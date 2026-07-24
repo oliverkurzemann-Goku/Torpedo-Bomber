@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Squadron Select</title>
+<style>
+  :root{
+    --ink:#0d0f0a; --olive:#2b3022; --olive2:#1c2017;
+    --khaki:#cabf9c; --amber:#e8b84b; --amber-dim:#9a7d34;
+    --oxide:#b1442b; --sea:#35506a; --field:#55603a;
+    --rule:rgba(202,191,156,.22);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;min-height:100%;background:var(--ink);color:var(--khaki);
+    font-family:"SFMono-Regular",Menlo,Consolas,"Courier New",monospace;
+    -webkit-text-size-adjust:100%;}
+  body{
+    /* board surface: a dark painted panel, lit from above left */
+    background:
+      radial-gradient(120% 80% at 20% 0%,rgba(70,80,54,.34),transparent 60%),
+      radial-gradient(100% 70% at 90% 100%,rgba(30,36,24,.7),transparent 60%),
+      var(--ink);
+    padding:clamp(20px,4vw,44px) clamp(16px,4vw,44px) calc(40px + env(safe-area-inset-bottom));
+    display:flex;flex-direction:column;align-items:center;}
+
+  /* ---------- header ---------- */
+  header{width:100%;max-width:900px;text-align:center;margin-bottom:clamp(22px,4vw,38px);}
+  .eyebrow{font-size:10px;letter-spacing:5px;color:var(--amber-dim);text-transform:uppercase;
+    display:flex;align-items:center;justify-content:center;gap:12px;}
+  .eyebrow:before,.eyebrow:after{content:"";height:1px;width:min(70px,12vw);background:var(--rule);}
+  h1{font-family:"Arial Black",Impact,sans-serif;text-transform:uppercase;letter-spacing:clamp(3px,1.4vw,9px);
+    font-size:clamp(26px,7vw,50px);color:var(--amber);margin:12px 0 0;line-height:1;
+    text-shadow:0 0 26px rgba(232,184,75,.22);}
+  .standfirst{margin:14px auto 0;max-width:44ch;font-size:13px;line-height:1.75;
+    color:rgba(202,191,156,.72);}
+
+  /* ---------- the two chits ---------- */
+  .board{width:100%;max-width:900px;display:grid;gap:clamp(16px,2.6vw,26px);
+    grid-template-columns:repeat(auto-fit,minmax(300px,1fr));}
+  .chit{
+    position:relative;display:flex;flex-direction:column;overflow:hidden;
+    background:linear-gradient(180deg,rgba(43,48,34,.96),rgba(20,23,15,.98));
+    border:1px solid var(--rule);border-radius:5px;
+    box-shadow:0 16px 44px rgba(0,0,0,.55),inset 0 0 0 3px rgba(0,0,0,.28);
+    text-decoration:none;color:inherit;
+    opacity:0;transform:translateY(14px);
+    animation:rise .5s cubic-bezier(.2,.7,.3,1) forwards;}
+  .chit:nth-child(2){animation-delay:.09s;}
+  @keyframes rise{to{opacity:1;transform:none;}}
+  .chit:active{transform:translateY(1px) scale(.995);}
+  .chit:focus-visible{outline:2px solid var(--amber);outline-offset:3px;}
+
+  /* signature: a strip of the theatre's own ground, drawn in CSS */
+  .band{height:78px;position:relative;border-bottom:1px solid var(--rule);}
+  .band.pacific{
+    background:
+      linear-gradient(180deg,#7fa8c4 0 34%,#4c7191 34% 46%,var(--sea) 46% 100%);}
+  .band.pacific:before{ /* carrier deck seen from astern, and its wake */
+    content:"";position:absolute;left:16%;right:52%;bottom:16px;height:7px;
+    background:#8d8a76;border-radius:1px;
+    box-shadow:0 7px 0 -2px rgba(255,255,255,.30),0 12px 0 -4px rgba(255,255,255,.16);}
+  .band.pacific:after{ /* sun glitter */
+    content:"";position:absolute;right:10%;top:8px;width:44px;height:44px;border-radius:50%;
+    background:radial-gradient(circle,rgba(255,238,190,.75),transparent 66%);}
+  .band.europe{
+    background:
+      linear-gradient(180deg,#93a5b2 0 30%,transparent 30%),
+      repeating-linear-gradient(102deg,#5c6a3c 0 26px,#6b7444 26px 48px,#4f5c37 48px 74px);}
+  .band.europe:before{ /* the river, cutting across the fields */
+    content:"";position:absolute;left:-6%;right:-6%;top:52%;height:11px;
+    background:var(--sea);transform:rotate(-5deg);
+    box-shadow:0 0 0 1px rgba(20,30,40,.5);}
+  .band.europe:after{ /* the road, and the bridge over the river */
+    content:"";position:absolute;left:-6%;right:-6%;top:34%;height:5px;
+    background:#6f6a55;transform:rotate(4deg);}
+
+  .chitBody{padding:18px 20px 20px;display:flex;flex-direction:column;flex:1;}
+  .no{font-size:10px;letter-spacing:4px;color:var(--amber-dim);text-transform:uppercase;}
+  .name{font-family:"Arial Black",Impact,sans-serif;text-transform:uppercase;
+    letter-spacing:2px;font-size:clamp(17px,2.5vw,21px);color:var(--khaki);
+    margin:7px 0 2px;line-height:1.12;}
+  .role{font-size:12px;letter-spacing:3px;color:var(--amber);text-transform:uppercase;}
+  .blurb{margin:13px 0 0;font-size:12.5px;line-height:1.75;color:rgba(202,191,156,.74);}
+
+  dl{margin:16px 0 0;padding:14px 0 0;border-top:1px solid var(--rule);
+    display:grid;grid-template-columns:auto 1fr;gap:7px 14px;font-size:11.5px;}
+  dt{letter-spacing:2px;color:var(--amber-dim);text-transform:uppercase;}
+  dd{margin:0;color:var(--khaki);text-align:right;}
+
+  .go{margin-top:18px;display:block;text-align:center;
+    font-family:"Arial Black",Impact,sans-serif;text-transform:uppercase;letter-spacing:3px;
+    font-size:13px;color:var(--ink);background:linear-gradient(180deg,var(--amber),var(--amber-dim));
+    border-radius:4px;padding:14px 16px;}
+  .chit.alt .go{background:linear-gradient(180deg,#b9c08f,#7d8358);}
+
+  footer{max-width:900px;margin-top:clamp(26px,4vw,40px);text-align:center;
+    font-size:11px;line-height:1.9;color:rgba(202,191,156,.42);}
+  footer b{color:rgba(202,191,156,.7);font-weight:400;}
+  kbd{font:inherit;border:1px solid var(--rule);border-radius:3px;padding:1px 5px;
+    color:rgba(202,191,156,.7);}
+
+  @media (prefers-reduced-motion:reduce){
+    .chit{animation:none;opacity:1;transform:none;}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="eyebrow">Operations Board</div>
+  <h1>Squadron Select</h1>
+  <p class="standfirst">
+    Two theatres, flown from the same cockpit. Pick the war you want today —
+    your logbook is kept separately for each.
+  </p>
+</header>
+
+<main class="board">
+
+  <a class="chit" href="torpedo-carrier.html">
+    <div class="band pacific" aria-hidden="true"></div>
+    <div class="chitBody">
+      <div class="no">Theatre I</div>
+      <div class="name">Torpedo Squadron</div>
+      <div class="role">Carrier Strike</div>
+      <p class="blurb">
+        Catapult off the deck, find the convoy, and put a fish in her side. The hard part is
+        coming home: fly the meatball down to a moving deck and catch the three wire.
+      </p>
+      <dl>
+        <dt>Theatre</dt><dd>Pacific, 1944</dd>
+        <dt>Aircraft</dt><dd>TBM Avenger &middot; SBD &middot; A6M</dd>
+        <dt>Sorties</dt><dd>12</dd>
+        <dt>Take off from</dt><dd>Carrier deck</dd>
+      </dl>
+      <span class="go">Start Carrier Strike</span>
+    </div>
+  </a>
+
+  <a class="chit alt" href="thunderbolt-europe.html">
+    <div class="band europe" aria-hidden="true"></div>
+    <div class="chitBody">
+      <div class="no">Theatre II</div>
+      <div class="name">Thunderbolt Squadron</div>
+      <div class="role">Ground Attack</div>
+      <p class="blurb">
+        Off the grass strip at Beaufort Field and down into the valley after trucks, panzers,
+        trains and the bridge. Everything down there shoots back, and the flak does not miss twice.
+      </p>
+      <dl>
+        <dt>Theatre</dt><dd>Europe, 1944</dd>
+        <dt>Aircraft</dt><dd>P-47D Thunderbolt &middot; Bf&nbsp;109G</dd>
+        <dt>Sorties</dt><dd>10</dd>
+        <dt>Take off from</dt><dd>Grass strip</dd>
+      </dl>
+      <span class="go">Start Ground Attack</span>
+    </div>
+  </a>
+
+</main>
+
+<footer>
+  Both run in the browser — nothing to install. Best on iPad in landscape.<br>
+  <b>Touch:</b> left stick pitch and roll &middot; right bar throttle &middot; red button drops ordnance.
+  <b>Keyboard:</b> <kbd>&larr;&uarr;&darr;&rarr;</kbd> fly &middot; <kbd>W</kbd>/<kbd>S</kbd> throttle
+  &middot; <kbd>Space</kbd> drop.<br>
+  New to it? Start with <b>Carrier Qualification</b> or <b>Circuits</b> — both teach the landing,
+  which is the part that takes practice.
+</footer>
+
+</body>
+</html>
