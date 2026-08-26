@@ -5,7 +5,7 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 102 · Thunderbolt Squadron EU BUILD 24**
+Stand bei Übergabe: **Torpedo Squadron BUILD 103 · Thunderbolt Squadron EU BUILD 24**
 Repo: `oliverkurzemann-Goku/Torpedo-Bomber`, ausgeliefert über GitHub Pages.
 Alle Angaben unten sind aus dem tatsächlichen Code verifiziert, nicht aus dem Gedächtnis.
 
@@ -365,6 +365,94 @@ Unterschied von 20 %, keine Formel-Vermutung. **Kein Bug, korrekte Größenverh�
 Flugverhalten der verschiedenen Modelle wirkt laut Nutzer zu arcade-lastig — „zu aggressiv und
 zu simpel". Explizit als Erinnerung für eine spätere, eigene Sitzung markiert, nicht Teil der
 aktuellen Bugfix-Runde. Nicht angefasst.
+
+### 4.8 Propellerrotation und Propellergröße — Stand nach BUILD 103
+
+**Propellerrotation ist bereits überall verdrahtet, keine Änderung nötig.** Geprüft (Grep,
+keine Testfahrt nötig, da reine Code-Inspektion ausreicht um „ist der Aufruf vorhanden"
+festzustellen): Spieler-Avenger (`propPivot.rotation.z-=spin`), Spieler-SBD
+(`sbdRotor.rotation.z-=...`), Zero (`zeroRotor.rotation[zeroRotorAxis]-=...`), SBD-Begleiter
+(`w.disc.rotation.z-=PROP_STEP`) und Raider (`r.disc.rotation.z-=PROP_STEP`) drehen alle schon
+in `animate()`. Der Nutzer hatte vermutlich einen stehenden Propeller in genau den Momenten
+gesehen, in denen `fitPropeller` `null` liefert (4.1 vor BUILD 100) oder die Scheibe falsch saß
+(vor BUILD 102) — mit den Fixes aus 4.1 sollte das Bild jetzt stimmen.
+
+**Propellergröße — bewusst NICHT angepasst, Zielkonflikt mit 4.1 ungelöst.** Gemessen (siehe
+4.1-Tabelle): SBD-Scheibe 10–20 % größer als der reale 3,28 m-Propeller, weil die Scheibe exakt
+das im Modell eingeschweißte Blattmaterial nachmisst. Ein künstlicher Clamp auf 3,28 m würde die
+Scheibe kleiner machen als die echten Blätter darunter — genau der Zustand, den BUILD 102 gerade
+behoben hat (Blattspitzen ragen wieder heraus, siehe „Nachtrag BUILD 102" in 4.1). Es gibt keine
+Möglichkeit, gleichzeitig „historisch korrekte Größe" UND „volle Abdeckung der eingeschweißten
+Blätter" zu erfüllen, ohne die Blattgeometrie selbst zu verändern — was laut 3.1 aus guten
+Gründen (dreimal gescheitert) tabu ist. **Rückfrage an den Nutzer nötig**, bevor hier irgendetwas
+geändert wird: Lieber leicht überdimensionierte, aber vollständig abgedeckte Propeller behalten,
+oder historische Größe mit dem Risiko sichtbarer Blattspitzen? Bis zur Antwort unverändert
+gelassen.
+
+### 4.9 Klappen, Fanghaken, Dive Brakes an den echten Modellen sichtbar — BEHOBEN in BUILD 103
+
+Vorher gab es Landeklappen, Dive Brakes und Fanghaken nur am eingebauten Platzhalter-Rumpf
+(`flapL/flapR/diveFlapL/diveFlapR`, `hook` in der Platzhalter-Konstruktion) — sobald das echte
+GLB-Modell nachlädt und den Platzhalter ersetzt (wie bei Propeller/Fahrwerk, siehe 3.1/3.3),
+verschwanden diese Teile ersatzlos, weil auch hier alles in die Rumpf-Geometrie eingeschweißt
+ist. Nach demselben „Cover/Add, don't cut"-Muster wie Propellerscheibe und Fahrwerk-Verkleidung
+wurden synthetische Klappen-, Dive-Brake- und Hakenteile direkt auf `model` aufgesetzt (Avenger
+in `loadPlaneModel()`, SBD in `loadSBDModel()` auf dem geteilten `sbdTemplate`, damit auch
+Begleitflugzeuge sie bekommen). Neue globale Variablen `sbdFlapL/sbdFlapR/sbdDiveFlapL/
+sbdDiveFlapR` halten die SBD-eigenen Klone getrennt von `flapL/flapR/diveFlapL/diveFlapR`
+(Platzhalter + Avenger), damit ein späterer erneuter Avenger-Einsatz in derselben Sitzung nicht
+auf veraltete SBD-Referenzen zeigt. Jede Klappen-Hinge-Gruppe trägt `userData.flapSign` (±1),
+weil „hinten" je nach Modellrahmen ein anderes Vorzeichen hat — die gemeinsame Update-Schleife
+rechnet einheitlich `rotation.x=(flapSign||1)*fl*0.8`.
+
+**Zwei grundverschiedene, verifizierte Achsfehler dabei gefunden und korrigiert — beide erst
+durch Rendern entdeckt, nicht durch Nachrechnen (genau das Muster aus Abschnitt 5, Lektion 1):**
+
+1. **Avenger: „vorne/hinten" ist X, nicht Z.** Erster Versuch nahm (in Analogie zum
+   Propeller-Code) an, „hinten" liege bei ±Z im `model`-lokalen Rahmen (dem Rahmen, in den
+   `model.add()` einfügt). Ein Render zeigte Klappe und Haken direkt am Propeller/Fahrwerk statt
+   an Flügel/Heck. Ursache: `model`-lokal (also OHNE das auf `gltfRoot` gebackene
+   `MODEL_YAW=-90°`) liegt die Nase bei x≈-5,2 bis -5,3 (gemessen an den 5 Propeller/Spinner-
+   Meshes, exakt dieselbe Nasenerkennungs-Logik wie beim `propPivot`-Aufbau, nur in
+   `model`-lokale statt `planeGroup`-lokale Koordinaten umgerechnet) — konsistent mit den
+   bereits verifizierten Fahrwerksankern aus 4.2 (Hauptfahrwerk x=-2,381, Spornrad x=+3,734,
+   beide zwischen Nase und Heck liegend). Z ist stattdessen die Spannweitenachse. Nach der
+   Korrektur (Klappen-Trefferpunkt auf X statt Z, Spannweite auf Z statt X, plus
+   `grp.rotation.y=-Math.PI/2` auf jeder Klappen-Gruppe, damit die von allen drei Flugzeugtypen
+   geteilte Update-Schleife mit `rotation.x` weiterhin um die richtige — jetzt lokal auf Z
+   ausgerichtete — Scharnierachse dreht statt die Klappe um die Sehnenachse zu „rollen") zeigt
+   ein Render die Klappen korrekt am Flügelansatz nach unten ausschlagend und den Haken frei
+   unter dem Heck hängend.
+2. **SBD: Achsen-Konvention war richtig, die Positionswerte waren es nicht.** Die
+   Grundannahme „Nase bei +Z, Spannweite auf X" stimmte (unabhängig bestätigt durch die
+   bereits funktionierende `fitPropeller(playerSBD,...,-1)`- bzw.
+   `fitPropeller(inner,...,+1)`-Aufrufe für Spieler bzw. Begleitflugzeug) — aber die
+   Zahlenwerte (`trailZ=-0.24`, Haken bei `z=-4.55`) waren nie am Modell gemessen worden. Ein
+   Render zeigte den Fanghaken frei im Raum schwebend, weit hinter dem tatsächlichen Heck.
+   Ein Vertex-Scan der Rumpfunterseite entlang der Mittellinie ergab die reale
+   Flügelhinterkante bei z≈-2,0 bis -2,2 (im Klappen-Spannweitenbereich x=1,0–2,0) und die
+   Rumpfunterseite am Heckkegel bei z≈-3,8 bis -4,0, y≈-0,08 — beide Werte entsprechend
+   korrigiert (`trailZ=-2.0`, Dive-Brake bei `dbZ=-1.6`, Haken bei `z=-4.0`).
+
+**Nachgewiesen** (headless-WebGL-Renderer, echte `grumman tbm avenger.glb` und
+`sbd dauntless.glb`, echter `GLTFLoader` r128, Klappen bei der Prüfung voll ausgeschlagen
+gerendert): Avenger zeigt Klappen am Flügelansatz nach unten ausschlagend und einen frei unter
+dem Heck hängenden Haken (Screenshots `avenger_flaps_side.png`, `avenger_hook_tail2.png` im
+Prüfstand); SBD zeigt Klappen/Dive-Brakes direkt unter der (im Modell bereits vorhandenen,
+perforierten) Tragflächen-Hinterkante und einen Haken unter dem Heckkegel statt frei schwebend
+(`sbd_flaps_side.png`, `sbd_hook_tail.png`).
+
+**Offen:** Nur am Prüfstand (headless, ohne Texturen/Beleuchtung des echten Spiels) geprüft —
+Bestätigung auf dem echten iPad steht aus. Die SBD hat im Original-Mesh bereits sichtbare,
+perforierte Dive-Brake-Flächen fest eingebaut (auffällig im Render) — die neuen synthetischen
+Dive Brakes kommen zusätzlich dazu und sind die einzigen davon, die sich mit `P.diveBrake`
+ein-/ausblenden lassen; nicht geprüft, ob das im Spiel doppelt wirkt. `thunderbolt-europe.html`
+hat für den eigenen, inline gebauten Propeller in `rigModel()` denselben Tiefen-Bug wie 4.1 vor
+BUILD 102 (flache `CircleGeometry` statt Zylinder) — nicht angefasst, da der gemeldete Bug sich
+auf das Torpedo-Spiel bezog.
+
+Code: `torpedo-carrier.html`, Suche nach „Flaps + arrestor hook" (Avenger, in `loadPlaneModel()`)
+und „Flaps, dive brakes and the arrestor hook" (SBD, in `loadSBDModel()`).
 
 ---
 

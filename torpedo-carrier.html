@@ -302,7 +302,7 @@
   <div id="flash"></div>
   <div id="ltn" style="position:fixed;inset:0;background:#e6ecff;opacity:0;pointer-events:none;z-index:40;"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 102</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 103</div>
 
   <!-- Optical landing aid -->
   <div id="lso">
@@ -620,6 +620,11 @@ let clouds=[], smokes=[], explosions=[];
 let smokePool=[], wakePool=[], wakeGeo=null;   // particle pools (declared before first use)
 let actx=null, eng=null, carrierSmokeT=0;
 let planeGear, flapL, flapR, diveFlapL, diveFlapR, bigSea, cockpitInterior;
+// SBD's own flap/dive-brake clones live in separate variables, not reassigned into flapL/
+// flapR/diveFlapL/diveFlapR directly — the player can fly an Avenger sortie again after an
+// SBD one in the same session, and the update loop needs the Avenger's own flaps back at
+// that point rather than a stale pointer into the (now inactive) SBD aircraft.
+let sbdFlapL, sbdFlapR, sbdDiveFlapL, sbdDiveFlapR;
 let loadout='torpedo';
 let bombs=[];
 let islands=[], volcanoT=0;
@@ -2176,7 +2181,60 @@ function loadSBDModel(){
       model.traverse(function(o){ if(o.isMesh){ o.castShadow=true; o.frustumCulled=false;
         if(o.material) o.material.side=THREE.DoubleSide; }});
       const holder=new THREE.Group(); holder.add(model);
-      // verified from the model: nose is +Z (tail z=-3.7, engine z=+2.2) -> no yaw fix
+      // verified from the model: nose is +Z (tail z=-3.7, engine z=+2.2) -> no yaw fix. This
+      // axis (span=x, fore/aft=z, aft=-z) is independently corroborated by the working,
+      // CLAUDE.md-4.1-verified propeller code: fitPropeller(playerSBD,...,-1) and
+      // fitPropeller(inner,...,+1) for the wingman both only succeed with this convention.
+      // Flaps, dive brakes and the arrestor hook, added the same way as the Avenger's (see
+      // loadPlaneModel): static real geometry, no separate hinged part to find, so a
+      // synthetic panel goes on top instead. Built on the SHARED, unrotated template so
+      // wingmen (who clone this directly) get them too, not just the player — named so the
+      // player-specific block below can find its own clone and drive it from P.flap /
+      // P.diveBrake. The AXIS convention above was right but the actual z/y numbers below were
+      // not checked against the mesh and were badly wrong (trailing edge assumed near z=-0.24;
+      // a real vertex scan puts the wing's actual trailing edge around z=-2.0 to -2.2 in the
+      // x=1.0-2.0 flap span, and the tail-cone belly — for the hook — around z=-3.8 to -4.0,
+      // y=-0.08). A render with the old numbers showed the hook floating in empty space well
+      // past the real tail, not attached to anything — caught the same way as the Avenger fix,
+      // by rendering and looking, not by trusting the numbers.
+      {
+        const flapMat=new THREE.MeshStandardMaterial({color:0x3c4048, roughness:0.75});
+        const chord=0.5, thick=0.07, spanLo=1.0, spanHi=2.0, trailZ=-2.0, underY=-0.35;
+        for(const side of [-1,1]){
+          const grp=new THREE.Group();
+          grp.name=side<0?'sbdFlapL':'sbdFlapR';
+          grp.userData.flapSign=-1;                      // nose at +z here, aft is -z
+          grp.position.set(side*(spanLo+spanHi)/2, underY, trailZ);
+          const panel=new THREE.Mesh(new THREE.BoxGeometry(spanHi-spanLo, thick, chord), flapMat);
+          panel.position.z=-chord/2;                      // extends aft (-z) from the hinge
+          grp.add(panel);
+          model.add(grp);
+        }
+        // dive brakes: split perforated flaps, Dauntless-style, a bit further outboard of
+        // the landing flaps so the two don't overlap
+        const dbSpanLo=2.2, dbSpanHi=3.1, dbZ=-1.6, dbY=-0.25;
+        const dbMat=new THREE.MeshStandardMaterial({color:0x16181a, roughness:0.8});
+        for(const side of [-1,1]){
+          const grp=new THREE.Group();
+          grp.name=side<0?'sbdDiveL':'sbdDiveR';
+          grp.visible=false;
+          grp.position.set(side*(dbSpanLo+dbSpanHi)/2, dbY, dbZ);
+          const w=dbSpanHi-dbSpanLo;
+          const up=new THREE.Mesh(new THREE.BoxGeometry(w,0.05,0.42), dbMat);
+          up.position.set(0,0.34,0); up.rotation.x=0.7; grp.add(up);
+          const dn=new THREE.Mesh(new THREE.BoxGeometry(w,0.05,0.42), dbMat);
+          dn.position.set(0,-0.34,0); dn.rotation.x=-0.7; grp.add(dn);
+          model.add(grp);
+        }
+        // arrestor hook: tail cone belly sits around z=-3.8..-4.0, y=-0.08 here; a plain rod
+        // hanging down-and-aft from just past that point.
+        const hook=new THREE.Mesh(new THREE.CylinderGeometry(0.05,0.05,1.0,8),
+          new THREE.MeshStandardMaterial({color:0x222428, roughness:0.6}));
+        hook.name='sbdHook';
+        hook.position.set(0,-0.35,-4.0);
+        hook.rotation.x=-0.55;
+        model.add(hook);
+      }
       sbdTemplate=holder;
       console.log('SBD Dauntless loaded');
     }catch(e){ console.warn('SBD post-process failed',e); }
@@ -3541,6 +3599,51 @@ function loadPlaneModel(){
           model.add(leg);
           gearDoors.push(leg);
         });
+      // Flaps + arrestor hook, added on top of the real model exactly like the gear-leg
+      // fairings above: the real geometry is static (no separate hinged part to find, same
+      // "welded" pattern as everything else on these models — 3.1), so a synthetic panel is
+      // ADDED rather than searched for. Unlike the propeller disc or the gear fairings this
+      // doesn't need to cover anything — a deployed flap or hook is additive, sticking out
+      // past the model's own (flaps-up) silhouette, so placement only needs to be plausible,
+      // not pixel-exact. TWO placement attempts before this one put the parts at the nose —
+      // first assuming aft=+z, then (wrongly "fixed") assuming aft=-z. Both were wrong for the
+      // SAME reason: they treated z as the fore/aft axis by analogy with the propeller code,
+      // without checking it for this specific geometry. A direct measurement (propPivot's own
+      // nose-finding logic, re-run against model-local coordinates — see CLAUDE.md 4.x) proved
+      // the fore/aft axis in this model's OWN local frame (the one `model.add()` places things
+      // into) is actually X, not Z: propeller/nose sits at model-local x≈-5.2..-5.3, the
+      // already-verified working gear anchors sit at x=-2.381 (main, mid-fuselage) and
+      // x=+3.734 (tailwheel, near the tail) — increasing x = further aft. Z is the spanwise
+      // axis instead (wing left/right). Re-measured the wing on that corrected axis: real
+      // trailing edge across z=1.2..2.0 sits around x≈0.1, underside y≈-0.4; the tail cone
+      // bottom is around x≈5.0, y≈-0.35, z≈0.
+      {
+        const flapMat=new THREE.MeshStandardMaterial({color:0x3c4048, roughness:0.75});
+        const flapChord=0.5, flapThick=0.07, spanLo=1.2, spanHi=2.0, trailX=0.1, underY=-0.4;
+        flapL=new THREE.Group(); flapR=new THREE.Group();
+        flapL.userData.flapSign=-1; flapR.userData.flapSign=-1;
+        for(const [side,grp] of [[-1,flapL],[1,flapR]]){
+          // position is in model-local space directly (x=fore/aft, z=span); the extra
+          // rotation.y below only re-orients this GROUP's own local axes so the shared
+          // per-frame update loop's `rotation.x` (written assuming local x = hinge/span axis,
+          // true for the placeholder body and the SBD) still droops the panel correctly here
+          // too, instead of barrel-rolling it around the fore/aft axis.
+          grp.position.set(trailX, underY, side*(spanLo+spanHi)/2);
+          grp.rotation.y=-Math.PI/2;
+          const panel=new THREE.Mesh(new THREE.BoxGeometry(spanHi-spanLo, flapThick, flapChord), flapMat);
+          panel.position.z=-flapChord/2;                // extends aft (+model x) from the hinge line
+          grp.add(panel);
+          model.add(grp);
+        }
+        // arrestor hook: a static rod under the tail, same look as the built-in placeholder's
+        // (a plain cylinder), sized and sited off the real tail measured the same way. Aft is
+        // +x here (see above), so the tilt is around z, not x.
+        const hookMat=new THREE.MeshStandardMaterial({color:0x222428, roughness:0.6});
+        const hook=new THREE.Mesh(new THREE.CylinderGeometry(0.05,0.05,1.1,8), hookMat);
+        hook.position.set(5.3,-0.75,0);
+        hook.rotation.z=-Math.PI/2-0.35;
+        model.add(hook);
+      }
       // Pilot eye anchored to PANEL + SEAT (material names are unambiguous in this model).
       // Height = panel top + half panel height (matches the offline-validated sweep);
       // fore/aft = seat centre. Windshield/glass anchors only as fallbacks.
@@ -3582,7 +3685,7 @@ function loadPlaneModel(){
       }
       window.__eyeDbg='EYE '+COCKPIT_EYE.map(v=>v.toFixed(2)).join('/');
       const btEl=document.getElementById('buildTag');
-      if(btEl) btEl.textContent='BUILD 102 · '+window.__eyeDbg;
+      if(btEl) btEl.textContent='BUILD 103 · '+window.__eyeDbg;
       let seat=null;
       model.traverse(function(o){
         if(!o.isMesh||!o.material) return;
@@ -3806,6 +3909,11 @@ function updatePlaneMesh(){
     playerSBD.add(inner);
     playerSBD.userData.fromTemplate=true;
     planeGroup.add(playerSBD);
+    // clone(true) keeps names but not references — find THIS aircraft's own flap/dive-brake
+    // clones (built once on the shared sbdTemplate, see loadSBDModel). Kept in their own
+    // variables rather than overwriting flapL/flapR: see the sbdFlapL declaration above.
+    sbdFlapL=inner.getObjectByName('sbdFlapL'); sbdFlapR=inner.getObjectByName('sbdFlapR');
+    sbdDiveFlapL=inner.getObjectByName('sbdDiveL'); sbdDiveFlapR=inner.getObjectByName('sbdDiveR');
     console.log('SBD attached');
     radioSay('DAUNTLESS ON THE LINE');
   }
@@ -3893,9 +4001,24 @@ function updatePlaneMesh(){
   const g=(P.gear==null?1:P.gear), fl=(P.flap==null?0:P.flap);
   if(planeGear){ planeGear.visible=g>0.02; planeGear.scale.set(1,Math.max(0.02,g),1);
     planeGear.position.y=-(1-g)*0.5; }
-  if(flapL){ flapL.rotation.x=fl*0.8; flapR.rotation.x=fl*0.8; }
+  // Whichever aircraft is actually flying right now: SBD's own flap/dive-brake clones when
+  // an SBD is up, the Avenger/placeholder pair otherwise. isSBD() alone isn't enough — the
+  // SBD model may still be loading (playerSBD null), in which case the Avenger stand-in is
+  // what's actually on screen and should keep animating.
+  const sbdUp = isSBD() && playerSBD;
+  const curFlapL = sbdUp? sbdFlapL : flapL, curFlapR = sbdUp? sbdFlapR : flapR;
+  const curDiveL = sbdUp? sbdDiveFlapL : diveFlapL, curDiveR = sbdUp? sbdDiveFlapR : diveFlapR;
+  if(curFlapL){
+    // Each model's flap panel extends aft from its hinge, and "aft" is a different sign of Z
+    // depending on which way that particular model faces (nose at -z for the built-in body
+    // and the Avenger, nose at +z for the unrotated SBD template) — userData.flapSign (set
+    // where each pair is built) makes rotation.x deploy downward either way. Defaults to the
+    // built-in placeholder's own convention (+z aft) when unset.
+    curFlapL.rotation.x=(curFlapL.userData.flapSign||1)*fl*0.8;
+    curFlapR.rotation.x=(curFlapR.userData.flapSign||1)*fl*0.8;
+  }
   const db=!!P.diveBrake;
-  if(diveFlapL){ diveFlapL.visible=db; diveFlapR.visible=db; }
+  if(curDiveL){ curDiveL.visible=db; curDiveR.visible=db; }
   const cp = viewMode==='cockpit';
   if(cockpitInterior) cockpitInterior.visible=false;
   // Photo cockpit (cockpit.png, windows cut transparent) is the pit when it loaded;
@@ -5005,7 +5128,7 @@ function setupUIButtons(){
   if(dbgT2) dbgT2.onclick=()=>{
     dbgOn=!dbgOn; localStorage.setItem('dbgOn',dbgOn?'1':'0');
     const db=document.getElementById('dbgBox'); if(db) db.textContent=dbgOn?'✓':'';
-    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 102'; }
+    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 103'; }
   };
   const lu=document.getElementById('lookUp'), ld=document.getElementById('lookDn');
   const setTilt=v=>{ pitTilt=Math.max(-0.9,Math.min(0.4,v)); localStorage.setItem('pitTilt',pitTilt.toFixed(3)); };
