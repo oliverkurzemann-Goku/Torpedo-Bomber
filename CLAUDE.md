@@ -5,7 +5,7 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 105 · Thunderbolt Squadron EU BUILD 26**
+Stand bei Übergabe: **Torpedo Squadron BUILD 106 · Thunderbolt Squadron EU BUILD 26**
 Repo: `oliverkurzemann-Goku/Torpedo-Bomber`, ausgeliefert über GitHub Pages.
 Alle Angaben unten sind aus dem tatsächlichen Code verifiziert, nicht aus dem Gedächtnis.
 
@@ -20,7 +20,7 @@ iPad/iPhone Safari.
 | Datei | Was |
 |---|---|
 | `index.html` | Startseite, Auswahl zwischen beiden Spielen |
-| `torpedo-carrier.html` | **Teil 1** — Pazifik, Trägerbetrieb (BUILD 105) |
+| `torpedo-carrier.html` | **Teil 1** — Pazifik, Trägerbetrieb (BUILD 106) |
 | `thunderbolt-europe.html` | **Teil 2** — Europa, Bodenangriff (EU BUILD 26) |
 | `model-check.html` | Kalibrier-Werkzeug für neue Flugzeugmodelle (Ausrichtung, Maßstab) |
 
@@ -609,6 +609,52 @@ genommen). Noch nicht begonnen — nächste Schritte für eine künftige Sitzung
 Textur-Linien ohne 3D-Form, `SEG=384`-Höhengitter) gegen echte 3D-Vegetation/-Gebäude und ein
 feineres Höhengitter abwägen; Speicher-/Ladezeit-Auswirkungen auf einem 64×64-km-Gebiet
 berücksichtigen. Kein Code angefasst.
+
+### 4.13 Inseln in torpedo-carrier.html verbessert — BUILD 106
+
+Nutzer bat direkt darum, auch die Pazifik-Inseln zu verbessern (Teil der „Grafik"-Serie). Erst
+gerendert, um zu sehen statt zu raten, was schwach wirkt (`buildIsland()` extrahiert, gegen einen
+echten headless-WebGL-Renderer ausgeführt — Ergebnis siehe unten): der „Dschungel" bestand aus
+Kegel-Bäumen (wie Weihnachtsbäume) statt Palmen, und die Insel-Textur (`TS=160`) wirkte bei
+niedrigem Überflug sichtbar blockig/pixelig, mit hartem Farbsprung an jeder Höhen-Bandgrenze
+(Sand→Gras→Gestrüpp).
+
+**Drei Änderungen in `buildIsland()`:**
+1. **Palmen statt Kegel-Wald.** Der Dschungel bestand aus einem einzigen instanced Kegel
+   (`ConeGeometry`), für eine Pazifikinsel falsch. Ersetzt durch echte Palmen — Stamm + 5
+   strahlenförmige Wedel-Kegel, dieselbe Form, die `addPalm()` für die Strandlinie schon baute.
+   `addPalm()` selbst PRO Baum aufzurufen (6 einzelne Meshes je Baum) hätte bei ~18 Inseln
+   Tausende einzelner Draw-Calls bedeutet — ein echtes Performance-Risiko auf einem iPad.
+   Stattdessen zwei `InstancedMesh`es (alle Stämme, alle Wedel — 5 pro Baum), damit es bei der
+   gleichen Draw-Call-Klasse wie der alte Kegel-Wald bleibt (2 statt vorher 1 pro Insel).
+2. **Textur-Auflösung `TS` 160→384.** Nutzer hat „Performance zweitrangig" für dieses Thema
+   explizit freigegeben; ~18 Inseln × 384² RGBA sind überschaubare ~10 MB Texturspeicher.
+3. **Sanfte Farbübergänge an den Höhen-Bandgrenzen** (Sand/Gras/Gestrüpp/Dschungel) statt eines
+   harten if/else-Sprungs — behoben mit einer kleinen Überblend-Zone (±0,6 Höheneinheiten) um
+   jede Schwelle. Die HANGneigungs-basierten Grenzen (Klippe, Vulkan-Basalt) bewusst NICHT
+   geglättet — das sind im echten Gelände tatsächlich scharfe Kanten, keine Bandbreiten-Artefakte.
+
+**Verifiziert, nicht nur geschrieben:** Ein eigenständiges Testskript mit der VOLLSTÄNDIGEN,
+per Klammerzählung extrahierten `buildIsland()`-Logik (plus `isl_hash`/`isl_noise`/`isl_fbm`/
+`addPalm`) gegen einen echten headless-WebGL-Renderer (`gl` + `xvfb-run`) ausgeführt, für alle
+drei Inseltypen (normal/Vulkan/Atoll). Ergebnis: Palmen-Wald und Terrain-Geometrie rendern
+korrekt, keine Laufzeitfehler, Bäume sitzen an den erwarteten Positionen/Höhen. Die
+Textur-EINFÄRBUNG selbst konnte in diesem zweiten (aus der echten Datei extrahierten) Testlauf
+nicht visuell bestätigt werden — Node hat keinen echten Canvas-2D-Backend, `CanvasTexture` bekam
+dadurch keine echten Pixel und die Terrain-Fläche blieb im Screenshot schwarz (dieselbe
+Einschränkung wie beim SBD-Material-Test in 4.11, kein Bug im Spielcode). Die Farb-Überblend-
+Formel selbst wurde separat, unabhängig von `CanvasTexture`, mit einer direkten
+`THREE.DataTexture` aus denselben Pixel-Daten gerendert und sichtbar bestätigt (deutlich
+glattere Farbübergänge, keine Pixel-Art-Kante mehr) — bevor sie identisch in die echte Datei
+übertragen wurde.
+
+**Offen:** Nur am Prüfstand gerendert, nicht auf dem echten iPad geflogen. Ein vorbestehendes,
+nicht durch diese Änderung verursachtes Detail (auch im alten Kegel-Wald schon vorhanden, nur an
+der Baum-Platzierungslogik selbst hängend, die nicht angefasst wurde): auf Atollen wachsen
+vereinzelt Bäume bis dicht an den inneren Lagunenrand — kosmetisch, nicht Teil dieses Fixes.
+
+Code: `torpedo-carrier.html`, Funktion `buildIsland()`, Suche nach „Real palm trees instead" und
+„The three height bands below".
 
 ---
 

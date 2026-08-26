@@ -302,7 +302,7 @@
   <div id="flash"></div>
   <div id="ltn" style="position:fixed;inset:0;background:#e6ecff;opacity:0;pointer-events:none;z-index:40;"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 105</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 106</div>
 
   <!-- Optical landing aid -->
   <div id="lso">
@@ -1067,7 +1067,11 @@ function buildIsland(x,z,r,type){
   }
   const D=r*2.5;
   // --- pixel texture from a height grid: beach/grass/jungle/cliff/basalt ---
-  const TS=160;
+  // Bumped from 160: at that resolution each texel covered a large enough patch of ground to
+  // read as a visible pixel-art block, especially at the beach edge. The user asked for real
+  // realism here with performance a secondary concern, so this trades a modest amount of
+  // texture memory (18 islands x 384^2 RGBA ~= 10 MB total) for a visibly smoother coastline.
+  const TS=384;
   const grid=new Float32Array(TS*TS);
   for(let py=0;py<TS;py++)
     for(let px=0;px<TS;px++)
@@ -1091,12 +1095,32 @@ function buildIsland(x,z,r,type){
       let cr,cg,cb;
       const dNorm=Math.hypot(wx,wz)/r;
       if(atoll && dNorm<0.72){ cr=64;cg=176;cb=182; }         // turquoise lagoon interior
-      else if(h<0.4){ cr=atoll?218:132; cg=atoll?220:168; cb=atoll?196:148; }  // coral sand on an atoll rim
-      else if(h<1.8){ const m=0.9+0.2*n; cr=226*m;cg=202*m;cb=142*m; }
-      else if(h<3.4){ const m=0.85+0.3*n; cr=158*m;cg=148*m;cb=86*m; }
-      else if(sl>2.5){ const m=0.8+0.4*n; cr=118*m;cg=104*m;cb=88*m; }
-      else if(volcano&&h>peak*0.55){ const m=0.8+0.4*n; cr=74*m;cg=64*m;cb=58*m; }
-      else { const m=0.6+0.65*n; cr=30*m;cg=96*m;cb=26*m; }
+      else if(sl>2.5){ const m=0.8+0.4*n; cr=118*m;cg=104*m;cb=88*m; }              // cliff face: a real edge, left hard
+      else if(volcano&&h>peak*0.55){ const m=0.8+0.4*n; cr=74*m;cg=64*m;cb=58*m; }  // basalt: likewise a real edge
+      else {
+        // The three height bands below (sand/scrub/upland/jungle) used to be a hard if/else
+        // chain — a clean pixel cutoff between sand and grass reads as a painted-on step
+        // rather than ground blending into ground. Blending across a band around each
+        // threshold removes that without changing where any colour dominates. The slope-based
+        // cliff/basalt branches above are deliberately left hard — those really are sharp
+        // edges on real terrain.
+        const BW=0.6;
+        const sand=[atoll?218:132, atoll?220:168, atoll?196:148];
+        const mLow=0.9+0.2*n, mUp=0.85+0.3*n, mJun=0.6+0.65*n;
+        const low=[226*mLow,202*mLow,142*mLow];
+        const up=[158*mUp,148*mUp,86*mUp];
+        const jun=[30*mJun,96*mJun,26*mJun];
+        const blend=(hh,t,a,b)=>{ const f=Math.min(1,Math.max(0,(hh-(t-BW))/(2*BW))); return [a[0]+(b[0]-a[0])*f,a[1]+(b[1]-a[1])*f,a[2]+(b[2]-a[2])*f]; };
+        let col;
+        if(h<0.4-BW) col=sand;
+        else if(h<0.4+BW) col=blend(h,0.4,sand,low);
+        else if(h<1.8-BW) col=low;
+        else if(h<1.8+BW) col=blend(h,1.8,low,up);
+        else if(h<3.4-BW) col=up;
+        else if(h<3.4+BW) col=blend(h,3.4,up,jun);
+        else col=jun;
+        cr=col[0]; cg=col[1]; cb=col[2];
+      }
       const i4=(py*TS+px)*4;
       data[i4]=cr*shade; data[i4+1]=cg*shade; data[i4+2]=cb*shade; data[i4+3]=255;
     }
@@ -1104,7 +1128,7 @@ function buildIsland(x,z,r,type){
   ctx.putImageData(img,0,0);
   const tex=new THREE.CanvasTexture(cv);
   // --- terrain mesh ---
-  const SEG=Math.round(Math.min(84,Math.max(48,r*0.5)));
+  const SEG=Math.round(Math.min(130,Math.max(48,r*0.5)));   // raised cap: realism over performance, per the user
   const geo=new THREE.PlaneGeometry(D,D,SEG,SEG);
   geo.rotateX(-Math.PI/2);
   const pos=geo.attributes.position;
@@ -1120,14 +1144,22 @@ function buildIsland(x,z,r,type){
   terr.receiveShadow=true;
   g.add(terr);
   // --- instanced jungle forest on the mid slopes ---
+  // Used to be cone shapes — read as a pine/Christmas-tree forest, wrong for a Pacific island.
+  // Real palm trees instead: trunk + 5 radiating frond cones, the same shape addPalm() already
+  // builds for the beach line below. Placing one addPalm() PER tree (6 individual meshes each)
+  // would mean thousands of individual draw calls across ~18 islands — a real performance
+  // cliff on an iPad. Two InstancedMeshes (every trunk, every frond — 5 per tree) keep this at
+  // the same 2-draw-call-per-island cost class as the old single-cone forest.
   const treeCnt=volcano? Math.round(r*0.5) : Math.round(Math.min(240,r*1.5));
   if(treeCnt>6){
-    const tg=new THREE.ConeGeometry(1,2.8,6); tg.translate(0,1.4,0);
-    const tm=new THREE.MeshStandardMaterial({color:0x1c4718,roughness:1});
-    const inst=new THREE.InstancedMesh(tg,tm,treeCnt);
-    const M=new THREE.Matrix4(), q=new THREE.Quaternion(),
-          up=new THREE.Vector3(0,1,0), sv=new THREE.Vector3(), pv=new THREE.Vector3();
-    let placed=0, tries=0;
+    const trunkG=new THREE.CylinderGeometry(0.4,0.7,9,7);
+    const trunkM=new THREE.MeshStandardMaterial({color:0x6b4a2a,roughness:1});
+    const trunkInst=new THREE.InstancedMesh(trunkG,trunkM,treeCnt);
+    const frondG=new THREE.ConeGeometry(1.1,5,5);
+    const frondM=new THREE.MeshStandardMaterial({color:0x2f7a3a,roughness:1});
+    const frondInst=new THREE.InstancedMesh(frondG,frondM,treeCnt*5);
+    const dummy=new THREE.Object3D();
+    let placed=0, tries=0, frondN=0;
     while(placed<treeCnt && tries<treeCnt*14){
       tries++;
       const a=Math.random()*Math.PI*2, rr=Math.sqrt(Math.random())*r*0.92;
@@ -1136,14 +1168,23 @@ function buildIsland(x,z,r,type){
       const hi=volcano? peak*0.42 : peak*0.8;
       if(h<3.2||h>hi) continue;
       if(Math.abs(hAt(wx+3,wz)-h)+Math.abs(hAt(wx,wz+3)-h)>3.2) continue;
-      const s=1.1+Math.random()*2.1;
-      q.setFromAxisAngle(up,Math.random()*Math.PI*2);
-      M.compose(pv.set(wx,h-0.2,wz), q, sv.set(s,s*(0.9+Math.random()*0.5),s));
-      inst.setMatrixAt(placed++,M);
+      const s=0.55+Math.random()*0.5, lean=(Math.random()-0.5)*0.35, y=h-0.2;
+      dummy.position.set(wx,y,wz); dummy.rotation.set(lean,0,lean*0.6); dummy.scale.set(s,s,s);
+      dummy.updateMatrix();
+      trunkInst.setMatrixAt(placed,dummy.matrix);
+      for(let i=0;i<5;i++){
+        dummy.position.set(wx,y+8.7*s,wz);
+        dummy.rotation.set(Math.PI/2+lean,0,(i/5)*Math.PI*2);
+        dummy.scale.set(s,s,s);
+        dummy.translateY(2*s);         // outward along the frond's own tilted axis, post-rotation
+        dummy.updateMatrix();          // bake position+rotation+scale AFTER the translate
+        frondInst.setMatrixAt(frondN++,dummy.matrix);
+      }
+      placed++;
     }
-    inst.count=placed;
-    inst.instanceMatrix.needsUpdate=true;
-    g.add(inst);
+    trunkInst.count=placed; frondInst.count=frondN;
+    trunkInst.instanceMatrix.needsUpdate=true; frondInst.instanceMatrix.needsUpdate=true;
+    g.add(trunkInst); g.add(frondInst);
   }
   // shallows + surf line
   const shal=new THREE.Mesh(new THREE.RingGeometry(r*0.55,r*1.45,56),
@@ -3747,7 +3788,7 @@ function loadPlaneModel(){
       }
       window.__eyeDbg='EYE '+COCKPIT_EYE.map(v=>v.toFixed(2)).join('/');
       const btEl=document.getElementById('buildTag');
-      if(btEl) btEl.textContent='BUILD 105 · '+window.__eyeDbg;
+      if(btEl) btEl.textContent='BUILD 106 · '+window.__eyeDbg;
       let seat=null;
       model.traverse(function(o){
         if(!o.isMesh||!o.material) return;
@@ -5193,7 +5234,7 @@ function setupUIButtons(){
   if(dbgT2) dbgT2.onclick=()=>{
     dbgOn=!dbgOn; localStorage.setItem('dbgOn',dbgOn?'1':'0');
     const db=document.getElementById('dbgBox'); if(db) db.textContent=dbgOn?'✓':'';
-    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 105'; }
+    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 106'; }
   };
   const lu=document.getElementById('lookUp'), ld=document.getElementById('lookDn');
   const setTilt=v=>{ pitTilt=Math.max(-0.9,Math.min(0.4,v)); localStorage.setItem('pitTilt',pitTilt.toFixed(3)); };
