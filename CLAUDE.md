@@ -5,7 +5,7 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 104 · Thunderbolt Squadron EU BUILD 25**
+Stand bei Übergabe: **Torpedo Squadron BUILD 105 · Thunderbolt Squadron EU BUILD 26**
 Repo: `oliverkurzemann-Goku/Torpedo-Bomber`, ausgeliefert über GitHub Pages.
 Alle Angaben unten sind aus dem tatsächlichen Code verifiziert, nicht aus dem Gedächtnis.
 
@@ -20,8 +20,8 @@ iPad/iPhone Safari.
 | Datei | Was |
 |---|---|
 | `index.html` | Startseite, Auswahl zwischen beiden Spielen |
-| `torpedo-carrier.html` | **Teil 1** — Pazifik, Trägerbetrieb (BUILD 104) |
-| `thunderbolt-europe.html` | **Teil 2** — Europa, Bodenangriff (EU BUILD 25) |
+| `torpedo-carrier.html` | **Teil 1** — Pazifik, Trägerbetrieb (BUILD 105) |
+| `thunderbolt-europe.html` | **Teil 2** — Europa, Bodenangriff (EU BUILD 26) |
 | `model-check.html` | Kalibrier-Werkzeug für neue Flugzeugmodelle (Ausrichtung, Maßstab) |
 
 Beide Spiele haben getrennte Speicherstände (`localStorage`-Präfixe `tc_*` bzw. `eu_*`).
@@ -529,6 +529,86 @@ dieser Änderung.
 
 Code: `torpedo-carrier.html` und `thunderbolt-europe.html`, Funktion `updateFlight()`, Suche nach
 „Real rotational inertia" / „Real inertia" bzw. „bank-to-turn: real coordinated-turn physics".
+
+### 4.11 Grafik-Verbesserung, Runde 1: drei konkrete Bugs — BEHOBEN in BUILD 105 / EU BUILD 26
+
+Nutzer-Feedback zum nächsten großen Thema (Grafik): Avenger hat schönes Sonnenlicht, Dauntless
+nicht; manche Schiffe (Merchant/Zerstörer) erscheinen als generierte statt echte 3D-Modelle;
+Thunderbolt-Terrain wirkt schwach, Häuser/Hecken wirken teils „über dem Abgrund". Auf Wunsch des
+Nutzers zuerst diese drei konkreten, eingrenzbaren Ursachen untersucht und behoben, bevor die
+größere Terrain-Erneuerung angegangen wird (siehe 4.12 für den Ausblick).
+
+**1) Dauntless-Materialien — nicht geraten, sondern mit Node+echtem GLTFLoader die Material-
+Eigenschaften beider Modelle direkt verglichen:** Die Avenger hat auf JEDEM Material explizit
+`roughness=0.6, metalness=0` gesetzt. Die Dauntless hat zwei Rumpf-Materialien, bei denen der
+Export `roughness`/`metalness` nie gesetzt hat UND die Grundfarbe `#000000` (schwarz) ohne
+Textur ist — ein schwarzes, unbeleuchtetes Material zeigt so gut wie kein Sonnenlicht, egal wie
+die Szenenbeleuchtung aussieht. Das ist keine Lichter-/Code-Ursache, sondern eine Lücke im
+Modell-Export selbst. Fix in `loadSBDModel()`: beim Materialdurchlauf werden fehlende
+roughness/metalness auf 0.6/0 gesetzt (Avenger-Wert) und ein schwarzes Material ohne Textur auf
+ein neutrales Aluminium-Grau (`0x9aa3a8`) umgefärbt. Zero (`zero.glb`) separat geprüft — dort ist
+alles unauffällig (ein einziges Material, weiß, texturiert, roughness/metalness korrekt
+gesetzt), kein Fix nötig. **Verifiziert auf Datenebene** (Node, echtes GLTFLoader): vor dem Fix
+`color=#000000, roughness=undefined, metalness=undefined` auf beiden betroffenen Materialien,
+nach dem Fix `color=#9aa3a8, roughness=0.6, metalness=0` — exakt wie beabsichtigt. Ein
+visueller Render-Vergleich war bei diesen beiden (kleinen, aus dem gewählten Blickwinkel kaum
+sichtbaren) Meshes im Headless-Testaufbau nicht aussagekräftig (Textur-Uploads scheitern dort an
+echten Bilddaten) — deshalb hier bewusst auf dem Datenniveau verifiziert statt eine irreführende
+Bildaussage zu behaupten.
+
+**2) Schiffe als generierte Platzhalter statt echtes Modell — Lade-Wettlauf, kein fehlendes
+Modell.** `merchant_ship.glb`/`samidare_destroyer.glb`/`ijn cruiser.glb` werden alle korrekt
+geladen (`loadFreighterModel()`/`loadDestroyerModel()`/`loadCruiserModel()`, alle drei bereits
+beim Seitenstart aufgerufen) und `spawnShip()` nutzt sie bereits, WENN das jeweilige Template zum
+Zeitpunkt des Missionsstarts schon fertig geladen ist. Genau das war die Lücke: keines der drei
+hatte einen Nachlade-Pfad wie ihn die SBD-Begleitflugzeuge längst haben (`wingmenPendingT`) — war
+das Template beim Missionsstart noch nicht da (großes .glb, langsame Verbindung, frühe Mission
+nach Seitenstart), blieb dieses Schiff für die GANZE Mission auf dem prozeduralen Platzhalter
+hängen, auch wenn das echte Modell Sekunden später fertig war. Erklärt das „manche Schiffe"
+aus der Beschreibung: je nachdem, wie früh eine Mission relativ zum Laden gestartet wird, trifft
+es unterschiedliche Missionen unterschiedlich. **Fix:** jeder Schiff-Eintrag trägt jetzt
+`usedFallback` (true nur für den prozeduralen Zweig); eine neue `upgradeShipsToTemplate(type,
+template)` wird am Ende jedes der drei Loader aufgerufen und tauscht bei allen noch lebenden,
+noch auf dem Platzhalter stehenden Schiffen dieses Typs die Kindobjekte gegen einen frischen
+Klon des jetzt geladenen Templates — Position, Rotation, HP, Trefferradius bleiben unangetastet.
+**Verifiziert** mit einer eigenständigen Simulation (echtes `THREE.Group`/`Mesh`, vier Fälle:
+Platzhalter+lebendig → wird aufgerüstet; bereits echtes Modell → unangetastet; versenkt →
+unangetastet; falscher Schiffstyp → unangetastet) — alle vier Fälle verhalten sich exakt wie
+vorgesehen.
+
+**3) Thunderbolt: Häuser/Hecken „über dem Abgrund" — quantifiziert, nicht nur vermutet.** Das
+gerenderte Gelände-Mesh setzt die Höhe NUR an seinen Gitterpunkten (`SEG=384` über `WORLD=64000`
+→ 167 m pro Kachel) exakt auf `terrainH(x,z)`; dazwischen interpoliert die GPU linear über das
+Dreieck. `buildSettlement()` hat Häuser und Hecken aber mit der rohen analytischen `terrainH(x,z)`
+platziert — an jeder Stelle, an der sich die Funktion zwischen zwei Gitterpunkten stark ändert
+(am stärksten am steilen Flusstal-Rand), weicht dieser Wert von der tatsächlich gerenderten
+Dreiecksfläche ab, und das Objekt schwebt über einer Lücke oder versinkt im Boden. Mit einer
+eigenständigen Simulation der Geländefunktion (Node, ohne GLTFLoader nötig — reine Zahlenlogik,
+siehe Abschnitt 6) **gemessen, nicht geschätzt**: am Flusstal-Rand bis zu **55 m** Abweichung
+zwischen `terrainH()` und der tatsächlich gerenderten Fläche; selbst auf offenem Ackerland
+abseits von Fluss/Straße/Schiene noch bis zu ~11,5 m. **Fix:** neue Funktion `groundYRender(x,z)`
+(bilineare Interpolation über dieselben Gitterpunkt-Höhen, die das Mesh selbst benutzt — exakt
+an Gitterpunkten, korrekt interpoliert dazwischen), verwendet in `buildSettlement()` für die
+tatsächliche Platzierungshöhe von Häusern und Hecken. `groundY()`/`terrainH()` selbst (Flugphysik,
+Kollision, KI-Höhe) bewusst NICHT angefasst — dort spielen ein paar Meter Unterschied zwischen
+Gitterpunkten keine Rolle, und der Eingriff hätte unnötig viele Systeme berührt. **Verifiziert**:
+`groundYRender` stimmt exakt (Differenz 0,000000) mit `terrainH` an echten Gitterpunkten überein
+(Sanity-Check für korrekte Interpolation) und beseitigt die gemessene 55-m/11,5-m-Abweichung per
+Konstruktion.
+
+Code: `torpedo-carrier.html` — Suche nach „loadSBDModel" (Material-Fix), „usedFallback" und
+`upgradeShipsToTemplate` (Schiffs-Fix). `thunderbolt-europe.html` — Suche nach `groundYRender`
+und die zwei Aufrufstellen in `buildSettlement()`.
+
+### 4.12 Grafik-Verbesserung, Runde 2: Terrain-Erneuerung — Konzept noch offen, nicht begonnen
+
+Nutzer will danach eine **deutlich realistischere** Terrain-Grafik für Thunderbolt-Europe, mit
+Performance ausdrücklich zweitrangig (iPad-Ruckler als akzeptables Risiko explizit in Kauf
+genommen). Noch nicht begonnen — nächste Schritte für eine künftige Sitzung: aktuellen Ansatz
+(prozedurale Canvas-Textur für Felder, `InstancedMesh`-Boxen für Häuser, Hecken als reine
+Textur-Linien ohne 3D-Form, `SEG=384`-Höhengitter) gegen echte 3D-Vegetation/-Gebäude und ein
+feineres Höhengitter abwägen; Speicher-/Ladezeit-Auswirkungen auf einem 64×64-km-Gebiet
+berücksichtigen. Kein Code angefasst.
 
 ---
 

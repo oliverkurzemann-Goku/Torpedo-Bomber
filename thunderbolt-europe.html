@@ -253,7 +253,7 @@
   <div id="flash"></div>
   <div id="gunsight"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">EU BUILD 25</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">EU BUILD 26</div>
 
   <div id="apr">
     <div id="aprCall"></div>
@@ -519,6 +519,29 @@ function baseHRail(x){
 // ground height including the airfield's flat pad — what everything collides against
 function groundY(x,z){ return terrainH(x,z); }
 
+// The rendered terrain mesh only ever shows terrainH() EXACTLY at its grid vertices (167 m
+// apart, see SEG) — buildTerrain() sets each vertex's y straight from terrainH(vertex). Off a
+// grid vertex, the GPU linearly interpolates across whichever triangle (x,z) falls in. A
+// decoration placed at the raw analytic terrainH(x,z) can therefore sit measurably above or
+// below that flat triangle face wherever the height curves between two grid points — worst
+// right at the steep river-valley edge — which reads as the object floating over a gap in the
+// ground. This bilinearly interpolates the SAME grid-vertex heights the mesh itself uses, so a
+// building or hedge placed with it always sits exactly on the rendered surface, wherever it
+// falls between vertices. Only used for decoration placement (buildSettlement) — flight
+// physics/collision keep using the cheaper groundY()/terrainH(), where a few metres of
+// difference between grid points doesn't matter.
+const TERRAIN_GRID=WORLD/SEG;
+function groundYRender(x,z){
+  const gx=(x+WORLD/2)/TERRAIN_GRID, gz=(z+WORLD/2)/TERRAIN_GRID;
+  const ix=Math.max(0,Math.min(SEG-1,Math.floor(gx))), iz=Math.max(0,Math.min(SEG-1,Math.floor(gz)));
+  const fx=Math.min(1,Math.max(0,gx-ix)), fz=Math.min(1,Math.max(0,gz-iz));
+  const x0=-WORLD/2+ix*TERRAIN_GRID, z0=-WORLD/2+iz*TERRAIN_GRID;
+  const h00=terrainH(x0,z0), h10=terrainH(x0+TERRAIN_GRID,z0);
+  const h01=terrainH(x0,z0+TERRAIN_GRID), h11=terrainH(x0+TERRAIN_GRID,z0+TERRAIN_GRID);
+  const hx0=h00+(h10-h00)*fx, hx1=h01+(h11-h01)*fx;
+  return hx0+(hx1-hx0)*fz;
+}
+
 function makeGroundTexture(){
   const N=512;
   const c=document.createElement('canvas'); c.width=c.height=N;
@@ -723,7 +746,7 @@ function buildSettlement(){
     for(let b=0;b<sp.n && k<NB;b++){
       const a=Math.random()*Math.PI*2, r=Math.random()*(28+sp.n*7);
       const x=sp.x+Math.cos(a)*r, z=sp.z+Math.sin(a)*r;
-      const gy=terrainH(x,z);
+      const gy=groundYRender(x,z);   // exact render-surface height, not the raw analytic one — see its comment
       if(gy<RIVER_Y+18) continue;
       const w=7+Math.random()*7, d=9+Math.random()*9, h=5+Math.random()*3.5;
       o.position.set(x,gy+h/2,z); o.rotation.set(0,rot+(Math.random()-0.5)*0.5,0);
@@ -749,7 +772,7 @@ function buildSettlement(){
   while(j<NH && guard<NH*6){
     guard++;
     const x=(Math.random()-0.5)*WORLD*0.88, z=(Math.random()-0.5)*WORLD*0.88;
-    const gy=terrainH(x,z);
+    const gy=groundYRender(x,z);   // exact render-surface height, not the raw analytic one — see its comment
     if(gy<RIVER_Y+25 || gy>920) continue;
     if(Math.abs(z-roadZ(x))<90 || Math.abs(x-riverX(z))<200) continue;
     if(Math.abs(x-AF_X)<RWY_LEN*0.8 && Math.abs(z-AF_Z)<760) continue;
