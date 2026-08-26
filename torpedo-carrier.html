@@ -303,7 +303,7 @@
   <div id="flash"></div>
   <div id="ltn" style="position:fixed;inset:0;background:#e6ecff;opacity:0;pointer-events:none;z-index:40;"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 108</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 109</div>
 
   <!-- Optical landing aid -->
   <div id="lso">
@@ -2626,7 +2626,14 @@ function updateFlight(dt){
   const pitchLim = AC.name==='sbd' ? 1.28 : (AC.name==='zero' ? 1.05 : 0.85);   // ~73° / 60° / 49°
   if(P.pitch>pitchLim){ P.pitch=pitchLim; P.pitchVel=Math.min(0,P.pitchVel); }
   if(P.pitch<-pitchLim){ P.pitch=-pitchLim; P.pitchVel=Math.max(0,P.pitchVel); }
-  const rollLim=AC.name==='zero'?1.05:(AC.name==='sbd'?0.88:0.72);   // the bomber simply won't rack over like a fighter
+  // rollLim used to sit at 41-60 deg for every type - well short of what it took to reach each
+  // aircraft's own gLim (turn load factor is 1/cos(bank), so even the Avenger's modest 3.5g
+  // needs about 73 deg of bank before gLim, not bank angle, becomes the limit). Reported
+  // "Vollkreis dauert ewig" / "Querneigung ist limitiert": with the low cap doing the limiting
+  // instead of gLim, a full 360 took 28-91s depending on type (checked numerically) — raised so
+  // every type can now reach (or, Avenger, get close to) its own gLim; full 360 now 7-24s, gLim
+  // alone tells them apart again, same fix as thunderbolt-europe.html's rollLim table.
+  const rollLim=AC.name==='zero'?1.43:(AC.name==='sbd'?1.40:1.30);
   if(P.roll>rollLim){ P.roll=rollLim; P.rollVel=Math.min(0,P.rollVel); }
   if(P.roll<-rollLim){ P.roll=-rollLim; P.rollVel=Math.max(0,P.rollVel); }
 
@@ -3817,7 +3824,7 @@ function loadPlaneModel(){
       }
       window.__eyeDbg='EYE '+COCKPIT_EYE.map(v=>v.toFixed(2)).join('/');
       const btEl=document.getElementById('buildTag');
-      if(btEl) btEl.textContent='BUILD 108 · '+window.__eyeDbg;
+      if(btEl) btEl.textContent='BUILD 109 · '+window.__eyeDbg;
       let seat=null;
       model.traverse(function(o){
         if(!o.isMesh||!o.material) return;
@@ -5278,7 +5285,7 @@ function setupUIButtons(){
   if(dbgT2) dbgT2.onclick=()=>{
     dbgOn=!dbgOn; localStorage.setItem('dbgOn',dbgOn?'1':'0');
     const db=document.getElementById('dbgBox'); if(db) db.textContent=dbgOn?'✓':'';
-    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 108'; }
+    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 109'; }
   };
   const lu=document.getElementById('lookUp'), ld=document.getElementById('lookDn');
   const setTilt=v=>{ pitTilt=Math.max(-0.9,Math.min(0.4,v)); localStorage.setItem('pitTilt',pitTilt.toFixed(3)); };

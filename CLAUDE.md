@@ -5,7 +5,7 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 108 · Thunderbolt Squadron EU BUILD 29**
+Stand bei Übergabe: **Torpedo Squadron BUILD 109 · Thunderbolt Squadron EU BUILD 30**
 Repo: `oliverkurzemann-Goku/Torpedo-Bomber`, ausgeliefert über GitHub Pages.
 Alle Angaben unten sind aus dem tatsächlichen Code verifiziert, nicht aus dem Gedächtnis.
 
@@ -924,6 +924,65 @@ bewusst noch nicht gemacht, um die Änderung in diesem Schritt klein zu halten.
 Code: beide Dateien, Suche nach „Textures in gLTF sometimes display black" (ImageBitmap-Fix,
 ganz am Anfang des Skripts). `thunderbolt-europe.html` zusätzlich `rigModel()`, Suche nach
 „dark discs, no spinning propeller visible" (Propeller-Kontrast).
+
+---
+
+### 4.19 Vollkreis dauert ewig / Querneigung limitiert — BEHOBEN in BUILD 109 / EU BUILD 30
+
+Nutzer: „Um einen Vollkreis zu machen brauchen die Flugzeuge ewig. Hier liegt das größte Problem
+bei der Steuerung. Auch die Querneigung ist limitiert." Beides dieselbe Ursache, nicht zwei
+getrennte Bugs.
+
+**Ursache, nachgerechnet statt geraten:** `rollLim` (der maximale Querneigungswinkel, den der
+Steuerknüppel überhaupt kommandieren kann) lag in beiden Spielen bei ca. 41–60°. Die
+Kurvenraten-Physik aus 4.10 (`turn = g·√(n²−1)/v`, `n = 1/cos(Querneigung)`, gedeckelt durch das
+strukturelle `gLim` jedes Flugzeugs — Avenger 3,5 g bis Zero/P-47 6,5–7,0 g) braucht aber selbst
+für das SCHWÄCHSTE `gLim` (Avenger, 3,5 g) etwa 73° Querneigung, bevor `gLim` statt des
+Querneigungswinkels zur echten Grenze wird — bei 6,5–7,0 g (P-47/Zero) sogar ~81–82°. Mit einem
+bei 41–60° gedeckelten Knüppel konnte kein einziges Flugzeug jemals so weit in die Kurve legen,
+dass sein eigenes strukturelles Limit überhaupt zum Tragen kam — die Querneigungsgrenze selbst
+war der Flaschenhals, nicht `gLim`, und zwar bei alle sechs Flugzeugen beider Spiele.
+
+Mit einer eigenständigen Simulation der exakt verbauten Formel (Abschnitt 6, reine Zahlenlogik)
+gemessen, wie lange ein voller 360°-Kreis bei typischer Kampfgeschwindigkeit dauerte: **28–91
+Sekunden** je nach Flugzeug (Avenger 91,3 s, P-47 79,6 s, SBD 52,9 s, Bf109 33,9 s, Fw190 37,3 s,
+Zero 28,3 s) — das deckt sich exakt mit „dauert ewig".
+
+**Fix:** `rollLim` je Flugzeug so angehoben, dass jedes Flugzeug seine eigene `gLim`-Grenze
+tatsächlich erreichen (P-47/Zero/Fw190/Bf109/SBD) oder ihr zumindest nahekommen kann (Avenger,
+absichtlich etwas knapper gehalten, da spürbar schwerer als die anderen fünf) — die
+Kurvenrate wird jetzt wieder von `gLim` begrenzt, nicht von der Querneigung selbst, exakt wie in
+4.10 ursprünglich beabsichtigt. `pitchRate`/`rollRate` (wie SCHNELL der Knüppel dorthin kommt,
+siehe 4.16) bleiben unverändert — das war schon in Ordnung, das Problem war ausschließlich, WIE
+WEIT der Knüppel kommandieren durfte, nicht wie schnell.
+
+| Flugzeug | rollLim vorher | rollLim nachher | Vollkreis vorher | Vollkreis nachher |
+|---|---|---|---|---|
+| P-47 (EU) | 0,78 rad (45°) | 1,42 rad (81°) | 79,6 s | 13,8 s |
+| Fw190 (EU) | 1,05 rad (60°) | 1,40 rad (80°) | 37,3 s | 12,0 s |
+| Bf109 (EU) | 1,02 rad (58°) | 1,40 rad (80°) | 33,9 s | 10,2 s |
+| Zero (TC) | 1,05 rad (60°) | 1,43 rad (82°) | 28,3 s | 7,1 s |
+| SBD (TC) | 0,88 rad (50°) | 1,40 rad (80°) | 52,9 s | 11,8 s |
+| Avenger (TC) | 0,72 rad (41°) | 1,30 rad (74°) | 91,3 s | 23,9 s |
+
+(TC = torpedo-carrier.html, EU = thunderbolt-europe.html — Vollkreis-Zeiten bei geschätzter
+typischer Kampfgeschwindigkeit je Flugzeug, siehe Testskript.)
+
+**Verifiziert:** Node-Simulation der exakt aus beiden Dateien übernommenen Kurvenraten-Formel
+bestätigt für alle sechs Flugzeuge: die neue `rollLim` reicht in jedem Fall aus, dass
+`1/cos(rollLim) ≥ gLim` gilt (die Kurve sättigt jetzt am strukturellen Limit, nicht am
+Knüppelanschlag) — geprüft als expliziter Boolean je Flugzeug, nicht nur die Endzeit verglichen.
+Keine Kollision mit anderen, von `P.roll` abhängigen Stellen gefunden (z. B. „WINGS LEVEL TO
+DROP"/`wOk` in `torpedo-carrier.html` prüfen nur auf nahezu Level, nicht auf einen Maximalwert —
+von der höheren Obergrenze unberührt).
+
+**Offen:** Nicht auf dem echten iPad geflogen. Avenger bleibt mit 23,9 s bewusst der langsamste
+Kreisflieger (schwerer Torpedobomber) — falls das immer noch zu behäbig wirkt, ist der nächste
+Hebel `gLim` selbst anzuheben (aktuell 3,5 g), nicht `rollLim` weiter zu öffnen, da `rollLim`
+für alle sechs Flugzeuge jetzt bereits über dem Punkt liegt, an dem `gLim` limitierend wird.
+
+Code: `torpedo-carrier.html` und `thunderbolt-europe.html`, Suche nach „Vollkreis dauert ewig"
+(torpedo-carrier.html) bzw. die `rollLim`-Kommentare im `AC`-Objekt (thunderbolt-europe.html).
 
 ---
 

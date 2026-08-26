@@ -253,7 +253,7 @@
   <div id="flash"></div>
   <div id="gunsight"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">EU BUILD 29</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">EU BUILD 30</div>
 
   <div id="apr">
     <div id="aprCall"></div>
@@ -415,17 +415,25 @@ const P={
 const AC={
   // rollAuth/pitchAuth/turn are the handling numbers the carrier game uses; rollLim and
   // pitchLim cap how far she will go. The Jug is heavy and will not rack over like a fighter.
+  // rollLim used to sit at 45-60 deg for every type here - well short of what it took to reach
+  // each aircraft's own gLim (a real fighter needs roughly 75-82 deg of bank before the turn's
+  // load factor, 1/cos(bank), even reaches the 5.5-6.5g these airframes are rated for). Reported
+  // "Vollkreis dauert ewig" / "Querneigung ist limitiert": with the low cap doing the limiting
+  // instead of gLim, a full 360 took 34-80s depending on type (checked numerically) - the aircraft
+  // could never lean far enough over to use the g it structurally had available. rollLim raised
+  // so every type can now reach (or, Avenger/SBD, get close to) its own gLim - full 360 now
+  // 10-24s depending on type, gLim itself remains the thing that tells them apart.
   p47:{ name:'P-47D Thunderbolt', rollAuth:0.90, pitchAuth:0.85, turn:0.85, gLim:6.5,
-        rollLim:0.78, pitchLim:0.96, stall:40, app:54, max:190, thrMin:34,
+        rollLim:1.42, pitchLim:0.96, stall:40, app:54, max:190, thrMin:34,
         hull:130, ammo:3400, bombs:2, rockets:8, gunDmg:1.0, gunRate:0.055, wing:12.4,
         col:0x6e7a63, band:0xf0f0e4 },
   // The Focke-Wulf: rolls like nothing else in the war, but will not out-turn a 109.
   fw190:{ name:'Fw 190A-8', rollAuth:1.85, pitchAuth:1.10, turn:1.05, gLim:5.5,
-        rollLim:1.05, pitchLim:1.02, stall:39, app:53, max:194, thrMin:32,
+        rollLim:1.40, pitchLim:1.02, stall:39, app:53, max:194, thrMin:32,
         hull:102, ammo:1800, bombs:1, rockets:0, gunDmg:1.5, gunRate:0.075, wing:10.5,
         col:0x7d8478, band:0x2f3a2a },
   bf109:{ name:'Bf 109G-6', rollAuth:1.45, pitchAuth:1.25, turn:1.25, gLim:5.5,
-        rollLim:1.02, pitchLim:1.08, stall:36, app:50, max:196, thrMin:30,
+        rollLim:1.40, pitchLim:1.08, stall:36, app:50, max:196, thrMin:30,
         hull:88, ammo:1500, bombs:1, rockets:0, gunDmg:1.35, gunRate:0.085, wing:9.9,
         col:0x8d9384, band:0x3d4636 }
 };
