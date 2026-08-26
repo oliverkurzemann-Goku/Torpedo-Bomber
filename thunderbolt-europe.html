@@ -253,7 +253,7 @@
   <div id="flash"></div>
   <div id="gunsight"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">EU BUILD 23</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">EU BUILD 24</div>
 
   <div id="apr">
     <div id="aprCall"></div>
@@ -1091,6 +1091,29 @@ function readVert(attr, i, out){
   }
   return out;
 }
+// The true skin height directly under a given (x,z) spot, not the aeroplane's single lowest
+// point anywhere. Verified against the real p47new.glb: whole.min.y (the old "belly" reference
+// buildGear used for every leg) lands on the belly scoop/duct near the engine, 0.80-0.87 m
+// below the actual local fuselage line at both the main-gear and tailwheel positions. Hanging
+// every leg from that one global point put all of them ~0.8 m too low — invisible on the main
+// gear, whose own long leg+wheel roughly spans that gap anyway, but glaring on the tailwheel,
+// whose much shorter leg leaves a visible void between the tail and the wheel (CLAUDE.md 4.3:
+// "hängt ~1 m unter dem Flugzeug" — matches this measured gap almost exactly).
+function localFloor(root, x, z, r){
+  let minY=1e9, found=false;
+  const v=new THREE.Vector3();
+  root.traverse(o=>{
+    if(!o.isMesh||!o.geometry||!o.geometry.attributes||!o.geometry.attributes.position) return;
+    const pos=o.geometry.attributes.position;
+    const st=Math.max(1,Math.floor(pos.count/6000));
+    for(let i=0;i<pos.count;i+=st){
+      readVert(pos,i,v); o.localToWorld(v); root.worldToLocal(v);
+      if(Math.hypot(v.x-x,v.z-z)>r) continue;
+      if(v.y<minY){ minY=v.y; found=true; }
+    }
+  });
+  return found? minY : null;
+}
 function findPropDisc(root){
   // Measure, do not judge: every aircraft here is a propeller aircraft. The old pass/fail test
   // rejected good noses (bounding-box roundness fails on an inline engine; angular coverage
@@ -1195,7 +1218,7 @@ function rigModel(root){
     found.forEach(p=>gear.attach(p.o));
     rig+=', own gear';
   } else {
-    buildGear(gear, whole, S);
+    buildGear(gear, root, whole, S);
     rig+=', built gear';
   }
   return rig;
@@ -1209,19 +1232,25 @@ function rigModel(root){
 // for reference: 1.4 m leg, 4.9 m track, 0.89 m tyres, and the legs are FAT — that aeroplane
 // weighed eight tons. Everything is sized off the span, never the height (the height includes
 // the fin, which is how this ended up as stilts the first time).
-function buildGear(gear, whole, S){
+function buildGear(gear, root, whole, S){
   // Deliberately UNDERSIZED against the real aeroplane. Three times now the real numbers
-  // (1.40 m leg, 0.89 m tyre, 4.90 m track) have looked wrong in the game, and there is a
-  // reason: these models are in clean configuration, so their belly is where the wheel wells
-  // would be. Hanging a full-length leg off that reads as stilts. Two thirds of scale sits
-  // right visually — and simple shapes, because at any real distance detail is just noise.
+  // (1.40 m leg, 0.89 m tyre, 4.90 m track) have looked wrong in the game — but the size was
+  // never the actual problem. Every leg hung off ONE global anchor, `whole.min.y`: the single
+  // lowest point anywhere on the aeroplane. Verified against the real p47new.glb, that point
+  // is the belly scoop/duct near the engine — 0.80-0.87 m below the real local fuselage skin
+  // at BOTH the main-gear and tailwheel positions (measured directly). A long main-gear leg
+  // roughly spans that gap on its own, so it still read as "a gear leg". The tailwheel's much
+  // shorter leg does not, leaving a visible void between the tail and the wheel — exactly the
+  // "hangs ~1 m under the aeroplane" report in CLAUDE.md 4.3. Anchoring each leg to the real
+  // skin height directly above IT (localFloor), not one global point, fixes every leg at once
+  // and needs no per-aircraft tuning.
   const span=S.x;
   const legLen=span*0.052;         // 0.65 m on a P-47
   const legR  =span*0.0075;
   const wheelR=span*0.0195;        // 0.48 m tyre
   const wheelW=span*0.0090;
   const halfTrack=span*0.150;
-  const belly=whole.min.y;
+  const embed=span*0.008;          // tuck the leg top slightly into the skin, no visible seam
   const mainZ=whole.min.z+S.z*0.56;
   const strutM=new THREE.MeshLambertMaterial({color:0x3c3d34});
   const tyreM =new THREE.MeshLambertMaterial({color:0x17170f});
@@ -1232,7 +1261,9 @@ function buildGear(gear, whole, S){
     leg.position.y=-legLen*0.5; g.add(leg);
     const wh=new THREE.Mesh(new THREE.CylinderGeometry(wheelR,wheelR,wheelW*2,16),tyreM);
     wh.rotation.z=Math.PI/2; wh.position.y=-legLen-wheelR*0.12; g.add(wh);
-    g.position.set(side*halfTrack, belly+S.y*0.06, mainZ);
+    const legX=side*halfTrack;
+    const floorY=localFloor(root, legX, mainZ, span*0.12);
+    g.position.set(legX, (floorY!=null? floorY : whole.min.y)+embed, mainZ);
     g.rotation.z=side*0.04;
     gear.add(g);
   }
@@ -1241,7 +1272,9 @@ function buildGear(gear, whole, S){
   tl.position.y=-legLen*0.21; tg.add(tl);
   const tw=new THREE.Mesh(new THREE.CylinderGeometry(wheelR*0.42,wheelR*0.42,wheelW*1.3,12),tyreM);
   tw.rotation.z=Math.PI/2; tw.position.y=-legLen*0.42; tg.add(tw);
-  tg.position.set(0, belly+S.y*0.05, whole.min.z+S.z*0.05);
+  const tailZ=whole.min.z+S.z*0.05;
+  const tailFloorY=localFloor(root, 0, tailZ, span*0.08);
+  tg.position.set(0, (tailFloorY!=null? tailFloorY : whole.min.y)+embed, tailZ);
   gear.add(tg);
 }
 function loadModels(){

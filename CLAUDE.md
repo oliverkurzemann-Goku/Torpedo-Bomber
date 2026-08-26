@@ -5,7 +5,7 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 101 · Thunderbolt Squadron EU BUILD 23**
+Stand bei Übergabe: **Torpedo Squadron BUILD 101 · Thunderbolt Squadron EU BUILD 24**
 Repo: `oliverkurzemann-Goku/Torpedo-Bomber`, ausgeliefert über GitHub Pages.
 Alle Angaben unten sind aus dem tatsächlichen Code verifiziert, nicht aus dem Gedächtnis.
 
@@ -236,25 +236,64 @@ und `gearDoors[i].visible` (Sichtbarkeits-Toggle, gleich neben dem `gearMesh`-To
 **Offen:** Nur am headless-Renderer geprüft (echtes Modell, aber ohne Texturen/Beleuchtung
 des echten Spiels) — Bestätigung auf dem echten iPad steht noch aus, genau wie bei 4.1.
 
-### 4.3 P-47: Spornrad hängt nach dem Start ~1 m unter dem Flugzeug
-Hauptfahrwerk wird laut Nutzer korrekt ein-/ausgefahren („Fahrwerk ist ok"). Das Spornrad
-(`tg`-Gruppe in `buildGear()`, Teil 2) hängt separat sichtbar unterhalb des Rumpfs.
+### 4.3 P-47: Spornrad hängt nach dem Start ~1 m unter dem Flugzeug — BEHOBEN in EU BUILD 24, mit Messwerten am echten Modell nachgewiesen
 
-Die gesamte `gear`-Gruppe (Hauptfahrwerk + Spornrad zusammen) wird nur **binär** ein-/
-ausgeblendet: `gr.visible = P.gear>0.05` (eine Zeile, ein Objekt). Es gibt keine Animation,
-die Räder "einfahren" lässt — sie verschwinden schlagartig. Wenn nur das Spornrad sichtbar
-bleibt, während das Hauptfahrwerk korrekt verschwindet, spricht das dafür, dass die
-`tg`-Gruppe **nicht** dieselbe Elterngruppe (`gear`) hat wie vermutet, oder dass irgendwo ein
-zweites, unabhängiges Spornrad existiert. Nicht bestätigt — nachprüfen, ob `gear.add(tg)`
-tatsächlich in derselben Gruppe landet, die der Sichtbarkeits-Toggle anspricht, und ob die
-Position `whole.min.z+S.z*0.05` mit der tatsächlichen Nasenrichtung des geladenen Modells
-übereinstimmt (Vorzeichenfehler bei der Achse würden das Spornrad an die falsche
-Rumpfstelle setzen, nicht nur unsichtbar machen).
+**Keine der beiden im vorigen Stand vermuteten Ursachen (`tg` nicht in derselben Gruppe,
+Vorzeichenfehler bei der Achse) war es.** Am Prüfstand bestätigt: `tg` landet korrekt in
+derselben `gear`-Gruppe, die der Sichtbarkeits-Toggle anspricht (3 Kinder: Haupt-links,
+Haupt-rechts, Spornrad — alle zusammen ein-/ausgeblendet). Das Hauptfahrwerk und das Spornrad
+verschwinden also tatsächlich gemeinsam. Der Nutzer hat nicht „ein sichtbares Spornrad bei
+Gear Up" gemeldet, sondern dass es **falsch positioniert** ist.
 
-Code: `thunderbolt-europe.html`, Funktion `buildGear` (~Zeile 1212), Sichtbarkeits-Toggle
-bei `gr.visible=P.gear>0.05`.
+**Tatsächliche Ursache, mit dem echten `p47new.glb` gemessen:** `buildGear()` hängt jedes
+Bein (beide Hauptfahrwerksbeine UND das Spornrad) von genau **einem globalen Ankerpunkt** ab:
+`belly = whole.min.y`, dem tiefsten Punkt des GESAMTEN Flugzeugs. Am echten Modell ist dieser
+tiefste Punkt der Bauchlufteinlass/Kühlerschacht nahe dem Triebwerk (x≈−0,03, z≈3,2 — nahe der
+Motorhaube, nicht am Heck) — **nicht** die Rumpfunterseite an der Stelle, wo die Beine
+tatsächlich hängen sollen. Gemessen: an der Hauptfahrwerks-Position liegt die echte
+Rumpfunterseite 0,87 m über diesem globalen Ankerpunkt, am Spornrad 0,80 m — praktisch exakt
+das gemeldete „~1 m". Das lange Hauptfahrwerksbein (0,65 m Bein + Rad) überbrückt diese Lücke
+weitgehend von selbst, was optisch noch als Bein durchgeht. Das kurze Spornradbein (nur
+`legLen*0.42` ≈ 0,27 m) überbrückt sie nicht — zwischen Rumpf und Rad bleibt eine sichtbare
+Lücke, die genau als „hängt separat unter dem Flugzeug" auffällt.
 
-### 4.4 Generelle Warnung zu 4.1–4.3
+**Fix (EU BUILD 24):** Neue Funktion `localFloor(root, x, z, radius)` misst die echte
+Rumpfunterseite direkt über JEDER Bein-Position einzeln (Vertex-Scan in einem engen Radius um
+die jeweilige x/z-Position), statt sich auf einen einzigen globalen Tiefpunkt zu verlassen.
+`buildGear()` verankert jedes Bein jetzt an seiner eigenen lokal gemessenen Rumpfunterseite.
+
+**Nachgewiesen am echten Modell** (`readVert`, `localFloor`, `buildGear`, `rigModel` wortwörtlich
+aus der Datei extrahiert, gegen echtes `p47new.glb` mit echtem `GLTFLoader` r128 UND echtem
+headless-WebGL-Renderer ausgeführt, Screenshots gespeichert und angesehen — nicht nur Zahlen
+verglichen): Hauptfahrwerk sitzt jetzt bündig unter dem Flügel, keine sichtbare Lücke mehr.
+Spornrad sitzt jetzt exakt am im Modell vorhandenen Spornradschacht — vorher y=−1,62 (Lücke),
+nachher y=−0,69 (bündig, Differenz 0,93 auf der Modellskala).
+
+**Regressionscheck an den anderen 4 Baumustern (dieselbe `buildGear`-Funktion wird geteilt):**
+- Bf 109, B‑24: nutzen `rigModel()`s „own gear"-Pfad (eigene, trennbare Fahrwerksteile im
+  Modell gefunden) — `buildGear()` läuft dort gar nicht, meine Änderung hat keinen Effekt.
+- FW 190: nutzt `buildGear()`, sieht am Prüfstand sauber aus (Räder bündig am Rumpf).
+- B‑17: nutzt ebenfalls `buildGear()`. Meine Änderung verbessert die Position messbar (Spornrad
+  1,3 Einheiten näher am Rumpf als vorher), **deckt aber einen separaten, unabhängigen Fund
+  auf**: Die B‑17 hat laut Screenshot bereits ein eigenes, echtes Fahrwerk/Rad im Modell
+  eingebaut, das die „own gear"-Erkennung nicht findet (Schwellenwerte vermutlich auf das
+  falsche Maß kalibriert für ein 4-motoriges Flugzeug) — es entsteht ein doppeltes Fahrwerk
+  (echtes + synthetisches nebeneinander). Das ist **nicht** Teil dieses Fixes und war schon vor
+  dieser Änderung so; nicht angefasst, da unbeauftragt und eigenständig zu untersuchen.
+
+Code: `thunderbolt-europe.html`, Funktionen `localFloor` (neu, direkt nach `readVert`) und
+`buildGear` (~Zeile 1235).
+
+### 4.4 B-17: „own gear"-Erkennung findet das eingebaute Fahrwerk nicht (neu entdeckt, nicht behoben)
+Nebenbefund beim Prüfen von 4.3: die B-17 (`b17.glb`) hat laut Screenshot bereits ein eigenes,
+gut aussehendes Fahrwerk/Rad im Modell — aber `rigModel()`s Erkennung für „eigenes Fahrwerk"
+(Zeile ~1192: `bb.max.y<floor && sz.y<S.y*0.5 && sz.x<S.x*0.30`) findet es nicht und baut
+zusätzlich das synthetische `buildGear()`-Fahrwerk daneben. Ergebnis: doppeltes Fahrwerk.
+Vermutung (nicht geprüft): die Schwellenwerte sind an einjährigen Jägern kalibriert und passen
+nicht auf die Proportionen eines 4-motorigen Bombers. Nicht Teil eines gemeldeten Bugs, daher
+nicht angefasst — eigenständig am Prüfstand untersuchen, bevor daran gearbeitet wird.
+
+### 4.5 Generelle Warnung zu 4.1–4.3
 Alle drei Punkte hängen an Code, der in den letzten Sitzungen mehrfach als „jetzt behoben"
 ausgeliefert wurde und es nicht war. **Vor jeder erneuten Behauptung „gelöst": am echten
 Modell im Prüfstand nachweisen (Abschnitt 6), nicht nur Syntax prüfen und hoffen.**
