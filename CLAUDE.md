@@ -5,7 +5,7 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 101 · Thunderbolt Squadron EU BUILD 24**
+Stand bei Übergabe: **Torpedo Squadron BUILD 102 · Thunderbolt Squadron EU BUILD 24**
 Repo: `oliverkurzemann-Goku/Torpedo-Bomber`, ausgeliefert über GitHub Pages.
 Alle Angaben unten sind aus dem tatsächlichen Code verifiziert, nicht aus dem Gedächtnis.
 
@@ -178,6 +178,60 @@ könnte für die Avenger-Cowling grundsätzlich verbessert werden, damit sie dor
 Scheiben-Methode statt `rigOwnProp` nutzen kann — das ist aber ein separates, unbeauftragtes
 Thema und wurde nicht angefasst (Avenger hat aktuell keine gemeldeten Propellerprobleme).
 
+#### Nachtrag BUILD 102, aus echtem Spiel-Feedback nach BUILD 101: starre Blätter immer noch teilweise sichtbar — BEHOBEN, Ursache war eine dritte, andere Sache
+
+Der Nutzer hat BUILD 101 tatsächlich gespielt und gemeldet: Avenger sieht gut aus, bei der
+Dauntless ist aber weiterhin zusätzlich zum Propeller noch der starre Original-Propeller zu
+sehen. Mit Screenshots (nicht nur Zahlen) am echten Prüfstand nachgestellt: aus einer Kamera,
+die exakt entlang der Propellerachse blickt, deckt die Scheibe die Blätter tatsächlich
+**vollständig** ab (0 Blatt-Vertices außerhalb des Scheibenradius gemessen). Aus jedem anderen
+Blickwinkel — und eine Verfolgungskamera schaut so gut wie nie exakt entlang dieser Achse —
+ragen Blattspitzen sichtbar heraus.
+
+**Ursache:** Die Scheibe war eine `CircleGeometry` — praktisch papierdünn. Die echten,
+eingeschweißten Propellerblätter sind das nicht: am Dauntless-Modell gemessen erstreckt sich
+das Blattmaterial über 0,587 m entlang der Propellerachse (Blattwurzel liegt deutlich tiefer im
+Rumpf als die Blattspitze). Eine papierdünne Scheibe deckt eine Form mit echter Tiefe nur von
+exakt vorne ab — von der Seite gesehen ragt die „Rückseite" des Blattmaterials immer heraus.
+Exakt dasselbe Muster wie bei 4.2 (Avenger-Fahrwerk): eine flache Kappe reichte dort auch
+nicht, erst ein Zylinder mit echter Tiefe.
+
+**Fix (BUILD 102):** Die Scheibe ist jetzt ein flacher **Zylinder** (`CylinderGeometry`,
+Tiefe ≈max(R·0,34, 0,6 m)) statt einer `CircleGeometry`. Dekor (Streifen, Rand, Spinner) sitzt
+jetzt auf der äußeren (Nutzer-zugewandten) Stirnfläche des Zylinders statt nahe der Mitte —
+sonst wäre es im jetzt massiven Zylinder vergraben und unsichtbar gewesen. Der alte
+Vorwärts-Versatz (`disc.z ± dia*0.05`) entfällt, die Scheibe sitzt jetzt zentriert auf dem
+gemessenen Mittelwert der Blattgeometrie — der Versatz war nur nötig, um die fehlende Tiefe
+einer papierdünnen Scheibe zu kompensieren.
+
+**Nachgewiesen:** Kamera exakt entlang der Propellerachse (Blätter isoliert freigestellt,
+Rest des Flugzeugs ausgeblendet) zeigt keine sichtbaren Blattreste mehr außerhalb der Scheibe,
+weder bei der Spieler-SBD noch beim SBD-Begleitflugzeug. Eine 3/4-Perspektive (typische
+Verfolgungskamera-Ansicht) zeigt ebenfalls keine herausragenden Blätter mehr.
+
+**Offen — zwei vom Nutzer gemeldete Punkte, nicht reproduziert:**
+- „Bei den Dauntless-Begleitflugzeugen ist der Propeller außen links am Flügel." Am Prüfstand
+  mit exakt demselben Code-Pfad wie `spawnWingman()` (SBD-Zweig, keine Rotation,
+  `fitPropeller(inner, mesh, +1)`) nachgestellt: die Scheibe landet zentriert auf der
+  Nase (cx≈0,010, gut innerhalb der Mittellinien-Toleranz), nicht am Flügel. Es gibt bereits
+  einen Lade-Timing-Schutz (`wingmenPendingT`, wartet bis zu 6 s auf `sbdTemplate`, siehe
+  `animate()`), der einen früheren, ähnlichen Fehler (Avenger-Ersatz während SBD noch lädt)
+  bereits verhindert — beide Begleitflugzeuge spawnen zudem im selben Aufruf mit demselben
+  Template-Status, eine Asymmetrie zwischen „linkem" und „rechtem" Flugzeug ist aus dem Code
+  heraus nicht ersichtlich. **Nicht behoben, weil nicht reproduzierbar** — Screenshot vom
+  Nutzer nötig, um weiterzukommen.
+- „Größe der Propeller" — gemessen (siehe Tabelle unten): Dauntless-Scheibe liegt 10–20 % über
+  dem echten Vorbild (3,28 m real vs. 3,61–3,93 m gemessen, je nach Pfad). Das ist keine
+  Regel-, sondern eine Modell-Eigenschaft — das gemessene Blattmaterial selbst reicht so weit
+  hinaus, die Scheibe misst nur nach, was da ist. Nicht korrigiert, da unklar, ob der Nutzer
+  einen künstlichen Abschlag (Clamp) auf die reale Größe wünscht oder die Modellgröße
+  akzeptiert. Rückfrage nötig.
+
+| Pfad | Datei-Radius gemessen | Durchmesser | Real | Verhältnis |
+|---|---|---|---|---|
+| SBD Spieler (`playerSBD`, noseSign −1) | 1,965 m | 3,93 m | 3,28 m | 1,20× |
+| SBD Begleitflugzeug (`spawnWingman`, noseSign +1) | 1,807 m | 3,61 m | 3,28 m | 1,10× |
+
 Code: `torpedo-carrier.html`, Funktionen `findPropDisc`, `fitPropeller` (Suche im File danach).
 
 ### 4.2 Avenger: Fahrwerk fährt bei „Gear Up" nicht ein, weiße Streben bleiben sichtbar — BEHOBEN in BUILD 101, am echten Modell mit Screenshots nachgewiesen
@@ -297,6 +351,20 @@ nicht angefasst — eigenständig am Prüfstand untersuchen, bevor daran gearbei
 Alle drei Punkte hängen an Code, der in den letzten Sitzungen mehrfach als „jetzt behoben"
 ausgeliefert wurde und es nicht war. **Vor jeder erneuten Behauptung „gelöst": am echten
 Modell im Prüfstand nachweisen (Abschnitt 6), nicht nur Syntax prüfen und hoffen.**
+
+### 4.6 Bf 109 „wirkt klein" — geprüft, keine Ursache gefunden (kein Bug)
+Nutzerbeobachtung: Bf 109 wirkt im Vergleich zu den anderen Flugzeugen recht klein. Am echten
+`bf109new.glb` nachgemessen: rohe Modellbreite 9,82 m, `REAL_SPAN.bf109=9,92` m → Auto-Skalierung
+×1,01 (kaum Korrektur nötig). Zum Vergleich: FW190 roh 10,54 m vs. Sollwert 10,51 m (×0,997),
+P-47 roh 12,47 m vs. 12,42 m (×0,996) — alle drei Modelle sind intern konsistent und korrekt
+skaliert. Die reale Bf 109 hatte tatsächlich nur 9,92 m Spannweite gegenüber 12,42 m beim P-47
+Thunderbolt (einem der größten einmotorigen Jäger des Krieges) — ein echter, historischer
+Unterschied von 20 %, keine Formel-Vermutung. **Kein Bug, korrekte Größenverhältnisse.**
+
+### 4.7 Backlog (Nutzer-Reminder, nicht bearbeitet)
+Flugverhalten der verschiedenen Modelle wirkt laut Nutzer zu arcade-lastig — „zu aggressiv und
+zu simpel". Explizit als Erinnerung für eine spätere, eigene Sitzung markiert, nicht Teil der
+aktuellen Bugfix-Runde. Nicht angefasst.
 
 ---
 

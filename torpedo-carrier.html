@@ -302,7 +302,7 @@
   <div id="flash"></div>
   <div id="ltn" style="position:fixed;inset:0;background:#e6ecff;opacity:0;pointer-events:none;z-index:40;"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 101</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 102</div>
 
   <!-- Optical landing aid -->
   <div id="lso">
@@ -2909,38 +2909,50 @@ function fitPropeller(model, parent, noseSign){
   if(Math.abs(disc.cx) > disc.S.x*0.12) return null;
   const g=new THREE.Group();
   const R=disc.dia*0.5;
-  // The disc itself: opaque, so the moulded-in blades behind it simply cannot be seen. Dark
-  // metal grey with a faint sheen, which is what a propeller under power actually looks like.
-  const face=new THREE.Mesh(new THREE.CircleGeometry(R,40),
-    new THREE.MeshStandardMaterial({color:0x24241d, roughness:0.85, metalness:0.15,
-      side:THREE.DoubleSide}));
+  // The disc used to be a flat card (CircleGeometry, near-zero thickness). Numerically it
+  // covered the moulded blades exactly — verified on the real Dauntless: zero blade vertices
+  // fall outside its radius on its own plane. But the blades are not flat: measured depth
+  // along the propeller axis was 0.587 m (the blade root sits further from the nose than the
+  // tip). A paper-thin disc only ever hides that from dead ahead; from any other angle — which
+  // is most of the time with a chase camera — the far side of the blade pokes out past the
+  // disc's silhouette exactly like the Avenger's landing-gear legs did with a flat cap instead
+  // of a cylinder (4.2). Same fix here: give the disc real depth instead of covering it with a
+  // playing card.
+  const depth=Math.max(R*0.34, 0.6);
+  const lead=noseSign<0? -depth/2 : depth/2;    // the face pointing away from the fuselage
+  const face=new THREE.Mesh(new THREE.CylinderGeometry(R,R,depth,40),
+    new THREE.MeshStandardMaterial({color:0x24241d, roughness:0.85, metalness:0.15}));
+  face.rotation.x=Math.PI/2;
   g.add(face);
   // A few darker streaks across it so the rotation is visible — a plain disc looks static
-  // however fast you spin it.
+  // however fast you spin it. Sit them on the leading face now that the disc has depth (they
+  // used to sit almost dead centre, which worked on a flat card but would now be buried
+  // inside the solid cylinder).
   const streak=new THREE.MeshStandardMaterial({color:0x14140f,roughness:0.7,side:THREE.DoubleSide});
   for(let i=0;i<3;i++){
     const bl=new THREE.Mesh(new THREE.BoxGeometry(R*0.13,R*1.94,R*0.012),streak);
     bl.rotation.z=i*(Math.PI/3);
-    bl.position.z=noseSign<0? -R*0.010 : R*0.010;
+    bl.position.z=lead+(noseSign<0?-0.008:0.008);
     g.add(bl);
   }
   // bright rim, the tip flash you see on a turning propeller
   const rim=new THREE.Mesh(new THREE.RingGeometry(R*0.955,R,44),
     new THREE.MeshBasicMaterial({color:0xd9d2b8,transparent:true,opacity:0.30,
       side:THREE.DoubleSide}));
-  rim.position.z=noseSign<0? -R*0.014 : R*0.014;
+  rim.position.z=lead+(noseSign<0?-0.012:0.012);
   g.add(rim);
   // spinner
   const spin=new THREE.Mesh(new THREE.ConeGeometry(R*0.15,R*0.42,16),
     new THREE.MeshStandardMaterial({color:0x2b2b22,roughness:0.5}));
   spin.rotation.x=noseSign<0? -Math.PI/2 : Math.PI/2;
-  spin.position.z=noseSign<0? -R*0.20 : R*0.20;
+  spin.position.z=lead+(noseSign<0?-R*0.20:R*0.20);
   g.add(spin);
   // Sits inside the MODEL, in the coordinates the disc was measured in — no conversion, and
   // it inherits the model's own rotation. Converting by hand is what put the wingmen's
-  // propellers out on a wingtip.
-  g.position.set(disc.cx, disc.cy,
-    disc.z + (noseSign<0? -disc.dia*0.05 : disc.dia*0.05));
+  // propellers out on a wingtip. Centred on disc.z (the measured mean of the blade material) —
+  // the old forward nudge compensated for a paper-thin disc missing depth entirely; with a
+  // cylinder spanning the real depth that compensation is no longer needed.
+  g.position.set(disc.cx, disc.cy, disc.z);
   model.add(g);
   return g;
 }
@@ -3570,7 +3582,7 @@ function loadPlaneModel(){
       }
       window.__eyeDbg='EYE '+COCKPIT_EYE.map(v=>v.toFixed(2)).join('/');
       const btEl=document.getElementById('buildTag');
-      if(btEl) btEl.textContent='BUILD 101 · '+window.__eyeDbg;
+      if(btEl) btEl.textContent='BUILD 102 · '+window.__eyeDbg;
       let seat=null;
       model.traverse(function(o){
         if(!o.isMesh||!o.material) return;
@@ -4993,7 +5005,7 @@ function setupUIButtons(){
   if(dbgT2) dbgT2.onclick=()=>{
     dbgOn=!dbgOn; localStorage.setItem('dbgOn',dbgOn?'1':'0');
     const db=document.getElementById('dbgBox'); if(db) db.textContent=dbgOn?'✓':'';
-    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 101'; }
+    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 102'; }
   };
   const lu=document.getElementById('lookUp'), ld=document.getElementById('lookDn');
   const setTilt=v=>{ pitTilt=Math.max(-0.9,Math.min(0.4,v)); localStorage.setItem('pitTilt',pitTilt.toFixed(3)); };
