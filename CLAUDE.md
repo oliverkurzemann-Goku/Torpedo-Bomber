@@ -5,7 +5,7 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 100 · Thunderbolt Squadron EU BUILD 23**
+Stand bei Übergabe: **Torpedo Squadron BUILD 101 · Thunderbolt Squadron EU BUILD 23**
 Repo: `oliverkurzemann-Goku/Torpedo-Bomber`, ausgeliefert über GitHub Pages.
 Alle Angaben unten sind aus dem tatsächlichen Code verifiziert, nicht aus dem Gedächtnis.
 
@@ -180,24 +180,61 @@ Thema und wurde nicht angefasst (Avenger hat aktuell keine gemeldeten Propellerp
 
 Code: `torpedo-carrier.html`, Funktionen `findPropDisc`, `fitPropeller` (Suche im File danach).
 
-### 4.2 Avenger: Fahrwerk fährt bei „Gear Up" nicht ein, weiße Streben bleiben sichtbar
-Der Filter, der Fahrwerksteile findet (`gearMesh`), nutzt aktuell eine **Vereinigung aus zwei
-Tests** — dem ursprünglichen (mesh-lokale Box, Bedingungen `raw.max.z<-1.0 && track<5.0 &&
-span<8.0`) und einem neueren (Welt-Box, `bb.min.y<lowLine && ...`). Laut Nutzer wirkt es
-weiterhin nicht. Mögliche Ursachen, keine davon geprüft:
-- Die Vereinigung erfasst jetzt *zu viele* Teile (auch Nicht-Fahrwerk), oder immer noch zu
-  wenige der tatsächlichen Streben.
-- Sichtbarkeit wird nur binär umgeschaltet (`gearMesh[i].visible=gv`, Zeile mit
-  `for(let i=0;i<gearMesh.length;i++)`) — falls das asynchrone Nachladen des Modells
-  (`loadModels`, Kommentar „nothing of the Avenger rig may linger") die `gearMesh`-Liste
-  nach dem ersten Aufbau nicht neu befüllt, zeigt der Toggle auf eine veraltete/leere Liste.
+### 4.2 Avenger: Fahrwerk fährt bei „Gear Up" nicht ein, weiße Streben bleiben sichtbar — BEHOBEN in BUILD 101, am echten Modell mit Screenshots nachgewiesen
 
-**Vorgehen:** Mit dem echten `grumman tbm avenger.glb` im Prüfstand exakt auflisten, welche
-Meshes der aktuelle Vereinigungsfilter zurückgibt, und ob diese Liste mit dem tatsächlichen
-Zeitpunkt übereinstimmt, an dem `gearMesh[i].visible` gesetzt wird (Reihenfolge: lädt das
-Modell fertig, *bevor* der erste Sichtbarkeits-Toggle passiert?).
+**Keine der beiden im vorigen Stand vermuteten Ursachen (zu große/zu kleine Vereinigung,
+veraltete Liste durchs Ladetiming) war die eigentliche.** Mit dem echten
+`grumman tbm avenger.glb`, einem echten `GLTFLoader` r128 und einem echten headless
+WebGL-Renderer (`gl`-Paket + Xvfb, Screenshots gespeichert und tatsächlich angesehen — nicht
+nur Zahlen verglichen) zeigte sich das eigentliche Bild:
 
-Code: `torpedo-carrier.html`, Suche nach `gearMesh=[]` und `gearMesh[i].visible=gv`.
+1. **`gearMesh` findet korrekt genau EIN Mesh** — ein einzelnes verschmolzenes Mesh, das
+   BEIDE Hauptfahrwerksräder UND das Spornrad enthält (per Vertex-Clustering auf diesem
+   Mesh bestätigt: exakt 3 räumlich getrennte Cluster, symmetrisch, mit den erwarteten
+   Radien ~0,41–0,42 m für die Haupträder und ~0,11–0,13 m fürs Spornrad). Dieses eine
+   Mesh korrekt aus- und einzublenden funktioniert bereits und blendet die Räder korrekt
+   aus. **Das war nie das Problem.**
+2. **Die sichtbar bleibenden „weißen Streben" sind gar keine Räder, sondern die Beinen
+   selbst — und die sind in die Rumpf/Flügel-Geometrie eingeschweißt** (Meshes `Object_31`/
+   `Object_32`, dieselben riesigen Meshes, die auch den Großteil von Rumpf und Flächen
+   bilden — exakt dasselbe Modellierungs-Shortcut wie beim Propeller, siehe 3.1). Ein
+   Renderdurchlauf mit jedem Mesh in einer eigenen Farbe zeigte das eindeutig: das
+   Rad/Spornrad-Mesh (rot eingefärbt) endet am Radaufhängungspunkt, aber das Bein darüber
+   bis zur Fläche (in derselben Farbe wie der Rumpf) ist Teil des großen Rumpf-Meshes.
+   Da es kein eigenständiges Bein-Objekt gibt, kann **kein** Filter auf `gearMesh` das je
+   erfassen — das war von Anfang an gar nicht lösbar über bessere Mesh-Auswahl.
+
+**Zusätzlich, unabhängig gefunden und ebenfalls behoben:** Die alte `gearMesh`-Klassifizierung
+maß `whole` über `Box3.setFromObject(model)` (immer **Weltkoordinaten**) und verglich damit
+`o.matrixWorld`-transformierte Boxen (auch Weltkoordinaten, in sich konsistent — anders als
+der Propeller-Bug, aber trotzdem noch **abhängig von der aktuellen Fluglage** des Flugzeugs
+im Moment des Ladens). Am Prüfstand mit einer gebankten Fluglage nachgestellt: sobald das
+Flugzeug gegenüber dem Ursprung gedreht ist, kippt „unten" im Welt-Sinn nicht mehr mit „unten"
+am Rumpf zusammen, und die Klassifizierung würde andere (potenziell falsche) Teile finden.
+In der Praxis bleibt `P.pitch`/`P.roll` bei Missionsstart auf 0, das 15-MB-Modell lädt aber
+asynchron und kann theoretisch erst mitten im Flug fertig werden (die SBD-Ladelogik im
+selben File behandelt exakt dasselbe Timing-Problem explizit) — daher als Härtung mit
+behoben, nicht weil es hier der Auslöser war.
+
+**Fix (BUILD 101):**
+- `gearMesh`-Messung läuft jetzt durchgehend in **modell-lokalen** Koordinaten
+  (`invModel = model.matrixWorld.invert()`), unabhängig von Position/Rotation des Flugzeugs.
+- Drei kleine Zylinder („Bein-Verkleidungen") werden an den gemessenen Bein-Positionen
+  angebracht — links/rechts Hauptfahrwerk und Spornrad — und nur sichtbar geschaltet, wenn
+  `gearMesh` unsichtbar ist (also bei „Gear Up"), exakt gegenläufig zum Rad-Mesh. Gleiches
+  Prinzip wie die Propellerscheibe: nicht schneiden, abdecken.
+- Länge und Radius jedes Zylinders wurden am echten Bein gemessen (Vertex-Scan entlang der
+  Bein-Säule, `Object_31`/`Object_32` Vertices um die gemessene Radposition, Radiusprofil
+  pro Höhenschicht) und mit Sicherheitsmarge nach unten verlängert, bis Screenshots aus
+  mehreren Winkeln (von schräg unten, von hinten, aus der Nähe) **keinen sichtbaren
+  Rumpfrest mehr zeigten** — sowohl bei „Gear Up" (Zylinder sichtbar, Bein vollständig
+  verdeckt) als auch bei „Gear Down" (Zylinder unsichtbar, Original unverändert).
+
+Code: `torpedo-carrier.html`, Suche nach `gearMesh=[]` (Klassifizierung + Zylinder-Aufbau)
+und `gearDoors[i].visible` (Sichtbarkeits-Toggle, gleich neben dem `gearMesh`-Toggle).
+
+**Offen:** Nur am headless-Renderer geprüft (echtes Modell, aber ohne Texturen/Beleuchtung
+des echten Spiels) — Bestätigung auf dem echten iPad steht noch aus, genau wie bei 4.1.
 
 ### 4.3 P-47: Spornrad hängt nach dem Start ~1 m unter dem Flugzeug
 Hauptfahrwerk wird laut Nutzer korrekt ein-/ausgefahren („Fahrwerk ist ok"). Das Spornrad

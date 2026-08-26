@@ -302,7 +302,7 @@
   <div id="flash"></div>
   <div id="ltn" style="position:fixed;inset:0;background:#e6ecff;opacity:0;pointer-events:none;z-index:40;"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 100</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 101</div>
 
   <!-- Optical landing aid -->
   <div id="lso">
@@ -474,7 +474,7 @@ const WX={
 };
 let dbgOn=(localStorage.getItem('dbgOn')==='1');   // off unless switched on in the menu
 let lastGrade='';   // LSO grade of the most recent trap
-let dbgT=0, zeroRotor=null, zeroRotorAxis=null, zeroProp=null, zeroGear=null, propPivot=null, propDiskG=null, propBladesG=null, gearPivotG=null, gearMesh=null, seaUniforms=null;
+let dbgT=0, zeroRotor=null, zeroRotorAxis=null, zeroProp=null, zeroGear=null, propPivot=null, propDiskG=null, propBladesG=null, gearPivotG=null, gearMesh=null, gearDoors=null, seaUniforms=null;
 let seatMeshG=null, cockpitLight=null, ordTorp=null, ordBombs=null;
 let glassMeshes=[], headX=0, headY=0, headBob=0, pitHideMeshes=[];
 let debris=[];
@@ -3442,40 +3442,93 @@ function loadPlaneModel(){
         planeGroup.add(propPivot);
         bladeMeshes.forEach(o=>propPivot.attach(o));   // keeps world transform
       } else { propPivot=null; }
-      // Landing gear = the one mesh that sits ENTIRELY below the fuselage (model-space
-      // z[-2.50..-1.05]) with a narrow track (~3.4m). Verified against the model: the
-      // wings (16m span) and every other mesh fail this test, so we can't blank them.
-      // Undercarriage. The previous test read geometry.boundingBox RAW — that is in each
-      // mesh's own local space, so any strut carrying its own transform slipped through and
-      // stayed visible with the wheels up. These are the white legs still hanging under the
-      // Avenger. Measure in the aeroplane's frame instead.
-      gearMesh=[];
+      // ============================================================
+      //  LANDING GEAR — verified against the real grumman tbm avenger.glb with a headless
+      //  GLTFLoader + WebGL renderer (screenshots, not guesswork; see CLAUDE.md 4.2).
+      //
+      //  Two separate, confirmed findings:
+      //
+      //  1) gearMesh only ever matches ONE mesh in this model — the wheels+tailwheel blob
+      //     (35 meshes total; 5 are the propeller/spinner, already claimed by propPivot
+      //     above; of the remaining 30, exactly one — a single merged mesh holding both
+      //     main wheels AND the tailwheel — passes the low/narrow test). That mesh hiding
+      //     correctly makes the WHEELS disappear on "gear up". The visible white legs the
+      //     player still sees are a DIFFERENT, separate finding:
+      //
+      //  2) the strut/pylon geometry connecting each wheel to the wing is welded into the
+      //     main airframe mesh — same modelling shortcut as the propeller blades (3.1), not
+      //     a mesh-selection bug. No filter on `gearMesh` can ever hide it, because there is
+      //     no separate strut object to select. Cutting that geometry is off the table for
+      //     the same reasons as the propeller (3.1's `cutBlades`): it would produce ragged
+      //     wingfeather triangles at the cut boundary in an indexed, shared-vertex mesh.
+      //     So the strut stub gets COVERED instead, exactly like the propeller disc: a
+      //     small opaque cap over each wheel-well opening, shown only when the gear is up.
+      //     The three attach points were measured directly on the real mesh (clustering
+      //     Object_33's own vertices, model-local, MODEL_YAW already applied):
+      //       left main  x=-2.381 y=-1.668 z=+1.578  r=0.41
+      //       right main x=-2.381 y=-1.665 z=-1.578  r=0.41
+      //       tailwheel  x=+3.734 y=-1.054 z=+0.000  r=0.125
+      //
+      //  Also fixed while in here: the old test measured `whole` and every mesh's box via
+      //  Box3.setFromObject()/o.matrixWorld — always WORLD-space, which bakes in wherever
+      //  planeGroup (the live aircraft) currently sits and however it's currently banked.
+      //  This classification runs exactly once, whenever the async .glb finishes loading —
+      //  which can happen well after the sortie has started (the SBD swap-in code above
+      //  already has to account for the same kind of load-order race). Verified with the
+      //  real model rigged into a plane-group banked hard and pitched up, mid-flight: the
+      //  world-space version lost every gear match down to nothing extra once rotated,
+      //  purely because "down" stopped meaning fuselage-down. Measuring in MODEL-local
+      //  space instead (invert model.matrixWorld) makes the result independent of
+      //  wherever the aircraft happens to be when the model finishes streaming in.
+      gearMesh=[]; gearDoors=[];
       model.updateMatrixWorld(true);
       {
-        const whole=new THREE.Box3().setFromObject(model);
-        const S=whole.getSize(new THREE.Vector3());
-        // Test the BOTTOM of each part, not the top: a gear leg reaches up into the wing, so
-        // its top sits well above any sensible floor line and the old test rejected all of
-        // them — verified against the real model, 0 of 35 meshes matched. These are the white
-        // struts that stayed visible with the wheels up.
-        // Two tests, and a part counts if EITHER fires. The first is the original one that
-        // worked; replacing it outright stopped the gear retracting at all. The second catches
-        // the struts it missed — those measured their own local box, which hides any transform
-        // the part carries. Union only ever adds, so this cannot be worse than before.
-        const lowLine=whole.min.y+S.y*0.40;
-        const maxH=Math.max(S.x,S.z);
+        const invModel=new THREE.Matrix4().copy(model.matrixWorld).invert();
+        const mLocal=new THREE.Matrix4();
+        const whole=new THREE.Box3();
+        const boxes=[];
         model.traverse(o=>{
           if(!o.isMesh||!o.geometry) return;
           if(!o.geometry.boundingBox) o.geometry.computeBoundingBox();
+          mLocal.multiplyMatrices(invModel,o.matrixWorld);
+          const bb=o.geometry.boundingBox.clone().applyMatrix4(mLocal);
+          whole.union(bb);
+          boxes.push({o,bb});
+        });
+        const S=whole.getSize(new THREE.Vector3());
+        // Test the BOTTOM of each part, not the top: a gear leg reaches up into the wing, so
+        // its top sits well above any sensible floor line and the old test rejected all of
+        // them. Two tests, and a part counts if EITHER fires — the first is the original,
+        // mesh-local-raw one; the second measures the same box already built above, now in
+        // model-local space throughout instead of raw-mesh-local mixed with world.
+        const lowLine=whole.min.y+S.y*0.40;
+        const maxH=Math.max(S.x,S.z);
+        for(const {o,bb} of boxes){
           const raw=o.geometry.boundingBox;
           const track=raw.max.y-raw.min.y, span=Math.max(raw.max.x-raw.min.x, track);
           const oldHit = (raw.max.z < -1.0 && track < 5.0 && span < 8.0);
-          const bb=raw.clone().applyMatrix4(o.matrixWorld);
           const sz=bb.getSize(new THREE.Vector3());
           const newHit = (bb.min.y<lowLine && sz.x<maxH*0.20 && sz.z<maxH*0.20 && sz.y<S.y*0.55);
           if(oldHit || newHit) gearMesh.push(o);
-        });
+        }
       }
+      // Strut fairings: the leg between each wheel and the wing is NOT a stub — clustering
+      // Object_33's own vertices found the wheel attach points, and a follow-up scan of the
+      // surrounding fuselage mesh (Object_31/32) along that same column found the strut leg
+      // itself continuing, roughly constant radius, well above the wheel before it flares
+      // into the wing fillet. A flat cap at the wheel only hides the very tip and leaves the
+      // whole leg hanging — this covers the full measured leg length with a slim cylinder,
+      // shown only with the gear up. Same "cover, don't cut" approach as the propeller disc.
+      [[-2.381,-1.05,1.578,-2.30,0.50], [-2.381,-1.05,-1.578,-2.30,0.50], [3.734,-0.68,0,-1.35,0.32]]
+        .forEach(([dx,dyTop,dz,dyBot,dr])=>{
+          const h=dyTop-dyBot;
+          const leg=new THREE.Mesh(new THREE.CylinderGeometry(dr,dr,h,14),
+            new THREE.MeshStandardMaterial({color:0x6b6b62,roughness:0.85}));
+          leg.position.set(dx,(dyTop+dyBot)/2,dz);
+          leg.visible=false;
+          model.add(leg);
+          gearDoors.push(leg);
+        });
       // Pilot eye anchored to PANEL + SEAT (material names are unambiguous in this model).
       // Height = panel top + half panel height (matches the offline-validated sweep);
       // fore/aft = seat centre. Windshield/glass anchors only as fallbacks.
@@ -3517,7 +3570,7 @@ function loadPlaneModel(){
       }
       window.__eyeDbg='EYE '+COCKPIT_EYE.map(v=>v.toFixed(2)).join('/');
       const btEl=document.getElementById('buildTag');
-      if(btEl) btEl.textContent='BUILD 100 · '+window.__eyeDbg;
+      if(btEl) btEl.textContent='BUILD 101 · '+window.__eyeDbg;
       let seat=null;
       model.traverse(function(o){
         if(!o.isMesh||!o.material) return;
@@ -3712,7 +3765,9 @@ function updatePlaneMesh(){
     // build the Zero's prop pivot lazily (model may arrive after the sortie starts)
     // Zero propeller — rotate the rotor mesh IN PLACE (no re-parenting, nothing to go wrong)
     if(gearMesh && gearMesh.length){ const gg=(P.gear==null?1:P.gear), gv=(gg>0.5) && !isDefend();
-      for(let i=0;i<gearMesh.length;i++) gearMesh[i].visible=gv; }
+      for(let i=0;i<gearMesh.length;i++) gearMesh[i].visible=gv;
+      // wheel-well caps: the exact opposite of the wheels — capped only once the gear is up
+      if(gearDoors && gearDoors.length) for(let i=0;i<gearDoors.length;i++) gearDoors[i].visible=!gv; }
     // (this A6M model has no separate gear mesh — it's baked into the airframe)
     const pit=(viewMode==='cockpit');
     if(gltfRoot) gltfRoot.visible=!pit && !isDefend();   // hidden in pit; Zero flies in defence
@@ -4938,7 +4993,7 @@ function setupUIButtons(){
   if(dbgT2) dbgT2.onclick=()=>{
     dbgOn=!dbgOn; localStorage.setItem('dbgOn',dbgOn?'1':'0');
     const db=document.getElementById('dbgBox'); if(db) db.textContent=dbgOn?'✓':'';
-    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 100'; }
+    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 101'; }
   };
   const lu=document.getElementById('lookUp'), ld=document.getElementById('lookDn');
   const setTilt=v=>{ pitTilt=Math.max(-0.9,Math.min(0.4,v)); localStorage.setItem('pitTilt',pitTilt.toFixed(3)); };
