@@ -5,7 +5,7 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 106 · Thunderbolt Squadron EU BUILD 27**
+Stand bei Übergabe: **Torpedo Squadron BUILD 107 · Thunderbolt Squadron EU BUILD 28**
 Repo: `oliverkurzemann-Goku/Torpedo-Bomber`, ausgeliefert über GitHub Pages.
 Alle Angaben unten sind aus dem tatsächlichen Code verifiziert, nicht aus dem Gedächtnis.
 
@@ -704,6 +704,151 @@ Lücken/Toren, weiteres Feintuning der Wald-Dichte) sind nicht Teil dieser Runde
 
 Code: `thunderbolt-europe.html`, Suche nach „Used to be a plain box" (Hecken), „Every wall/roof
 used to share one flat colour" (Häuser), „Used to be conifer cones everywhere" (Wald).
+
+---
+
+### 4.15 Fanghaken (Arrestor Hook) bekommt einen echten Ein/Ausfahr-Mechanismus — BUILD 107
+
+Nutzerfrage: „Haben die Träger Flugzeuge auch einen Button um den Fanghaken zu bewegen?" —
+Antwort war nein: der Haken war in allen drei Konstruktionen (Platzhalter-Rumpf, echtes
+Avenger-Modell, echtes SBD-Modell) eine rein dekorative, starre Stange in fester Ausgefahren-
+Stellung. Der Nutzer wollte das eingebaut haben.
+
+**Umsetzung**, exakt nach dem Muster von `P.gearTgt`/`gearBtn` und `P.flapTgt`/`flapBtn`:
+- Neuer Button `hookBtn` (HTML/CSS, direkt unter `diveBtn`) mit `P.hook`/`P.hookTgt` (0=einge-
+  fahren, 1=ausgefahren), Standardwert **ausgefahren** (`P.hook=1; P.hookTgt=1` beim Sortie-
+  Start) — das entspricht exakt dem Aussehen, das der Haken vorher immer hatte, damit sich für
+  niemanden, der den Button nie anfasst, irgendetwas ändert. Interpolation läuft mit derselben
+  Formel wie `P.gear`/`P.flap` (`P.hook += (Ziel-P.hook)*min(1,3*dt)`).
+- Jede der drei Haken-Konstruktionen (Platzhalter, `loadSBDModel()`, `loadPlaneModel()` für den
+  Avenger) trägt jetzt `userData.hookAxis`/`hookDownAngle`/`hookUpAngle` — nötig, weil (exakt wie
+  bei den Klappen in 4.9) „ausgefahren" bei jedem Modell eine andere Rotationsachse und ein
+  anderes Vorzeichen ist (Platzhalter/SBD um lokal X, das echte Avenger-Modell um Z, wegen der in
+  4.9 gemessenen X/Z-Vertauschung dieses Modells). Eine gemeinsame Zeile im `animate()`-Update
+  liest diese userData generisch aus und schwenkt den Haken zwischen den beiden Winkeln — dieselbe
+  Technik wie `userData.flapSign` bei den Klappen.
+- Neue globale Variablen `hookMesh`/`sbdHookMesh`, exakt analog zu `flapL`/`sbdFlapL`: der Avenger-
+  Haken überschreibt `hookMesh` direkt (einziges Avenger-Modell im Spiel), der SBD-Haken wird nach
+  jedem `sbdTemplate.clone(true)` per `getObjectByName('sbdHook')` neu geholt (Klone behalten Namen,
+  aber keine Referenzen — exakt derselbe Grund, warum `sbdFlapL` genauso funktioniert).
+- **Gameplay-Kopplung:** In der Landepunkt-Prüfung, direkt neben der bereits vorhandenen
+  `if(P.gear<0.6){ crash("WHEELS UP",...) }`-Zeile, jetzt zusätzlich
+  `if(P.hook<0.6){ bolter("HOOK UP — BOLTER"); return; }` — Landen mit eingefahrenem Haken fängt
+  keinen Draht, sondern rollt über die Fangseile hinweg (Bolter, exakt wie bei zu schnell/zu lang/
+  zu kurz). Zusätzlich eine `LOWER HOOK`-Erinnerung im Endanflug, analog zu `LOWER GEAR`
+  (`P.hookWarnT`, gleicher 1100-m-Radius um das Schiff).
+
+**Verifiziert** (reine Zustandsmaschine, kein Modell-Laden nötig — Abschnitt 6, zweiter Teil):
+Node-Simulation der exakt aus der Datei übernommenen Interpolationsformel bestätigt Konvergenz
+gegen 0 bzw. 1 innerhalb von 2 Sekunden bei 60 fps; die Bolter-Schwelle (`<0.6`) verhält sich wie
+erwartet (ausgefahren=kein Bolter, eingefahren=Bolter, halb ausgefahren=Bolter); die Rotationsformel
+pro Haken-Mesh liefert bei `P.hook=1`/`P.hook=0` exakt die konstruierten `hookDownAngle`/
+`hookUpAngle`-Werte für alle drei Varianten (Platzhalter, SBD, Avenger).
+
+**Offen:** Nicht auf dem echten iPad geflogen — insbesondere, ob der Haken beim Einfahren durchs
+Heck/Rumpf clippt (die Animation ist eine reine Rotation um den festen Anbringungspunkt, ohne
+Kollisionsprüfung, wie bei Klappen/Fahrwerk auch). Kein visuelles Cover für den eingefahrenen
+Zustand (anders als Propeller/Fahrwerk gibt es hier keine verschweißte Geometrie, die abgedeckt
+werden müsste — der Haken ist ein eigenständiges, unabhängig bewegliches Objekt in allen drei
+Fällen, daher reicht reine Rotation).
+
+Code: `torpedo-carrier.html`, Suche nach „hookMesh, sbdHookMesh" (Deklaration), „arrestor hook: same
+swing-toward-target" (Animation), „HOOK UP — BOLTER" (Gameplay-Kopplung).
+
+---
+
+### 4.16 Flugverhalten: Federschwinger zu träge — nachjustiert in BUILD 107 / EU BUILD 28
+
+Reales Nutzer-Feedback nach dem Fliegen von BUILD 104/EU BUILD 25 (4.10): „Das Flugverhalten der
+Flugzeuge ist viel zu träge." Genau die Gegenrichtung von dem, was in 4.10 als nächster
+Stellhebel notiert war — nicht weniger Trägheit befürchtet, sondern zu viel geliefert.
+
+Nachgemessen (dieselbe Node-Simulation wie in 4.10, jetzt mit den tatsächlich verbauten
+Konstanten): Bei `rate×1.0, ζ=0.85` (BUILD 104/EU BUILD 25) brauchte das trägste Flugzeug
+(Avenger, Nicken) 3,4 s bis 95 % des Zielwinkels erreicht waren — spürbar behäbig, nicht nur
+„etwas träge". Selbst das agilste Flugzeug/Achse (Fw190, Rollen) brauchte noch 0,83 s.
+
+**Fix:** `pitchRate`/`rollRate`-Multiplikator von `1.5`/`2.4` auf `3.0`/`4.8` verdoppelt (die
+Eigenfrequenz des Federschwingers direkt erhöht — das ist der Hebel, der die Ansprechzeit
+verkürzt, ohne die relative Charakteristik zwischen den Flugzeugen zu verändern, da alle
+weiterhin über `pitchAuth`/`rollAuth` bzw. `AC.pitch`/`AC.roll` skalieren). Zusätzlich
+`ζ` leicht von 0,85 auf 0,80 gesenkt. Numerisch geprüft: bei `ζ=0.80` sinkt die Einschwingzeit
+UND das Überschwingen bleibt niedrig, weil die Verdopplung der Rate den Effekt der etwas
+geringeren Dämpfung überkompensiert — Avenger-Nicken jetzt 1,55 s statt 3,4 s bis 95 %, mit
+1,3 % Überschwingen statt 0,5 % (verglichen mit einer Zwischenstufe bei nur ×1,6/ζ=0,78, die
+1,6–1,8 % Überschwingen ergeben hätte — ×2,0/ζ=0,80 war in der Simulation strikt besser auf
+beiden Achsen). Identische Änderung in beiden Spielen (`torpedo-carrier.html` und
+`thunderbolt-europe.html`), da beide dieselbe Formel und denselben ursprünglichen Kommentar
+teilen.
+
+**Verifiziert:** Node-Simulation des exakt aus beiden Dateien übernommenen Federschwingers für
+alle 6 Flugzeugtypen (Avenger/SBD/Zero, P-47/Fw190/Bf109) bestätigt: Einschwingzeiten (95 %)
+jetzt zwischen 0,37 s (Fw190 Rollen) und 1,55 s (Avenger Nicken), gegenüber vorher 0,83–3,4 s.
+Überschwingen bleibt in allen Fällen unter 1,3 %.
+
+**Offen:** Nicht auf dem echten iPad geflogen. Falls „zu träge" mit den neuen Werten immer noch
+zutrifft, ist der nächste Schritt eine weitere Erhöhung der Rate-Multiplikatoren (nicht des
+`ζ`-Werts allein) — siehe 4.10s ursprüngliche Warnung, kein Rückfall auf ratenkommandiertes
+Rollen.
+
+Code: beide Dateien, Funktion `updateFlight()`, Suche nach „much too sluggish".
+
+---
+
+### 4.17 Thunderbolt: Fahrwerk „wirkt künstlich" + Sporn-/Heckrad hängt zu tief — BEHOBEN in EU BUILD 28
+
+Zwei Nutzer-Beobachtungen in einer Nachricht: „Das gear der Thunderbolt sieht immer noch zu
+künstlich aus. Sportrad hängt viel zu weit unten." Der zweite Punkt widerspricht direkt 4.3, wo
+genau dieser Bug für EU BUILD 24 als behoben und am echten Modell nachgewiesen dokumentiert
+wurde — also frisch und skeptisch neu am echten `p47new.glb` gerendert, statt der alten
+Dokumentation zu vertrauen (Lektion 1).
+
+**Tailwheel-Bug — echte, neue Ursache, nicht dieselbe wie in 4.3:** Ein Render mit echtem
+`GLTFLoader`/`p47new.glb` zeigte das Heckrad tatsächlich mit sichtbarem Spalt zur Rumpfunterseite
+hängend, trotz EU BUILD 24s `localFloor()`. Direkt am Modell nachgemessen: `localFloor()` (misst
+den tiefsten Vertex innerhalb eines Radius `r` um die Ziel-x/z-Position) fand für die Heckrad-
+Position (`tailZ`, Radius `span*0.08` ≈ 1 m) einen Wert von y=−0,714 — aber ein Scan mit engerem
+Radius zeigte: die echte Rumpfhaut an genau dieser Stelle liegt bei y=−0,112, deutlich höher.
+Der abweichende, tiefere Wert stammt von einer echten, aber 0,73 m entfernten Vertex — dem
+modellierten Spornrad-Schacht (einer echten Vertiefung im Mesh, vermutlich für ein eingebautes,
+aber vom „own gear"-Filter nicht erkanntes Rad), die noch innerhalb des 1-m-Suchradius liegt und
+dessen Minimum gewinnt. Exakt derselbe Fehlerklasse wie beim Propeller in 4.1 („ein echter, aber
+falscher Punkt gewinnt, weil der Suchradius zu groß ist"), nur diesmal in `localFloor()` statt
+`findPropDisc()`, und ein anderer Auslöser als der in 4.3 behobene globale-Anker-Bug.
+
+**Fix:** `localFloor()` sucht jetzt zweistufig — zuerst mit einem engen Kernradius (`min(r,0.28)`,
+klein genug, dass ein 0,7 m entfernter Schacht nicht mehr gewinnen kann), nur bei Fehlschlag
+(quantisiertes Mesh, Stride-Sampling trifft zufällig nichts in der Nähe) schrittweise breiter bis
+zum ursprünglich übergebenen `r`. Kein Aufrufer musste geändert werden — `localFloor()` wird nur
+von `buildGear()` für Haupt- und Heckfahrwerk verwendet (geprüft, keine weiteren Aufrufer in
+dieser Datei oder in `torpedo-carrier.html`).
+
+**„Wirkt künstlich":** Das alte Fahrwerksbein war ein einzelner, einfarbiger Zylinder — von jedem
+Blickwinkel ein bloßer grauer Stock. Neu: zweifarbiges Bein (dunkler fester Zylinder oben, hellerer
+metallischer „Kolben" unten — derselbe Zweiton-Trick, den ein echtes Ölbein-Fahrwerk optisch
+nutzt), plus eine diagonale Strebe vom oberen Drehpunkt zur Achse (jedes echte Jäger-Fahrwerk hat
+eine solche Strebe; ein reiner Vertikalstab ohne sie ist genau das, was als Platzhalter wirkt),
+plus eine kleine Nabenkappe auf jedem Rad. Neue Hilfsfunktion `strutBetween(p1,p2,radius,mat)`
+baut einen korrekt orientierten Zylinder zwischen zwei beliebigen Punkten (Quaternion aus
+`setFromUnitVectors`) — für die diagonale Strebe, robuster als eine von Hand ausgerechnete
+`rotation.z`.
+
+**Nachgewiesen am echten Modell** (wortwörtlich aus der Datei extrahiert — `localFloor`,
+`findPropDisc`, `cutBlades`, `strutBetween`, `buildGear`, `rigModel` — gegen echtes `p47new.glb`
+und `fw190.glb` mit echtem `GLTFLoader` r128 und echtem headless-WebGL-Renderer ausgeführt):
+Heckrad sitzt jetzt bündig an der Rumpfunterseite am Heckkonus, kein sichtbarer Spalt mehr
+(vorher: deutlich sichtbarer Abstand zwischen Rumpfhaut und Beinoberkante). Hauptfahrwerk an
+P-47, Fw190 und B-17 (Regressionscheck) weiterhin bündig am Rumpf/an der Tragfläche montiert,
+keine Verschlechterung durch die geänderte `localFloor()`-Suche. Die B-17 zeigt weiterhin das in
+4.4 dokumentierte, separate Doppel-Fahrwerk-Problem (unverändert, nicht Teil dieses Fixes).
+
+**Offen:** Nicht auf dem echten iPad geflogen. „Künstlich wirkend" ist eine subjektive Einschätzung
+— die jetzige Verbesserung (Zweiton-Bein, Diagonalstrebe, Nabenkappe) ist ein gezielter, aber
+begrenzter Schritt; ein Fahrwerksschacht-Deckel-Mechanismus (offene Klappen beim Ein-/Ausfahren,
+wie bei echten Flugzeugen) wäre der nächste, deutlich größere Schritt, falls das nicht ausreicht.
+
+Code: `thunderbolt-europe.html`, Funktionen `localFloor()` (Suche nach „Two-tier"), `strutBetween()`
+(neu, direkt vor `buildGear`), `buildGear()` (Suche nach „oleo strut").
 
 ---
 
