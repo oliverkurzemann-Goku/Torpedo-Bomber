@@ -5,7 +5,7 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 106 · Thunderbolt Squadron EU BUILD 26**
+Stand bei Übergabe: **Torpedo Squadron BUILD 106 · Thunderbolt Squadron EU BUILD 27**
 Repo: `oliverkurzemann-Goku/Torpedo-Bomber`, ausgeliefert über GitHub Pages.
 Alle Angaben unten sind aus dem tatsächlichen Code verifiziert, nicht aus dem Gedächtnis.
 
@@ -21,7 +21,7 @@ iPad/iPhone Safari.
 |---|---|
 | `index.html` | Startseite, Auswahl zwischen beiden Spielen |
 | `torpedo-carrier.html` | **Teil 1** — Pazifik, Trägerbetrieb (BUILD 106) |
-| `thunderbolt-europe.html` | **Teil 2** — Europa, Bodenangriff (EU BUILD 26) |
+| `thunderbolt-europe.html` | **Teil 2** — Europa, Bodenangriff (EU BUILD 27) |
 | `model-check.html` | Kalibrier-Werkzeug für neue Flugzeugmodelle (Ausrichtung, Maßstab) |
 
 Beide Spiele haben getrennte Speicherstände (`localStorage`-Präfixe `tc_*` bzw. `eu_*`).
@@ -600,15 +600,15 @@ Code: `torpedo-carrier.html` — Suche nach „loadSBDModel" (Material-Fix), „
 `upgradeShipsToTemplate` (Schiffs-Fix). `thunderbolt-europe.html` — Suche nach `groundYRender`
 und die zwei Aufrufstellen in `buildSettlement()`.
 
-### 4.12 Grafik-Verbesserung, Runde 2: Terrain-Erneuerung — Konzept noch offen, nicht begonnen
+### 4.12 Grafik-Verbesserung, Runde 2: Terrain-Erneuerung — erste Runde in BUILD 106/EU BUILD 27, siehe 4.14
 
-Nutzer will danach eine **deutlich realistischere** Terrain-Grafik für Thunderbolt-Europe, mit
+Nutzer will eine **deutlich realistischere** Terrain-Grafik für Thunderbolt-Europe, mit
 Performance ausdrücklich zweitrangig (iPad-Ruckler als akzeptables Risiko explizit in Kauf
-genommen). Noch nicht begonnen — nächste Schritte für eine künftige Sitzung: aktuellen Ansatz
-(prozedurale Canvas-Textur für Felder, `InstancedMesh`-Boxen für Häuser, Hecken als reine
-Textur-Linien ohne 3D-Form, `SEG=384`-Höhengitter) gegen echte 3D-Vegetation/-Gebäude und ein
-feineres Höhengitter abwägen; Speicher-/Ladezeit-Auswirkungen auf einem 64×64-km-Gebiet
-berücksichtigen. Kein Code angefasst.
+genommen). Ursprünglich als „noch nicht begonnen" markiert — 4.14 dokumentiert die erste
+Umsetzungsrunde (feineres Höhengitter, Laubbäume, rundere Hecken, Häuser mit Farbvarianz).
+Korrektur zum vorherigen Stand: die Hecken waren KEINE reinen Textur-Linien ohne 3D-Form,
+sondern schon immer echte (nur schlicht rechteckige) `BoxGeometry`-Instanzen — das war eine
+Verwechslung mit den rein kosmetischen Feldgrenz-Strichen in `makeGroundTexture()`s Canvas.
 
 ### 4.13 Inseln in torpedo-carrier.html verbessert — BUILD 106
 
@@ -655,6 +655,55 @@ vereinzelt Bäume bis dicht an den inneren Lagunenrand — kosmetisch, nicht Tei
 
 Code: `torpedo-carrier.html`, Funktion `buildIsland()`, Suche nach „Real palm trees instead" und
 „The three height bands below".
+
+### 4.14 Thunderbolt-Terrain, Runde 1 — BUILD 106 / EU BUILD 27
+
+Nutzer bat direkt darum, mit der in 4.12 angekündigten Terrain-Erneuerung anzufangen, und hat
+für diese und künftige Pushes explizit auf den Bestätigungsschritt vor dem Mergen verzichtet
+(„machen, kontrollieren, pushen" — siehe Abschnitt 7).
+
+**Vier Änderungen, alle in `thunderbolt-europe.html`:**
+1. **Höhengitter `SEG` 384→640** (167 m → 100 m pro Kachel). Performance war vom Nutzer explizit
+   als zweitrangig freigegeben; einfache, risikoarme Änderung mit direkter Wirkung auf jede
+   Hügelkante im Spiel.
+2. **Hecken: runde statt rechteckige Form.** Ein flacher `BoxGeometry`-Quader sah aus wie eine
+   Mauer, nicht wie eine Hecke. Ersetzt durch einen Halbzylinder (`CylinderGeometry` mit
+   `thetaLength=Math.PI`), einmalig mit `rotateZ(Math.PI/2)` so gedreht, dass die flache Seite
+   am Boden liegt und sich die Rundung nach oben wölbt — geprüft mit einer Bounding-Box-Probe
+   VOR dem Einbau (Länge liegt danach auf lokal X, Wölbung auf lokal Y, Breite auf lokal Z,
+   exakt dieselbe Platzierungs-Konvention wie beim alten Quader, siehe Code-Kommentar). Dazu
+   etwas Höhen-/Breiten-Streuung pro Hecke statt eines starren Fixwerts.
+3. **Häuser: Farbvarianz statt eine einzige Wand-/Dachfarbe für jedes Gebäude im Spiel.**
+   `instanceColor` auf beiden `InstancedMesh`es (Wände, Dächer), aus je 5 plausiblen Ton-Paletten
+   zyklisch zugewiesen — gleicher Draw-Call, kein Mehraufwand.
+4. **Wald: Laubbäume neben den Nadelbäumen**, nicht als Ersatz — anders als bei den
+   Pazifik-Inseln (dort waren Kegel-„Nadelbäume" für einen tropischen Dschungel schlicht falsch)
+   sind Nadelbäume für ein mitteleuropäisches Hochland/Waldgebiet real plausibel und blieben
+   daher. Unterhalb von 700 Höhenmetern (dieselbe Schwelle, die `buildTerrain()` schon für
+   „raues Weideland" benutzt) wird ein Baum jetzt zu 65 % ein Laubbaum (Stamm-Zylinder +
+   Ikosaeder-Krone, zwei zusätzliche `InstancedMesh`es), oberhalb bleibt es beim Nadelbaum-Kegel
+   — spiegelt die reale Höhenzonierung (Mischwald im Tal, Nadelwald im Hochland).
+
+**Verifiziert, nicht nur geschrieben:** `buildForests()`, `buildSettlement()` und ihre komplette
+Abhängigkeitskette (`terrainH`, `groundYRender`, `riverX`/`roadZ`/`railZ` usw.) wortwörtlich per
+Klammerzählung aus der echten Datei extrahiert und gegen einen echten headless-WebGL-Renderer
+ausgeführt — lief fehlerfrei durch (4018 Nadelbäume, 4182 Laubbäume, 381 Gebäude, 4600 Hecken
+bei einem Testlauf), keine NaN-Positionen, keine invertierte Geometrie. Die tatsächlich
+platzierten Gebäude-Koordinaten wurden aus der laufenden `InstancedMesh` ausgelesen (nicht
+geraten), um die Kamera in einem echten Weiler zu positionieren — dort sichtbar bestätigt:
+Häuser mit unterschiedlichen Wand-/Dachfarben, ein Laubbaum mit Stamm+Krone. Die Hecken-Form
+zusätzlich separat in einem Mock-up mit identischem Geometrie-Code gerendert und bestätigt
+(deutlich rundlicher als der alte Quader).
+
+**Offen:** Nur am Prüfstand gerendert, nicht auf dem echten iPad geflogen — insbesondere die
+Framerate-Auswirkung von `SEG=640` und den zwei neuen Laubbaum-`InstancedMesh`es ist ungeprüft;
+der Nutzer hat Ruckler als Risiko akzeptiert, aber ob es tatsächlich noch flüssig genug ist,
+kann nur er auf seinem iPad beurteilen. Häuser haben weiterhin keine Fenster/Details — nur
+Farbvarianz. Größere, noch offene Schritte aus 4.12 (echte 3D-Gebäudeformen, Hecken mit
+Lücken/Toren, weiteres Feintuning der Wald-Dichte) sind nicht Teil dieser Runde.
+
+Code: `thunderbolt-europe.html`, Suche nach „Used to be a plain box" (Hecken), „Every wall/roof
+used to share one flat colour" (Häuser), „Used to be conifer cones everywhere" (Wald).
 
 ---
 
@@ -733,6 +782,11 @@ Aussagen über Modellgeometrie treffen (dafür Abschnitt 6, oberer Teil, verwend
 - Build-Nummer bei jeder Änderung hochzählen (Abschnitt 2).
 - Chirurgische, gezielte Änderungen bevorzugen — keine großflächigen Neuschreibungen ohne
   Not, das Projekt ist bereits umfangreich und funktionierende Teile sollen es bleiben.
+- **Seit BUILD 106/EU BUILD 27: kein Rückfrage-Schritt mehr vor dem Mergen/Pushen nach `main`.**
+  Der Nutzer hat das explizit so gewünscht ("machen, kontrollieren, pushen") — vorher wurde vor
+  jedem Merge auf den `main`-Branch einmal nachgefragt. Weiterhin gilt: auf dem Feature-Branch
+  entwickeln, dann direkt nach `main` mergen und pushen, ohne zu fragen — aber nur nachdem
+  Syntax UND die Kernannahme verifiziert wurden (siehe oben).
 
 ---
 

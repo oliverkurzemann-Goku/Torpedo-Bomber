@@ -253,7 +253,7 @@
   <div id="flash"></div>
   <div id="gunsight"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">EU BUILD 26</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">EU BUILD 27</div>
 
   <div id="apr">
     <div id="aprCall"></div>
@@ -358,8 +358,10 @@
 const KT=2.23694;            // m/s -> mph (this theatre talks in mph, not knots)
 const FT=3.28084, MI=1609.34, R2D=180/Math.PI;
 const WORLD=64000;           // playable square, metres
-const SEG=384;               // 64 km over 384 spans = 167 m per quad. The mesh carries the
-                             // large forms; a tiled detail texture supplies everything finer,
+const SEG=640;               // 64 km over 640 spans = 100 m per quad. Raised from 384 (167 m)
+                             // as part of the terrain-realism pass — user explicitly accepted
+                             // iPad frame-rate risk in exchange for smoother hills and valleys;
+                             // a tiled detail texture supplies everything finer still,
                              // because vertex colours alone can never show a field or a track.
 const RIVER_Y=30;            // water surface height
 const AF_Y=423;              // airfield pad elevation — matches the terrain at the origin,
@@ -722,11 +724,18 @@ let villages=null, roofs=null, hedges=null;
 function buildSettlement(){
   const wallG=new THREE.BoxGeometry(1,1,1);
   const roofG=new THREE.CylinderGeometry(0.72,0.72,1,3);   // a prism makes a pitched roof
-  const wallM=new THREE.MeshLambertMaterial({color:0xbcbcae});
-  const roofM=new THREE.MeshLambertMaterial({color:0x6e3f33});
+  // Every wall/roof used to share one flat colour each — a whole hamlet in identical boxes.
+  // Per-instance colour (a handful of plausible wall/roof tones) breaks that up cheaply: same
+  // geometry, same draw call, just a colour attribute alongside the matrix.
+  const wallM=new THREE.MeshLambertMaterial({color:0xffffff});
+  const roofM=new THREE.MeshLambertMaterial({color:0xffffff});
+  const wallPalette=[[0.74,0.72,0.66],[0.80,0.76,0.62],[0.70,0.66,0.60],[0.78,0.70,0.58],[0.72,0.70,0.68]];
+  const roofPalette=[[0.43,0.24,0.20],[0.36,0.20,0.16],[0.30,0.30,0.30],[0.40,0.28,0.18],[0.33,0.22,0.19]];
   const NB=2400;
   villages=new THREE.InstancedMesh(wallG,wallM,NB);
   roofs   =new THREE.InstancedMesh(roofG,roofM,NB);
+  villages.instanceColor=new THREE.InstancedBufferAttribute(new Float32Array(NB*3),3);
+  roofs.instanceColor=new THREE.InstancedBufferAttribute(new Float32Array(NB*3),3);
   const o=new THREE.Object3D();
   let k=0;
   // hamlets strung along the road, plus isolated farms out in the fields
@@ -751,20 +760,33 @@ function buildSettlement(){
       const w=7+Math.random()*7, d=9+Math.random()*9, h=5+Math.random()*3.5;
       o.position.set(x,gy+h/2,z); o.rotation.set(0,rot+(Math.random()-0.5)*0.5,0);
       o.scale.set(w,h,d); o.updateMatrix(); villages.setMatrixAt(k,o.matrix);
+      const wc=wallPalette[k%wallPalette.length];
+      villages.instanceColor.setXYZ(k,wc[0],wc[1],wc[2]);
       o.position.set(x,gy+h+h*0.30,z);
       o.scale.set(w*1.16,h*0.60,d*1.10);
       o.rotation.z=Math.PI/2;                            // lay the prism along the ridge
       o.updateMatrix(); roofs.setMatrixAt(k,o.matrix);
       o.rotation.z=0;
+      const rc=roofPalette[(k+2)%roofPalette.length];
+      roofs.instanceColor.setXYZ(k,rc[0],rc[1],rc[2]);
       k++;
     }
   }
   villages.count=k; roofs.count=k;
+  villages.instanceColor.needsUpdate=true; roofs.instanceColor.needsUpdate=true;
   scene.add(villages); scene.add(roofs);
 
   // hedgerows: short dark lines following the field pattern, which is what actually breaks up
   // an open landscape when you are down at fifty feet
-  const hg=new THREE.BoxGeometry(1,1,1);
+  // Used to be a plain box — a flat-topped rectangular slab reads as a wall, not a hedge. A
+  // half-cylinder gives the same footprint a rounded, bushy top instead. Baked once into the
+  // shared geometry (verified with a bounding-box check before porting): thetaLength=PI takes
+  // only half the cylinder's circular sweep, and rotateZ(PI/2) lays that half-round so its
+  // flat face sits at local y=0 (the ground) and the round bulge rises to local y=1, with
+  // length now along local X — the same placement convention (position/scale/rotation.y for
+  // horiz/vertical) the old box used, so nothing downstream needed to change.
+  const hg=new THREE.CylinderGeometry(1,1,1,8,1,false,0,Math.PI);
+  hg.rotateZ(Math.PI/2);
   const hm=new THREE.MeshLambertMaterial({color:0x2f4526});
   const NH=4600;
   hedges=new THREE.InstancedMesh(hg,hm,NH);
@@ -778,9 +800,10 @@ function buildSettlement(){
     if(Math.abs(x-AF_X)<RWY_LEN*0.8 && Math.abs(z-AF_Z)<760) continue;
     const len=70+Math.random()*150;
     const horiz=Math.random()<0.5;
-    o.position.set(x,gy+2.2,z);
+    const ht=3.6+Math.random()*1.8, wd=2.2+Math.random()*0.8;   // a little height/width jitter, real hedges aren't uniform
+    o.position.set(x,gy,z);                 // flat bottom already sits at local y=0 — no lift needed
     o.rotation.set(0,horiz?0:Math.PI/2,0);
-    o.scale.set(len,4.4,5);
+    o.scale.set(len,ht,wd);
     o.updateMatrix(); hedges.setMatrixAt(j++,o.matrix);
   }
   hedges.count=j;
@@ -789,12 +812,24 @@ function buildSettlement(){
 }
 
 function buildForests(){
+  // Used to be conifer cones everywhere. Real Central-European lowland woodland is mostly
+  // deciduous, with conifers taking over higher up — a monoculture of pine-cone shapes read
+  // flat and repetitive from the air. Below the same 700 m "rough pasture" band buildTerrain()
+  // already uses for its own colouring, trees are now mostly deciduous (trunk + round
+  // icosahedron canopy); above it, conifers as before — three InstancedMeshes total (conifer,
+  // deciduous trunks, deciduous canopies), still one draw call each regardless of tree count.
   const cone=new THREE.ConeGeometry(9,26,6);
   const mat=new THREE.MeshLambertMaterial({color:0x2c4022});
   const N=8200;
   forest=new THREE.InstancedMesh(cone,mat,N);
-  const o=new THREE.Object3D(); let k=0, guard=0;
-  while(k<N && guard<N*8){
+  const trunkG=new THREE.CylinderGeometry(1.1,1.6,10,6);
+  const trunkM=new THREE.MeshLambertMaterial({color:0x4a3a26});
+  const deciduousTrunk=new THREE.InstancedMesh(trunkG,trunkM,N);
+  const canopyG=new THREE.IcosahedronGeometry(1,1);
+  const canopyM=new THREE.MeshLambertMaterial({color:0x4f7a34});
+  const deciduousCanopy=new THREE.InstancedMesh(canopyG,canopyM,N);
+  const o=new THREE.Object3D(); let k=0, dk=0, guard=0;
+  while(k+dk<N && guard<N*8){
     guard++;
     const x=(Math.random()-0.5)*WORLD*0.94, z=(Math.random()-0.5)*WORLD*0.94;
     const h=terrainH(x,z);
@@ -807,11 +842,21 @@ function buildForests(){
     const mask=Math.sin(x*0.00042)*Math.cos(z*0.00051)+Math.sin(x*0.0009+2)*0.5;
     if(mask<0.35) continue;
     const s=0.7+Math.random()*0.7;
-    o.position.set(x,h+13*s,z); o.scale.set(s,s*(0.8+Math.random()*0.5),s);
-    o.rotation.set(0,Math.random()*3.14,0);
-    o.updateMatrix(); forest.setMatrixAt(k++,o.matrix);
+    if(h<700 && Math.random()<0.65){
+      o.position.set(x,h+5*s,z); o.scale.set(s,s,s); o.rotation.set(0,Math.random()*3.14,0);
+      o.updateMatrix(); deciduousTrunk.setMatrixAt(dk,o.matrix);
+      o.position.set(x,h+11*s,z); o.scale.set(7*s,6.5*s,7*s);
+      o.updateMatrix(); deciduousCanopy.setMatrixAt(dk,o.matrix);
+      dk++;
+    } else {
+      o.position.set(x,h+13*s,z); o.scale.set(s,s*(0.8+Math.random()*0.5),s);
+      o.rotation.set(0,Math.random()*3.14,0);
+      o.updateMatrix(); forest.setMatrixAt(k++,o.matrix);
+    }
   }
   forest.count=k; scene.add(forest);
+  deciduousTrunk.count=dk; deciduousCanopy.count=dk;
+  scene.add(deciduousTrunk); scene.add(deciduousCanopy);
 }
 
 // ============================================================
