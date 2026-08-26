@@ -377,17 +377,16 @@ in `animate()`. Der Nutzer hatte vermutlich einen stehenden Propeller in genau d
 gesehen, in denen `fitPropeller` `null` liefert (4.1 vor BUILD 100) oder die Scheibe falsch saß
 (vor BUILD 102) — mit den Fixes aus 4.1 sollte das Bild jetzt stimmen.
 
-**Propellergröße — bewusst NICHT angepasst, Zielkonflikt mit 4.1 ungelöst.** Gemessen (siehe
-4.1-Tabelle): SBD-Scheibe 10–20 % größer als der reale 3,28 m-Propeller, weil die Scheibe exakt
-das im Modell eingeschweißte Blattmaterial nachmisst. Ein künstlicher Clamp auf 3,28 m würde die
-Scheibe kleiner machen als die echten Blätter darunter — genau der Zustand, den BUILD 102 gerade
-behoben hat (Blattspitzen ragen wieder heraus, siehe „Nachtrag BUILD 102" in 4.1). Es gibt keine
-Möglichkeit, gleichzeitig „historisch korrekte Größe" UND „volle Abdeckung der eingeschweißten
-Blätter" zu erfüllen, ohne die Blattgeometrie selbst zu verändern — was laut 3.1 aus guten
-Gründen (dreimal gescheitert) tabu ist. **Rückfrage an den Nutzer nötig**, bevor hier irgendetwas
-geändert wird: Lieber leicht überdimensionierte, aber vollständig abgedeckte Propeller behalten,
-oder historische Größe mit dem Risiko sichtbarer Blattspitzen? Bis zur Antwort unverändert
-gelassen.
+**Propellergröße — Entscheidung getroffen: aktuelle Größe bleibt, keine Codeänderung.** Gemessen
+(siehe 4.1-Tabelle): SBD-Scheibe 10–20 % größer als der reale 3,28 m-Propeller, weil die Scheibe
+exakt das im Modell eingeschweißte Blattmaterial nachmisst. Ein künstlicher Clamp auf 3,28 m
+würde die Scheibe kleiner machen als die echten Blätter darunter — genau der Zustand, den
+BUILD 102 gerade behoben hat (Blattspitzen ragen wieder heraus, siehe „Nachtrag BUILD 102" in
+4.1). Es gibt keine Möglichkeit, gleichzeitig „historisch korrekte Größe" UND „volle Abdeckung
+der eingeschweißten Blätter" zu erfüllen, ohne die Blattgeometrie selbst zu verändern — was laut
+3.1 aus guten Gründen (dreimal gescheitert) tabu ist. Dem Nutzer vorgelegt und entschieden:
+**aktuelle (leicht überdimensionierte, aber vollständig abgedeckte) Größe bleibt** — historische
+Größe mit dem Risiko sichtbarer Blattspitzen wurde bewusst abgelehnt. Nichts zu tun.
 
 ### 4.9 Klappen, Fanghaken, Dive Brakes an den echten Modellen sichtbar — BEHOBEN in BUILD 103
 
