@@ -302,7 +302,7 @@
   <div id="flash"></div>
   <div id="ltn" style="position:fixed;inset:0;background:#e6ecff;opacity:0;pointer-events:none;z-index:40;"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 99</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 100</div>
 
   <!-- Optical landing aid -->
   <div id="lso">
@@ -2827,21 +2827,48 @@ function findPropDisc(root, noseSign){
   // propeller at rest has blades at only three angles). Measured diameters against the real
   // aircraft: Dauntless 3.34 vs 3.20, P-47 3.94 vs 3.71, Bf 109 3.52 vs 3.00.
   root.updateMatrixWorld(true);
-  const whole=new THREE.Box3().setFromObject(root);
+  // Box3.setFromObject() is always WORLD-space (it walks every descendant's matrixWorld).
+  // The per-vertex loop below works in ROOT-LOCAL space (root.worldToLocal). A world-space
+  // cut plane tested against root-local vertices is the coordinate-frame mistake this file
+  // warns about in section 3 of CLAUDE.md — verified with the real Dauntless model loaded in
+  // a plane-group positioned and rotated the way a mid-flight aircraft actually sits: the old
+  // version returned null (front/cut landed nowhere near the model at all, so under 40 points
+  // matched), the caller fell back to rigOwnProp, and on the Dauntless that fallback can only
+  // grab two unrelated small parts (the real propeller is welded into the fuselage mesh, see
+  // 3.1) — so nothing ever covered the frozen moulded blades. Every box below is built and
+  // compared in ROOT-LOCAL space only, so the result no longer depends on where in the world
+  // (or which way) the aircraft happens to be facing.
+  const invRoot=new THREE.Matrix4().copy(root.matrixWorld).invert();
+  const mLocal=new THREE.Matrix4();
+  const whole=new THREE.Box3();
+  const meshBoxes=[];
+  root.traverse(o=>{
+    if(!o.isMesh||!o.geometry||!o.geometry.attributes||!o.geometry.attributes.position) return;
+    if(!o.geometry.boundingBox) o.geometry.computeBoundingBox();
+    mLocal.multiplyMatrices(invRoot,o.matrixWorld);
+    const bb=o.geometry.boundingBox.clone().applyMatrix4(mLocal);
+    whole.union(bb);
+    meshBoxes.push({o,bb});
+  });
   const S=whole.getSize(new THREE.Vector3());
   const v=new THREE.Vector3(), pts=[];
   const front=(noseSign<0)? whole.min.z : whole.max.z;
   const cut=(noseSign<0)? front+S.z*0.07 : front-S.z*0.07;   // shallow: past this the wing arrives
-  root.traverse(o=>{
-    if(!o.isMesh||!o.geometry||!o.geometry.attributes||!o.geometry.attributes.position) return;
+  for(const {o,bb} of meshBoxes){
+    // cheap per-mesh reject: this mesh's own root-local box cannot reach the cut region at all
+    if(noseSign<0 ? bb.min.z>cut : bb.max.z<cut) continue;
+    // No stride here. Sampling every Nth vertex ACROSS THE WHOLE MESH (as before) missed the
+    // true widest point of the Dauntless's blade sweep — measured 1.78 m real vs. 1.35 m found
+    // by the stride, enough to shift the computed disc centre by 0.22 m and leave a ring of the
+    // real moulded blade sticking out past the disc's edge. Only meshes that survive the box
+    // reject above get here, so a full scan of just those stays cheap.
     const pos=o.geometry.attributes.position;
-    const st=Math.max(1,Math.floor(pos.count/9000));
-    for(let i=0;i<pos.count;i+=st){
+    for(let i=0;i<pos.count;i++){
       readVert(pos,i,v); o.localToWorld(v); root.worldToLocal(v);
       if(noseSign<0 ? v.z>cut : v.z<cut) continue;
       pts.push(v.clone());
     }
-  });
+  }
   if(pts.length<40) return null;
   let mnx=1e9,mxx=-1e9,mny=1e9,mxy=-1e9,zs=0;
   for(const p of pts){ if(p.x<mnx)mnx=p.x; if(p.x>mxx)mxx=p.x;
@@ -2872,6 +2899,14 @@ function cutBlades(root, disc, noseSign){
 function fitPropeller(model, parent, noseSign){
   const disc=findPropDisc(model, noseSign);
   if(!disc) return null;
+  // The propeller shaft sits on the aircraft's own vertical symmetry plane for every model
+  // here — same assumption rigOwnProp already makes about individual parts (S.x*0.12 below).
+  // Fixing findPropDisc's coordinate-frame bug (see above) made it succeed for aircraft where
+  // it used to silently fail, and on the wider-nosed Avenger the shallow 7% cut catches the
+  // asymmetric cowl/intake bulge instead of the propeller (measured cx 1.62 m off centre on a
+  // 12.45 m span — nowhere near a crankshaft). Reject that rather than covering the wrong
+  // thing; the caller already falls back to rigOwnProp when this returns null.
+  if(Math.abs(disc.cx) > disc.S.x*0.12) return null;
   const g=new THREE.Group();
   const R=disc.dia*0.5;
   // The disc itself: opaque, so the moulded-in blades behind it simply cannot be seen. Dark
@@ -3482,7 +3517,7 @@ function loadPlaneModel(){
       }
       window.__eyeDbg='EYE '+COCKPIT_EYE.map(v=>v.toFixed(2)).join('/');
       const btEl=document.getElementById('buildTag');
-      if(btEl) btEl.textContent='BUILD 99 · '+window.__eyeDbg;
+      if(btEl) btEl.textContent='BUILD 100 · '+window.__eyeDbg;
       let seat=null;
       model.traverse(function(o){
         if(!o.isMesh||!o.material) return;
@@ -4903,7 +4938,7 @@ function setupUIButtons(){
   if(dbgT2) dbgT2.onclick=()=>{
     dbgOn=!dbgOn; localStorage.setItem('dbgOn',dbgOn?'1':'0');
     const db=document.getElementById('dbgBox'); if(db) db.textContent=dbgOn?'✓':'';
-    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 99'; }
+    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 100'; }
   };
   const lu=document.getElementById('lookUp'), ld=document.getElementById('lookDn');
   const setTilt=v=>{ pitTilt=Math.max(-0.9,Math.min(0.4,v)); localStorage.setItem('pitTilt',pitTilt.toFixed(3)); };

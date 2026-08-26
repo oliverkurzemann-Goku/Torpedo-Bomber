@@ -5,7 +5,7 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 99 · Thunderbolt Squadron EU BUILD 23**
+Stand bei Übergabe: **Torpedo Squadron BUILD 100 · Thunderbolt Squadron EU BUILD 23**
 Repo: `oliverkurzemann-Goku/Torpedo-Bomber`, ausgeliefert über GitHub Pages.
 Alle Angaben unten sind aus dem tatsächlichen Code verifiziert, nicht aus dem Gedächtnis.
 
@@ -109,18 +109,74 @@ Diese vier Punkte hat der Nutzer nach dem letzten Deploy gemeldet. **Keiner davo
 untersucht oder bestätigt behoben.** Nicht annehmen, dass frühere Kommentare im Code
 ("PROBLEM GELÖST") noch stimmen — genau diese Annahme hat das Projekt wiederholt zurückgeworfen.
 
-### 4.1 Dauntless: alter starrer Propeller sichtbar zusätzlich zur neuen Scheibe
-P-47 und Bf 109 zeigen jetzt korrekt eine schwarze deckende Scheibe (funktioniert laut
-Nutzer). Bei der Dauntless (Teil 1) ist zusätzlich noch der alte, unbewegte Original-Propeller
-sichtbar — die neue Scheibe deckt ihn nicht vollständig ab.
+### 4.1 Dauntless: alter starrer Propeller sichtbar zusätzlich zur neuen Scheibe — BEHOBEN in BUILD 100, am echten Modell nachgewiesen
 
-**Wahrscheinlichste Ursache (unverifiziert):** In `fitPropeller()` wird der Scheiben-Radius
-auf `Math.min(S.x*0.34, ...)` gedeckelt. Falls der tatsächliche Propellerdurchmesser der
-Dauntless über dieser Grenze liegt oder die Scheiben-Z-Position (`disc.z`) nicht exakt auf der
-Ebene der echten Blätter sitzt, ragen die alten Blätter seitlich oder davor heraus.
-**Vorgehen:** Mit dem in Abschnitt 6 beschriebenen Prüfstand das echte `sbd dauntless.glb`
-laden, `findPropDisc()` aufrufen, den gemessenen Durchmesser und die Blattposition mit der
-Position/Größe der erzeugten Scheibe vergleichen — nicht am Bildschirm raten.
+**Die vermutete Ursache im vorigen Stand (Radius-Deckel `Math.min(S.x*0.34,...)`, falsche
+`disc.z`) war falsch.** Mit dem Prüfstand aus Abschnitt 6 (echter `GLTFLoader` r128, echtes
+`sbd dauntless.glb`, `findPropDisc`/`fitPropeller` wortwörtlich aus der Datei extrahiert)
+zeigte sich: Bei **an der Herkunft ruhendem, unrotiertem** Modell lieferte `findPropDisc`
+plausible Werte (Radius ≈1,66–1,80 m, Zentrum nahe der Mittellinie). Das ist aber nicht die
+Situation im Spiel.
+
+**Tatsächliche Ursache — zwei Bugs, beide verifiziert:**
+
+1. **Koordinatensystem-Vermischung (der eigentliche Auslöser, genau Lektion 2 aus Abschnitt 5).**
+   `findPropDisc()` berechnete die „Schnittebene vor der Nase" (`front`/`cut`) aus
+   `whole = new THREE.Box3().setFromObject(root)` — das liefert laut Three.js immer
+   **Weltkoordinaten**. Die anschließende Vertex-Schleife rechnet jeden Punkt aber über
+   `root.worldToLocal(v)` in **root-lokale** Koordinaten um. Sobald das Flugzeug (`planeGroup`)
+   irgendwo abseits vom Weltursprung mit einer Rotation ≠ 0 steht — also praktisch immer, sobald
+   es fliegt (`planeGroup.position.copy(P.pos)` und `planeGroup.quaternion.setFromRotationMatrix(m)`
+   in `animate()`) — lag `cut` in einem völlig anderen Zahlenbereich als `v.z`. Am Prüfstand mit
+   einer realistischen Flugpose (Position abseits vom Ursprung, volle 3-Achsen-Rotation)
+   nachgestellt: `findPropDisc` fand **unter 40 Punkte und lieferte `null`** — bei identischem
+   Modell am Ursprung ohne Rotation funktionierte es. `fitPropeller()` fällt bei `null` auf
+   `rigOwnProp()` zurück; diese Funktion sucht aber nach einem **eigenständigen Mesh-Objekt**
+   für den Propeller. Da der Propeller laut 3.1 in die Rumpf-Geometrie eingeschweißt ist (bei
+   der Dauntless 52 % eines Meshes), findet `rigOwnProp` dort nur zwei irrelevante kleine Teile
+   (siehe Kommentar im alten Code: „the nose holds only two small parts, 1.27 m / 1.11 m") und
+   dreht diese — während die echten, eingeschweißten Propellerblätter nie abgedeckt werden und
+   komplett sichtbar bleiben. Das ist exakt das gemeldete Bild.
+2. **Sampling-Lücke (zweiter, kleinerer Effekt, nur relevant sobald Bug 1 behoben ist).**
+   `findPropDisc` hat vor der z-Filterung mit `st=Math.floor(pos.count/9000)` über das
+   **gesamte** Mesh gestridet, nicht nur über den Nasenbereich. Am Dauntless-Mesh (36899
+   Vertices) hat dieses Stride-Sampling den tatsächlich breitesten Blattspitzen-Vertex
+   verpasst: erschöpfende Messung ergab Y-Ausdehnung 1,78 m, das Sampling fand nur 1,35 m —
+   das verschob das berechnete Scheiben-Zentrum um 0,22 m und ließ einen Ring der echten
+   Blätter am Scheibenrand herausragen.
+
+**Fix (BUILD 100):** `findPropDisc()` baut `whole` jetzt konsequent in **root-lokalen**
+Koordinaten (`invRoot = root.matrixWorld.invert()`, jede Mesh-Box damit transformiert statt mit
+`o.matrixWorld` allein) — dieselbe Zahlenbasis wie die Vertex-Schleife. Zusätzlich ein günstiger
+Bounding-Box-Vorfilter pro Mesh (verwirft Meshes, die den Nasenbereich gar nicht erreichen
+können), und für die verbleibenden Meshes **kein Stride mehr**, sondern vollständiges Abtasten
+— günstig, weil nur noch wenige Meshes überhaupt in Frage kommen.
+
+**Nachgewiesen am echten Modell, exakt aus der Datei extrahiert** (`torpedo-carrier.html`,
+Funktionen `readVert`, `findPropDisc`, `fitPropeller` per Klammerzählung extrahiert, gegen
+echtes `sbd dauntless.glb` mit echtem `GLTFLoader` r128 ausgeführt, Szene mit `planeGroup` an
+einer realistischen Flugposition/-rotation aufgebaut — nicht am Ursprung, nicht ungetestet):
+- Vorher: `fitPropeller(playerSBD, planeGroup, -1)` → `null` in Flugpose.
+- Nachher: liefert eine Scheibe mit Radius 1,796 m, zentriert bei cx=-0,0104/cy=0,560
+  (root-lokal), unabhängig von Position/Rotation des `planeGroup` — identisches Ergebnis am
+  Ursprung und in Flugpose.
+
+**Regressionscheck Avenger (nicht Teil dieses Bugs, aber selbe Funktion, selbe Datei):** Der
+gleiche Koordinatenfehler betrifft auch die Avenger-Aufrufe (`spawnWingman`, Raider-Spawn), war
+dort aber unauffällig, weil `rigOwnProp` als Fallback offenbar ein brauchbares Ergebnis liefert
+und der Nutzer dort nichts gemeldet hat. Mit behobenem Koordinatenfehler würde `findPropDisc`
+für den Avenger **auch** erfolgreich sein — aber mit einem falschen Ergebnis: der flache 7-%-
+Nasenschnitt trifft auf die breitere Avenger-Cowling/Lufthutze statt auf den Propeller (gemessen
+cx=-1,62 m bei 12,45 m Spannweite — weit von der Mittellinie, keine Propellerwelle sitzt dort).
+Deshalb zusätzlich in `fitPropeller()`: Scheiben-Zentrum wird verworfen (→ `null`, Fallback auf
+`rigOwnProp` wie bisher), wenn `|disc.cx| > S.x*0.12` — dieselbe Mittellinien-Heuristik, die
+`rigOwnProp` für einzelne Teile schon verwendet. Damit bleibt das Avenger-Verhalten exakt wie
+vor diesem Fix (am Prüfstand mit derselben Flugpose bestätigt: liefert weiterhin `null`).
+
+**Offen / nicht in diesem Fix:** Die zugrunde liegende Nasenschnitt-Heuristik (feste 7 % Tiefe)
+könnte für die Avenger-Cowling grundsätzlich verbessert werden, damit sie dort ebenfalls die
+Scheiben-Methode statt `rigOwnProp` nutzen kann — das ist aber ein separates, unbeauftragtes
+Thema und wurde nicht angefasst (Avenger hat aktuell keine gemeldeten Propellerprobleme).
 
 Code: `torpedo-carrier.html`, Funktionen `findPropDisc`, `fitPropeller` (Suche im File danach).
 
