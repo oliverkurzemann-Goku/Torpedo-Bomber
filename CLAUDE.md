@@ -20,8 +20,8 @@ iPad/iPhone Safari.
 | Datei | Was |
 |---|---|
 | `index.html` | Startseite, Auswahl zwischen beiden Spielen |
-| `torpedo-carrier.html` | **Teil 1** — Pazifik, Trägerbetrieb (BUILD 99) |
-| `thunderbolt-europe.html` | **Teil 2** — Europa, Bodenangriff (EU BUILD 23) |
+| `torpedo-carrier.html` | **Teil 1** — Pazifik, Trägerbetrieb (BUILD 103) |
+| `thunderbolt-europe.html` | **Teil 2** — Europa, Bodenangriff (EU BUILD 24) |
 | `model-check.html` | Kalibrier-Werkzeug für neue Flugzeugmodelle (Ausrichtung, Maßstab) |
 
 Beide Spiele haben getrennte Speicherstände (`localStorage`-Präfixe `tc_*` bzw. `eu_*`).
@@ -46,6 +46,15 @@ pro Flugzeug mehrere Schreibweisen durch (`MODEL_URL`-Objekt).
    hartnäckig im Cache — der Nutzer muss die Seite mit `?v=N` aufrufen oder hart neu laden.
 3. Die Build-Nummer steht unten im Bild im Spiel. Wenn der Nutzer eine alte Nummer meldet,
    ist es fast immer der Cache, nicht der Code.
+4. **Ausnahme, einmal beobachtet (26.08.2026):** Der Pages-Deploy-Job selbst blieb nach einem
+   Push über 10 Minuten auf „queued" hängen (per GitHub-API bestätigt, nicht nur vermutet —
+   `gh`/API zeigte `status:"queued"` unverändert, ein Retrigger-Versuch schlug mit
+   „already running" fehl, ein Cancel danach mit „not yet queued"). Das war kein Cache-Problem
+   beim Nutzer, sondern ein hängender Job auf GitHub-Seite. Ein neuer, echter Commit (nicht
+   Cache-Reload, nicht Nutzer-Aktion) hat einen frischen Workflow-Run ausgelöst, der dann
+   normal durchlief. Falls das wieder passiert: zuerst mit der GitHub-API/`actions`-Tools den
+   Run-Status direkt prüfen (nicht raten), dann einen neuen Commit pushen statt endlos auf den
+   alten Run zu warten.
 
 ### Dateien im Repo (verifiziert)
 Flugzeuge Teil 1: `grumman tbm avenger.glb`, `zero.glb`, `sbd dauntless.glb`
