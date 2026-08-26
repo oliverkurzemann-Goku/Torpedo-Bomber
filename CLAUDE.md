@@ -5,7 +5,7 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 103 · Thunderbolt Squadron EU BUILD 24**
+Stand bei Übergabe: **Torpedo Squadron BUILD 104 · Thunderbolt Squadron EU BUILD 25**
 Repo: `oliverkurzemann-Goku/Torpedo-Bomber`, ausgeliefert über GitHub Pages.
 Alle Angaben unten sind aus dem tatsächlichen Code verifiziert, nicht aus dem Gedächtnis.
 
@@ -20,8 +20,8 @@ iPad/iPhone Safari.
 | Datei | Was |
 |---|---|
 | `index.html` | Startseite, Auswahl zwischen beiden Spielen |
-| `torpedo-carrier.html` | **Teil 1** — Pazifik, Trägerbetrieb (BUILD 103) |
-| `thunderbolt-europe.html` | **Teil 2** — Europa, Bodenangriff (EU BUILD 24) |
+| `torpedo-carrier.html` | **Teil 1** — Pazifik, Trägerbetrieb (BUILD 104) |
+| `thunderbolt-europe.html` | **Teil 2** — Europa, Bodenangriff (EU BUILD 25) |
 | `model-check.html` | Kalibrier-Werkzeug für neue Flugzeugmodelle (Ausrichtung, Maßstab) |
 
 Beide Spiele haben getrennte Speicherstände (`localStorage`-Präfixe `tc_*` bzw. `eu_*`).
@@ -370,10 +370,11 @@ skaliert. Die reale Bf 109 hatte tatsächlich nur 9,92 m Spannweite gegenüber 1
 Thunderbolt (einem der größten einmotorigen Jäger des Krieges) — ein echter, historischer
 Unterschied von 20 %, keine Formel-Vermutung. **Kein Bug, korrekte Größenverhältnisse.**
 
-### 4.7 Backlog (Nutzer-Reminder, nicht bearbeitet)
+### 4.7 Backlog (Nutzer-Reminder) — Flugverhalten in BUILD 104/EU BUILD 25 angegangen, siehe 4.10
 Flugverhalten der verschiedenen Modelle wirkt laut Nutzer zu arcade-lastig — „zu aggressiv und
-zu simpel". Explizit als Erinnerung für eine spätere, eigene Sitzung markiert, nicht Teil der
-aktuellen Bugfix-Runde. Nicht angefasst.
+zu simpel". Ursprünglich als Erinnerung für eine spätere, eigene Sitzung markiert. Diese Sitzung
+war das: siehe 4.10 für den ersten Umbau (Spieler-Flugmodell, beide Spiele). Grafik des Spiels
+ist als nächstes Thema angekündigt, noch nicht begonnen.
 
 ### 4.8 Propellerrotation und Propellergröße — Stand nach BUILD 103
 
@@ -461,6 +462,73 @@ auf das Torpedo-Spiel bezog.
 
 Code: `torpedo-carrier.html`, Suche nach „Flaps + arrestor hook" (Avenger, in `loadPlaneModel()`)
 und „Flaps, dive brakes and the arrestor hook" (SBD, in `loadSBDModel()`).
+
+### 4.10 Flugverhalten: Spieler-Flugmodell auf echte Trägheit/Physik umgestellt — BUILD 104 / EU BUILD 25
+
+Nutzer-Feedback: Flugverhalten wirkt „zu aggressiv und zu simpel". Vor jeder Änderung im Code
+nachgesehen statt geraten (Abschnitt 7-Vorgabe): in `updateFlight()` (beide Spiele) folgten Nick
+und Roll dem Stick als reine Erste-Ordnung-Annäherung an einen Zielwinkel
+(`P.roll += (target-P.roll)*rate*dt`) — keine Masse, keine Trägheit, kein Überschwingen, das
+Flugzeug „schnappt" jeden Frame Richtung Zielwinkel. Die Kurve selbst war ein flacher Faktor
+(`heading -= sin(roll)*1.1*AC.turn*dt*(spd/APP_SPD)`) — mit Geschwindigkeit **steigender**
+Drehrate, was aerodynamisch falsch herum ist (eine gegebene Querlage dreht bei höherer Fahrt
+LANGSAMER, nicht schneller). Auffällig dabei: die **Gegner-KI** in `thunderbolt-europe.html`
+(`flyAI()`) fliegt bereits mit echter Physik (`turn = g·√(n²−1)/v`, aus Lastvielfachem und
+Querlage) — der Spieler selbst aber nicht. Genau diese Inkonsistenz dürfte einen Teil des
+„simpel" ausgemacht haben.
+
+**Wichtiger Fund, der die Umsetzung geprägt hat:** `thunderbolt-europe.html`s eigener Code
+enthält bereits einen Kommentar, der erklärt, dass ratenbasiertes Rollen (Stick kommandiert eine
+Rollrate statt einen Zielwinkel) **schon einmal ausprobiert und wieder verworfen** wurde: das
+Flugzeug „blieb stehen, wo man es losgelassen hatte" und driftete über 80° Querlage — auf einem
+Touchscreen nicht mehr beherrschbar. Diese Lektion wurde nicht wiederholt.
+
+**Umsetzung (beide Spiele, `updateFlight()`):**
+1. **Nick/Roll:** Stick-Position kommandiert weiterhin einen Ziel-**winkel** (nicht eine Rate) —
+   genau wie bisher, damit das Flugzeug beim Loslassen von selbst wieder in den Horizontalflug
+   zurückfindet (die oben genannte Lektion bleibt gültig). Neu: statt jeden Frame direkt zum
+   Zielwinkel zu springen, nähert sich der Winkel über einen gedämpften Federschwinger
+   (`P.rollVel += (rollRate²·(target-roll) - 2·ζ·rollRate·rollVel)·dt; P.roll += rollVel·dt`),
+   mit den bisherigen `pitchRate`/`rollRate`-Werten als Eigenfrequenz — jedes Flugzeug behält
+   also sein bisheriges relatives Gefühl (Zero spritzig, Avenger schwer), nur WIE der Zielwinkel
+   erreicht wird, ändert sich. `ζ=0.85` (leicht unterdämpft) sorgt für spürbare Trägheit ohne
+   Schwammigkeit. `P.pitchVel`/`P.rollVel` neu eingeführt, bei jedem Sortie-/Missionsstart und
+   Katapultstart auf 0 zurückgesetzt (sonst würde Drehimpuls vom vorigen Leben übernommen).
+2. **Kurvenrate:** dieselbe Formel wie die bereits bewährte Gegner-KI
+   (`turn = g·√(n²−1)/v`, `n` aus Querlage via `1/cos(roll)`, gedeckelt durch verfügbaren Auftrieb
+   bei aktueller Geschwindigkeit UND ein neues, per Flugzeug gesetztes strukturelles `gLim`
+   — Zero 7.0g, SBD 5.5g, Avenger 3.5g in `torpedo-carrier.html`; P-47 6.5g, Fw190/Bf109 5.5g in
+   `thunderbolt-europe.html`, identisch zu den bereits vorhandenen KI-Werten in `aiSpec()`).
+   `AC.turn`/`d.turn` bleibt als kleiner Restfaktor erhalten (Tragflächenbelastung u.ä., die
+   dieses einfache Modell sonst nicht abbildet), um die bisherige Balance zwischen den
+   Flugzeugtypen nicht zu verwerfen.
+
+**Verifiziert, nicht nur geschrieben** (reine Spiellogik, keine Modellgeometrie — dafür reicht
+laut Abschnitt 6 der einfachere Zahlen-Test, kein GLTFLoader nötig): Federschwinger-Formel
+losgelöst in Node simuliert für alle drei Pazifik-Flugzeuge — Rollen erreicht 63 % des
+Zielwinkels jetzt in 0,53–1,08 s (vorher 0,29–0,58 s, reine Verzögerung ohne jedes Überschwingen),
+mit 0,4–0,5 % Überschwinger — spürbar behäbiger, ohne zu schwimmen. Kurvenraten-Formel geprüft:
+bei fester Querlage (60°) sinkt die Drehrate jetzt korrekt mit steigender Geschwindigkeit
+(0,42 rad/s bei 40 m/s → 0,11 rad/s bei 160 m/s) statt wie vorher zu steigen; bei fester
+Geschwindigkeit steigt sie mit der Querlage und wird oberhalb des gesetzten `gLim` korrekt
+gedeckelt (bei 85° Querlage/70 m/s: auf den 7g-Wert begrenzt, nicht auf den geometrisch daraus
+folgenden, unrealistisch hohen Wert). Clamp-Verhalten am Winkel-Limit separat simuliert (Ziel
+jenseits des Limits, z. B. volles Ruder + maximaler Schadens-Bias auf der Avenger): Winkel bleibt
+sauber am Limit stehen, Geschwindigkeit wird beim Anschlag auf 0 gesetzt, kein Aufschaukeln.
+Beide Dateien zusätzlich mit `node --check`-äquivalentem Parse-Test (`new Function(...)` auf
+jedem `<script>`-Block) geprüft — beide fehlerfrei.
+
+**Offen:** Nur numerisch/Node-seitig geprüft, nicht auf dem echten iPad geflogen — wie bei jeder
+Änderung in diesem Projekt braucht es Oliver, um zu bestätigen, dass es sich auch tatsächlich
+„schwerer" anfühlt und nicht zu träge geworden ist. `ζ=0.85` ist ein erster, konservativer Wert
+(kaum sichtbares Überschwingen) — falls es sich immer noch zu leicht/schnell anfühlt, ist der
+nächste Hebel ein kleineres `ζ` (mehr Schwingen/Momentum) oder kleinere `pitchRate`/`rollRate`
+(langsamere Grundreaktion), nicht ein Rückfall auf ratenkommandiertes Rollen (siehe oben).
+Grafik-Verbesserungen sind vom Nutzer als nächstes, separates Thema angekündigt — nicht Teil
+dieser Änderung.
+
+Code: `torpedo-carrier.html` und `thunderbolt-europe.html`, Funktion `updateFlight()`, Suche nach
+„Real rotational inertia" / „Real inertia" bzw. „bank-to-turn: real coordinated-turn physics".
 
 ---
 

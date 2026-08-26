@@ -253,7 +253,7 @@
   <div id="flash"></div>
   <div id="gunsight"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">EU BUILD 24</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">EU BUILD 25</div>
 
   <div id="apr">
     <div id="aprCall"></div>
@@ -403,16 +403,16 @@ const P={
 const AC={
   // rollAuth/pitchAuth/turn are the handling numbers the carrier game uses; rollLim and
   // pitchLim cap how far she will go. The Jug is heavy and will not rack over like a fighter.
-  p47:{ name:'P-47D Thunderbolt', rollAuth:0.90, pitchAuth:0.85, turn:0.85,
+  p47:{ name:'P-47D Thunderbolt', rollAuth:0.90, pitchAuth:0.85, turn:0.85, gLim:6.5,
         rollLim:0.78, pitchLim:0.96, stall:40, app:54, max:190, thrMin:34,
         hull:130, ammo:3400, bombs:2, rockets:8, gunDmg:1.0, gunRate:0.055, wing:12.4,
         col:0x6e7a63, band:0xf0f0e4 },
   // The Focke-Wulf: rolls like nothing else in the war, but will not out-turn a 109.
-  fw190:{ name:'Fw 190A-8', rollAuth:1.85, pitchAuth:1.10, turn:1.05,
+  fw190:{ name:'Fw 190A-8', rollAuth:1.85, pitchAuth:1.10, turn:1.05, gLim:5.5,
         rollLim:1.05, pitchLim:1.02, stall:39, app:53, max:194, thrMin:32,
         hull:102, ammo:1800, bombs:1, rockets:0, gunDmg:1.5, gunRate:0.075, wing:10.5,
         col:0x7d8478, band:0x2f3a2a },
-  bf109:{ name:'Bf 109G-6', rollAuth:1.45, pitchAuth:1.25, turn:1.25,
+  bf109:{ name:'Bf 109G-6', rollAuth:1.45, pitchAuth:1.25, turn:1.25, gLim:5.5,
         rollLim:1.02, pitchLim:1.08, stall:36, app:50, max:196, thrMin:30,
         hull:88, ammo:1500, bombs:1, rockets:0, gunDmg:1.35, gunRate:0.085, wing:9.9,
         col:0x8d9384, band:0x3d4636 }
@@ -2400,6 +2400,7 @@ function updateFlight(dt){
     // steer with the stick's roll axis, tailwheel style — same sense as in the air
     P.heading += inputRoll*steerSign*Math.min(1,P.spd/40)*0.9*dt;
     P.roll*=Math.max(0,1-3*dt); P.pitch*=Math.max(0,1-3*dt);
+    P.rollVel=0; P.pitchVel=0;   // wheels down: no airborne rotational inertia carries over
     // rotate off the ground: stick back (which is DOWN on the screen by default)
     const vr=d.stall*1.12;
     if(P.spd>vr && inputPitch>0.15 && P.gear>0.5){
@@ -2424,10 +2425,15 @@ function updateFlight(dt){
   P.spd += (eff-P.spd)*Math.min(1,0.5*dt);
   P.spd = Math.max(6,P.spd);
 
-  // ---- attitude: stick POSITION commands an attitude, exactly as in the carrier game ----
+  // ---- attitude: stick POSITION still commands an attitude, exactly as before ----
   // The old code drove roll and pitch as RATES, so the aeroplane stayed wherever you left it
   // and wound up past 80 degrees of bank. Position control self-centres: let go and she flies
-  // level again, which is what makes the carrier game controllable on a touchscreen.
+  // level again, which is what makes the carrier game controllable on a touchscreen. That
+  // choice stays — but easing straight to the target every frame (the code this replaces) has
+  // no mass behind it, no momentum, it just snaps to wherever the stick is. A damped spring
+  // toward the same target — pitchRate/rollRate as its natural frequency, so every aircraft
+  // keeps its existing relative feel — adds real rotational inertia while still self-centring.
+  // Exact same change as torpedo-carrier.html's updateFlight; see its comment for the derivation.
   const dmgF = (P.hull < d.hull*0.6) ? (0.55+0.45*P.hull/(d.hull*0.6)) : 1.0;
   const auth = (P.spd<stallSpd ? 0.4 : 1.0)*dmgF;
   const pitchRate=1.5*auth*d.pitchAuth, rollRate=2.4*auth*d.rollAuth;
@@ -2437,12 +2443,28 @@ function updateFlight(dt){
   // Full stick was worth only 0.55 rad = 31 degrees, inherited from the carrier game where a
   // gentle approach matters more than climb. A ground-attack aeroplane needs to pull up hard
   // off a target run, so full deflection now commands most of the aircraft's real pitch limit.
-  P.pitch += (inputPitch*d.pitchLim*0.92 - P.pitch)*Math.min(1,pitchRate*dt);
-  P.roll  += (rollTarget      - P.roll )*Math.min(1,rollRate*dt);
-  P.pitch = Math.max(-d.pitchLim,Math.min(d.pitchLim,P.pitch));
-  P.roll  = Math.max(-d.rollLim, Math.min(d.rollLim, P.roll));
-  // bank-to-turn, matched to this game's heading convention (nose +Z, heading grows toward +X)
-  P.heading += Math.sin(P.roll)*1.1*d.turn*dt*(P.spd/APP_SPD);
+  const zeta=0.85;
+  P.pitchVel=(P.pitchVel||0)+(pitchRate*pitchRate*(inputPitch*d.pitchLim*0.92-P.pitch) - 2*zeta*pitchRate*P.pitchVel)*dt;
+  P.pitch += P.pitchVel*dt;
+  P.rollVel=(P.rollVel||0)+(rollRate*rollRate*(rollTarget-P.roll) - 2*zeta*rollRate*P.rollVel)*dt;
+  P.roll += P.rollVel*dt;
+  if(P.pitch>d.pitchLim){ P.pitch=d.pitchLim; P.pitchVel=Math.min(0,P.pitchVel); }
+  if(P.pitch<-d.pitchLim){ P.pitch=-d.pitchLim; P.pitchVel=Math.max(0,P.pitchVel); }
+  if(P.roll>d.rollLim){ P.roll=d.rollLim; P.rollVel=Math.min(0,P.rollVel); }
+  if(P.roll<-d.rollLim){ P.roll=-d.rollLim; P.rollVel=Math.max(0,P.rollVel); }
+  // bank-to-turn: real coordinated-turn physics (turn = g·√(n²−1)/v), the same formula already
+  // used for the enemy AI just above in flyAI() — replacing the old flat "roll × fudge factor,
+  // scaled UP with speed", which had turn rate rising with airspeed: backwards from a real
+  // aeroplane, where a given bank turns SLOWER at higher speed, not faster. Matched to this
+  // game's heading convention (nose +Z, heading grows toward +X).
+  {
+    const G=9.81;
+    const nLift=Math.max(1.05, Math.pow(P.spd/Math.max(1,stallSpd),2)*0.85);
+    const nMaxTurn=Math.max(1.05, Math.min(d.gLim, nLift));
+    const nUseTurn=Math.min(nMaxTurn, 1/Math.max(0.12,Math.cos(P.roll)));
+    const turnRate=(nUseTurn>1.001)? G*Math.sqrt(nUseTurn*nUseTurn-1)/Math.max(30,P.spd) : 0;
+    P.heading += Math.sign(P.roll)*turnRate*d.turn*dt;
+  }
   P.heading += windZ*0.004*dt;
 
   // vertical speed: climb from attitude + speed-dependent lift
@@ -2577,6 +2599,7 @@ function landed(onStrip){
 function relaunch(){
   P.pos.set(AF_X-RWY_LEN/2+140, AF_Y+2.0, AF_Z);
   P.heading=Math.PI/2; P.pitch=0; P.roll=0; P.spd=0; P.vSpeed=0;
+  P.pitchVel=0; P.rollVel=0;
   P.onGround=true; P.touchResolved=true; P.throttle=0.0; setThrottleUI(0);
   P.gear=1; P.gearTgt=1; P.flap=0; P.flapTgt=0;
   state=ST.FLIGHT;

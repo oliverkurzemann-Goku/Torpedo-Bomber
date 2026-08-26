@@ -302,7 +302,7 @@
   <div id="flash"></div>
   <div id="ltn" style="position:fixed;inset:0;background:#e6ecff;opacity:0;pointer-events:none;z-index:40;"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 103</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 104</div>
 
   <!-- Optical landing aid -->
   <div id="lso">
@@ -1653,7 +1653,7 @@ function startMission(idx){
   P.touchResolved=false; P.boltMsgTimer=0; P.rtb=false;
   P.gear=1; P.gearTgt=1; P.flap=0; P.flapTgt=0; P.diveBrake=false; P.dmgT=0;
   P.ammo=1200; P.fireT=0; firing=false;
-  P.rollBias=0; P.bingo=false; P.tailCool=0;
+  P.rollBias=0; P.bingo=false; P.tailCool=0; P.pitchVel=0; P.rollVel=0;
   sortieTorpFired=0; sortieTorpHit=0; sortieShipsSunk=0; sortieZeros=0; hitsTaken=0; sortieWingmenLost=0;
   radioEvadeCalled=false; radioQ=[]; radioT=0; P.ballCalled=false;
   // per-sortie crosswind: grows with mission index, random side
@@ -1914,7 +1914,7 @@ function launch(){
   launchTimer=0;
   P.pos.set(carrierX+BOW_X-60, DECK_Y+3.0, 0);
   P.spd=24; P.throttle=1.0; setThrottleUI(1.0);
-  P.heading=0; P.pitch=0; P.roll=0;
+  P.heading=0; P.pitch=0; P.roll=0; P.pitchVel=0; P.rollVel=0;
   flash("CATAPULT",700);
 }
 
@@ -2496,10 +2496,10 @@ function updateFlight(dt){
   // Per-aircraft handling. The A6M was the most agile fighter of the early Pacific war;
   // the TBM Avenger is an 8-tonne torpedo bomber and must feel like one.
   const AC = isDefend()
-    ? { roll:1.45, pitch:1.30, turn:1.30, name:'zero'   }   // Zero: light, quick, tight turns
+    ? { roll:1.45, pitch:1.30, turn:1.30, gLim:7.0, name:'zero'   }   // Zero: light, quick, tight turns
     : isSBD()
-    ? { roll:1.00, pitch:1.05, turn:1.00, name:'sbd'    }   // Dauntless: nimble for a bomber
-    : { roll:0.72, pitch:0.78, turn:0.80, name:'avenger'};  // Avenger: heavy, slow to answer
+    ? { roll:1.00, pitch:1.05, turn:1.00, gLim:5.5, name:'sbd'    }   // Dauntless: nimble for a bomber
+    : { roll:0.72, pitch:0.78, turn:0.80, gLim:3.5, name:'avenger'};  // Avenger: heavy, slow to answer
   const pitchRate=1.5*auth*AC.pitch, rollRate=2.4*auth*AC.roll;
   // ease pitch/roll toward input
   // damaged wing pulls roll toward the hit side; bias decays slowly as you fight it
@@ -2508,17 +2508,43 @@ function updateFlight(dt){
   const biasDecay = (P.gear!=null&&P.gear>0.5)? 0.9 : 0.35;
   P.rollBias = Math.max(-0.16, Math.min(0.16, (P.rollBias||0)*(1-biasDecay*dt)));
   const rollTarget = inputRoll*steerSign*0.7 + P.rollBias;
-  P.pitch += (inputPitch*0.55 - P.pitch)*Math.min(1,pitchRate*dt);
-  P.roll  += (rollTarget - P.roll )*Math.min(1,rollRate*dt);
+  // Real rotational inertia. Stick position still commands a target ATTITUDE, not a rate —
+  // rate-commanded roll was tried in thunderbolt-europe.html and reverted (see that file's
+  // updateFlight: the aircraft "stayed wherever you left it" past 80° of bank, unflyable on a
+  // touchscreen). But easing straight to that target every frame, as this used to, has no mass
+  // behind it: no momentum, no overshoot, it just snaps to wherever the stick is. A damped
+  // spring toward the same target — using the existing pitchRate/rollRate as its natural
+  // frequency, so every aircraft keeps its prior relative feel (Zero crisp, Avenger heavy),
+  // only HOW it arrives changes — gives real weight while still safely self-centering.
+  // zeta=0.85 (slightly underdamped) reads as inertia without wallowing.
+  const zeta=0.85;
+  P.pitchVel=(P.pitchVel||0)+(pitchRate*pitchRate*(inputPitch*0.55-P.pitch) - 2*zeta*pitchRate*P.pitchVel)*dt;
+  P.pitch += P.pitchVel*dt;
+  P.rollVel=(P.rollVel||0)+(rollRate*rollRate*(rollTarget-P.roll) - 2*zeta*rollRate*P.rollVel)*dt;
+  P.roll += P.rollVel*dt;
   // Pitch (dive/climb) limit per aircraft. 0.8 rad (46°) was a hard ceiling for everyone —
   // the SBD, a dedicated dive bomber, is DOCTRINALLY flown to ~70° and could never get there.
   const pitchLim = AC.name==='sbd' ? 1.28 : (AC.name==='zero' ? 1.05 : 0.85);   // ~73° / 60° / 49°
-  P.pitch=Math.max(-pitchLim,Math.min(pitchLim,P.pitch));
+  if(P.pitch>pitchLim){ P.pitch=pitchLim; P.pitchVel=Math.min(0,P.pitchVel); }
+  if(P.pitch<-pitchLim){ P.pitch=-pitchLim; P.pitchVel=Math.max(0,P.pitchVel); }
   const rollLim=AC.name==='zero'?1.05:(AC.name==='sbd'?0.88:0.72);   // the bomber simply won't rack over like a fighter
-  P.roll =Math.max(-rollLim,Math.min(rollLim,P.roll));
+  if(P.roll>rollLim){ P.roll=rollLim; P.rollVel=Math.min(0,P.rollVel); }
+  if(P.roll<-rollLim){ P.roll=-rollLim; P.rollVel=Math.max(0,P.rollVel); }
 
-  // bank-to-turn
-  P.heading -= Math.sin(P.roll)*1.1*AC.turn*dt*(P.spd/APP_SPD);
+  // bank-to-turn: real coordinated-turn physics (turn = g·√(n²−1)/v, n from bank angle, capped
+  // by available lift and the airframe's own structural limit) instead of the old flat
+  // "roll × fudge factor, scaled UP with speed" — which had turn rate rising with airspeed,
+  // backwards from a real aeroplane (a given bank turns SLOWER at higher speed, not faster).
+  // Same formula already proven for the enemy AI in thunderbolt-europe.html's flyAI(). AC.turn
+  // is kept as a mild residual per-aircraft multiplier — wing loading/induced drag differences
+  // this simple model doesn't otherwise capture — not dropped, to preserve the existing balance
+  // between the three aircraft.
+  const G=9.81;
+  const nLift=Math.max(1.05, Math.pow(P.spd/Math.max(1,stallSpd),2)*0.85);
+  const nMaxTurn=Math.max(1.05, Math.min(AC.gLim, nLift));
+  const nUseTurn=Math.min(nMaxTurn, 1/Math.max(0.12,Math.cos(P.roll)));
+  const turnRate=(nUseTurn>1.001)? G*Math.sqrt(nUseTurn*nUseTurn-1)/Math.max(30,P.spd) : 0;
+  P.heading -= Math.sign(P.roll)*turnRate*AC.turn*dt;
 
   // speed toward throttle target (engine loses power when damaged), minus drag
   const engineMul = P.hull<60? (0.45+0.55*P.hull/60) : 1.0;
@@ -3685,7 +3711,7 @@ function loadPlaneModel(){
       }
       window.__eyeDbg='EYE '+COCKPIT_EYE.map(v=>v.toFixed(2)).join('/');
       const btEl=document.getElementById('buildTag');
-      if(btEl) btEl.textContent='BUILD 103 · '+window.__eyeDbg;
+      if(btEl) btEl.textContent='BUILD 104 · '+window.__eyeDbg;
       let seat=null;
       model.traverse(function(o){
         if(!o.isMesh||!o.material) return;
@@ -5128,7 +5154,7 @@ function setupUIButtons(){
   if(dbgT2) dbgT2.onclick=()=>{
     dbgOn=!dbgOn; localStorage.setItem('dbgOn',dbgOn?'1':'0');
     const db=document.getElementById('dbgBox'); if(db) db.textContent=dbgOn?'✓':'';
-    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 103'; }
+    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 104'; }
   };
   const lu=document.getElementById('lookUp'), ld=document.getElementById('lookDn');
   const setTilt=v=>{ pitTilt=Math.max(-0.9,Math.min(0.4,v)); localStorage.setItem('pitTilt',pitTilt.toFixed(3)); };
