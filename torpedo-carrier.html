@@ -303,7 +303,7 @@
   <div id="flash"></div>
   <div id="ltn" style="position:fixed;inset:0;background:#e6ecff;opacity:0;pointer-events:none;z-index:40;"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 107</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 108</div>
 
   <!-- Optical landing aid -->
   <div id="lso">
@@ -430,6 +430,16 @@
    Units: metres, m/s internally. Displayed in kt / ft.
    Coordinate frame: y up. Sea at y=0. Carrier bow toward +X.
    ============================================================ */
+
+// iOS Safari has a long-documented bug (three.js forum: "Textures in gLTF sometimes display
+// black, but only on iOS") where GLTFLoader's default texture path - THREE.ImageBitmapLoader,
+// used automatically whenever the browser supports createImageBitmap, which Safari does - can
+// decode a texture as fully black, worse the more textures load at once. Same GLTFLoader,
+// same iOS target as thunderbolt-europe.html — applying the same defensive fix here even
+// though it wasn't the reported bug in this file yet: hiding createImageBitmap makes
+// GLTFLoader fall back to its plain Image-element TextureLoader path instead, which does not
+// have this bug. Must happen before the first GLTFLoader use.
+try{ delete window.createImageBitmap; }catch(e){ window.createImageBitmap=undefined; }
 
 const KT = 1.94384, FT = 3.28084, NM = 1852;
 const D2R = Math.PI/180, R2D = 180/Math.PI;
@@ -3807,7 +3817,7 @@ function loadPlaneModel(){
       }
       window.__eyeDbg='EYE '+COCKPIT_EYE.map(v=>v.toFixed(2)).join('/');
       const btEl=document.getElementById('buildTag');
-      if(btEl) btEl.textContent='BUILD 107 · '+window.__eyeDbg;
+      if(btEl) btEl.textContent='BUILD 108 · '+window.__eyeDbg;
       let seat=null;
       model.traverse(function(o){
         if(!o.isMesh||!o.material) return;
@@ -5268,7 +5278,7 @@ function setupUIButtons(){
   if(dbgT2) dbgT2.onclick=()=>{
     dbgOn=!dbgOn; localStorage.setItem('dbgOn',dbgOn?'1':'0');
     const db=document.getElementById('dbgBox'); if(db) db.textContent=dbgOn?'✓':'';
-    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 107'; }
+    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 108'; }
   };
   const lu=document.getElementById('lookUp'), ld=document.getElementById('lookDn');
   const setTilt=v=>{ pitTilt=Math.max(-0.9,Math.min(0.4,v)); localStorage.setItem('pitTilt',pitTilt.toFixed(3)); };

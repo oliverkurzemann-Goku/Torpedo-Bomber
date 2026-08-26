@@ -5,7 +5,7 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 107 · Thunderbolt Squadron EU BUILD 28**
+Stand bei Übergabe: **Torpedo Squadron BUILD 108 · Thunderbolt Squadron EU BUILD 29**
 Repo: `oliverkurzemann-Goku/Torpedo-Bomber`, ausgeliefert über GitHub Pages.
 Alle Angaben unten sind aus dem tatsächlichen Code verifiziert, nicht aus dem Gedächtnis.
 
@@ -849,6 +849,81 @@ wie bei echten Flugzeugen) wäre der nächste, deutlich größere Schritt, falls
 
 Code: `thunderbolt-europe.html`, Funktionen `localFloor()` (Suche nach „Two-tier"), `strutBetween()`
 (neu, direkt vor `buildGear`), `buildGear()` (Suche nach „oleo strut").
+
+---
+
+### 4.18 Thunderbolt: Propeller als reglose dunkle Scheibe + Bf 109 fast schwarz — BEHOBEN in EU BUILD 29
+
+Zwei neue Nutzer-Beobachtungen: „Die Propeller in den Thunderbolt Missionen sind dunkle Scheiben,
+keine drehenden Propeller. Me-109 ist fast schwarz, sehr schlecht Grafik." Zwei getrennte
+Ursachen, beide verifiziert (nicht geraten).
+
+**1) Bf 109 fast schwarz — echtes, dokumentiertes Three.js/iOS-Problem, kein Modellfehler.**
+Alle Flugzeug-GLBs in dieser Datei (`bf109new.glb`, `fw190.glb`, `p47new.glb`, vermutlich auch
+`b17.glb`/`b24.glb`) sind Sketchfab-Standardexporte mit der veralteten
+`KHR_materials_pbrSpecularGlossiness`-Extension statt des modernen Metallic-Roughness-Workflows
+— jedes Material hat eine eigene Diffuse- UND eine eigene Specular/Glossiness-Textur (bis zu
+22 eingebettete Bilder bei der Bf 109, deutlich mehr als Fw190 mit 10 oder P-47 mit 16 — direkt
+aus der GLB-JSON ausgezählt). GLTFLoader r128 wählt automatisch `THREE.ImageBitmapLoader` für
+den Textur-Ladepfad, sobald der Browser `createImageBitmap` unterstützt UND es nicht Firefox
+ist (`GLTFLoader.js`, Zeile ~1743) — exakt der Fall für iOS Safari. Das three.js-Forum
+dokumentiert seit Jahren genau dieses Symptom unter dem Titel „Textures in gLTF sometimes
+display black, but only on iOS": `createImageBitmap` liefert auf iOS gelegentlich ein
+vollständig schwarzes Bitmap zurück, und zwar **umso öfter, je mehr Texturen gleichzeitig
+laden** — passt exakt zur Beobachtung, dass ausgerechnet die Bf 109 (mit Abstand die meisten
+Texturen) am schlimmsten betroffen ist, während P-47/Fw190 (weniger Texturen) bisher nicht
+gemeldet wurden.
+
+**Fix:** `delete window.createImageBitmap` einmalig ganz oben im Skript, vor jeder
+`GLTFLoader`-Nutzung — dadurch fällt der Loader auf seinen einfachen, Image-Element-basierten
+`TextureLoader`-Pfad zurück, der diesen Bug nicht hat (exakt die im three.js-Forum genannte
+Umgehung). Dieselbe defensive Änderung auch in `torpedo-carrier.html` ergänzt, obwohl dort noch
+kein Fehler gemeldet wurde — gleicher GLTFLoader, gleiches iOS-Ziel, gleicher Mechanismus, also
+lieber vorbeugend behoben als auf den nächsten Bug-Report zu warten.
+
+**Verifiziert:** Die exakte Bedingung aus der GLTFLoader-Quelle
+(`typeof createImageBitmap!=='undefined' && !/Firefox/.test(navigator.userAgent)`) in Node mit
+einer simulierten iOS-Safari-`userAgent`-Zeichenkette nachgebaut — liefert `true` (würde
+ImageBitmapLoader nehmen) vor dem Fix, `false` (nimmt TextureLoader) exakt nach Anwendung der
+einen Zeile. Ein echter Vorher/Nachher-Bildvergleich war nicht möglich: Node hat kein
+`createImageBitmap`, das Kern-Symptom ist also im Headless-Prüfstand ohnehin nie reproduzierbar
+— das ist eine iOS-Safari-spezifische Eigenheit, keine reine Programmlogik, die sich in Node
+nachstellen lässt. Fix stattdessen auf Mechanismus-Ebene bestätigt (Bedingung schaltet nachweis-
+lich um), nicht durch einen irreführenden Screenshot, der so oder so nur den bereits im
+Headless-Test funktionierenden Pfad gezeigt hätte.
+
+**2) Propeller wirkt wie eine reglose dunkle Scheibe — unabhängiger Kontrast-Bug, eigene Ursache.**
+`rigModel()`s Propeller-Deckscheibe (siehe 3.1 — der Propeller ist ins Rumpf-Mesh eingeschweißt,
+daher eine deckende Scheibe statt echter Blätter) hatte Flächenfarbe `0x24241d` und
+„Blattstreifen"-Farbe `0x14140f` — zwei nahezu identische, fast schwarze Töne. Eine Scheibe, die
+sich dreht, aber deren Streifen sich farblich kaum vom Untergrund abheben, sieht bei jedem
+Drehwinkel praktisch gleich aus — die Rotation selbst war nie das Problem (bereits in 4.8
+geprüft: alle Rotationsaufrufe sind verdrahtet), sondern dass sie unter fast gleichfarbigen
+Flächen unsichtbar blieb. Mit einem eigenständigen Rendertest (identische Scheiben-Geometrie,
+zwei Drehwinkel verglichen) bestätigt: mit den alten Farben bleibt die Scheibe bei jeder Drehung
+ein fast einheitlicher dunkler Fleck; mit saniert helleren, leicht metallischen Streifenfarben
+(`0xcac2a8` auf `0x38362f`-Fläche, `MeshStandardMaterial` statt `MeshLambertMaterial` für echte
+Hochlicht-Reaktion) läuft ein sichtbarer Glanzlicht-Reflex mit über die Blattstreifen, sobald sich
+die Scheibe dreht — das ist optisch der auffälligste Hinweis auf Rotation, den ein flaches
+Lambert-Material grundsätzlich gar nicht liefern kann. Rand-Ring und Spinner-Kegel ebenfalls
+aufgehellt (`0xd9d2b8`→`0xf0e8cc`, `0x2b2b22`→`0x403e34`), aus demselben Grund.
+
+**Verifiziert am echten Modell:** `rigModel()` (inkl. aller Abhängigkeiten) wortwörtlich aus der
+Datei extrahiert, gegen echtes `fw190.glb` mit echtem `GLTFLoader` r128 und echtem
+headless-WebGL-Renderer ausgeführt, Propellerscheibe bei zwei Drehwinkeln fotografiert — helle
+Streifen deutlich sichtbar, Glanzlicht wandert sichtbar zwischen den Aufnahmen.
+
+**Offen:** Nicht auf dem echten iPad geflogen. Fix 1 (ImageBitmapLoader) ist auf Mechanismus-
+Ebene, nicht per Sichtprüfung bestätigt — sollte „fast schwarz" nach diesem Build noch auftreten,
+ist der nächste Schritt, die Materialien komplett von der veralteten
+`KHR_materials_pbrSpecularGlossiness`-Extension weg auf ein einfaches, robustes
+`MeshStandardMaterial` mit nur der Diffuse-Textur umzustellen (halbiert die Textur-Last pro
+Material und entfernt den eigenen, fehleranfälligeren Shader-Patch dieser Extension ganz) —
+bewusst noch nicht gemacht, um die Änderung in diesem Schritt klein zu halten.
+
+Code: beide Dateien, Suche nach „Textures in gLTF sometimes display black" (ImageBitmap-Fix,
+ganz am Anfang des Skripts). `thunderbolt-europe.html` zusätzlich `rigModel()`, Suche nach
+„dark discs, no spinning propeller visible" (Propeller-Kontrast).
 
 ---
 
