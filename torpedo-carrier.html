@@ -303,7 +303,7 @@
   <div id="flash"></div>
   <div id="ltn" style="position:fixed;inset:0;background:#e6ecff;opacity:0;pointer-events:none;z-index:40;"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 110</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 111</div>
 
   <!-- Optical landing aid -->
   <div id="lso">
@@ -2659,7 +2659,7 @@ function updateFlight(dt){
   // instead of gLim, a full 360 took 28-91s depending on type (checked numerically) — raised so
   // every type can now reach (or, Avenger, get close to) its own gLim; full 360 now 7-24s, gLim
   // alone tells them apart again, same fix as thunderbolt-europe.html's rollLim table.
-  const rollLim=AC.name==='zero'?1.43:(AC.name==='sbd'?1.40:1.30);
+  const rollLim=AC.name==='zero'?1.52:(AC.name==='sbd'?1.50:1.42);
   if(P.roll>rollLim){ P.roll=rollLim; P.rollVel=Math.min(0,P.rollVel); }
   if(P.roll<-rollLim){ P.roll=-rollLim; P.rollVel=Math.max(0,P.rollVel); }
 
@@ -3054,160 +3054,178 @@ function readVert(attr, i, out){
   }
   return out;
 }
-function findPropDisc(root, noseSign){
-  // Every aeroplane in this game is a propeller aeroplane, so there is nothing to decide —
-  // only something to MEASURE. The old pass/fail test kept rejecting perfectly good noses
-  // (bounding-box roundness fails on an inline engine; angular coverage fails because a
-  // propeller at rest has blades at only three angles). Measured diameters against the real
-  // aircraft: Dauntless 3.34 vs 3.20, P-47 3.94 vs 3.71, Bf 109 3.52 vs 3.00.
+// Measure the real propeller on the real mesh: shaft axis, where the spinner/cowl ends and the
+// blades begin, how far they reach, and WHICH PLANE they sit in. All in ROOT-LOCAL coordinates,
+// so it does not care where the aeroplane happens to be flying (CLAUDE.md lesson 2).
+// Two passes on purpose: a fixed slab at the very front works on a P-47, whose blades are the
+// frontmost thing, but misses a Dauntless completely, whose long spinner puts the blade roots
+// a whole unit further back. So find the blade material first, then centre the slab on it.
+function findProp(root, dir){
+  dir=(dir<0)?-1:1;
   root.updateMatrixWorld(true);
-  // Box3.setFromObject() is always WORLD-space (it walks every descendant's matrixWorld).
-  // The per-vertex loop below works in ROOT-LOCAL space (root.worldToLocal). A world-space
-  // cut plane tested against root-local vertices is the coordinate-frame mistake this file
-  // warns about in section 3 of CLAUDE.md — verified with the real Dauntless model loaded in
-  // a plane-group positioned and rotated the way a mid-flight aircraft actually sits: the old
-  // version returned null (front/cut landed nowhere near the model at all, so under 40 points
-  // matched), the caller fell back to rigOwnProp, and on the Dauntless that fallback can only
-  // grab two unrelated small parts (the real propeller is welded into the fuselage mesh, see
-  // 3.1) — so nothing ever covered the frozen moulded blades. Every box below is built and
-  // compared in ROOT-LOCAL space only, so the result no longer depends on where in the world
-  // (or which way) the aircraft happens to be facing.
   const invRoot=new THREE.Matrix4().copy(root.matrixWorld).invert();
-  const mLocal=new THREE.Matrix4();
   const whole=new THREE.Box3();
-  const meshBoxes=[];
-  root.traverse(o=>{
-    if(!o.isMesh||!o.geometry||!o.geometry.attributes||!o.geometry.attributes.position) return;
-    if(!o.geometry.boundingBox) o.geometry.computeBoundingBox();
-    mLocal.multiplyMatrices(invRoot,o.matrixWorld);
-    const bb=o.geometry.boundingBox.clone().applyMatrix4(mLocal);
-    whole.union(bb);
-    meshBoxes.push({o,bb});
-  });
+  root.traverse(o=>{ if(o.isMesh&&o.geometry){ const bb=new THREE.Box3().setFromObject(o); bb.applyMatrix4(invRoot); whole.union(bb); }});
   const S=whole.getSize(new THREE.Vector3());
+  const zNose=(dir>0? whole.max.z-S.z*0.20 : whole.min.z+S.z*0.20);              // generous: the whole engine bay
   const v=new THREE.Vector3(), pts=[];
-  const front=(noseSign<0)? whole.min.z : whole.max.z;
-  const cut=(noseSign<0)? front+S.z*0.07 : front-S.z*0.07;   // shallow: past this the wing arrives
-  for(const {o,bb} of meshBoxes){
-    // cheap per-mesh reject: this mesh's own root-local box cannot reach the cut region at all
-    if(noseSign<0 ? bb.min.z>cut : bb.max.z<cut) continue;
-    // No stride here. Sampling every Nth vertex ACROSS THE WHOLE MESH (as before) missed the
-    // true widest point of the Dauntless's blade sweep — measured 1.78 m real vs. 1.35 m found
-    // by the stride, enough to shift the computed disc centre by 0.22 m and leave a ring of the
-    // real moulded blade sticking out past the disc's edge. Only meshes that survive the box
-    // reject above get here, so a full scan of just those stays cheap.
+  root.traverse(o=>{
+    if(!o.isMesh||!o.geometry||!o.geometry.attributes.position) return;
+    const bb=new THREE.Box3().setFromObject(o).applyMatrix4(invRoot);
+    if(dir>0? bb.max.z<zNose : bb.min.z>zNose) return;
     const pos=o.geometry.attributes.position;
     for(let i=0;i<pos.count;i++){
       readVert(pos,i,v); o.localToWorld(v); root.worldToLocal(v);
-      if(noseSign<0 ? v.z>cut : v.z<cut) continue;
-      pts.push(v.clone());
+      if(dir>0? v.z>=zNose : v.z<=zNose) pts.push(v.clone());
     }
+  });
+  if(pts.length<80) return null;
+  // shaft axis: the cowl is a solid of revolution about it, so centre on the DENSE core -
+  // averaging everything would let the blades drag the centre off to one side
+  let cx=0,cy=0; for(const p of pts){ cx+=p.x; cy+=p.y; } cx/=pts.length; cy/=pts.length;
+  for(let it=0;it<4;it++){
+    const rs=pts.map(p=>Math.hypot(p.x-cx,p.y-cy)).sort((a,b)=>a-b);
+    const rMid=rs[Math.floor(rs.length*0.5)];
+    let sx=0,sy=0,n=0;
+    for(const p of pts){ if(Math.hypot(p.x-cx,p.y-cy)<=rMid){ sx+=p.x; sy+=p.y; n++; } }
+    if(!n) break; cx=sx/n; cy=sy/n;
   }
-  if(pts.length<40) return null;
-  let mnx=1e9,mxx=-1e9,mny=1e9,mxy=-1e9,zs=0;
-  for(const p of pts){ if(p.x<mnx)mnx=p.x; if(p.x>mxx)mxx=p.x;
-    if(p.y<mny)mny=p.y; if(p.y>mxy)mxy=p.y; zs+=p.z; }
-  const cx=(mnx+mxx)/2, cy=(mny+mxy)/2;
-  let rmax=0;
-  for(const p of pts){ const r=Math.hypot(p.x-cx,p.y-cy); if(r>rmax) rmax=r; }
-  // a real propeller is roughly a quarter to a third of the span; clamp so a stub of a nose
-  // does not give a toy propeller and a stray vertex does not give a giant one
-  const dia=Math.max(S.x*0.24, Math.min(S.x*0.34, rmax*2));
-  return { cx, cy, z:zs/pts.length, dia, front, zFront:front, S };
+  // cowl radius from density per unit annulus area, not from a vertex percentile: the cowl is
+  // dense and the blades are sparse, and that holds whatever the mesh split is - a percentile
+  // is dominated by whichever mesh happens to carry the most vertices and broke on two of five.
+  const RCAP=S.x*0.17;                            // real fighters: prop radius is 0.13-0.16 span
+  const BW=S.x*0.008, NB=Math.ceil(RCAP/BW)+1;
+  const cnt=new Array(NB).fill(0);
+  for(const p of pts){ const b=Math.floor(Math.hypot(p.x-cx,p.y-cy)/BW); if(b<NB) cnt[b]++; }
+  const dens=cnt.map((c,i)=>c/(2*Math.PI*(i+0.5)*BW*BW));
+  let peak=0; for(const d of dens) if(d>peak) peak=d;
+  if(peak<=0) return null;
+  let core=0; for(let i=0;i<NB;i++){ if(dens[i]>peak*0.06) core=i; else if(i>2&&core>0) break; }
+  const hubR=(core+1)*BW;
+  // everything sticking out past the cowl, anywhere in the engine bay, is blade material
+  const cand=pts.filter(p=>{ const r=Math.hypot(p.x-cx,p.y-cy); return r>hubR*1.15 && r<=RCAP; });
+  if(cand.length<12) return null;
+  const zsAll=cand.map(p=>p.z).sort((a,b)=>a-b);
+  const zLo=zsAll[Math.floor(zsAll.length*0.02)], zHi=zsAll[Math.floor(zsAll.length*0.98)];
+  const zPlane=(zLo+zHi)/2;
+  const halfDepth=Math.max((zHi-zLo)/2*1.25, S.z*0.02);
+  const inSlab=cand.filter(p=>Math.abs(p.z-zPlane)<=halfDepth);
+  if(inSlab.length<10) return null;
+  const rIn=inSlab.map(p=>Math.hypot(p.x-cx,p.y-cy)).sort((a,b)=>a-b);
+  const tipR=rIn[Math.floor(rIn.length*0.995)];
+  if(tipR < hubR*1.35) return null;
+  return { cx, cy, hubR, tipR, zPlane, halfDepth, S, dir, bladeVerts:inSlab.length };
 }
-function cutBlades(root, disc, noseSign){
-  // Geometry surgery is off the table. Three attempts, three different ways to fail:
-  // rebuilding the buffers lost the quantisation and blew the model up; collapsing single
-  // vertices stretched every triangle that straddled the disc edge into a sheet hanging off
-  // the wing; collapsing whole triangles still drags neighbours along, because indexed meshes
-  // share their corners. The propeller is welded into the fuselage and it is going to stay
-  // welded.
-  //
-  // So the frozen blades get COVERED instead. A propeller under power is a disc — that is what
-  // the eye expects and what a photograph shows — and an opaque disc at the propeller plane
-  // hides whatever is behind it completely. Nothing is modified, so nothing can break.
-  return 0;
+// ---- remove the moulded blades WITHOUT touching a single vertex position ----------------
+// Earlier sessions concluded geometry surgery was impossible, having tried three things that
+// all move or rebuild POSITIONS: rebuilding the buffers (lost the KHR quantisation), collapsing
+// single vertices (stretched every triangle straddling the edge) and collapsing triangles by
+// moving their corners (indexed meshes share corners, so neighbours came along).
+// This touches no position at all. Every one of these geometries is INDEXED (measured on all
+// five models), so setting a blade triangle's three indices to the same value makes it a
+// zero-area triangle that rasterises nothing, while every other triangle keeps its own indices
+// and its own corners. Quantisation is irrelevant because nothing is read back or rewritten.
+function cutBlades(root, prop){
+  root.updateMatrixWorld(true);
+  const invRoot=new THREE.Matrix4().copy(root.matrixWorld).invert();
+  const a=new THREE.Vector3(), b=new THREE.Vector3(), c=new THREE.Vector3(), m=new THREE.Vector3();
+  const zLo=prop.zPlane-prop.halfDepth*1.15, zHi=prop.zPlane+prop.halfDepth*1.15;
+  let cut=0;
+  root.traverse(o=>{
+    if(!o.isMesh||!o.geometry||!o.geometry.index||!o.geometry.attributes.position) return;
+    const bb=new THREE.Box3().setFromObject(o).applyMatrix4(invRoot);
+    if(bb.max.z<zLo||bb.min.z>zHi) return;
+    const pos=o.geometry.attributes.position, arr=o.geometry.index.array;
+    const rd=(i,out)=>{ readVert(pos,i,out); o.localToWorld(out); root.worldToLocal(out); };
+    for(let t=0;t+2<arr.length;t+=3){
+      if(arr[t]===arr[t+1]&&arr[t]===arr[t+2]) continue;
+      rd(arr[t],a); rd(arr[t+1],b); rd(arr[t+2],c);
+      // Judge the TRIANGLE by its centroid, not by demanding all three corners qualify. A blade
+      // is one continuous sheet with the hub, so the root triangles always have a corner down in
+      // the spinner - the all-corners rule left three quarters of every blade standing.
+      m.set((a.x+b.x+c.x)/3,(a.y+b.y+c.y)/3,(a.z+b.z+c.z)/3);
+      if(m.z<zLo||m.z>zHi) continue;
+      const r=Math.hypot(m.x-prop.cx,m.y-prop.cy);
+      if(r<=prop.hubR*1.12||r>=prop.tipR*1.30) continue;
+      arr[t+1]=arr[t]; arr[t+2]=arr[t];
+      cut++;
+    }
+    o.geometry.index.needsUpdate=true;
+  });
+  return cut;
+}
+// ---- how many blades does this aeroplane actually have? measure, do not assume -----------
+function countBlades(root, prop){
+  root.updateMatrixWorld(true);
+  const invRoot=new THREE.Matrix4().copy(root.matrixWorld).invert();
+  const v=new THREE.Vector3(); const NB=180, bins=new Array(NB).fill(0);
+  root.traverse(o=>{
+    if(!o.isMesh||!o.geometry||!o.geometry.attributes.position) return;
+    const bb=new THREE.Box3().setFromObject(o).applyMatrix4(invRoot);
+    if(bb.max.z<prop.zPlane-prop.halfDepth) return;
+    const pos=o.geometry.attributes.position;
+    for(let i=0;i<pos.count;i++){
+      readVert(pos,i,v); o.localToWorld(v); root.worldToLocal(v);
+      if(Math.abs(v.z-prop.zPlane)>prop.halfDepth) continue;
+      const r=Math.hypot(v.x-prop.cx,v.y-prop.cy);
+      if(r<prop.hubR*1.35||r>prop.tipR*1.05) continue;
+      let ang=Math.atan2(v.y-prop.cy,v.x-prop.cx); if(ang<0) ang+=Math.PI*2;
+      bins[Math.floor(ang/(Math.PI*2)*NB)%NB]++;
+    }
+  });
+  const tot=bins.reduce((s,x)=>s+x,0); if(tot<24) return 3;
+  const thr=tot/NB*0.8;
+  let groups=0, on=false;
+  for(let i=0;i<NB*2;i++){ const hot=bins[i%NB]>thr;
+    if(hot&&!on){ if(i<NB) groups++; on=true; } else if(!hot) on=false; }
+  return (groups>=2&&groups<=6)? groups : 3;
+}
+// ---- a real propeller, built to the measured size, that actually turns -------------------
+function makeProp(prop, nBlades){
+  const g=new THREE.Group(); g.name='prop';
+  // Clamp to a historically sane size: the moulded blades on these models overshoot the real
+  // propeller by 8-12%, and the cut removes all of that, so drawing our own slightly smaller
+  // one is both correct and tidy.
+  const R=Math.min(prop.tipR, prop.S.x*0.155), hub=prop.hubR;
+  const bladeM=new THREE.MeshStandardMaterial({color:0x24251f,roughness:0.42,metalness:0.55});
+  const tipM  =new THREE.MeshStandardMaterial({color:0xd8c169,roughness:0.45,metalness:0.35});
+  const len=R-hub*0.60;
+  for(let i=0;i<nBlades;i++){
+    const arm=new THREE.Group(); arm.rotation.z=i*(Math.PI*2/nBlades);
+    const bl=new THREE.Mesh(new THREE.CylinderGeometry(R*0.032,R*0.075,len,4),bladeM);
+    bl.position.y=hub*0.60+len/2; bl.scale.set(1,1,0.22); bl.rotation.y=0.40;
+    arm.add(bl);
+    const tip=new THREE.Mesh(new THREE.CylinderGeometry(R*0.030,R*0.034,len*0.09,4),tipM);
+    tip.position.y=hub*0.60+len*0.960; tip.scale.set(1,1,0.22); tip.rotation.y=0.40;
+    arm.add(tip);
+    g.add(arm);
+  }
+  const spin=new THREE.Mesh(new THREE.ConeGeometry(hub*0.60,hub*1.15,16),
+    new THREE.MeshStandardMaterial({color:0x33342e,roughness:0.45,metalness:0.4}));
+  spin.rotation.x=(prop.dir<0? -Math.PI/2 : Math.PI/2); spin.position.z=(prop.dir<0? -hub*0.50 : hub*0.50); g.add(spin);
+  g.position.set(prop.cx, prop.cy, prop.zPlane);
+  return g;
 }
 // Cut the moulded-in blades and hand back a turning propeller of the right size, in the right
-// place, sitting in the hole they left.
+// place, sitting in the hole they left. Same system the European game now uses, and the same
+// thing the Avenger has always done - the one propeller in this project nobody complained about.
 function fitPropeller(model, parent, noseSign){
-  const disc=findPropDisc(model, noseSign);
-  if(!disc) return null;
-  // The propeller shaft sits on the aircraft's own vertical symmetry plane for every model
-  // here — same assumption rigOwnProp already makes about individual parts (S.x*0.12 below).
-  // Fixing findPropDisc's coordinate-frame bug (see above) made it succeed for aircraft where
-  // it used to silently fail, and on the wider-nosed Avenger the shallow 7% cut catches the
-  // asymmetric cowl/intake bulge instead of the propeller (measured cx 1.62 m off centre on a
-  // 12.45 m span — nowhere near a crankshaft). Reject that rather than covering the wrong
-  // thing; the caller already falls back to rigOwnProp when this returns null.
-  if(Math.abs(disc.cx) > disc.S.x*0.12) return null;
-  const g=new THREE.Group();
-  const R=disc.dia*0.5;
-  // The disc used to be a flat card (CircleGeometry, near-zero thickness). Numerically it
-  // covered the moulded blades exactly — verified on the real Dauntless: zero blade vertices
-  // fall outside its radius on its own plane. But the blades are not flat: measured depth
-  // along the propeller axis was 0.587 m (the blade root sits further from the nose than the
-  // tip). A paper-thin disc only ever hides that from dead ahead; from any other angle — which
-  // is most of the time with a chase camera — the far side of the blade pokes out past the
-  // disc's silhouette exactly like the Avenger's landing-gear legs did with a flat cap instead
-  // of a cylinder (4.2). Same fix here: give the disc real depth instead of covering it with a
-  // playing card.
-  const depth=Math.max(R*0.34, 0.6);
-  const lead=noseSign<0? -depth/2 : depth/2;    // the face pointing away from the fuselage
-  const face=new THREE.Mesh(new THREE.CylinderGeometry(R,R,depth,40),
-    new THREE.MeshStandardMaterial({color:0x24241d, roughness:0.85, metalness:0.15}));
-  face.rotation.x=Math.PI/2;
-  g.add(face);
-  // Reported: "graue, sich nicht drehende Scheiben". The rotation was always wired up and
-  // running — the PATTERN was the bug. Three bars, each spanning the full diameter, 60° apart,
-  // is a SIX-fold symmetric star: rendered and measured, rotating it by 60/120/180° produced a
-  // mean pixel difference of 0.25 / 0.25 / 0.00 — literally the same image. However fast it
-  // spun, every frame looked like the last one. The two tones (0x14140f on 0x24241d) were also
-  // near-black on near-black, so what little did move was invisible anyway.
-  // Fix: three soft blade "ghosts" (what a real 3-blade propeller actually smears into) plus
-  // FIVE irregular bright glints at angles that share no common divisor. Measured the same way,
-  // worst-case self-similarity over a full turn went from 0.00 to 12.8 — there is no longer any
-  // angle at which the disc repeats itself, so the rotation reads at every instant. Still fully
-  // opaque, so it keeps covering the blades welded into the fuselage mesh (3.1) exactly as before.
-  const zf=(o)=> lead+(noseSign<0? -o : o);
-  for(let i=0;i<3;i++){
-    const gh=new THREE.Mesh(new THREE.RingGeometry(R*0.13,R*0.99,34,1,i*(Math.PI*2/3),1.05),
-      new THREE.MeshStandardMaterial({color:0x5d594d,roughness:0.5,metalness:0.35,
-        transparent:true,opacity:0.45,side:THREE.DoubleSide}));
-    gh.position.z=zf(0.008); g.add(gh);
-  }
-  const GLINTS=[[0.16,0.99,0.42,0.62,0xf2ead2,0.85],
-                [0.44,0.99,2.30,0.40,0xfffbec,0.95],
-                [0.14,0.66,3.75,0.50,0xa9a28c,0.70],
-                [0.55,0.99,4.90,0.30,0xfff9e6,0.90],
-                [0.24,0.82,5.72,0.34,0xcac2a8,0.78]];
-  for(const [i0,i1,st,ln,col,op] of GLINTS){
-    const m=new THREE.Mesh(new THREE.RingGeometry(R*i0,R*i1,26,1,st,ln),
-      new THREE.MeshStandardMaterial({color:col,roughness:0.24,metalness:0.66,
-        transparent:true,opacity:op,side:THREE.DoubleSide}));
-    m.position.z=zf(0.012); g.add(m);
-  }
-  // bright rim, the tip flash you see on a turning propeller
-  const rim=new THREE.Mesh(new THREE.RingGeometry(R*0.955,R,44),
-    new THREE.MeshBasicMaterial({color:0xd9d2b8,transparent:true,opacity:0.30,
-      side:THREE.DoubleSide}));
-  rim.position.z=zf(0.016);
-  g.add(rim);
-  // spinner
-  const spin=new THREE.Mesh(new THREE.ConeGeometry(R*0.15,R*0.42,16),
-    new THREE.MeshStandardMaterial({color:0x2b2b22,roughness:0.5}));
-  spin.rotation.x=noseSign<0? -Math.PI/2 : Math.PI/2;
-  spin.position.z=lead+(noseSign<0?-R*0.20:R*0.20);
-  g.add(spin);
-  // Sits inside the MODEL, in the coordinates the disc was measured in — no conversion, and
+  const prop=findProp(model, noseSign);
+  if(!prop) return null;
+  // The propeller shaft sits on the aircraft's own vertical symmetry plane for every model here.
+  // On the wider-nosed Avenger the measurement lands on the asymmetric cowl/intake bulge instead
+  // (measured 0.97 off centre), so reject that and let the caller fall back to rigOwnProp, which
+  // spins the Avenger's own separate propeller meshes and works well.
+  if(Math.abs(prop.cx) > prop.S.x*0.06) return null;
+  cutBlades(model, prop);
+  const g=makeProp(prop, 3);          // Dauntless, Avenger and Zero are all three-blade
+  // Sits inside the MODEL, in the coordinates the propeller was measured in - no conversion, and
   // it inherits the model's own rotation. Converting by hand is what put the wingmen's
-  // propellers out on a wingtip. Centred on disc.z (the measured mean of the blade material) —
-  // the old forward nudge compensated for a paper-thin disc missing depth entirely; with a
-  // cylinder spanning the real depth that compensation is no longer needed.
-  g.position.set(disc.cx, disc.cy, disc.z);
+  // propellers out on a wingtip once before.
   model.add(g);
   return g;
 }
+
 function rigOwnProp(model, parent, noseSign){
   try{
     model.updateMatrixWorld(true);
@@ -3776,23 +3794,68 @@ function loadPlaneModel(){
           if(oldHit || newHit) gearMesh.push(o);
         }
       }
-      // Strut fairings: the leg between each wheel and the wing is NOT a stub — clustering
-      // Object_33's own vertices found the wheel attach points, and a follow-up scan of the
-      // surrounding fuselage mesh (Object_31/32) along that same column found the strut leg
-      // itself continuing, roughly constant radius, well above the wheel before it flares
-      // into the wing fillet. A flat cap at the wheel only hides the very tip and leaves the
-      // whole leg hanging — this covers the full measured leg length with a slim cylinder,
-      // shown only with the gear up. Same "cover, don't cut" approach as the propeller disc.
-      [[-2.381,-1.05,1.578,-2.30,0.50], [-2.381,-1.05,-1.578,-2.30,0.50], [3.734,-0.68,0,-1.35,0.32]]
-        .forEach(([dx,dyTop,dz,dyBot,dr])=>{
-          const h=dyTop-dyBot;
-          const leg=new THREE.Mesh(new THREE.CylinderGeometry(dr,dr,h,14),
-            new THREE.MeshStandardMaterial({color:0x6b6b62,roughness:0.85}));
-          leg.position.set(dx,(dyTop+dyBot)/2,dz);
-          leg.visible=false;
-          model.add(leg);
-          gearDoors.push(leg);
+      // Undercarriage legs. These used to be COVERED with grey cylinders shown only when the
+      // gear was up, because the legs are moulded into the fuselage/wing meshes and were
+      // believed impossible to remove. Reported after BUILD 110: "bei der Avenger sind bei gear
+      // up nun weiße Pylone unter dem Flugzeug zu sehen" - fair, they read as pods, not legs.
+      // They can be removed after all, the same way the propeller blades now are: these meshes
+      // are INDEXED, so a leg triangle can be made zero-area by pointing its three indices at
+      // the same vertex, without moving anything. Measured at each leg column on the real model:
+      // wing/fuselage skin sits at y -0.40..-0.75, the welded leg runs -0.88..-1.88, and the
+      // wheel mesh takes over below that - so cut strictly between skin and wheel.
+      // AVLEG = [x, z, yTop, yBot, radius] in model-local coordinates (x is fore/aft here, 4.9).
+      {
+        const AVLEG=[[-2.381, 1.578, -0.88, -1.88, 0.55],
+                     [-2.381,-1.578, -0.88, -1.88, 0.55],
+                     [ 3.734, 0.000, -0.80, -1.32, 0.45]];
+        const wheelSet=new Set(gearMesh);
+        model.updateMatrixWorld(true);
+        const a=new THREE.Vector3(), b2=new THREE.Vector3(), c2=new THREE.Vector3(), mid=new THREE.Vector3();
+        let cutLeg=0;
+        model.traverse(o=>{
+          if(!o.isMesh||!o.geometry||!o.geometry.index||!o.geometry.attributes.position) return;
+          if(wheelSet.has(o)) return;                       // never touch the wheels
+          const pos=o.geometry.attributes.position, arr=o.geometry.index.array;
+          const rd=(i,out)=>{ readVert(pos,i,out); o.localToWorld(out); model.worldToLocal(out); };
+          for(let t=0;t+2<arr.length;t+=3){
+            if(arr[t]===arr[t+1]&&arr[t]===arr[t+2]) continue;
+            rd(arr[t],a); rd(arr[t+1],b2); rd(arr[t+2],c2);
+            mid.set((a.x+b2.x+c2.x)/3,(a.y+b2.y+c2.y)/3,(a.z+b2.z+c2.z)/3);
+            for(const [lx,lz,yT,yB,lr] of AVLEG){
+              if(mid.y>yT||mid.y<yB) continue;
+              if(Math.hypot(mid.x-lx,mid.z-lz)>lr) continue;
+              arr[t+1]=arr[t]; arr[t+2]=arr[t]; cutLeg++; break;
+            }
+          }
+          o.geometry.index.needsUpdate=true;
         });
+        console.log('Avenger: '+cutLeg+' moulded gear-leg triangles removed');
+        // real legs in their place, shown only with the gear DOWN (gearDoors keeps its name and
+        // its slot in the update loop, but it now holds legs that appear with the wheels rather
+        // than covers that appear without them)
+        const strutM =new THREE.MeshStandardMaterial({color:0x3c3d34,roughness:0.55,metalness:0.30});
+        const pistonM=new THREE.MeshStandardMaterial({color:0xb9bdc0,roughness:0.25,metalness:0.75});
+        for(const [lx,lz,yT,yB,lr] of AVLEG){
+          const grp=new THREE.Group();
+          const h=yT-yB, rad=(lr<0.5)?0.085:0.125;
+          const up=new THREE.Mesh(new THREE.CylinderGeometry(rad,rad*1.06,h*0.55,10),strutM);
+          up.position.y=yT-h*0.275; grp.add(up);
+          const pis=new THREE.Mesh(new THREE.CylinderGeometry(rad*0.62,rad*0.68,h*0.52,10),pistonM);
+          pis.position.y=yT-h*0.74; grp.add(pis);
+          if(lr>=0.5){
+            const side=(lz>0)?1:-1;
+            const p1=new THREE.Vector3(0,yT,0), p2=new THREE.Vector3(0,yB+h*0.10,side*rad*3.0);
+            const dir=new THREE.Vector3().subVectors(p2,p1), len=dir.length();
+            const br=new THREE.Mesh(new THREE.CylinderGeometry(rad*0.42,rad*0.42,len,6),strutM);
+            br.position.copy(p1).addScaledVector(dir,0.5);
+            br.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),dir.clone().normalize());
+            grp.add(br);
+          }
+          grp.position.set(lx,0,lz);
+          model.add(grp);
+          gearDoors.push(grp);
+        }
+      }
       // Flaps + arrestor hook, added on top of the real model exactly like the gear-leg
       // fairings above: the real geometry is static (no separate hinged part to find, same
       // "welded" pattern as everything else on these models — 3.1), so a synthetic panel is
@@ -3880,7 +3943,7 @@ function loadPlaneModel(){
       }
       window.__eyeDbg='EYE '+COCKPIT_EYE.map(v=>v.toFixed(2)).join('/');
       const btEl=document.getElementById('buildTag');
-      if(btEl) btEl.textContent='BUILD 110 · '+window.__eyeDbg;
+      if(btEl) btEl.textContent='BUILD 111 · '+window.__eyeDbg;
       let seat=null;
       model.traverse(function(o){
         if(!o.isMesh||!o.material) return;
@@ -4080,7 +4143,7 @@ function updatePlaneMesh(){
     if(gearMesh && gearMesh.length){ const gg=(P.gear==null?1:P.gear), gv=(gg>0.5) && !isDefend();
       for(let i=0;i<gearMesh.length;i++) gearMesh[i].visible=gv;
       // wheel-well caps: the exact opposite of the wheels — capped only once the gear is up
-      if(gearDoors && gearDoors.length) for(let i=0;i<gearDoors.length;i++) gearDoors[i].visible=!gv; }
+      if(gearDoors && gearDoors.length) for(let i=0;i<gearDoors.length;i++) gearDoors[i].visible=gv; }
     // (this A6M model has no separate gear mesh — it's baked into the airframe)
     const pit=(viewMode==='cockpit');
     if(gltfRoot) gltfRoot.visible=!pit && !isDefend();   // hidden in pit; Zero flies in defence
@@ -5341,7 +5404,7 @@ function setupUIButtons(){
   if(dbgT2) dbgT2.onclick=()=>{
     dbgOn=!dbgOn; localStorage.setItem('dbgOn',dbgOn?'1':'0');
     const db=document.getElementById('dbgBox'); if(db) db.textContent=dbgOn?'✓':'';
-    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 110'; }
+    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 111'; }
   };
   const lu=document.getElementById('lookUp'), ld=document.getElementById('lookDn');
   const setTilt=v=>{ pitTilt=Math.max(-0.9,Math.min(0.4,v)); localStorage.setItem('pitTilt',pitTilt.toFixed(3)); };

@@ -5,7 +5,7 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 110 · Thunderbolt Squadron EU BUILD 31**
+Stand bei Übergabe: **Torpedo Squadron BUILD 111 · Thunderbolt Squadron EU BUILD 32**
 Repo: `oliverkurzemann-Goku/Torpedo-Bomber`, ausgeliefert über GitHub Pages.
 Alle Angaben unten sind aus dem tatsächlichen Code verifiziert, nicht aus dem Gedächtnis.
 
@@ -79,6 +79,14 @@ Das wurde erst nach stundenlangem Suchen gefunden, indem das echte Modell mit de
 Code darauf laufen gelassen wurde (siehe Abschnitt 6). Ein Handauslesen ergab 373.481 m
 Spannweite statt 12,62 m. **Jede Funktion, die Vertex-Positionen manuell liest, muss
 `readVert()` benutzen** (in beiden Spielen vorhanden — de-normalisiert korrekt).
+
+**KORREKTUR (BUILD 111 / EU BUILD 32, siehe 4.21):** Der Satz „es gibt kein trennbares Objekt"
+stimmt, die daraus gezogene Folgerung „also ist der Propeller nicht entfernbar" war aber falsch.
+Alle fünf GLBs sind **indiziert**; setzt man die drei Indizes eines Dreiecks auf denselben Wert,
+verschwindet es, ohne dass eine einzige Position angefasst wird. Damit sind alle drei unten
+genannten Fehlermodi konstruktionsbedingt ausgeschlossen. Propeller und Avenger-Fahrwerksbeine
+werden seit BUILD 111 so entfernt und durch echte, bewegliche Teile ersetzt. Der Rest dieses
+Abschnitts bleibt gültig — er beschreibt, warum das Anfassen von POSITIONEN scheitert:
 
 **Geometrie dieser Modelle NIEMALS neu aufbauen** (neue `BufferGeometry` mit kopierten
 Werten). Das wurde dreimal versucht:
@@ -1100,6 +1108,98 @@ Code: beide Dateien, Suche nach „bankTurnRate" (Kurvenrate), „viel zu sluggi
 
 ---
 
+### 4.21 Echte Propeller statt Deckscheibe, Avenger-Fahrwerk, schwebende Hecken — BUILD 111 / EU BUILD 32
+
+Nutzer nach BUILD 110, zu Recht deutlich: „Die Propeller sind immer noch Scheiben, bei der Avenger
+sind bei gear up nun weiße Pylone unter dem Flugzeug zu sehen. Bei Terrain hängen immer noch Hecken
+in der Schlucht. Sonst nimm den Propeller der Avenger, der ja funktioniert, und wende das System auf
+die anderen Flugzeuge an. Mach es endlich richtig anstatt zu pfuschen."
+
+**Der Hinweis auf die Avenger war der Schlüssel** — und er hat eine Annahme widerlegt, die seit
+Abschnitt 3.1 als gesichert galt.
+
+#### 1) „Geometrie-Chirurgie ist unmöglich" war falsch — es gibt einen vierten Weg
+
+3.1 und der alte `cutBlades`-Kommentar sagten: Propellerblätter sind ins Rumpf-Mesh eingeschweißt
+und nicht entfernbar. Begründet mit drei gescheiterten Versuchen — alle drei bewegen oder bauen
+**Positionen** neu: Buffer neu aufbauen (Quantisierung verloren), Einzelvertices kollabieren
+(Dreiecke verzerrt), Dreiecke durch Verschieben ihrer Ecken kollabieren (indizierte Meshes teilen
+Ecken, Nachbarn kamen mit).
+
+Am echten Modell nachgemessen: **alle fünf GLBs sind INDIZIERT.** Damit gibt es einen vierten Weg,
+den nie jemand probiert hat: die drei **Indizes** eines Blattdreiecks auf denselben Wert setzen.
+Das Dreieck hat null Fläche und rastert nichts mehr — und es wird **keine einzige Position
+angefasst**, also ist Quantisierung irrelevant, nichts kann verzerren, und jedes Nachbardreieck
+behält seine eigenen Indizes und seine eigenen Ecken. Alle drei dokumentierten Fehlermodi sind
+konstruktionsbedingt ausgeschlossen.
+
+**Nachgewiesen:** P-47 1082, Fw 190 716, SBD 730, Bf 109 197 Blattdreiecke entartet; danach am
+ausgelieferten Code nachgezählt: **0 Dreiecke** bleiben im Schnittbereich übrig, bei allen vier.
+
+#### 2) `findPropDisc` hat für den P-47 nie funktioniert
+
+Beim Debuggen aufgefallen: `findPropDisc(root)` liefert für `p47new.glb` **null**. Das Spiel ist
+also seit jeher auf die Notfall-Scheibe `S.x*0.30` zurückgefallen — eine geratene Größe an einer
+geratenen Stelle. Ersetzt durch `findProp()`, das den Propeller wirklich vermisst:
+
+- Achse über iterative Zentrierung auf den **dichten Kern** (die Haube ist ein Rotationskörper; ein
+  einfacher Mittelwert würde von den Blättern aus der Mitte gezogen)
+- Haubenradius über **Flächendichte pro Kreisring**, nicht über ein Vertex-Perzentil — die Haube ist
+  dicht, die Blätter sind dünn, und das gilt unabhängig davon, wie das Modell in Meshes aufgeteilt
+  ist. Ein Perzentil wird vom vertexreichsten Mesh dominiert und ist bei zwei von fünf Flugzeugen
+  gescheitert.
+- **Zwei Durchgänge:** eine feste Frontscheibe funktioniert beim P-47 (Blätter sind das Vorderste),
+  verfehlt die Dauntless aber komplett, deren langer Spinner die Blattwurzeln eine ganze Einheit
+  weiter hinten sitzen lässt. Also erst das Blattmaterial finden, dann den Schnitt darum legen.
+
+Gemessene Durchmesser gegen die realen Vorbilder: P-47 3,9 m (real 3,71), Bf 109 3,1 (3,00),
+Fw 190 3,3 (3,30), SBD 3,2 (3,28). Die 8–12 % Überschuss sind die Modellgeometrie selbst.
+
+#### 3) Echte, drehende Propeller
+
+`makeProp()` baut nun einen richtigen Propeller — verjüngte, verwundene Blätter mit hellen
+Blattspitzen und einem Spinner — statt einer Deckscheibe. Blattzahlen sind historische Fakten,
+keine Messung: P-47D vier, alles andere drei. Die Avenger bleibt bei ihrem eigenen `propPivot`
+(`fitPropeller` gibt für sie bewusst `null` zurück, Achse 0,97 aus der Mitte) — genau wie vom
+Nutzer vorgeschlagen: das eine System, das funktioniert hat, bleibt unangetastet.
+
+#### 4) Avenger: weiße Pylone bei eingefahrenem Fahrwerk
+
+Das waren meine Bein-Abdeckungen aus BUILD 101 — graue Zylinder, die bei „gear up" erschienen, weil
+die Beine als nicht entfernbar galten. Mit der Index-Technik sind sie es doch. Am Modell gemessen:
+Flügelhaut bei y −0,40…−0,75, eingeschweißtes Bein −0,88…−1,88, darunter das Radmesh. 1475 Dreiecke
+entartet, dazu echte Beine (Zweiton-Ölbein plus Diagonalstrebe), die jetzt **mit** dem Fahrwerk
+erscheinen statt ohne. Gerendert: Bauch bei „gear up" sauber, nur der Radschacht bleibt sichtbar;
+bei „gear down" hängen Räder und Beine zusammen.
+
+#### 5) Hecken hängen in der Schlucht — Ursache endlich gefunden
+
+BUILD 105 hatte mit `groundYRender()` die Höhe an einem **Punkt** korrigiert. Das war richtig und
+hat das Problem nicht gelöst, weil eine Hecke 70–220 m lang ist, das Geländegitter aber 100 m pro
+Kachel misst: die Platzierung nahm **eine** Stichprobe in der Heckenmitte und wusste nichts darüber,
+wo die beiden **Enden** landen. Über 4600 Platzierungen gemessen: **58 % der Hecken schwebten mehr
+als 3 m über dem Boden, die schlimmste 137 m.**
+
+Fix: entlang der ganzen Hecke abtasten, zu steile Stellen verwerfen (eine Hecke läuft keine
+Schluchtwand hinunter), und auf den **Tiefpunkt** setzen, den sie überspannt, mit etwas Zusatzhöhe,
+damit das eingegrabene Ende noch sichtbar bleibt. Gebäude bekamen dieselbe Behandlung über ihre
+eigene Grundfläche. **Am ausgelieferten Code nachgemessen (Schleife wortwörtlich aus der Datei
+extrahiert und ausgeführt): 0,0 % schwebend, schlimmster Fall 0,00 m.**
+
+#### 6) Mehr Querlage
+
+`rollLim` weiter angehoben: P-47/Zero 87°, Fw190/Bf109/SBD 86°, Avenger 81° (vorher 74–82°).
+
+**Offen:** Nichts davon ist auf dem echten iPad geflogen. Der Schnitt ist nicht rückgängig zu machen
+— er passiert einmal beim Modellaufbau, also betrifft er alle Klone. Falls ein Modell dazukommt,
+dessen Propeller `findProp` nicht findet, bleibt es unverändert (kein Notbehelf mehr).
+
+Code: `thunderbolt-europe.html` und `torpedo-carrier.html`, Suche nach `findProp`, `cutBlades`,
+`makeProp`; `torpedo-carrier.html` zusätzlich „moulded gear-leg triangles"; `thunderbolt-europe.html`
+zusätzlich die Hecken-Schleife in `buildSettlement()`.
+
+---
+
 ## 5. Gelernte Lektionen (aus echten, wiederholten Fehlern)
 
 1. **Nie im Chat/offline testen und im Spiel hoffen.** Der größte Zeitfresser dieses
@@ -1127,10 +1227,16 @@ Code: beide Dateien, Suche nach „bankTurnRate" (Kurvenrate), „viel zu sluggi
    Flugkurve aus echter Querneigung und Lastvielfachem (`ω = g·√(n²−1)/v`) berechnet wurde
    statt aus einem beliebigen Richtungs-Lerp. Vorher drehten Gegner mit ~180°/s, physikalisch
    möglich sind bei Kampfgeschwindigkeit 6–17°/s.
-8. **Wenn eine Reparatur wiederholt fehlschlägt, das Vorgehen wechseln, nicht die Parameter.**
+8. **Eine Unmöglichkeits-Behauptung im eigenen Kommentar ist eine Hypothese, keine Tatsache.**
+   „Der Propeller ist eingeschweißt und bleibt eingeschweißt" stand drei Sitzungen lang als
+   gesichert im Code und in 3.1 — begründet mit drei Fehlschlägen, die alle POSITIONEN anfassten.
+   Niemand hatte den Index-Buffer probiert: drei gleiche Indizes ergeben ein Dreieck ohne Fläche,
+   ganz ohne Positionen anzurühren. **Wenn eine Sperre auf „X ist unmöglich" lautet, prüfe, welche
+   Annahme alle gescheiterten Versuche geteilt haben** — hier: „entfernen heißt Punkte bewegen".
+9. **Wenn eine Reparatur wiederholt fehlschlägt, das Vorgehen wechseln, nicht die Parameter.**
    Der Propeller-Fall brauchte drei grundverschiedene Ansätze (Objekt suchen → Geometrie
    schneiden → Geometrie zudecken), bevor einer ohne Nebenwirkungen funktionierte.
-9. **„Physikalisch korrekt" ist kein Qualitätsnachweis — das Spiel muss spielbar bleiben.**
+10. **„Physikalisch korrekt" ist kein Qualitätsnachweis — das Spiel muss spielbar bleiben.**
    BUILD 104 ersetzte die Arcade-Kurvenformel durch die Lehrbuchformel. Die Formel war richtig,
    die Zahlen stimmten, die Verifikation „bestand" — und die Kurve wurde bei normaler Querlage
    15× langsamer, ein Vollkreis dauerte 66 statt 4,5 Sekunden. Drei Builds lang wurde an
@@ -1139,15 +1245,20 @@ Code: beide Dateien, Suche nach „bankTurnRate" (Kurvenrate), „viel zu sluggi
    Wie lange dauert ein Vollkreis? Wie schnell reagiert der Knüppel? Diese Zahlen mit dem
    VORHERIGEN Zustand vergleichen — eine Größenordnung Unterschied ist ein Alarmsignal,
    auch wenn die neue Formel „richtiger" ist.
-10. **Symmetrie messen, nicht ansehen.** Der „drehende sich nicht"-Propeller wurde zweimal als
+11. **Symmetrie messen, nicht ansehen.** Der „drehende sich nicht"-Propeller wurde zweimal als
    Farbproblem fehldiagnostiziert. Die Ursache war ein sechsfach symmetrisches Muster: bei 60°
    Drehung ein pixelweise IDENTISCHES Bild (Differenz 0,00). Bei „bewegt sich nicht"-Berichten
    das Objekt bei mehreren Drehwinkeln rendern und die Bilder subtrahieren — Symmetrie ist
    messbar, mit bloßem Auge auf einem Standbild aber unsichtbar.
-11. **Bei Optik-Kritik zuerst `git show` auf die eigene Änderung, dann urteilen.** „Inseln sehen
+12. **Bei Optik-Kritik zuerst `git show` auf die eigene Änderung, dann urteilen.** „Inseln sehen
    aus wie ein Kindercomic" war nicht die Farbpalette (unverändert) und nicht die Textur — es
    waren die Bäume, die ich dreimal so hoch und fast doppelt so hell gemacht hatte. Der Diff
    beantwortete das in einer Minute; Raten hätte an der falschen Stelle angesetzt.
+13. **Ein Objekt sitzt nicht dort, wo sein Mittelpunkt sitzt.** Die Hecken hingen in der Schlucht,
+   obwohl BUILD 105 die Bodenhöhe an ihrer Position korrekt bestimmte — sie sind nur 70–220 m
+   lang bei 100 m Gitterweite, und die ENDEN wusste niemand. Bei allem, was länger oder breiter
+   als eine Geländekachel ist, die Höhe über die ganze Ausdehnung abtasten und auf den Tiefpunkt
+   setzen. Gemessen: 58 % schwebten, der schlimmste 137 m.
 
 ---
 
