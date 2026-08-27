@@ -5,7 +5,7 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 109 · Thunderbolt Squadron EU BUILD 30**
+Stand bei Übergabe: **Torpedo Squadron BUILD 110 · Thunderbolt Squadron EU BUILD 31**
 Repo: `oliverkurzemann-Goku/Torpedo-Bomber`, ausgeliefert über GitHub Pages.
 Alle Angaben unten sind aus dem tatsächlichen Code verifiziert, nicht aus dem Gedächtnis.
 
@@ -986,6 +986,120 @@ Code: `torpedo-carrier.html` und `thunderbolt-europe.html`, Suche nach „Vollkr
 
 ---
 
+### 4.20 Kurvenrate, Pitch, Propeller-Optik, Insel-Optik — BUILD 110 / EU BUILD 31
+
+Deutliches, berechtigtes Nutzer-Feedback nach BUILD 109: „Die Propeller sind graue, sich nicht
+drehende Scheiben bei Dauntless, Me109 und P47. Die Kurvenrate ist viel zu gering, das Flugzeug
+neigt sich zwar zur Seite, es kommt aber fast keine Drehrate zustande. Man fliegt trotz 50 Grad
+Querlage fast geradeaus. Die Pitch-Bewegungen sind jedoch zu aggressiv. Die Südsee-Inseln sehen
+jetzt aus wie aus einem Comic für Kinder."
+
+Alle vier Punkte waren echte, selbst verursachte Regressionen aus 4.10/4.16/4.19 bzw. 4.13.
+
+#### 1) Kurvenrate — die eigentliche Ursache, nicht das, was 4.19 vermutet hatte
+
+4.19 hatte `rollLim` angehoben und dabei nur den Bereich ÜBER 70° Querlage verbessert. Der
+Nutzer fliegt aber bei ~50°. Dort nachgerechnet (P-47, 105 m/s Reisefahrt, Formel wortwörtlich
+aus der Datei):
+
+| Querlage | vor BUILD 104 (Arcade) | BUILD 104–109 (Physik) | jetzt |
+|---|---|---|---|
+| 30° | 6,9 s | 137 s | 18,5 s |
+| 50° | 4,5 s | **66 s** | **12,1 s** |
+| 70° | 3,7 s | 29 s | 9,8 s |
+
+**Meine BUILD-104-Umstellung auf die Lehrbuchformel `turn = g·√(n²−1)/v` hat die Kurve bei
+normaler Querlage um Faktor 15 verlangsamt.** Die Formel ist korrekt — ein echtes Flugzeug ist
+bei 50° Querlage wirklich so träge (bei 50° liegen nur 1,56 g an). Aber ein Spiel, das mit zwei
+Daumen auf einem Tablet geflogen wird, kann das nicht sein. Das war eine Fehlentscheidung von
+mir, kein Geschmacksthema, und 4.19 hat sie nur kaschiert statt behoben.
+
+**Fix:** neue Funktion `bankTurnRate(roll, spd, gLim, turnFactor)` — eine **bewusst deklarierte
+Gameplay-Kurve**, ausdrücklich kein Physik-Anspruch mehr:
+- `sin(Querlage)` statt `√(n²−1)`: beißt früh und beißt weiter, statt bis 70° fast nichts zu tun
+  und dann steil hochzuschießen
+- fällt weiterhin mit steigender Geschwindigkeit — das ist das Einzige, was die alte
+  Arcade-Formel vor BUILD 104 falsch herum hatte, und das bleibt korrekt
+- `TURN_VREF` als Untergrenze: unterhalb davon wird die Kurve nicht weiter enger, damit langsames
+  Fliegen keine absurden Raten erzeugt
+- das strukturelle `gLim` deckelt weiterhin — das ist es, was Avenger, Thunderbolt und Zero
+  weiterhin unterscheidbar hält
+
+Konstanten `TURN_K=1.05, TURN_VREF=80, TURN_CEIL=1.8`, per Rastersuche gegen harte Zielvorgaben
+bestimmt, nicht geraten.
+
+**Wichtig: dieselbe Funktion gilt jetzt auch für die Gegner-KI** (`flyAI()`). Hätte ich nur den
+Spieler beschleunigt, wäre jeder Gegner zum Abschuss freigegeben gewesen. Geprüft: die KI-Bf109
+dreht weiterhin 1,35× so schnell wie der Spieler-P-47.
+
+**Verifiziert am ausgelieferten Code** (Funktion und Konstanten per Klammerzählung aus
+`thunderbolt-europe.html` extrahiert, `rollLim`-Werte aus beiden Dateien gelesen): für alle sechs
+Flugzeuge steigt die Drehrate monoton mit der Querlage, fällt in jedem Fall bei höherer
+Geschwindigkeit, und der Avenger bleibt mit Faktor 1,83 deutlich der schlechteste Kurvenflieger.
+Vollkreis bei 50° Querlage jetzt 7,5–12,2 s statt 41–67 s.
+
+#### 2) Pitch zu aggressiv
+
+In 4.16 hatte ich den Federschwinger-Multiplikator für Nick UND Roll gemeinsam von 1,5/2,4 auf
+3,0/4,8 verdoppelt. Für Roll war das richtig, für Nick zu viel. Nick allein auf **2,0** gesenkt
+(Einschwingzeit 1,30–2,17 s statt 0,87–1,43 s), Roll bleibt bei 4,8 — die Beschwerde war die
+Kurvenrate, nicht die Rollgeschwindigkeit. Numerisch mit den tatsächlich verbauten Konstanten
+geprüft, Überschwingen bleibt überall unter 1,3 %.
+
+#### 3) Propeller „graue, sich nicht drehende Scheiben" — die Rotation war nie das Problem
+
+In 4.8 und 4.18 hatte ich zweimal geprüft, dass die Rotation verdrahtet ist (ist sie, in beiden
+Spielen), und in 4.18 nur die FARBEN aufgehellt. Das war die falsche Stellschraube. Das
+tatsächliche Problem, diesmal gemessen statt betrachtet: die Scheibe bestand aus **drei Balken
+über den vollen Durchmesser im 60°-Abstand — ein SECHSFACH symmetrisches Muster.** Gerendert und
+pixelweise verglichen: dreht man die Scheibe um 60°, 120° bzw. 180°, beträgt die mittlere
+Pixeldifferenz 0,25 / 0,25 / **0,00** — das exakt identische Bild. Keine Drehgeschwindigkeit der
+Welt lässt eine Form, die sich alle 60° wiederholt, wie eine Drehung aussehen.
+
+**Fix in beiden Spielen:** drei weiche Blatt-Schlieren (das, wozu ein echter Dreiblattpropeller
+verschmiert) plus fünf unregelmäßige Glanzlichter, deren Winkel keinen gemeinsamen Teiler haben.
+Am echten `p47new.glb` mit dem ausgelieferten `rigModel()` nachgemessen: schlechtester Fall der
+Selbstähnlichkeit über eine volle Umdrehung **0,00 → 12,31** — es gibt keinen Winkel mehr, bei
+dem sich das Bild wiederholt. Die Scheibe bleibt vollständig deckend, deckt also die in den Rumpf
+eingeschweißten Blätter weiterhin ab (3.1).
+
+Zwei Zwischenentwürfe wurden verworfen, weil sie zwar gut maßen, aber wie ein Ventilator bzw.
+ein Speichenrad aussahen — beide gerendert und angesehen, nicht nur an Zahlen beurteilt.
+
+#### 4) Inseln „wie aus einem Comic für Kinder"
+
+Per `git show` nachgesehen, was BUILD 106 tatsächlich geändert hatte, statt zu raten: der alte
+Wald war **ein dunkler Kegel, 2,8 Einheiten hoch, in `0x1c4718`**. Ich hatte ihn durch einen
+9 Einheiten hohen Stamm in hellem `0x6b4a2a` mit fünf identischen, flach abstehenden Wedeln in
+kräftigem `0x2f7a3a` ersetzt — also **dreimal so hoch und in HSL-Helligkeit fast doppelt so hell**
+(0,33 statt 0,19). Dreimal so groß und doppelt so hell ist exakt, wie ein Spielzeug aussieht. Die
+Farbpalette des Geländes selbst hatte ich nicht angefasst; die Comic-Optik kam allein von den
+Bäumen.
+
+Palmen bleiben (für den Pazifik richtig), aber gedämpft: Stamm 5,0 statt 9,0 Einheiten in
+`0x4a3a28`, Wedel `0x255220`, abgeflacht statt fette Kegel, **hängend statt flach abstehend**, mit
+5 oder 6 Wedeln in zufälliger Ausrichtung statt fünf identischer Speichen. Dieselbe Behandlung
+für `addPalm()` (die Strandpalmen) — deren Werte waren die Vorlage, die ich in BUILD 106 auf den
+ganzen Dschungel kopiert hatte, und sie stehen genau dort, wo man im Tiefflug vorbeikommt; nur
+den Wald zu korrigieren hätte die halbe Insel grell gelassen.
+
+**Offen:** Die Geländefarbe selbst konnte im Prüfstand nicht beurteilt werden — Node hat kein
+echtes Canvas-2D-Backend, `CanvasTexture` bekommt dort keine Pixel und der Boden bleibt im
+Screenshot schwarz (bekannte Grenze, siehe 4.11/4.13, kein Spielfehler). Sollte die Insel-Optik
+nach diesem Build immer noch zu bunt wirken, sind die nächsten Stellschrauben die Bandfarben
+`low`/`up`/`jun` in `buildIsland()` — die sind unverändert seit vor BUILD 106.
+
+**Offen, generell:** Nichts davon ist auf dem echten iPad geflogen. Falls die Kurvenrate jetzt zu
+schnell wirkt, ist die eine Stellschraube `TURN_K`; falls immer noch zu langsam, ebenfalls `TURN_K`
+(zusammen mit `TURN_CEIL`, sonst deckelt das g-Limit). `rollLim` NICHT weiter öffnen — das liegt
+seit 4.19 bereits über dem Punkt, an dem `gLim` limitiert.
+
+Code: beide Dateien, Suche nach „bankTurnRate" (Kurvenrate), „viel zu sluggish"/`pitchRate`
+(Pitch), „SIX-fold symmetric"/„SECHSfach" (Propeller); `torpedo-carrier.html` zusätzlich
+`addPalm()` und `buildIsland()`, Suche nach „Comic für Kinder".
+
+---
+
 ## 5. Gelernte Lektionen (aus echten, wiederholten Fehlern)
 
 1. **Nie im Chat/offline testen und im Spiel hoffen.** Der größte Zeitfresser dieses
@@ -1016,6 +1130,24 @@ Code: `torpedo-carrier.html` und `thunderbolt-europe.html`, Suche nach „Vollkr
 8. **Wenn eine Reparatur wiederholt fehlschlägt, das Vorgehen wechseln, nicht die Parameter.**
    Der Propeller-Fall brauchte drei grundverschiedene Ansätze (Objekt suchen → Geometrie
    schneiden → Geometrie zudecken), bevor einer ohne Nebenwirkungen funktionierte.
+9. **„Physikalisch korrekt" ist kein Qualitätsnachweis — das Spiel muss spielbar bleiben.**
+   BUILD 104 ersetzte die Arcade-Kurvenformel durch die Lehrbuchformel. Die Formel war richtig,
+   die Zahlen stimmten, die Verifikation „bestand" — und die Kurve wurde bei normaler Querlage
+   15× langsamer, ein Vollkreis dauerte 66 statt 4,5 Sekunden. Drei Builds lang wurde an
+   `rollLim`, `pitchRate` und `ζ` geschraubt, ohne die eigentliche Ursache zu treffen.
+   **Vor jeder Änderung am Flugmodell die spürbare Größe ausrechnen, nicht nur die Formel:**
+   Wie lange dauert ein Vollkreis? Wie schnell reagiert der Knüppel? Diese Zahlen mit dem
+   VORHERIGEN Zustand vergleichen — eine Größenordnung Unterschied ist ein Alarmsignal,
+   auch wenn die neue Formel „richtiger" ist.
+10. **Symmetrie messen, nicht ansehen.** Der „drehende sich nicht"-Propeller wurde zweimal als
+   Farbproblem fehldiagnostiziert. Die Ursache war ein sechsfach symmetrisches Muster: bei 60°
+   Drehung ein pixelweise IDENTISCHES Bild (Differenz 0,00). Bei „bewegt sich nicht"-Berichten
+   das Objekt bei mehreren Drehwinkeln rendern und die Bilder subtrahieren — Symmetrie ist
+   messbar, mit bloßem Auge auf einem Standbild aber unsichtbar.
+11. **Bei Optik-Kritik zuerst `git show` auf die eigene Änderung, dann urteilen.** „Inseln sehen
+   aus wie ein Kindercomic" war nicht die Farbpalette (unverändert) und nicht die Textur — es
+   waren die Bäume, die ich dreimal so hoch und fast doppelt so hell gemacht hatte. Der Diff
+   beantwortete das in einer Minute; Raten hätte an der falschen Stelle angesetzt.
 
 ---
 

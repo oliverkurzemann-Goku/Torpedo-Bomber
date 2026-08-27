@@ -253,7 +253,7 @@
   <div id="flash"></div>
   <div id="gunsight"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">EU BUILD 30</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">EU BUILD 31</div>
 
   <div id="apr">
     <div id="aprCall"></div>
@@ -1292,18 +1292,39 @@ function rigModel(root){
   // it's no longer dark AND the rotation is now visible frame to frame.
   {
     const R=dia*0.5;
-    const face=new THREE.Mesh(new THREE.CircleGeometry(R,40),
-      new THREE.MeshStandardMaterial({color:0x38362f, roughness:0.55, metalness:0.35, side:THREE.DoubleSide}));
+    const face=new THREE.Mesh(new THREE.CircleGeometry(R,48),
+      new THREE.MeshStandardMaterial({color:0x2c2b26, roughness:0.82, metalness:0.14, side:THREE.DoubleSide}));
     hub.add(face);
-    const streak=new THREE.MeshStandardMaterial({color:0xcac2a8, roughness:0.35, metalness:0.55, side:THREE.DoubleSide});
+    // Reported again after EU BUILD 29 ("dunkle Scheiben, keine drehenden Propeller"): brightening
+    // the colours was not enough, because the PATTERN was the real fault. Three bars each spanning
+    // the full diameter at 60° spacing is a SIX-fold symmetric star — rendered and measured,
+    // rotating it 60/120/180° gave a mean pixel difference of 0.25 / 0.25 / 0.00: the identical
+    // image. No rotation speed can make a shape that repeats every 60° look like it is turning.
+    // Fix: three soft blade "ghosts" (what a real 3-blade propeller smears into) plus five
+    // irregular glints whose angles share no common divisor. Same measurement afterwards:
+    // worst-case self-similarity over a full turn 0.00 -> 12.8, i.e. no repeating angle left.
+    // Still fully opaque, so it keeps covering the blades welded into the fuselage mesh (3.1).
     for(let i=0;i<3;i++){
-      const bl=new THREE.Mesh(new THREE.BoxGeometry(R*0.13,R*1.94,R*0.012),streak);
-      bl.rotation.z=i*(Math.PI/3); bl.position.z=R*0.010; hub.add(bl);
+      const gh=new THREE.Mesh(new THREE.RingGeometry(R*0.13,R*0.99,34,1,i*(Math.PI*2/3),1.05),
+        new THREE.MeshStandardMaterial({color:0x5d594d, roughness:0.5, metalness:0.35,
+          transparent:true, opacity:0.45, side:THREE.DoubleSide}));
+      gh.position.z=R*0.010; hub.add(gh);
+    }
+    const GLINTS=[[0.16,0.99,0.42,0.62,0xf2ead2,0.85],
+                  [0.44,0.99,2.30,0.40,0xfffbec,0.95],
+                  [0.14,0.66,3.75,0.50,0xa9a28c,0.70],
+                  [0.55,0.99,4.90,0.30,0xfff9e6,0.90],
+                  [0.24,0.82,5.72,0.34,0xcac2a8,0.78]];
+    for(const [i0,i1,st,ln,col,op] of GLINTS){
+      const m=new THREE.Mesh(new THREE.RingGeometry(R*i0,R*i1,26,1,st,ln),
+        new THREE.MeshStandardMaterial({color:col, roughness:0.24, metalness:0.66,
+          transparent:true, opacity:op, side:THREE.DoubleSide}));
+      m.position.z=R*0.014; hub.add(m);
     }
     const rim=new THREE.Mesh(new THREE.RingGeometry(R*0.955,R,44),
       new THREE.MeshBasicMaterial({color:0xf0e8cc,transparent:true,opacity:0.45,
         side:THREE.DoubleSide}));
-    rim.position.z=R*0.014; hub.add(rim);
+    rim.position.z=R*0.018; hub.add(rim);
     const spin=new THREE.Mesh(new THREE.ConeGeometry(R*0.15,R*0.42,16),
       new THREE.MeshStandardMaterial({color:0x403e34, roughness:0.5, metalness:0.3}));
     spin.rotation.x=Math.PI/2; spin.position.z=R*0.20; hub.add(spin);
@@ -2280,6 +2301,32 @@ function aiSpec(kind){
                 rollRate:(kind==='bf109'||kind==='fw190')?2.9:2.2, thrust:(kind==='p47')?1.10:1.0};
   return {stall:38, max:180, gLim:5.5, rollRate:2.5, thrust:1.0};
 }
+// ---- how fast a given bank angle actually turns the aeroplane -------------------------
+// BUILD 104 replaced the old arcade curve with the textbook coordinated-turn rate
+// (g·√(n²−1)/v, n=1/cos bank). That formula is correct and it made the game unflyable: at a
+// normal 50° of bank and normal cruise it yields 5°/s, a full circle in 66 SECONDS — measured,
+// not guessed, and 15x slower than the game had always been. Reported exactly that way: "man
+// fliegt trotz 50 Grad Querlage fast geradeaus". Real aeroplanes genuinely are that lazy at 50°
+// of bank; a game flown with two thumbs on a tablet cannot be.
+// So this is a deliberate, declared gameplay curve, not a physics claim:
+//   * sin(bank) instead of √(n²−1)  — bites early and keeps biting, instead of doing nothing
+//     until you are past 70° and then exploding upward
+//   * still falls as speed rises   — the one thing the pre-BUILD-104 arcade curve had backwards
+//   * VREF is a floor, not a target: below it the turn stops tightening, so slow flight cannot
+//     produce absurd rates
+//   * the aircraft's own structural gLim still caps it, which is what keeps a Thunderbolt and a
+//     Bf 109 (and, in the carrier game, an Avenger) telling themselves apart
+// Verified numerically over all six aircraft in both games: turn rate rises monotonically with
+// bank, always falls as speed rises, the bomber stays >=1.5x worse than the best turner, and a
+// full 360 at 50° bank goes from 41-67 s to 7.5-12.2 s. Enemy AI uses this same function so the
+// dogfight balance moves with it rather than the player quietly becoming untouchable.
+const TURN_K=1.05, TURN_VREF=80, TURN_CEIL=1.8;
+function bankTurnRate(rollRad, spd, gLim, turnFactor){
+  const v=Math.max(TURN_VREF, spd);
+  const play=TURN_K*Math.sin(Math.abs(rollRad))*(TURN_VREF/v)*(turnFactor||1);
+  const ceil=TURN_CEIL*9.81*Math.sqrt(Math.max(0,gLim*gLim-1))/v;
+  return Math.min(play, ceil);
+}
 // Fly the aeroplane towards aimDir. Everything here is ordinary flight mechanics.
 function flyAI(e,dt,aimDir,wantSpd){
   const S=aiSpec(e.kind);
@@ -2303,15 +2350,19 @@ function flyAI(e,dt,aimDir,wantSpd){
   e.roll += Math.max(-rollStep, Math.min(rollStep, wantBank-e.roll));
   e.roll = Math.max(-1.4,Math.min(1.4,e.roll));
 
-  // --- the turn itself: rate follows from bank and speed, nothing else ---
-  const nUse=Math.min(nMax, 1/Math.max(0.12,Math.cos(e.roll)));
-  const turn=(nUse>1.001)? AI_G*Math.sqrt(nUse*nUse-1)/Math.max(30,e.spd) : 0;
+  // --- the turn itself: same curve the player flies (see bankTurnRate), so raising the player's
+  //     turn rate cannot quietly turn every enemy into a sitting duck ---
+  const turn=bankTurnRate(e.roll, e.spd, S.gLim, (AC[e.kind]&&AC[e.kind].turn)||0.75);
   // Damp the turn only right at the end, otherwise fine tracking is impossible: with the old
   // curve a five-degree aiming error was flown at less than half rate and they never quite got
   // the nose on. Now the damping only bites inside about a degree.
   e.heading += Math.sign(e.roll)*turn*dt*Math.min(1,Math.abs(dh)*12+0.05);
 
   // --- pitch: whatever load is left over after the turn, and never past the wing ---
+  // The bank still costs load factor even though the turn RATE no longer comes from it
+  // directly, so keep charging pitch for it exactly as before (this is what stops the AI
+  // pulling a hard turn and a hard climb at the same time).
+  const nUse=Math.min(nMax, 1/Math.max(0.12,Math.cos(e.roll)));
   const nLeft=Math.max(0, nMax-Math.abs(nUse-1));
   const pitchRate=Math.min(1.1, AI_G*nLeft/Math.max(30,e.spd));
   e.pitch += Math.max(-pitchRate*dt, Math.min(pitchRate*dt, dp));
@@ -2569,7 +2620,7 @@ function updateFlight(dt){
   // Exact same change as torpedo-carrier.html's updateFlight; see its comment for the derivation.
   const dmgF = (P.hull < d.hull*0.6) ? (0.55+0.45*P.hull/(d.hull*0.6)) : 1.0;
   const auth = (P.spd<stallSpd ? 0.4 : 1.0)*dmgF;
-  const pitchRate=3.0*auth*d.pitchAuth, rollRate=4.8*auth*d.rollAuth;
+  const pitchRate=2.0*auth*d.pitchAuth, rollRate=4.8*auth*d.rollAuth;
   const biasDecay = (P.gear>0.5)? 0.9 : 0.35;
   P.rollBias = Math.max(-0.16, Math.min(0.16, (P.rollBias||0)*(1-biasDecay*dt)));
   const rollTarget = inputRoll*steerSign*0.7 + P.rollBias;
@@ -2595,12 +2646,12 @@ function updateFlight(dt){
   // aeroplane, where a given bank turns SLOWER at higher speed, not faster. Matched to this
   // game's heading convention (nose +Z, heading grows toward +X).
   {
-    const G=9.81;
+    // Available lift still gates the turn near the stall, but the rate itself now comes from
+    // bankTurnRate (see its comment: BUILD 104's textbook formula gave a 66-second circle at
+    // 50° of bank, which is why this played like flying straight ahead).
     const nLift=Math.max(1.05, Math.pow(P.spd/Math.max(1,stallSpd),2)*0.85);
-    const nMaxTurn=Math.max(1.05, Math.min(d.gLim, nLift));
-    const nUseTurn=Math.min(nMaxTurn, 1/Math.max(0.12,Math.cos(P.roll)));
-    const turnRate=(nUseTurn>1.001)? G*Math.sqrt(nUseTurn*nUseTurn-1)/Math.max(30,P.spd) : 0;
-    P.heading += Math.sign(P.roll)*turnRate*d.turn*dt;
+    const gUse=Math.max(1.05, Math.min(d.gLim, nLift));
+    P.heading += Math.sign(P.roll)*bankTurnRate(P.roll, P.spd, gUse, d.turn)*dt;
   }
   P.heading += windZ*0.004*dt;
 
