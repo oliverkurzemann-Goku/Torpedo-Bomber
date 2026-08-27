@@ -5,7 +5,7 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 112 · Thunderbolt Squadron EU BUILD 33**
+Stand bei Übergabe: **Torpedo Squadron BUILD 112 · Thunderbolt Squadron EU BUILD 34**
 Repo: `oliverkurzemann-Goku/Torpedo-Bomber`, ausgeliefert über GitHub Pages.
 Alle Angaben unten sind aus dem tatsächlichen Code verifiziert, nicht aus dem Gedächtnis.
 
@@ -1270,6 +1270,181 @@ selbst zu prüfen statt weiter am Material.
 Code: beide Dateien, Suche nach „ANGULAR OCCUPANCY" (Blattwurzel), „A real propeller blade is
 twisted" (Scheibendicke); `thunderbolt-europe.html` zusätzlich `TURN_K` und „Get off
 KHR_materials_pbrSpecularGlossiness".
+
+---
+
+### 4.23 Pause-Menü, Brücke unauffindbar, Ziele schwer erkennbar, Rookie zu hart, Flugverhalten — EU BUILD 34
+
+Nutzer-Sammelanfrage: „Terrain und mehr Feinschliff bei den Missionen. Kein Button um zurück ins
+Menü zu kommen, bei Pause läuft der Ton weiter. Auch im Rookie Modus sehr schwer zu überleben,
+Ziele zum Teil sehr schwer zu erkennen oder gar nicht vorhanden (Bridge Buster: keine Brücke
+auffindbar), Flak-Stellungen und Panzer schwer erkennbar. Flugverhalten an Torpedo Bomber
+angleichen, mehr Pitch und Bank." Nur `thunderbolt-europe.html` betroffen — `torpedo-carrier.html`
+wurde in diesem Build nicht angefasst, BUILD-Nummer dort bleibt 112.
+
+#### 1) Kein Menü-Button, Ton läuft bei Pause weiter — behoben
+
+`togglePause()` hat vorher nur `state` umgeschaltet — kein Overlay, keine Audio-Aktion. `animate()`
+hört zwar auf, `updateAudio()` aufzurufen, sobald pausiert ist, aber die Engine-Oszillatoren laufen
+als echte WebAudio-Knoten auf der Hardware-Uhr, unabhängig von `requestAnimationFrame` — ohne
+etwas, das die Lautstärke gegen 0 fährt, brummen sie einfach mit dem zuletzt gesetzten Pegel
+weiter. Neues `#pauseMenu`-Overlay (gleiches Muster wie `#menu`/`#result`) mit „Resume"/„Back to
+Menu"; `togglePause()` fährt jetzt zusätzlich `eng.master.gain` (der eine Gain-Knoten, durch den
+schon jeder Motor-/Waffen-/Explosionssound läuft) per `setTargetAtTime` gegen 0 bzw. zurück auf
+0.85. Neue `exitToMenuFromPause()` nach dem Vorbild von `torpedo-carrier.html`s `exitToMenu()`.
+**Verifiziert** mit einer isolierten Node-Simulation (Mocks für `show`, `eng.master.gain`,
+`actx.currentTime`, `buildMenu`): Pause dämpft, Resume stellt wieder her, Exit-to-Menu setzt
+State/Overlays korrekt und dämpft ebenfalls. `torpedo-carrier.html` hat denselben zugrunde
+liegenden Bug (auch dort verlässt `animate()` bei `ST.PAUSED` früh) — dort aber nicht gemeldet,
+daher bewusst nicht angefasst (Scope-Disziplin).
+
+#### 2) Bridge Buster: keine Brücke auffindbar — Ursache gefunden und behoben, aufwendigster Teil dieses Builds
+
+**Root Cause, nicht geraten:** `buildRoads()` pflastert die Straße unabhängig von jeder Mission
+durchgehend über den Fluss — `baseHRoad()`s „road stays up on the bridge"-Blend hält die Straße
+absichtlich eben auf Brückenhöhe. Das eigentliche `bridge`-Missionsziel (`makeBridge()`, 17 m
+breite Deckplatte) saß dabei nur 2 Einheiten über UND schmaler als diese immer vorhandene, 44 m
+breite Straßen-Ribbon (plus Bankette) — von oben betrachtet verschluckt die immer vorhandene
+Straße das eigentliche Bombenziel praktisch vollständig. Zusätzlich: `killTarget('bridge')`
+hat nur die eigene, kleine Gruppe abgedunkelt/fallen lassen — die durchgehende Straße blieb
+unangetastet, „Brücke zerstört" hatte also nie eine sichtbare Wirkung auf die Straße selbst.
+
+**Fix — die Brücke ist jetzt permanentes Weltobjekt, kein Pro-Mission-Requisit:**
+- Neue `findBridgeCrossing()` (deterministisch, keine Zufallszahl — dieselbe Straßen-/Fluss-Kurve
+  jedes Mal) liefert den Kreuzungspunkt; `buildTerrain()` berechnet ihn zuerst (läuft vor
+  `buildRoads()` im Start-Ablauf), `buildRoads()` nutzt denselben, bereits berechneten Wert.
+- `makeWorldBridge()` baut eine echte, straßenbreite (48 m statt 17 m), 520 m lange Fachwerkbrücke
+  **einmalig** in `buildRoads()` — permanentes Weltobjekt, in jeder Mission sichtbar, nicht nur
+  in „Bridge Buster". Die Straßen-/Bankett-Ribbons bekommen an genau dieser Stelle eine echte
+  Lücke (zwei separate Ribbon-Segmente statt einem durchgehenden).
+- `spawnTarget('bridge',...)` hängt HP/Treffer-Erkennung jetzt an dieses **selbe** permanente
+  Objekt statt eine eigene Kopie zu bauen; `clearWorld()` überspringt es beim Aufräumen
+  ausdrücklich (sonst wäre es nach der ersten Bridge-Buster-Mission für immer aus der Szene
+  verschwunden); `resetWorldBridge()` stellt Transformation/Material beim erneuten Missionsstart
+  zurück auf intakt. Zerstören der Brücke wirkt jetzt tatsächlich auf die einzige, echte
+  Brückenstruktur — die Straße zeigt sichtbar Schaden, nicht nur ein Nebengebilde.
+
+**Drei Folgefehler, jeder erst durch echtes Rendern entdeckt, nicht durch Nachrechnen (Lektion 1):**
+1. *Deck zu kurz für die geschnittene Lücke.* Erste Fassung: 360 m Länge. Gemessen: die
+   geschnittenen Ribbon-Enden liegen (durch 100-m-Sampling plus `BRIDGE_GAP`) bis zu ~250 m vom
+   Kreuzungspunkt entfernt — bei einer Fahrbahnneigung von bis zu 22° reichte 360 m nicht bis an
+   beide Enden. Auf 520 m verlängert (deckt auch den ungünstigsten Neigungsfall mit Marge).
+2. *Gelände sticht durch die Deckplatte.* Ein isolierter Headless-Render der Brücke allein war
+   pixelsauber; im vollen Szenen-Render zeigte sich ein „zerrissenes" Deck. Ursache, per
+   Elimination gefunden (Terrain raus → Riss weg, wieder rein → Riss wieder da): das Flusstal
+   steigt binnen 100-150 m um 200+ Höhen-Einheiten an, und `dR`/`dRo`-Abstand-zur-Kurve-Checks
+   waren dafür ungeeignet — abseits der exakten Kreuzungshöhe `z` laufen Fluss-/Straßenkurve vom
+   festen, geraden Brücken-Footprint weg. Ersetzt durch eine echte Rechteck-Prüfung im lokalen
+   Koordinatensystem der Brücke (`nearBridge()`, feste Länge/Breite statt Abstand-zur-Kurve) —
+   robust unabhängig davon, wie die Kurven sich in der Nähe verhalten. **Nachgewiesen:** Feinraster-
+   Scan sowohl der analytischen Höhe als auch der tatsächlichen Mesh-Grid-Vertices streng
+   innerhalb des Brücken-Rechtecks ergibt exakt 46,0 überall, keine einzige Ausnahme.
+3. *Fachwerk-Streben überlappten sich selbst (Z-Fighting).* Diagonal- und Vertikalstrebe saßen
+   exakt am selben Mittelpunkt (zwei fast deckungsgleiche Boxen) — bei flachem Blickwinkel ein
+   flackerndes Muster. Vertikalstrebe entfernt (reines Warren-Fachwerk, nur Diagonalen, dicker
+   und mit weniger Elementen — liest sich aus der Luft genauso gut, kann sich aber nicht mehr
+   überlappen). Zusätzlich: Pfeiler-Oberkante lag exakt auf Deck-Unterkante (Z-Fighting-Naht) —
+   Pfeiler jetzt 1,5 m in die Deckplatte eingebettet statt nur berührend.
+
+**Nebenfund, ebenfalls behoben:** `buildSettlement()`s Dorf-Platzierung (entlang der Straße
+gestreut) konnte einen Weiler direkt auf die Kreuzung setzen — einzelne Häuser landeten dabei am
+steilen Hang direkt neben der jetzt eingeebneten Brücke und wurden in wild unterschiedlichen
+Höhen gerendert (sichtbar als chaotischer Häuserstapel in der Nähe der Brücke). Fix: dieselbe
+`nearBridge()`-Prüfung wie beim Gelände, als Ausschlusszone analog zum bereits vorhandenen
+Flugplatz-Ausschluss.
+
+**Nachgewiesen, Methode:** Der komplette Ablauf (`buildTerrain(); buildRoads(); buildForests();
+buildSettlement(); buildAirfield(); startMission(4);`) wortwörtlich aus der Datei extrahiert,
+mit echtem `GLTFLoader`-freiem Headless-WebGL-Renderer (`gl`+`xvfb-run`) tatsächlich gerendert —
+mehrere Kamerawinkel (Übersicht, Nahaufnahme, Anflug), dazwischen jeweils Zwischenbilder
+angesehen, nicht nur Zahlen verglichen. Zusätzlich eine vollständige Lebenszyklus-Prüfung
+(Node, keine Grafik nötig): Missionsstart → Ziel existiert und zeigt auf das permanente Objekt →
+Treffer → sichtbar zerstört + `sortieKills.bridge` hochgezählt → Missionswechsel →
+`clearWorld()` lässt das permanente Objekt in der Szene → erneuter Bridge-Buster-Start →
+Ziel und Optik vollständig zurückgesetzt. Alle Prüfungen bestanden.
+
+**Offen:** Nicht auf dem echten iPad geflogen. Aus einer extrem flachen, wasserspiegelnahen
+Testkamera (deutlich tiefer als jede reale Anflughöhe) blieb ein leichtes perspektivisches
+„Einschnüren" der Deckkontur sichtbar, das sich beim isolierten Brücken-Objekt (identische
+Kamera, keine Umgebung) NICHT zeigt — vermutlich reine Parallaxe zwischen der jetzt flachen
+Brücke und dem unmittelbar dahinter noch immer steil aufragenden, im Headless-Test texturlosen
+(schwarzen) Hang, kein Geometriefehler. Aus den realistischeren Übersichts-/Anflug-Kamerawinkeln
+war das nicht sichtbar. Sollte die Brücke im echten Spiel aus bestimmten Blickwinkeln noch immer
+seltsam wirken, ist der nächste Schritt, denselben `nearBridge()`-Ausschluss probeweise noch
+breiter zu ziehen — die aktuelle Breite (90 Einheiten Halbbreite) ist bereits deutlich über der
+Deckbreite selbst.
+
+Code: `thunderbolt-europe.html`, Suche nach `findBridgeCrossing`, `makeWorldBridge`, `nearBridge`,
+`BRIDGE_GAP`, `BRIDGE_ROAD_FLAT`.
+
+#### 3) Flak-Stellungen und Panzer schwer erkennbar — behoben
+
+Dieselbe Erkenntnis wie beim Propeller-Kontrast-Fix (EU BUILD 29, siehe 4.18): realistische,
+fast schwarze Tarnfarben lesen sich aus der Luft als formloser Fleck, egal wie korrekt die Form
+darunter ist. Grundfarben von Panzer, Flak (leicht/schwer) und LKW spürbar aufgehellt (weiterhin
+glaubwürdiges Oliv/Khaki, keine Comic-Farben), dazu je ein kleiner, echt glänzender Akzent
+(Panzer-Luke, Geschützmündung) mit `MeshStandardMaterial` statt der sonst überall verwendeten
+`MeshLambertMaterial` — nur eine Hochglanz-Fläche kann tatsächlich Sonnenlicht reflektieren, eine
+noch so helle Lambert-Fläche nicht. **Verifiziert** mit einem Headless-Render aller vier
+Fahrzeugtypen vor olivgrünem Testhintergrund — deutlich sichtbarer Kontrast gegenüber den alten,
+fast schwarzen Tönen.
+
+**Offen:** Nur gegen einen synthetischen Testhintergrund geprüft, nicht gegen die echte
+Geländetextur (Node hat kein Canvas-2D-Backend, siehe 4.11/4.13/4.20 — dieselbe Einschränkung
+wie immer). Falls die Ziele auf dem echten iPad immer noch zu dunkel wirken, ist der nächste
+Hebel eine weitere Aufhellung derselben Farbwerte.
+
+Code: `thunderbolt-europe.html`, Suche nach `function glint`.
+
+#### 4) Rookie-Modus zu schwer — Ursache: EU-Schwierigkeitstabelle stimmte nicht mit der eigenen Behauptung überein
+
+Der Code-Kommentar über `DIFFS` behauptete seit jeher „same three tiers as the carrier game" —
+stimmte aber nicht: EU Rookie hatte `flak:0.55, dmg:0.6`, `torpedo-carrier.html`s Rookie hat
+`flak:0.45, dmg:0.5` — EU-Rookie nahm 20-22 % mehr Schaden pro Treffer als das als Vorbild
+genannte Original. Dieselbe Abweichung bei Veteran (1.0/1.0 vs. 0.80/0.8) und Ace (1.45/1.5 vs.
+1.00/1.0) — EU war auf JEDER Stufe härter als sein eigenes erklärtes Vorbild. `flak`/`dmg` jetzt
+exakt an `torpedo-carrier.html`s `DIFFS` angeglichen; `aim` (EU-eigenes Feld, kein Gegenstück im
+Trägerspiel) und `fuel` (andere Verbrauchsformel, nicht Teil der Beschwerde) unverändert.
+**Verifiziert:** Werte direkt aus beiden Dateien gegenübergestellt, `flak`/`dmg` jetzt
+identisch. `damagePlayer()` wird über den gemeinsamen `updateTracers()`-Pfad sowohl von
+Flak-Treffern als auch von Jäger-MG-Feuer aufgerufen (beide landen im selben `tracers[]`-Array)
+— die Korrektur wirkt also auf beide Schadensquellen, nicht nur auf Flak-Direkttreffer.
+
+Code: `thunderbolt-europe.html`, Suche nach `const DIFFS`.
+
+#### 5) Flugverhalten an Torpedo Bomber angleichen, mehr Pitch/Bank — größtenteils bereits deckungsgleich, Grenzen angehoben
+
+Zeile für Zeile mit `torpedo-carrier.html`s `updateFlight()` verglichen: Federschwinger-Formel,
+`pitchRate`/`rollRate`-Multiplikatoren (2,0/4,8) und `zeta` (0,80) sind bereits identisch, beide
+Dateien verweisen im Kommentar bereits aufeinander. Verbleibende Unterschiede sind bewusst und
+begründet, keine Bugs: `TURN_K`/`TURN_CEIL` unterscheiden sich (EU auf die tatsächlich geflogene
+Geschwindigkeit von 167 m/s getunt statt der Trägerspiel-typischen 105 m/s, siehe 4.22 — bei einer
+1/v-Formel ein Faktor 1,6, nicht weglassbar) und das Pitch-Ziel (EU: `inputPitch*pitchLim*0.92`
+statt der Trägerspiel-Konstante 0,55) — ausdrücklich damit begründet, dass ein Erdkampfflugzeug
+nach einem Tiefangriff steil hochziehen muss, während das Trägerspiel absichtlich einen sanfteren
+Anflug betont.
+
+Für „mehr Pitch und Bank": `rollLim` lag mit 1,50-1,52 rad bereits so weit über dem Punkt, an dem
+`gLim` die Kurvenrate begrenzt (`1/cos(rollLim)` ≈ 19-20, das 3-4-fache jedes `gLim`-Werts hier),
+dass ein Anheben NICHTS an der Kurvenrate ändert — `gLim` bleibt die eigentliche Grenze (exakt die
+in 4.19/4.20 dokumentierte Lektion: nicht `rollLim` öffnen, wenn `gLim` längst greift). Trotzdem
+angehoben (auf 1,56 rad ≈ 89°, praktisch beliebig, da folgenlos für die Balance) — die Beschwerde
+war die MÖGLICHE Querlage, nicht die Kurvenrate. `pitchLim` dagegen ist eine reine
+Gameplay-Entscheidung ohne physikalische Kopplung an `gLim` und war mit 55-62° spürbar knapper als
+das Trägerspiel-Vorbild (SBD 73°) — auf 66-72° angehoben, je nach Baumuster weiterhin
+unterschiedlich (P-47 am knappsten, Bf 109 am großzügigsten, spiegelt die bisherige relative
+Charakteristik).
+
+**Verifiziert:** Node-Simulation mit den tatsächlich verbauten `AC`-Werten bestätigt für alle drei
+Baumuster: `1/cos(rollLim)` bleibt weit über `gLim` (rollLim also weiterhin folgenlos für die
+Kurvenrate), Vollkreis-Zeit bei 167 m/s unverändert bei 8,1-8,2 s (keine Regression durch die
+`rollLim`-Anhebung).
+
+**Offen:** Nicht auf dem echten iPad geflogen. Falls sich „mehr Bank" trotzdem nicht spürbar
+anfühlt, liegt das daran, dass `rollLim` schon vorher nicht der limitierende Faktor war — der
+tatsächlich spürbare Hebel für „aggressiver kurven" wäre `gLim` selbst anzuheben, nicht `rollLim`.
+
+Code: `thunderbolt-europe.html`, Suche nach `rollLim:` im `AC`-Objekt.
 
 ---
 

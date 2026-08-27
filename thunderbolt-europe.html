@@ -253,7 +253,7 @@
   <div id="flash"></div>
   <div id="gunsight"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">EU BUILD 33</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">EU BUILD 34</div>
 
   <div id="apr">
     <div id="aprCall"></div>
@@ -344,6 +344,16 @@
   </div>
 </div>
 
+<!-- ---------------- PAUSE ---------------- -->
+<div class="overlay hidden" id="pauseMenu">
+  <div class="card menuCard">
+    <h1 class="stencil">Paused</h1>
+    <div class="sub">Sortie held</div>
+    <button class="btn" id="pmResume">Resume</button>
+    <button class="btn ghost" id="pmMenu" style="margin-top:10px;">Back to Menu</button>
+  </div>
+</div>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
 <script>
@@ -374,6 +384,9 @@ const SEG=640;               // 64 km over 640 spans = 100 m per quad. Raised fr
                              // a tiled detail texture supplies everything finer still,
                              // because vertex colours alone can never show a field or a track.
 const RIVER_Y=30;            // water surface height
+const BRIDGE_GAP=150;         // half-width of the flat river-crossing zone road/rail height locks
+                             // onto RIVER_Y+16, and of the gap cut into the road ribbon there —
+                             // see buildRoads()/makeWorldBridge()
 const AF_Y=423;              // airfield pad elevation — matches the terrain at the origin,
                              // otherwise the strip sits in a 140 m pit
 const RWY_LEN=1500, RWY_W=64;
@@ -387,6 +400,7 @@ let state=ST.MENU, prevState=ST.FLIGHT;
 
 let scene,camera,renderer,clock,sun,hemi;
 let terrainMesh=null, waterMesh=null, roadMesh=null, railMesh=null;
+let bridgeSite=null, worldBridge=null;
 let forest=null, planeGroup=null, playerModel=null;
 let mission=0, selectedMission=0, score=0, scoreStart=0, bestS=0;
 let targets=[], flakUnits=[], bullets=[], tracers=[], bombs=[], rockets=[];
@@ -423,27 +437,40 @@ const AC={
   // could never lean far enough over to use the g it structurally had available. rollLim raised
   // so every type can now reach (or, Avenger/SBD, get close to) its own gLim - full 360 now
   // 10-24s depending on type, gLim itself remains the thing that tells them apart.
+  // rollLim already sat well past every aircraft's own gLim (1/cos(1.50 rad) is ~19, ten times
+  // any gLim here) - opening it further changes nothing about turn RATE, gLim still saturates
+  // bankTurnRate first. But "mehr Bank sollte möglich sein" is about how far she visually racks
+  // over, not the turn itself, so it's raised anyway - harmless since gLim already governs.
+  // pitchLim raised too - 55-62 deg was noticeably shy of a real fighter's zoom-climb/dive
+  // angle; the carrier game's dive bomber already runs safely at 1.28 rad (73 deg), so 66-72 is
+  // conservative by comparison, not a leap into new territory.
   p47:{ name:'P-47D Thunderbolt', rollAuth:0.90, pitchAuth:0.85, turn:0.85, gLim:6.5,
-        rollLim:1.52, pitchLim:0.96, stall:40, app:54, max:190, thrMin:34,
+        rollLim:1.56, pitchLim:1.15, stall:40, app:54, max:190, thrMin:34,
         hull:130, ammo:3400, bombs:2, rockets:8, gunDmg:1.0, gunRate:0.055, wing:12.4,
         col:0x6e7a63, band:0xf0f0e4 },
   // The Focke-Wulf: rolls like nothing else in the war, but will not out-turn a 109.
   fw190:{ name:'Fw 190A-8', rollAuth:1.85, pitchAuth:1.10, turn:1.05, gLim:5.5,
-        rollLim:1.50, pitchLim:1.02, stall:39, app:53, max:194, thrMin:32,
+        rollLim:1.56, pitchLim:1.20, stall:39, app:53, max:194, thrMin:32,
         hull:102, ammo:1800, bombs:1, rockets:0, gunDmg:1.5, gunRate:0.075, wing:10.5,
         col:0x7d8478, band:0x2f3a2a },
   bf109:{ name:'Bf 109G-6', rollAuth:1.45, pitchAuth:1.25, turn:1.25, gLim:5.5,
-        rollLim:1.50, pitchLim:1.08, stall:36, app:50, max:196, thrMin:30,
+        rollLim:1.56, pitchLim:1.25, stall:36, app:50, max:196, thrMin:30,
         hull:88, ammo:1500, bombs:1, rockets:0, gunDmg:1.35, gunRate:0.085, wing:9.9,
         col:0x8d9384, band:0x3d4636 }
 };
 function acDef(){ return AC[P.ac]||AC.p47; }
 
 // ---- difficulty (same three tiers as the carrier game) ----
+// The comment above was aspirational, not actual: flak/dmg here were 20-45% harsher than the
+// carrier game's identically-named tiers at every level (rookie flak 0.55 vs carrier's 0.45,
+// dmg 0.6 vs 0.5; veteran 1.0/1.0 vs 0.80/0.8; ace 1.45/1.5 vs 1.00/1.0) - reported as "auch im
+// Rookie Modus sehr schwer zu überleben". flak/dmg now match torpedo-carrier.html's DIFFS
+// exactly; aim (enemy accuracy, no carrier equivalent) and fuel (different consumption formula,
+// not part of the complaint) are unchanged.
 const DIFFS=[
-  {id:'rookie', name:'Rookie',  flak:0.55, dmg:0.6, fuel:0.7, aim:0.55},
-  {id:'vet',    name:'Veteran', flak:1.0,  dmg:1.0, fuel:1.0, aim:1.0 },
-  {id:'ace',    name:'Ace',     flak:1.45, dmg:1.5, fuel:1.3, aim:1.4 }
+  {id:'rookie', name:'Rookie',  flak:0.45, dmg:0.5, fuel:0.7, aim:0.55},
+  {id:'vet',    name:'Veteran', flak:0.80, dmg:0.8, fuel:1.0, aim:1.0 },
+  {id:'ace',    name:'Ace',     flak:1.00, dmg:1.0, fuel:1.3, aim:1.4 }
 ];
 let diffIdx=1;
 function D(){ return DIFFS[diffIdx]; }
@@ -517,6 +544,15 @@ function terrainH(x,z){
   if(dRo<300){ const t=Math.pow(1-dRo/300,1.3); h=h*(1-t)+baseHRoad(x)*t; }
   const dRa=Math.abs(z-railZ(x));
   if(dRa<260){ const t=Math.pow(1-dRa/260,1.3); h=h*(1-t)+baseHRail(x)*t; }
+  // The permanent bridge deck (makeWorldBridge) is a fixed, straight 520x48 rectangle at
+  // RIVER_Y+16. Distance-to-curve checks (river/road) don't reliably cover it: this valley's
+  // banks climb 200+ m within just 100-150 m of the crossing, and off the exact crossing z the
+  // river/road curves drift away from the deck's fixed footprint, so a "close to the curve"
+  // radius left real mesh vertices under the deck 100-250 m too high (confirmed: an isolated
+  // headless render showed the deck visibly cut by the terrain poking through it). Test straight
+  // rectangle containment in the deck's own local frame instead - always correct regardless of
+  // how the curves behave nearby.
+  if(nearBridge(x,z,280,90)) h=RIVER_Y+16;
   // airfield pad, blended into the surrounding fields
   const ax=Math.abs(x-AF_X)/(RWY_LEN*0.72), az=Math.abs(z-AF_Z)/700;
   const ad=Math.max(ax,az);
@@ -527,7 +563,16 @@ function terrainH(x,z){
 function baseHRoad(x){
   let h=baseH(x,roadZ(x));
   const dR=Math.abs(x-riverX(roadZ(x)));
-  if(dR<600){ const t=Math.pow(1-dR/600,1.4); h=h*(1-t)+(RIVER_Y+16)*t; }   // road stays up on the bridge
+  // road stays up on the bridge — flat and exactly RIVER_Y+16 out to BRIDGE_ROAD_FLAT, well past
+  // both the ribbon's cut edge (buildRoads() removes points within BRIDGE_GAP, but 100 m sampling
+  // means the first kept point can land up to ~250 from the crossing) and the deck's own
+  // half-length (260, makeWorldBridge). Missing this by even 50-80 units left the still-climbing
+  // bank height on the cut ribbon's very end - a steep grey ramp poking straight up out of the
+  // flat deck, confirmed by a headless render (baseHRoad was ~126 at the old boundary vs the
+  // deck's 46). Blends down to the surrounding terrain further out as before.
+  const BRIDGE_ROAD_FLAT=270;
+  if(dR<BRIDGE_ROAD_FLAT) return RIVER_Y+16;
+  if(dR<600){ const t=Math.pow(1-(dR-BRIDGE_ROAD_FLAT)/(600-BRIDGE_ROAD_FLAT),1.4); h=h*(1-t)+(RIVER_Y+16)*t; }
   return h;
 }
 function baseHRail(x){
@@ -610,6 +655,10 @@ function makeGroundTexture(){
   return tex;
 }
 function buildTerrain(){
+  // terrainH() needs bridgeSite to flatten the ground under the permanent bridge deck (see
+  // below) - buildTerrain() runs before buildRoads() at startup, so compute it here first if
+  // nobody has yet; buildRoads() then just reuses the same deterministic result.
+  if(!bridgeSite) bridgeSite=findBridgeCrossing();
   const geo=new THREE.PlaneGeometry(WORLD,WORLD,SEG,SEG);
   geo.rotateX(-Math.PI/2);
   const pos=geo.attributes.position;
@@ -704,20 +753,59 @@ function ribbon(pts, width, colour, lift){
   g.setIndex(idx); g.computeVertexNormals();
   return new THREE.Mesh(g,new THREE.MeshLambertMaterial({color:colour}));
 }
+function findBridgeCrossing(){
+  // deterministic, same every run: where road and river curves meet closest. Shared by
+  // buildRoads() (cuts the road ribbon and builds the permanent structure) and populate()
+  // (spawns the Bridge Buster target on it) so both agree on one spot.
+  let bx=0,bz=0,best=1e9;
+  for(let x=-6000;x<6000;x+=40){ const z=roadZ(x); const d=Math.abs(x-riverX(z));
+    if(d<best){best=d;bx=x;bz=z;} }
+  const rot=Math.atan2(1,(roadZ(bx+40)-roadZ(bx-40))/80)-Math.PI/2;
+  return {bx, x:riverX(bz), z:bz, rot};
+}
+// is (x,z) within a halfLen x halfWid rectangle centred on the bridge, aligned to its heading?
+// Shared by terrainH() (flattens the ground under the deck) and buildSettlement() (keeps houses
+// off the crossing, same idea as the airfield exclusion right below it).
+function nearBridge(x,z,halfLen,halfWid){
+  if(!bridgeSite) return false;
+  const ddx=x-bridgeSite.x, ddz=z-bridgeSite.z;
+  const cr=Math.cos(-bridgeSite.rot), sr=Math.sin(-bridgeSite.rot);
+  const lx=ddx*cr-ddz*sr, lz=ddx*sr+ddz*cr;
+  return Math.abs(lx)<halfLen && Math.abs(lz)<halfWid;
+}
 function buildRoads(){
+  if(!bridgeSite) bridgeSite=findBridgeCrossing();   // buildTerrain() usually already set it
+  const bx=bridgeSite.bx;
   const rp=[], ra=[];
   for(let x=-WORLD/2+200;x<=WORLD/2-200;x+=100){
     const z=roadZ(x); rp.push({x,z,y:baseHRoad(x)});
     const z2=railZ(x); ra.push({x,z:z2,y:baseHRail(x)});
   }
   // wider and lifted clear of the ground: from 3000 ft a 26 m ribbon is a thread
-  roadMesh=ribbon(rp,44,0x54504a,2.4); scene.add(roadMesh);
+  // Reported: the Bridge Buster target was next to impossible to find. Root cause, confirmed by
+  // rendering it: this ribbon used to pave straight across the river on its own (baseHRoad blends
+  // up to stay "on the bridge"), 44 m wide plus verges — nearly twice as wide as the 17 m target
+  // deck sitting only ~2 m above it. The actual bombable bridge was a sliver lost inside the
+  // already-continuous road. Fix: cut a real gap here (exactly BRIDGE_GAP wide, matching the flat
+  // zone baseHRoad now holds at RIVER_Y+16) and fill it with one permanent, road-width structure
+  // built below — present in every mission as normal scenery, not just when it's a target.
+  const cutRP=p=>Math.abs(p.x-bx)>=BRIDGE_GAP;
+  roadMesh=new THREE.Group();
+  roadMesh.add(ribbon(rp.filter(p=>p.x<bx).filter(cutRP),44,0x54504a,2.4));
+  roadMesh.add(ribbon(rp.filter(p=>p.x>=bx).filter(cutRP),44,0x54504a,2.4));
+  scene.add(roadMesh);
   railMesh=ribbon(ra,22,0x5b5245,2.4); scene.add(railMesh);
   // pale verges either side make the road read from height, the way they do in reality
   const vergeL=[], vergeR=[];
   for(const p of rp){ vergeL.push({x:p.x,z:p.z+31,y:p.y}); vergeR.push({x:p.x,z:p.z-31,y:p.y}); }
-  scene.add(ribbon(vergeL,14,0x8d8a6a,2.0));
-  scene.add(ribbon(vergeR,14,0x8d8a6a,2.0));
+  const vergeGroup=new THREE.Group();
+  vergeGroup.add(ribbon(vergeL.filter(p=>p.x<bx).filter(cutRP),14,0x8d8a6a,2.0));
+  vergeGroup.add(ribbon(vergeL.filter(p=>p.x>=bx).filter(cutRP),14,0x8d8a6a,2.0));
+  vergeGroup.add(ribbon(vergeR.filter(p=>p.x<bx).filter(cutRP),14,0x8d8a6a,2.0));
+  vergeGroup.add(ribbon(vergeR.filter(p=>p.x>=bx).filter(cutRP),14,0x8d8a6a,2.0));
+  scene.add(vergeGroup);
+  worldBridge=makeWorldBridge(bridgeSite);
+  scene.add(worldBridge);
   // sleepers give the rail line some texture from low level
   const sg=new THREE.BoxGeometry(16,0.5,2.4);
   const sm=new THREE.MeshLambertMaterial({color:0x3a3228});
@@ -769,6 +857,12 @@ function buildSettlement(){
     const gy0=terrainH(sp.x,sp.z);
     if(gy0<RIVER_Y+22 || gy0>980) continue;              // not in the river, not up a mountain
     if(Math.abs(sp.x-AF_X)<RWY_LEN*0.9 && Math.abs(sp.z-AF_Z)<800) continue;
+    // Keep the bridge crossing clear - a village spot landing close by let individually scattered
+    // houses straddle the steep bank right beside the flattened deck, some of them ending up
+    // rendered at wildly different heights within one small cluster (confirmed by a headless
+    // render). A defended river crossing is a plausible place for the country to be *without*
+    // a hamlet on top of it anyway.
+    if(nearBridge(sp.x,sp.z,380,160)) continue;
     const rot=Math.random()*Math.PI;
     for(let b=0;b<sp.n && k<NB;b++){
       const a=Math.random()*Math.PI*2, r=Math.random()*(28+sp.n*7);
@@ -1685,11 +1779,20 @@ function buildAircraft(kind){
 // ============================================================
 //  GROUND TARGETS
 // ============================================================
+// Ground targets used to be painted in near-black authentic camouflage tones - realistic, but
+// exactly the "sehr schwer erkennbar" the user reported, and the same lesson as the propeller
+// fix in EU BUILD 29 (CLAUDE.md 4.18): a flat dark colour reads as a shapeless smudge from
+// altitude no matter how correct the shape underneath is. Base tones lifted noticeably (still
+// believable olive/khaki, not cartoon colours), plus one small bright metallic accent per
+// vehicle (hatch rim / muzzle brake) built with MeshStandardMaterial so it actually catches
+// sunlight and glints - a flat colour alone can't do that, only a specular highlight can.
+function glint(c){ return new THREE.Mesh(new THREE.CylinderGeometry(0.1,0.1,0.1,8),
+  new THREE.MeshStandardMaterial({color:c,roughness:0.35,metalness:0.6})); }
 function makeTruck(){
   const g=new THREE.Group();
-  g.add(at(box(2.6,1.5,6.6,0x4a5038),0,1.5,0));            // bed
-  g.add(at(box(2.5,1.8,2.2,0x3e4430),0,2.0,3.4));           // cab
-  g.add(at(box(2.7,1.9,4.4,0x6d6a52),0,3.1,-0.4));          // canvas tilt
+  g.add(at(box(2.6,1.5,6.6,0x63684e),0,1.5,0));            // bed
+  g.add(at(box(2.5,1.8,2.2,0x525846),0,2.0,3.4));           // cab
+  g.add(at(box(2.7,1.9,4.4,0x87825f),0,3.1,-0.4));          // canvas tilt
   for(const s of [-1,1]) for(const z of [3.0,0.2,-2.2]){
     const w=cyl(0.62,0.62,0.4,0x1a1a17,10); w.rotation.z=Math.PI/2;
     g.add(at(w,s*1.35,0.62,z));
@@ -1698,49 +1801,90 @@ function makeTruck(){
 }
 function makeTank(){
   const g=new THREE.Group();
-  g.add(at(box(3.3,1.25,6.5,0x4c5240),0,1.5,0));            // hull
-  for(const s of [-1,1]) g.add(at(box(0.85,1.1,6.8,0x33372c),s*1.7,1.0,0));  // tracks
-  const tur=cyl(1.5,1.7,1.3,0x515743,10); g.add(at(tur,0,2.75,-0.3));
-  const bar=cyl(0.19,0.22,4.6,0x3a3e32,8); bar.rotation.x=Math.PI/2;
+  g.add(at(box(3.3,1.25,6.5,0x6b7358),0,1.5,0));            // hull
+  for(const s of [-1,1]) g.add(at(box(0.85,1.1,6.8,0x494e3e),s*1.7,1.0,0));  // tracks
+  const tur=cyl(1.5,1.7,1.3,0x707962,10); g.add(at(tur,0,2.75,-0.3));
+  const bar=cyl(0.19,0.22,4.6,0x565c4a,8); bar.rotation.x=Math.PI/2;
   g.add(at(bar,0,2.9,2.2));
+  const hatch=glint(0xcfc6a0); hatch.scale.set(10,3,10); g.add(at(hatch,0,3.42,-0.8));
+  const brake=glint(0x9a9488); brake.scale.set(2.6,4,2.6); brake.rotation.x=Math.PI/2;
+  g.add(at(brake,0,2.9,4.4));
   return g;
 }
 function makeFlak(heavy){
   const g=new THREE.Group();
-  g.add(at(box(heavy?6:3.6,0.7,heavy?6:3.6,0x54503f),0,0.5,0));    // emplacement
+  g.add(at(box(heavy?6:3.6,0.7,heavy?6:3.6,0x6e6851),0,0.5,0));    // emplacement
+  let muzzleZ, muzzleY;
   if(heavy){
-    const mount=cyl(0.9,1.3,1.6,0x4a4b3c,10); g.add(at(mount,0,1.6,0));
-    const bar=cyl(0.24,0.3,7.4,0x3d3f31,8); bar.rotation.x=-Math.PI/3.1;
+    const mount=cyl(0.9,1.3,1.6,0x63644f,10); g.add(at(mount,0,1.6,0));
+    const bar=cyl(0.24,0.3,7.4,0x53554a,8); bar.rotation.x=-Math.PI/3.1;
     g.add(at(bar,0,4.0,-1.4));
-    for(const s of [-1,1]) g.add(at(box(0.3,2.2,2.6,0x494a3b),s*1.2,2.4,0.5));  // shield
+    for(const s of [-1,1]) g.add(at(box(0.3,2.2,2.6,0x64654f),s*1.2,2.4,0.5));  // shield
+    muzzleY=6.8; muzzleZ=-4.9;
   } else {
-    const mount=cyl(0.6,0.9,1.0,0x4a4b3c,8); g.add(at(mount,0,1.1,0));
+    const mount=cyl(0.6,0.9,1.0,0x63644f,8); g.add(at(mount,0,1.1,0));
     for(const s of [-1,1]) for(const u of [0,1]){
-      const bar=cyl(0.10,0.12,3.0,0x3d3f31,6); bar.rotation.x=-Math.PI/3.4;
+      const bar=cyl(0.10,0.12,3.0,0x53554a,6); bar.rotation.x=-Math.PI/3.4;
       g.add(at(bar,s*0.28,2.0+u*0.34,-0.5));
     }
+    muzzleY=3.3; muzzleZ=-1.7;
   }
+  const brake=glint(0xb8ae86); brake.scale.set(2.2,3.4,2.2); brake.rotation.x=-Math.PI/3.2;
+  g.add(at(brake,0,muzzleY,muzzleZ));
   // sandbag ring
   for(let i=0;i<10;i++){
     const a=i/10*Math.PI*2, r=heavy?4.0:2.6;
-    g.add(at(box(1.5,0.8,1.0,0x6f6a52),Math.cos(a)*r,0.8,Math.sin(a)*r));
+    g.add(at(box(1.5,0.8,1.0,0x86805f),Math.cos(a)*r,0.8,Math.sin(a)*r));
   }
   return g;
 }
-function makeBridge(len,h){
+function makeWorldBridge(site){
+  // Permanent world scenery, built once in buildRoads() — not a per-mission prop. The road
+  // ribbon has a matching gap cut into it right here (BRIDGE_GAP either side of site.bx), so this
+  // structure IS the crossing in every mission, not an add-on floating over an already-paved
+  // river. A flat deck the width of the road (48 m, was 17 m) reads as a continuation of the
+  // road at a glance; the tall steel through-truss either side (9.5 m, was a 0.5 m wire) is what
+  // actually reads as "bridge" from altitude instead of "road".
+  // len must clear the road-ribbon gap cut in buildRoads() (2*BRIDGE_GAP, plus up to 100 m of
+  // sampling slack per side since the ribbon is built from 100 m steps) even at the road's
+  // steepest measured heading (~22 deg, cos~0.93) - measured short at first (360), the deck's
+  // rotated footprint fell ~50 m short of the cut ends on both sides. 520 clears that with margin.
+  const len=520, width=48, thick=2.0, deckY=RIVER_Y+16-thick/2;
   const g=new THREE.Group();
-  g.add(at(box(len,1.6,17,0x6a6559),0,h,0));                        // deck
-  for(let i=-2;i<=2;i++){
-    const pier=box(7,h-RIVER_Y+6,10,0x5d5850);
-    g.add(at(pier,i*len*0.2,(h-RIVER_Y)*0.5+RIVER_Y-3,0));
+  g.add(at(box(len,thick,width,0x59564c),0,deckY,0));
+  // pier tops overlap 1.5 m INTO the deck rather than just touching it - an exactly coplanar
+  // pier-top/deck-bottom seam z-fought at any grazing viewing angle (confirmed by a headless
+  // render: a mottled tear right along the deck at low, near-level camera positions).
+  const pTop=deckY-thick/2+1.5, pBot=RIVER_Y-20, pH=pTop-pBot;
+  for(let i=-2;i<=2;i++) g.add(at(box(9,pH,13,0x53504a), i*len*0.19, pBot+pH*0.5, 0));
+  // chords sit clear ABOVE the deck top (deckY+thick/2), not overlapping it - z-fighting between
+  // a near-coplanar chord and the deck was visible as a mottled seam when this was deckY+0.6.
+  // Diagonals only (a plain Warren truss, no separate vertical post) - a post and a diagonal
+  // sharing the same centre point were nearly coincident boxes and z-fought badly at any oblique
+  // angle, rendering as a torn/flickering mess (confirmed by an isolated render before this was
+  // simplified). Fewer, thicker members read as a truss from altitude just as well and can't
+  // overlap.
+  const truH=9.5, steel=0x8f8c80, steelDark=0x4f4c44, nDiag=9;
+  const chordLo=deckY+thick/2+0.5, chordHi=chordLo+truH, chordMid=(chordLo+chordHi)*0.5;
+  for(const s of [-1,1]){
+    g.add(at(box(len,1.1,1.1,steel),0,chordHi,s*width*0.46));
+    g.add(at(box(len,1.1,1.1,steelDark),0,chordLo,s*width*0.46));
+    for(let i=0;i<nDiag;i++){
+      const dx=-len*0.46+i*(len*0.92/(nDiag-1));
+      const diag=box(1.6,truH,1.6,steel);
+      diag.rotation.z=(i%2?1:-1)*0.62;
+      g.add(at(diag,dx,chordMid,s*width*0.46));
+    }
   }
-  // steel truss along both sides
-  for(const s of [-1,1]) for(let i=0;i<9;i++){
-    const t=box(len*0.11,0.5,0.6,0x4b4a42); t.rotation.z=(i%2?1:-1)*0.5;
-    g.add(at(t,-len*0.44+i*len*0.11,h+3.4,s*8));
-    g.add(at(box(0.6,7,0.6,0x4b4a42),-len*0.44+i*len*0.11,h+4,s*8));
-  }
+  g.position.set(site.x,0,site.z);
+  g.rotation.y=site.rot;
+  g.traverse(o=>{ if(o.isMesh) o.userData.introMat=o.material; });
   return g;
+}
+function resetWorldBridge(){
+  if(!worldBridge) return;
+  worldBridge.position.y=0; worldBridge.rotation.z=0;
+  worldBridge.traverse(o=>{ if(o.isMesh&&o.userData.introMat) o.material=o.userData.introMat; });
 }
 function makeDepot(){
   const g=new THREE.Group();
@@ -1803,14 +1947,15 @@ function spawnTarget(kind,x,z,opt){
   else if(kind==='tank') g=makeTank();
   else if(kind==='flak20') g=makeFlak(false);
   else if(kind==='flak88') g=makeFlak(true);
-  else if(kind==='bridge') g=makeBridge(opt.len||220, opt.h||(RIVER_Y+18));
+  else if(kind==='bridge'){ g=worldBridge; resetWorldBridge(); }   // permanent, see buildRoads()
   else if(kind==='depot') g=makeDepot();
   else if(kind==='train') g=makeTrain();
   else g=makeParked(opt.ac||'bf109');
-  const y=(kind==='bridge')?0:groundY(x,z);
-  g.position.set(x,y,z);
-  if(opt.rot!==undefined) g.rotation.y=opt.rot;
-  scene.add(g);
+  if(kind!=='bridge'){
+    g.position.set(x,groundY(x,z),z);
+    if(opt.rot!==undefined) g.rotation.y=opt.rot;
+    scene.add(g);
+  }
   const t={kind, group:g, hp:d.hp*(opt.hpMul||1), maxhp:d.hp*(opt.hpMul||1), alive:true,
     radius:d.r, pts:d.pts, name:d.name, primary:!!opt.primary,
     road:opt.road, rail:opt.rail, roadX:opt.roadX||x, speed:opt.speed||0,
@@ -1935,7 +2080,9 @@ function isFree(){ return !!M().free; }
 function isCircuits(){ return !!M().circuits; }
 
 function clearWorld(){
-  for(const t of targets) scene.remove(t.group);
+  // worldBridge is permanent scenery (built once in buildRoads()), never a per-mission mesh —
+  // removing it here would delete it from the scene forever after the first Bridge Buster sortie.
+  for(const t of targets) if(t.kind!=='bridge') scene.remove(t.group);
   targets=[]; flakUnits=[];
   for(const e of enemyAir) scene.remove(e.group); enemyAir=[];
   for(const b of bullets) scene.remove(b.mesh); bullets=[];
@@ -1969,14 +2116,11 @@ function populate(){
     }
   }
   if(m.kills&&m.kills.bridge){
-    // put the span exactly where the road meets the water
-    let bx=0,bz=0,best=1e9;
-    for(let x=-6000;x<6000;x+=40){ const z=roadZ(x); const d=Math.abs(x-riverX(z));
-      if(d<best){best=d;bx=x;bz=z;} }
-    spawnTarget('bridge',riverX(bz),bz,{len:230,h:RIVER_Y+18,primary:true,
-      rot:Math.atan2(1,(roadZ(bx+40)-roadZ(bx-40))/80)-Math.PI/2});
-    spawnTarget('flak20',riverX(bz)-260,bz+140,{});
-    spawnTarget('flak88',riverX(bz)+280,bz-160,{});
+    // the span itself is permanent world scenery (buildRoads() -> makeWorldBridge, at
+    // bridgeSite) — spawnTarget() just attaches HP/hit-detection to that same object.
+    spawnTarget('bridge',bridgeSite.x,bridgeSite.z,{primary:true});
+    spawnTarget('flak20',bridgeSite.x-260,bridgeSite.z+140,{});
+    spawnTarget('flak88',bridgeSite.x+280,bridgeSite.z-160,{});
   }
   if(m.kills&&m.kills.train){
     const x=rng(-1500,1500);
@@ -3615,8 +3759,33 @@ function bindInput(){
   window.addEventListener('pointerdown',()=>{ if(actx&&actx.state==='suspended') actx.resume(); });
 }
 function togglePause(){
-  if(state===ST.PAUSED){ state=prevState; }
-  else if(state===ST.FLIGHT){ prevState=state; state=ST.PAUSED; }
+  // Reported: no way back to the menu from a Thunderbolt sortie, and the engine kept humming
+  // while paused. Both were the same gap - togglePause only ever flipped `state`, with no
+  // overlay and nothing telling the audio graph to go quiet. animate() does stop calling
+  // updateAudio() once paused, but the oscillators are real WebAudio nodes running on the
+  // hardware clock, independent of requestAnimationFrame - with nothing left to glide their
+  // gain toward 0, they just hold whatever volume updateAudio last set and hum on forever.
+  // Muting the master gain node directly (the same node every engine/gun/explosion sound
+  // already routes through) is the one change that silences all of it in one place.
+  if(state===ST.PAUSED){
+    state=prevState;
+    show('pauseMenu',false);
+    if(eng) eng.master.gain.setTargetAtTime(0.85,actx.currentTime,0.05);
+    clock.getDelta();            // swallow the paused interval so dt doesn't jump
+  }
+  else if(state===ST.FLIGHT){
+    prevState=state; state=ST.PAUSED;
+    show('pauseMenu',true);
+    if(eng) eng.master.gain.setTargetAtTime(0.0001,actx.currentTime,0.05);
+  }
+}
+function exitToMenuFromPause(){
+  show('pauseMenu',false);
+  if(eng) eng.master.gain.setTargetAtTime(0.85,actx.currentTime,0.05);
+  state=ST.MENU;
+  show('result',false); show('brief',false);
+  show('menu',true);
+  buildMenu();
 }
 
 // ============================================================
@@ -3659,6 +3828,8 @@ function init(){
     initAudio(); show('brief',false); startMission(selectedMission); };
   document.getElementById('rsMenu').onclick=()=>{ show('result',false); show('menu',true);
     buildMenu(); state=ST.MENU; };
+  document.getElementById('pmResume').onclick=()=>{ if(state===ST.PAUSED) togglePause(); };
+  document.getElementById('pmMenu').onclick=exitToMenuFromPause;
   const ivT=document.getElementById('invToggle');
   ivT.onclick=()=>{ invertPitch=!invertPitch;
     document.getElementById('invBox').textContent=invertPitch?'\u2713':'';
