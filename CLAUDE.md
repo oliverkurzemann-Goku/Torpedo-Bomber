@@ -5,7 +5,7 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 111 · Thunderbolt Squadron EU BUILD 32**
+Stand bei Übergabe: **Torpedo Squadron BUILD 112 · Thunderbolt Squadron EU BUILD 33**
 Repo: `oliverkurzemann-Goku/Torpedo-Bomber`, ausgeliefert über GitHub Pages.
 Alle Angaben unten sind aus dem tatsächlichen Code verifiziert, nicht aus dem Gedächtnis.
 
@@ -1200,6 +1200,79 @@ zusätzlich die Hecken-Schleife in `buildSettlement()`.
 
 ---
 
+### 4.22 Blattwurzeln, Kurvenrate bei echter Geschwindigkeit, Bf 109 dunkel — BUILD 112 / EU BUILD 33
+
+Nutzer nach BUILD 111: „Kurvenrate bei Thunderbolt Spiel immer noch zu gering. Auch sind noch
+starre Spitzen von Propellern zu sehen. Wie auch auf den Bildern, die du geschickt hast. Aber die
+Propeller drehen sich mittlerweile. Fahrwerke sind auch besser. Me109 immer noch viel zu dunkel."
+
+Drei Punkte, alle drei mit einem konkreten Messfehler auf meiner Seite.
+
+#### 1) Starre Blattwurzeln — meine Haubenerkennung war schlicht falsch
+
+Der Nutzer hat es an MEINEN eigenen Bildern gesehen, ich hatte die weißen Paddel bei 12 und 6 Uhr
+vorschnell als Antennenmast abgetan. Per Raycast durch genau diesen Bildpunkt geprüft: die Paddel
+sitzen bei **Radius 0,54–0,75**, mein Schnitt begann aber erst bei 0,95. Es waren die
+**Blattwurzeln** zwischen Spinner und Haube.
+
+Ursache: `findProp` bestimmte den Haubenradius über die **Flächendichte pro Kreisring** und kam
+beim P-47 auf 0,90. Eine Messung der **Winkelbelegung** zeigt den wahren Wert: bis r=0,64 sind
+33–36 von 36 Winkelsektoren belegt (ein Rotationskörper — Spinner und Motor füllen jeden Sektor),
+ab r=0,74 nur noch 8–18 (ein Blatt füllt nur wenige). **Der Übergang IST die Blattwurzel**, und er
+ist eindeutig; die Dichte-Heuristik ist es nicht. Haubenradius jetzt über Winkelbelegung:
+P-47 0,70 statt 0,90, Bf 109 0,55, Fw 190 0,67, SBD 0,81.
+
+Zusätzlich war der Schnitt zu dünn: eine feste Scheibendicke passt nicht auf alle Modelle (die
+gemessene Blattdicke der Bf 109 ist 0,18 bei 1,57 Blattradius). `cutBlades` weitet die Scheibe
+jetzt selbstregelnd auf, bis der Blattring frei ist, mit einer Untergrenze von `tipR*0,22` — ein
+verwundenes Blatt erstreckt sich immer über einen nennenswerten Teil seines eigenen Radius.
+
+**Nachgewiesen:** P-47 7312 statt 1082 Dreiecke entfernt; gerendert sind die Paddel weg.
+**Ehrliche Einschränkung:** die Restzahlen hängen stark davon ab, wie weit man das Prüffenster
+zieht (bei der Bf 109 lagen die vermeintlichen „Reste" 1,4 Einheiten HINTER der Propellerebene —
+das war die Motorhaube, kein Blatt). Deshalb ist der Nachweis hier das Rendering, nicht eine Zahl.
+
+#### 2) Kurvenrate — ich hatte gegen die falsche Geschwindigkeit getunt
+
+Der entscheidende Fehler: ich habe mit 105 m/s Reisefahrt gerechnet. Der Screenshot des Nutzers
+zeigt **375 mph = 167 m/s**. Die Kurve fällt mit 1/v — was ich als 12-Sekunden-Kreis gemessen
+hatte, war in der Luft, in der er tatsächlich fliegt, ein 19-Sekunden-Kreis.
+
+Neu getunt bei den Geschwindigkeiten, die geflogen werden (`TURN_K` 1,05 → 1,90, `TURN_CEIL`
+1,8 → 2,4, nur in `thunderbolt-europe.html`; das Trägerspiel wurde nicht kritisiert und bleibt):
+
+| | 50° Querlage @167 m/s | volle Querlage |
+|---|---|---|
+| P-47 vorher | 19,2 s | 14,7 s |
+| P-47 jetzt | **10,6 s** | **8,1 s** |
+| Bf 109 jetzt | 7,9 s | 7,9 s |
+
+Am ausgelieferten Code geprüft: monoton in der Querlage, fällt weiterhin mit steigender
+Geschwindigkeit, und die Gegner-KI bleibt mit Faktor 1,03 mindestens gleichauf.
+
+#### 3) Bf 109 zu dunkel — weg von KHR_materials_pbrSpecularGlossiness
+
+Die `createImageBitmap`-Umgehung aus EU BUILD 29 hat nicht gereicht. Alle Flugzeuge hier sind
+Sketchfab-Exporte mit dieser veralteten Extension, die GLTFLoader durch **Patchen des
+Standard-Shaders zur Compile-Zeit** umsetzt und die pro Material eine ZWEITE Textur lädt (die
+Bf 109 trägt so 22 eingebettete Bilder, mit Abstand die meisten). Alle Materialien werden beim
+Laden auf ein einfaches `MeshStandardMaterial` mit nur der Diffuse-Textur umgestellt: der
+gepatchte Shader entfällt komplett, die Texturlast pro Material halbiert sich.
+
+**Ehrliche Einschränkung:** Das iOS-Safari-Verhalten ist im Prüfstand nicht reproduzierbar
+(headless-GL lädt die eingebetteten Texturen gar nicht erst, beide Varianten kommen schwarz
+heraus) — es gibt also KEINEN Vorher/Nachher-Screenshot. Die Begründung stützt sich darauf, dass
+ein Render, der exakt so gebaut war (einfaches Standardmaterial + dekodierte Diffuse-Textur),
+korrekt hell und farbig herauskam, während der Extension-Pfad das nicht tut. Sollte die Bf 109
+danach immer noch dunkel sein, ist der nächste Schritt, die Szenenbeleuchtung des Europa-Spiels
+selbst zu prüfen statt weiter am Material.
+
+Code: beide Dateien, Suche nach „ANGULAR OCCUPANCY" (Blattwurzel), „A real propeller blade is
+twisted" (Scheibendicke); `thunderbolt-europe.html` zusätzlich `TURN_K` und „Get off
+KHR_materials_pbrSpecularGlossiness".
+
+---
+
 ## 5. Gelernte Lektionen (aus echten, wiederholten Fehlern)
 
 1. **Nie im Chat/offline testen und im Spiel hoffen.** Der größte Zeitfresser dieses
@@ -1254,6 +1327,20 @@ zusätzlich die Hecken-Schleife in `buildSettlement()`.
    aus wie ein Kindercomic" war nicht die Farbpalette (unverändert) und nicht die Textur — es
    waren die Bäume, die ich dreimal so hoch und fast doppelt so hell gemacht hatte. Der Diff
    beantwortete das in einer Minute; Raten hätte an der falschen Stelle angesetzt.
+14. **Gegen die Geschwindigkeit tunen, die tatsächlich geflogen wird.** Die Kurvenrate wurde
+   zweimal zu schwach ausgeliefert, weil ich gegen eine angenommene Reisefahrt von 105 m/s
+   gerechnet habe — der Screenshot zeigte 167 m/s. Bei einer Formel mit 1/v ist das Faktor 1,6.
+   **Vor jedem Flugmodell-Tuning die Geschwindigkeit aus einem echten Screenshot/HUD ablesen**,
+   nicht aus dem Datenblatt schätzen.
+15. **Ein Rotationskörper füllt jeden Winkelsektor, ein Blatt nur wenige.** Die Haubenerkennung
+   über Vertexdichte lag beim P-47 um 30 % daneben und ließ die Blattwurzeln stehen. Die
+   Winkelbelegung pro Radiusschale trennt Spinner/Haube von Blatt eindeutig und modellunabhängig.
+   Allgemein: **bei rotationssymmetrischen Teilen über die Winkelverteilung messen, nicht über
+   die Dichte.**
+16. **Eine Restzahl ohne festes Prüffenster ist keine Aussage.** „105 Dreiecke übrig" kippte je
+   nach gewähltem z-Fenster auf 0 oder auf 644 — bei der Bf 109 lagen die vermeintlichen Reste
+   1,4 Einheiten hinter der Propellerebene und waren die Motorhaube. Wenn eine Metrik vom frei
+   gewählten Fenster abhängt, ist das Rendering der Nachweis, nicht die Zahl.
 13. **Ein Objekt sitzt nicht dort, wo sein Mittelpunkt sitzt.** Die Hecken hingen in der Schlucht,
    obwohl BUILD 105 die Bodenhöhe an ihrer Position korrekt bestimmte — sie sind nur 70–220 m
    lang bei 100 m Gitterweite, und die ENDEN wusste niemand. Bei allem, was länger oder breiter

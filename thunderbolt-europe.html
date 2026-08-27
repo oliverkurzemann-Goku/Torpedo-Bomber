@@ -253,7 +253,7 @@
   <div id="flash"></div>
   <div id="gunsight"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">EU BUILD 32</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">EU BUILD 33</div>
 
   <div id="apr">
     <div id="aprCall"></div>
@@ -1243,6 +1243,12 @@ function localFloor(root, x, z, r){
 // Two passes on purpose: a fixed slab at the very front works on a P-47, whose blades are the
 // frontmost thing, but misses a Dauntless completely, whose long spinner puts the blade roots
 // a whole unit further back. So find the blade material first, then centre the slab on it.
+// Measure the real propeller on the real mesh: shaft axis, where the spinner/cowl ends and the
+// blades begin, how far they reach, and WHICH PLANE they sit in. All in ROOT-LOCAL coordinates,
+// so it does not care where the aeroplane happens to be flying (CLAUDE.md lesson 2).
+// Two passes on purpose: a fixed slab at the very front works on a P-47, whose blades are the
+// frontmost thing, but misses a Dauntless completely, whose long spinner puts the blade roots
+// a whole unit further back. So find the blade material first, then centre the slab on it.
 function findProp(root, dir){
   dir=(dir<0)?-1:1;
   root.updateMatrixWorld(true);
@@ -1273,18 +1279,32 @@ function findProp(root, dir){
     for(const p of pts){ if(Math.hypot(p.x-cx,p.y-cy)<=rMid){ sx+=p.x; sy+=p.y; n++; } }
     if(!n) break; cx=sx/n; cy=sy/n;
   }
-  // cowl radius from density per unit annulus area, not from a vertex percentile: the cowl is
-  // dense and the blades are sparse, and that holds whatever the mesh split is - a percentile
-  // is dominated by whichever mesh happens to carry the most vertices and broke on two of five.
+  // Where does the spinner/cowl end and the blade begin? Density per annulus was the wrong
+  // measure - it put the P-47's boundary at r=0.90 while the blade ROOTS start at 0.74, so the
+  // roots survived the cut and stood there rigid while the new propeller turned around them
+  // (reported: "starre Spitzen von Propellern"). The right measure is ANGULAR OCCUPANCY: a
+  // spinner and a cowl are bodies of revolution and fill every angular sector at their radius;
+  // a blade fills only a few. Measured on the P-47: 33-36 of 36 sectors out to r=0.64, then 18
+  // at r=0.74 and 8-14 beyond - the transition IS the blade root, and it is unambiguous.
   const RCAP=S.x*0.17;                            // real fighters: prop radius is 0.13-0.16 span
-  const BW=S.x*0.008, NB=Math.ceil(RCAP/BW)+1;
+  const BW=S.x*0.008, NB=Math.ceil(RCAP/BW)+1, NA=36;
   const cnt=new Array(NB).fill(0);
-  for(const p of pts){ const b=Math.floor(Math.hypot(p.x-cx,p.y-cy)/BW); if(b<NB) cnt[b]++; }
-  const dens=cnt.map((c,i)=>c/(2*Math.PI*(i+0.5)*BW*BW));
-  let peak=0; for(const d of dens) if(d>peak) peak=d;
-  if(peak<=0) return null;
-  let core=0; for(let i=0;i<NB;i++){ if(dens[i]>peak*0.06) core=i; else if(i>2&&core>0) break; }
-  const hubR=(core+1)*BW;
+  const occ=[]; for(let i=0;i<NB;i++) occ.push(new Array(NA).fill(0));
+  for(const q of pts){
+    const dx=q.x-cx, dy=q.y-cy, r=Math.hypot(dx,dy);
+    const bi=Math.floor(r/BW); if(bi>=NB) continue;
+    cnt[bi]++;
+    let ang=Math.atan2(dy,dx); if(ang<0) ang+=Math.PI*2;
+    occ[bi][Math.floor(ang/(Math.PI*2)*NA)%NA]=1;
+  }
+  let core=0;
+  for(let i=0;i<NB;i++){
+    if(cnt[i]<6) continue;
+    const filled=occ[i].reduce((a,b)=>a+b,0);
+    if(filled>=NA*0.60) core=i; else if(core>0) break;
+  }
+  const hubR=Math.max((core+1)*BW, S.x*0.012);
+
   // everything sticking out past the cowl, anywhere in the engine bay, is blade material
   const cand=pts.filter(p=>{ const r=Math.hypot(p.x-cx,p.y-cy); return r>hubR*1.15 && r<=RCAP; });
   if(cand.length<12) return null;
@@ -1308,33 +1328,72 @@ function findProp(root, dir){
 // five models), so setting a blade triangle's three indices to the same value makes it a
 // zero-area triangle that rasterises nothing, while every other triangle keeps its own indices
 // and its own corners. Quantisation is irrelevant because nothing is read back or rewritten.
+// Remove the moulded blades. Every one of these geometries is INDEXED, so a blade triangle can
+// be made zero-area by pointing its three indices at the same vertex - no position is touched,
+// so the KHR quantisation is irrelevant, nothing can stretch, and no neighbouring triangle is
+// affected (which is what sank all three earlier attempts, all of which moved POSITIONS).
+// Self-widening: one fixed slab thickness does not fit all five models - a P-47's blades are
+// nearly flat, a Dauntless's are set well back behind a long spinner and are strongly twisted,
+// so a slab that clears one leaves stubs on the other (measured: 488 and 2818 triangles left
+// standing, which is exactly the reported "starre Spitzen von Propellern"). Widen only until
+// the blade annulus is actually clear, so no model is cut more than it needs.
 function cutBlades(root, prop){
   root.updateMatrixWorld(true);
   const invRoot=new THREE.Matrix4().copy(root.matrixWorld).invert();
   const a=new THREE.Vector3(), b=new THREE.Vector3(), c=new THREE.Vector3(), m=new THREE.Vector3();
-  const zLo=prop.zPlane-prop.halfDepth*1.15, zHi=prop.zPlane+prop.halfDepth*1.15;
+  const rIn=prop.hubR*1.05, rOut=prop.tipR*1.32;
+  // The measured blade thickness can come out very thin (the Bf 109's is 0.18 against a 1.57
+  // blade radius), and scaling a too-thin slab still leaves a too-thin slab - it left 105
+  // triangles standing. A real propeller blade is twisted, so its material always spans a
+  // useful fraction of its own radius along the shaft: use that as a floor.
+  const HD=Math.max(prop.halfDepth, prop.tipR*0.22);
+  function pass(zf){
+    const zLo=prop.zPlane-HD*zf, zHi=prop.zPlane+HD*zf;
+    let n=0;
+    root.traverse(o=>{
+      if(!o.isMesh||!o.geometry||!o.geometry.index||!o.geometry.attributes.position) return;
+      const bb=new THREE.Box3().setFromObject(o).applyMatrix4(invRoot);
+      if(bb.max.z<zLo||bb.min.z>zHi) return;
+      const pos=o.geometry.attributes.position, arr=o.geometry.index.array;
+      const rd=(i,out)=>{ readVert(pos,i,out); o.localToWorld(out); root.worldToLocal(out); };
+      for(let t=0;t+2<arr.length;t+=3){
+        if(arr[t]===arr[t+1]&&arr[t]===arr[t+2]) continue;
+        rd(arr[t],a); rd(arr[t+1],b); rd(arr[t+2],c);
+        // judge by the centroid: a blade is one sheet continuous with the hub, so demanding all
+        // three corners qualify leaves three quarters of every blade standing
+        m.set((a.x+b.x+c.x)/3,(a.y+b.y+c.y)/3,(a.z+b.z+c.z)/3);
+        if(m.z<zLo||m.z>zHi) continue;
+        const r=Math.hypot(m.x-prop.cx,m.y-prop.cy);
+        if(r<=rIn||r>=rOut) continue;
+        arr[t+1]=arr[t]; arr[t+2]=arr[t]; n++;
+      }
+      o.geometry.index.needsUpdate=true;
+    });
+    return n;
+  }
+  function stillThere(){
+    let n=0;
+    root.traverse(o=>{
+      if(!o.isMesh||!o.geometry||!o.geometry.index||!o.geometry.attributes.position) return;
+      const pos=o.geometry.attributes.position, arr=o.geometry.index.array;
+      const rd=(i,out)=>{ readVert(pos,i,out); o.localToWorld(out); root.worldToLocal(out); };
+      for(let t=0;t+2<arr.length;t+=3){
+        if(arr[t]===arr[t+1]&&arr[t]===arr[t+2]) continue;
+        rd(arr[t],a); rd(arr[t+1],b); rd(arr[t+2],c);
+        m.set((a.x+b.x+c.x)/3,(a.y+b.y+c.y)/3,(a.z+b.z+c.z)/3);
+        const r=Math.hypot(m.x-prop.cx,m.y-prop.cy);
+        if(r<rIn||r>prop.tipR*1.30) continue;
+        if(Math.abs(m.z-prop.zPlane)>prop.S.z*0.16) continue;
+        n++;
+      }
+    });
+    return n;
+  }
   let cut=0;
-  root.traverse(o=>{
-    if(!o.isMesh||!o.geometry||!o.geometry.index||!o.geometry.attributes.position) return;
-    const bb=new THREE.Box3().setFromObject(o).applyMatrix4(invRoot);
-    if(bb.max.z<zLo||bb.min.z>zHi) return;
-    const pos=o.geometry.attributes.position, arr=o.geometry.index.array;
-    const rd=(i,out)=>{ readVert(pos,i,out); o.localToWorld(out); root.worldToLocal(out); };
-    for(let t=0;t+2<arr.length;t+=3){
-      if(arr[t]===arr[t+1]&&arr[t]===arr[t+2]) continue;
-      rd(arr[t],a); rd(arr[t+1],b); rd(arr[t+2],c);
-      // Judge the TRIANGLE by its centroid, not by demanding all three corners qualify. A blade
-      // is one continuous sheet with the hub, so the root triangles always have a corner down in
-      // the spinner - the all-corners rule left three quarters of every blade standing.
-      m.set((a.x+b.x+c.x)/3,(a.y+b.y+c.y)/3,(a.z+b.z+c.z)/3);
-      if(m.z<zLo||m.z>zHi) continue;
-      const r=Math.hypot(m.x-prop.cx,m.y-prop.cy);
-      if(r<=prop.hubR*1.12||r>=prop.tipR*1.30) continue;
-      arr[t+1]=arr[t]; arr[t+2]=arr[t];
-      cut++;
-    }
-    o.geometry.index.needsUpdate=true;
-  });
+  for(const zf of [1.15,1.6,2.0,2.2]){
+    cut+=pass(zf);
+    if(stillThere()<=12) break;
+  }
   return cut;
 }
 // ---- a real propeller, built to the measured size, that actually turns -------------------
@@ -1518,6 +1577,37 @@ function tryLoad(L,k,i){
       modelBase[k]={yaw:d.yaw, pitch:0, roll:0, scale:0};
       note='auto ('+d.note+')'+(d.conf<0.6?' << unsure, use TURN MODEL':'');
     }
+    // Get off KHR_materials_pbrSpecularGlossiness. Every aircraft here is a Sketchfab export
+    // using that deprecated extension, and GLTFLoader implements it by PATCHING the standard
+    // shader at compile time (GLTFMeshStandardSGMaterial's onBeforeCompile) and by loading a
+    // second specular/glossiness texture per material on top of the diffuse one - the Bf 109
+    // alone carries 22 embedded images that way, by far the most of any aircraft in this game,
+    // and it is the one reported as "fast schwarz" build after build. Hiding createImageBitmap
+    // (EU BUILD 29) was not enough. Converting to a plain MeshStandardMaterial with just the
+    // diffuse map removes the patched shader entirely and halves the texture load per material.
+    // Honest limitation: iOS Safari's black-texture behaviour cannot be reproduced in the
+    // headless test rig, so this is not verified by a before/after screenshot - but a render
+    // built exactly this way (plain standard material + the decoded diffuse texture) came out
+    // correctly lit and coloured, which the extension path did not.
+    src.traverse(o=>{
+      if(!o.isMesh||!o.material) return;
+      const mats=Array.isArray(o.material)? o.material : [o.material];
+      const out=mats.map(m=>{
+        if(!m || !m.isGLTFSpecularGlossinessMaterial) return m;
+        const nm=new THREE.MeshStandardMaterial({
+          map:m.map||null, normalMap:m.normalMap||null, aoMap:m.aoMap||null,
+          color:m.color? m.color.clone() : new THREE.Color(0xffffff),
+          transparent:!!m.transparent, opacity:(m.opacity==null?1:m.opacity),
+          alphaTest:m.alphaTest||0, side:m.side, depthWrite:m.depthWrite!==false,
+          roughness:0.62, metalness:0.06 });
+        nm.name=m.name||'';
+        // a material with no texture and a near-black base colour renders as a black hole under
+        // any lighting - same trap the Dauntless fell into (4.11). Give it honest aluminium.
+        if(!nm.map && nm.color.getHex()<0x101010) nm.color.setHex(0x9aa3a8);
+        return nm;
+      });
+      o.material=Array.isArray(o.material)? out : out[0];
+    });
     modelRaw[k]=src;
     window.__modelSrc=(window.__modelSrc||{}); window.__modelSrc[k]=url;
     buildTemplate(k);
@@ -2383,7 +2473,12 @@ function aiSpec(kind){
 // bank, always falls as speed rises, the bomber stays >=1.5x worse than the best turner, and a
 // full 360 at 50° bank goes from 41-67 s to 7.5-12.2 s. Enemy AI uses this same function so the
 // dogfight balance moves with it rather than the player quietly becoming untouchable.
-const TURN_K=1.05, TURN_VREF=80, TURN_CEIL=1.8;
+// Raised again after real feedback that the turn was still too weak. The decisive number I had
+// wrong: I tuned against an assumed 105 m/s cruise, but the reported screenshot showed 375 mph
+// = 167 m/s, and this curve falls with 1/v - so what I had measured as a 12 s circle was really
+// a 19 s one in the air he actually flies. Re-tuned at the speeds actually flown: a P-47 at
+// 167 m/s now needs 10.6 s at 50 deg of bank instead of 19.2 s, and 8.1 s at full bank.
+const TURN_K=1.90, TURN_VREF=80, TURN_CEIL=2.4;
 function bankTurnRate(rollRad, spd, gLim, turnFactor){
   const v=Math.max(TURN_VREF, spd);
   const play=TURN_K*Math.sin(Math.abs(rollRad))*(TURN_VREF/v)*(turnFactor||1);
