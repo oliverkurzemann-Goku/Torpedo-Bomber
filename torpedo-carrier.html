@@ -310,7 +310,7 @@
   <div id="flash"></div>
   <div id="ltn" style="position:fixed;inset:0;background:#e6ecff;opacity:0;pointer-events:none;z-index:40;"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 118</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 119</div>
 
   <!-- Optical landing aid -->
   <div id="lso">
@@ -2829,6 +2829,25 @@ function resolveGroundAndDeck(dt){
     P.touchResolved=false;
     // hit sea
     if(y<=0.6){
+      // Reported: the dive-bomb sorties ("Dive on the Convoy", "Break Their Back") are
+      // unbeatable on Rookie. None of DIFFS.rookie's fields (dud/flak/zero/wire/fuel/dmg) touch
+      // the dive itself - a 70 deg dive-bomb run that comes out of the pull-out a hair late hits
+      // this exact check and crashes exactly as hard for Rookie as for Ace, the one failure mode
+      // Rookie was never built to soften. Reusing the sink-rate idea the deck landing already
+      // uses (sink>7.5 there is a hard-landing crash): a shallow graze - still descending, but not
+      // steeply, sink well under a real unrecovered dive - is a survivable skip off the wave tops
+      // on Rookie, not a fireball. A steep, fast impact (P.pitch still well nose-down, sink far
+      // above this) still kills at every difficulty, same as it always did - this only forgives a
+      // pull-out that was ALMOST there, not a dive flown straight into the water.
+      const sink=-P.vSpeed;
+      if(DIFF==='rookie' && sink<22){
+        P.pos.y=1.4; P.vSpeed=Math.max(P.vSpeed,3); P.pitch=Math.max(P.pitch,0.05);
+        P.hull=Math.max(0,P.hull-40); shake(2.0); sfxBoom(0.7); registerHit();
+        flash("SKIPPED OFF THE WATER",1400); P.touchResolved=false;
+        if(P.hull<=0) crash("SPLASH","You flew into the sea.");
+        else updateHUD();
+        return;
+      }
       crash("SPLASH","You flew into the sea.");
       return;
     }
@@ -4029,7 +4048,7 @@ function loadPlaneModel(){
       }
       window.__eyeDbg='EYE '+COCKPIT_EYE.map(v=>v.toFixed(2)).join('/');
       const btEl=document.getElementById('buildTag');
-      if(btEl) btEl.textContent='BUILD 118 · '+window.__eyeDbg;
+      if(btEl) btEl.textContent='BUILD 119 · '+window.__eyeDbg;
       let seat=null;
       model.traverse(function(o){
         if(!o.isMesh||!o.material) return;
@@ -5622,7 +5641,7 @@ function setupUIButtons(){
   if(dbgT2) dbgT2.onclick=()=>{
     dbgOn=!dbgOn; localStorage.setItem('dbgOn',dbgOn?'1':'0');
     const db=document.getElementById('dbgBox'); if(db) db.textContent=dbgOn?'✓':'';
-    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 118'; }
+    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 119'; }
   };
   const lu=document.getElementById('lookUp'), ld=document.getElementById('lookDn');
   const setTilt=v=>{ pitTilt=Math.max(-0.9,Math.min(0.4,v)); localStorage.setItem('pitTilt',pitTilt.toFixed(3)); };

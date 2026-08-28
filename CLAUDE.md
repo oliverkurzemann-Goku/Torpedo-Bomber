@@ -5,7 +5,7 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 118 · Thunderbolt Squadron EU BUILD 41**
+Stand bei Übergabe: **Torpedo Squadron BUILD 119 · Thunderbolt Squadron EU BUILD 42**
 Repo: `oliverkurzemann-Goku/Torpedo-Bomber`, ausgeliefert über GitHub Pages.
 Alle Angaben unten sind aus dem tatsächlichen Code verifiziert, nicht aus dem Gedächtnis.
 
@@ -2265,6 +2265,92 @@ Code: `torpedo-carrier.html` und `thunderbolt-europe.html`, Funktion `pitShift()
 
 ---
 
+### 4.34 Rookie: „Dive on the Convoy"/„Break Their Back" und „Liberators at Noon" nicht zu schaffen — BEHOBEN in BUILD 119 / EU BUILD 42
+
+Nutzer: „Die Missionen sind für Rookie noch zu schwer. Liberator, dive into convoy etc… nicht zu
+schaffen…" Zwei konkret benannte Missionen, aus zwei verschiedenen Spielen, mit zwei getrennten,
+aber jeweils an echten Zahlen (nicht am Code-Lesen allein) gefundenen Ursachen — beide Male hat
+die vorhandene `DIFFS`-Skalierung (flak/dmg/zero/wire/fuel bzw. flak/dmg/fuel/aim) den eigentlichen
+Schwierigkeitstreiber schlicht nie berührt.
+
+#### 1) `torpedo-carrier.html`: SBD-Sturzflug-Missionen — der Sturzflug selbst ist ungebremst
+
+„Dive on the Convoy" (Sortie 8) und „Break Their Back" (Sortie 9) verlangen einen 70°-Sturzflug aus
+3.650 m, Bombenabwurf tief, dann Abfangen. Keines der sechs `DIFFS.rookie`-Felder
+(`dud/flak/zero/wire/fuel/dmg`) hat irgendetwas mit Sturzflug, Abfang-Physik oder Wasserkontakt zu
+tun — `resolveGroundAndDeck()`s globale Prüfung `if(y<=0.6) crash("SPLASH",...)` gilt unverändert
+für Rookie wie für Ace. Ein Rookie, der den Abfang nur knapp verpasst, stirbt exakt so hart wie ein
+Ass — genau die eine Fehlerart, die Rookie laut seinem eigenen Zweck-Kommentar („makes the sortie
+survivable while you learn the deck") abfedern sollte, aber nie angefasst hatte.
+
+**Fix:** Am selben `y<=0.6`-Punkt, nur bei `DIFF==='rookie'` und nur bei moderater Sinkrate
+(`sink<22`, wiederverwendet aus demselben Sinkraten-Konzept, das die Deck-Landung schon nutzt —
+dort ist `sink>7.5` eine Bruchlandung) wird der Bodenkontakt jetzt zu einem überlebbaren „Abprall
+von der Wasseroberfläche" statt einem sofortigen Absturz: 40 Rumpf-Schaden, Aufprall-Effekte, dann
+zurück in die Luft. Ein steiler, schneller Einschlag (hohe Sinkrate — ein wirklich verpasster,
+durchgezogener Sturzflug) bleibt bei JEDER Schwierigkeit tödlich, unverändert. Da die Prüfung global
+ist, hilft das nicht nur den beiden SBD-Sorties, sondern jedem Rookie-Flug, der knapp über dem
+Wasser fliegt (praktisch jeder Torpedoanflug — „stay low" steht in fast jeder Missionsbeschreibung).
+
+**Nachgewiesen, nicht nur geschrieben:** Direkter Funktionsaufruf von `resolveGroundAndDeck()` gegen
+den echten, laufenden Spielcode (Playwright), mit kontrolliertem `P.vSpeed`/`P.pitch`/`P.hull`:
+- Rookie, flacher Abprall (sink=10 bzw. 18) → überlebt, Hülle 100→60, `alive:true`.
+- Rookie, steiler Einschlag (sink=60/30, Nase deutlich unten) → weiterhin sofortiger Absturz,
+  `alive:false`, exakt wie vorher.
+- Rookie, flacher Abprall bei bereits niedriger Hülle (30) → stirbt korrekt, wenn der Abprall selbst
+  mehr Schaden nimmt als noch vorhanden ist (0 Hülle → Absturz) — kein Freifahrtschein.
+- Veteran UND Ace, identischer flacher Abprall (sink=10) → weiterhin sofortiger Absturz, keine
+  Änderung — die neue Abfederung greift ausschließlich bei Rookie.
+Zusätzlich mit echtem Screenshot bestätigt: „SKIPPED OFF THE WATER" erscheint, Flugzeug steigt
+sichtbar wieder (VSI +600 FPM), HUD zeigt HULL 60 %.
+
+#### 2) `thunderbolt-europe.html`: „Liberators at Noon" — die Abwehrfeuer-Lautstärke, nicht die Treffergenauigkeit
+
+Sortie 9 verlangt, ALLE sechs B-24 (26 HP je Bomber) UND beide P-47-Begleitjäger abzuschießen —
+kein Teilerfolg möglich (`checkObjective()` verlangt `airLeft===0`). Jeder Bomber hat bis zu drei
+gleichzeitige Abwehrgeschütz-Stationen, die umso öfter feuern, je näher man kommt
+(`updateBomber()`); `D().aim` (0,55 bei Rookie) streut deren Zielgenauigkeit nur um ~27 % breiter
+als bei Veteran — das war die einzige vorhandene Rookie-Abschwächung.
+
+**Gemessen statt geraten, mit dem echten Feuer-Code gegen eine live gespawnte 6-Bomber-Box:**
+Ein regungslos in der Formation stehender Spieler verlor in 10 Sekunden bei Rookie 92 von 100 Hülle
+(Distanz 600), bei Veteran/Ace 100 von 100 (toter Spieler) — bei praktisch jeder getesteten
+Distanz (150–900). Das ist kein „etwas zu hart", das ist ein Todesurteil binnen 10–15 Sekunden,
+unabhängig vom fliegerischen Können, und `aim`/`dmg` allein (die einzigen bisher wirkenden Regler)
+kamen dagegen nicht an — die eigentliche Ursache ist reine Feuer-MENGE (bis zu drei Geschütze pro
+Bomber, alle ~0,3–0,55 s, mal sechs Bomber gleichzeitig), kein Genauigkeitsproblem.
+
+**Fix:** Neuer, Rookie-exklusiver Zweig direkt in `updateBomber()` (Veteran/Ace durchlaufen exakt
+die alte, unveränderte Formel): Rookie-Bomber feuern höchstens EIN Geschütz pro Salve (statt bis zu
+drei), mit ~1,8× längerer Ladezeit und doppelt so breiter Streuung. Trifft automatisch auch Sortie 8
+(„The Bomber Stream", 5×B-17 ohne Begleitschutz), da beide Missionen dieselbe `updateBomber()`
+teilen.
+
+**Nachgewiesen:** Derselbe Prüfstand, diesmal mit einer entscheidenden Korrektur — der erste
+Testlauf hatte den Spieler an einem festen Weltkoordinaten-Versatz hinter Bomber Nr. 0 platziert,
+aber `spawnBombers()` würfelt eine ZUFÄLLIGE Formationsrichtung; dieselbe „Distanz" bedeutete also
+lauf-zu-lauf einen anderen echten Abstand zu den übrigen fünf Bombern (Veteran zeigte einmal 50,4,
+im nächsten Lauf 0,0 Hülle-Verlust bei identischer Konfiguration — genau Lektion 3, ein Fehler im
+eigenen Testaufbau). Behoben durch eine feste Formationsrichtung (Math.random() für den einen
+Aufruf überschrieben) und Mittelung über 3 Wiederholungen. Ergebnis danach, konsistent über alle
+vier getesteten Distanzen: Rookie verliert 0–7,5 Hülle in 10 Sekunden (vorher 43–92), Veteran 0–100
+(unverändert gefährlich, korrekt — die Formel wurde für Veteran/Ace gar nicht angefasst), Ace 0–100
+(unverändert, ebenfalls nicht angefasst).
+
+**Offen (beide Fixes):** Nicht auf dem echten iPad geflogen. Ob „Liberators at Noon" mit der neuen
+Überlebensfähigkeit auch tatsächlich in angemessener Zeit ABSCHLIESSBAR ist (alle 8 Gegner
+tatsächlich abschießen, nicht nur überleben), wurde nur überschlägig aus Waffenschaden/-rate
+plausibilisiert (Bf109: ~15,9 Schaden/s bei Dauertreffer, ein B-24 fällt rechnerisch in 1,6–5 s
+Feuerzeit), nicht mit einem vollständigen Missions-Durchspielen verifiziert — dafür bräuchte es
+einen echten Steuer-Bot, was aus Zeitgründen nicht aufgebaut wurde. Der gemessene, dominante Faktor
+(fast sicherer Tod binnen 10–15 s unabhängig vom Können) ist behoben; ob das Zielschießen selbst
+jetzt fair genug ist, kann nur der Nutzer beurteilen.
+
+Code: `torpedo-carrier.html`, `resolveGroundAndDeck()`, Suche nach „SKIPPED OFF THE WATER".
+`thunderbolt-europe.html`, `updateBomber()`, Suche nach `rookieB`.
+
+---
+
 ## 5. Gelernte Lektionen (aus echten, wiederholten Fehlern)
 
 1. **Nie im Chat/offline testen und im Spiel hoffen.** Der größte Zeitfresser dieses
@@ -2375,6 +2461,19 @@ Code: `torpedo-carrier.html` und `thunderbolt-europe.html`, Funktion `pitShift()
    einer Formel durch eine andere: die volle Zielfunktion über eine große, echte Fläche sampeln und
    Mittelwert UND Extremwert gegen den alten Code vergleichen — nicht nur eine der beiden Zahlen,
    und nicht die Einzelterm-Formel statt der tatsächlich zusammengesetzten Funktion.**
+21. **Eine Schwierigkeits-Tabelle, die vollständig aussieht, kann den eigentlichen Schwierigkeits-
+   treiber trotzdem komplett auslassen.** „Liberators at Noon" hatte längst `flak/dmg/fuel/aim` pro
+   Stufe skaliert — wirkte damit erledigt. Ein Spieler, regungslos in eine echte 6-Bomber-Box
+   gestellt und 10 Sekunden lang dem echten Feuer-Code ausgesetzt, verlor bei Rookie 92 von 100
+   Hülle, bei Veteran/Ace 100 von 100 — praktisch derselbe fast sichere Tod bei allen drei Stufen,
+   weil der dominante Faktor (bis zu drei Geschütze pro Bomber, mal sechs Bomber) nie eine eigene
+   Stellschraube hatte, nur die Treffergenauigkeit. **Bei „X ist immer noch zu schwer trotz
+   Schwierigkeitsstufe": den tatsächlichen Schaden pro Sekunde aus dem echten Code messen (Spieler
+   fixieren, den echten Update-Pfad viele simulierte Sekunden laufen lassen), nicht die Liste der
+   bereits skalierten Werte für vollständig halten.** Derselbe Prüfstand brauchte einen zweiten
+   Durchgang, weil der erste eine zufällige Formationsrichtung nicht festgehalten hatte und deshalb
+   bei identischer Konfiguration unterschiedliche Zahlen lieferte — Lektion 3 gilt auch für
+   Kampf-/Schadens-Simulationen, nicht nur für Positions-/Bewegungstests.
 
 ---
 
