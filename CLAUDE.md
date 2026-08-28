@@ -5,7 +5,7 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 113 · Thunderbolt Squadron EU BUILD 36**
+Stand bei Übergabe: **Torpedo Squadron BUILD 113 · Thunderbolt Squadron EU BUILD 37**
 Repo: `oliverkurzemann-Goku/Torpedo-Bomber`, ausgeliefert über GitHub Pages.
 Alle Angaben unten sind aus dem tatsächlichen Code verifiziert, nicht aus dem Gedächtnis.
 
@@ -1639,6 +1639,103 @@ Code: `thunderbolt-europe.html`, `findGearClusters()`, Suche nach „laterally M
 
 ---
 
+### 4.26 Thunderbolt: Wolken hinzugefügt, dabei ein schwerer, alter Bug gefunden — Straße/Schiene/Ufer waren nie sichtbar — EU BUILD 37
+
+Nutzer: „Mach weiter, diesmal mit der Grafik des Spiels. Und eventuell kannst du die Missionen
+verbessern?" Grafik zuerst angegangen. `torpedo-carrier.html` diente als Vorlage-Vergleich
+(Wolken, Himmelskuppel) — dabei aufgefallen: `thunderbolt-europe.html` hatte **überhaupt keine
+Wolken**, ein auffälliger, leerer Himmel in einem Flugspiel. Beim Verifizieren des Wolken-Ports
+per Rendertest wurde daraus ein deutlich größerer Fund.
+
+#### 1) Wolken — neu eingebaut, nach dem bewährten Vorbild aus `torpedo-carrier.html`
+
+`buildClouds()`/`updateClouds()` 1:1 nach dem Muster von `torpedo-carrier.html`s gleichnamigen
+Funktionen übernommen: Billboard-Sprites mit weicher Radial-Gradient-Textur (`makeSoftSprite()`),
+mehrere Sprites pro Wolkengruppe, ein fester Pool (40 Wolken), der um die Spielerposition
+gekachelt wird (`updateClouds()`, ±5000 Einheiten Toleranzfenster). Neu gegenüber der Vorlage:
+`applyWeather()` blendet nur einen Teil des Pools ein (`clear`:16, `haze`:26, `rain`:34,
+`storm`:40) und färbt die restlichen um (heller bei Klarwetter, dunkler/grauer bei Sturm) statt
+bei jedem Wetterwechsel neu zu bauen — passend zu diesem Spiel, das (anders als das Trägerspiel)
+bereits ein Wettersystem mit mehreren Stufen hat.
+
+**Verifiziert:** `buildClouds`/`updateClouds`/`applyWeather` wortwörtlich extrahiert, mit echtem
+`GLTFLoader`-freiem Headless-WebGL-Renderer ausgeführt: 40 Wolken gebaut, `storm` zeigt 40
+sichtbar, `clear` zeigt 16 sichtbar (exakt die konfigurierten Werte), Sprite-Gruppen rendern an
+den erwarteten Positionen. Die volle Aufbaukette (`buildTerrain(); buildRoads(); buildForests();
+buildSettlement(); buildAirfield(); buildRain(); buildClouds(); applyWeather();`) läuft
+fehlerfrei durch.
+
+#### 2) Der eigentliche Fund: Straße, Schiene, Bankette und Fluss waren nie sichtbar — falsche Dreiecks-Wicklung
+
+Beim isolierten Rendertest des Fluss-Ufers (derselbe Nachweis-Standard wie immer: Objekt allein
+in einer Szene, mehrere Kamerawinkel, greller Kontrast-Hintergrund) zeigte sich: **nichts**
+zeichnete sich, aus keinem Winkel, keiner Entfernung, auch nicht direkt von oben mit sattem
+Magenta dahinter. Das widerlegte sofort die erste Vermutung (Material/Beleuchtung) — bei einem
+Renderfehler dieser Art (komplett unsichtbar, unabhängig vom Blickwinkel) ist die nächste Frage
+immer: wird das Objekt überhaupt gezeichnet, nicht: sieht man es schlecht.
+
+`geometry.boundingSphere` war tatsächlich `null` (nie berechnet — `computeBoundingSphere()` wird
+von Three.js nur lazy in `raycast()` aufgerufen, nie fürs Rendern), das allein erklärte aber nicht
+die Unsichtbarkeit aus JEDEM Winkel inklusive direkt von oben mit riesigem `frustumCulled=false`.
+Der eigentliche Befund kam aus dem Messen der Flächennormalen (`computeVertexNormals()`s
+Ausgabe): **konsequent −Y, überall auf dem Ufer-Mesh** — jede Dreiecksfläche zeigt nach unten,
+weg von jeder Kamera, die (wie in diesem Spiel immer) über dem Wasser fliegt. Bei einem
+Standard-Material (`side: THREE.FrontSide`, das Three.js-Standardverhalten, hier nirgends
+überschrieben) wird eine Fläche, deren Normale von der Kamera weg zeigt, grundsätzlich nie
+gezeichnet — unabhängig von Blickwinkel oder Abstand, weil das Kriterium nicht „wie schräg schaut
+man drauf", sondern „auf welcher Seite der Fläche steht die Kamera" ist. Die Kamera steht in
+diesem Spiel nie unter dem Wasserspiegel.
+
+**Nachgerechnet, welche Dreiecks-Wicklung das ergibt:** Sowohl `buildWater()`s eigene
+Index-Konstruktion als auch die von `roadMesh`/`railMesh`/den Banketten geteilte `ribbon()`-
+Hilfsfunktion bauen ihre Dreiecke identisch: `idx.push(a,a+1,a+2, a+1,a+3,a+2)` über einen Pfad,
+der stur in eine Richtung durchnummeriert wird (Fluss: `z` von `-WORLD/2` aufwärts; Straße: `x`
+von `-WORLD/2` aufwärts). Handrechnung mit konkreten Testpunkten (einmal Pfadrichtung +Z, einmal
++X) ergab in BEIDEN Fällen dieselbe Kreuzprodukt-Normale: `(0,-200,0)` — die Wicklung ist so
+gebaut, dass sie unabhängig von der tatsächlichen Pfadrichtung immer nach unten zeigt. Das
+bedeutet: **nicht nur der Fluss** — auch Straße, Bankette UND Bahnlinie, die alle über dieselbe
+`ribbon()`-Funktion laufen, haben exakt dieselbe falsche Wicklung. Am ausgelieferten Code
+gemessen (nicht nur hergeleitet): Fluss-Normale `(0,1,0)*-1`, Straßen-Normale `(−0.05,−0.998,
+−0.02)`, Schienen-Normale `(−0.16,−0.986,0.03)` — alle drei nahezu exakt −Y.
+
+**Tragweite:** Straße, Bahnlinie, Bankette und Fluss — praktisch die gesamte „Infrastruktur"-
+Ebene des Geländes — waren seit es `ribbon()`/`buildWater()` in dieser Form gibt, in JEDER
+Mission, aus JEDEM Kamerawinkel unsichtbar, unabhängig vom iPad, unabhängig vom Wetter. Das
+erklärt einen Teil der in 4.11 vage beschriebenen „Terrain wirkt schwach" — dort wurde nach
+Materialglanz gesucht, aber ein komplett fehlendes Straßennetz wäre die naheliegendere Erklärung
+gewesen, wurde aber nie gerendert und daher nie bemerkt (Lektion 1: kein Test zählt, der nicht
+wirklich rendert).
+
+**Fix:** Wicklung in `ribbon()` UND in `buildWater()`s eigener Kopie von `a,a+1,a+2, a+1,a+3,a+2`
+auf `a,a+2,a+1, a+1,a+2,a+3` gedreht (jedes Dreieck einmal umgekehrt bestückt) — kehrt die
+Normale nach +Y, ohne eine einzige Position zu verändern. `waterMesh.frustumCulled=false` (die
+`boundingSphere`-Absicherung) bleibt zusätzlich bestehen, als günstige, unabhängige Absicherung.
+
+**Nachgewiesen, vorher/nachher:** Normalen-Messung am ausgelieferten Code vor dem Fix (−Y bei
+Fluss, Straße, Schiene) und danach (+Y bei allen dreien, exakt `(0,1,0)` beim Fluss). Isolierter
+Rendertest des Wasser-Meshes: vorher 0 von 480.000 Pixeln nicht-Magenta bei drei verschiedenen
+Kamera-Setups (nah, weit, senkrecht von oben); nachher 112.281–240.130 Pixel nicht-Magenta bei
+denselben drei Setups — das Ufer füllt jetzt einen plausiblen Teil des Bildausschnitts. Isolierter
+Rendertest der Straße (senkrecht von oben, echte Terrain-/Straßengeometrie): vorher 0, nachher
+12.475 nicht-Magenta-Pixel mit einer erkennbar straßenfarbenen Fläche. Die komplette
+Aufbau-Kette (`buildTerrain(); buildRoads(); buildForests(); buildSettlement(); buildAirfield();
+buildRain(); buildClouds(); applyWeather();`) läuft danach weiterhin fehlerfrei durch, keine
+Regression an den bereits bestehenden Meshes.
+
+**Offen:** Nicht auf dem echten iPad geflogen. Die Farbgebung selbst (wie hell Straße/Wasser unter
+der tatsächlichen Spiel-Beleuchtung wirken) konnte im Prüfstand nur mit einer vereinfachten
+Test-Beleuchtung bestätigt werden, nicht mit der echten Szenen-Beleuchtung aus `init()` — das ist
+aber ein rein kosmetisches Folgethema, kein Sichtbarkeits-Bug mehr. Die Himmelskuppel aus
+`torpedo-carrier.html` (`buildSky()`) wurde in dieser Runde nicht portiert — zurückgestellt
+zugunsten des Wolken- und Sichtbarkeits-Fixes; falls der Himmel im Vergleich zum Trägerspiel
+weiterhin schlicht wirkt, ist das der nächste Schritt. Missionen (vom Nutzer als „eventuell"
+zweitrangig genannt) sind nicht Teil dieser Runde.
+
+Code: `thunderbolt-europe.html`, Suche nach `buildClouds`, `updateClouds` (neu); `ribbon()` und
+`buildWater()`, Suche nach „Wound so the face normal points +Y".
+
+---
+
 ## 5. Gelernte Lektionen (aus echten, wiederholten Fehlern)
 
 1. **Nie im Chat/offline testen und im Spiel hoffen.** Der größte Zeitfresser dieses
@@ -1712,6 +1809,15 @@ Code: `thunderbolt-europe.html`, `findGearClusters()`, Suche nach „laterally M
    lang bei 100 m Gitterweite, und die ENDEN wusste niemand. Bei allem, was länger oder breiter
    als eine Geländekachel ist, die Höhe über die ganze Ausdehnung abtasten und auf den Tiefpunkt
    setzen. Gemessen: 58 % schwebten, der schlimmste 137 m.
+17. **Wenn ein Objekt aus JEDEM Kamerawinkel unsichtbar ist, ist die erste Frage „wird es
+   überhaupt gezeichnet", nicht „warum sieht man es schlecht".** Straße, Schiene, Bankette und
+   Fluss in `thunderbolt-europe.html` waren nicht dunkel, nicht falsch belichtet, nicht zu dünn —
+   sie waren komplett unsichtbar, aus jedem Winkel inklusive senkrecht von oben, weil ihre
+   Dreiecks-Wicklung die Flächennormale nach unten zeigen ließ, weg von einer Kamera, die nie
+   unter der Wasser-/Straßenebene steht. Ein Material-/Beleuchtungsfehler ist blickwinkel-
+   abhängig (aus manchen Winkeln sieht man trotzdem etwas); ein Culling-/Wicklungsfehler ist es
+   nicht — bei „nichts zu sehen, aus wirklich jedem getesteten Winkel" zuerst die
+   Flächennormalen messen (`computeVertexNormals()`s Ausgabe), nicht am Material schrauben.
 
 ---
 
