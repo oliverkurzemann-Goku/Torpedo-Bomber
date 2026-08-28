@@ -5,7 +5,7 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 116 · Thunderbolt Squadron EU BUILD 39**
+Stand bei Übergabe: **Torpedo Squadron BUILD 117 · Thunderbolt Squadron EU BUILD 39**
 Repo: `oliverkurzemann-Goku/Torpedo-Bomber`, ausgeliefert über GitHub Pages.
 Alle Angaben unten sind aus dem tatsächlichen Code verifiziert, nicht aus dem Gedächtnis.
 
@@ -2046,6 +2046,71 @@ Test gezielt prüfen: stummer Schalter aus, Medienlautstärke hoch, dann erneut 
 der GEAR/FLAPS-Knöpfe) achten.
 
 Code: beide Dateien, Funktion `initAudio()`, Suche nach „still comes up 'suspended'".
+
+---
+
+### 4.31 Torpedo Carrier: Cockpit-Visier schwebt in der Luft — BEHOBEN in BUILD 117
+
+Nutzer, direkt nach 4.30: „Und das Visier (roter Kreis) bei der Cockpit Darstellung ist irgendwo
+in der Luft, also viel zu weit oben." Nur `torpedo-carrier.html` betroffen — `thunderbolt-europe.
+html` hat kein vergleichbares System (dort ist das im Foto sichtbare Leuchtvisier Teil der
+Aufnahme selbst, kein separat positioniertes Element).
+
+**Ursache, an echter Three.js-Kamera-/Projektionsmathematik nachgerechnet, nicht geraten:**
+`.pitReticle` wird in `updateCamera()`s Cockpit-Zweig per 3D-Projektion positioniert — ein Punkt
+400 Einheiten entlang der wahren Nasenrichtung (`nd`, ungebremst, volle Nickrate) wird durch die
+tatsächliche Kamera projiziert. Die Kamera selbst zielt aber NICHT auf `nd`, sondern auf ein
+eigenes `tgt`, dessen Höhenanteil bewusst nur 50 % des Nickwinkels folgt (`tiltA=pitTilt+P.pitch*
+0.5`, Kommentar im Code: „cruise nose-up attitude no longer pushes the view into the sky") — eine
+Design-Entscheidung, die einer früheren Sitzung galt und nie mit der Visier-Projektion
+abgeglichen wurde, die weiterhin die volle, ungebremste `nd` benutzt.
+
+Bei ebenem Flug bedeutet das schon einen festen Versatz durch `pitTilt`s Grundwert (−0,34 rad,
+„Baseline down-tilt"): am echten Code mit einer echten `THREE.PerspectiveCamera` und `.project()`
+nachgerechnet, landet das Visier bei 29 % Bildhöhe statt bei den ~50 %, auf die die Kamera selbst
+zentriert ist. Bei echtem Steigen — ein Katapultstart ist genau das — geht die Schere schnell
+weiter auf: bei 40° Steigwinkel lag das Visier bei 1 % Bildhöhe, praktisch am oberen Bildrand
+festgenagelt; bei 70° identisch. Genau das beschreibt „irgendwo in der Luft, viel zu weit oben".
+
+**Fix, zweiteilig:**
+1. Der konstante `pitTilt`-Grundversatz wird aus dem projizierten Zielpunkt herausgerechnet
+   (`aimPt.y += 40*Math.tan(pitTilt)`) — bei unverändertem `pitTilt` (Standard, bevor jemand
+   Look ▲/▼ anfasst) und Geradeausflug zentriert das Visier jetzt auf das, worauf die Kamera
+   selbst zentriert ist, statt systematisch daneben zu liegen.
+2. Das Ergebnis wird zusätzlich auf ein festes Bildschirmband geklemmt (Höhe 15–60 %, Breite
+   25–75 %) — unabhängig davon, wie steil tatsächlich geflogen wird, kann das Visier dadurch nie
+   mehr über den Bildrand hinauslaufen. Ein Zielhilfe-Symbol, das ein normaler Steigflug vom
+   Bildschirm schießen kann, ist unbrauchbar, egal wie „korrekt" der zugrundeliegende Winkel ist.
+
+**Nachgewiesen, nicht nur gerechnet:** Erst eine eigenständige Simulation mit echtem
+`THREE.PerspectiveCamera`/`.project()` (Kamera- und Flugzeug-Aufbau wortwörtlich aus
+`updateCamera()`/`updatePlaneMesh()` nachgebaut) über mehrere Nickwinkel (−30° bis 70°) bestätigt:
+vorher wandert das Visier von 45 % (Sturzflug) bis 1 % (40°+ Steigflug) praktisch linear mit dem
+Winkel; nachher bleibt es zwischen 15 % und 60 %, mit 31 % bei ebenem Flug. Dann am ECHTEN,
+laufenden Spielcode wiederholt (`GLTFLoader`-freies Headless-Setup reicht hier nicht — die Kamera
+braucht ein echtes Playwright/Chromium mit echter `PerspectiveCamera`): `P.pitch` gesetzt,
+`updatePlaneMesh()` und `updateCamera()` wie im echten Frame aufgerufen, `.pitReticle`s
+tatsächliche Pixel-Position ausgelesen — Werte stimmen exakt mit der Simulation überein (31,4 %
+bei 0°, an der 15-%-Decke geklemmt bei 40° und 70°, 47,2 % bei −30°). Zusätzlich als Screenshot
+bestätigt: bei ebenem Flug sitzt der rote Kreis jetzt praktisch deckungsgleich auf dem im Foto
+bereits eingebauten, weißen Leuchtvisier-Ring; im 40°-Steigflug bleibt er sichtbar am oberen
+Rahmen statt zu verschwinden.
+
+Ein eigener Fehler beim ersten Testversuch, aus Gründlichkeit dokumentiert: der erste Durchlauf
+gegen den echten, laufenden Spielcode zeigte auch bei 0° Nickwinkel fälschlich 15 % (geklemmt) —
+weil `P.pos` gesetzt, aber `updatePlaneMesh()` (das `planeGroup.position` aus `P.pos` aktualisiert)
+nie aufgerufen wurde, sodass die Kamera von einer veralteten Flugzeugposition ausging, während der
+Zielpunkt die neue benutzte. Nach Ergänzen des fehlenden Aufrufs verschwand die Diskrepanz.
+Lektion 3 bestätigt sich wieder: ein Fehler im eigenen Testaufbau sah zunächst wie ein Fehler im
+Spiel aus.
+
+**Offen:** Nicht auf dem echten iPad geflogen. Das Visier im Chase-View (`viewMode==='chase'`,
+separater Code-Pfad ab „gunsight in chase view") benutzt Kamera-Ziel UND Visier-Projektion aus
+derselben, ungebremsten `nd` — dort besteht dieselbe systematische Lücke nicht, geprüft, nicht
+angefasst.
+
+Code: `torpedo-carrier.html`, `updateCamera()`, Cockpit-Zweig, Suche nach „floating way up off the
+photo entirely".
 
 ---
 

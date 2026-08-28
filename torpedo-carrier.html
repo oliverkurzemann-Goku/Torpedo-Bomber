@@ -310,7 +310,7 @@
   <div id="flash"></div>
   <div id="ltn" style="position:fixed;inset:0;background:#e6ecff;opacity:0;pointer-events:none;z-index:40;"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 116</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 117</div>
 
   <!-- Optical landing aid -->
   <div id="lso">
@@ -4029,7 +4029,7 @@ function loadPlaneModel(){
       }
       window.__eyeDbg='EYE '+COCKPIT_EYE.map(v=>v.toFixed(2)).join('/');
       const btEl=document.getElementById('buildTag');
-      if(btEl) btEl.textContent='BUILD 116 · '+window.__eyeDbg;
+      if(btEl) btEl.textContent='BUILD 117 · '+window.__eyeDbg;
       let seat=null;
       model.traverse(function(o){
         if(!o.isMesh||!o.material) return;
@@ -4956,13 +4956,30 @@ function updateCamera(dt){
     applyShake();
     // Pin the gunsight onto where the guns actually shoot (nose direction), so the
     // reticle always matches the impact regardless of the cockpit look angle.
+    // Reported: floating way up off the photo entirely. Root cause, confirmed with the exact
+    // camera/reticle math run outside the game: the camera's OWN look target deliberately only
+    // follows 50% of P.pitch (tiltA above - "cruise nose-up attitude no longer pushes the view
+    // into the sky"), but this projection used the raw, undamped nose direction for the reticle.
+    // In level flight the two already disagree by the pitTilt baseline alone (measured: the
+    // reticle sits at 29% down the screen instead of the ~50% the camera itself is centred on);
+    // in any real climb - a catapult launch is exactly this - the gap between "true, 100% pitch"
+    // and "camera's damped 50%" widens fast: at 40 degrees nose-up the old math put the reticle
+    // 1% of the way down the screen, i.e. pinned to the very top edge. Two independent fixes:
+    // cancel the constant pitTilt offset (so a level, untouched view centres the reticle instead
+    // of leaving it stuck 20-odd percent high), and clamp the result to a band that always stays
+    // on the photographed dashboard - a gunsight that can be driven off-screen by an ordinary
+    // climb was never going to be usable there regardless of how correct the underlying angle is.
     const ret=document.querySelector('.pitReticle');
     if(ret){
       camera.updateMatrixWorld();
-      const aim=P.pos.clone().addScaledVector(nd,400).project(camera);
+      const aimPt=P.pos.clone().addScaledVector(nd,400);
+      aimPt.y+=40*Math.tan(pitTilt);
+      const aim=aimPt.project(camera);
       if(aim.z<1){
-        ret.style.left=((aim.x*0.5+0.5)*window.innerWidth)+'px';
-        ret.style.top=((-aim.y*0.5+0.5)*window.innerHeight)+'px';
+        const fx=Math.max(0.25,Math.min(0.75, aim.x*0.5+0.5));
+        const fy=Math.max(0.15,Math.min(0.60, -aim.y*0.5+0.5));
+        ret.style.left=(fx*window.innerWidth)+'px';
+        ret.style.top=(fy*window.innerHeight)+'px';
         ret.style.display='block';
       } else { ret.style.display='none'; }
     }
@@ -5586,7 +5603,7 @@ function setupUIButtons(){
   if(dbgT2) dbgT2.onclick=()=>{
     dbgOn=!dbgOn; localStorage.setItem('dbgOn',dbgOn?'1':'0');
     const db=document.getElementById('dbgBox'); if(db) db.textContent=dbgOn?'✓':'';
-    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 116'; }
+    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 117'; }
   };
   const lu=document.getElementById('lookUp'), ld=document.getElementById('lookDn');
   const setTilt=v=>{ pitTilt=Math.max(-0.9,Math.min(0.4,v)); localStorage.setItem('pitTilt',pitTilt.toFixed(3)); };
