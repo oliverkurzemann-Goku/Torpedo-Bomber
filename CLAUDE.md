@@ -5,7 +5,7 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 119 · Thunderbolt Squadron EU BUILD 42**
+Stand bei Übergabe: **Torpedo Squadron BUILD 119 · Thunderbolt Squadron EU BUILD 43**
 Repo: `oliverkurzemann-Goku/Torpedo-Bomber`, ausgeliefert über GitHub Pages.
 Alle Angaben unten sind aus dem tatsächlichen Code verifiziert, nicht aus dem Gedächtnis.
 
@@ -2190,13 +2190,14 @@ ALTEN Code gefunden, nicht durch Plausibilität der neuen Formel (genau Lektion 
   großzügiger Sicherheitsmarge für ein langsameres iPad-JS-Engine, aber nicht auf echter Hardware
   gemessen (siehe Offen).
 
-**Nebenbefund, nicht angefasst:** Der Überflug-Render zeigte ein auffällig regelmäßiges
-Schachbrett-Muster in der Feld-/Farmland-EINFÄRBUNG (Vertex-Farben, separat von `baseH()`s
-Höhenform). Das ist eine vorbestehende, von dieser Änderung unabhängige Kosmetik-Funktion — die
-Höhenform selbst wurde unabhängig als plaid-frei bestätigt (siehe Heightmap-Render oben), das
-Karomuster im Überflugbild kommt nachweislich aus der Farbe, nicht aus der Höhe. Nicht Teil dieses
-Auftrags („Terrain" bezog sich auf die Höhenfunktion, nicht die Feldfarben); als möglicher nächster
-Schritt notiert, falls der Nutzer künftig weiter an der Optik arbeiten möchte.
+**Nebenbefund, nicht angefasst (BEHOBEN in 4.35):** Der Überflug-Render zeigte ein auffällig
+regelmäßiges Schachbrett-Muster in der Feld-/Farmland-EINFÄRBUNG (Vertex-Farben, separat von
+`baseH()`s Höhenform). Das ist eine vorbestehende, von dieser Änderung unabhängige
+Kosmetik-Funktion — die Höhenform selbst wurde unabhängig als plaid-frei bestätigt (siehe
+Heightmap-Render oben), das Karomuster im Überflugbild kommt nachweislich aus der Farbe, nicht aus
+der Höhe. Nicht Teil dieses Auftrags („Terrain" bezog sich auf die Höhenfunktion, nicht die
+Feldfarben); als möglicher nächster Schritt notiert, falls der Nutzer künftig weiter an der Optik
+arbeiten möchte. Genau das war der nächste Schritt — siehe 4.35.
 
 **Offen:** Nicht auf dem echten iPad geflogen. Die gemessene 3,3–3,9-fache Verteuerung pro
 Funktionsaufruf ist nur in Node gemessen, nicht auf iOS-Safari-JavaScriptCore — sollte sich das
@@ -2348,6 +2349,83 @@ jetzt fair genug ist, kann nur der Nutzer beurteilen.
 
 Code: `torpedo-carrier.html`, `resolveGroundAndDeck()`, Suche nach „SKIPPED OFF THE WATER".
 `thunderbolt-europe.html`, `updateBomber()`, Suche nach `rookieB`.
+
+---
+
+### 4.35 Thunderbolt: Feld-Schachbrett behoben, echtes Straßennetz, mehr Dörfer — EU BUILD 43
+
+Nutzer: „Terrain muss noch detaillierter werden. Mehr Straßen, Dörfer, bessere Grafik mit mehr
+Details. Nochmals, was ist mit einer realistischen Darstellung des Terrains? Google Maps?"
+
+**Zur „Google Maps"-Frage, damit hier keine falsche Erwartung stehen bleibt:** Echte
+Satellitenkacheln einzubinden wurde NICHT versucht — das würde einen bezahlten API-Schlüssel,
+Tile-Lizenzierung und eine Kartierung auf reale Erdkoordinaten voraussetzen, während dieses Tal
+(Fluss, Straße, Dörfer, die Frontlinie) komplett erfunden und deterministisch aus `baseH()`/
+`riverX()`/`roadZ()` erzeugt ist, nicht an einen echten Ort gebunden. Verstanden als „soll aussehen
+wie ein echtes Luftbild, nicht wie ein offensichtlich generiertes Spiel-Terrain" — dafür lag der
+größte Hebel nicht bei neuen Inhalten, sondern bei einem Fehler, der beim Terrain-Höhen-Fix
+(4.32) selbst schon fast gefunden wurde.
+
+#### 1) Das Feld-Schachbrett — in 4.32 als Nebenbefund notiert, jetzt Ursache und Fix
+
+4.32s eigener „Nebenbefund"-Absatz hatte es schon gesehen: ein „auffällig regelmäßiges
+Schachbrett-Muster in der Feld-/Farmland-EINFÄRBUNG", getrennt von der (damals frisch behobenen)
+Höhenform. Ursache, jetzt tatsächlich behoben statt nur notiert: `buildTerrain()`s
+Vertex-Einfärbung wählte die Erntefarbe über `Math.floor(x/300)`/`Math.floor(z/300)` — einen
+Hash auf dem 300-Meter-GITTER, mit hartkantigen Übergängen exakt auf jedem Vielfachen von 300 in
+x UND z. Genau dieselbe Fehlerklasse wie 4.32s Plaid-Muster, nur in Farbe statt Höhe, und mit
+derselben Ursache (eine achsenausgerichtete, periodische Funktion statt echtem Rauschen).
+
+**Fix:** Ersetzt durch `nFbm(x*0.00255,z*0.00255,15.7,3)` — dieselbe, in 4.32 gebaute
+Rauschfunktion, wiederverwendet statt neu erfunden. Verifiziert per Vorher/Nachher-Vertexfarben-
+Render (identischer Prüfstand wie 4.32, `MeshLambertMaterial({vertexColors:true})` ohne die im
+Node-Prüfstand ohnehin schwarze Canvas-Textur, um die reine Farbform zu isolieren): das
+Schachbrett ist komplett verschwunden, die Farbflächen jetzt unregelmäßig und weich, wie echtes
+Weideland aus der Luft.
+
+#### 2) Ein echtes Straßennetz statt einer einzelnen Linie
+
+Das gesamte befahrbare Netz bestand aus GENAU einer Fernstraße (`roadZ(x)`) plus einer Bahnlinie —
+jedes Dorf hing direkt an dieser einen Linie, 140–400 Einheiten seitlich versetzt. Aus der Luft: ein
+Strich durchs Tal, kein Netz. Neu: 20 zusätzliche Weiler sitzen jetzt echt abseits (900–2800
+Einheiten seitlich), jeder mit einer eigenen unbefestigten Zufahrt (`ribbon()`, 7 m breit,
+erdfarben statt asphaltgrau) zurück zur Fernstraße — derselbe `ribbon()`-Helfer, den Fernstraße,
+Bankette und Bahnlinie schon benutzen, nur schmaler. Die Zufahrt läuft zum nächstgelegenen Punkt
+auf der tatsächlichen (gekrümmten!) Straßenkurve, nicht zu einem geometrisch falschen festen
+x-Versatz — dieselbe Lektion wie beim Brücken-Fix in 4.30 (Lektion 18), hier von Anfang an richtig
+gemacht statt nachträglich korrigiert. Nur Weiler, die die bestehenden Ausschlusszonen (Fluss,
+Gebirge, Flugplatz, Brücke) tatsächlich überstehen, bekommen eine Zufahrt — kein Weg ins Nichts.
+
+**Mehr Dörfer:** Straßendorf-Abstand von durchschnittlich ~2800 auf ~2200 Einheiten verengt (mehr
+Weiler auf derselben Fernstraße), Einzelgehöfte von 70 auf 100 erhöht, plus die 20 neuen
+Außenweiler — alles deutlich unter der bestehenden `NB=2400`-Instanz-Obergrenze (gemessen: 532–639
+Gebäude pro Lauf, je nach Zufallszahlen, gegenüber vorher 327–607).
+
+**Nachgewiesen, nicht nur geschrieben:**
+- Vollständige Aufbau-Kette (`buildTerrain(); buildRoads(); buildForests(); buildSettlement();
+  buildAirfield();`) läuft headless fehlerfrei durch: 139 Meshes (+19 gegenüber vorher — exakt die
+  Zahl der tatsächlich gebauten Zufahrten), 0 NaN/Infinity in jeder Instanz-Matrix.
+- Echter headless-WebGL-Render einer tatsächlich gebauten Zufahrt (Kamera anhand der ECHTEN
+  Bounding-Box der Zufahrts-Geometrie positioniert, nicht geraten): zeigt ein erdfarbenes Band,
+  das dem Gelände folgt, mit einem kleinen bunten Gebäudecluster genau an seinem Ende — sichtbar
+  als eigenständiges Element neben der Fernstraße, nicht mit ihr verwechselbar.
+- **Gezielte Regressionsprüfung der Hecken-Schwebe-Fix (4.21):** dieselbe Messmethode wie in 4.32
+  auf die Landschaft nach ALLEN Änderungen dieser Runde angewendet — 4600 Hecken, weiterhin 0 %
+  schweben über 3 m, schlimmster Fall 0,46 m. Die 100-m-Sampling-Fix aus 4.21 hält auch unter der
+  jetzt dichteren Besiedlung.
+- Performance: Gesamt-Ladezeit im Node-Prüfstand 3752–3875 ms (gegenüber 3670–3875 ms vor dieser
+  Runde) — keine spürbare zusätzliche Verzögerung durch die 20 neuen Meshes oder den einen
+  zusätzlichen `nFbm()`-Aufruf pro Terrain-Vertex.
+
+**Offen:** Nicht auf dem echten iPad geflogen. Die Zufahrten sind gerade genug angelegt (lineare
+Interpolation Weiler→Straßenpunkt mit Geländefolgung), keine geschwungene, „echt gebaute" Trassen-
+führung — für den nächsten Schritt (falls gewünscht) wäre das eine mögliche Verfeinerung, ebenso
+wie Zäune, einzelne Ackerfurchen oder Strommasten für noch mehr Detail. Die Canvas-Textur
+(`makeGroundTexture()`, Feldgrenzen/Pflugspuren) wurde nicht angefasst — sie war schon vor dieser
+Runde unregelmäßig, das Schachbrett saß ausschließlich in der Vertex-Einfärbung darunter.
+
+Code: `thunderbolt-europe.html`, `buildTerrain()` (Suche nach „patchwork fields"), `buildSettlement()`
+(Suche nach „farm lanes").
 
 ---
 

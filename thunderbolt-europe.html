@@ -258,7 +258,7 @@
   <div id="flash"></div>
   <div id="gunsight"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">EU BUILD 42</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">EU BUILD 43</div>
 
   <div id="apr">
     <div id="aprCall"></div>
@@ -729,9 +729,13 @@ function buildTerrain(){
     // slope from a small finite difference — steep ground reads as rock, flat as farmland
     const hx=terrainH(x+40,z)-h, hz=terrainH(x,z+40)-h;
     const slope=Math.min(1,Math.hypot(hx,hz)/34);
-    // patchwork fields: a cheap hash gives each ~300 m block its own crop colour
-    const fx=Math.floor(x/300), fz=Math.floor(z/300);
-    const rnd=Math.abs(Math.sin(fx*12.9898+fz*78.233)*43758.5453)%1;
+    // patchwork fields: crop colour used to come from hashing which ~300 m grid BLOCK a vertex
+    // fell in - regular, axis-aligned squares, so from any real altitude the ground read as a
+    // literal checkerboard (seen in an overhead render while chasing the "not realistic" report -
+    // the height fix in baseH() was noise-based already; this vertex-colour tint underneath it
+    // never was). Continuous coherent noise instead: no grid to align to, so the patches this
+    // produces are the same irregular, non-repeating shapes the terrain height itself now has.
+    const rnd=nFbm(x*0.00255,z*0.00255,15.7,3);
     // Height bands, the way a real valley reads from the air: silt and water meadow along the
     // river, patchwork farmland on the floor, then scrub, bare rock and finally snow up on the
     // ranges. Steep ground shows rock whatever height it is at.
@@ -919,7 +923,7 @@ function buildRoads(){
 //  is what makes this affordable on an iPad. Nothing here is a target; it is there so the
 //  ground reads as occupied country instead of empty hills.
 // ============================================================
-let villages=null, roofs=null, hedges=null, chimneys=null, doors=null;
+let villages=null, roofs=null, hedges=null, chimneys=null, doors=null, laneMeshes=null;
 function buildSettlement(){
   const wallG=new THREE.BoxGeometry(1,1,1);
   const roofG=new THREE.CylinderGeometry(0.72,0.72,1,3);   // a prism makes a pitched roof
@@ -948,15 +952,28 @@ function buildSettlement(){
   doors   =new THREE.InstancedMesh(doorG,doorM,NB);
   const o=new THREE.Object3D();
   let k=0;
-  // hamlets strung along the road, plus isolated farms out in the fields
+  // hamlets strung along the road, outlying villages further out with their own lane back to it,
+  // plus isolated farms out in the fields
   const spots=[];
-  for(let x=-WORLD/2+2500;x<WORLD/2-2500 && spots.length<46;x+=1500+Math.random()*2600){
+  for(let x=-WORLD/2+2500;x<WORLD/2-2500 && spots.length<60;x+=1200+Math.random()*2000){
     spots.push({x, z:roadZ(x)+(Math.random()<0.5?-1:1)*(140+Math.random()*260), n:7+Math.floor(Math.random()*11)});
   }
-  for(let i=0;i<70;i++){
+  // Reported: "mehr Straßen, Dörfer" - the road network used to be a single through-road with
+  // every settlement pinned right against it, which reads as one line on the map, not a country.
+  // These sit 900-2800 m off the road - genuinely out in the land - and get their own lane
+  // (spur:true) built after the hedges below, the same way a real farm track leaves the highway
+  // for the village you can see from it but is not actually on it.
+  for(let i=0;i<20;i++){
+    const x=-WORLD/2+2500+Math.random()*(WORLD-5000);
+    const side=Math.random()<0.5?-1:1;
+    const z=roadZ(x)+side*(900+Math.random()*1900);
+    spots.push({x, z, n:5+Math.floor(Math.random()*5), spur:true});
+  }
+  for(let i=0;i<100;i++){
     const x=(Math.random()-0.5)*WORLD*0.80, z=(Math.random()-0.5)*WORLD*0.80;
     spots.push({x,z,n:1+Math.floor(Math.random()*3)});
   }
+  const spurSpots=[];
   for(const sp of spots){
     const gy0=terrainH(sp.x,sp.z);
     if(gy0<RIVER_Y+22 || gy0>980) continue;              // not in the river, not up a mountain
@@ -967,6 +984,7 @@ function buildSettlement(){
     // render). A defended river crossing is a plausible place for the country to be *without*
     // a hamlet on top of it anyway.
     if(nearBridge(sp.x,sp.z,380,160)) continue;
+    if(sp.spur) spurSpots.push(sp);   // only build a lane to a hamlet that actually got placed
     const rot=Math.random()*Math.PI;
     for(let b=0;b<sp.n && k<NB;b++){
       const a=Math.random()*Math.PI*2, r=Math.random()*(28+sp.n*7);
@@ -1069,7 +1087,34 @@ function buildSettlement(){
   }
   hedges.count=j;
   scene.add(hedges);
-  console.log('settlement: '+k+' buildings, '+j+' hedgerows');
+
+  // farm lanes: a narrow, unpaved ribbon from each outlying hamlet back to the main road - the
+  // thing that turns "one road through a valley" into a network you'd actually recognise from the
+  // air. Same ribbon() helper the highway and verges already use, just narrower and dirt-toned so
+  // it reads as a track rather than a second highway. One mesh per lane (spurSpots is capped at 20
+  // by construction above, so this is a bounded, small number of extra draw calls).
+  laneMeshes=new THREE.Group();
+  for(const sp of spurSpots){
+    // nearest point on the road curve to this hamlet - the road isn't straight, so that is not
+    // simply x=sp.x; scan a local window and keep the closest sample.
+    let bestX=sp.x, bestD=1e18;
+    for(let x=sp.x-2200;x<=sp.x+2200;x+=40){
+      const rz=roadZ(x), d=(x-sp.x)*(x-sp.x)+(rz-sp.z)*(rz-sp.z);
+      if(d<bestD){ bestD=d; bestX=x; }
+    }
+    const rz=roadZ(bestX);
+    const pts=[];
+    const steps=Math.max(4,Math.round(Math.hypot(bestX-sp.x,rz-sp.z)/45));
+    for(let s=0;s<=steps;s++){
+      const t=s/steps;
+      const x=sp.x+(bestX-sp.x)*t, z=sp.z+(rz-sp.z)*t;
+      pts.push({x,z,y:groundYRender(x,z)});
+    }
+    laneMeshes.add(ribbon(pts,7,0x8d7c58,1.1));
+  }
+  scene.add(laneMeshes);
+
+  console.log('settlement: '+k+' buildings, '+j+' hedgerows, '+spurSpots.length+' farm lanes');
 }
 
 function buildForests(){
