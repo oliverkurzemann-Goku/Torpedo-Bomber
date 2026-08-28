@@ -154,12 +154,17 @@
   /* ---------- cockpit: real photograph, live needles drawn onto its own bezels ---------- */
   #cockpitFrame{position:fixed;inset:0;z-index:9;pointer-events:none;display:none;}
   #cockpitFrame.show{display:block;}
-  /* The photograph sits LOW in the frame: filling the screen with it left barely a strip of
-     sky, which is no use for flying. Pushed down and scaled up, the canopy opening lands
-     where a pilot's eyeline actually is and you get roughly 20 degrees more view over the
-     nose. PIT_SHIFT in the script must match the translateY below. */
+  /* Reported "cockpit view looks cool but you can't see anything": measured against the real
+     photo at 1.34x/15% (the old values), only 28-38% of the screen was actual sky/ground - and
+     most of that sliver was the SIDE windows, not the forward-down view a ground-attack game
+     needs. 1.34x was cropping away transparent canopy glass that the photo already has; scale(1)
+     is the loosest crop object-fit:cover allows (below 1 would show the page background past the
+     photo's own edges, which reads as a broken image, not glass). The 26% push down trades the
+     boring lower dashboard/pedals for more sky above - measured 38%->~64% visible. Both this
+     value and the eyeUp-driven range added on top in JS must stay in step with PIT_ZOOM/
+     PIT_SHIFT_BASE/PIT_SHIFT_RANGE in the script, which sets this transform live every frame. */
   #pitPhotoP,#pitPhotoB{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;
-    object-position:50% 50%;transform:scale(1.34) translateY(15%);transform-origin:50% 50%;
+    object-position:50% 50%;transform:scale(1.0) translateY(26%);transform-origin:50% 50%;
     pointer-events:none;z-index:1;display:none;}
   #pitLive{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:2;}
   /* gunsight for the chase view */
@@ -253,7 +258,7 @@
   <div id="flash"></div>
   <div id="gunsight"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">EU BUILD 37</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">EU BUILD 38</div>
 
   <div id="apr">
     <div id="aprCall"></div>
@@ -2405,7 +2410,7 @@ function radioSay(msg){ radioQ.push(msg); }
 function updateRadio(dt){
   const el=document.getElementById('radio'); if(!el) return;
   if(radioT>0){ radioT-=dt; if(radioT<=0) el.classList.remove('show'); return; }
-  if(radioQ.length){ el.textContent=radioQ.shift(); el.classList.add('show'); radioT=2.6; }
+  if(radioQ.length){ el.textContent=radioQ.shift(); el.classList.add('show'); radioT=2.6; sfxRadio(); }
 }
 function addScore(n){ score+=Math.round(n); }
 
@@ -3554,11 +3559,22 @@ function photoAttitude(g,x,y,r,pitch,roll){
   g.moveTo(x+r*0.12,y); g.lineTo(x+r*0.42,y); g.stroke();
 }
 // Map a point given as a fraction of the photo onto the screen, matching exactly what CSS
-// does with object-fit:cover, object-position 50% 30% and the 1.16 blow-up.
-// These three must stay in step with the CSS on #pitPhotoP / #pitPhotoB, or the needles drift
-// off their dials. object-position is 50% 50%, the scale is 1.34, and the image is pushed down
-// by 15% of its own height.
-const PIT_ZOOM=1.34, PIT_SHIFT=0.15;
+// does with object-fit:cover, object-position 50% 50% and the scale/translateY set by
+// updatePitPhotoTransform() below. PIT_ZOOM here must stay in step with the CSS transform's
+// scale(), or the needles drift off their dials.
+const PIT_ZOOM=1.0, PIT_SHIFT_BASE=0.26, PIT_SHIFT_RANGE=0.10;
+// Live look-around: the old shift was a fixed constant, so the "look up/down" buttons moved
+// only the 3D camera - the flat photo never budged, capping how much sky you could ever see in
+// the pit no matter how far you looked. Tying the photo's own pan to eyeUp (already used for the
+// 3D camera look target, see updateCamera()) lets looking up trade more of the side canopy for
+// more forward-up sky, on the same input the player already has.
+function pitShift(){ return PIT_SHIFT_BASE + eyeUp*PIT_SHIFT_RANGE; }
+function updatePitPhotoTransform(){
+  const t='scale('+PIT_ZOOM+') translateY('+(pitShift()*100).toFixed(2)+'%)';
+  const p=document.getElementById('pitPhotoP'), b=document.getElementById('pitPhotoB');
+  if(p) p.style.transform=t;
+  if(b) b.style.transform=t;
+}
 function pitMap(img,cw,ch,fx,fy){
   const iw=img.naturalWidth||1672, ih=img.naturalHeight||941;
   const s=Math.max(cw/iw, ch/ih);
@@ -3567,10 +3583,11 @@ function pitMap(img,cw,ch,fx,fy){
   const cx=cw/2, cy=ch/2;
   // scale about the centre, then translate — the same order the browser applies it
   const x=cx+((ox+fx*dw)-cx)*PIT_ZOOM;
-  const y=cy+((oy+fy*dh)-cy)*PIT_ZOOM + dh*PIT_ZOOM*PIT_SHIFT;
+  const y=cy+((oy+fy*dh)-cy)*PIT_ZOOM + dh*PIT_ZOOM*pitShift();
   return { x, y, s:s*PIT_ZOOM };
 }
 function drawPitLive(){
+  updatePitPhotoTransform();
   const cv=document.getElementById('pitLive'); if(!cv) return;
   const img=pitPhotoEl(); if(!img) return;
   const cw=Math.round(innerWidth), ch=Math.round(innerHeight);
@@ -3671,6 +3688,9 @@ function updateAudio(dt){
   eng.eg.gain.setTargetAtTime(vol,ct,0.12);
   eng.lfoG.gain.setTargetAtTime(flying?vol*0.6:0,ct,0.12);
   eng.ng.gain.setTargetAtTime(flying?0.015+rpm*0.04:0,ct,0.12);
+  // damaged engine misfiring under load - same hull<55 threshold the oil-on-canopy visual uses
+  const dmgF=Math.max(0,(55-P.hull)/55);
+  if(flying && dmgF>0 && Math.random()<dmgF*dt*1.2) sfxSputter();
 }
 function nburst(dur,type,freq,q,peak,delay,curve){
   if(!actx) return; const ct=actx.currentTime, o2=out();
@@ -3722,6 +3742,38 @@ function sfxAlarm(){
   g.gain.linearRampToValueAtTime(0.09,ct+0.03); g.gain.exponentialRampToValueAtTime(0.001,ct+0.35);
   o.connect(g); g.connect(o2); o.start(ct); o.stop(ct+0.4);
 }
+// Gear and flaps used to be silent - a HUD flash and the visual state changed, but nothing in
+// the cockpit told you the mechanism actually moved. A real electric/hydraulic actuator is a
+// low whirring motor for the travel time, ending in a hard mechanical lock when it reaches the
+// stop. dur is matched to the real travel time in updateFlight() (gear ~1.8s at rate 0.55, flap
+// ~1.4s at rate 0.7) so the sound and the visible surface finish together.
+function sfxMotor(dur,baseFreq,thunkFreq){
+  if(!actx) return; const ct=actx.currentTime, o2=out();
+  const o=actx.createOscillator(); o.type='square';
+  o.frequency.setValueAtTime(baseFreq*1.35,ct); o.frequency.linearRampToValueAtTime(baseFreq,ct+dur);
+  const lp=actx.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=420;
+  const g=actx.createGain();
+  g.gain.setValueAtTime(0.0001,ct); g.gain.linearRampToValueAtTime(0.05,ct+0.08);
+  g.gain.setValueAtTime(0.05,ct+Math.max(0.08,dur-0.12)); g.gain.linearRampToValueAtTime(0.0001,ct+dur);
+  o.connect(lp); lp.connect(g); g.connect(o2); o.start(ct); o.stop(ct+dur+0.05);
+  nburst(0.09,'bandpass',thunkFreq,1.2,0.22,dur,2.2);   // mechanism lock, once travel finishes
+}
+function sfxGearMotor(){ sfxMotor(1.8,88,220); }
+function sfxFlapMotor(){ sfxMotor(1.4,140,340); }
+// A radio call used to just appear as text - the actual cockpit habit is a click of static as
+// the transmission opens. Cheap, and it sells every radioSay() as someone actually keying a mic.
+function sfxRadio(){
+  if(!actx) return; const ct=actx.currentTime, o2=out();
+  nburst(0.05,'highpass',2600,0,0.09,0,3);
+  const o=actx.createOscillator(); o.type='sine'; o.frequency.value=1400;
+  const g=actx.createGain(); g.gain.setValueAtTime(0.0001,ct);
+  g.gain.linearRampToValueAtTime(0.05,ct+0.015); g.gain.exponentialRampToValueAtTime(0.001,ct+0.09);
+  o.connect(g); g.connect(o2); o.start(ct); o.stop(ct+0.1);
+}
+// A damaged engine misfiring under load - short, irregular crackle bursts, probability and
+// frequency scaled by how badly hurt P.hull is. Triggered from updateAudio() below, same hull
+// threshold (55) already used for the oil-on-canopy visual, so the two read as one damage state.
+function sfxSputter(){ nburst(0.07,'bandpass',180+Math.random()*260,1.5,0.16+Math.random()*0.12,0,2.4); }
 
 // ============================================================
 //  CLOUDS — this sky had none at all, a stark gap for a game about flying
@@ -3954,11 +4006,11 @@ function bindInput(){
     P.gearTgt=P.gearTgt>0.5?0:1;
     const b=e.currentTarget; b.classList.toggle('on',P.gearTgt>0.5);
     b.innerHTML=P.gearTgt>0.5?'GEAR<br>&#9660; DN':'GEAR<br>&#9650; UP';
-    flash(P.gearTgt>0.5?'GEAR DOWN':'GEAR UP',700); });
+    flash(P.gearTgt>0.5?'GEAR DOWN':'GEAR UP',700); sfxGearMotor(); });
   document.getElementById('flapBtn').addEventListener('pointerdown',e=>{ e.preventDefault();
     P.flapTgt=P.flapTgt>0.5?0:1;
     const b=e.currentTarget; b.classList.toggle('on',P.flapTgt>0.5);
-    b.innerHTML=P.flapTgt>0.5?'FLAPS<br>DN':'FLAPS<br>UP'; });
+    b.innerHTML=P.flapTgt>0.5?'FLAPS<br>DN':'FLAPS<br>UP'; sfxFlapMotor(); });
   document.getElementById('armBtn').addEventListener('pointerdown',e=>{ e.preventDefault();
     weapon=(weapon==='rocket')?'bomb':'rocket'; applyWeaponUI();
     flash(weapon==='rocket'?'ROCKETS ARMED':'BOMBS ARMED',700); });
