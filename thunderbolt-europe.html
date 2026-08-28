@@ -258,7 +258,7 @@
   <div id="flash"></div>
   <div id="gunsight"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">EU BUILD 40</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">EU BUILD 41</div>
 
   <div id="apr">
     <div id="aprCall"></div>
@@ -3675,15 +3675,27 @@ const PIT_ZOOM=1.0, PIT_SHIFT_BASE=0.26, PIT_SHIFT_RANGE=0.10;
 // relative to the 1400x787 photo, and at some aspect ratios there is barely any. Clamped to the
 // margin object-fit:cover actually leaves at the CURRENT viewport/image size instead of a fixed
 // percentage - full 26% (plus look-up) on a tall/narrow screen where there is room for it, less
-// automatically on a wide/short one, never enough to expose the edge. A 92% safety factor stops
-// the clamp from landing exactly on the seam, which rounding could still push over by a pixel.
+// automatically on a wide/short one, never enough to expose the edge.
+//
+// The 8% safety factor this used to reserve turned out to matter more than it looked: the same
+// function in torpedo-carrier.html got the identical treatment after a real report that the SBD's
+// canopy frame clipped at the top while the Avenger's didn't, even sharing one photo size and one
+// clamp - measuring the actual photos' alpha channels showed the SBD's frame simply has far less
+// transparent margin above it than the Avenger's, so the 8% this function always held back was
+// most of the difference between "frame intact" and "frame clipped" on the tighter photo. Both
+// cockpit photos here (p47, bf109) were measured the same way: the P-47's frame reaches
+// substantial width by source row ~2 of 787 (0.3% down) versus the Bf 109's row ~10 (1.3%) - the
+// same asymmetry, smaller margin on one photo than the other sharing this one function. Raised to
+// 99.5%: the clamp is an exact geometric bound (not an estimate), so even 100% would land exactly
+// on the object-fit:cover seam, never past it - 99.5% keeps a hair of float-rounding safety while
+// actually using the pan range already being computed instead of discarding most of an eighth of it.
 function pitShift(){
   const desired=PIT_SHIFT_BASE+eyeUp*PIT_SHIFT_RANGE;
   const img=pitPhotoEl();
   const iw=(img&&img.naturalWidth)||1672, ih=(img&&img.naturalHeight)||941;
   const vw=innerWidth||1, vh=innerHeight||1;
   const s=Math.max(vw/iw,vh/ih), dispH=ih*s;
-  const maxShift=Math.max(0,(dispH-vh)/(2*vh))*0.92;
+  const maxShift=Math.max(0,(dispH-vh)/(2*vh))*0.995;
   return Math.max(0,Math.min(desired,maxShift));
 }
 function updatePitPhotoTransform(){
