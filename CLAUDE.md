@@ -5,7 +5,7 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 113 · Thunderbolt Squadron EU BUILD 35**
+Stand bei Übergabe: **Torpedo Squadron BUILD 113 · Thunderbolt Squadron EU BUILD 36**
 Repo: `oliverkurzemann-Goku/Torpedo-Bomber`, ausgeliefert über GitHub Pages.
 Alle Angaben unten sind aus dem tatsächlichen Code verifiziert, nicht aus dem Gedächtnis.
 
@@ -1499,17 +1499,12 @@ UNVERÄNDERLICH ausgefahren — die B-17 flog immer mit sichtbar heruntergelasse
 Reiseflug. Nach dem Fix hängt das echte Fahrwerk (jetzt aus der Mesh geschnitten) an der `gear`-
 Gruppe, die dieselbe `gr.visible=false`-Logik korrekt greifen lässt.
 
-**Nebenfund, nicht angefasst:** derselbe Test an P-47 und Fw190 zeigt, dass auch DIESE
-spielbaren Flugzeuge ihr eigentliches, eingeschweißtes Fahrwerk permanent sichtbar haben,
-zusätzlich zum synthetischen (beim Spieler-eigenen Flugzeug wird nur die synthetische Gruppe
-per `P.gear` ein-/ausgeblendet — das echte Fahrwerk bliebe beim Einfahren sichtbar). Das war
-NICHT Teil der gemeldeten Aufgabe (nur die B-17 aus 4.4) und wurde bewusst nicht angefasst: die
-Vermessung zeigt für P-47/Fw190 eine viel unordentlichere Unterseiten-Geometrie (Klumpen mit
-n=200-950, weit über der für die B-17 kalibrierten Grenze) — Cowl-Flaps, Kühlerklappen und
-Kanonenschächte reichen dort ebenfalls unter die Bodenlinie, ein Rad ist dort nicht sauber von
-echten Oberflächendetails zu trennen, ohne die Gefahr, Nutzflächen mit wegzuschneiden. Ein
-generischer Fix müsste vorsichtiger vorgehen — als eigenständiger, separat zu verifizierender
-Auftrag zu behandeln, nicht im Vorbeigehen.
+**Nebenfund, damals nicht angefasst, seit EU BUILD 36 behoben:** derselbe Test an P-47 und
+Fw190 zeigte, dass auch DIESE spielbaren Flugzeuge ihr eigentliches, eingeschweißtes Fahrwerk
+permanent sichtbar hatten, zusätzlich zum synthetischen (beim Spieler-eigenen Flugzeug wird nur
+die synthetische Gruppe per `P.gear` ein-/ausgeblendet — das echte Fahrwerk blieb beim Einfahren
+sichtbar). Die vertexdichte-basierte Erkennung aus diesem Build war dafür zu unsicher (siehe
+4.25) — der Fix, der P-47 und Fw190 tatsächlich abdeckt, ist dort beschrieben.
 
 **Regressionscheck:** B-24 nutzt bereits erfolgreich den bestehenden „own gear"-Pfad (eigenes
 Fahrwerk als trennbares Objekt gefunden) — mein neuer Code läuft für sie gar nicht erst.
@@ -1582,6 +1577,65 @@ nicht separat gerendert, aber derselbe Code, keine größenabhängige Fallunters
 
 Code: `torpedo-carrier.html`, `buildIsland()`, Suche nach „grew right up to the atoll's inner
 lagoon edge".
+
+---
+
+### 4.25 P-47/Fw190: echtes Fahrwerk bleibt beim Einfahren sichtbar — EU BUILD 36
+
+Nutzer: „Ok, verbessere weiter" — Fortsetzung des in 4.24/2 als Nebenfund notierten, damals
+bewusst nicht angefassten Punkts: P-47 und Fw190 haben (wie die B-17) ihr echtes Fahrwerk in die
+Rumpf/Flügel-Mesh eingeschweißt, aber anders als die B-17 wird ihr synthetisches Fahrwerk beim
+Spieler-eigenen Flugzeug tatsächlich per `P.gear` sichtbar geschaltet — das eingeschweißte,
+echte Fahrwerk bleibt beim Einfahren aber trotzdem sichtbar, weil nichts es je der `gear`-Gruppe
+zugeordnet hat.
+
+**Erster Ansatz (die vertexdichte-basierte Erkennung aus EU BUILD 35) hat nicht funktioniert —
+neu vermessen statt nachgebessert:** Der `n<=100`-Schwellenwert war an der B-17 kalibriert. Am
+echten `p47new.glb`/`fw190.glb` neu gemessen: deren Räder haben selbst MEHR Vertices (232/226
+bzw. 89/89) als die B-17-Turmstruktur, die der Schwellenwert eigentlich ausschließen sollte —
+der gleiche Wert schloss also entweder die echten Räder mit aus oder ließ, gelockert, Kühlerklappen-
+und Kanonenschacht-Klumpen mit rein. Radius half ebensowenig — Rad- und Störklumpen liegen in
+derselben Größenordnung.
+
+**Tatsächlich robustes Signal: seitliche Spiegelsymmetrie.** Das Hauptfahrwerk ist an jedem
+dieser Flugzeuge ein Paar — zwei Klumpen, die in y, z, Radius UND Punktzahl übereinstimmen und
+sich nur im Vorzeichen von x unterscheiden. Dass zwei Kandidaten in fünf Zahlen gleichzeitig
+übereinstimmen, ist praktisch nie Zufall — kein Modell-spezifischer Schwellenwert nötig.
+`findGearClusters()` sucht jetzt genau dieses Spiegelpaar (`a.cx*b.cx<0`, |x|-Differenz klein,
+z/y innerhalb einer Toleranz) statt über Punktzahl zu filtern. Ein einzelnes Bug-/Spornrad wird
+bewusst NICHT gesucht — jeder Versuch, einen dritten, mittig sitzenden Klumpen dazuzunehmen, traf
+auf denselben Flugzeugen auch echte Rumpfdetails (Lüftungsschächte, Kanonenschacht, Mastfuß) statt
+nur das Rad. Verzichtet, statt zu raten — das Hauptfahrwerk ist ohnehin die optisch dominante
+Komponente.
+
+**Ein eigener Debugging-Umweg, aus Gründlichkeit dokumentiert:** Ein Zwischenstand zeigte für die
+B-17 auf einmal `cutN=0` — kein Regressionsverdacht bestätigte sich beim Nachmessen: Der Propeller
+dieses vierblütigen Bombers sitzt (anders als bei einem Einmotorer) an EINEM der Flügelmotoren, in
+unmittelbarer Nähe des Hauptfahrwerks in derselben Gondel. `cutBlades()`s eigener, mehrstufig
+aufweitender Schnitt (bis zum 2,2-fachen Radius) hatte die Radgeometrie dort bereits als
+Kollateralschaden mitentfernt, bevor der Fahrwerk-Schnitt überhaupt lief — `cutGearClusters()`
+fand deshalb zu Recht nichts mehr zu tun (bereits entartete Dreiecke werden übersprungen, damit
+kein doppelter Schnitt zählt). Am Rendering bestätigt: die B-17 zeigt weiterhin keine Räder, nur
+eben durch einen anderen Mechanismus als beabsichtigt. Kein Fix nötig, aber der Fund zeigt: auf
+mehrmotorigen Flugzeugen können Propeller- und Fahrwerksschnitt sich überschneiden — bei einem
+zukünftigen Modell, bei dem das nicht der Fall ist, greift jetzt trotzdem `findGearClusters()`
+selbst.
+
+**Nachgewiesen am echten Modell:** `readVert`, `findProp`, `cutBlades`, `makeProp`,
+`findGearClusters`, `cutGearClusters`, `rigModel` wortwörtlich extrahiert, gegen echte
+`p47new.glb`/`fw190new.glb`/`b17.glb` mit echtem `GLTFLoader` r128 und echtem headless-WebGL-
+Renderer ausgeführt, `gear`-Gruppe wie im echten Spiel unsichtbar geschaltet. P-47: 37 Dreiecke
+geschnitten, Seitenansicht vorher/nachher zeigt das Rad verschwunden. Fw190: 2812 Dreiecke
+geschnitten, gleiches Ergebnis. **Regressionscheck:** B-24 und Bf 109 laufen weiterhin über den
+bereits erfolgreichen „own gear"-Pfad und erreichen den neuen Code gar nicht; an beiden real
+gegengeprüft, dass `findGearClusters()` zwar (harmlos) ein Klumpenpaar findet, dieser Codepfad in
+`rigModel()` aber nie aufgerufen wird, weil die Objekt-Klassifizierung vorher schon greift.
+
+**Offen:** Nicht auf dem echten iPad geflogen. Bug-/Spornrad bleibt bei allen drei betroffenen
+Baumustern weiterhin sichtbar (bewusste Entscheidung, siehe oben) — deutlich kleiner und weniger
+auffällig als die jetzt entfernten Hauptfahrwerksräder.
+
+Code: `thunderbolt-europe.html`, `findGearClusters()`, Suche nach „laterally MIRRORED PAIR".
 
 ---
 

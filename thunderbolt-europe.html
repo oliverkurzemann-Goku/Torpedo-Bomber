@@ -253,7 +253,7 @@
   <div id="flash"></div>
   <div id="gunsight"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">EU BUILD 35</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">EU BUILD 36</div>
 
   <div id="apr">
     <div id="aprCall"></div>
@@ -1560,14 +1560,20 @@ function makeProp(prop, nBlades){
 // per-aircraft: only tried when the whole-mesh "own gear" check in rigModel() finds nothing (a
 // wheel welded into the SAME mesh as the wing fails that check because the mesh's own bounding
 // box is the whole aeroplane), and only trusted when the result is clean.
-// Confirmed on the real b17.glb (CLAUDE.md 4.4 - "own gear" detection never finds the B-17's
-// built-in wheels, and a synthetic gear used to get added on top of them, visible whenever the
-// synthetic gear was): below-floor vertices form 5 clusters, not 3 - two of them (455 and 277
-// points) are the ball turret and tail structure, not wheels, and sit at similar radius to the
-// real wheels (62/57/12 points) so radius alone can't tell them apart. Vertex COUNT can: a wheel
-// is a simple disc on a strut, a turret has canopy/gun/greeble detail giving it far higher
-// density for a similarly-sized cluster - capped well above the real wheels, well below the
-// turret, so it separates them cleanly without needing to name the model.
+// First cut (EU BUILD 35) told wheels from clutter by vertex count alone (a wheel is a simple
+// disc, a gun turret or duct has far more detail for a similarly-sized cluster) - correct for the
+// B-17 but wrong in general: re-run against the real p47new.glb/fw190.glb, that same count filter
+// either caught nothing (their true wheels have MORE vertices than the B-17's, so the same
+// upper cap excluded them) or, loosened, caught cowl-flap and duct clutter along with them - a
+// P-47's belly is a much busier shape than a bomber's. The reliable signal turned out to be
+// simpler: the two main wheels are a laterally MIRRORED PAIR - matching in y/z/r/count and
+// opposite in x. Five numbers agreeing between two candidates at once is effectively impossible
+// by chance, so this needs no per-model tuning and no name check. Verified clean (exactly one
+// pair, at the expected position) on all five model files in this project, including the two
+// (b24/bf109) whose own-gear whole-mesh check already succeeds and never reach this function in
+// the real game. A lone tail/nose wheel is deliberately NOT hunted for here: every heuristic
+// tried for it also matched real belly detail (ducts, gun bays, aerial mounts) on the busier
+// aircraft - not worth the risk of cutting a hole in something that isn't a wheel.
 function findGearClusters(root, whole, S){
   const floor=whole.min.y+S.y*0.30;
   const groupR=Math.max(S.x*0.05, 0.3);
@@ -1593,12 +1599,24 @@ function findGearClusters(root, whole, S){
     if(best && bestD<groupR){ best.pts.push(p); best.cx=best.pts.reduce((s,q)=>s+q.x,0)/best.pts.length; best.cz=best.pts.reduce((s,q)=>s+q.z,0)/best.pts.length; }
     else clusters.push({cx:p.x,cz:p.z,pts:[p]});
   }
-  const good=clusters.map(cl=>{
+  const all=clusters.map(cl=>{
     const cy=cl.pts.reduce((s,q)=>s+q.y,0)/cl.pts.length;
     const r=Math.max(...cl.pts.map(p=>Math.hypot(p.x-cl.cx,p.z-cl.cz)));
     return {cx:cl.cx,cy,cz:cl.cz,r,n:cl.pts.length};
-  }).filter(cl=>cl.n>=6 && cl.n<=100 && cl.r>S.x*0.008 && cl.r<S.x*0.05);
-  return {clusters:good, floor};
+  }).filter(cl=>cl.n>=6 && cl.r>S.x*0.008 && cl.r<S.x*0.08);
+  let best=null;
+  for(let i=0;i<all.length;i++) for(let j=i+1;j<all.length;j++){
+    const a=all[i], b=all[j];
+    if(a.cx*b.cx>=0) continue;                          // must sit on opposite sides
+    if(Math.min(Math.abs(a.cx),Math.abs(b.cx))<S.x*0.02) continue;   // genuinely off-centre, not a
+                                                                       // stray near the midline
+    if(Math.abs(Math.abs(a.cx)-Math.abs(b.cx))>S.x*0.03) continue;   // mirrored in x
+    if(Math.abs(a.cz-b.cz)>S.x*0.03) continue;                       // same station along the hull
+    if(Math.abs(a.cy-b.cy)>S.y*0.15) continue;                       // same height
+    const score=Math.abs(a.cx+b.cx)+Math.abs(a.cz-b.cz)+Math.abs(a.cy-b.cy)*2;
+    if(!best || score<best.score) best={a,b,score};
+  }
+  return {clusters: best? [best.a,best.b] : [], floor};
 }
 function cutGearClusters(root, gearInfo){
   const {clusters, floor}=gearInfo;
@@ -1698,11 +1716,12 @@ function rigModel(root, kind){
   } else {
     // Nothing separable as a whole mesh - it may still be there, just welded into a mesh far too
     // big to pass the size filter (its own bounding box is the whole aeroplane). See
-    // findGearClusters()'s comment: caught on the real b17.glb, where a single 9862-vertex
+    // findGearClusters()'s comment: caught on the real b17.glb (a single 9862-vertex
     // fuselage+wing mesh holds the wing skin AND all three wheels, permanently visible because
-    // nothing was ever attached to `gear` to hide them (CLAUDE.md 4.4).
+    // nothing was ever attached to `gear` to hide them - CLAUDE.md 4.4) and, generalised past
+    // that one aircraft, also on the real p47new.glb/fw190.glb.
     const gi=findGearClusters(root, whole, S);
-    if(gi.clusters.length>=2 && gi.clusters.length<=5){
+    if(gi.clusters.length===2){                 // exactly the mirrored main-gear pair, or nothing
       const cutN=cutGearClusters(root, gi);
       if(cutN>0) rig+=', cut '+cutN+' welded gear triangles';
     }
