@@ -303,7 +303,7 @@
   <div id="flash"></div>
   <div id="ltn" style="position:fixed;inset:0;background:#e6ecff;opacity:0;pointer-events:none;z-index:40;"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 112</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 113</div>
 
   <!-- Optical landing aid -->
   <div id="lso">
@@ -1200,6 +1200,13 @@ function buildIsland(x,z,r,type){
       const h=hAt(wx,wz);
       const hi=volcano? peak*0.42 : peak*0.8;
       if(h<3.2||h>hi) continue;
+      // Trees occasionally grew right up to the atoll's inner lagoon edge (CLAUDE.md 4.13):
+      // the rim's height function is a Gaussian centred on the reef (dd~0.78) with a hard step
+      // down at the lagoon boundary (dd=0.72), so a spot just outside that step can still pass
+      // both the height AND local-slope checks below - the step itself is the only thing making
+      // it "steep", and the two slope-probe points (offset +3 in x/z) don't reliably straddle
+      // it. An explicit margin past the lagoon edge is the direct fix, not a slope trick.
+      if(atoll && Math.hypot(wx,wz)/r<0.72+0.06) continue;
       if(Math.abs(hAt(wx+3,wz)-h)+Math.abs(hAt(wx,wz+3)-h)>3.2) continue;
       const s=0.55+Math.random()*0.5, lean=(Math.random()-0.5)*0.35, y=h-0.2;
       dummy.position.set(wx,y,wz); dummy.rotation.set(lean,0,lean*0.6); dummy.scale.set(s,s,s);
@@ -4002,7 +4009,7 @@ function loadPlaneModel(){
       }
       window.__eyeDbg='EYE '+COCKPIT_EYE.map(v=>v.toFixed(2)).join('/');
       const btEl=document.getElementById('buildTag');
-      if(btEl) btEl.textContent='BUILD 112 · '+window.__eyeDbg;
+      if(btEl) btEl.textContent='BUILD 113 · '+window.__eyeDbg;
       let seat=null;
       model.traverse(function(o){
         if(!o.isMesh||!o.material) return;
@@ -5329,6 +5336,12 @@ function showResult(win,title,sub,body,btn){
 function togglePause(){
   if(state===ST.FLIGHT || state===ST.LAUNCH){
     prePauseState=state; state=ST.PAUSED; firing=false; showOverlay('pause');
+    // animate() returns early on ST.PAUSED before it ever reaches updateAudio(dt) - but the
+    // engine oscillators are real WebAudio nodes running on the hardware clock, independent of
+    // requestAnimationFrame, so without this they just keep humming at whatever level
+    // updateAudio last set (same gap thunderbolt-europe.html had, fixed there in EU BUILD 34;
+    // same eng.master gain node every engine/gun/explosion sound already routes through).
+    if(eng) eng.master.gain.setTargetAtTime(0.0001,actx.currentTime,0.05);
   } else if(state===ST.PAUSED){
     resumeGame();
   }
@@ -5338,8 +5351,10 @@ function resumeGame(){
   hideOverlays();
   state=prePauseState||ST.FLIGHT;
   clock.getDelta();            // swallow the paused interval so dt doesn't jump
+  if(eng) eng.master.gain.setTargetAtTime(0.85,actx.currentTime,0.05);
 }
 function exitToMenu(){
+  if(eng) eng.master.gain.setTargetAtTime(0.85,actx.currentTime,0.05);
   state=ST.MENU; killCam=null;
   carrierX=0; if(carrier) carrier.position.x=0;
   if(carrierModel) carrierModel.position.x=CARRIER_DX;
@@ -5463,7 +5478,7 @@ function setupUIButtons(){
   if(dbgT2) dbgT2.onclick=()=>{
     dbgOn=!dbgOn; localStorage.setItem('dbgOn',dbgOn?'1':'0');
     const db=document.getElementById('dbgBox'); if(db) db.textContent=dbgOn?'✓':'';
-    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 112'; }
+    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 113'; }
   };
   const lu=document.getElementById('lookUp'), ld=document.getElementById('lookDn');
   const setTilt=v=>{ pitTilt=Math.max(-0.9,Math.min(0.4,v)); localStorage.setItem('pitTilt',pitTilt.toFixed(3)); };

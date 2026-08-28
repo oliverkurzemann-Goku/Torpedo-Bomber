@@ -5,7 +5,7 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 112 · Thunderbolt Squadron EU BUILD 34**
+Stand bei Übergabe: **Torpedo Squadron BUILD 113 · Thunderbolt Squadron EU BUILD 35**
 Repo: `oliverkurzemann-Goku/Torpedo-Bomber`, ausgeliefert über GitHub Pages.
 Alle Angaben unten sind aus dem tatsächlichen Code verifiziert, nicht aus dem Gedächtnis.
 
@@ -355,14 +355,13 @@ nachher y=−0,69 (bündig, Differenz 0,93 auf der Modellskala).
 Code: `thunderbolt-europe.html`, Funktionen `localFloor` (neu, direkt nach `readVert`) und
 `buildGear` (~Zeile 1235).
 
-### 4.4 B-17: „own gear"-Erkennung findet das eingebaute Fahrwerk nicht (neu entdeckt, nicht behoben)
-Nebenbefund beim Prüfen von 4.3: die B-17 (`b17.glb`) hat laut Screenshot bereits ein eigenes,
-gut aussehendes Fahrwerk/Rad im Modell — aber `rigModel()`s Erkennung für „eigenes Fahrwerk"
-(Zeile ~1192: `bb.max.y<floor && sz.y<S.y*0.5 && sz.x<S.x*0.30`) findet es nicht und baut
-zusätzlich das synthetische `buildGear()`-Fahrwerk daneben. Ergebnis: doppeltes Fahrwerk.
-Vermutung (nicht geprüft): die Schwellenwerte sind an einjährigen Jägern kalibriert und passen
-nicht auf die Proportionen eines 4-motorigen Bombers. Nicht Teil eines gemeldeten Bugs, daher
-nicht angefasst — eigenständig am Prüfstand untersuchen, bevor daran gearbeitet wird.
+### 4.4 B-17: „own gear"-Erkennung findet das eingebaute Fahrwerk nicht — BEHOBEN in EU BUILD 35, siehe 4.24
+Ursprünglicher Befund (Nebenbefund beim Prüfen von 4.3, damals nicht behoben): die B-17
+(`b17.glb`) hat laut Screenshot bereits ein eigenes, gut aussehendes Fahrwerk/Rad im Modell —
+aber `rigModel()`s Erkennung für „eigenes Fahrwerk" findet es nicht und baut zusätzlich das
+synthetische `buildGear()`-Fahrwerk daneben. Für die tatsächliche Ursache, den Fix und den
+Nachweis am echten Modell siehe 4.24 — die Diagnose „doppeltes Fahrwerk sichtbar" stimmte nur
+teilweise: siehe dort, warum.
 
 ### 4.5 Generelle Warnung zu 4.1–4.3
 Alle drei Punkte hängen an Code, der in den letzten Sitzungen mehrfach als „jetzt behoben"
@@ -1445,6 +1444,144 @@ anfühlt, liegt das daran, dass `rollLim` schon vorher nicht der limitierende Fa
 tatsächlich spürbare Hebel für „aggressiver kurven" wäre `gLim` selbst anzuheben, nicht `rollLim`.
 
 Code: `thunderbolt-europe.html`, Suche nach `rollLim:` im `AC`-Objekt.
+
+---
+
+### 4.24 Carrier-Pause-Ton, B-17-Fahrwerk, echte Gebäudeformen, Atoll-Bäume — BUILD 113 / EU BUILD 35
+
+Nutzer: „Bugs und Grafik zuerst bitte", aus einer zuvor selbst vorgeschlagenen Liste offener
+Punkte. Vier Themen, zwei Dateien.
+
+#### 1) `torpedo-carrier.html`: derselbe Pause-Ton-Bug wie EU BUILD 34 — behoben
+
+Exakt dieselbe Ursache wie beim Thunderbolt-Fix (siehe 4.23/1): `animate()` verlässt sich bei
+`ST.PAUSED` früh und erreicht `updateAudio()` nie, aber die Engine-Oszillatoren laufen auf der
+WebAudio-Hardware-Uhr weiter. Anders als bei EU gab es hier schon ein echtes Pause-Overlay
+(`showOverlay('pause')`/`resumeGame()`/`exitToMenu()`) — nur die Ton-Dämpfung fehlte. Dieselbe
+`eng.master.gain.setTargetAtTime(...)`-Technik in `togglePause()`, `resumeGame()` und
+`exitToMenu()` ergänzt. **Verifiziert** mit einer isolierten Node-Simulation (die drei Funktionen
+per Klammerzählung extrahiert, `eng`/`actx`/`ST` gemockt): Pause dämpft auf ~0, Resume und
+Exit-to-Menu stellen 0,85 wieder her.
+
+Code: `torpedo-carrier.html`, `togglePause()`, `resumeGame()`, `exitToMenu()`.
+
+#### 2) B-17-Fahrwerk — Ursache neu vermessen, echte Ursache war etwas anderes als 4.4 vermutete
+
+**Erster eigener Fehler bei der Untersuchung, gleich selbst gefunden:** ein erster Messversuch
+mit `o.localToWorld(v); root.worldToLocal(v)` (derselbe Umweg wie in `cutBlades`, das ihn
+braucht, weil `prop` root-lokal gemessen wird) lieferte für die B-17 nur 6 statt der tatsächlichen
+867 Vertices unter der Bodenlinie — `whole`/`floor` in `rigModel()` sind aber, wie die bereits
+vorhandene Objekt-Klassifizierung direkt daneben, in WELTKOORDINATEN. Der zusätzliche
+`worldToLocal`-Schritt hat beides vermischt (exakt Lektion 2). Nach der Korrektur (reines
+`localToWorld`, konsistent mit dem Rest der Funktion) fand die Messung die drei echten Räder.
+
+**Tatsächlicher Befund am echten `b17.glb`:** wie beim Propeller sind die Räder in dieselbe
+riesige Rumpf/Flügel-Mesh eingeschweißt wie der Rest des Flugzeugs (nur 7 Meshes insgesamt für
+das ganze Modell) — die Objekt-Größenklassifizierung verwirft dieses Mesh zurecht (seine eigene
+Bounding-Box ist das ganze Flugzeug). Neue, generische Funktion `findGearClusters()` (nach dem
+Vorbild von `findProp`): Vertices unter der Bodenlinie bilden 5 räumlich getrennte Klumpen, nicht
+3 — zwei davon (455 und 277 Punkte) sind die Kugelturmhalterung und eine Heckstruktur, keine
+Räder, und liegen bei ähnlichem Radius wie die echten Räder (62/57/12 Punkte), Radius allein
+trennt sie also nicht. Die PUNKTZAHL trennt sauber: ein Rad ist eine einfache Scheibe an einer
+Strebe, ein Geschützturm hat Kanzel-/Waffen-Detailgeometrie und damit weit höhere Dichte für
+einen ähnlich großen Klumpen. Grenze bei `n<=100` gesetzt — deutlich über den echten Rädern,
+deutlich unter dem Turm. Gefundene, vertrauenswürdige Klumpen (2-5, symmetrisch/plausibel
+verteilt) werden per `cutGearClusters()` entfernt — dieselbe Index-Degenerierungs-Technik wie
+`cutBlades`, mit iterativ wachsendem Radius und einer „stillThere"-Abbruchprüfung, weil ein
+Rad-an-Strebe keine glatte Scheibe ist und ein einzelner Radius-Durchlauf beim Fw190-Test (siehe
+unten) nur einen Bruchteil traf.
+
+**Wichtige Korrektur zur ursprünglichen 4.4-Diagnose:** „doppeltes Fahrwerk sichtbar" war so nie
+ganz richtig. `gr.visible=false` wird für JEDES KI-Flugzeug direkt nach dem Bauen gesetzt (die
+B-17 fliegt nur als KI/Bomber-Ziel, nie spielbar) — das synthetische `buildGear()`-Fahrwerk war
+also im Spiel nie sichtbar. Sichtbar war stattdessen NUR das echte, eingeschweißte Fahrwerk,
+UNVERÄNDERLICH ausgefahren — die B-17 flog immer mit sichtbar heruntergelassenen Rädern, auch im
+Reiseflug. Nach dem Fix hängt das echte Fahrwerk (jetzt aus der Mesh geschnitten) an der `gear`-
+Gruppe, die dieselbe `gr.visible=false`-Logik korrekt greifen lässt.
+
+**Nebenfund, nicht angefasst:** derselbe Test an P-47 und Fw190 zeigt, dass auch DIESE
+spielbaren Flugzeuge ihr eigentliches, eingeschweißtes Fahrwerk permanent sichtbar haben,
+zusätzlich zum synthetischen (beim Spieler-eigenen Flugzeug wird nur die synthetische Gruppe
+per `P.gear` ein-/ausgeblendet — das echte Fahrwerk bliebe beim Einfahren sichtbar). Das war
+NICHT Teil der gemeldeten Aufgabe (nur die B-17 aus 4.4) und wurde bewusst nicht angefasst: die
+Vermessung zeigt für P-47/Fw190 eine viel unordentlichere Unterseiten-Geometrie (Klumpen mit
+n=200-950, weit über der für die B-17 kalibrierten Grenze) — Cowl-Flaps, Kühlerklappen und
+Kanonenschächte reichen dort ebenfalls unter die Bodenlinie, ein Rad ist dort nicht sauber von
+echten Oberflächendetails zu trennen, ohne die Gefahr, Nutzflächen mit wegzuschneiden. Ein
+generischer Fix müsste vorsichtiger vorgehen — als eigenständiger, separat zu verifizierender
+Auftrag zu behandeln, nicht im Vorbeigehen.
+
+**Regressionscheck:** B-24 nutzt bereits erfolgreich den bestehenden „own gear"-Pfad (eigenes
+Fahrwerk als trennbares Objekt gefunden) — mein neuer Code läuft für sie gar nicht erst.
+Bf 109 ebenso (schon vorher „own gear"). P-47/Fw190 werden vom neuen Code geprüft, aber die
+Klumpen-Erkennung liefert dort zu viele/zu große Klumpen und bleibt (korrekt) untätig — bestätigt
+per Vorher/Nachher-Vergleich der `rig`-Log-Zeile, unverändert „built gear" ohne Schnitt.
+
+**Nachgewiesen am echten Modell:** `readVert`, `findProp`, `cutBlades`, `buildGear`,
+`findGearClusters`, `cutGearClusters`, `rigModel` wortwörtlich aus der Datei extrahiert, gegen
+echtes `b17.glb` mit echtem `GLTFLoader` r128 und echtem headless-WebGL-Renderer ausgeführt.
+Vorher: Räder an beiden Triebwerksgondeln UND am Heck deutlich sichtbar (Nahaufnahme-Screenshot).
+Nachher: dieselbe Nahaufnahme zeigt eine saubere Gondel-Unterseite ohne jedes Rad; eine
+Gesamtansicht der Unterseite zeigt keinen einzigen der drei Radpositionen mehr. Der Kugelturm
+(absichtlich nicht geschnitten) bleibt sichtbar, mit einigen dünnen, degenerierten Restdreiecken
+in seiner Nähe (vermutlich ein teilweise geschnittener Heckrad-Strebenrest) — nur bei extremer
+Nahaufnahme auf dem Bauch sichtbar, aus normaler Flughöhe nicht relevant.
+
+**Offen:** Nicht auf dem echten iPad geflogen. Der P-47/Fw190-Nebenfund (oben) ist ein
+eigenständiges, noch offenes Thema.
+
+Code: `thunderbolt-europe.html`, Suche nach `findGearClusters`, `cutGearClusters`, `rigModel`.
+
+#### 3) Echte Gebäudeformen statt reiner Boxen — ein erster Schritt
+
+Aus 4.12/4.14 als „nächster, größerer Schritt" offen gelassen. Jedes Haus bestand aus genau zwei
+Boxen (Wand-Quader, Dach-Prisma) — nichts, was ein Haus von einem Container unterscheidet. Zwei
+weitere `InstancedMesh`es (Kamin, Tür) ergänzt — bei Tausenden Häusern weiterhin nur vier
+Draw-Calls insgesamt für die ganze Siedlung, nicht vier pro Haus. Kamin und Tür werden im
+LOKALEN Koordinatensystem jedes Hauses platziert (`toWorld()`-Hilfsfunktion, dieselbe
+Rotationsmatrix, die Wand und Dach schon verwenden) und dann in Weltkoordinaten umgerechnet,
+statt die zufällige Rotation jedes Hauses zu ignorieren.
+
+**Ein eigener Messfehler unterwegs, durch Rendern gefunden statt geraten:** die erste Kamin-Höhe
+(`h*0.55` bis `h*0.85`, also 55-85 % der GESAMTEN Haushöhe) ergab beim Rendern Kamine, die höher
+als das Haus selbst waren — wie Getreidesilos, nicht wie Kamine. Korrigiert auf eine feste,
+kleine Höhe (1,0-2,4 Einheiten, unabhängig von der Haushöhe) — ein echter Kamin überragt den
+First um ein bis zwei Meter, nicht um einen Großteil der Firsthöhe.
+
+**Nachgewiesen:** Headless-Render eines echten, aus `buildTerrain()+buildRoads()+
+buildSettlement()` erzeugten Hauses aus mehreren Blickwinkeln — Kamin sitzt jetzt maßstäblich
+neben dem First, Tür sitzt flach auf einer Wandfläche.
+
+**Offen:** Nicht auf dem echten iPad geflogen. Fensterreihen, echte L-förmige Grundrisse oder
+unterschiedliche Dachformen sind größere, hier nicht angegangene Schritte.
+
+Code: `thunderbolt-europe.html`, `buildSettlement()`, Suche nach „two boxes - a wall block".
+
+#### 4) Atoll-Bäume zu nah am Lagunenrand — Ursache gefunden, behoben
+
+Aus 4.13 als kosmetischer, seit vor BUILD 106 bestehender Nebenfund offen gelassen. Ursache
+nachgerechnet, nicht geraten: die Atoll-Höhenfunktion ist ein Gaußsches Riff-Band um `dd≈0,78`
+(Bruchteil des Inselradius) mit einem harten Sprung an der Lagunengrenze `dd=0,72`. Die
+Baum-Platzierung prüfte nur absolute Höhe (`h` zwischen 3,2 und `peak*0.8`) und lokale Steigung
+an zwei Abtastpunkten (+3 Einheiten in x/z) — durchgerechnet reicht der gültige Höhenbereich
+aber bis `dd≈0,42` hinunter, weit auf die Lagunenseite, und die Steigungsprüfung erkennt den
+harten Sprung an der exakten Grenze nicht zuverlässig, weil ihre beiden Abtastpunkte ihn nicht
+zwangsläufig einschließen. Fix: eine explizite Mindestdistanz zur Lagunengrenze
+(`dd<0,72+0,06` → verwerfen), nur für `atoll`-Inseln.
+
+**Nachgewiesen:** `buildIsland()` wortwörtlich extrahiert, gegen eine echte Atoll-Insel
+(Radius 175, wie in `buildIslands()` tatsächlich verwendet) ausgeführt, alle 240 platzierten
+Baum-Positionen aus der `InstancedMesh` zurückgelesen. Vorher (durchgerechnet, nicht separat
+gerendert): gültiger Bereich reicht bis `dd≈0,42`. Nachher: minimaler gemessener Abstand unter
+allen 240 Bäumen `dd=0,7807` — kein einziger Baum unter der 0,78-Grenze, keiner in der Lagune.
+Zusätzlich ein Übersichts-Render bestätigt einen sauberen Baumring um das Riff, ohne Bäume in
+der Lagunenmitte.
+
+**Offen:** Nicht auf dem echten iPad geflogen. Nur die zweite verwendete Atoll-Größe (Radius 150)
+nicht separat gerendert, aber derselbe Code, keine größenabhängige Fallunterscheidung.
+
+Code: `torpedo-carrier.html`, `buildIsland()`, Suche nach „grew right up to the atoll's inner
+lagoon edge".
 
 ---
 

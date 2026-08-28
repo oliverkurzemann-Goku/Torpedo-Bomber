@@ -253,7 +253,7 @@
   <div id="flash"></div>
   <div id="gunsight"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">EU BUILD 34</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">EU BUILD 35</div>
 
   <div id="apr">
     <div id="aprCall"></div>
@@ -826,7 +826,7 @@ function buildRoads(){
 //  is what makes this affordable on an iPad. Nothing here is a target; it is there so the
 //  ground reads as occupied country instead of empty hills.
 // ============================================================
-let villages=null, roofs=null, hedges=null;
+let villages=null, roofs=null, hedges=null, chimneys=null, doors=null;
 function buildSettlement(){
   const wallG=new THREE.BoxGeometry(1,1,1);
   const roofG=new THREE.CylinderGeometry(0.72,0.72,1,3);   // a prism makes a pitched roof
@@ -842,6 +842,17 @@ function buildSettlement(){
   roofs   =new THREE.InstancedMesh(roofG,roofM,NB);
   villages.instanceColor=new THREE.InstancedBufferAttribute(new Float32Array(NB*3),3);
   roofs.instanceColor=new THREE.InstancedBufferAttribute(new Float32Array(NB*3),3);
+  // Every house used to be exactly two boxes - a wall block and a roof prism, nothing else, so
+  // a whole hamlet read as identical featureless blocks even up close. A chimney and a door are
+  // the two cheapest cues that make a box read as a building rather than a container: two more
+  // InstancedMeshes, so still four draw calls total for every house in the world, not four per
+  // house.
+  const chimG=new THREE.BoxGeometry(1,1,1);
+  const doorG=new THREE.BoxGeometry(1,1,1);
+  const chimM=new THREE.MeshLambertMaterial({color:0x4a3f34});
+  const doorM=new THREE.MeshLambertMaterial({color:0x241f1a});
+  chimneys=new THREE.InstancedMesh(chimG,chimM,NB);
+  doors   =new THREE.InstancedMesh(doorG,doorM,NB);
   const o=new THREE.Object3D();
   let k=0;
   // hamlets strung along the road, plus isolated farms out in the fields
@@ -876,7 +887,10 @@ function buildSettlement(){
         const hh=groundYRender(x+ox,z+oz); if(hh<gy) gy=hh;
       }
       if(gy<RIVER_Y+18) continue;
-      o.position.set(x,gy+h/2,z); o.rotation.set(0,rot+(Math.random()-0.5)*0.5,0);
+      const jitterRot=rot+(Math.random()-0.5)*0.5;
+      const cosR=Math.cos(jitterRot), sinR=Math.sin(jitterRot);
+      const toWorld=(lx,lz)=>[x+lx*cosR-lz*sinR, z+lx*sinR+lz*cosR];
+      o.position.set(x,gy+h/2,z); o.rotation.set(0,jitterRot,0);
       o.scale.set(w,h,d); o.updateMatrix(); villages.setMatrixAt(k,o.matrix);
       const wc=wallPalette[k%wallPalette.length];
       villages.instanceColor.setXYZ(k,wc[0],wc[1],wc[2]);
@@ -887,12 +901,34 @@ function buildSettlement(){
       o.rotation.z=0;
       const rc=roofPalette[(k+2)%roofPalette.length];
       roofs.instanceColor.setXYZ(k,rc[0],rc[1],rc[2]);
+      // chimney: offset toward one gable end and to one side (never dead-centre - nobody builds
+      // a chimney on the ridge's midpoint), rising clear of the roof
+      {
+        const [cx,cz]=toWorld(w*0.24, d*0.36*((k%2)?1:-1));
+        // A real chimney clears the ridge by a metre or two, not by most of the house's own
+        // height - the first cut used h*0.55-0.85 and chimneys towered over the roof like
+        // silos (visible immediately on render).
+        const chH=1.0+Math.random()*1.4, chW=Math.max(0.6,w*0.09);
+        o.position.set(cx, gy+h+h*0.30+chH*0.5, cz);
+        o.rotation.set(0,jitterRot,0);
+        o.scale.set(chW,chH,chW);
+        o.updateMatrix(); chimneys.setMatrixAt(k,o.matrix);
+      }
+      // door: flush on one long wall face, proud of the wall so it doesn't z-fight with it
+      {
+        const [dx,dz]=toWorld((Math.random()-0.5)*w*0.4, d*0.5+0.13);
+        const doorH=h*0.42, doorW=Math.max(0.9,w*0.13);
+        o.position.set(dx, gy+doorH*0.5, dz);
+        o.rotation.set(0,jitterRot,0);
+        o.scale.set(doorW,doorH,0.26);
+        o.updateMatrix(); doors.setMatrixAt(k,o.matrix);
+      }
       k++;
     }
   }
-  villages.count=k; roofs.count=k;
+  villages.count=k; roofs.count=k; chimneys.count=k; doors.count=k;
   villages.instanceColor.needsUpdate=true; roofs.instanceColor.needsUpdate=true;
-  scene.add(villages); scene.add(roofs);
+  scene.add(villages); scene.add(roofs); scene.add(chimneys); scene.add(doors);
 
   // hedgerows: short dark lines following the field pattern, which is what actually breaks up
   // an open landscape when you are down at fifty feet
@@ -1518,6 +1554,102 @@ function makeProp(prop, nBlades){
 }
 
 
+// A landing-gear wheel welded into a much larger fuselage/wing mesh reads the same way a welded
+// propeller does (3.1): a compact, roughly round cluster of vertices - this time sitting below
+// the aircraft rather than spinning in a disc. Generic and measurement-based like findProp, not
+// per-aircraft: only tried when the whole-mesh "own gear" check in rigModel() finds nothing (a
+// wheel welded into the SAME mesh as the wing fails that check because the mesh's own bounding
+// box is the whole aeroplane), and only trusted when the result is clean.
+// Confirmed on the real b17.glb (CLAUDE.md 4.4 - "own gear" detection never finds the B-17's
+// built-in wheels, and a synthetic gear used to get added on top of them, visible whenever the
+// synthetic gear was): below-floor vertices form 5 clusters, not 3 - two of them (455 and 277
+// points) are the ball turret and tail structure, not wheels, and sit at similar radius to the
+// real wheels (62/57/12 points) so radius alone can't tell them apart. Vertex COUNT can: a wheel
+// is a simple disc on a strut, a turret has canopy/gun/greeble detail giving it far higher
+// density for a similarly-sized cluster - capped well above the real wheels, well below the
+// turret, so it separates them cleanly without needing to name the model.
+function findGearClusters(root, whole, S){
+  const floor=whole.min.y+S.y*0.30;
+  const groupR=Math.max(S.x*0.05, 0.3);
+  const v=new THREE.Vector3();
+  const pts=[];
+  root.traverse(o=>{
+    if(!o.isMesh||!o.geometry||!o.geometry.attributes.position) return;
+    const pos=o.geometry.attributes.position;
+    const st=Math.max(1,Math.floor(pos.count/20000));
+    for(let i=0;i<pos.count;i+=st){
+      // World space throughout, matching `whole`/`floor` (Box3.setFromObject is always world)
+      // and the plain-mesh classification just above in rigModel() - NOT root-local like
+      // cutBlades, which needs root-local because `prop` is computed that way. Mixing the two
+      // here undercounted 867 real below-floor vertices down to 6 (Lektion 2).
+      readVert(pos,i,v); o.localToWorld(v);
+      if(v.y<floor) pts.push({x:v.x,y:v.y,z:v.z});
+    }
+  });
+  const clusters=[];
+  for(const p of pts){
+    let best=null,bestD=1e9;
+    for(const cl of clusters){ const d=Math.hypot(p.x-cl.cx,p.z-cl.cz); if(d<bestD){bestD=d;best=cl;} }
+    if(best && bestD<groupR){ best.pts.push(p); best.cx=best.pts.reduce((s,q)=>s+q.x,0)/best.pts.length; best.cz=best.pts.reduce((s,q)=>s+q.z,0)/best.pts.length; }
+    else clusters.push({cx:p.x,cz:p.z,pts:[p]});
+  }
+  const good=clusters.map(cl=>{
+    const cy=cl.pts.reduce((s,q)=>s+q.y,0)/cl.pts.length;
+    const r=Math.max(...cl.pts.map(p=>Math.hypot(p.x-cl.cx,p.z-cl.cz)));
+    return {cx:cl.cx,cy,cz:cl.cz,r,n:cl.pts.length};
+  }).filter(cl=>cl.n>=6 && cl.n<=100 && cl.r>S.x*0.008 && cl.r<S.x*0.05);
+  return {clusters:good, floor};
+}
+function cutGearClusters(root, gearInfo){
+  const {clusters, floor}=gearInfo;
+  root.updateMatrixWorld(true);
+  const a=new THREE.Vector3(), b=new THREE.Vector3(), c=new THREE.Vector3(), m=new THREE.Vector3();
+  const rd=(o,pos,i,out)=>{ readVert(pos,i,out); o.localToWorld(out); };   // world space, see findGearClusters
+  function pass(rf){
+    let cut=0;
+    root.traverse(o=>{
+      if(!o.isMesh||!o.geometry||!o.geometry.index||!o.geometry.attributes.position) return;
+      const pos=o.geometry.attributes.position, arr=o.geometry.index.array;
+      let hitAny=false;
+      for(let t=0;t+2<arr.length;t+=3){
+        if(arr[t]===arr[t+1]&&arr[t]===arr[t+2]) continue;
+        rd(o,pos,arr[t],a); rd(o,pos,arr[t+1],b); rd(o,pos,arr[t+2],c);
+        m.set((a.x+b.x+c.x)/3,(a.y+b.y+c.y)/3,(a.z+b.z+c.z)/3);
+        if(m.y>=floor) continue;               // stay strictly below the measured-safe floor line
+        let hit=false;
+        for(const cl of clusters){ if(Math.hypot(m.x-cl.cx,m.z-cl.cz)<cl.r*rf){ hit=true; break; } }
+        if(!hit) continue;
+        arr[t+1]=arr[t]; arr[t+2]=arr[t]; cut++; hitAny=true;
+      }
+      if(hitAny) o.geometry.index.needsUpdate=true;
+    });
+    return cut;
+  }
+  function stillThere(){
+    let n=0;
+    root.traverse(o=>{
+      if(!o.isMesh||!o.geometry||!o.geometry.index||!o.geometry.attributes.position) return;
+      const pos=o.geometry.attributes.position, arr=o.geometry.index.array;
+      for(let t=0;t+2<arr.length;t+=3){
+        if(arr[t]===arr[t+1]&&arr[t]===arr[t+2]) continue;
+        rd(o,pos,arr[t],a); rd(o,pos,arr[t+1],b); rd(o,pos,arr[t+2],c);
+        m.set((a.x+b.x+c.x)/3,(a.y+b.y+c.y)/3,(a.z+b.z+c.z)/3);
+        if(m.y>=floor) continue;
+        for(const cl of clusters){ if(Math.hypot(m.x-cl.cx,m.z-cl.cz)<cl.r*2.2){ n++; break; } }
+      }
+    });
+    return n;
+  }
+  // A single fixed radius left a wheel mostly standing on the Fw190 (measured: 103 triangles
+  // cut, wheel still clearly visible) - a wheel-on-a-strut isn't a clean disc, so one pass at a
+  // modest radius misses the strut and the hub. Widen like cutBlades until little is left.
+  let cut=0;
+  for(const rf of [1.6,2.2,2.8,3.4]){
+    cut+=pass(rf);
+    if(stillThere()<=6) break;
+  }
+  return cut;
+}
 function rigModel(root, kind){
   root.updateMatrixWorld(true);
   const whole=new THREE.Box3().setFromObject(root);
@@ -1564,6 +1696,16 @@ function rigModel(root, kind){
     found.forEach(p=>gear.attach(p.o));
     rig+=', own gear';
   } else {
+    // Nothing separable as a whole mesh - it may still be there, just welded into a mesh far too
+    // big to pass the size filter (its own bounding box is the whole aeroplane). See
+    // findGearClusters()'s comment: caught on the real b17.glb, where a single 9862-vertex
+    // fuselage+wing mesh holds the wing skin AND all three wheels, permanently visible because
+    // nothing was ever attached to `gear` to hide them (CLAUDE.md 4.4).
+    const gi=findGearClusters(root, whole, S);
+    if(gi.clusters.length>=2 && gi.clusters.length<=5){
+      const cutN=cutGearClusters(root, gi);
+      if(cutN>0) rig+=', cut '+cutN+' welded gear triangles';
+    }
     buildGear(gear, root, whole, S);
     rig+=', built gear';
   }
