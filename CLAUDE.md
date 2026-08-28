@@ -5,7 +5,7 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 115 · Thunderbolt Squadron EU BUILD 38**
+Stand bei Übergabe: **Torpedo Squadron BUILD 116 · Thunderbolt Squadron EU BUILD 39**
 Repo: `oliverkurzemann-Goku/Torpedo-Bomber`, ausgeliefert über GitHub Pages.
 Alle Angaben unten sind aus dem tatsächlichen Code verifiziert, nicht aus dem Gedächtnis.
 
@@ -1913,6 +1913,142 @@ Code: beide Dateien, Suche nach „Gear and flaps used to be silent" (`sfxMotor`
 
 ---
 
+### 4.30 Echtes Feedback vom iPad: Straßenloch, Brücke im Tal, Cockpit-Rand abgeschnitten, kein Ton — BUILD 116 / EU BUILD 39
+
+Erstes echtes Feedback vom iPad seit mehreren Builds, mit Screenshots: „Straße hat ein Loch,
+Brücke ist im Tal, Cockpit avenger oben abgeschnitten. Sonst cool. Soundeffekte leider nicht
+hörbar/vorhanden." Alle vier Punkte einzeln untersucht, nicht aus den Screenshots zurückgerechnet
+(Lektion 5) — stattdessen jeweils mit dem echten Code nachgestellt.
+
+#### 1) Straße hat ein Loch + Brücke im Tal — eine einzige Ursache, keine zwei Bugs
+
+**Root Cause:** `makeWorldBridge()` (seit EU BUILD 34, siehe 4.23) baute die Brücke als EINE
+gerade, starre Box, mit einer einzigen Rotation aus der Straßenrichtung genau am Kreuzungspunkt.
+`roadZ(x)` ist aber eine Sinuskurve, keine Gerade. Am echten Code gemessen (nicht geschätzt):
+schon bei ±50 Einheiten vom Kreuzungspunkt weicht die echte Straße 25 Einheiten seitlich von der
+geraden Linie ab — mehr als die halbe Fahrbahnbreite (24) der alten Brücke. Bei ±200-260
+Einheiten, dort wo das abgeschnittene Straßenband tatsächlich wieder anfängt, sind es 90-125
+Einheiten — das Vierfache der halben Fahrbahnbreite. Eine gerade Brücke kann eine gekrümmte
+Straße nur an genau einem Punkt berühren; überall sonst läuft sie zwangsläufig weg. Aus der Luft
+sah der Zwischenraum zwischen dem starren geraden Bauwerk und der tatsächlich weiterlaufenden
+Straße wie ein Loch in der Straße aus — und dieselbe falsch platzierte Brücke wie „sitzt einfach
+irgendwo im Tal", statt die Straße zu tragen.
+
+Bemerkenswert: `terrainH()`s eigener Kommentar bei `nearBridge()` wusste bereits, dass die Straße
+in der Nähe der Kreuzung von einer geraden Linie abdriftet — nur wurde diese Erkenntnis nie auf
+die Brücke selbst angewendet, nur auf das (großzügig bemessene) Rechteck, das den Boden darunter
+flach hält.
+
+**Fix, an der Wurzel statt am Symptom:** Fahrbahn, Pfeiler und Fachwerk der Brücke werden jetzt
+aus derselben `roadZ(x)`-Kurve gebaut, die `buildRoads()` für das Straßenband ohnehin schon
+abtastet — in 10 Segmente zerlegt, jedes einzeln an seinem eigenen Stück Straße ausgerichtet
+(`Math.atan2(-dz,dx)`, algebraisch identisch zu der bereits bewährten Rotationsformel in
+`findBridgeCrossing()`, nur pro Segment statt einmal für die ganze Spannweite — durch Einsetzen
+dreier Testfälle bestätigt). Dieselbe Technik, die `ribbon()`/`buildWater()` schon für Straße und
+Fluss benutzen, nur als orientierte Boxen statt als flaches Band, damit die Fahrbahn ihre echte
+Dicke behält (siehe die bereits bestehenden Z-Fighting-Lektionen im Code). Damit kann die Brücke
+konstruktionsbedingt nicht mehr von der Straße abdriften — sie IST die Straße an dieser Stelle.
+
+Ein Folgefund dabei: `terrainH()`s Gelände-Glättung um die Brücke (`nearBridge(x,z,280,90)`) war
+mit Halbbreite 90 zu schmal für die jetzt kurvenfolgende Brücke — an den äußeren Stichproben-
+punkten (±260) lag die echte Kurve schon 125 Einheiten von der geraden Referenzlinie entfernt.
+Auf Halbbreite 150 verbreitert (am echten Code für alle 11 Stichprobenpunkte der neuen Brücke
+geprüft: mit 90 lagen die äußersten zwei Punkte auf jeder Seite außerhalb der geglätteten Zone,
+mit 150 alle elf innerhalb).
+
+**Nachgewiesen, nicht nur gerechnet:** Lückenprüfung am echten Code — die neue Brücken-Kurve
+deckt x=4940 bis 5460 ab, das abgeschnittene Straßenband endet bei 5004,75 bzw. beginnt bei
+5394,32, beides komfortabel innerhalb der Brücken-Spannweite. Seitliche Übereinstimmung ist per
+Konstruktion exakt (beide benutzen dieselbe `roadZ(x)`-Funktion an denselben x-Werten), nicht nur
+angenähert. Zusätzlich mit echtem headless-WebGL gerendert (mehrere Kamerawinkel, darunter eine
+Anflug-Perspektive direkt die Fahrbahn entlang): die Fahrbahn erscheint als durchgehende,
+ununterbrochene Fläche vom Nahbereich bis zum fernen Ende, mit dem echten Straßenband sichtbar
+dahinter anschließend — kein Loch. Volle Aufbaukette (`buildTerrain()` bis `buildClouds()`) läuft
+weiterhin fehlerfrei. Zerstören-/Zurücksetzen-Zyklus geprüft (`killTarget('bridge')` kippt und
+senkt die Gruppe wie vorher, `resetWorldBridge()` stellt sie korrekt zurück, Kindobjekt-Anzahl
+bleibt bei 75) — funktioniert unverändert, weil beide nach wie vor nur die GRUPPE selbst
+verschieben/kippen, unabhängig davon, wie viele Segmente darin stecken.
+
+**Offen:** Nicht auf dem echten iPad geflogen.
+
+Code: `thunderbolt-europe.html`, `makeWorldBridge()` (komplett neu, Suche nach „Used to be one
+straight, rigid box"), `terrainH()` bei `nearBridge(x,z,280,150)`.
+
+#### 2) Cockpit-Rand oben abgeschnitten (Avenger) — echte Regression aus BUILD 115, nicht der Ursprungszustand
+
+Direkt mit dem echten Foto verglichen: die alten Werte (vor 4.28) UND die neuen (aus 4.28)
+zeigten am selben, extra-breiten Seitenverhältnis (1180×700 — plausibel für Safari mit
+sichtbarer Werkzeugleiste, oder ein iPad Pro 12.9" im Querformat, beides nie getestet in 4.28)
+dieselbe Kappung am Scheibenrahmen-Querholm — ABER: die alten Werte zeigten direkt bildfüllenden
+Fotoinhalt bis zum oberen Bildschirmrand, die neuen Werte aus 4.28 öffneten dort einen sichtbaren
+**schwarzen Streifen** über dem Rahmen — Seiten-an-Seite-Vergleich am echten Bild bestätigt. Das
+ist eine echte, durch 4.28 eingeführte Verschlechterung, kein vorbestehendes Problem, das nur
+sichtbarer wurde.
+
+**Ursache:** Der in 4.28 gewählte, feste Verschiebungswert (26 % plus bis zu 10 % dynamisch) wurde
+nur an EINEM Seitenverhältnis (1180×820) geprüft. `object-fit:cover` lässt bei einem im Verhältnis
+zum Foto BREITEREN Bildschirm nur wenig „Reserve" über das reine Zuschneiden hinaus — bei 1180×700
+reicht die feste 26-%-Verschiebung weiter, als das Foto überhaupt Bildinhalt hat, und die
+Bildbox rutscht dabei buchstäblich über den eigenen oberen Rand hinaus: der Bereich, den sie vorher
+abdeckte, zeigt jetzt die nackte Seiten-Hintergrundfarbe (Schwarz) statt Fotoinhalt.
+
+**Fix:** `pitShift()` in beiden Dateien berechnet jetzt live, wie viel Verschiebung beim
+AKTUELLEN Bildschirm-/Bildverhältnis tatsächlich verfügbar ist (`(dispH-vh)/(2*vh)`, dieselbe
+Rechnung, die `object-fit:cover` selbst benutzt), und kappt den gewünschten Wert auf 92 % davon —
+volle 26 %+ auf einem hohen/schmalen Bildschirm mit reichlich Reserve, automatisch weniger auf
+einem breiten/kurzen, nie genug, um über den Bildrand zu rutschen. Da `pitMap()`/`M()` denselben
+`pitShift()`-Aufruf für die Zeiger-Positionierung nutzen (siehe 4.28 — bewusst als gemeinsame
+Funktion statt duplizierter Konstante gebaut, genau für diesen Fall), bleiben die Zeiger
+automatisch mit der jetzt dynamischen Verschiebung synchron.
+
+**Nachgewiesen:** Derselbe 1180×700-Vergleich nach dem Fix zeigt keinen schwarzen Streifen mehr —
+der Rahmen-Querholm sitzt wieder direkt am oberen Bildrand wie im Original, ohne die Lücke. Das
+zuvor bereits geprüfte, gute Seitenverhältnis (1180×820, EU zusätzlich bei 1180×650) unverändert
+mit vollem Sichtfeld-Gewinn — der Clamp greift dort nicht, weil dort genug Reserve vorhanden ist.
+Live-Rendering mit echten Zeigern an mehreren Seitenverhältnissen für beide Spiele bestätigt: kein
+Zeiger-Drift.
+
+**Offen:** Der Scheibenrahmen-Querholm liegt bei diesem extremen Seitenverhältnis weiterhin GENAU
+am oberen Bildrand, nicht mit komfortablem Abstand darüber — das ist keine Regression mehr
+(identisch zum Ausgangszustand vor 4.28), aber auch keine Verbesserung für exakt dieses
+Seitenverhältnis. Ohne mehr Bildreserve im Foto selbst (mehr Himmel oberhalb des Rahmens
+fotografiert) ist das die Grenze dessen, was reines Zuschneiden hergibt.
+
+Code: beide Dateien, Funktion `pitShift()`, Suche nach „PIT_SHIFT_BASE was tuned and verified
+against one landscape iPad viewport".
+
+#### 3) Sound nicht hörbar — ein plausibler Verdacht behoben, ehrliche Grenze benannt
+
+Der Code-Pfad für den Audio-Start wurde vollständig durchgesehen: `initAudio()` wird in beiden
+Spielen ausschließlich aus einem echten `onclick`-Handler eines Buttons aufgerufen (dem „Start
+Engine"/„Catapult Launch"-Knopf der Missions-Vorbesprechung), bei JEDEM Sortie-Start, auch bei
+Free Flight — das erfüllt Safaris Vorgabe, dass WebAudio nur innerhalb einer echten Nutzer-Geste
+gestartet werden darf. Der Pause-Stummschalt-Mechanismus (`eng.master.gain`, seit BUILD 113/EU
+BUILD 34) wurde ebenfalls durchgesehen — alle drei Stellen (Pause, Resume, Exit-to-Menu) setzen
+korrekt zurück, kein Pfad bleibt hängen.
+
+**Eine Lücke gefunden und behoben:** Ein frisch erzeugter `AudioContext` MÜSSTE innerhalb einer
+Nutzer-Geste automatisch im Zustand „running" starten — WebKit hat aber Versionen ausgeliefert,
+bei denen das nicht zuverlässig der Fall ist, und dafür rief der Code nie `.resume()` auf (das
+passierte bisher nur beim ZWEITEN und jedem weiteren `initAudio()`-Aufruf, wenn der Kontext
+bereits existierte und `suspended` war). Jetzt wird `actx.resume()` auch direkt nach der
+Neuerstellung unbedingt aufgerufen — folgenlos, falls der Kontext ohnehin schon lief, die
+Lösung, falls nicht.
+
+**Ehrliche Grenze:** Das ist ein plausibler, real existierender Fehlerfall, aber es gibt keine
+Garantie, dass er die tatsächliche Ursache in diesem Fall war — ohne Zugriff auf ein echtes
+iPad lässt sich das von hier aus nicht abschließend bestätigen. Die naheliegendste andere
+Erklärung, die sich grundsätzlich NICHT im Code beheben lässt: der stumme Schalter (Ring/Silent)
+am iPad-Rand oder eine heruntergedrehte Medienlautstärke — iOS Safari respektiert diesen Schalter
+für von WebAudio erzeugten Ton, unabhängig davon, ob der Code korrekt läuft. Bitte beim nächsten
+Test gezielt prüfen: stummer Schalter aus, Medienlautstärke hoch, dann erneut auf Motorbrummen
+(dauerhaft, sobald geflogen wird) und das neue Fahrwerk-/Klappen-Geräusch (kurz nach dem Antippen
+der GEAR/FLAPS-Knöpfe) achten.
+
+Code: beide Dateien, Funktion `initAudio()`, Suche nach „still comes up 'suspended'".
+
+---
+
 ## 5. Gelernte Lektionen (aus echten, wiederholten Fehlern)
 
 1. **Nie im Chat/offline testen und im Spiel hoffen.** Der größte Zeitfresser dieses
@@ -1995,6 +2131,23 @@ Code: beide Dateien, Suche nach „Gear and flaps used to be silent" (`sfxMotor`
    abhängig (aus manchen Winkeln sieht man trotzdem etwas); ein Culling-/Wicklungsfehler ist es
    nicht — bei „nichts zu sehen, aus wirklich jedem getesteten Winkel" zuerst die
    Flächennormalen messen (`computeVertexNormals()`s Ausgabe), nicht am Material schrauben.
+18. **Zwei getrennt klingende Bug-Reports können eine einzige Ursache haben — erst prüfen, ob
+   sie zusammenhängen, bevor man zwei Fixes sucht.** „Straße hat ein Loch" und „Brücke ist im
+   Tal" klangen wie zwei Dinge. Beide kamen davon, dass eine gerade, starre Brücken-Box eine
+   gekrümmte Straße nur an einem Punkt berühren konnte — am echten Code gemessen bereits 25
+   Einheiten Abweichung bei ±50 Einheiten Entfernung vom Kreuzungspunkt, 90-125 bei ±200-260.
+   Der eigene Code hatte die Ursache sogar schon einmal halb erkannt (`nearBridge()`s Kommentar
+   wusste, dass die Straße abdriftet) — nur nie auf die Brücke selbst angewendet, nur auf das
+   Rechteck drumherum.
+19. **Ein CSS-Zuschnittwert, der an einem Bildschirmformat geprüft wurde, ist nicht an allen
+   Bildschirmformaten geprüft.** Die Cockpit-Sichtfeld-Korrektur (4.28) bestand den Test bei
+   1180×820 und öffnete bei 1180×700 einen hässlichen schwarzen Streifen über dem Rahmen — weil
+   `object-fit:cover` bei einem im Verhältnis zum Bild breiteren Bildschirm weniger Zuschnitt-
+   Reserve übrig lässt, und eine feste Prozent-Verschiebung diese Reserve bei manchen Formaten
+   einfach überschreitet. Bei jedem CSS-Zuschnitt-/Verschiebungswert: an mehreren echten
+   Seitenverhältnissen prüfen (hoch/schmal und breit/kurz), nicht nur an dem einen, das gerade
+   zur Hand war — und wo möglich die Verschiebung an der tatsächlich verfügbaren Reserve
+   bemessen statt an einer festen Zahl.
 
 ---
 

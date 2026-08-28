@@ -258,7 +258,7 @@
   <div id="flash"></div>
   <div id="gunsight"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">EU BUILD 38</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">EU BUILD 39</div>
 
   <div id="apr">
     <div id="aprCall"></div>
@@ -557,8 +557,12 @@ function terrainH(x,z){
   // radius left real mesh vertices under the deck 100-250 m too high (confirmed: an isolated
   // headless render showed the deck visibly cut by the terrain poking through it). Test straight
   // rectangle containment in the deck's own local frame instead - always correct regardless of
-  // how the curves behave nearby.
-  if(nearBridge(x,z,280,90)) h=RIVER_Y+16;
+  // how the curves behave nearby. Widened from 90 to 150: the deck itself now follows that same
+  // drifting curve (see makeWorldBridge()) instead of sitting on a fixed straight footprint, and
+  // measured against the real crossing its own sample points reach a good 125 units off the
+  // straight reference line by the deck's own ends - 90 left the last two sample points on each
+  // side sitting outside the flattened zone.
+  if(nearBridge(x,z,280,150)) h=RIVER_Y+16;
   // airfield pad, blended into the surrounding fields
   const ax=Math.abs(x-AF_X)/(RWY_LEN*0.72), az=Math.abs(z-AF_Z)/700;
   const ad=Math.max(ax,az);
@@ -2047,39 +2051,84 @@ function makeWorldBridge(site){
   // river. A flat deck the width of the road (48 m, was 17 m) reads as a continuation of the
   // road at a glance; the tall steel through-truss either side (9.5 m, was a 0.5 m wire) is what
   // actually reads as "bridge" from altitude instead of "road".
-  // len must clear the road-ribbon gap cut in buildRoads() (2*BRIDGE_GAP, plus up to 100 m of
-  // sampling slack per side since the ribbon is built from 100 m steps) even at the road's
-  // steepest measured heading (~22 deg, cos~0.93) - measured short at first (360), the deck's
-  // rotated footprint fell ~50 m short of the cut ends on both sides. 520 clears that with margin.
-  const len=520, width=48, thick=2.0, deckY=RIVER_Y+16-thick/2;
+  //
+  // Used to be one straight, rigid box - and that turned out to be the ONE bug behind two
+  // reports that looked separate ("the road has a hole", "the bridge just sits in the valley").
+  // roadZ(x) is a sine curve, not a straight line: measured against the live crossing, the road
+  // is already 25 units off the straight line joining the deck's own two ends by +-50 units out
+  // from centre, and 90-125 units off (four-plus times the deck's own half-width of 24) by
+  // +-200-260 - right where the cut road ribbon actually resumes. A straight deck can only ever
+  // touch a curved road at its own two fixed endpoints; everywhere else it necessarily drifts
+  // away. From the air the gap between the straight deck's edge and the curved road actually
+  // continuing read as "the road has a hole"; the misplaced straight structure sitting off to
+  // one side of where the road really runs read as "the bridge is just sitting in the valley"
+  // rather than carrying it. (terrainH()'s own nearBridge() comment already knew the road drifts
+  // away from a straight footprint near the crossing - it just widened ITS rectangle to cover
+  // that drift without noticing the deck built the same way had the identical problem.)
+  //
+  // Fixed at the root: the deck, its piers and its truss are now built from the SAME roadZ(x)
+  // curve buildRoads() already samples for the ribbon, cut into N straight segments each
+  // individually angled to match its own stretch of road - the same idea ribbon()/buildWater()
+  // already use for the road and river themselves, just as oriented boxes instead of a flat
+  // strip so the deck keeps real thickness (see the z-fighting notes below, still true here).
+  const halfSpan=260, width=48, thick=2.0, deckY=RIVER_Y+16-thick/2, N=10;
   const g=new THREE.Group();
-  g.add(at(box(len,thick,width,0x59564c),0,deckY,0));
+  const pts=[];
+  for(let i=0;i<=N;i++){ const x=site.bx-halfSpan+i*(2*halfSpan/N); pts.push({x,z:roadZ(x)}); }
+  // One oriented box per segment. Heading is the same atan2 relation findBridgeCrossing() already
+  // uses to angle the whole old rigid deck from a road tangent (verified algebraically equivalent
+  // to Math.atan2(1,slope)-PI/2 for slope=dz/dx), just evaluated per segment instead of once for
+  // the whole span; segments overrun their own length by 6% so consecutive boxes always overlap
+  // rather than leaving hairline seams at the joints.
+  function segBox(p1,p2,h,d,mat,y,lat){
+    const dx=p2.x-p1.x, dz=p2.z-p1.z, len=Math.hypot(dx,dz);
+    const ux=-dz/len, uz=dx/len;
+    const m=box(len*1.06,h,d,mat);
+    m.position.set((p1.x+p2.x)/2+ux*(lat||0), y, (p1.z+p2.z)/2+uz*(lat||0));
+    m.rotation.y=Math.atan2(-dz,dx);
+    return m;
+  }
+  for(let i=0;i<N;i++) g.add(segBox(pts[i],pts[i+1],thick,width,0x59564c,deckY));
   // pier tops overlap 1.5 m INTO the deck rather than just touching it - an exactly coplanar
   // pier-top/deck-bottom seam z-fought at any grazing viewing angle (confirmed by a headless
-  // render: a mottled tear right along the deck at low, near-level camera positions).
+  // render: a mottled tear right along the deck at low, near-level camera positions). Same five
+  // fractional positions the old straight deck used, sampled off the curve now instead of a
+  // straight local-x offset so they still stand under it; small enough footprint (9x13) that
+  // leaving them axis-aligned rather than angled per-pier is not visibly different.
   const pTop=deckY-thick/2+1.5, pBot=RIVER_Y-20, pH=pTop-pBot;
-  for(let i=-2;i<=2;i++) g.add(at(box(9,pH,13,0x53504a), i*len*0.19, pBot+pH*0.5, 0));
+  for(const f of [-0.38,-0.19,0,0.19,0.38]){
+    const x=site.bx+f*2*halfSpan, z=roadZ(x);
+    g.add(at(box(9,pH,13,0x53504a), x, pBot+pH*0.5, z));
+  }
   // chords sit clear ABOVE the deck top (deckY+thick/2), not overlapping it - z-fighting between
   // a near-coplanar chord and the deck was visible as a mottled seam when this was deckY+0.6.
   // Diagonals only (a plain Warren truss, no separate vertical post) - a post and a diagonal
   // sharing the same centre point were nearly coincident boxes and z-fought badly at any oblique
   // angle, rendering as a torn/flickering mess (confirmed by an isolated render before this was
   // simplified). Fewer, thicker members read as a truss from altitude just as well and can't
-  // overlap.
-  const truH=9.5, steel=0x8f8c80, steelDark=0x4f4c44, nDiag=9;
+  // overlap. One diagonal per segment (N=10) is close enough to the old nDiag=9 to look the same.
+  const truH=9.5, steel=0x8f8c80, steelDark=0x4f4c44;
   const chordLo=deckY+thick/2+0.5, chordHi=chordLo+truH, chordMid=(chordLo+chordHi)*0.5;
+  const AY=new THREE.Vector3(0,1,0), AZ=new THREE.Vector3(0,0,1);
   for(const s of [-1,1]){
-    g.add(at(box(len,1.1,1.1,steel),0,chordHi,s*width*0.46));
-    g.add(at(box(len,1.1,1.1,steelDark),0,chordLo,s*width*0.46));
-    for(let i=0;i<nDiag;i++){
-      const dx=-len*0.46+i*(len*0.92/(nDiag-1));
+    for(let i=0;i<N;i++){
+      const p1=pts[i], p2=pts[i+1];
+      g.add(segBox(p1,p2,1.1,1.1,steel,chordHi,s*width*0.46));
+      g.add(segBox(p1,p2,1.1,1.1,steelDark,chordLo,s*width*0.46));
+      const dx=p2.x-p1.x, dz=p2.z-p1.z, len=Math.hypot(dx,dz);
+      const ux=-dz/len, uz=dx/len, mx=(p1.x+p2.x)/2, mz=(p1.z+p2.z)/2;
       const diag=box(1.6,truH,1.6,steel);
-      diag.rotation.z=(i%2?1:-1)*0.62;
-      g.add(at(diag,dx,chordMid,s*width*0.46));
+      diag.position.set(mx+ux*s*width*0.46, chordMid, mz+uz*s*width*0.46);
+      // tilt around the diagonal's own (pre-heading) Z axis, THEN turn the whole tilted member to
+      // the segment's heading - explicit quaternion composition (qHead.multiply(qTilt) applies
+      // qTilt first) instead of assigning .rotation.y/.rotation.z separately, whose combined
+      // effect depends on Three's Euler axis order and was not worth getting subtly backwards.
+      const qTilt=new THREE.Quaternion().setFromAxisAngle(AZ,(i%2?1:-1)*0.62);
+      const qHead=new THREE.Quaternion().setFromAxisAngle(AY,Math.atan2(-dz,dx));
+      diag.quaternion.copy(qHead).multiply(qTilt);
+      g.add(diag);
     }
   }
-  g.position.set(site.x,0,site.z);
-  g.rotation.y=site.rot;
   g.traverse(o=>{ if(o.isMesh) o.userData.introMat=o.material; });
   return g;
 }
@@ -3568,7 +3617,27 @@ const PIT_ZOOM=1.0, PIT_SHIFT_BASE=0.26, PIT_SHIFT_RANGE=0.10;
 // the pit no matter how far you looked. Tying the photo's own pan to eyeUp (already used for the
 // 3D camera look target, see updateCamera()) lets looking up trade more of the side canopy for
 // more forward-up sky, on the same input the player already has.
-function pitShift(){ return PIT_SHIFT_BASE + eyeUp*PIT_SHIFT_RANGE; }
+// PIT_SHIFT_BASE (26%) was tuned and verified against one landscape iPad viewport. Reported
+// back from a real device: on a wider/shorter one (Safari's own chrome eating into the visible
+// height changes the effective aspect ratio, and an iPad Pro 12.9" landscape is wider still than
+// what was tested) that fixed percentage push the crop past the photo's own top edge, opening a
+// band of plain page background above the canopy - worse than the untouched crop it replaced,
+// because object-fit:cover only guarantees enough image to cover the box at zero shift; how much
+// spare margin exists above that before running off the edge shrinks as the viewport gets wider
+// relative to the 1400x787 photo, and at some aspect ratios there is barely any. Clamped to the
+// margin object-fit:cover actually leaves at the CURRENT viewport/image size instead of a fixed
+// percentage - full 26% (plus look-up) on a tall/narrow screen where there is room for it, less
+// automatically on a wide/short one, never enough to expose the edge. A 92% safety factor stops
+// the clamp from landing exactly on the seam, which rounding could still push over by a pixel.
+function pitShift(){
+  const desired=PIT_SHIFT_BASE+eyeUp*PIT_SHIFT_RANGE;
+  const img=pitPhotoEl();
+  const iw=(img&&img.naturalWidth)||1672, ih=(img&&img.naturalHeight)||941;
+  const vw=innerWidth||1, vh=innerHeight||1;
+  const s=Math.max(vw/iw,vh/ih), dispH=ih*s;
+  const maxShift=Math.max(0,(dispH-vh)/(2*vh))*0.92;
+  return Math.max(0,Math.min(desired,maxShift));
+}
 function updatePitPhotoTransform(){
   const t='scale('+PIT_ZOOM+') translateY('+(pitShift()*100).toFixed(2)+'%)';
   const p=document.getElementById('pitPhotoP'), b=document.getElementById('pitPhotoB');
@@ -3653,8 +3722,14 @@ function updateApproach(){
 // ============================================================
 function initAudio(){
   if(actx){ if(actx.state==='suspended') actx.resume(); return; }
-  try{ const AC2=window.AudioContext||window.webkitAudioContext; actx=new AC2(); }
-  catch(e){ actx=null; return; }
+  try{ const AC2=window.AudioContext||window.webkitAudioContext; actx=new AC2();
+    // A context created inside a real user gesture (this only ever runs from the "Start Engine"
+    // click) is supposed to start 'running' on its own, but WebKit has shipped versions where a
+    // freshly-created context still comes up 'suspended' and nothing ever called resume() on it
+    // - silent forever, no error, nothing to catch. Belt and braces: resume unconditionally right
+    // after creation. A no-op if it's already running, the fix if it wasn't.
+    actx.resume();
+  }catch(e){ actx=null; return; }
   const master=actx.createGain(); master.gain.value=0.85; master.connect(actx.destination);
   const eg=actx.createGain(); eg.gain.value=0;
   const lp=actx.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=950;
