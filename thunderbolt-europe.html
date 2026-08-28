@@ -258,7 +258,7 @@
   <div id="flash"></div>
   <div id="gunsight"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">EU BUILD 41</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">EU BUILD 42</div>
 
   <div id="apr">
     <div id="aprCall"></div>
@@ -3112,14 +3112,25 @@ function updateBomber(e,dt,toP,dist){
   if(e.hp<e.maxhp*0.45){ e.smokeT=(e.smokeT||0)-dt;
     if(e.smokeT<=0){ e.smokeT=0.25; spawnSmoke(e.pos.x,e.pos.y,e.pos.z,0x3a3630,1.4); } }
   // defensive fire: several stations, so the closer you get the more of it there is
+  // Reported "Liberators at Noon" unbeatable on Rookie. Measured, not guessed: parked a stationary
+  // player at various ranges from a live 6-bomber box and ran the real fire code for 10 simulated
+  // seconds. Rookie's existing easing (D().aim widens scatter ~27%, D().dmg halves the damage of
+  // any hit that lands) barely mattered against the real killer, which is VOLUME - up to 3 guns
+  // per bomber, every ~0.3-0.55s, times six bombers if caught inside the formation. Result at
+  // dist=600 (a routine firing pass): 92 of 100 hull gone in 10 seconds on Rookie, 100 on
+  // Veteran/Ace. This was never a "slightly too harsh" gap the existing aim/dmg dials could close -
+  // it needed its own dial. Rookie gets a dedicated one here (guns capped at 1 per volley instead
+  // of up to 3, cooldown stretched, aim scatter widened further); Veteran and Ace fall through to
+  // the exact original formula, unchanged.
+  const rookieB = D().id==='rookie';
   e.cool-=dt;
   if(e.cool<=0 && P.alive && dist<900){
-    e.cool=0.30+Math.random()*0.25;
-    const guns=1+Math.floor((1-dist/900)*2);
+    e.cool = rookieB ? (0.55+Math.random()*0.45) : (0.30+Math.random()*0.25);
+    const guns = rookieB ? 1 : (1+Math.floor((1-dist/900)*2));
     for(let g=0;g<guns;g++){
       const tof=dist/620;
       const lead=P.pos.clone().addScaledVector(noseDir(),P.spd*tof*0.8);
-      const err=(1.6-D().aim*0.6)*22;
+      const err=((1.6-D().aim*0.6)*22) * (rookieB?2.0:1);
       lead.x+=(Math.random()-0.5)*err; lead.y+=(Math.random()-0.5)*err; lead.z+=(Math.random()-0.5)*err;
       const from=e.pos.clone();
       from.x+=(Math.random()-0.5)*14; from.y+=(Math.random()-0.5)*4; from.z+=(Math.random()-0.5)*16;
