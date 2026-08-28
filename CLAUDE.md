@@ -5,7 +5,7 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 114 · Thunderbolt Squadron EU BUILD 37**
+Stand bei Übergabe: **Torpedo Squadron BUILD 115 · Thunderbolt Squadron EU BUILD 38**
 Repo: `oliverkurzemann-Goku/Torpedo-Bomber`, ausgeliefert über GitHub Pages.
 Alle Angaben unten sind aus dem tatsächlichen Code verifiziert, nicht aus dem Gedächtnis.
 
@@ -1783,6 +1783,136 @@ Code: `torpedo-carrier.html`, `const MISSIONS = [...]`, die letzten drei Einträ
 
 ---
 
+### 4.28 Cockpit-View „sieht cool aus, ist aber nicht praktisch" — beide Spiele, BUILD 115 / EU BUILD 38
+
+Nutzer: „Die Cockpit view ist im Spiel eher nicht nutzbar, da man sehr wenig von der Umgebung
+sieht. Also optisch cool, aber nicht praktisch." Vor jeder Änderung erst gemessen statt geraten
+— mit einem echten Browser (Playwright/Chromium, Abschnitt 6 um dieses Werkzeug erweitert, siehe
+dort), dem echten CSS und den echten Cockpit-Fotos, gegen einen grellen Kontrasthintergrund
+gerendert, um zu zählen, wie viel vom Bildschirm tatsächlich durchsichtig ist.
+
+**Befund:** Bei den bisherigen Werten (`torpedo-carrier.html`: `object-position:50% 30%`,
+`scale(1.16)`; `thunderbolt-europe.html`: `scale(1.34) translateY(15%)`) waren im Querformat nur
+**37–38 %** des Bildschirms echte Welt, im Hochformat nur **~28–30 %** — und der durchsichtige
+Bereich lag vor allem seitlich/oben (die Canopy-Fenster), nicht dort, wo man beim Erdkampf oder
+beim Landeanflug hinschaut (nach vorne-unten). Beide Spiele hatten exakt dasselbe strukturelle
+Problem, unabhängig entwickelt, mit unterschiedlicher Technik (`object-position` bei TC,
+`translateY` bei EU) — vermutlich, weil in keiner der beiden ursprünglichen Sitzungen tatsächlich
+gemessen wurde, wie viel vom Foto am Ende sichtbar bleibt.
+
+**Fix — dieselbe Technik in beiden Dateien:** `object-position:50% 50%` (zentriert) plus
+`transform:scale(1.0) translateY(26%)`. `scale(1.0)` ist der lockerste Zuschnitt, den
+`object-fit:cover` erlaubt (darunter würde der Seitenrand des Fotos sichtbar und wie ein kaputtes
+Bild wirken, nicht wie Glas) — die alten Zoom-Werte (1.16/1.34) haben durchsichtige Fläche
+weggeschnitten, die im Foto längst vorhanden war. Die 26 % Verschiebung nach unten tauschen den
+uninteressanten unteren Fußraum/die Pedale gegen mehr Himmel oben — durchgerechnet mit
+verschiedenen Zoom-/Verschiebungs-Kombinationen (Abschnitt 6) und die beste getestete Kombination
+übernommen: **38 %→~64 %** sichtbare Welt bei EU, **37 %→~66 %** bei TC, beide im Querformat.
+
+**Zusätzlich — Blickrichtung jetzt tatsächlich beweglich:** Beide Spiele hatten schon einen
+„Look ▲/▼"-Knopf, der aber nur die 3D-Kamera bewegte — das flache Foto blieb starr, die
+sichtbare Fläche also unabhängig davon, wie weit man „hochschaute", immer gleich groß. Jetzt
+verschiebt derselbe Knopf auch das Foto selbst: `eyeUp` (EU, −1…1) bzw. `pitTilt` (TC, wie schon
+vorher) treiben live einen zusätzlichen Verschiebungs-Anteil (`pitShift()`), der jeden Frame in
+`drawPitLive()`/`drawPhotoGauges()` neu auf den `transform` des Fotos angewendet wird — Hochschauen
+tauscht jetzt spürbar mehr Seitenfenster gegen mehr Himmel, nicht nur die Kamera dahinter.
+
+**Die Gefahr dabei — Nadel-Drift:** Beide Spiele malen die Zeiger der Bordinstrumente live auf ein
+Canvas ÜBER dem Foto (`pitMap()`/`M()`), mit einer eigenen Formel, die exakt denselben
+Zoom-/Verschiebungswert kennen muss wie das CSS — sonst wandern die Zeiger von ihren Zifferblättern
+weg (im Code seit Langem als Warnung kommentiert: „PIT_SHIFT in the script must match..."). Da
+jetzt die Verschiebung dynamisch ist, ziehen `pitMap()` (EU) und `M()` (TC) den Wert live aus
+derselben `pitShift()`-Funktion statt aus einer festen Konstante — es gibt nur eine Quelle für den
+Wert, CSS und Nadel-Mathematik können nicht mehr auseinanderlaufen.
+
+**Nachgewiesen, nicht nur behauptet:** Beide Dateien vollständig mit echtem `GLTFLoader` und einem
+echten (nicht headless-gl, sondern regulären) Chromium über Playwright geladen, tatsächlich eine
+Mission gestartet, in den Cockpit-Modus geschaltet und fotografiert — mit sichtbaren, in der Luft
+befindlichen Instrumenten (Fahrt, Höhe, künstlicher Horizont mit blau/braunem Himmel-Erde-Ball) an
+exakt den erwarteten Positionen auf den Zifferblättern, sowohl in der Grundstellung als auch nach
+simuliertem „Look up" (`eyeUp`/`pitTilt` auf Maximum) — kein Zeiger-Drift in beiden Fällen. Vorher/
+Nachher-Screenshots bestätigen den gemessenen Sichtbarkeits-Gewinn visuell, nicht nur als Zahl.
+
+**Offen:** Nicht auf dem echten iPad geflogen. Die Fotos selbst begrenzen, wie viel „nach vorne
+durch die Frontscheibe" prinzipiell sichtbar sein kann — beide zeigen einen echten, fotografierten
+Cockpit-Innenraum, in dem das Armaturenbrett einen erheblichen Teil des Sichtfelds einnimmt; das
+ist keine Cropping-Frage mehr, sondern die Aufnahme selbst. Ein größerer, hier nicht angegangener
+Schritt wäre ein echtes 3D-Cockpit-Rahmen-Objekt statt eines flachen Fotos (echte Parallaxe beim
+Kopfbewegen, kein Deckel auf einem Teil des Sichtfelds) — deutlich mehr Aufwand, kein neues
+Bildmaterial vorhanden.
+
+Code: beide Dateien, Suche nach „looks cool but you can't see anything" (CSS-Kommentar),
+`pitShift`/`pitMap` (EU) bzw. `pitShift`/`function M(p)` (TC).
+
+### 4.29 Sound: Fahrwerk/Klappen stumm, Funkspruch ohne Klick, Motor unbeeindruckt von Schaden — BUILD 115 / EU BUILD 38
+
+Nutzer: „Sound wäre gut" (zweiter Teil derselben Anfrage wie 4.28). Beide Spiele haben bereits ein
+vollständig synthetisches WebAudio-System (kein Sample-Material — zwei verstimmte Sägezahn-
+Oszillatoren plus gefiltertes Rauschen für den Motor, dazu einzelne Rausch-Burst-Funktionen für
+Explosionen/MG/Flak/Absturz), aber vier Lücken fielen beim Durchsehen auf, die keine der beiden
+Dateien abdeckte:
+
+1. **Fahrwerk und Klappen sind lautlos.** Ein-/Ausfahren ändert nur den sichtbaren Zustand und
+   zeigt eine HUD-Meldung — keine der beiden Dateien hatte je ein Motorengeräusch dafür, obwohl das
+   in jedem echten Propellerflugzeug ein deutlich hörbarer, mehrsekündiger Vorgang ist.
+2. **Funksprüche erscheinen lautlos als Text.** `radioSay()`/`updateRadio()` blenden eine Zeile ein,
+   ohne jedes akustische Signal — kein Klick, kein Rauschen, das eine tatsächliche Funkübertragung
+   andeutet.
+3. **Der Motorklang reagiert nicht auf Schaden.** `updateAudio()` berechnet Tonhöhe/Lautstärke rein
+   aus Drehzahl/Fahrt — ein auf 10 % Rumpf-HP herunter geschossenes Flugzeug klingt exakt wie ein
+   unbeschädigtes, obwohl beide Spiele bereits eine visuelle Schadenserkennung (Ölschmiere auf der
+   Scheibe in TC/EU, Rauchfahne in TC) ab einer festen HP-Schwelle haben.
+4. (TC zusätzlich) **Fahrwerks-Bremsklappe und Fanghaken** (`diveBtn`/`hookBtn`, siehe 4.15) hatten
+   dieselbe Lücke wie Fahrwerk/Klappen.
+
+**Fix, dieselbe Technik in beiden Dateien (EU hatte bereits einen geteilten `nburst()`-Rauschbrenner-
+Helfer für Explosion/MG/Absturz/Bolter; TC hatte denselben Code bisher nur lokal in `sfxCrash()`
+dupliziert — für TC einmal auf Top-Level gehoben, `sfxCrash()` selbst nicht angefasst):**
+- `sfxMotor(dauer, grundfrequenz, klopf-frequenz)` — ein tiefes, quadratisches Motorengeräusch, das
+  über die Fahrzeit hochfrequent startet und zur Zielfrequenz absinkt, gefolgt von einem kurzen
+  Rausch-Klopfen (`nburst`, verzögert um `dauer`) beim Erreichen des Anschlags — dieselbe
+  „Cover statt Schneiden"-Denkweise wie bei den mechanischen Fixes in Abschnitt 3.1, nur akustisch:
+  ein Geräusch, kein neues Modell. `sfxGearMotor()`/`sfxFlapMotor()` sind dünne Wrapper mit den
+  jeweils im Code gemessenen echten Fahrzeiten (Fahrwerk ~1,8 s bei Rate 0,55, Klappen ~1,4 s bei
+  Rate 0,7 — direkt aus der Interpolationsformel in `updateFlight()` übernommen, nicht geschätzt)
+  und leicht unterschiedlicher Tonhöhe (Fahrwerk tiefer/schwerer als Klappen). In TC zusätzlich
+  `sfxMotor(0.6,110,260)` für die Sturzflugbremse und `sfxMotor(1.0,100,260)` für den Fanghaken,
+  an den jeweiligen Button-Handlern.
+- `sfxRadio()` — ein kurzer Rausch-Klick plus ein 1400-Hz-Doppelpiep, ausgelöst nicht beim
+  Einreihen in die Warteschlange (`radioSay()`), sondern beim tatsächlichen Anzeigen
+  (`radioQ.shift()` in `updateRadio()`) — genau der Moment, in dem der Spieler die Zeile sieht.
+- Motor-Schaden: `updateAudio()` berechnet einen Schadensfaktor aus derselben HP-Schwelle, die die
+  vorhandene visuelle Anzeige schon benutzt (EU: `hull<55`, wie beim Öl-auf-Scheibe-Effekt; TC:
+  `hull<50`, wie bei der Rauchfahne) und löst mit einer zur Schadensschwere proportionalen
+  Wahrscheinlichkeit pro Frame kurze, unregelmäßige Fehlzündungs-Rauschstöße aus (`sfxSputter()`).
+  Bewusst als zufällige Einzelereignisse statt als kontinuierliche Modulation der laufenden
+  Motor-Oszillatoren umgesetzt — weniger riskant für den bereits fein abgestimmten sauberen
+  Grundklang, und ein Motor-Fehlzünden klingt in Wirklichkeit auch unregelmäßig, nicht periodisch.
+
+**Nachgewiesen, nicht nur geschrieben:** Beide Dateien mit echtem `GLTFLoader`/Chromium (Playwright,
+dasselbe Werkzeug wie 4.28) geladen, eine Mission tatsächlich gestartet (echte `AudioContext`,
+keine Attrappe — Node hat keine WebAudio-API, ein Stub hätte hier nichts über echtes Verhalten
+ausgesagt). Alle neuen Funktionen einzeln UND über den echten Button-Pfad ausgelöst (`gearBtn`/
+`flapBtn`/`hookBtn`/`diveBtn` per echtem `pointerdown`-Event, `radioSay()`+`updateRadio()`) — keine
+Konsolenfehler in beiden Spielen. Schadens-Wahrscheinlichkeit statistisch geprüft: 600 simulierte
+Frames (10 Sekunden) bei vollem Rumpf (`P.hull=100`) lösten in keinem der beiden Spiele auch nur
+einen Fehlzündungs-Sound aus; bei stark beschädigtem Rumpf (`P.hull=10`) waren es 17 (EU) bzw. 7
+(TC) in denselben 10 Sekunden — die Formel reagiert also nachweislich auf Schaden und bleibt bei
+vollem Rumpf still, nicht nur der Formel nach plausibel.
+
+**Offen:** Nicht auf dem echten iPad gehört — bei reinem WebAudio-Sounddesign ist das ohnehin die
+einzige Instanz, die „klingt das gut" wirklich beurteilen kann; die Verifikation hier stellt sicher,
+dass die Sounds zur richtigen Zeit, ohne Fehler und mit der richtigen Schadenslogik auslösen, nicht
+dass sie subjektiv überzeugend klingen. Kein Sound für die Tastatur-Kurzwahl (`e.key==='g'`,
+Desktop-Test-Fallback, auf dem iPad ohne externe Tastatur nie erreichbar) — bewusst ausgelassen, um
+die Änderung eng am tatsächlich genutzten Touch-Pfad zu halten.
+
+Code: beide Dateien, Suche nach „Gear and flaps used to be silent" (`sfxMotor`/`sfxGearMotor`/
+`sfxFlapMotor`), „A radio call used to just appear as text" (`sfxRadio`), „damaged engine misfiring"
+(`sfxSputter`, Aufruf in `updateAudio()`).
+
+---
+
 ## 5. Gelernte Lektionen (aus echten, wiederholten Fehlern)
 
 1. **Nie im Chat/offline testen und im Spiel hoffen.** Der größte Zeitfresser dieses
@@ -1895,6 +2025,37 @@ Headless-Test: THREE- und DOM-Stubs (Vector3, Group, Mesh, Canvas-2D-Context-Att
 laden, `init()` aufrufen, dann `animate()` in einer Schleife. Damit lassen sich Missionen
 durchspielen, Kollisionen prüfen, Flugbahnen über viele Frames verfolgen — nur eben keine
 Aussagen über Modellgeometrie treffen (dafür Abschnitt 6, oberer Teil, verwenden).
+
+**Für CSS/Layout/DOM-Fragen (Menü-Anordnung, Cockpit-Foto-Zuschnitt, Bildschirmabdeckung von
+Overlays) zählt kein DOM-Stub, kein Nachrechnen von `object-fit:cover`-Formeln per Hand — nur ein
+echter Browser mit dem echten CSS.** Genau das hat 4.28 gefunden: die alten Cockpit-Zoom-Werte
+„fühlten sich richtig an" im Code, aber erst ein echtes Rendering gegen einen grellen
+Kontrasthintergrund zeigte, dass nur 28-38 % des Bildschirms tatsächlich durchsichtig waren.
+Playwright + das vorinstallierte Chromium sind in dieser Umgebung bereits vorhanden
+(`/opt/pw-browsers/chromium-*/chrome-linux/chrome`, `NODE_PATH` auf die globale
+`node_modules` von `playwright` setzen, falls `require('playwright')` lokal nicht auflöst).
+Verfahren:
+1. Datei in ein Testverzeichnis kopieren, die beiden CDN-`<script src>`-Zeilen (three.min.js,
+   GLTFLoader.js) per `sed` auf lokale Kopien aus dem npm-`three`-Paket umbiegen (kein
+   Netzwerkzugriff nötig/möglich in dieser Umgebung — der CDN-Aufruf schlägt sonst fehl und das
+   Skript bricht mit „THREE is not defined" ab, bevor irgend etwas UI-Bezogenes läuft).
+2. Mit `python3 -m http.server` bedienen (nicht `file://` — `GLTFLoader` nutzt `fetch()`, das
+   unter `file://` in Chromium an CORS scheitert) und dabei über den `run_in_background`-Modus
+   des Bash-Werkzeugs starten, nicht mit `&`/`nohup` — Hintergrundprozesse, die nicht explizit
+   als Background-Tool-Aufruf laufen, werden von dieser Sandbox beim Ende des Tool-Aufrufs
+   mitbeendet.
+3. Mit Playwright laden, echte Buttons per `.click()`/`dispatchEvent(new PointerEvent(...))`
+   auslösen (nicht nur die zugrunde liegende Funktion direkt aufrufen — das prüft auch, ob der
+   Button überhaupt am richtigen Element hängt), einen Screenshot speichern UND für reine
+   Sichtbarkeits-Fragen die Pixel auszählen (`pngjs`, bereits im `proptest`-node_modules
+   vorhanden): Seite/Overlay mit sattem Magenta hinterlegen, den Anteil nicht-magenta-farbener
+   Pixel zählen — dieselbe Kontrast-Technik, die schon für die Wasser-Sichtbarkeit in 4.26
+   funktioniert hat, hier auf DOM/CSS statt auf eine Three.js-Geometrie angewendet.
+4. Bei Audio (4.29): Node hat keine `AudioContext` — ein Stub sagt nichts über echtes Verhalten.
+   Auch hier bedient Playwright/Chromium die echte `AudioContext`/`OscillatorNode`/`GainNode`-API
+   (kein Hardware-Ausgang nötig, der Knotengraph läuft trotzdem echt) — Funktionen einzeln UND
+   über den echten Button-Pfad auslösen, auf Konsolenfehler prüfen, bei wahrscheinlichkeitsbasierter
+   Logik (z. B. Schadens-Sputter) über viele simulierte Frames zählen statt einmalig aufzurufen.
 
 ---
 

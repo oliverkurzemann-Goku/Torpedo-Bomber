@@ -153,8 +153,15 @@
   #cockpitFrame .dash{display:none;}
   /* Aspect-safe canopy frame: fixed/clamped sizes, never stretched by orientation */
   #cockpitFrame .cnp{position:absolute;pointer-events:none;z-index:0;}
-  #pitPhoto,#pitPhotoZ,#pitPhotoS{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 30%;
-    transform:scale(1.16);transform-origin:50% 50%;pointer-events:none;z-index:1;display:none;}
+  /* Reported "cockpit view looks cool but you can't see anything" (same photo-overlay technique
+     as thunderbolt-europe.html, same fix): the old 50%/30% + 1.16 crop measured out to only
+     ~37% of the screen being actual world, most of that on the SIDE windows, not the forward
+     view. object-position:50% 50% + translateY(26%) - trading the boring lower panel/floor for
+     more sky above - measured 37%->66% visible on the real photo. This value and the pitTilt-
+     driven range added on top in JS must stay in step with PIT_ZOOM/PIT_SHIFT_BASE/
+     PIT_TILT_DEFAULT/PIT_TILT_GAIN, which set this transform live every frame. */
+  #pitPhoto,#pitPhotoZ,#pitPhotoS{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 50%;
+    transform:scale(1.0) translateY(26%);transform-origin:50% 50%;pointer-events:none;z-index:1;display:none;}
   #pitLive{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:2;display:none;}
   .lookBtn{position:fixed;right:max(20px,env(safe-area-inset-right));top:calc(50% - 104px);z-index:12;display:none;
     padding:8px 10px;font-family:"Arial Black",sans-serif;font-size:11px;letter-spacing:1px;
@@ -303,7 +310,7 @@
   <div id="flash"></div>
   <div id="ltn" style="position:fixed;inset:0;background:#e6ecff;opacity:0;pointer-events:none;z-index:40;"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 114</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 115</div>
 
   <!-- Optical landing aid -->
   <div id="lso">
@@ -4022,7 +4029,7 @@ function loadPlaneModel(){
       }
       window.__eyeDbg='EYE '+COCKPIT_EYE.map(v=>v.toFixed(2)).join('/');
       const btEl=document.getElementById('buildTag');
-      if(btEl) btEl.textContent='BUILD 114 · '+window.__eyeDbg;
+      if(btEl) btEl.textContent='BUILD 115 · '+window.__eyeDbg;
       let seat=null;
       model.traverse(function(o){
         if(!o.isMesh||!o.material) return;
@@ -4660,6 +4667,9 @@ function updateAudio(dt){
   eng.eg.gain.setTargetAtTime(vol,ct,0.12);
   eng.lfoG.gain.setTargetAtTime(flying?vol*0.6:0,ct,0.12);
   eng.ng.gain.setTargetAtTime(flying?0.015+rpm*0.04:0,ct,0.12);
+  // damaged engine misfiring under load - same hull<50 threshold the smoke-trail visual uses
+  const dmgF=Math.max(0,(50-P.hull)/50);
+  if(flying && dmgF>0 && Math.random()<dmgF*dt*1.2) sfxSputter();
 }
 function sfxBoom(level){
   if(!actx) return; const ct=actx.currentTime, dur=0.45+level*0.5, o2=out();
@@ -4712,6 +4722,50 @@ function sfxAlarm(){
     g.gain.exponentialRampToValueAtTime(0.001,ts+0.16);
     o.connect(g); g.connect(o2); o.start(ts); o.stop(ts+0.18); }
 }
+// Shared noise-burst helper (the pattern sfxCrash below already uses via its own local copy),
+// promoted here so the new sfxMotor/sfxSputter below don't need their own — same technique,
+// same signature, as thunderbolt-europe.html's own top-level nburst().
+function nburst(dur,type,freq,q,peak,delay,curve){
+  if(!actx) return; const ct=actx.currentTime, o2=out();
+  const n=Math.max(1,Math.floor(actx.sampleRate*dur));
+  const nb=actx.createBuffer(1,n,actx.sampleRate); const d=nb.getChannelData(0);
+  for(let i=0;i<n;i++) d[i]=(Math.random()*2-1)*Math.pow(1-i/n,curve);
+  const src=actx.createBufferSource(); src.buffer=nb;
+  const f=actx.createBiquadFilter(); f.type=type; f.frequency.value=freq; if(q) f.Q.value=q;
+  const g=actx.createGain(); const ts=ct+delay;
+  g.gain.setValueAtTime(peak,ts); g.gain.exponentialRampToValueAtTime(0.001,ts+dur);
+  src.connect(f); f.connect(g); g.connect(o2); src.start(ts);
+}
+// Gear and flaps used to be silent - a HUD flash and the visual state changed, but nothing in
+// the cockpit told you the mechanism actually moved. A real electric/hydraulic actuator is a
+// low whirring motor for the travel time, ending in a hard mechanical lock when it reaches the
+// stop. Same technique as thunderbolt-europe.html's own sfxMotor().
+function sfxMotor(dur,baseFreq,thunkFreq){
+  if(!actx) return; const ct=actx.currentTime, o2=out();
+  const o=actx.createOscillator(); o.type='square';
+  o.frequency.setValueAtTime(baseFreq*1.35,ct); o.frequency.linearRampToValueAtTime(baseFreq,ct+dur);
+  const lp=actx.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=420;
+  const g=actx.createGain();
+  g.gain.setValueAtTime(0.0001,ct); g.gain.linearRampToValueAtTime(0.05,ct+0.08);
+  g.gain.setValueAtTime(0.05,ct+Math.max(0.08,dur-0.12)); g.gain.linearRampToValueAtTime(0.0001,ct+dur);
+  o.connect(lp); lp.connect(g); g.connect(o2); o.start(ct); o.stop(ct+dur+0.05);
+  nburst(0.09,'bandpass',thunkFreq,1.2,0.22,dur,2.2);   // mechanism lock, once travel finishes
+}
+function sfxGearMotor(){ sfxMotor(1.8,88,220); }
+function sfxFlapMotor(){ sfxMotor(1.4,140,340); }
+// A radio call used to just appear as text - the actual cockpit habit is a click of static as
+// the transmission opens. Same technique as thunderbolt-europe.html's own sfxRadio().
+function sfxRadio(){
+  if(!actx) return; const ct=actx.currentTime, o2=out();
+  nburst(0.05,'highpass',2600,0,0.09,0,3);
+  const o=actx.createOscillator(); o.type='sine'; o.frequency.value=1400;
+  const g=actx.createGain(); g.gain.setValueAtTime(0.0001,ct);
+  g.gain.linearRampToValueAtTime(0.05,ct+0.015); g.gain.exponentialRampToValueAtTime(0.001,ct+0.09);
+  o.connect(g); g.connect(o2); o.start(ct); o.stop(ct+0.1);
+}
+// A damaged engine misfiring under load - short, irregular crackle bursts. Triggered from
+// updateAudio() below, scaled by how badly hurt P.hull is.
+function sfxSputter(){ nburst(0.07,'bandpass',180+Math.random()*260,1.5,0.16+Math.random()*0.12,0,2.4); }
 
 // A crash is broadband, never tonal. The old sound leaned on a sine sweeping 95->34 Hz, which
 // is exactly the "falling cartoon anvil" cue. This is all filtered noise: a bright metal crunch,
@@ -5041,7 +5095,19 @@ function attitudeDial(g,x,y,r,pitch,roll){
 // circle-detection on the image (6x2 grid) — the teal attitude ball verified by colour.
 // We do NOT paint opaque dials over the photo: only the needles (and the moving horizon
 // ball) are drawn, so the real aged faces, bezels and glass of the photo stay visible.
-const PIT_IMG_W=1536, PIT_IMG_H=1024, PIT_POS_X=0.5, PIT_POS_Y=0.30, PIT_ZOOM=1.16;
+const PIT_IMG_W=1536, PIT_IMG_H=1024, PIT_POS_X=0.5, PIT_POS_Y=0.5, PIT_ZOOM=1.0;
+// Live look-around: pitTilt already drives the 3D camera's cockpit look angle (see the ▲/▼
+// buttons and tiltA below) but never touched the flat photo, so looking up/down never revealed
+// any more sky than the fixed crop already showed. Tying the photo's own pan to pitTilt lets
+// looking up trade side-canopy for more forward-up sky on the same input. Anchored so the
+// DEFAULT pitTilt (-0.34, before anyone touches ▲/▼) reproduces exactly the tuned PIT_SHIFT_BASE
+// crop — nobody who never touches the look buttons sees any different framing than intended.
+const PIT_SHIFT_BASE=0.26, PIT_TILT_DEFAULT=-0.34, PIT_TILT_GAIN=0.15;
+function pitShift(){ return PIT_SHIFT_BASE + (pitTilt-PIT_TILT_DEFAULT)*PIT_TILT_GAIN; }
+function updatePitPhotoTransform(){
+  const t='scale('+PIT_ZOOM+') translateY('+(pitShift()*100).toFixed(2)+'%)';
+  ['pitPhoto','pitPhotoZ','pitPhotoS'].forEach(id=>{ const el=document.getElementById(id); if(el) el.style.transform=t; });
+}
 const PIT_GAUGES={ asi:[606,542,31], alt:[686,540,30], att:[769,540,30],
                    vsi:[852,542,29], rpm:[930,542,28], cmp:[766,622,31] };
 // Zero (A6M) panel — bezels found by circle-detection on cockpit_zero.png (1536x1024)
@@ -5097,6 +5163,7 @@ function photoAttitude(g,x,y,r,pitch,roll){
   glassSheen(g,x,y,r);
 }
 function drawPhotoGauges(){
+  updatePitPhotoTransform();
   if(!plCv){ plCv=document.getElementById('pitLive'); if(!plCv) return; plCtx=plCv.getContext('2d'); }
   const vw=window.innerWidth, vh=window.innerHeight;
   if(plCv.width!==vw||plCv.height!==vh){ plCv.width=vw; plCv.height=vh; }
@@ -5104,8 +5171,12 @@ function drawPhotoGauges(){
   const s=Math.max(vw/PIT_IMG_W, vh/PIT_IMG_H);
   const dx=(vw-PIT_IMG_W*s)*PIT_POS_X, dy=(vh-PIT_IMG_H*s)*PIT_POS_Y;
   const zcx=vw*0.5, zcy=vh*0.5;
+  // scale about the centre, then translate — same order the CSS transform applies it, and the
+  // same pattern thunderbolt-europe.html's pitMap() uses for its own photo-overlay cockpit.
   function M(p){ let x=dx+p[0]*s, y=dy+p[1]*s;
-    x=zcx+(x-zcx)*PIT_ZOOM; y=zcy+(y-zcy)*PIT_ZOOM; return [x, y, p[2]*s*PIT_ZOOM]; }
+    x=zcx+(x-zcx)*PIT_ZOOM;
+    y=zcy+(y-zcy)*PIT_ZOOM + PIT_IMG_H*s*PIT_ZOOM*pitShift();
+    return [x, y, p[2]*s*PIT_ZOOM]; }
   const kt=P.spd*KT, alt=Math.max(0,P.pos.y*FT), vsi=P.vSpeed*FT*60;
   const GA=pitGauges();
   let c;
@@ -5327,7 +5398,7 @@ function radioSay(text){ if(radioQ.length<4) radioQ.push(text); }
 function updateRadio(dt){
   const r=document.getElementById('radio');
   if(radioT>0){ radioT-=dt; if(radioT<=0) r.classList.remove('show'); return; }
-  if(radioQ.length){ r.textContent=radioQ.shift(); r.classList.add('show'); radioT=2.8; }
+  if(radioQ.length){ r.textContent=radioQ.shift(); r.classList.add('show'); radioT=2.8; sfxRadio(); }
 }
 function updateFlash(dt){
   if(flashTimer>0){ flashTimer-=dt; if(flashTimer<=0) document.getElementById('flash').classList.remove('show'); }
@@ -5397,18 +5468,18 @@ function setupUIButtons(){
   document.getElementById('gearBtn').addEventListener('pointerdown',e=>{ e.preventDefault();
     P.gearTgt = P.gearTgt>0.5?0:1; const b=document.getElementById('gearBtn');
     b.classList.toggle('on',P.gearTgt>0.5); b.innerHTML=P.gearTgt>0.5?'GEAR<br>▼ DN':'GEAR<br>▲ UP';
-    flash(P.gearTgt>0.5?'GEAR DOWN':'GEAR UP',700); });
+    flash(P.gearTgt>0.5?'GEAR DOWN':'GEAR UP',700); sfxGearMotor(); });
   document.getElementById('flapBtn').addEventListener('pointerdown',e=>{ e.preventDefault();
     P.flapTgt = P.flapTgt>0.5?0:1; const b=document.getElementById('flapBtn');
     b.classList.toggle('on',P.flapTgt>0.5); b.innerHTML=P.flapTgt>0.5?'FLAPS<br>DN':'FLAPS<br>UP';
-    flash(P.flapTgt>0.5?'FLAPS DOWN':'FLAPS UP',700); });
+    flash(P.flapTgt>0.5?'FLAPS DOWN':'FLAPS UP',700); sfxFlapMotor(); });
   document.getElementById('diveBtn').addEventListener('pointerdown',e=>{ e.preventDefault();
     P.diveBrake=!P.diveBrake; document.getElementById('diveBtn').classList.toggle('on',P.diveBrake);
-    flash(P.diveBrake?'DIVE BRAKES OUT':'DIVE BRAKES IN',700); });
+    flash(P.diveBrake?'DIVE BRAKES OUT':'DIVE BRAKES IN',700); sfxMotor(0.6,110,260); });
   document.getElementById('hookBtn').addEventListener('pointerdown',e=>{ e.preventDefault();
     P.hookTgt = P.hookTgt>0.5?0:1; const b=document.getElementById('hookBtn');
     b.classList.toggle('on',P.hookTgt>0.5); b.innerHTML=P.hookTgt>0.5?'HOOK<br>▼ DN':'HOOK<br>▲ UP';
-    flash(P.hookTgt>0.5?'HOOK DOWN':'HOOK UP',700); });
+    flash(P.hookTgt>0.5?'HOOK DOWN':'HOOK UP',700); sfxMotor(1.0,100,260); });
   document.getElementById('viewBtn').addEventListener('pointerdown',e=>{ e.preventDefault();
     viewMode = viewMode==='chase'?'cockpit':'chase';
     const b=document.getElementById('viewBtn'); b.innerHTML='VIEW<br>'+(viewMode==='cockpit'?'PIT':'CHASE');
@@ -5491,7 +5562,7 @@ function setupUIButtons(){
   if(dbgT2) dbgT2.onclick=()=>{
     dbgOn=!dbgOn; localStorage.setItem('dbgOn',dbgOn?'1':'0');
     const db=document.getElementById('dbgBox'); if(db) db.textContent=dbgOn?'✓':'';
-    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 114'; }
+    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 115'; }
   };
   const lu=document.getElementById('lookUp'), ld=document.getElementById('lookDn');
   const setTilt=v=>{ pitTilt=Math.max(-0.9,Math.min(0.4,v)); localStorage.setItem('pitTilt',pitTilt.toFixed(3)); };
