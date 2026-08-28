@@ -5,7 +5,7 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 113 · Thunderbolt Squadron EU BUILD 37**
+Stand bei Übergabe: **Torpedo Squadron BUILD 114 · Thunderbolt Squadron EU BUILD 37**
 Repo: `oliverkurzemann-Goku/Torpedo-Bomber`, ausgeliefert über GitHub Pages.
 Alle Angaben unten sind aus dem tatsächlichen Code verifiziert, nicht aus dem Gedächtnis.
 
@@ -1733,6 +1733,53 @@ zweitrangig genannt) sind nicht Teil dieser Runde.
 
 Code: `thunderbolt-europe.html`, Suche nach `buildClouds`, `updateClouds` (neu); `ribbon()` und
 `buildWater()`, Suche nach „Wound so the face normal points +Y".
+
+---
+
+### 4.27 Torpedo Carrier: Missionen falsch nummeriert (7 → 9 → 10 → 8) — BUILD 114
+
+Nach dem Grafik-Fund (4.26) auf Wunsch des Nutzers weiter zum „eventuell"-Nebenpunkt Missionen:
+`MISSIONS`-Array in beiden Dateien durchgesehen. `thunderbolt-europe.html`s zehn Sorties sind in
+Array- und Anzeige-Reihenfolge bereits durchgehend 1–10. `torpedo-carrier.html` nicht: die letzten
+drei Einträge im Array trugen die Titel „Sortie 9", „Sortie 10", „Sortie 8" — in genau dieser
+Reihenfolge. Jeder andere Missionstitel im Array stimmt exakt mit seiner Array-Position überein;
+dieses Trio war die einzige Ausnahme.
+
+**Tragweite, nicht nur kosmetisch:** Die Missionsauswahl-Chips (`setupUIButtons()`) werden per
+`MISSIONS.forEach((m,i)=>...)` in exakter Array-Reihenfolge gebaut, und `missionTag(m)` liest die
+angezeigte Nummer direkt per Regex aus `m.title` — die Chips zeigten also sichtbar „…7, 9, 10, 8".
+Schwerwiegender: bei einem Sieg springt `resultBtn.onclick` per `startMission(mission+1)` strikt
+zur nächsten ARRAY-Position, nicht zur nächsten Nummer — wer „Sortie 7" gewann, landete direkt in
+der als „Sortie 9" beschrifteten Mission, „Sortie 8" kam danach zuletzt.
+
+**Ursache der Verwechslung geklärt, nicht nur der Reihenfolge nach behoben:** Zwei mögliche Fixes
+standen zur Wahl — das letzte Array-Element (Titel „Sortie 8", `defend:true, raiders:6`,
+„The Last Stand") an seine nummerisch korrekte Position VOR die beiden SBD-Missionen verschieben,
+oder alle drei Titel umnummerieren und die Array-Reihenfolge unangetastet lassen. Gegen das
+Verschieben spricht der Fließtext dieser Mission selbst („this is what the whole cruise comes
+down to") UND der Code: `const last=mission>=MISSIONS.length-1;` behandelt exakt das letzte
+Array-Element als Ende des Kriegseinsatzes (nach einem Sieg dort beginnt die Kampagne wieder bei
+Sortie 1). Beides zusammen macht klar: die Array-Position (ganz am Ende) war immer richtig
+gemeint, nur die Zahl im Titel war es nicht. Fix: die drei Titel korrekt durchnummeriert
+(„Sortie 9"→„Sortie 8", „Sortie 10"→„Sortie 9", „Sortie 8"→„Sortie 10") — Array-Reihenfolge,
+Schwierigkeitskurve und welche Mission tatsächlich gespielt wird bleiben komplett unverändert,
+nur die angezeigte/gedruckte Nummer stimmt jetzt mit der Spielreihenfolge überein. Ein alter
+Code-Kommentar an anderer Stelle (`startMission()`, Ladeout-Reihenfolge-Fix), der die beiden
+SBD-Missionen noch bei ihren alten Nummern („sortie 9"/„Sortie 10") nannte, wurde mit umformuliert
+(neutral „the first/next SBD sortie" statt einer Nummer), damit er nicht erneut veraltet.
+
+**Verifiziert:** `MISSIONS`/`missionTag` wortwörtlich aus der Datei extrahiert und ausgeführt
+(Node, keine Grafik nötig — reine Datenstruktur/Logik-Prüfung nach Abschnitt 6, unterer Teil):
+Anzeige-Reihenfolge jetzt lückenlos `FF, Q, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10`, `MISSIONS.length-1`
+zeigt weiterhin auf „Sortie 10 · The Last Stand" (den beabsichtigten Kampagnen-Abschluss).
+`localStorage`-Kompatibilität geprüft: `bestScore()`/`saveBest()` hängen an einem einzigen
+festen Schlüssel `tc_best`, nicht an Missionstiteln — bestehende Spielstände sind von der
+Umbenennung nicht betroffen.
+
+**Offen:** Nicht auf dem echten iPad gespielt.
+
+Code: `torpedo-carrier.html`, `const MISSIONS = [...]`, die letzten drei Einträge (Suche nach
+„These last three used to be titled 9, 10, 8").
 
 ---
 
