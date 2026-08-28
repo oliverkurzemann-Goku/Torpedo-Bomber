@@ -303,7 +303,7 @@
   <div id="flash"></div>
   <div id="ltn" style="position:fixed;inset:0;background:#e6ecff;opacity:0;pointer-events:none;z-index:40;"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 113</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 114</div>
 
   <!-- Optical landing aid -->
   <div id="lso">
@@ -731,7 +731,19 @@ const MISSIONS = [
               {type:"destroyer", pos:[-480,0,3700], hp:1, flak:true},
               {type:"destroyer", pos:[ 620,0,4000], hp:1, flak:true} ] },
 
-  { title:"Sortie 9", sub:"Dive on the Convoy", sbd:true, loadout:'divebomb',
+  // These last three used to be titled 9, 10, 8 in that array order - every other mission's
+  // number matches its array position exactly, this trio was the one exception. missionTag()
+  // reads the number straight out of the title for the mission-select chips, so the menu showed
+  // ...7, 9, 10, 8: the last mission looked skipped, then reappeared after two sorties that
+  // hadn't happened yet. Worse, startMission(mission+1) on a win advances by array position, not
+  // by title, so a player finishing "Sortie 7" was dropped straight into what was labelled
+  // "Sortie 9". Renumbered 8, 9, 10 to match the order they are actually flown in - nothing
+  // about which mission plays when has changed, only the number printed on it. The final one's
+  // body text ("this is what the whole cruise comes down to") and its array position itself
+  // (MISSIONS.length-1, the one slot the win handler treats as the end of the war cruise,
+  // restarting the campaign from Sortie 1 on the next win) both confirm it was always meant to
+  // close the cruise - it just had the wrong number on it.
+  { title:"Sortie 8", sub:"Dive on the Convoy", sbd:true, loadout:'divebomb',
     body:"<b>SBD Dauntless.</b> No torpedo today — you go in from <b>12,000 feet</b> and put a bomb down the funnel.<br><br>"
         +"Roll in over the target, <b>dive brakes out</b>, hold 70° and let the ship come up the nose. Release <b>low</b>, "
         +"then pull out and stay low. <b>3 bombs</b>, two freighters, one escort.",
@@ -740,7 +752,7 @@ const MISSIONS = [
               {type:"freighter", pos:[ 340,0,4000], hp:1},
               {type:"destroyer", pos:[  40,0,3300], hp:1, flak:true} ] },
 
-  { title:"Sortie 10", sub:"Break Their Back", sbd:true, loadout:'divebomb',
+  { title:"Sortie 9", sub:"Break Their Back", sbd:true, loadout:'divebomb',
     body:"The one that matters. A <b>cruiser</b> under two destroyers of cover, and a pair of <b>Zeros</b> on patrol. "
         +"The cruiser needs <b>two hits</b> — that means two clean dives through the flak, with your rear gunner "
         +"earning every cent. <b>3 bombs</b>. This is what Dauntless crews did at Midway.",
@@ -749,7 +761,7 @@ const MISSIONS = [
               {type:"destroyer", pos:[-420,0,3700], hp:1, flak:true},
               {type:"destroyer", pos:[ 520,0,3900], hp:1, flak:true} ] },
 
-  { title:"Sortie 8", sub:"The Last Stand", defend:true, raiders:6, sea:2.2, weather:'storm',
+  { title:"Sortie 10", sub:"The Last Stand", defend:true, raiders:6, sea:2.2, weather:'storm',
     body:"<b>Zero. Six Avengers.</b> They have found the fleet and they are coming in from every bearing. Guns only, and the carrier will not survive a fourth fish. This is what the whole cruise comes down to.",
     torps:0, fuel:100, zeros:0,
     targets:[] },
@@ -1750,9 +1762,10 @@ function startMission(idx){
   inputPitch=0; inputRoll=0;
   setThrottleUI(P.throttle);
   // The sortie's loadout must be set BEFORE the control UI is built: applyLoadoutUI() reads
-  // `loadout`, so running it first left sortie 9 wearing the previous sortie's torpedo controls
-  // (no dive-brake button, "TORPEDOES" label). Sortie 10 only looked right because 9 had
-  // already flipped the flag. Missions without a loadout keep the player's menu choice.
+  // `loadout`, so running it first left the first SBD sortie wearing the previous sortie's
+  // torpedo controls (no dive-brake button, "TORPEDOES" label). The SBD sortie after it only
+  // looked right because the one before had already flipped the flag. Missions without a
+  // loadout keep the player's menu choice.
   if(m.loadout) loadout=m.loadout;
   applyLoadoutUI(); resetControlUI();
 
@@ -4009,7 +4022,7 @@ function loadPlaneModel(){
       }
       window.__eyeDbg='EYE '+COCKPIT_EYE.map(v=>v.toFixed(2)).join('/');
       const btEl=document.getElementById('buildTag');
-      if(btEl) btEl.textContent='BUILD 113 · '+window.__eyeDbg;
+      if(btEl) btEl.textContent='BUILD 114 · '+window.__eyeDbg;
       let seat=null;
       model.traverse(function(o){
         if(!o.isMesh||!o.material) return;
@@ -5478,7 +5491,7 @@ function setupUIButtons(){
   if(dbgT2) dbgT2.onclick=()=>{
     dbgOn=!dbgOn; localStorage.setItem('dbgOn',dbgOn?'1':'0');
     const db=document.getElementById('dbgBox'); if(db) db.textContent=dbgOn?'✓':'';
-    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 113'; }
+    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 114'; }
   };
   const lu=document.getElementById('lookUp'), ld=document.getElementById('lookDn');
   const setTilt=v=>{ pitTilt=Math.max(-0.9,Math.min(0.4,v)); localStorage.setItem('pitTilt',pitTilt.toFixed(3)); };
