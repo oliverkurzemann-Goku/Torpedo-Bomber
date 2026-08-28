@@ -5,7 +5,7 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 117 · Thunderbolt Squadron EU BUILD 39**
+Stand bei Übergabe: **Torpedo Squadron BUILD 117 · Thunderbolt Squadron EU BUILD 40**
 Repo: `oliverkurzemann-Goku/Torpedo-Bomber`, ausgeliefert über GitHub Pages.
 Alle Angaben unten sind aus dem tatsächlichen Code verifiziert, nicht aus dem Gedächtnis.
 
@@ -2114,6 +2114,102 @@ photo entirely".
 
 ---
 
+### 4.32 Thunderbolt: Terrain-Höhenfunktion — Plaid-Muster gefunden und behoben — EU BUILD 40
+
+Nutzer, auf die Rückfrage „Höhenfunktion oder Gebäude-Realismus zuerst?": **„Terrain"**.
+
+**Ursache, nicht geraten, sondern gerendert:** `baseH(x,z)` (Grundlage von `terrainH()`, die
+eigentliche Landschaftsform) bestand komplett aus `Math.sin(x*a)*Math.cos(z*b)`-Produkten und
+einer handgebauten `ridge(v)=(1-|sin(v)|)²`-Funktion, jeweils auf eine LINEARE Kombination von
+x und z angewendet (`x*0.000135+z*0.000055` usw.). Statt zu raten, was „nicht realistisch genug"
+bedeutet, wurde `baseH()` als reine Graustufen-Heightmap gerendert (Höhe direkt in Pixelhelligkeit,
+ohne die kosmetischen Biom-Farbbänder, die die Form sonst verdecken) — das zeigte sofort ein
+exaktes, regelmäßiges diagonales Karo-/Gitter-Muster über die gesamte Landschaft. Das ist keine
+Geschmacksfrage, sondern eine direkte mathematische Folge: Höhenlinien einer linearen Funktion
+sind per Definition gerade und gleichmäßig verteilt; die Summe mehrerer solcher Gitter in
+verschiedenen Winkeln ergibt zwangsläufig ein Karomuster, kein Gebirge — aus keinem Abstand und
+keinem Kamerawinkel zu kaschieren. Genau das hatte der Nutzer als „nicht realistisch" gesehen.
+
+**Fix:** `ridge(v)` und alle `sin*cos`-Terme in `baseH()` ersetzt durch echtes kohärentes
+2D-Value-Noise (`nHash`/`nNoise`/`nFbm`/`nRidge`) — dieselbe Technik, die `torpedo-carrier.html`s
+Insel-Terrain bereits seit BUILD 106 erfolgreich nutzt (`isl_hash`/`isl_noise`/`isl_fbm`), hier neu
+für Europa portiert und um eine `nRidge`-Variante ergänzt (jede Oktave um ihren Mittelpunkt gefaltet
+und quadriert, für Kämme statt runder Beulen — der eigentliche Zweck, den `ridge(sin(...))` vorher
+hatte). Oktaven-Frequenzen steigen um den Faktor ~2,03 (irrational gewählt, damit sich Oktaven nie
+auf eine gemeinsame Periode einschwingen). Drei Terme betroffen: Talboden-Schwellung (5-Oktaven-fbm),
+Vorgebirgs-Kamm (4-Oktaven-ridge) und Gebirgskamm am Rand (5-Oktaven-ridge plus 3-Oktaven-fbm für
+zerklüftete Details).
+
+**Kalibrierung — zwei Fehlschläge vor dem tatsächlichen Ergebnis, beide durch Nachmessen gegen den
+ALTEN Code gefunden, nicht durch Plausibilität der neuen Formel (genau Lektion 10):**
+1. Erster Versuch: Amplituden so gewählt, dass Min/Max-Bereich jeder neuen Funktion ungefähr dem
+   Min/Max-Bereich der alten Funktion entsprach. Ergebnis, an der VOLLEN `terrainH()` über die
+   ganze Welt gemessen (900×900-Raster, dieselbe Fläche wie der Voll-Welt-Heightmap-Render):
+   Mittelwert 740 / Maximum 2065 gegenüber vorher 527 / 1476 — ein systematischer Überschuss von
+   ~40 % auf beiden Kennzahlen, nicht nur ein seltener Ausreißer.
+2. Ursache gefunden: Value-Noise (`nRidge`) hat eine deutlich schmalere, weniger „spitze"
+   Verteilung als die alte, handgebaute Ridge-Summe (Verhältnis Maximum/Mittelwert alt ≈4,4,
+   neu ≈1,8) — wenige hohe alte Kämme bei überwiegend niedrigem Gelände vs. gleichmäßiger verteilte
+   neue Beulen. Ein Min/Max-Abgleich zweier unterschiedlich geformter Verteilungen trifft
+   zwangsläufig nur eine der beiden Kennzahlen. Zweiter Versuch: jeden alten Term (voll amplituded)
+   gegen den entsprechenden neuen Rohterm über dieselbe große Fläche gesampelt und **Mittelwert**
+   (für die stets positiven Ridge-Terme — der Mittelwert bestimmt die durchschnittliche Anhebung in
+   der Zone, wo mount/fh=1) bzw. **Standardabweichung** (für die beiden nullzentrierten
+   Schwellungs-Terme) angeglichen. Ergebnis: Mittelwert jetzt 503 (gut getroffen), Maximum aber nur
+   noch 1128 — der bestehende „Schnee"-Farbschwelle bei h>1420 wäre damit dauerhaft unerreichbar
+   geworden, ein bereits vorhandenes, gestaltetes Feature (5 Farbbänder inkl. Schnee) stillschweigend
+   entfernt.
+3. Dritter, ausgelieferter Versuch: nur die mit Abstand größte Amplitude (Gebirgskamm-Term) noch
+   einmal nachjustiert, als Kompromiss zwischen Mittelwert- und Maximum-Abgleich. Ergebnis, wieder
+   an der vollen `terrainH()` gemessen: Mittelwert 582 (+10 % ggü. 527 — plausibel für Gelände mit
+   echtem Relief statt einem flachen grünen Tisch), Maximum 1457 (−1 % ggü. 1476 — die
+   Schnee-Schwelle bleibt erreichbar).
+
+**Weitere Verifikation, nicht nur die Statistik-Tabelle:**
+- Voll-Welt-Heightmap sowie Zoom auf den Gebirgsrand nach der finalen Kalibrierung erneut gerendert
+  — Karomuster bestätigt verschwunden, Höhenlinien jetzt unregelmäßig und nicht-periodisch, wie
+  echtes Gelände.
+- Echter 3D-Render (headless-WebGL, `buildTerrain()`s tatsächliches Mesh, Vertex-Farben statt der
+  im Node-Prüfstand ohnehin schwarzen Canvas-Textur) aus flachem Blickwinkel gegen den Gebirgsrand:
+  unregelmäßige, gezackte Horizontlinie statt einer geraden oder gleichmäßig gewellten Kante.
+- Kompletter Aufbau-Ablauf (`buildTerrain(); buildRoads(); buildForests(); buildSettlement();
+  buildAirfield();`) wortwörtlich extrahiert und headless ausgeführt: läuft fehlerfrei durch,
+  17.720 Instanzen + 120 Meshes, 0 NaN/Infinity in jeder einzelnen Instanz-Matrix und Mesh-Position.
+- **Gezielte Regressionsprüfung der Hecken-Schwebe-Fix (4.21/Lektion 13):** Diese Fix-Logik
+  (`groundYRender` entlang der ganzen Heckenlänge abtasten, auf den Tiefpunkt setzen) hängt direkt
+  an der Geländeform. Dieselbe Messmethode wie in 4.21 auf die tatsächlich platzierten
+  Hecken-Instanzen der NEUEN Landschaft angewendet: 4600 Hecken, 0 % schweben über 3 m, schlimmster
+  Fall 0,73 m — die alte Behebung hält auch unter der neuen Terrainform.
+- **Performance, ehrlich gemessen statt angenommen:** `baseH()`/`terrainH()`/`groundYRender()`
+  sind pro Aufruf 3,3–3,9× teurer als vorher (Node-Mikrobenchmark, 400.000 Aufrufe, altes vs. neues
+  `bdee7a1`-vs-Arbeitsstand). Der teure Fall (410.240 Aufrufe für das komplette `SEG=640`-Gitter)
+  passiert nur einmal beim Missionsstart, im selben bereits vom Nutzer akzeptierten „Ruckler"-Budget
+  wie `SEG=640` selbst (4.14). Die Pro-Frame-Aufrufe (`groundY()` für Spieler, KI-Flugzeuge,
+  Geschosse) sind durch die Entity-Zahl begrenzt (typischerweise zweistellig pro Frame), nicht durch
+  die Gittergröße — hochgerechnet eine niedrige einstellige Millisekunden-Größenordnung selbst mit
+  großzügiger Sicherheitsmarge für ein langsameres iPad-JS-Engine, aber nicht auf echter Hardware
+  gemessen (siehe Offen).
+
+**Nebenbefund, nicht angefasst:** Der Überflug-Render zeigte ein auffällig regelmäßiges
+Schachbrett-Muster in der Feld-/Farmland-EINFÄRBUNG (Vertex-Farben, separat von `baseH()`s
+Höhenform). Das ist eine vorbestehende, von dieser Änderung unabhängige Kosmetik-Funktion — die
+Höhenform selbst wurde unabhängig als plaid-frei bestätigt (siehe Heightmap-Render oben), das
+Karomuster im Überflugbild kommt nachweislich aus der Farbe, nicht aus der Höhe. Nicht Teil dieses
+Auftrags („Terrain" bezog sich auf die Höhenfunktion, nicht die Feldfarben); als möglicher nächster
+Schritt notiert, falls der Nutzer künftig weiter an der Optik arbeiten möchte.
+
+**Offen:** Nicht auf dem echten iPad geflogen. Die gemessene 3,3–3,9-fache Verteuerung pro
+Funktionsaufruf ist nur in Node gemessen, nicht auf iOS-Safari-JavaScriptCore — sollte sich das
+Terrain beim Fliegen spürbar ruckliger anfühlen als vor diesem Build (zusätzlich zum bereits
+akzeptierten `SEG=640`-Ruckler), ist das der erste Verdacht. Die Canvas-Textur-Einfärbung selbst
+(wie hell/dunkel die Biom-Farben unter der echten Spiel-Beleuchtung wirken) blieb im Prüfstand wie
+immer ungeprüft (kein Canvas-2D-Backend in Node, siehe 4.11/4.13/4.20/4.23). Das
+Farmland-Schachbrett (siehe Nebenbefund) ist unangetastet.
+
+Code: `thunderbolt-europe.html`, Suche nach `nHash`, `nFbm`, `nRidge`, `baseH`.
+
+---
+
 ## 5. Gelernte Lektionen (aus echten, wiederholten Fehlern)
 
 1. **Nie im Chat/offline testen und im Spiel hoffen.** Der größte Zeitfresser dieses
@@ -2213,6 +2309,17 @@ photo entirely".
    Seitenverhältnissen prüfen (hoch/schmal und breit/kurz), nicht nur an dem einen, das gerade
    zur Hand war — und wo möglich die Verschiebung an der tatsächlich verfügbaren Reserve
    bemessen statt an einer festen Zahl.
+20. **Zwei Funktionen mit demselben Min/Max-Bereich sind nicht dieselbe Verteilung.** Beim Ersatz
+   der Terrain-Ridge-Formel durch echtes Noise traf ein Min/Max-Abgleich beide Kennzahlen daneben
+   (Mittelwert +40 %, Maximum +40 %) — die neue Funktion streut gleichmäßiger, die alte hatte
+   wenige hohe Spitzen bei überwiegend niedrigem Grund. Ein zweiter Versuch, der stattdessen
+   Mittelwert/Standardabweichung an der VOLLEN Zielfunktion (nicht nur dem Einzelterm) gegen den
+   alten Code maß, traf den Mittelwert, unterbot dabei aber das alte Maximum so stark, dass eine
+   bereits vorhandene Farbschwelle (Schnee ab 1420 m) unerreichbar wurde. Erst ein dritter, gegen
+   BEIDE Kennzahlen gleichzeitig nachjustierter Versuch traf beide auf ±10 %. **Bei jedem Ersatz
+   einer Formel durch eine andere: die volle Zielfunktion über eine große, echte Fläche sampeln und
+   Mittelwert UND Extremwert gegen den alten Code vergleichen — nicht nur eine der beiden Zahlen,
+   und nicht die Einzelterm-Formel statt der tatsächlich zusammengesetzten Funktion.**
 
 ---
 
