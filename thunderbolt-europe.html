@@ -253,7 +253,7 @@
   <div id="flash"></div>
   <div id="gunsight"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">EU BUILD 36</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">EU BUILD 37</div>
 
   <div id="apr">
     <div id="aprCall"></div>
@@ -412,6 +412,7 @@ let firing=false, gunT=0, weapon='bomb';
 let inputPitch=0, inputRoll=0;
 let steerSign=1;                 // live left/right invert, same as the carrier game
 let windZ=0, weather='clear', ceilingY=4200;
+let clouds=[];
 let radioQ=[], radioT=0, flashT=0;
 let actx=null, eng=null;
 let sortieKills={truck:0,tank:0,flak:0,bridge:0,depot:0,train:0,air:0,bomber:0};
@@ -729,14 +730,49 @@ function buildWater(){
     v.push(p.x+px,RIVER_Y,p.z+pz, p.x-px,RIVER_Y,p.z-pz);
   }
   const idx=[];
-  for(let i=0;i<n-1;i++){ const a=i*2; idx.push(a,a+1,a+2, a+1,a+3,a+2); }
+  // Wound a,a+2,a+1 / a+1,a+2,a+3 (not the naive a,a+1,a+2 / a+1,a+3,a+2), same reason as
+  // ribbon() just below: that naive order gives a face normal of -Y for a path parametrised by
+  // increasing z (this one always is - the loop above runs z from -WORLD/2 up). Discovered by
+  // actually rendering this mesh alone in a headless scene, from a dozen camera angles and
+  // distances, including from directly overhead with a bright, unmissable clear colour behind
+  // it: nothing ever drew. That ruled out material/lighting and pointed at culling; measuring
+  // computeVertexNormals()'s output confirmed a uniform -Y, i.e. every face pointing straight
+  // down, away from a camera that is never below the water's own plane. The river has been
+  // built this way as long as buildWater() has existed - it was never visible in the shipped
+  // game, on any device, regardless of the material work below.
+  for(let i=0;i<n-1;i++){ const a=i*2; idx.push(a,a+2,a+1, a+1,a+2,a+3); }
   g.setAttribute('position',new THREE.Float32BufferAttribute(v,3));
   g.setIndex(idx); g.computeVertexNormals();
-  waterMesh=new THREE.Mesh(g,new THREE.MeshLambertMaterial({color:0x35506a}));
+  // MeshLambertMaterial has no specular term at all - water rendered with it is just a flat,
+  // dead grey-blue ribbon no matter where the sun sits, the same "can't glint" gap already fixed
+  // for the propeller discs (EU BUILD 29) and ground targets (EU BUILD 34) in this file. A low-
+  // roughness MeshStandardMaterial lets the same sun that already lights everything else put a
+  // moving highlight on the river as the aeroplane banks past it. metalness stays 0 - water is a
+  // dielectric, and there is no environment map anywhere in this scene for a metallic surface to
+  // reflect, which without one renders the whole ribbon near-black instead of glinting (checked
+  // by rendering it: metalness>0 here just goes dark, the direct specular highlight needs none).
+  waterMesh=new THREE.Mesh(g,new THREE.MeshStandardMaterial({color:0x2c4560,
+    roughness:0.18, metalness:0}));
+  // Independent, secondary finding made while chasing the winding bug above: this geometry never
+  // got computeBoundingSphere() called (three.js only does that lazily inside raycast(), never
+  // for rendering), so geometry.boundingSphere stayed null. A null bounding sphere reads as
+  // "everywhere" to Three's own frustum test in most builds, but is cheap insurance to rule out
+  // regardless - the ribbon follows the river the full length of the map, so a bounding sphere
+  // tight enough to be worth computing would have to enclose most of the world anyway, same
+  // reasoning rainMesh already uses a few lines below.
+  waterMesh.frustumCulled=false;
   scene.add(waterMesh);
 }
 
 // ---- ribbon helper: lays a strip of quads along a path, sitting on the ground ----
+// Wound so the face normal points +Y (up, toward a camera that is always above the ground it
+// follows) - see the comment on the same fix in buildWater() below, which found this by actually
+// rendering the river alone in a headless scene and getting nothing back at any camera angle,
+// then measuring computeVertexNormals()'s output (-Y everywhere) instead of guessing further.
+// This shares that exact triangulation with roads/verges/rail, so it shared the bug: with the
+// default FrontSide material, a face whose normal points away from the camera is never drawn,
+// and the camera in this game is never below the ground plane. Confirmed by re-running the same
+// measurement on the shipped road/rail geometry (also -Y before this fix).
 function ribbon(pts, width, colour, lift){
   const g=new THREE.BufferGeometry();
   const v=[], n=pts.length;
@@ -748,7 +784,7 @@ function ribbon(pts, width, colour, lift){
     v.push(p.x+px,p.y+lift,p.z+pz, p.x-px,p.y+lift,p.z-pz);
   }
   const idx=[];
-  for(let i=0;i<n-1;i++){ const a=i*2; idx.push(a,a+1,a+2, a+1,a+3,a+2); }
+  for(let i=0;i<n-1;i++){ const a=i*2; idx.push(a,a+2,a+1, a+1,a+2,a+3); }
   g.setAttribute('position',new THREE.Float32BufferAttribute(v,3));
   g.setIndex(idx); g.computeVertexNormals();
   return new THREE.Mesh(g,new THREE.MeshLambertMaterial({color:colour}));
@@ -3295,6 +3331,15 @@ function applyWeather(){
   ceilingY={clear:4200,haze:3200,rain:2400,storm:1800}[weather]||4200;
   if(hemi) hemi.intensity={clear:0.85,haze:0.7,rain:0.55,storm:0.42}[weather]||0.85;
   if(sun)  sun.intensity ={clear:0.95,haze:0.7,rain:0.45,storm:0.3 }[weather]||0.95;
+  if(clouds.length){
+    const active={clear:16,haze:26,rain:34,storm:40}[weather]||16;
+    const topTint={clear:0xffffff,haze:0xd8d8d2,rain:0x9aa0a8,storm:0x6d727a}[weather]||0xffffff;
+    const botTint={clear:0xc7d0da,haze:0xb7bcb8,rain:0x7c828c,storm:0x565a62}[weather]||0xc7d0da;
+    clouds.forEach((cl,i)=>{
+      cl.visible=i<active;
+      cl.userData.puffs.forEach(p=>p.sprite.material.color.setHex(p.top?topTint:botTint));
+    });
+  }
 }
 
 // ============================================================
@@ -3679,6 +3724,65 @@ function sfxAlarm(){
 }
 
 // ============================================================
+//  CLOUDS — this sky had none at all, a stark gap for a game about flying
+//  through it. Same billboard-sprite technique as torpedo-carrier.html's
+//  buildClouds()/updateClouds() (a soft radial-gradient texture, several
+//  sprites grouped per cloud): proven, cheap (a handful of draw calls total,
+//  not per-cloud since each sprite is its own tiny mesh but there is no
+//  per-frame geometry work), and already tuned for exactly this look.
+//  Built once as a fixed pool; weather changes retint/re-show them instead
+//  of rebuilding, so a mission switching from clear to storm just thickens
+//  and darkens the same sky.
+// ============================================================
+function makeSoftSprite(){
+  const c=document.createElement('canvas'); c.width=c.height=128;
+  const g=c.getContext('2d');
+  const grd=g.createRadialGradient(64,64,2,64,64,64);
+  grd.addColorStop(0,'rgba(255,255,255,0.98)');
+  grd.addColorStop(0.45,'rgba(255,255,255,0.55)');
+  grd.addColorStop(1,'rgba(255,255,255,0)');
+  g.fillStyle=grd; g.beginPath(); g.arc(64,64,64,0,7); g.fill();
+  return new THREE.CanvasTexture(c);
+}
+const CLOUD_SPAN=10000;   // tiling window updateClouds() wraps within, centred on the player
+function buildClouds(){
+  const tex=makeSoftSprite();
+  const N=40;
+  for(let i=0;i<N;i++){
+    const cl=new THREE.Group();
+    const puffs=4+Math.floor(Math.random()*5);
+    const base=320+Math.random()*300;
+    const puffInfo=[];
+    for(let j=0;j<puffs;j++){
+      const top=j<puffs*0.5;
+      const m=new THREE.SpriteMaterial({map:tex,color:top?0xffffff:0xc7d0da,
+        transparent:true,opacity:0.5+Math.random()*0.3,depthWrite:false,fog:true});
+      const s=new THREE.Sprite(m);
+      const sc=base*(0.6+Math.random()*0.7);
+      s.scale.set(sc,sc*0.62,1);
+      s.position.set((Math.random()-0.5)*base*1.8,(Math.random()-0.4)*base*0.5,
+        (Math.random()-0.5)*base*1.8);
+      cl.add(s); puffInfo.push({sprite:s, top});
+    }
+    // sits under whatever ceiling is in effect when the sky is first built (clear, at load) -
+    // a later mission's lower storm ceiling just means the same layer reads as closer to it,
+    // which is the right direction for worse weather, not a mismatch worth rebuilding for.
+    cl.position.set((Math.random()-0.5)*CLOUD_SPAN, ceilingY*(0.35+Math.random()*0.5),
+      (Math.random()-0.5)*CLOUD_SPAN);
+    cl.userData.puffs=puffInfo;
+    scene.add(cl); clouds.push(cl);
+  }
+}
+function updateClouds(){
+  const half=CLOUD_SPAN/2;
+  for(const c of clouds){
+    const dx=c.position.x-P.pos.x, dz=c.position.z-P.pos.z;
+    if(dx>half) c.position.x-=CLOUD_SPAN; else if(dx<-half) c.position.x+=CLOUD_SPAN;
+    if(dz>half) c.position.z-=CLOUD_SPAN; else if(dz<-half) c.position.z+=CLOUD_SPAN;
+  }
+}
+
+// ============================================================
 //  WEATHER EFFECTS
 // ============================================================
 let rainMesh=null, ltnT=4, ltnFlash=0;
@@ -3971,6 +4075,7 @@ function init(){
   scene.add(fill);
   applyWeather();
   buildTerrain(); buildRoads(); buildForests(); buildSettlement(); buildAirfield(); buildRain();
+  buildClouds(); applyWeather();   // clouds need ceilingY (set above) to place, then re-tint them
   planeGroup=new THREE.Group(); scene.add(planeGroup);
   loadModels();
   try{
@@ -4038,6 +4143,7 @@ function animate(){
     updateBullets(dt); updateTracers(dt); updateOrdnance(dt);
     updateExplosions(dt); updateSmoke(dt); updateDebris(dt);
     updateWeatherFx(dt);
+    updateClouds();
     // player model follows the state vector
     planeGroup.position.copy(P.pos);
     planeGroup.rotation.set(0,0,0);
