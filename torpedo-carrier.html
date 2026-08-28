@@ -310,7 +310,7 @@
   <div id="flash"></div>
   <div id="ltn" style="position:fixed;inset:0;background:#e6ecff;opacity:0;pointer-events:none;z-index:40;"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 117</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 118</div>
 
   <!-- Optical landing aid -->
   <div id="lso">
@@ -4029,7 +4029,7 @@ function loadPlaneModel(){
       }
       window.__eyeDbg='EYE '+COCKPIT_EYE.map(v=>v.toFixed(2)).join('/');
       const btEl=document.getElementById('buildTag');
-      if(btEl) btEl.textContent='BUILD 117 · '+window.__eyeDbg;
+      if(btEl) btEl.textContent='BUILD 118 · '+window.__eyeDbg;
       let seat=null;
       model.traverse(function(o){
         if(!o.isMesh||!o.material) return;
@@ -5136,13 +5136,32 @@ const PIT_SHIFT_BASE=0.26, PIT_TILT_DEFAULT=-0.34, PIT_TILT_GAIN=0.15;
 // relative to the 1536x1024 photo, and at some aspect ratios there is barely any. Clamped to the
 // margin object-fit:cover actually leaves at the CURRENT viewport size instead of a fixed
 // percentage - full range on a tall/narrow screen where there is room for it, less automatically
-// on a wide/short one, never enough to expose the edge. A 92% safety factor stops the clamp from
-// landing exactly on the seam, which rounding could still push over by a pixel.
+// on a wide/short one, never enough to expose the edge.
+//
+// Reported again, this time as the SBD's canopy frame specifically clipped at the top (not the
+// Avenger's). Measured the three cockpit photos' own alpha channels: the SBD's arch reaches
+// substantial width by source row ~4 of 1024 (0.4% down), the Avenger's not until row ~17 (1.7%)
+// - the SBD photo simply has far less headroom above its frame than the others, same pixel
+// dimensions or not. All three photos share this one function/transform, so whichever one has
+// the least headroom sets the real limit. The 92% safety factor below (meant only to keep
+// rounding from landing exactly on the object-fit:cover seam) was throwing away 8% of the
+// available pan range on every viewport - for most photos invisible, for the SBD's much
+// tighter margin, that 8% was most of the difference between "frame intact" and "frame clipped".
+// Raised to 99.5%: still comfortably clear of the seam (the clamp is an exact geometric bound,
+// not an estimate, so even 100% would land exactly on cropTop=0, never past it), while actually
+// using the pan range that was already being computed. Verified against a live sweep of realistic
+// iPad viewport ratios (1024-1366 wide x 428-1024 tall) with the real page's own pitShift()/
+// getBoundingClientRect(): at 92% roughly half of the tested wide/short ratios clipped the SBD
+// frame by 1-9 source px; at 99.5% every ratio where the clamp was the active constraint (which
+// is most of them) came back at 0 clipped px, exactly as the algebra predicts. The few very
+// extreme ratios left over (viewport height under ~500px, e.g. an actual iPhone in landscape or
+// heavy iPad split-view) are the same "out of photo headroom" limit BUILD 116 already documented
+// for the Avenger - no amount of clamp tuning fixes that without more sky in the source photo.
 function pitShift(){
   const desired=PIT_SHIFT_BASE + (pitTilt-PIT_TILT_DEFAULT)*PIT_TILT_GAIN;
   const vw=window.innerWidth||1, vh=window.innerHeight||1;
   const s=Math.max(vw/PIT_IMG_W,vh/PIT_IMG_H), dispH=PIT_IMG_H*s;
-  const maxShift=Math.max(0,(dispH-vh)/(2*vh))*0.92;
+  const maxShift=Math.max(0,(dispH-vh)/(2*vh))*0.995;
   return Math.max(0,Math.min(desired,maxShift));
 }
 function updatePitPhotoTransform(){
@@ -5603,7 +5622,7 @@ function setupUIButtons(){
   if(dbgT2) dbgT2.onclick=()=>{
     dbgOn=!dbgOn; localStorage.setItem('dbgOn',dbgOn?'1':'0');
     const db=document.getElementById('dbgBox'); if(db) db.textContent=dbgOn?'✓':'';
-    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 117'; }
+    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 118'; }
   };
   const lu=document.getElementById('lookUp'), ld=document.getElementById('lookDn');
   const setTilt=v=>{ pitTilt=Math.max(-0.9,Math.min(0.4,v)); localStorage.setItem('pitTilt',pitTilt.toFixed(3)); };

@@ -5,7 +5,7 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 117 · Thunderbolt Squadron EU BUILD 40**
+Stand bei Übergabe: **Torpedo Squadron BUILD 118 · Thunderbolt Squadron EU BUILD 41**
 Repo: `oliverkurzemann-Goku/Torpedo-Bomber`, ausgeliefert über GitHub Pages.
 Alle Angaben unten sind aus dem tatsächlichen Code verifiziert, nicht aus dem Gedächtnis.
 
@@ -2207,6 +2207,61 @@ immer ungeprüft (kein Canvas-2D-Backend in Node, siehe 4.11/4.13/4.20/4.23). Da
 Farmland-Schachbrett (siehe Nebenbefund) ist unangetastet.
 
 Code: `thunderbolt-europe.html`, Suche nach `nHash`, `nFbm`, `nRidge`, `baseH`.
+
+---
+
+### 4.33 Dauntless-Cockpit: Rahmen oben abgeschnitten — BEHOBEN in BUILD 118 / EU BUILD 41
+
+Nutzer: „Dauntless Cockpit ist auch der Rahmen oben abgeschnitten" — „auch" verweist auf 4.30
+Punkt 2/4.31, wo genau dieses Muster für die Avenger schon einmal auftrat. Erste Vermutung (die
+drei Cockpit-Fotos haben unterschiedliche Pixel-Maße, `PIT_IMG_W/H` ist aber ein einziger
+gemeinsamer Wert) war durch Nachmessen sofort widerlegt — alle drei sind exakt 1536×1024.
+
+**Tatsächliche Ursache, an den echten PNG-Alphakanälen gemessen, nicht geraten:** Gleiche
+Pixel-Maße heißt nicht gleicher Bildinhalt. Bei `cockpit.png` (Avenger) beginnt die breite
+Rahmen-Bogenstruktur erst ab Zeile ~17 von 1024 (1,7 % Abstand zum oberen Bildrand) — was vorher
+bei Zeile 0 schon undurchsichtig ist, ist nur die dünne Antennenmast-Spitze. Bei `cockpit sbd.png`
+(Dauntless) erreicht der Rahmenbogen bereits ab Zeile ~4 (0,4 %) nennenswerte Breite — viel
+weniger Toleranz, obwohl dieselbe gemeinsame Zuschnitt-/Verschiebungs-Funktion `pitShift()` für
+alle drei Fotos identisch rechnet. Das knappere Foto bekommt also von einer Formel, die für alle
+drei gleich ist, exakt denselben Spielraum wie das großzügigere — und ist es, das zuerst abreißt.
+
+Der eigentliche Verlust saß in der Sicherheitsmarge selbst: `pitShift()`s Begrenzung auf 92 % des
+geometrisch verfügbaren Verschiebebereichs (siehe 4.30) ist eine EXAKTE geometrische Grenze, kein
+Schätzwert — bei 100 % landet der Zuschnitt exakt auf `cropTop=0`, nie darüber hinaus (nachgerechnet:
+`cropTopDisp(pct) = baseCrop·(1−pct)`, bei `pct=1` immer exakt 0, unabhängig vom Seitenverhältnis).
+Die alten 92 % haben also bei jedem Bildschirmformat 8 % des ohnehin schon berechneten Spielraums
+ungenutzt verschenkt — beim Avenger unsichtbar (reichlich Toleranz übrig), bei der Dauntless meist
+der komplette Unterschied zwischen „Rahmen vollständig" und „Rahmen abgeschnitten".
+
+**Fix:** Sicherheitsmarge in `pitShift()` von 0,92 auf 0,995 angehoben, in BEIDEN Spielen (EU hat
+dieselbe Funktion mit denselben 8 % verschenkter Marge; nachgemessen, dass `cockpit p47.png` mit
+Zeile ~2 von 787 ebenfalls sehr wenig Toleranz hat — vorsorglich mitbehoben, bevor eine gleichlau­
+tende Meldung für Europa kommt).
+
+**Nachgewiesen, nicht nur gerechnet:** Ein Sweep über 116 Kombinationen aus realistischen
+Seitenverhältnissen (1024–1366 Breite × 428–1024 Höhe) × zwei Blickwinkeln (Ruhestellung, volles
+Look ▲), mit `pitShift()` und `getBoundingClientRect()` aus der echten laufenden Seite ausgelesen
+(nicht nachgerechnet) und gegen die gemessene Dauntless-Sicherheitszeile (4 px) geprüft: vorher 56
+von 116 Kombinationen abgeschnitten, danach 14 — und jede einzelne davon nur noch bei einer
+Bildschirmhöhe von 428–500 px (iPhone-Querformat- bzw. extremes Split-View-Terrain, nicht das
+tatsächliche Testgerät). Jedes realistische iPad-Seitenverhältnis (Höhe ≥600 px, mit oder ohne
+Safari-Werkzeugleiste) liegt danach bei 0 abgeschnittenen Pixeln, in Ruhestellung UND bei vollem
+Look ▲. Zusätzlich mit echten Screenshots bestätigt (Playwright/Chromium, echtes `pitShift()`):
+bei 1180×700 mit Look ▲ maximal zeigt die Dauntless jetzt einen vollständigen Rahmenbogen mit
+Rückspiegel und Himmel darüber, vorher lief der Bogen gerade nach oben aus dem Bild. Avenger und
+Zero am selben Bildschirmformat gegengeprüft — keine Regression, beide weiterhin vollständig
+sichtbar. Das Zielvisier (`.pitReticle`, BUILD 117) hängt nur indirekt an `pitShift()` und clemmt
+auf ein festes 15–60-%-Band — per Playwright erneut geprüft: identische Werte wie in 4.31 (31,4 %
+eben, 15 % geklemmt im Steigflug), kein Nadel-Drift durch diese Änderung.
+
+**Offen:** Nicht auf dem echten iPad geflogen. Die verbleibenden 14 Sweep-Treffer (Bildschirmhöhe
+428–500 px) sind dieselbe, in 4.30 bereits dokumentierte Grenze — ohne mehr Himmel-Reserve im Foto
+selbst nicht weiter zu schließen, ohne den nutzbaren Look-▲/▼-Bereich für alle drei Flugzeuge
+einzuschränken. Sollte der Nutzer auf einem iPad Split-View mit sehr geringer Höhe fliegen, könnte
+der Rahmen dort noch knapp sichtbar bleiben.
+
+Code: `torpedo-carrier.html` und `thunderbolt-europe.html`, Funktion `pitShift()`.
 
 ---
 
