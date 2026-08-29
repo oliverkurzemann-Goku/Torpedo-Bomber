@@ -260,7 +260,7 @@
   <div id="flash"></div>
   <div id="gunsight"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">EU BUILD 48</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">EU BUILD 49</div>
 
   <div id="apr">
     <div id="aprCall"></div>
@@ -673,18 +673,40 @@ function groundYRender(x,z){
   return hx0+(hx1-hx0)*fz;
 }
 
-function makeGroundTexture(){
+// Reported: "brauchen viel detailliertere Auflösung", then later "echte 3D-Unebenheiten" as a
+// separate ask from texture sharpness. Tried a second, independently-tiled bump canvas first (16 m
+// tile instead of this one's 900 m) - reading three.js r128's own shader source
+// (WebGLMaterials.refreshUniformsCommon) before shipping it showed why that could never have
+// worked: vUv is computed ONCE per vertex from a SINGLE shared uvTransform uniform, and that
+// uniform is copied from whichever map property material.map/specularMap/.../bumpMap finds FIRST
+// in a fixed priority list - since this material already has `map` set, bumpMap's own .repeat
+// would simply be ignored and it would sample at the diffuse map's 900 m tile regardless of what
+// was asked for (Lektion: verify the assumption against the real engine source before shipping,
+// not just "should work"). The fix is to not need a second UV scale at all: build the bump texture
+// in the SAME drawing pass as the colour texture, sharing every field cut and plough-line
+// coordinate, so it automatically inherits the colour map's transform and lines up with it
+// pixel-for-pixel - the plough grooves and field-edge ridges you see are the same ones you feel
+// under raking light, which is more physically honest than an unrelated fine-noise layer would
+// have been anyway.
+function makeGroundTextures(){
   // Reported: "brauchen viel detailliertere Auflösung" - this canvas, tiled every 900 m, was the
   // only thing that ever put a field edge or a plough line back in (vertex colours only change
   // every SEG quad, see buildTerrain()); at the old N=512 that is 0.57 texels/metre, badly blurred
-  // up close. Tripled to N=1536 (1.7 texels/metre) and every STRUCTURAL dimension below (field
-  // size, plough-line spacing, track wander) scaled by SC so real-world field/track size is
-  // unchanged - only line WIDTHS are left unscaled, so strokes get thinner and crisper relative to
-  // the ground rather than just redrawing the same blur at higher resolution.
-  const N=1536, SC=N/512;
+  // up close. Raised to N=1536 (1.7 texels/metre) in the first round, then to N=2048 (2.28
+  // texels/metre) after the player confirmed no frame-rate cost and asked for the texture sharper
+  // still. Every STRUCTURAL dimension below (field size, plough-line spacing, track wander) scaled
+  // by SC so real-world field/track size is unchanged - only line WIDTHS are left unscaled, so
+  // strokes get thinner and crisper relative to the ground rather than just redrawing the same
+  // blur at higher resolution.
+  const N=2048, SC=N/512;
   const c=document.createElement('canvas'); c.width=c.height=N;
   const g=c.getContext('2d');
   g.fillStyle='#ffffff'; g.fillRect(0,0,N,N);
+  // bump canvas: neutral mid-grey = flat: darker = recessed (a plough groove), lighter = raised
+  // (a field-edge ridge or a low mound), same coordinate space as the colour canvas above
+  const bc=document.createElement('canvas'); bc.width=bc.height=N;
+  const bgx=bc.getContext('2d');
+  bgx.fillStyle='#808080'; bgx.fillRect(0,0,N,N);
   // irregular field parcels, each with its own shade and plough direction
   const rnd=(a,b)=>a+Math.random()*(b-a);
   const cuts=[0];
@@ -698,6 +720,11 @@ function makeGroundTexture(){
       const v=rnd(0.86,1.10);
       g.fillStyle='rgba('+Math.round(255*v)+','+Math.round(252*v)+','+Math.round(246*v)+',1)';
       g.fillRect(x0,y,x1-x0,y1-y);
+      // a whole parcel sits a touch higher or lower than its neighbours - a real field is not a
+      // perfectly flat plane, and this is free relief at the same 900 m scale the colour bands use
+      const parcelBump=128+Math.round(rnd(-10,10));
+      bgx.fillStyle='rgb('+parcelBump+','+parcelBump+','+parcelBump+')';
+      bgx.fillRect(x0,y,x1-x0,y1-y);
       // plough lines
       g.strokeStyle='rgba(0,0,0,0.055)'; g.lineWidth=1;
       const horiz=Math.random()<0.5, step=rnd(5,11)*SC;
@@ -705,21 +732,33 @@ function makeGroundTexture(){
       if(horiz){ for(let k=y;k<y1;k+=step){ g.moveTo(x0,k); g.lineTo(x1,k); } }
       else     { for(let k=x0;k<x1;k+=step){ g.moveTo(k,y); g.lineTo(k,y1); } }
       g.stroke();
+      // the same plough lines, recessed in the bump map (a furrow is a groove, not a paint mark)
+      bgx.strokeStyle='rgba(0,0,0,0.35)'; bgx.lineWidth=1;
+      bgx.beginPath();
+      if(horiz){ for(let k=y;k<y1;k+=step){ bgx.moveTo(x0,k); bgx.lineTo(x1,k); } }
+      else     { for(let k=x0;k<x1;k+=step){ bgx.moveTo(k,y); bgx.lineTo(k,y1); } }
+      bgx.stroke();
       // hedge/boundary
       g.strokeStyle='rgba(30,44,24,0.30)'; g.lineWidth=rnd(1.2,2.6);
       g.strokeRect(x0+0.5,y+0.5,x1-x0-1,y1-y-1);
+      // a field edge is a low bank/verge in reality, not a line drawn on flat ground - raised in
+      // the bump map, wider than the colour stroke so the ridge actually reads under light
+      bgx.strokeStyle='rgba(255,255,255,0.45)'; bgx.lineWidth=Math.max(2,rnd(1.2,2.6)*1.6);
+      bgx.strokeRect(x0+0.5,y+0.5,x1-x0-1,y1-y-1);
       y=y1;
     }
   }
-  // a couple of farm tracks wandering across
+  // a couple of farm tracks wandering across - worn slightly into the ground, so recessed too
   g.strokeStyle='rgba(150,138,110,0.55)';
+  bgx.strokeStyle='rgba(0,0,0,0.25)';
   for(let t=0;t<3;t++){
-    g.lineWidth=rnd(1.5,3);
-    g.beginPath();
+    const lw=rnd(1.5,3);
+    g.lineWidth=lw; bgx.lineWidth=lw*1.4;
+    g.beginPath(); bgx.beginPath();
     let x=rnd(0,N), y=0;
-    g.moveTo(x,y);
-    while(y<N){ y+=rnd(20,50)*SC; x+=rnd(-26,26)*SC; g.lineTo(x,y); }
-    g.stroke();
+    g.moveTo(x,y); bgx.moveTo(x,y);
+    while(y<N){ y+=rnd(20,50)*SC; x+=rnd(-26,26)*SC; g.lineTo(x,y); bgx.lineTo(x,y); }
+    g.stroke(); bgx.stroke();
   }
   const tex=new THREE.CanvasTexture(c);
   tex.wrapS=tex.wrapT=THREE.RepeatWrapping;
@@ -729,7 +768,12 @@ function makeGroundTexture(){
   // real device can do. Ask the renderer for its real ceiling instead (typically 16 on anything
   // this project targets); costs nothing extra to request, only helps if the GPU can deliver it.
   tex.anisotropy=renderer.capabilities.getMaxAnisotropy();
-  return tex;
+  const bumpTex=new THREE.CanvasTexture(bc);
+  bumpTex.wrapS=bumpTex.wrapT=THREE.RepeatWrapping;
+  // deliberately NOT setting bumpTex.repeat - it is ignored by the renderer anyway (see the
+  // comment above this function) since `map` is present and wins the shared uvTransform; drawn at
+  // the identical 0..1 UV space as the colour canvas, so it is correct with no repeat of its own.
+  return {colorTex:tex, bumpTex};
 }
 function buildTerrain(){
   // terrainH() needs bridgeSite to flatten the ground under the permanent bridge deck (see
@@ -786,7 +830,21 @@ function buildTerrain(){
   // A tiled detail texture. Vertex colours change only every 200 m, so on their own the ground
   // is a smooth wash however far you fly; this puts field edges, plough lines and tracks back
   // in at a scale you can actually see from a few hundred feet.
-  const mat=new THREE.MeshLambertMaterial({vertexColors:true, map:makeGroundTexture()});
+  // Reported: "echte 3D-Unebenheiten" - actual per-vertex relief at metre scale is not reachable
+  // by raising SEG further (it would need tens of thousands of spans across 64 km to resolve a
+  // single furrow, hopelessly past what one synchronous buildTerrain() pass can compute - see the
+  // measured SEG-cost table above). A bump map gives the same visual read (raking light catching
+  // small ridges) from a texture instead of real vertices - not literally added geometry, but
+  // indistinguishable from it at the subtlety this needs. See makeGroundTextures()'s own comment
+  // for why this shares one drawing pass with the colour map instead of tiling independently.
+  const {colorTex,bumpTex}=makeGroundTextures();
+  // MeshLambertMaterial has no bumpMap/bumpScale at all in this three.js build - r128's own
+  // Material.setValues() warns and silently drops them (caught by that warning during testing,
+  // not assumed). MeshPhongMaterial is the nearest type that supports bumpMap; specular/shininess
+  // knocked down from its defaults so switching material types doesn't add a shine the ground
+  // never had.
+  const mat=new THREE.MeshPhongMaterial({vertexColors:true, map:colorTex,
+    bumpMap:bumpTex, bumpScale:0.9, specular:0x080808, shininess:4});
   terrainMesh=new THREE.Mesh(geo,mat);
   terrainMesh.receiveShadow=false;
   scene.add(terrainMesh);
@@ -943,6 +1001,7 @@ function buildRoads(){
 //  ground reads as occupied country instead of empty hills.
 // ============================================================
 let villages=null, roofs=null, hedges=null, chimneys=null, doors=null, laneMeshes=null;
+let rocks=null, bushes=null, poles=null, crossarms=null, fenceposts=null;
 function buildSettlement(){
   const wallG=new THREE.BoxGeometry(1,1,1);
   const roofG=new THREE.CylinderGeometry(0.72,0.72,1,3);   // a prism makes a pitched roof
@@ -1182,6 +1241,115 @@ function buildForests(){
   forest.count=k; scene.add(forest);
   deciduousTrunk.count=dk; deciduousCanopy.count=dk;
   scene.add(deciduousTrunk); scene.add(deciduousCanopy);
+}
+
+// Reported: "verstreute Objekte" - rocks, bushes, fences, utility poles - none of which existed
+// yet; everything at ground level so far was either the flat field texture or a whole building/
+// hedge/tree. Four more InstancedMeshes (plus two small groups for poles' cross-arms and the
+// bounded set of fence-post rows), same one-draw-call-per-type approach as the trees/hedges above,
+// so this stays cheap regardless of how many of each actually get placed.
+function buildClutter(){
+  const o=new THREE.Object3D();
+
+  // ---- rocks: scattered boulders, open ground only ----
+  const rockG=new THREE.IcosahedronGeometry(1,0);           // flat-shaded, reads as a rough boulder
+  const rockM=new THREE.MeshLambertMaterial({color:0x7d7869});
+  const NR=3000;
+  rocks=new THREE.InstancedMesh(rockG,rockM,NR);
+  let rk=0, rguard=0;
+  while(rk<NR && rguard<NR*6){
+    rguard++;
+    const x=(Math.random()-0.5)*WORLD*0.92, z=(Math.random()-0.5)*WORLD*0.92;
+    const h=terrainH(x,z);
+    if(h<RIVER_Y+20) continue;
+    if(Math.abs(z-roadZ(x))<60 || Math.abs(z-railZ(x))<50 || Math.abs(x-riverX(z))<140) continue;
+    if(Math.abs(x-AF_X)<RWY_LEN*0.85 && Math.abs(z-AF_Z)<820) continue;
+    if(nearBridge(x,z,300,120)) continue;
+    // sparser than trees/hedges - a field with a boulder every few metres would look absurd
+    if(Math.random()>0.55) continue;
+    const gy=groundYRender(x,z);
+    const s=0.6+Math.random()*1.4;
+    o.position.set(x,gy+s*0.32,z);
+    o.rotation.set(Math.random()*3.14,Math.random()*6.28,Math.random()*3.14);
+    o.scale.set(s,s*(0.6+Math.random()*0.5),s*(0.8+Math.random()*0.4));
+    o.updateMatrix(); rocks.setMatrixAt(rk++,o.matrix);
+  }
+  rocks.count=rk; scene.add(rocks);
+
+  // ---- bushes: small rounded shrubs along field/hedge margins and rough pasture ----
+  const bushG=new THREE.IcosahedronGeometry(1,1);
+  const bushM=new THREE.MeshLambertMaterial({color:0x3f5c2c});
+  const NBU=5000;
+  bushes=new THREE.InstancedMesh(bushG,bushM,NBU);
+  let bk=0, bguard=0;
+  while(bk<NBU && bguard<NBU*6){
+    bguard++;
+    const x=(Math.random()-0.5)*WORLD*0.92, z=(Math.random()-0.5)*WORLD*0.92;
+    const h=terrainH(x,z);
+    if(h<RIVER_Y+25 || h>1080) continue;
+    if(Math.abs(z-roadZ(x))<50 || Math.abs(z-railZ(x))<45 || Math.abs(x-riverX(z))<130) continue;
+    if(Math.abs(x-AF_X)<RWY_LEN*0.85 && Math.abs(z-AF_Z)<820) continue;
+    if(nearBridge(x,z,300,120)) continue;
+    const gy=groundYRender(x,z);
+    const s=0.8+Math.random()*1.3;
+    o.position.set(x,gy+s*0.6,z);
+    o.rotation.set(0,Math.random()*6.28,0);
+    o.scale.set(s,s*(0.7+Math.random()*0.4),s);
+    o.updateMatrix(); bushes.setMatrixAt(bk++,o.matrix);
+  }
+  bushes.count=bk; scene.add(bushes);
+
+  // ---- utility poles along the main road, alternating sides ----
+  const poleG=new THREE.CylinderGeometry(0.5,0.6,9,6);
+  const poleM=new THREE.MeshLambertMaterial({color:0x4a3f30});
+  const armG=new THREE.BoxGeometry(1,1,1);
+  const armM=new THREE.MeshLambertMaterial({color:0x39301f});
+  const NP=800;
+  poles=new THREE.InstancedMesh(poleG,poleM,NP);
+  crossarms=new THREE.InstancedMesh(armG,armM,NP);
+  let pk=0;
+  for(let x=-WORLD/2+300;x<WORLD/2-300 && pk<NP;x+=90+Math.random()*40){
+    const z=roadZ(x), side=(pk%2===0)?1:-1, px=x, pz=z+side*22;
+    if(Math.abs(x-riverX(z))<220) continue;                 // no poles standing in the river
+    if(nearBridge(px,pz,320,140)) continue;
+    if(Math.abs(px-AF_X)<RWY_LEN*0.85 && Math.abs(pz-AF_Z)<820) continue;
+    const gy=groundYRender(px,pz);
+    o.position.set(px,gy+4.5,pz); o.rotation.set(0,0,0); o.scale.set(1,1,1);
+    o.updateMatrix(); poles.setMatrixAt(pk,o.matrix);
+    o.position.set(px,gy+8.6,pz); o.scale.set(3.4,0.35,0.35);
+    o.updateMatrix(); crossarms.setMatrixAt(pk,o.matrix);
+    pk++;
+  }
+  poles.count=pk; crossarms.count=pk;
+  scene.add(poles); scene.add(crossarms);
+
+  // ---- fences: rows of posts along a handful of field boundaries, not full hedge lines ----
+  const postG=new THREE.CylinderGeometry(0.18,0.22,1.5,5);
+  const postM=new THREE.MeshLambertMaterial({color:0x5b4a34});
+  const NF=3000;
+  fenceposts=new THREE.InstancedMesh(postG,postM,NF);
+  let fk=0, flines=0;
+  while(flines<70 && fk<NF-40){
+    const x=(Math.random()-0.5)*WORLD*0.88, z=(Math.random()-0.5)*WORLD*0.88;
+    const h=terrainH(x,z);
+    flines++;
+    if(h<RIVER_Y+25 || h>950) continue;
+    if(Math.abs(z-roadZ(x))<70 || Math.abs(z-railZ(x))<60 || Math.abs(x-riverX(z))<150) continue;
+    if(Math.abs(x-AF_X)<RWY_LEN*0.85 && Math.abs(z-AF_Z)<820) continue;
+    if(nearBridge(x,z,300,120)) continue;
+    const len=60+Math.random()*120, horiz=Math.random()<0.5;
+    const nPosts=Math.max(3,Math.round(len/8));
+    for(let p=0;p<nPosts && fk<NF;p++){
+      const t=(p/(nPosts-1))-0.5;
+      const px=horiz? x+len*t : x, pz=horiz? z : z+len*t;
+      const gy=groundYRender(px,pz);
+      o.position.set(px,gy+0.75,pz); o.rotation.set(0,0,0); o.scale.set(1,1,1);
+      o.updateMatrix(); fenceposts.setMatrixAt(fk++,o.matrix);
+    }
+  }
+  fenceposts.count=fk; scene.add(fenceposts);
+
+  console.log('clutter: '+rk+' rocks, '+bk+' bushes, '+pk+' poles, '+fk+' fence posts');
 }
 
 // ============================================================
@@ -4479,7 +4647,7 @@ function init(){
   const fill=new THREE.DirectionalLight(0xbfd4e6,0.42); fill.position.set(1500,900,-1600);
   scene.add(fill);
   applyWeather();
-  buildTerrain(); buildRoads(); buildForests(); buildSettlement(); buildAirfield(); buildRain();
+  buildTerrain(); buildRoads(); buildForests(); buildSettlement(); buildClutter(); buildAirfield(); buildRain();
   buildClouds(); applyWeather();   // clouds need ceilingY (set above) to place, then re-tint them
   planeGroup=new THREE.Group(); scene.add(planeGroup);
   loadModels();
