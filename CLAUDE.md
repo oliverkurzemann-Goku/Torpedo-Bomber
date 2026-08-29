@@ -5,7 +5,7 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 120 · Thunderbolt Squadron EU BUILD 49**
+Stand bei Übergabe: **Torpedo Squadron BUILD 120 · Thunderbolt Squadron EU BUILD 50**
 Repo: `oliverkurzemann-Goku/Torpedo-Bomber`, ausgeliefert über GitHub Pages.
 Alle Angaben unten sind aus dem tatsächlichen Code verifiziert, nicht aus dem Gedächtnis.
 
@@ -61,8 +61,19 @@ Flugzeuge Teil 1: `grumman tbm avenger.glb`, `zero.glb`, `sbd dauntless.glb`
 Schiffe: `uss_midway.glb`, `ijn carrier.glb`, `ijn cruiser.glb`, `samidare_destroyer.glb`,
 `merchant_ship.glb`
 Cockpits Teil 1: `cockpit.png`, `cockpit zero.png`, `cockpit sbd.png`
-Flugzeuge Teil 2: `p47new.glb`, `bf109new.glb`, `fw190.glb`, `b17.glb`, `b24.glb`
-Cockpits Teil 2: `cockpit_p47.png`, `cockpit_bf109.png`
+Flugzeuge Teil 2: `p47new.glb`, `bf109new.glb`, `fw190.glb`, `b17.glb`, `b24.glb`, `me262.glb`
+Cockpits Teil 2: `cockpit_p47.png`, `cockpit_bf109.png` (Me262 nutzt mangels eigenem Foto das
+P-47-Cockpit als Platzhalter, exakt wie die Fw 190 bereits — `pitPhotoEl()` fällt für jedes
+`P.ac`, das nicht `'bf109'` ist, auf `pitPhotoP` zurück)
+
+**Vom Nutzer bereitgestellt, noch nicht eingebaut** (Sitzung „Me262-Einsatz", alle mit dem
+echten GLTFLoader geprüft, laden fehlerfrei): `me163.glb` (Me 163B Komet, Raketenjäger),
+`ju87.glb` (Ju 87 B-2 Stuka), `fw190f8_alt.glb`/`p47d_alt.glb` (alternative Modelle zu den
+bereits verwendeten), `flak88_sfl.glb` (8,8cm Flak 37 Sfl), `m16_mgmc.glb` (M16 MGMC),
+`maus.glb`, `tiger.glb`, `sherman_m4a1.glb`, `jagdpanther.glb` — für einen möglichen
+nächsten Schritt (echte Panzer-/Flak-Modelle statt der prozeduralen Ziele in
+`thunderbolt-europe.html`, bzw. Me163/Ju87 als weitere Flugzeuge), auf ausdrücklichen
+Nutzerwunsch diese Runde zurückgestellt zugunsten des Me262.
 
 ---
 
@@ -2953,6 +2964,81 @@ sollte.
 Code: `thunderbolt-europe.html`, `buildClutter()` (neu), `makeGroundTextures()` (umbenannt von
 `makeGroundTexture()`, Suche nach „echte 3D-Unebenheiten"), `buildTerrain()`s Material-Aufbau
 (Suche nach „MeshPhongMaterial").
+
+---
+
+### 4.42 Me262 als spielbares Flugzeug — EU BUILD 50
+
+Nutzer hat elf echte GLB-Modelle bereitgestellt (Me262, Me163, Ju87, mehrere Panzer/Flak-
+Fahrzeuge, zwei alternative P-47/Fw190-Modelle). Auf Rückfrage per `AskUserQuestion`: zuerst
+der Me262-Einsatz — der in einer früheren Sitzung mangels Modell ausdrücklich zurückgestellt
+worden war. Die übrigen zehn Modelle liegen jetzt im Repo (siehe Abschnitt 2), aber unbenutzt,
+für eine künftige Runde.
+
+**Vor dem Einbauen erst gemessen, nicht angenommen:**
+- `detectYaw()` (die automatische Ausrichtungs-Erkennung für Modelle ohne `MODEL_FIX`-Eintrag)
+  direkt gegen das echte `me262.glb` laufen lassen: 99,6 % symmetrisch auf der Spannweiten-Achse,
+  Nase korrekt über die Leitwerk-Heuristik erkannt (kein Propeller zum Messen vorhanden) — exakt
+  dieselbe Konvention (Spannweite auf X, Nase bei +Z) wie jedes andere Flugzeug hier. Trotzdem als
+  `MODEL_FIX`-Eintrag festgeschrieben statt dem Laufzeit-Detektor überlassen, wie bei allen
+  anderen Flugzeugen auch.
+- `findProp()` **direkt gegen das echte Modell getestet, in beide Richtungen** — und lieferte an
+  BEIDEN Enden ein plausibel aussehendes Ergebnis (Nabe+Blatt-Radius, Nasen-Bereich UND
+  Heck-Bereich), obwohl ein Düsenflugzeug gar keinen Propeller hat. Die runden Triebwerks-
+  gondeln/Lufteinlässe und der Heckkonus messen sich offenbar ähnlich genug wie eine Nabe+Blatt-
+  Anordnung, um dieselbe Erkennung zu täuschen, die bei jedem Propellerflugzeug in diesem Projekt
+  zuverlässig funktioniert. Wäre das ungeprüft geblieben, hätte `rigModel()` versucht, echte
+  Rumpf-/Triebwerksgeometrie als „Propellerblätter" herauszuschneiden und einen sich drehenden
+  Propeller an ein Düsenflugzeug zu bauen. **Fix:** neue Konstante `JET_KINDS=['me262']`,
+  `rigModel()` überspringt `findProp()` für diese Typen komplett und geht direkt in den
+  „kein Propeller gefunden"-Zweig (der das Modell unverändert lässt — für einen Jet exakt
+  richtig, nicht nur ein Notbehelf).
+
+**Flugwerte, historisch begründet, nicht geraten:** reale Höchstgeschwindigkeit ~870 km/h
+(242 m/s) gegenüber 190-196 bei den Propellerflugzeugen hier — der Me262 ist bewusst spürbar
+schneller, nicht nur eine weitere Variation. `turn`/`gLim` bewusst NIEDRIGER als Bf109/Fw190
+(5,0 statt 5,5): der reale Vorteil dieses Flugzeugs war Entkommen durch Geschwindigkeit, nicht
+eng kurven. `ammo:400`/`gunDmg:3.0` spiegeln die reale Bewaffnung (4× 30-mm MK108-Bordkanone,
+insgesamt nur rund 360-380 Schuss gegenüber der P-47s 3400 Schuss aus acht MGs) — wenige, aber
+sehr wirkungsvolle Treffer statt eines Dauerfeuers. `stall:49`/`app:56` (beide höher als jedes
+andere Flugzeug hier) spiegeln die real bekannt schwierige, schnelle Landung dieses Musters.
+Modell des Typs A-1a/Jabo (laut Dateiname) trug real Bomben (`bombs:2`, wie die P-47).
+
+**Neue Mission „Jet Strike"** (Sortie 11, vor dem Finale eingefügt, Finale von Sortie 11 auf 12
+umnummeriert — `MISSIONS.length-1` wird überall dynamisch gelesen, siehe bereits 4.37/4.27,
+nichts sonst musste angepasst werden): Ziel `{flak:2,truck:3}` statt der Fw-190-Mission
+`{truck:4,tank:2}`, um unterschiedliche Zielarten zwischen den beiden Sorties zu behalten — ein
+Flak-Schlag passt zudem historisch besser zum realen Vorteil des Musters (zu schnell für die
+Flak-Ortung) als eine weitere Lkw-Kolonne. `brStamp` (Luftwaffe-Stempel) und `ACSHORT`-Abzeichen
+(„ME 262") um den neuen Typ erweitert.
+
+**Nachgewiesen, in zwei Schritten:**
+1. Echter `GLTFLoader` + headless-WebGL-Renderer, `rigModel()` wortwörtlich extrahiert und direkt
+   gegen das echte `me262.glb` ausgeführt: Ergebnis „no propeller found, own gear" (das Modell hat
+   ein eigenes, trennbares Fahrwerksobjekt — der einfachste, zuverlässigste Fahrwerks-Pfad),
+   `prop`-Gruppe mit 0 Kindern (kein Phantom-Propeller angebaut), `gear`-Gruppe mit 1 Kind.
+   Draufsicht/Seitenansicht/Unteransicht gerendert und angesehen: eindeutig als Me262 erkennbar
+   (Pfeilflügel, zwei unterflügel Triebwerksgondeln, Kabinenhaube, Seitenleitwerk), keine
+   sichtbaren Geometriefehler, keine Propellerreste.
+2. Echtes Playwright/Chromium gegen den echten laufenden Code, kompletter echter Klickpfad (Chip
+   → Begin Sortie → Start Engine): Missions-Chip zeigt Abzeichen „ME 262", Briefing zeigt „Sortie
+   11 / Jet Strike / Luftwaffe / Me 262A-1a/Jabo", danach fliegt der Spieler tatsächlich einen
+   Me262 (`P.ac==='me262'`, `P.bombs===2`, `P.hull===95`, `P.ammo===400`, echtes Modell geladen,
+   `rigModel()`-Protokoll aus dem laufenden Spiel identisch zum isolierten Test oben). HUD zeigt
+   korrekt „FLAK 2 TRUCKS 3", Bildschirmfoto zeigt eine saubere Startbahn-Szene ohne
+   Rendering-Fehler. Voller Build-Ablauf und Hecken-Regressionstest weiterhin fehlerfrei
+   (unberührt, da diese Änderung keinen Terrain-Code anfasst).
+
+**Offen:** Nicht auf dem echten iPad geflogen. Kein eigenes Cockpit-Foto vorhanden — nutzt wie
+die Fw 190 bereits das P-47-Cockpit als Platzhalter (`pitPhotoEl()`s bestehender Fallback,
+unverändert). Die Flugwerte sind eine erste, historisch begründete Einschätzung, keine am echten
+Gerät gegengeprüfte Balance — insbesondere `gLim:5,0` und `stall/app` sind Startwerte, die nach
+echtem Spielen nachjustiert werden könnten. Me163/Ju87 sowie die Panzer-/Flak-Modelle sind auf
+Nutzerwunsch dieser Runde nicht angefasst.
+
+Code: `thunderbolt-europe.html`, `const JET_KINDS`, `AC.me262`, `MISSIONS`-Array (Eintrag
+`id:'jetstrike'`), `rigModel()` (Suche nach „a genuinely different kind of aeroplane" bzw.
+„there is nothing here that legitimately spins").
 
 ---
 
