@@ -258,7 +258,7 @@
   <div id="flash"></div>
   <div id="gunsight"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">EU BUILD 43</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">EU BUILD 44</div>
 
   <div id="apr">
     <div id="aprCall"></div>
@@ -2111,29 +2111,39 @@ function makeTank(){
   return g;
 }
 function makeFlak(heavy){
+  // Reported (again) that flak positions are hard to spot - EU BUILD 34 (CLAUDE.md 4.23) already
+  // lightened these once, but only verified against a synthetic test background, not the real
+  // terrain. Measured properly this time: sampled the terrain's OWN colour formula at real Flak
+  // Suppression spawn points (near the river, where that mission actually places them) - it comes
+  // out yellow-green, rgb(107,120,71). The old emplacement/sandbag colours were only 0.04-0.05 off
+  // in luminance from that and shared its greenish hue (R<G), which is close to invisible against
+  // real ground, not just a synthetic swatch. New colours push both luminance (Δ0.13-0.28, 3-5x
+  // the old gap) AND hue (R>=G, warm/grey instead of green) away from the actual measured terrain
+  // colour, not just "brighter".
   const g=new THREE.Group();
-  g.add(at(box(heavy?6:3.6,0.7,heavy?6:3.6,0x6e6851),0,0.5,0));    // emplacement
+  g.add(at(box(heavy?6:3.6,0.7,heavy?6:3.6,0x9a9484),0,0.5,0));    // emplacement
   let muzzleZ, muzzleY;
   if(heavy){
-    const mount=cyl(0.9,1.3,1.6,0x63644f,10); g.add(at(mount,0,1.6,0));
-    const bar=cyl(0.24,0.3,7.4,0x53554a,8); bar.rotation.x=-Math.PI/3.1;
+    const mount=cyl(0.9,1.3,1.6,0x87826f,10); g.add(at(mount,0,1.6,0));
+    const bar=cyl(0.24,0.3,7.4,0x6b6656,8); bar.rotation.x=-Math.PI/3.1;
     g.add(at(bar,0,4.0,-1.4));
-    for(const s of [-1,1]) g.add(at(box(0.3,2.2,2.6,0x64654f),s*1.2,2.4,0.5));  // shield
+    for(const s of [-1,1]) g.add(at(box(0.3,2.2,2.6,0x8a8570),s*1.2,2.4,0.5));  // shield
     muzzleY=6.8; muzzleZ=-4.9;
   } else {
-    const mount=cyl(0.6,0.9,1.0,0x63644f,8); g.add(at(mount,0,1.1,0));
+    const mount=cyl(0.6,0.9,1.0,0x87826f,8); g.add(at(mount,0,1.1,0));
     for(const s of [-1,1]) for(const u of [0,1]){
-      const bar=cyl(0.10,0.12,3.0,0x53554a,6); bar.rotation.x=-Math.PI/3.4;
+      const bar=cyl(0.10,0.12,3.0,0x6b6656,6); bar.rotation.x=-Math.PI/3.4;
       g.add(at(bar,s*0.28,2.0+u*0.34,-0.5));
     }
     muzzleY=3.3; muzzleZ=-1.7;
   }
-  const brake=glint(0xb8ae86); brake.scale.set(2.2,3.4,2.2); brake.rotation.x=-Math.PI/3.2;
+  const brake=glint(0xe8ddb0); brake.scale.set(2.2,3.4,2.2); brake.rotation.x=-Math.PI/3.2;
   g.add(at(brake,0,muzzleY,muzzleZ));
-  // sandbag ring
+  // sandbag ring - the widest, most overhead-visible part of the position, so the one most worth
+  // making pop: a genuinely light tan, clearly not the ground colour underneath it
   for(let i=0;i<10;i++){
     const a=i/10*Math.PI*2, r=heavy?4.0:2.6;
-    g.add(at(box(1.5,0.8,1.0,0x86805f),Math.cos(a)*r,0.8,Math.sin(a)*r));
+    g.add(at(box(1.5,0.8,1.0,0xc4b990),Math.cos(a)*r,0.8,Math.sin(a)*r));
   }
   return g;
 }
@@ -2444,13 +2454,21 @@ function populate(){
   const rng=(a,b)=>a+Math.random()*(b-a);
   if(m.free||m.circuits) return;
 
+  // Reported "Missionen zu fad, da Ziel zu nahe am Flugplatz": measured, not guessed - the old
+  // ranges below put every primary target 1200-2900 units from AF_X/AF_Z=0,0, a 12-20 second
+  // flight at cruise. The map is 64000 units wide; that used well under a tenth of it. Pushed each
+  // of these out to 5500-9800 (~45-50s one-way at cruise) - the fuel model has enormous headroom
+  // for it (100% lasts 278s at full throttle, a 23000-unit one-way range before bingo) - and
+  // randomised which side of the airfield each sortie's target falls on, so it isn't always the
+  // same direction out.
+  const tSide=Math.random()<0.5?-1:1;
   if(m.kills&&m.kills.truck){
-    let x=rng(-2600,-1200);
+    let x=tSide*rng(5500,9500);
     for(let i=0;i<(m.kills.truck+2);i++){
       spawnTarget('truck',x,roadZ(x),{road:true,roadX:x,speed:11,primary:true});
-      x+=rng(70,120);
+      x+=tSide*rng(70,120);
     }
-    spawnTarget('flak20',rng(-3000,-800),roadZ(-1800)+rng(-120,120),{});
+    spawnTarget('flak20',x-tSide*rng(600,1200),roadZ(x)+rng(-120,120),{});
   }
   if(m.kills&&m.kills.flak){
     for(let i=0;i<m.kills.flak;i++){
@@ -2467,17 +2485,17 @@ function populate(){
     spawnTarget('flak88',bridgeSite.x+280,bridgeSite.z-160,{});
   }
   if(m.kills&&m.kills.train){
-    const x=rng(-1500,1500);
+    const x=tSide*rng(5000,9000);
     spawnTarget('train',x,railZ(x),{rail:true,roadX:x,speed:16,primary:true});
     for(let i=0;i<4;i++){ const tx=rng(-4000,4000);
       spawnTarget('truck',tx,roadZ(tx),{road:true,roadX:tx,speed:10}); }
     spawnTarget('flak20',x+400,railZ(x+400)+90,{});
   }
   if(m.kills&&m.kills.tank){
-    let x=rng(1200,2400);
+    let x=tSide*rng(5500,9500);
     for(let i=0;i<m.kills.tank;i++){
       spawnTarget('tank',x,roadZ(x)+rng(-40,40),{primary:true,rot:headingOnRoad(x)});
-      x+=rng(90,150);
+      x+=tSide*rng(90,150);
     }
     spawnTarget('flak20',x+160,roadZ(x+160)+80,{});
     spawnTarget('flak88',x-700,roadZ(x-700)-150,{});

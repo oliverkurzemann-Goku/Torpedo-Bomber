@@ -310,7 +310,7 @@
   <div id="flash"></div>
   <div id="ltn" style="position:fixed;inset:0;background:#e6ecff;opacity:0;pointer-events:none;z-index:40;"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 119</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 120</div>
 
   <!-- Optical landing aid -->
   <div id="lso">
@@ -3168,11 +3168,32 @@ function findProp(root, dir){
   }
   const hubR=Math.max((core+1)*BW, S.x*0.012);
 
-  // everything sticking out past the cowl, anywhere in the engine bay, is blade material
+  // everything sticking out past the cowl, anywhere in the engine bay, is blade material - or so
+  // it looks by radius alone. Measured on the Dauntless: 193 of the candidate triangles turned
+  // out to be the RADIO ANTENNA MAST and a FLAP EDGE, sitting nowhere near the propeller but
+  // happening to cross this same radius band, against only a handful of triangles that were the
+  // actual blade - a first attempt at rejecting outliers picked whichever cluster had more
+  // triangles and got it exactly backwards (confirmed by literally colouring the two groups and
+  // rendering them: the small cluster was a clean, recognisable blade sitting right at the nose,
+  // the large one was a vertical mast line nowhere near it). A propeller cannot be anything but at
+  // or right behind the nose tip - unlike an antenna or a flap edge, which can be anywhere on the
+  // airframe - so distance to the actual nose (whole.max.z / whole.min.z per dir, not the loose
+  // 20%-of-length search window) is the reliable discriminator, not vertex count. Cluster the
+  // candidate z-values by gap and keep the cluster nearest the nose.
   const cand=pts.filter(p=>{ const r=Math.hypot(p.x-cx,p.y-cy); return r>hubR*1.15 && r<=RCAP; });
   if(cand.length<12) return null;
   const zsAll=cand.map(p=>p.z).sort((a,b)=>a-b);
-  const zLo=zsAll[Math.floor(zsAll.length*0.02)], zHi=zsAll[Math.floor(zsAll.length*0.98)];
+  const gapThresh=Math.max(S.z*0.015, (zsAll[zsAll.length-1]-zsAll[0])*0.05);
+  let clusters=[[zsAll[0]]];
+  for(let i=1;i<zsAll.length;i++){
+    if(zsAll[i]-zsAll[i-1]>gapThresh) clusters.push([]);
+    clusters[clusters.length-1].push(zsAll[i]);
+  }
+  const noseZ=(dir>0)? whole.max.z : whole.min.z;
+  const distToNose=cl=> dir>0 ? Math.abs(noseZ-cl[cl.length-1]) : Math.abs(noseZ-cl[0]);
+  clusters.sort((a,b)=>distToNose(a)-distToNose(b));
+  const mainZ=clusters[0];
+  const zLo=mainZ[Math.floor(mainZ.length*0.02)], zHi=mainZ[Math.floor(mainZ.length*0.98)];
   const zPlane=(zLo+zHi)/2;
   const halfDepth=Math.max((zHi-zLo)/2*1.25, S.z*0.02);
   const inSlab=cand.filter(p=>Math.abs(p.z-zPlane)<=halfDepth);
@@ -4048,7 +4069,7 @@ function loadPlaneModel(){
       }
       window.__eyeDbg='EYE '+COCKPIT_EYE.map(v=>v.toFixed(2)).join('/');
       const btEl=document.getElementById('buildTag');
-      if(btEl) btEl.textContent='BUILD 119 · '+window.__eyeDbg;
+      if(btEl) btEl.textContent='BUILD 120 · '+window.__eyeDbg;
       let seat=null;
       model.traverse(function(o){
         if(!o.isMesh||!o.material) return;
@@ -5641,7 +5662,7 @@ function setupUIButtons(){
   if(dbgT2) dbgT2.onclick=()=>{
     dbgOn=!dbgOn; localStorage.setItem('dbgOn',dbgOn?'1':'0');
     const db=document.getElementById('dbgBox'); if(db) db.textContent=dbgOn?'✓':'';
-    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 119'; }
+    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 120'; }
   };
   const lu=document.getElementById('lookUp'), ld=document.getElementById('lookDn');
   const setTilt=v=>{ pitTilt=Math.max(-0.9,Math.min(0.4,v)); localStorage.setItem('pitTilt',pitTilt.toFixed(3)); };
