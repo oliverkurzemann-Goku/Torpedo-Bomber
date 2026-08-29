@@ -260,7 +260,7 @@
   <div id="flash"></div>
   <div id="gunsight"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">EU BUILD 46</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">EU BUILD 47</div>
 
   <div id="apr">
     <div id="aprCall"></div>
@@ -385,11 +385,17 @@ try{ delete window.createImageBitmap; }catch(e){ window.createImageBitmap=undefi
 const KT=2.23694;            // m/s -> mph (this theatre talks in mph, not knots)
 const FT=3.28084, MI=1609.34, R2D=180/Math.PI;
 const WORLD=64000;           // playable square, metres
-const SEG=640;               // 64 km over 640 spans = 100 m per quad. Raised from 384 (167 m)
-                             // as part of the terrain-realism pass — user explicitly accepted
-                             // iPad frame-rate risk in exchange for smoother hills and valleys;
-                             // a tiled detail texture supplies everything finer still,
-                             // because vertex colours alone can never show a field or a track.
+const SEG=1024;              // 64 km over 1024 spans = 62.5 m per quad. Raised again from 640
+                             // (100 m) after "brauchen viel detailliertere Auflösung" - measured
+                             // in the Node build-chain harness: buildTerrain() cost scales with
+                             // SEG² (quadratic, one height+colour sample per vertex), 640->1024 is
+                             // ~2.5x the vertices/time of the previous value, 640->1280 would have
+                             // been 4x; chose 1024 as the largest step that does not roughly
+                             // quadruple the one-time load stall on top of the SEG=384->640 hit
+                             // already accepted. User explicitly accepted iPad frame-rate risk in
+                             // exchange for smoother hills and valleys; a tiled detail texture
+                             // supplies everything finer still, because vertex colours alone can
+                             // never show a field or a track.
 const RIVER_Y=30;            // water surface height
 const BRIDGE_GAP=150;         // half-width of the flat river-crossing zone road/rail height locks
                              // onto RIVER_Y+16, and of the gap cut into the road ribbon there —
@@ -668,26 +674,33 @@ function groundYRender(x,z){
 }
 
 function makeGroundTexture(){
-  const N=512;
+  // Reported: "brauchen viel detailliertere Auflösung" - this canvas, tiled every 900 m, was the
+  // only thing that ever put a field edge or a plough line back in (vertex colours only change
+  // every SEG quad, see buildTerrain()); at the old N=512 that is 0.57 texels/metre, badly blurred
+  // up close. Tripled to N=1536 (1.7 texels/metre) and every STRUCTURAL dimension below (field
+  // size, plough-line spacing, track wander) scaled by SC so real-world field/track size is
+  // unchanged - only line WIDTHS are left unscaled, so strokes get thinner and crisper relative to
+  // the ground rather than just redrawing the same blur at higher resolution.
+  const N=1536, SC=N/512;
   const c=document.createElement('canvas'); c.width=c.height=N;
   const g=c.getContext('2d');
   g.fillStyle='#ffffff'; g.fillRect(0,0,N,N);
   // irregular field parcels, each with its own shade and plough direction
   const rnd=(a,b)=>a+Math.random()*(b-a);
   const cuts=[0];
-  for(let x=0;x<N;){ x+=rnd(38,96); if(x<N-24) cuts.push(Math.round(x)); }
+  for(let x=0;x<N;){ x+=rnd(38,96)*SC; if(x<N-24*SC) cuts.push(Math.round(x)); }
   cuts.push(N);
   for(let i=0;i<cuts.length-1;i++){
     const x0=cuts[i], x1=cuts[i+1];
     let y=0;
     while(y<N){
-      const h=rnd(34,92), y1=Math.min(N,y+h);
+      const h=rnd(34,92)*SC, y1=Math.min(N,y+h);
       const v=rnd(0.86,1.10);
       g.fillStyle='rgba('+Math.round(255*v)+','+Math.round(252*v)+','+Math.round(246*v)+',1)';
       g.fillRect(x0,y,x1-x0,y1-y);
       // plough lines
       g.strokeStyle='rgba(0,0,0,0.055)'; g.lineWidth=1;
-      const horiz=Math.random()<0.5, step=rnd(5,11);
+      const horiz=Math.random()<0.5, step=rnd(5,11)*SC;
       g.beginPath();
       if(horiz){ for(let k=y;k<y1;k+=step){ g.moveTo(x0,k); g.lineTo(x1,k); } }
       else     { for(let k=x0;k<x1;k+=step){ g.moveTo(k,y); g.lineTo(k,y1); } }
@@ -705,13 +718,17 @@ function makeGroundTexture(){
     g.beginPath();
     let x=rnd(0,N), y=0;
     g.moveTo(x,y);
-    while(y<N){ y+=rnd(20,50); x+=rnd(-26,26); g.lineTo(x,y); }
+    while(y<N){ y+=rnd(20,50)*SC; x+=rnd(-26,26)*SC; g.lineTo(x,y); }
     g.stroke();
   }
   const tex=new THREE.CanvasTexture(c);
   tex.wrapS=tex.wrapT=THREE.RepeatWrapping;
-  tex.repeat.set(WORLD/900, WORLD/900);      // one tile ≈ 900 m of ground
-  tex.anisotropy=4;
+  tex.repeat.set(WORLD/900, WORLD/900);      // one tile ≈ 900 m of ground, unchanged real size
+  // Anisotropic filtering is what actually keeps this crisp at the shallow, near-grazing angles a
+  // chase camera looks at the ground with - a fixed 4 was a guess, never checked against what the
+  // real device can do. Ask the renderer for its real ceiling instead (typically 16 on anything
+  // this project targets); costs nothing extra to request, only helps if the GPU can deliver it.
+  tex.anisotropy=renderer.capabilities.getMaxAnisotropy();
   return tex;
 }
 function buildTerrain(){

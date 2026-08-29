@@ -5,7 +5,7 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 120 · Thunderbolt Squadron EU BUILD 46**
+Stand bei Übergabe: **Torpedo Squadron BUILD 120 · Thunderbolt Squadron EU BUILD 47**
 Repo: `oliverkurzemann-Goku/Torpedo-Bomber`, ausgeliefert über GitHub Pages.
 Alle Angaben unten sind aus dem tatsächlichen Code verifiziert, nicht aus dem Gedächtnis.
 
@@ -2699,6 +2699,78 @@ ben Patch automatisch mit, wurde aber nicht separat nachgerendert (KI-only, kein
 
 Code: `thunderbolt-europe.html`, `cutGearClusters()` (jetzt `{cut, rfUsed}` statt nur einer Zahl)
 und `coverGearCut()` (neu, direkt danach), Suche nach „durchsichtig".
+
+---
+
+### 4.39 Thunderbolt-Terrain: Auflösung nochmals angehoben — EU BUILD 47
+
+Nutzer, direkt nach dem Fw-190-Fix: „Mit dem Terrain bin ich immer noch [nicht] zufrieden.
+Brauchen viel detailliertere Auflösung." Terrain war zuletzt in 4.32 (Höhenform, echtes Noise
+statt Karomuster) und 4.35 (Feldfarben-Schachbrett, Straßennetz, mehr Dörfer) angefasst worden —
+beide Male die STRUKTUR korrigiert, nie die reine Auflösung selbst seit dem einmaligen Sprung
+`SEG` 384→640 in BUILD 106/EU 27. Diesmal direkt an der Auflösung angesetzt, an zwei
+unabhängigen Stellen, die beide zu „detailliert/undetailliert" beitragen:
+
+**1) Geländegitter `SEG` 640→1024** (100 m → 62,5 m pro Kachel). Vor der Entscheidung im
+Node-Prüfstand gemessen, nicht geraten, wie teuer das wird: `buildTerrain()`s Kosten skalieren mit
+SEG² (ein Höhen- plus Farb-Sample pro Vertex). Gemessene Werte: 640→2,6–2,8 s, 800→4,05 s (Faktor
+1,5, passt zu (800/640)²=1,56), 960→5,88 s (Faktor 2,2, passt zu 2,25), 1024→6,69 s (Faktor 2,5,
+passt zu 2,56), 1280→10,6 s (Faktor 4,0, passt exakt zu (1280/640)²=4). 1024 gewählt als größter
+Schritt, der die einmalige Ladepause nicht glatt vervierfacht wie 1280 es getan hätte — der
+Nutzer hat Performance zwar wiederholt als zweitrangig erklärt, aber ein von 6 auf 11 Sekunden
+alleine für `buildTerrain()` verlängerter Missionsstart wäre eine neue, eigene Beschwerde.
+
+**2) Bodentextur `N` 512→1536** (0,57 → 1,71 Texel/Meter bei gleichbleibender 900-m-Kachelgröße)
+plus anisotrope Filterung von einer geratenen festen 4 auf den tatsächlichen Gerätewert
+(`renderer.capabilities.getMaxAnisotropy()`, am echten Chromium gemessen: 16). Diese Textur ist
+laut eigenem Code-Kommentar das einzige, was Feldgrenzen und Pflugspuren überhaupt zeigt — Vertex-
+Farben ändern sich nur alle SEG-Kachel — und war bei alter Auflösung aus der Nähe sichtbar
+unscharf. Wichtig dabei: alle STRUKTURELLEN Canvas-Bemaße (Feldgröße, Pflugspur-Abstand, Weg-
+Mäander) mit `SC=N/512=3` mitskaliert, damit Felder/Wege ihre reale Größe in Metern behalten und
+nicht auf ein Drittel schrumpfen — nur die Strichbreiten blieben unskaliert, damit sie bei der
+höheren Auflösung tatsächlich dünner/schärfer werden, statt einfach denselben unscharfen Look bei
+mehr Pixeln neu zu zeichnen. Diese Textur ist reines Canvas-Zeichnen ohne Bezug zu `SEG` — kostet
+beim Laden nichts zusätzlich (ein einmaliger Canvas-Draw, kein Pro-Vertex-Kostenfaktor).
+
+**Nachgewiesen, nicht nur geschrieben:**
+- Node+`buildTerrain()`+`hedge_float_check.js` (derselbe Hecken-Schwebe-Regressionstest wie in
+  4.21/4.32/4.35, da die feinere Geländeform erneut geprüft werden muss): weiterhin 0 % über 3 m
+  schwebend, schlimmster Fall 0,41 m — die 4.21-Fix hält auch beim feineren Gitter.
+- Voller Build-Ablauf (`buildTerrain()` bis `buildAirfield()`) läuft weiterhin fehlerfrei durch,
+  0 NaN/Infinity in jeder Instanz-Matrix.
+- **Echtes Playwright/Chromium** (Node hat wie immer keinen echten Canvas-2D-Kontext, siehe
+  4.11/4.13/4.20/4.23/4.32/4.35/4.36 — für eine Beurteilung der TEXTUR-Auflösung reicht der
+  Node-Prüfstand grundsätzlich nicht): `makeGroundTexture()` direkt im echten Browser aufgerufen
+  und der erzeugte Canvas als PNG gespeichert und angesehen — Feldgröße/Struktur unverändert
+  proportional, spürbar mehr Details (feinere Pflugspuren, Weg-Mäander) bei 1536×1536 statt
+  512×512. `tex.anisotropy` im echten Browser ausgelesen: 16 (== `getMaxAnisotropy()`), vorher
+  fest 4 — bestätigt, dass die Anfrage tatsächlich ankommt und nicht auf den alten Wert
+  zurückfällt. Ein echter Tiefflug (Free-Flight-Mission über den echten Klickpfad gestartet,
+  Kamera auf ~45 m AGL in typischer Verfolgungsperspektive positioniert, echte Texturen geladen)
+  zeigt scharfe Feldgrenzen und Wege ohne sichtbare Unschärfe/Pixelung, sowohl aus ~180 m als auch
+  aus ~45 m Höhe.
+- Ein Test-Kabelbaum-Detail dabei gefunden und behoben (kein Spielfehler): die bestehenden
+  Node-Prüfstand-Skripte (`smoke_test.js`, `hedge_float_check.js`) hatten nie einen `renderer` im
+  globalen Scope, weil sie ganz ohne echten WebGL-Kontext laufen — bricht seit der neuen
+  `renderer.capabilities.getMaxAnisotropy()`-Zeile mit einer `TypeError`. Ein einzeiliger
+  `renderer={capabilities:{getMaxAnisotropy:()=>16}}`-Stub in beiden Testskripten behoben, an der
+  einzigen Stelle, die es betrifft — der Spielcode selbst wurde dafür nicht mit einer Prüfung
+  „falls renderer fehlt" verwässert, weil das im echten Spiel (renderer entsteht in `init()` klar
+  vor jedem `buildTerrain()`-Aufruf) nie eintreten kann.
+
+**Offen:** Nicht auf dem echten iPad geflogen — insbesondere, ob `SEG=1024` zusammen mit den
+bereits akzeptierten Laubbaum-`InstancedMesh`es (4.14) und den 20 neuen Bauernhof-Zufahrten (4.35)
+die Bildrate auf echter Hardware spürbar stärker drückt als bisher, ist ungeprüft; der Nutzer hat
+Ruckler wiederholt als Risiko akzeptiert, aber ~2,5× mehr Vertices im Geländegitter ist ein
+größerer Schritt als die bisherigen. Falls „detaillierter" nach diesem Build immer noch der
+Hauptwunsch ist, sind die nächsten, hier bewusst nicht gezogenen Hebel: `SEG` weiter erhöhen (Kosten
+skaliert weiter quadratisch, siehe Messtabelle oben), die 900-m-Kachelgröße der Bodentextur selbst
+verkleinern (mehr Texel/Meter ohne `N` weiter zu erhöhen, aber mehr Wiederholungen), oder echte
+3D-Detailgeometrie (Steine, Ackerfurchen als Mesh statt Textur) statt einer flachen Textur — deutlich
+mehr Aufwand, hier nicht begonnen.
+
+Code: `thunderbolt-europe.html`, `const SEG=1024` (Kommentar mit den gemessenen Timings) und
+`makeGroundTexture()`, Suche nach „brauchen viel detailliertere Auflösung".
 
 ---
 
