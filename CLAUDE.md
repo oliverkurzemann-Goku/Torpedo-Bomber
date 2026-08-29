@@ -5,7 +5,7 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 120 · Thunderbolt Squadron EU BUILD 50**
+Stand bei Übergabe: **Torpedo Squadron BUILD 120 · Thunderbolt Squadron EU BUILD 51**
 Repo: `oliverkurzemann-Goku/Torpedo-Bomber`, ausgeliefert über GitHub Pages.
 Alle Angaben unten sind aus dem tatsächlichen Code verifiziert, nicht aus dem Gedächtnis.
 
@@ -65,6 +65,7 @@ Flugzeuge Teil 2: `p47new.glb`, `bf109new.glb`, `fw190.glb`, `b17.glb`, `b24.glb
 Cockpits Teil 2: `cockpit_p47.png`, `cockpit_bf109.png` (Me262 nutzt mangels eigenem Foto das
 P-47-Cockpit als Platzhalter, exakt wie die Fw 190 bereits — `pitPhotoEl()` fällt für jedes
 `P.ac`, das nicht `'bf109'` ist, auf `pitPhotoP` zurück)
+Terrain Teil 2: `treepack.glb` (Low-Poly-Baum-/Felspaket, vier Baumpaare + neun Felsen, siehe 4.43)
 
 **Vom Nutzer bereitgestellt, noch nicht eingebaut** (Sitzung „Me262-Einsatz", alle mit dem
 echten GLTFLoader geprüft, laden fehlerfrei): `me163.glb` (Me 163B Komet, Raketenjäger),
@@ -3039,6 +3040,105 @@ Nutzerwunsch dieser Runde nicht angefasst.
 Code: `thunderbolt-europe.html`, `const JET_KINDS`, `AC.me262`, `MISSIONS`-Array (Eintrag
 `id:'jetstrike'`), `rigModel()` (Suche nach „a genuinely different kind of aeroplane" bzw.
 „there is nothing here that legitimately spins").
+
+---
+
+### 4.43 Echte Bäume und Felsen statt Kegel/Ikosaeder — EU BUILD 51
+
+Nutzer hat ein Low-Poly-Baum-/Fels-Paket (`low_poly_forest_tree_pack.glb`, 30 Meshes, 3747
+Dreiecke: 4 Baum-Paare aus Stamm+Krone, 9 Felsvarianten, 13 flache Hintergrund-Bäume als
+Textur-Karten) ohne Begleittext hochgeladen. Aus dem Kontext (unmittelbar vorausgegangene
+„Terrain braucht mehr Details"-Runde, EU BUILD 49) ergab sich der Verwendungszweck von selbst:
+`buildForests()`s prozedurale Kegel/Ikosaeder-Bäume und `buildClutter()`s Ikosaeder-Felsen durch
+echte Geometrie aus diesem Paket ersetzen. Nicht nachgefragt (anders als bei den elf Fahrzeug-
+Modellen in 4.42), weil der Anwendungsfall hier eindeutig und eng genug war.
+
+**Vor dem Einbauen erst vermessen, nicht angenommen:**
+- Jedes Stamm-/Kronen-Objekt im Paket ist eine `Group` mit genau einem Mesh-Kind (verifiziert).
+- Das Paket ist als fertig arrangierte Szene aufgebaut (Objekte liegen auf realen Welt-Koordinaten
+  verstreut), nicht als Satz von Einzel-Requisiten am Ursprung — und `RootNode` trägt eine
+  Sketchfab-typische cm→m-Skalierung. **Erster Renderversuch mit `clone(true)` auf nur das
+  Blattobjekt kam ~100× zu groß heraus** (gemessene Kombigröße 591×1034×546 statt der später
+  korrekt gemessenen 5,91×10,34×5,46) — der Klon hatte die Transformation der Elternkette
+  (`Sketchfab_model > Tree_Packfbx > RootNode`) verloren, weil `clone(true)` nur den Teilbaum ab
+  dem geklonten Knoten kopiert, nicht dessen Vorfahren. **Fix:** jedes Mesh bekommt seine ECHTE
+  `matrixWorld` fest in die Geometrie hineingerechnet (`geometry.applyMatrix4(mesh.matrixWorld)`),
+  bevor irgendetwas geklont oder in eine neue Gruppe gehängt wird — genau die in Abschnitt 3.2/
+  Lektion 2 dokumentierte Klasse von Fehlern, hier beim ersten Versuch selbst gemacht und dann
+  am echten, erneut gerenderten Modell (korrekte Maße, deckungsgleich mit der ursprünglichen
+  Positions-Vermessung) nachgewiesen.
+- Vier Baum-Paare gerendert und angesehen (nicht nur an Maßen beurteilt): drei sind konisch/
+  säulenförmig (5,91–18,46 m Kronenhöhe, „pairA_small"/„pairB_tall"/„pairC_med" — passen als
+  Nadelbaum-Ersatz) und einer ist rund/buschig („pairD_small2", 11,87 m — passt als Laubbaum-
+  Ersatz), sauber getrennt per Silhouette, nicht nur per Zahl.
+
+**Architektur — „prozedural zuerst, echt sobald geladen", wie `torpedo-carrier.html`s
+`upgradeShipsToTemplate()` (4.11):** `buildForests()`/`buildClutter()` bauen weiterhin sofort ihre
+bisherige prozedurale Geometrie (Kegel, Ikosaeder) — das Spiel bleibt ab Missionsstart voll
+spielbar, egal wie lange das 10-MB-Paket braucht oder ob es überhaupt lädt. Zusätzlich zeichnet
+jede der beiden Funktionen jetzt auf, WOHIN sie jeden Baum/Felsen gesetzt hat
+(`forestPlacements`/`rockPlacements`: Position, Rotation, Skalierung, eine zufällig gewürfelte
+Sorten-Nummer). `loadTreePack()` lädt das GLB parallel über dieselbe Mehrfach-Dateiname-Fallback-
+Technik wie `MODEL_URL` (`treepack.glb` mit zwei Ausweich-Schreibweisen); sobald es fertig ist,
+baut `upgradeForestToTreePack()` aus den aufgezeichneten Platzierungen neue `InstancedMesh`es mit
+echter Geometrie (3 Nadelbaum-Sorten × Stamm+Krone, 1 Laubbaum-Sorte × Stamm+Krone, 9 Felssorten
+— 17 statt vorher 4 Draw-Calls, Performance laut Nutzer weiterhin zweitrangig) und tauscht sie
+gegen die prozeduralen Meshes aus — exakt an denselben Stellen, ohne die Platzierungs-Logik ein
+zweites Mal zu würfeln. Scheitert der Ladevorgang, bleibt die prozedurale Fassung stehen, genau
+wie beim Fehlschlag jedes Flugzeug-Modells auch.
+
+**Zweiter, beim Testen gefundener Bug — Vertexfarben:** Ein erster Playwright-Test (echter
+Chromium-Browser, echter Klick-Pfad durch Missionsauswahl → Start Engine) zeigte jeden echten
+Baum/Felsen als praktisch schwarze Silhouette. Nachgemessen statt geraten: die Textur lädt korrekt
+(richtige Maße, `mapImgOk:true`), aber `GLTFLoader` hatte `material.vertexColors=true` gesetzt,
+weil die Quelldatei ein `COLOR_0`-Attribut trägt — nichts sonst in diesem Spiel färbt ein Material
+über einen Vertexfarben-Multiplikator, und dieser hier lieferte offenbar keinen sinnvollen Wert.
+**Fix:** jedes extrahierte Material wird geklont und `vertexColors=false` erzwungen — reine
+Textur-Einfärbung, wie überall sonst in diesem Projekt.
+
+**Nach dem Fix noch immer sehr dunkel — das war aber kein Bug.** Direktes Auslesen der
+Texturpixel (`drawImage` auf ein Canvas, Mittelwert über alle Pixel) ergab für die Kronen-Textur
+ein Mittel von RGB≈(21, 24, 20) — dunkel, aber nicht Schwarz. Direktes Auslesen der tatsächlich
+GERENDERTEN Bildschirmpixel an der Baumstelle ergab RGB≈(18, 21, 17) — praktisch identisch mit
+dem Texturmittel, während dieselbe Methode am offenen Feld daneben RGB≈(192, 220, 205) ergab.
+Beleuchtung und Textur-Pipeline funktionieren also nachweislich korrekt; das Blattmaterial dieses
+Pakets ist einfach ein bewusst dunkles, schattiertes Grün (ein verbreiteter Stil bei Low-Poly-
+Assets: dunkle Silhouette gegen helles Gelände statt aufgehellter Blätter). Kein Rendering-Fehler,
+also nicht „repariert" — siehe Offen.
+
+**Verifiziert:**
+- Syntax-Check (`new Function(...)` auf dem extrahierten Skript) fehlerfrei.
+- Voller Build-Ablauf (`buildTerrain()` bis `buildAirfield()`, Node, echter `GLTFLoader`+
+  headless-WebGL) läuft vor UND nach dem Tree-Pack-Upgrade fehlerfrei durch: 8200 Baum- und 3000
+  Felsplatzierungen aufgezeichnet, nach dem Upgrade 27 statt 14 `InstancedMesh`es (genau die
+  erwarteten 8 Baum- + 9 Fels-Meshes minus die 4 entfernten prozeduralen), 0 NaN/Infinity in
+  jeder Instanz-Matrix, alte prozedurale Meshes nachweislich aus der Szene entfernt.
+- Hecken-Schwebe-Regressionstest (4.21/Lektion 13) weiterhin 0 % über 3 m schwebend — unberührt,
+  da diese Änderung keinen Geländehöhen-Code anfasst.
+- **Echtes Playwright/Chromium, kompletter echter Klick-Pfad** (Missions-Chip → Begin Sortie →
+  Start Engine, per echtem `dispatchEvent`, nicht direktem Funktionsaufruf): Tree-Pack-Fetch
+  (10 MB über lokalen Server, ~25–30 s in dieser Sandbox) lief vollständig durch, Konsole zeigt
+  „tree pack: upgraded N conifer + M deciduous trees" und „upgraded 3000 rocks", keine neuen
+  Konsolenfehler (die vorhandenen 9× „404" sind unveränderte, erwartete Ausweich-Versuche für
+  andere, in diesem Testverzeichnis nicht kopierte Flugzeug-Dateinamen). Kamera bei pausiertem
+  Spiel gezielt auf eine tatsächlich aufgezeichnete Baum-Position gesetzt: zeigt einen klar als
+  Nadelbaum erkennbaren, mehrschichtigen echten Baum anstelle des alten Pappel-Kegels, umgeben
+  von weiteren erkennbaren Bäumen am Horizont.
+
+**Offen:** Nicht auf dem echten iPad geflogen. Das Laubmaterial liest sich aus der Nähe sehr
+dunkel/fast schwarz (siehe oben, verifiziert kein Rendering-Fehler, sondern die Textur selbst) —
+ob das aus normaler Flughöhe auf einem echten Bildschirm gut oder zu düster wirkt, kann nur Oliver
+beurteilen; falls zu dunkel, ist der nächste Hebel eine Aufhellung des geklonten Materials (z. B.
+`material.color` leicht anheben), nicht ein weiterer Eingriff an der Geometrie. Die 13 flachen
+Hintergrund-Bäume aus dem Paket (`Background_Tree_Atlas*`, für billige Fernsicht gedacht) wurden
+nicht verwendet — bei aktuell moderater Baumzahl (8200) nicht nötig, könnte aber bei einer
+künftigen Dichte-Erhöhung relevant werden. Bug-/Spornrad-artige Detailfragen gibt es hier nicht,
+aber wie beim Fahrwerk (4.24) gilt: nur die per Position eindeutig unterscheidbaren Bauteile
+(Stamm+Krone-Paare, Felsen) wurden verwendet, nichts wurde über Namen gesucht (3.2).
+
+Code: `thunderbolt-europe.html`, Suche nach `TREEPACK_URL`, `bakeTreePackMesh`, `bakeTreePackPair`,
+`extractTreePack`, `upgradeForestToTreePack`, `loadTreePack`; `buildForests()`/`buildClutter()`,
+Suche nach `forestPlacements`/`rockPlacements`.
 
 ---
 

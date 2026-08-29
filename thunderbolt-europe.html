@@ -260,7 +260,7 @@
   <div id="flash"></div>
   <div id="gunsight"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">EU BUILD 50</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">EU BUILD 51</div>
 
   <div id="apr">
     <div id="aprCall"></div>
@@ -414,7 +414,8 @@ let state=ST.MENU, prevState=ST.FLIGHT;
 let scene,camera,renderer,clock,sun,hemi;
 let terrainMesh=null, waterMesh=null, roadMesh=null, railMesh=null;
 let bridgeSite=null, worldBridge=null;
-let forest=null, planeGroup=null, playerModel=null;
+let forest=null, deciduousTrunk=null, deciduousCanopy=null, planeGroup=null, playerModel=null;
+let forestPlacements=null;    // recorded by buildForests(), consumed once by the tree-pack upgrade
 let mission=0, selectedMission=0, score=0, scoreStart=0, bestS=0;
 let targets=[], flakUnits=[], bullets=[], tracers=[], bombs=[], rockets=[];
 let explosions=[], smokes=[], smokePool=[], debris=[], craters=[];
@@ -1013,6 +1014,7 @@ function buildRoads(){
 // ============================================================
 let villages=null, roofs=null, hedges=null, chimneys=null, doors=null, laneMeshes=null;
 let rocks=null, bushes=null, poles=null, crossarms=null, fenceposts=null;
+let rockPlacements=null;      // recorded by buildClutter(), consumed once by the tree-pack upgrade
 function buildSettlement(){
   const wallG=new THREE.BoxGeometry(1,1,1);
   const roofG=new THREE.CylinderGeometry(0.72,0.72,1,3);   // a prism makes a pitched roof
@@ -1219,10 +1221,15 @@ function buildForests(){
   forest=new THREE.InstancedMesh(cone,mat,N);
   const trunkG=new THREE.CylinderGeometry(1.1,1.6,10,6);
   const trunkM=new THREE.MeshLambertMaterial({color:0x4a3a26});
-  const deciduousTrunk=new THREE.InstancedMesh(trunkG,trunkM,N);
+  deciduousTrunk=new THREE.InstancedMesh(trunkG,trunkM,N);
   const canopyG=new THREE.IcosahedronGeometry(1,1);
   const canopyM=new THREE.MeshLambertMaterial({color:0x4f7a34});
-  const deciduousCanopy=new THREE.InstancedMesh(canopyG,canopyM,N);
+  deciduousCanopy=new THREE.InstancedMesh(canopyG,canopyM,N);
+  // Recorded alongside the procedural placement loop below so the tree-pack upgrade (once its
+  // GLB has loaded, see loadTreePack()) can plant real geometry at exactly the same spots
+  // instead of re-rolling the dice - the procedural cones/canopies stay as the immediate,
+  // always-available fallback if that load is slow or fails.
+  forestPlacements={conifer:[], deciduous:[]};
   const o=new THREE.Object3D(); let k=0, dk=0, guard=0;
   while(k+dk<N && guard<N*8){
     guard++;
@@ -1238,20 +1245,164 @@ function buildForests(){
     if(mask<0.35) continue;
     const s=0.7+Math.random()*0.7;
     if(h<700 && Math.random()<0.65){
-      o.position.set(x,h+5*s,z); o.scale.set(s,s,s); o.rotation.set(0,Math.random()*3.14,0);
+      const rot=Math.random()*3.14;
+      o.position.set(x,h+5*s,z); o.scale.set(s,s,s); o.rotation.set(0,rot,0);
       o.updateMatrix(); deciduousTrunk.setMatrixAt(dk,o.matrix);
       o.position.set(x,h+11*s,z); o.scale.set(7*s,6.5*s,7*s);
       o.updateMatrix(); deciduousCanopy.setMatrixAt(dk,o.matrix);
       dk++;
+      forestPlacements.deciduous.push({x,h,z,s,rot});
     } else {
+      const rot=Math.random()*3.14;
       o.position.set(x,h+13*s,z); o.scale.set(s,s*(0.8+Math.random()*0.5),s);
-      o.rotation.set(0,Math.random()*3.14,0);
+      o.rotation.set(0,rot,0);
       o.updateMatrix(); forest.setMatrixAt(k++,o.matrix);
+      forestPlacements.conifer.push({x,h,z,s,rot,variant:Math.floor(Math.random()*3)});
     }
   }
   forest.count=k; scene.add(forest);
   deciduousTrunk.count=dk; deciduousCanopy.count=dk;
   scene.add(deciduousTrunk); scene.add(deciduousCanopy);
+}
+
+// ============================================================
+//  REAL TREE PACK — an "upgrade when it arrives" swap, same shape as
+//  torpedo-carrier.html's upgradeShipsToTemplate() (CLAUDE.md 4.11): the procedural
+//  cone/trunk+icosahedron trees above are already fully playable the instant the sortie
+//  starts, and real geometry replaces them a few seconds later if and when the pack loads -
+//  a slow connection or a missing file never breaks the terrain, it just stays procedural.
+// ============================================================
+const TREEPACK_URL=['treepack.glb','low_poly_forest_tree_pack.glb',
+                     'low%20poly%20forest%20tree%20pack.glb'];
+// Every trunk/branch node in the pack is a Group with exactly one Mesh child (verified against
+// the real file) and the pack itself is laid out as a scattered scene, not unit props at the
+// origin - RootNode carries the Sketchfab cm->m scale, so the ONLY reliable way to get true
+// size/shape is baking each mesh's real matrixWorld into its geometry, never trusting a bare
+// clone() of just the leaf node (that drops every parent transform above it and came out
+// roughly 100x too large the first time this was tried against the real file).
+function bakeTreePackMesh(groupNode){
+  const mesh=groupNode.children[0];
+  const geo=mesh.geometry.clone();
+  geo.applyMatrix4(mesh.matrixWorld);
+  const src=Array.isArray(mesh.material)?mesh.material[0]:mesh.material;
+  const mat=src.clone();
+  // Reported (found by rendering, not guessed): every part of the pack came back solid black
+  // in a real browser despite a correctly loaded, correctly sized diffuse texture - traced to
+  // GLTFLoader setting material.vertexColors=true because the source file declares a COLOR_0
+  // attribute, multiplying that texture by whatever ends up in the (unused, possibly all-zero)
+  // vertex colour. Nothing else in this game colours a material that way; force plain
+  // texture-only shading instead of trusting a per-vertex tint this integration never asked for.
+  mat.vertexColors=false;
+  return {geo, mat};
+}
+function bakeTreePackPair(byName, trunkName, branchName){
+  const t=bakeTreePackMesh(byName[trunkName]), b=bakeTreePackMesh(byName[branchName]);
+  // Recentre on its own footprint and drop it so the trunk base sits at local y=0 - so a plain
+  // (position, yaw, uniform scale) instance matrix, exactly like every other InstancedMesh in
+  // this file, reproduces the pack's real proportions with no per-species offset math.
+  const tmp=new THREE.Group();
+  tmp.add(new THREE.Mesh(t.geo)); tmp.add(new THREE.Mesh(b.geo)); tmp.updateMatrixWorld(true);
+  const box=new THREE.Box3().setFromObject(tmp);
+  const shift=new THREE.Matrix4().makeTranslation(
+    -(box.min.x+box.max.x)/2, -box.min.y, -(box.min.z+box.max.z)/2);
+  t.geo.applyMatrix4(shift); b.geo.applyMatrix4(shift);
+  // Leaves come in as alpha-blended (transparent:true). InstancedMesh does not depth-sort
+  // individual instances, so thousands of overlapping blended leaf cards would show visible
+  // sorting artefacts against each other - switching to an alpha-test cutout (standard practice
+  // for instanced foliage) avoids that with no visual cost this pack's leaf texture doesn't
+  // already pay for (it is a cutout-shaped alpha channel, not a soft blend).
+  b.mat.transparent=false; b.mat.alphaTest=0.5; b.mat.side=THREE.DoubleSide;
+  return {trunkGeo:t.geo, trunkMat:t.mat, branchGeo:b.geo, branchMat:b.mat, height:box.max.y-box.min.y};
+}
+// Rocks recentre on their own bounding-box CENTRE, not their base - the procedural boulder they
+// replace (an IcosahedronGeometry centred at its own origin) is placed half-buried via
+// "gy + s*0.32" (see buildClutter()), and a centre-pivoted real rock slots into that same
+// placement heuristic; a base-pivoted one would sit visibly too high.
+function bakeTreePackRock(byName, name){
+  const r=bakeTreePackMesh(byName[name]);
+  const tmp=new THREE.Mesh(r.geo); tmp.updateMatrixWorld(true);
+  const box=new THREE.Box3().setFromObject(tmp);
+  const c=box.getCenter(new THREE.Vector3());
+  r.geo.applyMatrix4(new THREE.Matrix4().makeTranslation(-c.x,-c.y,-c.z));
+  return r;
+}
+function extractTreePack(gltf){
+  const model=gltf.scene||gltf.scenes[0];
+  model.updateMatrixWorld(true);
+  const root=model.children[0].children[0].children[0];   // Sketchfab_model > Tree_Packfbx > RootNode
+  const byName={}; for(const c of root.children) byName[c.name]=c;
+  const rockNames=['Rocks','Rocks001','Rocks002','Rocks003','Rocks004','Rocks005','Rocks006','Rocks007','Rocks008'];
+  return {
+    conifer:[
+      bakeTreePackPair(byName,'Tree_Trunk_01','Tree_Branches_01001'),      // pairA_small
+      bakeTreePackPair(byName,'Tree_Trunk_01001','Tree_Branches_01'),      // pairB_tall
+      bakeTreePackPair(byName,'Tree_Trunk_01002','Tree_Branches_01002'),   // pairC_med
+    ],
+    deciduous: bakeTreePackPair(byName,'Tree_Trunk_02','Tree_Branches_02'),// pairD_small2 - the
+                                                                            // one pair that reads
+                                                                            // round/bushy rather
+                                                                            // than conical, rendered
+                                                                            // and compared against
+                                                                            // the other three before
+                                                                            // this file was touched
+    rocks: rockNames.map(n=>bakeTreePackRock(byName,n))
+  };
+}
+function buildSpeciesMeshes(part, placements){
+  const n=placements.length;
+  const trunk=new THREE.InstancedMesh(part.trunkGeo, part.trunkMat, Math.max(n,1));
+  const branch=new THREE.InstancedMesh(part.branchGeo, part.branchMat, Math.max(n,1));
+  const o=new THREE.Object3D();
+  for(let i=0;i<n;i++){
+    const p=placements[i];
+    o.position.set(p.x,p.h,p.z); o.rotation.set(0,p.rot,0); o.scale.setScalar(p.s);
+    o.updateMatrix(); trunk.setMatrixAt(i,o.matrix); branch.setMatrixAt(i,o.matrix);
+  }
+  trunk.count=n; branch.count=n;
+  return [trunk,branch];
+}
+function buildRockMeshes(part, placements){
+  const n=placements.length;
+  const m=new THREE.InstancedMesh(part.geo, part.mat, Math.max(n,1));
+  const o=new THREE.Object3D();
+  for(let i=0;i<n;i++){
+    const p=placements[i];
+    o.position.set(p.x,p.gy,p.z); o.rotation.set(p.rx,p.ry,p.rz); o.scale.set(p.s,p.sy,p.sz);
+    o.updateMatrix(); m.setMatrixAt(i,o.matrix);
+  }
+  m.count=n;
+  return m;
+}
+function upgradeForestToTreePack(pack){
+  if(forestPlacements){
+    scene.remove(forest); scene.remove(deciduousTrunk); scene.remove(deciduousCanopy);
+    const byVariant=[[],[],[]];
+    for(const p of forestPlacements.conifer) byVariant[p.variant].push(p);
+    for(let v=0; v<3; v++){
+      for(const m of buildSpeciesMeshes(pack.conifer[v], byVariant[v])) scene.add(m);
+    }
+    for(const m of buildSpeciesMeshes(pack.deciduous, forestPlacements.deciduous)) scene.add(m);
+    console.log('tree pack: upgraded '+forestPlacements.conifer.length+' conifer + '
+      +forestPlacements.deciduous.length+' deciduous trees to real geometry');
+  }
+  if(rockPlacements){
+    scene.remove(rocks);
+    const byVariant=Array.from({length:9},()=>[]);
+    for(const p of rockPlacements) byVariant[p.variant].push(p);
+    for(let v=0; v<9; v++) scene.add(buildRockMeshes(pack.rocks[v], byVariant[v]));
+    console.log('tree pack: upgraded '+rockPlacements.length+' rocks to real geometry');
+  }
+}
+function loadTreePack(){
+  if(typeof THREE.GLTFLoader!=='function') return;
+  const L=new THREE.GLTFLoader();
+  (function tryTP(i){
+    if(i>=TREEPACK_URL.length){ console.warn('tree pack: no file found, procedural trees/rocks stay'); return; }
+    L.load(TREEPACK_URL[i]+'?v=1', gltf=>{
+      try{ upgradeForestToTreePack(extractTreePack(gltf)); }
+      catch(e){ console.warn('tree pack: found but failed to parse, procedural trees/rocks stay', e); }
+    }, undefined, ()=>tryTP(i+1));
+  })(0);
 }
 
 // Reported: "verstreute Objekte" - rocks, bushes, fences, utility poles - none of which existed
@@ -1267,6 +1418,7 @@ function buildClutter(){
   const rockM=new THREE.MeshLambertMaterial({color:0x7d7869});
   const NR=3000;
   rocks=new THREE.InstancedMesh(rockG,rockM,NR);
+  rockPlacements=[];
   let rk=0, rguard=0;
   while(rk<NR && rguard<NR*6){
     rguard++;
@@ -1280,10 +1432,13 @@ function buildClutter(){
     if(Math.random()>0.55) continue;
     const gy=groundYRender(x,z);
     const s=0.6+Math.random()*1.4;
+    const rx=Math.random()*3.14, ry=Math.random()*6.28, rz=Math.random()*3.14;
+    const sy=s*(0.6+Math.random()*0.5), sz=s*(0.8+Math.random()*0.4);
     o.position.set(x,gy+s*0.32,z);
-    o.rotation.set(Math.random()*3.14,Math.random()*6.28,Math.random()*3.14);
-    o.scale.set(s,s*(0.6+Math.random()*0.5),s*(0.8+Math.random()*0.4));
+    o.rotation.set(rx,ry,rz);
+    o.scale.set(s,sy,sz);
     o.updateMatrix(); rocks.setMatrixAt(rk++,o.matrix);
+    rockPlacements.push({x,gy,z,s,sy,sz,rx,ry,rz,variant:Math.floor(Math.random()*9)});
   }
   rocks.count=rk; scene.add(rocks);
 
@@ -4695,6 +4850,7 @@ function init(){
   buildClouds(); applyWeather();   // clouds need ceilingY (set above) to place, then re-tint them
   planeGroup=new THREE.Group(); scene.add(planeGroup);
   loadModels();
+  loadTreePack();
   try{
     const d=localStorage.getItem('eu_diff'); if(d!==null) diffIdx=Math.max(0,Math.min(2,parseInt(d,10)||0));
     const e=localStorage.getItem('eu_eye'); if(e!==null) eyeUp=parseFloat(e)||0;
