@@ -5,7 +5,7 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 120 · Thunderbolt Squadron EU BUILD 45**
+Stand bei Übergabe: **Torpedo Squadron BUILD 120 · Thunderbolt Squadron EU BUILD 46**
 Repo: `oliverkurzemann-Goku/Torpedo-Bomber`, ausgeliefert über GitHub Pages.
 Alle Angaben unten sind aus dem tatsächlichen Code verifiziert, nicht aus dem Gedächtnis.
 
@@ -2631,6 +2631,77 @@ sortie"), `showLogbook()`.
 
 ---
 
+### 4.38 Fw-190: Flügelwurzel durchsichtig — BEHOBEN in EU BUILD 46
+
+Erstes echtes Feedback nach der neuen Fw-190-Mission (4.37), mit Screenshot direkt von oben auf
+dem Rollfeld: „Die FW ist leider bei den Flügelwurzeln durchsichtig." Da die Fw 190 in diesem
+Build zum ersten Mal überhaupt vom Spieler geflogen wurde (vorher nur als KI-Begleitjäger, nie aus
+der Nähe von oben betrachtet), lag der Verdacht nahe, dass dies ein alter, nie bemerkter Fehler ist
+— bestätigt: `cutGearClusters()` (EU BUILD 35/36, siehe 4.24/4.25) steckt dahinter, unverändert
+seit damals.
+
+**Ursache, am echten Modell nachgemessen, nicht geraten:** `cutGearClusters()`s Aufweitungs-
+Schleife (`rf` von 1,6 bis 3,4) wächst so lange, bis `stillThere()` — das IMMER mit einem fest
+verdrahteten Radius `cl.r*2,2` prüft, unabhängig davon, wie weit die eigentliche Schneide-Passe
+gerade war — kaum noch Reste findet. Am echten `fw190.glb` gemessen: Der Radkomplex sitzt bei
+cx=0,876 (nur 0,88 Einheiten von der Mittellinie entfernt), die Schleife musste bis auf Radius
+1,23 aufweiten, um „sauber" zu werden — dabei erfasste sie 2812 Dreiecke über einen Bereich von
+0,46 bis 2,86 auf der Rumpflängsachse, fast 2,4 Einheiten lang. Der Schnittkreis überlappt bei
+diesem Radius die Rumpfmittellinie (Rumpfbreite an dieser Stelle nur ~0,26 Einheiten!) auf BEIDEN
+Seiten — das schneidet quer durch die komplette Rumpf-/Flügelwurzel-Haut, oben UND unten, weil
+diese Stelle laut Messung tatsächlich unter die pauschale 30-%-Höhen-„floor"-Schwelle fällt, mit
+der auch das Rad selbst erkannt wird.
+
+**Warum das nicht auch beim P-47 auffiel:** Am echten `p47new.glb` sitzt der Radkomplex mit
+cx=0,39 sogar NÄHER an der Mittellinie als bei der Fw 190 — trotzdem bleibt der Schnitt dort
+harmlos (nur 13–46 Dreiecke, siehe 4.25). Der Unterschied ist also nicht der Abstand zur
+Mittellinie, sondern dass die Fw-190-Flügelwurzel an dieser Stelle strukturell flacher/niedriger
+gebaut ist und deshalb selbst unter die Floor-Schwelle rutscht — ein Effekt, der sich mit keinem
+Radius-Parameter sauber von „das ist noch Rad" trennen lässt (Lektion 9: Ansatz wechseln, nicht
+Parameter drehen).
+
+**Fix:** Statt einen Radius zu suchen, der für die Fw 190 nicht existiert, wird das nach dem
+Schnitt entstandene Loch geschlossen — dieselbe „Abdecken, nicht schneiden"-Idee wie bei
+Propellerscheibe (vor BUILD 111) und Fahrwerksbein-Zylindern (BUILD 101, siehe 3.1). Neue
+Funktion `coverGearCut()`: ein flacher Kreis-Patch (`CircleGeometry`, `side:DoubleSide`) am
+`floor`-Höhenwert, mit dem Radius, den der Schnitt tatsächlich zuletzt benutzt hat (`rfUsed`,
+neu von `cutGearClusters()` zurückgegeben statt nur der Trefferzahl), plus 15 % Sicherheitsmarge.
+Deckt das Loch von oben UND unten ab, unabhängig davon, wie groß der Schnitt im Einzelfall
+ausgefallen ist. Farbe zunächst zu hell gewählt (0x5c6156, wirkte im echten Rendering wie ein
+deutlich sichtbarer hellblaugrauer Fleck) — nach Messen der tatsächlichen Pixelfarbe von Flügel/
+Rumpf im selben Rendering (Camouflage liegt im Bereich RGB 20–100) auf 0x2b2f2d abgedunkelt, was
+nach der Szenenbeleuchtung im erwarteten dunklen Bereich landet und sich deutlich unauffälliger
+einfügt.
+
+**Nachgewiesen, in zwei Stufen:** Erst mit dem bewährten Node+echtem-`GLTFLoader`+headless-WebGL-
+Prüfstand gegen grellen Magenta-Hintergrund (Abschnitt 6, oberer Teil) — vorher: deutlich
+sichtbares Magenta an beiden Flügelwurzeln in der Draufsicht, exakt wie im Nutzer-Screenshot;
+nachher: kein Magenta mehr sichtbar, das Loch ist vollständig geschlossen. Dann — weil Node keine
+echten Texturen dekodieren kann und eine Farbbeurteilung dort keine Aussage über die tatsächliche
+Optik im Spiel erlaubt (dieselbe Grenze wie in 4.11/4.13/4.20/4.23/4.32/4.36) — zusätzlich mit
+echtem Playwright/Chromium gegen den echten, laufenden Code: Jabo-Raid-Mission über den echten
+Klickpfad gestartet (Chip → Begin Sortie → Start Engine, exakt die Situation aus dem Nutzer-
+Screenshot), echte Texturen geladen, Kamera direkt über dem Spielerflugzeug positioniert,
+Screenshot gespeichert und tatsächlich angesehen: keine Transparenz mehr an der Flügelwurzel,
+der Patch fügt sich nach der Farbkorrektur unauffällig in die dunkle Tarnfarbe ein.
+**Regressionscheck P-47** (nutzt denselben Codepfad, `cutGearClusters` läuft dort ebenfalls):
+gleicher Playwright-Test mit einer P-47-Mission (Sortie 1) — Flügelwurzel weiterhin sauber, kein
+neuer sichtbarer Fleck (der dortige Schnitt war schon vorher klein genug, der zusätzliche Patch
+fällt nicht auf). Kompletter Build-Ablauf (`buildTerrain()` bis `buildAirfield()`) läuft weiterhin
+fehlerfrei durch (139 Meshes, 0 NaN/Infinity).
+
+**Offen:** Nicht auf dem echten iPad geflogen. Die Patch-Farbe ist ein pauschaler Kompromiss (aus
+einem gemessenen Rendering abgeleitet, nicht aus der tatsächlichen Diffuse-Textur gesampelt, da
+diese als gebackene Bilddatei nicht trivial zur Laufzeit auslesbar ist) — sollte der Fleck auf dem
+echten Gerät bei genauem Hinsehen doch auffallen, ist der nächste Schritt eine noch genauere
+Farbanpassung, keine erneute Radius-Jagd. B-17 nutzt denselben Codepfad (4.24) und bekommt densel-
+ben Patch automatisch mit, wurde aber nicht separat nachgerendert (KI-only, kein gemeldeter Bug).
+
+Code: `thunderbolt-europe.html`, `cutGearClusters()` (jetzt `{cut, rfUsed}` statt nur einer Zahl)
+und `coverGearCut()` (neu, direkt danach), Suche nach „durchsichtig".
+
+---
+
 ## 5. Gelernte Lektionen (aus echten, wiederholten Fehlern)
 
 1. **Nie im Chat/offline testen und im Spiel hoffen.** Der größte Zeitfresser dieses
@@ -2766,6 +2837,20 @@ sortie"), `showLogbook()`.
    Eigenschaft filtern, die das gesuchte Teil physikalisch auszeichnet** (hier: ein Propeller kann
    nur an der Nase sitzen, ein Antennenmast überall) **— und das Ergebnis rendern, nicht nur an der
    Anzahl der Treffer ablesen.**
+23. **Eine „solange aufweiten, bis nichts mehr übrig ist"-Schleife kann für ein Modell keinen
+   sicheren Stopp-Radius haben, egal wie weit man aufweitet.** Der Fw-190-Flügelwurzel-Fehler kam
+   aus genau dieser Annahme: `cutGearClusters()` (verifiziert sauber an P-47/Bf109/B-17/B-24) ging
+   davon aus, dass alles, was nahe genug am gemessenen Rad-Cluster liegt, noch Rad ist. Bei der
+   Fw 190 lag die Flügelwurzel selbst so nah und so niedrig, dass keine Radius-Schwelle „Rad" von
+   „Flügelhaut" trennen konnte — nicht weil der Radius falsch gewählt war, sondern weil die
+   Trennung an dieser Stelle geometrisch nicht existiert. Der Vergleich mit dem P-47 (Rad sogar
+   NÄHER an der Mittellinie, aber harmlos) zeigte: der Abstand zur Mittellinie war nie das
+   entscheidende Merkmal, ein einzelner zusätzlicher Parameter hätte das nicht behoben. **Wenn der
+   Vergleich mit einem funktionierenden Referenzfall zeigt, dass ein naheliegender Parameter
+   (Abstand, Radius) nicht der Unterschied ist, nicht am Parameter weiterdrehen, sondern das
+   Ergebnis absichern** (hier: das Loch, das die Schneide-Technik zwangsläufig hinterlässt, mit
+   einem Patch abdecken, statt eine perfektere Schnittgrenze zu suchen, die es für dieses Modell
+   nicht gibt).
 
 ---
 
