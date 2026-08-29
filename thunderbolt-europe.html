@@ -260,7 +260,7 @@
   <div id="flash"></div>
   <div id="gunsight"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">EU BUILD 45</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">EU BUILD 46</div>
 
   <div id="apr">
     <div id="aprCall"></div>
@@ -1801,12 +1801,35 @@ function cutGearClusters(root, gearInfo){
   // A single fixed radius left a wheel mostly standing on the Fw190 (measured: 103 triangles
   // cut, wheel still clearly visible) - a wheel-on-a-strut isn't a clean disc, so one pass at a
   // modest radius misses the strut and the hub. Widen like cutBlades until little is left.
-  let cut=0;
+  let cut=0, rfUsed=1.6;
   for(const rf of [1.6,2.2,2.8,3.4]){
-    cut+=pass(rf);
+    cut+=pass(rf); rfUsed=rf;
     if(stillThere()<=6) break;
   }
-  return cut;
+  return {cut, rfUsed};
+}
+// Reported: the real Fw190's wing root showed a jagged see-through gap in a straight-down view.
+// Measured against the real fw190.glb: the widening loop above (built and verified clean against
+// p47new.glb/b17.glb, where it only ever needs to eat a few dozen triangles) had to grow to a
+// radius of 1.23 units around a wheel sitting just 0.88 units off the centreline to actually clear
+// it there - on the P-47 the same widening reaches 1.31 units around a wheel only 0.39 units off
+// centre and stays harmless, so the trigger is not distance from the centreline, it is that the
+// Fw190's wing-root skin genuinely dips below the same 30%-height "floor" line the wheel itself is
+// judged against, at that exact station - no radius separates "wheel" from "wing root" there.
+// Rather than chase a radius that cannot exist for every model (Lektion 9: change the approach,
+// not the parameters), close whatever the cut left open the same way this project has closed
+// unavoidable holes before (3.1: the propeller disc, the Avenger gear-leg covers) - a flat patch
+// at the floor line, sized to the actual area just cut, wide enough to cover it from directly
+// above or below regardless of how the cut turned out.
+function coverGearCut(root, clusters, floor, rfUsed){
+  const mat=new THREE.MeshStandardMaterial({color:0x2b2f2d, roughness:0.75, side:THREE.DoubleSide});
+  for(const cl of clusters){
+    const r=cl.r*rfUsed*1.15;
+    const patch=new THREE.Mesh(new THREE.CircleGeometry(r, 16), mat);
+    patch.rotation.x=-Math.PI/2;
+    patch.position.set(cl.cx, floor, cl.cz);
+    root.add(patch);
+  }
 }
 function rigModel(root, kind){
   root.updateMatrixWorld(true);
@@ -1862,8 +1885,11 @@ function rigModel(root, kind){
     // that one aircraft, also on the real p47new.glb/fw190.glb.
     const gi=findGearClusters(root, whole, S);
     if(gi.clusters.length===2){                 // exactly the mirrored main-gear pair, or nothing
-      const cutN=cutGearClusters(root, gi);
-      if(cutN>0) rig+=', cut '+cutN+' welded gear triangles';
+      const {cut:cutN, rfUsed}=cutGearClusters(root, gi);
+      if(cutN>0){
+        rig+=', cut '+cutN+' welded gear triangles';
+        coverGearCut(root, gi.clusters, gi.floor, rfUsed);
+      }
     }
     buildGear(gear, root, whole, S);
     rig+=', built gear';
