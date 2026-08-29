@@ -5,7 +5,7 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 119 · Thunderbolt Squadron EU BUILD 43**
+Stand bei Übergabe: **Torpedo Squadron BUILD 120 · Thunderbolt Squadron EU BUILD 44**
 Repo: `oliverkurzemann-Goku/Torpedo-Bomber`, ausgeliefert über GitHub Pages.
 Alle Angaben unten sind aus dem tatsächlichen Code verifiziert, nicht aus dem Gedächtnis.
 
@@ -2429,6 +2429,108 @@ Code: `thunderbolt-europe.html`, `buildTerrain()` (Suche nach „patchwork field
 
 ---
 
+### 4.36 SBD-Propeller falsch zugeordnet, Flak-Kontrast gegen echtes Terrain, Missionsziele zu nah am Flugplatz — BUILD 120 / EU BUILD 44
+
+Erstes echtes iPad-Feedback mit Screenshots seit BUILD 119: „Dauntless Cockpit ist auch der Rahmen
+oben abgeschnitten (separat behandelt, siehe unten), Propeller zu weit hinten in der Nase (siehe
+Screenshot Begleitflugzeuge). Flak Stellungen nicht sichtbar. Missionen zu fad, da Ziel zu nahe am
+Flugplatz und Terrain immer noch schlecht." Drei der vier Punkte hier behandelt, mit echten Zahlen
+nachgewiesen statt geraten — keiner davon war ein Ratefehler auf den ersten Versuch.
+
+#### 1) SBD-Propeller „zu weit hinten in der Nase" — echter Fund, ein Fehlschlag unterwegs
+
+Am Screenshot des Begleitflugzeugs allein war nicht zu erkennen, was falsch sitzt (Lektion 5: nicht
+aus Screenshots zurückrechnen) — stattdessen `findProp`/`fitPropeller` wortwörtlich extrahiert,
+gegen das echte `sbd dauntless.glb` mit echtem `GLTFLoader` r128 gerendert, der Propeller grün
+eingefärbt. Ergebnis: **ein zweiter, unbehandelter Propeller** stand sichtbar vorne an der echten
+Nasenspitze, während die neue grüne Scheibe deutlich dahinter saß, im Rumpf.
+
+Ursache, per Z-Histogramm der Kandidatenpunkte gemessen: `findProp()`s Kandidatenmenge
+(Radius zwischen Nabe und Blattspitze) zerfällt in zwei klar getrennte Cluster — 272 Punkte bei
+z≈2,97–3,17 und nur 12 Punkte bei z≈4,47–4,63 (näher an der echten Nasenspitze bei z≈4,94). Ein
+2./98.-Perzentil über beide Cluster hinweg zog `zPlane` in den leeren Kegelmantel dazwischen.
+
+**Erster Fix-Versuch, falsch:** Naheliegend schien „den größeren Cluster nehmen, der kleinere ist
+Ausreißer" — per Klammerzählung eingebaut, syntaktisch sauber, Zahlen sahen plausibel aus. Erst ein
+zweites Rendering mit den beiden Clustern separat eingefärbt (rot = 272er-Cluster, blau =
+12er-Cluster) zeigte die Wahrheit: **der blaue (kleinere) Cluster war der echte, sauber erkennbare
+Propeller direkt an der Nase; der rote (größere) Cluster war der Funkantennenmast plus eine
+Klappenkante** — zufällig im selben Radiusband, aber am Rumpf verteilt, nicht am Propeller.
+Anzahl Vertices ist kein verlässliches Merkmal, wenn ein Antennenmast mehr Geometriedetail hat als
+ein einfaches Propellerblatt.
+
+**Tatsächlicher Fix:** Ein Propeller sitzt physikalisch immer an oder direkt hinter der Nasenspitze
+— anders als ein Antennenmast oder eine Klappenkante, die überall am Rumpf sein können. Cluster
+werden jetzt nach Abstand zur ECHTEN Nasenspitze (`whole.max.z`/`whole.min.z` je nach `dir`, nicht
+das großzügige 20-%-Suchfenster) sortiert, nicht nach Punktanzahl.
+
+**Nachgewiesen, beide Richtungen:** `findProp`/`fitPropeller` gegen das echte Modell in BEIDEN
+Konventionen getestet (Begleitflugzeug: `dir=+1`, unrotiert; Spieler: `dir=-1`, mit der echten
+180°-Y-Rotation, die `playerSBD` tatsächlich bekommt, nicht nur am unrotierten Modell geraten) —
+beide liefern jetzt eine Scheibe direkt an der jeweiligen Nasenspitze (Lücke 0,45–0,87 Einheiten,
+vorher 1,2–1,9). Regressionscheck Avenger: `findProp` liefert weiterhin `cx=-0,77` (weit außerhalb
+der Mittelachse), `fitPropeller` fällt weiterhin korrekt auf `rigOwnProp` zurück, exakt wie vor
+dieser Änderung — die Avenger-Sonderbehandlung aus 4.1 bleibt unberührt. Zero nutzt `findProp`
+gar nicht (eigener Erkennungsweg über einen benannten Modell-Knoten), ebenfalls nicht betroffen.
+
+**Offen:** Nicht auf dem echten iPad geflogen.
+
+#### 2) Flak-Stellungen nicht sichtbar — gegen die ECHTE Geländefarbe gemessen, nicht nur synthetisch
+
+EU BUILD 34 (4.23/3) hatte Flak/Panzer/LKW schon einmal aufgehellt, aber nur gegen einen
+„synthetischen Testhintergrund" geprüft — die eigene Offen-Notiz von damals sagte bereits voraus,
+dass der nächste Schritt eine weitere Aufhellung wäre, falls das nicht reicht. Diesmal die ECHTE
+Geländefarbe an echten Flak-Suppression-Spawnpunkten gemessen (`terrainH()`/die Vertex-Farbformel
+direkt ausgewertet, nicht geschätzt): gelbgrün, rgb(107,120,71). Die alten Flak-Farben lagen nur
+0,04–0,05 Luminanz-Einheiten und dieselbe Grün-Tendenz (R<G) davon entfernt — praktisch unsichtbar
+gegen echtes Gelände, auch wenn sie gegen eine synthetische Testfläche schon gut aussahen.
+
+**Fix:** Neue Farben für Emplacement/Mount/Sandsack-Ring/Glanzlicht in `makeFlak()`, diesmal sowohl
+in Luminanz (Δ0,13–0,42 statt 0,04–0,06) als auch im Farbton (R≥G, warm/grau statt grün) vom
+gemessenen Terrain-Grün weg bewegt.
+
+**Nachgewiesen:** Echter headless-WebGL-Render einer Flak-Stellung direkt auf dem echten,
+generierten Terrain-Mesh (Vertex-Farben, keine Canvas-Textur nötig für diesen Test) aus der
+Vogelperspektive — die Stellung hebt sich jetzt klar als heller Fleck vom grünen Untergrund ab,
+vorher wäre sie bei diesem Kontrast kaum vom Boden zu unterscheiden gewesen.
+
+**Offen:** Nur gegen Vertex-Farben geprüft, nicht gegen die echte Canvas-Textur obendrüber (siehe
+die wiederkehrende Einschränkung in 4.11/4.13/4.20/4.23/4.32 — kein Canvas-2D-Backend in Node).
+Panzer/LKW nutzen weiterhin die alten, dunkleren Farben aus 4.23 — nicht Teil dieser Meldung,
+könnte aber am selben Problem leiden, falls künftig gemeldet.
+
+#### 3) Missionsziele zu nah am Flugplatz — gemessen, nicht nur nachvollzogen
+
+`AF_X=0, AF_Z=0`. Nachgemessen (echte `roadZ`/`railZ`/`riverX`-Funktionen, 20.000 Stichproben pro
+Missionstyp): LKW-Kolonne (Sortie 1) 1674–2741 Einheiten vom Flugplatz, Zug (Sortie 4) 2096–2727,
+Panzerkolonne (Sortie 5) 2365–3360 — bei einer Reisegeschwindigkeit von ~150–167 m/s (siehe 4.22)
+sind das 12–20 Sekunden Flugzeit ab Start. Die Welt ist 64.000 Einheiten breit; das nutzte weniger
+als ein Zehntel davon.
+
+**Fix:** Alle drei Zieltypen in `populate()` auf 5500–9500 Einheiten (LKW/Panzer) bzw. 5000–9000
+(Zug) verschoben, mit zufälliger Seite (`tSide`) statt immer derselben Himmelsrichtung. Das
+Treibstoffmodell hat dafür enormen Spielraum (100 % reicht bei Vollgas 278 s, das entspricht bei
+Reisegeschwindigkeit einer Ein-Weg-Reichweite von rund 23.000 Einheiten vor „bingo fuel" — die neuen
+Zieldistanzen von ~7500–9800 sind davon weit entfernt). Flak-Suppression- (Sortie 2) und
+Bridge-Buster-Mission (Sortie 3) waren mit ~4500–5700 bereits angemessen weit weg und blieben
+unverändert.
+
+**Nachgewiesen:** Direkter Aufruf der echten `populate()`-Funktion für die betroffenen Missionen
+(inkl. der Kombi-Mission „The Whole Valley", die dieselbe `tank`-Verzweigung teilt), tatsächliche
+Zielposition aus der laufenden `targets`-Liste gelesen (nicht aus dem Code zurückgerechnet): neue
+mittlere Distanz 7654–8244 Einheiten über alle drei Missionstypen, gegenüber vorher 2154–2894.
+
+**Offen:** Nicht auf dem echten iPad geflogen. „Terrain immer noch schlecht" aus derselben Meldung
+ist nicht Teil dieser Runde — 4.35 (unmittelbar davor) hatte bereits Schachbrett, Straßennetz und
+mehr Dörfer behandelt; falls das der Nutzer nach diesem Build weiterhin so empfindet, braucht es
+ein konkreteres Beispiel (welcher Ausschnitt, welche Mission), um den nächsten Schritt zu planen.
+
+Code: `torpedo-carrier.html`, `findProp()`, Suche nach „RADIO ANTENNA MAST and a FLAP EDGE".
+`thunderbolt-europe.html`, `makeFlak()` (Suche nach „Reported (again) that flak positions") und
+`populate()` (Suche nach „Missionen zu fad").
+
+---
+
 ## 5. Gelernte Lektionen (aus echten, wiederholten Fehlern)
 
 1. **Nie im Chat/offline testen und im Spiel hoffen.** Der größte Zeitfresser dieses
@@ -2552,6 +2654,18 @@ Code: `thunderbolt-europe.html`, `buildTerrain()` (Suche nach „patchwork field
    Durchgang, weil der erste eine zufällige Formationsrichtung nicht festgehalten hatte und deshalb
    bei identischer Konfiguration unterschiedliche Zahlen lieferte — Lektion 3 gilt auch für
    Kampf-/Schadens-Simulationen, nicht nur für Positions-/Bewegungstests.
+22. **Vertex-/Dreieckszahl ist kein verlässliches Merkmal dafür, welches Geometriestück das
+   gesuchte Bauteil ist.** Beim SBD-Propeller-Fix schien „nimm den größeren der beiden Z-Cluster,
+   der kleinere ist ein Ausreißer" naheliegend — und war exakt falsch. Der kleinere Cluster
+   (12 Punkte) war der echte Propeller direkt an der Nasenspitze; der größere (272 Punkte) war ein
+   Funkantennenmast plus eine Klappenkante, die zufällig im selben Radiusband lagen, aber am Rumpf
+   verteilt waren. Ein Antennenmast mit feinem Geometriedetail hat leicht mehr Vertices als ein
+   einzelnes, einfaches Propellerblatt. Erst ein zweites Rendering mit beiden Clustern separat
+   eingefärbt zeigte das — die erste, nur an den Zahlen geprüfte Version sah plausibel aus und war
+   es nicht. **Wenn ein Merkmal (Position, Radius, Farbe) mehrere Kandidaten liefert: nach einer
+   Eigenschaft filtern, die das gesuchte Teil physikalisch auszeichnet** (hier: ein Propeller kann
+   nur an der Nase sitzen, ein Antennenmast überall) **— und das Ergebnis rendern, nicht nur an der
+   Anzahl der Treffer ablesen.**
 
 ---
 
