@@ -260,7 +260,7 @@
   <div id="flash"></div>
   <div id="gunsight"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">EU BUILD 49</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">EU BUILD 50</div>
 
   <div id="apr">
     <div id="aprCall"></div>
@@ -323,7 +323,7 @@
     <a class="btn ghost" id="selBtn" href="index.html" style="text-decoration:none;">&#9664; Change Game</a>
     <div class="credit">
       Rolling hills, hedgerows and a river valley somewhere over the Reich.<br>
-      P-47D Thunderbolt &middot; Bf&nbsp;109G &middot; Fw&nbsp;190A-8 &middot; eleven sorties from the strip at Beaufort Field.
+      P-47D Thunderbolt &middot; Bf&nbsp;109G &middot; Fw&nbsp;190A-8 &middot; Me&nbsp;262A-1a &middot; twelve sorties from the strip at Beaufort Field.
     </div>
   </div>
 </div>
@@ -470,7 +470,18 @@ const AC={
   bf109:{ name:'Bf 109G-6', rollAuth:1.45, pitchAuth:1.25, turn:1.25, gLim:5.5,
         rollLim:1.56, pitchLim:1.25, stall:36, app:50, max:196, thrMin:30,
         hull:88, ammo:1500, bombs:1, rockets:0, gunDmg:1.35, gunRate:0.085, wing:9.9,
-        col:0x8d9384, band:0x3d4636 }
+        col:0x8d9384, band:0x3d4636 },
+  // The Me262: a genuinely different kind of aeroplane, not just another set of numbers on the
+  // same curve - real top speed ~870 km/h (242 m/s) against 190-196 for the prop fighters here,
+  // and real landing/stall speeds high enough that pilots trained on it specifically for that
+  // (~200/175 km/h approach/stall, both well above every other type). turn/gLim deliberately
+  // lower than the Bf109/Fw190: this aircraft's real advantage was outrunning a fight, not
+  // out-turning one. ammo/gunDmg reflect 4x30mm MK108 cannon - roughly a tenth of the P-47's
+  // eight-gun belt count, but each round is a 30mm autocannon shell, not a rifle-calibre bullet.
+  me262:{ name:'Me 262A-1a/Jabo', rollAuth:1.10, pitchAuth:1.00, turn:0.80, gLim:5.0,
+        rollLim:1.56, pitchLim:1.15, stall:49, app:56, max:242, thrMin:42,
+        hull:95, ammo:400, bombs:2, rockets:0, gunDmg:3.0, gunRate:0.09, wing:12.51,
+        col:0x6b7360, band:0x33392a }
 };
 function acDef(){ return AC[P.ac]||AC.p47; }
 
@@ -1418,9 +1429,15 @@ const MODEL_URL={
   fw190: ['fw190.glb','fw_190_f-8_2_custom_payload_war_thunder.glb',
           'fw%20190%20f-8%202%20custom%20payload%20war%20thunder.glb'],
   b17:   ['b17.glb','helijahs_b-17.glb','b-17.glb'],
-  b24:   ['b24.glb','b-24_liberator.glb','b-24.glb']
+  b24:   ['b24.glb','b-24_liberator.glb','b-24.glb'],
+  me262: ['me262.glb','me_262_a1ajabo_war_thunder.glb',
+          'me%20262%20a1ajabo%20war%20thunder.glb']
 };
-const REAL_SPAN={ p47:12.42, bf109:9.92, fw190:10.51, b17:31.62, b24:33.53 };   // metres, tip to tip
+const REAL_SPAN={ p47:12.42, bf109:9.92, fw190:10.51, b17:31.62, b24:33.53, me262:12.51 };   // metres, tip to tip
+// Jet/rocket types: no propeller exists, so rigModel() must not go looking for one (see its
+// own comment - the Me262's round nacelle intakes and tail cone measure enough like a
+// hub/blade annulus to fool the same disc heuristic that works for every propeller aircraft).
+const JET_KINDS=['me262'];
 
 // Known-good alignments. These are NOT guesses:
 //  p47   - worked back from a screenshot in flight. On heading 224 the chase camera's
@@ -1453,13 +1470,20 @@ const MODEL_FIX={
   'bf 109 f-1 war thunder.glb':        {yaw:0},
   'fw190.glb':                                     {yaw:0},
   'fw_190_f-8_2_custom_payload_war_thunder.glb':   {yaw:0},
-  'fw 190 f-8 2 custom payload war thunder.glb':   {yaw:0}
+  'fw 190 f-8 2 custom payload war thunder.glb':   {yaw:0},
+  // No propeller disc to measure (it is a jet) - detectYaw()'s tail-surfaces fallback was checked
+  // directly against the real model instead of guessed: 99.6% symmetric on X (span), nose +Z via
+  // the tail assembly, matching every other aircraft's convention already. Recorded here as
+  // known-good rather than left to re-run the detector (and its "unsure" warning path) every load.
+  'me262.glb':                            {yaw:0},
+  'me_262_a1ajabo_war_thunder.glb':       {yaw:0},
+  'me 262 a1ajabo war thunder.glb':       {yaw:0}
 };
 function knownFix(url){
   const k=decodeURIComponent(url.split('?')[0]).toLowerCase();
   return MODEL_FIX[k]||null;
 }
-const AC_KINDS=['p47','bf109','fw190','b17','b24'];
+const AC_KINDS=['p47','bf109','fw190','b17','b24','me262'];
 const modelTpl={}, modelRaw={}, modelBase={};
 let modelAdj={};                            // YOUR correction, in quarter turns, kept on the device
 AC_KINDS.forEach(k=>{ modelTpl[k]=null; modelRaw[k]=null;
@@ -2085,7 +2109,13 @@ function rigModel(root, kind){
   // has always had in the carrier game and the one propeller in this project nobody complained
   // about. Blade counts are historical fact, not a measurement: P-47D four, everything else three.
   const NBLADES={p47:4, bf109:3, fw190:3, b17:3, b24:3};
-  const prop=findProp(root, +1);
+  // Reported (Me262): a jet has no propeller at all, but findProp() still returned a plausible-
+  // looking hub+blade result at BOTH ends when tested directly against the real model - the round
+  // engine nacelle intakes and the tail cone measure enough like a hub/blade annulus to fool the
+  // same heuristic that works for every propeller aircraft in this project. Skip the search
+  // entirely for jet/rocket types rather than trust a disc-shaped false positive; there is nothing
+  // here that legitimately spins.
+  const prop=JET_KINDS.includes(kind) ? null : findProp(root, +1);
   if(prop){
     const cutN=cutBlades(root, prop);
     const pg=makeProp(prop, NBLADES[kind]||3);
@@ -2706,7 +2736,21 @@ const MISSIONS=[
         +"its way home - that is why it flies this one, not the 109. A supply column and a couple of "
         +"armoured cars are moving up under fighter cover. Drop the bomb, then use the cannon and the "
         +"fifties on whatever is left. Watch for Jugs upstairs." },
-  { id:'final', title:'Sortie 11', sub:'The Whole Valley', ac:'p47', weather:'storm', enemyAir:2,
+  // Reported: a real Me262 model became available and the player specifically asked for a Me262
+  // sortie. AC.me262/JET_KINDS/MODEL_URL/REAL_SPAN were all wired in first (see their own
+  // comments) - this is the mission that actually puts a player in it. The A-1a/Jabo variant this
+  // model represents carried bombs and flew both bomber-interception and strike work; a flak
+  // strike fits its real edge (speed the guns could not track) better than another truck column
+  // would, and keeps this sortie's kill types distinct from Sortie 10's. Inserted before the
+  // finale, finale bumped from Sortie 11 to 12 - MISSIONS.length-1 is read dynamically everywhere
+  // (see 4.37's identical note), so nothing else needed updating for the renumber.
+  { id:'jetstrike', title:'Sortie 11', sub:'Jet Strike', ac:'me262', enemyAir:2, weather:'clear',
+    kills:{flak:2,truck:3}, text:"There are only a handful of these in the whole Luftwaffe, and today "
+        +"one of them is yours. She is over a hundred miles an hour faster than anything that will try "
+        +"to catch you, but she drinks fuel fast and comes in hot on landing - this is not an aeroplane "
+        +"for lingering. Take the gun line down before it tracks you, use the cannon on the rest, and "
+        +"get her home." },
+  { id:'final', title:'Sortie 12', sub:'The Whole Valley', ac:'p47', weather:'storm', enemyAir:2,
     kills:{tank:3,flak:3,bridge:1}, text:"Everything at once, in weather that should have scrubbed the "
         +"mission. Armour, the guns along the river, and the bridge itself — and the Luftwaffe is up. "
         +"Bring the aeroplane home afterwards and you will have earned the strip." }
@@ -4410,7 +4454,7 @@ function showBrief(i){
   selectedMission=i; const m=MISSIONS[i];
   document.getElementById('brSub').textContent=m.sub;
   document.getElementById('brTitle').textContent=m.title;
-  document.getElementById('brStamp').textContent=(m.ac==='bf109'||m.ac==='fw190')?'Luftwaffe':'Secret';
+  document.getElementById('brStamp').textContent=(m.ac==='bf109'||m.ac==='fw190'||m.ac==='me262')?'Luftwaffe':'Secret';
   document.getElementById('brText').innerHTML=m.text
     +'<br><br><b>AIRCRAFT</b> '+AC[m.ac||'p47'].name;
   show('menu',false); show('result',false); show('brief',true);
@@ -4431,7 +4475,7 @@ function showResult(good,title,sub,html,btn){
 // Reported: "in der Missionsauswahl wäre es toll, wenn man die Flugzeugtypen sehen könnte" -
 // every chip already carries m.ac, just never displayed. Short label + the aircraft's own
 // AC[...].col (the same colour it's rendered in in-flight) so the badge doubles as a legend.
-const ACSHORT={p47:'P-47',bf109:'BF 109',fw190:'FW 190'};
+const ACSHORT={p47:'P-47',bf109:'BF 109',fw190:'FW 190',me262:'ME 262'};
 function acHex(kind){ return '#'+(AC[kind]&&AC[kind].col!==undefined?AC[kind].col:0x888888).toString(16).padStart(6,'0'); }
 function buildMenu(){
   const sel=document.getElementById('missionSel');
