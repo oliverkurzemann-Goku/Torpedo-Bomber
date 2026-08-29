@@ -260,7 +260,7 @@
   <div id="flash"></div>
   <div id="gunsight"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">EU BUILD 51</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">EU BUILD 52</div>
 
   <div id="apr">
     <div id="aprCall"></div>
@@ -1217,7 +1217,12 @@ function buildForests(){
   // deciduous trunks, deciduous canopies), still one draw call each regardless of tree count.
   const cone=new THREE.ConeGeometry(9,26,6);
   const mat=new THREE.MeshLambertMaterial({color:0x2c4022});
-  const N=8200;
+  // Reported "viel, viel mehr" (much, much more) trees - N raised 8200->30000 (~3.7x) and the
+  // forest-clump mask loosened from 0.35 to 0.05, which measured against the real formula
+  // (200,000 random samples) grows the qualifying area from 32% to 54% of the map - denser
+  // clumps AND clumps covering roughly two-thirds more of the terrain, not just more trees
+  // packed into the same patches. Performance stays explicitly secondary per repeated instruction.
+  const N=30000;
   forest=new THREE.InstancedMesh(cone,mat,N);
   const trunkG=new THREE.CylinderGeometry(1.1,1.6,10,6);
   const trunkM=new THREE.MeshLambertMaterial({color:0x4a3a26});
@@ -1242,7 +1247,7 @@ function buildForests(){
     if(Math.abs(x-AF_X)<RWY_LEN*0.85 && Math.abs(z-AF_Z)<820) continue;
     // clump the trees: accept mostly where a low-frequency mask is high
     const mask=Math.sin(x*0.00042)*Math.cos(z*0.00051)+Math.sin(x*0.0009+2)*0.5;
-    if(mask<0.35) continue;
+    if(mask<0.05) continue;
     const s=0.7+Math.random()*0.7;
     if(h<700 && Math.random()<0.65){
       const rot=Math.random()*3.14;
@@ -1416,7 +1421,7 @@ function buildClutter(){
   // ---- rocks: scattered boulders, open ground only ----
   const rockG=new THREE.IcosahedronGeometry(1,0);           // flat-shaded, reads as a rough boulder
   const rockM=new THREE.MeshLambertMaterial({color:0x7d7869});
-  const NR=3000;
+  const NR=7000;   // "viel viel mehr" - was 3000, see buildForests()'s matching note
   rocks=new THREE.InstancedMesh(rockG,rockM,NR);
   rockPlacements=[];
   let rk=0, rguard=0;
@@ -1445,7 +1450,7 @@ function buildClutter(){
   // ---- bushes: small rounded shrubs along field/hedge margins and rough pasture ----
   const bushG=new THREE.IcosahedronGeometry(1,1);
   const bushM=new THREE.MeshLambertMaterial({color:0x3f5c2c});
-  const NBU=5000;
+  const NBU=16000;   // "viel viel mehr" - was 5000, see buildForests()'s matching note
   bushes=new THREE.InstancedMesh(bushG,bushM,NBU);
   let bk=0, bguard=0;
   while(bk<NBU && bguard<NBU*6){
@@ -1593,6 +1598,10 @@ const REAL_SPAN={ p47:12.42, bf109:9.92, fw190:10.51, b17:31.62, b24:33.53, me26
 // own comment - the Me262's round nacelle intakes and tail cone measure enough like a
 // hub/blade annulus to fool the same disc heuristic that works for every propeller aircraft).
 const JET_KINDS=['me262'];
+// The Me262 has tricycle gear (a nosewheel, no tailwheel) - every other aircraft `buildGear()`
+// serves is a taildragger. See buildGear()'s own comment for where this changes the small wheel's
+// position.
+const TRICYCLE_KINDS=['me262'];
 
 // Known-good alignments. These are NOT guesses:
 //  p47   - worked back from a screenshot in flight. On heading 224 the chase camera's
@@ -2297,7 +2306,17 @@ function rigModel(root, kind){
   });
   const gear=new THREE.Group(); gear.name='gear'; root.add(gear);
   const floor=whole.min.y+S.y*0.30;
-  const found=parts.filter(p=>p.bb.max.y<floor && p.sz.y<S.y*0.5 && p.sz.x<S.x*0.30);
+  // Reported (Me262): "no landing gear" in flight - rendered and looked at what this filter
+  // actually found (see 4.44) rather than trusting the "own gear" child count alone: a single
+  // 1.6x0.3x0.9 m panel sitting off-centre under the nacelle, nowhere near where a wheel would
+  // be. It is a belly vent or access panel that happens to be small and low enough to pass this
+  // whole-mesh size filter, not landing gear at all - and because the real wheels on this model
+  // are not a separable mesh, "own gear" silently succeeded on the wrong object while the actual
+  // aeroplane stayed wheels-up forever. `findGearClusters()`/`buildGear()` below already handle
+  // "the real gear is welded in" for every propeller aircraft; skip the unreliable whole-mesh
+  // filter for jets and let that same fallback run instead of trusting a false positive.
+  const found=JET_KINDS.includes(kind) ? [] :
+    parts.filter(p=>p.bb.max.y<floor && p.sz.y<S.y*0.5 && p.sz.x<S.x*0.30);
   if(found.length && found.length<=parts.length*0.4){
     found.forEach(p=>gear.attach(p.o));
     rig+=', own gear';
@@ -2316,7 +2335,7 @@ function rigModel(root, kind){
         coverGearCut(root, gi.clusters, gi.floor, rfUsed);
       }
     }
-    buildGear(gear, root, whole, S);
+    buildGear(gear, root, whole, S, kind);
     rig+=', built gear';
   }
   return rig;
@@ -2338,7 +2357,7 @@ function strutBetween(p1,p2,radius,mat,segments){
   m.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0), dir.clone().normalize());
   return m;
 }
-function buildGear(gear, root, whole, S){
+function buildGear(gear, root, whole, S, kind){
   // Deliberately UNDERSIZED against the real aeroplane. Three times now the real numbers
   // (1.40 m leg, 0.89 m tyre, 4.90 m track) have looked wrong in the game — but the size was
   // never the actual problem. Every leg hung off ONE global anchor, `whole.min.y`: the single
@@ -2394,9 +2413,12 @@ function buildGear(gear, root, whole, S){
   tw.rotation.z=Math.PI/2; tw.position.y=-legLen*0.42; tg.add(tw);
   const thub=new THREE.Mesh(new THREE.CylinderGeometry(wheelR*0.18,wheelR*0.18,wheelW*0.3,12),hubM);
   thub.rotation.z=Math.PI/2; thub.position.set(0,-legLen*0.42,wheelW*0.55); tg.add(thub);
-  const tailZ=whole.min.z+S.z*0.05;
-  const tailFloorY=localFloor(root, 0, tailZ, span*0.08);
-  tg.position.set(0, (tailFloorY!=null? tailFloorY : whole.min.y)+embed, tailZ);
+  // Reported (Me262): "no landing gear" - it has tricycle gear, no tailwheel, and this always
+  // built one at the tail regardless. A nosewheel sits near the nose instead (see TRICYCLE_KINDS
+  // above); everything else about the small wheel (size, leg, localFloor anchoring) is identical.
+  const smallZ=TRICYCLE_KINDS.includes(kind) ? whole.max.z-S.z*0.05 : whole.min.z+S.z*0.05;
+  const smallFloorY=localFloor(root, 0, smallZ, span*0.08);
+  tg.position.set(0, (smallFloorY!=null? smallFloorY : whole.min.y)+embed, smallZ);
   gear.add(tg);
 }
 function loadModels(){
@@ -2893,18 +2915,22 @@ const MISSIONS=[
         +"fifties on whatever is left. Watch for Jugs upstairs." },
   // Reported: a real Me262 model became available and the player specifically asked for a Me262
   // sortie. AC.me262/JET_KINDS/MODEL_URL/REAL_SPAN were all wired in first (see their own
-  // comments) - this is the mission that actually puts a player in it. The A-1a/Jabo variant this
-  // model represents carried bombs and flew both bomber-interception and strike work; a flak
-  // strike fits its real edge (speed the guns could not track) better than another truck column
-  // would, and keeps this sortie's kill types distinct from Sortie 10's. Inserted before the
-  // finale, finale bumped from Sortie 11 to 12 - MISSIONS.length-1 is read dynamically everywhere
-  // (see 4.37's identical note), so nothing else needed updating for the renumber.
-  { id:'jetstrike', title:'Sortie 11', sub:'Jet Strike', ac:'me262', enemyAir:2, weather:'clear',
-    kills:{flak:2,truck:3}, text:"There are only a handful of these in the whole Luftwaffe, and today "
-        +"one of them is yours. She is over a hundred miles an hour faster than anything that will try "
-        +"to catch you, but she drinks fuel fast and comes in hot on landing - this is not an aeroplane "
-        +"for lingering. Take the gun line down before it tracks you, use the cannon on the rest, and "
-        +"get her home." },
+  // comments) - this is the mission that actually puts a player in it. First shipped as a ground-
+  // attack strike (flak+truck), but the Me262's actual historical job - and the one that shows
+  // off what a jet does that a piston fighter cannot - was intercepting the heavy-bomber boxes,
+  // exactly like Sorties 8/9 already do with the 109. Rebuilt as a bomber-intercept mission
+  // reusing that same `bombers`/`enemyAir` structure: a Fortress box with a Thunderbolt escort,
+  // flown in the one fighter in this war fast enough to not have to out-turn either of them.
+  // Inserted before the finale, finale bumped from Sortie 11 to 12 - MISSIONS.length-1 is read
+  // dynamically everywhere (see 4.37's identical note), so nothing else needed updating for the
+  // renumber.
+  { id:'jetstrike', title:'Sortie 11', sub:'Jet Interceptor', ac:'me262', bombers:{n:6,type:'b17'},
+    enemyAir:2, weather:'clear',
+    text:"There are only a handful of these in the whole Luftwaffe, and today one of them is yours. "
+        +"A Fortress box is inbound with Thunderbolts riding shotgun. She is over a hundred miles an "
+        +"hour faster than anything up there and drinks fuel just as fast - there is no time to circle "
+        +"and pick your moment. Take the escort down first or you will never get a clean pass at the "
+        +"bombers, then close on the box before the tanks run dry." },
   { id:'final', title:'Sortie 12', sub:'The Whole Valley', ac:'p47', weather:'storm', enemyAir:2,
     kills:{tank:3,flak:3,bridge:1}, text:"Everything at once, in weather that should have scrubbed the "
         +"mission. Armour, the guns along the river, and the bridge itself — and the Luftwaffe is up. "
@@ -4380,25 +4406,48 @@ function initAudio(){
   const nbp=actx.createBiquadFilter(); nbp.type='bandpass'; nbp.frequency.value=210; nbp.Q.value=0.7;
   const ng=actx.createGain(); ng.gain.value=0; noise.connect(nbp); nbp.connect(ng); ng.connect(master);
   o1.start(); o2.start(); lfo.start(); noise.start();
-  eng={master,eg,lp,o1,o2,lfo,lfoG,ng,freq:60};
+  eng={master,eg,lp,o1,o2,lfo,lfoG,nbp,ng,freq:60};
 }
 function out(){ return eng?eng.master:(actx?actx.destination:null); }
 function updateAudio(dt){
   if(!actx||!eng) return;
   const flying=(state===ST.FLIGHT)&&P.alive;
   const rpm=flying?(0.30+P.throttle*0.70):0;
-  // the Jug's R-2800 sits lower and rougher than the 109's inline
-  const base=(P.ac==='p47')?42:52;
-  const tf=base+rpm*74+(P.spd/Math.max(1,MAX_SPD))*22;
-  eng.freq+=(tf-eng.freq)*Math.min(1,5*dt);
   const ct=actx.currentTime;
-  eng.o1.frequency.setTargetAtTime(eng.freq,ct,0.04);
-  eng.o2.frequency.setTargetAtTime(eng.freq*1.012,ct,0.04);
-  eng.lfo.frequency.setTargetAtTime(Math.max(6,eng.freq*0.42),ct,0.05);
-  const vol=flying?(0.05+rpm*0.13):0;
-  eng.eg.gain.setTargetAtTime(vol,ct,0.12);
-  eng.lfoG.gain.setTargetAtTime(flying?vol*0.6:0,ct,0.12);
-  eng.ng.gain.setTargetAtTime(flying?0.015+rpm*0.04:0,ct,0.12);
+  // Reported: the Me262 (a jet, no propeller - see JET_KINDS/rigModel()'s own comment) still
+  // used the exact same detuned-sawtooth-plus-LFO-wobble engine model as every piston aircraft
+  // here, which reads as a propeller drone because that IS what it was built to model. A turbine
+  // has no cylinder-firing pulse to wobble at all, sits at a much higher, smoother pitch, and is
+  // dominated by broadband hiss rather than a low mechanical rumble. Reusing the same node graph
+  // (see initAudio()) driven completely differently, rather than building a second graph:
+  // no LFO amplitude modulation, a much higher tone that rises with throttle/speed instead of a
+  // rough low idle, and the noise layer swept up into a bright hiss instead of a low rumble.
+  if(JET_KINDS.includes(P.ac)){
+    const tf=340+rpm*260+(P.spd/Math.max(1,MAX_SPD))*90;
+    eng.freq+=(tf-eng.freq)*Math.min(1,4*dt);
+    eng.o1.frequency.setTargetAtTime(eng.freq,ct,0.10);
+    eng.o2.frequency.setTargetAtTime(eng.freq*1.004,ct,0.10);
+    eng.lp.frequency.setTargetAtTime(2600+rpm*1400,ct,0.15);
+    const vol=flying?(0.035+rpm*0.075):0;
+    eng.eg.gain.setTargetAtTime(vol,ct,0.18);
+    eng.lfoG.gain.setTargetAtTime(0,ct,0.2);
+    eng.nbp.frequency.setTargetAtTime(1800+rpm*2600,ct,0.15);
+    eng.ng.gain.setTargetAtTime(flying?0.05+rpm*0.09:0,ct,0.15);
+  } else {
+    // the Jug's R-2800 sits lower and rougher than the 109's inline
+    const base=(P.ac==='p47')?42:52;
+    const tf=base+rpm*74+(P.spd/Math.max(1,MAX_SPD))*22;
+    eng.freq+=(tf-eng.freq)*Math.min(1,5*dt);
+    eng.o1.frequency.setTargetAtTime(eng.freq,ct,0.04);
+    eng.o2.frequency.setTargetAtTime(eng.freq*1.012,ct,0.04);
+    eng.lfo.frequency.setTargetAtTime(Math.max(6,eng.freq*0.42),ct,0.05);
+    eng.lp.frequency.setTargetAtTime(950,ct,0.15);
+    const vol=flying?(0.05+rpm*0.13):0;
+    eng.eg.gain.setTargetAtTime(vol,ct,0.12);
+    eng.lfoG.gain.setTargetAtTime(flying?vol*0.6:0,ct,0.12);
+    eng.nbp.frequency.setTargetAtTime(210,ct,0.15);
+    eng.ng.gain.setTargetAtTime(flying?0.015+rpm*0.04:0,ct,0.12);
+  }
   // damaged engine misfiring under load - same hull<55 threshold the oil-on-canopy visual uses
   const dmgF=Math.max(0,(55-P.hull)/55);
   if(flying && dmgF>0 && Math.random()<dmgF*dt*1.2) sfxSputter();

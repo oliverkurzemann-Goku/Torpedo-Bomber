@@ -5,7 +5,7 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 120 · Thunderbolt Squadron EU BUILD 51**
+Stand bei Übergabe: **Torpedo Squadron BUILD 120 · Thunderbolt Squadron EU BUILD 52**
 Repo: `oliverkurzemann-Goku/Torpedo-Bomber`, ausgeliefert über GitHub Pages.
 Alle Angaben unten sind aus dem tatsächlichen Code verifiziert, nicht aus dem Gedächtnis.
 
@@ -3139,6 +3139,140 @@ aber wie beim Fahrwerk (4.24) gilt: nur die per Position eindeutig unterscheidba
 Code: `thunderbolt-europe.html`, Suche nach `TREEPACK_URL`, `bakeTreePackMesh`, `bakeTreePackPair`,
 `extractTreePack`, `upgradeForestToTreePack`, `loadTreePack`; `buildForests()`/`buildClutter()`,
 Suche nach `forestPlacements`/`rockPlacements`.
+
+---
+
+### 4.44 Me262: Propellerton statt Turbine, kein Fahrwerk, falscher Missionstyp; viel mehr Terrain-Bäume — EU BUILD 52
+
+Erstes Feedback nach dem Me262-Einsatz (4.42): „Die Me262 hat einen Propeller-Sound und kein
+Fahrwerk. Weiters müsste eine Bomber-Abfangen-Mission besser zu diesem Flugzeug passen. Und
+Terrain braucht viel, viel mehr Bäume — und die zeigen nur die alten Kegel, nicht das Paket."
+Vier getrennte Punkte, jeder einzeln untersucht statt geraten.
+
+#### 1) Propeller-Sound bei einem Düsenflugzeug
+
+`updateAudio()` fuhr für JEDES Flugzeug exakt dasselbe Motorengeräusch — zwei verstimmte
+Sägezahn-Oszillatoren plus ein 24-Hz-LFO, der die Lautstärke wackeln lässt (das simuliert den
+Zündtakt eines Kolbenmotors) — unabhängig davon, dass `JET_KINDS` bereits existiert und die Me262
+seit 4.42 keinen Propeller hat. **Fix:** `updateAudio()` bekommt einen eigenen Zweig für
+`JET_KINDS`, der denselben Node-Graphen (siehe `initAudio()`) völlig anders ansteuert: `lfoG`-Gain
+auf 0 (ein Turbinentriebwerk hat keinen Zündtakt, der wackeln könnte), eine deutlich höhere,
+glattere Tonhöhe (340–860 Hz statt 42–138 Hz), die mit Schub/Geschwindigkeit steigt statt eines
+rauen tiefen Leerlaufs, und der Rauschanteil (`nbp`/`ng`, vorher fest auf 210 Hz „Motorengrummeln")
+zu einem hellen Zischen hoch gefahren (1800–4400 Hz). `nbp` (vorher nur lokal in `initAudio()`,
+nie wieder angefasst) wird jetzt auch im `eng`-Objekt gehalten, damit `updateAudio()` es pro Frame
+verändern kann.
+
+**Nachgewiesen:** Echtes Playwright/Chromium, echte `AudioContext` (Node hat keine, siehe
+Abschnitt 6), Me262-Mission über den echten Klick-Pfad gestartet, `updateAudio()` mit
+`P.throttle=0.8`/`P.spd=150` manuell einen Tick laufen lassen und die tatsächlich gesetzten
+Node-Werte ausgelesen: `isJet:true`, `lfoGainTarget:0` (kein Wackeln), `engFreq≈454 Hz`,
+`nbpFreq:2580 Hz`, `lpFreq:3020 Hz` — deutlich heller/glatter als jedes Kolbenflugzeug, keine
+Konsolenfehler.
+
+#### 2) Kein Fahrwerk — Ursache am echten Modell gerendert, nicht angenommen
+
+`rigModel()`s „own gear"-Pfad (ein einzelnes trennbares Mesh unter der Bodenlinie, klein genug für
+den Größenfilter) meldete für die Me262 „1 Kind gefunden" und wurde daher genommen — aber
+gerendert (Rumpf grau, `gear`-Gruppe rot eingefärbt, aus mehreren Winkeln fotografiert, nicht nur
+Zahlen verglichen) zeigte sich: das eine gefundene Teil ist ein winziges (1,6×0,3×0,9 m), seitlich
+versetztes Lüftungs-/Wartungsklappen-Panel unter der Triebwerksgondel — keine Radaufhängung. Die
+echten Räder sind auf diesem Modell nicht als eigenes Objekt vorhanden (in die große Rumpf-/
+Gondel-Geometrie verschweißt, exakt das aus 4.24/4.25 bekannte Muster), aber der Größenfilter griff
+zufällig zuerst auf dieses Panel und beendete die Suche, bevor `findGearClusters()`/`buildGear()`
+(die genau für „echtes Fahrwerk ist verschweißt" gebaut wurden) überhaupt liefen. **Fix:** Jets
+überspringen den „own gear"-Filter jetzt komplett und gehen direkt in den bewährten
+Cluster-Schnitt-plus-Synthetik-Pfad.
+
+**Zweiter, dabei gefundener Fehler:** Die Me262 hat Bugradfahrwerk (Nase, keine Spornrad-
+Konfiguration) — `buildGear()` baute aber IMMER ein Spornrad am Heck, unabhängig vom Flugzeugtyp
+(richtig für alle bisherigen Baumuster, alles Spornradflugzeuge, aber falsch hier). Neue Konstante
+`TRICYCLE_KINDS=['me262']`: das kleine Rad sitzt jetzt bei `whole.max.z` (Nase) statt
+`whole.min.z` (Heck) für diese Flugzeuge, alles andere (Größe, Bein, `localFloor()`-Verankerung)
+unverändert.
+
+**Nachgewiesen am echten Modell:** `rigModel()` (inkl. `findGearClusters`, `cutGearClusters`,
+`buildGear`) wortwörtlich aus der Datei extrahiert, gegen echtes `me262.glb` mit echtem
+`GLTFLoader` r128 und echtem headless-WebGL-Renderer ausgeführt. Vorher: `gear`-Gruppe mit 1 Kind,
+gerendert als das falsche Lüftungspanel, keine Räder irgendwo sichtbar (Seitenansicht: glatter
+Rumpf ohne jeden Radansatz — exakt „kein Fahrwerk"). Nachher: `rig` meldet „cut 3166 welded gear
+triangles, built gear", `gear`-Gruppe mit 3 Kindern — zwei spiegelsymmetrische Hauptfahrwerke unter
+den Gondeln (x=±2,04 m) UND ein Bugrad vorne (z=+4,77 m, in Richtung Nase, nicht Heck). Rendern von
+unten zeigt zwei klar erkennbare Räder unter den Gondeln; von der Seite ein Bugrad unter dem
+Cockpit und ein Hauptrad unter der Gondel. Zusätzlich über den echten Klick-Pfad (Playwright)
+bestätigt: `playerModel.getObjectByName('gear')` hat beim Missionsstart `childCount:3`,
+`visible:true` (Fahrwerk ausgefahren, wie bei jedem anderen Flugzeug beim Start).
+
+**Offen:** Nicht auf dem echten iPad geflogen. Das Einfahren des Fahrwerks selbst (GEAR-Knopf) war
+im selben Test nicht auslösbar, solange das Flugzeug stillsteht — dasselbe Verhalten wurde nicht
+gezielt an einem anderen Baumuster gegengeprüft, ist aber nicht Teil der Nutzer-Meldung (die bezog
+sich ausschließlich auf fehlendes Fahrwerk, nicht auf das Ein-/Ausfahren) und vermutlich
+gemeinsames, beabsichtigtes Verhalten aller Flugzeuge (kein Einfahren im Stand) statt ein
+Me262-spezifischer Fehler — nicht weiter verfolgt.
+
+#### 3) Missionstyp: Bomber-Abfangen statt Bodenangriff
+
+„Jet Strike" (Sortie 11) war als Bodenangriff angelegt (`kills:{flak:2,truck:3}`), obwohl der
+reale historische Auftrag der Me262 (und der Grund, warum sie überhaupt gebaut wurde) die Abwehr
+alliierter Bomberverbände war — und genau das zeigt den Geschwindigkeitsvorteil, den kein
+Kolbenjäger in diesem Spiel hat, viel deutlicher als eine weitere Lkw-Kolonne. Umgebaut auf
+dieselbe `bombers`/`enemyAir`-Struktur, die die Sorties 8/9 („The Bomber Stream", „Liberators at
+Noon") bereits benutzen — beide Funktionen (`spawnBombers()`, `spawnEnemyAir()`) sind bereits
+vollständig generisch (Eskorte wird automatisch als P-47 gespawnt, sobald `P.ac!=='p47'` ist,
+unabhängig vom konkreten Achsenflugzeug), keine Codeänderung nötig, nur die Missionsdefinition:
+`bombers:{n:6,type:'b17'}, enemyAir:2` statt `kills:{flak:2,truck:3}`. Titel von „Jet Strike" auf
+„Jet Interceptor" geändert, Text neu geschrieben (Eskorte zuerst, dann die Box, bevor der Sprit
+ausgeht).
+
+**Nachgewiesen:** Echtes Playwright/Chromium, kompletter echter Klick-Pfad (Chip mit Abzeichen
+„ME 262" gefunden und angeklickt, Begin Sortie, Start Engine). Nach Missionsstart: `M().bombers`
+= `{n:6,type:'b17'}`, `M().enemyAir`=2, tatsächlich im `enemyAir[]`-Array gespawnt: 6 lebende
+Bomber + 2 lebende Eskorte-Jäger (insgesamt 8, exakt wie konfiguriert), HUD-Zieltext korrekt
+„BOMBERS 6   ESCORT 2" — identisches Verhalten zum bereits bewährten Sorties-8/9-Pfad.
+
+**Offen:** Nicht auf dem echten iPad geflogen. Ob die Missionsbalance (6 B-17 + 2 P-47-Eskorte,
+mit `AC.me262`s Kanonen-Schaden 3,0 statt MG-Dauerfeuer) für dieses schnellere Flugzeug fair genug
+ist, kann nur der Nutzer nach echtem Spielen beurteilen — dieselbe Einschränkung wie bei jeder
+Mission-Balance-Änderung in diesem Projekt (siehe 4.34).
+
+#### 4) Terrain: viel mehr Bäume, weniger Kegel/Bäume-Verwechslung geklärt
+
+Der Nutzer bemerkte außerdem, dass die sichtbaren Bäume „nicht wie im Paket, sondern die Kegel"
+seien — nach 4.43s Verifikation (echtes Playwright, echter Klick-Pfad, `upgradeForestToTreePack()`
+lief nachweislich durch) ist die wahrscheinlichste Erklärung GitHub Pages' Deploy-Verzögerung bzw.
+iPad-Safaris hartnäckiges Caching der ALTEN `thunderbolt-europe.html` selbst (Abschnitt 2 — das
+träfe JEDEN Code dieser Runde, nicht nur die Bäume, und ließe sich am angezeigten Build-Text im
+Spiel ablesen). Nicht im Code reproduzierbar, daher nicht als Bug „behoben", sondern die Bitte um
+viel mehr Bäume direkt umgesetzt — das war ohnehin Teil derselben Nachricht.
+
+**Zahlen, nicht nur „mehr":** `buildForests()`s Baum-Budget `N` von 8200 auf 30000 angehoben
+(≈3,7×) UND die Wald-Klumpen-Maske (`mask<0.35`) auf `mask<0.05` gelockert — gegen die echte
+Formel gemessen (200.000 Zufallsstichproben), wächst die qualifizierende Fläche dadurch von 32 %
+auf 54 % der Karte. Beides zusammen: nicht nur dichtere Klumpen, sondern spürbar mehr
+Kartenfläche mit Wald überhaupt. `buildClutter()`s Felsen (`NR`) von 3000 auf 7000, Büsche (`NBU`)
+von 5000 auf 16000 angehoben.
+
+**Verifiziert:** Voller Build-Ablauf (`buildTerrain()` bis `buildAirfield()`) läuft weiterhin
+fehlerfrei durch: tatsächlich erreichte Zahlen exakt am Zielwert (7000 Felsen, 16000 Büsche, keine
+stille Kappung durch das Zufalls-Guard-Limit), Baum-Platzierungen 18873 Nadelbaum + 11127
+Laubbaum = 30000, exakt N. 0 NaN/Infinity in allen ~73.000–92.000 Instanzen (mit und ohne
+Baumpaket-Upgrade geprüft). Hecken-Schwebe-Regressionstest (4.21/4.32/4.35/4.39/4.41) weiterhin
+0 % über 3 m schwebend. Der Baumpaket-Upgrade-Pfad aus 4.43 funktioniert mit den neuen, viel
+größeren Platzierungszahlen unverändert (upgradet jetzt 30000 statt 8200 Bäume und 7000 statt
+3000 Felsen auf echte Geometrie, ohne Fehler).
+
+**Offen:** Nicht auf dem echten iPad geflogen. Die Ursache für „zeigt die Kegel" selbst bleibt
+ungeklärt (vermutet: Cache/Deploy-Timing, siehe oben) — falls nach hartem Reload mit aktueller
+Build-Nummer im Spiel immer noch nur Kegel erscheinen, ist das ein neuer, eigenständiger Befund
+und keine Wiederholung dieser Vermutung. `SEG=1024`/Baumpaket-Ladezeit zusammen mit jetzt 3,7×
+mehr Bäumen ist ein größerer Performance-Schritt als jeder einzelne bisherige (4.14/4.32/4.39/
+4.41) — Performance bleibt laut wiederholter Nutzeraussage zweitrangig, aber ungeprüft auf
+echter Hardware.
+
+Code: `thunderbolt-europe.html`, `updateAudio()` (Suche nach „no cylinder-firing pulse"),
+`rigModel()`/`buildGear()`/`TRICYCLE_KINDS` (Suche nach „a tiny underside vent panel"),
+`MISSIONS`-Array (Eintrag `id:'jetstrike'`), `buildForests()`/`buildClutter()` (Suche nach
+„viel, viel mehr").
 
 ---
 
