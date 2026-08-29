@@ -5,7 +5,7 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 120 · Thunderbolt Squadron EU BUILD 48**
+Stand bei Übergabe: **Torpedo Squadron BUILD 120 · Thunderbolt Squadron EU BUILD 49**
 Repo: `oliverkurzemann-Goku/Torpedo-Bomber`, ausgeliefert über GitHub Pages.
 Alle Angaben unten sind aus dem tatsächlichen Code verifiziert, nicht aus dem Gedächtnis.
 
@@ -2855,6 +2855,107 @@ Code: `thunderbolt-europe.html`, `init()` (Suche nach „iPad/Safari zoom-guard"
 
 ---
 
+### 4.41 Terrain-Detail, Runde 2: schärfere Textur, verstreute Objekte, echte Unebenheiten — EU BUILD 49
+
+Nutzer nach BUILD 48: Terrain läuft flüssig, kein Ruckeln, aber „braucht noch viel mehr Details".
+Auf Rückfrage per `AskUserQuestion` alle drei angebotenen Punkte gleichzeitig gewählt: Bodentextur
+noch schärfer, verstreute Objekte (Steine, Büsche, Zäune, Strommasten), echte 3D-Unebenheiten.
+
+#### 1) Bodentextur nochmals verschärft
+
+`N` in `makeGroundTextures()` (vormals `makeGroundTexture()`, siehe Punkt 3) von 1536 auf 2048
+angehoben (0,57→1,71→2,28 Texel/Meter über die beiden Runden), bei unveränderter 900-m-Kachelgröße
+und unverändertem `SC`-Skalierungsmechanismus aus BUILD 47 — Feld-/Weggröße bleibt real gleich,
+nur die Auflösung steigt weiter.
+
+#### 2) Verstreute Objekte: Steine, Büsche, Strommasten, Zäune
+
+Neue Funktion `buildClutter()`, nach demselben Muster wie `buildForests()`/`buildSettlement()`
+(ein `InstancedMesh` pro Objekttyp, damit die Anzahl der Draw-Calls unabhängig von der
+Instanzenzahl bleibt): Steine (`IcosahedronGeometry(1,0)`, flach schattiert, wirkt wie ein grober
+Felsbrocken, dünn verstreut auf offenem Grund), Büsche (`IcosahedronGeometry(1,1)`, rundere,
+grüne Blöcke entlang Feldrändern/Hecken/Weideland), Strommasten entlang der Fernstraße
+(abwechselnd auf beiden Seiten, Mast + Querarm, jeweils eigenes `InstancedMesh`), und
+Zaunreihen (mehrere Pfosten in einer Linie über zufällig gewählte Feldgrenzen verteilt — bewusst
+NUR Pfosten, kein Querriegel, da ein Querriegel pro Segment eine eigene Ausrichtung bräuchte und
+den Aufwand für diese Runde gesprengt hätte). Alle vier respektieren dieselben Ausschlusszonen wie
+Bäume/Hecken (Fluss, Straße, Schiene, Flugplatz, Brücke).
+
+**Nachgewiesen:** Voller Build-Ablauf läuft weiterhin fehlerfrei durch (3000 Steine, 5000 Büsche,
+572 Masten, 855 Zaunpfosten in einem Testlauf, 0 NaN/Infinity, +107 ms Bauzeit — vernachlässigbar
+gegen `buildTerrain()`s ~6,6 s). Echte Instanz-Positionen aus der laufenden Szene ausgelesen (nicht
+geraten) und die Kamera direkt darauf gerichtet: Stein, Strommast+Querarm und Zaunpfosten rendern
+alle korrekt am Boden sitzend, plausible Größe.
+
+**Ein eigener Mess-Umweg dabei, aus Gründlichkeit dokumentiert:** Ein erster Versuch, die Kamera
+für diese Nahaufnahmen manuell zu setzen, zeigte wiederholt die normale Verfolgungsansicht statt
+der gewünschten Draufsicht — `animate()`s `FLIGHT`-Zweig berechnet die Kamera jeden Frame neu aus
+der Spielerposition und überschreibt jede manuelle Positionierung, bevor der Screenshot greift.
+Behoben durch `state=ST.PAUSED` vor dem Setzen der Kamera (der `PAUSED`-Zweig in `animate()`
+rendert nur noch, ohne die Kamera anzufassen) — danach blieb die gesetzte Kamera über mehrere
+Frames stabil.
+
+#### 3) Echte 3D-Unebenheiten — als Bump-Map, nicht als echte Vertices
+
+Echtes Relief im Meterbereich über mehr `SEG` zu erreichen ist unerreichbar (siehe die gemessene
+Kostentabelle in 4.39 — ein einzelner Furchenverlauf bräuchte zehntausende Spannen über 64 km,
+weit jenseits dessen, was ein einziger synchroner `buildTerrain()`-Durchlauf leisten kann).
+Stattdessen eine Bump-Map: dieselbe optische Wirkung (Streiflicht zeigt kleine Erhebungen) aus
+einer Textur statt echter Geometrie — keine echten zusätzlichen Vertices, aber bei dieser Feinheit
+optisch nicht unterscheidbar.
+
+**Zwei eigene Fehlschläge dabei, beide durch tatsächliches Prüfen gefunden, nicht angenommen:**
+
+1. Erster Versuch: eine ZWEITE, unabhängig gekachelte Bump-Textur (16-m-Kachel statt der 900-m-
+   Kachel der Feldtextur). Vor dem Ausliefern in der echten three.js-r128-Quelle nachgesehen
+   (`WebGLMaterials.refreshUniformsCommon`), statt „sollte funktionieren" anzunehmen: `vUv` wird
+   NUR EINMAL pro Vertex berechnet, aus einem einzigen gemeinsamen `uvTransform`-Uniform, das von
+   genau EINER Map-Eigenschaft übernommen wird, in fester Prioritätsreihenfolge (`map` zuerst) —
+   da diese Fläche bereits `map` gesetzt hat, wäre `bumpMap`s eigener `repeat`-Wert schlicht
+   ignoriert worden und hätte auf der 900-m-Kachel der Feldtextur gesampelt, nicht auf der
+   gewünschten 16-m-Kachel. Statt eine zweite UV-Kachelgröße zu erzwingen: Bump-Textur im
+   SELBEN Zeichendurchlauf wie die Feldtextur aufgebaut, mit denselben Feldgrenzen und
+   Pflugspuren — dadurch übernimmt sie automatisch dieselbe Transformation und liegt Pixel für
+   Pixel exakt auf der Farbtextur, ohne einen zweiten UV-Kanal zu brauchen.
+2. Zweiter Versuch: `bumpMap`/`bumpScale` auf das bestehende `MeshLambertMaterial` gesetzt — die
+   Konsole meldete sofort „'bumpMap' is not a property of this material", direkt am echten
+   three.js-Quellcode nachgeprüft: `MeshLambertMaterial` hat in diesem Build (r128) schlicht kein
+   `bumpMap` in seiner Eigenschaftsliste. Auf `MeshPhongMaterial` umgestellt (hat `bumpMap`),
+   `specular`/`shininess` deutlich heruntergesetzt (0x080808/4), damit der Materialwechsel selbst
+   keinen neuen Glanz einführt, den der Boden vorher nie hatte.
+
+**Ein dritter, ernsterer Fehlalarm beim Verifizieren — kein echtes Performance-Problem, sondern
+liegengebliebene Prozesse:** Ein erster Nahaufnahme-Test hing nach dem ersten von drei
+Screenshots minutenlang, mit einem Chromium-GPU-Prozess bei über 300 % CPU-Last. Direkt gemessen
+statt vermutet, ob das an der neuen Fläche liegt: ein isolierter Test, der NUR `renderer.render()`
+20-mal in Folge aufruft und die Zeit stoppt, ergab 0,79 ms pro Bild bei 2.097.152 Dreiecken mit
+`MeshPhongMaterial` und aktiver Bump-Map — deutlich unter jedem Framerate-Budget. Der eigentliche
+Übeltäter waren liegengebliebene Chromium-Prozesse aus vorherigen, abgebrochenen Testläufen, die
+sich gegenseitig die CPU streitig machten (durch `pkill` bereinigt, danach lief derselbe Test
+sauber durch) — nicht das Material selbst. Trotzdem ausdrücklich als Randnotiz festgehalten, weil
+softwareseitiges Rendering (dieser Prüfstand nutzt `swiftshader`, keine echte GPU) ohnehin nichts
+über echte Hardware-Performance aussagt.
+
+**Nachgewiesen:** Bump-Textur-Canvas separat exportiert und angesehen — Feldgrenzen erscheinen
+als helle Grate, Pflugspuren als dunkle Furchen, einzelne Parzellen leicht unterschiedlich hoch,
+alles exakt deckungsgleich mit der Farbtextur. Voller Build-Ablauf weiterhin fehlerfrei, Hecken-
+Schwebe-Regressionstest (4.21/4.32/4.35/4.39) weiterhin bei 0 % über 3 m.
+
+**Offen (alle drei Punkte):** Nichts davon auf dem echten iPad geflogen. Die Bump-Map-Stärke
+(`bumpScale:0.9`) ist ein erster, an einem Rendering geprüfter Wert, keine erschöpfend
+durchprobierte Feinabstimmung — falls die Unebenheit zu stark oder zu schwach wirkt, ist das der
+eine anzufassende Wert. Zaunreihen haben bewusst keinen Querriegel (nur Pfosten). Der
+Materialwechsel auf `MeshPhongMaterial` ist im Prüfstand als performant bestätigt, aber nur
+software-gerendert — echte GPU-Kosten auf einem iPad sind unbekannt, auch wenn ein Zusatzwert von
+0,79 ms/Bild selbst mit großzügiger Sicherheitsmarge für langsamere Hardware unauffällig sein
+sollte.
+
+Code: `thunderbolt-europe.html`, `buildClutter()` (neu), `makeGroundTextures()` (umbenannt von
+`makeGroundTexture()`, Suche nach „echte 3D-Unebenheiten"), `buildTerrain()`s Material-Aufbau
+(Suche nach „MeshPhongMaterial").
+
+---
+
 ## 5. Gelernte Lektionen (aus echten, wiederholten Fehlern)
 
 1. **Nie im Chat/offline testen und im Spiel hoffen.** Der größte Zeitfresser dieses
@@ -3004,6 +3105,27 @@ Code: `thunderbolt-europe.html`, `init()` (Suche nach „iPad/Safari zoom-guard"
    Ergebnis absichern** (hier: das Loch, das die Schneide-Technik zwangsläufig hinterlässt, mit
    einem Patch abdecken, statt eine perfektere Schnittgrenze zu suchen, die es für dieses Modell
    nicht gibt).
+24. **„Sollte laut Doku funktionieren" ist keine Verifikation — bei einer konkreten Engine-
+   Eigenschaft (unterstützt dieses Material diese Map? teilen sich zwei Texturen dieselbe UV-
+   Transformation?) lohnt sich ein Blick in die tatsächlich verwendete Bibliotheksquelle, bevor
+   etwas ausgeliefert wird.** Bei der Bump-Map fürs Terrain wären zwei Annahmen beinahe
+   ungeprüft durchgegangen: dass eine zweite, unabhängig gekachelte Textur einfach ihre eigene
+   `repeat`-Einstellung bekommt (tatsächlich: three.js berechnet `vUv` nur einmal pro Vertex aus
+   EINEM gemeinsamen Uniform, das von der ERSTEN vorhandenen Map-Eigenschaft in fester Reihenfolge
+   übernommen wird — eine zweite Kachelgröße wäre schlicht ignoriert worden), und dass
+   `MeshLambertMaterial` `bumpMap` unterstützt (tut es in diesem three.js-Build nicht — die eigene
+   Konsolenwarnung „is not a property of this material" hat das schneller gezeigt als jede
+   Vermutung). Beide Male hat ein Blick in den echten Bibliotheks-Quelltext (oder eine echte
+   Fehlermeldung im Browser) die Annahme in Minuten widerlegt, bevor sie als stiller, falsch
+   aussehender Fehler ausgeliefert worden wäre. Dieselbe Sitzung zeigte auch die Kehrseite: ein
+   scheinbar handfester Performance-Alarm (ein Testlauf hing minutenlang, ein GPU-Prozess bei über
+   300 % Last) stellte sich bei direkter Messung (`performance.now()` um `renderer.render()` selbst)
+   als 0,79 ms pro Bild heraus — der eigentliche Übeltäter waren liegengebliebene Chromium-Prozesse
+   aus früheren, abgebrochenen Testläufen, nicht das neue Material. **Bei jedem Verdacht — ob eine
+   Engine-Funktion greift, ob eine Änderung zu langsam ist — die konkrete, direkt messbare Frage
+   stellen (eine Konsolenwarnung, ein Blick in die Quelle, eine isolierte Zeitmessung), statt die
+   erste plausible Erklärung (egal ob „das müsste gehen" oder „das ist jetzt zu langsam") für bare
+   Münze zu nehmen.**
 
 ---
 
