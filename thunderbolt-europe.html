@@ -260,7 +260,7 @@
   <div id="flash"></div>
   <div id="gunsight"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">EU BUILD 47</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">EU BUILD 48</div>
 
   <div id="apr">
     <div id="aprCall"></div>
@@ -1838,11 +1838,66 @@ function cutGearClusters(root, gearInfo){
 // unavoidable holes before (3.1: the propeller disc, the Avenger gear-leg covers) - a flat patch
 // at the floor line, sized to the actual area just cut, wide enough to cover it from directly
 // above or below regardless of how the cut turned out.
+//
+// First shipped version (EU BUILD 46) used a single guessed flat colour for every aircraft -
+// reported back as visibly "odd" patches on the real device. Guessing a colour is exactly the
+// mistake this project keeps relearning (Lektion 1/16 etc): the real diffuse texture is right
+// there on the very mesh that got cut, so sample IT instead of guessing. Reads back the actual
+// pixels of the surrounding skin, just outside the cut, off the same decoded image the GLTFLoader
+// already put in `material.map` - same-origin embedded texture, no CORS taint, safe to read with
+// a throwaway canvas.
+function sampleNearbySurfaceColor(root, cl, rInner, rOuter){
+  let rSum=0, gSum=0, bSum=0, n=0;
+  const v=new THREE.Vector3();
+  root.traverse(o=>{
+    if(n>=200) return;                        // plenty for a stable average, keep this cheap
+    if(!o.isMesh||!o.geometry||!o.geometry.attributes.position||!o.geometry.attributes.uv) return;
+    const mat=Array.isArray(o.material)?o.material[0]:o.material;
+    if(!mat||!mat.map||!mat.map.image) return;
+    const img=mat.map.image;
+    if(!img.width||!img.height) return;
+    if(!sampleNearbySurfaceColor._cv) sampleNearbySurfaceColor._cv=document.createElement('canvas');
+    const cv=sampleNearbySurfaceColor._cv;
+    let ctx;
+    try{ cv.width=img.width; cv.height=img.height; ctx=cv.getContext('2d'); ctx.drawImage(img,0,0); }
+    catch(e){ return; }
+    const pos=o.geometry.attributes.position, uv=o.geometry.attributes.uv;
+    const st=Math.max(1,Math.floor(pos.count/4000));
+    for(let i=0;i<pos.count && n<200;i+=st){
+      readVert(pos,i,v); o.localToWorld(v);
+      const d=Math.hypot(v.x-cl.cx, v.z-cl.cz);
+      if(d<rInner||d>rOuter) continue;
+      let px=Math.floor(((uv.getX(i)%1+1)%1)*img.width);
+      let py=Math.floor(((1-uv.getY(i)%1+1)%1)*img.height);
+      px=Math.max(0,Math.min(img.width-1,px)); py=Math.max(0,Math.min(img.height-1,py));
+      let d2;
+      try{ d2=ctx.getImageData(px,py,1,1).data; } catch(e){ continue; }
+      rSum+=d2[0]; gSum+=d2[1]; bSum+=d2[2]; n++;
+    }
+  });
+  return n>=8 ? new THREE.Color(rSum/n/255, gSum/n/255, bSum/n/255) : null;
+}
 function coverGearCut(root, clusters, floor, rfUsed){
-  const mat=new THREE.MeshStandardMaterial({color:0x2b2f2d, roughness:0.75, side:THREE.DoubleSide});
   for(const cl of clusters){
     const r=cl.r*rfUsed*1.15;
-    const patch=new THREE.Mesh(new THREE.CircleGeometry(r, 16), mat);
+    // sample a ring just outside the cut, not inside it (inside is the hole itself) - wide enough
+    // to catch real skin at any model's scale, narrow enough to stay local to this wheel, not
+    // wander onto a national marking or the opposite wing
+    const sampled=sampleNearbySurfaceColor(root, cl, r, r*1.6);
+    const col=sampled || new THREE.Color(0x2b2f2d);   // flat fallback if this model has no map at all
+    const mat=new THREE.MeshStandardMaterial({color:col, roughness:0.75, side:THREE.DoubleSide});
+    // a perfect circle reads as a sticker; nudge each rim vertex's radius randomly so the outline
+    // is irregular like a real repaired/riveted panel, not a coin
+    const geo=new THREE.CircleGeometry(r, 20);
+    const rp=geo.attributes.position;
+    for(let i=1;i<rp.count;i++){                       // vertex 0 is the centre, leave it alone
+      // only ever GROW a rim vertex, never shrink it below r - r is already sized to guarantee
+      // full coverage of the actual cut, and jittering it smaller would tear a new gap open
+      const jitter=1.0+Math.random()*0.35;
+      rp.setXY(i, rp.getX(i)*jitter, rp.getY(i)*jitter);
+    }
+    rp.needsUpdate=true;
+    const patch=new THREE.Mesh(geo,mat);
     patch.rotation.x=-Math.PI/2;
     patch.position.set(cl.cx, floor, cl.cz);
     root.add(patch);
@@ -4458,6 +4513,42 @@ function init(){
   document.getElementById('gunsight').classList.add('show');
   if(window.showLookButtons) window.showLookButtons(true);
   if(window.showPitPhoto) window.showPitPhoto();
+
+  // ---- iPad/Safari zoom-guard -------------------------------------------------
+  // Reported: two quick taps that miss every button zoom Safari into the page, and the
+  // aeroplane goes uncontrollable/turns on its own until the device is rotated and back -
+  // `touch-action:none` on html/body (already set) does not reliably stop iOS Safari's
+  // double-tap-to-zoom gesture recognizer, and once the visual viewport is left scaled the
+  // touch coordinates the joystick reads no longer line up with what is on screen, which
+  // reads as a stuck/runaway control input. torpedo-carrier.html already carries exactly
+  // this guard (undocumented in CLAUDE.md, predates this session's history) and has never had
+  // this reported there - ported over verbatim rather than rewritten.
+  ['gesturestart','gesturechange','gestureend'].forEach(function(ev){
+    document.addEventListener(ev, function(e){ e.preventDefault(); }, {passive:false});
+  });
+  let _lastTap=0;
+  document.addEventListener('touchend', function(e){
+    const now=Date.now();
+    if(now-_lastTap<320){ e.preventDefault(); }   // kill double-tap zoom
+    _lastTap=now;
+  }, {passive:false});
+  function resetZoom(){
+    try{
+      if(window.visualViewport && window.visualViewport.scale>1.01){
+        // toggling the viewport meta forces Safari to snap back to scale 1
+        const m=document.querySelector('meta[name=viewport]');
+        const c=m.getAttribute('content');
+        m.setAttribute('content', c+', maximum-scale=1.0');
+        window.scrollTo(0,0);
+        setTimeout(()=>m.setAttribute('content', c), 50);
+      } else { window.scrollTo(0,0); }
+    }catch(_){}
+  }
+  if(window.visualViewport){
+    window.visualViewport.addEventListener('resize', resetZoom);
+    window.visualViewport.addEventListener('scroll', resetZoom);
+  }
+
   animate();
 }
 function onResize(){

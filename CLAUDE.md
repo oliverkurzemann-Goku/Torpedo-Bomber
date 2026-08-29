@@ -5,7 +5,7 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 120 · Thunderbolt Squadron EU BUILD 47**
+Stand bei Übergabe: **Torpedo Squadron BUILD 120 · Thunderbolt Squadron EU BUILD 48**
 Repo: `oliverkurzemann-Goku/Torpedo-Bomber`, ausgeliefert über GitHub Pages.
 Alle Angaben unten sind aus dem tatsächlichen Code verifiziert, nicht aus dem Gedächtnis.
 
@@ -2771,6 +2771,87 @@ mehr Aufwand, hier nicht begonnen.
 
 Code: `thunderbolt-europe.html`, `const SEG=1024` (Kommentar mit den gemessenen Timings) und
 `makeGroundTexture()`, Suche nach „brauchen viel detailliertere Auflösung".
+
+---
+
+### 4.40 Fw-190-Patches immer noch sichtbar, Zoom-Bug bei Doppel-Tipp — BEHOBEN in EU BUILD 48
+
+Echtes iPad-Feedback nach BUILD 47, mit Screenshot: Terrain läuft flüssig (kein Ruckeln, Rückmeldung
+zur SEG/Textur-Erhöhung positiv), Fw-190-Flügelwurzel-Patches aus 4.38 sehen „komisch" aus, und ein
+neuer, unabhängiger Bug: zwei schnelle Tipps auf den Bildschirm, die keinen Button treffen, zoomen
+Safari in die Seite hinein und das Flugzeug wird unsteuerbar/dreht von selbst — Gerät drehen und
+zurückdrehen stellt die ursprüngliche Ansicht wieder her.
+
+#### 1) Zoom-Bug — bereits gelöst in `torpedo-carrier.html`, nur nie nach EU portiert
+
+Vor jeder Neuentwicklung erst im Schwesterspiel nachgesehen (Lektion: nicht doppelt lösen, was
+schon gelöst ist). Tatsächlich trägt `torpedo-carrier.html` bereits einen vollständigen „iPad/Safari
+zoom-guard" (undokumentiert, älter als diese Sitzungs-Historie, nie in CLAUDE.md erwähnt und in TC
+selbst nie als Bug gemeldet) — `thunderbolt-europe.html` hatte diesen Schutz nie erhalten. Ursache:
+`touch-action:none` auf `html,body` (in beiden Spielen längst vorhanden) unterdrückt zuverlässig
+Pinch-Zoom, aber iOS Safari respektiert das für die Doppel-Tipp-Zoom-Geste nicht in jedem Fall — ein
+bekannter, browser-seitiger Sonderfall. Sobald der visuelle Viewport dadurch skaliert bleibt, passen
+die vom Steuerknüppel gelesenen Touch-Koordinaten nicht mehr zum tatsächlich Angezeigten — genau das
+liest sich als „Flugzeug dreht von selbst".
+
+**Fix:** TCs Schutzmechanismus wortwörtlich nach EU portiert, nicht neu geschrieben: `gesturestart/
+change/end` global unterdrückt (Pinch-Geste), ein `touchend`-Zeitstempel-Vergleich (<320 ms zum
+letzten Tipp → `preventDefault()`, tötet die Doppel-Tipp-Zoom-Geste direkt an der Quelle) sowie ein
+`resetZoom()`-Sicherheitsnetz über `visualViewport`s `resize`/`scroll`-Events, das die Skalierung
+per Viewport-Meta-Toggle zurück auf 1 erzwingt, falls sie doch einmal durchrutscht.
+
+**Nachgewiesen, mit einem eigenen Mess-Umweg dabei:** Ein erster Testversuch mit echtem Playwright/
+Chromium, zwei `touchend`-Events per In-Page-`setTimeout(...,100)` erzeugt, zeigte den zweiten Tipp
+fälschlich NICHT unterdrückt. Nachgemessen: die tatsächliche Zeit zwischen den beiden Events betrug
+laut `Date.now()` über 5000 ms statt der angeforderten 100 ms — der Haupt-Thread war zu diesem
+Zeitpunkt noch mit `buildTerrain()`s synchronem Aufbau beschäftigt (durch die SEG-Erhöhung in 4.39
+jetzt ~6-7 s statt ~2,6-2,8 s), und In-Page-Timer werden dahinter aufgestaut, nicht garantiert
+pünktlich ausgeführt (Lektion 3: ein Fehler im eigenen Testaufbau sieht aus wie ein Spielfehler).
+Mit einem zuverlässigen, host-seitigen Timing statt eines In-Page-`setTimeout`s (zwei Events im
+selben Tick für „schnell", zwei separate `page.evaluate()`-Aufrufe mit 600 ms echtem Playwright-Wait
+dazwischen für „normal getrennt") bestätigt: Events im selben Tick → zweiter Tipp korrekt
+unterdrückt; 600 ms auseinander → keiner der beiden unterdrückt, normale getrennte Tipps bleiben
+unangetastet. `gesturestart` ebenfalls bestätigt unterdrückt, `visualViewport`-Listener angemeldet
+ohne Fehler.
+
+#### 2) Fw-190-Patches „komisch" — Ursache war die geratene Farbe, nicht die Form
+
+4.38s erster Fix (dunklerer fester Farbwert `0x2b2f2d`, an einem einzigen Rendering nachjustiert)
+hat das Loch zuverlässig geschlossen, aber laut echtem Feedback am Gerät weiterhin sichtbar „komisch"
+gewirkt — ein fester Farbwert für JEDES Flugzeug war immer nur eine Annäherung, keine Messung, exakt
+die Art Fehler, die dieses Projekt wiederholt zurückwirft (Lektion 1). Die echte Diffuse-Textur liegt
+aber bereits auf genau der Mesh, die geschnitten wurde — nichts hindert daran, sie zu LESEN statt zu
+raten.
+
+**Fix:** neue Funktion `sampleNearbySurfaceColor()` liest die tatsächlichen Pixel der echten Textur
+knapp außerhalb des Schnitts (Ring zwischen dem genutzten Schnittradius und dem 1,6-fachen davon, bis
+zu 200 Stichproben) über einen Wegwerf-Canvas (`drawImage`+`getImageData`, unkritisch: eingebettetes,
+same-origin Bild, kein CORS-Problem) und mittelt daraus eine echte Patch-Farbe pro Flugzeug/Cluster —
+fällt nur auf den alten festen Ton zurück, wenn ein Modell gar keine texturierte, UV-gemappte Mesh in
+der Nähe hat. Zusätzlich der Rand der Patch-Scheibe unregelmäßig gemacht (`CircleGeometry` mit
+zufällig nach AUSSEN verschobenen Randpunkten — nie nach innen, sonst reißt an genau der Stelle ein
+neues Loch auf) statt einem perfekten Kreis, der als aufgeklebter „Sticker" auffällt.
+
+**Nachgewiesen:** Derselbe Magenta-Lochtest wie in 4.38 bestätigt weiterhin lückenlose Abdeckung
+(0 Magenta-Pixel, auch mit dem unregelmäßigen Rand). Echtes Playwright/Chromium mit echten Texturen,
+derselbe Klickpfad wie in 4.38 (Jabo Raid, Chip → Begin Sortie → Start Engine), Kamera direkt über
+dem Flugzeug: die vorher deutlich als hellblaugraue Flecken sichtbaren Patches sind nach der
+Farbmessung im Rendering praktisch nicht mehr vom umgebenden Tarnanstrich zu unterscheiden.
+**Regressionscheck P-47** (teilt denselben Codepfad): weiterhin sauber, keine sichtbare Verschlech-
+terung. Ein zweiter Testlauf-Fehlschlag dabei behoben: derselbe Main-Thread-Blockierungs-Effekt wie
+beim Zoom-Guard-Test ließ das erste Testskript in einen Timeout laufen, weil sein festes 700-ms-Warten
+seit der SEG-Erhöhung nicht mehr reicht — auf 9 s erhöht, danach lief der Test sauber durch.
+
+**Offen (beide Fixes):** Nicht auf dem echten iPad geprüft. Die Patch-Farbe ist jetzt gemessen statt
+geraten, aber immer noch ein flacher, einfarbiger Durchschnitt ohne die feinere Musterung der echten
+Textur an dieser Stelle — sollte sie bei genauem Hinsehen doch noch auffallen, wäre der nächste
+Schritt, ein kleines Textur-Fenster statt nur eines Farbmittelwerts zu übernehmen. Der Zoom-Guard
+verhindert die Geste, aber `resetZoom()` als Sicherheitsnetz wurde nicht durch tatsächliches
+Auslösen einer echten iOS-Zoom-Geste getestet (in diesem Prüfstand nicht reproduzierbar) — nur die
+Doppel-Tipp- und Pinch-Unterdrückung selbst.
+
+Code: `thunderbolt-europe.html`, `init()` (Suche nach „iPad/Safari zoom-guard") und
+`sampleNearbySurfaceColor()`/`coverGearCut()` (Suche nach „reads as a sticker").
 
 ---
 
