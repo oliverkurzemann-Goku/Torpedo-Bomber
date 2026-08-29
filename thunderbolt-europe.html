@@ -197,6 +197,8 @@
     font-family:monospace;color:var(--khaki);transition:.12s;}
   .chip .cn{font-weight:700;font-size:15px;color:var(--amber);letter-spacing:1px;}
   .chip .cs{font-size:9.5px;letter-spacing:1px;opacity:.7;text-transform:uppercase;margin-top:2px;}
+  .chip .ca{display:inline-block;font-size:8.5px;letter-spacing:0.5px;margin-top:4px;
+    padding:1px 6px;border-radius:8px;font-weight:700;color:#0c0f08;}
   .chip:active{transform:scale(.96);}
   .chip.sel{background:rgba(232,184,75,.16);border-color:var(--amber);
     box-shadow:0 0 0 1px var(--amber) inset;}
@@ -258,7 +260,7 @@
   <div id="flash"></div>
   <div id="gunsight"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">EU BUILD 44</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">EU BUILD 45</div>
 
   <div id="apr">
     <div id="aprCall"></div>
@@ -321,7 +323,7 @@
     <a class="btn ghost" id="selBtn" href="index.html" style="text-decoration:none;">&#9664; Change Game</a>
     <div class="credit">
       Rolling hills, hedgerows and a river valley somewhere over the Reich.<br>
-      P-47D Thunderbolt &middot; Bf&nbsp;109G &middot; eight sorties from the strip at Beaufort Field.
+      P-47D Thunderbolt &middot; Bf&nbsp;109G &middot; Fw&nbsp;190A-8 &middot; eleven sorties from the strip at Beaufort Field.
     </div>
   </div>
 </div>
@@ -2424,7 +2426,21 @@ const MISSIONS=[
     text:"Liberators this time, and they have brought their little friends. Two Thunderbolts are "
         +"weaving above the stream. Six bombers - kill the escort first or you will never get a "
         +"clean pass at them." },
-  { id:'final', title:'Sortie 10', sub:'The Whole Valley', ac:'p47', weather:'storm', enemyAir:2,
+  // Reported: no Fw 190 sortie existed even though AC.fw190 (rolls, gLim, fuel, guns, one bomb)
+  // and the model were already fully wired in - only ever flown as an escort, never by the
+  // player. A Jabo (fighter-bomber) raid fits the aircraft historically (it carries a bomb and
+  // fights its way home, unlike the pure-interceptor 109 sorties above) and needed nothing new in
+  // populate() - it's the same truck/tank kill types Sorties 1 and 5 already use, just flown from
+  // the other side with the 190's own fighter escort covering it. Inserted before the finale and
+  // the finale bumped from Sortie 10 to 11 - MISSIONS.length-1 (the "last mission" check) is
+  // read dynamically everywhere in this file (see showResult()'s good&&selectedMission<
+  // MISSIONS.length-1), so nothing else needed to change for that.
+  { id:'jabo', title:'Sortie 10', sub:'Jabo Raid', ac:'fw190', enemyAir:2, weather:'haze',
+    kills:{truck:4,tank:2}, text:"Fighter-bomber work today. The 190 can carry a load and still fight "
+        +"its way home - that is why it flies this one, not the 109. A supply column and a couple of "
+        +"armoured cars are moving up under fighter cover. Drop the bomb, then use the cannon and the "
+        +"fifties on whatever is left. Watch for Jugs upstairs." },
+  { id:'final', title:'Sortie 11', sub:'The Whole Valley', ac:'p47', weather:'storm', enemyAir:2,
     kills:{tank:3,flak:3,bridge:1}, text:"Everything at once, in weather that should have scrubbed the "
         +"mission. Armour, the guns along the river, and the bridge itself — and the Luftwaffe is up. "
         +"Bring the aeroplane home afterwards and you will have earned the strip." }
@@ -3403,14 +3419,24 @@ function bestScore(){ try{ return parseInt(localStorage.getItem('eu_best')||'0',
 function saveBest(s){ try{ if(s>bestScore()) localStorage.setItem('eu_best',String(s)); }catch(e){} }
 const RANKS=['Flight Officer','2nd Lieutenant','1st Lieutenant','Captain','Major'];
 function rankFor(l){ return l>=24?4 : l>=14?3 : l>=7?2 : l>=3?1 : 0; }
+// Reported (as "wie im Trägerspiel"): a named, persisted pilot, medals per sortie and a
+// promotion radio call - torpedo-carrier.html's PILOT_NAMES/rankName/medal pattern, ported here.
+// Own list (Army Air Forces sound) rather than reusing the Navy one from the carrier game.
+const PILOT_NAMES=['Hank Dobbs','Ray Kowalski','Bud Ferris','Tex Calloway','Whitey Lambert',
+  'Gus Halloran','Duke Servino','Red McAllister','Frank Zabrinski','Ace Delaney'];
+function rankName(landings){ return RANKS[rankFor(landings)]; }
 function loadLog(){ try{ return JSON.parse(localStorage.getItem('eu_log'))||{}; }catch(e){ return {}; } }
 function saveLog(l){ try{ localStorage.setItem('eu_log',JSON.stringify(l)); }catch(e){} }
+function pilotName(){ const l=loadLog(); return l.pilot||'Rookie'; }
 function logSortie(rec){
   const l=loadLog();
+  if(!l.pilot) l.pilot=PILOT_NAMES[Math.floor(Math.random()*PILOT_NAMES.length)];
   l.sorties=(l.sorties||0)+1;
   if(rec.lost) l.lost=(l.lost||0)+1; else l.landings=(l.landings||0)+1;
   for(const k in sortieKills) l[k]=(l[k]||0)+(sortieKills[k]||0);
   l.score=(l.score||0)+score;
+  l.medals=l.medals||{gold:0,silver:0,bronze:0};
+  if(rec.medal) l.medals[rec.medal]=(l.medals[rec.medal]||0)+1;
   saveLog(l); return l;
 }
 function landed(onStrip){
@@ -3438,21 +3464,32 @@ function landed(onStrip){
   missionOver=true;
   addScore(onStrip?400:150);
   saveBest(score);
-  const l=logSortie({});
+  // ---- medal for this sortie (same shape as torpedo-carrier.html's gold/silver/bronze) ----
+  let medal='bronze';
+  if(done && onStrip && P.hull>=70 && hitsTaken<=4) medal='gold';
+  else if((done||onStrip) && P.hull>=45 && hitsTaken<=10) medal='silver';
+  const medalIcon={gold:'🥇 GOLD',silver:'🥈 SILVER',bronze:'🥉 BRONZE'}[medal];
+  const landingsBefore=(loadLog().landings||0);
+  const l=logSortie({medal});
   const bag=[];
   for(const k in sortieKills) if(sortieKills[k]) bag.push(sortieKills[k]+' '+k);
-  const rank=RANKS[rankFor(l.landings||0)];
+  const rank=rankName(l.landings||0);
+  // career promotion — crossing a rank threshold on this recovery is worth a radio call
+  const promoted = rankFor(l.landings||0)!==rankFor(landingsBefore);
+  if(promoted) radioSay("BEAUFORT TOWER — "+pilotName().toUpperCase()+", YOU'RE PROMOTED TO "+rank.toUpperCase());
   showResult(done,
     done?'MISSION ACCOMPLISHED':'RECOVERED — OBJECTIVE INCOMPLETE',
-    rank+'  &middot;  '+(onStrip?'Landed at Beaufort':'Force-landed'),
+    (promoted?'PROMOTED — ':'')+rank+' '+pilotName()+'  &middot;  '+(onStrip?'Landed at Beaufort':'Force-landed')+'  &middot;  '+medalIcon,
     (done?'Every target on the list is burning. ':'You are home, but the job is not finished. ')
+    +(promoted?'<br><br><b>Promoted to '+rank+'.</b>':'')
     +'<br><br>This sortie: '+(bag.length?bag.join(' &middot; '):'nothing claimed')
     +'<br>Hull '+Math.round(P.hull)+'% &middot; '+hitsTaken+' hits taken &middot; fuel '+Math.round(P.fuel)+'%'
     +'<br>SCORE '+score+' &middot; BEST '+Math.max(bestScore(),score)
     +'<br><br><b>LOGBOOK</b> — '+(l.sorties||0)+' sorties &middot; '+(l.landings||0)+' landings &middot; '
     +(l.lost||0)+' aircraft lost'
     +'<br>Claims: '+(l.truck||0)+' trucks, '+(l.tank||0)+' panzers, '+(l.flak||0)+' guns, '
-    +(l.bridge||0)+' bridges, '+(l.train||0)+' trains, '+(l.air||0)+' aircraft',
+    +(l.bridge||0)+' bridges, '+(l.train||0)+' trains, '+(l.air||0)+' aircraft'
+    +'<br>Medals: 🥇'+(l.medals.gold||0)+'  🥈'+(l.medals.silver||0)+'  🥉'+(l.medals.bronze||0),
     done?'Next Sortie':'Try Again');
 }
 
@@ -4107,7 +4144,7 @@ function showBrief(i){
   selectedMission=i; const m=MISSIONS[i];
   document.getElementById('brSub').textContent=m.sub;
   document.getElementById('brTitle').textContent=m.title;
-  document.getElementById('brStamp').textContent=(m.ac==='bf109')?'Luftwaffe':'Secret';
+  document.getElementById('brStamp').textContent=(m.ac==='bf109'||m.ac==='fw190')?'Luftwaffe':'Secret';
   document.getElementById('brText').innerHTML=m.text
     +'<br><br><b>AIRCRAFT</b> '+AC[m.ac||'p47'].name;
   show('menu',false); show('result',false); show('brief',true);
@@ -4125,13 +4162,20 @@ function showResult(good,title,sub,html,btn){
     else showBrief(selectedMission);
   };
 }
+// Reported: "in der Missionsauswahl wäre es toll, wenn man die Flugzeugtypen sehen könnte" -
+// every chip already carries m.ac, just never displayed. Short label + the aircraft's own
+// AC[...].col (the same colour it's rendered in in-flight) so the badge doubles as a legend.
+const ACSHORT={p47:'P-47',bf109:'BF 109',fw190:'FW 190'};
+function acHex(kind){ return '#'+(AC[kind]&&AC[kind].col!==undefined?AC[kind].col:0x888888).toString(16).padStart(6,'0'); }
 function buildMenu(){
   const sel=document.getElementById('missionSel');
   if(sel && !sel.childElementCount){
     MISSIONS.forEach((m,i)=>{
       const c=document.createElement('div'); c.className='chip'+(i===selectedMission?' sel':'');
       const tag=m.free?'FF':(m.circuits?'C':String(i-1));
-      c.innerHTML='<div class="cn">'+tag+'</div><div class="cs">'+m.sub+'</div>';
+      const acLabel=ACSHORT[m.ac]||m.ac||'';
+      c.innerHTML='<div class="cn">'+tag+'</div><div class="cs">'+m.sub+'</div>'
+        +'<div class="ca" style="background:'+acHex(m.ac)+'">'+acLabel+'</div>';
       c.onclick=()=>{ selectedMission=i;
         sel.querySelectorAll('.chip').forEach((e,j)=>e.classList.toggle('sel',j===i));
         document.getElementById('startBtn').textContent='Begin '+m.title; };
@@ -4154,14 +4198,16 @@ function buildMenu(){
 }
 function showLogbook(){
   const l=loadLog();
-  const rank=RANKS[rankFor(l.landings||0)];
-  showResult(true,"PILOT'S LOGBOOK",rank+'  &middot;  '+(l.sorties||0)+' sorties',
+  const rank=rankName(l.landings||0);
+  const medals=l.medals||{gold:0,silver:0,bronze:0};
+  showResult(true,"PILOT'S LOGBOOK",rank+' '+pilotName()+'  &middot;  '+(l.sorties||0)+' sorties',
     '<b>RECORD</b><br>'+(l.landings||0)+' landings &middot; '+(l.lost||0)+' aircraft lost<br><br>'
     +'<b>CLAIMS</b><br>'
     +(l.truck||0)+' trucks &middot; '+(l.tank||0)+' panzers<br>'
     +(l.flak||0)+' gun positions &middot; '+(l.bridge||0)+' bridges<br>'
     +(l.train||0)+' trains &middot; '+(l.depot||0)+' depots<br>'
     +(l.air||0)+' aircraft destroyed<br><br>'
+    +'<b>DECORATIONS</b>  🥇'+(medals.gold||0)+'  🥈'+(medals.silver||0)+'  🥉'+(medals.bronze||0)+'<br><br>'
     +'<b>CAREER SCORE</b> '+(l.score||0),'Close');
   document.getElementById('rsGo').onclick=()=>{ show('result',false); show('menu',true); };
 }

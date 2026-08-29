@@ -5,7 +5,7 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 120 · Thunderbolt Squadron EU BUILD 44**
+Stand bei Übergabe: **Torpedo Squadron BUILD 120 · Thunderbolt Squadron EU BUILD 45**
 Repo: `oliverkurzemann-Goku/Torpedo-Bomber`, ausgeliefert über GitHub Pages.
 Alle Angaben unten sind aus dem tatsächlichen Code verifiziert, nicht aus dem Gedächtnis.
 
@@ -2528,6 +2528,106 @@ ein konkreteres Beispiel (welcher Ausschnitt, welche Mission), um den nächsten 
 Code: `torpedo-carrier.html`, `findProp()`, Suche nach „RADIO ANTENNA MAST and a FLAP EDGE".
 `thunderbolt-europe.html`, `makeFlak()` (Suche nach „Reported (again) that flak positions") und
 `populate()` (Suche nach „Missionen zu fad").
+
+---
+
+### 4.37 Flugzeug-Icons in der Missionsauswahl, Fw-190-Einsatz, Karriere-Logbuch erweitert — EU BUILD 45
+
+Nutzer, nach einer offenen "was würdest du noch verbessern"-Rückfrage: Icons/Flugzeugtyp in der
+Missionsauswahl sichtbar machen, eine Fw-190-Mission ergänzen, und eine Karriere-/Logbuch-Ansicht
+für Thunderbolt (auf Nachfrage per `AskUserQuestion` alle drei gemeinsam ausgewählt; eine Me262
+wurde in derselben Rückfrage ausdrücklich zurückgestellt und ist nicht Teil dieser Runde).
+
+**Wichtige Korrektur vorweg:** In der vorherigen Antwort hatte ich behauptet, Thunderbolt habe
+noch gar kein Logbuch. Das war falsch und ungeprüft geraten — `showLogbook()`, `RANKS`, `rankFor`,
+`loadLog`/`logSortie` und ein sichtbarer `logBtn` existierten bereits. Die tatsächliche, korrekte
+Lücke gegenüber `torpedo-carrier.html`s Logbuch war eine andere: kein benannter, dauerhaft
+gespeicherter Pilot, keine Medaillen pro Einsatz, keine Beförderungs-Funkmeldung im Spiel — das ist
+das, was in dieser Runde tatsächlich ergänzt wurde.
+
+#### 1) Flugzeugtyp-Icons in der Missionsauswahl
+
+Jeder Missions-Chip trug `m.ac` bereits, zeigte es aber nie an. Neue `.chip .ca`-Badge-Zeile pro
+Chip (`buildMenu()`), mit `ACSHORT={p47:'P-47',bf109:'BF 109',fw190:'FW 190'}` als Kurzlabel und
+`acHex()`, das die Badge-Hintergrundfarbe direkt aus `AC[kind].col` liest — derselben Farbe, in der
+das Flugzeug auch im Flug gerendert wird, damit das Abzeichen gleichzeitig als Farblegende dient.
+
+#### 2) Fw-190-Einsatz („Jabo Raid")
+
+`AC.fw190` (Rollrate, `gLim`, Treibstoff, Waffen, eine Bombe) und das `fw190.glb`-Modell waren
+bereits vollständig vorhanden — geflogen wurde die Fw 190 bisher aber nur von gegnerischen
+Begleitjägern, nie vom Spieler. Neue `MISSIONS`-Eintrag `{id:'jabo', title:'Sortie 10', ac:'fw190',
+kills:{truck:4,tank:2}, ...}`, historisch als Jabo-Einsatz motiviert (die 190 trägt eine Bombe und
+kämpft sich zurück, anders als die reinen Abfangjäger-Einsätze der Bf 109). Eingefügt vor dem
+Finale, das von „Sortie 10" auf „Sortie 11" umnummeriert wurde. Da EU die Missions-Chip-Nummer
+bereits array-index-basiert anzeigt (`String(i-1)`, nicht aus dem Titel-String geparst — anders als
+der in 4.27 dokumentierte Titel-Bug in `torpedo-carrier.html`), war für die Einfügung sonst nichts
+umzunummerieren; `MISSIONS.length-1` (die „letzte Mission"-Prüfung) wird ohnehin überall dynamisch
+gelesen. `brStamp`-Logik um `fw190` erweitert (zeigt jetzt ebenfalls „Luftwaffe" statt „Secret").
+`buildAircraft(kind)`/`playerModel=buildAircraft(P.ac)` sind bereits vollständig generisch (laden
+jedes `modelTpl[kind]`, das existiert) — keine Fw190-spezifische Sonderbehandlung nötig, ebenso wie
+die Gegner-Typ-Auswahl bereits korrekt auf einen Nicht-P47-Spieler reagiert (spawnt dann P-47-Gegner).
+
+**Nachgewiesen, nicht nur geschrieben:** Playwright/Chromium gegen den echten, laufenden Code, über
+den ECHTEN Klick-Pfad (nicht direkter Funktionsaufruf) — Chip anklicken, „Begin Sortie" anklicken,
+Briefing-DOM auslesen, „Start Engine" anklicken, Flugzustand auslesen. Ein erster Testlauf mit
+direktem `startMission(idx)`-Aufruf zeigte fälschlich noch den alten „Free Flight"-Briefing-Text
+(Lektion 3: Fehler im eigenen Testaufbau) — Ursache: `startMission()` selbst aktualisiert das
+Briefing-DOM gar nicht, das tut nur `showBrief()`, aufgerufen vom echten `startBtn`-Handler. Über
+den echten Klickpfad korrigiert: Briefing zeigt „Sortie 10 / Jabo Raid / Luftwaffe / Fw 190A-8",
+danach fliegt der Spieler tatsächlich eine Fw 190 (`P.ac==='fw190'`, `P.bombs===1`, `P.hull===102`,
+`playerModel` gesetzt, echtes `fw190.glb` geladen — mit dem Modell in `localtest` kopiert, um die
+zuvor beobachteten 404-Konsolenfehler zu beseitigen), HUD zeigt korrekt „TRUCKS 4 PANZERS 2",
+Bildschirmfoto bestätigt eine normale Startbahn-Szene ohne Rendering-Fehler.
+
+#### 3) Karriere-Logbuch: benannter Pilot, Medaillen, Beförderungsmeldung
+
+Nach demselben Muster wie `torpedo-carrier.html`s `PILOT_NAMES`/`pilotName()`/Medaillen-Vergabe
+portiert, mit einer eigenen Namensliste (US Army Air Forces statt Navy-Klang, keine Vermischung mit
+dem Trägerspiel-Roster). `logSortie()` vergibt beim ersten Aufruf einen zufälligen, dauerhaft in
+`eu_log` gespeicherten Piloten und führt jetzt `l.medals={gold,silver,bronze}`. In `landed()`s
+Haupt-Einsatzpfad (nicht im Circuits-Übungspfad — genau wie im Trägerspiel, wo die Qualifikations-
+Landung ebenfalls keine Medaille vergibt): Medaille berechnet aus `done`/`onStrip`/`P.hull`/
+`hitsTaken` (Gold: Ziel erreicht, auf der Bahn gelandet, Rumpf ≥70 %, ≤4 Treffer; Silber: Ziel
+erreicht ODER gelandet, Rumpf ≥45 %, ≤10 Treffer; sonst Bronze) — dieselbe Struktur wie im
+Trägerspiel, nur auf EU-eigene Kennzahlen statt Torpedotreffer/Wire übertragen. Beförderung wird
+über einen Rang-Index-Vergleich vor/nach dem Landungszähler erkannt (`rankFor(landingsBefore)!==
+rankFor(l.landings)`) und löst `radioSay("BEAUFORT TOWER — <PILOT>, YOU'RE PROMOTED TO <RANG>")`
+aus. Ergebnis-Bildschirm und `showLogbook()` zeigen jetzt Rang + Pilotname + Medaillen-Symbole.
+
+**Nachgewiesen am echten, laufenden Code (Playwright, `landed()` direkt mit kontrolliertem
+`P.hull`/`hitsTaken`/`objectiveLeft()`-Zustand aufgerufen — keine Neuimplementierung, dieselbe
+Funktion wie im Spiel):** 26 simulierte Landungen mit `localStorage.clear()` zu Beginn zeigen einen
+einmal zugewiesenen, über alle 26 Aufrufe identischen Pilotennamen; Beförderungs-Funkmeldungen
+lösen exakt bei Landung 3, 7, 14 und 24 aus (den in `rankFor` hinterlegten Schwellen) und nur dort,
+mit korrektem Namen/Rang im Text; Medaillen-Zähler in `loadLog().medals` und im Logbuch-HTML
+stimmen mit den simulierten Rumpf-/Treffer-Werten überein. Separat geprüft: ein Silber-Fall
+(Rumpf 50 %, 8 Treffer, Ziel erreicht) ergibt korrekt 🥈 statt 🥇 oder 🥉; ein Fall mit
+unvollständigem Ziel UND Notlandung (`onStrip=false`) ergibt korrekt Bronze, ohne Fehler.
+
+**Nebenkorrektur:** Die Credit-Zeile im Hauptmenü nannte „eight sorties" und keine Fw 190 — bereits
+vor dieser Änderung veraltet (es gab schon neun nummerierte Einsätze), jetzt mit dem elften Einsatz
+konsistent auf „eleven sorties" korrigiert und Fw 190A-8 in der Flugzeugliste ergänzt.
+
+**Verifiziert, gesamt:** Vollständiger Build-Ablauf (`buildTerrain(); buildRoads(); buildForests();
+buildSettlement(); buildAirfield();`) läuft nach allen Änderungen dieser Runde weiterhin fehlerfrei
+durch (139 Meshes, 0 NaN/Infinity) — die `MISSIONS`-Einfügung berührt keinen Terrain-Code, aber der
+volle Smoke-Test lief zur Sicherheit erneut. Syntax-Check (`new Function(...)` auf dem extrahierten
+Skript) fehlerfrei.
+
+**Offen:** Nichts davon ist auf dem echten iPad geflogen. Die Fw-190-Mission wurde bewusst als
+zusätzlicher, nicht ersetzender Einsatz eingefügt — bestehende Spielstände/Highscores bleiben
+unberührt (`tc_best`/`eu_best` hängen an einem festen Schlüssel, nicht an Missionstiteln oder
+-indizes, siehe bereits 4.27). Die Medaillen-Kriterien sind eine erste, an EU-eigenen Kennzahlen
+orientierte Übertragung des Trägerspiel-Musters — ob die Schwellen (Rumpf/Treffer) für die
+Bodenangriffs-Missionen genauso gut passen wie für die Träger-Landungen, kann nur der Nutzer nach
+ein paar echten Einsätzen beurteilen. Me262: auf ausdrücklichen Nutzerwunsch zurückgestellt, nicht
+Teil dieser Runde.
+
+Code: `thunderbolt-europe.html`, `buildMenu()` (Suche nach „wäre es toll, wenn man die
+Flugzeugtypen"), `MISSIONS`-Array (Eintrag `id:'jabo'`), `PILOT_NAMES`/`pilotName`/`rankName`
+(Suche nach „wie im Trägerspiel"), `landed()`s Haupt-Einsatzpfad (Suche nach „medal for this
+sortie"), `showLogbook()`.
 
 ---
 
