@@ -5,7 +5,7 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 120 · Thunderbolt Squadron EU BUILD 52**
+Stand bei Übergabe: **Torpedo Squadron BUILD 120 · Thunderbolt Squadron EU BUILD 53**
 Repo: `oliverkurzemann-Goku/Torpedo-Bomber`, ausgeliefert über GitHub Pages.
 Alle Angaben unten sind aus dem tatsächlichen Code verifiziert, nicht aus dem Gedächtnis.
 
@@ -3273,6 +3273,103 @@ Code: `thunderbolt-europe.html`, `updateAudio()` (Suche nach „no cylinder-firi
 `rigModel()`/`buildGear()`/`TRICYCLE_KINDS` (Suche nach „a tiny underside vent panel"),
 `MISSIONS`-Array (Eintrag `id:'jetstrike'`), `buildForests()`/`buildClutter()` (Suche nach
 „viel, viel mehr").
+
+---
+
+### 4.45 Me262 klingt wie ein Haarföhn, Fw190-Patches immer noch sichtbar — EU BUILD 53
+
+Feedback direkt nach BUILD 52, mit Screenshot: „Auch die fw190 hat noch diese patches bei den
+Flügeln… Und die me262 klingt wie ein Haarföhn." Zwei getrennte Punkte.
+
+#### 1) Me262-Sound — Ursache war die eigene Balance, nicht die Grundidee
+
+Der Turbinen-Sound aus BUILD 52 (4.44) hatte die Wobble-LFO korrekt abgeschaltet und die
+Tonhöhe korrekt angehoben — aber nachgemessen (nicht nur gehört) zeigte sich: der Rauschanteil
+(`ng.gain`, bis 0,14 bei Vollgas) war LAUTER als der eigentliche Ton (`eg.gain`, bis 0,11), breit
+gestreut über 1,8–4,4 kHz bei der ererbten Standard-Güte (`Q=0,7`, geteilt mit dem Kolbenmotor-
+Rauschen, nie eigens gesetzt). Ein lautes, breitbandiges Rauschen mit einem leiseren Ton darunter
+ist ziemlich genau die Beschreibung eines Haarföhns. **Fix:** die Balance umgekehrt — der Ton ist
+jetzt das dominante, klar tonale Element, das Rauschen eine leise Stütztextur, dazu enger gefiltert
+(`Q=3,5` statt 0,7) und harmonisch an die eigene Tonhöhe gekoppelt (`nbp.frequency=eng.freq*3,2`
+statt einer unabhängigen 1,8–4,4-kHz-Spanne), damit es sich nach EINEM Triebwerk anhört statt nach
+Ton-plus-separatem-Windgeräusch. Da `nbp.Q` jetzt geteilt UND verändert wird, setzt der
+Kolbenmotor-Zweig es explizit auf 0,7 zurück — sonst bliebe die enge Güte nach einem Me262-Flug an
+jedem anderen Flugzeug hängen.
+
+**Ehrliche Einschränkung:** Wie bei jedem reinen WebAudio-Sounddesign (siehe 4.29) kann das hier
+nicht „nachgehört" werden — die Verifikation stellt sicher, dass die Werte tatsächlich in die
+richtige Richtung verschoben sind (Ton lauter als Rauschen, Rauschen schmalbandig und an den Ton
+gekoppelt), nicht, dass es subjektiv überzeugend klingt. Das kann nur Oliver beurteilen.
+
+#### 2) Fw190-Flügelwurzel-Patches — Ursache war diesmal eine andere als in 4.38/4.40
+
+Der Screenshot zeigte zwei helle, klumpige Flecken deutlich AUSSERHALB der sichtbaren Tragfläche,
+nahe der Flügelspitzen schwebend — nicht mehr die alte Transparenz (4.38) oder die alte falsche
+Farbe (4.40), sondern etwas Neues. Direkt am echten `fw190.glb` mit `findGearClusters()`s
+vollständiger Kandidatenliste nachgemessen (nicht nur das gewählte Paar): Die reine Symmetrie-
+Bewertung (`Math.abs(a.cx+b.cx)+...`) kannte keine Vorstellung davon, WO am Flugzeug ein Rad
+plausibel sitzt, und wählte in manchen Läufen ein Paar bei 50 % der halben Spannweite — praktisch
+an der Flügelspitze, wo kein einmotoriger Jäger dieses Spiels (P-47, Fw190, Me262 — B-17/B-24/
+Bf109 laufen bereits erfolgreich über den „own gear"-Pfad und erreichen diese Funktion nie) jemals
+sein Hauptfahrwerk hat. Reale Spurweite/Halbspannweite-Verhältnisse aller drei betroffenen Muster
+liegen bei 28–33 %. **Fix:** Die Bewertung bestraft jetzt Kandidatenpaare außerhalb eines
+großzügigen 12–42-%-Fensters, statt sie ganz auszuschließen — ein schlechter, aber plausibler
+Kandidat kann immer noch gewinnen, wenn nichts Besseres existiert.
+
+**Zweiter, unabhängiger Fund beim Nachmessen:** Selbst am korrekt gewählten, plausiblen
+Radposition (0,88 Einheiten von der Mittellinie, exakt die in 4.38 bereits dokumentierte reale
+Radposition) wuchs der Schnitt bei diesem einen Modell so weit (bis Faktor 3,4 laut der bereits
+vorhandenen, aus 4.38 stammenden Erklärung: die Flügelwurzelhaut selbst unterschreitet dort die
+30-%-Bodenlinie, keine Schwelle trennt „Rad" von „Wurzelhaut"), dass die beiden gespiegelten
+Flicken über die Flugzeugmittellinie hinaus wuchsen und sich zu einem einzigen großen Fleck
+vereinigten — vermutlich das, was der allererste Rendertest dieser Sitzung zeigte (ein einzelnes
+diamantförmiges helles Feld über der gesamten zentralen Rumpfbreite). **Fix:** Sowohl der
+Schneide-Durchlauf (`cutGearClusters()`) als auch die Flicken-Größe (`coverGearCut()`) dürfen jetzt
+nie mehr auf die Seite des gespiegelten Rads wechseln (`m.x*cl.cx<0` → überspringen bzw.
+`Math.min(r, Math.abs(cl.cx)*0,97)` als harte Obergrenze) — die beiden Flicken können sich
+dadurch konstruktionsbedingt nicht mehr treffen. Zusätzlich die allgemeine Sicherheitsspanne
+gesenkt (Rand-Marge 1,15→1,06, Jitter-Wachstum 35 %→15 % — der Ausreißer-Radius war ohnehin nie
+das Problem, aber unnötig große Ränder verschärfen jeden anderen Fehler).
+
+**Nachgewiesen, mehrstufig:**
+- Vollständige Kandidatenliste (nicht nur das Ergebnis) für `fw190.glb` UND `p47new.glb`
+  extrahiert und geprüft: Fw190 wählt jetzt konsistent ein Paar zwischen 16,6 % und 33,4 %
+  Halbspannweite (je nach Lauf — die Auswahl bleibt lauflabil, siehe Offen, aber beide
+  beobachteten Ergebnisse liegen jetzt im plausiblen Fenster), nie mehr bei 50 %.
+- Flicken-Radius nach dem Mittellinien-Clamp direkt gemessen: die beiden Flicken überlappen sich
+  nicht mehr (gemessener Abstand zur Mittellinie 0,15–0,22 Einheiten auf beiden Seiten, vorher
+  rechnerisch bis zu 0,7 Einheiten Überlappung).
+- P-47 als Regressionscheck (nutzt denselben Code-Pfad, aber nie als Problem gemeldet): Flicken-
+  Radius sank von 1,39/1,41 auf 0,38 (der Mittellinien-Clamp griff dort ebenfalls, ohne dass
+  vorher ein Fehler sichtbar war — reiner Sicherheitsgewinn).
+- **Echtes Playwright/Chromium, ein einziger sauberer Seitenaufruf** (kein wiederholter
+  `buildTemplate()`-Aufruf im selben Lauf — ein früherer Diagnoseversuch mit einem zweiten Aufruf
+  zeigte fälschlich `cutN=0`, weil `clone(true)` in three.js die BufferGeometry NICHT tief klont
+  und ein zweiter Rigging-Durchlauf auf der bereits vom ersten Durchlauf mutierten Geometrie
+  landet — ein eigener Fehler in der Testmethode, nicht im Spiel, siehe Offen): Jabo-Raid-Mission
+  über den echten Klick-Pfad gestartet, Kamera bei pausiertem Spiel senkrecht über das eigene
+  Flugzeug gesetzt. Vorher (Screenshot des Nutzers, exakt reproduziert): zwei helle Klumpen
+  deutlich außerhalb der Tragfläche in der Luft schwebend. Nachher: keine schwebenden Klumpen
+  mehr, die Flügelwurzel zeigt einen dunkleren, etwas glatteren Bereich, der sich sichtbar besser
+  in die umgebende Tarnfarbe einfügt statt als getrennter Fleck herauszustechen.
+
+**Offen:** Nicht auf dem echten iPad geflogen. Die Kandidatenauswahl bleibt zwischen sonst
+identischen Läufen instabil (0,88 vs. 1,75 Einheiten Halbspannweite in verschiedenen Testläufen
+desselben, unveränderten Codes und Modells) — die genaue Ursache dieser Lauf-zu-Lauf-Variation
+wurde nicht abschließend gefunden (das gierige, reihenfolgeabhängige Clustering in
+`findGearClusters()` ist ein plausibler Kandidat, aber nicht bewiesen). Beide beobachteten
+Ergebnisse liegen inzwischen im plausiblen Fenster und keines zeigt mehr das gemeldete Schweben
+oder Überlappen, aber eine dritte, bisher unbeobachtete Variante ist nicht ausgeschlossen. Separat,
+beim Debuggen gefunden und hier nur dokumentiert, nicht behoben: `buildTemplate()`s
+`modelRaw[k].clone(true)` teilt sich die BufferGeometry mit dem Original (three.js klont
+Geometrie/Material bei `clone()` nicht automatisch) — jeder erneute Aufruf (z. B. durch mehrfaches
+Drücken von „TURN MODEL") rigged auf einer bereits vom vorherigen Aufruf mutierten Geometrie
+weiter, mit unklaren kumulativen Effekten. Nicht Teil dieser Meldung und nicht angefasst, aber ein
+echter, unabhängiger Fund für eine künftige Runde.
+
+Code: `thunderbolt-europe.html`, `updateAudio()` (Suche nach „klingt wie ein Haarfoehn"),
+`findGearClusters()` (Suche nach „no single-engine WWII fighter"), `cutGearClusters()`/
+`coverGearCut()` (Suche nach „never cross onto the mirrored wheel's own side").
 
 ---
 
