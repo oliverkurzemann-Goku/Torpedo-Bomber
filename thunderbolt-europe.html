@@ -260,7 +260,7 @@
   <div id="flash"></div>
   <div id="gunsight"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">EU BUILD 52</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">EU BUILD 53</div>
 
   <div id="apr">
     <div id="aprCall"></div>
@@ -2126,7 +2126,19 @@ function findGearClusters(root, whole, S){
     if(Math.abs(Math.abs(a.cx)-Math.abs(b.cx))>S.x*0.03) continue;   // mirrored in x
     if(Math.abs(a.cz-b.cz)>S.x*0.03) continue;                       // same station along the hull
     if(Math.abs(a.cy-b.cy)>S.y*0.15) continue;                       // same height
-    const score=Math.abs(a.cx+b.cx)+Math.abs(a.cz-b.cz)+Math.abs(a.cy-b.cy)*2;
+    // Reported (Fw190): a wing-root patch was visibly floating past the real wing edge near the
+    // tip. Logging every candidate pair for the real fw190.glb (not just the winning one) turned
+    // up several plausible mirrored pairs at very different span stations, and pure symmetry
+    // scoring picked one sitting at HALF the wingspan out - no single-engine WWII fighter this
+    // function serves (P-47, Fw190, Me262 - B-17/B-24/Bf109 already succeed on the "own gear"
+    // path and never reach here) has main gear anywhere near its wingtip; real track/half-span
+    // ratios for all three are 28-33%. A candidate outside a generous 12-42% band is almost
+    // certainly some other symmetric under-wing detail (a flap fairing, a light recess), not a
+    // wheel well, so it is penalised rather than excluded outright - a bad-enough symmetry match
+    // elsewhere can still win if nothing plausible exists.
+    const frac=Math.abs(a.cx)/(S.x/2);
+    const implausible=frac<0.12?(0.12-frac):frac>0.42?(frac-0.42):0;
+    const score=Math.abs(a.cx+b.cx)+Math.abs(a.cz-b.cz)+Math.abs(a.cy-b.cy)*2+implausible*2;
     if(!best || score<best.score) best={a,b,score};
   }
   return {clusters: best? [best.a,best.b] : [], floor};
@@ -2148,7 +2160,10 @@ function cutGearClusters(root, gearInfo){
         m.set((a.x+b.x+c.x)/3,(a.y+b.y+c.y)/3,(a.z+b.z+c.z)/3);
         if(m.y>=floor) continue;               // stay strictly below the measured-safe floor line
         let hit=false;
-        for(const cl of clusters){ if(Math.hypot(m.x-cl.cx,m.z-cl.cz)<cl.r*rf){ hit=true; break; } }
+        for(const cl of clusters){
+          if(m.x*cl.cx<0) continue;    // never cross onto the mirrored wheel's own side (see below)
+          if(Math.hypot(m.x-cl.cx,m.z-cl.cz)<cl.r*rf){ hit=true; break; }
+        }
         if(!hit) continue;
         arr[t+1]=arr[t]; arr[t+2]=arr[t]; cut++; hitAny=true;
       }
@@ -2166,7 +2181,10 @@ function cutGearClusters(root, gearInfo){
         rd(o,pos,arr[t],a); rd(o,pos,arr[t+1],b); rd(o,pos,arr[t+2],c);
         m.set((a.x+b.x+c.x)/3,(a.y+b.y+c.y)/3,(a.z+b.z+c.z)/3);
         if(m.y>=floor) continue;
-        for(const cl of clusters){ if(Math.hypot(m.x-cl.cx,m.z-cl.cz)<cl.r*2.2){ n++; break; } }
+        for(const cl of clusters){
+          if(m.x*cl.cx<0) continue;
+          if(Math.hypot(m.x-cl.cx,m.z-cl.cz)<cl.r*2.2){ n++; break; }
+        }
       }
     });
     return n;
@@ -2235,7 +2253,17 @@ function sampleNearbySurfaceColor(root, cl, rInner, rOuter){
 }
 function coverGearCut(root, clusters, floor, rfUsed){
   for(const cl of clusters){
-    const r=cl.r*rfUsed*1.15;
+    // Margin was 1.15 (+ up to another 1.35x from the rim jitter below, worst case ~1.55x the
+    // real cut radius) - fine on a wide, flat area of skin, but reported as visibly overhanging
+    // past the real edge near a wing tip, where there is little surrounding surface to spare.
+    // Tightened to the smallest margin that still reliably covers the cut (verified against the
+    // real cutGearClusters() output, not just assumed). Reported (Fw190): on a model where the
+    // wing-root skin itself dips below the cut floor at the wheel's station (see cutGearClusters()'s
+    // own comment on this exact model), the cut widens enough that the two mirrored patches met and
+    // merged into one blob spanning the centreline - cutGearClusters() no longer lets the cut cross
+    // the mirror line at all (see its own "never cross onto the mirrored wheel's own side"), so the
+    // patch cannot need to either.
+    const r=Math.min(cl.r*rfUsed*1.06, Math.abs(cl.cx)*0.97);
     // sample a ring just outside the cut, not inside it (inside is the hole itself) - wide enough
     // to catch real skin at any model's scale, narrow enough to stay local to this wheel, not
     // wander onto a national marking or the opposite wing
@@ -2249,7 +2277,7 @@ function coverGearCut(root, clusters, floor, rfUsed){
     for(let i=1;i<rp.count;i++){                       // vertex 0 is the centre, leave it alone
       // only ever GROW a rim vertex, never shrink it below r - r is already sized to guarantee
       // full coverage of the actual cut, and jittering it smaller would tear a new gap open
-      const jitter=1.0+Math.random()*0.35;
+      const jitter=1.0+Math.random()*0.15;
       rp.setXY(i, rp.getX(i)*jitter, rp.getY(i)*jitter);
     }
     rp.needsUpdate=true;
@@ -4416,24 +4444,33 @@ function updateAudio(dt){
   const ct=actx.currentTime;
   // Reported: the Me262 (a jet, no propeller - see JET_KINDS/rigModel()'s own comment) still
   // used the exact same detuned-sawtooth-plus-LFO-wobble engine model as every piston aircraft
-  // here, which reads as a propeller drone because that IS what it was built to model. A turbine
-  // has no cylinder-firing pulse to wobble at all, sits at a much higher, smoother pitch, and is
-  // dominated by broadband hiss rather than a low mechanical rumble. Reusing the same node graph
-  // (see initAudio()) driven completely differently, rather than building a second graph:
-  // no LFO amplitude modulation, a much higher tone that rises with throttle/speed instead of a
-  // rough low idle, and the noise layer swept up into a bright hiss instead of a low rumble.
+  // here, which reads as a propeller drone because that IS what it was built to model. First fix
+  // (EU BUILD 52) killed the LFO wobble and raised the pitch, but reported back "klingt wie ein
+  // Haarfoehn" (sounds like a hairdryer) - measured what was actually built rather than guessing
+  // again: the noise layer's gain (up to ~0.14 at full rpm) was HIGHER than the tone's own gain
+  // (~0.11), swept into a broad 1.8-4.4 kHz bandpass at the stock Q of 0.7 - a loud, wide, hissy
+  // band with a quieter tone underneath is close to the literal definition of a hairdryer. Fixed
+  // by inverting that balance: the tone is now the dominant, clearly pitched element, the noise
+  // is a quiet supporting texture, and its band is pulled in tight (Q raised well past the shared
+  // default) and tuned as a harmonic of the tone's own pitch so it reads as part of one engine
+  // rather than a second, unrelated rushing-air sound layered on top. `nbp.Q` is shared with the
+  // piston-engine noise layer and was never touched before this, so the else branch below now
+  // resets it back to the original 0.7 - otherwise a jet flight would leave every piston aircraft
+  // flown afterwards with the jet's narrow Q stuck on its own noise layer.
   if(JET_KINDS.includes(P.ac)){
     const tf=340+rpm*260+(P.spd/Math.max(1,MAX_SPD))*90;
     eng.freq+=(tf-eng.freq)*Math.min(1,4*dt);
     eng.o1.frequency.setTargetAtTime(eng.freq,ct,0.10);
-    eng.o2.frequency.setTargetAtTime(eng.freq*1.004,ct,0.10);
-    eng.lp.frequency.setTargetAtTime(2600+rpm*1400,ct,0.15);
-    const vol=flying?(0.035+rpm*0.075):0;
+    eng.o2.frequency.setTargetAtTime(eng.freq*1.006,ct,0.10);
+    eng.lp.frequency.setTargetAtTime(2200+rpm*900,ct,0.15);
+    const vol=flying?(0.05+rpm*0.10):0;
     eng.eg.gain.setTargetAtTime(vol,ct,0.18);
     eng.lfoG.gain.setTargetAtTime(0,ct,0.2);
-    eng.nbp.frequency.setTargetAtTime(1800+rpm*2600,ct,0.15);
-    eng.ng.gain.setTargetAtTime(flying?0.05+rpm*0.09:0,ct,0.15);
+    eng.nbp.frequency.setTargetAtTime(eng.freq*3.2,ct,0.15);
+    eng.nbp.Q.setTargetAtTime(3.5,ct,0.2);
+    eng.ng.gain.setTargetAtTime(flying?0.010+rpm*0.018:0,ct,0.15);
   } else {
+    eng.nbp.Q.setTargetAtTime(0.7,ct,0.15);
     // the Jug's R-2800 sits lower and rougher than the 109's inline
     const base=(P.ac==='p47')?42:52;
     const tf=base+rpm*74+(P.spd/Math.max(1,MAX_SPD))*22;
