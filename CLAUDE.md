@@ -5,7 +5,7 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 120 · Thunderbolt Squadron EU BUILD 53**
+Stand bei Übergabe: **Torpedo Squadron BUILD 120 · Thunderbolt Squadron EU BUILD 54**
 Repo: `oliverkurzemann-Goku/Torpedo-Bomber`, ausgeliefert über GitHub Pages.
 Alle Angaben unten sind aus dem tatsächlichen Code verifiziert, nicht aus dem Gedächtnis.
 
@@ -3373,6 +3373,128 @@ Code: `thunderbolt-europe.html`, `updateAudio()` (Suche nach „klingt wie ein H
 
 ---
 
+### 4.46 Bomber-Nasenpropeller, Fw190-Flecken (endlich Ursache statt Symptom), Me262-Sound Runde 3 — EU BUILD 54
+
+Nutzer, mit zwei Screenshots direkt nach EU BUILD 53: „Die Stellen am Flügel sind jetzt noch
+schlimmer und warum haben die Bomber e8nen Propeller an der Nase? Der Sound der me262 ist
+furchtbar, klingt wie ein Mücke." Drei Punkte, einer davon neu (Bomber), einer davon eine
+vierte(!) Runde am selben Fw190-Fehler.
+
+#### 1) B-17/B-24: `findProp()` baute einen 8,5-m-„Propeller" an die Bugkanzel — BEHOBEN
+
+Neuer Fund, kein Regressions-Fehler aus dieser Sitzung. `findProp()` ist für einmotorige Jäger
+gebaut (sucht eine Nabe-plus-Blatt-Scheibe nahe der Rumpfspitze) und lief bislang auch für die
+beiden vierstrahligen/-motorigen Bomber, weil `NBLADES` (die Liste, für welche Baumuster überhaupt
+ein Propeller gebaut wird) `b17:3, b24:3` enthielt. Am echten Modell nachgemessen: `findProp()`
+verwechselt die runde, verglaste Bugkanzel dieser Bomber mit einer Propellerhaube und baute dort
+einen 8,5 m „Propeller" (B-17) bzw. 3,8 m (B-24) — beide Werte weit jenseits jeder realen
+Propellergröße, exakt das vom Nutzer beschriebene Bild. Beide Bomber tragen ihre echten Propeller
+bereits korrekt an den Tragflächen-Triebwerken (unangetastet, `findProp()`/`cutBlades()` laufen für
+sie gar nicht mehr).
+
+**Fix:** neue Konstante `NO_PROP_KINDS=['b17','b24']`, `rigModel()` überspringt `findProp()` für
+diese Typen komplett (analog zu `JET_KINDS` für die Me262) — beide Bomber sind KI-only und werden
+nie vom Spieler geflogen, ihre eigenen, im Modell bereits vorhandenen Triebwerks-Propeller waren
+nie Teil des Problems.
+
+**Nachgewiesen am echten Modell:** `rigModel()` wortwörtlich extrahiert, gegen echte `b17.glb`/
+`b24.glb` mit echtem `GLTFLoader` r128 und echtem headless-WebGL-Renderer ausgeführt. Vorher:
+`prop`-Gruppe mit Kindern an der Bugspitze, Seiten-/3-viertel-Renders zeigen den falschen
+Riesenpropeller deutlich vor der Kanzel. Nachher: „no propeller found", `prop`-Gruppe mit 0
+Kindern, Renders zeigen beide Bomber korrekt mit intakten Flügeltriebwerken, keine Bugscheibe mehr.
+
+#### 2) Fw190-Flügelflecken — vierte Runde, jetzt mit tatsächlich gefundener Ursache
+
+Der Nutzer hat zu Recht „noch schlimmer" gemeldet. Die EU-BUILD-53-Fassung (`GEAR_CLUSTER_HINT`,
+Mittellinien-Clamp) hatte die POSITION korrekt fixiert (numerisch mehrfach bestätigt, Lauf-zu-Lauf
+stabil bei 16,6–16,7 % Halbspannweite statt vorher wandernd), aber die FARBE blieb blass/hell statt
+dunkles Camouflage — der eigentliche, vom Nutzer als „noch schlimmer" wahrgenommene Defekt.
+
+**Erster Fund — die Farbe wurde falsch gesampelt.** `sampleNearbySurfaceColor()` sammelte Pixel aus
+einem Ring rein nach x/z-Abstand um den Radkomplex, ohne Höhenfilter. Am echten `fw190.glb`
+nachgemessen: dieser Ring reicht von y=−1,17 bis y=+0,59 — praktisch die gesamte 2,83 m Höhe des
+Flugzeugs, inklusive der Flügeloberseite und des Radschacht-Inneren. Der gemittelte Farbwert war
+dadurch strukturell zu hell. **Fix:** Höhenfenster ±0,2 Einheiten um `floor` (dieselbe Höhe, auf der
+der Flicken sitzt) ergänzt — am echten Modell blieben dabei immer noch 336 Kandidatenpunkte übrig
+(weit über der `n>=8`-Untergrenze). Direkt im echten Browser nachgemessen: die gesampelte Farbe kam
+danach tatsächlich dunkel heraus (`0x3e423d`/`0x414742`), nicht mehr blass — aber im Rendering blieb
+der Flicken trotzdem ein heller Fleck.
+
+**Zweiter Fund — die eigentliche Ursache: Beleuchtungs-Orientierung, nicht Farbe.** Mit einem
+echten Least-Squares-Ebenen-Fit (Minimum-Varianz-Richtung, per Power-Iteration über die
+Kovarianzmatrix der nahegelegenen Oberflächenpunkte — dieselbe `setFromUnitVectors`-Technik, die
+`strutBetween()` in diesem File schon für Zylinder benutzt) gemessen, wie die reale Fläche an dieser
+Stelle tatsächlich ausgerichtet ist: die Punkte liegen fast exakt in einer Ebene (Minimum-Varianz
+nur 0,012), deren Normale (−0,10, −0,995, 0) ist — praktisch senkrecht nach UNTEN. Der alte, feste
+`CircleGeometry`-Flicken zeigte aber immer nach OBEN (+Y, `rotation.x=-Math.PI/2`), unabhängig von
+der echten Fläche — bei einer echten Flügelunterseite fast die exakt entgegengesetzte Richtung.
+Das erklärt, warum selbst eine korrekt dunkel gesampelte Farbe hell wirkte: kein Farbfehler, ein
+Beleuchtungsfehler (eine flache, nach oben zeigende Fläche fängt direktes „Sonnenlicht" ein, das
+eine beschattete Unterseite nie bekommen sollte).
+
+**Ein Zwischenversuch, verworfen:** Um das Orientierungsproblem ganz zu umgehen, wurde die
+Scheibe testweise durch eine Kugel ersetzt (keine „falsche Seite" möglich). Gerendert: sah wie zwei
+auffällige graue Bälle auf der Tragfläche aus — anders schlecht, nicht besser. Verworfen zugunsten
+der jetzt korrekt orientierten flachen Scheibe (die Minimum-Varianz-Zahl oben zeigt: eine Ebene ist
+tatsächlich die richtige Form für diese Stelle, nur die Ausrichtung war falsch).
+
+**Dritter Fund, beim Verifizieren der Ebenen-Ausrichtung entdeckt:** Selbst mit korrekt berechneter,
+nach unten zeigender Normale (im echten Browser bestätigt: `getWorldQuaternion()` liefert exakt
+(0,04, −1,00, −0,03)) blieb der Flicken aus der Top-Down-Ansicht weiterhin hell. Ursache: das
+Material stand auf `side:THREE.DoubleSide` — das lässt den Fragment-Shader die Beleuchtungsnormale
+serverseitig auf die Kameraseite umklappen (`gl_FrontFacing`), sodass eine Fläche IMMER so beleuchtet
+wird, als würde sie zur Kamera zeigen, unabhängig von ihrer wahren Ausrichtung. Das hat die gesamte
+Ebenen-Ausrichtungs-Korrektur wirkungslos gemacht. **Fix:** `DoubleSide` entfernt (Standard:
+`FrontSide`) — jetzt zeigt die wahre Ausrichtung tatsächlich Wirkung: korrekt beschattet aus der
+Perspektive, aus der die Fläche wirklich sichtbar sein soll (von unten), und aus der Vogelperspektive
+einfach nicht gezeichnet (Rückseite) — was hier richtig ist, weil von oben ohnehin die echte,
+unversehrte Flügeloberhaut zu sehen sein soll, nicht dieser Flicken.
+
+**Nachgewiesen, alle drei Funde zusammen:** Echtes Playwright/Chromium, echter Klickpfad
+(Missions-Chip „FW 190" → Begin Sortie → Start Engine), Material-Farbe UND Weltnormale direkt aus
+der laufenden Szene ausgelesen (nicht behauptet): Farbe `0x3e423d`/`0x414742` (dunkel, korrekt),
+Normale (0,04,−1,00,−0,03) (nach unten, korrekt). Draufsicht-Screenshot exakt wie im
+Nutzer-Screenshot aufgebaut: keine hellen Flecken mehr sichtbar, die Tragfläche sieht aus wie jedes
+andere Camouflage-Flugzeug. Eine realistischere 3/4-Verfolgungskamera-Ansicht (typische
+Spielperspektive) zeigt ebenfalls keinerlei sichtbare Artefakte. Regressionscheck P-47 (teilt
+denselben Codepfad): weiterhin ein kleiner, unauffälliger Flicken (Radius 0,38, Farbe
+`0x696d70`/`0x4a4e48`), keine Verschlechterung.
+
+#### 3) Me262-Sound „klingt wie eine Mücke" — dritte Runde
+
+EU BUILD 53 hatte die Balance korrigiert (Ton dominant statt Rauschen — das behebt den
+„Haarföhn"), aber mit 340–860 Hz und nahezu unisono Oszillatoren (`freq*1,006`) plus enger
+Rauschbandbreite (Q=3,5) landete der Ton genau im Mücken-Sirren-Bereich: dünn, rein, isoliert.
+
+**Fix:** Grundton eine Registerstufe tiefer (170–350 Hz, weiterhin klar höher/glatter als jedes
+Kolbenflugzeug hier mit 42–138 Hz, aber deutlich außerhalb des Sirren-Bereichs), Verstimmung der
+beiden Oszillatoren verbreitert (`freq*1,018` statt `*1,006`) für einen volleren, weniger reinen
+Chorus-Klang, Tiefpass gesenkt (1400–2100 Hz statt 2200–3100 Hz) um die schärfsten Obertöne zu
+dämpfen, Rauschband-Güte gelockert (Q=1,8, ein Mittelweg zwischen dem 0,7 des Haarföhn-Zustands und
+dem 3,5 des Mücken-Zustands) — damit liest sich das Rauschen wieder als Teil desselben Triebwerks
+statt als eigenständiges Pfeifen.
+
+**Nachgewiesen (Grenzen wie immer bei reinem WebAudio-Sounddesign, siehe 4.29/4.45):** Kann von hier
+aus nicht gehört werden — verifiziert wurde, dass sich die Werte tatsächlich in die beabsichtigte
+Richtung bewegt haben (Grundfrequenz eine Oktave tiefer als die Mücken-Fassung, weiterhin klar über
+jedem Kolbenmotor; Rauschgüte zwischen den beiden bisherigen, gemeldet schlechten Extremen), nicht
+dass es subjektiv überzeugt. `nbp.Q` wird im Kolbenmotor-Zweig weiterhin explizit auf 0,7
+zurückgesetzt, damit ein Me262-Flug keine Nachwirkung auf andere Flugzeuge hinterlässt.
+
+**Offen (alle drei Punkte):** Nichts davon auf dem echten iPad geprüft. Der Fw190-Fall zeigt (jetzt
+zum vierten Mal dokumentiert) exemplarisch, wie tief eine „einfache" Symptom-Behebung (Farbe,
+Position) am eigentlichen, strukturellen Fehler (Beleuchtungs-Ausrichtung, `DoubleSide`) vorbeigehen
+kann — festgehalten als neue Lektion unten. Der Me262-Sound bleibt reine Parameterarbeit ohne
+Hör-Verifikation; sollte „Mücke" oder „Haarföhn" nach diesem Build erneut gemeldet werden, ist der
+nächste Schritt vermutlich, die Balance zwischen Ton und Rauschen erneut zu messen (wie in Runde 1),
+nicht denselben Frequenzbereich weiter zu verschieben.
+
+Code: `thunderbolt-europe.html`, `NO_PROP_KINDS` (Suche nach „a tiny underside vent panel" — direkt
+davor), `fitLocalSurfacePlane()`/`coverGearCut()` (Suche nach „DoubleSide was here to guarantee"),
+`updateAudio()` (Suche nach „klingt wie eine Muecke").
+
+---
+
 ## 5. Gelernte Lektionen (aus echten, wiederholten Fehlern)
 
 1. **Nie im Chat/offline testen und im Spiel hoffen.** Der größte Zeitfresser dieses
@@ -3543,6 +3665,20 @@ Code: `thunderbolt-europe.html`, `updateAudio()` (Suche nach „klingt wie ein H
    stellen (eine Konsolenwarnung, ein Blick in die Quelle, eine isolierte Zeitmessung), statt die
    erste plausible Erklärung (egal ob „das müsste gehen" oder „das ist jetzt zu langsam") für bare
    Münze zu nehmen.**
+25. **Eine korrekt gemessene Farbe UND eine korrekt berechnete Flächennormale können beide stimmen
+   und die Fläche trotzdem falsch aussehen — wenn `DoubleSide` dazwischenfunkt.** Der Fw190-Flicken
+   (4.46) durchlief drei eigenständig verifizierte Korrekturen — Farbe direkt aus der Textur
+   gesampelt (nachweislich dunkel, `0x3e423d`), Ausrichtung per Ebenen-Fit gemessen (nachweislich
+   nach unten zeigend, `getWorldQuaternion()` bestätigt) — und sah im echten Rendering trotzdem
+   unverändert hell aus. Ursache: `side:THREE.DoubleSide` lässt den Fragment-Shader die
+   Beleuchtungsnormale auf `gl_FrontFacing` umklappen, sodass eine Fläche IMMER so beleuchtet wird,
+   als zeige sie zur Kamera — unabhängig von ihrer tatsächlichen, korrekt berechneten Ausrichtung.
+   Zwei für sich genommen richtige, einzeln bestätigte Werte (Farbe, Normale) wurden von einer
+   dritten, unbeachteten Materialeinstellung vollständig neutralisiert. **Wenn eine Fläche trotz
+   nachweislich korrekter Farbe UND Ausrichtung immer noch falsch beleuchtet aussieht, als Nächstes
+   nicht an Farbe/Normale weiterdrehen, sondern die Material-Flags selbst prüfen (`side`,
+   `flatShading`, Blend-Modus) — genau die Art Einstellung, die stillschweigend alles andere
+   überschreibt, ohne selbst je als „gemessen falsch" aufzufallen.**
 
 ---
 
