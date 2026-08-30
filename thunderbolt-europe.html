@@ -260,7 +260,7 @@
   <div id="flash"></div>
   <div id="gunsight"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">EU BUILD 53</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">EU BUILD 54</div>
 
   <div id="apr">
     <div id="aprCall"></div>
@@ -1598,6 +1598,15 @@ const REAL_SPAN={ p47:12.42, bf109:9.92, fw190:10.51, b17:31.62, b24:33.53, me26
 // own comment - the Me262's round nacelle intakes and tail cone measure enough like a
 // hub/blade annulus to fool the same disc heuristic that works for every propeller aircraft).
 const JET_KINDS=['me262'];
+// Reported (real screenshot): the bombers flew with an enormous disc bolted to the nose.
+// Measured directly against the real models: findProp() built an 8.5 m "propeller" on the
+// b17.glb and a 3.8 m one on the b24.glb - both four-engine bombers with their real propellers
+// already on the wings, no single engine at the nose at all. findProp()'s hub-search (built for
+// single-engine fighters) mistook the B-17's round glazed nose cone for a hub. Both bombers are
+// AI-only and never player-flown, so skipping synthesis entirely and leaving their own modelled
+// wing engines alone (untouched, since findProp()/cutBlades() never runs) is correct, not a
+// compromise - there was never anything at the nose to find.
+const NO_PROP_KINDS=['b17','b24'];
 // The Me262 has tricycle gear (a nosewheel, no tailwheel) - every other aircraft `buildGear()`
 // serves is a taildragger. See buildGear()'s own comment for where this changes the small wheel's
 // position.
@@ -2087,7 +2096,16 @@ function makeProp(prop, nBlades){
 // the real game. A lone tail/nose wheel is deliberately NOT hunted for here: every heuristic
 // tried for it also matched real belly detail (ducts, gun bays, aerial mounts) on the busier
 // aircraft - not worth the risk of cutting a hole in something that isn't a wheel.
-function findGearClusters(root, whole, S){
+// Reported (Fw190, real device, twice): the scoring-based picker above still wasn't reliable -
+// a second report showed the patches WORSE, not better, after the first attempt to fix the
+// scoring. Rather than tune the same heuristic a further time (Lektion 9: change the approach,
+// not the parameters), the real wheel position for this model was already measured once,
+// carefully, directly against the geometry (4.38: "a wheel sitting just 0.88 units off the
+// centreline") - pinned here so a fresh run can never wander onto a different, wrong-looking
+// candidate again. Only added for the one model this was actually reported on; every other
+// aircraft keeps using the dynamic search unchanged.
+const GEAR_CLUSTER_HINT={ fw190: 0.88 };
+function findGearClusters(root, whole, S, kind){
   const floor=whole.min.y+S.y*0.30;
   const groupR=Math.max(S.x*0.05, 0.3);
   const v=new THREE.Vector3();
@@ -2135,10 +2153,18 @@ function findGearClusters(root, whole, S){
     // ratios for all three are 28-33%. A candidate outside a generous 12-42% band is almost
     // certainly some other symmetric under-wing detail (a flap fairing, a light recess), not a
     // wheel well, so it is penalised rather than excluded outright - a bad-enough symmetry match
-    // elsewhere can still win if nothing plausible exists.
-    const frac=Math.abs(a.cx)/(S.x/2);
-    const implausible=frac<0.12?(0.12-frac):frac>0.42?(frac-0.42):0;
-    const score=Math.abs(a.cx+b.cx)+Math.abs(a.cz-b.cz)+Math.abs(a.cy-b.cy)*2+implausible*2;
+    // elsewhere can still win if nothing plausible exists. Where a specific position has been
+    // measured and pinned above (GEAR_CLUSTER_HINT), that overrides the generic band entirely -
+    // a direct distance-from-the-known-real-position penalty rather than a wide plausible range.
+    const hint=GEAR_CLUSTER_HINT[kind];
+    let implausible;
+    if(hint!=null){
+      implausible=Math.abs(Math.abs(a.cx)-hint)/(S.x/2);
+    } else {
+      const frac=Math.abs(a.cx)/(S.x/2);
+      implausible=frac<0.12?(0.12-frac):frac>0.42?(frac-0.42):0;
+    }
+    const score=Math.abs(a.cx+b.cx)+Math.abs(a.cz-b.cz)+Math.abs(a.cy-b.cy)*2+implausible*(hint!=null?8:2);
     if(!best || score<best.score) best={a,b,score};
   }
   return {clusters: best? [best.a,best.b] : [], floor};
@@ -2220,7 +2246,7 @@ function cutGearClusters(root, gearInfo){
 // pixels of the surrounding skin, just outside the cut, off the same decoded image the GLTFLoader
 // already put in `material.map` - same-origin embedded texture, no CORS taint, safe to read with
 // a throwaway canvas.
-function sampleNearbySurfaceColor(root, cl, rInner, rOuter){
+function sampleNearbySurfaceColor(root, cl, rInner, rOuter, floor){
   let rSum=0, gSum=0, bSum=0, n=0;
   const v=new THREE.Vector3();
   root.traverse(o=>{
@@ -2241,6 +2267,15 @@ function sampleNearbySurfaceColor(root, cl, rInner, rOuter){
       readVert(pos,i,v); o.localToWorld(v);
       const d=Math.hypot(v.x-cl.cx, v.z-cl.cz);
       if(d<rInner||d>rOuter) continue;
+      // Reported (Fw190, third round): the sampled colour itself came out pale/washed-out, not
+      // dark camo - measured directly (no pixel decode needed, pure geometry) why: the x/z-only
+      // ring around a wing-root wheel spans y=-1.17 to +0.59 on this model, nearly the aircraft's
+      // ENTIRE 2.83 m height, sweeping in the wing's top surface and the wheel-well interior along
+      // with the actual nearby exterior skin - averaging all of that together washes the colour
+      // toward whatever is lightest. The patch itself always sits at `floor` (see coverGearCut),
+      // so restrict sampling to the same height band: plenty of candidates remain even at a tight
+      // +-0.2 window (measured 336 on this exact model, well over the n>=8 floor below).
+      if(floor!=null && Math.abs(v.y-floor)>0.2) continue;
       let px=Math.floor(((uv.getX(i)%1+1)%1)*img.width);
       let py=Math.floor(((1-uv.getY(i)%1+1)%1)*img.height);
       px=Math.max(0,Math.min(img.width-1,px)); py=Math.max(0,Math.min(img.height-1,py));
@@ -2250,6 +2285,69 @@ function sampleNearbySurfaceColor(root, cl, rInner, rOuter){
     }
   });
   return n>=8 ? new THREE.Color(rSum/n/255, gSum/n/255, bSum/n/255) : null;
+}
+// Reported (Fw190, third round): even with the correct dark sampled colour (verified straight off
+// the live material - 0x3e423d/0x414742, genuinely dark, not the pale tone visible on screen) the
+// patch STILL rendered as a glaring pale disc. First guess was a lighting-orientation mismatch, so
+// tried averaging the nearby vertex normals - that average came out weak and muddled (magnitude
+// only 0.3-0.44 even in a tight +-0.05 window), because per-vertex normals on a curved/detailed
+// mesh cancel out even where the underlying surface is genuinely flat. Fitting a PLANE through the
+// same nearby surface POSITIONS instead (least-squares, via the eigenvector of smallest variance -
+// the direction the points barely spread out along) is far more robust to that per-vertex noise:
+// measured on this exact model, the fitted plane has a minimum-variance of just 0.012 (the points
+// really do lie almost exactly in a plane) and that plane's normal comes out to (-0.10,-0.995,0) -
+// essentially straight DOWN, not up. The flat CircleGeometry patch always faced +Y (up, toward the
+// sun) regardless of the real surface it sat over - on this model that is not just "some" wrong
+// orientation, it is the exact opposite of the wing underside it was covering, catching direct
+// light a shaded underside should never see. That is why even a correctly dark colour still looked
+// pale: a lighting-orientation bug, not a colour bug (Lektion 9's own point about not mistaking a
+// shading problem for a colour problem carries over here). A sphere was tried next specifically to
+// sidestep needing an orientation at all - rendered instead as two conspicuous grey balls sitting
+// on top of the wing, worse in a different way. Gone back to a flat disc (the minimum-variance
+// number above says a plane genuinely is the right shape for this surface) but now oriented with
+// the fitted normal via `setFromUnitVectors` (the same technique this file's own strutBetween()
+// already uses for orienting cylinders between two arbitrary points) instead of a fixed up rotation.
+function fitLocalSurfacePlane(root, cl, rInner, rOuter, floor){
+  const v=new THREE.Vector3();
+  const pts=[];
+  root.traverse(o=>{
+    if(pts.length>=400) return;
+    if(!o.isMesh||!o.geometry||!o.geometry.attributes.position) return;
+    const pos=o.geometry.attributes.position;
+    const st=Math.max(1,Math.floor(pos.count/2000));
+    for(let i=0;i<pos.count && pts.length<400;i+=st){
+      readVert(pos,i,v); o.localToWorld(v);
+      const d=Math.hypot(v.x-cl.cx, v.z-cl.cz);
+      if(d<rInner||d>rOuter) continue;
+      if(floor!=null && Math.abs(v.y-floor)>0.2) continue;
+      pts.push({x:v.x,y:v.y,z:v.z});
+    }
+  });
+  if(pts.length<8) return null;
+  const n=pts.length;
+  let mx=0,my=0,mz=0; for(const p of pts){ mx+=p.x; my+=p.y; mz+=p.z; } mx/=n; my/=n; mz/=n;
+  let xx=0,xy=0,xz=0,yy=0,yz=0,zz=0;
+  for(const p of pts){
+    const dx=p.x-mx, dy=p.y-my, dz=p.z-mz;
+    xx+=dx*dx; xy+=dx*dy; xz+=dx*dz; yy+=dy*dy; yz+=dy*dz; zz+=dz*dz;
+  }
+  xx/=n; xy/=n; xz/=n; yy/=n; yz/=n; zz/=n;
+  const mul=(v)=>({x:xx*v.x+xy*v.y+xz*v.z, y:xy*v.x+yy*v.y+yz*v.z, z:xz*v.x+yz*v.y+zz*v.z});
+  const norm=(v)=>{ const l=Math.hypot(v.x,v.y,v.z)||1; return {x:v.x/l,y:v.y/l,z:v.z/l}; };
+  // power iteration for the two dominant (in-plane) eigenvectors of the covariance matrix, then
+  // the plane normal is whatever is left over, at right angles to both: cross(u1,u2).
+  let u1={x:1,y:0,z:0};
+  for(let k=0;k<24;k++) u1=norm(mul(u1));
+  const mv1=mul(u1), lambda1=mv1.x*u1.x+mv1.y*u1.y+mv1.z*u1.z;
+  let u2=norm({x:0,y:1,z:0.001});
+  for(let k=0;k<24;k++){
+    let w=mul(u2);
+    const d=u1.x*u2.x+u1.y*u2.y+u1.z*u2.z;
+    w={x:w.x-lambda1*d*u1.x, y:w.y-lambda1*d*u1.y, z:w.z-lambda1*d*u1.z};
+    u2=norm(w);
+  }
+  const nrm={x:u1.y*u2.z-u1.z*u2.y, y:u1.z*u2.x-u1.x*u2.z, z:u1.x*u2.y-u1.y*u2.x};
+  return {center:new THREE.Vector3(mx,my,mz), normal:new THREE.Vector3().copy(norm(nrm))};
 }
 function coverGearCut(root, clusters, floor, rfUsed){
   for(const cl of clusters){
@@ -2267,23 +2365,41 @@ function coverGearCut(root, clusters, floor, rfUsed){
     // sample a ring just outside the cut, not inside it (inside is the hole itself) - wide enough
     // to catch real skin at any model's scale, narrow enough to stay local to this wheel, not
     // wander onto a national marking or the opposite wing
-    const sampled=sampleNearbySurfaceColor(root, cl, r, r*1.6);
+    const sampled=sampleNearbySurfaceColor(root, cl, r, r*1.6, floor);
     const col=sampled || new THREE.Color(0x2b2f2d);   // flat fallback if this model has no map at all
-    const mat=new THREE.MeshStandardMaterial({color:col, roughness:0.75, side:THREE.DoubleSide});
-    // a perfect circle reads as a sticker; nudge each rim vertex's radius randomly so the outline
-    // is irregular like a real repaired/riveted panel, not a coin
+    const plane=fitLocalSurfacePlane(root, cl, r, r*1.6, floor);
+    // DoubleSide was here to guarantee the patch is never invisible from an unexpected angle -
+    // but measured directly in a real browser after the plane-fit above: the patch's WORLD normal
+    // really was correctly pointing down (-0.999 y, verified via getWorldQuaternion()), yet it
+    // still rendered just as pale from directly above as the old always-up version. Cause: a
+    // DoubleSide material's fragment shader flips the effective lighting normal to face whichever
+    // side the camera is currently looking from (gl_FrontFacing) - so a camera above always sees
+    // an effectively-upward, sun-facing normal for lighting purposes, regardless of the mesh's own
+    // true orientation. DoubleSide was silently cancelling out the entire fix. Single-sided lets
+    // the real orientation actually matter: correctly shaded (dark, matching the shaded underside)
+    // when seen from below where it belongs, and simply not drawn (its own true front-facing side)
+    // when viewed from above - which is fine, since the wing's own real, untouched top skin is
+    // what a top-down view should show there instead of this patch anyway.
+    const mat=new THREE.MeshStandardMaterial({color:col, roughness:0.85});
     const geo=new THREE.CircleGeometry(r, 20);
     const rp=geo.attributes.position;
+    // a perfect circle reads as a sticker; nudge each rim vertex's radius randomly so the outline
+    // is irregular like a real repaired/riveted panel, not a coin
     for(let i=1;i<rp.count;i++){                       // vertex 0 is the centre, leave it alone
-      // only ever GROW a rim vertex, never shrink it below r - r is already sized to guarantee
-      // full coverage of the actual cut, and jittering it smaller would tear a new gap open
       const jitter=1.0+Math.random()*0.15;
       rp.setXY(i, rp.getX(i)*jitter, rp.getY(i)*jitter);
     }
     rp.needsUpdate=true;
     const patch=new THREE.Mesh(geo,mat);
-    patch.rotation.x=-Math.PI/2;
-    patch.position.set(cl.cx, floor, cl.cz);
+    if(plane){
+      // circle's own normal is local +Z before any rotation - align it to the real, measured
+      // surface normal instead of always assuming the patch faces up
+      patch.quaternion.setFromUnitVectors(new THREE.Vector3(0,0,1), plane.normal);
+      patch.position.set(cl.cx, plane.center.y, cl.cz);
+    } else {
+      patch.rotation.x=-Math.PI/2;
+      patch.position.set(cl.cx, floor, cl.cz);
+    }
     root.add(patch);
   }
 }
@@ -2300,14 +2416,14 @@ function rigModel(root, kind){
   // (see cutBlades). What replaces them is a real, turning propeller, the same thing the Avenger
   // has always had in the carrier game and the one propeller in this project nobody complained
   // about. Blade counts are historical fact, not a measurement: P-47D four, everything else three.
-  const NBLADES={p47:4, bf109:3, fw190:3, b17:3, b24:3};
+  const NBLADES={p47:4, bf109:3, fw190:3};
   // Reported (Me262): a jet has no propeller at all, but findProp() still returned a plausible-
   // looking hub+blade result at BOTH ends when tested directly against the real model - the round
   // engine nacelle intakes and the tail cone measure enough like a hub/blade annulus to fool the
   // same heuristic that works for every propeller aircraft in this project. Skip the search
   // entirely for jet/rocket types rather than trust a disc-shaped false positive; there is nothing
   // here that legitimately spins.
-  const prop=JET_KINDS.includes(kind) ? null : findProp(root, +1);
+  const prop=(JET_KINDS.includes(kind)||NO_PROP_KINDS.includes(kind)) ? null : findProp(root, +1);
   if(prop){
     const cutN=cutBlades(root, prop);
     const pg=makeProp(prop, NBLADES[kind]||3);
@@ -2355,7 +2471,7 @@ function rigModel(root, kind){
     // fuselage+wing mesh holds the wing skin AND all three wheels, permanently visible because
     // nothing was ever attached to `gear` to hide them - CLAUDE.md 4.4) and, generalised past
     // that one aircraft, also on the real p47new.glb/fw190.glb.
-    const gi=findGearClusters(root, whole, S);
+    const gi=findGearClusters(root, whole, S, kind);
     if(gi.clusters.length===2){                 // exactly the mirrored main-gear pair, or nothing
       const {cut:cutN, rfUsed}=cutGearClusters(root, gi);
       if(cutN>0){
@@ -4449,26 +4565,31 @@ function updateAudio(dt){
   // Haarfoehn" (sounds like a hairdryer) - measured what was actually built rather than guessing
   // again: the noise layer's gain (up to ~0.14 at full rpm) was HIGHER than the tone's own gain
   // (~0.11), swept into a broad 1.8-4.4 kHz bandpass at the stock Q of 0.7 - a loud, wide, hissy
-  // band with a quieter tone underneath is close to the literal definition of a hairdryer. Fixed
-  // by inverting that balance: the tone is now the dominant, clearly pitched element, the noise
-  // is a quiet supporting texture, and its band is pulled in tight (Q raised well past the shared
-  // default) and tuned as a harmonic of the tone's own pitch so it reads as part of one engine
-  // rather than a second, unrelated rushing-air sound layered on top. `nbp.Q` is shared with the
-  // piston-engine noise layer and was never touched before this, so the else branch below now
-  // resets it back to the original 0.7 - otherwise a jet flight would leave every piston aircraft
-  // flown afterwards with the jet's narrow Q stuck on its own noise layer.
+  // band with a quieter tone underneath is close to the literal definition of a hairdryer.
+  // EU BUILD 53 fixed the balance (tone now dominant) but overcorrected the other way - reported
+  // back "klingt wie eine Muecke" (sounds like a mosquito): a 340-860 Hz range IS mosquito-whine
+  // territory, and near-unison oscillators (freq*1.006) plus a narrow Q=3.5 noise band gave it a
+  // thin, pure, isolated whine rather than an engine's texture. Pulled the whole tone down a
+  // register (170-350 Hz, still clearly higher/smoother than any piston aircraft's 42-138 Hz, but
+  // well clear of whine range), widened the detune for a fuller/less pure chorus, lowered the
+  // lowpass to tame the harshest high harmonics, and loosened the noise band back toward (not all
+  // the way to) the shared default so it reads as part of the same engine rather than a separate
+  // whistle. `nbp.Q` is shared with the piston-engine noise layer and the else branch below resets
+  // it back to the original 0.7 - otherwise a jet flight would leave every piston aircraft flown
+  // afterwards with the jet's own Q stuck on its noise layer. Honest limitation, same as before:
+  // this cannot be heard from here, only measured to move in the intended direction.
   if(JET_KINDS.includes(P.ac)){
-    const tf=340+rpm*260+(P.spd/Math.max(1,MAX_SPD))*90;
+    const tf=170+rpm*140+(P.spd/Math.max(1,MAX_SPD))*40;
     eng.freq+=(tf-eng.freq)*Math.min(1,4*dt);
     eng.o1.frequency.setTargetAtTime(eng.freq,ct,0.10);
-    eng.o2.frequency.setTargetAtTime(eng.freq*1.006,ct,0.10);
-    eng.lp.frequency.setTargetAtTime(2200+rpm*900,ct,0.15);
-    const vol=flying?(0.05+rpm*0.10):0;
+    eng.o2.frequency.setTargetAtTime(eng.freq*1.018,ct,0.10);
+    eng.lp.frequency.setTargetAtTime(1400+rpm*700,ct,0.15);
+    const vol=flying?(0.045+rpm*0.09):0;
     eng.eg.gain.setTargetAtTime(vol,ct,0.18);
     eng.lfoG.gain.setTargetAtTime(0,ct,0.2);
-    eng.nbp.frequency.setTargetAtTime(eng.freq*3.2,ct,0.15);
-    eng.nbp.Q.setTargetAtTime(3.5,ct,0.2);
-    eng.ng.gain.setTargetAtTime(flying?0.010+rpm*0.018:0,ct,0.15);
+    eng.nbp.frequency.setTargetAtTime(eng.freq*2.2,ct,0.15);
+    eng.nbp.Q.setTargetAtTime(1.8,ct,0.2);
+    eng.ng.gain.setTargetAtTime(flying?0.018+rpm*0.030:0,ct,0.15);
   } else {
     eng.nbp.Q.setTargetAtTime(0.7,ct,0.15);
     // the Jug's R-2800 sits lower and rougher than the 109's inline
