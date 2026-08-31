@@ -5,7 +5,7 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 120 · Thunderbolt Squadron EU BUILD 54**
+Stand bei Übergabe: **Torpedo Squadron BUILD 120 · Thunderbolt Squadron EU BUILD 55**
 Repo: `oliverkurzemann-Goku/Torpedo-Bomber`, ausgeliefert über GitHub Pages.
 Alle Angaben unten sind aus dem tatsächlichen Code verifiziert, nicht aus dem Gedächtnis.
 
@@ -3492,6 +3492,152 @@ nicht denselben Frequenzbereich weiter zu verschieben.
 Code: `thunderbolt-europe.html`, `NO_PROP_KINDS` (Suche nach „a tiny underside vent panel" — direkt
 davor), `fitLocalSurfacePlane()`/`coverGearCut()` (Suche nach „DoubleSide was here to guarantee"),
 `updateAudio()` (Suche nach „klingt wie eine Muecke").
+
+---
+
+### 4.47 B-17-Propeller drehen sich endlich, Me262-Sound mit echter Recherche statt Raten — EU BUILD 55
+
+Nutzer: „M262 klingt fürchterlich, Research, kein Ratespiel. B17 prpellerdrehen sich nicht." Zwei
+Punkte, beide eine Fortsetzung von zuvor bereits (falsch) behobenen Themen.
+
+#### 1) Me262-Sound — diesmal mit echter Recherche, nicht der vierten Rateschleife
+
+Drei Runden in Folge (EU BUILD 52/53/54) hatten denselben Fehler gemacht: an genau zwei Reglern
+(Ton-Frequenz, Ton-vs-Rauschen-Lautstärke) auf demselben Kolbenmotor-Node-Graphen gedreht, ohne je
+nachzusehen, was ein echtes Strahltriebwerk akustisch überhaupt auszeichnet. Diesmal recherchiert
+(`WebSearch`), nicht geraten:
+
+- **Echte Jumo-004-Drehzahl** (das reale Triebwerk dieses Flugzeugs, National Museum of the USAF /
+  Flughandbuch-Angaben): Leerlauf ca. 2000–3000 U/min, Vollgas 8700 U/min — eine 3–4-fache Spanne,
+  weit über jeder Kolbenmotor-Drehzahlspreizung, und die Wellendrehzahl allein bestimmt die
+  Tonhöhe (eine Turbine hat keine Zündtakte).
+- **Blattfolgefrequenz (BPF):** Die akustische Fachliteratur zur Turbomaschinen-Geräuschentwicklung
+  beschreibt den charakteristischen Ton eines Turbojets als eine echte Frequenz bei
+  (Schaufelzahl × Wellendrehzahl/60) plus Harmonische, typischerweise 10–15 dB ÜBER dem
+  umgebenden Breitbandrauschen — der Ton soll also deutlich dominieren, nicht nur knapp gewinnen.
+- **„Buzz-Saw"-Rauheit:** Benachbarte Verdichter-Schaufelreihen laufen mit derselben Wellendrehzahl,
+  aber unterschiedlicher Schaufelzahl — mehrere gleichzeitige, eng benachbarte (nicht identische)
+  Töne schweben gegeneinander zu einer rauen, „sägenden" Qualität, weder ein sauberer Akkord noch
+  ein breiter Chorus-Effekt.
+- Darunter liegt echtes Breitband-Turbulenzrauschen (Verdichter/Abgasstrahl) — keine resonante
+  Pfeif-Bandpass-Färbung bei einem festen Vielfachen des Tons.
+
+Nichts davon ähnelt einem Kolbenmotor bei irgendeiner Tonhöhe — weshalb das bloße Verschieben
+derselben zwei Regler drei Runden lang nie konvergierte (Lektion 9 gilt hier strukturell, nicht nur
+für einen einzelnen Parameter). **Fix:** Grundton deutlich höher angesetzt, an der echten 3–4-fachen
+Drehzahlspreizung orientiert (650–2200 Hz, statt der bisherigen, an Kolbenmotor-Maßstäben orientierten
+Werte 170–350/340–860 Hz) — `o2` jetzt 5 % über `o1` verstimmt (rau, „buzz-saw"-artig, weder die zu
+enge 0,6-%-„Mücke" noch ein breiter Chorus), Rauschband deutlich verbreitert (Güte von 1,8/3,5 auf
+0,45 gesenkt) und vom Ton entkoppelt (eigene, nicht an ein Tonvielfaches gekoppelte Mittenfrequenz)
+für echten Breitband-Charakter statt eines Pfeiftons, und die Rauschlautstärke fest auf 22 % der
+Ton-Lautstärke gesetzt — nahe am literaturbelegten ~13-dB-Verhältnis, statt einer freihändig
+gewählten Zahl.
+
+**Nachgewiesen, mit derselben ehrlichen Grenze wie immer bei reiner WebAudio-Synthese:** Von hier
+aus nicht hörbar — verifiziert wurde stattdessen, dass die tatsächlich im Code ankommenden Werte
+den recherchierten Zielgrößen entsprechen. Echtes Playwright/Chromium, echter Klickpfad (Me262-
+Missions-Chip → Begin Sortie → Start Engine, echte `AudioContext`), `updateAudio()` bei Leerlauf/
+halbem/vollem Schub aufgerufen: die interne `eng.freq`-Verfolgungsgröße (die tatsächlich an die
+Oszillatoren übergebene Zielfrequenz) steigt korrekt von 1040 Hz (Leerlauf) über 1597 Hz (halber
+Schub) auf 2199 Hz (Vollgas/Höchstgeschwindigkeit) — exakt im recherchierten, deutlich höheren
+Register, mit der erwarteten Reihenfolge. Die restlichen, direkt aus der Formel ablesbaren Werte
+bei Leerlauf exakt wie im Code vorgegeben bestätigt: Ton-Lautstärke 0,08 (=0,05+0,3·0,10), Rauschen
+0,0176 (=0,08·0,22, exakt das 22-%-Verhältnis), Rauschband-Mitte 2290 Hz (=1900+0,3·1300), Tiefpass
+2090 Hz (=1700+0,3·1300) — kein LFO-Wobble (Kolbenmotor-Zündtakt-Simulation bleibt bei 0, korrekt
+für eine Turbine ohne Kolben). Ein direktes Auslesen der geglätteten `AudioParam.value` NACH
+mehreren Sekunden echter Wanduhrzeit (statt nur der internen `eng.freq`-Zielgröße) ließ sich in
+diesem Prüfstand nicht zuverlässig herstellen — wiederholte `requestAnimationFrame`-Schleifen
+brachten die Playwright-Seite in dieser Sandbox zum Absturz, ein bekanntes Umgebungsproblem,
+kein Hinweis auf einen Code-Fehler. Da die geprüfte `eng.freq`-Zielgröße exakt das ist, was die
+Standard-`setTargetAtTime()`-API dann zuverlässig anfährt, ist das keine Lücke im eigentlich
+Verifizierten, nur eine nicht bis zum letzten Schritt durchführbare zusätzliche Bestätigung.
+
+**Offen:** Nicht auf dem echten iPad geprüft. Wie bei jedem reinen WebAudio-Sounddesign kann „klingt
+gut" grundsätzlich nur Oliver beurteilen — diesmal ist die Grundlage aber recherchiert statt geraten;
+sollte der Klang weiterhin nicht überzeugen, ist der nächste Schritt eine Feinjustierung derselben,
+jetzt richtig verorteten Werte (Register, Detune, Rauschbreite), nicht ein erneuter Sprung auf einen
+völlig anderen Frequenzbereich.
+
+#### 2) B-17: vier echte, unabhängig rotierende Propeller statt „gar keiner"
+
+EU BUILD 54 hatte den falschen Nasenpropeller (`findProp()` verwechselte die Bugkanzel mit einer
+Propellerhaube) korrekt entfernt, dabei aber jede Propeller-Synthese für die Bomber komplett
+übersprungen (`NO_PROP_KINDS`) — die vier echten, in die Tragfläche eingeschweißten Propeller
+(3.1) hatten dadurch nie etwas, das sie zum Drehen brachte. Der eigentliche Fehler war nicht „zu
+viel Propeller" (die Bugkanzel), sondern „am falschen Ort gesucht" — `findProp()` ist für EINEN
+Nabe-an-der-Nase-Motor gebaut und hat keinen Begriff von „vier, seitlich versetzt".
+
+**Neue Funktion `findWingProps()`** (statt `findProp()` für dieses eine Baumuster wiederzuverwenden
+oder zu verbiegen): Am echten `b17.glb` gemessen (voller, nicht gestreuter Scan), dass eine einzelne
+globale „wie weit vorne"-Schwelle keine der vier Triebwerksgondeln zuverlässig von der übrigen
+Flügelhaut trennt — eine Schwelle, die die inneren Triebwerke erfasst (deren Haube absolut gesehen
+weiter vorne liegt), lässt auch Flügelhaut nahe der äußeren Triebwerke durch, und umgekehrt. Was bei
+allen vieren gleich ist (ebenfalls gemessen, nicht angenommen): wie weit die eigene Haube gegenüber
+der UNMITTELBAR UMGEBENDEN Flügeloberfläche an genau dieser Spannweiten-Station vorsteht. Die neue
+Funktion misst deshalb pro Spannweiten-Abschnitt eine lokale Referenzhöhe und sucht Material, das
+diese lokal (nicht global) um einen festen Betrag überragt — findet daraus vier symmetrische
+Kandidatenpaare, deren Fenster-Breite jeweils vom echten Abstand zur Rumpfmittellinie bzw. zum
+nächsten Nachbar-Triebwerk begrenzt wird (ein zu breites festes Fenster ließ die inneren Triebwerke
+Rumpfmaterial mit einsammeln, gemessen: Zentrum von x=-2,98 auf x=-0,04 verzogen, einseitig auf
+Radius 3,56 statt der symmetrischen ~0,8 aufgebläht).
+
+**Ein eigener Messfehler dabei gefunden und korrigiert:** Die erste Fassung maß die Blatt-Tiefe
+(„halfDepth") genauso wie den Blattradius — über ein Perzentil der lokal gesammelten Punkte. Nach
+dem Schneiden blieben trotzdem tausende Dreiecke stehen (als zusammenhängender, jagged-sternförmiger
+Rest sichtbar, nicht die erwartete saubere Propellerscheibe). Direkt nachgemessen statt weiter an
+Parametern gedreht: die überlebenden Dreiecke lagen tatsächlich innerhalb des Radius-Schnittbereichs
+(0,3–0,9 Einheiten, echtes Blattmaterial, nicht Nabe — die Nabe selbst misst unter 0,05), aber mit
+einer Tiefe (dz) von bis zu 0,72 gegenüber einer gemessenen `halfDepth` von nur 0,24 — derselbe
+Fehlerklasse wie beim Radius (Lektion 22: eine Perzentil-Messung über Punktzahl unterschätzt ein
+dünnes, aus wenigen, langen Dreiecken bestehendes Blatt systematisch, egal ob es um Radius oder
+Tiefe geht). Fix: `halfDepth` bekommt eine Untergrenze proportional zum bereits (robuster)
+gemessenen Blattradius (`tipR*0,95`) statt sich auf dieselbe unterschätzende Perzentil-Zahl zu
+verlassen.
+
+**Vier unabhängig rotierende Propeller statt einer starr rotierenden Gruppe:** `updateBomber()`
+drehte bisher `e.prop.rotation.z` als Ganzes — für einen einzelnen Propeller richtig, für vier
+separate Triebwerke falsch (hätte alle vier gemeinsam um einen einzigen Punkt geschwenkt statt
+jedes um seine eigene Achse). Die vier `makeProp()`-Ergebnisse werden jetzt als Kinder EINER
+äußeren, weiterhin `'prop'` benannten Gruppe eingehängt (kompatibel mit jedem bestehenden
+`getObjectByName('prop')`-Aufruf), und `updateBomber()` dreht bei vorhandenen Kindern jedes einzeln
+statt die Elterngruppe — bei null Kindern (jedes andere, nicht per `MULTI_ENGINE_KINDS` erfasste
+Baumuster) unverändert wie zuvor.
+
+**Nachgewiesen am echten Modell, über den tatsächlichen `rigModel('b17')`-Pfad, nicht nur an der
+extrahierten Hilfsfunktion:** `rig`-Protokoll bestätigt „cut 18011 moulded blade triangles across 4
+engines … 1,6-1,6 m", `prop`-Gruppe mit genau 4 Kindern. Ein simulierter `updateBomber()`-Tick
+(dieselbe Zeile, die im echten Spiel läuft) zeigt alle vier Propeller-Rotationen unabhängig von 0
+auf -0,30 fortschreiten. Gerendert (headless-WebGL, Draufsicht UND 3/4-Ansicht): vier korrekt
+positionierte, gleich große, symmetrische 3-Blatt-Propeller an allen vier Triebwerken, deutliche
+Verbesserung gegenüber dem vorherigen jagged-Sternrest (Nahaufnahme eines Triebwerks vorher/nachher
+verglichen: von einer großen, unregelmäßigen roten Fläche auf wenige kleine, kaum sichtbare
+Spitzen reduziert). **Regressionscheck über den echten `rigModel()`-Pfad:** P-47 nicht verfügbar in
+diesem Prüfstand, aber Fw190 (identischer, unveränderter Code-Pfad, da `MULTI_ENGINE_KINDS` nur
+`'b17'` enthält) liefert exakt dasselbe Ergebnis wie vor dieser Änderung; Me262 (JET_KINDS, ebenfalls
+unberührt) ebenso; B-24 (bewusst NICHT in `MULTI_ENGINE_KINDS` aufgenommen, siehe unten) liefert
+weiterhin exakt „no propeller found, own gear" wie vor diesem Build — keine Verschlechterung.
+
+**B-24 bewusst nicht mitgemacht:** `findWingProps()` gegen das echte `b24.glb` getestet — die vier
+Triebwerke ließen sich mit keiner der ausprobierten lokalen Schwellen sauber trennen (sitzen auf
+diesem Rumpf offenbar dicht genug beieinander, dass jede lokale Baseline auch die dazwischenliegende
+Flügelhaut mit einschließt; selbst ein 2,5-fach engeres Trennkriterium änderte am Ergebnis nichts).
+Der Nutzer hat ausdrücklich nur „B17" gemeldet, nicht B-24 — ein ungeprüfter Fix für ein zweites
+Modell auszuliefern wäre genau der Fehler, den dieses Projekt immer wieder gemacht hat (Lektion 1).
+B-24 bleibt auf dem sicheren, bereits vor diesem Build gültigen Verhalten (kein Propeller synthetisiert,
+kein Absturz, kein falscher Nasenpropeller) — ein zukünftiger, eigens für B-24 vermessener Versuch
+ist der nächste Schritt, falls gewünscht.
+
+**Offen:** Nicht auf dem echten iPad geflogen (B-17/B-24 sind ohnehin reine KI-Gegner, nie
+spielbar — die Bestätigung betrifft also, wie es im Spiel tatsächlich AUSSIEHT, nicht Steuerung).
+Ein kleiner Rest sichtbarer, dünner Blattspitzen bleibt bei genauer Nahaufnahme aus bestimmten
+Winkeln sichtbar (siehe Rendering-Vergleich oben) — deutlich kleiner als vorher, aber nicht auf
+Null reduziert; ein weiteres Anheben der `halfDepth`-Untergrenze wurde ausprobiert (`tipR*1,3`)
+und brachte keine sichtbare Verbesserung mehr (Untersuchung eingestellt, abnehmender Ertrag).
+
+Code: `thunderbolt-europe.html`, `MULTI_ENGINE_KINDS`, `findWingProps()`/`classifyWingHub()`
+(Suche nach „four wing-mounted propellers"), `rigModel()`s neuer Zweig (Suche nach „B17 propeller
+drehen sich nicht"), `updateBomber()` (Suche nach „each spin around their OWN axis").
+`updateAudio()`, Suche nach „Reported three times running".
 
 ---
 

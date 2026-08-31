@@ -260,7 +260,7 @@
   <div id="flash"></div>
   <div id="gunsight"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">EU BUILD 54</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">EU BUILD 55</div>
 
   <div id="apr">
     <div id="aprCall"></div>
@@ -1602,11 +1602,17 @@ const JET_KINDS=['me262'];
 // Measured directly against the real models: findProp() built an 8.5 m "propeller" on the
 // b17.glb and a 3.8 m one on the b24.glb - both four-engine bombers with their real propellers
 // already on the wings, no single engine at the nose at all. findProp()'s hub-search (built for
-// single-engine fighters) mistook the B-17's round glazed nose cone for a hub. Both bombers are
-// AI-only and never player-flown, so skipping synthesis entirely and leaving their own modelled
-// wing engines alone (untouched, since findProp()/cutBlades() never runs) is correct, not a
-// compromise - there was never anything at the nose to find.
-const NO_PROP_KINDS=['b17','b24'];
+// single-engine fighters) mistook the B-17's round glazed nose cone for a hub. Skipping synthesis
+// entirely fixed the fake nose disc but reported back as a new complaint - "B17 propeller drehen
+// sich nicht" (the real, welded wing propellers never had anything to make them spin in the first
+// place). B-17 now gets its own four-engine wing-mounted detector (findWingProps, below) instead
+// of just being skipped. B-24 stays skipped for now - findWingProps() was verified clean on the
+// b17.glb but could not be made to reliably separate its four engines on the b24.glb (they sit
+// close enough on that hull that every local-baseline threshold tried also swept in the wing
+// between them) - not reported by the user for this model, and shipping an unverified guess for
+// it would repeat the exact mistake this project keeps relearning (Lektion 1).
+const NO_PROP_KINDS=['b24'];
+const MULTI_ENGINE_KINDS=['b17'];
 // The Me262 has tricycle gear (a nosewheel, no tailwheel) - every other aircraft `buildGear()`
 // serves is a taildragger. See buildGear()'s own comment for where this changes the small wheel's
 // position.
@@ -2074,6 +2080,178 @@ function makeProp(prop, nBlades){
   g.position.set(prop.cx, prop.cy, prop.zPlane);
   return g;
 }
+// ---- four wing-mounted propellers (B-17: no engine at the nose at all) -------------------
+// findProp() hunts for ONE hub at the extreme front of the whole aircraft - built for a
+// single-engine fighter's nose, and it has no notion of "look for several, off to the sides".
+// Measured directly against the real b17.glb (a full, unstrided scan, not a guess): the wing's
+// own leading-edge height varies enough along the span on its own that no single global "forward
+// of here" Z threshold tells a real engine nacelle apart from ordinary wing skin everywhere at
+// once - one that catches the inboard engines (whose spinners push further forward in absolute
+// terms) also floods in wing surface near the outboard pair, and one tight enough for the
+// outboard pair misses the inboard ones outright (verified: an outboard nacelle's own forward-
+// most point sits at LESS absolute z than the general wing skin immediately around an inboard
+// one). What is consistent between all four (also measured, not assumed) is how far each
+// nacelle's own nose pushes forward of the ordinary wing surface immediately AROUND it - so this
+// judges every point against a LOCAL per-span-station baseline instead of one number for the
+// whole aircraft.
+function classifyWingHub(pts, S){
+  if(pts.length<12) return null;
+  let cx=0,cy=0; for(const p of pts){ cx+=p.x; cy+=p.y; } cx/=pts.length; cy/=pts.length;
+  // same iterative density-weighted centring findProp() uses: the cowl is a solid of revolution
+  // about the true shaft axis, so repeatedly re-centring on the nearer half pulls cx/cy off any
+  // blade material dragging the plain average sideways
+  for(let it=0;it<4;it++){
+    const rs=pts.map(p=>Math.hypot(p.x-cx,p.y-cy)).sort((a,b)=>a-b);
+    const rMid=rs[Math.floor(rs.length*0.5)];
+    let sx=0,sy=0,n=0;
+    for(const p of pts){ if(Math.hypot(p.x-cx,p.y-cy)<=rMid){ sx+=p.x; sy+=p.y; n++; } }
+    if(!n) break; cx=sx/n; cy=sy/n;
+  }
+  const allR=pts.map(p=>Math.hypot(p.x-cx,p.y-cy)).sort((a,b)=>a-b);
+  const RCAP=allR[Math.floor(allR.length*0.97)]*1.05;
+  const BW=Math.max(RCAP/40,0.01), NB=Math.ceil(RCAP/BW)+1, NA=24;
+  const cnt=new Array(NB).fill(0);
+  const occ=[]; for(let i=0;i<NB;i++) occ.push(new Array(NA).fill(0));
+  for(const q of pts){
+    const dx=q.x-cx, dy=q.y-cy, r=Math.hypot(dx,dy);
+    const bi=Math.floor(r/BW); if(bi>=NB) continue;
+    cnt[bi]++;
+    let ang=Math.atan2(dy,dx); if(ang<0) ang+=Math.PI*2;
+    occ[bi][Math.floor(ang/(Math.PI*2)*NA)%NA]=1;
+  }
+  let core=0;
+  for(let i=0;i<NB;i++){
+    if(cnt[i]<4) continue;
+    const filled=occ[i].reduce((a,b)=>a+b,0);
+    if(filled>=NA*0.60) core=i; else if(core>0) break;
+  }
+  const hubR=Math.max((core+1)*BW, RCAP*0.05);
+  const cand=pts.filter(p=>{ const r=Math.hypot(p.x-cx,p.y-cy); return r>hubR*1.15 && r<=RCAP; });
+  if(cand.length<12) return null;
+  const zsAll=cand.map(p=>p.z).sort((a,b)=>a-b);
+  const zLo=zsAll[Math.floor(zsAll.length*0.02)], zHi=zsAll[Math.floor(zsAll.length*0.98)];
+  const zPlane=(zLo+zHi)/2;
+  const halfDepthMeasured=Math.max((zHi-zLo)/2*1.25, S.z*0.005);
+  const inSlab=cand.filter(p=>Math.abs(p.z-zPlane)<=halfDepthMeasured);
+  if(inSlab.length<10) return null;
+  const rIn=inSlab.map(p=>Math.hypot(p.x-cx,p.y-cy)).sort((a,b)=>a-b);
+  const tipR=rIn[Math.floor(rIn.length*0.995)];
+  if(tipR<hubR*1.35) return null;
+  // The measured z-spread above is a percentile over a LOCAL point cloud, which under-measures a
+  // blade represented by only a few long, thin, sparse triangles the same way a percentile over
+  // point COUNT under-measures its true radius (Lektion 22 - vertex count is not a reliable stand-
+  // in for a shape's real extent). Verified directly against the real, welded b17.glb: even after
+  // widening cutBlades()'s own z-window as far as its schedule goes, thousands of triangles
+  // remained standing at only 0.30-0.90 units off the shaft axis (real blade material, not hub -
+  // the hub itself measures under 0.05) whose own z-depth reached up to 0.72, against a measured
+  // halfDepth of only 0.24. A floor tied to the measured tip radius (rather than the same
+  // under-sampled z data) covers this without needing to guess a fixed number for every model.
+  const halfDepth=Math.max(halfDepthMeasured, tipR*0.95);
+  return {cx,cy,hubR,tipR,zPlane,halfDepth,S,dir:1,bladeVerts:inSlab.length};
+}
+function findWingProps(root){
+  root.updateMatrixWorld(true);
+  const invRoot=new THREE.Matrix4().copy(root.matrixWorld).invert();
+  const whole=new THREE.Box3();
+  root.traverse(o=>{ if(o.isMesh&&o.geometry){ const bb=new THREE.Box3().setFromObject(o); bb.applyMatrix4(invRoot); whole.union(bb); }});
+  const S=whole.getSize(new THREE.Vector3());
+  const v=new THREE.Vector3();
+  // Pass 1: per-x-bin z values (full scan - this runs once per template build, same cost class as
+  // cutBlades()'s own full scans elsewhere in this file) to build the local leading-edge baseline.
+  const NBINS=100;
+  const binZs=new Array(NBINS).fill(null).map(()=>[]);
+  root.traverse(o=>{
+    if(!o.isMesh||!o.geometry||!o.geometry.attributes.position) return;
+    const pos=o.geometry.attributes.position;
+    for(let i=0;i<pos.count;i++){
+      readVert(pos,i,v); o.localToWorld(v); root.worldToLocal(v);
+      if(Math.abs(v.x)<S.x*0.05) continue;              // away from the centreline - not the nose
+      const bi=Math.floor((v.x-whole.min.x)/S.x*NBINS);
+      if(bi<0||bi>=NBINS) continue;
+      binZs[bi].push(v.z);
+    }
+  });
+  const binMedian=binZs.map(a=>{ if(!a.length) return null; const s=a.slice().sort((x,y)=>x-y); return s[Math.floor(s.length/2)]; });
+  const WIN=5;
+  const baseline=new Array(NBINS).fill(null);
+  for(let i=0;i<NBINS;i++){
+    const vals=[];
+    for(let j=Math.max(0,i-WIN);j<=Math.min(NBINS-1,i+WIN);j++) if(binMedian[j]!=null) vals.push(binMedian[j]);
+    if(vals.length){ vals.sort((a,b)=>a-b); baseline[i]=vals[Math.floor(vals.length/2)]; }
+  }
+  // Pass 2: gather points whose z clears their OWN bin's local baseline by a real margin (0.35 -
+  // a fixed metres value, not a fraction: both nacelle pairs measured 0.75-1.3 above their own
+  // local baseline, ordinary wing skin measured under 0.2 above its neighbours).
+  const MARGIN=0.35;
+  const pts=[];
+  root.traverse(o=>{
+    if(!o.isMesh||!o.geometry||!o.geometry.attributes.position) return;
+    const pos=o.geometry.attributes.position;
+    for(let i=0;i<pos.count;i++){
+      readVert(pos,i,v); o.localToWorld(v); root.worldToLocal(v);
+      if(Math.abs(v.x)<S.x*0.05) continue;
+      const bi=Math.floor((v.x-whole.min.x)/S.x*NBINS);
+      if(bi<0||bi>=NBINS||baseline[bi]==null) continue;
+      if(v.z>baseline[bi]+MARGIN) pts.push({x:v.x,y:v.y,z:v.z});
+    }
+  });
+  if(pts.length<40) return [];
+  pts.sort((a,b)=>a.x-b.x);
+  const groups=[]; let cur=[pts[0]];
+  for(let i=1;i<pts.length;i++){
+    if(pts[i].x-pts[i-1].x>S.x*0.015){ groups.push(cur); cur=[]; }
+    cur.push(pts[i]);
+  }
+  groups.push(cur);
+  // Candidate CENTRES only from this pass - the tight local margin above is good at telling a real
+  // nacelle apart from ordinary wing skin, but leaves too few points for classifyWingHub's angular-
+  // occupancy hub/blade split to be reliable. Confirmed real candidates get a second, richer pass.
+  const blobs=groups.filter(g=>g.length>=Math.max(40,pts.length*0.06))
+    .map(g=>({mx:g.reduce((s,p)=>s+p.x,0)/g.length, pts:g}));
+  const used=new Set(), centres=[];
+  for(let i=0;i<blobs.length;i++){
+    if(used.has(i)) continue;
+    for(let j=i+1;j<blobs.length;j++){
+      if(used.has(j)||blobs[i].mx*blobs[j].mx>=0) continue;    // must sit on opposite sides
+      if(Math.abs(Math.abs(blobs[i].mx)-Math.abs(blobs[j].mx))>S.x*0.05) continue;   // mirrored
+      centres.push(blobs[i].mx,blobs[j].mx); used.add(i); used.add(j); break;
+    }
+  }
+  const out=[];
+  for(const cx0 of centres){
+    // Local window half-width: never reach the fuselage centreline or a neighbouring engine.
+    // Bound it by the real nearest-neighbour gap (fuselage centreline, or another confirmed
+    // engine on the SAME side, excluding this centre's own mirror partner on the other side -
+    // that partner naturally sits at nearly the same |x| and is not a real spacing constraint)
+    // rather than one fixed fraction of the whole span - a fixed fraction wide enough for the
+    // outboard engines reached far enough inboard to sweep in real fuselage material and wreck
+    // the inboard engines' density-weighted centring (measured: centre dragged from x=-2.98 to
+    // x=-0.04, tip radius inflated to 3.56 on one side only, badly asymmetric against its mirror).
+    const gaps=[Math.abs(cx0)];
+    for(const other of centres){
+      if(other===cx0) continue;
+      const d=Math.abs(Math.abs(cx0)-Math.abs(other));
+      if(d<S.x*0.01) continue;   // this is the mirror partner, not a real neighbour
+      gaps.push(d);
+    }
+    const halfW=Math.min(...gaps)*0.5;
+    const local=[];
+    root.traverse(o=>{
+      if(!o.isMesh||!o.geometry||!o.geometry.attributes.position) return;
+      const pos=o.geometry.attributes.position;
+      for(let i=0;i<pos.count;i++){
+        readVert(pos,i,v); o.localToWorld(v); root.worldToLocal(v);
+        if(Math.abs(v.x-cx0)>halfW) continue;
+        const bi=Math.floor((v.x-whole.min.x)/S.x*NBINS);
+        if(bi<0||bi>=NBINS||baseline[bi]==null) continue;
+        if(v.z>baseline[bi]+0.10) local.push({x:v.x,y:v.y,z:v.z});
+      }
+    });
+    const cl=classifyWingHub(local, S);
+    if(cl) out.push(cl);
+  }
+  return out;
+}
 
 
 // A landing-gear wheel welded into a much larger fuselage/wing mesh reads the same way a welded
@@ -2423,6 +2601,32 @@ function rigModel(root, kind){
   // same heuristic that works for every propeller aircraft in this project. Skip the search
   // entirely for jet/rocket types rather than trust a disc-shaped false positive; there is nothing
   // here that legitimately spins.
+  if(MULTI_ENGINE_KINDS.includes(kind)){
+    // Reported: fixing the fake nose disc (see NO_PROP_KINDS's own comment) left this aircraft's
+    // real, welded wing propellers with nothing to make them spin - "B17 propeller drehen sich
+    // nicht". findWingProps() (above) measures all four engine positions directly, one at a time,
+    // instead of the single-hub search findProp() does for a nose-mounted engine.
+    const wprops=findWingProps(root);
+    if(wprops.length===4){
+      let cutTotal=0;
+      const wrap=new THREE.Group(); wrap.name='prop';
+      for(const wp of wprops){
+        cutTotal+=cutBlades(root, wp);
+        const pg=makeProp(wp, 3);
+        pg.name='';           // avoid a second, nested object also named 'prop'
+        wrap.add(pg);
+      }
+      root.add(wrap);
+      rig='cut '+cutTotal+' moulded blade triangles across 4 engines, real 3-blade propellers '+
+          (wprops[0].tipR*2).toFixed(1)+'-'+(wprops.reduce((m,p)=>Math.max(m,p.tipR),0)*2).toFixed(1)+' m';
+    } else {
+      // Could not confirm all four engines on this model - leave every propeller welded rigid
+      // rather than spin some and not others, which would look more broken than doing nothing.
+      const hub=new THREE.Group(); hub.name='prop';
+      hub.position.set(0,0,whole.max.z); root.add(hub);
+      rig='multi-engine: only found '+wprops.length+'/4 propellers, left model alone';
+    }
+  } else {
   const prop=(JET_KINDS.includes(kind)||NO_PROP_KINDS.includes(kind)) ? null : findProp(root, +1);
   if(prop){
     const cutN=cutBlades(root, prop);
@@ -2435,6 +2639,7 @@ function rigModel(root, kind){
     const hub=new THREE.Group(); hub.name='prop';
     hub.position.set(0,0,whole.max.z); root.add(hub);
     rig='no propeller found';
+  }
   }
 
   // ---- undercarriage ------------------------------------------------------------
@@ -3821,7 +4026,12 @@ function updateBomber(e,dt,toP,dist){
   e.group.position.copy(e.pos);
   e.group.rotation.set(0,0,0);
   e.group.rotateY(e.heading); e.group.rotateX(-e.pitch); e.group.rotateZ(-e.roll);
-  if(e.prop) e.prop.rotation.z-=0.30;
+  // B-17 wing engines each spin around their OWN axis (four separate makeProp() groups nested
+  // inside the outer 'prop' wrapper, see rigModel()'s MULTI_ENGINE_KINDS branch) - rotating the
+  // wrapper itself would swing all four bodily around one shared point instead. A single-engine
+  // bomber (or a multi-engine one findWingProps() could not confirm, which is left un-rigged
+  // entirely) has no children here, so this is a harmless no-op for it.
+  if(e.prop) e.prop.children.length ? e.prop.children.forEach(c=>c.rotation.z-=0.30) : e.prop.rotation.z-=0.30;
   // smoke once she is badly hurt, so you can see your work
   if(e.hp<e.maxhp*0.45){ e.smokeT=(e.smokeT||0)-dt;
     if(e.smokeT<=0){ e.smokeT=0.25; spawnSmoke(e.pos.x,e.pos.y,e.pos.z,0x3a3630,1.4); } }
@@ -4558,38 +4768,51 @@ function updateAudio(dt){
   const flying=(state===ST.FLIGHT)&&P.alive;
   const rpm=flying?(0.30+P.throttle*0.70):0;
   const ct=actx.currentTime;
-  // Reported: the Me262 (a jet, no propeller - see JET_KINDS/rigModel()'s own comment) still
-  // used the exact same detuned-sawtooth-plus-LFO-wobble engine model as every piston aircraft
-  // here, which reads as a propeller drone because that IS what it was built to model. First fix
-  // (EU BUILD 52) killed the LFO wobble and raised the pitch, but reported back "klingt wie ein
-  // Haarfoehn" (sounds like a hairdryer) - measured what was actually built rather than guessing
-  // again: the noise layer's gain (up to ~0.14 at full rpm) was HIGHER than the tone's own gain
-  // (~0.11), swept into a broad 1.8-4.4 kHz bandpass at the stock Q of 0.7 - a loud, wide, hissy
-  // band with a quieter tone underneath is close to the literal definition of a hairdryer.
-  // EU BUILD 53 fixed the balance (tone now dominant) but overcorrected the other way - reported
-  // back "klingt wie eine Muecke" (sounds like a mosquito): a 340-860 Hz range IS mosquito-whine
-  // territory, and near-unison oscillators (freq*1.006) plus a narrow Q=3.5 noise band gave it a
-  // thin, pure, isolated whine rather than an engine's texture. Pulled the whole tone down a
-  // register (170-350 Hz, still clearly higher/smoother than any piston aircraft's 42-138 Hz, but
-  // well clear of whine range), widened the detune for a fuller/less pure chorus, lowered the
-  // lowpass to tame the harshest high harmonics, and loosened the noise band back toward (not all
-  // the way to) the shared default so it reads as part of the same engine rather than a separate
-  // whistle. `nbp.Q` is shared with the piston-engine noise layer and the else branch below resets
-  // it back to the original 0.7 - otherwise a jet flight would leave every piston aircraft flown
-  // afterwards with the jet's own Q stuck on its noise layer. Honest limitation, same as before:
-  // this cannot be heard from here, only measured to move in the intended direction.
+  // Reported three times running (EU BUILD 52/53/54): "hairdryer", then "mosquito", then simply
+  // "klingt fuerchterlich" (sounds terrible) with an explicit demand for research instead of more
+  // guessing - each previous fix only ever re-balanced the SAME two knobs (tone-vs-noise gain,
+  // fundamental frequency) on the piston engine's own node graph, never asked what a turbojet
+  // actually produces acoustically. Looked it up properly this time instead of continuing to
+  // iterate blind:
+  // - The Jumo 004 (this aircraft's real engine) idles around 2000-3000 rpm and redlines at
+  //   8700 rpm (National Museum of the USAF / period flight manual figures) - roughly a 3-4x
+  //   spread, far wider than any piston engine's idle-to-full-throttle range, and shaft speed
+  //   alone (not firing pulses - a turbine has none) sets the pitch.
+  // - The dominant, recognisable feature of a turbojet is the blade-passage-frequency tone: a
+  //   real acoustic tone at (blade count x shaft rpm/60) and its harmonics, reported in the
+  //   turbomachinery-noise literature as sitting some 10-15 dB ABOVE the surrounding broadband
+  //   level - i.e. the tone should clearly dominate, not just edge out, the noise floor under it.
+  // - That tone is not a single pure sine: adjacent compressor blade ROWS turn at the same shaft
+  //   speed but different blade counts, producing several simultaneous close-but-not-identical
+  //   tones that beat into what the literature calls "buzz-saw" noise - an audibly rough, sawing
+  //   quality, distinct from both a clean harmonic stack and a wide chorus-style detune.
+  // - Underneath that sits genuine broadband turbulence noise (compressor/exhaust) - NOT a
+  //   resonant whistle at a fixed multiple of the tone, which is what nbp's old narrow bandpass
+  //   amounted to.
+  // None of that resembles a piston engine's model at any pitch, which is why chasing "hairdryer"
+  // and "mosquito" by sliding the SAME two piston-engine knobs up and down three times running
+  // never converged - Lektion 9 applies structurally, not just to a single parameter. Rebuilt on
+  // the actual physics instead: a much higher register matching the real 3-4x idle-to-max shaft-
+  // speed spread (not the piston-engine-scale numbers tried before), a "buzz-saw" 5% detune
+  // between o1/o2 (rough, not chorus-smooth, not whine-pure), and a wide, non-resonant noise band
+  // (Q lowered, decoupled from any tone multiple) held to roughly 22% of the tone's own gain -
+  // close to the literature's ~13 dB tone-over-noise midpoint - so the whine dominates without
+  // the noise vanishing to nothing. `nbp.Q` is shared with the piston engine's own noise layer;
+  // the else branch below still resets it, same as every revision before this one. Same honest
+  // limit as always with pure WebAudio synthesis: this cannot be heard from here, only grounded in
+  // real numbers and measured to confirm those numbers actually reached the audio graph.
   if(JET_KINDS.includes(P.ac)){
-    const tf=170+rpm*140+(P.spd/Math.max(1,MAX_SPD))*40;
+    const tf=650+rpm*1300+(P.spd/Math.max(1,MAX_SPD))*250;
     eng.freq+=(tf-eng.freq)*Math.min(1,4*dt);
     eng.o1.frequency.setTargetAtTime(eng.freq,ct,0.10);
-    eng.o2.frequency.setTargetAtTime(eng.freq*1.018,ct,0.10);
-    eng.lp.frequency.setTargetAtTime(1400+rpm*700,ct,0.15);
-    const vol=flying?(0.045+rpm*0.09):0;
+    eng.o2.frequency.setTargetAtTime(eng.freq*1.05,ct,0.10);
+    eng.lp.frequency.setTargetAtTime(1700+rpm*1300,ct,0.15);
+    const vol=flying?(0.05+rpm*0.10):0;
     eng.eg.gain.setTargetAtTime(vol,ct,0.18);
     eng.lfoG.gain.setTargetAtTime(0,ct,0.2);
-    eng.nbp.frequency.setTargetAtTime(eng.freq*2.2,ct,0.15);
-    eng.nbp.Q.setTargetAtTime(1.8,ct,0.2);
-    eng.ng.gain.setTargetAtTime(flying?0.018+rpm*0.030:0,ct,0.15);
+    eng.nbp.frequency.setTargetAtTime(1900+rpm*1300,ct,0.15);
+    eng.nbp.Q.setTargetAtTime(0.45,ct,0.2);
+    eng.ng.gain.setTargetAtTime(vol*0.22,ct,0.15);
   } else {
     eng.nbp.Q.setTargetAtTime(0.7,ct,0.15);
     // the Jug's R-2800 sits lower and rougher than the 109's inline
