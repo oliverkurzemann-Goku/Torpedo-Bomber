@@ -4,21 +4,50 @@
 <meta charset="utf-8">
 <title>Terrain System — Step 5 Prototype</title>
 <style>
-  html,body{margin:0;height:100%;background:#87b3e0;overflow:hidden;font-family:monospace}
-  canvas{display:block}
+  html,body{margin:0;height:100%;background:#87b3e0;overflow:hidden;font-family:monospace;touch-action:none}
+  canvas{display:block;touch-action:none}
   #hud{position:absolute;top:8px;left:8px;color:#fff;background:rgba(0,0,0,.55);
        padding:8px 12px;font-size:13px;line-height:1.6;border-radius:4px;pointer-events:none}
   #hud b{color:#ffd76a}
+  /* Touch controls — same visual language as the real games' #stick/#stickKnob
+     (thunderbolt-europe.html), so this reads as "the same kind of control"
+     rather than a one-off. Movement stick bottom-left (forward/back/strafe,
+     replacing WASD); up/down buttons bottom-right (replacing Q/E); dragging
+     anywhere else on the canvas looks around (replacing mouse-drag — now
+     Pointer Events, so the same code path handles mouse AND touch). */
+  #moveStick{position:fixed;left:max(20px,env(safe-area-inset-left));bottom:max(26px,env(safe-area-inset-bottom));
+    width:140px;height:140px;border-radius:50%;z-index:20;
+    background:radial-gradient(circle,rgba(28,32,23,.55),rgba(13,15,10,.35));
+    border:1px solid rgba(202,191,156,.25);touch-action:none}
+  #moveKnob{position:absolute;left:50%;top:50%;width:58px;height:58px;border-radius:50%;
+    transform:translate(-50%,-50%);
+    background:radial-gradient(circle at 35% 30%,#4a5238,#222719);
+    border:1px solid rgba(202,191,156,.45);box-shadow:0 4px 10px rgba(0,0,0,.5)}
+  #moveHint{position:absolute;left:50%;bottom:-18px;transform:translateX(-50%);
+    font-size:8px;letter-spacing:2px;color:#e2d9b8;white-space:nowrap;
+    font-family:monospace;text-transform:uppercase}
+  #vertButtons{position:fixed;right:max(20px,env(safe-area-inset-right));bottom:max(26px,env(safe-area-inset-bottom));
+    display:flex;flex-direction:column;gap:10px;z-index:20}
+  .vBtn{width:58px;height:58px;border-radius:50%;touch-action:none;
+    background:radial-gradient(circle at 35% 30%,#4a5238,#222719);
+    border:1px solid rgba(202,191,156,.45);color:#e2d9b8;font-size:22px;
+    display:flex;align-items:center;justify-content:center;user-select:none}
+  .vBtn.active{background:radial-gradient(circle at 35% 30%,#6a7548,#33391f)}
 </style>
 </head>
 <body>
 <div id="hud">
   <b>Terrain System — Step 5 prototype</b><br>
   Standalone demo. Not wired into the flight sim — proves the tile/LOD/streaming/content technique in isolation.<br>
-  WASD move · Q/E down/up · drag mouse to look · Shift = faster<br>
+  Stick: move · buttons: up/down · drag elsewhere: look · (keyboard WASD/QE/Shift also works)<br>
   tiles loaded: <span id="tileCount">-</span> / wanted: <span id="wantedCount">-</span> &nbsp; focus tile: <span id="tileInfo">-</span><br>
   loaded this frame: <span id="loadedInfo">-</span> &nbsp; pending: <span id="pendingInfo">-</span> &nbsp; trees: <span id="treeInfo">-</span><br>
   pos (m): <span id="posInfo">-</span> &nbsp; height under camera: <span id="hInfo">-</span> m
+</div>
+<div id="moveStick"><div id="moveKnob"></div><div id="moveHint">Move</div></div>
+<div id="vertButtons">
+  <div class="vBtn" id="upBtn">▲</div>
+  <div class="vBtn" id="downBtn">▼</div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -73,16 +102,63 @@ const streamer = new WorldStreamer(terrain, { contentManagers: [waterRoads, vege
 const keys = {};
 window.addEventListener('keydown', e => keys[e.key.toLowerCase()] = true);
 window.addEventListener('keyup',   e => keys[e.key.toLowerCase()] = false);
-let yaw = 0, pitch = -0.15, dragging = false, lastX = 0, lastY = 0;
-renderer.domElement.addEventListener('mousedown', e => { dragging = true; lastX = e.clientX; lastY = e.clientY; });
-window.addEventListener('mouseup', () => dragging = false);
-window.addEventListener('mousemove', e => {
-  if(!dragging) return;
+
+// Look: Pointer Events (not separate mouse/touch handlers) so one code path
+// drives both — dragging anywhere on the canvas looks around, exactly like
+// the old mouse-only version did, now also working on a touch screen.
+let yaw = 0, pitch = -0.15, lookId = null, lastX = 0, lastY = 0;
+renderer.domElement.addEventListener('pointerdown', e => {
+  if(lookId !== null) return;
+  lookId = e.pointerId;
+  try { renderer.domElement.setPointerCapture(lookId); } catch(err) {}
+  lastX = e.clientX; lastY = e.clientY;
+});
+renderer.domElement.addEventListener('pointermove', e => {
+  if(e.pointerId !== lookId) return;
   yaw   -= (e.clientX - lastX) * 0.003;
   pitch -= (e.clientY - lastY) * 0.003;
   pitch = Math.max(-1.4, Math.min(1.4, pitch));
   lastX = e.clientX; lastY = e.clientY;
 });
+const releaseLook = () => { lookId = null; };
+renderer.domElement.addEventListener('pointerup', releaseLook);
+renderer.domElement.addEventListener('pointercancel', releaseLook);
+renderer.domElement.addEventListener('lostpointercapture', releaseLook);
+
+// Move stick — same pointer-capture pattern as thunderbolt-europe.html's own
+// #stick, reused here so it feels like the same control (see this file's
+// <style> comment). dx/dy in [-1,1]: dx -> strafe, dy -> forward/back.
+let stickX = 0, stickY = 0, stickId = null;
+const moveStick = document.getElementById('moveStick'), moveKnob = document.getElementById('moveKnob');
+const setStick = e => {
+  const r = moveStick.getBoundingClientRect();
+  let dx = (e.clientX - (r.left + r.width/2)) / (r.width/2);
+  let dy = (e.clientY - (r.top + r.height/2)) / (r.height/2);
+  const L = Math.hypot(dx, dy); if(L > 1){ dx /= L; dy /= L; }
+  stickX = dx; stickY = dy;
+  moveKnob.style.transform = `translate(calc(-50% + ${dx*36}px),calc(-50% + ${dy*36}px))`;
+};
+const releaseStick = () => { stickId = null; stickX = 0; stickY = 0; moveKnob.style.transform = 'translate(-50%,-50%)'; };
+moveStick.addEventListener('pointerdown', e => { if(stickId !== null) return; stickId = e.pointerId;
+  try { moveStick.setPointerCapture(stickId); } catch(err) {} setStick(e); e.stopPropagation(); });
+moveStick.addEventListener('pointermove', e => { if(e.pointerId !== stickId) return; setStick(e); });
+moveStick.addEventListener('pointerup', releaseStick);
+moveStick.addEventListener('pointercancel', releaseStick);
+moveStick.addEventListener('lostpointercapture', releaseStick);
+
+// Up/down buttons — simple press-and-hold, same idea as the stick's Y axis
+// but for a third axis that doesn't fit a 2D stick.
+let upHeld = false, downHeld = false;
+function bindHoldButton(el, onDown, onUp){
+  el.addEventListener('pointerdown', e => { onDown(); el.classList.add('active'); e.stopPropagation(); });
+  const release = () => { onUp(); el.classList.remove('active'); };
+  el.addEventListener('pointerup', release);
+  el.addEventListener('pointercancel', release);
+  el.addEventListener('pointerleave', release);
+}
+bindHoldButton(document.getElementById('upBtn'),   () => upHeld = true,   () => upHeld = false);
+bindHoldButton(document.getElementById('downBtn'), () => downHeld = true, () => downHeld = false);
+
 window.addEventListener('resize', () => {
   camera.aspect = window.innerWidth/window.innerHeight;
   camera.updateProjectionMatrix();
@@ -112,6 +188,13 @@ function animate(){
   if(keys['d']) camera.position.addScaledVector(right, speed);
   if(keys['q']) camera.position.y -= speed;
   if(keys['e']) camera.position.y += speed;
+  // touch stick/buttons — same speed scale as the keyboard path, additive so
+  // keyboard and touch can both be used (e.g. a keyboard for movement, a
+  // finger for looking, or vice versa)
+  camera.position.addScaledVector(dir, -stickY * speed);
+  camera.position.addScaledVector(right, stickX * speed);
+  if(upHeld) camera.position.y += speed;
+  if(downHeld) camera.position.y -= speed;
 
   camera.rotation.set(0,0,0);
   camera.rotateY(yaw);
