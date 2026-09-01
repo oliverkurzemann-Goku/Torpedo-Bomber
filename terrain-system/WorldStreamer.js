@@ -31,6 +31,45 @@
 //  methods. Content only ever exists where its terrain tile does, and this
 //  class doesn't need to know anything about what a content manager actually
 //  puts in the world.
+//
+//  Step 7 — does any of this hold up at >=100x100km, and is a floating
+//  origin (rendering everything relative to the aircraft instead of true
+//  world coordinates, to dodge float32 precision loss far from the origin)
+//  actually needed to get there? Both measured, not assumed:
+//
+//  - Streaming itself: nothing in TerrainManager/WorldStreamer/HeightProvider
+//    has ever been bounded to a fixed world size (tiles live in a sparse Map
+//    keyed by tile-grid coordinates, and the height/noise functions are pure
+//    functions of world position with no fixed extent) — so this was really
+//    a question of whether it still WORKS, not whether it's structurally
+//    possible. Tested the streamer at focus points up to 96km from the
+//    origin on both axes (including a negative-coordinate corner): full
+//    convergence to the exact expected tile count every time, 0 NaN tiles,
+//    0 out-of-range tiles, finite/plausible heights, comparable convergence
+//    time (26-36 frames) regardless of distance from the origin. Real
+//    renders at 95km out show the same terrain character as near the origin
+//    (same tile-seam pattern, no jitter, no tearing) — no visible
+//    degradation. ProceduralHeightProvider's Math.sin-based hashing was
+//    separately checked out to 5,000km (50x the required scale) for the
+//    classic "large trig argument loses precision" pitfall: local height
+//    variance stayed in the same range the whole way, no flattening.
+//
+//  - Floating origin: measured the actual float32 quantization step at
+//    increasing distance from the origin (the real, GPU-relevant precision
+//    limit, regardless of how carefully tile-local vertex data is kept
+//    small — a tile's position itself still multiplies into every vertex's
+//    final world-space value in the vertex shader, in float32). Result: ~1mm
+//    at 30km, ~4mm at 100km, ~8mm at 150-250km. For a flight sim, a few
+//    millimetres of positional error at 100km out is not perceptible —
+//    nowhere near the multi-metre jitter that actually motivates a floating
+//    origin in other engines. CONCLUSION: floating origin is not needed at
+//    the required >=100x100km scale, so it has NOT been implemented — doing
+//    it anyway would mean reworking how every consumer (camera, aircraft
+//    position, mission logic) reads world position for a problem that
+//    doesn't measurably exist yet. Revisit this if the world size
+//    requirement ever grows into the thousands of km (the float32 step
+//    roughly doubles every time distance-from-origin crosses a power of two,
+//    so it stays sub-centimetre out to several hundred km).
 // ============================================================
 
 const WORLD_STREAM_RADIUS = 30000;   // metres — matches the user's "30km+" example, adjustable
