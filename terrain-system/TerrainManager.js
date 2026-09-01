@@ -3,10 +3,13 @@
 //  on distance from a focus point (the aircraft, once wired in via Step 4),
 //  and keeps the Three.js scene graph in sync.
 //
-//  Step 1 only ever asks for a small handful of tiles (see demo.html), but the
-//  grid bookkeeping here already supports an arbitrary sparse set — Step 2
-//  ("multiple tiles") and Step 4 ("world streaming") extend how tiles get
-//  requested/released, not this class's basic shape.
+//  The grid bookkeeping here already supported an arbitrary sparse set from
+//  Step 1 on — Step 2 ("multiple tiles") turned out to be less about this
+//  class (ensureTile/removeTile/updateLOD already handled any tile count) and
+//  more about what happens at the seam BETWEEN tiles once neighbours can be
+//  at different LOD: see TerrainTile.js's skirt for that. Step 4 ("world
+//  streaming") is what will actually call ensureTile/removeTile every frame
+//  from an aircraft position instead of demo.html's fixed startup grid.
 // ============================================================
 
 // Distance bands (metres) at which a tile drops to a coarser LOD. A tile
