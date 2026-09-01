@@ -260,7 +260,7 @@
   <div id="flash"></div>
   <div id="gunsight"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">EU BUILD 55</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">EU BUILD 56</div>
 
   <div id="apr">
     <div id="aprCall"></div>
@@ -4768,51 +4768,53 @@ function updateAudio(dt){
   const flying=(state===ST.FLIGHT)&&P.alive;
   const rpm=flying?(0.30+P.throttle*0.70):0;
   const ct=actx.currentTime;
-  // Reported three times running (EU BUILD 52/53/54): "hairdryer", then "mosquito", then simply
-  // "klingt fuerchterlich" (sounds terrible) with an explicit demand for research instead of more
-  // guessing - each previous fix only ever re-balanced the SAME two knobs (tone-vs-noise gain,
-  // fundamental frequency) on the piston engine's own node graph, never asked what a turbojet
-  // actually produces acoustically. Looked it up properly this time instead of continuing to
-  // iterate blind:
-  // - The Jumo 004 (this aircraft's real engine) idles around 2000-3000 rpm and redlines at
-  //   8700 rpm (National Museum of the USAF / period flight manual figures) - roughly a 3-4x
-  //   spread, far wider than any piston engine's idle-to-full-throttle range, and shaft speed
-  //   alone (not firing pulses - a turbine has none) sets the pitch.
-  // - The dominant, recognisable feature of a turbojet is the blade-passage-frequency tone: a
-  //   real acoustic tone at (blade count x shaft rpm/60) and its harmonics, reported in the
-  //   turbomachinery-noise literature as sitting some 10-15 dB ABOVE the surrounding broadband
-  //   level - i.e. the tone should clearly dominate, not just edge out, the noise floor under it.
-  // - That tone is not a single pure sine: adjacent compressor blade ROWS turn at the same shaft
-  //   speed but different blade counts, producing several simultaneous close-but-not-identical
-  //   tones that beat into what the literature calls "buzz-saw" noise - an audibly rough, sawing
-  //   quality, distinct from both a clean harmonic stack and a wide chorus-style detune.
-  // - Underneath that sits genuine broadband turbulence noise (compressor/exhaust) - NOT a
-  //   resonant whistle at a fixed multiple of the tone, which is what nbp's old narrow bandpass
-  //   amounted to.
-  // None of that resembles a piston engine's model at any pitch, which is why chasing "hairdryer"
-  // and "mosquito" by sliding the SAME two piston-engine knobs up and down three times running
-  // never converged - Lektion 9 applies structurally, not just to a single parameter. Rebuilt on
-  // the actual physics instead: a much higher register matching the real 3-4x idle-to-max shaft-
-  // speed spread (not the piston-engine-scale numbers tried before), a "buzz-saw" 5% detune
-  // between o1/o2 (rough, not chorus-smooth, not whine-pure), and a wide, non-resonant noise band
-  // (Q lowered, decoupled from any tone multiple) held to roughly 22% of the tone's own gain -
-  // close to the literature's ~13 dB tone-over-noise midpoint - so the whine dominates without
-  // the noise vanishing to nothing. `nbp.Q` is shared with the piston engine's own noise layer;
-  // the else branch below still resets it, same as every revision before this one. Same honest
-  // limit as always with pure WebAudio synthesis: this cannot be heard from here, only grounded in
-  // real numbers and measured to confirm those numbers actually reached the audio graph.
+  // Reported four times running now (EU BUILD 52/53/54/55): "hairdryer", "mosquito", "klingt
+  // fuerchterlich", and after EU BUILD 55's literature-research pass, still not right - the
+  // literature gave a correct general SHAPE (tonal, turbine-register, no piston wobble) but no
+  // numbers specific to what this engine actually sounds like. This round the user supplied an
+  // actual reference recording ("So klingt in etwa eine me262") - analysed it directly (Python +
+  // numpy FFT, not by ear, since audio still cannot be heard from here) instead of researching
+  // engine specs a fifth time. Measured across 12 windows spanning the 8 s clip:
+  // - The fundamental sits in an unexpectedly NARROW, high band: 1790 Hz at its quietest, rising
+  //   smoothly to a 2200-2350 Hz plateau it holds for the back half of the clip - not the wide
+  //   650-2200 Hz idle-to-full spread the Jumo 004's raw 3-4x rpm ratio implied. EU BUILD 55's
+  //   TOP end already landed almost exactly on this reference's plateau; the bottom end was much
+  //   too low.
+  // - A strong, clean second peak at almost EXACTLY 2x the fundamental shows up in every single
+  //   window (e.g. 2213 Hz and 4425 Hz; 2347 Hz and 4689 Hz) - a genuine octave overtone, not the
+  //   5% "buzz-saw" detune EU BUILD 55 built between o1/o2. That octave was already sitting right
+  //   there for free (a sawtooth's own natural harmonic series includes one at half the
+  //   fundamental's amplitude) - EU BUILD 55's lowpass (topping out at 3000 Hz) was silently
+  //   filtering it back out before it could ever be heard.
+  // - The two closest simultaneous peaks in every window (the actual "roughness" in the tone) sit
+  //   only 0.2-0.3% apart (e.g. 2213 vs 2218 Hz), not 5% - EU BUILD 53's original 0.6% "mosquito"
+  //   detune was in fact closer to this reference than EU BUILD 55's wider one; the mosquito
+  //   complaint traces to the missing octave and the noise balance below, not the detune width.
+  // - Spectral flatness across every window measured 0.008-0.011 - extremely tonal, next to no
+  //   broadband texture audible in the spectrum at all. EU BUILD 55's noise layer (22% of the
+  //   tone's gain) is too prominent for what this specific reference actually contains.
+  // Rebuilt directly on these numbers: fundamental narrowed to 1300-2300 Hz (still idle-to-full,
+  // but centred on the reference's measured plateau instead of the raw rpm-ratio calculation),
+  // o1/o2 detune tightened to 0.25% (the reference's own measured spacing), lowpass raised well
+  // past 2x the fundamental's peak (5000-6500 Hz) specifically so that free second harmonic is
+  // finally audible instead of filtered away, and the noise layer cut back to 9% of the tone's
+  // gain to match the reference's near-total tonal dominance. `nbp.Q` is shared with the piston
+  // engine's own noise layer; the else branch below still resets it, same as every revision
+  // before this one. Same honest limit as always with pure WebAudio synthesis: the numbers below
+  // are now grounded in a direct FFT of the user's own reference clip, not a guess and not a
+  // generic literature figure - but whether it actually sounds right is still only Oliver's call.
   if(JET_KINDS.includes(P.ac)){
-    const tf=650+rpm*1300+(P.spd/Math.max(1,MAX_SPD))*250;
+    const tf=1300+rpm*1000+(P.spd/Math.max(1,MAX_SPD))*180;
     eng.freq+=(tf-eng.freq)*Math.min(1,4*dt);
     eng.o1.frequency.setTargetAtTime(eng.freq,ct,0.10);
-    eng.o2.frequency.setTargetAtTime(eng.freq*1.05,ct,0.10);
-    eng.lp.frequency.setTargetAtTime(1700+rpm*1300,ct,0.15);
+    eng.o2.frequency.setTargetAtTime(eng.freq*1.0025,ct,0.10);
+    eng.lp.frequency.setTargetAtTime(5000+rpm*1500,ct,0.15);
     const vol=flying?(0.05+rpm*0.10):0;
     eng.eg.gain.setTargetAtTime(vol,ct,0.18);
     eng.lfoG.gain.setTargetAtTime(0,ct,0.2);
     eng.nbp.frequency.setTargetAtTime(1900+rpm*1300,ct,0.15);
     eng.nbp.Q.setTargetAtTime(0.45,ct,0.2);
-    eng.ng.gain.setTargetAtTime(vol*0.22,ct,0.15);
+    eng.ng.gain.setTargetAtTime(vol*0.09,ct,0.15);
   } else {
     eng.nbp.Q.setTargetAtTime(0.7,ct,0.15);
     // the Jug's R-2800 sits lower and rougher than the 109's inline

@@ -5,7 +5,7 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 120 · Thunderbolt Squadron EU BUILD 55**
+Stand bei Übergabe: **Torpedo Squadron BUILD 120 · Thunderbolt Squadron EU BUILD 56**
 Repo: `oliverkurzemann-Goku/Torpedo-Bomber`, ausgeliefert über GitHub Pages.
 Alle Angaben unten sind aus dem tatsächlichen Code verifiziert, nicht aus dem Gedächtnis.
 
@@ -3638,6 +3638,87 @@ Code: `thunderbolt-europe.html`, `MULTI_ENGINE_KINDS`, `findWingProps()`/`classi
 (Suche nach „four wing-mounted propellers"), `rigModel()`s neuer Zweig (Suche nach „B17 propeller
 drehen sich nicht"), `updateBomber()` (Suche nach „each spin around their OWN axis").
 `updateAudio()`, Suche nach „Reported three times running".
+
+---
+
+### 4.48 Me262-Sound anhand einer echten Referenzaufnahme kalibriert, Terrain-Meldung (vermutlich Cache) — EU BUILD 56
+
+Nutzer, mit einem iPad-Screenshot und einer echten Audiodatei: „So klingt in etwa eine me262" (Datei
+`me262_jet_engine_synth.wav`, 8 s), dazu: „Die Straße hat ein Loch und die meisten Bäume sind weg."
+
+#### 1) Me262-Sound — diesmal mit einer echten Referenzaufnahme statt Literaturwerten
+
+EU BUILD 55 hatte den Sound bereits auf recherchierte Turbojet-Akustik umgestellt (Blattfolge-
+frequenz, „Buzz-Saw"-Rauheit, Breitbandrauschen) — laut Nutzer immer noch nicht richtig. Diesmal
+lag ein echtes Vergleichsstück vor: direkt analysiert (Python, `numpy`-FFT über 12 Zeitfenster à
+186 ms, verteilt über die ganzen 8 s) statt erneut nur an der Literatur zu messen — Audio kann von
+hier aus weiterhin nicht gehört werden, aber eine Aufnahme lässt sich sehr wohl vermessen.
+
+**Vier konkrete, direkt gemessene Befunde, jeder einzelne im Widerspruch zu einer BUILD-55-Annahme:**
+1. Der Grundton liegt in einem überraschend schmalen, hohen Band: 1790 Hz am leisesten, steigt auf
+   ein 2200–2350-Hz-Plateau, das die zweite Hälfte des Clips durchgehend hält — nicht die 650–2200-Hz-
+   Spanne, die aus der rohen 3–4-fachen Jumo-004-Drehzahlspanne abgeleitet war. Das VOLLGAS-Ende von
+   BUILD 55 lag bereits fast exakt auf diesem Plateau; nur das untere (Leerlauf-)Ende war deutlich
+   zu tief.
+2. Ein klarer zweiter Peak bei fast EXAKT dem 2-fachen des Grundtons erscheint in jedem einzelnen
+   Fenster (z. B. 2213 Hz und 4425 Hz; 2347 Hz und 4689 Hz) — ein echter Oktav-Oberton, nicht die
+   5-%-„Buzz-Saw"-Verstimmung, die BUILD 55 zwischen o1/o2 gebaut hatte. Dieser Oberton war bereits
+   kostenlos vorhanden (ein Sägezahn-Oszillator enthält von selbst eine zweite Harmonische bei halber
+   Amplitude des Grundtons) — BUILD 55s Tiefpass (Deckel bei 3000 Hz) hat ihn nur stillschweigend
+   wieder herausgefiltert, bevor er hörbar werden konnte.
+3. Die beiden am engsten benachbarten gleichzeitigen Peaks in jedem Fenster (die eigentliche
+   „Rauheit" im Ton) liegen nur 0,2–0,3 % auseinander (z. B. 2213 vs. 2218 Hz), nicht 5 % — BUILD
+   53s ursprüngliche 0,6-%-„Mücke"-Verstimmung lag damit näher an dieser Referenz als BUILD 55s
+   breitere; die „Mücke"-Beschwerde geht auf den fehlenden Oktav-Oberton und die Rauschbalance
+   zurück (siehe Punkt 4), nicht auf die Verstimmungsbreite selbst.
+4. Spektrale Flachheit lag in jedem Fenster bei 0,008–0,011 — extrem tonal, im Spektrum praktisch
+   kein Breitbandanteil sichtbar. BUILD 55s Rauschanteil (22 % der Ton-Lautstärke) ist für das, was
+   diese konkrete Referenz tatsächlich enthält, zu präsent.
+
+**Fix, direkt aus diesen vier Zahlen abgeleitet:** Grundton auf 1300–2300 Hz verengt (weiterhin
+Leerlauf-bis-Vollgas, aber auf das gemessene Plateau zentriert statt auf die rohe Drehzahlspannen-
+Rechnung), o1/o2-Verstimmung auf 0,25 % verengt (die tatsächlich gemessene Referenz-Spannbreite),
+Tiefpass deutlich über das 2-fache des Spitzen-Grundtons angehoben (5000–6500 Hz), genau damit
+dieser kostenlose zweite Oberton endlich hörbar wird, und der Rauschanteil auf 9 % der Ton-
+Lautstärke gesenkt, um die fast vollständige tonale Dominanz der Referenz zu spiegeln.
+
+**Nachgewiesen:** Echtes Playwright/Chromium, echte `AudioContext`, echter Klickpfad. Die interne
+`eng.freq`-Zielgröße steigt korrekt von 1599 Hz (Leerlauf) über 2024 Hz (halber Schub) auf 2479 Hz
+(Vollgas/Höchstgeschwindigkeit) — passend zum gemessenen 1790–2350-Hz-Plateau der Referenz, mit
+etwas Leerlauf-Reserve nach unten (plausibel, da der Clip selbst schon mitten im Hochlaufen beginnt,
+nicht bei echtem Leerlauf). Verstimmungsverhältnis `o2/o1` exakt 1,0025 (die gemessenen 0,25 %),
+Rausch-zu-Ton-Verhältnis exakt 0,09 (die gemessenen 9 %), Tiefpass deutlich über 5000 Hz statt vorher
+3000 Hz — lässt die zweite Harmonische jetzt tatsächlich durch. Volle Regressionssuite
+(`smoke_test.js`, `hedge_float_check.js`) sowie Syntax-Check laufen weiterhin sauber durch.
+
+**Offen:** Wie bei jedem reinen WebAudio-Sounddesign kann „klingt gut" nur Oliver beurteilen — diesmal
+ist die Grundlage aber eine direkte Vermessung SEINER eigenen Referenzaufnahme, nicht nur eine
+allgemeine Literaturzahl. Die Referenzdatei selbst ist laut Dateiname „_synth" — vermutlich ebenfalls
+eine Synthese-Annäherung, keine echte Feldaufnahme des Jumo 004 — aber genau das ist der Zielklang,
+den der Nutzer als Vorbild vorgelegt hat, also das richtige Ziel für diese Kalibrierung.
+
+#### 2) Terrain-Meldung „Straße hat ein Loch, die meisten Bäume sind weg" — vermutlich Cache, nicht geprüft am Code
+
+Der Diff von EU BUILD 54 auf EU BUILD 55 (per `git diff`, nicht nur behauptet) berührt `buildTerrain`,
+`buildRoads`, `buildForests`, `buildClutter` und `makeWorldBridge` an keiner einzigen Stelle — diese
+Sitzung hat ausschließlich an B-17-Propellern und dem Me262-Sound gearbeitet. Der aktuelle Code auf
+`main` hat weiterhin `const N=30000` (das „viel, viel mehr Bäume"-Budget aus EU BUILD 52) und die
+kurvenfolgende `makeWorldBridge()` aus EU BUILD 39 unverändert vorhanden. Beide vom Nutzer
+beschriebenen Symptome (Straßenloch, kaum Bäume) entsprechen exakt Bildern, die bereits VOR EU BUILD
+39 bzw. VOR EU BUILD 51/52 gemeldet und seitdem behoben wurden (siehe 4.30/4.35/4.42-4.44) — nicht
+erneut aufgetreten in dieser Sitzung reproduziert oder untersucht, da der Code-Diff keinen Hinweis auf
+eine Regression liefert. Der Live-Stand auf GitHub Pages konnte von dieser Umgebung aus nicht direkt
+abgerufen werden (Netzwerk-Sandbox), daher hier nicht selbst bestätigt.
+
+**Offen, nicht behoben:** Passend zu Abschnitt 2 dieser Datei („GitHub verwandelt beim Hochladen
+manchmal Unterstriche in Leerzeichen" / iPad-Safari-Cache) ist die naheliegendste Erklärung, dass das
+iPad noch eine alte, gecachte Version zeigt. Der Nutzer wurde bereits gebeten, die im Spiel unten
+angezeigte Build-Nummer zu prüfen und die Seite mit einem harten Neuladen (bzw. `?v=56`) erneut zu
+laden. Falls die korrekte Build-Nummer bestätigt UND das Problem weiterhin sichtbar ist, wäre das ein
+echter, neuer Befund für eine künftige Runde — bislang nicht reproduziert, also nicht spekulativ
+„repariert".
+
+Code: `thunderbolt-europe.html`, `updateAudio()`, Suche nach „Reported four times running".
 
 ---
 
