@@ -33,6 +33,17 @@
     border:1px solid rgba(202,191,156,.45);color:#e2d9b8;font-size:22px;
     display:flex;align-items:center;justify-content:center;user-select:none}
   .vBtn.active{background:radial-gradient(circle at 35% 30%,#6a7548,#33391f)}
+  /* Reported (iPad, real device): dragging to look around easily tips the
+     view past the horizon -- pitch swings toward the sky and the whole
+     screen reads as an empty blue nothing, terrain sitting below the frame.
+     Reproduced exactly with a scripted stick-forward + drag-up test. A tap
+     here snaps pitch back to level so that dead end always has a way out. */
+  #levelBtn{position:fixed;top:8px;right:max(8px,env(safe-area-inset-right));z-index:20;
+    padding:8px 14px;border-radius:8px;touch-action:none;
+    background:radial-gradient(circle at 35% 30%,#4a5238,#222719);
+    border:1px solid rgba(202,191,156,.45);color:#e2d9b8;font-size:12px;
+    font-family:monospace;letter-spacing:1px;user-select:none}
+  #levelBtn.active{background:radial-gradient(circle at 35% 30%,#6a7548,#33391f)}
 </style>
 </head>
 <body>
@@ -49,6 +60,7 @@
   <div class="vBtn" id="upBtn">▲</div>
   <div class="vBtn" id="downBtn">▼</div>
 </div>
+<div id="levelBtn">⟲ LEVEL</div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="HeightProvider.js"></script>
@@ -158,6 +170,7 @@ function bindHoldButton(el, onDown, onUp){
 }
 bindHoldButton(document.getElementById('upBtn'),   () => upHeld = true,   () => upHeld = false);
 bindHoldButton(document.getElementById('downBtn'), () => downHeld = true, () => downHeld = false);
+bindHoldButton(document.getElementById('levelBtn'), () => { pitch = 0; }, () => {});
 
 window.addEventListener('resize', () => {
   camera.aspect = window.innerWidth/window.innerHeight;
