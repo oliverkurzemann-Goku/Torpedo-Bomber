@@ -106,7 +106,7 @@ function animate(){
 
   // This is exactly the call a WorldStreamer/flight-sim integration will make
   // every frame with the AIRCRAFT's position instead of the free-fly camera's.
-  terrain.updateLOD(camera.position.x, camera.position.z);
+  terrain.updateLOD(camera.position.x, camera.position.z, dt);
 
   const { tx, tz } = terrain.worldToTileCoord(camera.position.x, camera.position.z);
   tileCountEl.textContent = terrain.tileCount;
