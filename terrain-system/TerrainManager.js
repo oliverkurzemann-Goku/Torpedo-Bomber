@@ -42,8 +42,10 @@ class TerrainManager {
     this.heightProvider = heightProvider;
     // flatShading:false + real vertex normals from TerrainTile reads as rolling
     // ground, not faceted low-poly — matches what a LOD system needs to look
-    // acceptable even at the coarsest tesselation.
-    this.material = new THREE.MeshStandardMaterial({ color: 0x5a6b3e, roughness: 1.0, metalness: 0 });
+    // acceptable even at the coarsest tesselation. color stays white so the
+    // per-vertex biome tint TerrainTile now bakes in (Step 5) shows through
+    // unmultiplied by any additional material tint.
+    this.material = new THREE.MeshStandardMaterial({ color: 0xffffff, vertexColors: true, roughness: 1.0, metalness: 0 });
     this.tiles = new Map();   // "tx,tz" -> TerrainTile
   }
 
@@ -118,6 +120,27 @@ class TerrainManager {
   // every caller (flight-floor clamp, AI altitude, mission placement, ...).
   getHeight(x, z){
     return this.heightProvider.getHeight(x, z);
+  }
+
+  // Height as the CURRENTLY RENDERED terrain surface actually shows it at
+  // (x,z) — distinct from getHeight() above, which is the true, exact height
+  // regardless of tessellation. Step 5 content that rests ON TOP of the
+  // terrain (roads, rivers, trees) needs THIS one: placing something at the
+  // exact true height can leave it floating above or sunk into a coarser LOD
+  // tile's own straight-line interpolation between its sparser sample points
+  // — measured in Step 2 at up to ~48m for the coarsest tessellation. That's
+  // the same interpolation-gap problem the terrain skirt already solved for
+  // tile EDGES; this is the same fix applied to content sitting on a tile's
+  // INTERIOR, reusing TerrainTile.js's own coarseInterpHeight() so it matches
+  // pixel-for-pixel with what that tile's mesh is actually built from. Falls
+  // back to the exact height when no tile is currently loaded at that point
+  // (matches getHeight()'s point, no tile) — content wouldn't be visibly
+  // resting on unloaded ground anyway.
+  getRenderedHeight(x, z){
+    const { tx, tz } = this.worldToTileCoord(x, z);
+    const tile = this.tiles.get(this._key(tx, tz));
+    if(!tile || tile._renderSeg < 0) return this.heightProvider.getHeight(x, z);
+    return coarseInterpHeight(this.heightProvider, this.tileSize, tile.centerX, tile.centerZ, tile._renderSeg, x - tile.centerX, z - tile.centerZ);
   }
 
   get tileCount(){ return this.tiles.size; }
