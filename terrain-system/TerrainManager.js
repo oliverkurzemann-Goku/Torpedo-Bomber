@@ -54,15 +54,21 @@ class TerrainManager {
     return { tx: Math.floor(x / this.tileSize), tz: Math.floor(z / this.tileSize) };
   }
 
-  // Ensures a tile exists at the given tile-grid coordinate, builds it at LOD0
-  // if it's new, adds its mesh to the scene, and returns it. Idempotent — safe
-  // to call every frame for the same coordinate.
-  ensureTile(tx, tz){
+  // Ensures a tile exists at the given tile-grid coordinate, adds its mesh to
+  // the scene, and returns it. Idempotent — safe to call every frame for the
+  // same coordinate. `initialLod` (default 0) is only used for a brand new
+  // tile's first build — WorldStreamer (Step 4) passes in whatever LOD
+  // actually matches the tile's real distance, so a tile that first appears
+  // near the edge of the streaming radius doesn't pay for full LOD0 detail
+  // only to immediately downgrade next frame; updateLOD()'s own hysteresis/
+  // morph logic still corrects it on the very next call regardless, so this
+  // only needs to be approximately right, not exact.
+  ensureTile(tx, tz, initialLod = 0){
     const key = this._key(tx, tz);
     let tile = this.tiles.get(key);
     if(!tile){
       tile = new TerrainTile(tx, tz, this.tileSize, this.heightProvider);
-      tile.setLOD(0, this.material);
+      tile.setLOD(initialLod, this.material);
       this.scene.add(tile.mesh);
       this.tiles.set(key, tile);
     }
