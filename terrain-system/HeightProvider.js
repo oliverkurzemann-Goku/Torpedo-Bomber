@@ -65,17 +65,108 @@ class ProceduralHeightProvider {
   }
 }
 
-// Step 6 stub. Documents the intended shape of the real data path so
-// TerrainTile/TerrainManager can already be written against a stable interface:
-// a real DEM tile is a small binary heightmap (e.g. a Float32Array laid out
-// row-major, north-to-south, west-to-east) plus a header giving its world-space
-// origin and metres-per-sample. This class will fetch/parse that once per tile
-// and answer getHeight() by bilinearly sampling the grid — same one-method
-// contract as ProceduralHeightProvider above, so nothing else in this module
-// set needs to change when this stub gets filled in.
+// Step 6: real, working implementation — reads the binary tile format
+// tools/convert_dem_tile.js produces (see that file's own header for the
+// exact byte layout). Fetching is asynchronous (a real DEM tile is a network
+// request), but getHeight(worldX,worldZ) itself stays SYNCHRONOUS — the same
+// one-method contract as ProceduralHeightProvider — by requiring the tile to
+// already be loaded via loadTile() first. That split is deliberate and
+// honestly incomplete on purpose: TerrainTile._buildGeometry() calls
+// getHeight() synchronously inside a per-vertex loop, and making THAT async
+// (so a coarse LOD tile can appear the instant its DEM data lands, mid-frame)
+// is real surgery to the Step 1-4 streaming/LOD/morph system this class
+// intentionally does not attempt yet — the loader/parser/format is proven
+// end to end (see demo-dem-osm.html), the "swap it in for
+// ProceduralHeightProvider on every tile automatically" integration is next.
 class DEMHeightProvider {
-  constructor(/* tileUrl, originX, originZ, metresPerSample */){
-    throw new Error('DEMHeightProvider is a Step 6 stub, not implemented yet — use ProceduralHeightProvider for now.');
+  constructor(tileSize, baseUrl = 'data/dem/'){
+    this.tileSize = tileSize;
+    this.baseUrl = baseUrl;
+    this.tiles = new Map();   // "tx,tz" -> {gridSize, metresPerSample, heights: Float32Array}
   }
-  getHeight(worldX, worldZ){ return 0; }
+
+  _key(tx, tz){ return tx + ',' + tz; }
+
+  // Fetches and parses one DEM tile. Must be awaited before getHeight() is
+  // called for any point inside that tile. Safe to call repeatedly for the
+  // same tile (returns the cached tile after the first successful load).
+  async loadTile(tx, tz){
+    const key = this._key(tx, tz);
+    if(this.tiles.has(key)) return this.tiles.get(key);
+
+    const res = await fetch(`${this.baseUrl}${tx}_${tz}.bin`);
+    if(!res.ok) throw new Error(`DEMHeightProvider: failed to fetch tile ${key} (HTTP ${res.status})`);
+    const buf = await res.arrayBuffer();
+    const view = new DataView(buf);
+
+    const magic = String.fromCharCode(view.getUint8(0), view.getUint8(1), view.getUint8(2), view.getUint8(3));
+    if(magic !== 'DEM1') throw new Error(`DEMHeightProvider: tile ${key} has bad magic "${magic}", expected "DEM1"`);
+    const gridSize = view.getUint16(4, true);
+    const metresPerSample = view.getFloat32(6, true);
+    const expectedBytes = 16 + gridSize * gridSize * 4;
+    if(buf.byteLength !== expectedBytes){
+      throw new Error(`DEMHeightProvider: tile ${key} is ${buf.byteLength} bytes, expected ${expectedBytes} for a ${gridSize}x${gridSize} grid`);
+    }
+    const heights = new Float32Array(buf.slice(16));
+
+    const tile = { gridSize, metresPerSample, heights };
+    this.tiles.set(key, tile);
+    return tile;
+  }
+
+  hasTile(tx, tz){ return this.tiles.has(this._key(tx, tz)); }
+
+  // Synchronous, bilinear — throws (loudly, not a silent wrong answer) if
+  // the covering tile hasn't been loadTile()'d yet, rather than guessing 0.
+  getHeight(worldX, worldZ){
+    // A point sitting EXACTLY on a tile boundary floor()s into whichever
+    // tile happens to START there — and a tile's own base grid legitimately
+    // samples its own far edge at exactly tileOrigin+tileSize (TerrainTile.js's
+    // PlaneGeometry includes both endpoints), which is just as much the
+    // PREVIOUS tile's edge too. Each axis needs this checked independently:
+    // a vertex can sit on its tile's far edge in x while sitting on its
+    // NEAR edge in z at the very same time (worldZ=0 needs no adjustment,
+    // even though worldX=tileOrigin+tileSize does) — a single shared
+    // "shift both axes together" fallback gets that combination wrong, so
+    // each axis gets its own small candidate list, tried in every
+    // combination, primary (no shift) first.
+    let tile = null, tx, tz;
+    outer:
+    for(const cx of tileAxisCandidates(worldX, this.tileSize)){
+      for(const cz of tileAxisCandidates(worldZ, this.tileSize)){
+        const t = this.tiles.get(this._key(cx, cz));
+        if(t){ tile = t; tx = cx; tz = cz; break outer; }
+      }
+    }
+    if(!tile){
+      const pTx = Math.floor(worldX/this.tileSize), pTz = Math.floor(worldZ/this.tileSize);
+      throw new Error(`DEMHeightProvider: no DEM data loaded for tile (${pTx},${pTz}) — call loadTile(${pTx},${pTz}) first`);
+    }
+
+    const localX = worldX - tx * this.tileSize, localZ = worldZ - tz * this.tileSize;
+    const { gridSize, metresPerSample, heights } = tile;
+    const fx = Math.min(gridSize - 1.0001, Math.max(0, localX / metresPerSample));
+    const fz = Math.min(gridSize - 1.0001, Math.max(0, localZ / metresPerSample));
+    const ix0 = Math.floor(fx), iz0 = Math.floor(fz);
+    const tX = fx - ix0, tZ = fz - iz0;
+    const h00 = heights[ix0   + gridSize*iz0];
+    const h10 = heights[ix0+1 + gridSize*iz0];
+    const h01 = heights[ix0   + gridSize*(iz0+1)];
+    const h11 = heights[ix0+1 + gridSize*(iz0+1)];
+    const h0 = h00 + (h10-h00)*tX;
+    const h1 = h01 + (h11-h01)*tX;
+    return h0 + (h1-h0)*tZ;
+  }
+}
+
+// Which tile INDEX (along one axis) a coordinate could belong to: normally
+// just floor(coord/tileSize), plus the PREVIOUS index too when coord sits
+// right on that tile's own lower edge (remainder ~0) — the same point is
+// then also that previous tile's upper edge. Order matters: primary first,
+// so an interior point (the overwhelmingly common case) never even looks at
+// the fallback.
+function tileAxisCandidates(coord, tileSize){
+  const primary = Math.floor(coord / tileSize);
+  const remainder = coord - primary * tileSize;
+  return remainder < 1e-6 ? [primary, primary - 1] : [primary];
 }
