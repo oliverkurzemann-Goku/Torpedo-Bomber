@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="utf-8">
-<title>Terrain System — Step 6 DEM/OSM Prototype</title>
+<title>Terrain System — Step 6-8 DEM/OSM/Historical Prototype</title>
 <style>
   html,body{margin:0;height:100%;background:#87b3e0;overflow:hidden;font-family:monospace}
   canvas{display:block}
@@ -14,11 +14,12 @@
 </head>
 <body>
 <div id="hud">
-  <b>Terrain System — Step 6 DEM/OSM prototype</b><br>
+  <b>Terrain System — Step 6-8 DEM/OSM/Historical prototype</b><br>
   Standalone demo, separate from the main streaming demo.html on purpose — this one
-  proves ONLY the offline-file → fetch → parse → render pipeline against a single
-  hand-made sample tile (tools/convert_dem_tile.js + convert_osm_tile.js), not the
-  full auto-streaming system (see this file's own comments for why).<br>
+  proves the offline-file → fetch → parse → render pipeline against a single
+  hand-made sample tile, real DEM terrain (Step 6) with the real-world OSM layer
+  (Step 6) AND the separate historical/WW2 layer (Step 8) layered on top of it —
+  not the full auto-streaming system (see this file's own comments for why).<br>
   WASD move · Q/E down/up · drag mouse to look · Shift = faster<br>
   status: <span id="status">loading…</span>
 </div>
@@ -28,6 +29,7 @@
 <script src="TerrainTile.js"></script>
 <script src="TerrainManager.js"></script>
 <script src="OSMManager.js"></script>
+<script src="HistoricalObjectManager.js"></script>
 <script>
 'use strict';
 
@@ -61,15 +63,22 @@ async function main(){
 
   const terrain = new TerrainManager(scene, TILE_SIZE, heightProvider);
   const osm = new OSMManager(scene, TILE_SIZE, terrain, 'data/osm/');
+  // Step 8: a separate layer, loaded independently of and after the base
+  // terrain+OSM layers -- see HistoricalObjectManager.js's own header for
+  // why it stays a distinct file/manager instead of folding into OSMManager.
+  const historical = new HistoricalObjectManager(scene, TILE_SIZE, terrain, 'data/historical/');
 
   terrain.ensureTile(0, 0, 0);   // LOD0 — this whole prototype is one tile, viewed up close
   await osm.loadTile(0, 0);
+  await historical.loadTile(0, 0);
 
   const osmTile = osm.tiles.get('0,0');
+  const histGroup = historical.tiles.get('0,0');
   statusEl.textContent = `DEM tile loaded (${heightProvider.tiles.get('0,0').gridSize}x${heightProvider.tiles.get('0,0').gridSize} samples) — `
-    + `OSM tile ${osmTile ? 'loaded' : 'MISSING'} (trees: ${osmTile?.treeCount ?? 0}, buildings: ${osmTile?.buildingCount ?? 0})`;
+    + `OSM tile ${osmTile ? 'loaded' : 'MISSING'} (trees: ${osmTile?.treeCount ?? 0}, buildings: ${osmTile?.buildingCount ?? 0}) — `
+    + `historical tile ${histGroup ? 'loaded' : 'MISSING'} (objects: ${histGroup ? histGroup.children.length : 0})`;
 
-  window.__step6 = { heightProvider, terrain, osm };   // for the verification harness to inspect directly
+  window.__step6 = { heightProvider, terrain, osm, historical };   // for the verification harness to inspect directly
 }
 
 main().catch(e => {

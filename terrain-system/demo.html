@@ -28,6 +28,12 @@
 <script src="WorldStreamer.js"></script>
 <script src="WaterRoadManager.js"></script>
 <script src="VegetationManager.js"></script>
+<!-- HistoricalObjectManager.js is loaded here so it's available to attach
+     (e.g. from a test, or a future menu toggle) but deliberately NOT added
+     to this demo's own `contentManagers` list below -- see Step 8's own
+     independence test (terrain_step8_independence.js) for why leaving a
+     content manager out changes nothing else about the running system. -->
+<script src="HistoricalObjectManager.js"></script>
 <script>
 'use strict';
 
