@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="utf-8">
-<title>Terrain System — Step 4 Prototype</title>
+<title>Terrain System — Step 5 Prototype</title>
 <style>
   html,body{margin:0;height:100%;background:#87b3e0;overflow:hidden;font-family:monospace}
   canvas{display:block}
@@ -13,11 +13,11 @@
 </head>
 <body>
 <div id="hud">
-  <b>Terrain System — Step 4 prototype</b><br>
-  Standalone demo. Not wired into the flight sim — proves the tile/LOD/streaming technique in isolation.<br>
+  <b>Terrain System — Step 5 prototype</b><br>
+  Standalone demo. Not wired into the flight sim — proves the tile/LOD/streaming/content technique in isolation.<br>
   WASD move · Q/E down/up · drag mouse to look · Shift = faster<br>
   tiles loaded: <span id="tileCount">-</span> / wanted: <span id="wantedCount">-</span> &nbsp; focus tile: <span id="tileInfo">-</span><br>
-  loaded this frame: <span id="loadedInfo">-</span> &nbsp; pending: <span id="pendingInfo">-</span><br>
+  loaded this frame: <span id="loadedInfo">-</span> &nbsp; pending: <span id="pendingInfo">-</span> &nbsp; trees: <span id="treeInfo">-</span><br>
   pos (m): <span id="posInfo">-</span> &nbsp; height under camera: <span id="hInfo">-</span> m
 </div>
 
@@ -26,6 +26,8 @@
 <script src="TerrainTile.js"></script>
 <script src="TerrainManager.js"></script>
 <script src="WorldStreamer.js"></script>
+<script src="WaterRoadManager.js"></script>
+<script src="VegetationManager.js"></script>
 <script>
 'use strict';
 
@@ -48,11 +50,17 @@ const sun = new THREE.DirectionalLight(0xfff0d0, 1.05); sun.position.set(-1800,2
 
 const heightProvider = new ProceduralHeightProvider(1);
 const terrain = new TerrainManager(scene, TILE_SIZE, heightProvider);
-// Real streaming (Step 4): tiles load/unload themselves every frame based on
-// the focus point below, budgeted so a sudden big jump doesn't stall a frame.
-// No upfront loading loop needed any more — the first few frames populate the
-// area around the starting camera position on their own.
-const streamer = new WorldStreamer(terrain);
+// Step 5: procedural content that streams in/out alongside terrain tiles,
+// via WorldStreamer's contentManagers hook — see WaterRoadManager.js and
+// VegetationManager.js for what each one actually builds per tile.
+const waterRoads = new WaterRoadManager(scene, TILE_SIZE, terrain);
+const vegetation = new VegetationManager(scene, TILE_SIZE, terrain);
+// Real streaming (Step 4): tiles (and now their content) load/unload
+// themselves every frame based on the focus point below, budgeted so a
+// sudden big jump doesn't stall a frame. No upfront loading loop needed any
+// more — the first few frames populate the area around the starting camera
+// position on their own.
+const streamer = new WorldStreamer(terrain, { contentManagers: [waterRoads, vegetation] });
 
 // ---- minimal free-fly controls, demo-only — the real flight sim's own
 // controls/camera are never touched by this module ----
@@ -80,6 +88,7 @@ const wantedCountEl = document.getElementById('wantedCount');
 const tileInfoEl    = document.getElementById('tileInfo');
 const loadedInfoEl  = document.getElementById('loadedInfo');
 const pendingInfoEl = document.getElementById('pendingInfo');
+const treeInfoEl    = document.getElementById('treeInfo');
 const posInfoEl     = document.getElementById('posInfo');
 const hInfoEl       = document.getElementById('hInfo');
 
@@ -112,6 +121,7 @@ function animate(){
   tileInfoEl.textContent = `(${tx}, ${tz})`;
   loadedInfoEl.textContent = streamInfo.loadedThisFrame;
   pendingInfoEl.textContent = streamInfo.pendingLoads;
+  treeInfoEl.textContent = vegetation.treeCount;
   posInfoEl.textContent = `${camera.position.x.toFixed(0)}, ${camera.position.y.toFixed(0)}, ${camera.position.z.toFixed(0)}`;
   hInfoEl.textContent = terrain.getHeight(camera.position.x, camera.position.z).toFixed(0);
 

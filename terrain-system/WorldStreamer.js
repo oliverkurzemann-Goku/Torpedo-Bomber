@@ -23,6 +23,14 @@
 //  LOD0, since a tile first entering a 30km streaming radius is essentially
 //  never close enough to need full detail immediately — updateLOD()'s own
 //  hysteresis/morph logic (Step 3) refines it from there like any other tile.
+//
+//  Step 5: optional `contentManagers` (VegetationManager, WaterRoadManager,
+//  and later BuildingManager/AirfieldManager/HistoricalObjectManager) piggy-
+//  back on the exact same per-tile load/unload decisions terrain tiles
+//  already make here — each one just needs loadTile(tx,tz)/unloadTile(tx,tz)
+//  methods. Content only ever exists where its terrain tile does, and this
+//  class doesn't need to know anything about what a content manager actually
+//  puts in the world.
 // ============================================================
 
 const WORLD_STREAM_RADIUS = 30000;   // metres — matches the user's "30km+" example, adjustable
@@ -35,6 +43,7 @@ class WorldStreamer {
     this.streamRadius = opts.streamRadius ?? WORLD_STREAM_RADIUS;
     this.loadMsBudget = opts.loadMsBudget ?? WORLD_STREAM_LOAD_MS_BUDGET;
     this.maxUnloadsPerFrame = opts.maxUnloadsPerFrame ?? WORLD_STREAM_MAX_UNLOADS_PER_FRAME;
+    this.contentManagers = opts.contentManagers ?? [];
   }
 
   // Call once per frame with the aircraft's (or, for the demo, the free-fly
@@ -68,6 +77,7 @@ class WorldStreamer {
       const key = tile.tileX + ',' + tile.tileZ;
       if(!wanted.has(key)){
         this.terrain.removeTile(tile.tileX, tile.tileZ);
+        for(const cm of this.contentManagers) cm.unloadTile(tile.tileX, tile.tileZ);
         unloads++;
       }
     }
@@ -83,6 +93,7 @@ class WorldStreamer {
     for(const w of missing){
       if(performance.now() - loadStart >= this.loadMsBudget) break;
       this.terrain.ensureTile(w.tx, w.tz, rawLodFor(w.d));
+      for(const cm of this.contentManagers) cm.loadTile(w.tx, w.tz);
       loaded++;
     }
 

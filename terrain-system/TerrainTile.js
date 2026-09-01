@@ -189,6 +189,22 @@ class TerrainTile {
       }
     }
 
+    // ---- Step 5: simple height-banded biome tint, per vertex. This is the
+    // "field/meadow texturing" the landscape spec asks for, done as vertex
+    // colours on the terrain's own mesh (zero extra draw calls) rather than a
+    // separate texture — self-contained noise here, deliberately not shared
+    // with VegetationManager.js's own forest-coverage noise (see this file's
+    // header on not sharing code across this module set), so a real OSM
+    // landuse import (Step 6) can later replace this one function without
+    // anything else needing to change.
+    const colors = new Array(mainCount * 3);
+    for(let i = 0; i < mainCount; i++){
+      const wx = cx + pos.getX(i), wz = cz + pos.getZ(i);
+      const h = pos.getY(i);
+      const [r,g,b] = biomeColor(h, wx, wz);
+      colors[i*3] = r; colors[i*3+1] = g; colors[i*3+2] = b;
+    }
+
     // ---- skirt: hang a wall down from each of the 4 edges, see file header ----
     const positions = Array.from(pos.array);
     const indices    = Array.from(geo.index.array);
@@ -207,6 +223,7 @@ class TerrainTile {
         bottom.push(positions.length / 3);
         skirtTopOf.push(ti);
         positions.push(tx, ty - TERRAIN_SKIRT_DEPTH, tz);
+        colors.push(colors[ti*3], colors[ti*3+1], colors[ti*3+2]);   // skirt just carries its top vertex's colour
       }
       const midTop = edge.top[Math.floor(edge.top.length/2)];
       const outward = new THREE.Vector2(positions[midTop*3], positions[midTop*3+2]).normalize();
@@ -218,6 +235,7 @@ class TerrainTile {
 
     geo.setIndex(indices);
     geo.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+    geo.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
     geo.computeVertexNormals();
     geo.computeBoundingSphere();     // required for Three.js's own frustum culling to work
 
@@ -261,6 +279,35 @@ class TerrainTile {
     this._renderSeg = -1;
     this.morphing = false;
   }
+}
+
+// Simple height-banded biome tint (green meadow low, olive scrub mid, rocky
+// brown higher, grey rock at the very top), with a little per-point noise so
+// band edges aren't a hard, artificial-looking line — the "smooth blending
+// instead of a hard if/else jump" lesson this project already learned once
+// for its own island terrain (see the live game's CLAUDE.md history). A
+// deliberately simple placeholder, standing in for what a real OSM
+// landuse/natural import (Step 6) will eventually classify per point instead.
+function biomeColor(h, wx, wz){
+  const jitter = (Math.sin(wx*0.011+wz*0.017)*0.5+0.5) * 0.06 - 0.03;
+  const bands = [
+    { h: 0,   c: [0.30, 0.46, 0.22] },   // meadow
+    { h: 220, c: [0.40, 0.47, 0.27] },   // scrub/farmland
+    { h: 480, c: [0.47, 0.40, 0.30] },   // heath/rock
+    { h: 760, c: [0.55, 0.55, 0.54] },   // bare rock
+  ];
+  let lo = bands[0], hi = bands[bands.length-1];
+  for(let i = 0; i < bands.length-1; i++){
+    if(h >= bands[i].h && h <= bands[i+1].h){ lo = bands[i]; hi = bands[i+1]; break; }
+  }
+  if(h > bands[bands.length-1].h){ lo = hi = bands[bands.length-1]; }
+  const span = Math.max(1, hi.h - lo.h);
+  const t = Math.max(0, Math.min(1, (h - lo.h) / span));
+  return [
+    Math.max(0, Math.min(1, lo.c[0] + (hi.c[0]-lo.c[0])*t + jitter)),
+    Math.max(0, Math.min(1, lo.c[1] + (hi.c[1]-lo.c[1])*t + jitter)),
+    Math.max(0, Math.min(1, lo.c[2] + (hi.c[2]-lo.c[2])*t + jitter)),
+  ];
 }
 
 // What a COARSER grid (given segment count) would show at a LOCAL (x,z) point
