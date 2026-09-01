@@ -19,6 +19,22 @@
 // with the real aircraft (Step 4) shows what actually needs to be sharp.
 const TERRAIN_LOD_DISTANCES = [2200, 6000];
 
+// Step 3: a tile sitting almost exactly on a threshold would otherwise flip
+// LOD every frame as the focus point jitters a metre either side of it —
+// each flip re-triggers a geomorph (TerrainTile.js) for nothing. Upgrading
+// (more detail) is allowed the moment the raw distance calls for it — more
+// detail never looks wrong even a little early. Downgrading only happens
+// once the distance clears the CURRENT band's own threshold by this factor,
+// so retreating has to actually mean it before detail is thrown away.
+const TERRAIN_LOD_HYSTERESIS = 1.15;
+
+function rawLodFor(d){
+  for(let i = 0; i < TERRAIN_LOD_DISTANCES.length; i++){
+    if(d < TERRAIN_LOD_DISTANCES[i]) return i;
+  }
+  return TERRAIN_LOD_DISTANCES.length;
+}
+
 class TerrainManager {
   constructor(scene, tileSize, heightProvider){
     this.scene = scene;
@@ -67,17 +83,24 @@ class TerrainManager {
   }
 
   // Re-picks LOD for every currently-loaded tile based on distance to
-  // (focusX, focusZ). Call once per frame (Step 4 will throttle/stagger this
-  // across frames once tile counts get large enough that rebuilding several
-  // geometries in one frame would show up as a stutter).
-  updateLOD(focusX, focusZ){
+  // (focusX, focusZ), applies hysteresis (see TERRAIN_LOD_HYSTERESIS above),
+  // and advances any tile mid-geomorph by dt. Call once per frame (Step 4
+  // will throttle/stagger the LOD-selection part once tile counts get large
+  // enough that even just the distance checks show up as a cost — the morph
+  // update itself is already only ever done for tiles actually transitioning).
+  updateLOD(focusX, focusZ, dt){
     for(const tile of this.tiles.values()){
       const d = tile.distanceTo(focusX, focusZ);
-      let lod = TERRAIN_LOD_DISTANCES.length;   // coarsest by default
-      for(let i = 0; i < TERRAIN_LOD_DISTANCES.length; i++){
-        if(d < TERRAIN_LOD_DISTANCES[i]){ lod = i; break; }
+      const raw = rawLodFor(d);
+      let lod = tile.lod >= 0 ? tile.lod : raw;
+      if(raw < lod){
+        lod = raw;   // upgrade (more detail): immediate
+      } else if(raw > lod){
+        const curBoundary = lod < TERRAIN_LOD_DISTANCES.length ? TERRAIN_LOD_DISTANCES[lod] : Infinity;
+        if(d >= curBoundary * TERRAIN_LOD_HYSTERESIS) lod = raw;   // downgrade: only once clearly past the band
       }
       if(lod !== tile.lod) tile.setLOD(lod, this.material);
+      if(tile.morphing) tile.updateMorph(dt);
     }
   }
 
