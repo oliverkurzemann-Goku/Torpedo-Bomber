@@ -125,6 +125,8 @@ window.addEventListener('keydown', e => keys[e.key.toLowerCase()] = true);
 window.addEventListener('keyup',   e => keys[e.key.toLowerCase()] = false);
 
 let yaw = -0.4, pitch = -0.2, lookId = null, lastX = 0, lastY = 0;
+// LEVEL button — same reasoning as demo.html, see that file's comment.
+const START_PITCH = pitch;
 renderer.domElement.addEventListener('pointerdown', e => {
   if(lookId !== null) return;
   lookId = e.pointerId;
@@ -171,7 +173,7 @@ function bindHoldButton(el, onDown, onUp){
 }
 bindHoldButton(document.getElementById('upBtn'),   () => upHeld = true,   () => upHeld = false);
 bindHoldButton(document.getElementById('downBtn'), () => downHeld = true, () => downHeld = false);
-bindHoldButton(document.getElementById('levelBtn'), () => { pitch = 0; }, () => {});
+bindHoldButton(document.getElementById('levelBtn'), () => { pitch = START_PITCH; }, () => {});
 
 window.addEventListener('resize', () => {
   camera.aspect = window.innerWidth/window.innerHeight;
