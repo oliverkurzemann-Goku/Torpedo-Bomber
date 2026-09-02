@@ -42,10 +42,27 @@ class TerrainManager {
     this.heightProvider = heightProvider;
     // flatShading:false + real vertex normals from TerrainTile reads as rolling
     // ground, not faceted low-poly — matches what a LOD system needs to look
-    // acceptable even at the coarsest tesselation. color stays white so the
-    // per-vertex biome tint TerrainTile now bakes in (Step 5) shows through
-    // unmultiplied by any additional material tint.
-    this.material = new THREE.MeshStandardMaterial({ color: 0xffffff, vertexColors: true, roughness: 1.0, metalness: 0 });
+    // acceptable even at the coarsest tesselation.
+    //
+    // Reported (real iPad, not this sandbox's headless SwiftShader renderer):
+    // the terrain mesh itself was completely invisible -- pure sky colour
+    // where the ground should be -- while every OTHER mesh in this same
+    // scene (roads, river, trees, buildings, historical objects, all from
+    // OSMManager/VegetationManager/WaterRoadManager/HistoricalObjectManager)
+    // rendered correctly, unmoved by camera position or the LEVEL button.
+    // Compared every material in this whole module set: this terrain
+    // material was the ONLY one with vertexColors:true (all 17 others use a
+    // plain solid `color`) -- the one structural difference between the one
+    // mesh that fails and everything that doesn't. Cannot reproduce on real
+    // iOS hardware from this environment to prove it conclusively, but it's
+    // the one real lead the evidence points to, so: dropped the per-vertex
+    // biome tint (TerrainTile.js) in favour of a plain solid colour here,
+    // removing vertexColors from this material entirely as the most
+    // surgical way to test/fix that lead. If this resolves it, the biome
+    // tint is worth re-adding later via a baked canvas texture instead (the
+    // technique thunderbolt-europe.html's own ground texture already uses
+    // successfully on real iPads) rather than per-vertex colours.
+    this.material = new THREE.MeshStandardMaterial({ color: 0x527a3c, roughness: 1.0, metalness: 0 });
     this.tiles = new Map();   // "tx,tz" -> TerrainTile
   }
 
