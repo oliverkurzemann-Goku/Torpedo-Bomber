@@ -119,6 +119,13 @@ window.addEventListener('keyup',   e => keys[e.key.toLowerCase()] = false);
 // drives both — dragging anywhere on the canvas looks around, exactly like
 // the old mouse-only version did, now also working on a touch screen.
 let yaw = 0, pitch = -0.15, lookId = null, lastX = 0, lastY = 0;
+// Reported (iPad, real device): resetting pitch to exactly 0 (dead level)
+// leaves mostly sky in frame, since the tuned starting pitch (-0.15) is
+// what actually puts the terrain in view at this camera height -- 0 is
+// "not pointed at the sky", not "a good view". LEVEL restores the tuned
+// starting pitch instead of an arbitrary flat 0 (yaw is left alone --
+// snapping the look direction back too would read as an unrelated spin).
+const START_PITCH = pitch;
 renderer.domElement.addEventListener('pointerdown', e => {
   if(lookId !== null) return;
   lookId = e.pointerId;
@@ -170,7 +177,7 @@ function bindHoldButton(el, onDown, onUp){
 }
 bindHoldButton(document.getElementById('upBtn'),   () => upHeld = true,   () => upHeld = false);
 bindHoldButton(document.getElementById('downBtn'), () => downHeld = true, () => downHeld = false);
-bindHoldButton(document.getElementById('levelBtn'), () => { pitch = 0; }, () => {});
+bindHoldButton(document.getElementById('levelBtn'), () => { pitch = START_PITCH; }, () => {});
 
 window.addEventListener('resize', () => {
   camera.aspect = window.innerWidth/window.innerHeight;
