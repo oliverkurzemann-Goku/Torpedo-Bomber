@@ -125,8 +125,19 @@ window.addEventListener('keydown', e => keys[e.key.toLowerCase()] = true);
 window.addEventListener('keyup',   e => keys[e.key.toLowerCase()] = false);
 
 let yaw = -0.4, pitch = -0.2, lookId = null, lastX = 0, lastY = 0;
-// LEVEL button — same reasoning as demo.html, see that file's comment.
+// LEVEL button — same reasoning as demo.html, see that file's comment, PLUS
+// one thing unique to this page: it holds only ONE hand-made 4x4km sample
+// tile, not an infinite streamed world (see the HUD text above). Fly far
+// enough with the move stick and you leave that one tile behind entirely --
+// confirmed by pixel-sampling a real screenshot of exactly this: a thin
+// strip of terrain sandwiched between two solid bands of pure sky colour,
+// nothing else in frame. Reproduced the same way (stick held forward for
+// ~25s). There's nothing else out there to fly back to by hand, so LEVEL
+// resets position here too, not just pitch -- on demo.html, where flying
+// far is the whole point of the streaming world, position is deliberately
+// left alone.
 const START_PITCH = pitch;
+const START_POS = camera.position.clone();
 renderer.domElement.addEventListener('pointerdown', e => {
   if(lookId !== null) return;
   lookId = e.pointerId;
@@ -173,7 +184,7 @@ function bindHoldButton(el, onDown, onUp){
 }
 bindHoldButton(document.getElementById('upBtn'),   () => upHeld = true,   () => upHeld = false);
 bindHoldButton(document.getElementById('downBtn'), () => downHeld = true, () => downHeld = false);
-bindHoldButton(document.getElementById('levelBtn'), () => { pitch = START_PITCH; }, () => {});
+bindHoldButton(document.getElementById('levelBtn'), () => { pitch = START_PITCH; camera.position.copy(START_POS); }, () => {});
 
 window.addEventListener('resize', () => {
   camera.aspect = window.innerWidth/window.innerHeight;
