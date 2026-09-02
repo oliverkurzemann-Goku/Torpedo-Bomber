@@ -190,6 +190,24 @@ class TerrainTile {
     }
 
     // ---- skirt: hang a wall down from each of the 4 edges, see file header ----
+    //
+    // Found (real iPad, not this sandbox's SwiftShader renderer, which never
+    // caught it): PlaneGeometry's own `normal`/`uv` attributes stay sized for
+    // the ORIGINAL mainCount vertices, but `positions` below grows by the
+    // skirt count, and the index buffer built from THAT then references
+    // vertex indices past the end of those two now too-short attribute
+    // buffers -- an out-of-bounds vertex attribute read for every skirt
+    // triangle. THREE.js's own bookkeeping (mesh.visible, boundingSphere,
+    // frustum test) never notices this, because none of that touches the
+    // attribute buffers themselves -- it can only show up in the GPU's own,
+    // driver-dependent handling of reading past a buffer's end, which
+    // SwiftShader tolerates and a stricter real driver may not. `uv` gets
+    // the same treatment `color` used to (carry the top vertex's own value
+    // onto its skirt copy); `normal` is deleted first so
+    // computeVertexNormals() below builds a fresh, correctly-sized one
+    // instead of reusing (and thus leaving too-short) the stale one -- see
+    // this method's own call to it, and the comment there.
+    const uvs = geo.attributes.uv ? Array.from(geo.attributes.uv.array) : null;
     const positions = Array.from(pos.array);
     const indices    = Array.from(geo.index.array);
     const skirtTopOf = [];
@@ -207,6 +225,7 @@ class TerrainTile {
         bottom.push(positions.length / 3);
         skirtTopOf.push(ti);
         positions.push(tx, ty - TERRAIN_SKIRT_DEPTH, tz);
+        if(uvs) uvs.push(uvs[ti*2], uvs[ti*2+1]);
       }
       const midTop = edge.top[Math.floor(edge.top.length/2)];
       const outward = new THREE.Vector2(positions[midTop*3], positions[midTop*3+2]).normalize();
@@ -218,6 +237,8 @@ class TerrainTile {
 
     geo.setIndex(indices);
     geo.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+    if(uvs) geo.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
+    geo.deleteAttribute('normal');   // stale, mainCount-sized -- force a fresh one at the new vertex count, see the comment above
     geo.computeVertexNormals();
     geo.computeBoundingSphere();     // required for Three.js's own frustum culling to work
 
