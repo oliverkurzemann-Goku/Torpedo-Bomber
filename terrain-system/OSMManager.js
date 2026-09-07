@@ -157,17 +157,56 @@ class OSMManager {
 
   // Scatters trees inside a forest polygon (point-in-polygon via ray
   // casting), same InstancedMesh-per-part technique as VegetationManager.js.
+  //
+  // Real-data regression (found by demo-remagen.html's own real-browser
+  // verification): the synthetic prototype's own forest patches were always
+  // placed with generous margin away from a tile's own edges, so this
+  // never came up there, but a real Overture forest polygon routinely
+  // covers a WHOLE tile (clipped ring exactly matching the tile's own
+  // [0,tileSize] square) or reaches right up to one edge. The point-in-
+  // polygon test above uses the UNjittered (x,z), which does stay within
+  // [minX,maxX]/[minZ,maxZ] (i.e. within this tile) by construction -- but
+  // jx/jz can be up to +-step/2 (10m), and the JITTERED position is what
+  // actually got queried for height below. For a sample sitting right at
+  // the tile's own edge (a real, common case now, not a rare corner), that
+  // jitter can land the query up to 10m into a DIFFERENT tile -- one that
+  // may not even be loaded, which used to throw straight through
+  // TerrainManager.getRenderedHeight()'s fallback (see that function's own
+  // updated comment). Clamped to this tile's own world bounds instead: a
+  // tree jittering 10m less freely right at its tile's own edge is
+  // invisible, an uncaught exception killing this whole tile's content
+  // build is not.
+  //
+  // Second real-data finding, same session: a fixed step=20 was tuned
+  // against the synthetic prototype's own forest patches, at most a few
+  // hundred thousand m^2 each -- a real Overture forest polygon can cover
+  // an ENTIRE tile (16,000,000 m^2, measured directly against the actual
+  // Remagen data: 10 of that grid's forest rings are exactly a full
+  // 4000x4000 tile), which at a fixed 20m step is 40,000 samples for ONE
+  // ring alone -- summed across every forest ring in the real dataset,
+  // over 5 MILLION placements before point-in-polygon even rejects any of
+  // them. Never crashed (InstancedMesh handles large counts fine) but is a
+  // real, unnecessary performance cliff for no visual benefit at flight-sim
+  // altitude. Step now scales with the ring's own bounding-box area,
+  // targeting roughly TARGET_TREES samples per ring regardless of size —
+  // never denser than the original 20m (small synthetic-scale patches are
+  // unaffected, same visual density as before) and never sparser than 150m
+  // (a huge ring still reads as a forest, not a few scattered dots).
   _scatterForest(group, localRing, ox, oz){
     const world = localRing.map(([lx,lz]) => [ox+lx, oz+lz]);
     let minX=Infinity,maxX=-Infinity,minZ=Infinity,maxZ=-Infinity;
     for(const [x,z] of world){ minX=Math.min(minX,x); maxX=Math.max(maxX,x); minZ=Math.min(minZ,z); maxZ=Math.max(maxZ,z); }
-    const step = 20;
+    const TARGET_TREES = 800;
+    const bboxArea = Math.max(1, (maxX-minX) * (maxZ-minZ));
+    const step = Math.min(150, Math.max(20, Math.round(Math.sqrt(bboxArea / TARGET_TREES))));
     const placements = [];
     for(let x = minX; x <= maxX; x += step){
       for(let z = minZ; z <= maxZ; z += step){
         if(!pointInPolygon(x, z, world)) continue;
         const jx = (osmHash(x,z,1)-0.5)*step, jz = (osmHash(x,z,2)-0.5)*step;
-        placements.push({ x: x+jx, z: z+jz, scale: 0.8+osmHash(x,z,3)*0.5, rot: osmHash(x,z,4)*Math.PI*2 });
+        const px = Math.min(ox+this.tileSize, Math.max(ox, x+jx));
+        const pz = Math.min(oz+this.tileSize, Math.max(oz, z+jz));
+        placements.push({ x: px, z: pz, scale: 0.8+osmHash(x,z,3)*0.5, rot: osmHash(x,z,4)*Math.PI*2 });
       }
     }
     if(placements.length === 0) return 0;

@@ -1,0 +1,18 @@
+{
+  "_comment": "Shared config for the real-data pipeline (real/tools/*.py) -- one file instead of the same numbers duplicated in three scripts, same reasoning as convert_dem_tile.js exporting TILE_SIZE/GRID_RANGE for the synthetic prototype's own tools to share.",
+  "region": "Remagen / Rhein-Schleife (Erpel, Bad Honnef, Sinzig, Linz am Rhein)",
+  "crs": "EPSG:32632",
+  "crsComment": "UTM zone 32N -- correct zone for this longitude band (6E-12E), true metre distances at this scale without the projection distortion a lat/lon-as-metres shortcut would introduce.",
+  "bboxLonLat": { "lonMin": 7.05, "lonMax": 7.42, "latMin": 50.45, "latMax": 50.72 },
+  "originUTM": { "x": 361000, "y": 5589000 },
+  "originComment": "SW corner of the working area in UTM32N metres, rounded down to a clean 1000m -- world (0,0) in the tile-local coordinate system every tool/JSON file below uses. worldX = utmEasting - originUTM.x, worldZ = utmNorthing - originUTM.y (north = +Z).",
+  "tileSize": 4000,
+  "gridW": 7,
+  "gridH": 8,
+  "gridComment": "tx runs 0..6, tz runs 0..7 -- covers UTM X 361000..389000, Y 5589000..5621000, comfortably containing the full bboxLonLat with margin on every side.",
+  "gridSizeDem": 65,
+  "landmarks": {
+    "ludendorffBridgeWest": { "lon": 7.2278, "lat": 50.5772, "label": "Remagen bridgehead (west bank)" },
+    "ludendorffBridgeEast": { "lon": 7.2313, "lat": 50.5761, "label": "Erpel bridgehead (east bank, below the Erpeler Ley)" }
+  }
+}

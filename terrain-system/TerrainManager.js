@@ -153,11 +153,37 @@ class TerrainManager {
   // back to the exact height when no tile is currently loaded at that point
   // (matches getHeight()'s point, no tile) — content wouldn't be visibly
   // resting on unloaded ground anyway.
+  //
+  // Real-data regression (found by demo-remagen.html's own real-browser
+  // verification, not anticipated up front): the ORIGINAL version below
+  // only ever looked up the ONE tile worldToTileCoord() floor()s to — fine
+  // for the synthetic prototype's own content, which was always placed
+  // with margin well inside a tile's interior, but real Overture forest
+  // polygons routinely get clipped right up to a tile's shared edge, and
+  // VegetationManager/OSMManager's own scatter-sampling grids (fixed step,
+  // starting at the polygon's own bounding-box min) can land a sample
+  // EXACTLY on that edge or a shared corner. worldToTileCoord()'s plain
+  // floor() then resolves it to whichever of the (up to four) tiles
+  // touching that point happens to "start" there — which does not have to
+  // be one of the ones actually loaded, even when every tile that DOES
+  // touch that exact point except one IS loaded. DEMHeightProvider.getHeight()
+  // already solved exactly this ambiguity for its own tile lookup via
+  // tileAxisCandidates() (HeightProvider.js) — reused here (both files
+  // share one global scope, same as WorldStreamer.js already reusing
+  // TerrainManager.js's own rawLodFor()) so this tile-selection step tries
+  // every legitimate neighbour before ever falling through to a raw
+  // heightProvider call that might have nothing loaded at the exact
+  // (possibly wrong) primary index either.
   getRenderedHeight(x, z){
-    const { tx, tz } = this.worldToTileCoord(x, z);
-    const tile = this.tiles.get(this._key(tx, tz));
-    if(!tile || tile._renderSeg < 0) return this.heightProvider.getHeight(x, z);
-    return coarseInterpHeight(this.heightProvider, this.tileSize, tile.centerX, tile.centerZ, tile._renderSeg, x - tile.centerX, z - tile.centerZ);
+    for(const tx of tileAxisCandidates(x, this.tileSize)){
+      for(const tz of tileAxisCandidates(z, this.tileSize)){
+        const tile = this.tiles.get(this._key(tx, tz));
+        if(tile && tile._renderSeg >= 0){
+          return coarseInterpHeight(this.heightProvider, this.tileSize, tile.centerX, tile.centerZ, tile._renderSeg, x - tile.centerX, z - tile.centerZ);
+        }
+      }
+    }
+    return this.heightProvider.getHeight(x, z);
   }
 
   get tileCount(){ return this.tiles.size; }
