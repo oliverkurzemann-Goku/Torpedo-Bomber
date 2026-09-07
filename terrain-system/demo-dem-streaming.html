@@ -1,0 +1,288 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Terrain System — DEM/OSM World Streaming Prototype</title>
+<style>
+  html,body{margin:0;height:100%;background:#87b3e0;overflow:hidden;font-family:monospace;touch-action:none}
+  canvas{display:block;touch-action:none}
+  #hud{position:absolute;top:8px;left:8px;color:#fff;background:rgba(0,0,0,.55);
+       padding:8px 12px;font-size:13px;line-height:1.6;border-radius:4px;pointer-events:none}
+  #hud b{color:#ffd76a}
+  #hud.err{color:#ff8080}
+  /* Touch controls — same as demo.html/demo-dem-osm.html, see those files' <style> comments. */
+  #moveStick{position:fixed;left:max(20px,env(safe-area-inset-left));bottom:max(26px,env(safe-area-inset-bottom));
+    width:140px;height:140px;border-radius:50%;z-index:20;
+    background:radial-gradient(circle,rgba(28,32,23,.55),rgba(13,15,10,.35));
+    border:1px solid rgba(202,191,156,.25);touch-action:none}
+  #moveKnob{position:absolute;left:50%;top:50%;width:58px;height:58px;border-radius:50%;
+    transform:translate(-50%,-50%);
+    background:radial-gradient(circle at 35% 30%,#4a5238,#222719);
+    border:1px solid rgba(202,191,156,.45);box-shadow:0 4px 10px rgba(0,0,0,.5)}
+  #moveHint{position:absolute;left:50%;bottom:-18px;transform:translateX(-50%);
+    font-size:8px;letter-spacing:2px;color:#e2d9b8;white-space:nowrap;
+    font-family:monospace;text-transform:uppercase}
+  #vertButtons{position:fixed;right:max(20px,env(safe-area-inset-right));bottom:max(26px,env(safe-area-inset-bottom));
+    display:flex;flex-direction:column;gap:10px;z-index:20}
+  .vBtn{width:58px;height:58px;border-radius:50%;touch-action:none;
+    background:radial-gradient(circle at 35% 30%,#4a5238,#222719);
+    border:1px solid rgba(202,191,156,.45);color:#e2d9b8;font-size:22px;
+    display:flex;align-items:center;justify-content:center;user-select:none}
+  .vBtn.active{background:radial-gradient(circle at 35% 30%,#6a7548,#33391f)}
+  /* Level button — same as demo.html/demo-dem-osm.html, see those files' <style> comments. */
+  #levelBtn{position:fixed;top:8px;right:max(8px,env(safe-area-inset-right));z-index:20;
+    padding:8px 14px;border-radius:8px;touch-action:none;
+    background:radial-gradient(circle at 35% 30%,#4a5238,#222719);
+    border:1px solid rgba(202,191,156,.45);color:#e2d9b8;font-size:12px;
+    font-family:monospace;letter-spacing:1px;user-select:none}
+  #levelBtn.active{background:radial-gradient(circle at 35% 30%,#6a7548,#33391f)}
+</style>
+</head>
+<body>
+<div id="hud">
+  <b>Terrain System — DEM/OSM world streaming prototype</b><br>
+  Real DEM terrain + real-world OSM content (Step 6) streamed automatically in/out around the
+  camera (Step 4), across the whole generated 25-tile grid — not demo.html's procedural noise,
+  not demo-dem-osm.html's single fixed tile. Fly far enough (past the generated grid's edge, see
+  tools/convert_dem_tile.js's GRID_RANGE) and that direction simply stops streaming in new
+  terrain — that boundary is expected, not a bug (see WorldStreamer.js's heightLoadFailures).<br>
+  Stick: move · buttons: up/down · drag elsewhere: look · (keyboard WASD/QE/Shift also works)<br>
+  tiles loaded: <span id="tileCount">-</span> / wanted: <span id="wantedCount">-</span> &nbsp; focus tile: <span id="tileInfo">-</span><br>
+  loaded this frame: <span id="loadedInfo">-</span> &nbsp; awaiting height: <span id="awaitInfo">-</span>
+    &nbsp; pending: <span id="pendingInfo">-</span> &nbsp; grid-edge failures: <span id="failInfo">-</span><br>
+  OSM trees: <span id="osmTreeInfo">-</span> &nbsp; OSM buildings: <span id="osmBuildingInfo">-</span>
+    &nbsp; historical objects: <span id="histInfo">-</span><br>
+  pos (m): <span id="posInfo">-</span> &nbsp; height under camera: <span id="hInfo">-</span> m<br>
+  diag: <span id="diag">-</span>
+</div>
+<div id="moveStick"><div id="moveKnob"></div><div id="moveHint">Move</div></div>
+<div id="vertButtons">
+  <div class="vBtn" id="upBtn">▲</div>
+  <div class="vBtn" id="downBtn">▼</div>
+</div>
+<div id="levelBtn">⟲ LEVEL</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="HeightProvider.js"></script>
+<script src="TerrainTile.js"></script>
+<script src="TerrainManager.js"></script>
+<script src="WorldStreamer.js"></script>
+<script src="OSMManager.js"></script>
+<script src="HistoricalObjectManager.js"></script>
+<script>
+'use strict';
+
+// Same on-page diagnostics as demo-dem-osm.html (see that file's own header
+// for why: a report from a real device this environment cannot reproduce
+// directly needs the page to describe its own state, not just a guess).
+const diagEl0 = document.getElementById('diag');
+const diagSlots = {};
+function setDiag(key, s){ diagSlots[key] = s; diagEl0.textContent = Object.values(diagSlots).join(' | '); }
+window.addEventListener('error', e => {
+  const msg = 'JS ERROR: ' + (e.message || e.error) + ' @' + (e.filename||'').split('/').pop() + ':' + e.lineno;
+  setDiag('err:' + msg, msg);
+});
+window.addEventListener('unhandledrejection', e => {
+  const msg = 'PROMISE REJECTED: ' + (e.reason && e.reason.message || e.reason);
+  setDiag('err:' + msg, msg);
+});
+
+const TILE_SIZE = 4000;   // must match convert_dem_tile.js's own TILE_SIZE
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x87b3e0);
+scene.fog = new THREE.Fog(0x87b3e0, 3000, 9000);
+
+// Starts inside tile (0,0), near the world origin — the generated grid
+// (tools/convert_dem_tile.js's GRID_RANGE=2) runs tx,tz -2..2, so the origin
+// sits comfortably in the middle of the data that actually exists, with
+// history layer content (the bridge in tile (0,0), flak+factory in (-1,0),
+// the airfield in (-2,1)) all reachable within a short flight.
+const camera = new THREE.PerspectiveCamera(65, window.innerWidth/window.innerHeight, 1, 20000);
+camera.position.set(1000, 700, 1000);
+
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.setSize(window.innerWidth, window.innerHeight);
+document.body.appendChild(renderer.domElement);
+
+{
+  const gl = renderer.getContext();
+  const dbg = gl.getExtension('WEBGL_debug_renderer_info');
+  const rendererStr = dbg ? gl.getParameter(dbg.UNMASKED_RENDERER_WEBGL) : gl.getParameter(gl.RENDERER);
+  setDiag('gl', `GL: ${gl.getParameter(gl.VERSION)} / ${rendererStr}`);
+}
+
+const hemi = new THREE.HemisphereLight(0xcfe2f2, 0x4a5438, 1.0); scene.add(hemi);
+const sun = new THREE.DirectionalLight(0xfff0d0, 1.05); sun.position.set(-1800,2600,1400); scene.add(sun);
+
+// Step 6's real, working height source — async loadTile()s, but the actual
+// per-vertex getHeight() calls TerrainTile._buildGeometry() makes stay
+// synchronous (see HeightProvider.js's own header). WorldStreamer (Step 4,
+// extended this round — see its own header comment on "Step 6 integration")
+// is what makes this safe: it never calls terrain.ensureTile() for a tile
+// whose DEM data isn't loaded yet, so getHeight() never gets a chance to
+// throw its "call loadTile() first" error.
+const heightProvider = new DEMHeightProvider(TILE_SIZE, 'data/dem/');
+const terrain = new TerrainManager(scene, TILE_SIZE, heightProvider);
+const osm = new OSMManager(scene, TILE_SIZE, terrain, 'data/osm/');
+const historical = new HistoricalObjectManager(scene, TILE_SIZE, terrain, 'data/historical/');
+
+// Deliberately smaller than demo.html's 30km default: the generated DEM/OSM
+// grid only covers a 5x5 tile (20km x 20km) footprint (GRID_RANGE=2 in
+// tools/convert_dem_tile.js) — a 30km streaming radius from anywhere near
+// the middle would spend most of its "wanted" list on tiles that were never
+// generated, all of which correctly end up in heightLoadFailures (see
+// WorldStreamer.js) but that's still wasted 404 traffic for no visible
+// benefit in THIS demo. 10km keeps the wanted ring within (or just at the
+// edge of) the real data almost everywhere reachable from the start
+// position, while still being big enough to show several tiles streaming
+// in/out as the camera moves — the actual multi-tile streaming this file
+// exists to prove, unlike demo-dem-osm.html's single fixed tile.
+const streamer = new WorldStreamer(terrain, { streamRadius: 10000, contentManagers: [osm, historical] });
+
+// ---- same free-fly controls as demo.html/demo-dem-osm.html ----
+const keys = {};
+window.addEventListener('keydown', e => keys[e.key.toLowerCase()] = true);
+window.addEventListener('keyup',   e => keys[e.key.toLowerCase()] = false);
+
+let yaw = 0, pitch = -0.15, lookId = null, lastX = 0, lastY = 0;
+const START_PITCH = pitch;
+renderer.domElement.addEventListener('pointerdown', e => {
+  if(lookId !== null) return;
+  lookId = e.pointerId;
+  try { renderer.domElement.setPointerCapture(lookId); } catch(err) {}
+  lastX = e.clientX; lastY = e.clientY;
+});
+renderer.domElement.addEventListener('pointermove', e => {
+  if(e.pointerId !== lookId) return;
+  yaw   -= (e.clientX - lastX) * 0.003;
+  pitch -= (e.clientY - lastY) * 0.003;
+  pitch = Math.max(-1.4, Math.min(1.4, pitch));
+  lastX = e.clientX; lastY = e.clientY;
+});
+const releaseLook = () => { lookId = null; };
+renderer.domElement.addEventListener('pointerup', releaseLook);
+renderer.domElement.addEventListener('pointercancel', releaseLook);
+renderer.domElement.addEventListener('lostpointercapture', releaseLook);
+
+let stickX = 0, stickY = 0, stickId = null;
+const moveStick = document.getElementById('moveStick'), moveKnob = document.getElementById('moveKnob');
+const setStick = e => {
+  const r = moveStick.getBoundingClientRect();
+  let dx = (e.clientX - (r.left + r.width/2)) / (r.width/2);
+  let dy = (e.clientY - (r.top + r.height/2)) / (r.height/2);
+  const L = Math.hypot(dx, dy); if(L > 1){ dx /= L; dy /= L; }
+  stickX = dx; stickY = dy;
+  moveKnob.style.transform = `translate(calc(-50% + ${dx*36}px),calc(-50% + ${dy*36}px))`;
+};
+const releaseStick = () => { stickId = null; stickX = 0; stickY = 0; moveKnob.style.transform = 'translate(-50%,-50%)'; };
+moveStick.addEventListener('pointerdown', e => { if(stickId !== null) return; stickId = e.pointerId;
+  try { moveStick.setPointerCapture(stickId); } catch(err) {} setStick(e); e.stopPropagation(); });
+moveStick.addEventListener('pointermove', e => { if(e.pointerId !== stickId) return; setStick(e); });
+moveStick.addEventListener('pointerup', releaseStick);
+moveStick.addEventListener('pointercancel', releaseStick);
+moveStick.addEventListener('lostpointercapture', releaseStick);
+
+let upHeld = false, downHeld = false;
+function bindHoldButton(el, onDown, onUp){
+  el.addEventListener('pointerdown', e => { onDown(); el.classList.add('active'); e.stopPropagation(); });
+  const release = () => { onUp(); el.classList.remove('active'); };
+  el.addEventListener('pointerup', release);
+  el.addEventListener('pointercancel', release);
+  el.addEventListener('pointerleave', release);
+}
+bindHoldButton(document.getElementById('upBtn'),   () => upHeld = true,   () => upHeld = false);
+bindHoldButton(document.getElementById('downBtn'), () => downHeld = true, () => downHeld = false);
+bindHoldButton(document.getElementById('levelBtn'), () => { pitch = START_PITCH; }, () => {});
+
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth/window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
+
+const tileCountEl   = document.getElementById('tileCount');
+const wantedCountEl = document.getElementById('wantedCount');
+const tileInfoEl    = document.getElementById('tileInfo');
+const loadedInfoEl  = document.getElementById('loadedInfo');
+const awaitInfoEl   = document.getElementById('awaitInfo');
+const pendingInfoEl = document.getElementById('pendingInfo');
+const failInfoEl    = document.getElementById('failInfo');
+const osmTreeEl     = document.getElementById('osmTreeInfo');
+const osmBuildingEl = document.getElementById('osmBuildingInfo');
+const histEl        = document.getElementById('histInfo');
+const posInfoEl     = document.getElementById('posInfo');
+const hInfoEl       = document.getElementById('hInfo');
+
+window.__demoStreaming = { heightProvider, terrain, osm, historical, streamer };   // for the verification harness to inspect directly
+
+const clock = new THREE.Clock();
+function animate(){
+  requestAnimationFrame(animate);
+  const dt = Math.min(0.1, clock.getDelta());
+
+  const dir = new THREE.Vector3(Math.sin(yaw), 0, Math.cos(yaw));
+  const right = new THREE.Vector3(dir.z, 0, -dir.x);
+  const speed = (keys['shift'] ? 900 : 220) * dt;
+  if(keys['w']) camera.position.addScaledVector(dir, speed);
+  if(keys['s']) camera.position.addScaledVector(dir, -speed);
+  if(keys['a']) camera.position.addScaledVector(right, -speed);
+  if(keys['d']) camera.position.addScaledVector(right, speed);
+  if(keys['q']) camera.position.y -= speed;
+  if(keys['e']) camera.position.y += speed;
+  camera.position.addScaledVector(dir, -stickY * speed);
+  camera.position.addScaledVector(right, stickX * speed);
+  if(upHeld) camera.position.y += speed;
+  if(downHeld) camera.position.y -= speed;
+
+  camera.rotation.set(0,0,0);
+  camera.rotateY(yaw);
+  camera.rotateX(pitch);
+
+  // Same one call a real flight-sim integration would make every frame with
+  // the aircraft's position — now able to reach real DEM/OSM tiles it
+  // hasn't fetched yet without ever handing TerrainTile an unloaded height
+  // sample (Step 6 integration, see WorldStreamer.js).
+  const streamInfo = streamer.update(camera.position.x, camera.position.z, dt);
+
+  const { tx, tz } = terrain.worldToTileCoord(camera.position.x, camera.position.z);
+  tileCountEl.textContent = terrain.tileCount;
+  wantedCountEl.textContent = streamInfo.wantedCount;
+  tileInfoEl.textContent = `(${tx}, ${tz})`;
+  loadedInfoEl.textContent = streamInfo.loadedThisFrame;
+  awaitInfoEl.textContent = streamInfo.awaitingHeightData;
+  pendingInfoEl.textContent = streamInfo.pendingLoads;
+  failInfoEl.textContent = streamInfo.heightLoadFailures;
+
+  let osmTrees = 0, osmBuildings = 0;
+  for(const t of osm.tiles.values()) if(t){ osmTrees += t.treeCount; osmBuildings += t.buildingCount; }
+  osmTreeEl.textContent = osmTrees;
+  osmBuildingEl.textContent = osmBuildings;
+  let histObjects = 0;
+  for(const g of historical.tiles.values()) if(g) histObjects += g.children.length;
+  histEl.textContent = histObjects;
+
+  posInfoEl.textContent = `${camera.position.x.toFixed(0)}, ${camera.position.y.toFixed(0)}, ${camera.position.z.toFixed(0)}`;
+  // Unlike demo.html's ProceduralHeightProvider (a pure function, always
+  // ready), DEMHeightProvider.getHeight() throws for a point whose covering
+  // tile hasn't loadTile()'d yet (see HeightProvider.js) -- and that tile
+  // can easily be the very one the camera starts inside of, on this page's
+  // FIRST frame, before streaming has had any chance to fetch anything at
+  // all (found by this file's own real-browser verification: an unguarded
+  // call here threw a pageerror on page load, every time). WorldStreamer
+  // guards its OWN internal use of the height provider (never builds a
+  // tile before its data lands, see WorldStreamer.js), but this HUD read-out
+  // is a second, independent caller with no such guard of its own.
+  try {
+    hInfoEl.textContent = terrain.getHeight(camera.position.x, camera.position.z).toFixed(0);
+  } catch(e){
+    hInfoEl.textContent = '…';
+  }
+
+  renderer.render(scene, camera);
+}
+animate();
+</script>
+</body>
+</html>

@@ -8,14 +8,25 @@
 //  binary files that DEMHeightProvider (HeightProvider.js) can fetch.
 //
 //  No real DEM source is available in this environment, so this script
-//  authors ONE small, clearly hand-made sample tile (a hill with a river
+//  authors a hand-made sample landscape (a broad hill with a winding river
 //  valley cut through it — deliberately structured/legible, nothing like
 //  the procedural noise terrain, so it's obviously test data, not a claim of
 //  real Germany elevation) — proving the FORMAT and the LOADER work end to
-//  end. Swapping in a real DEM parser later means rewriting the sampleHeight
-//  function below to read a real raster instead of this hand-authored shape;
+//  end. Swapping in a real DEM parser later means rewriting sampleHeight()
+//  below to read a real raster instead of this hand-authored shape;
 //  everything downstream (the binary format, DEMHeightProvider, the tile
-//  streaming it eventually plugs into) does not change.
+//  streaming it plugs into) does not change.
+//
+//  Was originally ONE hand-made tile at (0,0), with sampleHeight() taking
+//  TILE-LOCAL coordinates -- fine for a single isolated tile, but that
+//  reset-every-tile shape would have produced a hard, visible seam at every
+//  tile boundary the moment more than one tile exists side by side (each
+//  tile would re-center its own hill on itself). Now generates a GRID of
+//  tiles and sampleHeight() takes WORLD coordinates instead, exactly the
+//  same "pure function of world position, no per-tile reset" contract
+//  ProceduralHeightProvider (HeightProvider.js) already uses -- continuity
+//  across tile edges is then automatic, not something each tile has to get
+//  right on its own.
 //
 //  BINARY FORMAT ("DEM1"), little-endian, one file per terrain tile:
 //    offset  0..3   magic bytes 'D','E','M','1' (ASCII)
@@ -37,15 +48,28 @@ const GRID_SIZE = 65;             // matches TERRAIN_LOD_SEGMENTS[0]+1 (64 segme
 const TILE_SIZE = 4000;           // metres — must match the running game's own tileSize
 const METRES_PER_SAMPLE = TILE_SIZE / (GRID_SIZE - 1);
 
-// Stands in for "read one real DEM raster cell" -- a hand-authored hill with
-// a river valley, in LOCAL tile coordinates (0,0) = tile's own south-west
-// corner, (TILE_SIZE,TILE_SIZE) = north-east corner.
-function sampleHeight(localX, localZ){
-  const cx = TILE_SIZE / 2, cz = TILE_SIZE / 2;
-  const dx = localX - cx, dz = localZ - cz;
-  const dist = Math.hypot(dx, dz);
-  const hill = Math.max(0, 260 - dist * 0.09);                 // a gentle hill toward the tile centre
-  const valley = Math.max(0, 1 - Math.abs(dx - 600) / 500) * 90; // a river valley notch, off-centre
+// The grid this tool generates -- exported so convert_osm_tile.js and
+// convert_historical_tile.js build data for the exact same footprint
+// without a second, easily-out-of-sync copy of these numbers.
+const GRID_RANGE = 2;   // tx,tz each run -GRID_RANGE..+GRID_RANGE -> 5x5 = 25 tiles
+
+// A continuous river-valley centreline, in WORLD metres -- winds slowly
+// along X. convert_osm_tile.js samples this SAME function so its river
+// polyline visually lines up with the valley cut into the terrain instead
+// of being an independently-guessed path.
+function riverCenterZ(worldX){
+  return 2000 + Math.sin(worldX * 0.00035) * 2200 + Math.sin(worldX * 0.0011) * 500;
+}
+
+// Stands in for "read one real DEM raster cell" -- a hand-authored hill
+// range with a river valley cut through it, now a pure function of WORLD
+// position (see file header for why that matters once more than one tile
+// exists).
+function sampleHeight(worldX, worldZ){
+  const dist = Math.hypot(worldX, worldZ);
+  const hill = Math.max(0, 320 - dist * 0.022);                       // broad hill centred on the world origin
+  const distToRiver = Math.abs(worldZ - riverCenterZ(worldX));
+  const valley = Math.max(0, 1 - distToRiver / 550) * 100;            // valley notch following the winding river
   return Math.max(0, hill - valley);
 }
 
@@ -54,8 +78,8 @@ function buildTile(tx, tz){
   const heights = new Float32Array(GRID_SIZE * GRID_SIZE);
   for(let iz = 0; iz < GRID_SIZE; iz++){
     for(let ix = 0; ix < GRID_SIZE; ix++){
-      const localX = ix * METRES_PER_SAMPLE, localZ = iz * METRES_PER_SAMPLE;
-      heights[ix + GRID_SIZE*iz] = sampleHeight(localX, localZ);
+      const worldX = originX + ix * METRES_PER_SAMPLE, worldZ = originZ + iz * METRES_PER_SAMPLE;
+      heights[ix + GRID_SIZE*iz] = sampleHeight(worldX, worldZ);
     }
   }
 
@@ -72,9 +96,19 @@ function buildTile(tx, tz){
   fs.mkdirSync(outDir, { recursive: true });
   const outPath = path.join(outDir, `${tx}_${tz}.bin`);
   fs.writeFileSync(outPath, out);
-  console.log(`Wrote ${outPath} (${out.length} bytes, ${GRID_SIZE}x${GRID_SIZE} samples, origin ${originX},${originZ})`);
-  return outPath;
+  return { outPath, size: out.length };
 }
 
-// Only the one sample tile the Step 6 prototype actually loads.
-buildTile(0, 0);
+if(require.main === module){
+  let count = 0;
+  for(let tx = -GRID_RANGE; tx <= GRID_RANGE; tx++){
+    for(let tz = -GRID_RANGE; tz <= GRID_RANGE; tz++){
+      const { outPath, size } = buildTile(tx, tz);
+      console.log(`Wrote ${outPath} (${size} bytes, ${GRID_SIZE}x${GRID_SIZE} samples)`);
+      count++;
+    }
+  }
+  console.log(`${count} DEM tiles written, grid (${-GRID_RANGE}..${GRID_RANGE}) x (${-GRID_RANGE}..${GRID_RANGE}).`);
+}
+
+module.exports = { buildTile, sampleHeight, riverCenterZ, TILE_SIZE, GRID_SIZE, GRID_RANGE, METRES_PER_SAMPLE };

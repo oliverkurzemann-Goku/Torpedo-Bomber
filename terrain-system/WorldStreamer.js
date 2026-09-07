@@ -83,6 +83,42 @@ class WorldStreamer {
     this.loadMsBudget = opts.loadMsBudget ?? WORLD_STREAM_LOAD_MS_BUDGET;
     this.maxUnloadsPerFrame = opts.maxUnloadsPerFrame ?? WORLD_STREAM_MAX_UNLOADS_PER_FRAME;
     this.contentManagers = opts.contentManagers ?? [];
+
+    // Step 6 integration: DEMHeightProvider.getHeight() is SYNCHRONOUS (see
+    // HeightProvider.js's own header) but throws unless loadTile(tx,tz) has
+    // already resolved for whichever DEM tile a sample falls in --
+    // ProceduralHeightProvider needs none of this (a pure function of world
+    // position, always ready). TerrainTile._buildGeometry() calls
+    // getHeight() synchronously in a per-vertex loop (real surgery to make
+    // THAT itself async, see HeightProvider.js's own note on this being
+    // deliberately deferred) -- so the fix belongs here instead: never call
+    // terrain.ensureTile() for a tile whose height data isn't loaded yet.
+    // Detected by CAPABILITY (does the provider expose hasTile/loadTile at
+    // all), not a hardcoded class check, so any future provider with the
+    // same async-load shape works here for free.
+    const hp = this.terrain.heightProvider;
+    this._asyncHeight = typeof hp.hasTile === 'function' && typeof hp.loadTile === 'function';
+    this._heightFailed = new Set();   // "tx,tz" whose height data failed to load -- see _requestHeightData()
+  }
+
+  // Kicks off loadTile() for one DEM tile's height data, fire-and-forget.
+  // DEMHeightProvider.loadTile() already dedupes concurrent calls for the
+  // SAME tile internally (its own `pending` map, see HeightProvider.js) --
+  // calling this again every frame while a fetch is still in flight is
+  // harmless, not a second fetch. A tile OUTSIDE the generated DEM grid (or
+  // any other real fetch failure) would otherwise reject every single time
+  // it's retried -- a streaming radius reaching past the data actually on
+  // disk would then hammer that same 404 every frame, forever. Remembered in
+  // `_heightFailed` instead: that tile's terrain simply never streams in,
+  // same as if it were outside the world entirely, which is the honest
+  // outcome for a DEM tile that was never generated.
+  _requestHeightData(tx, tz){
+    const key = tx + ',' + tz;
+    if(this._heightFailed.has(key)) return;
+    this.terrain.heightProvider.loadTile(tx, tz).catch(err => {
+      this._heightFailed.add(key);
+      console.warn(`WorldStreamer: height data for tile (${tx},${tz}) failed to load, will not retry: ${err.message}`);
+    });
   }
 
   // Call once per frame with the aircraft's (or, for the demo, the free-fly
@@ -128,9 +164,21 @@ class WorldStreamer {
     }
     missing.sort((a, b) => a.d - b.d);
     const loadStart = performance.now();
-    let loaded = 0;
+    let loaded = 0, awaitingHeight = 0;
     for(const w of missing){
       if(performance.now() - loadStart >= this.loadMsBudget) break;
+
+      // DEM height data not ready for this tile yet? Kick off the async load
+      // (deduped/cached by the provider itself) and leave this tile out of
+      // the scene for now -- ensureTile()'s synchronous per-vertex
+      // getHeight() calls would otherwise throw. It re-enters `missing` on a
+      // later frame's recompute and gets built then, once hasTile() is true.
+      if(this._asyncHeight && !this.terrain.heightProvider.hasTile(w.tx, w.tz)){
+        this._requestHeightData(w.tx, w.tz);
+        awaitingHeight++;
+        continue;
+      }
+
       this.terrain.ensureTile(w.tx, w.tz, rawLodFor(w.d));
       for(const cm of this.contentManagers) cm.loadTile(w.tx, w.tz);
       loaded++;
@@ -139,6 +187,13 @@ class WorldStreamer {
     // ---- 4) tessellation LOD + geomorph for whatever is actually loaded (Step 3, unchanged) ----
     this.terrain.updateLOD(focusX, focusZ, dt);
 
-    return { wantedCount: wanted.size, loadedThisFrame: loaded, unloadedThisFrame: unloads, pendingLoads: missing.length - loaded };
+    return {
+      wantedCount: wanted.size,
+      loadedThisFrame: loaded,
+      unloadedThisFrame: unloads,
+      pendingLoads: missing.length - loaded,
+      awaitingHeightData: awaitingHeight,
+      heightLoadFailures: this._heightFailed.size,
+    };
   }
 }
