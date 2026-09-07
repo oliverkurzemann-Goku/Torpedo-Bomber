@@ -82,7 +82,8 @@ class DEMHeightProvider {
   constructor(tileSize, baseUrl = 'data/dem/'){
     this.tileSize = tileSize;
     this.baseUrl = baseUrl;
-    this.tiles = new Map();   // "tx,tz" -> {gridSize, metresPerSample, heights: Float32Array}
+    this.tiles = new Map();     // "tx,tz" -> {gridSize, metresPerSample, heights: Float32Array}
+    this.pending = new Map();   // "tx,tz" -> in-flight loadTile() Promise, see loadTile() below
   }
 
   _key(tx, tz){ return tx + ',' + tz; }
@@ -90,10 +91,34 @@ class DEMHeightProvider {
   // Fetches and parses one DEM tile. Must be awaited before getHeight() is
   // called for any point inside that tile. Safe to call repeatedly for the
   // same tile (returns the cached tile after the first successful load).
-  async loadTile(tx, tz){
+  //
+  // WorldStreamer (Step 4) walks its whole "wanted" ring and calls loadTile()
+  // for every tile that isn't loaded yet, every frame, until each one lands —
+  // the ONLY cache check the original version above had was `this.tiles`,
+  // which is only populated once a fetch already finished. Two calls for the
+  // same still-loading tile (frame N and frame N+1, both before frame N's
+  // fetch resolves) would each pass that check and start their OWN fetch —
+  // wasted network/parse work that grows with the streaming radius, not a
+  // wrong answer (both fetches parse the same bytes into an equivalent tile),
+  // but pure waste on every tile, every time it loads. Fixed by also caching
+  // the in-flight PROMISE: a second call while the first is still pending
+  // gets that same promise back instead of starting a second fetch, and the
+  // pending entry is removed (success OR failure) so a later retry after a
+  // real failure still gets a fresh attempt rather than replaying a rejected
+  // promise forever.
+  loadTile(tx, tz){
     const key = this._key(tx, tz);
-    if(this.tiles.has(key)) return this.tiles.get(key);
+    if(this.tiles.has(key)) return Promise.resolve(this.tiles.get(key));
+    if(this.pending.has(key)) return this.pending.get(key);
 
+    const promise = this._fetchTile(tx, tz, key).finally(() => {
+      this.pending.delete(key);
+    });
+    this.pending.set(key, promise);
+    return promise;
+  }
+
+  async _fetchTile(tx, tz, key){
     const res = await fetch(`${this.baseUrl}${tx}_${tz}.bin`);
     if(!res.ok) throw new Error(`DEMHeightProvider: failed to fetch tile ${key} (HTTP ${res.status})`);
     const buf = await res.arrayBuffer();
