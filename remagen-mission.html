@@ -260,7 +260,7 @@
   <div id="flash"></div>
   <div id="gunsight"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">REMAGEN BUILD 1</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">REMAGEN BUILD 2</div>
 
   <div id="apr">
     <div id="aprCall"></div>
@@ -594,6 +594,38 @@ async function loadRealWorld(){
   AF_Y=terrain.getHeight(AF_X,AF_Z);
   realWorldReady=true;
   setLoadingText('Ready.');
+}
+
+// Reported (real iPad): "die Grafik wäre cool, allerdings ruckelt das Spiel jetzt" — measured,
+// not guessed. This file preloads and permanently keeps all 56 tiles resident (see
+// loadRealWorld()'s own header on why streaming was avoided for the flight-physics height
+// queries), but never told TerrainManager or the content managers that most of those tiles are
+// far from the aircraft — every tile sat at LOD0 (64x64 segments, TerrainTile.js) and every OSM/
+// historical tile's full mesh set rendered every frame regardless of distance. TerrainManager
+// already HAS a working, hysteresis-guarded LOD system (updateLOD(), the same one WorldStreamer
+// calls every frame) that this file simply never invoked; wiring it in is the single biggest,
+// safest fix (real terrain geometry drops from 8192 to as few as 32 triangles per far tile,
+// nothing else about the tile - height data, mesh identity - changes). OSMManager/
+// HistoricalObjectManager have no per-tile LOD of their own, only a whole-tile group to show or
+// hide - toggling that by distance is exactly as safe as terrain LOD for the same reason: it
+// only touches rendering, never terrain.getRenderedHeight()'s tile lookup (that reads from
+// heightProvider/tile data, never from a mesh's .visible flag), so it cannot affect flight
+// physics, hit detection or the HUD nav arrow (all of which read a target's real recorded x/z,
+// see targetHandle()'s own comment, not whether its mesh happens to be drawn this frame).
+const CONTENT_VIS_RADIUS=7000;
+function updateContentVisibility(focusX,focusZ){
+  for(const [key,g] of osmMgr.tiles){
+    if(!g) continue;
+    const [tx,tz]=key.split(',').map(Number);
+    const cx=tx*RTILE+RTILE/2, cz=tz*RTILE+RTILE/2;
+    g.visible=Math.hypot(cx-focusX,cz-focusZ)<CONTENT_VIS_RADIUS;
+  }
+  for(const [key,g] of historicalMgr.tiles){
+    if(!g) continue;
+    const [tx,tz]=key.split(',').map(Number);
+    const cx=tx*RTILE+RTILE/2, cz=tz*RTILE+RTILE/2;
+    g.visible=Math.hypot(cx-focusX,cz-focusZ)<CONTENT_VIS_RADIUS;
+  }
 }
 
 // ============================================================
@@ -4131,7 +4163,7 @@ function onResize(){
 // ============================================================
 //  MAIN LOOP
 // ============================================================
-let hudT=0, mmT=0;
+let hudT=0, mmT=0, contentVisT=0;
 function animate(){
   requestAnimationFrame(animate);
   if(!renderer) return;
@@ -4140,6 +4172,12 @@ function animate(){
   let dt=raw;
   if(killCam){ killCam.t-=raw; killCam.ang+=raw*0.6; if(killCam.t<=0) killCam=null; else dt=raw*0.45; }
   if(shakeT>0) shakeT=Math.max(0,shakeT-raw);
+  if(realWorldReady){
+    const focusX=(state===ST.FLIGHT||state===ST.DEAD)?P.pos.x:AF_X;
+    const focusZ=(state===ST.FLIGHT||state===ST.DEAD)?P.pos.z:AF_Z;
+    terrain.updateLOD(focusX,focusZ,raw);
+    contentVisT-=raw; if(contentVisT<=0){ contentVisT=0.5; updateContentVisibility(focusX,focusZ); }
+  }
   if(flashT>0){ flashT-=raw; if(flashT<=0) document.getElementById('flash').classList.remove('show'); }
   if(P.dmgT>0){ P.dmgT-=raw;
     if(P.dmgT<=0){ const v=document.getElementById('dmgVig'); if(v) v.style.opacity='0'; } }

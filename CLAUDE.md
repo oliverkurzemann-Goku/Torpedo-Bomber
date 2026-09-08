@@ -22,7 +22,7 @@ iPad/iPhone Safari.
 | `index.html` | Startseite, Auswahl zwischen den Spielen |
 | `torpedo-carrier.html` | **Teil 1** — Pazifik, Trägerbetrieb (BUILD 106) |
 | `thunderbolt-europe.html` | **Teil 2** — Europa, Bodenangriff (EU BUILD 27) |
-| `remagen-mission.html` | **Teil 3** — Remagen 1945, echtes Terrain (REMAGEN BUILD 1, siehe 4.49) |
+| `remagen-mission.html` | **Teil 3** — Remagen 1945, echtes Terrain (REMAGEN BUILD 2, siehe 4.49/4.50) |
 | `model-check.html` | Kalibrier-Werkzeug für neue Flugzeugmodelle (Ausrichtung, Maßstab) |
 
 Alle drei Spiele haben getrennte Speicherstände (`localStorage`-Präfixe `tc_*`, `eu_*` bzw.
@@ -3838,6 +3838,75 @@ Code: `remagen-mission.html` (neue Datei, komplett), `terrain-system/HistoricalO
 
 ---
 
+### 4.50 Ruckeln behoben: das eigene, bereits vorhandene Terrain-LOD-System war nie verdrahtet — REMAGEN BUILD 2
+
+Erstes echtes Feedback nach dem Testen auf dem iPad: „Ok, cool! Grafik wäre cool, allerdings
+ruckelt das Spiel jetzt." Genau das in 4.49s eigener „Offen"-Notiz befürchtete Risiko, jetzt
+tatsächlich gemeldet — und die Ursache war konkreter und leichter behebbar, als diese Notiz
+vermuten ließ.
+
+**Ursache, direkt am Code gefunden, nicht geraten:** `TerrainManager.js` hat bereits ein
+vollständiges, funktionierendes LOD-System (`updateLOD(focusX,focusZ,dt)` — dieselbe Methode, die
+`WorldStreamer.js` für jedes Streaming-Szenario dieses Moduls jeden Frame aufruft, mit
+Hysterese gegen Flackern, siehe `TerrainManager.js`s eigener Kommentar). `loadRealWorld()` hat
+alle 56 Kacheln nur einmalig mit `terrain.ensureTile(tx,tz,0)` — fest auf LOD 0 — gebaut und
+`updateLOD()` danach **nie aufgerufen**. Jede Kachel blieb dauerhaft bei voller Auflösung
+(64×64 Segmente, `TerrainTile.js` — 8192 Dreiecke), unabhängig von der Entfernung zum Flugzeug:
+bei allen 56 Kacheln gleichzeitig macht das 458.752 Dreiecke, ununterbrochen jeden Frame gerendert,
+ohne jede Sichtweiten-Abschaltung — genau das Risiko, das 4.49 unter „Offen" bereits benannt hatte.
+Zusätzlich hatten `OSMManager`/`HistoricalObjectManager` (kein eigenes LOD, nur eine Kachel-Gruppe
+ein-/ausblendbar) ebenfalls keine Sichtweiten-Abschaltung — Straßen/Gebäude/Wälder aller 56 Kacheln
+rendern permanent, egal wie weit entfernt.
+
+**Fix, zwei Teile, beide rein render-seitig (rühren `terrain.getRenderedHeight()`s Kachel-
+Nachschlage-Logik nicht an, die liest ausschließlich aus den Höhendaten/der Kachel-Map, nie aus
+`.visible`):**
+1. `terrain.updateLOD(focusX,focusZ,dt)` jetzt jeden Frame in `animate()` aufgerufen (Fokuspunkt:
+   `P.pos` während Flug, sonst `AF_X/AF_Z` für die Menü-Kamera) — genau der Aufruf, der in
+   `loadRealWorld()` fehlte.
+2. Neue Funktion `updateContentVisibility(focusX,focusZ)`: schaltet jede OSM-/historische
+   Kachel-Gruppe per einfachem Abstand zum Fokuspunkt sichtbar/unsichtbar (Radius 7000, alle
+   0,5 s neu geprüft, nicht jeden Frame — reine Sichtbarkeits-Umschaltung ist billig genug, um
+   sie nicht öfter zu brauchen). Berührt nur Rendering: die permanenten Missionsziele
+   (`realBridge`/`realFlak`/`realFactory`) bleiben unabhängig davon jederzeit funktional, ihre
+   `t.group.position` (siehe `targetHandle()`) wird einmalig beim Spawn aus `userData.x/z` plus
+   echter Terrainhöhe berechnet, nie aus der Mesh-Sichtbarkeit.
+
+**Verifiziert — mit einer echten, im Prüfstand selbst gefundenen Einschränkung, die dokumentiert
+gehört (siehe auch Abschnitt 6, neuer Absatz unten):** Ein erster Test (echtes Playwright/
+Chromium, mehrere echte Sekunden lang auf die laufende `animate()`-Schleife gewartet) zeigte
+weiterhin `renderSeg=64` bei allen Kacheln — sah zunächst wie ein fehlgeschlagener Fix aus.
+Direkt nachgemessen statt vorschnell „behoben" zurückgenommen: `requestAnimationFrame` in DIESEM
+Sandbox-Chromium (headless, `swiftshader`) liefert nur **~0,08 Bilder pro Sekunde** (2 Aufrufe in
+24 echten Sekunden, per instrumentiertem `requestAnimationFrame`-Wrapper gemessen) — eine
+Eigenheit dieser Test-Umgebung (vermutlich Hintergrund-Tab-Drosselung ohne echten Compositor),
+keine Aussage über ein reales Gerät. Um das LOD-/Morph-System selbst unabhängig von dieser
+Drosselung zu prüfen, wurde `terrain.updateLOD()` **manuell** 100-mal mit `dt=0,016` aufgerufen
+(1,6 simulierte Sekunden, deutlich über `TERRAIN_MORPH_DURATION=0,6`) — das Ergebnis: Gesamt-
+Dreieckszahl fällt von 458.752 auf **11.392** (−97,5 %), Verteilung 1×LOD0/3×LOD1/52×LOD2 (fast
+alle 56 Kacheln liegen vom Flugplatz aus gesehen tatsächlich weit weg), `morphingCount:0` (jeder
+Morph sauber abgeschlossen), Stichprobenkachel `lod:2, renderSeg:4, morphing:false` — exakt das
+erwartete Verhalten. Ein zweiter Fokuspunkt (gegenüberliegende Kachel-Ecke) verschiebt sichtbar,
+welche 6 von 56 OSM-Kacheln sichtbar sind (bestätigt: Sichtweiten-Abschaltung folgt tatsächlich
+dem Fokuspunkt, ist keine feste Ja/Nein-Regel). Missions-Regressionstest (Bridge Buster:
+spawnen, `hp=6/6`, Treffer, `objectiveText()`, `sortieKills`) exakt identisch zum Stand vor
+diesem Fix — 0 Konsolenfehler.
+
+**Offen:** Nicht auf dem echten iPad geflogen — die gemessene 97,5-%-Dreiecksreduktion ist eine
+starke, konkrete Zahl, aber kein Ersatz für Oliver selbst am Gerät. `CONTENT_VIS_RADIUS=7000` ist
+ein erster, ungeprüfter Wert — sollte Sichtbares zu abrupt am Rand der Sichtweite erscheinen/
+verschwinden, ist das der eine anzufassende Wert (größer = mehr sichtbar, aber weniger
+Performance-Gewinn). Die in 4.49 genannte, größere Optimierung (`OSMManager._buildBuilding()` auf
+`InstancedMesh` statt zwei Einzel-Meshes pro Gebäude umzustellen) wurde bewusst NICHT in dieser
+Runde angegangen — dieser Fix allein sollte das gemeldete Ruckeln bereits deutlich lindern; falls
+nach diesem Build immer noch spürbar geruckelt wird, ist die Gebäude-Instanzierung der nächste,
+größere Schritt.
+
+Code: `remagen-mission.html`, Suche nach „ruckelt das Spiel jetzt" (`updateContentVisibility`,
+die zwei Aufrufe in `animate()`).
+
+---
+
 ## 5. Gelernte Lektionen (aus echten, wiederholten Fehlern)
 
 1. **Nie im Chat/offline testen und im Spiel hoffen.** Der größte Zeitfresser dieses
@@ -4083,6 +4152,19 @@ Verfahren:
    (kein Hardware-Ausgang nötig, der Knotengraph läuft trotzdem echt) — Funktionen einzeln UND
    über den echten Button-Pfad auslösen, auf Konsolenfehler prüfen, bei wahrscheinlichkeitsbasierter
    Logik (z. B. Schadens-Sputter) über viele simulierte Frames zählen statt einmalig aufzurufen.
+5. **`requestAnimationFrame` in diesem headless-Chromium-Sandbox läuft nicht verlässlich in
+   Echtzeit** (in 4.50 gemessen: ~0,08 Bilder/Sekunde, 2 Aufrufe in 24 echten Sekunden — vermutlich
+   Hintergrund-Tab-Drosselung ohne echten Compositor). Ein Test, der ein paar reale Sekunden wartet
+   und dann erwartet, dass die echte `animate()`-Schleife inzwischen X Frames gelaufen ist (LOD-
+   Konvergenz, ein Timer, eine Animation), zeigt in diesem Sandbox oft „nichts passiert" — nicht
+   weil der Code kaputt ist, sondern weil kaum ein echter Frame in der Wartezeit stattfand. Vor
+   dem Schluss „das ist ein Bug": mit einem instrumentierten `requestAnimationFrame`-Wrapper
+   (`window.requestAnimationFrame=(cb)=>{count++;return real(cb);}`, per `page.addInitScript`
+   VOR dem Laden gesetzt) die tatsächliche Rate messen. Ist sie niedrig, den zu prüfenden
+   Mechanismus **manuell** mit vielen simulierten `dt`-Schritten aufrufen (z. B. `for(let
+   i=0;i<100;i++) irgendeineUpdateFunktion(fokus,fokus,0.016)`) statt auf echte Frames zu warten
+   — das prüft den Mechanismus selbst unabhängig von dieser Sandbox-Eigenheit, und ein echtes Gerät
+   liefert ohnehin ganz normale ~60 Bilder/Sekunde.
 
 ---
 
