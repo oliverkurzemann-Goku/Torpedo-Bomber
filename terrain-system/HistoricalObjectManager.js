@@ -60,12 +60,22 @@ class HistoricalObjectManager {
 
     const ox = tx * this.tileSize, oz = tz * this.tileSize;
     const group = new THREE.Group();
-
-    for(const a of data.airfields || []) this._buildAirfield(group, a, ox, oz);
-    for(const f of data.flak || [])      this._buildFlak(group, f, ox, oz);
-    for(const f of data.factories || []) this._buildFactory(group, f, ox, oz);
-    for(const b of data.bridges || [])   this._buildBridge(group, b, ox, oz);
-    for(const p of data.ports || [])     this._buildPort(group, p, ox, oz);
+    // Per-object handles, for a caller (a future real mission — see this
+    // file's own header on staying visual/placement-only) that needs to
+    // hook HP/hit-detection onto ONE specific flak battery or the bridge
+    // deck rather than the whole tile's group. Each _build*() below now
+    // returns its own small sub-group (tagged via userData) instead of
+    // adding its meshes straight into the shared tile group — additive,
+    // not a breaking change: `group` itself is exactly the same kind of
+    // object every existing caller (the three demo pages) already reads,
+    // just with one sub-group per historical object instead of 2-3 raw
+    // meshes each.
+    group.userData.objects = [];
+    for(const a of data.airfields || []) group.userData.objects.push(this._buildAirfield(group, a, ox, oz));
+    for(const f of data.flak || [])      group.userData.objects.push(this._buildFlak(group, f, ox, oz));
+    for(const f of data.factories || []) group.userData.objects.push(this._buildFactory(group, f, ox, oz));
+    for(const b of data.bridges || [])   group.userData.objects.push(this._buildBridge(group, b, ox, oz));
+    for(const p of data.ports || [])     group.userData.objects.push(this._buildPort(group, p, ox, oz));
 
     this.scene.add(group);
     this.tiles.set(key, group);
@@ -98,33 +108,45 @@ class HistoricalObjectManager {
   }
 
   _buildAirfield(group, a, ox, oz){
+    const sub = new THREE.Group();
     const x = ox + a.x, z = oz + a.z;
     const y = this.terrain.getRenderedHeight(x, z) + 0.2;
-    this._box(group, this.runwayMat, x, y, z, a.length, 0.3, a.width, a.rotY);
+    this._box(sub, this.runwayMat, x, y, z, a.length, 0.3, a.width, a.rotY);
     // a couple of hangars off to one side
     const perpX = -Math.sin(a.rotY), perpZ = Math.cos(a.rotY);
     for(let i = 0; i < 2; i++){
       const hx = x + perpX * (a.width/2 + 30) + Math.cos(a.rotY) * (i*60 - 30);
       const hz = z + perpZ * (a.width/2 + 30) + Math.sin(a.rotY) * (i*60 - 30);
       const hy = this.terrain.getRenderedHeight(hx, hz);
-      this._box(group, this.hangarMat, hx, hy+4, hz, 24, 8, 20, a.rotY);
+      this._box(sub, this.hangarMat, hx, hy+4, hz, 24, 8, 20, a.rotY);
     }
+    sub.userData = { kind: 'airfield', data: a, x, z };
+    group.add(sub);
+    return sub;
   }
 
   _buildFlak(group, f, ox, oz){
+    const sub = new THREE.Group();
     const x = ox + f.x, z = oz + f.z;
     const y = this.terrain.getRenderedHeight(x, z);
-    this._cyl(group, this.flakBaseMat, x, y+0.6, z, 3, 1.2);
-    const barrel = this._cyl(group, this.flakBarrelMat, x, y+1.6, z, 0.25, 3.2);
+    this._cyl(sub, this.flakBaseMat, x, y+0.6, z, 3, 1.2);
+    const barrel = this._cyl(sub, this.flakBarrelMat, x, y+1.6, z, 0.25, 3.2);
     barrel.rotation.z = Math.PI/2 * 0.55;
+    sub.userData = { kind: 'flak', data: f, x, z };
+    group.add(sub);
+    return sub;
   }
 
   _buildFactory(group, f, ox, oz){
+    const sub = new THREE.Group();
     const x = ox + f.x, z = oz + f.z;
     const y = this.terrain.getRenderedHeight(x, z);
-    this._box(group, this.factoryMat, x, y+7, z, 40, 14, 26, f.rotY);
-    this._box(group, this.factoryMat, x + 26*Math.cos(f.rotY), y+5, z + 26*Math.sin(f.rotY), 18, 10, 16, f.rotY);
-    this._cyl(group, this.chimneyMat, x - 14*Math.cos(f.rotY), y+18, z - 14*Math.sin(f.rotY), 1.6, 36);
+    this._box(sub, this.factoryMat, x, y+7, z, 40, 14, 26, f.rotY);
+    this._box(sub, this.factoryMat, x + 26*Math.cos(f.rotY), y+5, z + 26*Math.sin(f.rotY), 18, 10, 16, f.rotY);
+    this._cyl(sub, this.chimneyMat, x - 14*Math.cos(f.rotY), y+18, z - 14*Math.sin(f.rotY), 1.6, 36);
+    sub.userData = { kind: 'factory', data: f, x, z };
+    group.add(sub);
+    return sub;
   }
 
   // Ground-following deck between two points, plus simple pier supports —
@@ -132,6 +154,7 @@ class HistoricalObjectManager {
   // OSMManager.js's own ribbon builders (see WaterRoadManager.js's header
   // for why a hand-derived winding guess is worth avoiding).
   _buildBridge(group, b, ox, oz){
+    const sub = new THREE.Group();
     const x1 = ox+b.x1, z1 = oz+b.z1, x2 = ox+b.x2, z2 = oz+b.z2;
     const dx = x2-x1, dz = z2-z1, len = Math.hypot(dx,dz) || 1;
     const ux = dx/len, uz = dz/len, perpX = -uz*b.width/2, perpZ = ux*b.width/2;
@@ -150,19 +173,26 @@ class HistoricalObjectManager {
     geo.setIndex(indices);
     geo.computeVertexNormals();
     geo.computeBoundingSphere();
-    group.add(new THREE.Mesh(geo, this.bridgeMat));
+    sub.add(new THREE.Mesh(geo, this.bridgeMat));
 
     for(const t of [0.2, 0.5, 0.8]){
       const px = x1+dx*t, pz = z1+dz*t;
       const py = this.terrain.getRenderedHeight(px,pz);
-      this._cyl(group, this.pierMat, px, (py+deckY)/2, pz, 1.2, deckY-py);
+      this._cyl(sub, this.pierMat, px, (py+deckY)/2, pz, 1.2, deckY-py);
     }
+    sub.userData = { kind: 'bridge', data: b, x: (x1+x2)/2, z: (z1+z2)/2 };
+    group.add(sub);
+    return sub;
   }
 
   _buildPort(group, p, ox, oz){
+    const sub = new THREE.Group();
     const x = ox + p.x, z = oz + p.z;
     const y = this.terrain.getRenderedHeight(x, z) + 0.5;
-    this._box(group, this.dockMat, x, y, z, p.length, 1.0, 12, p.rotY);
+    this._box(sub, this.dockMat, x, y, z, p.length, 1.0, 12, p.rotY);
+    sub.userData = { kind: 'port', data: p, x, z };
+    group.add(sub);
+    return sub;
   }
 }
 
