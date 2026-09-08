@@ -19,12 +19,16 @@ iPad/iPhone Safari.
 
 | Datei | Was |
 |---|---|
-| `index.html` | Startseite, Auswahl zwischen beiden Spielen |
+| `index.html` | Startseite, Auswahl zwischen den Spielen |
 | `torpedo-carrier.html` | **Teil 1** — Pazifik, Trägerbetrieb (BUILD 106) |
 | `thunderbolt-europe.html` | **Teil 2** — Europa, Bodenangriff (EU BUILD 27) |
+| `remagen-mission.html` | **Teil 3** — Remagen 1945, echtes Terrain (REMAGEN BUILD 1, siehe 4.49) |
 | `model-check.html` | Kalibrier-Werkzeug für neue Flugzeugmodelle (Ausrichtung, Maßstab) |
 
-Beide Spiele haben getrennte Speicherstände (`localStorage`-Präfixe `tc_*` bzw. `eu_*`).
+Alle drei Spiele haben getrennte Speicherstände (`localStorage`-Präfixe `tc_*`, `eu_*` bzw.
+`re_*` — `remagen-mission.html` ist als Fork von `thunderbolt-europe.html` entstanden und hatte
+anfangs versehentlich dieselben `eu_*`-Schlüssel, wurde vor dem Ausliefern auf `re_*` umbenannt,
+siehe 4.49).
 
 Der Nutzer (Oliver) kommuniziert auf Deutsch, testet ausschließlich auf einem echten iPad,
 und hat **keinen** Entwickler-Hintergrund — er kann keinen Code lesen und keine Fehler
@@ -3719,6 +3723,118 @@ echter, neuer Befund für eine künftige Runde — bislang nicht reproduziert, a
 „repariert".
 
 Code: `thunderbolt-europe.html`, `updateAudio()`, Suche nach „Reported four times running".
+
+---
+
+### 4.49 Neue, dritte Mission: Remagen 1945 mit echtem Terrain — `remagen-mission.html`, REMAGEN BUILD 1
+
+Nutzer, nachdem er das eigenständige `terrain-system/demo-remagen.html`-Prototyp getestet und für
+gut befunden hatte: „Und wie können wir nun diese Art von Terrain, eventuell noch detaillierter,
+ins Spiel einbauen?" Auf Rückfrage per `AskUserQuestion` (neue, eigene Datei vs. `thunderbolt-
+europe.html` direkt umbauen) ausdrücklich **„Neue, eigene Datei"** gewählt — `thunderbolt-
+europe.html` bleibt dadurch komplett unangetastet, dieser gesamte Abschnitt betrifft ausschließlich
+die neue Datei.
+
+**Was es ist:** `remagen-mission.html` ist ein Fork von `thunderbolt-europe.html` — Flugphysik,
+Waffen, HUD, Kamera, Audio, Pause/Menü-Rahmen, Flugzeug-Rigging (3.1-3.3) und die Cockpit-Fotos
+sind unverändert übernommen. Ersetzt wurde ausschließlich die komplette prozedurale Terrain-/
+Weltgenerierung (`baseH`/`terrainH`/`buildTerrain`/`buildRoads`/`buildSettlement`/`buildForests`/
+`buildClutter`/`makeGroundTextures` — der komplette in 4.32-4.43 gebaute Noise-/OSM-Ersatz-Apparat)
+durch die echten Daten aus `terrain-system/real/` (Copernicus-DEM, Overture-Maps-Straßen/Flüsse/
+Wälder/Gebäude, echte Ludendorff-Brücke) über dieselben Klassen, die `terrain-system/demo-
+remagen.html` bereits benutzt (`TerrainManager`/`OSMManager`/`HistoricalObjectManager`).
+
+**Laden — bewusst kein Streaming, anders als jede terrain-system-Demo-Seite:** `loadRealWorld()`
+lädt beim Start das komplette 7×8-Kachelraster (28×32 km, `real/config.json`) in drei sequenziellen
+Phasen (alle Höhen → alle Terrain-Meshes → alle Straßen/Gebäude/Wälder + historischen Objekte,
+jede Phase mit `Promise.all` parallelisiert), mit eigenem Ladebildschirm (`#loading`-Overlay),
+bevor das Menü erscheint. Begründung: Flugphysik, KI und Missionslogik brauchen jeden Frame
+synchron eine Höhe an einer beliebigen Position — `WorldStreamer`s asynchrones „Kachel kommt
+während des Fliegens rein"-Modell (Schritt 4/EU-Demo) in einen echten Kampfflugsimulator zu
+integrieren wäre deutlich mehr Risiko gewesen als „lädt einmalig alles", zumal der reale Datensatz
+mit ~24 MB klein genug dafür ist.
+
+**Missionen hängen an ECHTEN, permanenten Objekten, nicht an neu gebauten:** Die Datenlage hat nur
+eine Brücke, zwei Flak-Stellungen und eine Fabrik (`real/data/historical/*.json`, siehe
+`fetch_historical.py`s eigene Ehrlichkeits-Notiz dazu, was real vs. illustrativ ist) — reduziertes
+`MISSIONS`-Array (Free Flight, Circuits, Bridge Buster, Flak Suppression, Factory Strike, 5 statt
+12). `spawnRealTarget()` hängt HP/Treffererkennung direkt an die von `HistoricalObjectManager`
+bereits geladenen Untergruppen (`realBridge`/`realFlak[]`/`realFactory`, per `userData.kind`
+gefunden — siehe 4.65/HistoricalObjectManager.js-Tagging-Änderung, die genau dafür gebaut wurde),
+statt wie das alte Spiel neue prozedurale Meshes an ausgedachten Koordinaten zu bauen. Trucks/
+Panzer/Züge/Depots/geparkte Flugzeuge/Luftgegner gibt es hier nicht — dafür gäbe es in den echten
+Daten keine Entsprechung, ohne erneut Positionen zu erfinden.
+
+**Ein echter Drehpunkt-Fehler, VOR dem Ausliefern gefunden, nicht danach:** Die alte
+`killTarget()`-Zerstörungs-Optik (`t.group.rotation.z=...` fürs Umkippen) hätte bei einem echten
+Objekt katastrophal falsch gewirkt: `HistoricalObjectManager._build*()`-Untergruppen backen jede
+Kind-Mesh-Position in WELTKOORDINATEN, die Gruppe selbst bleibt bei lokal (0,0,0) — eine Rotation
+dieser Gruppe schwenkt also reale, weit vom Ursprung entfernte Geometrie um den Weltursprung,
+nicht um sich selbst. Neue `targetHandle(sub)`-Hilfsfunktion gibt dem Rest der Datei (Treffer-
+erkennung, HUD-Zielpfeil, Minimap, Flak-Zielsuche) dieselbe `.position`-Lese-Schnittstelle wie die
+alten prozeduralen Ziele, aus `sub.userData.x/z` (aus dem Tagging) plus echter Terrainhöhe berechnet
+— `killTarget()` selbst verzichtet für echte Ziele bewusst auf jede Rotation und sinkt die Gruppe
+nur gleichmäßig in Y ab (kein Drehpunkt-Problem bei reiner Y-Verschiebung).
+
+**Ein echter, vor dem Ausliefern gefundener und behobener Speicherstand-Konflikt:** Als Fork von
+`thunderbolt-europe.html` benutzte `remagen-mission.html` anfangs unverändert dieselben sieben
+`eu_*`-`localStorage`-Schlüssel (`eu_best`, `eu_log`, `eu_diff`, `eu_eye`, `eu_chase`, `eu_inv`,
+`eu_modeladj`) — Bestwert, Logbuch/Pilot/Medaillen, Schwierigkeitsgrad und UI-Einstellungen wären
+also mit denen von Thunderbolt Squadron VERMISCHT worden, direkt gegen das in Abschnitt 1 dieser
+Datei festgehaltene Architekturprinzip „getrennte Speicherstände". Alle sieben auf `re_*`
+umbenannt. **Bewusste Ausnahme:** `fixKey()`s `'eu_fix_'+Dateiname`-Präfix (die von
+`model-check.html` geschriebene, pro-Modell-Datei gespeicherte Ausrichtungskorrektur) wurde NICHT
+umbenannt — das ist ein Fix pro `.glb`-Datei, keine Spielzustand pro Spiel, und `remagen-
+mission.html` fliegt dieselben Modelle (`p47new.glb` u.a.) wie `thunderbolt-europe.html`; eine
+Umbenennung hätte die geteilte Kalibrierung nur unnötig dupliziert.
+
+**Flugplatz:** `AF_X=787, AF_Z=18087.6` — die reale, DEM-geprüft flache Position bei Sinzig aus
+`fetch_historical.py`. `AF_Y` wird nach dem Laden aus der echten Terrainhöhe gesetzt (`terrain.
+getHeight(AF_X,AF_Z)`, gemessen 193,18), nicht die alte feste `AF_Y=423`. Die reale, im Datensatz
+gespeicherte Ausrichtung (`rotY=0.3`) wird bewusst NICHT übernommen — die vielen im Code verteilten
+Startbahn-relativen Prüfungen (`Math.abs(x-AF_X)<RWY_LEN/2`-Stil) gehen alle von einer achsen-
+ausgerichteten Bahn aus, und diese Ausrichtung war laut `fetch_historical.py`s eigener Notiz ohnehin
+nie historisch verifiziert, nur plausibel gewählt — einfacher und risikoärmer, sie achsenausgerichtet
+zu lassen, als jede dieser Prüfungen für einen gedrehten Rahmen neu herzuleiten.
+
+**Nachgewiesen, echter Playwright/Chromium, kein Mock:** Syntax-Check (`node --check` auf dem
+extrahierten Skript) fehlerfrei. Vollständiger Ladevorgang (alle 56 Kacheln, echter `GLTFLoader`
+r128, echter `TerrainManager`/`OSMManager`/`HistoricalObjectManager`) bestätigt: `realWorldReady`
+wird `true`, `realBridge`/`realFactory` gefunden, `realFlak.length===2`, `AF_Y` korrekt aus echtem
+Terrain gesetzt. `startMission()` direkt für alle drei Kampfmissionen aufgerufen (derselbe Pfad, den
+die echten Menü-Buttons auslösen): Bridge-Buster-Mission spawnt ein Ziel mit `hp=6/6` exakt an
+`realBridge.userData.x/z`; `damageTarget(t,999,false)` zerstört es korrekt (`hp<0`, `alive:false`,
+`sub.position.y` um 7 gesunken, `objectiveText()` wechselt zu „RTB — LAND AT BEAUFORT",
+`P.rtb=true`, `sortieKills.bridge===1`); Flak-Suppression spawnt beide echten Flak-Stellungen;
+Factory Strike spawnt die echte Fabrik. Nach dem Zerstören der Brücke ein Missionswechsel zu Flak
+bzw. Factory ausgeführt — die nächste `populate()` setzt `realBridge` (`resetAllRealTargets()`)
+korrekt auf `position.y===0` zurück, obwohl diese Missionen die Brücke gar nicht selbst benutzen.
+0 Konsolenfehler über den ganzen Testlauf (harmlose, erwartete 404s beim Flugzeugmodell-Dateinamen-
+Fallback ausgenommen, siehe Abschnitt 2).
+
+**Offen — ehrlich, nicht auf dem echten iPad getestet, und diesmal mit einer echten Einschränkung,
+die über das übliche „Performance war zweitrangig" hinausgeht:** Der Prüfstand (Playwright/Chromium
+mit `swiftshader`-Software-Rendering, keine echte GPU) brauchte für das einmalige Laden UND
+Rendern aller 56 Kacheln durchgehend mehrere Minuten, mit der Chromium-Renderer-CPU die ganze Zeit
+über bei 300 %+ ausgelastet — deutlich mehr als jede bisherige Terrain-Änderung in diesem Projekt
+(zum Vergleich: `thunderbolt-europe.html`s eigenes `buildTerrain()` für EINE Karte lag zuletzt bei
+~6-7 s). Echte, hardware-beschleunigte WebGL-Renderer sind gegenüber `swiftshader` typischerweise
+um ein Vielfaches schneller, daher ist unklar, wie sich das auf einem echten iPad tatsächlich
+anfühlt — aber das ist ein größerer, unbekannterer Sprung als die bisherigen „Ruckler als Risiko
+akzeptiert"-Änderungen, weil hier nicht nur die Auflösung EINER Karte, sondern die volle Fläche von
+56 einzelnen echten Kacheln gleichzeitig geladen UND ohne jede Sichtweiten-Abschaltung dauerhaft
+gerendert wird. Sollte sich das auf dem iPad als spürbar zu langsam herausstellen, sind die
+naheliegenden nächsten Schritte: Sichtweiten-basiertes Ausblenden ferner Kacheln (dieselbe Technik,
+die `WorldStreamer` bereits für Streaming-Szenarien hat, hier nur auf „ausblenden" statt „laden"
+angewendet) oder `OSMManager._buildBuilding()`s Einzel-Boxen pro Gebäude auf `InstancedMesh`
+umzustellen (aktuell zwei einzelne, nicht instanzierte Meshes PRO Gebäude — bei Hunderten Gebäuden
+pro Kachel ein möglicher Flaschenhals, der bei der reinen Kachelanzahl-Betrachtung leicht übersehen
+wird). Keins von beidem wurde in dieser Runde umgesetzt, um die erste Version klein und nah am
+bereits bewährten `terrain-system`-Code zu halten. `index.html` bekam einen dritten Kachel-Link
+("Theatre III · Real Terrain"), mit einem ehrlichen "Experimental"-Hinweis im Text.
+
+Code: `remagen-mission.html` (neue Datei, komplett), `terrain-system/HistoricalObjectManager.js`
+(siehe eigener Commit, `userData.objects`-Tagging), `index.html` (dritte `.chit`).
 
 ---
 

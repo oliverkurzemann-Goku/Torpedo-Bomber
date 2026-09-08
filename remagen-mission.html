@@ -260,7 +260,7 @@
   <div id="flash"></div>
   <div id="gunsight"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">EU BUILD 56</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">REMAGEN BUILD 1</div>
 
   <div id="apr">
     <div id="aprCall"></div>
@@ -332,8 +332,9 @@
     <button class="btn ghost" id="logBtn">&#128214; Pilot's Logbook</button>
     <a class="btn ghost" id="selBtn" href="index.html" style="text-decoration:none;">&#9664; Change Game</a>
     <div class="credit">
-      Rolling hills, hedgerows and a river valley somewhere over the Reich.<br>
-      P-47D Thunderbolt &middot; Bf&nbsp;109G &middot; Fw&nbsp;190A-8 &middot; Me&nbsp;262A-1a &middot; twelve sorties from the strip at Beaufort Field.
+      The real Rhine gorge around Remagen — Copernicus elevation data and Overture Maps roads,
+      rivers, forests and buildings, not an invented valley.<br>
+      P-47D Thunderbolt &middot; five sorties, including the actual Ludendorff Bridge.
     </div>
   </div>
 </div>
@@ -739,8 +740,8 @@ const modelTpl={}, modelRaw={}, modelBase={};
 let modelAdj={};                            // YOUR correction, in quarter turns, kept on the device
 AC_KINDS.forEach(k=>{ modelTpl[k]=null; modelRaw[k]=null;
   modelBase[k]={yaw:0,pitch:0,roll:0,scale:0}; modelAdj[k]=0; });
-try{ const j=localStorage.getItem('eu_modeladj'); if(j) modelAdj=Object.assign(modelAdj,JSON.parse(j)); }catch(e){}
-function saveAdj(){ try{ localStorage.setItem('eu_modeladj',JSON.stringify(modelAdj)); }catch(e){} }
+try{ const j=localStorage.getItem('re_modeladj'); if(j) modelAdj=Object.assign(modelAdj,JSON.parse(j)); }catch(e){}
+function saveAdj(){ try{ localStorage.setItem('re_modeladj',JSON.stringify(modelAdj)); }catch(e){} }
 
 // Build the ready-to-clone template from the raw model at a given yaw. Called again whenever
 // you press TURN MODEL, so the propeller and undercarriage are always re-found for the new
@@ -3021,8 +3022,8 @@ function resolveGround(dt){
 //  LANDING / MISSION RESULT / LOGBOOK
 // ============================================================
 let circuitsDone=0;
-function bestScore(){ try{ return parseInt(localStorage.getItem('eu_best')||'0',10)||0; }catch(e){ return 0; } }
-function saveBest(s){ try{ if(s>bestScore()) localStorage.setItem('eu_best',String(s)); }catch(e){} }
+function bestScore(){ try{ return parseInt(localStorage.getItem('re_best')||'0',10)||0; }catch(e){ return 0; } }
+function saveBest(s){ try{ if(s>bestScore()) localStorage.setItem('re_best',String(s)); }catch(e){} }
 const RANKS=['Flight Officer','2nd Lieutenant','1st Lieutenant','Captain','Major'];
 function rankFor(l){ return l>=24?4 : l>=14?3 : l>=7?2 : l>=3?1 : 0; }
 // Reported (as "wie im Trägerspiel"): a named, persisted pilot, medals per sortie and a
@@ -3031,8 +3032,8 @@ function rankFor(l){ return l>=24?4 : l>=14?3 : l>=7?2 : l>=3?1 : 0; }
 const PILOT_NAMES=['Hank Dobbs','Ray Kowalski','Bud Ferris','Tex Calloway','Whitey Lambert',
   'Gus Halloran','Duke Servino','Red McAllister','Frank Zabrinski','Ace Delaney'];
 function rankName(landings){ return RANKS[rankFor(landings)]; }
-function loadLog(){ try{ return JSON.parse(localStorage.getItem('eu_log'))||{}; }catch(e){ return {}; } }
-function saveLog(l){ try{ localStorage.setItem('eu_log',JSON.stringify(l)); }catch(e){} }
+function loadLog(){ try{ return JSON.parse(localStorage.getItem('re_log'))||{}; }catch(e){ return {}; } }
+function saveLog(l){ try{ localStorage.setItem('re_log',JSON.stringify(l)); }catch(e){} }
 function pilotName(){ const l=loadLog(); return l.pilot||'Rookie'; }
 function logSortie(rec){
   const l=loadLog();
@@ -3841,7 +3842,7 @@ function buildMenu(){
     DIFFS.forEach((d,i)=>{
       const c=document.createElement('div'); c.className='chip'+(i===diffIdx?' sel':'');
       c.innerHTML='<div class="cn">'+d.name+'</div>';
-      c.onclick=()=>{ diffIdx=i; try{localStorage.setItem('eu_diff',String(i));}catch(e){}
+      c.onclick=()=>{ diffIdx=i; try{localStorage.setItem('re_diff',String(i));}catch(e){}
         ds.querySelectorAll('.chip').forEach((e,j)=>e.classList.toggle('sel',j===i)); };
       ds.appendChild(c);
     });
@@ -3940,9 +3941,9 @@ function bindInput(){
   // ---- look ----
   const look=(d,e)=>{ e.preventDefault();
     if(viewMode==='cockpit'){ eyeUp=Math.max(-1,Math.min(1,eyeUp+d*0.25));
-      try{localStorage.setItem('eu_eye',String(eyeUp));}catch(x){} }
+      try{localStorage.setItem('re_eye',String(eyeUp));}catch(x){} }
     else { chaseUp=Math.max(-1,Math.min(2,chaseUp+d*0.3));
-      try{localStorage.setItem('eu_chase',String(chaseUp));}catch(x){} } };
+      try{localStorage.setItem('re_chase',String(chaseUp));}catch(x){} } };
   const lu=document.getElementById('lookUp'), ld=document.getElementById('lookDn');
   // These were styled display:none and never switched on, so the view could not be moved at
   // all - the carrier game shows them the whole time you are flying.
@@ -4054,10 +4055,10 @@ function init(){
     if(el) el.textContent='Failed to load real terrain data: '+err.message+' — check your connection and reload.';
   });
   try{
-    const d=localStorage.getItem('eu_diff'); if(d!==null) diffIdx=Math.max(0,Math.min(2,parseInt(d,10)||0));
-    const e=localStorage.getItem('eu_eye'); if(e!==null) eyeUp=parseFloat(e)||0;
-    const c=localStorage.getItem('eu_chase'); if(c!==null) chaseUp=parseFloat(c)||0;
-    const iv=localStorage.getItem('eu_inv'); if(iv!==null) invertPitch=(iv==='1');
+    const d=localStorage.getItem('re_diff'); if(d!==null) diffIdx=Math.max(0,Math.min(2,parseInt(d,10)||0));
+    const e=localStorage.getItem('re_eye'); if(e!==null) eyeUp=parseFloat(e)||0;
+    const c=localStorage.getItem('re_chase'); if(c!==null) chaseUp=parseFloat(c)||0;
+    const iv=localStorage.getItem('re_inv'); if(iv!==null) invertPitch=(iv==='1');
   }catch(e){}
   bindInput();
   buildMenu();
@@ -4074,7 +4075,7 @@ function init(){
   const ivT=document.getElementById('invToggle');
   ivT.onclick=()=>{ invertPitch=!invertPitch;
     document.getElementById('invBox').textContent=invertPitch?'\u2713':'';
-    try{localStorage.setItem('eu_inv',invertPitch?'1':'0');}catch(e){} };
+    try{localStorage.setItem('re_inv',invertPitch?'1':'0');}catch(e){} };
   document.getElementById('invBox').textContent=invertPitch?'\u2713':'';
   const dbT=document.getElementById('dbgToggle');
   dbT.onclick=()=>{ dbgOn=!dbgOn; document.getElementById('dbgBox').textContent=dbgOn?'\u2713':''; };
