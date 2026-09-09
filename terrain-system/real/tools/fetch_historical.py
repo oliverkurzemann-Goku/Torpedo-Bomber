@@ -36,10 +36,12 @@
 import json, math, os
 
 from pyproj import Transformer
+from shapely.geometry import Point, Polygon
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 CFG = json.load(open(os.path.join(HERE, '..', 'config.json')))
 OUT_DIR = os.path.join(HERE, '..', 'data', 'historical')
+OSM_DIR = os.path.join(HERE, '..', 'data', 'osm')
 
 TILE_SIZE = CFG['tileSize']
 ORIGIN_X, ORIGIN_Y = CFG['originUTM']['x'], CFG['originUTM']['y']
@@ -62,12 +64,80 @@ def add(tiles, tx, tz, key, obj):
     tiles[k][key].append(obj)
 
 
+def _tile_water_polygons(tx, tz):
+    """Loads one tile's already-fetched real water polygons (fetch_overture.py's own comment:
+    'lakes' is how the actual Rhine channel itself comes through, not a line) in WORLD-local
+    metres — the exact same source OSMManager.js renders the river from, so a bridge snapped
+    onto these polygons is guaranteed to cross what the game actually shows, not just what an
+    independently-projected landmark coordinate SHOULD line up with."""
+    path = os.path.join(OSM_DIR, f'{tx}_{tz}.json')
+    if not os.path.exists(path):
+        return []
+    d = json.load(open(path))
+    ox, oz = tx * TILE_SIZE, tz * TILE_SIZE
+    polys = []
+    for ring in d.get('lakes', []):
+        if len(ring) < 4:
+            continue
+        world = [(p[0] + ox, p[1] + oz) for p in ring]
+        poly = Polygon(world)
+        if not poly.is_valid:
+            poly = poly.buffer(0)
+        polys.append(poly)
+    return polys
+
+
+def snap_bridge_to_river(wx1, wy1, wx2, wy2):
+    """Reported (real iPad, screenshot): "Die Bruecke ist im nirgendwo" -- measured, not
+    guessed: the raw geocoded bridge line above sits ~370m from the nearest water polygon
+    fetch_overture.py's own output has for this tile (checked directly: at the bridge's own x
+    range, the real river polygon's z-extent doesn't even overlap the bridge's z-extent) --
+    more than the Rhine's own real width here, not a rounding error. Same lesson this project
+    already learned once for thunderbolt-europe.html's synthetic bridge (CLAUDE.md 4.30/Lesson
+    18): a crossing's position has to come from the SAME data the renderer actually draws the
+    river from, not an independently-derived value that merely SHOULD line up with it -- doesn't
+    matter here whether the landmark lon/lat or Overture's own water polygon is the less precise
+    of the two, snapping onto what OSMManager actually renders is correct either way. Translates
+    BOTH endpoints by the same vector (bridge length/width/orientation unchanged, only where it
+    sits moves) so the span's own midpoint lands just inside the nearest real water polygon this
+    tile (or an immediate neighbour, in case the true crossing sits right at a tile seam)
+    actually has.
+    """
+    tx, tz = tile_of((wx1 + wx2) / 2, (wy1 + wy2) / 2)
+    candidates = []
+    for cand_tx, cand_tz in {(tx, tz), (tx - 1, tz), (tx + 1, tz), (tx, tz - 1), (tx, tz + 1)}:
+        candidates.extend(_tile_water_polygons(cand_tx, cand_tz))
+    if not candidates:
+        print('  WARNING: no water polygon data found near the bridge -- left at raw geocoded position')
+        return wx1, wy1, wx2, wy2
+
+    mid = Point((wx1 + wx2) / 2, (wy1 + wy2) / 2)
+    best_poly, best_dist = None, None
+    for poly in candidates:
+        d = mid.distance(poly)
+        if best_dist is None or d < best_dist:
+            best_poly, best_dist = poly, d
+
+    if best_dist <= 1:   # already sits on/inside real water -- nothing to correct
+        return wx1, wy1, wx2, wy2
+
+    nearest_on_boundary = best_poly.exterior.interpolate(best_poly.exterior.project(mid))
+    dx, dy = nearest_on_boundary.x - mid.x, nearest_on_boundary.y - mid.y
+    # step 30m PAST the boundary (continuing the same direction) so the new midpoint sits
+    # genuinely inside the water, not just grazing its edge
+    step = (best_dist + 30) / best_dist
+    dx, dy = dx * step, dy * step
+    print(f'  snapping bridge onto real river data: was {best_dist:.1f}m from nearest mapped water, shifting ({dx:.1f},{dy:.1f})')
+    return wx1 + dx, wy1 + dy, wx2 + dx, wy2 + dy
+
+
 def main():
     tiles = {}
 
-    # ---- The bridge, real coordinates ----
+    # ---- The bridge, real coordinates, snapped onto the actually-mapped river ----
     wx1, wy1 = to_local(CFG['landmarks']['ludendorffBridgeWest']['lon'], CFG['landmarks']['ludendorffBridgeWest']['lat'])
     wx2, wy2 = to_local(CFG['landmarks']['ludendorffBridgeEast']['lon'], CFG['landmarks']['ludendorffBridgeEast']['lat'])
+    wx1, wy1, wx2, wy2 = snap_bridge_to_river(wx1, wy1, wx2, wy2)
     tx, tz = tile_of((wx1 + wx2) / 2, (wy1 + wy2) / 2)
     assert tile_of(wx1, wy1) == tile_of(wx2, wy2) == (tx, tz), 'bridge endpoints must share one tile -- span is short relative to tile size, checked directly rather than assumed'
     lx1, lz1 = wx1 - tx * TILE_SIZE, wy1 - tz * TILE_SIZE

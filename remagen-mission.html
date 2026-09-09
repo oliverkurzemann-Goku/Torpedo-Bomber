@@ -254,7 +254,7 @@
   <div style="width:100%;height:4px;background:repeating-linear-gradient(45deg,#ffd400,#ffd400 8px,#111 8px,#111 16px);"></div>
   <span id="testVersionBannerText" style="background:#111;color:#ffd400;font-family:monospace;font-weight:800;font-size:11px;letter-spacing:.5px;padding:3px 10px;border:1px solid #ffd400;border-top:none;border-radius:0 0 6px 6px;"></span>
 </div>
-<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — REMAGEN BUILD 3 — shipped 2026-09-09';</script>
+<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — REMAGEN BUILD 4 — shipped 2026-09-09';</script>
 <!-- ===== END TEMP TEST-ONLY VERSION BANNER ===== -->
 <div id="app"></div>
 
@@ -281,7 +281,7 @@
   <div id="flash"></div>
   <div id="gunsight"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">REMAGEN BUILD 3</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">REMAGEN BUILD 4</div>
 
   <div id="apr">
     <div id="aprCall"></div>
@@ -562,7 +562,80 @@ function D(){ return DIFFS[diffIdx]; }
 //  standalone terrain-system/demo-remagen.html prototype already proved against this same data —
 //  nothing about them changes here, only which page constructs and uses them.
 // ============================================================
-function groundY(x,z){ return terrain.getRenderedHeight(x,z); }
+// Reported (real iPad): flying fast toward the edge of the loaded real-data grid froze the whole
+// game. Root cause, found by reading DEMHeightProvider.getHeight() (HeightProvider.js): it
+// deliberately THROWS for any (x,z) outside the loaded tile set -- a good, intentional contract
+// for the terrain-system demo pages (an uncaught throw there means a real bug to catch), but
+// this file's real DEM/OSM grid is a small, FINITE area (28x32km, RTILE*RGRID_W x RTILE*RGRID_H)
+// that a fast aeroplane can genuinely fly past -- and an uncaught throw inside the animate()
+// rAF callback stops the browser from ever scheduling another frame, which IS "the game gets
+// stuck". Fixed at its actual source: updateFlight() now clamps P.pos itself (see
+// clampToWorldBounds()), so the player can never leave the loaded grid in the first place. This
+// clamp here is the second, defensive layer for anything else that calls groundY() with an
+// out-of-bounds x/z (a bomb/rocket's flight arc, the minimap, ...) -- clamps the QUERY position
+// into the grid instead of letting the throw propagate, rather than weakening
+// DEMHeightProvider's own loud-throw contract (shared by demo-dem-osm.html/demo-dem-streaming.
+// html/demo-remagen.html too, where that throw catching a real bug is the point).
+// Shared clamp for anything that queries height by (x,z) — both TerrainManager.
+// getRenderedHeight() and DEMHeightProvider.getHeight() throw for a query outside the loaded
+// grid (see groundY()'s own history below for why that throw exists and why it stays intact
+// upstream). Keeping the two callers below in a common function means a stray data point (a
+// polygon vertex a hair outside its own tile from upstream floating-point noise, same class of
+// edge case HeightProvider.js's own tileAxisCandidates() already documents) can't throw from
+// either one.
+function clampToWorld(x,z){
+  return [Math.max(1,Math.min(RTILE*RGRID_W-1,x)),Math.max(1,Math.min(RTILE*RGRID_H-1,z))];
+}
+function groundY(x,z){
+  const [cx,cz]=clampToWorld(x,z);
+  return terrain.getRenderedHeight(cx,cz);
+}
+
+// Bounding rectangle around every element buildAirfield() actually places (runway, apron,
+// hangars, tower, windsock — all fixed offsets off AF_X/AF_Z there), plus a 50-unit margin —
+// measured from that function's own numbers, not eyeballed, so a future change to the airfield
+// layout stays covered without a second hand-tuned rectangle to keep in sync.
+const AF_CLEAR_X0=-560, AF_CLEAR_X1=500, AF_CLEAR_Z0=-350, AF_CLEAR_Z1=180;
+
+// See the call site's own comment (loadRealWorld()) for why this exists: real, genuinely-shaped
+// local forest data can legitimately overlap the fictional airfield footprint. Zeroes out any
+// tree instance (trunk+canopy pair, same index in both InstancedMeshes — see
+// OSMManager._scatterForest()) that falls inside AF_CLEAR_*, rather than touching OSMManager's
+// own buffer layout — the same "hide, don't rebuild" approach killTarget() already uses.
+function clearTreesNearAirfield(){
+  const m=new THREE.Matrix4(), v=new THREE.Vector3(), zero=new THREE.Matrix4().makeScale(0,0,0);
+  let cleared=0;
+  for(const t of osmMgr.tiles.values()){
+    if(!t||!t.group) continue;
+    // A tile can hold MORE than one forest polygon, each its own trunk+canopy InstancedMesh
+    // pair (_scatterForest() runs once per polygon, group.add(trunk); group.add(canopy); each
+    // time) — collecting every pair here, not just the last one seen, matters: an earlier
+    // version of this function kept only the LAST trunk/canopy found per tile and silently
+    // never even looked at any earlier pair in a tile with more than one forest polygon, which
+    // is exactly the tile the airfield sits in (see loadRealWorld()'s own call site comment).
+    // Trunk and canopy of the SAME polygon are always adjacent in child order (that same
+    // group.add pair, back to back), so a trunk found at index k is matched with whichever
+    // canopy comes right after it.
+    const children=t.group.children;
+    for(let k=0;k<children.length;k++){
+      const trunk=children[k];
+      if(!trunk.isInstancedMesh || trunk.geometry!==osmMgr.trunkGeo) continue;
+      const canopy=children[k+1];
+      if(!canopy || !canopy.isInstancedMesh || canopy.geometry!==osmMgr.canopyGeo) continue;
+      let touched=false;
+      for(let i=0;i<trunk.count;i++){
+        trunk.getMatrixAt(i,m); v.setFromMatrixPosition(m);
+        const dx=v.x-AF_X, dz=v.z-AF_Z;
+        if(dx>AF_CLEAR_X0 && dx<AF_CLEAR_X1 && dz>AF_CLEAR_Z0 && dz<AF_CLEAR_Z1){
+          trunk.setMatrixAt(i,zero); canopy.setMatrixAt(i,zero);
+          cleared++; touched=true;
+        }
+      }
+      if(touched){ trunk.instanceMatrix.needsUpdate=true; canopy.instanceMatrix.needsUpdate=true; }
+    }
+  }
+  if(cleared) console.log('cleared',cleared,'tree(s) overlapping the airfield footprint');
+}
 
 async function loadRealWorld(){
   const setLoadingText=(s)=>{ const el=document.getElementById('loadingText'); if(el) el.textContent=s; };
@@ -612,6 +685,20 @@ async function loadRealWorld(){
     }
   }
 
+  // Reported (real iPad, screenshot): trees standing on the runway. The synthetic airfield
+  // (buildAirfield(), AF_X/AF_Z) is an INVENTED structure dropped onto a real, genuinely flat
+  // farmland parcel (see fetch_historical.py's own header) — nothing in the real Overture data
+  // knows this runway exists, so wherever a real, legitimately-shaped local forest/shrub polygon
+  // happens to cross that same patch of ground, OSMManager correctly scatters trees there, same
+  // as it would anywhere else. (Most of the reported tree spam was a separate bug — a degenerate
+  // full-tile "forest" polygon fixed at the source in fetch_overture.py/real/data/osm/*.json —
+  // this is the small, genuine remainder: real, locally-shaped forest data that happens to
+  // overlap the fictional runway.) Clearing any tree instance inside the airfield's own footprint
+  // (runway + apron + hangars + tower + windsock, all built from fixed offsets off AF_X/AF_Z in
+  // buildAirfield() above) the same way killTarget() hides a destroyed target — zero the
+  // instance's own matrix rather than touching the shared InstancedMesh's buffer layout.
+  clearTreesNearAirfield();
+
   AF_Y=terrain.getHeight(AF_X,AF_Z);
   realWorldReady=true;
   setLoadingText('Ready.');
@@ -635,11 +722,18 @@ async function loadRealWorld(){
 // see targetHandle()'s own comment, not whether its mesh happens to be drawn this frame).
 const CONTENT_VIS_RADIUS=7000;
 function updateContentVisibility(focusX,focusZ){
-  for(const [key,g] of osmMgr.tiles){
-    if(!g) continue;
+  // osmMgr.tiles maps key -> {group,treeCount,buildingCount} (OSMManager.js's own loadTile()),
+  // NOT a bare THREE.Group like historicalMgr.tiles does — a real bug found while investigating
+  // a different report (farmland patches "looking odd"): this loop was setting `.visible` on
+  // that WRAPPER object, which Three.js's renderer never looks at, so this half of the culling
+  // this comment block above already describes had silently never hidden a single OSM tile
+  // since it was written — every road/farmland/tree/building mesh across all 56 tiles rendered
+  // every frame regardless of distance the whole time. Fixed by reaching into `.group`.
+  for(const [key,t] of osmMgr.tiles){
+    if(!t) continue;
     const [tx,tz]=key.split(',').map(Number);
     const cx=tx*RTILE+RTILE/2, cz=tz*RTILE+RTILE/2;
-    g.visible=Math.hypot(cx-focusX,cz-focusZ)<CONTENT_VIS_RADIUS;
+    t.group.visible=Math.hypot(cx-focusX,cz-focusZ)<CONTENT_VIS_RADIUS;
   }
   for(const [key,g] of historicalMgr.tiles){
     if(!g) continue;
@@ -647,6 +741,78 @@ function updateContentVisibility(focusX,focusZ){
     const cx=tx*RTILE+RTILE/2, cz=tz*RTILE+RTILE/2;
     g.visible=Math.hypot(cx-focusX,cz-focusZ)<CONTENT_VIS_RADIUS;
   }
+  rebakeStaleOsmHeights();
+}
+
+// Reported (real iPad, screenshot): farmland patches "sehen komisch aus" (look odd). Measured,
+// not guessed: OSMManager builds roads/rails/rivers/lakes/farmland/airfields ONCE, in
+// loadRealWorld()'s phase 3, sampling terrain.getRenderedHeight() while every tile still sits at
+// LOD0 (ensureTile(tx,tz,0) — updateLOD() has never run yet at that point). The terrain LOD fix
+// above (see this file's own history, "ruckelt das Spiel jetzt") then coarsens far tiles down to
+// LOD1/LOD2 every frame afterward — but nothing ever went back to update the ALREADY-BUILT flat
+// meshes' baked Y coordinates to match. Measured directly against the shipped code: a coarsened
+// tile's farmland vertices sit up to 106m away (vertically) from what terrain.getRenderedHeight()
+// now actually returns there — a flat yellow patch visibly floating over, or sunk into, hillside
+// that has since been re-tessellated underneath it. Re-triangulating a merged road/farmland mesh
+// on every LOD change would be expensive and touch its indices, not just heights; the fix here is
+// far cheaper because the FOOTPRINT (x,z, and the triangle indices) never needs to change, only Y
+// — rewriting just the Y component of an already-built BufferGeometry's position attribute is a
+// simple per-vertex loop, no re-triangulation. Runs on the same 0.5s throttle as the visibility
+// culling above (a per-frame check would be wasted work; nothing here needs sub-second freshness,
+// and TERRAIN_MORPH_DURATION=0.6s already smooths the terrain's OWN visual LOD transition on
+// roughly that timescale).
+// Each flat mesh (road/rail/river/lake/farmland/airfield) has its own small, fixed decorative
+// Y-offset above the ground (1.4/1.2/1.8/0.9/0.3/0.3 — see OSMManager.js's own loadTile(), which
+// keeps roads visually clear of the ground it's laid on, etc.) baked into its ORIGINAL vertex Y
+// alongside the terrain height. That offset has to survive a rebake — recomputing against
+// terrain.getRenderedHeight() (LOD-DEPENDENT) is exactly the value that's about to change, so it
+// can't be the reference point for "what offset was baked in". heightProvider.getHeight() is the
+// true, LOD-INDEPENDENT analytic height (same answer regardless of the tile's current render
+// resolution — see HeightProvider.js's own contract) — capturing offset = originalY - that exact
+// height, once, the first time a mesh is seen (whatever LOD the terrain happens to be at by
+// then), gives a per-vertex constant that's safe to reuse at every later rebake, at any LOD.
+const osmTileLastLod=new Map();
+function rebakeStaleOsmHeights(){
+  for(const [key,t] of osmMgr.tiles){
+    if(!t||!t.group) continue;
+    const tile=terrain.tiles.get(key);
+    if(!tile) continue;
+    const prevSeg=osmTileLastLod.get(key);
+    if(prevSeg===tile._renderSeg) continue;
+    osmTileLastLod.set(key,tile._renderSeg);
+    if(prevSeg===undefined){ captureFlatMeshOffsets(t.group); continue; }
+    rebakeFlatMeshHeights(t.group);
+  }
+}
+function flatOsmMeshes(group){
+  const flatMats=[osmMgr.roadMat,osmMgr.railMat,osmMgr.riverMat,osmMgr.lakeMat,osmMgr.farmMat];
+  return group.children.filter(o=>o.isMesh&&!o.isInstancedMesh&&flatMats.includes(o.material));
+}
+function captureFlatMeshOffsets(group){
+  flatOsmMeshes(group).forEach(o=>{
+    const pos=o.geometry.attributes.position;
+    if(!pos||o.userData.yOffsets) return;
+    const offs=new Float32Array(pos.count);
+    for(let i=0;i<pos.count;i++){
+      const [x,z]=clampToWorld(pos.getX(i),pos.getZ(i));
+      offs[i]=pos.getY(i)-heightProvider.getHeight(x,z);
+    }
+    o.userData.yOffsets=offs;
+  });
+}
+function rebakeFlatMeshHeights(group){
+  flatOsmMeshes(group).forEach(o=>{
+    const pos=o.geometry.attributes.position;
+    if(!pos||!o.userData.yOffsets) return;
+    const offs=o.userData.yOffsets;
+    for(let i=0;i<pos.count;i++){
+      const [x,z]=clampToWorld(pos.getX(i),pos.getZ(i));
+      pos.setY(i,terrain.getRenderedHeight(x,z)+offs[i]);
+    }
+    pos.needsUpdate=true;
+    o.geometry.computeVertexNormals();
+    o.geometry.computeBoundingSphere();
+  });
 }
 
 // ============================================================
@@ -2918,6 +3084,24 @@ function hdgErrDeg(h,ref){
   let d=h-ref; while(d>Math.PI)d-=2*Math.PI; while(d<-Math.PI)d+=2*Math.PI;
   return Math.abs(d)*R2D;
 }
+// World-boundary clamp — see groundY()'s own comment for the "game gets stuck" root cause this
+// exists to prevent. Called from BOTH updateFlight() branches, right after P.pos is moved each
+// frame, so nothing downstream in the same frame (resolveGround()'s groundY() call included)
+// ever sees an out-of-bounds position in the first place.
+const WORLD_EDGE_MARGIN=400;
+function clampToWorldBounds(){
+  const maxX=RTILE*RGRID_W-WORLD_EDGE_MARGIN, maxZ=RTILE*RGRID_H-WORLD_EDGE_MARGIN;
+  const outside=P.pos.x<WORLD_EDGE_MARGIN||P.pos.x>maxX||P.pos.z<WORLD_EDGE_MARGIN||P.pos.z>maxZ;
+  P.pos.x=Math.max(WORLD_EDGE_MARGIN,Math.min(maxX,P.pos.x));
+  P.pos.z=Math.max(WORLD_EDGE_MARGIN,Math.min(maxZ,P.pos.z));
+  if(outside && !P.edgeWarned){
+    P.edgeWarned=true; flash('LEAVING OPERATIONAL AREA',1600);
+    radioSay('BEAUFORT TOWER — TURN BACK, YOU ARE LEAVING THE AREA');
+  } else if(!outside){
+    P.edgeWarned=false;
+  }
+}
+
 function updateFlight(dt){
   const d=acDef();
   // control surfaces
@@ -2946,6 +3130,7 @@ function updateFlight(dt){
     P.pos.y=gy+2.0; P.vSpeed=0;
     P.pos.x+=Math.sin(P.heading)*P.spd*dt;
     P.pos.z+=Math.cos(P.heading)*P.spd*dt;
+    clampToWorldBounds();
     // running off the strip at speed wrecks the undercarriage
     const offRwy=Math.abs(P.pos.x-AF_X)>RWY_LEN/2 || Math.abs(P.pos.z-AF_Z)>RWY_W/2;
     if(offRwy && P.spd>46){ crash('GROUND LOOP','Ran off the strip and dug a wingtip in.'); }
@@ -3027,6 +3212,7 @@ function updateFlight(dt){
   P.pos.y += vs*dt;
   // a ceiling so you cannot simply climb out of the war
   if(P.pos.y>ceilingY){ P.pos.y=ceilingY; if(P.vSpeed>0) P.vSpeed=0; }
+  clampToWorldBounds();
 
   // fuel
   if(!isFree()){
@@ -3172,7 +3358,7 @@ function startMission(i){
   STALL_SPD=d.stall; APP_SPD=d.app; MAX_SPD=d.max; THR_MIN_SPD=d.thrMin;
   P.hull=d.hull; P.ammo=d.ammo; P.bombs=d.bombs; P.rockets=d.rockets;
   P.fuel=100; P.alive=true; P.rtb=false; P.bingo=false; P.rollBias=0;
-  P.dmgT=0; P.stallWarnT=0;
+  P.dmgT=0; P.stallWarnT=0; P.edgeWarned=false;
   weapon=(d.rockets>0)?'rocket':'bomb';
   score=0; scoreStart=0; hitsTaken=0;
   sortieKills={flak:0,bridge:0,factory:0,air:0,bomber:0};

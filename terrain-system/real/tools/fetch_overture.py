@@ -148,7 +148,32 @@ def polygon_rings_in_tile(geom, tx, tz):
     """Clips one projected Polygon/MultiPolygon feature against tile
     (tx,tz)'s box and returns a list of tile-local CLOSED rings (exterior
     only -- holes dropped, an accepted simplification matching
-    _buildFlatPolygon's own single-ring rendering)."""
+    _buildFlatPolygon's own single-ring rendering).
+
+    Reported (real iPad, remagen-mission.html): trees scattered everywhere
+    -- on the runway, over roads, through buildings -- not confined to
+    anything that actually looks like a forest. Root cause, found by
+    inspecting the actual generated JSON, not guessed: land_cover's real
+    "forest" features for this bbox include at least one enormous polygon
+    that (per this project's OWN "holes dropped" choice above) legitimately
+    has villages/farmland/the river carved out as interior holes across
+    dozens of square kilometres -- correct for the true shape, but once
+    holes are dropped, a tile that sits entirely INSIDE that polygon's
+    exterior ring clips to exactly the tile's own bounding box: intersecting
+    a box with a polygon that fully contains it returns the box itself.
+    Verified directly against every one of the 56 already-fetched tiles in
+    real/data/osm/: literally all 56 carried this exact degenerate 5-point
+    ring (the tile's four corners) as a "forest" polygon -- not a plausible
+    natural forest boundary at any single one of them, a mathematical
+    certainty whenever this specific clip situation occurs. A ring like
+    this asserts total forest coverage with the actual, hole-bearing shape
+    entirely discarded -- worse than no data, since it plants trees over
+    the very features (roads, buildings, farmland, water, this file's own
+    synthetic airfield) the hole was there to exclude. Dropped here at the
+    source: a ring whose bbox covers effectively the entire tile is exactly
+    the fingerprint of "tile fully inside a bigger polygon, real interior
+    shape unknown" -- skipped rather than treated as true full coverage.
+    """
     clipped = geom.intersection(tile_box(tx, tz))
     if clipped.is_empty:
         return []
@@ -159,6 +184,11 @@ def polygon_rings_in_tile(geom, tx, tz):
             continue
         coords = list(part.exterior.coords)
         if len(coords) < 4:   # a real ring: at least 3 distinct points + closing point
+            continue
+        xs = [c[0] for c in coords]
+        ys = [c[1] for c in coords]
+        full_tile = (max(xs) - min(xs)) > TILE_SIZE * 0.999 and (max(ys) - min(ys)) > TILE_SIZE * 0.999
+        if full_tile:
             continue
         rings.append([to_local(c, tx, tz) for c in coords])
     return rings

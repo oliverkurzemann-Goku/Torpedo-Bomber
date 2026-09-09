@@ -22,7 +22,7 @@ iPad/iPhone Safari.
 | `index.html` | Startseite, Auswahl zwischen den Spielen |
 | `torpedo-carrier.html` | **Teil 1** — Pazifik, Trägerbetrieb (BUILD 106) |
 | `thunderbolt-europe.html` | **Teil 2** — Europa, Bodenangriff (EU BUILD 27) |
-| `remagen-mission.html` | **Teil 3** — Remagen 1945, echtes Terrain (REMAGEN BUILD 3, siehe 4.49/4.50/4.51) |
+| `remagen-mission.html` | **Teil 3** — Remagen 1945, echtes Terrain (REMAGEN BUILD 4, siehe 4.49/4.50/4.51/4.52) |
 | `model-check.html` | Kalibrier-Werkzeug für neue Flugzeugmodelle (Ausrichtung, Maßstab) |
 
 Alle drei Spiele haben getrennte Speicherstände (`localStorage`-Präfixe `tc_*`, `eu_*` bzw.
@@ -4009,6 +4009,166 @@ und liest jetzt „REMAGEN BUILD 3". Per Canvas-Screenshot visuell bestätigt: B
 Code: `remagen-mission.html`, Suche nach „ruckelt es immer noch" (`_buildBuildings`,
 `_buildRibbons`, `_buildFlatPolygons` in `terrain-system/OSMManager.js`) bzw. „TEMP TEST-ONLY
 VERSION BANNER" (Banner, direkt nach `<body>` in `remagen-mission.html`).
+
+---
+
+### 4.52 Erstes Detail-Feedback nach dem Performance-Fix: Bäume auf der Runway, Brücke im
+Nirgendwo, Absturz am Kartenrand, schwebendes Farmland — REMAGEN BUILD 4
+
+Nutzer, nach dem Bestätigen „läuft flüssig, mega gemacht": „Fluzeug steht vor der Landebahn, Bäume
+auf der Runway. Die Brücke ist im Nirgendwo. Häuser könnten realistischer sein, ebenso Wald. Die
+gelben Flächen sind etwas komisch. Und man fliegt sehr schnell an den Rand der Spielumgebung und
+dann bleibt das Spiel stecken." Vier der fünf Punkte hier behandelt, jeder einzeln mit echten
+Zahlen nachgewiesen — „Häuser/Wald realistischer" ist ein größerer, eigenständiger Grafik-Auftrag
+und nicht Teil dieser Runde (siehe „Offen").
+
+#### 1) Bäume auf der Runway — Ursache war eine kaputte Overture-Landnutzungs-Polygon, nicht die
+Baum-Platzierung selbst
+
+Direkt an den echten, bereits abgerufenen Daten gemessen statt geraten: **alle 56 von 56**
+`real/data/osm/*.json`-Kacheln enthalten als „Wald"-Polygon EXAKT dasselbe entartete 5-Punkt-
+Rechteck — die eigene Kachelgrenze selbst (`[[0,0],[0,4000],[4000,4000],[4000,0],[0,0]]`). Ursache
+in `fetch_overture.py` nachvollzogen: `polygon_rings_in_tile()` schneidet ein reales Overture-
+Landcover-Polygon gegen die Kachel-Box; liegt die Kachel VOLLSTÄNDIG innerhalb eines viel größeren
+Polygons, ist der Schnitt exakt die Kachel-Box selbst — mathematisch korrekt, aber das reale
+Polygon hat (siehe dieser Datei eigener „holes dropped"-Kommentar) an genau dieser Stelle Löcher
+für Dörfer/Äcker/den Fluss, die beim Vereinfachen auf einen einzelnen Außenring verlorengehen. Das
+Ergebnis behauptet 100 % Waldbedeckung, wo tatsächlich Straßen/Gebäude/Ackerland/Fluss/die eigene
+(erfundene) Startbahn liegen — und `_scatterForest()` streut dort brav ~800 Bäume hinein, überall.
+
+**Fix, an der Quelle:** `polygon_rings_in_tile()` verwirft jetzt Ringe, deren Bounding-Box (Breite
+UND Höhe) mindestens 99,9 % der Kachelgröße erreicht — genau der Fingerabdruck von „Kachel liegt
+vollständig in einem größeren, lochbehafteten Polygon, echte Form unbekannt". Da ein Neu-Abruf von
+Overture Maps aus dieser Umgebung nicht möglich ist (kein Netzwerkzugriff auf den S3-Bucket),
+wurde derselbe Filter direkt auf die 56 bereits abgerufenen JSON-Dateien angewendet (Migration,
+keine Neuberechnung) — 87 entartete Polygone entfernt, 1662 echte, kleinere Waldpolygone bleiben
+unangetastet.
+
+**Zweiter, kleinerer Fund dabei:** Selbst nach diesem Fix blieben vereinzelt echte, korrekt
+geformte lokale Waldpolygone übrig, die zufällig die erfundene Startbahn überlappen (nichts in den
+echten Daten weiß von dieser Kunstbahn, siehe `fetch_historical.py`s eigener Header). Neue
+Funktion `clearTreesNearAirfield()` (in `loadRealWorld()`, nach dem Laden aller OSM-Inhalte)
+nullt jede Baum-Instanz innerhalb einer aus `buildAirfield()`s eigenen Zahlen berechneten
+Bounding-Box (Runway+Vorfeld+Hangars+Turm+Windsack) — „abdecken, nicht neu bauen", exakt wie
+`killTarget()` es für zerstörte Ziele schon macht. **Ein eigener Fehler dabei gefunden und
+korrigiert:** Die erste Fassung fand pro Kachel nur das LETZTE Stamm/Krone-Paar (eine Kachel kann
+mehrere Waldpolygone und damit mehrere `InstancedMesh`-Paare haben, `_scatterForest()` fügt für
+jedes ein eigenes Paar hinzu) — durch echtes Rendern/Zählen aufgefallen (Bäume blieben trotz Fix
+sichtbar), behoben durch paarweises Ablaufen der Kind-Liste statt nur den letzten Treffer zu
+merken.
+
+**Nachgewiesen:** Echtes Playwright/Chromium, vollständiges 56-Kachel-Raster geladen, alle
+Baum-Instanzen gegen die Runway-Rechteck-Grenze geprüft: vorher (gemessen, nicht behauptet) Bäume
+sowohl direkt auf als auch neben der Bahn; nach beiden Fixes zusammen **0 Bäume** innerhalb der
+Bahn und **0** im 60-Einheiten-Sicherheitsstreifen darum. Canvas-Screenshot direkt über dem
+Flugplatz bestätigt eine saubere Bahn/Vorfeld ohne jeden Baum.
+
+#### 2) Brücke im Nirgendwo — die historischen Koordinaten lagen ~370 m vom real gemappten Fluss entfernt
+
+Direkt nachgemessen (Shapely, gegen die echten `real/data/osm/*.json`-Wasserpolygone dieser
+Kachel): Die Brückenmitte aus `fetch_historical.py`s Landmarken-Koordinaten lag **388,9 m** vom
+nächsten gemappten Wasserpolygon entfernt — mehr als die reale Rheinbreite an dieser Stelle, kein
+Rundungsfehler. Dieselbe Lektion, die dieses Projekt schon einmal für `thunderbolt-europe.html`s
+Brücke gelernt hat (4.30/Lektion 18): eine Kreuzung muss aus DENSELBEN Daten kommen, die auch
+gerendert werden, nicht aus einem unabhängig berechneten Wert, der nur zufällig übereinstimmen
+SOLLTE.
+
+**Fix:** Neue Funktion `snap_bridge_to_river()` in `fetch_historical.py` — verschiebt BEIDE
+Brückenenden um denselben Vektor (Länge/Breite/Ausrichtung unverändert, nur WO sie sitzt bewegt
+sich), bis die Brückenmitte tatsächlich innerhalb des nächsten echten Wasserpolygons dieser (oder
+einer Nachbar-)Kachel liegt, plus 30 m Sicherheitsmarge über die Kante hinaus. Lief ohne Netzwerk
+(reine lokale Nachberechnung gegen bereits abgerufene Daten), regeneriert nur `real/data/historical/
+3_3.json` — Fabrik/Flugplatz (andere Kacheln) unverändert, per `git diff --stat` bestätigt.
+
+**Nachgewiesen:** Neue Brückenmitte liegt bei Distanz 0,0 vom nächsten Wasserpolygon, die
+Brückenlinie selbst schneidet dieses Polygon nachweislich (`shapely`-Intersection bestätigt).
+Voller Missions-Regressionstest (alle 5 Missionen gestartet, Bridge-Buster-Ziel gefunden,
+`damageTarget(t,999,false)` zerstört es korrekt, `sortieKills.bridge===1`) — identisches Verhalten
+zum Stand vor diesem Fix, nur an der richtigen Stelle.
+
+#### 3) Absturz am Kartenrand — DEMHeightProvider wirft absichtlich, aber diese Datei hat (anders
+als die Demo-Seiten) ein wirklich endliches Gebiet
+
+`HeightProvider.js`s `DEMHeightProvider.getHeight()` wirft bewusst einen Fehler für jede Abfrage
+außerhalb der geladenen Kacheln (siehe die eigene Begründung dort: „nicht schweigend raten") — ein
+guter Vertrag für die `terrain-system`-Demoseiten, aber `remagen-mission.html`s reales Gebiet ist
+klein und endlich (28×32 km), und ein schnelles Flugzeug erreicht den Rand tatsächlich. Ein nicht
+abgefangener Wurf INNERHALB von `animate()`s `requestAnimationFrame`-Rückruf bedeutet, dass der
+Browser nie wieder einen Frame anfordert — exakt „das Spiel bleibt stecken".
+
+**Fix, zweistufig:** `updateFlight()` klemmt `P.pos` jetzt selbst auf das geladene Gitter
+(`clampToWorldBounds()`, 400 Einheiten Sicherheitsabstand vom Rand, mit einer einmaligen „LEAVING
+OPERATIONAL AREA"-Warnung) — der Spieler kann das Gebiet also gar nicht erst verlassen. `groundY()`
+klemmt zusätzlich als zweite, defensive Schicht jede Abfrage-Position (für alles andere, das
+`groundY()` aufruft — Bomben-/Raketenflugbahnen, Minikarte), OHNE `DEMHeightProvider`s eigenen
+lauten Wurf-Vertrag selbst abzuschwächen (der bleibt für die drei Demoseiten unverändert wertvoll).
+
+**Nachgewiesen:** Über eine echte, per `startMission(0)` initialisierte Sortie 2000 simulierte
+Frames lang mit Vollgas direkt auf den Ostrand zugeflogen (Playwright, echter `updateFlight()`-
+Pfad) — kein einziger Wurf, Position bleibt sauber bei `x=27600` (der geklemmte Rand) hängen,
+`edgeWarned` schaltet korrekt einmalig um. Ein erster Testversuch ohne `startMission()` zuvor zeigte
+fälschlich `NaN`-Positionen und einen Wurf — Lektion 3 bestätigt: `P.ac` war nie gesetzt, ein Fehler
+im eigenen Testaufbau, kein Spielfehler (mit echter Missionsinitialisierung verschwand das sofort).
+
+#### 4) Gelbe Flächen (Farmland) sehen komisch aus — echter, selbst verursachter Nebeneffekt des
+LOD-Fixes aus 4.51
+
+Direkt gemessen, nicht geraten: `OSMManager`s flache Straßen-/Farmland-/Fluss-/See-/Bahn-Meshes
+werden EINMALIG in `loadRealWorld()`s Phase 3 gebaut, während jede Kachel noch bei LOD0 steht
+(`ensureTile(tx,tz,0)`, vor jedem `updateLOD()`-Aufruf) — der LOD-Fix aus 4.51 vergröbert entfernte
+Kacheln danach jeden Frame weiter, aber niemand hat je die BEREITS GEBAUTEN Meshes daran angepasst.
+Am ausgelieferten Code nachgemessen: an einer vergröberten Kachel (LOD2, 4×4 Segmente) lagen
+Farmland-Vertices bis zu **106 m** (vertikal!) neben dem, was `terrain.getRenderedHeight()` an
+derselben Stelle jetzt tatsächlich liefert — ein flacher gelber Fleck, der sichtbar über einem
+Hang schwebt oder darin versinkt.
+
+**Nebenbefund beim Untersuchen, unabhängig vom eigentlichen Bug:** `updateContentVisibility()`
+(4.50/4.51) hat OSM-Inhalte NIE tatsächlich ausgeblendet — `osmMgr.tiles` bildet auf
+`{group,treeCount,buildingCount}` ab, nicht direkt auf die `THREE.Group` (anders als
+`historicalMgr.tiles`), und die Funktion setzte `.visible` auf dieses Wrapper-Objekt statt auf
+`.group` — folgenlos für Three.js' Renderer. Live gemessen: nach einem Aufruf mit fernem Fokus
+blieben alle 56 OSM-Kachelgruppen `visible:true`. Fix: `t.group.visible=...` statt `t.visible=...`
+— ein echter, zusätzlicher Performance- UND Korrektheitsgewinn (die schlimmsten LOD2-Abweichungen
+lagen ohnehin meist außerhalb des 7000-Einheiten-Sichtradius), reichte für sich allein aber NICHT
+aus (gemessen: selbst unter den nach dem Fix noch sichtbaren, näheren Kacheln blieben Lücken bis
+106 m).
+
+**Eigentlicher Fix:** Straßen/Bahn/Fluss/See/Farmland behalten ihren ursprünglichen, kleinen
+Dekor-Y-Versatz (1,4/1,2/1,8/0,9/0,3 Einheiten, siehe `OSMManager.js`) als per-Vertex-Konstante
+(`offset = ursprüngliches Y − heightProvider.getHeight(x,z)`, gegen die ECHTE, LOD-UNABHÄNGIGE
+Analytik-Höhe gemessen, nicht gegen die gerade aktuelle gerenderte Höhe — dieser Bezugspunkt bleibt
+richtig, egal bei welchem LOD er erstmals gemessen wird). Bei jeder tatsächlichen LOD-Änderung
+einer Kachel (im selben 0,5-s-Takt wie die Sichtbarkeits-Prüfung mitlaufend, kein zusätzlicher
+Zeitgeber) wird nur die Y-Komponente jedes Vertex neu geschrieben (`terrain.getRenderedHeight(x,z)
++ offset`) — die Dreiecks-Topologie (Indizes, x/z) bleibt unangetastet, also keine teure
+Neu-Triangulierung, nur ein einfacher Vertex-Durchlauf plus `computeVertexNormals()`.
+
+**Nachgewiesen:** Vorher/Nachher am selben, realistischen Flugfokuspunkt gemessen (LOD absichtlich
+zweimal auf unterschiedliche Fokuspunkte umgestellt, um echte LOD-Wechsel zu erzwingen, nicht nur
+die erste Initial-Bake zu testen): größte verbleibende Abweichung unter sichtbaren Kacheln sank von
+106 m auf **12,5 m** (eine einzelne LOD2-Kachel, an der äußersten Interpolationsgrenze eines
+1000-m-Gitterfelds — plausibler Rest, keine offene Regression), die meisten Farmland-Vertices
+liegen jetzt exakt (±0,0001 Einheiten) beim beabsichtigten 0,3-Einheiten-Versatz. Ein
+Grenzfall-Fehler unterwegs gefunden und behoben: ein Vertex knapp außerhalb seiner eigenen Kachel
+(Fließkomma-Rauschen aus der Overture-Konvertierung) ließ `heightProvider.getHeight()` einmal
+werfen — behoben, indem dieselbe `clampToWorld()`-Klemme aus Punkt 3 hier mitverwendet wird, statt
+eine zweite, unabhängige Absicherung zu bauen.
+
+**Offen (alle vier Punkte):** Nicht auf dem echten iPad geflogen. „Häuser/Wald realistischer" ist
+ein separater, größerer Grafik-Auftrag (echte 3D-Gebäudeformen bzw. das bereits vorhandene, aber
+in `remagen-mission.html` nie eingebundene `treepack.glb` aus `thunderbolt-europe.html`, siehe
+4.43) — nicht Teil dieser Runde, da hier zuerst die vier konkret gemeldeten Fehler behoben wurden;
+naheliegender nächster Schritt, falls gewünscht. Der verbleibende 12,5-m-Ausreißer bei Farmland
+tritt nur an der coarsesten LOD-Stufe auf; sollte einzelnes Farmland trotzdem noch schweben,
+wäre der nächste Hebel, denselben Rebake-Mechanismus auch auf Bäume/Gebäude (`InstancedMesh`-
+Positionen) auszuweiten — bewusst nicht in dieser Runde gemacht, da die gemeldete Beschwerde sich
+konkret auf die gelben (Farmland-)Flächen bezog.
+
+Code: `terrain-system/real/tools/fetch_overture.py` (`polygon_rings_in_tile()`, Suche nach
+„Trees scattered everywhere"), `terrain-system/real/tools/fetch_historical.py`
+(`snap_bridge_to_river()`), `remagen-mission.html` (`clampToWorldBounds()`, `groundY()`,
+`clearTreesNearAirfield()`, `rebakeStaleOsmHeights()`/`rebakeFlatMeshHeights()`, Suche nach
+„Fluzeug steht vor der Landebahn" bzw. „gelben Flächen sind etwas komisch").
 
 ---
 
