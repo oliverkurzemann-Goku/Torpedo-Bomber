@@ -22,7 +22,7 @@ iPad/iPhone Safari.
 | `index.html` | Startseite, Auswahl zwischen den Spielen |
 | `torpedo-carrier.html` | **Teil 1** — Pazifik, Trägerbetrieb (BUILD 106) |
 | `thunderbolt-europe.html` | **Teil 2** — Europa, Bodenangriff (EU BUILD 27) |
-| `remagen-mission.html` | **Teil 3** — Remagen 1945, echtes Terrain (REMAGEN BUILD 2, siehe 4.49/4.50) |
+| `remagen-mission.html` | **Teil 3** — Remagen 1945, echtes Terrain (REMAGEN BUILD 3, siehe 4.49/4.50/4.51) |
 | `model-check.html` | Kalibrier-Werkzeug für neue Flugzeugmodelle (Ausrichtung, Maßstab) |
 
 Alle drei Spiele haben getrennte Speicherstände (`localStorage`-Präfixe `tc_*`, `eu_*` bzw.
@@ -3904,6 +3904,111 @@ größere Schritt.
 
 Code: `remagen-mission.html`, Suche nach „ruckelt das Spiel jetzt" (`updateContentVisibility`,
 die zwei Aufrufe in `animate()`).
+
+---
+
+### 4.51 Ruckeln nach dem echten iPad-Test immer noch da — echter Übeltäter war OSMManager,
+nicht die Terrain-Dreieckszahl; dazu ein temporäres Test-Banner — REMAGEN BUILD 3
+
+Nutzer, nach dem Spielen der BUILD-2-Version auf dem echten iPad: „Wenn ich die aktuelle Version
+gespielt habe ruckelt es immer noch. Kannst du irgendwo einbauen, dass man die aktuelle Version
+sieht. Für Testzwecke, erleichtert vieles. Können wir dann final wieder entfernen." Zwei getrennte
+Punkte.
+
+#### 1) Ruckeln — gemessen, nicht angenommen: Straßen, nicht Gebäude, waren der größte Posten
+
+4.50s eigene „Offen"-Notiz hatte bereits die Vermutung, `OSMManager._buildBuilding()`s Gebäude
+(zwei einzelne, nicht instanzierte `THREE.Mesh`-Objekte pro Gebäude) seien der nächste, größere
+Hebel, falls das LOD-/Sichtweiten-Fix aus BUILD 2 nicht reicht — genau das ist jetzt der Fall.
+Vor dem Fix direkt am echten, laufenden Code gemessen (Playwright, Szene nach `terrain.tiles`,
+das komplette 56-Kachel-Raster geladen, jedes `THREE.Mesh`/`InstancedMesh` in jeder OSM-Kachel-
+Gruppe gezählt, nach Material gruppiert statt nur behauptet): **21.449 Gebäude** erzeugten
+**42.898 einzelne Meshes** (Wand+Dach je Gebäude) — aber die eigentlich größere Zahl war
+**40.739 einzelne Straßen-Ribbon-Meshes**, fast das Doppelte der Gebäude, weil ein echter
+Overture-Weg beim Konvertieren in viele kurze Segmente zerlegt wird und `_buildRibbon()` pro
+Segment (nicht pro tatsächlicher Straße) ein eigenes `THREE.Mesh` gebaut hat — dieselbe
+Fehlerklasse bei Bahnlinien/Flüssen (`_buildRibbon`) und Seen/Ackerland/Flugplätzen
+(`_buildFlatPolygon`), nur nie gemessen, weil 4.49/4.50 nur die Gebäudezahl im Blick hatten.
+Insgesamt **53.401 einzelne Meshes** in der Szene — das Rendern jedes einzelnen davon als
+eigener Draw-Call, unabhängig von geteilter Geometrie/Material (Three.js fasst gleiches
+Material/Geometrie NICHT automatisch zu einem Draw-Call zusammen, dafür ist `InstancedMesh` da —
+exakt das, was `_scatterForest()` in dieser Datei für Bäume schon lange richtig macht, aber nie
+auf Gebäude/Straßen/Wasser/Ackerland angewendet wurde).
+
+**Fix, zwei Techniken, je nachdem was zur Form passt:**
+- **Gebäude** (`OSMManager._buildBuildings()`, ersetzt das alte `_buildBuilding()`): identische
+  Boxen, nur mit unterschiedlicher Position/Größe/Rotation — genau der Fall, für den
+  `InstancedMesh` gebaut ist. Zwei `InstancedMesh` pro Kachel (Wand, Dach), unabhängig davon,
+  wie viele Gebäude die Kachel hat.
+- **Straßen/Bahnlinien/Flüsse/Seen/Ackerland/Flugplätze** (`_buildRibbons()`/
+  `_buildFlatPolygons()`, ersetzen `_buildRibbon()`/`_buildFlatPolygon()`): jedes Segment hat
+  eine eigene, unterschiedlich lange Form — `InstancedMesh` passt hier nicht (keine gemeinsame
+  Basisgeometrie). Stattdessen alle Segmente EINES Feature-Typs pro Kachel in EIN gemeinsames
+  `BufferGeometry` gemerged (Positionen/Indizes fortlaufend aneinandergehängt, mit Index-Offset
+  pro Segment) — höchstens 6 Meshes pro Kachel (Straße, Schiene, Fluss, See, Ackerland,
+  Flugplatz) statt eines pro einzelnem Straßenstück. Dieselbe self-korrigierende
+  +Y-Wicklungslogik (`addUpwardTriOSM`, siehe 4.26/Lektion 17) bleibt unverändert, nur mit einem
+  Index-Offset pro Segment ergänzt.
+
+**Nachgewiesen, nicht nur behauptet** (echtes Playwright/Chromium, echtes `GLTFLoader` r128,
+komplettes 56-Kachel-Raster geladen, Szene nach dem Fix erneut durchlaufen): Gesamtzahl einzelner
+Meshes fällt von 53.401 auf **249** (Straßen/Schienen/Flüsse/Seen/Ackerland zusammen, 56 Kacheln),
+Gebäude vollständig auf `InstancedMesh` umgestellt (0 einzelne Gebäude-Meshes übrig, 21.449
+Gebäude weiterhin korrekt gezählt). Gesamte Szene (`scene.traverse`, alle Meshes/InstancedMeshes
+zusammen inklusive Terrain-Kacheln, Bäumen, Flugzeugmodellen, historischen Objekten): **53.401 →
+3.892 Meshes, eine Reduktion um 92,7 %** — deutlich mehr als die Gebäude allein gebracht hätten.
+Visuell bestätigt (Kamera über dem Flugplatz positioniert, `renderer.render()` direkt aufgerufen,
+Canvas per `toDataURL()` ausgelesen statt `page.screenshot()` — dieselbe Umgehung wie schon in
+4.50 für den bekannten Sandbox-„waiting for fonts to load"-Hänger): Straßen, Start-/Landebahn,
+Bahnlinie, Gebäude (die drei dunklen Hangars, die zwei kleinen Häuser) und Gelände sehen exakt
+so aus wie vor dem Merge, nur aus weit weniger Draw-Calls zusammengesetzt. Zusätzlicher
+Regressionstest gegen alle drei anderen Verbraucher von `OSMManager.js`
+(`demo-remagen.html`, `demo-dem-osm.html`, `demo-dem-streaming.html` — dieselbe Datei wird von
+allen vier Seiten geteilt): alle drei laden weiterhin fehlerfrei, `buildingCount`/`treeCount`
+weiterhin korrekt gemeldet (2000/25/0 Gebäude je nach Testszene, exakt wie vor der Änderung).
+Missions-Regressionscheck (Bridge-Buster-Ziel spawnen) unverändert erfolgreich — die permanenten
+historischen Ziele (`realBridge`/`realFlak`/`realFactory`, siehe 4.49) hängen nicht an
+`OSMManager.js`, sind von dieser Änderung nicht betroffen.
+
+**Offen:** Nicht auf dem echten iPad geflogen. Die in 4.50 gemessene 97,5-%-Terrain-Dreiecks-
+reduktion UND diese 92,7-%-Mesh-Reduktion sind jetzt beide aktiv — zusammen ein deutlich
+größerer Sprung als 4.50 allein, aber wieder kein Ersatz für Olivers eigenen Test. Sollte es
+danach immer noch spürbar ruckeln, ist der nächste Verdacht nicht mehr diese Datei (Terrain +
+OSM-Inhalt sind jetzt beide auf wenige hundert Draw-Calls total herunter) — eher die
+Flugzeugmodelle selbst (unkomprimierte `.glb`-Dateien, mehrere MB, siehe Abschnitt 2) oder
+generelle iPad-Grafikleistung, die sich von dieser Umgebung aus (Software-Rendering, keine echte
+GPU) nicht abschätzen lässt.
+
+#### 2) Temporäres Test-Versions-Banner
+
+Ausdrücklich als Testhilfe angefragt, nicht als Dauerfeature: „Können wir dann final wieder
+entfernen." Ein auffälliges, gelb-schwarz gestreiftes Banner ganz oben am Bildschirm
+(`#testVersionBanner`, z-index 99999 — über allem, inklusive Menü/Briefing/HUD/Pause), das per
+eigenem, direkt nach dem `<body>`-Tag stehenden `<script>` sofort beim Laden gesetzt wird (nicht
+erst in `init()`, das erst beim `window`-„load"-Event läuft und selbst noch etwas braucht) —
+sichtbar ab dem allerersten gerenderten Frame, auch während „Loading real terrain…" noch läuft,
+ohne auf `realWorldReady` zu warten. Zeigt „TEST BUILD — REMAGEN BUILD 3 — shipped 2026-09-09".
+
+Bewusst getrennt vom bestehenden, dauerhaften `#buildTag` (unten im Flug-HUD, blass, siehe
+Abschnitt 2) — dieser bleibt unverändert genau dafür, wofür er immer gedacht war, dieses neue
+Banner ist ausschließlich dafür da, einen Versions-Mismatch (alter iPad-Safari-Cache vs. echter
+neuer Deploy) sofort erkennbar zu machen, ohne erst eine Mission starten zu müssen.
+
+**Leicht wieder entfernbar, wie zugesagt:** Der komplette Block (ein `<div id="testVersionBanner">`
+plus ein `<script>`, beide zwischen den Kommentaren „TEMP TEST-ONLY VERSION BANNER" und „END TEMP
+TEST-ONLY VERSION BANNER" direkt nach `<body>`) ist die gesamte Änderung — nichts sonst im File
+referenziert `#testVersionBanner`. Löschen dieses einen Blocks stellt den Ausgangszustand exakt
+wieder her.
+
+**Nachgewiesen:** Echtes Playwright/Chromium — Bannertext ist bereits direkt nach
+`domcontentloaded` gesetzt, VOR `window`-„load"/`init()`. Menü erscheint danach normal (kein
+Interferenz durch `pointer-events:none` bestätigt). Bestehendes `#buildTag` unverändert erreichbar
+und liest jetzt „REMAGEN BUILD 3". Per Canvas-Screenshot visuell bestätigt: Banner klar lesbar,
+übliche Ladeanzeige darunter unverändert sichtbar.
+
+Code: `remagen-mission.html`, Suche nach „ruckelt es immer noch" (`_buildBuildings`,
+`_buildRibbons`, `_buildFlatPolygons` in `terrain-system/OSMManager.js`) bzw. „TEMP TEST-ONLY
+VERSION BANNER" (Banner, direkt nach `<body>` in `remagen-mission.html`).
 
 ---
 

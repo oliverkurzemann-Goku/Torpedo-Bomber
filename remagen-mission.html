@@ -235,6 +235,27 @@
 </style>
 </head>
 <body>
+<!-- ===== TEMP TEST-ONLY VERSION BANNER — asked for by Oliver: "kannst du irgendwo einbauen,
+     dass man die aktuelle Version sieht, für Testzwecke, erleichtert vieles, können wir dann
+     final wieder entfernen" (see CLAUDE.md). NOT a permanent game feature — this whole block,
+     div plus its one inline script tag, is everything there is to it: delete this comment through
+     the matching "END TEMP TEST-ONLY VERSION BANNER" comment below and the game is back to
+     exactly how it was, nothing else references #testVersionBanner. Sits on top of literally
+     everything (menu, briefing, HUD, pause) via a z-index far above this file's own highest
+     (41, .overlay) and fires from a plain inline script (not init(), which only runs later on
+     window 'load' and can itself take a moment before the first frame) so it is the very
+     first thing painted, visible from any screen without needing to start a sortie first — no
+     dependency on realWorldReady/loadRealWorld() finishing. The existing, permanent #buildTag
+     (bottom of the in-flight HUD only, low-contrast by design, see CLAUDE.md Abschnitt 2)
+     stays completely untouched; this is a second, separate, loud indicator purely so a build
+     mismatch (stale GitHub Pages cache vs. a genuinely new deploy) is obvious without having
+     to start flying first. -->
+<div id="testVersionBanner" style="position:fixed;left:0;top:0;width:100vw;z-index:99999;pointer-events:none;display:flex;flex-direction:column;align-items:center;">
+  <div style="width:100%;height:4px;background:repeating-linear-gradient(45deg,#ffd400,#ffd400 8px,#111 8px,#111 16px);"></div>
+  <span id="testVersionBannerText" style="background:#111;color:#ffd400;font-family:monospace;font-weight:800;font-size:11px;letter-spacing:.5px;padding:3px 10px;border:1px solid #ffd400;border-top:none;border-radius:0 0 6px 6px;"></span>
+</div>
+<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — REMAGEN BUILD 3 — shipped 2026-09-09';</script>
+<!-- ===== END TEMP TEST-ONLY VERSION BANNER ===== -->
 <div id="app"></div>
 
 <div id="hud">
@@ -260,7 +281,7 @@
   <div id="flash"></div>
   <div id="gunsight"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">REMAGEN BUILD 2</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">REMAGEN BUILD 3</div>
 
   <div id="apr">
     <div id="aprCall"></div>

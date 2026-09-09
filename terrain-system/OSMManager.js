@@ -66,20 +66,36 @@ class OSMManager {
     const group = new THREE.Group();
     let treeCount = 0, buildingCount = 0;
 
-    for(const line of data.roads || [])  group.add(this._buildRibbon(line, ox, oz, 10, this.roadMat, 1.4));
-    for(const line of data.rails || [])  group.add(this._buildRibbon(line, ox, oz, 3, this.railMat, 1.2));
-    for(const line of data.rivers || []) group.add(this._buildRibbon(line, ox, oz, 34, this.riverMat, 1.8));
-    for(const poly of data.lakes || [])  group.add(this._buildFlatPolygon(poly, ox, oz, this.lakeMat, 0.9));
-    for(const poly of data.farmland || []) group.add(this._buildFlatPolygon(poly, ox, oz, this.farmMat, 0.3));
-    for(const poly of data.airfields || []) group.add(this._buildFlatPolygon(poly, ox, oz, this.roadMat, 0.3));
+    // Reported (real iPad): "ruckelt es immer noch" after the terrain-LOD fix
+    // (remagen-mission.html's own history, REMAGEN BUILD 2) already cut
+    // terrain triangle count by 97.5%. Measured, not guessed, where the
+    // remaining draw-call cost actually is (real Playwright + a real scene
+    // traversal, counting Mesh objects grouped by material): across the full
+    // 56-tile grid, roads alone accounted for 40,739 individual THREE.Mesh
+    // objects (one per road-segment LINE, since a real Overture way is
+    // chopped into many short segments) — nearly double the building count
+    // this file's own _buildBuildings() had already fixed, and the true
+    // dominant cost, not buildings. Same problem, same fix: one merged
+    // THREE.Mesh per FEATURE TYPE per tile instead of one per feature — see
+    // _buildRibbons()/_buildFlatPolygons() below (replacing the old
+    // one-mesh-per-line/-ring _buildRibbon()/_buildFlatPolygon()).
+    const roadMesh = this._buildRibbons(data.roads || [], ox, oz, 10, this.roadMat, 1.4);
+    if(roadMesh) group.add(roadMesh);
+    const railMesh = this._buildRibbons(data.rails || [], ox, oz, 3, this.railMat, 1.2);
+    if(railMesh) group.add(railMesh);
+    const riverMesh = this._buildRibbons(data.rivers || [], ox, oz, 34, this.riverMat, 1.8);
+    if(riverMesh) group.add(riverMesh);
+    const lakeMesh = this._buildFlatPolygons(data.lakes || [], ox, oz, this.lakeMat, 0.9);
+    if(lakeMesh) group.add(lakeMesh);
+    const farmMesh = this._buildFlatPolygons(data.farmland || [], ox, oz, this.farmMat, 0.3);
+    if(farmMesh) group.add(farmMesh);
+    const airfieldMesh = this._buildFlatPolygons(data.airfields || [], ox, oz, this.roadMat, 0.3);
+    if(airfieldMesh) group.add(airfieldMesh);
 
     for(const poly of data.forests || []){
       treeCount += this._scatterForest(group, poly, ox, oz);
     }
-    for(const b of data.buildings || []){
-      this._buildBuilding(group, b, ox, oz);
-      buildingCount++;
-    }
+    buildingCount = this._buildBuildings(group, data.buildings || [], ox, oz);
 
     this.scene.add(group);
     this.tiles.set(key, { group, treeCount, buildingCount });
@@ -95,33 +111,43 @@ class OSMManager {
     this.tiles.delete(key);
   }
 
-  // Ground-following ribbon from an explicit polyline (local tile metres) —
-  // same self-correcting +Y winding technique as WaterRoadManager.js's own
-  // ribbon builder (see that file's header for why: a hand-derived winding
-  // guess is exactly the kind of thing thunderbolt-europe.html's CLAUDE.md
-  // history (4.26) documents going wrong and staying invisible for a whole
-  // build).
-  _buildRibbon(localPts, ox, oz, width, mat, yOffset){
-    if(localPts.length < 2) return new THREE.Group();
-    const world = localPts.map(([lx,lz]) => [ox+lx, oz+lz]);
-    const positions = [];
-    for(let i = 0; i < world.length; i++){
-      const [x,z] = world[i];
-      const [px,pz] = world[Math.max(0,i-1)];
-      const [nx,nz] = world[Math.min(world.length-1,i+1)];
-      let dx = nx-px, dz = nz-pz;
-      const len = Math.hypot(dx,dz) || 1;
-      dx/=len; dz/=len;
-      const perpX = -dz*width/2, perpZ = dx*width/2;
-      const y = this.terrain.getRenderedHeight(x,z) + yOffset;
-      positions.push(x+perpX, y, z+perpZ, x-perpX, y, z-perpZ);
+  // Ground-following ribbons from ALL of a tile's polylines of one feature
+  // type (road/rail/river), merged into a SINGLE mesh — same winding logic
+  // as the old per-line _buildRibbon(), just appended into one shared
+  // positions/indices buffer instead of returning one THREE.Mesh per line.
+  // (see the "ruckelt es immer noch" comment on the loadTile() call site for
+  // why: a real Overture way is chopped into many short segments — 40,739
+  // individual road-ribbon meshes measured across the 56-tile grid, nearly
+  // double what buildings alone had cost before _buildBuildings() fixed
+  // those.) Same self-correcting +Y winding technique as WaterRoadManager.js
+  // (see that file's header for why: a hand-derived winding guess is exactly
+  // the kind of thing thunderbolt-europe.html's CLAUDE.md history (4.26)
+  // documents going wrong and staying invisible for a whole build).
+  _buildRibbons(lines, ox, oz, width, mat, yOffset){
+    if(!lines || lines.length === 0) return null;
+    const positions = [], indices = [];
+    for(const localPts of lines){
+      if(!localPts || localPts.length < 2) continue;
+      const world = localPts.map(([lx,lz]) => [ox+lx, oz+lz]);
+      const base = positions.length/3;
+      for(let i = 0; i < world.length; i++){
+        const [x,z] = world[i];
+        const [px,pz] = world[Math.max(0,i-1)];
+        const [nx,nz] = world[Math.min(world.length-1,i+1)];
+        let dx = nx-px, dz = nz-pz;
+        const len = Math.hypot(dx,dz) || 1;
+        dx/=len; dz/=len;
+        const perpX = -dz*width/2, perpZ = dx*width/2;
+        const y = this.terrain.getRenderedHeight(x,z) + yOffset;
+        positions.push(x+perpX, y, z+perpZ, x-perpX, y, z-perpZ);
+      }
+      for(let i = 1; i < world.length; i++){
+        const l0=base+(i-1)*2, r0=l0+1, l1=base+i*2, r1=l1+1;
+        addUpwardTriOSM(indices, positions, l0, r0, l1);
+        addUpwardTriOSM(indices, positions, r0, r1, l1);
+      }
     }
-    const indices = [];
-    for(let i = 1; i < world.length; i++){
-      const l0=(i-1)*2, r0=l0+1, l1=i*2, r1=l1+1;
-      addUpwardTriOSM(indices, positions, l0, r0, l1);
-      addUpwardTriOSM(indices, positions, r0, r1, l1);
-    }
+    if(positions.length === 0) return null;
     const geo = new THREE.BufferGeometry();
     geo.setAttribute('position', new THREE.Float32BufferAttribute(positions,3));
     geo.setIndex(indices);
@@ -130,23 +156,29 @@ class OSMManager {
     return new THREE.Mesh(geo, mat);
   }
 
-  // Flat-ish ground patch for a closed polygon ring (lake/farmland/airfield),
-  // fan-triangulated from the centroid — own triangulation instead of
-  // THREE.Shape/ShapeGeometry so the winding is under the same self-checking
-  // control as everything else in this module set, not a black-box
-  // triangulator's own convention.
-  _buildFlatPolygon(localRing, ox, oz, mat, yOffset){
-    const world = localRing.map(([lx,lz]) => [ox+lx, oz+lz]);
-    let cx = 0, cz = 0;
-    for(const [x,z] of world){ cx += x; cz += z; }
-    cx /= world.length; cz /= world.length;
-    const cy = this.terrain.getRenderedHeight(cx, cz) + yOffset;
-
-    const positions = [cx, cy, cz];
-    for(const [x,z] of world) positions.push(x, this.terrain.getRenderedHeight(x,z) + yOffset, z);
-    const indices = [];
-    for(let i = 1; i < world.length; i++) addUpwardTriOSM(indices, positions, 0, i, i+1);
-
+  // Flat-ish ground patches for ALL of a tile's closed polygon rings of one
+  // feature type (lake/farmland/airfield), merged into a SINGLE mesh — same
+  // centroid fan-triangulation as the old per-ring _buildFlatPolygon(), just
+  // appended into one shared buffer instead of one THREE.Mesh per ring. Own
+  // triangulation instead of THREE.Shape/ShapeGeometry so the winding stays
+  // under the same self-checking control as everything else in this module
+  // set, not a black-box triangulator's own convention.
+  _buildFlatPolygons(polys, ox, oz, mat, yOffset){
+    if(!polys || polys.length === 0) return null;
+    const positions = [], indices = [];
+    for(const localRing of polys){
+      const world = localRing.map(([lx,lz]) => [ox+lx, oz+lz]);
+      if(world.length < 3) continue;
+      let cx = 0, cz = 0;
+      for(const [x,z] of world){ cx += x; cz += z; }
+      cx /= world.length; cz /= world.length;
+      const cy = this.terrain.getRenderedHeight(cx, cz) + yOffset;
+      const base = positions.length/3;
+      positions.push(cx, cy, cz);
+      for(const [x,z] of world) positions.push(x, this.terrain.getRenderedHeight(x,z) + yOffset, z);
+      for(let i = 1; i < world.length; i++) addUpwardTriOSM(indices, positions, base, base+i, base+i+1);
+    }
+    if(positions.length === 0) return null;
     const geo = new THREE.BufferGeometry();
     geo.setAttribute('position', new THREE.Float32BufferAttribute(positions,3));
     geo.setIndex(indices);
@@ -237,20 +269,48 @@ class OSMManager {
   // BuildingManager doing real per-building detail near the aircraft is a
   // later step (in the user's own 8-step plan, Steps 5/6 here only cover
   // this simplified form).
-  _buildBuilding(group, b, ox, oz){
-    const x = ox + b.x, z = oz + b.z;
-    const y = this.terrain.getRenderedHeight(x, z);
-    const h = 6 + (b.w*b.d > 400 ? 4 : 0);
-    const wall = new THREE.Mesh(this.boxGeo, this.buildingMat);
-    wall.scale.set(b.w, h, b.d);
-    wall.position.set(x, y+h/2, z);
-    wall.rotation.y = b.rotY;
-    group.add(wall);
-    const roof = new THREE.Mesh(this.boxGeo, this.roofMat);
-    roof.scale.set(b.w*1.05, 1.2, b.d*1.05);
-    roof.position.set(x, y+h+0.6, z);
-    roof.rotation.y = b.rotY;
-    group.add(roof);
+  //
+  // Reported (real iPad, remagen-mission.html, after the LOD-wiring fix in
+  // that file's own history already cut terrain triangle count by 97.5%):
+  // "ruckelt es immer noch" — still stutters. This function used to build
+  // TWO individual THREE.Mesh objects (wall, roof) per building — sharing
+  // this.boxGeo/this.buildingMat/this.roofMat does NOT merge them into one
+  // draw call; Three.js still issues one drawArrays/drawElements call per
+  // Mesh regardless of shared geometry/material (that's what InstancedMesh
+  // exists to fix — exactly the technique _scatterForest() above already
+  // uses for trees, never applied here). A single real Remagen tile can
+  // carry hundreds of buildings; at up to 56 tiles loaded simultaneously
+  // (loadRealWorld() in remagen-mission.html loads the whole real/ grid
+  // upfront, no streaming) that was potentially thousands of individual
+  // draw calls for buildings ALONE, on top of everything else in the scene
+  // — a very plausible, measurable stutter source distinct from the
+  // terrain-mesh triangle count the LOD fix already addressed. Rebuilt as
+  // two InstancedMeshes (wall, roof) per tile instead — one draw call each,
+  // regardless of how many buildings that tile has.
+  _buildBuildings(group, buildings, ox, oz){
+    if(!buildings || buildings.length === 0) return 0;
+    const wallMesh = new THREE.InstancedMesh(this.boxGeo, this.buildingMat, buildings.length);
+    const roofMesh = new THREE.InstancedMesh(this.boxGeo, this.roofMat, buildings.length);
+    const m = new THREE.Matrix4(), q = new THREE.Quaternion(), s = new THREE.Vector3(), pos = new THREE.Vector3();
+    for(let i = 0; i < buildings.length; i++){
+      const b = buildings[i];
+      const x = ox + b.x, z = oz + b.z;
+      const y = this.terrain.getRenderedHeight(x, z);
+      const h = 6 + (b.w*b.d > 400 ? 4 : 0);
+      q.setFromAxisAngle(OSM_UP, b.rotY);
+      pos.set(x, y+h/2, z);
+      s.set(b.w, h, b.d);
+      m.compose(pos, q, s);
+      wallMesh.setMatrixAt(i, m);
+      pos.set(x, y+h+0.6, z);
+      s.set(b.w*1.05, 1.2, b.d*1.05);
+      m.compose(pos, q, s);
+      roofMesh.setMatrixAt(i, m);
+    }
+    wallMesh.instanceMatrix.needsUpdate = true;
+    roofMesh.instanceMatrix.needsUpdate = true;
+    group.add(wallMesh); group.add(roofMesh);
+    return buildings.length;
   }
 }
 
