@@ -14,8 +14,8 @@ class OSMManager {
 
     this.roadMat = new THREE.MeshStandardMaterial({ color: 0x3a3a3a, roughness: 1 });
     this.railMat = new THREE.MeshStandardMaterial({ color: 0x585048, roughness: 0.8 });
-    this.riverMat = new THREE.MeshStandardMaterial({ color: 0x3a6a8a, roughness: 0.35, metalness: 0.1 });
-    this.lakeMat = new THREE.MeshStandardMaterial({ color: 0x2f6f92, roughness: 0.2, metalness: 0.15 });
+    this.riverMat = new THREE.MeshStandardMaterial({ color: 0x426f78, roughness: 0.72, metalness: 0 });
+    this.lakeMat = new THREE.MeshStandardMaterial({ color: 0x3c6d78, roughness: 0.68, metalness: 0 });
     // Farmland is a subtle tint over the textured terrain, not an opaque map
     // polygon. Opaque yellow polygons made whole valleys read like a board game.
     this.farmMat = new THREE.MeshStandardMaterial({
@@ -27,7 +27,10 @@ class OSMManager {
     this.buildingWarmMat = new THREE.MeshStandardMaterial({ color: 0x9b8a73, roughness: 0.95 });
     this.buildingCoolMat = new THREE.MeshStandardMaterial({ color: 0x807d75, roughness: 0.95 });
     this.roofMat = new THREE.MeshStandardMaterial({ color: 0x653b31, roughness: 0.95 });
+    this.roofSlateMat = new THREE.MeshStandardMaterial({ color: 0x454b4a, roughness: 0.98 });
     this.flatRoofMat = new THREE.MeshStandardMaterial({ color: 0x4d4b45, roughness: 1 });
+    this.chimneyMat = new THREE.MeshStandardMaterial({ color: 0x4e4038, roughness: 1 });
+    this.facadeDetailMat = new THREE.MeshStandardMaterial({ color: 0x27302d, roughness: 0.85 });
 
     // Vegetation palette. Four tree draw calls maximum per tile regardless of
     // how many forest polygons the source data contains.
@@ -45,9 +48,10 @@ class OSMManager {
     // stretched over a rectangular footprint it produced the implausible tall,
     // diagonal roof faces visible in BUILD 7 screenshots.
     this.gableRoofGeo = makeGableRoofGeometry();
+    this.chimneyGeo = new THREE.BoxGeometry(0.72, 1.8, 0.72);
 
     this.sharedGeometries = new Set([
-      this.boxGeo, this.gableRoofGeo, this.trunkGeo,
+      this.boxGeo, this.gableRoofGeo, this.chimneyGeo, this.trunkGeo,
       this.coniferGeo, this.deciduousGeo, this.shrubGeo
     ]);
   }
@@ -90,7 +94,7 @@ class OSMManager {
     group.add(farGroup);
     const forestExclusion = this._buildForestExclusion(data, ox, oz);
     const treeCount = this._buildForests(farGroup, data.forests || [], ox, oz, forestExclusion);
-    const buildingCount = this._buildBuildings(farGroup, data.buildings || [], ox, oz);
+    const buildingCount = this._buildBuildings(farGroup, data.buildings || [], ox, oz, forestExclusion);
 
     this.scene.add(group);
     this.tiles.set(key, { group, farGroup, treeCount, buildingCount });
@@ -156,16 +160,15 @@ class OSMManager {
     if(!polys || polys.length === 0) return null;
     const positions = [], indices = [];
     for(const localRing of polys){
-      const world = localRing.map(([lx,lz]) => [ox+lx, oz+lz]);
+      const world = cleanPolygonRing(localRing.map(([lx,lz]) => [ox+lx, oz+lz]));
       if(world.length < 3) continue;
-      let cx = 0, cz = 0;
-      for(const [x,z] of world){ cx += x; cz += z; }
-      cx /= world.length; cz /= world.length;
-      const cy = this.terrain.getRenderedHeight(cx, cz) + yOffset;
       const base = positions.length/3;
-      positions.push(cx, cy, cz);
       for(const [x,z] of world) positions.push(x, this.terrain.getRenderedHeight(x,z) + yOffset, z);
-      for(let i = 1; i < world.length; i++) addUpwardTriOSM(indices, positions, base, base+i, base+i+1);
+      // A centroid fan only works for convex polygons. The Rhine/lake rings are
+      // strongly concave; the old fan crossed bends and painted blue wedges
+      // over land, which made valid trees/buildings appear to stand in water.
+      const triangles=triangulateSimplePolygon(world);
+      for(const [a,b,c] of triangles) addUpwardTriOSM(indices,positions,base+a,base+b,base+c);
     }
     if(positions.length === 0) return null;
     const geo = new THREE.BufferGeometry();
@@ -190,40 +193,40 @@ class OSMManager {
         bucket.push(feature);
       }
     };
-    const addCorridors=(lines,clearance)=>{
+    const addCorridors=(lines,clearance,source)=>{
       for(const line of lines||[]){
         if(!line||line.length<2) continue;
         for(let i=1;i<line.length;i++){
           const a=line[i-1], b=line[i];
-          const f={kind:'segment',ax:ox+a[0],az:oz+a[1],bx:ox+b[0],bz:oz+b[1],r2:clearance*clearance};
+          const f={kind:'segment',source,ax:ox+a[0],az:oz+a[1],bx:ox+b[0],bz:oz+b[1],r2:clearance*clearance};
           add(f,Math.min(f.ax,f.bx)-clearance,Math.min(f.az,f.bz)-clearance,
             Math.max(f.ax,f.bx)+clearance,Math.max(f.az,f.bz)+clearance);
         }
       }
     };
-    const addPolygons=(polys,edgeClearance)=>{
+    const addPolygons=(polys,edgeClearance,source)=>{
       for(const localRing of polys||[]){
         if(!localRing||localRing.length<3) continue;
         const ring=localRing.map(p=>[ox+p[0],oz+p[1]]);
         let minX=Infinity,minZ=Infinity,maxX=-Infinity,maxZ=-Infinity;
         for(const [x,z] of ring){ minX=Math.min(minX,x); minZ=Math.min(minZ,z); maxX=Math.max(maxX,x); maxZ=Math.max(maxZ,z); }
-        add({kind:'polygon',ring},minX-edgeClearance,minZ-edgeClearance,maxX+edgeClearance,maxZ+edgeClearance);
+        add({kind:'polygon',source,ring},minX-edgeClearance,minZ-edgeClearance,maxX+edgeClearance,maxZ+edgeClearance);
         // Also keep canopies back from the polygon edge, not merely outside it.
-        addCorridors([localRing],edgeClearance);
+        addCorridors([localRing],edgeClearance,source);
       }
     };
 
-    addCorridors(data.roads, 13);   // 5m road half-width + canopy/root margin
-    addCorridors(data.rails, 9);
-    addCorridors(data.rivers, 23);  // 17m rendered half-width + margin
-    addPolygons(data.lakes, 7);
-    addPolygons(data.airfields, 12);
+    addCorridors(data.roads, 13, 'road');   // 5m road half-width + canopy/root margin
+    addCorridors(data.rails, 9, 'rail');
+    addCorridors(data.rivers, 23, 'river'); // 17m rendered half-width + margin
+    addPolygons(data.lakes, 7, 'lake');
+    addPolygons(data.airfields, 12, 'airfield');
 
     for(const b of data.buildings||[]){
       const x=ox+b.x,z=oz+b.z,c=Math.cos(b.rotY),s=Math.sin(b.rotY),margin=7;
       const ex=Math.abs(c)*b.w/2+Math.abs(s)*b.d/2+margin;
       const ez=Math.abs(s)*b.w/2+Math.abs(c)*b.d/2+margin;
-      add({kind:'building',x,z,c,s,hw:b.w/2+margin,hd:b.d/2+margin},x-ex,z-ez,x+ex,z+ez);
+      add({kind:'building',source:'building',x,z,c,s,hw:b.w/2+margin,hd:b.d/2+margin},x-ex,z-ez,x+ex,z+ez);
     }
     return {cellSize,cells};
   }
@@ -242,6 +245,26 @@ class OSMManager {
       }
     }
     return false;
+  }
+
+  _pointTouchesWater(x,z,index){
+    if(!index) return false;
+    const bucket=index.cells.get(Math.floor(x/index.cellSize)+','+Math.floor(z/index.cellSize));
+    if(!bucket) return false;
+    for(const f of bucket){
+      if(f.source!=='river' && f.source!=='lake') continue;
+      if(f.kind==='segment' && pointSegmentDistanceSq(x,z,f.ax,f.az,f.bx,f.bz)<=f.r2) return true;
+      if(f.kind==='polygon' && pointInPolygon(x,z,f.ring)) return true;
+    }
+    return false;
+  }
+
+  _buildingTouchesWater(b,x,z,index){
+    const c=Math.cos(b.rotY),s=Math.sin(b.rotY),hw=b.w/2,hd=b.d/2;
+    // Centre, corners and edge midpoints. This catches both a small building
+    // inside water and a long footprint crossed by a narrow mapped stream.
+    const samples=[[0,0],[-hw,-hd],[hw,-hd],[hw,hd],[-hw,hd],[-hw,0],[hw,0],[0,-hd],[0,hd]];
+    return samples.some(([lx,lz])=>this._pointTouchesWater(x+lx*c-lz*s,z+lx*s+lz*c,index));
   }
 
   _forestPlacements(polys, ox, oz, exclusion=null){
@@ -358,11 +381,12 @@ class OSMManager {
     return {minY,maxY};
   }
 
-  _buildBuildings(group, buildings, ox, oz){
+  _buildBuildings(group, buildings, ox, oz, exclusion=null){
     if(!buildings || buildings.length === 0) return 0;
 
     const desc = buildings.map(b => {
       const x=ox+b.x, z=oz+b.z;
+      if(this._buildingTouchesWater(b,x,z,exclusion)) return null;
       const area=b.w*b.d;
       const aspect=b.w/Math.max(1,b.d);
       const r=osmHash(x,z,21);
@@ -377,6 +401,8 @@ class OSMManager {
 
       const pitched = area < 1200 && b.d < 38 && aspect < 5.5;
       const warm = osmHash(x,z,22) > 0.34;
+      const redRoof = osmHash(x,z,23) > 0.22;
+      const chimney = pitched && area < 700 && Math.min(b.w,b.d) > 5 && osmHash(x,z,24) > 0.28;
       const ground=this._buildingGroundRange(b,x,z,ox,oz);
 
       // Foundation extends below the lowest sampled corner. The roof datum is
@@ -384,13 +410,16 @@ class OSMManager {
       // a slope or have an uphill corner poke through the wall.
       const baseY=ground.minY-0.8;
       const wallTop=ground.maxY+h;
-      return {b,x,z,pitched,warm,baseY,wallTop};
-    });
+      return {b,x,z,pitched,warm,redRoof,chimney,ground,baseY,wallTop};
+    }).filter(Boolean);
 
     const warm=desc.filter(d=>d.warm);
     const cool=desc.filter(d=>!d.warm);
-    const pitched=desc.filter(d=>d.pitched);
+    const pitchedRed=desc.filter(d=>d.pitched&&d.redRoof);
+    const pitchedSlate=desc.filter(d=>d.pitched&&!d.redRoof);
     const flat=desc.filter(d=>!d.pitched);
+    const chimneys=desc.filter(d=>d.chimney);
+    const detailed=desc.filter(d=>d.pitched&&d.b.w>=7&&d.b.d>=6&&d.b.w*d.b.d<900);
     const m=new THREE.Matrix4(), q=new THREE.Quaternion(), pos=new THREE.Vector3(), scale=new THREE.Vector3();
 
     const addWalls=(items,mat)=>{
@@ -412,11 +441,12 @@ class OSMManager {
     addWalls(warm,this.buildingWarmMat);
     addWalls(cool,this.buildingCoolMat);
 
-    if(pitched.length){
-      const roofs=new THREE.InstancedMesh(this.gableRoofGeo,this.roofMat,pitched.length);
-      roofs.name='osmBuildingRoofsPitched';
-      for(let i=0;i<pitched.length;i++){
-        const d=pitched[i];
+    const addPitchedRoofs=(items,mat,name)=>{
+      if(!items.length) return;
+      const roofs=new THREE.InstancedMesh(this.gableRoofGeo,mat,items.length);
+      roofs.name=name;
+      for(let i=0;i<items.length;i++){
+        const d=items[i];
         const roofH=Math.min(3.2,Math.max(1.1,d.b.d*0.16));
         q.setFromAxisAngle(OSM_UP,d.b.rotY);
         // Gable geometry spans y=0..1, so its base sits directly on wallTop.
@@ -427,7 +457,10 @@ class OSMManager {
       }
       roofs.instanceMatrix.needsUpdate=true;
       group.add(roofs);
-    }
+    };
+
+    addPitchedRoofs(pitchedRed,this.roofMat,'osmBuildingRoofsRed');
+    addPitchedRoofs(pitchedSlate,this.roofSlateMat,'osmBuildingRoofsSlate');
 
     if(flat.length){
       const roofs=new THREE.InstancedMesh(this.boxGeo,this.flatRoofMat,flat.length);
@@ -444,7 +477,52 @@ class OSMManager {
       group.add(roofs);
     }
 
-    return buildings.length;
+    if(chimneys.length){
+      const mesh=new THREE.InstancedMesh(this.chimneyGeo,this.chimneyMat,chimneys.length);
+      mesh.name='osmBuildingChimneys';
+      for(let i=0;i<chimneys.length;i++){
+        const d=chimneys[i],roofH=Math.min(3.2,Math.max(1.1,d.b.d*0.16));
+        const lx=(osmHash(d.x,d.z,25)-0.5)*d.b.w*0.42;
+        const c=Math.cos(d.b.rotY),s=Math.sin(d.b.rotY);
+        q.setFromAxisAngle(OSM_UP,d.b.rotY);
+        pos.set(d.x+lx*c,d.wallTop+roofH*0.72+0.55,d.z+lx*s);
+        scale.set(1,1,1);
+        m.compose(pos,q,scale);
+        mesh.setMatrixAt(i,m);
+      }
+      mesh.instanceMatrix.needsUpdate=true;
+      group.add(mesh);
+    }
+
+    // One bounded facade-detail bucket per tile: a door and two front windows
+    // on ordinary pitched-roof buildings. This adds visible scale/detail from
+    // low altitude without creating thousands of individual Mesh draw calls.
+    if(detailed.length){
+      const details=[];
+      for(const d of detailed){
+        const front=osmHash(d.x,d.z,26)>0.5 ? 1 : -1;
+        const lz=front*(d.b.d/2+0.10);
+        const spread=Math.min(d.b.w*0.24,4.2);
+        const specs=[[0,lz,1.15,1.15,2.3,0.18],[-spread,lz,2.65,1.15,1.05,0.18],[spread,lz,2.65,1.15,1.05,0.18]];
+        const c=Math.cos(d.b.rotY),s=Math.sin(d.b.rotY);
+        for(const [lx,lz0,yOff,sx,sy,sz] of specs){
+          const x=d.x+lx*c-lz0*s,z=d.z+lx*s+lz0*c;
+          details.push({x,z,y:this._safeRenderedHeight(x,z,ox,oz)+yOff,rot:d.b.rotY,sx,sy,sz});
+        }
+      }
+      const mesh=new THREE.InstancedMesh(this.boxGeo,this.facadeDetailMat,details.length);
+      mesh.name='osmBuildingFacadeDetails';
+      for(let i=0;i<details.length;i++){
+        const d=details[i];
+        q.setFromAxisAngle(OSM_UP,d.rot);
+        pos.set(d.x,d.y,d.z); scale.set(d.sx,d.sy,d.sz);
+        m.compose(pos,q,scale); mesh.setMatrixAt(i,m);
+      }
+      mesh.instanceMatrix.needsUpdate=true;
+      group.add(mesh);
+    }
+
+    return desc.length;
   }
 }
 
@@ -484,6 +562,61 @@ function pointInPolygon(px, pz, ring){
     if(intersect) inside = !inside;
   }
   return inside;
+}
+
+function cleanPolygonRing(ring){
+  const out=[];
+  for(const p of ring||[]){
+    if(!out.length || Math.abs(p[0]-out[out.length-1][0])>1e-6 || Math.abs(p[1]-out[out.length-1][1])>1e-6) out.push(p);
+  }
+  if(out.length>1 && Math.abs(out[0][0]-out[out.length-1][0])<1e-6 && Math.abs(out[0][1]-out[out.length-1][1])<1e-6) out.pop();
+  return out;
+}
+
+function polygonArea2(ring){
+  let area=0;
+  for(let i=0,j=ring.length-1;i<ring.length;j=i++) area+=ring[j][0]*ring[i][1]-ring[i][0]*ring[j][1];
+  return area;
+}
+
+function cross2(a,b,c){
+  return (b[0]-a[0])*(c[1]-a[1])-(b[1]-a[1])*(c[0]-a[0]);
+}
+
+function pointInTriangle2(p,a,b,c,orientation){
+  const eps=1e-8;
+  return cross2(a,b,p)*orientation>=-eps && cross2(b,c,p)*orientation>=-eps && cross2(c,a,p)*orientation>=-eps;
+}
+
+function triangulateSimplePolygon(input){
+  const ring=cleanPolygonRing(input);
+  if(ring.length<3) return [];
+  const orientation=polygonArea2(ring)>=0 ? 1 : -1;
+  const remaining=ring.map((_,i)=>i), triangles=[];
+  let guard=ring.length*ring.length;
+  while(remaining.length>3 && guard-->0){
+    let clipped=false;
+    for(let i=0;i<remaining.length;i++){
+      const ia=remaining[(i-1+remaining.length)%remaining.length];
+      const ib=remaining[i];
+      const ic=remaining[(i+1)%remaining.length];
+      const a=ring[ia],b=ring[ib],c=ring[ic];
+      if(cross2(a,b,c)*orientation<=1e-8) continue;
+      let occupied=false;
+      for(const ip of remaining){
+        if(ip===ia||ip===ib||ip===ic) continue;
+        if(pointInTriangle2(ring[ip],a,b,c,orientation)){ occupied=true; break; }
+      }
+      if(occupied) continue;
+      triangles.push([ia,ib,ic]);
+      remaining.splice(i,1);
+      clipped=true;
+      break;
+    }
+    if(!clipped) return [];
+  }
+  if(remaining.length===3) triangles.push([remaining[0],remaining[1],remaining[2]]);
+  return triangles;
 }
 
 function pointSegmentDistanceSq(px,pz,ax,az,bx,bz){
