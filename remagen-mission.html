@@ -846,7 +846,15 @@ function buildAirfield(){
       const x=AF_X-RWY_LEN/2+i*(RWY_LEN/segN);
       const h=terrain.getHeight(x,AF_Z)+yOff;
       pos.push(x,h,AF_Z-width/2, x,h,AF_Z+width/2);
-      if(i<segN){ const a=i*2; idx.push(a,a+2,a+1, a+1,a+2,a+3); }
+      // Winding derived FOR THIS vertex layout (left=z-halfW pushed before right=z+halfW,
+      // stepping along +X), not copied from ribbon()'s own fix in thunderbolt-europe.html
+      // (CLAUDE.md Lektion 17/4.26) — that fix's winding assumed a different push order and,
+      // tried here unmodified, gave a cross product of (0,-...,0): the strip was invisible from
+      // directly above (confirmed by an actual top-down render — no strip visible at all,
+      // exactly the "wird gar nicht gezeichnet" symptom Lektion 17 itself warns about) and only
+      // ever showed the huts/windsock. Re-derived by hand for THIS layout: (a,a+1,a+2) crossed
+      // with (a+1,a+3,a+2) gives (0,+...,0). Verified after the fix with a real top-down render.
+      if(i<segN){ const a=i*2; idx.push(a,a+1,a+2, a+1,a+3,a+2); }
     }
     const geo=new THREE.BufferGeometry();
     geo.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));
