@@ -186,7 +186,17 @@ class TerrainManager {
       for(const tz of tileAxisCandidates(z, this.tileSize)){
         const tile = this.tiles.get(this._key(tx, tz));
         if(tile && tile._renderSeg >= 0){
-          return coarseInterpHeight(this.heightProvider, this.tileSize, tile.centerX, tile.centerZ, tile._renderSeg, x - tile.centerX, z - tile.centerZ);
+          // Read the actual two triangles, including their current morph.
+          // Bilinear DEM interpolation is a curved patch, not the rendered
+          // PlaneGeometry: it put water/objects below or above the mesh.
+          const seg=tile._renderSeg,n=seg+1;
+          const fx=Math.max(0,Math.min(seg,(x-tx*this.tileSize)/this.tileSize*seg));
+          const fz=Math.max(0,Math.min(seg,(z-tz*this.tileSize)/this.tileSize*seg));
+          const ix=Math.min(seg-1,Math.floor(fx)),iz=Math.min(seg-1,Math.floor(fz));
+          const u=fx-ix,v=fz-iz,p=tile.mesh.geometry.attributes.position;
+          const a=ix+n*iz,b=a+n,d=a+1,c=b+1;
+          return u+v<=1 ? p.getY(a)*(1-u-v)+p.getY(d)*u+p.getY(b)*v
+            : p.getY(c)*(u+v-1)+p.getY(b)*(1-u)+p.getY(d)*(1-v);
         }
       }
     }
@@ -215,11 +225,12 @@ function makeTerrainGroundTexture(){
   for(let y=0;y<size;y++) for(let x=0;x<size;x++){
     // Integer-frequency waves make opposite texture edges meet cleanly.
     const u=x/size*tau,v=y/size*tau;
-    const broad=(Math.sin(u*2+v)+Math.cos(v*3-u*0.5)+Math.sin((u+v)*5))*0.333;
+    const broad=(Math.sin(u*2+v)+Math.cos(v*3-u)+Math.sin((u+v)*5))*0.333;
     const medium=(Math.sin(u*11-v*7)+Math.cos(v*13+u*3))*0.5;
     const hash=Math.sin(x*12.9898+y*78.233)*43758.5453;
     const grain=(hash-Math.floor(hash))-0.5;
-    const light=broad*8+medium*3+grain*4;
+    const furrow=Math.sin(u*43+Math.sin(v*2))*Math.sin(v*5);
+    const light=broad*10+medium*4+grain*9+furrow*1.5;
     const i=(y*size+x)*4;
     // Muted Rhine-valley grass/soil palette: olive, moss and earth rather
     // than saturated toy green. Lighting still supplies the slope shading.
@@ -231,7 +242,7 @@ function makeTerrainGroundTexture(){
   ctx.putImageData(img,0,0);
   const tex=new THREE.CanvasTexture(canvas);
   tex.wrapS=tex.wrapT=THREE.RepeatWrapping;
-  tex.repeat.set(8,8);              // ~500m visual repeat on a 4km tile
+  tex.repeat.set(16,16);            // ~250m visual repeat on a 4km tile
   tex.anisotropy=4;
   if(THREE.sRGBEncoding!==undefined) tex.encoding=THREE.sRGBEncoding;
   tex.needsUpdate=true;

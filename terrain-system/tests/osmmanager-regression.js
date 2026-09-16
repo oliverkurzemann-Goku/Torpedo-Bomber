@@ -48,7 +48,7 @@ class Group {
   }
 }
 class Mesh {
-  constructor(geometry,material){ this.geometry=geometry; this.material=material; this.name=''; }
+  constructor(geometry,material){ this.geometry=geometry; this.material=material; this.name=''; this.userData={}; }
 }
 class InstancedMesh extends Mesh {
   constructor(geometry,material,count){
@@ -89,9 +89,9 @@ assert(osm.farmMat.opts.transparent===true && osm.farmMat.opts.opacity<=0.20,
   'farmland: expected a subtle transparent terrain tint');
 
 // BUILD 7's four-sided cone roof was a stretched pyramid. The replacement
-// must be a six-vertex gable prism (four eaves + two ridge endpoints).
-assert(osm.gableRoofGeo.attributes.position.array.length===18,
-  'roof: expected six-vertex gable-prism geometry');
+// must retain six geometric corners, with separate vertices at creases.
+assert(osm.gableRoofGeo.attributes.position.array.length===54,
+  'roof: expected six triangles with separate crease normals');
 
 // Two overlapping forest polygons. Old code emitted trunk+canopy PER polygon;
 // the new invariant is <=4 vegetation buckets for the entire tile.
