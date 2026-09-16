@@ -8,6 +8,10 @@ Remagen is the terrain laboratory for the project. Terrain experiments should be
 
 The flight model, weapons and mission logic are not part of a terrain pass unless a terrain change demonstrably breaks them.
 
+## Test build versioning
+
+Every Remagen revision handed to Oliver for testing must increment the visible build number in both places in `remagen-mission.html`: the always-visible `#testVersionBannerText` and the in-flight `#buildTag`. Add a short pass label when useful. Never tell Oliver a build is ready until the branch/deployment being tested contains that exact visible version. Current terrain pass: `REMAGEN BUILD 7 · TERRAIN PASS 1`.
+
 ## Current pipeline
 
 `terrain-system/real/config.json` defines the 7x8, 4 km tile grid. `terrain-system/real/data/dem/` contains the height tiles. `terrain-system/real/data/osm/` contains converted real-world roads, rails, water, farmland, forest rings and simplified building records. `terrain-system/real/data/historical/` contains the bridge, flak, airfield/factory-style historical objects.
