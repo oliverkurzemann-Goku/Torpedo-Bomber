@@ -237,7 +237,7 @@
   <div style="width:100%;height:4px;background:repeating-linear-gradient(45deg,#ffd400,#ffd400 8px,#111 8px,#111 16px);"></div>
   <span id="testVersionBannerText" style="background:#111;color:#ffd400;font-family:monospace;font-weight:800;font-size:11px;letter-spacing:.5px;padding:3px 10px;border:1px solid #ffd400;border-top:none;border-radius:0 0 6px 6px;"></span>
 </div>
-<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — REMAGEN BUILD 9 — TERRAIN PASS 3 — 2026-09-16';</script>
+<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — REMAGEN BUILD 10 — TERRAIN PASS 4 — 2026-09-16';</script>
 <!-- ===== END TEMP TEST-ONLY VERSION BANNER ===== -->
 <div id="app"></div>
 
@@ -264,7 +264,7 @@
   <div id="flash"></div>
   <div id="gunsight"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">REMAGEN BUILD 9 · TERRAIN PASS 3</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">REMAGEN BUILD 10 · TERRAIN PASS 4</div>
 
   <div id="apr">
     <div id="aprCall"></div>
@@ -374,11 +374,11 @@
      own per-object userData tagging, added specifically to support this mission file) — the whole
      point of building the prototype first was that this game only needs to point them at real data,
      not rewrite them. -->
-<script src="terrain-system/HeightProvider.js"></script>
-<script src="terrain-system/TerrainTile.js"></script>
-<script src="terrain-system/TerrainManager.js"></script>
-<script src="terrain-system/OSMManager.js"></script>
-<script src="terrain-system/HistoricalObjectManager.js"></script>
+<script src="terrain-system/HeightProvider.js?v=remagen-10"></script>
+<script src="terrain-system/TerrainTile.js?v=remagen-10"></script>
+<script src="terrain-system/TerrainManager.js?v=remagen-10"></script>
+<script src="terrain-system/OSMManager.js?v=remagen-10"></script>
+<script src="terrain-system/HistoricalObjectManager.js?v=remagen-10"></script>
 <script>
 // ============================================================
 //  REMAGEN 1945 — REAL TERRAIN (forked from thunderbolt-europe.html)
@@ -579,32 +579,19 @@ function clearTreesNearAirfield(){
   let cleared=0;
   for(const t of osmMgr.tiles.values()){
     if(!t||!t.farGroup) continue;
-    // A tile can hold MORE than one forest polygon, each its own trunk+canopy InstancedMesh
-    // pair (_scatterForest() runs once per polygon, group.add(trunk); group.add(canopy); each
-    // time) — collecting every pair here, not just the last one seen, matters: an earlier
-    // version of this function kept only the LAST trunk/canopy found per tile and silently
-    // never even looked at any earlier pair in a tile with more than one forest polygon, which
-    // is exactly the tile the airfield sits in (see loadRealWorld()'s own call site comment).
-    // Trunk and canopy of the SAME polygon are always adjacent in child order (that same
-    // group.add pair, back to back), so a trunk found at index k is matched with whichever
-    // canopy comes right after it. Trees/buildings live in `farGroup` (a sub-group of `group`),
-    // not directly in `group` — see OSMManager.loadTile()'s own comment on why.
-    const children=t.farGroup.children;
-    for(let k=0;k<children.length;k++){
-      const trunk=children[k];
-      if(!trunk.isInstancedMesh || trunk.geometry!==osmMgr.trunkGeo) continue;
-      const canopy=children[k+1];
-      if(!canopy || !canopy.isInstancedMesh || canopy.geometry!==osmMgr.canopyGeo) continue;
+    // BUILD 7 replaced adjacent pairs with four independent species buckets.
+    // Inspect every bucket by its stable name; pairing children missed all trees.
+    for(const mesh of t.farGroup.children){
+      if(!mesh.isInstancedMesh || !mesh.name.startsWith('osmForest')) continue;
       let touched=false;
-      for(let i=0;i<trunk.count;i++){
-        trunk.getMatrixAt(i,m); v.setFromMatrixPosition(m);
-        const dx=v.x-AF_X, dz=v.z-AF_Z;
-        if(dx>AF_CLEAR_X0 && dx<AF_CLEAR_X1 && dz>AF_CLEAR_Z0 && dz<AF_CLEAR_Z1){
-          trunk.setMatrixAt(i,zero); canopy.setMatrixAt(i,zero);
-          cleared++; touched=true;
+      for(let i=0;i<mesh.count;i++){
+        mesh.getMatrixAt(i,m); v.setFromMatrixPosition(m);
+        const dx=v.x-AF_X,dz=v.z-AF_Z;
+        if(dx>AF_CLEAR_X0-5 && dx<AF_CLEAR_X1+5 && dz>AF_CLEAR_Z0-5 && dz<AF_CLEAR_Z1+5){
+          mesh.setMatrixAt(i,zero); cleared++; touched=true;
         }
       }
-      if(touched){ trunk.instanceMatrix.needsUpdate=true; canopy.instanceMatrix.needsUpdate=true; }
+      if(touched) mesh.instanceMatrix.needsUpdate=true;
     }
   }
   if(cleared) console.log('cleared',cleared,'tree(s) overlapping the airfield footprint');
@@ -613,6 +600,9 @@ function clearTreesNearAirfield(){
 async function loadRealWorld(){
   const setLoadingText=(s)=>{ const el=document.getElementById('loadingText'); if(el) el.textContent=s; };
 
+  if(OSMManager.BUILD!==10) throw new Error('Terrain version mismatch. Reload Remagen.');
+  document.getElementById('testVersionBannerText').textContent=
+    'TEST BUILD — REMAGEN BUILD 10 — TERRAIN PASS 4 — MODULE 10';
   heightProvider=new DEMHeightProvider(RTILE,'terrain-system/real/data/dem/');
   terrain=new TerrainManager(scene,RTILE,heightProvider);
   osmMgr=new OSMManager(scene,RTILE,terrain,'terrain-system/real/data/osm/');
@@ -630,6 +620,12 @@ async function loadRealWorld(){
   // Phase 2: build every terrain tile's mesh — synchronous, CPU-only, no further network wait.
   setLoadingText('Building terrain mesh…');
   for(let tz=0;tz<RGRID_H;tz++) for(let tx=0;tx<RGRID_W;tx++) terrain.ensureTile(tx,tz,0);
+
+  // Build a region-wide water mask BEFORE asynchronous tile placement.
+  setLoadingText('Preparing water boundaries…');
+  const osmCoords=[];
+  for(let tz=0;tz<RGRID_H;tz++) for(let tx=0;tx<RGRID_W;tx++) osmCoords.push([tx,tz]);
+  await osmMgr.prepareRegion(osmCoords);
 
   // Phase 3: real roads/rail/river/forest/farmland/buildings (OSMManager) and the historical
   // layer (bridge/flak/factory/airfield) — both need a real TERRAIN TILE already built at their
@@ -757,25 +753,20 @@ function updateContentVisibility(focusX,focusZ){
 // and TERRAIN_MORPH_DURATION=0.6s already smooths the terrain's OWN visual LOD transition on
 // roughly that timescale).
 // Each flat mesh (road/rail/river/lake/farmland/airfield) has its own small, fixed decorative
-// Y-offset above the ground (1.4/1.2/1.8/0.9/0.3/0.3 — see OSMManager.js's own loadTile(), which
-// keeps roads visually clear of the ground it's laid on, etc.) baked into its ORIGINAL vertex Y
-// alongside the terrain height. That offset has to survive a rebake — recomputing against
-// terrain.getRenderedHeight() (LOD-DEPENDENT) is exactly the value that's about to change, so it
-// can't be the reference point for "what offset was baked in". heightProvider.getHeight() is the
-// true, LOD-INDEPENDENT analytic height (same answer regardless of the tile's current render
-// resolution — see HeightProvider.js's own contract) — capturing offset = originalY - that exact
-// height, once, the first time a mesh is seen (whatever LOD the terrain happens to be at by
-// then), gives a per-vertex constant that's safe to reuse at every later rebake, at any LOD.
+// OSMManager records the intended layer offset at construction. Water must be
+// split along the terrain grid AND its triangle diagonals at each settled LOD.
+// Rebuilding only when a morph finishes avoids a per-frame geometry allocation.
 const osmTileLastLod=new Map();
 function rebakeStaleOsmHeights(){
   for(const [key,t] of osmMgr.tiles){
     if(!t||!t.group) continue;
     const tile=terrain.tiles.get(key);
-    if(!tile) continue;
+    if(!tile || tile.morphing) continue;
     const prevSeg=osmTileLastLod.get(key);
     if(prevSeg===tile._renderSeg) continue;
     osmTileLastLod.set(key,tile._renderSeg);
     if(prevSeg===undefined){ captureFlatMeshOffsets(t.group); continue; }
+    for(const mesh of flatOsmMeshes(t.group)) if(mesh.userData.waterSource) osmMgr.redrapeWater(mesh);
     rebakeFlatMeshHeights(t.group);
   }
 }
@@ -799,6 +790,7 @@ function rebakeFlatMeshHeights(group){
   flatOsmMeshes(group).forEach(o=>{
     const pos=o.geometry.attributes.position;
     if(!pos||!o.userData.yOffsets) return;
+    if(o.userData.waterSource) return; // redrapeWater already used the owning tile's edge
     const offs=o.userData.yOffsets;
     for(let i=0;i<pos.count;i++){
       const [x,z]=clampToWorld(pos.getX(i),pos.getZ(i));

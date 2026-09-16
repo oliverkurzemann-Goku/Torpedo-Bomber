@@ -10,7 +10,29 @@ The flight model, weapons and mission logic are not part of a terrain pass unles
 
 ## Test build versioning
 
-Every Remagen revision handed to Oliver for testing must increment the visible build number in both places in `remagen-mission.html`: the always-visible `#testVersionBannerText` and the in-flight `#buildTag`. Add a short pass label when useful. Never tell Oliver a build is ready until the branch/deployment being tested contains that exact visible version. Current terrain pass: `REMAGEN BUILD 9 · TERRAIN PASS 3`.
+Every Remagen revision handed to Oliver for testing must increment the visible build number in both places in `remagen-mission.html`: the always-visible `#testVersionBannerText` and the in-flight `#buildTag`. Add a short pass label when useful. Never tell Oliver a build is ready until the branch/deployment being tested contains that exact visible version. Current terrain pass: `REMAGEN BUILD 10 · TERRAIN PASS 4`.
+
+The local terrain scripts carry the same version as a `?v=remagen-10` query. `OSMManager.BUILD` is checked during startup and the banner gains `MODULE 10` only after that check succeeds. This prevents an updated HTML document from silently running an older Safari-cached terrain module.
+
+## Terrain pass 4 — Remagen Build 10
+
+### Water/object correctness
+
+Build 9 tested nine points of a building against only the water stored in the same source tile. That can miss a thin stream crossing between probes, water from the neighbouring tile and the true footprint of a rotated Three.js instance. The rotation formula used by the test also had the opposite sign from `Matrix4.makeRotationY`.
+
+Build 10 preloads all 56 OSM JSON sources with `OSMManager.prepareRegion()` and builds one region-wide spatial index from the projected triangles that are actually used to render rivers and lake polygons. Buildings are tested as complete rotated roof polygons with a two-metre bank margin. Tree crowns are tested as discs with a five-metre margin. Forest jitter is rechecked against its source polygon after displacement.
+
+Long water triangles previously connected a few terrain samples and could pass through a hill or disappear below coarse LOD terrain. `redrapeWater()` now clips each source water triangle at the owning terrain tile's current grid lines and triangle diagonals, then samples the actual rendered triangle plane. Water is rebuilt only after a settled LOD change; it is not allocated every animation frame. Water meshes preserve their explicit layer offsets rather than trying to infer them from raw DEM heights.
+
+### Buildings and ground detail
+
+Walls use one shared 512px canvas atlas containing weathered plaster, windows, shutters, doors, a cornice and masonry footing. All four façades are mapped; the entrance side uses the door half of the atlas. Roofs use a shared 256px tile pattern, and the gable prism now duplicates vertices at hard edges so roof planes and gables shade as separate surfaces. These remain instanced meshes: texture detail adds no per-building draw calls.
+
+The terrain canvas has stronger fine grain and a shorter repeat scale. Its formerly non-integer cosine frequency was corrected so opposite texture edges really are seamless.
+
+### Regression evidence
+
+`terrain-system/tests/remagen-real-geometry.js` loads the shipped 56 DEM and OSM tiles with actual Three.js r128. It independently intersects the rendered water triangles against every rendered roof footprint and tree-crown disc, verifies water/terrain drape at high and coarse LOD, validates buffers and compares the height query with Three.js raycasting during a morph. Build 10 result: 21,286 buildings, 162,469 crowns and 182,323 water triangles checked; maximum measured water drape error 0.00063m. This is a geometry test, not an iPad WebGL/FPS test; visual acceptance and performance still require Oliver's real device.
 
 ## Current pipeline
 

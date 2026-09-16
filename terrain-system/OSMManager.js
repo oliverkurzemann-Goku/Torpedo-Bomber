@@ -5,12 +5,15 @@
 // ============================================================
 
 class OSMManager {
+  static get BUILD(){ return 10; }
   constructor(scene, tileSize, terrainManager, baseUrl = 'data/osm/'){
     this.scene = scene;
     this.tileSize = tileSize;
     this.terrain = terrainManager;
     this.baseUrl = baseUrl;
     this.tiles = new Map();
+    this.sourceTiles = new Map();
+    this.waterIndex = null;
 
     this.roadMat = new THREE.MeshStandardMaterial({ color: 0x3a3a3a, roughness: 1 });
     this.railMat = new THREE.MeshStandardMaterial({ color: 0x585048, roughness: 0.8 });
@@ -31,6 +34,10 @@ class OSMManager {
     this.flatRoofMat = new THREE.MeshStandardMaterial({ color: 0x4d4b45, roughness: 1 });
     this.chimneyMat = new THREE.MeshStandardMaterial({ color: 0x4e4038, roughness: 1 });
     this.facadeDetailMat = new THREE.MeshStandardMaterial({ color: 0x27302d, roughness: 0.85 });
+    this.facadeTexture = makeOSMFacadeTexture();
+    this.roofTexture = makeOSMRoofTexture();
+    this.buildingWarmMat.map = this.buildingCoolMat.map = this.facadeTexture;
+    this.roofMat.map = this.roofSlateMat.map = this.roofTexture;
 
     // Vegetation palette. Four tree draw calls maximum per tile regardless of
     // how many forest polygons the source data contains.
@@ -44,6 +51,7 @@ class OSMManager {
     this.shrubMat = new THREE.MeshStandardMaterial({ color: 0x536f3a, roughness: 1 });
 
     this.boxGeo = new THREE.BoxGeometry(1, 1, 1);
+    this.wallGeo = makeOSMWallGeometry();
     // Proper gable prism: the previous four-sided cone was a pyramid. Once
     // stretched over a rectangular footprint it produced the implausible tall,
     // diagonal roof faces visible in BUILD 7 screenshots.
@@ -51,19 +59,32 @@ class OSMManager {
     this.chimneyGeo = new THREE.BoxGeometry(0.72, 1.8, 0.72);
 
     this.sharedGeometries = new Set([
-      this.boxGeo, this.gableRoofGeo, this.chimneyGeo, this.trunkGeo,
+      this.boxGeo, this.wallGeo, this.gableRoofGeo, this.chimneyGeo, this.trunkGeo,
       this.coniferGeo, this.deciduousGeo, this.shrubGeo
     ]);
   }
 
   _key(tx, tz){ return tx + ',' + tz; }
 
+  // Read every source before placing anything: a roof/crown near a seam can
+  // intersect water belonging to the NEXT tile. Network completion order must
+  // never decide which objects are admitted. A failed source aborts preparation.
+  async prepareRegion(coords){
+    const records = await Promise.all(coords.map(async ([tx,tz]) => {
+      const res = await fetch(`${this.baseUrl}${tx}_${tz}.json`);
+      if(!res.ok) throw new Error(`Missing OSM tile ${tx},${tz}: ${res.status}`);
+      return {tx,tz,data:await res.json()};
+    }));
+    for(const r of records) this.sourceTiles.set(this._key(r.tx,r.tz),r.data);
+    this.waterIndex = makeOSMWaterIndex(records,this.tileSize);
+  }
+
   async loadTile(tx, tz){
     const key = this._key(tx, tz);
     if(this.tiles.has(key)) return;
 
-    let data;
-    try {
+    let data = this.sourceTiles.get(key);
+    if(!data) try {
       const res = await fetch(`${this.baseUrl}${tx}_${tz}.json`);
       if(!res.ok){ this.tiles.set(key, null); return; }
       data = await res.json();
@@ -114,6 +135,8 @@ class OSMManager {
   }
 
   _safeRenderedHeight(x, z, ox, oz){
+    if(this.terrain.tiles && this.terrain.tiles.has(this._key(Math.floor(x/this.tileSize),Math.floor(z/this.tileSize))))
+      return this.terrain.getRenderedHeight(x,z);
     // A building corner or jittered tree can cross a tile edge by a few metres.
     // Clamp only for the height query so a missing neighbour in demo pages
     // cannot abort the whole tile build. Remagen itself preloads all DEM tiles.
@@ -128,18 +151,11 @@ class OSMManager {
     const positions = [], indices = [];
     for(const localPts of lines){
       if(!localPts || localPts.length < 2) continue;
-      const world = localPts.map(([lx,lz]) => [ox+lx, oz+lz]);
+      const pairs = osmRibbonPairs(localPts,ox,oz,width);
+      const world = pairs; // index count below
       const base = positions.length/3;
-      for(let i = 0; i < world.length; i++){
-        const [x,z] = world[i];
-        const [px,pz] = world[Math.max(0,i-1)];
-        const [nx,nz] = world[Math.min(world.length-1,i+1)];
-        let dx = nx-px, dz = nz-pz;
-        const len = Math.hypot(dx,dz) || 1;
-        dx/=len; dz/=len;
-        const perpX = -dz*width/2, perpZ = dx*width/2;
-        const y = this.terrain.getRenderedHeight(x,z) + yOffset;
-        positions.push(x+perpX, y, z+perpZ, x-perpX, y, z-perpZ);
+      for(const pair of pairs) for(const [x,z] of pair){
+        positions.push(x,this._safeRenderedHeight(x,z,ox,oz)+yOffset,z);
       }
       for(let i = 1; i < world.length; i++){
         const l0=base+(i-1)*2, r0=l0+1, l1=base+i*2, r1=l1+1;
@@ -153,7 +169,10 @@ class OSMManager {
     geo.setIndex(indices);
     geo.computeVertexNormals();
     geo.computeBoundingSphere();
-    return new THREE.Mesh(geo, mat);
+    const mesh=new THREE.Mesh(geo, mat);
+    mesh.userData.yOffsets=new Float32Array(positions.length/3).fill(yOffset);
+    if(mat===this.riverMat) this._prepareWaterSurface(mesh,ox,oz,yOffset);
+    return mesh;
   }
 
   _buildFlatPolygons(polys, ox, oz, mat, yOffset){
@@ -176,7 +195,60 @@ class OSMManager {
     geo.setIndex(indices);
     geo.computeVertexNormals();
     geo.computeBoundingSphere();
-    return new THREE.Mesh(geo, mat);
+    const mesh=new THREE.Mesh(geo, mat);
+    mesh.userData.yOffsets=new Float32Array(positions.length/3).fill(yOffset);
+    if(mat===this.lakeMat) this._prepareWaterSurface(mesh,ox,oz,yOffset);
+    return mesh;
+  }
+
+  _prepareWaterSurface(mesh,ox,oz,offset){
+    // Keep the small source triangulation to rebuild when LOD changes.
+    mesh.userData.waterSource={positions:mesh.geometry.attributes.position.array.slice(),indices:Array.from(mesh.geometry.index.array),ox,oz,offset};
+    this.redrapeWater(mesh);
+  }
+
+  redrapeWater(mesh){
+    const src=mesh.userData.waterSource;
+    if(!src || !this.terrain.tiles) return;
+    const tile=this.terrain.tiles.get(this._key(src.ox/this.tileSize,src.oz/this.tileSize));
+    if(!tile) return;
+    const step=this.tileSize/tile._renderSeg,positions=[];
+    // At an exact seam, TerrainManager normally prefers the next tile. Its
+    // LOD may differ. A surface owned by THIS tile must use THIS tile's edge.
+    const height=(x,z)=>this.terrain.getRenderedHeight(
+      Math.max(src.ox+0.001,Math.min(src.ox+this.tileSize-0.001,x)),
+      Math.max(src.oz+0.001,Math.min(src.oz+this.tileSize-0.001,z)))+src.offset;
+    for(let i=0;i<src.indices.length;i+=3){
+      const tri=src.indices.slice(i,i+3).map(j=>[src.positions[j*3],src.positions[j*3+2]]);
+      const xs=tri.map(p=>p[0]),zs=tri.map(p=>p[1]);
+      for(let gx=Math.floor(Math.min(...xs)/step);gx<=Math.floor(Math.max(...xs)/step);gx++)
+        for(let gz=Math.floor(Math.min(...zs)/step);gz<=Math.floor(Math.max(...zs)/step);gz++){
+          const x=gx*step,z=gz*step;
+          let ring=osmClipHalfPlane(tri,1,0,x,true);
+          ring=osmClipHalfPlane(ring,1,0,x+step,false);
+          ring=osmClipHalfPlane(ring,0,1,z,true);
+          ring=osmClipHalfPlane(ring,0,1,z+step,false);
+          ring=osmClipHalfPlane(ring,1,0,src.ox,true);
+          ring=osmClipHalfPlane(ring,1,0,src.ox+this.tileSize,false);
+          ring=osmClipHalfPlane(ring,0,1,src.oz,true);
+          ring=osmClipHalfPlane(ring,0,1,src.oz+this.tileSize,false);
+          // Split at PlaneGeometry's diagonal too, not just the grid edges.
+          for(const keepGreater of [false,true]){
+            const part=osmClipHalfPlane(ring,1,1,x+z+step,keepGreater);
+            for(let j=1;j<part.length-1;j++){
+              const a=part[0],b=part[j],c=part[j+1];
+              const area=(b[0]-a[0])*(c[1]-a[1])-(b[1]-a[1])*(c[0]-a[0]);
+              if(Math.abs(area)<1e-5) continue;
+              for(const [px,pz] of area<0?[a,b,c]:[a,c,b]) positions.push(px,height(px,pz),pz);
+            }
+          }
+        }
+    }
+    const geo=new THREE.BufferGeometry();
+    geo.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));
+    geo.computeVertexNormals(); geo.computeBoundingSphere();
+    mesh.geometry.dispose(); mesh.geometry=geo;
+    mesh.userData.yOffsets=new Float32Array(positions.length/3).fill(src.offset);
   }
 
   _buildForestExclusion(data, ox, oz){
@@ -228,11 +300,12 @@ class OSMManager {
       const ez=Math.abs(s)*b.w/2+Math.abs(c)*b.d/2+margin;
       add({kind:'building',source:'building',x,z,c,s,hw:b.w/2+margin,hd:b.d/2+margin},x-ex,z-ez,x+ex,z+ez);
     }
-    return {cellSize,cells};
+    return {cellSize,cells,water:this.waterIndex || makeOSMWaterIndex([{tx:ox/this.tileSize,tz:oz/this.tileSize,data}],this.tileSize)};
   }
 
   _treeExcluded(x,z,index){
     if(!index) return false;
+    if(osmWaterOverlaps([[x,z]],5,index.water)) return true;
     const bucket=index.cells.get(Math.floor(x/index.cellSize)+','+Math.floor(z/index.cellSize));
     if(!bucket) return false;
     for(const f of bucket){
@@ -240,7 +313,7 @@ class OSMManager {
       if(f.kind==='polygon' && pointInPolygon(x,z,f.ring)) return true;
       if(f.kind==='building'){
         const dx=x-f.x,dz=z-f.z;
-        const lx=dx*f.c+dz*f.s, lz=-dx*f.s+dz*f.c;
+        const lx=dx*f.c-dz*f.s, lz=dx*f.s+dz*f.c;
         if(Math.abs(lx)<=f.hw && Math.abs(lz)<=f.hd) return true;
       }
     }
@@ -260,11 +333,9 @@ class OSMManager {
   }
 
   _buildingTouchesWater(b,x,z,index){
-    const c=Math.cos(b.rotY),s=Math.sin(b.rotY),hw=b.w/2,hd=b.d/2;
-    // Centre, corners and edge midpoints. This catches both a small building
-    // inside water and a long footprint crossed by a narrow mapped stream.
-    const samples=[[0,0],[-hw,-hd],[hw,-hd],[hw,hd],[-hw,hd],[-hw,0],[hw,0],[0,-hd],[0,hd]];
-    return samples.some(([lx,lz])=>this._pointTouchesWater(x+lx*c-lz*s,z+lx*s+lz*c,index));
+    // Test the entire rendered roof footprint, including overhang and 2m
+    // bank clearance. Nine sample points missed thin streams between probes.
+    return osmWaterOverlaps(osmBuildingFootprint(b,x,z),2,index && index.water);
   }
 
   _forestPlacements(polys, ox, oz, exclusion=null){
@@ -291,6 +362,7 @@ class OSMManager {
           const jz = (osmHash(x,z,2)-0.5)*step;
           const px = Math.min(ox+this.tileSize-0.01, Math.max(ox+0.01, x+jx));
           const pz = Math.min(oz+this.tileSize-0.01, Math.max(oz+0.01, z+jz));
+          if(!pointInPolygon(px,pz,world)) continue;
           if(this._treeExcluded(px,pz,exclusion)) continue;
 
           // Overlapping source polygons used to create visibly doubled trees.
@@ -372,8 +444,8 @@ class OSMManager {
     const samples=[[0,0],[-hw,-hd],[hw,-hd],[hw,hd],[-hw,hd]];
     let minY=Infinity,maxY=-Infinity;
     for(const [lx,lz] of samples){
-      const wx=x + lx*c - lz*s;
-      const wz=z + lx*s + lz*c;
+      const wx=x + lx*c + lz*s;
+      const wz=z - lx*s + lz*c;
       const y=this._safeRenderedHeight(wx,wz,ox,oz);
       minY=Math.min(minY,y);
       maxY=Math.max(maxY,y);
@@ -419,12 +491,11 @@ class OSMManager {
     const pitchedSlate=desc.filter(d=>d.pitched&&!d.redRoof);
     const flat=desc.filter(d=>!d.pitched);
     const chimneys=desc.filter(d=>d.chimney);
-    const detailed=desc.filter(d=>d.pitched&&d.b.w>=7&&d.b.d>=6&&d.b.w*d.b.d<900);
     const m=new THREE.Matrix4(), q=new THREE.Quaternion(), pos=new THREE.Vector3(), scale=new THREE.Vector3();
 
     const addWalls=(items,mat)=>{
       if(!items.length) return;
-      const mesh=new THREE.InstancedMesh(this.boxGeo,mat,items.length);
+      const mesh=new THREE.InstancedMesh(this.wallGeo,mat,items.length);
       mesh.name = mat===this.buildingWarmMat ? 'osmBuildingWallsWarm' : 'osmBuildingWallsCool';
       for(let i=0;i<items.length;i++){
         const d=items[i], h=d.wallTop-d.baseY;
@@ -485,38 +556,10 @@ class OSMManager {
         const lx=(osmHash(d.x,d.z,25)-0.5)*d.b.w*0.42;
         const c=Math.cos(d.b.rotY),s=Math.sin(d.b.rotY);
         q.setFromAxisAngle(OSM_UP,d.b.rotY);
-        pos.set(d.x+lx*c,d.wallTop+roofH*0.72+0.55,d.z+lx*s);
+        pos.set(d.x+lx*c,d.wallTop+roofH*0.72+0.55,d.z-lx*s);
         scale.set(1,1,1);
         m.compose(pos,q,scale);
         mesh.setMatrixAt(i,m);
-      }
-      mesh.instanceMatrix.needsUpdate=true;
-      group.add(mesh);
-    }
-
-    // One bounded facade-detail bucket per tile: a door and two front windows
-    // on ordinary pitched-roof buildings. This adds visible scale/detail from
-    // low altitude without creating thousands of individual Mesh draw calls.
-    if(detailed.length){
-      const details=[];
-      for(const d of detailed){
-        const front=osmHash(d.x,d.z,26)>0.5 ? 1 : -1;
-        const lz=front*(d.b.d/2+0.10);
-        const spread=Math.min(d.b.w*0.24,4.2);
-        const specs=[[0,lz,1.15,1.15,2.3,0.18],[-spread,lz,2.65,1.15,1.05,0.18],[spread,lz,2.65,1.15,1.05,0.18]];
-        const c=Math.cos(d.b.rotY),s=Math.sin(d.b.rotY);
-        for(const [lx,lz0,yOff,sx,sy,sz] of specs){
-          const x=d.x+lx*c-lz0*s,z=d.z+lx*s+lz0*c;
-          details.push({x,z,y:this._safeRenderedHeight(x,z,ox,oz)+yOff,rot:d.b.rotY,sx,sy,sz});
-        }
-      }
-      const mesh=new THREE.InstancedMesh(this.boxGeo,this.facadeDetailMat,details.length);
-      mesh.name='osmBuildingFacadeDetails';
-      for(let i=0;i<details.length;i++){
-        const d=details[i];
-        q.setFromAxisAngle(OSM_UP,d.rot);
-        pos.set(d.x,d.y,d.z); scale.set(d.sx,d.sy,d.sz);
-        m.compose(pos,q,scale); mesh.setMatrixAt(i,m);
       }
       mesh.instanceMatrix.needsUpdate=true;
       group.add(mesh);
@@ -527,6 +570,171 @@ class OSMManager {
 }
 
 const OSM_UP = new THREE.Vector3(0,1,0);
+
+function osmClipHalfPlane(ring,nx,nz,limit,greater){
+  if(!ring.length) return [];
+  const out=[],sign=greater?1:-1;
+  for(let i=0;i<ring.length;i++){
+    const a=ring[i],b=ring[(i+1)%ring.length];
+    const da=(a[0]*nx+a[1]*nz-limit)*sign,db=(b[0]*nx+b[1]*nz-limit)*sign;
+    if(da>=0) out.push(a);
+    if((da>=0)!==(db>=0)){
+      const t=da/(da-db);
+      out.push([a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t]);
+    }
+  }
+  return out;
+}
+
+function osmBuildingFootprint(b,x,z){
+  const c=Math.cos(b.rotY),s=Math.sin(b.rotY),hw=b.w*0.53,hd=b.d*0.54;
+  // THREE.Matrix4.makeRotationY: x'=cx+sz, z'=-sx+cz.
+  return [[-hw,-hd],[hw,-hd],[hw,hd],[-hw,hd]].map(([u,v])=>[x+c*u+s*v,z-s*u+c*v]);
+}
+
+function osmRibbonPairs(line,ox,oz,width){
+  const world=line.map(([x,z])=>[x+ox,z+oz]);
+  return world.map(([x,z],i)=>{
+    const p=world[Math.max(0,i-1)],n=world[Math.min(world.length-1,i+1)];
+    const dx=n[0]-p[0],dz=n[1]-p[1],k=width/2/(Math.hypot(dx,dz)||1);
+    return [[x-dz*k,z+dx*k],[x+dz*k,z-dx*k]];
+  });
+}
+
+function makeOSMWaterIndex(records,tileSize){
+  const cellSize=128,cells=new Map();
+  const add=ring=>{
+    if(ring.length<3) return;
+    const xs=ring.map(p=>p[0]),zs=ring.map(p=>p[1]);
+    const f={ring,minX:Math.min(...xs),maxX:Math.max(...xs),minZ:Math.min(...zs),maxZ:Math.max(...zs)};
+    for(let x=Math.floor((f.minX-8)/cellSize);x<=Math.floor((f.maxX+8)/cellSize);x++)
+      for(let z=Math.floor((f.minZ-8)/cellSize);z<=Math.floor((f.maxZ+8)/cellSize);z++){
+        const key=x+','+z;
+        if(!cells.has(key)) cells.set(key,[]);
+        cells.get(key).push(f);
+      }
+  };
+  for(const {tx,tz,data} of records){
+    const ox=tx*tileSize,oz=tz*tileSize;
+    for(const ring of data.lakes||[]) add(cleanPolygonRing(ring.map(([x,z])=>[x+ox,z+oz])));
+    for(const line of data.rivers||[]){
+      const pairs=osmRibbonPairs(line,ox,oz,34);
+      for(let i=1;i<pairs.length;i++){
+        // EXACT projected triangles from _buildRibbons, including bend joins.
+        const [a,b]=pairs[i-1],[c,d]=pairs[i];
+        add([a,b,c]); add([b,d,c]);
+      }
+    }
+  }
+  return {cells,cellSize};
+}
+
+function osmSegmentsIntersect(a,b,c,d){
+  const cross=(p,q,r)=>(q[0]-p[0])*(r[1]-p[1])-(q[1]-p[1])*(r[0]-p[0]);
+  const u=cross(a,b,c),v=cross(a,b,d),w=cross(c,d,a),t=cross(c,d,b);
+  if(((u>0&&v<0)||(u<0&&v>0))&&((w>0&&t<0)||(w<0&&t>0))) return true;
+  const on=(p,q,r)=>Math.abs(cross(p,q,r))<1e-7&&r[0]>=Math.min(p[0],q[0])-1e-7&&r[0]<=Math.max(p[0],q[0])+1e-7&&r[1]>=Math.min(p[1],q[1])-1e-7&&r[1]<=Math.max(p[1],q[1])+1e-7;
+  return on(a,b,c)||on(a,b,d)||on(c,d,a)||on(c,d,b);
+}
+
+function osmWaterOverlaps(footprint,margin,index){
+  if(!index) return false;
+  const xs=footprint.map(p=>p[0]),zs=footprint.map(p=>p[1]);
+  const minX=Math.min(...xs)-margin,maxX=Math.max(...xs)+margin;
+  const minZ=Math.min(...zs)-margin,maxZ=Math.max(...zs)+margin;
+  const candidates=new Set(),cs=index.cellSize;
+  for(let x=Math.floor(minX/cs);x<=Math.floor(maxX/cs);x++) for(let z=Math.floor(minZ/cs);z<=Math.floor(maxZ/cs);z++)
+    for(const f of index.cells.get(x+','+z)||[]) candidates.add(f);
+  const r2=margin*margin;
+  for(const f of candidates){
+    if(f.maxX<minX||f.minX>maxX||f.maxZ<minZ||f.minZ>maxZ) continue;
+    if(footprint.some(p=>pointInPolygon(p[0],p[1],f.ring))) return true;
+    if(footprint.length>2&&f.ring.some(p=>pointInPolygon(p[0],p[1],footprint))) return true;
+    for(let i=0;i<footprint.length;i++){
+      const a=footprint[i],b=footprint[(i+1)%footprint.length];
+      for(let j=0;j<f.ring.length;j++){
+        const c=f.ring[j],d=f.ring[(j+1)%f.ring.length];
+        if(osmSegmentsIntersect(a,b,c,d)||
+           pointSegmentDistanceSq(a[0],a[1],c[0],c[1],d[0],d[1])<=r2||
+           pointSegmentDistanceSq(c[0],c[1],a[0],a[1],b[0],b[1])<=r2) return true;
+      }
+    }
+  }
+  return false;
+}
+
+function makeOSMWallGeometry(){
+  const geo=new THREE.BoxGeometry(1,1,1);
+  const uv=geo.attributes && geo.attributes.uv;
+  if(uv) for(let i=0;i<uv.count;i++){
+    // Canvas top half: window-only side/rear. Bottom half: entrance facade.
+    // BoxGeometry face order: +X,-X,+Y,-Y,+Z,-Z.
+    const front=Math.floor(i/4)===4;
+    uv.setY(i,uv.getY(i)*0.5+(front?0:0.5));
+  }
+  return geo;
+}
+
+function osmCanvasTexture(canvas){
+  const tex=new THREE.CanvasTexture(canvas);
+  tex.anisotropy=4;
+  tex.encoding=THREE.sRGBEncoding;
+  return tex;
+}
+
+function makeOSMFacadeTexture(){
+  if(typeof document==='undefined') return null; // placement-only Node tests
+  const canvas=document.createElement('canvas'); canvas.width=canvas.height=512;
+  const c=canvas.getContext('2d');
+  for(let panel=0;panel<2;panel++){
+    const y=panel*256;
+    c.fillStyle='#e2dbca'; c.fillRect(0,y,512,256);
+    // Weathered plaster, stone footing and cornice; one shared 1 MB atlas.
+    for(let i=0;i<2400;i++){
+      c.fillStyle=i%2?'rgba(90,78,62,0.065)':'rgba(255,253,236,0.10)';
+      c.fillRect(osmHash(i,panel,81)*512,y+osmHash(i,panel,82)*256,2+osmHash(i,panel,83)*9,2);
+    }
+    c.fillStyle='#a39b89'; c.fillRect(0,y+222,512,34);
+    c.strokeStyle='#888270'; c.lineWidth=1;
+    for(let row=0;row<2;row++) for(let col=0;col<14;col++){
+      c.strokeRect(col*40+(row%2)*20,y+223+row*16,40,16);
+    }
+    c.fillStyle='#c6bfaf'; c.fillRect(0,y+3,512,7);
+    for(let row=0;row<2;row++) for(let col=0;col<4;col++){
+      const x=42+col*127,wy=y+33+row*103;
+      if(panel===1&&row===1&&col===1) continue;
+      c.fillStyle='#a69c84'; c.fillRect(x-5,wy-5,52,67);
+      c.fillStyle='#3c4541'; c.fillRect(x-17,wy,10,57); c.fillRect(x+49,wy,10,57);
+      c.fillStyle='#263633'; c.fillRect(x,wy,42,57);
+      c.fillStyle='#66766e'; c.fillRect(x+3,wy+3,16,23);
+      c.fillStyle='#b7b3a0'; c.fillRect(x+19,wy,3,57); c.fillRect(x,wy+27,42,3);
+      c.fillStyle='#ece5d3'; c.fillRect(x-6,wy+58,54,4);
+    }
+    if(panel===1){
+      const x=169,dy=y+145;
+      c.fillStyle='#b6ad98'; c.fillRect(x-6,dy-6,54,111);
+      c.fillStyle='#4f4434'; c.fillRect(x,dy,42,101);
+      c.strokeStyle='#837159'; c.lineWidth=2; c.strokeRect(x+6,dy+10,30,31); c.strokeRect(x+6,dy+50,30,42);
+      c.fillStyle='#b3a17a'; c.fillRect(x+33,dy+47,4,5);
+    }
+  }
+  return osmCanvasTexture(canvas);
+}
+
+function makeOSMRoofTexture(){
+  if(typeof document==='undefined') return null;
+  const canvas=document.createElement('canvas'); canvas.width=canvas.height=256;
+  const c=canvas.getContext('2d');
+  c.fillStyle='#b9b2a7'; c.fillRect(0,0,256,256);
+  for(let row=0;row<16;row++) for(let col=-1;col<16;col++){
+    const light=Math.floor(150+osmHash(row,col,90)*60);
+    c.fillStyle=`rgb(${light},${light},${light})`;
+    const x=col*20+(row%2)*10,y=row*16;
+    c.fillRect(x+1,y+1,18,14);
+    c.fillStyle='rgba(25,21,16,0.28)'; c.fillRect(x,y+14,20,2);
+  }
+  return osmCanvasTexture(canvas);
+}
 
 function makeGableRoofGeometry(){
   // Unit prism, ridge along local X. There is deliberately no bottom face.
@@ -541,9 +749,15 @@ function makeGableRoofGeometry(){
     0,2,4,               // west gable
     1,5,3                // east gable
   ];
+  const expanded=[],uv=[];
+  for(let i=0;i<indices.length;i++){
+    const idx=indices[i],x=positions[idx*3],y=positions[idx*3+1],z=positions[idx*3+2];
+    expanded.push(x,y,z);
+    uv.push(i<12?x+0.5:z+0.5,i<12?(z<0?y:1-y):y);
+  }
   const geo=new THREE.BufferGeometry();
-  geo.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));
-  geo.setIndex(indices);
+  geo.setAttribute('position',new THREE.Float32BufferAttribute(expanded,3));
+  geo.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));
   geo.computeVertexNormals();
   geo.computeBoundingSphere();
   return geo;
