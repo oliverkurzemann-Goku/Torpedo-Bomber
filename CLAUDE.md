@@ -4820,6 +4820,30 @@ er die Giebelprisma-Geometrie und die transparente Farmland-Regel. Syntaxprüfun
 geänderten Manager bestanden. Sichtbare Kennung: `REMAGEN BUILD 8 · TERRAIN PASS 2`.
 Echte iPad-Freigabe steht bis zum Nutzer-Test noch aus.
 
+### REMAGEN BUILD 9 — Terrain Pass 3 (ChatGPT, 2026-09-16)
+
+BUILD 8 wurde auf dem echten iPad als sehr flüssig und als großer visueller Fortschritt
+bestätigt. Zwei Screenshots zeigten aber Wasser unter Bäumen/Gebäuden und scheinbar abrupt
+endende Flussflächen. Hauptursache war `_buildFlatPolygons()`: der bisherige Mittelpunkt-Fächer
+ist nur für konvexe Polygone gültig. Die realen Rhein-/See-Ringe sind konkav; Fächer-Dreiecke
+überquerten Flussbiegungen und malten blaue Keile über trockenes Land.
+
+BUILD 9:
+
+- ersetzt den Mittelpunkt-Fächer durch Ear-Clipping für einfache konkave Polygone,
+- prüft alle 7.985 ausgelieferten See-/Farmland-/Flugfeld-Ringe auf exakt `n-2` Dreiecke,
+- markiert Quellen im 64-m-Ausschlussindex und verwirft Gebäude, deren Mittelpunkt, Ecken
+  oder Kantenmittelpunkte echte Fluss-/Seeflächen berühren,
+- reduziert dadurch die real gerenderten Gebäude von 21.449 auf 21.221 (228 Wasser-Konflikte),
+- macht Fluss-/See-Materialien rauer und weniger spiegelnd,
+- ergänzt bei normalen Häusern zwei gedeckte Dachfarben, instanzierte Schornsteine sowie
+  einen gebündelten Fassaden-Detail-Bucket (Tür + zwei Frontfenster).
+
+Der echte Three.js-r128-Test baut alle 56 Kacheln mit 169.251 Bäumen und 21.221 Gebäuden,
+endlichen Matrizen und höchstens sieben Gebäude-Instanz-Buckets pro Kachel. Keine einzelnen
+Fenster-/Schornstein-Meshes. Sichtbare Kennung: `REMAGEN BUILD 9 · TERRAIN PASS 3`.
+Echte iPad-Freigabe steht bis zum Nutzer-Test noch aus.
+
 ---
 
 ## 7. Arbeitsweise, die der Nutzer erwartet
