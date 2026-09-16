@@ -4609,6 +4609,51 @@ Verfahren:
    — das prüft den Mechanismus selbst unabhängig von dieser Sandbox-Eigenheit, und ein echtes Gerät
    liefert ohnehin ganz normale ~60 Bilder/Sekunde.
 
+### Checkliste: jede Platzierung auf echtem Terrain (`remagen-mission.html`)
+
+Auf ausdrücklichen Nutzerwunsch, nachdem in einer einzigen Runde (REMAGEN BUILD 6) gleich drei
+verschiedene Platzierungsfehler gemeldet wurden (Flugzeug-Spawn neben statt auf der Bahn, Flak
+in der Flusssichtbarkeit ertrunken/unsichtbar, Fluss hört mitten in der Karte auf) — alle drei
+mit derselben Grund-Ursache: eine Annahme über Fläche/Sichtbarkeit/Richtung wurde nie gegen die
+tatsächlich geladenen echten Daten geprüft, nur gegen die Formel, die sie erzeugt hat. Vor jedem
+Ausliefern von Code, der etwas auf dem echten Terrain platziert (Flugzeug-Spawn, Flak/Fahrzeuge,
+Gebäude, Missionsziele, Brücken/Straßen-Segmente):
+
+1. **Nie eine einzelne Höhe für eine Fläche annehmen.** Jede Ausdehnung größer als ein paar
+   Meter (Landebahn, Brücke, Hecke, Gebäude-Reihe) bekommt ihre Höhe an JEDEM eigenen Punkt
+   abgetastet, nie am Zentrum gemessen und dann überallhin übernommen — miss die tatsächliche
+   Abweichung (`terrain.getHeight()` an mehreren Punkten entlang der Ausdehnung, Differenz zum
+   Zentrumswert ausgeben) BEVOR du eine flache Platte baust, nicht danach beim Debuggen. Der
+   Landebahn-Fehler dieser Runde maß bis zu 3,5 Einheiten Abweichung, wo „DEM-checked-flat" im
+   Kommentar stand — der Kommentar war einmal wahr, die inzwischen dazwischengekommene LOD-/
+   Kachel-Terrain-Pipeline hatte ihn nie erneut geprüft.
+2. **Jede aus einem ANDEREN, bereits korrigierten Objekt abgeleitete Position neu prüfen, wenn
+   sich dieses Objekt ändert.** „Senkrecht zur Brücke" bedeutet nach einer Korrektur an der
+   Brücken-AUSRICHTUNG etwas völlig anderes als davor — die Flak-Platzierung dieser Runde
+   benutzte exakt dieselbe `perp`-Formel unverändert weiter, während sich die Bedeutung von
+   „senkrecht" unter ihr gedreht hatte, und landete dadurch im Fluss. Bei jeder Änderung an
+   einem Referenzobjekt (Position, Richtung, Ausrichtung): jede Formel, die „relativ zu X"
+   rechnet, einzeln aufsuchen und neu durchdenken, nicht nur X selbst reparieren.
+3. **Jede automatisch platzierte Position gegen die ECHTEN geladenen Daten validieren, nicht nur
+   gegen die eigene Formel.** Ein Punkt-in-Polygon-Test gegen die tatsächlichen Wasser-/Gebäude-
+   /Straßenpolygone (dieselben Daten, aus denen auch gerendert wird — `_nearby_water_polygons()`-
+   Stil) kostet in einem Offline-Tool praktisch nichts und hätte den Flak-im-Fluss-Fehler vor dem
+   Ausliefern gefunden. Bei einem Fehlschlag: automatisch weiter weg schieben UND eine Warnung
+   ausgeben (nie schweigend eine unvalidierte Position ausliefern) — dieselbe Ehrlichkeits-Regel,
+   die `DEMHeightProvider` schon für fehlende Kacheln befolgt.
+4. **Sichtweiten-/Distance-Culling darf nie ein zusammenhängendes, lineares Feature (Fluss,
+   Straße, Bahnlinie) hart abschneiden.** Ein Objekt, das über mehrere Kacheln hinweg
+   durchläuft, kann bei einem reinen Pro-Kachel-Sichtbarkeits-Schalter an der Kachelgrenze
+   sichtbar aufhören, obwohl die Welt dahinter unverändert weiterläuft (Terrain-LOD tut das
+   NICHT — es vergröbert nur, verschwindet nie) — das fällt als handfester Bug auf, nicht als
+   Performance-Kompromiss. Vor jedem neuen Distance-Cull: fragen, ob das Feature linear/
+   durchlaufend ist (dann nie hart ausblenden, oder in einen immer sichtbaren Layer legen) oder
+   punktuell/zahlreich (Bäume, einzelne Gebäude — dafür ist Culling gemacht).
+5. **Nach jedem Platzierungs-Fix das Ergebnis tatsächlich messen, nicht nur rechnen.** Exakt
+   Lektion 1 aus Abschnitt 5, hier noch einmal konkret für Terrain-Platzierung: Abstand zur
+   nächsten echten Wasser-/Gebäude-Fläche ausgeben, Spawn-Y minus echte Boden-Höhe an der
+   exakten Spawn-Position ausgeben, nicht nur „sollte nach der Formel jetzt stimmen" annehmen.
+
 ---
 
 ## 7. Arbeitsweise, die der Nutzer erwartet

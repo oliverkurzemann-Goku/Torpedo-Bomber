@@ -92,13 +92,32 @@ class OSMManager {
     const airfieldMesh = this._buildFlatPolygons(data.airfields || [], ox, oz, this.roadMat, 0.3);
     if(airfieldMesh) group.add(airfieldMesh);
 
+    // Trees and buildings live in their own sub-group, NOT as direct children of `group`
+    // alongside the road/rail/river/lake/farmland/airfield meshes above. Reported on a real
+    // iPad ("Fluss ist einfach zu Ende") right after the fix that made distance-based tile
+    // culling (remagen-mission.html's updateContentVisibility(), CONTENT_VIS_RADIUS=7000)
+    // actually work for the first time (it had a bug of its own before that made it a no-op
+    // — see that function's own comment) — the moment whole-tile hide/show started really
+    // happening, a river or road that crosses a tile boundary could vanish at a hard, dead-flat
+    // cutoff the instant its FAR tile's centre passed 7000 units away, even though the terrain
+    // itself keeps rendering (LOD, not hard on/off) right through that same boundary. Measured
+    // in 4.51's own smoke test that road/rail/river/lake/farmland/airfield are already merged
+    // into AT MOST 6 meshes total per tile (249 across the whole 56-tile grid) — cheap enough to
+    // just always render, full stop. Trees (thousands of instances per tile) and buildings
+    // (hundreds) are the actual expensive content and are what distance culling was built for
+    // in the first place. Splitting them into `farGroup` lets remagen-mission.html cull ONLY
+    // that sub-group by distance while `group` itself — and every infrastructure mesh directly
+    // in it — stays permanently visible, so a river/road can never again pop out of existence
+    // mid-span just because its containing tile happened to cross the cull radius.
+    const farGroup = new THREE.Group();
+    group.add(farGroup);
     for(const poly of data.forests || []){
-      treeCount += this._scatterForest(group, poly, ox, oz);
+      treeCount += this._scatterForest(farGroup, poly, ox, oz);
     }
-    buildingCount = this._buildBuildings(group, data.buildings || [], ox, oz);
+    buildingCount = this._buildBuildings(farGroup, data.buildings || [], ox, oz);
 
     this.scene.add(group);
-    this.tiles.set(key, { group, treeCount, buildingCount });
+    this.tiles.set(key, { group, farGroup, treeCount, buildingCount });
   }
 
   unloadTile(tx, tz){

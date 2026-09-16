@@ -87,6 +87,55 @@ def _tile_water_polygons(tx, tz):
     return polys
 
 
+def _nearby_water_polygons(wx, wy):
+    """Every water polygon from the point's own tile plus its 4 neighbours, in world-local
+    metres -- shared by snap_bridge_to_river() and place_flak_on_land() below so both use the
+    exact same "which water is near this point" answer instead of two independently-written
+    (and possibly diverging) versions of the same lookup."""
+    tx, tz = tile_of(wx, wy)
+    polys = []
+    for cand_tx, cand_tz in {(tx, tz), (tx - 1, tz), (tx + 1, tz), (tx, tz - 1), (tx, tz + 1)}:
+        polys.extend(_tile_water_polygons(cand_tx, cand_tz))
+    return polys
+
+
+def place_flak_on_land(x, y, push_dir, label, step=15, max_steps=20):
+    """Reported on a real iPad ("Bei der flak suppression Mission schiesst die flak aus dem
+    Fluss und ist auch nicht sichtbar"): a genuine regression from THIS session's own earlier
+    fix. The old flak formula offset each gun `perp`*220m from the bridge midpoint, where `perp`
+    is perpendicular to the bridge's own direction vector. Before snap_bridge_to_river()'s round-2
+    orientation fix, the raw geocoded bridge line ran nearly ALONG the riverbank (dot product
+    0.21 against the true across-river direction, see that function's own docstring) -- so
+    "perpendicular to the bridge" happened to land roughly ACROSS the river, onto dry ground on
+    either side, by accident. Once the bridge was corrected to actually run perpendicular to the
+    river (the whole point of that fix), "perpendicular to the bridge" became "parallel to the
+    river" instead -- so the same formula now walks 220m along the river's own flow from a
+    starting point (the bridge midpoint) that sits IN the water, landing the flak in the water
+    too. Not caught earlier because nothing had ever checked a placed object against the water
+    data before shipping it -- the exact gap CLAUDE.md's new placement checklist exists to close.
+
+    Fixed at the root, not by re-tuning the same broken formula: flak now guards the bridge
+    APPROACHES by walking outward along the BRIDGE'S OWN direction (push_dir), starting from a
+    point already past the bridge deck's own dry-land margin (see snap_bridge_to_river()'s
+    `margin=25`) -- guaranteed on the correct (each gun's own) side of the river by construction,
+    not by coincidence. Still independently validated here (not assumed) by checking real water
+    polygon data and stepping further out if the point is still wet, exactly like
+    snap_bridge_to_river() validates the bridge itself against the same data."""
+    polys = _nearby_water_polygons(x, y)
+    from shapely.geometry import Point as _Point
+    for i in range(max_steps):
+        pt = _Point(x, y)
+        wet = any(pt.within(poly) or pt.distance(poly) < 1 for poly in polys)
+        if not wet:
+            if i > 0:
+                print(f'  flak ({label}): stepped {i * step}m further onto dry land')
+            return x, y
+        x += push_dir[0] * step
+        y += push_dir[1] * step
+    print(f'  WARNING: flak ({label}) still inside/near water after {max_steps * step}m -- left at last position, needs a manual look')
+    return x, y
+
+
 def snap_bridge_to_river(wx1, wy1, wx2, wy2):
     """Reported TWICE on the real iPad, two different symptoms from two different bugs in this
     one function:
@@ -118,10 +167,7 @@ def snap_bridge_to_river(wx1, wy1, wx2, wy2):
     orientation changed -- the real historical span length is not reused, only the fact that a
     bridge is a straight line between two riverbanks.
     """
-    tx, tz = tile_of((wx1 + wx2) / 2, (wy1 + wy2) / 2)
-    candidates = []
-    for cand_tx, cand_tz in {(tx, tz), (tx - 1, tz), (tx + 1, tz), (tx, tz - 1), (tx, tz + 1)}:
-        candidates.extend(_tile_water_polygons(cand_tx, cand_tz))
+    candidates = _nearby_water_polygons((wx1 + wx2) / 2, (wy1 + wy2) / 2)
     if not candidates:
         print('  WARNING: no water polygon data found near the bridge -- left at raw geocoded position')
         return wx1, wy1, wx2, wy2
@@ -185,13 +231,22 @@ def main():
     print(f'bridge: tile ({tx},{tz}) local ({lx1:.1f},{lz1:.1f}) -> ({lx2:.1f},{lz2:.1f})')
 
     # ---- Illustrative flak, guarding both bridge approaches ----
-    bridge_mid = ((wx1 + wx2) / 2, (wy1 + wy2) / 2)
+    # Walks outward along the BRIDGE'S OWN direction from each end, not perpendicular to it --
+    # see place_flak_on_land()'s own docstring for why the old perpendicular-offset formula put
+    # the guns in the river once the bridge itself got fixed to actually cross it. Starting
+    # `setback` metres past each end means starting past the bridge deck's own dry-land overhang
+    # margin (25m, see snap_bridge_to_river) -- already on the correct bank by construction,
+    # independently confirmed (not just assumed) by place_flak_on_land()'s own water-polygon check.
     dx, dz = wx2 - wx1, wy2 - wy1
     length = math.hypot(dx, dz)
-    perp = (-dz / length, dx / length)
-    for sign, label in [(1, 'west overlook'), (-1, 'east overlook')]:
-        fx = bridge_mid[0] + perp[0] * 220 * sign
-        fy = bridge_mid[1] + perp[1] * 220 * sign
+    dirv = (dx / length, dz / length)
+    setback = 60
+    for sign, label in [(-1, 'west overlook'), (1, 'east overlook')]:
+        end = (wx1, wy1) if sign < 0 else (wx2, wy2)
+        push_dir = (dirv[0] * sign, dirv[1] * sign)
+        fx = end[0] + push_dir[0] * setback
+        fy = end[1] + push_dir[1] * setback
+        fx, fy = place_flak_on_land(fx, fy, push_dir, label)
         ftx, ftz = tile_of(fx, fy)
         add(tiles, ftx, ftz, 'flak', {'x': round(fx - ftx * TILE_SIZE, 1), 'z': round(fy - ftz * TILE_SIZE, 1)})
         print(f'flak ({label}): tile ({ftx},{ftz})')
