@@ -1,24 +1,7 @@
 // ============================================================
-//  OSMManager — fetches a tile's real-feature JSON (produced offline by
-//  tools/convert_osm_tile.js — see that file's header for the exact format
-//  and the highway/railway/waterway/natural/landuse/building/aeroway tag
-//  mapping) and renders it with the SAME simplified techniques Step 5's
-//  procedural WaterRoadManager/VegetationManager already use: roads/rails/
-//  rivers as ground-following ribbons, lakes/farmland as flat-ish tinted
-//  ground patches, forests as scattered tree instances, buildings as simple
-//  boxes (per the landscape spec: "individual buildings detailed only near
-//  the aircraft" — a box is exactly the right amount of detail for anything
-//  that isn't that).
-//
-//  Deliberately NOT wired into WorldStreamer yet. Loading a tile's JSON is
-//  asynchronous (a real network fetch); WorldStreamer's loadTile(tx,tz)
-//  contract is synchronous (matching TerrainManager.ensureTile()) — bridging
-//  that is real integration work for a later step, not attempted here. This
-//  class only proves the OFFLINE FORMAT -> FETCH -> PARSE -> RENDER pipeline
-//  works, against the ONE hand-made sample tile convert_osm_tile.js
-//  produces — see demo-dem-osm.html. Most tiles have no OSM file at all yet
-//  (a 404 is treated as "nothing here", not an error) — that is the honest,
-//  intended state until a real country-wide conversion exists.
+// OSMManager — renders the offline real-world feature tiles used by Remagen.
+// Public contract is intentionally unchanged: loadTile(), unloadTile(), tiles.
+// See /TERRAIN.md before changing terrain, buildings, vegetation or LOD logic.
 // ============================================================
 
 class OSMManager {
@@ -27,27 +10,44 @@ class OSMManager {
     this.tileSize = tileSize;
     this.terrain = terrainManager;
     this.baseUrl = baseUrl;
-    this.tiles = new Map();   // "tx,tz" -> { group: THREE.Group, treeCount, buildingCount } | null (no data)
+    this.tiles = new Map();
 
     this.roadMat = new THREE.MeshStandardMaterial({ color: 0x3a3a3a, roughness: 1 });
     this.railMat = new THREE.MeshStandardMaterial({ color: 0x585048, roughness: 0.8 });
     this.riverMat = new THREE.MeshStandardMaterial({ color: 0x3a6a8a, roughness: 0.35, metalness: 0.1 });
     this.lakeMat = new THREE.MeshStandardMaterial({ color: 0x2f6f92, roughness: 0.2, metalness: 0.15 });
     this.farmMat = new THREE.MeshStandardMaterial({ color: 0xb8a355, roughness: 1 });
-    this.buildingMat = new THREE.MeshStandardMaterial({ color: 0x9a8b78, roughness: 0.9 });
-    this.roofMat = new THREE.MeshStandardMaterial({ color: 0x6b3f36, roughness: 0.9 });
-    this.trunkGeo = new THREE.CylinderGeometry(0.35, 0.5, 4, 6);
-    this.canopyGeo = new THREE.ConeGeometry(2.6, 6, 7);
-    this.trunkMat = new THREE.MeshStandardMaterial({ color: 0x5a4630, roughness: 1 });
-    this.canopyMat = new THREE.MeshStandardMaterial({ color: 0x2f5a2a, roughness: 1 });
-    this.boxGeo = new THREE.BoxGeometry(1, 1, 1);   // scaled per-building via matrix
+
+    // Building palette: still cheap/instanced, but no longer one identical box everywhere.
+    this.buildingWarmMat = new THREE.MeshStandardMaterial({ color: 0x9b8a73, roughness: 0.95 });
+    this.buildingCoolMat = new THREE.MeshStandardMaterial({ color: 0x807d75, roughness: 0.95 });
+    this.roofMat = new THREE.MeshStandardMaterial({ color: 0x653b31, roughness: 0.95 });
+    this.flatRoofMat = new THREE.MeshStandardMaterial({ color: 0x4d4b45, roughness: 1 });
+
+    // Vegetation palette. Four tree draw calls maximum per tile regardless of
+    // how many forest polygons the source data contains.
+    this.trunkGeo = new THREE.CylinderGeometry(0.34, 0.48, 5.5, 6);
+    this.coniferGeo = new THREE.ConeGeometry(2.7, 7.5, 7);
+    this.deciduousGeo = new THREE.DodecahedronGeometry(2.7, 0);
+    this.shrubGeo = new THREE.DodecahedronGeometry(1.7, 0);
+    this.trunkMat = new THREE.MeshStandardMaterial({ color: 0x51402d, roughness: 1 });
+    this.coniferMat = new THREE.MeshStandardMaterial({ color: 0x284d28, roughness: 1 });
+    this.deciduousMat = new THREE.MeshStandardMaterial({ color: 0x3f6835, roughness: 1 });
+    this.shrubMat = new THREE.MeshStandardMaterial({ color: 0x536f3a, roughness: 1 });
+
+    this.boxGeo = new THREE.BoxGeometry(1, 1, 1);
+    // A four-sided cone, rotated 45° when instanced, is a rectangular hipped roof
+    // after non-uniform X/Z scaling. Radius sqrt(1/2) makes its rotated base 1x1.
+    this.hipRoofGeo = new THREE.ConeGeometry(Math.SQRT1_2, 1, 4);
+
+    this.sharedGeometries = new Set([
+      this.boxGeo, this.hipRoofGeo, this.trunkGeo,
+      this.coniferGeo, this.deciduousGeo, this.shrubGeo
+    ]);
   }
 
   _key(tx, tz){ return tx + ',' + tz; }
 
-  // Asynchronous — must be awaited (or otherwise let run) before this tile's
-  // content appears. Not part of WorldStreamer's synchronous per-frame
-  // budget loop; see file header.
   async loadTile(tx, tz){
     const key = this._key(tx, tz);
     if(this.tiles.has(key)) return;
@@ -55,7 +55,7 @@ class OSMManager {
     let data;
     try {
       const res = await fetch(`${this.baseUrl}${tx}_${tz}.json`);
-      if(!res.ok){ this.tiles.set(key, null); return; }   // no OSM data for this tile — expected, not an error
+      if(!res.ok){ this.tiles.set(key, null); return; }
       data = await res.json();
     } catch(e){
       this.tiles.set(key, null);
@@ -64,21 +64,7 @@ class OSMManager {
 
     const ox = tx * this.tileSize, oz = tz * this.tileSize;
     const group = new THREE.Group();
-    let treeCount = 0, buildingCount = 0;
 
-    // Reported (real iPad): "ruckelt es immer noch" after the terrain-LOD fix
-    // (remagen-mission.html's own history, REMAGEN BUILD 2) already cut
-    // terrain triangle count by 97.5%. Measured, not guessed, where the
-    // remaining draw-call cost actually is (real Playwright + a real scene
-    // traversal, counting Mesh objects grouped by material): across the full
-    // 56-tile grid, roads alone accounted for 40,739 individual THREE.Mesh
-    // objects (one per road-segment LINE, since a real Overture way is
-    // chopped into many short segments) — nearly double the building count
-    // this file's own _buildBuildings() had already fixed, and the true
-    // dominant cost, not buildings. Same problem, same fix: one merged
-    // THREE.Mesh per FEATURE TYPE per tile instead of one per feature — see
-    // _buildRibbons()/_buildFlatPolygons() below (replacing the old
-    // one-mesh-per-line/-ring _buildRibbon()/_buildFlatPolygon()).
     const roadMesh = this._buildRibbons(data.roads || [], ox, oz, 10, this.roadMat, 1.4);
     if(roadMesh) group.add(roadMesh);
     const railMesh = this._buildRibbons(data.rails || [], ox, oz, 3, this.railMat, 1.2);
@@ -92,29 +78,12 @@ class OSMManager {
     const airfieldMesh = this._buildFlatPolygons(data.airfields || [], ox, oz, this.roadMat, 0.3);
     if(airfieldMesh) group.add(airfieldMesh);
 
-    // Trees and buildings live in their own sub-group, NOT as direct children of `group`
-    // alongside the road/rail/river/lake/farmland/airfield meshes above. Reported on a real
-    // iPad ("Fluss ist einfach zu Ende") right after the fix that made distance-based tile
-    // culling (remagen-mission.html's updateContentVisibility(), CONTENT_VIS_RADIUS=7000)
-    // actually work for the first time (it had a bug of its own before that made it a no-op
-    // — see that function's own comment) — the moment whole-tile hide/show started really
-    // happening, a river or road that crosses a tile boundary could vanish at a hard, dead-flat
-    // cutoff the instant its FAR tile's centre passed 7000 units away, even though the terrain
-    // itself keeps rendering (LOD, not hard on/off) right through that same boundary. Measured
-    // in 4.51's own smoke test that road/rail/river/lake/farmland/airfield are already merged
-    // into AT MOST 6 meshes total per tile (249 across the whole 56-tile grid) — cheap enough to
-    // just always render, full stop. Trees (thousands of instances per tile) and buildings
-    // (hundreds) are the actual expensive content and are what distance culling was built for
-    // in the first place. Splitting them into `farGroup` lets remagen-mission.html cull ONLY
-    // that sub-group by distance while `group` itself — and every infrastructure mesh directly
-    // in it — stays permanently visible, so a river/road can never again pop out of existence
-    // mid-span just because its containing tile happened to cross the cull radius.
+    // Infrastructure stays visible across tile boundaries. Only expensive
+    // vegetation/building instances are distance-culled by remagen-mission.html.
     const farGroup = new THREE.Group();
     group.add(farGroup);
-    for(const poly of data.forests || []){
-      treeCount += this._scatterForest(farGroup, poly, ox, oz);
-    }
-    buildingCount = this._buildBuildings(farGroup, data.buildings || [], ox, oz);
+    const treeCount = this._buildForests(farGroup, data.forests || [], ox, oz);
+    const buildingCount = this._buildBuildings(farGroup, data.buildings || [], ox, oz);
 
     this.scene.add(group);
     this.tiles.set(key, { group, farGroup, treeCount, buildingCount });
@@ -125,23 +94,24 @@ class OSMManager {
     const t = this.tiles.get(key);
     if(t){
       this.scene.remove(t.group);
-      t.group.traverse(o => { if(o.geometry && o.geometry !== this.boxGeo && o.geometry !== this.trunkGeo && o.geometry !== this.canopyGeo) o.geometry.dispose(); if(o.isInstancedMesh) o.dispose(); });
+      t.group.traverse(o => {
+        if(o.geometry && !this.sharedGeometries.has(o.geometry)) o.geometry.dispose();
+        if(o.isInstancedMesh && typeof o.dispose === 'function') o.dispose();
+      });
     }
     this.tiles.delete(key);
   }
 
-  // Ground-following ribbons from ALL of a tile's polylines of one feature
-  // type (road/rail/river), merged into a SINGLE mesh — same winding logic
-  // as the old per-line _buildRibbon(), just appended into one shared
-  // positions/indices buffer instead of returning one THREE.Mesh per line.
-  // (see the "ruckelt es immer noch" comment on the loadTile() call site for
-  // why: a real Overture way is chopped into many short segments — 40,739
-  // individual road-ribbon meshes measured across the 56-tile grid, nearly
-  // double what buildings alone had cost before _buildBuildings() fixed
-  // those.) Same self-correcting +Y winding technique as WaterRoadManager.js
-  // (see that file's header for why: a hand-derived winding guess is exactly
-  // the kind of thing thunderbolt-europe.html's CLAUDE.md history (4.26)
-  // documents going wrong and staying invisible for a whole build).
+  _safeRenderedHeight(x, z, ox, oz){
+    // A building corner or jittered tree can cross a tile edge by a few metres.
+    // Clamp only for the height query so a missing neighbour in demo pages
+    // cannot abort the whole tile build. Remagen itself preloads all DEM tiles.
+    const eps = 0.01;
+    const qx = Math.min(ox + this.tileSize - eps, Math.max(ox + eps, x));
+    const qz = Math.min(oz + this.tileSize - eps, Math.max(oz + eps, z));
+    return this.terrain.getRenderedHeight(qx, qz);
+  }
+
   _buildRibbons(lines, ox, oz, width, mat, yOffset){
     if(!lines || lines.length === 0) return null;
     const positions = [], indices = [];
@@ -175,13 +145,6 @@ class OSMManager {
     return new THREE.Mesh(geo, mat);
   }
 
-  // Flat-ish ground patches for ALL of a tile's closed polygon rings of one
-  // feature type (lake/farmland/airfield), merged into a SINGLE mesh — same
-  // centroid fan-triangulation as the old per-ring _buildFlatPolygon(), just
-  // appended into one shared buffer instead of one THREE.Mesh per ring. Own
-  // triangulation instead of THREE.Shape/ShapeGeometry so the winding stays
-  // under the same self-checking control as everything else in this module
-  // set, not a black-box triangulator's own convention.
   _buildFlatPolygons(polys, ox, oz, mat, yOffset){
     if(!polys || polys.length === 0) return null;
     const positions = [], indices = [];
@@ -206,129 +169,204 @@ class OSMManager {
     return new THREE.Mesh(geo, mat);
   }
 
-  // Scatters trees inside a forest polygon (point-in-polygon via ray
-  // casting), same InstancedMesh-per-part technique as VegetationManager.js.
-  //
-  // Real-data regression (found by demo-remagen.html's own real-browser
-  // verification): the synthetic prototype's own forest patches were always
-  // placed with generous margin away from a tile's own edges, so this
-  // never came up there, but a real Overture forest polygon routinely
-  // covers a WHOLE tile (clipped ring exactly matching the tile's own
-  // [0,tileSize] square) or reaches right up to one edge. The point-in-
-  // polygon test above uses the UNjittered (x,z), which does stay within
-  // [minX,maxX]/[minZ,maxZ] (i.e. within this tile) by construction -- but
-  // jx/jz can be up to +-step/2 (10m), and the JITTERED position is what
-  // actually got queried for height below. For a sample sitting right at
-  // the tile's own edge (a real, common case now, not a rare corner), that
-  // jitter can land the query up to 10m into a DIFFERENT tile -- one that
-  // may not even be loaded, which used to throw straight through
-  // TerrainManager.getRenderedHeight()'s fallback (see that function's own
-  // updated comment). Clamped to this tile's own world bounds instead: a
-  // tree jittering 10m less freely right at its tile's own edge is
-  // invisible, an uncaught exception killing this whole tile's content
-  // build is not.
-  //
-  // Second real-data finding, same session: a fixed step=20 was tuned
-  // against the synthetic prototype's own forest patches, at most a few
-  // hundred thousand m^2 each -- a real Overture forest polygon can cover
-  // an ENTIRE tile (16,000,000 m^2, measured directly against the actual
-  // Remagen data: 10 of that grid's forest rings are exactly a full
-  // 4000x4000 tile), which at a fixed 20m step is 40,000 samples for ONE
-  // ring alone -- summed across every forest ring in the real dataset,
-  // over 5 MILLION placements before point-in-polygon even rejects any of
-  // them. Never crashed (InstancedMesh handles large counts fine) but is a
-  // real, unnecessary performance cliff for no visual benefit at flight-sim
-  // altitude. Step now scales with the ring's own bounding-box area,
-  // targeting roughly TARGET_TREES samples per ring regardless of size —
-  // never denser than the original 20m (small synthetic-scale patches are
-  // unaffected, same visual density as before) and never sparser than 150m
-  // (a huge ring still reads as a forest, not a few scattered dots).
-  _scatterForest(group, localRing, ox, oz){
-    const world = localRing.map(([lx,lz]) => [ox+lx, oz+lz]);
-    let minX=Infinity,maxX=-Infinity,minZ=Infinity,maxZ=-Infinity;
-    for(const [x,z] of world){ minX=Math.min(minX,x); maxX=Math.max(maxX,x); minZ=Math.min(minZ,z); maxZ=Math.max(maxZ,z); }
-    const TARGET_TREES = 800;
-    const bboxArea = Math.max(1, (maxX-minX) * (maxZ-minZ));
-    const step = Math.min(150, Math.max(20, Math.round(Math.sqrt(bboxArea / TARGET_TREES))));
+  _forestPlacements(polys, ox, oz){
     const placements = [];
-    for(let x = minX; x <= maxX; x += step){
-      for(let z = minZ; z <= maxZ; z += step){
-        if(!pointInPolygon(x, z, world)) continue;
-        const jx = (osmHash(x,z,1)-0.5)*step, jz = (osmHash(x,z,2)-0.5)*step;
-        const px = Math.min(ox+this.tileSize, Math.max(ox, x+jx));
-        const pz = Math.min(oz+this.tileSize, Math.max(oz, z+jz));
-        placements.push({ x: px, z: pz, scale: 0.8+osmHash(x,z,3)*0.5, rot: osmHash(x,z,4)*Math.PI*2 });
+    const usedCells = new Set();
+
+    for(const localRing of polys){
+      if(!localRing || localRing.length < 4) continue;
+      const world = localRing.map(([lx,lz]) => [ox+lx, oz+lz]);
+      let minX=Infinity,maxX=-Infinity,minZ=Infinity,maxZ=-Infinity;
+      for(const [x,z] of world){
+        minX=Math.min(minX,x); maxX=Math.max(maxX,x);
+        minZ=Math.min(minZ,z); maxZ=Math.max(maxZ,z);
+      }
+
+      const TARGET_TREES = 800;
+      const bboxArea = Math.max(1, (maxX-minX) * (maxZ-minZ));
+      const step = Math.min(150, Math.max(20, Math.round(Math.sqrt(bboxArea / TARGET_TREES))));
+
+      for(let x = minX; x <= maxX; x += step){
+        for(let z = minZ; z <= maxZ; z += step){
+          if(!pointInPolygon(x, z, world)) continue;
+          const jx = (osmHash(x,z,1)-0.5)*step;
+          const jz = (osmHash(x,z,2)-0.5)*step;
+          const px = Math.min(ox+this.tileSize-0.01, Math.max(ox+0.01, x+jx));
+          const pz = Math.min(oz+this.tileSize-0.01, Math.max(oz+0.01, z+jz));
+
+          // Overlapping source polygons used to create visibly doubled trees.
+          // Dedupe on a small world-space cell while retaining organic jitter.
+          const cell = `${Math.round(px/12)},${Math.round(pz/12)}`;
+          if(usedCells.has(cell)) continue;
+          usedCells.add(cell);
+
+          const r = osmHash(px,pz,7);
+          const kind = r < 0.52 ? 0 : (r < 0.90 ? 1 : 2); // conifer / deciduous / shrub
+          placements.push({
+            x:px, z:pz, kind,
+            scale:0.78 + osmHash(px,pz,3)*0.62,
+            rot:osmHash(px,pz,4)*Math.PI*2
+          });
+        }
       }
     }
+    return placements;
+  }
+
+  _buildForests(group, polys, ox, oz){
+    if(!polys || polys.length === 0) return 0;
+    const placements = this._forestPlacements(polys, ox, oz);
     if(placements.length === 0) return 0;
 
-    const trunk = new THREE.InstancedMesh(this.trunkGeo, this.trunkMat, placements.length);
-    const canopy = new THREE.InstancedMesh(this.canopyGeo, this.canopyMat, placements.length);
-    const m = new THREE.Matrix4(), q = new THREE.Quaternion();
-    for(let i = 0; i < placements.length; i++){
-      const p = placements[i];
-      const y = this.terrain.getRenderedHeight(p.x, p.z);
-      q.setFromAxisAngle(OSM_UP, p.rot);
-      m.compose(new THREE.Vector3(p.x, y+2*p.scale, p.z), q, new THREE.Vector3(p.scale,p.scale,p.scale));
-      trunk.setMatrixAt(i, m);
-      m.compose(new THREE.Vector3(p.x, y+4.5*p.scale, p.z), q, new THREE.Vector3(p.scale,p.scale,p.scale));
-      canopy.setMatrixAt(i, m);
+    const conifers = placements.filter(p => p.kind === 0);
+    const deciduous = placements.filter(p => p.kind === 1);
+    const shrubs = placements.filter(p => p.kind === 2);
+    const trunked = placements.filter(p => p.kind !== 2);
+
+    const m = new THREE.Matrix4();
+    const q = new THREE.Quaternion();
+    const pos = new THREE.Vector3();
+    const scale = new THREE.Vector3();
+
+    if(trunked.length){
+      const trunks = new THREE.InstancedMesh(this.trunkGeo, this.trunkMat, trunked.length);
+      trunks.name='osmForestTrunks';
+      for(let i=0;i<trunked.length;i++){
+        const p=trunked[i], y=this._safeRenderedHeight(p.x,p.z,ox,oz);
+        q.setFromAxisAngle(OSM_UP,p.rot);
+        // Embed trunk by 1.2m so small LOD height changes do not expose roots.
+        pos.set(p.x,y+1.55*p.scale,p.z);
+        scale.set(p.scale,p.scale,p.scale);
+        m.compose(pos,q,scale);
+        trunks.setMatrixAt(i,m);
+      }
+      trunks.instanceMatrix.needsUpdate=true;
+      group.add(trunks);
     }
-    trunk.instanceMatrix.needsUpdate = true;
-    canopy.instanceMatrix.needsUpdate = true;
-    group.add(trunk); group.add(canopy);
+
+    const addCanopies = (items, geo, mat, yFactor, sx, sy, sz) => {
+      if(!items.length) return;
+      const mesh = new THREE.InstancedMesh(geo, mat, items.length);
+      mesh.name = geo===this.coniferGeo ? 'osmForestConifers' : (geo===this.deciduousGeo ? 'osmForestDeciduous' : 'osmForestShrubs');
+      for(let i=0;i<items.length;i++){
+        const p=items[i], y=this._safeRenderedHeight(p.x,p.z,ox,oz);
+        q.setFromAxisAngle(OSM_UP,p.rot);
+        pos.set(p.x,y+yFactor*p.scale,p.z);
+        scale.set(p.scale*sx,p.scale*sy,p.scale*sz);
+        m.compose(pos,q,scale);
+        mesh.setMatrixAt(i,m);
+      }
+      mesh.instanceMatrix.needsUpdate=true;
+      group.add(mesh);
+    };
+
+    addCanopies(conifers, this.coniferGeo, this.coniferMat, 5.6, 1.0, 1.0, 1.0);
+    addCanopies(deciduous, this.deciduousGeo, this.deciduousMat, 5.5, 1.15, 1.05, 1.15);
+    addCanopies(shrubs, this.shrubGeo, this.shrubMat, 1.5, 1.25, 0.85, 1.25);
+
     return placements.length;
   }
 
-  // Simple box building — footprint centre/size/rotation straight from the
-  // data (a real converter would take this from the OSM way's own footprint
-  // polygon + building:levels tag; the hand-made sample already supplies it
-  // directly). Per the spec, this level of detail (a coloured box with a
-  // roof cap) is deliberately as far as a non-nearby building goes — a
-  // BuildingManager doing real per-building detail near the aircraft is a
-  // later step (in the user's own 8-step plan, Steps 5/6 here only cover
-  // this simplified form).
-  //
-  // Reported (real iPad, remagen-mission.html, after the LOD-wiring fix in
-  // that file's own history already cut terrain triangle count by 97.5%):
-  // "ruckelt es immer noch" — still stutters. This function used to build
-  // TWO individual THREE.Mesh objects (wall, roof) per building — sharing
-  // this.boxGeo/this.buildingMat/this.roofMat does NOT merge them into one
-  // draw call; Three.js still issues one drawArrays/drawElements call per
-  // Mesh regardless of shared geometry/material (that's what InstancedMesh
-  // exists to fix — exactly the technique _scatterForest() above already
-  // uses for trees, never applied here). A single real Remagen tile can
-  // carry hundreds of buildings; at up to 56 tiles loaded simultaneously
-  // (loadRealWorld() in remagen-mission.html loads the whole real/ grid
-  // upfront, no streaming) that was potentially thousands of individual
-  // draw calls for buildings ALONE, on top of everything else in the scene
-  // — a very plausible, measurable stutter source distinct from the
-  // terrain-mesh triangle count the LOD fix already addressed. Rebuilt as
-  // two InstancedMeshes (wall, roof) per tile instead — one draw call each,
-  // regardless of how many buildings that tile has.
+  _buildingGroundRange(b, x, z, ox, oz){
+    const c=Math.cos(b.rotY), s=Math.sin(b.rotY);
+    const hw=b.w/2, hd=b.d/2;
+    const samples=[[0,0],[-hw,-hd],[hw,-hd],[hw,hd],[-hw,hd]];
+    let minY=Infinity,maxY=-Infinity;
+    for(const [lx,lz] of samples){
+      const wx=x + lx*c - lz*s;
+      const wz=z + lx*s + lz*c;
+      const y=this._safeRenderedHeight(wx,wz,ox,oz);
+      minY=Math.min(minY,y);
+      maxY=Math.max(maxY,y);
+    }
+    return {minY,maxY};
+  }
+
   _buildBuildings(group, buildings, ox, oz){
     if(!buildings || buildings.length === 0) return 0;
-    const wallMesh = new THREE.InstancedMesh(this.boxGeo, this.buildingMat, buildings.length);
-    const roofMesh = new THREE.InstancedMesh(this.boxGeo, this.roofMat, buildings.length);
-    const m = new THREE.Matrix4(), q = new THREE.Quaternion(), s = new THREE.Vector3(), pos = new THREE.Vector3();
-    for(let i = 0; i < buildings.length; i++){
-      const b = buildings[i];
-      const x = ox + b.x, z = oz + b.z;
-      const y = this.terrain.getRenderedHeight(x, z);
-      const h = 6 + (b.w*b.d > 400 ? 4 : 0);
-      q.setFromAxisAngle(OSM_UP, b.rotY);
-      pos.set(x, y+h/2, z);
-      s.set(b.w, h, b.d);
-      m.compose(pos, q, s);
-      wallMesh.setMatrixAt(i, m);
-      pos.set(x, y+h+0.6, z);
-      s.set(b.w*1.05, 1.2, b.d*1.05);
-      m.compose(pos, q, s);
-      roofMesh.setMatrixAt(i, m);
+
+    const desc = buildings.map(b => {
+      const x=ox+b.x, z=oz+b.z;
+      const area=b.w*b.d;
+      const aspect=b.w/Math.max(1,b.d);
+      const r=osmHash(x,z,21);
+
+      // Size is real; exact levels are not present in the current tile JSON.
+      // Use deterministic, bounded variation rather than pretending to know
+      // the historical storey count.
+      let h;
+      if(area > 1600) h=8 + r*6;
+      else if(area > 650) h=7 + r*5;
+      else h=5.5 + r*4.5;
+
+      const pitched = area < 1200 && b.d < 38 && aspect < 5.5;
+      const warm = osmHash(x,z,22) > 0.34;
+      const ground=this._buildingGroundRange(b,x,z,ox,oz);
+
+      // Foundation extends below the lowest sampled corner. The roof datum is
+      // above the highest corner, so large buildings cannot visibly hover on
+      // a slope or have an uphill corner poke through the wall.
+      const baseY=ground.minY-0.8;
+      const wallTop=ground.maxY+h;
+      return {b,x,z,pitched,warm,baseY,wallTop};
+    });
+
+    const warm=desc.filter(d=>d.warm);
+    const cool=desc.filter(d=>!d.warm);
+    const pitched=desc.filter(d=>d.pitched);
+    const flat=desc.filter(d=>!d.pitched);
+    const m=new THREE.Matrix4(), q=new THREE.Quaternion(), pos=new THREE.Vector3(), scale=new THREE.Vector3();
+
+    const addWalls=(items,mat)=>{
+      if(!items.length) return;
+      const mesh=new THREE.InstancedMesh(this.boxGeo,mat,items.length);
+      mesh.name = mat===this.buildingWarmMat ? 'osmBuildingWallsWarm' : 'osmBuildingWallsCool';
+      for(let i=0;i<items.length;i++){
+        const d=items[i], h=d.wallTop-d.baseY;
+        q.setFromAxisAngle(OSM_UP,d.b.rotY);
+        pos.set(d.x,d.baseY+h/2,d.z);
+        scale.set(d.b.w,h,d.b.d);
+        m.compose(pos,q,scale);
+        mesh.setMatrixAt(i,m);
+      }
+      mesh.instanceMatrix.needsUpdate=true;
+      group.add(mesh);
+    };
+
+    addWalls(warm,this.buildingWarmMat);
+    addWalls(cool,this.buildingCoolMat);
+
+    if(pitched.length){
+      const roofs=new THREE.InstancedMesh(this.hipRoofGeo,this.roofMat,pitched.length);
+      roofs.name='osmBuildingRoofsPitched';
+      for(let i=0;i<pitched.length;i++){
+        const d=pitched[i];
+        const roofH=Math.min(4.2,Math.max(1.4,d.b.d*0.22));
+        q.setFromAxisAngle(OSM_UP,d.b.rotY+Math.PI/4);
+        pos.set(d.x,d.wallTop+roofH/2,d.z);
+        scale.set(d.b.w*1.06,roofH,d.b.d*1.08);
+        m.compose(pos,q,scale);
+        roofs.setMatrixAt(i,m);
+      }
+      roofs.instanceMatrix.needsUpdate=true;
+      group.add(roofs);
     }
-    wallMesh.instanceMatrix.needsUpdate = true;
-    roofMesh.instanceMatrix.needsUpdate = true;
-    group.add(wallMesh); group.add(roofMesh);
+
+    if(flat.length){
+      const roofs=new THREE.InstancedMesh(this.boxGeo,this.flatRoofMat,flat.length);
+      roofs.name='osmBuildingRoofsFlat';
+      for(let i=0;i<flat.length;i++){
+        const d=flat[i];
+        q.setFromAxisAngle(OSM_UP,d.b.rotY);
+        pos.set(d.x,d.wallTop+0.35,d.z);
+        scale.set(d.b.w*1.02,0.7,d.b.d*1.02);
+        m.compose(pos,q,scale);
+        roofs.setMatrixAt(i,m);
+      }
+      roofs.instanceMatrix.needsUpdate=true;
+      group.add(roofs);
+    }
+
     return buildings.length;
   }
 }
@@ -340,7 +378,6 @@ function osmHash(x, z, salt){
   return s - Math.floor(s);
 }
 
-// Standard ray-casting point-in-polygon test.
 function pointInPolygon(px, pz, ring){
   let inside = false;
   for(let i = 0, j = ring.length-1; i < ring.length; j = i++){
@@ -351,9 +388,6 @@ function pointInPolygon(px, pz, ring){
   return inside;
 }
 
-// Same self-correcting +Y winding check as WaterRoadManager.js's addUpwardTri
-// (kept as its own copy here — self-contained per this module set's own
-// convention, see HeightProvider.js's file header).
 function addUpwardTriOSM(indices, positions, a, b, c){
   const pa=[positions[a*3],positions[a*3+1],positions[a*3+2]];
   const pb=[positions[b*3],positions[b*3+1],positions[b*3+2]];
