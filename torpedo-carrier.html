@@ -147,44 +147,11 @@
   #mmap{position:fixed;top:calc(env(safe-area-inset-top) + 310px);
     right:calc(max(12px,env(safe-area-inset-right)) + 92px);width:104px;height:104px;border-radius:50%;
     border:1px solid rgba(202,191,156,.35);background:rgba(8,12,10,.62);z-index:9;}
-  #viewBtn{left:max(20px,env(safe-area-inset-left));top:calc(33% + 168px);}
-  #cockpitFrame{position:fixed;inset:0;z-index:9;pointer-events:none;display:none;}
-  #cockpitFrame.show{display:block;}
-  #cockpitFrame .dash{display:none;}
-  /* Aspect-safe canopy frame: fixed/clamped sizes, never stretched by orientation */
-  #cockpitFrame .cnp{position:absolute;pointer-events:none;z-index:0;}
-  /* Reported "cockpit view looks cool but you can't see anything" (same photo-overlay technique
-     as thunderbolt-europe.html, same fix): the old 50%/30% + 1.16 crop measured out to only
-     ~37% of the screen being actual world, most of that on the SIDE windows, not the forward
-     view. object-position:50% 50% + translateY(26%) - trading the boring lower panel/floor for
-     more sky above - measured 37%->66% visible on the real photo. This value and the pitTilt-
-     driven range added on top in JS must stay in step with PIT_ZOOM/PIT_SHIFT_BASE/
-     PIT_TILT_DEFAULT/PIT_TILT_GAIN, which set this transform live every frame. */
-  #pitPhoto,#pitPhotoZ,#pitPhotoS{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 50%;
-    transform:scale(1.0) translateY(26%);transform-origin:50% 50%;pointer-events:none;z-index:1;display:none;}
-  #pitLive{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:2;display:none;}
   .lookBtn{position:fixed;right:max(20px,env(safe-area-inset-right));top:calc(50% - 104px);z-index:12;display:none;
     padding:8px 10px;font-family:"Arial Black",sans-serif;font-size:11px;letter-spacing:1px;
     color:rgba(202,191,156,.92);background:rgba(18,22,15,.72);border:1px solid rgba(202,191,156,.4);
     border-radius:7px;pointer-events:auto;touch-action:manipulation;user-select:none;-webkit-user-select:none;}
   .lookBtn:active{background:rgba(202,191,156,.28);}
-  #cnpTop{top:0;left:0;right:0;height:clamp(26px,5vh,48px);
-    background:linear-gradient(#626a4d,#313724);border-bottom:2px solid rgba(118,125,94,.8);}
-  #cnpL{top:0;bottom:0;left:0;width:clamp(20px,6.5vw,68px);
-    background:linear-gradient(90deg,#565d47,#232817);
-    clip-path:polygon(0 0,100% 0,55% 100%,0 100%);}
-  #cnpR{top:0;bottom:0;right:0;width:clamp(20px,6.5vw,68px);
-    background:linear-gradient(-90deg,#565d47,#232817);
-    clip-path:polygon(0 0,100% 0,100% 100%,45% 100%);}
-  #cnpPostL{top:clamp(26px,5vh,48px);bottom:0;left:31%;width:clamp(8px,1.4vw,14px);
-    background:linear-gradient(90deg,#4a5140,#2a2f21);transform:skewX(-4deg);transform-origin:top;}
-  #cnpPostR{top:clamp(26px,5vh,48px);bottom:0;right:31%;width:clamp(8px,1.4vw,14px);
-    background:linear-gradient(-90deg,#4a5140,#2a2f21);transform:skewX(4deg);transform-origin:top;}
-  #oilCanopy{position:fixed;inset:0;z-index:8;pointer-events:none;opacity:0;
-    transition:opacity .6s;background:
-      radial-gradient(60px 90px at 32% 30%,rgba(24,18,10,.72),transparent 70%),
-      radial-gradient(90px 70px at 68% 40%,rgba(20,15,8,.6),transparent 70%),
-      radial-gradient(50px 60px at 52% 22%,rgba(16,12,7,.55),transparent 70%);}
   #dmgVig{position:fixed;inset:0;z-index:11;pointer-events:none;opacity:0;
     box-shadow:inset 0 0 220px 60px rgba(190,20,10,.85);}
   #torpRun{position:fixed;left:14px;top:150px;z-index:12;display:none;
@@ -211,10 +178,7 @@
   @keyframes trPulse{50%{background:#2fa048;}}
   #lsoCall{position:absolute;top:-26px;left:50%;transform:translateX(-50%);
     font-family:monospace;font-weight:700;letter-spacing:2px;font-size:15px;white-space:nowrap;}
-  #cockpitFrame #pitCv{position:absolute;left:50%;transform:translateX(-50%);z-index:2;
-    bottom:max(4px,env(safe-area-inset-bottom));display:block;
-    width:auto;height:auto;max-width:min(97vw,880px);max-height:24vh;}
-    .pitReticle{position:absolute;z-index:3;left:50%;top:40%;width:30px;height:30px;
+  .pitReticle{position:absolute;z-index:3;left:50%;top:40%;width:30px;height:30px;
     margin:-15px 0 0 -15px;border:2px solid rgba(255,120,70,.85);border-radius:50%;
     box-shadow:0 0 6px rgba(255,120,70,.5);}
     .pitReticle:after{content:'';position:absolute;left:50%;top:50%;width:4px;height:4px;
@@ -310,7 +274,7 @@
   <div id="flash"></div>
   <div id="ltn" style="position:fixed;inset:0;background:#e6ecff;opacity:0;pointer-events:none;z-index:40;"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 120</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 121</div>
 
   <!-- Optical landing aid -->
   <div id="lso">
@@ -343,22 +307,7 @@
 <div id="diveBtn" class="ctlBtn">DIVE<br>BRAKE</div>
 <div id="hookBtn" class="ctlBtn on">HOOK<br>▼ DN</div>
 <div id="fireBtn">GUNS</div>
-<div id="viewBtn" class="ctlBtn">VIEW<br>CHASE</div>
 <canvas id="mmap" width="120" height="120"></canvas>
-<div id="cockpitFrame">
-  <div class="cnp" id="cnpTop"></div>
-  <img id="pitPhoto" src="cockpit.png?v=6" alt="">
-  <img id="pitPhotoZ" src="cockpit%20zero.png?v=2" alt="">
-  <img id="pitPhotoS" src="cockpit%20sbd.png?v=1" alt="">
-  <canvas id="pitLive"></canvas>
-  <div class="cnp" id="cnpL"></div>
-  <div class="cnp" id="cnpR"></div>
-  <div class="cnp" id="cnpPostL"></div>
-  <div class="cnp" id="cnpPostR"></div>
-  <div class="dash"></div>
-  <canvas id="pitCv" width="940" height="210"></canvas>
-</div>
-<div id="oilCanopy"></div>
 <div id="dmgVig"></div>
 
 <!-- Menu -->
@@ -472,8 +421,6 @@ let COCKPIT_EYE = [0, 0.70, -1.5];
 let COCKPIT_AIM = [0, 0.15, -60];
 let chaseH = parseFloat(localStorage.getItem('chaseH'));
 if(isNaN(chaseH)) chaseH = 14;      // chase camera height, tuned live via LOOK ▲/▼
-let pitTilt = parseFloat(localStorage.getItem('pitTilt'));
-if(isNaN(pitTilt)) pitTilt = -0.34;   // cockpit look angle (rad); tuned live via ▲/▼
 let planeBody, gltfRoot, propNode, planeModelLoaded=false;
 let DIFF = localStorage.getItem('tc_diff') || 'veteran';
 // Rookie makes the sortie survivable while you learn the deck; Ace is the old behaviour.
@@ -539,7 +486,7 @@ function logAircraftLost(){ const l=loadLog(); l.aircraftLost=(l.aircraftLost||0
 function bestScore(){ try{ return parseInt(localStorage.getItem('tc_best')||'0',10)||0; }catch(e){ return 0; } }
 function saveBest(v){ try{ if(v>bestScore()) localStorage.setItem('tc_best',String(v)); }catch(e){} }
 function addScore(n){ score+=n; const el=document.getElementById('hScore'); if(el) el.textContent=score; }
-let sunTarget=null, skyDome=null, pitCtx=null;
+let sunTarget=null, skyDome=null;
 const sunOffset=new THREE.Vector3(-455,546,318);
 
 // ---- Carrier / deck geometry ----
@@ -648,7 +595,7 @@ let hookMesh, sbdHookMesh;   // arrestor hook, same split as the flaps above
 let loadout='torpedo';
 let bombs=[];
 let islands=[], volcanoT=0;
-let bullets=[], firing=false, gunCool=0, timeMode='day', menuTime='day', viewMode='chase';
+let bullets=[], firing=false, gunCool=0, timeMode='day', menuTime='day';
 let skyMat, hemiLight, mmCtx;
 
 // ---- Game state ----
@@ -826,7 +773,6 @@ function init(){
   buildShadow();
   applyTimeOfDay(timeMode);
   mmCtx=document.getElementById('mmap').getContext('2d');
-  pitCtx=document.getElementById('pitCv').getContext('2d');
 
   clock=new THREE.Clock();
   window.addEventListener('resize',onResize);
@@ -2759,14 +2705,12 @@ function updateFlight(dt){
     // Trail it BEHIND the aircraft. Spawning it ahead put the puff right where the
     // cockpit camera sits — that is why a damaged aircraft filled the pit with haze.
     const snd=noseDir();
-    const back=(viewMode==='cockpit')? -9.0 : -3.0;
-    const sp=P.pos.clone().addScaledVector(snd,back).add(new THREE.Vector3(0,-0.6,0));
+    const sp=P.pos.clone().addScaledVector(snd,-3.0).add(new THREE.Vector3(0,-0.6,0));
     spawnSmoke(sp.x,sp.y,sp.z, P.hull<25?0x111111:0x444444, 0.28); } }
   // engine fire when critical
   if(P.hull<20){ P.fireT=(P.fireT||0)-dt; if(P.fireT<=0){ P.fireT=0.1;
     const nd=noseDir();
-    const fOff=(viewMode==='cockpit')? 6.5 : 2.4;   // keep the fireball out of our own eye
-    const fp=P.pos.clone().addScaledVector(nd,fOff).add(new THREE.Vector3(0,0.2,0));
+    const fp=P.pos.clone().addScaledVector(nd,2.4).add(new THREE.Vector3(0,0.2,0));
     const fb=new THREE.Mesh(new THREE.SphereGeometry(1.1,8,6),
       new THREE.MeshBasicMaterial({color:0xff7a2a,transparent:true,opacity:0.9}));
     fb.position.copy(fp); scene.add(fb); explosions.push({mesh:fb,life:0.22,max:0.22,grow:0.4}); } }
@@ -4069,7 +4013,7 @@ function loadPlaneModel(){
       }
       window.__eyeDbg='EYE '+COCKPIT_EYE.map(v=>v.toFixed(2)).join('/');
       const btEl=document.getElementById('buildTag');
-      if(btEl) btEl.textContent='BUILD 120 · '+window.__eyeDbg;
+      if(btEl) btEl.textContent='BUILD 121 · '+window.__eyeDbg;
       let seat=null;
       model.traverse(function(o){
         if(!o.isMesh||!o.material) return;
@@ -4262,7 +4206,7 @@ function updatePlaneMesh(){
   planeGroup.position.copy(P.pos);
   if(planeModelLoaded){
     const spin=(0.14+P.throttle*0.34)*(P.alive?1:0.12);   // per-frame, visibly spinning
-    if(propPivot){ propPivot.rotation.z-=spin; propPivot.visible=(viewMode!=='cockpit') && !isDefend(); }
+    if(propPivot){ propPivot.rotation.z-=spin; propPivot.visible=!isDefend(); }
     // the Zero's own propeller (its blades live in the Zero model, not on propPivot)
     // build the Zero's prop pivot lazily (model may arrive after the sortie starts)
     // Zero propeller — rotate the rotor mesh IN PLACE (no re-parenting, nothing to go wrong)
@@ -4271,14 +4215,8 @@ function updatePlaneMesh(){
       // wheel-well caps: the exact opposite of the wheels — capped only once the gear is up
       if(gearDoors && gearDoors.length) for(let i=0;i<gearDoors.length;i++) gearDoors[i].visible=gv; }
     // (this A6M model has no separate gear mesh — it's baked into the airframe)
-    const pit=(viewMode==='cockpit');
-    if(gltfRoot) gltfRoot.visible=!pit && !isDefend();   // hidden in pit; Zero flies in defence
-    if(playerZero) playerZero.visible=isDefend() && !pit; // own Zero must not fill the cockpit
-
-    if(glassMeshes.length) for(let i=0;i<glassMeshes.length;i++) glassMeshes[i].visible=!pit;
-    if(seatMeshG) seatMeshG.visible=!pit;    // we sit in it — don't render it into our own eye
-    for(let i=0;i<pitHideMeshes.length;i++) pitHideMeshes[i].visible=!pit;
-    if(cockpitLight) cockpitLight.intensity=pit?0.55:0;
+    if(gltfRoot) gltfRoot.visible=!isDefend();
+    if(playerZero) playerZero.visible=isDefend();
     const dfd=isDefend();
     if(ordTorp) ordTorp.visible=!dfd && (loadout==='torpedo' && P.torps>0);
     if(ordBombs) for(let i=0;i<ordBombs.length;i++)
@@ -4346,9 +4284,8 @@ function updatePlaneMesh(){
         if(window.__avStash && window.__avStash.indexOf(o)<0) window.__avStash.push(o);
       }
     }
-    const pitS=(viewMode==='cockpit');
-    if(playerSBD) playerSBD.visible=!pitS;
-    if(sbdRotor)  sbdRotor.visible=!pitS;
+    if(playerSBD) playerSBD.visible=true;
+    if(sbdRotor)  sbdRotor.visible=true;
   }
   // The Zero's propeller must NOT depend on the Avenger being loaded — that gate
   // ('planeModelLoaded') is why it stood completely still when the 15 MB Avenger
@@ -4417,30 +4354,14 @@ function updatePlaneMesh(){
     curHook.rotation[ax]=curHook.userData.hookUpAngle+
       (curHook.userData.hookDownAngle-curHook.userData.hookUpAngle)*(P.hook==null?1:P.hook);
   }
-  const cp = viewMode==='cockpit';
   if(cockpitInterior) cockpitInterior.visible=false;
-  // Photo cockpit (cockpit.png, windows cut transparent) is the pit when it loaded;
-  // otherwise fall back to the CSS canopy + drawn panel.
-  const pitCv=document.getElementById('pitCv');
-  const pp=pitPhotoEl();
-  ['pitPhoto','pitPhotoZ','pitPhotoS'].forEach(id=>{
-    const el=document.getElementById(id);
-    if(el && el!==pp) el.style.display='none';
-  });
-  const photoOK=!!(pp&&pp.complete&&pp.naturalWidth>0);
-  if(pp) pp.style.display=(cp&&photoOK)?'block':'none';
-  const pl=document.getElementById('pitLive');
-  if(pl) pl.style.display=(cp&&photoOK)?'block':'none';
-  // LOOK buttons: cockpit -> view angle, chase -> camera height. Shown in both views.
-  const showLook = (cp&&photoOK) || (!cp && state===ST.FLIGHT);
-  document.querySelectorAll('.lookBtn').forEach(el=>{ el.style.display=showLook?'block':'none'; });
-  if(pitCv) pitCv.style.display=(cp&&!photoOK)?'block':'none';
-  document.querySelectorAll('#cockpitFrame .cnp').forEach(el=>{ el.style.display=(cp&&!photoOK)?'block':'none'; });
-  if(!planeModelLoaded && planeBody) planeBody.visible=!cp;
+  // LOOK buttons: chase view only, camera height.
+  document.querySelectorAll('.lookBtn').forEach(el=>{ el.style.display=(state===ST.FLIGHT)?'block':'none'; });
+  if(!planeModelLoaded && planeBody) planeBody.visible=true;
   planeGroup.traverse(o=>{
     if(o.name==='torp') o.visible=(loadout==='torpedo' && P.torps>0);
     if(o.name==='bomb') o.visible=(loadout==='divebomb' && P.torps>0);
-    if(o.name==='glass'||o.name==='pilot') o.visible=!cp;
+    if(o.name==='glass'||o.name==='pilot') o.visible=true;
   });
 
   // LAST WORD: in the Zero sortie nothing of the Avenger (or the procedural stand-in)
@@ -4456,7 +4377,6 @@ function updatePlaneMesh(){
         if(window.__avStash && window.__avStash.indexOf(o)<0) window.__avStash.push(o);
       }
     }
-    const pitNow=(viewMode==='cockpit');
     // walk the WHOLE subtree: anything not under the Zero (or its prop) is an Avenger
     // leftover — slung torpedo, bombs, gear legs, procedural stand-in parts.
     const keep=new Set();
@@ -4467,8 +4387,8 @@ function updatePlaneMesh(){
       if(o===planeGroup) return;
       if(!keep.has(o)) o.visible=false;
     });
-    if(playerZero) playerZero.visible=!pitNow;
-    if(zeroProp)   zeroProp.visible=!pitNow;
+    if(playerZero) playerZero.visible=true;
+    if(zeroProp)   zeroProp.visible=true;
   }
 }
 
@@ -4968,63 +4888,6 @@ function updateCamera(dt){
     return;
   }
   const nd=noseDir();
-  if(viewMode==='cockpit'){
-    if(camera.near!==0.08){ camera.near=0.08; camera.updateProjectionMatrix(); }
-    if(camera.fov!==80){ camera.fov=80; camera.updateProjectionMatrix(); }
-    planeGroup.updateMatrixWorld();
-    const right=new THREE.Vector3(1,0,0).applyQuaternion(planeGroup.quaternion);
-    const up=new THREE.Vector3(0,1,0).applyQuaternion(planeGroup.quaternion);
-    // --- gentle head motion: lean into turns only, no oscillating bob ---
-    const txX=Math.max(-0.09,Math.min(0.09,-P.roll*0.10));           // lean into bank
-    const txY=Math.max(-0.04,Math.min(0.04,P.pitch*0.06)) - Math.abs(P.roll)*0.02;
-    const k=Math.min(1,4*dt);
-    headX+=(txX-headX)*k; headY+=(txY-headY)*k;
-    const eye=planeGroup.localToWorld(new THREE.Vector3(COCKPIT_EYE[0],COCKPIT_EYE[1],COCKPIT_EYE[2]));
-    // Horizon-referenced sightline: the cruise nose-up attitude no longer pushes the
-    // view into the sky. Baseline down-tilt keeps the horizon in the glass; plane
-    // pitch feeds in at 50% so pulling up still raises the view.
-    const fwdH=new THREE.Vector3(0,0,-1).applyQuaternion(planeGroup.quaternion); fwdH.y=0;
-    if(fwdH.lengthSq()<1e-6) fwdH.set(1,0,0); fwdH.normalize();
-    const tiltA=pitTilt + P.pitch*0.5;      // pitTilt set by the in-pit ▲/▼ look buttons
-    const tgt=eye.clone().addScaledVector(fwdH,40);
-    tgt.y=eye.y+40*Math.tan(tiltA);
-    eye.addScaledVector(right,headX).addScaledVector(up,headY);
-    tgt.addScaledVector(right,headX*0.5);                            // head turns slightly with lean
-    camera.position.copy(eye);
-    camera.up.copy(up);
-    camera.lookAt(tgt);
-    applyShake();
-    // Pin the gunsight onto where the guns actually shoot (nose direction), so the
-    // reticle always matches the impact regardless of the cockpit look angle.
-    // Reported: floating way up off the photo entirely. Root cause, confirmed with the exact
-    // camera/reticle math run outside the game: the camera's OWN look target deliberately only
-    // follows 50% of P.pitch (tiltA above - "cruise nose-up attitude no longer pushes the view
-    // into the sky"), but this projection used the raw, undamped nose direction for the reticle.
-    // In level flight the two already disagree by the pitTilt baseline alone (measured: the
-    // reticle sits at 29% down the screen instead of the ~50% the camera itself is centred on);
-    // in any real climb - a catapult launch is exactly this - the gap between "true, 100% pitch"
-    // and "camera's damped 50%" widens fast: at 40 degrees nose-up the old math put the reticle
-    // 1% of the way down the screen, i.e. pinned to the very top edge. Two independent fixes:
-    // cancel the constant pitTilt offset (so a level, untouched view centres the reticle instead
-    // of leaving it stuck 20-odd percent high), and clamp the result to a band that always stays
-    // on the photographed dashboard - a gunsight that can be driven off-screen by an ordinary
-    // climb was never going to be usable there regardless of how correct the underlying angle is.
-    const ret=document.querySelector('.pitReticle');
-    if(ret){
-      camera.updateMatrixWorld();
-      const aimPt=P.pos.clone().addScaledVector(nd,400);
-      aimPt.y+=40*Math.tan(pitTilt);
-      const aim=aimPt.project(camera);
-      if(aim.z<1){
-        const fx=Math.max(0.25,Math.min(0.75, aim.x*0.5+0.5));
-        const fy=Math.max(0.15,Math.min(0.60, -aim.y*0.5+0.5));
-        ret.style.left=(fx*window.innerWidth)+'px';
-        ret.style.top=(fy*window.innerHeight)+'px';
-        ret.style.display='block';
-      } else { ret.style.display='none'; }
-    }
-    return;
-  }
   if(camera.near!==1){ camera.near=1; camera.updateProjectionMatrix(); }
   if(camera.fov!==60){ camera.fov=60; camera.updateProjectionMatrix(); }
   // live diagnostic: what is attached to the aircraft right now (proves/disproves guesses)
@@ -5081,259 +4944,6 @@ function applyShake(){
 // ============================================================
 //  HUD UPDATE
 // ============================================================
-function dial(g,x,y,r,label,frac,txt,warn){
-  frac=Math.max(0,Math.min(1,frac));
-  g.beginPath(); g.arc(x,y,r,0,6.2832);
-  g.fillStyle='rgba(9,11,13,0.94)'; g.fill();
-  g.lineWidth=2; g.strokeStyle='rgba(205,196,168,0.55)'; g.stroke();
-  g.strokeStyle='rgba(205,196,168,0.8)'; g.lineWidth=1.5;
-  for(let i=0;i<=10;i++){
-    const a=(0.75+1.5*i/10)*Math.PI, c=Math.cos(a), s=Math.sin(a);
-    g.beginPath(); g.moveTo(x+c*(r-2),y+s*(r-2));
-    g.lineTo(x+c*(r-(i%5?6:10)),y+s*(r-(i%5?6:10))); g.stroke();
-  }
-  const a=(0.75+1.5*frac)*Math.PI;
-  g.strokeStyle=warn?'#ff5a3c':'#f3e6c8'; g.lineWidth=3;
-  g.beginPath(); g.moveTo(x-Math.cos(a)*5,y-Math.sin(a)*5);
-  g.lineTo(x+Math.cos(a)*(r-12),y+Math.sin(a)*(r-12)); g.stroke();
-  g.beginPath(); g.arc(x,y,3.5,0,6.2832); g.fillStyle='#c9bf9c'; g.fill();
-  g.fillStyle='rgba(205,196,168,0.85)'; g.font='700 10px monospace'; g.textAlign='center';
-  g.fillText(label,x,y+r*0.58);
-  g.fillStyle=warn?'#ff5a3c':'#f3e6c8'; g.font='700 13px monospace';
-  g.fillText(txt,x,y+r+16);
-}
-function compassDial(g,x,y,r,hdg){
-  g.beginPath(); g.arc(x,y,r,0,6.2832);
-  g.fillStyle='rgba(9,11,13,0.94)'; g.fill();
-  g.lineWidth=2; g.strokeStyle='rgba(205,196,168,0.55)'; g.stroke();
-  g.save(); g.translate(x,y); g.rotate(-hdg*Math.PI/180);
-  g.strokeStyle='rgba(205,196,168,0.6)'; g.lineWidth=1.5;
-  for(let d=0;d<360;d+=30){ g.save(); g.rotate(d*Math.PI/180);
-    g.beginPath(); g.moveTo(0,-(r-2)); g.lineTo(0,-(r-(d%90?5:9))); g.stroke(); g.restore(); }
-  g.fillStyle='rgba(205,196,168,0.92)'; g.font='700 12px monospace';
-  g.textAlign='center'; g.textBaseline='middle';
-  const pts=[['N',0],['E',90],['S',180],['W',270]];
-  for(const p of pts){ g.save(); g.rotate(p[1]*Math.PI/180); g.fillText(p[0],0,-(r-15)); g.restore(); }
-  g.restore();
-  g.strokeStyle='#ffb347'; g.lineWidth=3;
-  g.beginPath(); g.moveTo(x,y-r+2); g.lineTo(x,y-r+13); g.stroke();
-  g.fillStyle='#f3e6c8'; g.font='700 13px monospace'; g.textAlign='center'; g.textBaseline='alphabetic';
-  g.fillText(String(Math.round(hdg)).padStart(3,'0')+'\u00B0',x,y+r+16);
-}
-function attitudeDial(g,x,y,r,pitch,roll){
-  g.save();
-  g.beginPath(); g.arc(x,y,r,0,6.2832); g.clip();
-  // rolling / pitching sky+sea disc
-  g.translate(x,y); g.rotate(roll);   // horizon banks opposite the wings (was inverted)
-  const horizon = pitch*r*1.7;   // pitch shifts the horizon line
-  g.fillStyle='#3f78a8'; g.fillRect(-r*2,-r*2, r*4, r*2+horizon);      // sky
-  g.fillStyle='#1d3524'; g.fillRect(-r*2,horizon, r*4, r*2);           // sea
-  g.strokeStyle='#e8e0c8'; g.lineWidth=2; g.beginPath();
-  g.moveTo(-r*2,horizon); g.lineTo(r*2,horizon); g.stroke();
-  // pitch ladder
-  g.lineWidth=1.4; g.strokeStyle='rgba(232,224,200,0.8)'; g.font='8px monospace';
-  g.textAlign='center'; g.fillStyle='rgba(232,224,200,0.85)';
-  for(let p=-30;p<=30;p+=10){ if(!p) continue;
-    const yy=horizon - (p/10)*(r*0.34);
-    if(Math.abs(yy)>r) continue;
-    const w=p%20?r*0.16:r*0.28;
-    g.beginPath(); g.moveTo(-w,yy); g.lineTo(w,yy); g.stroke();
-  }
-  g.restore();
-  // fixed bezel + miniature aircraft
-  g.beginPath(); g.arc(x,y,r,0,6.2832); g.lineWidth=3; g.strokeStyle='#0a0c0e'; g.stroke();
-  g.lineWidth=2; g.strokeStyle='rgba(205,196,168,0.55)'; g.stroke();
-  g.strokeStyle='#ffb347'; g.lineWidth=3;
-  g.beginPath(); g.moveTo(x-r*0.42,y); g.lineTo(x-r*0.12,y);
-  g.moveTo(x+r*0.12,y); g.lineTo(x+r*0.42,y);
-  g.moveTo(x,y-r*0.10); g.lineTo(x,y+r*0.02); g.stroke();
-  g.beginPath(); g.arc(x,y,2.6,0,6.2832); g.fillStyle='#ffb347'; g.fill();
-  // roll pointer at top
-  g.fillStyle='#e8e0c8'; g.beginPath();
-  g.moveTo(x,y-r+2); g.lineTo(x-3,y-r+8); g.lineTo(x+3,y-r+8); g.closePath(); g.fill();
-  g.fillStyle='rgba(205,196,168,0.85)'; g.font='700 10px monospace'; g.textAlign='center';
-  g.fillText('ATTITUDE',x,y+r*0.62);
-}
-// Live instruments on the photo cockpit. Positions are the photo's own bezels, found by
-// circle-detection on the image (6x2 grid) — the teal attitude ball verified by colour.
-// We do NOT paint opaque dials over the photo: only the needles (and the moving horizon
-// ball) are drawn, so the real aged faces, bezels and glass of the photo stay visible.
-const PIT_IMG_W=1536, PIT_IMG_H=1024, PIT_POS_X=0.5, PIT_POS_Y=0.5, PIT_ZOOM=1.0;
-// Live look-around: pitTilt already drives the 3D camera's cockpit look angle (see the ▲/▼
-// buttons and tiltA below) but never touched the flat photo, so looking up/down never revealed
-// any more sky than the fixed crop already showed. Tying the photo's own pan to pitTilt lets
-// looking up trade side-canopy for more forward-up sky on the same input. Anchored so the
-// DEFAULT pitTilt (-0.34, before anyone touches ▲/▼) reproduces exactly the tuned PIT_SHIFT_BASE
-// crop — nobody who never touches the look buttons sees any different framing than intended.
-const PIT_SHIFT_BASE=0.26, PIT_TILT_DEFAULT=-0.34, PIT_TILT_GAIN=0.15;
-// PIT_SHIFT_BASE was tuned and verified against one landscape iPad viewport. Reported back from
-// a real device: on a wider/shorter one (Safari's own chrome eating into the visible height
-// changes the effective aspect ratio, and an iPad Pro 12.9" landscape is wider still than what
-// was tested) that fixed percentage pushes the crop past the photo's own top edge, opening a
-// band of plain page background above the canopy - worse than the untouched crop it replaced,
-// because object-fit:cover only guarantees enough image to cover the box at zero shift; how much
-// spare margin exists above that before running off the edge shrinks as the viewport gets wider
-// relative to the 1536x1024 photo, and at some aspect ratios there is barely any. Clamped to the
-// margin object-fit:cover actually leaves at the CURRENT viewport size instead of a fixed
-// percentage - full range on a tall/narrow screen where there is room for it, less automatically
-// on a wide/short one, never enough to expose the edge.
-//
-// Reported again, this time as the SBD's canopy frame specifically clipped at the top (not the
-// Avenger's). Measured the three cockpit photos' own alpha channels: the SBD's arch reaches
-// substantial width by source row ~4 of 1024 (0.4% down), the Avenger's not until row ~17 (1.7%)
-// - the SBD photo simply has far less headroom above its frame than the others, same pixel
-// dimensions or not. All three photos share this one function/transform, so whichever one has
-// the least headroom sets the real limit. The 92% safety factor below (meant only to keep
-// rounding from landing exactly on the object-fit:cover seam) was throwing away 8% of the
-// available pan range on every viewport - for most photos invisible, for the SBD's much
-// tighter margin, that 8% was most of the difference between "frame intact" and "frame clipped".
-// Raised to 99.5%: still comfortably clear of the seam (the clamp is an exact geometric bound,
-// not an estimate, so even 100% would land exactly on cropTop=0, never past it), while actually
-// using the pan range that was already being computed. Verified against a live sweep of realistic
-// iPad viewport ratios (1024-1366 wide x 428-1024 tall) with the real page's own pitShift()/
-// getBoundingClientRect(): at 92% roughly half of the tested wide/short ratios clipped the SBD
-// frame by 1-9 source px; at 99.5% every ratio where the clamp was the active constraint (which
-// is most of them) came back at 0 clipped px, exactly as the algebra predicts. The few very
-// extreme ratios left over (viewport height under ~500px, e.g. an actual iPhone in landscape or
-// heavy iPad split-view) are the same "out of photo headroom" limit BUILD 116 already documented
-// for the Avenger - no amount of clamp tuning fixes that without more sky in the source photo.
-function pitShift(){
-  const desired=PIT_SHIFT_BASE + (pitTilt-PIT_TILT_DEFAULT)*PIT_TILT_GAIN;
-  const vw=window.innerWidth||1, vh=window.innerHeight||1;
-  const s=Math.max(vw/PIT_IMG_W,vh/PIT_IMG_H), dispH=PIT_IMG_H*s;
-  const maxShift=Math.max(0,(dispH-vh)/(2*vh))*0.995;
-  return Math.max(0,Math.min(desired,maxShift));
-}
-function updatePitPhotoTransform(){
-  const t='scale('+PIT_ZOOM+') translateY('+(pitShift()*100).toFixed(2)+'%)';
-  ['pitPhoto','pitPhotoZ','pitPhotoS'].forEach(id=>{ const el=document.getElementById(id); if(el) el.style.transform=t; });
-}
-const PIT_GAUGES={ asi:[606,542,31], alt:[686,540,30], att:[769,540,30],
-                   vsi:[852,542,29], rpm:[930,542,28], cmp:[766,622,31] };
-// Zero (A6M) panel — bezels found by circle-detection on cockpit_zero.png (1536x1024)
-// SBD Dauntless panel — bezels found by circle-detection, attitude confirmed by colour
-const PIT_GAUGES_SBD={ asi:[640,444,29], alt:[794,526,29], att:[734,440,28],
-                       vsi:[870,526,26], rpm:[720,524,27], cmp:[722,602,29] };
-const PIT_GAUGES_ZERO={ asi:[522,608,31], alt:[1004,608,31], att:[808,494,30],
-                        vsi:[520,684,31], rpm:[768,614,31], cmp:[734,496,27] };
-function pitPhotoEl(){ return document.getElementById(isDefend()?'pitPhotoZ':(isSBD()?'pitPhotoS':'pitPhoto')); }
-function pitGauges(){ return isDefend()?PIT_GAUGES_ZERO:(isSBD()?PIT_GAUGES_SBD:PIT_GAUGES); }
-let plCv=null, plCtx=null;
-function needle(g,x,y,r,v,opt){
-  opt=opt||{};
-  const a=-Math.PI/2 + (Math.max(0,Math.min(1,v))-0.5)*1.5*Math.PI;  // 7:30 -> 12 -> 4:30
-  const len=r*(opt.len||0.80), tail=r*0.16, w=r*0.085;
-  g.save(); g.translate(x,y); g.rotate(a);
-  g.beginPath();                       // soft drop shadow under the needle
-  g.moveTo(-tail,-w*0.7); g.lineTo(len,0); g.lineTo(-tail,w*0.7); g.closePath();
-  g.fillStyle='rgba(0,0,0,0.55)'; g.translate(1.2,1.6); g.fill(); g.translate(-1.2,-1.6);
-  g.beginPath();                       // tapered aged-cream needle
-  g.moveTo(-tail,-w); g.lineTo(len,0); g.lineTo(-tail,w); g.closePath();
-  g.fillStyle=opt.color||'#efe6cc'; g.fill();
-  g.restore();
-  g.beginPath(); g.arc(x,y,r*0.10,0,6.2832); g.fillStyle='#15150f'; g.fill();
-  g.beginPath(); g.arc(x,y,r*0.10,0,6.2832); g.strokeStyle='rgba(230,220,190,0.5)'; g.lineWidth=0.8; g.stroke();
-}
-function glassSheen(g,x,y,r){
-  const gr=g.createLinearGradient(x-r*0.7,y-r*0.8,x+r*0.4,y+r*0.6);
-  gr.addColorStop(0,'rgba(255,255,255,0.10)'); gr.addColorStop(0.45,'rgba(255,255,255,0.02)');
-  gr.addColorStop(1,'rgba(255,255,255,0)');
-  g.save(); g.beginPath(); g.arc(x,y,r*0.97,0,6.2832); g.clip();
-  g.fillStyle=gr; g.fillRect(x-r,y-r,r*2,r*2); g.restore();
-}
-function photoAttitude(g,x,y,r,pitch,roll){
-  g.save();
-  g.beginPath(); g.arc(x,y,r*0.80,0,6.2832); g.clip();
-  g.translate(x,y); g.rotate(roll);
-  const hz=pitch*r*1.6;
-  g.fillStyle='#4d7f9e'; g.fillRect(-r*2,-r*2,r*4,r*2+hz);      // sky
-  g.fillStyle='#3a2f22'; g.fillRect(-r*2,hz,r*4,r*2);           // earth
-  g.strokeStyle='#efe6cc'; g.lineWidth=1.4;
-  g.beginPath(); g.moveTo(-r*2,hz); g.lineTo(r*2,hz); g.stroke();
-  g.strokeStyle='rgba(239,230,204,0.75)'; g.lineWidth=1;
-  for(let p=-20;p<=20;p+=10){ if(!p) continue;
-    const yy=hz-(p/10)*(r*0.30); if(Math.abs(yy)>r*0.8) continue;
-    const w=p%20?r*0.14:r*0.24;
-    g.beginPath(); g.moveTo(-w,yy); g.lineTo(w,yy); g.stroke(); }
-  g.restore();
-  // fixed miniature aircraft
-  g.strokeStyle='#e8a53a'; g.lineWidth=1.8; g.beginPath();
-  g.moveTo(x-r*0.42,y); g.lineTo(x-r*0.14,y); g.moveTo(x+r*0.14,y); g.lineTo(x+r*0.42,y);
-  g.moveTo(x,y-r*0.10); g.lineTo(x,y+r*0.03); g.stroke();
-  glassSheen(g,x,y,r);
-}
-function drawPhotoGauges(){
-  updatePitPhotoTransform();
-  if(!plCv){ plCv=document.getElementById('pitLive'); if(!plCv) return; plCtx=plCv.getContext('2d'); }
-  const vw=window.innerWidth, vh=window.innerHeight;
-  if(plCv.width!==vw||plCv.height!==vh){ plCv.width=vw; plCv.height=vh; }
-  const g=plCtx; g.clearRect(0,0,vw,vh);
-  const s=Math.max(vw/PIT_IMG_W, vh/PIT_IMG_H);
-  const dx=(vw-PIT_IMG_W*s)*PIT_POS_X, dy=(vh-PIT_IMG_H*s)*PIT_POS_Y;
-  const zcx=vw*0.5, zcy=vh*0.5;
-  // scale about the centre, then translate — same order the CSS transform applies it, and the
-  // same pattern thunderbolt-europe.html's pitMap() uses for its own photo-overlay cockpit.
-  function M(p){ let x=dx+p[0]*s, y=dy+p[1]*s;
-    x=zcx+(x-zcx)*PIT_ZOOM;
-    y=zcy+(y-zcy)*PIT_ZOOM + PIT_IMG_H*s*PIT_ZOOM*pitShift();
-    return [x, y, p[2]*s*PIT_ZOOM]; }
-  const kt=P.spd*KT, alt=Math.max(0,P.pos.y*FT), vsi=P.vSpeed*FT*60;
-  const GA=pitGauges();
-  let c;
-  c=M(GA.att); photoAttitude(g,c[0],c[1],c[2], Math.max(-0.9,Math.min(0.9,P.pitch)), P.roll);
-  c=M(GA.asi); needle(g,c[0],c[1],c[2], kt/240,
-        {color:(P.spd<STALL_SPD*1.05&&state===ST.FLIGHT)?'#ff7a4a':'#efe6cc'}); glassSheen(g,c[0],c[1],c[2]);
-  c=M(GA.alt); needle(g,c[0],c[1],c[2], (alt%5000)/5000); 
-  needle(g,c[0],c[1],c[2], Math.min(1,alt/25000), {len:0.52});   // 10k hand
-  glassSheen(g,c[0],c[1],c[2]);
-  c=M(GA.vsi); needle(g,c[0],c[1],c[2], (vsi+3000)/6000); glassSheen(g,c[0],c[1],c[2]);
-  c=M(GA.rpm); needle(g,c[0],c[1],c[2], 0.15+P.throttle*0.85); glassSheen(g,c[0],c[1],c[2]);
-  // directional gyro: needle points at the current heading
-  c=M(GA.cmp);
-  const hd=((P.heading*R2D)%360+360)%360;
-  g.save(); g.translate(c[0],c[1]); g.rotate(hd*Math.PI/180); g.translate(-c[0],-c[1]);
-  needle(g,c[0],c[1],c[2],0.5,{color:'#e8a53a',len:0.72});
-  g.restore(); glassSheen(g,c[0],c[1],c[2]);
-}
-function drawPitGauges(){
-  if(!pitCtx) return;
-  const g=pitCtx, W=g.canvas.width, H=g.canvas.height;
-  g.clearRect(0,0,W,H);
-  // ---- instrument panel plate ----
-  const grd=g.createLinearGradient(0,0,0,H);
-  grd.addColorStop(0,'#20241b'); grd.addColorStop(0.5,'#171a13'); grd.addColorStop(1,'#0e100b');
-  g.fillStyle=grd;
-  g.beginPath();
-  const rad=26;
-  g.moveTo(rad,6); g.lineTo(W-rad,6); g.quadraticCurveTo(W,6,W,6+rad);
-  g.lineTo(W,H); g.lineTo(0,H); g.lineTo(0,6+rad); g.quadraticCurveTo(0,6,rad,6);
-  g.closePath(); g.fill();
-  // top coaming lip + rivets
-  g.strokeStyle='#39402d'; g.lineWidth=3; g.stroke();
-  g.fillStyle='rgba(90,96,71,0.7)';
-  for(let rx=24;rx<W-10;rx+=46){ g.beginPath(); g.arc(rx,14,1.6,0,6.2832); g.fill(); }
-  // ---- gauges (laid out like the TBM panel) ----
-  const kt=P.spd*KT, alt=Math.max(0,P.pos.y*FT), vsi=P.vSpeed*FT*60;
-  const yT=78, yB=158, r=42;
-  // left cluster
-  dial(g,88 ,yT,r,'ASI', kt/240, Math.round(kt)+' KT', P.spd<STALL_SPD*1.05&&state===ST.FLIGHT);
-  dial(g,196,yT,r,'ALT', (alt%5000)/5000, Math.round(alt)+' FT', false);
-  dial(g,150,yB,38,'RPM', 0.15+P.throttle*0.85, Math.round(1200+P.throttle*1350)+'', false);
-  // centre — artificial horizon
-  attitudeDial(g,470,92,64, Math.max(-0.9,Math.min(0.9,P.pitch)), P.roll);
-  // right cluster
-  compassDial(g,752,yT,r,((P.heading*R2D)%360+360)%360);
-  dial(g,860,yT,r,'FUEL', P.fuel/100, Math.round(P.fuel)+' %', P.fuel<25);
-  dial(g,806,yB,38,'VSI', (vsi+3000)/6000, (vsi>0?'+':'')+(Math.round(vsi/100)*100), false);
-  // ---- red-topped throttle/mixture levers (lower centre-left) ----
-  for(let i=0;i<3;i++){ const lx=300+i*22, base=H-8, top=H-8-(34+P.throttle*22*(i===0?1:0.6));
-    g.strokeStyle='#2a2e22'; g.lineWidth=6; g.beginPath(); g.moveTo(lx,base); g.lineTo(lx,top); g.stroke();
-    g.fillStyle=i===0?'#c9402e':(i===1?'#c98a2e':'#2e6ec9');
-    g.beginPath(); g.arc(lx,top,5,0,6.2832); g.fill();
-  }
-  // gunsight glow reference already provided by .pitReticle overlay
-}
-
 function updateHUD(){
   document.getElementById('hSpd').innerHTML=Math.round(P.spd*KT)+'<small> KT</small>';
   // ALT normally reads height above the SEA — but the deck sits 16 m up, so on short final
@@ -5360,14 +4970,8 @@ function updateHUD(){
   document.getElementById('hHull').parentElement.classList.toggle('warn',P.hull<40);
   document.getElementById('hFuel').parentElement.classList.toggle('warn',P.fuel<25);
   const db=document.getElementById('dropBtn'); db.classList.toggle('spent',P.torps<=0);
-  if(viewMode==='cockpit'){
-    const pp=pitPhotoEl();
-    if(pp&&pp.complete&&pp.naturalWidth>0) drawPhotoGauges(); else drawPitGauges();
-  }
   const vig=document.getElementById('dmgVig');
   if(vig) vig.style.opacity=Math.min(0.75, shakeMag*shakeT*0.7);
-  const oil=document.getElementById('oilCanopy');
-  if(oil) oil.style.opacity=(viewMode==='cockpit'&&P.hull<40)?Math.min(0.9,(40-P.hull)/40):0;
 }
 
 function updateTorpRun(){
@@ -5580,15 +5184,6 @@ function setupUIButtons(){
     P.hookTgt = P.hookTgt>0.5?0:1; const b=document.getElementById('hookBtn');
     b.classList.toggle('on',P.hookTgt>0.5); b.innerHTML=P.hookTgt>0.5?'HOOK<br>▼ DN':'HOOK<br>▲ UP';
     flash(P.hookTgt>0.5?'HOOK DOWN':'HOOK UP',700); sfxMotor(1.0,100,260); });
-  document.getElementById('viewBtn').addEventListener('pointerdown',e=>{ e.preventDefault();
-    viewMode = viewMode==='chase'?'cockpit':'chase';
-    const b=document.getElementById('viewBtn'); b.innerHTML='VIEW<br>'+(viewMode==='cockpit'?'PIT':'CHASE');
-    b.classList.toggle('on',viewMode==='cockpit');
-    document.getElementById('cockpitFrame').classList.toggle('show',viewMode==='cockpit');
-    document.getElementById('mmap').style.display=viewMode==='cockpit'?'none':'block';
-    const pit=viewMode==='cockpit';
-    document.getElementById('instLeft').style.display=pit?'none':'';
-    document.getElementById('instRight').style.display=pit?'none':''; });
   document.getElementById('loadToggle').onclick=()=>{
     loadout = loadout==='divebomb'?'torpedo':'divebomb';
     document.getElementById('loadBox').textContent = loadout==='divebomb'?'✓':'';
@@ -5662,16 +5257,14 @@ function setupUIButtons(){
   if(dbgT2) dbgT2.onclick=()=>{
     dbgOn=!dbgOn; localStorage.setItem('dbgOn',dbgOn?'1':'0');
     const db=document.getElementById('dbgBox'); if(db) db.textContent=dbgOn?'✓':'';
-    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 120'; }
+    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 121'; }
   };
   const lu=document.getElementById('lookUp'), ld=document.getElementById('lookDn');
-  const setTilt=v=>{ pitTilt=Math.max(-0.9,Math.min(0.4,v)); localStorage.setItem('pitTilt',pitTilt.toFixed(3)); };
   let _lookT=0;
   function look(delta,e){ e.preventDefault(); e.stopPropagation();
     const now=performance.now(); if(now-_lookT<140) return; _lookT=now;
-    if(viewMode==='cockpit'){ setTilt(pitTilt+delta); }
-    else { chaseH=Math.max(3,Math.min(40,chaseH+delta*40));   // ±2 m per tap
-           localStorage.setItem('chaseH',chaseH.toFixed(1)); } }
+    chaseH=Math.max(3,Math.min(40,chaseH+delta*40));   // ±2 m per tap
+    localStorage.setItem('chaseH',chaseH.toFixed(1)); }
   [ [lu,0.05],[ld,-0.05] ].forEach(([el,d])=>{ if(!el) return;
     el.addEventListener('pointerdown',e=>look(d,e));
     el.addEventListener('touchend',e=>{ e.preventDefault(); },{passive:false});   // block dbl-tap zoom

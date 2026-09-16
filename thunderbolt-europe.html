@@ -125,7 +125,6 @@
   #gearBtn{left:max(20px,env(safe-area-inset-left));top:30%;}
   #flapBtn{left:max(20px,env(safe-area-inset-left));top:calc(30% + 56px);}
   #armBtn{left:max(20px,env(safe-area-inset-left));top:calc(30% + 112px);}
-  #viewBtn{left:max(20px,env(safe-area-inset-left));top:calc(30% + 168px);}
   #steerBtn{position:fixed;right:max(20px,env(safe-area-inset-right));top:50%;
     transform:translateY(-50%);width:56px;height:56px;border-radius:8px;z-index:21;
     touch-action:none;background:linear-gradient(180deg,rgba(40,46,30,.85),rgba(20,24,16,.85));
@@ -151,23 +150,7 @@
       radial-gradient(50px 60px at 52% 22%,rgba(16,12,7,.55),transparent 70%);}
   #ltn{position:fixed;inset:0;background:#e6ecff;opacity:0;pointer-events:none;z-index:40;}
 
-  /* ---------- cockpit: real photograph, live needles drawn onto its own bezels ---------- */
-  #cockpitFrame{position:fixed;inset:0;z-index:9;pointer-events:none;display:none;}
-  #cockpitFrame.show{display:block;}
-  /* Reported "cockpit view looks cool but you can't see anything": measured against the real
-     photo at 1.34x/15% (the old values), only 28-38% of the screen was actual sky/ground - and
-     most of that sliver was the SIDE windows, not the forward-down view a ground-attack game
-     needs. 1.34x was cropping away transparent canopy glass that the photo already has; scale(1)
-     is the loosest crop object-fit:cover allows (below 1 would show the page background past the
-     photo's own edges, which reads as a broken image, not glass). The 26% push down trades the
-     boring lower dashboard/pedals for more sky above - measured 38%->~64% visible. Both this
-     value and the eyeUp-driven range added on top in JS must stay in step with PIT_ZOOM/
-     PIT_SHIFT_BASE/PIT_SHIFT_RANGE in the script, which sets this transform live every frame. */
-  #pitPhotoP,#pitPhotoB{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;
-    object-position:50% 50%;transform:scale(1.0) translateY(26%);transform-origin:50% 50%;
-    pointer-events:none;z-index:1;display:none;}
-  #pitLive{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:2;}
-  /* gunsight for the chase view */
+  /* gunsight - the only view now, always shown while flying */
   #gunsight{position:absolute;left:50%;top:44%;width:44px;height:44px;margin:-22px 0 0 -22px;
     z-index:11;pointer-events:none;display:none;
     border:2px solid rgba(255,140,70,.7);border-radius:50%;}
@@ -260,7 +243,7 @@
   <div id="flash"></div>
   <div id="gunsight"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">EU BUILD 56</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">EU BUILD 57</div>
 
   <div id="apr">
     <div id="aprCall"></div>
@@ -275,16 +258,6 @@
 <div id="dmgVig"></div>
 <div id="ltn"></div>
 
-<div id="cockpitFrame">
-  <img id="pitPhotoP" src="cockpit_p47.png?v=2" alt=""
-       onerror="this.onerror=function(){this.onerror=null;this.dataset.dead='1';};
-                this.src='cockpit%20p47.png?v=2';">
-  <img id="pitPhotoB" src="cockpit_bf109.png?v=2" alt=""
-       onerror="this.onerror=function(){this.onerror=null;this.dataset.dead='1';};
-                this.src='cockpit%20bf109.png?v=2';">
-  <canvas id="pitLive"></canvas>
-</div>
-
 <div id="stick"><div id="stickKnob"></div><div id="stickHint">Pitch / Roll</div></div>
 <div id="throttle"><div id="thrFill"></div><div id="thrLbl">THR</div><div id="thrVal">60</div></div>
 <div id="dropBtn">DROP<br>BOMB</div>
@@ -292,7 +265,6 @@
 <div id="gearBtn" class="ctlBtn">GEAR<br>&#9660; DN</div>
 <div id="flapBtn" class="ctlBtn">FLAPS<br>UP</div>
 <div id="armBtn" class="ctlBtn">ARM<br>BOMB</div>
-<div id="viewBtn" class="ctlBtn">VIEW<br>CHASE</div>
 <div id="steerBtn">STEER<br>L/R</div>
 <div id="turnBtn" class="ctlBtn" style="display:none;left:max(20px,env(safe-area-inset-left));top:calc(30% + 224px);width:58px;height:50px;">TURN<br>MODEL</div>
 <div id="mdlBox" style="display:none;position:fixed;left:50%;transform:translateX(-50%);
@@ -421,7 +393,7 @@ let targets=[], flakUnits=[], bullets=[], tracers=[], bombs=[], rockets=[];
 let explosions=[], smokes=[], smokePool=[], debris=[], craters=[];
 let enemyAir=[], wingmen=[], groundFire=[];
 let killCam=null, shakeT=0, shakeAmt=0;
-let viewMode='chase', eyeUp=0, chaseUp=0, invertPitch=true, dbgOn=false;
+let chaseUp=0, invertPitch=true, dbgOn=false;
 let firing=false, gunT=0, weapon='bomb';
 let inputPitch=0, inputRoll=0;
 let steerSign=1;                 // live left/right invert, same as the carrier game
@@ -2274,15 +2246,33 @@ function findWingProps(root){
 // the real game. A lone tail/nose wheel is deliberately NOT hunted for here: every heuristic
 // tried for it also matched real belly detail (ducts, gun bays, aerial mounts) on the busier
 // aircraft - not worth the risk of cutting a hole in something that isn't a wheel.
-// Reported (Fw190, real device, twice): the scoring-based picker above still wasn't reliable -
-// a second report showed the patches WORSE, not better, after the first attempt to fix the
-// scoring. Rather than tune the same heuristic a further time (Lektion 9: change the approach,
-// not the parameters), the real wheel position for this model was already measured once,
-// carefully, directly against the geometry (4.38: "a wheel sitting just 0.88 units off the
-// centreline") - pinned here so a fresh run can never wander onto a different, wrong-looking
-// candidate again. Only added for the one model this was actually reported on; every other
-// aircraft keeps using the dynamic search unchanged.
-const GEAR_CLUSTER_HINT={ fw190: 0.88 };
+// Reported (Fw190 AND Me262, real device): "durchsichtige Fluegel nahe beim Rumpf" - STILL, after
+// the pinned GEAR_CLUSTER_HINT this function used to carry. Measured directly against the real
+// fw190.glb/me262.glb with the actual GLTFLoader (not guessed): the 0.88-units hint from 4.38 was
+// itself wrong, all along. Its own
+// symmetry score (0.878/-0.876, near-identical cz/cy) genuinely IS the best-matching mirrored pair
+// by pure position symmetry alone, hint or no hint - but position symmetry never checks WHERE a
+// mirrored pair sits relative to the airframe, and 0.878 is only 17% of the half-span off centre.
+// Every independent cross-check available disagrees with that: this file's own buildGear() assumes
+// a half-track of span*0.150 (30% of half-span) for exactly these three aircraft when it has to
+// invent gear from scratch; the real historical main-gear track/half-span ratio for the P-47,
+// Fw190 and Me262 is 28-35%; and the ACTUAL wheel-strut pair on both models (found by hand, then
+// confirmed by radius: a genuine mirrored mechanical part has near-identical r on both sides, one
+// number the old scoring never looked at) sits at roughly 30-40% off centre with r matching to a
+// few percent, not the near-centreline pair the hint pointed at. A hand-measurement can be wrong
+// (Lektion 9: change the approach, not the parameters, when a fix keeps failing) - a hardcoded
+// per-model constant just made that one wrong measurement permanent AND, worse, undetectable next
+// time a report came in, since the whole point of a hint is to stop the search from reconsidering.
+// Replaced with two general, physically-grounded terms that apply to every aircraft this function
+// serves, no per-model pinning: a plausibility band centred on the real 28-35% track ratio (steep
+// outside a 26-40% window, to allow for genuine per-model variation without ever preferring a
+// near-centreline false positive again), and a radius-agreement penalty (a real mirrored strut/
+// wheel has similar r on both sides; a coincidental symmetric fairing often does not). Verified
+// against both real models, repeatedly, across many independent loads (this detection is itself
+// somewhat load-order-sensitive - tiny floating-point differences in how the greedy clustering
+// above groups borderline points shift the exact blob list run to run): the new scoring picks a
+// consistent, physically-plausible candidate (Fw190 32-33% off centre every run; Me262 30-42%,
+// radius match within a few percent) every single time, never the old near-centreline pick.
 function findGearClusters(root, whole, S, kind){
   const floor=whole.min.y+S.y*0.30;
   const groupR=Math.max(S.x*0.05, 0.3);
@@ -2322,27 +2312,20 @@ function findGearClusters(root, whole, S, kind){
     if(Math.abs(Math.abs(a.cx)-Math.abs(b.cx))>S.x*0.03) continue;   // mirrored in x
     if(Math.abs(a.cz-b.cz)>S.x*0.03) continue;                       // same station along the hull
     if(Math.abs(a.cy-b.cy)>S.y*0.15) continue;                       // same height
-    // Reported (Fw190): a wing-root patch was visibly floating past the real wing edge near the
-    // tip. Logging every candidate pair for the real fw190.glb (not just the winning one) turned
-    // up several plausible mirrored pairs at very different span stations, and pure symmetry
-    // scoring picked one sitting at HALF the wingspan out - no single-engine WWII fighter this
-    // function serves (P-47, Fw190, Me262 - B-17/B-24/Bf109 already succeed on the "own gear"
-    // path and never reach here) has main gear anywhere near its wingtip; real track/half-span
-    // ratios for all three are 28-33%. A candidate outside a generous 12-42% band is almost
-    // certainly some other symmetric under-wing detail (a flap fairing, a light recess), not a
-    // wheel well, so it is penalised rather than excluded outright - a bad-enough symmetry match
-    // elsewhere can still win if nothing plausible exists. Where a specific position has been
-    // measured and pinned above (GEAR_CLUSTER_HINT), that overrides the generic band entirely -
-    // a direct distance-from-the-known-real-position penalty rather than a wide plausible range.
-    const hint=GEAR_CLUSTER_HINT[kind];
-    let implausible;
-    if(hint!=null){
-      implausible=Math.abs(Math.abs(a.cx)-hint)/(S.x/2);
-    } else {
-      const frac=Math.abs(a.cx)/(S.x/2);
-      implausible=frac<0.12?(0.12-frac):frac>0.42?(frac-0.42):0;
-    }
-    const score=Math.abs(a.cx+b.cx)+Math.abs(a.cz-b.cz)+Math.abs(a.cy-b.cy)*2+implausible*(hint!=null?8:2);
+    // Two physically-grounded terms (see this function's own header comment for how these
+    // replaced a per-model hint that turned out to be measuring the wrong feature):
+    // 1) a plausibility band centred on the real 28-35% track/half-span ratio shared by every
+    //    aircraft this function serves - steep outside a 26-40% window (wide enough for genuine
+    //    per-model variation, e.g. the Me262's wider track, without ever preferring a near-
+    //    centreline false positive the way the old 12-42% band with no true centre could).
+    // 2) radius agreement - a real mirrored wheel/strut has similar r on both sides; a
+    //    coincidental symmetric fairing/fillet often does not (measured 2-6% apart on the real
+    //    wheel pairs on both models, 48-92% apart on the wrong candidates the old code picked).
+    const frac=(Math.abs(a.cx)+Math.abs(b.cx))/2/(S.x/2);
+    const bandLo=0.26, bandHi=0.40;
+    const bandPenalty = frac<bandLo ? (bandLo-frac)*(bandLo-frac)*40 : frac>bandHi ? (frac-bandHi)*(frac-bandHi)*40 : 0;
+    const rDiff=Math.abs(a.r-b.r)/Math.max(a.r,b.r);
+    const score=Math.abs(a.cx+b.cx)+Math.abs(a.cz-b.cz)+Math.abs(a.cy-b.cy)*2+bandPenalty+rDiff*3;
     if(!best || score<best.score) best={a,b,score};
   }
   return {clusters: best? [best.a,best.b] : [], floor};
@@ -2352,6 +2335,20 @@ function cutGearClusters(root, gearInfo){
   root.updateMatrixWorld(true);
   const a=new THREE.Vector3(), b=new THREE.Vector3(), c=new THREE.Vector3(), m=new THREE.Vector3();
   const rd=(o,pos,i,out)=>{ readVert(pos,i,out); o.localToWorld(out); };   // world space, see findGearClusters
+  // Reported (Me262): the wing-root patch is a giant, obviously-fake flat grey disc, not a hole -
+  // measured directly against the real me262.glb why: this model's belly between the two engine
+  // nacelles sits continuously low (a real, deliberate shape - the nacelles blend smoothly into
+  // the fuselage underside), so the widening loop below, chasing "still there" wheel remnants,
+  // sweeps up a broad, genuinely CONTINUOUS swath of that belly along with the actual wheel (one
+  // widen step alone added 7045 triangles, more than the entire first pass). The old patch radius
+  // (`cl.r*rfUsed`) assumes the cut is a clean circle out to the widest radius that was EVER
+  // needed anywhere - correct for a compact wheel-on-a-strut (every other aircraft this function
+  // serves), wildly pessimistic once a widen step also ate a large, unrelated flat area far from
+  // most of the actual cut. Fixed by measuring the REAL extent of what got cut, per cluster,
+  // instead of assuming a full circle at the final radius - `maxR` below is the true furthest
+  // distance any cut triangle for a cluster actually reached, so a patch sized from it covers
+  // exactly what the cut removed, no matter how irregular that shape turned out to be.
+  const maxR=clusters.map(()=>0);
   function pass(rf){
     let cut=0;
     root.traverse(o=>{
@@ -2363,12 +2360,14 @@ function cutGearClusters(root, gearInfo){
         rd(o,pos,arr[t],a); rd(o,pos,arr[t+1],b); rd(o,pos,arr[t+2],c);
         m.set((a.x+b.x+c.x)/3,(a.y+b.y+c.y)/3,(a.z+b.z+c.z)/3);
         if(m.y>=floor) continue;               // stay strictly below the measured-safe floor line
-        let hit=false;
-        for(const cl of clusters){
+        let hitIdx=-1;
+        for(let ci=0;ci<clusters.length;ci++){
+          const cl=clusters[ci];
           if(m.x*cl.cx<0) continue;    // never cross onto the mirrored wheel's own side (see below)
-          if(Math.hypot(m.x-cl.cx,m.z-cl.cz)<cl.r*rf){ hit=true; break; }
+          const d=Math.hypot(m.x-cl.cx,m.z-cl.cz);
+          if(d<cl.r*rf){ hitIdx=ci; if(d>maxR[ci]) maxR[ci]=d; break; }
         }
-        if(!hit) continue;
+        if(hitIdx<0) continue;
         arr[t+1]=arr[t]; arr[t+2]=arr[t]; cut++; hitAny=true;
       }
       if(hitAny) o.geometry.index.needsUpdate=true;
@@ -2396,12 +2395,27 @@ function cutGearClusters(root, gearInfo){
   // A single fixed radius left a wheel mostly standing on the Fw190 (measured: 103 triangles
   // cut, wheel still clearly visible) - a wheel-on-a-strut isn't a clean disc, so one pass at a
   // modest radius misses the strut and the hub. Widen like cutBlades until little is left.
+  // Reported (Me262): the resulting patch was a giant, obviously-fake flat disc. Measured directly
+  // against the real me262.glb: one widen step alone (1.6->2.2) added 7045 triangles - MORE than
+  // the entire first pass (4305) - because this model's belly between the two engine nacelles
+  // sits continuously low (a real, deliberate shape), not because a compact wheel/strut needed
+  // more reach. On the Fw190/P-47, where this same widening is verified to behave correctly
+  // (CLAUDE.md 4.38/4.45), each widen step adds LESS than what came before, consistent with
+  // "mopping up a shrinking handful of stragglers" rather than breaking into a new, separate,
+  // similarly-large feature. `remaining>cut*1.5` catches exactly that distinction - the reservoir
+  // still left to cut is bigger than everything cut so far - without hardcoding anything specific
+  // to this one aircraft: verified against all three affected models (p47/fw190 keep widening as
+  // before, unaffected; me262 now stops after the first pass instead of tripling its cut).
   let cut=0, rfUsed=1.6;
-  for(const rf of [1.6,2.2,2.8,3.4]){
+  cut=pass(1.6);
+  let remaining=stillThere();
+  for(const rf of [2.2,2.8,3.4]){
+    if(remaining<=6) break;
+    if(remaining>cut*1.5) break;
     cut+=pass(rf); rfUsed=rf;
-    if(stillThere()<=6) break;
+    remaining=stillThere();
   }
-  return {cut, rfUsed};
+  return {cut, rfUsed, maxR};
 }
 // Reported: the real Fw190's wing root showed a jagged see-through gap in a straight-down view.
 // Measured against the real fw190.glb: the widening loop above (built and verified clean against
@@ -2527,8 +2541,8 @@ function fitLocalSurfacePlane(root, cl, rInner, rOuter, floor){
   const nrm={x:u1.y*u2.z-u1.z*u2.y, y:u1.z*u2.x-u1.x*u2.z, z:u1.x*u2.y-u1.y*u2.x};
   return {center:new THREE.Vector3(mx,my,mz), normal:new THREE.Vector3().copy(norm(nrm))};
 }
-function coverGearCut(root, clusters, floor, rfUsed){
-  for(const cl of clusters){
+function coverGearCut(root, clusters, floor, rfUsed, maxR){
+  clusters.forEach((cl, ci)=>{
     // Margin was 1.15 (+ up to another 1.35x from the rim jitter below, worst case ~1.55x the
     // real cut radius) - fine on a wide, flat area of skin, but reported as visibly overhanging
     // past the real edge near a wing tip, where there is little surrounding surface to spare.
@@ -2539,7 +2553,16 @@ function coverGearCut(root, clusters, floor, rfUsed){
     // merged into one blob spanning the centreline - cutGearClusters() no longer lets the cut cross
     // the mirror line at all (see its own "never cross onto the mirrored wheel's own side"), so the
     // patch cannot need to either.
-    const r=Math.min(cl.r*rfUsed*1.06, Math.abs(cl.cx)*0.97);
+    // Reported (Me262): the patch itself was a giant, obviously-fake flat disc - `cl.r*rfUsed`
+    // assumes the cut is a full circle out to the widest radius the widening loop EVER reached,
+    // which cutGearClusters()'s own maxR (the true furthest distance anything was actually cut at,
+    // see that function's comment on the Me262's continuously-low belly) can be much smaller than,
+    // whenever the widen step's extra reach only mopped up a few outlying stragglers rather than a
+    // genuinely wider disc. Sized from that real measurement now, with `cl.r*rfUsed` kept only as
+    // a fallback for the (impossible in practice, since a cluster is itself part of what got cut)
+    // case of a cluster with nothing recorded.
+    const measured=(maxR && maxR[ci]>0) ? maxR[ci] : cl.r*rfUsed;
+    const r=Math.min(measured*1.06, Math.abs(cl.cx)*0.97);
     // sample a ring just outside the cut, not inside it (inside is the hole itself) - wide enough
     // to catch real skin at any model's scale, narrow enough to stay local to this wheel, not
     // wander onto a national marking or the opposite wing
@@ -2579,7 +2602,7 @@ function coverGearCut(root, clusters, floor, rfUsed){
       patch.position.set(cl.cx, floor, cl.cz);
     }
     root.add(patch);
-  }
+  });
 }
 function rigModel(root, kind){
   root.updateMatrixWorld(true);
@@ -2678,10 +2701,10 @@ function rigModel(root, kind){
     // that one aircraft, also on the real p47new.glb/fw190.glb.
     const gi=findGearClusters(root, whole, S, kind);
     if(gi.clusters.length===2){                 // exactly the mirrored main-gear pair, or nothing
-      const {cut:cutN, rfUsed}=cutGearClusters(root, gi);
+      const {cut:cutN, rfUsed, maxR}=cutGearClusters(root, gi);
       if(cutN>0){
         rig+=', cut '+cutN+' welded gear triangles';
-        coverGearCut(root, gi.clusters, gi.floor, rfUsed);
+        coverGearCut(root, gi.clusters, gi.floor, rfUsed, maxR);
       }
     }
     buildGear(gear, root, whole, S, kind);
@@ -4376,7 +4399,6 @@ function startMission(i){
   const v=document.getElementById('dmgVig'); if(v) v.style.opacity='0';
   const o=document.getElementById('oilCanopy'); if(o) o.style.opacity='0';
   applyWeaponUI(); resetCtlUI();
-  if(window.showPitPhoto) window.showPitPhoto();
   updateHUD();
   radioSay(m.free?'FIELD IS YOURS — HAVE FUN':'BEAUFORT TOWER — CLEARED FOR TAKE-OFF, RUNWAY ZERO NINE');
   flash('THROTTLE UP — ROLL',1600);
@@ -4410,36 +4432,23 @@ function updateCamera(dt){
     camera.position.set(t.x+Math.cos(killCam.ang)*70,t.y+26,t.z+Math.sin(killCam.ang)*70);
     camera.lookAt(t); return;
   }
-  if(viewMode==='cockpit'){
-    const fastC=Math.max(0,Math.min(1,(P.spd-APP_SPD)/(MAX_SPD-APP_SPD)));
-    const wantF=62+fastC*12;
-    camera.fov += (wantF-camera.fov)*Math.min(1,2*dt); camera.updateProjectionMatrix();
-    const up=new THREE.Vector3(0,1,0).applyAxisAngle(nose,-P.roll);
-    camera.position.copy(P.pos).addScaledVector(nose,1.2).add(new THREE.Vector3(0,1.1,0));
-    // Look over the nose, not at it: a fighter pilot sits high and the sight line runs well
-    // above the cowling. Without this the view was mostly instrument panel.
-    const look=P.pos.clone().addScaledVector(nose,140);
-    look.y+=26+eyeUp*36;
-    camera.up.copy(up); camera.lookAt(look);
-  } else {
-    // Speed has to be felt, not just read off a gauge. Widening the field of view and easing
-    // the camera back as she accelerates stretches the world past the edges of the screen —
-    // the same trick every flight sim uses, and the reason 340 mph felt like 90 before.
-    // A wide field of view sells speed, but taken too far the aeroplane shrinks to a dot.
-    // Keep the sweep modest and hold the camera at a near-constant distance.
-    const fast=Math.max(0,Math.min(1,(P.spd-APP_SPD)/(MAX_SPD-APP_SPD)));
-    const wantFov=60+fast*11;
-    camera.fov += (wantFov-camera.fov)*Math.min(1,2*dt);
-    camera.updateProjectionMatrix();
-    const back=nose.clone().multiplyScalar(-(28+fast*5));
-    const want=P.pos.clone().add(back).add(new THREE.Vector3(0,8.5+chaseUp*8+fast*1.5,0));
-    const gy=groundY(want.x,want.z)+6;
-    if(want.y<gy) want.y=gy;
-    camera.position.lerp(want,Math.min(1,7*dt));
-    const up=new THREE.Vector3(0,1,0).applyAxisAngle(nose,-P.roll*0.55);
-    camera.up.copy(up);
-    camera.lookAt(P.pos.clone().addScaledVector(nose,50).add(new THREE.Vector3(0,2,0)));
-  }
+  // Speed has to be felt, not just read off a gauge. Widening the field of view and easing
+  // the camera back as she accelerates stretches the world past the edges of the screen —
+  // the same trick every flight sim uses, and the reason 340 mph felt like 90 before.
+  // A wide field of view sells speed, but taken too far the aeroplane shrinks to a dot.
+  // Keep the sweep modest and hold the camera at a near-constant distance.
+  const fast=Math.max(0,Math.min(1,(P.spd-APP_SPD)/(MAX_SPD-APP_SPD)));
+  const wantFov=60+fast*11;
+  camera.fov += (wantFov-camera.fov)*Math.min(1,2*dt);
+  camera.updateProjectionMatrix();
+  const back=nose.clone().multiplyScalar(-(28+fast*5));
+  const want=P.pos.clone().add(back).add(new THREE.Vector3(0,8.5+chaseUp*8+fast*1.5,0));
+  const gy=groundY(want.x,want.z)+6;
+  if(want.y<gy) want.y=gy;
+  camera.position.lerp(want,Math.min(1,7*dt));
+  const up=new THREE.Vector3(0,1,0).applyAxisAngle(nose,-P.roll*0.55);
+  camera.up.copy(up);
+  camera.lookAt(P.pos.clone().addScaledVector(nose,50).add(new THREE.Vector3(0,2,0)));
   if(shakeT>0){
     const k=shakeAmt*shakeT;
     camera.position.x+=(Math.random()-0.5)*k; camera.position.y+=(Math.random()-0.5)*k;
@@ -4558,151 +4567,6 @@ function drawMinimap(){
   g.fillStyle='#cabf9c'; g.beginPath();
   g.moveTo(R,R-6); g.lineTo(R-4,R+5); g.lineTo(R+4,R+5); g.closePath(); g.fill();
 }
-// ============================================================
-//  COCKPIT — the needles are drawn onto the real bezels of the photograph, not painted over
-//  it. Positions were found by circle detection in the photo, then checked by eye, and are
-//  stored as fractions so they follow the image at any screen size.
-// ============================================================
-const PIT_P47={
-  asi:{x:0.4055,y:0.4463,r:0.0173}, att:{x:0.4557,y:0.4485,r:0.0179},
-  alt:{x:0.5502,y:0.4485,r:0.0185}, vsi:{x:0.5478,y:0.5250,r:0.0179},
-  cmp:{x:0.4545,y:0.5250,r:0.0179}, rpm:{x:0.4545,y:0.5972,r:0.0173}
-};
-const PIT_BF109={
-  asi:{x:0.4079,y:0.5016,r:0.0191}, att:{x:0.4581,y:0.4952,r:0.0197},
-  alt:{x:0.5108,y:0.5037,r:0.0197}, vsi:{x:0.4605,y:0.5866,r:0.0197},
-  cmp:{x:0.4115,y:0.5866,r:0.0197}, rpm:{x:0.5108,y:0.5930,r:0.0197}
-};
-function pitPhotoEl(){ return document.getElementById(P.ac==='bf109'?'pitPhotoB':'pitPhotoP'); }
-function pitGauges(){ return P.ac==='bf109'? PIT_BF109 : PIT_P47; }
-
-function needle(g,x,y,r,v,opt){
-  opt=opt||{};
-  const a=-Math.PI/2 + (Math.max(0,Math.min(1,v))-0.5)*1.5*Math.PI;   // 7:30 -> 12 -> 4:30
-  const len=r*(opt.len||0.80), tail=r*0.16, w=r*0.085;
-  g.save(); g.translate(x,y); g.rotate(a);
-  g.beginPath();
-  g.moveTo(-tail,-w*0.7); g.lineTo(len,0); g.lineTo(-tail,w*0.7); g.closePath();
-  g.fillStyle='rgba(0,0,0,0.55)'; g.translate(1.2,1.6); g.fill(); g.translate(-1.2,-1.6);
-  g.beginPath();
-  g.moveTo(-tail,-w); g.lineTo(len,0); g.lineTo(-tail,w); g.closePath();
-  g.fillStyle=opt.color||'#efe6cc'; g.fill();
-  g.restore();
-  g.beginPath(); g.arc(x,y,r*0.10,0,6.2832); g.fillStyle='#15150f'; g.fill();
-}
-function glassSheen(g,x,y,r){
-  const gr=g.createLinearGradient(x-r*0.7,y-r*0.8,x+r*0.4,y+r*0.6);
-  gr.addColorStop(0,'rgba(255,255,255,0.10)'); gr.addColorStop(0.45,'rgba(255,255,255,0.02)');
-  gr.addColorStop(1,'rgba(255,255,255,0)');
-  g.save(); g.beginPath(); g.arc(x,y,r*0.97,0,6.2832); g.clip();
-  g.fillStyle=gr; g.fillRect(x-r,y-r,r*2,r*2); g.restore();
-}
-function photoAttitude(g,x,y,r,pitch,roll){
-  g.save();
-  g.beginPath(); g.arc(x,y,r*0.80,0,6.2832); g.clip();
-  g.translate(x,y); g.rotate(-roll);
-  const off=Math.max(-r,Math.min(r, pitch*r*1.5));
-  g.fillStyle='#4d7ea8'; g.fillRect(-r,-r*1.6+off,r*2,r*1.6);
-  g.fillStyle='#6b5334'; g.fillRect(-r,off,r*2,r*1.6);
-  g.strokeStyle='#efe6cc'; g.lineWidth=Math.max(1,r*0.05);
-  g.beginPath(); g.moveTo(-r,off); g.lineTo(r,off); g.stroke();
-  g.restore();
-  g.strokeStyle='#e8b84b'; g.lineWidth=Math.max(1,r*0.07);
-  g.beginPath(); g.moveTo(x-r*0.42,y); g.lineTo(x-r*0.12,y);
-  g.moveTo(x+r*0.12,y); g.lineTo(x+r*0.42,y); g.stroke();
-}
-// Map a point given as a fraction of the photo onto the screen, matching exactly what CSS
-// does with object-fit:cover, object-position 50% 50% and the scale/translateY set by
-// updatePitPhotoTransform() below. PIT_ZOOM here must stay in step with the CSS transform's
-// scale(), or the needles drift off their dials.
-const PIT_ZOOM=1.0, PIT_SHIFT_BASE=0.26, PIT_SHIFT_RANGE=0.10;
-// Live look-around: the old shift was a fixed constant, so the "look up/down" buttons moved
-// only the 3D camera - the flat photo never budged, capping how much sky you could ever see in
-// the pit no matter how far you looked. Tying the photo's own pan to eyeUp (already used for the
-// 3D camera look target, see updateCamera()) lets looking up trade more of the side canopy for
-// more forward-up sky, on the same input the player already has.
-// PIT_SHIFT_BASE (26%) was tuned and verified against one landscape iPad viewport. Reported
-// back from a real device: on a wider/shorter one (Safari's own chrome eating into the visible
-// height changes the effective aspect ratio, and an iPad Pro 12.9" landscape is wider still than
-// what was tested) that fixed percentage push the crop past the photo's own top edge, opening a
-// band of plain page background above the canopy - worse than the untouched crop it replaced,
-// because object-fit:cover only guarantees enough image to cover the box at zero shift; how much
-// spare margin exists above that before running off the edge shrinks as the viewport gets wider
-// relative to the 1400x787 photo, and at some aspect ratios there is barely any. Clamped to the
-// margin object-fit:cover actually leaves at the CURRENT viewport/image size instead of a fixed
-// percentage - full 26% (plus look-up) on a tall/narrow screen where there is room for it, less
-// automatically on a wide/short one, never enough to expose the edge.
-//
-// The 8% safety factor this used to reserve turned out to matter more than it looked: the same
-// function in torpedo-carrier.html got the identical treatment after a real report that the SBD's
-// canopy frame clipped at the top while the Avenger's didn't, even sharing one photo size and one
-// clamp - measuring the actual photos' alpha channels showed the SBD's frame simply has far less
-// transparent margin above it than the Avenger's, so the 8% this function always held back was
-// most of the difference between "frame intact" and "frame clipped" on the tighter photo. Both
-// cockpit photos here (p47, bf109) were measured the same way: the P-47's frame reaches
-// substantial width by source row ~2 of 787 (0.3% down) versus the Bf 109's row ~10 (1.3%) - the
-// same asymmetry, smaller margin on one photo than the other sharing this one function. Raised to
-// 99.5%: the clamp is an exact geometric bound (not an estimate), so even 100% would land exactly
-// on the object-fit:cover seam, never past it - 99.5% keeps a hair of float-rounding safety while
-// actually using the pan range already being computed instead of discarding most of an eighth of it.
-function pitShift(){
-  const desired=PIT_SHIFT_BASE+eyeUp*PIT_SHIFT_RANGE;
-  const img=pitPhotoEl();
-  const iw=(img&&img.naturalWidth)||1672, ih=(img&&img.naturalHeight)||941;
-  const vw=innerWidth||1, vh=innerHeight||1;
-  const s=Math.max(vw/iw,vh/ih), dispH=ih*s;
-  const maxShift=Math.max(0,(dispH-vh)/(2*vh))*0.995;
-  return Math.max(0,Math.min(desired,maxShift));
-}
-function updatePitPhotoTransform(){
-  const t='scale('+PIT_ZOOM+') translateY('+(pitShift()*100).toFixed(2)+'%)';
-  const p=document.getElementById('pitPhotoP'), b=document.getElementById('pitPhotoB');
-  if(p) p.style.transform=t;
-  if(b) b.style.transform=t;
-}
-function pitMap(img,cw,ch,fx,fy){
-  const iw=img.naturalWidth||1672, ih=img.naturalHeight||941;
-  const s=Math.max(cw/iw, ch/ih);
-  const dw=iw*s, dh=ih*s;
-  const ox=(cw-dw)*0.5, oy=(ch-dh)*0.5;
-  const cx=cw/2, cy=ch/2;
-  // scale about the centre, then translate — the same order the browser applies it
-  const x=cx+((ox+fx*dw)-cx)*PIT_ZOOM;
-  const y=cy+((oy+fy*dh)-cy)*PIT_ZOOM + dh*PIT_ZOOM*pitShift();
-  return { x, y, s:s*PIT_ZOOM };
-}
-function drawPitLive(){
-  updatePitPhotoTransform();
-  const cv=document.getElementById('pitLive'); if(!cv) return;
-  const img=pitPhotoEl(); if(!img) return;
-  const cw=Math.round(innerWidth), ch=Math.round(innerHeight);
-  const dpr=Math.min(devicePixelRatio||1,2);
-  if(cv.width!==Math.round(cw*dpr)||cv.height!==Math.round(ch*dpr)){
-    cv.width=Math.round(cw*dpr); cv.height=Math.round(ch*dpr);
-  }
-  const g=cv.getContext('2d');
-  g.setTransform(dpr,0,0,dpr,0,0);
-  g.clearRect(0,0,cw,ch);
-  const G=pitGauges();
-  const mph=P.spd*KT, gy=groundY(P.pos.x,P.pos.z);
-  const alt=Math.max(0,(P.pos.y-gy)*FT);
-  const vs=P.vSpeed*FT*60;
-  const val={
-    asi: Math.min(1,mph/500),
-    alt: (alt%10000)/10000,
-    vsi: 0.5+Math.max(-0.5,Math.min(0.5,vs/6000)),
-    rpm: 0.18+P.throttle*0.72,
-    cmp: (((P.heading*R2D)%360+360)%360)/360
-  };
-  for(const k in G){
-    const m=pitMap(img,cw,ch,G[k].x,G[k].y);
-    const r=G[k].r*(img.naturalWidth||1672)*m.s;
-    if(r<4||m.x<-r||m.x>cw+r||m.y<-r||m.y>ch+r) continue;
-    if(k==='att'){ photoAttitude(g,m.x,m.y,r,P.pitch,P.roll); }
-    else { needle(g,m.x,m.y,r,val[k]||0); }
-    glassSheen(g,m.x,m.y,r);
-  }
-}
 // approach aid: shows glidepath and lineup for the strip
 function updateApproach(){
   const el=document.getElementById('apr'); if(!el) return;
@@ -4803,18 +4667,34 @@ function updateAudio(dt){
   // before this one. Same honest limit as always with pure WebAudio synthesis: the numbers below
   // are now grounded in a direct FFT of the user's own reference clip, not a guess and not a
   // generic literature figure - but whether it actually sounds right is still only Oliver's call.
+  //
+  // Reported again after EU BUILD 56 shipped this reference-matched version: "immer noch
+  // furchtbar, muss dumpfer werden" - a clear, unambiguous direction this time (duller/more
+  // muffled), not another vague "wrong" to re-research from scratch. Acted on directly rather
+  // than guessing yet another register/detune (this project's own lesson from four rounds of
+  // that: change the LEVER, not the same two numbers again). The FFT-matched reference clip is a
+  // close-mic'd recording; EU BUILD 56's lowpass (5000-6500 Hz) sits so far above the 1300-2300 Hz
+  // fundamental that almost the sawtooth's ENTIRE harmonic series passes through close to
+  // unfiltered - harmonics 2-4 alone reach up to ~9200 Hz at full rpm, all audible under a
+  // 6500 Hz ceiling - which is exactly what a raw, bright, buzzy tone sounds like up close, not
+  // what a jet engine sounds like from a cockpit or from the ground. "Dumpfer" is a lowpass
+  // problem before anything else: brought down to just above the second harmonic (2300-3400 Hz,
+  // versus the reference's own measured 2x peaks at 4425-4689 Hz) so that harmonic still colours
+  // the tone slightly without the higher, harsher ones ringing through, and the noise layer
+  // (already fairly small) trimmed further and darkened (mid-band lowered) so it reads as a
+  // distant rumble rather than an audible hiss riding on top.
   if(JET_KINDS.includes(P.ac)){
     const tf=1300+rpm*1000+(P.spd/Math.max(1,MAX_SPD))*180;
     eng.freq+=(tf-eng.freq)*Math.min(1,4*dt);
     eng.o1.frequency.setTargetAtTime(eng.freq,ct,0.10);
     eng.o2.frequency.setTargetAtTime(eng.freq*1.0025,ct,0.10);
-    eng.lp.frequency.setTargetAtTime(5000+rpm*1500,ct,0.15);
+    eng.lp.frequency.setTargetAtTime(2300+rpm*1100,ct,0.15);
     const vol=flying?(0.05+rpm*0.10):0;
     eng.eg.gain.setTargetAtTime(vol,ct,0.18);
     eng.lfoG.gain.setTargetAtTime(0,ct,0.2);
-    eng.nbp.frequency.setTargetAtTime(1900+rpm*1300,ct,0.15);
+    eng.nbp.frequency.setTargetAtTime(900+rpm*700,ct,0.15);
     eng.nbp.Q.setTargetAtTime(0.45,ct,0.2);
-    eng.ng.gain.setTargetAtTime(vol*0.09,ct,0.15);
+    eng.ng.gain.setTargetAtTime(vol*0.06,ct,0.15);
   } else {
     eng.nbp.Q.setTargetAtTime(0.7,ct,0.15);
     // the Jug's R-2800 sits lower and rougher than the 109's inline
@@ -5166,14 +5046,6 @@ function bindInput(){
   document.getElementById('armBtn').addEventListener('pointerdown',e=>{ e.preventDefault();
     weapon=(weapon==='rocket')?'bomb':'rocket'; applyWeaponUI();
     flash(weapon==='rocket'?'ROCKETS ARMED':'BOMBS ARMED',700); });
-  document.getElementById('viewBtn').addEventListener('pointerdown',e=>{ e.preventDefault();
-    viewMode=(viewMode==='chase')?'cockpit':'chase';
-    e.currentTarget.innerHTML=(viewMode==='chase')?'VIEW<br>CHASE':'VIEW<br>PIT';
-    document.getElementById('cockpitFrame').classList.toggle('show',viewMode==='cockpit');
-    document.getElementById('gunsight').classList.toggle('show',viewMode==='chase');
-    showPitPhoto();
-    showLookButtons(true);
-  });
   // ---- live left/right invert, exactly as in the carrier game ----
   const st=document.getElementById('steerBtn');
   st.addEventListener('pointerdown',e=>{ e.preventDefault();
@@ -5182,20 +5054,11 @@ function bindInput(){
     flash(steerSign<0?'STEERING INVERTED':'STEERING NORMAL',900); });
   // ---- look ----
   const look=(d,e)=>{ e.preventDefault();
-    if(viewMode==='cockpit'){ eyeUp=Math.max(-1,Math.min(1,eyeUp+d*0.25));
-      try{localStorage.setItem('eu_eye',String(eyeUp));}catch(x){} }
-    else { chaseUp=Math.max(-1,Math.min(2,chaseUp+d*0.3));
-      try{localStorage.setItem('eu_chase',String(chaseUp));}catch(x){} } };
+    chaseUp=Math.max(-1,Math.min(2,chaseUp+d*0.3));
+    try{localStorage.setItem('eu_chase',String(chaseUp));}catch(x){} };
   const lu=document.getElementById('lookUp'), ld=document.getElementById('lookDn');
   // These were styled display:none and never switched on, so the view could not be moved at
   // all - the carrier game shows them the whole time you are flying.
-  // only the photograph for the aeroplane you are actually in
-  window.showPitPhoto=()=>{
-    const p=document.getElementById('pitPhotoP'), b=document.getElementById('pitPhotoB');
-    const on=(viewMode==='cockpit');
-    if(p) p.style.display=(on&&P.ac!=='bf109')?'block':'none';
-    if(b) b.style.display=(on&&P.ac==='bf109')?'block':'none';
-  };
   window.showLookButtons=(on)=>{ if(lu) lu.style.display=on?'block':'none';
                                  if(ld) ld.style.display=on?'block':'none'; };
   if(lu) lu.addEventListener('pointerdown',e=>look(1,e));
@@ -5285,7 +5148,6 @@ function init(){
   loadTreePack();
   try{
     const d=localStorage.getItem('eu_diff'); if(d!==null) diffIdx=Math.max(0,Math.min(2,parseInt(d,10)||0));
-    const e=localStorage.getItem('eu_eye'); if(e!==null) eyeUp=parseFloat(e)||0;
     const c=localStorage.getItem('eu_chase'); if(c!==null) chaseUp=parseFloat(c)||0;
     const iv=localStorage.getItem('eu_inv'); if(iv!==null) invertPitch=(iv==='1');
   }catch(e){}
@@ -5312,7 +5174,6 @@ function init(){
   window.addEventListener('orientationchange',()=>{ setTimeout(onResize,150); setTimeout(onResize,450); });
   document.getElementById('gunsight').classList.add('show');
   if(window.showLookButtons) window.showLookButtons(true);
-  if(window.showPitPhoto) window.showPitPhoto();
 
   // ---- iPad/Safari zoom-guard -------------------------------------------------
   // Reported: two quick taps that miss every button zoom Safari into the page, and the
@@ -5393,7 +5254,6 @@ function animate(){
     // pitched the opposite way to the direction it was actually flying.
     planeGroup.rotateY(P.heading); planeGroup.rotateX(-P.pitch); planeGroup.rotateZ(-P.roll);
     if(playerModel){
-      playerModel.visible=(viewMode!=='cockpit');
       const gr=playerModel.getObjectByName('gear');
       if(gr) gr.visible=P.gear>0.05;
       const pr=playerModel.getObjectByName('prop');
@@ -5403,7 +5263,6 @@ function animate(){
     updateApproach();
     hudT-=raw; if(hudT<=0){ hudT=0.1; updateHUD(); }
     mmT-=raw; if(mmT<=0){ mmT=0.2; drawMinimap(); }
-    if(viewMode==='cockpit') drawPitLive();     // needles every frame, they must not stutter
     updateRadio(raw); updateAudio(raw);
     // a readable panel instead of squinting at nine-pixel type
     {

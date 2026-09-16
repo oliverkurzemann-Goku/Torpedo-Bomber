@@ -125,7 +125,6 @@
   #gearBtn{left:max(20px,env(safe-area-inset-left));top:30%;}
   #flapBtn{left:max(20px,env(safe-area-inset-left));top:calc(30% + 56px);}
   #armBtn{left:max(20px,env(safe-area-inset-left));top:calc(30% + 112px);}
-  #viewBtn{left:max(20px,env(safe-area-inset-left));top:calc(30% + 168px);}
   #steerBtn{position:fixed;right:max(20px,env(safe-area-inset-right));top:50%;
     transform:translateY(-50%);width:56px;height:56px;border-radius:8px;z-index:21;
     touch-action:none;background:linear-gradient(180deg,rgba(40,46,30,.85),rgba(20,24,16,.85));
@@ -151,23 +150,7 @@
       radial-gradient(50px 60px at 52% 22%,rgba(16,12,7,.55),transparent 70%);}
   #ltn{position:fixed;inset:0;background:#e6ecff;opacity:0;pointer-events:none;z-index:40;}
 
-  /* ---------- cockpit: real photograph, live needles drawn onto its own bezels ---------- */
-  #cockpitFrame{position:fixed;inset:0;z-index:9;pointer-events:none;display:none;}
-  #cockpitFrame.show{display:block;}
-  /* Reported "cockpit view looks cool but you can't see anything": measured against the real
-     photo at 1.34x/15% (the old values), only 28-38% of the screen was actual sky/ground - and
-     most of that sliver was the SIDE windows, not the forward-down view a ground-attack game
-     needs. 1.34x was cropping away transparent canopy glass that the photo already has; scale(1)
-     is the loosest crop object-fit:cover allows (below 1 would show the page background past the
-     photo's own edges, which reads as a broken image, not glass). The 26% push down trades the
-     boring lower dashboard/pedals for more sky above - measured 38%->~64% visible. Both this
-     value and the eyeUp-driven range added on top in JS must stay in step with PIT_ZOOM/
-     PIT_SHIFT_BASE/PIT_SHIFT_RANGE in the script, which sets this transform live every frame. */
-  #pitPhotoP,#pitPhotoB{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;
-    object-position:50% 50%;transform:scale(1.0) translateY(26%);transform-origin:50% 50%;
-    pointer-events:none;z-index:1;display:none;}
-  #pitLive{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:2;}
-  /* gunsight for the chase view */
+  /* gunsight - the only view now, always shown while flying */
   #gunsight{position:absolute;left:50%;top:44%;width:44px;height:44px;margin:-22px 0 0 -22px;
     z-index:11;pointer-events:none;display:none;
     border:2px solid rgba(255,140,70,.7);border-radius:50%;}
@@ -254,7 +237,7 @@
   <div style="width:100%;height:4px;background:repeating-linear-gradient(45deg,#ffd400,#ffd400 8px,#111 8px,#111 16px);"></div>
   <span id="testVersionBannerText" style="background:#111;color:#ffd400;font-family:monospace;font-weight:800;font-size:11px;letter-spacing:.5px;padding:3px 10px;border:1px solid #ffd400;border-top:none;border-radius:0 0 6px 6px;"></span>
 </div>
-<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — REMAGEN BUILD 4 — shipped 2026-09-09';</script>
+<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — REMAGEN BUILD 5 — shipped 2026-09-16';</script>
 <!-- ===== END TEMP TEST-ONLY VERSION BANNER ===== -->
 <div id="app"></div>
 
@@ -281,7 +264,7 @@
   <div id="flash"></div>
   <div id="gunsight"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">REMAGEN BUILD 4</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">REMAGEN BUILD 5</div>
 
   <div id="apr">
     <div id="aprCall"></div>
@@ -296,16 +279,6 @@
 <div id="dmgVig"></div>
 <div id="ltn"></div>
 
-<div id="cockpitFrame">
-  <img id="pitPhotoP" src="cockpit_p47.png?v=2" alt=""
-       onerror="this.onerror=function(){this.onerror=null;this.dataset.dead='1';};
-                this.src='cockpit%20p47.png?v=2';">
-  <img id="pitPhotoB" src="cockpit_bf109.png?v=2" alt=""
-       onerror="this.onerror=function(){this.onerror=null;this.dataset.dead='1';};
-                this.src='cockpit%20bf109.png?v=2';">
-  <canvas id="pitLive"></canvas>
-</div>
-
 <div id="stick"><div id="stickKnob"></div><div id="stickHint">Pitch / Roll</div></div>
 <div id="throttle"><div id="thrFill"></div><div id="thrLbl">THR</div><div id="thrVal">60</div></div>
 <div id="dropBtn">DROP<br>BOMB</div>
@@ -313,7 +286,6 @@
 <div id="gearBtn" class="ctlBtn">GEAR<br>&#9660; DN</div>
 <div id="flapBtn" class="ctlBtn">FLAPS<br>UP</div>
 <div id="armBtn" class="ctlBtn">ARM<br>BOMB</div>
-<div id="viewBtn" class="ctlBtn">VIEW<br>CHASE</div>
 <div id="steerBtn">STEER<br>L/R</div>
 <div id="turnBtn" class="ctlBtn" style="display:none;left:max(20px,env(safe-area-inset-left));top:calc(30% + 224px);width:58px;height:50px;">TURN<br>MODEL</div>
 <div id="mdlBox" style="display:none;position:fixed;left:50%;transform:translateX(-50%);
@@ -440,7 +412,7 @@ let realWorldReady=false;
 // Populated once loadRealWorld() finds them in historicalMgr's tiles (see that function) - the
 // actual gameplay hooks onto these REAL objects (position, mesh, hit-box) instead of building new
 // procedural ones the way spawnTarget()/makeFlak() etc. used to for the synthetic map.
-let realBridge=null, realFlak=[], realFactory=null, realAirfield=null;
+let realBridge=null, realFlak=[], realFactory=null;
 
 const AF_Y_FALLBACK=180;     // only used if terrain.getHeight() somehow isn't ready yet when
                              // buildAirfield() runs — real height overwrites this immediately after
@@ -470,7 +442,7 @@ let targets=[], flakUnits=[], bullets=[], tracers=[], bombs=[], rockets=[];
 let explosions=[], smokes=[], smokePool=[], debris=[], craters=[];
 let enemyAir=[], wingmen=[], groundFire=[];
 let killCam=null, shakeT=0, shakeAmt=0;
-let viewMode='chase', eyeUp=0, chaseUp=0, invertPitch=true, dbgOn=false;
+let chaseUp=0, invertPitch=true, dbgOn=false;
 let firing=false, gunT=0, weapon='bomb';
 let inputPitch=0, inputRoll=0;
 let steerSign=1;                 // live left/right invert, same as the carrier game
@@ -675,13 +647,30 @@ async function loadRealWorld(){
   // objective tracking) — found by kind, not guessed by index, since which tile ends up holding
   // which object is a fact about the real data (real/data/historical/*.json), not something this
   // file should hard-code positions for a second time.
+  //
+  // Reported (real iPad, screenshot): "Flugzeuge starten vor der runway im Gras" — measured, not
+  // guessed: real/data/historical/0_4.json's "airfields" entry sits at local (787.0,2087.6) in
+  // tile (0,4); with TILE_SIZE=4000 that is world (787,18087.6) — EXACTLY AF_X/AF_Z, the same
+  // centre buildAirfield() below already uses for its own, axis-aligned runway. But
+  // HistoricalObjectManager._buildAirfield() renders ITS OWN copy of that runway too (this class
+  // is a general-purpose visual layer, not aware that this particular game already builds its
+  // own strip) — rotated by the real, historically-plausible rotY=0.3 rad (~17°) that
+  // buildAirfield() deliberately does NOT use (see that function's own comment: every runway-
+  // relative gameplay check in this file assumes an axis-aligned strip). Two overlapping runway
+  // boxes at the same centre but ~17° apart is exactly what reads as "the plane sits in the
+  // grass in front of the runway" — the visible (real, rotated) strip and the one the plane
+  // actually spawns/taxis on (synthetic, axis-aligned) diverge more the further from centre you
+  // look, including right at the spawn point 310 units off-centre. Removed here (never added to
+  // the scene a second time down in buildAirfield()) rather than kept and reconciled — this file
+  // already has its own, gameplay-correct runway; a second decorative one from a general-purpose
+  // manager that doesn't know about it is pure noise.
   for(const g of historicalMgr.tiles.values()){
     if(!g||!g.userData.objects) continue;
-    for(const sub of g.userData.objects){
+    for(const sub of g.userData.objects.slice()){
       if(sub.userData.kind==='bridge') realBridge=sub;
       else if(sub.userData.kind==='flak') realFlak.push(sub);
       else if(sub.userData.kind==='factory') realFactory=sub;
-      else if(sub.userData.kind==='airfield') realAirfield=sub;
+      else if(sub.userData.kind==='airfield'){ g.remove(sub); g.userData.objects.splice(g.userData.objects.indexOf(sub),1); }
     }
   }
 
@@ -3377,7 +3366,6 @@ function startMission(i){
   const v=document.getElementById('dmgVig'); if(v) v.style.opacity='0';
   const o=document.getElementById('oilCanopy'); if(o) o.style.opacity='0';
   applyWeaponUI(); resetCtlUI();
-  if(window.showPitPhoto) window.showPitPhoto();
   updateHUD();
   radioSay(m.free?'FIELD IS YOURS — HAVE FUN':'BEAUFORT TOWER — CLEARED FOR TAKE-OFF, RUNWAY ZERO NINE');
   flash('THROTTLE UP — ROLL',1600);
@@ -3411,36 +3399,23 @@ function updateCamera(dt){
     camera.position.set(t.x+Math.cos(killCam.ang)*70,t.y+26,t.z+Math.sin(killCam.ang)*70);
     camera.lookAt(t); return;
   }
-  if(viewMode==='cockpit'){
-    const fastC=Math.max(0,Math.min(1,(P.spd-APP_SPD)/(MAX_SPD-APP_SPD)));
-    const wantF=62+fastC*12;
-    camera.fov += (wantF-camera.fov)*Math.min(1,2*dt); camera.updateProjectionMatrix();
-    const up=new THREE.Vector3(0,1,0).applyAxisAngle(nose,-P.roll);
-    camera.position.copy(P.pos).addScaledVector(nose,1.2).add(new THREE.Vector3(0,1.1,0));
-    // Look over the nose, not at it: a fighter pilot sits high and the sight line runs well
-    // above the cowling. Without this the view was mostly instrument panel.
-    const look=P.pos.clone().addScaledVector(nose,140);
-    look.y+=26+eyeUp*36;
-    camera.up.copy(up); camera.lookAt(look);
-  } else {
-    // Speed has to be felt, not just read off a gauge. Widening the field of view and easing
-    // the camera back as she accelerates stretches the world past the edges of the screen —
-    // the same trick every flight sim uses, and the reason 340 mph felt like 90 before.
-    // A wide field of view sells speed, but taken too far the aeroplane shrinks to a dot.
-    // Keep the sweep modest and hold the camera at a near-constant distance.
-    const fast=Math.max(0,Math.min(1,(P.spd-APP_SPD)/(MAX_SPD-APP_SPD)));
-    const wantFov=60+fast*11;
-    camera.fov += (wantFov-camera.fov)*Math.min(1,2*dt);
-    camera.updateProjectionMatrix();
-    const back=nose.clone().multiplyScalar(-(28+fast*5));
-    const want=P.pos.clone().add(back).add(new THREE.Vector3(0,8.5+chaseUp*8+fast*1.5,0));
-    const gy=groundY(want.x,want.z)+6;
-    if(want.y<gy) want.y=gy;
-    camera.position.lerp(want,Math.min(1,7*dt));
-    const up=new THREE.Vector3(0,1,0).applyAxisAngle(nose,-P.roll*0.55);
-    camera.up.copy(up);
-    camera.lookAt(P.pos.clone().addScaledVector(nose,50).add(new THREE.Vector3(0,2,0)));
-  }
+  // Speed has to be felt, not just read off a gauge. Widening the field of view and easing
+  // the camera back as she accelerates stretches the world past the edges of the screen —
+  // the same trick every flight sim uses, and the reason 340 mph felt like 90 before.
+  // A wide field of view sells speed, but taken too far the aeroplane shrinks to a dot.
+  // Keep the sweep modest and hold the camera at a near-constant distance.
+  const fast=Math.max(0,Math.min(1,(P.spd-APP_SPD)/(MAX_SPD-APP_SPD)));
+  const wantFov=60+fast*11;
+  camera.fov += (wantFov-camera.fov)*Math.min(1,2*dt);
+  camera.updateProjectionMatrix();
+  const back=nose.clone().multiplyScalar(-(28+fast*5));
+  const want=P.pos.clone().add(back).add(new THREE.Vector3(0,8.5+chaseUp*8+fast*1.5,0));
+  const gy=groundY(want.x,want.z)+6;
+  if(want.y<gy) want.y=gy;
+  camera.position.lerp(want,Math.min(1,7*dt));
+  const up=new THREE.Vector3(0,1,0).applyAxisAngle(nose,-P.roll*0.55);
+  camera.up.copy(up);
+  camera.lookAt(P.pos.clone().addScaledVector(nose,50).add(new THREE.Vector3(0,2,0)));
   if(shakeT>0){
     const k=shakeAmt*shakeT;
     camera.position.x+=(Math.random()-0.5)*k; camera.position.y+=(Math.random()-0.5)*k;
@@ -3554,151 +3529,6 @@ function drawMinimap(){
   g.restore();
   g.fillStyle='#cabf9c'; g.beginPath();
   g.moveTo(R,R-6); g.lineTo(R-4,R+5); g.lineTo(R+4,R+5); g.closePath(); g.fill();
-}
-// ============================================================
-//  COCKPIT — the needles are drawn onto the real bezels of the photograph, not painted over
-//  it. Positions were found by circle detection in the photo, then checked by eye, and are
-//  stored as fractions so they follow the image at any screen size.
-// ============================================================
-const PIT_P47={
-  asi:{x:0.4055,y:0.4463,r:0.0173}, att:{x:0.4557,y:0.4485,r:0.0179},
-  alt:{x:0.5502,y:0.4485,r:0.0185}, vsi:{x:0.5478,y:0.5250,r:0.0179},
-  cmp:{x:0.4545,y:0.5250,r:0.0179}, rpm:{x:0.4545,y:0.5972,r:0.0173}
-};
-const PIT_BF109={
-  asi:{x:0.4079,y:0.5016,r:0.0191}, att:{x:0.4581,y:0.4952,r:0.0197},
-  alt:{x:0.5108,y:0.5037,r:0.0197}, vsi:{x:0.4605,y:0.5866,r:0.0197},
-  cmp:{x:0.4115,y:0.5866,r:0.0197}, rpm:{x:0.5108,y:0.5930,r:0.0197}
-};
-function pitPhotoEl(){ return document.getElementById(P.ac==='bf109'?'pitPhotoB':'pitPhotoP'); }
-function pitGauges(){ return P.ac==='bf109'? PIT_BF109 : PIT_P47; }
-
-function needle(g,x,y,r,v,opt){
-  opt=opt||{};
-  const a=-Math.PI/2 + (Math.max(0,Math.min(1,v))-0.5)*1.5*Math.PI;   // 7:30 -> 12 -> 4:30
-  const len=r*(opt.len||0.80), tail=r*0.16, w=r*0.085;
-  g.save(); g.translate(x,y); g.rotate(a);
-  g.beginPath();
-  g.moveTo(-tail,-w*0.7); g.lineTo(len,0); g.lineTo(-tail,w*0.7); g.closePath();
-  g.fillStyle='rgba(0,0,0,0.55)'; g.translate(1.2,1.6); g.fill(); g.translate(-1.2,-1.6);
-  g.beginPath();
-  g.moveTo(-tail,-w); g.lineTo(len,0); g.lineTo(-tail,w); g.closePath();
-  g.fillStyle=opt.color||'#efe6cc'; g.fill();
-  g.restore();
-  g.beginPath(); g.arc(x,y,r*0.10,0,6.2832); g.fillStyle='#15150f'; g.fill();
-}
-function glassSheen(g,x,y,r){
-  const gr=g.createLinearGradient(x-r*0.7,y-r*0.8,x+r*0.4,y+r*0.6);
-  gr.addColorStop(0,'rgba(255,255,255,0.10)'); gr.addColorStop(0.45,'rgba(255,255,255,0.02)');
-  gr.addColorStop(1,'rgba(255,255,255,0)');
-  g.save(); g.beginPath(); g.arc(x,y,r*0.97,0,6.2832); g.clip();
-  g.fillStyle=gr; g.fillRect(x-r,y-r,r*2,r*2); g.restore();
-}
-function photoAttitude(g,x,y,r,pitch,roll){
-  g.save();
-  g.beginPath(); g.arc(x,y,r*0.80,0,6.2832); g.clip();
-  g.translate(x,y); g.rotate(-roll);
-  const off=Math.max(-r,Math.min(r, pitch*r*1.5));
-  g.fillStyle='#4d7ea8'; g.fillRect(-r,-r*1.6+off,r*2,r*1.6);
-  g.fillStyle='#6b5334'; g.fillRect(-r,off,r*2,r*1.6);
-  g.strokeStyle='#efe6cc'; g.lineWidth=Math.max(1,r*0.05);
-  g.beginPath(); g.moveTo(-r,off); g.lineTo(r,off); g.stroke();
-  g.restore();
-  g.strokeStyle='#e8b84b'; g.lineWidth=Math.max(1,r*0.07);
-  g.beginPath(); g.moveTo(x-r*0.42,y); g.lineTo(x-r*0.12,y);
-  g.moveTo(x+r*0.12,y); g.lineTo(x+r*0.42,y); g.stroke();
-}
-// Map a point given as a fraction of the photo onto the screen, matching exactly what CSS
-// does with object-fit:cover, object-position 50% 50% and the scale/translateY set by
-// updatePitPhotoTransform() below. PIT_ZOOM here must stay in step with the CSS transform's
-// scale(), or the needles drift off their dials.
-const PIT_ZOOM=1.0, PIT_SHIFT_BASE=0.26, PIT_SHIFT_RANGE=0.10;
-// Live look-around: the old shift was a fixed constant, so the "look up/down" buttons moved
-// only the 3D camera - the flat photo never budged, capping how much sky you could ever see in
-// the pit no matter how far you looked. Tying the photo's own pan to eyeUp (already used for the
-// 3D camera look target, see updateCamera()) lets looking up trade more of the side canopy for
-// more forward-up sky, on the same input the player already has.
-// PIT_SHIFT_BASE (26%) was tuned and verified against one landscape iPad viewport. Reported
-// back from a real device: on a wider/shorter one (Safari's own chrome eating into the visible
-// height changes the effective aspect ratio, and an iPad Pro 12.9" landscape is wider still than
-// what was tested) that fixed percentage push the crop past the photo's own top edge, opening a
-// band of plain page background above the canopy - worse than the untouched crop it replaced,
-// because object-fit:cover only guarantees enough image to cover the box at zero shift; how much
-// spare margin exists above that before running off the edge shrinks as the viewport gets wider
-// relative to the 1400x787 photo, and at some aspect ratios there is barely any. Clamped to the
-// margin object-fit:cover actually leaves at the CURRENT viewport/image size instead of a fixed
-// percentage - full 26% (plus look-up) on a tall/narrow screen where there is room for it, less
-// automatically on a wide/short one, never enough to expose the edge.
-//
-// The 8% safety factor this used to reserve turned out to matter more than it looked: the same
-// function in torpedo-carrier.html got the identical treatment after a real report that the SBD's
-// canopy frame clipped at the top while the Avenger's didn't, even sharing one photo size and one
-// clamp - measuring the actual photos' alpha channels showed the SBD's frame simply has far less
-// transparent margin above it than the Avenger's, so the 8% this function always held back was
-// most of the difference between "frame intact" and "frame clipped" on the tighter photo. Both
-// cockpit photos here (p47, bf109) were measured the same way: the P-47's frame reaches
-// substantial width by source row ~2 of 787 (0.3% down) versus the Bf 109's row ~10 (1.3%) - the
-// same asymmetry, smaller margin on one photo than the other sharing this one function. Raised to
-// 99.5%: the clamp is an exact geometric bound (not an estimate), so even 100% would land exactly
-// on the object-fit:cover seam, never past it - 99.5% keeps a hair of float-rounding safety while
-// actually using the pan range already being computed instead of discarding most of an eighth of it.
-function pitShift(){
-  const desired=PIT_SHIFT_BASE+eyeUp*PIT_SHIFT_RANGE;
-  const img=pitPhotoEl();
-  const iw=(img&&img.naturalWidth)||1672, ih=(img&&img.naturalHeight)||941;
-  const vw=innerWidth||1, vh=innerHeight||1;
-  const s=Math.max(vw/iw,vh/ih), dispH=ih*s;
-  const maxShift=Math.max(0,(dispH-vh)/(2*vh))*0.995;
-  return Math.max(0,Math.min(desired,maxShift));
-}
-function updatePitPhotoTransform(){
-  const t='scale('+PIT_ZOOM+') translateY('+(pitShift()*100).toFixed(2)+'%)';
-  const p=document.getElementById('pitPhotoP'), b=document.getElementById('pitPhotoB');
-  if(p) p.style.transform=t;
-  if(b) b.style.transform=t;
-}
-function pitMap(img,cw,ch,fx,fy){
-  const iw=img.naturalWidth||1672, ih=img.naturalHeight||941;
-  const s=Math.max(cw/iw, ch/ih);
-  const dw=iw*s, dh=ih*s;
-  const ox=(cw-dw)*0.5, oy=(ch-dh)*0.5;
-  const cx=cw/2, cy=ch/2;
-  // scale about the centre, then translate — the same order the browser applies it
-  const x=cx+((ox+fx*dw)-cx)*PIT_ZOOM;
-  const y=cy+((oy+fy*dh)-cy)*PIT_ZOOM + dh*PIT_ZOOM*pitShift();
-  return { x, y, s:s*PIT_ZOOM };
-}
-function drawPitLive(){
-  updatePitPhotoTransform();
-  const cv=document.getElementById('pitLive'); if(!cv) return;
-  const img=pitPhotoEl(); if(!img) return;
-  const cw=Math.round(innerWidth), ch=Math.round(innerHeight);
-  const dpr=Math.min(devicePixelRatio||1,2);
-  if(cv.width!==Math.round(cw*dpr)||cv.height!==Math.round(ch*dpr)){
-    cv.width=Math.round(cw*dpr); cv.height=Math.round(ch*dpr);
-  }
-  const g=cv.getContext('2d');
-  g.setTransform(dpr,0,0,dpr,0,0);
-  g.clearRect(0,0,cw,ch);
-  const G=pitGauges();
-  const mph=P.spd*KT, gy=groundY(P.pos.x,P.pos.z);
-  const alt=Math.max(0,(P.pos.y-gy)*FT);
-  const vs=P.vSpeed*FT*60;
-  const val={
-    asi: Math.min(1,mph/500),
-    alt: (alt%10000)/10000,
-    vsi: 0.5+Math.max(-0.5,Math.min(0.5,vs/6000)),
-    rpm: 0.18+P.throttle*0.72,
-    cmp: (((P.heading*R2D)%360+360)%360)/360
-  };
-  for(const k in G){
-    const m=pitMap(img,cw,ch,G[k].x,G[k].y);
-    const r=G[k].r*(img.naturalWidth||1672)*m.s;
-    if(r<4||m.x<-r||m.x>cw+r||m.y<-r||m.y>ch+r) continue;
-    if(k==='att'){ photoAttitude(g,m.x,m.y,r,P.pitch,P.roll); }
-    else { needle(g,m.x,m.y,r,val[k]||0); }
-    glassSheen(g,m.x,m.y,r);
-  }
 }
 // approach aid: shows glidepath and lineup for the strip
 function updateApproach(){
@@ -4163,14 +3993,6 @@ function bindInput(){
   document.getElementById('armBtn').addEventListener('pointerdown',e=>{ e.preventDefault();
     weapon=(weapon==='rocket')?'bomb':'rocket'; applyWeaponUI();
     flash(weapon==='rocket'?'ROCKETS ARMED':'BOMBS ARMED',700); });
-  document.getElementById('viewBtn').addEventListener('pointerdown',e=>{ e.preventDefault();
-    viewMode=(viewMode==='chase')?'cockpit':'chase';
-    e.currentTarget.innerHTML=(viewMode==='chase')?'VIEW<br>CHASE':'VIEW<br>PIT';
-    document.getElementById('cockpitFrame').classList.toggle('show',viewMode==='cockpit');
-    document.getElementById('gunsight').classList.toggle('show',viewMode==='chase');
-    showPitPhoto();
-    showLookButtons(true);
-  });
   // ---- live left/right invert, exactly as in the carrier game ----
   const st=document.getElementById('steerBtn');
   st.addEventListener('pointerdown',e=>{ e.preventDefault();
@@ -4179,20 +4001,11 @@ function bindInput(){
     flash(steerSign<0?'STEERING INVERTED':'STEERING NORMAL',900); });
   // ---- look ----
   const look=(d,e)=>{ e.preventDefault();
-    if(viewMode==='cockpit'){ eyeUp=Math.max(-1,Math.min(1,eyeUp+d*0.25));
-      try{localStorage.setItem('re_eye',String(eyeUp));}catch(x){} }
-    else { chaseUp=Math.max(-1,Math.min(2,chaseUp+d*0.3));
-      try{localStorage.setItem('re_chase',String(chaseUp));}catch(x){} } };
+    chaseUp=Math.max(-1,Math.min(2,chaseUp+d*0.3));
+    try{localStorage.setItem('re_chase',String(chaseUp));}catch(x){} };
   const lu=document.getElementById('lookUp'), ld=document.getElementById('lookDn');
   // These were styled display:none and never switched on, so the view could not be moved at
   // all - the carrier game shows them the whole time you are flying.
-  // only the photograph for the aeroplane you are actually in
-  window.showPitPhoto=()=>{
-    const p=document.getElementById('pitPhotoP'), b=document.getElementById('pitPhotoB');
-    const on=(viewMode==='cockpit');
-    if(p) p.style.display=(on&&P.ac!=='bf109')?'block':'none';
-    if(b) b.style.display=(on&&P.ac==='bf109')?'block':'none';
-  };
   window.showLookButtons=(on)=>{ if(lu) lu.style.display=on?'block':'none';
                                  if(ld) ld.style.display=on?'block':'none'; };
   if(lu) lu.addEventListener('pointerdown',e=>look(1,e));
@@ -4295,7 +4108,6 @@ function init(){
   });
   try{
     const d=localStorage.getItem('re_diff'); if(d!==null) diffIdx=Math.max(0,Math.min(2,parseInt(d,10)||0));
-    const e=localStorage.getItem('re_eye'); if(e!==null) eyeUp=parseFloat(e)||0;
     const c=localStorage.getItem('re_chase'); if(c!==null) chaseUp=parseFloat(c)||0;
     const iv=localStorage.getItem('re_inv'); if(iv!==null) invertPitch=(iv==='1');
   }catch(e){}
@@ -4322,7 +4134,6 @@ function init(){
   window.addEventListener('orientationchange',()=>{ setTimeout(onResize,150); setTimeout(onResize,450); });
   document.getElementById('gunsight').classList.add('show');
   if(window.showLookButtons) window.showLookButtons(true);
-  if(window.showPitPhoto) window.showPitPhoto();
 
   // ---- iPad/Safari zoom-guard -------------------------------------------------
   // Reported: two quick taps that miss every button zoom Safari into the page, and the
@@ -4409,7 +4220,6 @@ function animate(){
     // pitched the opposite way to the direction it was actually flying.
     planeGroup.rotateY(P.heading); planeGroup.rotateX(-P.pitch); planeGroup.rotateZ(-P.roll);
     if(playerModel){
-      playerModel.visible=(viewMode!=='cockpit');
       const gr=playerModel.getObjectByName('gear');
       if(gr) gr.visible=P.gear>0.05;
       const pr=playerModel.getObjectByName('prop');
@@ -4419,7 +4229,6 @@ function animate(){
     updateApproach();
     hudT-=raw; if(hudT<=0){ hudT=0.1; updateHUD(); }
     mmT-=raw; if(mmT<=0){ mmT=0.2; drawMinimap(); }
-    if(viewMode==='cockpit') drawPitLive();     // needles every frame, they must not stutter
     updateRadio(raw); updateAudio(raw);
     // a readable panel instead of squinting at nine-pixel type
     {

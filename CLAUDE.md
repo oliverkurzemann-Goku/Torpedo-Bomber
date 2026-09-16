@@ -5,7 +5,7 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 120 · Thunderbolt Squadron EU BUILD 56**
+Stand bei Übergabe: **Torpedo Squadron BUILD 121 · Thunderbolt Squadron EU BUILD 57 · Remagen 1945 REMAGEN BUILD 5**
 Repo: `oliverkurzemann-Goku/Torpedo-Bomber`, ausgeliefert über GitHub Pages.
 Alle Angaben unten sind aus dem tatsächlichen Code verifiziert, nicht aus dem Gedächtnis.
 
@@ -20,9 +20,9 @@ iPad/iPhone Safari.
 | Datei | Was |
 |---|---|
 | `index.html` | Startseite, Auswahl zwischen den Spielen |
-| `torpedo-carrier.html` | **Teil 1** — Pazifik, Trägerbetrieb (BUILD 106) |
-| `thunderbolt-europe.html` | **Teil 2** — Europa, Bodenangriff (EU BUILD 27) |
-| `remagen-mission.html` | **Teil 3** — Remagen 1945, echtes Terrain (REMAGEN BUILD 4, siehe 4.49/4.50/4.51/4.52) |
+| `torpedo-carrier.html` | **Teil 1** — Pazifik, Trägerbetrieb (BUILD 121) |
+| `thunderbolt-europe.html` | **Teil 2** — Europa, Bodenangriff (EU BUILD 57) |
+| `remagen-mission.html` | **Teil 3** — Remagen 1945, echtes Terrain (REMAGEN BUILD 5, siehe 4.49/4.50/4.51/4.52/4.53) |
 | `model-check.html` | Kalibrier-Werkzeug für neue Flugzeugmodelle (Ausrichtung, Maßstab) |
 
 Alle drei Spiele haben getrennte Speicherstände (`localStorage`-Präfixe `tc_*`, `eu_*` bzw.
@@ -4169,6 +4169,184 @@ Code: `terrain-system/real/tools/fetch_overture.py` (`polygon_rings_in_tile()`, 
 (`snap_bridge_to_river()`), `remagen-mission.html` (`clampToWorldBounds()`, `groundY()`,
 `clearTreesNearAirfield()`, `rebakeStaleOsmHeights()`/`rebakeFlatMeshHeights()`, Suche nach
 „Fluzeug steht vor der Landebahn" bzw. „gelben Flächen sind etwas komisch").
+
+---
+
+### 4.53 Fw190/Me262-Flügeltransparenz endlich an der Wurzel behoben, Flugzeug-Spawn im Gras,
+Me262-Sound Runde 4, Brückenausrichtung korrigiert, Cockpit-Ansicht komplett entfernt —
+BUILD 121 / EU BUILD 57 / REMAGEN BUILD 5
+
+Nutzer, mit zwei Screenshots: „Fw190 und me262 haben immer noch durchsichtige Flügel nahe beim
+Rumpf, Flugzeuge starten vor der runway im Gras, Sound der me262 ist immer noch furchtbar, muss
+dumpfer werden… und die Brück steht längs im Fluss… Cockpit views können wir entfernen, sind
+nutzlos…" Fünf getrennte Punkte, in zwei Dateien plus einem Python-Werkzeug.
+
+#### 1) Fw190/Me262 „durchsichtige Flügel nahe beim Rumpf" — die wahre Ursache war nie die Farbe
+oder die Ausrichtung (4.38/4.40/4.45/4.46), sondern die KANDIDATENWAHL selbst
+
+Vier vorherige Runden hatten Farbe, Beleuchtungs-Orientierung und `DoubleSide` korrigiert — der
+Fehler blieb. Diesmal mit einem echten Node+GLTFLoader-Prüfstand direkt gemessen, welchen
+Radkomplex `findGearClusters()` für Fw190 tatsächlich wählt: den bei `cx=0,878` — nur 17 % der
+Halbspannweite von der Mittellinie entfernt. Das seit 4.38 fest verdrahtete `GEAR_CLUSTER_HINT.
+fw190=0,88` maß also von Anfang an das FALSCHE Bauteil (vermutlich eine Flügelwurzel-Verkleidung
+in der Nähe des Rumpfs, nicht das Rad) — bestätigt durch drei unabhängige Gegenproben: die reale
+Spurweite/Halbspannweite-Ratio für Fw190/P-47/Me262 liegt bei 28-35 % (nicht 17 %); `buildGear()`s
+eigene Notfall-Formel nimmt für exakt diese drei Baumuster `halfTrack=span*0,150` an (≈30 % der
+Halbspannweite); und ein Kandidat bei `cx=1,76` (34 % der Halbspannweite, `n=34/34` identische
+Punktzahl auf beiden Seiten — ein starkes Symmetriesignal) lag die ganze Zeit im Kandidatenpool,
+wurde aber vom Hinweis-Term (Gewicht ×8) systematisch wegbestraft.
+
+**Fix:** `GEAR_CLUSTER_HINT` komplett entfernt. Ersetzt durch zwei allgemeine, physikalisch
+begründete Bewertungsterme (gelten für alle Baumuster dieser Funktion, kein Hardcoding pro
+Modell): eine Plausibilitätsband-Strafe, zentriert auf die reale 28-35-%-Ratio (steil außerhalb
+eines 26-40-%-Fensters), und eine Radius-Übereinstimmungs-Strafe (ein echtes gespiegeltes
+Rad-/Strebenpaar hat auf beiden Seiten ähnlichen Radius — ein Merkmal, das die alte Bewertung nie
+geprüft hat). Über fünf unabhängige Browser-Starts hinweg (dieselbe Erkennung ist selbst leicht
+lastordnungsabhängig — winzige Fließkomma-Unterschiede beim gierigen Clustering verschieben die
+genaue Blob-Liste von Lauf zu Lauf) wählt die neue Bewertung konsistent einen physikalisch
+plausiblen Kandidaten (Fw190 32-33 % jedes Mal; Me262 30-42 %, Radius-Übereinstimmung im
+Prozentbereich) — nie mehr den nahe-Mittellinien-Fehlgriff.
+
+**Zweiter, unabhängig gefundener Bug — der eigentliche Grund für das „hässliche graue
+Flicken"-Bild bei Me262:** Selbst mit dem korrekten Kandidaten wuchs der Schneide-Radius für den
+Me262-Radkomplex auf eine riesige Fläche (11350 statt der erwarteten paar tausend Dreiecke),
+weil dieses zweimotorige Modell zwischen den Triebwerksgondeln durchgehend niedrig hängendes
+Rumpfmaterial hat (real, keine Modellierungslücke) — die Aufweitungsschleife, gebaut für
+kompakte Einmotorer-Räder, fraß sich dabei quer durch diese echte Rumpfunterseite. Ein Widen-
+Schritt allein (1,6→2,2) fügte 7045 neue Dreiecke hinzu — MEHR als der gesamte erste Durchgang
+(4305). Fix: eine allgemeine, modellunabhängige Bremse in `cutGearClusters()` — wenn das, was
+noch als „übrig" gilt, größer ist als alles bisher Geschnittene (`remaining>cut*1,5`), stoppt die
+Aufweitung dort, statt weiterzuwachsen. Verifiziert: P-47/Fw190 (beide brauchen normalerweise den
+2,2×-Schritt) bleiben unverändert; Me262 stoppt jetzt korrekt nach dem ersten Durchgang.
+
+**Dritter, kleinerer Fix:** `coverGearCut()`s Patch-Radius kam bisher aus der (pessimistischen)
+Formel `cl.r*rfUsed`, die einen vollen Kreis bis zum weitesten je erreichten Radius annimmt.
+`cutGearClusters()` gibt jetzt zusätzlich `maxR` zurück — die tatsächlich gemessene größte
+Entfernung, bei der wirklich etwas geschnitten wurde — und der Patch wird danach bemessen statt
+nach der Worst-Case-Formel. Kein Verhaltensunterschied bei den bereits sauberen Fällen, aber
+korrekter, wo der Schnitt keine perfekte Scheibe ist.
+
+**Nachgewiesen, mehrstufig, am ECHTEN, per Playwright bedienten `rigModel()`-Pfad (nicht einer
+separat nachgebauten Kopie):** Draufsicht-Renders von Fw190 (sauberer Flügelroot, kein Loch, kein
+Flicken) und Me262 (kleine, gut getarnte Patches statt eines riesigen grauen Blobs oder des
+vorher bestätigten echten Lochs — Vorher/Nachher-Screenshot mit demselben Code zeigt den Sprung
+von „sichtbares schwarzes Loch am Rumpf" zu „unauffällig"). Regressionscheck P-47/Bf109/B-17/B-24
+über den echten `rigModel()`-Aufruf: alle unverändert korrekt (own-gear-Pfade unberührt, B-17
+weiterhin 4 unabhängig rotierende Propeller).
+
+#### 2) Flugzeuge starten im Gras vor der Runway — zwei überlappende Landebahnen, ~17° zueinander
+
+Nur `remagen-mission.html` betroffen. Root Cause, nicht geraten: `HistoricalObjectManager.
+_buildAirfield()` (eine allgemeine, für alle Terrain-Demoseiten gebaute Klasse, siehe deren
+eigener Header — kennt dieses Spiel nicht) rendert für JEDE geladene `airfields`-Eintrag eine
+EIGENE Landebahn-Box. `real/data/historical/0_4.json` hat einen solchen Eintrag — an lokalen
+Koordinaten (787,0; 2087,6) in Kachel (0,4), was bei `TILE_SIZE=4000` exakt Weltkoordinaten
+(787; 18087,6) ergibt: GENAU `AF_X`/`AF_Z`, dieselbe Mitte, die `buildAirfield()` unten im selben
+File für die eigene, spielrelevante, achsenausgerichtete Startbahn verwendet — aber mit der
+echten, historisch plausiblen `rotY=0,3` (≈17°) rotiert, die `buildAirfield()` bewusst NICHT
+übernimmt (siehe 4.49: jede runway-relative Prüfung im Spiel geht von einer achsenausgerichteten
+Bahn aus). Zwei überlappende Landebahnen an derselben Mitte, ~17° zueinander verdreht — je weiter
+vom Zentrum, desto mehr laufen sie auseinander, genau dort, wo der Spieler (310 Einheiten
+abseits der Mitte) tatsächlich spawnt.
+
+**Fix:** Der historische `airfield`-Eintrag wird beim Laden gefunden (er war ohnehin schon vorher
+identifiziert, nur nie benutzt: `realAirfield` wurde zugewiesen und dann nirgends gelesen) und
+jetzt aktiv aus der Szene entfernt (`g.remove(sub)`), statt eine zweite, verwirrende Kopie
+herumstehen zu lassen — dieselbe „ausblenden, nicht neu bauen"-Idee, die dieses Projekt schon für
+zerstörte Ziele benutzt. Die tote `realAirfield`-Variable gleich mit entfernt.
+
+**Nachgewiesen:** Rechnerisch bestätigt (Kachelursprung + lokale Koordinaten = exakt AF_X/AF_Z,
+keine Vermutung), und per Playwright: nach dem Fix taucht kein zweites `kind==='airfield'`-Objekt
+mehr in der Szene auf, die restlichen historischen Ziele (Brücke, 2× Flak) bleiben unberührt.
+
+#### 3) Me262-Sound „muss dumpfer werden" — direkt auf die klare Anweisung reagiert, nicht erneut
+geraten
+
+Nach vier vorherigen Runden (4.44-4.48, zuletzt gegen eine echte, vom Nutzer gelieferte
+Referenzaufnahme per FFT kalibriert) kam diesmal eine eindeutige, actionable Regieanweisung statt
+eines vagen „falsch". Direkt umgesetzt statt ein fünftes Mal Register/Detune zu verschieben
+(Lektion des Projekts: bei wiederholtem Scheitern den HEBEL wechseln, nicht denselben Parameter):
+`eng.lp.frequency` (der Tiefpass) saß bei EU BUILD 56 mit 5000-6500 Hz so weit über dem
+Grundton (1300-2300 Hz), dass praktisch die gesamte Obertonreihe eines Sägezahns nahezu
+ungefiltert durchkam — hell und blechern, nicht „dumpf". Tiefpass auf 2300-3400 Hz gesenkt (knapp
+über dem 2. Oberton, der dadurch nur noch leicht durchscheint statt zu dominieren), Rauschband
+(`nbp`) von 1900-3200 Hz auf 900-1600 Hz abgesenkt und Rauschlautstärke von 9 % auf 6 % der
+Ton-Lautstärke reduziert.
+
+**Nachgewiesen, mit derselben ehrlichen Grenze wie immer bei reiner WebAudio-Synthese:** von hier
+aus nicht hörbar — verifiziert wurde, dass die tatsächlichen Zielwerte (`eng.lp`/`eng.nbp`/
+`eng.ng`) sich rechnerisch korrekt in die angeforderte Richtung bewegen (Tiefpass bei Leerlauf
+2630 Hz statt vorher 5000 Hz, bei Vollgas 3400 statt 6500 Hz), über den echten `updateAudio()`-
+Codepfad mit echter `AudioContext`.
+
+#### 4) Brücke „steht längs im Fluss" — echte Regression aus der eigenen `snap_bridge_to_river()`
+
+In derselben Sitzung bereits als "Brücke im Nirgendwo" gemeldet und mit einer reinen
+Verschiebung (Endpunkte Richtung nächstem Wasserpolygon versetzt, Ausrichtung unverändert)
+behoben — aber eine Verschiebung kann nur WO korrigieren, nie WELCHE RICHTUNG. Gemessen: die
+ursprüngliche, geokodierte Brückenrichtung hat nur 0,21 Übereinstimmung mit der lokalen
+Fluss-Tangente (1,0 = exakt quer über den Fluss, 0 = exakt am Ufer entlang) — die Verschiebung
+hatte die Brücke also korrekt INS Wasser bewegt, aber fast parallel zur Fließrichtung liegen
+lassen.
+
+**Fix, in `snap_bridge_to_river()`:** Statt nur zu verschieben, wird jetzt die lokale
+Fluss-Tangente am Kreuzungspunkt gemessen (zwei Punkte ±8 m entlang des Wasserpolygon-Randes) und
+die neue Brücke exakt SENKRECHT dazu gebaut. Die Position kommt aus einer echten Messung der
+Flussbreite an dieser Stelle (ein Strahl entlang der neuen, korrekten Richtung, geschnitten mit
+dem Wasserpolygon) statt der ursprünglichen historischen Spannlänge wiederzuverwenden, die nach
+der Richtungsänderung nicht mehr garantiert beide Ufer erreicht hätte.
+
+**Nachgewiesen:** Neue Brücke schneidet den Wasserpolygon-Rand exakt zweimal (beide Enden auf
+trockenem Land, Mittelpunkt im Wasser) — geometrisch bewiesen, nicht angenommen. Nur
+`real/data/historical/3_3.json` neu geschrieben (Brücke + ihre 2 Flak-Stellungen, die von der
+Brückenmitte abgeleitet werden); Fabrik/Flugplatz-Kacheln per `git diff` bestätigt unverändert.
+
+#### 5) Cockpit-Ansicht komplett entfernt — aus allen drei Spielen
+
+Nutzerwunsch, auf Rückfrage bestätigt: alle drei Dateien (nicht nur die beiden gerade getesteten).
+Entfernt: der VIEW-Umschalt-Button, das Foto-Overlay (Avenger/Zero/SBD in torpedo-carrier.html;
+P-47/Bf109 in thunderbolt-europe.html und remagen-mission.html), die live gezeichneten
+Zeiger/Instrumente auf dem Foto (`pitShift`/`pitMap`/`drawPitLive` bzw. `drawPhotoGauges`), das
+vektorgezeichnete Notfall-Cockpit-Panel (`drawPitGauges`, `dial`/`compassDial`/`attitudeDial`,
+nur in torpedo-carrier.html), die kamera-seitige Cockpit-Perspektive in `updateCamera()`, und
+jede Sichtbarkeits-Umschaltung, die eigens fürs Cockpit gedacht war (Spielermodell/Zero-Modell/
+Glasscheiben/Sitz beim Blick von innen ausblenden, Minikarte/Instrumententafel beim Cockpit
+verstecken, Ölfleck-auf-Scheibe-Effekt). Die CHASE-Ansicht ist jetzt die einzige — inklusive
+ihres eigenen Fadenkreuz-Systems (`#gunsight` in den EU-Dateien, `.pitReticle` in
+torpedo-carrier.html), das unverändert weiterläuft, da es nie cockpit-exklusiv war (torpedo-
+carrier.html projiziert es schon immer auch im Chase-View, siehe 4.31).
+
+**Bewusst nicht angefasst, aus Zeit-/Risikogründen, harmlos liegen gelassen:** in
+torpedo-carrier.html die Berechnung von `COCKPIT_EYE`/`COCKPIT_AIM`/`cockpitLight` (wird beim
+Modell-Laden weiterhin berechnet, hat aber seit der Kamera-Vereinfachung keinen Leser mehr — ein
+reines Datenrelikt ohne Wirkung) und die bereits vor dieser Änderung permanent unsichtbare
+`cockpitInterior`-Gruppe (ein altes, nie benutztes Vektor-Cockpit, das schon vorher tot war).
+Beides verifiziert folgenlos (keine Fehler, keine sichtbare Wirkung).
+
+**Nachgewiesen, alle drei Dateien:** Syntax-Check fehlerfrei. Playwright-Läufe durch den echten
+Menü→Missionsauswahl→Start-Ablauf: keine Konsolenfehler, `#viewBtn`/`#cockpitFrame`/`#oilCanopy`
+existieren nicht mehr im DOM, `.pitReticle`/`#gunsight` weiterhin vorhanden und aktiv. Für
+thunderbolt-europe.html und torpedo-carrier.html zusätzlich der Chase-Kamera-Pfad direkt gerendert
+(`updateCamera()`/`updateHUD()` mehrfach in Folge aufgerufen, keine Fehler) — Screenshot zeigt
+eine normale, unveränderte Chase-Ansicht.
+
+**Offen (alle fünf Punkte):** Nichts davon auf dem echten iPad geprüft. Der Fw190/Me262-Fix ist
+nach VIER vorherigen fehlgeschlagenen Versuchen diesmal an der tatsächlichen Kandidatenwahl
+angesetzt, nicht an Farbe/Form/Ausrichtung — aber die Erkennung bleibt, wie im Fix selbst
+dokumentiert, leicht lastordnungsabhängig (Blob-Liste variiert minimal zwischen Browser-Starts);
+sollte das Problem nach diesem Build ein fünftes Mal gemeldet werden, ist der nächste Schritt,
+diese Lauf-zu-Lauf-Varianz selbst robuster zu machen (z. B. die gierige Clustering-Reihenfolge
+kanonisch statt traversierungsabhängig zu machen), nicht wieder an Farbe/Position zu drehen. Der
+Me262-Sound ist jetzt die fünfte Iteration ohne Hör-Verifikation von hier aus.
+
+Code: `thunderbolt-europe.html` — `findGearClusters()` (Suche nach „the pinned GEAR_CLUSTER_HINT
+this function used to carry"), `cutGearClusters()`/`coverGearCut()` (Suche nach „continuously low
+belly"), `updateAudio()` (Suche nach „muss dumpfer werden"), Cockpit-Entfernung (Suche nach
+„cockpitFrame" — sollte nichts mehr finden außer diesem Kommentar). `remagen-mission.html` —
+`loadRealWorld()` (Suche nach „Flugzeuge starten vor der runway im Gras"), dieselbe
+Cockpit-Entfernung wie thunderbolt-europe.html. `torpedo-carrier.html` — Cockpit-Entfernung
+(Suche nach „updateCamera", der `if(viewMode==='cockpit')`-Zweig existiert nicht mehr).
+`terrain-system/real/tools/fetch_historical.py` — `snap_bridge_to_river()` (Suche nach „Round 2").
 
 ---
 

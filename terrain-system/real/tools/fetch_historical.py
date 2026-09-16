@@ -36,7 +36,7 @@
 import json, math, os
 
 from pyproj import Transformer
-from shapely.geometry import Point, Polygon
+from shapely.geometry import Point, Polygon, LineString
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 CFG = json.load(open(os.path.join(HERE, '..', 'config.json')))
@@ -88,20 +88,35 @@ def _tile_water_polygons(tx, tz):
 
 
 def snap_bridge_to_river(wx1, wy1, wx2, wy2):
-    """Reported (real iPad, screenshot): "Die Bruecke ist im nirgendwo" -- measured, not
-    guessed: the raw geocoded bridge line above sits ~370m from the nearest water polygon
-    fetch_overture.py's own output has for this tile (checked directly: at the bridge's own x
-    range, the real river polygon's z-extent doesn't even overlap the bridge's z-extent) --
-    more than the Rhine's own real width here, not a rounding error. Same lesson this project
-    already learned once for thunderbolt-europe.html's synthetic bridge (CLAUDE.md 4.30/Lesson
-    18): a crossing's position has to come from the SAME data the renderer actually draws the
-    river from, not an independently-derived value that merely SHOULD line up with it -- doesn't
-    matter here whether the landmark lon/lat or Overture's own water polygon is the less precise
-    of the two, snapping onto what OSMManager actually renders is correct either way. Translates
-    BOTH endpoints by the same vector (bridge length/width/orientation unchanged, only where it
-    sits moves) so the span's own midpoint lands just inside the nearest real water polygon this
-    tile (or an immediate neighbour, in case the true crossing sits right at a tile seam)
-    actually has.
+    """Reported TWICE on the real iPad, two different symptoms from two different bugs in this
+    one function:
+
+    Round 1 ("Die Bruecke ist im nirgendwo"): the raw geocoded bridge line sat ~370m from the
+    nearest water polygon fetch_overture.py's own output has for this tile -- more than the
+    Rhine's own real width here, not a rounding error. Same lesson this project already learned
+    once for thunderbolt-europe.html's synthetic bridge (CLAUDE.md 4.30/Lesson 18): a crossing's
+    position has to come from the SAME data the renderer actually draws the river from. Fixed by
+    translating the endpoints toward the nearest real water polygon -- but a pure translation
+    preserves the ORIGINAL line's orientation, which is what caused round 2.
+
+    Round 2 ("Die Bruecke steht laengs im Fluss", confirmed on a screenshot): measured, not
+    guessed -- the original geocoded bridge direction (0.886,-0.464) has a dot product of only
+    0.21 against the local river-flow-perpendicular at the crossing point (1.0 would mean
+    "exactly across the river", 0 would mean "exactly along the river bank"). 0.21 means the
+    round-1 fix moved the bridge INTO the water, correctly, but left it running almost parallel
+    to the bank rather than across it -- exactly what "steht laengs im Fluss" describes. A pure
+    translation can only ever fix WHERE a line sits, never WHICH WAY it points, so round 1 could
+    never have caught this on its own.
+
+    Round-2 fix, orientation-aware: measures the water polygon's local boundary tangent at the
+    crossing (two points +-8m apart along the polygon's own exterior ring, interpolated by arc
+    length -- the ring IS the riverbank here, so its tangent IS the local flow direction) and
+    forces the new bridge to run PERPENDICULAR to that, not whatever the original geocoded line
+    happened to point. Position comes from actually measuring the water body's width at that
+    cross-section (a ray cast along the perpendicular, intersected with the polygon) rather than
+    reusing the original span length, which was never guaranteed to reach both banks once the
+    orientation changed -- the real historical span length is not reused, only the fact that a
+    bridge is a straight line between two riverbanks.
     """
     tx, tz = tile_of((wx1 + wx2) / 2, (wy1 + wy2) / 2)
     candidates = []
@@ -118,17 +133,41 @@ def snap_bridge_to_river(wx1, wy1, wx2, wy2):
         if best_dist is None or d < best_dist:
             best_poly, best_dist = poly, d
 
-    if best_dist <= 1:   # already sits on/inside real water -- nothing to correct
-        return wx1, wy1, wx2, wy2
+    ring = best_poly.exterior
+    proj = ring.project(mid)
+    eps = 8.0
+    p_before = ring.interpolate((proj - eps) % ring.length)
+    p_after = ring.interpolate((proj + eps) % ring.length)
+    tangent_len = math.hypot(p_after.x - p_before.x, p_after.y - p_before.y)
+    tangent = ((p_after.x - p_before.x) / tangent_len, (p_after.y - p_before.y) / tangent_len)
+    perp = (-tangent[1], tangent[0])   # perpendicular to local flow -- the way a bridge must run
 
-    nearest_on_boundary = best_poly.exterior.interpolate(best_poly.exterior.project(mid))
-    dx, dy = nearest_on_boundary.x - mid.x, nearest_on_boundary.y - mid.y
-    # step 30m PAST the boundary (continuing the same direction) so the new midpoint sits
-    # genuinely inside the water, not just grazing its edge
-    step = (best_dist + 30) / best_dist
-    dx, dy = dx * step, dy * step
-    print(f'  snapping bridge onto real river data: was {best_dist:.1f}m from nearest mapped water, shifting ({dx:.1f},{dy:.1f})')
-    return wx1 + dx, wy1 + dy, wx2 + dx, wy2 + dy
+    # seed point to cast the cross-section ray from: the boundary point nearest the original
+    # midpoint if that midpoint isn't already inside the water, otherwise the midpoint itself
+    seed = mid if best_dist <= 1 else ring.interpolate(proj)
+
+    max_reach = 1500  # metres each way -- generous, real river crossings here are a few hundred m
+    ray = LineString([(seed.x - perp[0] * max_reach, seed.y - perp[1] * max_reach),
+                       (seed.x + perp[0] * max_reach, seed.y + perp[1] * max_reach)])
+    inter = ray.intersection(best_poly)
+    segs = list(inter.geoms) if hasattr(inter, 'geoms') else ([inter] if not inter.is_empty else [])
+    segs = [g for g in segs if g.geom_type == 'LineString' and g.length > 1]
+    if not segs:
+        print('  WARNING: could not measure a river crossing width near the bridge -- left at raw geocoded position')
+        return wx1, wy1, wx2, wy2
+    # the crossing nearest the original bridge, in case the ray clips more than one water body
+    crossing = min(segs, key=lambda g: g.distance(seed))
+
+    c0, c1 = crossing.coords[0], crossing.coords[-1]
+    width = math.hypot(c1[0] - c0[0], c1[1] - c0[1])
+    center = ((c0[0] + c1[0]) / 2, (c0[1] + c1[1]) / 2)
+    margin = 25   # metres of overhang past each bank, so the deck clearly lands on dry ground
+    half = width / 2 + margin
+    nx1, nz1 = center[0] - perp[0] * half, center[1] - perp[1] * half
+    nx2, nz2 = center[0] + perp[0] * half, center[1] + perp[1] * half
+    print(f'  snapping bridge onto real river data: crossing width {width:.1f}m at ({center[0]:.1f},{center[1]:.1f}), '
+          f'orientation now perpendicular to local flow (was {abs((wx2-wx1)*perp[0]+(wy2-wy1)*perp[1])/math.hypot(wx2-wx1,wy2-wy1):.2f} aligned, 1.0=across)')
+    return nx1, nz1, nx2, nz2
 
 
 def main():
