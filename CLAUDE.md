@@ -5,7 +5,7 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 121 · Thunderbolt Squadron EU BUILD 57 · Remagen 1945 REMAGEN BUILD 5**
+Stand bei Übergabe: **Torpedo Squadron BUILD 121 · Thunderbolt Squadron EU BUILD 57 · Remagen 1945 REMAGEN BUILD 6**
 Repo: `oliverkurzemann-Goku/Torpedo-Bomber`, ausgeliefert über GitHub Pages.
 Alle Angaben unten sind aus dem tatsächlichen Code verifiziert, nicht aus dem Gedächtnis.
 
@@ -22,7 +22,7 @@ iPad/iPhone Safari.
 | `index.html` | Startseite, Auswahl zwischen den Spielen |
 | `torpedo-carrier.html` | **Teil 1** — Pazifik, Trägerbetrieb (BUILD 121) |
 | `thunderbolt-europe.html` | **Teil 2** — Europa, Bodenangriff (EU BUILD 57) |
-| `remagen-mission.html` | **Teil 3** — Remagen 1945, echtes Terrain (REMAGEN BUILD 5, siehe 4.49/4.50/4.51/4.52/4.53) |
+| `remagen-mission.html` | **Teil 3** — Remagen 1945, echtes Terrain (REMAGEN BUILD 6, siehe 4.49/4.50/4.51/4.52/4.53/4.54) |
 | `model-check.html` | Kalibrier-Werkzeug für neue Flugzeugmodelle (Ausrichtung, Maßstab) |
 
 Alle drei Spiele haben getrennte Speicherstände (`localStorage`-Präfixe `tc_*`, `eu_*` bzw.
@@ -4347,6 +4347,147 @@ belly"), `updateAudio()` (Suche nach „muss dumpfer werden"), Cockpit-Entfernun
 Cockpit-Entfernung wie thunderbolt-europe.html. `torpedo-carrier.html` — Cockpit-Entfernung
 (Suche nach „updateCamera", der `if(viewMode==='cockpit')`-Zweig existiert nicht mehr).
 `terrain-system/real/tools/fetch_historical.py` — `snap_bridge_to_river()` (Suche nach „Round 2").
+
+---
+
+### 4.54 Flugzeug-Spawn im Gras, Flak im Fluss, Fluss hört mitten in der Karte auf — REMAGEN BUILD 6
+
+Nutzer, mit zwei Screenshots: „Flugzeug startet vor Landebahn, Baracken und eine Gras oder dirt
+Piste wären realistischer als der jetzige Flugplatz. Terrain muss noch detaillierter werden...
+Fluss ist einfach zu Ende…. Bei der flak suppression Mission schießt die flak aus dem Fluss und
+ist auch nicht sichtbar. Erstelle hier eine Checkliste für dich, dass solche Fehler nicht wieder
+passieren…." Vier Punkte behandelt; „Terrain detaillierter, wie in der Vorgabe" (eine vom Nutzer
+in einer früheren, nicht mehr im Kontext verfügbaren Sitzung geschickte Datei) und die noch
+unbenutzten Fahrzeug-/Flugzeugmodelle sind nicht Teil dieser Runde — dafür wird die Vorgabe-Datei
+noch gebraucht bzw. eine Priorisierung, welches Modell zuerst.
+
+#### 1) Flugzeug startet im Gras statt auf der Bahn — Ursache gemessen, nicht geraten
+
+Direkt an den geladenen DEM-Kacheldaten nachgemessen (Node, dieselben Bytes wie `HeightProvider.js`
+liest): die reale Geländehöhe entlang der 900 m langen Landebahn weicht bis zu **±3,5 Einheiten**
+von der alten, festen `AF_Y`-Höhe ab (Spot-Check an elf Punkten entlang der Mittellinie plus
+Querschnitt an der Spawn-Position). Die alte, flache Bahn-Platte lag dadurch streckenweise unter
+dem echten Boden vergraben, streckenweise darüber schwebend — am Spawn-Punkt selbst maß die echte
+Höhe 195,98, die Platte saß bei 193,58, der Spieler wurde aber auf `AF_Y+2,0=195,18` gesetzt: knapp
+UNTER dem echten Boden an genau dieser Stelle. Exakt das gemeldete Bild.
+
+**Fix:** `relaunch()` setzt die Spawn-Höhe jetzt aus `terrain.getHeight()` an der EIGENEN
+Spawn-Position, nicht mehr aus dem zentralen `AF_Y`-Näherungswert.
+
+**Nachgewiesen am echten, laufenden Spiel** (Playwright, echter Klickpfad durch Missionsauswahl →
+Begin Sortie → Start Engine, `Sortie 2 / Flak Suppression`): `P.pos.y − terrain.getHeight(P.pos.x,
+P.pos.z) = 2,000000` exakt — der Spieler sitzt jetzt bündig auf dem echten Boden an seiner eigenen
+Position, kein Näherungsfehler mehr.
+
+#### 2) Grasstreifen + Baracken statt Beton/Turm — `buildAirfield()` neu gebaut
+
+Auf ausdrücklichen Wunsch neu gestaltet: kein gepflasterter Runway, kein Kontrollturm, keine
+Beton-Hangars mehr — stattdessen ein geländefolgendes Gras-/Dirt-Band (Höhe an 15 Punkten entlang
+der Länge einzeln abgetastet, nicht an einem Zentrum) mit einer schmaleren, dunkleren
+Reifenspur-Mitte, plus fünf einfache Nissenhütten-Baracken (Halbzylinder-Dach auf einem Kasten —
+dieselbe Technik, die diese Funktion vorher schon für die alten Hangars benutzte, nur hüttengroß
+und jede auf ihrer eigenen abgetasteten Geländehöhe) und ein Windsack. `AF_CLEAR_*` (die
+Baum-Freihalte-Zone um den Flugplatz) blieb unverändert gültig, da alle neuen Elemente innerhalb
+des alten, bereits großzügig bemessenen Footprints liegen.
+
+**Ein eigener Fehler dabei gefunden, nicht nur behauptet „jetzt richtig":** Der erste Versuch
+kopierte `thunderbolt-europe.html`s `ribbon()`-Wicklungsfix (`a,a+2,a+1, a+1,a+2,a+3`, CLAUDE.md
+Lektion 17/4.26) unverändert — ein echter Draufsicht-Render zeigte danach **gar keinen Streifen**,
+nur die Baracken/den Windsack (die Fläche wurde gezeichnet, zeigte aber mit der Normale nach unten,
+exakt das „aus jedem Winkel unsichtbar"-Muster aus Lektion 17 selbst). Grund: die kopierte Wicklung
+war für EU-Straßen mit einer ANDEREN Vertex-Reihenfolge hergeleitet worden; für dieses eigene
+Layout (linke Kante vor rechter Kante, Schritt entlang +X) von Hand neu berechnet
+(Kreuzprodukt tatsächlich ausgerechnet, nicht geraten) — die richtige Wicklung hier ist
+`a,a+1,a+2, a+1,a+3,a+2`, das exakte Gegenteil.
+
+**Nachgewiesen, vorher/nachher:** Draufsicht-Render vor der Korrektur zeigt keinen Streifen;
+danach ein durchgehendes olivgrünes Band mit dunkler Mittelspur, exakt bei den Baracken
+positioniert. `buildAirfield()` baut nachweislich 14 Kindobjekte (2 Streifen-Meshes + 2
+Windsack-Teile + 5×2 Hütten-Teile) — exakt die erwartete Zahl, über den echten Aufruf im
+laufenden Spiel ausgelesen, nicht nachgezählt.
+
+#### 3) Flak schießt aus dem Fluss — Ursache: eine Formel, die ihre Bedeutung unbemerkt gedreht hat
+
+`fetch_historical.py` platzierte Flak seit jeher `perp` (senkrecht zur Brücken-Richtung) × 220 m
+vom Brücken-Mittelpunkt versetzt. Das funktionierte, SOLANGE die rohe geokodierte Brücke fast
+entlang des Flussufers lag (Ausrichtungs-Übereinstimmung nur 0,21 gegen „echt quer", siehe
+`snap_bridge_to_river()`s eigene Round-2-Dokumentation) — „senkrecht zur Brücke" traf dabei
+zufällig „quer zum Fluss", also aufs trockene Ufer. Nachdem diese Sitzung die Brücke bereits
+vorher korrekt darauf gedreht hatte, tatsächlich QUER über den Fluss zu laufen, bedeutet
+„senkrecht zur Brücke" jetzt „ENTLANG des Flusses" — dieselbe, unverändert weiterlaufende Formel
+lief von einem Startpunkt (der Brückenmitte, die per Definition im Wasser liegt) 220 m am Ufer
+entlang statt darüber hinweg und landete weiterhin im Wasser.
+
+**Fix:** Flak wird jetzt jenseits jedes Brückenendes ENTLANG der Brückenrichtung platziert (60 m
+Rückversatz, über den eigenen 25-m-Trockenland-Rand der Brücke hinaus — per Konstruktion auf der
+richtigen Uferseite), zusätzlich unabhängig gegen die echten geladenen Wasserpolygone geprüft
+(neue Funktion `place_flak_on_land()`, schiebt bei Bedarf in 15-m-Schritten weiter weg und gibt
+eine Warnung aus statt schweigend eine unvalidierte Position auszuliefern).
+
+**Nachgewiesen, mehrstufig:**
+- Unabhängig in Python/Shapely gemessen (nicht nur „kein WARNING ausgegeben" angenommen):
+  beide neuen Flak-Positionen liegen 84,0 m bzw. 85,0 m vom nächsten echten Wasserpolygon
+  entfernt, keine davon innerhalb.
+- Am echten, laufenden Spiel bestätigt (Playwright, echter Klickpfad zur Flak-Suppression-Mission):
+  beide Flak-Ziele spawnen (`targets.length===2`, beide `alive:true`) exakt an den von Python
+  berechneten Weltkoordinaten. Ein Nahaufnahme-Render (Sichtweite eigens auf die Flak-Position
+  fokussiert, da der Spieler in diesem Testlauf nie dorthin geflogen ist und die Kachel sonst
+  korrekt ausgeblendet gewesen wäre) zeigt die Flak klar sichtbar auf offenem Gras, deutlich
+  abseits jeder Straße oder Wasserfläche — nicht mehr im Fluss, nicht mehr unsichtbar.
+
+#### 4) Fluss hört mitten in der Karte auf — eine eigene Regression aus derselben Sitzung
+
+Root Cause: `updateContentVisibility()`s Sichtweiten-Abschaltung (Radius 7000) war laut eigenem
+Code-Kommentar jahrelang ein stiller No-Op (sie setzte `.visible` auf das falsche Objekt) — DIESE
+Sitzung hatte sie mit dem Ruckel-Fix (`t.group.visible=...` statt `t.visible=...`) zum ersten Mal
+tatsächlich scharf gemacht. Ab dem Moment blendete sie aber die GESAMTE Kachel aus, sobald ihr
+Zentrum weiter als 7 km entfernt lag — inklusive der billigen, längst zu je höchstens 6 Meshes pro
+Kachel gemergten Straßen-/Fluss-/Bahn-/Ackerland-Meshes, für die dieser Cull nie gedacht war (nur
+Bäume/Gebäude, die zahlreichen, teuren Inhalte, sollten das sein). Ein Fluss, der über eine
+Kachelgrenze läuft, konnte dadurch mitten im Bild hart abreißen, während das Terrain selbst (LOD,
+kein Ein/Aus) unverändert weiterlief — genau das gemeldete Bild.
+
+**Fix:** `OSMManager.loadTile()` legt Bäume/Gebäude jetzt in eine eigene `farGroup`
+(Unter-Gruppe von `group`); `updateContentVisibility()` schaltet nur noch `farGroup.visible`
+per Entfernung, `group` selbst (und damit jedes Straßen-/Fluss-/Bahn-/Ackerland-Mesh direkt
+darin) bleibt immer sichtbar. `clearTreesNearAirfield()` (liest Baum-Instanzen direkt aus der
+Kachel-Gruppe) entsprechend auf `farGroup` umgestellt.
+
+**Nachgewiesen, nicht nur die `.visible`-Flags gelesen:** Sichtweite auf einen Fokuspunkt
+21.219 Einheiten von den Brücken-Kacheln (3,3)/(3,4) entfernt gesetzt (weit über dem
+7000-Radius) — beide Kacheln zeigen danach `group.visible:true, farGroup.visible:false`,
+`infraMeshCount:5` (Straße/Bahn/Fluss/See/Ackerland gemergt) bleibt unverändert Kind von `group`,
+78–118 Baum-/Gebäude-Instanzen wandern korrekt in die jetzt unsichtbare `farGroup`. Ein
+tatsächlicher Draufsicht-Render bei diesem fernen Fokuspunkt zeigt Fluss UND Straßennetz weiterhin
+vollständig gezeichnet — keine Bäume/Gebäude in diesem Ausschnitt, aber genau das ist beabsichtigt.
+
+#### 5) Checkliste, wie vom Nutzer verlangt
+
+Als neuer Unterabschnitt in Abschnitt 6 ergänzt („Checkliste: jede Platzierung auf echtem
+Terrain") — alle vier obigen Punkte hatten dieselbe Grund-Ursache (eine Annahme über Höhe/
+Richtung/Sichtbarkeit wurde nie gegen die echten geladenen Daten geprüft, nur gegen die Formel,
+die sie erzeugt hat) und sind dort als fünf konkrete Vor-Auslieferungs-Prüfungen festgehalten.
+
+**Ein eigener, dokumentierter Fehler beim Verifizieren selbst (Lektion 3, hier erneut bestätigt):**
+Der erste Testlauf prüfte `window.realWorldReady`/`window.terrain` und bekam beide Male `false`/
+`undefined` zurück — sah aus wie ein hängender Ladevorgang. Tatsächlich sind `realWorldReady`/
+`terrain` mit `let` auf Skript-Ebene deklariert, was in einem klassischen (nicht-Modul-)
+`<script>`-Tag NIE eine `window`-Eigenschaft erzeugt — die Prüfung war strukturell immer falsch,
+unabhängig vom tatsächlichen Ladefortschritt. Nach Korrektur (die Bezeichner direkt referenzieren
+statt über `window.*`) lud die Welt tatsächlich in unter einer Minute durch, nicht die zuvor
+vermuteten mehreren Minuten.
+
+**Offen:** Nichts davon auf dem echten iPad geprüft. „Terrain detaillierter, wie in der Vorgabe"
+und die zehn noch unbenutzten Fahrzeug-/Flugzeugmodelle (Me163, Ju87, Panzer/Flak-GLBs, siehe
+Abschnitt 2) sind nicht Teil dieser Runde — die genannte „Vorgabe"-Datei ist in dieser Sitzung
+nicht mehr auffindbar (vermutlich aus einer früheren, komprimierten Sitzung), müsste erneut
+geschickt werden.
+
+Code: `remagen-mission.html`, `relaunch()` (Suche nach „Flugzeug steht vor der Landebahn"),
+`buildAirfield()` (komplett neu, Suche nach „Nissen-hut barracks"), `updateContentVisibility()`
+(Suche nach „farGroup"). `terrain-system/OSMManager.js`, `loadTile()` (Suche nach „Fluss ist
+einfach zu Ende"). `terrain-system/real/tools/fetch_historical.py`, `place_flak_on_land()`
+(neu, Suche nach „schiesst die flak aus dem Fluss").
 
 ---
 
