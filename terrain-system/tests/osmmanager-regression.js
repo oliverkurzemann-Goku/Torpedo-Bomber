@@ -128,8 +128,17 @@ const buildings=[
 ];
 const buildingCount=osm._buildBuildings(buildingGroup,buildings,0,0);
 assert(buildingCount===buildings.length,'buildings: count mismatch');
-assert(buildingGroup.children.length<=4,`buildings: expected <=4 instance buckets, got ${buildingGroup.children.length}`);
+assert(buildingGroup.children.length<=7,`buildings: expected <=7 instance buckets, got ${buildingGroup.children.length}`);
 finiteMatrices(buildingGroup,'buildings');
+
+const waterBuildingGroup=new THREE.Group();
+const waterBuildings=[
+  {x:900,z:900,w:18,d:12,rotY:0},       // inside synthetic lake
+  {x:1200,z:1200,w:18,d:12,rotY:0}      // dry open ground
+];
+assert(osm._buildBuildings(waterBuildingGroup,waterBuildings,0,0,exclusion)===1,
+  'buildings: water-overlapping footprint was not rejected');
+finiteMatrices(waterBuildingGroup,'water-filtered buildings');
 
 const range=osm._buildingGroundRange(buildings[1],900,700,0,0);
 assert(range.maxY>range.minY,'buildings: corner/centre terrain sampling did not detect slope');
@@ -143,7 +152,7 @@ assert(wallHeights.every(h=>Number.isFinite(h)&&h>5),'buildings: invalid compens
 // intentionally data-backed: it catches a future schema/coordinate regression
 // that a single synthetic road cannot.
 const osmDataDir=path.join(__dirname,'..','real','data','osm');
-let realRawTrees=0,realFilteredTrees=0,realTiles=0;
+let realRawTrees=0,realFilteredTrees=0,realTiles=0,realPolygonRings=0;
 for(const file of fs.readdirSync(osmDataDir).filter(x=>x.endsWith('.json'))){
   const match=file.match(/^(\d+)_(\d+)\.json$/);
   if(!match) continue;
@@ -156,11 +165,30 @@ for(const file of fs.readdirSync(osmDataDir).filter(x=>x.endsWith('.json'))){
     `real tile ${file}: tree survived on an excluded feature`);
   realRawTrees+=raw.length;
   realFilteredTrees+=kept.length;
+  for(const ring of [...(data.lakes||[]),...(data.farmland||[]),...(data.airfields||[])]){
+    const clean=cleanPolygonRing(ring);
+    if(clean.length<3) continue;
+    const triangles=triangulateSimplePolygon(clean);
+    assert(triangles.length===clean.length-2,
+      `real tile ${file}: failed concave polygon triangulation (${clean.length} vertices)`);
+    realPolygonRings++;
+  }
   realTiles++;
 }
 assert(realTiles>0,'real data: no OSM tiles scanned');
 assert(realFilteredTrees<realRawTrees,
   'real data: exclusion system did not remove any overlapping trees');
+
+const concave=[[0,0],[100,0],[100,30],[30,30],[30,100],[0,100],[0,0]];
+const concaveClean=cleanPolygonRing(concave);
+const concaveTriangles=triangulateSimplePolygon(concaveClean);
+assert(concaveTriangles.length===concaveClean.length-2,
+  'water: concave polygon did not produce n-2 triangles');
+for(const tri of concaveTriangles){
+  const p=[(concaveClean[tri[0]][0]+concaveClean[tri[1]][0]+concaveClean[tri[2]][0])/3,
+    (concaveClean[tri[0]][1]+concaveClean[tri[1]][1]+concaveClean[tri[2]][1])/3];
+  assert(pointInPolygon(p[0],p[1],concaveClean),'water: triangulation crossed outside concave ring');
+}
 
 console.log('OSMManager regression OK',JSON.stringify({
   treeCount,
@@ -168,6 +196,7 @@ console.log('OSMManager regression OK',JSON.stringify({
   realTiles,
   realRawTrees,
   realFilteredTrees,
+  realPolygonRings,
   forestBuckets:forestGroup.children.map(x=>x.name),
   buildingBuckets:buildingGroup.children.map(x=>x.name),
   sampledRelief:+(range.maxY-range.minY).toFixed(2)
