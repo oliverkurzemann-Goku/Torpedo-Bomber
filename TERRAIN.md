@@ -10,7 +10,7 @@ The flight model, weapons and mission logic are not part of a terrain pass unles
 
 ## Test build versioning
 
-Every Remagen revision handed to Oliver for testing must increment the visible build number in both places in `remagen-mission.html`: the always-visible `#testVersionBannerText` and the in-flight `#buildTag`. Add a short pass label when useful. Never tell Oliver a build is ready until the branch/deployment being tested contains that exact visible version. Current terrain pass: `REMAGEN BUILD 8 · TERRAIN PASS 2`.
+Every Remagen revision handed to Oliver for testing must increment the visible build number in both places in `remagen-mission.html`: the always-visible `#testVersionBannerText` and the in-flight `#buildTag`. Add a short pass label when useful. Never tell Oliver a build is ready until the branch/deployment being tested contains that exact visible version. Current terrain pass: `REMAGEN BUILD 9 · TERRAIN PASS 3`.
 
 ## Current pipeline
 
@@ -66,6 +66,16 @@ Triggered by two real-iPad screenshots of BUILD 7. The screenshots, not a synthe
 
 The regression harness scans all 56 shipped OSM tiles. At BUILD 8 it generated 231,120 raw forest candidates and retained 169,251 after exclusions, removing 61,869 placements that conflicted with mapped features. It also verifies the six-vertex roof geometry and the bounded transparent farmland material.
 
+## Terrain pass 3 — BUILD 9
+
+Triggered by BUILD 8 iPad screenshots. Performance was reported as very fluid, but the screenshots showed buildings/trees inside rendered water and apparently terminating river shapes.
+
+The primary cause was not only bad placement: `_buildFlatPolygons()` used a centre fan, which is valid only for convex polygons. The real Rhine/lake rings are strongly concave, so fan triangles crossed bends and painted large blue wedges over dry land. BUILD 9 replaces the fan with deterministic ear-clipping triangulation. The regression harness proves all 7,985 shipped lake/farmland/airfield rings produce exactly `n-2` triangles and includes an explicit concave-L test whose triangle centroids remain inside the source polygon.
+
+The feature index now tags its sources. Buildings sample centre, corners and edge midpoints against river/lake features before instancing; BUILD 9 removes 228 of 21,449 source buildings that overlap mapped water and renders 21,221. Trees retain the BUILD 8 road/water/building filtering. Water materials are rougher and less reflective to avoid the electric-blue/white glare seen in the screenshots.
+
+Building detail stays bounded by tile: two roof palettes, one chimney bucket, and one facade-detail bucket containing a door plus two front windows for ordinary houses. The real-Three.js test builds all 56 tiles with at most seven building instance buckets per tile; no individual detail Mesh objects are created.
+
 ## Regression rules — do not skip
 
 1. **Placement must be checked against loaded terrain, not a centre approximation.** Large buildings/objects need footprint or extent samples. Long roads/bridges need samples along their span.
@@ -91,10 +101,12 @@ It intentionally has no npm dependency. A small THREE stub executes the real `OS
 
 - multiple forest polygons still create at most four vegetation instance buckets per tile,
 - all 56 real OSM tiles emit zero trees inside indexed road/water/building exclusions,
+- buildings touching mapped river/lake features are rejected before instancing,
+- every shipped concave flat polygon triangulates to `n-2` triangles without a centre fan,
 - the roof is a six-vertex gable prism rather than a stretched pyramid,
 - farmland remains a low-opacity tint rather than an opaque colour sheet,
 - no generated instance matrix contains NaN/Infinity,
-- building creation remains bounded to at most four instance buckets per tile,
+- building creation remains bounded to at most seven instance buckets per tile,
 - sloped footprints produce a non-zero sampled terrain range,
 - building walls remain finite and tall enough after foundation compensation.
 
@@ -102,7 +114,7 @@ This is a structural regression test, not a rendering test. Before shipping a te
 
 ## Next terrain priorities
 
-1. Validate BUILD 8's palette, roof proportions, road clearances and loading time on the real iPad; tune from screenshots and observed frame behaviour, not desktop assumptions.
+1. Validate BUILD 9's corrected water outlines, river continuity, water exclusions and building-detail cost on the real iPad; distinguish genuine source-data gaps from the removed triangulation wedges.
 2. Test replacing procedural tree canopies with instanced geometry extracted from the existing `treepack.glb`. Measure load time, memory, draw calls and frame time on iPad before adopting it.
 3. Preserve richer building attributes in `fetch_overture.py` when the source actually provides them (height/storeys/subtype). Use those before procedural guesses. Consider footprint geometry only after measuring the cost versus the current minimum-rotated-rectangle representation.
 4. If buildings/trees visibly move relative to terrain during LOD transitions, implement an explicit per-tile instance-height rebake keyed to actual LOD changes. Do not continuously rebake every frame.
