@@ -29,8 +29,9 @@ class CylinderGeometry extends Geometry {}
 class ConeGeometry extends Geometry {}
 class DodecahedronGeometry extends Geometry {}
 class BufferGeometry extends Geometry {
-  setAttribute(){ return this; }
-  setIndex(){ return this; }
+  constructor(){ super(); this.attributes={}; this.index=null; }
+  setAttribute(name,value){ this.attributes[name]=value; return this; }
+  setIndex(value){ this.index=value; return this; }
   computeVertexNormals(){}
   computeBoundingSphere(){}
 }
@@ -84,6 +85,13 @@ const scene={add(){},remove(){}};
 // Deliberately sloped surface: a large footprint must see different corner heights.
 const terrain={getRenderedHeight(x,z){ return 0.01*x+0.02*z; }};
 const osm=new OSMManager(scene,4000,terrain,'');
+assert(osm.farmMat.opts.transparent===true && osm.farmMat.opts.opacity<=0.20,
+  'farmland: expected a subtle transparent terrain tint');
+
+// BUILD 7's four-sided cone roof was a stretched pyramid. The replacement
+// must be a six-vertex gable prism (four eaves + two ridge endpoints).
+assert(osm.gableRoofGeo.attributes.position.array.length===18,
+  'roof: expected six-vertex gable-prism geometry');
 
 // Two overlapping forest polygons. Old code emitted trunk+canopy PER polygon;
 // the new invariant is <=4 vegetation buckets for the entire tile.
@@ -95,6 +103,22 @@ assert(treeCount>0,'forest: no placements generated');
 assert(forestGroup.children.length<=4,`forest: expected <=4 instance buckets, got ${forestGroup.children.length}`);
 assert(new Set(forestGroup.children.map(x=>x.name)).size===forestGroup.children.length,'forest: duplicate debug bucket names');
 finiteMatrices(forestGroup,'forest');
+
+const exclusion=osm._buildForestExclusion({
+  roads:[[[100,500],[1300,500]]],
+  rails:[],rivers:[],
+  lakes:[[[800,800],[1000,800],[1000,1000],[800,1000],[800,800]]],
+  airfields:[],
+  buildings:[{x:600,z:700,w:50,d:30,rotY:0.35}]
+},0,0);
+assert(osm._treeExcluded(400,500,exclusion),'exclusion: road centre was not blocked');
+assert(osm._treeExcluded(600,700,exclusion),'exclusion: building footprint was not blocked');
+assert(osm._treeExcluded(900,900,exclusion),'exclusion: lake polygon was not blocked');
+assert(!osm._treeExcluded(1200,1200,exclusion),'exclusion: unrelated open ground was blocked');
+const filtered=osm._forestPlacements([forestA,forestB],0,0,exclusion);
+assert(filtered.length>0,'exclusion: removed every forest placement');
+assert(filtered.every(p=>!osm._treeExcluded(p.x,p.z,exclusion)),
+  'exclusion: emitted a tree on a blocked feature');
 
 const buildingGroup=new THREE.Group();
 const buildings=[
@@ -115,8 +139,35 @@ const wallHeights=wallMeshes.flatMap(m=>m.matrices.map(a=>a[5]));
 assert(wallHeights.length===buildings.length,'buildings: not every building received a wall instance');
 assert(wallHeights.every(h=>Number.isFinite(h)&&h>5),'buildings: invalid compensated wall height');
 
+// Run the exclusion system against every shipped Remagen OSM tile. This is
+// intentionally data-backed: it catches a future schema/coordinate regression
+// that a single synthetic road cannot.
+const osmDataDir=path.join(__dirname,'..','real','data','osm');
+let realRawTrees=0,realFilteredTrees=0,realTiles=0;
+for(const file of fs.readdirSync(osmDataDir).filter(x=>x.endsWith('.json'))){
+  const match=file.match(/^(\d+)_(\d+)\.json$/);
+  if(!match) continue;
+  const tx=+match[1],tz=+match[2],ox=tx*4000,oz=tz*4000;
+  const data=JSON.parse(fs.readFileSync(path.join(osmDataDir,file),'utf8'));
+  const raw=osm._forestPlacements(data.forests||[],ox,oz);
+  const index=osm._buildForestExclusion(data,ox,oz);
+  const kept=osm._forestPlacements(data.forests||[],ox,oz,index);
+  assert(kept.every(p=>!osm._treeExcluded(p.x,p.z,index)),
+    `real tile ${file}: tree survived on an excluded feature`);
+  realRawTrees+=raw.length;
+  realFilteredTrees+=kept.length;
+  realTiles++;
+}
+assert(realTiles>0,'real data: no OSM tiles scanned');
+assert(realFilteredTrees<realRawTrees,
+  'real data: exclusion system did not remove any overlapping trees');
+
 console.log('OSMManager regression OK',JSON.stringify({
   treeCount,
+  filteredTreeCount:filtered.length,
+  realTiles,
+  realRawTrees,
+  realFilteredTrees,
   forestBuckets:forestGroup.children.map(x=>x.name),
   buildingBuckets:buildingGroup.children.map(x=>x.name),
   sampledRelief:+(range.maxY-range.minY).toFixed(2)

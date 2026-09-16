@@ -4795,6 +4795,31 @@ Gebäude, Missionsziele, Brücken/Straßen-Segmente):
    nächsten echten Wasser-/Gebäude-Fläche ausgeben, Spawn-Y minus echte Boden-Höhe an der
    exakten Spawn-Position ausgeben, nicht nur „sollte nach der Formel jetzt stimmen" annehmen.
 
+### REMAGEN BUILD 8 — Terrain Pass 2 (ChatGPT, 2026-09-16)
+
+Auslöser waren zwei echte iPad-Screenshots von BUILD 7. Sie zeigten drei klar getrennte
+Fehler: die gedehnten `ConeGeometry(4)`-Dächer wirkten wie Pyramiden, Bäume standen in
+Straßen, und deckend gelbe Farmland-Polygone lagen auf einem einfarbig hellgrünen Boden.
+
+Korrektur in `terrain-system/OSMManager.js` und `TerrainManager.js`:
+
+- Satteldächer sind jetzt echte sechs Eckpunkte umfassende Giebelprismen; keine um 45°
+  gedrehte und rechteckig verzerrte Pyramide mehr.
+- Vor dem Instancing filtert ein temporärer 64-m-Zellenindex Baumkandidaten gegen Straßen,
+  Schienen, Flüsse, Seen, Flugfelder und rotierte Gebäudegrundrisse. Er erzeugt keine neuen
+  Renderobjekte und hält die Prüfung von `Bäume × alle Features` fern.
+- Der Terrain-Boden nutzt eine einzige, gemeinsam verwendete, nahtlos wiederholte 256-px-
+  Canvas-Textur in gedeckten Oliv-/Erdtönen. Das vermeidet den früheren, auf iOS unsichtbaren
+  Vertex-Color-Pfad.
+- Farmland bleibt geografisch erkennbar, ist aber nur noch eine gedeckte 20%-Tönung über der
+  Textur, keine deckende gelbe Fläche.
+
+Der erweiterte Regressionstest scannt alle 56 echten OSM-Kacheln: 231.120 rohe
+Baumkandidaten, 169.251 nach Ausschluss; 61.869 Konflikte wurden entfernt. Zusätzlich prüft
+er die Giebelprisma-Geometrie und die transparente Farmland-Regel. Syntaxprüfungen für beide
+geänderten Manager bestanden. Sichtbare Kennung: `REMAGEN BUILD 8 · TERRAIN PASS 2`.
+Echte iPad-Freigabe steht bis zum Nutzer-Test noch aus.
+
 ---
 
 ## 7. Arbeitsweise, die der Nutzer erwartet

@@ -10,7 +10,7 @@ The flight model, weapons and mission logic are not part of a terrain pass unles
 
 ## Test build versioning
 
-Every Remagen revision handed to Oliver for testing must increment the visible build number in both places in `remagen-mission.html`: the always-visible `#testVersionBannerText` and the in-flight `#buildTag`. Add a short pass label when useful. Never tell Oliver a build is ready until the branch/deployment being tested contains that exact visible version. Current terrain pass: `REMAGEN BUILD 7 · TERRAIN PASS 1`.
+Every Remagen revision handed to Oliver for testing must increment the visible build number in both places in `remagen-mission.html`: the always-visible `#testVersionBannerText` and the in-flight `#buildTag`. Add a short pass label when useful. Never tell Oliver a build is ready until the branch/deployment being tested contains that exact visible version. Current terrain pass: `REMAGEN BUILD 8 · TERRAIN PASS 2`.
 
 ## Current pipeline
 
@@ -47,13 +47,24 @@ Previous behaviour sampled ground height only at the building centre and placed 
 
 Pass 1 samples the centre plus all four ROTATED footprint corners. The wall/foundation extends below the lowest sample and the roof datum is placed above the highest sample. This intentionally favours "never visibly floating" over a mathematically thin wall box.
 
-Buildings now use deterministic bounded height variation based on footprint size, two wall palettes, and two roof families: a low-cost hipped roof for ordinary/smaller buildings and a flat roof for large/industrial footprints. Exact height/roof type remains visual inference because the current tile JSON does not contain authoritative values.
+Buildings now use deterministic bounded height variation based on footprint size, two wall palettes, and two roof families. Pass 1 attempted a four-sided cone as a cheap hipped roof; real iPad screenshots showed that stretching it over rectangular footprints produced implausible pyramid/diagonal silhouettes. Pass 2 replaces it with a real gable-prism geometry. Flat roofs remain for large/industrial footprints. Exact height/roof type remains visual inference because the current tile JSON does not contain authoritative values.
 
 Generated instance meshes have stable debug names such as `osmForestConifers`, `osmBuildingWallsWarm` and `osmBuildingRoofsPitched` so browser/Playwright checks can inspect them without relying on child order.
 
 ### Shared geometry disposal
 
 `unloadTile()` now keeps every constructor-owned shared geometry alive rather than only the old box/trunk/cone trio. This matters for demos that unload/reload tiles; disposing a shared roof or canopy geometry on the first unload would silently break later tiles.
+
+## Terrain pass 2 — BUILD 8
+
+Triggered by two real-iPad screenshots of BUILD 7. The screenshots, not a synthetic scene, established three failures: stretched pyramid roofs, trees inside roads, and opaque bright-yellow farmland over a single bright-green terrain sheet.
+
+- **Roofs:** `makeGableRoofGeometry()` creates a six-vertex prism with two sloped planes and triangular gable ends. It is instanced with the building rotation unchanged; there is no `+45°` cone workaround.
+- **Tree exclusions:** `_buildForestExclusion()` creates a temporary 64m-cell spatial index per tile from roads, rails, rivers, lakes, airfields and rotated building footprints. `_treeExcluded()` rejects candidates with a canopy/root margin before matrices are created. The index is temporary and does not add render objects or draw calls.
+- **Ground:** `TerrainManager` now uses one shared 256px seamless, mipmapped canvas texture with muted olive/earth variation. It replaces the uniform bright-green material without reintroducing the iOS-incompatible vertex-colour path.
+- **Farmland:** the real polygons remain as geographic hints but are now a 20%-opacity muted tint over the textured ground instead of opaque yellow sheets. No additional farmland draw-call bucket was added.
+
+The regression harness scans all 56 shipped OSM tiles. At BUILD 8 it generated 231,120 raw forest candidates and retained 169,251 after exclusions, removing 61,869 placements that conflicted with mapped features. It also verifies the six-vertex roof geometry and the bounded transparent farmland material.
 
 ## Regression rules — do not skip
 
@@ -63,7 +74,7 @@ Generated instance meshes have stable debug names such as `osmForestConifers`, `
 4. **LOD can move the rendered surface.** A placement that matched LOD0 can float at coarse LOD. Infrastructure already has rebake logic in `remagen-mission.html`; trees/buildings currently rely on embedded bases plus near-distance culling. If visible floating remains, add an explicit instance-height rebake rather than random offsets.
 5. **Do not cull infrastructure by whole tile.** Rivers/roads/rails must not terminate at the content visibility radius. Only `farGroup` is intended for distance culling.
 6. **Polygon holes matter.** The real Overture forest incident proved that dropping holes can turn a huge polygon into false full-tile forest coverage. Never assume a clipped exterior ring represents valid occupancy everywhere inside it.
-7. **Keep trees away from roads/buildings/water by data or an explicit exclusion system, not visual hope.** This remains a planned improvement; pass 1 only removes duplicate overlap between forest polygons.
+7. **Keep trees away from roads/buildings/water by the explicit exclusion index, not visual hope.** When a new linear or occupied feature is added, add it to `_buildForestExclusion()` and extend the data-backed regression test.
 8. **Triangle winding must be verified from above.** A mesh that is invisible from every expected camera angle may simply face downward. Do not "fix" it by changing colour/lighting first.
 9. **Measure draw calls/mesh count before and after visual detail changes.** The iPad target makes thousands of small Mesh objects unacceptable even when triangle count is modest. Prefer a bounded number of `InstancedMesh`/merged meshes per tile.
 10. **Do not claim iPad verification unless it was actually flown on the real device.** Headless/browser tests prove logic and geometry invariants, not final feel or thermal performance.
@@ -79,6 +90,9 @@ node terrain-system/tests/osmmanager-regression.js
 It intentionally has no npm dependency. A small THREE stub executes the real `OSMManager.js` and checks:
 
 - multiple forest polygons still create at most four vegetation instance buckets per tile,
+- all 56 real OSM tiles emit zero trees inside indexed road/water/building exclusions,
+- the roof is a six-vertex gable prism rather than a stretched pyramid,
+- farmland remains a low-opacity tint rather than an opaque colour sheet,
 - no generated instance matrix contains NaN/Infinity,
 - building creation remains bounded to at most four instance buckets per tile,
 - sloped footprints produce a non-zero sampled terrain range,
@@ -88,12 +102,11 @@ This is a structural regression test, not a rendering test. Before shipping a te
 
 ## Next terrain priorities
 
-1. Build a fast exclusion mask/spatial index so forest placement leaves believable clear corridors around roads, rails, water, airfields and building footprints without O(trees × features) startup cost.
+1. Validate BUILD 8's palette, roof proportions, road clearances and loading time on the real iPad; tune from screenshots and observed frame behaviour, not desktop assumptions.
 2. Test replacing procedural tree canopies with instanced geometry extracted from the existing `treepack.glb`. Measure load time, memory, draw calls and frame time on iPad before adopting it.
-3. Improve ground materials: farmland should not be one universal yellow/olive patch. Add deterministic field-tone variation and, later, texture/detail mapping that does not explode texture memory.
-4. Preserve richer building attributes in `fetch_overture.py` when the source actually provides them (height/storeys/subtype). Use those before procedural guesses. Consider footprint geometry only after measuring the cost versus the current minimum-rotated-rectangle representation.
-5. If buildings/trees visibly move relative to terrain during LOD transitions, implement an explicit per-tile instance-height rebake keyed to actual LOD changes. Do not continuously rebake every frame.
-6. Only after the above is stable: near-camera detail LOD for buildings (chimneys, gables, facade hints) while keeping distant buildings in cheap instanced buckets.
+3. Preserve richer building attributes in `fetch_overture.py` when the source actually provides them (height/storeys/subtype). Use those before procedural guesses. Consider footprint geometry only after measuring the cost versus the current minimum-rotated-rectangle representation.
+4. If buildings/trees visibly move relative to terrain during LOD transitions, implement an explicit per-tile instance-height rebake keyed to actual LOD changes. Do not continuously rebake every frame.
+5. Only after the above is stable: near-camera detail LOD for buildings (chimneys, gables, facade hints) while keeping distant buildings in cheap instanced buckets.
 
 ## Handoff procedure for future ChatGPT / Claude sessions
 
