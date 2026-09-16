@@ -62,7 +62,14 @@ class TerrainManager {
     // tint is worth re-adding later via a baked canvas texture instead (the
     // technique thunderbolt-europe.html's own ground texture already uses
     // successfully on real iPads) rather than per-vertex colours.
-    this.material = new THREE.MeshStandardMaterial({ color: 0x527a3c, roughness: 1.0, metalness: 0 });
+    // A small seamless canvas texture is reliable on iOS (unlike the former
+    // per-vertex colour path) and breaks up the single bright-green sheet that
+    // dominated BUILD 7. It is shared by every tile and mipmapped, so memory
+    // and draw-call cost stay essentially unchanged.
+    this.groundTexture = makeTerrainGroundTexture();
+    this.material = new THREE.MeshStandardMaterial({
+      color: 0xffffff, map: this.groundTexture, roughness: 1.0, metalness: 0
+    });
     this.tiles = new Map();   // "tx,tz" -> TerrainTile
   }
 
@@ -196,4 +203,37 @@ class TerrainManager {
     this.tiles.clear();
     this.material.dispose();
   }
+}
+
+function makeTerrainGroundTexture(){
+  const size=256;
+  const canvas=document.createElement('canvas');
+  canvas.width=size; canvas.height=size;
+  const ctx=canvas.getContext('2d');
+  const img=ctx.createImageData(size,size);
+  const tau=Math.PI*2;
+  for(let y=0;y<size;y++) for(let x=0;x<size;x++){
+    // Integer-frequency waves make opposite texture edges meet cleanly.
+    const u=x/size*tau,v=y/size*tau;
+    const broad=(Math.sin(u*2+v)+Math.cos(v*3-u*0.5)+Math.sin((u+v)*5))*0.333;
+    const medium=(Math.sin(u*11-v*7)+Math.cos(v*13+u*3))*0.5;
+    const hash=Math.sin(x*12.9898+y*78.233)*43758.5453;
+    const grain=(hash-Math.floor(hash))-0.5;
+    const light=broad*8+medium*3+grain*4;
+    const i=(y*size+x)*4;
+    // Muted Rhine-valley grass/soil palette: olive, moss and earth rather
+    // than saturated toy green. Lighting still supplies the slope shading.
+    img.data[i]=Math.max(0,Math.min(255,92+light));
+    img.data[i+1]=Math.max(0,Math.min(255,105+light*1.15));
+    img.data[i+2]=Math.max(0,Math.min(255,61+light*0.65));
+    img.data[i+3]=255;
+  }
+  ctx.putImageData(img,0,0);
+  const tex=new THREE.CanvasTexture(canvas);
+  tex.wrapS=tex.wrapT=THREE.RepeatWrapping;
+  tex.repeat.set(8,8);              // ~500m visual repeat on a 4km tile
+  tex.anisotropy=4;
+  if(THREE.sRGBEncoding!==undefined) tex.encoding=THREE.sRGBEncoding;
+  tex.needsUpdate=true;
+  return tex;
 }
