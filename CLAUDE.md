@@ -5,9 +5,27 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 121 · Thunderbolt Squadron EU BUILD 57 · Remagen 1945 REMAGEN BUILD 12**
+Stand bei Übergabe: **Torpedo Squadron BUILD 121 · Thunderbolt Squadron EU BUILD 57 · Remagen 1945 REMAGEN BUILD 13**
 Repo: `oliverkurzemann-Goku/Torpedo-Bomber`, ausgeliefert über GitHub Pages.
 Alle Angaben unten sind aus dem tatsächlichen Code verifiziert, nicht aus dem Gedächtnis.
+
+**Flugplatz, Build 13 (17.09.2026):** Oliver bestätigte Build 12 auf dem iPad:
+„Ja, passt wieder“. Sein Auftrag zur Weiterentwicklung gilt weiter; nach einem Fix
+nicht erneut untätig auf eine Erlaubnis warten. Dieser Schritt betrifft nur den Startplatz.
+Neue `terrain-system/AirfieldDetails.js`: breite Erdpiste, Fahrspuren, Rollwege,
+Vorfeld, fünf Baracken mit Fenstern/Türen/Satteldächern, Wartungsschuppen, Kisten,
+Fässer, kleine Randmarkierungen und maßstäblicher Windsack. Neun normale Lambert-Meshes
+durch Zusammenfassen nach Material; keine neuen Instanzfarben oder globalen Shaderänderungen.
+Die Bodenflächen folgen über die bestehende Dreiecks-Clipping-Methode dem gerenderten
+Terrain und werden nach LOD-Wechseln neu aufgelegt. UVs danach ebenfalls erneuern!
+Flugzeug, Startposition, Flugphysik, Missionen und weltweite Vegetation bleiben unverändert.
+Neuer Test `terrain-system/tests/remagen-airfield.js` mit echtem Three r128 und DEM:
+Start-/Pistenfläche frei, Fundamente eingebettet, Bodenfehler maximal 0,000012m,
+Attribute und Winding geprüft, neun Meshes. Beide vorhandenen Terrain-Tests bestehen.
+Kein behaupteter GPU-/FPS-Nachweis: der Cloud-Browser hatte keinen WebGL-Kontext;
+neue Grafik muss auf dem echten iPad beurteilt werden. Details und Testbefehle in `TERRAIN.md`.
+Version, Modulprüfung und lokale Script-Cachekeys sind 13. Offene Wünsche: Dorfvarianten,
+Wälder, Fahrzeuge und später Missionen — einzeln umsetzen, nicht Build 11 pauschal reaktivieren.
 
 **Render-Recovery, Build 12 (17.09.2026):** Oliver meldete mit Fotos in Build 11
 unsichtbares Spielerflugzeug, fehlende Dächer/Bäume und einen fehlenden Flugplatz.

@@ -237,7 +237,7 @@
   <div style="width:100%;height:4px;background:repeating-linear-gradient(45deg,#ffd400,#ffd400 8px,#111 8px,#111 16px);"></div>
   <span id="testVersionBannerText" style="background:#111;color:#ffd400;font-family:monospace;font-weight:800;font-size:11px;letter-spacing:.5px;padding:3px 10px;border:1px solid #ffd400;border-top:none;border-radius:0 0 6px 6px;"></span>
 </div>
-<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — REMAGEN BUILD 12 — RENDER RECOVERY — 2026-09-17';</script>
+<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — REMAGEN BUILD 13 — FORWARD AIRFIELD — 2026-09-17';</script>
 <!-- ===== END TEMP TEST-ONLY VERSION BANNER ===== -->
 <div id="app"></div>
 
@@ -264,7 +264,7 @@
   <div id="flash"></div>
   <div id="gunsight"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">REMAGEN BUILD 12 · RENDER RECOVERY</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">REMAGEN BUILD 13 · FORWARD AIRFIELD</div>
 
   <div id="apr">
     <div id="aprCall"></div>
@@ -374,11 +374,12 @@
      own per-object userData tagging, added specifically to support this mission file) — the whole
      point of building the prototype first was that this game only needs to point them at real data,
      not rewrite them. -->
-<script src="terrain-system/HeightProvider.js?v=remagen-12"></script>
-<script src="terrain-system/TerrainTile.js?v=remagen-12"></script>
-<script src="terrain-system/TerrainManager.js?v=remagen-12"></script>
-<script src="terrain-system/OSMManager.js?v=remagen-12"></script>
-<script src="terrain-system/HistoricalObjectManager.js?v=remagen-12"></script>
+<script src="terrain-system/HeightProvider.js?v=remagen-13"></script>
+<script src="terrain-system/TerrainTile.js?v=remagen-13"></script>
+<script src="terrain-system/TerrainManager.js?v=remagen-13"></script>
+<script src="terrain-system/OSMManager.js?v=remagen-13"></script>
+<script src="terrain-system/HistoricalObjectManager.js?v=remagen-13"></script>
+<script src="terrain-system/AirfieldDetails.js?v=remagen-13"></script>
 <script>
 // ============================================================
 //  REMAGEN 1945 — REAL TERRAIN (forked from thunderbolt-europe.html)
@@ -600,9 +601,9 @@ function clearTreesNearAirfield(){
 async function loadRealWorld(){
   const setLoadingText=(s)=>{ const el=document.getElementById('loadingText'); if(el) el.textContent=s; };
 
-  if(OSMManager.BUILD!==12) throw new Error('Terrain version mismatch. Reload Remagen.');
+  if(OSMManager.BUILD!==13) throw new Error('Terrain version mismatch. Reload Remagen.');
   document.getElementById('testVersionBannerText').textContent=
-    'TEST BUILD — REMAGEN BUILD 12 — RENDER RECOVERY — MODULE 12';
+    'TEST BUILD — REMAGEN BUILD 13 — FORWARD AIRFIELD — MODULE 13';
   heightProvider=new DEMHeightProvider(RTILE,'terrain-system/real/data/dem/');
   terrain=new TerrainManager(scene,RTILE,heightProvider);
   osmMgr=new OSMManager(scene,RTILE,terrain,'terrain-system/real/data/osm/');
@@ -733,6 +734,7 @@ function updateContentVisibility(focusX,focusZ){
     g.visible=Math.hypot(cx-focusX,cz-focusZ)<CONTENT_VIS_RADIUS;
   }
   rebakeStaleOsmHeights();
+  if(airfieldDetails)airfieldDetails.refresh();
 }
 
 // Reported (real iPad, screenshot): farmland patches "sehen komisch aus" (look odd). Measured,
@@ -812,69 +814,17 @@ function cyl(rt,rb,h,c,seg){ return new THREE.Mesh(new THREE.CylinderGeometry(rt
 function at(m,x,y,z){ m.position.set(x,y,z); return m; }
 
 // ============================================================
-//  AIRFIELD — a mown grass/dirt forward strip with Nissen-hut barracks, no paved runway,
+//  AIRFIELD — a grass/dirt forward strip with timber barracks, no paved runway,
 //  tower or concrete hangars — replaced after real iPad feedback ("Baracken und eine Gras
 //  oder dirt Piste waeren realistischer") and matching this site's own honest description in
 //  fetch_historical.py ("a plausible site for a forward strip, not a documented one" — a real
 //  WW2 forward strip was rough grass or packed dirt with tents/huts, not a paved airbase).
 // ============================================================
-let airfield=null;
+let airfield=null,airfieldDetails=null;
 function buildAirfield(){
-  const g=new THREE.Group();
-
-  // The strip is built as a terrain-following ribbon (height sampled from the real DEM at
-  // each segment along its length), not one flat plate at a single AF_Y — see this function's
-  // git history / CLAUDE.md ("Flugzeug steht vor der Landebahn"): the real relief across this
-  // 900m span varies up to +-3.5 units from the old single AF_Y height (measured directly
-  // against the loaded tile data), which buried most of the old flat runway box under the real
-  // ground and left only a short unburied stretch visible far down the strip. Same fix, same
-  // technique this project already uses for terrain-hugging roads/rivers/hedges — wound
-  // `a,a+2,a+1, a+1,a+2,a+3` so the face normal points +Y (CLAUDE.md Lektion 17), and every
-  // building below samples ITS OWN x/z instead of reusing AF_Y too.
-  const segN=14;
-  function terrainStrip(width,color,yOff){
-    const pos=[], idx=[];
-    for(let i=0;i<=segN;i++){
-      const x=AF_X-RWY_LEN/2+i*(RWY_LEN/segN);
-      const h=terrain.getHeight(x,AF_Z)+yOff;
-      pos.push(x,h,AF_Z-width/2, x,h,AF_Z+width/2);
-      // Winding derived FOR THIS vertex layout (left=z-halfW pushed before right=z+halfW,
-      // stepping along +X), not copied from ribbon()'s own fix in thunderbolt-europe.html
-      // (CLAUDE.md Lektion 17/4.26) — that fix's winding assumed a different push order and,
-      // tried here unmodified, gave a cross product of (0,-...,0): the strip was invisible from
-      // directly above (confirmed by an actual top-down render — no strip visible at all,
-      // exactly the "wird gar nicht gezeichnet" symptom Lektion 17 itself warns about) and only
-      // ever showed the huts/windsock. Re-derived by hand for THIS layout: (a,a+1,a+2) crossed
-      // with (a+1,a+3,a+2) gives (0,+...,0). Verified after the fix with a real top-down render.
-      if(i<segN){ const a=i*2; idx.push(a,a+1,a+2, a+1,a+3,a+2); }
-    }
-    const geo=new THREE.BufferGeometry();
-    geo.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));
-    geo.setIndex(idx);
-    geo.computeVertexNormals();
-    return new THREE.Mesh(geo,new THREE.MeshLambertMaterial({color}));
-  }
-  g.add(terrainStrip(RWY_W,0x748049,0.15));        // full width: worn/mown grass
-  g.add(terrainStrip(RWY_W*0.28,0x5f5138,0.22));   // narrower centre band: packed-dirt wheel track
-
-  // windsock, on its own sampled height
-  const sockX=AF_X+150, sockZ=AF_Z+120, sockH=terrain.getHeight(sockX,sockZ);
-  const pole=cyl(0.7,0.7,20,0x8a8578,6); at(pole,sockX,sockH+10,sockZ); g.add(pole);
-  const sock=cyl(2.0,3.8,12,0xd9762e,8); sock.rotation.z=Math.PI/2;
-  at(sock,sockX+8,sockH+18,sockZ); g.add(sock);
-
-  // Nissen-hut barracks — the same squashed-half-cylinder-roof-on-a-box technique this
-  // function used for its old hangars, just hut-sized and each sampling its OWN terrain
-  // height, scattered off the strip's north side where the old apron/hangars/tower used to sit
-  // (kept inside the existing AF_CLEAR_* footprint, see that constant's own comment).
-  const hutSpots=[[-380,-140],[-260,-150],[-120,-155],[60,-145],[220,-130]];
-  for(const [dx,dz] of hutSpots){
-    const hx=AF_X+dx, hz=AF_Z+dz, hh=terrain.getHeight(hx,hz);
-    const base=box(20,6,12,0x5c5240); at(base,hx,hh+3,hz); g.add(base);
-    const roof=cyl(6.5,6.5,20,0x474030,10); roof.rotation.z=Math.PI/2;
-    at(roof,hx,hh+5.5,hz); roof.scale.set(1,1,0.55); g.add(roof);
-  }
-  airfield=g; scene.add(g);
+  airfieldDetails=new AirfieldDetails(terrain,osmMgr,AF_X,AF_Z,RWY_LEN,RWY_W);
+  airfield=airfieldDetails.group;
+  scene.add(airfield);
 }
 
 // ============================================================
