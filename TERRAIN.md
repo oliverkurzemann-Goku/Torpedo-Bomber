@@ -10,9 +10,21 @@ The flight model, weapons and mission logic are not part of a terrain pass unles
 
 ## Test build versioning
 
-Every Remagen revision handed to Oliver for testing must increment the visible build number in both places in `remagen-mission.html`: the always-visible `#testVersionBannerText` and the in-flight `#buildTag`. Add a short pass label when useful. Never tell Oliver a build is ready until the branch/deployment being tested contains that exact visible version. Current terrain pass: `REMAGEN BUILD 10 · TERRAIN PASS 4`.
+Every Remagen revision handed to Oliver for testing must increment the visible build number in both places in `remagen-mission.html`: the always-visible `#testVersionBannerText` and the in-flight `#buildTag`. Add a short pass label when useful. Never tell Oliver a build is ready until the branch/deployment being tested contains that exact visible version. Current terrain pass: `REMAGEN BUILD 11 · TERRAIN PASS 5`.
 
-The local terrain scripts carry the same version as a `?v=remagen-10` query. `OSMManager.BUILD` is checked during startup and the banner gains `MODULE 10` only after that check succeeds. This prevents an updated HTML document from silently running an older Safari-cached terrain module.
+The local terrain scripts carry the same version as a `?v=remagen-11` query. `OSMManager.BUILD` is checked during startup and the banner gains `MODULE 11` only after that check succeeds. This prevents an updated HTML document from silently running an older Safari-cached terrain module.
+
+## Terrain pass 5 — Remagen Build 11
+
+- `AirfieldDetails.js` adds a fictional period-inspired field layout: apron, taxiway and links, three open maintenance sheds with pitched roofs, operations hut/antenna, three generic utility trucks, stores, low revetments and runway-edge stones. Existing huts move behind the sheds. The original 900x40m runway, spawn and flight rules retain their coordinates. No new GLB downloads.
+- Runway/shoulder/wheel lanes and apron surfaces reuse the proven terrain-triangle clipping path. The mission rebakes these surfaces at settled LOD changes, including the first observed settled LOD (the previous early return could leave stale water heights after startup).
+- Some houses become L-shaped main blocks with lower wings within the original water-cleared footprint. Gable, hipped and flat roofs share fixed instancing buckets. Six facade tints, two canvas facade styles (plaster/timber) and coherent conifer/broadleaf stands add variation.
+- One candidate building at most per tile gets a chapel tower/spire contained inside its cleared roof outline. The shipped source lacks religious-use tags; these 53 silhouettes are inferred scenery, not historical church reconstruction. Likewise the field/trucks are representative, not exact historical structures/models.
+- Budget: at most four forest and ten building instance buckets per tile; 118 new airfield component instances in nine material/geometry batches, plus ground surfaces. These are geometry/draw-count budgets, not measured iPad FPS.
+
+Validation: `THREE_R128=/path/to/three.min.js node terrain-system/tests/remagen-real-geometry.js` uses the actual r128 library and all 56 shipped DEM/OSM tiles. This pass checked 23,305 roof parts, 162,469 crowns, 182,323 water triangles and 904 airfield ground triangles. Maximum sampled terrain/water separation error remains 0.00063m. It executes the actual mission airfield builder and checks finite geometry, runway clearance and water placement. The dependency-free structural regression also passes. Browser/Safari visual and performance acceptance remains outstanding.
+
+Next roadmap, explicitly not shipped in Build 11: parked GLB aircraft and additional authentic vehicles; appropriate Rhine shipping; pasture animals; then convoy escort, interdiction and river missions. First asset inventory (primitive triangle counts, not loader validation): merchant ship 1.7MB/~7.6k triangles, Jagdpanther 12.2MB/~5.4k, Sherman 17.9MB/~132k, M16 13MB/~100k, Flak vehicle 14.2MB/~149k; treepack 9.8MB/17 images. Parse with the actual GLTFLoader and inspect orientation, bounds, texture memory and historical suitability before integration. Do not bulk-load everything on iPad.
 
 ## Terrain pass 4 — Remagen Build 10
 

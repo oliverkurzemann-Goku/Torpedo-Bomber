@@ -237,7 +237,7 @@
   <div style="width:100%;height:4px;background:repeating-linear-gradient(45deg,#ffd400,#ffd400 8px,#111 8px,#111 16px);"></div>
   <span id="testVersionBannerText" style="background:#111;color:#ffd400;font-family:monospace;font-weight:800;font-size:11px;letter-spacing:.5px;padding:3px 10px;border:1px solid #ffd400;border-top:none;border-radius:0 0 6px 6px;"></span>
 </div>
-<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — REMAGEN BUILD 10 — TERRAIN PASS 4 — 2026-09-16';</script>
+<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — REMAGEN BUILD 11 — TERRAIN PASS 5 — 2026-09-17';</script>
 <!-- ===== END TEMP TEST-ONLY VERSION BANNER ===== -->
 <div id="app"></div>
 
@@ -264,7 +264,7 @@
   <div id="flash"></div>
   <div id="gunsight"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">REMAGEN BUILD 10 · TERRAIN PASS 4</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">REMAGEN BUILD 11 · TERRAIN PASS 5</div>
 
   <div id="apr">
     <div id="aprCall"></div>
@@ -374,11 +374,12 @@
      own per-object userData tagging, added specifically to support this mission file) — the whole
      point of building the prototype first was that this game only needs to point them at real data,
      not rewrite them. -->
-<script src="terrain-system/HeightProvider.js?v=remagen-10"></script>
-<script src="terrain-system/TerrainTile.js?v=remagen-10"></script>
-<script src="terrain-system/TerrainManager.js?v=remagen-10"></script>
-<script src="terrain-system/OSMManager.js?v=remagen-10"></script>
-<script src="terrain-system/HistoricalObjectManager.js?v=remagen-10"></script>
+<script src="terrain-system/HeightProvider.js?v=remagen-11"></script>
+<script src="terrain-system/TerrainTile.js?v=remagen-11"></script>
+<script src="terrain-system/TerrainManager.js?v=remagen-11"></script>
+<script src="terrain-system/OSMManager.js?v=remagen-11"></script>
+<script src="terrain-system/HistoricalObjectManager.js?v=remagen-11"></script>
+<script src="terrain-system/AirfieldDetails.js?v=remagen-11"></script>
 <script>
 // ============================================================
 //  REMAGEN 1945 — REAL TERRAIN (forked from thunderbolt-europe.html)
@@ -600,9 +601,9 @@ function clearTreesNearAirfield(){
 async function loadRealWorld(){
   const setLoadingText=(s)=>{ const el=document.getElementById('loadingText'); if(el) el.textContent=s; };
 
-  if(OSMManager.BUILD!==10) throw new Error('Terrain version mismatch. Reload Remagen.');
+  if(OSMManager.BUILD!==11) throw new Error('Terrain version mismatch. Reload Remagen.');
   document.getElementById('testVersionBannerText').textContent=
-    'TEST BUILD — REMAGEN BUILD 10 — TERRAIN PASS 4 — MODULE 10';
+    'TEST BUILD — REMAGEN BUILD 11 — TERRAIN PASS 5 — MODULE 11';
   heightProvider=new DEMHeightProvider(RTILE,'terrain-system/real/data/dem/');
   terrain=new TerrainManager(scene,RTILE,heightProvider);
   osmMgr=new OSMManager(scene,RTILE,terrain,'terrain-system/real/data/osm/');
@@ -765,9 +766,13 @@ function rebakeStaleOsmHeights(){
     const prevSeg=osmTileLastLod.get(key);
     if(prevSeg===tile._renderSeg) continue;
     osmTileLastLod.set(key,tile._renderSeg);
-    if(prevSeg===undefined){ captureFlatMeshOffsets(t.group); continue; }
+    if(prevSeg===undefined) captureFlatMeshOffsets(t.group);
     for(const mesh of flatOsmMeshes(t.group)) if(mesh.userData.waterSource) osmMgr.redrapeWater(mesh);
     rebakeFlatMeshHeights(t.group);
+    if(airfield) airfield.traverse(mesh=>{
+      const source=mesh.userData.waterSource;
+      if(source && key===`${source.ox/RTILE},${source.oz/RTILE}`) osmMgr.redrapeWater(mesh);
+    });
   }
 }
 function flatOsmMeshes(group){
@@ -832,12 +837,12 @@ function buildAirfield(){
   // `a,a+2,a+1, a+1,a+2,a+3` so the face normal points +Y (CLAUDE.md Lektion 17), and every
   // building below samples ITS OWN x/z instead of reusing AF_Y too.
   const segN=14;
-  function terrainStrip(width,color,yOff){
+  function terrainStrip(width,color,yOff,zShift=0){
     const pos=[], idx=[];
     for(let i=0;i<=segN;i++){
       const x=AF_X-RWY_LEN/2+i*(RWY_LEN/segN);
       const h=terrain.getHeight(x,AF_Z)+yOff;
-      pos.push(x,h,AF_Z-width/2, x,h,AF_Z+width/2);
+      pos.push(x,h,AF_Z+zShift-width/2, x,h,AF_Z+zShift+width/2);
       // Winding derived FOR THIS vertex layout (left=z-halfW pushed before right=z+halfW,
       // stepping along +X), not copied from ribbon()'s own fix in thunderbolt-europe.html
       // (CLAUDE.md Lektion 17/4.26) — that fix's winding assumed a different push order and,
@@ -852,10 +857,14 @@ function buildAirfield(){
     geo.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));
     geo.setIndex(idx);
     geo.computeVertexNormals();
-    return new THREE.Mesh(geo,new THREE.MeshLambertMaterial({color}));
+    const mesh=new THREE.Mesh(geo,new THREE.MeshStandardMaterial({color,roughness:1}));
+    osmMgr._prepareWaterSurface(mesh,0,16000,yOff);
+    return mesh;
   }
-  g.add(terrainStrip(RWY_W,0x748049,0.15));        // full width: worn/mown grass
-  g.add(terrainStrip(RWY_W*0.28,0x5f5138,0.22));   // narrower centre band: packed-dirt wheel track
+  g.add(terrainStrip(RWY_W+12,0x727251,0.18)); // mown shoulder
+  g.add(terrainStrip(RWY_W,0x8b8164,0.25)); // clearly readable worn earth strip
+  g.add(terrainStrip(2.0,0x615945,0.30,-3));
+  g.add(terrainStrip(2.0,0x615945,0.30,3));
 
   // windsock, on its own sampled height
   const sockX=AF_X+150, sockZ=AF_Z+120, sockH=terrain.getHeight(sockX,sockZ);
@@ -867,13 +876,14 @@ function buildAirfield(){
   // function used for its old hangars, just hut-sized and each sampling its OWN terrain
   // height, scattered off the strip's north side where the old apron/hangars/tower used to sit
   // (kept inside the existing AF_CLEAR_* footprint, see that constant's own comment).
-  const hutSpots=[[-380,-140],[-260,-150],[-120,-155],[60,-145],[220,-130]];
+  const hutSpots=[[-380,-275],[-260,-275],[-120,-275],[60,-275],[220,-275]];
   for(const [dx,dz] of hutSpots){
     const hx=AF_X+dx, hz=AF_Z+dz, hh=terrain.getHeight(hx,hz);
     const base=box(20,6,12,0x5c5240); at(base,hx,hh+3,hz); g.add(base);
     const roof=cyl(6.5,6.5,20,0x474030,10); roof.rotation.z=Math.PI/2;
     at(roof,hx,hh+5.5,hz); roof.scale.set(1,1,0.55); g.add(roof);
   }
+  g.add(buildRemagenAirfieldDetails(terrain,osmMgr,AF_X,AF_Z));
   airfield=g; scene.add(g);
 }
 
