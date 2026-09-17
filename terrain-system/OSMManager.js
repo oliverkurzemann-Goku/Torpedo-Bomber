@@ -5,7 +5,7 @@
 // ============================================================
 
 class OSMManager {
-  static get BUILD(){ return 12; }
+  static get BUILD(){ return 13; }
   constructor(scene, tileSize, terrainManager, baseUrl = 'data/osm/'){
     this.scene = scene;
     this.tileSize = tileSize;

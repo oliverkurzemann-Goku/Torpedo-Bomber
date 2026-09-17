@@ -10,9 +10,31 @@ The flight model, weapons and mission logic are not part of a terrain pass unles
 
 ## Test build versioning
 
-Every Remagen revision handed to Oliver for testing must increment the visible build number in both places in `remagen-mission.html`: the always-visible `#testVersionBannerText` and the in-flight `#buildTag`. Add a short pass label when useful. Never tell Oliver a build is ready until the branch/deployment being tested contains that exact visible version. Current revision: `REMAGEN BUILD 12 · RENDER RECOVERY`.
+Every Remagen revision handed to Oliver for testing must increment the visible build number in both places in `remagen-mission.html`: the always-visible `#testVersionBannerText` and the in-flight `#buildTag`. Add a short pass label when useful. Never tell Oliver a build is ready until the branch/deployment being tested contains that exact visible version. Current revision: `REMAGEN BUILD 13 · FORWARD AIRFIELD`.
 
-The local terrain scripts carry the same version as a `?v=remagen-12` query. `OSMManager.BUILD` is checked during startup and the banner gains `MODULE 12` only after that check succeeds. This prevents an updated HTML document from silently running an older Safari-cached terrain module.
+The local terrain scripts carry the same version as a `?v=remagen-13` query. `OSMManager.BUILD` is checked during startup and the banner gains `MODULE 13` only after that check succeeds. This prevents an updated HTML document from silently running an older Safari-cached terrain module.
+
+## Build 13 — isolated forward airfield
+
+Oliver confirmed Build 12 on his iPad: "Ja, passt wieder". He explicitly asked us to continue improving the game instead of stopping after recovery. This revision changes only the fictional start field; it does not restore Build 11's global instance colours, village variants or forest changes.
+
+`terrain-system/AirfieldDetails.js` replaces the old two centre-sampled ribbons and five crude huts. It builds a 900 x 40m earth strip with grass shoulders, two wheel ruts, a parallel service track with three connections, an apron, five timber barracks with pitched roofs/windows/doors/stovepipes, a maintenance shed, crates, barrels, small edge markers and a proportionate windsock. It remains a period-inspired fictional field, not a verified reconstruction of a historical airbase. Aircraft, spawn, flight and missions are unchanged.
+
+Rendering uses **nine ordinary MeshLambert meshes total**: three ground batches and six merged object colour batches. There are no instance colours, new shader defines, added model downloads or changes to shared terrain/aircraft materials. Window frames and supplies merge into the same bounded colour batches. The shader/GPU cause of Build 11 remains unproven.
+
+Ground triangles reuse the established `OSMManager._prepareWaterSurface` / `redrapeWater` grid-clipping algorithm. Despite the water-oriented helper names, only geometry is involved: the field retains its own Lambert materials and ground UVs. `refresh()` regenerates UVs after redraping and runs only after a settled segment-count change on tile 0,4, via `updateContentVisibility`. No ground allocation occurs on unchanged LOD or during morphs. Static object foundations use 15 footprint samples at construction; distant LOD changes do not rebake these objects. Ground may briefly differ during a morph, as with existing water. Keep this limitation explicit.
+
+Tests:
+
+```bash
+THREE_R128=/absolute/path/to/three.min.js node terrain-system/tests/remagen-airfield.js
+THREE_R128=/absolute/path/to/three.min.js node terrain-system/tests/remagen-real-geometry.js
+node terrain-system/tests/osmmanager-regression.js
+```
+
+The new test executes the actual mission's `buildAirfield()` with real r128 and shipped DEM: nine meshes, 51 named major parts, 1,362 sampled ground triangles across fine/coarse/fine LOD, maximum drape error 0.000012m. It checks finite/aligned attributes, upward winding, ray hits across runway width including spawn, foundation coverage, no solid details in the active runway, and stable allocations on unchanged LOD. Existing region tests still pass: 21,286 roofs, 162,469 crowns, 182,323 water triangles. **These are CPU geometry tests, not GPU rendering or FPS measurements.** Cloud Chrome could not create a WebGL context for the prior recovery; final iPad appearance of this isolated pass remains unverified. Next real-device check: player visible at spawn/chase, broad runway visible, roofs/trees preserved, rollways and buildings visible, smooth frame rate.
+
+Next work remains village/building variety and forest detail, followed by period vehicles and mission expansion. Keep separate revisions and always increment the visible build. Do not silently stop after a repair: the standing user request is to continue improvements.
 
 ## Build 12 — recovery from Build 11 rendering regression
 
@@ -20,7 +42,7 @@ The user's Build 11 iPad screenshots show no player aircraft, roofs, trees or ai
 
 Recovery deliberately restores the entire Build 10 runtime (`655cf1e50f657ab9399d4b8d57c89abac44695fc`), changing only version/cache labels. Build 11's airfield module, instance colours, L-shaped blocks, hipped roofs and chapel additions are withdrawn together. They remain in commit `719857d56cda8ba0d0b57c9062a19efbb3c256a7` and PR #5; this is recoverable history, not lost work.
 
-Do not describe the exact cause as proven. The new instance-colour/material combinations are a suspect, but there is no captured iPad GPU error. The current cloud Chrome test cannot even create a WebGL context (`THREE.WebGLRenderer: Error creating WebGL context.`), so it provides no visual acceptance evidence. Build 12 is verified by runtime comparison to Build 10, syntax and existing real-data geometry tests, and deployment completion. Actual iPad recovery remains for the user's check.
+Do not describe the exact cause as proven. The new instance-colour/material combinations are a suspect, but there is no captured iPad GPU error. The current cloud Chrome test cannot even create a WebGL context (`THREE.WebGLRenderer: Error creating WebGL context.`), so it provides no visual acceptance evidence. Build 12 was verified by runtime comparison to Build 10, syntax and existing real-data geometry tests, and deployment completion. Oliver subsequently confirmed the recovery on his iPad ("Ja, passt wieder").
 
 Before reintroducing the detail pass, obtain a working WebGL test and isolate one change at a time: first instance colours with shared materials, then roofing variants, then the field. Verify actual visible pixels for the player at spawn and in chase view, pitched roofs, forest and runway; inspect browser GPU errors. Never call a matrix/overlap check a render test or an FPS measurement.
 
