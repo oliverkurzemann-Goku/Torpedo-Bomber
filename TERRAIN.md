@@ -10,9 +10,34 @@ The flight model, weapons and mission logic are not part of a terrain pass unles
 
 ## Test build versioning
 
-Every Remagen revision handed to Oliver for testing must increment the visible build number in both places in `remagen-mission.html`: the always-visible `#testVersionBannerText` and the in-flight `#buildTag`. Add a short pass label when useful. Never tell Oliver a build is ready until the branch/deployment being tested contains that exact visible version. Current revision: `REMAGEN BUILD 13 · FORWARD AIRFIELD`.
+Every Remagen revision handed to Oliver for testing must increment the visible build number in both places in `remagen-mission.html`: the always-visible `#testVersionBannerText` and the in-flight `#buildTag`. Add a short pass label when useful. Never tell Oliver a build is ready until the branch/deployment being tested contains that exact visible version. Current revision: `REMAGEN BUILD 14 · WATER SKY VEHICLES`.
 
-The local terrain scripts carry the same version as a `?v=remagen-13` query. `OSMManager.BUILD` is checked during startup and the banner gains `MODULE 13` only after that check succeeds. This prevents an updated HTML document from silently running an older Safari-cached terrain module.
+The local terrain scripts carry the same version as a `?v=remagen-14` query. `OSMManager.BUILD` is checked during startup and the banner gains `MODULE 14` only after that check succeeds. This prevents an updated HTML document from silently running an older Safari-cached terrain module.
+
+## Build 14 — complete stream layer, neutral clouds, real vehicles
+
+Oliver accepted Build 13. We inspected IMG_0611/0610/0609: multicoloured cloud speckles and wide, abruptly ending water strips. The original importer deliberately omitted streams. Of its 507 clipped line pieces, 464 are canals and 43 rivers; rendering every one 34m wide exaggerated their size and missing connections.
+
+`real/tools/build_waterways.py` fetches the pinned Overture water theme (2026-08-19.0), including streams. `real/data/waterways.json` holds 4,182 stream pieces, 464 canals and 43 river pieces across all 56 tiles. `prepareRegion(coords,waterwaysURL)` replaces only water-line fields BEFORE generating global masks and loading any tile. Missing/mismatched overlays fail explicitly. Original lake/Rhine polygons and all other tile fields remain intact. 83 of the previous 263 unmatched line ends now touch a sourced stream within 0.2m, including seven around the field. This does NOT prove every remaining endpoint is a defect or every source gap is fixed: springs, culverts and the source bbox remain relevant. Do not disguise gaps by inventing lakes.
+
+Widths are visual estimates (stream 2.4m, canal 6m, river 12m), not measured source attributes. `osmWaterPairs()` is shared by rendering and placement masks. It retains source bends, varies width slightly and tapers only unmatched source ends; clipped seams and polygon connections retain full width. The generator tags endpoints globally. Water uses a neutral 64px ripple DataTexture; world UVs are regenerated on redrape. The first implementation subdivided every 8m (630,407 water triangles). Sparse 80m subdivision plus explicit taper points reduces this to **398,896**, versus 182,323 in Build 13. There are no additional water draw-call buckets, but geometry/memory costs rose; unchanged iPad FPS is NOT established.
+
+Clouds now use explicit 128px RGBA data: every RGB channel is 255, including transparent texels; alpha falls smoothly to zero. This replaces the canvas upload path and avoids chromatic filtering fringes. The precise Safari/GPU cause is unproven and the screenshot fix needs real-device confirmation. No new cloud shader or renderer flags.
+
+`WorldVehicles.js` loads existing M16 (approximately 14MB) and Tiger (1.7MB) sequentially after the menu opens. Static M16: (1047,17987.6) beside the field; Tiger: (14350,15870) near Erpel, with a bounded fallback position search. Positions are illustrative, not verified historical unit locations. Select ONLY the Tiger's `TIGER_H1` subtree, preserving ancestor transforms: the source is a kit with separately laid-out crew, heads and weapons. Convert vehicle materials locally to Lambert + existing diffuse maps; never modify aircraft materials. Vehicles hide beyond 1,800m, re-ground on current terrain and reject water, building footprints, nearby trees and steep footprint relief. These are scenery, not new combat targets, traffic AI or suspension physics. Credits and the GLBs' embedded attribution/license metadata are recorded in `ASSET-CREDITS.md`, linked in the menu. No Sketchfab download/account was used.
+
+Validation commands (in addition to existing region/airfield tests):
+
+```bash
+THREE_R128=/path/to/three.min.js node terrain-system/tests/remagen-water-sky.js
+THREE_R128=/path/to/three.min.js GLTF_LOADER_R128=/path/to/GLTFLoader.js node terrain-system/tests/remagen-vehicles.js
+```
+
+Tests confirm 83 stream connections, tile/width arrays, neutral cloud pixels, terminal/seam behavior, and actual GLTFLoader node transforms/materials/placement. M16: 19 meshes/99,911 triangles; selected Tiger: 13/910. All 53 embedded source images separately decoded with Pillow. The loader test supplies image events without a GPU: it is NOT a rendered screenshot. Independent region geometry tests check 21,142 roofs and 160,662 crowns against 398,896 water triangles, maximum drape error 0.00063m. Existing field and dependency-free regression tests pass. The cloud browser has been unable to create WebGL even for confirmed Build 12; no iPad visual/FPS acceptance is claimed.
+
+Source-fetch lesson: fsspec ignored the configured proxy and failed every footer while urllib could reach the public bucket. Set `client_kwargs={"trust_env": True}` in `overture_lib.py`. Successful fetch: 32 files scanned, one matching file, 33,224 candidate rows, 5,682 intersecting water features. An earlier Overpass request returned HTTP 406 and supplied no data. Never overwrite the shipped network with an empty fetch; the overlay builder rejects suspiciously small results.
+
+Next device checks: photographed canal near the field, cloud speckles, M16 at the service area, Tiger near Erpel, and frame rate with the fuller water network. Remaining detail work: richer forest/building silhouettes, additional vehicles/ships, then mission hooks. Build 13 field and player flight remain unchanged.
 
 ## Build 13 — isolated forward airfield
 

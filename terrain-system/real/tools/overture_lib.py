@@ -26,7 +26,7 @@ import pyarrow.parquet as pq
 from shapely import wkb as shapely_wkb
 from shapely.geometry import box as shapely_box
 
-_HTTP_FS = fsspec.filesystem("https")
+_HTTP_FS = fsspec.filesystem("https", client_kwargs={"trust_env": True})
 
 
 def list_keys(bucket, prefix):

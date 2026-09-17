@@ -5,7 +5,7 @@
 // ============================================================
 
 class OSMManager {
-  static get BUILD(){ return 13; }
+  static get BUILD(){ return 14; }
   constructor(scene, tileSize, terrainManager, baseUrl = 'data/osm/'){
     this.scene = scene;
     this.tileSize = tileSize;
@@ -19,6 +19,8 @@ class OSMManager {
     this.railMat = new THREE.MeshStandardMaterial({ color: 0x585048, roughness: 0.8 });
     this.riverMat = new THREE.MeshStandardMaterial({ color: 0x426f78, roughness: 0.72, metalness: 0 });
     this.lakeMat = new THREE.MeshStandardMaterial({ color: 0x3c6d78, roughness: 0.68, metalness: 0 });
+    this.waterTexture=makeOSMWaterTexture();
+    this.riverMat.map=this.lakeMat.map=this.waterTexture;
     // Farmland is a subtle tint over the textured terrain, not an opaque map
     // polygon. Opaque yellow polygons made whole valleys read like a board game.
     this.farmMat = new THREE.MeshStandardMaterial({
@@ -69,12 +71,23 @@ class OSMManager {
   // Read every source before placing anything: a roof/crown near a seam can
   // intersect water belonging to the NEXT tile. Network completion order must
   // never decide which objects are admitted. A failed source aborts preparation.
-  async prepareRegion(coords){
+  async prepareRegion(coords,waterwaysURL=null){
     const records = await Promise.all(coords.map(async ([tx,tz]) => {
       const res = await fetch(`${this.baseUrl}${tx}_${tz}.json`);
       if(!res.ok) throw new Error(`Missing OSM tile ${tx},${tz}: ${res.status}`);
       return {tx,tz,data:await res.json()};
     }));
+    if(waterwaysURL){
+      const res=await fetch(waterwaysURL);
+      if(!res.ok)throw new Error('Missing complete water network');
+      const network=await res.json();
+      for(const r of records){
+        const water=network.tiles[this._key(r.tx,r.tz)];
+        if(!water||water.rivers.length!==water.riverWidths.length||water.rivers.length!==water.riverEnds.length)
+          throw new Error('Incomplete water overlay for '+r.tx+','+r.tz);
+        r.data={...r.data,...water};
+      }
+    }
     for(const r of records) this.sourceTiles.set(this._key(r.tx,r.tz),r.data);
     this.waterIndex = makeOSMWaterIndex(records,this.tileSize);
   }
@@ -100,7 +113,7 @@ class OSMManager {
     if(roadMesh) group.add(roadMesh);
     const railMesh = this._buildRibbons(data.rails || [], ox, oz, 3, this.railMat, 1.2);
     if(railMesh) group.add(railMesh);
-    const riverMesh = this._buildRibbons(data.rivers || [], ox, oz, 34, this.riverMat, 1.8);
+    const riverMesh = this._buildRibbons(data.rivers || [], ox, oz, 12, this.riverMat, 0.65,data);
     if(riverMesh) group.add(riverMesh);
     const lakeMesh = this._buildFlatPolygons(data.lakes || [], ox, oz, this.lakeMat, 0.9);
     if(lakeMesh) group.add(lakeMesh);
@@ -146,12 +159,15 @@ class OSMManager {
     return this.terrain.getRenderedHeight(qx, qz);
   }
 
-  _buildRibbons(lines, ox, oz, width, mat, yOffset){
+  _buildRibbons(lines, ox, oz, width, mat, yOffset,riverData=null){
     if(!lines || lines.length === 0) return null;
     const positions = [], indices = [];
-    for(const localPts of lines){
+    for(let lineIndex=0;lineIndex<lines.length;lineIndex++){
+      const localPts=lines[lineIndex];
       if(!localPts || localPts.length < 2) continue;
-      const pairs = osmRibbonPairs(localPts,ox,oz,width);
+      const pairs = mat===this.riverMat
+        ? osmWaterPairs(localPts,ox,oz,riverData?.riverWidths?.[lineIndex]||width,riverData?.riverEnds?.[lineIndex])
+        : osmRibbonPairs(localPts,ox,oz,width);
       const world = pairs; // index count below
       const base = positions.length/3;
       for(const pair of pairs) for(const [x,z] of pair){
@@ -246,6 +262,9 @@ class OSMManager {
     }
     const geo=new THREE.BufferGeometry();
     geo.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));
+    const uv=[];
+    for(let i=0;i<positions.length;i+=3)uv.push(positions[i]/48,positions[i+2]/48);
+    geo.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));
     geo.computeVertexNormals(); geo.computeBoundingSphere();
     mesh.geometry.dispose(); mesh.geometry=geo;
     mesh.userData.yOffsets=new Float32Array(positions.length/3).fill(src.offset);
@@ -290,7 +309,8 @@ class OSMManager {
 
     addCorridors(data.roads, 13, 'road');   // 5m road half-width + canopy/root margin
     addCorridors(data.rails, 9, 'rail');
-    addCorridors(data.rivers, 23, 'river'); // 17m rendered half-width + margin
+    for(let i=0;i<(data.rivers||[]).length;i++)
+      addCorridors([data.rivers[i]],(data.riverWidths?.[i]||12)/2+6,'river');
     addPolygons(data.lakes, 7, 'lake');
     addPolygons(data.airfields, 12, 'airfield');
 
@@ -586,6 +606,20 @@ function osmClipHalfPlane(ring,nx,nz,limit,greater){
   return out;
 }
 
+function makeOSMWaterTexture(){
+  if(typeof THREE.DataTexture!=='function')return null;
+  const n=64,pixels=new Uint8Array(n*n*4);
+  for(let y=0;y<n;y++)for(let x=0;x<n;x++){
+    const a=x/n*Math.PI*2,b=y/n*Math.PI*2,i=(y*n+x)*4;
+    const v=Math.round(226+9*Math.sin(3*a+11*b)+5*Math.sin(7*a-5*b));
+    pixels[i]=pixels[i+1]=pixels[i+2]=v;pixels[i+3]=255;
+  }
+  const tex=new THREE.DataTexture(pixels,n,n,THREE.RGBAFormat);
+  tex.wrapS=tex.wrapT=THREE.RepeatWrapping;
+  tex.magFilter=THREE.LinearFilter;tex.minFilter=THREE.LinearMipmapLinearFilter;
+  tex.generateMipmaps=true;tex.needsUpdate=true;return tex;
+}
+
 function osmBuildingFootprint(b,x,z){
   const c=Math.cos(b.rotY),s=Math.sin(b.rotY),hw=b.w*0.53,hd=b.d*0.54;
   // THREE.Matrix4.makeRotationY: x'=cx+sz, z'=-sx+cz.
@@ -598,6 +632,35 @@ function osmRibbonPairs(line,ox,oz,width){
     const p=world[Math.max(0,i-1)],n=world[Math.min(world.length-1,i+1)];
     const dx=n[0]-p[0],dz=n[1]-p[1],k=width/2/(Math.hypot(dx,dz)||1);
     return [[x-dz*k,z+dx*k],[x+dz*k,z-dx*k]];
+  });
+}
+
+// Source centre-lines are retained. Resample for gently varying bank widths and
+// taper only unconnected source ends, never tile seams or mapped confluences.
+// Rendering AND placement masks must call this exact function.
+function osmWaterPairs(line,ox,oz,width,ends=[false,false]){
+  if(!line||line.length<2)return [];
+  const sampled=[line[0]],dist=[0];let total=0;
+  const length=line.slice(1).reduce((sum,p,i)=>sum+Math.hypot(p[0]-line[i][0],p[1]-line[i][1]),0);
+  for(let i=1;i<line.length;i++){
+    const a=line[i-1],b=line[i],len=Math.hypot(b[0]-a[0],b[1]-a[1]);
+    // Preserve original bends. Only sparse long segments need extra samples;
+    // grid clipping handles ground accuracy, so 8m subdivision wasted triangles.
+    const steps=Math.max(1,Math.ceil(len/80)),fractions=[];
+    for(let j=1;j<=steps;j++)fractions.push(j/steps);
+    for(const distance of [ends[0]?12:-1,ends[1]?length-12:-1])
+      if(distance>total&&distance<total+len)fractions.push((distance-total)/len);
+    fractions.sort((a,b)=>a-b);
+    for(const f of fractions){
+      sampled.push([a[0]+(b[0]-a[0])*f,a[1]+(b[1]-a[1])*f]);dist.push(total+len*f);
+    }total+=len;
+  }
+  const pairs=osmRibbonPairs(sampled,ox,oz,width);
+  return pairs.map((pair,i)=>{
+    const x=sampled[i][0]+ox,z=sampled[i][1]+oz;
+    const taper=Math.min(1,ends[0]?dist[i]/12:1,ends[1]?(total-dist[i])/12:1);
+    const factor=Math.max(.08,taper)*(.95+.05*Math.sin(x*.07+z*.09));
+    return pair.map(([px,pz])=>[x+(px-x)*factor,z+(pz-z)*factor]);
   });
 }
 
@@ -617,8 +680,8 @@ function makeOSMWaterIndex(records,tileSize){
   for(const {tx,tz,data} of records){
     const ox=tx*tileSize,oz=tz*tileSize;
     for(const ring of data.lakes||[]) add(cleanPolygonRing(ring.map(([x,z])=>[x+ox,z+oz])));
-    for(const line of data.rivers||[]){
-      const pairs=osmRibbonPairs(line,ox,oz,34);
+    for(let i=0;i<(data.rivers||[]).length;i++){
+      const pairs=osmWaterPairs(data.rivers[i],ox,oz,data.riverWidths?.[i]||12,data.riverEnds?.[i]);
       for(let i=1;i<pairs.length;i++){
         // EXACT projected triangles from _buildRibbons, including bend joins.
         const [a,b]=pairs[i-1],[c,d]=pairs[i];
