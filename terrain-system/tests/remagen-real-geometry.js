@@ -70,7 +70,7 @@ function validateBuffers(mesh){
 (async()=>{
  await Promise.all(coords.map(([x,z])=>dem.loadTile(x,z)));
  for(const [x,z]of coords)terrain.ensureTile(x,z,0);
- await osm.prepareRegion(coords);
+ await osm.prepareRegion(coords,'terrain-system/real/data/waterways.json');
  const start=performance.now();
  for(const [x,z]of coords)await osm.loadTile(x,z);
  let triangles=0,waterSamples=0,maxDrapeError=0,buildings=0,trees=0,forestBuckets=0,buildingBuckets=0;

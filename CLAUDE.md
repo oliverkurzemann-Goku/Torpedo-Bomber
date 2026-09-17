@@ -5,9 +5,36 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 121 · Thunderbolt Squadron EU BUILD 57 · Remagen 1945 REMAGEN BUILD 13**
+Stand bei Übergabe: **Torpedo Squadron BUILD 121 · Thunderbolt Squadron EU BUILD 57 · Remagen 1945 REMAGEN BUILD 14**
 Repo: `oliverkurzemann-Goku/Torpedo-Bomber`, ausgeliefert über GitHub Pages.
 Alle Angaben unten sind aus dem tatsächlichen Code verifiziert, nicht aus dem Gedächtnis.
+
+**Wasser, Wolken und Fahrzeuge, Build 14 (17.09.2026):** Oliver akzeptierte Build 13;
+IMG_0611/0610/0609 zeigen bunte Wolkenpunkte und abgehackte Wasserbänder. Alle Bilder
+wurden geöffnet. Ursache der Wasserlücken teilweise belegt: Der Import ließ Bäche weg,
+464 der 507 bisherigen Flusslinien sind Kanäle, alle wurden trotzdem 34m breit gezeichnet.
+Neuer Wasser-Overlay `terrain-system/real/data/waterways.json`, reproduzierbar mit
+`real/tools/build_waterways.py`: Overture 2026-08-19.0, 4.182 Bach-, 464 Kanal-, 43
+Flussstücke. 83 zuvor offene Enden treffen jetzt importierte Bachläufe. Keine erfundenen
+Seen; vorhandene Wasserpolygone unverändert. Breiten 2,4/6/12m sind visuelle Schätzungen.
+Overlay VOR globalem Wasserindex laden! `osmWaterPairs` gemeinsam für Geometrie und Masken.
+Neue Uferbreiten/Endverjüngung und dezente Wassertextur; UVs nach Redrape erneuern.
+Wassergeometrie steigt auf 398.896 Dreiecke (vorher 182.323), keine zusätzlichen Wasser-
+Drawcall-Buckets. Echter Daten-/r128-Test: 21.142 Dächer, 160.662 Kronen ohne Wasserkollision;
+Drapefehler <0,00063m. iPad-FPS nicht gemessen, Kostenanstieg ausdrücklich dokumentieren.
+Wolken: `makeSoftSprite` nutzt neutrale DataTexture statt CanvasTexture. Alle RGB-Texel
+sind weiß, Alpha weich. Bunte Punkte damit technisch adressiert, Safari-Ursache NICHT bewiesen.
+`WorldVehicles.js`: vorhandene M16-GLB am Flugplatz, Tiger bei Erpel, nach Menüstart
+sequenziell geladen, 1.800m Sichtweite, Boden-/Wasser-/Gebäude-/Baumprüfung. Statische Kulisse,
+keine neuen Missionsziele. Beim Tiger NUR `TIGER_H1` mit erhaltenen Elterntransformationen:
+Export enthält außerdem lose Köpfe, Waffen und eine separate Besatzung! Fahrzeugmaterialien
+lokal in Lambert umwandeln; Flugzeugmaterialien unverändert. Echtes GLTFLoader r128 geprüft:
+M16 19 Meshes/99.911 Dreiecke; Tiger 13/910. Alle 53 eingebetteten Bilder separat decodiert.
+Tests `remagen-water-sky.js`, `remagen-vehicles.js` plus bisherige Geometrie-/Flugplatztests.
+Kein GPU-/iPad-Nachweis; Details, Befehle, Grenzen und nächste Schritte in `TERRAIN.md`.
+Credits im Menü und `ASSET-CREDITS.md`; kein neuer Sketchfab-Download. Versionsanzeige,
+Modulprüfung und Cachekeys auf 14. Wasserabruf braucht fsspec `trust_env=True`, sonst
+ignoriert es den konfigurierten Proxy. Niemals leere Abrufdaten über den Bestand schreiben.
 
 **Flugplatz, Build 13 (17.09.2026):** Oliver bestätigte Build 12 auf dem iPad:
 „Ja, passt wieder“. Sein Auftrag zur Weiterentwicklung gilt weiter; nach einem Fix

@@ -237,7 +237,7 @@
   <div style="width:100%;height:4px;background:repeating-linear-gradient(45deg,#ffd400,#ffd400 8px,#111 8px,#111 16px);"></div>
   <span id="testVersionBannerText" style="background:#111;color:#ffd400;font-family:monospace;font-weight:800;font-size:11px;letter-spacing:.5px;padding:3px 10px;border:1px solid #ffd400;border-top:none;border-radius:0 0 6px 6px;"></span>
 </div>
-<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — REMAGEN BUILD 13 — FORWARD AIRFIELD — 2026-09-17';</script>
+<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — REMAGEN BUILD 14 — WATER SKY VEHICLES — 2026-09-17';</script>
 <!-- ===== END TEMP TEST-ONLY VERSION BANNER ===== -->
 <div id="app"></div>
 
@@ -264,7 +264,7 @@
   <div id="flash"></div>
   <div id="gunsight"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">REMAGEN BUILD 13 · FORWARD AIRFIELD</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">REMAGEN BUILD 14 · WATER SKY VEHICLES</div>
 
   <div id="apr">
     <div id="aprCall"></div>
@@ -328,6 +328,8 @@
       The real Rhine gorge around Remagen — Copernicus elevation data and Overture Maps roads,
       rivers, forests and buildings, not an invented valley.<br>
       P-47D Thunderbolt &middot; five sorties, including the actual Ludendorff Bridge.
+      <br>Vehicles: KojfDiscord / adrielcz, CC BY 4.0 ·
+      <a href="ASSET-CREDITS.md" target="_blank" rel="noopener" style="color:inherit">Model credits</a>
     </div>
   </div>
 </div>
@@ -374,12 +376,13 @@
      own per-object userData tagging, added specifically to support this mission file) — the whole
      point of building the prototype first was that this game only needs to point them at real data,
      not rewrite them. -->
-<script src="terrain-system/HeightProvider.js?v=remagen-13"></script>
-<script src="terrain-system/TerrainTile.js?v=remagen-13"></script>
-<script src="terrain-system/TerrainManager.js?v=remagen-13"></script>
-<script src="terrain-system/OSMManager.js?v=remagen-13"></script>
-<script src="terrain-system/HistoricalObjectManager.js?v=remagen-13"></script>
-<script src="terrain-system/AirfieldDetails.js?v=remagen-13"></script>
+<script src="terrain-system/HeightProvider.js?v=remagen-14"></script>
+<script src="terrain-system/TerrainTile.js?v=remagen-14"></script>
+<script src="terrain-system/TerrainManager.js?v=remagen-14"></script>
+<script src="terrain-system/OSMManager.js?v=remagen-14"></script>
+<script src="terrain-system/HistoricalObjectManager.js?v=remagen-14"></script>
+<script src="terrain-system/AirfieldDetails.js?v=remagen-14"></script>
+<script src="terrain-system/WorldVehicles.js?v=remagen-14"></script>
 <script>
 // ============================================================
 //  REMAGEN 1945 — REAL TERRAIN (forked from thunderbolt-europe.html)
@@ -601,9 +604,9 @@ function clearTreesNearAirfield(){
 async function loadRealWorld(){
   const setLoadingText=(s)=>{ const el=document.getElementById('loadingText'); if(el) el.textContent=s; };
 
-  if(OSMManager.BUILD!==13) throw new Error('Terrain version mismatch. Reload Remagen.');
+  if(OSMManager.BUILD!==14) throw new Error('Terrain version mismatch. Reload Remagen.');
   document.getElementById('testVersionBannerText').textContent=
-    'TEST BUILD — REMAGEN BUILD 13 — FORWARD AIRFIELD — MODULE 13';
+    'TEST BUILD — REMAGEN BUILD 14 — WATER SKY VEHICLES — MODULE 14';
   heightProvider=new DEMHeightProvider(RTILE,'terrain-system/real/data/dem/');
   terrain=new TerrainManager(scene,RTILE,heightProvider);
   osmMgr=new OSMManager(scene,RTILE,terrain,'terrain-system/real/data/osm/');
@@ -626,7 +629,7 @@ async function loadRealWorld(){
   setLoadingText('Preparing water boundaries…');
   const osmCoords=[];
   for(let tz=0;tz<RGRID_H;tz++) for(let tx=0;tx<RGRID_W;tx++) osmCoords.push([tx,tz]);
-  await osmMgr.prepareRegion(osmCoords);
+  await osmMgr.prepareRegion(osmCoords,'terrain-system/real/data/waterways.json?v=remagen-14');
 
   // Phase 3: real roads/rail/river/forest/farmland/buildings (OSMManager) and the historical
   // layer (bridge/flak/factory/airfield) — both need a real TERRAIN TILE already built at their
@@ -735,6 +738,7 @@ function updateContentVisibility(focusX,focusZ){
   }
   rebakeStaleOsmHeights();
   if(airfieldDetails)airfieldDetails.refresh();
+  if(worldVehicles)worldVehicles.update(focusX,focusZ);
 }
 
 // Reported (real iPad, screenshot): farmland patches "sehen komisch aus" (look odd). Measured,
@@ -820,7 +824,7 @@ function at(m,x,y,z){ m.position.set(x,y,z); return m; }
 //  fetch_historical.py ("a plausible site for a forward strip, not a documented one" — a real
 //  WW2 forward strip was rough grass or packed dirt with tents/huts, not a paved airbase).
 // ============================================================
-let airfield=null,airfieldDetails=null;
+let airfield=null,airfieldDetails=null,worldVehicles=null;
 function buildAirfield(){
   airfieldDetails=new AirfieldDetails(terrain,osmMgr,AF_X,AF_Z,RWY_LEN,RWY_W);
   airfield=airfieldDetails.group;
@@ -3737,22 +3741,28 @@ function sfxSputter(){ nburst(0.07,'bandpass',180+Math.random()*260,1.5,0.16+Mat
 //  CLOUDS — this sky had none at all, a stark gap for a game about flying
 //  through it. Same billboard-sprite technique as torpedo-carrier.html's
 //  buildClouds()/updateClouds() (a soft radial-gradient texture, several
-//  sprites grouped per cloud): proven, cheap (a handful of draw calls total,
-//  not per-cloud since each sprite is its own tiny mesh but there is no
-//  per-frame geometry work), and already tuned for exactly this look.
+//  sprites grouped per cloud). Each sprite is a draw call; pooling avoids
+//  per-frame allocation but does not merge calls. Build 14 uses neutral RGBA
+//  data after coloured speckles were reported on iPad.
 //  Built once as a fixed pool; weather changes retint/re-show them instead
 //  of rebuilding, so a mission switching from clear to storm just thickens
 //  and darkens the same sky.
 // ============================================================
 function makeSoftSprite(){
-  const c=document.createElement('canvas'); c.width=c.height=128;
-  const g=c.getContext('2d');
-  const grd=g.createRadialGradient(64,64,2,64,64,64);
-  grd.addColorStop(0,'rgba(255,255,255,0.98)');
-  grd.addColorStop(0.45,'rgba(255,255,255,0.55)');
-  grd.addColorStop(1,'rgba(255,255,255,0)');
-  g.fillStyle=grd; g.beginPath(); g.arc(64,64,64,0,7); g.fill();
-  return new THREE.CanvasTexture(c);
+  // Explicit neutral RGBA pixels: avoid canvas-backed cloud textures after the
+  // iPad's coloured-speckle report. The exact GPU/browser cause is not proven.
+  // White RGB remains white even in transparent texels (no coloured fringe).
+  const size=128,pixels=new Uint8Array(size*size*4);
+  for(let y=0;y<size;y++)for(let x=0;x<size;x++){
+    const r=Math.hypot((x+.5-size/2)/(size/2),(y+.5-size/2)/(size/2));
+    const t=Math.max(0,1-r*r),i=(y*size+x)*4;
+    pixels[i]=pixels[i+1]=pixels[i+2]=255;
+    pixels[i+3]=Math.round(235*t*t*t);
+  }
+  const tex=new THREE.DataTexture(pixels,size,size,THREE.RGBAFormat);
+  tex.minFilter=tex.magFilter=THREE.LinearFilter;
+  tex.generateMipmaps=false; tex.needsUpdate=true;
+  return tex;
 }
 const CLOUD_SPAN=10000;   // tiling window updateClouds() wraps within, centred on the player
 function buildClouds(){
@@ -4089,6 +4099,8 @@ function init(){
   loadRealWorld().then(()=>{
     buildAirfield();
     show('loading',false); show('menu',true); state=ST.MENU;
+    worldVehicles=new WorldVehicles(scene,terrain,osmMgr);
+    worldVehicles.load().catch(err=>console.warn('Scenery vehicles:',err));
   }).catch(err=>{
     console.error('loadRealWorld failed:',err);
     const el=document.getElementById('loadingText');
