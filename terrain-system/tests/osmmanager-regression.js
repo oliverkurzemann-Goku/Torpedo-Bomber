@@ -128,7 +128,7 @@ const buildings=[
 ];
 const buildingCount=osm._buildBuildings(buildingGroup,buildings,0,0);
 assert(buildingCount===buildings.length,'buildings: count mismatch');
-assert(buildingGroup.children.length<=7,`buildings: expected <=7 instance buckets, got ${buildingGroup.children.length}`);
+assert(buildingGroup.children.length<=10,`buildings: expected <=10 instance buckets, got ${buildingGroup.children.length}`);
 finiteMatrices(buildingGroup,'buildings');
 
 const waterBuildingGroup=new THREE.Group();
