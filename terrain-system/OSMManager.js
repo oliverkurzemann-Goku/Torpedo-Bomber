@@ -5,7 +5,7 @@
 // ============================================================
 
 class OSMManager {
-  static get BUILD(){ return 11; }
+  static get BUILD(){ return 12; }
   constructor(scene, tileSize, terrainManager, baseUrl = 'data/osm/'){
     this.scene = scene;
     this.tileSize = tileSize;
@@ -37,7 +37,6 @@ class OSMManager {
     this.facadeTexture = makeOSMFacadeTexture();
     this.roofTexture = makeOSMRoofTexture();
     this.buildingWarmMat.map = this.buildingCoolMat.map = this.facadeTexture;
-    this.buildingCoolMat.map = makeOSMFacadeTexture('timber');
     this.roofMat.map = this.roofSlateMat.map = this.roofTexture;
 
     // Vegetation palette. Four tree draw calls maximum per tile regardless of
@@ -57,12 +56,10 @@ class OSMManager {
     // stretched over a rectangular footprint it produced the implausible tall,
     // diagonal roof faces visible in BUILD 7 screenshots.
     this.gableRoofGeo = makeGableRoofGeometry();
-    this.hippedRoofGeo = makeGableRoofGeometry(true);
-    this.spireGeo = new THREE.ConeGeometry(0.7,1,4);
     this.chimneyGeo = new THREE.BoxGeometry(0.72, 1.8, 0.72);
 
     this.sharedGeometries = new Set([
-      this.boxGeo, this.wallGeo, this.gableRoofGeo, this.hippedRoofGeo, this.spireGeo, this.chimneyGeo, this.trunkGeo,
+      this.boxGeo, this.wallGeo, this.gableRoofGeo, this.chimneyGeo, this.trunkGeo,
       this.coniferGeo, this.deciduousGeo, this.shrubGeo
     ]);
   }
@@ -375,10 +372,7 @@ class OSMManager {
           usedCells.add(cell);
 
           const r = osmHash(px,pz,7);
-          // Coherent stands: one hillside should not look like the same random
-          // conifer/broadleaf mixture repeated everywhere. All clearance stays.
-          const stand=0.5+0.25*Math.sin(px/470)+0.25*Math.cos(pz/610);
-          const kind = r < 0.20+stand*0.55 ? 0 : (r < 0.93 ? 1 : 2);
+          const kind = r < 0.52 ? 0 : (r < 0.90 ? 1 : 2); // conifer / deciduous / shrub
           placements.push({
             x:px, z:pz, kind,
             scale:0.78 + osmHash(px,pz,3)*0.62,
@@ -432,10 +426,6 @@ class OSMManager {
         scale.set(p.scale*sx,p.scale*sy,p.scale*sz);
         m.compose(pos,q,scale);
         mesh.setMatrixAt(i,m);
-        if(mesh.setColorAt){
-          const light=0.78+osmHash(p.x,p.z,41)*0.32;
-          mesh.setColorAt(i,new THREE.Color().setRGB(light,light,light*(0.88+osmHash(p.x,p.z,42)*0.12)));
-        }
       }
       mesh.instanceMatrix.needsUpdate=true;
       group.add(mesh);
@@ -466,7 +456,7 @@ class OSMManager {
   _buildBuildings(group, buildings, ox, oz, exclusion=null){
     if(!buildings || buildings.length === 0) return 0;
 
-    const original = buildings.map(b => {
+    const desc = buildings.map(b => {
       const x=ox+b.x, z=oz+b.z;
       if(this._buildingTouchesWater(b,x,z,exclusion)) return null;
       const area=b.w*b.d;
@@ -482,7 +472,7 @@ class OSMManager {
       else h=5.5 + r*4.5;
 
       const pitched = area < 1200 && b.d < 38 && aspect < 5.5;
-      const warm = osmHash(x,z,22) > 0.18;
+      const warm = osmHash(x,z,22) > 0.34;
       const redRoof = osmHash(x,z,23) > 0.22;
       const chimney = pitched && area < 700 && Math.min(b.w,b.d) > 5 && osmHash(x,z,24) > 0.28;
       const ground=this._buildingGroundRange(b,x,z,ox,oz);
@@ -492,28 +482,13 @@ class OSMManager {
       // a slope or have an uphill corner poke through the wall.
       const baseY=ground.minY-0.8;
       const wallTop=ground.maxY+h;
-      const hipped=pitched&&osmHash(x,z,27)<0.30;
-      return {b,x,z,pitched,hipped,warm,redRoof,chimney,ground,baseY,wallTop};
+      return {b,x,z,pitched,warm,redRoof,chimney,ground,baseY,wallTop};
     }).filter(Boolean);
-
-    // Split selected homes into an L-shaped main house and a lower wing.
-    // Both parts remain within the already-tested source footprint; the same
-    // material/roof instance buckets are reused, so no new draw calls arise.
-    const desc=original.flatMap(d=>{
-      if(!d.pitched||d.b.w<14||d.b.d<12||d.b.w*d.b.d>850||osmHash(d.x,d.z,35)>0.18) return [d];
-      const c=Math.cos(d.b.rotY),s=Math.sin(d.b.rotY),w=d.b.w,depth=d.b.d;
-      const block=(lx,lz,bw,bd,lower)=>({...d,
-        x:d.x+lx*c+lz*s,z:d.z-lx*s+lz*c,b:{...d.b,w:bw,d:bd},
-        wallTop:d.wallTop-lower,chimney:lower?false:d.chimney});
-      return [block(-w*.175,0,w*.65,depth,0),block(w*.325,-depth*.25,w*.35,depth*.5,1.2)];
-    });
 
     const warm=desc.filter(d=>d.warm);
     const cool=desc.filter(d=>!d.warm);
-    const pitchedRed=desc.filter(d=>d.pitched&&!d.hipped&&d.redRoof);
-    const pitchedSlate=desc.filter(d=>d.pitched&&!d.hipped&&!d.redRoof);
-    const hippedRed=desc.filter(d=>d.hipped&&d.redRoof);
-    const hippedSlate=desc.filter(d=>d.hipped&&!d.redRoof);
+    const pitchedRed=desc.filter(d=>d.pitched&&d.redRoof);
+    const pitchedSlate=desc.filter(d=>d.pitched&&!d.redRoof);
     const flat=desc.filter(d=>!d.pitched);
     const chimneys=desc.filter(d=>d.chimney);
     const m=new THREE.Matrix4(), q=new THREE.Quaternion(), pos=new THREE.Vector3(), scale=new THREE.Vector3();
@@ -529,10 +504,6 @@ class OSMManager {
         scale.set(d.b.w,h,d.b.d);
         m.compose(pos,q,scale);
         mesh.setMatrixAt(i,m);
-        if(mesh.setColorAt){
-          const palette=[0xe8dfc7,0xd4bc9d,0xc8cebc,0xd4c1b5,0xb4afb0,0xf1e9d9];
-          mesh.setColorAt(i,new THREE.Color(palette[Math.floor(osmHash(d.x,d.z,31)*palette.length)]));
-        }
       }
       mesh.instanceMatrix.needsUpdate=true;
       group.add(mesh);
@@ -541,9 +512,9 @@ class OSMManager {
     addWalls(warm,this.buildingWarmMat);
     addWalls(cool,this.buildingCoolMat);
 
-    const addPitchedRoofs=(items,mat,name,geo=this.gableRoofGeo)=>{
+    const addPitchedRoofs=(items,mat,name)=>{
       if(!items.length) return;
-      const roofs=new THREE.InstancedMesh(geo,mat,items.length);
+      const roofs=new THREE.InstancedMesh(this.gableRoofGeo,mat,items.length);
       roofs.name=name;
       for(let i=0;i<items.length;i++){
         const d=items[i];
@@ -561,8 +532,6 @@ class OSMManager {
 
     addPitchedRoofs(pitchedRed,this.roofMat,'osmBuildingRoofsRed');
     addPitchedRoofs(pitchedSlate,this.roofSlateMat,'osmBuildingRoofsSlate');
-    addPitchedRoofs(hippedRed,this.roofMat,'osmBuildingRoofsHippedRed',this.hippedRoofGeo);
-    addPitchedRoofs(hippedSlate,this.roofSlateMat,'osmBuildingRoofsHippedSlate',this.hippedRoofGeo);
 
     if(flat.length){
       const roofs=new THREE.InstancedMesh(this.boxGeo,this.flatRoofMat,flat.length);
@@ -596,23 +565,7 @@ class OSMManager {
       group.add(mesh);
     }
 
-    // Sparse village chapel silhouettes. Source JSON has no religious-use
-    // tag: these are explicitly inferred scenery, not historical locations.
-    // Keep the entire tower and spire inside an already-cleared roof outline.
-    const chapel=desc.find(d=>d.pitched&&d.b.w>18&&d.b.w<38&&d.b.d>9&&d.b.d<17&&osmHash(d.x,d.z,38)<0.08);
-    if(chapel){
-      const d=chapel,size=Math.min(7,d.b.d*0.65),lx=d.b.w*0.24;
-      const x=d.x+lx*Math.cos(d.b.rotY),z=d.z-lx*Math.sin(d.b.rotY);
-      const tower=new THREE.InstancedMesh(this.wallGeo,this.buildingCoolMat,1);
-      tower.name='osmChapelTower';
-      q.setFromAxisAngle(OSM_UP,d.b.rotY);pos.set(x,d.wallTop+6,z);scale.set(size,13,size);
-      m.compose(pos,q,scale);tower.setMatrixAt(0,m);group.add(tower);
-      const spire=new THREE.InstancedMesh(this.spireGeo,this.roofSlateMat,1);
-      spire.name='osmChapelSpire';
-      q.setFromAxisAngle(OSM_UP,d.b.rotY+Math.PI/4);pos.set(x,d.wallTop+16,z);scale.set(size,7,size);
-      m.compose(pos,q,scale);spire.setMatrixAt(0,m);group.add(spire);
-    }
-    return original.length;
+    return desc.length;
   }
 }
 
@@ -729,7 +682,7 @@ function osmCanvasTexture(canvas){
   return tex;
 }
 
-function makeOSMFacadeTexture(style='plaster'){
+function makeOSMFacadeTexture(){
   if(typeof document==='undefined') return null; // placement-only Node tests
   const canvas=document.createElement('canvas'); canvas.width=canvas.height=512;
   const c=canvas.getContext('2d');
@@ -747,15 +700,6 @@ function makeOSMFacadeTexture(style='plaster'){
       c.strokeRect(col*40+(row%2)*20,y+223+row*16,40,16);
     }
     c.fillStyle='#c6bfaf'; c.fillRect(0,y+3,512,7);
-    if(style==='timber'){
-      c.fillStyle='#655446';
-      for(const x of [8,127,254,381,498]) c.fillRect(x,y,7,223);
-      for(const sy of [15,117,216]) c.fillRect(0,y+sy,512,7);
-      for(let step=0;step<90;step++){
-        c.fillRect(12+step,y+20+step,7,7);
-        c.fillRect(489-step,y+125+step,7,7);
-      }
-    }
     for(let row=0;row<2;row++) for(let col=0;col<4;col++){
       const x=42+col*127,wy=y+33+row*103;
       if(panel===1&&row===1&&col===1) continue;
@@ -792,12 +736,12 @@ function makeOSMRoofTexture(){
   return osmCanvasTexture(canvas);
 }
 
-function makeGableRoofGeometry(hipped=false){
+function makeGableRoofGeometry(){
   // Unit prism, ridge along local X. There is deliberately no bottom face.
   const positions=[
     -0.5,0,-0.5,  0.5,0,-0.5,
     -0.5,0, 0.5,  0.5,0, 0.5,
-    hipped?-0.25:-0.5,1,0.0, hipped?0.25:0.5,1,0.0
+    -0.5,1, 0.0,  0.5,1, 0.0
   ];
   const indices=[
     0,5,1, 0,4,5,       // south roof plane
