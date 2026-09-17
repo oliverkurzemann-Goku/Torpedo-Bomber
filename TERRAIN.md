@@ -10,21 +10,19 @@ The flight model, weapons and mission logic are not part of a terrain pass unles
 
 ## Test build versioning
 
-Every Remagen revision handed to Oliver for testing must increment the visible build number in both places in `remagen-mission.html`: the always-visible `#testVersionBannerText` and the in-flight `#buildTag`. Add a short pass label when useful. Never tell Oliver a build is ready until the branch/deployment being tested contains that exact visible version. Current terrain pass: `REMAGEN BUILD 11 · TERRAIN PASS 5`.
+Every Remagen revision handed to Oliver for testing must increment the visible build number in both places in `remagen-mission.html`: the always-visible `#testVersionBannerText` and the in-flight `#buildTag`. Add a short pass label when useful. Never tell Oliver a build is ready until the branch/deployment being tested contains that exact visible version. Current revision: `REMAGEN BUILD 12 · RENDER RECOVERY`.
 
-The local terrain scripts carry the same version as a `?v=remagen-11` query. `OSMManager.BUILD` is checked during startup and the banner gains `MODULE 11` only after that check succeeds. This prevents an updated HTML document from silently running an older Safari-cached terrain module.
+The local terrain scripts carry the same version as a `?v=remagen-12` query. `OSMManager.BUILD` is checked during startup and the banner gains `MODULE 12` only after that check succeeds. This prevents an updated HTML document from silently running an older Safari-cached terrain module.
 
-## Terrain pass 5 — Remagen Build 11
+## Build 12 — recovery from Build 11 rendering regression
 
-- `AirfieldDetails.js` adds a fictional period-inspired field layout: apron, taxiway and links, three open maintenance sheds with pitched roofs, operations hut/antenna, three generic utility trucks, stores, low revetments and runway-edge stones. Existing huts move behind the sheds. The original 900x40m runway, spawn and flight rules retain their coordinates. No new GLB downloads.
-- Runway/shoulder/wheel lanes and apron surfaces reuse the proven terrain-triangle clipping path. The mission rebakes these surfaces at settled LOD changes, including the first observed settled LOD (the previous early return could leave stale water heights after startup).
-- Some houses become L-shaped main blocks with lower wings within the original water-cleared footprint. Gable, hipped and flat roofs share fixed instancing buckets. Six facade tints, two canvas facade styles (plaster/timber) and coherent conifer/broadleaf stands add variation.
-- One candidate building at most per tile gets a chapel tower/spire contained inside its cleared roof outline. The shipped source lacks religious-use tags; these 53 silhouettes are inferred scenery, not historical church reconstruction. Likewise the field/trucks are representative, not exact historical structures/models.
-- Budget: at most four forest and ten building instance buckets per tile; 118 new airfield component instances in nine material/geometry batches, plus ground surfaces. These are geometry/draw-count budgets, not measured iPad FPS.
+The user's Build 11 iPad screenshots show no player aircraft, roofs, trees or airfield; textured wall boxes and terrain still draw. This is a rendering failure, not established evidence that those objects were absent from the scene. CPU placement/geometry checks were insufficient.
 
-Validation: `THREE_R128=/path/to/three.min.js node terrain-system/tests/remagen-real-geometry.js` uses the actual r128 library and all 56 shipped DEM/OSM tiles. This pass checked 23,305 roof parts, 162,469 crowns, 182,323 water triangles and 904 airfield ground triangles. Maximum sampled terrain/water separation error remains 0.00063m. It executes the actual mission airfield builder and checks finite geometry, runway clearance and water placement. The dependency-free structural regression also passes. Browser/Safari visual and performance acceptance remains outstanding.
+Recovery deliberately restores the entire Build 10 runtime (`655cf1e50f657ab9399d4b8d57c89abac44695fc`), changing only version/cache labels. Build 11's airfield module, instance colours, L-shaped blocks, hipped roofs and chapel additions are withdrawn together. They remain in commit `719857d56cda8ba0d0b57c9062a19efbb3c256a7` and PR #5; this is recoverable history, not lost work.
 
-Next roadmap, explicitly not shipped in Build 11: parked GLB aircraft and additional authentic vehicles; appropriate Rhine shipping; pasture animals; then convoy escort, interdiction and river missions. First asset inventory (primitive triangle counts, not loader validation): merchant ship 1.7MB/~7.6k triangles, Jagdpanther 12.2MB/~5.4k, Sherman 17.9MB/~132k, M16 13MB/~100k, Flak vehicle 14.2MB/~149k; treepack 9.8MB/17 images. Parse with the actual GLTFLoader and inspect orientation, bounds, texture memory and historical suitability before integration. Do not bulk-load everything on iPad.
+Do not describe the exact cause as proven. The new instance-colour/material combinations are a suspect, but there is no captured iPad GPU error. The current cloud Chrome test cannot even create a WebGL context (`THREE.WebGLRenderer: Error creating WebGL context.`), so it provides no visual acceptance evidence. Build 12 is verified by runtime comparison to Build 10, syntax and existing real-data geometry tests, and deployment completion. Actual iPad recovery remains for the user's check.
+
+Before reintroducing the detail pass, obtain a working WebGL test and isolate one change at a time: first instance colours with shared materials, then roofing variants, then the field. Verify actual visible pixels for the player at spawn and in chase view, pitched roofs, forest and runway; inspect browser GPU errors. Never call a matrix/overlap check a render test or an FPS measurement.
 
 ## Terrain pass 4 — Remagen Build 10
 

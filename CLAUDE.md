@@ -5,20 +5,21 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 121 · Thunderbolt Squadron EU BUILD 57 · Remagen 1945 REMAGEN BUILD 11**
+Stand bei Übergabe: **Torpedo Squadron BUILD 121 · Thunderbolt Squadron EU BUILD 57 · Remagen 1945 REMAGEN BUILD 12**
 Repo: `oliverkurzemann-Goku/Torpedo-Bomber`, ausgeliefert über GitHub Pages.
 Alle Angaben unten sind aus dem tatsächlichen Code verifiziert, nicht aus dem Gedächtnis.
 
-**Remagen Build 11 (17.09.2026):** Neuer Flugplatz-Detailaufbau in
-`terrain-system/AirfieldDetails.js`, Erdstartbahn mit Bodenanpassung, Rollwegen,
-Vorfeld, Unterständen, Betriebsgebäude, drei generischen Versorgungslastern und
-Materiallagern. `OSMManager.js` ergänzt Walmdächer, L-förmige Wohnhäuser,
-Fachwerk, Fassaden-/Baumfarben und zusammenhängende Waldarten. 53 sparsame
-Kapellenformen sind prozedurale Ergänzungen, keine belegten Kirchenstandorte.
-Tests und Einschränkungen stehen in `TERRAIN.md`. Versionskennung inklusive
-Script-Cache-Parameter und `MODULE 11` aktualisiert. Noch kein echter iPad-/FPS-Test.
-Nächste getrennte Schritte: vorhandene Fahrzeug-/Flugzeugmodelle nach Speicher-
-und Geometrieprüfung integrieren, Rheinverkehr und Weidetiere, danach Missionen.
+**Render-Recovery, Build 12 (17.09.2026):** Oliver meldete mit Fotos in Build 11
+unsichtbares Spielerflugzeug, fehlende Dächer/Bäume und einen fehlenden Flugplatz.
+Die positionsbasierten Geometrietests hatten diese Regression nicht erkannt.
+Build 12 nimmt deshalb den kompletten Detail-Pass aus Commit `719857d` zurück;
+Spiel- und Terraincode entsprechen Build 10 (`655cf1e`), bis auf Build-/Cache-Kennung.
+Die genaue WebGL-Ursache ist NICHT bewiesen. Insbesondere Instanzfarben sind ein
+Verdacht, keine gesicherte Diagnose. Der Cloud-Testbrowser scheitert bereits an
+`THREE.WebGLRenderer: Error creating WebGL context.` und kann keinen visuellen
+Nachweis liefern. Details bleiben in PR #5 / Commit `719857d` rekonstruierbar.
+Keine weitere pauschale Detail-Auslieferung allein aufgrund von CPU-Geometriechecks;
+als Nächstes echte WebGL-Renderprüfung von Startansicht, Flugzeug, Dach und Wald.
 
 ---
 
@@ -33,7 +34,7 @@ iPad/iPhone Safari.
 | `index.html` | Startseite, Auswahl zwischen den Spielen |
 | `torpedo-carrier.html` | **Teil 1** — Pazifik, Trägerbetrieb (BUILD 121) |
 | `thunderbolt-europe.html` | **Teil 2** — Europa, Bodenangriff (EU BUILD 57) |
-| `remagen-mission.html` | **Teil 3** — Remagen 1945, echtes Terrain (REMAGEN BUILD 11; Terrain-Handoff in `TERRAIN.md`) |
+| `remagen-mission.html` | **Teil 3** — Remagen 1945, echtes Terrain (REMAGEN BUILD 12; Terrain-Handoff in `TERRAIN.md`) |
 | `model-check.html` | Kalibrier-Werkzeug für neue Flugzeugmodelle (Ausrichtung, Maßstab) |
 
 Alle drei Spiele haben getrennte Speicherstände (`localStorage`-Präfixe `tc_*`, `eu_*` bzw.

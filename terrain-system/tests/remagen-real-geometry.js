@@ -120,51 +120,7 @@ function validateBuffers(mesh){
    }
   }
  }
- assert(forestBuckets<=4);assert(buildingBuckets<=10);
- // Execute the actual mission airfield builder, not a copied approximation.
- vm.runInThisContext(fs.readFileSync(path.join(root,'terrain-system/AirfieldDetails.js'),'utf8'));
- const html=fs.readFileSync(path.join(root,'remagen-mission.html'),'utf8');
- const startAirfield=html.indexOf('function buildAirfield(){');
- const endAirfield=html.indexOf('//  AIRCRAFT —',startAirfield);
- const ctx={THREE,terrain,osmMgr:osm,AF_X:787,AF_Z:18087.6,RWY_LEN:900,RWY_W:40,
-   scene:new THREE.Scene(),buildRemagenAirfieldDetails,
-   box:(w,h,d,c)=>new THREE.Mesh(new THREE.BoxGeometry(w,h,d),new THREE.MeshLambertMaterial({color:c})),
-   cyl:(rt,rb,h,c,seg)=>new THREE.Mesh(new THREE.CylinderGeometry(rt,rb,h,seg),new THREE.MeshLambertMaterial({color:c})),
-   at:(m,x,y,z)=>{m.position.set(x,y,z);return m;}};
- vm.runInNewContext('let airfield;\n'+html.slice(startAirfield,endAirfield)+'\nbuildAirfield();globalThis.field=airfield;',ctx);
- let airfieldParts=0,airfieldTriangles=0,chapels=0;
- ctx.field.traverse(mesh=>{
-   if(!mesh.geometry)return;
-   validateBuffers(mesh);
-   if(mesh.userData.waterSource){
-     const p=mesh.geometry.attributes.position;
-     for(let i=0;i<p.count;i+=3){
-       const x=(p.getX(i)+p.getX(i+1)+p.getX(i+2))/3,z=(p.getZ(i)+p.getZ(i+1)+p.getZ(i+2))/3;
-       const y=(p.getY(i)+p.getY(i+1)+p.getY(i+2))/3;
-       assert(Math.abs(y-terrain.getRenderedHeight(x,z)-mesh.userData.waterSource.offset)<.01,'airfield ground buried/floating');
-       airfieldTriangles++;
-     }
-   }
-   if(!mesh.isInstancedMesh)return;
-   for(let i=0;i<mesh.count;i++){
-     mesh.getMatrixAt(i,matrix);assert(matrix.elements.every(Number.isFinite));airfieldParts++;
-     const x=matrix.elements[12],z=matrix.elements[14];
-     assert(Math.abs(x-787)>450||Math.abs(z-18087.6)>23,'obstacle in active runway');
-     const corners=[[-.5,-.5],[.5,-.5],[.5,.5],[-.5,.5]].map(([x,z])=>new THREE.Vector3(x,0,z).applyMatrix4(matrix)).map(p=>[p.x,p.z]);
-     const inv=matrix.clone().invert();
-     for(const tri of nearby(corners)){
-       const local=tri.map(([x,z])=>new THREE.Vector3(x,0,z).applyMatrix4(inv)).map(v=>[v.x,v.z]);
-       assert(!local.some((p,j)=>segmentBox(p,local[(j+1)%3])),'airfield object overlaps water');
-     }
-   }
- });
- for(const tile of osm.tiles.values()){
-   for(const mesh of tile.farGroup.children){
-     if(mesh.name==='osmChapelTower')chapels++;
-     if(mesh.instanceColor)assert.equal(mesh.instanceColor.count,mesh.count,'invalid instance colour buffer');
-   }
- }
- assert(airfieldParts>100&&chapels>0,'detail pass missing');
+ assert(forestBuckets<=4);assert(buildingBuckets<=6);
  // The point-height query must agree with actual r128 ray/triangle hits during
  // an LOD morph, too. Bilinear interpolation fails this on non-planar quads.
  const target=terrain.tiles.get('3,3');
@@ -194,5 +150,5 @@ function validateBuffers(mesh){
  const idx=cross._buildForestExclusion({},0,0);
  assert(cross._buildingTouchesWater({w:100,d:100,rotY:.61},3999,100,idx),'neighbor water/rotated roof missed');
  assert(!cross._buildingTouchesWater({w:10,d:10,rotY:.61},3900,100,idx),'dry building rejected');
- console.log(JSON.stringify({tiles:coords.length,buildings,trees,chapels,airfieldParts,airfieldTriangles,waterTriangles:triangles,waterSamples,maxDrapeError,forestBuckets,buildingBuckets,elapsedSeconds:+((performance.now()-start)/1000).toFixed(2),browserTest:false},null,2));
+ console.log(JSON.stringify({tiles:coords.length,buildings,trees,waterTriangles:triangles,waterSamples,maxDrapeError,forestBuckets,buildingBuckets,elapsedSeconds:+((performance.now()-start)/1000).toFixed(2),browserTest:false},null,2));
 })().catch(e=>{console.error(e);process.exit(1);});
