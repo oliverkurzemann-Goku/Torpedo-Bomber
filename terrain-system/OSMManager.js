@@ -5,7 +5,7 @@
 // ============================================================
 
 class OSMManager {
-  static get BUILD(){ return 14; }
+  static get BUILD(){ return 15; }
   constructor(scene, tileSize, terrainManager, baseUrl = 'data/osm/'){
     this.scene = scene;
     this.tileSize = tileSize;
@@ -14,6 +14,7 @@ class OSMManager {
     this.tiles = new Map();
     this.sourceTiles = new Map();
     this.waterIndex = null;
+    this.churchKeys = new Set();
 
     this.roadMat = new THREE.MeshStandardMaterial({ color: 0x3a3a3a, roughness: 1 });
     this.railMat = new THREE.MeshStandardMaterial({ color: 0x585048, roughness: 0.8 });
@@ -29,17 +30,21 @@ class OSMManager {
     });
 
     // Building palette: still cheap/instanced, but no longer one identical box everywhere.
-    this.buildingWarmMat = new THREE.MeshStandardMaterial({ color: 0x9b8a73, roughness: 0.95 });
-    this.buildingCoolMat = new THREE.MeshStandardMaterial({ color: 0x807d75, roughness: 0.95 });
+    this.buildingWarmMat = new THREE.MeshStandardMaterial({ color: 0xb1a48c, roughness: 0.95 });
+    this.buildingCoolMat = new THREE.MeshStandardMaterial({ color: 0x8b8a82, roughness: 0.98 });
+    this.buildingOchreMat = new THREE.MeshStandardMaterial({ color: 0xae8960, roughness: 0.97 });
+    this.buildingBrickMat = new THREE.MeshStandardMaterial({ color: 0x895f51, roughness: 0.98 });
     this.roofMat = new THREE.MeshStandardMaterial({ color: 0x653b31, roughness: 0.95 });
     this.roofSlateMat = new THREE.MeshStandardMaterial({ color: 0x454b4a, roughness: 0.98 });
+    this.roofBrownMat = new THREE.MeshStandardMaterial({ color: 0x574439, roughness: 1 });
     this.flatRoofMat = new THREE.MeshStandardMaterial({ color: 0x4d4b45, roughness: 1 });
     this.chimneyMat = new THREE.MeshStandardMaterial({ color: 0x4e4038, roughness: 1 });
     this.facadeDetailMat = new THREE.MeshStandardMaterial({ color: 0x27302d, roughness: 0.85 });
     this.facadeTexture = makeOSMFacadeTexture();
     this.roofTexture = makeOSMRoofTexture();
-    this.buildingWarmMat.map = this.buildingCoolMat.map = this.facadeTexture;
-    this.roofMat.map = this.roofSlateMat.map = this.roofTexture;
+    this.buildingWarmMat.map = this.buildingCoolMat.map = this.buildingOchreMat.map =
+      this.buildingBrickMat.map = this.facadeTexture;
+    this.roofMat.map = this.roofSlateMat.map = this.roofBrownMat.map = this.roofTexture;
 
     // Vegetation palette. Four tree draw calls maximum per tile regardless of
     // how many forest polygons the source data contains.
@@ -59,10 +64,11 @@ class OSMManager {
     // diagonal roof faces visible in BUILD 7 screenshots.
     this.gableRoofGeo = makeGableRoofGeometry();
     this.chimneyGeo = new THREE.BoxGeometry(0.72, 1.8, 0.72);
+    this.spireGeo = new THREE.ConeGeometry(1, 1, 8);
 
     this.sharedGeometries = new Set([
       this.boxGeo, this.wallGeo, this.gableRoofGeo, this.chimneyGeo, this.trunkGeo,
-      this.coniferGeo, this.deciduousGeo, this.shrubGeo
+      this.coniferGeo, this.deciduousGeo, this.shrubGeo, this.spireGeo
     ]);
   }
 
@@ -89,7 +95,34 @@ class OSMManager {
       }
     }
     for(const r of records) this.sourceTiles.set(this._key(r.tx,r.tz),r.data);
+    this._prepareSettlementLandmarks(records);
     this.waterIndex = makeOSMWaterIndex(records,this.tileSize);
+  }
+
+  _prepareSettlementLandmarks(records){
+    // Current Overture conversion has no trustworthy historical building-use
+    // field. Pick a small number of church-like landmarks from plausible large
+    // footprints inside dense clusters, with a region-wide spacing limit. This
+    // is a visual inference, never historical identification.
+    const candidates=[];
+    for(const {tx,tz,data} of records){
+      const list=data.buildings||[],ox=tx*this.tileSize,oz=tz*this.tileSize;
+      for(const b of list){
+        const area=b.w*b.d,aspect=Math.max(b.w/Math.max(1,b.d),b.d/Math.max(1,b.w));
+        if(area<180||area>1100||Math.min(b.w,b.d)<8||aspect>3.6)continue;
+        const near=list.reduce((n,q)=>n+(Math.hypot(q.x-b.x,q.z-b.z)<260),0);
+        if(near<28)continue;
+        const x=ox+b.x,z=oz+b.z;
+        candidates.push({x,z,b,score:near*10+Math.min(area,700)/100+osmHash(x,z,170)});
+      }
+    }
+    candidates.sort((a,b)=>b.score-a.score);
+    const selected=[];
+    for(const c of candidates){
+      if(selected.length>=14)break;
+      if(selected.every(s=>Math.hypot(c.x-s.x,c.z-s.z)>1900))selected.push(c);
+    }
+    this.churchKeys=new Set(selected.map(c=>osmBuildingKey(c.x,c.z)));
   }
 
   async loadTile(tx, tz){
@@ -385,18 +418,31 @@ class OSMManager {
           if(!pointInPolygon(px,pz,world)) continue;
           if(this._treeExcluded(px,pz,exclusion)) continue;
 
+          // Low-frequency density produces irregular glades without the square
+          // checkerboard of per-tree random thinning.
+          const density=0.76+0.22*osmValueNoise(px/420,pz/420,88);
+          if(osmHash(px,pz,89)>density) continue;
+
           // Overlapping source polygons used to create visibly doubled trees.
           // Dedupe on a small world-space cell while retaining organic jitter.
           const cell = `${Math.round(px/12)},${Math.round(pz/12)}`;
           if(usedCells.has(cell)) continue;
           usedCells.add(cell);
 
-          const r = osmHash(px,pz,7);
-          const kind = r < 0.52 ? 0 : (r < 0.90 ? 1 : 2); // conifer / deciduous / shrub
+          const edge=osmRingEdgeDistance(px,pz,world);
+          const stand=osmValueNoise(px/310,pz/310,91);
+          // Species change in broad, blended stands. Shrubs favour real polygon
+          // edges; individual-tree hash only softens the boundaries.
+          const jitter=(osmHash(px,pz,7)-.5)*.16;
+          let kind=stand+jitter<.47?0:1;
+          if(edge<24&&osmHash(px,pz,92)<.48)kind=2;
           placements.push({
             x:px, z:pz, kind,
             scale:0.78 + osmHash(px,pz,3)*0.62,
-            rot:osmHash(px,pz,4)*Math.PI*2
+            width:0.82+osmHash(px,pz,5)*0.28,
+            height:0.84+osmHash(px,pz,6)*0.42,
+            rot:osmHash(px,pz,4)*Math.PI*2,
+            edge
           });
         }
       }
@@ -427,7 +473,7 @@ class OSMManager {
         q.setFromAxisAngle(OSM_UP,p.rot);
         // Embed trunk by 1.2m so small LOD height changes do not expose roots.
         pos.set(p.x,y+1.55*p.scale,p.z);
-        scale.set(p.scale,p.scale,p.scale);
+        scale.set(p.scale*.86,p.scale*p.height,p.scale*.86);
         m.compose(pos,q,scale);
         trunks.setMatrixAt(i,m);
       }
@@ -443,7 +489,7 @@ class OSMManager {
         const p=items[i], y=this._safeRenderedHeight(p.x,p.z,ox,oz);
         q.setFromAxisAngle(OSM_UP,p.rot);
         pos.set(p.x,y+yFactor*p.scale,p.z);
-        scale.set(p.scale*sx,p.scale*sy,p.scale*sz);
+        scale.set(p.scale*sx*p.width,p.scale*sy*p.height,p.scale*sz*p.width);
         m.compose(pos,q,scale);
         mesh.setMatrixAt(i,m);
       }
@@ -479,117 +525,129 @@ class OSMManager {
     const desc = buildings.map(b => {
       const x=ox+b.x, z=oz+b.z;
       if(this._buildingTouchesWater(b,x,z,exclusion)) return null;
-      const area=b.w*b.d;
-      const aspect=b.w/Math.max(1,b.d);
-      const r=osmHash(x,z,21);
-
-      // Size is real; exact levels are not present in the current tile JSON.
-      // Use deterministic, bounded variation rather than pretending to know
-      // the historical storey count.
-      let h;
-      if(area > 1600) h=8 + r*6;
-      else if(area > 650) h=7 + r*5;
-      else h=5.5 + r*4.5;
-
-      const pitched = area < 1200 && b.d < 38 && aspect < 5.5;
-      const warm = osmHash(x,z,22) > 0.34;
-      const redRoof = osmHash(x,z,23) > 0.22;
-      const chimney = pitched && area < 700 && Math.min(b.w,b.d) > 5 && osmHash(x,z,24) > 0.28;
+      const area=b.w*b.d,aspect=Math.max(b.w/Math.max(1,b.d),b.d/Math.max(1,b.w));
+      const r=osmHash(x,z,21),church=this.churchKeys.has(osmBuildingKey(x,z));
+      const barn=!church&&area>380&&area<1800&&aspect>1.75&&osmHash(x,z,26)>.28;
+      let h=area>1600?8+r*6:(area>650?7+r*5:5.5+r*4.5);
+      if(barn)h=6+r*2.8;
+      if(church)h=10+r*2.5;
+      const pitched=church||barn||(area<1200&&b.d<38&&aspect<5.5);
+      // Neighbourhood-scale wall palette creates coherent streets; a fine hash
+      // keeps every block from being literally identical.
+      let palette=Math.min(3,Math.floor(osmValueNoise(x/260,z/260,122)*4));
+      if(barn)palette=osmHash(x,z,123)>.45?2:3;
+      if(church)palette=1;
+      let roofTone=Math.min(2,Math.floor(osmValueNoise(x/330,z/330,124)*3));
+      if(church)roofTone=1;
+      const chimney=pitched&&!church&&!barn&&area<700&&Math.min(b.w,b.d)>5&&osmHash(x,z,24)>.28;
       const ground=this._buildingGroundRange(b,x,z,ox,oz);
-
-      // Foundation extends below the lowest sampled corner. The roof datum is
-      // above the highest corner, so large buildings cannot visibly hover on
-      // a slope or have an uphill corner poke through the wall.
-      const baseY=ground.minY-0.8;
-      const wallTop=ground.maxY+h;
-      return {b,x,z,pitched,warm,redRoof,chimney,ground,baseY,wallTop};
+      const baseY=ground.minY-0.8,wallTop=ground.maxY+h;
+      const annex=!church&&!barn&&pitched&&area>190&&area<850&&aspect<3&&osmHash(x,z,125)>.76;
+      return {b,x,z,area,aspect,church,barn,pitched,palette,roofTone,chimney,annex,ground,baseY,wallTop};
     }).filter(Boolean);
 
-    const warm=desc.filter(d=>d.warm);
-    const cool=desc.filter(d=>!d.warm);
-    const pitchedRed=desc.filter(d=>d.pitched&&d.redRoof);
-    const pitchedSlate=desc.filter(d=>d.pitched&&!d.redRoof);
-    const flat=desc.filter(d=>!d.pitched);
-    const chimneys=desc.filter(d=>d.chimney);
-    const m=new THREE.Matrix4(), q=new THREE.Quaternion(), pos=new THREE.Vector3(), scale=new THREE.Vector3();
-
-    const addWalls=(items,mat)=>{
-      if(!items.length) return;
-      const mesh=new THREE.InstancedMesh(this.wallGeo,mat,items.length);
-      mesh.name = mat===this.buildingWarmMat ? 'osmBuildingWallsWarm' : 'osmBuildingWallsCool';
-      for(let i=0;i<items.length;i++){
-        const d=items[i], h=d.wallTop-d.baseY;
-        q.setFromAxisAngle(OSM_UP,d.b.rotY);
-        pos.set(d.x,d.baseY+h/2,d.z);
-        scale.set(d.b.w,h,d.b.d);
-        m.compose(pos,q,scale);
-        mesh.setMatrixAt(i,m);
-      }
-      mesh.instanceMatrix.needsUpdate=true;
-      group.add(mesh);
+    const wallParts=[],roofParts=[],chimneys=[],spires=[];
+    const addPart=(d,lx,lz,w,depth,top=d.wallTop,roof=true)=>{
+      const c=Math.cos(d.b.rotY),s=Math.sin(d.b.rotY);
+      const part={...d,x:d.x+lx*c+lz*s,z:d.z-lx*s+lz*c,w,depth,wallTop:top};
+      wallParts.push(part);if(roof)roofParts.push(part);return part;
     };
-
-    addWalls(warm,this.buildingWarmMat);
-    addWalls(cool,this.buildingCoolMat);
-
-    const addPitchedRoofs=(items,mat,name)=>{
-      if(!items.length) return;
-      const roofs=new THREE.InstancedMesh(this.gableRoofGeo,mat,items.length);
-      roofs.name=name;
-      for(let i=0;i<items.length;i++){
-        const d=items[i];
-        const roofH=Math.min(3.2,Math.max(1.1,d.b.d*0.16));
-        q.setFromAxisAngle(OSM_UP,d.b.rotY);
-        // Gable geometry spans y=0..1, so its base sits directly on wallTop.
-        pos.set(d.x,d.wallTop+0.05,d.z);
-        scale.set(d.b.w*1.06,roofH,d.b.d*1.08);
-        m.compose(pos,q,scale);
-        roofs.setMatrixAt(i,m);
+    for(const d of desc){
+      if(d.annex){
+        addPart(d,-d.b.w*.14,0,d.b.w*.72,d.b.d);
+        const side=osmHash(d.x,d.z,126)>.5?1:-1;
+        addPart(d,d.b.w*.36,side*d.b.d*.225,d.b.w*.28,d.b.d*.55);
+      }else addPart(d,0,0,d.b.w,d.b.d);
+      if(d.church){
+        const tw=Math.min(7,d.b.w*.38),td=Math.min(7,d.b.d*.55);
+        const tower=addPart(d,-d.b.w/2+tw/2,0,tw,td,d.wallTop+6.5,false);
+        spires.push({...tower,radius:Math.min(tw,td)*.58,height:6.5});
       }
-      roofs.instanceMatrix.needsUpdate=true;
-      group.add(roofs);
-    };
+      if(d.chimney)chimneys.push(d);
+    }
 
-    addPitchedRoofs(pitchedRed,this.roofMat,'osmBuildingRoofsRed');
-    addPitchedRoofs(pitchedSlate,this.roofSlateMat,'osmBuildingRoofsSlate');
+    const wallMats=[this.buildingWarmMat,this.buildingCoolMat,this.buildingOchreMat,this.buildingBrickMat];
+    const wallNames=['Warm','Stone','Ochre','Brick'];
+    for(let palette=0;palette<wallMats.length;palette++){
+      const items=wallParts.filter(d=>d.palette===palette);if(!items.length)continue;
+      const mesh=new THREE.InstancedMesh(this.wallGeo,wallMats[palette],items.length);
+      mesh.name='osmBuildingWalls'+wallNames[palette];
+      const m=new THREE.Matrix4(),q=new THREE.Quaternion(),pos=new THREE.Vector3(),scale=new THREE.Vector3();
+      for(let i=0;i<items.length;i++){
+        const d=items[i],h=d.wallTop-d.baseY;q.setFromAxisAngle(OSM_UP,d.b.rotY);
+        pos.set(d.x,d.baseY+h/2,d.z);scale.set(d.w,h,d.depth);m.compose(pos,q,scale);mesh.setMatrixAt(i,m);
+      }
+      mesh.instanceMatrix.needsUpdate=true;group.add(mesh);
+    }
 
+    const roofMats=[this.roofMat,this.roofSlateMat,this.roofBrownMat];
+    const roofNames=['Red','Slate','Brown'];
+    for(let tone=0;tone<roofMats.length;tone++){
+      const items=roofParts.filter(d=>d.pitched&&d.roofTone===tone);if(!items.length)continue;
+      const mesh=new THREE.InstancedMesh(this.gableRoofGeo,roofMats[tone],items.length);
+      mesh.name='osmBuildingRoofs'+roofNames[tone];
+      const m=new THREE.Matrix4(),q=new THREE.Quaternion(),pos=new THREE.Vector3(),scale=new THREE.Vector3();
+      for(let i=0;i<items.length;i++){
+        const d=items[i],roofH=Math.min(d.church?5:3.2,Math.max(1.1,d.depth*(d.church ? .22 : .16)));
+        q.setFromAxisAngle(OSM_UP,d.b.rotY);pos.set(d.x,d.wallTop+.05,d.z);
+        scale.set(d.w*1.06,roofH,d.depth*1.08);m.compose(pos,q,scale);mesh.setMatrixAt(i,m);
+      }
+      mesh.instanceMatrix.needsUpdate=true;group.add(mesh);
+    }
+
+    const flat=roofParts.filter(d=>!d.pitched);
     if(flat.length){
-      const roofs=new THREE.InstancedMesh(this.boxGeo,this.flatRoofMat,flat.length);
-      roofs.name='osmBuildingRoofsFlat';
+      const mesh=new THREE.InstancedMesh(this.boxGeo,this.flatRoofMat,flat.length);mesh.name='osmBuildingRoofsFlat';
+      const m=new THREE.Matrix4(),q=new THREE.Quaternion(),pos=new THREE.Vector3(),scale=new THREE.Vector3();
       for(let i=0;i<flat.length;i++){
-        const d=flat[i];
-        q.setFromAxisAngle(OSM_UP,d.b.rotY);
-        pos.set(d.x,d.wallTop+0.35,d.z);
-        scale.set(d.b.w*1.02,0.7,d.b.d*1.02);
-        m.compose(pos,q,scale);
-        roofs.setMatrixAt(i,m);
-      }
-      roofs.instanceMatrix.needsUpdate=true;
-      group.add(roofs);
+        const d=flat[i];q.setFromAxisAngle(OSM_UP,d.b.rotY);pos.set(d.x,d.wallTop+.35,d.z);
+        scale.set(d.w*1.02,.7,d.depth*1.02);m.compose(pos,q,scale);mesh.setMatrixAt(i,m);
+      }mesh.instanceMatrix.needsUpdate=true;group.add(mesh);
     }
 
     if(chimneys.length){
-      const mesh=new THREE.InstancedMesh(this.chimneyGeo,this.chimneyMat,chimneys.length);
-      mesh.name='osmBuildingChimneys';
+      const mesh=new THREE.InstancedMesh(this.chimneyGeo,this.chimneyMat,chimneys.length);mesh.name='osmBuildingChimneys';
+      const m=new THREE.Matrix4(),q=new THREE.Quaternion(),pos=new THREE.Vector3(),scale=new THREE.Vector3(1,1,1);
       for(let i=0;i<chimneys.length;i++){
-        const d=chimneys[i],roofH=Math.min(3.2,Math.max(1.1,d.b.d*0.16));
-        const lx=(osmHash(d.x,d.z,25)-0.5)*d.b.w*0.42;
-        const c=Math.cos(d.b.rotY),s=Math.sin(d.b.rotY);
-        q.setFromAxisAngle(OSM_UP,d.b.rotY);
-        pos.set(d.x+lx*c,d.wallTop+roofH*0.72+0.55,d.z-lx*s);
-        scale.set(1,1,1);
-        m.compose(pos,q,scale);
-        mesh.setMatrixAt(i,m);
-      }
-      mesh.instanceMatrix.needsUpdate=true;
-      group.add(mesh);
+        const d=chimneys[i],roofH=Math.min(3.2,Math.max(1.1,d.b.d*.16));
+        const lx=(osmHash(d.x,d.z,25)-.5)*d.b.w*.42,c=Math.cos(d.b.rotY),s=Math.sin(d.b.rotY);
+        q.setFromAxisAngle(OSM_UP,d.b.rotY);pos.set(d.x+lx*c,d.wallTop+roofH*.72+.55,d.z-lx*s);
+        m.compose(pos,q,scale);mesh.setMatrixAt(i,m);
+      }mesh.instanceMatrix.needsUpdate=true;group.add(mesh);
     }
 
+    if(spires.length){
+      const mesh=new THREE.InstancedMesh(this.spireGeo,this.roofSlateMat,spires.length);mesh.name='osmChurchSpires';
+      const m=new THREE.Matrix4(),q=new THREE.Quaternion(),pos=new THREE.Vector3(),scale=new THREE.Vector3();
+      for(let i=0;i<spires.length;i++){
+        const d=spires[i];q.setFromAxisAngle(OSM_UP,d.b.rotY);pos.set(d.x,d.wallTop+d.height/2,d.z);
+        scale.set(d.radius,d.height,d.radius);m.compose(pos,q,scale);mesh.setMatrixAt(i,m);
+      }mesh.instanceMatrix.needsUpdate=true;group.add(mesh);
+    }
     return desc.length;
   }
 }
 
 const OSM_UP = new THREE.Vector3(0,1,0);
+
+function osmBuildingKey(x,z){ return `${Math.round(x*10)},${Math.round(z*10)}`; }
+
+function osmSmooth(t){ return t*t*(3-2*t); }
+function osmValueNoise(x,z,salt){
+  const ix=Math.floor(x),iz=Math.floor(z),fx=osmSmooth(x-ix),fz=osmSmooth(z-iz);
+  const a=osmHash(ix,iz,salt),b=osmHash(ix+1,iz,salt);
+  const c=osmHash(ix,iz+1,salt),d=osmHash(ix+1,iz+1,salt);
+  return (a+(b-a)*fx)*(1-fz)+(c+(d-c)*fx)*fz;
+}
+
+function osmRingEdgeDistance(x,z,ring){
+  let best=Infinity;
+  for(let i=0;i<ring.length;i++){
+    const a=ring[i],b=ring[(i+1)%ring.length];
+    best=Math.min(best,pointSegmentDistanceSq(x,z,a[0],a[1],b[0],b[1]));
+  }
+  return Math.sqrt(best);
+}
 
 function osmClipHalfPlane(ring,nx,nz,limit,greater){
   if(!ring.length) return [];

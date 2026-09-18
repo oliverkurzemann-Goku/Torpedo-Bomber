@@ -73,7 +73,7 @@ function validateBuffers(mesh){
  await osm.prepareRegion(coords,'terrain-system/real/data/waterways.json');
  const start=performance.now();
  for(const [x,z]of coords)await osm.loadTile(x,z);
- let triangles=0,waterSamples=0,maxDrapeError=0,buildings=0,trees=0,forestBuckets=0,buildingBuckets=0;
+ let triangles=0,waterSamples=0,maxDrapeError=0,buildings=0,acceptedBuildings=0,trees=0,churches=0,forestBuckets=0,buildingBuckets=0;
  // Index real water vertices emitted for rendering, not the source mask.
  for(const tile of osm.tiles.values())for(const mesh of tile.group.children){
   if(mesh.material!==osm.riverMat&&mesh.material!==osm.lakeMat)continue;
@@ -93,10 +93,12 @@ function validateBuffers(mesh){
  }
  assert(maxDrapeError<0.01,`water surface is not draped: ${maxDrapeError}m`);
  for(const tile of osm.tiles.values()){
+  acceptedBuildings+=tile.buildingCount;
   const forests=tile.farGroup.children.filter(m=>m.name.startsWith('osmForest'));
   const roofs=tile.farGroup.children.filter(m=>m.name.startsWith('osmBuildingRoofs'));
   forestBuckets=Math.max(forestBuckets,forests.length);
   buildingBuckets=Math.max(buildingBuckets,tile.farGroup.children.length-forests.length);
+  for(const mesh of tile.farGroup.children.filter(m=>m.name==='osmChurchSpires'))churches+=mesh.count;
   for(const mesh of roofs){
    validateBuffers(mesh);
    for(let i=0;i<mesh.count;i++){
@@ -114,13 +116,14 @@ function validateBuffers(mesh){
    if(mesh.name==='osmForestTrunks')continue;
    for(let i=0;i<mesh.count;i++){
     mesh.getMatrixAt(i,matrix);const p=[matrix.elements[12],matrix.elements[14]];
-    // Maximum existing canopy envelope is <4.4m; test this conservative disk.
-    for(const tri of nearby([p],4.4))assert(!circleTriangle(p,4.4,tri),`canopy intersects water at ${p}`);
+    // BUILD 15's widest varied deciduous crown remains below 4.9m.
+    for(const tri of nearby([p],4.9))assert(!circleTriangle(p,4.9,tri),`canopy intersects water at ${p}`);
     trees++;
    }
   }
  }
- assert(forestBuckets<=4);assert(buildingBuckets<=6);
+ assert(forestBuckets<=4);assert(buildingBuckets<=10);assert(churches>=8&&churches<=14);
+ assert(buildings>acceptedBuildings,'building shape variants did not add any roof wings');
  // The point-height query must agree with actual r128 ray/triangle hits during
  // an LOD morph, too. Bilinear interpolation fails this on non-planar quads.
  const target=terrain.tiles.get('3,3');
@@ -150,5 +153,5 @@ function validateBuffers(mesh){
  const idx=cross._buildForestExclusion({},0,0);
  assert(cross._buildingTouchesWater({w:100,d:100,rotY:.61},3999,100,idx),'neighbor water/rotated roof missed');
  assert(!cross._buildingTouchesWater({w:10,d:10,rotY:.61},3900,100,idx),'dry building rejected');
- console.log(JSON.stringify({tiles:coords.length,buildings,trees,waterTriangles:triangles,waterSamples,maxDrapeError,forestBuckets,buildingBuckets,elapsedSeconds:+((performance.now()-start)/1000).toFixed(2),browserTest:false},null,2));
+ console.log(JSON.stringify({tiles:coords.length,acceptedBuildings,roofParts:buildings,trees,churches,waterTriangles:triangles,waterSamples,maxDrapeError,forestBuckets,buildingBuckets,elapsedSeconds:+((performance.now()-start)/1000).toFixed(2),browserTest:false},null,2));
 })().catch(e=>{console.error(e);process.exit(1);});
