@@ -13,7 +13,16 @@ for(let i=0;i<pixels.length;i+=4){
 }
 assert(transparent>1000&&opaque>100,'cloud alpha falloff missing');
 const water=makeOSMWaterTexture();assert(water.isDataTexture);
-for(let i=0;i<water.image.data.length;i+=4){assert.equal(water.image.data[i],water.image.data[i+1]);assert.equal(water.image.data[i+1],water.image.data[i+2]);assert.equal(water.image.data[i+3],255);}
+let waterMin=255,waterMax=0,waterDelta=0,waterEdges=0;
+for(let y=0;y<water.image.height;y++)for(let x=0;x<water.image.width;x++){
+  const i=(y*water.image.width+x)*4,v=water.image.data[i];
+  assert.equal(v,water.image.data[i+1]);assert.equal(v,water.image.data[i+2]);assert.equal(water.image.data[i+3],255);
+  waterMin=Math.min(waterMin,v);waterMax=Math.max(waterMax,v);
+  if(x){waterDelta+=Math.abs(v-water.image.data[i-4]);waterEdges++;}
+  if(y){waterDelta+=Math.abs(v-water.image.data[i-water.image.width*4]);waterEdges++;}
+}
+assert.equal(water.image.width,128);assert(waterMax-waterMin<=10,'water texture contrast is too harsh');
+assert(waterDelta/waterEdges<.5,'water texture contains high-frequency screen pattern');
 // Taper actual isolated ends, keep seams full-width and preserve all source bends.
 const capped=osmWaterPairs([[0,0],[100,0]],0,0,12,[true,true]);
 const open=osmWaterPairs([[0,0],[100,0]],0,0,12,[false,false]);
@@ -45,4 +54,4 @@ function distance(p,a,b){const dx=b[0]-a[0],dz=b[1]-a[1],l=dx*dx+dz*dz;const t=l
 const repaired=[...oldEnds.values()].filter(e=>e.n===1&&streamSegments.some(([a,b])=>distance(e.p,a,b)<.2));
 assert(repaired.length>=80,'lost imported stream connections');
 assert(repaired.some(e=>Math.hypot(e.p[0]-1558.269,e.p[1]-17952.081)<1),'reported airfield-area canal connection missing');
-console.log(JSON.stringify({waterPieces:pieces,sourceStreams:data.counts.stream,reconnectedOldEnds:repaired.length,cloudPixels:pixels.length/4,neutralRGB:true,browserTest:false},null,2));
+console.log(JSON.stringify({waterPieces:pieces,sourceStreams:data.counts.stream,reconnectedOldEnds:repaired.length,cloudPixels:pixels.length/4,waterRange:[waterMin,waterMax],waterMeanEdgeDelta:+(waterDelta/waterEdges).toFixed(3),neutralRGB:true,browserTest:false},null,2));

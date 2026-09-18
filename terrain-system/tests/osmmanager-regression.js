@@ -168,6 +168,12 @@ const wallMeshes=buildingGroup.children.filter(x=>x.name.startsWith('osmBuilding
 const wallHeights=wallMeshes.flatMap(m=>m.matrices.map(a=>a[5]));
 assert(wallHeights.length>=buildings.length,'buildings: not every building received a wall instance');
 assert(wallHeights.every(h=>Number.isFinite(h)&&h>5),'buildings: invalid compensated wall height');
+const pitchedRoofs=buildingGroup.children.filter(x=>x.name.startsWith('osmBuildingRoofs')&&x.name!=='osmBuildingRoofsFlat');
+const pitchedMatrices=pitchedRoofs.flatMap(m=>m.matrices);
+assert(pitchedMatrices.length>=5,'buildings: wide footprints were not split into gabled village masses');
+assert(pitchedMatrices.every(a=>a[5]>=2),'buildings: shallow post-war roof profile returned');
+assert(!buildingGroup.children.some(x=>x.name==='osmBuildingRoofsFlat'),
+  'buildings: ordinary large footprint became a flat-roof block');
 
 // Run the exclusion system against every shipped Remagen OSM tile. This is
 // intentionally data-backed: it catches a future schema/coordinate regression

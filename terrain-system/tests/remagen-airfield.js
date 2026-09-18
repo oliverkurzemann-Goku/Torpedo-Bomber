@@ -25,9 +25,9 @@ global.fetch=async url=>{
   vm.runInContext(html.slice(start,end)+'\nbuildAirfield(); globalThis.field=airfieldDetails;',context);
   const f=context.field;
   assert(scene.children.includes(f.group)); assert.equal(terrain.material,originalTerrainMaterial);
-  assert(html.includes('AirfieldDetails.js?v=remagen-16')); assert(html.includes('MODULE 16'));
+  assert(html.includes('AirfieldDetails.js?v=remagen-17')); assert(html.includes('MODULE 17'));
   assert(html.includes('if(airfieldDetails)airfieldDetails.refresh()'));
-  assert.equal(OSMManager.BUILD,16);
+  assert.equal(OSMManager.BUILD,17);
   const meshes=f.group.children;
   assert(meshes.length<=10,`draw-call budget exceeded: ${meshes.length}`);
   let samples=0,maxDrapeError=0;

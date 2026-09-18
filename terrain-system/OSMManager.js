@@ -5,7 +5,7 @@
 // ============================================================
 
 class OSMManager {
-  static get BUILD(){ return 16; }
+  static get BUILD(){ return 17; }
   constructor(scene, tileSize, terrainManager, baseUrl = 'data/osm/'){
     this.scene = scene;
     this.tileSize = tileSize;
@@ -18,8 +18,10 @@ class OSMManager {
 
     this.roadMat = new THREE.MeshStandardMaterial({ color: 0x3a3a3a, roughness: 1 });
     this.railMat = new THREE.MeshStandardMaterial({ color: 0x585048, roughness: 0.8 });
-    this.riverMat = new THREE.MeshStandardMaterial({ color: 0x426f78, roughness: 0.72, metalness: 0 });
-    this.lakeMat = new THREE.MeshStandardMaterial({ color: 0x3c6d78, roughness: 0.68, metalness: 0 });
+    // Muted, fairly rough water suits an overcast inland river. BUILD 16's
+    // bright 48m wave tile produced a severe checker/moire pattern on iPad.
+    this.riverMat = new THREE.MeshStandardMaterial({ color: 0x365f66, roughness: 0.84, metalness: 0 });
+    this.lakeMat = new THREE.MeshStandardMaterial({ color: 0x3a6268, roughness: 0.82, metalness: 0 });
     this.waterTexture=makeOSMWaterTexture();
     this.riverMat.map=this.lakeMat.map=this.waterTexture;
     // Farmland is a subtle tint over the textured terrain, not an opaque map
@@ -306,7 +308,9 @@ class OSMManager {
     const geo=new THREE.BufferGeometry();
     geo.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));
     const uv=[];
-    for(let i=0;i<positions.length;i+=3)uv.push(positions[i]/48,positions[i+2]/48);
+    // One repeat spans 260m. The old 48m repeat made its diagonal waves turn
+    // into a high-frequency screen-door pattern over the broad Rhine.
+    for(let i=0;i<positions.length;i+=3)uv.push(positions[i]/260,positions[i+2]/260);
     geo.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));
     geo.computeVertexNormals(); geo.computeBoundingSphere();
     mesh.geometry.dispose(); mesh.geometry=geo;
@@ -542,10 +546,15 @@ class OSMManager {
       const area=b.w*b.d,aspect=Math.max(b.w/Math.max(1,b.d),b.d/Math.max(1,b.w));
       const r=osmHash(x,z,21),church=this.churchKeys.has(osmBuildingKey(x,z));
       const barn=!church&&area>380&&area<1800&&aspect>1.75&&osmHash(x,z,26)>.28;
-      let h=area>1600?8+r*6:(area>650?7+r*5:5.5+r*4.5);
+      // Only a small share of very large, elongated footprints remain flat
+      // industrial sheds. Modern OSM rectangles otherwise become period-style
+      // gabled masses below instead of one giant post-war block.
+      const industrial=!church&&!barn&&area>4800&&aspect>1.7&&osmHash(x,z,127)>.62;
+      let h=area>1600?6.8+r*3.8:(area>650?6.2+r*3.6:5.5+r*3.2);
       if(barn)h=6+r*2.8;
       if(church)h=13+r*3.5;
-      const pitched=church||barn||(area<1200&&b.d<38&&aspect<5.5);
+      if(industrial)h=7.5+r*3.5;
+      const pitched=!industrial;
       // Neighbourhood-scale wall palette creates coherent streets; a fine hash
       // keeps every block from being literally identical.
       let palette=Math.min(3,Math.floor(osmValueNoise(x/260,z/260,122)*4));
@@ -553,25 +562,48 @@ class OSMManager {
       if(church)palette=1;
       let roofTone=Math.min(2,Math.floor(osmValueNoise(x/330,z/330,124)*3));
       if(church)roofTone=1;
-      const chimney=pitched&&!church&&!barn&&area<700&&Math.min(b.w,b.d)>5&&osmHash(x,z,24)>.28;
+      const chimney=pitched&&!church&&!barn&&area<1700&&Math.min(b.w,b.d)>5&&osmHash(x,z,24)>.24;
       const ground=this._buildingGroundRange(b,x,z,ox,oz);
       const baseY=ground.minY-0.8,wallTop=ground.maxY+h;
-      const annex=!church&&!barn&&pitched&&area>190&&area<850&&aspect<3&&osmHash(x,z,125)>.76;
-      return {b,x,z,area,aspect,church,barn,pitched,palette,roofTone,chimney,annex,ground,baseY,wallTop};
+      const annex=!church&&!barn&&pitched&&area>170&&area<700&&b.w<32&&aspect<3&&osmHash(x,z,125)>.68;
+      return {b,x,z,area,aspect,church,barn,industrial,pitched,palette,roofTone,chimney,annex,ground,baseY,wallTop};
     }).filter(Boolean);
 
     const wallParts=[],roofParts=[],chimneys=[],spires=[];
-    const addPart=(d,lx,lz,w,depth,top=d.wallTop,roof=true)=>{
+    const addPart=(d,lx,lz,w,depth,top=d.wallTop,roof=true,style={})=>{
       const c=Math.cos(d.b.rotY),s=Math.sin(d.b.rotY);
-      const part={...d,x:d.x+lx*c+lz*s,z:d.z-lx*s+lz*c,w,depth,wallTop:top};
+      const part={...d,...style,x:d.x+lx*c+lz*s,z:d.z-lx*s+lz*c,w,depth,wallTop:top,rotY:d.b.rotY};
       wallParts.push(part);if(roof)roofParts.push(part);return part;
     };
     for(const d of desc){
-      if(d.annex){
-        addPart(d,-d.b.w*.14,0,d.b.w*.72,d.b.d);
+      const houseParts=[];
+      // Wide/deep source rectangles often describe a whole modern block. Lay
+      // out two to six smaller, slightly staggered gabled houses inside that
+      // same dry footprint. This gives villages street rhythm and courtyards
+      // without inventing a new map location or extra draw-call buckets.
+      const subdivide=!d.church&&!d.barn&&!d.industrial&&d.b.w>30&&d.area>480;
+      if(subdivide){
+        const rows=d.b.d>29&&d.area>1450?2:1;
+        const cols=Math.min(rows===2?3:4,Math.max(2,Math.round(d.b.w/19)));
+        const slotW=d.b.w/cols,slotD=d.b.d/rows;
+        for(let rz=0;rz<rows;rz++)for(let rx=0;rx<cols;rx++){
+          const seed=osmHash(d.x+rx*19,d.z+rz*23,128);
+          const w=slotW*Math.min(.92,Math.max(.78,1.8/slotW+.78));
+          const depth=rows===1?d.b.d*(.72+seed*.18):slotD*Math.min(.91,Math.max(.72,1.6/slotD+.72));
+          const lx=-d.b.w/2+slotW*(rx+.5);
+          const rowCentre=-d.b.d/2+slotD*(rz+.5);
+          const spare=slotD-depth,lz=rowCentre+(seed-.5)*spare*.72;
+          const top=d.wallTop+(osmHash(d.x+rx,d.z+rz,129)-.5)*1.5;
+          houseParts.push(addPart(d,lx,lz,w,depth,top,true,{
+            palette:(d.palette+(seed>.82?1:0))%4,
+            roofTone:(d.roofTone+Math.floor(seed*2.4))%3
+          }));
+        }
+      }else if(d.annex){
+        houseParts.push(addPart(d,-d.b.w*.14,0,d.b.w*.72,d.b.d));
         const side=osmHash(d.x,d.z,126)>.5?1:-1;
-        addPart(d,d.b.w*.36,side*d.b.d*.225,d.b.w*.28,d.b.d*.55);
-      }else addPart(d,0,0,d.b.w,d.b.d);
+        houseParts.push(addPart(d,d.b.w*.36,side*d.b.d*.225,d.b.w*.28,d.b.d*.55,d.wallTop-.45));
+      }else houseParts.push(addPart(d,0,0,d.b.w,d.b.d));
       if(d.church){
         // The former 6.5m cap vanished into the nave from normal flight
         // altitude. A broad, tall western tower and steep spire now make the
@@ -581,7 +613,10 @@ class OSMManager {
         const tower=addPart(d,-d.b.w/2+tw/2,0,tw,td,d.wallTop+12,false);
         spires.push({...tower,radius:Math.min(tw,td)*.66,height:10});
       }
-      if(d.chimney)chimneys.push(d);
+      if(d.chimney&&houseParts.length){
+        const at=Math.min(houseParts.length-1,Math.floor(osmHash(d.x,d.z,130)*houseParts.length));
+        chimneys.push(houseParts[at]);
+      }
     }
 
     const wallMats=[this.buildingWarmMat,this.buildingCoolMat,this.buildingOchreMat,this.buildingBrickMat];
@@ -592,7 +627,7 @@ class OSMManager {
       mesh.name='osmBuildingWalls'+wallNames[palette];
       const m=new THREE.Matrix4(),q=new THREE.Quaternion(),pos=new THREE.Vector3(),scale=new THREE.Vector3();
       for(let i=0;i<items.length;i++){
-        const d=items[i],h=d.wallTop-d.baseY;q.setFromAxisAngle(OSM_UP,d.b.rotY);
+        const d=items[i],h=d.wallTop-d.baseY;q.setFromAxisAngle(OSM_UP,d.rotY);
         pos.set(d.x,d.baseY+h/2,d.z);scale.set(d.w,h,d.depth);m.compose(pos,q,scale);mesh.setMatrixAt(i,m);
       }
       mesh.instanceMatrix.needsUpdate=true;group.add(mesh);
@@ -606,8 +641,8 @@ class OSMManager {
       mesh.name='osmBuildingRoofs'+roofNames[tone];
       const m=new THREE.Matrix4(),q=new THREE.Quaternion(),pos=new THREE.Vector3(),scale=new THREE.Vector3();
       for(let i=0;i<items.length;i++){
-        const d=items[i],roofH=Math.min(d.church?5:3.2,Math.max(1.1,d.depth*(d.church ? .22 : .16)));
-        q.setFromAxisAngle(OSM_UP,d.b.rotY);pos.set(d.x,d.wallTop+.05,d.z);
+        const d=items[i],roofH=osmRoofHeight(d);
+        q.setFromAxisAngle(OSM_UP,d.rotY);pos.set(d.x,d.wallTop+.05,d.z);
         scale.set(d.w*1.06,roofH,d.depth*1.08);m.compose(pos,q,scale);mesh.setMatrixAt(i,m);
       }
       mesh.instanceMatrix.needsUpdate=true;group.add(mesh);
@@ -618,7 +653,7 @@ class OSMManager {
       const mesh=new THREE.InstancedMesh(this.boxGeo,this.flatRoofMat,flat.length);mesh.name='osmBuildingRoofsFlat';
       const m=new THREE.Matrix4(),q=new THREE.Quaternion(),pos=new THREE.Vector3(),scale=new THREE.Vector3();
       for(let i=0;i<flat.length;i++){
-        const d=flat[i];q.setFromAxisAngle(OSM_UP,d.b.rotY);pos.set(d.x,d.wallTop+.35,d.z);
+        const d=flat[i];q.setFromAxisAngle(OSM_UP,d.rotY);pos.set(d.x,d.wallTop+.35,d.z);
         scale.set(d.w*1.02,.7,d.depth*1.02);m.compose(pos,q,scale);mesh.setMatrixAt(i,m);
       }mesh.instanceMatrix.needsUpdate=true;group.add(mesh);
     }
@@ -627,9 +662,9 @@ class OSMManager {
       const mesh=new THREE.InstancedMesh(this.chimneyGeo,this.chimneyMat,chimneys.length);mesh.name='osmBuildingChimneys';
       const m=new THREE.Matrix4(),q=new THREE.Quaternion(),pos=new THREE.Vector3(),scale=new THREE.Vector3(1,1,1);
       for(let i=0;i<chimneys.length;i++){
-        const d=chimneys[i],roofH=Math.min(3.2,Math.max(1.1,d.b.d*.16));
-        const lx=(osmHash(d.x,d.z,25)-.5)*d.b.w*.42,c=Math.cos(d.b.rotY),s=Math.sin(d.b.rotY);
-        q.setFromAxisAngle(OSM_UP,d.b.rotY);pos.set(d.x+lx*c,d.wallTop+roofH*.72+.55,d.z-lx*s);
+        const d=chimneys[i],roofH=osmRoofHeight(d);
+        const lx=(osmHash(d.x,d.z,25)-.5)*d.w*.42,c=Math.cos(d.rotY),s=Math.sin(d.rotY);
+        q.setFromAxisAngle(OSM_UP,d.rotY);pos.set(d.x+lx*c,d.wallTop+roofH*.72+.55,d.z-lx*s);
         m.compose(pos,q,scale);mesh.setMatrixAt(i,m);
       }mesh.instanceMatrix.needsUpdate=true;group.add(mesh);
     }
@@ -638,7 +673,7 @@ class OSMManager {
       const mesh=new THREE.InstancedMesh(this.spireGeo,this.roofSlateMat,spires.length);mesh.name='osmChurchSpires';
       const m=new THREE.Matrix4(),q=new THREE.Quaternion(),pos=new THREE.Vector3(),scale=new THREE.Vector3();
       for(let i=0;i<spires.length;i++){
-        const d=spires[i];q.setFromAxisAngle(OSM_UP,d.b.rotY);pos.set(d.x,d.wallTop+d.height/2,d.z);
+        const d=spires[i];q.setFromAxisAngle(OSM_UP,d.rotY);pos.set(d.x,d.wallTop+d.height/2,d.z);
         scale.set(d.radius,d.height,d.radius);m.compose(pos,q,scale);mesh.setMatrixAt(i,m);
       }mesh.instanceMatrix.needsUpdate=true;group.add(mesh);
     }
@@ -656,6 +691,12 @@ function osmValueNoise(x,z,salt){
   const a=osmHash(ix,iz,salt),b=osmHash(ix+1,iz,salt);
   const c=osmHash(ix,iz+1,salt),d=osmHash(ix+1,iz+1,salt);
   return (a+(b-a)*fx)*(1-fz)+(c+(d-c)*fx)*fz;
+}
+
+function osmRoofHeight(d){
+  if(d.church) return Math.min(6.5,Math.max(3.2,d.depth*.30));
+  if(d.barn) return Math.min(4.8,Math.max(2.1,d.depth*.24));
+  return Math.min(5.4,Math.max(2.0,d.depth*.28));
 }
 
 function osmRingEdgeDistance(x,z,ring){
@@ -684,10 +725,13 @@ function osmClipHalfPlane(ring,nx,nz,limit,greater){
 
 function makeOSMWaterTexture(){
   if(typeof THREE.DataTexture!=='function')return null;
-  const n=64,pixels=new Uint8Array(n*n*4);
+  // Very broad, low-contrast neutral undulation. Integer wave frequencies
+  // keep the texture tileable; low amplitudes and the 260m world repeat keep
+  // it from becoming a visible screen pattern at low flight altitude.
+  const n=128,pixels=new Uint8Array(n*n*4);
   for(let y=0;y<n;y++)for(let x=0;x<n;x++){
     const a=x/n*Math.PI*2,b=y/n*Math.PI*2,i=(y*n+x)*4;
-    const v=Math.round(226+9*Math.sin(3*a+11*b)+5*Math.sin(7*a-5*b));
+    const v=Math.round(249+2.2*Math.sin(a+2*b)+1.4*Math.sin(2*a-b)+.8*Math.sin(3*a+b));
     pixels[i]=pixels[i+1]=pixels[i+2]=v;pixels[i+3]=255;
   }
   const tex=new THREE.DataTexture(pixels,n,n,THREE.RGBAFormat);

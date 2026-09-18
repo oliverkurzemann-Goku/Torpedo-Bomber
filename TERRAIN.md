@@ -10,9 +10,38 @@ The flight model, weapons and mission logic are not part of a terrain pass unles
 
 ## Test build versioning
 
-Every Remagen revision handed to Oliver for testing must increment the visible build number in both places in `remagen-mission.html`: the always-visible `#testVersionBannerText` and the in-flight `#buildTag`. Add a short pass label when useful. Never tell Oliver a build is ready until the branch/deployment being tested contains that exact visible version. Current revision: `REMAGEN BUILD 16 · LANDMARKS WOODLANDS`.
+Every Remagen revision handed to Oliver for testing must increment the visible build number in both places in `remagen-mission.html`: the always-visible `#testVersionBannerText` and the in-flight `#buildTag`. Add a short pass label when useful. Never tell Oliver a build is ready until the branch/deployment being tested contains that exact visible version. Current revision: `REMAGEN BUILD 17 · RHINE VILLAGES`.
 
-The local terrain scripts carry the same version as a `?v=remagen-16` query. `OSMManager.BUILD` is checked during startup and the banner gains `MODULE 16` only after that check succeeds. This prevents an updated HTML document from silently running an older Safari-cached terrain module.
+The local terrain scripts carry the same version as a `?v=remagen-17` query. `OSMManager.BUILD` is checked during startup and the banner gains `MODULE 17` only after that check succeeds. This prevents an updated HTML document from silently running an older Safari-cached terrain module.
+
+## Build 17 — calm Rhine and period village masses
+
+Oliver's Build 16 iPad screenshots exposed two specific visual failures. The water's 64px,
+48m repeating diagonal wave texture became an obvious high-frequency checker/moire pattern
+across the Rhine. Large current-day OSM minimum rectangles were also rendered almost literally,
+leaving conspicuous modern flat-roof blocks among otherwise rural settlements.
+
+- Rhine/lake material colours are darker and less saturated, with roughness 0.82–0.84. The
+  water map is now a neutral 128px, eight-level low-contrast texture repeated every 260m. It
+  keeps subtle broad tonal variation without the previous screen-door pattern. Water source
+  geometry, terrain draping, stream widths and collision masks are unchanged.
+- The data still provides only rotated rectangles, not verified 1945 footprints or building
+  use. This pass therefore creates a period-inspired visual grammar rather than claiming a
+  reconstruction. Suitable rectangles wider than 30m split into two to six inset, staggered
+  gabled masses or small courtyard groups. The pieces stay inside the already water-validated
+  source footprint. Heights, plaster family and roof tone vary slightly between adjoining
+  masses, while barns and inferred churches keep their special silhouettes.
+- Ordinary roofs are now steeper (at least 2m, up to 5.4m; church roofs up to 6.5m). Only 58
+  very large elongated source structures qualify for a possible industrial flat roof before
+  water rejection, about 0.27% of the 21,449 raw building rectangles. No new material or
+  draw-call bucket and no instance colours were introduced.
+
+Validation with actual Three.js r128 and all 56 shipped tiles: 21,142 accepted buildings create
+32,540 roof parts, 14 church spires and at most ten building buckets per tile. Every rendered
+roof remains outside 398,896 rendered water triangles; maximum terrain/water drape error remains
+0.00063m. The water texture has range 245–253 and mean adjacent-pixel delta 0.135. Structural,
+airfield and water/cloud suites pass. These are CPU/geometry checks, not an iPad visual or FPS
+measurement; final acceptance still requires Oliver's device screenshot and fluidity check.
 
 ## Build 16 — landmarks, woodland mass and facade variation
 

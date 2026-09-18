@@ -5,9 +5,23 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 121 · Thunderbolt Squadron EU BUILD 57 · Remagen 1945 REMAGEN BUILD 16**
+Stand bei Übergabe: **Torpedo Squadron BUILD 121 · Thunderbolt Squadron EU BUILD 57 · Remagen 1945 REMAGEN BUILD 17**
 Repo: `oliverkurzemann-Goku/Torpedo-Bomber`, ausgeliefert über GitHub Pages.
 Alle Angaben unten sind aus dem tatsächlichen Code verifiziert, nicht aus dem Gedächtnis.
+
+**Rhein und Ortskörper, Build 17 (18.09.2026):** Olivers Build-16-iPad-Bilder zeigten
+ein starkes Wasser-Moire und weiterhin moderne rechteckige Flachdachblöcke. Das Wasser nutzt
+jetzt eine dunklere, rauere Farbe und eine neutrale 128px-Struktur mit nur 8 Helligkeitsstufen,
+260m statt 48m Wiederholung und mittlerer Nachbarpixel-Differenz 0,135; Wassergeometrie,
+Draping, Bäche und Masken bleiben unverändert. Breite aktuelle OSM-Minimalrechtecke werden
+innerhalb ihrer bereits wassergeprüften Quellfläche zu zwei bis sechs eingerückten, gestaffelten
+Giebelhäusern/Hofkörpern geteilt. Gewöhnliche Dächer sind 2–5,4m hoch; nur 58 von 21.449 rohen
+Rechtecken (0,27%) können als sehr große Industrieform flach bleiben. Das ist period-inspirierte
+Visualisierung, keine behauptete 1945-Rekonstruktion: Die Quelldaten enthalten weiterhin nur
+`{x,z,w,d,rotY}`. Echte r128-Prüfung aller 56 Kacheln: 21.142 angenommene Gebäude, 32.540
+Dachteile, 14 Kirchtürme, maximal 10 Gebäude-Buckets, 398.896 Wassertriangel, keine Dach-Wasser-
+Kollision, Drapefehler <0,00063m. Struktur-, Wasser/Wolken- und Airfieldtests grün; iPad-Bild/FPS
+noch offen. Details in `TERRAIN.md`.
 
 **Luftlesbarkeit, Build 16 (18.09.2026):** Nach Olivers echtem iPad-Feedback (Kirchen
 aus der Luft unkenntlich, Wälder wie verstreute Einzelbäume, überall dieselbe Fenstertextur)
@@ -110,7 +124,7 @@ iPad/iPhone Safari.
 | `index.html` | Startseite, Auswahl zwischen den Spielen |
 | `torpedo-carrier.html` | **Teil 1** — Pazifik, Trägerbetrieb (BUILD 121) |
 | `thunderbolt-europe.html` | **Teil 2** — Europa, Bodenangriff (EU BUILD 57) |
-| `remagen-mission.html` | **Teil 3** — Remagen 1945, echtes Terrain (REMAGEN BUILD 12; Terrain-Handoff in `TERRAIN.md`) |
+| `remagen-mission.html` | **Teil 3** — Remagen 1945, echtes Terrain (REMAGEN BUILD 17; Terrain-Handoff in `TERRAIN.md`) |
 | `model-check.html` | Kalibrier-Werkzeug für neue Flugzeugmodelle (Ausrichtung, Maßstab) |
 
 Alle drei Spiele haben getrennte Speicherstände (`localStorage`-Präfixe `tc_*`, `eu_*` bzw.
