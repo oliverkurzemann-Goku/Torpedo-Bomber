@@ -237,7 +237,7 @@
   <div style="width:100%;height:4px;background:repeating-linear-gradient(45deg,#ffd400,#ffd400 8px,#111 8px,#111 16px);"></div>
   <span id="testVersionBannerText" style="background:#111;color:#ffd400;font-family:monospace;font-weight:800;font-size:11px;letter-spacing:.5px;padding:3px 10px;border:1px solid #ffd400;border-top:none;border-radius:0 0 6px 6px;"></span>
 </div>
-<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — REMAGEN BUILD 17 — RHINE VILLAGES — 2026-09-18';</script>
+<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — REMAGEN BUILD 18 — LIVING RHINE — 2026-09-18';</script>
 <!-- ===== END TEMP TEST-ONLY VERSION BANNER ===== -->
 <div id="app"></div>
 
@@ -264,7 +264,7 @@
   <div id="flash"></div>
   <div id="gunsight"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">REMAGEN BUILD 17 · RHINE VILLAGES</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">REMAGEN BUILD 18 · LIVING RHINE</div>
 
   <div id="apr">
     <div id="aprCall"></div>
@@ -376,13 +376,14 @@
      own per-object userData tagging, added specifically to support this mission file) — the whole
      point of building the prototype first was that this game only needs to point them at real data,
      not rewrite them. -->
-<script src="terrain-system/HeightProvider.js?v=remagen-17"></script>
-<script src="terrain-system/TerrainTile.js?v=remagen-17"></script>
-<script src="terrain-system/TerrainManager.js?v=remagen-17"></script>
-<script src="terrain-system/OSMManager.js?v=remagen-17"></script>
-<script src="terrain-system/HistoricalObjectManager.js?v=remagen-17"></script>
-<script src="terrain-system/AirfieldDetails.js?v=remagen-17"></script>
-<script src="terrain-system/WorldVehicles.js?v=remagen-17"></script>
+<script src="terrain-system/HeightProvider.js?v=remagen-18"></script>
+<script src="terrain-system/TerrainTile.js?v=remagen-18"></script>
+<script src="terrain-system/TerrainManager.js?v=remagen-18"></script>
+<script src="terrain-system/OSMManager.js?v=remagen-18"></script>
+<script src="terrain-system/HistoricalObjectManager.js?v=remagen-18"></script>
+<script src="terrain-system/AirfieldDetails.js?v=remagen-18"></script>
+<script src="terrain-system/WorldVehicles.js?v=remagen-18"></script>
+<script src="terrain-system/LivingWorld.js?v=remagen-18"></script>
 <script>
 // ============================================================
 //  REMAGEN 1945 — REAL TERRAIN (forked from thunderbolt-europe.html)
@@ -454,7 +455,7 @@ let windZ=0, weather='clear', ceilingY=4200;
 let clouds=[];
 let radioQ=[], radioT=0, flashT=0;
 let actx=null, eng=null;
-let sortieKills={flak:0,bridge:0,factory:0,air:0,bomber:0};
+let sortieKills={flak:0,bridge:0,factory:0,truck:0,train:0,ferry:0,air:0,bomber:0};
 let hitsTaken=0, missionOver=false;
 
 const P={
@@ -604,9 +605,9 @@ function clearTreesNearAirfield(){
 async function loadRealWorld(){
   const setLoadingText=(s)=>{ const el=document.getElementById('loadingText'); if(el) el.textContent=s; };
 
-  if(OSMManager.BUILD!==17) throw new Error('Terrain version mismatch. Reload Remagen.');
+  if(OSMManager.BUILD!==18||LivingWorld.BUILD!==18) throw new Error('Terrain version mismatch. Reload Remagen.');
   document.getElementById('testVersionBannerText').textContent=
-    'TEST BUILD — REMAGEN BUILD 17 — RHINE VILLAGES — MODULE 17';
+    'TEST BUILD — REMAGEN BUILD 18 — LIVING RHINE — MODULE 18';
   heightProvider=new DEMHeightProvider(RTILE,'terrain-system/real/data/dem/');
   terrain=new TerrainManager(scene,RTILE,heightProvider);
   osmMgr=new OSMManager(scene,RTILE,terrain,'terrain-system/real/data/osm/');
@@ -629,7 +630,7 @@ async function loadRealWorld(){
   setLoadingText('Preparing water boundaries…');
   const osmCoords=[];
   for(let tz=0;tz<RGRID_H;tz++) for(let tx=0;tx<RGRID_W;tx++) osmCoords.push([tx,tz]);
-  await osmMgr.prepareRegion(osmCoords,'terrain-system/real/data/waterways.json?v=remagen-17');
+  await osmMgr.prepareRegion(osmCoords,'terrain-system/real/data/waterways.json?v=remagen-18');
 
   // Phase 3: real roads/rail/river/forest/farmland/buildings (OSMManager) and the historical
   // layer (bridge/flak/factory/airfield) — both need a real TERRAIN TILE already built at their
@@ -824,7 +825,7 @@ function at(m,x,y,z){ m.position.set(x,y,z); return m; }
 //  fetch_historical.py ("a plausible site for a forward strip, not a documented one" — a real
 //  WW2 forward strip was rough grass or packed dirt with tents/huts, not a paved airbase).
 // ============================================================
-let airfield=null,airfieldDetails=null,worldVehicles=null;
+let airfield=null,airfieldDetails=null,worldVehicles=null,livingWorld=null;
 function buildAirfield(){
   airfieldDetails=new AirfieldDetails(terrain,osmMgr,AF_X,AF_Z,RWY_LEN,RWY_W);
   airfield=airfieldDetails.group;
@@ -2178,7 +2179,10 @@ function buildAircraft(kind){
 const TDEF={
   flak   :{hp:2, r:6,  pts:250,  gun:1.0, name:'FLAK'},
   bridge :{hp:6, r:40, pts:1500, gun:0.0, name:'LUDENDORFF BRIDGE'},
-  factory:{hp:5, r:30, pts:900,  gun:0.3, name:'FACTORY'}
+  factory:{hp:5, r:30, pts:900,  gun:0.3, name:'FACTORY'},
+  truck  :{hp:2, r:7,  pts:220,  gun:1.0, name:'TRUCK'},
+  train  :{hp:9, r:34, pts:1400, gun:0.35,name:'SUPPLY TRAIN'},
+  ferry  :{hp:7, r:20, pts:1100, gun:0.45,name:'RHINE FERRY'}
 };
 
 // A thin position/rotation handle standing in for a real object's own THREE.Group. Real
@@ -2212,6 +2216,13 @@ function spawnRealTarget(kind,sub,opt){
   targets.push(t);
   if(kind==='flak') flakUnits.push(t);
   return t;
+}
+function spawnLivingTarget(entity,opt){
+  opt=opt||{};const d=TDEF[entity.kind];
+  const t={kind:entity.kind,sub:entity.model,group:entity.model,entity,
+    hp:d.hp*(opt.hpMul||1),maxhp:d.hp*(opt.hpMul||1),alive:true,radius:d.r,
+    pts:d.pts,name:d.name,primary:opt.primary!==false,cool:0,burnT:0,smokeT:Math.random()};
+  targets.push(t);return t;
 }
 function resetAllRealTargets(){
   if(realBridge) resetRealTarget(realBridge);
@@ -2248,12 +2259,12 @@ function damageTarget(t,amount,byGun){
 function killTarget(t){
   t.alive=false; t.burnT=26;
   const p=t.group.position;
-  const big=(t.kind==='bridge'||t.kind==='factory');
+  const big=(t.kind==='bridge'||t.kind==='factory'||t.kind==='train'||t.kind==='ferry');
   spawnExplosion(p.x,p.y+3,p.z, big?2.2:1.0);
   spawnDebris(p.x,p.y+2,p.z, big?18:8);
   sfxBoom(big?1.2:0.6);
   addScore(t.pts);
-  const key={flak:'flak',bridge:'bridge',factory:'factory'}[t.kind];
+  const key={flak:'flak',bridge:'bridge',factory:'factory',truck:'truck',train:'train',ferry:'ferry'}[t.kind];
   if(key) sortieKills[key]=(sortieKills[key]||0)+1;
   // Darken materials in place and sink the whole permanent sub-group straight down a few metres
   // for a "knocked out" read — deliberately NOT the old rotation-tilt wreck visual
@@ -2262,8 +2273,11 @@ function killTarget(t){
   // group would swing real, far-from-origin geometry around world (0,0,0), not around the object
   // itself. A uniform Y-translation has no pivot-point issue either way, so it is the one
   // transform that is safe to apply directly to the real group (see targetHandle()'s own comment).
-  t.sub.traverse(o=>{ if(o.isMesh){ o.material=o.material.clone(); o.material.color.multiplyScalar(0.32); } });
-  t.sub.position.y-=(t.kind==='bridge'?7:1.2);
+  if(t.entity) livingWorld.destroyEntity(t.entity);
+  else {
+    t.sub.traverse(o=>{ if(o.isMesh){ o.material=o.material.clone(); o.material.color.multiplyScalar(0.32); } });
+    t.sub.position.y-=(t.kind==='bridge'?7:1.2);
+  }
   if(t.kind==='bridge'||t.kind==='factory') shake(2.0); else shake(0.7);
   flash(t.name+' DESTROYED',900);
   const i=flakUnits.indexOf(t); if(i>=0) flakUnits.splice(i,1);
@@ -2271,13 +2285,10 @@ function killTarget(t){
 }
 
 // ============================================================
-//  MISSIONS — reduced to the real objects the actual data has: one bridge, two flak positions,
-//  one factory (real/data/historical/*.json — see fetch_historical.py's own header for exactly
-//  which of these are real coordinates vs illustrative placements). No trucks/tanks/trains/depots/
-//  parked aircraft/enemy air here — the original synthetic game could scatter those anywhere along
-//  its made-up road/rail curves, but there is nothing equivalent to spawn them ON in the real
-//  data without inventing positions a second time, which is exactly the dishonesty CLAUDE.md's
-//  fetch_historical.py already flags for the illustrative flak placements it does have.
+//  MISSIONS — permanent historical objects still come from the historical layer. BUILD 18's
+//  moving targets are equally persistent world objects, but follow routes selected from the
+//  shipped OSM road/rail/water data by LivingWorld. Their vehicle identities and wartime roles
+//  are period-inspired mission fiction, explicitly not verified unit movements.
 // ============================================================
 const MISSIONS=[
   { id:'free', title:'Free Flight', sub:'Practice', ac:'p47', free:true, weather:'clear',
@@ -2299,7 +2310,19 @@ const MISSIONS=[
   { id:'factory', title:'Sortie 3', sub:'Factory Strike', ac:'p47', weather:'clear',
     kills:{factory:1}, text:"The industrial works up the valley are keeping the bridgehead "
         +"supplied. Bombs and rockets on the workshops and the stack — watch for light flak "
-        +"around the yard." }
+        +"around the yard." },
+  { id:'convoy', title:'Sortie 4', sub:'Road Interdiction', ac:'p47', weather:'haze',
+    kills:{truck:4}, text:"Recon has found a four-truck supply column moving on the mapped road "
+        +"network south of the bridgehead. The road is narrow and the column will not wait for "
+        +"you. Use the fifties or rockets, keep your first pass low and fast, then get home." },
+  { id:'train', title:'Sortie 5', sub:'Rail Cut', ac:'p47', weather:'rain',
+    kills:{train:1}, text:"A supply train is running on the real valley railway. It is a long, "
+        +"moving target but the locomotive is tough: guns will slow it, bombs or rockets will "
+        +"finish it. Mind the rising ground beyond the track." },
+  { id:'ferry', title:'Sortie 6', sub:'Rhine Ferry Hunt', ac:'p47', weather:'clear',
+    kills:{ferry:1}, text:"A vehicle ferry is moving along the Rhine inside the mapped river "
+        +"channel. Find it near the Remagen crossing and stop it before it clears the sector. "
+        +"Attack along the river, not across the hills." }
 ];
 function M(){ return MISSIONS[mission]; }
 function isFree(){ return !!M().free; }
@@ -2323,11 +2346,14 @@ function clearWorld(){
 // attach HP/hit-detection to whichever real objects this sortie needs
 function populate(){
   const m=M();
+  if(livingWorld)livingWorld.resetForMission(m.id);
   if(m.free||m.circuits) return;
   resetAllRealTargets();
   if(m.kills&&m.kills.bridge && realBridge) spawnRealTarget('bridge',realBridge,{primary:true});
   if(m.kills&&m.kills.flak) for(const f of realFlak) spawnRealTarget('flak',f,{primary:true});
   if(m.kills&&m.kills.factory && realFactory) spawnRealTarget('factory',realFactory,{primary:true});
+  if(livingWorld&&m.kills&&(m.kills.truck||m.kills.train||m.kills.ferry))
+    for(const e of livingWorld.missionTargets(m.id))spawnLivingTarget(e,{primary:true});
 }
 function objectiveLeft(){
   const need=M().kills||{};
@@ -2353,7 +2379,7 @@ function objectiveText(){
   if(m.enemyAir && enemyAir.filter(e=>e.alive).length>0 && !ks.length)
     return 'BANDITS  '+enemyAir.filter(e=>e.alive).length+' LEFT';
   if(!ks.length) return 'RTB — LAND AT BEAUFORT';
-  const nm={flak:'FLAK',bridge:'BRIDGE',factory:'FACTORY'};
+  const nm={flak:'FLAK',bridge:'BRIDGE',factory:'FACTORY',truck:'TRUCKS',train:'TRAIN',ferry:'FERRY'};
   return ks.map(k=>(nm[k]||k.toUpperCase())+' '+left[k]).join('  ');
 }
 function checkObjective(){
@@ -3309,7 +3335,7 @@ function landed(onStrip){
     +'<br><br><b>LOGBOOK</b> — '+(l.sorties||0)+' sorties &middot; '+(l.landings||0)+' landings &middot; '
     +(l.lost||0)+' aircraft lost'
     +'<br>Claims: '+(l.truck||0)+' trucks, '+(l.tank||0)+' panzers, '+(l.flak||0)+' guns, '
-    +(l.bridge||0)+' bridges, '+(l.train||0)+' trains, '+(l.air||0)+' aircraft'
+    +(l.bridge||0)+' bridges, '+(l.train||0)+' trains, '+(l.ferry||0)+' ferries, '+(l.air||0)+' aircraft'
     +'<br>Medals: 🥇'+(l.medals.gold||0)+'  🥈'+(l.medals.silver||0)+'  🥉'+(l.medals.bronze||0),
     done?'Next Sortie':'Try Again');
 }
@@ -3342,7 +3368,7 @@ function startMission(i){
   P.dmgT=0; P.stallWarnT=0; P.edgeWarned=false;
   weapon=(d.rockets>0)?'rocket':'bomb';
   score=0; scoreStart=0; hitsTaken=0;
-  sortieKills={flak:0,bridge:0,factory:0,air:0,bomber:0};
+  sortieKills={flak:0,bridge:0,factory:0,truck:0,train:0,ferry:0,air:0,bomber:0};
   weather=m.weather||'clear';
   applyWeather();
   windZ=(Math.random()<0.5?-1:1)*(0.5+i*0.2);
@@ -3927,7 +3953,7 @@ function showLogbook(){
     +'<b>CLAIMS</b><br>'
     +(l.truck||0)+' trucks &middot; '+(l.tank||0)+' panzers<br>'
     +(l.flak||0)+' gun positions &middot; '+(l.bridge||0)+' bridges<br>'
-    +(l.train||0)+' trains &middot; '+(l.depot||0)+' depots<br>'
+    +(l.train||0)+' trains &middot; '+(l.ferry||0)+' ferries &middot; '+(l.depot||0)+' depots<br>'
     +(l.air||0)+' aircraft destroyed<br><br>'
     +'<b>DECORATIONS</b>  🥇'+(medals.gold||0)+'  🥈'+(medals.silver||0)+'  🥉'+(medals.bronze||0)+'<br><br>'
     +'<b>CAREER SCORE</b> '+(l.score||0),'Close');
@@ -4098,6 +4124,13 @@ function init(){
   // buildAirfield() itself is called only after this awaits, not in this synchronous block above.
   loadRealWorld().then(()=>{
     buildAirfield();
+    const bd=realBridge&&realBridge.userData.data;
+    livingWorld=new LivingWorld(scene,terrain,osmMgr,{
+      bridge:realBridge?[realBridge.userData.x,realBridge.userData.z]:undefined,
+      bridgeSpan:bd?[bd.x2-bd.x1,bd.z2-bd.z1]:undefined,
+      factory:realFactory?[realFactory.userData.x,realFactory.userData.z]:undefined,
+      field:[AF_X,AF_Z]
+    });
     show('loading',false); show('menu',true); state=ST.MENU;
     worldVehicles=new WorldVehicles(scene,terrain,osmMgr);
     worldVehicles.load().catch(err=>console.warn('Scenery vehicles:',err));
@@ -4194,6 +4227,8 @@ function animate(){
     const focusX=(state===ST.FLIGHT||state===ST.DEAD)?P.pos.x:AF_X;
     const focusZ=(state===ST.FLIGHT||state===ST.DEAD)?P.pos.z:AF_Z;
     terrain.updateLOD(focusX,focusZ,raw);
+    if(livingWorld)livingWorld.update(raw,focusX,focusZ,state===ST.FLIGHT?p=>
+      spawnSmoke(p.x,p.y,p.z,p.color,p.scale):null);
     contentVisT-=raw; if(contentVisT<=0){ contentVisT=0.5; updateContentVisibility(focusX,focusZ); }
   }
   if(flashT>0){ flashT-=raw; if(flashT<=0) document.getElementById('flash').classList.remove('show'); }

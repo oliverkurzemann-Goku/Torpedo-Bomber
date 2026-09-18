@@ -10,9 +10,49 @@ The flight model, weapons and mission logic are not part of a terrain pass unles
 
 ## Test build versioning
 
-Every Remagen revision handed to Oliver for testing must increment the visible build number in both places in `remagen-mission.html`: the always-visible `#testVersionBannerText` and the in-flight `#buildTag`. Add a short pass label when useful. Never tell Oliver a build is ready until the branch/deployment being tested contains that exact visible version. Current revision: `REMAGEN BUILD 17 · RHINE VILLAGES`.
+Every Remagen revision handed to Oliver for testing must increment the visible build number in both places in `remagen-mission.html`: the always-visible `#testVersionBannerText` and the in-flight `#buildTag`. Add a short pass label when useful. Never tell Oliver a build is ready until the branch/deployment being tested contains that exact visible version. Current revision: `REMAGEN BUILD 18 · LIVING RHINE`.
 
-The local terrain scripts carry the same version as a `?v=remagen-17` query. `OSMManager.BUILD` is checked during startup and the banner gains `MODULE 17` only after that check succeeds. This prevents an updated HTML document from silently running an older Safari-cached terrain module.
+The local terrain scripts carry the same version as a `?v=remagen-18` query. `OSMManager.BUILD` and `LivingWorld.BUILD` are checked during startup and the banner gains `MODULE 18` only after both checks succeed. This prevents an updated HTML document from silently running an older Safari-cached terrain module.
+
+## Build 18 — living roads, railway and Rhine
+
+After the settlement/landscape passes, Oliver explicitly asked to implement the remaining agreed
+sequence as one larger update: living world first, followed by mission hooks and atmosphere. The
+flight model and the five existing practice/combat flows remain unchanged.
+
+`terrain-system/LivingWorld.js` is a new persistent world layer built only after all real OSM and
+historical sources are ready. It selects four deterministic routes from the shipped road network,
+two from the railway network, and traces a 4.76km navigation line through the rendered Rhine water
+mask starting at the real bridge centre. No mission creates or removes routes. Vehicle identities
+and traffic are period-inspired fiction; the source proves the road/rail/water footprint, not that
+a particular unit used it in March 1945.
+
+- Three four-truck convoys, one steam supply train, two Rhine ferries and six civilian cars/
+  horse carts move continuously. Each object follows terrain or water every frame and hides beyond
+  3.2–4.2km. The complete moving layer is 108 simple Lambert meshes; only nearby entity groups
+  render. The existing high-detail static M16 and Tiger remain separate scenery.
+- Eight global instanced buckets add 420 hedge pieces, 77 orchard trees, 46 haystacks, 125
+  telegraph poles and 33 cattle across 230 points sampled inside mapped farmland. No instance
+  colours are used. Because these instances span the full 28x32km region, their eight aggregate
+  meshes deliberately disable object-origin frustum culling; this prevents the whole bucket from
+  vanishing when the origin is outside the camera while keeping draw calls bounded.
+- Subtle periodic smoke comes from the factory stack and one rail-side activity point only when
+  the player is within 2.6km. It reuses the mission's existing pooled smoke system; no permanent
+  particle allocation or new audio stream was added.
+- Three new sorties attach combat state to those same persistent moving objects: Road
+  Interdiction (four trucks), Rail Cut (one supply train), and Rhine Ferry Hunt (one ferry).
+  Objectives, HUD/minimap navigation, damage, destruction, RTB logic, score and logbook claims use
+  the existing target pipeline. Starting another sortie resets the persistent objects and their
+  original shared materials safely.
+
+The real-r128 living-world test confirms road route lengths 1375/884/1348/1291m, rail routes
+952/819m, a 4760m Rhine route whose sampled points remain inside water, 12 trucks, one train, two
+ferries, six ambient vehicles, 108 moving meshes and exactly eight rural-detail buckets. All
+matrices/buffers are finite, every moving material is Lambert, instance colours remain absent,
+destroy/reset/culling and smoke emission pass. The pre-existing structural, all-56-tile geometry,
+water/cloud, airfield and real-GLTF vehicle suites also pass unchanged: 21,142 buildings, 32,540
+roof parts, 139,930 crowns, 398,896 water triangles and maximum drape error 0.00063m. These checks
+do not prove iPad appearance or FPS; Oliver's device remains the acceptance test.
 
 ## Build 17 — calm Rhine and period village masses
 

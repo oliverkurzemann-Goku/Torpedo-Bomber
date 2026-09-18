@@ -5,9 +5,26 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 121 · Thunderbolt Squadron EU BUILD 57 · Remagen 1945 REMAGEN BUILD 17**
+Stand bei Übergabe: **Torpedo Squadron BUILD 121 · Thunderbolt Squadron EU BUILD 57 · Remagen 1945 REMAGEN BUILD 18**
 Repo: `oliverkurzemann-Goku/Torpedo-Bomber`, ausgeliefert über GitHub Pages.
 Alle Angaben unten sind aus dem tatsächlichen Code verifiziert, nicht aus dem Gedächtnis.
+
+**Belebte Welt, Missionen und Atmosphäre, Build 18 (18.09.2026):** Nach Abschluss der
+Orts-/Landschaftspässe setzt `terrain-system/LivingWorld.js` die vereinbarte nächste Stufe um.
+Vier Straßen- und zwei Bahnstrecken werden aus den geladenen OSM-Linien gewählt; eine 4,76km
+lange Fährenroute wird vom realen Brückenmittelpunkt vollständig innerhalb der vorhandenen
+Rhein-Wassermaske verfolgt. 12 Lastwagen in drei Kolonnen, ein Dampfzug, zwei Fähren und sechs
+Zivilautos/Pferdewagen bewegen sich permanent und werden ab 3,2–4,2km ausgeblendet. 108 einfache
+Lambert-Meshes insgesamt, nur nahe Gruppen sichtbar. Acht Instanz-Buckets ergänzen 420 Hecken,
+77 Obstbäume, 46 Heuhaufen, 125 Telegraphenmasten und 33 Rinder auf 230 aus realen Ackerpolygonen
+abgeleiteten Punkten; keine Instanzfarben. Drei neue Einsätze nutzen dieselben persistenten
+Objekte: Road Interdiction (4 Trucks), Rail Cut (1 Zug), Rhine Ferry Hunt (1 Fähre), inklusive
+HUD/Minimap, Treffer, Zerstörung, RTB, Score und Logbuch. Dezenter Fabrik-/Bahndampf nutzt den
+bestehenden Partikelpool. Routen sind real datenbasiert, Fahrzeugidentitäten/Einheitenbewegungen
+sind ausdrücklich period-inspirierte Fiktion, keine historische Behauptung. Neuer r128-Test prüft
+Routen, Wasserbindung, Bewegung, Culling, Zerstören/Reset, Materialien, Matrizen und Bucketlimits.
+Alle bisherigen 56-Kachel-, Wasser-, Airfield-, Struktur- und echte GLTF-Tests bleiben grün.
+Kein behaupteter iPad-/FPS-Nachweis; Details und Messzahlen in `TERRAIN.md`.
 
 **Rhein und Ortskörper, Build 17 (18.09.2026):** Olivers Build-16-iPad-Bilder zeigten
 ein starkes Wasser-Moire und weiterhin moderne rechteckige Flachdachblöcke. Das Wasser nutzt
@@ -124,7 +141,7 @@ iPad/iPhone Safari.
 | `index.html` | Startseite, Auswahl zwischen den Spielen |
 | `torpedo-carrier.html` | **Teil 1** — Pazifik, Trägerbetrieb (BUILD 121) |
 | `thunderbolt-europe.html` | **Teil 2** — Europa, Bodenangriff (EU BUILD 57) |
-| `remagen-mission.html` | **Teil 3** — Remagen 1945, echtes Terrain (REMAGEN BUILD 17; Terrain-Handoff in `TERRAIN.md`) |
+| `remagen-mission.html` | **Teil 3** — Remagen 1945, echtes Terrain (REMAGEN BUILD 18; Terrain-Handoff in `TERRAIN.md`) |
 | `model-check.html` | Kalibrier-Werkzeug für neue Flugzeugmodelle (Ausrichtung, Maßstab) |
 
 Alle drei Spiele haben getrennte Speicherstände (`localStorage`-Präfixe `tc_*`, `eu_*` bzw.
