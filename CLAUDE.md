@@ -5,9 +5,26 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 121 · Thunderbolt Squadron EU BUILD 57 · Remagen 1945 REMAGEN BUILD 14**
+Stand bei Übergabe: **Torpedo Squadron BUILD 121 · Thunderbolt Squadron EU BUILD 57 · Remagen 1945 REMAGEN BUILD 15**
 Repo: `oliverkurzemann-Goku/Torpedo-Bomber`, ausgeliefert über GitHub Pages.
 Alle Angaben unten sind aus dem tatsächlichen Code verifiziert, nicht aus dem Gedächtnis.
+
+**Ortschaften und Wälder, Build 15 (18.09.2026):** Oliver meldete Build 14 als
+„funktioniert super“ und gab die vereinbarte Reihenfolge frei. Dieser Schritt verändert nur
+Gebäude/Vegetation. Vier regional zusammenhängende Fassadenfarben, drei Dachfamilien,
+Scheunen, L-förmig geteilte Gebäude und maximal 14 mindestens 1,9km getrennte Kirchtürme.
+Kirchen sind aus Rechteckgröße + Siedlungsdichte VISUELL INFERIERT, nicht historisch belegt;
+die aktuellen Overture-JSONs enthalten keine Gebäudenutzung. Keine Instanzfarben — Build 11
+nicht wiederholen. Maximal 10 Gebäude-Buckets pro Kachel. 21.142 trockene Quellgebäude,
+23.853 Dachteile durch Anbauten, 14 Türme. Wälder verwenden glattes ~310m-Standrauschen,
+Randsträucher und ~420m-Dichteschwankung/Lichtungen statt zufälligem Baumarten-Konfetti.
+140.196 Kronen statt 160.662 in Build 14; weiterhin maximal vier Vegetations-Buckets.
+Echte r128-Datenprüfung: keine Dach-/4,9m-Kronenkollision mit 398.896 Wassertriangeln,
+Drapefehler <0,00063m. Strukturtest: 91,1% Artgleichheit naher Bäume, 53,4% Randsträucher,
+14 Landmarken, keine `instanceColor`, Bucketgrenzen eingehalten. Flugplatz-, Wasser/Wolken-
+und echte GLTF-Fahrzeugtests bestehen. Kein GPU-/iPad-FPS-Nachweis. Nächster Schritt nach
+Gerätefreigabe: belebte Welt, zuerst fahrende Konvois; dann Züge/Schiffe/Landdetails.
+Version, Modulprüfung und Cachekeys 15. Ausführliche Übergabe in `TERRAIN.md`.
 
 **Wasser, Wolken und Fahrzeuge, Build 14 (17.09.2026):** Oliver akzeptierte Build 13;
 IMG_0611/0610/0609 zeigen bunte Wolkenpunkte und abgehackte Wasserbänder. Alle Bilder

@@ -119,6 +119,19 @@ const filtered=osm._forestPlacements([forestA,forestB],0,0,exclusion);
 assert(filtered.length>0,'exclusion: removed every forest placement');
 assert(filtered.every(p=>!osm._treeExcluded(p.x,p.z,exclusion)),
   'exclusion: emitted a tree on a blocked feature');
+let neighbourPairs=0,sameStandPairs=0,edgeShrubs=0,edgeTotal=0;
+for(let i=0;i<filtered.length;i++){
+  if(filtered[i].edge<24){edgeTotal++;edgeShrubs+=filtered[i].kind===2;}
+  for(let j=i+1;j<filtered.length;j++){
+    const distance=Math.hypot(filtered[i].x-filtered[j].x,filtered[i].z-filtered[j].z);
+    if(distance>55||filtered[i].kind===2||filtered[j].kind===2)continue;
+    neighbourPairs++;sameStandPairs+=filtered[i].kind===filtered[j].kind;
+  }
+}
+assert(neighbourPairs>100&&sameStandPairs/neighbourPairs>.72,
+  'forest: nearby trees do not form coherent species stands');
+assert(edgeTotal>0&&edgeShrubs/edgeTotal>.25,
+  'forest: shrubs no longer favour natural polygon edges');
 
 const buildingGroup=new THREE.Group();
 const buildings=[
@@ -126,10 +139,15 @@ const buildings=[
   {x:900,z:700,w:80,d:28,rotY:1.0},
   {x:1200,z:1100,w:24,d:14,rotY:0.5}
 ];
+osm.churchKeys.add(osmBuildingKey(500,500));
 const buildingCount=osm._buildBuildings(buildingGroup,buildings,0,0);
 assert(buildingCount===buildings.length,'buildings: count mismatch');
-assert(buildingGroup.children.length<=7,`buildings: expected <=7 instance buckets, got ${buildingGroup.children.length}`);
+assert(buildingGroup.children.length<=10,`buildings: expected <=10 instance buckets, got ${buildingGroup.children.length}`);
 finiteMatrices(buildingGroup,'buildings');
+assert(buildingGroup.children.every(m=>!m.instanceColor),
+  'buildings: instance colours reintroduced after the Build 11 rendering regression');
+const churchSpire=buildingGroup.children.find(m=>m.name==='osmChurchSpires');
+assert(churchSpire&&churchSpire.count===1,'buildings: inferred church silhouette missing');
 
 const waterBuildingGroup=new THREE.Group();
 const waterBuildings=[
@@ -145,19 +163,20 @@ assert(range.maxY>range.minY,'buildings: corner/centre terrain sampling did not 
 
 const wallMeshes=buildingGroup.children.filter(x=>x.name.startsWith('osmBuildingWalls'));
 const wallHeights=wallMeshes.flatMap(m=>m.matrices.map(a=>a[5]));
-assert(wallHeights.length===buildings.length,'buildings: not every building received a wall instance');
+assert(wallHeights.length>=buildings.length,'buildings: not every building received a wall instance');
 assert(wallHeights.every(h=>Number.isFinite(h)&&h>5),'buildings: invalid compensated wall height');
 
 // Run the exclusion system against every shipped Remagen OSM tile. This is
 // intentionally data-backed: it catches a future schema/coordinate regression
 // that a single synthetic road cannot.
-const osmDataDir=path.join(__dirname,'..','real','data','osm');
+const osmDataDir=path.join(__dirname,'..','real','data','osm'),realRecords=[];
 let realRawTrees=0,realFilteredTrees=0,realTiles=0,realPolygonRings=0;
 for(const file of fs.readdirSync(osmDataDir).filter(x=>x.endsWith('.json'))){
   const match=file.match(/^(\d+)_(\d+)\.json$/);
   if(!match) continue;
   const tx=+match[1],tz=+match[2],ox=tx*4000,oz=tz*4000;
   const data=JSON.parse(fs.readFileSync(path.join(osmDataDir,file),'utf8'));
+  realRecords.push({tx,tz,data});
   const raw=osm._forestPlacements(data.forests||[],ox,oz);
   const index=osm._buildForestExclusion(data,ox,oz);
   const kept=osm._forestPlacements(data.forests||[],ox,oz,index);
@@ -178,6 +197,12 @@ for(const file of fs.readdirSync(osmDataDir).filter(x=>x.endsWith('.json'))){
 assert(realTiles>0,'real data: no OSM tiles scanned');
 assert(realFilteredTrees<realRawTrees,
   'real data: exclusion system did not remove any overlapping trees');
+osm._prepareSettlementLandmarks(realRecords);
+assert(osm.churchKeys.size===14,'settlements: expected bounded regional landmark count');
+const churchPoints=[...osm.churchKeys].map(k=>k.split(',').map(v=>+v/10));
+for(let i=0;i<churchPoints.length;i++)for(let j=i+1;j<churchPoints.length;j++)
+  assert(Math.hypot(churchPoints[i][0]-churchPoints[j][0],churchPoints[i][1]-churchPoints[j][1])>1899,
+    'settlements: inferred churches are clustered too closely');
 
 const concave=[[0,0],[100,0],[100,30],[30,30],[30,100],[0,100],[0,0]];
 const concaveClean=cleanPolygonRing(concave);
@@ -199,5 +224,8 @@ console.log('OSMManager regression OK',JSON.stringify({
   realPolygonRings,
   forestBuckets:forestGroup.children.map(x=>x.name),
   buildingBuckets:buildingGroup.children.map(x=>x.name),
+  standCoherence:+(sameStandPairs/neighbourPairs).toFixed(3),
+  edgeShrubRatio:+(edgeShrubs/edgeTotal).toFixed(3),
+  churches:osm.churchKeys.size,
   sampledRelief:+(range.maxY-range.minY).toFixed(2)
 }));

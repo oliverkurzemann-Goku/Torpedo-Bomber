@@ -10,9 +10,28 @@ The flight model, weapons and mission logic are not part of a terrain pass unles
 
 ## Test build versioning
 
-Every Remagen revision handed to Oliver for testing must increment the visible build number in both places in `remagen-mission.html`: the always-visible `#testVersionBannerText` and the in-flight `#buildTag`. Add a short pass label when useful. Never tell Oliver a build is ready until the branch/deployment being tested contains that exact visible version. Current revision: `REMAGEN BUILD 14 · WATER SKY VEHICLES`.
+Every Remagen revision handed to Oliver for testing must increment the visible build number in both places in `remagen-mission.html`: the always-visible `#testVersionBannerText` and the in-flight `#buildTag`. Add a short pass label when useful. Never tell Oliver a build is ready until the branch/deployment being tested contains that exact visible version. Current revision: `REMAGEN BUILD 15 · SETTLEMENTS FORESTS`.
 
-The local terrain scripts carry the same version as a `?v=remagen-14` query. `OSMManager.BUILD` is checked during startup and the banner gains `MODULE 14` only after that check succeeds. This prevents an updated HTML document from silently running an older Safari-cached terrain module.
+The local terrain scripts carry the same version as a `?v=remagen-15` query. `OSMManager.BUILD` is checked during startup and the banner gains `MODULE 15` only after that check succeeds. This prevents an updated HTML document from silently running an older Safari-cached terrain module.
+
+## Build 15 — settlement silhouettes and coherent forests
+
+Oliver confirmed Build 14 works very well and asked to continue in the agreed order. This revision is deliberately limited to buildings and vegetation. Flight, missions, airfield, water, clouds and vehicles are unchanged except for their cache version.
+
+The source still stores buildings only as a minimum rotated rectangle `{x,z,w,d,rotY}`. Build 15 therefore adds deterministic **visual inference**, not historical claims:
+
+- four neighbourhood-coherent wall families (plaster, stone, ochre, brick), three roof families (tile, slate, dark brown), flat industrial roofs and existing chimneys;
+- suitable medium footprints sometimes split into two parts inside their original rectangle, producing an L-shaped house with matching independent gable roofs;
+- long medium/large footprints become lower barn/warehouse silhouettes;
+- at most 14 region-wide church-like landmarks are selected from plausible footprints in dense building clusters, kept more than 1.9km apart, with a raised stone tower and octagonal spire. They are not assertions that a particular 1945 church stood at that coordinate.
+
+No instance colours are used. Build 11's suspected shared-material/instance-colour path remains withdrawn. All variants use ordinary existing `MeshStandardMaterial` buckets and instanced geometry. The maximum per-tile building bucket count rises from 6 to **10**, bounded independently of building count. Across the 56 tiles, 21,142 accepted source buildings create 23,853 roof parts because some footprints have a second wing; 14 spires are emitted. The existing complete-footprint water rejection still happens before splitting, so every wing stays within an already-validated dry footprint. Foundation heights still use the full source footprint, favouring no visible floating on slopes.
+
+Forest species no longer switch independently at every tree. `osmValueNoise()` creates smoothly varying ~310m stands; a small individual perturbation softens their borders. Shrubs preferentially occupy the first 24m inside a mapped forest boundary. A second ~420m field varies density and produces irregular small glades. Height, width and rotation still vary per tree, but the maximum crown envelope remains below the existing 5m water clearance. Real-data counts fall from 160,662 rendered crowns in Build 14 to **140,196** in Build 15, partly offsetting the extra building buckets.
+
+Validation: the real-r128, all-56-tile test checks 21,142 accepted buildings, 23,853 roof matrices, 14 churches, 140,196 crowns and 398,896 water triangles. Roofs and maximum 4.9m crown discs do not intersect rendered water; maximum drape error remains 0.00063m. The structural test measures 91.1% same-species agreement between nearby non-shrub trees, 53.4% shrub share at forest edges, exactly 14 spaced landmark keys, no building instance colours, bounded 4 forest / 10 building buckets, and a church silhouette. Airfield, water/sky and actual-GLTF vehicle tests also pass. These are CPU geometry checks, not an iPad screenshot or FPS measurement.
+
+Next real-device check: player/roofs/trees still visible, towns show coherent colour blocks rather than confetti, L-shaped roofs remain correctly aligned, churches are plausible and not excessive, forest stands read as patches, forest edges look softer, and frame rate remains fluid. If accepted, the next agreed stage is a living world: moving convoys first, then trains/ships and rural details. Keep those mission/AI changes out of this terrain-only build.
 
 ## Build 14 — complete stream layer, neutral clouds, real vehicles
 
