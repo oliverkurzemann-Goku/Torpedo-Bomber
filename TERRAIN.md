@@ -10,9 +10,36 @@ The flight model, weapons and mission logic are not part of a terrain pass unles
 
 ## Test build versioning
 
-Every Remagen revision handed to Oliver for testing must increment the visible build number in both places in `remagen-mission.html`: the always-visible `#testVersionBannerText` and the in-flight `#buildTag`. Add a short pass label when useful. Never tell Oliver a build is ready until the branch/deployment being tested contains that exact visible version. Current revision: `REMAGEN BUILD 15 · SETTLEMENTS FORESTS`.
+Every Remagen revision handed to Oliver for testing must increment the visible build number in both places in `remagen-mission.html`: the always-visible `#testVersionBannerText` and the in-flight `#buildTag`. Add a short pass label when useful. Never tell Oliver a build is ready until the branch/deployment being tested contains that exact visible version. Current revision: `REMAGEN BUILD 16 · LANDMARKS WOODLANDS`.
 
-The local terrain scripts carry the same version as a `?v=remagen-15` query. `OSMManager.BUILD` is checked during startup and the banner gains `MODULE 15` only after that check succeeds. This prevents an updated HTML document from silently running an older Safari-cached terrain module.
+The local terrain scripts carry the same version as a `?v=remagen-16` query. `OSMManager.BUILD` is checked during startup and the banner gains `MODULE 16` only after that check succeeds. This prevents an updated HTML document from silently running an older Safari-cached terrain module.
+
+## Build 16 — landmarks, woodland mass and facade variation
+
+Oliver's real-device feedback on Build 15 was specific: church silhouettes disappeared from
+normal flying height, mapped woods still read as scattered individual trees, and every facade
+carried the same symmetric window grid. The partially considered convoy step was therefore
+deferred; Build 16 changes only these three visual systems.
+
+- The same bounded set of 14 visually inferred church landmarks remains. Naves are taller;
+  western towers are now 7–10m wide and rise 12m above the nave, with a 10m octagonal spire.
+  These are still visual landmarks, not claims about verified 1945 church locations.
+- Each mapped forest tile adds one merged, translucent dark woodland floor beneath its trees and
+  uses broader canopy geometry. This makes polygon-scale forest masses readable from the air
+  without adding tree instances. Water, roads and farmland render above the floor. The forest
+  budget is now at most five buckets per tile: floor, trunks, conifers, deciduous and shrubs.
+- The four existing wall-material buckets now have four distinct asymmetric window/door atlases.
+  This adds texture memory but no building draw calls, no individual window meshes and no
+  instance colours. The per-tile building limit remains ten buckets.
+
+Validation on actual shipped data with Three.js r128: all 56 tiles, 21,142 accepted buildings,
+23,853 roof parts, 139,930 crowns, 14 church spires, 398,896 water triangles, maximum water-drape
+error 0.00063m, maximum five forest and ten building buckets. Roofs and the enlarged 6.8m crown
+envelope do not intersect rendered water. The airfield, water/cloud, actual-GLTF vehicle and
+dependency-free structural suites pass. These checks do not establish iPad appearance or FPS.
+The next device check must confirm that churches read clearly, woods look continuous rather than
+painted-on, facade repetition is visibly reduced, and frame rate remains fluid. Only after that
+should moving convoys resume.
 
 ## Build 15 — settlement silhouettes and coherent forests
 

@@ -5,7 +5,7 @@
 // ============================================================
 
 class OSMManager {
-  static get BUILD(){ return 15; }
+  static get BUILD(){ return 16; }
   constructor(scene, tileSize, terrainManager, baseUrl = 'data/osm/'){
     this.scene = scene;
     this.tileSize = tileSize;
@@ -40,18 +40,28 @@ class OSMManager {
     this.flatRoofMat = new THREE.MeshStandardMaterial({ color: 0x4d4b45, roughness: 1 });
     this.chimneyMat = new THREE.MeshStandardMaterial({ color: 0x4e4038, roughness: 1 });
     this.facadeDetailMat = new THREE.MeshStandardMaterial({ color: 0x27302d, roughness: 0.85 });
-    this.facadeTexture = makeOSMFacadeTexture();
+    // Four genuinely different atlases, one per existing material bucket. This
+    // changes no draw-call budget, but stops every house from carrying the same
+    // perfectly mirrored window grid when seen low over a village.
+    this.facadeTextures = [0,1,2,3].map(makeOSMFacadeTexture);
     this.roofTexture = makeOSMRoofTexture();
-    this.buildingWarmMat.map = this.buildingCoolMat.map = this.buildingOchreMat.map =
-      this.buildingBrickMat.map = this.facadeTexture;
+    [this.buildingWarmMat,this.buildingCoolMat,this.buildingOchreMat,this.buildingBrickMat]
+      .forEach((mat,i)=>{ mat.map=this.facadeTextures[i]; });
     this.roofMat.map = this.roofSlateMat.map = this.roofBrownMat.map = this.roofTexture;
 
-    // Vegetation palette. Four tree draw calls maximum per tile regardless of
-    // how many forest polygons the source data contains.
+    // A subdued polygon floor makes mapped woods read as one continuous mass
+    // from the air. Individual trees remain for silhouette/parallax up close;
+    // this adds one bounded draw call per tile, not more tree instances.
+    this.forestFloorMat = new THREE.MeshStandardMaterial({
+      color:0x29472a,roughness:1,transparent:true,opacity:.62,depthWrite:false,
+      polygonOffset:true,polygonOffsetFactor:-1
+    });
+    // Vegetation palette. Four tree draw calls plus one forest-floor draw call
+    // maximum per tile regardless of how many source polygons exist.
     this.trunkGeo = new THREE.CylinderGeometry(0.34, 0.48, 5.5, 6);
-    this.coniferGeo = new THREE.ConeGeometry(2.7, 7.5, 7);
-    this.deciduousGeo = new THREE.DodecahedronGeometry(2.7, 0);
-    this.shrubGeo = new THREE.DodecahedronGeometry(1.7, 0);
+    this.coniferGeo = new THREE.ConeGeometry(3.8, 7.5, 7);
+    this.deciduousGeo = new THREE.DodecahedronGeometry(3.7, 0);
+    this.shrubGeo = new THREE.DodecahedronGeometry(2.3, 0);
     this.trunkMat = new THREE.MeshStandardMaterial({ color: 0x51402d, roughness: 1 });
     this.coniferMat = new THREE.MeshStandardMaterial({ color: 0x284d28, roughness: 1 });
     this.deciduousMat = new THREE.MeshStandardMaterial({ color: 0x3f6835, roughness: 1 });
@@ -358,7 +368,8 @@ class OSMManager {
 
   _treeExcluded(x,z,index){
     if(!index) return false;
-    if(osmWaterOverlaps([[x,z]],5,index.water)) return true;
+    // Build 16's broader crowns stay clear of water with their full envelope.
+    if(osmWaterOverlaps([[x,z]],7,index.water)) return true;
     const bucket=index.cells.get(Math.floor(x/index.cellSize)+','+Math.floor(z/index.cellSize));
     if(!bucket) return false;
     for(const f of bucket){
@@ -455,6 +466,9 @@ class OSMManager {
     const placements = this._forestPlacements(polys, ox, oz, exclusion);
     if(placements.length === 0) return 0;
 
+    const floor=this._buildFlatPolygons(polys,ox,oz,this.forestFloorMat,.18);
+    if(floor){ floor.name='osmForestFloor';group.add(floor); }
+
     const conifers = placements.filter(p => p.kind === 0);
     const deciduous = placements.filter(p => p.kind === 1);
     const shrubs = placements.filter(p => p.kind === 2);
@@ -530,7 +544,7 @@ class OSMManager {
       const barn=!church&&area>380&&area<1800&&aspect>1.75&&osmHash(x,z,26)>.28;
       let h=area>1600?8+r*6:(area>650?7+r*5:5.5+r*4.5);
       if(barn)h=6+r*2.8;
-      if(church)h=10+r*2.5;
+      if(church)h=13+r*3.5;
       const pitched=church||barn||(area<1200&&b.d<38&&aspect<5.5);
       // Neighbourhood-scale wall palette creates coherent streets; a fine hash
       // keeps every block from being literally identical.
@@ -559,9 +573,13 @@ class OSMManager {
         addPart(d,d.b.w*.36,side*d.b.d*.225,d.b.w*.28,d.b.d*.55);
       }else addPart(d,0,0,d.b.w,d.b.d);
       if(d.church){
-        const tw=Math.min(7,d.b.w*.38),td=Math.min(7,d.b.d*.55);
-        const tower=addPart(d,-d.b.w/2+tw/2,0,tw,td,d.wallTop+6.5,false);
-        spires.push({...tower,radius:Math.min(tw,td)*.58,height:6.5});
+        // The former 6.5m cap vanished into the nave from normal flight
+        // altitude. A broad, tall western tower and steep spire now make the
+        // landmark unmistakable without adding a new material/draw-call bucket.
+        const tw=Math.min(10,Math.max(7,d.b.w*.44));
+        const td=Math.min(10,Math.max(7,d.b.d*.62));
+        const tower=addPart(d,-d.b.w/2+tw/2,0,tw,td,d.wallTop+12,false);
+        spires.push({...tower,radius:Math.min(tw,td)*.66,height:10});
       }
       if(d.chimney)chimneys.push(d);
     }
@@ -803,10 +821,25 @@ function osmCanvasTexture(canvas){
   return tex;
 }
 
-function makeOSMFacadeTexture(){
+function makeOSMFacadeTexture(variant=0){
   if(typeof document==='undefined') return null; // placement-only Node tests
   const canvas=document.createElement('canvas'); canvas.width=canvas.height=512;
   const c=canvas.getContext('2d');
+  const profiles=[
+    {top:[42,174,319,438],bottom:[66,218,392],door:309},
+    {top:[28,132,286,421],bottom:[50,175,355,448],door:252},
+    {top:[70,210,350,448],bottom:[39,188,405],door:317},
+    {top:[35,151,274,416],bottom:[82,232,385],door:24}
+  ];
+  const profile=profiles[variant%profiles.length];
+  const drawWindow=(x,wy,w=42,h=57)=>{
+    c.fillStyle='#a69c84'; c.fillRect(x-5,wy-5,w+10,h+10);
+    c.fillStyle='#3c4541'; c.fillRect(x-17,wy,10,h); c.fillRect(x+w+7,wy,10,h);
+    c.fillStyle='#263633'; c.fillRect(x,wy,w,h);
+    c.fillStyle='#66766e'; c.fillRect(x+3,wy+3,Math.max(8,w*.38),Math.max(10,h*.4));
+    c.fillStyle='#b7b3a0'; c.fillRect(x+w/2-1.5,wy,3,h); c.fillRect(x,wy+h/2-1.5,w,3);
+    c.fillStyle='#ece5d3'; c.fillRect(x-6,wy+h+1,w+12,4);
+  };
   for(let panel=0;panel<2;panel++){
     const y=panel*256;
     c.fillStyle='#e2dbca'; c.fillRect(0,y,512,256);
@@ -821,18 +854,13 @@ function makeOSMFacadeTexture(){
       c.strokeRect(col*40+(row%2)*20,y+223+row*16,40,16);
     }
     c.fillStyle='#c6bfaf'; c.fillRect(0,y+3,512,7);
-    for(let row=0;row<2;row++) for(let col=0;col<4;col++){
-      const x=42+col*127,wy=y+33+row*103;
-      if(panel===1&&row===1&&col===1) continue;
-      c.fillStyle='#a69c84'; c.fillRect(x-5,wy-5,52,67);
-      c.fillStyle='#3c4541'; c.fillRect(x-17,wy,10,57); c.fillRect(x+49,wy,10,57);
-      c.fillStyle='#263633'; c.fillRect(x,wy,42,57);
-      c.fillStyle='#66766e'; c.fillRect(x+3,wy+3,16,23);
-      c.fillStyle='#b7b3a0'; c.fillRect(x+19,wy,3,57); c.fillRect(x,wy+27,42,3);
-      c.fillStyle='#ece5d3'; c.fillRect(x-6,wy+58,54,4);
+    for(const x of profile.top)drawWindow(x,y+31,variant===1?36:42,variant===2?64:57);
+    for(const x of profile.bottom){
+      if(panel===1&&Math.abs(x-profile.door)<62)continue;
+      drawWindow(x,y+136,variant===3?38:42,variant===0?62:57);
     }
     if(panel===1){
-      const x=169,dy=y+145;
+      const x=profile.door,dy=y+143;
       c.fillStyle='#b6ad98'; c.fillRect(x-6,dy-6,54,111);
       c.fillStyle='#4f4434'; c.fillRect(x,dy,42,101);
       c.strokeStyle='#837159'; c.lineWidth=2; c.strokeRect(x+6,dy+10,30,31); c.strokeRect(x+6,dy+50,30,42);

@@ -94,13 +94,15 @@ assert(osm.gableRoofGeo.attributes.position.array.length===54,
   'roof: expected six triangles with separate crease normals');
 
 // Two overlapping forest polygons. Old code emitted trunk+canopy PER polygon;
-// the new invariant is <=4 vegetation buckets for the entire tile.
+// the new invariant is <=4 tree buckets plus one continuous woodland floor.
 const forestGroup=new THREE.Group();
 const forestA=[[100,100],[900,100],[900,900],[100,900],[100,100]];
 const forestB=[[500,500],[1300,500],[1300,1300],[500,1300],[500,500]];
 const treeCount=osm._buildForests(forestGroup,[forestA,forestB],0,0);
 assert(treeCount>0,'forest: no placements generated');
-assert(forestGroup.children.length<=4,`forest: expected <=4 instance buckets, got ${forestGroup.children.length}`);
+assert(forestGroup.children.length<=5,`forest: expected <=5 bounded buckets, got ${forestGroup.children.length}`);
+assert(forestGroup.children.some(x=>x.name==='osmForestFloor'),
+  'forest: mapped woodland floor missing');
 assert(new Set(forestGroup.children.map(x=>x.name)).size===forestGroup.children.length,'forest: duplicate debug bucket names');
 finiteMatrices(forestGroup,'forest');
 
@@ -148,6 +150,7 @@ assert(buildingGroup.children.every(m=>!m.instanceColor),
   'buildings: instance colours reintroduced after the Build 11 rendering regression');
 const churchSpire=buildingGroup.children.find(m=>m.name==='osmChurchSpires');
 assert(churchSpire&&churchSpire.count===1,'buildings: inferred church silhouette missing');
+assert(churchSpire.matrices[0][5]>=10,'buildings: church spire is not visible enough from the air');
 
 const waterBuildingGroup=new THREE.Group();
 const waterBuildings=[

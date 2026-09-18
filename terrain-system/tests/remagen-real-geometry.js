@@ -113,16 +113,16 @@ function validateBuffers(mesh){
    }
   }
   for(const mesh of forests){
-   if(mesh.name==='osmForestTrunks')continue;
+   if(mesh.name==='osmForestTrunks'||mesh.name==='osmForestFloor')continue;
    for(let i=0;i<mesh.count;i++){
     mesh.getMatrixAt(i,matrix);const p=[matrix.elements[12],matrix.elements[14]];
-    // BUILD 15's widest varied deciduous crown remains below 4.9m.
-    for(const tri of nearby([p],4.9))assert(!circleTriangle(p,4.9,tri),`canopy intersects water at ${p}`);
+    // BUILD 16's broader deciduous crown remains below a 6.8m envelope.
+    for(const tri of nearby([p],6.8))assert(!circleTriangle(p,6.8,tri),`canopy intersects water at ${p}`);
     trees++;
    }
   }
  }
- assert(forestBuckets<=4);assert(buildingBuckets<=10);assert(churches>=8&&churches<=14);
+ assert(forestBuckets<=5);assert(buildingBuckets<=10);assert(churches>=8&&churches<=14);
  assert(buildings>acceptedBuildings,'building shape variants did not add any roof wings');
  // The point-height query must agree with actual r128 ray/triangle hits during
  // an LOD morph, too. Bilinear interpolation fails this on non-planar quads.

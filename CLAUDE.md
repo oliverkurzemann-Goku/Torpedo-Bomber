@@ -5,9 +5,23 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 121 · Thunderbolt Squadron EU BUILD 57 · Remagen 1945 REMAGEN BUILD 15**
+Stand bei Übergabe: **Torpedo Squadron BUILD 121 · Thunderbolt Squadron EU BUILD 57 · Remagen 1945 REMAGEN BUILD 16**
 Repo: `oliverkurzemann-Goku/Torpedo-Bomber`, ausgeliefert über GitHub Pages.
 Alle Angaben unten sind aus dem tatsächlichen Code verifiziert, nicht aus dem Gedächtnis.
+
+**Luftlesbarkeit, Build 16 (18.09.2026):** Nach Olivers echtem iPad-Feedback (Kirchen
+aus der Luft unkenntlich, Wälder wie verstreute Einzelbäume, überall dieselbe Fenstertextur)
+wurde der begonnene Konvoi-Pass zurückgestellt und genau diese drei sichtbaren Punkte isoliert
+korrigiert. Die 14 visuell inferierten Kirchen haben nun 12m höhere, 7–10m breite Westtürme,
+10m hohe Spitzhelme und höhere Kirchenschiffe; weiterhin keine Behauptung historischer
+Kirchenstandorte. Wälder erhalten pro Kachel eine zusammenhängende, transparente Boden-/Kronen-
+fläche unter breiteren Baumkronen: maximal fünf statt vier Wald-Buckets, aber keine zusätzlichen
+Bauminstanzen. Vier bestehende Fassaden-Materialfamilien tragen jetzt vier verschiedene,
+asymmetrische Fenster-/Türatlanten; Gebäude-Bucketlimit unverändert 10, keine Instanzfarben.
+Echte r128-Prüfung aller 56 Kacheln: 21.142 Gebäude, 23.853 Dachteile, 139.930 Kronen,
+14 Kirchen und 398.896 Wasser-Dreiecke; keine Dach-/6,8m-Kronenkollision mit Wasser,
+Drapefehler <0,00063m. Airfield-, Wasser/Wolken-, Fahrzeug- und Strukturtests bestanden.
+Kein behaupteter iPad-/GPU-Nachweis; nächster Schritt erst nach Sichtprüfung: fahrende Konvois.
 
 **Ortschaften und Wälder, Build 15 (18.09.2026):** Oliver meldete Build 14 als
 „funktioniert super“ und gab die vereinbarte Reihenfolge frei. Dieser Schritt verändert nur
