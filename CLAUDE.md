@@ -5,9 +5,24 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 121 · Thunderbolt Squadron EU BUILD 57 · Remagen 1945 REMAGEN BUILD 19**
+Stand bei Übergabe: **Torpedo Squadron BUILD 121 · Thunderbolt Squadron EU BUILD 57 · Remagen 1945 REMAGEN BUILD 20**
 Repo: `oliverkurzemann-Goku/Torpedo-Bomber`, ausgeliefert über GitHub Pages.
 Alle Angaben unten sind aus dem tatsächlichen Code verifiziert, nicht aus dem Gedächtnis.
+
+**Echte Flak und aktive Missionsverteidigung, Build 20 (19.09.2026):** Oliver meldete,
+dass in den Missionen keine Flak zu sehen/zu hören war, und stellte 16 GLBs bereit. 14 sind
+bytegenaue Duplikate bestehender Repo-Dateien, einschließlich `flak88_sfl.glb`; neu sind nur
+ein schwereres alternatives Bf-109-Modell und eine für Remagen/iPad ungeeignete Saratoga
+(45,4MB/395.510 Dreiecke). Ursache war die Missionsverdrahtung: Build 19 registrierte die zwei
+Geschütze nur im Pflichtzielauftrag „Flak Suppression“ in `flakUnits`. Build 20 aktiviert ein
+oder zwei Geschütze in allen sechs Kampfeinsätzen; nur bei Flak Suppression sind sie Pflichtziele.
+Freiflug/Platzrunden bleiben sicher. Beide Zylinder-Platzhalter werden nach dem asynchronen Laden
+durch Klone der vorhandenen 8,8cm Flak 37 Sfl. ersetzt (je 22 Meshes/149.028 Dreiecke, 8,808m),
+bei stabilen HistoricalObjectManager-Gruppen für Treffer/Reset. Wegen iPad-Kosten exakt zwei
+Kopien, keine Massenspawns. Schweres 5,5km-Airburst-Verhalten statt 1,5km-Leichtspurfeuer;
+Schwierigkeit skaliert weiter, offene Airbursts werden zwischen Missionen gelöscht. Echte
+GLTF- und ausgeführte Missions-Populate-Tests prüfen Modelltausch, Anzahl und Primärrollen.
+Keine neuen Zivilauto-/Pferdewagen-/Zug-/Mastenmodelle im Upload. Details in `TERRAIN.md`.
 
 **Fahrzeugmodelle, Sichtbarkeit und Regen, Build 19 (19.09.2026):** Olivers echtes
 iPad-Bild aus Build 18 zeigt den Regen als feststehende graue Bildschirmstriche; außerdem
@@ -160,7 +175,7 @@ iPad/iPhone Safari.
 | `index.html` | Startseite, Auswahl zwischen den Spielen |
 | `torpedo-carrier.html` | **Teil 1** — Pazifik, Trägerbetrieb (BUILD 121) |
 | `thunderbolt-europe.html` | **Teil 2** — Europa, Bodenangriff (EU BUILD 57) |
-| `remagen-mission.html` | **Teil 3** — Remagen 1945, echtes Terrain (REMAGEN BUILD 19; Terrain-Handoff in `TERRAIN.md`) |
+| `remagen-mission.html` | **Teil 3** — Remagen 1945, echtes Terrain (REMAGEN BUILD 20; Terrain-Handoff in `TERRAIN.md`) |
 | `model-check.html` | Kalibrier-Werkzeug für neue Flugzeugmodelle (Ausrichtung, Maßstab) |
 
 Alle drei Spiele haben getrennte Speicherstände (`localStorage`-Präfixe `tc_*`, `eu_*` bzw.

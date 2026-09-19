@@ -20,6 +20,14 @@ not a reconstruction of documented unit positions in March 1945.
   (spare kit pieces and crew excluded), Lambert material conversion, normalization
   and terrain placement; Build 19 also clones this selected subtree for moving
   tracked targets. The original GLB remains unchanged.
+- **8,8 cm Flak 37 Sfl. (War Thunder)** — KojfDiscord. Source:
+  https://sketchfab.com/3d-models/88-cm-flak-37-sfl-war-thunder-7a9b4abbc2884ef6bbf5dbffbe8adf2b
+  Author: https://sketchfab.com/KojfDiscord
+  License recorded in the supplied GLB: **CC BY 4.0**,
+  https://creativecommons.org/licenses/by/4.0/
+  File: `flak88_sfl.glb`. Build 20 runtime changes: Lambert material conversion,
+  metre-scale normalization and two shared clones at the existing gun positions;
+  the original GLB remains unchanged.
 
 Build 19 also reuses the repository's existing `merchant_ship.glb` as a two-copy,
 30m Rhine workboat silhouette. The GLB contains no embedded author, source or licence

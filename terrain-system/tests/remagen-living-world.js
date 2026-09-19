@@ -18,16 +18,32 @@ global.fetch=async url=>{const b=fs.readFileSync(path.join(root,url.split('?')[0
   const osm=new OSMManager(scene,4000,terrain,osmDir);
   await osm.prepareRegion(coords,'terrain-system/real/data/waterways.json');
   const html=fs.readFileSync(path.join(root,'remagen-mission.html'),'utf8');
-  assert(html.includes('LivingWorld.js?v=remagen-19'));assert(html.includes('MODULE 19'));
+  assert(html.includes('LivingWorld.js?v=remagen-20'));assert(html.includes('MODULE 20'));
   for(const id of ['convoy','train','ferry'])assert(html.includes(`id:'${id}'`),`mission ${id} missing`);
   assert(html.includes("livingWorld.missionTargets(m.id)"));assert(html.includes('livingWorld.destroyEntity(t.entity)'));
+  // Execute the actual mission table/population logic with lightweight target
+  // stubs: practice stays safe, every combat sortie receives active guns, and
+  // only Flak Suppression makes those guns primary objectives.
+  const missionStart=html.indexOf('const MISSIONS=['),missionEnd=html.indexOf('function objectiveLeft',missionStart);
+  const missionContext=vm.createContext({mission:0,calls:[],realBridge:{},realFactory:{},realFlak:[{},{}],
+    resetAllRealTargets(){},livingWorld:{resetForMission(){},missionTargets(id){return [{kind:id==='convoy'?'truck':id==='train'?'train':'ferry'}];}},
+    spawnRealTarget(kind,sub,opt){missionContext.calls.push({kind,primary:!!opt.primary,heavy:!!opt.heavy});},
+    spawnLivingTarget(e,opt){missionContext.calls.push({kind:e.kind,primary:!!opt.primary});}});
+  vm.runInContext(html.slice(missionStart,missionEnd)+"\nglobalThis.runMission=i=>{mission=i;calls=[];populate();return {id:M().id,calls};};",missionContext);
+  const missionFlak={free:0,circ:0,bridge:2,flak:2,factory:1,convoy:1,train:1,ferry:2};
+  for(let i=0;i<8;i++){
+    const run=missionContext.runMission(i),guns=run.calls.filter(c=>c.kind==='flak');
+    assert.equal(guns.length,missionFlak[run.id],run.id+' flak defense mismatch');
+    assert(guns.every(g=>g.heavy));assert(guns.every(g=>g.primary===(run.id==='flak')));
+  }
+  assert(html.includes('const range=light?1500:5500'));assert(html.includes('groundFire=[];'));
   const h=JSON.parse(fs.readFileSync(path.join(root,'terrain-system/real/data/historical/3_3.json'))),b=h.bridges[0];
   const bridge=[12000+(b.x1+b.x2)/2,12000+(b.z1+b.z2)/2];
   const f=JSON.parse(fs.readFileSync(path.join(root,'terrain-system/real/data/historical/3_5.json'))).factories[0];
   const factory=[12000+f.x,20000+f.z];
   const world=new LivingWorld(scene,terrain,osm,{bridge,bridgeSpan:[b.x2-b.x1,b.z2-b.z1],factory,field:[787,18087.6]});
 
-  assert.equal(LivingWorld.BUILD,19);assert.equal(OSMManager.BUILD,19);
+  assert.equal(LivingWorld.BUILD,20);assert.equal(OSMManager.BUILD,20);
   assert(world.routes.road.length>=3,'not enough real road routes');
   assert(world.routes.rail.length>=1,'real rail route missing');
   assert.equal(world.routes.water.length,1,'Rhine route missing');

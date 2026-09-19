@@ -1,7 +1,7 @@
 // Scenic period vehicles from existing repository GLBs. No combat/mission hooks.
 // Real r128 GLTFLoader validation is in tests/remagen-vehicles.js; credits below.
 class WorldVehicles {
-  static get BUILD(){ return 19; }
+  static get BUILD(){ return 20; }
   constructor(scene,terrain,osm){
     this.scene=scene;this.terrain=terrain;this.osm=osm;this.entries=[];this.failures=[];
     this.templates=new Map();this.onTemplate=null;
@@ -35,7 +35,7 @@ class WorldVehicles {
     if(![size.x,size.y,size.z].every(v=>Number.isFinite(v)&&v>0))throw new Error('Invalid vehicle bounds');
     // Validated real-world target lengths. The merchant is repurposed as a
     // compact Rhine workboat silhouette, not claimed to be a literal ferry.
-    const targetLength={m16:6.62,tiger:8.45,merchant:30}[kind]||8;
+    const targetLength={m16:6.62,tiger:8.45,merchant:30,flak88:8.808}[kind]||8;
     const scale=targetLength/Math.max(size.x,size.z);
     const model=new THREE.Group();model.add(root);root.scale.setScalar(scale);
     root.position.set(-(b.min.x+b.max.x)*scale/2,-b.min.y*scale,-(b.min.z+b.max.z)*scale/2);
@@ -105,6 +105,14 @@ class WorldVehicles {
       this.templates.set('merchant',model);
       if(this.onTemplate)this.onTemplate('merchant',model);
     }catch(e){this.failures.push({kind:'merchant',message:e.message});console.warn('Merchant template unavailable:',e);}
+    // Two historical gun positions can share the repository's existing model.
+    // It is heavy (149k triangles), so do not use it for convoys or mass spawning.
+    try{
+      const gl=await new Promise((resolve,reject)=>L.load('flak88_sfl.glb',resolve,undefined,reject));
+      const model=WorldVehicles.prepare(gl.scene,'flak88');
+      this.templates.set('flak88',model);
+      if(this.onTemplate)this.onTemplate('flak88',model);
+    }catch(e){this.failures.push({kind:'flak88',message:e.message});console.warn('Flak 88 template unavailable:',e);}
   }
   update(x,z){
     for(const e of this.entries){

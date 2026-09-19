@@ -6,7 +6,7 @@ const root=path.resolve(__dirname,'../..');global.THREE=require(process.env.THRE
 assert.equal(THREE.REVISION,'128');global.window={URL};global.self=global;
 global.document={createElementNS(){return {addEventListener(k,fn){this[k]=fn;},removeEventListener(){},set src(v){this.width=this.height=1024;queueMicrotask(()=>this.load());}};}};
 vm.runInThisContext(fs.readFileSync(process.env.GLTF_LOADER_R128,'utf8'));
-for(const name of ['HeightProvider','TerrainTile','TerrainManager','OSMManager','WorldVehicles','LivingWorld'])
+for(const name of ['HeightProvider','TerrainTile','TerrainManager','OSMManager','HistoricalObjectManager','WorldVehicles','LivingWorld'])
   vm.runInThisContext(fs.readFileSync(path.join(root,'terrain-system',name+'.js'),'utf8'));
 global.fetch=async url=>{const b=fs.readFileSync(path.join(root,url.split('?')[0]));return {ok:true,json:async()=>JSON.parse(b),arrayBuffer:async()=>b.buffer.slice(b.byteOffset,b.byteOffset+b.byteLength)};};
 THREE.GLTFLoader.prototype.load=function(file,yes,progress,no){
@@ -24,8 +24,8 @@ THREE.GLTFLoader.prototype.load=function(file,yes,progress,no){
   await osm.loadTile(3,3);
   global.document=imageDocument;
   const vehicles=new WorldVehicles(scene,terrain,osm);await vehicles.load();
-  assert.equal(WorldVehicles.BUILD,19);assert.deepEqual(vehicles.failures,[]);assert.equal(vehicles.entries.length,2);
-  assert.deepEqual([...vehicles.templates.keys()].sort(),['m16','merchant','tiger']);
+  assert.equal(WorldVehicles.BUILD,20);assert.deepEqual(vehicles.failures,[]);assert.equal(vehicles.entries.length,2);
+  assert.deepEqual([...vehicles.templates.keys()].sort(),['flak88','m16','merchant','tiger']);
   const merchant=vehicles.templates.get('merchant');merchant.updateMatrixWorld(true);
   const merchantSize=new THREE.Box3().setFromObject(merchant).getSize(new THREE.Vector3());
   assert(Math.abs(Math.max(merchantSize.x,merchantSize.z)-30)<.01);
@@ -34,6 +34,18 @@ THREE.GLTFLoader.prototype.load=function(file,yes,progress,no){
   const modelStats=e=>{let meshes=0,triangles=0;e.visual.traverse(m=>{if(!m.isMesh)return;meshes++;triangles+=(m.geometry.index?m.geometry.index.count:m.geometry.attributes.position.count)/3;});return {meshes,triangles};};
   assert.deepEqual(modelStats(living.entities.find(e=>e.kind==='truck')),{meshes:13,triangles:910});
   assert.deepEqual(modelStats(living.entities.find(e=>e.kind==='ferry')),{meshes:3,triangles:7646});
+  const historical=new HistoricalObjectManager(scene,4000,terrain,'terrain-system/real/data/historical/');
+  await historical.loadTile(3,3);await historical.loadTile(3,4);
+  const fallbackFlak=[];for(const g of historical.tiles.values())if(g)for(const o of g.userData.objects||[])if(o.userData.kind==='flak')fallbackFlak.push(o);
+  fallbackFlak[0].position.y=-1.2; // asynchronous replacement must preserve an existing wreck
+  assert.equal(HistoricalObjectManager.BUILD,20);assert.equal(historical.installFlakModel(vehicles.templates.get('flak88')),2);
+  const flak=[];for(const g of historical.tiles.values())if(g)for(const o of g.userData.objects||[])if(o.userData.kind==='flak')flak.push(o);
+  assert.equal(flak.length,2);assert(flak.every(o=>o.userData.sourceModel==='flak88'));
+  assert.deepEqual(modelStats({visual:flak[0]}),{meshes:22,triangles:149028});
+  let wreckMesh=null;flak[0].traverse(o=>{if(!wreckMesh&&o.isMesh)wreckMesh=o;});
+  const wreckMat=Array.isArray(wreckMesh.material)?wreckMesh.material[0]:wreckMesh.material;
+  const originalMat=Array.isArray(wreckMesh.userData.origMat)?wreckMesh.userData.origMat[0]:wreckMesh.userData.origMat;
+  assert.notEqual(wreckMat,originalMat);assert(wreckMat.color.r+wreckMat.color.g+wreckMat.color.b<originalMat.color.r+originalMat.color.g+originalMat.color.b);
   const stats=[];
   for(const e of vehicles.entries){
     e.model.updateMatrixWorld(true);const b=new THREE.Box3().setFromObject(e.model);let meshes=0,triangles=0;

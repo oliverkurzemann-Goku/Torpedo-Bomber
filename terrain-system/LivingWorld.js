@@ -8,7 +8,7 @@
 // ============================================================
 
 class LivingWorld {
-  static get BUILD(){ return 19; }
+  static get BUILD(){ return 20; }
 
   constructor(scene,terrain,osm,landmarks={}){
     this.scene=scene;this.terrain=terrain;this.osm=osm;this.landmarks=landmarks;

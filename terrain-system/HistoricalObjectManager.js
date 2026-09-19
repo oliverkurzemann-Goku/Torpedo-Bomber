@@ -24,6 +24,7 @@
 // ============================================================
 
 class HistoricalObjectManager {
+  static get BUILD(){ return 20; }
   constructor(scene, tileSize, terrainManager, baseUrl = 'data/historical/'){
     this.scene = scene;
     this.tileSize = tileSize;
@@ -89,6 +90,37 @@ class HistoricalObjectManager {
       g.traverse(o => { if(o.geometry && o.geometry !== this.boxGeo && o.geometry !== this.cylGeo) o.geometry.dispose(); });
     }
     this.tiles.delete(key);
+  }
+
+  // Replace the two low-detail cylinders with shared clones of the existing
+  // 8.8cm Flak vehicle. The historical sub-group stays stable because mission
+  // target handles, damage and reset logic already reference it.
+  installFlakModel(template){
+    if(!template)return 0;
+    let replaced=0;
+    for(const group of this.tiles.values()){
+      if(!group||!group.userData.objects)continue;
+      for(const sub of group.userData.objects){
+        if(sub.userData.kind!=='flak'||sub.userData.sourceModel==='flak88')continue;
+        while(sub.children.length)sub.remove(sub.children[0]);
+        const visual=template.clone(true),x=sub.userData.x,z=sub.userData.z;
+        visual.position.set(x,this.terrain.getRenderedHeight(x,z),z);
+        visual.rotation.y=((Math.abs(x*17+z*31)%628)/100)-Math.PI;
+        // If the fallback was destroyed before this asynchronous model arrived,
+        // preserve the wreck state. Keep pristine originals for the next sortie.
+        const wrecked=sub.position.y<-.5;
+        visual.traverse(o=>{if(o.isMesh){
+          o.userData.origMat=o.material;
+          if(wrecked){
+            const darken=m=>{const copy=m.clone();copy.color.multiplyScalar(.32);return copy;};
+            o.material=Array.isArray(o.material)?o.material.map(darken):darken(o.material);
+          }
+        }});
+        visual.userData.sourceModel='flak88';sub.userData.sourceModel='flak88';
+        sub.add(visual);replaced++;
+      }
+    }
+    return replaced;
   }
 
   _box(group, mat, x, y, z, w, h, d, rotY = 0){

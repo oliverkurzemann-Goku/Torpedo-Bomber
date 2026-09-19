@@ -10,9 +10,41 @@ The flight model, weapons and mission logic are not part of a terrain pass unles
 
 ## Test build versioning
 
-Every Remagen revision handed to Oliver for testing must increment the visible build number in both places in `remagen-mission.html`: the always-visible `#testVersionBannerText` and the in-flight `#buildTag`. Add a short pass label when useful. Never tell Oliver a build is ready until the branch/deployment being tested contains that exact visible version. Current revision: `REMAGEN BUILD 19 · MODELS WEATHER`.
+Every Remagen revision handed to Oliver for testing must increment the visible build number in both places in `remagen-mission.html`: the always-visible `#testVersionBannerText` and the in-flight `#buildTag`. Add a short pass label when useful. Never tell Oliver a build is ready until the branch/deployment being tested contains that exact visible version. Current revision: `REMAGEN BUILD 20 · FLAK DEFENSE`.
 
-The local terrain scripts carry the same version as a `?v=remagen-19` query. `OSMManager.BUILD`, `LivingWorld.BUILD` and `WorldVehicles.BUILD` are checked during startup and the banner gains `MODULE 19` only after all checks succeed. This prevents an updated HTML document from silently running an older Safari-cached terrain module.
+The local terrain scripts carry the same version as a `?v=remagen-20` query. `OSMManager.BUILD`, `HistoricalObjectManager.BUILD`, `LivingWorld.BUILD` and `WorldVehicles.BUILD` are checked during startup and the banner gains `MODULE 20` only after all checks succeed. This prevents an updated HTML document from silently running an older Safari-cached terrain module.
+
+## Build 20 — real flak model and active mission defenses
+
+Oliver reported that the sorties contained no flak and supplied sixteen GLBs for inspection.
+Fourteen are byte-identical to files already in the repository, including Tiger, Jagdpanther,
+M16, Sherman and `flak88_sfl.glb`. Only the Bf 109 remix and USS Saratoga are new; neither is a
+Remagen ground-defense asset. The remix is 6.0MB/27,104 triangles versus the existing 3.3MB/
+23,404-triangle Bf 109 and offers no animation. Saratoga is 45.4MB/395,510 triangles/76 meshes
+and is unsuitable for this iPad-focused Remagen scene. No civilian car, horse cart, train or
+telegraph-pole GLB was present.
+
+The missing-fire cause was mission wiring, not missing source data: Build 19 registered the two
+permanent gun positions in `flakUnits` only when `kills.flak` was the primary objective. Bridge,
+factory, convoy, train and ferry sorties therefore created no active gun unit at all, even where
+the briefing promised defenses.
+
+- `WorldVehicles` now loads the already shipped 8.8cm Flak 37 Sfl. model as a shared template.
+  `HistoricalObjectManager.installFlakModel()` replaces both cylinder placeholders while keeping
+  their stable historical sub-groups for target handles, damage and reset. Each clone is 22
+  meshes/149,028 triangles; the model is deliberately limited to the two permanent positions.
+- Every combat sortie now activates one or two guns. Bridge Buster, Flak Suppression and Ferry
+  Hunt use two; Factory Strike, Road Interdiction and Rail Cut use one. Only Flak Suppression marks
+  them primary objectives. Free Flight and Circuits remain intentionally safe.
+- These are heavy 8.8cm positions with 5.5km gameplay range and airbursts rather than the old
+  1.5km light-tracer behavior. Difficulty still scales accuracy/damage. Pending airbursts are
+  cleared between sorties so no shot leaks into a new mission.
+
+The real GLTF test loads the 14.2MB source, confirms 8.808m normalization, 22 meshes/149,028
+triangles, and exactly two stable model replacements. The mission test executes the actual mission
+table and `populate()` logic for all eight entries, checking defense counts, heavy-gun status and
+primary/secondary roles. The full real-data suite remains required; tests do not establish iPad
+FPS or final appearance.
 
 ## Build 19 — readable traffic, real tracked models and moving rain
 

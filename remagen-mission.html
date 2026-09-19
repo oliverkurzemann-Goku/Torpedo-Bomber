@@ -237,7 +237,7 @@
   <div style="width:100%;height:4px;background:repeating-linear-gradient(45deg,#ffd400,#ffd400 8px,#111 8px,#111 16px);"></div>
   <span id="testVersionBannerText" style="background:#111;color:#ffd400;font-family:monospace;font-weight:800;font-size:11px;letter-spacing:.5px;padding:3px 10px;border:1px solid #ffd400;border-top:none;border-radius:0 0 6px 6px;"></span>
 </div>
-<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — REMAGEN BUILD 19 — MODELS WEATHER — 2026-09-19';</script>
+<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — REMAGEN BUILD 20 — FLAK DEFENSE — 2026-09-19';</script>
 <!-- ===== END TEMP TEST-ONLY VERSION BANNER ===== -->
 <div id="app"></div>
 
@@ -264,7 +264,7 @@
   <div id="flash"></div>
   <div id="gunsight"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">REMAGEN BUILD 19 · MODELS WEATHER</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">REMAGEN BUILD 20 · FLAK DEFENSE</div>
 
   <div id="apr">
     <div id="aprCall"></div>
@@ -376,14 +376,14 @@
      own per-object userData tagging, added specifically to support this mission file) — the whole
      point of building the prototype first was that this game only needs to point them at real data,
      not rewrite them. -->
-<script src="terrain-system/HeightProvider.js?v=remagen-19"></script>
-<script src="terrain-system/TerrainTile.js?v=remagen-19"></script>
-<script src="terrain-system/TerrainManager.js?v=remagen-19"></script>
-<script src="terrain-system/OSMManager.js?v=remagen-19"></script>
-<script src="terrain-system/HistoricalObjectManager.js?v=remagen-19"></script>
-<script src="terrain-system/AirfieldDetails.js?v=remagen-19"></script>
-<script src="terrain-system/WorldVehicles.js?v=remagen-19"></script>
-<script src="terrain-system/LivingWorld.js?v=remagen-19"></script>
+<script src="terrain-system/HeightProvider.js?v=remagen-20"></script>
+<script src="terrain-system/TerrainTile.js?v=remagen-20"></script>
+<script src="terrain-system/TerrainManager.js?v=remagen-20"></script>
+<script src="terrain-system/OSMManager.js?v=remagen-20"></script>
+<script src="terrain-system/HistoricalObjectManager.js?v=remagen-20"></script>
+<script src="terrain-system/AirfieldDetails.js?v=remagen-20"></script>
+<script src="terrain-system/WorldVehicles.js?v=remagen-20"></script>
+<script src="terrain-system/LivingWorld.js?v=remagen-20"></script>
 <script>
 // ============================================================
 //  REMAGEN 1945 — REAL TERRAIN (forked from thunderbolt-europe.html)
@@ -605,9 +605,9 @@ function clearTreesNearAirfield(){
 async function loadRealWorld(){
   const setLoadingText=(s)=>{ const el=document.getElementById('loadingText'); if(el) el.textContent=s; };
 
-  if(OSMManager.BUILD!==19||LivingWorld.BUILD!==19||WorldVehicles.BUILD!==19) throw new Error('Terrain version mismatch. Reload Remagen.');
+  if(OSMManager.BUILD!==20||HistoricalObjectManager.BUILD!==20||LivingWorld.BUILD!==20||WorldVehicles.BUILD!==20) throw new Error('Terrain version mismatch. Reload Remagen.');
   document.getElementById('testVersionBannerText').textContent=
-    'TEST BUILD — REMAGEN BUILD 19 — MODELS WEATHER — MODULE 19';
+    'TEST BUILD — REMAGEN BUILD 20 — FLAK DEFENSE — MODULE 20';
   heightProvider=new DEMHeightProvider(RTILE,'terrain-system/real/data/dem/');
   terrain=new TerrainManager(scene,RTILE,heightProvider);
   osmMgr=new OSMManager(scene,RTILE,terrain,'terrain-system/real/data/osm/');
@@ -630,7 +630,7 @@ async function loadRealWorld(){
   setLoadingText('Preparing water boundaries…');
   const osmCoords=[];
   for(let tz=0;tz<RGRID_H;tz++) for(let tx=0;tx<RGRID_W;tx++) osmCoords.push([tx,tz]);
-  await osmMgr.prepareRegion(osmCoords,'terrain-system/real/data/waterways.json?v=remagen-19');
+  await osmMgr.prepareRegion(osmCoords,'terrain-system/real/data/waterways.json?v=remagen-20');
 
   // Phase 3: real roads/rail/river/forest/farmland/buildings (OSMManager) and the historical
   // layer (bridge/flak/factory/airfield) — both need a real TERRAIN TILE already built at their
@@ -2212,7 +2212,7 @@ function spawnRealTarget(kind,sub,opt){
   resetRealTarget(sub);
   const t={kind, sub, group:targetHandle(sub), hp:d.hp*(opt.hpMul||1), maxhp:d.hp*(opt.hpMul||1),
     alive:true, radius:d.r, pts:d.pts, name:d.name, primary:!!opt.primary,
-    cool:Math.random()*2, burnT:0, smokeT:Math.random()};
+    heavy:!!opt.heavy, cool:Math.random()*2, burnT:0, smokeT:Math.random()};
   targets.push(t);
   if(kind==='flak') flakUnits.push(t);
   return t;
@@ -2299,28 +2299,28 @@ const MISSIONS=[
     text:"Three circuits of the strip. Wheels down, flaps out, cross the hedge at <b>110 mph</b> "
         +"and hold the centreline. Learn to put her down here and the rest of the war is easier." },
   { id:'bridge', title:'Sortie 1', sub:'Bridge Buster', ac:'p47', weather:'clear',
-    kills:{bridge:1}, text:"The Ludendorff Bridge at Remagen — captured intact by the 9th Armored "
+    kills:{bridge:1}, flakDefense:2, text:"The Ludendorff Bridge at Remagen — captured intact by the 9th Armored "
         +"on 7 March 1945, and still the fastest way west for anything the enemy can push across "
         +"it. It needs <b>bombs</b>; the fifties will not scratch it. Arm the bombs, come in "
         +"shallow along the span and pickle just short of the deck. The guns on both banks are alert." },
   { id:'flak', title:'Sortie 2', sub:'Flak Suppression', ac:'p47', weather:'haze',
-    kills:{flak:2}, text:"Two gun positions overlook the river crossing from the high ground on "
+    kills:{flak:2}, flakDefense:2, text:"Two gun positions overlook the river crossing from the high ground on "
         +"either bank. Before anyone else comes through low over the bridge, they have to go. "
         +"Come in low and fast, one pass, no second circuit." },
   { id:'factory', title:'Sortie 3', sub:'Factory Strike', ac:'p47', weather:'clear',
-    kills:{factory:1}, text:"The industrial works up the valley are keeping the bridgehead "
-        +"supplied. Bombs and rockets on the workshops and the stack — watch for light flak "
-        +"around the yard." },
+    kills:{factory:1}, flakDefense:1, text:"The industrial works up the valley are keeping the bridgehead "
+        +"supplied. Bombs and rockets on the workshops and the stack — watch for heavy flak "
+        +"over the valley." },
   { id:'convoy', title:'Sortie 4', sub:'Road Interdiction', ac:'p47', weather:'haze',
-    kills:{truck:4}, text:"Recon has found a four-truck supply column moving on the mapped road "
+    kills:{truck:4}, flakDefense:1, text:"Recon has found a four-truck supply column moving on the mapped road "
         +"network south of the bridgehead. The road is narrow and the column will not wait for "
         +"you. Use the fifties or rockets, keep your first pass low and fast, then get home." },
   { id:'train', title:'Sortie 5', sub:'Rail Cut', ac:'p47', weather:'rain',
-    kills:{train:1}, text:"A supply train is running on the real valley railway. It is a long, "
+    kills:{train:1}, flakDefense:1, text:"A supply train is running on the real valley railway. It is a long, "
         +"moving target but the locomotive is tough: guns will slow it, bombs or rockets will "
         +"finish it. Mind the rising ground beyond the track." },
   { id:'ferry', title:'Sortie 6', sub:'Rhine Ferry Hunt', ac:'p47', weather:'clear',
-    kills:{ferry:1}, text:"A vehicle ferry is moving along the Rhine inside the mapped river "
+    kills:{ferry:1}, flakDefense:2, text:"A vehicle ferry is moving along the Rhine inside the mapped river "
         +"channel. Find it near the Remagen crossing and stop it before it clears the sector. "
         +"Attack along the river, not across the hills." }
 ];
@@ -2336,6 +2336,7 @@ function clearWorld(){
   for(const e of enemyAir) scene.remove(e.group); enemyAir=[];
   for(const b of bullets) scene.remove(b.mesh); bullets=[];
   for(const t of tracers) scene.remove(t.mesh); tracers=[];
+  groundFire=[];
   for(const b of bombs) scene.remove(b.mesh); bombs=[];
   for(const r of rockets) scene.remove(r.mesh); rockets=[];
   for(const d of debris) scene.remove(d.mesh); debris=[];
@@ -2347,10 +2348,14 @@ function clearWorld(){
 function populate(){
   const m=M();
   if(livingWorld)livingWorld.resetForMission(m.id);
-  if(m.free||m.circuits) return;
   resetAllRealTargets();
+  if(m.free||m.circuits) return;
   if(m.kills&&m.kills.bridge && realBridge) spawnRealTarget('bridge',realBridge,{primary:true});
-  if(m.kills&&m.kills.flak) for(const f of realFlak) spawnRealTarget('flak',f,{primary:true});
+  // Every combat sortie now activates the documented gun positions. They are
+  // primary only in Flak Suppression; elsewhere they defend the objective and
+  // can be destroyed for score without blocking mission completion.
+  const flakPrimary=!!(m.kills&&m.kills.flak),flakCount=Math.min(realFlak.length,m.flakDefense||0);
+  for(let i=0;i<flakCount;i++)spawnRealTarget('flak',realFlak[i],{primary:flakPrimary,heavy:true});
   if(m.kills&&m.kills.factory && realFactory) spawnRealTarget('factory',realFactory,{primary:true});
   if(livingWorld&&m.kills&&(m.kills.truck||m.kills.train||m.kills.ferry))
     for(const e of livingWorld.missionTargets(m.id))spawnLivingTarget(e,{primary:true});
@@ -2643,11 +2648,11 @@ function updateFlak(dt){
     if(!f.alive) continue;
     const p=f.group.position;
     const d=P.pos.distanceTo(p);
-    // Real flak objects have only one visual/gameplay style (HistoricalObjectManager's
-    // _buildFlak() doesn't build a heavy/light distinction) — all of them fire as the fast,
-    // low-range tracer gun rather than the old synthetic map's separate 88mm airburst gun.
-    const light=(f.kind==='flak');
-    const range=light?1500:4200;
+    // The two real-map positions now use the existing 8.8cm vehicle model and
+    // heavy airburst behavior. The low-detail fallback remains combat-capable
+    // while its GLB is still loading.
+    const light=!f.heavy;
+    const range=light?1500:5500;
     if(d>range || agl<12) continue;
     f.cool-=dt;
     if(f.cool>0) continue;
@@ -3547,7 +3552,7 @@ function drawMinimap(){
     const px=R+(lx/L)*(R-5), py=R-(lz/L)*(R-5);
     g.fillStyle=col; g.fillRect(px-2.5,py-2.5,5,5);
   };
-  for(const t of targets) if(t.alive&&t.primary) rim(t.group.position.x,t.group.position.z,'#e8b84b');
+  for(const t of targets) if(t.alive) rim(t.group.position.x,t.group.position.z,t.primary?'#e8b84b':'#b1442b');
   for(const e of enemyAir) if(e.alive) rim(e.pos.x,e.pos.z,'#ff6a4a');
   if(livingWorld)for(const e of livingWorld.entities)
     if(e.alive&&(e.kind==='civil'||e.kind==='wagon'))rim(e.model.position.x,e.model.position.z,'#b9d6cf');
@@ -4168,7 +4173,10 @@ function init(){
     });
     show('loading',false); show('menu',true); state=ST.MENU;
     worldVehicles=new WorldVehicles(scene,terrain,osmMgr);
-    worldVehicles.onTemplate=()=>{ if(livingWorld)livingWorld.installVehicleModels(worldVehicles.templates); };
+    worldVehicles.onTemplate=(kind,template)=>{
+      if(livingWorld)livingWorld.installVehicleModels(worldVehicles.templates);
+      if(kind==='flak88'&&historicalMgr)historicalMgr.installFlakModel(template);
+    };
     worldVehicles.load().catch(err=>console.warn('Scenery vehicles:',err));
   }).catch(err=>{
     console.error('loadRealWorld failed:',err);
