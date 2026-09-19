@@ -237,7 +237,7 @@
   <div style="width:100%;height:4px;background:repeating-linear-gradient(45deg,#ffd400,#ffd400 8px,#111 8px,#111 16px);"></div>
   <span id="testVersionBannerText" style="background:#111;color:#ffd400;font-family:monospace;font-weight:800;font-size:11px;letter-spacing:.5px;padding:3px 10px;border:1px solid #ffd400;border-top:none;border-radius:0 0 6px 6px;"></span>
 </div>
-<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — REMAGEN BUILD 18 — LIVING RHINE — 2026-09-18';</script>
+<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — REMAGEN BUILD 19 — MODELS WEATHER — 2026-09-19';</script>
 <!-- ===== END TEMP TEST-ONLY VERSION BANNER ===== -->
 <div id="app"></div>
 
@@ -264,7 +264,7 @@
   <div id="flash"></div>
   <div id="gunsight"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">REMAGEN BUILD 18 · LIVING RHINE</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">REMAGEN BUILD 19 · MODELS WEATHER</div>
 
   <div id="apr">
     <div id="aprCall"></div>
@@ -376,14 +376,14 @@
      own per-object userData tagging, added specifically to support this mission file) — the whole
      point of building the prototype first was that this game only needs to point them at real data,
      not rewrite them. -->
-<script src="terrain-system/HeightProvider.js?v=remagen-18"></script>
-<script src="terrain-system/TerrainTile.js?v=remagen-18"></script>
-<script src="terrain-system/TerrainManager.js?v=remagen-18"></script>
-<script src="terrain-system/OSMManager.js?v=remagen-18"></script>
-<script src="terrain-system/HistoricalObjectManager.js?v=remagen-18"></script>
-<script src="terrain-system/AirfieldDetails.js?v=remagen-18"></script>
-<script src="terrain-system/WorldVehicles.js?v=remagen-18"></script>
-<script src="terrain-system/LivingWorld.js?v=remagen-18"></script>
+<script src="terrain-system/HeightProvider.js?v=remagen-19"></script>
+<script src="terrain-system/TerrainTile.js?v=remagen-19"></script>
+<script src="terrain-system/TerrainManager.js?v=remagen-19"></script>
+<script src="terrain-system/OSMManager.js?v=remagen-19"></script>
+<script src="terrain-system/HistoricalObjectManager.js?v=remagen-19"></script>
+<script src="terrain-system/AirfieldDetails.js?v=remagen-19"></script>
+<script src="terrain-system/WorldVehicles.js?v=remagen-19"></script>
+<script src="terrain-system/LivingWorld.js?v=remagen-19"></script>
 <script>
 // ============================================================
 //  REMAGEN 1945 — REAL TERRAIN (forked from thunderbolt-europe.html)
@@ -605,9 +605,9 @@ function clearTreesNearAirfield(){
 async function loadRealWorld(){
   const setLoadingText=(s)=>{ const el=document.getElementById('loadingText'); if(el) el.textContent=s; };
 
-  if(OSMManager.BUILD!==18||LivingWorld.BUILD!==18) throw new Error('Terrain version mismatch. Reload Remagen.');
+  if(OSMManager.BUILD!==19||LivingWorld.BUILD!==19||WorldVehicles.BUILD!==19) throw new Error('Terrain version mismatch. Reload Remagen.');
   document.getElementById('testVersionBannerText').textContent=
-    'TEST BUILD — REMAGEN BUILD 18 — LIVING RHINE — MODULE 18';
+    'TEST BUILD — REMAGEN BUILD 19 — MODELS WEATHER — MODULE 19';
   heightProvider=new DEMHeightProvider(RTILE,'terrain-system/real/data/dem/');
   terrain=new TerrainManager(scene,RTILE,heightProvider);
   osmMgr=new OSMManager(scene,RTILE,terrain,'terrain-system/real/data/osm/');
@@ -630,7 +630,7 @@ async function loadRealWorld(){
   setLoadingText('Preparing water boundaries…');
   const osmCoords=[];
   for(let tz=0;tz<RGRID_H;tz++) for(let tx=0;tx<RGRID_W;tx++) osmCoords.push([tx,tz]);
-  await osmMgr.prepareRegion(osmCoords,'terrain-system/real/data/waterways.json?v=remagen-18');
+  await osmMgr.prepareRegion(osmCoords,'terrain-system/real/data/waterways.json?v=remagen-19');
 
   // Phase 3: real roads/rail/river/forest/farmland/buildings (OSMManager) and the historical
   // layer (bridge/flak/factory/airfield) — both need a real TERRAIN TILE already built at their
@@ -3527,6 +3527,12 @@ function drawMinimap(){
       } else g.fillRect(p[0]-2.5,p[1]-2.5,5,5);
     } else { g.fillStyle='#b1442b'; g.fillRect(p[0]-1.5,p[1]-1.5,3,3); }
   }
+  // Small pale dots make the deliberately sparse civilian traffic findable
+  // without turning it into mission targets or adding floating world labels.
+  if(livingWorld)for(const e of livingWorld.entities){
+    if(!e.alive||(e.kind!=='civil'&&e.kind!=='wagon'))continue;
+    p=put(e.model.position.x,e.model.position.z);g.fillStyle='#b9d6cf';g.fillRect(p[0]-1.5,p[1]-1.5,3,3);
+  }
   for(const e of enemyAir){ if(!e.alive) continue;
     p=put(e.pos.x,e.pos.z); g.fillStyle=e.bomber?'#e8b84b':'#ff6a4a'; g.beginPath();
     g.arc(p[0],p[1],e.bomber?4:3,0,6.283); g.fill(); }
@@ -3543,6 +3549,8 @@ function drawMinimap(){
   };
   for(const t of targets) if(t.alive&&t.primary) rim(t.group.position.x,t.group.position.z,'#e8b84b');
   for(const e of enemyAir) if(e.alive) rim(e.pos.x,e.pos.z,'#ff6a4a');
+  if(livingWorld)for(const e of livingWorld.entities)
+    if(e.alive&&(e.kind==='civil'||e.kind==='wagon'))rim(e.model.position.x,e.model.position.z,'#b9d6cf');
   rim(AF_X,AF_Z,'#7fae5a');
   g.restore();
   g.fillStyle='#cabf9c'; g.beginPath();
@@ -3833,25 +3841,52 @@ function updateClouds(){
 // ============================================================
 let rainMesh=null, ltnT=4, ltnFlash=0;
 function buildRain(){
-  const N=1400;
+  // BUILD 18 used a fixed LineSegments cloud that merely followed the player;
+  // every streak therefore stayed in the same place on screen and read as a
+  // field of grey scratches. Fewer, softer drops now fall and sweep backwards
+  // relative to aircraft speed, with individually wrapped local positions.
+  const N=900;
   const g=new THREE.BufferGeometry();
   const v=new Float32Array(N*6);
   for(let i=0;i<N;i++){
     const x=(Math.random()-0.5)*600, y=Math.random()*400, z=(Math.random()-0.5)*600;
+    const len=5+Math.random()*8,slant=(Math.random()-.5)*1.4;
     v[i*6]=x; v[i*6+1]=y; v[i*6+2]=z;
-    v[i*6+3]=x; v[i*6+4]=y-7; v[i*6+5]=z;
+    v[i*6+3]=x+slant; v[i*6+4]=y-len; v[i*6+5]=z+1.2;
   }
-  g.setAttribute('position',new THREE.BufferAttribute(v,3));
+  const attr=new THREE.BufferAttribute(v,3);if(attr.setUsage&&THREE.DynamicDrawUsage)attr.setUsage(THREE.DynamicDrawUsage);
+  g.setAttribute('position',attr);
   rainMesh=new THREE.LineSegments(g,new THREE.LineBasicMaterial({
-    color:0xaab6c2,transparent:true,opacity:0.42}));
+    color:0xc3ced7,transparent:true,opacity:0.27,depthWrite:false}));
+  rainMesh.userData.dropCount=N;
   rainMesh.frustumCulled=false; rainMesh.visible=false; scene.add(rainMesh);
 }
 function updateWeatherFx(dt){
   if(rainMesh){
     const wet=(weather==='rain'||weather==='storm');
     rainMesh.visible=wet;
-    if(wet){ rainMesh.position.set(P.pos.x,P.pos.y-200,P.pos.z);
-      rainMesh.material.opacity=weather==='storm'?0.55:0.4; }
+    if(wet){
+      rainMesh.position.set(P.pos.x,P.pos.y-200,P.pos.z);
+      rainMesh.material.opacity=weather==='storm'?0.36:0.25;
+      const a=rainMesh.geometry.attributes.position,v=a.array;
+      const fall=(weather==='storm'?235:175)*dt;
+      const sweep=Math.min(190,P.spd)*.48*dt;
+      const dx=-Math.sin(P.heading)*sweep,dz=-Math.cos(P.heading)*sweep-windZ*dt*1.5;
+      for(let i=0;i<v.length;i+=6){
+        v[i]+=dx;v[i+2]+=dz;v[i+3]+=dx;v[i+5]+=dz;
+        v[i+1]-=fall;v[i+4]-=fall;
+        if(v[i+4]<0){
+          const x=(Math.random()-.5)*600,y=400+Math.random()*35,z=(Math.random()-.5)*600;
+          const len=5+Math.random()*8,slant=(Math.random()-.5)*1.4;
+          v[i]=x;v[i+1]=y;v[i+2]=z;v[i+3]=x+slant;v[i+4]=y-len;v[i+5]=z+1.2;
+        }
+        // Keep both endpoints together and avoid allocating a temporary array
+        // for every drop on every animation frame (important on mobile Safari).
+        if(v[i]>320){v[i]-=640;v[i+3]-=640;}else if(v[i]<-320){v[i]+=640;v[i+3]+=640;}
+        if(v[i+2]>320){v[i+2]-=640;v[i+5]-=640;}else if(v[i+2]<-320){v[i+2]+=640;v[i+5]+=640;}
+      }
+      a.needsUpdate=true;
+    }
   }
   const el=document.getElementById('ltn'); if(!el) return;
   if(weather!=='storm'){ if(el.style.opacity!=='0') el.style.opacity='0'; return; }
@@ -4133,6 +4168,7 @@ function init(){
     });
     show('loading',false); show('menu',true); state=ST.MENU;
     worldVehicles=new WorldVehicles(scene,terrain,osmMgr);
+    worldVehicles.onTemplate=()=>{ if(livingWorld)livingWorld.installVehicleModels(worldVehicles.templates); };
     worldVehicles.load().catch(err=>console.warn('Scenery vehicles:',err));
   }).catch(err=>{
     console.error('loadRealWorld failed:',err);

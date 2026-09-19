@@ -6,7 +6,7 @@ const root=path.resolve(__dirname,'../..');global.THREE=require(process.env.THRE
 assert.equal(THREE.REVISION,'128');global.window={URL};global.self=global;
 global.document={createElementNS(){return {addEventListener(k,fn){this[k]=fn;},removeEventListener(){},set src(v){this.width=this.height=1024;queueMicrotask(()=>this.load());}};}};
 vm.runInThisContext(fs.readFileSync(process.env.GLTF_LOADER_R128,'utf8'));
-for(const name of ['HeightProvider','TerrainTile','TerrainManager','OSMManager','WorldVehicles'])
+for(const name of ['HeightProvider','TerrainTile','TerrainManager','OSMManager','WorldVehicles','LivingWorld'])
   vm.runInThisContext(fs.readFileSync(path.join(root,'terrain-system',name+'.js'),'utf8'));
 global.fetch=async url=>{const b=fs.readFileSync(path.join(root,url.split('?')[0]));return {ok:true,json:async()=>JSON.parse(b),arrayBuffer:async()=>b.buffer.slice(b.byteOffset,b.byteOffset+b.byteLength)};};
 THREE.GLTFLoader.prototype.load=function(file,yes,progress,no){
@@ -24,7 +24,16 @@ THREE.GLTFLoader.prototype.load=function(file,yes,progress,no){
   await osm.loadTile(3,3);
   global.document=imageDocument;
   const vehicles=new WorldVehicles(scene,terrain,osm);await vehicles.load();
-  assert.deepEqual(vehicles.failures,[]);assert.equal(vehicles.entries.length,2);
+  assert.equal(WorldVehicles.BUILD,19);assert.deepEqual(vehicles.failures,[]);assert.equal(vehicles.entries.length,2);
+  assert.deepEqual([...vehicles.templates.keys()].sort(),['m16','merchant','tiger']);
+  const merchant=vehicles.templates.get('merchant');merchant.updateMatrixWorld(true);
+  const merchantSize=new THREE.Box3().setFromObject(merchant).getSize(new THREE.Vector3());
+  assert(Math.abs(Math.max(merchantSize.x,merchantSize.z)-30)<.01);
+  const living=new LivingWorld(scene,terrain,osm,{bridge:[13805.25,15769.95],bridgeSpan:[-101.5,-356.1],factory:[13200.6,20489.7],field:[787,18087.6]});
+  assert.equal(living.installVehicleModels(vehicles.templates),14);
+  const modelStats=e=>{let meshes=0,triangles=0;e.visual.traverse(m=>{if(!m.isMesh)return;meshes++;triangles+=(m.geometry.index?m.geometry.index.count:m.geometry.attributes.position.count)/3;});return {meshes,triangles};};
+  assert.deepEqual(modelStats(living.entities.find(e=>e.kind==='truck')),{meshes:13,triangles:910});
+  assert.deepEqual(modelStats(living.entities.find(e=>e.kind==='ferry')),{meshes:3,triangles:7646});
   const stats=[];
   for(const e of vehicles.entries){
     e.model.updateMatrixWorld(true);const b=new THREE.Box3().setFromObject(e.model);let meshes=0,triangles=0;

@@ -1,7 +1,11 @@
 // Scenic period vehicles from existing repository GLBs. No combat/mission hooks.
 // Real r128 GLTFLoader validation is in tests/remagen-vehicles.js; credits below.
 class WorldVehicles {
-  constructor(scene,terrain,osm){this.scene=scene;this.terrain=terrain;this.osm=osm;this.entries=[];this.failures=[];}
+  static get BUILD(){ return 19; }
+  constructor(scene,terrain,osm){
+    this.scene=scene;this.terrain=terrain;this.osm=osm;this.entries=[];this.failures=[];
+    this.templates=new Map();this.onTemplate=null;
+  }
   static prepare(source,kind){
     source.updateMatrixWorld(true);
     const root=new THREE.Group();
@@ -29,8 +33,10 @@ class WorldVehicles {
     root.updateMatrixWorld(true);
     const b=new THREE.Box3().setFromObject(root),size=b.getSize(new THREE.Vector3());
     if(![size.x,size.y,size.z].every(v=>Number.isFinite(v)&&v>0))throw new Error('Invalid vehicle bounds');
-    // Both validated source models are in metres, nose/turret along local Z.
-    const scale=(kind==='m16'?6.62:8.45)/Math.max(size.x,size.z);
+    // Validated real-world target lengths. The merchant is repurposed as a
+    // compact Rhine workboat silhouette, not claimed to be a literal ferry.
+    const targetLength={m16:6.62,tiger:8.45,merchant:30}[kind]||8;
+    const scale=targetLength/Math.max(size.x,size.z);
     const model=new THREE.Group();model.add(root);root.scale.setScalar(scale);
     root.position.set(-(b.min.x+b.max.x)*scale/2,-b.min.y*scale,-(b.min.z+b.max.z)*scale/2);
     model.userData.size=new THREE.Vector3(size.x*scale,size.y*scale,size.z*scale);
@@ -63,12 +69,16 @@ class WorldVehicles {
     // Sequential downloads after the menu opens; a vehicle failure cannot hide
     // the player's aircraft or block starting a sortie. Models share resources.
     const specs=[
-      {kind:'m16',url:'m16_mgmc.glb',x:1047,z:17987.6,yaw:Math.PI/2},
-      {kind:'tiger',url:'tiger.glb',x:14350,z:15870,yaw:-Math.PI/2}
+      // Load the light 910-triangle Tiger subtree first so LivingWorld can
+      // replace its temporary convoy silhouettes almost immediately.
+      {kind:'tiger',url:'tiger.glb',x:14350,z:15870,yaw:-Math.PI/2},
+      {kind:'m16',url:'m16_mgmc.glb',x:1047,z:17987.6,yaw:Math.PI/2}
     ];
     for(const spec of specs)try{
       const gl=await new Promise((resolve,reject)=>L.load(spec.url,resolve,undefined,reject));
       const model=WorldVehicles.prepare(gl.scene,spec.kind),size=model.userData.size;
+      this.templates.set(spec.kind,model.clone(true));
+      if(this.onTemplate)this.onTemplate(spec.kind,this.templates.get(spec.kind));
       // Search a small local area, rejecting water, steep slopes and mapped
       // building footprints. Never scatter tanks blindly across the map.
       let spot=null;
@@ -86,6 +96,15 @@ class WorldVehicles {
       this.scene.add(model);this.entries.push({model,spec,spot,size});
       console.info('Scenic vehicle ready:',spec.kind,spot.x,spot.z);
     }catch(e){this.failures.push({kind:spec.kind,message:e.message});console.warn('Scenic vehicle unavailable:',spec.kind,e);}
+    // The repository already contains a low-cost 7.6k-triangle merchant hull.
+    // Load it only as a shared template for the two Rhine vessels; unlike the
+    // M16/Tiger it has no separate static placement in the scenery.
+    try{
+      const gl=await new Promise((resolve,reject)=>L.load('merchant_ship.glb',resolve,undefined,reject));
+      const model=WorldVehicles.prepare(gl.scene,'merchant');
+      this.templates.set('merchant',model);
+      if(this.onTemplate)this.onTemplate('merchant',model);
+    }catch(e){this.failures.push({kind:'merchant',message:e.message});console.warn('Merchant template unavailable:',e);}
   }
   update(x,z){
     for(const e of this.entries){

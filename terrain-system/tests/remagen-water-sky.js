@@ -23,6 +23,20 @@ for(let y=0;y<water.image.height;y++)for(let x=0;x<water.image.width;x++){
 }
 assert.equal(water.image.width,128);assert(waterMax-waterMin<=10,'water texture contrast is too harsh');
 assert(waterDelta/waterEdges<.5,'water texture contains high-frequency screen pattern');
+// BUILD 18's rain mesh followed the player without changing a single vertex,
+// so its grey lines appeared glued to the screen. Execute the actual weather
+// functions and prove a rain frame changes the drop positions.
+const weatherStart=html.indexOf('let rainMesh=null'),weatherEnd=html.indexOf('//  CONTROL UI',weatherStart);
+const weatherContext=vm.createContext({THREE,scene:new THREE.Scene(),weather:'rain',
+  P:{pos:new THREE.Vector3(100,500,200),spd:150,heading:.8},windZ:2,
+  document:{getElementById(){return {style:{opacity:'0'}};}},sfxBoom(){},setTimeout(){}});
+vm.runInContext(html.slice(weatherStart,weatherEnd)+'\nglobalThis.buildRain=buildRain;globalThis.updateWeatherFx=updateWeatherFx;globalThis.getRain=()=>rainMesh;',weatherContext);
+weatherContext.buildRain();const rain=weatherContext.getRain(),rainBefore=rain.geometry.attributes.position.array.slice();
+assert.equal(rain.userData.dropCount,900);weatherContext.updateWeatherFx(.1);
+const rainAfter=rain.geometry.attributes.position.array;
+let moved=0;for(let i=0;i<rainAfter.length;i++)if(Math.abs(rainAfter[i]-rainBefore[i])>.001)moved++;
+assert(moved>rainAfter.length*.8,'rain streak vertices are still static');assert(rain.visible);
+weatherContext.weather='clear';weatherContext.updateWeatherFx(.1);assert(!rain.visible);
 // Taper actual isolated ends, keep seams full-width and preserve all source bends.
 const capped=osmWaterPairs([[0,0],[100,0]],0,0,12,[true,true]);
 const open=osmWaterPairs([[0,0],[100,0]],0,0,12,[false,false]);
@@ -54,4 +68,4 @@ function distance(p,a,b){const dx=b[0]-a[0],dz=b[1]-a[1],l=dx*dx+dz*dz;const t=l
 const repaired=[...oldEnds.values()].filter(e=>e.n===1&&streamSegments.some(([a,b])=>distance(e.p,a,b)<.2));
 assert(repaired.length>=80,'lost imported stream connections');
 assert(repaired.some(e=>Math.hypot(e.p[0]-1558.269,e.p[1]-17952.081)<1),'reported airfield-area canal connection missing');
-console.log(JSON.stringify({waterPieces:pieces,sourceStreams:data.counts.stream,reconnectedOldEnds:repaired.length,cloudPixels:pixels.length/4,waterRange:[waterMin,waterMax],waterMeanEdgeDelta:+(waterDelta/waterEdges).toFixed(3),neutralRGB:true,browserTest:false},null,2));
+console.log(JSON.stringify({waterPieces:pieces,sourceStreams:data.counts.stream,reconnectedOldEnds:repaired.length,cloudPixels:pixels.length/4,waterRange:[waterMin,waterMax],waterMeanEdgeDelta:+(waterDelta/waterEdges).toFixed(3),rainDrops:rain.userData.dropCount,rainMovedValues:moved,neutralRGB:true,browserTest:false},null,2));

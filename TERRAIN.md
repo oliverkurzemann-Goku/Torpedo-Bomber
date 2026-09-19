@@ -10,9 +10,47 @@ The flight model, weapons and mission logic are not part of a terrain pass unles
 
 ## Test build versioning
 
-Every Remagen revision handed to Oliver for testing must increment the visible build number in both places in `remagen-mission.html`: the always-visible `#testVersionBannerText` and the in-flight `#buildTag`. Add a short pass label when useful. Never tell Oliver a build is ready until the branch/deployment being tested contains that exact visible version. Current revision: `REMAGEN BUILD 18 · LIVING RHINE`.
+Every Remagen revision handed to Oliver for testing must increment the visible build number in both places in `remagen-mission.html`: the always-visible `#testVersionBannerText` and the in-flight `#buildTag`. Add a short pass label when useful. Never tell Oliver a build is ready until the branch/deployment being tested contains that exact visible version. Current revision: `REMAGEN BUILD 19 · MODELS WEATHER`.
 
-The local terrain scripts carry the same version as a `?v=remagen-18` query. `OSMManager.BUILD` and `LivingWorld.BUILD` are checked during startup and the banner gains `MODULE 18` only after both checks succeed. This prevents an updated HTML document from silently running an older Safari-cached terrain module.
+The local terrain scripts carry the same version as a `?v=remagen-19` query. `OSMManager.BUILD`, `LivingWorld.BUILD` and `WorldVehicles.BUILD` are checked during startup and the banner gains `MODULE 19` only after all checks succeed. This prevents an updated HTML document from silently running an older Safari-cached terrain module.
+
+## Build 19 — readable traffic, real tracked models and moving rain
+
+Oliver's Build 18 iPad screenshot and report established four visible failures: rain was a fixed
+array of grey vertical scratches, moving tracked targets were procedural boxes, civilian traffic
+was too sparse or distant to find, and the thin telegraph poles did not read from normal flying
+height. The screenshot is the visual evidence; CPU tests alone had not established appearance.
+
+- Every moving `truck` now keeps a stable gameplay wrapper but swaps its procedural child for a
+  clone of the repository's selected Tiger `TIGER_H1` subtree as soon as that asset has loaded.
+  It is the only suitable existing tracked model for repeated motion: 13 meshes/910 triangles,
+  versus 19/99,911 for the M16 and 132,171 triangles for the Sherman. The wrapper preserves
+  mission target identity, damage, minimap position and route motion during the asynchronous swap.
+- Both Rhine vessels similarly swap to the existing `merchant_ship.glb` template, scaled to a
+  compact 30m silhouette. Its 3 meshes/7,646 triangles are acceptable for two copies. This is a
+  visual workboat stand-in, not a claim that the source ocean merchant ship is a historical
+  Remagen ferry. The repository has no dedicated Rhine ferry model.
+- Ambient civilian cars/horse-cart stand-ins increase from six to twelve, repeat along a road
+  near the airfield as well as the mission routes, remain visible to 5.2km, and have pale-cyan
+  minimap dots/rim ticks. They are deliberately not targets. There is still no suitable civilian
+  car, horse/cart or steam-train GLB in the repository; those procedural silhouettes should be
+  replaced when Oliver supplies models.
+- Telegraph poles now prioritise the same four actually travelled roads, use roughly 105m spacing,
+  are 11.5m tall with a 6.4m crossbar, and increase from 125 to 180. They still occupy exactly two
+  instanced draw-call buckets; all rural detail remains eight buckets total. The poles are an
+  enlarged procedural silhouette because the repository contains no pole model.
+- Weather keeps a bounded 900 two-point streaks but now updates every vertex every frame. Drops
+  fall, drift with wind, sweep relative to heading/speed, wrap around a 640m player-centred volume,
+  and respawn individually above the aircraft. Softer blue-grey opacity and disabled depth writes
+  remove the fixed screen-scratch appearance without adding particles or draw calls.
+
+Real Three.js r128 tests confirm 12 trucks, one train, two vessels and twelve ambient vehicles;
+the actual moving Tiger child is 13 meshes/910 triangles and each vessel 3/7,646. The 900 rain
+streaks contain 5,400 position floats and all 5,400 change in the deterministic 0.1s update test.
+The real route/rural test confirms 180 poles, stable entity wrappers through model replacement,
+bounded fallback geometry and no instance colours. All 56-tile geometry, water, airfield,
+structural and GLTF suites remain green. These are code/data checks, not proof of iPad FPS or final
+appearance; Build 19 still requires Oliver's real-device acceptance.
 
 ## Build 18 — living roads, railway and Rhine
 

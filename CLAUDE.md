@@ -5,9 +5,28 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 121 · Thunderbolt Squadron EU BUILD 57 · Remagen 1945 REMAGEN BUILD 18**
+Stand bei Übergabe: **Torpedo Squadron BUILD 121 · Thunderbolt Squadron EU BUILD 57 · Remagen 1945 REMAGEN BUILD 19**
 Repo: `oliverkurzemann-Goku/Torpedo-Bomber`, ausgeliefert über GitHub Pages.
 Alle Angaben unten sind aus dem tatsächlichen Code verifiziert, nicht aus dem Gedächtnis.
+
+**Fahrzeugmodelle, Sichtbarkeit und Regen, Build 19 (19.09.2026):** Olivers echtes
+iPad-Bild aus Build 18 zeigt den Regen als feststehende graue Bildschirmstriche; außerdem
+waren Zivilverkehr und Telegraphenmasten nicht auffindbar und bewegte Kettenziele nur
+prozedurale Klötze. Alle 12 fahrenden Trucks ersetzen deshalb ihr Visual nach dem asynchronen
+Laden durch Klone des vorhandenen `TIGER_H1`: 13 Meshes/910 Dreiecke pro Fahrzeug. M16
+(99.911) und Sherman (132.171 Dreiecke) sind für viele bewegte iPad-Kopien ungeeignet.
+Gameplay-Wrapper bleiben stabil, damit Mission, Schaden, Route, HUD und Minimap beim Tausch
+nicht brechen. Zwei Rhein-Schiffe nutzen `merchant_ship.glb` mit 3 Meshes/7.646 Dreiecken,
+auf 30m als Arbeitsschiff-Silhouette skaliert; ausdrücklich kein historisch exaktes Fährmodell.
+Zivilauto-/Pferdewagen-Platzhalter: 12 statt 6, nahe Flugplatz- und Missionsstraßen,
+5,2km Sichtweite sowie hellblaue Minimap-Punkte/Randmarker. Telegraphenmasten: 180 statt 125,
+11,5m hoch, 6,4m Querträger, 105m Abstand, zuerst entlang der vier tatsächlich befahrenen
+Straßen; weiterhin zwei Instanz-Buckets und acht ländliche Buckets insgesamt. Regen: 900
+weiche Striche, deren 5.400 Positionswerte pro Frame mit Fall, Wind, Flugrichtung,
+Geschwindigkeit, Wrap und Einzel-Respawn aktualisiert werden; `depthWrite=false`. Im Repo
+fehlen geeignete GLBs für Zivilauto, Pferd/Wagen, Dampfzug, Telegraphenmast und echte
+Rheinfähre; diese Platzhalter erst nach Upload ersetzen. Vollständige r128-/Echtdaten-Suite
+grün, aber kein behaupteter iPad-FPS-/Bildnachweis. Details in `TERRAIN.md`.
 
 **Belebte Welt, Missionen und Atmosphäre, Build 18 (18.09.2026):** Nach Abschluss der
 Orts-/Landschaftspässe setzt `terrain-system/LivingWorld.js` die vereinbarte nächste Stufe um.
@@ -141,7 +160,7 @@ iPad/iPhone Safari.
 | `index.html` | Startseite, Auswahl zwischen den Spielen |
 | `torpedo-carrier.html` | **Teil 1** — Pazifik, Trägerbetrieb (BUILD 121) |
 | `thunderbolt-europe.html` | **Teil 2** — Europa, Bodenangriff (EU BUILD 57) |
-| `remagen-mission.html` | **Teil 3** — Remagen 1945, echtes Terrain (REMAGEN BUILD 18; Terrain-Handoff in `TERRAIN.md`) |
+| `remagen-mission.html` | **Teil 3** — Remagen 1945, echtes Terrain (REMAGEN BUILD 19; Terrain-Handoff in `TERRAIN.md`) |
 | `model-check.html` | Kalibrier-Werkzeug für neue Flugzeugmodelle (Ausrichtung, Maßstab) |
 
 Alle drei Spiele haben getrennte Speicherstände (`localStorage`-Präfixe `tc_*`, `eu_*` bzw.

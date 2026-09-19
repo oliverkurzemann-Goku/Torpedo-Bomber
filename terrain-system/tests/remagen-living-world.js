@@ -18,7 +18,7 @@ global.fetch=async url=>{const b=fs.readFileSync(path.join(root,url.split('?')[0
   const osm=new OSMManager(scene,4000,terrain,osmDir);
   await osm.prepareRegion(coords,'terrain-system/real/data/waterways.json');
   const html=fs.readFileSync(path.join(root,'remagen-mission.html'),'utf8');
-  assert(html.includes('LivingWorld.js?v=remagen-18'));assert(html.includes('MODULE 18'));
+  assert(html.includes('LivingWorld.js?v=remagen-19'));assert(html.includes('MODULE 19'));
   for(const id of ['convoy','train','ferry'])assert(html.includes(`id:'${id}'`),`mission ${id} missing`);
   assert(html.includes("livingWorld.missionTargets(m.id)"));assert(html.includes('livingWorld.destroyEntity(t.entity)'));
   const h=JSON.parse(fs.readFileSync(path.join(root,'terrain-system/real/data/historical/3_3.json'))),b=h.bridges[0];
@@ -27,7 +27,7 @@ global.fetch=async url=>{const b=fs.readFileSync(path.join(root,url.split('?')[0
   const factory=[12000+f.x,20000+f.z];
   const world=new LivingWorld(scene,terrain,osm,{bridge,bridgeSpan:[b.x2-b.x1,b.z2-b.z1],factory,field:[787,18087.6]});
 
-  assert.equal(LivingWorld.BUILD,18);assert.equal(OSMManager.BUILD,18);
+  assert.equal(LivingWorld.BUILD,19);assert.equal(OSMManager.BUILD,19);
   assert(world.routes.road.length>=3,'not enough real road routes');
   assert(world.routes.rail.length>=1,'real rail route missing');
   assert.equal(world.routes.water.length,1,'Rhine route missing');
@@ -37,7 +37,7 @@ global.fetch=async url=>{const b=fs.readFileSync(path.join(root,url.split('?')[0
 
   const count=kind=>world.entities.filter(e=>e.kind===kind).length;
   assert.equal(count('truck'),12);assert.equal(count('train'),1);assert.equal(count('ferry'),2);
-  assert(count('wagon')+count('civil')>=4);
+  assert.equal(count('wagon')+count('civil'),12);
   assert.equal(world.missionTargets('convoy').length,4);
   assert.equal(world.missionTargets('train').length,1);
   assert.equal(world.missionTargets('ferry').length,1);
@@ -45,7 +45,7 @@ global.fetch=async url=>{const b=fs.readFileSync(path.join(root,url.split('?')[0
 
   const d=world.detailCounts;
   assert(d.fields>=150&&d.fields<=230);assert(d.hedges>=200&&d.hedges<=420);
-  assert(d.poles>=80&&d.poles<=125);assert(d.cows>20&&d.cows<=36);assert.equal(d.buckets,8);
+  assert(d.poles>=140&&d.poles<=180);assert(d.cows>20&&d.cows<=36);assert.equal(d.buckets,8);
   const matrix=new THREE.Matrix4();
   for(const mesh of world.details.children){
     assert(mesh.isInstancedMesh);assert.equal(mesh.frustumCulled,false);assert(!mesh.instanceColor,'instance colours are forbidden');
@@ -56,7 +56,16 @@ global.fetch=async url=>{const b=fs.readFileSync(path.join(root,url.split('?')[0
   for(const e of world.entities)e.model.traverse(o=>{if(!o.isMesh)return;entityMeshes++;
     assert(o.material.isMeshLambertMaterial);assert(o.geometry.attributes.position.array.every(Number.isFinite));
   });
-  assert(entityMeshes<120,'moving-world mesh budget exceeded');
+  assert(entityMeshes<150,'fallback moving-world mesh budget exceeded');
+
+  // Model replacement keeps the stable wrapper used by live target handles.
+  const targetWrapper=world.missionTargets('convoy')[0].model;
+  const tigerTemplate=new THREE.Group();tigerTemplate.add(new THREE.Mesh(new THREE.BoxGeometry(2,2,5),new THREE.MeshLambertMaterial()));
+  const merchantTemplate=new THREE.Group();merchantTemplate.add(new THREE.Mesh(new THREE.BoxGeometry(5,3,20),new THREE.MeshLambertMaterial()));
+  const replaced=world.installVehicleModels(new Map([['tiger',tigerTemplate],['merchant',merchantTemplate]]));
+  assert.equal(replaced,14);assert.equal(world.missionTargets('convoy')[0].model,targetWrapper);
+  assert(world.entities.filter(e=>e.kind==='truck').every(e=>e.visual.userData.sourceModel==='tiger'));
+  assert(world.entities.filter(e=>e.kind==='ferry').every(e=>e.visual.userData.sourceModel==='merchant'));
 
   const truck=world.missionTargets('convoy')[0],before=truck.phase;
   const start=world._sample(truck.route,truck.phase);world.update(2,start.x,start.z);
