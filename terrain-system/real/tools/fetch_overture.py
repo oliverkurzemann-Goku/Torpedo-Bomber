@@ -65,11 +65,15 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from overture_lib import collect_theme_rows, wkb_to_shape, bbox_polygon
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-CFG = json.load(open(os.path.join(HERE, '..', 'config.json')))
+# TERRAIN_ROOT lets this same tool run against a SECOND region (e.g.
+# terrain-system/real-pacific/) without duplicating this file -- see
+# fetch_dem.py's own copy of this comment.
+ROOT = os.environ.get('TERRAIN_ROOT', os.path.join(HERE, '..'))
+CFG = json.load(open(os.path.join(ROOT, 'config.json')))
 
 RELEASE = 'release/2026-08-19.0'
 BUCKET = 'overturemaps-us-west-2'
-OUT_DIR = os.path.join(HERE, '..', 'data', 'osm')
+OUT_DIR = os.path.join(ROOT, 'data', 'osm')
 
 TILE_SIZE = CFG['tileSize']
 GRID_W, GRID_H = CFG['gridW'], CFG['gridH']
@@ -144,7 +148,7 @@ def line_segments_in_tile(geom, tx, tz):
     return segs
 
 
-def polygon_rings_in_tile(geom, tx, tz):
+def polygon_rings_in_tile(geom, tx, tz, allow_full_tile=False):
     """Clips one projected Polygon/MultiPolygon feature against tile
     (tx,tz)'s box and returns a list of tile-local CLOSED rings (exterior
     only -- holes dropped, an accepted simplification matching
@@ -188,7 +192,13 @@ def polygon_rings_in_tile(geom, tx, tz):
         xs = [c[0] for c in coords]
         ys = [c[1] for c in coords]
         full_tile = (max(xs) - min(xs)) > TILE_SIZE * 0.999 and (max(ys) - min(ys)) > TILE_SIZE * 0.999
-        if full_tile:
+        # For land_cover/land_use the full-tile fingerprint means "this tile sits inside a
+        # bigger polygon whose real interior holes we just dropped" (see this function's own
+        # header) -- worse than no data. For open-ocean water polygons a full-tile ring is the
+        # OPPOSITE: a tile that is simply all sea IS the true shape, dropping it would leave a
+        # hole of open water with no water mesh at all. allow_full_tile lets a caller that knows
+        # its polygon source is water opt back into keeping these rings.
+        if full_tile and not allow_full_tile:
             continue
         rings.append([to_local(c, tx, tz) for c in coords])
     return rings
@@ -262,7 +272,7 @@ def main():
                     data['rivers'].extend(line_segments_in_tile(f['geom'], tx, tz))
             if lakes_idx:
                 for f in query_tile(*lakes_idx, tx, tz):
-                    data['lakes'].extend(polygon_rings_in_tile(f['geom'], tx, tz))
+                    data['lakes'].extend(polygon_rings_in_tile(f['geom'], tx, tz, allow_full_tile=True))
             if forests_idx:
                 for f in query_tile(*forests_idx, tx, tz):
                     data['forests'].extend(polygon_rings_in_tile(f['geom'], tx, tz))

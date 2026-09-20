@@ -5,9 +5,192 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 121 · Thunderbolt Squadron EU BUILD 57 · Remagen 1945 REMAGEN BUILD 21**
+Stand bei Übergabe: **Torpedo Squadron BUILD 121 · Thunderbolt Squadron EU BUILD 57 · Remagen 1945 REMAGEN BUILD 21 ·
+Okinawa Testbed PACIFIC TESTBED BUILD 1**
 Repo: `oliverkurzemann-Goku/Torpedo-Bomber`, ausgeliefert über GitHub Pages.
 Alle Angaben unten sind aus dem tatsächlichen Code verifiziert, nicht aus dem Gedächtnis.
+
+**Neue, vierte Datei: Okinawa-Terrain-Testbed für Torpedo Squadron, PACIFIC TESTBED BUILD 1
+(20.09.2026):** Nutzer, wörtlich: „Verstehst du wie das Terrain für Remagen aufgebaut wurde? Hätte
+das gerne in ähnlicher Form bei Torpedo carrier. Also viel mehr Details, auch Missionen um
+Bodenziel anzugreifen… derzeit ist es etwas langweilig dauernd über Wasser zu fliegen und diese
+wenigen Inseln ohne Details… Du kannst ja ein zusätzliches Spiel hinzufügen, um Terrain für
+Torpedo zu testen und dann könnten wir die 2 Szenarien (Torpedo Carrier + terrain) verbinden…"
+— der Nutzer hat die Strategie (separate Testdatei zuerst, kein sofortiger Umbau von
+`torpedo-carrier.html`) selbst vorgegeben. Auf Rückfrage per `AskUserQuestion` **Okinawa
+(Hauptinsel)** als reale Region gewählt (Alternativen: Philippinen/Leyte, Truk-Lagune) — Okinawa
+gewählt, weil in Overture Maps dicht kartiert (echte Straßen, ein echter Hafen, ein echter
+Flugplatz), passend zum eigentlichen Ziel „mehr Detail", nicht ein winziges, kaum kartiertes
+Kriegsatoll.
+
+**Datenpipeline wiederverwendet, nicht dupliziert.** `fetch_dem.py`/`fetch_overture.py` (beide
+bereits region-agnostisch über `config.json`) bekommen eine neue `TERRAIN_ROOT`-Umgebungsvariable
+(Default `HERE/..`, exakt das alte Remagen-Verhalten — nichts ändert sich, wenn die Variable nicht
+gesetzt ist). `fetch_dem.py` leitet den Copernicus-DEM-Kachelnamen jetzt aus `config.json`s
+eigener `bboxLonLat` her (`_dem_tile_name_for_bbox()`) statt ihn für Remagen hart zu kodieren —
+verifiziert, dass das exakt den alten Remagen-Wert (`N50_00_E007_00`) reproduziert, bevor die neue
+Region angefasst wurde. Neuer, dritter Datensatz: `terrain-system/real-pacific/` (eigene
+`config.json`: Region Naha–Kadena–Yomitan-Korridor, EPSG:32652/UTM52N, 7×9=63 Kacheln à 4 km,
+Landmarken Kadena-Flugplatz/Naha-Hafen/Yomitan-Strand aus echten Koordinaten). Echte Copernicus-
+GLO-30-Höhendaten (934×1200 px @ 30 m, min −0,5/max 216,1/Mittel 20,8 m) und echte Overture-Maps-
+Daten (69.329 Straßen, 632 Flüsse, 403 Seen, 13.323 Gebäude nach Kappung, aus 185.169 rohen
+Gebäuden) abgerufen — dieselben Werkzeuge, dieselben JSON-Formate, `OSMManager`/`TerrainManager`/
+`HistoricalObjectManager` brauchten null Änderungen zum Lesen.
+
+**Ein echter, latenter Bug in `fetch_overture.py` gefunden, bevor er zum Problem wurde.** Der
+volle-Kachel-Ring-Filter (BUILD 8/„Terrain Pass 2", siehe unten in diesem Dokument) verwirft
+Ringe, deren Bounding-Box fast die ganze Kachel füllt — gedacht, um die „Wald überall"-Klasse von
+Fehlern zu verhindern (ein Landnutzungspolygon mit real vorhandenen, aber beim Import verlorenen
+Löchern behauptet 100 % Bedeckung). Bei Wasser ist eine Kachel, die WIRKLICH vollständig offener
+Ozean ist, aber genau dasselbe Muster — dieselbe pauschale Regel hätte für Okinawas Außenkacheln
+gar kein Wasserpolygon geliefert, also keinen Ozean gerendert. Neuer Parameter
+`allow_full_tile=True`, ausschließlich für den `lakes`-Aufruf (Ozean/Seen) gesetzt, Wälder/
+Ackerland/Flugplätze bleiben beim strengeren Default. **Verifiziert:** die westlichen Kacheln
+(tx=0,1 bei tz=4) enthalten je genau einen 5-Punkt-Vollkachel-Wasserring (korrekt, dort ist
+tatsächlich nur Ozean); Inselkacheln (tx=3,4,5) zeigen viele Gebäude/Straßen und null
+Vollkachel-Ringe.
+
+**Echte, gemessene statt geratene Zielkoordinaten.** Neues, eigenständiges
+`fetch_historical_pacific.py` (nicht `fetch_historical.py`s brücken-zentrierte Logik
+wiederverwendet — hier gibt es keine Flussquerung, ein Erzwingen wäre irreführender als ein neues,
+kleines Skript). `push_off_water()`/`_nearby_water_polygons()` validieren jede Position gegen die
+tatsächlich geladenen Wasserpolygone (Platzierungs-Checkliste, Punkt 3). Neu: `best_runway_heading()`
+probiert Ausrichtungen 0–170° in 10°-Schritten und bewertet jede anhand von ECHT gemessenen
+Stichproben (Punkt-in-Wasser-Test plus DEM-Relief über den ganzen Footprint) statt eine Richtung zu
+raten — Checkliste Punkt 1 („nie eine einzelne Höhe annehmen") hier auf die Ausrichtung selbst
+angewendet. Ergebnisse: Kadena-Flugplatz (900×45 m) beste Ausrichtung 70°, 0 nasse Stichproben,
+2,4 m Relief; Naha-Hafen (220×30 m) 50°, 0 nass, 6,3 m Relief; Yomitan-Küstenstellung von der
+tatsächlichen Invasionsstrand-Koordinate auf trockenes Land geschoben.
+
+**Koordinaten-Split-Architektur — die eigentliche technische Entscheidung dieser Runde.**
+`torpedo-carrier.html` ist über tausende Zeilen fein austariert (Trägerlandung, Flugphysik,
+Missions-Deltas, Minimap — siehe Abschnitt 3 dieser Datei). Diese alle auf echte UTM-Koordinaten
+umzustellen wäre genau die Art großflächiger Neuschreibung, die Abschnitt 7 ausdrücklich verbietet.
+Stattdessen bleibt JEDES bestehende Gameplay-Objekt (Spieler, Schiffe, Trägerposition) im
+angestammten Spiel-Koordinatensystem um (0,0) — nur die von `TerrainManager`/`OSMManager`/
+`HistoricalObjectManager` gerenderten Objekte bekommen einen visuellen Versatz: eine
+`realWorldGroup` (`THREE.Group`, `.position.set(-REAL_ORIGIN_X,0,-REAL_ORIGIN_Z)`) wird statt der
+echten `THREE.Scene` an die drei Manager-Konstruktoren übergeben. `realX(x)=x+REAL_ORIGIN_X`,
+`realZ(z)=z+REAL_ORIGIN_Z` rechnen an den wenigen Stellen um, die wirklich reale Koordinaten
+brauchen (`groundY()`, Bodenziel-Spawns, LOD-Fokuspunkt). Keine einzige bestehende
+Schiffs-/Missions-Koordinate musste angefasst werden.
+
+**`REAL_ORIGIN` bewusst gewählt, nicht das erste offene-Wasser-Ergebnis genommen.** Ein erster
+Versuch (nahe Naha) hätte Kadena ~20.900 und Yomitan ~22.000 Einheiten vom Träger entfernt gelegt
+— jenseits der überschlägig ermittelten realistischen Ein-Weg-Reichweite (Treibstoffmodell:
+grob 12.000–16.000 Einheiten, abhängig vom Schubsetting). `REAL_ORIGIN_X=6317, REAL_ORIGIN_Z=26575`
+gewählt stattdessen: Kadena ~10.002, Yomitan ~6.302 Einheiten entfernt — beide komfortabel
+innerhalb der Reichweite. Naha-Hafen (~17.690 Einheiten) dadurch bewusst diese Runde nicht als
+Missionsziel verwendet, nicht vergessen — ein Scope-Schnitt, dokumentiert statt stillschweigend
+weggelassen. Verifiziert: `REAL_ORIGIN` selbst liegt exakt auf 0,0 m (offenes Wasser), UND alle
+bestehenden Schiffs-Missionsziel-Offsets (~17 verschiedene, aus dem unveränderten `MISSIONS`-Array)
+liegen an dieser neuen Ausrichtung weiterhin auf 0,0 m — keines der zwölf bestehenden
+Ozean-Einsätze rückt versehentlich über echtes Land.
+
+**Zwei neue Bodenangriffs-Missionen, real angebunden statt neu erfunden.** „Sortie 10 · Kadena
+Strike" (Flugplatz, hp=3) und „Sortie 11 · Yomitan Coastal Gun" (Küstengeschütz, hp=1) vor dem
+Finale eingefügt, das Finale von „Sortie 10" auf „Sortie 12" umnummeriert (Array-Position bleibt
+das letzte Element, exakt die in 4.27 dokumentierte Lektion: die Array-Position war immer richtig
+gemeint, nur die gedruckte Nummer musste mitziehen). `spawnShip()` bekam einen neuen `def.type`-
+Zweig (`"airfield"`/`"gun"`), der statt eines neuen Schiffs-Meshs die per `userData.kind` bereits
+gefundenen echten `HistoricalObjectManager`-Untergruppen (`realKadena`/`realYomitan`) referenziert
+— dasselbe Wiederverwendungs-Prinzip wie `remagen-mission.html`s `targetHandle()`. `hitShip()`
+verzweigt für Bodenziele (kein Wasserspritzer/Ölschlick, aber Explosion/Trümmer/Feuer/Rauch
+identisch) und senkt beim Kill die reale Mesh-Gruppe per `groundSub.position.y-=6` ab — „Abdecken,
+nicht schneiden" (3.1), keine Geometrie wird neu gebaut. `checkObjectiveCleared()`/`updateNav()`/
+`updateLSO()`s bereits vorhandener Ziel-Filter (`s.def.type==="freighter"||...`) wurde um
+`airfield`/`gun` erweitert (drei Fundstellen, `updateTorpRun()`s eigener Filter bewusst nicht
+angefasst — Torpedoläufe gelten für Bodenziele nicht).
+
+**Neue Geländekollisionsprüfung, real gegen echtes DEM.** `resolveGroundAndDeck()` bekam einen
+zusätzlichen Zweig: `if(realWorldReady){ const gy=groundY(x,z); if(gy>1.5 && y<gy+3){
+crash("TERRAIN",...); } }` — ein Flugzeug, das real über Land bei echtem Gelände zu tief fliegt,
+stürzt jetzt tatsächlich ab, statt durch den Boden zu fliegen. Bestehendes `buildSea()`/
+`buildIslands()` werden in dieser Datei bewusst NIE aufgerufen (nur Kommentar erklärt warum);
+`islands[]` bleibt eine leere Array (jede bestehende Schleife darüber bleibt dadurch harmlos no-op,
+alle Fundstellen einzeln geprüft), `sea` bleibt `null`/`undefined` (jeder Lesezugriff bereits mit
+`if(sea)` abgesichert).
+
+**Nachgewiesen, mehrstufig, nicht nur behauptet:**
+- Syntax-Check (`new Function()` auf allen 8 extrahierten `<script>`-Blöcken): 0 Fehler.
+- Echtes Playwright/Chromium (Vorbild: Abschnitt 6 dieser Datei), echter `GLTFLoader` r128, echte
+  63-Kachel-Datenladung: `realWorldReady` wird `true`, `realKadena`/`realYomitan` per
+  `userData.kind` korrekt gefunden, `terrain.tiles.size===63`. `MISSIONS.length===14`, Indizes 11/12
+  tragen „Sortie 10 · Kadena Strike" / „Sortie 11 · Yomitan Coastal Gun" mit den erwarteten
+  Zielkoordinaten, Index 13 „Sortie 12 · The Last Stand" (Kampagnenende).
+- **Echte Tötungssequenz über den echten, ungeänderten Kollisions-Guard** (`if(!s.alive) continue;`,
+  denselben, den Bomben-/Torpedo-/Flak-Strafe-Code bereits verwendet — nicht künstlich umgangen):
+  Kadena (hp=3) stirbt exakt beim dritten `hitShip()`-Aufruf, `groundSub.position.y` sinkt exakt
+  einmal auf −6 (nicht mehrfach — ein erster Testdurchlauf mit VIER manuellen `hitShip()`-Aufrufen
+  ohne den `!alive`-Guard zeigte fälschlich −12, weil `hitShip()` selbst keinen eigenen
+  „schon tot"-Schutz hat; das ist aber kein erreichbarer Spielfehler, da jeder echte Aufrufer
+  bereits davor filtert — Lektion 3 dieser Datei bestätigt sich erneut), `P.rtb` wird gesetzt,
+  Score korrekt 3800 (2×400 Nichttödlich-Treffer + 2500 Kill + 500 Ziel-frei-Bonus). Yomitan
+  (hp=1) stirbt exakt beim ersten Treffer, gleiches Muster.
+- **Regressionscheck bestehender Ozean-Einsätze:** „Sortie 1" (Index 2, unverändert) spawnt
+  weiterhin korrekt in offenem Wasser (`groundY()===0` an Spieler- und Schiffsposition), die neue
+  TERRAIN-Kollisionsprüfung bleibt dort still (`resolveGroundAndDeck()` 120-mal direkt aufgerufen,
+  kein Zustandswechsel, kein Wurf). Über echtem Kadena-Gelände (reale Höhe 38,8 m) mit dem Spieler
+  1 m über Grund ausgelöst: `resolveGroundAndDeck()` löst korrekt `crash("TERRAIN",...)` aus —
+  die neue Prüfung reagiert nachweislich auf echte Erhebung, nicht nur auf dem Papier.
+  (`animate()` selbst wurde für diese Prüfung bewusst NICHT wiederholt aufgerufen — es plant sich
+  selbst über `requestAnimationFrame(animate)` neu ein, ein manueller Schleifenaufruf hätte rAF-
+  Callbacks rekursiv aufgetürmt; `resolveGroundAndDeck(dt)` direkt ist die einzelschrittige,
+  robuste Alternative — wieder Lektion 3: der erste 180-Frame-`animate()`-Loop-Testversuch hing,
+  das war der Testaufbau, kein Spielfehler.)
+- **Echtes Rendering, per Screenshot bestätigt, nicht nur Pixel-Statistik behauptet** (eine erste
+  eigene Canvas-Readback-Methode lieferte fälschlich 0 Nicht-Schwarz-Pixel bei JEDER Szene,
+  inklusive der schon immer funktionierenden Ozean-Ansicht — Ursache nicht weiter verfolgt, da der
+  tatsächliche Playwright-Screenshot die zuverlässigere Quelle ist und sie eindeutig zeigt: die
+  Canvas-Readback-Methode selbst war fehlerhaft, nicht das Rendering): Kadena zeigt echtes
+  Okinawa-Gelände mit sichtbarem, aus echten Overture-Daten stammendem Straßennetz, volles HUD
+  (GEAR/FLAPS/DIVE BRAKE/HOOK/STEER/DROP BOMB), Zielvisier. Yomitan zeigt dieselbe reale Küstenlinie
+  am Horizont. Die bestehende Ozean-Mission (Regressionscheck) zeigt unverändert Fracht­schiff und
+  offenes Wasser, mit der echten Okinawa-Küste als fernem Horizont-Detail sichtbar — keine
+  Verschlechterung der bisherigen Optik.
+- Null `pageerror`-Ereignisse über alle Testläufe; die einzigen Konsolenfehler sind die erwarteten
+  404s für die 60 von 63 Kacheln ohne historische Daten (von `HistoricalObjectManager.loadTile()`
+  bereits abgefangen, siehe dessen eigener Kommentar „no historical data here — expected for most
+  tiles").
+
+**Nicht Teil dieser Runde, bewusst zurückgestellt:** `LivingWorld.js`/`WorldVehicles.js`
+(bewegter ziviler Verkehr, wie in Remagen) — noch nicht portiert; Wolken (`buildClouds()` aus
+Remagen/Thunderbolt, deutlich besser als das Trägerspiel-eigene `makeSoftSprite`-Wolkensystem laut
+Nutzer) — nur der DataTexture-Fix für Farbfleck-Artefakte wurde in `torpedo-carrier.html` selbst
+nachgezogen (siehe unten), die volle Wolken-Neugestaltung nicht; Naha-Hafen als drittes
+Missionsziel (siehe oben, Reichweiten-Entscheidung); eine tatsächliche Verschmelzung von
+Torpedo-Carrier-Gameplay und echtem Terrain in EINER Datei (der Nutzer selbst wollte ausdrücklich
+zuerst die separate Testdatei). **Offen, nicht auf dem echten iPad geprüft:** Ladezeit für 63
+Kacheln ist ungemessen auf echter Hardware (Remagens eigene Erfahrung, 4.49/4.50/4.51, warnt vor
+genau diesem Risiko — LOD/Sichtweiten-Culling sind hier von Anfang an aktiv verdrahtet, anders als
+Remagens erste Runde, die das erst nachträglich reparieren musste); Treibstoff-Reichweite für
+Kadena/Yomitan ist überschlägig, nicht exakt durchgerechnet; keine neuen Wolken; kein Naha.
+
+**Nebenfix in `torpedo-carrier.html` selbst (nicht testbed-spezifisch):** `makeSoftSprite()`
+(Wolken/Rauch/Explosions-Sprites) nutzte noch die alte `CanvasTexture`-Implementierung mit
+radialem Gradient — dieselbe, für die Remagen/Thunderbolt bereits eine `DataTexture`-Alternative
+gegen den gemeldeten iOS-Farbfleck-Bug (siehe „Textures in gLTF sometimes display black" bzw. das
+Wolken-Pendant in diesem Dokument) eingeführt hatten. Wortwörtlich aus `remagen-mission.html`
+übernommen, alle Aufrufstellen (`smokeTex`, `buildSun()`, diverse `SpriteMaterial`) unverändert
+kompatibel — verifiziert per Syntax-Check und den obigen Playwright-Läufen (Rauch/Explosionen
+rendern in allen Screenshots sichtbar).
+
+**Eigener Speicherstand-Fehler vor dem Ausliefern gefunden und behoben, exakt die in Abschnitt 1
+dokumentierte Lektion aus `remagen-mission.html`s Frühgeschichte:** `pacific-terrain-test.html`
+entstand als Kopie von `torpedo-carrier.html` und hatte deshalb anfangs unverändert dieselben
+`tc_*`-Schlüssel (`tc_diff`, `tc_log`, `tc_best`) — Bestwert, Logbuch/Pilot/Medaillen und
+Schwierigkeitsgrad wären zwischen dem Trägerspiel und diesem Testbed vermischt worden. Vor dem
+Commit auf `pt_*` umbenannt (alle drei Fundstellen), `chaseH`/`dbgOn` bewusst NICHT umbenannt
+(reine Geräte-/UI-Einstellungen ohne Punktestand-Charakter, gleiche Begründung wie bei
+`remagen-mission.html`s bewusst geteiltem `fixKey`-Präfix). Nach der Umbenennung erneut Syntax-
+Check und die komplette Tötungssequenz-Verifikation wiederholt — beides weiterhin fehlerfrei.
+
+Code: `pacific-terrain-test.html` (neu), `terrain-system/real-pacific/` (neu, Daten + Config),
+`terrain-system/real/tools/fetch_historical_pacific.py` (neu), `terrain-system/real/tools/
+fetch_dem.py`/`fetch_overture.py` (Suche nach `TERRAIN_ROOT`/`allow_full_tile`),
+`torpedo-carrier.html` (Suche nach `makeSoftSprite`), `index.html` (vierter Chit „Theatre IV").
+
+---
 
 **Historischer Verkehr und Telegraphenlinien, Build 21 (20.09.2026):** Drei hinsichtlich
 Lizenz, Download und iPad-Kosten geprüfte Modelle ersetzen die letzten bewegten Klötze. Vier
@@ -182,7 +365,7 @@ als Nächstes echte WebGL-Renderprüfung von Startansicht, Flugzeug, Dach und Wa
 
 ## 1. Was das Projekt ist
 
-Drei zusammengehörige, eigenständige HTML-Dateien im selben Repo. Three.js r128 über CDN,
+Mehrere zusammengehörige, eigenständige HTML-Dateien im selben Repo. Three.js r128 über CDN,
 keine Build-Werkzeuge, kein npm/webpack — alles läuft direkt im Browser. Zielgerät ist
 iPad/iPhone Safari.
 
@@ -192,10 +375,11 @@ iPad/iPhone Safari.
 | `torpedo-carrier.html` | **Teil 1** — Pazifik, Trägerbetrieb (BUILD 121) |
 | `thunderbolt-europe.html` | **Teil 2** — Europa, Bodenangriff (EU BUILD 57) |
 | `remagen-mission.html` | **Teil 3** — Remagen 1945, echtes Terrain (REMAGEN BUILD 21; Terrain-Handoff in `TERRAIN.md`) |
+| `pacific-terrain-test.html` | **Teil 4, Testbed** — Torpedo Squadron mit echtem Okinawa-Terrain (PACIFIC TESTBED BUILD 1; noch nicht mit `torpedo-carrier.html` verschmolzen, siehe Eintrag oben) |
 | `model-check.html` | Kalibrier-Werkzeug für neue Flugzeugmodelle (Ausrichtung, Maßstab) |
 
-Alle drei Spiele haben getrennte Speicherstände (`localStorage`-Präfixe `tc_*`, `eu_*` bzw.
-`re_*` — `remagen-mission.html` ist als Fork von `thunderbolt-europe.html` entstanden und hatte
+Alle Spiele haben getrennte Speicherstände (`localStorage`-Präfixe `tc_*`, `eu_*`, `re_*` bzw.
+`pt_*` — `remagen-mission.html` ist als Fork von `thunderbolt-europe.html` entstanden und hatte
 anfangs versehentlich dieselben `eu_*`-Schlüssel, wurde vor dem Ausliefern auf `re_*` umbenannt,
 siehe 4.49).
 

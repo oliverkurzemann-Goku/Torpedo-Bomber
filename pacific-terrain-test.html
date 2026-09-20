@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Torpedo Squadron — Carrier Strike</title>
+<title>Torpedo Squadron — Okinawa Testbed</title>
 <style>
   :root{
     --olive:#2b3022; --olive2:#1c2017; --khaki:#cabf9c; --amber:#e8b84b;
@@ -274,7 +274,7 @@
   <div id="flash"></div>
   <div id="ltn" style="position:fixed;inset:0;background:#e6ecff;opacity:0;pointer-events:none;z-index:40;"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 121</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">PACIFIC TESTBED BUILD 1</div>
 
   <!-- Optical landing aid -->
   <div id="lso">
@@ -310,8 +310,18 @@
 <canvas id="mmap" width="120" height="120"></canvas>
 <div id="dmgVig"></div>
 
+<!-- Loading (real terrain/OSM/historical data for the Okinawa testbed, see loadRealWorld()) -->
+<div class="overlay" id="loading">
+  <div class="card menuCard">
+    <div class="insignia"></div>
+    <h1 class="stencil">Torpedo Squadron</h1>
+    <div class="sub">Loading real terrain (Okinawa testbed)&hellip;</div>
+    <div class="brief" id="loadingText" style="text-align:center;">Fetching Copernicus DEM elevation and Overture Maps roads/buildings for the Naha&ndash;Kadena&ndash;Yomitan coast&hellip;</div>
+  </div>
+</div>
+
 <!-- Menu -->
-<div class="overlay" id="menu">
+<div class="overlay hidden" id="menu">
   <div class="card menuCard">
     <div class="insignia"></div>
     <h1 class="stencil">Torpedo Squadron</h1>
@@ -379,6 +389,13 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+<!-- Real-terrain testbed (see terrain-system/real-pacific/): same shared modules
+     remagen-mission.html uses, only the region config underneath differs. -->
+<script src="terrain-system/HeightProvider.js?v=pacific-1"></script>
+<script src="terrain-system/TerrainTile.js?v=pacific-1"></script>
+<script src="terrain-system/TerrainManager.js?v=pacific-1"></script>
+<script src="terrain-system/OSMManager.js?v=pacific-1"></script>
+<script src="terrain-system/HistoricalObjectManager.js?v=pacific-1"></script>
 <script>
 "use strict";
 /* ============================================================
@@ -422,7 +439,7 @@ let COCKPIT_AIM = [0, 0.15, -60];
 let chaseH = parseFloat(localStorage.getItem('chaseH'));
 if(isNaN(chaseH)) chaseH = 14;      // chase camera height, tuned live via LOOK ▲/▼
 let planeBody, gltfRoot, propNode, planeModelLoaded=false;
-let DIFF = localStorage.getItem('tc_diff') || 'veteran';
+let DIFF = localStorage.getItem('pt_diff') || 'veteran';
 // Rookie makes the sortie survivable while you learn the deck; Ace is the old behaviour.
 const DIFFS = {
   rookie:  { label:'Rookie',  dud:0.00, flak:0.45, zero:0.55, wire:1.45, fuel:1.6, dmg:0.5 },
@@ -458,8 +475,8 @@ function rankIndexForTraps(t){ return t>=25?4 : t>=15?3 : t>=8?2 : t>=3?1 : 0; }
 function rankName(t){ return RANKS[rankIndexForTraps(t)]; }
 const PILOT_NAMES=['Hank Reese','Bud Callahan','Chip Vance','Red Mallory',"Sam O'Dell",
   'Duke Ferris','Whitey Sloan','Gus Hardin','Ace Delgado','Moose Kittredge'];
-function loadLog(){ try{ return JSON.parse(localStorage.getItem('tc_log'))||{}; }catch(e){ return {}; } }
-function saveLog(l){ try{ localStorage.setItem('tc_log',JSON.stringify(l)); }catch(e){} }
+function loadLog(){ try{ return JSON.parse(localStorage.getItem('pt_log'))||{}; }catch(e){ return {}; } }
+function saveLog(l){ try{ localStorage.setItem('pt_log',JSON.stringify(l)); }catch(e){} }
 function pilotName(){ const l=loadLog(); return l.pilot||'Nugget'; }
 function logSortie(rec){
   const l=loadLog();
@@ -483,8 +500,8 @@ function logSortie(rec){
 }
 // records a lost airframe against the career file straight away (used on a crash)
 function logAircraftLost(){ const l=loadLog(); l.aircraftLost=(l.aircraftLost||0)+1; saveLog(l); }
-function bestScore(){ try{ return parseInt(localStorage.getItem('tc_best')||'0',10)||0; }catch(e){ return 0; } }
-function saveBest(v){ try{ if(v>bestScore()) localStorage.setItem('tc_best',String(v)); }catch(e){} }
+function bestScore(){ try{ return parseInt(localStorage.getItem('pt_best')||'0',10)||0; }catch(e){ return 0; } }
+function saveBest(v){ try{ if(v>bestScore()) localStorage.setItem('pt_best',String(v)); }catch(e){} }
 function addScore(n){ score+=n; const el=document.getElementById('hScore'); if(el) el.textContent=score; }
 let sunTarget=null, skyDome=null;
 const sunOffset=new THREE.Vector3(-455,546,318);
@@ -597,6 +614,45 @@ let bombs=[];
 let islands=[], volcanoT=0;
 let bullets=[], firing=false, gunCool=0, timeMode='day', menuTime='day';
 let skyMat, hemiLight, mmCtx;
+
+// ============================================================
+//  REAL TERRAIN TESTBED (Okinawa) — see terrain-system/real-pacific/config.json
+//  Reported: the Pacific theatre's islands are a handful of undetailed procedural
+//  blobs and every sortie is over open water — real terrain, like remagen-mission.html
+//  already has, wanted here too, plus ground-attack missions against real targets.
+//  buildIslands()/buildSea() are deliberately NEVER called in this file (islands[]
+//  stays the empty array declared above, seaUniforms/sea stay null/undefined, both
+//  already guarded at every existing call site) — real DEM terrain + real OSM water
+//  polygons (see fetch_overture.py's allow_full_tile fix, verified against actual
+//  open-ocean tiles before this file existed) replace them outright, the same
+//  choice remagen-mission.html already made for its river rather than layering a
+//  second, conflicting water system on top.
+//
+//  Coordinate split: EVERY existing gameplay coordinate in this file (carrierX, ship
+//  spawn positions, P.pos, the minimap, ...) stays in the ORIGINAL game-space, always
+//  centred near (0,0) at the carrier, completely unchanged — none of that tuning is
+//  touched. Only the TERRAIN's own scene objects are shifted, via realWorldGroup's own
+//  position offset, so that game-space (0,0) lines up with a chosen real, open-water
+//  point off the Okinawa coast (REAL_ORIGIN_X/Z below, DEM-verified at exactly 0.0m
+//  before being picked, not guessed). realX()/realZ() convert a game-space point to
+//  the matching real UTM-local coordinate for the few places that need to query the
+//  real data directly (groundY(), new ground-target placement) — gameplay code never
+//  needs to call these itself.
+const REAL_ORIGIN_X=6317, REAL_ORIGIN_Z=26575;
+const RTILE=4000, RGRID_W=7, RGRID_H=9;
+function realX(x){ return x+REAL_ORIGIN_X; }
+function realZ(z){ return z+REAL_ORIGIN_Z; }
+let heightProvider=null, terrain=null, osmMgr=null, historicalMgr=null, realWorldGroup=null;
+let realWorldReady=false;
+let realKadena=null, realYomitan=null;   // real historical-layer objects the new ground missions hang on
+// Real ground height at a GAME-SPACE (x,z) point — 0 almost everywhere over open water
+// (the whole existing ship-mission area was DEM-checked at exactly 0.0m before this file
+// shipped), rises over real land. Returns 0 before the real data has loaded, matching the
+// original game's implicit flat-sea-at-0 assumption for every frame before that point.
+function groundY(x,z){
+  if(!realWorldReady) return 0;
+  return terrain.getHeight(realX(x), realZ(z));
+}
 
 // ---- Game state ----
 const ST = {MENU:0, BRIEF:1, LAUNCH:2, FLIGHT:3, RESULT:4, PAUSED:5};
@@ -715,11 +771,112 @@ const MISSIONS = [
               {type:"destroyer", pos:[-420,0,3700], hp:1, flak:true},
               {type:"destroyer", pos:[ 520,0,3900], hp:1, flak:true} ] },
 
-  { title:"Sortie 10", sub:"The Last Stand", defend:true, raiders:6, sea:2.2, weather:'storm',
+  // Ground-attack sorties (Okinawa real-terrain testbed) — inserted before the campaign
+  // finale, which stays last (MISSIONS.length-1 — see the "Sortie 8/9/10" comment above for
+  // why the array's LAST slot is what actually matters, not a specific number). Targets sit
+  // on REAL Okinawa land, not the open ocean every earlier sortie has been flown over — see
+  // REAL_ORIGIN_X's own comment for how game-space and the real terrain line up.
+  { title:"Sortie 10", sub:"Kadena Strike", sbd:true, loadout:'divebomb',
+    body:"<b>Real ground target.</b> A Japanese airfield at Kadena — real Okinawa terrain, not open water. "
+        +"Dive on the runway and dispersal, then get out low over the water before their AA finds the range. "
+        +"<b>3 bombs</b>. Longest transit of the cruise — watch your fuel.",
+    torps:3, fuel:100, zeros:0,
+    targets:[ {type:"airfield", pos:[9815,0,-1924], hp:3} ] },
+
+  { title:"Sortie 11", sub:"Yomitan Coastal Gun", sbd:true, loadout:'divebomb',
+    body:"A coastal-defence position dug in above the Yomitan beaches is tracking the task group. "
+        +"Silence it. Real coastline, real elevation — mind the high ground either side of the target. <b>3 bombs</b>.",
+    torps:3, fuel:100, zeros:0,
+    targets:[ {type:"gun", pos:[6001,0,1924], hp:1} ] },
+
+  { title:"Sortie 12", sub:"The Last Stand", defend:true, raiders:6, sea:2.2, weather:'storm',
     body:"<b>Zero. Six Avengers.</b> They have found the fleet and they are coming in from every bearing. Guns only, and the carrier will not survive a fourth fish. This is what the whole cruise comes down to.",
     torps:0, fuel:100, zeros:0,
     targets:[] },
 ];
+
+// ============================================================
+//  REAL WORLD LOADING (Okinawa testbed)
+// ============================================================
+async function loadRealWorld(){
+  const setLoadingText=(s)=>{ const el=document.getElementById('loadingText'); if(el) el.textContent=s; };
+
+  // Visual-only offset: every terrain/OSM/historical mesh this group ever holds renders
+  // REAL_ORIGIN_X/Z earlier than its own logical coordinate, so the chosen real open-water
+  // point ends up sitting at game-space (0,0) — the carrier's own position — without any
+  // existing gameplay coordinate (carrierX, ship spawn deltas, P.pos, the minimap, ...)
+  // needing to change. See the REAL TERRAIN TESTBED block comment further up for why.
+  realWorldGroup=new THREE.Group();
+  realWorldGroup.position.set(-REAL_ORIGIN_X,0,-REAL_ORIGIN_Z);
+  scene.add(realWorldGroup);
+
+  heightProvider=new DEMHeightProvider(RTILE,'terrain-system/real-pacific/data/dem/');
+  terrain=new TerrainManager(realWorldGroup,RTILE,heightProvider);
+  osmMgr=new OSMManager(realWorldGroup,RTILE,terrain,'terrain-system/real-pacific/data/osm/');
+  historicalMgr=new HistoricalObjectManager(realWorldGroup,RTILE,terrain,'terrain-system/real-pacific/data/historical/');
+
+  // Phase 1: every tile's real elevation — DEMHeightProvider.getHeight() throws unless this
+  // has already resolved for a tile, and TerrainManager.ensureTile()'s per-vertex geometry
+  // build calls getHeight() synchronously, so this phase must fully finish before phase 2.
+  setLoadingText('Fetching real elevation data (Copernicus DEM)…');
+  const heightLoads=[];
+  for(let tz=0;tz<RGRID_H;tz++) for(let tx=0;tx<RGRID_W;tx++) heightLoads.push(heightProvider.loadTile(tx,tz));
+  await Promise.all(heightLoads);
+
+  // Phase 2: build every terrain tile's mesh — synchronous, CPU-only, no further network wait.
+  setLoadingText('Building terrain mesh…');
+  for(let tz=0;tz<RGRID_H;tz++) for(let tx=0;tx<RGRID_W;tx++) terrain.ensureTile(tx,tz,0);
+
+  // Phase 3: real roads/rail/river/forest/farmland/buildings (OSMManager) and the historical
+  // layer (Kadena airfield, Naha port, Yomitan coastal-defence position) — both need a real
+  // terrain tile already built at their own (tx,tz) for getRenderedHeight() to resolve
+  // without falling through to TerrainManager's own raw-heightProvider fallback.
+  setLoadingText('Placing roads, buildings, coastline…');
+  const contentLoads=[];
+  for(let tz=0;tz<RGRID_H;tz++) for(let tx=0;tx<RGRID_W;tx++){
+    contentLoads.push(osmMgr.loadTile(tx,tz));
+    contentLoads.push(historicalMgr.loadTile(tx,tz));
+  }
+  await Promise.all(contentLoads);
+
+  // Real historical objects the new ground-attack missions hang on — found by kind, not
+  // guessed by tile index, same discipline remagen-mission.html's own loadRealWorld() uses.
+  for(const g of historicalMgr.tiles.values()){
+    if(!g || !g.userData.objects) continue;
+    for(const sub of g.userData.objects){
+      if(sub.userData.kind==='airfield') realKadena=sub;
+      else if(sub.userData.kind==='flak') realYomitan=sub;
+    }
+  }
+
+  // Wired in from the START here (not added after a reported "ruckelt" like remagen-mission.html's
+  // own history) — LOD + distance culling are called every frame from animate() below.
+  realWorldReady=true;
+  setLoadingText('Ready.');
+}
+
+// Reported in remagen-mission.html's own history: loading every real tile permanently resident
+// at full LOD/visibility stutters badly (458,752 terrain triangles alone there). Fixed there by
+// wiring TerrainManager's own updateLOD() and a distance-based visibility toggle for OSM/
+// historical content — applied here from the first build of this file rather than waiting for
+// the same report a second time. See remagen-mission.html's own comments for the measured
+// numbers this pattern is based on.
+const CONTENT_VIS_RADIUS=7000;
+let contentVisT=0;
+function updateContentVisibility(focusX,focusZ){
+  for(const [key,t] of osmMgr.tiles){
+    if(!t || !t.farGroup) continue;
+    const [tx,tz]=key.split(',').map(Number);
+    const cx=tx*RTILE+RTILE/2, cz=tz*RTILE+RTILE/2;
+    t.farGroup.visible = Math.hypot(focusX-cx, focusZ-cz) < CONTENT_VIS_RADIUS;
+  }
+  for(const [key,g] of historicalMgr.tiles){
+    if(!g) continue;
+    const [tx,tz]=key.split(',').map(Number);
+    const cx=tx*RTILE+RTILE/2, cz=tz*RTILE+RTILE/2;
+    g.visible = Math.hypot(focusX-cx, focusZ-cz) < CONTENT_VIS_RADIUS;
+  }
+}
 
 // ============================================================
 //  INIT
@@ -758,8 +915,10 @@ function init(){
   buildSky();
   buildSun();
   buildClouds();
-  buildSea();
-  buildIslands();
+  // buildSea()/buildIslands() are deliberately never called in this file — real Okinawa
+  // terrain + real OSM water polygons replace them, see the REAL TERRAIN TESTBED comment
+  // near REAL_ORIGIN_X. Every call site that reads sea/seaUniforms/islands is already
+  // guarded or, for islands, simply iterates an empty array — verified before this change.
   buildCarrier();
   carrier.traverse(function(o){ if(o.isMesh){ o.castShadow=true; o.receiveShadow=true; } });
   loadCarrierModel(); loadIJNCarrierModel(); loadSBDModel();
@@ -773,6 +932,20 @@ function init(){
   buildShadow();
   applyTimeOfDay(timeMode);
   mmCtx=document.getElementById('mmap').getContext('2d');
+
+  // Real Okinawa terrain/OSM/historical data — the one async gap this file has that the
+  // original torpedo-carrier.html never needed (buildSea()/buildIslands() were synchronous
+  // procedural generation). #menu stays hidden behind #loading until this resolves, since
+  // startMission() (reachable the instant the menu shows) needs groundY()/realKadena/
+  // realYomitan to already have real data — same pattern remagen-mission.html's own
+  // loadRealWorld() established.
+  loadRealWorld().then(()=>{
+    showOverlay('menu'); state=ST.MENU;
+  }).catch(err=>{
+    console.error('loadRealWorld failed:',err);
+    const el=document.getElementById('loadingText');
+    if(el) el.textContent='Failed to load real terrain data: '+err.message+' — check your connection and reload.';
+  });
 
   clock=new THREE.Clock();
   window.addEventListener('resize',onResize);
@@ -1883,6 +2056,24 @@ function shipMast(g,x,y,h){
   const yard=boxMesh(0.22,0.22,6,0x2c2f28); yard.position.set(x,y+h*0.75,0); g.add(yard);
 }
 function spawnShip(def){
+  // Ground targets (real Okinawa testbed) — reuses the entire ships[] hit-detection/nav/LSO
+  // framework rather than building a parallel system, see the block comment near REAL_ORIGIN_X.
+  // Purely a hit-detection/nav ANCHOR in game-space; the actual visible structure is the real
+  // HistoricalObjectManager object already rendered inside realWorldGroup (which is itself
+  // offset by -REAL_ORIGIN_X/Z so it lines up with this same game-space point) — no new mesh
+  // built here, on purpose, so there is only ever one visible copy of the real airfield/gun.
+  if(def.type==="airfield" || def.type==="gun"){
+    const src = def.type==="airfield" ? realKadena : realYomitan;
+    const g=new THREE.Group();
+    const gx = src ? src.userData.x-REAL_ORIGIN_X : def.pos[0];
+    const gz = src ? src.userData.z-REAL_ORIGIN_Z : def.pos[2];
+    g.position.set(gx,0,gz);
+    scene.add(g);
+    ships.push({def:def, group:g, hp:def.hp, alive:true, flak:!!def.flak,
+      radius:def.type==="airfield"?140:45, flakTimer:Math.random()*2, sinkT:0, usedFallback:false,
+      groundSub:src});
+    return;
+  }
   // If the Samidare model is loaded, every destroyer uses it (clone per instance).
   if(def.type==="destroyer" && destroyerTemplate){
     const g=new THREE.Group();
@@ -2202,8 +2393,13 @@ function updateTorpedoes(dt){
 }
 
 function hitShip(s, quietCam){
+  const isGround = s.def.type==="airfield" || s.def.type==="gun";
   s.hp--;
-  spawnSplash(s.group.position.x, s.group.position.z, true);
+  // A water splash/oil slick/expanding wake ring makes no sense for a target standing on real
+  // dry land (the Okinawa testbed's ground targets) — everything else (explosion, debris, fire,
+  // smoke, camera cut, shake) reads the same on land or water, so only the water-specific
+  // effects are skipped here rather than forking this whole function.
+  if(!isGround) spawnSplash(s.group.position.x, s.group.position.z, true);
   // a brief camera cut on ANY hit, not just the kill blow — a solid hit deserves to be seen.
   // quietCam skips the cut for wingman hits, so the camera doesn't yank away from the player.
   if(s.hp>0 && state===ST.FLIGHT && !quietCam) killCam={t:1.1, ang:Math.random()*Math.PI*2,
@@ -2211,29 +2407,41 @@ function hitShip(s, quietCam){
   if(s.hp<=0){
     s.alive=false; s.sinkT=0.0001; sortieShipsSunk++;
     s.boomN=4+Math.floor(Math.random()*3); s.boomT=0.3; s.burnT=0;
-    shipBlast(s,1.7);
-    spawnSlick(s);
-    const pts=s.def.type==='cruiser'?2000:s.def.type==='destroyer'?1200:1000;
+    if(isGround){
+      spawnExplosion(s.group.position.x, 9, s.group.position.z, 1.7);
+      spawnDebris(s.group.position.x, 10, s.group.position.z, 26);
+      for(let i=0;i<16;i++) spawnFire(s.group.position.x+(Math.random()-0.5)*s.radius*1.4, 5+Math.random()*10,
+        s.group.position.z+(Math.random()-0.5)*s.radius*0.6, 1.2);
+      for(let i=0;i<14;i++) spawnSmoke(s.group.position.x+(Math.random()-0.5)*s.radius*0.7, 6+i*3.2,
+        s.group.position.z+(Math.random()-0.5)*s.radius*0.4, i<3?0x0e0e0e:0x24241f, 0.8);
+      // "cover, don't cut" — same idea killTarget() uses elsewhere in this project (3.1): the real
+      // historical-layer mesh sinks out of sight rather than being rebuilt or removed.
+      if(s.groundSub) s.groundSub.position.y -= 6;
+    } else {
+      shipBlast(s,1.7);
+      spawnSlick(s);
+    }
+    const pts=s.def.type==='cruiser'?2000:s.def.type==='destroyer'?1200:s.def.type==='airfield'?2500:s.def.type==='gun'?1200:1000;
     addScore(pts);
-    // heavier feedback for capital ships: bigger shake, longer slow-mo hold
-    const heft = s.def.type==='cruiser'?1 : s.def.type==='destroyer'?0.65 : 0.8;
+    // heavier feedback for capital ships/the airfield: bigger shake, longer slow-mo hold
+    const heft = s.def.type==='cruiser'||s.def.type==='airfield'?1 : s.def.type==='destroyer'||s.def.type==='gun'?0.65 : 0.8;
     shake(2.2*heft+0.8);
     if(state===ST.FLIGHT && !quietCam) killCam={t:2.0+1.4*heft, ang:Math.random()*Math.PI*2,
       target:s.group.position.clone(), slow:0.45-0.18*heft};
     sfxBoom(1.4);
-    flash("SHIP SINKING  +"+pts,1100);
+    flash((isGround?"TARGET DESTROYED  +":"SHIP SINKING  +")+pts,1100);
   } else {
     spawnExplosion(s.group.position.x, 7, s.group.position.z, 1.15);
     spawnDebris(s.group.position.x, 9, s.group.position.z, 6);
     addScore(400);
     sfxBoom(0.7);
-    flash("HIT — STILL AFLOAT  +400",900);
+    flash((isGround?"HIT — STILL STANDING  +400":"HIT — STILL AFLOAT  +400"),900);
   }
   checkObjectiveCleared();
 }
 
 function checkObjectiveCleared(){
-  const primary=ships.filter(s=>s.def.type==="freighter"||s.def.type==="cruiser");
+  const primary=ships.filter(s=>s.def.type==="freighter"||s.def.type==="cruiser"||s.def.type==="airfield"||s.def.type==="gun");
   const cleared = primary.length>0 && primary.every(s=>!s.alive);
   if(cleared && !P.rtb){ P.rtb=true; addScore(500); flash("TARGETS DOWN  +500 — RETURN TO SHIP",1500); }
 }
@@ -2750,10 +2958,20 @@ function overDeck(x,z){
 function resolveGroundAndDeck(dt){
   const x=P.pos.x, z=P.pos.z, y=P.pos.y;
 
-  // island terrain
+  // island terrain — islands[] stays empty in this file (buildIslands() is never called, see
+  // the REAL TERRAIN TESTBED block comment above), so this loop is naturally a no-op; real
+  // ground collision comes from the loaded DEM instead, checked right below.
   for(const is of islands){
     if(Math.hypot(x-is.x,z-is.z)<is.r*0.85 && y<is.topY){
       crash("TERRAIN","You flew into an island."); return;
+    }
+  }
+  // real Okinawa terrain — groundY() reads ~0m over open water (DEM-verified before this file
+  // shipped, see REAL_ORIGIN_X's own comment), so this only ever fires over real, elevated land.
+  if(realWorldReady){
+    const gy=groundY(x,z);
+    if(gy>1.5 && y<gy+3){
+      crash("TERRAIN","You flew into high ground."); return;
     }
   }
 
@@ -4026,7 +4244,7 @@ function loadPlaneModel(){
       }
       window.__eyeDbg='EYE '+COCKPIT_EYE.map(v=>v.toFixed(2)).join('/');
       const btEl=document.getElementById('buildTag');
-      if(btEl) btEl.textContent='BUILD 121 · '+window.__eyeDbg;
+      if(btEl) btEl.textContent='PACIFIC TESTBED BUILD 1 · '+window.__eyeDbg;
       let seat=null;
       model.traverse(function(o){
         if(!o.isMesh||!o.material) return;
@@ -5039,7 +5257,7 @@ function updateTorpRun(){
 function updateNav(){
   let target=null, label="";
   // pick nearest live primary target, else carrier
-  const live=isDefend()? raiders.filter(r=>r.alive) : ships.filter(s=>s.alive && (s.def.type==="freighter"||s.def.type==="cruiser"));
+  const live=isDefend()? raiders.filter(r=>r.alive) : ships.filter(s=>s.alive && (s.def.type==="freighter"||s.def.type==="cruiser"||s.def.type==="airfield"||s.def.type==="gun"));
   if(live.length){
     let best=null,bd=1e9;
     for(const s of live){ const d=Math.hypot(P.pos.x-s.group.position.x,P.pos.z-s.group.position.z); if(d<bd){bd=d;best=s;} }
@@ -5061,7 +5279,7 @@ function updateNav(){
 // Optical landing aid
 function updateLSO(){
   const lso=document.getElementById('lso');
-  const live=isDefend()? raiders.filter(r=>r.alive) : ships.filter(s=>s.alive && (s.def.type==="freighter"||s.def.type==="cruiser"));
+  const live=isDefend()? raiders.filter(r=>r.alive) : ships.filter(s=>s.alive && (s.def.type==="freighter"||s.def.type==="cruiser"||s.def.type==="airfield"||s.def.type==="gun"));
   const recovering = live.length===0;
   const aimX=carrierX+AIM_X;
   const dx=aimX-P.pos.x;                 // +ve means carrier ahead (we fly +X)
@@ -5260,7 +5478,7 @@ function setupUIButtons(){
           +'border:1px solid '+(k===DIFF?'var(--amber)':'rgba(202,191,156,.3)')+';'
           +'color:'+(k===DIFF?'var(--amber)':'rgba(202,191,156,.7)')+';'
           +'background:'+(k===DIFF?'rgba(202,191,156,.12)':'transparent')+';';
-        b.onclick=()=>{ DIFF=k; localStorage.setItem('tc_diff',k); draw(); };
+        b.onclick=()=>{ DIFF=k; localStorage.setItem('pt_diff',k); draw(); };
         wrap.appendChild(b);
       });
     };
@@ -5270,7 +5488,7 @@ function setupUIButtons(){
   if(dbgT2) dbgT2.onclick=()=>{
     dbgOn=!dbgOn; localStorage.setItem('dbgOn',dbgOn?'1':'0');
     const db=document.getElementById('dbgBox'); if(db) db.textContent=dbgOn?'✓':'';
-    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 121'; }
+    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='PACIFIC TESTBED BUILD 1'; }
   };
   const lu=document.getElementById('lookUp'), ld=document.getElementById('lookDn');
   let _lookT=0;
@@ -5463,6 +5681,12 @@ function animate(){
   if(shakeT>0) shakeT=Math.max(0,shakeT-rawDt);
   const t=clock.elapsedTime;
 
+  if(realWorldReady){
+    terrain.updateLOD(realX(P.pos.x), realZ(P.pos.z), dt);
+    contentVisT-=dt;
+    if(contentVisT<=0){ contentVisT=0.5; updateContentVisibility(realX(P.pos.x), realZ(P.pos.z)); }
+  }
+
   // steam the task group forward (bow-first, +X) whenever the sortie is live
   if((state===ST.FLIGHT||state===ST.LAUNCH) && carrier){
     carrierX += CARRIER_SPD*dt;
@@ -5529,7 +5753,7 @@ function animate(){
   updateClouds();
   updateShadow();
   updateAudio(dt);
-  updateSea(t);
+  if(sea) updateSea(t);   // sea/seaUniforms stay null in this file — see REAL TERRAIN TESTBED comment
   updatePlaneMesh();
   if(skyDome) skyDome.position.copy(camera.position);
   // The sea plane was only centred once, at creation. Fly 7000 units from that point

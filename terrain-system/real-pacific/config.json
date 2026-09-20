@@ -1,0 +1,20 @@
+{
+  "_comment": "Shared config for the real-data pipeline (real/tools/*.py, pointed here via TERRAIN_ROOT) -- SECOND region alongside real/ (Remagen), same tools, same per-tile JSON formats, DEMHeightProvider/OSMManager/HistoricalObjectManager need ZERO changes to read this. Reported by the user directly: torpedo-carrier.html's Pacific setting is procedural/generic (a handful of undetailed islands, endless open water) and he wants the same real-data terrain treatment Remagen got, plus ground-attack missions -- this is the testbed region for that, not yet wired into any game file.",
+  "region": "Okinawa (Naha - Kadena - Yomitan corridor, central-southern Okinawa Hontō)",
+  "regionComment": "Chosen over a small, remote atoll (e.g. Truk Lagoon) specifically because it is densely mapped in Overture (real city blocks, real roads, a real port and airfield) -- the whole point of this round is MORE real detail, and a real, currently inhabited, well-surveyed island delivers that; a tiny wartime-only atoll would not.",
+  "crs": "EPSG:32652",
+  "crsComment": "UTM zone 52N -- correct zone for this longitude band (126E-132E), true metre distances at this scale without the projection distortion a lat/lon-as-metres shortcut would introduce.",
+  "bboxLonLat": { "lonMin": 127.62, "lonMax": 127.86, "latMin": 26.15, "latMax": 26.42 },
+  "originUTM": { "x": 361000, "y": 2891000 },
+  "originComment": "SW corner of the working area in UTM52N metres, rounded down to a clean 1000m -- world (0,0) in the tile-local coordinate system every tool/JSON file below uses. worldX = utmEasting - originUTM.x, worldZ = utmNorthing - originUTM.y (north = +Z). Computed directly from bboxLonLat via pyproj before being written here (not guessed): SW corner projects to (362060.5, 2893027.8), rounded down.",
+  "tileSize": 4000,
+  "gridW": 7,
+  "gridH": 9,
+  "gridComment": "tx runs 0..6, tz runs 0..8 -- covers UTM X 361000..389000, Y 2891000..2927000, comfortably containing the full bboxLonLat with margin on every side (checked against all four projected bbox corners, not assumed). 63 tiles total, comparable in count to Remagen's 56 -- deliberately NOT the full length of Okinawa Hontō (~106km), this is a first testbed region, not the whole island.",
+  "gridSizeDem": 65,
+  "landmarks": {
+    "kadenaAirfield": { "lon": 127.7686, "lat": 26.3556, "label": "Kadena airfield (runway centre) -- REAL, currently active airfield; ground-attack target, no claim this exact site saw 1945 combat, same honesty caveat as Remagen's factory/airfield placements" },
+    "nahaPort": { "lon": 127.6725, "lat": 26.2124, "label": "Naha port -- REAL, currently active commercial port; ground-attack target" },
+    "yomitanBeach": { "lon": 127.7300, "lat": 26.3900, "label": "Hagushi beach, Yomitan -- REAL location of the actual 1 April 1945 invasion landing beaches; used here as a coastal-defence/flak target site, not a claim that specific gun positions are historically documented (same caveat as Remagen's flak placements)" }
+  }
+}
