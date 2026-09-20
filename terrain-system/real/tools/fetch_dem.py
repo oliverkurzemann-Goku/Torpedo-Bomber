@@ -36,12 +36,44 @@ import rasterio
 from rasterio.warp import calculate_default_transform, reproject, Resampling
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-CFG = json.load(open(os.path.join(HERE, '..', 'config.json')))
+# TERRAIN_ROOT lets this same tool run against a SECOND region (e.g.
+# terrain-system/real-pacific/) without duplicating this file -- defaults to
+# the original real/ layout (HERE/..) so nothing changes for Remagen unless
+# the env var is set.
+ROOT = os.environ.get('TERRAIN_ROOT', os.path.join(HERE, '..'))
+CFG = json.load(open(os.path.join(ROOT, 'config.json')))
 
-DEM_TILE_NAME = 'Copernicus_DSM_COG_10_N50_00_E007_00_DEM'
-DEM_URL = f'https://copernicus-dem-30m.s3.amazonaws.com/{DEM_TILE_NAME}/{DEM_TILE_NAME}.tif'
 CACHE_DIR = os.path.join(HERE, '_cache')
-OUT_DIR = os.path.join(HERE, '..', 'data', 'dem')
+OUT_DIR = os.path.join(ROOT, 'data', 'dem')
+
+
+def _dem_tile_name_for_bbox(bbox):
+    """Copernicus DEM GLO-30 ships as 1x1-degree COGs named by their SW
+    corner (e.g. N50_00_E007_00 covers 50-51N, 7-8E). Computed from the
+    config's own bboxLonLat instead of hand-typed per region -- Remagen's
+    original tile name (N50_00_E007_00) falls straight out of this same
+    formula, verified against the hardcoded value it replaces. Raises
+    rather than silently mosaicking if a region's bbox spans more than one
+    1-degree cell -- true for every region used so far (confirmed by direct
+    computation before shipping, same standard this project holds itself
+    to elsewhere), but a real limit worth failing loudly on, not guessing
+    past."""
+    lat_cells = {math.floor(bbox['latMin']), math.floor(bbox['latMax'] - 1e-9)}
+    lon_cells = {math.floor(bbox['lonMin']), math.floor(bbox['lonMax'] - 1e-9)}
+    if len(lat_cells) > 1 or len(lon_cells) > 1:
+        raise RuntimeError(
+            f'bboxLonLat spans more than one Copernicus 1x1-degree DEM tile '
+            f'(lat cells {lat_cells}, lon cells {lon_cells}) -- this tool only '
+            f'downloads a single source tile, add mosaicking before using a '
+            f'wider region.')
+    lat0, lon0 = lat_cells.pop(), lon_cells.pop()
+    ns = 'N' if lat0 >= 0 else 'S'
+    ew = 'E' if lon0 >= 0 else 'W'
+    return f'Copernicus_DSM_COG_10_{ns}{abs(lat0):02d}_00_{ew}{abs(lon0):03d}_00_DEM'
+
+
+DEM_TILE_NAME = _dem_tile_name_for_bbox(CFG['bboxLonLat'])
+DEM_URL = f'https://copernicus-dem-30m.s3.amazonaws.com/{DEM_TILE_NAME}/{DEM_TILE_NAME}.tif'
 
 GRID_SIZE = CFG['gridSizeDem']          # 65 samples per side, matches TerrainTile.js's PlaneGeometry
 TILE_SIZE = CFG['tileSize']             # 4000 m
