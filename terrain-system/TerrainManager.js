@@ -36,18 +36,10 @@ function rawLodFor(d){
 }
 
 class TerrainManager {
-  // regionStyle is optional and defaults to 'temperate' (the original Rhine-valley
-  // palette every existing caller — the three demo pages and remagen-mission.html —
-  // already relies on; passing nothing here changes NOTHING for them). Only
-  // pacific-terrain-test.html passes 'tropical', reported directly by the user
-  // against real iPad screenshots: Okinawa's ocean/land rendered in the same muted
-  // olive/grey-teal Rhine tones this module was built for, not remotely what a
-  // subtropical Pacific island actually looks like.
-  constructor(scene, tileSize, heightProvider, regionStyle='temperate'){
+  constructor(scene, tileSize, heightProvider){
     this.scene = scene;
     this.tileSize = tileSize;
     this.heightProvider = heightProvider;
-    this.regionStyle = regionStyle;
     // flatShading:false + real vertex normals from TerrainTile reads as rolling
     // ground, not faceted low-poly — matches what a LOD system needs to look
     // acceptable even at the coarsest tesselation.
@@ -74,7 +66,7 @@ class TerrainManager {
     // per-vertex colour path) and breaks up the single bright-green sheet that
     // dominated BUILD 7. It is shared by every tile and mipmapped, so memory
     // and draw-call cost stay essentially unchanged.
-    this.groundTexture = makeTerrainGroundTexture(regionStyle);
+    this.groundTexture = makeTerrainGroundTexture();
     this.material = new THREE.MeshStandardMaterial({
       color: 0xffffff, map: this.groundTexture, roughness: 1.0, metalness: 0
     });
@@ -223,14 +215,13 @@ class TerrainManager {
   }
 }
 
-function makeTerrainGroundTexture(regionStyle='temperate'){
+function makeTerrainGroundTexture(){
   const size=256;
   const canvas=document.createElement('canvas');
   canvas.width=size; canvas.height=size;
   const ctx=canvas.getContext('2d');
   const img=ctx.createImageData(size,size);
   const tau=Math.PI*2;
-  const tropical=regionStyle==='tropical';
   for(let y=0;y<size;y++) for(let x=0;x<size;x++){
     // Integer-frequency waves make opposite texture edges meet cleanly.
     const u=x/size*tau,v=y/size*tau;
@@ -241,30 +232,11 @@ function makeTerrainGroundTexture(regionStyle='temperate'){
     const furrow=Math.sin(u*43+Math.sin(v*2))*Math.sin(v*5);
     const light=broad*10+medium*4+grain*9+furrow*1.5;
     const i=(y*size+x)*4;
-    if(tropical){
-      // Reported directly against real iPad screenshots of Okinawa: "blasse
-      // Farben, nicht wie ich mir Okinawa vorstelle" -- confirmed by reading
-      // this function's own prior comment, which named its palette "muted
-      // Rhine-valley grass/soil", built for Remagen and never revisited for
-      // this second region. A subtropical island isn't olive farmland: real
-      // Okinawa countryside is saturated sugarcane/jungle green broken up by
-      // patches of the island's famous reddish "shimajiri-mahji"/laterite
-      // soil, not a uniform earth tone. A second, slower-frequency hash
-      // (different seed offset from `grain`) decides per-texel whether a
-      // patch leans toward that red-brown soil or stays saturated green,
-      // instead of blending every texel toward the same muted middle colour.
-      const soilHash=Math.sin(x*3.71+y*5.13+21.7)*24681.923;
-      const soilPatch=Math.max(0,(soilHash-Math.floor(soilHash))-0.72)*3.6; // 0..~1, rare
-      img.data[i]  =Math.max(0,Math.min(255,58+light*1.05 +soilPatch*118));
-      img.data[i+1]=Math.max(0,Math.min(255,128+light*1.3 -soilPatch*58));
-      img.data[i+2]=Math.max(0,Math.min(255,46+light*0.55 -soilPatch*20));
-    } else {
-      // Muted Rhine-valley grass/soil palette: olive, moss and earth rather
-      // than saturated toy green. Lighting still supplies the slope shading.
-      img.data[i]=Math.max(0,Math.min(255,92+light));
-      img.data[i+1]=Math.max(0,Math.min(255,105+light*1.15));
-      img.data[i+2]=Math.max(0,Math.min(255,61+light*0.65));
-    }
+    // Muted Rhine-valley grass/soil palette: olive, moss and earth rather
+    // than saturated toy green. Lighting still supplies the slope shading.
+    img.data[i]=Math.max(0,Math.min(255,92+light));
+    img.data[i+1]=Math.max(0,Math.min(255,105+light*1.15));
+    img.data[i+2]=Math.max(0,Math.min(255,61+light*0.65));
     img.data[i+3]=255;
   }
   ctx.putImageData(img,0,0);
