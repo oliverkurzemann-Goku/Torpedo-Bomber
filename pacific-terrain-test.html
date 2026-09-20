@@ -274,7 +274,7 @@
   <div id="flash"></div>
   <div id="ltn" style="position:fixed;inset:0;background:#e6ecff;opacity:0;pointer-events:none;z-index:40;"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">PACIFIC TESTBED BUILD 1</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">PACIFIC TESTBED BUILD 2</div>
 
   <!-- Optical landing aid -->
   <div id="lso">
@@ -811,8 +811,8 @@ async function loadRealWorld(){
   scene.add(realWorldGroup);
 
   heightProvider=new DEMHeightProvider(RTILE,'terrain-system/real-pacific/data/dem/');
-  terrain=new TerrainManager(realWorldGroup,RTILE,heightProvider);
-  osmMgr=new OSMManager(realWorldGroup,RTILE,terrain,'terrain-system/real-pacific/data/osm/');
+  terrain=new TerrainManager(realWorldGroup,RTILE,heightProvider,'tropical');
+  osmMgr=new OSMManager(realWorldGroup,RTILE,terrain,'terrain-system/real-pacific/data/osm/','tropical');
   historicalMgr=new HistoricalObjectManager(realWorldGroup,RTILE,terrain,'terrain-system/real-pacific/data/historical/');
 
   // Phase 1: every tile's real elevation — DEMHeightProvider.getHeight() throws unless this
@@ -4244,7 +4244,7 @@ function loadPlaneModel(){
       }
       window.__eyeDbg='EYE '+COCKPIT_EYE.map(v=>v.toFixed(2)).join('/');
       const btEl=document.getElementById('buildTag');
-      if(btEl) btEl.textContent='PACIFIC TESTBED BUILD 1 · '+window.__eyeDbg;
+      if(btEl) btEl.textContent='PACIFIC TESTBED BUILD 2 · '+window.__eyeDbg;
       let seat=null;
       model.traverse(function(o){
         if(!o.isMesh||!o.material) return;
@@ -5488,7 +5488,7 @@ function setupUIButtons(){
   if(dbgT2) dbgT2.onclick=()=>{
     dbgOn=!dbgOn; localStorage.setItem('dbgOn',dbgOn?'1':'0');
     const db=document.getElementById('dbgBox'); if(db) db.textContent=dbgOn?'✓':'';
-    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='PACIFIC TESTBED BUILD 1'; }
+    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='PACIFIC TESTBED BUILD 2'; }
   };
   const lu=document.getElementById('lookUp'), ld=document.getElementById('lookDn');
   let _lookT=0;
