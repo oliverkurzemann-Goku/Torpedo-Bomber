@@ -5,9 +5,25 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 121 · Thunderbolt Squadron EU BUILD 57 · Remagen 1945 REMAGEN BUILD 20**
+Stand bei Übergabe: **Torpedo Squadron BUILD 121 · Thunderbolt Squadron EU BUILD 57 · Remagen 1945 REMAGEN BUILD 21**
 Repo: `oliverkurzemann-Goku/Torpedo-Bomber`, ausgeliefert über GitHub Pages.
 Alle Angaben unten sind aus dem tatsächlichen Code verifiziert, nicht aus dem Gedächtnis.
+
+**Historischer Verkehr und Telegraphenlinien, Build 21 (20.09.2026):** Drei hinsichtlich
+Lizenz, Download und iPad-Kosten geprüfte Modelle ersetzen die letzten bewegten Klötze. Vier
+Zivilautos nutzen Saurav Maitys 1940 Ford V8 (CC BY 4.0, 22.608 Dreiecke); 78 FBX-Objekte werden
+vor dem Klonen in höchstens 23 Material-Batches zusammengeführt. Das Zugziel ist Götz von
+Berlichingens DRB 01.10 mit Tender (CC BY 4.0), lokal zu einem eingebetteten GLB mit 2 Meshes/
+6.940 Dreiecken konvertiert. Acht Quaternius-Pferde (CC0, je 8 Skinned Meshes/2.182 Dreiecke/
+50 Knochen) werden skelettsicher geklont und spielen nahe am Spieler den gelieferten `Walk`-Clip;
+der zugehörige günstige Holzwagen hat nun Bett, Bordwände, Heu, vier Räder und Deichsel in drei
+Material-Batches. Die 180 instanzierten Telegraphenmasten erhalten 540 Isolatoren und drei
+durchhängende Leitungen je Strecke; insgesamt zehn ländliche Buckets. Optionale Assets laden
+sequenziell nach Erscheinen des Menüs und behalten je einen funktionalen Fallback. Echte r128-
+Loader-/Echtdaten-Tests prüfen sieben Templates, alle 27 fahrenden Modellwechsel, Animation,
+Maßstab, Dreieckzahlen, Leitungen und die komplette bisherige Suite. Kein behaupteter iPad-FPS-
+oder Bildnachweis. Quellen, Lizenzen und Konvertierungen: `ASSET-CREDITS.md`; technische Details:
+`TERRAIN.md`.
 
 **Echte Flak und aktive Missionsverteidigung, Build 20 (19.09.2026):** Oliver meldete,
 dass in den Missionen keine Flak zu sehen/zu hören war, und stellte 16 GLBs bereit. 14 sind
@@ -175,7 +191,7 @@ iPad/iPhone Safari.
 | `index.html` | Startseite, Auswahl zwischen den Spielen |
 | `torpedo-carrier.html` | **Teil 1** — Pazifik, Trägerbetrieb (BUILD 121) |
 | `thunderbolt-europe.html` | **Teil 2** — Europa, Bodenangriff (EU BUILD 57) |
-| `remagen-mission.html` | **Teil 3** — Remagen 1945, echtes Terrain (REMAGEN BUILD 20; Terrain-Handoff in `TERRAIN.md`) |
+| `remagen-mission.html` | **Teil 3** — Remagen 1945, echtes Terrain (REMAGEN BUILD 21; Terrain-Handoff in `TERRAIN.md`) |
 | `model-check.html` | Kalibrier-Werkzeug für neue Flugzeugmodelle (Ausrichtung, Maßstab) |
 
 Alle drei Spiele haben getrennte Speicherstände (`localStorage`-Präfixe `tc_*`, `eu_*` bzw.

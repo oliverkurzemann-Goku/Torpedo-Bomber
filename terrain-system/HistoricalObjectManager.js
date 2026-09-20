@@ -24,7 +24,7 @@
 // ============================================================
 
 class HistoricalObjectManager {
-  static get BUILD(){ return 20; }
+  static get BUILD(){ return 21; }
   constructor(scene, tileSize, terrainManager, baseUrl = 'data/historical/'){
     this.scene = scene;
     this.tileSize = tileSize;

@@ -1,14 +1,47 @@
-// Scenic period vehicles from existing repository GLBs. No combat/mission hooks.
-// Real r128 GLTFLoader validation is in tests/remagen-vehicles.js; credits below.
+// Shared, licensed period-vehicle templates plus two static scenic vehicles.
+// Real r128 GLTF/FBX loader validation is in tests/remagen-vehicles.js; credits below.
 class WorldVehicles {
-  static get BUILD(){ return 20; }
+  static get BUILD(){ return 21; }
   constructor(scene,terrain,osm){
     this.scene=scene;this.terrain=terrain;this.osm=osm;this.entries=[];this.failures=[];
     this.templates=new Map();this.onTemplate=null;
   }
+  static mergeStaticByMaterial(source){
+    source.updateMatrixWorld(true);
+    const buckets=new Map();
+    source.traverse(o=>{
+      if(!o.isMesh||o.isSkinnedMesh)return;
+      const material=o.material;
+      if(Array.isArray(material))throw new Error('Unexpected multi-material car mesh');
+      let g=o.geometry.index?o.geometry.toNonIndexed():o.geometry.clone();
+      g.applyMatrix4(o.matrixWorld);
+      if(!g.attributes.normal)g.computeVertexNormals();
+      if(!buckets.has(material))buckets.set(material,[]);
+      buckets.get(material).push(g);
+    });
+    const merged=new THREE.Group();merged.name='civilCarMerged';
+    const join=(parts,itemSize)=>{
+      let count=0;for(const a of parts)count+=a.length;
+      const out=new Float32Array(count);let at=0;for(const a of parts){out.set(a,at);at+=a.length;}
+      return new THREE.BufferAttribute(out,itemSize);
+    };
+    for(const [material,geometries] of buckets){
+      const positions=[],normals=[],uvs=[];
+      for(const g of geometries){
+        const p=g.attributes.position,n=g.attributes.normal,u=g.attributes.uv;
+        positions.push(p.array);normals.push(n.array);
+        uvs.push(u?u.array:new Float32Array(p.count*2));
+      }
+      const g=new THREE.BufferGeometry();
+      g.setAttribute('position',join(positions,3));g.setAttribute('normal',join(normals,3));g.setAttribute('uv',join(uvs,2));
+      g.computeBoundingBox();g.computeBoundingSphere();merged.add(new THREE.Mesh(g,material));
+      for(const old of geometries)old.dispose();
+    }
+    return merged;
+  }
   static prepare(source,kind){
     source.updateMatrixWorld(true);
-    const root=new THREE.Group();
+    let root=new THREE.Group();
     if(kind==='tiger'){
       // The export is a kit: spare heads, weapons and a posed crewman lie beside
       // the tank. Keep only TIGER_H1, preserving all ancestor transforms.
@@ -19,23 +52,27 @@ class WorldVehicles {
     const materials=new Map();
     root.traverse(o=>{
       if(!o.isMesh)return;
-      if(o.isSkinnedMesh)throw new Error('Unexpected skinned vehicle part');
+      if(o.isSkinnedMesh&&kind!=='horse')throw new Error('Unexpected skinned vehicle part');
       const convert=m=>{
         if(materials.has(m))return materials.get(m);
         // Same simple Lambert path as the confirmed field. No deprecated SG
         // shader extension, per-instance colour or material changes to aircraft.
         const plain=new THREE.MeshLambertMaterial({map:m.map||null,color:m.color?m.color.clone():0xffffff,
           side:m.side,alphaTest:m.alphaTest||0,transparent:!!m.transparent,opacity:m.opacity==null?1:m.opacity});
+        plain.skinning=kind==='horse';
         plain.name=m.name;materials.set(m,plain);return plain;
       };
       o.material=Array.isArray(o.material)?o.material.map(convert):convert(o.material);
     });
+    if(kind==='civilCar')root=WorldVehicles.mergeStaticByMaterial(root);
     root.updateMatrixWorld(true);
     const b=new THREE.Box3().setFromObject(root),size=b.getSize(new THREE.Vector3());
     if(![size.x,size.y,size.z].every(v=>Number.isFinite(v)&&v>0))throw new Error('Invalid vehicle bounds');
-    // Validated real-world target lengths. The merchant is repurposed as a
-    // compact Rhine workboat silhouette, not claimed to be a literal ferry.
-    const targetLength={m16:6.62,tiger:8.45,merchant:30,flak88:8.808}[kind]||8;
+    // Real-world target lengths keep imports from three different authoring
+    // unit systems consistent. The merchant remains a compact Rhine workboat
+    // silhouette, not a claim about the exact 1945 ferry type.
+    const targetLength={m16:6.62,tiger:8.45,merchant:30,flak88:8.808,
+      civilCar:4.75,horse:2.5,train:24.1}[kind]||8;
     const scale=targetLength/Math.max(size.x,size.z);
     const model=new THREE.Group();model.add(root);root.scale.setScalar(scale);
     root.position.set(-(b.min.x+b.max.x)*scale/2,-b.min.y*scale,-(b.min.z+b.max.z)*scale/2);
@@ -65,7 +102,20 @@ class WorldVehicles {
     return {x,z,y:Math.min(...h),points};
   }
   async load(){
-    const L=new THREE.GLTFLoader();
+    const gltf=new THREE.GLTFLoader();
+    const loadSource=async spec=>{
+      if(spec.loader==='fbx'){
+        const scene=await new Promise((resolve,reject)=>new THREE.FBXLoader().load(spec.url,resolve,undefined,reject));
+        return {scene,animations:scene.animations||[]};
+      }
+      const data=await new Promise((resolve,reject)=>gltf.load(spec.url,resolve,undefined,reject));
+      return {scene:data.scene,animations:data.animations||[]};
+    };
+    const publish=(kind,model,animations=[])=>{
+      if(animations.length)model.animations=animations;
+      this.templates.set(kind,model);
+      if(this.onTemplate)this.onTemplate(kind,model);
+    };
     // Sequential downloads after the menu opens; a vehicle failure cannot hide
     // the player's aircraft or block starting a sortie. Models share resources.
     const specs=[
@@ -75,10 +125,9 @@ class WorldVehicles {
       {kind:'m16',url:'m16_mgmc.glb',x:1047,z:17987.6,yaw:Math.PI/2}
     ];
     for(const spec of specs)try{
-      const gl=await new Promise((resolve,reject)=>L.load(spec.url,resolve,undefined,reject));
-      const model=WorldVehicles.prepare(gl.scene,spec.kind),size=model.userData.size;
-      this.templates.set(spec.kind,model.clone(true));
-      if(this.onTemplate)this.onTemplate(spec.kind,this.templates.get(spec.kind));
+      const asset=await loadSource(spec);
+      const model=WorldVehicles.prepare(asset.scene,spec.kind),size=model.userData.size;
+      publish(spec.kind,model.clone(true),asset.animations);
       // Search a small local area, rejecting water, steep slopes and mapped
       // building footprints. Never scatter tanks blindly across the map.
       let spot=null;
@@ -96,23 +145,20 @@ class WorldVehicles {
       this.scene.add(model);this.entries.push({model,spec,spot,size});
       console.info('Scenic vehicle ready:',spec.kind,spot.x,spot.z);
     }catch(e){this.failures.push({kind:spec.kind,message:e.message});console.warn('Scenic vehicle unavailable:',spec.kind,e);}
-    // The repository already contains a low-cost 7.6k-triangle merchant hull.
-    // Load it only as a shared template for the two Rhine vessels; unlike the
-    // M16/Tiger it has no separate static placement in the scenery.
-    try{
-      const gl=await new Promise((resolve,reject)=>L.load('merchant_ship.glb',resolve,undefined,reject));
-      const model=WorldVehicles.prepare(gl.scene,'merchant');
-      this.templates.set('merchant',model);
-      if(this.onTemplate)this.onTemplate('merchant',model);
-    }catch(e){this.failures.push({kind:'merchant',message:e.message});console.warn('Merchant template unavailable:',e);}
-    // Two historical gun positions can share the repository's existing model.
-    // It is heavy (149k triangles), so do not use it for convoys or mass spawning.
-    try{
-      const gl=await new Promise((resolve,reject)=>L.load('flak88_sfl.glb',resolve,undefined,reject));
-      const model=WorldVehicles.prepare(gl.scene,'flak88');
-      this.templates.set('flak88',model);
-      if(this.onTemplate)this.onTemplate('flak88',model);
-    }catch(e){this.failures.push({kind:'flak88',message:e.message});console.warn('Flak 88 template unavailable:',e);}
+    // Templates load one at a time to avoid simultaneous decode peaks on iPad.
+    // Real imported traffic replaces the temporary silhouettes as each asset
+    // becomes ready; a failed optional model leaves its procedural fallback.
+    const templateSpecs=[
+      {kind:'flak88',url:'flak88_sfl.glb'},
+      {kind:'civilCar',url:'assets/remagen/ford1940/1940_ford_v8.fbx',loader:'fbx'},
+      {kind:'horse',url:'assets/remagen/horse/quaternius_horse.glb'},
+      {kind:'train',url:'assets/remagen/drb0110/drb0110.glb'},
+      {kind:'merchant',url:'merchant_ship.glb'}
+    ];
+    for(const spec of templateSpecs)try{
+      const asset=await loadSource(spec),model=WorldVehicles.prepare(asset.scene,spec.kind);
+      publish(spec.kind,model,asset.animations);
+    }catch(e){this.failures.push({kind:spec.kind,message:e.message});console.warn(spec.kind+' template unavailable:',e);}
   }
   update(x,z){
     for(const e of this.entries){

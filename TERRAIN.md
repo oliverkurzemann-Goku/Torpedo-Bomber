@@ -10,9 +10,44 @@ The flight model, weapons and mission logic are not part of a terrain pass unles
 
 ## Test build versioning
 
-Every Remagen revision handed to Oliver for testing must increment the visible build number in both places in `remagen-mission.html`: the always-visible `#testVersionBannerText` and the in-flight `#buildTag`. Add a short pass label when useful. Never tell Oliver a build is ready until the branch/deployment being tested contains that exact visible version. Current revision: `REMAGEN BUILD 20 · FLAK DEFENSE`.
+Every Remagen revision handed to Oliver for testing must increment the visible build number in both places in `remagen-mission.html`: the always-visible `#testVersionBannerText` and the in-flight `#buildTag`. Add a short pass label when useful. Never tell Oliver a build is ready until the branch/deployment being tested contains that exact visible version. Current revision: `REMAGEN BUILD 21 · PERIOD TRAFFIC`.
 
-The local terrain scripts carry the same version as a `?v=remagen-20` query. `OSMManager.BUILD`, `HistoricalObjectManager.BUILD`, `LivingWorld.BUILD` and `WorldVehicles.BUILD` are checked during startup and the banner gains `MODULE 20` only after all checks succeed. This prevents an updated HTML document from silently running an older Safari-cached terrain module.
+The local terrain scripts carry the same version as a `?v=remagen-21` query. `OSMManager.BUILD`, `HistoricalObjectManager.BUILD`, `LivingWorld.BUILD` and `WorldVehicles.BUILD` are checked during startup and the banner gains `MODULE 21` only after all checks succeed. This prevents an updated HTML document from silently running an older Safari-cached terrain module.
+
+## Build 21 — licensed period traffic and readable telegraph lines
+
+Oliver confirmed that terrain was improved but the remaining moving civilian traffic and train
+still read as blocks, while telegraph poles were not visible. Three downloadable, license-checked
+assets were selected with the iPad constraint ahead of raw detail. Exact attribution, conversion
+and source links are recorded in `ASSET-CREDITS.md`.
+
+- Four civilian traffic objects now use Saurav Maity's 1940 Ford V8 (CC BY 4.0), normalized to
+  4.75m. Its 22,608 triangles are retained, but the 78 FBX source objects are flattened into at
+  most 23 shared-material batches before cloning. Supplied PNG textures remain external. The FBX,
+  loader and `fflate` are optional: a load failure leaves the existing moving fallback intact.
+- The rail mission uses Götz von Berlichingen's low-poly DRB 01.10 locomotive and tender (CC BY
+  4.0), converted from DAE plus two textures to a single embedded GLB. It is 2 meshes/6,940
+  triangles and normalized to 24.1m, replacing the entire block-built moving target.
+- Eight carts are now pulled by Quaternius's CC0 horse: 8 skinned meshes/2,182 triangles/50 bones,
+  cloned with `SkeletonUtils` and driven by its real `Walk` clip only while visible and alive.
+  The paired wooden cart remains procedural for cost control, but now has a bed, side/end boards,
+  hay, four torus wheels and shafts and is merged into three material batches rather than reading
+  as a moving rectangular bale.
+- Telegraph infrastructure remains instanced instead of loading 180 separate models. The same
+  180 poles now carry 540 pale insulators plus three continuous sagging wires along each selected
+  road. A route keeps its poles on one side, so wires no longer zigzag across the road. This adds
+  exactly one instance bucket and one `LineSegments` draw call: ten rural-detail buckets total.
+- New assets load sequentially after the playable menu appears and share geometry, materials and
+  textures across clones. Their combined checked-in size is about 5.1MB. Existing procedural
+  visuals remain per-asset fallbacks, so one failed optional request cannot block a sortie.
+
+The real r128 loader test decodes the shipped FBX and all GLBs, reports no failed template, and
+checks all 27 replacements (12 Tigers, one train, two vessels, four cars and eight horse carts),
+target scales, triangle counts and active horse mixers. The all-data world test confirms 180
+poles, 540 insulators, non-empty finite wire geometry, 124 fallback moving meshes and ten bounded
+rural buckets. Airfield, rain/water/clouds, all 56 terrain tiles and OSM structural tests remain
+green. These CPU/loader checks do not establish real-iPad appearance or FPS; Build 21 still needs
+Oliver's device acceptance.
 
 ## Build 20 — real flak model and active mission defenses
 

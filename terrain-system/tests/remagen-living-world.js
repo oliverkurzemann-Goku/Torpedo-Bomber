@@ -3,7 +3,7 @@
 const fs=require('fs'),path=require('path'),vm=require('vm'),assert=require('assert/strict');
 const root=path.resolve(__dirname,'../..');global.THREE=require(process.env.THREE_R128||'three');
 assert.equal(THREE.REVISION,'128');
-for(const name of ['HeightProvider','TerrainTile','TerrainManager','OSMManager','LivingWorld'])
+for(const name of ['HeightProvider','TerrainTile','TerrainManager','OSMManager','WorldVehicles','LivingWorld'])
   vm.runInThisContext(fs.readFileSync(path.join(root,'terrain-system',name+'.js'),'utf8'));
 global.fetch=async url=>{const b=fs.readFileSync(path.join(root,url.split('?')[0]));return {ok:true,json:async()=>JSON.parse(b),arrayBuffer:async()=>b.buffer.slice(b.byteOffset,b.byteOffset+b.byteLength)};};
 
@@ -18,7 +18,7 @@ global.fetch=async url=>{const b=fs.readFileSync(path.join(root,url.split('?')[0
   const osm=new OSMManager(scene,4000,terrain,osmDir);
   await osm.prepareRegion(coords,'terrain-system/real/data/waterways.json');
   const html=fs.readFileSync(path.join(root,'remagen-mission.html'),'utf8');
-  assert(html.includes('LivingWorld.js?v=remagen-20'));assert(html.includes('MODULE 20'));
+  assert(html.includes('LivingWorld.js?v=remagen-21'));assert(html.includes('MODULE 21'));
   for(const id of ['convoy','train','ferry'])assert(html.includes(`id:'${id}'`),`mission ${id} missing`);
   assert(html.includes("livingWorld.missionTargets(m.id)"));assert(html.includes('livingWorld.destroyEntity(t.entity)'));
   // Execute the actual mission table/population logic with lightweight target
@@ -43,7 +43,7 @@ global.fetch=async url=>{const b=fs.readFileSync(path.join(root,url.split('?')[0
   const factory=[12000+f.x,20000+f.z];
   const world=new LivingWorld(scene,terrain,osm,{bridge,bridgeSpan:[b.x2-b.x1,b.z2-b.z1],factory,field:[787,18087.6]});
 
-  assert.equal(LivingWorld.BUILD,20);assert.equal(OSMManager.BUILD,20);
+  assert.equal(LivingWorld.BUILD,21);assert.equal(OSMManager.BUILD,21);
   assert(world.routes.road.length>=3,'not enough real road routes');
   assert(world.routes.rail.length>=1,'real rail route missing');
   assert.equal(world.routes.water.length,1,'Rhine route missing');
@@ -61,11 +61,13 @@ global.fetch=async url=>{const b=fs.readFileSync(path.join(root,url.split('?')[0
 
   const d=world.detailCounts;
   assert(d.fields>=150&&d.fields<=230);assert(d.hedges>=200&&d.hedges<=420);
-  assert(d.poles>=140&&d.poles<=180);assert(d.cows>20&&d.cows<=36);assert.equal(d.buckets,8);
+  assert(d.poles>=140&&d.poles<=180);assert(d.cows>20&&d.cows<=36);assert.equal(d.buckets,10);
+  const insulators=world.details.getObjectByName('telegraphInsulators'),wires=world.details.getObjectByName('telegraphWires');
+  assert.equal(insulators.count,d.poles*3);assert(wires.isLineSegments);assert(wires.geometry.attributes.position.count>0);
   const matrix=new THREE.Matrix4();
   for(const mesh of world.details.children){
-    assert(mesh.isInstancedMesh);assert.equal(mesh.frustumCulled,false);assert(!mesh.instanceColor,'instance colours are forbidden');
-    for(let i=0;i<mesh.count;i++){mesh.getMatrixAt(i,matrix);assert(matrix.elements.every(Number.isFinite));}
+    assert(mesh.isInstancedMesh||mesh.isLineSegments);assert.equal(mesh.frustumCulled,false);assert(!mesh.instanceColor,'instance colours are forbidden');
+    if(mesh.isInstancedMesh)for(let i=0;i<mesh.count;i++){mesh.getMatrixAt(i,matrix);assert(matrix.elements.every(Number.isFinite));}
   }
 
   let entityMeshes=0;

@@ -1,8 +1,9 @@
 # Remagen vehicle credits
 
 Build 14 uses existing repository models as static scenery. Build 19 also reuses the
-selected Tiger as the moving tracked-target visual. Vehicle positions are illustrative,
-not a reconstruction of documented unit positions in March 1945.
+selected Tiger as the moving tracked-target visual. Build 21 adds licensed period traffic.
+Vehicle positions are illustrative, not a reconstruction of documented unit positions in
+March 1945.
 
 - **M16 MGMC (War Thunder)** — KojfDiscord. Source:
   https://sketchfab.com/3d-models/m16-mgmc-war-thunder-fbdb51b1f92f45eebe791a16d805acd4
@@ -28,12 +29,45 @@ not a reconstruction of documented unit positions in March 1945.
   File: `flak88_sfl.glb`. Build 20 runtime changes: Lambert material conversion,
   metre-scale normalization and two shared clones at the existing gun positions;
   the original GLB remains unchanged.
+- **1940 Ford V8** — Saurav Maity. Primary source:
+  https://sketchfab.com/3d-models/1940-ford-v8-d9e2efb283534eebae96cf0963820d35
+  Author: https://sketchfab.com/saurav.maity
+  License shown on the source page: **CC BY 4.0**,
+  https://creativecommons.org/licenses/by/4.0/
+  Files: `assets/remagen/ford1940/1940_ford_v8.fbx` plus its supplied textures. The
+  source archive was obtained from the public author-attributed mirror
+  https://downloadfree3d.com/3d-models/vehicles/classic-car/1940-ford-v8/
+  Runtime changes: Lambert material conversion, centring and 4.75m normalization. To
+  match the archive's supplied PNG files, the FBX's external `.dds` filename suffixes
+  were changed to `.png`; geometry is unchanged. The 78 source meshes are combined by
+  shared material into no more than 23 render batches and cloned for four civilian cars.
+- **DRB 01.10 Steam Locomotive (low poly)** — Götz von Berlichingen. Primary source:
+  https://sketchfab.com/3d-models/drb-0110-steam-locomotive-low-poly-b4e4252632f44492b6c018627a6b4a60
+  Author: https://sketchfab.com/vonBerlichingen
+  License shown on the source page: **CC BY 4.0**,
+  https://creativecommons.org/licenses/by/4.0/
+  File: `assets/remagen/drb0110/drb0110.glb`. The Collada source and its textures were
+  obtained from the public author-attributed mirror
+  https://downloadfree3d.com/3d-models/vehicles/trains/drb-01-10-steam-locomotive-low-poly/
+  and converted locally to one texture-embedded GLB. Runtime changes: Lambert material
+  conversion, centring and 24.1m normalization. The shipped result is two meshes and
+  6,940 triangles and replaces the procedural train target.
+- **Horse** — Quaternius. Source:
+  https://poly.pizza/m/qvTrSG9pZF
+  Author: https://quaternius.com/
+  License shown on the source page: **CC0 1.0**,
+  https://creativecommons.org/publicdomain/zero/1.0/
+  File: `assets/remagen/horse/quaternius_horse.glb`. Runtime changes: Lambert material
+  conversion, centring and 2.5m normalization. Eight skeleton-safe clones use the supplied
+  `Walk` animation and are paired with the project's low-cost wooden cart geometry. The
+  source horse is eight skinned meshes, 2,182 triangles and 50 bones.
 
 Build 19 also reuses the repository's existing `merchant_ship.glb` as a two-copy,
 30m Rhine workboat silhouette. The GLB contains no embedded author, source or licence
 metadata, so none is invented here. It is a visual stand-in, not a historically exact
 Remagen ferry; the original file remains unchanged.
 
-Attribution is transcribed from each GLB's `asset.extras`; it does not establish
-rights beyond those recorded by the model uploader. No new Sketchfab download
-or account access was used for this revision.
+Attribution for the original repository GLBs is transcribed from each GLB's
+`asset.extras`. Build 21 attribution and licenses were checked against the linked primary
+model pages; public mirrors supplied the two downloadable source archives. This record does
+not establish rights beyond those granted by the named uploaders.

@@ -237,7 +237,7 @@
   <div style="width:100%;height:4px;background:repeating-linear-gradient(45deg,#ffd400,#ffd400 8px,#111 8px,#111 16px);"></div>
   <span id="testVersionBannerText" style="background:#111;color:#ffd400;font-family:monospace;font-weight:800;font-size:11px;letter-spacing:.5px;padding:3px 10px;border:1px solid #ffd400;border-top:none;border-radius:0 0 6px 6px;"></span>
 </div>
-<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — REMAGEN BUILD 20 — FLAK DEFENSE — 2026-09-19';</script>
+<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — REMAGEN BUILD 21 — PERIOD TRAFFIC — 2026-09-20';</script>
 <!-- ===== END TEMP TEST-ONLY VERSION BANNER ===== -->
 <div id="app"></div>
 
@@ -264,7 +264,7 @@
   <div id="flash"></div>
   <div id="gunsight"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">REMAGEN BUILD 20 · FLAK DEFENSE</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">REMAGEN BUILD 21 · PERIOD TRAFFIC</div>
 
   <div id="apr">
     <div id="aprCall"></div>
@@ -369,6 +369,9 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/fflate@0.6.9/umd/index.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/FBXLoader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/utils/SkeletonUtils.js"></script>
 <!-- terrain-system: real DEM/OSM/historical data for the Remagen/Rhein area, built and verified
      in a standalone prototype first (terrain-system/demo-remagen.html) before this file existed —
      see terrain-system/real/ for the conversion tools and CLAUDE.md-equivalent history in this
@@ -376,14 +379,14 @@
      own per-object userData tagging, added specifically to support this mission file) — the whole
      point of building the prototype first was that this game only needs to point them at real data,
      not rewrite them. -->
-<script src="terrain-system/HeightProvider.js?v=remagen-20"></script>
-<script src="terrain-system/TerrainTile.js?v=remagen-20"></script>
-<script src="terrain-system/TerrainManager.js?v=remagen-20"></script>
-<script src="terrain-system/OSMManager.js?v=remagen-20"></script>
-<script src="terrain-system/HistoricalObjectManager.js?v=remagen-20"></script>
-<script src="terrain-system/AirfieldDetails.js?v=remagen-20"></script>
-<script src="terrain-system/WorldVehicles.js?v=remagen-20"></script>
-<script src="terrain-system/LivingWorld.js?v=remagen-20"></script>
+<script src="terrain-system/HeightProvider.js?v=remagen-21"></script>
+<script src="terrain-system/TerrainTile.js?v=remagen-21"></script>
+<script src="terrain-system/TerrainManager.js?v=remagen-21"></script>
+<script src="terrain-system/OSMManager.js?v=remagen-21"></script>
+<script src="terrain-system/HistoricalObjectManager.js?v=remagen-21"></script>
+<script src="terrain-system/AirfieldDetails.js?v=remagen-21"></script>
+<script src="terrain-system/WorldVehicles.js?v=remagen-21"></script>
+<script src="terrain-system/LivingWorld.js?v=remagen-21"></script>
 <script>
 // ============================================================
 //  REMAGEN 1945 — REAL TERRAIN (forked from thunderbolt-europe.html)
@@ -605,9 +608,9 @@ function clearTreesNearAirfield(){
 async function loadRealWorld(){
   const setLoadingText=(s)=>{ const el=document.getElementById('loadingText'); if(el) el.textContent=s; };
 
-  if(OSMManager.BUILD!==20||HistoricalObjectManager.BUILD!==20||LivingWorld.BUILD!==20||WorldVehicles.BUILD!==20) throw new Error('Terrain version mismatch. Reload Remagen.');
+  if(OSMManager.BUILD!==21||HistoricalObjectManager.BUILD!==21||LivingWorld.BUILD!==21||WorldVehicles.BUILD!==21) throw new Error('Terrain version mismatch. Reload Remagen.');
   document.getElementById('testVersionBannerText').textContent=
-    'TEST BUILD — REMAGEN BUILD 20 — FLAK DEFENSE — MODULE 20';
+    'TEST BUILD — REMAGEN BUILD 21 — PERIOD TRAFFIC — MODULE 21';
   heightProvider=new DEMHeightProvider(RTILE,'terrain-system/real/data/dem/');
   terrain=new TerrainManager(scene,RTILE,heightProvider);
   osmMgr=new OSMManager(scene,RTILE,terrain,'terrain-system/real/data/osm/');
@@ -630,7 +633,7 @@ async function loadRealWorld(){
   setLoadingText('Preparing water boundaries…');
   const osmCoords=[];
   for(let tz=0;tz<RGRID_H;tz++) for(let tx=0;tx<RGRID_W;tx++) osmCoords.push([tx,tz]);
-  await osmMgr.prepareRegion(osmCoords,'terrain-system/real/data/waterways.json?v=remagen-20');
+  await osmMgr.prepareRegion(osmCoords,'terrain-system/real/data/waterways.json?v=remagen-21');
 
   // Phase 3: real roads/rail/river/forest/farmland/buildings (OSMManager) and the historical
   // layer (bridge/flak/factory/airfield) — both need a real TERRAIN TILE already built at their

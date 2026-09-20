@@ -8,7 +8,7 @@
 // ============================================================
 
 class LivingWorld {
-  static get BUILD(){ return 20; }
+  static get BUILD(){ return 21; }
 
   constructor(scene,terrain,osm,landmarks={}){
     this.scene=scene;this.terrain=terrain;this.osm=osm;this.landmarks=landmarks;
@@ -30,7 +30,8 @@ class LivingWorld {
       tyre:lambert(0x171817),steel:lambert(0x4a4b47),rust:lambert(0x63483b),
       wood:lambert(0x654a31),hay:lambert(0xa08a51),hedge:lambert(0x36552d),
       leaf:lambert(0x557044),trunk:lambert(0x51402d),cow:lambert(0x6c5d4a),
-      cream:lambert(0xb6ab91),riverHull:lambert(0x414b49),deck:lambert(0x79684b)
+      cream:lambert(0xb6ab91),ceramic:lambert(0xd6d0bf),
+      riverHull:lambert(0x414b49),deck:lambert(0x79684b)
     };
   }
 
@@ -129,10 +130,17 @@ class LivingWorld {
     this._rememberMaterials(g);return g;
   }
   _makeWagon(){
-    const g=new THREE.Group();this._box(g,3.8,.5,1.7,this.mat.wood,0,1,0);
-    this._box(g,3.5,1.0,1.55,this.mat.hay,0,1.75,0);
-    for(const z of [-1.15,1.15]){const axle=this._cyl(g,.62,1.95,this.mat.dark,0,.65,z,10);axle.rotation.z=Math.PI/2;}
-    this._rememberMaterials(g);return g;
+    const g=new THREE.Group();this._box(g,1.9,.26,3.25,this.mat.wood,0,1.0,0);
+    this._box(g,.14,.72,3.35,this.mat.wood,-.92,1.42,0);this._box(g,.14,.72,3.35,this.mat.wood,.92,1.42,0);
+    this._box(g,1.72,.72,.14,this.mat.wood,0,1.42,-1.58);this._box(g,1.72,.72,.14,this.mat.wood,0,1.42,1.58);
+    const bale=this._cyl(g,.68,1.5,this.mat.hay,0,1.72,-.25,9);bale.rotation.z=Math.PI/2;
+    for(const x of [-1.02,1.02])for(const z of [-1.08,1.08]){
+      const wheel=new THREE.Mesh(new THREE.TorusGeometry(.55,.12,6,12),this.mat.dark);
+      wheel.position.set(x,.66,z);wheel.rotation.y=Math.PI/2;g.add(wheel);
+    }
+    this._box(g,.12,.12,3.2,this.mat.wood,-.48,.8,3.05);this._box(g,.12,.12,3.2,this.mat.wood,.48,.8,3.05);
+    const merged=WorldVehicles.mergeStaticByMaterial(g);merged.name='periodWagon';
+    this._rememberMaterials(merged);return merged;
   }
   _makeCivilCar(){
     const g=new THREE.Group();this._box(g,4.3,.55,1.65,this.mat.dark,0,.65,0);
@@ -186,10 +194,19 @@ class LivingWorld {
   installVehicleModels(templates){
     let replaced=0;
     for(const e of this.entities){
-      const source=e.kind==='truck'?'tiger':(e.kind==='ferry'?'merchant':null);
+      const source=e.kind==='truck'?'tiger':(e.kind==='ferry'?'merchant':
+        (e.kind==='train'?'train':(e.kind==='civil'?'civilCar':(e.kind==='wagon'?'horse':null))));
       const template=source&&templates&&templates.get(source);
       if(!template||e.visual.userData.sourceModel===source)continue;
-      const visual=template.clone(true);visual.userData.sourceModel=source;
+      let visual;
+      if(source==='horse'){
+        const cart=e.visual;visual=new THREE.Group();visual.name='living-horse-cart-model';
+        e.model.remove(cart);visual.add(cart);
+        const horse=THREE.SkeletonUtils.clone(template);horse.name='living-horse';horse.position.z=3.05;visual.add(horse);
+        const clips=template.animations||[],walk=clips.find(c=>c.name==='Walk')||clips.find(c=>/Walk$/.test(c.name));
+        if(walk){e.mixer=new THREE.AnimationMixer(horse);e.mixer.clipAction(walk).play();}
+      }else visual=template.clone(true);
+      visual.userData.sourceModel=source;
       if(source==='merchant')visual.scale.y=.55;
       this._rememberMaterials(visual);
       e.model.remove(e.visual);e.visual=visual;e.model.add(visual);replaced++;
@@ -218,7 +235,7 @@ class LivingWorld {
       if(e.alive||!Number.isFinite(e.last.x))e.last=this._sample(e.route,e.phase);
       const p=e.last,near=Math.hypot(p.x-focusX,p.z-focusZ)<e.visibleRadius;
       e.model.visible=near;
-      if(near&&e.alive){e.model.position.set(p.x,this._groundEntity(e,p),p.z);e.model.rotation.y=p.yaw;}
+      if(near&&e.alive){e.model.position.set(p.x,this._groundEntity(e,p),p.z);e.model.rotation.y=p.yaw;if(e.mixer)e.mixer.update(dt);}
     }
     this._smokeClock-=dt;
     if(emitSmoke&&this._smokeClock<=0){
@@ -302,14 +319,16 @@ class LivingWorld {
   _polePlacements(limit){
     const out=[],seen=new Set();
     const preferred=this.routes.road.concat(this._collectLines('roads',1100).sort((a,b)=>b.length-a.length));
+    let routeId=0;
     for(const route of preferred){
       const routeKey=Math.round(route.mid[0]/50)+','+Math.round(route.mid[1]/50);if(seen.has(routeKey))continue;seen.add(routeKey);
       if(out.length>=limit)break;
       for(let d=70;d<route.length-60&&out.length<limit;d+=105){
-        const p=this._sample(route,d),side=(Math.floor(d/105)%2?1:-1),x=p.x+Math.cos(p.yaw)*9*side,z=p.z-Math.sin(p.yaw)*9*side;
+        const p=this._sample(route,d),side=routeId%2?1:-1,x=p.x+Math.cos(p.yaw)*9*side,z=p.z-Math.sin(p.yaw)*9*side;
         if(this._pointOnWater(x,z))continue;
-        out.push({x,z,y:this.terrain.getRenderedHeight(x,z),rot:p.yaw,scale:1+osmHash(x,z,207)*.16});
+        out.push({x,z,y:this.terrain.getRenderedHeight(x,z),rot:p.yaw,scale:1+osmHash(x,z,207)*.16,routeId,d});
       }
+      routeId++;
     }
     return out;
   }
@@ -335,6 +354,26 @@ class LivingWorld {
     this._instances('haystacks',new THREE.ConeGeometry(1.7,3.2,8),this.mat.hay,hay,basic(1.6,1));
     this._instances('telegraphPoles',new THREE.CylinderGeometry(.25,.34,11.5,7),this.mat.wood,poles,basic(5.75,1));
     this._instances('telegraphCrossbars',new THREE.BoxGeometry(6.4,.34,.34),this.mat.dark,poles,(o,p,q,s)=>{p.set(o.x,o.y+10.7*o.scale,o.z);q.setFromAxisAngle(up,o.rot);s.set(o.scale,o.scale,o.scale);});
+    const insulators=[];for(const o of poles)for(const offset of [-2.35,0,2.35])insulators.push({...o,offset});
+    this._instances('telegraphInsulators',new THREE.CylinderGeometry(.15,.22,.48,7),this.mat.ceramic,insulators,(o,p,q,s)=>{
+      p.set(o.x+Math.cos(o.rot)*o.offset*o.scale,o.y+11.05*o.scale,o.z-Math.sin(o.rot)*o.offset*o.scale);
+      q.setFromAxisAngle(up,o.rot);s.set(o.scale,o.scale,o.scale);
+    });
+    const wirePoints=[],byRoute=new Map();for(const o of poles){if(!byRoute.has(o.routeId))byRoute.set(o.routeId,[]);byRoute.get(o.routeId).push(o);}
+    for(const list of byRoute.values())for(let i=1;i<list.length;i++){
+      const a=list[i-1],b=list[i];if(Math.hypot(a.x-b.x,a.z-b.z)>155)continue;
+      for(const offset of [-2.35,0,2.35]){
+        const ax=a.x+Math.cos(a.rot)*offset*a.scale,az=a.z-Math.sin(a.rot)*offset*a.scale,ay=a.y+11.28*a.scale;
+        const bx=b.x+Math.cos(b.rot)*offset*b.scale,bz=b.z-Math.sin(b.rot)*offset*b.scale,by=b.y+11.28*b.scale;
+        const mx=(ax+bx)/2,mz=(az+bz)/2,my=(ay+by)/2-1.05;
+        wirePoints.push(ax,ay,az,mx,my,mz,mx,my,mz,bx,by,bz);
+      }
+    }
+    if(wirePoints.length){
+      const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(wirePoints,3));
+      const wires=new THREE.LineSegments(g,new THREE.LineBasicMaterial({color:0x33352f,transparent:true,opacity:.78,depthWrite:false}));
+      wires.name='telegraphWires';wires.frustumCulled=false;this.details.add(wires);
+    }
     this._instances('cattleBodies',new THREE.DodecahedronGeometry(1,0),this.mat.cow,cows,(o,p,q,s)=>{p.set(o.x,o.y+1.25,o.z);q.setFromAxisAngle(up,o.rot);s.set(1.5*o.scale,.75*o.scale,.68*o.scale);});
     this._instances('cattleHeads',new THREE.BoxGeometry(1,1,1),this.mat.dark,cows,(o,p,q,s)=>{p.set(o.x+Math.sin(o.rot)*1.35,o.y+1.35,o.z+Math.cos(o.rot)*1.35);q.setFromAxisAngle(up,o.rot);s.set(.62*o.scale,.58*o.scale,.62*o.scale);});
     this.detailCounts={fields:fields.length,hedges:hedges.length,poles:poles.length,orchards:orchards.length,hay:hay.length,cows:cows.length,buckets:this.details.children.length};
