@@ -6,19 +6,11 @@
 
 class OSMManager {
   static get BUILD(){ return 21; }
-  // regionStyle mirrors TerrainManager's: optional, defaults to 'temperate' so
-  // every existing caller (three demo pages, remagen-mission.html) is byte-for-
-  // byte unaffected. 'tropical' (pacific-terrain-test.html only) swaps water
-  // colour, tree species and building style — reported directly against real
-  // iPad screenshots: Okinawa's water, forests and villages all rendered
-  // identically to Remagen's, because this module never had a second look.
-  constructor(scene, tileSize, terrainManager, baseUrl = 'data/osm/', regionStyle='temperate'){
+  constructor(scene, tileSize, terrainManager, baseUrl = 'data/osm/'){
     this.scene = scene;
     this.tileSize = tileSize;
     this.terrain = terrainManager;
     this.baseUrl = baseUrl;
-    this.regionStyle = regionStyle;
-    const tropical = regionStyle==='tropical';
     this.tiles = new Map();
     this.sourceTiles = new Map();
     this.waterIndex = null;
@@ -26,70 +18,44 @@ class OSMManager {
 
     this.roadMat = new THREE.MeshStandardMaterial({ color: 0x3a3a3a, roughness: 1 });
     this.railMat = new THREE.MeshStandardMaterial({ color: 0x585048, roughness: 0.8 });
-    // Muted, fairly rough water suited an overcast inland river (Remagen). The
-    // user's own Okinawa screenshots showed the coastline/lakes in this exact
-    // grey-teal -- read on a real iPad as "was ist grau" against sub-tropical
-    // land. Tropical water is a real optical effect, not decoration: shallow
-    // water over pale sand/reef reads bright turquoise, deeper water a
-    // saturated blue -- both far more reflective (lower roughness) than a
-    // silty river.
-    this.riverMat = new THREE.MeshStandardMaterial({
-      color: tropical?0x1f7f8c:0x365f66, roughness: tropical?0.35:0.84, metalness: 0 });
-    this.lakeMat = new THREE.MeshStandardMaterial({
-      color: tropical?0x1478a8:0x3a6268, roughness: tropical?0.3:0.82, metalness: 0 });
+    // Muted, fairly rough water suits an overcast inland river. BUILD 16's
+    // bright 48m wave tile produced a severe checker/moire pattern on iPad.
+    this.riverMat = new THREE.MeshStandardMaterial({ color: 0x365f66, roughness: 0.84, metalness: 0 });
+    this.lakeMat = new THREE.MeshStandardMaterial({ color: 0x3a6268, roughness: 0.82, metalness: 0 });
     this.waterTexture=makeOSMWaterTexture();
     this.riverMat.map=this.lakeMat.map=this.waterTexture;
     // Farmland is a subtle tint over the textured terrain, not an opaque map
     // polygon. Opaque yellow polygons made whole valleys read like a board game.
-    // Tropical fields (sugarcane, rice paddies) read saturated green, not the
-    // golden-tan of a temperate harvest -- same subtle-tint mechanism, new hue.
     this.farmMat = new THREE.MeshStandardMaterial({
-      color: tropical?0x4a8f3c:0x8a8054, roughness: 1, transparent: true, opacity: 0.20,
+      color: 0x8a8054, roughness: 1, transparent: true, opacity: 0.20,
       depthWrite: false, polygonOffset: true, polygonOffsetFactor: -1
     });
 
     // Building palette: still cheap/instanced, but no longer one identical box everywhere.
-    // Tropical walls: pale concrete/stucco tones real Okinawan houses actually
-    // use (white, pale grey, sandy beige, pale coral) -- close in LIGHTNESS to
-    // the temperate palette (so the same lighting/shadow reads correctly) but
-    // without the German warm-tan/brick hues, and with no facade texture (see
-    // below): a fake German window grid is wrong on ANY Okinawan house.
-    this.buildingWarmMat = new THREE.MeshStandardMaterial({ color: tropical?0xdcd5c2:0xb1a48c, roughness: 0.9 });
-    this.buildingCoolMat = new THREE.MeshStandardMaterial({ color: tropical?0xc8cdc9:0x8b8a82, roughness: 0.92 });
-    this.buildingOchreMat = new THREE.MeshStandardMaterial({ color: tropical?0xd8c9a8:0xae8960, roughness: 0.9 });
-    this.buildingBrickMat = new THREE.MeshStandardMaterial({ color: tropical?0xdec2ba:0x895f51, roughness: 0.92 });
+    this.buildingWarmMat = new THREE.MeshStandardMaterial({ color: 0xb1a48c, roughness: 0.95 });
+    this.buildingCoolMat = new THREE.MeshStandardMaterial({ color: 0x8b8a82, roughness: 0.98 });
+    this.buildingOchreMat = new THREE.MeshStandardMaterial({ color: 0xae8960, roughness: 0.97 });
+    this.buildingBrickMat = new THREE.MeshStandardMaterial({ color: 0x895f51, roughness: 0.98 });
     this.roofMat = new THREE.MeshStandardMaterial({ color: 0x653b31, roughness: 0.95 });
     this.roofSlateMat = new THREE.MeshStandardMaterial({ color: 0x454b4a, roughness: 0.98 });
     this.roofBrownMat = new THREE.MeshStandardMaterial({ color: 0x574439, roughness: 1 });
-    // Flat concrete roofs are THE defining silhouette of real modern Okinawan
-    // houses (built flat and reinforced against typhoons, often with a rooftop
-    // water tank) -- not a simplification, the architecturally correct choice
-    // over a European pitched gable. Two tones: bare grey concrete, and the
-    // island's traditional red Ryukyu roof-tile colour, alternated per house
-    // via the same per-building hash already used for the wall palette below.
-    this.flatRoofMat = new THREE.MeshStandardMaterial({ color: tropical?0x9a958a:0x4d4b45, roughness: tropical?0.85:1 });
-    this.flatRoofRedMat = new THREE.MeshStandardMaterial({ color: 0xa14a2e, roughness: 0.88 });
+    this.flatRoofMat = new THREE.MeshStandardMaterial({ color: 0x4d4b45, roughness: 1 });
     this.chimneyMat = new THREE.MeshStandardMaterial({ color: 0x4e4038, roughness: 1 });
     this.facadeDetailMat = new THREE.MeshStandardMaterial({ color: 0x27302d, roughness: 0.85 });
     // Four genuinely different atlases, one per existing material bucket. This
     // changes no draw-call budget, but stops every house from carrying the same
-    // perfectly mirrored window grid when seen low over a village. Skipped for
-    // tropical: that window/door atlas is drawn in a German facade style (see
-    // makeOSMFacadeTexture's own comments) -- plain concrete-tone walls with no
-    // map read as Okinawan concrete-block houses far better than a wrong texture.
-    if(!tropical){
-      this.facadeTextures = [0,1,2,3].map(makeOSMFacadeTexture);
-      this.roofTexture = makeOSMRoofTexture();
-      [this.buildingWarmMat,this.buildingCoolMat,this.buildingOchreMat,this.buildingBrickMat]
-        .forEach((mat,i)=>{ mat.map=this.facadeTextures[i]; });
-      this.roofMat.map = this.roofSlateMat.map = this.roofBrownMat.map = this.roofTexture;
-    }
+    // perfectly mirrored window grid when seen low over a village.
+    this.facadeTextures = [0,1,2,3].map(makeOSMFacadeTexture);
+    this.roofTexture = makeOSMRoofTexture();
+    [this.buildingWarmMat,this.buildingCoolMat,this.buildingOchreMat,this.buildingBrickMat]
+      .forEach((mat,i)=>{ mat.map=this.facadeTextures[i]; });
+    this.roofMat.map = this.roofSlateMat.map = this.roofBrownMat.map = this.roofTexture;
 
     // A subdued polygon floor makes mapped woods read as one continuous mass
     // from the air. Individual trees remain for silhouette/parallax up close;
     // this adds one bounded draw call per tile, not more tree instances.
     this.forestFloorMat = new THREE.MeshStandardMaterial({
-      color: tropical?0x1f5a26:0x29472a, roughness:1,transparent:true,opacity:.62,depthWrite:false,
+      color:0x29472a,roughness:1,transparent:true,opacity:.62,depthWrite:false,
       polygonOffset:true,polygonOffsetFactor:-1
     });
     // Vegetation palette. Four tree draw calls plus one forest-floor draw call
@@ -100,19 +66,8 @@ class OSMManager {
     this.shrubGeo = new THREE.DodecahedronGeometry(2.3, 0);
     this.trunkMat = new THREE.MeshStandardMaterial({ color: 0x51402d, roughness: 1 });
     this.coniferMat = new THREE.MeshStandardMaterial({ color: 0x284d28, roughness: 1 });
-    this.deciduousMat = new THREE.MeshStandardMaterial({ color: tropical?0x2f7a34:0x3f6835, roughness: 1 });
-    this.shrubMat = new THREE.MeshStandardMaterial({ color: tropical?0x3d7a3a:0x536f3a, roughness: 1 });
-    // Reported directly: "Gibt es in Okinawa Nadelbäume?" -- no. The 'conifer'
-    // slot (previously a pine cone) becomes a palm crown for tropical: a wide,
-    // flattened cone stands in for a radiating cluster of fronds -- the same
-    // cheap single-InstancedMesh-per-slot budget as every other tree kind here,
-    // just a different silhouette/colour, plus a second, taller palm-trunk
-    // InstancedMesh (thin, pale, leaning slightly) instead of the shared brown
-    // European trunk, which reads unmistakably as an oak/beech trunk otherwise.
-    this.palmTrunkGeo = new THREE.CylinderGeometry(0.22, 0.34, 8.5, 6);
-    this.palmCrownGeo = makeOSMPalmCrownGeometry();
-    this.palmTrunkMat = new THREE.MeshStandardMaterial({ color: 0x8a7a5a, roughness: 1 });
-    this.palmCrownMat = new THREE.MeshStandardMaterial({ color: 0x255220, roughness: 1 });
+    this.deciduousMat = new THREE.MeshStandardMaterial({ color: 0x3f6835, roughness: 1 });
+    this.shrubMat = new THREE.MeshStandardMaterial({ color: 0x536f3a, roughness: 1 });
 
     this.boxGeo = new THREE.BoxGeometry(1, 1, 1);
     this.wallGeo = makeOSMWallGeometry();
@@ -125,8 +80,7 @@ class OSMManager {
 
     this.sharedGeometries = new Set([
       this.boxGeo, this.wallGeo, this.gableRoofGeo, this.chimneyGeo, this.trunkGeo,
-      this.coniferGeo, this.deciduousGeo, this.shrubGeo, this.spireGeo,
-      this.palmTrunkGeo, this.palmCrownGeo
+      this.coniferGeo, this.deciduousGeo, this.shrubGeo, this.spireGeo
     ]);
   }
 
@@ -519,15 +473,10 @@ class OSMManager {
     const floor=this._buildFlatPolygons(polys,ox,oz,this.forestFloorMat,.18);
     if(floor){ floor.name='osmForestFloor';group.add(floor); }
 
-    const tropical = this.regionStyle==='tropical';
     const conifers = placements.filter(p => p.kind === 0);
     const deciduous = placements.filter(p => p.kind === 1);
     const shrubs = placements.filter(p => p.kind === 2);
-    // Tropical: the 'conifer' slot becomes palms (see constructor comment) with
-    // their own trunk, built separately below -- so only deciduous still uses
-    // the shared European oak/beech trunk. Temperate: unchanged, both trunked
-    // kinds share one trunk mesh exactly as before.
-    const trunked = tropical ? deciduous : placements.filter(p => p.kind !== 2);
+    const trunked = placements.filter(p => p.kind !== 2);
 
     const m = new THREE.Matrix4();
     const q = new THREE.Quaternion();
@@ -553,7 +502,7 @@ class OSMManager {
     const addCanopies = (items, geo, mat, yFactor, sx, sy, sz) => {
       if(!items.length) return;
       const mesh = new THREE.InstancedMesh(geo, mat, items.length);
-      mesh.name = geo===this.coniferGeo ? 'osmForestConifers' : (geo===this.deciduousGeo ? 'osmForestDeciduous' : (geo===this.palmCrownGeo?'osmForestPalms':'osmForestShrubs'));
+      mesh.name = geo===this.coniferGeo ? 'osmForestConifers' : (geo===this.deciduousGeo ? 'osmForestDeciduous' : 'osmForestShrubs');
       for(let i=0;i<items.length;i++){
         const p=items[i], y=this._safeRenderedHeight(p.x,p.z,ox,oz);
         q.setFromAxisAngle(OSM_UP,p.rot);
@@ -566,35 +515,7 @@ class OSMManager {
       group.add(mesh);
     };
 
-    if(tropical){
-      // Reported: "Gibt es in Okinawa Nadelbäume?" -- no conifers, palms
-      // instead, each with its own (taller, thinner) trunk and a flattened
-      // crown standing in for a frond cluster.
-      if(conifers.length){
-        const palmTrunks = new THREE.InstancedMesh(this.palmTrunkGeo, this.palmTrunkMat, conifers.length);
-        palmTrunks.name='osmForestPalmTrunks';
-        for(let i=0;i<conifers.length;i++){
-          const p=conifers[i], y=this._safeRenderedHeight(p.x,p.z,ox,oz);
-          // A slight lean per tree reads far more like a real palm than a
-          // perfectly vertical trunk.
-          const lean=(osmHash(p.x,p.z,201)-.5)*0.22;
-          q.setFromAxisAngle(new THREE.Vector3(Math.cos(p.rot),0,Math.sin(p.rot)),lean);
-          pos.set(p.x,y+2.2*p.scale,p.z);
-          scale.set(p.scale*.7,p.scale*p.height*1.35,p.scale*.7);
-          m.compose(pos,q,scale);
-          palmTrunks.setMatrixAt(i,m);
-        }
-        palmTrunks.instanceMatrix.needsUpdate=true;
-        group.add(palmTrunks);
-      }
-      // The merged geometry is already correctly proportioned in the same
-      // units as the trunk (built from addPalm's real blade dimensions) --
-      // near-uniform scale here, not the old flat cone's compensating 1.5x
-      // stretch, is what keeps it looking like a frond cluster, not a disc.
-      addCanopies(conifers, this.palmCrownGeo, this.palmCrownMat, 7.8, 1.0, 1.0, 1.0);
-    } else {
-      addCanopies(conifers, this.coniferGeo, this.coniferMat, 5.6, 1.0, 1.0, 1.0);
-    }
+    addCanopies(conifers, this.coniferGeo, this.coniferMat, 5.6, 1.0, 1.0, 1.0);
     addCanopies(deciduous, this.deciduousGeo, this.deciduousMat, 5.5, 1.15, 1.05, 1.15);
     addCanopies(shrubs, this.shrubGeo, this.shrubMat, 1.5, 1.25, 0.85, 1.25);
 
@@ -633,14 +554,7 @@ class OSMManager {
       if(barn)h=6+r*2.8;
       if(church)h=13+r*3.5;
       if(industrial)h=7.5+r*3.5;
-      // Reported: "Die Häuser sind ident mit Remagen. Ändern zu japanischen
-      // Häusern." A flat concrete roof -- not a European gable -- is the
-      // actually correct, typhoon-resistant silhouette of a real modern
-      // Okinawan house (see constructor comment on flatRoofMat/flatRoofRedMat).
-      // Every tropical building takes the flat-roof code path already used
-      // here for industrial sheds; nothing about churches/chimneys/gable tone
-      // below can fire once this is false, so nothing extra needed there.
-      const pitched=this.regionStyle==='tropical'?false:!industrial;
+      const pitched=!industrial;
       // Neighbourhood-scale wall palette creates coherent streets; a fine hash
       // keeps every block from being literally identical.
       let palette=Math.min(3,Math.floor(osmValueNoise(x/260,z/260,122)*4));
@@ -734,20 +648,9 @@ class OSMManager {
       mesh.instanceMatrix.needsUpdate=true;group.add(mesh);
     }
 
-    const flatAll=roofParts.filter(d=>!d.pitched);
-    // Tropical: split the flat-roof bucket between bare grey concrete and the
-    // island's traditional red Ryukyu tile colour (see constructor comment),
-    // per-building via the same wall-palette hash already computed above --
-    // two InstancedMeshes instead of one, still bounded, still tiny next to
-    // the wall/canopy buckets. Temperate keeps the original single grey bucket
-    // (industrial sheds only) untouched.
-    const flatBuckets = this.regionStyle==='tropical'
-      ? [ [flatAll.filter(d=>d.palette%2===0), this.flatRoofMat,    'osmBuildingRoofsFlatGrey'],
-          [flatAll.filter(d=>d.palette%2===1), this.flatRoofRedMat, 'osmBuildingRoofsFlatRed'] ]
-      : [ [flatAll, this.flatRoofMat, 'osmBuildingRoofsFlat'] ];
-    for(const [flat,mat,name] of flatBuckets){
-      if(!flat.length) continue;
-      const mesh=new THREE.InstancedMesh(this.boxGeo,mat,flat.length);mesh.name=name;
+    const flat=roofParts.filter(d=>!d.pitched);
+    if(flat.length){
+      const mesh=new THREE.InstancedMesh(this.boxGeo,this.flatRoofMat,flat.length);mesh.name='osmBuildingRoofsFlat';
       const m=new THREE.Matrix4(),q=new THREE.Quaternion(),pos=new THREE.Vector3(),scale=new THREE.Vector3();
       for(let i=0;i<flat.length;i++){
         const d=flat[i];q.setFromAxisAngle(OSM_UP,d.rotY);pos.set(d.x,d.wallTop+.35,d.z);
@@ -1051,47 +954,6 @@ function makeGableRoofGeometry(){
   geo.computeVertexNormals();
   geo.computeBoundingSphere();
   return geo;
-}
-
-// A single, static InstancedMesh geometry standing in for a whole palm crown
-// (radiating, drooping fronds), built by baking `torpedo-carrier.html`'s own
-// already-proven `addPalm()` blade shape/placement (thin drooping cone blades,
-// spun radially) into one merged BufferGeometry instead of live per-tree
-// Mesh objects -- InstancedMesh needs one shared geometry per instance, so
-// the live-Group approach that file uses for a handful of beach palms isn't
-// usable directly at forest-scatter scale (potentially thousands of trees).
-// Replaces a first attempt that just squashed a single wide cone flat (read
-// as a pale mushroom/umbrella on iPad-style rendering, not a palm) -- this
-// one visibly is the same silhouette `addPalm()` already earned on real
-// screenshots, just baked once instead of built per tree.
-function makeOSMPalmCrownGeometry(){
-  const nf=6;
-  const dummy=new THREE.Object3D();
-  const parts=[];
-  for(let i=0;i<nf;i++){
-    const geo=new THREE.ConeGeometry(0.62,3.4,4).toNonIndexed();
-    dummy.position.set(0,0,0);
-    dummy.rotation.set(Math.PI/2-0.56,0,(i/nf)*Math.PI*2);   // droop + radial spin, addPalm's own angles
-    dummy.scale.set(0.55,1,1);                                // a blade, not a fat cone
-    dummy.updateMatrix();
-    dummy.translateY(1.35);                                   // addPalm's own post-rotation lift
-    dummy.updateMatrix();
-    geo.applyMatrix4(dummy.matrix);
-    parts.push(geo);
-  }
-  let total=0; for(const g of parts) total+=g.attributes.position.count;
-  const pos=new Float32Array(total*3), nor=new Float32Array(total*3);
-  let o=0;
-  for(const g of parts){
-    pos.set(g.attributes.position.array,o*3);
-    nor.set(g.attributes.normal.array,o*3);
-    o+=g.attributes.position.count;
-  }
-  const merged=new THREE.BufferGeometry();
-  merged.setAttribute('position',new THREE.BufferAttribute(pos,3));
-  merged.setAttribute('normal',new THREE.BufferAttribute(nor,3));
-  merged.computeBoundingSphere();
-  return merged;
 }
 
 function osmHash(x, z, salt){
