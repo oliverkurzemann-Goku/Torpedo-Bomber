@@ -274,7 +274,7 @@
   <div id="flash"></div>
   <div id="ltn" style="position:fixed;inset:0;background:#e6ecff;opacity:0;pointer-events:none;z-index:40;"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 121</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 122</div>
 
   <!-- Optical landing aid -->
   <div id="lso">
@@ -440,7 +440,7 @@ const WX={
 };
 let dbgOn=(localStorage.getItem('dbgOn')==='1');   // off unless switched on in the menu
 let lastGrade='';   // LSO grade of the most recent trap
-let dbgT=0, zeroRotor=null, zeroRotorAxis=null, zeroProp=null, zeroGear=null, propPivot=null, propDiskG=null, propBladesG=null, gearPivotG=null, gearMesh=null, gearDoors=null, seaUniforms=null;
+let dbgT=0, zeroRotor=null, zeroRotorAxis=null, zeroProp=null, zeroGear=null, propPivot=null, propDiskG=null, propBladesG=null, gearPivotG=null, gearMesh=null, gearDoors=null, gearWellCovers=null, seaUniforms=null;
 let seatMeshG=null, cockpitLight=null, ordTorp=null, ordBombs=null;
 let glassMeshes=[], headX=0, headY=0, headBob=0, pitHideMeshes=[];
 let debris=[];
@@ -516,10 +516,10 @@ const AIM_X       = -75;         // ideal touchdown point
 const CARRIER_MODEL_URL   = 'uss_midway.glb?v=2';
 // Japanese carrier, flown against in the defence sortie. Constants measured from the
 // model: hull 137.6 long, flight deck at raw Y=8.01 -> scale 240/137.6 for the same deck run.
-const IJN_CARRIER_URL     = 'ijn%20carrier.glb?v=2';
+const IJN_CARRIER_URL     = 'ijn%20carrier.glb?v=3';
 const IJN_SCALE           = 1.744;
 const IJN_DECK_Y_MODEL    = 8.01;
-let ijnCarrierModel       = null;
+let ijnCarrierModel       = null, ijnAssetPromise=null;
 let CARRIER_SCALE         = 1.35;
 let CARRIER_YAW           = Math.PI/2;
 let CARRIER_DECK_Y_MODEL  = 10.45;
@@ -527,18 +527,18 @@ let CARRIER_TARGET_DECK_Y = DECK_Y + 0.85;   // 16.85 — the surface the plane 
 let CARRIER_DX = 0, CARRIER_DZ = 0;
 let carrierModel = null, carrierModelLoaded = false;
 
-/* ---- IJN destroyer model (Samidare) : replaces the built-in "destroyer" type -
-   3D model: "Samidare destroyer" by everlasting17th
-   (https://sketchfab.com/3d-models/samidare-destroyer-b37939147c854e61857f5b248f9efd29)
-   licensed CC-BY-4.0. Drop samidare_destroyer.glb next to this HTML. Every mission
-   destroyer uses it; the hit-detection radius, flak and the sinking animation are
-   unchanged (the model just rides inside the existing ship group).
+/* ---- IJN destroyer model slot : replaces the built-in "destroyer" type -------
+   A future valid, licensed GLB can use this slot. Every mission destroyer would use it;
+   hit detection, flak and the sinking animation remain on the existing ship group.
    Tuning:
    - DEST_TARGET_LEN : ship length in game units (also drives the hit radius).
    - DEST_WATERLINE_Y: the raw model-Y that should sit at sea level (controls draft).
    - DEST_YAW        : add Math.PI if it should face the other way.
    Falls back to the built-in blocky destroyer if the .glb is missing.          */
-const DESTROYER_MODEL_URL = 'samidare_destroyer.glb?v=2';
+// The checked-in Samidare file was only a two-byte CR/LF placeholder, not a GLB. Do not issue
+// a guaranteed-failing request; the detailed procedural destroyer below is the deliberate
+// fallback until a licensed, valid replacement asset is added.
+const DESTROYER_MODEL_URL = null;
 let DEST_TARGET_LEN  = 60;
 let DEST_WATERLINE_Y = -1.7;
 let DEST_YAW = 0;
@@ -558,11 +558,12 @@ let FRT_YAW = 0;
 let freighterTemplate = null;
 
 /* ---- Capital ship model (IJN Zuihō light carrier) : replaces the "cruiser" type
-   3D model: "Japs 瑞凤 Zuihō Leyte1944" by World of WarGames (Sketchfab),
-   licensed CC-BY-4.0. Drop ijn_cruiser.glb next to this HTML. Used for the
-   capital-ship targets in Sorties 3 & 5; hit radius, flak and sinking unchanged.
+   Uses the same canonical licensed carrier asset as the defence sortie. It appears as
+   the capital-ship target in Sorties 3 & 5; hit radius, flak and sinking stay unchanged.
    Tuning: CRU_TARGET_LEN, CRU_WATERLINE_Y (draft), CRU_YAW (Math.PI flips).       */
-const CRUISER_MODEL_URL = 'ijn%20cruiser.glb?v=2';
+// The old "ijn cruiser.glb" was byte-for-byte identical to this carrier (10.8 MB twice).
+// Point both uses at one canonical asset so the browser cache and the repository carry it once.
+const CRUISER_MODEL_URL = IJN_CARRIER_URL;
 let CRU_TARGET_LEN  = 105;
 let CRU_WATERLINE_Y = -1.5;
 let CRU_YAW = 0;
@@ -1717,7 +1718,7 @@ function startMission(idx){
   P.heading=0; P.pitch=0; P.roll=0; P.spd=APP_SPD; P.throttle=0.6;
   P.vSpeed=0; P.fuel=m.fuel; P.hull=100; P.fuelRate=1/D().fuel; P.torps=m.torps; P.alive=true;
   P.touchResolved=false; P.boltMsgTimer=0; P.rtb=false;
-  P.gear=1; P.gearTgt=1; P.flap=0; P.flapTgt=0; P.diveBrake=false; P.dmgT=0;
+  P.gear=1; P.gearTgt=1; P.flap=0; P.flapTgt=0; P.diveBrake=false; P.diveBrakeVisual=0; P.dmgT=0;
   P.hook=1; P.hookTgt=1;   // matches how it always looked before this button existed: deployed
   P.ammo=1200; P.fireT=0; firing=false;
   P.rollBias=0; P.bingo=false; P.tailCool=0; P.pitchVel=0; P.rollVel=0;
@@ -2024,9 +2025,9 @@ function setupControls(){
     inputRoll = -dx/R;
     inputPitch = (invertPitch? dy/R : -dy/R); // screen up -> nose up by default
   }
-  stick.addEventListener('pointerdown',e=>{ if(sid!==null)return; sid=e.pointerId; stick.setPointerCapture(sid); set(e); e.preventDefault();});
+  stick.addEventListener('pointerdown',e=>{ if(sid!==null)return; sid=e.pointerId; P._stickActive=true; stick.setPointerCapture(sid); set(e); e.preventDefault();});
   stick.addEventListener('pointermove',e=>{ if(e.pointerId!==sid)return; set(e);});
-  function release(e){ if(e.pointerId!==sid)return; sid=null; inputRoll=0; inputPitch=0;
+  function release(e){ if(e.pointerId!==sid)return; sid=null; P._stickActive=false; inputRoll=0; inputPitch=0;
     knob.style.transform='translate(-50%,-50%)'; }
   stick.addEventListener('pointerup',release);
   stick.addEventListener('pointercancel',release);
@@ -2047,13 +2048,13 @@ function setupControls(){
   // Global safety net: if any pointer ends anywhere (or is stolen by the OS), free a
   // stuck stick/throttle/guns so the aircraft never becomes uncontrollable.
   function globalRelease(e){
-    if(sid!==null && (e.pointerId===sid||e.type==='pointercancel')){ sid=null; inputRoll=0; inputPitch=0; knob.style.transform='translate(-50%,-50%)'; }
+    if(sid!==null && (e.pointerId===sid||e.type==='pointercancel')){ sid=null; P._stickActive=false; inputRoll=0; inputPitch=0; knob.style.transform='translate(-50%,-50%)'; }
     if(tid!==null && (e.pointerId===tid||e.type==='pointercancel')){ tid=null; }
     if(e.type==='pointercancel') firing=false;
   }
   window.addEventListener('pointerup',globalRelease,true);
   window.addEventListener('pointercancel',globalRelease,true);
-  window.addEventListener('blur',()=>{ sid=null;tid=null;firing=false;inputRoll=0;inputPitch=0;knob.style.transform='translate(-50%,-50%)'; });
+  window.addEventListener('blur',()=>{ sid=null;tid=null;firing=false;P._stickActive=false;P._keyboardFlightActive=false;inputRoll=0;inputPitch=0;knob.style.transform='translate(-50%,-50%)'; });
   document.addEventListener('dblclick',e=>e.preventDefault());
 
   // drop
@@ -2090,7 +2091,15 @@ function pollKeys(dt){
   if(k['ArrowUp']) ip+=1; if(k['ArrowDown']) ip-=1;
   if(invertPitch) ip*=-1;
   if(k['ArrowLeft']) ir+=1; if(k['ArrowRight']) ir-=1;
-  if(ip||ir){ inputPitch=ip; inputRoll=ir; }
+  const arrows=!!(ip||ir);
+  if(arrows && !P._stickActive){
+    inputPitch=ip; inputRoll=ir; P._keyboardFlightActive=true;
+  } else if(!arrows && P._keyboardFlightActive){
+    // Arrow-key release used to leave the last full pitch/roll command latched forever.
+    // Only clear a keyboard-owned command; an active touch stick keeps its own live value.
+    if(!P._stickActive){ inputPitch=0; inputRoll=0; }
+    P._keyboardFlightActive=false;
+  }
   if(k['KeyW']){ P.throttle=Math.min(1,P.throttle+0.6*dt); setThrottleUI(P.throttle);}
   if(k['KeyS']){ P.throttle=Math.max(0,P.throttle-0.6*dt); setThrottleUI(P.throttle);}
 }
@@ -2314,20 +2323,42 @@ function loadSBDModel(){
           grp.add(panel);
           model.add(grp);
         }
-        // dive brakes: split perforated flaps, Dauntless-style, a bit further outboard of
-        // the landing flaps so the two don't overlap
-        const dbSpanLo=2.2, dbSpanHi=3.1, dbZ=-1.6, dbY=-0.25;
-        const dbMat=new THREE.MeshStandardMaterial({color:0x16181a, roughness:0.8});
+        // SBD split dive brakes: broad upper/lower perforated panels hinged at the wing's
+        // trailing edge. The former implementation was two tiny black boxes already parked at
+        // a fixed angle; it neither resembled the red perforated Dauntless brakes nor animated.
+        const dbSpanLo=1.35, dbSpanHi=3.25, dbZ=-1.42, dbY=-0.19;
+        const dbW=dbSpanHi-dbSpanLo, dbChord=0.82;
+        const dbShape=new THREE.Shape();
+        dbShape.moveTo(-dbW/2,0); dbShape.lineTo(dbW/2,0);
+        dbShape.lineTo(dbW/2,dbChord); dbShape.lineTo(-dbW/2,dbChord); dbShape.closePath();
+        // Three staggered rows of real openings. ShapeGeometry triangulates around the holes,
+        // so these remain transparent silhouettes instead of painted-on dark dots.
+        for(let row=0;row<3;row++) for(let col=0;col<7;col++){
+          const hx=-dbW/2+0.17+col*(dbW-0.34)/6+(row===1?0.035:0);
+          if(Math.abs(hx)>dbW/2-0.10) continue;
+          const hz=0.18+row*0.22;
+          const hole=new THREE.Path(); hole.absellipse(hx,hz,0.057,0.075,0,Math.PI*2,false,0);
+          dbShape.holes.push(hole);
+        }
+        const dbGeo=new THREE.ShapeGeometry(dbShape,12); dbGeo.rotateX(-Math.PI/2);
+        const dbMat=new THREE.MeshStandardMaterial({color:0xa9231f,roughness:0.68,
+          metalness:0.08,side:THREE.DoubleSide});
+        const dbEdgeMat=new THREE.MeshStandardMaterial({color:0x4b1817,roughness:0.72,metalness:0.18});
         for(const side of [-1,1]){
           const grp=new THREE.Group();
           grp.name=side<0?'sbdDiveL':'sbdDiveR';
           grp.visible=false;
           grp.position.set(side*(dbSpanLo+dbSpanHi)/2, dbY, dbZ);
-          const w=dbSpanHi-dbSpanLo;
-          const up=new THREE.Mesh(new THREE.BoxGeometry(w,0.05,0.42), dbMat);
-          up.position.set(0,0.34,0); up.rotation.x=0.7; grp.add(up);
-          const dn=new THREE.Mesh(new THREE.BoxGeometry(w,0.05,0.42), dbMat);
-          dn.position.set(0,-0.34,0); dn.rotation.x=-0.7; grp.add(dn);
+          const upHinge=new THREE.Group(); upHinge.name='sbdDiveUpper'; upHinge.position.y=0.06;
+          const dnHinge=new THREE.Group(); dnHinge.name='sbdDiveLower'; dnHinge.position.y=-0.06;
+          const up=new THREE.Mesh(dbGeo,dbMat); upHinge.add(up);
+          const dn=new THREE.Mesh(dbGeo,dbMat); dnHinge.add(dn);
+          // Dark leading-edge hinge tubes visually anchor both panels to the wing.
+          for(const h of [upHinge,dnHinge]){
+            const pin=new THREE.Mesh(new THREE.CylinderGeometry(0.035,0.035,dbW,8),dbEdgeMat);
+            pin.rotation.z=Math.PI/2; h.add(pin);
+          }
+          grp.add(upHinge); grp.add(dnHinge);
           model.add(grp);
         }
         // arrestor hook: tail cone belly sits around z=-3.8..-4.0, y=-0.08 here; a plain rod
@@ -2411,9 +2442,12 @@ function spawnZero(i,n){
       side:THREE.DoubleSide,depthWrite:false}));
   disk.position.z=bb.max.z-0.15; mesh.add(disk);
   const a=Math.PI*(0.3+0.4*i/Math.max(1,n));
+  const heading=Math.PI;
   const z={ mesh, disk, hp:3, alive:true, cool:1+Math.random()*2,
     pos:new THREE.Vector3(P.pos.x+Math.cos(a)*900, 220+i*70, P.pos.z+900+Math.sin(a)*300),
-    heading:Math.PI, pitch:0, roll:0, spd:88, reengage:0 };
+    heading, pitch:0, roll:0, spd:88, reengage:0,
+    vel:new THREE.Vector3(Math.sin(heading)*88,0,Math.cos(heading)*88),
+    breakSide:(i&1)?1:-1, weave:Math.random()*Math.PI*2 };
   mesh.position.copy(z.pos); scene.add(mesh); zeros.push(z);
 }
 function updateZeros(dt){
@@ -2432,35 +2466,66 @@ function updateZeros(dt){
     }
     const foe=(z.foeW && z.foeW.alive)? z.foeW : null;
     const foePos=foe? foe.pos : P.pos;
-    const foeHeading=foe? foe.heading : P.heading;
-    const foeSpd=foe? foe.spd : P.spd;
-    const to=foePos.clone().sub(z.pos); const dist=to.length(); to.normalize();
+    const foeVel=foe && foe.vel ? foe.vel.clone() : (foe
+      ? new THREE.Vector3(Math.sin(foe.heading)*Math.cos(foe.pitch||0),Math.sin(foe.pitch||0),Math.cos(foe.heading)*Math.cos(foe.pitch||0)).multiplyScalar(foe.spd)
+      : noseDir().multiplyScalar(P.spd));
+    const toTarget=foePos.clone().sub(z.pos), dist=toTarget.length();
+    const to=toTarget.clone().normalize();
     const pdist=P.pos.distanceTo(z.pos);
     if(!z.spotted && pdist<1200){ z.spotted=true;
       radioSay(z.pos.y>P.pos.y+40?"SKIPPER — ZEROS HIGH, TWELVE O'CLOCK!":"BANDITS INBOUND — KEEP YOUR HEAD ON A SWIVEL"); }
-    const fwd=new THREE.Vector3(Math.sin(z.heading)*Math.cos(z.pitch),Math.sin(z.pitch),Math.cos(z.heading)*Math.cos(z.pitch));
-    let aim=to;
-    if(dist<160){ z.reengage=1.4; }
-    if(z.reengage>0){ z.reengage-=dt; aim=fwd; }
-    const desH=Math.atan2(aim.x,aim.z);
+    if(!z.vel) z.vel=new THREE.Vector3(Math.sin(z.heading),0,Math.cos(z.heading)).multiplyScalar(z.spd||88);
+    const fwd=z.vel.clone().normalize();
+    // Do not orbit tightly around the target. Pass through, break away with a persistent side,
+    // then set up another lead pursuit. This produces recognisable attack runs and removes the
+    // old point-chasing zig-zag when a target crossed the nose.
+    if(dist<145 && fwd.dot(to)>0.15 && z.reengage<=0){ z.reengage=1.5+Math.random()*0.7; z.breakSide*=-1; }
+    let aim;
+    if(z.reengage>0){
+      z.reengage-=dt;
+      const lat=new THREE.Vector3(fwd.z,0,-fwd.x).multiplyScalar(z.breakSide*0.72);
+      aim=fwd.clone().multiplyScalar(1.15).add(lat).add(new THREE.Vector3(0,0.18,0)).normalize();
+    } else {
+      const leadT=Math.min(2.2,Math.max(0.25,dist/170));
+      const lead=foePos.clone().addScaledVector(foeVel,leadT);
+      aim=lead.sub(z.pos).normalize();
+      // A very small, slow weave stops every fighter tracing the exact same ruler-straight path.
+      z.weave+=dt*(0.7+i*0.05);
+      aim.add(new THREE.Vector3(Math.cos(z.weave)*0.025,Math.sin(z.weave*0.73)*0.018,
+        Math.sin(z.weave)*0.025)).normalize();
+    }
+    if(z.pos.y<85) aim.y=Math.max(aim.y,(85-z.pos.y)/70); // progressive sea avoidance
+    aim.y=Math.max(-0.48,Math.min(0.48,aim.y)); aim.normalize();
+    const desiredSpeed=86+(dist>650?9:0)+(z.reengage>0?12:0);
+    const desiredVel=aim.multiplyScalar(desiredSpeed);
+    const dv=desiredVel.sub(z.vel), maxDv=24*dt;
+    if(dv.length()>maxDv) dv.setLength(maxDv);
+    z.vel.add(dv);
+    const oldHeading=z.heading;
+    const velDir=z.vel.clone().normalize();
+    const desH=Math.atan2(velDir.x,velDir.z);
     let dh=desH-z.heading; while(dh>Math.PI)dh-=2*Math.PI; while(dh<-Math.PI)dh+=2*Math.PI;
-    const rate=1.4*dt; z.heading+=Math.max(-rate,Math.min(rate,dh));
-    const desP=Math.max(-0.5,Math.min(0.5,Math.asin(Math.max(-1,Math.min(1,aim.y)))));
-    z.pitch+=Math.max(-rate,Math.min(rate,desP-z.pitch));
-    z.roll=Math.max(-1,Math.min(1,dh*2.2));
-    const nf=new THREE.Vector3(Math.sin(z.heading)*Math.cos(z.pitch),Math.sin(z.pitch),Math.cos(z.heading)*Math.cos(z.pitch));
-    z.pos.addScaledVector(nf,z.spd*dt);
-    if(z.pos.y<60) z.pos.y=60;
+    const maxTurn=1.35*dt; z.heading+=Math.max(-maxTurn,Math.min(maxTurn,dh));
+    const desP=Math.max(-0.48,Math.min(0.48,Math.asin(Math.max(-1,Math.min(1,velDir.y)))));
+    z.pitch+=(desP-z.pitch)*Math.min(1,3.4*dt);
+    const turnRate=(z.heading-oldHeading)/Math.max(dt,0.001);
+    const bankTarget=Math.max(-0.95,Math.min(0.95,turnRate*0.72));
+    z.roll+=(bankTarget-z.roll)*Math.min(1,3.2*dt);
+    z.spd=z.vel.length();
+    z.pos.addScaledVector(z.vel,dt);
+    if(z.pos.y<28){ z.pos.y=28; z.vel.y=Math.max(4,z.vel.y); }
     z.mesh.position.copy(z.pos);
     z.mesh.quaternion.setFromEuler(new THREE.Euler(0,z.heading,0,'YXZ'));
     z.mesh.rotateX(-z.pitch); z.mesh.rotateZ(-z.roll);
     if(z.disk) z.disk.rotation.z-=1.6;
     z.cool-=dt;
-    const aligned=fwd.dot(to)>0.985;
+    const gunFwd=z.vel.clone().normalize();
+    const shootLead=foePos.clone().addScaledVector(foeVel,Math.min(0.9,dist/640));
+    const shootDir=shootLead.sub(z.pos).normalize();
+    const aligned=gunFwd.dot(shootDir)>0.987;
     if(z.cool<=0 && dist<650 && dist>150 && aligned && z.reengage<=0){
       z.cool=0.6+Math.random()*0.5;
-      const leadDir = foe? new THREE.Vector3(Math.sin(foeHeading),0,Math.cos(foeHeading)) : noseDir();
-      const lead=foePos.clone().addScaledVector(leadDir,foeSpd*0.4);
+      const lead=foePos.clone().addScaledVector(foeVel,Math.min(0.65,dist/640));
       for(let k=0;k<2;k++){
         const dir=lead.clone().sub(z.pos).normalize()
           .add(new THREE.Vector3((Math.random()-0.5)*0.03,(Math.random()-0.5)*0.03,(Math.random()-0.5)*0.03)).normalize();
@@ -3397,9 +3462,13 @@ function spawnWingman(i){
     // already noses +Z, so it needs none. (Getting this wrong flies them tail-first.)
     if(!(sbd && sbdTemplate)) inner.rotation.y+=Math.PI;
     // Wingmen fly gear-UP once airborne — hide the same gear meshes we blank on the raiders.
-    if(!sbd && gearMesh && gearMesh.length){
-      const gn=new Set(gearMesh.map(g=>g.name));
-      inner.traverse(o=>{ if(o.isMesh && gn.has(o.name)) o.visible=false; });
+    if(!sbd){
+      const gn=new Set((gearMesh||[]).map(g=>g.name));
+      inner.traverse(o=>{
+        if(o.isMesh && gn.has(o.name)) o.visible=false;
+        if(o.name==='avengerGearLeg') o.visible=false;
+        if(o.name==='avengerGearCover') o.visible=true;
+      });
     }
     mesh.add(inner);
   }
@@ -3419,8 +3488,10 @@ function spawnWingman(i){
   const lat=playerLateral(), nose=noseDir();
   const pos=P.pos.clone().addScaledVector(lat, side*30).addScaledVector(nose,-26);
   pos.y=Math.max(70, P.pos.y-3);
+  const startSpd=Math.max(P.spd,APP_SPD);
   const w={ mesh, disc, sbd, alive:true, hp:3, side, mode:'form', cool:2+i*1.5, dropped:false,
-    target:null, egressT:0, pos, heading:P.heading, pitch:0, roll:0, spd:Math.max(P.spd,APP_SPD) };
+    target:null, egressT:0, pos, slotPos:pos.clone(), heading:P.heading, pitch:0, roll:0, spd:startSpd,
+    vel:nose.clone().multiplyScalar(startSpd) };
   mesh.position.copy(w.pos); scene.add(mesh); wingmen.push(w);
 }
 // Wingman AI. Three modes: FORM (hold a formation slot on the player), ATTACK (a staged
@@ -3430,7 +3501,7 @@ function spawnWingman(i){
 function updateWingmen(dt){
   const live = isDefend()? [] :
     ships.filter(s=>s.alive && (s.def.type==='freighter'||s.def.type==='cruiser'||s.def.type==='destroyer'));
-  const someoneAttacking = wingmen.some(w=>w.alive && w.mode==='attack');
+  let someoneAttacking = wingmen.some(w=>w.alive && w.mode==='attack');
   for(const w of wingmen){
     if(!w.alive) continue;
     if(w.cool>0) w.cool-=dt;
@@ -3439,7 +3510,7 @@ function updateWingmen(dt){
     if(w.mode==='form' && !someoneAttacking && w.cool<=0 && live.length){
       let best=null,bd=1e9;
       for(const s of live){ const d=w.pos.distanceTo(s.group.position); if(d<1800 && d<bd){bd=d;best=s;} }
-      if(best){ w.mode='attack'; w.target=best; w.dropped=false;
+      if(best){ w.mode='attack'; w.target=best; w.dropped=false; someoneAttacking=true;
         radioSay((w.side<0?"TWO":"THREE")+"'S IN — "+(w.sbd?"ROLLING IN ON":"LINING UP")+" THE "+best.def.type.toUpperCase()); }
     }
     if(w.mode==='attack' && (!w.target || !w.target.alive)){ w.mode='egress'; w.egressT=2.4; }
@@ -3465,14 +3536,19 @@ function updateWingmen(dt){
       const nf=new THREE.Vector3(Math.sin(w.heading),0,Math.cos(w.heading));
       desPos=w.pos.clone().addScaledVector(nf,140); desPos.y=w.pos.y+45;   // climbing break
       desSpd=Math.min(112,P.spd+8);
-      if(w.egressT<=0){ w.mode='form'; w.target=null; }
+      if(w.egressT<=0){ w.mode='form'; w.target=null; w.slotPos=w.pos.clone(); }
     } else {
       // FORM: finger-four slot square to the player's heading, out and back, depth-staggered
       const lat=playerLateral();
       const nose=noseDir();
-      desPos=P.pos.clone().addScaledVector(lat,w.side*28)
-                          .addScaledVector(nose,-22-(w.side>0?8:0));
-      desPos.y=P.pos.y-2;
+      const rawSlot=P.pos.clone().addScaledVector(lat,w.side*28)
+                                 .addScaledVector(nose,-22-(w.side>0?8:0));
+      rawSlot.y=P.pos.y-2;
+      if(!w.slotPos) w.slotPos=w.pos.clone();
+      // The slot rotates around the leader during a turn. Driving straight at its raw position
+      // made it leap from one side of the screen to the other; move the slot itself smoothly.
+      w.slotPos.lerp(rawSlot,Math.min(1,2.0*dt));
+      desPos=w.slotPos.clone();
       desSpd=P.spd;
     }
     if(desPos.y<44) desPos.y=44;
@@ -3487,8 +3563,8 @@ function updateWingmen(dt){
     if(!w.vel) w.vel = leadVel.clone();
     let desVel;
     if(w.mode==='form'){
-      const corr = desPos.clone().sub(w.pos).multiplyScalar(1.7);
-      if(corr.length()>55) corr.setLength(55);         // capped: eases in, never sprints
+      const corr = desPos.clone().sub(w.pos).multiplyScalar(0.72);
+      if(corr.length()>24) corr.setLength(24);         // settle into station; no slot sprint
       desVel = leadVel.add(corr);
     } else {
       const gap = desPos.clone().sub(w.pos);
@@ -3497,9 +3573,14 @@ function updateWingmen(dt){
     }
     const vlen=desVel.length(), vmax=(w.mode==='attack'?126:112);
     if(vlen>vmax) desVel.setLength(vmax); else if(vlen<42) desVel.setLength(42);
-    w.vel.lerp(desVel, Math.min(1,3*dt));              // smooth acceleration
+    // Acceleration-limited steering prevents one slow frame or a mode change from producing a
+    // visible position jump. Formation flying is gentler than an attack/egress manoeuvre.
+    const dv=desVel.sub(w.vel), maxDv=(w.mode==='form'?12:20)*dt;
+    if(dv.length()>maxDv) dv.setLength(maxDv);
+    w.vel.add(dv);
     w.pos.addScaledVector(w.vel, dt);
-    if(w.pos.y<40){ w.pos.y=40; if(w.vel.y<0) w.vel.y*=0.2; }
+    if(w.pos.y<55) w.vel.y+=Math.min(16,(55-w.pos.y)*0.6)*dt;
+    if(w.pos.y<28){ w.pos.y=28; w.vel.y=Math.max(3,w.vel.y); }
 
     // attitude follows the velocity vector: heading tracks it, bank into the turn, pitch to climb
     const vhoriz=Math.hypot(w.vel.x,w.vel.z);
@@ -3601,10 +3682,12 @@ function spawnRaider(i,n){
     inner.rotation.y+=Math.PI;          // Avenger nose is -Z; raiders fly +Z like the zeros
     mesh.add(inner);
     // raiders attack with gear UP: hide the same gear parts we detect on the player's Avenger
-    if(gearMesh && gearMesh.length){
-      const gearNames=new Set(gearMesh.map(g=>g.name));
-      inner.traverse(o=>{ if(o.isMesh && gearNames.has(o.name)) o.visible=false; });
-    }
+    const gearNames=new Set((gearMesh||[]).map(g=>g.name));
+    inner.traverse(o=>{
+      if(o.isMesh && gearNames.has(o.name)) o.visible=false;
+      if(o.name==='avengerGearLeg') o.visible=false;
+      if(o.name==='avengerGearCover') o.visible=true;
+    });
     // same as the wingmen: turn the model's own propeller if it has one, otherwise build
     let disc=fitPropeller(inner, mesh, +1) || rigOwnProp(inner, mesh, +1);
     if(!disc){
@@ -3619,6 +3702,7 @@ function spawnRaider(i,n){
   const r={ mesh, group:mesh, disc:r_disc, fromModel, def:{type:'avenger'}, hp:4, alive:true, dropped:false, runIn:false,
     pos:new THREE.Vector3(carrierX+Math.cos(a)*(2200+i*700), 260+i*70, (1900+i*600)+Math.sin(a)*600),
     heading:Math.PI, pitch:0, roll:0, spd:72-i*3 };
+  r.vel=new THREE.Vector3(Math.sin(r.heading),0,Math.cos(r.heading)).multiplyScalar(r.spd);
   mesh.position.copy(r.pos); scene.add(mesh); raiders.push(r);
 }
 function killRaider(r){
@@ -3646,32 +3730,54 @@ function updateRaiders(dt){
       nu.rotation.y+=Math.PI;
       if(gearMesh && gearMesh.length){
         const gn=new Set(gearMesh.map(g=>g.name));
-        nu.traverse(o=>{ if(o.isMesh && gn.has(o.name)) o.visible=false; });
+        nu.traverse(o=>{
+          if(o.isMesh && gn.has(o.name)) o.visible=false;
+          if(o.name==='avengerGearLeg') o.visible=false;
+          if(o.name==='avengerGearCover') o.visible=true;
+        });
       }
       r.mesh.add(nu); r.fromModel=true;
     }
     const dh2=Math.hypot(r.pos.x-carrierX, r.pos.z);
-    if(r.dropped && dh2>1500){ r.dropped=false; r.runIn=false; }   // come around for another run
-    if(!r.runIn && dh2<1800) r.runIn=true;
+    if(r.dropped && dh2>1900){ r.dropped=false; r.runIn=false; r.egressDir=null; }   // enough room to come around
+    if(!r.runIn && dh2<1750) r.runIn=true;
     const aimY = r.dropped ? 240 : (r.runIn ? 45 : 220);           // descend to wave height on the run-in
-    const to=new THREE.Vector3(carrierX-r.pos.x, 0, -r.pos.z);
-    if(r.dropped) to.set(r.pos.x-carrierX, 0, r.pos.z);            // egress after dropping
-    to.normalize();
-    const desH=Math.atan2(to.x,to.z);
+    if(!r.vel) r.vel=new THREE.Vector3(Math.sin(r.heading),0,Math.cos(r.heading)).multiplyScalar(r.spd);
+    let goal;
+    if(r.dropped){
+      if(!r.egressDir) r.egressDir=new THREE.Vector3(r.pos.x-carrierX,0,r.pos.z).normalize();
+      goal=r.pos.clone().addScaledVector(r.egressDir,650); goal.y=aimY;
+    } else {
+      // Aim ahead of the moving deck, not at its current centre, and include altitude in the
+      // steering vector so the descent is one smooth flight path rather than two snapped axes.
+      const eta=Math.min(7,dh2/Math.max(45,r.spd));
+      goal=new THREE.Vector3(carrierX+CARRIER_SPD*eta,aimY,0);
+    }
+    const aim=goal.sub(r.pos);
+    if(r.pos.y<70) aim.y=Math.max(aim.y,(70-r.pos.y)*5);
+    aim.normalize();
+    const wanted=aim.multiplyScalar(r.dropped?82:(r.runIn?76:72));
+    const dv=wanted.sub(r.vel), maxDv=13*dt;
+    if(dv.length()>maxDv) dv.setLength(maxDv);
+    r.vel.add(dv);
+    const dir=r.vel.clone().normalize();
+    const oldH=r.heading, desH=Math.atan2(dir.x,dir.z);
     let dh=desH-r.heading; while(dh>Math.PI)dh-=2*Math.PI; while(dh<-Math.PI)dh+=2*Math.PI;
-    const rate=1.0*dt; r.heading+=Math.max(-rate,Math.min(rate,dh));
-    const desP=Math.max(-0.28,Math.min(0.22,(aimY-r.pos.y)*0.0016));
-    r.pitch+=Math.max(-rate,Math.min(rate,desP-r.pitch));
-    r.roll=Math.max(-0.9,Math.min(0.9,dh*2.0));
-    const nf=new THREE.Vector3(Math.sin(r.heading)*Math.cos(r.pitch),Math.sin(r.pitch),Math.cos(r.heading)*Math.cos(r.pitch));
-    r.pos.addScaledVector(nf,r.spd*dt);
-    if(r.pos.y<32) r.pos.y=32;
+    const rate=0.85*dt; r.heading+=Math.max(-rate,Math.min(rate,dh));
+    const desP=Math.max(-0.32,Math.min(0.28,Math.asin(Math.max(-1,Math.min(1,dir.y)))));
+    r.pitch+=(desP-r.pitch)*Math.min(1,2.8*dt);
+    const bank=Math.max(-0.82,Math.min(0.82,((r.heading-oldH)/Math.max(dt,0.001))*0.8));
+    r.roll+=(bank-r.roll)*Math.min(1,3.0*dt);
+    r.spd=r.vel.length();
+    r.pos.addScaledVector(r.vel,dt);
+    if(r.pos.y<28){ r.pos.y=28; r.vel.y=Math.max(3,r.vel.y); }
     r.mesh.position.copy(r.pos);
     r.mesh.rotation.set(0,0,0);
     r.mesh.rotateY(r.heading); r.mesh.rotateX(r.pitch); r.mesh.rotateZ(-r.roll);
     if(r.disc) r.disc.rotation.z-=PROP_STEP; // visible prop rotation (under the 60°/frame alias point)
     if(!r.dropped && r.runIn && dh2<820 && r.pos.y<95){
       r.dropped=true;
+      r.egressDir=new THREE.Vector3(r.pos.x-carrierX,0,r.pos.z).normalize();
       // deflection shot: aim where the carrier WILL be, or the fish always runs astern
       let t=0, ax=carrierX;
       for(let k=0;k<5;k++){ ax=carrierX+CARRIER_SPD*t; t=Math.hypot(ax-r.pos.x, 0-r.pos.z)/22; }
@@ -3782,30 +3888,35 @@ function loadPlaneModel(){
         // This model has a full textured cockpit interior + panel: keep it ALL visible
         // in cockpit view. Nothing goes into pitHideMeshes.
       });
-      // Real propeller: the visible blades sit in the big nose mesh (with the round cowl);
-      // the small DefaultWhite meshes are the spinner. Spin the whole frontmost cluster —
-      // the round cowl turns symmetrically (invisible), the blades show the rotation.
+      // Real propeller: rotate only the measured three-blade mesh. The old "five frontmost
+      // meshes" rule also grabbed the cowl, engine spokes and spinner pieces. Those rotating
+      // details read as a second fixed/contrary propeller around the real one.
       propDiskG=null; propBladesG=null; gearPivotG=null;
       model.updateMatrixWorld(true);
-      const noseList=[]; let frontZ=1e9;
-      model.traverse(o=>{ if(!o.isMesh) return;
-        const c=new THREE.Box3().setFromObject(o).getCenter(new THREE.Vector3());
-        const lz=planeGroup.worldToLocal(c.clone()).z;
-        noseList.push([o,lz]); if(lz<frontZ) frontZ=lz; });
-      const bladeMeshes=noseList.filter(p=>p[1]<frontZ+1.7).map(p=>p[0]);
-      if(bladeMeshes.length){
+      const invModel=new THREE.Matrix4().copy(model.matrixWorld).invert();
+      const wholeLocal=new THREE.Box3();
+      const propParts=[];
+      model.traverse(o=>{ if(!o.isMesh||!o.geometry) return;
+        if(!o.geometry.boundingBox) o.geometry.computeBoundingBox();
+        const bb=o.geometry.boundingBox.clone().applyMatrix4(new THREE.Matrix4().multiplyMatrices(invModel,o.matrixWorld));
+        wholeLocal.union(bb); propParts.push({o,bb});
+      });
+      const ps=wholeLocal.getSize(new THREE.Vector3()), noseX=wholeLocal.min.x;
+      let bladePart=null, bladeScore=-1;
+      for(const p of propParts){
+        const sz=p.bb.getSize(new THREE.Vector3()), across=Math.max(sz.y,sz.z);
+        if(p.bb.min.x>noseX+ps.x*0.13 || across<ps.z*0.12 || sz.x>ps.x*0.20) continue;
+        const score=across-Math.abs(p.bb.getCenter(new THREE.Vector3()).x-noseX)*0.2;
+        if(score>bladeScore){ bladeScore=score; bladePart=p; }
+      }
+      if(bladePart){
         propPivot=new THREE.Group();
-        // pivot on the SHAFT: the DefaultWhite spinner marks the hub centre; force x=0
-        // (exact centreline) so the prop spins true instead of wobbling / sitting to the side.
-        const hub=new THREE.Box3(); let hubN=0;
-        model.traverse(o=>{ if(o.isMesh&&o.material&&o.material.name==='DefaultWhite'){ hub.expandByObject(o); hubN++; }});
-        let piv;
-        if(hubN>0) piv=planeGroup.worldToLocal(hub.getCenter(new THREE.Vector3()));
-        else { const bb=new THREE.Box3(); bladeMeshes.forEach(o=>bb.expandByObject(o)); piv=planeGroup.worldToLocal(bb.getCenter(new THREE.Vector3())); }
-        piv.x=0;
+        const piv=planeGroup.worldToLocal(new THREE.Box3().setFromObject(bladePart.o).getCenter(new THREE.Vector3()));
+        piv.x=0;                                      // exact aircraft centreline: no wobble
         propPivot.position.copy(piv);
+        propPivot.userData.spinAxis='z';
         planeGroup.add(propPivot);
-        bladeMeshes.forEach(o=>propPivot.attach(o));   // keeps world transform
+        propPivot.attach(bladePart.o);                 // only the blades; cowl/engine stay fixed
       } else { propPivot=null; }
       // ============================================================
       //  LANDING GEAR — verified against the real grumman tbm avenger.glb with a headless
@@ -3845,7 +3956,7 @@ function loadPlaneModel(){
       //  purely because "down" stopped meaning fuselage-down. Measuring in MODEL-local
       //  space instead (invert model.matrixWorld) makes the result independent of
       //  wherever the aircraft happens to be when the model finishes streaming in.
-      gearMesh=[]; gearDoors=[];
+      gearMesh=[]; gearDoors=[]; gearWellCovers=[];
       model.updateMatrixWorld(true);
       {
         const invModel=new THREE.Matrix4().copy(model.matrixWorld).invert();
@@ -3894,6 +4005,7 @@ function loadPlaneModel(){
         const wheelSet=new Set(gearMesh);
         model.updateMatrixWorld(true);
         const a=new THREE.Vector3(), b2=new THREE.Vector3(), c2=new THREE.Vector3(), mid=new THREE.Vector3();
+        const hitsLeg=(p,lx,lz,yT,yB,lr)=>p.y<=yT&&p.y>=yB&&Math.hypot(p.x-lx,p.z-lz)<=lr;
         let cutLeg=0;
         model.traverse(o=>{
           if(!o.isMesh||!o.geometry||!o.geometry.index||!o.geometry.attributes.position) return;
@@ -3905,8 +4017,10 @@ function loadPlaneModel(){
             rd(arr[t],a); rd(arr[t+1],b2); rd(arr[t+2],c2);
             mid.set((a.x+b2.x+c2.x)/3,(a.y+b2.y+c2.y)/3,(a.z+b2.z+c2.z)/3);
             for(const [lx,lz,yT,yB,lr] of AVLEG){
-              if(mid.y>yT||mid.y<yB) continue;
-              if(Math.hypot(mid.x-lx,mid.z-lz)>lr) continue;
+              // Centroid-only clipping left every triangle crossing the cylinder boundary as
+              // a visible white tooth. Include all triangles that touch the measured leg volume.
+              if(!hitsLeg(a,lx,lz,yT,yB,lr)&&!hitsLeg(b2,lx,lz,yT,yB,lr)&&
+                 !hitsLeg(c2,lx,lz,yT,yB,lr)&&!hitsLeg(mid,lx,lz,yT,yB,lr)) continue;
               arr[t+1]=arr[t]; arr[t+2]=arr[t]; cutLeg++; break;
             }
           }
@@ -3918,8 +4032,10 @@ function loadPlaneModel(){
         // than covers that appear without them)
         const strutM =new THREE.MeshStandardMaterial({color:0x3c3d34,roughness:0.55,metalness:0.30});
         const pistonM=new THREE.MeshStandardMaterial({color:0xb9bdc0,roughness:0.25,metalness:0.75});
+        const wellM=new THREE.MeshStandardMaterial({color:0x171b1c,roughness:0.92,metalness:0.05,side:THREE.DoubleSide});
         for(const [lx,lz,yT,yB,lr] of AVLEG){
           const grp=new THREE.Group();
+          grp.name='avengerGearLeg';
           const h=yT-yB, rad=(lr<0.5)?0.085:0.125;
           const up=new THREE.Mesh(new THREE.CylinderGeometry(rad,rad*1.06,h*0.55,10),strutM);
           up.position.y=yT-h*0.275; grp.add(up);
@@ -3937,6 +4053,12 @@ function loadPlaneModel(){
           grp.position.set(lx,0,lz);
           model.add(grp);
           gearDoors.push(grp);
+          // A shallow, dark closed wheel-well door hides the cut seam when retracted. It sits
+          // flush with the belly and is never visible with the replacement leg extended.
+          const cover=new THREE.Mesh(new THREE.CircleGeometry(lr*0.92,18),wellM);
+          cover.name='avengerGearCover';
+          cover.rotation.x=-Math.PI/2; cover.scale.set(1.25,0.72,1);
+          cover.position.set(lx,yT+0.055,lz); model.add(cover); gearWellCovers.push(cover);
         }
       }
       // Flaps + arrestor hook, added on top of the real model exactly like the gear-leg
@@ -4026,7 +4148,7 @@ function loadPlaneModel(){
       }
       window.__eyeDbg='EYE '+COCKPIT_EYE.map(v=>v.toFixed(2)).join('/');
       const btEl=document.getElementById('buildTag');
-      if(btEl) btEl.textContent='BUILD 121 · '+window.__eyeDbg;
+      if(btEl) btEl.textContent='BUILD 122 · '+window.__eyeDbg;
       let seat=null;
       model.traverse(function(o){
         if(!o.isMesh||!o.material) return;
@@ -4103,13 +4225,26 @@ function loadCarrierModel(){
   }, undefined, function(){ console.warn('No carrier model at "'+CARRIER_MODEL_URL+'" — using built-in carrier.'); });
 }
 
+// Both the defence carrier and the so-called cruiser target use the same source model. Keep one
+// in-flight load/parse promise and clone its scene, otherwise two loaders can fetch and decode
+// the same 10.8 MB GLB at startup before the browser cache has a chance to settle.
+function getIJNShipAsset(){
+  if(ijnAssetPromise) return ijnAssetPromise;
+  ijnAssetPromise=new Promise((resolve,reject)=>{
+    let loader; try{ loader=new THREE.GLTFLoader(); }catch(e){ reject(e); return; }
+    loader.load(IJN_CARRIER_URL,gltf=>{
+      const model=gltf.scene||(gltf.scenes&&gltf.scenes[0]);
+      if(model) resolve(model); else reject(new Error('IJN asset has no scene'));
+    },undefined,reject);
+  });
+  return ijnAssetPromise;
+}
+
 function loadIJNCarrierModel(){
   if(!IJN_CARRIER_URL || typeof THREE.GLTFLoader==='undefined') return;
-  let loader; try{ loader=new THREE.GLTFLoader(); }catch(e){ return; }
-  loader.load(IJN_CARRIER_URL, function(gltf){
+  getIJNShipAsset().then(function(source){
     try{
-      const model=gltf.scene||(gltf.scenes&&gltf.scenes[0]);
-      if(!model) return;
+      const model=source.clone(true);
       // Measured from the model: hull 137.6 long on Z, flight deck at raw Y=8.01.
       // Scale so the deck runs the same 240 units as the game's BOW_X..STERN_X.
       const root=new THREE.Group();
@@ -4127,7 +4262,7 @@ function loadIJNCarrierModel(){
       scene.add(root); ijnCarrierModel=root;
       console.log('IJN carrier loaded:', IJN_CARRIER_URL);
     }catch(e){ console.warn('IJN carrier post-process failed', e); }
-  }, undefined, function(){ console.warn('No IJN carrier at "'+IJN_CARRIER_URL+'"'); });
+  }).catch(function(){ console.warn('No IJN carrier at "'+IJN_CARRIER_URL+'"'); });
 }
 
 function loadDestroyerModel(){
@@ -4182,11 +4317,9 @@ function loadFreighterModel(){
 
 function loadCruiserModel(){
   if(!CRUISER_MODEL_URL || typeof THREE.GLTFLoader==='undefined') return;
-  let loader; try{ loader=new THREE.GLTFLoader(); }catch(e){ return; }
-  loader.load(CRUISER_MODEL_URL, function(gltf){
+  getIJNShipAsset().then(function(source){
     try{
-      const model=gltf.scene||(gltf.scenes&&gltf.scenes[0]);
-      if(!model) return;
+      const model=source.clone(true);
       const box=new THREE.Box3().setFromObject(model);
       const size=new THREE.Vector3(); box.getSize(size);
       const ctr=new THREE.Vector3();  box.getCenter(ctr);
@@ -4202,10 +4335,10 @@ function loadCruiserModel(){
       upgradeShipsToTemplate('cruiser', tmpl);
       console.log('Cruiser (Zuihō) model loaded:', CRUISER_MODEL_URL);
     }catch(e){ console.warn('cruiser model post-process failed; using built-in', e); }
-  }, undefined, function(){ console.warn('No cruiser model at "'+CRUISER_MODEL_URL+'" — using built-in cruiser.'); });
+  }).catch(function(){ console.warn('No cruiser model at "'+CRUISER_MODEL_URL+'" — using built-in cruiser.'); });
 }
 
-function updatePlaneMesh(){
+function updatePlaneMesh(dt){
   const nd=noseDir();                          // forward = direction of travel
   const up=new THREE.Vector3(0,1,0);
   // model nose is local -Z, so we want -Z -> nd  (equivalently local +Z -> -nd)
@@ -4219,14 +4352,16 @@ function updatePlaneMesh(){
   planeGroup.position.copy(P.pos);
   if(planeModelLoaded){
     const spin=(0.14+P.throttle*0.34)*(P.alive?1:0.12);   // per-frame, visibly spinning
-    if(propPivot){ propPivot.rotation.z-=spin; propPivot.visible=!isDefend(); }
+    if(propPivot){ propPivot.rotation[propPivot.userData.spinAxis||'z']-=spin; propPivot.visible=!isDefend(); }
     // the Zero's own propeller (its blades live in the Zero model, not on propPivot)
     // build the Zero's prop pivot lazily (model may arrive after the sortie starts)
     // Zero propeller — rotate the rotor mesh IN PLACE (no re-parenting, nothing to go wrong)
     if(gearMesh && gearMesh.length){ const gg=(P.gear==null?1:P.gear), gv=(gg>0.5) && !isDefend();
       for(let i=0;i<gearMesh.length;i++) gearMesh[i].visible=gv;
-      // wheel-well caps: the exact opposite of the wheels — capped only once the gear is up
-      if(gearDoors && gearDoors.length) for(let i=0;i<gearDoors.length;i++) gearDoors[i].visible=gv; }
+      if(gearDoors && gearDoors.length) for(let i=0;i<gearDoors.length;i++) gearDoors[i].visible=gv;
+      // Flush well covers are the opposite of the wheels/legs: visible only while retracted.
+      if(gearWellCovers && gearWellCovers.length) for(let i=0;i<gearWellCovers.length;i++)
+        gearWellCovers[i].visible=!gv && !isDefend(); }
     // (this A6M model has no separate gear mesh — it's baked into the airframe)
     if(gltfRoot) gltfRoot.visible=!isDefend();
     if(playerZero) playerZero.visible=isDefend();
@@ -4356,7 +4491,18 @@ function updatePlaneMesh(){
     curFlapR.rotation.x=(curFlapR.userData.flapSign||1)*fl*0.8;
   }
   const db=!!P.diveBrake;
-  if(curDiveL){ curDiveL.visible=db; curDiveR.visible=db; }
+  const dbNow=P.diveBrakeVisual||0;
+  const dbTarget=db?1:0;
+  P.diveBrakeVisual=dbNow+(dbTarget-dbNow)*Math.min(1,7*(dt||1/60));
+  if(curDiveL){
+    const amt=P.diveBrakeVisual;
+    curDiveL.visible=amt>0.01; curDiveR.visible=amt>0.01;
+    for(const grp of [curDiveL,curDiveR]){
+      const upper=grp.getObjectByName('sbdDiveUpper'), lower=grp.getObjectByName('sbdDiveLower');
+      if(upper) upper.rotation.x= 1.18*amt;
+      if(lower) lower.rotation.x=-1.18*amt;
+    }
+  }
   // Arrestor hook: same swing-toward-target as gear/flaps, P.hook 0=stowed..1=deployed. Each
   // hook mesh carries its own axis/angle pair in userData because, like the flaps above, "down"
   // is a different rotation axis and sign depending on which model built it (placeholder/SBD
@@ -5270,7 +5416,7 @@ function setupUIButtons(){
   if(dbgT2) dbgT2.onclick=()=>{
     dbgOn=!dbgOn; localStorage.setItem('dbgOn',dbgOn?'1':'0');
     const db=document.getElementById('dbgBox'); if(db) db.textContent=dbgOn?'✓':'';
-    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 121'; }
+    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 122'; }
   };
   const lu=document.getElementById('lookUp'), ld=document.getElementById('lookDn');
   let _lookT=0;
@@ -5530,7 +5676,7 @@ function animate(){
   updateShadow();
   updateAudio(dt);
   updateSea(t);
-  updatePlaneMesh();
+  updatePlaneMesh(dt);
   if(skyDome) skyDome.position.copy(camera.position);
   // The sea plane was only centred once, at creation. Fly 7000 units from that point
   // (easy at altitude, since you cover ground faster) and its edge comes into view —
