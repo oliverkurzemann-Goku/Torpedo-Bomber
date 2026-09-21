@@ -5,9 +5,26 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 121 · Thunderbolt Squadron EU BUILD 57 · Remagen 1945 REMAGEN BUILD 21**
+Stand bei Übergabe: **Torpedo Squadron BUILD 122 · Thunderbolt Squadron EU BUILD 58 · Remagen 1945 REMAGEN BUILD 21**
 Repo: `oliverkurzemann-Goku/Torpedo-Bomber`, ausgeliefert über GitHub Pages.
 Alle Angaben unten sind aus dem tatsächlichen Code verifiziert, nicht aus dem Gedächtnis.
+
+**Aircraft/AI repair pass, BUILD 122 / EU BUILD 58 (21.09.2026):** Der Avenger-Loader dreht
+nicht länger pauschal die fünf vordersten Meshes, sondern wählt per Modellraum-Messung genau
+`Object_34`, das einzige breite, dünne Drei-Blatt-Mesh an der Nase; Motor-/Cowlingteile bleiben
+fest. Beim eingefrästen Fahrwerk werden nun auch Dreiecke entfernt, die den gemessenen
+Strut-Zylinder nur am Rand schneiden, und dunkle bündige Radschacht-Abdeckungen verdecken die
+Naht bei eingefahrenem Fahrwerk. Die SBD hat statt zweier kleiner schwarzer Klötze breite rote,
+perforierte obere/untere Split-Divebrakes mit geglätteter Scharnieranimation. Zeros, Rottenflieger
+und Trägerangreifer bewegen sich beschleunigungs- und kurvenbegrenzt; Formationsslots werden
+selbst geglättet, damit sie bei Leader-Kurven nicht durchs Bild springen. Der Me-262-Sound liegt
+in EU BUILD 58 rund eine Oktave tiefer und erhält eine eigene tiefe Turbinen-/Körperschicht.
+Zusätzlich: Pfeiltasten-Release neutralisiert seine Steuerung wieder; der ungültige Zwei-Byte-
+Samidare-Download ist abgeschaltet; der bytegleiche zweite IJN-Carrier-Blob wird entfernt und
+beide Verwendungen zeigen auf ein einziges Asset. Verifiziert: beide Inline-Skripte parsen,
+alle DOM-ID-Referenzen existieren, echte GLTFLoader-Geometriemessung wählt `Object_34`, und die
+neuen SBD-Brakes liegen im gemessenen Flügelbereich. Kein WebGL-Screenshot: in dieser Umgebung
+war kein Browser-Binary vorhanden und der Playwright-Download lief in den Netzwerk-Timeout.
 
 **Okinawa-Terrain-Testbed gebaut, dann auf ausdrücklichen Nutzerwunsch komplett wieder entfernt
 (20.09.2026):** Auf Bitte des Nutzers wurde eine neue, eigenständige vierte Datei
@@ -238,8 +255,8 @@ iPad/iPhone Safari.
 | Datei | Was |
 |---|---|
 | `index.html` | Startseite, Auswahl zwischen den Spielen |
-| `torpedo-carrier.html` | **Teil 1** — Pazifik, Trägerbetrieb (BUILD 121) |
-| `thunderbolt-europe.html` | **Teil 2** — Europa, Bodenangriff (EU BUILD 57) |
+| `torpedo-carrier.html` | **Teil 1** — Pazifik, Trägerbetrieb (BUILD 122) |
+| `thunderbolt-europe.html` | **Teil 2** — Europa, Bodenangriff (EU BUILD 58) |
 | `remagen-mission.html` | **Teil 3** — Remagen 1945, echtes Terrain (REMAGEN BUILD 21; Terrain-Handoff in `TERRAIN.md`) |
 | `model-check.html` | Kalibrier-Werkzeug für neue Flugzeugmodelle (Ausrichtung, Maßstab) |
 
