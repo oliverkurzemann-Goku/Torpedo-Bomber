@@ -34,9 +34,9 @@ function frondGeometry(){
   const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(p,3));g.computeVertexNormals();return g;
 }
 class OkinawaWorld{
- constructor(data){
+ constructor(data, options={}){
   this.data=data;this.root=new THREE.Group();this.root.name='OkinawaEnvironment';this.terrain=new THREE.Group();this.terrain.name='GeographicTerrain';this.root.add(this.terrain);
-  this.tiles=new Map();this.size=16000;this.half=8000;this.mapSize=1024;this.objectCount=0;this.time={value:0};this.warm={value:0};this.sun=new THREE.Vector3(-.48,.72,.46).normalize();this.materials=[];this.decorations=[];
+  this.tiles=new Map();this.size=16000;this.half=8000;this.mapSize=1024;this.objectCount=0;this.vegetationDensity=options.vegetationDensity===undefined?1:clamp(options.vegetationDensity,.1,1);this.time={value:0};this.warm={value:0};this.sun=new THREE.Vector3(-.48,.72,.46).normalize();this.materials=[];this.decorations=[];
   for(const t of data.tiles){const bytes=Uint8Array.from(atob(t.dem),c=>c.charCodeAt(0)),d=new DataView(bytes.buffer);if(String.fromCharCode(...bytes.slice(0,4))!=='DEM1'||d.getUint16(4,true)!==65||bytes.length!==16916)throw Error('Invalid DEM tile '+t.x+','+t.z);const h=new Float32Array(4225);for(let i=0;i<h.length;i++){h[i]=d.getFloat32(16+i*4,true);if(!Number.isFinite(h[i]))throw Error('Non-finite DEM sample');}this.tiles.set(t.x+','+t.z,h);}
  }
  rawHeight(x,z){
@@ -100,7 +100,7 @@ class OkinawaWorld{
  batch(geo,mat,placements,name){if(!placements.length)return;const m=new THREE.InstancedMesh(geo,mat,placements.length),dummy=new THREE.Object3D();m.name=name;for(let i=0;i<placements.length;i++){const p=placements[i];dummy.position.set(p.x,p.y,p.z);dummy.rotation.set(0,p.r||0,0);dummy.scale.set(p.sx||p.s||1,p.sy||p.s||1,p.sz||p.s||1);dummy.updateMatrix();m.setMatrixAt(i,dummy.matrix);}m.instanceMatrix.needsUpdate=true;m.frustumCulled=false;m.castShadow=false;m.receiveShadow=true;this.root.add(m);this.objectCount+=placements.length;this.decorations.push(m);return m;}
  buildVegetation(){
   const rand=rng(680422),buckets=[[],[],[]],trunks=[],palms=[],rocks=[];
-  for(let i=0;i<68000;i++){
+  for(let i=0;i<Math.round(68000*this.vegetationDensity);i++){
    const x=rand()*15400-7700,z=rand()*15400-7700,d=this.shoreDistance(x,z);if(d<20)continue;
    const h=this.getHeight(x,z),[forest,field,air]=this.biome(x,z),patch=noise(x*.0028,z*.0028);
    if(air>.2||field>.2)continue;
@@ -116,7 +116,7 @@ class OkinawaWorld{
   this.batch(new THREE.CylinderGeometry(.15,.24,1,5).translate(0,.5,0),new THREE.MeshStandardMaterial({color:0x615444,roughness:1}),trunks,'Tree trunks');
   this.batch(new THREE.CylinderGeometry(.12,.24,9,7).translate(0,4.5,0),new THREE.MeshStandardMaterial({color:0x7e7359,roughness:1}),palms,'Palm trunks');
   this.batch(frondGeometry(),new THREE.MeshStandardMaterial({color:0x425c2d,roughness:1,side:THREE.DoubleSide}),palms,'Palm fronds');
-  for(let i=0;i<18000;i++){const x=rand()*15500-7750,z=rand()*15500-7750,d=this.shoreDistance(x,z);if(d>3&&d<42&&rand()>.35)rocks.push({x,z,y:this.getHeight(x,z)-1,sx:2+rand()*5,sy:1+rand()*2,sz:2+rand()*4,r:rand()*6.28});}
+  for(let i=0;i<Math.round(18000*this.vegetationDensity);i++){const x=rand()*15500-7750,z=rand()*15500-7750,d=this.shoreDistance(x,z);if(d>3&&d<42&&rand()>.35)rocks.push({x,z,y:this.getHeight(x,z)-1,sx:2+rand()*5,sy:1+rand()*2,sz:2+rand()*4,r:rand()*6.28});}
   this.batch(new THREE.DodecahedronGeometry(1,0),new THREE.MeshStandardMaterial({color:0x898879,roughness:1}),rocks,'Coastal limestone');
  }
  buildSettlements(){
@@ -142,10 +142,10 @@ class OkinawaWorld{
   this.batch(new THREE.BoxGeometry(1,1,1),new THREE.MeshStandardMaterial({color:0x8e8c77,roughness:1}),gardenWalls,'Coral garden walls');this.houses=walls.length;
  }
  buildWater(){
-  const material=new THREE.ShaderMaterial({uniforms:{uTime:this.time,uWarm:this.warm,uCoast:{value:this.coastTexture},uSun:{value:this.sun}},vertexShader:`varying vec3 vWorld;void main(){vWorld=(modelMatrix*vec4(position,1.)).xyz;gl_Position=projectionMatrix*viewMatrix*vec4(vWorld,1.);}`,
-   fragmentShader:`precision highp float;varying vec3 vWorld;uniform float uTime;uniform float uWarm;uniform sampler2D uCoast;uniform vec3 uSun;
+  const material=new THREE.ShaderMaterial({uniforms:{uTime:this.time,uWarm:this.warm,uCoast:{value:this.coastTexture},uSun:{value:this.sun}},vertexShader:`varying vec3 vWorld;varying vec3 vLocal;void main(){vLocal=position;vWorld=(modelMatrix*vec4(position,1.)).xyz;gl_Position=projectionMatrix*viewMatrix*vec4(vWorld,1.);}`,
+   fragmentShader:`precision highp float;varying vec3 vWorld;varying vec3 vLocal;uniform float uTime;uniform float uWarm;uniform sampler2D uCoast;uniform vec3 uSun;
    float hash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}float noise(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(hash(i),hash(i+vec2(1,0)),f.x),mix(hash(i+vec2(0,1)),hash(i+1.),f.x),f.y);}
-   void main(){vec2 p=vWorld.xz,uv=(p+8000.)/16000.;vec4 c=texture2D(uCoast,clamp(uv,0.,1.));float d=c.r*255.*256.+c.g*255.-32768.;if(any(lessThan(uv,vec2(0)))||any(greaterThan(uv,vec2(1))))d=-5000.;
+   void main(){vec2 p=vLocal.xz,uv=(p+8000.)/16000.;vec4 c=texture2D(uCoast,clamp(uv,0.,1.));float d=c.r*255.*256.+c.g*255.-32768.;if(any(lessThan(uv,vec2(0)))||any(greaterThan(uv,vec2(1))))d=-5000.;
    float sea=max(0.,-d),patch=noise(p*.008)+noise(p*.023)*.4;float depth=smoothstep(80.,850.,sea+patch*95.);
    vec3 shallow=mix(vec3(.13,.42,.36),vec3(.21,.55,.48),patch*.6);vec3 col=mix(shallow,vec3(.026,.16,.23),depth);
    float w1=dot(p,vec2(.10,.061))-uTime*1.15,w2=dot(p,vec2(-.19,.13))+uTime*1.8,w3=dot(p,vec2(.43,.32))-uTime*2.7;

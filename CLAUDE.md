@@ -5,9 +5,19 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 122 · Thunderbolt Squadron EU BUILD 58 · Remagen 1945 REMAGEN BUILD 21**
+Stand bei Übergabe: **Torpedo Squadron BUILD 123 · Thunderbolt Squadron EU BUILD 58 · Remagen 1945 REMAGEN BUILD 21**
 Repo: `oliverkurzemann-Goku/Torpedo-Bomber`, ausgeliefert über GitHub Pages.
 Alle Angaben unten sind aus dem tatsächlichen Code verifiziert, nicht aus dem Gedächtnis.
+
+**Okinawa-Freiflug, BUILD 123 (23.09.2026):** Die eigenständige 16×16-km-Yomitan-
+Landschaft (`okinawa/data.js`, `okinawa/world.js`) wird nun auf Auswahl "Okinawa Coast ·
+Free Flight" im Torpedo-Squadron-Menü asynchron aufgebaut. Im Spiel läuft die dekorative
+Vegetation mit 45% der Dichte der separaten Vollansicht; das Terrain ist identisch. Die
+Szene liegt 10 km östlich des Trägers, nutzt die lokale Küstenmaske im Wassershader und
+ersetzt dort Meer/Inseln, nicht den globalen Himmel. Geländehöhe steuert Kollision und
+Minimap; die Kampagnenfolge endet weiter nach Sortie 10. Kein historischer 1945-Einsatz.
+`okinawa-preview.html` bleibt die unabhängige Ansicht. Vor Veröffentlichung: Game-Script-
+Syntax, Geometrie/Koordinaten und Missionswechsel prüfen; visuelle iPad-Abnahme ist offen.
 
 **Aircraft/AI repair pass, BUILD 122 / EU BUILD 58 (21.09.2026):** Der Avenger-Loader dreht
 nicht länger pauschal die fünf vordersten Meshes, sondern wählt per Modellraum-Messung genau
