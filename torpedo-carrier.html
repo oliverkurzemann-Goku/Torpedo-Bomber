@@ -274,7 +274,7 @@
   <div id="flash"></div>
   <div id="ltn" style="position:fixed;inset:0;background:#e6ecff;opacity:0;pointer-events:none;z-index:40;"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 122</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 123</div>
 
   <!-- Optical landing aid -->
   <div id="lso">
@@ -379,6 +379,8 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+<script src="okinawa/data.js?v=1"></script>
+<script src="okinawa/world.js?v=2"></script>
 <script>
 "use strict";
 /* ============================================================
@@ -596,6 +598,8 @@ let hookMesh, sbdHookMesh;   // arrestor hook, same split as the flaps above
 let loadout='torpedo';
 let bombs=[];
 let islands=[], volcanoT=0;
+let okinawaWorld=null, okinawaLoading=null;
+const OKINAWA_OFFSET_X=10000;
 let bullets=[], firing=false, gunCool=0, timeMode='day', menuTime='day';
 let skyMat, hemiLight, mmCtx;
 
@@ -720,7 +724,35 @@ const MISSIONS = [
     body:"<b>Zero. Six Avengers.</b> They have found the fleet and they are coming in from every bearing. Guns only, and the carrier will not survive a fourth fish. This is what the whole cruise comes down to.",
     torps:0, fuel:100, zeros:0,
     targets:[] },
+  { title:"Okinawa", sub:"Okinawa Coast · Free Flight", free:true, okinawa:true,
+    body:"Fly the Avenger from the carrier toward the Yomitan coast. The 16 × 16 km landscape uses geographic elevation and shoreline data. Houses, reefs and vegetation are illustrative. No enemy, timer or score; land aboard to fly again.<br><br>Head east from the bow to reach the coast. The mapped area ends inland; this is a scenery flight, not a historical mission.",
+    torps:0, fuel:100, zeros:0, targets:[] },
 ];
+
+async function prepareOkinawa(){
+  if(okinawaWorld)return okinawaWorld;
+  if(okinawaLoading)return okinawaLoading;
+  okinawaLoading=(async()=>{
+    if(!window.OKINAWA_DATA||!window.OkinawaWorld)throw Error('Okinawa scenery files are missing.');
+    const world=new OkinawaWorld(OKINAWA_DATA,{vegetationDensity:.45});
+    try{
+      await world.build((p,msg)=>{const b=document.getElementById('startBtn');if(b)b.textContent='Loading Okinawa '+Math.round(p*100)+'% · '+msg;});
+      world.root.position.x=OKINAWA_OFFSET_X;
+      world.sky.visible=false; // the game already owns the sun, sky and weather
+      world.root.visible=false;
+      scene.add(world.root);
+      okinawaWorld=world;
+      return world;
+    }catch(e){world.dispose();throw e;}
+  })();
+  try{return await okinawaLoading;}finally{okinawaLoading=null;}
+}
+function setOkinawaActive(active){
+  if(active && !okinawaWorld)throw Error('Okinawa environment was not prepared.');
+  if(okinawaWorld)okinawaWorld.root.visible=active;
+  if(sea)sea.visible=!active;
+  for(const is of islands)is.group.visible=!active;
+}
 
 // ============================================================
 //  INIT
@@ -1699,7 +1731,8 @@ function buildPlane(){
 // ============================================================
 function startMission(idx){
   mission=idx;
-  if(idx===0){ score=0; scoreStart=0; }
+  setOkinawaActive(!!MISSIONS[idx].okinawa);
+  if(idx===0 || MISSIONS[idx].okinawa){ score=0; scoreStart=0; }
   else { score=scoreStart; }
   addScore(0);
   killCam=null;
@@ -2816,9 +2849,16 @@ function resolveGroundAndDeck(dt){
   const x=P.pos.x, z=P.pos.z, y=P.pos.y;
 
   // island terrain
-  for(const is of islands){
-    if(Math.hypot(x-is.x,z-is.z)<is.r*0.85 && y<is.topY){
-      crash("TERRAIN","You flew into an island."); return;
+  if(MISSIONS[mission].okinawa && okinawaWorld){
+    const localX=x-OKINAWA_OFFSET_X;
+    if(Math.abs(localX)<7980 && Math.abs(z)<7980 && okinawaWorld.shoreDistance(localX,z)>1 && y<okinawaWorld.getHeight(localX,z)+2){
+      crash("TERRAIN","You flew into the Okinawa coastline."); return;
+    }
+  }else{
+    for(const is of islands){
+      if(Math.hypot(x-is.x,z-is.z)<is.r*0.85 && y<is.topY){
+        crash("TERRAIN","You flew into an island."); return;
+      }
     }
   }
 
@@ -2954,7 +2994,7 @@ function trap(x){
   }
 
   state=ST.RESULT;
-  const last = mission>=MISSIONS.length-1;
+  const last = mission===MISSIONS.length-2; // final campaign sortie; Okinawa free flight follows in the menu
   // ---- medal for this sortie ----
   const acc = sortieTorpFired? sortieTorpHit/sortieTorpFired : 0;
   let medal='bronze';
@@ -3008,6 +3048,7 @@ function isSBD(){ const m=MISSIONS[mission]; return !!(m&&m.sbd); }
 // Short badge for a mission that matches its real title (not the array index, which counts
 // Free Flight + Qual and so ran two ahead of the "Sortie N" the briefing shows).
 function missionTag(m){
+  if(m.okinawa) return 'OK';
   if(m.free) return 'FF';
   if(m.qual) return 'Q';
   const d=(m.title||'').match(/\d+/);
@@ -4148,7 +4189,7 @@ function loadPlaneModel(){
       }
       window.__eyeDbg='EYE '+COCKPIT_EYE.map(v=>v.toFixed(2)).join('/');
       const btEl=document.getElementById('buildTag');
-      if(btEl) btEl.textContent='BUILD 122 · '+window.__eyeDbg;
+      if(btEl) btEl.textContent='BUILD 123 · '+window.__eyeDbg;
       let seat=null;
       model.traverse(function(o){
         if(!o.isMesh||!o.material) return;
@@ -5025,8 +5066,17 @@ function updateMinimap(){
   const ch=Math.cos(P.heading), sh=Math.sin(P.heading);
   const put=(wx,wz)=>{ const dx=wx-P.pos.x, dz=wz-P.pos.z;
     const f=dx*ch+dz*sh, r=-dx*sh+dz*ch; return [c+r*scale, c-f*scale]; };
+  if(MISSIONS[mission].okinawa && okinawaWorld){
+    mmCtx.save();mmCtx.beginPath();mmCtx.arc(c,c,R-1,0,7);mmCtx.clip();
+    mmCtx.fillStyle='rgba(139,164,105,.58)';
+    for(let py=7;py<113;py+=5)for(let px=7;px<113;px+=5){
+      const r=(px-c)/scale,f=(c-py)/scale,lx=P.pos.x+f*ch-r*sh-OKINAWA_OFFSET_X,lz=P.pos.z+f*sh+r*ch;
+      if(Math.abs(lx)<8000&&Math.abs(lz)<8000&&okinawaWorld.shoreDistance(lx,lz)>0)mmCtx.fillRect(px,py,5,5);
+    }
+    mmCtx.restore();
+  }
   mmCtx.fillStyle='#b8a06a';
-  for(const is of islands){ const p=put(is.x,is.z);
+  if(!MISSIONS[mission].okinawa)for(const is of islands){ const p=put(is.x,is.z);
     if(Math.hypot(p[0]-c,p[1]-c)<R-1){ mmCtx.beginPath(); mmCtx.arc(p[0],p[1],Math.max(2,is.r*scale),0,7); mmCtx.fill(); } }
   let p=put(carrierX,0); if(Math.hypot(p[0]-c,p[1]-c)<R-1){ mmCtx.fillStyle='#7fae5a'; mmCtx.fillRect(p[0]-3,p[1]-3,6,6); }
   for(const s of ships){ if(!s.alive) continue; const q=put(s.group.position.x,s.group.position.z);
@@ -5303,6 +5353,7 @@ function resumeGame(){
 function exitToMenu(){
   if(eng) eng.master.gain.setTargetAtTime(0.85,actx.currentTime,0.05);
   state=ST.MENU; killCam=null;
+  setOkinawaActive(false);
   carrierX=0; if(carrier) carrier.position.x=0;
   if(carrierModel) carrierModel.position.x=CARRIER_DX;
   if(ijnCarrierModel) ijnCarrierModel.position.x=CARRIER_DX;
@@ -5416,7 +5467,7 @@ function setupUIButtons(){
   if(dbgT2) dbgT2.onclick=()=>{
     dbgOn=!dbgOn; localStorage.setItem('dbgOn',dbgOn?'1':'0');
     const db=document.getElementById('dbgBox'); if(db) db.textContent=dbgOn?'✓':'';
-    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 122'; }
+    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 123'; }
   };
   const lu=document.getElementById('lookUp'), ld=document.getElementById('lookDn');
   let _lookT=0;
@@ -5436,7 +5487,7 @@ function setupUIButtons(){
     // the logbook borrows this screen from the menu — send the player straight back
     if(logbookOpen){ logbookOpen=false; showOverlay('menu'); return; }
     if(state!==ST.RESULT) return;
-    const last=mission>=MISSIONS.length-1;
+    const last=mission===MISSIONS.length-2;
     if(wasWin){
       if(MISSIONS[mission] && MISSIONS[mission].free){ startMission(mission); return; }  // stay in Free Flight
       if(MISSIONS[mission] && MISSIONS[mission].qual){ showOverlay('menu'); return; }  // qual -> ready room
@@ -5452,10 +5503,17 @@ let wasWin=false;
 const _showResult=showResult;
 showResult=function(win,a,b,c,d){ wasWin=win; _showResult(win,a,b,c,d); };
 
-function beginGame(){
+async function beginGame(){
+  const idx=selectedMission,button=document.getElementById('startBtn');
+  if(button.disabled)return;
   initAudio();
   P.rtb=false;
-  startMission(selectedMission);
+  if(MISSIONS[idx].okinawa){
+    button.disabled=true;
+    try{await prepareOkinawa();if(selectedMission===idx)startMission(idx);}
+    catch(e){console.error(e);flash('OKINAWA COULD NOT LOAD — '+e.message,3000);}
+    finally{button.disabled=false;button.textContent='Begin '+MISSIONS[selectedMission].title;}
+  }else startMission(idx);
 }
 
 function applyLoadoutUI(){
@@ -5676,6 +5734,7 @@ function animate(){
   updateShadow();
   updateAudio(dt);
   updateSea(t);
+  if(okinawaWorld && MISSIONS[mission].okinawa)okinawaWorld.update(dt);
   updatePlaneMesh(dt);
   if(skyDome) skyDome.position.copy(camera.position);
   // The sea plane was only centred once, at creation. Fly 7000 units from that point
@@ -5696,6 +5755,7 @@ function animate(){
     spawnSmoke(carrierX+8+(Math.random()-0.5)*2, DECK_Y+26, DECK_HALF_W-3, 0x55554f, 0.32); }
   volcanoT-=dt;
   if(volcanoT<=0){ volcanoT=0.55;
+    if(!MISSIONS[mission].okinawa)
     for(const is of islands){ if(is.volcano)
       spawnSmoke(is.x+(Math.random()-0.5)*10, is.topY+4, is.z+(Math.random()-0.5)*10, 0x6f6f6f, 0.4); } }
   if(state!==ST.MENU){ updateCamera(dt); updateMinimap(); }
