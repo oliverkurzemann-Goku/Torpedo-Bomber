@@ -274,7 +274,7 @@
   <div id="flash"></div>
   <div id="ltn" style="position:fixed;inset:0;background:#e6ecff;opacity:0;pointer-events:none;z-index:40;"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 123</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 124</div>
 
   <!-- Optical landing aid -->
   <div id="lso">
@@ -753,6 +753,11 @@ function setOkinawaActive(active){
   if(sea)sea.visible=!active;
   for(const is of islands)is.group.visible=!active;
 }
+function releaseOkinawa(){
+  if(!okinawaWorld)return;
+  okinawaWorld.dispose();
+  okinawaWorld=null;
+}
 
 // ============================================================
 //  INIT
@@ -1015,8 +1020,14 @@ function buildShadow(){
 function updateShadow(){
   if(!planeShadow) return;
   const onDeck=(P.pos.x-carrierX)>STERN_X&&(P.pos.x-carrierX)<BOW_X&&Math.abs(P.pos.z)<DECK_HALF_W;
-  const baseY=onDeck?DECK_Y+1.05:0.45;
-  const alt=Math.max(0,onDeck?P.pos.y-DECK_Y:P.pos.y);
+  let baseY=onDeck?DECK_Y+1.05:0.45;
+  let terrainY=null;
+  if(!onDeck && MISSIONS[mission].okinawa && okinawaWorld){
+    const lx=P.pos.x-OKINAWA_OFFSET_X,z=P.pos.z;
+    if(Math.abs(lx)<7980 && Math.abs(z)<7980 && okinawaWorld.shoreDistance(lx,z)>1)
+      baseY=(terrainY=okinawaWorld.getHeight(lx,z))+0.12;
+  }
+  const alt=Math.max(0,P.pos.y-(onDeck?DECK_Y:(terrainY===null?0:terrainY)));
   planeShadow.position.set(P.pos.x,baseY,P.pos.z);
   const s=1+alt*0.018; planeShadow.scale.set(s,s,s);
   planeShadow.material.opacity=Math.max(0.04,0.5-alt*0.0028);
@@ -1732,6 +1743,7 @@ function buildPlane(){
 function startMission(idx){
   mission=idx;
   setOkinawaActive(!!MISSIONS[idx].okinawa);
+  if(!MISSIONS[idx].okinawa)releaseOkinawa(); // return the large scene's GPU memory to iPad Safari
   if(idx===0 || MISSIONS[idx].okinawa){ score=0; scoreStart=0; }
   else { score=scoreStart; }
   addScore(0);
@@ -4189,7 +4201,7 @@ function loadPlaneModel(){
       }
       window.__eyeDbg='EYE '+COCKPIT_EYE.map(v=>v.toFixed(2)).join('/');
       const btEl=document.getElementById('buildTag');
-      if(btEl) btEl.textContent='BUILD 123 · '+window.__eyeDbg;
+      if(btEl) btEl.textContent='BUILD 124 · '+window.__eyeDbg;
       let seat=null;
       model.traverse(function(o){
         if(!o.isMesh||!o.material) return;
@@ -5354,6 +5366,7 @@ function exitToMenu(){
   if(eng) eng.master.gain.setTargetAtTime(0.85,actx.currentTime,0.05);
   state=ST.MENU; killCam=null;
   setOkinawaActive(false);
+  releaseOkinawa();
   carrierX=0; if(carrier) carrier.position.x=0;
   if(carrierModel) carrierModel.position.x=CARRIER_DX;
   if(ijnCarrierModel) ijnCarrierModel.position.x=CARRIER_DX;
@@ -5467,7 +5480,7 @@ function setupUIButtons(){
   if(dbgT2) dbgT2.onclick=()=>{
     dbgOn=!dbgOn; localStorage.setItem('dbgOn',dbgOn?'1':'0');
     const db=document.getElementById('dbgBox'); if(db) db.textContent=dbgOn?'✓':'';
-    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 123'; }
+    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 124'; }
   };
   const lu=document.getElementById('lookUp'), ld=document.getElementById('lookDn');
   let _lookT=0;

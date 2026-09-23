@@ -5,9 +5,21 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 123 · Thunderbolt Squadron EU BUILD 58 · Remagen 1945 REMAGEN BUILD 21**
+Stand bei Übergabe: **Torpedo Squadron BUILD 124 · Thunderbolt Squadron EU BUILD 58 · Remagen 1945 REMAGEN BUILD 21**
 Repo: `oliverkurzemann-Goku/Torpedo-Bomber`, ausgeliefert über GitHub Pages.
 Alle Angaben unten sind aus dem tatsächlichen Code verifiziert, nicht aus dem Gedächtnis.
+
+**Okinawa-Integration nachgebessert, BUILD 124 (23.09.2026):** Der aus dem anderen
+Account übernommene BUILD 123 war bereits auf `main`; die echte 16-Kachel-Geometrie und
+Missionsumschaltung bestanden die Tests. Zwei Integrationslücken wurden im Code nachgewiesen:
+Beim Verlassen Okinawas blieb die große Szene trotz `visible=false` mit sämtlichen Texturen,
+Geometrien und Instanzpuffern im iPad-GPU-Speicher; nun wird sie beim Menüwechsel oder Start
+einer anderen Mission entsorgt und erst bei erneutem Okinawa-Start wieder aufgebaut. Der
+Flugzeugschatten lag über Land auf Meereshöhe; er folgt nun der tatsächlichen Geländeoberfläche
+und nutzt die Höhe über Grund, während Schatten auf Meer und Träger unverändert bleiben.
+Der Integrationstest führt alle drei Schattenfälle sowie die Entsorgung aus. Vollständige
+Geometrie-/Missionswechseltests und Inline-JavaScript-Syntaxprüfung bestehen. Die historische
+Landschaftsoptik wurde nicht ungeprüft verändert; echte iPad-Sichtprüfung und FPS bleiben offen.
 
 **Okinawa-Freiflug, BUILD 123 (23.09.2026):** Die eigenständige 16×16-km-Yomitan-
 Landschaft (`okinawa/data.js`, `okinawa/world.js`) wird nun auf Auswahl "Okinawa Coast ·
@@ -16,8 +28,8 @@ Vegetation mit 45% der Dichte der separaten Vollansicht; das Terrain ist identis
 Szene liegt 10 km östlich des Trägers, nutzt die lokale Küstenmaske im Wassershader und
 ersetzt dort Meer/Inseln, nicht den globalen Himmel. Geländehöhe steuert Kollision und
 Minimap; die Kampagnenfolge endet weiter nach Sortie 10. Kein historischer 1945-Einsatz.
-`okinawa-preview.html` bleibt die unabhängige Ansicht. Vor Veröffentlichung: Game-Script-
-Syntax, Geometrie/Koordinaten und Missionswechsel prüfen; visuelle iPad-Abnahme ist offen.
+`okinawa-preview.html` bleibt die unabhängige Ansicht. Game-Script-Syntax,
+Geometrie/Koordinaten und Missionswechsel wurden geprüft; visuelle iPad-Abnahme ist offen.
 
 **Aircraft/AI repair pass, BUILD 122 / EU BUILD 58 (21.09.2026):** Der Avenger-Loader dreht
 nicht länger pauschal die fünf vordersten Meshes, sondern wählt per Modellraum-Messung genau
@@ -265,7 +277,7 @@ iPad/iPhone Safari.
 | Datei | Was |
 |---|---|
 | `index.html` | Startseite, Auswahl zwischen den Spielen |
-| `torpedo-carrier.html` | **Teil 1** — Pazifik, Trägerbetrieb (BUILD 122) |
+| `torpedo-carrier.html` | **Teil 1** — Pazifik, Trägerbetrieb (BUILD 124) |
 | `thunderbolt-europe.html` | **Teil 2** — Europa, Bodenangriff (EU BUILD 58) |
 | `remagen-mission.html` | **Teil 3** — Remagen 1945, echtes Terrain (REMAGEN BUILD 21; Terrain-Handoff in `TERRAIN.md`) |
 | `model-check.html` | Kalibrier-Werkzeug für neue Flugzeugmodelle (Ausrichtung, Maßstab) |

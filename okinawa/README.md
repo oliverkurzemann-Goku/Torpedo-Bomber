@@ -1,6 +1,6 @@
 # Okinawa coastal study — build 1
 
-Open `../okinawa-preview.html` for the full-density scenery viewer. Torpedo Squadron BUILD 123 includes **Okinawa Coast · Free Flight** in its mission menu. The game builds the same environment when that choice is selected, with 45% of the viewer's decorative vegetation for a lower iPad rendering cost. Thunderbolt Squadron and Remagen remain separate.
+Open `../okinawa-preview.html` for the full-density scenery viewer. Torpedo Squadron BUILD 124 includes **Okinawa Coast · Free Flight** in its mission menu. The game builds the same environment when that choice is selected, with 45% of the viewer's decorative vegetation for a lower iPad rendering cost. Thunderbolt Squadron and Remagen remain separate.
 
 ## Scope and provenance
 
@@ -29,7 +29,7 @@ environment.setLight(true);          // late-afternoon water/sky palette
 environment.dispose();
 ```
 
-The caller owns camera, renderer, fog, lights and game state. `viewer.js` is only the standalone inspection UI. In Torpedo Squadron, the carrier stays at its original sea coordinates; the environment root is shifted 10 km east. The water shader keeps its shoreline lookup in local coordinates. The game's sky and ocean switch off while the Okinawa scene is active; it checks actual ground height for collision and plots land on the minimap. The original campaign sequence is unchanged. This is free flight, not a historical combat mission.
+The caller owns camera, renderer, fog, lights and game state. `viewer.js` is only the standalone inspection UI. In Torpedo Squadron, the carrier stays at its original sea coordinates; the environment root is shifted 10 km east. The water shader keeps its shoreline lookup in local coordinates. The game's sky and ocean switch off while the Okinawa scene is active; it checks actual ground height for collision, places the aircraft shadow on the land surface, and plots land on the minimap. Leaving for the menu or a different mission disposes the world and its GPU resources; returning to Okinawa rebuilds it on demand. The original campaign sequence is unchanged. This is free flight, not a historical combat mission.
 
 The viewer's **Download terrain model** button exports a glTF 2.0 binary (`.glb`) containing the textured elevation mesh. Instanced vegetation, buildings, sky and animated water stay in `world.js` and must be integrated as scenery. Water is intentionally not baked into the collision model.
 

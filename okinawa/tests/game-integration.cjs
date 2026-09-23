@@ -11,15 +11,18 @@ const pick=(name,next)=>{
  assert.ok(start>0&&end>start,name+' exists');return html.slice(start,end);
 };
 const crashes=[];
-const game=vm.createContext({THREE,Math,console,MISSIONS:[{okinawa:true}],mission:0,
+const game=vm.createContext({THREE,Math,console,MISSIONS:[{okinawa:true},{okinawa:false}],mission:0,
  OKINAWA_OFFSET_X:10000,okinawaWorld:null,sea:{visible:true},islands:[{group:{visible:true}}],
  P:{pos:{x:0,y:0,z:0},touchResolved:false},overDeck:()=>false,DECK_Y:18,carrierX:0,
- STERN_X:-120,BOW_X:120,crashes,DECK_HALF_W:16,crash(type){crashes.push(type)} });
+ STERN_X:-120,BOW_X:120,crashes,DECK_HALF_W:16,crash(type){crashes.push(type)},
+ planeShadow:{position:new THREE.Vector3(),scale:new THREE.Vector3(),material:{opacity:1},visible:true},
+ scene:new THREE.Scene()});
 vm.runInContext(pick('setOkinawaActive','init'),game);
+vm.runInContext(pick('updateShadow','updateClouds'),game);
 vm.runInContext(pick('resolveGroundAndDeck','trap'),game);
 (async()=>{
  const world=await new OkinawaWorld(OKINAWA_DATA,{vegetationDensity:.45}).build();
- game.okinawaWorld=world;world.root.position.x=10000;
+ game.okinawaWorld=world;world.root.position.x=10000;game.scene.add(world.root);
  game.setOkinawaActive(true);
  assert.equal(world.root.visible,true);assert.equal(game.sea.visible,false);
  assert.equal(game.islands[0].group.visible,false);
@@ -31,6 +34,13 @@ vm.runInContext(pick('resolveGroundAndDeck','trap'),game);
  assert.deepEqual(game.crashes,[],'Player above hillside remains airborne');
  game.P.pos={x:3000,y:50,z:-2000};game.resolveGroundAndDeck(.016);
  assert.deepEqual(game.crashes,[],'Offshore air has no land collision');
+ game.P.pos={x:7505,y:200,z:-2548};game.updateShadow();
+ assert.ok(Math.abs(game.planeShadow.position.y-world.getHeight(-2495,-2548)-.12)<.001,'Shadow rests on actual land');
+ assert.ok(game.planeShadow.visible,'Shadow remains visible at low altitude above terrain');
+ game.P.pos={x:3000,y:200,z:-2000};game.updateShadow();
+ assert.equal(game.planeShadow.position.y,.45,'Shadow returns to sea level offshore');
+ game.P.pos={x:0,y:50,z:0};game.updateShadow();
+ assert.equal(game.planeShadow.position.y,19.05,'Carrier deck shadow is unchanged');
  game.setOkinawaActive(false);
  assert.equal(world.root.visible,false);assert.equal(game.sea.visible,true);
  assert.equal(game.islands[0].group.visible,true);
@@ -39,6 +49,11 @@ vm.runInContext(pick('resolveGroundAndDeck','trap'),game);
  assert.match(html,/title:"Okinawa", sub:"Okinawa Coast · Free Flight", free:true, okinawa:true/);
  assert.match(html,/const last=mission===MISSIONS\.length-2/);
  assert.match(html,/const last = mission===MISSIONS\.length-2/);
- console.log('Okinawa game integration: '+world.objectCount+' instances; land/sea/altitude collision, scene switching and campaign finale OK');
- world.dispose();
+ assert.match(html,/if\(!MISSIONS\[idx\]\.okinawa\)releaseOkinawa\(\)/);
+ assert.match(html,/function exitToMenu\(\)[\s\S]*?setOkinawaActive\(false\);\s*releaseOkinawa\(\)/);
+ const count=world.objectCount;game.releaseOkinawa();
+ assert.equal(game.okinawaWorld,null,'Leaving Okinawa releases the cached world');
+ assert.equal(world.root.parent,null,'Leaving Okinawa detaches its scene from the renderer');
+ game.releaseOkinawa(); // repeated exits must remain safe
+ console.log('Okinawa game integration: '+count+' instances; land/sea/deck shadows, collision, scene switching, disposal and campaign finale OK');
 })().catch(e=>{console.error(e);process.exitCode=1});
