@@ -771,8 +771,18 @@ async function prepareOkinawa(){
 }
 function setOkinawaActive(active){
   if(active && !okinawaWorld)throw Error('Okinawa environment was not prepared.');
-  if(okinawaWorld)okinawaWorld.root.visible=active;
-  if(sea)sea.visible=!active;
+  if(okinawaWorld){
+    okinawaWorld.root.visible=active;
+    // Use the carrier game's reflective waves in every sortie. The coast mask below
+    // cuts out the ocean where mapped land rises above the waterline.
+    okinawaWorld.water.visible=false;
+  }
+  if(sea)sea.visible=true;
+  if(seaUniforms){
+    if(active)seaUniforms.uCoast.value=okinawaWorld.coastTexture;
+    else seaUniforms.uCoast.value=null;
+    seaUniforms.uCoastActive.value=active?1:0;
+  }
   for(const is of islands)is.group.visible=!active;
 }
 function releaseOkinawa(){
@@ -1044,7 +1054,7 @@ function updateShadow(){
   const onDeck=(P.pos.x-carrierX)>STERN_X&&(P.pos.x-carrierX)<BOW_X&&Math.abs(P.pos.z)<DECK_HALF_W;
   let baseY=onDeck?DECK_Y+1.05:0.45;
   let terrainY=null;
-  if(!onDeck && MISSIONS[mission].okinawa && okinawaWorld){
+  if(!onDeck && okinawaWorld && okinawaWorld.root.visible){
     const lx=P.pos.x-OKINAWA_OFFSET_X,z=P.pos.z;
     if(Math.abs(lx)<7980 && Math.abs(z)<7980 && okinawaWorld.shoreDistance(lx,z)>1)
       baseY=(terrainY=okinawaWorld.getHeight(lx,z))+0.12;
@@ -1382,6 +1392,8 @@ function buildSea(){
     uFogColor:{value:new THREE.Color(0xaecfe6)},
     uFogNear:{value:2200},
     uFogFar:{value:6200},
+    uCoast:{value:null},
+    uCoastActive:{value:0},
     uSeaState:{value:1.0}   // wave-height multiplier, set per sortie
   };
   const mat=new THREE.ShaderMaterial({
@@ -1418,12 +1430,23 @@ function buildSea(){
       uniform vec3 uSunDir; uniform vec3 uSunCol; uniform vec3 uDeep; uniform vec3 uShallow;
       uniform vec3 uZenith; uniform vec3 uHorizon; uniform vec3 uFogColor;
       uniform float uFogNear; uniform float uFogFar; uniform float uTime;
+      uniform sampler2D uCoast; uniform float uCoastActive;
       varying vec3 vWorld; varying vec3 vN; varying float vH;
       float hash(vec2 p){ return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453); }
       float noise(vec2 p){ vec2 i=floor(p); vec2 f=fract(p); f=f*f*(3.0-2.0*f);
         return mix(mix(hash(i),hash(i+vec2(1.0,0.0)),f.x),
                    mix(hash(i+vec2(0.0,1.0)),hash(i+vec2(1.0,1.0)),f.x),f.y); }
       void main(){
+        float coastalShallow=0.0;
+        if(uCoastActive>0.5){
+          vec2 shoreUV=(vWorld.xz-vec2(10000.0,0.0)+vec2(8000.0))/16000.0;
+          if(all(greaterThanEqual(shoreUV,vec2(0.0))) && all(lessThanEqual(shoreUV,vec2(1.0)))){
+            vec4 encoded=texture2D(uCoast,shoreUV);
+            float shoreMetres=(floor(encoded.r*255.0+0.5)*256.0+floor(encoded.g*255.0+0.5))-32768.0;
+            if(shoreMetres>5.0)discard;
+            coastalShallow=clamp((350.0+shoreMetres)/350.0,0.0,1.0);
+          }
+        }
         vec3 N=normalize(vN);
         float rip=noise(vWorld.xz*0.32+uTime*0.55)+noise(vWorld.xz*0.85-uTime*0.7);
         N=normalize(N+vec3((rip-1.0)*0.10,0.0,(rip-1.0)*0.10));
@@ -1432,6 +1455,7 @@ function buildSea(){
         vec3 R=reflect(-V,N);
         vec3 skyRef=mix(uHorizon,uZenith,clamp(R.y*1.4+0.12,0.0,1.0));
         vec3 base=mix(uDeep,uShallow,clamp(vH*0.35+0.42,0.0,1.0));
+        base=mix(base,vec3(0.12,0.33,0.32),coastalShallow*0.55);
         vec3 col=mix(base,skyRef,fres);
         vec3 L=normalize(uSunDir);
         float rl=max(dot(R,L),0.0);
@@ -1451,6 +1475,17 @@ function buildSea(){
 function updateSea(t){
   sea.position.x=P.pos.x; sea.position.z=P.pos.z;
   seaUniforms.uTime.value=t;
+}
+// Same waves as the sea vertex shader, sampled under a ship's hull so its draft
+// and wake remain in the water even as the wind and swell change.
+function seaHeightAt(x,z,t){
+  const wrap=Math.sin(x*.006+t*.5)*22+Math.cos(z*.0052-t*.4)*22;
+  return (Math.sin(x*.0062+t*.45)*.62
+    +Math.sin((z+wrap)*.0105-t*.4)*.46
+    +Math.sin((x*.7+z*.72)*.02+t*.85)*.30
+    +Math.sin((x*.55-z*.8)*.046+t*1.5)*.16
+    +Math.sin((x*1.3+z*.4)*.085-t*2.1)*.09
+    +Math.sin((x*.23-z*1.1)*.13+t*2.6)*.05)*seaState;
 }
 
 function boxMesh(w,h,d,color,rough){
@@ -1769,9 +1804,8 @@ function startMission(idx){
   menuChips.forEach((chip,i)=>chip.classList.toggle('sel',i===idx));
   const menuStart=document.getElementById('startBtn');
   if(menuStart)menuStart.textContent='Begin '+MISSIONS[idx].title;
-  setOkinawaActive(!!MISSIONS[idx].okinawa);
-  if(!MISSIONS[idx].okinawa)releaseOkinawa(); // return the large scene's GPU memory to iPad Safari
-  if(idx===0 || MISSIONS[idx].okinawa){ score=0; scoreStart=0; }
+  setOkinawaActive(true);
+  if(idx===0){ score=0; scoreStart=0; }
   else { score=scoreStart; }
   addScore(0);
   killCam=null;
@@ -2892,7 +2926,7 @@ function resolveGroundAndDeck(dt){
   const x=P.pos.x, z=P.pos.z, y=P.pos.y;
 
   // island terrain
-  if(MISSIONS[mission].okinawa && okinawaWorld){
+  if(okinawaWorld && okinawaWorld.root.visible){
     const localX=x-OKINAWA_OFFSET_X;
     if(Math.abs(localX)<7980 && Math.abs(z)<7980 && okinawaWorld.shoreDistance(localX,z)>1 && y<okinawaWorld.getHeight(localX,z)+2){
       crash("TERRAIN","You flew into the Okinawa coastline."); return;
@@ -3580,9 +3614,9 @@ function spawnWingman(i){
   pos.y=Math.max(70, P.pos.y-3);
   const startSpd=Math.max(P.spd,APP_SPD);
   const w={ mesh, disc, sbd, alive:true, hp:3, side, mode:'form', cool:2+i*1.5, dropped:false,
-    target:null, egressT:0, pos, slotPos:pos.clone(), heading:P.heading, pitch:0, roll:0, spd:startSpd,
+    target:null, egressT:0, pos, slotPos:pos.clone(), heading:Math.atan2(nose.x,nose.z), pitch:0, roll:0, spd:startSpd,
     vel:nose.clone().multiplyScalar(startSpd) };
-  mesh.position.copy(w.pos); scene.add(mesh); wingmen.push(w);
+  mesh.position.copy(w.pos); mesh.rotation.y=w.heading; scene.add(mesh); wingmen.push(w);
 }
 // Wingman AI. Three modes: FORM (hold a formation slot on the player), ATTACK (a staged
 // run-in on a ship, descending to weapons altitude, drop, then break away), EGRESS (climb
@@ -3676,10 +3710,15 @@ function updateWingmen(dt){
     const vhoriz=Math.hypot(w.vel.x,w.vel.z);
     const vH=Math.atan2(w.vel.x,w.vel.z);
     let dh=vH-w.heading; while(dh>Math.PI)dh-=2*Math.PI; while(dh<-Math.PI)dh+=2*Math.PI;
-    w.heading += dh*Math.min(1,6*dt);
+    // A powered aircraft cannot yaw on the spot. Its turn rate falls with airspeed:
+    // at ~100 m/s a three-g coordinated turn takes seconds, not one animation frame.
+    const maxTurn=Math.min(.32,9.81*Math.sqrt(3*3-1)/Math.max(42,vhoriz));
+    const yawStep=Math.max(-maxTurn*dt,Math.min(maxTurn*dt,dh));
+    w.heading += yawStep;
     const desPitch=Math.max(-0.5,Math.min(0.5, Math.atan2(w.vel.y, Math.max(1,vhoriz))));
     w.pitch += (desPitch-w.pitch)*Math.min(1,4*dt);
-    w.roll  += (Math.max(-0.6,Math.min(0.6,dh*1.3))-w.roll)*Math.min(1,4*dt);
+    const bank=Math.max(-.65,Math.min(.65,Math.atan2(vhoriz*yawStep/Math.max(dt,.001),9.81)));
+    w.roll  += (bank-w.roll)*Math.min(1,3*dt);
     w.spd = w.vel.length();
 
     w.mesh.position.copy(w.pos);
@@ -5114,7 +5153,7 @@ function updateMinimap(){
   const ch=Math.cos(P.heading), sh=Math.sin(P.heading);
   const put=(wx,wz)=>{ const dx=wx-P.pos.x, dz=wz-P.pos.z;
     const f=dx*ch+dz*sh, r=-dx*sh+dz*ch; return [c+r*scale, c-f*scale]; };
-  if(MISSIONS[mission].okinawa && okinawaWorld){
+  if(okinawaWorld && okinawaWorld.root.visible){
     mmCtx.save();mmCtx.beginPath();mmCtx.arc(c,c,R-1,0,7);mmCtx.clip();
     mmCtx.fillStyle='rgba(139,164,105,.58)';
     for(let py=7;py<113;py+=5)for(let px=7;px<113;px+=5){
@@ -5124,7 +5163,7 @@ function updateMinimap(){
     mmCtx.restore();
   }
   mmCtx.fillStyle='#b8a06a';
-  if(!MISSIONS[mission].okinawa)for(const is of islands){ const p=put(is.x,is.z);
+  if(!okinawaWorld || !okinawaWorld.root.visible)for(const is of islands){ const p=put(is.x,is.z);
     if(Math.hypot(p[0]-c,p[1]-c)<R-1){ mmCtx.beginPath(); mmCtx.arc(p[0],p[1],Math.max(2,is.r*scale),0,7); mmCtx.fill(); } }
   let p=put(carrierX,0); if(Math.hypot(p[0]-c,p[1]-c)<R-1){ mmCtx.fillStyle='#7fae5a'; mmCtx.fillRect(p[0]-3,p[1]-3,6,6); }
   for(const s of ships){ if(!s.alive) continue; const q=put(s.group.position.x,s.group.position.z);
@@ -5559,14 +5598,12 @@ async function launchCampaignMission(idx){
   if(button.disabled)return;
   initAudio();
   P.rtb=false;
-  if(MISSIONS[idx].okinawa){
-    button.disabled=true;
-    const label=button.textContent;
-    button.textContent='Loading Okinawa…';
-    try{await prepareOkinawa();startMission(idx);}
-    catch(e){console.error(e);flash('OKINAWA COULD NOT LOAD — '+e.message,3000);}
-    finally{button.disabled=false;button.textContent=label;}
-  }else startMission(idx);
+  button.disabled=true;
+  const label=button.textContent;
+  button.textContent=okinawaWorld?'Preparing sortie…':'Loading Okinawa…';
+  try{await prepareOkinawa();startMission(idx);}
+  catch(e){console.error(e);flash('OKINAWA COULD NOT LOAD — '+e.message,3000);}
+  finally{button.disabled=false;button.textContent=label;}
 }
 function beginGame(){ return launchCampaignMission(selectedMission); }
 
@@ -5672,7 +5709,16 @@ function updateShips(dt){
       // Turn the bow toward the bearing that points away from the island's centre. Once clear
       // of the keep-out ring the ship resumes its course, so it curves around instead of
       // circling. Checked against the nearest island only — they never overlap.
-      {
+      if(okinawaWorld && okinawaWorld.root.visible){
+        const aheadX=s.group.position.x+wf.x*(s.radius+180)-OKINAWA_OFFSET_X;
+        const aheadZ=s.group.position.z+wf.z*(s.radius+180);
+        if(Math.abs(aheadX)<7950 && Math.abs(aheadZ)<7950 &&
+           okinawaWorld.shoreDistance(aheadX,aheadZ)>-s.radius-35){
+          const left=okinawaWorld.shoreDistance(aheadX-wf.z*180,aheadZ+wf.x*180);
+          const right=okinawaWorld.shoreDistance(aheadX+wf.z*180,aheadZ-wf.x*180);
+          s.group.rotateY((left<right?-1:1)*.24*dt);
+        }
+      }else{
         let near=null, nd=1e9;
         for(const is of islands){
           const d=Math.hypot(s.group.position.x-is.x, s.group.position.z-is.z);
@@ -5692,9 +5738,11 @@ function updateShips(dt){
           if(Math.abs(diff)>0.05) s.group.rotateY(Math.sign(diff)*0.35*dt);
         }
       }
+      wf.copy(s.fwd).applyQuaternion(s.group.quaternion);wf.y=0;wf.normalize();
       s.group.position.x+=wf.x*s.speed*dt;
       s.group.position.z+=wf.z*s.speed*dt;
-      s.group.position.y=Math.sin(performance.now()*0.001+s.group.position.x)*0.4*seaState;
+      s.group.position.y=seaHeightAt(s.group.position.x,s.group.position.z,seaUniforms.uTime.value)
+        +Math.sin(performance.now()*.0008+s.group.position.x*.012)*.13*seaState;
       // funnel haze, drifting off the stern
       if(s.smokeT===undefined) s.smokeT=Math.random();
       s.smokeT-=dt;
@@ -5788,7 +5836,7 @@ function animate(){
   updateShadow();
   updateAudio(dt);
   updateSea(t);
-  if(okinawaWorld && MISSIONS[mission].okinawa)okinawaWorld.update(dt);
+  if(okinawaWorld && okinawaWorld.root.visible)okinawaWorld.update(dt);
   updatePlaneMesh(dt);
   if(skyDome) skyDome.position.copy(camera.position);
   // The sea plane was only centred once, at creation. Fly 7000 units from that point
@@ -5809,7 +5857,7 @@ function animate(){
     spawnSmoke(carrierX+8+(Math.random()-0.5)*2, DECK_Y+26, DECK_HALF_W-3, 0x55554f, 0.32); }
   volcanoT-=dt;
   if(volcanoT<=0){ volcanoT=0.55;
-    if(!MISSIONS[mission].okinawa)
+    if(!okinawaWorld || !okinawaWorld.root.visible)
     for(const is of islands){ if(is.volcano)
       spawnSmoke(is.x+(Math.random()-0.5)*10, is.topY+4, is.z+(Math.random()-0.5)*10, 0x6f6f6f, 0.4); } }
   if(state!==ST.MENU){ updateCamera(dt); updateMinimap(); }

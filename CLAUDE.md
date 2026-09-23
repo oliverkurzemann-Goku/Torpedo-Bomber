@@ -5,9 +5,21 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 125 · Thunderbolt Squadron EU BUILD 59 · Remagen 1945 REMAGEN BUILD 22**
+Stand bei Übergabe: **Torpedo Squadron BUILD 126 · Thunderbolt Squadron BUILD 126 · reales Remagen-Gelände 21**
 Repo: `oliverkurzemann-Goku/Torpedo-Bomber`, ausgeliefert über GitHub Pages.
 Alle Angaben unten sind aus dem tatsächlichen Code verifiziert, nicht aus dem Gedächtnis.
+
+**Korrektur: integrierte Spiele (BUILD 126):** Die beiden Testgelände sind keine eigenen
+Kampagnenkapitel. `index.html` führt zu genau zwei Spielen: Die zwölf Europa-Einsätze mit
+P-47, Bf 109, Fw 190 und Me 262 laufen jetzt alle in `remagen-mission.html` auf dem echten
+Remagen-Gelände; die alte synthetische `thunderbolt-europe.html` leitet dorthin weiter.
+`torpedo-carrier.html` aktiviert Okinawas Land samt Küstenbebauung in jeder Mission, erhält
+aber das reflektierende Wasser des Trägerspiels; dessen Shader schneidet die Wasserfläche
+an der echten Küstenmaske aus. Schiffe folgen dem Wellengang und weichen der Küste aus.
+Rottenflieger spawnen mit ihrer tatsächlichen Flugrichtung und wenden nur mit begrenzter
+Winkelgeschwindigkeit. Neue Europa-Missionen speichern Fortschritt unter `europeRhine`,
+damit Abschlüsse aus der früheren synthetischen Karte diese neuen Einsätze nicht überspringen.
+Frühere Einträge unten beschreiben die Geschichte der separaten Testversionen.
 
 **Zwei Kampagnen und Propeller-Reparatur (23.09.2026):** `index.html` bietet genau zwei
 Einstiege: Pacific (Träger → zwei neue Okinawa-Einsätze → Freiflug) und Europe

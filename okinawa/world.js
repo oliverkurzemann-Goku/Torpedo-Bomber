@@ -66,7 +66,7 @@ class OkinawaWorld{
   for(let i=0;i<dist.length;i++)dist[i]*=16000/(n-1)*(this.land[i]?1:-1);
   ctx.fillStyle='#000';ctx.fillRect(0,0,n,n);this.paintPolygons(ctx,'forest','#ff0000');this.paintPolygons(ctx,'fields','#00ff00');this.paintPolygons(ctx,'airfields','#0000ff');this.biomes=ctx.getImageData(0,0,n,n).data;
   const sdf=new Uint8Array(n*n*4);for(let i=0;i<n*n;i++){const d=clamp(Math.round(dist[i]+32768),0,65535);sdf[i*4]=d>>8;sdf[i*4+1]=d&255;sdf[i*4+2]=0;sdf[i*4+3]=255;}
-  this.coastTexture=new THREE.DataTexture(sdf,n,n,THREE.RGBAFormat);this.coastTexture.minFilter=this.coastTexture.magFilter=THREE.LinearFilter;this.coastTexture.needsUpdate=true;
+  this.coastTexture=new THREE.DataTexture(sdf,n,n,THREE.RGBAFormat);this.coastTexture.minFilter=this.coastTexture.magFilter=THREE.NearestFilter;this.coastTexture.needsUpdate=true;
  }
  biome(x,z){const n=this.mapSize,i=clamp(Math.round((x+8000)/16000*(n-1)),0,n-1),j=clamp(Math.round((z+8000)/16000*(n-1)),0,n-1),k=(j*n+i)*4;return [this.biomes[k]/255,this.biomes[k+1]/255,this.biomes[k+2]/255];}
  buildGroundTexture(){
@@ -122,7 +122,7 @@ class OkinawaWorld{
  buildSettlements(){
   // Illustrative rural hamlets, intentionally sparse. These are not today's Overture buildings.
   const rand=rng(9831),walls=[],roofs=[],dark=[],gardenWalls=[],locations=[];
-  for(const c of [[-4200,-3300],[-3100,-1500],[-2500,-2800],[-2200,600]]){
+  for(const c of [[-4800,-2600],[-4200,-3300],[-3800,200],[-3100,-1500],[-2500,-2800],[-2200,600]]){
    for(let i=0;i<28;i++){
     const angle=rand()*6.28,r=40+Math.sqrt(rand())*330,x=c[0]+Math.cos(angle)*r,z=c[1]+Math.sin(angle)*r;
     const y=this.getHeight(x,z),d=this.shoreDistance(x,z);if(d<100||this.biome(x,z)[0]>.3)continue;
@@ -133,6 +133,17 @@ class OkinawaWorld{
     dark.push({x:x+Math.sin(rot)*(depth*.5+.03),z:z+Math.cos(rot)*(depth*.5+.03),y:y+1.7,sx:w*.67,sy:1.5,sz:.1,r:rot});
     for(let side=-1;side<=1;side+=2){const gx=x+side*(w*.7+3),gz=z;gardenWalls.push({x:gx,z:gz,y:this.getHeight(gx,gz)+.55,sx:.65,sy:1.1,sz:depth+10,r:0});}
    }
+  }
+  // A small coastal village near the eastern strike route remains readable from low
+  // altitude. Leave gaps and slight offsets so it follows the land rather than a grid.
+  for(let row=0;row<5;row++)for(let col=0;col<7;col++){
+   const x=-4840+col*29+(rand()-.5)*11,z=-2610+row*34+(rand()-.5)*13;
+   const y=this.getHeight(x,z),d=this.shoreDistance(x,z),w=8+rand()*4,depth=7+rand()*3,rot=(rand()-.5)*.35;
+   if(d<40||this.biome(x,z)[0]>.3||Math.max(Math.abs(this.getHeight(x+w,z)-y),Math.abs(this.getHeight(x,z+depth)-y))>2.5)continue;
+   if(locations.some(p=>Math.hypot(p.x-x,p.z-z)<20))continue;locations.push({x,z});
+   walls.push({x,z,y:y+1.65,sx:w,sy:3.3,sz:depth,r:rot});
+   roofs.push({x,z,y:y+3.2,sx:w,sy:w*.74,sz:depth,r:rot});
+   dark.push({x:x+Math.sin(rot)*(depth*.5+.03),z:z+Math.cos(rot)*(depth*.5+.03),y:y+1.65,sx:w*.67,sy:1.5,sz:.1,r:rot});
   }
   const roofTex=canvas(128),c=roofTex.getContext('2d');c.fillStyle='#875040';c.fillRect(0,0,128,128);for(let i=0;i<128;i+=8){c.fillStyle=i%16?'#a46951':'#955d49';c.fillRect(i,0,3,128);c.fillStyle='#c3a08a';for(let j=0;j<128;j+=20)c.fillRect(i,j,7,1);}
   const tex=new THREE.CanvasTexture(roofTex);tex.encoding=THREE.sRGBEncoding;tex.wrapS=tex.wrapT=THREE.RepeatWrapping;tex.repeat.set(2,2);

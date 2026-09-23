@@ -12,7 +12,8 @@ const pick=(name,next)=>{
 };
 const crashes=[];
 const game=vm.createContext({THREE,Math,console,MISSIONS:[{okinawa:true},{okinawa:false}],mission:0,
- OKINAWA_OFFSET_X:10000,okinawaWorld:null,sea:{visible:true},islands:[{group:{visible:true}}],
+ OKINAWA_OFFSET_X:10000,okinawaWorld:null,sea:{visible:true},
+ seaUniforms:{uCoast:{value:null},uCoastActive:{value:0}},islands:[{group:{visible:true}}],
  P:{pos:{x:0,y:0,z:0},touchResolved:false},overDeck:()=>false,DECK_Y:18,carrierX:0,
  STERN_X:-120,BOW_X:120,crashes,DECK_HALF_W:16,crash(type){crashes.push(type)},
  planeShadow:{position:new THREE.Vector3(),scale:new THREE.Vector3(),material:{opacity:1},visible:true},
@@ -24,7 +25,10 @@ vm.runInContext(pick('resolveGroundAndDeck','trap'),game);
  const world=await new OkinawaWorld(OKINAWA_DATA,{vegetationDensity:.45}).build();
  game.okinawaWorld=world;world.root.position.x=10000;game.scene.add(world.root);
  game.setOkinawaActive(true);
- assert.equal(world.root.visible,true);assert.equal(game.sea.visible,false);
+ assert.equal(world.root.visible,true);assert.equal(game.sea.visible,true);
+ assert.equal(world.water.visible,false,'flat test water must not cover reflective ocean');
+ assert.equal(game.seaUniforms.uCoast.value,world.coastTexture);
+ assert.equal(game.seaUniforms.uCoastActive.value,1);
  assert.equal(game.islands[0].group.visible,false);
  assert.ok(world.objectCount<30000,'Reduced game decoration fits its budget');
  assert.ok(world.shoreDistance(-2495,-2548)>100,'Measured land location');
@@ -43,6 +47,7 @@ vm.runInContext(pick('resolveGroundAndDeck','trap'),game);
  assert.equal(game.planeShadow.position.y,19.05,'Carrier deck shadow is unchanged');
  game.setOkinawaActive(false);
  assert.equal(world.root.visible,false);assert.equal(game.sea.visible,true);
+ assert.equal(game.seaUniforms.uCoastActive.value,0);
  assert.equal(game.islands[0].group.visible,true);
  assert.match(world.water.material.vertexShader,/vLocal=position/);
  assert.match(world.water.material.fragmentShader,/p=vLocal\.xz/);
@@ -51,14 +56,15 @@ vm.runInContext(pick('resolveGroundAndDeck','trap'),game);
  assert.equal(missions.at(-1).free,true,'free flight stays outside combat campaign');
  assert.equal(missions.at(-2).sub,'Coastal Screen','final campaign sortie takes place at Okinawa');
  assert.equal(missions.at(-3).sub,'Okinawa Recon');
- for(const m of missions.filter(m=>m.okinawa&&!m.free))for(const t of m.targets){
+ for(const m of missions.filter(m=>!m.free))for(const t of m.targets){
   const x=t.pos[0]-10000,z=t.pos[2];
   assert.ok(world.shoreDistance(x,z)<-300,'Okinawa ship target sits in navigable coastal water: '+m.sub+' '+x+','+z);
  }
  assert.match(html,/launchCampaignMission\(mission\+1\)/,'campaign advances through the world preparation path');
  assert.match(html,/const last=mission===MISSIONS\.length-2/);
  assert.match(html,/const last = mission===MISSIONS\.length-2/);
- assert.match(html,/if\(!MISSIONS\[idx\]\.okinawa\)releaseOkinawa\(\)/);
+ assert.match(html,/try\{await prepareOkinawa\(\);startMission\(idx\);\}/,'all sorties prepare the coastline');
+ assert.match(html,/if\(shoreMetres>5\.0\)discard/,'reflective sea masks the mapped land');
  assert.match(html,/function exitToMenu\(\)[\s\S]*?setOkinawaActive\(false\);\s*releaseOkinawa\(\)/);
  const count=world.objectCount;game.releaseOkinawa();
  assert.equal(game.okinawaWorld,null,'Leaving Okinawa releases the cached world');

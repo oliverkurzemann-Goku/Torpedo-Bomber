@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Remagen 1945 — Real Terrain</title>
+<title>Thunderbolt Squadron — Rhine Campaign</title>
 <style>
   :root{
     --olive:#2b3022; --olive2:#1c2017; --khaki:#cabf9c; --amber:#e8b84b;
@@ -239,7 +239,7 @@
   <div style="width:100%;height:4px;background:repeating-linear-gradient(45deg,#ffd400,#ffd400 8px,#111 8px,#111 16px);"></div>
   <span id="testVersionBannerText" style="background:#111;color:#ffd400;font-family:monospace;font-weight:800;font-size:11px;letter-spacing:.5px;padding:3px 10px;border:1px solid #ffd400;border-top:none;border-radius:0 0 6px 6px;"></span>
 </div>
-<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — REMAGEN BUILD 22 — EUROPE CAMPAIGN — 2026-09-23';</script>
+<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 126';</script>
 <!-- ===== END TEMP TEST-ONLY VERSION BANNER ===== -->
 <div id="app"></div>
 
@@ -266,7 +266,7 @@
   <div id="flash"></div>
   <div id="gunsight"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">REMAGEN BUILD 22 · EUROPE CAMPAIGN</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 126 · REAL RHINE</div>
 
   <div id="apr">
     <div id="aprCall"></div>
@@ -303,7 +303,7 @@
 <div class="overlay" id="loading">
   <div class="card menuCard">
     <div class="insignia"></div>
-    <h1 class="stencil">Remagen 1945</h1>
+    <h1 class="stencil">Thunderbolt Squadron</h1>
     <div class="sub">Loading real terrain&hellip;</div>
     <div class="brief" id="loadingText" style="text-align:center;">Fetching Copernicus DEM elevation and Overture Maps roads/buildings for the Rhine gorge around Remagen&hellip;</div>
   </div>
@@ -313,11 +313,10 @@
   <div class="card menuCard">
     <div class="campaignArt" aria-hidden="true"></div>
     <div class="insignia"></div>
-    <h1 class="stencil">Remagen 1945</h1>
-    <div class="sub">Real Terrain &middot; The Bridge, March 1945</div>
+    <h1 class="stencil">Thunderbolt Squadron</h1>
+    <div class="sub">The Rhine Campaign &middot; Real Terrain &middot; 1945</div>
     <div class="secLbl">Select Sortie</div>
     <div id="missionSel"></div>
-    <a class="btn ghost" href="thunderbolt-europe.html" style="text-decoration:none;display:inline-block;margin-top:12px;">&#9664; Europe · Campaign Chapter I</a>
     <div class="secLbl">Difficulty</div>
     <div id="diffSel" style="display:flex;gap:7px;justify-content:center;"></div>
     <div class="optRow">
@@ -331,7 +330,7 @@
     <div class="credit">
       The real Rhine gorge around Remagen — Copernicus elevation data and Overture Maps roads,
       rivers, forests and buildings, not an invented valley.<br>
-      P-47D Thunderbolt &middot; five sorties, including the actual Ludendorff Bridge.
+      Twelve sorties with the P-47D, Bf 109, Fw 190 and Me 262, including the Ludendorff Bridge.
       <br>Vehicles: KojfDiscord / adrielcz, CC BY 4.0 ·
       <a href="ASSET-CREDITS.md" target="_blank" rel="noopener" style="color:inherit">Model credits</a>
     </div>
@@ -615,7 +614,7 @@ async function loadRealWorld(){
 
   if(OSMManager.BUILD!==21||HistoricalObjectManager.BUILD!==21||LivingWorld.BUILD!==21||WorldVehicles.BUILD!==21) throw new Error('Terrain version mismatch. Reload Remagen.');
   document.getElementById('testVersionBannerText').textContent=
-    'TEST BUILD — REMAGEN BUILD 22 — EUROPE CAMPAIGN — MODULE 21';
+    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 126 · MODULE 21';
   heightProvider=new DEMHeightProvider(RTILE,'terrain-system/real/data/dem/');
   terrain=new TerrainManager(scene,RTILE,heightProvider);
   osmMgr=new OSMManager(scene,RTILE,terrain,'terrain-system/real/data/osm/');
@@ -2306,31 +2305,49 @@ const MISSIONS=[
   { id:'circ', title:'Circuits', sub:'Field Landing', ac:'p47', circuits:3, weather:'clear',
     text:"Three circuits of the strip. Wheels down, flaps out, cross the hedge at <b>110 mph</b> "
         +"and hold the centreline. Learn to put her down here and the rest of the war is easier." },
-  { id:'bridge', title:'Sortie 1', sub:'Bridge Buster', ac:'p47', weather:'clear',
-    kills:{bridge:1}, flakDefense:2, text:"The Ludendorff Bridge at Remagen — captured intact by the 9th Armored "
-        +"on 7 March 1945, and still the fastest way west for anything the enemy can push across "
-        +"it. It needs <b>bombs</b>; the fifties will not scratch it. Arm the bombs, come in "
-        +"shallow along the span and pickle just short of the deck. The guns on both banks are alert." },
+  { id:'convoy', title:'Sortie 1', sub:'Road Recce', ac:'p47', weather:'clear',
+    kills:{truck:4}, flakDefense:1, text:"Four vehicles are moving along the mapped valley road. "
+        +"Stay below the ridge, make one fast gun pass and watch for flak near the crossing." },
   { id:'flak', title:'Sortie 2', sub:'Flak Suppression', ac:'p47', weather:'haze',
     kills:{flak:2}, flakDefense:2, text:"Two gun positions overlook the river crossing from the high ground on "
         +"either bank. Before anyone else comes through low over the bridge, they have to go. "
         +"Come in low and fast, one pass, no second circuit." },
-  { id:'factory', title:'Sortie 3', sub:'Factory Strike', ac:'p47', weather:'clear',
+  { id:'train', title:'Sortie 3', sub:'Rail Cut', ac:'p47', weather:'rain',
+    kills:{train:1}, flakDefense:1, text:"A supply train is on the real valley railway. Find its locomotive "
+        +"through the rain, strike with rockets or bombs, and climb before the track bends uphill." },
+  { id:'factory', title:'Sortie 4', sub:'Factory Strike', ac:'p47', weather:'clear',
     kills:{factory:1}, flakDefense:1, text:"The industrial works up the valley are keeping the bridgehead "
         +"supplied. Bombs and rockets on the workshops and the stack — watch for heavy flak "
         +"over the valley." },
-  { id:'convoy', title:'Sortie 4', sub:'Road Interdiction', ac:'p47', weather:'haze',
-    kills:{truck:4}, flakDefense:1, text:"Recon has found a four-truck supply column moving on the mapped road "
-        +"network south of the bridgehead. The road is narrow and the column will not wait for "
-        +"you. Use the fifties or rockets, keep your first pass low and fast, then get home." },
-  { id:'train', title:'Sortie 5', sub:'Rail Cut', ac:'p47', weather:'rain',
-    kills:{train:1}, flakDefense:1, text:"A supply train is running on the real valley railway. It is a long, "
-        +"moving target but the locomotive is tough: guns will slow it, bombs or rockets will "
-        +"finish it. Mind the rising ground beyond the track." },
-  { id:'ferry', title:'Sortie 6', sub:'Rhine Ferry Hunt', ac:'p47', weather:'clear',
+  { id:'ferry', title:'Sortie 5', sub:'Rhine Ferry Hunt', ac:'p47', weather:'haze',
     kills:{ferry:1}, flakDefense:2, text:"A vehicle ferry is moving along the Rhine inside the mapped river "
         +"channel. Find it near the Remagen crossing and stop it before it clears the sector. "
-        +"Attack along the river, not across the hills." }
+        +"Attack along the river, not across the hills." },
+  { id:'fighter', title:'Sortie 6', sub:'Valley Patrol', ac:'p47', enemyAir:4, weather:'clear',
+    text:"Four fighters have crossed the ridge. Intercept them over the Rhine, protect the crossing "
+        +"and return to the strip. Keep enough speed to clear the rising hills." },
+  { id:'bridge', title:'Sortie 7', sub:'Counterattack', ac:'bf109', weather:'clear',
+    kills:{bridge:1}, flakDefense:2, text:"Fly the other side in a Bf 109: a counterattack on the "
+        +"captured Ludendorff Bridge. One bomb, one careful approach along the span. "
+        +"This is a playable scenario, not a reconstruction of a specific sortie." },
+  { id:'boxes', title:'Sortie 8', sub:'The Bomber Stream', ac:'bf109', bombers:{n:5,type:'b17'},
+    weather:'clear', text:"A Fortress box is crossing the real Rhine gorge. Break up the formation, "
+        +"avoid sitting behind the tail guns and watch the high ground on your escape." },
+  { id:'libs', title:'Sortie 9', sub:'Liberators at Noon', ac:'bf109', bombers:{n:6,type:'b24'},
+    enemyAir:2, weather:'haze', text:"Six Liberators with a Thunderbolt escort. Work above the "
+        +"Rhineland hills, clear the escorts and make clean crossing passes on the bombers." },
+  { id:'jabo', title:'Sortie 10', sub:'Jabo Raid', ac:'fw190', traffic:'convoy',
+    kills:{truck:4}, flakDefense:1, enemyAir:2, weather:'haze',
+    text:"Take the Fw 190 against a four-vehicle supply column on the mapped road. "
+        +"Two fighters cover it and a heavy gun protects the route. Strike fast and disengage." },
+  { id:'jetstrike', title:'Sortie 11', sub:'Jet Interceptor', ac:'me262',
+    bombers:{n:6,type:'b17'}, enemyAir:2, weather:'clear',
+    text:"Intercept a Fortress box with the Me 262 over the Rhine. Preserve speed, "
+        +"cross the formation instead of circling behind it, then return with fuel to spare." },
+  { id:'final', title:'Sortie 12', sub:'The Whole Rhine', ac:'p47', weather:'storm',
+    kills:{factory:1,flak:2,ferry:1}, traffic:'ferry', flakDefense:2, enemyAir:2,
+    text:"A storm over the Rhine: silence both flak positions, stop a ferry and hit the works "
+        +"before returning through hostile aircraft. Plan your attack order and watch the terrain." }
 ];
 function M(){ return MISSIONS[mission]; }
 function isFree(){ return !!M().free; }
@@ -2355,7 +2372,7 @@ function clearWorld(){
 // attach HP/hit-detection to whichever real objects this sortie needs
 function populate(){
   const m=M();
-  if(livingWorld)livingWorld.resetForMission(m.id);
+  if(livingWorld)livingWorld.resetForMission(m.traffic||m.id);
   resetAllRealTargets();
   if(m.free||m.circuits) return;
   if(m.kills&&m.kills.bridge && realBridge) spawnRealTarget('bridge',realBridge,{primary:true});
@@ -2366,7 +2383,7 @@ function populate(){
   for(let i=0;i<flakCount;i++)spawnRealTarget('flak',realFlak[i],{primary:flakPrimary,heavy:true});
   if(m.kills&&m.kills.factory && realFactory) spawnRealTarget('factory',realFactory,{primary:true});
   if(livingWorld&&m.kills&&(m.kills.truck||m.kills.train||m.kills.ferry))
-    for(const e of livingWorld.missionTargets(m.id))spawnLivingTarget(e,{primary:true});
+    for(const e of livingWorld.missionTargets(m.traffic||m.id))spawnLivingTarget(e,{primary:true});
 }
 function objectiveLeft(){
   const need=M().kills||{};
@@ -3319,9 +3336,9 @@ function landed(onStrip){
     return;
   }
   const left=objectiveLeft();
-  const airLeft=(m.enemyAir? enemyAir.filter(e=>e.alive).length : 0);
+  const airLeft=((m.enemyAir||m.bombers)? enemyAir.filter(e=>e.alive).length : 0);
   const done=(!Object.keys(left).length && airLeft===0);
-  if(done && window.SquadronCampaign)SquadronCampaign.record('remagen',mission);
+  if(done && window.SquadronCampaign)SquadronCampaign.record('europeRhine',mission);
   missionOver=true;
   addScore(onStrip?400:150);
   saveBest(score);
@@ -4201,13 +4218,13 @@ function init(){
     const iv=localStorage.getItem('re_inv'); if(iv!==null) invertPitch=(iv==='1');
   }catch(e){}
   bindInput();
-  // Entering from the completed Europe chapter selects the first Rhine combat sortie.
+  // A single campaign uses the real Rhine terrain for every sortie.
   const campaignParams=new URLSearchParams(window.location.search);
   const requestedMission=Number(campaignParams.get('mission'));
   if(campaignParams.has('campaign')){
     if(campaignParams.has('mission') && Number.isInteger(requestedMission) && requestedMission>=0 && requestedMission<MISSIONS.length)
       selectedMission=requestedMission;
-    else selectedMission=Math.min(MISSIONS.length-1,Math.max(2,(window.SquadronCampaign?SquadronCampaign.highest('remagen'):0)+1));
+    else selectedMission=Math.min(MISSIONS.length-1,Math.max(2,(window.SquadronCampaign?SquadronCampaign.highest('europeRhine'):0)+1));
   }
   buildMenu();
   // menu wiring

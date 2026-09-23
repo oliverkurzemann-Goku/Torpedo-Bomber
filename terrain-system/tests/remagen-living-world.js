@@ -20,7 +20,7 @@ global.fetch=async url=>{const b=fs.readFileSync(path.join(root,url.split('?')[0
   const html=fs.readFileSync(path.join(root,'remagen-mission.html'),'utf8');
   assert(html.includes('LivingWorld.js?v=remagen-21'));assert(html.includes('MODULE 21'));
   for(const id of ['convoy','train','ferry'])assert(html.includes(`id:'${id}'`),`mission ${id} missing`);
-  assert(html.includes("livingWorld.missionTargets(m.id)"));assert(html.includes('livingWorld.destroyEntity(t.entity)'));
+  assert(html.includes("livingWorld.missionTargets(m.traffic||m.id)"));assert(html.includes('livingWorld.destroyEntity(t.entity)'));
   // Execute the actual mission table/population logic with lightweight target
   // stubs: practice stays safe, every combat sortie receives active guns, and
   // only Flak Suppression makes those guns primary objectives.
@@ -30,11 +30,14 @@ global.fetch=async url=>{const b=fs.readFileSync(path.join(root,url.split('?')[0
     spawnRealTarget(kind,sub,opt){missionContext.calls.push({kind,primary:!!opt.primary,heavy:!!opt.heavy});},
     spawnLivingTarget(e,opt){missionContext.calls.push({kind:e.kind,primary:!!opt.primary});}});
   vm.runInContext(html.slice(missionStart,missionEnd)+"\nglobalThis.runMission=i=>{mission=i;calls=[];populate();return {id:M().id,calls};};",missionContext);
-  const missionFlak={free:0,circ:0,bridge:2,flak:2,factory:1,convoy:1,train:1,ferry:2};
-  for(let i=0;i<8;i++){
+  const missionFlak={free:0,circ:0,bridge:2,flak:2,factory:1,convoy:1,train:1,ferry:2,
+    fighter:0,boxes:0,libs:0,jabo:1,jetstrike:0,final:2};
+  for(let i=0;i<14;i++){
     const run=missionContext.runMission(i),guns=run.calls.filter(c=>c.kind==='flak');
     assert.equal(guns.length,missionFlak[run.id],run.id+' flak defense mismatch');
-    assert(guns.every(g=>g.heavy));assert(guns.every(g=>g.primary===(run.id==='flak')));
+    assert(guns.every(g=>g.heavy));assert(guns.every(g=>g.primary===(run.id==='flak'||run.id==='final')));
+    if(run.id==='jabo')assert(run.calls.some(c=>c.kind==='truck'&&c.primary));
+    if(run.id==='final')assert(run.calls.some(c=>c.kind==='ferry'&&c.primary));
   }
   assert(html.includes('const range=light?1500:5500'));assert(html.includes('groundFire=[];'));
   const h=JSON.parse(fs.readFileSync(path.join(root,'terrain-system/real/data/historical/3_3.json'))),b=h.bridges[0];

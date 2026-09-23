@@ -4,7 +4,7 @@
   const KEY='squadron_campaign_v1';
   function read(){try{return JSON.parse(localStorage.getItem(KEY))||{};}catch(_){return {};}}
   function record(chapter,index){
-    if(!['pacific','europe','remagen'].includes(chapter)||!Number.isInteger(index)||index<0)return;
+    if(!['pacific','europe','remagen','europeRhine'].includes(chapter)||!Number.isInteger(index)||index<0)return;
     const data=read();data[chapter]=Math.max(Number(data[chapter])||0,index);
     try{localStorage.setItem(KEY,JSON.stringify(data));}catch(_){}
   }

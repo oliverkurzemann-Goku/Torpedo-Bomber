@@ -106,8 +106,8 @@
       <div class="name">Torpedo Squadron</div>
       <div class="role">Carrier &rarr; Okinawa</div>
       <p class="blurb">
-        Fly the Avenger and Dauntless from a moving carrier. Strike convoys, defend the fleet,
-        then follow the coast to Okinawa for two new missions and a free flight.
+        Fly the Avenger and Dauntless from a moving carrier over the mapped Okinawa coast.
+        Strike convoys, defend the fleet and recover aboard across twelve sorties.
       </p>
       <dl>
         <dt>Theatre</dt><dd>Pacific campaign</dd>
@@ -120,20 +120,20 @@
     </div>
   </a>
 
-  <a class="chit alt" href="thunderbolt-europe.html">
+  <a class="chit alt" href="remagen-mission.html?campaign=1">
     <div class="band europe" aria-hidden="true"></div>
     <div class="chitBody">
       <div class="no">Theatre II</div>
       <div class="name">Thunderbolt Squadron</div>
-      <div class="role">Thunderbolt &rarr; Remagen</div>
+      <div class="role">Real Rhine terrain</div>
       <p class="blurb">
-        Start over the European valley with fighters, bombers and ground attacks. Finish the
-        campaign on the mapped Rhine terrain with bridge, rail and river operations.
+        Fly every mission over the mapped Rhine terrain: roads, villages, rail, hills and the
+        Remagen crossing. Strike moving targets, then fly fighters and bomber intercepts.
       </p>
       <dl>
-        <dt>Theatre</dt><dd>Europe &middot; Rhineland</dd>
+        <dt>Theatre</dt><dd>Rhineland &middot; real terrain</dd>
         <dt>Aircraft</dt><dd>P-47D &middot; Bf&nbsp;109 &middot; Fw&nbsp;190 &middot; Me&nbsp;262</dd>
-        <dt>Sorties</dt><dd>12 + 6 Remagen sorties</dd>
+        <dt>Sorties</dt><dd>12 varied sorties + training</dd>
         <dt>Take off from</dt><dd>Grass strip</dd>
       </dl>
       <span class="go">Fly the Europe Campaign</span>
@@ -173,13 +173,9 @@
 </footer>
 <script src="campaign.js"></script>
 <script>
-  const pac=SquadronCampaign.highest('pacific'),eu=SquadronCampaign.highest('europe'),re=SquadronCampaign.highest('remagen');
+  const pac=SquadronCampaign.highest('pacific'),eu=SquadronCampaign.highest('europeRhine');
   if(pac>=2)document.getElementById('pacificProgress').textContent=pac>=13?'Pacific campaign complete':'Carrier sortie '+Math.min(12,pac-1)+' completed';
-  if(eu>=2||re>=2){
-    document.getElementById('europeProgress').textContent=re>=2?(re>=7?'Europe campaign complete':'Remagen sortie '+(re-1)+' completed'):'Europe sortie '+Math.min(12,eu-1)+' completed';
-    if(eu>=13){const card=document.querySelector('.chit.alt');card.href='remagen-mission.html?campaign=1';
-      card.querySelector('.go').textContent='Continue at Remagen';}
-  }
+  if(eu>=2)document.getElementById('europeProgress').textContent=eu>=13?'Europe campaign complete':'Europe sortie '+Math.min(12,eu-1)+' completed';
 </script>
 </body>
 </html>
