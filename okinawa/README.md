@@ -1,6 +1,6 @@
 # Okinawa coastal study — build 1
 
-Open `../okinawa-preview.html` for the full-density scenery viewer. Torpedo Squadron BUILD 124 includes **Okinawa Coast · Free Flight** in its mission menu. The game builds the same environment when that choice is selected, with 45% of the viewer's decorative vegetation for a lower iPad rendering cost. Thunderbolt Squadron and Remagen remain separate.
+Open `../okinawa-preview.html` for the full-density scenery viewer. Torpedo Squadron BUILD 125 includes two **Okinawa coastal combat sorties** after the carrier sorties and **Okinawa Coast · Free Flight** as an optional practice mission. The game builds the same environment for these missions, with 45% of the viewer's decorative vegetation for a lower iPad rendering cost. Thunderbolt Squadron and Remagen form the second campaign with a chapter transition.
 
 ## Scope and provenance
 
@@ -29,7 +29,7 @@ environment.setLight(true);          // late-afternoon water/sky palette
 environment.dispose();
 ```
 
-The caller owns camera, renderer, fog, lights and game state. `viewer.js` is only the standalone inspection UI. In Torpedo Squadron, the carrier stays at its original sea coordinates; the environment root is shifted 10 km east. The water shader keeps its shoreline lookup in local coordinates. The game's sky and ocean switch off while the Okinawa scene is active; it checks actual ground height for collision, places the aircraft shadow on the land surface, and plots land on the minimap. Leaving for the menu or a different mission disposes the world and its GPU resources; returning to Okinawa rebuilds it on demand. The original campaign sequence is unchanged. This is free flight, not a historical combat mission.
+The caller owns camera, renderer, fog, lights and game state. `viewer.js` is only the standalone inspection UI. In Torpedo Squadron, the carrier stays at its original sea coordinates; the environment root is shifted 10 km east. The water shader keeps its shoreline lookup in local coordinates. The game's sky and ocean switch off while the Okinawa scene is active; it checks actual ground height for collision, places the aircraft shadow on the land surface, and plots land on the minimap. Leaving for the menu or a different mission disposes of the world and its GPU resources; returning to Okinawa rebuilds it on demand. Two fictional coastal ship strikes now conclude the Pacific campaign before optional free flight. Target positions are verified over water; they do not represent historical Okinawa 1945 operations.
 
 The viewer's **Download terrain model** button exports a glTF 2.0 binary (`.glb`) containing the textured elevation mesh. Instanced vegetation, buildings, sky and animated water stay in `world.js` and must be integrated as scenery. Water is intentionally not baked into the collision model.
 

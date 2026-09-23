@@ -47,6 +47,15 @@ vm.runInContext(pick('resolveGroundAndDeck','trap'),game);
  assert.match(world.water.material.vertexShader,/vLocal=position/);
  assert.match(world.water.material.fragmentShader,/p=vLocal\.xz/);
  assert.match(html,/title:"Okinawa", sub:"Okinawa Coast · Free Flight", free:true, okinawa:true/);
+ const missions=vm.runInNewContext(html.slice(html.indexOf('const MISSIONS = ['),html.indexOf('\n\nasync function prepareOkinawa'))+'; MISSIONS');
+ assert.equal(missions.at(-1).free,true,'free flight stays outside combat campaign');
+ assert.equal(missions.at(-2).sub,'Coastal Screen','final campaign sortie takes place at Okinawa');
+ assert.equal(missions.at(-3).sub,'Okinawa Recon');
+ for(const m of missions.filter(m=>m.okinawa&&!m.free))for(const t of m.targets){
+  const x=t.pos[0]-10000,z=t.pos[2];
+  assert.ok(world.shoreDistance(x,z)<-300,'Okinawa ship target sits in navigable coastal water: '+m.sub+' '+x+','+z);
+ }
+ assert.match(html,/launchCampaignMission\(mission\+1\)/,'campaign advances through the world preparation path');
  assert.match(html,/const last=mission===MISSIONS\.length-2/);
  assert.match(html,/const last = mission===MISSIONS\.length-2/);
  assert.match(html,/if\(!MISSIONS\[idx\]\.okinawa\)releaseOkinawa\(\)/);
@@ -55,5 +64,5 @@ vm.runInContext(pick('resolveGroundAndDeck','trap'),game);
  assert.equal(game.okinawaWorld,null,'Leaving Okinawa releases the cached world');
  assert.equal(world.root.parent,null,'Leaving Okinawa detaches its scene from the renderer');
  game.releaseOkinawa(); // repeated exits must remain safe
- console.log('Okinawa game integration: '+count+' instances; land/sea/deck shadows, collision, scene switching, disposal and campaign finale OK');
+ console.log('Okinawa game integration: '+count+' instances; offshore sorties, land/sea/deck shadows, collision, disposal and finale OK');
 })().catch(e=>{console.error(e);process.exitCode=1});

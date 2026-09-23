@@ -5,9 +5,24 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 124 · Thunderbolt Squadron EU BUILD 58 · Remagen 1945 REMAGEN BUILD 21**
+Stand bei Übergabe: **Torpedo Squadron BUILD 125 · Thunderbolt Squadron EU BUILD 59 · Remagen 1945 REMAGEN BUILD 22**
 Repo: `oliverkurzemann-Goku/Torpedo-Bomber`, ausgeliefert über GitHub Pages.
 Alle Angaben unten sind aus dem tatsächlichen Code verifiziert, nicht aus dem Gedächtnis.
+
+**Zwei Kampagnen und Propeller-Reparatur (23.09.2026):** `index.html` bietet genau zwei
+Einstiege: Pacific (Träger → zwei neue Okinawa-Einsätze → Freiflug) und Europe
+(Thunderbolt → Remagen). Die vorhandenen Flugsimulatoren bleiben separate HTML-Seiten,
+wechseln jedoch nach Europas Abschluss automatisch zum Remagen-Kapitel und speichern
+ihren Fortschritt gemeinsam über `campaign.js`. Beide Menüs ermöglichen manuelle
+Kapitelauswahl und wiederholbare Einsätze. Die Okinawa-Ziele wurden mit `shoreDistance`
+gegen die echte Küstenmaske auf offene See geprüft. In der SBD wird die feste Modell-
+Propellergeometrie einmal an der Vorlage entfernt und durch je einen drehbaren Rotor für
+Spieler und Begleiter ersetzt. Beim Avenger klonen Wingmen jetzt den realen, vom Rumpf
+getrennten Propeller-Pivot; vorher fehlte er in `gltfRoot`-Klonen vollständig. Ein echter
+r128-GLTFLoader-Test lädt das 11-MB-SBD-Modell, misst den Propeller und prüft Vorlage sowie
+getrennte Klone. Die zwei Menüillustrationen sind kleine lokale SVGs ohne zusätzliche
+Netzwerkabrufe. Die Me-262-Tonspur wurde nicht verändert: der neu genannte YouTube-Short
+war aus dieser Umgebung nicht abrufbar. Echte iPad-Ansicht und akustische Abnahme stehen aus.
 
 **Okinawa-Integration nachgebessert, BUILD 124 (23.09.2026):** Der aus dem anderen
 Account übernommene BUILD 123 war bereits auf `main`; die echte 16-Kachel-Geometrie und

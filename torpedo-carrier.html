@@ -193,6 +193,9 @@
   .menuCard{background:linear-gradient(180deg,rgba(30,34,24,.96),rgba(18,20,14,.97));
     border:1px solid rgba(202,191,156,.28);border-radius:12px;padding:26px 26px 20px;
     box-shadow:0 18px 60px rgba(0,0,0,.6),inset 0 0 0 4px rgba(0,0,0,.25);}
+  .campaignArt{height:110px;margin:-10px -10px 17px;border-radius:7px;
+    background:url('assets/pacific-campaign.svg') center/cover;
+    border:1px solid rgba(202,191,156,.25);}
   .insignia{width:46px;height:46px;margin:0 auto 8px;border-radius:50%;
     background:
       radial-gradient(circle at 50% 50%,#c8412a 0 34%,transparent 35%),
@@ -274,7 +277,7 @@
   <div id="flash"></div>
   <div id="ltn" style="position:fixed;inset:0;background:#e6ecff;opacity:0;pointer-events:none;z-index:40;"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 124</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 125</div>
 
   <!-- Optical landing aid -->
   <div id="lso">
@@ -313,14 +316,15 @@
 <!-- Menu -->
 <div class="overlay" id="menu">
   <div class="card menuCard">
+    <div class="campaignArt" aria-hidden="true"></div>
     <div class="insignia"></div>
     <h1 class="stencil">Torpedo Squadron</h1>
     <div class="sub">Carrier Strike · Pacific 1943</div>
     <div class="brief">
       Fly an <b>Avenger</b> off the carrier, press the attack at wave height, put your fish
-      in the water — then bring it home and <b>trap aboard</b>. Five sorties of rising difficulty.
+      in the water — then bring it home and <b>trap aboard</b>. The campaign continues at Okinawa.
     </div>
-    <div class="secLbl">Select Sortie</div>
+    <div class="secLbl">Carrier Operations &amp; Okinawa Coast</div>
     <div id="missionSel"></div>
     <div id="bestLine">BEST SCORE <b id="bestVal">0</b></div>
     <div class="optRow">
@@ -381,6 +385,7 @@
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
 <script src="okinawa/data.js?v=1"></script>
 <script src="okinawa/world.js?v=2"></script>
+<script src="campaign.js?v=1"></script>
 <script>
 "use strict";
 /* ============================================================
@@ -690,7 +695,7 @@ const MISSIONS = [
               {type:"destroyer", pos:[-480,0,3700], hp:1, flak:true},
               {type:"destroyer", pos:[ 620,0,4000], hp:1, flak:true} ] },
 
-  // These last three used to be titled 9, 10, 8 in that array order - every other mission's
+  // These three used to be titled 9, 10, 8 in that array order - every other mission's
   // number matches its array position exactly, this trio was the one exception. missionTag()
   // reads the number straight out of the title for the mission-select chips, so the menu showed
   // ...7, 9, 10, 8: the last mission looked skipped, then reappeared after two sorties that
@@ -724,6 +729,22 @@ const MISSIONS = [
     body:"<b>Zero. Six Avengers.</b> They have found the fleet and they are coming in from every bearing. Guns only, and the carrier will not survive a fourth fish. This is what the whole cruise comes down to.",
     torps:0, fuel:100, zeros:0,
     targets:[] },
+  // The coastline is a continuation of the same carrier campaign. The ship remains the
+  // recovery point; all targets below were sampled in the offshore side of the coastline.
+  { title:"Sortie 11", sub:"Okinawa Recon", okinawa:true,
+    body:"Yomitan is ahead, but a freighter is running supplies just offshore. Track the coast, "
+        +"sink the freighter with your Avenger and recover aboard. Keep your approach over water "
+        +"and watch the terrain beyond the beach.",
+    torps:2, fuel:100, zeros:0,
+    targets:[{type:"freighter",pos:[3400,0,-2500],hp:1}] },
+  { title:"Sortie 12", sub:"Coastal Screen", okinawa:true, sbd:true, loadout:'divebomb', weather:'haze',
+    body:"The next convoy has a destroyer screen near the Okinawa shore and a Zero on patrol. "
+        +"Take the Dauntless, dive on both freighters, then climb clear of the coast and trap aboard. "
+        +"The destroyer and its flak are optional targets.",
+    torps:3, fuel:100, zeros:1,
+    targets:[{type:"freighter",pos:[3450,0,160],hp:1},
+             {type:"freighter",pos:[3300,0,-360],hp:1},
+             {type:"destroyer",pos:[2900,0,-50],hp:1,flak:true}] },
   { title:"Okinawa", sub:"Okinawa Coast · Free Flight", free:true, okinawa:true,
     body:"Fly the Avenger from the carrier toward the Yomitan coast. The 16 × 16 km landscape uses geographic elevation and shoreline data. Houses, reefs and vegetation are illustrative. No enemy, timer or score; land aboard to fly again.<br><br>Head east from the bow to reach the coast. The mapped area ends inland; this is a scenery flight, not a historical mission.",
     torps:0, fuel:100, zeros:0, targets:[] },
@@ -736,7 +757,8 @@ async function prepareOkinawa(){
     if(!window.OKINAWA_DATA||!window.OkinawaWorld)throw Error('Okinawa scenery files are missing.');
     const world=new OkinawaWorld(OKINAWA_DATA,{vegetationDensity:.45});
     try{
-      await world.build((p,msg)=>{const b=document.getElementById('startBtn');if(b)b.textContent='Loading Okinawa '+Math.round(p*100)+'% · '+msg;});
+      await world.build((p,msg)=>{const b=document.getElementById(state===ST.RESULT?'resultBtn':'startBtn');
+        if(b)b.textContent='Loading Okinawa '+Math.round(p*100)+'% · '+msg;});
       world.root.position.x=OKINAWA_OFFSET_X;
       world.sky.visible=false; // the game already owns the sun, sky and weather
       world.root.visible=false;
@@ -1742,6 +1764,11 @@ function buildPlane(){
 // ============================================================
 function startMission(idx){
   mission=idx;
+  selectedMission=idx;
+  const menuChips=document.querySelectorAll('#missionSel .chip');
+  menuChips.forEach((chip,i)=>chip.classList.toggle('sel',i===idx));
+  const menuStart=document.getElementById('startBtn');
+  if(menuStart)menuStart.textContent='Begin '+MISSIONS[idx].title;
   setOkinawaActive(!!MISSIONS[idx].okinawa);
   if(!MISSIONS[idx].okinawa)releaseOkinawa(); // return the large scene's GPU memory to iPad Safari
   if(idx===0 || MISSIONS[idx].okinawa){ score=0; scoreStart=0; }
@@ -2339,6 +2366,10 @@ function loadSBDModel(){
         }
       }});
       const holder=new THREE.Group(); holder.add(model);
+      // Work on the shared template once. Clone(true) shares BufferGeometry; cutting a
+      // per-aircraft clone mutated every other SBD, leaving a fixed blade beside later rotors.
+      const rotor=fitPropeller(holder, holder, +1);
+      if(rotor) rotor.name='sbdRotorBlade';
       // verified from the model: nose is +Z (tail z=-3.7, engine z=+2.2) -> no yaw fix. This
       // axis (span=x, fore/aft=z, aft=-z) is independently corroborated by the working,
       // CLAUDE.md-4.1-verified propeller code: fitPropeller(playerSBD,...,-1) and
@@ -3006,7 +3037,8 @@ function trap(x){
   }
 
   state=ST.RESULT;
-  const last = mission===MISSIONS.length-2; // final campaign sortie; Okinawa free flight follows in the menu
+  const last = mission===MISSIONS.length-2; // final Okinawa sortie; free flight follows
+  if(window.SquadronCampaign)SquadronCampaign.record('pacific',mission);
   // ---- medal for this sortie ----
   const acc = sortieTorpFired? sortieTorpHit/sortieTorpFired : 0;
   let medal='bronze';
@@ -3037,7 +3069,7 @@ function trap(x){
         ? Object.keys(l.grades).map(k=>k+"×"+l.grades[k]).join("  ") : "—")
       +"<br>Medals: 🥇"+(l.medals.gold||0)+"  🥈"+(l.medals.silver||0)+"  🥉"+(l.medals.bronze||0)
       +"  ·  Airframes lost: "+(l.aircraftLost||0)+" · Wingmen lost: "+(l.wingmenLost||0),
-    last?"Fly Again":"Next Sortie");
+    last?"Campaign Complete":"Next Sortie");
 }
 
 function bolter(msg){
@@ -3528,8 +3560,13 @@ function spawnWingman(i){
   // Propeller: if the cloned model already carries one, turn that. Only build blades when it
   // genuinely has none — and then put the hub on the cowl, worked out from the model itself.
   // A fixed 0.3 sat visibly above the nose.
-  let disc=inner? fitPropeller(inner, mesh, +1) : null;
-  if(!disc && inner) disc=rigOwnProp(inner, mesh, +1);
+  // The player Avenger keeps its real blade on a separate pivot outside gltfRoot.
+  // Cloning gltfRoot alone therefore loses precisely the mesh that must turn.
+  let disc=sbd && inner?inner.getObjectByName('sbdRotorBlade'):null;
+  if(!sbd && inner && gltfRoot && propPivot){
+    const mount=new THREE.Group(); mount.rotation.y=Math.PI;
+    disc=propPivot.clone(true); disc.rotation.z=0; mount.add(disc); mesh.add(mount);
+  }
   if(!disc){
     const c=inner? cowlCentre(inner, mesh, +1) : null;
     disc=makePropBlades(sbd?3.05:3.6, c? c.z+0.30 : (sbd?4.4:5.6), c? c.y : 0.3);
@@ -4201,7 +4238,7 @@ function loadPlaneModel(){
       }
       window.__eyeDbg='EYE '+COCKPIT_EYE.map(v=>v.toFixed(2)).join('/');
       const btEl=document.getElementById('buildTag');
-      if(btEl) btEl.textContent='BUILD 124 · '+window.__eyeDbg;
+      if(btEl) btEl.textContent='BUILD 125 · '+window.__eyeDbg;
       let seat=null;
       model.traverse(function(o){
         if(!o.isMesh||!o.material) return;
@@ -4454,9 +4491,8 @@ function updatePlaneMesh(dt){
   // A real SBD prop is 3.2 m across — this model simply ships without one, so we build it.
   if(isSBD() && playerSBD){
     if(!sbdRotor){
-      // 1) cut the moulded-in blades out and drop a real propeller into the hole
-      const fitted=fitPropeller(playerSBD, planeGroup, -1)
-                || rigOwnProp(playerSBD, planeGroup, -1);   // call once, not twice
+      // The model's blades were cut once at load time; use the cloned turning rotor.
+      const fitted=playerSBD.getObjectByName('sbdRotorBlade');
       if(fitted){
         sbdRotor=fitted; sbdRotorAxis='z';
       } else {
@@ -5376,6 +5412,8 @@ function exitToMenu(){
 }
 
 function setupUIButtons(){
+  if(window.SquadronCampaign && SquadronCampaign.highest('pacific')>=2)
+    selectedMission=Math.min(MISSIONS.length-2,SquadronCampaign.highest('pacific')+1);
   // mission select chips
   const sel=document.getElementById('missionSel');
   if(sel && !sel.childElementCount){
@@ -5480,7 +5518,7 @@ function setupUIButtons(){
   if(dbgT2) dbgT2.onclick=()=>{
     dbgOn=!dbgOn; localStorage.setItem('dbgOn',dbgOn?'1':'0');
     const db=document.getElementById('dbgBox'); if(db) db.textContent=dbgOn?'✓':'';
-    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 124'; }
+    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 125'; }
   };
   const lu=document.getElementById('lookUp'), ld=document.getElementById('lookDn');
   let _lookT=0;
@@ -5504,10 +5542,10 @@ function setupUIButtons(){
     if(wasWin){
       if(MISSIONS[mission] && MISSIONS[mission].free){ startMission(mission); return; }  // stay in Free Flight
       if(MISSIONS[mission] && MISSIONS[mission].qual){ showOverlay('menu'); return; }  // qual -> ready room
-      if(last){ P.rtb=false; startMission(2); }        // war cruise restarts at Sortie 1 (index 2: Free Flight, Qual come first)
-      else { startMission(mission+1); }
+      if(last){ exitToMenu(); return; }
+      launchCampaignMission(mission+1);
     } else {
-      startMission(mission);
+      launchCampaignMission(mission);
     }
   };
 }
@@ -5516,18 +5554,21 @@ let wasWin=false;
 const _showResult=showResult;
 showResult=function(win,a,b,c,d){ wasWin=win; _showResult(win,a,b,c,d); };
 
-async function beginGame(){
-  const idx=selectedMission,button=document.getElementById('startBtn');
+async function launchCampaignMission(idx){
+  const button=document.getElementById(state===ST.RESULT?'resultBtn':'startBtn');
   if(button.disabled)return;
   initAudio();
   P.rtb=false;
   if(MISSIONS[idx].okinawa){
     button.disabled=true;
-    try{await prepareOkinawa();if(selectedMission===idx)startMission(idx);}
+    const label=button.textContent;
+    button.textContent='Loading Okinawa…';
+    try{await prepareOkinawa();startMission(idx);}
     catch(e){console.error(e);flash('OKINAWA COULD NOT LOAD — '+e.message,3000);}
-    finally{button.disabled=false;button.textContent='Begin '+MISSIONS[selectedMission].title;}
+    finally{button.disabled=false;button.textContent=label;}
   }else startMission(idx);
 }
+function beginGame(){ return launchCampaignMission(selectedMission); }
 
 function applyLoadoutUI(){
   const div = loadout==='divebomb';
@@ -5711,7 +5752,7 @@ function animate(){
     // frozen as Avengers. Fall back to whatever's loaded after a few seconds if it never comes.
     if(wingmenPending && P.pos.y>DECK_Y+55){
       wingmenPendingT=(wingmenPendingT||0)+dt;
-      if(!isSBD() || sbdTemplate || wingmenPendingT>6){
+      if((isSBD()?sbdTemplate:!!(gltfRoot&&propPivot)) || wingmenPendingT>6){
         wingmenPending=false; wingmen.length=0; spawnWingman(0); spawnWingman(1);
       }
     }

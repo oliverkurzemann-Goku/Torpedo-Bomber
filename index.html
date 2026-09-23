@@ -51,29 +51,10 @@
   .chit:active{transform:translateY(1px) scale(.995);}
   .chit:focus-visible{outline:2px solid var(--amber);outline-offset:3px;}
 
-  /* signature: a strip of the theatre's own ground, drawn in CSS */
-  .band{height:78px;position:relative;border-bottom:1px solid var(--rule);}
-  .band.pacific{
-    background:
-      linear-gradient(180deg,#7fa8c4 0 34%,#4c7191 34% 46%,var(--sea) 46% 100%);}
-  .band.pacific:before{ /* carrier deck seen from astern, and its wake */
-    content:"";position:absolute;left:16%;right:52%;bottom:16px;height:7px;
-    background:#8d8a76;border-radius:1px;
-    box-shadow:0 7px 0 -2px rgba(255,255,255,.30),0 12px 0 -4px rgba(255,255,255,.16);}
-  .band.pacific:after{ /* sun glitter */
-    content:"";position:absolute;right:10%;top:8px;width:44px;height:44px;border-radius:50%;
-    background:radial-gradient(circle,rgba(255,238,190,.75),transparent 66%);}
-  .band.europe{
-    background:
-      linear-gradient(180deg,#93a5b2 0 30%,transparent 30%),
-      repeating-linear-gradient(102deg,#5c6a3c 0 26px,#6b7444 26px 48px,#4f5c37 48px 74px);}
-  .band.europe:before{ /* the river, cutting across the fields */
-    content:"";position:absolute;left:-6%;right:-6%;top:52%;height:11px;
-    background:var(--sea);transform:rotate(-5deg);
-    box-shadow:0 0 0 1px rgba(20,30,40,.5);}
-  .band.europe:after{ /* the road, and the bridge over the river */
-    content:"";position:absolute;left:-6%;right:-6%;top:34%;height:5px;
-    background:#6f6a55;transform:rotate(4deg);}
+  .band{height:clamp(132px,22vw,205px);border-bottom:1px solid var(--rule);
+    background-position:center;background-size:cover;}
+  .band.pacific{background-image:url('assets/pacific-campaign.svg');}
+  .band.europe{background-image:url('assets/europe-campaign.svg');}
 
   .chitBody{padding:18px 20px 20px;display:flex;flex-direction:column;flex:1;}
   .no{font-size:10px;letter-spacing:4px;color:var(--amber-dim);text-transform:uppercase;}
@@ -111,8 +92,8 @@
   <div class="eyebrow">Operations Board</div>
   <h1>Squadron Select</h1>
   <p class="standfirst">
-    Three theatres, flown from the same cockpit. Pick the war you want today —
-    your logbook is kept separately for each.
+    Two campaigns. Fly from a Pacific carrier to Okinawa, or from Beaufort Field
+    to the Rhine crossing at Remagen.
   </p>
 </header>
 
@@ -123,18 +104,19 @@
     <div class="chitBody">
       <div class="no">Theatre I</div>
       <div class="name">Torpedo Squadron</div>
-      <div class="role">Carrier Strike</div>
+      <div class="role">Carrier &rarr; Okinawa</div>
       <p class="blurb">
-        Catapult off the deck, find the convoy, and put a fish in her side. The hard part is
-        coming home: fly the meatball down to a moving deck and catch the three wire.
+        Fly the Avenger and Dauntless from a moving carrier. Strike convoys, defend the fleet,
+        then follow the coast to Okinawa for two new missions and a free flight.
       </p>
       <dl>
-        <dt>Theatre</dt><dd>Pacific, 1944</dd>
+        <dt>Theatre</dt><dd>Pacific campaign</dd>
         <dt>Aircraft</dt><dd>TBM Avenger &middot; SBD &middot; A6M</dd>
-        <dt>Sorties</dt><dd>12</dd>
+        <dt>Sorties</dt><dd>12 combat sorties + training</dd>
         <dt>Take off from</dt><dd>Carrier deck</dd>
       </dl>
-      <span class="go">Start Carrier Strike</span>
+      <span class="go">Fly the Pacific Campaign</span>
+      <div class="blurb" id="pacificProgress" aria-live="polite"></div>
     </div>
   </a>
 
@@ -143,40 +125,19 @@
     <div class="chitBody">
       <div class="no">Theatre II</div>
       <div class="name">Thunderbolt Squadron</div>
-      <div class="role">Ground Attack</div>
+      <div class="role">Thunderbolt &rarr; Remagen</div>
       <p class="blurb">
-        Off the grass strip at Beaufort Field and down into the valley after trucks, panzers,
-        trains and the bridge. Everything down there shoots back, and the flak does not miss twice.
+        Start over the European valley with fighters, bombers and ground attacks. Finish the
+        campaign on the mapped Rhine terrain with bridge, rail and river operations.
       </p>
       <dl>
-        <dt>Theatre</dt><dd>Europe, 1944</dd>
-        <dt>Aircraft</dt><dd>P-47D Thunderbolt &middot; Bf&nbsp;109G</dd>
-        <dt>Sorties</dt><dd>10</dd>
+        <dt>Theatre</dt><dd>Europe &middot; Rhineland</dd>
+        <dt>Aircraft</dt><dd>P-47D &middot; Bf&nbsp;109 &middot; Fw&nbsp;190 &middot; Me&nbsp;262</dd>
+        <dt>Sorties</dt><dd>12 + 6 Remagen sorties</dd>
         <dt>Take off from</dt><dd>Grass strip</dd>
       </dl>
-      <span class="go">Start Ground Attack</span>
-    </div>
-  </a>
-
-  <a class="chit alt" href="remagen-mission.html">
-    <div class="band europe" aria-hidden="true"></div>
-    <div class="chitBody">
-      <div class="no">Theatre III &middot; Real Terrain</div>
-      <div class="name">Remagen 1945</div>
-      <div class="role">Ground Attack</div>
-      <p class="blurb">
-        The actual Rhine gorge around Remagen, built from real elevation and map data instead
-        of an invented valley — the Ludendorff Bridge, the river bends and the hills are the
-        real thing. Same P-47, same guns. Experimental: heavier to load than the other two,
-        still being tuned.
-      </p>
-      <dl>
-        <dt>Theatre</dt><dd>Rhineland, 1945</dd>
-        <dt>Aircraft</dt><dd>P-47D Thunderbolt</dd>
-        <dt>Sorties</dt><dd>5</dd>
-        <dt>Take off from</dt><dd>Grass strip</dd>
-      </dl>
-      <span class="go">Start Remagen 1945</span>
+      <span class="go">Fly the Europe Campaign</span>
+      <div class="blurb" id="europeProgress" aria-live="polite"></div>
     </div>
   </a>
 
@@ -203,13 +164,22 @@
 </section>
 
 <footer>
-  All three run in the browser — nothing to install. Best on iPad in landscape.<br>
+  Both campaigns run in the browser — nothing to install. Best on iPad in landscape.<br>
   <b>Touch:</b> left stick pitch and roll &middot; right bar throttle &middot; red button drops ordnance.
   <b>Keyboard:</b> <kbd>&larr;&uarr;&darr;&rarr;</kbd> fly &middot; <kbd>W</kbd>/<kbd>S</kbd> throttle
   &middot; <kbd>Space</kbd> drop.<br>
   New to it? Start with <b>Carrier Qualification</b> or <b>Circuits</b> — both teach the landing,
   which is the part that takes practice.
 </footer>
-
+<script src="campaign.js"></script>
+<script>
+  const pac=SquadronCampaign.highest('pacific'),eu=SquadronCampaign.highest('europe'),re=SquadronCampaign.highest('remagen');
+  if(pac>=2)document.getElementById('pacificProgress').textContent=pac>=13?'Pacific campaign complete':'Carrier sortie '+Math.min(12,pac-1)+' completed';
+  if(eu>=2||re>=2){
+    document.getElementById('europeProgress').textContent=re>=2?(re>=7?'Europe campaign complete':'Remagen sortie '+(re-1)+' completed'):'Europe sortie '+Math.min(12,eu-1)+' completed';
+    if(eu>=13){const card=document.querySelector('.chit.alt');card.href='remagen-mission.html?campaign=1';
+      card.querySelector('.go').textContent='Continue at Remagen';}
+  }
+</script>
 </body>
 </html>
