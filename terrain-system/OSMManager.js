@@ -75,11 +75,12 @@ class OSMManager {
     // stretched over a rectangular footprint it produced the implausible tall,
     // diagonal roof faces visible in BUILD 7 screenshots.
     this.gableRoofGeo = makeGableRoofGeometry();
+    this.hipRoofGeo = makeHipRoofGeometry();
     this.chimneyGeo = new THREE.BoxGeometry(0.72, 1.8, 0.72);
     this.spireGeo = new THREE.ConeGeometry(1, 1, 8);
 
     this.sharedGeometries = new Set([
-      this.boxGeo, this.wallGeo, this.gableRoofGeo, this.chimneyGeo, this.trunkGeo,
+      this.boxGeo, this.wallGeo, this.gableRoofGeo, this.hipRoofGeo, this.chimneyGeo, this.trunkGeo,
       this.coniferGeo, this.deciduousGeo, this.shrubGeo, this.spireGeo
     ]);
   }
@@ -637,7 +638,7 @@ class OSMManager {
     const roofNames=['Red','Slate','Brown'];
     for(let tone=0;tone<roofMats.length;tone++){
       const items=roofParts.filter(d=>d.pitched&&d.roofTone===tone);if(!items.length)continue;
-      const mesh=new THREE.InstancedMesh(this.gableRoofGeo,roofMats[tone],items.length);
+      const mesh=new THREE.InstancedMesh(tone===0?this.hipRoofGeo:this.gableRoofGeo,roofMats[tone],items.length);
       mesh.name='osmBuildingRoofs'+roofNames[tone];
       const m=new THREE.Matrix4(),q=new THREE.Quaternion(),pos=new THREE.Vector3(),scale=new THREE.Vector3();
       for(let i=0;i<items.length;i++){
@@ -953,6 +954,25 @@ function makeGableRoofGeometry(){
   geo.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));
   geo.computeVertexNormals();
   geo.computeBoundingSphere();
+  return geo;
+}
+
+function makeHipRoofGeometry(){
+  // Low tiled hip roofs break up the repeated gable silhouette without adding
+  // material buckets or draw calls. The ridge stays along the long X axis.
+  const v=[
+    [-.5,0,-.5],[.5,0,-.5],[.5,0,.5],[-.5,0,.5],
+    [-.27,1,0],[.27,1,0]
+  ];
+  const faces=[[0,4,5],[0,5,1],[3,2,5],[3,5,4],[0,3,4],[1,5,2]];
+  const pos=[],uv=[];
+  for(const face of faces)for(const i of face){
+    const [x,y,z]=v[i];pos.push(x,y,z);uv.push(x+.5,z+.5);
+  }
+  const geo=new THREE.BufferGeometry();
+  geo.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));
+  geo.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));
+  geo.computeVertexNormals();geo.computeBoundingSphere();
   return geo;
 }
 

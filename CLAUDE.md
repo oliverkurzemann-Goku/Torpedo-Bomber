@@ -5,7 +5,17 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 127 · Thunderbolt Squadron BUILD 127 · reales Remagen-Gelände 21**
+Stand bei Übergabe: **Torpedo Squadron BUILD 128 · Thunderbolt Squadron BUILD 128 · reales Remagen-Gelände 21**
+
+**Build 128 (24.09.2026):** Me-262-Ton auf gleichmäßigeren Loop umgestellt,
+MG-Lautstärke außerhalb P-47 erhöht und Me-262-Fahrwerk sichtbar verlängert.
+Okinawa-Gebäude haben nun mehrere Dach-, Wand- und Grundrissformen; Remagen erhält
+zusätzlich Walmdächer. Rottenflieger halten die Spielergrenze von 62 m/s und die
+Abwurfhöhe ein, Torpedos steuern nicht mehr nach. Schiffsziele zeigen ausschließlich
+vorhandene Repository-GLBs: Frachter und mangels gültigem Zerstörer-GLB auch
+Eskorten nutzen `merchant_ship.glb`, Großziele `ijn carrier.glb`. Solange ein Asset
+lädt, bleibt der Schiffsplatz unsichtbar statt einen Bauklotz-Ersatz zu zeigen.
+Ein historisch korrektes Zerstörer-Modell fehlt weiterhin im Repository.
 
 **Build 127 (24.09.2026):** Die Dauntless-Schnittgeometrie prüft jetzt auch Dreiecksecken:
 Ein Dreieck konnte von der Nabe bis zur Blattspitze reichen, während sein Mittelpunkt in

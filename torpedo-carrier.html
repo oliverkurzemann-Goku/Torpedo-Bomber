@@ -277,7 +277,7 @@
   <div id="flash"></div>
   <div id="ltn" style="position:fixed;inset:0;background:#e6ecff;opacity:0;pointer-events:none;z-index:40;"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 127</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 128</div>
 
   <!-- Optical landing aid -->
   <div id="lso">
@@ -384,7 +384,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
 <script src="okinawa/data.js?v=1"></script>
-<script src="okinawa/world.js?v=2"></script>
+<script src="okinawa/world.js?v=128"></script>
 <script src="campaign.js?v=1"></script>
 <script>
 "use strict";
@@ -534,20 +534,12 @@ let CARRIER_TARGET_DECK_Y = DECK_Y + 0.85;   // 16.85 — the surface the plane 
 let CARRIER_DX = 0, CARRIER_DZ = 0;
 let carrierModel = null, carrierModelLoaded = false;
 
-/* ---- IJN destroyer model slot : replaces the built-in "destroyer" type -------
-   A future valid, licensed GLB can use this slot. Every mission destroyer would use it;
-   hit detection, flak and the sinking animation remain on the existing ship group.
-   Tuning:
-   - DEST_TARGET_LEN : ship length in game units (also drives the hit radius).
-   - DEST_WATERLINE_Y: the raw model-Y that should sit at sea level (controls draft).
-   - DEST_YAW        : add Math.PI if it should face the other way.
-   Falls back to the built-in blocky destroyer if the .glb is missing.          */
-// The checked-in Samidare file was only a two-byte CR/LF placeholder, not a GLB. Do not issue
-// a guaranteed-failing request; the detailed procedural destroyer below is the deliberate
-// fallback until a licensed, valid replacement asset is added.
-const DESTROYER_MODEL_URL = null;
+/* The repository has no valid destroyer GLB. Escort targets reuse its licensed
+   merchant ship model until a real destroyer asset is available. Never render
+   a generated hull in place of a repository ship. */
+const DESTROYER_MODEL_URL = 'merchant_ship.glb?v=2';
 let DEST_TARGET_LEN  = 60;
-let DEST_WATERLINE_Y = -1.7;
+let DEST_WATERLINE_Y = -1.0;
 let DEST_YAW = 0;
 let destroyerTemplate = null;
 
@@ -1546,6 +1538,7 @@ function buildCarrier(){
   // parked aircraft (starboard, clear of the centreline)
   for(let i=0;i<3;i++){ const p=parkedPlane(); p.position.set(55+i*22, DECK_Y+1.6, 9.5);
     p.rotation.y=-0.5; carrier.add(p); }
+  carrier.visible=false; // wait for the repository's USS Midway GLB
   scene.add(carrier);
 }
 
@@ -1956,44 +1949,8 @@ function startMission(idx){
   state=ST.BRIEF;
 }
 
-function shipHullMesh(L,W,H,color){
-  const hw=W/2, s=new THREE.Shape();
-  s.moveTo(-L/2,-hw*0.72);
-  s.quadraticCurveTo(-L/2-W*0.35,0,-L/2,hw*0.72);
-  s.lineTo(L*0.20,hw);
-  s.quadraticCurveTo(L*0.46,hw*0.6,L/2,0);
-  s.quadraticCurveTo(L*0.46,-hw*0.6,L*0.20,-hw);
-  s.lineTo(-L/2,-hw*0.72);
-  const geo=new THREE.ExtrudeGeometry(s,{depth:H,bevelEnabled:false});
-  geo.rotateX(-Math.PI/2);
-  return new THREE.Mesh(geo,new THREE.MeshStandardMaterial({color:color,roughness:0.85,metalness:0.12}));
-}
-function shipTurret(g,x,y,w,barrels,dir){
-  const mat=new THREE.MeshStandardMaterial({color:0x394038,roughness:0.9});
-  const t=new THREE.Mesh(new THREE.CylinderGeometry(w,w*1.18,w*0.85,10),mat);
-  t.position.set(x,y,0); g.add(t);
-  for(let i=0;i<barrels;i++){
-    const b=new THREE.Mesh(new THREE.CylinderGeometry(0.15,0.20,w*3.4,6),
-      new THREE.MeshStandardMaterial({color:0x22271f}));
-    b.rotation.z=dir>0? -Math.PI/2+0.06 : Math.PI/2-0.06;
-    b.position.set(x+dir*w*1.8, y+0.3, (i-(barrels-1)/2)*0.8);
-    g.add(b);
-  }
-}
-function shipFunnel(g,x,y,h,rr){
-  const f=new THREE.Mesh(new THREE.CylinderGeometry(rr*0.82,rr,h,10),
-    new THREE.MeshStandardMaterial({color:0x3a3f36,roughness:0.9}));
-  f.position.set(x,y+h/2,0); f.rotation.z=0.06; g.add(f);
-  const cap=new THREE.Mesh(new THREE.CylinderGeometry(rr*0.86,rr*0.86,h*0.14,10),
-    new THREE.MeshStandardMaterial({color:0x15161a}));
-  cap.position.set(x-h*0.03,y+h*1.02,0); cap.rotation.z=0.06; g.add(cap);
-}
-function shipMast(g,x,y,h){
-  const m=boxMesh(0.3,h,0.3,0x2c2f28); m.position.set(x,y+h/2,0); g.add(m);
-  const yard=boxMesh(0.22,0.22,6,0x2c2f28); yard.position.set(x,y+h*0.75,0); g.add(yard);
-}
 function spawnShip(def){
-  // If the Samidare model is loaded, every destroyer uses it (clone per instance).
+  // Every visible target is a clone of an existing repository GLB.
   if(def.type==="destroyer" && destroyerTemplate){
     const g=new THREE.Group();
     g.add(destroyerTemplate.clone(true));
@@ -2027,73 +1984,21 @@ function spawnShip(def){
       radius:CRU_TARGET_LEN*0.55, flakTimer:Math.random()*2, sinkT:0, usedFallback:false});
     return;
   }
-  // No template loaded yet for this type — build the procedural placeholder below, but flag it
-  // so the loader can swap in the real model the moment it finishes loading (see
-  // upgradeShipsToTemplate()). Without this, a ship spawned before its multi-MB .glb finished
-  // downloading was stuck looking procedural for the rest of that mission, even once the real
-  // model arrived a few seconds later — exactly the load-order race this project has hit before
-  // (SBD wingmen, Avenger gear); ships just never had the "retry once it's ready" half of the fix.
+  // The target exists for AI, collision and wake logic while its GLB downloads.
+  // It stays invisible until upgradeShipsToTemplate installs the repository model.
   const g=new THREE.Group();
-  let size, hullCol, deckCol;
-  if(def.type==="freighter"){ size=[70,7.5,14]; hullCol=0x4a4238; deckCol=0x7d6f52; }
-  else if(def.type==="destroyer"){ size=[58,5.5,7.5]; hullCol=0x4d5350; deckCol=0x596055; }
-  else { size=[92,8,16]; hullCol=0x50564e; deckCol=0x5c635a; } // cruiser
-  const L=size[0], H=size[1], W=size[2];
-  const hull=shipHullMesh(L,W,H,hullCol); hull.position.y=-1.8; g.add(hull);
-  const wl=shipHullMesh(L,H*0.16,W,0x5a2620); wl.scale.set(1.012,1,1.05);
-  wl.position.y=-1.2; g.add(wl);
-  const deck=shipHullMesh(L,H*0.06,W,deckCol); deck.scale.set(0.965,1,0.9);
-  deck.position.y=H-1.9; g.add(deck);
-  const dy=H-1.8;                                  // deck level
-  if(def.type==="freighter"){
-    const house=boxMesh(L*0.16,5.5,W*0.6,0x6a6e64); house.position.set(-L*0.26,dy+2.7,0); g.add(house);
-    const brg=boxMesh(L*0.10,2.4,W*0.66,0x757a70); brg.position.set(-L*0.26,dy+6.6,0); g.add(brg);
-    const win=boxMesh(L*0.10+0.2,0.55,W*0.66+0.2,0x14181c); win.position.set(-L*0.26,dy+7.1,0); g.add(win);
-    shipFunnel(g,-L*0.33,dy+7.8,4.4,1.5);
-    for(const cx of [L*0.05,L*0.26]){
-      shipMast(g,cx,dy,10);
-      const boom=boxMesh(8,0.28,0.28,0x2c2f28);
-      boom.position.set(cx+3.4,dy+4.6,0.8); boom.rotation.z=0.5; boom.rotation.y=0.25; g.add(boom);
-    }
-    for(const hx of [-L*0.06,L*0.13,L*0.31]){
-      const hatch=boxMesh(L*0.11,0.5,W*0.5,0x33362f); hatch.position.set(hx,dy+0.3,0); g.add(hatch);
-    }
-  } else if(def.type==="destroyer"){
-    const brg=boxMesh(L*0.13,3.4,W*0.62,0x5d635a); brg.position.set(L*0.14,dy+1.7,0); g.add(brg);
-    const brt=boxMesh(L*0.09,1.8,W*0.5,0x666c62); brt.position.set(L*0.14,dy+4.2,0); g.add(brt);
-    const win=boxMesh(L*0.09+0.2,0.45,W*0.5+0.2,0x14181c); win.position.set(L*0.14,dy+4.6,0); g.add(win);
-    shipFunnel(g,-L*0.02,dy,4.6,1.25);
-    shipFunnel(g,-L*0.16,dy,4.2,1.15);
-    shipTurret(g,L*0.33,dy+0.8,1.5,1,1);
-    shipTurret(g,-L*0.36,dy+0.8,1.5,1,-1);
-    const tubes=new THREE.Mesh(new THREE.CylinderGeometry(0.5,0.5,5.5,8),
-      new THREE.MeshStandardMaterial({color:0x2e332c}));
-    tubes.rotation.z=Math.PI/2; tubes.position.set(-L*0.26,dy+0.9,0); g.add(tubes);
-    shipMast(g,L*0.07,dy,11);
-  } else { // cruiser
-    const b1=boxMesh(L*0.16,4.2,W*0.6,0x5d635a); b1.position.set(L*0.10,dy+2.1,0); g.add(b1);
-    const b2=boxMesh(L*0.11,2.6,W*0.48,0x666c62); b2.position.set(L*0.10,dy+5.5,0); g.add(b2);
-    const b3=boxMesh(L*0.07,1.8,W*0.36,0x707668); b3.position.set(L*0.10,dy+7.7,0); g.add(b3);
-    const win=boxMesh(L*0.07+0.2,0.5,W*0.36+0.2,0x14181c); win.position.set(L*0.10,dy+8.2,0); g.add(win);
-    shipFunnel(g,-L*0.06,dy,5.6,1.7);
-    shipFunnel(g,-L*0.19,dy,5.0,1.6);
-    shipTurret(g,L*0.30,dy+1.0,2.1,2,1);
-    shipTurret(g,L*0.40,dy+2.2,1.7,2,1);
-    shipTurret(g,-L*0.37,dy+1.0,2.1,2,-1);
-    shipMast(g,L*0.00,dy,13);
-    shipMast(g,-L*0.28,dy,9);
-  }
-  g.traverse(function(o){ if(o.isMesh){ o.castShadow=true; o.receiveShadow=true; } });
   g.position.set(def.pos[0],0,def.pos[2]);
   g.rotation.y=Math.random()*Math.PI*2;
   scene.add(g);
+  const radius=def.type==='freighter'?FRT_TARGET_LEN*.55:
+    def.type==='destroyer'?DEST_TARGET_LEN*.55:CRU_TARGET_LEN*.55;
   ships.push({def:def, group:g, hp:def.hp, alive:true, flak:!!def.flak,
-    radius:Math.max(size[0],size[2])*0.55, flakTimer:Math.random()*2, sinkT:0, usedFallback:true});
+    radius, flakTimer:Math.random()*2, sinkT:0, usedFallback:true});
 }
 
 // Called once from each of loadDestroyerModel/loadFreighterModel/loadCruiserModel's onLoad,
 // after that type's template finishes loading. Any ship of this type already spawned on the
-// procedural placeholder (because its .glb wasn't ready yet at mission start) gets the real
+// invisible group (because its .glb wasn't ready yet at mission start) gets the real
 // model swapped in on the spot — position, heading, hp and hit radius are untouched, only the
 // visible geometry changes. Ships that already sank or were spawned with the real model to
 // begin with are left alone.
@@ -3666,8 +3571,10 @@ function updateWingmen(dt){
       const atkAlt=Math.max(46,(tp.y||0)+32);        // run in low over the water
       desPos=w.pos.clone().addScaledVector(flat.clone().normalize(),70);
       desPos.y=w.pos.y+(atkAlt-w.pos.y)*0.6;
-      desSpd=Math.min(112,P.spd+20);
-      if(gd<180 && !w.dropped && Math.abs(w.pos.y-atkAlt)<70){
+      desSpd=w.sbd?Math.min(112,P.spd+20):Math.min(DROP_MAX_SPD-4,P.spd+8);
+      const releaseOk=w.sbd ? Math.abs(w.pos.y-atkAlt)<70 :
+        w.spd<=DROP_MAX_SPD && w.pos.y>=8 && w.pos.y<=DROP_MAX_ALT && Math.abs(w.roll)<=0.35;
+      if(gd<180 && !w.dropped && releaseOk){
         w.dropped=true;
         spawnWingShot(w, w.target);                    // visible torpedo/bomb -> hits on arrival
         radioSay(w.sbd?"BOMB GONE!":"FISH IN THE WATER!");
@@ -3711,9 +3618,9 @@ function updateWingmen(dt){
     } else {
       const gap = desPos.clone().sub(w.pos);
       const dir = gap.length()>0.5? gap.normalize() : noseDir();
-      desVel = dir.multiplyScalar(w.mode==='attack'? Math.min(126,P.spd+22) : Math.min(112,P.spd+10));
+      desVel = dir.multiplyScalar(w.mode==='attack'?desSpd:Math.min(112,P.spd+10));
     }
-    const vlen=desVel.length(), vmax=(w.mode==='attack'?126:112);
+    const vlen=desVel.length(), vmax=(w.mode==='attack'&&!w.sbd?DROP_MAX_SPD-4:112);
     if(vlen>vmax) desVel.setLength(vmax); else if(vlen<42) desVel.setLength(42);
     // Acceleration-limited steering prevents one slow frame or a mode change from producing a
     // visible position jump. Formation flying is gentler than an attack/egress manoeuvre.
@@ -3721,7 +3628,8 @@ function updateWingmen(dt){
     if(dv.length()>maxDv) dv.setLength(maxDv);
     w.vel.add(dv);
     w.pos.addScaledVector(w.vel, dt);
-    if(w.pos.y<55) w.vel.y+=Math.min(16,(55-w.pos.y)*0.6)*dt;
+    const minFlightY=(w.mode==='attack'&&!w.sbd)?44:55;
+    if(w.pos.y<minFlightY) w.vel.y+=Math.min(16,(minFlightY-w.pos.y)*0.6)*dt;
     if(w.pos.y<28){ w.pos.y=28; w.vel.y=Math.max(3,w.vel.y); }
 
     // attitude follows the velocity vector: heading tracks it, bank into the turn, pitch to climb
@@ -3757,29 +3665,37 @@ function spawnWingShot(w, tgt){
   if(!sbd) start.y=Math.max(2.2, start.y-1.2);
   mesh.position.copy(start); scene.add(mesh);
   const nf=new THREE.Vector3(Math.sin(w.heading),0,Math.cos(w.heading));
-  wingShots.push({mesh, tgt, kind:sbd?'bomb':'torp', life:9,
-    vel: sbd? nf.clone().multiplyScalar(w.spd).setY(-6) : nf.multiplyScalar(24) });
+  wingShots.push({mesh, tgt, kind:sbd?'bomb':'torp', life:sbd?9:16,
+    phase:'air',
+    vel: sbd? nf.clone().multiplyScalar(w.spd).setY(-6) :
+      nf.multiplyScalar(Math.max(16,Math.min(42,w.spd*.5))).setY(-1.5) });
 }
 function updateWingShots(dt){
   for(let i=wingShots.length-1;i>=0;i--){
     const s=wingShots[i]; s.life-=dt; let done=false;
     if(s.kind==='bomb') s.vel.y-=18*dt;
-    // gentle homing so a wingman's aim is fair without being a guided missile
-    if(s.tgt && s.tgt.alive){
+    else if(s.phase==='air') s.vel.y-=9.81*dt;
+    // Bombs adjust slightly during the dive. Torpedoes keep the heading they had at release,
+    // just like the player's weapon: a fast flyby cannot turn a fish into a guided missile.
+    if(s.kind==='bomb' && s.tgt && s.tgt.alive){
       const tp=s.tgt.group.position;
       const aim=new THREE.Vector3(tp.x-s.mesh.position.x,0,tp.z-s.mesh.position.z);
       const d=aim.length();
-      if(d>1){ aim.normalize(); s.vel.x+=(aim.x*Math.abs(s.kind==='torp'?24:s.vel.length())-s.vel.x)*Math.min(1,2*dt);
-               s.vel.z+=(aim.z*Math.abs(s.kind==='torp'?24:s.vel.length())-s.vel.z)*Math.min(1,2*dt); }
+      if(d>1){ aim.normalize(); s.vel.x+=(aim.x*s.vel.length()-s.vel.x)*Math.min(1,2*dt);
+               s.vel.z+=(aim.z*s.vel.length()-s.vel.z)*Math.min(1,2*dt); }
     }
     s.mesh.position.addScaledVector(s.vel,dt);
-    if(s.kind==='torp') s.mesh.position.y=2.0;
+    if(s.kind==='torp' && s.phase==='air' && s.mesh.position.y<=2){
+      s.phase='water';s.mesh.position.y=2;s.vel.setY(0).normalize().multiplyScalar(23);
+    }
+    if(s.kind==='torp' && s.phase==='water') s.mesh.position.y=2;
     s.mesh.lookAt(s.mesh.position.clone().add(s.vel));
     if(s.kind==='torp') s.mesh.rotateX(Math.PI/2);
     if(s.tgt && s.tgt.alive){
       const tp=s.tgt.group.position;
       const dd=Math.hypot(s.mesh.position.x-tp.x, s.mesh.position.z-tp.z);
-      if(dd < (s.tgt.radius||30)+6 && (s.kind==='torp'||s.mesh.position.y<26)){
+      if(dd < (s.tgt.radius||30)+6 && ((s.kind==='torp'&&s.phase==='water')||
+          (s.kind==='bomb'&&s.mesh.position.y<26))){
         hitShip(s.tgt, true); done=true;
       }
     }
@@ -4295,7 +4211,7 @@ function loadPlaneModel(){
       }
       window.__eyeDbg='EYE '+COCKPIT_EYE.map(v=>v.toFixed(2)).join('/');
       const btEl=document.getElementById('buildTag');
-      if(btEl) btEl.textContent='BUILD 127 · '+window.__eyeDbg;
+      if(btEl) btEl.textContent='BUILD 128 · '+window.__eyeDbg;
       let seat=null;
       model.traverse(function(o){
         if(!o.isMesh||!o.material) return;
@@ -4368,8 +4284,8 @@ function loadCarrierModel(){
       carrier.visible=false;   // hide the built-in blocky carrier (its nodes/anim still exist)
       carrierModelLoaded=true;
       console.log('Carrier model loaded:', CARRIER_MODEL_URL);
-    }catch(e){ console.warn('carrier model post-process failed; using built-in', e); }
-  }, undefined, function(){ console.warn('No carrier model at "'+CARRIER_MODEL_URL+'" — using built-in carrier.'); });
+    }catch(e){ console.warn('Carrier GLB post-process failed', e); }
+  }, undefined, function(){ console.warn('No carrier model at "'+CARRIER_MODEL_URL+'"'); });
 }
 
 // Both the defence carrier and the so-called cruiser target use the same source model. Keep one
@@ -4422,7 +4338,7 @@ function loadDestroyerModel(){
       const box=new THREE.Box3().setFromObject(model);
       const size=new THREE.Vector3(); box.getSize(size);
       const ctr=new THREE.Vector3();  box.getCenter(ctr);
-      const scale=DEST_TARGET_LEN/(size.x||1);        // longest axis (X) -> target length
+      const scale=DEST_TARGET_LEN/(Math.max(size.x,size.z)||1);
       // centre on X/Z, and lift so the designed waterline sits on the sea (y=0)
       model.position.set(-ctr.x, -DEST_WATERLINE_Y, -ctr.z);
       model.traverse(function(o){ if(o.isMesh){ o.castShadow=true; o.receiveShadow=true; o.frustumCulled=false; } });
@@ -4431,10 +4347,10 @@ function loadDestroyerModel(){
       tmpl.scale.setScalar(scale);
       tmpl.rotation.y=DEST_YAW;
       destroyerTemplate=tmpl;                          // spawnShip() clones this per destroyer
-      upgradeShipsToTemplate('destroyer', tmpl);       // any already-spawned procedural ones catch up
-      console.log('Destroyer model loaded:', DESTROYER_MODEL_URL);
-    }catch(e){ console.warn('destroyer model post-process failed; using built-in', e); }
-  }, undefined, function(){ console.warn('No destroyer model at "'+DESTROYER_MODEL_URL+'" — using built-in destroyer.'); });
+      upgradeShipsToTemplate('destroyer', tmpl);       // any already-spawned waiting ships appear
+      console.log('Escort repository model loaded:', DESTROYER_MODEL_URL);
+    }catch(e){ console.warn('Escort GLB post-process failed', e); }
+  }, undefined, function(){ console.warn('No destroyer model at "'+DESTROYER_MODEL_URL+'" — repository ship remains invisible.'); });
 }
 
 function loadFreighterModel(){
@@ -4458,8 +4374,8 @@ function loadFreighterModel(){
       freighterTemplate=tmpl;
       upgradeShipsToTemplate('freighter', tmpl);
       console.log('Freighter model loaded:', FREIGHTER_MODEL_URL);
-    }catch(e){ console.warn('freighter model post-process failed; using built-in', e); }
-  }, undefined, function(){ console.warn('No freighter model at "'+FREIGHTER_MODEL_URL+'" — using built-in freighter.'); });
+    }catch(e){ console.warn('Freighter GLB post-process failed', e); }
+  }, undefined, function(){ console.warn('No freighter model at "'+FREIGHTER_MODEL_URL+'" — repository ship remains invisible.'); });
 }
 
 function loadCruiserModel(){
@@ -4481,8 +4397,8 @@ function loadCruiserModel(){
       cruiserTemplate=tmpl;
       upgradeShipsToTemplate('cruiser', tmpl);
       console.log('Cruiser (Zuihō) model loaded:', CRUISER_MODEL_URL);
-    }catch(e){ console.warn('cruiser model post-process failed; using built-in', e); }
-  }).catch(function(){ console.warn('No cruiser model at "'+CRUISER_MODEL_URL+'" — using built-in cruiser.'); });
+    }catch(e){ console.warn('Capital ship GLB post-process failed', e); }
+  }).catch(function(){ console.warn('No cruiser model at "'+CRUISER_MODEL_URL+'" — repository ship remains invisible.'); });
 }
 
 function updatePlaneMesh(dt){
@@ -5575,7 +5491,7 @@ function setupUIButtons(){
   if(dbgT2) dbgT2.onclick=()=>{
     dbgOn=!dbgOn; localStorage.setItem('dbgOn',dbgOn?'1':'0');
     const db=document.getElementById('dbgBox'); if(db) db.textContent=dbgOn?'✓':'';
-    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 127'; }
+    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 128'; }
   };
   const lu=document.getElementById('lookUp'), ld=document.getElementById('lookDn');
   let _lookT=0;
@@ -5706,7 +5622,7 @@ function updateShips(dt){
       // steam forward (bow-first), bob gently on the swell
       if(s.speed===undefined){
         s.speed=(s.def.type==='freighter'?4.5:s.def.type==='cruiser'?5.5:7.0)+Math.random()*1.5;
-        s.fwd=(s.def.type==='freighter'||s.def.type==='cruiser')?new THREE.Vector3(0,0,1):new THREE.Vector3(1,0,0);
+        s.fwd=new THREE.Vector3(0,0,1); // every loaded ship's longitudinal axis is Z
         s.wakeT=0;
       }
       const wf=s.fwd.clone().applyQuaternion(s.group.quaternion); wf.y=0; wf.normalize();

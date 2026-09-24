@@ -20,6 +20,12 @@ function roofGeometry(){
   for(const f of faces)for(const i of f){p.push(...v[i]);uv.push(v[i][0]+.62,v[i][2]+.52);}
   const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(p,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.computeVertexNormals();return g;
 }
+function gableRoofGeometry(){
+  const v=[[-.62,0,-.54],[.62,0,-.54],[-.62,0,.54],[.62,0,.54],[0,.40,-.54],[0,.40,.54]];
+  const faces=[[0,1,4],[2,5,3],[0,4,5],[0,5,2],[1,3,5],[1,5,4],[0,2,3],[0,3,1]],p=[],uv=[];
+  for(const f of faces)for(const i of f){p.push(...v[i]);uv.push(v[i][0]+.62,v[i][2]+.54);}
+  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(p,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.computeVertexNormals();return g;
+}
 function frondGeometry(){
   const p=[];
   const add=(a,b,c)=>p.push(...a,...b,...c);
@@ -120,37 +126,55 @@ class OkinawaWorld{
   this.batch(new THREE.DodecahedronGeometry(1,0),new THREE.MeshStandardMaterial({color:0x898879,roughness:1}),rocks,'Coastal limestone');
  }
  buildSettlements(){
-  // Illustrative rural hamlets, intentionally sparse. These are not today's Overture buildings.
-  const rand=rng(9831),walls=[],roofs=[],dark=[],gardenWalls=[],locations=[];
+  // Illustrative rural hamlets, not today's Overture buildings. Mix compact red-roofed
+  // houses, timber workshops and low thatched storehouses, grouped into courtyards.
+  const rand=rng(9831),walls=[[],[],[]],roofs=[[],[],[]],dark=[],gardenWalls=[],locations=[];
+  const addHouse=(x,z,w,depth,rot,y,style,annex=false)=>{
+    const h=[3.4,4.5,2.65][style],roofH=style===2?w*.42:w*.72;
+    walls[style].push({x,z,y:y+h/2,sx:w,sy:h,sz:depth,r:rot});
+    roofs[style].push({x,z,y:y+h,sx:w,sy:roofH,sz:depth,r:rot});
+    if(style!==2)dark.push({x:x+Math.sin(rot)*(depth*.5+.05),z:z+Math.cos(rot)*(depth*.5+.05),
+      y:y+h*.46,sx:w*.64,sy:h*.54,sz:.12,r:rot});
+    if(annex){
+      const ax=x+Math.cos(rot)*(w*.68),az=z-Math.sin(rot)*(w*.68);
+      const ay=this.getHeight(ax,az);
+      if(this.shoreDistance(ax,az)>35 && Math.abs(ay-y)<1.1)
+        addHouse(ax,az,w*.50,depth*.64,rot+.12,ay,2,false);
+    }
+  };
   for(const c of [[-4800,-2600],[-4200,-3300],[-3800,200],[-3100,-1500],[-2500,-2800],[-2200,600]]){
    for(let i=0;i<28;i++){
     const angle=rand()*6.28,r=40+Math.sqrt(rand())*330,x=c[0]+Math.cos(angle)*r,z=c[1]+Math.sin(angle)*r;
     const y=this.getHeight(x,z),d=this.shoreDistance(x,z);if(d<100||this.biome(x,z)[0]>.3)continue;
-    const w=8+rand()*6,depth=7+rand()*4,rot=(rand()-.5)*.9;
+    const style=rand()<.55?0:rand()<.63?1:2;
+    const w=(style===1?11:7.5)+rand()*(style===1?7:6),depth=(style===1?9:6)+rand()*5,rot=(rand()-.5)*.9;
     if(Math.max(Math.abs(this.getHeight(x+w,z)-y),Math.abs(this.getHeight(x,z+depth)-y))>1.4)continue;
     if(locations.some(p=>Math.hypot(p.x-x,p.z-z)<30))continue;locations.push({x,z});
-    walls.push({x,z,y:y+1.7,sx:w,sy:3.4,sz:depth,r:rot});roofs.push({x,z,y:y+3.3,sx:w,sy:w*.75,sz:depth,r:rot});
-    dark.push({x:x+Math.sin(rot)*(depth*.5+.03),z:z+Math.cos(rot)*(depth*.5+.03),y:y+1.7,sx:w*.67,sy:1.5,sz:.1,r:rot});
+    addHouse(x,z,w,depth,rot,y,style,rand()>.72);
     for(let side=-1;side<=1;side+=2){const gx=x+side*(w*.7+3),gz=z;gardenWalls.push({x:gx,z:gz,y:this.getHeight(gx,gz)+.55,sx:.65,sy:1.1,sz:depth+10,r:0});}
    }
   }
   // A small coastal village near the eastern strike route remains readable from low
   // altitude. Leave gaps and slight offsets so it follows the land rather than a grid.
   for(let row=0;row<5;row++)for(let col=0;col<7;col++){
-   const x=-4840+col*29+(rand()-.5)*11,z=-2610+row*34+(rand()-.5)*13;
-   const y=this.getHeight(x,z),d=this.shoreDistance(x,z),w=8+rand()*4,depth=7+rand()*3,rot=(rand()-.5)*.35;
+   const x=-4840+col*29+(rand()-.5)*18,z=-2610+row*34+(rand()-.5)*22;
+   const y=this.getHeight(x,z),d=this.shoreDistance(x,z),w=7+rand()*7,depth=6+rand()*6,rot=(rand()-.5)*.55;
    if(d<40||this.biome(x,z)[0]>.3||Math.max(Math.abs(this.getHeight(x+w,z)-y),Math.abs(this.getHeight(x,z+depth)-y))>2.5)continue;
    if(locations.some(p=>Math.hypot(p.x-x,p.z-z)<20))continue;locations.push({x,z});
-   walls.push({x,z,y:y+1.65,sx:w,sy:3.3,sz:depth,r:rot});
-   roofs.push({x,z,y:y+3.2,sx:w,sy:w*.74,sz:depth,r:rot});
-   dark.push({x:x+Math.sin(rot)*(depth*.5+.03),z:z+Math.cos(rot)*(depth*.5+.03),y:y+1.65,sx:w*.67,sy:1.5,sz:.1,r:rot});
+   addHouse(x,z,w,depth,rot,y,rand()<.62?0:rand()<.55?1:2,rand()>.8);
   }
   const roofTex=canvas(128),c=roofTex.getContext('2d');c.fillStyle='#875040';c.fillRect(0,0,128,128);for(let i=0;i<128;i+=8){c.fillStyle=i%16?'#a46951':'#955d49';c.fillRect(i,0,3,128);c.fillStyle='#c3a08a';for(let j=0;j<128;j+=20)c.fillRect(i,j,7,1);}
   const tex=new THREE.CanvasTexture(roofTex);tex.encoding=THREE.sRGBEncoding;tex.wrapS=tex.wrapT=THREE.RepeatWrapping;tex.repeat.set(2,2);
-  this.batch(new THREE.BoxGeometry(1,1,1),new THREE.MeshStandardMaterial({color:0xa99e83,roughness:1}),walls,'Village walls');
-  this.batch(roofGeometry(),new THREE.MeshStandardMaterial({map:tex,color:0xffffff,roughness:1,side:THREE.DoubleSide}),roofs,'Red tile hip roofs');
+  const wallColors=[0xb8a98e,0x74644f,0xc9b995];
+  const roofMaterials=[new THREE.MeshStandardMaterial({map:tex,color:0xffffff,roughness:1,side:THREE.DoubleSide}),
+    new THREE.MeshStandardMaterial({color:0x5e5143,roughness:1,side:THREE.DoubleSide}),
+    new THREE.MeshStandardMaterial({color:0x837552,roughness:1,side:THREE.DoubleSide})];
+  for(let i=0;i<3;i++){
+    this.batch(new THREE.BoxGeometry(1,1,1),new THREE.MeshStandardMaterial({color:wallColors[i],roughness:1}),walls[i],['Coral homes','Timber workshops','Storehouses'][i]);
+    this.batch(i===0?roofGeometry():gableRoofGeometry(),roofMaterials[i],roofs[i],['Red tile roofs','Dark gables','Thatch gables'][i]);
+  }
   this.batch(new THREE.BoxGeometry(1,1,1),new THREE.MeshStandardMaterial({color:0x302b23,roughness:1}),dark,'Shaded verandas');
-  this.batch(new THREE.BoxGeometry(1,1,1),new THREE.MeshStandardMaterial({color:0x8e8c77,roughness:1}),gardenWalls,'Coral garden walls');this.houses=walls.length;
+  this.batch(new THREE.BoxGeometry(1,1,1),new THREE.MeshStandardMaterial({color:0x8e8c77,roughness:1}),gardenWalls,'Coral garden walls');this.houses=walls.reduce((n,a)=>n+a.length,0);
  }
  buildWater(){
   const material=new THREE.ShaderMaterial({uniforms:{uTime:this.time,uWarm:this.warm,uCoast:{value:this.coastTexture},uSun:{value:this.sun}},vertexShader:`varying vec3 vWorld;varying vec3 vLocal;void main(){vLocal=position;vWorld=(modelMatrix*vec4(position,1.)).xyz;gl_Position=projectionMatrix*viewMatrix*vec4(vWorld,1.);}`,

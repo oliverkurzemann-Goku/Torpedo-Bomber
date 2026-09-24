@@ -67,12 +67,12 @@ Build 19 also reuses the repository's existing `merchant_ship.glb` as a two-copy
 metadata, so none is invented here. It is a visual stand-in, not a historically exact
 Remagen ferry; the original file remains unchanged.
 
-- **Me 262 flyby recording** — LEJ.approach/dvldi, [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Messerschmitt_Me-262_At_Hahnweide_Air_Show_2011.ogv),
+- **Me 262 engine loop** — LEJ.approach/dvldi, [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Messerschmitt_Me-262_At_Hahnweide_Air_Show_2011.ogv),
   [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/). The source is a 2011
   airshow video of a Me 262 replica powered by modern GE J85 jet engines, not an
-  original Jumo 004 recording. `me262-engine.mp3` is an edited 4.65-second mono
-  excerpt from 1:17–1:22 of that video: high-level gain reduced and ends
-  crossfaded for looping. It replaces the synthetic jet tone when decoding succeeds.
+  original Jumo 004 recording. `me262-engine.mp3` is an edited 1.72-second mono
+  segment around 1:15–1:17 of that video: a more even part of the engine sound,
+  with the ends crossfaded and its gain kept moderate for looping. It replaces the synthetic jet tone when decoding succeeds.
 
 Attribution for the original repository GLBs is transcribed from each GLB's
 `asset.extras`. Build 21 attribution and licenses were checked against the linked primary
