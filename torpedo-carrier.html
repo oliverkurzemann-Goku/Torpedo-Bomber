@@ -277,7 +277,7 @@
   <div id="flash"></div>
   <div id="ltn" style="position:fixed;inset:0;background:#e6ecff;opacity:0;pointer-events:none;z-index:40;"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 125</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 127</div>
 
   <!-- Optical landing aid -->
   <div id="lso">
@@ -459,7 +459,7 @@ function registerHit(){ hitsTaken++; const vig=document.getElementById('dmgVig')
 let bubbles=[], slicks=[], killCam=null, score=0, scoreStart=0, selectedMission=0;
 // ---- pilot's logbook (persisted like the best score) ----
 let sortieTorpFired=0, sortieTorpHit=0, sortieShipsSunk=0, sortieZeros=0, radioEvadeCalled=false;
-let sortieWingmenLost=0;
+let sortieWingmenLost=0, reinforcementsLaunched=false;
 const RANKS=['Ensign','Lieutenant j.g.','Lieutenant','Lt Commander','Commander'];
 function rankIndexForTraps(t){ return t>=25?4 : t>=15?3 : t>=8?2 : t>=3?1 : 0; }
 function rankName(t){ return RANKS[rankIndexForTraps(t)]; }
@@ -732,11 +732,13 @@ const MISSIONS = [
   // The coastline is a continuation of the same carrier campaign. The ship remains the
   // recovery point; all targets below were sampled in the offshore side of the coastline.
   { title:"Sortie 11", sub:"Okinawa Recon", okinawa:true,
-    body:"Yomitan is ahead, but a freighter is running supplies just offshore. Track the coast, "
-        +"sink the freighter with your Avenger and recover aboard. Keep your approach over water "
-        +"and watch the terrain beyond the beach.",
-    torps:2, fuel:100, zeros:0,
-    targets:[{type:"freighter",pos:[3400,0,-2500],hp:1}] },
+    body:"A supply ship is running north of Yomitan. After the first attack, expect a second "
+        +"convoy to emerge farther south under destroyer and fighter cover. Carry three torpedoes, "
+        +"plan a second approach along the coastline, then recover aboard. The escort is optional.",
+    torps:3, fuel:100, zeros:0,
+    targets:[{type:"freighter",pos:[3400,0,-2500],hp:1}],
+    reinforcement:{targets:[{type:"freighter",pos:[3450,0,160],hp:1},
+                            {type:"destroyer",pos:[2900,0,-50],hp:1,flak:true}],zeros:1} },
   { title:"Sortie 12", sub:"Coastal Screen", okinawa:true, sbd:true, loadout:'divebomb', weather:'haze',
     body:"The next convoy has a destroyer screen near the Okinawa shore and a Zero on patrol. "
         +"Take the Dauntless, dive on both freighters, then climb clear of the coast and trap aboard. "
@@ -1829,6 +1831,7 @@ function startMission(idx){
   P.ammo=1200; P.fireT=0; firing=false;
   P.rollBias=0; P.bingo=false; P.tailCool=0; P.pitchVel=0; P.rollVel=0;
   sortieTorpFired=0; sortieTorpHit=0; sortieShipsSunk=0; sortieZeros=0; hitsTaken=0; sortieWingmenLost=0;
+  reinforcementsLaunched=false;
   radioEvadeCalled=false; radioQ=[]; radioT=0; P.ballCalled=false;
   // per-sortie crosswind: grows with mission index, random side
   windZ=(0.4+mission*0.25)*(Math.random()<0.5?-1:1);
@@ -2350,6 +2353,15 @@ function hitShip(s, quietCam){
 function checkObjectiveCleared(){
   const primary=ships.filter(s=>s.def.type==="freighter"||s.def.type==="cruiser");
   const cleared = primary.length>0 && primary.every(s=>!s.alive);
+  const wave=MISSIONS[mission].reinforcement;
+  if(cleared && wave && !reinforcementsLaunched){
+    reinforcementsLaunched=true;
+    wave.targets.forEach(spawnShip);
+    for(let i=0;i<(wave.zeros||0);i++)spawnZero(i,wave.zeros);
+    flash('SECOND CONVOY SIGHTED — SOUTH OF YOMITAN',2200);
+    radioSay('NEW CONTACT SOUTH OF YOMITAN — DESTROYER AND FIGHTER COVER');
+    return;
+  }
   if(cleared && !P.rtb){ P.rtb=true; addScore(500); flash("TARGETS DOWN  +500 — RETURN TO SHIP",1500); }
 }
 
@@ -3384,12 +3396,15 @@ function cutBlades(root, prop){
       for(let t=0;t+2<arr.length;t+=3){
         if(arr[t]===arr[t+1]&&arr[t]===arr[t+2]) continue;
         rd(arr[t],a); rd(arr[t+1],b); rd(arr[t+2],c);
-        // judge by the centroid: a blade is one sheet continuous with the hub, so demanding all
-        // three corners qualify leaves three quarters of every blade standing
+        // Some SBD blade triangles run from the hub to the tip. Their centroid is inside the
+        // hub even though a corner reaches 1.6 m, leaving rigid spokes beside the new rotor.
         m.set((a.x+b.x+c.x)/3,(a.y+b.y+c.y)/3,(a.z+b.z+c.z)/3);
         if(m.z<zLo||m.z>zHi) continue;
         const r=Math.hypot(m.x-prop.cx,m.y-prop.cy);
-        if(r<=rIn||r>=rOut) continue;
+        const rMax=Math.max(Math.hypot(a.x-prop.cx,a.y-prop.cy),
+                            Math.hypot(b.x-prop.cx,b.y-prop.cy),
+                            Math.hypot(c.x-prop.cx,c.y-prop.cy));
+        if(r>=rOut || (r<=rIn && rMax<=prop.hubR*1.35)) continue;
         arr[t+1]=arr[t]; arr[t+2]=arr[t]; n++;
       }
       o.geometry.index.needsUpdate=true;
@@ -3407,7 +3422,10 @@ function cutBlades(root, prop){
         rd(arr[t],a); rd(arr[t+1],b); rd(arr[t+2],c);
         m.set((a.x+b.x+c.x)/3,(a.y+b.y+c.y)/3,(a.z+b.z+c.z)/3);
         const r=Math.hypot(m.x-prop.cx,m.y-prop.cy);
-        if(r<rIn||r>prop.tipR*1.30) continue;
+        const rMax=Math.max(Math.hypot(a.x-prop.cx,a.y-prop.cy),
+                            Math.hypot(b.x-prop.cx,b.y-prop.cy),
+                            Math.hypot(c.x-prop.cx,c.y-prop.cy));
+        if(r>prop.tipR*1.30 || (r<rIn && rMax<=prop.hubR*1.35)) continue;
         if(Math.abs(m.z-prop.zPlane)>prop.S.z*0.16) continue;
         n++;
       }
@@ -4277,7 +4295,7 @@ function loadPlaneModel(){
       }
       window.__eyeDbg='EYE '+COCKPIT_EYE.map(v=>v.toFixed(2)).join('/');
       const btEl=document.getElementById('buildTag');
-      if(btEl) btEl.textContent='BUILD 125 · '+window.__eyeDbg;
+      if(btEl) btEl.textContent='BUILD 127 · '+window.__eyeDbg;
       let seat=null;
       model.traverse(function(o){
         if(!o.isMesh||!o.material) return;
@@ -5557,7 +5575,7 @@ function setupUIButtons(){
   if(dbgT2) dbgT2.onclick=()=>{
     dbgOn=!dbgOn; localStorage.setItem('dbgOn',dbgOn?'1':'0');
     const db=document.getElementById('dbgBox'); if(db) db.textContent=dbgOn?'✓':'';
-    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 125'; }
+    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 127'; }
   };
   const lu=document.getElementById('lookUp'), ld=document.getElementById('lookDn');
   let _lookT=0;

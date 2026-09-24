@@ -16,6 +16,23 @@ assert.match(html('remagen-mission.html'),/SquadronCampaign\.record\('europeRhin
 assert.match(html('remagen-mission.html'),/const airLeft=\(\(m\.enemyAir\|\|m\.bombers\)\? enemyAir\.filter\(e=>e\.alive\)\.length : 0\)/,
  'landing cannot complete bomber sorties while bombers remain');
 assert.match(html('torpedo-carrier.html'),/try\{await prepareOkinawa\(\);startMission\(idx\);\}/,'every Pacific sortie loads mapped coast');
+const carrier=html('torpedo-carrier.html');
+const waveStart=carrier.indexOf('function checkObjectiveCleared(){');
+const waveEnd=carrier.indexOf('\nfunction ',waveStart+10);
+const carrierMissions=vm.runInNewContext(carrier.slice(carrier.indexOf('const MISSIONS = ['),carrier.indexOf('\nasync function prepareOkinawa'))+'\nMISSIONS',{});
+const sortie=carrierMissions[12];
+assert.equal(sortie.reinforcement.targets.length,2,'Okinawa reconnaissance has a second convoy');
+const spawned=[],jets=[],pilot={rtb:false};let points=0;
+const stage=vm.createContext({MISSIONS:carrierMissions,mission:12,reinforcementsLaunched:false,
+ ships:[{def:sortie.targets[0],alive:false}],P:pilot,
+ spawnShip:def=>{spawned.push(def);stage.ships.push({def,alive:true});},
+ spawnZero:i=>jets.push(i),flash(){},radioSay(){},addScore:n=>{points+=n;}});
+vm.runInContext(carrier.slice(waveStart,waveEnd),stage);
+stage.checkObjectiveCleared();
+assert.equal(spawned.length,2);assert.equal(jets.length,1);assert.equal(pilot.rtb,false,'first kill starts second phase');
+stage.ships.find(s=>s.def.type==='freighter'&&s.alive).alive=false;
+stage.checkObjectiveCleared();
+assert.equal(pilot.rtb,true,'second kill unlocks carrier recovery');assert.equal(points,500);
 const script=html('remagen-mission.html');
 const start=script.indexOf('const MISSIONS=['),end=script.indexOf('\nfunction M()',start);
 const missions=vm.runInNewContext(script.slice(start,end)+'\nMISSIONS',{});

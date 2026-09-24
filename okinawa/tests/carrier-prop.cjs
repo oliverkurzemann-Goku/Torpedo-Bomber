@@ -31,11 +31,12 @@ function glb(file){return new Promise((resolve,reject)=>{const raw=fs.readFileSy
    const vs=[ix[t],ix[t+1],ix[t+2]].map(i=>holder.worldToLocal(o.localToWorld(readVert(pos,i,new THREE.Vector3()))));
    const centre=vs[0].clone().add(vs[1]).add(vs[2]).divideScalar(3);
    const r=Math.hypot(centre.x-prop.cx,centre.y-prop.cy);
-   if(r>prop.hubR*1.05&&r<prop.tipR*1.3&&Math.abs(centre.z-prop.zPlane)<.85)
-    survivors.push([centre.z.toFixed(2),r.toFixed(2),o.name]);
+   const outer=Math.max(...vs.map(v=>Math.hypot(v.x-prop.cx,v.y-prop.cy)));
+   if(outer>prop.hubR*1.35&&r<prop.tipR*1.3&&Math.abs(centre.z-prop.zPlane)<.85)
+    survivors.push([centre.z.toFixed(2),r.toFixed(2),outer.toFixed(2),o.name]);
   }
  });
- assert.ok(survivors.length<=2,'no fixed blade triangles remain near the measured SBD propeller');
+ assert.equal(survivors.length,0,'no fixed blade tips remain near the measured SBD propeller');
  const rotor=makeProp(prop,3);rotor.name='sbdRotorBlade';holder.add(rotor);
  for(const clone of [holder.clone(true),holder.clone(true)]){
    const rotors=[];clone.traverse(o=>{if(o.name==='sbdRotorBlade')rotors.push(o);});

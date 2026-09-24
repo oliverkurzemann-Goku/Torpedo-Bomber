@@ -5,7 +5,18 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 126 · Thunderbolt Squadron BUILD 126 · reales Remagen-Gelände 21**
+Stand bei Übergabe: **Torpedo Squadron BUILD 127 · Thunderbolt Squadron BUILD 127 · reales Remagen-Gelände 21**
+
+**Build 127 (24.09.2026):** Die Dauntless-Schnittgeometrie prüft jetzt auch Dreiecksecken:
+Ein Dreieck konnte von der Nabe bis zur Blattspitze reichen, während sein Mittelpunkt in
+der Nabe lag. Im echten GLB wurden zuvor nur 7 von 16 Blattdreiecken entfernt; jetzt alle 16,
+mit Regressionstest auf stehen gebliebene Eckspitzen. Die Me 262 nutzt einen kurzen,
+nahtlos bearbeiteten MP3-Ausschnitt einer fliegenden Replik (modernes J85-Triebwerk, CC BY 3.0;
+Attribution in ASSET-CREDITS.md), wenn Safari ihn dekodiert; Synthese bleibt Lade-Fallback.
+Okinawa Sortie 11 erhält nach dem ersten Frachter einen zweiten, südlichen Konvoi mit
+Flak-Zerstörer und Zero. Ein Kampagnentest prüft die gestaffelte Zielerfüllung.
+Ton und Geometrie brauchen noch Abnahme auf Olivers iPad.
+
 Repo: `oliverkurzemann-Goku/Torpedo-Bomber`, ausgeliefert über GitHub Pages.
 Alle Angaben unten sind aus dem tatsächlichen Code verifiziert, nicht aus dem Gedächtnis.
 

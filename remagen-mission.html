@@ -239,7 +239,7 @@
   <div style="width:100%;height:4px;background:repeating-linear-gradient(45deg,#ffd400,#ffd400 8px,#111 8px,#111 16px);"></div>
   <span id="testVersionBannerText" style="background:#111;color:#ffd400;font-family:monospace;font-weight:800;font-size:11px;letter-spacing:.5px;padding:3px 10px;border:1px solid #ffd400;border-top:none;border-radius:0 0 6px 6px;"></span>
 </div>
-<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 126';</script>
+<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 127';</script>
 <!-- ===== END TEMP TEST-ONLY VERSION BANNER ===== -->
 <div id="app"></div>
 
@@ -266,7 +266,7 @@
   <div id="flash"></div>
   <div id="gunsight"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 126 · REAL RHINE</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 127 · REAL RHINE</div>
 
   <div id="apr">
     <div id="aprCall"></div>
@@ -614,7 +614,7 @@ async function loadRealWorld(){
 
   if(OSMManager.BUILD!==21||HistoricalObjectManager.BUILD!==21||LivingWorld.BUILD!==21||WorldVehicles.BUILD!==21) throw new Error('Terrain version mismatch. Reload Remagen.');
   document.getElementById('testVersionBannerText').textContent=
-    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 126 · MODULE 21';
+    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 127 · MODULE 21';
   heightProvider=new DEMHeightProvider(RTILE,'terrain-system/real/data/dem/');
   terrain=new TerrainManager(scene,RTILE,heightProvider);
   osmMgr=new OSMManager(scene,RTILE,terrain,'terrain-system/real/data/osm/');
@@ -3620,6 +3620,7 @@ function updateApproach(){
 // ============================================================
 //  AUDIO
 // ============================================================
+let jetRecording=null, jetRecordingGain=null;
 function initAudio(){
   if(actx){ if(actx.state==='suspended') actx.resume(); return; }
   try{ const AC2=window.AudioContext||window.webkitAudioContext; actx=new AC2();
@@ -3645,6 +3646,16 @@ function initAudio(){
   const ng=actx.createGain(); ng.gain.value=0; noise.connect(nbp); nbp.connect(ng); ng.connect(master);
   o1.start(); o2.start(); lfo.start(); noise.start();
   eng={master,eg,lp,o1,o2,lfo,lfoG,nbp,ng,freq:60};
+  // Recorded flyby from a Me 262 replica (modern J85 engines), CC BY 3.0; see credits.
+  // Load after the user's Start Engine gesture. Keep the synthesizer as an offline fallback.
+  fetch('me262-engine.mp3?v=127').then(r=>{if(!r.ok)throw Error('jet recording unavailable');return r.arrayBuffer();})
+    .then(b=>actx.decodeAudioData(b)).then(buffer=>{
+      if(!eng||!actx)return;
+      const source=actx.createBufferSource(); source.buffer=buffer; source.loop=true;
+      const gain=actx.createGain(); gain.gain.value=0;
+      source.connect(gain); gain.connect(master); source.start();
+      jetRecording=source; jetRecordingGain=gain;
+    }).catch(e=>console.warn('Jet recording fallback:',e));
 }
 function out(){ return eng?eng.master:(actx?actx.destination:null); }
 function updateAudio(dt){
@@ -3652,41 +3663,8 @@ function updateAudio(dt){
   const flying=(state===ST.FLIGHT)&&P.alive;
   const rpm=flying?(0.30+P.throttle*0.70):0;
   const ct=actx.currentTime;
-  // Reported four times running now (EU BUILD 52/53/54/55): "hairdryer", "mosquito", "klingt
-  // fuerchterlich", and after EU BUILD 55's literature-research pass, still not right - the
-  // literature gave a correct general SHAPE (tonal, turbine-register, no piston wobble) but no
-  // numbers specific to what this engine actually sounds like. This round the user supplied an
-  // actual reference recording ("So klingt in etwa eine me262") - analysed it directly (Python +
-  // numpy FFT, not by ear, since audio still cannot be heard from here) instead of researching
-  // engine specs a fifth time. Measured across 12 windows spanning the 8 s clip:
-  // - The fundamental sits in an unexpectedly NARROW, high band: 1790 Hz at its quietest, rising
-  //   smoothly to a 2200-2350 Hz plateau it holds for the back half of the clip - not the wide
-  //   650-2200 Hz idle-to-full spread the Jumo 004's raw 3-4x rpm ratio implied. EU BUILD 55's
-  //   TOP end already landed almost exactly on this reference's plateau; the bottom end was much
-  //   too low.
-  // - A strong, clean second peak at almost EXACTLY 2x the fundamental shows up in every single
-  //   window (e.g. 2213 Hz and 4425 Hz; 2347 Hz and 4689 Hz) - a genuine octave overtone, not the
-  //   5% "buzz-saw" detune EU BUILD 55 built between o1/o2. That octave was already sitting right
-  //   there for free (a sawtooth's own natural harmonic series includes one at half the
-  //   fundamental's amplitude) - EU BUILD 55's lowpass (topping out at 3000 Hz) was silently
-  //   filtering it back out before it could ever be heard.
-  // - The two closest simultaneous peaks in every window (the actual "roughness" in the tone) sit
-  //   only 0.2-0.3% apart (e.g. 2213 vs 2218 Hz), not 5% - EU BUILD 53's original 0.6% "mosquito"
-  //   detune was in fact closer to this reference than EU BUILD 55's wider one; the mosquito
-  //   complaint traces to the missing octave and the noise balance below, not the detune width.
-  // - Spectral flatness across every window measured 0.008-0.011 - extremely tonal, next to no
-  //   broadband texture audible in the spectrum at all. EU BUILD 55's noise layer (22% of the
-  //   tone's gain) is too prominent for what this specific reference actually contains.
-  // Rebuilt directly on these numbers: fundamental narrowed to 1300-2300 Hz (still idle-to-full,
-  // but centred on the reference's measured plateau instead of the raw rpm-ratio calculation),
-  // o1/o2 detune tightened to 0.25% (the reference's own measured spacing), lowpass raised well
-  // past 2x the fundamental's peak (5000-6500 Hz) specifically so that free second harmonic is
-  // finally audible instead of filtered away, and the noise layer cut back to 9% of the tone's
-  // gain to match the reference's near-total tonal dominance. `nbp.Q` is shared with the piston
-  // engine's own noise layer; the else branch below still resets it, same as every revision
-  // before this one. Same honest limit as always with pure WebAudio synthesis: the numbers below
-  // are now grounded in a direct FFT of the user's own reference clip, not a guess and not a
-  // generic literature figure - but whether it actually sounds right is still only Oliver's call.
+  // The jet uses the recorded loop when it has decoded. The older oscillators remain as a
+  // fallback for devices that cannot fetch or decode MP3, and for the propeller aircraft.
   if(JET_KINDS.includes(P.ac)){
     const tf=1300+rpm*1000+(P.spd/Math.max(1,MAX_SPD))*180;
     eng.freq+=(tf-eng.freq)*Math.min(1,4*dt);
@@ -3694,12 +3672,17 @@ function updateAudio(dt){
     eng.o2.frequency.setTargetAtTime(eng.freq*1.0025,ct,0.10);
     eng.lp.frequency.setTargetAtTime(5000+rpm*1500,ct,0.15);
     const vol=flying?(0.05+rpm*0.10):0;
-    eng.eg.gain.setTargetAtTime(vol,ct,0.18);
+    if(jetRecordingGain){
+      jetRecording.playbackRate.setTargetAtTime(0.78+rpm*0.27,ct,0.16);
+      jetRecordingGain.gain.setTargetAtTime(flying?0.42+rpm*0.20:0,ct,0.18);
+    }
+    eng.eg.gain.setTargetAtTime(jetRecordingGain?0:vol,ct,0.18);
     eng.lfoG.gain.setTargetAtTime(0,ct,0.2);
     eng.nbp.frequency.setTargetAtTime(1900+rpm*1300,ct,0.15);
     eng.nbp.Q.setTargetAtTime(0.45,ct,0.2);
-    eng.ng.gain.setTargetAtTime(vol*0.09,ct,0.15);
+    eng.ng.gain.setTargetAtTime(jetRecordingGain?0:vol*0.09,ct,0.15);
   } else {
+    if(jetRecordingGain) jetRecordingGain.gain.setTargetAtTime(0,ct,0.12);
     eng.nbp.Q.setTargetAtTime(0.7,ct,0.15);
     // the Jug's R-2800 sits lower and rougher than the 109's inline
     const base=(P.ac==='p47')?42:52;
