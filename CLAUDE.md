@@ -7,6 +7,17 @@ ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wie
 
 Stand bei Übergabe: **Torpedo Squadron BUILD 129 · Thunderbolt Squadron BUILD 129 · reales Remagen-Gelände 21**
 
+**Ältere Spiele und Vorschauen wieder auffindbar (25.09.2026):** Die letzte
+Träger-Version vor der Okinawa-Integration (`ef8a848`, BUILD 122) liegt unverändert als
+`torpedo-carrier-open-sea.html` neben dem aktuellen Spiel. `index.html` verlinkt außerdem
+den direkten Remagen-Einstieg ohne Kampagnenparameter (dieselbe aktuelle Rheinwelt, aber
+freie Missionswahl ab Beginn) sowie die weiterhin vorhandenen eigenständigen Vorschauen
+`terrain-system/demo-remagen.html` und `okinawa-preview.html`. Das synthetische
+Thunderbolt/Bridge-Buster-Spiel ist seit EU BUILD 60 wieder separat. Das am 20.09. auf
+ausdrücklichen Nutzerwunsch vollständig entfernte Okinawa-Realterrain-Testbed wurde
+nicht wiederhergestellt. Historische `torpedo-carrier 2` bis `10` sind Revisionen,
+keine zusätzlichen Kampagnen.
+
 **Classic-Landschaft wieder auswählbar (25.09.2026, EU BUILD 60):** Auf Nutzerwunsch
 ist `thunderbolt-europe.html` wieder ein eigener Einstieg in `index.html`. Die sofortige
 Weiterleitung nach Remagen wurde entfernt; Sortie 3 heißt dort weiterhin „Bridge Buster“
