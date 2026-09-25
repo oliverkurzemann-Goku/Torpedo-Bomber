@@ -80,6 +80,38 @@ Attribution for the original repository GLBs is transcribed from each GLB's
 model pages; public mirrors supplied the two downloadable source archives. This record does
 not establish rights beyond those granted by the named uploaders.
 
+## Me 262 aircraft and low-poly tree pack
+
+Not previously listed here even though both are active runtime assets, not archival —
+found while syncing this file against the actual code (`grep` for each `.glb` filename,
+not assumed). Attribution below is transcribed from each GLB's own `asset.extras`, the
+same method this file already uses for the vehicle models above.
+
+- **Me 262 A-1a/Jabo (War Thunder)** — KojfDiscord. Source:
+  https://sketchfab.com/3d-models/me-262-a-1ajabo-war-thunder-a6e4bd7a047f49b292e59ad285850310
+  Author: https://sketchfab.com/KojfDiscord
+  License recorded in the supplied GLB: **CC BY 4.0**,
+  https://creativecommons.org/licenses/by/4.0/
+  File: `me262.glb`. Used as the player's Me 262 in both `thunderbolt-europe.html` (EU
+  BUILD 50+) and `remagen-mission.html`. Runtime changes: standard rigging shared with
+  every other playable aircraft in these files (gear/canopy fitting, `KHR_materials_
+  pbrSpecularGlossiness` replaced by a plain textured `MeshStandardMaterial` for iOS
+  texture-loading reliability); the model is a jet, so the shared propeller-cutting
+  step (3.1) is skipped for it. Original GLB unchanged.
+- **Low Poly Forest Tree Pack** — 99.Miles. Source:
+  https://sketchfab.com/3d-models/low-poly-forest-tree-pack-5ff5a51e74324845a4e4905f182dfb2b
+  Author: https://sketchfab.com/99.Miles
+  License recorded in the supplied GLB: **CC BY 4.0**,
+  https://creativecommons.org/licenses/by/4.0/
+  File: `treepack.glb`. Used by `thunderbolt-europe.html` (EU BUILD 51+) to upgrade the
+  procedural conifer/rock scenery to real geometry once it finishes loading (the
+  procedural version stays as a fallback and during load). Runtime changes: each
+  trunk/crown pair's `matrixWorld` is baked into its own geometry before cloning
+  (the pack ships as one arranged scene, not origin-centred parts); `material.
+  vertexColors` is forced off (the source file's `COLOR_0` attribute produced no
+  usable per-vertex color and just re-tinted the texture); Lambert/Standard material
+  conversion. Original GLB unchanged.
+
 ## Build 131 jet sound
 
 `audio/jet-engine.js` is original procedural sound design: filtered combustion noise,

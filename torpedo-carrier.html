@@ -283,7 +283,7 @@
   <div id="flash"></div>
   <div id="ltn" style="position:fixed;inset:0;background:#e6ecff;opacity:0;pointer-events:none;z-index:40;"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 131</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 132</div>
 
   <!-- Optical landing aid -->
   <div id="lso">
@@ -393,7 +393,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
 <script src="okinawa/data.js?v=1"></script>
-<script src="okinawa/world.js?v=128"></script>
+<script src="okinawa/world.js?v=132"></script>
 <script src="campaign.js?v=1"></script>
 <script src="sortie-systems.js?v=129"></script>
 <script src="operation-plans.js?v=129"></script>
@@ -4325,7 +4325,7 @@ function loadPlaneModel(){
       }
       window.__eyeDbg='EYE '+COCKPIT_EYE.map(v=>v.toFixed(2)).join('/');
       const btEl=document.getElementById('buildTag');
-      if(btEl) btEl.textContent='BUILD 131 · '+window.__eyeDbg;
+      if(btEl) btEl.textContent='BUILD 132 · '+window.__eyeDbg;
       let seat=null;
       model.traverse(function(o){
         if(!o.isMesh||!o.material) return;
@@ -5615,7 +5615,7 @@ function setupUIButtons(){
   if(dbgT2) dbgT2.onclick=()=>{
     dbgOn=!dbgOn; localStorage.setItem('dbgOn',dbgOn?'1':'0');
     const db=document.getElementById('dbgBox'); if(db) db.textContent=dbgOn?'✓':'';
-    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 131'; }
+    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 132'; }
   };
   const lu=document.getElementById('lookUp'), ld=document.getElementById('lookDn');
   let _lookT=0;

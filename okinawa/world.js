@@ -112,16 +112,24 @@ class OkinawaWorld{
    if(air>.2||field>.2)continue;
    const density=forest>.3?.86:(h>90?.68:(patch>.48?.42:.08));if(rand()>density)continue;
    const slope=Math.hypot(this.getHeight(x+15,z)-h,this.getHeight(x,z+15)-h)/15;if(slope>.9)continue;
-   const s=5.2+rand()*7.6,p={x,z,y:h-.4,s,r:rand()*Math.PI*2};buckets[i%3].push(p);trunks.push({...p,sx:s*.15,sy:s*.8,sz:s*.15});
+   // Trunk radius used to be s*.15 (height:radius up to ~22:1, a toothpick under a
+   // canopy blob from any real flight altitude); s*.27 reads as an actual trunk.
+   const s=5.2+rand()*7.6,p={x,z,y:h-.4,s,r:rand()*Math.PI*2};buckets[i%3].push(p);trunks.push({...p,sx:s*.27,sy:s*.72,sz:s*.27});
    if(d<160&&d>35&&rand()<.08)palms.push({x:x+4,z:z+3,y:this.getHeight(x+4,z+3)-.2,s:.9+rand()*.45,r:rand()*6.28});
   }
   for(let v=0;v<3;v++){
    const gs=[];for(let j=0;j<4;j++){const g=new THREE.SphereGeometry(.42,7,5);g.scale(1,.7+(j%2)*.2,.9);g.translate(Math.cos(j*2.4)*.24,.63+(j%2)*.20,Math.sin(j*2.4)*.24);gs.push(g);}
-   const geo=merge(gs),mat=new THREE.MeshStandardMaterial({color:[0x344c25,0x425b2c,0x4f6531][v],roughness:1});this.materials.push(mat);this.batch(geo,mat,buckets[v],'Broadleaf canopy '+v);
+   // These used to be 0x344c25/0x425b2c/0x4f6531 -- a plausible dark-green hex on
+   // paper, but measured (real render, torpedo-carrier.html's own ACESFilmicToneMapping
+   // at exposure 1.12 plus its HemisphereLight(.9)+Ambient(.15)+Directional(1.6) rig)
+   // it washes out to a near-white sage blob, which is what "komisch wirkende Baeume"
+   // was actually seeing. Same isolated-sphere test under that exact rig confirmed a
+   // color needs to be roughly this dark before it still reads as green, not pale.
+   const geo=merge(gs),mat=new THREE.MeshStandardMaterial({color:[0x16240e,0x1c2e14,0x233a19][v],roughness:1});this.materials.push(mat);this.batch(geo,mat,buckets[v],'Broadleaf canopy '+v);
   }
-  this.batch(new THREE.CylinderGeometry(.15,.24,1,5).translate(0,.5,0),new THREE.MeshStandardMaterial({color:0x615444,roughness:1}),trunks,'Tree trunks');
-  this.batch(new THREE.CylinderGeometry(.12,.24,9,7).translate(0,4.5,0),new THREE.MeshStandardMaterial({color:0x7e7359,roughness:1}),palms,'Palm trunks');
-  this.batch(frondGeometry(),new THREE.MeshStandardMaterial({color:0x425c2d,roughness:1,side:THREE.DoubleSide}),palms,'Palm fronds');
+  this.batch(new THREE.CylinderGeometry(.15,.24,1,5).translate(0,.5,0),new THREE.MeshStandardMaterial({color:0x4a3d2e,roughness:1}),trunks,'Tree trunks');
+  this.batch(new THREE.CylinderGeometry(.12,.24,9,7).translate(0,4.5,0),new THREE.MeshStandardMaterial({color:0x5c4f3a,roughness:1}),palms,'Palm trunks');
+  this.batch(frondGeometry(),new THREE.MeshStandardMaterial({color:0x1e3018,roughness:1,side:THREE.DoubleSide}),palms,'Palm fronds');
   for(let i=0;i<Math.round(18000*this.vegetationDensity);i++){const x=rand()*15500-7750,z=rand()*15500-7750,d=this.shoreDistance(x,z);if(d>3&&d<42&&rand()>.35)rocks.push({x,z,y:this.getHeight(x,z)-1,sx:2+rand()*5,sy:1+rand()*2,sz:2+rand()*4,r:rand()*6.28});}
   this.batch(new THREE.DodecahedronGeometry(1,0),new THREE.MeshStandardMaterial({color:0x898879,roughness:1}),rocks,'Coastal limestone');
  }
@@ -142,8 +150,28 @@ class OkinawaWorld{
         addHouse(ax,az,w*.50,depth*.64,rot+.12,ay,2,false);
     }
   };
-  for(const c of [[-4800,-2600],[-4200,-3300],[-3800,200],[-3100,-1500],[-2500,-2800],[-2200,600]]){
-   for(let i=0;i<28;i++){
+  // Used to be six fixed hamlet centres, all packed into one ~3x2km pocket in the
+  // south-west corner of the 16x16km map -- most sorties/free-flight never crossed
+  // that one pocket, which read in play as "no buildings at all" even though the
+  // hamlets themselves looked fine up close. Scan a jittered grid across the whole
+  // island instead: each cell becomes a hamlet only if the centre itself is inland,
+  // clear of heavy forest/fields/the airfield and not on a steep slope or ridge --
+  // the same suitability a real Okinawan village favoured (flat land near the coast
+  // or a valley floor) -- and even then only about half the eligible cells are used,
+  // so coverage stays organic rather than a rigid lattice.
+  const hamletCenters=[];
+  for(let gx=-7400;gx<7400;gx+=1900)for(let gz=-7400;gz<7400;gz+=1900){
+   const jx=gx+950+(rand()-.5)*950,jz=gz+950+(rand()-.5)*950;
+   const jh=this.getHeight(jx,jz),jd=this.shoreDistance(jx,jz);
+   const [jforest,jfield,jair]=this.biome(jx,jz);
+   if(jd<180||jair>.15||jforest>.45||jfield>.5)continue;
+   const jslope=Math.hypot(this.getHeight(jx+40,jz)-jh,this.getHeight(jx,jz+40)-jh)/40;
+   if(jslope>.5||jh>260)continue;
+   if(rand()>.5)continue;
+   hamletCenters.push([jx,jz]);
+  }
+  for(const c of hamletCenters){
+   for(let i=0;i<24;i++){
     const angle=rand()*6.28,r=40+Math.sqrt(rand())*330,x=c[0]+Math.cos(angle)*r,z=c[1]+Math.sin(angle)*r;
     const y=this.getHeight(x,z),d=this.shoreDistance(x,z);if(d<100||this.biome(x,z)[0]>.3)continue;
     const style=rand()<.55?0:rand()<.63?1:2;
@@ -181,14 +209,14 @@ class OkinawaWorld{
    fragmentShader:`precision highp float;varying vec3 vWorld;varying vec3 vLocal;uniform float uTime;uniform float uWarm;uniform sampler2D uCoast;uniform vec3 uSun;
    float hash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}float noise(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(hash(i),hash(i+vec2(1,0)),f.x),mix(hash(i+vec2(0,1)),hash(i+1.),f.x),f.y);}
    void main(){vec2 p=vLocal.xz,uv=(p+8000.)/16000.;vec4 c=texture2D(uCoast,clamp(uv,0.,1.));float d=c.r*255.*256.+c.g*255.-32768.;if(any(lessThan(uv,vec2(0)))||any(greaterThan(uv,vec2(1))))d=-5000.;
-   float sea=max(0.,-d),patch=noise(p*.008)+noise(p*.023)*.4;float depth=smoothstep(80.,850.,sea+patch*95.);
-   vec3 shallow=mix(vec3(.13,.42,.36),vec3(.21,.55,.48),patch*.6);vec3 col=mix(shallow,vec3(.026,.16,.23),depth);
+   float sea=max(0.,-d),swell=noise(p*.008)+noise(p*.023)*.4;float depth=smoothstep(80.,850.,sea+swell*95.);
+   vec3 shallow=mix(vec3(.13,.42,.36),vec3(.21,.55,.48),swell*.6);vec3 col=mix(shallow,vec3(.026,.16,.23),depth);
    float w1=dot(p,vec2(.10,.061))-uTime*1.15,w2=dot(p,vec2(-.19,.13))+uTime*1.8,w3=dot(p,vec2(.43,.32))-uTime*2.7;
    vec3 n=normalize(vec3(cos(w1)*.07+cos(w2)*.05,1.,sin(w1)*.10+sin(w3)*.035));vec3 eye=normalize(cameraPosition-vWorld);float fres=pow(1.-max(0.,dot(n,eye)),4.);
    vec3 sky=mix(vec3(.57,.73,.77),vec3(.83,.75,.58),uWarm*.65);col=mix(col,sky,fres*.64);
    float shine=pow(max(0.,dot(reflect(-uSun,n),eye)),180.);col+=vec3(1.,.91,.72)*shine*.65;
    float edge=(1.-smoothstep(8.,46.,sea))*smoothstep(0.,4.,sea);float surge=pow(.5+.5*sin(sea*.26-uTime*1.7+noise(p*.026)*3.),6.);
-   float reef=exp(-pow((sea-170.-noise(p*.0018)*105.)/25.,2.))*.33;float foam=(edge*surge+reef*pow(.5+.5*sin(w2*.32),5.))*clamp(patch,0.,1.);
+   float reef=exp(-pow((sea-170.-noise(p*.0018)*105.)/25.,2.))*.33;float foam=(edge*surge+reef*pow(.5+.5*sin(w2*.32),5.))*clamp(swell,0.,1.);
    col=mix(col,vec3(.78,.84,.76),foam);float fog=1.-exp(-length(cameraPosition-vWorld)*.000062);col=mix(col,sky,fog*.65);gl_FragColor=vec4(col,1.);
    #include <tonemapping_fragment>
    #include <encodings_fragment>

@@ -23,3 +23,6 @@ jobs:
 
       - name: Run terrain-system regression tests
         run: npm run test:terrain
+
+      - name: Run okinawa regression tests
+        run: npm run test:okinawa

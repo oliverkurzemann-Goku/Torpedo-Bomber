@@ -4,9 +4,10 @@
   "private": true,
   "description": "Standalone WW2 flight-sim HTML games (Three.js r128, no build step) plus the terrain-system real-DEM/OSM pipeline behind remagen-mission.html.",
   "scripts": {
-    "test": "npm run test:syntax && npm run test:terrain",
+    "test": "npm run test:syntax && npm run test:terrain && npm run test:okinawa",
     "test:syntax": "node scripts/check-syntax.js",
-    "test:terrain": "node scripts/run-terrain-tests.js"
+    "test:terrain": "node scripts/run-terrain-tests.js",
+    "test:okinawa": "node scripts/run-okinawa-tests.js"
   },
   "repository": {
     "type": "git",
@@ -19,6 +20,7 @@
   },
   "homepage": "https://github.com/oliverkurzemann-Goku/Torpedo-Bomber#readme",
   "devDependencies": {
+    "@napi-rs/canvas": "^1.0.9",
     "fflate": "^0.8.3",
     "playwright": "^1.63.0",
     "three": "0.128.0"

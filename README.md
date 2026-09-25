@@ -1,16 +1,22 @@
 # Torpedo-Bomber
 
-Four standalone WW2 flight-sim browser games, plus the real-terrain data pipeline behind
-one of them. No build step — Three.js r128 loaded from a CDN, everything runs directly in
-the browser. Deployed via GitHub Pages, target device is iPad/iPhone Safari.
+Standalone WW2 flight-sim browser games, plus the real-terrain data pipeline behind two of
+them. No build step — Three.js r128 loaded from a CDN, everything runs directly in the
+browser. Deployed via GitHub Pages, target device is iPad/iPhone Safari.
 
 | File | Game |
 |---|---|
-| `index.html` | Landing page — pick a game |
-| `torpedo-carrier.html` | Torpedo Squadron — Pacific, carrier operations |
-| `thunderbolt-europe.html` | Thunderbolt Squadron — Europe, ground attack |
-| `remagen-mission.html` | Remagen 1945 — real terrain (Copernicus DEM + Overture Maps) |
+| `index.html` | Landing page — the two current campaigns |
+| `torpedo-carrier.html` | Torpedo Squadron — Pacific, carrier operations + the mapped Okinawa coast |
+| `remagen-mission.html` | Thunderbolt Squadron — Europe, real terrain (Copernicus DEM + Overture Maps) |
+| `thunderbolt-europe.html` | Classic Europe (synthetic terrain) — superseded by `remagen-mission.html`, kept reachable by direct URL |
+| `torpedo-carrier-open-sea.html` | Classic Pacific (pre-Okinawa) — kept reachable by direct URL |
+| `okinawa-preview.html` | Standalone viewer for the `okinawa/` coastal module, full vegetation density |
 | `model-check.html` | Internal tool: calibrate a new aircraft model's alignment/scale |
+
+`okinawa/` holds the Okinawa coastal terrain module (`data.js`, `world.js`, own
+`tests/*.cjs`) shared between `torpedo-carrier.html` and `okinawa-preview.html`; see
+`okinawa/README.md` for its scope, coordinate system and data provenance.
 
 Current build numbers are shown in-game (bottom of the HUD) and tracked in `CLAUDE.md`'s
 "Stand bei Übergabe" line, which is the source of truth — this README doesn't repeat them
@@ -32,9 +38,10 @@ python3 -m http.server 8000
 
 ```bash
 npm install
-npm test          # syntax-check every game HTML file + run terrain-system regression tests
+npm test          # syntax-check every game HTML file + terrain-system + okinawa regression tests
 npm run test:syntax    # just the syntax check
 npm run test:terrain   # just terrain-system/tests/*.js
+npm run test:okinawa   # just okinawa/tests/*.cjs
 ```
 
 Both run in plain Node, no browser needed, and both run in CI on every push

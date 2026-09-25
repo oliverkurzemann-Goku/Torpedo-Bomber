@@ -5,7 +5,80 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 131 · Thunderbolt Squadron BUILD 131 · reales Remagen-Gelände 21**
+Stand bei Übergabe: **Torpedo Squadron BUILD 132 · Thunderbolt Squadron BUILD 131 · reales Remagen-Gelände 21**
+
+**Build 132 — Okinawa-Terrain/Häuser (25.09.2026):** Nutzer, nach eigener Bestandsaufnahme
+des Repos: „Bin mit den Details in Okinawa sehr unzufrieden. Keine Häuser, komisch wirkende
+Bäume etc." Vor jeder Änderung erst mit echtem Three.js r128 UND dem tatsächlichen Licht-/
+Tonemapping-Rig aus `torpedo-carrier.html`s `init()` gerendert (`ACESFilmicToneMapping`,
+Exposure 1,12, `HemisphereLight(.9)+Ambient(.15)+Directional(1.6)`) — nicht mit eigenen,
+geratenen Lichtwerten, sonst hätte das nur den eigenen Testaufbau beurteilt (Lektion 3).
+Drei echte, einzeln nachgewiesene Ursachen in `okinawa/world.js`, keine davon vorher vermutet:
+
+1. **Bäume:** Die Kronenfarbe (`0x344c25`/`0x425b2c`/`0x4f6531`) ist auf dem Papier ein
+   plausibles dunkles Grün, rendert unter dem echten Licht-Rig aber zu einem fast weißen
+   Salbeigrün überbelichtet — mit einer Reihe isolierter Testkugeln in genau diesem Rig
+   nachgemessen: erst deutlich dunklere Werte (`0x16240e`/`0x1c2e14`/`0x233a19`) lesen sich
+   noch als Grün statt als heller Fleck. Zusätzlich war der Stamm mit Radius-Faktor `s*.15`
+   bei Höhe `s*.8` ein Verhältnis bis 22:1 — ein Zahnstocher unter einem Wattebausch; auf
+   `s*.27`/`s*.72` verdickt. Palmwedel/-stamm hatten dieselbe Farb-Überbelichtung und wurden
+   ebenfalls abgedunkelt.
+2. **Häuser:** `buildSettlements()` hatte sechs FEST codierte Hamlet-Zentren, alle in einer
+   einzigen ~3×2-km-Tasche in der Südwest-Ecke der 16×16-km-Karte. Die 100+ Häuser waren also
+   nie „fehlend" — nur außerhalb dieser einen Tasche gab es auf 90 %+ der Karte keine einzige,
+   und genau dort liegen die Missionsziele (Frachter/Zerstörer vor der Küste, „head east from
+   the bow"). Ersetzt durch einen gerasterten, gejitterten Scan über die ganze Karte: jede
+   Zelle wird nur dann ein Hamlet, wenn ihr Zentrum selbst landeinwärts, frei von dichtem
+   Wald/Feld/Flugplatz und nicht auf steiler Hangneigung liegt — dieselbe Eignung, die auch
+   ein echtes Dorf gesucht hätte — und selbst dann nur zu ~50 % der geeigneten Zellen, damit
+   es organisch bleibt statt einem Gitter. Verifiziert mit `okinawa/tests/geometry.cjs`
+   (Häuser 103→234 bei voller Dichte) und einem echten Playwright-Render: Dach-Positionen
+   jetzt von X −4848 bis +7529, Z −6595 bis +7545 (vorher komplett innerhalb von X −4800…
+   −2200, Z −3300…600) — 208 von 234 Häusern liegen jetzt außerhalb der alten Tasche.
+   Zwei Nahaufnahmen aus vorher garantiert leeren Kartenteilen (Nordost-Küste, eine Bucht im
+   Osten) zeigen sichtbar neue Weiler.
+3. **Wassershader-Bug, unabhängiger Fund:** `buildWater()`s Fragment-Shader benutzte `patch`
+   als Variablennamen — ein reserviertes Wort in GLSL ES 3.00/WebGL2. Programm kompilierte
+   nicht (`gl.getError()`≠0, Konsole: „Illegal use of reserved word"). Betraf nur den
+   eigenständigen `okinawa-preview.html`-Viewer — `torpedo-carrier.html` blendet
+   `okinawaWorld.water` ohnehin aus und nutzt sein eigenes Wasser — dort wäre die See aber
+   kaputt gewesen. Umbenannt zu `swell`, drei Stellen. Nach dem Fix `gl.getError()===0`,
+   keine Shader-Konsolenfehler mehr, im Render eine korrekt texturierte, animierte See.
+
+**Nachgewiesen, alle drei Punkte:** Kompletter `okinawa/tests/*.cjs`-Satz (8 Dateien) läuft
+weiterhin fehlerfrei durch, inklusive `game-integration.cjs`s `objectCount<30000`-Budget
+(23814 statt 23254 — Marge bleibt groß) und aller Kollisions-/Schatten-/Missions-Prüfungen,
+die auf feste Testkoordinaten gehen (unberührt, da `buildSettlements()` nie die Terrainhöhe
+anfasst). Zusätzlich echte Playwright-Renders mit dem faithful nachgebauten Licht-/
+Tonemapping-Rig aus `init()` (nicht nur Zahlen) vor und nach dem Fix verglichen.
+
+**Zwei kleinere, dabei gefundene und mitbehobene Lücken:**
+- `okinawa/tests/*.cjs` (8 Dateien) liefen bisher nur, wenn man `@napi-rs/canvas` von Hand
+  installierte und jede Datei einzeln aufrief — genau die Lücke, die `terrain-system/tests/`
+  vor der letzten Housekeeping-Runde hatte. `@napi-rs/canvas` jetzt als `devDependency`,
+  neues `scripts/run-okinawa-tests.js` (`npm run test:okinawa`, Teil von `npm test` und
+  `ci.yml`) — läuft ohne Sonderbehandlung, da diese Tests `three`/`@napi-rs/canvas` normal
+  per `require()` auflösen, keine Umgebungsvariablen wie bei `terrain-system/tests/` nötig.
+- `ASSET-CREDITS.md` deckte `me262.glb` und `treepack.glb` nicht ab, obwohl beide aktiv im
+  Spiel geladen werden (per `grep` geprüft, nicht angenommen) — beide tragen laut ihrem
+  eigenen `asset.extras` CC-BY-4.0-Attribution (KojfDiscord bzw. 99.Miles), jetzt mit der
+  Datei ergänzt, gleiches Format wie die bestehenden Einträge.
+
+**Offen:** Nicht auf dem echten iPad geflogen. Die Baumform selbst (4 überlappende Kugeln auf
+einem Zylinder) ist unverändert — nach der Farbkorrektur liest sie sich als plausibler
+Laubbaum-Klumpen, aber eine grundlegend andere Geometrie wäre ein größerer, hier nicht
+angegangener Schritt. Die Hamlet-Verteilung ist jetzt terrain-gesteuert, aber weiterhin ohne
+Bezug zu echten Overture-Gebäudedaten (README sagt das bereits ausdrücklich: „illustrative
+rural hamlets, not today's Overture buildings"). `index.html`s Direktlink auf
+`torpedo-carrier.html` wurde auf `?v=132` gehoben; `remagen-mission.html` ist von dieser
+Runde nicht betroffen und bleibt bei `?v=131`.
+
+Code: `okinawa/world.js` (`buildVegetation`, `buildSettlements`, `buildWater`), `torpedo-
+carrier.html`/`okinawa-preview.html` (Cache-Bust-Versionen der `okinawa/world.js`-Tags),
+`scripts/run-okinawa-tests.js` (neu), `package.json`, `.github/workflows/ci.yml`,
+`ASSET-CREDITS.md`, `README.md`.
+
+---
 
 **Build 131 (25.09.2026):** Pacific-Verfolgerkamera jetzt 6 m höher/24 m hinter
 Flugzeug statt 14 m/26 m, Blickziel auf Flugzeughöhe statt darunter. Der neue Speicher-
