@@ -283,7 +283,7 @@
   <div id="flash"></div>
   <div id="ltn" style="position:fixed;inset:0;background:#e6ecff;opacity:0;pointer-events:none;z-index:40;"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 129</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 131</div>
 
   <!-- Optical landing aid -->
   <div id="lso">
@@ -437,8 +437,11 @@ let MODEL_YAW = -Math.PI/2;
 let MODEL_SCALE = 1;
 let COCKPIT_EYE = [0, 0.70, -1.5];
 let COCKPIT_AIM = [0, 0.15, -60];
-let chaseH = parseFloat(localStorage.getItem('chaseH'));
-if(isNaN(chaseH)) chaseH = 14;      // chase camera height, tuned live via LOOK ▲/▼
+// New lower chase view; ignore the old 14–40 m setting stored by earlier builds.
+let chaseH=6;
+try{const saved=parseFloat(localStorage.getItem('tc_chaseHeight_v2'));
+  if(Number.isFinite(saved))chaseH=Math.max(3,Math.min(16,saved));
+}catch(_){}
 let planeBody, gltfRoot, propNode, planeModelLoaded=false;
 let DIFF = localStorage.getItem('tc_diff') || 'veteran';
 // Rookie makes the sortie survivable while you learn the deck; Ace is the old behaviour.
@@ -4322,7 +4325,7 @@ function loadPlaneModel(){
       }
       window.__eyeDbg='EYE '+COCKPIT_EYE.map(v=>v.toFixed(2)).join('/');
       const btEl=document.getElementById('buildTag');
-      if(btEl) btEl.textContent='BUILD 129 · '+window.__eyeDbg;
+      if(btEl) btEl.textContent='BUILD 131 · '+window.__eyeDbg;
       let seat=null;
       model.traverse(function(o){
         if(!o.isMesh||!o.material) return;
@@ -5274,10 +5277,10 @@ function updateCamera(dt){
   }
   camera.up.set(0,1,0);
   const want=P.pos.clone()
-    .addScaledVector(nd,-26)
+    .addScaledVector(nd,-24)
     .add(new THREE.Vector3(0,chaseH,0));  // chase height (LOOK buttons)
   camera.position.lerp(want, Math.min(1,5*dt));
-  camera.lookAt(P.pos.clone().addScaledVector(nd,30).add(new THREE.Vector3(0,-1.5,0)));
+  camera.lookAt(P.pos.clone().addScaledVector(nd,30));
   applyShake();
 }
 function applyShake(){
@@ -5612,14 +5615,14 @@ function setupUIButtons(){
   if(dbgT2) dbgT2.onclick=()=>{
     dbgOn=!dbgOn; localStorage.setItem('dbgOn',dbgOn?'1':'0');
     const db=document.getElementById('dbgBox'); if(db) db.textContent=dbgOn?'✓':'';
-    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 129'; }
+    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 131'; }
   };
   const lu=document.getElementById('lookUp'), ld=document.getElementById('lookDn');
   let _lookT=0;
   function look(delta,e){ e.preventDefault(); e.stopPropagation();
     const now=performance.now(); if(now-_lookT<140) return; _lookT=now;
-    chaseH=Math.max(3,Math.min(40,chaseH+delta*40));   // ±2 m per tap
-    localStorage.setItem('chaseH',chaseH.toFixed(1)); }
+    chaseH=Math.max(3,Math.min(16,chaseH+delta*20));   // ±1 m per tap
+    try{localStorage.setItem('tc_chaseHeight_v2',chaseH.toFixed(1));}catch(_){} }
   [ [lu,0.05],[ld,-0.05] ].forEach(([el,d])=>{ if(!el) return;
     el.addEventListener('pointerdown',e=>look(d,e));
     el.addEventListener('touchend',e=>{ e.preventDefault(); },{passive:false});   // block dbl-tap zoom

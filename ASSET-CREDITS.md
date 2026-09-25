@@ -73,10 +73,18 @@ Remagen ferry; the original file remains unchanged.
   original Jumo 004 recording. `me262-engine-loop.wav` is a 1.6-second mono PCM loop derived from the
   excerpt around 1:15–1:17 of that video. Build 129 applies a circular 240 Hz high-pass,
   reduces short level surges and crossfades the seam; PCM avoids codec padding during
-  repetition. It replaces the synthetic jet tone when decoding succeeds. The older
-  `me262-engine.mp3` remains an unused earlier edit.
+  repetition. Both this WAV and `me262-engine.mp3` are unused archival assets as of Build 131.
 
 Attribution for the original repository GLBs is transcribed from each GLB's
 `asset.extras`. Build 21 attribution and licenses were checked against the linked primary
 model pages; public mirrors supplied the two downloadable source archives. This record does
 not establish rights beyond those granted by the named uploaders.
+
+## Build 131 jet sound
+
+`audio/jet-engine.js` is original procedural sound design: filtered combustion noise,
+exhaust air rush and quiet sine turbine partials, generated in Web Audio. It contains
+no recording or third-party samples and is not presented as an authentic Jumo 004
+recording. A 23.75-second equal-power noise loop has constant playback speed;
+throttle changes the spectrum and level with gradual spool response. The old
+airshow recording is no longer loaded by the game.

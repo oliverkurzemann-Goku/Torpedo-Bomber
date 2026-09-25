@@ -245,7 +245,7 @@
   <div style="width:100%;height:4px;background:repeating-linear-gradient(45deg,#ffd400,#ffd400 8px,#111 8px,#111 16px);"></div>
   <span id="testVersionBannerText" style="background:#111;color:#ffd400;font-family:monospace;font-weight:800;font-size:11px;letter-spacing:.5px;padding:3px 10px;border:1px solid #ffd400;border-top:none;border-radius:0 0 6px 6px;"></span>
 </div>
-<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 130';</script>
+<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 131';</script>
 <!-- ===== END TEMP TEST-ONLY VERSION BANNER ===== -->
 <div id="app"></div>
 
@@ -272,7 +272,7 @@
   <div id="flash"></div>
   <div id="gunsight"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 130 · REAL RHINE</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 131 · REAL RHINE</div>
 
   <div id="apr">
     <div id="aprCall"></div>
@@ -400,6 +400,7 @@
 <script src="terrain-system/WorldVehicles.js?v=remagen-21"></script>
 <script src="terrain-system/LivingWorld.js?v=remagen-21"></script>
 <script src="campaign.js?v=1"></script>
+<script src="audio/jet-engine.js?v=131"></script>
 <script src="sortie-systems.js?v=129"></script>
 <script src="operation-plans.js?v=129"></script>
 <script>
@@ -625,7 +626,7 @@ async function loadRealWorld(){
 
   if(OSMManager.BUILD!==21||HistoricalObjectManager.BUILD!==21||LivingWorld.BUILD!==21||WorldVehicles.BUILD!==21) throw new Error('Terrain version mismatch. Reload Remagen.');
   document.getElementById('testVersionBannerText').textContent=
-    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 130 · MODULE 21';
+    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 131 · MODULE 21';
   heightProvider=new DEMHeightProvider(RTILE,'terrain-system/real/data/dem/');
   terrain=new TerrainManager(scene,RTILE,heightProvider);
   osmMgr=new OSMManager(scene,RTILE,terrain,'terrain-system/real/data/osm/');
@@ -3719,7 +3720,7 @@ function updateApproach(){
 // ============================================================
 //  AUDIO
 // ============================================================
-let jetRecording=null, jetRecordingGain=null;
+let jetEngine=null;
 function initAudio(){
   if(actx){ if(actx.state==='suspended') actx.resume(); return; }
   try{ const AC2=window.AudioContext||window.webkitAudioContext; actx=new AC2();
@@ -3745,16 +3746,7 @@ function initAudio(){
   const ng=actx.createGain(); ng.gain.value=0; noise.connect(nbp); nbp.connect(ng); ng.connect(master);
   o1.start(); o2.start(); lfo.start(); noise.start();
   eng={master,eg,lp,o1,o2,lfo,lfoG,nbp,ng,freq:60};
-  // Recorded flyby from a Me 262 replica (modern J85 engines), CC BY 3.0; see credits.
-  // Load after the user's Start Engine gesture. Keep the synthesizer as an offline fallback.
-  fetch('me262-engine-loop.wav?v=129').then(r=>{if(!r.ok)throw Error('jet recording unavailable');return r.arrayBuffer();})
-    .then(b=>actx.decodeAudioData(b)).then(buffer=>{
-      if(!eng||!actx)return;
-      const source=actx.createBufferSource(); source.buffer=buffer; source.loop=true;
-      const gain=actx.createGain(); gain.gain.value=0;
-      source.connect(gain); gain.connect(master); source.start();
-      jetRecording=source; jetRecordingGain=gain;
-    }).catch(e=>console.warn('Jet recording fallback:',e));
+  jetEngine=JetEngine.create(actx,master);
 }
 function out(){ return eng?eng.master:(actx?actx.destination:null); }
 function updateAudio(dt){
@@ -3762,26 +3754,14 @@ function updateAudio(dt){
   const flying=(state===ST.FLIGHT)&&P.alive;
   const rpm=flying?(0.30+P.throttle*0.70):0;
   const ct=actx.currentTime;
-  // The jet uses the recorded loop when it has decoded. The older oscillators remain as a
-  // fallback for devices that cannot fetch or decode MP3, and for the propeller aircraft.
-  if(JET_KINDS.includes(P.ac)){
-    const tf=1300+rpm*1000+(P.spd/Math.max(1,MAX_SPD))*180;
-    eng.freq+=(tf-eng.freq)*Math.min(1,4*dt);
-    eng.o1.frequency.setTargetAtTime(eng.freq,ct,0.10);
-    eng.o2.frequency.setTargetAtTime(eng.freq*1.0025,ct,0.10);
-    eng.lp.frequency.setTargetAtTime(5000+rpm*1500,ct,0.15);
-    const vol=flying?(0.05+rpm*0.10):0;
-    if(jetRecordingGain){
-      jetRecording.playbackRate.setTargetAtTime(0.78+rpm*0.27,ct,0.16);
-      jetRecordingGain.gain.setTargetAtTime(flying?0.42+rpm*0.20:0,ct,0.18);
-    }
-    eng.eg.gain.setTargetAtTime(jetRecordingGain?0:vol,ct,0.18);
-    eng.lfoG.gain.setTargetAtTime(0,ct,0.2);
-    eng.nbp.frequency.setTargetAtTime(1900+rpm*1300,ct,0.15);
-    eng.nbp.Q.setTargetAtTime(0.45,ct,0.2);
-    eng.ng.gain.setTargetAtTime(jetRecordingGain?0:vol*0.09,ct,0.15);
+  const isJet=JET_KINDS.includes(P.ac);
+  jetEngine.update(dt,P.throttle,flying&&isJet,Math.max(0,(55-P.hull)/55));
+  if(isJet){
+    // Keep every piston-engine source and its pulse modulator silent.
+    eng.eg.gain.setTargetAtTime(0,ct,.08);
+    eng.ng.gain.setTargetAtTime(0,ct,.08);
+    eng.lfoG.gain.setTargetAtTime(0,ct,.08);
   } else {
-    if(jetRecordingGain) jetRecordingGain.gain.setTargetAtTime(0,ct,0.12);
     eng.nbp.Q.setTargetAtTime(0.7,ct,0.15);
     // the Jug's R-2800 sits lower and rougher than the 109's inline
     const base=(P.ac==='p47')?42:52;
@@ -3799,7 +3779,7 @@ function updateAudio(dt){
   }
   // damaged engine misfiring under load - same hull<55 threshold the oil-on-canopy visual uses
   const dmgF=Math.max(0,(55-P.hull)/55);
-  if(flying && dmgF>0 && Math.random()<dmgF*dt*1.2) sfxSputter();
+  if(flying && !isJet && dmgF>0 && Math.random()<dmgF*dt*1.2) sfxSputter();
 }
 function nburst(dur,type,freq,q,peak,delay,curve){
   if(!actx) return; const ct=actx.currentTime, o2=out();
@@ -4434,7 +4414,7 @@ function animate(){
     updateApproach();
     hudT-=raw; if(hudT<=0){ hudT=0.1; updateHUD(); }
     mmT-=raw; if(mmT<=0){ mmT=0.2; drawMinimap(); }
-    updateRadio(raw); updateAudio(raw);
+    updateRadio(raw);
     // a readable panel instead of squinting at nine-pixel type
     {
       const box=document.getElementById('mdlBox'), tb2=document.getElementById('turnBtn');
@@ -4457,6 +4437,8 @@ function animate(){
     camera.lookAt(AF_X,AF_Y+40,AF_Z);
     updateWeatherFx(raw);
   }
+  // Menu/briefing transitions also fade the engine; pause uses the master gain above.
+  updateAudio(raw);
   renderer.render(scene,camera);
 }
 function reportStartupError(err){

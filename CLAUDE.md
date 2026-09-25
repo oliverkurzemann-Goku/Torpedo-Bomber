@@ -5,7 +5,21 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 129 · Thunderbolt Squadron BUILD 130 · reales Remagen-Gelände 21**
+Stand bei Übergabe: **Torpedo Squadron BUILD 131 · Thunderbolt Squadron BUILD 131 · reales Remagen-Gelände 21**
+
+**Build 131 (25.09.2026):** Pacific-Verfolgerkamera jetzt 6 m höher/24 m hinter
+Flugzeug statt 14 m/26 m, Blickziel auf Flugzeughöhe statt darunter. Der neue Speicher-
+schlüssel `tc_chaseHeight_v2` ignoriert alte, bis 40 m hohe Einstellungen; LOOK verstellt
+in 1-m-Schritten innerhalb 3–16 m. Projektion bei 193 kt mit tatsächlicher Kamera-
+funktion geprüft (Flugzeug und Horizont sichtbar); kein behaupteter Safari-Bildtest.
+Me 262 nutzt nun `audio/jet-engine.js`: eigene kontinuierliche Web-Audio-Synthese mit
+breitem Verbrennungs-/Ausströmrauschen, leisem Sinus-Turbinenton und geglättetem
+Schubhochlauf. Kein Vorbeiflug-Sample, Doppler-Pitch oder Kolbenmotor-Sägezahn;
+auch bei Schaden keine Kolbenmotor-Fehlzündung. Alte WAV/MP3 bleiben nur im Archiv.
+Ein 47-s-PCM-Test rendert die tatsächlich im Spiel verwendeten Audiofunktionen über
+web-audio-engine: Leerlauf/Vollschub, langer gleichmäßiger Betrieb über die Loopgrenze,
+Motoraus, Menüwechsel und Flugzeugwechsel. Pegelspitze 0,56, stationäre Viertelsekunden-Pegelschwankung
+unter 0,7 dB; keine Übersteuerung im geprüften Triebwerkssignal. Hörabnahme auf iPad offen.
 
 **Build 130 (25.09.2026):** Der erste `applyWeather()`-Aufruf traf auf den
 standardmäßig leeren `THREE.Scene.background` und brach vor `loadRealWorld()` ab.
