@@ -35,9 +35,9 @@
   .standfirst{margin:14px auto 0;max-width:44ch;font-size:13px;line-height:1.75;
     color:rgba(202,191,156,.72);}
 
-  /* ---------- the two chits ---------- */
+  /* ---------- game choices ---------- */
   .board{width:100%;max-width:900px;display:grid;gap:clamp(16px,2.6vw,26px);
-    grid-template-columns:repeat(auto-fit,minmax(300px,1fr));}
+    grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));}
   .chit{
     position:relative;display:flex;flex-direction:column;overflow:hidden;
     background:linear-gradient(180deg,rgba(43,48,34,.96),rgba(20,23,15,.98));
@@ -47,6 +47,7 @@
     opacity:0;transform:translateY(14px);
     animation:rise .5s cubic-bezier(.2,.7,.3,1) forwards;}
   .chit:nth-child(2){animation-delay:.09s;}
+  .chit:nth-child(3){animation-delay:.18s;}
   @keyframes rise{to{opacity:1;transform:none;}}
   .chit:active{transform:translateY(1px) scale(.995);}
   .chit:focus-visible{outline:2px solid var(--amber);outline-offset:3px;}
@@ -92,8 +93,8 @@
   <div class="eyebrow">Operations Board</div>
   <h1>Squadron Select</h1>
   <p class="standfirst">
-    Two campaigns. Fly from a Pacific carrier to Okinawa, or from Beaufort Field
-    to the Rhine crossing at Remagen.
+    Choose the Pacific campaign, the real Rhine terrain, or the classic
+    Thunderbolt landscape with Bridge Buster.
   </p>
 </header>
 
@@ -141,6 +142,26 @@
     </div>
   </a>
 
+  <a class="chit alt" href="thunderbolt-europe.html">
+    <div class="band europe" aria-hidden="true"></div>
+    <div class="chitBody">
+      <div class="no">Classic map</div>
+      <div class="name">Thunderbolt Squadron</div>
+      <div class="role">The great landscape</div>
+      <p class="blurb">
+        Return to the original 64 km landscape of hills, fields and a river valley.
+        Select Bridge Buster as Sortie 3 from the mission menu.
+      </p>
+      <dl>
+        <dt>Terrain</dt><dd>Original generated landscape</dd>
+        <dt>Aircraft</dt><dd>P-47D &middot; Bf&nbsp;109 &middot; Fw&nbsp;190 &middot; Me&nbsp;262</dd>
+        <dt>Mission</dt><dd>Bridge Buster &middot; Sortie 3</dd>
+        <dt>Take off from</dt><dd>Beaufort Field</dd>
+      </dl>
+      <span class="go">Fly the Classic Map</span>
+    </div>
+  </a>
+
 </main>
 
 <section>
@@ -164,7 +185,7 @@
 </section>
 
 <footer>
-  Both campaigns run in the browser — nothing to install. Best on iPad in landscape.<br>
+  All three choices run in the browser — nothing to install. Best on iPad in landscape.<br>
   <b>Touch:</b> left stick pitch and roll &middot; right bar throttle &middot; red button drops ordnance.
   <b>Keyboard:</b> <kbd>&larr;&uarr;&darr;&rarr;</kbd> fly &middot; <kbd>W</kbd>/<kbd>S</kbd> throttle
   &middot; <kbd>Space</kbd> drop.<br>

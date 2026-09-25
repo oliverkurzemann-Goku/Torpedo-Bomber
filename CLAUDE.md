@@ -7,6 +7,12 @@ ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wie
 
 Stand bei Übergabe: **Torpedo Squadron BUILD 129 · Thunderbolt Squadron BUILD 129 · reales Remagen-Gelände 21**
 
+**Classic-Landschaft wieder auswählbar (25.09.2026, EU BUILD 60):** Auf Nutzerwunsch
+ist `thunderbolt-europe.html` wieder ein eigener Einstieg in `index.html`. Die sofortige
+Weiterleitung nach Remagen wurde entfernt; Sortie 3 heißt dort weiterhin „Bridge Buster“
+und nutzt die synthetische 64-km-Landschaft. Die reale Rhein-Kampagne bleibt als eigener
+Eintrag erhalten. Der ältere Absatz zu BUILD 126 beschreibt den damaligen Zustand.
+
 **Build 129 (25.09.2026):** Neuer 1,6-s-PCM-Loop `me262-engine-loop.wav`: zirkulärer
 Hochpass gegen den dumpfen Impuls, Pegelspitzen begrenzt, überblendeter Übergang ohne
 MP3-Padding. Der alte MP3 bleibt nur als früheres Asset im Repo. Thunderbolt-MG-Treffer
