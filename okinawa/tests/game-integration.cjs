@@ -54,7 +54,7 @@ vm.runInContext(pick('resolveGroundAndDeck','trap'),game);
  assert.match(html,/title:"Okinawa", sub:"Okinawa Coast · Free Flight", free:true, okinawa:true/);
  const missions=vm.runInNewContext(html.slice(html.indexOf('const MISSIONS = ['),html.indexOf('\n\nasync function prepareOkinawa'))+'; MISSIONS');
  assert.equal(missions.at(-1).free,true,'free flight stays outside combat campaign');
- assert.equal(missions.at(-2).sub,'Coastal Screen','final campaign sortie takes place at Okinawa');
+ assert.equal(missions.at(-2).shoreStrike,true,'final campaign sortie combines sea and land attack');
  assert.equal(missions.at(-3).sub,'Okinawa Recon');
  for(const m of missions.filter(m=>!m.free))for(const t of m.targets){
   const x=t.pos[0]-10000,z=t.pos[2];

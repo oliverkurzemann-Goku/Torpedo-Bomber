@@ -13,8 +13,8 @@ assert.equal(openChapter().highest('europe'),13,'old synthetic sorties do not ov
 assert.match(html('index.html'),/href="remagen-mission\.html\?campaign=1"/,'single Europe game opens real terrain');
 assert.match(html('thunderbolt-europe.html'),/location\.replace\('remagen-mission\.html\?'/,'old Europe bookmarks redirect');
 assert.match(html('remagen-mission.html'),/SquadronCampaign\.record\('europeRhine',mission\)/);
-assert.match(html('remagen-mission.html'),/const airLeft=\(\(m\.enemyAir\|\|m\.bombers\)\? enemyAir\.filter\(e=>e\.alive\)\.length : 0\)/,
- 'landing cannot complete bomber sorties while bombers remain');
+assert.match(html('remagen-mission.html'),/const airLeft=enemyAir.filter\(e=>e.alive\).length/,
+ 'landing counts every live aircraft, including reinforcements');
 assert.match(html('torpedo-carrier.html'),/try\{await prepareOkinawa\(\);startMission\(idx\);\}/,'every Pacific sortie loads mapped coast');
 const carrier=html('torpedo-carrier.html');
 const waveStart=carrier.indexOf('function checkObjectiveCleared(){');
@@ -24,7 +24,7 @@ const sortie=carrierMissions[12];
 assert.equal(sortie.reinforcement.targets.length,2,'Okinawa reconnaissance has a second convoy');
 const spawned=[],jets=[],pilot={rtb:false};let points=0;
 const stage=vm.createContext({MISSIONS:carrierMissions,mission:12,reinforcementsLaunched:false,
- ships:[{def:sortie.targets[0],alive:false}],P:pilot,
+ ships:[{def:sortie.targets[0],alive:false}],P:pilot,isDefend:()=>false,shoreTargets:[],pacificOps:null,
  spawnShip:def=>{spawned.push(def);stage.ships.push({def,alive:true});},
  spawnZero:i=>jets.push(i),flash(){},radioSay(){},addScore:n=>{points+=n;}});
 vm.runInContext(carrier.slice(waveStart,waveEnd),stage);

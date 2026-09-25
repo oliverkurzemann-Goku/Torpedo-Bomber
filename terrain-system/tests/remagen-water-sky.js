@@ -2,6 +2,7 @@
 const fs=require('fs'),path=require('path'),vm=require('vm'),assert=require('assert/strict');
 const root=path.resolve(__dirname,'../..');global.THREE=require(process.env.THREE_R128||'three');
 vm.runInThisContext(fs.readFileSync(path.join(root,'terrain-system/OSMManager.js'),'utf8'));
+vm.runInThisContext(fs.readFileSync(path.join(root,'sortie-systems.js'),'utf8'));
 const html=fs.readFileSync(path.join(root,'remagen-mission.html'),'utf8');
 const start=html.indexOf('function makeSoftSprite()'),end=html.indexOf('const CLOUD_SPAN',start);
 vm.runInThisContext(html.slice(start,end));
@@ -27,7 +28,7 @@ assert(waterDelta/waterEdges<.5,'water texture contains high-frequency screen pa
 // so its grey lines appeared glued to the screen. Execute the actual weather
 // functions and prove a rain frame changes the drop positions.
 const weatherStart=html.indexOf('let rainMesh=null'),weatherEnd=html.indexOf('//  CONTROL UI',weatherStart);
-const weatherContext=vm.createContext({THREE,scene:new THREE.Scene(),weather:'rain',
+const weatherContext=vm.createContext({THREE,FlightOps,wxTime:0,baseWind:2,clouds:[],state:0,ST:{FLIGHT:1},scene:new THREE.Scene(),weather:'rain',
   P:{pos:new THREE.Vector3(100,500,200),spd:150,heading:.8},windZ:2,
   document:{getElementById(){return {style:{opacity:'0'}};}},sfxBoom(){},setTimeout(){}});
 vm.runInContext(html.slice(weatherStart,weatherEnd)+'\nglobalThis.buildRain=buildRain;globalThis.updateWeatherFx=updateWeatherFx;globalThis.getRain=()=>rainMesh;',weatherContext);

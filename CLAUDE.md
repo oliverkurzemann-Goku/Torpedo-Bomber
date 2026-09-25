@@ -5,7 +5,32 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 128 · Thunderbolt Squadron BUILD 128 · reales Remagen-Gelände 21**
+Stand bei Übergabe: **Torpedo Squadron BUILD 129 · Thunderbolt Squadron BUILD 129 · reales Remagen-Gelände 21**
+
+**Build 129 (25.09.2026):** Neuer 1,6-s-PCM-Loop `me262-engine-loop.wav`: zirkulärer
+Hochpass gegen den dumpfen Impuls, Pegelspitzen begrenzt, überblendeter Übergang ohne
+MP3-Padding. Der alte MP3 bleibt nur als früheres Asset im Repo. Thunderbolt-MG-Treffer
+schneiden nun das Geschosssegment mit dem Gelände: Staub an der Oberfläche und bis zu
+320 dauerhafte, an die Hangneigung angepasste Einschussmarken in einem InstancedMesh.
+
+Gemeinsame Systeme in `sortie-systems.js` und missionsweise Pläne in `operation-plans.js`:
+acht Wetterlagen (Wolkenlücken, tiefe Bewölkung, Nebel, Regen, Schauer und Gewitter),
+Wolkenhöhe/-dichte, Sichtverlust in Wolken, Wind/Böen und Wetterwechsel während des
+Einsatzes. Wetterwahl für Free Flight. Beide Briefings enthalten nummerierte Ziele,
+Route, Wetter, Wind, Zeitfenster und Aufklärungsanweisungen. Thunderbolt-Radar zeigt
+jetzt ein einmal aufgebautes DEM-/OSM-Kartenbild mit Rhein und Straßen.
+
+Die zwölf Einsätze je Kampagne verwenden nun Aufklärungskreise, Abfang-/Bomberwellen,
+begrenzte Angriffsfenster, Gegenangriffe und wechselnde Sichtbedingungen. Timer laufen
+nur im Flug; ein verpasstes Fenster erlaubt die Rückkehr, aber keinen Kampagnenfortschritt.
+Pflichtwellen und Landziele blockieren einen voreiligen Abschluss. Pacific Sortie 12
+kombiniert einen Frachter mit zwei abgestellten Zero-Modellen an einem fiktiven
+Küstendispersal; eine M16 aus dem Repository dient als optionale AA-Spielposition.
+Kein historisch belegter japanischer Flugplatz oder japanisches AA-Modell wird behauptet.
+Bomber drehen vor der Remagen-Kartengrenze um; der Träger geht auf langen Einsätzen
+bei X=1800 in eine Offshore-Halteposition, statt in die Okinawa-Küste zu fahren.
+CPU-Prüfungen für Ereignisse, Wetter, Gelände, Einschussmarken, Missionen und Schiffe
+bestehen; Briefingkarten mit echten Daten als PNG geprüft. Kein Safari-/iPad-Flugtest.
 
 **Build 128 (24.09.2026):** Me-262-Ton auf gleichmäßigeren Loop umgestellt,
 MG-Lautstärke außerhalb P-47 erhöht und Me-262-Fahrwerk sichtbar verlängert.

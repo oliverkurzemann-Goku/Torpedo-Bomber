@@ -246,6 +246,12 @@
   .ctrlsNote{font-family:monospace;font-size:10px;color:var(--amber-dim);margin-top:18px;
     letter-spacing:1px;line-height:1.6;}
   #resultTitle{font-size:clamp(30px,8vw,52px);}
+  #opsStatus:empty{display:none;}
+  .overlay{touch-action:pan-y;}
+  #brief .card{max-width:760px;}
+  .opsMap{display:block;width:100%;height:auto;margin-top:14px;border:1px solid #778168;border-radius:5px;}
+  .opsLegend{font:11px/1.5 monospace;color:#d7c797;text-align:left;margin-top:5px;}
+  #opsStatus{position:fixed;top:calc(env(safe-area-inset-top) + 76px);left:50%;transform:translateX(-50%);color:#edcc80;background:rgba(14,20,18,.78);padding:5px 9px;font:10px monospace;pointer-events:none;z-index:9;max-width:58vw;text-align:center;}
 </style>
 </head>
 <body>
@@ -277,7 +283,7 @@
   <div id="flash"></div>
   <div id="ltn" style="position:fixed;inset:0;background:#e6ecff;opacity:0;pointer-events:none;z-index:40;"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 128</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 129</div>
 
   <!-- Optical landing aid -->
   <div id="lso">
@@ -310,6 +316,7 @@
 <div id="diveBtn" class="ctlBtn">DIVE<br>BRAKE</div>
 <div id="hookBtn" class="ctlBtn on">HOOK<br>▼ DN</div>
 <div id="fireBtn">GUNS</div>
+<div id="opsStatus"></div>
 <canvas id="mmap" width="120" height="120"></canvas>
 <div id="dmgVig"></div>
 
@@ -341,6 +348,7 @@
     <div class="ctrlsNote">
       LEFT STICK pitch + roll · RIGHT BAR throttle · RED drop · LEFT gear/flaps · keyboard arrows + W/S + Space
     </div>
+    <div class="opsLegend" style="text-align:center"><label for="practiceWx">FREE FLIGHT WEATHER </label><select id="practiceWx" style="background:#1c271e;color:#ddce9a;padding:6px;border:1px solid #75806a"><option value="clear">Clear</option><option value="broken">Broken cloud</option><option value="lowcloud">Low overcast</option><option value="fog">Fog</option><option value="rain">Rain</option><option value="squall">Heavy showers</option><option value="storm">Thunderstorm</option></select></div>
     <button class="btn" id="startBtn">Begin Sortie 1</button>
     <a class="btn ghost" id="selBtn" href="index.html" style="text-decoration:none;">&#9664; Change Game</a>
     <div class="credit">
@@ -355,6 +363,7 @@
     <h1 class="stencil" id="briefTitle">Sortie 1</h1>
     <div class="sub" id="briefSub">Lone Merchant</div>
     <div class="brief" id="briefBody"></div>
+    <canvas class="opsMap" id="opsMap" width="720" height="420" aria-label="Mission map with numbered targets and route"></canvas><div id="opsLegend" class="opsLegend"></div>
     <div class="stamp">For Action</div><br>
     <button class="btn" id="launchBtn">Catapult Launch</button>
   </div>
@@ -386,6 +395,8 @@
 <script src="okinawa/data.js?v=1"></script>
 <script src="okinawa/world.js?v=128"></script>
 <script src="campaign.js?v=1"></script>
+<script src="sortie-systems.js?v=129"></script>
+<script src="operation-plans.js?v=129"></script>
 <script>
 "use strict";
 /* ============================================================
@@ -439,12 +450,7 @@ const DIFFS = {
 function D(){ return DIFFS[DIFF]||DIFFS.veteran; }
 let seaState=1.0;   // 1=calm, up to ~2.5=rough — set per sortie, drives waves + deck motion
 let weather='clear'; // 'clear' | 'haze' | 'rain' | 'storm' — set per sortie
-const WX={
-  clear: { fogNear:2400, fogFar:7800, rain:0,   gust:0    },
-  haze:  { fogNear:900,  fogFar:3200, rain:0,   gust:0.15 },
-  rain:  { fogNear:700,  fogFar:2400, rain:1,   gust:0.35 },
-  storm: { fogNear:450,  fogFar:1500, rain:1.8, gust:0.65 }
-};
+const WX=Object.fromEntries(Object.entries(FlightOps.weather).map(([k,w])=>[k,{...w,fogNear:w.near,fogFar:w.far}]));
 let dbgOn=(localStorage.getItem('dbgOn')==='1');   // off unless switched on in the menu
 let lastGrade='';   // LSO grade of the most recent trap
 let dbgT=0, zeroRotor=null, zeroRotorAxis=null, zeroProp=null, zeroGear=null, propPivot=null, propDiskG=null, propBladesG=null, gearPivotG=null, gearMesh=null, gearDoors=null, gearWellCovers=null, seaUniforms=null;
@@ -606,7 +612,7 @@ let state = ST.MENU;
 let prePauseState = null;
 // ---- Moving carrier (the whole task group steams forward along +X) ----
 let carrierX = 0;                 // current world-X of the carrier group's origin
-const CARRIER_SPD = 5;            // m/s — gentle, keeps the trap achievable
+let CARRIER_SPD = 5;            // m/s — gentle, keeps the trap achievable
 let carrierWakeT = 0;            // stagger timer for carrier bow/stern foam
 let lastTorpDud = false;         // prevents two dud torpedoes in a row
 let mission = 0;            // 0-indexed
@@ -667,15 +673,16 @@ const MISSIONS = [
     body:"A running convoy: <b>two freighters</b> behind a destroyer screen, with a <b>Zero</b> overhead. Both merchants must go down. Pick your line, mind the flak. <b>3 torpedoes</b>.",
     torps:3, fuel:100, zeros:1,
     targets:[ {type:"freighter", pos:[-320,0,3500], hp:1},
-              {type:"freighter", pos:[ 300,0,3900], hp:1},
+
               {type:"destroyer", pos:[ 0,0,3250], hp:1, flak:true},
-              {type:"destroyer", pos:[ 640,0,3600], hp:1, flak:true} ] },
+              {type:"destroyer", pos:[ 640,0,3600], hp:1, flak:true} ],
+    reinforcement:{targets:[{type:"freighter",pos:[2000,0,4600],hp:1}],zeros:1} },
   { title:"Sortie 5", sub:"Night Strike", time:'night', sea:1.8, weather:'haze',
     body:"A <b>night torpedo attack</b> on a cruiser running dark, one destroyer in company. Low light, heavy flak — the meatball brings you home. The cruiser needs <b>two hits</b>. <b>3 torpedoes</b>.",
     torps:3, fuel:100, zeros:0,
     targets:[ {type:"cruiser",   pos:[ 0,0,4200], hp:2},
               {type:"destroyer", pos:[ -420,0,3600], hp:1, flak:true} ] },
-  { title:"Sortie 6", sub:"Defend the Fleet", defend:true, raiders:4,
+  { title:"Sortie 6", sub:"Defend the Fleet", defend:true, raiders:2,
     body:"<b>You fly the Zero today.</b> Enemy <b>Avengers</b> are inbound at wave height to put torpedoes into your carrier — the Imperial Navy flattop below you. No bombs, no fish — <b>guns only</b>. Splash every raider before they line up on the flight deck, then recover aboard. The carrier can absorb <b>four hits</b> before she goes down.",
     torps:0, fuel:100, zeros:0,
     targets:[] },
@@ -717,7 +724,7 @@ const MISSIONS = [
               {type:"destroyer", pos:[-420,0,3700], hp:1, flak:true},
               {type:"destroyer", pos:[ 520,0,3900], hp:1, flak:true} ] },
 
-  { title:"Sortie 10", sub:"The Last Stand", defend:true, raiders:6, sea:2.2, weather:'storm',
+  { title:"Sortie 10", sub:"The Last Stand", defend:true, raiders:3, sea:2.2, weather:'storm',
     body:"<b>Zero. Six Avengers.</b> They have found the fleet and they are coming in from every bearing. Guns only, and the carrier will not survive a fourth fish. This is what the whole cruise comes down to.",
     torps:0, fuel:100, zeros:0,
     targets:[] },
@@ -731,13 +738,12 @@ const MISSIONS = [
     targets:[{type:"freighter",pos:[3400,0,-2500],hp:1}],
     reinforcement:{targets:[{type:"freighter",pos:[3450,0,160],hp:1},
                             {type:"destroyer",pos:[2900,0,-50],hp:1,flak:true}],zeros:1} },
-  { title:"Sortie 12", sub:"Coastal Screen", okinawa:true, sbd:true, loadout:'divebomb', weather:'haze',
-    body:"The next convoy has a destroyer screen near the Okinawa shore and a Zero on patrol. "
-        +"Take the Dauntless, dive on both freighters, then climb clear of the coast and trap aboard. "
-        +"The destroyer and its flak are optional targets.",
-    torps:3, fuel:100, zeros:1,
+  { title:"Sortie 12", sub:"Sea to Shore", okinawa:true, sbd:true, shoreStrike:true, loadout:'divebomb', weather:'broken',
+    body:"<b>SBD combined strike.</b> Sink the offshore supply ship, then cross the coast and destroy "
+      +"<b>two parked aircraft</b> at the inland dispersal. The AA vehicle is optional, but will fire at you. "
+      +"Four bombs; guns can finish the aircraft. This forward dispersal is a fictional mission site on the mapped terrain.",
+    torps:4, fuel:100, zeros:1,
     targets:[{type:"freighter",pos:[3450,0,160],hp:1},
-             {type:"freighter",pos:[3300,0,-360],hp:1},
              {type:"destroyer",pos:[2900,0,-50],hp:1,flak:true}] },
   { title:"Okinawa", sub:"Okinawa Coast · Free Flight", free:true, okinawa:true,
     body:"Fly the Avenger from the carrier toward the Yomitan coast. The 16 × 16 km landscape uses geographic elevation and shoreline data. Houses, reefs and vegetation are illustrative. No enemy, timer or score; land aboard to fly again.<br><br>Head east from the bow to reach the coast. The mapped area ends inland; this is a scenery flight, not a historical mission.",
@@ -1011,9 +1017,9 @@ function buildSun(){
 function buildClouds(){
   smokeTex=makeSoftSprite();
   const tex=makeSoftSprite();
-  for(let i=0;i<16;i++){
+  for(let i=0;i<40;i++){
     const cl=new THREE.Group();
-    const puffs=4+Math.floor(Math.random()*5);
+    const puffs=5;
     const base=280+Math.random()*260;
     for(let j=0;j<puffs;j++){
       const top=j<puffs*0.5;
@@ -1792,6 +1798,82 @@ function buildPlane(){
 // ============================================================
 //  MISSION FLOW
 // ============================================================
+let pacificOps=null,pacificPlan=null,shoreTargets=[],shoreAsset=null,shoreAssetLoading=false;
+const COASTAL_STRIKE=[
+ {x:6990,z:-1044,kind:'aircraft',label:'Parked aircraft A',hp:16},
+ {x:7200,z:-1044,kind:'aircraft',label:'Parked aircraft B',hp:16},
+ {x:7260,z:-940,kind:'flak',label:'Dispersal AA',hp:22,optional:true}
+];
+function shoreHeight(x,z){
+ if(!okinawaWorld)return 0;const lx=x-OKINAWA_OFFSET_X;
+ if(Math.abs(lx)>7990||Math.abs(z)>7990||okinawaWorld.shoreDistance(lx,z)<=0)return 0;
+ return okinawaWorld.getHeight(lx,z);
+}
+function resetShoreTargets(enabled){
+ shoreTargets.forEach(t=>scene.remove(t.group));shoreTargets=[];
+ if(!enabled)return;
+ if(!shoreAsset&&!shoreAssetLoading){
+  shoreAssetLoading=true;new THREE.GLTFLoader().load('m16_mgmc.glb',g=>{
+   const model=g.scene,box=new THREE.Box3().setFromObject(model),size=box.getSize(new THREE.Vector3()),c=box.getCenter(new THREE.Vector3());
+   const holder=new THREE.Group();model.position.set(-c.x,-box.min.y,-c.z);holder.add(model);holder.scale.setScalar(6.5/Math.max(size.x,size.z));shoreAsset=holder;
+  },undefined,()=>{shoreAssetLoading=false;});
+ }
+ for(const def of COASTAL_STRIKE){const group=new THREE.Group();group.position.set(def.x,shoreHeight(def.x,def.z),def.z);scene.add(group);
+  shoreTargets.push({def,group,hp:def.hp,alive:true,loaded:false,cool:2});}
+}
+function hitShoreTarget(t,damage){
+ if(!t.alive)return;t.hp-=damage;
+ const p=t.group.position;spawnSmoke(p.x,p.y+3,p.z,0x554a3a,.9);
+ if(t.hp>0)return;t.alive=false;t.group.visible=false;addScore(t.def.optional?300:900);
+ spawnExplosion(p.x,p.y+2,p.z,1.1);spawnDebris(p.x,p.y+3,p.z,8);sfxBoom(.8);
+ flash(t.def.label.toUpperCase()+' DESTROYED',1400);checkObjectiveCleared();
+}
+function updateShoreTargets(dt){
+ for(const t of shoreTargets){
+  if(!t.loaded){const source=t.def.kind==='aircraft'?zeroTemplate:shoreAsset;
+   if(source){const model=source.clone(true);const b=new THREE.Box3().setFromObject(model);model.position.y-=b.min.y;
+    model.rotation.y=Math.PI/2;t.group.add(model);t.loaded=true;}}
+  if(!t.alive||t.def.kind!=='flak')continue;
+  t.cool-=dt;const p=t.group.position;
+  if(t.cool<=0&&p.distanceTo(P.pos)<1700){t.cool=.8+Math.random()*.6;
+   const from=p.clone().add(new THREE.Vector3(0,3,0)),aim=P.pos.clone().addScaledVector(noseDir(),P.spd*.6);
+   aim.x+=(Math.random()-.5)*45;aim.y+=(Math.random()-.5)*35;aim.z+=(Math.random()-.5)*45;
+   const dir=aim.sub(from).normalize(),mesh=new THREE.Mesh(new THREE.BoxGeometry(.13,.13,3),new THREE.MeshBasicMaterial({color:0xffae66}));
+   mesh.position.copy(from);mesh.lookAt(from.clone().add(dir));scene.add(mesh);tracers.push({mesh,dir,life:3,speed:560});
+  }
+ }
+}
+function choosePacificPlan(i){
+ const config={...(FlightPlans.pacific[i]||{}),practice:!!(MISSIONS[i].free||MISSIONS[i].qual)},names=MISSIONS[i].free?[document.getElementById('practiceWx').value||'clear']:config.weather||[MISSIONS[i].weather||'clear'];
+ return {config,weather:names[Math.floor(Math.random()*names.length)],wind:(Math.random()<.5?-1:1)*(2+i*.28)};
+}
+function updatePacificOperation(dt){
+ if(!pacificOps||isFree()||isQual())return;
+ const clear=isDefend()?raiders.every(r=>!r.alive):ships.filter(s=>s.def.type!=='destroyer').every(s=>!s.alive)&&shoreTargets.filter(t=>!t.def.optional).every(t=>!t.alive);
+ const kills=sortieShipsSunk+shoreTargets.filter(t=>!t.alive).length+raiders.filter(r=>!r.alive).length;
+ for(const e of pacificOps.tick(dt,{pos:P.pos,kills,clear,complete:P.rtb||clear&&pacificOps.ready()})){
+  if(e.weather){weather=e.weather;applyWeather();}
+  for(let i=0;i<(e.fighters||0);i++)spawnZero(i,e.fighters);
+  for(let i=0;i<(e.raiders||0);i++)spawnRaider(i,e.raiders);
+  if(e.recon)addScore(250);
+  if(e.failed)P.rtb=true;
+  if(e.message){flash(e.message,2200);radioSay(e.message);}
+ }
+ checkObjectiveCleared();
+ const el=document.getElementById('opsStatus');
+ if(el)el.textContent=FlightOps.wx(weather).label.toUpperCase()+' · '+(P.rtb&&!pacificOps.failed?'RECOVERY':pacificOps.status());
+}
+function drawPacificBrief(m){
+ const targets=m.targets.map(s=>({x:s.pos[0],z:s.pos[2],label:s.type==='destroyer'?'Armed escort':s.type==='cruiser'?'Capital ship':'Supply ship',optional:s.type==='destroyer'}));
+ if(m.reinforcement)for(const s of m.reinforcement.targets)targets.push({x:s.pos[0],z:s.pos[2],label:'Second contact: '+s.type,optional:s.type==='destroyer'});
+ if(m.shoreStrike)targets.push(...COASTAL_STRIKE);
+ if(m.defend)targets.push({x:2200,z:2400,label:'Raider approach sector'});
+ const labels=FlightOps.drawMap(document.getElementById('opsMap'),{title:'OKINAWA COAST',northSign:-1,base:{x:0,z:0},targets,recon:pacificPlan.config.recon,
+  sample:(x,z)=>{const lx=x-OKINAWA_OFFSET_X;if(!okinawaWorld||Math.abs(lx)>7990||Math.abs(z)>7990||okinawaWorld.shoreDistance(lx,z)<0)return '#24434c';
+   const h=okinawaWorld.getHeight(lx,z),v=Math.min(1,h/250);return 'rgb('+Math.round(63+v*45)+','+Math.round(86+v*30)+','+Math.round(46+v*20)+')';}});
+ document.getElementById('opsLegend').textContent=labels||'Carrier training area';
+}
+
 function startMission(idx){
   mission=idx;
   selectedMission=idx;
@@ -1809,10 +1891,12 @@ function startMission(idx){
   debris.forEach(d=>scene.remove(d.mesh)); debris=[];
   zeros.forEach(z=>scene.remove(z.mesh)); zeros=[];
   shakeT=0; shakeMag=0;
-  carrierX=0; if(carrier) carrier.position.x=0;   // task group back on station
+  carrierX=0; CARRIER_SPD=5; if(carrier) carrier.position.x=0;   // task group back on station
   if(carrierModel) carrierModel.position.x=CARRIER_DX;
   if(ijnCarrierModel) ijnCarrierModel.position.x=CARRIER_DX;
   const m=MISSIONS[idx];
+  pacificPlan=choosePacificPlan(idx);pacificOps=new FlightOps.Operation(pacificPlan.config);
+  document.getElementById('opsStatus').textContent='';
   applyTimeOfDay(m.time || menuTime);
   // reset plane
   P.pos.set(carrierX+BOW_X+30, DECK_Y+4, 0);
@@ -1827,7 +1911,7 @@ function startMission(idx){
   reinforcementsLaunched=false;
   radioEvadeCalled=false; radioQ=[]; radioT=0; P.ballCalled=false;
   // per-sortie crosswind: grows with mission index, random side
-  windZ=(0.4+mission*0.25)*(Math.random()<0.5?-1:1);
+  windZ=pacificPlan.wind;
   inputPitch=0; inputRoll=0;
   setThrottleUI(P.throttle);
   // The sortie's loadout must be set BEFORE the control UI is built: applyLoadoutUI() reads
@@ -1850,6 +1934,7 @@ function startMission(idx){
 
   // spawn ships
   m.targets.forEach(t=>spawnShip(t));
+  resetShoreTargets(!!m.shoreStrike);
   // spawn enemy fighters
   const nz=m.zeros||0;
   for(let i=0;i<nz;i++) spawnZero(i,nz);
@@ -1860,7 +1945,7 @@ function startMission(idx){
   carrierHP=100; qualTraps=0; qualStep=0;
   seaState=m.sea||1.0;
   if(seaUniforms) seaUniforms.uSeaState.value=seaState;
-  weather=m.weather||'clear';
+  weather=pacificPlan.weather;
   applyWeather();
   wingmen.forEach(w=>scene.remove(w.mesh)); wingmen=[];
   if(typeof wingShots!=='undefined'){ wingShots.forEach(s=>scene.remove(s.mesh)); wingShots=[]; }
@@ -1944,7 +2029,8 @@ function startMission(idx){
   // briefing
   document.getElementById('briefTitle').textContent=m.title;
   document.getElementById('briefSub').textContent=m.sub;
-  document.getElementById('briefBody').innerHTML=m.body;
+  document.getElementById('briefBody').innerHTML=m.body+FlightOps.briefText(weather,pacificPlan.config,windZ);
+  drawPacificBrief(m);
   showOverlay('brief');
   state=ST.BRIEF;
 }
@@ -2167,8 +2253,13 @@ function updateBombs(dt){
     b.mesh.position.addScaledVector(b.vel,dt);
     b.mesh.lookAt(b.mesh.position.clone().add(b.vel));
     let done=false;
+    const gy=shoreHeight(b.mesh.position.x,b.mesh.position.z);
+    if(gy>0&&b.mesh.position.y<=gy+1){
+      for(const t of shoreTargets)if(t.alive&&Math.hypot(t.def.x-b.mesh.position.x,t.def.z-b.mesh.position.z)<85)hitShoreTarget(t,30);
+      spawnExplosion(b.mesh.position.x,gy+2,b.mesh.position.z,1.2);sfxBoom(.8);done=true;
+    }
     for(const s of ships){
-      if(!s.alive) continue;
+      if(done||!s.alive) continue;
       const d=Math.hypot(b.mesh.position.x-s.group.position.x, b.mesh.position.z-s.group.position.z);
       if(d<s.radius && b.mesh.position.y<26){ hitShip(s); done=true; break; }
     }
@@ -2257,17 +2348,18 @@ function hitShip(s, quietCam){
 
 function checkObjectiveCleared(){
   const primary=ships.filter(s=>s.def.type==="freighter"||s.def.type==="cruiser");
-  const cleared = primary.length>0 && primary.every(s=>!s.alive);
+  const cleared = (isDefend()?raiders.length>0&&raiders.every(r=>!r.alive):
+    primary.length>0&&primary.every(s=>!s.alive)&&shoreTargets.filter(t=>!t.def.optional).every(t=>!t.alive));
   const wave=MISSIONS[mission].reinforcement;
   if(cleared && wave && !reinforcementsLaunched){
     reinforcementsLaunched=true;
     wave.targets.forEach(spawnShip);
     for(let i=0;i<(wave.zeros||0);i++)spawnZero(i,wave.zeros);
-    flash('SECOND CONVOY SIGHTED — SOUTH OF YOMITAN',2200);
-    radioSay('NEW CONTACT SOUTH OF YOMITAN — DESTROYER AND FIGHTER COVER');
+    flash('SECOND CONVOY SIGHTED — CHECK YOUR BRIEFING MAP',2200);
+    radioSay('SECOND CONTACT CONFIRMED — ESCORT AND FIGHTER COVER');
     return;
   }
-  if(cleared && !P.rtb){ P.rtb=true; addScore(500); flash("TARGETS DOWN  +500 — RETURN TO SHIP",1500); }
+  if(cleared && (!pacificOps||pacificOps.ready()) && !P.rtb){ P.rtb=true; addScore(500); flash("TARGETS DOWN  +500 — RETURN TO SHIP",1500); }
 }
 
 function spawnSplash(x,z,big){
@@ -2972,9 +3064,14 @@ function trap(x){
       "To the Squadron");
     return;
   }
+  if(pacificOps?.failed){state=ST.RESULT;showResult(false,'RECOVERED — WINDOW MISSED',MISSIONS[mission].title,
+    'Aircraft recovered. The attack window closed before all tasks were completed.','Try Again');return;}
   // ---- REARM: if primary targets are still afloat, refuel/rearm and go again ----
   const remaining = ships.filter(s=>s.alive &&
-    (s.def.type==='freighter'||s.def.type==='cruiser')).length;
+    (s.def.type==='freighter'||s.def.type==='cruiser')).length
+    +shoreTargets.filter(t=>t.alive&&!t.def.optional).length
+    +(isDefend()?raiders.filter(r=>r.alive).length:0)
+    +(pacificOps&&!pacificOps.ready()?1:0);
   if(remaining>0){
     const m=MISSIONS[mission];
     P.torps=m.torps; P.fuel=m.fuel; P.ammo=1200;
@@ -2982,7 +3079,7 @@ function trap(x){
     P.bingo=false; P.lowFuelT=0; P.rtb=false; P.ballCalled=false;
     updateHUD();
     flash("TRAP ABOARD — REARMED  +"+bonus,1600);
-    radioSay("DECK CREW — FUELLED AND ARMED. "+remaining+" STILL AFLOAT — GET BACK UP THERE");
+    radioSay("DECK CREW — FUELLED AND ARMED. "+remaining+" TASKS REMAIN — GET BACK UP THERE");
     launch();               // catapult straight back off the deck
     return;
   }
@@ -3065,9 +3162,21 @@ function buildRain(){
   scene.add(rainMesh);
 }
 function applyWeather(){
+  applyTimeOfDay(timeMode);
   const w=WX[weather]||WX.clear;
   if(scene.fog){ scene.fog.near=w.fogNear; scene.fog.far=w.fogFar; }
   if(seaUniforms){ seaUniforms.uFogNear.value=w.fogNear; seaUniforms.uFogFar.value=w.fogFar; }
+  FlightOps.clouds(clouds,weather);
+  const mood=new THREE.Color(w.color);if(timeMode!=='night'){scene.fog.color.copy(mood);scene.background.copy(mood);}
+  if(sun)sun.intensity=(timeMode==='night'?.45:1.32)*w.sun;
+  if(hemiLight)hemiLight.intensity=(timeMode==='night'?.25:.45)+w.sun*(timeMode==='night'?.12:.4);
+  if(skyMat){skyMat.uniforms.top.value.lerp(mood,w.cover*.65);skyMat.uniforms.bot.value.lerp(mood,w.cover*.6);
+    if(timeMode==='night'){skyMat.uniforms.top.value.multiplyScalar(.17);skyMat.uniforms.bot.value.multiplyScalar(.22);}
+    if(seaUniforms){seaUniforms.uZenith.value.copy(skyMat.uniforms.top.value);seaUniforms.uHorizon.value.copy(skyMat.uniforms.bot.value);}}
+  if(sunSprite)sunSprite.visible=w.cover<.8;
+  seaState=Math.max(MISSIONS[mission].sea||1,1+w.rain*.55);
+  if(seaUniforms)seaUniforms.uSeaState.value=seaState;
+  if(seaUniforms)seaUniforms.uFogColor.value.copy(scene.fog.color);
   if(!rainMesh) buildRain();
   rainMesh.visible = w.rain>0;
   rainMesh.material.opacity = Math.min(0.75, 0.35+w.rain*0.22);
@@ -3761,9 +3870,10 @@ function spawnRaider(i,n){
     }
     r_disc=disc;
   }
+  const waveSide=pacificOps&&pacificOps.elapsed>5?-1:1;
   const a=Math.PI*(0.15+0.7*i/Math.max(1,n));
   const r={ mesh, group:mesh, disc:r_disc, fromModel, def:{type:'avenger'}, hp:4, alive:true, dropped:false, runIn:false,
-    pos:new THREE.Vector3(carrierX+Math.cos(a)*(2200+i*700), 260+i*70, (1900+i*600)+Math.sin(a)*600),
+    pos:new THREE.Vector3(carrierX+Math.cos(a)*(2200+i*700), 260+i*70, waveSide*((1900+i*600)+Math.sin(a)*600)),
     heading:Math.PI, pitch:0, roll:0, spd:72-i*3 };
   r.vel=new THREE.Vector3(Math.sin(r.heading),0,Math.cos(r.heading)).multiplyScalar(r.spd);
   mesh.position.copy(r.pos); scene.add(mesh); raiders.push(r);
@@ -3776,7 +3886,8 @@ function killRaider(r){
   const left=raiders.filter(x=>x.alive).length;
   flash(left?("SPLASH ONE — "+left+" TO GO"):"ALL RAIDERS DOWN — RECOVER ABOARD",1500);
   if(left) radioSay("SPLASH ONE! "+left+" STILL COMING");
-  else radioSay("THE FLEET IS SAFE — BRING IT HOME");
+  else radioSay(pacificOps?.pending()?"FIRST WAVE DOWN — MORE RAIDERS EXPECTED":"THE FLEET IS SAFE — BRING IT HOME");
+  checkObjectiveCleared();
 }
 function updateRaiders(dt){
   for(let i=raiders.length-1;i>=0;i--){
@@ -4211,7 +4322,7 @@ function loadPlaneModel(){
       }
       window.__eyeDbg='EYE '+COCKPIT_EYE.map(v=>v.toFixed(2)).join('/');
       const btEl=document.getElementById('buildTag');
-      if(btEl) btEl.textContent='BUILD 128 · '+window.__eyeDbg;
+      if(btEl) btEl.textContent='BUILD 129 · '+window.__eyeDbg;
       let seat=null;
       model.traverse(function(o){
         if(!o.isMesh||!o.material) return;
@@ -5073,6 +5184,10 @@ function updateGuns(dt){
         scene.remove(t.mesh); etorps.splice(k,1); hit=true; break;
       }
     }
+    if(!hit)for(const t of shoreTargets){if(!t.alive)continue;const p=t.group.position,back=b.mesh.position.clone().addScaledVector(b.dir,-b.speed*dt);
+      const line=new THREE.Line3(back,b.mesh.position),near=line.closestPointToPoint(p.clone().add(new THREE.Vector3(0,2,0)),true,new THREE.Vector3());
+      if(near.distanceTo(p.clone().add(new THREE.Vector3(0,2,0)))<7){hitShoreTarget(t,1);hit=true;break;}}
+    if(!hit&&b.mesh.position.y<shoreHeight(b.mesh.position.x,b.mesh.position.z)){spawnSmoke(b.mesh.position.x,shoreHeight(b.mesh.position.x,b.mesh.position.z)+1,b.mesh.position.z,0x877960,.7);hit=true;}
     if(!hit && b.mesh.position.y<=0.6){ spawnSplash(b.mesh.position.x,b.mesh.position.z,false); hit=true; }
     if(hit||b.life<=0){ scene.remove(b.mesh); bullets.splice(i,1); }
   }
@@ -5103,6 +5218,8 @@ function updateMinimap(){
   for(const s of ships){ if(!s.alive) continue; const q=put(s.group.position.x,s.group.position.z);
     if(Math.hypot(q[0]-c,q[1]-c)<R-1){ mmCtx.fillStyle=s.def.type==='destroyer'?'#e0a050':'#c8412a';
       mmCtx.beginPath(); mmCtx.arc(q[0],q[1],3,0,7); mmCtx.fill(); } }
+  for(const t of shoreTargets){if(!t.alive)continue;const q=put(t.def.x,t.def.z);if(Math.hypot(q[0]-c,q[1]-c)<R-2){mmCtx.fillStyle=t.def.optional?'#dba774':'#f06a4b';mmCtx.fillRect(q[0]-3,q[1]-3,6,6);}}
+  if(pacificOps?.config.recon&&!pacificOps.reconDone){const r=pacificOps.config.recon,q=put(r.x,r.z);mmCtx.strokeStyle='#80c9df';mmCtx.beginPath();mmCtx.arc(q[0],q[1],r.radius*scale,0,7);mmCtx.stroke();}
   mmCtx.fillStyle='#e8b84b'; mmCtx.beginPath();
   mmCtx.moveTo(c,c-6); mmCtx.lineTo(c-4,c+5); mmCtx.lineTo(c+4,c+5); mmCtx.closePath(); mmCtx.fill();
 }
@@ -5264,6 +5381,10 @@ function updateNav(){
   } else {
     target=new THREE.Vector3(carrierX+AIM_X,DECK_Y,0); label="RECOVER ABOARD CARRIER";
   }
+  const ground=shoreTargets.find(t=>t.alive&&!t.def.optional);
+  if(!live.length&&ground){target=ground.group.position;label='ATTACK: '+ground.def.label.toUpperCase();}
+  if(pacificOps&&!pacificOps.reconDone){const r=pacificOps.config.recon;target=new THREE.Vector3(r.x,0,r.z);label='RECON: HOLD IN SEARCH CIRCLE';}
+  if(pacificOps?.failed){target=new THREE.Vector3(carrierX+AIM_X,DECK_Y,0);label='WINDOW MISSED — RECOVER';}
   const objText=document.getElementById('objText'); objText.textContent=label;
   // arrow relative to heading
   const bearing=Math.atan2(target.z-P.pos.z, target.x-P.pos.x);
@@ -5491,7 +5612,7 @@ function setupUIButtons(){
   if(dbgT2) dbgT2.onclick=()=>{
     dbgOn=!dbgOn; localStorage.setItem('dbgOn',dbgOn?'1':'0');
     const db=document.getElementById('dbgBox'); if(db) db.textContent=dbgOn?'✓':'';
-    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 128'; }
+    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 129'; }
   };
   const lu=document.getElementById('lookUp'), ld=document.getElementById('lookDn');
   let _lookT=0;
@@ -5705,6 +5826,7 @@ function animate(){
 
   // steam the task group forward (bow-first, +X) whenever the sortie is live
   if((state===ST.FLIGHT||state===ST.LAUNCH) && carrier){
+    CARRIER_SPD=Math.max(0,Math.min(5,(1800-carrierX)*.02)); // offshore holding station on long sorties
     carrierX += CARRIER_SPD*dt;
     carrier.position.x=carrierX;                              // gameplay reference (blocky/hidden)
     if(carrierModel) carrierModel.position.x=CARRIER_DX+carrierX; // the VISIBLE ship
@@ -5740,6 +5862,8 @@ function animate(){
     }
     if(wingmen.length) updateWingmen(dt);
     if(wingShots.length) updateWingShots(dt);
+    updatePacificOperation(dt);updateShoreTargets(dt);
+    FlightOps.visibility(scene,clouds,P.pos,weather,dt,seaUniforms);
     updateGust(dt); updateRain(dt); updateStorm(dt);
     updateTorpedoes(dt);
     updateBombs(dt);
