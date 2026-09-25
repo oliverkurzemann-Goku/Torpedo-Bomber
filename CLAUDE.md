@@ -5,7 +5,20 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 129 · Thunderbolt Squadron BUILD 129 · reales Remagen-Gelände 21**
+Stand bei Übergabe: **Torpedo Squadron BUILD 129 · Thunderbolt Squadron BUILD 130 · reales Remagen-Gelände 21**
+
+**Build 130 (25.09.2026):** Der erste `applyWeather()`-Aufruf traf auf den
+standardmäßig leeren `THREE.Scene.background` und brach vor `loadRealWorld()` ab.
+Der Himmel wird jetzt vor `setHex()` angelegt. Synchrone Startfehler und abgelehnte
+Geländeladevorgänge erhalten eine sichtbare Fehlermeldung. Der neue Starttest
+`terrain-system/tests/remagen-startup.cjs` führte zunächst genau diesen Null-Zugriff
+vor; er lädt nun alle 56 echten DEM-/OSM-/Historienkacheln durch den tatsächlichen
+Startpfad bis zum Menü und Briefing und prüft beide Fehlerpfade. GPU und optionale
+Modell-Downloads sind im CPU-Test ausgenommen; kein Safari-/iPad-Flugtest.
+Auf aktuellen Nutzerwunsch zeigt das Operations Board wieder genau zwei Spiele:
+Pacific/Okinawa und Thunderbolt/Rhein. Classic-Karten und der doppelte Remagen-Einstieg
+sind ausgeblendet; die Dateien sowie die Landschaftsvorschauen bleiben erhalten.
+Der Thunderbolt-Link enthält `v=130`, damit ein alter HTML-Cache umgangen wird.
 
 **Ältere Spiele und Vorschauen wieder auffindbar (25.09.2026):** Die letzte
 Träger-Version vor der Okinawa-Integration (`ef8a848`, BUILD 122) liegt unverändert als

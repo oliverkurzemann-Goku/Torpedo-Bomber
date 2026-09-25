@@ -245,7 +245,7 @@
   <div style="width:100%;height:4px;background:repeating-linear-gradient(45deg,#ffd400,#ffd400 8px,#111 8px,#111 16px);"></div>
   <span id="testVersionBannerText" style="background:#111;color:#ffd400;font-family:monospace;font-weight:800;font-size:11px;letter-spacing:.5px;padding:3px 10px;border:1px solid #ffd400;border-top:none;border-radius:0 0 6px 6px;"></span>
 </div>
-<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 129';</script>
+<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 130';</script>
 <!-- ===== END TEMP TEST-ONLY VERSION BANNER ===== -->
 <div id="app"></div>
 
@@ -272,7 +272,7 @@
   <div id="flash"></div>
   <div id="gunsight"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 129 · REAL RHINE</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 130 · REAL RHINE</div>
 
   <div id="apr">
     <div id="aprCall"></div>
@@ -625,7 +625,7 @@ async function loadRealWorld(){
 
   if(OSMManager.BUILD!==21||HistoricalObjectManager.BUILD!==21||LivingWorld.BUILD!==21||WorldVehicles.BUILD!==21) throw new Error('Terrain version mismatch. Reload Remagen.');
   document.getElementById('testVersionBannerText').textContent=
-    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 129 · MODULE 21';
+    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 130 · MODULE 21';
   heightProvider=new DEMHeightProvider(RTILE,'terrain-system/real/data/dem/');
   terrain=new TerrainManager(scene,RTILE,heightProvider);
   osmMgr=new OSMManager(scene,RTILE,terrain,'terrain-system/real/data/osm/');
@@ -3522,6 +3522,8 @@ function groundGunImpact(x,z){
 
 function applyWeather(){
   const w=FlightOps.wx(weather);
+  // A new THREE.Scene starts with a null background, before terrain loading begins.
+  if(!scene.background)scene.background=new THREE.Color(w.color);
   if(!scene.fog)scene.fog=new THREE.Fog(w.color,w.near,w.far);
   scene.fog.color.setHex(w.color);scene.fog.near=w.near;scene.fog.far=w.far;
   scene.background.setHex(w.color);ceilingY=w.base+w.depth;
@@ -4297,11 +4299,7 @@ function init(){
       if(kind==='flak88'&&historicalMgr)historicalMgr.installFlakModel(template);
     };
     worldVehicles.load().catch(err=>console.warn('Scenery vehicles:',err));
-  }).catch(err=>{
-    console.error('loadRealWorld failed:',err);
-    const el=document.getElementById('loadingText');
-    if(el) el.textContent='Failed to load real terrain data: '+err.message+' — check your connection and reload.';
-  });
+  }).catch(reportStartupError);
   try{
     const d=localStorage.getItem('re_diff'); if(d!==null) diffIdx=Math.max(0,Math.min(2,parseInt(d,10)||0));
     const c=localStorage.getItem('re_chase'); if(c!==null) chaseUp=parseFloat(c)||0;
@@ -4461,7 +4459,12 @@ function animate(){
   }
   renderer.render(scene,camera);
 }
-window.addEventListener('load',init);
+function reportStartupError(err){
+  console.error('Thunderbolt startup failed:',err);
+  show('menu',false);show('loading',true);
+  document.getElementById('loadingText').textContent='Unable to start Thunderbolt: '+err.message+' — please reload the page.';
+}
+window.addEventListener('load',()=>{try{init();}catch(err){reportStartupError(err);}});
 </script>
 </body>
 </html>

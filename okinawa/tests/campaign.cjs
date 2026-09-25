@@ -10,8 +10,14 @@ const legacy=openChapter();legacy.record('europe',13);legacy.record('remagen',2)
 assert.equal(openChapter().highest('pacific'),11,'carrier progress survives chapter reload');
 assert.equal(openChapter().highest('europeRhine'),3,'real Rhine progress survives reload');
 assert.equal(openChapter().highest('europe'),13,'old synthetic sorties do not overwrite new progress');
-assert.match(html('index.html'),/href="remagen-mission\.html\?campaign=1"/,'single Europe game opens real terrain');
-assert.match(html('thunderbolt-europe.html'),/location\.replace\('remagen-mission\.html\?'/,'old Europe bookmarks redirect');
+const board=html('index.html').match(/<main class="board">([\s\S]*?)<\/main>/)[1];
+const entries=[...board.matchAll(/href="([^"]+)"/g)].map(m=>new URL(m[1].replaceAll('&amp;','&'),'https://example.org/'));
+assert.deepEqual(entries.map(u=>u.pathname),['/torpedo-carrier.html','/remagen-mission.html'],'only the two current campaigns appear');
+assert.equal(entries[1].searchParams.get('campaign'),'1','Europe opens the real-terrain campaign');
+assert.equal(entries[1].searchParams.get('v'),'130','campaign link bypasses stale startup HTML');
+assert(!html('index.html').includes('href="thunderbolt-europe.html"'),'Classic Europe stays hidden');
+assert(!html('index.html').includes('href="torpedo-carrier-open-sea.html"'),'Classic Pacific stays hidden');
+assert(html('thunderbolt-europe.html').includes('function init()'),'hidden Classic game remains available by direct URL');
 assert.match(html('remagen-mission.html'),/SquadronCampaign\.record\('europeRhine',mission\)/);
 assert.match(html('remagen-mission.html'),/const airLeft=enemyAir.filter\(e=>e.alive\).length/,
  'landing counts every live aircraft, including reinforcements');
