@@ -48,6 +48,8 @@
     animation:rise .5s cubic-bezier(.2,.7,.3,1) forwards;}
   .chit:nth-child(2){animation-delay:.09s;}
   .chit:nth-child(3){animation-delay:.18s;}
+  .chit:nth-child(4){animation-delay:.27s;}
+  .chit:nth-child(5){animation-delay:.36s;}
   @keyframes rise{to{opacity:1;transform:none;}}
   .chit:active{transform:translateY(1px) scale(.995);}
   .chit:focus-visible{outline:2px solid var(--amber);outline-offset:3px;}
@@ -93,8 +95,8 @@
   <div class="eyebrow">Operations Board</div>
   <h1>Squadron Select</h1>
   <p class="standfirst">
-    Choose the Pacific campaign, the real Rhine terrain, or the classic
-    Thunderbolt landscape with Bridge Buster.
+    Choose a campaign or revisit the original sea and landscape versions.
+    The world previews are below the games.
   </p>
 </header>
 
@@ -121,6 +123,25 @@
     </div>
   </a>
 
+  <a class="chit" href="torpedo-carrier-open-sea.html">
+    <div class="band pacific" aria-hidden="true"></div>
+    <div class="chitBody">
+      <div class="no">Classic map</div>
+      <div class="name">Torpedo Squadron</div>
+      <div class="role">Open sea · before Okinawa</div>
+      <p class="blurb">
+        The original carrier campaign over the Pacific, before the Okinawa coastline
+        was added. Launch from the deck and fly over open water and small islands.
+      </p>
+      <dl>
+        <dt>Map</dt><dd>Open sea · original BUILD 122</dd>
+        <dt>Aircraft</dt><dd>TBM Avenger &middot; SBD &middot; A6M</dd>
+        <dt>Take off from</dt><dd>Carrier deck</dd>
+      </dl>
+      <span class="go">Fly the Open Sea Version</span>
+    </div>
+  </a>
+
   <a class="chit alt" href="remagen-mission.html?campaign=1">
     <div class="band europe" aria-hidden="true"></div>
     <div class="chitBody">
@@ -139,6 +160,25 @@
       </dl>
       <span class="go">Fly the Europe Campaign</span>
       <div class="blurb" id="europeProgress" aria-live="polite"></div>
+    </div>
+  </a>
+
+  <a class="chit alt" href="remagen-mission.html">
+    <div class="band europe" aria-hidden="true"></div>
+    <div class="chitBody">
+      <div class="no">Standalone entry</div>
+      <div class="name">Remagen 1945</div>
+      <div class="role">Explore the Rhine valley</div>
+      <p class="blurb">
+        Open the real Remagen landscape directly with free flight and the full mission
+        menu. This uses the same Rhine world as the campaign above, starting at its beginning.
+      </p>
+      <dl>
+        <dt>Map</dt><dd>Real Rhine terrain and villages</dd>
+        <dt>Aircraft</dt><dd>P-47D &middot; Bf&nbsp;109 &middot; Fw&nbsp;190 &middot; Me&nbsp;262</dd>
+        <dt>Take off from</dt><dd>Grass strip</dd>
+      </dl>
+      <span class="go">Open Remagen</span>
     </div>
   </a>
 
@@ -166,9 +206,27 @@
 
 <section>
   <div class="secHead">
-    <h2>Workshop</h2><span class="line"></span><span class="count">For adding aircraft</span>
+    <h2>World Previews &amp; Workshop</h2><span class="line"></span><span class="count">Explore without missions</span>
   </div>
   <div class="row">
+    <a class="chit alt" href="terrain-system/demo-remagen.html" style="max-width:420px;">
+      <div class="chitBody">
+        <div class="no">Landscape preview</div>
+        <div class="name">Remagen Terrain Explorer</div>
+        <div class="role">Hills, villages and houses</div>
+        <p class="blurb">Free camera over the large Rhine landscape and its mapped buildings. This is a terrain prototype without sorties.</p>
+        <span class="go">Explore the Landscape</span>
+      </div>
+    </a>
+    <a class="chit alt" href="okinawa-preview.html" style="max-width:420px;">
+      <div class="chitBody">
+        <div class="no">Landscape preview</div>
+        <div class="name">Okinawa Coast</div>
+        <div class="role">16 × 16 km study</div>
+        <p class="blurb">Explore the coastal environment on its own, without a flight mission.</p>
+        <span class="go">Explore Okinawa</span>
+      </div>
+    </a>
     <a class="chit" href="model-check.html" style="max-width:420px;">
       <div class="chitBody">
         <div class="no">Tool</div>
@@ -185,7 +243,7 @@
 </section>
 
 <footer>
-  All three choices run in the browser — nothing to install. Best on iPad in landscape.<br>
+  The games and previews run in the browser — nothing to install. Best on iPad in landscape.<br>
   <b>Touch:</b> left stick pitch and roll &middot; right bar throttle &middot; red button drops ordnance.
   <b>Keyboard:</b> <kbd>&larr;&uarr;&darr;&rarr;</kbd> fly &middot; <kbd>W</kbd>/<kbd>S</kbd> throttle
   &middot; <kbd>Space</kbd> drop.<br>
