@@ -22,7 +22,7 @@ vm.runInContext(pick('setOkinawaActive','init'),game);
 vm.runInContext(pick('updateShadow','updateClouds'),game);
 vm.runInContext(pick('resolveGroundAndDeck','trap'),game);
 (async()=>{
- const world=await new OkinawaWorld(OKINAWA_DATA,{vegetationDensity:.45}).build();
+ const world=await new OkinawaWorld(OKINAWA_DATA,{vegetationDensity:.38}).build();
  game.okinawaWorld=world;world.root.position.x=10000;game.scene.add(world.root);
  game.setOkinawaActive(true);
  assert.equal(world.root.visible,true);assert.equal(game.sea.visible,true);

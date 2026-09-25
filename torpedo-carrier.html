@@ -283,7 +283,7 @@
   <div id="flash"></div>
   <div id="ltn" style="position:fixed;inset:0;background:#e6ecff;opacity:0;pointer-events:none;z-index:40;"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 132</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 133</div>
 
   <!-- Optical landing aid -->
   <div id="lso">
@@ -393,8 +393,10 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
 <script src="okinawa/data.js?v=1"></script>
-<script src="okinawa/world.js?v=132"></script>
+<script src="okinawa/world.js?v=133"></script>
 <script src="campaign.js?v=1"></script>
+<script src="combat-fx.js?v=133"></script>
+<script src="audio/weapon-sound.js?v=133"></script>
 <script src="sortie-systems.js?v=129"></script>
 <script src="operation-plans.js?v=129"></script>
 <script>
@@ -758,7 +760,7 @@ async function prepareOkinawa(){
   if(okinawaLoading)return okinawaLoading;
   okinawaLoading=(async()=>{
     if(!window.OKINAWA_DATA||!window.OkinawaWorld)throw Error('Okinawa scenery files are missing.');
-    const world=new OkinawaWorld(OKINAWA_DATA,{vegetationDensity:.45});
+    const world=new OkinawaWorld(OKINAWA_DATA,{vegetationDensity:.38});
     try{
       await world.build((p,msg)=>{const b=document.getElementById(state===ST.RESULT?'resultBtn':'startBtn');
         if(b)b.textContent='Loading Okinawa '+Math.round(p*100)+'% · '+msg;});
@@ -797,6 +799,7 @@ function releaseOkinawa(){
 // ============================================================
 //  INIT
 // ============================================================
+let combatFX=null;
 function init(){
   const app=document.getElementById('app');
   renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:"high-performance"});
@@ -810,6 +813,7 @@ function init(){
   app.appendChild(renderer.domElement);
 
   scene=new THREE.Scene();
+  combatFX=CombatFX.create(scene);
   scene.background=new THREE.Color(0xaecfe6);
   scene.fog=new THREE.Fog(0xaecfe6, 3200, 15000);   // deeper horizon now nothing fakes the far shore
 
@@ -1878,6 +1882,7 @@ function drawPacificBrief(m){
 }
 
 function startMission(idx){
+  if(combatFX)combatFX.clear();
   mission=idx;
   selectedMission=idx;
   const menuChips=document.querySelectorAll('#missionSel .chip');
@@ -4325,7 +4330,7 @@ function loadPlaneModel(){
       }
       window.__eyeDbg='EYE '+COCKPIT_EYE.map(v=>v.toFixed(2)).join('/');
       const btEl=document.getElementById('buildTag');
-      if(btEl) btEl.textContent='BUILD 132 · '+window.__eyeDbg;
+      if(btEl) btEl.textContent='BUILD 133 · '+window.__eyeDbg;
       let seat=null;
       model.traverse(function(o){
         if(!o.isMesh||!o.material) return;
@@ -4730,6 +4735,8 @@ function updatePlaneMesh(dt){
 // ---------- FX: explosions, smoke ----------
 function spawnExplosion(x,y,z,sc){
   sc=sc||1;
+  const gy=shoreHeight(x,z);
+  if(combatFX&&gy>1&&Math.abs(y-gy)<25*sc){combatFX.blast(x,y,z,sc,gy);return;}
   // 1) white-hot flash — very brief, large
   const flashB=new THREE.Mesh(new THREE.SphereGeometry(6*sc,16,12),
     new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:1,blending:THREE.AdditiveBlending}));
@@ -5112,16 +5119,10 @@ function sfxBolter(){
   og.gain.exponentialRampToValueAtTime(0.001,ct+1.1);
   o.connect(lp); lp.connect(og); og.connect(o2); o.start(ct); o.stop(ct+1.15);
 }
-function sfxGun(){
-  if(!actx) return; const ct=actx.currentTime, o2=out();
-  const nb=actx.createBuffer(1,actx.sampleRate*0.05,actx.sampleRate);
-  const d=nb.getChannelData(0); for(let i=0;i<d.length;i++) d[i]=(Math.random()*2-1)*Math.pow(1-i/d.length,2);
-  const src=actx.createBufferSource(); src.buffer=nb;
-  const bp=actx.createBiquadFilter(); bp.type='bandpass'; bp.frequency.value=1700; bp.Q.value=0.8;
-  const g=actx.createGain(); g.gain.setValueAtTime(0.1,ct); g.gain.exponentialRampToValueAtTime(0.001,ct+0.05);
-  src.connect(bp); bp.connect(g); g.connect(o2); src.start();
-}
+function sfxGun(){ WeaponSound.fire(actx,out(),'pacific'); }
 
+const pacificTracerGeo=new THREE.CylinderGeometry(0.05,0.05,2.4,6);
+const pacificTracerMat=new THREE.MeshBasicMaterial({color:0xfff0a0,fog:false});
 function updateGuns(dt){
   gunCool-=dt;
   if(firing && state===ST.FLIGHT && P.alive && P.ammo>0 && gunCool<=0){
@@ -5130,14 +5131,10 @@ function updateGuns(dt){
     const perp=new THREE.Vector3(Math.cos(P.heading+Math.PI/2),0,Math.sin(P.heading+Math.PI/2));
     for(const sx of [-1,1]){
       const start=P.pos.clone().addScaledVector(perp,sx*4).addScaledVector(nd,5);
-      const m=new THREE.Mesh(new THREE.CylinderGeometry(0.05,0.05,2.4,6),
-        new THREE.MeshBasicMaterial({color:0xfff0a0,fog:false}));
+      const m=new THREE.Mesh(pacificTracerGeo,pacificTracerMat);
       m.position.copy(start); m.lookAt(start.clone().add(nd)); m.rotateX(Math.PI/2);
       scene.add(m); bullets.push({mesh:m,dir:nd.clone(),life:0.7,speed:650});
-      const mf=new THREE.Sprite(new THREE.SpriteMaterial({map:smokeTex,color:0xffd060,
-        transparent:true,opacity:0.95,blending:THREE.AdditiveBlending,depthWrite:false,fog:false}));
-      mf.scale.set(3.2,3.2,1); mf.position.copy(start); scene.add(mf);
-      explosions.push({mesh:mf,life:0.05,max:0.05,grow:0.3});
+      if(combatFX){planeGroup.updateMatrixWorld(true);combatFX.muzzle(planeGroup,[planeGroup.worldToLocal(start.clone())]);}
     }
     sfxGun(); updateHUD();
   }
@@ -5615,7 +5612,7 @@ function setupUIButtons(){
   if(dbgT2) dbgT2.onclick=()=>{
     dbgOn=!dbgOn; localStorage.setItem('dbgOn',dbgOn?'1':'0');
     const db=document.getElementById('dbgBox'); if(db) db.textContent=dbgOn?'✓':'';
-    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 132'; }
+    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 133'; }
   };
   const lu=document.getElementById('lookUp'), ld=document.getElementById('lookDn');
   let _lookT=0;
@@ -5896,6 +5893,7 @@ function animate(){
   updateClouds();
   updateShadow();
   updateAudio(dt);
+  if(combatFX)combatFX.update(dt);
   updateSea(t);
   if(okinawaWorld && okinawaWorld.root.visible)okinawaWorld.update(dt);
   updatePlaneMesh(dt);

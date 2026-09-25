@@ -110,10 +110,12 @@
   #dropBtn:active{transform:scale(.94);}
   #dropBtn.spent{filter:grayscale(.8) brightness(.6);}
   #fireBtn{position:fixed;right:max(86px,calc(env(safe-area-inset-right) + 86px));
-    bottom:calc(env(safe-area-inset-bottom) + 150px);width:64px;height:64px;border-radius:50%;
+    bottom:calc(env(safe-area-inset-bottom) + 150px);width:80px;height:80px;border-radius:50%;
     z-index:21;touch-action:none;color:#f3e6c8;font-family:monospace;font-weight:800;font-size:12px;
     letter-spacing:1px;display:flex;align-items:center;justify-content:center;
     background:radial-gradient(circle at 35% 30%,#9a7a34,#4a3410);border:2px solid rgba(202,191,156,.5);}
+  #fireBtn{text-align:center;line-height:1.35;}
+  #fireBtn.spent{filter:grayscale(.8) brightness(.6);}
   #fireBtn:active{transform:scale(.93);}
   .ctlBtn{position:fixed;width:58px;height:50px;border-radius:8px;z-index:21;touch-action:none;
     background:linear-gradient(180deg,rgba(40,46,30,.85),rgba(20,24,16,.85));
@@ -245,7 +247,7 @@
   <div style="width:100%;height:4px;background:repeating-linear-gradient(45deg,#ffd400,#ffd400 8px,#111 8px,#111 16px);"></div>
   <span id="testVersionBannerText" style="background:#111;color:#ffd400;font-family:monospace;font-weight:800;font-size:11px;letter-spacing:.5px;padding:3px 10px;border:1px solid #ffd400;border-top:none;border-radius:0 0 6px 6px;"></span>
 </div>
-<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 131';</script>
+<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 133';</script>
 <!-- ===== END TEMP TEST-ONLY VERSION BANNER ===== -->
 <div id="app"></div>
 
@@ -262,7 +264,7 @@
     <div><div class="lbl" id="hOrdLbl">BOMBS</div><div class="val" id="hOrd">2</div></div>
     <div><div class="lbl">ROCKETS</div><div class="val" id="hRkt">8</div></div>
     <div><div class="lbl">SCORE</div><div class="val" id="hScore">0</div></div>
-    <div><div class="lbl">GUN</div><div class="val" id="hAmmo">3400</div></div>
+    <div><div class="lbl" id="hAmmoLbl">GUN</div><div class="val" id="hAmmo">3400</div></div>
   </div>
   <div class="panel" id="obj">
     <div id="objText">—</div>
@@ -272,7 +274,7 @@
   <div id="flash"></div>
   <div id="gunsight"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 131 · REAL RHINE</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 133 · REAL RHINE</div>
 
   <div id="apr">
     <div id="aprCall"></div>
@@ -400,6 +402,8 @@
 <script src="terrain-system/WorldVehicles.js?v=remagen-21"></script>
 <script src="terrain-system/LivingWorld.js?v=remagen-21"></script>
 <script src="campaign.js?v=1"></script>
+<script src="combat-fx.js?v=133"></script>
+<script src="audio/weapon-sound.js?v=133"></script>
 <script src="audio/jet-engine.js?v=131"></script>
 <script src="sortie-systems.js?v=129"></script>
 <script src="operation-plans.js?v=129"></script>
@@ -522,11 +526,11 @@ const AC={
   // and real landing/stall speeds high enough that pilots trained on it specifically for that
   // (~200/175 km/h approach/stall, both well above every other type). turn/gLim deliberately
   // lower than the Bf109/Fw190: this aircraft's real advantage was outrunning a fight, not
-  // out-turning one. ammo/gunDmg reflect 4x30mm MK108 cannon - roughly a tenth of the P-47's
-  // eight-gun belt count, but each round is a 30mm autocannon shell, not a rifle-calibre bullet.
+  // out-turning one. gunDmg reflects 4x30mm MK108 cannon. The generous total ammo gives the
+  // player enough time to use them throughout a sortie; it is a gameplay allowance.
   me262:{ name:'Me 262A-1a/Jabo', rollAuth:1.10, pitchAuth:1.00, turn:0.80, gLim:5.0,
         rollLim:1.56, pitchLim:1.15, stall:49, app:56, max:242, thrMin:42,
-        hull:95, ammo:400, bombs:2, rockets:0, gunDmg:3.0, gunRate:0.09, wing:12.51,
+        hull:95, ammo:1200, bombs:2, rockets:0, gunDmg:3.0, gunRate:0.09, wing:12.51,
         col:0x6b7360, band:0x33392a }
 };
 function acDef(){ return AC[P.ac]||AC.p47; }
@@ -626,7 +630,7 @@ async function loadRealWorld(){
 
   if(OSMManager.BUILD!==21||HistoricalObjectManager.BUILD!==21||LivingWorld.BUILD!==21||WorldVehicles.BUILD!==21) throw new Error('Terrain version mismatch. Reload Remagen.');
   document.getElementById('testVersionBannerText').textContent=
-    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 131 · MODULE 21';
+    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 133 · MODULE 21';
   heightProvider=new DEMHeightProvider(RTILE,'terrain-system/real/data/dem/');
   terrain=new TerrainManager(scene,RTILE,heightProvider);
   osmMgr=new OSMManager(scene,RTILE,terrain,'terrain-system/real/data/osm/');
@@ -1690,6 +1694,27 @@ function cutGearClusters(root, gearInfo){
   }
   return {cut, rfUsed};
 }
+// The old wide search removed thousands of wing triangles on the Fw 190 and Bf 109.
+// On these two models only remove faces wholly beneath the lower wing skin and very
+// close to the measured wheel centres. The upper/lower wing panels stay intact.
+function cutWheelOnly(root, gearInfo){
+  const {clusters,floor}=gearInfo,v=[new THREE.Vector3(),new THREE.Vector3(),new THREE.Vector3()];
+  let removed=0;root.updateMatrixWorld(true);
+  root.traverse(o=>{
+    if(!o.isMesh||!o.geometry?.index||!o.geometry.attributes.position)return;
+    const index=o.geometry.index.array,position=o.geometry.attributes.position;let changed=false;
+    for(let i=0;i<index.length;i+=3){
+      if(index[i]===index[i+1]&&index[i]===index[i+2])continue;
+      for(let k=0;k<3;k++){readVert(position,index[i+k],v[k]);o.localToWorld(v[k]);}
+      if(v.some(p=>p.y>=floor-.36))continue;
+      const x=(v[0].x+v[1].x+v[2].x)/3,z=(v[0].z+v[1].z+v[2].z)/3;
+      if(!clusters.some(cl=>Math.hypot(x-cl.cx,z-cl.cz)<Math.min(.42,cl.r*.78)))continue;
+      index[i+1]=index[i];index[i+2]=index[i];changed=true;removed++;
+    }
+    if(changed)o.geometry.index.needsUpdate=true;
+  });
+  return removed;
+}
 // Reported: the real Fw190's wing root showed a jagged see-through gap in a straight-down view.
 // Measured against the real fw190.glb: the widening loop above (built and verified clean against
 // p47new.glb/b17.glb, where it only ever needs to eat a few dozen triangles) had to grow to a
@@ -1951,7 +1976,8 @@ function rigModel(root, kind){
   // aeroplane stayed wheels-up forever. `findGearClusters()`/`buildGear()` below already handle
   // "the real gear is welded in" for every propeller aircraft; skip the unreliable whole-mesh
   // filter for jets and let that same fallback run instead of trusting a false positive.
-  const found=JET_KINDS.includes(kind) ? [] :
+  const builtFighter=kind==='fw190'||kind==='bf109';
+  const found=(JET_KINDS.includes(kind)||builtFighter) ? [] :
     parts.filter(p=>p.bb.max.y<floor && p.sz.y<S.y*0.5 && p.sz.x<S.x*0.30);
   if(found.length && found.length<=parts.length*0.4){
     found.forEach(p=>gear.attach(p.o));
@@ -1965,7 +1991,7 @@ function rigModel(root, kind){
     // that one aircraft, also on the real p47new.glb/fw190.glb.
     const gi=findGearClusters(root, whole, S, kind);
     if(gi.clusters.length===2){                 // exactly the mirrored main-gear pair, or nothing
-      const {cut:cutN, rfUsed}=cutGearClusters(root, gi);
+      const {cut:cutN, rfUsed}=builtFighter?{cut:cutWheelOnly(root,gi),rfUsed:.8}:cutGearClusters(root, gi);
       if(cutN>0){
         rig+=', cut '+cutN+' welded gear triangles';
         coverGearCut(root, gi.clusters, gi.floor, rfUsed);
@@ -2009,9 +2035,10 @@ function buildGear(gear, root, whole, S, kind){
   // The Me 262 nacelles sit far below the fuselage. The generic fighter legs barely reach
   // past them, and the nosewheel used to vanish inside the nose in chase view.
   const jet=TRICYCLE_KINDS.includes(kind);
-  const legLen=span*(jet?0.100:0.052);
-  const legR  =span*0.0075;
-  const wheelR=span*(jet?0.024:0.0195);
+  const fighter=kind==='fw190'||kind==='bf109';
+  const legLen=span*(jet?0.100:fighter?0.112:0.052);
+  const legR  =span*(fighter?.010:0.0075);
+  const wheelR=span*(jet?0.024:fighter?0.031:0.0195);
   const wheelW=span*0.0090;
   const halfTrack=span*0.150;
   const embed=span*0.008;          // tuck the leg top slightly into the skin, no visible seam
@@ -2023,6 +2050,11 @@ function buildGear(gear, root, whole, S, kind){
   const pistonM=new THREE.MeshStandardMaterial({color:0xb9bdc0,roughness:0.25,metalness:0.75});
   const tyreM  =new THREE.MeshLambertMaterial({color:0x17170f});
   const hubM   =new THREE.MeshStandardMaterial({color:0x777b76,roughness:0.5,metalness:0.4});
+  // The Bf 109's left/right texture meshes have different low points; keep both
+  // wheel axles level on the runway while anchoring halfway between their skins.
+  const leftFloor=localFloor(root,-halfTrack,mainZ,span*.12);
+  const rightFloor=localFloor(root,halfTrack,mainZ,span*.12);
+  const fighterFloor=fighter&&leftFloor!=null&&rightFloor!=null?(leftFloor+rightFloor)/2:null;
 
   for(const side of [-1,1]){
     const g=new THREE.Group();
@@ -2041,7 +2073,7 @@ function buildGear(gear, root, whole, S, kind){
     hub.rotation.z=Math.PI/2; hub.position.set(0,-legLen-wheelR*0.12,side*(wheelW-wheelW*0.15)); g.add(hub);
     const legX=side*halfTrack;
     const floorY=localFloor(root, legX, mainZ, span*0.12);
-    g.position.set(legX, (floorY!=null? floorY : whole.min.y)+embed, mainZ);
+    g.position.set(legX,(fighterFloor!=null?fighterFloor:floorY!=null?floorY:whole.min.y)+embed,mainZ);
     g.rotation.z=side*0.04;
     gear.add(g);
   }
@@ -2060,6 +2092,19 @@ function buildGear(gear, root, whole, S, kind){
   // above); everything else about the small wheel (size, leg, localFloor anchoring) is identical.
   tg.position.set(0, (smallFloorY!=null? smallFloorY : whole.min.y)+embed, smallZ);
   gear.add(tg);
+}
+function brightenJetSkin(src){
+  src.traverse(o=>{if(!o.isMesh)return;
+    const materials=(Array.isArray(o.material)?o.material:[o.material]).map(m=>{
+      if(!m||!m.color||m.transparent&&m.opacity<.9)return m;
+      const n=m.clone();n.color.multiplyScalar(1.12);
+      if(n.emissive){n.emissive.setHex(0xb6bfca);n.emissiveMap=n.map||null;n.emissiveIntensity=.24;}
+      if(n.aoMapIntensity!==undefined)n.aoMapIntensity=.35;
+      if(n.metalness!==undefined)n.metalness=Math.min(n.metalness,.08);
+      if(n.roughness!==undefined)n.roughness=.64;
+      return n;
+    });o.material=Array.isArray(o.material)?materials:materials[0];
+  });
 }
 function loadModels(){
   if(typeof THREE.GLTFLoader!=='function') return;
@@ -2116,6 +2161,7 @@ function tryLoad(L,k,i){
       });
       o.material=Array.isArray(o.material)? out : out[0];
     });
+    if(k==='me262')brightenJetSkin(src);
     modelRaw[k]=src;
     window.__modelSrc=(window.__modelSrc||{}); window.__modelSrc[k]=url;
     buildTemplate(k);
@@ -2370,6 +2416,7 @@ function isFree(){ return !!M().free; }
 function isCircuits(){ return !!M().circuits; }
 
 function clearWorld(){
+  if(combatFX)combatFX.clear();
   // Every real target (flak/bridge/factory) is permanent world scenery, built once by
   // loadRealWorld() — never removed here, only reset (resetAllRealTargets(), called by the next
   // populate()), the same way the old synthetic game's own permanent worldBridge always was.
@@ -2482,14 +2529,9 @@ function updateSmoke(dt){
   }
 }
 function spawnExplosion(x,y,z,scale){
-  const s=scale||1;
-  const m=new THREE.Mesh(new THREE.SphereGeometry(1,10,8),
-    new THREE.MeshBasicMaterial({color:0xffb347,transparent:true,opacity:0.95,depthWrite:false}));
-  m.position.set(x,y,z); m.scale.setScalar(4*s); scene.add(m);
-  explosions.push({mesh:m,t:0,life:0.55+0.25*s,s:s});
-  for(let i=0;i<4+s*4;i++)
-    spawnSmoke(x+(Math.random()-0.5)*8*s,y+Math.random()*6*s,z+(Math.random()-0.5)*8*s,0x3b3730,s*1.1);
+  if(combatFX)combatFX.blast(x,y,z,scale,groundY(x,z));
 }
+
 function updateExplosions(dt){
   for(let i=explosions.length-1;i>=0;i--){
     const e=explosions[i]; e.t+=dt; const k=e.t/e.life;
@@ -2567,33 +2609,37 @@ function segDist(ax,ay,az,bx,by,bz,c){
   t=Math.max(0,Math.min(1,t));
   return Math.hypot(ax+dx*t-c.x, ay+dy*t-c.y, az+dz*t-c.z);
 }
-function fireGuns(dt){
-  if(!P.alive||state!==ST.FLIGHT) return;
-  const d=acDef();
-  gunT-=dt;
-  if(gunT>0||P.ammo<=0) return;
-  gunT=d.gunRate;
-  P.ammo-=(P.ac==='p47')?8:4;
-  const n=noseDir(), r=rightDir();
-  const pairs=(P.ac==='p47')?2:1;
-  for(let s=0;s<pairs;s++){
-    for(const side of (pairs>1?[-1,1]:[0])){
-      const off=r.clone().multiplyScalar(side*(1.6+s*1.3));
-      const spread=0.004+Math.random()*0.004;
-      const dir=n.clone().add(new THREE.Vector3(
-        (Math.random()-0.5)*spread*3,(Math.random()-0.5)*spread*3,(Math.random()-0.5)*spread*3)).normalize();
-      // fat, bright and long: at 760 m/s a round crosses 13 m per frame, so a thin dark
-      // sliver is simply never on screen long enough to see
-      const m=new THREE.Mesh(new THREE.BoxGeometry(0.34,0.34,7.5),
-        new THREE.MeshBasicMaterial({color:0xfff0b0}));
-      m.position.copy(P.pos).add(off).addScaledVector(n,6);
-      m.lookAt(m.position.clone().add(dir));
-      scene.add(m);
-      bullets.push({mesh:m,dir,speed:760,life:2.4,dmg:d.gunDmg});
-    }
-  }
-  sfxGun();
+function gunMuzzles(){
+  if(P.ac==='me262')return [[-.28,.18,5.4],[.28,.18,5.4],[-.28,-.16,5.4],[.28,-.16,5.4]].map(p=>new THREE.Vector3(...p));
+  if(P.ac==='p47')return [-3.1,-2.85,-2.6,-2.35,2.35,2.6,2.85,3.1].map(x=>new THREE.Vector3(x,-.15,1.6));
+  return [-2.1,-.3,.3,2.1].map(x=>new THREE.Vector3(x,0,2.6));
 }
+const cannonTracerGeo=new THREE.BoxGeometry(.12,.12,1.4),gunTracerGeo=new THREE.BoxGeometry(.12,.12,2.8);
+const playerTracerMat=new THREE.MeshBasicMaterial({color:0xffd78a});
+function fireGuns(dt){
+  if(!P.alive||state!==ST.FLIGHT)return;
+  const d=acDef();gunT-=dt;
+  if(gunT>0||P.ammo<=0)return;
+  gunT=d.gunRate;
+  const ports=gunMuzzles().slice(0,P.ammo);P.ammo-=ports.length;
+  const n=noseDir(),q=new THREE.Quaternion().setFromEuler(new THREE.Euler(-P.pitch,P.heading,-P.roll,'YXZ'));
+  for(const port of ports){
+    const dir=n.clone().add(new THREE.Vector3((Math.random()-.5)*.01,(Math.random()-.5)*.01,(Math.random()-.5)*.01)).normalize();
+    const m=new THREE.Mesh(P.ac==='me262'?cannonTracerGeo:gunTracerGeo,playerTracerMat);
+    m.position.copy(port).applyQuaternion(q).add(P.pos);m.lookAt(m.position.clone().add(dir));scene.add(m);
+    bullets.push({mesh:m,dir,speed:P.ac==='me262'?540:760,life:2.4,dmg:d.gunDmg*(P.ac==='me262'?1:P.ac==='p47'?.5:.25)});
+  }
+  if(combatFX)combatFX.muzzle(planeGroup,ports,P.ac==='me262');
+  sfxGun();updateGunUI();
+}
+function updateGunUI(){
+  const jet=P.ac==='me262',button=document.getElementById('fireBtn');
+  button.innerHTML=(jet?'CANNONS':'GUNS')+'<br>'+Math.max(0,P.ammo);
+  button.classList.toggle('spent',P.ammo<=0);
+  document.getElementById('hAmmoLbl').textContent=jet?'CANNON':'GUN';
+  document.getElementById('hAmmo').textContent=Math.max(0,P.ammo);
+}
+
 function updateBullets(dt){
   for(let i=bullets.length-1;i>=0;i--){
     const b=bullets[i]; b.life-=dt;
@@ -3423,6 +3469,7 @@ function relaunch(){
   state=ST.FLIGHT;
 }
 function startMission(i){
+  firing=false;gunT=0;
   mission=i; const m=MISSIONS[i];
   missionOver=false; circuitsDone=0;
   P.ac=m.ac||'p47';
@@ -3819,14 +3866,8 @@ function sfxBolter(){
 }
 // The fifties were the loudest thing in that cockpit. A short quiet tick did not sell them
 // at all, so this is a proper layered report: a hard crack, body underneath, and the breech.
-function sfxGun(){
-  // The P-47 already had the right level; quieter guns on the 109, 190 and jet were
-  // masked by their engines. Lift their own reports without changing the Jug.
-  const gain=P.ac==='p47'?1:1.85;
-  nburst(0.055,'highpass',2100,0,  0.34*gain, 0,     2.4);
-  nburst(0.090,'bandpass',820,0.8, 0.30*gain, 0.004, 1.8);
-  nburst(0.130,'lowpass', 300,0,   0.26*gain, 0.008, 1.4);
-}
+function sfxGun(){ WeaponSound.fire(actx,out(),P.ac); }
+
 function sfxWhoosh(){ nburst(0.35,'bandpass',600,0.6,0.12,0,1.5); }
 function sfxFlak(){ nburst(0.32,'lowpass',420,0,0.22,0,1.6); }
 function sfxAlarm(){
@@ -4009,6 +4050,8 @@ function updateWeatherFx(dt){
 //  CONTROL UI
 // ============================================================
 function applyWeaponUI(){
+  if(weapon==='rocket'&&acDef().rockets===0)weapon='bomb';
+  updateGunUI();
   const d=document.getElementById('dropBtn');
   const a=document.getElementById('armBtn');
   const rocketArmed=(weapon==='rocket');
@@ -4238,6 +4281,7 @@ function exitToMenuFromPause(){
 // ============================================================
 //  INIT
 // ============================================================
+let combatFX=null;
 function init(){
   const app=document.getElementById('app');
   renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});
@@ -4245,6 +4289,7 @@ function init(){
   renderer.setSize(window.innerWidth,window.innerHeight);
   app.appendChild(renderer.domElement);
   scene=new THREE.Scene();
+  combatFX=CombatFX.create(scene);
   // near was 0.6, which threw away depth precision for no gain - nothing is ever that close
   // to a chase camera. 2.5 keeps far ground and water cleanly separated in the depth buffer.
   camera=new THREE.PerspectiveCamera(62,window.innerWidth/window.innerHeight,2.5,30000);
@@ -4442,6 +4487,7 @@ function animate(){
   }
   // Menu/briefing transitions also fade the engine; pause uses the master gain above.
   updateAudio(raw);
+  if(combatFX)combatFX.update(raw);
   renderer.render(scene,camera);
 }
 function reportStartupError(err){

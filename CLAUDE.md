@@ -5,7 +5,24 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 132 · Thunderbolt Squadron BUILD 131 · reales Remagen-Gelände 21**
+Stand bei Übergabe: **Torpedo Squadron BUILD 133 · Thunderbolt Squadron BUILD 133 · reales Remagen-Gelände 21**
+
+**Build 133 (25.09.2026):** Die echte Fw-190- und Bf-109-GLB-Geometrie wurde mit
+`terrain-system/tests/aircraft-gear.js` überprüft: Der frühere Rad-Ausschnitt entfernte
+tausende Flügeldreiecke. Für diese beiden Modelle schneidet die begrenzte Routine nur
+44 bzw. 62 tiefe Rad-Dreiecke aus und erhält die Flügeloberfläche; die drei Beine sind
+sichtbar, die beiden Haupträder gleich hoch. Me 262 erhält vier getrennte 30-mm-Tracer
+pro Salve, eine eigene Bordkanonenanzeige, 1200 spielbare Patronen und hellere
+Modellmaterialien. Die Spielerwaffen erhalten kurze synthetisierte Schussgeräusche
+und Mündungsfeuer/Rauch; Bodentreffer erzeugen begrenzte Feuer-, Staub- und
+Rauchpartikel. Okinawa verwendet statt 234 nun 799 variierte Häuser mit
+Fenstern, Türen, Veranden, Mauern, Anbauten, Zufahrten, Hofpalmen und Wasserkrügen, verteilt auf rund
+25 Dörfer über die Insel. Die Instanzenzahl im Spiel bleibt mit Dichte 0,38
+bei 29340 und damit unter dem Budget von 30000. Beide Spiele verwenden die gemeinsamen Partikel und Waffenklänge.
+`npm test` prüft beide Welten und die realen Flugzeugmodelle; Browser-Render der
+Okinawa-Szenerie zusätzlich ohne WebGL-Fehler geprüft. iPad-Flugabnahme offen.
+
+---
 
 **Build 132 — Okinawa-Terrain/Häuser (25.09.2026):** Nutzer, nach eigener Bestandsaufnahme
 des Repos: „Bin mit den Details in Okinawa sehr unzufrieden. Keine Häuser, komisch wirkende

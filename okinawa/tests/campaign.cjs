@@ -14,7 +14,7 @@ const board=html('index.html').match(/<main class="board">([\s\S]*?)<\/main>/)[1
 const entries=[...board.matchAll(/href="([^"]+)"/g)].map(m=>new URL(m[1].replaceAll('&amp;','&'),'https://example.org/'));
 assert.deepEqual(entries.map(u=>u.pathname),['/torpedo-carrier.html','/remagen-mission.html'],'only the two current campaigns appear');
 assert.equal(entries[1].searchParams.get('campaign'),'1','Europe opens the real-terrain campaign');
-assert.equal(entries[1].searchParams.get('v'),'131','campaign link bypasses stale startup HTML');
+assert.equal(entries[1].searchParams.get('v'),'133','campaign link bypasses stale startup HTML');
 assert(!html('index.html').includes('href="thunderbolt-europe.html"'),'Classic Europe stays hidden');
 assert(!html('index.html').includes('href="torpedo-carrier-open-sea.html"'),'Classic Pacific stays hidden');
 assert(html('thunderbolt-europe.html').includes('function init()'),'hidden Classic game remains available by direct URL');
