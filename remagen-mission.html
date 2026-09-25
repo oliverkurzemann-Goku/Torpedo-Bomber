@@ -2394,8 +2394,11 @@ function populate(){
   if(m.free||m.circuits) return;
   if(m.kills&&m.kills.bridge && realBridge) spawnRealTarget('bridge',realBridge,{primary:true});
   // Every combat sortie now activates the documented gun positions. They are
-  // primary only in Flak Suppression; elsewhere they defend the objective and
-  // can be destroyed for score without blocking mission completion.
+  // primary (nav-arrow guidance, gold minimap mark) exactly where the sortie's
+  // own kills{} already requires destroying flak — currently Flak Suppression,
+  // Counterattack, Factory Strike, Jabo Raid and The Whole Rhine. Elsewhere
+  // they defend the objective and can be destroyed for score without a nav
+  // arrow pointing at them or blocking mission completion.
   const flakPrimary=!!(m.kills&&m.kills.flak),flakCount=Math.min(realFlak.length,m.flakDefense||0);
   for(let i=0;i<flakCount;i++)spawnRealTarget('flak',realFlak[i],{primary:flakPrimary,heavy:true});
   if(m.kills&&m.kills.factory && realFactory) spawnRealTarget('factory',realFactory,{primary:true});

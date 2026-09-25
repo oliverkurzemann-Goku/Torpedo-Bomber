@@ -165,6 +165,99 @@ alle DOM-ID-Referenzen existieren, echte GLTFLoader-Geometriemessung wählt `Obj
 neuen SBD-Brakes liegen im gemessenen Flügelbereich. Kein WebGL-Screenshot: in dieser Umgebung
 war kein Browser-Binary vorhanden und der Playwright-Download lief in den Netzwerk-Timeout.
 
+**Repo-Aufräumen: package.json/Tests/CI/README, kaputtes Asset entfernt (25.09.2026):** Nutzer,
+nach einer Bestandsaufnahme des Repos auf GitHub, ausdrücklich: „Kannst du generell für Ordnung
+sorgen und es auch dokumentieren? Das Spiel funktioniert derzeit, aber eben nicht effektiv." Reine
+Infrastruktur-/Aufräumarbeit — **keine der drei Spieldateien wurde inhaltlich verändert**, keine
+Build-Nummer musste daher hochgezählt werden (die Zahl steht fürs Gameplay im HUD, nicht für
+Repo-Hygiene).
+
+**Ursprünglicher Befund, mit dem diese Runde begann** (Details/Zahlen siehe die vorausgegangene
+Bestandsaufnahme in diesem Chat): kein `package.json`, keine CI, kein README, keine LICENSE, `.git`
+bei 177 MB (unkomprimierte GLB-Historie), 57 identisch benannte Top-Level-Funktionen doppelt
+zwischen `torpedo-carrier.html` und `thunderbolt-europe.html` gepflegt, und ein kaputtes Asset.
+
+**Was tatsächlich behoben wurde, alles risikoarm und additiv — die geteilte Codebasis (57
+Funktionsnamen doppelt zwischen den Spieldateien) wurde bewusst NICHT angefasst, das ist ein
+eigener, großer Umbau mit echtem Regressionsrisiko für ein Projekt, dessen halbe Historie aus
+genau solchen gut gemeinten Änderungen besteht, die etwas anderswo kaputt gemacht haben — nicht
+in einer „Ordnung schaffen"-Runde ohne separate Abstimmung zu machen:**
+
+1. **`samidare_destroyer.glb` entfernt — war 2 Byte groß, also faktisch kaputt.** Vor dem Löschen
+   geprüft, nicht angenommen: `loadDestroyerModel()` in `torpedo-carrier.html` hat einen
+   `onError`-Callback, der beim Ladefehler auf den vorhandenen prozeduralen Zerstörer zurückfällt
+   (`console.warn('No destroyer model...')`) — exakt derselbe Pfad, den eine fehlende Datei (404)
+   auch auslöst. Verhalten vor/nach dem Löschen ist identisch (Fallback greift so oder so), nur
+   liefert die Datei jetzt keinen stillen 2-Byte-Datenmüll mehr aus. Falls ein echtes
+   Zerstörer-Modell gewünscht ist: neu hochladen, `DESTROYER_MODEL_URL` in `torpedo-carrier.html`
+   zeigt bereits korrekt auf den Dateinamen.
+2. **`package.json` (Root, neu).** `three@0.128.0` (exakt gepinnt, kein `^`, weil mehrere Tests
+   `THREE.REVISION==='128'` prüfen und mehrere Spieldateien explizit r128 vom CDN laden — ein
+   automatischer Minor-Bump beim nächsten `npm install` hätte diese Annahme lautlos gebrochen),
+   `fflate` und `playwright` als `devDependencies`. `"license":"UNLICENSED"` — bewusst NICHT MIT/
+   ISC/o.ä. geraten, das ist eine echte Entscheidung über Nutzungsrechte am eigenen Code, die nur
+   der Nutzer treffen kann (siehe README, „License"-Abschnitt).
+3. **Zwei neue Skripte, `scripts/check-syntax.js` und `scripts/run-terrain-tests.js`.** Ersteres
+   ist exakt das in Abschnitt 6 dieser Datei seit Langem beschriebene, aber nie committete
+   Syntax-Check-Verfahren (`new Function()` auf jedem extrahierten `<script>`-Block), jetzt als
+   `npm run test:syntax` aufrufbar statt bei jeder Sitzung neu zusammengebaut zu werden. Zweiteres
+   löst einen bisher unbemerkten, echten Befund: **5 von 6 Tests in `terrain-system/tests/` liefen
+   vor dieser Runde gar nicht** — sie brauchen `THREE_R128`/`GLTF_LOADER_R128`/`FBX_LOADER_R128`/
+   `SKELETON_UTILS_R128`/`FFLATE_R128` als Umgebungsvariablen (Pfade zu den klassischen, nicht
+   ESM-basierten r128-Beispielskripten), die ohne `node_modules` schlicht nicht existierten —
+   `MODULE_NOT_FOUND` bei jedem Aufruf. Nur `osmmanager-regression.js` (reine THREE-Attrappen ohne
+   echten Loader) lief bereits vorher durch. `run-terrain-tests.js` löst diese Pfade jetzt aus den
+   installierten `devDependencies` auf (`path.dirname(require.resolve('paket/package.json'))`
+   statt `require.resolve('paket/unterpfad')` — Letzteres scheiterte für `fflate`, dessen
+   `package.json` den `exports`-Zugriff auf `umd/index.js` sperrt) und startet jedes Testfile als
+   eigenen Kindprozess mit den korrekten Variablen.
+4. **`.github/workflows/ci.yml` (neu).** Läuft bei jedem Push/PR: `npm ci`, dann
+   `npm run test:syntax` und `npm run test:terrain`. Deckt keine GPU/WebGL-Fragen ab (dafür bleibt
+   Abschnitt 6 dieser Datei die verbindliche Vorgabe), fängt aber genau die Art Fehler, die schon
+   mehrfach in dieser Historie passiert sind: ein kaputtes `<script>`-Tag, eine Terrain-Geometrie-
+   Regression, die erst beim nächsten Nutzer-Feedback aufgefallen wäre.
+5. **`README.md` (neu, Root)** — Spielübersicht, wie man lokal spielt/testet, Verweise auf
+   `CLAUDE.md`/`TERRAIN.md`/`ASSET-CREDITS.md`. Absichtlich schlank und ohne Build-Nummern (die
+   stehen bereits im HUD und im „Stand bei Übergabe"-Kopf dieser Datei — eine zweite Stelle hätte
+   nur eine weitere Quelle für Drift geschaffen).
+6. **`.gitignore` (neu, Root)** — `node_modules/` u. Ä., damit die 47 MB der frisch installierten
+   `devDependencies` nicht versehentlich committet werden.
+
+**Nachgewiesen, nicht nur behauptet:** `npm run test:syntax` — 5 HTML-Dateien, 5 Skriptblöcke,
+0 Fehler. `npm run test:terrain` — alle 6 Testdateien laufen jetzt durch (vorher 1 von 6), inklusive
+`remagen-vehicles.js` mit echtem `GLTFLoader`/`FBXLoader`/`SkeletonUtils` gegen die echten
+`.fbx`/`.glb`-Assets. `npm ci` aus einem vollständig gelöschten `node_modules/` heraus wiederholt
+(simuliert exakt, was `ci.yml` bei jedem Push tut) — lief fehlerfrei, `npm test` danach weiterhin
+grün. Das bewusst NICHT Getane (die geteilte Codebasis der drei Spieldateien) ist an dieser Stelle
+so belassen, wie es war — kein Risiko für laufendes Gameplay durch diese Runde.
+
+**Offen, bewusst nicht in dieser Runde angegangen:**
+- Die eigentliche strukturelle Ursache hinter „nicht effektiv" — 57 identisch benannte
+  Top-Level-Funktionen (Propellerschnitt, Fahrwerk-Erkennung, Flugmodell, Audio-Synthese) doppelt
+  zwischen `torpedo-carrier.html` und `thunderbolt-europe.html` von Hand synchron gehalten — bleibt
+  bestehen. Genau das hat wiederholt zu „in Datei A gefixt, in B vergessen" geführt (Pause-Audio-
+  Mute dreimal einzeln, iPad-Zoom-Guard monatelang nur in einer Datei). Ein Umbau auf geteilte
+  Module (nach dem Vorbild von `terrain-system/*.js`) wäre der nächste, deutlich größere und
+  riskantere Schritt — nicht ohne eigene Absprache zu machen.
+- `.git` bleibt bei ~177 MB (Historie unkomprimierter GLB-Uploads über ~120 Builds) — eine
+  Verkleinerung ginge nur über Rewriting der Git-Historie (`git filter-repo`/BFG), ein destruktiver
+  Eingriff, der laut den Sicherheitsregeln dieser Sitzung nur auf ausdrücklichen Nutzerwunsch
+  gemacht wird, nicht proaktiv.
+- Mehrere seit Wochen ungenutzte `.glb`-Dateien (`me163.glb`, `ju87.glb`, `maus.glb`, `tiger.glb`,
+  `sherman_m4a1.glb`, `jagdpanther.glb`, `m16_mgmc.glb`) bleiben unangetastet — laut Abschnitt 2
+  dieser Datei bewusst „für eine künftige Runde" vorgehalten, kein Aufräum-Fall.
+- Keine Draco-/Meshopt-Kompression der großen `.glb`-Dateien (10–20 MB roh) — könnte iPad-Ladezeit
+  senken, aber jede Kompression bräuchte laut Abschnitt 6 dieser Datei echte Rendering-Verifikation
+  vor dem Ausliefern; nicht in dieser reinen Infra-Runde gemacht.
+- `"license":"UNLICENSED"` ist ein Platzhalter, keine Entscheidung — der Nutzer muss noch sagen,
+  unter welcher Lizenz (falls überhaupt) der eigene Code stehen soll.
+
+Code: `package.json`, `package-lock.json`, `scripts/check-syntax.js`, `scripts/run-terrain-tests.js`,
+`.github/workflows/ci.yml`, `README.md`, `.gitignore` (alle neu, Root); `samidare_destroyer.glb`
+entfernt.
+
+---
+
 **Okinawa-Terrain-Testbed gebaut, dann auf ausdrücklichen Nutzerwunsch komplett wieder entfernt
 (20.09.2026):** Auf Bitte des Nutzers wurde eine neue, eigenständige vierte Datei
 (`pacific-terrain-test.html`) gebaut, die Remagens Technik für echtes Terrain (Copernicus-DEM +

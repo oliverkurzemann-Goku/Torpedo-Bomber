@@ -32,10 +32,17 @@ global.fetch=async url=>{const b=fs.readFileSync(path.join(root,url.split('?')[0
   vm.runInContext(html.slice(missionStart,missionEnd)+"\nglobalThis.runMission=i=>{mission=i;calls=[];populate();return {id:M().id,calls};};",missionContext);
   const missionFlak={free:0,circ:0,bridge:2,flak:2,factory:1,convoy:1,train:1,ferry:2,
     fighter:0,boxes:0,libs:0,jabo:1,jetstrike:0,final:2};
+  // Which sorties list flak in their own kills{} (MISSIONS array in remagen-mission.html) --
+  // those are the ones where destroyed flak guns must be primary (nav-arrow) targets.
+  const missionKills={bridge:{flak:1},flak:{flak:1},factory:{flak:1},jabo:{flak:1},final:{flak:1}};
   for(let i=0;i<14;i++){
     const run=missionContext.runMission(i),guns=run.calls.filter(c=>c.kind==='flak');
     assert.equal(guns.length,missionFlak[run.id],run.id+' flak defense mismatch');
-    assert(guns.every(g=>g.heavy));assert(guns.every(g=>g.primary===(run.id==='flak'||run.id==='final')));
+    // primary = flak is a listed kill{} requirement for this sortie (nav-arrow
+    // guidance), not just the dedicated Flak Suppression sortie -- see populate()'s
+    // own comment in remagen-mission.html.
+    const flakRequired=!!(missionKills[run.id]&&missionKills[run.id].flak);
+    assert(guns.every(g=>g.heavy));assert(guns.every(g=>g.primary===flakRequired));
     if(run.id==='jabo')assert(run.calls.some(c=>c.kind==='truck'&&c.primary));
     if(run.id==='final')assert(run.calls.some(c=>c.kind==='ferry'&&c.primary));
   }
