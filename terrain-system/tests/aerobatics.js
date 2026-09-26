@@ -24,6 +24,17 @@ for(const [file,start,kind] of [
   assert(p.roll>1.05&&p.roll<1.57,file+' full stick must reach a steep bank');
   for(let i=0;i<120;i++)fly(p,0,0,false,.04,d,40,1);
   assert(Math.abs(p.roll)<.06,file+' normal mode must still return to level');
+  p.roll=Math.PI/2;p.pitch=0;p.heading=0;
+  for(let i=0;i<35;i++)fly(p,0,1,true,.04,d,40,1);
+  assert(Math.abs(p.pitch)<.02,file+' knife-edge pull should turn rather than loop');
+  assert(Math.abs(p.heading)>.35,file+' knife-edge pull must tighten the turn');
+  p.roll=70*Math.PI/180;p.pitch=0;p.heading=0;
+  for(let i=0;i<35;i++)fly(p,0,1,true,.04,d,40,1);
+  assert(p.pitch>.15&&Math.abs(p.heading)>.3,file+' 70° pull must climb and turn');
+  p.roll=Math.PI/2;p.pitch=0;p.heading=0;
+  for(let i=0;i<35;i++)fly(p,0,0,true,.04,d,40,1);
+  assert(Math.abs(p.heading)<.01,file+' bank alone in AERO must not force a turn');
+  p.roll=0;p.pitch=0;
   let travelled=0,old=p.roll,upsideDown=false;
   for(let i=0;i<250&&travelled<Math.PI*2;i++){
     fly(p,1,0,true,.04,d,40,1);
@@ -38,5 +49,5 @@ for(const [file,start,kind] of [
     if(Math.abs(p.pitch)>2.9)upsideDown=true;
   }
   assert(upsideDown&&travelled>=Math.PI*2,file+' must rotate through a full 360° loop');
-  console.log(file,kind,'steep bank, full roll and loop');
+  console.log(file,kind,'coupled bank/pull, full roll and loop');
 }

@@ -252,7 +252,7 @@
   <div style="width:100%;height:4px;background:repeating-linear-gradient(45deg,#ffd400,#ffd400 8px,#111 8px,#111 16px);"></div>
   <span id="testVersionBannerText" style="background:#111;color:#ffd400;font-family:monospace;font-weight:800;font-size:11px;letter-spacing:.5px;padding:3px 10px;border:1px solid #ffd400;border-top:none;border-radius:0 0 6px 6px;"></span>
 </div>
-<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 138';</script>
+<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 139';</script>
 <!-- ===== END TEMP TEST-ONLY VERSION BANNER ===== -->
 <div id="app"></div>
 
@@ -281,7 +281,7 @@
   <div id="flash"></div>
   <div id="gunsight"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 138 · REAL RHINE</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 139 · REAL RHINE</div>
 
   <div id="apr">
     <div id="aprCall"></div>
@@ -639,7 +639,7 @@ async function loadRealWorld(){
 
   if(OSMManager.BUILD!==21||HistoricalObjectManager.BUILD!==21||LivingWorld.BUILD!==22||WorldVehicles.BUILD!==22) throw new Error('Terrain version mismatch. Reload Remagen.');
   document.getElementById('testVersionBannerText').textContent=
-    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 138 · MODULE 22';
+    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 139 · MODULE 22';
   heightProvider=new DEMHeightProvider(RTILE,'terrain-system/real/data/dem/');
   terrain=new TerrainManager(scene,RTILE,heightProvider);
   osmMgr=new OSMManager(scene,RTILE,terrain,'terrain-system/real/data/osm/');
@@ -3051,6 +3051,7 @@ function updateEnemyAir(dt){
   for(const e of enemyAir){
     if(!e.alive) continue;
     e.modeT-=dt;
+    e.evadeCd=Math.max(0,(e.evadeCd||0)-dt);
     const toP=P.pos.clone().sub(e.pos);
     const dist=toP.length();
     if(e.bomber){ updateBomber(e,dt,toP,dist); continue; }
@@ -3066,14 +3067,31 @@ function updateEnemyAir(dt){
     // Energy is the whole game: too slow and you cannot turn or climb, so you have to go and
     // get some speed back before you are any use.
     const slow=(e.spd < S.stall*1.45);
+    const playerBehind=dist<950 && ahead<0.3 && P.alive &&
+      noseDir().dot(e.pos.clone().sub(P.pos).normalize())>0.88;
     if(agl<160 && e.pitch<0.15){ e.mode='pullup'; e.modeT=Math.max(e.modeT,1.6); }
+    else if(playerBehind && e.evadeCd<=0 && !slow){
+      // A fighter caught in the player's gunsight breaks across the line of
+      // fire. Alternate the side on repeat attacks; use a shallow dive when
+      // there is height and energy to spend, then recover and re-engage.
+      e.evadeSide=-(e.evadeSide||1);
+      e.evadeDive=agl>520 && e.spd>S.stall*2.2;
+      e.mode='break';e.modeT=1.7+Math.random()*0.8;e.evadeCd=6+Math.random()*2;
+    }
     else if(e.modeT<=0){
       if(e.mode==='engage'){
-        if(dist<170 || slow){ e.mode='extend'; e.modeT=3.2+Math.random()*1.6; }
+        if(dist<240 || slow){ e.mode='extend'; e.modeT=2.5+Math.random()*1.2; }
+        else if(dist<1300 && ahead<0.7 && e.spd>S.stall*1.8){
+          e.evadeSide=-(e.evadeSide||1);e.mode='weave';e.modeT=1.4+Math.random()*0.7;
+        }
         else e.modeT=1.2;
       } else if(e.mode==='extend'){
         if(!slow && dist>700){ e.mode='climb'; e.modeT=2.4+Math.random()*1.8; }
         else e.modeT=1.6;
+      } else if(e.mode==='break'){
+        e.mode='extend';e.modeT=1.4;
+      } else if(e.mode==='weave'){
+        e.mode='engage';e.modeT=2.4;
       } else {                                   // climb, pullup or anything unset
         e.mode='engage'; e.modeT=3+Math.random()*2.5;
       }
@@ -3084,6 +3102,12 @@ function updateEnemyAir(dt){
     let aim, thr=S.max;
     if(e.mode==='pullup'){
       aim=nose.clone(); aim.y=0.75; thr=S.max;                   // get the nose up, now
+    } else if(e.mode==='break' || e.mode==='weave'){
+      const side=new THREE.Vector3(Math.cos(e.heading),0,-Math.sin(e.heading));
+      aim=nose.clone().multiplyScalar(e.mode==='break'?0.85:1.25)
+        .addScaledVector(side,e.evadeSide*(e.mode==='break'?0.92:0.55));
+      aim.y+=(e.mode==='break' && e.evadeDive)?-0.28:0.12;
+      thr=S.max;
     } else if(e.mode==='extend'){
       // run out in front, shallow, and build speed back up
       aim=e.pos.clone().sub(P.pos).normalize();
@@ -3332,13 +3356,15 @@ function updateFlight(dt){
   // overshoot versus the old zeta=0.85 (checked numerically for all three types here).
   const zeta=0.80;
   if(aeroMode){
-    // Rate control holds attitude when the stick is released. Crossing the
-    // vertical or inverted position remains possible in either direction.
+    // Pull acts along the aircraft's own lift axis: wings level -> climb,
+    // knife-edge -> turn, 70 degrees -> turn AND climb. Keep the full pitch
+    // rotation for loops and the roll rate for barrel rolls.
     const energy=Math.max(.35,Math.min(1,P.spd/(stallSpd*1.8)));
     const pull=Math.min(.95*d.pitchAuth,1.6*9.81*(d.gLim-1)/Math.max(P.spd,60))*energy;
     P.pitchVel=inputPitch*pull;
     P.rollVel=inputRoll*steerSign*2.1*d.rollAuth*energy;
-    P.pitch=Math.atan2(Math.sin(P.pitch+P.pitchVel*dt),Math.cos(P.pitch+P.pitchVel*dt));
+    P.pitch=Math.atan2(Math.sin(P.pitch+P.pitchVel*Math.cos(P.roll)*dt),Math.cos(P.pitch+P.pitchVel*Math.cos(P.roll)*dt));
+    P.heading+=P.pitchVel*Math.sin(P.roll)*dt;
     P.roll=Math.atan2(Math.sin(P.roll+P.rollVel*dt),Math.cos(P.roll+P.rollVel*dt));
   }else{
     P.pitchVel=(P.pitchVel||0)+(pitchRate*pitchRate*(inputPitch*d.pitchLim*0.92-P.pitch) - 2*zeta*pitchRate*P.pitchVel)*dt;
@@ -3361,8 +3387,7 @@ function updateFlight(dt){
     // 50° of bank, which is why this played like flying straight ahead).
     const nLift=Math.max(1.05, Math.pow(P.spd/Math.max(1,stallSpd),2)*0.85);
     const gUse=Math.max(1.05, Math.min(d.gLim, nLift));
-    P.heading += (aeroMode?Math.sin(P.roll)*.18:Math.sign(P.roll))
-      *bankTurnRate(P.roll, P.spd, gUse, d.turn)*dt;
+    if(!aeroMode)P.heading += Math.sign(P.roll)*bankTurnRate(P.roll, P.spd, gUse, d.turn)*dt;
   }
   P.heading += windZ*0.004*dt;
 
@@ -3671,14 +3696,18 @@ function updateCamera(dt){
   const wantFov=60+fast*11;
   camera.fov += (wantFov-camera.fov)*Math.min(1,2*dt);
   camera.updateProjectionMatrix();
-  const back=nose.clone().multiplyScalar(-(28+fast*5));
+  // In a loop the nose passes the zenith. A camera looking straight along it
+  // loses its world-up reference and flips the ground above the sky. In AERO
+  // follow the heading horizontally while keeping the plane centred.
+  const track=aeroMode?new THREE.Vector3(Math.sin(P.heading),0,Math.cos(P.heading)):nose;
+  const back=track.clone().multiplyScalar(-(28+fast*5));
   const want=P.pos.clone().add(back).add(new THREE.Vector3(0,8.5+chaseUp*8+fast*1.5,0));
   const gy=groundY(want.x,want.z)+6;
   if(want.y<gy) want.y=gy;
   camera.position.lerp(want,Math.min(1,7*dt));
-  const up=new THREE.Vector3(0,1,0).applyAxisAngle(nose,-P.roll*(aeroMode?1:0.55));
+  const up=aeroMode?new THREE.Vector3(0,1,0):new THREE.Vector3(0,1,0).applyAxisAngle(nose,-P.roll*.55);
   camera.up.copy(up);
-  camera.lookAt(P.pos.clone().addScaledVector(nose,50).add(new THREE.Vector3(0,2,0)));
+  camera.lookAt(P.pos.clone().addScaledVector(track,50).add(new THREE.Vector3(0,2,0)));
   if(shakeT>0){
     const k=shakeAmt*shakeT;
     camera.position.x+=(Math.random()-0.5)*k; camera.position.y+=(Math.random()-0.5)*k;

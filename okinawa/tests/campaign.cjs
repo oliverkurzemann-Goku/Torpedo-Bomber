@@ -16,7 +16,7 @@ assert.deepEqual(entries.map(u=>u.pathname),[
  '/torpedo-carrier.html','/remagen-mission.html'
 ],'only the two current real-terrain campaigns appear on the board');
 assert.equal(entries[1].searchParams.get('campaign'),'1','Europe opens the real-terrain campaign');
-assert.equal(entries[1].searchParams.get('v'),'138','campaign link bypasses stale startup HTML');
+assert.equal(entries[1].searchParams.get('v'),'139','campaign link bypasses stale startup HTML');
 for(const classic of ['torpedo-carrier-open-sea.html','thunderbolt-europe.html']){
  assert.match(html(classic),/id="missionSel"/,`${classic} has a mission selection`);
  assert.match(html(classic),/const MISSIONS\s*=\s*\[/,`${classic} defines its missions`);

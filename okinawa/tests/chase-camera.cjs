@@ -4,7 +4,7 @@ const settings=html.slice(html.indexOf('let chaseH=6;'),html.indexOf('let planeB
 const cameraCode=html.slice(html.indexOf('function updateCamera(dt)'),html.indexOf('function applyShake()'));
 for(const [store,height]of [[{chaseH:'40'},6],[{tc_chaseHeight_v2:'8'},8],[{tc_chaseHeight_v2:'Infinity'},6],[{tc_chaseHeight_v2:'900'},16]]){
  const camera=new THREE.PerspectiveCamera(60,1536/927,1,30000),pos=new THREE.Vector3(0,24,0);
- const ctx=vm.createContext({THREE,Math,Number,parseFloat,localStorage:{getItem:k=>store[k]??null},camera,P:{pos},killCam:null,dbgOn:false,ST:{FLIGHT:1},state:1,document:{querySelector:()=>null},noseDir:()=>new THREE.Vector3(1,0,0),applyShake(){}});
+ const ctx=vm.createContext({THREE,Math,Number,parseFloat,localStorage:{getItem:k=>store[k]??null},camera,P:{pos},aeroMode:false,killCam:null,dbgOn:false,ST:{FLIGHT:1},state:1,document:{querySelector:()=>null},noseDir:()=>new THREE.Vector3(1,0,0),applyShake(){}});
  vm.runInContext(settings+cameraCode,ctx);
  camera.position.set(-24,24+height,0);
  for(let i=0;i<600;i++){pos.x+=100/60;ctx.updateCamera(1/60);}

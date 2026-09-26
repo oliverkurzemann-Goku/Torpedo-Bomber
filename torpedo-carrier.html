@@ -287,7 +287,7 @@
   <div id="flash"></div>
   <div id="ltn" style="position:fixed;inset:0;background:#e6ecff;opacity:0;pointer-events:none;z-index:40;"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 138</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 139</div>
 
   <!-- Optical landing aid -->
   <div id="lso">
@@ -2641,12 +2641,23 @@ function updateZeros(dt){
       radioSay(z.pos.y>P.pos.y+40?"SKIPPER — ZEROS HIGH, TWELVE O'CLOCK!":"BANDITS INBOUND — KEEP YOUR HEAD ON A SWIVEL"); }
     if(!z.vel) z.vel=new THREE.Vector3(Math.sin(z.heading),0,Math.cos(z.heading)).multiplyScalar(z.spd||88);
     const fwd=z.vel.clone().normalize();
+    z.evadeCd=Math.max(0,(z.evadeCd||0)-dt);
+    if(!z.evadeT && z.evadeCd<=0 && dist<730 && fwd.dot(to)<0.3 &&
+       foeVel.clone().normalize().dot(z.pos.clone().sub(foePos).normalize())>0.88){
+      z.evadeT=1.5+Math.random()*0.6;
+      z.evadeCd=5+Math.random()*2;
+      z.breakSide*=-1;
+    }
     // Do not orbit tightly around the target. Pass through, break away with a persistent side,
     // then set up another lead pursuit. This produces recognisable attack runs and removes the
     // old point-chasing zig-zag when a target crossed the nose.
     if(dist<145 && fwd.dot(to)>0.15 && z.reengage<=0){ z.reengage=1.5+Math.random()*0.7; z.breakSide*=-1; }
     let aim;
-    if(z.reengage>0){
+    if(z.evadeT>0){
+      z.evadeT=Math.max(0,z.evadeT-dt);
+      const lat=new THREE.Vector3(fwd.z,0,-fwd.x).multiplyScalar(z.breakSide*0.85);
+      aim=fwd.clone().add(lat).add(new THREE.Vector3(0,z.pos.y>300?-0.22:0.16,0)).normalize();
+    } else if(z.reengage>0){
       z.reengage-=dt;
       const lat=new THREE.Vector3(fwd.z,0,-fwd.x).multiplyScalar(z.breakSide*0.72);
       aim=fwd.clone().multiplyScalar(1.15).add(lat).add(new THREE.Vector3(0,0.18,0)).normalize();
@@ -2674,7 +2685,7 @@ function updateZeros(dt){
     const desP=Math.max(-0.48,Math.min(0.48,Math.asin(Math.max(-1,Math.min(1,velDir.y)))));
     z.pitch+=(desP-z.pitch)*Math.min(1,3.4*dt);
     const turnRate=(z.heading-oldHeading)/Math.max(dt,0.001);
-    const bankTarget=Math.max(-0.95,Math.min(0.95,turnRate*0.72));
+    const bankTarget=Math.max(-1.1,Math.min(1.1,turnRate*2.2));
     z.roll+=(bankTarget-z.roll)*Math.min(1,3.2*dt);
     z.spd=z.vel.length();
     z.pos.addScaledVector(z.vel,dt);
@@ -2875,7 +2886,9 @@ function updateFlight(dt){
     const pull=Math.min(.95*AC.pitch,1.6*9.81*(AC.gLim-1)/Math.max(P.spd,50))*energy;
     P.pitchVel=inputPitch*pull;
     P.rollVel=inputRoll*steerSign*2.1*AC.roll*energy;
-    P.pitch=Math.atan2(Math.sin(P.pitch+P.pitchVel*dt),Math.cos(P.pitch+P.pitchVel*dt));
+    // Pull is in the wing's lift direction, so banked pulls turn as well as climb.
+    P.pitch=Math.atan2(Math.sin(P.pitch+P.pitchVel*Math.cos(P.roll)*dt),Math.cos(P.pitch+P.pitchVel*Math.cos(P.roll)*dt));
+    P.heading-=P.pitchVel*Math.sin(P.roll)*dt;
     P.roll=Math.atan2(Math.sin(P.roll+P.rollVel*dt),Math.cos(P.roll+P.rollVel*dt));
   }else{
     P.pitchVel=(P.pitchVel||0)+(pitchRate*pitchRate*(inputPitch*0.55-P.pitch) - 2*zeta*pitchRate*P.pitchVel)*dt;
@@ -2913,7 +2926,7 @@ function updateFlight(dt){
   const turnRate=Math.min(
     TURN_K*Math.sin(Math.abs(P.roll))*(TURN_VREF/vT)*AC.turn,
     TURN_CEIL*9.81*Math.sqrt(Math.max(0,gUse*gUse-1))/vT);
-  P.heading -= (aeroMode?Math.sin(P.roll)*.18:Math.sign(P.roll))*turnRate*dt;
+  if(!aeroMode)P.heading -= Math.sign(P.roll)*turnRate*dt;
 
   // speed toward throttle target (engine loses power when damaged), minus drag
   const engineMul = P.hull<60? (0.45+0.55*P.hull/60) : 1.0;
@@ -4378,7 +4391,7 @@ function loadPlaneModel(){
       }
       window.__eyeDbg='EYE '+COCKPIT_EYE.map(v=>v.toFixed(2)).join('/');
       const btEl=document.getElementById('buildTag');
-      if(btEl) btEl.textContent='BUILD 138 · '+window.__eyeDbg;
+      if(btEl) btEl.textContent='BUILD 139 · '+window.__eyeDbg;
       let seat=null;
       model.traverse(function(o){
         if(!o.isMesh||!o.material) return;
@@ -5323,11 +5336,13 @@ function updateCamera(dt){
     } else cret.style.display='none';
   }
   camera.up.set(0,1,0);
+  // Keep the sea and horizon below the aircraft when the nose passes vertical.
+  const track=aeroMode?new THREE.Vector3(Math.cos(P.heading),0,Math.sin(P.heading)):nd;
   const want=P.pos.clone()
-    .addScaledVector(nd,-24)
+    .addScaledVector(track,-24)
     .add(new THREE.Vector3(0,chaseH,0));  // chase height (LOOK buttons)
   camera.position.lerp(want, Math.min(1,5*dt));
-  camera.lookAt(P.pos.clone().addScaledVector(nd,30));
+  camera.lookAt(P.pos.clone().addScaledVector(track,30));
   applyShake();
 }
 function applyShake(){
@@ -5679,7 +5694,7 @@ function setupUIButtons(){
   if(dbgT2) dbgT2.onclick=()=>{
     dbgOn=!dbgOn; localStorage.setItem('dbgOn',dbgOn?'1':'0');
     const db=document.getElementById('dbgBox'); if(db) db.textContent=dbgOn?'✓':'';
-    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 138'; }
+    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 139'; }
   };
   const lu=document.getElementById('lookUp'), ld=document.getElementById('lookDn');
   let _lookT=0;
