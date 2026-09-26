@@ -252,7 +252,7 @@
   <div style="width:100%;height:4px;background:repeating-linear-gradient(45deg,#ffd400,#ffd400 8px,#111 8px,#111 16px);"></div>
   <span id="testVersionBannerText" style="background:#111;color:#ffd400;font-family:monospace;font-weight:800;font-size:11px;letter-spacing:.5px;padding:3px 10px;border:1px solid #ffd400;border-top:none;border-radius:0 0 6px 6px;"></span>
 </div>
-<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 139';</script>
+<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 140';</script>
 <!-- ===== END TEMP TEST-ONLY VERSION BANNER ===== -->
 <div id="app"></div>
 
@@ -281,7 +281,7 @@
   <div id="flash"></div>
   <div id="gunsight"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 139 · REAL RHINE</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 140 · REAL RHINE</div>
 
   <div id="apr">
     <div id="aprCall"></div>
@@ -639,7 +639,7 @@ async function loadRealWorld(){
 
   if(OSMManager.BUILD!==21||HistoricalObjectManager.BUILD!==21||LivingWorld.BUILD!==22||WorldVehicles.BUILD!==22) throw new Error('Terrain version mismatch. Reload Remagen.');
   document.getElementById('testVersionBannerText').textContent=
-    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 139 · MODULE 22';
+    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 140 · MODULE 22';
   heightProvider=new DEMHeightProvider(RTILE,'terrain-system/real/data/dem/');
   terrain=new TerrainManager(scene,RTILE,heightProvider);
   osmMgr=new OSMManager(scene,RTILE,terrain,'terrain-system/real/data/osm/');
@@ -2185,8 +2185,64 @@ function tryLoad(L,k,i){
     console.log(k+' <- "'+url+'"  '+note+'  turn '+(modelAdj[k]||0)*90+'deg');
   }, undefined, ()=>{ tryLoad(L,k,i+1); });
 }
+// The shipped Me 262 GLB has two aft nozzle rims at x=+/-2.22, y=-1.24,
+// z=-0.68 after its 12.51 m wingspan is applied. Keep the glow recessed at
+// those actual outlets, with only a short, translucent shimmer behind each.
+// No scene capture/postprocessing: that would double terrain rendering on iPad.
+let jetHeatTexture=null,jetHeatDisc=null,jetHeatPlume=null;
+function jetHeatAssets(){
+  if(jetHeatTexture)return;
+  const n=32,p=new Uint8Array(n*n*4);
+  for(let y=0;y<n;y++)for(let x=0;x<n;x++){
+    const r=Math.hypot((x+0.5-n/2)/(n/2),(y+0.5-n/2)/(n/2));
+    const i=(y*n+x)*4;
+    p[i]=255;p[i+1]=210;p[i+2]=150;
+    p[i+3]=Math.round(255*Math.pow(Math.max(0,1-r),2.2));
+  }
+  jetHeatTexture=new THREE.DataTexture(p,n,n,THREE.RGBAFormat);
+  jetHeatTexture.needsUpdate=true;
+  jetHeatDisc=new THREE.CircleGeometry(.27,20);
+  jetHeatPlume=new THREE.CylinderGeometry(.22,.31,.85,16,5,true);
+  jetHeatPlume.rotateX(Math.PI/2);
+}
+function attachJetExhaust(aircraft,fallback=false){
+  jetHeatAssets();
+  const fx=new THREE.Group(); fx.name='jetHeat';
+  const glow=new THREE.MeshBasicMaterial({map:jetHeatTexture,color:0xff9154,
+    transparent:true,opacity:.15,blending:THREE.AdditiveBlending,depthWrite:false,
+    side:THREE.DoubleSide,fog:false});
+  const shimmer=new THREE.ShaderMaterial({
+    uniforms:{time:{value:0},heat:{value:0}},
+    transparent:true,depthWrite:false,side:THREE.DoubleSide,
+    vertexShader:'varying vec2 vUv; uniform float time; uniform float heat; void main(){vUv=uv; vec3 p=position; float a=(1.0-uv.y)*heat; p.x+=sin(time*7.0+uv.y*15.0+uv.x*12.0)*0.022*a; p.y+=cos(time*5.0+uv.y*12.0+uv.x*9.0)*0.018*a; gl_Position=projectionMatrix*modelViewMatrix*vec4(p,1.0);}',
+    fragmentShader:'varying vec2 vUv; uniform float time; uniform float heat; void main(){float fade=sin(vUv.y*3.14159); float ripple=0.55+0.45*sin(vUv.x*24.0+vUv.y*18.0-time*7.0); float a=heat*fade*(0.035+0.07*ripple); gl_FragColor=vec4(0.88,0.81,0.70,a);}'
+  });
+  const z=fallback?-1.25:-.72,y=fallback?-1.0:-1.24;
+  for(const side of [-1,1]){
+    const x=side*2.22;
+    const core=new THREE.Mesh(jetHeatDisc,glow);
+    core.position.set(x,y,z);core.rotation.y=Math.PI;
+    fx.add(core);
+    const wake=new THREE.Mesh(jetHeatPlume,shimmer);
+    wake.position.set(x,y,z-.46);
+    fx.add(wake);
+  }
+  aircraft.add(fx);
+  aircraft.userData.jetExhaust={glow,shimmer};
+}
+function updateJetExhaust(aircraft,throttle,dt){
+  const fx=aircraft?.userData.jetExhaust;if(!fx)return;
+  const heat=Math.max(0,Math.min(1,throttle));
+  fx.shimmer.uniforms.time.value+=dt;
+  fx.shimmer.uniforms.heat.value=.20+.66*heat;
+  fx.glow.opacity=(.13+.29*heat)*(1+.04*Math.sin(fx.shimmer.uniforms.time.value*11));
+}
 function buildAircraft(kind){
-  if(modelTpl[kind]) return modelTpl[kind].clone(true);
+  if(modelTpl[kind]){
+    const aircraft=modelTpl[kind].clone(true);
+    if(kind==='me262')attachJetExhaust(aircraft);
+    return aircraft;
+  }
   const jug=(kind==='p47');
   const d=AC[kind]||AC.p47;
   const g=new THREE.Group();
@@ -2207,7 +2263,7 @@ function buildAircraft(kind){
   } else {
     const nose=cyl(0.42,1.05,2.5,body,12); nose.rotation.x=Math.PI/2;
     at(nose,0,0,len*0.40); g.add(nose);
-    const ring=cyl(0.5,0.5,0.8,0xd8bb3a,12); ring.rotation.x=Math.PI/2;   // yellow cowl band
+    const ring=cyl(0.5,0.5,0.8,kind==='me262'?0x555b53:0xd8bb3a,12); ring.rotation.x=Math.PI/2;
     at(ring,0,0,len*0.50); g.add(ring);
   }
   // wings
@@ -2240,16 +2296,25 @@ function buildAircraft(kind){
   at(tw,0,-0.9,-len*0.60); gear.add(tw);
   gear.name='gear'; g.add(gear);
   // propeller: real blades, so the spin is actually visible
-  const prop=new THREE.Group();
-  const bm=new THREE.MeshLambertMaterial({color:0x15150f});
-  const nb=jug?4:3;
-  for(let b=0;b<nb;b++){
-    const bl=new THREE.Mesh(new THREE.BoxGeometry(0.26,jug?3.9:3.4,0.06),bm);
-    bl.rotation.z=b*(Math.PI*2/nb); prop.add(bl);
+  if(kind==='me262'){
+    for(const side of [-1,1]){
+      const nacelle=cyl(.29,.34,3.25,0x51594c,14);
+      nacelle.rotation.x=Math.PI/2;
+      at(nacelle,side*2.22,-1,.35);g.add(nacelle);
+    }
+    attachJetExhaust(g,true);
+  }else{
+    const prop=new THREE.Group();
+    const bm=new THREE.MeshLambertMaterial({color:0x15150f});
+    const nb=jug?4:3;
+    for(let b=0;b<nb;b++){
+      const bl=new THREE.Mesh(new THREE.BoxGeometry(0.26,jug?3.9:3.4,0.06),bm);
+      bl.rotation.z=b*(Math.PI*2/nb); prop.add(bl);
+    }
+    const spin=cyl(0.16,0.42,0.9,jug?0x2a2f24:0xd8bb3a,12); spin.rotation.x=Math.PI/2;
+    prop.add(spin);
+    prop.position.set(0,0,len*0.54); prop.name='prop'; g.add(prop);
   }
-  const spin=cyl(0.16,0.42,0.9,jug?0x2a2f24:0xd8bb3a,12); spin.rotation.x=Math.PI/2;
-  prop.add(spin);
-  prop.position.set(0,0,len*0.54); prop.name='prop'; g.add(prop);
   return g;
 }
 
@@ -4594,11 +4659,13 @@ function animate(){
     // pitched the opposite way to the direction it was actually flying.
     planeGroup.rotateY(P.heading); planeGroup.rotateX(-P.pitch); planeGroup.rotateZ(-P.roll);
     if(playerModel){
+      updateJetExhaust(playerModel,P.alive?P.throttle:0,raw);
       const gr=playerModel.getObjectByName('gear');
       if(gr) gr.visible=P.gear>0.05;
       const pr=playerModel.getObjectByName('prop');
       if(pr) pr.rotation.z-=Math.min(0.30,0.10+P.throttle*0.28);
     }
+    for(const e of enemyAir)if(e.alive)updateJetExhaust(e.group,Math.min(1,e.spd/aiSpec(e.kind).max),raw);
     updateCamera(dt);
     updateApproach();
     hudT-=raw; if(hudT<=0){ hudT=0.1; updateHUD(); }
