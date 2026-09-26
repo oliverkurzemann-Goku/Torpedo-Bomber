@@ -13,6 +13,7 @@ global.document={createElementNS(){return new ImageStub();}};
 vm.runInThisContext(fs.readFileSync(require.resolve('three/examples/js/loaders/GLTFLoader.js'),'utf8'));
 const root=path.resolve(__dirname,'../..'), html=fs.readFileSync(path.join(root,'torpedo-carrier.html'),'utf8');
 vm.runInThisContext(html.slice(html.indexOf('function readVert('),html.indexOf('function cowlCentre(')));
+vm.runInThisContext(html.slice(html.indexOf('function makeSBDGear('),html.indexOf('function loadSBDModel(){')));
 function glb(file){return new Promise((resolve,reject)=>{const raw=fs.readFileSync(path.join(root,file));
  new THREE.GLTFLoader().parse(raw.buffer.slice(raw.byteOffset,raw.byteOffset+raw.byteLength),'',v=>resolve(v.scene),reject);
 });}
@@ -38,10 +39,16 @@ function glb(file){return new Promise((resolve,reject)=>{const raw=fs.readFileSy
  });
  assert.equal(survivors.length,0,'no fixed blade tips remain near the measured SBD propeller');
  const rotor=makeProp(prop,3);rotor.name='sbdRotorBlade';holder.add(rotor);
+ const gear=makeSBDGear();holder.add(gear);
+ assert.equal(gear.name,'sbdGear');assert.equal(gear.children.length,8,'two main wheel assemblies and tailwheel fitted');
+ const gearBounds=new THREE.Box3().setFromObject(gear);
+ assert.ok(gearBounds.min.y<-2.1&&gearBounds.max.x>2,'wheels hang visibly beneath the loaded SBD wing');
  for(const clone of [holder.clone(true),holder.clone(true)]){
    const rotors=[];clone.traverse(o=>{if(o.name==='sbdRotorBlade')rotors.push(o);});
    assert.equal(rotors.length,1,'each player/wingman clone has exactly one movable rotor');
    rotors[0].rotation.z+=.3;assert.notEqual(rotors[0].rotation.z,rotor.rotation.z,'rotor transforms are independent');
+   setSBDGearVisible(clone,false);assert.equal(clone.getObjectByName('sbdGear').visible,false,'gear retracts on cloned wingman');
+   setSBDGearVisible(clone,true);assert.equal(clone.getObjectByName('sbdGear').visible,true,'gear extends on player clone');
  }
  const avenger=await glb('grumman tbm avenger.glb');
  const avBox=new THREE.Box3().setFromObject(avenger),avSize=avBox.getSize(new THREE.Vector3());

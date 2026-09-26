@@ -48,5 +48,5 @@ function faceCount(group,minimumY){let total=0;group.updateMatrixWorld(true);gro
  }
  const jet=(await load('me262.glb')).scene;brightenFighterSkin(jet,'me262');
  const jetMaterials=[];jet.traverse(o=>{if(o.isMesh)jetMaterials.push(...[].concat(o.material).filter(m=>m?.emissiveIntensity>.1));});
- assert.ok(jetMaterials.length>0&&jetMaterials.every(m=>m.emissiveMap===null&&m.emissiveIntensity>=.34),'Me 262 skin remains dark');
+ assert.ok(jetMaterials.length>0&&jetMaterials.every(m=>m.emissiveMap===null&&m.emissiveIntensity>=.26),'Me 262 skin remains dark');
 })().catch(e=>{console.error(e);process.exitCode=1;});

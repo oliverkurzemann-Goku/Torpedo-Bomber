@@ -5,7 +5,20 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 135 · Thunderbolt Squadron BUILD 135 · reales Remagen-Gelände 21**
+Stand bei Übergabe: **Torpedo Squadron BUILD 136 · Thunderbolt Squadron BUILD 136 · reales Remagen-Gelände 21**
+
+**Build 136 (26.09.2026):** Der SBD Dauntless fehlte nach dem Wechsel vom Avenger das
+Fahrwerk: Der Avenger-Rumpf wurde korrekt entfernt, das geladene SBD-Modell hatte aber
+keine eigenen schaltbaren Räder. Der echten SBD-Geometrie wurden zwei kompakte
+Hauptfahrwerke und ein Spornrad an gemessenen Unterflügel-/Heckpositionen ergänzt.
+Der echte GLB-Test prüft den Radsatz, die Modellgrenzen und aus- bzw. eingefahrene
+Kopien für Spieler und Rottenflieger. Die Me 262 erhält etwas weniger konstantes
+Aufhelllicht und einen weniger stark aufgehellten Grundfarbwert. Ihr MK-108-Schuss
+liegt im Offline-Audiotest 3,5 dB über dem Vorgänger bei einer Einzelschuss-Pegelspitze
+unter 1; beim Feuern wird das Triebwerk kurz leicht abgesenkt. Beide neuen Audiodateien
+werden mit `?v=136` neu geladen. Sicht- und Hörabnahme auf dem iPad bleibt offen.
+
+---
 
 **Build 135 (26.09.2026):** Fw 190, Bf 109 und Me 262 verwenden hellere Modellmaterialien
 mit einer kleinen konstanten Emissionskomponente, damit dunkle eingebettete Texturen auch

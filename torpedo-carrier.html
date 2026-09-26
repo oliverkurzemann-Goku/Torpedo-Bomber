@@ -286,7 +286,7 @@
   <div id="flash"></div>
   <div id="ltn" style="position:fixed;inset:0;background:#e6ecff;opacity:0;pointer-events:none;z-index:40;"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 135</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 136</div>
 
   <!-- Optical landing aid -->
   <div id="lso">
@@ -399,7 +399,7 @@
 <script src="okinawa/world.js?v=133"></script>
 <script src="campaign.js?v=1"></script>
 <script src="combat-fx.js?v=133"></script>
-<script src="audio/weapon-sound.js?v=133"></script>
+<script src="audio/weapon-sound.js?v=136"></script>
 <script src="sortie-systems.js?v=129"></script>
 <script src="operation-plans.js?v=129"></script>
 <script>
@@ -2392,6 +2392,33 @@ const SBD_MODEL_URL       = 'sbd%20dauntless.glb?v=2';
 let sbdTemplate=null, playerSBD=null, sbdRotor=null, sbdRotorAxis=null;
 const ZERO_MODEL_URL='zero.glb?v=2';  // external A6M model (nose +Z)
 let zeroTemplate=null;
+// The SBD GLB has no articulated undercarriage, and the Avenger gear is
+// detached when the SBD becomes the player's aircraft. Fit a compact pair of
+// main legs and a tailwheel to the measured, scaled Dauntless underside.
+function makeSBDGear(){
+  const gear=new THREE.Group();gear.name='sbdGear';
+  const metal=new THREE.MeshStandardMaterial({color:0x747b79,roughness:.52,metalness:.32});
+  const tyre=new THREE.MeshStandardMaterial({color:0x202220,roughness:.95});
+  const hub=new THREE.MeshStandardMaterial({color:0x9a9e96,roughness:.55,metalness:.25});
+  for(const side of [-1,1]){
+    const x=side*2.05,z=1.55;
+    const leg=new THREE.Mesh(new THREE.CylinderGeometry(.085,.10,.82,10),metal);
+    leg.position.set(x,-1.46,z);gear.add(leg);
+    const wheel=new THREE.Mesh(new THREE.CylinderGeometry(.34,.34,.19,16),tyre);
+    wheel.rotation.z=Math.PI/2;wheel.position.set(x,-1.91,z);gear.add(wheel);
+    const cap=new THREE.Mesh(new THREE.CylinderGeometry(.14,.14,.20,12),hub);
+    cap.rotation.z=Math.PI/2;cap.position.set(x,-1.91,z);gear.add(cap);
+  }
+  const tailLeg=new THREE.Mesh(new THREE.CylinderGeometry(.055,.07,.43,8),metal);
+  tailLeg.position.set(0,-.90,-3.62);gear.add(tailLeg);
+  const tailWheel=new THREE.Mesh(new THREE.CylinderGeometry(.19,.19,.14,12),tyre);
+  tailWheel.rotation.z=Math.PI/2;tailWheel.position.set(0,-1.18,-3.62);gear.add(tailWheel);
+  return gear;
+}
+function setSBDGearVisible(aircraft,down){
+  const gear=aircraft&&aircraft.getObjectByName('sbdGear');
+  if(gear)gear.visible=!!down;
+}
 function loadSBDModel(){
   if(!SBD_MODEL_URL || typeof THREE.GLTFLoader==='undefined') return;
   let loader; try{ loader=new THREE.GLTFLoader(); }catch(e){ return; }
@@ -2419,7 +2446,7 @@ function loadSBDModel(){
           }
         }
       }});
-      const holder=new THREE.Group(); holder.add(model);
+      const holder=new THREE.Group(); holder.add(model);holder.add(makeSBDGear());
       // Work on the shared template once. Clone(true) shares BufferGeometry; cutting a
       // per-aircraft clone mutated every other SBD, leaving a fixed blade beside later rotors.
       const rotor=fitPropeller(holder, holder, +1);
@@ -3623,6 +3650,7 @@ function spawnWingman(i){
     // Avenger clone noses -Z and needs the +π flip to face the group's +Z; the SBD template
     // already noses +Z, so it needs none. (Getting this wrong flies them tail-first.)
     if(!(sbd && sbdTemplate)) inner.rotation.y+=Math.PI;
+    if(sbd)setSBDGearVisible(inner,false);
     // Wingmen fly gear-UP once airborne — hide the same gear meshes we blank on the raiders.
     if(!sbd){
       const gn=new Set((gearMesh||[]).map(g=>g.name));
@@ -4333,7 +4361,7 @@ function loadPlaneModel(){
       }
       window.__eyeDbg='EYE '+COCKPIT_EYE.map(v=>v.toFixed(2)).join('/');
       const btEl=document.getElementById('buildTag');
-      if(btEl) btEl.textContent='BUILD 135 · '+window.__eyeDbg;
+      if(btEl) btEl.textContent='BUILD 136 · '+window.__eyeDbg;
       let seat=null;
       model.traverse(function(o){
         if(!o.isMesh||!o.material) return;
@@ -4658,6 +4686,7 @@ function updatePlaneMesh(dt){
   const g=(P.gear==null?1:P.gear), fl=(P.flap==null?0:P.flap);
   if(planeGear){ planeGear.visible=g>0.02; planeGear.scale.set(1,Math.max(0.02,g),1);
     planeGear.position.y=-(1-g)*0.5; }
+  if(playerSBD)setSBDGearVisible(playerSBD,isSBD()&&g>0.5);
   // Whichever aircraft is actually flying right now: SBD's own flap/dive-brake clones when
   // an SBD is up, the Avenger/placeholder pair otherwise. isSBD() alone isn't enough — the
   // SBD model may still be loading (playerSBD null), in which case the Avenger stand-in is
@@ -5621,7 +5650,7 @@ function setupUIButtons(){
   if(dbgT2) dbgT2.onclick=()=>{
     dbgOn=!dbgOn; localStorage.setItem('dbgOn',dbgOn?'1':'0');
     const db=document.getElementById('dbgBox'); if(db) db.textContent=dbgOn?'✓':'';
-    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 135'; }
+    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 136'; }
   };
   const lu=document.getElementById('lookUp'), ld=document.getElementById('lookDn');
   let _lookT=0;

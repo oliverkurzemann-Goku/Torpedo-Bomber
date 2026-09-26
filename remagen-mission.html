@@ -250,7 +250,7 @@
   <div style="width:100%;height:4px;background:repeating-linear-gradient(45deg,#ffd400,#ffd400 8px,#111 8px,#111 16px);"></div>
   <span id="testVersionBannerText" style="background:#111;color:#ffd400;font-family:monospace;font-weight:800;font-size:11px;letter-spacing:.5px;padding:3px 10px;border:1px solid #ffd400;border-top:none;border-radius:0 0 6px 6px;"></span>
 </div>
-<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 135';</script>
+<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 136';</script>
 <!-- ===== END TEMP TEST-ONLY VERSION BANNER ===== -->
 <div id="app"></div>
 
@@ -279,7 +279,7 @@
   <div id="flash"></div>
   <div id="gunsight"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 135 · REAL RHINE</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 136 · REAL RHINE</div>
 
   <div id="apr">
     <div id="aprCall"></div>
@@ -408,8 +408,8 @@
 <script src="terrain-system/LivingWorld.js?v=remagen-21"></script>
 <script src="campaign.js?v=1"></script>
 <script src="combat-fx.js?v=133"></script>
-<script src="audio/weapon-sound.js?v=133"></script>
-<script src="audio/jet-engine.js?v=131"></script>
+<script src="audio/weapon-sound.js?v=136"></script>
+<script src="audio/jet-engine.js?v=136"></script>
 <script src="sortie-systems.js?v=129"></script>
 <script src="operation-plans.js?v=129"></script>
 <script>
@@ -635,7 +635,7 @@ async function loadRealWorld(){
 
   if(OSMManager.BUILD!==21||HistoricalObjectManager.BUILD!==21||LivingWorld.BUILD!==21||WorldVehicles.BUILD!==21) throw new Error('Terrain version mismatch. Reload Remagen.');
   document.getElementById('testVersionBannerText').textContent=
-    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 135 · MODULE 21';
+    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 136 · MODULE 21';
   heightProvider=new DEMHeightProvider(RTILE,'terrain-system/real/data/dem/');
   terrain=new TerrainManager(scene,RTILE,heightProvider);
   osmMgr=new OSMManager(scene,RTILE,terrain,'terrain-system/real/data/osm/');
@@ -2102,10 +2102,10 @@ function brightenFighterSkin(src,kind){
   src.traverse(o=>{if(!o.isMesh)return;
     const materials=(Array.isArray(o.material)?o.material:[o.material]).map(m=>{
       if(!m||!m.color||m.transparent&&m.opacity<.9)return m;
-      const n=m.clone();n.color.multiplyScalar(kind==='me262'?1.35:1.24);
+      const n=m.clone();n.color.multiplyScalar(kind==='me262'?1.22:1.24);
       // A constant ambient contribution makes the dark embedded diffuse textures
       // readable even in wing shadow. Do not multiply it by the same dark map.
-      if(n.emissive){n.emissiveMap=null;n.emissive.setHex(0xa4aaa0);n.emissiveIntensity=kind==='me262'?.34:.29;}
+      if(n.emissive){n.emissiveMap=null;n.emissive.setHex(0xa4aaa0);n.emissiveIntensity=kind==='me262'?.26:.29;}
       if(n.aoMapIntensity!==undefined)n.aoMapIntensity=.22;
       if(n.metalness!==undefined)n.metalness=Math.min(n.metalness,.08);
       if(n.roughness!==undefined)n.roughness=.64;
@@ -3797,7 +3797,7 @@ function updateApproach(){
 // ============================================================
 //  AUDIO
 // ============================================================
-let jetEngine=null;
+let jetEngine=null,jetGunDuck=0;
 function initAudio(){
   if(actx){ if(actx.state==='suspended') actx.resume(); return; }
   try{ const AC2=window.AudioContext||window.webkitAudioContext; actx=new AC2();
@@ -3832,7 +3832,8 @@ function updateAudio(dt){
   const rpm=flying?(0.30+P.throttle*0.70):0;
   const ct=actx.currentTime;
   const isJet=JET_KINDS.includes(P.ac);
-  jetEngine.update(dt,P.throttle,flying&&isJet,Math.max(0,(55-P.hull)/55));
+  jetGunDuck=Math.max(0,jetGunDuck-dt);
+  jetEngine.update(dt,P.throttle,flying&&isJet,Math.max(0,(55-P.hull)/55),isJet&&jetGunDuck>0?1:0);
   if(isJet){
     // Keep every piston-engine source and its pulse modulator silent.
     eng.eg.gain.setTargetAtTime(0,ct,.08);
@@ -3893,7 +3894,7 @@ function sfxBolter(){
 }
 // The fifties were the loudest thing in that cockpit. A short quiet tick did not sell them
 // at all, so this is a proper layered report: a hard crack, body underneath, and the breech.
-function sfxGun(){ WeaponSound.fire(actx,out(),P.ac); }
+function sfxGun(){ if(P.ac==='me262')jetGunDuck=.22; WeaponSound.fire(actx,out(),P.ac); }
 
 function sfxWhoosh(){ nburst(0.35,'bandpass',600,0.6,0.12,0,1.5); }
 function sfxFlak(){ nburst(0.32,'lowpass',420,0,0.22,0,1.6); }

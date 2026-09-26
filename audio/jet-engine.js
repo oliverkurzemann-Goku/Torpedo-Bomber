@@ -32,11 +32,11 @@
    osc.connect(gain);gain.connect(output);osc.start();return {osc,gain,ratio,level:i?.0018:.006};
   });
   let spool=.3;
-  return {update(dt,throttle,active,damage=0){
+  return {update(dt,throttle,active,damage=0,gunDuck=0){
    const target=.3+.7*Math.max(0,Math.min(1,throttle));
    spool+=(target-spool)*(1-Math.exp(-Math.max(0,dt)/(target>spool?1.8:2.6)));
    const now=ctx.currentTime;
-   output.gain.setTargetAtTime(active?.50:0,now,active?.12:.06);
+   output.gain.setTargetAtTime(active?.50*(1-.27*gunDuck):0,now,gunDuck?.035:active?.12:.06);
    low.frequency.setTargetAtTime(650+spool*1500,now,.15);
    coreGain.gain.setTargetAtTime(.25+spool*.58,now,.15);
    airLow.frequency.setTargetAtTime(2500+spool*3200,now,.15);
