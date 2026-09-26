@@ -6,13 +6,17 @@ browser. Deployed via GitHub Pages, target device is iPad/iPhone Safari.
 
 | File | Game |
 |---|---|
-| `index.html` | Landing page — both current campaigns and both classic mission games |
+| `index.html` | Landing page — only Torpedo Squadron and Thunderbolt Squadron (real Rhine terrain) |
 | `torpedo-carrier.html` | Torpedo Squadron — Pacific, carrier operations + the mapped Okinawa coast |
 | `remagen-mission.html` | Thunderbolt Squadron — Europe, real terrain (Copernicus DEM + Overture Maps) |
 | `thunderbolt-europe.html` | Classic Europe (synthetic terrain) — superseded by `remagen-mission.html`, kept reachable by direct URL |
 | `torpedo-carrier-open-sea.html` | Classic Pacific (pre-Okinawa) — kept reachable by direct URL |
 | `okinawa-preview.html` | Standalone viewer for the `okinawa/` coastal module, full vegetation density |
 | `model-check.html` | Internal tool: calibrate a new aircraft model's alignment/scale |
+
+The two Classic games remain reachable by direct URL for testing, but must not be
+reintroduced as cards on the public landing page. `okinawa/tests/campaign.cjs`
+checks that exactly the two current campaigns are linked there.
 
 `okinawa/` holds the Okinawa coastal terrain module (`data.js`, `world.js`, own
 `tests/*.cjs`) shared between `torpedo-carrier.html` and `okinawa-preview.html`; see

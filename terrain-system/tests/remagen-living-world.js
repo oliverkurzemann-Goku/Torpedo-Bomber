@@ -18,7 +18,7 @@ global.fetch=async url=>{const b=fs.readFileSync(path.join(root,url.split('?')[0
   const osm=new OSMManager(scene,4000,terrain,osmDir);
   await osm.prepareRegion(coords,'terrain-system/real/data/waterways.json');
   const html=fs.readFileSync(path.join(root,'remagen-mission.html'),'utf8');
-  assert(html.includes('LivingWorld.js?v=remagen-21'));assert(html.includes('MODULE 21'));
+  assert(html.includes('LivingWorld.js?v=remagen-22'));assert(html.includes('MODULE 22'));
   for(const id of ['convoy','train','ferry'])assert(html.includes(`id:'${id}'`),`mission ${id} missing`);
   assert(html.includes("livingWorld.missionTargets(m.traffic||m.id)"));assert(html.includes('livingWorld.destroyEntity(t.entity)'));
   // Execute the actual mission table/population logic with lightweight target
@@ -53,7 +53,7 @@ global.fetch=async url=>{const b=fs.readFileSync(path.join(root,url.split('?')[0
   const factory=[12000+f.x,20000+f.z];
   const world=new LivingWorld(scene,terrain,osm,{bridge,bridgeSpan:[b.x2-b.x1,b.z2-b.z1],factory,field:[787,18087.6]});
 
-  assert.equal(LivingWorld.BUILD,21);assert.equal(OSMManager.BUILD,21);
+  assert.equal(LivingWorld.BUILD,22);assert.equal(OSMManager.BUILD,21);
   assert(world.routes.road.length>=3,'not enough real road routes');
   assert(world.routes.rail.length>=1,'real rail route missing');
   assert.equal(world.routes.water.length,1,'Rhine route missing');
@@ -91,8 +91,10 @@ global.fetch=async url=>{const b=fs.readFileSync(path.join(root,url.split('?')[0
   const tigerTemplate=new THREE.Group();tigerTemplate.add(new THREE.Mesh(new THREE.BoxGeometry(2,2,5),new THREE.MeshLambertMaterial()));
   const merchantTemplate=new THREE.Group();merchantTemplate.add(new THREE.Mesh(new THREE.BoxGeometry(5,3,20),new THREE.MeshLambertMaterial()));
   const replaced=world.installVehicleModels(new Map([['tiger',tigerTemplate],['merchant',merchantTemplate]]));
-  assert.equal(replaced,14);assert.equal(world.missionTargets('convoy')[0].model,targetWrapper);
-  assert(world.entities.filter(e=>e.kind==='truck').every(e=>e.visual.userData.sourceModel==='tiger'));
+  assert.equal(replaced,13);assert.equal(world.missionTargets('convoy')[0].model,targetWrapper);
+  assert.equal(world.entities.filter(e=>e.kind==='truck'&&e.visual.userData.sourceModel==='tiger').length,11);
+  assert.equal(world.installVehicleModels(new Map([['jagdpanther',tigerTemplate]])),1);
+  assert.equal(world.missionTargets('convoy')[0].visual.userData.sourceModel,'jagdpanther');
   assert(world.entities.filter(e=>e.kind==='ferry').every(e=>e.visual.userData.sourceModel==='merchant'));
 
   const truck=world.missionTargets('convoy')[0],before=truck.phase;

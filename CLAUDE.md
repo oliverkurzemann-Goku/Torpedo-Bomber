@@ -5,7 +5,25 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 136 · Thunderbolt Squadron BUILD 136 · reales Remagen-Gelände 21**
+Stand bei Übergabe: **Torpedo Squadron BUILD 136 · Thunderbolt Squadron BUILD 137 · Remagen-Kern 21 / Fahrzeuge 22**
+
+**Build 137 (26.09.2026):** Auf ausdrücklichen Nutzerwunsch zeigt `index.html` nur
+die beiden aktuellen Kampagnen (Torpedo/Okinawa und Thunderbolt/Remagen). Classic-
+Versionen und Werkzeuge bleiben per Direktlink erreichbar, stehen aber NICHT mehr
+als Spielkarten auf der Startseite; Regression in `okinawa/tests/campaign.cjs`.
+Bei der Fw-190-Jabo-Mission wird zuerst die erforderliche Flak angepeilt und bis
+auf 4 km Entfernung mit einer projizierten Ziel-/Distanzmarke sichtbar gemacht.
+Zwei zuvor ungenutzte Repo-GLBs werden eingebunden: ein 5.406-Dreiecke-
+Jagdpanther als gepanzertes, bewegliches Konvoiziel (4 statt 2 Trefferpunkte),
+eine Me 163 als einzelner schneller Gegner in Valley Patrol, ohne erfundenes
+Propeller- oder Radfahrwerk. Jagdpanther wird erst nach dem Menü optional geladen;
+fehlende Modelle belassen die bisherigen Platzhalter. Tests mit echten GLBs,
+Flak-Markierung im geladenen Remagen und komplette `npm test`-Suite laufen; iPad-
+Sichttest steht noch aus. Weitere ungenutzte, teils sehr schwere Panzer-/Flugzeug-
+GLBs (Sherman/Maus/Ju87) wurden bewusst nicht ohne eigene Missionsrolle und
+Leistungsprüfung eingestreut. Lizenzangaben: `ASSET-CREDITS.md`.
+
+---
 
 **Build 136 (26.09.2026):** Der SBD Dauntless fehlte nach dem Wechsel vom Avenger das
 Fahrwerk: Der Avenger-Rumpf wurde korrekt entfernt, das geladene SBD-Modell hatte aber

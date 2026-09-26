@@ -25,7 +25,7 @@ global.fetch=async url=>{
   vm.runInContext(html.slice(start,end)+'\nbuildAirfield(); globalThis.field=airfieldDetails;',context);
   const f=context.field;
   assert(scene.children.includes(f.group)); assert.equal(terrain.material,originalTerrainMaterial);
-  assert(html.includes('AirfieldDetails.js?v=remagen-21')); assert(html.includes('MODULE 21'));
+  assert(html.includes('AirfieldDetails.js?v=remagen-21')); assert(html.includes('MODULE 22'));
   assert(html.includes('if(airfieldDetails)airfieldDetails.refresh()'));
   assert.equal(OSMManager.BUILD,21);
   const meshes=f.group.children;

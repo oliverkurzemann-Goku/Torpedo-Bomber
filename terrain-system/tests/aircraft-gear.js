@@ -12,7 +12,8 @@ class ImageStub{
 global.document={createElementNS(){return new ImageStub();},createElement(type){return type==='canvas'?{getContext(){return {drawImage(){},getImageData(){return {data:[60,60,60,255]};}}}}:new ImageStub();}};
 vm.runInThisContext(fs.readFileSync(process.env.GLTF_LOADER_R128,'utf8'));
 const root=path.resolve(__dirname,'../..'),html=fs.readFileSync(path.join(root,'remagen-mission.html'),'utf8');
-vm.runInThisContext("const JET_KINDS=['me262'],NO_PROP_KINDS=['b24'],MULTI_ENGINE_KINDS=['b17'],TRICYCLE_KINDS=['me262'];\n"+
+vm.runInThisContext(html.slice(html.indexOf('function samplePoints('),html.indexOf('// Find the propeller BY GEOMETRY')));
+vm.runInThisContext("const JET_KINDS=['me262','me163'],NO_PROP_KINDS=['b24'],MULTI_ENGINE_KINDS=['b17'],TRICYCLE_KINDS=['me262'];\n"+
  html.slice(html.indexOf('function readVert('),html.indexOf('function loadModels(){')));
 const loader=new THREE.GLTFLoader();
 async function load(file){const b=fs.readFileSync(path.join(root,file));return new Promise((resolve,reject)=>loader.parse(b.buffer.slice(b.byteOffset,b.byteOffset+b.byteLength),'',resolve,reject));}
@@ -49,4 +50,13 @@ function faceCount(group,minimumY){let total=0;group.updateMatrixWorld(true);gro
  const jet=(await load('me262.glb')).scene;brightenFighterSkin(jet,'me262');
  const jetMaterials=[];jet.traverse(o=>{if(o.isMesh)jetMaterials.push(...[].concat(o.material).filter(m=>m?.emissiveIntensity>.1));});
  assert.ok(jetMaterials.length>0&&jetMaterials.every(m=>m.emissiveMap===null&&m.emissiveIntensity>=.26),'Me 262 skin remains dark');
+ const rocket=(await load('me163.glb')).scene,rocketRoot=new THREE.Group();rocketRoot.add(rocket);
+ const points=samplePoints(rocket,3000),yaw=detectYaw(rocket);
+ assert.equal(yaw.yaw,Math.PI,'Me 163 GLB faces -Z before alignment');
+ assert(points.length>3000&&yaw.conf>.95,'real Me 163 model symmetry verified');
+ const rocketRig=rigModel(rocketRoot,'me163');
+ assert.match(rocketRig,/skid retained/);
+ assert.equal(rocketRoot.getObjectByName('gear'),undefined,'Me 163 must not get synthetic wheels');
+ assert.equal(rocketRoot.getObjectByName('prop')?.children.length,0,'Me 163 must not get a propeller');
+ assert(html.includes("M().id==='fighter'&&i===0?'me163'"),'rocket interceptor only appears on Valley Patrol');
 })().catch(e=>{console.error(e);process.exitCode=1;});

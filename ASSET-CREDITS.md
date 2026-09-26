@@ -5,6 +5,17 @@ selected Tiger as the moving tracked-target visual. Build 21 adds licensed perio
 Vehicle positions are illustrative, not a reconstruction of documented unit positions in
 March 1945.
 
+Build 137 also uses two previously inactive repository GLBs:
+
+- **Jadgpanther (War Thunder)** — PolyDucky. Source:
+  https://sketchfab.com/3d-models/jadgpanther-war-thunder-813e100326194334b52887a17416e0b8
+  License recorded in `jagdpanther.glb`: **CC BY 4.0**. One shared 5,406-triangle
+  template replaces the lead vehicle in the moving Remagen road column.
+- **Me 163 B (War Thunder)** — KojfDiscord. Source:
+  https://sketchfab.com/3d-models/me-163-b-war-thunder-b803273028ee4ebc87ca4af2e15766fb
+  License recorded in `me163.glb`: **CC BY 4.0**. One enemy rocket interceptor
+  appears in the Valley Patrol sortie; no propeller or synthetic wheels are added.
+
 - **M16 MGMC (War Thunder)** — KojfDiscord. Source:
   https://sketchfab.com/3d-models/m16-mgmc-war-thunder-fbdb51b1f92f45eebe791a16d805acd4
   Author: https://sketchfab.com/KojfDiscord

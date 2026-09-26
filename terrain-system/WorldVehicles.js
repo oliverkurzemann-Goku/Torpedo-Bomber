@@ -1,7 +1,7 @@
 // Shared, licensed period-vehicle templates plus two static scenic vehicles.
 // Real r128 GLTF/FBX loader validation is in tests/remagen-vehicles.js; credits below.
 class WorldVehicles {
-  static get BUILD(){ return 21; }
+  static get BUILD(){ return 22; }
   constructor(scene,terrain,osm){
     this.scene=scene;this.terrain=terrain;this.osm=osm;this.entries=[];this.failures=[];
     this.templates=new Map();this.onTemplate=null;
@@ -71,7 +71,7 @@ class WorldVehicles {
     // Real-world target lengths keep imports from three different authoring
     // unit systems consistent. The merchant remains a compact Rhine workboat
     // silhouette, not a claim about the exact 1945 ferry type.
-    const targetLength={m16:6.62,tiger:8.45,merchant:30,flak88:8.808,
+    const targetLength={m16:6.62,tiger:8.45,jagdpanther:9.8,merchant:30,flak88:8.808,
       civilCar:4.75,horse:2.5,train:24.1}[kind]||8;
     const scale=targetLength/Math.max(size.x,size.z);
     const model=new THREE.Group();model.add(root);root.scale.setScalar(scale);
@@ -150,6 +150,9 @@ class WorldVehicles {
     // becomes ready; a failed optional model leaves its procedural fallback.
     const templateSpecs=[
       {kind:'flak88',url:'flak88_sfl.glb'},
+      // One existing, low-polygon vehicle replaces a Tiger silhouette in the
+      // moving road column. Loaded after the menu appears, with fallback intact.
+      {kind:'jagdpanther',url:'jagdpanther.glb'},
       {kind:'civilCar',url:'assets/remagen/ford1940/1940_ford_v8.fbx',loader:'fbx'},
       {kind:'horse',url:'assets/remagen/horse/quaternius_horse.glb'},
       {kind:'train',url:'assets/remagen/drb0110/drb0110.glb'},

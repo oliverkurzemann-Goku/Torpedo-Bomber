@@ -12,7 +12,7 @@ The flight model, weapons and mission logic are not part of a terrain pass unles
 
 Every Remagen revision handed to Oliver for testing must increment the visible build number in both places in `remagen-mission.html`: the always-visible `#testVersionBannerText` and the in-flight `#buildTag`. Add a short pass label when useful. Never tell Oliver a build is ready until the branch/deployment being tested contains that exact visible version. Current revision: `REMAGEN BUILD 21 · PERIOD TRAFFIC`.
 
-The local terrain scripts carry the same version as a `?v=remagen-21` query. `OSMManager.BUILD`, `HistoricalObjectManager.BUILD`, `LivingWorld.BUILD` and `WorldVehicles.BUILD` are checked during startup and the banner gains `MODULE 21` only after all checks succeed. This prevents an updated HTML document from silently running an older Safari-cached terrain module.
+The local terrain scripts carry explicit `?v=` versions. `OSMManager.BUILD` and `HistoricalObjectManager.BUILD` remain at 21; `LivingWorld.BUILD` and `WorldVehicles.BUILD` are at 22. All are checked during startup and the banner gains `MODULE 22` only after the checks succeed. This prevents an updated HTML document from silently running older Safari-cached terrain modules.
 
 ## Build 21 — licensed period traffic and readable telegraph lines
 

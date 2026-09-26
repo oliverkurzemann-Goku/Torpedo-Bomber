@@ -26,6 +26,19 @@ vm.runInContext('loadModels=()=>{};WorldVehicles.prototype.load=async()=>{};',c)
  vm.runInContext(`for(const kind of Object.keys(FlightOps.weather)){weather=kind;applyWeather();if(!scene.background.isColor)throw Error('Missing sky');}showBrief(2);`,c);
  assert(!c.document.getElementById('brief').classList.contains('hidden'),'first combat briefing opens after terrain loads');
  assert(c.document.getElementById('opsLegend').textContent.length>0,'briefing includes target legend');
+ vm.runInContext(`startMission(11);
+   const f=flakUnits[0],p=f.group.position;
+   P.pos.set(p.x+700,p.y+240,p.z+700);P.heading=Math.atan2(p.x-P.pos.x,p.z-P.pos.z);
+   camera.position.copy(P.pos);camera.lookAt(p.x,p.y+11,p.z);camera.updateMatrixWorld(true);
+   updateHUD();
+   globalThis.fwStats={mission:M().id,marker:document.getElementById('flakMarker').textContent,
+     shown:document.getElementById('flakMarker').style.display,bearing:document.getElementById('compassText').textContent};`,c);
+ assert.equal(c.fwStats.mission,'jabo');
+ assert.match(c.fwStats.marker,/FLAK · 1\.0 KM/);
+ assert.equal(c.fwStats.shown,'block','live flak target must have a visible in-flight marker');
+ assert.match(c.fwStats.bearing,/BRG/);
+ vm.runInContext(`flakUnits[0].alive=false;updateHUD();`,c);
+ assert.equal(c.document.getElementById('flakMarker').style.display,'none','destroyed battery marker must disappear');
  // Both synchronous initialization errors and rejected terrain loads surface on the loading panel.
  vm.runInContext("const realInit=init;init=()=>{throw new Error('test renderer failure');};",c);
  listeners.load();

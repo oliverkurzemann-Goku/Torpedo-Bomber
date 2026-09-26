@@ -8,7 +8,7 @@
 // ============================================================
 
 class LivingWorld {
-  static get BUILD(){ return 21; }
+  static get BUILD(){ return 22; }
 
   constructor(scene,terrain,osm,landmarks={}){
     this.scene=scene;this.terrain=terrain;this.osm=osm;this.landmarks=landmarks;
@@ -174,7 +174,8 @@ class LivingWorld {
   }
   _buildTraffic(){
     for(let r=0;r<Math.min(3,this.routes.road.length);r++)for(let i=0;i<4;i++)
-      this._addEntity('truck',this._makeTruck(),this.routes.road[r],8.2+r*.7,140+i*31+r*173,{convoy:r});
+      this._addEntity('truck',this._makeTruck(),this.routes.road[r],8.2+r*.7,140+i*31+r*173,
+        {convoy:r,vehicleModel:r===0&&i===0?'jagdpanther':'tiger'});
     if(this.routes.rail[0])this._addEntity('train',this._makeTrain(),this.routes.rail[0],17,260,{train:0});
     if(this.routes.water[0])for(let i=0;i<2;i++)this._addEntity('ferry',this._makeFerry(),this.routes.water[0],5.2,220+i*this.routes.water[0].length*.48,{ferry:i});
     const nearField=this.routes.road[2]||this.routes.road[0];
@@ -194,7 +195,7 @@ class LivingWorld {
   installVehicleModels(templates){
     let replaced=0;
     for(const e of this.entities){
-      const source=e.kind==='truck'?'tiger':(e.kind==='ferry'?'merchant':
+      const source=e.kind==='truck'?e.meta.vehicleModel:(e.kind==='ferry'?'merchant':
         (e.kind==='train'?'train':(e.kind==='civil'?'civilCar':(e.kind==='wagon'?'horse':null))));
       const template=source&&templates&&templates.get(source);
       if(!template||e.visual.userData.sourceModel===source)continue;
