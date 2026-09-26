@@ -28,17 +28,20 @@ vm.runInContext('loadModels=()=>{};WorldVehicles.prototype.load=async()=>{};',c)
  assert(c.document.getElementById('opsLegend').textContent.length>0,'briefing includes target legend');
  vm.runInContext(`startMission(11);
    const f=flakUnits[0],p=f.group.position;
-   P.pos.set(p.x+700,p.y+240,p.z+700);P.heading=Math.atan2(p.x-P.pos.x,p.z-P.pos.z);
+   P.pos.set(p.x+700,p.y+240,p.z+700);P.heading=0;
    camera.position.copy(P.pos);camera.lookAt(p.x,p.y+11,p.z);camera.updateMatrixWorld(true);
+   enemyAir.forEach(e=>e.alive=false);
    updateHUD();
-   globalThis.fwStats={mission:M().id,marker:document.getElementById('flakMarker').textContent,
-     shown:document.getElementById('flakMarker').style.display,bearing:document.getElementById('compassText').textContent};`,c);
+   globalThis.fwStats={mission:M().id,kind:document.getElementById('navKind').textContent,
+     bearing:document.getElementById('compassText').textContent};`,c);
  assert.equal(c.fwStats.mission,'jabo');
- assert.match(c.fwStats.marker,/FLAK · 1\.0 KM/);
- assert.equal(c.fwStats.shown,'block','live flak target must have a visible in-flight marker');
+ assert(!html.includes('id="flakMarker"'),'flak should be visible in the world, without a floating label');
  assert.match(c.fwStats.bearing,/BRG/);
- vm.runInContext(`flakUnits[0].alive=false;updateHUD();`,c);
- assert.equal(c.document.getElementById('flakMarker').style.display,'none','destroyed battery marker must disappear');
+ vm.runInContext(`enemyAir.push({alive:true,pos:new THREE.Vector3(P.pos.x+1000,P.pos.y,P.pos.z),bomber:false});updateHUD();`,c);
+ assert.equal(c.document.getElementById('navKind').textContent,'BANDIT','the moving fighter must override the ground target');
+ assert.match(c.document.getElementById('navArrow').style.transform,/rotate\(90deg\)/,'fighter due east must point right when heading north');
+ vm.runInContext(`enemyAir[enemyAir.length-1].alive=false;updateHUD();`,c);
+ assert.notEqual(c.document.getElementById('navKind').textContent,'BANDIT','destroyed fighter must no longer guide the arrow');
  // Both synchronous initialization errors and rejected terrain loads surface on the loading panel.
  vm.runInContext("const realInit=init;init=()=>{throw new Error('test renderer failure');};",c);
  listeners.load();

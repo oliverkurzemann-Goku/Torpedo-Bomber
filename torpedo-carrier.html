@@ -139,6 +139,7 @@
   #flapBtn{left:max(20px,env(safe-area-inset-left));top:calc(33% + 56px);}
   #diveBtn{left:max(20px,env(safe-area-inset-left));top:calc(33% + 112px);display:none;}
   #hookBtn{left:max(20px,env(safe-area-inset-left));top:calc(33% + 168px);}
+  #aeroBtn{left:max(20px,env(safe-area-inset-left));top:calc(33% + 224px);}
   #fireBtn{position:fixed;right:max(86px,calc(env(safe-area-inset-right) + 86px));
     bottom:calc(env(safe-area-inset-bottom) + 150px);width:64px;height:64px;border-radius:50%;
     z-index:21;touch-action:none;color:#f3e6c8;font-family:monospace;font-weight:800;font-size:12px;
@@ -276,7 +277,7 @@
   </div>
   <div class="panel" id="obj">
     <div id="objText">—</div>
-    <div id="navWrap"><span id="navArrow"><svg viewBox="0 0 24 26" aria-label="Direction to objective"><path d="M12 1 22 15 15 14 15 25 9 25 9 14 2 15Z"/></svg></span><span id="navDist">0.0 NM</span></div>
+    <div id="navWrap"><span id="navArrow"><svg viewBox="0 0 24 26" aria-label="Direction to target"><path d="M12 1 22 15 15 14 15 25 9 25 9 14 2 15Z"/></svg></span><span id="navDist">0.0 NM</span><span id="navKind" style="font-size:10px;color:#ffcf8b;letter-spacing:1px;">TARGET</span></div>
     <div id="compassText">HDG 090° E · BRG 090° E</div>
   </div>
   <div class="pitReticle"></div>
@@ -286,7 +287,7 @@
   <div id="flash"></div>
   <div id="ltn" style="position:fixed;inset:0;background:#e6ecff;opacity:0;pointer-events:none;z-index:40;"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 136</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 138</div>
 
   <!-- Optical landing aid -->
   <div id="lso">
@@ -318,6 +319,7 @@
 <div id="flapBtn" class="ctlBtn">FLAPS<br>UP</div>
 <div id="diveBtn" class="ctlBtn">DIVE<br>BRAKE</div>
 <div id="hookBtn" class="ctlBtn on">HOOK<br>▼ DN</div>
+<div id="aeroBtn" class="ctlBtn" title="Rolls and loops in the Zero or Dauntless">AERO<br>OFF</div>
 <div id="fireBtn">GUNS</div>
 <div id="opsStatus"></div>
 <canvas id="mmap" width="120" height="120"></canvas>
@@ -466,6 +468,7 @@ let seatMeshG=null, cockpitLight=null, ordTorp=null, ordBombs=null;
 let glassMeshes=[], headX=0, headY=0, headBob=0, pitHideMeshes=[];
 let debris=[];
 let zeros=[], flakPuffs=[], shakeT=0, shakeMag=0, windZ=0;
+let aeroMode=false;
 function shake(mag){ shakeT=Math.max(shakeT,0.4); shakeMag=Math.max(shakeMag,mag); }
 let hitsTaken=0;
 function registerHit(){ hitsTaken++; const vig=document.getElementById('dmgVig');
@@ -1885,6 +1888,10 @@ function drawPacificBrief(m){
 }
 
 function startMission(idx){
+  aeroMode=false;
+  const aeroButton=document.getElementById('aeroBtn');
+  if(aeroButton){aeroButton.classList.remove('on');aeroButton.innerHTML='AERO<br>OFF';}
+  const stickHint=document.getElementById('stickHint');if(stickHint)stickHint.textContent='PITCH / ROLL';
   if(combatFX)combatFX.clear();
   mission=idx;
   selectedMission=idx;
@@ -2189,6 +2196,7 @@ function setupKeyboard(){
     keys[e.code]=true;
     if(e.code==='Space'){dropTorpedo(); e.preventDefault();}
     if(e.code==='KeyF') firing=true;
+    if(e.code==='KeyA'&&!e.repeat) toggleAero();
     if(e.code==='Enter'){ if(state===ST.MENU) beginGame(); else if(state===ST.BRIEF) launch(); }
     if(e.code==='Escape'||e.code==='KeyP'){ togglePause(); e.preventDefault(); }
   });
@@ -2835,7 +2843,8 @@ function updateFlight(dt){
   // otherwise a damaged recovery is simply impossible rather than merely hard
   const biasDecay = (P.gear!=null&&P.gear>0.5)? 0.9 : 0.35;
   P.rollBias = Math.max(-0.16, Math.min(0.16, (P.rollBias||0)*(1-biasDecay*dt)));
-  const rollTarget = inputRoll*steerSign*0.7 + P.rollBias;
+  const rollLim=AC.name==='zero'?1.52:(AC.name==='sbd'?1.50:1.42);
+  const rollTarget = inputRoll*steerSign*rollLim*(AC.name==='avenger'?.78:.86) + P.rollBias;
   // Real rotational inertia. Stick position still commands a target ATTITUDE, not a rate —
   // rate-commanded roll was tried in thunderbolt-europe.html and reverted (see that file's
   // updateFlight: the aircraft "stayed wherever you left it" past 80° of bank, unflyable on a
@@ -2851,15 +2860,9 @@ function updateFlight(dt){
   // aircraft: worst case, the Avenger's pitch, now settles to 95% in 1.55 s instead of 3.4 s,
   // with 1.3% overshoot instead of 0.5% — snappier without wallowing).
   const zeta=0.80;
-  P.pitchVel=(P.pitchVel||0)+(pitchRate*pitchRate*(inputPitch*0.55-P.pitch) - 2*zeta*pitchRate*P.pitchVel)*dt;
-  P.pitch += P.pitchVel*dt;
-  P.rollVel=(P.rollVel||0)+(rollRate*rollRate*(rollTarget-P.roll) - 2*zeta*rollRate*P.rollVel)*dt;
-  P.roll += P.rollVel*dt;
   // Pitch (dive/climb) limit per aircraft. 0.8 rad (46°) was a hard ceiling for everyone —
   // the SBD, a dedicated dive bomber, is DOCTRINALLY flown to ~70° and could never get there.
   const pitchLim = AC.name==='sbd' ? 1.28 : (AC.name==='zero' ? 1.05 : 0.85);   // ~73° / 60° / 49°
-  if(P.pitch>pitchLim){ P.pitch=pitchLim; P.pitchVel=Math.min(0,P.pitchVel); }
-  if(P.pitch<-pitchLim){ P.pitch=-pitchLim; P.pitchVel=Math.max(0,P.pitchVel); }
   // rollLim used to sit at 41-60 deg for every type - well short of what it took to reach each
   // aircraft's own gLim (turn load factor is 1/cos(bank), so even the Avenger's modest 3.5g
   // needs about 73 deg of bank before gLim, not bank angle, becomes the limit). Reported
@@ -2867,9 +2870,23 @@ function updateFlight(dt){
   // instead of gLim, a full 360 took 28-91s depending on type (checked numerically) — raised so
   // every type can now reach (or, Avenger, get close to) its own gLim; full 360 now 7-24s, gLim
   // alone tells them apart again, same fix as thunderbolt-europe.html's rollLim table.
-  const rollLim=AC.name==='zero'?1.52:(AC.name==='sbd'?1.50:1.42);
-  if(P.roll>rollLim){ P.roll=rollLim; P.rollVel=Math.min(0,P.rollVel); }
-  if(P.roll<-rollLim){ P.roll=-rollLim; P.rollVel=Math.max(0,P.rollVel); }
+  if(aeroMode){
+    const energy=Math.max(.35,Math.min(1,P.spd/(stallSpd*1.8)));
+    const pull=Math.min(.95*AC.pitch,1.6*9.81*(AC.gLim-1)/Math.max(P.spd,50))*energy;
+    P.pitchVel=inputPitch*pull;
+    P.rollVel=inputRoll*steerSign*2.1*AC.roll*energy;
+    P.pitch=Math.atan2(Math.sin(P.pitch+P.pitchVel*dt),Math.cos(P.pitch+P.pitchVel*dt));
+    P.roll=Math.atan2(Math.sin(P.roll+P.rollVel*dt),Math.cos(P.roll+P.rollVel*dt));
+  }else{
+    P.pitchVel=(P.pitchVel||0)+(pitchRate*pitchRate*(inputPitch*0.55-P.pitch) - 2*zeta*pitchRate*P.pitchVel)*dt;
+    P.pitch += P.pitchVel*dt;
+    P.rollVel=(P.rollVel||0)+(rollRate*rollRate*(rollTarget-P.roll) - 2*zeta*rollRate*P.rollVel)*dt;
+    P.roll += P.rollVel*dt;
+    if(P.pitch>pitchLim){ P.pitch=pitchLim; P.pitchVel=Math.min(0,P.pitchVel); }
+    if(P.pitch<-pitchLim){ P.pitch=-pitchLim; P.pitchVel=Math.max(0,P.pitchVel); }
+    if(P.roll>rollLim){ P.roll=rollLim; P.rollVel=Math.min(0,P.rollVel); }
+    if(P.roll<-rollLim){ P.roll=-rollLim; P.rollVel=Math.max(0,P.rollVel); }
+  }
 
   // bank-to-turn: real coordinated-turn physics (turn = g·√(n²−1)/v, n from bank angle, capped
   // by available lift and the airframe's own structural limit) instead of the old flat
@@ -2896,7 +2913,7 @@ function updateFlight(dt){
   const turnRate=Math.min(
     TURN_K*Math.sin(Math.abs(P.roll))*(TURN_VREF/vT)*AC.turn,
     TURN_CEIL*9.81*Math.sqrt(Math.max(0,gUse*gUse-1))/vT);
-  P.heading -= Math.sign(P.roll)*turnRate*dt;
+  P.heading -= (aeroMode?Math.sin(P.roll)*.18:Math.sign(P.roll))*turnRate*dt;
 
   // speed toward throttle target (engine loses power when damaged), minus drag
   const engineMul = P.hull<60? (0.45+0.55*P.hull/60) : 1.0;
@@ -4361,7 +4378,7 @@ function loadPlaneModel(){
       }
       window.__eyeDbg='EYE '+COCKPIT_EYE.map(v=>v.toFixed(2)).join('/');
       const btEl=document.getElementById('buildTag');
-      if(btEl) btEl.textContent='BUILD 136 · '+window.__eyeDbg;
+      if(btEl) btEl.textContent='BUILD 138 · '+window.__eyeDbg;
       let seat=null;
       model.traverse(function(o){
         if(!o.isMesh||!o.material) return;
@@ -4553,11 +4570,12 @@ function loadCruiserModel(){
 
 function updatePlaneMesh(dt){
   const nd=noseDir();                          // forward = direction of travel
-  const up=new THREE.Vector3(0,1,0);
   // model nose is local -Z, so we want -Z -> nd  (equivalently local +Z -> -nd)
   const zAxis=nd.clone().negate();
-  let xAxis=new THREE.Vector3().crossVectors(up,zAxis);
-  if(xAxis.lengthSq()<1e-5) xAxis.set(1,0,0); else xAxis.normalize();
+  // Keep the right-wing axis tied to heading through the vertical. Deriving it
+  // from world-up becomes singular at the top of a loop and snaps the plane
+  // upright again just as it should pass through inverted flight.
+  const xAxis=new THREE.Vector3(-Math.sin(P.heading),0,Math.cos(P.heading));
   const yAxis=new THREE.Vector3().crossVectors(zAxis,xAxis).normalize();
   const m=new THREE.Matrix4().makeBasis(xAxis,yAxis,zAxis);
   planeGroup.quaternion.setFromRotationMatrix(m);
@@ -5403,29 +5421,39 @@ function updateTorpRun(){
 }
 
 function updateNav(){
-  let target=null, label="";
+  let target=null, label="", kind='BASE';
   // pick nearest live primary target, else carrier
   const live=isDefend()? raiders.filter(r=>r.alive) : ships.filter(s=>s.alive && (s.def.type==="freighter"||s.def.type==="cruiser"));
   if(live.length){
     let best=null,bd=1e9;
     for(const s of live){ const d=Math.hypot(P.pos.x-s.group.position.x,P.pos.z-s.group.position.z); if(d<bd){bd=d;best=s;} }
-    target=best.group.position; label="ATTACK: "+best.def.type.toUpperCase();
+    target=best.group.position; label="ATTACK: "+best.def.type.toUpperCase();kind=isDefend()?'BOMBER':'SHIP';
   } else {
     target=new THREE.Vector3(carrierX+AIM_X,DECK_Y,0); label="RECOVER ABOARD CARRIER";
   }
   const ground=shoreTargets.find(t=>t.alive&&!t.def.optional);
-  if(!live.length&&ground){target=ground.group.position;label='ATTACK: '+ground.def.label.toUpperCase();}
-  if(pacificOps&&!pacificOps.reconDone){const r=pacificOps.config.recon;target=new THREE.Vector3(r.x,0,r.z);label='RECON: HOLD IN SEARCH CIRCLE';}
-  if(pacificOps?.failed){target=new THREE.Vector3(carrierX+AIM_X,DECK_Y,0);label='WINDOW MISSED — RECOVER';}
+  if(!live.length&&ground){target=ground.group.position;label='ATTACK: '+ground.def.label.toUpperCase();kind='TARGET';}
+  if(pacificOps&&!pacificOps.reconDone){const r=pacificOps.config.recon;target=new THREE.Vector3(r.x,0,r.z);label='RECON: HOLD IN SEARCH CIRCLE';kind='RECON';}
+  // The A6M is the immediate moving threat. Once close, the direction arrow
+  // follows its actual position instead of a fixed ship/shore waypoint.
+  let foe=null,fd=Infinity;
+  for(const z of zeros){if(!z.alive)continue;
+    const d=Math.hypot(z.pos.x-P.pos.x,z.pos.z-P.pos.z);
+    if(d<fd){fd=d;foe=z;}}
+  if(foe){target=foe.pos;label='BANDIT: A6M ZERO';kind='BANDIT';}
+  if(pacificOps?.failed){target=new THREE.Vector3(carrierX+AIM_X,DECK_Y,0);label='WINDOW MISSED — RECOVER';kind='BASE';}
   const objText=document.getElementById('objText'); objText.textContent=label;
   // arrow relative to heading
   const bearing=Math.atan2(target.z-P.pos.z, target.x-P.pos.x);
-  let rel=(bearing-P.heading);
+  // Heading zero is +X here, with screen-right toward -Z. Subtract the
+  // bearing from heading so the arrow points where the opponent appears.
+  let rel=(P.heading-bearing);
   while(rel>Math.PI)rel-=Math.PI*2; while(rel<-Math.PI)rel+=Math.PI*2;
   // screen up = ahead -> rotate arrow (0 = up). rel measured in world XZ.
   document.getElementById('navArrow').style.transform=`rotate(${rel*R2D}deg)`;
   const dist=Math.hypot(target.x-P.pos.x,target.z-P.pos.z)/NM;
   document.getElementById('navDist').textContent=dist.toFixed(1)+' NM';
+  document.getElementById('navKind').textContent=kind;
   // Pacific flight headings start at east (+X); a geographic compass starts
   // at north (+Z). Convert only the display, preserving the flight controls.
   const cardinal=n=>['N','NE','E','SE','S','SW','W','NW'][Math.round(n/45)%8];
@@ -5577,6 +5605,7 @@ function setupUIButtons(){
     P.hookTgt = P.hookTgt>0.5?0:1; const b=document.getElementById('hookBtn');
     b.classList.toggle('on',P.hookTgt>0.5); b.innerHTML=P.hookTgt>0.5?'HOOK<br>▼ DN':'HOOK<br>▲ UP';
     flash(P.hookTgt>0.5?'HOOK DOWN':'HOOK UP',700); sfxMotor(1.0,100,260); });
+  document.getElementById('aeroBtn').addEventListener('pointerdown',e=>{e.preventDefault();toggleAero();});
   document.getElementById('loadToggle').onclick=()=>{
     loadout = loadout==='divebomb'?'torpedo':'divebomb';
     document.getElementById('loadBox').textContent = loadout==='divebomb'?'✓':'';
@@ -5650,7 +5679,7 @@ function setupUIButtons(){
   if(dbgT2) dbgT2.onclick=()=>{
     dbgOn=!dbgOn; localStorage.setItem('dbgOn',dbgOn?'1':'0');
     const db=document.getElementById('dbgBox'); if(db) db.textContent=dbgOn?'✓':'';
-    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 136'; }
+    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 138'; }
   };
   const lu=document.getElementById('lookUp'), ld=document.getElementById('lookDn');
   let _lookT=0;
@@ -5699,6 +5728,24 @@ async function launchCampaignMission(idx){
   finally{button.disabled=false;button.textContent=label;}
 }
 function beginGame(){ return launchCampaignMission(selectedMission); }
+
+function toggleAero(){
+  if(state!==ST.FLIGHT||!P.alive)return;
+  if(!isDefend()&&!isSBD()){flash('AERO: ZERO OR DAUNTLESS ONLY',1200);return;}
+  const pitchLim=isSBD()?1.28:1.05,rollLim=isSBD()?1.50:1.52;
+  if(!aeroMode&&(P.gear>0.35||P.spd<STALL_SPD*1.7||P.pos.y<300)){
+    flash('AERO: CLIMB, GEAR UP, BUILD SPEED',1200);return;
+  }
+  if(aeroMode&&(Math.abs(P.pitch)>pitchLim*.95||Math.abs(P.roll)>rollLim*.95)){
+    flash('COMPLETE THE MANOEUVRE FIRST',1200);return;
+  }
+  aeroMode=!aeroMode;P.pitchVel=0;P.rollVel=0;
+  const b=document.getElementById('aeroBtn');
+  if(b){b.classList.toggle('on',aeroMode);b.innerHTML=aeroMode?'AERO<br>ON':'AERO<br>OFF';}
+  const hint=document.getElementById('stickHint');
+  if(hint)hint.textContent=aeroMode?'HOLD FOR ROLL / LOOP':'PITCH / ROLL';
+  flash(aeroMode?'AERO — HOLD STICK FOR ROLL OR LOOP':'NORMAL FLIGHT',1100);
+}
 
 function applyLoadoutUI(){
   const div = loadout==='divebomb';
