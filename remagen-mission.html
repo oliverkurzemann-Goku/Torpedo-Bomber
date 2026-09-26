@@ -252,7 +252,7 @@
   <div style="width:100%;height:4px;background:repeating-linear-gradient(45deg,#ffd400,#ffd400 8px,#111 8px,#111 16px);"></div>
   <span id="testVersionBannerText" style="background:#111;color:#ffd400;font-family:monospace;font-weight:800;font-size:11px;letter-spacing:.5px;padding:3px 10px;border:1px solid #ffd400;border-top:none;border-radius:0 0 6px 6px;"></span>
 </div>
-<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 140';</script>
+<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 141';</script>
 <!-- ===== END TEMP TEST-ONLY VERSION BANNER ===== -->
 <div id="app"></div>
 
@@ -281,7 +281,7 @@
   <div id="flash"></div>
   <div id="gunsight"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 140 · REAL RHINE</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 141 · REAL RHINE</div>
 
   <div id="apr">
     <div id="aprCall"></div>
@@ -521,13 +521,13 @@ const AC={
         rollLim:1.56, pitchLim:1.15, stall:40, app:54, max:190, thrMin:34,
         hull:130, ammo:3400, bombs:2, rockets:8, gunDmg:1.0, gunRate:0.055, wing:12.4,
         col:0x6e7a63, band:0xf0f0e4 },
-  // The Focke-Wulf: rolls like nothing else in the war, but will not out-turn a 109.
+  // The Focke-Wulf rolls quickly; its turning arc still depends on speed.
   fw190:{ name:'Fw 190A-8', rollAuth:1.85, pitchAuth:1.10, turn:1.05, gLim:5.5,
         rollLim:1.56, pitchLim:1.20, stall:39, app:53, max:194, thrMin:32,
         hull:102, ammo:1800, bombs:1, rockets:0, gunDmg:1.5, gunRate:0.075, wing:10.5,
         col:0x7d8478, band:0x2f3a2a },
-  bf109:{ name:'Bf 109G-6', rollAuth:1.45, pitchAuth:1.25, turn:1.25, gLim:5.5,
-        rollLim:1.56, pitchLim:1.25, stall:36, app:50, max:196, thrMin:30,
+  bf109:{ name:'Bf 109G-6', rollAuth:1.08, pitchAuth:1.03, turn:1.02, gLim:5.2,
+        rollLim:1.47, pitchLim:1.18, stall:36, app:50, max:196, thrMin:30,
         hull:88, ammo:1500, bombs:1, rockets:0, gunDmg:1.35, gunRate:0.085, wing:9.9,
         col:0x8d9384, band:0x3d4636 },
   // The Me262: a genuinely different kind of aeroplane, not just another set of numbers on the
@@ -639,7 +639,7 @@ async function loadRealWorld(){
 
   if(OSMManager.BUILD!==21||HistoricalObjectManager.BUILD!==21||LivingWorld.BUILD!==22||WorldVehicles.BUILD!==22) throw new Error('Terrain version mismatch. Reload Remagen.');
   document.getElementById('testVersionBannerText').textContent=
-    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 140 · MODULE 22';
+    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 141 · MODULE 22';
   heightProvider=new DEMHeightProvider(RTILE,'terrain-system/real/data/dem/');
   terrain=new TerrainManager(scene,RTILE,heightProvider);
   osmMgr=new OSMManager(scene,RTILE,terrain,'terrain-system/real/data/osm/');
@@ -3012,8 +3012,8 @@ const AI_G=9.81;
 function aiSpec(kind){
   if(kind==='me163') return {stall:58,max:235,gLim:4.6,rollRate:2.4,thrust:1};
   const d=AC[kind];
-  if(d) return {stall:d.stall, max:d.max, gLim:(kind==='p47')?6.5:5.5,
-                rollRate:(kind==='bf109'||kind==='fw190')?2.9:2.2, thrust:(kind==='p47')?1.10:1.0};
+  if(d) return {stall:d.stall, max:d.max, gLim:d.gLim,
+                rollRate:kind==='fw190'?2.9:(kind==='bf109'?2.5:2.2), thrust:(kind==='p47')?1.10:1.0};
   return {stall:38, max:180, gLim:5.5, rollRate:2.5, thrust:1.0};
 }
 // ---- how fast a given bank angle actually turns the aeroplane -------------------------
@@ -3117,6 +3117,7 @@ function updateEnemyAir(dt){
     if(!e.alive) continue;
     e.modeT-=dt;
     e.evadeCd=Math.max(0,(e.evadeCd||0)-dt);
+    e.weaveCd=Math.max(0,(e.weaveCd||0)-dt);
     const toP=P.pos.clone().sub(e.pos);
     const dist=toP.length();
     if(e.bomber){ updateBomber(e,dt,toP,dist); continue; }
@@ -3146,8 +3147,9 @@ function updateEnemyAir(dt){
     else if(e.modeT<=0){
       if(e.mode==='engage'){
         if(dist<240 || slow){ e.mode='extend'; e.modeT=2.5+Math.random()*1.2; }
-        else if(dist<1300 && ahead<0.7 && e.spd>S.stall*1.8){
-          e.evadeSide=-(e.evadeSide||1);e.mode='weave';e.modeT=1.4+Math.random()*0.7;
+        else if(dist<1700 && dist>440 && e.spd>S.stall*1.8 && e.weaveCd<=0){
+          e.evadeSide=-(e.evadeSide||1);e.mode='weave';e.modeT=1.5+Math.random()*0.6;
+          e.weaveCd=3.4+Math.random()*1.2;
         }
         else e.modeT=1.2;
       } else if(e.mode==='extend'){
@@ -3169,8 +3171,8 @@ function updateEnemyAir(dt){
       aim=nose.clone(); aim.y=0.75; thr=S.max;                   // get the nose up, now
     } else if(e.mode==='break' || e.mode==='weave'){
       const side=new THREE.Vector3(Math.cos(e.heading),0,-Math.sin(e.heading));
-      aim=nose.clone().multiplyScalar(e.mode==='break'?0.85:1.25)
-        .addScaledVector(side,e.evadeSide*(e.mode==='break'?0.92:0.55));
+      aim=nose.clone().multiplyScalar(e.mode==='break'?0.85:1.1)
+        .addScaledVector(side,e.evadeSide*(e.mode==='break'?0.92:0.82));
       aim.y+=(e.mode==='break' && e.evadeDive)?-0.28:0.12;
       thr=S.max;
     } else if(e.mode==='extend'){
@@ -3452,7 +3454,11 @@ function updateFlight(dt){
     // 50° of bank, which is why this played like flying straight ahead).
     const nLift=Math.max(1.05, Math.pow(P.spd/Math.max(1,stallSpd),2)*0.85);
     const gUse=Math.max(1.05, Math.min(d.gLim, nLift));
-    if(!aeroMode)P.heading += Math.sign(P.roll)*bankTurnRate(P.roll, P.spd, gUse, d.turn)*dt;
+    const curve=P.ac==='bf109'?0.72:1;
+    const bank=bankTurnRate(P.roll,P.spd,gUse,d.turn)*curve;
+    // Bank alone still turns in AERO, while pulling tightens the turn. The
+    // old AERO path removed this entirely, making even 90° of bank feel inert.
+    P.heading+=(aeroMode?0.72*Math.sin(P.roll):Math.sign(P.roll))*bank*dt;
   }
   P.heading += windZ*0.004*dt;
 
@@ -3761,16 +3767,19 @@ function updateCamera(dt){
   const wantFov=60+fast*11;
   camera.fov += (wantFov-camera.fov)*Math.min(1,2*dt);
   camera.updateProjectionMatrix();
-  // In a loop the nose passes the zenith. A camera looking straight along it
-  // loses its world-up reference and flips the ground above the sky. In AERO
-  // follow the heading horizontally while keeping the plane centred.
-  const track=aeroMode?new THREE.Vector3(Math.sin(P.heading),0,Math.cos(P.heading)):nose;
+  // Follow pitch and bank again in AERO. Close to the top of a loop a literal
+  // nose chase crosses vertical and flips the horizon, so ease only the camera
+  // pitch through that point; the aircraft still performs the full manoeuvre.
+  const viewPitch=Math.atan2(1.25*Math.sin(P.pitch),.42+Math.abs(Math.cos(P.pitch)));
+  const track=aeroMode?new THREE.Vector3(Math.sin(P.heading)*Math.cos(viewPitch),Math.sin(viewPitch),
+    Math.cos(P.heading)*Math.cos(viewPitch)):nose;
   const back=track.clone().multiplyScalar(-(28+fast*5));
   const want=P.pos.clone().add(back).add(new THREE.Vector3(0,8.5+chaseUp*8+fast*1.5,0));
   const gy=groundY(want.x,want.z)+6;
   if(want.y<gy) want.y=gy;
   camera.position.lerp(want,Math.min(1,7*dt));
-  const up=aeroMode?new THREE.Vector3(0,1,0):new THREE.Vector3(0,1,0).applyAxisAngle(nose,-P.roll*.55);
+  const cameraBank=aeroMode ? .82*Math.sin(P.roll) : P.roll*.55;
+  const up=new THREE.Vector3(0,1,0).applyAxisAngle(track,-cameraBank);
   camera.up.copy(up);
   camera.lookAt(P.pos.clone().addScaledVector(track,50).add(new THREE.Vector3(0,2,0)));
   if(shakeT>0){

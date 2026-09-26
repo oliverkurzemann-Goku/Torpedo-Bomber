@@ -14,6 +14,11 @@ for(const [file,pacific] of [['remagen-mission.html',false],['torpedo-carrier.ht
     noseDir:()=>pacific?new THREE.Vector3(Math.cos(P.pitch),Math.sin(P.pitch),0):
       new THREE.Vector3(0,Math.sin(P.pitch),Math.cos(P.pitch))});
   vm.runInContext(html.slice(a,b),c);
+  P.pitch=Math.PI/3;c.updateCamera(1);camera.updateMatrixWorld(true);
+  assert(camera.getWorldDirection(new THREE.Vector3()).y>.4,file+' AERO camera must follow the climb');
+  P.roll=70*Math.PI/180;c.updateCamera(1);
+  assert(camera.up.y<.95&&camera.up.y>.65,file+' AERO camera must follow bank without inverting');
+  P.roll=0;
   for(let i=0;i<=24;i++){
     P.pitch=i*Math.PI/12;
     c.updateCamera(1);

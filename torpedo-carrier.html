@@ -287,7 +287,7 @@
   <div id="flash"></div>
   <div id="ltn" style="position:fixed;inset:0;background:#e6ecff;opacity:0;pointer-events:none;z-index:40;"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 140</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 141</div>
 
   <!-- Optical landing aid -->
   <div id="lso">
@@ -2665,10 +2665,13 @@ function updateZeros(dt){
       const leadT=Math.min(2.2,Math.max(0.25,dist/170));
       const lead=foePos.clone().addScaledVector(foeVel,leadT);
       aim=lead.sub(z.pos).normalize();
-      // A very small, slow weave stops every fighter tracing the exact same ruler-straight path.
-      z.weave+=dt*(0.7+i*0.05);
-      aim.add(new THREE.Vector3(Math.cos(z.weave)*0.025,Math.sin(z.weave*0.73)*0.018,
-        Math.sin(z.weave)*0.025)).normalize();
+      // Alternate shallow pursuit offsets while closing. Velocity acceleration
+      // still limits the turn, so this produces S-curves instead of a snap.
+      z.weave+=dt*(0.8+i*0.05);
+      const offset=dist>350&&dist<1800&&fwd.dot(to)>0.35 ? .25 : .025;
+      aim.addScaledVector(new THREE.Vector3(fwd.z,0,-fwd.x),Math.sin(z.weave)*offset);
+      aim.y+=Math.sin(z.weave*.73)*.025;
+      aim.normalize();
     }
     if(z.pos.y<85) aim.y=Math.max(aim.y,(85-z.pos.y)/70); // progressive sea avoidance
     aim.y=Math.max(-0.48,Math.min(0.48,aim.y)); aim.normalize();
@@ -2926,7 +2929,7 @@ function updateFlight(dt){
   const turnRate=Math.min(
     TURN_K*Math.sin(Math.abs(P.roll))*(TURN_VREF/vT)*AC.turn,
     TURN_CEIL*9.81*Math.sqrt(Math.max(0,gUse*gUse-1))/vT);
-  if(!aeroMode)P.heading -= Math.sign(P.roll)*turnRate*dt;
+  P.heading -= (aeroMode?0.72*Math.sin(P.roll):Math.sign(P.roll))*turnRate*dt;
 
   // speed toward throttle target (engine loses power when damaged), minus drag
   const engineMul = P.hull<60? (0.45+0.55*P.hull/60) : 1.0;
@@ -5335,9 +5338,12 @@ function updateCamera(dt){
       cret.style.display='block';
     } else cret.style.display='none';
   }
-  camera.up.set(0,1,0);
-  // Keep the sea and horizon below the aircraft when the nose passes vertical.
-  const track=aeroMode?new THREE.Vector3(Math.cos(P.heading),0,Math.sin(P.heading)):nd;
+  // Follow the climb and bank while easing the camera past the vertical at the
+  // top of a loop, avoiding the abrupt sky/sea reversal in the old nose chase.
+  const viewPitch=Math.atan2(1.25*Math.sin(P.pitch),.42+Math.abs(Math.cos(P.pitch)));
+  const track=aeroMode?new THREE.Vector3(Math.cos(P.heading)*Math.cos(viewPitch),Math.sin(viewPitch),
+    Math.sin(P.heading)*Math.cos(viewPitch)):nd;
+  camera.up.set(0,1,0).applyAxisAngle(track,-(aeroMode ? .82*Math.sin(P.roll) : 0));
   const want=P.pos.clone()
     .addScaledVector(track,-24)
     .add(new THREE.Vector3(0,chaseH,0));  // chase height (LOOK buttons)
