@@ -6,7 +6,7 @@ browser. Deployed via GitHub Pages, target device is iPad/iPhone Safari.
 
 | File | Game |
 |---|---|
-| `index.html` | Landing page — the two current campaigns |
+| `index.html` | Landing page — both current campaigns and both classic mission games |
 | `torpedo-carrier.html` | Torpedo Squadron — Pacific, carrier operations + the mapped Okinawa coast |
 | `remagen-mission.html` | Thunderbolt Squadron — Europe, real terrain (Copernicus DEM + Overture Maps) |
 | `thunderbolt-europe.html` | Classic Europe (synthetic terrain) — superseded by `remagen-mission.html`, kept reachable by direct URL |

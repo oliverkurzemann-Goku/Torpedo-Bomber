@@ -7,6 +7,14 @@ ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wie
 
 Stand bei Übergabe: **Torpedo Squadron BUILD 133 · Thunderbolt Squadron BUILD 133 · reales Remagen-Gelände 21**
 
+**Operations Board BUILD 134 (26.09.2026):** `index.html` zeigt wieder vier
+gleichwertige, spielbare Einträge: die beiden aktuellen Kampagnen und die bereits
+vorhandenen Classic-Spiele `torpedo-carrier-open-sea.html` (zehn Einsätze plus
+Training) und `thunderbolt-europe.html` (zwölf Einsätze plus Training). Beide
+Classic-Dateien haben ihre eigene Missionsauswahl; die getrennten Remagen- und
+Okinawa-Landschaftsvorschauen bleiben ausdrücklich als Vorschau ohne Missionen
+beschriftet. Nur Startseite und Dokumentation geändert, kein Flugcode.
+
 **Build 133 (25.09.2026):** Die echte Fw-190- und Bf-109-GLB-Geometrie wurde mit
 `terrain-system/tests/aircraft-gear.js` überprüft: Der frühere Rad-Ausschnitt entfernte
 tausende Flügeldreiecke. Für diese beiden Modelle schneidet die begrenzte Routine nur
