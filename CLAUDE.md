@@ -5,7 +5,22 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 133 · Thunderbolt Squadron BUILD 133 · reales Remagen-Gelände 21**
+Stand bei Übergabe: **Torpedo Squadron BUILD 135 · Thunderbolt Squadron BUILD 135 · reales Remagen-Gelände 21**
+
+**Build 135 (26.09.2026):** Fw 190, Bf 109 und Me 262 verwenden hellere Modellmaterialien
+mit einer kleinen konstanten Emissionskomponente, damit dunkle eingebettete Texturen auch
+bei Schatten lesbar sind. Die generierten Fahrwerke sind etwa 10–15 % kleiner; der
+Regressionstest lädt die echten Modelle jetzt mit denselben Achsen wie das Spiel.
+Beide Kampagnen zeigen einen Zielpfeil mit Schaft und Kurs/Zielpeilung in Himmelsrichtungen
+und Grad; im Pazifik wurden sowohl HUD-Kurs als auch Kompass von der internen
+Ost-Nullrichtung auf geografisch Nord umgerechnet. Die schwere Rhein-Flak zielt beim Abschuss einmal, feuert ein sichtbares
+Geschoss mit entfernungsabhängiger Flugzeit und explodiert am festgelegten Punkt. Reichweite,
+Höhenbereich und Explosionsradius wurden begrenzt. Das HUD nennt Richtung und Entfernung
+der nächsten Flak sowie die verbleibende Flugzeit eines Geschosses. Der Test
+`terrain-system/tests/flak-flight.js` prüft einen Treffer im Geradeausflug und einen
+erfolgreich ausgewichenen Schuss im starken Richtungswechsel.
+
+---
 
 **Operations Board BUILD 134 (26.09.2026):** `index.html` zeigt wieder vier
 gleichwertige, spielbare Einträge: die beiden aktuellen Kampagnen und die bereits

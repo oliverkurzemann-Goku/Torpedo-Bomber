@@ -46,7 +46,7 @@ global.fetch=async url=>{const b=fs.readFileSync(path.join(root,url.split('?')[0
     if(run.id==='jabo')assert(run.calls.some(c=>c.kind==='truck'&&c.primary));
     if(run.id==='final')assert(run.calls.some(c=>c.kind==='ferry'&&c.primary));
   }
-  assert(html.includes('const range=light?1500:5500'));assert(html.includes('groundFire=[];'));
+  assert(html.includes('const range=light?1350:3900'));assert(html.includes('groundFire=[];'));
   const h=JSON.parse(fs.readFileSync(path.join(root,'terrain-system/real/data/historical/3_3.json'))),b=h.bridges[0];
   const bridge=[12000+(b.x1+b.x2)/2,12000+(b.z1+b.z2)/2];
   const f=JSON.parse(fs.readFileSync(path.join(root,'terrain-system/real/data/historical/3_5.json'))).factories[0];

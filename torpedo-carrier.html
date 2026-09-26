@@ -38,8 +38,10 @@
     text-align:center;min-width:200px;}
   #objText{font-size:12px;letter-spacing:1px;color:var(--khaki);}
   #navWrap{margin-top:4px;display:flex;align-items:center;justify-content:center;gap:8px;}
-  #navArrow{font-size:18px;color:var(--amber);transform-origin:center;display:inline-block;}
+  #navArrow{color:var(--amber);transform-origin:center;display:inline-block;}
+  #navArrow svg{width:22px;height:24px;display:block;fill:currentColor;}
   #navDist{font-size:14px;font-weight:700;color:var(--amber);}
+  #compassText{font-size:10px;letter-spacing:1px;color:var(--amber);margin-top:3px;white-space:nowrap;}
 
   /* center messages */
   #flash{position:absolute;top:32%;left:50%;transform:translateX(-50%);text-align:center;
@@ -274,7 +276,8 @@
   </div>
   <div class="panel" id="obj">
     <div id="objText">—</div>
-    <div id="navWrap"><span id="navArrow">▲</span><span id="navDist">0.0 NM</span></div>
+    <div id="navWrap"><span id="navArrow"><svg viewBox="0 0 24 26" aria-label="Direction to objective"><path d="M12 1 22 15 15 14 15 25 9 25 9 14 2 15Z"/></svg></span><span id="navDist">0.0 NM</span></div>
+    <div id="compassText">HDG 090° E · BRG 090° E</div>
   </div>
   <div class="pitReticle"></div>
   <div id="lookUp" class="lookBtn">LOOK ▲</div>
@@ -283,7 +286,7 @@
   <div id="flash"></div>
   <div id="ltn" style="position:fixed;inset:0;background:#e6ecff;opacity:0;pointer-events:none;z-index:40;"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 133</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 135</div>
 
   <!-- Optical landing aid -->
   <div id="lso">
@@ -4330,7 +4333,7 @@ function loadPlaneModel(){
       }
       window.__eyeDbg='EYE '+COCKPIT_EYE.map(v=>v.toFixed(2)).join('/');
       const btEl=document.getElementById('buildTag');
-      if(btEl) btEl.textContent='BUILD 133 · '+window.__eyeDbg;
+      if(btEl) btEl.textContent='BUILD 135 · '+window.__eyeDbg;
       let seat=null;
       model.traverse(function(o){
         if(!o.isMesh||!o.material) return;
@@ -5305,8 +5308,8 @@ function updateHUD(){
     const lb=document.getElementById('hAltLbl'); if(lb) lb.textContent=inPat?'DECK':'ALT';
     document.getElementById('hAlt').innerHTML=Math.max(0,Math.round(ft))+'<small> FT</small>';
   }
-  let hdg=((P.heading*R2D)%360+360)%360;
-  document.getElementById('hHdg').textContent=String(Math.round(hdg)).padStart(3,'0');
+  const hdg=((90-P.heading*R2D)%360+360)%360;
+  document.getElementById('hHdg').textContent=String(Math.round(hdg)%360).padStart(3,'0');
   const vsi=Math.round(P.vSpeed*FT*60/100)*100;
   const vsiEl=document.getElementById('hVsi');
   vsiEl.innerHTML=(vsi>0?'+':'')+vsi+'<small> FPM</small>';
@@ -5394,6 +5397,12 @@ function updateNav(){
   document.getElementById('navArrow').style.transform=`rotate(${rel*R2D}deg)`;
   const dist=Math.hypot(target.x-P.pos.x,target.z-P.pos.z)/NM;
   document.getElementById('navDist').textContent=dist.toFixed(1)+' NM';
+  // Pacific flight headings start at east (+X); a geographic compass starts
+  // at north (+Z). Convert only the display, preserving the flight controls.
+  const cardinal=n=>['N','NE','E','SE','S','SW','W','NW'][Math.round(n/45)%8];
+  const compassHeading=((90-P.heading*R2D)%360+360)%360;
+  const compassBearing=((90-bearing*R2D)%360+360)%360;
+  document.getElementById('compassText').textContent='HDG '+String(Math.round(compassHeading)%360).padStart(3,'0')+'° '+cardinal(compassHeading)+' · BRG '+String(Math.round(compassBearing)%360).padStart(3,'0')+'° '+cardinal(compassBearing);
 }
 
 // Optical landing aid
@@ -5612,7 +5621,7 @@ function setupUIButtons(){
   if(dbgT2) dbgT2.onclick=()=>{
     dbgOn=!dbgOn; localStorage.setItem('dbgOn',dbgOn?'1':'0');
     const db=document.getElementById('dbgBox'); if(db) db.textContent=dbgOn?'✓':'';
-    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 133'; }
+    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 135'; }
   };
   const lu=document.getElementById('lookUp'), ld=document.getElementById('lookDn');
   let _lookT=0;

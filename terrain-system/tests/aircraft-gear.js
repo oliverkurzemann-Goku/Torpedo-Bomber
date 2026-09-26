@@ -24,7 +24,7 @@ function faceCount(group,minimumY){let total=0;group.updateMatrixWorld(true);gro
  }
 });return total;}
 (async()=>{
- for(const [kind,file,yaw,span] of [['fw190','fw190.glb',0,10.51],['bf109','bf109new.glb',Math.PI/2,9.92]]){
+ for(const [kind,file,yaw,span] of [['fw190','fw190.glb',0,10.51],['bf109','bf109new.glb',0,9.92]]){
   const {scene:src}=await load(file),model=new THREE.Group();model.add(src);src.rotation.y=yaw;src.updateMatrixWorld(true);
   const size=new THREE.Box3().setFromObject(model).getSize(new THREE.Vector3());src.scale.setScalar(span/size.x);
   model.updateMatrixWorld(true);src.position.copy(new THREE.Box3().setFromObject(model).getCenter(new THREE.Vector3())).negate();model.updateMatrixWorld(true);
@@ -41,6 +41,12 @@ function faceCount(group,minimumY){let total=0;group.updateMatrixWorld(true);gro
   const wheels=gear.children.slice(0,2).map(g=>new THREE.Box3().setFromObject(g));
   assert.ok(wheels.every(b=>b.min.y<box.min.y-.55),kind+' main gear is hidden inside wing');
   assert.ok(Math.abs(wheels[0].min.y-wheels[1].min.y)<.05,kind+' wheel axles differ in height');
+  brightenFighterSkin(src,kind);
+  const painted=[];src.traverse(o=>{if(o.isMesh)painted.push(...[].concat(o.material).filter(m=>m?.emissiveIntensity>.1));});
+  assert.ok(painted.length>0&&painted.every(m=>m.emissiveMap===null),kind+' body textures still block the ambient fill');
   console.log(kind,JSON.stringify({removedWheelFaces:removed,upperWingFaces:upperAfter,wheelBottom:wheels[0].min.y}));
  }
+ const jet=(await load('me262.glb')).scene;brightenFighterSkin(jet,'me262');
+ const jetMaterials=[];jet.traverse(o=>{if(o.isMesh)jetMaterials.push(...[].concat(o.material).filter(m=>m?.emissiveIntensity>.1));});
+ assert.ok(jetMaterials.length>0&&jetMaterials.every(m=>m.emissiveMap===null&&m.emissiveIntensity>=.34),'Me 262 skin remains dark');
 })().catch(e=>{console.error(e);process.exitCode=1;});

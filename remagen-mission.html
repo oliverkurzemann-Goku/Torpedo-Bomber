@@ -37,8 +37,11 @@
     text-align:center;min-width:200px;}
   #objText{font-size:12px;letter-spacing:1px;color:var(--khaki);}
   #navWrap{margin-top:4px;display:flex;align-items:center;justify-content:center;gap:8px;}
-  #navArrow{font-size:18px;color:var(--amber);transform-origin:center;display:inline-block;}
+  #navArrow{color:var(--amber);transform-origin:center;display:inline-block;}
+  #navArrow svg{width:22px;height:24px;display:block;fill:currentColor;}
   #navDist{font-size:14px;font-weight:700;color:var(--amber);}
+  #compassText{font-size:10px;letter-spacing:1px;color:var(--amber);margin-top:3px;white-space:nowrap;}
+  #flakAlert{font-size:10px;letter-spacing:1px;color:#ffb779;margin-top:4px;min-height:12px;}
 
   #flash{position:absolute;top:32%;left:50%;transform:translateX(-50%);text-align:center;
     font-size:34px;font-weight:800;letter-spacing:3px;text-transform:uppercase;opacity:0;
@@ -247,7 +250,7 @@
   <div style="width:100%;height:4px;background:repeating-linear-gradient(45deg,#ffd400,#ffd400 8px,#111 8px,#111 16px);"></div>
   <span id="testVersionBannerText" style="background:#111;color:#ffd400;font-family:monospace;font-weight:800;font-size:11px;letter-spacing:.5px;padding:3px 10px;border:1px solid #ffd400;border-top:none;border-radius:0 0 6px 6px;"></span>
 </div>
-<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 133';</script>
+<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 135';</script>
 <!-- ===== END TEMP TEST-ONLY VERSION BANNER ===== -->
 <div id="app"></div>
 
@@ -268,13 +271,15 @@
   </div>
   <div class="panel" id="obj">
     <div id="objText">—</div>
-    <div id="navWrap"><span id="navArrow">&#9650;</span><span id="navDist">0.0 mi</span></div>
+    <div id="navWrap"><span id="navArrow"><svg viewBox="0 0 24 26" aria-label="Direction to objective"><path d="M12 1 22 15 15 14 15 25 9 25 9 14 2 15Z"/></svg></span><span id="navDist">0.0 mi</span></div>
+    <div id="compassText">HDG 000° N · BRG 000° N</div>
+    <div id="flakAlert" role="status"></div>
   </div>
   <div id="pauseBtn" title="Pause">&#10074;&#10074;</div>
   <div id="flash"></div>
   <div id="gunsight"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 133 · REAL RHINE</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 135 · REAL RHINE</div>
 
   <div id="apr">
     <div id="aprCall"></div>
@@ -630,7 +635,7 @@ async function loadRealWorld(){
 
   if(OSMManager.BUILD!==21||HistoricalObjectManager.BUILD!==21||LivingWorld.BUILD!==21||WorldVehicles.BUILD!==21) throw new Error('Terrain version mismatch. Reload Remagen.');
   document.getElementById('testVersionBannerText').textContent=
-    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 133 · MODULE 21';
+    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 135 · MODULE 21';
   heightProvider=new DEMHeightProvider(RTILE,'terrain-system/real/data/dem/');
   terrain=new TerrainManager(scene,RTILE,heightProvider);
   osmMgr=new OSMManager(scene,RTILE,terrain,'terrain-system/real/data/osm/');
@@ -2036,10 +2041,10 @@ function buildGear(gear, root, whole, S, kind){
   // past them, and the nosewheel used to vanish inside the nose in chase view.
   const jet=TRICYCLE_KINDS.includes(kind);
   const fighter=kind==='fw190'||kind==='bf109';
-  const legLen=span*(jet?0.100:fighter?0.112:0.052);
-  const legR  =span*(fighter?.010:0.0075);
-  const wheelR=span*(jet?0.024:fighter?0.031:0.0195);
-  const wheelW=span*0.0090;
+  const legLen=span*(jet?0.087:fighter?0.098:0.047);
+  const legR  =span*(fighter?.0086:0.0066);
+  const wheelR=span*(jet?0.021:fighter?0.027:0.0175);
+  const wheelW=span*0.0078;
   const halfTrack=span*0.150;
   const embed=span*0.008;          // tuck the leg top slightly into the skin, no visible seam
   const mainZ=whole.min.z+S.z*0.56;
@@ -2093,13 +2098,15 @@ function buildGear(gear, root, whole, S, kind){
   tg.position.set(0, (smallFloorY!=null? smallFloorY : whole.min.y)+embed, smallZ);
   gear.add(tg);
 }
-function brightenJetSkin(src){
+function brightenFighterSkin(src,kind){
   src.traverse(o=>{if(!o.isMesh)return;
     const materials=(Array.isArray(o.material)?o.material:[o.material]).map(m=>{
       if(!m||!m.color||m.transparent&&m.opacity<.9)return m;
-      const n=m.clone();n.color.multiplyScalar(1.12);
-      if(n.emissive){n.emissive.setHex(0xb6bfca);n.emissiveMap=n.map||null;n.emissiveIntensity=.24;}
-      if(n.aoMapIntensity!==undefined)n.aoMapIntensity=.35;
+      const n=m.clone();n.color.multiplyScalar(kind==='me262'?1.35:1.24);
+      // A constant ambient contribution makes the dark embedded diffuse textures
+      // readable even in wing shadow. Do not multiply it by the same dark map.
+      if(n.emissive){n.emissiveMap=null;n.emissive.setHex(0xa4aaa0);n.emissiveIntensity=kind==='me262'?.34:.29;}
+      if(n.aoMapIntensity!==undefined)n.aoMapIntensity=.22;
       if(n.metalness!==undefined)n.metalness=Math.min(n.metalness,.08);
       if(n.roughness!==undefined)n.roughness=.64;
       return n;
@@ -2161,7 +2168,7 @@ function tryLoad(L,k,i){
       });
       o.material=Array.isArray(o.material)? out : out[0];
     });
-    if(k==='me262')brightenJetSkin(src);
+    if(k==='me262'||k==='fw190'||k==='bf109')brightenFighterSkin(src,k);
     modelRaw[k]=src;
     window.__modelSrc=(window.__modelSrc||{}); window.__modelSrc[k]=url;
     buildTemplate(k);
@@ -2425,6 +2432,7 @@ function clearWorld(){
   for(const e of enemyAir) scene.remove(e.group); enemyAir=[];
   for(const b of bullets) scene.remove(b.mesh); bullets=[];
   for(const t of tracers) scene.remove(t.mesh); tracers=[];
+  for(const shell of groundFire)if(shell.mesh)scene.remove(shell.mesh);
   groundFire=[];
   for(const b of bombs) scene.remove(b.mesh); bombs=[];
   for(const r of rockets) scene.remove(r.mesh); rockets=[];
@@ -2737,6 +2745,8 @@ function updateOrdnance(dt){
 // ============================================================
 //  FLAK — light 20mm hoses tracer at you, the 88s put up airbursts
 // ============================================================
+const flakShellGeo=new THREE.CylinderGeometry(.42,.42,12,6);
+const flakShellMat=new THREE.MeshBasicMaterial({color:0xffad58,fog:false});
 function updateFlak(dt){
   if(!P.alive||state!==ST.FLIGHT) return;
   const agl=P.pos.y-groundY(P.pos.x,P.pos.z);
@@ -2748,8 +2758,8 @@ function updateFlak(dt){
     // heavy airburst behavior. The low-detail fallback remains combat-capable
     // while its GLB is still loading.
     const light=!f.heavy;
-    const range=light?1500:5500;
-    if(d>range || agl<12) continue;
+    const range=light?1350:3900;
+    if(d>range || agl<(light?15:140) || (!light&&d<350)) continue;
     f.cool-=dt;
     if(f.cool>0) continue;
     if(light){
@@ -2766,26 +2776,31 @@ function updateFlak(dt){
       scene.add(m);
       tracers.push({mesh:m,dir,speed:620,life:3.0});
     } else {
-      f.cool=1.5+Math.random()*1.4;
-      // airburst: a puff placed near you, with a miss distance set by difficulty
-      const err=(1.7-D().aim*0.7)*110;
-      const bx=P.pos.x+(Math.random()-0.5)*err;
-      const by=P.pos.y+(Math.random()-0.5)*err*0.5;
-      const bz=P.pos.z+(Math.random()-0.5)*err;
-      groundFire.push({x:bx,y:by,z:bz,t:0.35});
+      f.cool=(2.4+Math.random()*1.6)/Math.max(.7,D().flak);
+      // Aim only when firing. A turn or change in height during the shell's
+      // flight leaves the burst behind instead of tracking the aeroplane.
+      const flight=Math.max(.9,d/780),aim=P.pos.clone().addScaledVector(noseDir(),P.spd*flight*(.89+D().aim*.035));
+      const err=(1.5-D().aim*.25)*(30+d*.012);
+      aim.x+=(Math.random()-.5)*err;aim.y+=(Math.random()-.5)*err*.65;aim.z+=(Math.random()-.5)*err;
+      const shell=new THREE.Mesh(flakShellGeo,flakShellMat);
+      shell.position.copy(p);shell.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),aim.clone().sub(p).normalize());
+      scene.add(shell);
+      groundFire.push({x:aim.x,y:aim.y,z:aim.z,t:flight,flight,origin:p.clone(),mesh:shell});
     }
   }
   // resolve airbursts
   for(let i=groundFire.length-1;i>=0;i--){
     const b=groundFire[i]; b.t-=dt;
+    if(b.mesh)b.mesh.position.lerpVectors(b.origin,new THREE.Vector3(b.x,b.y,b.z),Math.min(1,1-b.t/b.flight));
     if(b.t<=0){
+      if(b.mesh)scene.remove(b.mesh);
       spawnSmoke(b.x,b.y,b.z,0x2a2a28,1.5);
       const m=new THREE.Mesh(new THREE.SphereGeometry(1,8,6),
         new THREE.MeshBasicMaterial({color:0x30302e,transparent:true,opacity:0.9,depthWrite:false}));
       m.position.set(b.x,b.y,b.z); m.scale.setScalar(6); scene.add(m);
       explosions.push({mesh:m,t:0,life:0.6,s:1.4});
       const d=P.pos.distanceTo(new THREE.Vector3(b.x,b.y,b.z));
-      if(d<60){ damagePlayer((1-d/60)*22*D().flak,'flak'); shake(1.0*(1-d/60)+0.2); }
+      if(d<42){ damagePlayer((1-d/42)*16*D().flak,'flak'); shake(1.0*(1-d/42)+0.2); }
       sfxFlak();
       groundFire.splice(i,1);
     }
@@ -3634,7 +3649,7 @@ function updateHUD(){
   document.getElementById('hSpd').innerHTML=Math.round(P.spd*KT)+'<small> MPH</small>';
   document.getElementById('hAlt').innerHTML=Math.max(0,Math.round(ftAlt))+'<small> FT</small>';
   const hdg=((P.heading*R2D)%360+360)%360;
-  document.getElementById('hHdg').textContent=String(Math.round(hdg)).padStart(3,'0');
+  document.getElementById('hHdg').textContent=String(Math.round(hdg)%360).padStart(3,'0');
   document.getElementById('hVsi').innerHTML=Math.round(P.vSpeed*FT*60/50)*50+'<small> FPM</small>';
   document.getElementById('hFuel').innerHTML=Math.round(P.fuel)+'<small> %</small>';
   document.getElementById('hHull').innerHTML=Math.round(P.hull)+'<small> %</small>';
@@ -3660,6 +3675,18 @@ function updateHUD(){
   if(ar) ar.style.transform='rotate('+(rel*R2D)+'deg)';
   const nd=document.getElementById('navDist');
   if(nd) nd.textContent=(Math.hypot(dx,dz)/MI).toFixed(1)+' mi';
+  const headingCard=n=>['N','NE','E','SE','S','SW','W','NW'][Math.round(n/45)%8];
+  const targetDeg=((brg*R2D)%360+360)%360;
+  document.getElementById('compassText').textContent='HDG '+String(Math.round(hdg)%360).padStart(3,'0')+'° '+headingCard(hdg)+' · BRG '+String(Math.round(targetDeg)%360).padStart(3,'0')+'° '+headingCard(targetDeg);
+  let closest=null,range=Infinity;
+  for(const f of flakUnits){if(!f.alive)continue;const d=P.pos.distanceTo(f.group.position);if(d<range){closest=f;range=d;}}
+  const alert=document.getElementById('flakAlert');
+  if(closest&&range<5500&&state===ST.FLIGHT){
+    const source=closest.group.position,angle=Math.atan2(source.x-P.pos.x,source.z-P.pos.z);
+    const clock=((Math.round((angle-P.heading)*6/Math.PI)%12)+12)%12||12;
+    const incoming=groundFire.reduce((best,b)=>Math.min(best,b.t),Infinity);
+    alert.textContent='FLAK '+clock+" O'CLOCK · "+(range/1000).toFixed(1)+' KM'+(Number.isFinite(incoming)?' · SHELL '+Math.max(0,incoming).toFixed(1)+' S':'');
+  }else alert.textContent='';
 }
 function drawMinimap(){
   const c=document.getElementById('mmap'); if(!c) return;
