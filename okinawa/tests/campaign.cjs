@@ -12,12 +12,18 @@ assert.equal(openChapter().highest('europeRhine'),3,'real Rhine progress survive
 assert.equal(openChapter().highest('europe'),13,'old synthetic sorties do not overwrite new progress');
 const board=html('index.html').match(/<main class="board">([\s\S]*?)<\/main>/)[1];
 const entries=[...board.matchAll(/href="([^"]+)"/g)].map(m=>new URL(m[1].replaceAll('&amp;','&'),'https://example.org/'));
-assert.deepEqual(entries.map(u=>u.pathname),['/torpedo-carrier.html','/remagen-mission.html'],'only the two current campaigns appear');
+assert.deepEqual(entries.map(u=>u.pathname),[
+ '/torpedo-carrier.html','/remagen-mission.html',
+ '/torpedo-carrier-open-sea.html','/thunderbolt-europe.html'
+],'current and classic mission games appear together');
 assert.equal(entries[1].searchParams.get('campaign'),'1','Europe opens the real-terrain campaign');
 assert.equal(entries[1].searchParams.get('v'),'133','campaign link bypasses stale startup HTML');
-assert(!html('index.html').includes('href="thunderbolt-europe.html"'),'Classic Europe stays hidden');
-assert(!html('index.html').includes('href="torpedo-carrier-open-sea.html"'),'Classic Pacific stays hidden');
-assert(html('thunderbolt-europe.html').includes('function init()'),'hidden Classic game remains available by direct URL');
+for(const classic of ['torpedo-carrier-open-sea.html','thunderbolt-europe.html']){
+ assert.match(html(classic),/id="missionSel"/,`${classic} has a mission selection`);
+ assert.match(html(classic),/const MISSIONS\s*=\s*\[/,`${classic} defines its missions`);
+}
+assert(!entries.some(u=>u.pathname.includes('preview')||u.pathname.includes('demo-remagen')),
+ 'landscape-only previews are separate from playable modes');
 assert.match(html('remagen-mission.html'),/SquadronCampaign\.record\('europeRhine',mission\)/);
 assert.match(html('remagen-mission.html'),/const airLeft=enemyAir.filter\(e=>e.alive\).length/,
  'landing counts every live aircraft, including reinforcements');
@@ -48,4 +54,4 @@ assert.equal(missions.filter(m=>m.kills||m.enemyAir||m.bombers).length,12);
 for(const m of missions){if(m.kills?.truck)assert.equal(m.traffic||m.id,'convoy');
  if(m.kills?.ferry)assert.equal(m.traffic||m.id,'ferry');
  if(m.kills?.train)assert.equal(m.traffic||m.id,'train');}
-console.log('Two integrated campaigns, all twelve real-Rhine sorties and fresh progression verified');
+console.log('Four playable modes, all twelve real-Rhine sorties and fresh progression verified');
