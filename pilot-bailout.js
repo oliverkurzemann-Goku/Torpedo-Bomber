@@ -5,6 +5,10 @@
   const group=new THREE.Group();group.name='pilotParachute';
   const cloth=new THREE.MeshStandardMaterial({color:0xc8b792,roughness:1,side:THREE.DoubleSide});
   const suit=new THREE.MeshStandardMaterial({color:0x464b3b,roughness:1});
+  const boots=new THREE.MeshStandardMaterial({color:0x242821,roughness:1});
+  const skin=new THREE.MeshStandardMaterial({color:0xb49473,roughness:1});
+  const harness=new THREE.MeshStandardMaterial({color:0xb8a78a,roughness:1});
+  const goggles=new THREE.MeshStandardMaterial({color:0x354952,metalness:.12,roughness:.24});
   const line=new THREE.MeshBasicMaterial({color:0xddd3b3});
   const canopy=new THREE.Mesh(new THREE.SphereGeometry(3.1,16,8,0,Math.PI*2,0,Math.PI/2),cloth);
   canopy.position.y=4.4;canopy.visible=false;group.add(canopy);
@@ -16,10 +20,38 @@
    cord.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),dir.normalize());
    cord.visible=false;group.add(cord);
   }
-  const body=new THREE.Mesh(new THREE.CylinderGeometry(.23,.27,.8,8),suit);
-  body.position.y=0;group.add(body);
-  const head=new THREE.Mesh(new THREE.SphereGeometry(.22,8,6),suit);
-  head.position.y=.72;group.add(head);
+  // Recognisable aircrew silhouette at chase-camera distance: jacket, harness,
+  // arms with gloves, two separated legs and boots, bare face and leather helmet.
+  const pilot=new THREE.Group();pilot.name='pilot';group.add(pilot);
+  const body=new THREE.Mesh(new THREE.CylinderGeometry(.23,.19,.66,10),suit);
+  body.name='flightJacket';body.position.y=.17;pilot.add(body);
+  const head=new THREE.Mesh(new THREE.SphereGeometry(.18,10,8),skin);
+  head.position.y=.68;head.name='face';pilot.add(head);
+  const helmet=new THREE.Mesh(new THREE.SphereGeometry(.205,12,8,0,Math.PI*2,0,Math.PI*.57),boots);
+  helmet.position.y=.74;helmet.name='helmet';pilot.add(helmet);
+  const visor=new THREE.Mesh(new THREE.BoxGeometry(.32,.105,.09),goggles);
+  visor.position.set(0,.72,.145);visor.name='goggles';pilot.add(visor);
+  const pack=new THREE.Mesh(new THREE.BoxGeometry(.43,.46,.20),cloth);
+  pack.position.set(0,.20,-.23);pack.name='parachutePack';pilot.add(pack);
+  const limb=(name,a,b,r,material)=>{
+   const v=new THREE.Vector3().subVectors(b,a);
+   const mesh=new THREE.Mesh(new THREE.CylinderGeometry(r*.85,r,v.length(),8),material);
+   mesh.name=name;mesh.position.copy(a).add(b).multiplyScalar(.5);
+   mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),v.normalize());pilot.add(mesh);
+  };
+  for(const side of [-1,1]){
+   limb(side<0?'leftArm':'rightArm',new THREE.Vector3(side*.23,.41,0),
+     new THREE.Vector3(side*.38,-.12,.12),.085,suit);
+   const glove=new THREE.Mesh(new THREE.SphereGeometry(.09,8,6),boots);
+   glove.position.set(side*.38,-.15,.12);pilot.add(glove);
+   limb(side<0?'leftLeg':'rightLeg',new THREE.Vector3(side*.11,-.14,0),
+     new THREE.Vector3(side*.15,-.68,.04),.11,suit);
+   const boot=new THREE.Mesh(new THREE.BoxGeometry(.18,.25,.30),boots);
+   boot.name=side<0?'leftBoot':'rightBoot';boot.position.set(side*.15,-.76,.12);pilot.add(boot);
+   const strap=new THREE.Mesh(new THREE.BoxGeometry(.045,.65,.045),harness);
+   strap.position.set(side*.115,.18,.195);strap.rotation.z=side*.22;pilot.add(strap);
+  }
+  group.rotation.y=heading;
   group.position.copy(start);scene.add(group);
   const velocity=new THREE.Vector3(Math.sin(heading)*Math.min(speed,190)*.18,0,
     Math.cos(heading)*Math.min(speed,190)*.18);

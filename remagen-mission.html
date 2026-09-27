@@ -133,6 +133,7 @@
   #flapBtn{left:max(20px,env(safe-area-inset-left));top:calc(30% + 56px);}
   #armBtn{left:max(20px,env(safe-area-inset-left));top:calc(30% + 112px);}
   #aeroBtn{left:max(20px,env(safe-area-inset-left));top:calc(30% + 168px);}
+  #diveBrakeBtn{left:max(20px,env(safe-area-inset-left));top:calc(30% + 224px);display:none;}
   #bailBtn{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 22px);
     transform:translateX(-50%);z-index:22;display:none;touch-action:manipulation;
     padding:10px 14px;border:1px solid #e2bd79;border-radius:7px;background:rgba(63,43,29,.9);
@@ -282,7 +283,7 @@
   <div style="width:100%;height:4px;background:repeating-linear-gradient(45deg,#ffd400,#ffd400 8px,#111 8px,#111 16px);"></div>
   <span id="testVersionBannerText" style="background:#111;color:#ffd400;font-family:monospace;font-weight:800;font-size:11px;letter-spacing:.5px;padding:3px 10px;border:1px solid #ffd400;border-top:none;border-radius:0 0 6px 6px;"></span>
 </div>
-<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 146';</script>
+<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 147';</script>
 <!-- ===== END TEMP TEST-ONLY VERSION BANNER ===== -->
 <div id="app"></div>
 
@@ -311,7 +312,7 @@
   <div id="flash"></div>
   <div id="gunsight"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 146 · REAL RHINE</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 147 · REAL RHINE</div>
 
   <div id="apr">
     <div id="aprCall"></div>
@@ -335,9 +336,10 @@
 <div id="flapBtn" class="ctlBtn">FLAPS<br>UP</div>
 <div id="armBtn" class="ctlBtn">ARM<br>BOMB</div>
 <div id="aeroBtn" class="ctlBtn" title="Rate control for rolls and loops">AERO<br>OFF</div>
+<div id="diveBrakeBtn" class="ctlBtn" title="Stuka dive brakes (D)">DIVE<br>BRAKES</div>
 <button id="bailBtn" type="button" title="Emergency parachute (B)">BAIL OUT</button>
 <div id="steerBtn">STEER<br>L/R</div>
-<div id="turnBtn" class="ctlBtn" style="display:none;left:max(20px,env(safe-area-inset-left));top:calc(30% + 224px);width:58px;height:50px;">TURN<br>MODEL</div>
+<div id="turnBtn" class="ctlBtn" style="display:none;left:max(20px,env(safe-area-inset-left));top:calc(30% + 280px);width:58px;height:50px;">TURN<br>MODEL</div>
 <div id="mdlBox" style="display:none;position:fixed;left:50%;transform:translateX(-50%);
   bottom:max(18px,env(safe-area-inset-bottom));z-index:13;pointer-events:none;
   font-family:monospace;font-size:11px;line-height:1.6;letter-spacing:.5px;
@@ -429,7 +431,7 @@
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+<script src="vendor/GLTFLoader-r128.js?v=147"></script>
 <script src="https://cdn.jsdelivr.net/npm/fflate@0.6.9/umd/index.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/FBXLoader.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/utils/SkeletonUtils.js"></script>
@@ -447,14 +449,14 @@
 <script src="terrain-system/HistoricalObjectManager.js?v=remagen-21"></script>
 <script src="terrain-system/AirfieldDetails.js?v=remagen-21"></script>
 <script src="terrain-system/WorldVehicles.js?v=remagen-22"></script>
-<script src="terrain-system/LivingWorld.js?v=remagen-22"></script>
+<script src="terrain-system/LivingWorld.js?v=147"></script>
 <script src="campaign.js?v=1"></script>
 <script src="combat-fx.js?v=133"></script>
-<script src="pilot-bailout.js?v=145"></script>
+<script src="pilot-bailout.js?v=147"></script>
 <script src="audio/weapon-sound.js?v=144"></script>
 <script src="audio/jet-engine.js?v=144"></script>
 <script src="sortie-systems.js?v=146"></script>
-<script src="operation-plans.js?v=146"></script>
+<script src="operation-plans.js?v=147"></script>
 <script>
 // ============================================================
 //  REMAGEN 1945 — REAL TERRAIN (forked from thunderbolt-europe.html)
@@ -687,7 +689,7 @@ async function loadRealWorld(){
 
   if(OSMManager.BUILD!==21||HistoricalObjectManager.BUILD!==21||LivingWorld.BUILD!==22||WorldVehicles.BUILD!==22) throw new Error('Terrain version mismatch. Reload Remagen.');
   document.getElementById('testVersionBannerText').textContent=
-    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 146 · MODULE 22';
+    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 147 · MODULE 22';
   heightProvider=new DEMHeightProvider(RTILE,'terrain-system/real/data/dem/');
   terrain=new TerrainManager(scene,RTILE,heightProvider);
   osmMgr=new OSMManager(scene,RTILE,terrain,'terrain-system/real/data/osm/');
@@ -927,7 +929,7 @@ const MODEL_URL={
   // the newer War Thunder P-47 first: measured span 12.47 m against a real 12.42, and it
   // carries a perfectly round 3.95 m disc at its +Z end - that is the propeller, so it is
   // already facing the right way. The older p47.glb stays as a fallback.
-  p47:   ['p-47d-28_thunderbolt_1_custom_war_thunder.glb',
+  p47:   ['p47new.glb','p-47d-28_thunderbolt_1_custom_war_thunder.glb',
           'p-47d-28%20thunderbolt%201%20custom%20war%20thunder.glb',   // uploads turn _ into space
           'p47new.glb','p47.glb','p-47.glb','p_47.glb'],
   bf109: ['bf109new.glb','bf_109_f-1_war_thunder.glb',
@@ -1040,6 +1042,7 @@ function buildTemplate(k){
   src.position.set(-c.x,-c.y,-c.z);
   root.updateMatrixWorld(true);
   const rig=rigModel(root,k);
+  if(k==='ju87')attachJu87DiveBrakes(root);
   modelTpl[k]=root;
   const sz=new THREE.Box3().setFromObject(root).getSize(new THREE.Vector3());
   window.__modelInfo=(window.__modelInfo||{});
@@ -1475,6 +1478,22 @@ function rigJu87Prop(root, whole, S){
   const prop=makeProp({cx:0,cy,zPlane:cz,hubR:0.29,tipR:1.55,S,dir:1},3);
   root.add(prop);
   return 'cut '+removed+' fixed Ju 87 blade faces; 3-blade rotor on nose';
+}
+function attachJu87DiveBrakes(root){
+  const bb=new THREE.Box3().setFromObject(root),S=bb.getSize(new THREE.Vector3());
+  const z=bb.min.z+S.z*.55;
+  const skin=new THREE.MeshStandardMaterial({color:0x444b37,metalness:.3,roughness:.62,side:THREE.DoubleSide});
+  for(const side of [-1,1]){
+    const x=side*S.x*.255,wingY=localFloor(root,x,z,S.x*.075);
+    const hinge=new THREE.Group();hinge.name=side<0?'diveBrakeLeft':'diveBrakeRight';
+    hinge.position.set(x,(wingY??bb.min.y+S.y*.35)-.09,z);
+    // Three narrow plates leave daylight between them when they swing below the wing.
+    for(let j=-1;j<=1;j++){
+      const slat=new THREE.Mesh(new THREE.BoxGeometry(.25,.045,.72),skin);
+      slat.position.set(j*.32,0,-.38);hinge.add(slat);
+    }
+    root.add(hinge);
+  }
 }
 // ---- four wing-mounted propellers (B-17: no engine at the nose at all) -------------------
 // findProp() hunts for ONE hub at the extreme front of the whole aircraft - built for a
@@ -2087,9 +2106,23 @@ function rigModel(root, kind){
   }
 
   // ---- undercarriage ------------------------------------------------------------
-  // The Me 163 uses a landing skid, not three permanent wheels. Its player
-  // mission begins after trolley jettison, so never synthesise wheeled gear.
-  if(kind==='me163') return rig+', skid retained';
+  // This Me 163 GLB includes its two-wheel take-off trolley as Object_9
+  // (axle) and Object_10 (wheels). The sortie starts after trolley jettison:
+  // hide both original parts and provide only the retractable landing skid.
+  if(kind==='me163'){
+    for(const name of ['Object_9','Object_10']){
+      const trolley=root.getObjectByName(name);
+      if(trolley)trolley.visible=false;
+    }
+    const skid=new THREE.Group();skid.name='gear';
+    const runnerMat=new THREE.MeshStandardMaterial({color:0x32342d,roughness:.8});
+    const supportMat=new THREE.MeshStandardMaterial({color:0x696f68,metalness:.35,roughness:.65});
+    skid.add(strutBetween(new THREE.Vector3(0,-.72,.35),new THREE.Vector3(0,-1.04,.35),.065,supportMat));
+    const runner=new THREE.Mesh(new THREE.BoxGeometry(.29,.12,2.15),runnerMat);
+    runner.position.set(0,-1.05,.35);skid.add(runner);
+    root.add(skid);
+    return rig+', take-off trolley removed; retractable skid added';
+  }
   if(kind==='ju87') return rig+', original fixed wheel fairings retained';
   const propGrp=root.getObjectByName('prop');
   const inProp=(o)=>{ let p=o; while(p){ if(p===propGrp) return true; p=p.parent; } return false; };
@@ -2244,20 +2277,29 @@ function brightenFighterSkin(src,kind){
     });o.material=Array.isArray(o.material)?materials:materials[0];
   });
 }
-function loadModels(){
-  if(typeof THREE.GLTFLoader!=='function') return;
-  const L=new THREE.GLTFLoader();
-  for(const k of AC_KINDS) tryLoad(L,k,0);
+const modelTasks={};
+function ensureModel(k){
+  if(modelTpl[k])return Promise.resolve(modelTpl[k]);
+  if(modelTasks[k])return modelTasks[k];
+  if(typeof THREE.GLTFLoader!=='function')return Promise.reject(new Error('3D model loader unavailable'));
+  const task=new Promise((resolve,reject)=>tryLoad(new THREE.GLTFLoader(),k,0,resolve,reject));
+  modelTasks[k]=task;
+  task.then(()=>{delete modelTasks[k];},()=>{delete modelTasks[k];});
+  return task;
 }
-function tryLoad(L,k,i){
+function loadModels(){return ensureModel(MISSIONS[selectedMission].ac);}
+function tryLoad(L,k,i,onReady,onFailed,lastError){
   const list=MODEL_URL[k];
   if(i>=list.length){
-    console.warn(k+': no model found, the built-in aeroplane stays. Tried: '+list.join(', '));
+    const message=AC[k].name+' could not load ('+(lastError?.message||'file unavailable')+')';
+    console.warn(message+'; tried: '+list.join(', '));
+    onFailed(new Error(message));
     return;
   }
   const url=list[i];
   L.load(url+'?v=3', gl=>{
-    const src=gl.scene||gl.scenes[0]; if(!src){ tryLoad(L,k,i+1); return; }
+    try{
+    const src=gl.scene||gl.scenes[0]; if(!src){ tryLoad(L,k,i+1,onReady,onFailed,new Error('empty GLB')); return; }
     const fix=savedFix(url) || knownFix(url);
     let note;
     if(fix){
@@ -2304,7 +2346,9 @@ function tryLoad(L,k,i){
     window.__modelSrc=(window.__modelSrc||{}); window.__modelSrc[k]=url;
     buildTemplate(k);
     console.log(k+' <- "'+url+'"  '+note+'  turn '+(modelAdj[k]||0)*90+'deg');
-  }, undefined, ()=>{ tryLoad(L,k,i+1); });
+    onReady(modelTpl[k]);
+    }catch(err){console.error(k+' model processing:',err);onFailed(err);}
+  }, undefined, err=>{ tryLoad(L,k,i+1,onReady,onFailed,err); });
 }
 // The shipped Me 262 GLB has two aft nozzle rims at x=+/-2.22, y=-1.24,
 // z=-0.68 after its 12.51 m wingspan is applied. Keep the glow recessed at
@@ -2455,6 +2499,7 @@ function buildAircraft(kind){
     prop.add(spin);
     prop.position.set(0,0,len*0.54); prop.name='prop'; g.add(prop);
   }
+  if(kind==='ju87')attachJu87DiveBrakes(g);
   return g;
 }
 
@@ -2509,13 +2554,16 @@ function spawnRealTarget(kind,sub,opt){
   return t;
 }
 function spawnLivingTarget(entity,opt){
-  opt=opt||{};const d=TDEF[entity.kind],armoured=entity.meta?.vehicleModel==='jagdpanther';
+  opt=opt||{};const d=TDEF[entity.kind],vehicle=entity.meta?.vehicleModel;
+  const armoured=vehicle==='jagdpanther'||vehicle==='sherman';
   const t={kind:entity.kind,sub:entity.model,group:entity.model,entity,
     hp:d.hp*(opt.hpMul||1)*(armoured?2:1),maxhp:d.hp*(opt.hpMul||1)*(armoured?2:1),
     alive:true,radius:armoured?9:d.r,
-    pts:armoured?400:d.pts,name:armoured?'JAGDPANTHER':d.name,
+    pts:armoured?400:d.pts,name:vehicle==='sherman'?'M4 SHERMAN':vehicle==='m16'?'M16 AA':armoured?'JAGDPANTHER':d.name,
     primary:opt.primary!==false,cool:0,burnT:0,smokeT:Math.random()};
-  targets.push(t);return t;
+  targets.push(t);
+  if(vehicle==='m16'&&(M().id==='stuka'||M().id==='jabo'))flakUnits.push(t);
+  return t;
 }
 function resetAllRealTargets(){
   if(realBridge) resetRealTarget(realBridge);
@@ -2613,7 +2661,7 @@ const MISSIONS=[
     text:"A fast Me 163 and a Bf 109 have crossed the ridge. Intercept them over the Rhine, protect the crossing "
         +"and return to the strip. Keep enough speed to clear the rising hills." },
   { id:'bridge', title:'Sortie 7', sub:'Counterattack', ac:'bf109', weather:'clear',
-    kills:{bridge:1,flak:2}, flakDefense:2, text:"Fly the other side in a Bf 109: a counterattack on the "
+    kills:{bridge:1}, text:"Fly the other side in a Bf 109: a counterattack on the "
         +"captured Ludendorff Bridge. One bomb, one careful approach along the span. "
         +"This is a playable scenario, not a reconstruction of a specific sortie." },
   { id:'boxes', title:'Sortie 8', sub:'The Bomber Stream', ac:'bf109', bombers:{n:3,type:'b17'},
@@ -2623,9 +2671,9 @@ const MISSIONS=[
     enemyAir:2, weather:'haze', text:"Six Liberators with a Thunderbolt escort. Work above the "
         +"Rhineland hills, clear the escorts and make clean crossing passes on the bombers." },
   { id:'jabo', title:'Sortie 10', sub:'Jabo Raid', ac:'fw190', traffic:'convoy',
-    kills:{truck:4,flak:1}, flakDefense:1, enemyAir:2, weather:'haze',
-    text:"Take the Fw 190 against a four-vehicle supply column, including a Jagdpanther, on the mapped road. "
-        +"Two fighters cover it. The marked flak battery protects the crossing: silence it first, then strike the column." },
+    kills:{truck:4}, enemyAir:2, weather:'haze',
+    text:"Take the Fw 190 against an Allied column of two Shermans and two M16 anti-aircraft "
+        +"half-tracks on the mapped road. Their light guns defend the convoy; two fighters cover it." },
   { id:'jetstrike', title:'Sortie 11', sub:'Jet Interceptor', ac:'me262',
     bombers:{n:4,type:'b17'}, enemyAir:2, weather:'clear',
     text:"Intercept a Fortress box with the Me 262 over the Rhine. Preserve speed, "
@@ -2635,8 +2683,8 @@ const MISSIONS=[
     text:"A storm over the Rhine: silence both flak positions, stop a ferry and hit the works "
         +"before returning through hostile aircraft. Plan your attack order and watch the terrain." },
   { id:'jetjabo', title:'Sortie 13', sub:'Jet Strike', ac:'me262', weather:'broken',
-    kills:{factory:1,flak:1}, flakDefense:1, enemyAir:2,
-    text:"The Me 262 returns for a fast strike: neutralise the battery, bomb the works and evade "
+    kills:{bridge:1}, enemyAir:2,
+    text:"The Me 262 returns for a fast strike on the Allied-held crossing. Bomb the bridge and evade "
         +"the fighters over the valley. Save speed for the approach to Beaufort." },
   { id:'jetboxes', title:'Sortie 14', sub:'Two Bomber Waves', ac:'me262', weather:'lowcloud',
     bombers:{n:3,type:'b24'}, enemyAir:1,
@@ -2649,11 +2697,12 @@ const MISSIONS=[
         +"the SKID before touchdown; there is no go-around without power. A pursuer may attack "
         +"during the glide; evade it or shoot it down." },
   { id:'stuka', title:'Bonus Sortie', sub:'Stuka Convoy Dive', ac:'ju87', bonus:true,
-    traffic:'convoy', weather:'broken', kills:{truck:4}, flakDefense:1,
-    text:"Alternate-history bonus over the mapped Rhine valley: take the Ju 87 against four moving "
-        +"vehicles on the road, including an armoured lead vehicle. Climb above the ridges, "
-        +"roll into a dive and release your bombs before pulling out. Watch the crossing battery "
-        +"and return to Beaufort; this is a fictional scenario, not a documented 1945 sortie." }
+    traffic:'convoy', weather:'broken', kills:{truck:4},
+    text:"Fictional Luftwaffe bonus sortie from a forward strip: attack an Allied road column with "
+        +"two M4 Shermans and two M16 anti-aircraft half-tracks. German batteries are friendly "
+        +"and are not targets. Extend DIVE BRAKES (D) before the dive, release your bombs, "
+        +"retract them for the climb and return to the forward strip. This is an alternate "
+        +"scenario over the Rhine terrain, not a documented Remagen sortie." }
 ];
 function M(){ return MISSIONS[mission]; }
 function isFree(){ return !!M().free; }
@@ -2681,16 +2730,12 @@ function clearWorld(){
 // attach HP/hit-detection to whichever real objects this sortie needs
 function populate(){
   const m=M();
-  if(livingWorld)livingWorld.resetForMission(m.traffic||m.id);
+  if(livingWorld)livingWorld.resetForMission(m.id);
   resetAllRealTargets();
   if(m.free||m.circuits) return;
   if(m.kills&&m.kills.bridge && realBridge) spawnRealTarget('bridge',realBridge,{primary:true});
-  // Every combat sortie now activates the documented gun positions. They are
-  // primary (nav-arrow guidance, gold minimap mark) exactly where the sortie's
-  // own kills{} already requires destroying flak — currently Flak Suppression,
-  // Counterattack, Factory Strike, Jabo Raid and The Whole Rhine. Elsewhere
-  // they defend the objective and can be destroyed for score without a nav
-  // arrow pointing at them or blocking mission completion.
+  // The permanent German 88s defend against Allied aircraft only. Luftwaffe
+  // sorties use their own Allied anti-aircraft targets, never these batteries.
   const flakPrimary=!!(m.kills&&m.kills.flak),flakCount=Math.min(realFlak.length,m.flakDefense||0);
   for(let i=0;i<flakCount;i++)spawnRealTarget('flak',realFlak[i],{primary:flakPrimary,heavy:true});
   if(m.kills&&m.kills.factory && realFactory) spawnRealTarget('factory',realFactory,{primary:true});
@@ -2724,8 +2769,8 @@ function objectiveText(){
   const ks=Object.keys(left);
   if(blockingEnemyAir().length>0 && !ks.length)
     return 'BANDITS  '+blockingEnemyAir().length+' LEFT';
-  if(!ks.length) return europeOps?.pending()?'NEXT CONTACT EXPECTED':'RTB — LAND AT BEAUFORT';
-  const nm={flak:'FLAK',bridge:'BRIDGE',factory:'FACTORY',truck:M().id==='jabo'?'VEHICLES':'TRUCKS',train:'TRAIN',ferry:'FERRY'};
+  if(!ks.length) return europeOps?.pending()?'NEXT CONTACT EXPECTED':M().id==='stuka'?'RTB — FORWARD STRIP':'RTB — LAND AT BEAUFORT';
+  const nm={flak:'FLAK',bridge:'BRIDGE',factory:'FACTORY',truck:['jabo','stuka'].includes(M().id)?'VEHICLES':'TRUCKS',train:'TRAIN',ferry:'FERRY'};
   return ks.map(k=>(nm[k]||k.toUpperCase())+' '+left[k]).join('  ');
 }
 function checkObjective(){
@@ -2735,7 +2780,7 @@ function checkObjective(){
   if(!Object.keys(left).length && airLeft===0 && !M().circuits){
     if(!P.rtb){ P.rtb=true;
       const pursuer=M().id==='komet'&&enemyAir.some(e=>e.alive&&e.escapeThreat);
-      radioSay(pursuer?'BOMBERS DOWN — EVADE THE PURSUER AND LAND':'TARGETS DESTROYED — RETURN TO BEAUFORT AND PANCAKE');
+      radioSay(pursuer?'BOMBERS DOWN — EVADE THE PURSUER AND LAND':M().id==='stuka'?'ALLIED COLUMN HIT — RETURN TO THE FORWARD STRIP':'TARGETS DESTROYED — RETURN TO BEAUFORT AND PANCAKE');
       flash(pursuer?'GLIDE HOME — PURSUER ON YOUR SIX':'OBJECTIVE COMPLETE — RTB',2200); }
   }
 }
@@ -2993,10 +3038,11 @@ const flakFlashMat=new THREE.MeshBasicMaterial({color:0xffc56a,transparent:true,
 function flakMuzzle(f){
   const p=f.group.position;
   const m=new THREE.Mesh(flakFlashGeo,flakFlashMat.clone());
-  m.position.set(p.x,p.y+5,p.z);scene.add(m);
+  const height=f.entity?2.4:5;
+  m.position.set(p.x,p.y+height,p.z);scene.add(m);
   explosions.push({mesh:m,t:0,life:0.22,s:0.85,disposeMaterial:true});
   f.gunSmokeLeft=8;f.gunSmokeT=0;
-  spawnSmoke(p.x,p.y+5,p.z,0x777369,1.6);
+  spawnSmoke(p.x,p.y+height,p.z,0x777369,1.6);
 }
 function updateFlak(dt){
   if(!P.alive||state!==ST.FLIGHT) return;
@@ -3011,7 +3057,7 @@ function updateFlak(dt){
       f.gunSmokeT=(f.gunSmokeT||0)-dt;
       if(f.gunSmokeT<=0){
         f.gunSmokeT=0.32;
-        spawnSmoke(p.x+(Math.random()-.5)*3,p.y+5,p.z+(Math.random()-.5)*3,0x777369,1.4);
+        spawnSmoke(p.x+(Math.random()-.5)*3,p.y+(f.entity?2.4:5),p.z+(Math.random()-.5)*3,0x777369,1.4);
       }
     }
     const d=P.pos.distanceTo(p);
@@ -3031,10 +3077,11 @@ function updateFlak(dt){
       const lead=P.pos.clone().addScaledVector(noseDir(),P.spd*tof*(0.6+D().aim*0.5));
       const err=(1.4-D().aim*0.5)*26;
       lead.x+=(Math.random()-0.5)*err; lead.y+=(Math.random()-0.5)*err; lead.z+=(Math.random()-0.5)*err;
-      const dir=lead.sub(p).normalize();
+      const origin=p.clone().add(new THREE.Vector3(0,f.entity?2.4:5,0));
+      const dir=lead.sub(origin).normalize();
       const m=new THREE.Mesh(new THREE.BoxGeometry(0.30,0.30,6.5),
         new THREE.MeshBasicMaterial({color:0xffab52}));
-      m.position.copy(p).addScaledVector(dir,4); m.lookAt(m.position.clone().add(dir));
+      m.position.copy(origin).addScaledVector(dir,1); m.lookAt(m.position.clone().add(dir));
       scene.add(m);
       tracers.push({mesh:m,dir,speed:620,life:3.0});
     } else {
@@ -3588,7 +3635,7 @@ function clampToWorldBounds(){
   P.pos.z=Math.max(WORLD_EDGE_MARGIN,Math.min(maxZ,P.pos.z));
   if(outside && !P.edgeWarned){
     P.edgeWarned=true; flash('LEAVING OPERATIONAL AREA',1600);
-    radioSay('BEAUFORT TOWER — TURN BACK, YOU ARE LEAVING THE AREA');
+    radioSay(M().id==='stuka'?'FORWARD STRIP — TURN BACK INTO THE AREA':'BEAUFORT TOWER — TURN BACK, YOU ARE LEAVING THE AREA');
   } else if(!outside){
     P.edgeWarned=false;
   }
@@ -3597,6 +3644,7 @@ function clampToWorldBounds(){
 function updateFlight(dt){
   const d=acDef();
   // control surfaces
+  P.diveBrakeVisual+=(Number(P.ac==='ju87'&&P.diveBrake)-P.diveBrakeVisual)*Math.min(1,dt*5);
   if(P.ac==='ju87')P.gearTgt=1; // the Stuka's wheels stay down in their fixed fairings
   P.gear+=Math.sign(P.gearTgt-P.gear)*Math.min(Math.abs(P.gearTgt-P.gear),dt*0.55);
   P.flap+=Math.sign(P.flapTgt-P.flap)*Math.min(Math.abs(P.flapTgt-P.flap),dt*0.7);
@@ -3635,6 +3683,7 @@ function updateFlight(dt){
   // thrust -> target speed, modified by attitude, gear, flaps
   let eff = THR_MIN_SPD + (MAX_SPD-THR_MIN_SPD)*P.throttle;
   eff -= Math.sin(P.pitch)*62 + P.flap*11 + P.gear*6;
+  if(P.ac==='ju87')eff-=P.diveBrakeVisual*(30+Math.max(0,-P.pitch)*25);
   if(P.ac==='me163' && (P.fuel<=0||P.throttle<0.01)){
     // With the rocket off the Komet trades altitude for airspeed. Closing the
     // throttle cannot conjure minimum jet thrust during its glide home.
@@ -3843,10 +3892,10 @@ function landed(onStrip){
   const rank=rankName(l.landings||0);
   // career promotion — crossing a rank threshold on this recovery is worth a radio call
   const promoted = rankFor(l.landings||0)!==rankFor(landingsBefore);
-  if(promoted) radioSay("BEAUFORT TOWER — "+pilotName().toUpperCase()+", YOU'RE PROMOTED TO "+rank.toUpperCase());
+  if(promoted) radioSay((m.id==='stuka'?'FIELD CONTROL':'BEAUFORT TOWER')+' — '+pilotName().toUpperCase()+", YOU'RE PROMOTED TO "+rank.toUpperCase());
   showResult(done,
     done?'MISSION ACCOMPLISHED':'RECOVERED — OBJECTIVE INCOMPLETE',
-    (promoted?'PROMOTED — ':'')+rank+' '+pilotName()+'  &middot;  '+(onStrip?'Landed at Beaufort':'Force-landed')+'  &middot;  '+medalIcon,
+    (promoted?'PROMOTED — ':'')+rank+' '+pilotName()+'  &middot;  '+(onStrip?(m.id==='stuka'?'Landed at forward strip':'Landed at Beaufort'):'Force-landed')+'  &middot;  '+medalIcon,
     (done?'Every target on the list is burning. ':'You are home, but the job is not finished. ')
     +(promoted?'<br><br><b>Promoted to '+rank+'.</b>':'')
     +'<br><br>This sortie: '+(bag.length?bag.join(' &middot; '):'nothing claimed')
@@ -3898,6 +3947,7 @@ function startMission(i){
   const d=acDef();
   STALL_SPD=d.stall; APP_SPD=d.app; MAX_SPD=d.max; THR_MIN_SPD=d.thrMin;
   P.hull=d.hull; P.ammo=d.ammo; P.bombs=d.bombs; P.rockets=d.rockets;
+  P.diveBrake=false;P.diveBrakeVisual=0;
   P.fuel=100; P.alive=true; P.rtb=false; P.bingo=false; P.rollBias=0;
   P.dmgT=0; P.stallWarnT=0; P.edgeWarned=false;
   weapon=(d.rockets>0)?'rocket':'bomb';
@@ -3921,7 +3971,7 @@ function startMission(i){
   const o=document.getElementById('oilCanopy'); if(o) o.style.opacity='0';
   applyWeaponUI(); resetCtlUI();
   updateHUD();
-  radioSay(m.free?'FIELD IS YOURS — HAVE FUN':'BEAUFORT TOWER — CLEARED FOR TAKE-OFF, RUNWAY ZERO NINE');
+  radioSay(m.free?'FIELD IS YOURS — HAVE FUN':m.id==='stuka'?'FORWARD STRIP — CLEARED FOR TAKE-OFF, RUNWAY ZERO NINE':'BEAUFORT TOWER — CLEARED FOR TAKE-OFF, RUNWAY ZERO NINE');
   flash('THROTTLE UP — ROLL',1600);
 }
 // Sortie weather, operational events and cartography.
@@ -3977,9 +4027,12 @@ function europeBriefTargets(m){
  for(const [key,obj,label] of [['bridge',realBridge,'Ludendorff bridge'],['factory',realFactory,'Industrial works']])
   if(m.kills&&m.kills[key]&&obj)out.push({x:obj.userData.x,z:obj.userData.z,label});
  realFlak.slice(0,m.flakDefense||0).forEach((o,i)=>out.push({x:o.userData.x,z:o.userData.z,label:'Flak battery '+(i+1),optional:!(m.kills&&m.kills.flak)}));
+ let vehicleIndex=0;
  if(livingWorld&&m.kills)for(const e of livingWorld.missionTargets(m.traffic||m.id)){
   const p=livingWorld._sample(e.route,e.initialPhase);
-  out.push({x:p.x,z:p.z,label:e.meta?.vehicleModel==='jagdpanther'?'Jagdpanther':TDEF[e.kind]?.name||e.kind});}
+  const label=m.id==='stuka'?(vehicleIndex<2?'M4 Sherman':'M16 AA'):
+    e.meta?.vehicleModel==='jagdpanther'?'Jagdpanther':TDEF[e.kind]?.name||e.kind;
+  vehicleIndex++;out.push({x:p.x,z:p.z,label});}
  if(m.enemyAir||m.bombers)out.push({x:AF_X+5000,z:AF_Z+2500,label:m.bombers?'Bomber interception sector':'Fighter patrol sector'});
  return out;
 }
@@ -4531,11 +4584,23 @@ function applyWeaponUI(){
   const lb=document.getElementById('hOrdLbl'); if(lb) lb.textContent='BOMBS';
   if(a) a.style.display=(acDef().rockets>0)?'flex':'none';
 }
+function syncDiveBtn(){
+  const dive=document.getElementById('diveBrakeBtn');if(!dive)return;
+  dive.style.display=P.ac==='ju87'?'flex':'none';
+  dive.classList.toggle('on',!!P.diveBrake);
+  dive.innerHTML=P.diveBrake?'DIVE<br>OUT':'DIVE<br>BRAKES';
+}
 function resetCtlUI(){
   const g=document.getElementById('gearBtn'); if(g){ g.classList.toggle('on',P.gearTgt>0.5);
     g.innerHTML=P.ac==='ju87'?'GEAR<br>FIXED':(P.ac==='me163'?'SKID':'GEAR')+'<br>'+(P.gearTgt>0.5?'&#9660; DN':'&#9650; UP'); }
   const f=document.getElementById('flapBtn'); if(f){f.style.display=P.ac==='me163'?'none':'';
     f.classList.remove('on'); f.innerHTML='FLAPS<br>UP'; }
+  syncDiveBtn();
+}
+function toggleDiveBrakes(){
+  if(state!==ST.FLIGHT||P.ac!=='ju87')return;
+  P.diveBrake=!P.diveBrake;
+  syncDiveBtn();flash(P.diveBrake?'DIVE BRAKES OUT':'DIVE BRAKES IN',800);sfxFlapMotor();
 }
 
 // ============================================================
@@ -4700,6 +4765,7 @@ function bindInput(){
     weapon=(weapon==='rocket')?'bomb':'rocket'; applyWeaponUI();
     flash(weapon==='rocket'?'ROCKETS ARMED':'BOMBS ARMED',700); });
   document.getElementById('aeroBtn').addEventListener('pointerdown',e=>{ e.preventDefault();toggleAero(); });
+  document.getElementById('diveBrakeBtn').addEventListener('pointerdown',e=>{e.preventDefault();toggleDiveBrakes();});
   document.getElementById('bailBtn').addEventListener('pointerdown',e=>{e.preventDefault();beginBailout();});
   // ---- live left/right invert, exactly as in the carrier game ----
   const st=document.getElementById('steerBtn');
@@ -4731,6 +4797,7 @@ function bindInput(){
     if(e.key==='f'||e.key==='F') firing=true;
     if((e.key==='g'||e.key==='G')&&P.ac!=='ju87') P.gearTgt=P.gearTgt>0.5?0:1;
     if((e.key==='a'||e.key==='A')&&!e.repeat) toggleAero();
+    if((e.key==='d'||e.key==='D')&&!e.repeat) toggleDiveBrakes();
     if((e.key==='b'||e.key==='B')&&!e.repeat) beginBailout();
     if(e.key==='p'||e.key==='P') togglePause();
   });
@@ -4803,7 +4870,7 @@ function init(){
   buildRain();
   buildClouds(); applyWeather();   // clouds need ceilingY (set above) to place, then re-tint them
   planeGroup=new THREE.Group(); scene.add(planeGroup);
-  loadModels();
+  // Defer GLB decoding until briefing; the selected aircraft must be ready before launch.
   // Real terrain/OSM/historical data (see loadRealWorld() above) — the ONE async gap this file
   // has that the synthetic thunderbolt-europe.html never needed (its buildTerrain() etc. were
   // synchronous procedural generation, done before the menu even had a chance to paint). The menu
@@ -4846,8 +4913,37 @@ function init(){
   document.getElementById('startBtn').onclick=()=>showBrief(selectedMission);
   document.getElementById('logBtn').onclick=()=>{ show('menu',false); showLogbook(); };
   document.getElementById('brBack').onclick=()=>{ show('brief',false); show('menu',true); state=ST.MENU; };
-  document.getElementById('brGo').onclick=()=>{
-    initAudio(); show('brief',false); startMission(selectedMission); };
+  document.getElementById('brGo').onclick=async()=>{
+    const idx=selectedMission,m=MISSIONS[idx],button=document.getElementById('brGo');
+    if(button.disabled)return;
+    document.getElementById('brModelError')?.remove();
+    button.disabled=true;show('brief',false);show('loading',true);
+    try{
+      // The aircraft already in the sky when the sortie opens need real models
+      // before they are spawned. Delaying the start also avoids decoding every
+      // campaign GLB at once on iPad Safari.
+      const kinds=[m.ac];
+      if(m.bombers)kinds.push(m.bombers.type);
+      if(m.enemyAir){
+        if(m.ac==='p47')kinds.push('bf109',...(m.id==='fighter'?['me163']:[]));
+        else kinds.push('p47');
+      }
+      for(const kind of new Set(kinds)){
+        document.getElementById('loadingText').textContent='Loading '+AC[kind].name+' — real aircraft '+(kinds.indexOf(kind)+1)+'/'+new Set(kinds).size+'…';
+        await ensureModel(kind);
+      }
+      show('loading',false);initAudio();startMission(idx);
+      // Event waves use the same types, except a newly arriving fighter on a
+      // bomber-only mission. Prepare that type without delaying take-off.
+      if(m.bombers&&!m.enemyAir)ensureModel(m.ac==='p47'?'bf109':'p47').catch(err=>console.warn('Later fighter model:',err));
+    }catch(err){
+      show('loading',false);show('brief',true);
+      document.getElementById('brSub').textContent='MODEL LOAD FAILED — TAP START ENGINE TO RETRY';
+      const note=document.createElement('p');note.id='brModelError';note.textContent=err.message;
+      document.getElementById('brText').appendChild(note);
+      console.error('Mission start stopped:',err);
+    }finally{button.disabled=false;}
+  };
   document.getElementById('rsMenu').onclick=()=>{ show('result',false); show('menu',true);
     buildMenu(); state=ST.MENU; };
   document.getElementById('pmResume').onclick=()=>{ if(state===ST.PAUSED) togglePause(); };
@@ -4950,6 +5046,10 @@ function animate(){
     planeGroup.rotateY(P.heading); planeGroup.rotateX(-P.pitch); planeGroup.rotateZ(-P.roll);
     if(playerModel){
       updateJetExhaust(playerModel,P.alive?P.throttle:0,raw);
+      if(P.ac==='ju87')for(const side of ['Left','Right']){
+        const brake=playerModel.getObjectByName('diveBrake'+side);
+        if(brake)brake.rotation.x=-1.05*P.diveBrakeVisual;
+      }
       const gr=playerModel.getObjectByName('gear');
       if(gr) gr.visible=P.gear>0.05;
       const pr=playerModel.getObjectByName('prop');

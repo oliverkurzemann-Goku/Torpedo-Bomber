@@ -59,8 +59,11 @@ function faceCount(group,minimumY){let total=0;group.updateMatrixWorld(true);gro
  assert.match(html,/'me163\.glb':\s*\{yaw:0\}/,'the observed forward-facing orientation overrides that heuristic');
  assert(points.length>3000&&yaw.conf>.95,'real Me 163 model symmetry verified');
  const rocketRig=rigModel(rocketRoot,'me163');
- assert.match(rocketRig,/skid retained/);
- assert.equal(rocketRoot.getObjectByName('gear'),undefined,'Me 163 must not get synthetic wheels');
+ assert.match(rocketRig,/take-off trolley removed; retractable skid added/);
+ for(const name of ['Object_9','Object_10'])
+  assert.equal(rocketRoot.getObjectByName(name)?.visible,false,'Me 163 take-off trolley '+name+' is jettisoned');
+ const skid=rocketRoot.getObjectByName('gear');
+ assert(skid&&skid.children.length===2,'Me 163 has a retractable runner, not fixed wheels');
  assert.equal(rocketRoot.getObjectByName('prop')?.children.length,0,'Me 163 must not get a propeller');
  assert(html.includes("M().id==='fighter'&&i===0?'me163'"),'Komet remains a Valley Patrol opponent');
  assert(html.includes("id:'komet'"),'Komet is now available as a player interception sortie');

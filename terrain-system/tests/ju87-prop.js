@@ -31,6 +31,12 @@ new THREE.GLTFLoader().parse(bytes.buffer.slice(bytes.byteOffset,bytes.byteOffse
   const wingIndices=wing.geometry.index.array.slice(),before=front.geometry.index.array.slice();
   const description=rigModel(aircraft,'ju87');
   assert.match(description,/fixed Ju 87 blade faces; 3-blade rotor/);
+  attachJu87DiveBrakes(aircraft);
+  for(const name of ['diveBrakeLeft','diveBrakeRight']){
+    const brake=aircraft.getObjectByName(name);
+    assert(brake&&brake.children.length===3,'real Ju 87 has three slotted '+name+' panels');
+    assert(brake.position.y<1,'brake belongs below the wing');
+  }
   assert.deepEqual(wing.geometry.index.array,wingIndices,'both gull wings retain every triangle');
   let cut=0;
   for(let i=0;i<before.length;i+=3)if(before[i]!==before[i+1]&&before[i]!==before[i+2]

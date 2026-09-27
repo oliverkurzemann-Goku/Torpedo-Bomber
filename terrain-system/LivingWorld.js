@@ -129,6 +129,36 @@ class LivingWorld {
     for(const z of [-1.55,1.45]){const axle=this._cyl(g,.46,2.35,this.mat.tyre,0,.48,z,10);axle.rotation.z=Math.PI/2;}
     this._rememberMaterials(g);return g;
   }
+  _makeSherman(){
+    const g=new THREE.Group();
+    this._box(g,2.8,1.15,5.3,this.mat.olive,0,1.10,0);
+    this._box(g,2.45,.38,3.7,this.mat.steel,0,1.86,-.05);
+    for(const side of [-1,1]){
+      this._box(g,.56,.92,4.7,this.mat.dark,side*1.53,.58,0);
+      for(const z of [-1.35,-.4,.55,1.5]){
+        const wheel=this._cyl(g,.34,.14,this.mat.steel,side*1.83,.55,z,10);
+        wheel.rotation.z=Math.PI/2;
+      }
+    }
+    this._cyl(g,.90,.62,this.mat.olive,0,2.35,-.26,12);
+    const gun=this._cyl(g,.105,2.45,this.mat.dark,0,2.33,1.34,8);gun.rotation.x=Math.PI/2;
+    this._box(g,.85,.025,.85,this.mat.cream,0,2.675,-.2);
+    this._rememberMaterials(g);return g;
+  }
+  _makeM16(){
+    const g=this._makeTruck();
+    // A quad-machine-gun half-track remains identifiable while the optional GLB loads.
+    const canvas=g.children.find(o=>o.material===this.mat.canvas);
+    if(canvas)g.remove(canvas);
+    this._box(g,2.4,.3,2.3,this.mat.olive,0,1.13,-.9);
+    const shield=this._box(g,1.65,.75,.09,this.mat.steel,0,1.89,-.75);
+    shield.rotation.x=.12;
+    for(const x of [-.35,-.11,.11,.35]){
+      const barrel=this._cyl(g,.055,1.45,this.mat.dark,x,2.22,-1.02,6);
+      barrel.rotation.x=Math.PI/2;
+    }
+    this._rememberMaterials(g);return g;
+  }
   _makeWagon(){
     const g=new THREE.Group();this._box(g,1.9,.26,3.25,this.mat.wood,0,1.0,0);
     this._box(g,.14,.72,3.35,this.mat.wood,-.92,1.42,0);this._box(g,.14,.72,3.35,this.mat.wood,.92,1.42,0);
@@ -168,7 +198,7 @@ class LivingWorld {
   _addEntity(kind,visual,route,speed,phase,meta={}){
     const model=new THREE.Group();model.name='living-'+kind;visual.name='living-'+kind+'-fallback';model.add(visual);this.group.add(model);
     const radius=kind==='train'?4800:((kind==='civil'||kind==='wagon')?5200:3600);
-    const e={kind,model,visual,route,speed,phase,initialPhase:phase,alive:true,meta,last:{x:0,z:0},visibleRadius:radius};
+    const e={kind,model,visual,fallbackVisual:visual,route,speed,phase,initialPhase:phase,alive:true,meta,last:{x:0,z:0},visibleRadius:radius};
     e.last=this._sample(route,phase);model.position.set(e.last.x,this._groundEntity(e,e.last),e.last.z);model.rotation.y=e.last.yaw;
     model.userData.livingEntity=e;this.entities.push(e);return e;
   }
@@ -193,6 +223,7 @@ class LivingWorld {
   // wrapper referenced by mission targets, the HUD and the minimap. Repository
   // GLBs share geometry/material resources across all clones.
   installVehicleModels(templates){
+    this._vehicleTemplates=templates;
     let replaced=0;
     for(const e of this.entities){
       const source=e.kind==='truck'?e.meta.vehicleModel:(e.kind==='ferry'?'merchant':
@@ -251,11 +282,23 @@ class LivingWorld {
 
   resetForMission(id){
     this._mission=id;
+    let convoyIndex=0;
     for(const e of this.entities){
+      if(e.kind==='truck'&&e.meta.convoy===0){
+        const allied=id==='stuka'||id==='jabo';
+        const index=convoyIndex++;
+        e.meta.vehicleModel=allied?(index<2?'sherman':'m16'):(index===0?'jagdpanther':'tiger');
+        if(e.visual.userData.sourceModel!==e.meta.vehicleModel){
+          const visual=allied?(e.meta.vehicleModel==='sherman'?(e.alliedSherman??=this._makeSherman()):
+            (e.alliedM16??=this._makeM16())):e.fallbackVisual;
+          e.model.remove(e.visual);e.visual=visual;e.model.add(visual);
+        }
+      }
       e.alive=true;e.phase=e.initialPhase;e.last=this._sample(e.route,e.phase);e.model.rotation.z=0;
       e.model.position.set(e.last.x,this._groundEntity(e,e.last),e.last.z);e.model.rotation.y=e.last.yaw;
       e.model.traverse(o=>{if(o.isMesh&&o.userData.baseMaterial)o.material=o.userData.baseMaterial;});
     }
+    if(this._vehicleTemplates)this.installVehicleModels(this._vehicleTemplates);
   }
   missionTargets(id){
     if(id==='convoy')return this.entities.filter(e=>e.kind==='truck'&&e.meta.convoy===0);

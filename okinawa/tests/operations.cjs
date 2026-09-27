@@ -20,6 +20,14 @@ let glideEvents=op.tick(1,{...state,clear:true,glide:true});
 assert.equal(glideEvents.length,1);assert.equal(glideEvents[0].escapeThreat,true);
 assert.equal(op.tick(1,{...state,clear:true,glide:true}).length,0,'pursuer launches once');
 assert.equal(op.ready(),true,'evasion or landing can complete the mission after the encounter');
+for(const index of [8,14]){
+ const bridgeStrike=new Operation(plans.europe[index]);
+ assert.equal(bridgeStrike.ready(),false,'bridge strike waits for its interceptors');
+ assert.equal(bridgeStrike.tick(1,{...state,kills:1,clear:false}).length,0);
+ assert(bridgeStrike.tick(1,{...state,kills:1,clear:true}).some(e=>e.fighters),
+  'destroyed Allied bridge launches the interceptor wave');
+ assert.equal(bridgeStrike.ready(),true,'German bridge strike can be completed');
+}
 for(const list of [plans.europe,plans.pacific])for(const c of list){
  for(const name of c.weather||[])assert(ctx.FlightOps.weather[name],name);
  for(const e of c.events||[]){if(e.weather)assert(ctx.FlightOps.weather[e.weather]);if(e.required)assert(e.kills!=null||e.at!=null||e.clear,'wave has reachable trigger');}

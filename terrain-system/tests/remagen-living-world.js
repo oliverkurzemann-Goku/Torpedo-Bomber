@@ -18,7 +18,7 @@ global.fetch=async url=>{const b=fs.readFileSync(path.join(root,url.split('?')[0
   const osm=new OSMManager(scene,4000,terrain,osmDir);
   await osm.prepareRegion(coords,'terrain-system/real/data/waterways.json');
   const html=fs.readFileSync(path.join(root,'remagen-mission.html'),'utf8');
-  assert(html.includes('LivingWorld.js?v=remagen-22'));assert(html.includes('MODULE 22'));
+  assert(html.includes('LivingWorld.js?v=147'));assert(html.includes('MODULE 22'));
   for(const id of ['convoy','train','ferry'])assert(html.includes(`id:'${id}'`),`mission ${id} missing`);
   assert(html.includes("livingWorld.missionTargets(m.traffic||m.id)"));assert(html.includes('livingWorld.destroyEntity(t.entity)'));
   // Execute the actual mission table/population logic with lightweight target
@@ -26,16 +26,16 @@ global.fetch=async url=>{const b=fs.readFileSync(path.join(root,url.split('?')[0
   // only Flak Suppression makes those guns primary objectives.
   const missionStart=html.indexOf('const MISSIONS=['),missionEnd=html.indexOf('function objectiveLeft',missionStart);
   const missionContext=vm.createContext({mission:0,calls:[],realBridge:{},realFactory:{},realFlak:[{},{}],
-    resetAllRealTargets(){},livingWorld:{resetForMission(){},missionTargets(id){return [{kind:id==='convoy'?'truck':id==='train'?'train':'ferry'}];}},
+    resetAllRealTargets(){},livingWorld:{resetForMission(id){missionContext.resetId=id;},missionTargets(id){return [{kind:id==='convoy'?'truck':id==='train'?'train':'ferry'}];}},
     spawnRealTarget(kind,sub,opt){missionContext.calls.push({kind,primary:!!opt.primary,heavy:!!opt.heavy});},
     spawnLivingTarget(e,opt){missionContext.calls.push({kind:e.kind,primary:!!opt.primary});}});
   vm.runInContext(html.slice(missionStart,missionEnd)+"\nglobalThis.runMission=i=>{mission=i;calls=[];populate();return {id:M().id,calls};};",missionContext);
-  const missionFlak={free:0,circ:0,bridge:2,flak:2,factory:1,convoy:1,train:1,ferry:2,
-    fighter:0,boxes:0,libs:0,jabo:1,jetstrike:0,final:2};
+  const missionFlak={free:0,circ:0,bridge:0,flak:2,factory:1,convoy:1,train:1,ferry:2,
+    fighter:0,boxes:0,libs:0,jabo:0,jetstrike:0,final:2,jetjabo:0,jetboxes:0,komet:0,stuka:0};
   // Which sorties list flak in their own kills{} (MISSIONS array in remagen-mission.html) --
   // those are the ones where destroyed flak guns must be primary (nav-arrow) targets.
-  const missionKills={bridge:{flak:1},flak:{flak:1},factory:{flak:1},jabo:{flak:1},final:{flak:1}};
-  for(let i=0;i<14;i++){
+  const missionKills={flak:{flak:1},factory:{flak:1},final:{flak:1}};
+  for(let i=0;i<18;i++){
     const run=missionContext.runMission(i),guns=run.calls.filter(c=>c.kind==='flak');
     assert.equal(guns.length,missionFlak[run.id],run.id+' flak defense mismatch');
     // primary = flak is a listed kill{} requirement for this sortie (nav-arrow
@@ -45,6 +45,13 @@ global.fetch=async url=>{const b=fs.readFileSync(path.join(root,url.split('?')[0
     assert(guns.every(g=>g.heavy));assert(guns.every(g=>g.primary===flakRequired));
     if(run.id==='jabo')assert(run.calls.some(c=>c.kind==='truck'&&c.primary));
     if(run.id==='final')assert(run.calls.some(c=>c.kind==='ferry'&&c.primary));
+    if(run.id==='stuka'){
+      assert.equal(guns.length,0,'German batteries must never fire on the Stuka');
+      assert.equal(missionContext.resetId,'stuka','side-specific convoy reset must see mission identity');
+      assert(run.calls.some(c=>c.kind==='truck'&&c.primary));
+    }
+    if(['bridge','jabo','jetjabo','jetstrike','jetboxes','komet','boxes','libs'].includes(run.id))
+      assert.equal(guns.length,0,'German battery must not attack a Luftwaffe aircraft');
   }
   assert(html.includes('const range=light?1350:3900'));assert(html.includes('groundFire=[];'));
   const h=JSON.parse(fs.readFileSync(path.join(root,'terrain-system/real/data/historical/3_3.json'))),b=h.bridges[0];
@@ -104,6 +111,17 @@ global.fetch=async url=>{const b=fs.readFileSync(path.join(root,url.split('?')[0
   world.update(.5,fp.x,fp.z);assert(world._pointOnWater(ferry.model.position.x,ferry.model.position.z));
   world.destroyEntity(truck);const stopped=truck.phase;world.update(3,truck.model.position.x,truck.model.position.z);assert.equal(truck.phase,stopped);
   assert(!truck.alive);world.resetForMission('convoy');assert(truck.alive&&truck.phase===truck.initialPhase);
+  world.resetForMission('stuka');
+  assert.deepEqual(world.missionTargets('convoy').map(e=>e.meta.vehicleModel),
+    ['sherman','sherman','m16','m16'],'Luftwaffe Stuka attacks Allied armour and AA');
+  assert(world.missionTargets('convoy').every(e=>e.visual.userData.sourceModel!=='jagdpanther'
+    &&e.visual.userData.sourceModel!=='tiger'),'no German visual remains on the Stuka target road');
+  world.resetForMission('jabo');
+  assert.deepEqual(world.missionTargets('convoy').map(e=>e.meta.vehicleModel),
+    ['sherman','sherman','m16','m16'],'Fw 190 also attacks Allied armour and AA');
+  world.resetForMission('convoy');
+  assert.deepEqual(world.missionTargets('convoy').map(e=>e.meta.vehicleModel),
+    ['jagdpanther','tiger','tiger','tiger'],'German convoy restores for American strike sorties');
   world.update(.1,27000,31000);assert(world.entities.every(e=>!e.model.visible));
 
   const smoke=[];for(let i=0;i<20;i++)world.update(.5,factory[0],factory[1],p=>smoke.push(p));
