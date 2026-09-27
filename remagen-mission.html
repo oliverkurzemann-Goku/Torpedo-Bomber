@@ -252,7 +252,7 @@
   <div style="width:100%;height:4px;background:repeating-linear-gradient(45deg,#ffd400,#ffd400 8px,#111 8px,#111 16px);"></div>
   <span id="testVersionBannerText" style="background:#111;color:#ffd400;font-family:monospace;font-weight:800;font-size:11px;letter-spacing:.5px;padding:3px 10px;border:1px solid #ffd400;border-top:none;border-radius:0 0 6px 6px;"></span>
 </div>
-<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 141';</script>
+<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 142';</script>
 <!-- ===== END TEMP TEST-ONLY VERSION BANNER ===== -->
 <div id="app"></div>
 
@@ -281,7 +281,7 @@
   <div id="flash"></div>
   <div id="gunsight"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 141 · REAL RHINE</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 142 · REAL RHINE</div>
 
   <div id="apr">
     <div id="aprCall"></div>
@@ -639,7 +639,7 @@ async function loadRealWorld(){
 
   if(OSMManager.BUILD!==21||HistoricalObjectManager.BUILD!==21||LivingWorld.BUILD!==22||WorldVehicles.BUILD!==22) throw new Error('Terrain version mismatch. Reload Remagen.');
   document.getElementById('testVersionBannerText').textContent=
-    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 141 · MODULE 22';
+    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 142 · MODULE 22';
   heightProvider=new DEMHeightProvider(RTILE,'terrain-system/real/data/dem/');
   terrain=new TerrainManager(scene,RTILE,heightProvider);
   osmMgr=new OSMManager(scene,RTILE,terrain,'terrain-system/real/data/osm/');
@@ -904,14 +904,9 @@ const JET_KINDS=['me262','me163'];
 // b17.glb and a 3.8 m one on the b24.glb - both four-engine bombers with their real propellers
 // already on the wings, no single engine at the nose at all. findProp()'s hub-search (built for
 // single-engine fighters) mistook the B-17's round glazed nose cone for a hub. Skipping synthesis
-// entirely fixed the fake nose disc but reported back as a new complaint - "B17 propeller drehen
-// sich nicht" (the real, welded wing propellers never had anything to make them spin in the first
-// place). B-17 now gets its own four-engine wing-mounted detector (findWingProps, below) instead
-// of just being skipped. B-24 stays skipped for now - findWingProps() was verified clean on the
-// b17.glb but could not be made to reliably separate its four engines on the b24.glb (they sit
-// close enough on that hull that every local-baseline threshold tried also swept in the wing
-// between them) - not reported by the user for this model, and shipping an unverified guess for
-// it would repeat the exact mistake this project keeps relearning (Lektion 1).
+// entirely fixed the fake nose disc but left the wing propellers still. The B-17's blades are
+// welded into the mesh, so findWingProps() replaces them. The B-24 GLB already has four separate
+// animated propeller pivots; use those directly instead of cutting any wing geometry.
 const NO_PROP_KINDS=['b24'];
 const MULTI_ENGINE_KINDS=['b17'];
 // The Me262 has tricycle gear (a nosewheel, no tailwheel) - every other aircraft `buildGear()`
@@ -1023,6 +1018,7 @@ function refreshModels(){
       const g=buildAircraft(e.kind);
       const gr=g.getObjectByName('gear'); if(gr) gr.visible=false;
       scene.add(g); e.group=g; e.prop=g.getObjectByName('prop');
+      if(e.bomber){e.rotors=bomberRotors(g);e.gunStations=bomberGunStations(g);}
     }
   }
 }
@@ -1043,6 +1039,7 @@ function turnModel90(){
     const g=buildAircraft(e.kind);
     const gr=g.getObjectByName('gear'); if(gr) gr.visible=false;
     scene.add(g); e.group=g; e.prop=g.getObjectByName('prop');
+    if(e.bomber){e.rotors=bomberRotors(g);e.gunStations=bomberGunStations(g);}
   }
   flash('MODEL TURNED — '+(modelAdj[k]*90)+'\u00B0',1100);
 }
@@ -1555,6 +1552,20 @@ function findWingProps(root){
   }
   return out;
 }
+// The B-24 asset includes three overlapping copies of each propeller: still,
+// blurred and slow. Its animation clips are not played by the game. Keep just
+// the four slow pivots and rotate them around their actual local shaft axis.
+function rigB24Props(root){
+  const rotors=[],idle=[];
+  root.traverse(o=>{
+    if(/^prop[0-3]_slow_AN_slow/.test(o.name))rotors.push(o);
+    else if(/^prop[0-3]_(still|blurred)_AN_/.test(o.name))idle.push(o);
+  });
+  if(rotors.length!==4)return 0;
+  for(const o of idle)o.visible=false;
+  for(const o of rotors){o.userData.bomberRotor=true;o.userData.spinAxis='y';}
+  return rotors.length;
+}
 
 
 // A landing-gear wheel welded into a much larger fuselage/wing mesh reads the same way a welded
@@ -1936,13 +1947,19 @@ function rigModel(root, kind){
       const wrap=new THREE.Group(); wrap.name='prop';
       for(const wp of wprops){
         cutTotal+=cutBlades(root, wp);
-        const pg=makeProp(wp, 3);
+        // The source GLB's blades measure only ~1.6 m across at a 31.6 m
+        // wingspan; at combat distance their movement is invisible. Keep the
+        // measured shaft positions and only bring the new blade diameter to
+        // 2.7 m (still below a full-size B-17 propeller).
+        const pg=makeProp({...wp,tipR:Math.max(wp.tipR,1.35)},3);
         pg.name='';           // avoid a second, nested object also named 'prop'
+        pg.userData.bomberRotor=true;pg.userData.spinAxis='z';
         wrap.add(pg);
       }
       root.add(wrap);
       rig='cut '+cutTotal+' moulded blade triangles across 4 engines, real 3-blade propellers '+
-          (wprops[0].tipR*2).toFixed(1)+'-'+(wprops.reduce((m,p)=>Math.max(m,p.tipR),0)*2).toFixed(1)+' m';
+          (Math.max(wprops[0].tipR,1.35)*2).toFixed(1)+'-'+
+          (Math.max(1.35,...wprops.map(p=>p.tipR))*2).toFixed(1)+' m';
     } else {
       // Could not confirm all four engines on this model - leave every propeller welded rigid
       // rather than spin some and not others, which would look more broken than doing nothing.
@@ -1950,6 +1967,9 @@ function rigModel(root, kind){
       hub.position.set(0,0,whole.max.z); root.add(hub);
       rig='multi-engine: only found '+wprops.length+'/4 propellers, left model alone';
     }
+  } else if(kind==='b24'){
+    const count=rigB24Props(root);
+    rig=count===4?'four original B-24 propellers rigged':'B-24 propeller pivots unavailable';
   } else {
   const prop=(JET_KINDS.includes(kind)||NO_PROP_KINDS.includes(kind)) ? null : findProp(root, +1);
   if(prop){
@@ -2112,10 +2132,10 @@ function brightenFighterSkin(src,kind){
   src.traverse(o=>{if(!o.isMesh)return;
     const materials=(Array.isArray(o.material)?o.material:[o.material]).map(m=>{
       if(!m||!m.color||m.transparent&&m.opacity<.9)return m;
-      const n=m.clone();n.color.multiplyScalar(kind==='me262'?1.22:1.24);
+      const n=m.clone();n.color.multiplyScalar(kind==='me262'?1.12:1.24);
       // A constant ambient contribution makes the dark embedded diffuse textures
       // readable even in wing shadow. Do not multiply it by the same dark map.
-      if(n.emissive){n.emissiveMap=null;n.emissive.setHex(0xa4aaa0);n.emissiveIntensity=kind==='me262'?.26:.29;}
+      if(n.emissive){n.emissiveMap=null;n.emissive.setHex(0xa4aaa0);n.emissiveIntensity=kind==='me262'?.20:.29;}
       if(n.aoMapIntensity!==undefined)n.aoMapIntensity=.22;
       if(n.metalness!==undefined)n.metalness=Math.min(n.metalness,.08);
       if(n.roughness!==undefined)n.roughness=.64;
@@ -2912,7 +2932,7 @@ function updateTracers(dt){
     p.addScaledVector(t.dir,t.speed*dt);
     let done=false;
     if(P.alive && segDist(ax,ay,az,p.x,p.y,p.z,P.pos)<7){
-      damagePlayer(4.5*D().dmg,'flak'); shake(0.5); done=true;
+      damagePlayer((t.damage||4.5)*D().dmg,'flak'); shake(0.5); done=true;
     }
     if(!done && p.y<=groundY(p.x,p.z)) done=true;
     if(done||t.life<=0){ scene.remove(t.mesh); tracers.splice(i,1); }
@@ -2947,6 +2967,31 @@ function spawnEnemyAir(n,forceKind){
 }
 // A bomber stream: heavy, straight and level, and it shoots back from every angle. Killing
 // one takes real gunnery - the fun is in surviving the crossfire on the way in.
+function bomberRotors(group){
+  const out=[];
+  group.traverse(o=>{if(o.userData.bomberRotor)out.push(o);});
+  // Until the multi-megabyte GLB finishes loading, the procedural stand-in has
+  // one conventional nose propeller. Keep it turning during that short wait.
+  if(!out.length){
+    const fallback=group.getObjectByName('prop');
+    if(fallback?.children.length){fallback.userData.bomberRotor=true;fallback.userData.spinAxis='z';out.push(fallback);}
+  }
+  return out;
+}
+function bomberGunStations(group){
+  // The loaded GLBs are centred and scaled to real wingspan. Use their actual
+  // nose, tail and height so each tracer begins at a plausible gun position.
+  const bb=new THREE.Box3().setFromObject(group),x=Math.min(1.35,bb.max.x*.085);
+  const station=(pos,arc)=>({pos:new THREE.Vector3(...pos),arc:new THREE.Vector3(...arc).normalize()});
+  return [
+    station([0,bb.max.y*.52,bb.max.z*.12],[0,.9,.3]),          // dorsal turret
+    station([0,bb.min.y*.47,bb.min.z*.08],[0,-.9,-.2]),        // ball / ventral turret
+    station([0,bb.max.y*.08,bb.max.z*.78],[0,0,1]),           // nose turret
+    station([0,bb.max.y*.08,bb.min.z*.78],[0,0,-1]),          // tail turret
+    station([-x,0,bb.min.z*.21],[-.9,0,-.4]),                 // port waist
+    station([ x,0,bb.min.z*.21],[ .9,0,-.4])                  // starboard waist
+  ];
+}
 function spawnBombers(n,kind){
   const type=kind||'b17';
   const hdg=Math.random()*Math.PI*2;
@@ -2966,7 +3011,8 @@ function spawnBombers(n,kind){
       .addScaledVector(lat, col*70)
       .addScaledVector(fwd, -row*90 - Math.abs(col)*45);
     pos.y+=row*40+Math.abs(col)*22;
-    enemyAir.push({group:g, prop:g.getObjectByName('prop'), kind:type, bomber:true,
+    enemyAir.push({group:g, prop:g.getObjectByName('prop'), rotors:bomberRotors(g),
+      gunStations:bomberGunStations(g), kind:type, bomber:true,
       alive:true, hp:(type==='b24')?26:30, maxhp:(type==='b24')?26:30,
       pos, vel:fwd.clone().multiplyScalar(72),
       heading:hdg, pitch:0, roll:0, spd:72, cool:1+i*0.4, mode:'cruise', modeT:99});
@@ -3246,6 +3292,9 @@ function updateEnemyAir(dt){
 
 // Bombers hold their course - they are not going to dogfight you - but every one of them has
 // gunners, and the whole formation can bring fire to bear at once.
+const bomberRoundGeo=new THREE.BoxGeometry(.095,.095,1.35);
+const bomberTracerDark=new THREE.MeshBasicMaterial({color:0x373a37});
+const bomberTracerLit=new THREE.MeshBasicMaterial({color:0xd8c4a0});
 function updateBomber(e,dt,toP,dist){
   // Turn the stream back into the playable sector before it becomes unreachable.
   if(e.pos.x<2000||e.pos.x>RTILE*RGRID_W-2000||e.pos.z<2000||e.pos.z>RTILE*RGRID_H-2000){
@@ -3261,12 +3310,10 @@ function updateBomber(e,dt,toP,dist){
   e.group.position.copy(e.pos);
   e.group.rotation.set(0,0,0);
   e.group.rotateY(e.heading); e.group.rotateX(-e.pitch); e.group.rotateZ(-e.roll);
-  // B-17 wing engines each spin around their OWN axis (four separate makeProp() groups nested
-  // inside the outer 'prop' wrapper, see rigModel()'s MULTI_ENGINE_KINDS branch) - rotating the
-  // wrapper itself would swing all four bodily around one shared point instead. A single-engine
-  // bomber (or a multi-engine one findWingProps() could not confirm, which is left un-rigged
-  // entirely) has no children here, so this is a harmless no-op for it.
-  if(e.prop) e.prop.children.length ? e.prop.children.forEach(c=>c.rotation.z-=0.30) : e.prop.rotation.z-=0.30;
+  e.group.updateWorldMatrix(true,false); // update the carrier of the turrets, not 1781 B-24 nodes
+  // Spin four separate shafts, not the common wrapper. The B-17 has four
+  // rebuilt Z-axis rotors; the B-24's own animated pivots use local Y.
+  for(const rotor of e.rotors||[])rotor.rotation[rotor.userData.spinAxis]-=29*dt;
   // smoke once she is badly hurt, so you can see your work
   if(e.hp<e.maxhp*0.45){ e.smokeT=(e.smokeT||0)-dt;
     if(e.smokeT<=0){ e.smokeT=0.25; spawnSmoke(e.pos.x,e.pos.y,e.pos.z,0x3a3630,1.4); } }
@@ -3286,19 +3333,27 @@ function updateBomber(e,dt,toP,dist){
   if(e.cool<=0 && P.alive && dist<900){
     e.cool = rookieB ? (0.55+Math.random()*0.45) : (0.30+Math.random()*0.25);
     const guns = rookieB ? 1 : (1+Math.floor((1-dist/900)*2));
-    for(let g=0;g<guns;g++){
-      const tof=dist/620;
-      const lead=P.pos.clone().addScaledVector(noseDir(),P.spd*tof*0.8);
-      const err=((1.6-D().aim*0.6)*22) * (rookieB?2.0:1);
-      lead.x+=(Math.random()-0.5)*err; lead.y+=(Math.random()-0.5)*err; lead.z+=(Math.random()-0.5)*err;
-      const from=e.pos.clone();
-      from.x+=(Math.random()-0.5)*14; from.y+=(Math.random()-0.5)*4; from.z+=(Math.random()-0.5)*16;
-      const dir=lead.sub(from).normalize();
-      const m=new THREE.Mesh(new THREE.BoxGeometry(0.30,0.30,6.5),
-        new THREE.MeshBasicMaterial({color:0xffd48a}));
-      m.position.copy(from).addScaledVector(dir,8); m.lookAt(m.position.clone().add(dir));
-      scene.add(m);
-      tracers.push({mesh:m,dir,speed:620,life:2.6});
+    const localP=e.group.worldToLocal(P.pos.clone());
+    const stations=(e.gunStations||[]).map(s=>({s,score:s.arc.dot(localP.clone().sub(s.pos).normalize())}))
+      .filter(a=>a.score>.05).sort((a,b)=>b.score-a.score);
+    for(let g=0;g<Math.min(guns,stations.length);g++){
+      const from=e.group.localToWorld(stations[g].s.pos.clone());
+      // Short, discrete MG rounds from the chosen turret. Two rounds per burst
+      // preserve the old total damage but look like fire rather than a lone
+      // six-metre yellow bar floating beside the bomber.
+      for(let burst=0;burst<2;burst++){
+        const tof=dist/620;
+        const lead=P.pos.clone().addScaledVector(noseDir(),P.spd*tof*0.8);
+        const err=((1.6-D().aim*0.6)*22) * (rookieB?2.0:1);
+        lead.x+=(Math.random()-0.5)*err; lead.y+=(Math.random()-0.5)*err; lead.z+=(Math.random()-0.5)*err;
+        const dir=lead.sub(from).normalize();
+        e.shotN=e.shotN||0;
+        const m=new THREE.Mesh(bomberRoundGeo,e.shotN++%3===0?bomberTracerLit:bomberTracerDark);
+        m.position.copy(from).addScaledVector(dir,1.3+burst*6);
+        m.lookAt(m.position.clone().add(dir));
+        scene.add(m);
+        tracers.push({mesh:m,dir,speed:620,life:2.6,damage:2.25});
+      }
     }
   }
 }

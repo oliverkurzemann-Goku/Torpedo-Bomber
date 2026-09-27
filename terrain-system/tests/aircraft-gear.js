@@ -49,7 +49,9 @@ function faceCount(group,minimumY){let total=0;group.updateMatrixWorld(true);gro
  }
  const jet=(await load('me262.glb')).scene;brightenFighterSkin(jet,'me262');
  const jetMaterials=[];jet.traverse(o=>{if(o.isMesh)jetMaterials.push(...[].concat(o.material).filter(m=>m?.emissiveIntensity>.1));});
- assert.ok(jetMaterials.length>0&&jetMaterials.every(m=>m.emissiveMap===null&&m.emissiveIntensity>=.26),'Me 262 skin remains dark');
+ assert.ok(jetMaterials.some(m=>Math.abs(m.emissiveIntensity-.20)<1e-6)&&
+  jetMaterials.every(m=>m.emissiveMap===null),
+  'Me 262 skin remains softly lit');
  const rocket=(await load('me163.glb')).scene,rocketRoot=new THREE.Group();rocketRoot.add(rocket);
  const points=samplePoints(rocket,3000),yaw=detectYaw(rocket);
  assert.equal(yaw.yaw,Math.PI,'Me 163 GLB faces -Z before alignment');
