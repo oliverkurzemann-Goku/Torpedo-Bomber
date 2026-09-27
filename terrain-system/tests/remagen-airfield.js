@@ -12,16 +12,20 @@ global.fetch=async url=>{
 };
 (async()=>{
   const scene=new THREE.Scene(),dem=new DEMHeightProvider(4000,'terrain-system/real/data/dem/');
-  await dem.loadTile(0,4);
+  await Promise.all([[0,4],[5,6],[6,6]].map(([x,z])=>dem.loadTile(x,z)));
   const terrain=Object.create(TerrainManager.prototype);
   Object.assign(terrain,{scene,tileSize:4000,heightProvider:dem,tiles:new Map(),material:new THREE.MeshStandardMaterial()});
   terrain.ensureTile(0,4,0);
+  terrain.ensureTile(5,6,0);
+  terrain.ensureTile(6,6,0);
   const osm=new OSMManager(scene,4000,terrain,'terrain-system/real/data/osm/');
   const originalTerrainMaterial=terrain.material;
   const html=fs.readFileSync(path.join(root,'remagen-mission.html'),'utf8');
   // Execute the actual mission integration, not a duplicated constructor invocation.
   const start=html.indexOf('let airfield=null,'),end=html.indexOf('// ===',start);
-  const context=vm.createContext({THREE,AirfieldDetails,terrain,osmMgr:osm,scene,AF_X:787,AF_Z:18087.6,RWY_LEN:900,RWY_W:40});
+  const context=vm.createContext({THREE,AirfieldDetails,terrain,osmMgr:osm,scene,
+    AF_X:787,AF_Z:18087.6,ALLIED_AF_X:787,ALLIED_AF_Z:18087.6,
+    GERMAN_AF_X:23600,GERMAN_AF_Z:25725,RWY_LEN:900,RWY_W:40});
   vm.runInContext(html.slice(start,end)+'\nbuildAirfield(); globalThis.field=airfieldDetails;',context);
   const f=context.field;
   assert(scene.children.includes(f.group)); assert.equal(terrain.material,originalTerrainMaterial);
@@ -81,5 +85,25 @@ global.fetch=async url=>{
   assert(f.ground.every((m,i)=>m.geometry===before[i]));
   tile.updateMorph(1);f.refresh();ground();
   tile.setLOD(0,terrain.material);tile.updateMorph(1);f.refresh();ground();
+  vm.runInContext('buildGermanAirfield();globalThis.germanField=germanAirfieldDetails;',context);
+  const german=context.germanField;
+  assert(scene.children.includes(german.group),'separate eastern airfield appears in the world');
+  assert(german.ground.length>0&&german.parts.length>0,'German strip has runway and buildings');
+  for(const {name,bounds:b} of german.parts)
+    assert(b.max.z<25725-20||b.min.z>25725+20,`German runway obstruction: ${name}`);
+  german.group.updateMatrixWorld(true);
+  const ray=new THREE.Raycaster();
+  for(const dx of [-400,0,400])for(const dz of [-18,0,18]){
+    ray.set(new THREE.Vector3(23600+dx,2000,25725+dz),new THREE.Vector3(0,-1,0));
+    const hits=ray.intersectObjects(german.ground);assert(hits.length,'German runway has a hole');
+    assert(hits[0].point.y>terrain.getRenderedHeight(23600+dx,25725+dz));
+  }
+  const baseStart=html.indexOf('const ALLIED_AF_X='),baseEnd=html.indexOf('// ---- flight envelope',baseStart);
+  const selection=vm.createContext({terrain,AF_Y:0});
+  vm.runInContext(html.slice(baseStart,baseEnd)+
+    '\nglobalThis.select=ac=>{selectMissionAirfield({ac});return [AF_X,AF_Z,AF_Y];};',selection);
+  assert.deepEqual(Array.from(selection.select('p47')),[787,18087.6,terrain.getHeight(787,18087.6)]);
+  for(const ac of ['bf109','fw190','ju87','me262','me163'])
+    assert.deepEqual(Array.from(selection.select(ac)),[23600,25725,terrain.getHeight(23600,25725)],`${ac} starts from the German base`);
   console.log(JSON.stringify({meshes:meshes.length,groundBatches:f.ground.length,parts:f.parts.length,samples,maxDrapeError,spawnAndRunwayClear:true,browserTest:false},null,2));
 })().catch(e=>{console.error(e);process.exit(1);});

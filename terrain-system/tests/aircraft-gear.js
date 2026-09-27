@@ -53,6 +53,15 @@ function faceCount(group,minimumY){let total=0;group.updateMatrixWorld(true);gro
  const jetMaterials=[];jet.traverse(o=>{if(o.isMesh)jetMaterials.push(...[].concat(o.material).filter(m=>m?.emissiveIntensity===.04));});
  assert.ok(jetMaterials.length>0&&jetMaterials.every(m=>m.emissiveMap===null),
   'Me 262 skin uses the darker ambient setting');
+ const jetRoot=new THREE.Group();jetRoot.add(jet);
+ const original=new Map();jet.traverse(o=>{if(o.isMesh&&o.geometry?.index)original.set(o,o.geometry.index.array.slice());});
+ assert(original.size>0,'shipped Me 262 has indexed wing meshes');
+ const jetRig=rigModel(jetRoot,'me262');
+ assert.match(jetRig,/without cutting wing geometry/);
+ for(const [mesh,indices] of original)
+  assert.deepEqual(mesh.geometry.index.array,indices,'Me 262 wing and nacelle faces must stay intact');
+ assert.equal(jetRoot.getObjectByName('gear').children.length,3,'jet retains its tricycle gear');
+ assert.equal(jetRoot.children.filter(o=>o.geometry?.type==='CircleGeometry').length,0,'no grey wheel-cut disks on wings');
  const rocket=(await load('me163.glb')).scene,rocketRoot=new THREE.Group();rocketRoot.add(rocket);
  const points=samplePoints(rocket,3000),yaw=detectYaw(rocket);
  assert.equal(yaw.yaw,Math.PI,'the symmetry heuristic gives the wrong nose for the tailless Me 163');

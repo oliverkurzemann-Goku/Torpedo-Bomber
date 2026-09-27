@@ -56,6 +56,8 @@ function fixedBladeFaces(group,p){
       kind+' rotors must sit at four separate wing engines');
     if(kind==='b17'){
       assert.equal(originalProps.length,4);
+      assert.equal(group.getObjectByName('0_1'),undefined,'B-17 original rigid propeller assembly must be removed');
+      assert(group.getObjectByName('0_0'),'B-17 wing and engine cowls must remain');
       assert(originalProps.every(p=>fixedBladeFaces(group,p)<5),
         'B-17 must have no fixed blade faces around any of its four spinning rotors');
       assert(rotors.every(r=>{

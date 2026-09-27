@@ -283,7 +283,7 @@
   <div style="width:100%;height:4px;background:repeating-linear-gradient(45deg,#ffd400,#ffd400 8px,#111 8px,#111 16px);"></div>
   <span id="testVersionBannerText" style="background:#111;color:#ffd400;font-family:monospace;font-weight:800;font-size:11px;letter-spacing:.5px;padding:3px 10px;border:1px solid #ffd400;border-top:none;border-radius:0 0 6px 6px;"></span>
 </div>
-<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 148';</script>
+<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 149';</script>
 <!-- ===== END TEMP TEST-ONLY VERSION BANNER ===== -->
 <div id="app"></div>
 
@@ -312,7 +312,7 @@
   <div id="flash"></div>
   <div id="gunsight"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 148 · REAL RHINE</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 149 · REAL RHINE</div>
 
   <div id="apr">
     <div id="aprCall"></div>
@@ -449,7 +449,7 @@
 <script src="terrain-system/HistoricalObjectManager.js?v=remagen-21"></script>
 <script src="terrain-system/AirfieldDetails.js?v=remagen-21"></script>
 <script src="terrain-system/WorldVehicles.js?v=remagen-22"></script>
-<script src="terrain-system/LivingWorld.js?v=147"></script>
+<script src="terrain-system/LivingWorld.js?v=149"></script>
 <script src="campaign.js?v=1"></script>
 <script src="combat-fx.js?v=133"></script>
 <script src="pilot-bailout.js?v=147"></script>
@@ -505,7 +505,19 @@ const RWY_LEN=900, RWY_W=40; // matches the real, DEM-checked-flat farmland stri
 // airfield's own orientation was never historically verified anyway (see fetch_historical.py's own
 // "illustrative, not verified" note) — simpler and lower-risk to keep it axis-aligned than to
 // rederive every one of those checks in a rotated frame for an orientation that was a guess either way.
-const AF_X=787, AF_Z=18087.6;
+const ALLIED_AF_X=787, ALLIED_AF_Z=18087.6;
+// Separate Luftwaffe strip on a DEM-checked plateau east of the Rhine.
+// OSM has no buildings or roads on its 900 m runway footprint.
+const GERMAN_AF_X=23600, GERMAN_AF_Z=25725;
+let AF_X=ALLIED_AF_X, AF_Z=ALLIED_AF_Z;
+function isGermanMission(m){return ['bf109','fw190','ju87','me262','me163'].includes(m.ac);}
+function airfieldName(m){return isGermanMission(m)?'FORWARD STRIP':'BEAUFORT';}
+function selectMissionAirfield(m){
+  const german=isGermanMission(m);
+  AF_X=german?GERMAN_AF_X:ALLIED_AF_X;
+  AF_Z=german?GERMAN_AF_Z:ALLIED_AF_Z;
+  if(terrain)AF_Y=terrain.getHeight(AF_X,AF_Z);
+}
 
 // ---- flight envelope (per aircraft, filled from AC below) ----
 let STALL_SPD=38, APP_SPD=52, MAX_SPD=175, THR_MIN_SPD=32;
@@ -673,8 +685,9 @@ function clearTreesNearAirfield(){
       let touched=false;
       for(let i=0;i<mesh.count;i++){
         mesh.getMatrixAt(i,m); v.setFromMatrixPosition(m);
-        const dx=v.x-AF_X,dz=v.z-AF_Z;
-        if(dx>AF_CLEAR_X0-5 && dx<AF_CLEAR_X1+5 && dz>AF_CLEAR_Z0-5 && dz<AF_CLEAR_Z1+5){
+        if([[ALLIED_AF_X,ALLIED_AF_Z],[GERMAN_AF_X,GERMAN_AF_Z]].some(([fx,fz])=>
+          v.x-fx>AF_CLEAR_X0-5&&v.x-fx<AF_CLEAR_X1+5&&
+          v.z-fz>AF_CLEAR_Z0-5&&v.z-fz<AF_CLEAR_Z1+5)){
           mesh.setMatrixAt(i,zero); cleared++; touched=true;
         }
       }
@@ -683,13 +696,36 @@ function clearTreesNearAirfield(){
   }
   if(cleared) console.log('cleared',cleared,'tree(s) overlapping the airfield footprint');
 }
+// OSM roads predate the fictional runways. Remove only road triangles that
+// overlap a strip; the mapped road resumes outside the runway clearance.
+function clearRoadsOnRunways(){
+  const fields=[[ALLIED_AF_X,ALLIED_AF_Z],[GERMAN_AF_X,GERMAN_AF_Z]];
+  for(const tile of osmMgr.tiles.values()){
+    if(!tile?.group)continue;
+    for(const mesh of tile.group.children){
+      if(!mesh.isMesh||mesh.material!==osmMgr.roadMat||!mesh.geometry.index)continue;
+      const pos=mesh.geometry.attributes.position,ix=mesh.geometry.index.array;
+      let removed=0;
+      for(let i=0;i<ix.length;i+=3){
+        const a=ix[i],b=ix[i+1],c=ix[i+2];
+        const x0=Math.min(pos.getX(a),pos.getX(b),pos.getX(c)),x1=Math.max(pos.getX(a),pos.getX(b),pos.getX(c));
+        const z0=Math.min(pos.getZ(a),pos.getZ(b),pos.getZ(c)),z1=Math.max(pos.getZ(a),pos.getZ(b),pos.getZ(c));
+        if(fields.some(([fx,fz])=>x1>fx-RWY_LEN/2-16&&x0<fx+RWY_LEN/2+16&&
+          z1>fz-RWY_W/2-16&&z0<fz+RWY_W/2+16)){
+          ix[i+1]=a;ix[i+2]=a;removed++;
+        }
+      }
+      if(removed)mesh.geometry.index.needsUpdate=true;
+    }
+  }
+}
 
 async function loadRealWorld(){
   const setLoadingText=(s)=>{ const el=document.getElementById('loadingText'); if(el) el.textContent=s; };
 
   if(OSMManager.BUILD!==21||HistoricalObjectManager.BUILD!==21||LivingWorld.BUILD!==22||WorldVehicles.BUILD!==22) throw new Error('Terrain version mismatch. Reload Remagen.');
   document.getElementById('testVersionBannerText').textContent=
-    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 148 · MODULE 22';
+    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 149 · MODULE 22';
   heightProvider=new DEMHeightProvider(RTILE,'terrain-system/real/data/dem/');
   terrain=new TerrainManager(scene,RTILE,heightProvider);
   osmMgr=new OSMManager(scene,RTILE,terrain,'terrain-system/real/data/osm/');
@@ -771,6 +807,7 @@ async function loadRealWorld(){
   // buildAirfield() above) the same way killTarget() hides a destroyed target — zero the
   // instance's own matrix rather than touching the shared InstancedMesh's buffer layout.
   clearTreesNearAirfield();
+  clearRoadsOnRunways();
 
   AF_Y=terrain.getHeight(AF_X,AF_Z);
   realWorldReady=true;
@@ -821,6 +858,7 @@ function updateContentVisibility(focusX,focusZ){
   }
   rebakeStaleOsmHeights();
   if(airfieldDetails)airfieldDetails.refresh();
+  if(germanAirfieldDetails)germanAirfieldDetails.refresh();
   if(worldVehicles)worldVehicles.update(focusX,focusZ);
 }
 
@@ -907,11 +945,15 @@ function at(m,x,y,z){ m.position.set(x,y,z); return m; }
 //  fetch_historical.py ("a plausible site for a forward strip, not a documented one" — a real
 //  WW2 forward strip was rough grass or packed dirt with tents/huts, not a paved airbase).
 // ============================================================
-let airfield=null,airfieldDetails=null,worldVehicles=null,livingWorld=null;
+let airfield=null,airfieldDetails=null,germanAirfieldDetails=null,worldVehicles=null,livingWorld=null;
 function buildAirfield(){
-  airfieldDetails=new AirfieldDetails(terrain,osmMgr,AF_X,AF_Z,RWY_LEN,RWY_W);
+  airfieldDetails=new AirfieldDetails(terrain,osmMgr,ALLIED_AF_X,ALLIED_AF_Z,RWY_LEN,RWY_W);
   airfield=airfieldDetails.group;
   scene.add(airfield);
+}
+function buildGermanAirfield(){
+  germanAirfieldDetails=new AirfieldDetails(terrain,osmMgr,GERMAN_AF_X,GERMAN_AF_Z,RWY_LEN,RWY_W);
+  scene.add(germanAirfieldDetails.group);
 }
 
 // ============================================================
@@ -2063,8 +2105,17 @@ function rigModel(root, kind){
     const wprops=findWingProps(root);
     if(wprops.length===4){
       let cutTotal=0;
+      // The B-17's 0_1 mesh contains the four original propeller assemblies
+      // (14 m across the nacelles, only 1.5 m deep). Cutting blade triangles
+      // by radius left visible rigid pieces of this mesh behind. Remove that
+      // isolated mesh in full; the original wing and cowls live in 0_0.
+      const fixedProps=root.getObjectByName('0_1');
+      if(fixedProps){fixedProps.parent.remove(fixedProps);cutTotal=fixedProps.geometry.index.count/3;}
       const wrap=new THREE.Group(); wrap.name='prop';
       for(const wp of wprops){
+        // A few blade triangles are also welded into the main wing mesh.
+        // Keep the narrow per-hub cut for those while removing the isolated
+        // four-prop assembly as a whole.
         cutTotal+=cutBlades(root, wp);
         // The source GLB's blades measure only ~1.6 m across at a 31.6 m
         // wingspan; at combat distance their movement is invisible. Keep the
@@ -2124,6 +2175,14 @@ function rigModel(root, kind){
     return rig+', take-off trolley removed; retractable skid added';
   }
   if(kind==='ju87') return rig+', original fixed wheel fairings retained';
+  if(kind==='me262'){
+    // This GLB has no welded wheels. The generic wheel-cluster detector was
+    // removing 5,177 wing/nacelle faces and covering them with metre-wide
+    // grey disks: exactly the floating panels visible on the iPad screenshot.
+    const gear=new THREE.Group();gear.name='gear';root.add(gear);
+    buildGear(gear,root,whole,S,kind);
+    return rig+', tricycle gear built without cutting wing geometry';
+  }
   const propGrp=root.getObjectByName('prop');
   const inProp=(o)=>{ let p=o; while(p){ if(p===propGrp) return true; p=p.parent; } return false; };
   const parts=[];
@@ -2784,13 +2843,13 @@ function objectiveText(){
     const b=bombersLeft(), f=blockingEnemyAir().filter(e=>!e.bomber).length;
     if(b||f) return 'BOMBERS '+b+(f?'   ESCORT '+f:'');
     if(m.id==='komet'&&europeOps?.pending())return 'ROCKET OFF — BEGIN GLIDE';
-    return europeOps?.pending()?'NEXT BOMBER BOX EXPECTED':'RTB — LAND AT BEAUFORT';
+    return europeOps?.pending()?'NEXT BOMBER BOX EXPECTED':'RTB — LAND AT '+airfieldName(m);
   }
   const left=objectiveLeft();
   const ks=Object.keys(left);
   if(blockingEnemyAir().length>0 && !ks.length)
     return 'BANDITS  '+blockingEnemyAir().length+' LEFT';
-  if(!ks.length) return europeOps?.pending()?'NEXT CONTACT EXPECTED':M().id==='stuka'?'RTB — FORWARD STRIP':'RTB — LAND AT BEAUFORT';
+  if(!ks.length) return europeOps?.pending()?'NEXT CONTACT EXPECTED':'RTB — LAND AT '+airfieldName(m);
   const nm={flak:'FLAK',bridge:'BRIDGE',factory:'FACTORY',truck:['jabo','stuka'].includes(M().id)?'VEHICLES':'TRUCKS',train:'TRAIN',ferry:'FERRY'};
   return ks.map(k=>(nm[k]||k.toUpperCase())+' '+left[k]).join('  ');
 }
@@ -2801,7 +2860,7 @@ function checkObjective(){
   if(!Object.keys(left).length && airLeft===0 && !M().circuits){
     if(!P.rtb){ P.rtb=true;
       const pursuer=M().id==='komet'&&enemyAir.some(e=>e.alive&&e.escapeThreat);
-      radioSay(pursuer?'BOMBERS DOWN — EVADE THE PURSUER AND LAND':M().id==='stuka'?'ALLIED COLUMN HIT — RETURN TO THE FORWARD STRIP':'TARGETS DESTROYED — RETURN TO BEAUFORT AND PANCAKE');
+      radioSay(pursuer?'BOMBERS DOWN — EVADE THE PURSUER AND LAND':M().id==='stuka'?'ALLIED COLUMN HIT — RETURN TO THE FORWARD STRIP':'TARGETS DESTROYED — RETURN TO '+airfieldName(M())+' AND PANCAKE');
       flash(pursuer?'GLIDE HOME — PURSUER ON YOUR SIX':'OBJECTIVE COMPLETE — RTB',2200); }
   }
 }
@@ -3164,7 +3223,8 @@ function spawnEnemyAir(n,forceKind){
     scene.add(g);
     const a=Math.PI*2*(i/n)+Math.random();
     // start them out with height and speed already in hand, the way a real bounce begins
-    const origin=europeOps&&europeOps.elapsed>5?P.pos:new THREE.Vector3(AF_X+5000,P.pos.y,AF_Z+2500);
+    const origin=europeOps&&europeOps.elapsed>5?P.pos:
+      new THREE.Vector3(Math.min(22500,AF_X+5000),P.pos.y,Math.min(26000,AF_Z+2500));
     const pos=origin.clone().add(new THREE.Vector3(Math.cos(a)*(1500+i*280),
       460+Math.random()*420, Math.sin(a)*(1500+i*280)));
     pos.y=Math.max(pos.y, groundY(pos.x,pos.z)+380);
@@ -3470,9 +3530,21 @@ function updateEnemyAir(dt){
       const corner=S.stall*Math.sqrt(S.gLim);
       thr = (dist<820 && ahead>0.45) ? Math.max(corner, P.spd*1.12+8) : S.max;
     }
+    // A coordinated turn takes hundreds of metres. Turn back well before the
+    // DEM grid ends, regardless of whether this fighter was extending away
+    // from the player or reacting to a gun pass.
+    const edge=2400;
+    if(e.pos.x<edge||e.pos.x>RTILE*RGRID_W-edge||
+       e.pos.z<edge||e.pos.z>RTILE*RGRID_H-edge){
+      e.mode='return';e.modeT=1.5;
+      aim=new THREE.Vector3(RTILE*RGRID_W/2-e.pos.x,.08,RTILE*RGRID_H/2-e.pos.z).normalize();
+      thr=S.max*.85;
+    }
     if(agl<260 && aim.y<0.05) aim.y=0.05;         // never aim into the hill
 
     flyAI(e,dt,aim,thr);
+    e.pos.x=Math.max(350,Math.min(RTILE*RGRID_W-350,e.pos.x));
+    e.pos.z=Math.max(350,Math.min(RTILE*RGRID_H-350,e.pos.z));
 
     // hard floor, so a bad decision does not end with them in the ground
     if(e.pos.y<gnd+70){ e.pos.y=gnd+70; if(e.pitch<0) e.pitch=Math.max(e.pitch,0.05); }
@@ -3656,7 +3728,7 @@ function clampToWorldBounds(){
   P.pos.z=Math.max(WORLD_EDGE_MARGIN,Math.min(maxZ,P.pos.z));
   if(outside && !P.edgeWarned){
     P.edgeWarned=true; flash('LEAVING OPERATIONAL AREA',1600);
-    radioSay(M().id==='stuka'?'FORWARD STRIP — TURN BACK INTO THE AREA':'BEAUFORT TOWER — TURN BACK, YOU ARE LEAVING THE AREA');
+    radioSay((isGermanMission(M())?'FIELD CONTROL':'BEAUFORT TOWER')+' — TURN BACK, YOU ARE LEAVING THE AREA');
   } else if(!outside){
     P.edgeWarned=false;
   }
@@ -3913,10 +3985,10 @@ function landed(onStrip){
   const rank=rankName(l.landings||0);
   // career promotion — crossing a rank threshold on this recovery is worth a radio call
   const promoted = rankFor(l.landings||0)!==rankFor(landingsBefore);
-  if(promoted) radioSay((m.id==='stuka'?'FIELD CONTROL':'BEAUFORT TOWER')+' — '+pilotName().toUpperCase()+", YOU'RE PROMOTED TO "+rank.toUpperCase());
+  if(promoted) radioSay((isGermanMission(m)?'FIELD CONTROL':'BEAUFORT TOWER')+' — '+pilotName().toUpperCase()+", YOU'RE PROMOTED TO "+rank.toUpperCase());
   showResult(done,
     done?'MISSION ACCOMPLISHED':'RECOVERED — OBJECTIVE INCOMPLETE',
-    (promoted?'PROMOTED — ':'')+rank+' '+pilotName()+'  &middot;  '+(onStrip?(m.id==='stuka'?'Landed at forward strip':'Landed at Beaufort'):'Force-landed')+'  &middot;  '+medalIcon,
+    (promoted?'PROMOTED — ':'')+rank+' '+pilotName()+'  &middot;  '+(onStrip?(isGermanMission(m)?'Landed at forward strip':'Landed at Beaufort'):'Force-landed')+'  &middot;  '+medalIcon,
     (done?'Every target on the list is burning. ':'You are home, but the job is not finished. ')
     +(promoted?'<br><br><b>Promoted to '+rank+'.</b>':'')
     +'<br><br>This sortie: '+(bag.length?bag.join(' &middot; '):'nothing claimed')
@@ -3963,6 +4035,7 @@ function startMission(i){
   if(aeroButton){aeroButton.classList.remove('on');aeroButton.innerHTML='AERO<br>OFF';}
   const stickHint=document.getElementById('stickHint');if(stickHint)stickHint.textContent='PITCH / ROLL';
   mission=i; const m=MISSIONS[i];
+  selectMissionAirfield(m);
   missionOver=false; circuitsDone=0;
   P.ac=m.ac||'p47';
   const d=acDef();
@@ -3992,7 +4065,7 @@ function startMission(i){
   const o=document.getElementById('oilCanopy'); if(o) o.style.opacity='0';
   applyWeaponUI(); resetCtlUI();
   updateHUD();
-  radioSay(m.free?'FIELD IS YOURS — HAVE FUN':m.id==='stuka'?'FORWARD STRIP — CLEARED FOR TAKE-OFF, RUNWAY ZERO NINE':'BEAUFORT TOWER — CLEARED FOR TAKE-OFF, RUNWAY ZERO NINE');
+  radioSay(m.free?'FIELD IS YOURS — HAVE FUN':(isGermanMission(m)?'FORWARD STRIP':'BEAUFORT TOWER')+' — CLEARED FOR TAKE-OFF, RUNWAY ZERO NINE');
   flash('THROTTLE UP — ROLL',1600);
 }
 // Sortie weather, operational events and cartography.
@@ -4054,7 +4127,7 @@ function europeBriefTargets(m){
   const label=m.id==='stuka'?(vehicleIndex<2?'M4 Sherman':'M16 AA'):
     e.meta?.vehicleModel==='jagdpanther'?'Jagdpanther':TDEF[e.kind]?.name||e.kind;
   vehicleIndex++;out.push({x:p.x,z:p.z,label});}
- if(m.enemyAir||m.bombers)out.push({x:AF_X+5000,z:AF_Z+2500,label:m.bombers?'Bomber interception sector':'Fighter patrol sector'});
+ if(m.enemyAir||m.bombers)out.push({x:Math.min(24000,AF_X+5000),z:Math.min(27000,AF_Z+2500),label:m.bombers?'Bomber interception sector':'Fighter patrol sector'});
  return out;
 }
 function drawEuropeBrief(m){
@@ -4630,6 +4703,7 @@ function toggleDiveBrakes(){
 function show(id,on){ const e=document.getElementById(id); if(e) e.classList.toggle('hidden',!on); }
 function showBrief(i){
   selectedMission=i; const m=MISSIONS[i];
+  selectMissionAirfield(m);
   // Start the selected aircraft while the pilot reads the briefing. Slow enemy
   // assets are requested at launch and can arrive after take-off.
   ensureModel(m.ac).catch(err=>console.warn('Briefing aircraft:',err));
@@ -4902,13 +4976,14 @@ function init(){
   // the instant the menu shows) needs groundY()/buildAirfield() to already have real data —
   // buildAirfield() itself is called only after this awaits, not in this synchronous block above.
   loadRealWorld().then(()=>{
-    buildAirfield();
+    buildAirfield();buildGermanAirfield();
     const bd=realBridge&&realBridge.userData.data;
     livingWorld=new LivingWorld(scene,terrain,osmMgr,{
       bridge:realBridge?[realBridge.userData.x,realBridge.userData.z]:undefined,
       bridgeSpan:bd?[bd.x2-bd.x1,bd.z2-bd.z1]:undefined,
       factory:realFactory?[realFactory.userData.x,realFactory.userData.z]:undefined,
-      field:[AF_X,AF_Z]
+      field:[ALLIED_AF_X,ALLIED_AF_Z],
+      airfields:[[ALLIED_AF_X,ALLIED_AF_Z],[GERMAN_AF_X,GERMAN_AF_Z]]
     });
     show('loading',false); show('menu',true); state=ST.MENU;
     worldVehicles=new WorldVehicles(scene,terrain,osmMgr);

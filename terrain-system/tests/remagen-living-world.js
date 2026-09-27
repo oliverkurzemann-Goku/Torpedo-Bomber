@@ -17,8 +17,29 @@ global.fetch=async url=>{const b=fs.readFileSync(path.join(root,url.split('?')[0
   for(const [x,z]of coords)terrain.ensureTile(x,z,0);
   const osm=new OSMManager(scene,4000,terrain,osmDir);
   await osm.prepareRegion(coords,'terrain-system/real/data/waterways.json');
+  await Promise.all(coords.map(([x,z])=>osm.loadTile(x,z)));
   const html=fs.readFileSync(path.join(root,'remagen-mission.html'),'utf8');
-  assert(html.includes('LivingWorld.js?v=147'));assert(html.includes('MODULE 22'));
+  const fields=[[787,18087.6],[23600,25725]],runwayFaces=()=>{
+    const counts=[0,0];
+    for(const tile of osm.tiles.values())if(tile?.group)for(const mesh of tile.group.children){
+      if(!mesh.isMesh||mesh.material!==osm.roadMat||!mesh.geometry.index)continue;
+      const pos=mesh.geometry.attributes.position,ix=mesh.geometry.index.array;
+      for(let i=0;i<ix.length;i+=3){
+        const a=ix[i],b=ix[i+1],c=ix[i+2];if(a===b&&b===c)continue;
+        const x0=Math.min(pos.getX(a),pos.getX(b),pos.getX(c)),x1=Math.max(pos.getX(a),pos.getX(b),pos.getX(c));
+        const z0=Math.min(pos.getZ(a),pos.getZ(b),pos.getZ(c)),z1=Math.max(pos.getZ(a),pos.getZ(b),pos.getZ(c));
+        fields.forEach(([fx,fz],j)=>{if(x1>fx-466&&x0<fx+466&&z1>fz-36&&z0<fz+36)counts[j]++;});
+      }
+    }
+    return counts;
+  };
+  const crossingBefore=runwayFaces();
+  const roadStart=html.indexOf('function clearRoadsOnRunways(){'),roadEnd=html.indexOf('async function loadRealWorld(){',roadStart);
+  const roadContext=vm.createContext({osmMgr:osm,ALLIED_AF_X:787,ALLIED_AF_Z:18087.6,
+    GERMAN_AF_X:23600,GERMAN_AF_Z:25725,RWY_LEN:900,RWY_W:40});
+  vm.runInContext(html.slice(roadStart,roadEnd)+'\nclearRoadsOnRunways();',roadContext);
+  assert.deepEqual(runwayFaces(),[0,0],'mapped roads and hardstanding must not cross either runway');
+  assert(html.includes('LivingWorld.js?v=149'));assert(html.includes('MODULE 22'));
   for(const id of ['convoy','train','ferry'])assert(html.includes(`id:'${id}'`),`mission ${id} missing`);
   assert(html.includes("livingWorld.missionTargets(m.traffic||m.id)"));assert(html.includes('livingWorld.destroyEntity(t.entity)'));
   // Execute the actual mission table/population logic with lightweight target
@@ -58,7 +79,7 @@ global.fetch=async url=>{const b=fs.readFileSync(path.join(root,url.split('?')[0
   const bridge=[12000+(b.x1+b.x2)/2,12000+(b.z1+b.z2)/2];
   const f=JSON.parse(fs.readFileSync(path.join(root,'terrain-system/real/data/historical/3_5.json'))).factories[0];
   const factory=[12000+f.x,20000+f.z];
-  const world=new LivingWorld(scene,terrain,osm,{bridge,bridgeSpan:[b.x2-b.x1,b.z2-b.z1],factory,field:[787,18087.6]});
+  const world=new LivingWorld(scene,terrain,osm,{bridge,bridgeSpan:[b.x2-b.x1,b.z2-b.z1],factory,field:fields[0],airfields:fields});
 
   assert.equal(LivingWorld.BUILD,22);assert.equal(OSMManager.BUILD,21);
   assert(world.routes.road.length>=3,'not enough real road routes');
@@ -81,6 +102,9 @@ global.fetch=async url=>{const b=fs.readFileSync(path.join(root,url.split('?')[0
   assert(d.poles>=140&&d.poles<=180);assert(d.cows>20&&d.cows<=36);assert.equal(d.buckets,10);
   const insulators=world.details.getObjectByName('telegraphInsulators'),wires=world.details.getObjectByName('telegraphWires');
   assert.equal(insulators.count,d.poles*3);assert(wires.isLineSegments);assert(wires.geometry.attributes.position.count>0);
+  const polePositions=world._polePlacements(180);
+  assert(polePositions.every(p=>fields.every(([x,z])=>Math.abs(p.x-x)>=580||Math.abs(p.z-z)>=105)),
+    'power poles must clear both strips');
   const matrix=new THREE.Matrix4();
   for(const mesh of world.details.children){
     assert(mesh.isInstancedMesh||mesh.isLineSegments);assert.equal(mesh.frustumCulled,false);assert(!mesh.instanceColor,'instance colours are forbidden');
@@ -130,6 +154,6 @@ global.fetch=async url=>{const b=fs.readFileSync(path.join(root,url.split('?')[0
   console.log(JSON.stringify({
     routes:{road:world.routes.road.map(r=>Math.round(r.length)),rail:world.routes.rail.map(r=>Math.round(r.length)),rhine:Math.round(world.routes.water[0].length)},
     entities:{trucks:count('truck'),trains:count('train'),ferries:count('ferry'),ambient:count('wagon')+count('civil'),meshes:entityMeshes},
-    rural:d,smokeEvents:smoke.length,browserTest:false
+    rural:d,roadFacesCleared:crossingBefore,smokeEvents:smoke.length,browserTest:false
   },null,2));
 })().catch(e=>{console.error(e);process.exit(1);});

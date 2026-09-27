@@ -5,12 +5,12 @@ const THREE=require('three'),root=path.resolve(__dirname,'../..');
 const rhine=fs.readFileSync(path.join(root,'remagen-mission.html'),'utf8');
 const first=rhine.indexOf('function updateEnemyAir(dt){'),last=rhine.indexOf('    flyAI(e,dt,aim,thr);',first);
 assert(first>0&&last>first);
-const e={alive:true,bomber:false,kind:'bf109',pos:new THREE.Vector3(0,900,0),
+const e={alive:true,bomber:false,kind:'bf109',pos:new THREE.Vector3(14000,900,16000),
   heading:0,pitch:0,roll:0,spd:145,mode:'engage',modeT:2};
-const P={pos:new THREE.Vector3(0,900,-400),heading:0,pitch:0,spd:155,alive:true,roll:0};
+const P={pos:new THREE.Vector3(14000,900,15600),heading:0,pitch:0,spd:155,alive:true,roll:0};
 const ctx=vm.createContext({THREE,P,enemyAir:[e],groundY:()=>0,
   noseDir:()=>new THREE.Vector3(Math.sin(P.heading),0,Math.cos(P.heading)),
-  aiSpec:()=>({stall:38,max:180,gLim:5.5}),APP_SPD:70});
+  aiSpec:()=>({stall:38,max:180,gLim:5.5}),APP_SPD:70,RTILE:4000,RGRID_W:7,RGRID_H:8});
 vm.runInContext(rhine.slice(first,last)+'    return {aim,mode:e.mode};\n  }\n}',ctx);
 let act=ctx.updateEnemyAir(.05);
 assert.equal(act.mode,'break','fighter under attack from behind must break');
@@ -18,7 +18,7 @@ assert(Math.abs(act.aim.x)>.3,'break must bend the flight path sideways');
 assert(act.aim.y<0,'fast fighter with height to spare can dive out of the shot');
 act=ctx.updateEnemyAir(3);
 assert.equal(act.mode,'extend','fighter must leave the break and regain separation');
-P.pos.set(400,900,350);P.heading=Math.PI;
+P.pos.set(14400,900,16350);P.heading=Math.PI;
 e.mode='engage';e.modeT=0;e.evadeCd=6;
 act=ctx.updateEnemyAir(.05);
 assert.equal(act.mode,'weave','approaching fighter should vary its line instead of orbiting forever');
@@ -33,6 +33,10 @@ assert.equal(Math.sign(act.aim.x),-firstWeave,'successive turns must alternate s
 e.pos.y=100;e.pitch=0;
 act=ctx.updateEnemyAir(.05);
 assert.equal(act.mode,'pullup','terrain avoidance overrides evasive manoeuvres');
+e.pos.set(27200,900,17000);e.pitch=0;
+act=ctx.updateEnemyAir(.05);
+assert.equal(act.mode,'return','fighter turns inward before crossing the operational boundary');
+assert(act.aim.x<0,'east-edge fighter aims back toward the playable area');
 
 const pacific=fs.readFileSync(path.join(root,'torpedo-carrier.html'),'utf8');
 const start=pacific.indexOf('function updateZeros(dt){'),end=pacific.indexOf('    const desiredVel=aim.multiplyScalar(desiredSpeed);',start);

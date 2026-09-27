@@ -370,6 +370,10 @@ class LivingWorld {
       for(let d=70;d<route.length-60&&out.length<limit;d+=105){
         const p=this._sample(route,d),side=routeId%2?1:-1,x=p.x+Math.cos(p.yaw)*9*side,z=p.z-Math.sin(p.yaw)*9*side;
         if(this._pointOnWater(x,z))continue;
+        // Poles and their suspended wires cannot cross either runway. Gaps
+        // wider than the wire-link limit below also disconnect the span.
+        const fields=this.landmarks.airfields||[this.landmarks.field];
+        if(fields.some(f=>f&&Math.abs(x-f[0])<580&&Math.abs(z-f[1])<105))continue;
         out.push({x,z,y:this.terrain.getRenderedHeight(x,z),rot:p.yaw,scale:1+osmHash(x,z,207)*.16,routeId,d});
       }
       routeId++;
