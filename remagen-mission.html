@@ -283,7 +283,7 @@
   <div style="width:100%;height:4px;background:repeating-linear-gradient(45deg,#ffd400,#ffd400 8px,#111 8px,#111 16px);"></div>
   <span id="testVersionBannerText" style="background:#111;color:#ffd400;font-family:monospace;font-weight:800;font-size:11px;letter-spacing:.5px;padding:3px 10px;border:1px solid #ffd400;border-top:none;border-radius:0 0 6px 6px;"></span>
 </div>
-<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 147';</script>
+<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 148';</script>
 <!-- ===== END TEMP TEST-ONLY VERSION BANNER ===== -->
 <div id="app"></div>
 
@@ -312,7 +312,7 @@
   <div id="flash"></div>
   <div id="gunsight"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 147 · REAL RHINE</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 148 · REAL RHINE</div>
 
   <div id="apr">
     <div id="aprCall"></div>
@@ -689,7 +689,7 @@ async function loadRealWorld(){
 
   if(OSMManager.BUILD!==21||HistoricalObjectManager.BUILD!==21||LivingWorld.BUILD!==22||WorldVehicles.BUILD!==22) throw new Error('Terrain version mismatch. Reload Remagen.');
   document.getElementById('testVersionBannerText').textContent=
-    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 147 · MODULE 22';
+    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 148 · MODULE 22';
   heightProvider=new DEMHeightProvider(RTILE,'terrain-system/real/data/dem/');
   terrain=new TerrainManager(scene,RTILE,heightProvider);
   osmMgr=new OSMManager(scene,RTILE,terrain,'terrain-system/real/data/osm/');
@@ -2286,6 +2286,27 @@ function ensureModel(k){
   modelTasks[k]=task;
   task.then(()=>{delete modelTasks[k];},()=>{delete modelTasks[k];});
   return task;
+}
+function initialMissionModelKinds(m){
+  const kinds=[m.ac];
+  if(m.bombers)kinds.push(m.bombers.type);
+  if(m.enemyAir){
+    if(m.ac==='p47')kinds.push('bf109',...(m.id==='fighter'?['me163']:[]));
+    else kinds.push('p47');
+  }
+  return [...new Set(kinds)];
+}
+async function waitForMissionModels(m,maxWaitMs=7000){
+  const kinds=initialMissionModelKinds(m);
+  // A missing texture or a slow mobile decode must never trap Start Engine on
+  // the loading screen. refreshModels() swaps late arrivals into the live sortie.
+  const loading=Promise.all(kinds.map(kind=>ensureModel(kind).catch(err=>{
+    console.warn(kind+' real model unavailable:',err);return null;
+  })));
+  let timer;
+  await Promise.race([loading,new Promise(resolve=>{timer=setTimeout(resolve,maxWaitMs);})]);
+  clearTimeout(timer);
+  return kinds.filter(kind=>!modelTpl[kind]);
 }
 function loadModels(){return ensureModel(MISSIONS[selectedMission].ac);}
 function tryLoad(L,k,i,onReady,onFailed,lastError){
@@ -4609,6 +4630,9 @@ function toggleDiveBrakes(){
 function show(id,on){ const e=document.getElementById(id); if(e) e.classList.toggle('hidden',!on); }
 function showBrief(i){
   selectedMission=i; const m=MISSIONS[i];
+  // Start the selected aircraft while the pilot reads the briefing. Slow enemy
+  // assets are requested at launch and can arrive after take-off.
+  ensureModel(m.ac).catch(err=>console.warn('Briefing aircraft:',err));
   briefPlan=chooseEuropePlan(i);
   document.getElementById('brSub').textContent=m.sub;
   document.getElementById('brTitle').textContent=m.title;
@@ -4917,28 +4941,20 @@ function init(){
     const idx=selectedMission,m=MISSIONS[idx],button=document.getElementById('brGo');
     if(button.disabled)return;
     document.getElementById('brModelError')?.remove();
+    // Safari allows AudioContext reliably only during the actual button gesture.
+    try{initAudio();}catch(err){console.warn('Audio start:',err);}
     button.disabled=true;show('brief',false);show('loading',true);
     try{
-      // The aircraft already in the sky when the sortie opens need real models
-      // before they are spawned. Delaying the start also avoids decoding every
-      // campaign GLB at once on iPad Safari.
-      const kinds=[m.ac];
-      if(m.bombers)kinds.push(m.bombers.type);
-      if(m.enemyAir){
-        if(m.ac==='p47')kinds.push('bf109',...(m.id==='fighter'?['me163']:[]));
-        else kinds.push('p47');
-      }
-      for(const kind of new Set(kinds)){
-        document.getElementById('loadingText').textContent='Loading '+AC[kind].name+' — real aircraft '+(kinds.indexOf(kind)+1)+'/'+new Set(kinds).size+'…';
-        await ensureModel(kind);
-      }
-      show('loading',false);initAudio();startMission(idx);
+      document.getElementById('loadingText').textContent='Preparing '+AC[m.ac].name+' and enemy aircraft — launching shortly…';
+      const pending=await waitForMissionModels(m);
+      show('loading',false);startMission(idx);
+      if(pending.length)flash('AIRCRAFT MODELS STILL LOADING — SORTIE STARTED',2000);
       // Event waves use the same types, except a newly arriving fighter on a
       // bomber-only mission. Prepare that type without delaying take-off.
       if(m.bombers&&!m.enemyAir)ensureModel(m.ac==='p47'?'bf109':'p47').catch(err=>console.warn('Later fighter model:',err));
     }catch(err){
       show('loading',false);show('brief',true);
-      document.getElementById('brSub').textContent='MODEL LOAD FAILED — TAP START ENGINE TO RETRY';
+      document.getElementById('brSub').textContent='START FAILED — TAP START ENGINE TO RETRY';
       const note=document.createElement('p');note.id='brModelError';note.textContent=err.message;
       document.getElementById('brText').appendChild(note);
       console.error('Mission start stopped:',err);
