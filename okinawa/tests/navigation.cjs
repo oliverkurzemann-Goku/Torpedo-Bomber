@@ -11,12 +11,18 @@ const c=vm.createContext({THREE,document:{getElementById},P:{pos:new THREE.Vecto
   R2D:180/Math.PI,NM:1852,zeros:[fighter],ships:[],raiders:[],shoreTargets:[],pacificOps:null,
   carrierX:0,AIM_X:0,DECK_Y:20,isDefend:()=>false});
 vm.runInContext(html.slice(a,b),c);
+const camera=new THREE.PerspectiveCamera(60,1,1,5000);
+camera.position.set(0,500,0);
+camera.lookAt(1000,500,0);camera.updateMatrixWorld();
+assert(new THREE.Vector3(1000,500,1000).project(camera).x>0,'+Z is screen right when flying +X');
 c.updateNav();
 assert.equal(getElementById('navKind').textContent,'BANDIT');
-assert.match(getElementById('navArrow').style.transform,/rotate\(-90deg\)/,'fighter to screen left must point left');
+assert.match(getElementById('navArrow').style.transform,/rotate\(90deg\)/,'fighter toward +Z appears on screen right when flying +X');
+assert.equal(getElementById('navCue').textContent,'RIGHT');
 fighter.pos.z=-1000;
 c.updateNav();
-assert.match(getElementById('navArrow').style.transform,/rotate\(90deg\)/,'fighter to screen right must point right');
+assert.match(getElementById('navArrow').style.transform,/rotate\(-90deg\)/,'fighter toward -Z appears on screen left when flying +X');
+assert.equal(getElementById('navCue').textContent,'LEFT');
 fighter.alive=false;
 c.updateNav();
 assert.equal(getElementById('navKind').textContent,'BASE','once clear, navigate back to carrier');

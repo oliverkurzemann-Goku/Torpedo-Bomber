@@ -43,6 +43,7 @@
   #compassText{font-size:10px;letter-spacing:1px;color:var(--amber);margin-top:3px;white-space:nowrap;}
   #flakAlert{font-size:10px;letter-spacing:1px;color:#ffb779;margin-top:4px;min-height:12px;}
   #navKind{font-size:10px;letter-spacing:1px;color:#ffcf8b;}
+  #navCue{font-size:10px;letter-spacing:1px;color:#ffcf8b;min-width:39px;text-align:left;}
 
   #flash{position:absolute;top:32%;left:50%;transform:translateX(-50%);text-align:center;
     font-size:34px;font-weight:800;letter-spacing:3px;text-transform:uppercase;opacity:0;
@@ -226,6 +227,31 @@
     box-shadow:none;font-size:13px;padding:11px 22px;margin-left:8px;}
   #opsStatus:empty{display:none;}
   .overlay{touch-action:pan-y;}
+  .overlay .card{flex-shrink:0;}
+  #menu:not(.hidden){display:block;overscroll-behavior:contain;
+    padding:calc(14px + env(safe-area-inset-top)) max(20px,env(safe-area-inset-right))
+      calc(28px + env(safe-area-inset-bottom)) max(20px,env(safe-area-inset-left));}
+  #menu .menuCard{margin:0 auto;}
+  .menuTop{position:sticky;top:0;z-index:2;max-width:520px;margin:0 auto 8px;
+    padding:4px 0;text-align:left;background:rgba(13,15,10,.94);border-radius:7px;}
+  .menuTop a{display:inline-flex;align-items:center;min-height:44px;padding:8px 12px;
+    font:700 12px monospace;color:var(--amber);text-decoration:none;touch-action:manipulation;}
+  .quickGuide{margin-top:14px;border:1px solid rgba(202,191,156,.4);border-radius:7px;
+    text-align:left;font:12px/1.5 monospace;background:rgba(13,15,10,.55);}
+  .quickGuide summary{cursor:pointer;touch-action:manipulation;padding:11px 13px;color:var(--amber);}
+  .quickGuide div{padding:0 13px 12px;}
+  .landingNote{margin-top:12px;font:12px/1.5 monospace;color:var(--amber);}
+  @media (orientation:landscape) and (max-height:820px){
+    #menu .menuCard{padding:14px;}
+    #menu .campaignArt{height:64px;margin:0 0 7px;}
+    #menu .insignia{width:30px;height:30px;margin-bottom:4px;}
+    #menu h1.stencil{font-size:25px;}
+    #menu .sub{margin:5px 0 8px;}
+    #menu .secLbl{margin:9px 0 5px;}
+    #menu .chip{flex-basis:72px;min-width:70px;padding:6px 4px;}
+    #menu .chip .cn{font-size:12px;}
+    #menu .chip .cs{font-size:8px;}
+  }
   #brief .card{max-width:760px;}
   .opsMap{display:block;width:100%;height:auto;margin-top:14px;border:1px solid #778168;border-radius:5px;}
   .opsLegend{font:11px/1.5 monospace;color:#d7c797;text-align:left;margin-top:5px;}
@@ -252,7 +278,7 @@
   <div style="width:100%;height:4px;background:repeating-linear-gradient(45deg,#ffd400,#ffd400 8px,#111 8px,#111 16px);"></div>
   <span id="testVersionBannerText" style="background:#111;color:#ffd400;font-family:monospace;font-weight:800;font-size:11px;letter-spacing:.5px;padding:3px 10px;border:1px solid #ffd400;border-top:none;border-radius:0 0 6px 6px;"></span>
 </div>
-<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 142';</script>
+<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 143';</script>
 <!-- ===== END TEMP TEST-ONLY VERSION BANNER ===== -->
 <div id="app"></div>
 
@@ -273,7 +299,7 @@
   </div>
   <div class="panel" id="obj">
     <div id="objText">—</div>
-    <div id="navWrap"><span id="navArrow"><svg viewBox="0 0 24 26" aria-label="Direction to target"><path d="M12 1 22 15 15 14 15 25 9 25 9 14 2 15Z"/></svg></span><span id="navDist">0.0 mi</span><span id="navKind">TARGET</span></div>
+    <div id="navWrap"><span id="navArrow"><svg viewBox="0 0 24 26" aria-label="Direction to target"><path d="M12 1 22 15 15 14 15 25 9 25 9 14 2 15Z"/></svg></span><span id="navDist">0.0 mi</span><span id="navKind">TARGET</span><span id="navCue" aria-label="Turn toward target">AHEAD</span></div>
     <div id="compassText">HDG 000° N · BRG 000° N</div>
     <div id="flakAlert" role="status"></div>
   </div>
@@ -281,7 +307,7 @@
   <div id="flash"></div>
   <div id="gunsight"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 142 · REAL RHINE</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 143 · REAL RHINE</div>
 
   <div id="apr">
     <div id="aprCall"></div>
@@ -327,6 +353,7 @@
 </div>
 
 <div class="overlay hidden" id="menu">
+  <div class="menuTop"><a id="selBtn" href="index.html">&#9664; Change Game</a></div>
   <div class="card menuCard">
     <div class="campaignArt" aria-hidden="true"></div>
     <div class="insignia"></div>
@@ -342,9 +369,14 @@
     </div>
     <div id="bestLine">BEST SCORE <b id="bestVal">0</b></div>
     <div class="opsLegend" style="text-align:center"><label for="practiceWx">FREE FLIGHT WEATHER </label><select id="practiceWx" style="background:#1c271e;color:#ddce9a;padding:6px;border:1px solid #75806a"><option value="clear">Clear</option><option value="broken">Broken cloud</option><option value="lowcloud">Low overcast</option><option value="fog">Fog</option><option value="rain">Rain</option><option value="squall">Heavy showers</option><option value="storm">Thunderstorm</option></select></div>
+    <details class="quickGuide" open><summary>First flight · controls and landing</summary>
+      <div>Left stick: pitch / bank. Right bar: throttle. GEAR and FLAPS down for landing.
+        The arrow points toward the next target; the compass shows heading and bearing.
+        AERO enables rolls and loops once airborne and fast enough.
+        <b id="menuLandingSpeed"></b> Keep the wings level and use the runway, not the surrounding fields.</div>
+    </details>
     <button class="btn" id="startBtn">Begin Sortie</button>
     <button class="btn ghost" id="logBtn">&#128214; Pilot's Logbook</button>
-    <a class="btn ghost" id="selBtn" href="index.html" style="text-decoration:none;">&#9664; Change Game</a>
     <div class="credit">
       The real Rhine gorge around Remagen — Copernicus elevation data and Overture Maps roads,
       rivers, forests and buildings, not an invented valley.<br>
@@ -362,6 +394,7 @@
     <h1 class="stencil" id="brTitle">Title</h1>
     <div class="stamp" id="brStamp">Secret</div>
     <div class="brief" id="brText"></div>
+    <div class="landingNote" id="briefLandingSpeed"></div>
     <canvas class="opsMap" id="opsMap" width="720" height="420" aria-label="Mission map with numbered targets and route"></canvas><div id="opsLegend" class="opsLegend"></div>
     <button class="btn" id="brGo">Start Engine</button>
     <button class="btn ghost" id="brBack">Back</button>
@@ -639,7 +672,7 @@ async function loadRealWorld(){
 
   if(OSMManager.BUILD!==21||HistoricalObjectManager.BUILD!==21||LivingWorld.BUILD!==22||WorldVehicles.BUILD!==22) throw new Error('Terrain version mismatch. Reload Remagen.');
   document.getElementById('testVersionBannerText').textContent=
-    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 142 · MODULE 22';
+    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 143 · MODULE 22';
   heightProvider=new DEMHeightProvider(RTILE,'terrain-system/real/data/dem/');
   terrain=new TerrainManager(scene,RTILE,heightProvider);
   osmMgr=new OSMManager(scene,RTILE,terrain,'terrain-system/real/data/osm/');
@@ -3893,9 +3926,12 @@ function updateHUD(){
   if(europeOps?.failed){tx=AF_X;tz=AF_Z;navKind='BASE';}
   const dx=tx-P.pos.x, dz=tz-P.pos.z;
   const brg=Math.atan2(dx,dz);
-  let rel=brg-P.heading; while(rel>Math.PI)rel-=2*Math.PI; while(rel<-Math.PI)rel+=2*Math.PI;
+  // Looking toward +Z, +X appears on the LEFT of the screen. The old sign
+  // showed the geographic bearing but sent the player the opposite way.
+  let rel=P.heading-brg; while(rel>Math.PI)rel-=2*Math.PI; while(rel<-Math.PI)rel+=2*Math.PI;
   const ar=document.getElementById('navArrow');
   if(ar) ar.style.transform='rotate('+(rel*R2D)+'deg)';
+  document.getElementById('navCue').textContent=Math.abs(rel)<Math.PI/12?'AHEAD':Math.abs(rel)>Math.PI*11/12?'BEHIND':rel>0?'RIGHT':'LEFT';
   const nd=document.getElementById('navDist');
   if(nd) nd.textContent=(Math.hypot(dx,dz)/MI).toFixed(1)+' mi';
   document.getElementById('navKind').textContent=navKind;
@@ -4330,6 +4366,7 @@ function showBrief(i){
   document.getElementById('brText').innerHTML=m.text
     +'<br><br><b>AIRCRAFT</b> '+AC[m.ac||'p47'].name
     +FlightOps.briefText(briefPlan.weather,briefPlan.config,briefPlan.wind);
+  document.getElementById('briefLandingSpeed').textContent=landingSpeedNote(m);
   drawEuropeBrief(m);
   show('menu',false); show('result',false); show('brief',true);
   state=ST.BRIEF;
@@ -4354,6 +4391,7 @@ function showResult(good,title,sub,html,btn){
 // AC[...].col (the same colour it's rendered in in-flight) so the badge doubles as a legend.
 const ACSHORT={p47:'P-47',bf109:'BF 109',fw190:'FW 190',me262:'ME 262'};
 function acHex(kind){ return '#'+(AC[kind]&&AC[kind].col!==undefined?AC[kind].col:0x888888).toString(16).padStart(6,'0'); }
+function landingSpeedNote(m){return 'LANDING TARGET: ~'+Math.round(AC[m.ac||'p47'].app*KT)+' MPH · '+AC[m.ac||'p47'].name+'.';}
 function buildMenu(){
   const sel=document.getElementById('missionSel');
   if(sel && !sel.childElementCount){
@@ -4365,7 +4403,8 @@ function buildMenu(){
         +'<div class="ca" style="background:'+acHex(m.ac)+'">'+acLabel+'</div>';
       c.onclick=()=>{ selectedMission=i;
         sel.querySelectorAll('.chip').forEach((e,j)=>e.classList.toggle('sel',j===i));
-        document.getElementById('startBtn').textContent='Begin '+m.title; };
+        document.getElementById('startBtn').textContent='Begin '+m.title;
+        document.getElementById('menuLandingSpeed').textContent=landingSpeedNote(m); };
       sel.appendChild(c);
     });
   }
@@ -4381,6 +4420,7 @@ function buildMenu(){
   }
   const im=MISSIONS[selectedMission]; const sb=document.getElementById('startBtn');
   if(im&&sb) sb.textContent='Begin '+im.title;
+  if(im) document.getElementById('menuLandingSpeed').textContent=landingSpeedNote(im);
   const bv=document.getElementById('bestVal'); if(bv) bv.textContent=bestScore();
 }
 function showLogbook(){
@@ -4636,23 +4676,18 @@ function init(){
   if(window.showLookButtons) window.showLookButtons(true);
 
   // ---- iPad/Safari zoom-guard -------------------------------------------------
-  // Reported: two quick taps that miss every button zoom Safari into the page, and the
-  // aeroplane goes uncontrollable/turns on its own until the device is rotated and back -
-  // `touch-action:none` on html/body (already set) does not reliably stop iOS Safari's
-  // double-tap-to-zoom gesture recognizer, and once the visual viewport is left scaled the
-  // touch coordinates the joystick reads no longer line up with what is on screen, which
-  // reads as a stuck/runaway control input. torpedo-carrier.html already carries exactly
-  // this guard (undocumented in CLAUDE.md, predates this session's history) and has never had
-  // this reported there - ported over verbatim rather than rewritten.
+  // Stop iPad zoom gestures during flight without blocking menu scrolling or briefing taps.
   ['gesturestart','gesturechange','gestureend'].forEach(function(ev){
-    document.addEventListener(ev, function(e){ e.preventDefault(); }, {passive:false});
+    document.addEventListener(ev, function(e){ if(state===ST.FLIGHT)e.preventDefault(); }, {passive:false});
   });
-  let _lastTap=0;
+  let _lastTap=0,_lastTapX=0,_lastTapY=0;
   document.addEventListener('touchend', function(e){
-    const now=Date.now();
-    if(now-_lastTap<320){ e.preventDefault(); }   // kill double-tap zoom
-    _lastTap=now;
+    if(state!==ST.FLIGHT||e.changedTouches.length!==1){_lastTap=0;return;}
+    const t=e.changedTouches[0],now=Date.now();
+    if(now-_lastTap<350&&Math.hypot(t.clientX-_lastTapX,t.clientY-_lastTapY)<60)e.preventDefault();
+    _lastTap=now;_lastTapX=t.clientX;_lastTapY=t.clientY;
   }, {passive:false});
+  document.addEventListener('dblclick',e=>{if(state===ST.FLIGHT)e.preventDefault();},{passive:false});
   function resetZoom(){
     try{
       if(window.visualViewport && window.visualViewport.scale>1.01){
