@@ -42,7 +42,7 @@ for(const [file,start,kind] of [
   p.roll=Math.PI/2;p.pitch=0;p.heading=0;
   for(let i=0;i<35;i++){fly(p,0,0,true,.04,d,40,1);turn(p,true,.04,d,40);}
   const bankOnly=Math.abs(p.heading);
-  assert(bankOnly>.25,file+' bank alone must turn in AERO');
+  assert(bankOnly>.05,file+' a bank must turn briefly as AERO levels neutral controls');
   p.roll=Math.PI/2;p.pitch=0;p.heading=0;
   for(let i=0;i<35;i++){fly(p,0,1,true,.04,d,40,1);turn(p,true,.04,d,40);}
   assert(Math.abs(p.pitch)<.02,file+' knife-edge pull should turn rather than loop');
@@ -65,6 +65,12 @@ for(const [file,start,kind] of [
     if(Math.abs(p.pitch)>2.9)upsideDown=true;
   }
   assert(upsideDown&&travelled>=Math.PI*2,file+' must rotate through a full 360° loop');
+  p.roll=1.32;p.rollVel=0;p.pitch=0;
+  for(let i=0;i<55;i++)fly(p,0,0,true,.04,d,40,1);
+  assert(Math.abs(p.roll)<.04,file+' AERO neutral stick must level the wings after a bank');
+  p.roll=Math.PI/2;p.pitch=0;
+  for(let i=0;i<25;i++)fly(p,0,1,true,.04,d,40,1);
+  assert(Math.abs(p.roll-Math.PI/2)<.04,file+' holding back-stick preserves knife-edge pull');
   console.log(file,kind,'coupled bank/pull, full roll and loop');
 }
 const rhine=fs.readFileSync(path.join(root,'remagen-mission.html'),'utf8');

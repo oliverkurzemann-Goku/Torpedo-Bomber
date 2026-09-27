@@ -4,7 +4,7 @@
  root.WeaponSound={fire(ctx,destination,kind){
   if(!ctx||!destination)return;
   let buffer=cache.get(ctx);if(!buffer){buffer=ctx.createBuffer(1,Math.ceil(ctx.sampleRate*.16),ctx.sampleRate);const a=buffer.getChannelData(0);for(let i=0;i<a.length;i++)a[i]=(Math.random()*2-1)*Math.pow(1-i/a.length,2);cache.set(ctx,buffer);}
-  const heavy=kind==='me262',medium=heavy||kind==='fw190'||kind==='bf109',t=ctx.currentTime;
+  const heavy=kind==='me262'||kind==='me163',medium=heavy||kind==='fw190'||kind==='bf109',t=ctx.currentTime;
   const n=ctx.createBufferSource();n.buffer=buffer;n.playbackRate.value=.96+Math.random()*.08;
   const f=ctx.createBiquadFilter();f.type='bandpass';f.frequency.value=heavy?1320:medium?1450:2100;f.Q.value=heavy?.52:.65;
   const g=ctx.createGain();g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(heavy?1.08:.58,t+.002);g.gain.exponentialRampToValueAtTime(.001,t+(heavy?.16:.085));

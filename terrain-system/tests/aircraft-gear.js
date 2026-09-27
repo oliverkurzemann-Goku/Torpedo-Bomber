@@ -41,6 +41,8 @@ function faceCount(group,minimumY){let total=0;group.updateMatrixWorld(true);gro
   const gear=model.getObjectByName('gear');assert.equal(gear.children.length,3);
   const wheels=gear.children.slice(0,2).map(g=>new THREE.Box3().setFromObject(g));
   assert.ok(wheels.every(b=>b.min.y<box.min.y-.55),kind+' main gear is hidden inside wing');
+  if(kind==='bf109')assert.ok(wheels.every(b=>b.min.y>box.min.y-1.05),
+    'Bf 109 wheels must not hang on long stilts');
   assert.ok(Math.abs(wheels[0].min.y-wheels[1].min.y)<.05,kind+' wheel axles differ in height');
   brightenFighterSkin(src,kind);
   const painted=[];src.traverse(o=>{if(o.isMesh)painted.push(...[].concat(o.material).filter(m=>m?.emissiveIntensity>.1));});
@@ -49,7 +51,7 @@ function faceCount(group,minimumY){let total=0;group.updateMatrixWorld(true);gro
  }
  const jet=(await load('me262.glb')).scene;brightenFighterSkin(jet,'me262');
  const jetMaterials=[];jet.traverse(o=>{if(o.isMesh)jetMaterials.push(...[].concat(o.material).filter(m=>m?.emissiveIntensity>.1));});
- assert.ok(jetMaterials.some(m=>Math.abs(m.emissiveIntensity-.20)<1e-6)&&
+ assert.ok(jetMaterials.some(m=>Math.abs(m.emissiveIntensity-.16)<1e-6)&&
   jetMaterials.every(m=>m.emissiveMap===null),
   'Me 262 skin remains softly lit');
  const rocket=(await load('me163.glb')).scene,rocketRoot=new THREE.Group();rocketRoot.add(rocket);
@@ -60,5 +62,6 @@ function faceCount(group,minimumY){let total=0;group.updateMatrixWorld(true);gro
  assert.match(rocketRig,/skid retained/);
  assert.equal(rocketRoot.getObjectByName('gear'),undefined,'Me 163 must not get synthetic wheels');
  assert.equal(rocketRoot.getObjectByName('prop')?.children.length,0,'Me 163 must not get a propeller');
- assert(html.includes("M().id==='fighter'&&i===0?'me163'"),'rocket interceptor only appears on Valley Patrol');
+ assert(html.includes("M().id==='fighter'&&i===0?'me163'"),'Komet remains a Valley Patrol opponent');
+ assert(html.includes("id:'komet'"),'Komet is now available as a player interception sortie');
 })().catch(e=>{console.error(e);process.exitCode=1;});

@@ -278,7 +278,7 @@
   <div style="width:100%;height:4px;background:repeating-linear-gradient(45deg,#ffd400,#ffd400 8px,#111 8px,#111 16px);"></div>
   <span id="testVersionBannerText" style="background:#111;color:#ffd400;font-family:monospace;font-weight:800;font-size:11px;letter-spacing:.5px;padding:3px 10px;border:1px solid #ffd400;border-top:none;border-radius:0 0 6px 6px;"></span>
 </div>
-<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 143';</script>
+<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 144';</script>
 <!-- ===== END TEMP TEST-ONLY VERSION BANNER ===== -->
 <div id="app"></div>
 
@@ -307,7 +307,7 @@
   <div id="flash"></div>
   <div id="gunsight"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 143 · REAL RHINE</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 144 · REAL RHINE</div>
 
   <div id="apr">
     <div id="aprCall"></div>
@@ -380,7 +380,7 @@
     <div class="credit">
       The real Rhine gorge around Remagen — Copernicus elevation data and Overture Maps roads,
       rivers, forests and buildings, not an invented valley.<br>
-      Twelve sorties with the P-47D, Bf 109, Fw 190 and Me 262, including the Ludendorff Bridge.
+      Fifteen sorties with the P-47D, Bf 109, Fw 190, Me 262 and Me 163, including the Ludendorff Bridge.
       <br>Vehicles: KojfDiscord / adrielcz, CC BY 4.0 ·
       <a href="ASSET-CREDITS.md" target="_blank" rel="noopener" style="color:inherit">Model credits</a>
     </div>
@@ -444,10 +444,10 @@
 <script src="terrain-system/LivingWorld.js?v=remagen-22"></script>
 <script src="campaign.js?v=1"></script>
 <script src="combat-fx.js?v=133"></script>
-<script src="audio/weapon-sound.js?v=136"></script>
-<script src="audio/jet-engine.js?v=136"></script>
+<script src="audio/weapon-sound.js?v=144"></script>
+<script src="audio/jet-engine.js?v=144"></script>
 <script src="sortie-systems.js?v=129"></script>
-<script src="operation-plans.js?v=129"></script>
+<script src="operation-plans.js?v=144"></script>
 <script>
 // ============================================================
 //  REMAGEN 1945 — REAL TERRAIN (forked from thunderbolt-europe.html)
@@ -573,7 +573,11 @@ const AC={
   me262:{ name:'Me 262A-1a/Jabo', rollAuth:1.10, pitchAuth:1.00, turn:0.80, gLim:5.0,
         rollLim:1.56, pitchLim:1.15, stall:49, app:56, max:242, thrMin:42,
         hull:95, ammo:1200, bombs:2, rockets:0, gunDmg:3.0, gunRate:0.09, wing:12.51,
-        col:0x6b7360, band:0x33392a }
+        col:0x626b58, band:0x33392a },
+  me163:{ name:'Me 163B Komet', rollAuth:1.48, pitchAuth:1.16, turn:1.20, gLim:5.4,
+        rollLim:1.53, pitchLim:1.18, stall:51, app:67, max:238, thrMin:33,
+        hull:75, ammo:160, bombs:0, rockets:0, gunDmg:2.8, gunRate:0.14, wing:9.3,
+        col:0x68715f, band:0x353c30 }
 };
 function acDef(){ return AC[P.ac]||AC.p47; }
 
@@ -672,7 +676,7 @@ async function loadRealWorld(){
 
   if(OSMManager.BUILD!==21||HistoricalObjectManager.BUILD!==21||LivingWorld.BUILD!==22||WorldVehicles.BUILD!==22) throw new Error('Terrain version mismatch. Reload Remagen.');
   document.getElementById('testVersionBannerText').textContent=
-    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 143 · MODULE 22';
+    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 144 · MODULE 22';
   heightProvider=new DEMHeightProvider(RTILE,'terrain-system/real/data/dem/');
   terrain=new TerrainManager(scene,RTILE,heightProvider);
   osmMgr=new OSMManager(scene,RTILE,terrain,'terrain-system/real/data/osm/');
@@ -2020,8 +2024,8 @@ function rigModel(root, kind){
   }
 
   // ---- undercarriage ------------------------------------------------------------
-  // The Me 163 is an AI-only rocket interceptor with a take-off trolley and
-  // landing skid, not a fighter with three fixed wheels. Never synthesise gear.
+  // The Me 163 uses a landing skid, not three permanent wheels. Its player
+  // mission begins after trolley jettison, so never synthesise wheeled gear.
   if(kind==='me163') return rig+', skid retained';
   const propGrp=root.getObjectByName('prop');
   const inProp=(o)=>{ let p=o; while(p){ if(p===propGrp) return true; p=p.parent; } return false; };
@@ -2104,11 +2108,11 @@ function buildGear(gear, root, whole, S, kind){
   // past them, and the nosewheel used to vanish inside the nose in chase view.
   const jet=TRICYCLE_KINDS.includes(kind);
   const fighter=kind==='fw190'||kind==='bf109';
-  const legLen=span*(jet?0.087:fighter?0.098:0.047);
+  const legLen=span*(jet?0.087:kind==='bf109'?0.072:fighter?0.098:0.047);
   const legR  =span*(fighter?.0086:0.0066);
   const wheelR=span*(jet?0.021:fighter?0.027:0.0175);
   const wheelW=span*0.0078;
-  const halfTrack=span*0.150;
+  const halfTrack=span*(kind==='bf109'?0.126:0.150);
   const embed=span*0.008;          // tuck the leg top slightly into the skin, no visible seam
   const mainZ=whole.min.z+S.z*0.56;
   // Two materials, not one: a single flat-grey cylinder read as a placeholder stick. A darker
@@ -2142,7 +2146,7 @@ function buildGear(gear, root, whole, S, kind){
     const legX=side*halfTrack;
     const floorY=localFloor(root, legX, mainZ, span*0.12);
     g.position.set(legX,(fighterFloor!=null?fighterFloor:floorY!=null?floorY:whole.min.y)+embed,mainZ);
-    g.rotation.z=side*0.04;
+    g.rotation.z=side*(kind==='bf109'?0.20:0.04);
     gear.add(g);
   }
   const tg=new THREE.Group();
@@ -2165,10 +2169,10 @@ function brightenFighterSkin(src,kind){
   src.traverse(o=>{if(!o.isMesh)return;
     const materials=(Array.isArray(o.material)?o.material:[o.material]).map(m=>{
       if(!m||!m.color||m.transparent&&m.opacity<.9)return m;
-      const n=m.clone();n.color.multiplyScalar(kind==='me262'?1.12:1.24);
+      const n=m.clone();n.color.multiplyScalar(kind==='me262'?1.08:1.24);
       // A constant ambient contribution makes the dark embedded diffuse textures
       // readable even in wing shadow. Do not multiply it by the same dark map.
-      if(n.emissive){n.emissiveMap=null;n.emissive.setHex(0xa4aaa0);n.emissiveIntensity=kind==='me262'?.20:.29;}
+      if(n.emissive){n.emissiveMap=null;n.emissive.setHex(0xa4aaa0);n.emissiveIntensity=kind==='me262'?.16:.29;}
       if(n.aoMapIntensity!==undefined)n.aoMapIntensity=.22;
       if(n.metalness!==undefined)n.metalness=Math.min(n.metalness,.08);
       if(n.roughness!==undefined)n.roughness=.64;
@@ -2295,6 +2299,25 @@ function buildAircraft(kind){
     const aircraft=modelTpl[kind].clone(true);
     if(kind==='me262')attachJetExhaust(aircraft);
     return aircraft;
+  }
+  if(kind==='me163'){
+    // The GLB can finish downloading after launch. A small tailless stand-in
+    // avoids showing a propeller or fixed fighter wheels in the meantime.
+    const g=new THREE.Group(),skin=new THREE.MeshStandardMaterial({color:AC.me163.col,side:THREE.DoubleSide});
+    const body=cyl(.43,.70,5.7,AC.me163.col,12);body.rotation.x=Math.PI/2;g.add(body);
+    const wingShape=new THREE.Shape();wingShape.moveTo(-4.65,-1.7);
+    wingShape.lineTo(0,1.5);wingShape.lineTo(4.65,-1.7);
+    wingShape.lineTo(3.7,-2.6);wingShape.lineTo(0,-1.1);
+    wingShape.lineTo(-3.7,-2.6);wingShape.closePath();
+    const wing=new THREE.Mesh(new THREE.ShapeGeometry(wingShape),skin);
+    wing.rotation.x=-Math.PI/2;g.add(wing);
+    const canopy=new THREE.Mesh(new THREE.SphereGeometry(.5,12,8),
+      new THREE.MeshStandardMaterial({color:0x263b48,roughness:.3}));
+    canopy.scale.set(.9,.55,1.8);canopy.position.set(0,.62,.55);g.add(canopy);
+    const skid=new THREE.Group();skid.name='gear';
+    skid.add(strutBetween(new THREE.Vector3(0,-.3,0),new THREE.Vector3(0,-.95,0),.09,skin));
+    const runner=box(.28,.13,2.6,0x393a32);runner.position.y=-1.0;skid.add(runner);
+    g.add(skid);return g;
   }
   const jug=(kind==='p47');
   const d=AC[kind]||AC.p47;
@@ -2546,7 +2569,20 @@ const MISSIONS=[
   { id:'final', title:'Sortie 12', sub:'The Whole Rhine', ac:'p47', weather:'storm',
     kills:{factory:1,flak:2,ferry:1}, traffic:'ferry', flakDefense:2, enemyAir:2,
     text:"A storm over the Rhine: silence both flak positions, stop a ferry and hit the works "
-        +"before returning through hostile aircraft. Plan your attack order and watch the terrain." }
+        +"before returning through hostile aircraft. Plan your attack order and watch the terrain." },
+  { id:'jetjabo', title:'Sortie 13', sub:'Jet Strike', ac:'me262', weather:'broken',
+    kills:{factory:1,flak:1}, flakDefense:1, enemyAir:2,
+    text:"The Me 262 returns for a fast strike: neutralise the battery, bomb the works and evade "
+        +"the fighters over the valley. Save speed for the approach to Beaufort." },
+  { id:'jetboxes', title:'Sortie 14', sub:'Two Bomber Waves', ac:'me262', weather:'lowcloud',
+    bombers:{n:3,type:'b24'}, enemyAir:1,
+    text:"Climb through the cloud gaps to break up a Liberator formation. A second group follows "
+        +"after the lead aircraft go down; fast crossing passes conserve your cannon rounds." },
+  { id:'komet', title:'Sortie 15', sub:'Komet Intercept', ac:'me163', weather:'clear',
+    bombers:{n:2,type:'b17'},
+    text:"Fictional Rhine interception. The trolley has already dropped: catch the two Fortresses "
+        +"with the Me 163 while rocket fuel lasts, then glide home in a shallow descent. Extend "
+        +"the SKID before touchdown; there is no go-around without power." }
 ];
 function M(){ return MISSIONS[mission]; }
 function isFree(){ return !!M().free; }
@@ -2749,6 +2785,7 @@ function segDist(ax,ay,az,bx,by,bz,c){
 }
 function gunMuzzles(){
   if(P.ac==='me262')return [[-.28,.18,5.4],[.28,.18,5.4],[-.28,-.16,5.4],[.28,-.16,5.4]].map(p=>new THREE.Vector3(...p));
+  if(P.ac==='me163')return [[-1.30,-.12,1.9],[1.30,-.12,1.9]].map(p=>new THREE.Vector3(...p));
   if(P.ac==='p47')return [-3.1,-2.85,-2.6,-2.35,2.35,2.6,2.85,3.1].map(x=>new THREE.Vector3(x,-.15,1.6));
   return [-2.1,-.3,.3,2.1].map(x=>new THREE.Vector3(x,0,2.6));
 }
@@ -2763,15 +2800,15 @@ function fireGuns(dt){
   const n=noseDir(),q=new THREE.Quaternion().setFromEuler(new THREE.Euler(-P.pitch,P.heading,-P.roll,'YXZ'));
   for(const port of ports){
     const dir=n.clone().add(new THREE.Vector3((Math.random()-.5)*.01,(Math.random()-.5)*.01,(Math.random()-.5)*.01)).normalize();
-    const m=new THREE.Mesh(P.ac==='me262'?cannonTracerGeo:gunTracerGeo,playerTracerMat);
+    const m=new THREE.Mesh(JET_KINDS.includes(P.ac)?cannonTracerGeo:gunTracerGeo,playerTracerMat);
     m.position.copy(port).applyQuaternion(q).add(P.pos);m.lookAt(m.position.clone().add(dir));scene.add(m);
-    bullets.push({mesh:m,dir,speed:P.ac==='me262'?540:760,life:2.4,dmg:d.gunDmg*(P.ac==='me262'?1:P.ac==='p47'?.5:.25)});
+    bullets.push({mesh:m,dir,speed:JET_KINDS.includes(P.ac)?540:760,life:2.4,dmg:d.gunDmg*(JET_KINDS.includes(P.ac)?1:P.ac==='p47'?.5:.25)});
   }
-  if(combatFX)combatFX.muzzle(planeGroup,ports,P.ac==='me262');
+  if(combatFX)combatFX.muzzle(planeGroup,ports,JET_KINDS.includes(P.ac));
   sfxGun();updateGunUI();
 }
 function updateGunUI(){
-  const jet=P.ac==='me262',button=document.getElementById('fireBtn');
+  const jet=JET_KINDS.includes(P.ac),button=document.getElementById('fireBtn');
   button.innerHTML=(jet?'CANNONS':'GUNS')+'<br>'+Math.max(0,P.ammo);
   button.classList.toggle('spent',P.ammo<=0);
   document.getElementById('hAmmoLbl').textContent=jet?'CANNON':'GUN';
@@ -3484,7 +3521,11 @@ function updateFlight(dt){
   // thrust -> target speed, modified by attitude, gear, flaps
   let eff = THR_MIN_SPD + (MAX_SPD-THR_MIN_SPD)*P.throttle;
   eff -= Math.sin(P.pitch)*62 + P.flap*11 + P.gear*6;
-  P.spd += (eff-P.spd)*Math.min(1,0.5*dt);
+  if(P.ac==='me163' && (P.fuel<=0||P.throttle<0.01)){
+    // With the rocket off the Komet trades altitude for airspeed. Closing the
+    // throttle cannot conjure minimum jet thrust during its glide home.
+    P.spd+=(-1.1-P.spd*.008-9.81*Math.sin(P.pitch))*dt;
+  } else P.spd += (eff-P.spd)*Math.min(1,(P.ac==='me163'?1.15:0.5)*dt);
   P.spd = Math.max(6,P.spd);
 
   // ---- attitude: stick POSITION still commands an attitude, exactly as before ----
@@ -3517,7 +3558,12 @@ function updateFlight(dt){
     const energy=Math.max(.35,Math.min(1,P.spd/(stallSpd*1.8)));
     const pull=Math.min(.95*d.pitchAuth,1.6*9.81*(d.gLim-1)/Math.max(P.spd,60))*energy;
     P.pitchVel=inputPitch*pull;
-    P.rollVel=inputRoll*steerSign*2.1*d.rollAuth*energy;
+    // Held stick still commands a full roll. Neutral stick now levels the
+    // wings smoothly, following the shortest path even after a half roll.
+    const bankErr=Math.atan2(Math.sin(P.roll-P.rollBias),Math.cos(P.roll-P.rollBias));
+    const rollAuthority=2.1*d.rollAuth*energy;
+    P.rollVel=(Math.abs(inputRoll)>0.075||Math.abs(inputPitch)>0.075)?inputRoll*steerSign*rollAuthority:
+      Math.max(-rollAuthority,Math.min(rollAuthority,-bankErr*3.2*d.rollAuth*energy));
     P.pitch=Math.atan2(Math.sin(P.pitch+P.pitchVel*Math.cos(P.roll)*dt),Math.cos(P.pitch+P.pitchVel*Math.cos(P.roll)*dt));
     P.heading+=P.pitchVel*Math.sin(P.roll)*dt;
     P.roll=Math.atan2(Math.sin(P.roll+P.rollVel*dt),Math.cos(P.roll+P.rollVel*dt));
@@ -3575,7 +3621,7 @@ function updateFlight(dt){
 
   // fuel
   if(!isFree()){
-    P.fuel-=(0.10+P.throttle*0.26)*D().fuel*dt;
+    P.fuel-=(P.ac==='me163'?P.throttle*0.46:(0.10+P.throttle*0.26))*D().fuel*dt;
     if(P.fuel<=0){ P.fuel=0; P.throttle=0; setThrottleUI(0); }
     if(P.fuel<25 && !P.bingo){ P.bingo=true; flash('BINGO FUEL — RTB',1600); radioSay('YOU ARE ON FUMES — GET HOME'); }
   }
@@ -3606,7 +3652,7 @@ function resolveGround(dt){
     crash('CRASHED','Hit the ground away from the strip.'); return;
   }
   if(sink>6.5){ crash('HARD LANDING','Came down too fast — the undercarriage folded.'); return; }
-  if(P.gear<0.6){ crash('WHEELS UP','You landed on the belly.'); return; }
+  if(P.gear<0.6){ crash(P.ac==='me163'?'SKID UP':'WHEELS UP',P.ac==='me163'?'Extend the landing skid before touchdown.':'You landed on the belly.'); return; }
   if(!wingsLevel){ crash('WINGTIP','Dropped a wing on touchdown.'); return; }
   if(hdgErr>28){ crash('OFF THE CENTRELINE','Landed across the strip instead of along it.'); return; }
   if(P.spd>APP_SPD+34){ flash('TOO FAST — GO AROUND',1400); sfxBolter();
@@ -3714,6 +3760,13 @@ function relaunch(){
   P.pitchVel=0; P.rollVel=0;
   P.onGround=true; P.touchResolved=true; P.throttle=0.0; setThrottleUI(0);
   P.gear=1; P.gearTgt=1; P.flap=0; P.flapTgt=0;
+  if(P.ac==='me163'){
+    // The original launch trolley has been released. Begin this one sortie
+    // airborne, so recovery is a powered interception followed by a skid glide.
+    P.pos.set(AF_X+1250,groundY(AF_X+1250,AF_Z)+760,AF_Z);
+    P.spd=155;P.onGround=false;P.touchResolved=false;
+    P.gear=0;P.gearTgt=0;P.throttle=0.65;setThrottleUI(0.65);
+  }
   state=ST.FLIGHT;
 }
 function startMission(i){
@@ -4057,7 +4110,7 @@ function updateApproach(){
 // ============================================================
 //  AUDIO
 // ============================================================
-let jetEngine=null,jetGunDuck=0;
+let jetEngine=null,rocketEngine=null,jetGunDuck=0;
 function initAudio(){
   if(actx){ if(actx.state==='suspended') actx.resume(); return; }
   try{ const AC2=window.AudioContext||window.webkitAudioContext; actx=new AC2();
@@ -4084,6 +4137,7 @@ function initAudio(){
   o1.start(); o2.start(); lfo.start(); noise.start();
   eng={master,eg,lp,o1,o2,lfo,lfoG,nbp,ng,freq:60};
   jetEngine=JetEngine.create(actx,master);
+  rocketEngine=JetEngine.create(actx,master,{rocket:true});
 }
 function out(){ return eng?eng.master:(actx?actx.destination:null); }
 function updateAudio(dt){
@@ -4093,7 +4147,8 @@ function updateAudio(dt){
   const ct=actx.currentTime;
   const isJet=JET_KINDS.includes(P.ac);
   jetGunDuck=Math.max(0,jetGunDuck-dt);
-  jetEngine.update(dt,P.throttle,flying&&isJet,Math.max(0,(55-P.hull)/55),isJet&&jetGunDuck>0?1:0);
+  jetEngine.update(dt,P.throttle,flying&&P.ac==='me262',Math.max(0,(55-P.hull)/55),P.ac==='me262'&&jetGunDuck>0?1:0);
+  rocketEngine.update(dt,P.throttle,flying&&P.ac==='me163'&&P.fuel>0&&P.throttle>.01,0,P.ac==='me163'&&jetGunDuck>0?1:0);
   if(isJet){
     // Keep every piston-engine source and its pulse modulator silent.
     eng.eg.gain.setTargetAtTime(0,ct,.08);
@@ -4154,7 +4209,7 @@ function sfxBolter(){
 }
 // The fifties were the loudest thing in that cockpit. A short quiet tick did not sell them
 // at all, so this is a proper layered report: a hard crack, body underneath, and the breech.
-function sfxGun(){ if(P.ac==='me262')jetGunDuck=.22; WeaponSound.fire(actx,out(),P.ac); }
+function sfxGun(){ if(JET_KINDS.includes(P.ac))jetGunDuck=.22; WeaponSound.fire(actx,out(),P.ac); }
 
 function sfxWhoosh(){ nburst(0.35,'bandpass',600,0.6,0.12,0,1.5); }
 function sfxFlak(){ nburst(0.32,'lowpass',420,0,0.22,0,1.6); }
@@ -4343,14 +4398,17 @@ function applyWeaponUI(){
   const d=document.getElementById('dropBtn');
   const a=document.getElementById('armBtn');
   const rocketArmed=(weapon==='rocket');
-  if(d) d.innerHTML=rocketArmed?'FIRE<br>ROCKET':'DROP<br>BOMB';
+  if(d){d.innerHTML=rocketArmed?'FIRE<br>ROCKET':'DROP<br>BOMB';
+    d.style.display=(acDef().bombs||acDef().rockets)?'':'none';}
   if(a){ a.innerHTML=rocketArmed?'ARM<br>RKT':'ARM<br>BOMB'; a.classList.toggle('on',rocketArmed); }
   const lb=document.getElementById('hOrdLbl'); if(lb) lb.textContent='BOMBS';
   if(a) a.style.display=(acDef().rockets>0)?'flex':'none';
 }
 function resetCtlUI(){
-  const g=document.getElementById('gearBtn'); if(g){ g.classList.add('on'); g.innerHTML='GEAR<br>&#9660; DN'; }
-  const f=document.getElementById('flapBtn'); if(f){ f.classList.remove('on'); f.innerHTML='FLAPS<br>UP'; }
+  const g=document.getElementById('gearBtn'); if(g){ g.classList.toggle('on',P.gearTgt>0.5);
+    g.innerHTML=(P.ac==='me163'?'SKID':'GEAR')+'<br>'+(P.gearTgt>0.5?'&#9660; DN':'&#9650; UP'); }
+  const f=document.getElementById('flapBtn'); if(f){f.style.display=P.ac==='me163'?'none':'';
+    f.classList.remove('on'); f.innerHTML='FLAPS<br>UP'; }
 }
 
 // ============================================================
@@ -4362,7 +4420,7 @@ function showBrief(i){
   briefPlan=chooseEuropePlan(i);
   document.getElementById('brSub').textContent=m.sub;
   document.getElementById('brTitle').textContent=m.title;
-  document.getElementById('brStamp').textContent=(m.ac==='bf109'||m.ac==='fw190'||m.ac==='me262')?'Luftwaffe':'Secret';
+  document.getElementById('brStamp').textContent=(m.ac==='bf109'||m.ac==='fw190'||m.ac==='me262'||m.ac==='me163')?'Luftwaffe':'Secret';
   document.getElementById('brText').innerHTML=m.text
     +'<br><br><b>AIRCRAFT</b> '+AC[m.ac||'p47'].name
     +FlightOps.briefText(briefPlan.weather,briefPlan.config,briefPlan.wind);
@@ -4389,9 +4447,9 @@ function showResult(good,title,sub,html,btn){
 // Reported: "in der Missionsauswahl wäre es toll, wenn man die Flugzeugtypen sehen könnte" -
 // every chip already carries m.ac, just never displayed. Short label + the aircraft's own
 // AC[...].col (the same colour it's rendered in in-flight) so the badge doubles as a legend.
-const ACSHORT={p47:'P-47',bf109:'BF 109',fw190:'FW 190',me262:'ME 262'};
+const ACSHORT={p47:'P-47',bf109:'BF 109',fw190:'FW 190',me262:'ME 262',me163:'ME 163'};
 function acHex(kind){ return '#'+(AC[kind]&&AC[kind].col!==undefined?AC[kind].col:0x888888).toString(16).padStart(6,'0'); }
-function landingSpeedNote(m){return 'LANDING TARGET: ~'+Math.round(AC[m.ac||'p47'].app*KT)+' MPH · '+AC[m.ac||'p47'].name+'.';}
+function landingSpeedNote(m){return 'LANDING TARGET: ~'+Math.round(AC[m.ac||'p47'].app*KT)+' MPH · '+AC[m.ac||'p47'].name+(m.ac==='me163'?' · SKID DOWN.':'.');}
 function buildMenu(){
   const sel=document.getElementById('missionSel');
   if(sel && !sel.childElementCount){
@@ -4503,8 +4561,9 @@ function bindInput(){
   document.getElementById('gearBtn').addEventListener('pointerdown',e=>{ e.preventDefault();
     P.gearTgt=P.gearTgt>0.5?0:1;
     const b=e.currentTarget; b.classList.toggle('on',P.gearTgt>0.5);
-    b.innerHTML=P.gearTgt>0.5?'GEAR<br>&#9660; DN':'GEAR<br>&#9650; UP';
-    flash(P.gearTgt>0.5?'GEAR DOWN':'GEAR UP',700); sfxGearMotor(); });
+    const name=P.ac==='me163'?'SKID':'GEAR';
+    b.innerHTML=name+'<br>'+(P.gearTgt>0.5?'&#9660; DN':'&#9650; UP');
+    flash(name+(P.gearTgt>0.5?' DOWN':' UP'),700); sfxGearMotor(); });
   document.getElementById('flapBtn').addEventListener('pointerdown',e=>{ e.preventDefault();
     P.flapTgt=P.flapTgt>0.5?0:1;
     const b=e.currentTarget; b.classList.toggle('on',P.flapTgt>0.5);

@@ -14,6 +14,7 @@ vm.runInThisContext(fs.readFileSync(require.resolve('three/examples/js/loaders/G
 const root=path.resolve(__dirname,'../..'), html=fs.readFileSync(path.join(root,'torpedo-carrier.html'),'utf8');
 vm.runInThisContext(html.slice(html.indexOf('function readVert('),html.indexOf('function cowlCentre(')));
 vm.runInThisContext(html.slice(html.indexOf('function makeSBDGear('),html.indexOf('function loadSBDModel(){')));
+vm.runInThisContext(html.slice(html.indexOf('function makeZeroGear(){'),html.indexOf('function buildZeroMesh(){')));
 function glb(file){return new Promise((resolve,reject)=>{const raw=fs.readFileSync(path.join(root,file));
  new THREE.GLTFLoader().parse(raw.buffer.slice(raw.byteOffset,raw.byteOffset+raw.byteLength),'',v=>resolve(v.scene),reject);
 });}
@@ -73,5 +74,19 @@ function glb(file){return new Promise((resolve,reject)=>{const raw=fs.readFileSy
  const escort=pivot.clone(true);escort.rotation.z+=.3;
  assert.equal(escort.children.length,1,'wingman rotor carries the loaded Avenger blades');
  assert.match(html,/disc=propPivot\.clone\(true\)/,'Avenger wingman copies the detached real blade');
+ const zero=await glb('zero.glb'),zeroBox=new THREE.Box3().setFromObject(zero);
+ const zeroSize=zeroBox.getSize(new THREE.Vector3());
+ zero.position.sub(zeroBox.getCenter(new THREE.Vector3()));
+ zero.scale.setScalar(11/Math.max(zeroSize.x,zeroSize.y,zeroSize.z));
+ const zeroHolder=new THREE.Group();zeroHolder.add(zero);
+ const airframeBottom=new THREE.Box3().setFromObject(zeroHolder).min.y;
+ zeroHolder.add(makeZeroGear());
+ for(const player of [true,false]){
+   const copy=zeroHolder.clone(true);
+   setZeroGearVisible(copy,player);
+   assert.equal(copy.getObjectByName('zeroGear').visible,player,'Zero landing gear follows player lever; enemy gear stays up');
+   if(player){const bottom=new THREE.Box3().setFromObject(copy).min.y;
+     assert(bottom<airframeBottom-.23,'Zero wheels visibly extend below the actual loaded GLB');}
+ }
  console.log('SBD GLB: '+cut+' original triangles cut, one independent rotor per aircraft; real Avenger wingman blade cloned ('+blades.name+')');
 })().catch(e=>{console.error(e);process.exitCode=1;});

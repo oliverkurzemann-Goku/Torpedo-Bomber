@@ -16,7 +16,7 @@ assert.deepEqual(entries.map(u=>u.pathname),[
  '/torpedo-carrier.html','/remagen-mission.html'
 ],'only the two current real-terrain campaigns appear on the board');
 assert.equal(entries[1].searchParams.get('campaign'),'1','Europe opens the real-terrain campaign');
-assert.equal(entries[1].searchParams.get('v'),'143','campaign link bypasses stale startup HTML');
+assert.equal(entries[1].searchParams.get('v'),'144','campaign link bypasses stale startup HTML');
 for(const classic of ['torpedo-carrier-open-sea.html','thunderbolt-europe.html']){
  assert.match(html(classic),/id="missionSel"/,`${classic} has a mission selection`);
  assert.match(html(classic),/const MISSIONS\s*=\s*\[/,`${classic} defines its missions`);
@@ -47,10 +47,15 @@ assert.equal(pilot.rtb,true,'second kill unlocks carrier recovery');assert.equal
 const script=html('remagen-mission.html');
 const start=script.indexOf('const MISSIONS=['),end=script.indexOf('\nfunction M()',start);
 const missions=vm.runInNewContext(script.slice(start,end)+'\nMISSIONS',{});
-assert.equal(missions.length,14,'training plus twelve real-terrain combat sorties');
-assert.deepEqual([...new Set(missions.map(m=>m.ac))].sort(),['bf109','fw190','me262','p47']);
-assert.equal(missions.filter(m=>m.kills||m.enemyAir||m.bombers).length,12);
+assert.equal(missions.length,17,'training plus fifteen real-terrain combat sorties');
+assert.deepEqual([...new Set(missions.map(m=>m.ac))].sort(),['bf109','fw190','me163','me262','p47']);
+assert.equal(missions.filter(m=>m.kills||m.enemyAir||m.bombers).length,15);
+assert.equal(missions.filter(m=>m.ac==='me262').length,3,'three jet sorties');
+assert.equal(missions.at(-1).ac,'me163','Komet intercept ends the campaign');
+const plans=vm.runInNewContext(html('operation-plans.js')+'\nwindow.FlightPlans',{window:{}});
+assert.equal(plans.europe.length,missions.length,'every Rhine sortie gets its own weather/operation plan');
+assert.equal(plans.europe.at(-1).fuel,65,'rocket sortie has limited powered flight');
 for(const m of missions){if(m.kills?.truck)assert.equal(m.traffic||m.id,'convoy');
  if(m.kills?.ferry)assert.equal(m.traffic||m.id,'ferry');
  if(m.kills?.train)assert.equal(m.traffic||m.id,'train');}
-console.log('Two playable modes, all twelve real-Rhine sorties and fresh progression verified');
+console.log('Two playable modes, fifteen real-Rhine sorties and fresh progression verified');
