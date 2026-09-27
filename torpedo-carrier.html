@@ -141,6 +141,10 @@
   #diveBtn{left:max(20px,env(safe-area-inset-left));top:calc(33% + 112px);display:none;}
   #hookBtn{left:max(20px,env(safe-area-inset-left));top:calc(33% + 168px);}
   #aeroBtn{left:max(20px,env(safe-area-inset-left));top:calc(33% + 224px);}
+  #bailBtn{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 22px);
+    transform:translateX(-50%);z-index:22;display:none;touch-action:manipulation;
+    padding:10px 14px;border:1px solid #e2bd79;border-radius:7px;background:rgba(63,43,29,.9);
+    color:#ffe0a0;font:700 11px monospace;letter-spacing:1px;}
   #fireBtn{position:fixed;right:max(86px,calc(env(safe-area-inset-right) + 86px));
     bottom:calc(env(safe-area-inset-bottom) + 150px);width:64px;height:64px;border-radius:50%;
     z-index:21;touch-action:none;color:#f3e6c8;font-family:monospace;font-weight:800;font-size:12px;
@@ -313,7 +317,7 @@
   <div id="flash"></div>
   <div id="ltn" style="position:fixed;inset:0;background:#e6ecff;opacity:0;pointer-events:none;z-index:40;"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 144</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 145</div>
 
   <!-- Optical landing aid -->
   <div id="lso">
@@ -346,6 +350,7 @@
 <div id="diveBtn" class="ctlBtn">DIVE<br>BRAKE</div>
 <div id="hookBtn" class="ctlBtn on">HOOK<br>▼ DN</div>
 <div id="aeroBtn" class="ctlBtn" title="Rolls and loops in the Zero or Dauntless">AERO<br>OFF</div>
+<button id="bailBtn" type="button" title="Emergency parachute (B)">BAIL OUT</button>
 <div id="fireBtn">GUNS</div>
 <div id="opsStatus"></div>
 <canvas id="mmap" width="120" height="120"></canvas>
@@ -384,7 +389,7 @@
     <details class="quickGuide" open><summary>First flight · controls and landing</summary>
       <div>Left stick: pitch / bank. Right bar: throttle. Launch, fly to the arrow,
         then return to the carrier. Drop torpedoes low, level and below the indicated speed.
-        GEAR, FLAPS and HOOK down on final.
+        GEAR, FLAPS and HOOK down on final. B or BAIL OUT deploys a parachute when high enough.
         <b id="menuLandingSpeed"></b> Watch the landing signal and keep the sink rate gentle.</div>
     </details>
     <button class="btn" id="startBtn">Begin Sortie 1</button>
@@ -434,6 +439,7 @@
 <script src="okinawa/world.js?v=133"></script>
 <script src="campaign.js?v=1"></script>
 <script src="combat-fx.js?v=133"></script>
+<script src="pilot-bailout.js?v=145"></script>
 <script src="audio/weapon-sound.js?v=144"></script>
 <script src="sortie-systems.js?v=129"></script>
 <script src="operation-plans.js?v=144"></script>
@@ -540,6 +546,7 @@ function logSortie(rec){
 }
 // records a lost airframe against the career file straight away (used on a crash)
 function logAircraftLost(){ const l=loadLog(); l.aircraftLost=(l.aircraftLost||0)+1; saveLog(l); }
+function logPilotBailout(){ const l=loadLog(); l.bailouts=(l.bailouts||0)+1; saveLog(l); }
 function bestScore(){ try{ return parseInt(localStorage.getItem('tc_best')||'0',10)||0; }catch(e){ return 0; } }
 function saveBest(v){ try{ if(v>bestScore()) localStorage.setItem('tc_best',String(v)); }catch(e){} }
 function addScore(n){ score+=n; const el=document.getElementById('hScore'); if(el) el.textContent=score; }
@@ -1922,6 +1929,8 @@ function drawPacificBrief(m){
 }
 
 function startMission(idx){
+  if(bailout){bailout.dispose();bailout=null;}
+  planeGroup.visible=true;
   aeroMode=false;
   const aeroButton=document.getElementById('aeroBtn');
   if(aeroButton){aeroButton.classList.remove('on');aeroButton.innerHTML='AERO<br>OFF';}
@@ -2166,6 +2175,7 @@ function launch(){
 //  INPUT
 // ============================================================
 function setupControls(){
+  document.getElementById('bailBtn').addEventListener('pointerdown',e=>{e.preventDefault();beginBailout();});
   const stick=document.getElementById('stick');
   const knob=document.getElementById('stickKnob');
   const R=46; let sid=null;
@@ -2232,6 +2242,7 @@ function setupKeyboard(){
     if(e.code==='Space'){dropTorpedo(); e.preventDefault();}
     if(e.code==='KeyF') firing=true;
     if(e.code==='KeyA'&&!e.repeat) toggleAero();
+    if(e.code==='KeyB'&&!e.repeat) beginBailout();
     if(e.code==='Enter'){ if(state===ST.MENU) beginGame(); else if(state===ST.BRIEF) launch(); }
     if(e.code==='Escape'||e.code==='KeyP'){ togglePause(); e.preventDefault(); }
   });
@@ -4156,6 +4167,39 @@ function crash(title,sub){
     sub+" Take it around again.<br><br>SCORE "+score+" &middot; BEST "+Math.max(bestScore(),score),
     "Retry Sortie");
 }
+let bailout=null,bailPlaneCrashed=false,bailDone=false,bailChuteCalled=false;
+function beginBailout(){
+  if(state!==ST.FLIGHT||!P.alive)return;
+  if(P.pos.y-shoreHeight(P.pos.x,P.pos.z)<85){flash('TOO LOW TO BAIL OUT',1400);return;}
+  bailout=PilotBailout.create(THREE,scene,P.pos.clone().add(new THREE.Vector3(-2,1,-2)),
+    Math.PI/2-P.heading,P.spd,shoreHeight);
+  bailPlaneCrashed=false;bailDone=false;bailChuteCalled=false;
+  P.alive=false;state=ST.RESULT;firing=false;
+  document.getElementById('bailBtn').style.display='none';
+  saveBest(score);
+  if(!isFree()){logAircraftLost();logPilotBailout();}
+  flash('PILOT CLEAR — OPENING PARACHUTE',1800);
+}
+function advanceBailout(dt){
+  if(!bailout||bailDone)return;
+  const landing=bailout.update(dt*3,windZ);
+  if(bailout.deployed&&!bailChuteCalled){bailChuteCalled=true;radioSay('PARACHUTE OPEN — PILOT DESCENDING');}
+  if(!bailPlaneCrashed){
+    P.pos.addScaledVector(noseDir(),P.spd*dt*.7);
+    P.pos.y-=Math.min(95,12+bailout.position.y*.05)*dt*3;
+    P.roll+=dt*.8;P.pitch-=dt*.2;
+    if(P.pos.y<=shoreHeight(P.pos.x,P.pos.z)+1){
+      spawnExplosion(P.pos.x,Math.max(1,P.pos.y),P.pos.z);
+      planeGroup.visible=false;bailPlaneCrashed=true;sfxCrash();
+    }
+  }
+  if(landing.landed){
+    bailDone=true;
+    showResult(false,landing.safe?'PILOT SAFE':'CHUTE TOO LATE','Sortie ended',
+      (landing.safe?'Parachute landing. The aircraft was lost.':'The parachute opened too late.')+
+      '<br><br>SCORE '+score+' &middot; BEST '+Math.max(bestScore(),score),'Retry Sortie');
+  }
+}
 
 // ============================================================
 //  CAMERA + MESH ORIENT
@@ -4463,7 +4507,7 @@ function loadPlaneModel(){
       }
       window.__eyeDbg='EYE '+COCKPIT_EYE.map(v=>v.toFixed(2)).join('/');
       const btEl=document.getElementById('buildTag');
-      if(btEl) btEl.textContent='BUILD 144 · '+window.__eyeDbg;
+      if(btEl) btEl.textContent='BUILD 145 · '+window.__eyeDbg;
       let seat=null;
       model.traverse(function(o){
         if(!o.isMesh||!o.material) return;
@@ -5653,6 +5697,7 @@ function resumeGame(){
   if(eng) eng.master.gain.setTargetAtTime(0.85,actx.currentTime,0.05);
 }
 function exitToMenu(){
+  document.getElementById('bailBtn').style.display='none';
   if(eng) eng.master.gain.setTargetAtTime(0.85,actx.currentTime,0.05);
   state=ST.MENU; killCam=null;
   setOkinawaActive(false);
@@ -5746,7 +5791,7 @@ function setupUIButtons(){
       +"<br><br><b>COMBAT</b><br>"
       +(l.shipsSunk||0)+" ships sunk · "+(l.zeros||0)+" Zeros splashed<br>"
       +(l.torpHit||0)+"/"+(l.torpFired||0)+" torpedoes on target ("+acc+"%)<br>"
-      +"Airframes lost: "+(l.aircraftLost||0)+" · Wingmen lost: "+(l.wingmenLost||0)+"<br><br>"
+      +"Airframes lost: "+(l.aircraftLost||0)+" · Pilots bailed out: "+(l.bailouts||0)+" · Wingmen lost: "+(l.wingmenLost||0)+"<br><br>"
       +"<b>DECORATIONS</b>  🥇"+((l.medals&&l.medals.gold)||0)
       +"  🥈"+((l.medals&&l.medals.silver)||0)
       +"  🥉"+((l.medals&&l.medals.bronze)||0)
@@ -5774,7 +5819,7 @@ function setupUIButtons(){
   if(dbgT2) dbgT2.onclick=()=>{
     dbgOn=!dbgOn; localStorage.setItem('dbgOn',dbgOn?'1':'0');
     const db=document.getElementById('dbgBox'); if(db) db.textContent=dbgOn?'✓':'';
-    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 144'; }
+    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 145'; }
   };
   const lu=document.getElementById('lookUp'), ld=document.getElementById('lookDn');
   let _lookT=0;
@@ -6026,6 +6071,7 @@ function animate(){
   }
 
   if(state===ST.FLIGHT){
+    document.getElementById('bailBtn').style.display=P.alive&&P.pos.y-shoreHeight(P.pos.x,P.pos.z)>85?'block':'none';
     pollKeys(dt);
     updateFlight(dt);
     if(isQual()) updateQualCoach();
@@ -6056,11 +6102,13 @@ function animate(){
     updateLSO();
     updateHUD();
   } else if(state===ST.LAUNCH){
+    document.getElementById('bailBtn').style.display='none';
     updateLaunch(dt);
     updateHUD();
     document.getElementById('lso').classList.remove('show');
     document.getElementById('torpRun').classList.remove('show');
   }
+  advanceBailout(rawDt);
 
   updateShips(dt);
   updateWakes(dt);
@@ -6099,7 +6147,13 @@ function animate(){
     if(!okinawaWorld || !okinawaWorld.root.visible)
     for(const is of islands){ if(is.volcano)
       spawnSmoke(is.x+(Math.random()-0.5)*10, is.topY+4, is.z+(Math.random()-0.5)*10, 0x6f6f6f, 0.4); } }
-  if(state!==ST.MENU){ updateCamera(dt); updateMinimap(); }
+  if(state!==ST.MENU){
+    if(bailout){camera.up.set(0,1,0);
+      camera.position.lerp(bailout.position.clone().add(new THREE.Vector3(18,11,28)),Math.min(1,4*rawDt));
+      camera.lookAt(bailout.position);
+    } else updateCamera(dt);
+    updateMinimap();
+  }
   else { // idle menu cam orbit over carrier
     const a=t*0.15;
     camera.position.set(Math.cos(a)*260,120,Math.sin(a)*260);

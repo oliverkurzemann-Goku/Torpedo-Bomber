@@ -22,6 +22,22 @@ async function load(file){
   const b=fs.readFileSync(path.join(root,file));
   return new Promise((resolve,reject)=>loader.parse(b.buffer.slice(b.byteOffset,b.byteOffset+b.byteLength),'',resolve,reject));
 }
+function fixedBladeFaces(group,p){
+  group.updateMatrixWorld(true);
+  let faces=0;const v=[new THREE.Vector3(),new THREE.Vector3(),new THREE.Vector3()];
+  group.traverse(o=>{
+    if(!o.isMesh||!o.geometry?.index)return;
+    for(let a=o.parent;a;a=a.parent)if(a.name==='prop')return;
+    const ix=o.geometry.index.array,pos=o.geometry.attributes.position;
+    for(let i=0;i<ix.length;i+=3){
+      if(ix[i]===ix[i+1]&&ix[i]===ix[i+2])continue;
+      for(let j=0;j<3;j++){readVert(pos,ix[i+j],v[j]);o.localToWorld(v[j]);}
+      const x=(v[0].x+v[1].x+v[2].x)/3,y=(v[0].y+v[1].y+v[2].y)/3,
+        z=(v[0].z+v[1].z+v[2].z)/3,r=Math.hypot(x-p.cx,y-p.cy);
+      if(r>.13&&r<1.24&&z>p.zPlane-1.1&&z<p.zPlane+.5)faces++;
+    }
+  });return faces;
+}
 (async()=>{
   for(const [file,span,kind,axis] of [['b17.glb',31.62,'b17','z'],['b24.glb',33.53,'b24','y']]){
     const gltf=await load(file),group=new THREE.Group(),src=gltf.scene;
@@ -30,6 +46,7 @@ async function load(file){
     src.scale.setScalar(span/width);group.updateMatrixWorld(true);
     src.position.copy(new THREE.Box3().setFromObject(group).getCenter(new THREE.Vector3())).negate();
     group.updateMatrixWorld(true);
+    const originalProps=kind==='b17'?findWingProps(group):[];
     const rig=rigModel(group,kind);
     assert.match(rig,kind==='b17'?/across 4 engines/:/four original B-24 propellers rigged/);
     const aircraft=group.clone(true),rotors=bomberRotors(aircraft),stations=bomberGunStations(aircraft);
@@ -37,14 +54,18 @@ async function load(file){
     assert(rotors.every(r=>r.userData.spinAxis===axis),kind+' must rotate around each shaft axis');
     assert.equal(new Set(rotors.map(r=>Math.round(r.getWorldPosition(new THREE.Vector3()).x*10))).size,4,
       kind+' rotors must sit at four separate wing engines');
-    if(kind==='b17')assert(rotors.every(r=>{
+    if(kind==='b17'){
+      assert.equal(originalProps.length,4);
+      assert(originalProps.every(p=>fixedBladeFaces(group,p)<5),
+        'B-17 must have no fixed blade faces around any of its four spinning rotors');
+      assert(rotors.every(r=>{
       const s=new THREE.Box3().setFromObject(r).getSize(new THREE.Vector3());
       return s.x>2.3&&s.y>2.0;
-    }),
-      'B-17 rotating blades must be large enough to read in flight');
+      }), 'B-17 rotating blades must be large enough to read in flight');
+    }
     if(kind==='b24'){
       const fixed=[];aircraft.traverse(o=>{if(/^prop[0-3]_(still|blurred)_AN_/.test(o.name))fixed.push(o);});
-      assert(fixed.length>=8&&fixed.every(o=>!o.visible),'static and blurred duplicate propellers must be hidden');
+      assert.equal(fixed.length,0,'static and blurred duplicate propeller subtrees must be removed');
     }
     const e={group:aircraft,rotors,gunStations:stations,kind,bomber:true,alive:true,
       pos:new THREE.Vector3(0,1000,0),vel:new THREE.Vector3(0,0,72),heading:0,pitch:0,roll:0,

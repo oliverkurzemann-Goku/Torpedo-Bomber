@@ -133,6 +133,10 @@
   #flapBtn{left:max(20px,env(safe-area-inset-left));top:calc(30% + 56px);}
   #armBtn{left:max(20px,env(safe-area-inset-left));top:calc(30% + 112px);}
   #aeroBtn{left:max(20px,env(safe-area-inset-left));top:calc(30% + 168px);}
+  #bailBtn{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 22px);
+    transform:translateX(-50%);z-index:22;display:none;touch-action:manipulation;
+    padding:10px 14px;border:1px solid #e2bd79;border-radius:7px;background:rgba(63,43,29,.9);
+    color:#ffe0a0;font:700 11px monospace;letter-spacing:1px;}
   #steerBtn{position:fixed;right:max(20px,env(safe-area-inset-right));top:50%;
     transform:translateY(-50%);width:56px;height:56px;border-radius:8px;z-index:21;
     touch-action:none;background:linear-gradient(180deg,rgba(40,46,30,.85),rgba(20,24,16,.85));
@@ -278,7 +282,7 @@
   <div style="width:100%;height:4px;background:repeating-linear-gradient(45deg,#ffd400,#ffd400 8px,#111 8px,#111 16px);"></div>
   <span id="testVersionBannerText" style="background:#111;color:#ffd400;font-family:monospace;font-weight:800;font-size:11px;letter-spacing:.5px;padding:3px 10px;border:1px solid #ffd400;border-top:none;border-radius:0 0 6px 6px;"></span>
 </div>
-<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 144';</script>
+<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 145';</script>
 <!-- ===== END TEMP TEST-ONLY VERSION BANNER ===== -->
 <div id="app"></div>
 
@@ -307,7 +311,7 @@
   <div id="flash"></div>
   <div id="gunsight"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 144 · REAL RHINE</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 145 · REAL RHINE</div>
 
   <div id="apr">
     <div id="aprCall"></div>
@@ -331,6 +335,7 @@
 <div id="flapBtn" class="ctlBtn">FLAPS<br>UP</div>
 <div id="armBtn" class="ctlBtn">ARM<br>BOMB</div>
 <div id="aeroBtn" class="ctlBtn" title="Rate control for rolls and loops">AERO<br>OFF</div>
+<button id="bailBtn" type="button" title="Emergency parachute (B)">BAIL OUT</button>
 <div id="steerBtn">STEER<br>L/R</div>
 <div id="turnBtn" class="ctlBtn" style="display:none;left:max(20px,env(safe-area-inset-left));top:calc(30% + 224px);width:58px;height:50px;">TURN<br>MODEL</div>
 <div id="mdlBox" style="display:none;position:fixed;left:50%;transform:translateX(-50%);
@@ -373,6 +378,7 @@
       <div>Left stick: pitch / bank. Right bar: throttle. GEAR and FLAPS down for landing.
         The arrow points toward the next target; the compass shows heading and bearing.
         AERO enables rolls and loops once airborne and fast enough.
+        Press B or BAIL OUT to parachute from a damaged aircraft while high enough.
         <b id="menuLandingSpeed"></b> Keep the wings level and use the runway, not the surrounding fields.</div>
     </details>
     <button class="btn" id="startBtn">Begin Sortie</button>
@@ -444,6 +450,7 @@
 <script src="terrain-system/LivingWorld.js?v=remagen-22"></script>
 <script src="campaign.js?v=1"></script>
 <script src="combat-fx.js?v=133"></script>
+<script src="pilot-bailout.js?v=145"></script>
 <script src="audio/weapon-sound.js?v=144"></script>
 <script src="audio/jet-engine.js?v=144"></script>
 <script src="sortie-systems.js?v=129"></script>
@@ -676,7 +683,7 @@ async function loadRealWorld(){
 
   if(OSMManager.BUILD!==21||HistoricalObjectManager.BUILD!==21||LivingWorld.BUILD!==22||WorldVehicles.BUILD!==22) throw new Error('Terrain version mismatch. Reload Remagen.');
   document.getElementById('testVersionBannerText').textContent=
-    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 144 · MODULE 22';
+    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 145 · MODULE 22';
   heightProvider=new DEMHeightProvider(RTILE,'terrain-system/real/data/dem/');
   terrain=new TerrainManager(scene,RTILE,heightProvider);
   osmMgr=new OSMManager(scene,RTILE,terrain,'terrain-system/real/data/osm/');
@@ -988,8 +995,9 @@ const MODEL_FIX={
   // the tail assembly, matching every other aircraft's convention already. Recorded here as
   // known-good rather than left to re-run the detector (and its "unsure" warning path) every load.
   'me262.glb':                            {yaw:0},
-  // Checked against the shipped GLB: 99% mirror symmetry across X, nose at -Z.
-  'me163.glb':                            {yaw:Math.PI},
+  // The shipped model's nose points +Z after GLTFLoader applies its root transform.
+  // The former half-turn made both the player and enemy Komet fly tail-first.
+  'me163.glb':                            {yaw:0},
   'me_262_a1ajabo_war_thunder.glb':       {yaw:0},
   'me 262 a1ajabo war thunder.glb':       {yaw:0}
 };
@@ -1085,6 +1093,15 @@ function fixKey(url){ return 'eu_fix_'+decodeURIComponent(url.split('?')[0]).toL
 function savedFix(url){
   try{ const j=localStorage.getItem(fixKey(url)); return j? JSON.parse(j) : null; }catch(e){ return null; }
 }
+// Build 144's hard-coded Komet turn was backwards. Discard any correction
+// saved against that baseline once, including a TURN MODEL adjustment on iPad.
+try{
+  if(localStorage.getItem('re_me163_forward_v145')!=='1'){
+    localStorage.removeItem(fixKey('me163.glb'));
+    modelAdj.me163=0;saveAdj();
+    localStorage.setItem('re_me163_forward_v145','1');
+  }
+}catch(e){}
 
 // Sample the model's own vertices in world space — everything below is decided from these.
 function samplePoints(obj,budget){
@@ -1336,7 +1353,9 @@ function cutBlades(root, prop){
   root.updateMatrixWorld(true);
   const invRoot=new THREE.Matrix4().copy(root.matrixWorld).invert();
   const a=new THREE.Vector3(), b=new THREE.Vector3(), c=new THREE.Vector3(), m=new THREE.Vector3();
-  const rIn=prop.hubR*1.05, rOut=prop.tipR*1.32;
+  // The B-17's welded blade tips extend past the percentile-based measured
+  // radius; clear those few rigid tips as well as the dense central blade.
+  const rIn=prop.hubR*1.05, rOut=prop.tipR*(prop.S.x>25?1.55:1.32);
   // The measured blade thickness can come out very thin (the Bf 109's is 0.18 against a 1.57
   // blade radius), and scaling a too-thin slab still leaves a too-thin slab - it left 105
   // triangles standing. A real propeller blade is twisted, so its material always spans a
@@ -1599,7 +1618,9 @@ function rigB24Props(root){
     else if(/^prop[0-3]_(still|blurred)_AN_/.test(o.name))idle.push(o);
   });
   if(rotors.length!==4)return 0;
-  for(const o of idle)o.visible=false;
+  // Remove all the static/blurred copies from the template. Hiding only the
+  // named child left duplicate blade geometry on some loaded/cloned bombers.
+  for(const o of idle)if(o.parent)o.parent.remove(o);
   for(const o of rotors){o.userData.bomberRotor=true;o.userData.spinAxis='y';}
   return rotors.length;
 }
@@ -2169,10 +2190,10 @@ function brightenFighterSkin(src,kind){
   src.traverse(o=>{if(!o.isMesh)return;
     const materials=(Array.isArray(o.material)?o.material:[o.material]).map(m=>{
       if(!m||!m.color||m.transparent&&m.opacity<.9)return m;
-      const n=m.clone();n.color.multiplyScalar(kind==='me262'?1.08:1.24);
+      const n=m.clone();n.color.multiplyScalar(kind==='me262'?.72:1.24);
       // A constant ambient contribution makes the dark embedded diffuse textures
       // readable even in wing shadow. Do not multiply it by the same dark map.
-      if(n.emissive){n.emissiveMap=null;n.emissive.setHex(0xa4aaa0);n.emissiveIntensity=kind==='me262'?.16:.29;}
+      if(n.emissive){n.emissiveMap=null;n.emissive.setHex(0xa4aaa0);n.emissiveIntensity=kind==='me262'?.04:.29;}
       if(n.aoMapIntensity!==undefined)n.aoMapIntensity=.22;
       if(n.metalness!==undefined)n.metalness=Math.min(n.metalness,.08);
       if(n.roughness!==undefined)n.roughness=.64;
@@ -3452,6 +3473,45 @@ function crash(title,msg){
   if(!isFree()) logSortie({lost:true});
   setTimeout(()=>showResult(false,title,'',msg+'<br><br>SCORE '+score,'Try Again'),1200);
 }
+let bailout=null,bailPlaneCrashed=false,bailDone=false,bailChuteCalled=false;
+function beginBailout(){
+  if(state!==ST.FLIGHT||!P.alive)return;
+  const agl=P.pos.y-groundY(P.pos.x,P.pos.z);
+  if(P.onGround||agl<85){flash('TOO LOW TO BAIL OUT',1400);return;}
+  bailout=PilotBailout.create(THREE,scene,P.pos.clone().add(new THREE.Vector3(-2,1,-2)),
+    P.heading,P.spd,groundY);
+  bailPlaneCrashed=false;bailDone=false;bailChuteCalled=false;
+  P.alive=false;state=ST.DEAD;firing=false;
+  document.getElementById('bailBtn').style.display='none';
+  saveBest(score);
+  if(!isFree())logSortie({lost:true,bailout:true});
+  flash('PILOT CLEAR — OPENING PARACHUTE',1800);
+}
+function advanceBailout(dt){
+  if(!bailout||bailDone)return;
+  // Accelerated cinematic descent: an ejection from bomber altitude must not
+  // require minutes of waiting for the result on a tablet.
+  const landing=bailout.update(dt*3,windZ);
+  if(bailout.deployed&&!bailChuteCalled){bailChuteCalled=true;radioSay('PARACHUTE OPEN — PILOT DESCENDING');}
+  if(!bailPlaneCrashed){
+    const forward=noseDir();
+    P.pos.addScaledVector(forward,P.spd*dt*.7);
+    P.pos.x=Math.max(1,Math.min(RTILE*RGRID_W-1,P.pos.x));
+    P.pos.z=Math.max(1,Math.min(RTILE*RGRID_H-1,P.pos.z));
+    P.pos.y-=Math.min(95,12+bailout.position.y*.05)*dt*3;
+    P.roll+=dt*.8;P.pitch-=dt*.2;
+    if(P.pos.y<=groundY(P.pos.x,P.pos.z)+2){
+      spawnExplosion(P.pos.x,groundY(P.pos.x,P.pos.z)+1,P.pos.z,1.8);
+      planeGroup.visible=false;bailPlaneCrashed=true;sfxCrash();
+    }
+  }
+  if(landing.landed){
+    bailDone=true;
+    showResult(false,landing.safe?'PILOT SAFE':'CHUTE TOO LATE','Parachute landing',
+      (landing.safe?'You landed safely. The aircraft was lost.':'The parachute opened too late.')+
+      '<br><br>SCORE '+score+' &middot; BEST '+Math.max(bestScore(),score),'Try Again');
+  }
+}
 
 // ============================================================
 //  FLIGHT MODEL
@@ -3684,6 +3744,7 @@ function logSortie(rec){
   if(!l.pilot) l.pilot=PILOT_NAMES[Math.floor(Math.random()*PILOT_NAMES.length)];
   l.sorties=(l.sorties||0)+1;
   if(rec.lost) l.lost=(l.lost||0)+1; else l.landings=(l.landings||0)+1;
+  if(rec.bailout) l.bailouts=(l.bailouts||0)+1;
   for(const k in sortieKills) l[k]=(l[k]||0)+(sortieKills[k]||0);
   l.score=(l.score||0)+score;
   l.medals=l.medals||{gold:0,silver:0,bronze:0};
@@ -3738,7 +3799,7 @@ function landed(onStrip){
     +'<br>Hull '+Math.round(P.hull)+'% &middot; '+hitsTaken+' hits taken &middot; fuel '+Math.round(P.fuel)+'%'
     +'<br>SCORE '+score+' &middot; BEST '+Math.max(bestScore(),score)
     +'<br><br><b>LOGBOOK</b> — '+(l.sorties||0)+' sorties &middot; '+(l.landings||0)+' landings &middot; '
-    +(l.lost||0)+' aircraft lost'
+     +(l.lost||0)+' aircraft lost &middot; '+(l.bailouts||0)+' bailouts'
     +'<br>Claims: '+(l.truck||0)+' trucks, '+(l.tank||0)+' panzers, '+(l.flak||0)+' guns, '
     +(l.bridge||0)+' bridges, '+(l.train||0)+' trains, '+(l.ferry||0)+' ferries, '+(l.air||0)+' aircraft'
     +'<br>Medals: 🥇'+(l.medals.gold||0)+'  🥈'+(l.medals.silver||0)+'  🥉'+(l.medals.bronze||0),
@@ -3770,6 +3831,8 @@ function relaunch(){
   state=ST.FLIGHT;
 }
 function startMission(i){
+  if(bailout){bailout.dispose();bailout=null;}
+  planeGroup.visible=true;
   firing=false;gunT=0;
   aeroMode=false;
   const aeroButton=document.getElementById('aeroBtn');
@@ -4572,6 +4635,7 @@ function bindInput(){
     weapon=(weapon==='rocket')?'bomb':'rocket'; applyWeaponUI();
     flash(weapon==='rocket'?'ROCKETS ARMED':'BOMBS ARMED',700); });
   document.getElementById('aeroBtn').addEventListener('pointerdown',e=>{ e.preventDefault();toggleAero(); });
+  document.getElementById('bailBtn').addEventListener('pointerdown',e=>{e.preventDefault();beginBailout();});
   // ---- live left/right invert, exactly as in the carrier game ----
   const st=document.getElementById('steerBtn');
   st.addEventListener('pointerdown',e=>{ e.preventDefault();
@@ -4602,6 +4666,7 @@ function bindInput(){
     if(e.key==='f'||e.key==='F') firing=true;
     if(e.key==='g'||e.key==='G') P.gearTgt=P.gearTgt>0.5?0:1;
     if((e.key==='a'||e.key==='A')&&!e.repeat) toggleAero();
+    if((e.key==='b'||e.key==='B')&&!e.repeat) beginBailout();
     if(e.key==='p'||e.key==='P') togglePause();
   });
   window.addEventListener('keyup',e=>{ keys[e.key]=false; if(e.key==='f'||e.key==='F') firing=false; });
@@ -4803,6 +4868,8 @@ function animate(){
       if(firing) fireGuns(dt);
       updateFlak(dt);
     }
+    advanceBailout(raw);
+    document.getElementById('bailBtn').style.display=state===ST.FLIGHT&&!P.onGround&&P.alive?'block':'none';
     refreshModels();
     updateTargets(dt); updateEnemyAir(dt);
     updateBullets(dt); updateTracers(dt); updateOrdnance(dt);
@@ -4824,7 +4891,11 @@ function animate(){
       if(pr) pr.rotation.z-=Math.min(0.30,0.10+P.throttle*0.28);
     }
     for(const e of enemyAir)if(e.alive)updateJetExhaust(e.group,Math.min(1,e.spd/aiSpec(e.kind).max),raw);
-    updateCamera(dt);
+    if(bailout){
+      camera.up.set(0,1,0);
+      camera.position.lerp(bailout.position.clone().add(new THREE.Vector3(18,11,28)),Math.min(1,4*raw));
+      camera.lookAt(bailout.position);
+    } else updateCamera(dt);
     updateApproach();
     hudT-=raw; if(hudT<=0){ hudT=0.1; updateHUD(); }
     mmT-=raw; if(mmT<=0){ mmT=0.2; drawMinimap(); }

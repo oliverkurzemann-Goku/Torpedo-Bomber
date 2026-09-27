@@ -50,13 +50,13 @@ function faceCount(group,minimumY){let total=0;group.updateMatrixWorld(true);gro
   console.log(kind,JSON.stringify({removedWheelFaces:removed,upperWingFaces:upperAfter,wheelBottom:wheels[0].min.y}));
  }
  const jet=(await load('me262.glb')).scene;brightenFighterSkin(jet,'me262');
- const jetMaterials=[];jet.traverse(o=>{if(o.isMesh)jetMaterials.push(...[].concat(o.material).filter(m=>m?.emissiveIntensity>.1));});
- assert.ok(jetMaterials.some(m=>Math.abs(m.emissiveIntensity-.16)<1e-6)&&
-  jetMaterials.every(m=>m.emissiveMap===null),
-  'Me 262 skin remains softly lit');
+ const jetMaterials=[];jet.traverse(o=>{if(o.isMesh)jetMaterials.push(...[].concat(o.material).filter(m=>m?.emissiveIntensity===.04));});
+ assert.ok(jetMaterials.length>0&&jetMaterials.every(m=>m.emissiveMap===null),
+  'Me 262 skin uses the darker ambient setting');
  const rocket=(await load('me163.glb')).scene,rocketRoot=new THREE.Group();rocketRoot.add(rocket);
  const points=samplePoints(rocket,3000),yaw=detectYaw(rocket);
- assert.equal(yaw.yaw,Math.PI,'Me 163 GLB faces -Z before alignment');
+ assert.equal(yaw.yaw,Math.PI,'the symmetry heuristic gives the wrong nose for the tailless Me 163');
+ assert.match(html,/'me163\.glb':\s*\{yaw:0\}/,'the observed forward-facing orientation overrides that heuristic');
  assert(points.length>3000&&yaw.conf>.95,'real Me 163 model symmetry verified');
  const rocketRig=rigModel(rocketRoot,'me163');
  assert.match(rocketRig,/skid retained/);
