@@ -282,7 +282,7 @@
   <div style="width:100%;height:4px;background:repeating-linear-gradient(45deg,#ffd400,#ffd400 8px,#111 8px,#111 16px);"></div>
   <span id="testVersionBannerText" style="background:#111;color:#ffd400;font-family:monospace;font-weight:800;font-size:11px;letter-spacing:.5px;padding:3px 10px;border:1px solid #ffd400;border-top:none;border-radius:0 0 6px 6px;"></span>
 </div>
-<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 145';</script>
+<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 146';</script>
 <!-- ===== END TEMP TEST-ONLY VERSION BANNER ===== -->
 <div id="app"></div>
 
@@ -311,7 +311,7 @@
   <div id="flash"></div>
   <div id="gunsight"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 145 · REAL RHINE</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 146 · REAL RHINE</div>
 
   <div id="apr">
     <div id="aprCall"></div>
@@ -453,8 +453,8 @@
 <script src="pilot-bailout.js?v=145"></script>
 <script src="audio/weapon-sound.js?v=144"></script>
 <script src="audio/jet-engine.js?v=144"></script>
-<script src="sortie-systems.js?v=129"></script>
-<script src="operation-plans.js?v=144"></script>
+<script src="sortie-systems.js?v=146"></script>
+<script src="operation-plans.js?v=146"></script>
 <script>
 // ============================================================
 //  REMAGEN 1945 — REAL TERRAIN (forked from thunderbolt-europe.html)
@@ -570,6 +570,10 @@ const AC={
         rollLim:1.47, pitchLim:1.18, stall:36, app:50, max:196, thrMin:30,
         hull:88, ammo:1500, bombs:1, rockets:0, gunDmg:1.35, gunRate:0.085, wing:9.9,
         col:0x8d9384, band:0x3d4636 },
+  ju87:{ name:'Ju 87B-2 Stuka', rollAuth:0.87, pitchAuth:0.92, turn:0.79, gLim:5.0,
+        rollLim:1.48, pitchLim:1.26, stall:37, app:51, max:113, thrMin:27,
+        hull:115, ammo:1100, bombs:4, rockets:0, gunDmg:1.1, gunRate:0.10, wing:13.8,
+        col:0x606950, band:0x343d2f },
   // The Me262: a genuinely different kind of aeroplane, not just another set of numbers on the
   // same curve - real top speed ~870 km/h (242 m/s) against 190-196 for the prop fighters here,
   // and real landing/stall speeds high enough that pilots trained on it specifically for that
@@ -683,7 +687,7 @@ async function loadRealWorld(){
 
   if(OSMManager.BUILD!==21||HistoricalObjectManager.BUILD!==21||LivingWorld.BUILD!==22||WorldVehicles.BUILD!==22) throw new Error('Terrain version mismatch. Reload Remagen.');
   document.getElementById('testVersionBannerText').textContent=
-    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 145 · MODULE 22';
+    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 146 · MODULE 22';
   heightProvider=new DEMHeightProvider(RTILE,'terrain-system/real/data/dem/');
   terrain=new TerrainManager(scene,RTILE,heightProvider);
   osmMgr=new OSMManager(scene,RTILE,terrain,'terrain-system/real/data/osm/');
@@ -934,11 +938,12 @@ const MODEL_URL={
           'fw%20190%20f-8%202%20custom%20payload%20war%20thunder.glb'],
   b17:   ['b17.glb','helijahs_b-17.glb','b-17.glb'],
   b24:   ['b24.glb','b-24_liberator.glb','b-24.glb'],
+  ju87:  ['ju87.glb'],
   me163: ['me163.glb'],
   me262: ['me262.glb','me_262_a1ajabo_war_thunder.glb',
           'me%20262%20a1ajabo%20war%20thunder.glb']
 };
-const REAL_SPAN={ p47:12.42, bf109:9.92, fw190:10.51, b17:31.62, b24:33.53, me163:9.3, me262:12.51 };   // metres, tip to tip
+const REAL_SPAN={ p47:12.42, bf109:9.92, fw190:10.51, ju87:13.8, b17:31.62, b24:33.53, me163:9.3, me262:12.51 };   // metres, tip to tip
 // Jet/rocket types: no propeller exists, so rigModel() must not go looking for one (see its
 // own comment - the Me262's round nacelle intakes and tail cone measure enough like a
 // hub/blade annulus to fool the same disc heuristic that works for every propeller aircraft).
@@ -998,6 +1003,7 @@ const MODEL_FIX={
   // The shipped model's nose points +Z after GLTFLoader applies its root transform.
   // The former half-turn made both the player and enemy Komet fly tail-first.
   'me163.glb':                            {yaw:0},
+  'ju87.glb':                             {yaw:0},
   'me_262_a1ajabo_war_thunder.glb':       {yaw:0},
   'me 262 a1ajabo war thunder.glb':       {yaw:0}
 };
@@ -1005,7 +1011,7 @@ function knownFix(url){
   const k=decodeURIComponent(url.split('?')[0]).toLowerCase();
   return MODEL_FIX[k]||null;
 }
-const AC_KINDS=['p47','bf109','fw190','b17','b24','me262','me163'];
+const AC_KINDS=['p47','bf109','fw190','ju87','b17','b24','me262','me163'];
 const modelTpl={}, modelRaw={}, modelBase={};
 let modelAdj={};                            // YOUR correction, in quarter turns, kept on the device
 AC_KINDS.forEach(k=>{ modelTpl[k]=null; modelRaw[k]=null;
@@ -1435,6 +1441,40 @@ function makeProp(prop, nBlades){
   spin.rotation.x=(prop.dir<0? -Math.PI/2 : Math.PI/2); spin.position.z=(prop.dir<0? -hub*0.50 : hub*0.50); g.add(spin);
   g.position.set(prop.cx, prop.cy, prop.zPlane);
   return g;
+}
+// This Ju 87 export keeps its nose blades in Object_12 alongside other parts. The generic
+// full-aircraft annulus cutter also catches the inverted gull wings and belly on this model.
+// Limit surgery to that one mesh and its front 0.9 m; leave every other mesh untouched.
+function rigJu87Prop(root, whole, S){
+  const bladeMesh=root.getObjectByName('Object_12');
+  if(!bladeMesh?.isMesh||!bladeMesh.geometry?.index)return null;
+  const bb=new THREE.Box3().setFromObject(bladeMesh);
+  const v=new THREE.Vector3(),pos=bladeMesh.geometry.attributes.position;
+  let yLo=Infinity,yHi=-Infinity;
+  for(let i=0;i<pos.count;i++){
+    readVert(pos,i,v);bladeMesh.localToWorld(v);root.worldToLocal(v);
+    if(v.z>bb.max.z-0.65&&Math.abs(v.x)<1.7){yLo=Math.min(yLo,v.y);yHi=Math.max(yHi,v.y);}
+  }
+  if(!Number.isFinite(yLo)||!Number.isFinite(yHi))return null;
+  const cy=(yLo+yHi)/2, cz=bb.max.z-0.43;
+  // Cloning the index buffer also protects the raw downloaded template: rebuilding after
+  // TURN MODEL must start with intact blades instead of cutting a shared buffer twice.
+  bladeMesh.geometry=bladeMesh.geometry.clone();
+  const ix=bladeMesh.geometry.index.array,a=new THREE.Vector3(),b=new THREE.Vector3(),c=new THREE.Vector3();
+  let removed=0;
+  for(let i=0;i+2<ix.length;i+=3){
+    readVert(pos,ix[i],a);bladeMesh.localToWorld(a);root.worldToLocal(a);
+    readVert(pos,ix[i+1],b);bladeMesh.localToWorld(b);root.worldToLocal(b);
+    readVert(pos,ix[i+2],c);bladeMesh.localToWorld(c);root.worldToLocal(c);
+    const x=(a.x+b.x+c.x)/3,y=(a.y+b.y+c.y)/3,z=(a.z+b.z+c.z)/3;
+    const r=Math.hypot(x,y-cy);
+    if(z<bb.max.z-0.90||r<0.28||r>1.7)continue;
+    ix[i+1]=ix[i];ix[i+2]=ix[i];removed++;
+  }
+  bladeMesh.geometry.index.needsUpdate=true;
+  const prop=makeProp({cx:0,cy,zPlane:cz,hubR:0.29,tipR:1.55,S,dir:1},3);
+  root.add(prop);
+  return 'cut '+removed+' fixed Ju 87 blade faces; 3-blade rotor on nose';
 }
 // ---- four wing-mounted propellers (B-17: no engine at the nose at all) -------------------
 // findProp() hunts for ONE hub at the extreme front of the whole aircraft - built for a
@@ -1994,7 +2034,9 @@ function rigModel(root, kind){
   // same heuristic that works for every propeller aircraft in this project. Skip the search
   // entirely for jet/rocket types rather than trust a disc-shaped false positive; there is nothing
   // here that legitimately spins.
-  if(MULTI_ENGINE_KINDS.includes(kind)){
+  if(kind==='ju87'){
+    rig=rigJu87Prop(root,whole,S)||'Ju 87 rotor mesh unavailable';
+  } else if(MULTI_ENGINE_KINDS.includes(kind)){
     // Reported: fixing the fake nose disc (see NO_PROP_KINDS's own comment) left this aircraft's
     // real, welded wing propellers with nothing to make them spin - "B17 propeller drehen sich
     // nicht". findWingProps() (above) measures all four engine positions directly, one at a time,
@@ -2048,6 +2090,7 @@ function rigModel(root, kind){
   // The Me 163 uses a landing skid, not three permanent wheels. Its player
   // mission begins after trolley jettison, so never synthesise wheeled gear.
   if(kind==='me163') return rig+', skid retained';
+  if(kind==='ju87') return rig+', original fixed wheel fairings retained';
   const propGrp=root.getObjectByName('prop');
   const inProp=(o)=>{ let p=o; while(p){ if(p===propGrp) return true; p=p.parent; } return false; };
   const parts=[];
@@ -2603,7 +2646,14 @@ const MISSIONS=[
     bombers:{n:2,type:'b17'},
     text:"Fictional Rhine interception. The trolley has already dropped: catch the two Fortresses "
         +"with the Me 163 while rocket fuel lasts, then glide home in a shallow descent. Extend "
-        +"the SKID before touchdown; there is no go-around without power." }
+        +"the SKID before touchdown; there is no go-around without power. A pursuer may attack "
+        +"during the glide; evade it or shoot it down." },
+  { id:'stuka', title:'Bonus Sortie', sub:'Stuka Convoy Dive', ac:'ju87', bonus:true,
+    traffic:'convoy', weather:'broken', kills:{truck:4}, flakDefense:1,
+    text:"Alternate-history bonus over the mapped Rhine valley: take the Ju 87 against four moving "
+        +"vehicles on the road, including an armoured lead vehicle. Climb above the ridges, "
+        +"roll into a dive and release your bombs before pulling out. Watch the crossing battery "
+        +"and return to Beaufort; this is a fictional scenario, not a documented 1945 sortie." }
 ];
 function M(){ return MISSIONS[mission]; }
 function isFree(){ return !!M().free; }
@@ -2657,6 +2707,7 @@ function objectiveLeft(){
   return left;
 }
 function bombersLeft(){ return enemyAir.filter(e=>e.alive&&e.bomber).length; }
+function blockingEnemyAir(){return enemyAir.filter(e=>e.alive&&!e.escapeThreat);}
 function objectiveText(){
   const m=M();
   if(europeOps&&europeOps.failed)return 'WINDOW MISSED — RETURN TO BASE';
@@ -2664,14 +2715,15 @@ function objectiveText(){
   if(m.free) return 'FREE FLIGHT';
   if(m.circuits) return 'CIRCUITS  '+circuitsDone+'/'+m.circuits;
   if(m.bombers){
-    const b=bombersLeft(), f=enemyAir.filter(e=>e.alive&&!e.bomber).length;
+    const b=bombersLeft(), f=blockingEnemyAir().filter(e=>!e.bomber).length;
     if(b||f) return 'BOMBERS '+b+(f?'   ESCORT '+f:'');
+    if(m.id==='komet'&&europeOps?.pending())return 'ROCKET OFF — BEGIN GLIDE';
     return europeOps?.pending()?'NEXT BOMBER BOX EXPECTED':'RTB — LAND AT BEAUFORT';
   }
   const left=objectiveLeft();
   const ks=Object.keys(left);
-  if(enemyAir.filter(e=>e.alive).length>0 && !ks.length)
-    return 'BANDITS  '+enemyAir.filter(e=>e.alive).length+' LEFT';
+  if(blockingEnemyAir().length>0 && !ks.length)
+    return 'BANDITS  '+blockingEnemyAir().length+' LEFT';
   if(!ks.length) return europeOps?.pending()?'NEXT CONTACT EXPECTED':'RTB — LAND AT BEAUFORT';
   const nm={flak:'FLAK',bridge:'BRIDGE',factory:'FACTORY',truck:M().id==='jabo'?'VEHICLES':'TRUCKS',train:'TRAIN',ferry:'FERRY'};
   return ks.map(k=>(nm[k]||k.toUpperCase())+' '+left[k]).join('  ');
@@ -2679,11 +2731,12 @@ function objectiveText(){
 function checkObjective(){
   if(missionOver||isFree()||(europeOps&&!europeOps.ready())) return;
   const left=objectiveLeft();
-  const airLeft=enemyAir.filter(e=>e.alive).length;
+  const airLeft=blockingEnemyAir().length;
   if(!Object.keys(left).length && airLeft===0 && !M().circuits){
     if(!P.rtb){ P.rtb=true;
-      radioSay('TARGETS DESTROYED — RETURN TO BEAUFORT AND PANCAKE');
-      flash('OBJECTIVE COMPLETE — RTB',2200); }
+      const pursuer=M().id==='komet'&&enemyAir.some(e=>e.alive&&e.escapeThreat);
+      radioSay(pursuer?'BOMBERS DOWN — EVADE THE PURSUER AND LAND':'TARGETS DESTROYED — RETURN TO BEAUFORT AND PANCAKE');
+      flash(pursuer?'GLIDE HOME — PURSUER ON YOUR SIX':'OBJECTIVE COMPLETE — RTB',2200); }
   }
 }
 
@@ -3124,7 +3177,7 @@ function damageEnemyAir(e,amount){
     addScore(e.bomber?1800:650);
     if(e.bomber) sortieKills.bomber=(sortieKills.bomber||0)+1;
     else sortieKills.air=(sortieKills.air||0)+1;
-    const left=enemyAir.filter(x=>x.alive).length;
+    const left=blockingEnemyAir().length;
     flash(left?('SPLASH ONE — '+left+' LEFT'):'ALL BANDITS DOWN',1500);
     radioSay(left?('GOOD SHOOTING — '+left+' STILL UP'):'SKY IS CLEAR — GET HOME');
     checkObjective();
@@ -3544,6 +3597,7 @@ function clampToWorldBounds(){
 function updateFlight(dt){
   const d=acDef();
   // control surfaces
+  if(P.ac==='ju87')P.gearTgt=1; // the Stuka's wheels stay down in their fixed fairings
   P.gear+=Math.sign(P.gearTgt-P.gear)*Math.min(Math.abs(P.gearTgt-P.gear),dt*0.55);
   P.flap+=Math.sign(P.flapTgt-P.flap)*Math.min(Math.abs(P.flapTgt-P.flap),dt*0.7);
 
@@ -3771,7 +3825,7 @@ function landed(onStrip){
     return;
   }
   const left=objectiveLeft();
-  const airLeft=enemyAir.filter(e=>e.alive).length;
+  const airLeft=blockingEnemyAir().length;
   const done=(!Object.keys(left).length && airLeft===0 && (!europeOps||europeOps.ready()));
   if(done && window.SquadronCampaign)SquadronCampaign.record('europeRhine',mission);
   missionOver=true;
@@ -3878,11 +3932,21 @@ function chooseEuropePlan(i){
 }
 function updateEuropeOperation(dt){
  if(!europeOps||isFree()||isCircuits()||P.onGround)return;
- const clear=!Object.keys(objectiveLeft()).length&&enemyAir.every(e=>!e.alive);
+ const clear=!Object.keys(objectiveLeft()).length&&blockingEnemyAir().length===0;
  const kills=Object.values(sortieKills).reduce((a,b)=>a+b,0);
- for(const e of europeOps.tick(dt,{pos:P.pos,kills,clear,complete:clear&&europeOps.ready()})){
+ for(const e of europeOps.tick(dt,{pos:P.pos,kills,clear,
+   glide:P.ac==='me163'&&(P.fuel<=0||P.throttle<.02),complete:clear&&europeOps.ready()})){
   if(e.weather){weather=e.weather;applyWeather();}
-  if(e.fighters)spawnEnemyAir(e.fighters);
+  if(e.fighters){
+    const first=enemyAir.length;
+    spawnEnemyAir(e.fighters);
+    if(e.escapeThreat)for(const pursuer of enemyAir.slice(first))pursuer.escapeThreat=true;
+  }
+  if(e.escapeThreat&&P.ac==='me163'){
+    // Final rocket cutoff. Keep the rest of the sortie unpowered even if the
+    // throttle slider is moved again: this encounter is an actual glide.
+    P.fuel=0;P.throttle=0;setThrottleUI(0);
+  }
   if(e.bombers)spawnBombers(e.bombers,e.type);
   if(e.recon)addScore(250);
   if(e.failed)P.rtb=true;
@@ -4030,7 +4094,7 @@ function updateHUD(){
   // arrow follows the closest live aircraft on every HUD update, then returns
   // to the mission target when the sky is clear.
   let foe=null,fd=Infinity;
-  for(const e of enemyAir){if(!e.alive)continue;
+  for(const e of enemyAir){if(!e.alive||(e.escapeThreat&&P.rtb))continue;
     const d=Math.hypot(e.pos.x-P.pos.x,e.pos.z-P.pos.z);
     if(d<fd){fd=d;foe=e;}}
   if(foe&&(!europeOps||europeOps.reconDone||fd<1500)){
@@ -4469,7 +4533,7 @@ function applyWeaponUI(){
 }
 function resetCtlUI(){
   const g=document.getElementById('gearBtn'); if(g){ g.classList.toggle('on',P.gearTgt>0.5);
-    g.innerHTML=(P.ac==='me163'?'SKID':'GEAR')+'<br>'+(P.gearTgt>0.5?'&#9660; DN':'&#9650; UP'); }
+    g.innerHTML=P.ac==='ju87'?'GEAR<br>FIXED':(P.ac==='me163'?'SKID':'GEAR')+'<br>'+(P.gearTgt>0.5?'&#9660; DN':'&#9650; UP'); }
   const f=document.getElementById('flapBtn'); if(f){f.style.display=P.ac==='me163'?'none':'';
     f.classList.remove('on'); f.innerHTML='FLAPS<br>UP'; }
 }
@@ -4483,7 +4547,7 @@ function showBrief(i){
   briefPlan=chooseEuropePlan(i);
   document.getElementById('brSub').textContent=m.sub;
   document.getElementById('brTitle').textContent=m.title;
-  document.getElementById('brStamp').textContent=(m.ac==='bf109'||m.ac==='fw190'||m.ac==='me262'||m.ac==='me163')?'Luftwaffe':'Secret';
+  document.getElementById('brStamp').textContent=(m.ac==='bf109'||m.ac==='fw190'||m.ac==='ju87'||m.ac==='me262'||m.ac==='me163')?'Luftwaffe':'Secret';
   document.getElementById('brText').innerHTML=m.text
     +'<br><br><b>AIRCRAFT</b> '+AC[m.ac||'p47'].name
     +FlightOps.briefText(briefPlan.weather,briefPlan.config,briefPlan.wind);
@@ -4510,15 +4574,15 @@ function showResult(good,title,sub,html,btn){
 // Reported: "in der Missionsauswahl wäre es toll, wenn man die Flugzeugtypen sehen könnte" -
 // every chip already carries m.ac, just never displayed. Short label + the aircraft's own
 // AC[...].col (the same colour it's rendered in in-flight) so the badge doubles as a legend.
-const ACSHORT={p47:'P-47',bf109:'BF 109',fw190:'FW 190',me262:'ME 262',me163:'ME 163'};
+const ACSHORT={p47:'P-47',bf109:'BF 109',fw190:'FW 190',ju87:'JU 87',me262:'ME 262',me163:'ME 163'};
 function acHex(kind){ return '#'+(AC[kind]&&AC[kind].col!==undefined?AC[kind].col:0x888888).toString(16).padStart(6,'0'); }
-function landingSpeedNote(m){return 'LANDING TARGET: ~'+Math.round(AC[m.ac||'p47'].app*KT)+' MPH · '+AC[m.ac||'p47'].name+(m.ac==='me163'?' · SKID DOWN.':'.');}
+function landingSpeedNote(m){return 'LANDING TARGET: ~'+Math.round(AC[m.ac||'p47'].app*KT)+' MPH · '+AC[m.ac||'p47'].name+(m.ac==='me163'?' · SKID DOWN.':m.ac==='ju87'?' · GEAR FIXED.':'.');}
 function buildMenu(){
   const sel=document.getElementById('missionSel');
   if(sel && !sel.childElementCount){
     MISSIONS.forEach((m,i)=>{
       const c=document.createElement('div'); c.className='chip'+(i===selectedMission?' sel':'');
-      const tag=m.free?'FF':(m.circuits?'C':String(i-1));
+      const tag=m.free?'FF':(m.circuits?'C':m.bonus?'B':String(i-1));
       const acLabel=ACSHORT[m.ac]||m.ac||'';
       c.innerHTML='<div class="cn">'+tag+'</div><div class="cs">'+m.sub+'</div>'
         +'<div class="ca" style="background:'+acHex(m.ac)+'">'+acLabel+'</div>';
@@ -4622,6 +4686,7 @@ function bindInput(){
   document.getElementById('dropBtn').addEventListener('pointerdown',e=>{ e.preventDefault(); dropBomb(); });
   // ---- gear / flaps / weapon / view ----
   document.getElementById('gearBtn').addEventListener('pointerdown',e=>{ e.preventDefault();
+    if(P.ac==='ju87'){flash('GEAR FIXED DOWN',700);return;}
     P.gearTgt=P.gearTgt>0.5?0:1;
     const b=e.currentTarget; b.classList.toggle('on',P.gearTgt>0.5);
     const name=P.ac==='me163'?'SKID':'GEAR';
@@ -4664,7 +4729,7 @@ function bindInput(){
     keys[e.key]=true;
     if(e.key===' '){ e.preventDefault(); dropBomb(); }
     if(e.key==='f'||e.key==='F') firing=true;
-    if(e.key==='g'||e.key==='G') P.gearTgt=P.gearTgt>0.5?0:1;
+    if((e.key==='g'||e.key==='G')&&P.ac!=='ju87') P.gearTgt=P.gearTgt>0.5?0:1;
     if((e.key==='a'||e.key==='A')&&!e.repeat) toggleAero();
     if((e.key==='b'||e.key==='B')&&!e.repeat) beginBailout();
     if(e.key==='p'||e.key==='P') togglePause();

@@ -16,7 +16,8 @@ g.FlightPlans={
   {weather:['storm'],deadline:900,notes:'Identify the crossing, silence both batteries, destroy the ferry and works. Enemy reserves will counterattack.',recon:{x:13000,z:15800,radius:1100,min:220,max:850,seconds:5},events:[{kills:2,fighters:2,required:true,message:'ENEMY RESERVE FLIGHT — TWO MORE BANDITS'},{at:210,weather:'rain',message:'THUNDERSTORM MOVING EAST — HEAVY RAIN REMAINS'}]},
   {weather:['broken','haze'],deadline:680,fuel:80,notes:'Fast jet attack: suppress one battery, strike the factory and escape the fighter screen.',events:[{kills:2,fighters:2,required:true,message:'VALLEY ALERT — TWO ADDITIONAL FIGHTERS'}]},
   {weather:['lowcloud','rain'],deadline:790,fuel:90,notes:'Lead Liberator group, escort and a second bomber wave. Conserve cannon ammunition.',events:[{kills:2,bombers:2,type:'b24',required:true,message:'SECOND LIBERATOR GROUP — CLIMB THROUGH THE CLOUD GAP'}]},
-  {weather:['clear','broken'],deadline:620,fuel:65,notes:'Rocket interception after trolley jettison. Fuel is finite: save altitude for an unpowered skid landing.',events:[]}
+  {weather:['clear','broken'],deadline:620,fuel:65,notes:'Rocket interception after trolley jettison. Once the bombers are down, close the throttle and glide home; a fighter will chase you, but you can evade it and land.',events:[{clear:true,glide:true,fighters:1,escapeThreat:true,required:true,message:'ROCKET OFF — THUNDERBOLT PURSUER! EVADE AND GLIDE HOME'}]},
+  {weather:['broken','haze'],deadline:780,notes:'Fictional bonus: dive on four moving road vehicles. Four bombs, fixed landing gear and a flak battery near the crossing.',events:[{kills:2,fighters:1,message:'ROAD CONVOY CALLING AIR COVER — WATCH YOUR EXIT'}]}
  ],
  pacific:[{}, {},
   {weather:['broken','haze'],deadline:480,notes:'Confirm the contact in the blue search area, then intercept the moving merchant.',recon:{x:600,z:2450,radius:850,min:60,max:650,seconds:5}},

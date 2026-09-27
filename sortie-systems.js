@@ -54,6 +54,7 @@ class Operation{
    if(e.at!=null&&this.elapsed<e.at)return;
    if(e.kills!=null&&state.kills<e.kills)return;
    if(e.clear&&!state.clear)return;
+   if(e.glide&&!state.glide)return;
    this.fired.add(i);out.push(e);
   });
   const r=this.config.recon;
