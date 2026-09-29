@@ -16,8 +16,10 @@ assert.deepEqual(entries.map(u=>u.pathname),[
  '/torpedo-carrier.html','/remagen-mission.html'
 ],'only the two current real-terrain campaigns appear on the board');
 assert.equal(entries[1].searchParams.get('campaign'),'1','Europe opens the real-terrain campaign');
-assert.equal(entries[0].searchParams.get('v'),'150','Pacific link bypasses stale startup HTML');
-assert.equal(entries[1].searchParams.get('v'),'150','campaign link bypasses stale startup HTML');
+const displayedBuild=html('index.html').match(/Operations Board · BUILD (\d+)/)?.[1];
+assert.ok(displayedBuild,'the operations board identifies its build');
+assert.equal(entries[0].searchParams.get('v'),displayedBuild,'Pacific link bypasses stale startup HTML');
+assert.equal(entries[1].searchParams.get('v'),displayedBuild,'campaign link bypasses stale startup HTML');
 for(const classic of ['torpedo-carrier-open-sea.html','thunderbolt-europe.html']){
  assert.match(html(classic),/id="missionSel"/,`${classic} has a mission selection`);
  assert.match(html(classic),/const MISSIONS\s*=\s*\[/,`${classic} defines its missions`);
