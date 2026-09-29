@@ -283,7 +283,7 @@
   <div style="width:100%;height:4px;background:repeating-linear-gradient(45deg,#ffd400,#ffd400 8px,#111 8px,#111 16px);"></div>
   <span id="testVersionBannerText" style="background:#111;color:#ffd400;font-family:monospace;font-weight:800;font-size:11px;letter-spacing:.5px;padding:3px 10px;border:1px solid #ffd400;border-top:none;border-radius:0 0 6px 6px;"></span>
 </div>
-<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 150';</script>
+<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 151';</script>
 <!-- ===== END TEMP TEST-ONLY VERSION BANNER ===== -->
 <div id="app"></div>
 
@@ -312,7 +312,7 @@
   <div id="flash"></div>
   <div id="gunsight"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 150 · REAL RHINE</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 151 · REAL RHINE</div>
 
   <div id="apr">
     <div id="aprCall"></div>
@@ -767,7 +767,7 @@ async function loadRealWorld(){
 
   if(OSMManager.BUILD!==21||HistoricalObjectManager.BUILD!==21||LivingWorld.BUILD!==22||WorldVehicles.BUILD!==22) throw new Error('Terrain version mismatch. Reload Remagen.');
   document.getElementById('testVersionBannerText').textContent=
-    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 150 · MODULE 22';
+    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 151 · MODULE 22';
   heightProvider=new DEMHeightProvider(RTILE,'terrain-system/real/data/dem/');
   terrain=new TerrainManager(scene,RTILE,heightProvider);
   osmMgr=new OSMManager(scene,RTILE,terrain,'terrain-system/real/data/osm/');
@@ -2117,6 +2117,62 @@ function coverGearCut(root, clusters, floor, rfUsed){
     root.add(patch);
   }
 }
+// The P-47 export has four separate blade shells, blade roots and spinner in
+// Object_4. They share a mesh with the airframe, but not triangle vertices.
+// Move just the complete front components into a rotating copy of that mesh.
+// The old whole-aircraft radius cut removed wing and cowling faces, and its
+// replacement propeller sat behind the original blades.
+function rigP47OriginalProp(root, whole, S){
+  const source=root.getObjectByName('Object_4');
+  if(!source?.isMesh||!source.geometry?.index)return null;
+  root.updateMatrixWorld(true);
+  const geometry=source.geometry, indices=geometry.index.array, pos=geometry.attributes.position;
+  const parent=new Int32Array(pos.count);
+  for(let i=0;i<parent.length;i++)parent[i]=i;
+  function find(i){while(parent[i]!==i){parent[i]=parent[parent[i]];i=parent[i];}return i;}
+  for(let i=0;i<indices.length;i+=3){
+    const a=find(indices[i]),b=find(indices[i+1]),c=find(indices[i+2]);
+    parent[b]=a;parent[c]=a;
+  }
+  const invRoot=new THREE.Matrix4().copy(root.matrixWorld).invert(),v=new THREE.Vector3();
+  const components=new Map();
+  for(let i=0;i<indices.length;i+=3){
+    const id=find(indices[i]);
+    if(!components.has(id))components.set(id,{faces:[],box:new THREE.Box3()});
+    const comp=components.get(id);comp.faces.push(i);
+    for(let k=0;k<3;k++){
+      readVert(pos,indices[i+k],v);source.localToWorld(v);root.worldToLocal(v);
+      comp.box.expandByPoint(v);
+    }
+  }
+  const threshold=whole.max.z-S.z*.061;
+  const front=[...components.values()].filter(c=>c.box.min.z>threshold);
+  const blades=front.filter(c=>c.faces.length>100 &&
+    Math.max(c.box.max.x-c.box.min.x,c.box.max.y-c.box.min.y)>S.x*.09);
+  const count=front.reduce((n,c)=>n+c.faces.length,0);
+  // Stop without modifying anything if a different export changes the mesh.
+  if(blades.length!==4||count<1500||count>2600)return null;
+  const spinner=front.find(c=>c.box.max.z>whole.max.z-.015 && c.faces.length>100);
+  if(!spinner)return null;
+  const pivot=new THREE.Vector3((spinner.box.min.x+spinner.box.max.x)/2,
+    (spinner.box.min.y+spinner.box.max.y)/2, blades[0].box.min.z+.07);
+  const selected=[];
+  for(const comp of front)for(const i of comp.faces){
+    selected.push(indices[i],indices[i+1],indices[i+2]);
+  }
+  const rotorGeo=new THREE.BufferGeometry();
+  for(const [name,attribute] of Object.entries(geometry.attributes))rotorGeo.setAttribute(name,attribute);
+  rotorGeo.setIndex(new THREE.BufferAttribute(new indices.constructor(selected),1));
+  const rotor=new THREE.Group();rotor.name='prop';rotor.position.copy(pivot);
+  const part=new THREE.Mesh(rotorGeo,source.material);
+  part.name='original P-47 propeller';
+  part.applyMatrix4(new THREE.Matrix4().makeTranslation(-pivot.x,-pivot.y,-pivot.z)
+    .multiply(invRoot.multiply(source.matrixWorld)));
+  rotor.add(part);root.add(rotor);
+  for(const comp of front)for(const i of comp.faces){indices[i+1]=indices[i];indices[i+2]=indices[i];}
+  geometry.index.needsUpdate=true;
+  return 'original P-47 four-blade propeller ('+count+' GLB triangles)';
+}
 function rigModel(root, kind){
   root.updateMatrixWorld(true);
   const whole=new THREE.Box3().setFromObject(root);
@@ -2137,7 +2193,9 @@ function rigModel(root, kind){
   // same heuristic that works for every propeller aircraft in this project. Skip the search
   // entirely for jet/rocket types rather than trust a disc-shaped false positive; there is nothing
   // here that legitimately spins.
-  if(kind==='ju87'){
+  if(kind==='p47'){
+    rig=rigP47OriginalProp(root,whole,S)||'P-47 original propeller unavailable';
+  } else if(kind==='ju87'){
     rig=rigJu87Prop(root,whole,S)||'Ju 87 rotor mesh unavailable';
   } else if(MULTI_ENGINE_KINDS.includes(kind)){
     // Reported: fixing the fake nose disc (see NO_PROP_KINDS's own comment) left this aircraft's
@@ -2246,7 +2304,7 @@ function rigModel(root, kind){
   // aeroplane stayed wheels-up forever. `findGearClusters()`/`buildGear()` below already handle
   // "the real gear is welded in" for every propeller aircraft; skip the unreliable whole-mesh
   // filter for jets and let that same fallback run instead of trusting a false positive.
-  const builtFighter=kind==='fw190'||kind==='bf109';
+  const builtFighter=kind==='fw190'||kind==='bf109'||kind==='p47';
   const found=(JET_KINDS.includes(kind)||builtFighter) ? [] :
     parts.filter(p=>p.bb.max.y<floor && p.sz.y<S.y*0.5 && p.sz.x<S.x*0.30);
   if(found.length && found.length<=parts.length*0.4){

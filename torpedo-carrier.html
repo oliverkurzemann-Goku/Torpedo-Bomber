@@ -317,7 +317,7 @@
   <div id="flash"></div>
   <div id="ltn" style="position:fixed;inset:0;background:#e6ecff;opacity:0;pointer-events:none;z-index:40;"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 150</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 151</div>
 
   <!-- Optical landing aid -->
   <div id="lso">
@@ -4021,7 +4021,7 @@ function spawnRaider(i,n){
   const mesh=new THREE.Group(); let r_disc=null;
   let inner=null;
   const fromModel=!!gltfRoot;
-  if(gltfRoot) inner=gltfRoot.clone(true);
+  if(gltfRoot) inner=makeWingmanModel(gltfRoot,true);
   else if(planeBody) inner=planeBody.clone(true);
   if(inner){
     inner.traverse(o=>{ o.visible=true; });
@@ -4034,8 +4034,14 @@ function spawnRaider(i,n){
       if(o.name==='avengerGearLeg') o.visible=false;
       if(o.name==='avengerGearCover') o.visible=true;
     });
-    // same as the wingmen: turn the model's own propeller if it has one, otherwise build
-    let disc=fitPropeller(inner, mesh, +1) || rigOwnProp(inner, mesh, +1);
+    // The Avenger's original blades were detached from gltfRoot for the player.
+    // Copy that rotor as the wingmen do. Scanning a full Avenger clone for a
+    // propeller on each raider also makes the Zero defence sortie stall.
+    let disc=null;
+    if(fromModel && propPivot){
+      const mount=new THREE.Group();mount.rotation.y=Math.PI;
+      disc=propPivot.clone(true);disc.rotation.z=0;mount.add(disc);mesh.add(mount);
+    } else disc=fitPropeller(inner, mesh, +1) || rigOwnProp(inner, mesh, +1);
     if(!disc){
       const c=cowlCentre(inner, mesh, +1);
       disc=makePropBlades(3.6, c? c.z+0.30 : 5.6, c? c.y : 0.3);
@@ -4069,12 +4075,8 @@ function updateRaiders(dt){
     // If the sortie started before the 15 MB Avenger finished loading, the raider was built
     // from the white procedural stand-in. Swap in the real model the moment it is ready.
     if(!r.fromModel && gltfRoot){
-      for(let c=r.mesh.children.length-1;c>=0;c--){
-        const ch=r.mesh.children[c];
-        if(ch!==r.disc) r.mesh.remove(ch);
-      }
-      const nu=gltfRoot.clone(true);
-      nu.traverse(o=>{ o.visible=true; });
+      while(r.mesh.children.length)r.mesh.remove(r.mesh.children[0]);
+      const nu=makeWingmanModel(gltfRoot,true);
       nu.rotation.y+=Math.PI;
       if(gearMesh && gearMesh.length){
         const gn=new Set(gearMesh.map(g=>g.name));
@@ -4084,7 +4086,12 @@ function updateRaiders(dt){
           if(o.name==='avengerGearCover') o.visible=true;
         });
       }
-      r.mesh.add(nu); r.fromModel=true;
+      r.mesh.add(nu);
+      if(propPivot){
+        const mount=new THREE.Group();mount.rotation.y=Math.PI;
+        r.disc=propPivot.clone(true);r.disc.rotation.z=0;mount.add(r.disc);r.mesh.add(mount);
+      } else r.disc=fitPropeller(nu,r.mesh,+1)||rigOwnProp(nu,r.mesh,+1);
+      r.fromModel=true;
     }
     const dh2=Math.hypot(r.pos.x-carrierX, r.pos.z);
     if(r.dropped && dh2>1900){ r.dropped=false; r.runIn=false; r.egressDir=null; }   // enough room to come around
@@ -4529,7 +4536,7 @@ function loadPlaneModel(){
       }
       window.__eyeDbg='EYE '+COCKPIT_EYE.map(v=>v.toFixed(2)).join('/');
       const btEl=document.getElementById('buildTag');
-      if(btEl) btEl.textContent='BUILD 150 · '+window.__eyeDbg;
+      if(btEl) btEl.textContent='BUILD 151 · '+window.__eyeDbg;
       let seat=null;
       model.traverse(function(o){
         if(!o.isMesh||!o.material) return;
@@ -5841,7 +5848,7 @@ function setupUIButtons(){
   if(dbgT2) dbgT2.onclick=()=>{
     dbgOn=!dbgOn; localStorage.setItem('dbgOn',dbgOn?'1':'0');
     const db=document.getElementById('dbgBox'); if(db) db.textContent=dbgOn?'✓':'';
-    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 150'; }
+    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 151'; }
   };
   const lu=document.getElementById('lookUp'), ld=document.getElementById('lookDn');
   let _lookT=0;

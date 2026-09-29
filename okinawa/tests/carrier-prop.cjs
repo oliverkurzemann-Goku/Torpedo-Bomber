@@ -91,6 +91,18 @@ function glb(file){return new Promise((resolve,reject)=>{const raw=fs.readFileSy
    assert.equal(w.mesh.getObjectByName('Object_2'),undefined,'spawned escort leaves out dense engine internals');
    assert(w.disc?.children.length,'escort retains its own rotating propeller');
  }
+ const raiderContext=vm.createContext({THREE,gltfRoot:avenger,planeBody:null,propPivot:pivot,
+  gearMesh:[],scene:new THREE.Scene(),raiders:[],carrierX:0,pacificOps:null,
+  cowlCentre:()=>null,fitPropeller:()=>{throw Error('loaded Avenger must use the detached GLB rotor');},
+  rigOwnProp:()=>null,makePropBlades:()=>null});
+ vm.runInContext(html.slice(html.indexOf('function makeWingmanModel('),html.indexOf('function spawnWingman('))+
+  '\n'+html.slice(html.indexOf('function spawnRaider(i,n){'),html.indexOf('function killRaider(r){')),raiderContext);
+ for(let i=0;i<3;i++)raiderContext.spawnRaider(i,3);
+ assert.equal(raiderContext.raiders.length,3,'Zero defence launches three live attackers');
+ for(const r of raiderContext.raiders){
+   assert.equal(r.mesh.getObjectByName('Object_2'),undefined,'raider keeps out 258k hidden engine faces');
+   assert(r.disc?.children.length,'raider rotates the original Avenger GLB blade');
+ }
  const zero=await glb('zero.glb'),zeroBox=new THREE.Box3().setFromObject(zero);
  const zeroSize=zeroBox.getSize(new THREE.Vector3());
  zero.position.sub(zeroBox.getCenter(new THREE.Vector3()));

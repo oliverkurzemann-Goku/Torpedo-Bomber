@@ -25,6 +25,28 @@ function faceCount(group,minimumY){let total=0;group.updateMatrixWorld(true);gro
  }
 });return total;}
 (async()=>{
+ const {scene:p47}=await load('p47new.glb'),p47Root=new THREE.Group();p47Root.add(p47);
+ const p47Size=new THREE.Box3().setFromObject(p47Root).getSize(new THREE.Vector3());
+ p47.scale.setScalar(12.42/p47Size.x);p47Root.updateMatrixWorld(true);
+ p47.position.copy(new THREE.Box3().setFromObject(p47Root).getCenter(new THREE.Vector3())).negate();
+ p47Root.updateMatrixWorld(true);
+ const wing=p47.getObjectByName('Object_3'),nose=p47.getObjectByName('Object_4');
+ const originalWing=wing.geometry.index.array.slice(),originalNose=nose.geometry.index.array.slice();
+ const p47Rig=rigModel(p47Root,'p47');
+ assert.match(p47Rig,/original P-47 four-blade propeller/);
+ const rotor=p47Root.getObjectByName('prop'),originalPart=rotor.getObjectByName('original P-47 propeller');
+ assert(originalPart?.geometry?.index.count>=4500,'the GLB blades, roots and spinner rotate together');
+ assert.strictEqual(originalPart.material,nose.material,'the original propeller texture is retained');
+ assert.ok(rotor.position.z>4.9,'the propeller pivots at the original front shaft, not behind the cowl');
+ const pv=new THREE.Vector3(),pi=wing.geometry.index.array,pp=wing.geometry.attributes.position;
+ for(let i=0;i<pi.length;i+=3){
+  readVert(pp,originalWing[i],pv);wing.localToWorld(pv);
+  if(Math.abs(pv.x)>1.8)assert.equal(pi[i+1],originalWing[i+1],
+    'the P-47 wing skin and its gun mounts must remain intact');
+ }
+ const newNose=nose.geometry.index.array;
+ assert(originalNose.some((n,i)=>n!==newNose[i]),'only the extracted original rotor is hidden in the fixed mesh');
+ console.log('p47',JSON.stringify({rig:p47Rig,propellerZ:rotor.position.z,rotatingFaces:originalPart.geometry.index.count/3}));
  for(const [kind,file,yaw,span] of [['fw190','fw190.glb',0,10.51],['bf109','bf109new.glb',0,9.92]]){
   const {scene:src}=await load(file),model=new THREE.Group();model.add(src);src.rotation.y=yaw;src.updateMatrixWorld(true);
   const size=new THREE.Box3().setFromObject(model).getSize(new THREE.Vector3());src.scale.setScalar(span/size.x);
