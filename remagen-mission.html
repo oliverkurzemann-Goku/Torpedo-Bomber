@@ -283,7 +283,7 @@
   <div style="width:100%;height:4px;background:repeating-linear-gradient(45deg,#ffd400,#ffd400 8px,#111 8px,#111 16px);"></div>
   <span id="testVersionBannerText" style="background:#111;color:#ffd400;font-family:monospace;font-weight:800;font-size:11px;letter-spacing:.5px;padding:3px 10px;border:1px solid #ffd400;border-top:none;border-radius:0 0 6px 6px;"></span>
 </div>
-<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 149';</script>
+<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 150';</script>
 <!-- ===== END TEMP TEST-ONLY VERSION BANNER ===== -->
 <div id="app"></div>
 
@@ -312,7 +312,7 @@
   <div id="flash"></div>
   <div id="gunsight"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 149 · REAL RHINE</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 150 · REAL RHINE</div>
 
   <div id="apr">
     <div id="aprCall"></div>
@@ -696,26 +696,68 @@ function clearTreesNearAirfield(){
   }
   if(cleared) console.log('cleared',cleared,'tree(s) overlapping the airfield footprint');
 }
-// OSM roads predate the fictional runways. Remove only road triangles that
-// overlap a strip; the mapped road resumes outside the runway clearance.
+// OSM landcover and roads predate the fictional runways. Transparent forest
+// floor sits above the dirt strip and, unlike trees, was not cleared in Build
+// 149: on the German field it drew over the aircraft. Clip triangles to the
+// OUTSIDE of each runway, retaining the mapped surroundings without a huge
+// polygon-shaped hole in the forest.
 function clearRoadsOnRunways(){
   const fields=[[ALLIED_AF_X,ALLIED_AF_Z],[GERMAN_AF_X,GERMAN_AF_Z]];
+  const clip=(ring,axis,limit,less)=>{
+    const out=[];
+    for(let i=0;i<ring.length;i++){
+      const a=ring[i],b=ring[(i+1)%ring.length];
+      const ia=less?a[axis]<=limit:a[axis]>=limit,ib=less?b[axis]<=limit:b[axis]>=limit;
+      if(ia)out.push(a);
+      if(ia!==ib){const t=(limit-a[axis])/(b[axis]-a[axis]);
+        out.push({x:a.x+(b.x-a.x)*t,z:a.z+(b.z-a.z)*t});}
+    }
+    return out;
+  };
   for(const tile of osmMgr.tiles.values()){
     if(!tile?.group)continue;
-    for(const mesh of tile.group.children){
-      if(!mesh.isMesh||mesh.material!==osmMgr.roadMat||!mesh.geometry.index)continue;
+    for(const mesh of [...tile.group.children,...(tile.farGroup?.children||[])]){
+      if(!mesh.isMesh||![osmMgr.roadMat,osmMgr.farmMat,osmMgr.forestFloorMat].includes(mesh.material)||!mesh.geometry.index)continue;
+      if(!mesh.geometry.boundingBox)mesh.geometry.computeBoundingBox();
+      const box=mesh.geometry.boundingBox;
+      if(!fields.some(([fx,fz])=>box.max.x>fx-RWY_LEN/2-16&&box.min.x<fx+RWY_LEN/2+16&&
+        box.max.z>fz-RWY_W/2-16&&box.min.z<fz+RWY_W/2+16))continue;
       const pos=mesh.geometry.attributes.position,ix=mesh.geometry.index.array;
+      const positions=Array.from(pos.array),indices=Array.from(ix);
+      const layerOffset=mesh.material===osmMgr.roadMat?1.4:mesh.material===osmMgr.farmMat?0.3:0.18;
+      const offsets=Array.from(mesh.userData.yOffsets||new Float32Array(pos.count).fill(layerOffset));
       let removed=0;
       for(let i=0;i<ix.length;i+=3){
         const a=ix[i],b=ix[i+1],c=ix[i+2];
         const x0=Math.min(pos.getX(a),pos.getX(b),pos.getX(c)),x1=Math.max(pos.getX(a),pos.getX(b),pos.getX(c));
         const z0=Math.min(pos.getZ(a),pos.getZ(b),pos.getZ(c)),z1=Math.max(pos.getZ(a),pos.getZ(b),pos.getZ(c));
-        if(fields.some(([fx,fz])=>x1>fx-RWY_LEN/2-16&&x0<fx+RWY_LEN/2+16&&
-          z1>fz-RWY_W/2-16&&z0<fz+RWY_W/2+16)){
-          ix[i+1]=a;ix[i+2]=a;removed++;
+        const hits=fields.filter(([fx,fz])=>x1>fx-RWY_LEN/2-16&&x0<fx+RWY_LEN/2+16&&
+          z1>fz-RWY_W/2-16&&z0<fz+RWY_W/2+16);
+        if(!hits.length)continue;
+        indices[i+1]=a;indices[i+2]=a;removed++;
+        let polygons=[[a,b,c].map(j=>({x:pos.getX(j),z:pos.getZ(j)}))];
+        for(const [fx,fz] of hits){
+          const left=fx-RWY_LEN/2-16,right=fx+RWY_LEN/2+16;
+          const near=fz-RWY_W/2-16,far=fz+RWY_W/2+16,next=[];
+          for(const ring of polygons){
+            next.push(clip(ring,'x',left,true),clip(ring,'x',right,false));
+            const mid=clip(clip(ring,'x',left,false),'x',right,true);
+            next.push(clip(mid,'z',near,true),clip(mid,'z',far,false));
+          }
+          polygons=next.filter(p=>p.length>=3);
+        }
+        const offset=offsets[a];
+        for(const ring of polygons){
+          const base=positions.length/3;
+          for(const p of ring){positions.push(p.x,terrain.getRenderedHeight(p.x,p.z)+offset,p.z);offsets.push(offset);}
+          for(let k=1;k<ring.length-1;k++)indices.push(base,base+k,base+k+1);
         }
       }
-      if(removed)mesh.geometry.index.needsUpdate=true;
+      if(removed){
+        mesh.geometry.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));
+        mesh.geometry.setIndex(indices);mesh.geometry.computeVertexNormals();mesh.geometry.computeBoundingSphere();
+        mesh.userData.yOffsets=new Float32Array(offsets);
+      }
     }
   }
 }
@@ -725,7 +767,7 @@ async function loadRealWorld(){
 
   if(OSMManager.BUILD!==21||HistoricalObjectManager.BUILD!==21||LivingWorld.BUILD!==22||WorldVehicles.BUILD!==22) throw new Error('Terrain version mismatch. Reload Remagen.');
   document.getElementById('testVersionBannerText').textContent=
-    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 149 · MODULE 22';
+    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 150 · MODULE 22';
   heightProvider=new DEMHeightProvider(RTILE,'terrain-system/real/data/dem/');
   terrain=new TerrainManager(scene,RTILE,heightProvider);
   osmMgr=new OSMManager(scene,RTILE,terrain,'terrain-system/real/data/osm/');
@@ -3818,15 +3860,17 @@ function updateFlight(dt){
     // wings smoothly, following the shortest path even after a half roll.
     const bankErr=Math.atan2(Math.sin(P.roll-P.rollBias),Math.cos(P.roll-P.rollBias));
     const rollAuthority=2.1*d.rollAuth*energy;
+    // Neutral self-levels gently; held controls keep the original responsive roll.
     P.rollVel=(Math.abs(inputRoll)>0.075||Math.abs(inputPitch)>0.075)?inputRoll*steerSign*rollAuthority:
-      Math.max(-rollAuthority,Math.min(rollAuthority,-bankErr*3.2*d.rollAuth*energy));
+      Math.max(-rollAuthority,Math.min(rollAuthority,-bankErr*.7*d.rollAuth*energy));
     P.pitch=Math.atan2(Math.sin(P.pitch+P.pitchVel*Math.cos(P.roll)*dt),Math.cos(P.pitch+P.pitchVel*Math.cos(P.roll)*dt));
     P.heading+=P.pitchVel*Math.sin(P.roll)*dt;
     P.roll=Math.atan2(Math.sin(P.roll+P.rollVel*dt),Math.cos(P.roll+P.rollVel*dt));
   }else{
     P.pitchVel=(P.pitchVel||0)+(pitchRate*pitchRate*(inputPitch*d.pitchLim*0.92-P.pitch) - 2*zeta*pitchRate*P.pitchVel)*dt;
     P.pitch += P.pitchVel*dt;
-    P.rollVel=(P.rollVel||0)+(rollRate*rollRate*(rollTarget-P.roll) - 2*zeta*rollRate*P.rollVel)*dt;
+    const levelRate=Math.abs(inputRoll)<.075?rollRate*.34:rollRate;
+    P.rollVel=(P.rollVel||0)+(levelRate*levelRate*(rollTarget-P.roll) - 2*zeta*levelRate*P.rollVel)*dt;
     P.roll += P.rollVel*dt;
     if(P.pitch>d.pitchLim){ P.pitch=d.pitchLim; P.pitchVel=Math.min(0,P.pitchVel); }
     if(P.pitch<-d.pitchLim){ P.pitch=-d.pitchLim; P.pitchVel=Math.max(0,P.pitchVel); }

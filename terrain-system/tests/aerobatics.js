@@ -37,7 +37,10 @@ for(const [file,start,kind] of [
   // self-centres when the touch stick is released.
   for(let i=0;i<90;i++)fly(p,1,0,false,.04,d,40,1);
   assert(p.roll>1.05&&p.roll<1.57,file+' full stick must reach a steep bank');
-  for(let i=0;i<120;i++)fly(p,0,0,false,.04,d,40,1);
+  const bankAtRelease=p.roll;
+  for(let i=0;i<15;i++)fly(p,0,0,false,.04,d,40,1);
+  assert(p.roll>bankAtRelease*.3,file+' normal neutral should not snap level in 0.6 seconds');
+  for(let i=0;i<105;i++)fly(p,0,0,false,.04,d,40,1);
   assert(Math.abs(p.roll)<.06,file+' normal mode must still return to level');
   p.roll=Math.PI/2;p.pitch=0;p.heading=0;
   for(let i=0;i<35;i++){fly(p,0,0,true,.04,d,40,1);turn(p,true,.04,d,40);}
@@ -67,7 +70,9 @@ for(const [file,start,kind] of [
   assert(upsideDown&&travelled>=Math.PI*2,file+' must rotate through a full 360° loop');
   p.roll=1.32;p.rollVel=0;p.pitch=0;
   for(let i=0;i<55;i++)fly(p,0,0,true,.04,d,40,1);
-  assert(Math.abs(p.roll)<.04,file+' AERO neutral stick must level the wings after a bank');
+  assert(p.roll>.08&&p.roll<.7,file+' AERO bank should unwind gradually');
+  for(let i=0;i<100;i++)fly(p,0,0,true,.04,d,40,1);
+  assert(Math.abs(p.roll)<.04,file+' AERO neutral stick eventually levels the wings');
   p.roll=Math.PI/2;p.pitch=0;
   for(let i=0;i<25;i++)fly(p,0,1,true,.04,d,40,1);
   assert(Math.abs(p.roll-Math.PI/2)<.04,file+' holding back-stick preserves knife-edge pull');

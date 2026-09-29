@@ -12,15 +12,17 @@ const ctx=vm.createContext({THREE,Math,P,ships:[],wingmen:[w],PROP_STEP:.3,isDef
 vm.runInContext(source('playerLateral','spawnWingman')+'\n'+source('updateWingmen','updateWingShots')+
  '\n'+source('noseDir','loadPlaneModel'),ctx);
 let moved=0;
-for(let i=0;i<240;i++){
- if(i===60)P.heading=Math.PI;
- const before=w.pos.clone(),old=w.heading;
+for(let i=0;i<1200;i++){
+ if(i>=90)P.heading=Math.min(Math.PI/2,(i-90)*Math.PI/360);
+ const before=w.pos.clone(),old=w.heading,oldRate=w.yawRate||0;
  ctx.updateWingmen(1/60);
- assert.ok(Math.abs(w.heading-old)<=.32/60+1e-7,'wingman cannot rotate in place');
+ assert.ok(Math.abs(w.heading-old)<=.25/60+1e-7,'wingman cannot rotate in place');
+ assert.ok(Math.abs((w.yawRate||0)-oldRate)<=.18/60+1e-7,'wingman yaw rate must not snap');
  moved+=before.distanceTo(w.pos);
  P.pos.addScaledVector(ctx.noseDir(),P.spd/60);
 }
 assert.ok(moved>150,'wingman travels forward through the manoeuvre');
 assert.ok(Number.isFinite(w.roll)&&Math.abs(w.roll)<.7,'bank remains physically bounded');
-assert.ok(Math.abs(w.heading-Math.PI/2)>.05,'aircraft eventually turns with its flight path');
+assert.ok(Math.abs(w.heading)<.5,'aircraft eventually follows a smooth 90-degree turn');
+assert.ok(w.pos.distanceTo(P.pos)<160,'wingman rejoins formation instead of wandering away');
 console.log('Formation: aligned launch, bounded bank/yaw, and continuous travel through a leader reversal');

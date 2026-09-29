@@ -15,6 +15,7 @@ const root=path.resolve(__dirname,'../..'), html=fs.readFileSync(path.join(root,
 vm.runInThisContext(html.slice(html.indexOf('function readVert('),html.indexOf('function cowlCentre(')));
 vm.runInThisContext(html.slice(html.indexOf('function makeSBDGear('),html.indexOf('function loadSBDModel(){')));
 vm.runInThisContext(html.slice(html.indexOf('function makeZeroGear(){'),html.indexOf('function buildZeroMesh(){')));
+vm.runInThisContext(html.slice(html.indexOf('function makeWingmanModel('),html.indexOf('function spawnWingman(')));
 function glb(file){return new Promise((resolve,reject)=>{const raw=fs.readFileSync(path.join(root,file));
  new THREE.GLTFLoader().parse(raw.buffer.slice(raw.byteOffset,raw.byteOffset+raw.byteLength),'',v=>resolve(v.scene),reject);
 });}
@@ -70,10 +71,26 @@ function glb(file){return new Promise((resolve,reject)=>{const raw=fs.readFileSy
   if(score>best){best=score;blades=p.o;}
  }
  assert.ok(blades,'real Avenger has a separate nose rotor');
+ const escortModel=makeWingmanModel(avenger,true);
+ let escortFaces=0;escortModel.traverse(o=>{if(o.isMesh)escortFaces+=(o.geometry.index?.count||o.geometry.attributes.position.count)/3;});
+ assert(escortFaces<40000,'two six-second escorts must not add half a million engine-detail triangles');
+ assert(avenger.getObjectByName('Object_2'),'player Avenger retains original engine detail');
+ assert(escortModel.getObjectByName('Object_31'),'wingman retains the real painted airframe');
  const pivot=new THREE.Group();pivot.add(blades.clone());
  const escort=pivot.clone(true);escort.rotation.z+=.3;
  assert.equal(escort.children.length,1,'wingman rotor carries the loaded Avenger blades');
  assert.match(html,/disc=propPivot\.clone\(true\)/,'Avenger wingman copies the detached real blade');
+ const escortContext=vm.createContext({THREE,P:{pos:new THREE.Vector3(0,180,0),heading:0,pitch:0,spd:80},
+   gltfRoot:avenger,sbdTemplate:null,propPivot:pivot,gearMesh:[],planeBody:null,
+   APP_SPD:65,wingmen:[],scene:new THREE.Scene(),isSBD:()=>false});
+ vm.runInContext(html.slice(html.indexOf('function playerLateral(){'),html.indexOf('function updateWingmen(dt){'))+
+   '\n'+html.slice(html.indexOf('function noseDir(){'),html.indexOf('function loadPlaneModel(){')),escortContext);
+ escortContext.spawnWingman(0);escortContext.spawnWingman(1);
+ assert.equal(escortContext.wingmen.length,2,'six-second join-up spawns two escorts without a frame error');
+ for(const w of escortContext.wingmen){
+   assert.equal(w.mesh.getObjectByName('Object_2'),undefined,'spawned escort leaves out dense engine internals');
+   assert(w.disc?.children.length,'escort retains its own rotating propeller');
+ }
  const zero=await glb('zero.glb'),zeroBox=new THREE.Box3().setFromObject(zero);
  const zeroSize=zeroBox.getSize(new THREE.Vector3());
  zero.position.sub(zeroBox.getCenter(new THREE.Vector3()));
@@ -86,7 +103,8 @@ function glb(file){return new Promise((resolve,reject)=>{const raw=fs.readFileSy
    setZeroGearVisible(copy,player);
    assert.equal(copy.getObjectByName('zeroGear').visible,player,'Zero landing gear follows player lever; enemy gear stays up');
    if(player){const bottom=new THREE.Box3().setFromObject(copy).min.y;
-     assert(bottom<airframeBottom-.23,'Zero wheels visibly extend below the actual loaded GLB');}
+     assert(bottom<airframeBottom-.12&&bottom>airframeBottom-.28,
+       'Zero wheels must show below the loaded GLB without long stilt-like legs');}
  }
  console.log('SBD GLB: '+cut+' original triangles cut, one independent rotor per aircraft; real Avenger wingman blade cloned ('+blades.name+')');
 })().catch(e=>{console.error(e);process.exitCode=1;});

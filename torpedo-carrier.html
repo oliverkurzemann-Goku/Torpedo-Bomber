@@ -317,7 +317,7 @@
   <div id="flash"></div>
   <div id="ltn" style="position:fixed;inset:0;background:#e6ecff;opacity:0;pointer-events:none;z-index:40;"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 147</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 150</div>
 
   <!-- Optical landing aid -->
   <div id="lso">
@@ -2619,19 +2619,19 @@ function makeZeroGear(){
   const hubMat=new THREE.MeshStandardMaterial({color:0x727872,roughness:.59});
   for(const side of [-1,1]){
     const x=side*2.13,z=-.32;
-    const strut=new THREE.Mesh(new THREE.CylinderGeometry(.085,.095,1.08,9),legMat);
-    strut.position.set(x,-.91,z);strut.rotation.z=side*.13;gear.add(strut);
-    const brace=new THREE.Mesh(new THREE.CylinderGeometry(.045,.045,.86,7),legMat);
-    brace.position.set(x-side*.22,-.88,z-.23);brace.rotation.z=-side*.45;gear.add(brace);
-    const wheel=new THREE.Mesh(new THREE.CylinderGeometry(.32,.32,.22,16),tyreMat);
-    wheel.rotation.z=Math.PI/2;wheel.position.set(x+side*.08,-1.47,z);gear.add(wheel);
+    const strut=new THREE.Mesh(new THREE.CylinderGeometry(.075,.085,.68,9),legMat);
+    strut.position.set(x,-.88,z);strut.rotation.z=side*.13;gear.add(strut);
+    const brace=new THREE.Mesh(new THREE.CylinderGeometry(.04,.04,.48,7),legMat);
+    brace.position.set(x-side*.14,-.80,z-.14);brace.rotation.z=-side*.45;gear.add(brace);
+    const wheel=new THREE.Mesh(new THREE.CylinderGeometry(.29,.29,.20,16),tyreMat);
+    wheel.rotation.z=Math.PI/2;wheel.position.set(x+side*.05,-1.32,z);gear.add(wheel);
     const hub=new THREE.Mesh(new THREE.CylinderGeometry(.12,.12,.24,14),hubMat);
     hub.rotation.z=Math.PI/2;hub.position.copy(wheel.position);gear.add(hub);
   }
   const tail=new THREE.Mesh(new THREE.CylinderGeometry(.045,.05,.46,8),legMat);
-  tail.position.set(0,-1.1,-3.3);gear.add(tail);
+  tail.position.set(0,-.83,-3.3);gear.add(tail);
   const wheel=new THREE.Mesh(new THREE.CylinderGeometry(.15,.15,.14,12),tyreMat);
-  wheel.rotation.z=Math.PI/2;wheel.position.set(0,-1.37,-3.3);gear.add(wheel);
+  wheel.rotation.z=Math.PI/2;wheel.position.set(0,-1.10,-3.3);gear.add(wheel);
   return gear;
 }
 function setZeroGearVisible(aircraft,down){
@@ -2967,8 +2967,10 @@ function updateFlight(dt){
     P.pitchVel=inputPitch*pull;
     const rollAuthority=2.1*AC.roll*energy;
     const bankErr=Math.atan2(Math.sin(P.roll-P.rollBias),Math.cos(P.roll-P.rollBias));
+    // Neutral still self-levels, but the bank should last long enough to fly
+    // through a turn instead of springing upright as soon as a thumb lifts.
     P.rollVel=(Math.abs(inputRoll)>0.075||Math.abs(inputPitch)>0.075)?inputRoll*steerSign*rollAuthority:
-      Math.max(-rollAuthority,Math.min(rollAuthority,-bankErr*3.2*AC.roll*energy));
+      Math.max(-rollAuthority,Math.min(rollAuthority,-bankErr*.7*AC.roll*energy));
     // Pull is in the wing's lift direction, so banked pulls turn as well as climb.
     P.pitch=Math.atan2(Math.sin(P.pitch+P.pitchVel*Math.cos(P.roll)*dt),Math.cos(P.pitch+P.pitchVel*Math.cos(P.roll)*dt));
     P.heading-=P.pitchVel*Math.sin(P.roll)*dt;
@@ -2976,7 +2978,8 @@ function updateFlight(dt){
   }else{
     P.pitchVel=(P.pitchVel||0)+(pitchRate*pitchRate*(inputPitch*0.55-P.pitch) - 2*zeta*pitchRate*P.pitchVel)*dt;
     P.pitch += P.pitchVel*dt;
-    P.rollVel=(P.rollVel||0)+(rollRate*rollRate*(rollTarget-P.roll) - 2*zeta*rollRate*P.rollVel)*dt;
+    const levelRate=Math.abs(inputRoll)<.075?rollRate*.34:rollRate;
+    P.rollVel=(P.rollVel||0)+(levelRate*levelRate*(rollTarget-P.roll) - 2*zeta*levelRate*P.rollVel)*dt;
     P.roll += P.rollVel*dt;
     if(P.pitch>pitchLim){ P.pitch=pitchLim; P.pitchVel=Math.min(0,P.pitchVel); }
     if(P.pitch<-pitchLim){ P.pitch=-pitchLim; P.pitchVel=Math.max(0,P.pitchVel); }
@@ -3753,13 +3756,26 @@ const PROP_STEP=0.30;   // radians per frame — under the 60° aliasing limit f
 // lateral (starboard) unit vector truly perpendicular to the player's nose — the old slot
 // vector wasn't square to the heading, so the finger-four sat slightly skewed.
 function playerLateral(){ return new THREE.Vector3(-Math.sin(P.heading),0,Math.cos(P.heading)); }
+function makeWingmanModel(tmpl,isAvenger){
+  const inner=tmpl.clone(true);
+  inner.traverse(o=>{o.visible=true;});
+  if(isAvenger){
+    // The Avenger GLB has four hidden engine-detail meshes at the nose with
+    // 258,000 triangles combined. Two complete escorts appear six seconds
+    // after take-off and overwhelm iPad WebGL. The player keeps the originals;
+    // escorts retain the cowl, wing, fuselage, paint and spinning propeller.
+    for(const name of ['Object_2','Object_3','Object_4','Object_5']){
+      const detail=inner.getObjectByName(name);if(detail)detail.parent.remove(detail);
+    }
+  }
+  return inner;
+}
 function spawnWingman(i){
   const mesh=new THREE.Group();
   const sbd = isSBD();                       // dive-bomb sorties get Dauntless wingmen
   let inner=null, tmpl = sbd? (sbdTemplate||gltfRoot) : (gltfRoot||sbdTemplate);
-  if(tmpl) inner=tmpl.clone(true); else if(planeBody) inner=planeBody.clone(true);
+  if(tmpl) inner=makeWingmanModel(tmpl,tmpl===gltfRoot); else if(planeBody) inner=planeBody.clone(true);
   if(inner){
-    inner.traverse(o=>{ o.visible=true; });
     // Avenger clone noses -Z and needs the +π flip to face the group's +Z; the SBD template
     // already noses +Z, so it needs none. (Getting this wrong flies them tail-first.)
     if(!(sbd && sbdTemplate)) inner.rotation.y+=Math.PI;
@@ -3818,7 +3834,7 @@ function updateWingmen(dt){
     if(w.mode==='form' && !someoneAttacking && w.cool<=0 && live.length){
       let best=null,bd=1e9;
       for(const s of live){ const d=w.pos.distanceTo(s.group.position); if(d<1800 && d<bd){bd=d;best=s;} }
-      if(best){ w.mode='attack'; w.target=best; w.dropped=false; someoneAttacking=true;
+      if(best){ w.mode='attack'; w.target=best; w.dropped=false; w.attackT=0; someoneAttacking=true;
         radioSay((w.side<0?"TWO":"THREE")+"'S IN — "+(w.sbd?"ROLLING IN ON":"LINING UP")+" THE "+best.def.type.toUpperCase()); }
     }
     if(w.mode==='attack' && (!w.target || !w.target.alive)){ w.mode='egress'; w.egressT=2.4; }
@@ -3826,6 +3842,7 @@ function updateWingmen(dt){
     // --- desired position / speed per mode ---
     let desPos, desSpd;
     if(w.mode==='attack' && w.target){
+      w.attackT=(w.attackT||0)+dt;
       const tp=w.target.group.position;
       const flat=new THREE.Vector3(tp.x-w.pos.x,0,tp.z-w.pos.z);
       const gd=flat.length();
@@ -3840,6 +3857,9 @@ function updateWingmen(dt){
         spawnWingShot(w, w.target);                    // visible torpedo/bomb -> hits on arrival
         radioSay(w.sbd?"BOMB GONE!":"FISH IN THE WATER!");
         w.mode='egress'; w.egressT=2.6; w.cool=7+Math.random()*3.5;
+      }
+      if(w.mode==='attack' && w.attackT>10){
+        w.mode='egress';w.egressT=3;w.cool=7;w.target=null;
       }
     } else if(w.mode==='egress'){
       w.egressT-=dt;
@@ -3857,7 +3877,7 @@ function updateWingmen(dt){
       if(!w.slotPos) w.slotPos=w.pos.clone();
       // The slot rotates around the leader during a turn. Driving straight at its raw position
       // made it leap from one side of the screen to the other; move the slot itself smoothly.
-      w.slotPos.lerp(rawSlot,Math.min(1,2.0*dt));
+      w.slotPos.lerp(rawSlot,Math.min(1,1.0*dt));
       desPos=w.slotPos.clone();
       desSpd=P.spd;
     }
@@ -3873,8 +3893,8 @@ function updateWingmen(dt){
     if(!w.vel) w.vel = leadVel.clone();
     let desVel;
     if(w.mode==='form'){
-      const corr = desPos.clone().sub(w.pos).multiplyScalar(0.72);
-      if(corr.length()>24) corr.setLength(24);         // settle into station; no slot sprint
+      const corr = desPos.clone().sub(w.pos).multiplyScalar(0.55);
+      if(corr.length()>24) corr.setLength(24);         // catch up without slot-sprint oscillation
       desVel = leadVel.add(corr);
     } else {
       const gap = desPos.clone().sub(w.pos);
@@ -3885,7 +3905,7 @@ function updateWingmen(dt){
     if(vlen>vmax) desVel.setLength(vmax); else if(vlen<42) desVel.setLength(42);
     // Acceleration-limited steering prevents one slow frame or a mode change from producing a
     // visible position jump. Formation flying is gentler than an attack/egress manoeuvre.
-    const dv=desVel.sub(w.vel), maxDv=(w.mode==='form'?12:20)*dt;
+    const dv=desVel.sub(w.vel), maxDv=(w.mode==='form'?20:16)*dt;
     if(dv.length()>maxDv) dv.setLength(maxDv);
     w.vel.add(dv);
     w.pos.addScaledVector(w.vel, dt);
@@ -3899,13 +3919,15 @@ function updateWingmen(dt){
     let dh=vH-w.heading; while(dh>Math.PI)dh-=2*Math.PI; while(dh<-Math.PI)dh+=2*Math.PI;
     // A powered aircraft cannot yaw on the spot. Its turn rate falls with airspeed:
     // at ~100 m/s a three-g coordinated turn takes seconds, not one animation frame.
-    const maxTurn=Math.min(.32,9.81*Math.sqrt(3*3-1)/Math.max(42,vhoriz));
-    const yawStep=Math.max(-maxTurn*dt,Math.min(maxTurn*dt,dh));
+    const maxTurn=Math.min(.25,9.81*Math.sqrt(3*3-1)/Math.max(42,vhoriz));
+    const desiredYaw=Math.max(-maxTurn,Math.min(maxTurn,dh*.8));
+    w.yawRate=(w.yawRate||0)+Math.max(-.18*dt,Math.min(.18*dt,desiredYaw-(w.yawRate||0)));
+    const yawStep=w.yawRate*dt;
     w.heading += yawStep;
     const desPitch=Math.max(-0.5,Math.min(0.5, Math.atan2(w.vel.y, Math.max(1,vhoriz))));
-    w.pitch += (desPitch-w.pitch)*Math.min(1,4*dt);
+    w.pitch += (desPitch-w.pitch)*Math.min(1,1.8*dt);
     const bank=Math.max(-.65,Math.min(.65,Math.atan2(vhoriz*yawStep/Math.max(dt,.001),9.81)));
-    w.roll  += (bank-w.roll)*Math.min(1,3*dt);
+    w.roll  += (bank-w.roll)*Math.min(1,1.5*dt);
     w.spd = w.vel.length();
 
     w.mesh.position.copy(w.pos);
@@ -4507,7 +4529,7 @@ function loadPlaneModel(){
       }
       window.__eyeDbg='EYE '+COCKPIT_EYE.map(v=>v.toFixed(2)).join('/');
       const btEl=document.getElementById('buildTag');
-      if(btEl) btEl.textContent='BUILD 147 · '+window.__eyeDbg;
+      if(btEl) btEl.textContent='BUILD 150 · '+window.__eyeDbg;
       let seat=null;
       model.traverse(function(o){
         if(!o.isMesh||!o.material) return;
@@ -5819,7 +5841,7 @@ function setupUIButtons(){
   if(dbgT2) dbgT2.onclick=()=>{
     dbgOn=!dbgOn; localStorage.setItem('dbgOn',dbgOn?'1':'0');
     const db=document.getElementById('dbgBox'); if(db) db.textContent=dbgOn?'✓':'';
-    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 147'; }
+    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 150'; }
   };
   const lu=document.getElementById('lookUp'), ld=document.getElementById('lookDn');
   let _lookT=0;

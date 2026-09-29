@@ -20,25 +20,43 @@ global.fetch=async url=>{const b=fs.readFileSync(path.join(root,url.split('?')[0
   await Promise.all(coords.map(([x,z])=>osm.loadTile(x,z)));
   const html=fs.readFileSync(path.join(root,'remagen-mission.html'),'utf8');
   const fields=[[787,18087.6],[23600,25725]],runwayFaces=()=>{
-    const counts=[0,0];
-    for(const tile of osm.tiles.values())if(tile?.group)for(const mesh of tile.group.children){
-      if(!mesh.isMesh||mesh.material!==osm.roadMat||!mesh.geometry.index)continue;
+    const counts={road:[0,0],farm:[0,0],forest:[0,0]};
+    const clip=(ring,axis,limit,less)=>{
+      const out=[];
+      for(let i=0;i<ring.length;i++){
+        const a=ring[i],b=ring[(i+1)%ring.length],inside=v=>less?v[axis]<=limit:v[axis]>=limit;
+        if(inside(a))out.push(a);
+        if(inside(a)!==inside(b)){const t=(limit-a[axis])/(b[axis]-a[axis]);out.push({x:a.x+(b.x-a.x)*t,z:a.z+(b.z-a.z)*t});}
+      }
+      return out;
+    };
+    for(const tile of osm.tiles.values())if(tile?.group)for(const mesh of [...tile.group.children,...(tile.farGroup?.children||[])]){
+      const kind=mesh.material===osm.roadMat?'road':mesh.material===osm.farmMat?'farm':mesh.material===osm.forestFloorMat?'forest':null;
+      if(!mesh.isMesh||!kind||!mesh.geometry.index)continue;
       const pos=mesh.geometry.attributes.position,ix=mesh.geometry.index.array;
       for(let i=0;i<ix.length;i+=3){
         const a=ix[i],b=ix[i+1],c=ix[i+2];if(a===b&&b===c)continue;
         const x0=Math.min(pos.getX(a),pos.getX(b),pos.getX(c)),x1=Math.max(pos.getX(a),pos.getX(b),pos.getX(c));
         const z0=Math.min(pos.getZ(a),pos.getZ(b),pos.getZ(c)),z1=Math.max(pos.getZ(a),pos.getZ(b),pos.getZ(c));
-        fields.forEach(([fx,fz],j)=>{if(x1>fx-466&&x0<fx+466&&z1>fz-36&&z0<fz+36)counts[j]++;});
+        fields.forEach(([fx,fz],j)=>{
+          if(!(x1>fx-466&&x0<fx+466&&z1>fz-36&&z0<fz+36))return;
+          let ring=[a,b,c].map(v=>({x:pos.getX(v),z:pos.getZ(v)}));
+          ring=clip(clip(clip(clip(ring,'x',fx-466,false),'x',fx+466,true),'z',fz-36,false),'z',fz+36,true);
+          let area=0;for(let k=0;k<ring.length;k++){const p=ring[k],q=ring[(k+1)%ring.length];area+=p.x*q.z-q.x*p.z;}
+          // Float32 vertices on a 28 km map can lie <0.4 mm across the clip edge.
+          if(Math.abs(area)>1)counts[kind][j]++;
+        });
       }
     }
     return counts;
   };
   const crossingBefore=runwayFaces();
   const roadStart=html.indexOf('function clearRoadsOnRunways(){'),roadEnd=html.indexOf('async function loadRealWorld(){',roadStart);
-  const roadContext=vm.createContext({osmMgr:osm,ALLIED_AF_X:787,ALLIED_AF_Z:18087.6,
+  const roadContext=vm.createContext({THREE,terrain,osmMgr:osm,ALLIED_AF_X:787,ALLIED_AF_Z:18087.6,
     GERMAN_AF_X:23600,GERMAN_AF_Z:25725,RWY_LEN:900,RWY_W:40});
   vm.runInContext(html.slice(roadStart,roadEnd)+'\nclearRoadsOnRunways();',roadContext);
-  assert.deepEqual(runwayFaces(),[0,0],'mapped roads and hardstanding must not cross either runway');
+  assert.deepEqual(runwayFaces(),{road:[0,0],farm:[0,0],forest:[0,0]},
+    'mapped road, farmland and forest floors must not cover either runway');
   assert(html.includes('LivingWorld.js?v=149'));assert(html.includes('MODULE 22'));
   for(const id of ['convoy','train','ferry'])assert(html.includes(`id:'${id}'`),`mission ${id} missing`);
   assert(html.includes("livingWorld.missionTargets(m.traffic||m.id)"));assert(html.includes('livingWorld.destroyEntity(t.entity)'));
