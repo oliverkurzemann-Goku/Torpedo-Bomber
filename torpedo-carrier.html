@@ -49,6 +49,8 @@
     font-size:34px;font-weight:800;letter-spacing:3px;text-transform:uppercase;opacity:0;
     transition:opacity .25s;text-shadow:0 2px 14px rgba(0,0,0,.8);}
   #flash.show{opacity:1;}
+  #flash.tip{width:75%;max-width:640px;padding:10px 14px;border-radius:7px;background:rgba(15,24,17,.82);
+    font-size:clamp(14px,2vw,20px);font-weight:600;letter-spacing:1px;line-height:1.4;}
   #pauseBtn{position:absolute;top:max(10px,env(safe-area-inset-top));right:calc(max(12px,env(safe-area-inset-right)) + 132px);
     z-index:36;pointer-events:auto;touch-action:manipulation;width:42px;height:42px;border-radius:7px;
     display:flex;align-items:center;justify-content:center;
@@ -317,7 +319,7 @@
   <div id="flash"></div>
   <div id="ltn" style="position:fixed;inset:0;background:#e6ecff;opacity:0;pointer-events:none;z-index:40;"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 151</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 152</div>
 
   <!-- Optical landing aid -->
   <div id="lso">
@@ -380,6 +382,7 @@
       <div id="diffRow" style="margin:10px 0 4px;font-size:12px;letter-spacing:2px;color:rgba(202,191,156,.55);">DIFFICULTY</div>
       <div id="diffPick" style="display:flex;gap:8px;justify-content:center;margin-bottom:10px;"></div>
       <label class="toggle" id="dbgToggle"><span class="box" id="dbgBox"></span> Debug overlay</label>
+      <label class="toggle"><input type="checkbox" id="flightHints" checked> Flight hints</label>
       <label class="toggle" id="timeToggle"><span class="box" id="timeBox">☀</span> <span id="timeName">Day</span></label>
     </div>
     <div class="ctrlsNote">
@@ -416,8 +419,8 @@
 <div class="overlay hidden" id="pause">
   <div class="card">
     <h1 class="stencil">Paused</h1>
-    <div class="sub">Sortie held</div>
-    <div class="brief">The task group holds station. Take a breath, then get back in the fight.</div>
+    <div class="sub" id="pauseReason">Sortie held</div>
+    <div class="brief" id="pauseOrders">The task group holds station. Take a breath, then get back in the fight.</div>
     <button class="btn" id="resumeBtn">Resume</button><br>
     <button class="btn" id="menuBtn" style="margin-top:10px;background:#4a4034;">Back to Menu</button>
   </div>
@@ -438,6 +441,7 @@
 <script src="okinawa/data.js?v=1"></script>
 <script src="okinawa/world.js?v=133"></script>
 <script src="campaign.js?v=1"></script>
+<script src="game-runtime.js?v=152"></script>
 <script src="combat-fx.js?v=133"></script>
 <script src="pilot-bailout.js?v=147"></script>
 <script src="audio/weapon-sound.js?v=144"></script>
@@ -489,7 +493,7 @@ try{const saved=parseFloat(localStorage.getItem('tc_chaseHeight_v2'));
   if(Number.isFinite(saved))chaseH=Math.max(3,Math.min(16,saved));
 }catch(_){}
 let planeBody, gltfRoot, propNode, planeModelLoaded=false;
-let DIFF = localStorage.getItem('tc_diff') || 'veteran';
+let DIFF = GameRuntime.storage.getItem('tc_diff') || 'veteran';
 // Rookie makes the sortie survivable while you learn the deck; Ace is the old behaviour.
 const DIFFS = {
   rookie:  { label:'Rookie',  dud:0.00, flak:0.45, zero:0.55, wire:1.45, fuel:1.6, dmg:0.5 },
@@ -500,7 +504,7 @@ function D(){ return DIFFS[DIFF]||DIFFS.veteran; }
 let seaState=1.0;   // 1=calm, up to ~2.5=rough — set per sortie, drives waves + deck motion
 let weather='clear'; // 'clear' | 'haze' | 'rain' | 'storm' — set per sortie
 const WX=Object.fromEntries(Object.entries(FlightOps.weather).map(([k,w])=>[k,{...w,fogNear:w.near,fogFar:w.far}]));
-let dbgOn=(localStorage.getItem('dbgOn')==='1');   // off unless switched on in the menu
+let dbgOn=(GameRuntime.storage.getItem('dbgOn')==='1');   // off unless switched on in the menu
 let lastGrade='';   // LSO grade of the most recent trap
 let dbgT=0, zeroRotor=null, zeroRotorAxis=null, zeroProp=null, zeroGear=null, propPivot=null, propDiskG=null, propBladesG=null, gearPivotG=null, gearMesh=null, gearDoors=null, gearWellCovers=null, seaUniforms=null;
 let seatMeshG=null, cockpitLight=null, ordTorp=null, ordBombs=null;
@@ -846,6 +850,25 @@ function releaseOkinawa(){
 //  INIT
 // ============================================================
 let combatFX=null;
+let runtimeSession=null,releaseHeldControls=()=>{};
+let flightCoach=new GameRuntime.HintCoach();
+function pacificPauseOrders(){
+  const m=MISSIONS[mission];
+  const task=isDefend()?'RAIDERS '+raiders.filter(r=>r.alive).length+' · CARRIER '+Math.round(carrierHP)+'%':
+    m.qual?'CARRIER QUALIFICATION · TRAPS '+qualTraps+'/'+(m.quals||3):m.free?'FREE FLIGHT':
+    'SHIPS '+ships.filter(s=>s.alive&&s.def.type!=='destroyer').length+' · SHORE TARGETS '+shoreTargets.filter(t=>t.alive&&!t.def.optional).length;
+  return task+' · '+Math.round(P.fuel)+'% FUEL · '+Math.round(P.hull)+'% HULL. '+
+    (pacificOps?pacificOps.status()+'. ':'')+'Recovery: gear, flaps and hook down; target ~'+Math.round(APP_SPD*KT)+' kt.';
+}
+function updateFlightHints(dt){
+  const distance=ships.reduce((d,s)=>s.alive?Math.min(d,Math.hypot(P.pos.x-s.group.position.x,P.pos.z-s.group.position.z)):d,Infinity);
+  flightCoach.tick(dt,{enabled:document.getElementById('flightHints').checked,alive:P.alive,
+    busy:document.getElementById('flash').classList.contains('show'),hull:P.hull,agl:P.pos.y-shoreHeight(P.pos.x,P.pos.z),altitude:P.pos.y,
+    rtb:P.rtb,homeDistance:Math.hypot(P.pos.x-carrierX-AIM_X,P.pos.z),recovery:'GEAR, FLAPS AND HOOK DOWN; FOLLOW THE LANDING SIGNAL.',
+    dive:isSBD()&&P.torps>0,pitch:P.pitch,diveBrake:P.diveBrake,gear:P.gear,
+    torpedo:!isDefend()&&loadout==='torpedo',ordnance:P.torps,targetDistance:distance,dropAltitude:DROP_MAX_ALT,
+    onGround:P.onDeck,speed:P.spd},message=>flash(message,3600));
+}
 function init(){
   const app=document.getElementById('app');
   renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:"high-performance"});
@@ -903,6 +926,9 @@ function init(){
   setupControls();
   setupKeyboard();
   setupUIButtons();
+  runtimeSession=GameRuntime.attachLifecycle({canvas:renderer.domElement,resetControls:()=>releaseHeldControls(),
+    pause:reason=>{if(state===ST.FLIGHT||state===ST.LAUNCH)togglePause(reason);},
+    onRestore:()=>{clock.getDelta();document.getElementById('pauseReason').textContent='Graphics restored — tap Resume.';}});
   window.addEventListener('pointerdown',()=>{ if(actx&&actx.state==='suspended') actx.resume(); });
 
   // ---- iPad/Safari zoom-guard -------------------------------------------------
@@ -1864,7 +1890,7 @@ function shoreHeight(x,z){
  return okinawaWorld.getHeight(lx,z);
 }
 function resetShoreTargets(enabled){
- shoreTargets.forEach(t=>scene.remove(t.group));shoreTargets=[];
+ shoreTargets.forEach(t=>GameRuntime.release(t.group));shoreTargets=[];
  if(!enabled)return;
  if(!shoreAsset&&!shoreAssetLoading){
   shoreAssetLoading=true;new THREE.GLTFLoader().load('m16_mgmc.glb',g=>{
@@ -1929,6 +1955,8 @@ function drawPacificBrief(m){
 }
 
 function startMission(idx){
+  flightCoach=new GameRuntime.HintCoach();
+  releaseHeldControls();
   if(bailout){bailout.dispose();bailout=null;}
   planeGroup.visible=true;
   aeroMode=false;
@@ -1947,10 +1975,10 @@ function startMission(idx){
   else { score=scoreStart; }
   addScore(0);
   killCam=null;
-  bubbles.forEach(b=>scene.remove(b.mesh)); bubbles=[];
-  slicks.forEach(s=>scene.remove(s.group)); slicks=[];
-  debris.forEach(d=>scene.remove(d.mesh)); debris=[];
-  zeros.forEach(z=>scene.remove(z.mesh)); zeros=[];
+  bubbles.forEach(b=>GameRuntime.release(b.mesh)); bubbles=[];
+  slicks.forEach(s=>GameRuntime.release(s.group)); slicks=[];
+  debris.forEach(d=>GameRuntime.release(d.mesh)); debris=[];
+  zeros.forEach(z=>GameRuntime.release(z.mesh)); zeros=[];
   shakeT=0; shakeMag=0;
   carrierX=0; CARRIER_SPD=5; if(carrier) carrier.position.x=0;   // task group back on station
   if(carrierModel) carrierModel.position.x=CARRIER_DX;
@@ -1984,14 +2012,15 @@ function startMission(idx){
   applyLoadoutUI(); resetControlUI();
 
   // clear dynamic objects
-  torpedoes.forEach(t=>scene.remove(t.mesh)); torpedoes=[];
-  tracers.forEach(t=>scene.remove(t.mesh)); tracers=[];
-  ships.forEach(s=>scene.remove(s.group)); ships=[];
+  torpedoes.forEach(t=>GameRuntime.release(t.mesh)); torpedoes=[];
+  tracers.forEach(t=>GameRuntime.release(t.mesh)); tracers=[];
+  ships.forEach(s=>GameRuntime.release(s.group)); ships=[];
   wakeParts.forEach(w=>{ w.m.visible=false; wakePool.push(w.m); }); wakeParts=[];
-  bombs.forEach(b=>scene.remove(b.mesh)); bombs=[];
-  bullets.forEach(b=>scene.remove(b.mesh)); bullets=[];
-  smokes.forEach(s=>{ s.mesh.visible=false; smokePool.push(s.mesh); }); smokes=[];
-  explosions.forEach(e=>scene.remove(e.mesh)); explosions=[];
+  bombs.forEach(b=>GameRuntime.release(b.mesh)); bombs=[];
+  bullets.forEach(b=>GameRuntime.release(b.mesh)); bullets=[];
+  smokes.forEach(s=>{if(s.mesh.userData.runtimeOwned)GameRuntime.release(s.mesh);else{s.mesh.visible=false;smokePool.push(s.mesh);}}); smokes=[];
+  splashes.forEach(s=>GameRuntime.release(s.mesh));splashes=[];
+  explosions.forEach(e=>GameRuntime.release(e.mesh)); explosions=[];
 
   // spawn ships
   m.targets.forEach(t=>spawnShip(t));
@@ -2001,15 +2030,15 @@ function startMission(idx){
   for(let i=0;i<nz;i++) spawnZero(i,nz);
 
   // ---- fleet defence: clear old raiders/torps, then set the sortie up ----
-  raiders.forEach(r=>{ if(r.mesh) scene.remove(r.mesh); }); raiders=[];
-  etorps.forEach(t=>scene.remove(t.mesh)); etorps=[];
+  raiders.forEach(r=>{ if(r.mesh) GameRuntime.release(r.mesh); }); raiders=[];
+  etorps.forEach(t=>GameRuntime.release(t.mesh)); etorps=[];
   carrierHP=100; qualTraps=0; qualStep=0;
   seaState=m.sea||1.0;
   if(seaUniforms) seaUniforms.uSeaState.value=seaState;
   weather=pacificPlan.weather;
   applyWeather();
-  wingmen.forEach(w=>scene.remove(w.mesh)); wingmen=[];
-  if(typeof wingShots!=='undefined'){ wingShots.forEach(s=>scene.remove(s.mesh)); wingShots=[]; }
+  wingmen.forEach(w=>GameRuntime.release(w.mesh)); wingmen=[];
+  if(typeof wingShots!=='undefined'){ wingShots.forEach(s=>GameRuntime.release(s.mesh)); wingShots=[]; }
   // two wingmen fly the strike/dive-bomb sorties with you — not the qual, free flight, or
   // the Zero defence sortie (there you ARE the fighter cover)
   // Wingmen no longer spawn on the deck (one used to sit crossways at the bow at launch).
@@ -2217,7 +2246,13 @@ function setupControls(){
   }
   window.addEventListener('pointerup',globalRelease,true);
   window.addEventListener('pointercancel',globalRelease,true);
-  window.addEventListener('blur',()=>{ sid=null;tid=null;firing=false;P._stickActive=false;P._keyboardFlightActive=false;inputRoll=0;inputPitch=0;knob.style.transform='translate(-50%,-50%)'; });
+  releaseHeldControls=()=>{
+    try{if(sid!==null)stick.releasePointerCapture(sid);}catch(_){}
+    try{if(tid!==null)thr.releasePointerCapture(tid);}catch(_){}
+    sid=null;tid=null;firing=false;P._stickActive=false;P._keyboardFlightActive=false;
+    inputRoll=0;inputPitch=0;knob.style.transform='translate(-50%,-50%)';
+    for(const k of Object.keys(P._keys||{}))delete P._keys[k];
+  };
   document.addEventListener('dblclick',e=>e.preventDefault());
 
   // drop
@@ -2228,6 +2263,7 @@ function setupControls(){
   fire.addEventListener('pointerdown',e=>{ e.preventDefault(); firing=true; fire.setPointerCapture(e.pointerId);});
   const stopFire=()=>{ firing=false; };
   fire.addEventListener('pointerup',stopFire); fire.addEventListener('pointercancel',stopFire);
+  fire.addEventListener('lostpointercapture',stopFire);
 }
 
 function setThrottleUI(v){
@@ -2238,13 +2274,14 @@ function setThrottleUI(v){
 function setupKeyboard(){
   const keys={};
   window.addEventListener('keydown',e=>{
+    if(e.code==='Escape'||e.code==='KeyP'){if(!e.repeat)togglePause();e.preventDefault();return;}
+    if(e.code==='Enter'){if(state===ST.MENU)beginGame();else if(state===ST.BRIEF)launch();return;}
+    if(state!==ST.FLIGHT)return;
     keys[e.code]=true;
     if(e.code==='Space'){dropTorpedo(); e.preventDefault();}
     if(e.code==='KeyF') firing=true;
     if(e.code==='KeyA'&&!e.repeat) toggleAero();
     if(e.code==='KeyB'&&!e.repeat) beginBailout();
-    if(e.code==='Enter'){ if(state===ST.MENU) beginGame(); else if(state===ST.BRIEF) launch(); }
-    if(e.code==='Escape'||e.code==='KeyP'){ togglePause(); e.preventDefault(); }
   });
   window.addEventListener('keyup',e=>{keys[e.code]=false; if(e.code==='KeyF') firing=false;});
   // poll in loop
@@ -2283,6 +2320,7 @@ function dropTorpedo(){           // primary weapon button (torpedo OR bomb)
   P.torps--; sortieTorpFired++; updateHUD();
   const mesh=new THREE.Mesh(new THREE.CylinderGeometry(0.32,0.32,3.4,8),
     new THREE.MeshStandardMaterial({color:0x9a9156,roughness:0.5,metalness:0.1}));
+  GameRuntime.own(mesh);
   const dir=new THREE.Vector3(Math.cos(P.heading),0,Math.sin(P.heading)).normalize();
   const startY=Math.max(2.2, P.pos.y-1.4);            // released from under the belly
   mesh.position.set(P.pos.x, startY, P.pos.z);
@@ -2303,6 +2341,7 @@ function releaseBomb(){
   P.torps--; updateHUD();
   const mesh=new THREE.Mesh(new THREE.CylinderGeometry(0.4,0.5,2.6,10),
     new THREE.MeshStandardMaterial({color:0x3a4030,roughness:0.6}));
+  GameRuntime.own(mesh);
   mesh.position.set(P.pos.x,P.pos.y-1.3,P.pos.z);
   const nd=noseDir();
   const vel=nd.clone().multiplyScalar(P.spd);   // inherits aircraft velocity
@@ -2331,7 +2370,7 @@ function updateBombs(dt){
     if(!done && b.mesh.position.y<=0.4){          // splash, miss
       spawnSplash(b.mesh.position.x,b.mesh.position.z,false); sfxBoom(0.4); done=true;
     }
-    if(done||b.life<=0){ scene.remove(b.mesh); bombs.splice(i,1); }
+    if(done||b.life<=0){ GameRuntime.release(b.mesh); bombs.splice(i,1); }
   }
 }
 
@@ -2351,7 +2390,7 @@ function updateTorpedoes(dt){
         spawnSplash(t.mesh.position.x,t.mesh.position.z,true);
         spawnWake(t.mesh.position.x,t.mesh.position.z,14);
       }
-      if(t.life<=0){ scene.remove(t.mesh); torpedoes.splice(i,1); }
+      if(t.life<=0){ GameRuntime.release(t.mesh); torpedoes.splice(i,1); }
       continue;
     }
     t.mesh.position.addScaledVector(t.dir, t.speed*dt);
@@ -2376,7 +2415,7 @@ function updateTorpedoes(dt){
         hit=true; break;
       }
     }
-    if(hit||t.life<=0){ scene.remove(t.mesh); torpedoes.splice(i,1); }
+    if(hit||t.life<=0){ GameRuntime.release(t.mesh); torpedoes.splice(i,1); }
   }
 }
 
@@ -2430,6 +2469,7 @@ function checkObjectiveCleared(){
 function spawnSplash(x,z,big){
   const g=new THREE.Mesh(new THREE.ConeGeometry(big?6:3, big?20:8, 8),
     new THREE.MeshStandardMaterial({color:0xdfe9ec,transparent:true,opacity:0.85}));
+  GameRuntime.own(g);
   g.position.set(x,(big?10:4),z); scene.add(g);
   splashes.push({mesh:g,life:1.1});
 }
@@ -2437,7 +2477,7 @@ function updateSplashes(dt){
   for(let i=splashes.length-1;i>=0;i--){
     const s=splashes[i]; s.life-=dt;
     s.mesh.scale.y=Math.max(0.1,s.life); s.mesh.material.opacity=s.life*0.8;
-    if(s.life<=0){ scene.remove(s.mesh); splashes.splice(i,1);}
+    if(s.life<=0){ GameRuntime.release(s.mesh); splashes.splice(i,1);}
   }
 }
 
@@ -2682,6 +2722,7 @@ function spawnZero(i,n){
   const disk=new THREE.Mesh(new THREE.CircleGeometry(1.7,20),
     new THREE.MeshBasicMaterial({color:0x111008,transparent:true,opacity:0.20,
       side:THREE.DoubleSide,depthWrite:false}));
+  GameRuntime.own(disk);
   disk.position.z=bb.max.z-0.15; mesh.add(disk);
   const a=Math.PI*(0.3+0.4*i/Math.max(1,n));
   const heading=Math.PI;
@@ -2787,6 +2828,7 @@ function updateZeros(dt){
           .add(new THREE.Vector3((Math.random()-0.5)*0.03,(Math.random()-0.5)*0.03,(Math.random()-0.5)*0.03)).normalize();
         const m=new THREE.Mesh(new THREE.CylinderGeometry(0.05,0.05,2.6,5),
           new THREE.MeshBasicMaterial({color:0xfff0a0,fog:false}));
+        GameRuntime.own(m);
         m.position.copy(z.pos).addScaledVector(dir,5);
         m.lookAt(m.position.clone().add(dir)); m.rotateX(Math.PI/2);
         scene.add(m); tracers.push({mesh:m,dir,life:2.2,speed:640,foe:true});
@@ -2803,7 +2845,7 @@ function killZero(z){
   sortieZeros++;
   flash("ZERO DOWN  +1500",1000);
   radioSay(["SPLASH ONE ZERO!","GOOD KILL, GOOD KILL","BANDIT DOWN — NICE SHOOTING"][Math.floor(Math.random()*3)]);
-  scene.remove(z.mesh);
+  GameRuntime.release(z.mesh);
   const idx=zeros.indexOf(z); if(idx>=0) zeros.splice(idx,1);
 }
 
@@ -2830,12 +2872,14 @@ function updateTailGun(dt){
     .add(new THREE.Vector3((Math.random()-0.5)*0.10,(Math.random()-0.5)*0.10,(Math.random()-0.5)*0.10)).normalize();
   const m=new THREE.Mesh(new THREE.CylinderGeometry(0.045,0.045,2.4,5),
     new THREE.MeshBasicMaterial({color:0xffe27a,fog:false}));
+  GameRuntime.own(m);
   m.position.copy(gun).addScaledVector(dir,3);
   m.lookAt(m.position.clone().add(dir)); m.rotateX(Math.PI/2);
   scene.add(m); bullets.push({mesh:m,dir,life:0.9,speed:620,tail:true});
   // muzzle flash
   const mf=new THREE.Sprite(new THREE.SpriteMaterial({map:smokeTex,color:0xffd060,
     transparent:true,opacity:0.9,blending:THREE.AdditiveBlending,depthWrite:false,fog:false}));
+  GameRuntime.own(mf,{geometry:false});
   mf.scale.set(2.4,2.4,1); mf.position.copy(gun); scene.add(mf);
   explosions.push({mesh:mf,life:0.05,max:0.05,grow:0.3});
   if(Math.random()<0.5) sfxGun&&sfxGun();
@@ -2857,6 +2901,7 @@ function updateFlak(dt){
         const dir=to.clone().sub(from).normalize();
         const mesh=new THREE.Mesh(new THREE.CylinderGeometry(0.11,0.11,3.4,5),
           new THREE.MeshBasicMaterial({color:0xff6a3c,fog:false}));
+        GameRuntime.own(mesh);
         mesh.position.copy(from).addScaledVector(dir,k*14);
         mesh.lookAt(mesh.position.clone().add(dir)); mesh.rotateX(Math.PI/2);
         scene.add(mesh);
@@ -2890,16 +2935,18 @@ function updateFlak(dt){
       for(const w of wingmen){ if(!w.alive) continue;
         if(t.mesh.position.distanceTo(w.pos)<9){ damageWingman(w,1); t.life=0; break; } }
     }
-    if(t.life<=0){ scene.remove(t.mesh); tracers.splice(i,1);}
+    if(t.life<=0){ GameRuntime.release(t.mesh); tracers.splice(i,1);}
   }
 }
 function spawnFlakBurst(p){
   const b=new THREE.Mesh(new THREE.SphereGeometry(3,10,8),
     new THREE.MeshBasicMaterial({color:0x161616,transparent:true,opacity:0.9}));
+  GameRuntime.own(b);
   b.position.copy(p); scene.add(b);
   explosions.push({mesh:b,life:0.5,max:0.5,grow:5});
   const fl=new THREE.Mesh(new THREE.SphereGeometry(1.6,8,6),
     new THREE.MeshBasicMaterial({color:0xffb347,transparent:true,opacity:1,fog:false}));
+  GameRuntime.own(fl);
   fl.position.copy(p); scene.add(fl);
   explosions.push({mesh:fl,life:0.14,max:0.14,grow:1.5});
   spawnSmoke(p.x,p.y,p.z,0x0d0d0d,0.8);
@@ -3064,6 +3111,7 @@ function updateFlight(dt){
     const fp=P.pos.clone().addScaledVector(nd,2.4).add(new THREE.Vector3(0,0.2,0));
     const fb=new THREE.Mesh(new THREE.SphereGeometry(1.1,8,6),
       new THREE.MeshBasicMaterial({color:0xff7a2a,transparent:true,opacity:0.9}));
+    GameRuntime.own(fb);
     fb.position.copy(fp); scene.add(fb); explosions.push({mesh:fb,life:0.22,max:0.22,grow:0.4}); } }
 
   // lower-gear reminder near the ship on recovery
@@ -3933,7 +3981,7 @@ function updateWingmen(dt){
     w.mesh.position.copy(w.pos);
     w.mesh.rotation.set(0,0,0);
     w.mesh.rotateY(w.heading); w.mesh.rotateX(w.pitch); w.mesh.rotateZ(-w.roll);
-    if(w.disc) w.disc.rotation.z-=PROP_STEP;
+    if(w.disc) w.disc.rotation.z-=GameRuntime.rotorStep(dt,PROP_STEP);
   }
 }
 // Visible ordnance a wingman drops on its run-in: a torpedo runs along the surface, a bomb
@@ -3944,6 +3992,7 @@ function spawnWingShot(w, tgt){
   const mesh=new THREE.Mesh(
     sbd? new THREE.CylinderGeometry(0.4,0.5,2.6,10) : new THREE.CylinderGeometry(0.3,0.3,3.2,8),
     new THREE.MeshStandardMaterial({color:sbd?0x3a4030:0x9a9156,roughness:0.6,metalness:0.1}));
+  GameRuntime.own(mesh);
   const start=w.pos.clone();
   if(!sbd) start.y=Math.max(2.2, start.y-1.2);
   mesh.position.copy(start); scene.add(mesh);
@@ -3983,7 +4032,7 @@ function updateWingShots(dt){
       }
     }
     if(!done && s.kind==='bomb' && s.mesh.position.y<=0.4){ spawnSplash(s.mesh.position.x,s.mesh.position.z,false); done=true; }
-    if(done||s.life<=0){ scene.remove(s.mesh); wingShots.splice(i,1); }
+    if(done||s.life<=0){ GameRuntime.release(s.mesh); wingShots.splice(i,1); }
   }
 }
 // A wingman can now be shot down. Career losses are tallied so the logbook shows the human cost.
@@ -3996,7 +4045,7 @@ function damageWingman(w, amount){
     spawnExplosion(w.pos.x,w.pos.y,w.pos.z,1.2);
     spawnDebris(w.pos.x,w.pos.y,w.pos.z,8);
     sfxBoom(0.9);
-    if(w.mesh) scene.remove(w.mesh);
+    if(w.mesh) GameRuntime.release(w.mesh);
     sortieWingmenLost++;
     radioSay(["THEY GOT "+(w.side<0?"TWO":"THREE")+" — HE'S GOING IN!",
               "MAYDAY, MAYDAY — WINGMAN DOWN!",
@@ -4062,7 +4111,7 @@ function killRaider(r){
   r.alive=false; addScore(400);
   spawnExplosion(r.pos.x,r.pos.y,r.pos.z,1.3); sfxBoom(0.7);
   spawnDebris(r.pos.x,r.pos.y,r.pos.z,14);
-  scene.remove(r.mesh);
+  GameRuntime.release(r.mesh);
   const left=raiders.filter(x=>x.alive).length;
   flash(left?("SPLASH ONE — "+left+" TO GO"):"ALL RAIDERS DOWN — RECOVER ABOARD",1500);
   if(left) radioSay("SPLASH ONE! "+left+" STILL COMING");
@@ -4129,7 +4178,7 @@ function updateRaiders(dt){
     r.mesh.position.copy(r.pos);
     r.mesh.rotation.set(0,0,0);
     r.mesh.rotateY(r.heading); r.mesh.rotateX(r.pitch); r.mesh.rotateZ(-r.roll);
-    if(r.disc) r.disc.rotation.z-=PROP_STEP; // visible prop rotation (under the 60°/frame alias point)
+    if(r.disc) r.disc.rotation.z-=GameRuntime.rotorStep(dt,PROP_STEP);
     if(!r.dropped && r.runIn && dh2<820 && r.pos.y<95){
       r.dropped=true;
       r.egressDir=new THREE.Vector3(r.pos.x-carrierX,0,r.pos.z).normalize();
@@ -4144,6 +4193,7 @@ function updateRaiders(dt){
 function spawnEnemyTorp(pos,dir){
   const m=new THREE.Mesh(new THREE.CylinderGeometry(0.32,0.32,3.4,8),
     new THREE.MeshStandardMaterial({color:0x8a8156,roughness:0.5,metalness:0.1}));
+  GameRuntime.own(m);
   m.position.set(pos.x,0.6,pos.z);
   m.lookAt(m.position.clone().add(dir)); m.rotateX(Math.PI/2);
   scene.add(m);
@@ -4162,12 +4212,12 @@ function updateEnemyTorps(dt){
       carrierHP-=25; shake(2.4); if(typeof sfxBoom==='function') sfxBoom(1.0);
       spawnExplosion(t.mesh.position.x,7,t.mesh.position.z,1.6);
       for(let k=0;k<6;k++) spawnFire(t.mesh.position.x+(Math.random()-0.5)*20,4+Math.random()*8,t.mesh.position.z+(Math.random()-0.5)*10,1.1);
-      scene.remove(t.mesh); etorps.splice(i,1);
+      GameRuntime.release(t.mesh); etorps.splice(i,1);
       if(carrierHP<=0) carrierLost();
       else { flash("CARRIER HIT — "+carrierHP+"%",1500); radioSay("WE'RE HIT! FLIGHT DECK BURNING"); }
       continue;
     }
-    if(t.life<=0){ scene.remove(t.mesh); etorps.splice(i,1); }
+    if(t.life<=0){ GameRuntime.release(t.mesh); etorps.splice(i,1); }
   }
 }
 function carrierLost(){
@@ -4536,7 +4586,7 @@ function loadPlaneModel(){
       }
       window.__eyeDbg='EYE '+COCKPIT_EYE.map(v=>v.toFixed(2)).join('/');
       const btEl=document.getElementById('buildTag');
-      if(btEl) btEl.textContent='BUILD 151 · '+window.__eyeDbg;
+      if(btEl) btEl.textContent='BUILD 152 · '+window.__eyeDbg;
       let seat=null;
       model.traverse(function(o){
         if(!o.isMesh||!o.material) return;
@@ -4741,7 +4791,7 @@ function updatePlaneMesh(dt){
   planeGroup.position.copy(P.pos);
   if(planeModelLoaded){
     const spin=(0.14+P.throttle*0.34)*(P.alive?1:0.12);   // per-frame, visibly spinning
-    if(propPivot){ propPivot.rotation[propPivot.userData.spinAxis||'z']-=spin; propPivot.visible=!isDefend(); }
+    if(propPivot){ propPivot.rotation[propPivot.userData.spinAxis||'z']-=GameRuntime.rotorStep(dt,spin); propPivot.visible=!isDefend(); }
     // the Zero's own propeller (its blades live in the Zero model, not on propPivot)
     // build the Zero's prop pivot lazily (model may arrive after the sortie starts)
     // Zero propeller — rotate the rotor mesh IN PLACE (no re-parenting, nothing to go wrong)
@@ -4759,7 +4809,7 @@ function updatePlaneMesh(dt){
     if(ordBombs) for(let i=0;i<ordBombs.length;i++)
       ordBombs[i].visible=!dfd && (loadout==='divebomb' && P.torps>i);
   }
-  else if(propSpinner) propSpinner.rotation.z+=0.9;
+  else if(propSpinner) propSpinner.rotation.z+=GameRuntime.rotorStep(dt,.9);
   // gear / flaps / dive brakes
   // ---- SBD: build the aircraft the moment the model arrives ----
   // The 21 MB model loads asynchronously. Creating it only in startMission meant that
@@ -4811,7 +4861,7 @@ function updatePlaneMesh(dt){
         sbdRotor=blades; sbdRotorAxis='z';
       }
     }
-    if(sbdRotor) sbdRotor.rotation.z-=Math.min(0.30,0.10+P.throttle*0.28);
+    if(sbdRotor) sbdRotor.rotation.z-=GameRuntime.rotorStep(dt,Math.min(0.30,0.10+P.throttle*0.28));
     // nothing of the Avenger rig may linger (its loader adds parts asynchronously)
     for(let i=planeGroup.children.length-1;i>=0;i--){
       const o=planeGroup.children[i];
@@ -4858,7 +4908,7 @@ function updatePlaneMesh(dt){
       }
       // 3-blade prop repeats every 120°: keep the per-frame step well under 60°,
       // otherwise it aliases and looks frozen (that was the 'static prop' bug).
-      if(zeroRotor && zeroRotorAxis) zeroRotor.rotation[zeroRotorAxis]-=Math.min(0.30, 0.10+P.throttle*0.28);
+      if(zeroRotor && zeroRotorAxis) zeroRotor.rotation[zeroRotorAxis]-=GameRuntime.rotorStep(dt,Math.min(0.30,0.10+P.throttle*0.28));
     }
 
   const g=(P.gear==null?1:P.gear), fl=(P.flap==null?0:P.flap);
@@ -4951,16 +5001,19 @@ function spawnExplosion(x,y,z,sc){
   // 1) white-hot flash — very brief, large
   const flashB=new THREE.Mesh(new THREE.SphereGeometry(6*sc,16,12),
     new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:1,blending:THREE.AdditiveBlending}));
+  GameRuntime.own(flashB);
   flashB.position.set(x,y,z); scene.add(flashB);
   explosions.push({mesh:flashB,life:0.16,max:0.16,grow:2.6});
   // 2) main fireball
   const ball=new THREE.Mesh(new THREE.SphereGeometry(5*sc,16,14),
     new THREE.MeshBasicMaterial({color:0xffa42a,transparent:true,opacity:1}));
+  GameRuntime.own(ball);
   ball.position.set(x,y,z); scene.add(ball);
   explosions.push({mesh:ball,life:0.75,max:0.75,grow:3.6});
   // 3) hot core
   const core=new THREE.Mesh(new THREE.SphereGeometry(3*sc,12,10),
     new THREE.MeshBasicMaterial({color:0xfff2b0,transparent:true,opacity:1}));
+  GameRuntime.own(core);
   core.position.set(x,y,z); scene.add(core);
   explosions.push({mesh:core,life:0.45,max:0.45,grow:2.2});
   // 4) secondary fireball puffs, offset — gives a roiling, uneven shape
@@ -4969,12 +5022,14 @@ function spawnExplosion(x,y,z,sc){
     const px=x+(Math.random()-0.5)*7*sc, py=y+Math.random()*6*sc, pz=z+(Math.random()-0.5)*7*sc;
     const p=new THREE.Mesh(new THREE.SphereGeometry((2.2+Math.random()*2)*sc,10,8),
       new THREE.MeshBasicMaterial({color:i%2?0xff7a1e:0xffc250,transparent:true,opacity:0.95}));
+    GameRuntime.own(p);
     p.position.set(px,py,pz); scene.add(p);
     explosions.push({mesh:p,life:0.5+Math.random()*0.3,max:0.8,grow:2.4});
   }
   // 5) ground/air shockwave ring
   const ring=new THREE.Mesh(new THREE.RingGeometry(1.5*sc,3*sc,32),
     new THREE.MeshBasicMaterial({color:0xffe2a0,transparent:true,opacity:0.85,side:THREE.DoubleSide,blending:THREE.AdditiveBlending}));
+  GameRuntime.own(ring);
   ring.rotation.x=-Math.PI/2; ring.position.set(x,y,z); scene.add(ring);
   explosions.push({mesh:ring,life:0.6,max:0.6,grow:18,ring:true});
   // 6) additive fire fllicker + rising smoke column
@@ -4989,6 +5044,7 @@ function spawnFire(x,y,z,sc){
   const m=new THREE.SpriteMaterial({map:smokeTex,color:0xff8c2a,transparent:true,opacity:0.95,
     blending:THREE.AdditiveBlending,depthWrite:false});
   const s=new THREE.Sprite(m); s.position.set(x,y,z);
+  GameRuntime.own(s,{geometry:false});
   const k=(5+Math.random()*5)*(sc||1); s.scale.set(k,k,1);
   scene.add(s); smokes.push({mesh:s,life:0.55+Math.random()*0.3,max:0.8,vy:8+Math.random()*5,grow:4});
 }
@@ -4998,6 +5054,7 @@ function spawnDebris(x,y,z,n){
     const sz=0.5+Math.random()*1.4;
     const m=new THREE.Mesh(new THREE.BoxGeometry(sz,sz*0.7,sz*0.5),
       new THREE.MeshBasicMaterial({color:Math.random()<0.3?0xff9033:0x2b2b28}));
+    GameRuntime.own(m);
     m.position.set(x,y,z); scene.add(m);
     debris.push({mesh:m,
       vx:(Math.random()-0.5)*46, vy:22+Math.random()*30, vz:(Math.random()-0.5)*46,
@@ -5009,6 +5066,7 @@ function spawnSparks(p,n){
     if(debris.length>90) return;
     const m=new THREE.Mesh(new THREE.BoxGeometry(0.28,0.28,0.28),
       new THREE.MeshBasicMaterial({color:0xffe08a,fog:false}));
+    GameRuntime.own(m);
     m.position.copy(p); scene.add(m);
     debris.push({mesh:m,vx:(Math.random()-0.5)*34,vy:8+Math.random()*16,vz:(Math.random()-0.5)*34,
       rx:6,rz:6,life:0.5+Math.random()*0.3});
@@ -5024,13 +5082,14 @@ function updateDebris(dt){
       spawnSplash(d.mesh.position.x,d.mesh.position.z,false);
       d.life=0;
     }
-    if(d.life<=0){ scene.remove(d.mesh); debris.splice(i,1); }
+    if(d.life<=0){ GameRuntime.release(d.mesh); debris.splice(i,1); }
   }
 }
 function spawnBubble(x,z){
   if(!smokeTex||bubbles.length>220) return;
   const m=new THREE.Sprite(new THREE.SpriteMaterial({map:smokeTex,color:0xeafcf7,
     transparent:true,opacity:0.75,depthWrite:false}));
+  GameRuntime.own(m,{geometry:false});
   m.position.set(x,1.9,z); m.scale.set(2.2,2.2,1);
   scene.add(m); bubbles.push({mesh:m,life:4,max:4});
 }
@@ -5039,18 +5098,20 @@ function updateBubbles(dt){
     const b=bubbles[i]; b.life-=dt;
     b.mesh.material.opacity=0.7*(b.life/b.max);
     const s=b.mesh.scale.x+2.4*dt; b.mesh.scale.set(s,s,1);
-    if(b.life<=0){ scene.remove(b.mesh); bubbles.splice(i,1); }
+    if(b.life<=0){ GameRuntime.release(b.mesh); bubbles.splice(i,1); }
   }
 }
 function spawnSlick(s){
   const g=new THREE.Group();
   const oil=new THREE.Mesh(new THREE.CircleGeometry(1,30),
     new THREE.MeshBasicMaterial({color:0x0c0d10,transparent:true,opacity:0.5,depthWrite:false}));
+  GameRuntime.own(oil);
   oil.rotation.x=-Math.PI/2; oil.position.y=1.72; g.add(oil);
   const bits=[];
   for(let i=0;i<7;i++){
     const b=new THREE.Mesh(new THREE.BoxGeometry(1.6+Math.random()*2,0.5,1+Math.random()),
       new THREE.MeshStandardMaterial({color:0x27251f,roughness:1}));
+    GameRuntime.own(b);
     b.position.set((Math.random()-0.5)*s.radius*1.2,1.75,(Math.random()-0.5)*s.radius*0.8);
     b.rotation.y=Math.random()*3; g.add(b); bits.push(b);
   }
@@ -5069,7 +5130,7 @@ function updateSlicks(dt){
       sl.bits[j].rotation.z=Math.sin(now*0.9+j)*0.08;
     }
     if(sl.life<20) sl.oil.material.opacity=0.5*(sl.life/20);
-    if(sl.life<=0){ scene.remove(sl.group); slicks.splice(i,1); }
+    if(sl.life<=0){ GameRuntime.release(sl.group); slicks.splice(i,1); }
   }
 }
 function shipBlast(s,sc){
@@ -5095,7 +5156,7 @@ function updateExplosions(dt){
     const s=e.ring? 1+k*e.grow : 1+k*e.grow;
     e.mesh.scale.set(s,s,s);
     e.mesh.material.opacity=Math.max(0,e.life/e.max);
-    if(e.life<=0){ scene.remove(e.mesh); explosions.splice(i,1); }
+    if(e.life<=0){ GameRuntime.release(e.mesh); explosions.splice(i,1); }
   }
 }
 function spawnWake(x,z,radius){
@@ -5141,7 +5202,11 @@ function updateSmoke(dt){
     const sm=smokes[i]; sm.life-=dt; sm.mesh.position.y+=sm.vy*dt;
     const k=sm.life/sm.max; sm.mesh.material.opacity=Math.max(0,k*0.55);
     const sc=sm.mesh.scale.x+sm.grow*dt; sm.mesh.scale.set(sc,sc,1);
-    if(sm.life<=0){ sm.mesh.visible=false; smokePool.push(sm.mesh); smokes.splice(i,1); }
+    if(sm.life<=0){
+      if(sm.mesh.userData.runtimeOwned)GameRuntime.release(sm.mesh);
+      else{sm.mesh.visible=false;smokePool.push(sm.mesh);}
+      smokes.splice(i,1);
+    }
   }
 }
 
@@ -5350,7 +5415,7 @@ function updateGuns(dt){
     sfxGun(); updateHUD();
   }
   for(let i=bullets.length-1;i>=0;i--){
-    const b=bullets[i]; b.life-=dt; b.mesh.position.addScaledVector(b.dir,b.speed*dt);
+    const b=bullets[i],back=b.mesh.position.clone(); b.life-=dt; b.mesh.position.addScaledVector(b.dir,b.speed*dt);
     let hit=false;
     for(const s of ships){ if(!s.alive) continue;
       const d=Math.hypot(b.mesh.position.x-s.group.position.x,b.mesh.position.z-s.group.position.z);
@@ -5359,6 +5424,7 @@ function updateGuns(dt){
         const sp=new THREE.Mesh(new THREE.SphereGeometry(1.1,8,6),
           new THREE.MeshBasicMaterial({color:0xffd870,transparent:true,opacity:1,fog:false,
             blending:THREE.AdditiveBlending}));
+        GameRuntime.own(sp);
         sp.position.copy(b.mesh.position); scene.add(sp);
         explosions.push({mesh:sp,life:0.16,max:0.16,grow:2.2});
         spawnSparks(b.mesh.position,3);
@@ -5372,7 +5438,7 @@ function updateGuns(dt){
       }
     }
     if(!hit) for(const z of zeros){ if(!z.alive) continue;
-      if(b.mesh.position.distanceTo(z.pos)<5.5){
+      if(GameRuntime.segmentDistance(back,b.mesh.position,z.pos)<5.5){
         z.hp--; spawnSparks(b.mesh.position,4); addScore(30);
         spawnSmoke(z.pos.x,z.pos.y,z.pos.z,0x333330,0.4);
         if(z.hp<=0) killZero(z);
@@ -5380,7 +5446,7 @@ function updateGuns(dt){
       }
     }
     if(!hit) for(const r of raiders){ if(!r.alive) continue;
-      if(b.mesh.position.distanceTo(r.pos)<7.5){
+      if(GameRuntime.segmentDistance(back,b.mesh.position,r.pos)<7.5){
         r.hp--; spawnSparks(b.mesh.position,4); addScore(30);
         spawnSmoke(r.pos.x,r.pos.y,r.pos.z,0x333330,0.5);
         if(r.hp<=0) killRaider(r);
@@ -5388,11 +5454,11 @@ function updateGuns(dt){
       }
     }
     if(!hit) for(let k=etorps.length-1;k>=0;k--){ const t=etorps[k];
-      if(b.mesh.position.distanceTo(t.mesh.position)<4.5){
+      if(GameRuntime.segmentDistance(back,b.mesh.position,t.mesh.position)<4.5){
         spawnExplosion(t.mesh.position.x,1.2,t.mesh.position.z,1.1);
         spawnSplash(t.mesh.position.x,t.mesh.position.z,true);
         addScore(150); flash("TORPEDO DESTROYED",900);
-        scene.remove(t.mesh); etorps.splice(k,1); hit=true; break;
+        GameRuntime.release(t.mesh); etorps.splice(k,1); hit=true; break;
       }
     }
     if(!hit)for(const t of shoreTargets){if(!t.alive)continue;const p=t.group.position,back=b.mesh.position.clone().addScaledVector(b.dir,-b.speed*dt);
@@ -5400,7 +5466,7 @@ function updateGuns(dt){
       if(near.distanceTo(p.clone().add(new THREE.Vector3(0,2,0)))<7){hitShoreTarget(t,1);hit=true;break;}}
     if(!hit&&b.mesh.position.y<shoreHeight(b.mesh.position.x,b.mesh.position.z)){spawnSmoke(b.mesh.position.x,shoreHeight(b.mesh.position.x,b.mesh.position.z)+1,b.mesh.position.z,0x877960,.7);hit=true;}
     if(!hit && b.mesh.position.y<=0.6){ spawnSplash(b.mesh.position.x,b.mesh.position.z,false); hit=true; }
-    if(hit||b.life<=0){ scene.remove(b.mesh); bullets.splice(i,1); }
+    if(hit||b.life<=0){ GameRuntime.release(b.mesh); bullets.splice(i,1); }
   }
 }
 
@@ -5679,6 +5745,7 @@ let flashTimer=0;
 function flash(text,ms){
   const f=document.getElementById('flash');
   f.textContent=text; f.classList.add('show'); flashTimer=ms/1000;
+  f.classList.toggle('tip',text.startsWith('FLIGHT TIP:'));
 }
 // ---- radio chatter (queued, one line at a time, bottom-left) ----
 let radioQ=[], radioT=0;
@@ -5705,9 +5772,12 @@ function showResult(win,title,sub,body,btn){
   showOverlay('result');
 }
 
-function togglePause(){
+function togglePause(reason='Sortie held'){
   if(state===ST.FLIGHT || state===ST.LAUNCH){
+    releaseHeldControls();
     prePauseState=state; state=ST.PAUSED; firing=false; showOverlay('pause');
+    document.getElementById('pauseReason').textContent=reason;
+    document.getElementById('pauseOrders').textContent=pacificPauseOrders();
     // animate() returns early on ST.PAUSED before it ever reaches updateAudio(dt) - but the
     // engine oscillators are real WebAudio nodes running on the hardware clock, independent of
     // requestAnimationFrame, so without this they just keep humming at whatever level
@@ -5719,7 +5789,8 @@ function togglePause(){
   }
 }
 function resumeGame(){
-  if(state!==ST.PAUSED) return;
+  if(state!==ST.PAUSED||runtimeSession?.graphicsLost) return;
+  releaseHeldControls();
   hideOverlays();
   state=prePauseState||ST.FLIGHT;
   clock.getDelta();            // swallow the paused interval so dt doesn't jump
@@ -5740,6 +5811,8 @@ function exitToMenu(){
 }
 
 function setupUIButtons(){
+  const hints=document.getElementById('flightHints');hints.checked=GameRuntime.storage.getItem('flightHints')!=='0';
+  hints.onchange=()=>GameRuntime.storage.setItem('flightHints',hints.checked?'1':'0');
   document.getElementById('menuLandingSpeed').textContent='LANDING TARGET: ~'+Math.round(APP_SPD*KT)+' KT.';
   if(window.SquadronCampaign && SquadronCampaign.highest('pacific')>=2)
     selectedMission=Math.min(MISSIONS.length-2,SquadronCampaign.highest('pacific')+1);
@@ -5838,7 +5911,7 @@ function setupUIButtons(){
           +'border:1px solid '+(k===DIFF?'var(--amber)':'rgba(202,191,156,.3)')+';'
           +'color:'+(k===DIFF?'var(--amber)':'rgba(202,191,156,.7)')+';'
           +'background:'+(k===DIFF?'rgba(202,191,156,.12)':'transparent')+';';
-        b.onclick=()=>{ DIFF=k; localStorage.setItem('tc_diff',k); draw(); };
+        b.onclick=()=>{ DIFF=k; GameRuntime.storage.setItem('tc_diff',k); draw(); };
         wrap.appendChild(b);
       });
     };
@@ -5846,9 +5919,9 @@ function setupUIButtons(){
   })();
   const dbgT2=document.getElementById('dbgToggle');
   if(dbgT2) dbgT2.onclick=()=>{
-    dbgOn=!dbgOn; localStorage.setItem('dbgOn',dbgOn?'1':'0');
+    dbgOn=!dbgOn; GameRuntime.storage.setItem('dbgOn',dbgOn?'1':'0');
     const db=document.getElementById('dbgBox'); if(db) db.textContent=dbgOn?'✓':'';
-    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 151'; }
+    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 152'; }
   };
   const lu=document.getElementById('lookUp'), ld=document.getElementById('lookDn');
   let _lookT=0;
@@ -6068,7 +6141,7 @@ function updateShips(dt){
 
 function animate(){
   requestAnimationFrame(animate);
-  if(state===ST.PAUSED){ renderer.render(scene,camera); return; }  // freeze the whole world
+  if(state===ST.PAUSED||document.hidden||runtimeSession?.graphicsLost)return;
   const rawDt=Math.min(0.05, clock.getDelta());
   let dt=rawDt;
   if(killCam){
@@ -6103,6 +6176,7 @@ function animate(){
     document.getElementById('bailBtn').style.display=P.alive&&P.pos.y-shoreHeight(P.pos.x,P.pos.z)>85?'block':'none';
     pollKeys(dt);
     updateFlight(dt);
+    updateFlightHints(rawDt);
     if(isQual()) updateQualCoach();
     if(isDefend()){ updateRaiders(dt); updateEnemyTorps(dt); }
     // wingmen join up in the air once the player is off the deck (no more deck pile-ups)

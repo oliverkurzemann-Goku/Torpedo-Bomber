@@ -48,7 +48,7 @@ new THREE.GLTFLoader().parse(bytes.buffer.slice(bytes.byteOffset,bytes.byteOffse
   assert.equal(aircraft.getObjectByName('gear'),undefined,'original fixed undercarriage stays visible');
   const enemy=aircraft.clone(true),enemyRotor=enemy.getObjectByName('prop');
   assert(enemyRotor&&enemyRotor!==rotor,'enemy clone has an independent animated shaft');
-  assert.match(html,/if\(e\.prop\) e\.prop\.rotation\.z-=0\.30/,'enemy spin hook active');
+  assert.match(html,/if\(e\.prop\) e\.prop\.rotation\.z-=GameRuntime\.rotorStep\(dt,/,'enemy time-based spin hook active');
   assert.match(html,/if\(pr\) pr\.rotation\.z-=/,'player spin hook active');
   enemyRotor.rotation.z-=0.30;rotor.rotation.z-=0.25;
   assert.notEqual(enemyRotor.rotation.z,0);assert.notEqual(rotor.rotation.z,0);

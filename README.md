@@ -48,12 +48,18 @@ npm run test:terrain   # just terrain-system/tests/*.js
 npm run test:okinawa   # just okinawa/tests/*.cjs
 ```
 
-Both run in plain Node, no browser needed, and both run in CI on every push
+The regression checks run in plain Node and run in CI on every push
 (`.github/workflows/ci.yml`). They catch parse errors and terrain-data/geometry
 regressions — they do **not** replace visually checking a change in a real browser.
 `CLAUDE.md` Abschnitt 6 documents the project's stricter verification standard for
 anything that touches 3D models or rendering (real `GLTFLoader`, real headless-WebGL or
 Playwright render, not just these Node-level checks).
+
+The Okinawa suite also runs a real Chrome/WebGL smoke test in CI (both campaigns,
+iPad-sized viewport, keyboard release, automatic pause and GPU context recovery).
+Locally this test is skipped if Chrome is absent; set `GAME_TEST_CHROME` to its
+executable path to enable it. `runtime-safety.cjs` checks swept gun hits at 20–120 FPS,
+blocked storage, owned-resource disposal, propeller timing and optional flight hints.
 
 ## Project documentation
 

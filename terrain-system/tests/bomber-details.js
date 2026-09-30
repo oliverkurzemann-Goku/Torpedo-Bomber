@@ -2,6 +2,7 @@
 'use strict';
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
 const THREE=require('three');global.THREE=THREE;global.self=global;global.window=global;
+require('../../game-runtime.js');const {GameRuntime}=global;
 class ImageStub{
   constructor(){this.listeners={};this.width=2;this.height=2;}
   addEventListener(type,fn){this.listeners[type]=fn;}
@@ -75,12 +76,13 @@ function fixedBladeFaces(group,p){
     const P={pos:new THREE.Vector3(0,1300,0),spd:120,alive:true};
     const tracers=[],scene=new THREE.Scene();scene.add(aircraft);
     const code=html.slice(html.indexOf('const bomberRoundGeo='),html.indexOf('function damagePlayer(',html.indexOf('const bomberRoundGeo=')));
-    const ctx=vm.createContext({THREE,P,scene,tracers,groundY:()=>0,RTILE:10000,RGRID_W:4,RGRID_H:4,
+    const ctx=vm.createContext({GameRuntime,THREE,P,scene,tracers,groundY:()=>0,RTILE:10000,RGRID_W:4,RGRID_H:4,
       D:()=>({id:'rookie',aim:1,dmg:.5}),noseDir:()=>new THREE.Vector3(0,0,1),spawnSmoke(){}});
     vm.runInContext(code,ctx);
     const spin=rotors[0].rotation[axis];
     ctx.updateBomber(e,.05,P.pos.clone().sub(e.pos),300);
-    assert(Math.abs(rotors[0].rotation[axis]-spin)>1,kind+' propeller rotation must advance with time');
+    const step=Math.abs(rotors[0].rotation[axis]-spin);
+    assert(step>.5&&step<Math.PI/3,kind+' propeller advances without low-FPS blade aliasing');
     assert.equal(tracers.length,2,kind+' single rookie gunner fires two small rounds');
     const dorsal=aircraft.localToWorld(stations[0].pos.clone());
     assert(tracers.every(t=>t.mesh.position.distanceTo(dorsal)<10),kind+' bullets must originate at dorsal turret');

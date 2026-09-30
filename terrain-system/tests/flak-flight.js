@@ -1,6 +1,7 @@
 // Exercise the game's actual heavy-flak routine with a straight pass and an evasive turn.
 'use strict';
 const fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict'),vm=require('node:vm'),THREE=require('three');
+require('../../game-runtime.js');const {GameRuntime}=global;
 const source=fs.readFileSync(path.resolve(__dirname,'../../remagen-mission.html'),'utf8');
 const routine=source.slice(source.indexOf('const flakShellGeo='),source.indexOf('function updateTracers('));
 const randomMath=Object.create(Math);randomMath.random=()=>.5;
@@ -8,7 +9,7 @@ function trial(evade,gunZ=-1900,altitude=400){
  const player={alive:true,pos:new THREE.Vector3(0,altitude,0),heading:0,spd:120,hull:100};
  const gun={alive:true,heavy:true,cool:0,group:new THREE.Group()};gun.group.position.set(0,0,gunZ);
  const smoke=[];
- const context={THREE,Math:randomMath,P:player,ST:{FLIGHT:1},state:1,flakUnits:[gun],groundFire:[],tracers:[],scene:new THREE.Scene(),explosions:[],damagePlayer:(amount)=>player.hull-=amount,
+ const context={GameRuntime,THREE,Math:randomMath,P:player,ST:{FLIGHT:1},state:1,flakUnits:[gun],groundFire:[],tracers:[],scene:new THREE.Scene(),explosions:[],damagePlayer:(amount)=>player.hull-=amount,
   groundY:()=>0,D:()=>({aim:1,flak:1}),noseDir:()=>new THREE.Vector3(0,0,1),spawnSmoke:(...p)=>smoke.push(p),shake:()=>{},sfxFlak:()=>{}};
  vm.createContext(context);vm.runInContext(routine,context);
  context.updateFlak(.05);

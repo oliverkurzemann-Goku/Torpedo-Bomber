@@ -49,6 +49,8 @@
     font-size:34px;font-weight:800;letter-spacing:3px;text-transform:uppercase;opacity:0;
     transition:opacity .25s;text-shadow:0 2px 14px rgba(0,0,0,.8);}
   #flash.show{opacity:1;}
+  #flash.tip{width:75%;max-width:640px;padding:10px 14px;border-radius:7px;background:rgba(15,24,17,.82);
+    font-size:clamp(14px,2vw,20px);font-weight:600;letter-spacing:1px;line-height:1.4;}
   #pauseBtn{position:absolute;top:max(10px,env(safe-area-inset-top));right:calc(max(12px,env(safe-area-inset-right)) + 132px);
     z-index:36;pointer-events:auto;touch-action:manipulation;width:42px;height:42px;border-radius:7px;
     display:flex;align-items:center;justify-content:center;
@@ -283,7 +285,7 @@
   <div style="width:100%;height:4px;background:repeating-linear-gradient(45deg,#ffd400,#ffd400 8px,#111 8px,#111 16px);"></div>
   <span id="testVersionBannerText" style="background:#111;color:#ffd400;font-family:monospace;font-weight:800;font-size:11px;letter-spacing:.5px;padding:3px 10px;border:1px solid #ffd400;border-top:none;border-radius:0 0 6px 6px;"></span>
 </div>
-<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 151';</script>
+<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 152';</script>
 <!-- ===== END TEMP TEST-ONLY VERSION BANNER ===== -->
 <div id="app"></div>
 
@@ -312,7 +314,7 @@
   <div id="flash"></div>
   <div id="gunsight"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 151 · REAL RHINE</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 152 · REAL RHINE</div>
 
   <div id="apr">
     <div id="aprCall"></div>
@@ -373,6 +375,7 @@
     <div class="optRow">
       <label class="toggle" id="invToggle"><span class="box" id="invBox">&#10003;</span> Invert pitch</label>
       <label class="toggle" id="dbgToggle"><span class="box" id="dbgBox"></span> Debug overlay</label>
+      <label class="toggle"><input type="checkbox" id="flightHints" checked> Flight hints</label>
     </div>
     <div id="bestLine">BEST SCORE <b id="bestVal">0</b></div>
     <div class="opsLegend" style="text-align:center"><label for="practiceWx">FREE FLIGHT WEATHER </label><select id="practiceWx" style="background:#1c271e;color:#ddce9a;padding:6px;border:1px solid #75806a"><option value="clear">Clear</option><option value="broken">Broken cloud</option><option value="lowcloud">Low overcast</option><option value="fog">Fog</option><option value="rain">Rain</option><option value="squall">Heavy showers</option><option value="storm">Thunderstorm</option></select></div>
@@ -424,7 +427,8 @@
 <div class="overlay hidden" id="pauseMenu">
   <div class="card menuCard">
     <h1 class="stencil">Paused</h1>
-    <div class="sub">Sortie held</div>
+    <div class="sub" id="pauseReason">Sortie held</div>
+    <div class="brief" id="pauseOrders"></div>
     <button class="btn" id="pmResume">Resume</button>
     <button class="btn ghost" id="pmMenu" style="margin-top:10px;">Back to Menu</button>
   </div>
@@ -451,6 +455,7 @@
 <script src="terrain-system/WorldVehicles.js?v=remagen-22"></script>
 <script src="terrain-system/LivingWorld.js?v=149"></script>
 <script src="campaign.js?v=1"></script>
+<script src="game-runtime.js?v=152"></script>
 <script src="combat-fx.js?v=133"></script>
 <script src="pilot-bailout.js?v=147"></script>
 <script src="audio/weapon-sound.js?v=144"></script>
@@ -767,7 +772,7 @@ async function loadRealWorld(){
 
   if(OSMManager.BUILD!==21||HistoricalObjectManager.BUILD!==21||LivingWorld.BUILD!==22||WorldVehicles.BUILD!==22) throw new Error('Terrain version mismatch. Reload Remagen.');
   document.getElementById('testVersionBannerText').textContent=
-    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 151 · MODULE 22';
+    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 152 · MODULE 22';
   heightProvider=new DEMHeightProvider(RTILE,'terrain-system/real/data/dem/');
   terrain=new TerrainManager(scene,RTILE,heightProvider);
   osmMgr=new OSMManager(scene,RTILE,terrain,'terrain-system/real/data/osm/');
@@ -1152,7 +1157,7 @@ function refreshModels(){
     const tag=e.kind+':'+(modelAdj[e.kind]||0);
     if(modelTpl[e.kind] && e.builtFrom!==tag){
       e.builtFrom=tag;
-      scene.remove(e.group);
+      GameRuntime.release(e.group);
       const g=buildAircraft(e.kind);
       const gr=g.getObjectByName('gear'); if(gr) gr.visible=false;
       scene.add(g); e.group=g; e.prop=g.getObjectByName('prop');
@@ -1173,7 +1178,7 @@ function turnModel90(){
   playerModel=buildAircraft(k); planeGroup.add(playerModel);
   for(const e of enemyAir){
     if(!e.alive||e.kind!==k) continue;
-    scene.remove(e.group);
+    GameRuntime.release(e.group);
     const g=buildAircraft(e.kind);
     const gr=g.getObjectByName('gear'); if(gr) gr.visible=false;
     scene.add(g); e.group=g; e.prop=g.getObjectByName('prop');
@@ -2895,17 +2900,17 @@ function clearWorld(){
   // populate()), the same way the old synthetic game's own permanent worldBridge always was.
   targets=[]; flakUnits=[];
   if(gunMarks){gunMarks.count=0;gunMarkNext=0;}
-  for(const e of enemyAir) scene.remove(e.group); enemyAir=[];
-  for(const b of bullets) scene.remove(b.mesh); bullets=[];
-  for(const t of tracers) scene.remove(t.mesh); tracers=[];
-  for(const shell of groundFire)if(shell.mesh)scene.remove(shell.mesh);
+  for(const e of enemyAir) GameRuntime.release(e.group); enemyAir=[];
+  for(const b of bullets) GameRuntime.release(b.mesh); bullets=[];
+  for(const t of tracers) GameRuntime.release(t.mesh); tracers=[];
+  for(const shell of groundFire)if(shell.mesh)GameRuntime.release(shell.mesh);
   groundFire=[];
-  for(const b of bombs) scene.remove(b.mesh); bombs=[];
-  for(const r of rockets) scene.remove(r.mesh); rockets=[];
-  for(const d of debris) scene.remove(d.mesh); debris=[];
-  for(const e of explosions) scene.remove(e.mesh); explosions=[];
+  for(const b of bombs) GameRuntime.release(b.mesh); bombs=[];
+  for(const r of rockets) GameRuntime.release(r.mesh); rockets=[];
+  for(const d of debris) GameRuntime.release(d.mesh); debris=[];
+  for(const e of explosions) GameRuntime.release(e.mesh); explosions=[];
   for(const s of smokes){ s.mesh.visible=false; smokePool.push(s.mesh); } smokes=[];
-  for(const c of craters) scene.remove(c); craters=[];
+  for(const c of craters) GameRuntime.release(c); craters=[];
 }
 // attach HP/hit-detection to whichever real objects this sortie needs
 function populate(){
@@ -2972,6 +2977,7 @@ function shake(a){ shakeAmt=Math.max(shakeAmt,a); shakeT=Math.max(shakeT,0.25+a*
 function flash(msg,ms){
   const el=document.getElementById('flash'); if(!el) return;
   el.textContent=msg; el.classList.add('show'); flashT=(ms||1200)/1000;
+  el.classList.toggle('tip',msg.startsWith('FLIGHT TIP:'));
 }
 function radioSay(msg){ radioQ.push(msg); }
 function updateRadio(dt){
@@ -3010,13 +3016,14 @@ function updateExplosions(dt){
     const e=explosions[i]; e.t+=dt; const k=e.t/e.life;
     e.mesh.scale.setScalar(4*e.s*(1+k*3.2));
     e.mesh.material.opacity=Math.max(0,0.95*(1-k));
-    if(k>=1){ scene.remove(e.mesh); if(e.disposeMaterial)e.mesh.material.dispose(); explosions.splice(i,1); }
+    if(k>=1){ GameRuntime.release(e.mesh); explosions.splice(i,1); }
   }
 }
 function spawnDebris(x,y,z,n){
   for(let i=0;i<n;i++){
     const m=new THREE.Mesh(new THREE.BoxGeometry(0.5+Math.random(),0.4,0.5+Math.random()),
       new THREE.MeshLambertMaterial({color:0x2e2b26}));
+    GameRuntime.own(m);
     m.position.set(x,y,z); scene.add(m);
     debris.push({mesh:m,life:2.5+Math.random()*2,
       v:new THREE.Vector3((Math.random()-0.5)*34,8+Math.random()*22,(Math.random()-0.5)*34),
@@ -3030,13 +3037,14 @@ function updateDebris(dt){
     d.mesh.rotation.x+=d.spin.x*dt; d.mesh.rotation.y+=d.spin.y*dt;
     const gy=groundY(d.mesh.position.x,d.mesh.position.z);
     if(d.mesh.position.y<gy+0.3){ d.mesh.position.y=gy+0.3; d.v.multiplyScalar(0); }
-    if(d.life<=0){ scene.remove(d.mesh); debris.splice(i,1); }
+    if(d.life<=0){ GameRuntime.release(d.mesh); debris.splice(i,1); }
   }
 }
 function spawnCrater(x,z){
-  if(craters.length>44){ scene.remove(craters.shift()); }
+  if(craters.length>44){ GameRuntime.release(craters.shift()); }
   const g=new THREE.CircleGeometry(7+Math.random()*4,12); g.rotateX(-Math.PI/2);
   const m=new THREE.Mesh(g,new THREE.MeshBasicMaterial({color:0x241f19,transparent:true,opacity:0.85}));
+  GameRuntime.own(m);
   m.position.set(x,groundY(x,z)+0.5,z); scene.add(m); craters.push(m);
 }
 
@@ -3142,7 +3150,7 @@ function updateBullets(dt){
       if(!e.alive) continue;
       if(segDist(ax,ay,az,p.x,p.y,p.z,e.pos)<9){ damageEnemyAir(e,b.dmg); done=true; break; }
     }
-    if(done||b.life<=0){ scene.remove(b.mesh); bullets.splice(i,1); }
+    if(done||b.life<=0){ GameRuntime.release(b.mesh); bullets.splice(i,1); }
   }
 }
 function dropBomb(){
@@ -3152,6 +3160,7 @@ function dropBomb(){
   P.bombs--;
   const m=new THREE.Mesh(new THREE.CylinderGeometry(0.28,0.34,2.0,10),
     new THREE.MeshLambertMaterial({color:0x4b4f3e}));
+  GameRuntime.own(m);
   m.rotation.x=Math.PI/2;
   m.position.copy(P.pos).addScaledVector(noseDir(),2).add(new THREE.Vector3(0,-1.4,0));
   scene.add(m);
@@ -3165,6 +3174,7 @@ function fireRocket(){
   const n=noseDir();
   const m=new THREE.Mesh(new THREE.CylinderGeometry(0.16,0.2,1.6,8),
     new THREE.MeshLambertMaterial({color:0x5a5040}));
+  GameRuntime.own(m);
   m.rotation.x=Math.PI/2;
   m.position.copy(P.pos).addScaledVector(n,4).add(new THREE.Vector3(0,-1.0,0));
   m.lookAt(m.position.clone().add(n));
@@ -3187,7 +3197,7 @@ function updateOrdnance(dt){
     }
     if(hit||b.life<=0){
       if(hit) blast(p.x,Math.max(p.y,groundY(p.x,p.z)+1),p.z,42,5.5);
-      scene.remove(b.mesh); bombs.splice(i,1);
+      GameRuntime.release(b.mesh); bombs.splice(i,1);
     }
   }
   for(let i=rockets.length-1;i>=0;i--){
@@ -3203,7 +3213,7 @@ function updateOrdnance(dt){
     }
     if(hit||r.life<=0){
       if(hit) blast(p.x,Math.max(p.y,groundY(p.x,p.z)+1),p.z,20,4.2);
-      scene.remove(r.mesh); rockets.splice(i,1);
+      GameRuntime.release(r.mesh); rockets.splice(i,1);
     }
   }
 }
@@ -3218,6 +3228,7 @@ const flakFlashMat=new THREE.MeshBasicMaterial({color:0xffc56a,transparent:true,
 function flakMuzzle(f){
   const p=f.group.position;
   const m=new THREE.Mesh(flakFlashGeo,flakFlashMat.clone());
+  GameRuntime.own(m,{geometry:false});
   const height=f.entity?2.4:5;
   m.position.set(p.x,p.y+height,p.z);scene.add(m);
   explosions.push({mesh:m,t:0,life:0.22,s:0.85,disposeMaterial:true});
@@ -3261,6 +3272,7 @@ function updateFlak(dt){
       const dir=lead.sub(origin).normalize();
       const m=new THREE.Mesh(new THREE.BoxGeometry(0.30,0.30,6.5),
         new THREE.MeshBasicMaterial({color:0xffab52}));
+      GameRuntime.own(m);
       m.position.copy(origin).addScaledVector(dir,1); m.lookAt(m.position.clone().add(dir));
       scene.add(m);
       tracers.push({mesh:m,dir,speed:620,life:3.0});
@@ -3282,10 +3294,11 @@ function updateFlak(dt){
     const b=groundFire[i]; b.t-=dt;
     if(b.mesh)b.mesh.position.lerpVectors(b.origin,new THREE.Vector3(b.x,b.y,b.z),Math.min(1,1-b.t/b.flight));
     if(b.t<=0){
-      if(b.mesh)scene.remove(b.mesh);
+      if(b.mesh)GameRuntime.release(b.mesh);
       spawnSmoke(b.x,b.y,b.z,0x2a2a28,1.5);
       const m=new THREE.Mesh(new THREE.SphereGeometry(1,8,6),
         new THREE.MeshBasicMaterial({color:0x30302e,transparent:true,opacity:0.9,depthWrite:false}));
+      GameRuntime.own(m);
       m.position.set(b.x,b.y,b.z); m.scale.setScalar(6); scene.add(m);
       explosions.push({mesh:m,t:0,life:0.6,s:1.4});
       const d=P.pos.distanceTo(new THREE.Vector3(b.x,b.y,b.z));
@@ -3306,7 +3319,7 @@ function updateTracers(dt){
       damagePlayer((t.damage||4.5)*D().dmg,'flak'); shake(0.5); done=true;
     }
     if(!done && p.y<=groundY(p.x,p.z)) done=true;
-    if(done||t.life<=0){ scene.remove(t.mesh); tracers.splice(i,1); }
+    if(done||t.life<=0){ GameRuntime.release(t.mesh); tracers.splice(i,1); }
   }
 }
 
@@ -3401,7 +3414,7 @@ function damageEnemyAir(e,amount){
     spawnDebris(e.pos.x,e.pos.y,e.pos.z,e.bomber?34:16);
     sfxBoom(e.bomber?1.4:0.9);
     if(e.bomber) shake(1.8);
-    scene.remove(e.group);
+    GameRuntime.release(e.group);
     addScore(e.bomber?1800:650);
     if(e.bomber) sortieKills.bomber=(sortieKills.bomber||0)+1;
     else sortieKills.air=(sortieKills.air||0)+1;
@@ -3652,7 +3665,7 @@ function updateEnemyAir(dt){
     e.group.position.copy(e.pos);
     e.group.rotation.set(0,0,0);
     e.group.rotateY(e.heading); e.group.rotateX(-e.pitch); e.group.rotateZ(-e.roll);
-    if(e.prop) e.prop.rotation.z-=0.30;
+    if(e.prop) e.prop.rotation.z-=GameRuntime.rotorStep(dt,.30,e.kind==='p47'?4:3);
 
     // ---- guns: only with the nose genuinely on him, and in range ----
     e.cool-=dt;
@@ -3667,6 +3680,7 @@ function updateEnemyAir(dt){
       const dir=lead.sub(e.pos).normalize();
       const m=new THREE.Mesh(new THREE.BoxGeometry(0.30,0.30,6.5),
         new THREE.MeshBasicMaterial({color:0xffc06a}));
+      GameRuntime.own(m);
       m.position.copy(e.pos).addScaledVector(dir,7); m.lookAt(m.position.clone().add(dir));
       scene.add(m);
       tracers.push({mesh:m,dir,speed:700,life:2.4});
@@ -3697,7 +3711,7 @@ function updateBomber(e,dt,toP,dist){
   e.group.updateWorldMatrix(true,false); // update the carrier of the turrets, not 1781 B-24 nodes
   // Spin four separate shafts, not the common wrapper. The B-17 has four
   // rebuilt Z-axis rotors; the B-24's own animated pivots use local Y.
-  for(const rotor of e.rotors||[])rotor.rotation[rotor.userData.spinAxis]-=29*dt;
+  for(const rotor of e.rotors||[])rotor.rotation[rotor.userData.spinAxis]-=GameRuntime.rotorStep(dt,29/60,3);
   // smoke once she is badly hurt, so you can see your work
   if(e.hp<e.maxhp*0.45){ e.smokeT=(e.smokeT||0)-dt;
     if(e.smokeT<=0){ e.smokeT=0.25; spawnSmoke(e.pos.x,e.pos.y,e.pos.z,0x3a3630,1.4); } }
@@ -4129,6 +4143,8 @@ function relaunch(){
   state=ST.FLIGHT;
 }
 function startMission(i){
+  flightCoach=new GameRuntime.HintCoach();
+  releaseHeldControls();
   if(bailout){bailout.dispose();bailout=null;}
   planeGroup.visible=true;
   firing=false;gunT=0;
@@ -4991,7 +5007,16 @@ function bindInput(){
   document.getElementById('pauseBtn').addEventListener('pointerdown',e=>{ e.preventDefault(); togglePause(); });
   // ---- keyboard ----
   const keys={};
+  let keyboardFlightActive=false;
+  releaseHeldControls=()=>{
+    try{if(sid!==null)stick.releasePointerCapture(sid);}catch(_){}
+    try{if(tid!==null)thr.releasePointerCapture(tid);}catch(_){}
+    relStick();relThr();firing=false;keyboardFlightActive=false;
+    for(const k of Object.keys(keys))delete keys[k];
+  };
   window.addEventListener('keydown',e=>{
+    if(e.key==='p'||e.key==='P'){if(!e.repeat)togglePause();return;}
+    if(state!==ST.FLIGHT)return;
     keys[e.key]=true;
     if(e.key===' '){ e.preventDefault(); dropBomb(); }
     if(e.key==='f'||e.key==='F') firing=true;
@@ -4999,7 +5024,6 @@ function bindInput(){
     if((e.key==='a'||e.key==='A')&&!e.repeat) toggleAero();
     if((e.key==='d'||e.key==='D')&&!e.repeat) toggleDiveBrakes();
     if((e.key==='b'||e.key==='B')&&!e.repeat) beginBailout();
-    if(e.key==='p'||e.key==='P') togglePause();
   });
   window.addEventListener('keyup',e=>{ keys[e.key]=false; if(e.key==='f'||e.key==='F') firing=false; });
   setInterval(()=>{
@@ -5008,13 +5032,14 @@ function bindInput(){
     if(keys.ArrowUp) px+=1; if(keys.ArrowDown) px-=1;
     if(invertPitch) px*=-1;
     if(keys.ArrowLeft) rx+=1; if(keys.ArrowRight) rx-=1;
-    if(px||rx){ inputPitch=px; inputRoll=rx; }
+    if((px||rx)&&sid===null){ inputPitch=px; inputRoll=rx; keyboardFlightActive=true; }
+    else if(keyboardFlightActive){if(sid===null){inputPitch=0;inputRoll=0;}keyboardFlightActive=false;}
     if(keys.w||keys.W) setThrottleUI(P.throttle+0.02);
     if(keys.s||keys.S) setThrottleUI(P.throttle-0.02);
   },33);
   window.addEventListener('pointerdown',()=>{ if(actx&&actx.state==='suspended') actx.resume(); });
 }
-function togglePause(){
+function togglePause(reason='Sortie held'){
   // Reported: no way back to the menu from a Thunderbolt sortie, and the engine kept humming
   // while paused. Both were the same gap - togglePause only ever flipped `state`, with no
   // overlay and nothing telling the audio graph to go quiet. animate() does stop calling
@@ -5024,13 +5049,18 @@ function togglePause(){
   // Muting the master gain node directly (the same node every engine/gun/explosion sound
   // already routes through) is the one change that silences all of it in one place.
   if(state===ST.PAUSED){
+    if(runtimeSession?.graphicsLost)return;
+    releaseHeldControls();
     state=prevState;
     show('pauseMenu',false);
     if(eng) eng.master.gain.setTargetAtTime(0.85,actx.currentTime,0.05);
     clock.getDelta();            // swallow the paused interval so dt doesn't jump
   }
   else if(state===ST.FLIGHT){
+    releaseHeldControls();
     prevState=state; state=ST.PAUSED;
+    document.getElementById('pauseReason').textContent=reason;
+    document.getElementById('pauseOrders').textContent=objectiveText()+' · '+Math.round(P.fuel)+'% FUEL · '+Math.round(P.hull)+'% HULL. Recovery: '+airfieldName(M())+'.';
     show('pauseMenu',true);
     if(eng) eng.master.gain.setTargetAtTime(0.0001,actx.currentTime,0.05);
   }
@@ -5048,6 +5078,16 @@ function exitToMenuFromPause(){
 //  INIT
 // ============================================================
 let combatFX=null;
+let runtimeSession=null,releaseHeldControls=()=>{};
+let flightCoach=new GameRuntime.HintCoach();
+function updateFlightHints(dt){
+  flightCoach.tick(dt,{enabled:document.getElementById('flightHints').checked,alive:P.alive,busy:flashT>0,
+    hull:P.hull,agl:P.pos.y-groundY(P.pos.x,P.pos.z),altitude:P.pos.y,
+    rtb:P.rtb,homeDistance:Math.hypot(P.pos.x-AF_X,P.pos.z-AF_Z),
+    recovery:'LAND AT '+airfieldName(M())+' WITH '+(P.ac==='me163'?'SKID':'GEAR')+' AND FLAPS DOWN.',
+    dive:P.ac==='ju87'&&P.bombs>0,pitch:P.pitch,diveBrake:P.diveBrake,fixedGear:P.ac==='ju87'||P.ac==='me163',
+    gear:P.gear,onGround:P.onGround,speed:P.spd},message=>flash(message,3600));
+}
 function init(){
   const app=document.getElementById('app');
   renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});
@@ -5101,6 +5141,11 @@ function init(){
     const iv=localStorage.getItem('re_inv'); if(iv!==null) invertPitch=(iv==='1');
   }catch(e){}
   bindInput();
+  const hints=document.getElementById('flightHints');hints.checked=GameRuntime.storage.getItem('flightHints')!=='0';
+  hints.onchange=()=>GameRuntime.storage.setItem('flightHints',hints.checked?'1':'0');
+  runtimeSession=GameRuntime.attachLifecycle({canvas:renderer.domElement,resetControls:()=>releaseHeldControls(),
+    pause:reason=>{if(state===ST.FLIGHT)togglePause(reason);},
+    onRestore:()=>{clock.getDelta();document.getElementById('pauseReason').textContent='Graphics restored — tap Resume.';}});
   // A single campaign uses the real Rhine terrain for every sortie.
   const campaignParams=new URLSearchParams(window.location.search);
   const requestedMission=Number(campaignParams.get('mission'));
@@ -5198,7 +5243,7 @@ let hudT=0, mmT=0, contentVisT=0;
 function animate(){
   requestAnimationFrame(animate);
   if(!renderer) return;
-  if(state===ST.PAUSED){ renderer.render(scene,camera); return; }
+  if(state===ST.PAUSED||document.hidden||runtimeSession?.graphicsLost)return;
   const raw=Math.min(0.05,clock.getDelta());
   let dt=raw;
   if(killCam){ killCam.t-=raw; killCam.ang+=raw*0.6; if(killCam.t<=0) killCam=null; else dt=raw*0.45; }
@@ -5219,6 +5264,7 @@ function animate(){
     if(state===ST.FLIGHT&&P.alive){
       updateFlight(dt);
       updateEuropeOperation(dt);
+      updateFlightHints(raw);
       if(firing) fireGuns(dt);
       updateFlak(dt);
     }
@@ -5246,7 +5292,7 @@ function animate(){
       const gr=playerModel.getObjectByName('gear');
       if(gr) gr.visible=P.gear>0.05;
       const pr=playerModel.getObjectByName('prop');
-      if(pr) pr.rotation.z-=Math.min(0.30,0.10+P.throttle*0.28);
+      if(pr) pr.rotation.z-=GameRuntime.rotorStep(raw,Math.min(0.30,0.10+P.throttle*0.28),P.ac==='p47'?4:3);
     }
     for(const e of enemyAir)if(e.alive)updateJetExhaust(e.group,Math.min(1,e.spd/aiSpec(e.kind).max),raw);
     if(bailout){

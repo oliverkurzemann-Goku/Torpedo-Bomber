@@ -2,6 +2,7 @@
 const fs=require('node:fs'),path=require('node:path'),vm=require('node:vm'),assert=require('node:assert/strict');
 const THREE=require('three'),{createCanvas}=require('@napi-rs/canvas');
 global.THREE=THREE;global.window=global;global.document={createElement:()=>createCanvas(1,1)};
+require('../../game-runtime.js');const {GameRuntime}=global;
 const root=path.resolve(__dirname,'../..');
 vm.runInThisContext(fs.readFileSync(path.join(root,'okinawa/data.js'),'utf8'));
 vm.runInThisContext(fs.readFileSync(path.join(root,'okinawa/world.js'),'utf8'));
@@ -11,7 +12,7 @@ const pick=(name,next)=>{
  assert.ok(start>0&&end>start,name+' exists');return html.slice(start,end);
 };
 const crashes=[];
-const game=vm.createContext({THREE,Math,console,MISSIONS:[{okinawa:true},{okinawa:false}],mission:0,
+const game=vm.createContext({GameRuntime,THREE,Math,console,MISSIONS:[{okinawa:true},{okinawa:false}],mission:0,
  OKINAWA_OFFSET_X:10000,okinawaWorld:null,sea:{visible:true},
  seaUniforms:{uCoast:{value:null},uCoastActive:{value:0}},islands:[{group:{visible:true}}],
  P:{pos:{x:0,y:0,z:0},touchResolved:false},overDeck:()=>false,DECK_Y:18,carrierX:0,

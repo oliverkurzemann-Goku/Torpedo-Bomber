@@ -1,7 +1,8 @@
 /* NODE_PATH=/path/to/three@0.128.0/node_modules node okinawa/tests/operations.cjs */
 const fs=require('fs'),path=require('path'),vm=require('vm'),assert=require('assert/strict'),THREE=require('three');
 const root=path.resolve(__dirname,'../..'),ctx=vm.createContext({THREE,console});ctx.window=ctx;
-for(const f of ['sortie-systems.js','operation-plans.js'])vm.runInContext(fs.readFileSync(path.join(root,f),'utf8'),ctx);
+for(const f of ['game-runtime.js','sortie-systems.js','operation-plans.js'])vm.runInContext(fs.readFileSync(path.join(root,f),'utf8'),ctx);
+const {GameRuntime}=ctx;
 const {Operation}=ctx.FlightOps,plans=ctx.FlightPlans;
 let op=new Operation({deadline:90,recon:{x:0,z:0,radius:100,min:30,max:200,seconds:5},events:[{kills:2,fighters:2,required:true}]});
 assert.equal(op.ready(),false);
@@ -63,7 +64,7 @@ assert.equal(rocket.fuel,0,'glide pursuit irreversibly cuts rocket power');
 assert.equal(rocket.rtb,true,'escaping the pursuer is enough to allow landing');
 assert(calls.some(([type,msg])=>type==='flash'&&msg.includes('PURSUER')),'pilot warned about the pursuer');
 bullets.push({mesh,dir:new THREE.Vector3(1,-1,0).normalize(),speed:760,life:2,dmg:1});
-const impacts=vm.createContext({THREE,Math,scene:new THREE.Scene(),groundY:(x,z)=>x*.01+z*.02,bullets,targets:[],enemyAir:[],spawnSmoke(){}});
+const impacts=vm.createContext({GameRuntime,THREE,Math,scene:new THREE.Scene(),groundY:(x,z)=>x*.01+z*.02,bullets,targets:[],enemyAir:[],spawnSmoke(){}});
 vm.runInContext('let gunMarks=null,gunMarkNext=0;'+func(eu,'groundGunImpact','applyWeather')+func(eu,'updateBullets','dropBomb')+'\nglobalThis.marks=()=>gunMarks;',impacts);
 impacts.updateBullets(.05);assert.equal(bullets.length,0);const marks=impacts.marks();assert.equal(marks.count,1);
 const matrix=new THREE.Matrix4();marks.getMatrixAt(0,matrix);const p=new THREE.Vector3().setFromMatrixPosition(matrix);
@@ -71,7 +72,7 @@ assert(Math.abs(p.y-(p.x*.01+p.z*.02)-.16)<.001,'mark sits above the terrain, no
 for(let i=0;i<500;i++)impacts.groundGunImpact(i*.1,0);assert.equal(marks.count,320,'long strafing runs keep a bounded decal pool');
 console.log('Operations: deadlines, reconnaissance, waves, cloud visibility, coastal completion and swept ground impacts OK');
 // Long sorties must not strand bombers beyond the flight boundary or drive the carrier ashore.
-const ai=vm.createContext({THREE,Math,RTILE:4000,RGRID_W:7,RGRID_H:8,groundY:()=>100,D:()=>({id:'rookie'}),P:{alive:false}});
+const ai=vm.createContext({GameRuntime,THREE,Math,RTILE:4000,RGRID_W:7,RGRID_H:8,groundY:()=>100,D:()=>({id:'rookie'}),P:{alive:false}});
 vm.runInContext(func(eu,'updateBomber','damagePlayer'),ai);
 const e={pos:new THREE.Vector3(1800,1100,16000),vel:new THREE.Vector3(-72,0,0),heading:-Math.PI/2,pitch:0,roll:0,group:new THREE.Group(),hp:30,maxhp:30,cool:999};
 for(let i=0;i<24000;i++){ai.updateBomber(e,.05,null,99999);assert(e.pos.x>0&&e.pos.x<28000&&e.pos.z>0&&e.pos.z<32000,'bomber remains reachable inside terrain');}

@@ -5,7 +5,38 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 136 · Thunderbolt Squadron BUILD 137 · Remagen-Kern 21 / Fahrzeuge 22**
+Stand bei Übergabe: **Torpedo Squadron BUILD 152 · Thunderbolt Squadron BUILD 152 · Remagen-Kern 21 / Fahrzeuge 22**
+
+**Build 152 (30.09.2026): Laufzeit-Sicherheit und optionale Flugtipps.**
+Keine App-/PWA-Version und keine Änderung der bewährten Flugphysik. Das neue
+`game-runtime.js` wird nur von den beiden aktiven Kampagnen geladen. Pacific-MG
+prüft nun die gesamte Geschossstrecke gegen Zeros, Raider und feindliche Torpedos
+(reproduzierter Unterschied bei 30 gegenüber 60 FPS). Kurzlebige Trümmer,
+Explosionen, Flak, Munition, Wasserspritzer, Luftblasen und Ölreste erhalten eine
+explizite Ressourcen-Eigentümerschaft und werden beim Ablauf/Sortiewechsel
+freigegeben. Niemals GLB-Klon-Geometrie, gemeinsam genutzte Tracer-/Flak-Geometrie,
+Sprite-Geometrie oder Texturen pauschal entsorgen. Feuer-Sprites landen nicht mehr
+im normalen Rauch-Pool. Gepoolter Rauch und Wellen bleiben wiederverwendbar.
+
+Tab-/Fensterwechsel pausiert eine aktive Sortie und löscht gehaltene Touch-/
+Tastaturbefehle. Pause zeichnet nicht weiter auf der GPU. WebGL-Kontextverlust
+zeigt einen Wiederherstellungshinweis; Three übernimmt die GPU-Wiederherstellung,
+danach muss der Spieler ausdrücklich fortsetzen. Ein Tastatur-Loslassfehler im
+Rhine-Spiel ist korrigiert, ohne die Bank-Rückstellung zu ändern. Propeller sind
+zeitbasiert, mit einem Anti-Aliasing-Schrittlimit passend zur Blattzahl.
+
+`Flight hints` ist abschaltbar und gespeichert. Tipps erscheinen einmal pro Sortie
+und frühestens 20 Sekunden nach dem vorigen Tipp; vorhandene Warnungen werden
+nicht überschrieben. Das Pausenmenü zeigt Ziele, Treibstoff, Zustand und Rückkehr.
+`runtime-safety.cjs` verifiziert echte Spielroutinen bei 20/30/60/120 FPS, blockiertem
+Speicher, 30 Effektzyklen und erhaltenen geteilten Ressourcen. Die lokalen 19
+Terrain- und 11 Okinawa-Regressionsdateien sind grün. `browser-smoke.cjs` ist in CI
+verpflichtend und nutzt echten Chrome/WebGL; lokal ohne Chrome explizit übersprungen.
+Es prüft beide Kampagnen, iPad-Größe, Tastatur, Auto-Pause, GPU-Ruhe und echten
+Kontextverlust. Veröffentlichung erst nach erfolgreichem Browsercheck. Ein echter
+iPad-/Safari-Sicht- und Langzeittest bleibt ausdrücklich Nutzerabnahme.
+
+---
 
 **Build 137 (26.09.2026):** Auf ausdrücklichen Nutzerwunsch zeigt `index.html` nur
 die beiden aktuellen Kampagnen (Torpedo/Okinawa und Thunderbolt/Remagen). Classic-
