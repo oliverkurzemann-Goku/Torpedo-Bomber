@@ -33,9 +33,13 @@ const cdn={
     const file=cdn[new URL(route.request().url()).pathname.split('/').pop()];
     if(file)await route.fulfill({path:file,contentType:'application/javascript'});else await route.abort();
    });
-   const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));page.setDefaultTimeout(90000);
+   const page=await context.newPage(),errors=[];page.on('pageerror',e=>{errors.push(e.message);console.error('Browser error '+campaign+': '+e.message);});page.setDefaultTimeout(90000);
+   page.on('console',m=>{if(m.type()==='error')console.error('Browser console '+campaign+': '+m.text());});
    await page.goto('http://127.0.0.1:'+server.address().port+'/'+campaign,{waitUntil:'domcontentloaded'});
    await page.waitForFunction(()=>typeof state!=='undefined'&&state===ST.MENU&&document.querySelector('#menu:not(.hidden)'));
+   // Keep the real scene and WebGL renderer, but lower GPU fill cost on the
+   // CPU-only CI runner. CSS still uses the full iPad viewport; no FPS claim.
+   await page.evaluate(()=>{renderer.setPixelRatio(.5);renderer.shadowMap.enabled=false;});
    await page.locator('#flightHints').uncheck();
    assert.equal(await page.evaluate(()=>GameRuntime.storage.getItem('flightHints')),'0');
    await page.locator('#flightHints').check();
@@ -44,7 +48,13 @@ const cdn={
     const defence=await page.evaluate(()=>MISSIONS.findIndex(m=>m.defend));
     await page.locator('#missionSel .chip').nth(defence).click();await page.locator('#startBtn').click();await page.locator('#launchBtn').click();
    }
-   await page.waitForFunction(()=>state===ST.FLIGHT);
+   try{await page.waitForFunction(()=>state===ST.FLIGHT||state===ST.PAUSED||state===ST.RESULT);
+    assert(await page.evaluate(()=>state===ST.FLIGHT),'launch must enter flight');
+   }catch(e){
+    console.error('Launch diagnostic '+campaign,await page.evaluate(()=>({state,hidden:document.hidden,graphicsLost:runtimeSession?.graphicsLost,
+      reason:document.getElementById('pauseReason').textContent,timer:typeof launchTimer==='undefined'?null:launchTimer,
+      frame:renderer.info.render.frame,alive:P.alive,hull:P.hull,model:typeof planeModelLoaded==='undefined'?null:planeModelLoaded})),errors);throw e;
+   }
    // Actual user keyboard events: release must clear a keyboard-owned command.
    await page.keyboard.down('ArrowLeft');await page.waitForTimeout(150);await page.keyboard.up('ArrowLeft');await page.waitForTimeout(150);
    assert.equal(await page.evaluate(()=>inputRoll),0,'keyboard release clears roll');

@@ -15,7 +15,7 @@ for(const m of html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/g)){
  if(src){if(!src[1].startsWith('https:'))vm.runInContext(fs.readFileSync(path.join(root,src[1].split('?')[0]),'utf8'),c,{filename:src[1]});}
  else vm.runInContext(m[1],c,{filename:'remagen-mission.html'});
 }
-vm.runInContext('loadModels=()=>{};WorldVehicles.prototype.load=async()=>{};',c);
+vm.runInContext('loadModels=()=>{};ensureModel=async()=>null;WorldVehicles.prototype.load=async()=>{};',c);
 (async()=>{
  listeners.load();
  for(let i=0;i<100&&c.document.getElementById('menu').classList.contains('hidden')&&!errors.length;i++)await new Promise(r=>setTimeout(r,10));
@@ -39,7 +39,7 @@ vm.runInContext('loadModels=()=>{};WorldVehicles.prototype.load=async()=>{};',c)
  assert.match(c.fwStats.bearing,/BRG/);
  vm.runInContext(`enemyAir.push({alive:true,pos:new THREE.Vector3(P.pos.x+1000,P.pos.y,P.pos.z),bomber:false});updateHUD();`,c);
  assert.equal(c.document.getElementById('navKind').textContent,'BANDIT','the moving fighter must override the ground target');
- assert.match(c.document.getElementById('navArrow').style.transform,/rotate\(90deg\)/,'fighter due east must point right when heading north');
+ assert.match(c.document.getElementById('navArrow').style.transform,/rotate\(-90deg\)/,'fighter due east is left in the northbound chase camera (see navigation.js)');
  vm.runInContext(`enemyAir[enemyAir.length-1].alive=false;updateHUD();`,c);
  assert.notEqual(c.document.getElementById('navKind').textContent,'BANDIT','destroyed fighter must no longer guide the arrow');
  // Both synchronous initialization errors and rejected terrain loads surface on the loading panel.
