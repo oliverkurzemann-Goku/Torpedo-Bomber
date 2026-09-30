@@ -2,7 +2,7 @@
 (function(root){
  'use strict';
  function create(THREE,scene,position,groundAt,options={}){
-  const water=!!options.water,waterAt=options.waterAt||((x,z)=>groundAt(x,z)<=.6),group=new THREE.Group();group.name=water?'rescueBoat':'rescueParty';
+  const water=!!options.water,waterAt=options.waterAt||((x,z)=>groundAt(x,z)<=.6),surfaceAt=options.surfaceAt||groundAt,group=new THREE.Group();group.name=water?'rescueBoat':'rescueParty';
   const marker=new THREE.Group();marker.name='rescueBeacon';scene.add(group,marker);
   const olive=new THREE.MeshStandardMaterial({color:0x53614b,roughness:.9});
   const grey=new THREE.MeshStandardMaterial({color:0x727f83,roughness:.8});
@@ -36,7 +36,7 @@
   const people=water?[crew(-.75,1.4)]:[crew(-.8,0),crew(.8,-.6)];
   const flare=new THREE.Mesh(new THREE.SphereGeometry(.22,8,6),glow);flare.position.y=.2;marker.add(flare);
   const plume=new THREE.Mesh(new THREE.ConeGeometry(.7,3.5,8),glow);plume.position.y=2;marker.add(plume);
-  marker.position.copy(position);marker.position.y=groundAt(position.x,position.z)+.12;
+  marker.position.copy(position);marker.position.y=(water?surfaceAt:groundAt)(position.x,position.z)+.12;
   const start=position.clone(),end=position.clone();let direction=0,found=false;
   // Never route a boat across an island, or the search party through water.
   for(const distance of [water?42:18,8,0]){
@@ -55,13 +55,14 @@
   const stop=Math.min(3,Math.hypot(start.x-position.x,start.z-position.z));
   end.x+=Math.sin(direction)*stop;end.z+=Math.cos(direction)*stop;
   if(!found){start.copy(position);end.copy(position);}
-  group.rotation.y=direction+Math.PI;group.position.copy(start);
+  group.rotation.y=direction+Math.PI;group.position.copy(start);if(water)group.position.y=surfaceAt(start.x,start.z);
   let elapsed=0,disposed=false;
   return {group,marker,water,get elapsed(){return elapsed;},get pickup(){return elapsed>=6.2;},
    update(dt){
     if(disposed)return {done:true,pickup:true};
     elapsed=Math.min(8,elapsed+Math.max(0,dt));const t=Math.min(1,elapsed/6.2);
-    group.position.lerpVectors(start,end,t);group.position.y=groundAt(group.position.x,group.position.z)+(water?Math.sin(elapsed*2)*.07:0);
+    group.position.lerpVectors(start,end,t);group.position.y=(water?surfaceAt:groundAt)(group.position.x,group.position.z)+(water?Math.sin(elapsed*2)*.07:0);
+    if(water)marker.position.y=surfaceAt(marker.position.x,marker.position.z)+.12;
     if(water)group.rotation.z=Math.sin(elapsed*1.4)*.018;
     else for(const p of people)for(let i=0;i<2;i++){
      p.legs[i].rotation.x=t<1?Math.sin(elapsed*7+i*Math.PI)*.25:0;

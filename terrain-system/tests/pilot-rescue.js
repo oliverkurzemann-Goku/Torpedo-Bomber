@@ -22,6 +22,8 @@ const scene=new THREE.Scene(),position=new THREE.Vector3(100,51,100),waterAt=(x,
 const river=PilotRescue.create(THREE,scene,position,()=>50,{water:true,waterAt});
 for(let i=0;i<160;i++){river.update(.05);assert(waterAt(river.group.position.x,river.group.position.z));assert(Math.abs(river.group.position.y-50)<.08);}
 river.dispose();
+const waves=PilotRescue.create(THREE,scene,new THREE.Vector3(0,1,0),()=>0,{water:true,surfaceAt:()=>2.5});
+waves.update(.1);assert(Math.abs(waves.group.position.y-2.5)<.08,'boat follows the existing sea surface, not a flat plane');waves.dispose();
 const bounded=PilotRescue.create(THREE,scene,new THREE.Vector3(1,100,1),()=>100,{water:false,waterAt:()=>false,bounds:{minX:0,minZ:0,maxX:30,maxZ:30}});
 for(let i=0;i<160;i++){bounded.update(.05);assert(bounded.group.position.x>=0&&bounded.group.position.z>=0);}
 bounded.dispose();

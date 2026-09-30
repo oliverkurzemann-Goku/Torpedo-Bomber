@@ -4291,6 +4291,7 @@ function beginBailout(){
 function advanceBailout(dt){
   if(!steeringParachute())return;
   if(bailRescue){
+    if(bailRescue.water)bailout.position.y=seaHeightAt(bailout.position.x,bailout.position.z,seaUniforms?.uTime.value||0)+.9;
     const pickup=bailRescue.update(dt);
     if(pickup.pickup)bailout.group.visible=false;
     if(pickup.done){
@@ -4316,7 +4317,7 @@ function advanceBailout(dt){
   if(landing.landed){
     if(landing.safe){
       releaseHeldControls();const p=bailout.position,water=shoreHeight(p.x,p.z)<=.6;
-      bailout.settle(water);bailRescue=PilotRescue.create(THREE,scene,p,shoreHeight,{water});
+      bailout.settle(water);bailRescue=PilotRescue.create(THREE,scene,p,shoreHeight,{water,surfaceAt:(x,z)=>seaHeightAt(x,z,seaUniforms?.uTime.value||0)});
       radioQ=[];radioT=0;radioSay(water?'RESCUE BOAT — WE HAVE YOUR SIGNAL, HOLD POSITION':'SEARCH PARTY — SIGNAL SEEN, WE ARE COMING TO YOU');
       document.getElementById('stickHint').textContent='RESCUE INBOUND';flash('PILOT SAFE — RESCUE INBOUND',4000);
       return;

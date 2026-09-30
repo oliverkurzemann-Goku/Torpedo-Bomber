@@ -22,6 +22,7 @@ bei Missionsstart. Keine Abfanghilfe am Boden, bei Rückkehr oder nach Zeitablau
 
 Sichere Schirmlandung startet `pilot-rescue.js`: acht Sekunden Signal und
 Abholung. Wasser: Dinghy und kleines Rettungsboot; Land: zweiköpfiger Suchtrupp.
+Boot und Dinghy im Pacific folgen der vorhandenen `seaHeightAt`-Wellenhöhe.
 Europa verwendet die vorhandene echte Wassermaske aus `LivingWorld`, nicht
 Meereshöhe als Flussdetektor; Boot und Trupp folgen dem gerenderten Terrain.
 Kurze Anfahrtswege werden gegen Wasser/Bank, Steigung und DEM-Grenze geprüft.
