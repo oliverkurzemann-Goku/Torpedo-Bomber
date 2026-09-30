@@ -64,7 +64,7 @@ vm.runInContext(pick('resolveGroundAndDeck','trap'),game);
  assert.match(html,/launchCampaignMission\(mission\+1\)/,'campaign advances through the world preparation path');
  assert.match(html,/const last=mission===MISSIONS\.length-2/);
  assert.match(html,/const last = mission===MISSIONS\.length-2/);
- assert.match(html,/try\{await prepareOkinawa\(\);startMission\(idx\);\}/,'all sorties prepare the coastline');
+ assert.match(html,/await prepareOkinawa\(\);[\s\S]*?await preparePacificModels\(MISSIONS\[idx\][\s\S]*?startMission\(idx\);/,'all sorties prepare the coastline and models');
  assert.match(html,/if\(shoreMetres>5\.0\)discard/,'reflective sea masks the mapped land');
  assert.match(html,/function exitToMenu\(\)[\s\S]*?setOkinawaActive\(false\);\s*releaseOkinawa\(\)/);
  const count=world.objectCount;game.releaseOkinawa();

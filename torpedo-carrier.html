@@ -319,7 +319,7 @@
   <div id="flash"></div>
   <div id="ltn" style="position:fixed;inset:0;background:#e6ecff;opacity:0;pointer-events:none;z-index:40;"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 152</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 153</div>
 
   <!-- Optical landing aid -->
   <div id="lso">
@@ -442,7 +442,8 @@
 <script src="okinawa/world.js?v=133"></script>
 <script src="campaign.js?v=1"></script>
 <script src="game-runtime.js?v=152"></script>
-<script src="combat-fx.js?v=133"></script>
+<script src="pacific-assets.js?v=153"></script>
+<script src="combat-fx.js?v=153"></script>
 <script src="pilot-bailout.js?v=147"></script>
 <script src="audio/weapon-sound.js?v=144"></script>
 <script src="sortie-systems.js?v=129"></script>
@@ -852,6 +853,30 @@ function releaseOkinawa(){
 let combatFX=null;
 let runtimeSession=null,releaseHeldControls=()=>{};
 let flightCoach=new GameRuntime.HintCoach();
+const pacificModelTasks=new Map();
+async function preparePacificModels(m,progress=()=>{}){
+  const needed=[['carrier',m.defend?loadIJNCarrierModel:loadCarrierModel,
+    ()=>m.defend?ijnCarrierModel:carrierModel]];
+  if(m.sbd)needed.push(['sbd',loadSBDModel,()=>sbdTemplate]);
+  if(!m.sbd||m.defend)needed.push(['avenger',loadPlaneModel,()=>gltfRoot&&propPivot]);
+  const targets=[...(m.targets||[]),...(m.reinforcement?.targets||[])];
+  if(m.defend||m.zeros||m.shoreStrike||!m.free&&!m.qual)
+    needed.push(['zero',loadZeroModel,()=>zeroTemplate]);
+  if(targets.some(t=>t.type==='destroyer'))needed.push(['escort',loadDestroyerModel,()=>destroyerTemplate]);
+  if(targets.some(t=>t.type==='freighter'))needed.push(['freighter',loadFreighterModel,()=>freighterTemplate]);
+  if(targets.some(t=>t.type==='cruiser'))needed.push(['capital',loadCruiserModel,()=>cruiserTemplate]);
+  // Serial decoding avoids overlapping large embedded-image allocations on iPad.
+  // Briefing/Start Engine is reached only once the selected sortie is ready.
+  for(let i=0;i<needed.length;i++){
+    const [key,load,ready]=needed[i];
+    // US and Japanese flight decks are different tasks, unlike their shared GLB sources.
+    const taskKey=key==='carrier'?(m.defend?'ijnDeck':'usDeck'):key;
+    progress('Loading models '+(i+1)+'/'+needed.length+' · '+key);
+    if(!pacificModelTasks.has(taskKey))pacificModelTasks.set(taskKey,Promise.resolve().then(load));
+    await pacificModelTasks.get(taskKey);
+    if(!ready()){pacificModelTasks.delete(taskKey);throw Error(key+' model could not load. Please retry.');}
+  }
+}
 function pacificPauseOrders(){
   const m=MISSIONS[mission];
   const task=isDefend()?'RAIDERS '+raiders.filter(r=>r.alive).length+' · CARRIER '+Math.round(carrierHP)+'%':
@@ -908,14 +933,9 @@ function init(){
   buildIslands();
   buildCarrier();
   carrier.traverse(function(o){ if(o.isMesh){ o.castShadow=true; o.receiveShadow=true; } });
-  loadCarrierModel(); loadIJNCarrierModel(); loadSBDModel();
-  loadDestroyerModel();
-  loadFreighterModel();
-  loadCruiserModel();
   buildPlane();
   planeGroup.traverse(function(o){ if(o.isMesh) o.castShadow=true; });
-  loadPlaneModel();
-  loadZeroModel();
+  // GLBs load for the selected mission, before launch, not simultaneously in the menu.
   buildShadow();
   applyTimeOfDay(timeMode);
   mmCtx=document.getElementById('mmap').getContext('2d');
@@ -2085,6 +2105,9 @@ function startMission(idx){
       inner.rotation.y+=Math.PI;              // template noses +Z; the plane group flies -Z
       playerSBD.add(inner);
       playerSBD.userData.fromTemplate=true;
+      sbdFlapL=inner.getObjectByName('sbdFlapL');sbdFlapR=inner.getObjectByName('sbdFlapR');
+      sbdDiveFlapL=inner.getObjectByName('sbdDiveL');sbdDiveFlapR=inner.getObjectByName('sbdDiveR');
+      sbdHookMesh=inner.getObjectByName('sbdHook');
       planeGroup.add(playerSBD);
     }
     if(playerSBD){ playerSBD.visible=true; playerSBD.traverse(o=>{ o.visible=true; }); }
@@ -2521,8 +2544,8 @@ function setSBDGearVisible(aircraft,down){
 }
 function loadSBDModel(){
   if(!SBD_MODEL_URL || typeof THREE.GLTFLoader==='undefined') return;
-  let loader; try{ loader=new THREE.GLTFLoader(); }catch(e){ return; }
-  loader.load(SBD_MODEL_URL, function(gltf){
+  let loader; try{ loader=PacificAssets.loader(); }catch(e){ return; }
+  return loader.load(SBD_MODEL_URL, function(gltf){
     try{
       const model=gltf.scene||gltf.scenes[0]; if(!model) return;
       const box=new THREE.Box3().setFromObject(model);
@@ -2636,8 +2659,8 @@ function loadSBDModel(){
 
 function loadZeroModel(){
   if(!ZERO_MODEL_URL || ZERO_MODEL_URL.indexOf('__')===0 || typeof THREE.GLTFLoader==='undefined') return;
-  let loader; try{ loader=new THREE.GLTFLoader(); }catch(e){ return; }
-  loader.load(ZERO_MODEL_URL, function(gltf){
+  let loader; try{ loader=PacificAssets.loader(); }catch(e){ return; }
+  return loader.load(ZERO_MODEL_URL, function(gltf){
     try{
       const model=gltf.scene||gltf.scenes[0]; if(!model) return;
       const box=new THREE.Box3().setFromObject(model);
@@ -4299,8 +4322,8 @@ function noseDir(){
 
 function loadPlaneModel(){
   if(!PLANE_MODEL_URL || typeof THREE.GLTFLoader==='undefined') return;
-  let loader; try{ loader=new THREE.GLTFLoader(); }catch(e){ return; }
-  loader.load(PLANE_MODEL_URL, function(gltf){
+  let loader; try{ loader=PacificAssets.loader(); }catch(e){ return; }
+  return loader.load(PLANE_MODEL_URL, function(gltf){
     try{
       const model=gltf.scene||(gltf.scenes&&gltf.scenes[0]);
       if(!model) return;
@@ -4592,7 +4615,7 @@ function loadPlaneModel(){
       }
       window.__eyeDbg='EYE '+COCKPIT_EYE.map(v=>v.toFixed(2)).join('/');
       const btEl=document.getElementById('buildTag');
-      if(btEl) btEl.textContent='BUILD 152 · '+window.__eyeDbg;
+      if(btEl) btEl.textContent='BUILD 153 · '+window.__eyeDbg;
       let seat=null;
       model.traverse(function(o){
         if(!o.isMesh||!o.material) return;
@@ -4635,8 +4658,8 @@ function loadPlaneModel(){
 
 function loadCarrierModel(){
   if(!CARRIER_MODEL_URL || typeof THREE.GLTFLoader==='undefined') return;
-  let loader; try{ loader=new THREE.GLTFLoader(); }catch(e){ return; }
-  loader.load(CARRIER_MODEL_URL, function(gltf){
+  let loader; try{ loader=PacificAssets.loader(); }catch(e){ return; }
+  return loader.load(CARRIER_MODEL_URL, function(gltf){
     try{
       const model=gltf.scene||(gltf.scenes&&gltf.scenes[0]);
       if(!model) return;
@@ -4675,18 +4698,18 @@ function loadCarrierModel(){
 function getIJNShipAsset(){
   if(ijnAssetPromise) return ijnAssetPromise;
   ijnAssetPromise=new Promise((resolve,reject)=>{
-    let loader; try{ loader=new THREE.GLTFLoader(); }catch(e){ reject(e); return; }
+    let loader; try{ loader=PacificAssets.loader(); }catch(e){ reject(e); return; }
     loader.load(IJN_CARRIER_URL,gltf=>{
       const model=gltf.scene||(gltf.scenes&&gltf.scenes[0]);
       if(model) resolve(model); else reject(new Error('IJN asset has no scene'));
     },undefined,reject);
-  });
+  }).catch(error=>{ijnAssetPromise=null;throw error;});
   return ijnAssetPromise;
 }
 
 function loadIJNCarrierModel(){
   if(!IJN_CARRIER_URL || typeof THREE.GLTFLoader==='undefined') return;
-  getIJNShipAsset().then(function(source){
+  return getIJNShipAsset().then(function(source){
     try{
       const model=source.clone(true);
       // Measured from the model: hull 137.6 long on Z, flight deck at raw Y=8.01.
@@ -4711,8 +4734,8 @@ function loadIJNCarrierModel(){
 
 function loadDestroyerModel(){
   if(!DESTROYER_MODEL_URL || typeof THREE.GLTFLoader==='undefined') return;
-  let loader; try{ loader=new THREE.GLTFLoader(); }catch(e){ return; }
-  loader.load(DESTROYER_MODEL_URL, function(gltf){
+  let loader; try{ loader=PacificAssets.loader(); }catch(e){ return; }
+  return loader.load(DESTROYER_MODEL_URL, function(gltf){
     try{
       const model=gltf.scene||(gltf.scenes&&gltf.scenes[0]);
       if(!model) return;
@@ -4736,8 +4759,8 @@ function loadDestroyerModel(){
 
 function loadFreighterModel(){
   if(!FREIGHTER_MODEL_URL || typeof THREE.GLTFLoader==='undefined') return;
-  let loader; try{ loader=new THREE.GLTFLoader(); }catch(e){ return; }
-  loader.load(FREIGHTER_MODEL_URL, function(gltf){
+  let loader; try{ loader=PacificAssets.loader(); }catch(e){ return; }
+  return loader.load(FREIGHTER_MODEL_URL, function(gltf){
     try{
       const model=gltf.scene||(gltf.scenes&&gltf.scenes[0]);
       if(!model) return;
@@ -4761,7 +4784,7 @@ function loadFreighterModel(){
 
 function loadCruiserModel(){
   if(!CRUISER_MODEL_URL || typeof THREE.GLTFLoader==='undefined') return;
-  getIJNShipAsset().then(function(source){
+  return getIJNShipAsset().then(function(source){
     try{
       const model=source.clone(true);
       const box=new THREE.Box3().setFromObject(model);
@@ -5416,7 +5439,13 @@ function updateGuns(dt){
       const m=new THREE.Mesh(pacificTracerGeo,pacificTracerMat);
       m.position.copy(start); m.lookAt(start.clone().add(nd)); m.rotateX(Math.PI/2);
       scene.add(m); bullets.push({mesh:m,dir:nd.clone(),life:0.7,speed:650});
-      if(combatFX){planeGroup.updateMatrixWorld(true);combatFX.muzzle(planeGroup,[planeGroup.worldToLocal(start.clone())]);}
+      if(combatFX){
+        // Zero/SBD rig cleanup removes siblings of the selected airframe. Put
+        // muzzle flashes UNDER that airframe so cleanup cannot detach live FX.
+        const mount=(isDefend()&&playerZero)||(isSBD()&&playerSBD)||planeGroup;
+        planeGroup.updateMatrixWorld(true);
+        combatFX.muzzle(mount,[mount.worldToLocal(start.clone())]);
+      }
     }
     sfxGun(); updateHUD();
   }
@@ -5927,7 +5956,7 @@ function setupUIButtons(){
   if(dbgT2) dbgT2.onclick=()=>{
     dbgOn=!dbgOn; GameRuntime.storage.setItem('dbgOn',dbgOn?'1':'0');
     const db=document.getElementById('dbgBox'); if(db) db.textContent=dbgOn?'✓':'';
-    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 152'; }
+    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 153'; }
   };
   const lu=document.getElementById('lookUp'), ld=document.getElementById('lookDn');
   let _lookT=0;
@@ -5971,8 +6000,12 @@ async function launchCampaignMission(idx){
   button.disabled=true;
   const label=button.textContent;
   button.textContent=okinawaWorld?'Preparing sortie…':'Loading Okinawa…';
-  try{await prepareOkinawa();startMission(idx);}
-  catch(e){console.error(e);flash('OKINAWA COULD NOT LOAD — '+e.message,3000);}
+  try{
+    await prepareOkinawa();
+    await preparePacificModels(MISSIONS[idx],text=>{button.textContent=text;});
+    startMission(idx);
+  }
+  catch(e){console.error(e);flash('SORTIE COULD NOT LOAD — '+e.message,6000);}
   finally{button.disabled=false;button.textContent=label;}
 }
 function beginGame(){ return launchCampaignMission(selectedMission); }
@@ -6145,8 +6178,27 @@ function updateShips(dt){
   }
 }
 
+let runtimeFault=null;
 function animate(){
   requestAnimationFrame(animate);
+  if(runtimeFault)return;
+  try{animateFrame();}
+  catch(error){
+    runtimeFault=error;
+    releaseHeldControls();
+    if(state===ST.FLIGHT||state===ST.LAUNCH)togglePause('Simulation interrupted — reload the game.');
+    const notice=document.createElement('div');notice.id='simulationRecovery';
+    notice.style.cssText='position:fixed;inset:0;z-index:999998;background:rgba(15,20,15,.95);color:#e8ddbc;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px;text-align:center;font:16px system-ui';
+    const title=document.createElement('h2');title.textContent='Simulation interrupted';
+    const detail=document.createElement('p');
+    detail.textContent='BUILD 153 · '+(MISSIONS[mission]?.sub||'Menu')+' · '+error.message;
+    const reload=document.createElement('button');reload.textContent='Reload game';
+    reload.style.cssText='padding:12px 24px;font:inherit';reload.onclick=()=>location.reload();
+    notice.appendChild(title);notice.appendChild(detail);notice.appendChild(reload);document.body.appendChild(notice);
+    throw error; // Keep real defects observable to browser tests, never silently continue.
+  }
+}
+function animateFrame(){
   if(state===ST.PAUSED||document.hidden||runtimeSession?.graphicsLost||renderer.getContext().isContextLost())return;
   const rawDt=Math.min(0.05, clock.getDelta());
   let dt=rawDt;

@@ -20,7 +20,7 @@
    m.material.rotation=Math.random()*6.28;m.visible=true;m.position.copy(pos);m.scale.set(size,size,1);parent.add(m);
    live.push({m,t:0,life,size,velocity,growth,gravity,hot});
   }
-  function recycle(i){const e=live[i];e.m.removeFromParent?e.m.removeFromParent():e.m.parent.remove(e.m);e.m.visible=false;pools[e.hot?1:0].push(e.m);live.splice(i,1);}
+  function recycle(i){const e=live[i];if(e.m.parent)e.m.parent.remove(e.m);e.m.visible=false;pools[e.hot?1:0].push(e.m);live.splice(i,1);}
   return {
    muzzle(parent,points,heavy=false){
     parent.updateMatrixWorld(true);shots++;

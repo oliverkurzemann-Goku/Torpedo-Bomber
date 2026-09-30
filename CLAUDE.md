@@ -5,7 +5,50 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 152 · Thunderbolt Squadron BUILD 152 · Remagen-Kern 21 / Fahrzeuge 22**
+Stand bei Übergabe: **Torpedo Squadron BUILD 153 · Thunderbolt Squadron BUILD 153 · Remagen-Kern 21 / Fahrzeuge 22**
+
+**Build 153 (30.09.2026): Zero-/Dauntless-Schussabsturz reproduziert und korrigiert.**
+Die präzisierte Meldung „beim Schießen, Avenger flüssig“ führt zur konkreten Ursache:
+`updateGuns` hängt Mündungsfeuer als Geschwister an `planeGroup`; Zero-/SBD-
+`updatePlaneMesh` entfernt sämtliche Geschwister der gewählten Maschine. Beim Ablauf
+greift `CombatFX.recycle` auf `sprite.parent.remove(...)` zu. Three r128 hat kein
+`removeFromParent`; nach dem Detach ist `parent` null. Der Fehler
+`Cannot read properties of null (reading 'remove')` wurde mit der echten r128-
+Bibliothek reproduziert. Mündungsfeuer hängt jetzt unter `playerZero`/`playerSBD`,
+und Recycling erlaubt bereits entfernte Sprites. `carrier-fire.cjs` führt echte
+GLBs und die tatsächlichen Schuss-/FX-/Modellroutinen in echter Frame-Reihenfolge
+für Zero/SBD/Avenger jeweils 60 simulierte Sekunden aus, prüft begrenzte Effekte,
+kein Verstauen von Mündungsfeuer und vollständiges Auslaufen nach Loslassen.
+Der CI-Browsercheck hält den echten Feuerknopf in allen vier genannten Sorties
+15 simulierte Sekunden; dazu echte Audio-API und Rendering. Keine iPad-Hardware.
+
+**Zusätzlich: Speicherlast begrenzt.**
+Nutzer meldet weiterhin Hänger nach wenigen Sekunden in beiden Flugzeugtypen.
+Ein Safari-Absturz wurde hier NICHT reproduziert. Nachgewiesen: sämtliche Pacific-
+GLBs wurden gleichzeitig beim Menüstart dekodiert, unabhängig vom gewählten Einsatz;
+Frachter und Escort wurden getrennt verarbeitet. Das SBD enthält eingebettete Bilder
+für insgesamt 148 MiB RGBA+Mipmaps; tatsächlich materialgebundene Texturen sind laut
+echtem r128-GLTFLoader mit nativer Bilddekodierung rund 110 MiB. `pacific-assets.js`
+begrenzt diese auf Touch-Geräten auf 512 px (SBD rund 22 MiB), sonst auf 1024 px.
+UVs, Materialien, Geometrie und Flugphysik bleiben unverändert. Ein Source-Promise
+pro URL teilt Geometrien/Texturen zwischen Schiffsklonen; Parser-/Bild-Caches werden
+nicht gehalten. Verkleinerte ImageBitmaps werden freigegeben. Downloads haben ein
+60-s-Limit und sind bei Fehlern erneut startbar.
+
+Nur die für die Mission benötigten Flugzeuge und Schiffe laden, seriell und VOR
+dem Briefing/Start Engine. Zero-Abwehr lädt weder Dauntless noch US-Träger/Frachter;
+SBD lädt keinen unbenutzten Avenger. Klappen-/Divebrake-/Hook-Referenzen werden nun
+auch beim bereits geladenen SBD-Start gebunden, nicht nur bei späterem Modelltausch.
+Echte Frame-Ausnahmen zeigen statt eines stummen Standbilds Build, Mission, Fehler
+und Reload; Fehler werden weiterhin an Browsertests weitergereicht, nicht geschluckt.
+
+`pacific-assets.cjs` prüft echte SBD-Texturen/Geometrie, geteilte Frachter-Ressourcen,
+Missionsabhängigkeiten und Wiederholung nach Ladefehler. Der Browsercheck deckt nun
+beide Zero- und beide reinen Dauntless-Sorties je über 15 simulierte Flugsekunden ab,
+einschließlich AI/Join-up und Divebrakes, außerdem den sichtbaren Fehlerpfad. CPU-GPU
+mit reduzierter Szenerie/Renderauflösung: KEIN FPS-Nachweis und KEIN iPad-Safari-Test.
+Veröffentlichung erst nach grüner CI. Der Schussfehler ist im Code reproduziert;
+die iPad-Abnahme sowie weitere mögliche Hardware-Hänger bleiben offen. Keine App-/PWA-Version.
 
 **Build 152 (30.09.2026): Laufzeit-Sicherheit und optionale Flugtipps.**
 Keine App-/PWA-Version und keine Änderung der bewährten Flugphysik. Das neue

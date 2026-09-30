@@ -60,6 +60,12 @@ iPad-sized viewport, keyboard release, automatic pause and GPU context recovery)
 Locally this test is skipped if Chrome is absent; set `GAME_TEST_CHROME` to its
 executable path to enable it. `runtime-safety.cjs` checks swept gun hits at 20–120 FPS,
 blocked storage, owned-resource disposal, propeller timing and optional flight hints.
+The browser check holds the fire button in both Zero and both Dauntless sorties
+past 15 simulated seconds. `carrier-fire.cjs` checks 60 seconds of sustained fire
+using the original GLBs and actual gun/FX/model routines. `pacific-assets.cjs`
+decodes native model images and verifies texture limits, shared ship resources
+and mission-specific preflight loading. CPU rendering is reduced in browser CI;
+these checks do not establish iPad/Safari performance or hardware stability.
 
 ## Project documentation
 

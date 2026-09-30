@@ -29,7 +29,7 @@ assert(!entries.some(u=>u.pathname.includes('preview')||u.pathname.includes('dem
 assert.match(html('remagen-mission.html'),/SquadronCampaign\.record\('europeRhine',mission\)/);
 assert.match(html('remagen-mission.html'),/const airLeft=blockingEnemyAir\(\).length/,
  'landing counts active objectives while allowing the optional Komet pursuer to be evaded');
-assert.match(html('torpedo-carrier.html'),/try\{await prepareOkinawa\(\);startMission\(idx\);\}/,'every Pacific sortie loads mapped coast');
+assert.match(html('torpedo-carrier.html'),/await prepareOkinawa\(\);[\s\S]*?await preparePacificModels\(MISSIONS\[idx\][\s\S]*?startMission\(idx\);/,'every Pacific sortie prepares mapped coast and required models before flight');
 const carrier=html('torpedo-carrier.html');
 const waveStart=carrier.indexOf('function checkObjectiveCleared(){');
 const waveEnd=carrier.indexOf('\nfunction ',waveStart+10);
