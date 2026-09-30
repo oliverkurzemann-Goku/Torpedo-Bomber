@@ -120,12 +120,25 @@ const cdn={
 
    }
    try{await page.waitForFunction(()=>state===ST.FLIGHT||state===ST.PAUSED||state===ST.RESULT);
-    assert(await page.evaluate(()=>state===ST.FLIGHT),'launch must enter flight');
+   assert(await page.evaluate(()=>state===ST.FLIGHT),'launch must enter flight');
    }catch(e){
     console.error('Launch diagnostic '+campaign,await page.evaluate(()=>({state,hidden:document.hidden,graphicsLost:runtimeSession?.graphicsLost,
       reason:document.getElementById('pauseReason').textContent,timer:typeof launchTimer==='undefined'?null:launchTimer,
       frame:renderer.info.render.frame,alive:P.alive,hull:P.hull,model:typeof planeModelLoaded==='undefined'?null:planeModelLoaded})),errors);throw e;
    }
+   // Guidance is supplementary: the existing live-target arrow stays untouched.
+   const guidance=await page.evaluate(()=>{
+    interceptRadio.reset();radioQ=[];radioT=0;
+    const oldSpeed=P.spd,oldGround=P.onGround;P.spd=Math.max(140,P.spd);P.onGround=false;
+    const before=P.pos.toArray();updateInterceptRadio(8);
+    const message=radioQ[0]||null;P.spd=oldSpeed;P.onGround=oldGround;
+    return {message,before,after:P.pos.toArray()};
+   });
+   if(!eu&&(scenario.kind==='defend'||guidance.message)){
+    assert.match(guidance.message,/CONTROL — (BOMBERS|BANDIT).*ALT \d+ FT MSL.*(INTERCEPT|CONTACT) \d{3}°/);
+    console.log('Browser radio '+scenario.kind+': '+guidance.message);
+   }
+   assert.deepEqual(guidance.after,guidance.before,'radio guidance never flies the aircraft');
    // Actual user keyboard events: release must clear a keyboard-owned command.
    await page.keyboard.down('ArrowLeft');await page.waitForTimeout(150);await page.keyboard.up('ArrowLeft');
    await page.waitForFunction(()=>inputRoll===0,{},{timeout:5000});
@@ -189,18 +202,36 @@ const cdn={
     assert(await page.evaluate(()=>steeringParachute()),'Resume returns to the chute, not flight');
     await page.evaluate(()=>{
      bailout.position.y=(typeof groundY==='function'?groundY(bailout.position.x,bailout.position.z):shoreHeight(bailout.position.x,bailout.position.z))+6;
-     for(let i=0;i<100&&!bailDone;i++)advanceBailout(.05);
+     for(let i=0;i<100&&!bailRescue&&!bailDone;i++)advanceBailout(.05);
     });
+    assert(await page.evaluate(()=>!!bailRescue&&!bailDone),'safe landing starts pickup, not an immediate result');
+    assert.equal(await page.locator('#stickHint').innerText(),'RESCUE INBOUND');
+    assert.equal(await page.evaluate(()=>bailRescue.group.name),eu?'rescueParty':'rescueBoat');
+    await page.evaluate(()=>window.dispatchEvent(new Event('blur')));
+    assert.match(await page.locator('#pauseOrders').innerText(),/RESCUE/);
+    const rescueHeld=await page.evaluate(()=>({time:bailRescue.elapsed,pos:bailRescue.group.position.toArray()}));
+    await page.waitForTimeout(200);
+    assert.deepEqual(await page.evaluate(()=>({time:bailRescue.elapsed,pos:bailRescue.group.position.toArray()})),rescueHeld,'paused rescue freezes too');
+    await page.locator(eu?'#pmResume':'#resumeBtn').click();
+    // Render the real pickup scene at full resolution for visual review.
+    const out=path.join(root,'test-visuals');fs.mkdirSync(out,{recursive:true});
+    const rescuePng=await page.evaluate(()=>{
+     const p=bailout.position;camera.up.set(0,1,0);camera.position.copy(p).add(new THREE.Vector3(12,9,19));camera.lookAt(p);
+     renderer.setPixelRatio(1);renderer.render(scene,camera);
+     const png=renderer.domElement.toDataURL('image/png');renderer.setPixelRatio(.25);return png;
+    });
+    fs.writeFileSync(path.join(out,(eu?'land':'sea')+'-rescue.png'),Buffer.from(rescuePng.split(',')[1],'base64'));
+    await page.evaluate(()=>{for(let i=0;i<180&&!bailDone;i++)advanceBailout(.05);});
     assert(await page.evaluate(()=>bailDone),'steered descent finishes');
     assert.match(await page.locator(eu?'#rsTitle':'#resultTitle').innerText(),/PILOT SAFE/);
     assert.deepEqual(errors,[],campaign+' parachute has no browser errors');
-    console.log('Browser '+campaign+': actual bail button, arrow/touch steering, release, auto-pause/resume and safe landing');
+    console.log('Browser '+campaign+': actual bail button, arrow/touch steering, release, auto-pause/resume, safe landing and complete pickup');
    }
    if(!eu&&scenario.kind==='defend'&&scenario.ordinal===0){
     // A real JS frame failure is visible and remains observable, not hidden.
     await page.evaluate(()=>{animateFrame=()=>{throw Error('TEST FRAME FAULT');};});
     await page.locator('#simulationRecovery').waitFor({state:'visible'});
-    assert.match(await page.locator('#simulationRecovery').innerText(),/BUILD 155.*TEST FRAME FAULT/);
+    assert.match(await page.locator('#simulationRecovery').innerText(),/BUILD 156.*TEST FRAME FAULT/);
     assert.equal(await page.locator('#simulationRecovery button').innerText(),'Reload game');
     assert.deepEqual(errors,['TEST FRAME FAULT'],'unexpected runtime errors cannot be swallowed');
    }

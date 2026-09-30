@@ -285,7 +285,7 @@
   <div style="width:100%;height:4px;background:repeating-linear-gradient(45deg,#ffd400,#ffd400 8px,#111 8px,#111 16px);"></div>
   <span id="testVersionBannerText" style="background:#111;color:#ffd400;font-family:monospace;font-weight:800;font-size:11px;letter-spacing:.5px;padding:3px 10px;border:1px solid #ffd400;border-top:none;border-radius:0 0 6px 6px;"></span>
 </div>
-<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 155';</script>
+<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 156';</script>
 <!-- ===== END TEMP TEST-ONLY VERSION BANNER ===== -->
 <div id="app"></div>
 
@@ -314,7 +314,7 @@
   <div id="flash"></div>
   <div id="gunsight"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 155 · REAL RHINE</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 156 · REAL RHINE</div>
 
   <div id="apr">
     <div id="aprCall"></div>
@@ -456,9 +456,11 @@
 <script src="terrain-system/LivingWorld.js?v=149"></script>
 <script src="campaign.js?v=1"></script>
 <script src="game-runtime.js?v=152"></script>
-<script src="combat-fx.js?v=155"></script>
-<script src="ordnance.js?v=155"></script>
-<script src="pilot-bailout.js?v=155"></script>
+<script src="combat-fx.js?v=156"></script>
+<script src="ordnance.js?v=156"></script>
+<script src="pilot-bailout.js?v=156"></script>
+<script src="pilot-rescue.js?v=156"></script>
+<script src="radio-intercept.js?v=156"></script>
 <script src="audio/weapon-sound.js?v=144"></script>
 <script src="audio/jet-engine.js?v=144"></script>
 <script src="sortie-systems.js?v=146"></script>
@@ -773,7 +775,7 @@ async function loadRealWorld(){
 
   if(OSMManager.BUILD!==21||HistoricalObjectManager.BUILD!==21||LivingWorld.BUILD!==22||WorldVehicles.BUILD!==22) throw new Error('Terrain version mismatch. Reload Remagen.');
   document.getElementById('testVersionBannerText').textContent=
-    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 155 · MODULE 22';
+    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 156 · MODULE 22';
   heightProvider=new DEMHeightProvider(RTILE,'terrain-system/real/data/dem/');
   terrain=new TerrainManager(scene,RTILE,heightProvider);
   osmMgr=new OSMManager(scene,RTILE,terrain,'terrain-system/real/data/osm/');
@@ -2984,7 +2986,7 @@ function radioSay(msg){ radioQ.push(msg); }
 function updateRadio(dt){
   const el=document.getElementById('radio'); if(!el) return;
   if(radioT>0){ radioT-=dt; if(radioT<=0) el.classList.remove('show'); return; }
-  if(radioQ.length){ el.textContent=radioQ.shift(); el.classList.add('show'); radioT=2.6; sfxRadio(); }
+  if(radioQ.length){ el.textContent=radioQ.shift(); el.classList.add('show'); radioT=el.textContent.startsWith('CONTROL — ')?7:2.6; sfxRadio(); }
 }
 function addScore(n){ score+=Math.round(n); }
 
@@ -3808,7 +3810,7 @@ function crash(title,msg){
   if(!isFree()) logSortie({lost:true});
   setTimeout(()=>showResult(false,title,'',msg+'<br><br>SCORE '+score,'Try Again'),1200);
 }
-let bailout=null,bailPlaneCrashed=false,bailDone=false,bailChuteCalled=false;
+let bailout=null,bailRescue=null,bailPlaneCrashed=false,bailDone=false,bailChuteCalled=false;
 function steeringParachute(){return !!bailout&&!bailDone&&state===ST.DEAD;}
 function beginBailout(){
   if(state!==ST.FLIGHT||!P.alive)return;
@@ -3827,6 +3829,17 @@ function beginBailout(){
 }
 function advanceBailout(dt){
   if(!steeringParachute())return;
+  if(bailRescue){
+    const pickup=bailRescue.update(dt);
+    if(pickup.pickup)bailout.group.visible=false;
+    if(pickup.done){
+      bailDone=true;releaseHeldControls();document.getElementById('stickHint').textContent='PITCH / ROLL';
+      showResult(false,'PILOT SAFE','Rescue complete',
+        (bailRescue.water?'A rescue boat picked you up.':'The search party brought you back.')+
+        '<br>The aircraft was lost.<br><br>SCORE '+score+' &middot; BEST '+Math.max(bestScore(),score),'Try Again');
+    }
+    return;
+  }
   // Accelerated cinematic descent: an ejection from bomber altitude must not
   // require minutes of waiting for the result on a tablet.
   const landing=bailout.update(dt*3,windZ,{turn:-inputRoll*steerSign,
@@ -3847,6 +3860,15 @@ function advanceBailout(dt){
     }
   }
   if(landing.landed){
+    if(landing.safe){
+      releaseHeldControls();const p=bailout.position;
+      const waterAt=(x,z)=>!!(livingWorld&&livingWorld._pointOnWater(x,z)),water=waterAt(p.x,p.z);
+      bailout.settle(water);
+      bailRescue=PilotRescue.create(THREE,scene,p,groundY,{water,waterAt,bounds:{minX:WORLD_EDGE_MARGIN,maxX:RTILE*RGRID_W-WORLD_EDGE_MARGIN,minZ:WORLD_EDGE_MARGIN,maxZ:RTILE*RGRID_H-WORLD_EDGE_MARGIN}});
+      radioQ=[];radioT=0;radioSay(water?'RESCUE BOAT — WE HAVE YOUR SIGNAL, HOLD POSITION':'SEARCH PARTY — SIGNAL SEEN, WE ARE COMING TO YOU');
+      document.getElementById('stickHint').textContent='RESCUE INBOUND';flash('PILOT SAFE — RESCUE INBOUND',4000);
+      return;
+    }
     bailDone=true;
     releaseHeldControls();document.getElementById('stickHint').textContent='PITCH / ROLL';
     showResult(false,landing.safe?'PILOT SAFE':'CHUTE TOO LATE','Parachute landing',
@@ -4181,6 +4203,7 @@ function relaunch(){
 function startMission(i){
   flightCoach=new GameRuntime.HintCoach();
   releaseHeldControls();
+  if(bailRescue){bailRescue.dispose();bailRescue=null;}
   if(bailout){bailout.dispose();bailout=null;}
   planeGroup.visible=true;
   firing=false;gunT=0;
@@ -4189,6 +4212,7 @@ function startMission(i){
   if(aeroButton){aeroButton.classList.remove('on');aeroButton.innerHTML='AERO<br>OFF';}
   const stickHint=document.getElementById('stickHint');if(stickHint)stickHint.textContent='PITCH / ROLL';
   mission=i; const m=MISSIONS[i];
+  interceptRadio.reset();radioQ=[];radioT=0;
   selectMissionAirfield(m);
   missionOver=false; circuitsDone=0;
   P.ac=m.ac||'p47';
@@ -4224,6 +4248,12 @@ function startMission(i){
 }
 // Sortie weather, operational events and cartography.
 let europeOps=null,briefPlan=null,rhineChart=null,wxTime=0,baseWind=0;
+const interceptRadio=RadioIntercept.create();
+function updateInterceptRadio(dt){
+ if(state!==ST.FLIGHT||!P.alive||P.onGround||P.rtb||europeOps?.failed)return;
+ const message=interceptRadio.tick(dt,P,enemyAir.filter(e=>!e.escapeThreat),radioT>0||radioQ.length>0);
+ if(message)radioSay(message);
+}
 function chooseEuropePlan(i){
  const cfg={...(FlightPlans.europe[i]||{}),practice:!!(MISSIONS[i].free||MISSIONS[i].circuits)},names=MISSIONS[i].free?[document.getElementById('practiceWx').value||'clear']:cfg.weather||[MISSIONS[i].weather||'clear'];
  return {config:cfg,weather:names[Math.floor(Math.random()*names.length)],wind:(Math.random()<.5?-1:1)*(2+i*.3)};
@@ -5102,12 +5132,13 @@ function togglePause(reason='Sortie held'){
     releaseHeldControls();
     prevState=state; state=ST.PAUSED;
     document.getElementById('pauseReason').textContent=reason;
-    document.getElementById('pauseOrders').textContent=bailout&&!bailDone?'PARACHUTE — stick or arrow keys: left/right turn, up glide, down brake.':objectiveText()+' · '+Math.round(P.fuel)+'% FUEL · '+Math.round(P.hull)+'% HULL. Recovery: '+airfieldName(M())+'.';
+    document.getElementById('pauseOrders').textContent=bailRescue&&!bailDone?'RESCUE INBOUND — automatic pickup. Resume to continue.':bailout&&!bailDone?'PARACHUTE — stick or arrow keys: left/right turn, up glide, down brake.':objectiveText()+' · '+Math.round(P.fuel)+'% FUEL · '+Math.round(P.hull)+'% HULL. Recovery: '+airfieldName(M())+'.';
     show('pauseMenu',true);
     if(eng) eng.master.gain.setTargetAtTime(0.0001,actx.currentTime,0.05);
   }
 }
 function exitToMenuFromPause(){
+  if(bailRescue){bailRescue.dispose();bailRescue=null;}
   if(bailout){bailout.dispose();bailout=null;}
   document.getElementById('stickHint').textContent='PITCH / ROLL';
   show('pauseMenu',false);
@@ -5308,6 +5339,7 @@ function animate(){
     if(state===ST.FLIGHT&&P.alive){
       updateFlight(dt);
       updateEuropeOperation(dt);
+      updateInterceptRadio(raw);
       updateFlightHints(raw);
       if(firing) fireGuns(dt);
       updateFlak(dt);

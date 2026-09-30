@@ -5,7 +5,34 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 155 · Thunderbolt Squadron BUILD 155 · Remagen-Kern 21 / Fahrzeuge 22**
+Stand bei Übergabe: **Torpedo Squadron BUILD 156 · Thunderbolt Squadron BUILD 156 · Remagen-Kern 21 / Fahrzeuge 22**
+
+**Build 156 (30.09.2026): Funk-Abfanghilfe und automatische Rettung.**
+Keine Begleiter-Befehle (vom Nutzer ausdrücklich ausgeschlossen), keine neuen
+Flugzeugmodelle und keine Änderungen der Flugphysik/AI oder des Richtungszeigers.
+`radio-intercept.js` berechnet aus echter Gegnergeschwindigkeit und eigener
+Horizontalgeschwindigkeit einen führenden Kurs. Meldet Zielhöhe in FT MSL plus
+relative Steig-/Sinkempfehlung. Ohne Abfanglösung innerhalb von 180 s gibt es
+nur einen Kontaktkurs mit GAIN SPEED, keinen erfundenen Schnittpunkt.
+Europäische Bomber haben Vorrang; Pacific-Abwehr meldet Raider, sonst Zeros.
+Erste Meldung frühestens nach acht Flugsekunden, danach maximal alle 20 s,
+unter 700 m keine Meldungen. Wichtiger Funk hat Vorrang, Berichte bleiben 7 s
+sichtbar. Der aktuelle Gegner wird gehalten, tote Kontakte fallen weg; Reset
+bei Missionsstart. Keine Abfanghilfe am Boden, bei Rückkehr oder nach Zeitablauf.
+
+Sichere Schirmlandung startet `pilot-rescue.js`: acht Sekunden Signal und
+Abholung. Wasser: Dinghy und kleines Rettungsboot; Land: zweiköpfiger Suchtrupp.
+Europa verwendet die vorhandene echte Wassermaske aus `LivingWorld`, nicht
+Meereshöhe als Flussdetektor; Boot und Trupp folgen dem gerenderten Terrain.
+Kurze Anfahrtswege werden gegen Wasser/Bank, Steigung und DEM-Grenze geprüft.
+Die Rettung läuft mit normalem dt (nicht dreifach wie der Schirm), ist pausierbar
+und wird bei Menü/Retry mitsamt Geometrien und Materialien entsorgt. Keine
+Punkte geschenkt: Pilot sicher, Flugzeug weiterhin verloren. Schirm zu spät
+führt wie zuvor direkt zum Ergebnis. Steuerbefehle beeinflussen die Rettung nicht.
+Tests prüfen Abfangmathematik, Funkpriorität, echte Callbacks, Wasser-/Landrigs,
+Flussniveau, acht Sekunden und idempotentes Cleanup; Browser prüft echte Landung,
+pausierte Abholung und Endergebnis und rendert Land-/See-Kontrollbilder.
+Weiterhin kein iPad/Safari-Hardware- oder FPS-Nachweis.
 
 **Build 155 (30.09.2026): erreichbare Abfangflüge und steuerbarer Fallschirm.**
 Die Wolkenoberkante (`ceilingY`, bei Low overcast 800 m) darf nicht länger die

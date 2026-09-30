@@ -82,4 +82,4 @@ No license is currently granted for this repository's own code (`package.json` l
 `UNLICENSED`) — this hasn't been decided yet, not a statement that it never will be.
 Third-party runtime assets keep their own licenses; see `ASSET-CREDITS.md`.
 
-Build 155: cloud tops no longer cap interceptor altitude; inland contact spawns and predictive edge avoidance. Steer the bailout parachute with the stick or arrows; pause/resume also works during descent. Flight physics unchanged.
+Build 156: supplementary radio calls give target MSL altitude and a leading intercept course; urgent chatter has priority. Safe parachute landings end with a brief, pausable boat or ground-party pickup. No wingman commands; navigation arrows, aircraft models and flight physics unchanged.

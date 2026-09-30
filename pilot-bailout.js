@@ -58,6 +58,15 @@
   let elapsed=0,fall=0,deployed=false,landed=false,yaw=heading,yawRate=0;
   return {
    group, get position(){return group.position;},get deployed(){return deployed;},get heading(){return yaw;},
+   settle(water=false){
+    for(const child of group.children)if(child.material===line)child.visible=false;
+    canopy.scale.y=.07;canopy.position.y=-.65;group.rotation.set(0,yaw,0);
+    if(water){
+     canopy.visible=false;pilot.position.y=-.3;
+     const raft=new THREE.Mesh(new THREE.TorusGeometry(1.15,.23,8,16),cloth);
+     raft.name='pilotDinghy';raft.rotation.x=Math.PI/2;raft.position.y=-.5;raft.scale.y=1.35;group.add(raft);
+    }
+   },
    update(dt,wind=0,controls=null){
     if(landed)return {landed:true,safe:deployed};
     elapsed+=dt;
