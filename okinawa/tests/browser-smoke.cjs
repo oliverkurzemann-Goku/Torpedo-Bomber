@@ -131,11 +131,14 @@ const cdn={
     interceptRadio.reset();radioQ=[];radioT=0;
     const oldSpeed=P.spd,oldGround=P.onGround;P.spd=Math.max(140,P.spd);P.onGround=false;
     const before=P.pos.toArray();updateInterceptRadio(8);
-    const message=radioQ[0]||null;P.spd=oldSpeed;P.onGround=oldGround;
-    return {message,before,after:P.pos.toArray()};
+    const message=radioQ[0]||null;if(message)updateRadio(.01);P.spd=oldSpeed;P.onGround=oldGround;
+    return {message,duration:radioT,before,after:P.pos.toArray()};
    });
    if(!eu&&(scenario.kind==='defend'||guidance.message)){
     assert.match(guidance.message,/CONTROL — (BOMBERS|BANDIT).*ALT \d+ FT MSL.*(INTERCEPT|CONTACT) \d{3}°/);
+    assert.equal(guidance.duration,7,'guidance stays readable for seven seconds');
+    const radioBox=await page.locator('#radio').boundingBox();
+    assert(radioBox.x>=0&&radioBox.x+radioBox.width<=1024&&radioBox.height<90,'radio report fits the iPad layout');
     console.log('Browser radio '+scenario.kind+': '+guidance.message);
    }
    assert.deepEqual(guidance.after,guidance.before,'radio guidance never flies the aircraft');
@@ -214,6 +217,7 @@ const cdn={
     assert.deepEqual(await page.evaluate(()=>({time:bailRescue.elapsed,pos:bailRescue.group.position.toArray()})),rescueHeld,'paused rescue freezes too');
     await page.locator(eu?'#pmResume':'#resumeBtn').click();
     // Render the real pickup scene at full resolution for visual review.
+    await page.evaluate(()=>advanceBailout(2));
     const out=path.join(root,'test-visuals');fs.mkdirSync(out,{recursive:true});
     const rescuePng=await page.evaluate(()=>{
      const p=bailout.position;camera.up.set(0,1,0);camera.position.copy(p).add(new THREE.Vector3(12,9,19));camera.lookAt(p);

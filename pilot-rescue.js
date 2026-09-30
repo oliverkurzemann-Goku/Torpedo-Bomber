@@ -8,7 +8,8 @@
   const grey=new THREE.MeshStandardMaterial({color:0x727f83,roughness:.8});
   const skin=new THREE.MeshStandardMaterial({color:0xba9679,roughness:1});
   const dark=new THREE.MeshStandardMaterial({color:0x282b28,roughness:1});
-  const glow=new THREE.MeshBasicMaterial({color:0xf4a54b,transparent:true,opacity:.8,depthWrite:false});
+  const glow=new THREE.MeshBasicMaterial({color:0xec713e,transparent:true,opacity:.55,depthWrite:false});
+  const smoke=new THREE.MeshBasicMaterial({color:0x99694f,transparent:true,opacity:.16,depthWrite:false});
   function box(parent,size,pos,material){const m=new THREE.Mesh(new THREE.BoxGeometry(...size),material);m.position.set(...pos);parent.add(m);return m;}
   function crew(x,z){
    const g=new THREE.Group();g.position.set(x,water?1.1:0,z);group.add(g);
@@ -34,8 +35,12 @@
    box(group,[.65,.4,.03],[.3,3.6,-1],olive);
   }
   const people=water?[crew(-.75,1.4)]:[crew(-.8,0),crew(.8,-.6)];
-  const flare=new THREE.Mesh(new THREE.SphereGeometry(.22,8,6),glow);flare.position.y=.2;marker.add(flare);
-  const plume=new THREE.Mesh(new THREE.ConeGeometry(.7,3.5,8),glow);plume.position.y=2;marker.add(plume);
+  const flare=new THREE.Mesh(new THREE.SphereGeometry(.1,8,6),glow);flare.position.set(.8,.2,.5);marker.add(flare);
+  const puffs=[];
+  for(let i=0;i<6;i++){
+   const puff=new THREE.Mesh(new THREE.SphereGeometry(.22+i*.035,8,6),smoke);
+   puff.position.set(.8+i*.08,.45+i*.45,.5);marker.add(puff);puffs.push(puff);
+  }
   marker.position.copy(position);marker.position.y=(water?surfaceAt:groundAt)(position.x,position.z)+.12;
   const start=position.clone(),end=position.clone();let direction=0,found=false;
   // Never route a boat across an island, or the search party through water.
@@ -68,14 +73,18 @@
      p.legs[i].rotation.x=t<1?Math.sin(elapsed*7+i*Math.PI)*.25:0;
      p.arms[i].rotation.x=-p.legs[i].rotation.x;
     }
-    glow.opacity=.45+Math.sin(elapsed*4)*.15;plume.rotation.y+=dt*.2;
+    glow.opacity=.42+Math.sin(elapsed*4)*.12;
+    for(let i=0;i<puffs.length;i++){
+     const t=(elapsed*.22+i/6)%1,puff=puffs[i];
+     puff.position.set(.8+t*.5,.35+t*3,.5+Math.sin(i+t*3)*.15);puff.scale.setScalar(.65+t*.9);
+    }
     return {done:elapsed>=8,pickup:elapsed>=6.2};
    },
    dispose(){
     if(disposed)return;disposed=true;
     const geometries=new Set(),materials=new Set();
     for(const object of [group,marker]){scene.remove(object);object.traverse(o=>{if(o.geometry)geometries.add(o.geometry);if(o.material)for(const m of [].concat(o.material))materials.add(m);});}
-    for(const g of geometries)g.dispose();for(const m of new Set([...materials,olive,grey,skin,dark,glow]))m.dispose();
+    for(const g of geometries)g.dispose();for(const m of new Set([...materials,olive,grey,skin,dark,glow,smoke]))m.dispose();
    }
   };
  }

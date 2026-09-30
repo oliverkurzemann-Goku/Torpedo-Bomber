@@ -60,7 +60,7 @@
    group, get position(){return group.position;},get deployed(){return deployed;},get heading(){return yaw;},
    settle(water=false){
     for(const child of group.children)if(child.material===line)child.visible=false;
-    canopy.scale.y=.07;canopy.position.y=-.65;group.rotation.set(0,yaw,0);
+    canopy.scale.set(.5,.07,.34);canopy.position.set(2.2,-.65,-1.4);cloth.color.setHex(0x887a59);group.rotation.set(0,yaw,0);
     if(water){
      canopy.visible=false;pilot.position.y=-.3;
      const raft=new THREE.Mesh(new THREE.TorusGeometry(1.15,.23,8,16),cloth);
