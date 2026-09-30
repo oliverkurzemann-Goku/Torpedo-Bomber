@@ -33,8 +33,8 @@ const cdn={
     const file=cdn[new URL(route.request().url()).pathname.split('/').pop()];
     if(file)await route.fulfill({path:file,contentType:'application/javascript'});else await route.abort();
    });
-   const page=await context.newPage(),errors=[];page.on('pageerror',e=>{errors.push(e.message);console.error('Browser error '+campaign+': '+e.message);});page.setDefaultTimeout(90000);
-   page.on('console',m=>{if(m.type()==='error')console.error('Browser console '+campaign+': '+m.text());});
+   const page=await context.newPage(),errors=[];page.on('pageerror',e=>{errors.push(e.message);console.error('Browser error '+campaign+': '+e.stack);});page.setDefaultTimeout(90000);
+   page.on('console',m=>{if(m.type()==='error'&&!m.text().includes('Failed to load resource'))console.error('Browser console '+campaign+': '+m.text());});
    await page.goto('http://127.0.0.1:'+server.address().port+'/'+campaign,{waitUntil:'domcontentloaded'});
    await page.waitForFunction(()=>typeof state!=='undefined'&&state===ST.MENU&&document.querySelector('#menu:not(.hidden)'));
    // Keep the real scene and WebGL renderer, but lower GPU fill cost on the

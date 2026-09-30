@@ -68,6 +68,14 @@ function spin(fps){let angle=0;for(let i=0;i<fps;i++)angle+=GameRuntime.rotorSte
 for(const fps of [30,60,120])assert(Math.abs(spin(fps)-18)<1e-10,'propeller speed is independent of FPS');
 assert(GameRuntime.rotorStep(.05,.48,3)<Math.PI/3,'slow frames do not alias the blades');
 assert(GameRuntime.rotorStep(.05,.30,4)<Math.PI/4,'four-blade P47 is protected too');
+let lost=true,calls=0;
+const renderer={getContext:()=>({isContextLost:()=>lost}),render(){calls++;}};
+assert.equal(GameRuntime.render(renderer,{},{}),false);assert.equal(calls,0,'do not draw before the loss event arrives');
+lost=false;assert.equal(GameRuntime.render(renderer,{},{}),true);assert.equal(calls,1);
+renderer.render=()=>{lost=true;throw Error('null shader log');};
+assert.equal(GameRuntime.render(renderer,{},{}),false,'loss during a frame is deferred to the recovery handler');
+lost=false;renderer.render=()=>{throw Error('real shader bug');};
+assert.throws(()=>GameRuntime.render(renderer,{},{}),/real shader bug/,'unrelated errors must remain visible');
 const coach=new GameRuntime.HintCoach(),notes=[],snap={enabled:true,alive:true,hull:100,agl:300,gear:1,homeDistance:800};
 coach.tick(6,{...snap,busy:true},m=>notes.push(m));assert.equal(notes.length,0,'critical messages are not overwritten');
 coach.tick(1,snap,m=>notes.push(m));assert.equal(notes.length,1);

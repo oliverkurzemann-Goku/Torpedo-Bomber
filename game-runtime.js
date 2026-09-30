@@ -48,6 +48,17 @@
  function rotorStep(dt,stepAt60,blades=3){
   return Math.min(Math.PI/blades*.9,Math.max(0,dt)*60*stepAt60);
  }
+ function render(renderer,scene,camera){
+  const gl=renderer.getContext();
+  if(gl.isContextLost())return false;
+  try{renderer.render(scene,camera);return true;}
+  catch(error){
+   // r128 calls .trim() on null shader logs if loss occurs during compilation,
+   // before the browser dispatches webglcontextlost. The loss handler recovers.
+   if(gl.isContextLost())return false;
+   throw error; // Do not conceal unrelated shader or application bugs.
+  }
+ }
  class HintCoach{
   constructor(){this.elapsed=0;this.next=6;this.seen=new Set();}
   tick(dt,s,notify){
@@ -95,5 +106,5 @@
   });
   return session;
  }
- global.GameRuntime={storage,own,release,segmentDistance,rotorStep,HintCoach,attachLifecycle};
+ global.GameRuntime={storage,own,release,segmentDistance,rotorStep,render,HintCoach,attachLifecycle};
 })(typeof window!=='undefined'?window:globalThis);

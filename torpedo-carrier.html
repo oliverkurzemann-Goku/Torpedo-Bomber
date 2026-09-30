@@ -6141,7 +6141,7 @@ function updateShips(dt){
 
 function animate(){
   requestAnimationFrame(animate);
-  if(state===ST.PAUSED||document.hidden||runtimeSession?.graphicsLost)return;
+  if(state===ST.PAUSED||document.hidden||runtimeSession?.graphicsLost||renderer.getContext().isContextLost())return;
   const rawDt=Math.min(0.05, clock.getDelta());
   let dt=rawDt;
   if(killCam){
@@ -6264,7 +6264,7 @@ function animate(){
   }
   updateFlash(dt);
 
-  renderer.render(scene,camera);
+  GameRuntime.render(renderer,scene,camera);
 }
 
 init();

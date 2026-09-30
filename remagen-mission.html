@@ -5243,7 +5243,7 @@ let hudT=0, mmT=0, contentVisT=0;
 function animate(){
   requestAnimationFrame(animate);
   if(!renderer) return;
-  if(state===ST.PAUSED||document.hidden||runtimeSession?.graphicsLost)return;
+  if(state===ST.PAUSED||document.hidden||runtimeSession?.graphicsLost||renderer.getContext().isContextLost())return;
   const raw=Math.min(0.05,clock.getDelta());
   let dt=raw;
   if(killCam){ killCam.t-=raw; killCam.ang+=raw*0.6; if(killCam.t<=0) killCam=null; else dt=raw*0.45; }
@@ -5329,7 +5329,7 @@ function animate(){
   // Menu/briefing transitions also fade the engine; pause uses the master gain above.
   updateAudio(raw);
   if(combatFX)combatFX.update(raw);
-  renderer.render(scene,camera);
+  GameRuntime.render(renderer,scene,camera);
 }
 function reportStartupError(err){
   console.error('Thunderbolt startup failed:',err);
