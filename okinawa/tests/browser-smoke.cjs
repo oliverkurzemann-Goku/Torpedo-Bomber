@@ -39,14 +39,21 @@ const cdn={
    await page.waitForFunction(()=>typeof state!=='undefined'&&state===ST.MENU&&document.querySelector('#menu:not(.hidden)'));
    // Keep the real scene and WebGL renderer, but lower GPU fill cost on the
    // CPU-only CI runner. CSS still uses the full iPad viewport; no FPS claim.
-   await page.evaluate(()=>{renderer.setPixelRatio(.5);renderer.shadowMap.enabled=false;});
+   async function reduceSceneryCost(){await page.evaluate(()=>{
+    renderer.setPixelRatio(.25);renderer.shadowMap.enabled=false;
+    // Static instanced vegetation is covered by the geometry regressions. It
+    // is not part of this controls/context-lifecycle test on a CPU-only GPU.
+    scene.traverse(o=>{if(o.isInstancedMesh)o.visible=false;});
+   });}
+   await reduceSceneryCost();
    await page.locator('#flightHints').uncheck();
    assert.equal(await page.evaluate(()=>GameRuntime.storage.getItem('flightHints')),'0');
    await page.locator('#flightHints').check();
    if(eu){await page.locator('#missionSel .chip').first().click();await page.locator('#startBtn').click();await page.locator('#brGo').click();}
    else{
     const defence=await page.evaluate(()=>MISSIONS.findIndex(m=>m.defend));
-    await page.locator('#missionSel .chip').nth(defence).click();await page.locator('#startBtn').click();await page.locator('#launchBtn').click();
+    await page.locator('#missionSel .chip').nth(defence).click();await page.locator('#startBtn').click();
+    await page.locator('#launchBtn').waitFor({state:'visible'});await reduceSceneryCost();await page.locator('#launchBtn').click();
    }
    try{await page.waitForFunction(()=>state===ST.FLIGHT||state===ST.PAUSED||state===ST.RESULT);
     assert(await page.evaluate(()=>state===ST.FLIGHT),'launch must enter flight');
@@ -65,7 +72,7 @@ const cdn={
    await page.waitForTimeout(250);
    assert.deepEqual(await page.evaluate(()=>P.pos.toArray()),paused.pos,'paused sortie cannot move');
    assert.equal(await page.evaluate(()=>renderer.info.render.frame),paused.frame,'pause does not redraw the GPU');
-   assert.match(await page.locator('#pauseReason').innerText(),/inactive/);
+   assert.match(await page.locator('#pauseReason').innerText(),/inactive/i);
    assert.match(await page.locator('#pauseOrders').innerText(),/FUEL/);
    await page.keyboard.up('ArrowRight');await page.keyboard.up('f');
    await page.locator(eu?'#pmResume':'#resumeBtn').click();
