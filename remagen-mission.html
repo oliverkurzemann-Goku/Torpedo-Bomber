@@ -5008,6 +5008,12 @@ function bindInput(){
   // ---- keyboard ----
   const keys={};
   let keyboardFlightActive=false;
+  const applyKeyboardFlight=()=>{
+    let px=(keys.ArrowUp?1:0)-(keys.ArrowDown?1:0),rx=(keys.ArrowLeft?1:0)-(keys.ArrowRight?1:0);
+    if(invertPitch)px=-px;
+    if((px||rx)&&sid===null){inputPitch=px;inputRoll=rx;keyboardFlightActive=true;}
+    else if(keyboardFlightActive){if(sid===null){inputPitch=0;inputRoll=0;}keyboardFlightActive=false;}
+  };
   releaseHeldControls=()=>{
     try{if(sid!==null)stick.releasePointerCapture(sid);}catch(_){}
     try{if(tid!==null)thr.releasePointerCapture(tid);}catch(_){}
@@ -5018,6 +5024,7 @@ function bindInput(){
     if(e.key==='p'||e.key==='P'){if(!e.repeat)togglePause();return;}
     if(state!==ST.FLIGHT)return;
     keys[e.key]=true;
+    if(e.key.startsWith('Arrow')){e.preventDefault();applyKeyboardFlight();}
     if(e.key===' '){ e.preventDefault(); dropBomb(); }
     if(e.key==='f'||e.key==='F') firing=true;
     if((e.key==='g'||e.key==='G')&&P.ac!=='ju87') P.gearTgt=P.gearTgt>0.5?0:1;
@@ -5025,15 +5032,11 @@ function bindInput(){
     if((e.key==='d'||e.key==='D')&&!e.repeat) toggleDiveBrakes();
     if((e.key==='b'||e.key==='B')&&!e.repeat) beginBailout();
   });
-  window.addEventListener('keyup',e=>{ keys[e.key]=false; if(e.key==='f'||e.key==='F') firing=false; });
+  window.addEventListener('keyup',e=>{keys[e.key]=false;if(e.key==='f'||e.key==='F')firing=false;
+    if(state===ST.FLIGHT)applyKeyboardFlight();});
   setInterval(()=>{
     if(state!==ST.FLIGHT) return;
-    let px=0,rx=0;
-    if(keys.ArrowUp) px+=1; if(keys.ArrowDown) px-=1;
-    if(invertPitch) px*=-1;
-    if(keys.ArrowLeft) rx+=1; if(keys.ArrowRight) rx-=1;
-    if((px||rx)&&sid===null){ inputPitch=px; inputRoll=rx; keyboardFlightActive=true; }
-    else if(keyboardFlightActive){if(sid===null){inputPitch=0;inputRoll=0;}keyboardFlightActive=false;}
+    applyKeyboardFlight();
     if(keys.w||keys.W) setThrottleUI(P.throttle+0.02);
     if(keys.s||keys.S) setThrottleUI(P.throttle-0.02);
   },33);

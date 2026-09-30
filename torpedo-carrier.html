@@ -2278,16 +2278,18 @@ function setupKeyboard(){
     if(e.code==='Enter'){if(state===ST.MENU)beginGame();else if(state===ST.BRIEF)launch();return;}
     if(state!==ST.FLIGHT)return;
     keys[e.code]=true;
+    if(e.code.startsWith('Arrow')){e.preventDefault();applyKeyboardFlight();}
     if(e.code==='Space'){dropTorpedo(); e.preventDefault();}
     if(e.code==='KeyF') firing=true;
     if(e.code==='KeyA'&&!e.repeat) toggleAero();
     if(e.code==='KeyB'&&!e.repeat) beginBailout();
   });
-  window.addEventListener('keyup',e=>{keys[e.code]=false; if(e.code==='KeyF') firing=false;});
+  window.addEventListener('keyup',e=>{keys[e.code]=false;if(e.code==='KeyF')firing=false;
+    if(state===ST.FLIGHT)applyKeyboardFlight();});
   // poll in loop
   P._keys=keys;
 }
-function pollKeys(dt){
+function applyKeyboardFlight(){
   const k=P._keys||{};
   let ip=0, ir=0;
   if(k['ArrowUp']) ip+=1; if(k['ArrowDown']) ip-=1;
@@ -2302,6 +2304,10 @@ function pollKeys(dt){
     if(!P._stickActive){ inputPitch=0; inputRoll=0; }
     P._keyboardFlightActive=false;
   }
+}
+function pollKeys(dt){
+  applyKeyboardFlight();
+  const k=P._keys||{};
   if(k['KeyW']){ P.throttle=Math.min(1,P.throttle+0.6*dt); setThrottleUI(P.throttle);}
   if(k['KeyS']){ P.throttle=Math.max(0,P.throttle-0.6*dt); setThrottleUI(P.throttle);}
 }

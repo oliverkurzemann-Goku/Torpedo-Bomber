@@ -63,7 +63,8 @@ const cdn={
       frame:renderer.info.render.frame,alive:P.alive,hull:P.hull,model:typeof planeModelLoaded==='undefined'?null:planeModelLoaded})),errors);throw e;
    }
    // Actual user keyboard events: release must clear a keyboard-owned command.
-   await page.keyboard.down('ArrowLeft');await page.waitForTimeout(150);await page.keyboard.up('ArrowLeft');await page.waitForTimeout(150);
+   await page.keyboard.down('ArrowLeft');await page.waitForTimeout(150);await page.keyboard.up('ArrowLeft');
+   await page.waitForFunction(()=>inputRoll===0,{},{timeout:5000});
    assert.equal(await page.evaluate(()=>inputRoll),0,'keyboard release clears roll');
    await page.keyboard.down('ArrowRight');await page.keyboard.down('f');
    await page.evaluate(()=>window.dispatchEvent(new Event('blur')));
