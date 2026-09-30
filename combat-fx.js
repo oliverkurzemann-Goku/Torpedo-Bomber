@@ -12,7 +12,8 @@
   const t=new THREE.DataTexture(p,n,n,THREE.RGBAFormat);t.needsUpdate=true;return t;
  }
  function create(scene){
-  const cloud=texture(false),flash=texture(true),ember=new THREE.Color(0xa13c14),live=[],pools=[[],[]];let allocated=0,shots=0;
+  const cloud=texture(false),flash=texture(true),ember=new THREE.Color(0xa13c14),live=[],pools=[[],[],[]];let allocated=0,shots=0;
+  const flameGeo=new THREE.ConeGeometry(1,1,9);flameGeo.translate(0,.5,0);flameGeo.rotateX(Math.PI/2);
   function emit(pos,size,color,life,velocity,hot=false,parent=scene,growth=1,gravity=0){
    if(live.length>=220)return;
    let m=pools[hot?1:0].pop();if(!m){if(allocated>=220)return;allocated++;m=new THREE.Sprite(new THREE.SpriteMaterial({map:hot?flash:cloud,blending:hot?THREE.AdditiveBlending:THREE.NormalBlending,transparent:true,depthWrite:false}));}
@@ -20,13 +21,25 @@
    m.material.rotation=Math.random()*6.28;m.visible=true;m.position.copy(pos);m.scale.set(size,size,1);parent.add(m);
    live.push({m,t:0,life,size,velocity,growth,gravity,hot});
   }
-  function recycle(i){const e=live[i];if(e.m.parent)e.m.parent.remove(e.m);e.m.visible=false;pools[e.hot?1:0].push(e.m);live.splice(i,1);}
+  function recycle(i){const e=live[i];if(e.m.parent)e.m.parent.remove(e.m);e.m.visible=false;pools[e.flame?2:e.hot?1:0].push(e.m);live.splice(i,1);}
+  function muzzleFlame(parent,p,direction,heavy){
+   if(live.length>=220)return;
+   let m=pools[2].pop();
+   if(!m){
+    if(allocated>=220)return;allocated++;m=new THREE.Group();
+    for(const color of [0xffa43b,0xffefd2])m.add(new THREE.Mesh(flameGeo,new THREE.MeshBasicMaterial({color,transparent:true,opacity:.85,depthWrite:false,blending:THREE.AdditiveBlending,fog:false})));
+   }
+   const radius=heavy?.19:.12,length=(heavy?.85:.55)*(.85+Math.random()*.3);
+   m.children[0].scale.set(radius,radius,length);m.children[1].scale.set(radius*.48,radius*.48,length*.62);
+   m.position.copy(p);m.quaternion.setFromUnitVectors(new THREE.Vector3(0,0,1),direction);m.visible=true;m.scale.setScalar(1);parent.add(m);
+   live.push({m,t:0,life:.055,flame:true});
+  }
   return {
-   muzzle(parent,points,heavy=false){
+   muzzle(parent,points,heavy=false,direction=new THREE.Vector3(0,0,1)){
     parent.updateMatrixWorld(true);shots++;
     for(const p of points){
-     emit(p,heavy?2.8:1.9,0xffbc57,.075,null,true,parent,1.4);
-     if(shots%3===0)emit(parent.localToWorld(p.clone()),heavy?.95:.65,0xc6bca6,.65,new THREE.Vector3(0,1.3,0),false,scene,3.4);
+     muzzleFlame(parent,p,direction,heavy);
+     if(shots%3===0)emit(parent.localToWorld(p.clone()),heavy?.40:.26,0x97958e,.55,new THREE.Vector3(0,.6,0),false,scene,2.2);
     }
    },
    blast(x,y,z,scale,ground){
@@ -45,6 +58,7 @@
     }
    },
    update(dt){for(let i=live.length-1;i>=0;i--){const e=live[i];e.t+=dt;if(e.t>=e.life){recycle(i);continue;}const k=e.t/e.life;
+    if(e.flame){e.m.scale.setScalar(1-k*.35);for(const c of e.m.children)c.material.opacity=.85*(1-k);continue;}
     if(e.velocity){e.velocity.y-=e.gravity*dt;e.m.position.addScaledVector(e.velocity,dt);}
     e.m.scale.setScalar(e.size*(1+k*e.growth));e.m.material.opacity=(e.hot?1:.72)*Math.pow(1-k,e.hot?1.3:.8);
     if(e.hot&&e.life>.2)e.m.material.color.lerp(ember,dt*2);

@@ -285,7 +285,7 @@
   <div style="width:100%;height:4px;background:repeating-linear-gradient(45deg,#ffd400,#ffd400 8px,#111 8px,#111 16px);"></div>
   <span id="testVersionBannerText" style="background:#111;color:#ffd400;font-family:monospace;font-weight:800;font-size:11px;letter-spacing:.5px;padding:3px 10px;border:1px solid #ffd400;border-top:none;border-radius:0 0 6px 6px;"></span>
 </div>
-<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 153';</script>
+<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 154';</script>
 <!-- ===== END TEMP TEST-ONLY VERSION BANNER ===== -->
 <div id="app"></div>
 
@@ -314,7 +314,7 @@
   <div id="flash"></div>
   <div id="gunsight"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 153 · REAL RHINE</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 154 · REAL RHINE</div>
 
   <div id="apr">
     <div id="aprCall"></div>
@@ -456,7 +456,8 @@
 <script src="terrain-system/LivingWorld.js?v=149"></script>
 <script src="campaign.js?v=1"></script>
 <script src="game-runtime.js?v=152"></script>
-<script src="combat-fx.js?v=153"></script>
+<script src="combat-fx.js?v=154"></script>
+<script src="ordnance.js?v=154"></script>
 <script src="pilot-bailout.js?v=147"></script>
 <script src="audio/weapon-sound.js?v=144"></script>
 <script src="audio/jet-engine.js?v=144"></script>
@@ -772,7 +773,7 @@ async function loadRealWorld(){
 
   if(OSMManager.BUILD!==21||HistoricalObjectManager.BUILD!==21||LivingWorld.BUILD!==22||WorldVehicles.BUILD!==22) throw new Error('Terrain version mismatch. Reload Remagen.');
   document.getElementById('testVersionBannerText').textContent=
-    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 153 · MODULE 22';
+    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 154 · MODULE 22';
   heightProvider=new DEMHeightProvider(RTILE,'terrain-system/real/data/dem/');
   terrain=new TerrainManager(scene,RTILE,heightProvider);
   osmMgr=new OSMManager(scene,RTILE,terrain,'terrain-system/real/data/osm/');
@@ -3111,6 +3112,7 @@ function fireGuns(dt){
     m.position.copy(port).applyQuaternion(q).add(P.pos);m.lookAt(m.position.clone().add(dir));scene.add(m);
     bullets.push({mesh:m,dir,speed:JET_KINDS.includes(P.ac)?540:760,life:2.4,dmg:d.gunDmg*(JET_KINDS.includes(P.ac)?1:P.ac==='p47'?.5:.25)});
   }
+  planeGroup.position.copy(P.pos);planeGroup.quaternion.copy(q);
   if(combatFX)combatFX.muzzle(planeGroup,ports,JET_KINDS.includes(P.ac));
   sfxGun();updateGunUI();
 }
@@ -3158,10 +3160,9 @@ function dropBomb(){
   if(weapon==='rocket') return fireRocket();
   if(P.bombs<=0){ flash('NO BOMBS LEFT',700); return; }
   P.bombs--;
-  const m=new THREE.Mesh(new THREE.CylinderGeometry(0.28,0.34,2.0,10),
-    new THREE.MeshLambertMaterial({color:0x4b4f3e}));
+  const m=Ordnance.create('bomb');
   GameRuntime.own(m);
-  m.rotation.x=Math.PI/2;
+  m.lookAt(noseDir());
   m.position.copy(P.pos).addScaledVector(noseDir(),2).add(new THREE.Vector3(0,-1.4,0));
   scene.add(m);
   const v=noseDir().multiplyScalar(P.spd);
@@ -3188,7 +3189,6 @@ function updateOrdnance(dt){
     b.v.y-=32*dt;
     b.mesh.position.addScaledVector(b.v,dt);
     b.mesh.lookAt(b.mesh.position.clone().add(b.v));
-    b.mesh.rotateX(Math.PI/2);
     const p=b.mesh.position;
     let hit=(p.y<=groundY(p.x,p.z)+0.6);
     if(!hit) for(const t of targets){

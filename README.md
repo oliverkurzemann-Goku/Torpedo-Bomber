@@ -81,3 +81,5 @@ these checks do not establish iPad/Safari performance or hardware stability.
 No license is currently granted for this repository's own code (`package.json` license:
 `UNLICENSED`) — this hasn't been decided yet, not a statement that it never will be.
 Third-party runtime assets keep their own licenses; see `ASSET-CREDITS.md`.
+
+Build 154: shaped bombs and torpedoes; short 3D muzzle flames with light smoke, attached to banked aircraft gun ports. Flight physics unchanged.

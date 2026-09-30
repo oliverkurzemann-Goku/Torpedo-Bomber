@@ -1,6 +1,6 @@
 /* Run: NODE_PATH=../test_deps/node_modules node okinawa/tests/ship-assets.cjs */
 const fs=require('node:fs'),path=require('node:path'),vm=require('node:vm'),assert=require('node:assert/strict');
-const THREE=require('three');
+const THREE=require('three');global.THREE=THREE;require('../../ordnance.js');const {Ordnance}=global;
 require('../../game-runtime.js');const {GameRuntime}=global;
 const html=fs.readFileSync(path.resolve(__dirname,'../../torpedo-carrier.html'),'utf8');
 function segment(from,to){
@@ -13,7 +13,7 @@ for(const name of ['merchant_ship.glb','ijn carrier.glb','uss_midway.glb']){
  assert.equal(data.readUInt32LE(8),data.length);
 }
 const scene=new THREE.Scene(),ships=[],wingShots=[];let hits=0;
-const ctx=vm.createContext({GameRuntime,THREE,scene,ships,wingShots,Math,
+const ctx=vm.createContext({GameRuntime,THREE,Ordnance,scene,ships,wingShots,Math,
  destroyerTemplate:null,freighterTemplate:null,cruiserTemplate:null,
  DEST_TARGET_LEN:60,FRT_TARGET_LEN:72,CRU_TARGET_LEN:105,
  hitShip:()=>hits++,spawnSplash:()=>{}});

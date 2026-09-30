@@ -319,7 +319,7 @@
   <div id="flash"></div>
   <div id="ltn" style="position:fixed;inset:0;background:#e6ecff;opacity:0;pointer-events:none;z-index:40;"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 153</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 154</div>
 
   <!-- Optical landing aid -->
   <div id="lso">
@@ -442,8 +442,9 @@
 <script src="okinawa/world.js?v=133"></script>
 <script src="campaign.js?v=1"></script>
 <script src="game-runtime.js?v=152"></script>
-<script src="pacific-assets.js?v=153"></script>
-<script src="combat-fx.js?v=153"></script>
+<script src="pacific-assets.js?v=154"></script>
+<script src="combat-fx.js?v=154"></script>
+<script src="ordnance.js?v=154"></script>
 <script src="pilot-bailout.js?v=147"></script>
 <script src="audio/weapon-sound.js?v=144"></script>
 <script src="sortie-systems.js?v=129"></script>
@@ -1881,15 +1882,10 @@ function buildPlane(){
   tw.position.set(0,-1.0,4.6); planeGear.add(tw);
 
   // belly torpedo — hangs clearly below the fuselage (belly ~ -1.04), matte olive (no metallic sky glare)
-  const tube=new THREE.Mesh(new THREE.CylinderGeometry(0.42,0.34,5.2,14),
-    new THREE.MeshStandardMaterial({color:0x6f7458,roughness:0.55,metalness:0.0}));
-  tube.rotation.x=Math.PI/2; tube.position.set(0,-1.55,0.2); tube.name="torp"; body.add(tube);
-  const tfin=boxMesh(1.0,0.08,0.6,0x55593f,0.5); tfin.position.set(0,-1.55,2.5); tfin.name="torp"; body.add(tfin);
-  // belly bomb — smaller and matte dark olive (metalness 0.0 so it doesn't catch the sky)
-  const bomb=new THREE.Mesh(new THREE.CylinderGeometry(0.28,0.36,2.2,14),
-    new THREE.MeshStandardMaterial({color:0x22261c,roughness:0.9,metalness:0.0}));
-  bomb.rotation.x=Math.PI/2; bomb.position.set(0,-1.5,0.2); bomb.name="bomb"; bomb.visible=false; body.add(bomb);
-  const bfin=boxMesh(0.55,0.55,0.4,0x1f2318,0.9); bfin.position.set(0,-1.5,1.35); bfin.name="bomb"; bfin.visible=false; body.add(bfin);
+  const tube=Ordnance.create('torpedo');
+  tube.rotation.y=Math.PI; tube.position.set(0,-1.55,.2);tube.name='torp';body.add(tube);
+  const bomb=Ordnance.create('bomb');bomb.rotation.y=Math.PI;
+  bomb.position.set(0,-1.5,.2);bomb.name='bomb';bomb.visible=false;body.add(bomb);
 
   planeGroup.add(body);
   scene.add(planeGroup);
@@ -2347,13 +2343,12 @@ function dropTorpedo(){           // primary weapon button (torpedo OR bomb)
   if(P.spd>DROP_MAX_SPD){ flash("TOO FAST — REDUCE SPEED",700); return; }
   if(Math.abs(P.roll)>0.35){ flash("WINGS LEVEL TO DROP",700); return; }
   P.torps--; sortieTorpFired++; updateHUD();
-  const mesh=new THREE.Mesh(new THREE.CylinderGeometry(0.32,0.32,3.4,8),
-    new THREE.MeshStandardMaterial({color:0x9a9156,roughness:0.5,metalness:0.1}));
+  const mesh=Ordnance.create('torpedo');
   GameRuntime.own(mesh);
   const dir=new THREE.Vector3(Math.cos(P.heading),0,Math.sin(P.heading)).normalize();
   const startY=Math.max(2.2, P.pos.y-1.4);            // released from under the belly
   mesh.position.set(P.pos.x, startY, P.pos.z);
-  mesh.lookAt(mesh.position.clone().add(dir)); mesh.rotateX(Math.PI/2);  // lay it along travel
+  mesh.lookAt(mesh.position.clone().add(dir));  // lay it along travel
   scene.add(mesh);
   const fwd=Math.max(16, Math.min(42, P.spd*0.5));     // carries the plane's momentum
   const isDud = (Math.random()<D().dud) && !lastTorpDud; lastTorpDud=isDud;
@@ -2368,12 +2363,12 @@ function releaseBomb(){
   if(P.pos.y>650){ flash("TOO HIGH — PRESS THE DIVE",800); return; }
   if(P.pos.y<25){ flash("TOO LOW — PULL UP",800); return; }
   P.torps--; updateHUD();
-  const mesh=new THREE.Mesh(new THREE.CylinderGeometry(0.4,0.5,2.6,10),
-    new THREE.MeshStandardMaterial({color:0x3a4030,roughness:0.6}));
+  const mesh=Ordnance.create('bomb');
   GameRuntime.own(mesh);
   mesh.position.set(P.pos.x,P.pos.y-1.3,P.pos.z);
   const nd=noseDir();
   const vel=nd.clone().multiplyScalar(P.spd);   // inherits aircraft velocity
+  mesh.lookAt(mesh.position.clone().add(vel));
   scene.add(mesh);
   bombs.push({mesh, vel, life:8});
   sfxWhoosh(); flash("BOMB GONE — PULL UP",600);
@@ -2412,10 +2407,10 @@ function updateTorpedoes(dt){
       t.mesh.position.y+=t.vy*dt;
       t.mesh.position.addScaledVector(t.dir, t.fwd*dt);
       const look=t.mesh.position.clone().add(new THREE.Vector3(t.dir.x, t.vy*0.06, t.dir.z));
-      t.mesh.lookAt(look); t.mesh.rotateX(Math.PI/2);
+      t.mesh.lookAt(look);
       if(t.mesh.position.y<=0.6){                        // water entry
         t.mesh.position.y=0.5; t.phase='run';
-        t.mesh.lookAt(t.mesh.position.clone().add(t.dir)); t.mesh.rotateX(Math.PI/2);
+        t.mesh.lookAt(t.mesh.position.clone().add(t.dir));
         spawnSplash(t.mesh.position.x,t.mesh.position.z,true);
         spawnWake(t.mesh.position.x,t.mesh.position.z,14);
       }
@@ -2859,7 +2854,7 @@ function updateZeros(dt){
           new THREE.MeshBasicMaterial({color:0xfff0a0,fog:false}));
         GameRuntime.own(m);
         m.position.copy(z.pos).addScaledVector(dir,5);
-        m.lookAt(m.position.clone().add(dir)); m.rotateX(Math.PI/2);
+        m.lookAt(m.position.clone().add(dir));
         scene.add(m); tracers.push({mesh:m,dir,life:2.2,speed:640,foe:true});
       }
       sfxGun();
@@ -2903,7 +2898,7 @@ function updateTailGun(dt){
     new THREE.MeshBasicMaterial({color:0xffe27a,fog:false}));
   GameRuntime.own(m);
   m.position.copy(gun).addScaledVector(dir,3);
-  m.lookAt(m.position.clone().add(dir)); m.rotateX(Math.PI/2);
+  m.lookAt(m.position.clone().add(dir));
   scene.add(m); bullets.push({mesh:m,dir,life:0.9,speed:620,tail:true});
   // muzzle flash
   const mf=new THREE.Sprite(new THREE.SpriteMaterial({map:smokeTex,color:0xffd060,
@@ -2932,7 +2927,7 @@ function updateFlak(dt){
           new THREE.MeshBasicMaterial({color:0xff6a3c,fog:false}));
         GameRuntime.own(mesh);
         mesh.position.copy(from).addScaledVector(dir,k*14);
-        mesh.lookAt(mesh.position.clone().add(dir)); mesh.rotateX(Math.PI/2);
+        mesh.lookAt(mesh.position.clone().add(dir));
         scene.add(mesh);
         tracers.push({mesh,dir,life:3,speed:560});
       }
@@ -4018,9 +4013,7 @@ function updateWingmen(dt){
 // what the player sees and never steals the camera.
 function spawnWingShot(w, tgt){
   const sbd=w.sbd;
-  const mesh=new THREE.Mesh(
-    sbd? new THREE.CylinderGeometry(0.4,0.5,2.6,10) : new THREE.CylinderGeometry(0.3,0.3,3.2,8),
-    new THREE.MeshStandardMaterial({color:sbd?0x3a4030:0x9a9156,roughness:0.6,metalness:0.1}));
+  const mesh=Ordnance.create(sbd?'bomb':'torpedo');
   GameRuntime.own(mesh);
   const start=w.pos.clone();
   if(!sbd) start.y=Math.max(2.2, start.y-1.2);
@@ -4051,7 +4044,7 @@ function updateWingShots(dt){
     }
     if(s.kind==='torp' && s.phase==='water') s.mesh.position.y=2;
     s.mesh.lookAt(s.mesh.position.clone().add(s.vel));
-    if(s.kind==='torp') s.mesh.rotateX(Math.PI/2);
+
     if(s.tgt && s.tgt.alive){
       const tp=s.tgt.group.position;
       const dd=Math.hypot(s.mesh.position.x-tp.x, s.mesh.position.z-tp.z);
@@ -4220,11 +4213,10 @@ function updateRaiders(dt){
   }
 }
 function spawnEnemyTorp(pos,dir){
-  const m=new THREE.Mesh(new THREE.CylinderGeometry(0.32,0.32,3.4,8),
-    new THREE.MeshStandardMaterial({color:0x8a8156,roughness:0.5,metalness:0.1}));
+  const m=Ordnance.create('torpedo');
   GameRuntime.own(m);
   m.position.set(pos.x,0.6,pos.z);
-  m.lookAt(m.position.clone().add(dir)); m.rotateX(Math.PI/2);
+  m.lookAt(m.position.clone().add(dir));
   scene.add(m);
   etorps.push({mesh:m, dir:dir.clone(), life:30, speed:22, wk:0});
   spawnSplash(pos.x,pos.z,true);
@@ -4615,7 +4607,7 @@ function loadPlaneModel(){
       }
       window.__eyeDbg='EYE '+COCKPIT_EYE.map(v=>v.toFixed(2)).join('/');
       const btEl=document.getElementById('buildTag');
-      if(btEl) btEl.textContent='BUILD 153 · '+window.__eyeDbg;
+      if(btEl) btEl.textContent='BUILD 154 · '+window.__eyeDbg;
       let seat=null;
       model.traverse(function(o){
         if(!o.isMesh||!o.material) return;
@@ -4626,29 +4618,12 @@ function loadPlaneModel(){
       cockpitLight.position.set(0,1.0,-1.4);
       planeGroup.add(cockpitLight);
       // external ordnance: torpedo slung under the belly, bombs under the wings
-      const ordMat=new THREE.MeshStandardMaterial({color:0x2c332c,roughness:0.72,metalness:0.12});
-      ordTorp=new THREE.Group();
-      const tb=new THREE.Mesh(new THREE.CylinderGeometry(0.32,0.30,4.6,12),ordMat);
-      tb.rotation.x=Math.PI/2; ordTorp.add(tb);
-      const tn=new THREE.Mesh(new THREE.SphereGeometry(0.32,12,10),ordMat);
-      tn.position.z=-2.3; ordTorp.add(tn);
-      const tf1=new THREE.Mesh(new THREE.BoxGeometry(0.95,0.06,0.5),ordMat);
-      tf1.position.z=2.15; ordTorp.add(tf1);
-      const tf2=tf1.clone(); tf2.rotation.z=Math.PI/2; ordTorp.add(tf2);
-      ordTorp.position.set(0,-1.55,-0.2);        // hang clearly below the fuselage (belly ~ -1.04)
-      planeGroup.add(ordTorp); ordTorp.visible=false;
-      // bombs: smaller and matte dark olive (no metallic sky glare)
-      const bombMat=new THREE.MeshStandardMaterial({color:0x22261c,roughness:0.9,metalness:0.0});
+      ordTorp=Ordnance.create('torpedo');ordTorp.rotation.y=Math.PI;
+      ordTorp.position.set(0,-1.55,-.2);planeGroup.add(ordTorp);ordTorp.visible=false;
       ordBombs=[];
       for(const sx of [-1,1]){
-        const bg=new THREE.Group();
-        const bb=new THREE.Mesh(new THREE.SphereGeometry(0.23,10,8),bombMat);
-        bb.scale.set(1,1,1.8); bg.add(bb);
-        const bf1=new THREE.Mesh(new THREE.BoxGeometry(0.5,0.05,0.34),bombMat);
-        bf1.position.z=0.5; bg.add(bf1);
-        const bf2=bf1.clone(); bf2.rotation.z=Math.PI/2; bg.add(bf2);
-        bg.position.set(sx*2.3,-1.0,-0.15);
-        planeGroup.add(bg); bg.visible=false; ordBombs.push(bg);
+        const bg=Ordnance.create('bomb');bg.rotation.y=Math.PI;bg.scale.setScalar(.65);
+        bg.position.set(sx*2.3,-1.0,-.15);planeGroup.add(bg);bg.visible=false;ordBombs.push(bg);
       }
       planeModelLoaded=true;
       console.log('Plane model loaded:', PLANE_MODEL_URL);
@@ -4805,7 +4780,14 @@ function loadCruiserModel(){
   }).catch(function(){ console.warn('No cruiser model at "'+CRUISER_MODEL_URL+'" — repository ship remains invisible.'); });
 }
 
-function updatePlaneMesh(dt){
+function pacificGunMuzzles(){
+  // Measured on normalized GLBs: wing leading edges for A6M/TBM, cowling for SBD.
+  // Plane-group coordinates: +X starboard, -Z forward.
+  const ports=isDefend()?[[-2.15,-.24,-2.52],[2.15,-.24,-2.52]]:
+    isSBD()?[[-.38,.10,-2.17],[.38,.10,-2.17]]:[[-3.5,-.11,-2.59],[3.5,-.11,-2.59]];
+  return ports.map(p=>new THREE.Vector3(...p));
+}
+function pacificAircraftQuaternion(){
   const nd=noseDir();                          // forward = direction of travel
   // model nose is local -Z, so we want -Z -> nd  (equivalently local +Z -> -nd)
   const zAxis=nd.clone().negate();
@@ -4815,8 +4797,12 @@ function updatePlaneMesh(dt){
   const xAxis=new THREE.Vector3(-Math.sin(P.heading),0,Math.cos(P.heading));
   const yAxis=new THREE.Vector3().crossVectors(zAxis,xAxis).normalize();
   const m=new THREE.Matrix4().makeBasis(xAxis,yAxis,zAxis);
-  planeGroup.quaternion.setFromRotationMatrix(m);
-  planeGroup.rotateZ(P.roll);                  // bank matches turn: right stick = right wing down
+  const q=new THREE.Quaternion().setFromRotationMatrix(m);
+  q.multiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,0,1),P.roll));                  // bank matches turn: right stick = right wing down
+  return q;
+}
+function updatePlaneMesh(dt){
+  planeGroup.quaternion.copy(pacificAircraftQuaternion());
   planeGroup.position.copy(P.pos);
   if(planeModelLoaded){
     const spin=(0.14+P.throttle*0.34)*(P.alive?1:0.12);   // per-frame, visibly spinning
@@ -5433,19 +5419,20 @@ function updateGuns(dt){
   if(firing && state===ST.FLIGHT && P.alive && P.ammo>0 && gunCool<=0){
     gunCool=0.07; P.ammo=Math.max(0,P.ammo-2);
     const nd=noseDir();
-    const perp=new THREE.Vector3(Math.cos(P.heading+Math.PI/2),0,Math.sin(P.heading+Math.PI/2));
-    for(const sx of [-1,1]){
-      const start=P.pos.clone().addScaledVector(perp,sx*4).addScaledVector(nd,5);
+    planeGroup.quaternion.copy(pacificAircraftQuaternion());planeGroup.position.copy(P.pos);
+    planeGroup.updateMatrixWorld(true);
+    const mount=(isDefend()&&playerZero)||(isSBD()&&playerSBD)||planeGroup;
+    const ports=pacificGunMuzzles(),localPorts=[];
+    for(const port of ports){
+      const start=planeGroup.localToWorld(port.clone());
+      localPorts.push(mount.worldToLocal(start.clone()));
       const m=new THREE.Mesh(pacificTracerGeo,pacificTracerMat);
       m.position.copy(start); m.lookAt(start.clone().add(nd)); m.rotateX(Math.PI/2);
       scene.add(m); bullets.push({mesh:m,dir:nd.clone(),life:0.7,speed:650});
-      if(combatFX){
-        // Zero/SBD rig cleanup removes siblings of the selected airframe. Put
-        // muzzle flashes UNDER that airframe so cleanup cannot detach live FX.
-        const mount=(isDefend()&&playerZero)||(isSBD()&&playerSBD)||planeGroup;
-        planeGroup.updateMatrixWorld(true);
-        combatFX.muzzle(mount,[mount.worldToLocal(start.clone())]);
-      }
+    }
+    if(combatFX){
+      const forward=mount.worldToLocal(P.pos.clone().add(nd)).sub(mount.worldToLocal(P.pos.clone())).normalize();
+      combatFX.muzzle(mount,localPorts,false,forward);
     }
     sfxGun(); updateHUD();
   }
@@ -5956,7 +5943,7 @@ function setupUIButtons(){
   if(dbgT2) dbgT2.onclick=()=>{
     dbgOn=!dbgOn; GameRuntime.storage.setItem('dbgOn',dbgOn?'1':'0');
     const db=document.getElementById('dbgBox'); if(db) db.textContent=dbgOn?'✓':'';
-    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 153'; }
+    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 154'; }
   };
   const lu=document.getElementById('lookUp'), ld=document.getElementById('lookDn');
   let _lookT=0;
@@ -6191,7 +6178,7 @@ function animate(){
     notice.style.cssText='position:fixed;inset:0;z-index:999998;background:rgba(15,20,15,.95);color:#e8ddbc;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px;text-align:center;font:16px system-ui';
     const title=document.createElement('h2');title.textContent='Simulation interrupted';
     const detail=document.createElement('p');
-    detail.textContent='BUILD 153 · '+(MISSIONS[mission]?.sub||'Menu')+' · '+error.message;
+    detail.textContent='BUILD 154 · '+(MISSIONS[mission]?.sub||'Menu')+' · '+error.message;
     const reload=document.createElement('button');reload.textContent='Reload game';
     reload.style.cssText='padding:12px 24px;font:inherit';reload.onclick=()=>location.reload();
     notice.appendChild(title);notice.appendChild(detail);notice.appendChild(reload);document.body.appendChild(notice);

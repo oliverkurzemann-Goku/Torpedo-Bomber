@@ -5,7 +5,26 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 153 · Thunderbolt Squadron BUILD 153 · Remagen-Kern 21 / Fahrzeuge 22**
+Stand bei Übergabe: **Torpedo Squadron BUILD 154 · Thunderbolt Squadron BUILD 154 · Remagen-Kern 21 / Fahrzeuge 22**
+
+**Build 154 (30.09.2026): Waffenformen und Mündungsfeuer.**
+`ordnance.js` liefert Bomben und Torpedos mit geschlossener runder Nase,
+verjüngtem Heck und vier Leitflächen (328 Dreiecke). Abwurfwaffen, Begleiter,
+feindliche Torpedos und Avenger-Außenlasten verwenden dieselben geteilten
+Geometrien/Materialien; einzelne Abwürfe dürfen diese Ressourcen nicht entsorgen.
+Alle Formen haben +Z als Nase und folgen direkt `lookAt(velocity)`, ohne den
+früheren Cylinder-X-Vierteldrehungsschritt. Abwurfphysik bleibt unverändert.
+
+Mündungsfeuer ist jetzt eine kurze, schmale orange/helle 3D-Flamme statt einer
+kamerafesten Sterntextur; kleiner, kurzlebiger Rauch bei jeder dritten Salve.
+Pacific-Waffenpunkte stehen im Flugzeugkoordinatensystem. Geschosse und Flammen
+benutzen denselben Punkt und dieselbe aktuelle Querneigung/Nicklage. Bei der
+Dauntless sitzen die MGs an der Motorhaube. Zero/SBD-Effekte bleiben unter dem
+gewählten Flugzeug, damit der Build-153-Cleanup-Fix erhalten bleibt.
+`carrier-fire.cjs` prüft reale GLBs und 60 simulierte Sekunden Rollen/Nicken,
+Flammenposition/-richtung und begrenzte Effekte; `ordnance.cjs` reale Abwurfpfade,
+Nase/Leitwerk und 100 Ressourcenzyklen. CI rendert Originalflugzeuge samt
+Mündungsfeuer und Waffenformen in zwei Kontrollbildern. iPad-Abnahme bleibt offen.
 
 **Build 153 (30.09.2026): Zero-/Dauntless-Schussabsturz reproduziert und korrigiert.**
 Die präzisierte Meldung „beim Schießen, Avenger flüssig“ führt zur konkreten Ursache:

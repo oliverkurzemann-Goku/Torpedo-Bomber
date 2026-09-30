@@ -26,3 +26,11 @@ jobs:
 
       - name: Run okinawa regression tests
         run: npm run test:okinawa
+
+      - name: Save gun and ordnance visual checks
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-154-visual-checks
+          path: test-visuals/*.png
+          if-no-files-found: ignore

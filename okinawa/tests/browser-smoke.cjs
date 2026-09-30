@@ -91,6 +91,23 @@ const cdn={
     }
     assert.equal(modelRequests.filter(p=>p.includes('merchant')).length,scenario.kind==='sbd'?1:0,'escort and freighter share one model decode');
     console.log('Browser Pacific '+label+': 15 simulated seconds with sustained fire, original aircraft and live AI; requests '+modelRequests.join(', '));
+    if(scenario.ordinal===0){
+     const out=path.join(root,'test-visuals');fs.mkdirSync(out,{recursive:true});
+     const png=await page.evaluate(()=>{
+      const studio=new THREE.Scene();studio.background=new THREE.Color(0x8faec0);
+      studio.add(new THREE.HemisphereLight(0xe8f3ff,0x524b39,1.2));
+      const sun=new THREE.DirectionalLight(0xffecd4,.9);sun.position.set(5,12,-10);studio.add(sun);
+      const frame=(isSBD()?playerSBD:playerZero).clone(true);studio.add(frame);frame.rotation.z=.9;
+      const fx=CombatFX.create(studio);fx.muzzle(frame,pacificGunMuzzles(),false,new THREE.Vector3(0,0,-1));
+      const bomb=Ordnance.create('bomb'),torp=Ordnance.create('torpedo');
+      bomb.rotation.y=torp.rotation.y=Math.PI;bomb.position.set(-3,-3,-1);torp.position.set(2,-3,-1);studio.add(bomb,torp);
+      const cam=new THREE.PerspectiveCamera(42,1024/768,.1,100);cam.position.set(12,6,-18);cam.lookAt(0,-.5,0);
+      renderer.setPixelRatio(1);renderer.render(studio,cam);
+      const png=renderer.domElement.toDataURL('image/png');renderer.setPixelRatio(.25);fx.clear();return png;
+     });
+     fs.writeFileSync(path.join(out,scenario.kind+'-banked-guns-ordnance.png'),Buffer.from(png.split(',')[1],'base64'));
+    }
+
    }
    try{await page.waitForFunction(()=>state===ST.FLIGHT||state===ST.PAUSED||state===ST.RESULT);
     assert(await page.evaluate(()=>state===ST.FLIGHT),'launch must enter flight');
@@ -141,7 +158,7 @@ const cdn={
     // A real JS frame failure is visible and remains observable, not hidden.
     await page.evaluate(()=>{animateFrame=()=>{throw Error('TEST FRAME FAULT');};});
     await page.locator('#simulationRecovery').waitFor({state:'visible'});
-    assert.match(await page.locator('#simulationRecovery').innerText(),/BUILD 153.*TEST FRAME FAULT/);
+    assert.match(await page.locator('#simulationRecovery').innerText(),/BUILD 154.*TEST FRAME FAULT/);
     assert.equal(await page.locator('#simulationRecovery button').innerText(),'Reload game');
     assert.deepEqual(errors,['TEST FRAME FAULT'],'unexpected runtime errors cannot be swallowed');
    }
