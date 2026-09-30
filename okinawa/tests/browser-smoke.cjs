@@ -75,7 +75,8 @@ const cdn={
    await page.locator('#pauseBtn').click();
    const memory=await page.evaluate(()=>{
     renderer.render(scene,camera);const before=renderer.info.memory.geometries;
-    for(let i=0;i<12;i++){spawnDebris(P.pos.x,P.pos.y+200,P.pos.z,12);renderer.render(scene,camera);updateDebris(10);renderer.render(scene,camera);}
+    for(let i=0;i<12;i++){spawnDebris(P.pos.x,P.pos.y+200,P.pos.z,12);renderer.render(scene,camera);updateDebris(10);
+      if(typeof updateSplashes==='function')updateSplashes(10);renderer.render(scene,camera);}
     return {before,after:renderer.info.memory.geometries};
    });
    assert(memory.after<=memory.before,'repeated debris does not retain GPU geometry');
