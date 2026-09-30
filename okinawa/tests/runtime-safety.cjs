@@ -78,8 +78,9 @@ lost=false;renderer.render=()=>{throw Error('real shader bug');};
 assert.throws(()=>GameRuntime.render(renderer,{},{}),/real shader bug/,'unrelated errors must remain visible');
 // Actual Pacific keyboard handlers must neutralise immediately on keyup,
 // including when no animation frame can run. Touch-owned commands stay intact.
-const handlers={},keyboard=vm.createContext({P:{_stickActive:false},ST:{FLIGHT:3},state:3,inputPitch:0,inputRoll:0,
- firing:false,invertPitch:false,window:{addEventListener:(name,fn)=>handlers[name]=fn}});
+const handlers={},keyboard=vm.createContext({P:{_stickActive:false},ST:{FLIGHT:3,RESULT:4,PAUSED:5},state:3,inputPitch:0,inputRoll:0,
+ bailout:null,bailDone:false,firing:false,invertPitch:false,window:{addEventListener:(name,fn)=>handlers[name]=fn}});
+vm.runInContext(routine(pac,'steeringParachute','beginBailout'),keyboard);
 vm.runInContext(routine(pac,'setupKeyboard','pollKeys'),keyboard);keyboard.setupKeyboard();
 const key=code=>({code,preventDefault(){}});
 handlers.keydown(key('ArrowLeft'));assert.equal(keyboard.inputRoll,1);
@@ -87,6 +88,14 @@ handlers.keyup(key('ArrowLeft'));assert.equal(keyboard.inputRoll,0,'keyup needs 
 keyboard.P._stickActive=true;keyboard.inputRoll=.3;keyboard.inputPitch=.2;
 handlers.keydown(key('ArrowLeft'));handlers.keyup(key('ArrowLeft'));
 assert.deepEqual([keyboard.inputRoll,keyboard.inputPitch],[.3,.2],'keyboard release does not cancel a held touch stick');
+keyboard.P._stickActive=false;keyboard.inputRoll=0;keyboard.inputPitch=0;
+keyboard.bailout={};keyboard.state=keyboard.ST.RESULT;
+handlers.keydown(key('ArrowRight'));assert.equal(keyboard.inputRoll,-1,'arrows steer the active parachute');
+handlers.keyup(key('ArrowRight'));assert.equal(keyboard.inputRoll,0,'parachute key release is immediate');
+keyboard.state=keyboard.ST.PAUSED;
+handlers.keydown(key('ArrowRight'));assert.equal(keyboard.inputRoll,0,'paused parachute ignores steering');
+handlers.keyup(key('ArrowRight'));keyboard.state=keyboard.ST.RESULT;keyboard.bailDone=true;
+handlers.keydown(key('ArrowRight'));assert.equal(keyboard.inputRoll,0,'result screen ignores steering after landing');
 const coach=new GameRuntime.HintCoach(),notes=[],snap={enabled:true,alive:true,hull:100,agl:300,gear:1,homeDistance:800};
 coach.tick(6,{...snap,busy:true},m=>notes.push(m));assert.equal(notes.length,0,'critical messages are not overwritten');
 coach.tick(1,snap,m=>notes.push(m));assert.equal(notes.length,1);

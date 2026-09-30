@@ -76,7 +76,17 @@ const cdn={
     const ammo=await page.evaluate(()=>P.ammo);
     const fire=await page.locator('#fireBtn').boundingBox();
     await page.mouse.move(fire.x+fire.width/2,fire.y+fire.height/2);await page.mouse.down();
-    await page.waitForFunction(()=>pacificOps.elapsed>=15||runtimeFault||state!==ST.FLIGHT,{},{timeout:180000});
+    // Drive the actual frame routine with the held real button. Sample GPU
+    // drawing every eighth tick: software Chrome's compositor can take minutes
+    // to schedule 300 RAFs. All simulation/cleanup ticks still run in order;
+    // this remains a controls/model lifecycle test, never an iPad FPS claim.
+    await page.evaluate(()=>{
+     const render=GameRuntime.render;let tick=0;
+     try{
+      GameRuntime.render=(...args)=>(++tick%8===1?render(...args):true);
+      for(let i=0;i<340&&pacificOps.elapsed<15&&state===ST.FLIGHT;i++)animateFrame();
+     }finally{GameRuntime.render=render;}
+    });
     await page.mouse.up();
     assert(await page.evaluate(()=>state===ST.FLIGHT&&P.alive&&!runtimeFault&&pacificOps.elapsed>=15),label+' must keep flying past 15 simulated seconds');
     assert(await page.evaluate(a=>P.ammo<a-100,ammo),'actual fire button must produce sustained gunfire');
@@ -154,11 +164,43 @@ const cdn={
    assert(memory.after<=memory.before,'repeated debris does not retain GPU geometry');
    assert.deepEqual(errors,[],campaign+' has no uncaught browser errors');
    console.log('Browser '+campaign+': iPad layout, keyboard release, auto-pause, frozen GPU, real context restoration; geometry '+memory.before+' → '+memory.after);
+   if(eu||scenario.kind==='defend'&&scenario.ordinal===1){
+    await page.locator(eu?'#pmResume':'#resumeBtn').click();
+    await page.evaluate(()=>{P.pos.y=(typeof groundY==='function'?groundY(P.pos.x,P.pos.z):shoreHeight(P.pos.x,P.pos.z))+160;P.onGround=false;P.spd=90;});
+    await page.locator('#bailBtn').waitFor({state:'visible'});await page.locator('#bailBtn').click();
+    await page.evaluate(()=>{for(let i=0;i<10;i++)advanceBailout(.05);});
+    assert(await page.evaluate(()=>bailout.deployed&&steeringParachute()),'actual bail button opens a controllable parachute');
+    assert.match(await page.locator('#stickHint').innerText(),/CHUTE/);
+    const heading=await page.evaluate(()=>bailout.heading);
+    await page.keyboard.down('ArrowRight');await page.waitForFunction(()=>inputRoll===-1);
+    await page.evaluate(()=>{for(let i=0;i<10;i++)advanceBailout(.05);});await page.keyboard.up('ArrowRight');
+    assert(await page.evaluate(h=>bailout.heading>h+.1,heading),'real arrow key turns the pilot, not the abandoned aircraft');
+    assert.equal(await page.evaluate(()=>inputRoll),0,'parachute key release clears the command');
+    const stick=await page.locator('#stick').boundingBox(),h=await page.evaluate(()=>bailout.heading);
+    await page.mouse.move(stick.x+stick.width*.75,stick.y+stick.height*.5);await page.mouse.down();
+    await page.evaluate(()=>{for(let i=0;i<10;i++)advanceBailout(.05);});await page.mouse.up();
+    assert(await page.evaluate(h=>bailout.heading>h+.1,h),'actual touch stick also turns the parachute');
+    await page.evaluate(()=>window.dispatchEvent(new Event('blur')));
+    assert(await page.evaluate(()=>state===ST.PAUSED),'app switch pauses the chute');
+    assert.match(await page.locator('#pauseOrders').innerText(),/PARACHUTE/);
+    const held=await page.evaluate(()=>bailout.position.toArray());await page.waitForTimeout(200);
+    assert.deepEqual(await page.evaluate(()=>bailout.position.toArray()),held,'paused pilot does not move');
+    await page.locator(eu?'#pmResume':'#resumeBtn').click();
+    assert(await page.evaluate(()=>steeringParachute()),'Resume returns to the chute, not flight');
+    await page.evaluate(()=>{
+     bailout.position.y=(typeof groundY==='function'?groundY(bailout.position.x,bailout.position.z):shoreHeight(bailout.position.x,bailout.position.z))+6;
+     for(let i=0;i<100&&!bailDone;i++)advanceBailout(.05);
+    });
+    assert(await page.evaluate(()=>bailDone),'steered descent finishes');
+    assert.match(await page.locator(eu?'#rsTitle':'#resultTitle').innerText(),/PILOT SAFE/);
+    assert.deepEqual(errors,[],campaign+' parachute has no browser errors');
+    console.log('Browser '+campaign+': actual bail button, arrow/touch steering, release, auto-pause/resume and safe landing');
+   }
    if(!eu&&scenario.kind==='defend'&&scenario.ordinal===0){
     // A real JS frame failure is visible and remains observable, not hidden.
     await page.evaluate(()=>{animateFrame=()=>{throw Error('TEST FRAME FAULT');};});
     await page.locator('#simulationRecovery').waitFor({state:'visible'});
-    assert.match(await page.locator('#simulationRecovery').innerText(),/BUILD 154.*TEST FRAME FAULT/);
+    assert.match(await page.locator('#simulationRecovery').innerText(),/BUILD 155.*TEST FRAME FAULT/);
     assert.equal(await page.locator('#simulationRecovery button').innerText(),'Reload game');
     assert.deepEqual(errors,['TEST FRAME FAULT'],'unexpected runtime errors cannot be swallowed');
    }

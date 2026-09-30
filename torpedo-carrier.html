@@ -319,7 +319,7 @@
   <div id="flash"></div>
   <div id="ltn" style="position:fixed;inset:0;background:#e6ecff;opacity:0;pointer-events:none;z-index:40;"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 154</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 155</div>
 
   <!-- Optical landing aid -->
   <div id="lso">
@@ -442,10 +442,10 @@
 <script src="okinawa/world.js?v=133"></script>
 <script src="campaign.js?v=1"></script>
 <script src="game-runtime.js?v=152"></script>
-<script src="pacific-assets.js?v=154"></script>
-<script src="combat-fx.js?v=154"></script>
-<script src="ordnance.js?v=154"></script>
-<script src="pilot-bailout.js?v=147"></script>
+<script src="pacific-assets.js?v=155"></script>
+<script src="combat-fx.js?v=155"></script>
+<script src="ordnance.js?v=155"></script>
+<script src="pilot-bailout.js?v=155"></script>
 <script src="audio/weapon-sound.js?v=144"></script>
 <script src="sortie-systems.js?v=129"></script>
 <script src="operation-plans.js?v=144"></script>
@@ -948,7 +948,7 @@ function init(){
   setupKeyboard();
   setupUIButtons();
   runtimeSession=GameRuntime.attachLifecycle({canvas:renderer.domElement,resetControls:()=>releaseHeldControls(),
-    pause:reason=>{if(state===ST.FLIGHT||state===ST.LAUNCH)togglePause(reason);},
+    pause:reason=>{if(state===ST.FLIGHT||state===ST.LAUNCH||steeringParachute())togglePause(reason);},
     onRestore:()=>{clock.getDelta();document.getElementById('pauseReason').textContent='Graphics restored — tap Resume.';}});
   window.addEventListener('pointerdown',()=>{ if(actx&&actx.state==='suspended') actx.resume(); });
 
@@ -956,16 +956,16 @@ function init(){
   // iOS may zoom after two quick taps, especially when flying aerobatics.
   // Protect flight only; menu gestures and accessibility are left untouched.
   ['gesturestart','gesturechange','gestureend'].forEach(function(ev){
-    document.addEventListener(ev, function(e){ if(state===ST.FLIGHT)e.preventDefault(); }, {passive:false});
+    document.addEventListener(ev, function(e){ if(state===ST.FLIGHT||steeringParachute())e.preventDefault(); }, {passive:false});
   });
   let _lastTap=0,_lastTapX=0,_lastTapY=0;
   document.addEventListener('touchend', function(e){
-    if(state!==ST.FLIGHT||e.changedTouches.length!==1){_lastTap=0;return;}
+    if((state!==ST.FLIGHT&&!steeringParachute())||e.changedTouches.length!==1){_lastTap=0;return;}
     const t=e.changedTouches[0],now=Date.now();
     if(now-_lastTap<350&&Math.hypot(t.clientX-_lastTapX,t.clientY-_lastTapY)<60)e.preventDefault();
     _lastTap=now;_lastTapX=t.clientX;_lastTapY=t.clientY;
   }, {passive:false});
-  document.addEventListener('dblclick',e=>{if(state===ST.FLIGHT)e.preventDefault();},{passive:false});
+  document.addEventListener('dblclick',e=>{if(state===ST.FLIGHT||steeringParachute())e.preventDefault();},{passive:false});
   function resetZoom(){
     try{
       if(window.visualViewport && window.visualViewport.scale>1.01){
@@ -2295,6 +2295,7 @@ function setupKeyboard(){
   window.addEventListener('keydown',e=>{
     if(e.code==='Escape'||e.code==='KeyP'){if(!e.repeat)togglePause();e.preventDefault();return;}
     if(e.code==='Enter'){if(state===ST.MENU)beginGame();else if(state===ST.BRIEF)launch();return;}
+    if(steeringParachute()&&e.code.startsWith('Arrow')){keys[e.code]=true;e.preventDefault();applyKeyboardFlight();return;}
     if(state!==ST.FLIGHT)return;
     keys[e.code]=true;
     if(e.code.startsWith('Arrow')){e.preventDefault();applyKeyboardFlight();}
@@ -2304,7 +2305,7 @@ function setupKeyboard(){
     if(e.code==='KeyB'&&!e.repeat) beginBailout();
   });
   window.addEventListener('keyup',e=>{keys[e.code]=false;if(e.code==='KeyF')firing=false;
-    if(state===ST.FLIGHT)applyKeyboardFlight();});
+    if(state===ST.FLIGHT||steeringParachute())applyKeyboardFlight();});
   // poll in loop
   P._keys=keys;
 }
@@ -4268,9 +4269,11 @@ function crash(title,sub){
     "Retry Sortie");
 }
 let bailout=null,bailPlaneCrashed=false,bailDone=false,bailChuteCalled=false;
+function steeringParachute(){return !!bailout&&!bailDone&&state===ST.RESULT;}
 function beginBailout(){
   if(state!==ST.FLIGHT||!P.alive)return;
   if(P.pos.y-shoreHeight(P.pos.x,P.pos.z)<85){flash('TOO LOW TO BAIL OUT',1400);return;}
+  releaseHeldControls();
   bailout=PilotBailout.create(THREE,scene,P.pos.clone().add(new THREE.Vector3(-2,1,-2)),
     Math.PI/2-P.heading,P.spd,shoreHeight);
   bailPlaneCrashed=false;bailDone=false;bailChuteCalled=false;
@@ -4278,12 +4281,14 @@ function beginBailout(){
   document.getElementById('bailBtn').style.display='none';
   saveBest(score);
   if(!isFree()){logAircraftLost();logPilotBailout();}
+  document.getElementById('stickHint').textContent='CHUTE: TURN / GLIDE';
   flash('PILOT CLEAR — OPENING PARACHUTE',1800);
 }
 function advanceBailout(dt){
-  if(!bailout||bailDone)return;
-  const landing=bailout.update(dt*3,windZ);
-  if(bailout.deployed&&!bailChuteCalled){bailChuteCalled=true;radioSay('PARACHUTE OPEN — PILOT DESCENDING');}
+  if(!steeringParachute())return;
+  const landing=bailout.update(dt*3,windZ,{turn:-inputRoll*steerSign,forward:inputPitch*(invertPitch?-1:1)});
+  if(bailout.deployed&&!bailChuteCalled){bailChuteCalled=true;radioSay('PARACHUTE OPEN — STEER TO A CLEAR LANDING');
+    flash('PARACHUTE: STICK / ARROWS — TURN, GLIDE OR BRAKE',4000);}
   if(!bailPlaneCrashed){
     P.pos.addScaledVector(noseDir(),P.spd*dt*.7);
     P.pos.y-=Math.min(95,12+bailout.position.y*.05)*dt*3;
@@ -4295,6 +4300,7 @@ function advanceBailout(dt){
   }
   if(landing.landed){
     bailDone=true;
+    releaseHeldControls();document.getElementById('stickHint').textContent='PITCH / ROLL';
     showResult(false,landing.safe?'PILOT SAFE':'CHUTE TOO LATE','Sortie ended',
       (landing.safe?'Parachute landing. The aircraft was lost.':'The parachute opened too late.')+
       '<br><br>SCORE '+score+' &middot; BEST '+Math.max(bestScore(),score),'Retry Sortie');
@@ -4607,7 +4613,7 @@ function loadPlaneModel(){
       }
       window.__eyeDbg='EYE '+COCKPIT_EYE.map(v=>v.toFixed(2)).join('/');
       const btEl=document.getElementById('buildTag');
-      if(btEl) btEl.textContent='BUILD 154 · '+window.__eyeDbg;
+      if(btEl) btEl.textContent='BUILD 155 · '+window.__eyeDbg;
       let seat=null;
       model.traverse(function(o){
         if(!o.isMesh||!o.material) return;
@@ -5795,11 +5801,11 @@ function showResult(win,title,sub,body,btn){
 }
 
 function togglePause(reason='Sortie held'){
-  if(state===ST.FLIGHT || state===ST.LAUNCH){
+  if(state===ST.FLIGHT || state===ST.LAUNCH || steeringParachute()){
     releaseHeldControls();
     prePauseState=state; state=ST.PAUSED; firing=false; showOverlay('pause');
     document.getElementById('pauseReason').textContent=reason;
-    document.getElementById('pauseOrders').textContent=pacificPauseOrders();
+    document.getElementById('pauseOrders').textContent=bailout&&!bailDone?'PARACHUTE — stick or arrow keys: left/right turn, up glide, down brake.':pacificPauseOrders();
     // animate() returns early on ST.PAUSED before it ever reaches updateAudio(dt) - but the
     // engine oscillators are real WebAudio nodes running on the hardware clock, independent of
     // requestAnimationFrame, so without this they just keep humming at whatever level
@@ -5819,6 +5825,8 @@ function resumeGame(){
   if(eng) eng.master.gain.setTargetAtTime(0.85,actx.currentTime,0.05);
 }
 function exitToMenu(){
+  if(bailout){bailout.dispose();bailout=null;}
+  document.getElementById('stickHint').textContent='PITCH / ROLL';
   document.getElementById('bailBtn').style.display='none';
   if(eng) eng.master.gain.setTargetAtTime(0.85,actx.currentTime,0.05);
   state=ST.MENU; killCam=null;
@@ -5943,7 +5951,7 @@ function setupUIButtons(){
   if(dbgT2) dbgT2.onclick=()=>{
     dbgOn=!dbgOn; GameRuntime.storage.setItem('dbgOn',dbgOn?'1':'0');
     const db=document.getElementById('dbgBox'); if(db) db.textContent=dbgOn?'✓':'';
-    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 154'; }
+    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 155'; }
   };
   const lu=document.getElementById('lookUp'), ld=document.getElementById('lookDn');
   let _lookT=0;
@@ -6178,7 +6186,7 @@ function animate(){
     notice.style.cssText='position:fixed;inset:0;z-index:999998;background:rgba(15,20,15,.95);color:#e8ddbc;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px;text-align:center;font:16px system-ui';
     const title=document.createElement('h2');title.textContent='Simulation interrupted';
     const detail=document.createElement('p');
-    detail.textContent='BUILD 154 · '+(MISSIONS[mission]?.sub||'Menu')+' · '+error.message;
+    detail.textContent='BUILD 155 · '+(MISSIONS[mission]?.sub||'Menu')+' · '+error.message;
     const reload=document.createElement('button');reload.textContent='Reload game';
     reload.style.cssText='padding:12px 24px;font:inherit';reload.onclick=()=>location.reload();
     notice.appendChild(title);notice.appendChild(detail);notice.appendChild(reload);document.body.appendChild(notice);

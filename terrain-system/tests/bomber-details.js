@@ -71,14 +71,14 @@ function fixedBladeFaces(group,p){
       assert.equal(fixed.length,0,'static and blurred duplicate propeller subtrees must be removed');
     }
     const e={group:aircraft,rotors,gunStations:stations,kind,bomber:true,alive:true,
-      pos:new THREE.Vector3(0,1000,0),vel:new THREE.Vector3(0,0,72),heading:0,pitch:0,roll:0,
+      pos:new THREE.Vector3(20000,1000,20000),vel:new THREE.Vector3(0,0,72),heading:0,pitch:0,roll:0,
       hp:30,maxhp:30,cool:0};
-    const P={pos:new THREE.Vector3(0,1300,0),spd:120,alive:true};
+    const P={pos:new THREE.Vector3(20000,1300,20000),spd:120,alive:true};
     const tracers=[],scene=new THREE.Scene();scene.add(aircraft);
     const code=html.slice(html.indexOf('const bomberRoundGeo='),html.indexOf('function damagePlayer(',html.indexOf('const bomberRoundGeo=')));
     const ctx=vm.createContext({GameRuntime,THREE,P,scene,tracers,groundY:()=>0,RTILE:10000,RGRID_W:4,RGRID_H:4,
       D:()=>({id:'rookie',aim:1,dmg:.5}),noseDir:()=>new THREE.Vector3(0,0,1),spawnSmoke(){}});
-    vm.runInContext(code,ctx);
+    vm.runInContext(html.slice(html.indexOf('function flightAltitudeLimit('),html.indexOf('function spawnEnemyAir('))+code,ctx);
     const spin=rotors[0].rotation[axis];
     ctx.updateBomber(e,.05,P.pos.clone().sub(e.pos),300);
     const step=Math.abs(rotors[0].rotation[axis]-spin);
@@ -89,9 +89,10 @@ function fixedBladeFaces(group,p){
     assert(tracers.every(t=>t.mesh.geometry.parameters.depth<1.5&&t.damage===2.25),
       kind+' rounds are smaller without doubling hit damage');
     for(const [z,stationId] of [[300,2],[-300,3]]){
-      P.pos.set(0,1000,z);e.cool=0;
+      P.pos.set(20000,1000,20000+z);e.cool=0;
       const before=tracers.length;
       ctx.updateBomber(e,.05,P.pos.clone().sub(e.pos),P.pos.distanceTo(e.pos));
+      assert(tracers.length>before,kind+' nose/tail volley really fires');
       const muzzle=aircraft.localToWorld(stations[stationId].pos.clone());
       assert(tracers.slice(before).every(t=>t.mesh.position.distanceTo(muzzle)<10),
         kind+' nose/tail fire must start at the turret facing the player');

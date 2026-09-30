@@ -73,7 +73,7 @@ for(let i=0;i<500;i++)impacts.groundGunImpact(i*.1,0);assert.equal(marks.count,3
 console.log('Operations: deadlines, reconnaissance, waves, cloud visibility, coastal completion and swept ground impacts OK');
 // Long sorties must not strand bombers beyond the flight boundary or drive the carrier ashore.
 const ai=vm.createContext({GameRuntime,THREE,Math,RTILE:4000,RGRID_W:7,RGRID_H:8,groundY:()=>100,D:()=>({id:'rookie'}),P:{alive:false}});
-vm.runInContext(func(eu,'updateBomber','damagePlayer'),ai);
+vm.runInContext(eu.slice(eu.indexOf('function flightAltitudeLimit('),eu.indexOf('function spawnEnemyAir('))+func(eu,'updateBomber','damagePlayer'),ai);
 const e={pos:new THREE.Vector3(1800,1100,16000),vel:new THREE.Vector3(-72,0,0),heading:-Math.PI/2,pitch:0,roll:0,group:new THREE.Group(),hp:30,maxhp:30,cool:999};
 for(let i=0;i<24000;i++){ai.updateBomber(e,.05,null,99999);assert(e.pos.x>0&&e.pos.x<28000&&e.pos.z>0&&e.pos.z<32000,'bomber remains reachable inside terrain');}
 const movement=pac.match(/CARRIER_SPD=Math\.max\(0,Math\.min\(5,\(1800-carrierX\)\*\.02\)\);[^\n]*\n\s*carrierX \+= CARRIER_SPD\*dt;/)[0];

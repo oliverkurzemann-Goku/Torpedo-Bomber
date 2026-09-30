@@ -55,10 +55,10 @@
   group.position.copy(start);scene.add(group);
   const velocity=new THREE.Vector3(Math.sin(heading)*Math.min(speed,190)*.18,0,
     Math.cos(heading)*Math.min(speed,190)*.18);
-  let elapsed=0,fall=0,deployed=false,landed=false;
+  let elapsed=0,fall=0,deployed=false,landed=false,yaw=heading,yawRate=0;
   return {
-   group, get position(){return group.position;},get deployed(){return deployed;},
-   update(dt,wind=0){
+   group, get position(){return group.position;},get deployed(){return deployed;},get heading(){return yaw;},
+   update(dt,wind=0,controls=null){
     if(landed)return {landed:true,safe:deployed};
     elapsed+=dt;
     const ground=groundAt(group.position.x,group.position.z);
@@ -68,9 +68,21 @@
     }
     if(deployed)fall+=(5.5-fall)*Math.min(1,dt*1.8);
     else fall=Math.min(55,fall+9.81*dt);
-    velocity.x+=(wind*.65-velocity.x)*Math.min(1,dt*(deployed?.9:.12));
-    velocity.z+=(0-velocity.z)*Math.min(1,dt*(deployed?.9:.12));
+    let glide=0;
+    if(deployed&&controls){
+     const turn=Math.max(-1,Math.min(1,controls.turn||0)),forward=Math.max(-1,Math.min(1,controls.forward||0));
+     yawRate+=(turn*.24-yawRate)*(1-Math.exp(-dt*4));yaw+=yawRate*dt;
+     glide=2.2*(1+forward*.65); // limited drift for the round canopy, not aircraft manoeuvres
+     group.rotation.y=yaw;group.rotation.z+=(-turn*.14-group.rotation.z)*(1-Math.exp(-dt*3));
+     group.rotation.x+=(forward*.06-group.rotation.x)*(1-Math.exp(-dt*3));
+    }
+    velocity.x+=(wind*.65+Math.sin(yaw)*glide-velocity.x)*Math.min(1,dt*(deployed?.9:.12));
+    velocity.z+=(Math.cos(yaw)*glide-velocity.z)*Math.min(1,dt*(deployed?.9:.12));
     group.position.addScaledVector(velocity,dt);group.position.y-=fall*dt;
+    if(controls?.bounds){
+     const b=controls.bounds;group.position.x=Math.max(b.minX,Math.min(b.maxX,group.position.x));
+     group.position.z=Math.max(b.minZ,Math.min(b.maxZ,group.position.z));
+    }
     const floor=groundAt(group.position.x,group.position.z);
     if(group.position.y<=floor+.9){group.position.y=floor+.9;landed=true;}
     return {landed,safe:landed&&deployed};

@@ -5,7 +5,33 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 154 · Thunderbolt Squadron BUILD 154 · Remagen-Kern 21 / Fahrzeuge 22**
+Stand bei Übergabe: **Torpedo Squadron BUILD 155 · Thunderbolt Squadron BUILD 155 · Remagen-Kern 21 / Fahrzeuge 22**
+
+**Build 155 (30.09.2026): erreichbare Abfangflüge und steuerbarer Fallschirm.**
+Die Wolkenoberkante (`ceilingY`, bei Low overcast 800 m) darf nicht länger die
+Flughöhe begrenzen: Bomber starteten darüber und waren dadurch unerreichbar.
+`flightAltitudeLimit()` trennt die beiden Größen (8.000 m Me 262/Me 163,
+5.000 m Propellerflugzeuge). Gegner bleiben mindestens 450 m darunter.
+`combatSectorPoint()` legt den Abfangbereich 6,5 km von der jeweiligen Basis
+in Richtung Kartenmitte; Spawnpunkte und Briefingkarte benutzen denselben Punkt.
+Die KI prüft zwölf Sekunden voraus, beginnt 5 km vor dem Rand abzudrehen und
+hält die Rückkehr bis zum sicheren Einwärtskurs. Der 3,8-km-Clamp ist nur die
+letzte Absicherung, nicht die Flugführung. Keine Änderung der Flugphysik.
+`intercept-airspace.js` lädt alle 56 echten DEM-Kacheln, prüft die tatsächlichen
+Spawn-/Steuer-/Integrationsroutinen und verfolgt Bomber und Jäger zehn Minuten.
+
+`PilotBailout.update()` nimmt optional Steuerbefehle: sanftes Drehen, begrenzte
+Gleitfahrt und Bremsen, niemals Auftrieb. Stick/Pfeiltasten funktionieren in
+beiden Kampagnen während des Absprungs. Eingaben werden beim Ausstieg und bei
+Landung gelöscht; Pause/App-Wechsel setzt den Absprung korrekt fort, nicht das
+verlorene Flugzeug. Der Rhein-Pilot bleibt auf geladenem Terrain. Menüwechsel
+entfernt die Fallschirmgruppe. Zoomschutz und Kurzhinweis gelten auch am Schirm.
+Unit-Tests prüfen Symmetrie, Bremsen, Sinkrate, Bildraten und Kartengrenzen;
+der Browser benutzt die echten Bail-out-/Stick-/Pause-Bedienelemente.
+Die 15 simulierten Dauerfeuer-Sekunden führen weiterhin jede echte Update-Routine
+aus; für den CPU-GPU-Test wird in dieser Phase nur jeder achte Frame gezeichnet.
+GPU-Ressourcen-/Kontextverlust- und Kontrollbildtests rendern weiterhin direkt.
+Dies ist weiterhin ausdrücklich kein iPad-FPS-/Safari-Hardware-Nachweis.
 
 **Build 154 (30.09.2026): Waffenformen und Mündungsfeuer.**
 `ordnance.js` liefert Bomben und Torpedos mit geschlossener runder Nase,

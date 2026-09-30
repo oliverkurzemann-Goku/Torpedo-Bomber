@@ -9,6 +9,6 @@ for(const file of ['torpedo-carrier.html','remagen-mission.html']){
   assert.match(menu[1],/<details class="quickGuide" open>/,`${file}: first-flight instructions visible`);
   assert.match(html,/id="menuLandingSpeed"/);
   assert.match(html,/id="briefLandingSpeed"/);
-  assert.match(html,/state!==ST\.FLIGHT\|\|e\.changedTouches\.length!==1/,`${file}: zoom guard limited to flight`);
+  assert.match(html,/state!==ST\.FLIGHT&&!steeringParachute\(\)/,`${file}: zoom guard limited to flight and active parachute`);
 }
 console.log('Both game menus scroll, retain Change Game, explain flight and landing, and scope zoom guard');

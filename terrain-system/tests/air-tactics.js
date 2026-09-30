@@ -11,7 +11,7 @@ const P={pos:new THREE.Vector3(14000,900,15600),heading:0,pitch:0,spd:155,alive:
 const ctx=vm.createContext({THREE,P,enemyAir:[e],groundY:()=>0,
   noseDir:()=>new THREE.Vector3(Math.sin(P.heading),0,Math.cos(P.heading)),
   aiSpec:()=>({stall:38,max:180,gLim:5.5}),APP_SPD:70,RTILE:4000,RGRID_W:7,RGRID_H:8});
-vm.runInContext(rhine.slice(first,last)+'    return {aim,mode:e.mode};\n  }\n}',ctx);
+vm.runInContext(rhine.slice(rhine.indexOf('function flightAltitudeLimit('),rhine.indexOf('function spawnEnemyAir('))+rhine.slice(first,last)+'    return {aim,mode:e.mode};\n  }\n}',ctx);
 let act=ctx.updateEnemyAir(.05);
 assert.equal(act.mode,'break','fighter under attack from behind must break');
 assert(Math.abs(act.aim.x)>.3,'break must bend the flight path sideways');
