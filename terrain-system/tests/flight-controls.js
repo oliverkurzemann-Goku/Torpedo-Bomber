@@ -19,7 +19,7 @@ const event=(x,y,id=1)=>({clientX:rect.left+rect.width/2+x,clientY:rect.top+rect
 for(const invert of [false,true])for(const [x,y] of [[0,0],[4,2],[35,0],[-35,20],[100,100]]){
  const commands=handlers.map(({c,listeners})=>{c.invertPitch=invert;listeners.pointerdown(event(x,y));const result=[c.inputRoll,c.inputPitch];listeners.pointerup(event(x,y));assert.equal(c.inputRoll,0);assert.equal(c.inputPitch,0);return result;});
  assert.deepEqual(commands[0],commands[1],'equal finger travel must give equal commands in both campaigns');
- if(Math.hypot(x,y)<5)assert(commands[0].every(v=>v===0),'small centre jitter must command level flight');
+ if(Math.hypot(x,y)<5)assert.deepEqual(commands[0],[0,0],'small centre jitter must return canonical neutral values');
  if(x===35)assert(Math.abs(commands[0][0])>.2&&Math.abs(commands[0][0])<.4,'half travel must give a gentle partial command');
  assert(Math.hypot(...commands[0])<=1.000001,'diagonal travel stays within full deflection');
 }

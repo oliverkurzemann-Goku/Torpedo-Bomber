@@ -53,7 +53,7 @@
    const response=travel*(.7+.3*travel*travel);
    x=x/radius*response;y=y/radius*response;
   }else{x=0;y=0;}
-  return {roll:-x,pitch:invertPitch?y:-y,knobX:x*36,knobY:y*36};
+  return {roll:x===0?0:-x,pitch:y===0?0:(invertPitch?y:-y),knobX:x*36,knobY:y*36};
  }
  // Preserve the existing 60-Hz appearance, while avoiding blade symmetry
  // aliasing at low frame rates. Never change the aircraft physics here.
