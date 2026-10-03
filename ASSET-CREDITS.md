@@ -1,5 +1,14 @@
 # Remagen vehicle credits
 
+## Campaign menu artwork (Build 159)
+
+`assets/pacific-campaign.webp` and `assets/europe-campaign.webp` are original
+AI-generated campaign illustrations made with built-in ImageGen. They are not
+historical photographs or documented reconstructions. Full prompts and asset
+paths are recorded in [Campaign artwork](assets/CAMPAIGN-ART.md).
+
+## Vehicle models
+
 Build 14 uses existing repository models as static scenery. Build 19 also reuses the
 selected Tiger as the moving tracked-target visual. Build 21 adds licensed period traffic.
 Vehicle positions are illustrative, not a reconstruction of documented unit positions in

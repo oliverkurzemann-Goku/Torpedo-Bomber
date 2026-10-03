@@ -9,7 +9,7 @@ if(!executable){
  if(process.env.CI)throw Error('Browser smoke test requires Chrome (set GAME_TEST_CHROME).');
  console.log('Browser smoke: skipped locally (no installed Chrome); required in CI.');process.exit(0);
 }
-const mime={'.html':'text/html','.js':'application/javascript','.json':'application/json','.svg':'image/svg+xml','.png':'image/png','.glb':'model/gltf-binary','.bin':'application/octet-stream'};
+const mime={'.html':'text/html','.css':'text/css','.js':'application/javascript','.json':'application/json','.svg':'image/svg+xml','.png':'image/png','.webp':'image/webp','.glb':'model/gltf-binary','.bin':'application/octet-stream'};
 const server=http.createServer((req,res)=>{
  const file=path.resolve(root,'.'+decodeURIComponent(new URL(req.url,'http://localhost').pathname));
  if(!file.startsWith(root+path.sep)){res.writeHead(403).end();return;}
@@ -46,6 +46,43 @@ const cdn={
    page.on('console',m=>{if(m.type()==='error'&&!m.text().includes('Failed to load resource'))console.error('Browser console '+campaign+': '+m.text());});
    await page.goto('http://127.0.0.1:'+server.address().port+'/'+campaign,{waitUntil:'domcontentloaded'});
    await page.waitForFunction(()=>typeof state!=='undefined'&&state===ST.MENU&&document.querySelector('#menu:not(.hidden)'));
+   if(eu||scenario.kind==='defend'&&scenario.ordinal===0){
+    // Real CSS geometry, including a reduced landscape content area.
+    // Chrome tablet viewports are not physical iPad/Safari hardware.
+    const out=path.join(root,'test-visuals');fs.mkdirSync(out,{recursive:true});
+    for(const size of [{width:1024,height:600},{width:1180,height:680},{width:1366,height:768}]){
+     await page.setViewportSize(size);
+     const layout=await page.evaluate(()=>{
+      const menu=document.getElementById('menu');menu.scrollTop=0;
+      const buttons=[...document.querySelectorAll('#missionSel .chip,#startBtn,#selBtn,.difficulty .chip,#flightHints')];
+      return {count:document.querySelectorAll('#missionSel .chip').length,expected:MISSIONS.length,
+        overflow:menu.scrollHeight-menu.clientHeight,rects:buttons.map(b=>{const r=b.getBoundingClientRect();return {id:b.id||b.textContent,x:r.x,y:r.y,w:r.width,h:r.height}})};
+     });
+     assert.equal(layout.count,layout.expected,'every mission appears on the board');
+     assert(layout.overflow<=1,campaign+' '+JSON.stringify(size)+' default menu overflow '+layout.overflow);
+     for(const r of layout.rects)assert(r.x>=0&&r.y>=0&&r.x+r.w<=size.width+1&&r.y+r.h<=size.height+1,JSON.stringify(r)+' fits landscape');
+     const change=layout.rects.find(r=>r.id==='selBtn');assert(change.w>=184&&change.h>=50,'Change Game has a large touch target');
+     assert(layout.rects.filter(r=>r.id!=='flightHints').every(r=>r.h>=44),'mission and difficulty buttons have touch-sized targets');
+     if(size.height===600)await page.screenshot({path:path.join(out,(eu?'europe':'pacific')+'-menu-landscape.png')});
+    }
+    await page.locator('#missionSel .chip').last().focus();await page.keyboard.press('Enter');
+    assert.equal(await page.locator('#missionSel .chip').last().getAttribute('aria-pressed'),'true','keyboard selection announces state');
+    await page.locator('.quickGuide summary').click();assert(await page.locator('#menuLandingSpeed').isVisible());
+    await page.locator('.quickGuide summary').click();
+    await page.setViewportSize({width:1024,height:768});
+    console.log('Browser '+campaign+': every mission, difficulty, launch and large Change Game fit 1024×600, 1180×680 and 1366×768');
+    if(!eu){
+     const board=await context.newPage();await board.setViewportSize({width:1024,height:600});
+     await board.goto('http://127.0.0.1:'+server.address().port+'/index.html');
+     await board.evaluate(()=>{document.querySelectorAll('.progress').forEach(p=>p.textContent='Campaign complete');});
+     const boardState=await board.evaluate(()=>({overflow:document.documentElement.scrollHeight-innerHeight,
+       images:[...document.querySelectorAll('.board img')].map(i=>i.complete&&i.naturalWidth>1000),
+       bottom:document.querySelector('.board').getBoundingClientRect().bottom}));
+     assert(boardState.images.every(Boolean),'both generated campaign assets decode');
+     assert(boardState.overflow<=1&&boardState.bottom<=600,'campaign board fits reduced iPad landscape, even with saved progress');
+     await board.screenshot({path:path.join(out,'campaign-board-landscape.png')});await board.close();
+    }
+   }
    // Keep the real scene and WebGL renderer, but lower GPU fill cost on the
    // CPU-only CI runner. CSS still uses the full iPad viewport; no FPS claim.
    async function reduceSceneryCost(){await page.evaluate(()=>{
@@ -208,6 +245,24 @@ const cdn={
    assert(memory.after<=memory.before,'repeated debris does not retain GPU geometry');
    assert.deepEqual(errors,[],campaign+' has no uncaught browser errors');
    console.log('Browser '+campaign+': iPad layout, keyboard release, auto-pause, frozen GPU, real context restoration; geometry '+memory.before+' → '+memory.after);
+   if(!eu&&scenario.kind==='sbd'){
+    const saved=await page.evaluate(()=>JSON.stringify(loadLog()));
+    await page.screenshot({path:path.join(root,'test-visuals','pause-options.png')});
+    if(scenario.ordinal===0){
+     await page.locator('#menuBtn').click();
+     assert(await page.evaluate(()=>state===ST.MENU&&!firing&&inputRoll===0&&inputPitch===0),'Abort stops flight and releases held controls');
+     await page.locator('#menu:not(.hidden)').waitFor();
+     assert.equal(await page.evaluate(()=>JSON.stringify(loadLog())),saved,'abort retains past flight record without completing the flight');
+     // Muting an aborted sortie must not silence a new flight.
+     await page.locator('#startBtn').click();await page.locator('#launchBtn').click();
+     await page.waitForFunction(()=>(state===ST.LAUNCH||state===ST.FLIGHT)&&eng.master.gain.value>.5);
+     await page.locator('#pauseBtn').click();await page.locator('#menuBtn').click();
+    }else{
+     await page.locator('#pauseMainMenu').click();await page.waitForURL('**/index.html?v=159');
+     await page.locator('main.board').waitFor();
+    }
+    console.log('Browser pause: '+(scenario.ordinal===0?'abort, retained record and audible relaunch':'Main Menu returns to campaign board'));
+   }
    if(eu||scenario.kind==='defend'&&scenario.ordinal===1){
     await page.locator(eu?'#pmResume':'#resumeBtn').click();
     await page.evaluate(()=>{P.pos.y=(typeof groundY==='function'?groundY(P.pos.x,P.pos.z):shoreHeight(P.pos.x,P.pos.z))+160;P.onGround=false;P.spd=90;});
@@ -263,7 +318,7 @@ const cdn={
     // A real JS frame failure is visible and remains observable, not hidden.
     await page.evaluate(()=>{animateFrame=()=>{throw Error('TEST FRAME FAULT');};});
     await page.locator('#simulationRecovery').waitFor({state:'visible'});
-    assert.match(await page.locator('#simulationRecovery').innerText(),/BUILD 158.*TEST FRAME FAULT/);
+    assert.match(await page.locator('#simulationRecovery').innerText(),/BUILD 159.*TEST FRAME FAULT/);
     assert.equal(await page.locator('#simulationRecovery button').innerText(),'Reload game');
     assert.deepEqual(errors,['TEST FRAME FAULT'],'unexpected runtime errors cannot be swallowed');
    }

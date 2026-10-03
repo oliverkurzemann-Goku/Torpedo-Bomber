@@ -5,7 +5,32 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 158 · Thunderbolt Squadron BUILD 157 · Remagen-Kern 21 / Fahrzeuge 22**
+Stand bei Übergabe: **Torpedo Squadron BUILD 159 · Thunderbolt Squadron BUILD 159 · Remagen-Kern 21 / Fahrzeuge 22**
+
+**Build 159 (03.10.2026): Querformat-Menüs, realistische Kampagnenbilder und Pause-Ausgänge.**
+Startseite auf zwei kompakte Kampagnenkarten reduziert; Workshop und Steuerungs-
+hinweise bleiben in einem aufklappbaren Bereich. Zwei fotorealistische, ausdrücklich
+KI-generierte Motive (Avenger/Träger und Thunderbolt/Rheintal) ersetzen die alten
+SVG-Bilder. WebP-Dateien rund 135–141 KiB, vollständige Prompts in
+`assets/CAMPAIGN-ART.md`. Keine Flugzeugmodelle, bestätigte Steuerung oder AI geändert.
+
+Beide Missionsmenüs nutzen `menu-layout.css`: Kampagnen-/Pilotenbereich links,
+alle Missionsknöpfe rechts im Sechs-Spalten-Raster für iPad-Querformat. Große
+Change-Game-Navigation, sichtbare Schwierigkeit, Invertierung, Hinweise und Start.
+Anleitung, Zusatzoptionen und Credits aufklappbar; kleinere Geräte weiterhin
+scrollbar. Missions- und Schwierigkeitsknöpfe sind echte Buttons mit Auswahlstatus.
+Pacific zeigt nun ebenfalls den Flugzeugtyp auf der Missionskarte.
+
+Pause: Resume Flight, Abort Mission (zur Missionsauswahl) und Main Menu / Change
+Game (zur Startseite). Abbruch löst Eingaben, entfernt Funk/Tipps/Kampfeffekte und
+entsorgt laufende Fallschirm-/Rettungsobjekte. Ton wird leise; Missionsstart stellt
+ihn wieder her. Vorherige Flugstatistik bleibt erhalten, Abbruch zählt nicht als Sieg.
+
+Browser-Regression misst beide vollständigen Menüs bei 1024×600, 1180×680 und
+1366×768, inklusive aller Missionen, Schwierigkeit, Start und großer Navigation.
+Startseite wird auch mit sichtbarem Fortschritt geprüft. Screenshots sowie echte
+Pause-/Abbruch-/Neustart-/Hauptmenü-Aktionen im CI. Kein physischer iPad/Safari-
+Hardware- oder FPS-Nachweis; vorherige Gear-/Steuerungsprüfungen bleiben aktiv.
 
 **Build 158 (03.10.2026): Zero-Fahrwerk am echten Flügel befestigt und gekürzt.**
 Nutzer bestätigt die Build-157-Steuerung auf dem iPad, meldet aber falsches/langes

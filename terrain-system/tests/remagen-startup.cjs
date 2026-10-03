@@ -4,7 +4,7 @@ const fs=require('fs'),path=require('path'),vm=require('vm'),assert=require('ass
 const THREE=require('three'),{createCanvas}=require('@napi-rs/canvas');
 const root=path.resolve(__dirname,'../..'),html=fs.readFileSync(path.join(root,'remagen-mission.html'),'utf8');
 const elements=new Map(),listeners={},requests=[],errors=[];
-function node(){const classes=new Set(['hidden']);return {style:{},classList:{add:c=>classes.add(c),remove:c=>classes.delete(c),contains:c=>classes.has(c),toggle(c,on){if(on)classes.add(c);else classes.delete(c);}},addEventListener(){},appendChild(){},querySelectorAll(){return []},getBoundingClientRect(){return {left:0,top:0,width:100,height:100}},value:'clear',innerHTML:'',textContent:''};}
+function node(){const classes=new Set(['hidden']),attributes={};return {style:{},setAttribute(k,v){attributes[k]=v},getAttribute(k){return attributes[k]},classList:{add:c=>classes.add(c),remove:c=>classes.delete(c),contains:c=>classes.has(c),toggle(c,on){if(on)classes.add(c);else classes.delete(c);}},addEventListener(){},appendChild(){},querySelectorAll(){return []},getBoundingClientRect(){return {left:0,top:0,width:100,height:100}},value:'clear',innerHTML:'',textContent:''};}
 const renderer=class{constructor(){this.domElement=node();}setPixelRatio(){}setSize(){}getContext(){return {isContextLost:()=>false};}render(){}};
 const c=vm.createContext({THREE:{...THREE,WebGLRenderer:renderer},console:{...console,error:(...args)=>errors.push(args)},Math,atob,performance:{now:()=>0},navigator:{},location:{search:'?campaign=1'},URLSearchParams,devicePixelRatio:1,
  localStorage:{getItem(){return null},setItem(){}},setTimeout,clearTimeout,setInterval(){},clearInterval(){},requestAnimationFrame(){},innerWidth:1280,innerHeight:800,

@@ -264,6 +264,7 @@
   .opsLegend{font:11px/1.5 monospace;color:#d7c797;text-align:left;margin-top:5px;}
   #opsStatus{position:fixed;top:calc(env(safe-area-inset-top) + 76px);left:50%;transform:translateX(-50%);color:#edcc80;background:rgba(14,20,18,.78);padding:5px 9px;font:10px monospace;pointer-events:none;z-index:9;max-width:58vw;text-align:center;}
 </style>
+<link rel="stylesheet" href="menu-layout.css?v=159">
 </head>
 <body>
 <!-- ===== TEMP TEST-ONLY VERSION BANNER — asked for by Oliver: "kannst du irgendwo einbauen,
@@ -285,7 +286,7 @@
   <div style="width:100%;height:4px;background:repeating-linear-gradient(45deg,#ffd400,#ffd400 8px,#111 8px,#111 16px);"></div>
   <span id="testVersionBannerText" style="background:#111;color:#ffd400;font-family:monospace;font-weight:800;font-size:11px;letter-spacing:.5px;padding:3px 10px;border:1px solid #ffd400;border-top:none;border-radius:0 0 6px 6px;"></span>
 </div>
-<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 157';</script>
+<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 159';</script>
 <!-- ===== END TEMP TEST-ONLY VERSION BANNER ===== -->
 <div id="app"></div>
 
@@ -314,7 +315,7 @@
   <div id="flash"></div>
   <div id="gunsight"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 157 · REAL RHINE</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 159 · REAL RHINE</div>
 
   <div id="apr">
     <div id="aprCall"></div>
@@ -361,40 +362,45 @@
   </div>
 </div>
 
-<div class="overlay hidden" id="menu">
-  <div class="menuTop"><a id="selBtn" href="index.html">&#9664; Change Game</a></div>
+<div class="overlay hidden" id="menu" data-campaign="europe">
+  <div class="menuTop"><a id="selBtn" href="index.html?v=159">&#9664; Change Game</a><span class="menuMeta">RHINE OPERATIONS<br>BUILD 159</span></div>
   <div class="card menuCard">
+    <aside class="menuOverview" aria-label="Campaign and pilot options">
     <div class="campaignArt" aria-hidden="true"></div>
-    <div class="insignia"></div>
     <h1 class="stencil">Thunderbolt Squadron</h1>
     <div class="sub">The Rhine Campaign &middot; Real Terrain &middot; 1945</div>
-    <div class="secLbl">Select Sortie</div>
-    <div id="missionSel"></div>
-    <div class="secLbl">Difficulty</div>
-    <div id="diffSel" style="display:flex;gap:7px;justify-content:center;"></div>
-    <div class="optRow">
-      <label class="toggle" id="invToggle"><span class="box" id="invBox">&#10003;</span> Invert pitch</label>
-      <label class="toggle" id="dbgToggle"><span class="box" id="dbgBox"></span> Debug overlay</label>
-      <label class="toggle"><input type="checkbox" id="flightHints" checked> Flight hints</label>
-    </div>
+    <p class="menuIntro">Start with Circuits to practise take-off and landing before combat.</p>
     <div id="bestLine">BEST SCORE <b id="bestVal">0</b></div>
-    <div class="opsLegend" style="text-align:center"><label for="practiceWx">FREE FLIGHT WEATHER </label><select id="practiceWx" style="background:#1c271e;color:#ddce9a;padding:6px;border:1px solid #75806a"><option value="clear">Clear</option><option value="broken">Broken cloud</option><option value="lowcloud">Low overcast</option><option value="fog">Fog</option><option value="rain">Rain</option><option value="squall">Heavy showers</option><option value="storm">Thunderstorm</option></select></div>
-    <details class="quickGuide" open><summary>First flight · controls and landing</summary>
+    <button class="btn ghost" id="logBtn">Pilot's Logbook</button>
+    <details class="quickGuide"><summary>Controls &amp; landing guide</summary>
       <div>Left stick: pitch / bank. Right bar: throttle. GEAR and FLAPS down for landing.
         The arrow points toward the next target; the compass shows heading and bearing.
         AERO enables rolls and loops once airborne and fast enough.
         Press B or BAIL OUT to parachute from a damaged aircraft while high enough.
         <b id="menuLandingSpeed"></b> Keep the wings level and use the runway, not the surrounding fields.</div>
     </details>
-    <button class="btn" id="startBtn">Begin Sortie</button>
-    <button class="btn ghost" id="logBtn">&#128214; Pilot's Logbook</button>
+    <details class="extraSettings"><summary>More options &amp; credits</summary><div class="settingsContent">
+      <label class="toggle" id="dbgToggle"><span class="box" id="dbgBox"></span> Debug overlay</label>
+      <label class="weatherPick" for="practiceWx">Free flight weather<select id="practiceWx"><option value="clear">Clear</option><option value="broken">Broken cloud</option><option value="lowcloud">Low overcast</option><option value="fog">Fog</option><option value="rain">Rain</option><option value="squall">Heavy showers</option><option value="storm">Thunderstorm</option></select></label>
     <div class="credit">
       The real Rhine gorge around Remagen — Copernicus elevation data and Overture Maps roads,
       rivers, forests and buildings, not an invented valley.<br>
-      Fifteen sorties with the P-47D, Bf 109, Fw 190, Me 262 and Me 163, including the Ludendorff Bridge.
+      Fifteen sorties and a bonus mission with the P-47D, Bf 109, Fw 190, Me 262, Me 163 and Ju 87.
       <br>Vehicles: KojfDiscord / adrielcz, CC BY 4.0 ·
       <a href="ASSET-CREDITS.md" target="_blank" rel="noopener" style="color:inherit">Model credits</a>
     </div>
+    </div></details>
+    </aside>
+    <section class="missionPanel" aria-label="Mission selection">
+      <div class="secLbl">Choose your sortie · 15 missions + bonus &amp; training</div>
+      <div id="missionSel" role="group" aria-label="European missions"></div>
+      <div class="menuConfig">
+        <div class="difficulty"><div class="secLbl">Difficulty</div><div id="diffSel" role="group" aria-label="Difficulty"></div></div>
+        <label class="toggle" id="invToggle"><span class="box" id="invBox">&#10003;</span> Invert pitch</label>
+        <label class="toggle"><input type="checkbox" id="flightHints" checked> Flight hints</label>
+      </div>
+      <div class="menuActions"><button class="btn" id="startBtn">Begin Sortie</button></div>
+    </section>
   </div>
 </div>
 
@@ -425,12 +431,16 @@
 
 <!-- ---------------- PAUSE ---------------- -->
 <div class="overlay hidden" id="pauseMenu">
-  <div class="card menuCard">
+  <div class="card menuCard pauseCard">
     <h1 class="stencil">Paused</h1>
     <div class="sub" id="pauseReason">Sortie held</div>
     <div class="brief" id="pauseOrders"></div>
-    <button class="btn" id="pmResume">Resume</button>
-    <button class="btn ghost" id="pmMenu" style="margin-top:10px;">Back to Menu</button>
+    <div class="pauseActions">
+      <button class="btn" id="pmResume">Resume Flight</button>
+      <button class="btn abortBtn" id="pmMenu">Abort Mission</button>
+      <button class="btn mainMenuBtn" id="pauseMainMenu">Main Menu · Change Game</button>
+    </div>
+    <p class="pauseNote">Abort returns to mission selection. Main Menu returns to the campaign board.<br>The current flight ends; your previous flight record is kept.</p>
   </div>
 </div>
 
@@ -775,7 +785,7 @@ async function loadRealWorld(){
 
   if(OSMManager.BUILD!==21||HistoricalObjectManager.BUILD!==21||LivingWorld.BUILD!==22||WorldVehicles.BUILD!==22) throw new Error('Terrain version mismatch. Reload Remagen.');
   document.getElementById('testVersionBannerText').textContent=
-    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 157 · MODULE 22';
+    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 159 · MODULE 22';
   heightProvider=new DEMHeightProvider(RTILE,'terrain-system/real/data/dem/');
   terrain=new TerrainManager(scene,RTILE,heightProvider);
   osmMgr=new OSMManager(scene,RTILE,terrain,'terrain-system/real/data/osm/');
@@ -4209,6 +4219,7 @@ function relaunch(){
   state=ST.FLIGHT;
 }
 function startMission(i){
+  if(eng) eng.master.gain.setTargetAtTime(0.85,actx.currentTime,0.05);
   flightCoach=new GameRuntime.HintCoach();
   releaseHeldControls();
   if(bailRescue){bailRescue.dispose();bailRescue=null;}
@@ -4942,13 +4953,14 @@ function buildMenu(){
   const sel=document.getElementById('missionSel');
   if(sel && !sel.childElementCount){
     MISSIONS.forEach((m,i)=>{
-      const c=document.createElement('div'); c.className='chip'+(i===selectedMission?' sel':'');
+      const c=document.createElement('button'); c.type='button';c.className='chip'+(i===selectedMission?' sel':'');
+      c.setAttribute('aria-pressed',String(i===selectedMission));
       const tag=m.free?'FF':(m.circuits?'C':m.bonus?'B':String(i-1));
       const acLabel=ACSHORT[m.ac]||m.ac||'';
       c.innerHTML='<div class="cn">'+tag+'</div><div class="cs">'+m.sub+'</div>'
         +'<div class="ca" style="background:'+acHex(m.ac)+'">'+acLabel+'</div>';
       c.onclick=()=>{ selectedMission=i;
-        sel.querySelectorAll('.chip').forEach((e,j)=>e.classList.toggle('sel',j===i));
+        sel.querySelectorAll('.chip').forEach((e,j)=>{e.classList.toggle('sel',j===i);e.setAttribute('aria-pressed',String(j===i));});
         document.getElementById('startBtn').textContent='Begin '+m.title;
         document.getElementById('menuLandingSpeed').textContent=landingSpeedNote(m); };
       sel.appendChild(c);
@@ -4957,10 +4969,11 @@ function buildMenu(){
   const ds=document.getElementById('diffSel');
   if(ds && !ds.childElementCount){
     DIFFS.forEach((d,i)=>{
-      const c=document.createElement('div'); c.className='chip'+(i===diffIdx?' sel':'');
+      const c=document.createElement('button'); c.type='button';c.className='chip'+(i===diffIdx?' sel':'');
+      c.setAttribute('aria-pressed',String(i===diffIdx));
       c.innerHTML='<div class="cn">'+d.name+'</div>';
       c.onclick=()=>{ diffIdx=i; try{localStorage.setItem('re_diff',String(i));}catch(e){}
-        ds.querySelectorAll('.chip').forEach((e,j)=>e.classList.toggle('sel',j===i)); };
+        ds.querySelectorAll('.chip').forEach((e,j)=>{e.classList.toggle('sel',j===i);e.setAttribute('aria-pressed',String(j===i));}); };
       ds.appendChild(c);
     });
   }
@@ -5145,12 +5158,19 @@ function togglePause(reason='Sortie held'){
   }
 }
 function exitToMenuFromPause(){
+  releaseHeldControls();
   if(bailRescue){bailRescue.dispose();bailRescue=null;}
   if(bailout){bailout.dispose();bailout=null;}
   document.getElementById('stickHint').textContent='PITCH / ROLL';
   show('pauseMenu',false);
-  if(eng) eng.master.gain.setTargetAtTime(0.85,actx.currentTime,0.05);
+  if(eng) eng.master.gain.setTargetAtTime(0.0001,actx.currentTime,0.05);
   state=ST.MENU;
+  document.getElementById('bailBtn').style.display='none';
+  document.getElementById('opsStatus').textContent='';
+  document.getElementById('flash').classList.remove('show');
+  document.getElementById('radio').classList.remove('show');
+  radioQ=[];radioT=0;flashT=0;
+  combatFX?.clear();
   show('result',false); show('brief',false);
   show('menu',true);
   buildMenu();
@@ -5239,6 +5259,7 @@ function init(){
   buildMenu();
   // menu wiring
   document.getElementById('startBtn').onclick=()=>showBrief(selectedMission);
+  document.getElementById('pauseMainMenu').onclick=()=>{exitToMenuFromPause();window.location.href='index.html?v=159';};
   document.getElementById('logBtn').onclick=()=>{ show('menu',false); showLogbook(); };
   document.getElementById('brBack').onclick=()=>{ show('brief',false); show('menu',true); state=ST.MENU; };
   document.getElementById('brGo').onclick=async()=>{

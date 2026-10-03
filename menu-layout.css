@@ -1,0 +1,79 @@
+/* Shared menu chrome only. Flight HUD, controls and simulation are untouched. */
+#menu:not(.hidden){background:radial-gradient(ellipse at top,#293329,#101510 75%);
+  padding:max(18px,env(safe-area-inset-top)) max(20px,env(safe-area-inset-right))
+    max(20px,env(safe-area-inset-bottom)) max(20px,env(safe-area-inset-left));
+  font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#e3dbc5;}
+#menu .menuTop{position:relative;max-width:1160px;display:flex;align-items:center;justify-content:space-between;
+  margin:0 auto 14px;padding:0;background:none;gap:16px;}
+#menu #selBtn{min-width:184px;min-height:50px;padding:12px 18px;border:1px solid #7b886f;border-radius:8px;
+  font:700 16px system-ui;color:#f0d391;background:#293328;box-shadow:0 3px 12px #0003;}
+#menu .menuMeta{font:11px/1.5 monospace;letter-spacing:1px;color:#a9ae9e;text-align:right;}
+#menu .menuCard{width:100%;max-width:1160px;padding:20px;display:grid;grid-template-columns:260px minmax(0,1fr);
+  gap:24px;text-align:left;border:1px solid #455044;border-radius:12px;background:#1b231c;box-sizing:border-box;}
+#menu .menuOverview,#menu .missionPanel{min-width:0;}
+#menu .campaignArt{height:auto;aspect-ratio:16/9;margin:0 0 14px;border-radius:7px;background-size:cover;background-position:center;}
+#menu[data-campaign="pacific"] .campaignArt{background-image:url('assets/pacific-campaign.webp');}
+#menu[data-campaign="europe"] .campaignArt{background-image:url('assets/europe-campaign.webp');}
+#menu h1.stencil{font:800 28px/1.05 system-ui;letter-spacing:-.7px;color:#e3dbc5;margin:0;text-shadow:none;}
+#menu .sub{font:600 11px/1.5 system-ui;color:#e8bd64;letter-spacing:.3px;margin:9px 0 12px;}
+#menu .menuIntro{font:13px/1.5 system-ui;color:#a9ae9e;margin:0 0 12px;}
+#menu .secLbl{font:700 13px/1.4 system-ui;text-transform:none;letter-spacing:.3px;margin:0 0 10px;color:#d7decd;}
+#menu #missionSel{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:7px;}
+#menu #missionSel .chip{min-width:0;min-height:78px;margin:0;padding:8px 6px;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:3px;font-family:inherit;color:inherit;text-align:center;
+  border:1px solid #52604d;background:#253025;border-radius:7px;cursor:pointer;touch-action:manipulation;}
+#menu #missionSel .chip .cn{font:800 13px/1 system-ui;letter-spacing:0;color:#e8bd64;}
+#menu #missionSel .chip .cs{font:500 11px/1.25 system-ui;letter-spacing:0;opacity:1;text-transform:none;margin:0;}
+#menu #missionSel .chip .ca{font:700 9px/1.2 monospace;letter-spacing:0;margin:0;padding:2px 5px;}
+#menu #missionSel .chip.sel{border-color:#e8bd64;background:#42402a;box-shadow:inset 0 0 0 1px #e8bd64;}
+#menu .chip:focus-visible,#menu button:focus-visible,#menu a:focus-visible,#menu summary:focus-visible,
+  .pauseCard button:focus-visible{outline:3px solid #f3cc76;outline-offset:2px;}
+#menu .menuConfig{display:flex;flex-wrap:wrap;align-items:end;gap:10px 16px;margin-top:14px;}
+#menu .difficulty{flex:1;min-width:210px;}
+#menu .difficulty .secLbl{font-size:10px;text-transform:uppercase;letter-spacing:1px;margin-bottom:5px;}
+#menu #diffSel,#menu #diffPick{display:flex;gap:6px;margin:0;}
+#menu .difficulty .chip{flex:1;min-width:0;min-height:44px;padding:8px 5px;border-radius:6px;cursor:pointer;
+  color:#e3dbc5;border:1px solid #52604d;background:#253025;font-family:inherit;}
+#menu .difficulty .chip .cn{font:700 12px system-ui;letter-spacing:0;color:inherit;}
+#menu .difficulty .chip.sel{border-color:#e8bd64;background:#42402a;}
+#menu .toggle{min-height:44px;margin:0;gap:7px;font:12px system-ui;letter-spacing:0;touch-action:manipulation;}
+#menu .toggle input{width:18px;height:18px;accent-color:#e8bd64;}
+#menu .menuActions{margin-top:14px;}
+#menu #startBtn{display:block;width:100%;min-height:52px;margin:0;padding:12px 16px;font:750 16px system-ui;
+  letter-spacing:.3px;text-transform:none;background:#e8bd64;color:#101510;box-shadow:none;border-radius:7px;}
+#menu #logBtn{display:block;width:100%;min-height:44px;margin:10px 0;padding:10px;border:1px solid #52604d;
+  background:transparent;color:#d7decd;border-radius:6px;font:600 12px system-ui;letter-spacing:0;box-shadow:none;cursor:pointer;}
+#menu #bestLine{margin:0;font:10px/1.5 monospace;text-align:left;color:#a9ae9e;}
+#menu .quickGuide,#menu .extraSettings{margin:8px 0 0;border:1px solid #455044;border-radius:6px;
+  text-align:left;font:12px/1.5 system-ui;background:#141d15;}
+#menu details summary{min-height:44px;padding:12px 10px;cursor:pointer;color:#e8bd64;touch-action:manipulation;}
+#menu .quickGuide div,#menu .settingsContent{padding:0 10px 12px;}
+#menu .settingsContent{display:flex;flex-direction:column;gap:7px;}
+#menu .weatherPick{display:flex;flex-direction:column;gap:5px;font-size:11px;color:#a9ae9e;}
+#menu select{min-height:44px;width:100%;padding:8px;color:#e3dbc5;background:#253025;border:1px solid #52604d;border-radius:5px;}
+#menu .credit{margin:4px 0 0;font:9px/1.5 system-ui;letter-spacing:0;color:#a9ae9e;}
+.pauseCard{max-width:520px!important;}
+.pauseActions{display:flex;flex-direction:column;gap:12px;margin-top:20px;}
+.pauseActions .btn{width:100%;min-height:52px;margin:0!important;font-size:16px;letter-spacing:1px;box-sizing:border-box;}
+.pauseActions .abortBtn{background:#45382d;color:#f0cf9e;border:1px solid #8e7153;box-shadow:none;}
+.pauseActions .mainMenuBtn{background:transparent;color:#cabf9c;border:1px solid #79816e;box-shadow:none;}
+.pauseNote{font:11px/1.5 system-ui;color:#a9ae9e;margin:14px 0 0;}
+@media (orientation:landscape) and (min-width:900px) and (max-height:820px){
+  #menu:not(.hidden){padding-top:max(16px,env(safe-area-inset-top));padding-bottom:max(12px,env(safe-area-inset-bottom));}
+  #menu .menuTop{margin-bottom:12px;}
+  #menu .menuCard{padding:16px;grid-template-columns:240px minmax(0,1fr);gap:20px;}
+  #menu .campaignArt{height:auto;margin-bottom:12px;}
+  #menu h1.stencil{font-size:26px;}
+  #menu #missionSel .chip{min-height:86px;}
+  #menu .sub{font-size:10px;line-height:1.4;margin:6px 0 10px;}
+  #menu .menuIntro{font-size:12px;margin-bottom:10px;}
+  #menu .menuConfig,#menu .menuActions{margin-top:12px;}
+}
+/* Smaller phones and portrait iPads retain a scrollable, readable layout. */
+@media (max-width:899px){
+  #menu .menuCard{grid-template-columns:1fr;max-width:650px;gap:20px;}
+  #menu .menuTop{max-width:650px;}
+  #menu .campaignArt{max-height:180px;background-size:contain;background-repeat:no-repeat;background-color:#101510;}
+  #menu #missionSel{grid-template-columns:repeat(4,minmax(0,1fr));}
+}
+@media (max-width:500px){#menu #missionSel{grid-template-columns:repeat(3,minmax(0,1fr));}#menu .menuMeta{font-size:9px;}}

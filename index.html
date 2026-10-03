@@ -5,196 +5,104 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Squadron Select</title>
 <style>
-  :root{
-    --ink:#0d0f0a; --olive:#2b3022; --olive2:#1c2017;
-    --khaki:#cabf9c; --amber:#e8b84b; --amber-dim:#9a7d34;
-    --oxide:#b1442b; --sea:#35506a; --field:#55603a;
-    --rule:rgba(202,191,156,.22);
-  }
+  :root{--ink:#101510;--khaki:#e3dbc5;--amber:#e8bd64;--muted:#a9ae9e;--rule:#455044;}
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
-  html,body{margin:0;padding:0;min-height:100%;background:var(--ink);color:var(--khaki);
-    font-family:"SFMono-Regular",Menlo,Consolas,"Courier New",monospace;
-    -webkit-text-size-adjust:100%;}
-  body{
-    /* board surface: a dark painted panel, lit from above left */
-    background:
-      radial-gradient(120% 80% at 20% 0%,rgba(70,80,54,.34),transparent 60%),
-      radial-gradient(100% 70% at 90% 100%,rgba(30,36,24,.7),transparent 60%),
-      var(--ink);
-    padding:clamp(20px,4vw,44px) clamp(16px,4vw,44px) calc(40px + env(safe-area-inset-bottom));
-    display:flex;flex-direction:column;align-items:center;}
-
-  /* ---------- header ---------- */
-  header{width:100%;max-width:900px;text-align:center;margin-bottom:clamp(22px,4vw,38px);}
-  .eyebrow{font-size:10px;letter-spacing:5px;color:var(--amber-dim);text-transform:uppercase;
-    display:flex;align-items:center;justify-content:center;gap:12px;}
-  .eyebrow:before,.eyebrow:after{content:"";height:1px;width:min(70px,12vw);background:var(--rule);}
-  h1{font-family:"Arial Black",Impact,sans-serif;text-transform:uppercase;letter-spacing:clamp(3px,1.4vw,9px);
-    font-size:clamp(26px,7vw,50px);color:var(--amber);margin:12px 0 0;line-height:1;
-    text-shadow:0 0 26px rgba(232,184,75,.22);}
-  .standfirst{margin:14px auto 0;max-width:44ch;font-size:13px;line-height:1.75;
-    color:rgba(202,191,156,.72);}
-
-  /* ---------- game choices ---------- */
-  .board{width:100%;max-width:900px;display:grid;gap:clamp(16px,2.6vw,26px);
-    grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));}
-  .chit{
-    position:relative;display:flex;flex-direction:column;overflow:hidden;
-    background:linear-gradient(180deg,rgba(43,48,34,.96),rgba(20,23,15,.98));
-    border:1px solid var(--rule);border-radius:5px;
-    box-shadow:0 16px 44px rgba(0,0,0,.55),inset 0 0 0 3px rgba(0,0,0,.28);
-    text-decoration:none;color:inherit;
-    opacity:0;transform:translateY(14px);
-    animation:rise .5s cubic-bezier(.2,.7,.3,1) forwards;}
-  .chit:nth-child(2){animation-delay:.09s;}
-  @keyframes rise{to{opacity:1;transform:none;}}
-  .chit:active{transform:translateY(1px) scale(.995);}
-  .chit:focus-visible{outline:2px solid var(--amber);outline-offset:3px;}
-
-  .band{height:clamp(132px,22vw,205px);border-bottom:1px solid var(--rule);
-    background-position:center;background-size:cover;}
-  .band.pacific{background-image:url('assets/pacific-campaign.svg');}
-  .band.europe{background-image:url('assets/europe-campaign.svg');}
-
-  .chitBody{padding:18px 20px 20px;display:flex;flex-direction:column;flex:1;}
-  .no{font-size:10px;letter-spacing:4px;color:var(--amber-dim);text-transform:uppercase;}
-  .name{font-family:"Arial Black",Impact,sans-serif;text-transform:uppercase;
-    letter-spacing:2px;font-size:clamp(17px,2.5vw,21px);color:var(--khaki);
-    margin:7px 0 2px;line-height:1.12;}
-  .role{font-size:12px;letter-spacing:3px;color:var(--amber);text-transform:uppercase;}
-  .blurb{margin:13px 0 0;font-size:12.5px;line-height:1.75;color:rgba(202,191,156,.74);}
-
-  dl{margin:16px 0 0;padding:14px 0 0;border-top:1px solid var(--rule);
-    display:grid;grid-template-columns:auto 1fr;gap:7px 14px;font-size:11.5px;}
-  dt{letter-spacing:2px;color:var(--amber-dim);text-transform:uppercase;}
-  dd{margin:0;color:var(--khaki);text-align:right;}
-
-  .go{margin-top:18px;display:block;text-align:center;
-    font-family:"Arial Black",Impact,sans-serif;text-transform:uppercase;letter-spacing:3px;
-    font-size:13px;color:var(--ink);background:linear-gradient(180deg,var(--amber),var(--amber-dim));
-    border-radius:4px;padding:14px 16px;}
-  .chit.alt .go{background:linear-gradient(180deg,#b9c08f,#7d8358);}
-
-  footer{max-width:900px;margin-top:clamp(26px,4vw,40px);text-align:center;
-    font-size:11px;line-height:1.9;color:rgba(202,191,156,.42);}
-  footer b{color:rgba(202,191,156,.7);font-weight:400;}
-  kbd{font:inherit;border:1px solid var(--rule);border-radius:3px;padding:1px 5px;
-    color:rgba(202,191,156,.7);}
-
-  @media (prefers-reduced-motion:reduce){
-    .chit{animation:none;opacity:1;transform:none;}
+  html,body{margin:0;min-height:100%;background:var(--ink);color:var(--khaki);
+    font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;-webkit-text-size-adjust:100%;}
+  body{background:radial-gradient(ellipse at top,#293329,transparent 70%),var(--ink);
+    padding:max(22px,env(safe-area-inset-top)) max(24px,env(safe-area-inset-right))
+      max(18px,env(safe-area-inset-bottom)) max(24px,env(safe-area-inset-left));}
+  header,.board,.support,footer{max-width:1120px;margin-left:auto;margin-right:auto;}
+  header{display:flex;align-items:end;justify-content:space-between;gap:20px;margin-bottom:22px;}
+  .eyebrow,.no{font:700 10px/1.4 monospace;letter-spacing:2px;text-transform:uppercase;color:var(--amber);}
+  h1{margin:5px 0 0;font-size:clamp(28px,4vw,40px);line-height:1.05;letter-spacing:-1px;font-weight:800;}
+  .standfirst{margin:0;max-width:30ch;font-size:14px;line-height:1.5;color:var(--muted);}
+  .board{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px;}
+  .chit{display:flex;flex-direction:column;overflow:hidden;border:1px solid var(--rule);border-radius:14px;
+    background:#1b231c;color:inherit;text-decoration:none;box-shadow:0 12px 40px #0004;
+    transition:border-color .15s,transform .15s;}
+  .chit:hover{border-color:var(--amber);transform:translateY(-2px);}
+  .chit:focus-visible,summary:focus-visible{outline:3px solid var(--amber);outline-offset:4px;}
+  .band{width:100%;aspect-ratio:16/9;object-fit:cover;display:block;border-bottom:1px solid var(--rule);}
+  .chitBody{padding:20px 22px;display:flex;flex-direction:column;flex:1;}
+  .name{margin:5px 0 3px;font-size:clamp(22px,2.6vw,29px);line-height:1.1;font-weight:800;letter-spacing:-.7px;}
+  .role{color:var(--amber);font-size:12px;font-weight:600;letter-spacing:.5px;}
+  .blurb{margin:12px 0 16px;font-size:14px;line-height:1.5;color:var(--muted);}
+  .aircraft{font:11px/1.5 monospace;color:#c6ccbd;margin:0 0 16px;}
+  .go{margin-top:auto;min-height:50px;display:flex;align-items:center;justify-content:space-between;gap:12px;
+    padding:12px 16px;border-radius:7px;font-size:15px;font-weight:750;background:var(--amber);color:var(--ink);}
+  .go:after{content:'→';font-size:22px;}.alt .go{background:#c6cead;}
+  .progress{font:11px/1.4 monospace;color:var(--amber);margin-top:10px;}.progress:empty{display:none;}
+  .support{margin-top:16px;border:1px solid var(--rule);border-radius:8px;background:#1b231c;}
+  .support summary{padding:13px 16px;cursor:pointer;font-size:13px;color:var(--muted);min-height:46px;}
+  .supportContent{padding:0 16px 16px;display:grid;grid-template-columns:1fr 1fr;gap:18px;color:var(--muted);font-size:13px;line-height:1.6;}
+  .supportContent p{margin:0;}.workshop{display:flex;flex-direction:column;gap:8px;}
+  .workshop a{color:var(--khaki);min-height:44px;display:flex;align-items:center;padding:8px 12px;border:1px solid var(--rule);border-radius:5px;}
+  footer{margin-top:14px;display:flex;justify-content:space-between;gap:16px;color:var(--muted);font:10px/1.4 monospace;}
+  @media (orientation:landscape) and (min-width:760px) and (max-height:820px){
+    body{padding-top:max(14px,env(safe-area-inset-top));padding-bottom:max(12px,env(safe-area-inset-bottom));}
+    header{margin-bottom:14px;}h1{font-size:30px;}.standfirst{font-size:12px;}
+    .board{gap:18px;}.band{aspect-ratio:auto;height:clamp(145px,31dvh,245px);object-fit:contain;background:#11170f;}
+    .chitBody{padding:15px 18px;}.name{font-size:24px;}.blurb{font-size:12px;margin:9px 0 10px;}
+    .aircraft{font-size:10px;margin-bottom:12px;}.support{margin-top:12px;}footer{margin-top:10px;}
   }
+  @media (max-width:650px){header{align-items:start;flex-direction:column;gap:10px;}.board{grid-template-columns:1fr;}
+    .standfirst{max-width:none;}.supportContent{grid-template-columns:1fr;}}
+  @media (prefers-reduced-motion:reduce){.chit{transition:none;}}
 </style>
 </head>
 <body>
-
 <header>
-  <div class="eyebrow">Operations Board</div>
-  <h1>Squadron Select</h1>
-  <p class="standfirst">
-    Two campaigns: carrier operations over Okinawa and Thunderbolt Squadron
-    over the mapped Rhine terrain.
-  </p>
+  <div><div class="eyebrow">Operations Board · Choose your theatre</div><h1>Squadron Select</h1></div>
+  <p class="standfirst">Two campaigns. One pilot.<br>Choose a theatre, then your mission.</p>
 </header>
-
 <main class="board">
-
-  <a class="chit" href="torpedo-carrier.html?v=158">
-    <div class="band pacific" aria-hidden="true"></div>
+  <a class="chit" href="torpedo-carrier.html?v=159">
+    <img class="band" src="assets/pacific-campaign.webp" alt="Avenger flying above a WWII aircraft carrier in the Pacific" width="1672" height="941" fetchpriority="high">
     <div class="chitBody">
-      <div class="no">Theatre I</div>
-      <div class="name">Torpedo Squadron</div>
-      <div class="role">Carrier &rarr; Okinawa</div>
-      <p class="blurb">
-        Fly the Avenger and Dauntless from a moving carrier over the mapped Okinawa coast.
-        Strike convoys, defend the fleet and recover aboard across twelve sorties.
-      </p>
-      <dl>
-        <dt>Theatre</dt><dd>Pacific campaign</dd>
-        <dt>Aircraft</dt><dd>TBM Avenger &middot; SBD &middot; A6M</dd>
-        <dt>Sorties</dt><dd>12 combat sorties + training</dd>
-        <dt>Take off from</dt><dd>Carrier deck</dd>
-      </dl>
-      <span class="go">Fly the Pacific Campaign</span>
-      <div class="blurb" id="pacificProgress" aria-live="polite"></div>
+      <div class="no">01 / Pacific Theatre</div>
+      <h2 class="name">Torpedo Squadron</h2>
+      <div class="role">Carrier operations · Okinawa coast</div>
+      <p class="blurb">Strike convoys, defend the fleet and bring your aircraft home to the carrier. Twelve combat sorties plus training.</p>
+      <div class="aircraft">TBM AVENGER · SBD DAUNTLESS · A6M ZERO</div>
+      <span class="go">Choose Pacific Mission</span>
+      <div class="progress" id="pacificProgress" aria-live="polite"></div>
     </div>
   </a>
-
-  <a class="chit alt" href="remagen-mission.html?campaign=1&amp;v=158">
-    <div class="band europe" aria-hidden="true"></div>
+  <a class="chit alt" href="remagen-mission.html?campaign=1&amp;v=159">
+    <img class="band" src="assets/europe-campaign.webp" alt="Thunderbolt flying over the Rhine valley and a river bridge" width="1672" height="941" fetchpriority="high">
     <div class="chitBody">
-      <div class="no">Theatre II</div>
-      <div class="name">Thunderbolt Squadron</div>
-      <div class="role">Real Rhine terrain</div>
-      <p class="blurb">
-        Fly every mission over the mapped Rhine terrain: roads, villages, rail, hills and the
-        Remagen crossing. Strike moving targets, then fly jets and a rocket interceptor.
-      </p>
-      <dl>
-        <dt>Theatre</dt><dd>Rhineland &middot; real terrain</dd>
-        <dt>Aircraft</dt><dd>P-47D &middot; Bf&nbsp;109 &middot; Fw&nbsp;190 &middot; Me&nbsp;262 &middot; Me&nbsp;163 &middot; Ju&nbsp;87</dd>
-        <dt>Sorties</dt><dd>16 varied sorties + training</dd>
-        <dt>Take off from</dt><dd>Grass strip</dd>
-      </dl>
-      <span class="go">Fly the Europe Campaign</span>
-      <div class="blurb" id="europeProgress" aria-live="polite"></div>
+      <div class="no">02 / European Theatre</div>
+      <h2 class="name">Thunderbolt Squadron</h2>
+      <div class="role">Rhine campaign · Real terrain · 1945</div>
+      <p class="blurb">Fly the Rhine gorge, strike ground targets and intercept bomber formations. Fifteen sorties, a bonus mission and training.</p>
+      <div class="aircraft">P-47 · BF 109 · FW 190 · ME 262 · ME 163 · JU 87</div>
+      <span class="go">Choose Europe Mission</span>
+      <div class="progress" id="europeProgress" aria-live="polite"></div>
     </div>
   </a>
-
 </main>
-
-<section>
-  <div class="secHead">
-    <h2>World Previews &amp; Workshop</h2><span class="line"></span><span class="count">Explore without missions</span>
+<details class="support">
+  <summary>First flight, controls &amp; workshop</summary>
+  <div class="supportContent">
+    <p>New pilot? Start with <b>Carrier Qualification</b> or <b>Circuits</b>.<br>
+      <b>Touch:</b> left stick pitch / bank, right bar throttle, red button ordnance.<br>
+      <b>Keyboard:</b> arrow keys fly, W / S throttle, Space drop, F fire, P pause.<br>
+      Both campaigns run in your browser. Best on iPad in landscape.<br>
+      Campaign images are AI-generated artwork, not archival photographs.</p>
+    <nav class="workshop" aria-label="World previews and workshop">
+      <a href="terrain-system/demo-remagen.html">Remagen Terrain Explorer →</a>
+      <a href="okinawa-preview.html">Okinawa Coast Preview →</a>
+      <a href="model-check.html">Aircraft Model Check →</a>
+    </nav>
   </div>
-  <div class="row">
-    <a class="chit alt" href="terrain-system/demo-remagen.html" style="max-width:420px;">
-      <div class="chitBody">
-        <div class="no">Landscape preview</div>
-        <div class="name">Remagen Terrain Explorer</div>
-        <div class="role">Hills, villages and houses</div>
-        <p class="blurb">Free camera over the large Rhine landscape and its mapped buildings. This is a terrain prototype without sorties.</p>
-        <span class="go">Explore the Landscape</span>
-      </div>
-    </a>
-    <a class="chit alt" href="okinawa-preview.html" style="max-width:420px;">
-      <div class="chitBody">
-        <div class="no">Landscape preview</div>
-        <div class="name">Okinawa Coast</div>
-        <div class="role">16 × 16 km study</div>
-        <p class="blurb">Explore the coastal environment on its own, without a flight mission.</p>
-        <span class="go">Explore Okinawa</span>
-      </div>
-    </a>
-    <a class="chit" href="model-check.html" style="max-width:420px;">
-      <div class="chitBody">
-        <div class="no">Tool</div>
-        <div class="name">Model Check</div>
-        <div class="role">Aircraft alignment</div>
-        <p class="blurb">
-          Drop a .glb in and see it from the same camera the game uses. Turn it until the nose
-          sits on the arrow, set the real wingspan, press Save — the game picks it up.
-        </p>
-        <span class="go">Open Model Check</span>
-      </div>
-    </a>
-  </div>
-</section>
-
-<footer>
-  <span>Operations Board · BUILD 158</span><br>
-  The games and previews run in the browser — nothing to install. Best on iPad in landscape.<br>
-  <b>Touch:</b> left stick pitch and roll &middot; right bar throttle &middot; red button drops ordnance.
-  <b>Keyboard:</b> <kbd>&larr;&uarr;&darr;&rarr;</kbd> fly &middot; <kbd>W</kbd>/<kbd>S</kbd> throttle
-  &middot; <kbd>Space</kbd> drop.<br>
-  New to it? Start with <b>Carrier Qualification</b> or <b>Circuits</b> — both teach the landing,
-  which is the part that takes practice.
-</footer>
+</details>
+<footer><span>Operations Board · BUILD 159</span><span>Your flight record is saved on this device.</span></footer>
 <script src="campaign.js"></script>
 <script>
   const pac=SquadronCampaign.highest('pacific'),eu=SquadronCampaign.highest('europeRhine');
   if(pac>=2)document.getElementById('pacificProgress').textContent=pac>=13?'Pacific campaign complete':'Carrier sortie '+Math.min(12,pac-1)+' completed';
-  if(eu>=2)document.getElementById('europeProgress').textContent=eu>=13?'Europe campaign complete':'Europe sortie '+Math.min(12,eu-1)+' completed';
+  if(eu>=2)document.getElementById('europeProgress').textContent=eu>=16?'Europe campaign complete':'Europe sortie '+Math.min(15,eu-1)+' completed';
 </script>
 </body>
 </html>
