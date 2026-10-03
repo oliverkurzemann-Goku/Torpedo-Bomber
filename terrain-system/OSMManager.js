@@ -769,10 +769,13 @@ function osmFadeScenery(mat){
     if(previous)previous(shader);
     shader.vertexShader='varying float sceneryDistance;\n'+shader.vertexShader;
     shader.vertexShader=shader.vertexShader.replace('#include <project_vertex>',
-      '#include <project_vertex>\nsceneryDistance = length(mvPosition.xyz);');
+      '#include <project_vertex>\n#ifdef USE_INSTANCING\n'+
+      'vec2 patchCenter = floor(instanceMatrix[3].xz / 4000.0) * 4000.0 + 2000.0;\n'+
+      'sceneryDistance = length((modelViewMatrix * vec4(patchCenter.x, instanceMatrix[3].y, patchCenter.y, 1.0)).xyz);\n'+
+      '#else\nsceneryDistance = length(mvPosition.xyz);\n#endif');
     shader.fragmentShader='varying float sceneryDistance;\n'+shader.fragmentShader;
     shader.fragmentShader=shader.fragmentShader.replace('#include <clipping_planes_fragment>',
-      '#include <clipping_planes_fragment>\nfloat sceneryAlpha = 1.0 - smoothstep(5500.0, 8000.0, sceneryDistance);\n'+
+      '#include <clipping_planes_fragment>\nfloat sceneryAlpha = 1.0 - smoothstep(5500.0, 6500.0, sceneryDistance);\n'+
       'float sceneryDither = fract(dot(mod(floor(gl_FragCoord.xy), 4.0), vec2(0.0625, 0.25)));\n'+
       'if (sceneryAlpha <= sceneryDither) discard;');
   };

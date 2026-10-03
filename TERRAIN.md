@@ -15,7 +15,8 @@ barycentric weights move surface vertices with each terrain frame; topology chan
 only at segment transitions. Runway clipping changes the source triangles, so an LOD
 rebuild cannot restore crossing roads. Static foundations are built at fine LOD,
 then startup picks settled LOD behind the loading screen before draping surfaces.
-The near-detail radius uses tile bounds; scenery dithers out between 5.5 and 8km.
+Terrain near detail uses tile bounds. Scenery dithers between 5.5 and 6.5km from
+tile centres, then retains the original 7km cull and visible-instance budget.
 No vertex/instance colours. New airfield activity uses bounded merged/instanced
 meshes and reuses the selected aircraft template, never eagerly downloads aircraft.
 

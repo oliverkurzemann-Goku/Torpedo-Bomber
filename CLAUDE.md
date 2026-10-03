@@ -21,7 +21,8 @@ Startup baut statische Objekte bei feinem Terrain, wählt anschließend verdeckt
 Start-LOD und erzeugt erst dann Bodengeometrie. Kein großer globaler Startup-Morph.
 LOD-Abstand zählt zur Kachelfläche statt zum Zentrum: Tiefflug an einer Kachelecke
 behält feine Geometrie auf allen angrenzenden Kacheln. OSM-Bäume/Gebäude verschwinden
-zwischen 5,5 und 8 km per Dither; Kachel-Ausblendung erst außerhalb dieses Bereichs.
+zwischen 5,5 und 6,5 km Kachelzentrum-Abstand per Dither; Ausblendung weiter bei
+7 km wie zuvor. Das hält den bisherigen sichtbaren Kachel-/Instanz-Aufwand.
 Fenster pro Vorderseite zwei bis drei pro Stock, Seiten ein Fenster pro Stock oder
 teilweise fensterlos; Hütten am Flugplatz ebenfalls sparsamer.
 `AirfieldActivity.js` ergänzt beide Flugplätze mit zwölf animierten Bodenleuten,

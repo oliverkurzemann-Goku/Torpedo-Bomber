@@ -904,7 +904,7 @@ async function loadRealWorld(){
 // heightProvider/tile data, never from a mesh's .visible flag), so it cannot affect flight
 // physics, hit detection or the HUD nav arrow (all of which read a target's real recorded x/z,
 // see targetHandle()'s own comment, not whether its mesh happens to be drawn this frame).
-const CONTENT_VIS_RADIUS=8500;
+const CONTENT_VIS_RADIUS=7000;
 function updateContentVisibility(focusX,focusZ){
   // osmMgr.tiles maps key -> {group,treeCount,buildingCount} (OSMManager.js's own loadTile()),
   // NOT a bare THREE.Group like historicalMgr.tiles does — a real bug found while investigating
@@ -922,8 +922,7 @@ function updateContentVisibility(focusX,focusZ){
     // in it, stay always visible — see OSMManager.loadTile()'s own comment on farGroup for why
     // (a river/road hard-cutting-off mid-span at a tile boundary is a much worse-looking bug
     // than a handful of always-cheap infrastructure meshes rendering a bit further than needed).
-    const tile=terrain.tiles.get(key);
-    if(t.farGroup)t.farGroup.visible=tile.distanceToBounds(focusX,focusZ)<CONTENT_VIS_RADIUS;
+    if(t.farGroup)t.farGroup.visible=Math.hypot(cx-focusX,cz-focusZ)<CONTENT_VIS_RADIUS;
   }
   for(const [key,g] of historicalMgr.tiles){
     if(!g) continue;
