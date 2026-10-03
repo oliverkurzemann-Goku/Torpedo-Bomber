@@ -136,8 +136,15 @@ const cdn={
      studio.add(new THREE.HemisphereLight(0xfff4db,0x4d543c,1.1));
      const sun=new THREE.DirectionalLight(0xfff0d2,1);sun.position.set(ALLIED_AF_X-150,500,ALLIED_AF_Z+120);
      sun.target.position.set(ALLIED_AF_X,0,ALLIED_AF_Z);studio.add(sun,sun.target);
-     const terrainTile=terrain.tiles.get('0,4');studio.add(terrainTile.mesh.clone());
-     const field=airfieldDetails.group.clone(true),crew=activity.group.clone(true);crew.visible=true;
+     const terrainTile=terrain.tiles.get('0,4'),ground=new THREE.Mesh(terrainTile.mesh.geometry,terrainTile.mesh.material);
+     ground.position.copy(terrainTile.mesh.position);studio.add(ground);
+     // Terrain userData contains the owning tile, which references its mesh.
+     // Build the visual fixture from live buffers rather than cloning that cycle.
+     const field=new THREE.Group();for(const source of airfieldDetails.group.children){
+      const mesh=new THREE.Mesh(source.geometry,source.material);mesh.position.copy(source.position);
+      mesh.quaternion.copy(source.quaternion);mesh.scale.copy(source.scale);field.add(mesh);
+     }
+     const crew=activity.group.clone(true);crew.visible=true;
      crew.traverse(o=>{if(o.isInstancedMesh)o.visible=true;});studio.add(field,crew);
      const cam=new THREE.PerspectiveCamera(50,1024/768,.5,5500),y=groundY(ALLIED_AF_X-310,ALLIED_AF_Z-70);
      renderer.setPixelRatio(1);
