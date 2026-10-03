@@ -31,7 +31,7 @@ class DodecahedronGeometry extends Geometry {}
 class BufferGeometry extends Geometry {
   constructor(){ super(); this.attributes={}; this.index=null; }
   setAttribute(name,value){ this.attributes[name]=value; return this; }
-  setIndex(value){ this.index=value; return this; }
+  setIndex(value){ this.index={array:value}; return this; }
   computeVertexNormals(){}
   computeBoundingSphere(){}
 }
@@ -101,8 +101,8 @@ const forestB=[[500,500],[1300,500],[1300,1300],[500,1300],[500,500]];
 const treeCount=osm._buildForests(forestGroup,[forestA,forestB],0,0);
 assert(treeCount>0,'forest: no placements generated');
 assert(forestGroup.children.length<=7,`forest: expected <=7 bounded buckets, got ${forestGroup.children.length}`);
-assert(forestGroup.children.some(x=>x.name==='osmForestFloor'),
-  'forest: mapped woodland floor missing');
+assert(forestGroup.children.every(x=>x.name!=='osmForestFloor'),
+  'forest: land cover belongs on terrain, not a floating polygon sheet');
 assert(new Set(forestGroup.children.map(x=>x.name)).size===forestGroup.children.length,'forest: duplicate debug bucket names');
 finiteMatrices(forestGroup,'forest');
 

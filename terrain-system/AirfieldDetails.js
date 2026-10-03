@@ -22,14 +22,20 @@ class AirfieldDetails {
     for(const dx of [-360,-60,260])patch(0x82745b,dx,-39,10,48,.16);
     patch(0x82745b,-290,-100,145,62,.16);
     for(const [colour,p] of patches){
+      const xs=p.positions.filter((_,i)=>i%3===0),zs=p.positions.filter((_,i)=>i%3===2),size=osm.tileSize;
+      // The eastern strip crosses x=24km. Give each half its own terrain owner
+      // so grid clipping cannot cut the last 59m off the runway at that seam.
+      for(let tx=Math.floor(Math.min(...xs)/size);tx<=Math.floor(Math.max(...xs)/size);tx++)
+      for(let tz=Math.floor(Math.min(...zs)/size);tz<=Math.floor(Math.max(...zs)/size);tz++){
       const geo=new THREE.BufferGeometry();
       geo.setAttribute('position',new THREE.Float32BufferAttribute(p.positions,3));
       geo.setIndex(p.indices);
       const mat=new THREE.MeshLambertMaterial({color:colour,map:terrain.material.map||null});
       const mesh=new THREE.Mesh(geo,mat); mesh.name='airfieldGround';
       // Reuse the established grid/diagonal clipping, not a centre-height ribbon.
-      osm._prepareWaterSurface(mesh,Math.floor(x/4000)*4000,Math.floor(z/4000)*4000,p.offset);
+      osm._prepareWaterSurface(mesh,tx*size,tz*size,p.offset);
       this.ground.push(mesh); this.group.add(mesh);
+      }
     }
     const wood=0x655a43,roof=0x4f5349,dark=0x303630,trim=0x968b70;
     // Low timber barracks, real pitched roofs, framed windows and a front door.
@@ -38,7 +44,7 @@ class AirfieldDetails {
       this.box(w,eave-b.bottom,d,wood,x+dx,(eave+b.bottom)/2,z+dz,'hut');
       this.gable(w+1,d+1,2.6,roof,x+dx,eave,z+dz);
       for(const side of [-1,1]){
-        for(let wx=-w/2+3;wx<w/2-1;wx+=4){
+        for(const wx of (side===1?[-w*.3,0,w*.3]:[-w*.25,w*.25])){
           this.box(1.65,1.6,.12,trim,x+dx+wx,b.top+2,z+dz+side*(d/2+.07));
           this.box(1.3,1.25,.14,dark,x+dx+wx,b.top+2,z+dz+side*(d/2+.15));
           this.box(.08,1.25,.16,trim,x+dx+wx,b.top+2,z+dz+side*(d/2+.23));
@@ -115,9 +121,11 @@ class AirfieldDetails {
   }
   refresh(){
     const tile=this.terrain.tiles.get(Math.floor(this.x/4000)+','+Math.floor(this.z/4000));
-    if(!tile||tile.morphing||tile._renderSeg===this.lastSegments)return;
+    if(!tile)return;
     for(const mesh of this.ground){
-      this.osm.redrapeWater(mesh);
+      const before=mesh.geometry;
+      this.osm.syncSurface(mesh);
+      if(before===mesh.geometry&&this.lastSegments>=0)continue;
       const p=mesh.geometry.attributes.position,uv=[];
       for(let i=0;i<p.count;i++)uv.push(p.getX(i)/4000,p.getZ(i)/4000);
       mesh.geometry.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));

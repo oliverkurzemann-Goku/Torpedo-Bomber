@@ -5,7 +5,37 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 160 · Thunderbolt Squadron BUILD 160 · Remagen-Kern 21 / Fahrzeuge 22**
+Stand bei Übergabe: **Torpedo Squadron BUILD 161 · Thunderbolt Squadron BUILD 161 · Remagen-Kern 23 / Fahrzeuge 22**
+
+**Build 161 (04.10.2026): stabiler Tiefflug-Boden, sparsame Fenster und sichtbare Flugplatzarbeit.**
+Auf echter Kachel 3,3 waren selbst bei LOD0 Straßen bis 5,96 m, Bahn bis 10,36 m,
+Farmland bis 12,89 m und Waldflächen bis 139,50 m von den Terrain-Dreiecken entfernt.
+Landcover steckt jetzt in einer 128px-Karte je Terrain-Kachel und wird direkt im
+Terrain-Material mit der bestehenden Bodentextur gemischt (r128-UV-Pfad, keine
+vertex/instanceColor). Keine separate schwebende/grüne Wald- oder Farmland-Geometrie.
+56 Karten benötigen rund 4,7 MiB inklusive Mips. Straßen, Bahn, Wasser und Startbahn
+werden am Terrain-Gitter samt Diagonalen geteilt. Während Morphs folgen ihre Y-Werte
+im selben Frame den Terrain-Vertices; Gewichte sind gecacht, Geometrie wird nur beim
+Segmentwechsel erzeugt. Runway-Aussparungen bleiben in den Quellflächen erhalten.
+Startup baut statische Objekte bei feinem Terrain, wählt anschließend verdeckt den
+Start-LOD und erzeugt erst dann Bodengeometrie. Kein großer globaler Startup-Morph.
+LOD-Abstand zählt zur Kachelfläche statt zum Zentrum: Tiefflug an einer Kachelecke
+behält feine Geometrie auf allen angrenzenden Kacheln. OSM-Bäume/Gebäude verschwinden
+zwischen 5,5 und 8 km per Dither; Kachel-Ausblendung erst außerhalb dieses Bereichs.
+Fenster pro Vorderseite zwei bis drei pro Stock, Seiten ein Fenster pro Stock oder
+teilweise fensterlos; Hütten am Flugplatz ebenfalls sparsamer.
+`AirfieldActivity.js` ergänzt beide Flugplätze mit zwölf animierten Bodenleuten,
+Beladung am Bomben-/Munitionswagen, Mechanikern, Marshaller, Kisten, Fässern, zwei
+fahrenden Versorgungs-Lastern und zwei abgestellten Flugzeugen. Echte Flugzeuge
+teilen den bereits für den gewählten Einsatz geladenen GLB-Template; keine zusätzlichen
+Flugzeug-Downloads. Alles außerhalb Startbahn und Rollwegen, gleiche Pause wie das Spiel.
+Keine Flugphysik-/Steuerungsänderung. CPU-Regressionsprüfung gegen echte r128-Raycasts
+misst 14.118 Bodenproben während mehrerer LOD-Morphs, maximal 0,000114 m Abweichung.
+Beide Flugplätze bleiben frei; Bodencrew bewegt sich, Scene-Mesh-Budget wird gemessen.
+Browser-Regression rendert Original-P47-Tank, Fassaden/Bäume sowie echte Flugplatz-
+Beladung und Übersicht inklusive Terrain-Landcover-Shader. Echte iPad/Safari-Prüfung
+erfolgt durch den Nutzer; keine Hardware-/FPS-Behauptung. Veröffentlichungsfreigabe
+besteht in der laufenden Sitzung. OSM-Modul 23, Fahrzeuge/LivingWorld weiterhin 22.
 
 **Build 160 (03.10.2026): Thunderbolt-Reichweite und vielfältigere Rheinlandschaft.**
 Piston-Flugzeuge verbrauchen bei Vollgas auf Veteran 0,11 interne Tank-Prozent pro

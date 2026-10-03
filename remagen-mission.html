@@ -265,7 +265,7 @@
   .opsLegend{font:11px/1.5 monospace;color:#d7c797;text-align:left;margin-top:5px;}
   #opsStatus{position:fixed;top:calc(env(safe-area-inset-top) + 76px);left:50%;transform:translateX(-50%);color:#edcc80;background:rgba(14,20,18,.78);padding:5px 9px;font:10px monospace;pointer-events:none;z-index:9;max-width:58vw;text-align:center;}
 </style>
-<link rel="stylesheet" href="menu-layout.css?v=160">
+<link rel="stylesheet" href="menu-layout.css?v=161">
 </head>
 <body>
 <!-- ===== TEMP TEST-ONLY VERSION BANNER — asked for by Oliver: "kannst du irgendwo einbauen,
@@ -287,7 +287,7 @@
   <div style="width:100%;height:4px;background:repeating-linear-gradient(45deg,#ffd400,#ffd400 8px,#111 8px,#111 16px);"></div>
   <span id="testVersionBannerText" style="background:#111;color:#ffd400;font-family:monospace;font-weight:800;font-size:11px;letter-spacing:.5px;padding:3px 10px;border:1px solid #ffd400;border-top:none;border-radius:0 0 6px 6px;"></span>
 </div>
-<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 160';</script>
+<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 161';</script>
 <!-- ===== END TEMP TEST-ONLY VERSION BANNER ===== -->
 <div id="app"></div>
 
@@ -316,7 +316,7 @@
   <div id="flash"></div>
   <div id="gunsight"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 160 · REAL RHINE</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 161 · REAL RHINE</div>
 
   <div id="apr">
     <div id="aprCall"></div>
@@ -365,7 +365,7 @@
 </div>
 
 <div class="overlay hidden" id="menu" data-campaign="europe">
-  <div class="menuTop"><a id="selBtn" href="index.html?v=160">&#9664; Change Game</a><span class="menuMeta">RHINE OPERATIONS<br>BUILD 160</span></div>
+  <div class="menuTop"><a id="selBtn" href="index.html?v=161">&#9664; Change Game</a><span class="menuMeta">RHINE OPERATIONS<br>BUILD 161</span></div>
   <div class="card menuCard">
     <aside class="menuOverview" aria-label="Campaign and pilot options">
     <div class="campaignArt" aria-hidden="true"></div>
@@ -459,13 +459,14 @@
      point of building the prototype first was that this game only needs to point them at real data,
      not rewrite them. -->
 <script src="terrain-system/HeightProvider.js?v=remagen-21"></script>
-<script src="terrain-system/TerrainTile.js?v=remagen-21"></script>
-<script src="terrain-system/TerrainManager.js?v=remagen-21"></script>
-<script src="terrain-system/OSMManager.js?v=160"></script>
+<script src="terrain-system/TerrainTile.js?v=161"></script>
+<script src="terrain-system/TerrainManager.js?v=161"></script>
+<script src="terrain-system/OSMManager.js?v=161"></script>
 <script src="terrain-system/HistoricalObjectManager.js?v=remagen-21"></script>
-<script src="terrain-system/AirfieldDetails.js?v=remagen-21"></script>
+<script src="terrain-system/AirfieldDetails.js?v=161"></script>
+<script src="terrain-system/AirfieldActivity.js?v=161"></script>
 <script src="terrain-system/WorldVehicles.js?v=remagen-22"></script>
-<script src="terrain-system/LivingWorld.js?v=160"></script>
+<script src="terrain-system/LivingWorld.js?v=161"></script>
 <script src="campaign.js?v=1"></script>
 <script src="game-runtime.js?v=157"></script>
 <script src="combat-fx.js?v=157"></script>
@@ -476,7 +477,7 @@
 <script src="audio/weapon-sound.js?v=144"></script>
 <script src="audio/jet-engine.js?v=144"></script>
 <script src="sortie-systems.js?v=146"></script>
-<script src="sortie-fuel.js?v=160"></script>
+<script src="sortie-fuel.js?v=161"></script>
 <script src="operation-plans.js?v=147"></script>
 <script>
 // ============================================================
@@ -738,15 +739,17 @@ function clearRoadsOnRunways(){
   for(const tile of osmMgr.tiles.values()){
     if(!tile?.group)continue;
     for(const mesh of [...tile.group.children,...(tile.farGroup?.children||[])]){
-      if(!mesh.isMesh||![osmMgr.roadMat,osmMgr.farmMat,osmMgr.forestFloorMat].includes(mesh.material)||!mesh.geometry.index)continue;
+      if(!mesh.isMesh||![osmMgr.roadMat,osmMgr.farmMat,osmMgr.forestFloorMat].includes(mesh.material)||(!mesh.geometry.index&&!mesh.userData.waterSource))continue;
       if(!mesh.geometry.boundingBox)mesh.geometry.computeBoundingBox();
       const box=mesh.geometry.boundingBox;
       if(!fields.some(([fx,fz])=>box.max.x>fx-RWY_LEN/2-16&&box.min.x<fx+RWY_LEN/2+16&&
         box.max.z>fz-RWY_W/2-16&&box.min.z<fz+RWY_W/2+16))continue;
-      const pos=mesh.geometry.attributes.position,ix=mesh.geometry.index.array;
+      const src=mesh.userData.waterSource;
+      const pos=src?new THREE.Float32BufferAttribute(src.positions,3):mesh.geometry.attributes.position;
+      const ix=src?src.indices:mesh.geometry.index.array;
       const positions=Array.from(pos.array),indices=Array.from(ix);
       const layerOffset=mesh.material===osmMgr.roadMat?1.4:mesh.material===osmMgr.farmMat?0.3:0.18;
-      const offsets=Array.from(mesh.userData.yOffsets||new Float32Array(pos.count).fill(layerOffset));
+      const offsets=Array.from(new Float32Array(pos.count).fill(src?src.offset:layerOffset));
       let removed=0;
       for(let i=0;i<ix.length;i+=3){
         const a=ix[i],b=ix[i+1],c=ix[i+2];
@@ -778,6 +781,7 @@ function clearRoadsOnRunways(){
         mesh.geometry.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));
         mesh.geometry.setIndex(indices);mesh.geometry.computeVertexNormals();mesh.geometry.computeBoundingSphere();
         mesh.userData.yOffsets=new Float32Array(offsets);
+        if(src){src.positions=new Float32Array(positions);src.indices=indices;if(!osmMgr.deferSurfaces)osmMgr.redrapeWater(mesh);}
       }
     }
   }
@@ -786,12 +790,13 @@ function clearRoadsOnRunways(){
 async function loadRealWorld(){
   const setLoadingText=(s)=>{ const el=document.getElementById('loadingText'); if(el) el.textContent=s; };
 
-  if(OSMManager.BUILD!==21||HistoricalObjectManager.BUILD!==21||LivingWorld.BUILD!==22||WorldVehicles.BUILD!==22) throw new Error('Terrain version mismatch. Reload Remagen.');
+  if(OSMManager.BUILD!==23||HistoricalObjectManager.BUILD!==21||LivingWorld.BUILD!==22||WorldVehicles.BUILD!==22) throw new Error('Terrain version mismatch. Reload Remagen.');
   document.getElementById('testVersionBannerText').textContent=
-    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 160 · MODULE 22';
+    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 161 · MODULE 23';
   heightProvider=new DEMHeightProvider(RTILE,'terrain-system/real/data/dem/');
   terrain=new TerrainManager(scene,RTILE,heightProvider);
   osmMgr=new OSMManager(scene,RTILE,terrain,'terrain-system/real/data/osm/');
+  osmMgr.deferSurfaces=true;
   historicalMgr=new HistoricalObjectManager(scene,RTILE,terrain,'terrain-system/real/data/historical/');
 
   // Phase 1: every tile's real elevation data — DEMHeightProvider.getHeight() throws unless this
@@ -872,6 +877,12 @@ async function loadRealWorld(){
   clearTreesNearAirfield();
   clearRoadsOnRunways();
 
+  // Static object foundations were sampled at fine resolution. Select the
+  // startup terrain LOD before constructing clipped ground layers, avoiding
+  // a whole-region fine-mesh allocation and startup morph under the loading screen.
+  terrain.updateLOD(AF_X,AF_Z,1);
+  osmMgr.deferSurfaces=false;osmMgr.syncTerrainSurfaces();
+
   AF_Y=terrain.getHeight(AF_X,AF_Z);
   realWorldReady=true;
   setLoadingText('Ready.');
@@ -893,7 +904,7 @@ async function loadRealWorld(){
 // heightProvider/tile data, never from a mesh's .visible flag), so it cannot affect flight
 // physics, hit detection or the HUD nav arrow (all of which read a target's real recorded x/z,
 // see targetHandle()'s own comment, not whether its mesh happens to be drawn this frame).
-const CONTENT_VIS_RADIUS=7000;
+const CONTENT_VIS_RADIUS=8500;
 function updateContentVisibility(focusX,focusZ){
   // osmMgr.tiles maps key -> {group,treeCount,buildingCount} (OSMManager.js's own loadTile()),
   // NOT a bare THREE.Group like historicalMgr.tiles does — a real bug found while investigating
@@ -911,7 +922,8 @@ function updateContentVisibility(focusX,focusZ){
     // in it, stay always visible — see OSMManager.loadTile()'s own comment on farGroup for why
     // (a river/road hard-cutting-off mid-span at a tile boundary is a much worse-looking bug
     // than a handful of always-cheap infrastructure meshes rendering a bit further than needed).
-    if(t.farGroup) t.farGroup.visible=Math.hypot(cx-focusX,cz-focusZ)<CONTENT_VIS_RADIUS;
+    const tile=terrain.tiles.get(key);
+    if(t.farGroup)t.farGroup.visible=tile.distanceToBounds(focusX,focusZ)<CONTENT_VIS_RADIUS;
   }
   for(const [key,g] of historicalMgr.tiles){
     if(!g) continue;
@@ -925,72 +937,9 @@ function updateContentVisibility(focusX,focusZ){
   if(worldVehicles)worldVehicles.update(focusX,focusZ);
 }
 
-// Reported (real iPad, screenshot): farmland patches "sehen komisch aus" (look odd). Measured,
-// not guessed: OSMManager builds roads/rails/rivers/lakes/farmland/airfields ONCE, in
-// loadRealWorld()'s phase 3, sampling terrain.getRenderedHeight() while every tile still sits at
-// LOD0 (ensureTile(tx,tz,0) — updateLOD() has never run yet at that point). The terrain LOD fix
-// above (see this file's own history, "ruckelt das Spiel jetzt") then coarsens far tiles down to
-// LOD1/LOD2 every frame afterward — but nothing ever went back to update the ALREADY-BUILT flat
-// meshes' baked Y coordinates to match. Measured directly against the shipped code: a coarsened
-// tile's farmland vertices sit up to 106m away (vertically) from what terrain.getRenderedHeight()
-// now actually returns there — a flat yellow patch visibly floating over, or sunk into, hillside
-// that has since been re-tessellated underneath it. Re-triangulating a merged road/farmland mesh
-// on every LOD change would be expensive and touch its indices, not just heights; the fix here is
-// far cheaper because the FOOTPRINT (x,z, and the triangle indices) never needs to change, only Y
-// — rewriting just the Y component of an already-built BufferGeometry's position attribute is a
-// simple per-vertex loop, no re-triangulation. Runs on the same 0.5s throttle as the visibility
-// culling above (a per-frame check would be wasted work; nothing here needs sub-second freshness,
-// and TERRAIN_MORPH_DURATION=0.6s already smooths the terrain's OWN visual LOD transition on
-// roughly that timescale).
-// Each flat mesh (road/rail/river/lake/farmland/airfield) has its own small, fixed decorative
-// OSMManager records the intended layer offset at construction. Water must be
-// split along the terrain grid AND its triangle diagonals at each settled LOD.
-// Rebuilding only when a morph finishes avoids a per-frame geometry allocation.
-const osmTileLastLod=new Map();
-function rebakeStaleOsmHeights(){
-  for(const [key,t] of osmMgr.tiles){
-    if(!t||!t.group) continue;
-    const tile=terrain.tiles.get(key);
-    if(!tile || tile.morphing) continue;
-    const prevSeg=osmTileLastLod.get(key);
-    if(prevSeg===tile._renderSeg) continue;
-    osmTileLastLod.set(key,tile._renderSeg);
-    if(prevSeg===undefined){ captureFlatMeshOffsets(t.group); continue; }
-    for(const mesh of flatOsmMeshes(t.group)) if(mesh.userData.waterSource) osmMgr.redrapeWater(mesh);
-    rebakeFlatMeshHeights(t.group);
-  }
-}
-function flatOsmMeshes(group){
-  const flatMats=[osmMgr.roadMat,osmMgr.railMat,osmMgr.riverMat,osmMgr.lakeMat,osmMgr.farmMat];
-  return group.children.filter(o=>o.isMesh&&!o.isInstancedMesh&&flatMats.includes(o.material));
-}
-function captureFlatMeshOffsets(group){
-  flatOsmMeshes(group).forEach(o=>{
-    const pos=o.geometry.attributes.position;
-    if(!pos||o.userData.yOffsets) return;
-    const offs=new Float32Array(pos.count);
-    for(let i=0;i<pos.count;i++){
-      const [x,z]=clampToWorld(pos.getX(i),pos.getZ(i));
-      offs[i]=pos.getY(i)-heightProvider.getHeight(x,z);
-    }
-    o.userData.yOffsets=offs;
-  });
-}
-function rebakeFlatMeshHeights(group){
-  flatOsmMeshes(group).forEach(o=>{
-    const pos=o.geometry.attributes.position;
-    if(!pos||!o.userData.yOffsets) return;
-    if(o.userData.waterSource) return; // redrapeWater already used the owning tile's edge
-    const offs=o.userData.yOffsets;
-    for(let i=0;i<pos.count;i++){
-      const [x,z]=clampToWorld(pos.getX(i),pos.getZ(i));
-      pos.setY(i,terrain.getRenderedHeight(x,z)+offs[i]);
-    }
-    pos.needsUpdate=true;
-    o.geometry.computeVertexNormals();
-    o.geometry.computeBoundingSphere();
-  });
-}
+// Ground layers follow the actual terrain triangles in the same rendered frame.
+// Topology changes only when grid resolution changes; morphs update Y in place.
+function rebakeStaleOsmHeights(){osmMgr.syncTerrainSurfaces();}
 
 // ============================================================
 //  SMALL GEOMETRY HELPERS
@@ -1009,14 +958,17 @@ function at(m,x,y,z){ m.position.set(x,y,z); return m; }
 //  WW2 forward strip was rough grass or packed dirt with tents/huts, not a paved airbase).
 // ============================================================
 let airfield=null,airfieldDetails=null,germanAirfieldDetails=null,worldVehicles=null,livingWorld=null;
+let alliedActivity=null,germanActivity=null;
 function buildAirfield(){
   airfieldDetails=new AirfieldDetails(terrain,osmMgr,ALLIED_AF_X,ALLIED_AF_Z,RWY_LEN,RWY_W);
   airfield=airfieldDetails.group;
   scene.add(airfield);
+  alliedActivity=new AirfieldActivity(terrain,ALLIED_AF_X,ALLIED_AF_Z);scene.add(alliedActivity.group);
 }
 function buildGermanAirfield(){
   germanAirfieldDetails=new AirfieldDetails(terrain,osmMgr,GERMAN_AF_X,GERMAN_AF_Z,RWY_LEN,RWY_W);
   scene.add(germanAirfieldDetails.group);
+  germanActivity=new AirfieldActivity(terrain,GERMAN_AF_X,GERMAN_AF_Z);scene.add(germanActivity.group);
 }
 
 // ============================================================
@@ -1163,6 +1115,8 @@ const builtFrom={};
 function refreshModels(){
   if(state!==ST.FLIGHT && state!==ST.DEAD) return;
   const k=P.ac;
+  const activity=AF_X===ALLIED_AF_X?alliedActivity:germanActivity;
+  if(activity)activity.setAircraft(modelTpl[k],k);
   if(modelTpl[k] && builtFrom.player!==k+':'+(modelAdj[k]||0)){
     builtFrom.player=k+':'+(modelAdj[k]||0);
     if(playerModel) planeGroup.remove(playerModel);
@@ -5316,7 +5270,7 @@ function init(){
   buildMenu();
   // menu wiring
   document.getElementById('startBtn').onclick=()=>showBrief(selectedMission);
-  document.getElementById('pauseMainMenu').onclick=()=>{exitToMenuFromPause();window.location.href='index.html?v=160';};
+  document.getElementById('pauseMainMenu').onclick=()=>{exitToMenuFromPause();window.location.href='index.html?v=161';};
   document.getElementById('logBtn').onclick=()=>{ show('menu',false); showLogbook(); };
   document.getElementById('brBack').onclick=()=>{ show('brief',false); show('menu',true); state=ST.MENU; };
   document.getElementById('brGo').onclick=async()=>{
@@ -5413,6 +5367,11 @@ function animate(){
     const focusX=(state===ST.FLIGHT||state===ST.DEAD)?P.pos.x:AF_X;
     const focusZ=(state===ST.FLIGHT||state===ST.DEAD)?P.pos.z:AF_Z;
     terrain.updateLOD(focusX,focusZ,raw);
+    osmMgr.syncTerrainSurfaces();
+    if(airfieldDetails)airfieldDetails.refresh();
+    if(germanAirfieldDetails)germanAirfieldDetails.refresh();
+    if(alliedActivity)alliedActivity.update(raw,focusX,focusZ);
+    if(germanActivity)germanActivity.update(raw,focusX,focusZ);
     if(livingWorld)livingWorld.update(raw,focusX,focusZ,state===ST.FLIGHT?p=>
       spawnSmoke(p.x,p.y,p.z,p.color,p.scale):null);
     contentVisT-=raw; if(contentVisT<=0){ contentVisT=0.5; updateContentVisibility(focusX,focusZ); }

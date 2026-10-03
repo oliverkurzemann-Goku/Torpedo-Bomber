@@ -1,5 +1,32 @@
 # Remagen terrain handoff
 
+## Build 161 — low-pass ground stability and airfield activity
+
+Measured on shipped tile 3,3: ordinary roads differ by up to 5.96m, rail by 10.36m,
+farmland by 12.89m and forest floor by 139.50m even at fine LOD. Sampling polygon
+corners does not drape their large triangles. Ground sheets also lagged terrain
+morphs, and the forest floor inherited whole-tile scenery culling.
+
+Forest/farmland cover is now a 128px per-tile mask in the actual terrain shader,
+using raw terrain UVs plus the existing repeated grain map. It cannot float or be
+hidden with trees. 56 mipmapped masks use about 4.7 MiB, with no additional draw calls.
+Roads/rails/water and field ground are split at the live grid and diagonals. Cached
+barycentric weights move surface vertices with each terrain frame; topology changes
+only at segment transitions. Runway clipping changes the source triangles, so an LOD
+rebuild cannot restore crossing roads. Static foundations are built at fine LOD,
+then startup picks settled LOD behind the loading screen before draping surfaces.
+The near-detail radius uses tile bounds; scenery dithers out between 5.5 and 8km.
+No vertex/instance colours. New airfield activity uses bounded merged/instanced
+meshes and reuses the selected aircraft template, never eagerly downloads aircraft.
+
+`ground-stability.js` checks 14,118 samples against actual r128 raycasts across
+fine/coarse/mid/fine morphs; maximum error 0.000114m. Airfield tests exercise real
+integration, moving crew and clear runways; browser captures actual loading and
+service-area geometry plus landcover shader compilation. These checks do not
+measure physical iPad/Safari performance. Window layouts are now deliberately
+sparse, with much simpler side walls.
+
+
 Companion to `CLAUDE.md`. Read both files before changing `remagen-mission.html`, `terrain-system/OSMManager.js`, terrain LOD, real-world placement, buildings or vegetation.
 
 ## Scope

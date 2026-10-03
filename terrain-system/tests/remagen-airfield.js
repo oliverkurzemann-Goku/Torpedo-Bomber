@@ -4,7 +4,7 @@ const fs=require('fs'),path=require('path'),vm=require('vm'),assert=require('ass
 const root=path.resolve(__dirname,'../..');
 global.THREE=require(process.env.THREE_R128||'three');
 assert.equal(THREE.REVISION,'128');
-for(const name of ['HeightProvider','TerrainTile','TerrainManager','OSMManager','AirfieldDetails'])
+for(const name of ['HeightProvider','TerrainTile','TerrainManager','OSMManager','WorldVehicles','AirfieldDetails','AirfieldActivity'])
   vm.runInThisContext(fs.readFileSync(path.join(root,'terrain-system',name+'.js'),'utf8'));
 global.fetch=async url=>{
   const b=fs.readFileSync(path.join(root,url.split('?')[0]));
@@ -23,15 +23,15 @@ global.fetch=async url=>{
   const html=fs.readFileSync(path.join(root,'remagen-mission.html'),'utf8');
   // Execute the actual mission integration, not a duplicated constructor invocation.
   const start=html.indexOf('let airfield=null,'),end=html.indexOf('// ===',start);
-  const context=vm.createContext({THREE,AirfieldDetails,terrain,osmMgr:osm,scene,
+  const context=vm.createContext({THREE,AirfieldDetails,AirfieldActivity,terrain,osmMgr:osm,scene,
     AF_X:787,AF_Z:18087.6,ALLIED_AF_X:787,ALLIED_AF_Z:18087.6,
     GERMAN_AF_X:23600,GERMAN_AF_Z:25725,RWY_LEN:900,RWY_W:40});
   vm.runInContext(html.slice(start,end)+'\nbuildAirfield(); globalThis.field=airfieldDetails;',context);
   const f=context.field;
   assert(scene.children.includes(f.group)); assert.equal(terrain.material,originalTerrainMaterial);
-  assert(html.includes('AirfieldDetails.js?v=remagen-21')); assert(html.includes('MODULE 22'));
+  assert(html.includes('AirfieldDetails.js?v=161')); assert(html.includes('MODULE 23'));
   assert(html.includes('if(airfieldDetails)airfieldDetails.refresh()'));
-  assert.equal(OSMManager.BUILD,21);
+  assert.equal(OSMManager.BUILD,23);
   const meshes=f.group.children;
   assert(meshes.length<=10,`draw-call budget exceeded: ${meshes.length}`);
   let samples=0,maxDrapeError=0;
@@ -93,7 +93,7 @@ global.fetch=async url=>{
     assert(b.max.z<25725-20||b.min.z>25725+20,`German runway obstruction: ${name}`);
   german.group.updateMatrixWorld(true);
   const ray=new THREE.Raycaster();
-  for(const dx of [-400,0,400])for(const dz of [-18,0,18]){
+  for(const dx of [-440,-400,0,400,440])for(const dz of [-18,0,18]){
     ray.set(new THREE.Vector3(23600+dx,2000,25725+dz),new THREE.Vector3(0,-1,0));
     const hits=ray.intersectObjects(german.ground);assert(hits.length,'German runway has a hole');
     assert(hits[0].point.y>terrain.getRenderedHeight(23600+dx,25725+dz));
@@ -105,5 +105,18 @@ global.fetch=async url=>{
   assert.deepEqual(Array.from(selection.select('p47')),[787,18087.6,terrain.getHeight(787,18087.6)]);
   for(const ac of ['bf109','fw190','ju87','me262','me163'])
     assert.deepEqual(Array.from(selection.select(ac)),[23600,25725,terrain.getHeight(23600,25725)],`${ac} starts from the German base`);
+  const activity=vm.runInContext('alliedActivity',context);
+  assert.equal(activity.crew.length,12);assert.equal(activity.parked.length,2);assert.equal(activity.trucks.length,2);
+  const pose=activity.people.limbs.instanceMatrix.array.slice();
+  activity.update(1,787,18087.6);
+  assert.notDeepEqual(activity.people.limbs.instanceMatrix.array,pose,'crew must actually animate');
+  let activityMeshes=0;activity.group.traverse(o=>{if(o.isMesh)activityMeshes++;});
+  assert(activityMeshes<=30,'service scenes exceed draw-call budget: '+activityMeshes);
+  for(let t=0;t<160;t++){
+    activity.update(1,787,18087.6);
+    for(const crew of activity.crew)assert(crew.drawZ<-27,'crew walks into active runway');
+    for(const truck of activity.trucks)assert(truck.model.position.z<-42,'supply truck drives into active runway');
+  }
+  for(const part of activity.parts)assert(Math.abs(part.z)-part.d/2>27,'supplies obstruct runway');
   console.log(JSON.stringify({meshes:meshes.length,groundBatches:f.ground.length,parts:f.parts.length,samples,maxDrapeError,spawnAndRunwayClear:true,browserTest:false},null,2));
 })().catch(e=>{console.error(e);process.exit(1);});

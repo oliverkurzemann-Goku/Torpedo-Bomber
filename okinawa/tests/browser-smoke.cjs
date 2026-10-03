@@ -128,6 +128,31 @@ const cdn={
      for(const g of geometries)g.dispose();for(const m of materials){m.map?.dispose();m.dispose();}return png;
     });
     fs.writeFileSync(path.join(out,'rhine-village-variants.png'),Buffer.from(villagePng.split(',')[1],'base64'));
+    const service=await page.evaluate(()=>{
+     const activity=alliedActivity;activity.setAircraft(modelTpl.p47,'p47');
+     const before=activity.people.limbs.instanceMatrix.array.slice();activity.update(2,ALLIED_AF_X,ALLIED_AF_Z);
+     const animated=before.some((v,i)=>v!==activity.people.limbs.instanceMatrix.array[i]);
+     const studio=new THREE.Scene();studio.background=new THREE.Color(0xb8c8cf);
+     studio.add(new THREE.HemisphereLight(0xfff4db,0x4d543c,1.1));
+     const sun=new THREE.DirectionalLight(0xfff0d2,1);sun.position.set(ALLIED_AF_X-150,500,ALLIED_AF_Z+120);
+     sun.target.position.set(ALLIED_AF_X,0,ALLIED_AF_Z);studio.add(sun,sun.target);
+     const terrainTile=terrain.tiles.get('0,4');studio.add(terrainTile.mesh.clone());
+     const field=airfieldDetails.group.clone(true),crew=activity.group.clone(true);crew.visible=true;
+     crew.traverse(o=>{if(o.isInstancedMesh)o.visible=true;});studio.add(field,crew);
+     const cam=new THREE.PerspectiveCamera(50,1024/768,.5,5500),y=groundY(ALLIED_AF_X-310,ALLIED_AF_Z-70);
+     renderer.setPixelRatio(1);
+     cam.position.set(ALLIED_AF_X-291,y+9,ALLIED_AF_Z-26);cam.lookAt(ALLIED_AF_X-318,y+2,ALLIED_AF_Z-77);
+     renderer.render(studio,cam);const close=renderer.domElement.toDataURL('image/png');
+     cam.position.set(ALLIED_AF_X-212,y+46,ALLIED_AF_Z+45);cam.lookAt(ALLIED_AF_X-295,y+1,ALLIED_AF_Z-90);
+     renderer.render(studio,cam);const overview=renderer.domElement.toDataURL('image/png');renderer.setPixelRatio(.25);
+     return {close,overview,animated,crew:activity.crew.length,parked:activity.parked.length,
+       originalModel:activity.parked[0].children[0].children.some(o=>o.isMesh||o.children.length),
+       hasLandcover:!!terrainTile.landcoverTexture};
+    });
+    assert(service.animated&&service.crew===12&&service.parked===2&&service.originalModel&&service.hasLandcover,
+      'visible field uses moving crew, loaded aircraft and terrain land cover');
+    fs.writeFileSync(path.join(out,'airfield-loading-crew.png'),Buffer.from(service.close.split(',')[1],'base64'));
+    fs.writeFileSync(path.join(out,'airfield-service-overview.png'),Buffer.from(service.overview.split(',')[1],'base64'));
     assert.deepEqual(shaderErrors,[],'r128 compiles facade instancing and crown shaders');
     await page.locator('#pmResume').click();
     const internal=await page.evaluate(()=>P.fuel);await page.locator('#tankBtn').click();
@@ -299,7 +324,7 @@ const cdn={
      await page.waitForFunction(()=>(state===ST.LAUNCH||state===ST.FLIGHT)&&eng.master.gain.value>.5);
      await page.locator('#pauseBtn').click();await page.locator('#menuBtn').click();
     }else{
-     await page.locator('#pauseMainMenu').click();await page.waitForURL('**/index.html?v=160');
+     await page.locator('#pauseMainMenu').click();await page.waitForURL('**/index.html?v=161');
      await page.locator('main.board').waitFor();
     }
     console.log('Browser pause: '+(scenario.ordinal===0?'abort, retained record and audible relaunch':'Main Menu returns to campaign board'));
@@ -359,7 +384,7 @@ const cdn={
     // A real JS frame failure is visible and remains observable, not hidden.
     await page.evaluate(()=>{animateFrame=()=>{throw Error('TEST FRAME FAULT');};});
     await page.locator('#simulationRecovery').waitFor({state:'visible'});
-    assert.match(await page.locator('#simulationRecovery').innerText(),/BUILD 160.*TEST FRAME FAULT/);
+    assert.match(await page.locator('#simulationRecovery').innerText(),/BUILD 161.*TEST FRAME FAULT/);
     assert.equal(await page.locator('#simulationRecovery button').innerText(),'Reload game');
     assert.deepEqual(errors,['TEST FRAME FAULT'],'unexpected runtime errors cannot be swallowed');
    }

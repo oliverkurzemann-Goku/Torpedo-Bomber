@@ -5,7 +5,7 @@
 // ============================================================
 
 class OSMManager {
-  static get BUILD(){ return 21; }
+  static get BUILD(){ return 23; }
   constructor(scene, tileSize, terrainManager, baseUrl = 'data/osm/'){
     this.scene = scene;
     this.tileSize = tileSize;
@@ -53,7 +53,7 @@ class OSMManager {
           shader.vertexShader="attribute vec2 facadeVariant;\n"+shader.vertexShader;
           shader.vertexShader=shader.vertexShader.replace("#include <uv_vertex>","#include <uv_vertex>\n#ifdef USE_UV\nvUv = vUv * 0.5 + facadeVariant;\n#endif");
         };
-        mat.customProgramCacheKey=()=>"period-facade-atlas-160";
+        mat.customProgramCacheKey=()=>"period-facade-atlas-161";
       });
     this.roofMat.map = this.roofSlateMat.map = this.roofBrownMat.map = this.roofTexture;
 
@@ -93,6 +93,10 @@ class OSMManager {
       this.boxGeo, this.wallGeo, this.gableRoofGeo, this.hipRoofGeo, this.chimneyGeo, this.trunkGeo,
       this.coniferGeo, this.deciduousGeo, this.shrubGeo, this.poplarGeo, this.willowGeo, this.spireGeo
     ]);
+    for(const mat of [this.buildingWarmMat,this.buildingCoolMat,this.buildingOchreMat,this.buildingBrickMat,
+      this.roofMat,this.roofSlateMat,this.roofBrownMat,this.flatRoofMat,this.chimneyMat,
+      this.trunkMat,this.coniferMat,this.deciduousMat,this.shrubMat,this.poplarMat,this.willowMat])
+      osmFadeScenery(mat);
   }
 
   _key(tx, tz){ return tx + ',' + tz; }
@@ -173,8 +177,9 @@ class OSMManager {
     if(riverMesh) group.add(riverMesh);
     const lakeMesh = this._buildFlatPolygons(data.lakes || [], ox, oz, this.lakeMat, 0.9);
     if(lakeMesh) group.add(lakeMesh);
-    const farmMesh = this._buildFlatPolygons(data.farmland || [], ox, oz, this.farmMat, 0.3);
-    if(farmMesh) group.add(farmMesh);
+    // Land cover is baked into the terrain shader. Separate huge polygon
+    // sheets cannot remain attached to a changing terrain triangulation.
+    if(this.terrain.setLandcover)this.terrain.setLandcover(tx,tz,data);
     const airfieldMesh = this._buildFlatPolygons(data.airfields || [], ox, oz, this.roadMat, 0.3);
     if(airfieldMesh) group.add(airfieldMesh);
 
@@ -185,6 +190,10 @@ class OSMManager {
     const forestExclusion = this._buildForestExclusion(data, ox, oz);
     const treeCount = this._buildForests(farGroup, data.forests || [], ox, oz, forestExclusion);
     const buildingCount = this._buildBuildings(farGroup, data.buildings || [], ox, oz, forestExclusion);
+
+    // Land cover is continuous ground, not part of the distance-culled trees.
+    const floor=farGroup.children.find(m=>m.name==='osmForestFloor');
+    if(floor){farGroup.remove(floor);group.add(floor);}
 
     this.scene.add(group);
     this.tiles.set(key, { group, farGroup, treeCount, buildingCount });
@@ -243,7 +252,7 @@ class OSMManager {
     geo.computeBoundingSphere();
     const mesh=new THREE.Mesh(geo, mat);
     mesh.userData.yOffsets=new Float32Array(positions.length/3).fill(yOffset);
-    if(mat===this.riverMat) this._prepareWaterSurface(mesh,ox,oz,yOffset);
+    this._prepareWaterSurface(mesh,ox,oz,yOffset);
     return mesh;
   }
 
@@ -269,14 +278,43 @@ class OSMManager {
     geo.computeBoundingSphere();
     const mesh=new THREE.Mesh(geo, mat);
     mesh.userData.yOffsets=new Float32Array(positions.length/3).fill(yOffset);
-    if(mat===this.lakeMat) this._prepareWaterSurface(mesh,ox,oz,yOffset);
+    this._prepareWaterSurface(mesh,ox,oz,yOffset);
     return mesh;
   }
 
   _prepareWaterSurface(mesh,ox,oz,offset){
     // Keep the small source triangulation to rebuild when LOD changes.
     mesh.userData.waterSource={positions:mesh.geometry.attributes.position.array.slice(),indices:Array.from(mesh.geometry.index.array),ox,oz,offset};
-    this.redrapeWater(mesh);
+    if(!this.deferSurfaces)this.redrapeWater(mesh);
+  }
+
+  syncSurface(mesh){
+    const src=mesh.userData.waterSource;
+    const tile=src&&this.terrain.tiles.get(this._key(src.ox/this.tileSize,src.oz/this.tileSize));
+    if(!tile)return;
+    if(mesh.userData.surfaceSegments!==tile._renderSeg){this.redrapeWater(mesh);return;}
+    if(mesh.userData.surfaceGeometry===tile.mesh.geometry&&mesh.userData.surfaceMorph===tile.morphT)return;
+    const p=mesh.geometry.attributes.position,base=mesh.userData.surfaceBase,uv=mesh.userData.surfaceWeights;
+    const heights=tile.mesh.geometry.attributes.position.array,n=tile._renderSeg+1;
+    for(let i=0;i<p.count;i++){
+      const a=base[i],b=a+n,d=a+1,c=b+1,u=uv[i*2],v=uv[i*2+1];
+      p.array[i*3+1]=(u+v<=1 ? heights[a*3+1]*(1-u-v)+heights[d*3+1]*u+heights[b*3+1]*v
+        : heights[c*3+1]*(u+v-1)+heights[b*3+1]*(1-u)+heights[d*3+1]*(1-v))+src.offset;
+    }
+    p.needsUpdate=true;
+    if(!tile.morphing)mesh.geometry.computeVertexNormals();
+    mesh.userData.surfaceGeometry=tile.mesh.geometry;mesh.userData.surfaceMorph=tile.morphT;
+  }
+
+  syncTerrainSurfaces(){
+    for(const t of this.tiles.values())if(t)for(const mesh of t.group.children)
+      if(mesh.isMesh&&mesh.userData.waterSource)this.syncSurface(mesh);
+  }
+
+  _surfaceHeight(src,x,z){
+    return this.terrain.getRenderedHeight(
+      Math.max(src.ox+.001,Math.min(src.ox+this.tileSize-.001,x)),
+      Math.max(src.oz+.001,Math.min(src.oz+this.tileSize-.001,z)))+src.offset;
   }
 
   redrapeWater(mesh){
@@ -287,9 +325,7 @@ class OSMManager {
     const step=this.tileSize/tile._renderSeg,positions=[];
     // At an exact seam, TerrainManager normally prefers the next tile. Its
     // LOD may differ. A surface owned by THIS tile must use THIS tile's edge.
-    const height=(x,z)=>this.terrain.getRenderedHeight(
-      Math.max(src.ox+0.001,Math.min(src.ox+this.tileSize-0.001,x)),
-      Math.max(src.oz+0.001,Math.min(src.oz+this.tileSize-0.001,z)))+src.offset;
+    const height=(x,z)=>this._surfaceHeight(src,x,z);
     for(let i=0;i<src.indices.length;i+=3){
       const tri=src.indices.slice(i,i+3).map(j=>[src.positions[j*3],src.positions[j*3+2]]);
       const xs=tri.map(p=>p[0]),zs=tri.map(p=>p[1]);
@@ -324,8 +360,20 @@ class OSMManager {
     for(let i=0;i<positions.length;i+=3)uv.push(positions[i]/260,positions[i+2]/260);
     geo.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));
     geo.computeVertexNormals(); geo.computeBoundingSphere();
+    geo.boundingSphere.radius+=200; // conservative throughout a height blend
     mesh.geometry.dispose(); mesh.geometry=geo;
     mesh.userData.yOffsets=new Float32Array(positions.length/3).fill(src.offset);
+    mesh.userData.surfaceSegments=tile._renderSeg;
+    mesh.userData.surfaceGeometry=tile.mesh.geometry;mesh.userData.surfaceMorph=tile.morphT;
+    const p=geo.attributes.position,base=new Uint16Array(p.count),weights=new Float32Array(p.count*2);
+    const seg=tile._renderSeg,n=seg+1;
+    for(let i=0;i<p.count;i++){
+      const fx=Math.max(.001/step,Math.min(seg-.001/step,(p.getX(i)-src.ox)/step));
+      const fz=Math.max(.001/step,Math.min(seg-.001/step,(p.getZ(i)-src.oz)/step));
+      const ix=Math.min(seg-1,Math.floor(fx)),iz=Math.min(seg-1,Math.floor(fz));
+      base[i]=ix+n*iz;weights[i*2]=fx-ix;weights[i*2+1]=fz-iz;
+    }
+    mesh.userData.surfaceBase=base;mesh.userData.surfaceWeights=weights;
   }
 
   _buildForestExclusion(data, ox, oz){
@@ -482,9 +530,6 @@ class OSMManager {
     if(!polys || polys.length === 0) return 0;
     const placements = this._forestPlacements(polys, ox, oz, exclusion);
     if(placements.length === 0) return 0;
-
-    const floor=this._buildFlatPolygons(polys,ox,oz,this.forestFloorMat,.18);
-    if(floor){ floor.name='osmForestFloor';group.add(floor); }
 
     const conifers = placements.filter(p => p.kind === 0);
     const deciduous = placements.filter(p => p.kind === 1);
@@ -717,6 +762,23 @@ const OSM_UP = new THREE.Vector3(0,1,0);
 
 function osmBuildingKey(x,z){ return `${Math.round(x*10)},${Math.round(z*10)}`; }
 
+function osmFadeScenery(mat){
+  const previous=mat.onBeforeCompile;
+  const key=typeof mat.customProgramCacheKey==='function'?mat.customProgramCacheKey():'standard';
+  mat.onBeforeCompile=shader=>{
+    if(previous)previous(shader);
+    shader.vertexShader='varying float sceneryDistance;\n'+shader.vertexShader;
+    shader.vertexShader=shader.vertexShader.replace('#include <project_vertex>',
+      '#include <project_vertex>\nsceneryDistance = length(mvPosition.xyz);');
+    shader.fragmentShader='varying float sceneryDistance;\n'+shader.fragmentShader;
+    shader.fragmentShader=shader.fragmentShader.replace('#include <clipping_planes_fragment>',
+      '#include <clipping_planes_fragment>\nfloat sceneryAlpha = 1.0 - smoothstep(5500.0, 8000.0, sceneryDistance);\n'+
+      'float sceneryDither = fract(dot(mod(floor(gl_FragCoord.xy), 4.0), vec2(0.0625, 0.25)));\n'+
+      'if (sceneryAlpha <= sceneryDither) discard;');
+  };
+  mat.customProgramCacheKey=()=> key+'-scenery-fade-161';
+}
+
 function osmSmooth(t){ return t*t*(3-2*t); }
 function osmValueNoise(x,z,salt){
   const ix=Math.floor(x),iz=Math.floor(z),fx=osmSmooth(x-ix),fz=osmSmooth(z-iz);
@@ -902,14 +964,14 @@ function makeOSMFacadePanel(variant=0,style=0){
   const canvas=document.createElement('canvas'); canvas.width=canvas.height=512;
   const c=canvas.getContext('2d');
   const profiles=[
-    {top:[42,174,319,438],bottom:[66,218,392],door:309},
-    {top:[28,132,286,421],bottom:[50,175,355,448],door:252},
-    {top:[70,210,350,448],bottom:[39,188,405],door:317},
-    {top:[35,151,274,416],bottom:[82,232,385],door:24}
+    {top:[90,343],bottom:[96,350],door:224},
+    {top:[64,333],bottom:[68,342],door:215},
+    {top:[125,353],bottom:[80,355],door:224},
+    {top:[68,262,417],bottom:[270,413],door:72}
   ];
   const profile={...profiles[(variant+style)%profiles.length]};
-  if(style===2){profile.top=[];profile.bottom=[50,203,404];}
-  if(style===3){profile.top=[82,374];profile.bottom=[];}
+  if(style===2){profile.top=[];profile.bottom=[110,355];}
+  if(style===3){profile.top=[102,369];profile.bottom=[];}
   const drawWindow=(x,wy,w=42,h=57)=>{
     c.fillStyle='#a69c84'; c.fillRect(x-5,wy-5,w+10,h+10);
     c.fillStyle=variant%2?'#596044':'#685244';
@@ -940,8 +1002,12 @@ function makeOSMFacadePanel(variant=0,style=0){
       c.strokeRect(col*40+(row%2)*20,y+223+row*16,40,16);
     }
     c.fillStyle='#c6bfaf'; c.fillRect(0,y+3,512,7);
-    for(const x of profile.top)drawWindow(x,y+31,variant===1?36:42,variant===2?64:57);
-    for(const x of profile.bottom){
+    // Side/rear faces have one opening per floor, with some blank walls.
+    // The entrance face carries only two or three windows per floor.
+    const top=panel===0?(style===2?[]:profile.top.slice(0,variant===2?0:1)):profile.top;
+    const bottom=panel===0?profile.bottom.slice(0,1):profile.bottom;
+    for(const x of top)drawWindow(x,y+31,variant===1?36:42,variant===2?64:57);
+    for(const x of bottom){
       if(panel===1&&Math.abs(x-profile.door)<62)continue;
       drawWindow(x,y+(style===2?78:136),variant===3?38:42,style===2?91:variant===0?62:57);
     }

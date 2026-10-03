@@ -57,7 +57,7 @@ global.fetch=async url=>{const b=fs.readFileSync(path.join(root,url.split('?')[0
   vm.runInContext(html.slice(roadStart,roadEnd)+'\nclearRoadsOnRunways();',roadContext);
   assert.deepEqual(runwayFaces(),{road:[0,0],farm:[0,0],forest:[0,0]},
     'mapped road, farmland and forest floors must not cover either runway');
-  assert(html.includes('LivingWorld.js?v=160'));assert(html.includes('MODULE 22'));
+  assert(html.includes('LivingWorld.js?v=161'));assert(html.includes('MODULE 23'));
   for(const id of ['convoy','train','ferry'])assert(html.includes(`id:'${id}'`),`mission ${id} missing`);
   assert(html.includes("livingWorld.missionTargets(m.traffic||m.id)"));assert(html.includes('livingWorld.destroyEntity(t.entity)'));
   // Execute the actual mission table/population logic with lightweight target
@@ -99,7 +99,7 @@ global.fetch=async url=>{const b=fs.readFileSync(path.join(root,url.split('?')[0
   const factory=[12000+f.x,20000+f.z];
   const world=new LivingWorld(scene,terrain,osm,{bridge,bridgeSpan:[b.x2-b.x1,b.z2-b.z1],factory,field:fields[0],airfields:fields});
 
-  assert.equal(LivingWorld.BUILD,22);assert.equal(OSMManager.BUILD,21);
+  assert.equal(LivingWorld.BUILD,22);assert.equal(OSMManager.BUILD,23);
   assert(world.routes.road.length>=3,'not enough real road routes');
   assert(world.routes.rail.length>=1,'real rail route missing');
   assert.equal(world.routes.water.length,1,'Rhine route missing');

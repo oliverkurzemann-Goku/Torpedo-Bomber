@@ -266,6 +266,11 @@ class TerrainTile {
     return Math.hypot(x - this.centerX, z - this.centerZ);
   }
 
+  distanceToBounds(x,z){
+    return Math.hypot(Math.max(this.worldOriginX-x,0,x-this.worldOriginX-this.tileSize),
+      Math.max(this.worldOriginZ-z,0,z-this.worldOriginZ-this.tileSize));
+  }
+
   // Height query local to this one tile (bounds-unchecked — callers that don't
   // already know (x,z) falls inside this tile should go through
   // TerrainManager.getHeight() instead, which works regardless of tiling).

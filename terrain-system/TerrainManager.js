@@ -106,6 +106,8 @@ class TerrainManager {
     const tile = this.tiles.get(key);
     if(!tile) return;
     this.scene.remove(tile.mesh);
+    if(tile.landcoverTexture)tile.landcoverTexture.dispose();
+    if(tile.materialOverride)tile.materialOverride.dispose();
     tile.dispose();
     this.tiles.delete(key);
   }
@@ -122,7 +124,9 @@ class TerrainManager {
   // update itself is already only ever done for tiles actually transitioning).
   updateLOD(focusX, focusZ, dt){
     for(const tile of this.tiles.values()){
-      const d = tile.distanceTo(focusX, focusZ);
+      // An aircraft at a tile corner is still directly above that tile. Centre
+      // distance used to coarsen the ground beneath low passes at every seam.
+      const d = tile.distanceToBounds(focusX, focusZ);
       const raw = rawLodFor(d);
       let lod = tile.lod >= 0 ? tile.lod : raw;
       if(raw < lod){
@@ -131,7 +135,7 @@ class TerrainManager {
         const curBoundary = lod < TERRAIN_LOD_DISTANCES.length ? TERRAIN_LOD_DISTANCES[lod] : Infinity;
         if(d >= curBoundary * TERRAIN_LOD_HYSTERESIS) lod = raw;   // downgrade: only once clearly past the band
       }
-      if(lod !== tile.lod) tile.setLOD(lod, this.material);
+      if(lod !== tile.lod) tile.setLOD(lod, tile.materialOverride||this.material);
       if(tile.morphing) tile.updateMorph(dt);
     }
   }
@@ -205,9 +209,43 @@ class TerrainManager {
 
   get tileCount(){ return this.tiles.size; }
 
+  setLandcover(tx,tz,data){
+    const tile=this.tiles.get(this._key(tx,tz));
+    if(!tile||typeof document==='undefined')return;
+    const canvas=document.createElement('canvas');canvas.width=canvas.height=128;
+    const ctx=canvas.getContext('2d'),scale=128/this.tileSize;
+    ctx.clearRect(0,0,128,128);
+    for(const [rings,colour] of [[data.farmland||[],'rgba(222,212,176,0.20)'],
+      [data.forests||[],'rgba(111,147,111,0.48)']]){
+      ctx.fillStyle=colour;
+      for(const ring of rings){
+        if(ring.length<3)continue;ctx.beginPath();ctx.moveTo(ring[0][0]*scale,ring[0][1]*scale);
+        for(let i=1;i<ring.length;i++)ctx.lineTo(ring[i][0]*scale,ring[i][1]*scale);
+        ctx.closePath();ctx.fill();
+      }
+    }
+    const texture=new THREE.CanvasTexture(canvas);
+    texture.generateMipmaps=true;texture.minFilter=THREE.LinearMipmapLinearFilter;
+    const material=this.material.clone();
+    material.onBeforeCompile=shader=>{
+      shader.uniforms.landCoverMap={value:texture};
+      shader.vertexShader='varying vec2 landCoverUv;\n'+shader.vertexShader;
+      shader.vertexShader=shader.vertexShader.replace('#include <uv_vertex>',
+        '#include <uv_vertex>\nlandCoverUv = uv;');
+      shader.fragmentShader='uniform sampler2D landCoverMap;\nvarying vec2 landCoverUv;\n'+shader.fragmentShader;
+      shader.fragmentShader=shader.fragmentShader.replace('#include <map_fragment>',
+        '#include <map_fragment>\nvec4 cover = texture2D(landCoverMap, landCoverUv);\n'+
+        'diffuseColor.rgb *= mix(vec3(1.0), cover.rgb, cover.a);');
+    };
+    material.customProgramCacheKey=()=> 'terrain-landcover-161';
+    tile.landcoverTexture=texture;tile.materialOverride=material;tile.mesh.material=material;
+  }
+
   dispose(){
     for(const tile of this.tiles.values()){
       this.scene.remove(tile.mesh);
+      if(tile.landcoverTexture)tile.landcoverTexture.dispose();
+      if(tile.materialOverride)tile.materialOverride.dispose();
       tile.dispose();
     }
     this.tiles.clear();
