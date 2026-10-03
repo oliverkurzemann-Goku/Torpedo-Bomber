@@ -2296,7 +2296,11 @@ function setupKeyboard(){
   const keys={};
   window.addEventListener('keydown',e=>{
     if(e.code==='Escape'||e.code==='KeyP'){if(!e.repeat)togglePause();e.preventDefault();return;}
-    if(e.code==='Enter'){if(state===ST.MENU)beginGame();else if(state===ST.BRIEF)launch();return;}
+    if(e.code==='Enter'){
+      // Native buttons own Enter: selecting a sortie must not also launch it.
+      if(e.repeat||e.target?.closest?.('button,a,input,select,summary'))return;
+      if(state===ST.MENU)beginGame();else if(state===ST.BRIEF)launch();return;
+    }
     if(steeringParachute()&&e.code.startsWith('Arrow')){keys[e.code]=true;e.preventDefault();applyKeyboardFlight();return;}
     if(state!==ST.FLIGHT)return;
     keys[e.code]=true;
