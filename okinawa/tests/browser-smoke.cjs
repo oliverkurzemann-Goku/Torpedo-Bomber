@@ -28,11 +28,11 @@ const cdn={
  const browser=await chromium.launch({executablePath:executable,headless:true,args:['--no-sandbox','--disable-dev-shm-usage','--use-angle=swiftshader','--enable-unsafe-swiftshader']});
  try{
   for(const scenario of [
+   {campaign:'remagen-mission.html'},
    {campaign:'torpedo-carrier.html',kind:'defend',ordinal:0},
    {campaign:'torpedo-carrier.html',kind:'sbd',ordinal:0},
    {campaign:'torpedo-carrier.html',kind:'sbd',ordinal:1},
-   {campaign:'torpedo-carrier.html',kind:'defend',ordinal:1},
-   {campaign:'remagen-mission.html'}
+   {campaign:'torpedo-carrier.html',kind:'defend',ordinal:1}
   ]){
    const {campaign}=scenario;
    const eu=campaign.startsWith('remagen'),context=await browser.newContext({viewport:{width:1024,height:768},deviceScaleFactor:1,hasTouch:true});
@@ -299,7 +299,7 @@ const cdn={
      await page.waitForFunction(()=>(state===ST.LAUNCH||state===ST.FLIGHT)&&eng.master.gain.value>.5);
      await page.locator('#pauseBtn').click();await page.locator('#menuBtn').click();
     }else{
-     await page.locator('#pauseMainMenu').click();await page.waitForURL('**/index.html?v=159');
+     await page.locator('#pauseMainMenu').click();await page.waitForURL('**/index.html?v=160');
      await page.locator('main.board').waitFor();
     }
     console.log('Browser pause: '+(scenario.ordinal===0?'abort, retained record and audible relaunch':'Main Menu returns to campaign board'));

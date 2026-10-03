@@ -13,7 +13,7 @@ Sekunde (15:09 Minuten intern). P-47, Bf 109 und Fw 190 tragen in Kampfmissionen
 60 zusätzliche Einheiten: 24:14 Minuten insgesamt bei Veteran, 18:39 bei Ace.
 Externer Tank wird zuerst geleert, sichtbarer Tank am gemessenen Rumpfbauch,
 7 m/s Widerstandsabzug, Drop Tank / T wirft Resttreibstoff und Tank ab.
-Me 262 separat 0,075/s bei Vollgas; Me 163 behält 0,46/s und Raketen-Gleitflug.
+Ju 87 0,08/s, Me 262 separat 0,075/s bei Vollgas; Me 163 behält 0,46/s und Raketen-Gleitflug.
 Übung ohne Zusatztank, Freiflug unbegrenzt. Alle zeitlich begrenzten normalen
 Kampfmissionen decken ihr Fenster plus zwei Minuten RTB auch auf Ace.
 
@@ -30,9 +30,10 @@ Positionen außerhalb Gebäude/Straßen/Wasser/Startbahnen, nur flaches Gelände
 Bis 24 weitere Rauchquellen sitzen auf tatsächlichen Schornsteinen und nutzen
 den bestehenden Partikelpool; höchstens vier Emissionen pro Rauch-Takt.
 Lokale Prüfung: 24 Terrain- und 16 Okinawa-Testdateien ohne Fehler; 45
-Fuel-/Schwierigkeitsfälle inklusive Rückflugreserve. Browserprüfung vorbereitet,
-lokal nicht ausführbar (Chromium beendet sich beim Start). Push durch automatische
-Freigabeprüfung blockiert; Build 160 noch NICHT veröffentlicht.
+Fuel-/Schwierigkeitsfälle inklusive Rückflugreserve. Browser-Regression rendert
+Fassaden/Baumkronen und prüft den originalen P-47 mit Tank, tatsächlichen
+Abwurfknopf, Treibstofferhalt und Ressourcen-Freigabe. Veröffentlichung vom
+Nutzer freigegeben; echte Browserprüfungen laufen über GitHub CI.
 Keine echte iPad/Safari-FPS-Messung. Aktuelle Kampagne ist remagen-mission.html,
 nicht das ausgeblendete Classic thunderbolt-europe.html.
 
