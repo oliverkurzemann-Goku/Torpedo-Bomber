@@ -14,6 +14,20 @@ Every Remagen revision handed to Oliver for testing must increment the visible b
 
 The local terrain scripts carry explicit `?v=` versions. `OSMManager.BUILD` and `HistoricalObjectManager.BUILD` remain at 21; `LivingWorld.BUILD` and `WorldVehicles.BUILD` are at 22. All are checked during startup and the banner gains `MODULE 22` only after the checks succeed. This prevents an updated HTML document from silently running older Safari-cached terrain modules.
 
+## Game Build 160 — varied villages and woodland
+
+The current Thunderbolt campaign uses this real Rhine world directly. Build 160
+adds 16 facade variations through four 1024px atlases and a per-instance UV offset,
+retaining four wall material buckets and avoiding instanceColor. Single-storey
+cottages, timbered homes, barns, differing roof slopes and two dormer buckets
+break up the former grid; building budget is at most 12 buckets per tile.
+Shared tree geometry now forms tiered firs, clustered broadleaf crowns, narrow
+poplars and drooping willows; shrubs retain the original edge placement. Seven
+forest buckets replace five, without adding trees or weakening water clearances.
+80 bounded village yards add five global instance buckets; chimney smoke reuses
+the existing pool and is limited to four emissions per tick. The existing terrain
+module BUILD identities stay unchanged; changed scripts use ?v=160 explicitly.
+
 ## Build 21 — licensed period traffic and readable telegraph lines
 
 Oliver confirmed that terrain was improved but the remaining moving civilian traffic and train

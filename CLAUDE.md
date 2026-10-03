@@ -5,7 +5,36 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 159 · Thunderbolt Squadron BUILD 159 · Remagen-Kern 21 / Fahrzeuge 22**
+Stand bei Übergabe: **Torpedo Squadron BUILD 160 · Thunderbolt Squadron BUILD 160 · Remagen-Kern 21 / Fahrzeuge 22**
+
+**Build 160 (03.10.2026): Thunderbolt-Reichweite und vielfältigere Rheinlandschaft.**
+Piston-Flugzeuge verbrauchen bei Vollgas auf Veteran 0,11 interne Tank-Prozent pro
+Sekunde (15:09 Minuten intern). P-47, Bf 109 und Fw 190 tragen in Kampfmissionen
+60 zusätzliche Einheiten: 24:14 Minuten insgesamt bei Veteran, 18:39 bei Ace.
+Externer Tank wird zuerst geleert, sichtbarer Tank am gemessenen Rumpfbauch,
+7 m/s Widerstandsabzug, Drop Tank / T wirft Resttreibstoff und Tank ab.
+Me 262 separat 0,075/s bei Vollgas; Me 163 behält 0,46/s und Raketen-Gleitflug.
+Übung ohne Zusatztank, Freiflug unbegrenzt. Alle zeitlich begrenzten normalen
+Kampfmissionen decken ihr Fenster plus zwei Minuten RTB auch auf Ace.
+
+Vier bestehende Fassaden-Buckets nutzen jeweils vier Atlas-Zellen (insgesamt
+16 Fassaden), per InstancedBufferAttribute und r128 UV-Shader: Putz, Fachwerk,
+eingeschossige Höfe und Scheunen. Keine instanceColor. Vier 1024px-Atlanten
+statt vier 512px-Atlanten; zusätzliche RGBA-Basisebenen etwa 12 MiB.
+Neue Gauben, variable Dachneigungen, niedrige Häuser. Gebäude maximal zwölf
+statt zehn Buckets/Kachel. Wälder maximal sieben statt fünf: geschichtete
+Tannen, gelappte Laubbäume, schmale Pappeln, Weiden und Sträucher. Baumanzahl
+und Wasser-/Straßen-Abstände bleiben gleich. 80 kleine Höfe mit Zäunen,
+Kisten, Brunnen oder Schutt in höchstens fünf globalen Instanz-Buckets;
+Positionen außerhalb Gebäude/Straßen/Wasser/Startbahnen, nur flaches Gelände.
+Bis 24 weitere Rauchquellen sitzen auf tatsächlichen Schornsteinen und nutzen
+den bestehenden Partikelpool; höchstens vier Emissionen pro Rauch-Takt.
+Lokale Prüfung: 24 Terrain- und 16 Okinawa-Testdateien ohne Fehler; 45
+Fuel-/Schwierigkeitsfälle inklusive Rückflugreserve. Browserprüfung vorbereitet,
+lokal nicht ausführbar (Chromium beendet sich beim Start). Push durch automatische
+Freigabeprüfung blockiert; Build 160 noch NICHT veröffentlicht.
+Keine echte iPad/Safari-FPS-Messung. Aktuelle Kampagne ist remagen-mission.html,
+nicht das ausgeblendete Classic thunderbolt-europe.html.
 
 **Build 159 (03.10.2026): Querformat-Menüs, realistische Kampagnenbilder und Pause-Ausgänge.**
 Startseite auf zwei kompakte Kampagnenkarten reduziert; Workshop und Steuerungs-

@@ -40,10 +40,10 @@ const cdn={
     const file=cdn[new URL(route.request().url()).pathname.split('/').pop()];
     if(file)await route.fulfill({path:file,contentType:'application/javascript'});else await route.abort();
    });
-   const page=await context.newPage(),errors=[],modelRequests=[];
+   const page=await context.newPage(),errors=[],shaderErrors=[],modelRequests=[];
    page.on('request',r=>{if(new URL(r.url()).pathname.endsWith('.glb'))modelRequests.push(decodeURIComponent(new URL(r.url()).pathname));});
    page.on('pageerror',e=>{errors.push(e.message);console.error('Browser error '+campaign+': '+e.stack);});page.setDefaultTimeout(120000);
-   page.on('console',m=>{if(m.type()==='error'&&!m.text().includes('Failed to load resource'))console.error('Browser console '+campaign+': '+m.text());});
+   page.on('console',m=>{if(/Shader Error|VALIDATE_STATUS|not compiled/i.test(m.text()))shaderErrors.push(m.text());if(m.type()==='error'&&!m.text().includes('Failed to load resource'))console.error('Browser console '+campaign+': '+m.text());});
    await page.goto('http://127.0.0.1:'+server.address().port+'/'+campaign,{waitUntil:'domcontentloaded'});
    await page.waitForFunction(()=>typeof state!=='undefined'&&state===ST.MENU&&document.querySelector('#menu:not(.hidden)'));
    if(eu||scenario.kind==='defend'&&scenario.ordinal===0){
@@ -96,7 +96,47 @@ const cdn={
    await page.locator('#flightHints').uncheck();
    assert.equal(await page.evaluate(()=>GameRuntime.storage.getItem('flightHints')),'0');
    await page.locator('#flightHints').check();
-   if(eu){await page.locator('#missionSel .chip').first().click();await page.locator('#startBtn').click();await page.locator('#brGo').click();}
+   if(eu){
+    await page.locator('#missionSel .chip').nth(2).click();await page.locator('#startBtn').click();await page.locator('#brGo').click();
+    await page.waitForFunction(()=>state===ST.FLIGHT&&P.tankAttached&&!!dropTank);
+    await page.evaluate(()=>{P.onGround=false;P.pos.y=groundY(P.pos.x,P.pos.z)+500;P.spd=110;planeGroup.position.copy(P.pos);planeGroup.updateMatrixWorld(true);syncTankButton();});
+    assert(await page.locator('#tankBtn').isVisible(),'combat tank has a touch control');
+    const tankRect=await page.locator('#tankBtn').boundingBox();assert(tankRect.x>=0&&tankRect.y+tankRect.height<=768,'tank lever fits landscape');
+    await page.locator('#pauseBtn').click();
+    const out=path.join(root,'test-visuals');fs.mkdirSync(out,{recursive:true});
+    const tankPng=await page.evaluate(()=>{
+     const studio=new THREE.Scene();studio.background=new THREE.Color(0xa4bbcc);studio.add(new THREE.HemisphereLight(0xffffff,0x544532,1.2));
+     const sun=new THREE.DirectionalLight(0xffefcf,.9);sun.position.set(4,9,-7);studio.add(sun);
+     const frame=planeGroup.clone(true);frame.position.set(0,0,0);studio.add(frame);
+     const cam=new THREE.PerspectiveCamera(40,1024/768,.1,100);cam.position.set(12,-3,17);cam.lookAt(0,-.5,0);
+     renderer.setPixelRatio(1);renderer.render(studio,cam);const png=renderer.domElement.toDataURL('image/png');renderer.setPixelRatio(.25);return png;
+    });
+    fs.writeFileSync(path.join(out,'p47-external-tank.png'),Buffer.from(tankPng.split(',')[1],'base64'));
+    const villagePng=await page.evaluate(()=>{
+     const studio=new THREE.Scene();studio.background=new THREE.Color(0xb8c8cf);studio.add(new THREE.HemisphereLight(0xf8f2df,0x5a6043,1.2));
+     const sun=new THREE.DirectionalLight(0xffefd2,1);sun.position.set(-50,100,60);studio.add(sun);
+     const ground=new THREE.Mesh(new THREE.PlaneGeometry(230,180),new THREE.MeshLambertMaterial({color:0x71815b}));ground.rotation.x=-Math.PI/2;studio.add(ground);
+     const mgr=new OSMManager(studio,1000,{getRenderedHeight:()=>0}),g=new THREE.Group();studio.add(g);
+     mgr._buildBuildings(g,Array.from({length:16},(_,i)=>({x:(i%4)*25-40,z:Math.floor(i/4)*28-40,w:12+i%3*3,d:10+i%4*2,rotY:(i%3-1)*.12})),0,0);
+     for(const [i,geo] of [mgr.coniferGeo,mgr.deciduousGeo,mgr.poplarGeo,mgr.willowGeo].entries()){
+      const crown=new THREE.Mesh(geo,[mgr.coniferMat,mgr.deciduousMat,mgr.poplarMat,mgr.willowMat][i]);crown.position.set(-60+i*30,6,64);studio.add(crown);
+      const trunk=new THREE.Mesh(mgr.trunkGeo,mgr.trunkMat);trunk.position.set(-60+i*30,2.5,64);studio.add(trunk);
+     }
+     const cam=new THREE.PerspectiveCamera(45,1024/768,.1,500);cam.position.set(105,55,145);cam.lookAt(0,4,5);
+     renderer.setPixelRatio(1);renderer.render(studio,cam);const png=renderer.domElement.toDataURL('image/png');renderer.setPixelRatio(.25);
+     const geometries=new Set(),materials=new Set();studio.traverse(o=>{if(o.isMesh){geometries.add(o.geometry);materials.add(o.material);}});
+     for(const g of geometries)g.dispose();for(const m of materials){m.map?.dispose();m.dispose();}return png;
+    });
+    fs.writeFileSync(path.join(out,'rhine-village-variants.png'),Buffer.from(villagePng.split(',')[1],'base64'));
+    assert.deepEqual(shaderErrors,[],'r128 compiles facade instancing and crown shaders');
+    await page.locator('#pmResume').click();
+    const internal=await page.evaluate(()=>P.fuel);await page.locator('#tankBtn').click();
+    assert(await page.evaluate(()=>!P.tankAttached&&!dropTank&&!!fallingTank&&P.tankFuel===0),'actual touch lever detaches and drops the model');
+    assert(Math.abs(await page.evaluate(()=>P.fuel)-internal)<1,'jettison preserves internal fuel');
+    await page.keyboard.press('t');assert(await page.evaluate(()=>!P.tankAttached),'repeated jettison does not restore the tank');
+    await page.evaluate(()=>{updateDropTank(11);});assert(await page.evaluate(()=>!fallingTank),'falling tank cleanup releases geometry');
+    console.log('Browser Thunderbolt: original P-47 tank, touch jettison, preserved internal fuel, disposal and facade/crown WebGL rendering pass');
+   }
    else{
     assert.equal(modelRequests.length,0,'menu must not eagerly decode every GLB');
     const selected=await page.evaluate(s=>MISSIONS.map((m,i)=>m[s.kind]?i:-1).filter(i=>i>=0)[s.ordinal],scenario);

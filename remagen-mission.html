@@ -135,6 +135,7 @@
   #flapBtn{left:max(20px,env(safe-area-inset-left));top:calc(30% + 56px);}
   #armBtn{left:max(20px,env(safe-area-inset-left));top:calc(30% + 112px);}
   #aeroBtn{left:max(20px,env(safe-area-inset-left));top:calc(30% + 168px);}
+  #tankBtn{left:max(86px,calc(env(safe-area-inset-left) + 86px));top:30%;display:none;}
   #diveBrakeBtn{left:max(20px,env(safe-area-inset-left));top:calc(30% + 224px);display:none;}
   #bailBtn{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 22px);
     transform:translateX(-50%);z-index:22;display:none;touch-action:manipulation;
@@ -264,7 +265,7 @@
   .opsLegend{font:11px/1.5 monospace;color:#d7c797;text-align:left;margin-top:5px;}
   #opsStatus{position:fixed;top:calc(env(safe-area-inset-top) + 76px);left:50%;transform:translateX(-50%);color:#edcc80;background:rgba(14,20,18,.78);padding:5px 9px;font:10px monospace;pointer-events:none;z-index:9;max-width:58vw;text-align:center;}
 </style>
-<link rel="stylesheet" href="menu-layout.css?v=159">
+<link rel="stylesheet" href="menu-layout.css?v=160">
 </head>
 <body>
 <!-- ===== TEMP TEST-ONLY VERSION BANNER — asked for by Oliver: "kannst du irgendwo einbauen,
@@ -286,7 +287,7 @@
   <div style="width:100%;height:4px;background:repeating-linear-gradient(45deg,#ffd400,#ffd400 8px,#111 8px,#111 16px);"></div>
   <span id="testVersionBannerText" style="background:#111;color:#ffd400;font-family:monospace;font-weight:800;font-size:11px;letter-spacing:.5px;padding:3px 10px;border:1px solid #ffd400;border-top:none;border-radius:0 0 6px 6px;"></span>
 </div>
-<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 159';</script>
+<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 160';</script>
 <!-- ===== END TEMP TEST-ONLY VERSION BANNER ===== -->
 <div id="app"></div>
 
@@ -315,7 +316,7 @@
   <div id="flash"></div>
   <div id="gunsight"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 159 · REAL RHINE</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 160 · REAL RHINE</div>
 
   <div id="apr">
     <div id="aprCall"></div>
@@ -340,6 +341,7 @@
 <div id="armBtn" class="ctlBtn">ARM<br>BOMB</div>
 <div id="aeroBtn" class="ctlBtn" title="Rate control for rolls and loops">AERO<br>OFF</div>
 <div id="diveBrakeBtn" class="ctlBtn" title="Stuka dive brakes (D)">DIVE<br>BRAKES</div>
+<button id="tankBtn" class="ctlBtn" type="button" title="Jettison external fuel tank (T)">DROP<br>TANK</button>
 <button id="bailBtn" type="button" title="Emergency parachute (B)">BAIL OUT</button>
 <div id="steerBtn">STEER<br>L/R</div>
 <div id="turnBtn" class="ctlBtn" style="display:none;left:max(20px,env(safe-area-inset-left));top:calc(30% + 280px);width:58px;height:50px;">TURN<br>MODEL</div>
@@ -363,7 +365,7 @@
 </div>
 
 <div class="overlay hidden" id="menu" data-campaign="europe">
-  <div class="menuTop"><a id="selBtn" href="index.html?v=159">&#9664; Change Game</a><span class="menuMeta">RHINE OPERATIONS<br>BUILD 159</span></div>
+  <div class="menuTop"><a id="selBtn" href="index.html?v=160">&#9664; Change Game</a><span class="menuMeta">RHINE OPERATIONS<br>BUILD 160</span></div>
   <div class="card menuCard">
     <aside class="menuOverview" aria-label="Campaign and pilot options">
     <div class="campaignArt" aria-hidden="true"></div>
@@ -459,11 +461,11 @@
 <script src="terrain-system/HeightProvider.js?v=remagen-21"></script>
 <script src="terrain-system/TerrainTile.js?v=remagen-21"></script>
 <script src="terrain-system/TerrainManager.js?v=remagen-21"></script>
-<script src="terrain-system/OSMManager.js?v=remagen-21-128"></script>
+<script src="terrain-system/OSMManager.js?v=160"></script>
 <script src="terrain-system/HistoricalObjectManager.js?v=remagen-21"></script>
 <script src="terrain-system/AirfieldDetails.js?v=remagen-21"></script>
 <script src="terrain-system/WorldVehicles.js?v=remagen-22"></script>
-<script src="terrain-system/LivingWorld.js?v=149"></script>
+<script src="terrain-system/LivingWorld.js?v=160"></script>
 <script src="campaign.js?v=1"></script>
 <script src="game-runtime.js?v=157"></script>
 <script src="combat-fx.js?v=157"></script>
@@ -474,6 +476,7 @@
 <script src="audio/weapon-sound.js?v=144"></script>
 <script src="audio/jet-engine.js?v=144"></script>
 <script src="sortie-systems.js?v=146"></script>
+<script src="sortie-fuel.js?v=160"></script>
 <script src="operation-plans.js?v=147"></script>
 <script>
 // ============================================================
@@ -785,7 +788,7 @@ async function loadRealWorld(){
 
   if(OSMManager.BUILD!==21||HistoricalObjectManager.BUILD!==21||LivingWorld.BUILD!==22||WorldVehicles.BUILD!==22) throw new Error('Terrain version mismatch. Reload Remagen.');
   document.getElementById('testVersionBannerText').textContent=
-    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 159 · MODULE 22';
+    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 160 · MODULE 22';
   heightProvider=new DEMHeightProvider(RTILE,'terrain-system/real/data/dem/');
   terrain=new TerrainManager(scene,RTILE,heightProvider);
   osmMgr=new OSMManager(scene,RTILE,terrain,'terrain-system/real/data/osm/');
@@ -3961,7 +3964,7 @@ function updateFlight(dt){
   const stallSpd=STALL_SPD+P.gear*2-P.flap*4;
   // thrust -> target speed, modified by attitude, gear, flaps
   let eff = THR_MIN_SPD + (MAX_SPD-THR_MIN_SPD)*P.throttle;
-  eff -= Math.sin(P.pitch)*62 + P.flap*11 + P.gear*6;
+  eff -= Math.sin(P.pitch)*62 + P.flap*11 + P.gear*6 + (P.tankAttached?7:0);
   if(P.ac==='ju87')eff-=P.diveBrakeVisual*(30+Math.max(0,-P.pitch)*25);
   if(P.ac==='me163' && (P.fuel<=0||P.throttle<0.01)){
     // With the rocket off the Komet trades altitude for airspeed. Closing the
@@ -4069,9 +4072,12 @@ function updateFlight(dt){
 
   // fuel
   if(!isFree()){
-    P.fuel-=(P.ac==='me163'?P.throttle*0.46:(0.10+P.throttle*0.26))*D().fuel*dt;
-    if(P.fuel<=0){ P.fuel=0; P.throttle=0; setThrottleUI(0); }
-    if(P.fuel<25 && !P.bingo){ P.bingo=true; flash('BINGO FUEL — RTB',1600); radioSay('YOU ARE ON FUMES — GET HOME'); }
+    SortieFuel.consume(P,dt,D().fuel);
+    if(SortieFuel.total(P)<=0){ P.throttle=0; setThrottleUI(0); }
+    if(SortieFuel.total(P)<25 && !P.bingo){ P.bingo=true; flash('BINGO FUEL — RTB',1600); radioSay('LOW FUEL — RETURN TO YOUR FIELD'); }
+    if(P.tankAttached&&P.tankFuel<=0&&!P.tankEmptyWarned){
+      P.tankEmptyWarned=true;flash('EXTERNAL TANK EMPTY — DROP TANK / T',2400);
+    }
   }
   resolveGround(dt);
 }
@@ -4247,7 +4253,8 @@ function startMission(i){
   sortieKills={flak:0,bridge:0,factory:0,truck:0,train:0,ferry:0,air:0,bomber:0};
   const plan=briefPlan||chooseEuropePlan(i);
   europeOps=new FlightOps.Operation(plan.config);weather=plan.weather;
-  P.fuel=plan.config.fuel||100;wxTime=0;baseWind=plan.wind;windZ=baseWind;
+  SortieFuel.reset(P,plan.config.fuel??100,!m.free&&!m.circuits);
+  clearDropTank();wxTime=0;baseWind=plan.wind;windZ=baseWind;
   document.getElementById('opsStatus').textContent='';
   applyWeather();
   clearWorld();
@@ -4255,6 +4262,7 @@ function startMission(i){
   if(playerModel){ planeGroup.remove(playerModel); }
   playerModel=buildAircraft(P.ac);
   planeGroup.add(playerModel);
+  installDropTank();
   relaunch();
   populate();
   if(m.enemyAir) spawnEnemyAir(m.enemyAir);
@@ -4427,7 +4435,8 @@ function updateHUD(){
   const hdg=((P.heading*R2D)%360+360)%360;
   document.getElementById('hHdg').textContent=String(Math.round(hdg)%360).padStart(3,'0');
   document.getElementById('hVsi').innerHTML=Math.round(P.vSpeed*FT*60/50)*50+'<small> FPM</small>';
-  document.getElementById('hFuel').innerHTML=Math.round(P.fuel)+'<small> %</small>';
+  document.getElementById('hFuel').innerHTML=Math.round(P.fuel)+'<small> %'+(P.tankAttached?' + '+Math.ceil(P.tankFuel)+' EXT':'')+'</small>';
+  syncTankButton();
   document.getElementById('hHull').innerHTML=Math.round(P.hull)+'<small> %</small>';
   document.getElementById('hOrd').textContent=P.bombs;
   document.getElementById('hRkt').textContent=P.rockets;
@@ -4883,6 +4892,49 @@ function applyWeaponUI(){
   const lb=document.getElementById('hOrdLbl'); if(lb) lb.textContent='BOMBS';
   if(a) a.style.display=(loadout.rockets>0)?'flex':'none';
 }
+let dropTank=null,fallingTank=null;
+function syncTankButton(){
+  const b=document.getElementById('tankBtn');if(!b)return;
+  b.style.display=state===ST.FLIGHT&&P.tankAttached?'flex':'none';
+  b.classList.toggle('on',P.tankFuel<=0);
+  b.innerHTML='DROP TANK<br>'+Math.ceil(P.tankFuel)+' EXT';
+}
+function clearDropTank(){
+  for(const o of [dropTank,fallingTank?.mesh])if(o){
+    o.parent?.remove(o);o.traverse(m=>{if(m.isMesh){m.geometry.dispose();m.material.dispose();}});
+  }
+  dropTank=null;fallingTank=null;
+}
+function installDropTank(){
+  if(!P.tankAttached)return;
+  const g=new THREE.Group();g.name='externalFuelTank';
+  const silver=new THREE.MeshStandardMaterial({color:0xa3a49c,roughness:.55,metalness:.35});
+  const body=new THREE.Mesh(new THREE.SphereGeometry(1,16,10),silver);
+  body.scale.set(.31,.29,1.25);body.position.y=-.43;g.add(body);
+  const skin=localFloor(playerModel,0,0,.3);
+  g.position.set(0,Number.isFinite(skin)?skin+.035:-.7,0);
+  const pylon=new THREE.Mesh(new THREE.BoxGeometry(.12,.27,.42),silver.clone());
+  pylon.position.y=-.12;g.add(pylon);planeGroup.add(g);dropTank=g;
+}
+function jettisonDropTank(){
+  if(state!==ST.FLIGHT||!P.alive||P.onGround||!P.tankAttached)return;
+  const discarded=SortieFuel.jettison(P);
+  if(dropTank){
+    scene.attach(dropTank);
+    fallingTank={mesh:dropTank,velocity:new THREE.Vector3(Math.sin(P.heading)*P.spd,P.vSpeed,Math.cos(P.heading)*P.spd),age:0};
+    dropTank=null;
+  }
+  syncTankButton();flash('TANK AWAY — '+Math.round(discarded)+' FUEL DISCARDED',1600);
+}
+function updateDropTank(dt){
+  syncTankButton();
+  if(!fallingTank)return;
+  const f=fallingTank;f.age+=dt;f.velocity.y-=9.81*dt;f.mesh.position.addScaledVector(f.velocity,dt);
+  f.mesh.rotateX(dt*.65);
+  if(f.age>10||f.mesh.position.y<=groundY(f.mesh.position.x,f.mesh.position.z)){
+    f.mesh.parent?.remove(f.mesh);f.mesh.traverse(m=>{if(m.isMesh){m.geometry.dispose();m.material.dispose();}});fallingTank=null;
+  }
+}
 function syncDiveBtn(){
   const dive=document.getElementById('diveBrakeBtn');if(!dive)return;
   dive.style.display=P.ac==='ju87'?'flex':'none';
@@ -4895,6 +4947,7 @@ function resetCtlUI(){
   const f=document.getElementById('flapBtn'); if(f){f.style.display=P.ac==='me163'?'none':'';
     f.classList.remove('on'); f.innerHTML='FLAPS<br>UP'; }
   syncDiveBtn();
+  syncTankButton();
 }
 function toggleDiveBrakes(){
   if(state!==ST.FLIGHT||P.ac!=='ju87')return;
@@ -4922,6 +4975,7 @@ function showBrief(i){
     +'<br><b>ARMAMENT</b> Guns'+(loadout.bombs?' · '+loadout.bombs+' bombs':'')
     +(loadout.rockets?' · '+loadout.rockets+' rockets':'')
     +((m.ac==='me262'||m.ac==='me163')?'<br><b>INTERCEPTION</b> Climb above the clouds; the flight limit is 8,000 m. Contacts patrol inland, not along the map edge.':'')
+    +(SortieFuel.supports(m.ac)&&!m.free&&!m.circuits?'<br><b>FUEL</b> Internal '+(briefPlan.config.fuel??100)+'% + 60 external. External fuel is used first. Drop Tank / T sheds remaining fuel and drag before combat.':'')
     +FlightOps.briefText(briefPlan.weather,briefPlan.config,briefPlan.wind);
   document.getElementById('briefLandingSpeed').textContent=landingSpeedNote(m);
   drawEuropeBrief(m);
@@ -5070,6 +5124,7 @@ function bindInput(){
   document.getElementById('aeroBtn').addEventListener('pointerdown',e=>{ e.preventDefault();toggleAero(); });
   document.getElementById('diveBrakeBtn').addEventListener('pointerdown',e=>{e.preventDefault();toggleDiveBrakes();});
   document.getElementById('bailBtn').addEventListener('pointerdown',e=>{e.preventDefault();beginBailout();});
+  document.getElementById('tankBtn').addEventListener('pointerdown',e=>{e.preventDefault();jettisonDropTank();});
   // ---- live left/right invert, exactly as in the carrier game ----
   const st=document.getElementById('steerBtn');
   st.addEventListener('pointerdown',e=>{ e.preventDefault();
@@ -5118,6 +5173,7 @@ function bindInput(){
     if((e.key==='g'||e.key==='G')&&P.ac!=='ju87') P.gearTgt=P.gearTgt>0.5?0:1;
     if((e.key==='a'||e.key==='A')&&!e.repeat) toggleAero();
     if((e.key==='d'||e.key==='D')&&!e.repeat) toggleDiveBrakes();
+    if((e.key==='t'||e.key==='T')&&!e.repeat) jettisonDropTank();
     if((e.key==='b'||e.key==='B')&&!e.repeat) beginBailout();
   });
   window.addEventListener('keyup',e=>{keys[e.key]=false;if(e.key==='f'||e.key==='F')firing=false;
@@ -5165,6 +5221,7 @@ function exitToMenuFromPause(){
   show('pauseMenu',false);
   if(eng) eng.master.gain.setTargetAtTime(0.0001,actx.currentTime,0.05);
   state=ST.MENU;
+  clearDropTank();syncTankButton();
   document.getElementById('bailBtn').style.display='none';
   document.getElementById('opsStatus').textContent='';
   document.getElementById('flash').classList.remove('show');
@@ -5259,7 +5316,7 @@ function init(){
   buildMenu();
   // menu wiring
   document.getElementById('startBtn').onclick=()=>showBrief(selectedMission);
-  document.getElementById('pauseMainMenu').onclick=()=>{exitToMenuFromPause();window.location.href='index.html?v=159';};
+  document.getElementById('pauseMainMenu').onclick=()=>{exitToMenuFromPause();window.location.href='index.html?v=160';};
   document.getElementById('logBtn').onclick=()=>{ show('menu',false); showLogbook(); };
   document.getElementById('brBack').onclick=()=>{ show('brief',false); show('menu',true); state=ST.MENU; };
   document.getElementById('brGo').onclick=async()=>{
@@ -5349,6 +5406,7 @@ function animate(){
   if(state===ST.PAUSED||document.hidden||runtimeSession?.graphicsLost||renderer.getContext().isContextLost())return;
   const raw=Math.min(0.05,clock.getDelta());
   let dt=raw;
+  updateDropTank(raw);
   if(killCam){ killCam.t-=raw; killCam.ang+=raw*0.6; if(killCam.t<=0) killCam=null; else dt=raw*0.45; }
   if(shakeT>0) shakeT=Math.max(0,shakeT-raw);
   if(realWorldReady){

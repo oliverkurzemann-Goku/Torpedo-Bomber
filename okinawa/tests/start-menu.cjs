@@ -7,7 +7,7 @@ for(const file of ['torpedo-carrier.html','remagen-mission.html']){
   assert(menu[1].indexOf('id="selBtn"')<menu[1].indexOf('class="card menuCard"'),`${file}: Change Game above scrolling missions`);
   assert.match(html,/#menu:not\(\.hidden\)\{display:block;overscroll-behavior:contain;/,`${file}: menu scrolls on landscape iPad`);
   assert.match(menu[1],/<details class="quickGuide"><summary>Controls &amp; landing guide/,`${file}: guide remains one tap away without crowding missions`);
-  assert.match(html,/<link rel="stylesheet" href="menu-layout.css\?v=159">/);
+  assert.match(html,/<link rel="stylesheet" href="menu-layout.css\?v=160">/);
   assert.match(menu[1],/class="menuOverview"/);
   assert.match(menu[1],/class="missionPanel"/);
   assert.match(html,/id="pauseMainMenu">Main Menu · Change Game/);

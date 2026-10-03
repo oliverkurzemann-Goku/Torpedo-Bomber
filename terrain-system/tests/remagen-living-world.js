@@ -57,7 +57,7 @@ global.fetch=async url=>{const b=fs.readFileSync(path.join(root,url.split('?')[0
   vm.runInContext(html.slice(roadStart,roadEnd)+'\nclearRoadsOnRunways();',roadContext);
   assert.deepEqual(runwayFaces(),{road:[0,0],farm:[0,0],forest:[0,0]},
     'mapped road, farmland and forest floors must not cover either runway');
-  assert(html.includes('LivingWorld.js?v=149'));assert(html.includes('MODULE 22'));
+  assert(html.includes('LivingWorld.js?v=160'));assert(html.includes('MODULE 22'));
   for(const id of ['convoy','train','ferry'])assert(html.includes(`id:'${id}'`),`mission ${id} missing`);
   assert(html.includes("livingWorld.missionTargets(m.traffic||m.id)"));assert(html.includes('livingWorld.destroyEntity(t.entity)'));
   // Execute the actual mission table/population logic with lightweight target
@@ -107,6 +107,9 @@ global.fetch=async url=>{const b=fs.readFileSync(path.join(root,url.split('?')[0
   assert(world._pointOnWater(bridge[0],bridge[1]),'historical bridge centre is not on rendered water');
   for(const p of world.routes.water[0].points.slice(1))assert(world._waterClear(p[0],p[1]),'ferry route left the Rhine');
 
+  assert(world.villageCounts.yards>20&&world.villageCounts.yards<=80,'bounded village courtyards exist on real data');
+  assert(world.villageCounts.buckets<=5,'village details retain a bounded draw budget');
+  assert(world.smokeSources.length>2&&world.smokeSources.length<=26,'real chimney smoke sources are bounded');
   const count=kind=>world.entities.filter(e=>e.kind===kind).length;
   assert.equal(count('truck'),12);assert.equal(count('train'),1);assert.equal(count('ferry'),2);
   assert.equal(count('wagon')+count('civil'),12);
@@ -172,6 +175,6 @@ global.fetch=async url=>{const b=fs.readFileSync(path.join(root,url.split('?')[0
   console.log(JSON.stringify({
     routes:{road:world.routes.road.map(r=>Math.round(r.length)),rail:world.routes.rail.map(r=>Math.round(r.length)),rhine:Math.round(world.routes.water[0].length)},
     entities:{trucks:count('truck'),trains:count('train'),ferries:count('ferry'),ambient:count('wagon')+count('civil'),meshes:entityMeshes},
-    rural:d,roadFacesCleared:crossingBefore,smokeEvents:smoke.length,browserTest:false
+    rural:d,villages:world.villageCounts,roadFacesCleared:crossingBefore,smokeEvents:smoke.length,browserTest:false
   },null,2));
 })().catch(e=>{console.error(e);process.exit(1);});

@@ -24,7 +24,7 @@ class Matrix4 {
   }
 }
 class Geometry { dispose(){ this.disposed=true; } }
-class BoxGeometry extends Geometry {}
+class BoxGeometry extends Geometry {constructor(){super();this.attributes={};}setAttribute(n,v){this.attributes[n]=v;return this;}}
 class CylinderGeometry extends Geometry {}
 class ConeGeometry extends Geometry {}
 class DodecahedronGeometry extends Geometry {}
@@ -64,7 +64,7 @@ class InstancedMesh extends Mesh {
 
 global.THREE={
   Vector3,Quaternion,Matrix4,BoxGeometry,CylinderGeometry,ConeGeometry,
-  DodecahedronGeometry,BufferGeometry,Float32BufferAttribute,
+  DodecahedronGeometry,BufferGeometry,Float32BufferAttribute,InstancedBufferAttribute:Float32BufferAttribute,
   MeshStandardMaterial,Group,Mesh,InstancedMesh
 };
 
@@ -100,7 +100,7 @@ const forestA=[[100,100],[900,100],[900,900],[100,900],[100,100]];
 const forestB=[[500,500],[1300,500],[1300,1300],[500,1300],[500,500]];
 const treeCount=osm._buildForests(forestGroup,[forestA,forestB],0,0);
 assert(treeCount>0,'forest: no placements generated');
-assert(forestGroup.children.length<=5,`forest: expected <=5 bounded buckets, got ${forestGroup.children.length}`);
+assert(forestGroup.children.length<=7,`forest: expected <=7 bounded buckets, got ${forestGroup.children.length}`);
 assert(forestGroup.children.some(x=>x.name==='osmForestFloor'),
   'forest: mapped woodland floor missing');
 assert(new Set(forestGroup.children.map(x=>x.name)).size===forestGroup.children.length,'forest: duplicate debug bucket names');
@@ -144,7 +144,7 @@ const buildings=[
 osm.churchKeys.add(osmBuildingKey(500,500));
 const buildingCount=osm._buildBuildings(buildingGroup,buildings,0,0);
 assert(buildingCount===buildings.length,'buildings: count mismatch');
-assert(buildingGroup.children.length<=10,`buildings: expected <=10 instance buckets, got ${buildingGroup.children.length}`);
+assert(buildingGroup.children.length<=12,`buildings: expected <=12 instance buckets, got ${buildingGroup.children.length}`);
 finiteMatrices(buildingGroup,'buildings');
 assert(buildingGroup.children.every(m=>!m.instanceColor),
   'buildings: instance colours reintroduced after the Build 11 rendering regression');
@@ -167,7 +167,7 @@ assert(range.maxY>range.minY,'buildings: corner/centre terrain sampling did not 
 const wallMeshes=buildingGroup.children.filter(x=>x.name.startsWith('osmBuildingWalls'));
 const wallHeights=wallMeshes.flatMap(m=>m.matrices.map(a=>a[5]));
 assert(wallHeights.length>=buildings.length,'buildings: not every building received a wall instance');
-assert(wallHeights.every(h=>Number.isFinite(h)&&h>5),'buildings: invalid compensated wall height');
+assert(wallHeights.every(h=>Number.isFinite(h)&&h>3),'buildings: invalid compensated wall height');
 const pitchedRoofs=buildingGroup.children.filter(x=>x.name.startsWith('osmBuildingRoofs')&&x.name!=='osmBuildingRoofsFlat');
 const pitchedMatrices=pitchedRoofs.flatMap(m=>m.matrices);
 assert(pitchedMatrices.length>=5,'buildings: wide footprints were not split into gabled village masses');

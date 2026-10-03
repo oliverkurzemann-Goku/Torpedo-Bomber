@@ -64,7 +64,7 @@ function circleTriangle(p,r,t){
 function validateBuffers(mesh){
  const g=mesh.geometry,n=g.attributes.position.count;
  if(g.index)assert(Math.max(...g.index.array.subarray(0,100000))<n);
- for(const attr of Object.values(g.attributes))assert.equal(attr.count,n,mesh.name+' mismatched attribute');
+ for(const attr of Object.values(g.attributes).filter(a=>!a.isInstancedBufferAttribute))assert.equal(attr.count,n,mesh.name+' mismatched attribute');
  for(const attr of Object.values(g.attributes))assert(Array.from(attr.array).every(Number.isFinite));
 }
 (async()=>{
@@ -122,7 +122,7 @@ function validateBuffers(mesh){
    }
   }
  }
- assert(forestBuckets<=5);assert(buildingBuckets<=10);assert(churches>=8&&churches<=14);
+ assert(forestBuckets<=7);assert(buildingBuckets<=12);assert(churches>=8&&churches<=14);
  assert(buildings>acceptedBuildings,'building shape variants did not add any roof wings');
  // The point-height query must agree with actual r128 ray/triangle hits during
  // an LOD morph, too. Bilinear interpolation fails this on non-planar quads.

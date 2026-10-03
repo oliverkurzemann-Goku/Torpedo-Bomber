@@ -48,7 +48,13 @@ class OSMManager {
     this.facadeTextures = [0,1,2,3].map(makeOSMFacadeTexture);
     this.roofTexture = makeOSMRoofTexture();
     [this.buildingWarmMat,this.buildingCoolMat,this.buildingOchreMat,this.buildingBrickMat]
-      .forEach((mat,i)=>{ mat.map=this.facadeTextures[i]; });
+      .forEach((mat,i)=>{ mat.map=this.facadeTextures[i];
+        mat.onBeforeCompile=shader=>{
+          shader.vertexShader="attribute vec2 facadeVariant;\n"+shader.vertexShader;
+          shader.vertexShader=shader.vertexShader.replace("#include <uv_vertex>","#include <uv_vertex>\n#ifdef USE_UV\nvUv = vUv * 0.5 + facadeVariant;\n#endif");
+        };
+        mat.customProgramCacheKey=()=>"period-facade-atlas-160";
+      });
     this.roofMat.map = this.roofSlateMat.map = this.roofBrownMat.map = this.roofTexture;
 
     // A subdued polygon floor makes mapped woods read as one continuous mass
@@ -61,13 +67,17 @@ class OSMManager {
     // Vegetation palette. Four tree draw calls plus one forest-floor draw call
     // maximum per tile regardless of how many source polygons exist.
     this.trunkGeo = new THREE.CylinderGeometry(0.34, 0.48, 5.5, 6);
-    this.coniferGeo = new THREE.ConeGeometry(3.8, 7.5, 7);
-    this.deciduousGeo = new THREE.DodecahedronGeometry(3.7, 0);
+    this.coniferGeo = makeOSMTreeCrown(0);
+    this.deciduousGeo = makeOSMTreeCrown(1);
+    this.poplarGeo=makeOSMTreeCrown(3);
+    this.willowGeo=makeOSMTreeCrown(4);
     this.shrubGeo = new THREE.DodecahedronGeometry(2.3, 0);
     this.trunkMat = new THREE.MeshStandardMaterial({ color: 0x51402d, roughness: 1 });
     this.coniferMat = new THREE.MeshStandardMaterial({ color: 0x284d28, roughness: 1 });
     this.deciduousMat = new THREE.MeshStandardMaterial({ color: 0x3f6835, roughness: 1 });
     this.shrubMat = new THREE.MeshStandardMaterial({ color: 0x536f3a, roughness: 1 });
+    this.poplarMat=new THREE.MeshStandardMaterial({color:0x52613b,roughness:1});
+    this.willowMat=new THREE.MeshStandardMaterial({color:0x65735a,roughness:1});
 
     this.boxGeo = new THREE.BoxGeometry(1, 1, 1);
     this.wallGeo = makeOSMWallGeometry();
@@ -81,7 +91,7 @@ class OSMManager {
 
     this.sharedGeometries = new Set([
       this.boxGeo, this.wallGeo, this.gableRoofGeo, this.hipRoofGeo, this.chimneyGeo, this.trunkGeo,
-      this.coniferGeo, this.deciduousGeo, this.shrubGeo, this.spireGeo
+      this.coniferGeo, this.deciduousGeo, this.shrubGeo, this.poplarGeo, this.willowGeo, this.spireGeo
     ]);
   }
 
@@ -451,6 +461,8 @@ class OSMManager {
           // edges; individual-tree hash only softens the boundaries.
           const jitter=(osmHash(px,pz,7)-.5)*.16;
           let kind=stand+jitter<.47?0:1;
+          if(kind===1&&osmValueNoise(px/180,pz/180,193)>.63)kind=3;
+          if(kind===1&&edge<42&&osmHash(px,pz,194)>.74)kind=4;
           if(edge<24&&osmHash(px,pz,92)<.48)kind=2;
           placements.push({
             x:px, z:pz, kind,
@@ -503,7 +515,7 @@ class OSMManager {
     const addCanopies = (items, geo, mat, yFactor, sx, sy, sz) => {
       if(!items.length) return;
       const mesh = new THREE.InstancedMesh(geo, mat, items.length);
-      mesh.name = geo===this.coniferGeo ? 'osmForestConifers' : (geo===this.deciduousGeo ? 'osmForestDeciduous' : 'osmForestShrubs');
+      mesh.name = geo===this.coniferGeo?'osmForestConifers':geo===this.deciduousGeo?'osmForestDeciduous':geo===this.poplarGeo?'osmForestPoplars':geo===this.willowGeo?'osmForestWillows':'osmForestShrubs';
       for(let i=0;i<items.length;i++){
         const p=items[i], y=this._safeRenderedHeight(p.x,p.z,ox,oz);
         q.setFromAxisAngle(OSM_UP,p.rot);
@@ -519,6 +531,8 @@ class OSMManager {
     addCanopies(conifers, this.coniferGeo, this.coniferMat, 5.6, 1.0, 1.0, 1.0);
     addCanopies(deciduous, this.deciduousGeo, this.deciduousMat, 5.5, 1.15, 1.05, 1.15);
     addCanopies(shrubs, this.shrubGeo, this.shrubMat, 1.5, 1.25, 0.85, 1.25);
+    addCanopies(placements.filter(p=>p.kind===3),this.poplarGeo,this.poplarMat,6.6,1,1,1);
+    addCanopies(placements.filter(p=>p.kind===4),this.willowGeo,this.willowMat,5.1,1,1,1);
 
     return placements.length;
   }
@@ -552,6 +566,8 @@ class OSMManager {
       // gabled masses below instead of one giant post-war block.
       const industrial=!church&&!barn&&area>4800&&aspect>1.7&&osmHash(x,z,127)>.62;
       let h=area>1600?6.8+r*3.8:(area>650?6.2+r*3.6:5.5+r*3.2);
+      const cottage=!church&&!barn&&area<240&&r<.34;
+      if(cottage)h=3.1+r*2;
       if(barn)h=6+r*2.8;
       if(church)h=13+r*3.5;
       if(industrial)h=7.5+r*3.5;
@@ -567,10 +583,10 @@ class OSMManager {
       const ground=this._buildingGroundRange(b,x,z,ox,oz);
       const baseY=ground.minY-0.8,wallTop=ground.maxY+h;
       const annex=!church&&!barn&&pitched&&area>170&&area<700&&b.w<32&&aspect<3&&osmHash(x,z,125)>.68;
-      return {b,x,z,area,aspect,church,barn,industrial,pitched,palette,roofTone,chimney,annex,ground,baseY,wallTop};
+      return {b,x,z,area,aspect,church,barn,cottage,industrial,pitched,palette,roofTone,chimney,annex,ground,baseY,wallTop,facade:cottage?2:barn?3:Math.floor(osmHash(x,z,161)*2)};
     }).filter(Boolean);
 
-    const wallParts=[],roofParts=[],chimneys=[],spires=[];
+    const wallParts=[],roofParts=[],chimneys=[],spires=[],dormers=[];
     const addPart=(d,lx,lz,w,depth,top=d.wallTop,roof=true,style={})=>{
       const c=Math.cos(d.b.rotY),s=Math.sin(d.b.rotY);
       const part={...d,...style,x:d.x+lx*c+lz*s,z:d.z-lx*s+lz*c,w,depth,wallTop:top,rotY:d.b.rotY};
@@ -620,11 +636,26 @@ class OSMManager {
       }
     }
 
+    for(const d of roofParts)if(!d.church&&!d.barn&&d.pitched&&d.w>10&&d.depth>8&&osmHash(d.x,d.z,163)>.78){
+      const roofH=osmRoofHeight(d),c=Math.cos(d.rotY),ss=Math.sin(d.rotY),lz=d.depth*.19;
+      dormers.push({x:d.x+lz*ss,z:d.z+lz*c,y:d.wallTop+roofH*.62,rot:d.rotY,width:Math.min(2.4,d.w*.16)});
+    }
+    for(const roof of [false,true])if(dormers.length){
+      const mesh=new THREE.InstancedMesh(roof?this.gableRoofGeo:this.boxGeo,roof?this.roofBrownMat:this.chimneyMat,dormers.length);
+      mesh.name=roof?'osmBuildingDormerRoofs':'osmBuildingDormerWalls';
+      const m=new THREE.Matrix4(),q=new THREE.Quaternion(),pos=new THREE.Vector3(),scale=new THREE.Vector3();
+      dormers.forEach((d,i)=>{q.setFromAxisAngle(OSM_UP,d.rot+Math.PI/2);pos.set(d.x,d.y+(roof?.72:0),d.z);scale.set(1.8,roof?.85:1.45,d.width);m.compose(pos,q,scale);mesh.setMatrixAt(i,m);});
+      mesh.instanceMatrix.needsUpdate=true;group.add(mesh);
+    }
     const wallMats=[this.buildingWarmMat,this.buildingCoolMat,this.buildingOchreMat,this.buildingBrickMat];
     const wallNames=['Warm','Stone','Ochre','Brick'];
     for(let palette=0;palette<wallMats.length;palette++){
       const items=wallParts.filter(d=>d.palette===palette);if(!items.length)continue;
-      const mesh=new THREE.InstancedMesh(this.wallGeo,wallMats[palette],items.length);
+      const wallGeo=makeOSMWallGeometry();
+      const atlas=new Float32Array(items.length*2);
+      items.forEach((d,i)=>{atlas[i*2]=(d.facade%2)*.5;atlas[i*2+1]=Math.floor(d.facade/2)*.5;});
+      wallGeo.setAttribute("facadeVariant",new THREE.InstancedBufferAttribute(atlas,2));
+      const mesh=new THREE.InstancedMesh(wallGeo,wallMats[palette],items.length);
       mesh.name='osmBuildingWalls'+wallNames[palette];
       const m=new THREE.Matrix4(),q=new THREE.Quaternion(),pos=new THREE.Vector3(),scale=new THREE.Vector3();
       for(let i=0;i<items.length;i++){
@@ -697,7 +728,7 @@ function osmValueNoise(x,z,salt){
 function osmRoofHeight(d){
   if(d.church) return Math.min(6.5,Math.max(3.2,d.depth*.30));
   if(d.barn) return Math.min(4.8,Math.max(2.1,d.depth*.24));
-  return Math.min(5.4,Math.max(2.0,d.depth*.28));
+  return Math.min(5.4,Math.max(1.8,d.depth*(.21+osmHash(d.x,d.z,162)*.13)));
 }
 
 function osmRingEdgeDistance(x,z,ring){
@@ -866,7 +897,7 @@ function osmCanvasTexture(canvas){
   return tex;
 }
 
-function makeOSMFacadeTexture(variant=0){
+function makeOSMFacadePanel(variant=0,style=0){
   if(typeof document==='undefined') return null; // placement-only Node tests
   const canvas=document.createElement('canvas'); canvas.width=canvas.height=512;
   const c=canvas.getContext('2d');
@@ -876,10 +907,13 @@ function makeOSMFacadeTexture(variant=0){
     {top:[70,210,350,448],bottom:[39,188,405],door:317},
     {top:[35,151,274,416],bottom:[82,232,385],door:24}
   ];
-  const profile=profiles[variant%profiles.length];
+  const profile={...profiles[(variant+style)%profiles.length]};
+  if(style===2){profile.top=[];profile.bottom=[50,203,404];}
+  if(style===3){profile.top=[82,374];profile.bottom=[];}
   const drawWindow=(x,wy,w=42,h=57)=>{
     c.fillStyle='#a69c84'; c.fillRect(x-5,wy-5,w+10,h+10);
-    c.fillStyle='#3c4541'; c.fillRect(x-17,wy,10,h); c.fillRect(x+w+7,wy,10,h);
+    c.fillStyle=variant%2?'#596044':'#685244';
+    if(style!==3){c.fillRect(x-17,wy,10,h);if((x+variant)%3)c.fillRect(x+w+7,wy,10,h);}
     c.fillStyle='#263633'; c.fillRect(x,wy,w,h);
     c.fillStyle='#66766e'; c.fillRect(x+3,wy+3,Math.max(8,w*.38),Math.max(10,h*.4));
     c.fillStyle='#b7b3a0'; c.fillRect(x+w/2-1.5,wy,3,h); c.fillRect(x,wy+h/2-1.5,w,3);
@@ -887,7 +921,14 @@ function makeOSMFacadeTexture(variant=0){
   };
   for(let panel=0;panel<2;panel++){
     const y=panel*256;
-    c.fillStyle='#e2dbca'; c.fillRect(0,y,512,256);
+    c.fillStyle=style===3?'#a89b81':style===1?'#d7c7ab':'#e2dbca'; c.fillRect(0,y,512,256);
+    if(style===1){
+      c.strokeStyle='#756048';c.lineWidth=8;
+      for(const x of [5,127,255,383,507]){c.beginPath();c.moveTo(x,y);c.lineTo(x,y+224);c.stroke();}
+      for(const yy of [y+8,y+116,y+220]){c.beginPath();c.moveTo(0,yy);c.lineTo(512,yy);c.stroke();}
+      for(const x of [5,255]){c.beginPath();c.moveTo(x,y+116);c.lineTo(x+120,y+220);c.stroke();}
+    }
+    if(style===3){c.strokeStyle='rgba(67,53,39,.3)';c.lineWidth=2;for(let x=0;x<512;x+=20){c.beginPath();c.moveTo(x,y);c.lineTo(x,y+224);c.stroke();}}
     // Weathered plaster, stone footing and cornice; one shared 1 MB atlas.
     for(let i=0;i<2400;i++){
       c.fillStyle=i%2?'rgba(90,78,62,0.065)':'rgba(255,253,236,0.10)';
@@ -902,9 +943,10 @@ function makeOSMFacadeTexture(variant=0){
     for(const x of profile.top)drawWindow(x,y+31,variant===1?36:42,variant===2?64:57);
     for(const x of profile.bottom){
       if(panel===1&&Math.abs(x-profile.door)<62)continue;
-      drawWindow(x,y+136,variant===3?38:42,variant===0?62:57);
+      drawWindow(x,y+(style===2?78:136),variant===3?38:42,style===2?91:variant===0?62:57);
     }
     if(panel===1){
+      if(style===3){c.fillStyle='#655342';c.fillRect(175,y+113,163,141);c.strokeStyle='#a29780';c.lineWidth=3;c.strokeRect(175,y+113,163,141);c.beginPath();c.moveTo(255,y+113);c.lineTo(255,y+254);c.stroke();continue;}
       const x=profile.door,dy=y+143;
       c.fillStyle='#b6ad98'; c.fillRect(x-6,dy-6,54,111);
       c.fillStyle='#4f4434'; c.fillRect(x,dy,42,101);
@@ -912,6 +954,13 @@ function makeOSMFacadeTexture(variant=0){
       c.fillStyle='#b3a17a'; c.fillRect(x+33,dy+47,4,5);
     }
   }
+  return canvas;
+}
+function makeOSMFacadeTexture(variant=0){
+  if(typeof document==='undefined')return null;
+  const canvas=document.createElement('canvas');canvas.width=canvas.height=1024;
+  const c=canvas.getContext('2d');
+  for(let style=0;style<4;style++)c.drawImage(makeOSMFacadePanel(variant,style),(style%2)*512,(1-Math.floor(style/2))*512);
   return osmCanvasTexture(canvas);
 }
 
@@ -1063,4 +1112,24 @@ function addUpwardTriOSM(indices, positions, a, b, c){
   const ny = e1[2]*e2[0]-e1[0]*e2[2];
   if(ny >= 0) indices.push(a,b,c);
   else indices.push(a,c,b);
+}
+
+// Shared low-poly crowns: layered fir, clustered oak, narrow poplar, drooping willow.
+// All dimensions stay within the existing 6.8m canopy/water exclusion envelope.
+function makeOSMTreeCrown(kind){
+ const positions=[];
+ const tri=(a,b,c)=>positions.push(...a,...b,...c);
+ const lobe=(cx,cy,cz,rx,ry,rz)=>{
+  const point=(ring,sector)=>{const a=ring*Math.PI/4,b=sector*Math.PI/4;return [cx+rx*Math.sin(a)*Math.cos(b),cy+ry*Math.cos(a),cz+rz*Math.sin(a)*Math.sin(b)];};
+  for(let j=0;j<4;j++)for(let i=0;i<8;i++){const a=point(j,i),b=point(j+1,i),c=point(j+1,i+1),d=point(j,i+1);tri(a,d,b);tri(b,d,c);}
+ };
+ if(kind===0){
+  for(let layer=0;layer<3;layer++){
+   const y=-3.6+layer*2.1,r=3.7-layer*.9,top=y+3.8;
+   for(let i=0;i<8;i++){const a=i*Math.PI/4,b=(i+1)*Math.PI/4;tri([r*Math.cos(a),y,r*Math.sin(a)],[0,top,0],[r*Math.cos(b),y,r*Math.sin(b)]);}
+  }
+ }else if(kind===3){lobe(0,0,0,1.4,5.1,1.6);lobe(.35,1.2,.2,1.2,3.7,1.2);}
+ else if(kind===4){lobe(0,.8,0,3,2.3,2.7);for(let i=0;i<4;i++){const a=i*Math.PI/2;lobe(Math.cos(a)*1.9,-.9,Math.sin(a)*1.9,1.5,2.5,1.5);}}
+ else {lobe(0,.5,0,2.5,2.5,2.5);for(let i=0;i<3;i++){const a=i*Math.PI*2/3;lobe(Math.cos(a)*1.6,-.4,Math.sin(a)*1.6,2,2.1,2);}}
+ const geo=new THREE.BufferGeometry();geo.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));geo.computeVertexNormals();geo.computeBoundingSphere();return geo;
 }

@@ -20,6 +20,7 @@ class LivingWorld {
     this._buildRoutes();
     this._buildTraffic();
     this._buildRuralDetails();
+    this._buildVillageDetails();
     this._buildAtmosphere();
   }
 
@@ -272,9 +273,11 @@ class LivingWorld {
     this._smokeClock-=dt;
     if(emitSmoke&&this._smokeClock<=0){
       this._smokeClock=.42;
+      let emissions=0;
       for(const s of this.smokeSources){
         if(Math.hypot(s.x-focusX,s.z-focusZ)>2600)continue;
         s.tick=(s.tick+1)%s.every;if(s.tick)continue;
+        if(emissions++>=4)break;
         emitSmoke({x:s.x+(osmHash(s.x,s.tick,211)-.5)*5,y:s.y,z:s.z,color:s.color,scale:s.scale});
       }
     }
@@ -426,10 +429,55 @@ class LivingWorld {
     this._instances('cattleHeads',new THREE.BoxGeometry(1,1,1),this.mat.dark,cows,(o,p,q,s)=>{p.set(o.x+Math.sin(o.rot)*1.35,o.y+1.35,o.z+Math.cos(o.rot)*1.35);q.setFromAxisAngle(up,o.rot);s.set(.62*o.scale,.58*o.scale,.62*o.scale);});
     this.detailCounts={fields:fields.length,hedges:hedges.length,poles:poles.length,orchards:orchards.length,hay:hay.length,cows:cows.length,buckets:this.details.children.length};
   }
+  _buildVillageDetails(){
+    const yards=[],fields=(this.landmarks.airfields||[this.landmarks.field,this.landmarks.germanField]).filter(Boolean);
+    for(const [key,data] of [...this.osm.sourceTiles].sort(([a],[b])=>a.localeCompare(b))){
+      const [tx,tz]=key.split(',').map(Number),ox=tx*this.osm.tileSize,oz=tz*this.osm.tileSize;
+      const index=this.osm._buildForestExclusion(data,ox,oz);let tileCount=0;
+      for(const b of data.buildings||[]){
+        if(yards.length>=80||tileCount>=2)break;
+        if(b.w*b.d<130||b.w*b.d>1400||osmHash(ox+b.x,oz+b.z,241)<.65)continue;
+        const c=Math.cos(b.rotY),ss=Math.sin(b.rotY),side=osmHash(b.x,b.z,242)>.5?1:-1;
+        const x=ox+b.x+side*c*(b.w/2+14),z=oz+b.z-side*ss*(b.w/2+14);
+        if(x<8||z<8||x>27992||z>31992||fields.some(f=>Math.abs(x-f[0])<620&&Math.abs(z-f[1])<380))continue;
+        if([[0,0],[-4,-4],[4,-4],[4,4],[-4,4]].some(([dx,dz])=>this.osm._treeExcluded(x+dx,z+dz,index)))continue;
+        if((data.forests||[]).some(ring=>pointInPolygon(x-ox,z-oz,ring)))continue;
+        const heights=[[-4,-4],[4,-4],[4,4],[-4,4]].map(([dx,dz])=>this.terrain.getRenderedHeight(x+dx,z+dz));
+        if(Math.max(...heights)-Math.min(...heights)>1.8)continue;
+        yards.push({x,z,y:Math.max(...heights),rot:b.rotY,scale:1});tileCount++;
+      }
+    }
+    const up=new THREE.Vector3(0,1,0),fences=[],posts=[],crates=[],rubble=[],wells=[];
+    for(const [i,o] of yards.entries()){
+      const c=Math.cos(o.rot),ss=Math.sin(o.rot),place=(lx,lz)=>({...o,x:o.x+lx*c+lz*ss,z:o.z-lx*ss+lz*c});
+      for(const y of [.55,1.15])fences.push({...place(0,-3.5),dy:y});
+      for(const lx of [-3,0,3])posts.push(place(lx,-3.5));
+      if(i%3===0)wells.push(place(-1.7,1));
+      else if(i%3===1)for(const [x,z] of [[-1,1],[.5,1.2],[.2,-.1]])crates.push(place(x,z));
+      else for(let j=0;j<4;j++)rubble.push({...place((osmHash(i,j,243)-.5)*4,(osmHash(j,i,244)-.5)*3),scale:.5+osmHash(i,j,245)});
+    }
+    const old=this.details.children.length;
+    this._instances('villageFenceRails',new THREE.BoxGeometry(6.4,.16,.14),this.mat.wood,fences,(o,p,q,s)=>{p.set(o.x,o.y+o.dy,o.z);q.setFromAxisAngle(up,o.rot);s.set(1,1,1);});
+    this._instances('villageFencePosts',new THREE.BoxGeometry(.2,1.5,.2),this.mat.wood,posts,(o,p,q,s)=>{p.set(o.x,o.y+.68,o.z);q.setFromAxisAngle(up,o.rot);s.set(1,1,1);});
+    this._instances('villageSupplyCrates',new THREE.BoxGeometry(.9,.8,.9),this.mat.hay,crates,(o,p,q,s)=>{p.set(o.x,o.y+.4,o.z);q.setFromAxisAngle(up,o.rot);s.set(1,1,1);});
+    this._instances('villageRubble',new THREE.DodecahedronGeometry(.8,0),this.mat.rust,rubble,(o,p,q,s)=>{p.set(o.x,o.y+.28,o.z);q.setFromAxisAngle(up,o.rot);s.set(o.scale,.55*o.scale,.8*o.scale);});
+    this._instances('villageWells',new THREE.CylinderGeometry(.7,.75,.85,10,1,true),this.mat.cream,wells,(o,p,q,s)=>{p.set(o.x,o.y+.4,o.z);q.setFromAxisAngle(up,o.rot);s.set(1,1,1);});
+    this.villageDetails=new THREE.Group();this.villageDetails.name='villageDetails';this.group.add(this.villageDetails);
+    for(const mesh of this.details.children.slice(old)){this.details.remove(mesh);this.villageDetails.add(mesh);}
+    this.villageCounts={yards:yards.length,buckets:this.villageDetails.children.length};
+  }
   _buildAtmosphere(){
     const factory=this.landmarks.factory||[13201,20490];
     const rail=this.routes.rail[0]&&this._sample(this.routes.rail[0],this.routes.rail[0].length*.62);
     this.smokeSources.push({x:factory[0],z:factory[1],y:this.terrain.getRenderedHeight(factory[0],factory[1])+30,color:0x55514a,scale:.42,every:3,tick:0});
+    const matrix=new THREE.Matrix4();let count=0;
+    for(const tile of this.osm.tiles.values()){
+      const chimneys=tile.farGroup?.children.find(m=>m.name==='osmBuildingChimneys');if(!chimneys)continue;
+      for(let i=0;i<chimneys.count&&count<24;i++){
+        if(i%29)continue;chimneys.getMatrixAt(i,matrix);const e=matrix.elements;
+        this.smokeSources.push({x:e[12],z:e[14],y:e[13]+.9,color:0x8c877a,scale:.16,every:11,tick:count%11});count++;
+      }
+    }
     if(rail)this.smokeSources.push({x:rail.x,z:rail.z,y:this.terrain.getRenderedHeight(rail.x,rail.z)+2,color:0x423f39,scale:.34,every:5,tick:1});
   }
 }
