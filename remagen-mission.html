@@ -285,7 +285,7 @@
   <div style="width:100%;height:4px;background:repeating-linear-gradient(45deg,#ffd400,#ffd400 8px,#111 8px,#111 16px);"></div>
   <span id="testVersionBannerText" style="background:#111;color:#ffd400;font-family:monospace;font-weight:800;font-size:11px;letter-spacing:.5px;padding:3px 10px;border:1px solid #ffd400;border-top:none;border-radius:0 0 6px 6px;"></span>
 </div>
-<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 156';</script>
+<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 157';</script>
 <!-- ===== END TEMP TEST-ONLY VERSION BANNER ===== -->
 <div id="app"></div>
 
@@ -314,7 +314,7 @@
   <div id="flash"></div>
   <div id="gunsight"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 156 · REAL RHINE</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 157 · REAL RHINE</div>
 
   <div id="apr">
     <div id="aprCall"></div>
@@ -455,12 +455,12 @@
 <script src="terrain-system/WorldVehicles.js?v=remagen-22"></script>
 <script src="terrain-system/LivingWorld.js?v=149"></script>
 <script src="campaign.js?v=1"></script>
-<script src="game-runtime.js?v=152"></script>
-<script src="combat-fx.js?v=156"></script>
-<script src="ordnance.js?v=156"></script>
-<script src="pilot-bailout.js?v=156"></script>
-<script src="pilot-rescue.js?v=156"></script>
-<script src="radio-intercept.js?v=156"></script>
+<script src="game-runtime.js?v=157"></script>
+<script src="combat-fx.js?v=157"></script>
+<script src="ordnance.js?v=157"></script>
+<script src="pilot-bailout.js?v=157"></script>
+<script src="pilot-rescue.js?v=157"></script>
+<script src="radio-intercept.js?v=157"></script>
 <script src="audio/weapon-sound.js?v=144"></script>
 <script src="audio/jet-engine.js?v=144"></script>
 <script src="sortie-systems.js?v=146"></script>
@@ -775,7 +775,7 @@ async function loadRealWorld(){
 
   if(OSMManager.BUILD!==21||HistoricalObjectManager.BUILD!==21||LivingWorld.BUILD!==22||WorldVehicles.BUILD!==22) throw new Error('Terrain version mismatch. Reload Remagen.');
   document.getElementById('testVersionBannerText').textContent=
-    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 156 · MODULE 22';
+    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 157 · MODULE 22';
   heightProvider=new DEMHeightProvider(RTILE,'terrain-system/real/data/dem/');
   terrain=new TerrainManager(scene,RTILE,heightProvider);
   osmMgr=new OSMManager(scene,RTILE,terrain,'terrain-system/real/data/osm/');
@@ -2896,6 +2896,11 @@ function M(){ return MISSIONS[mission]; }
 function isFree(){ return !!M().free; }
 function isCircuits(){ return !!M().circuits; }
 
+function missionLoadout(m,d=AC[m.ac||'p47']){
+  const strike=m.free||Object.entries(m.kills||{}).some(([kind,n])=>n>0&&kind!=='air'&&kind!=='bomber');
+  return {bombs:strike?d.bombs:0,rockets:strike?d.rockets:0};
+}
+
 function clearWorld(){
   if(combatFX)combatFX.clear();
   // Every real target (flak/bridge/factory) is permanent world scenery, built once by
@@ -3998,9 +4003,12 @@ function updateFlight(dt){
   }else{
     P.pitchVel=(P.pitchVel||0)+(pitchRate*pitchRate*(inputPitch*d.pitchLim*0.92-P.pitch) - 2*zeta*pitchRate*P.pitchVel)*dt;
     P.pitch += P.pitchVel*dt;
-    const levelRate=Math.abs(inputRoll)<.075?rollRate*.34:rollRate;
-    P.rollVel=(P.rollVel||0)+(levelRate*levelRate*(rollTarget-P.roll) - 2*zeta*levelRate*P.rollVel)*dt;
+    const neutral=Math.abs(inputRoll)<.001;
+    const levelRate=neutral?Math.max(3.5,rollRate*.7):rollRate;
+    const damping=neutral?1:zeta;
+    P.rollVel=(P.rollVel||0)+(levelRate*levelRate*(rollTarget-P.roll) - 2*damping*levelRate*P.rollVel)*dt;
     P.roll += P.rollVel*dt;
+    if(neutral&&Math.abs(P.roll-P.rollBias)<.002&&Math.abs(P.rollVel)<.01){P.roll=P.rollBias;P.rollVel=0;}
     if(P.pitch>d.pitchLim){ P.pitch=d.pitchLim; P.pitchVel=Math.min(0,P.pitchVel); }
     if(P.pitch<-d.pitchLim){ P.pitch=-d.pitchLim; P.pitchVel=Math.max(0,P.pitchVel); }
     if(P.roll>d.rollLim){ P.roll=d.rollLim; P.rollVel=Math.min(0,P.rollVel); }
@@ -4023,7 +4031,6 @@ function updateFlight(dt){
     // old AERO path removed this entirely, making even 90° of bank feel inert.
     P.heading+=(aeroMode?0.72*Math.sin(P.roll):Math.sign(P.roll))*bank*dt;
   }
-  P.heading += windZ*0.004*dt;
 
   // vertical speed: climb from attitude + speed-dependent lift
   const liftRefSpd = APP_SPD - P.flap*6;
@@ -4041,7 +4048,8 @@ function updateFlight(dt){
 
   // integrate
   const cp=Math.cos(P.pitch);
-  P.pos.x += Math.sin(P.heading)*cp*P.spd*dt;
+  // Crosswind changes the ground track, not the direction of the aircraft's nose.
+  P.pos.x += (Math.sin(P.heading)*cp*P.spd+windZ)*dt;
   P.pos.z += Math.cos(P.heading)*cp*P.spd*dt;
   P.pos.y += vs*dt;
   // Aircraft limit is independent of cloud base/top. Jets can get above the stream.
@@ -4218,11 +4226,12 @@ function startMission(i){
   P.ac=m.ac||'p47';
   const d=acDef();
   STALL_SPD=d.stall; APP_SPD=d.app; MAX_SPD=d.max; THR_MIN_SPD=d.thrMin;
-  P.hull=d.hull; P.ammo=d.ammo; P.bombs=d.bombs; P.rockets=d.rockets;
+  const loadout=missionLoadout(m,d);
+  P.hull=d.hull; P.ammo=d.ammo; P.bombs=loadout.bombs; P.rockets=loadout.rockets;
   P.diveBrake=false;P.diveBrakeVisual=0;
   P.fuel=100; P.alive=true; P.rtb=false; P.bingo=false; P.rollBias=0;
   P.dmgT=0; P.stallWarnT=0; P.edgeWarned=false;
-  weapon=(d.rockets>0)?'rocket':'bomb';
+  weapon=(P.rockets>0)?'rocket':'bomb';
   score=0; scoreStart=0; hitsTaken=0;
   sortieKills={flak:0,bridge:0,factory:0,truck:0,train:0,ferry:0,air:0,bomber:0};
   const plan=briefPlan||chooseEuropePlan(i);
@@ -4851,16 +4860,17 @@ function updateWeatherFx(dt){
 //  CONTROL UI
 // ============================================================
 function applyWeaponUI(){
-  if(weapon==='rocket'&&acDef().rockets===0)weapon='bomb';
+  const loadout=missionLoadout(M(),acDef());
+  if(weapon==='rocket'&&loadout.rockets===0)weapon='bomb';
   updateGunUI();
   const d=document.getElementById('dropBtn');
   const a=document.getElementById('armBtn');
   const rocketArmed=(weapon==='rocket');
   if(d){d.innerHTML=rocketArmed?'FIRE<br>ROCKET':'DROP<br>BOMB';
-    d.style.display=(acDef().bombs||acDef().rockets)?'':'none';}
+    d.style.display=(loadout.bombs||loadout.rockets)?'':'none';}
   if(a){ a.innerHTML=rocketArmed?'ARM<br>RKT':'ARM<br>BOMB'; a.classList.toggle('on',rocketArmed); }
   const lb=document.getElementById('hOrdLbl'); if(lb) lb.textContent='BOMBS';
-  if(a) a.style.display=(acDef().rockets>0)?'flex':'none';
+  if(a) a.style.display=(loadout.rockets>0)?'flex':'none';
 }
 function syncDiveBtn(){
   const dive=document.getElementById('diveBrakeBtn');if(!dive)return;
@@ -4887,6 +4897,7 @@ function toggleDiveBrakes(){
 function show(id,on){ const e=document.getElementById(id); if(e) e.classList.toggle('hidden',!on); }
 function showBrief(i){
   selectedMission=i; const m=MISSIONS[i];
+  const loadout=missionLoadout(m);
   selectMissionAirfield(m);
   // Start the selected aircraft while the pilot reads the briefing. Slow enemy
   // assets are requested at launch and can arrive after take-off.
@@ -4897,6 +4908,8 @@ function showBrief(i){
   document.getElementById('brStamp').textContent=(m.ac==='bf109'||m.ac==='fw190'||m.ac==='ju87'||m.ac==='me262'||m.ac==='me163')?'Luftwaffe':'Secret';
   document.getElementById('brText').innerHTML=m.text
     +'<br><br><b>AIRCRAFT</b> '+AC[m.ac||'p47'].name
+    +'<br><b>ARMAMENT</b> Guns'+(loadout.bombs?' · '+loadout.bombs+' bombs':'')
+    +(loadout.rockets?' · '+loadout.rockets+' rockets':'')
     +((m.ac==='me262'||m.ac==='me163')?'<br><b>INTERCEPTION</b> Climb above the clouds; the flight limit is 8,000 m. Contacts patrol inland, not along the map edge.':'')
     +FlightOps.briefText(briefPlan.weather,briefPlan.config,briefPlan.wind);
   document.getElementById('briefLandingSpeed').textContent=landingSpeedNote(m);
@@ -4996,17 +5009,11 @@ function bindInput(){
   const stick=document.getElementById('stick'), knob=document.getElementById('stickKnob');
   let sid=null;
   const setStick=e=>{
-    const r=stick.getBoundingClientRect();
-    let dx=(e.clientX-(r.left+r.width/2))/(r.width/2);
-    let dy=(e.clientY-(r.top+r.height/2))/(r.height/2);
-    const L=Math.hypot(dx,dy); if(L>1){ dx/=L; dy/=L; }
-    // Same mapping as the carrier game so the muscle memory carries over: roll axis is
-    // negated, and the pitch inversion is applied HERE (not again in the flight model).
-    inputRoll  = -dx;
-    inputPitch = (invertPitch ? dy : -dy);
-    knob.style.transform='translate(calc(-50% + '+(dx*36)+'px),calc(-50% + '+(dy*36)+'px))';
+    const command=GameRuntime.stickInput(stick.getBoundingClientRect(),e.clientX,e.clientY,invertPitch);
+    inputRoll=command.roll;inputPitch=command.pitch;
+    knob.style.transform=`translate(calc(-50% + ${command.knobX}px),calc(-50% + ${command.knobY}px))`;
   };
-  const relStick=()=>{ sid=null; inputRoll=0; inputPitch=0;
+  const relStick=e=>{ if(e&&e.pointerId!==sid)return;sid=null;inputRoll=0;inputPitch=0;
     knob.style.transform='translate(-50%,-50%)'; };
   stick.addEventListener('pointerdown',e=>{ if(sid!==null)return; sid=e.pointerId;
     stick.setPointerCapture(sid); setStick(e); e.preventDefault(); });

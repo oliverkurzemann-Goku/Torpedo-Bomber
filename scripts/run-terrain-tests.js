@@ -36,7 +36,7 @@ const env = Object.assign({}, process.env, {
 });
 
 const testFiles = fs.readdirSync(testDir)
-  .filter(f => f.endsWith('.js'))
+  .filter(f => /\.(?:js|cjs)$/.test(f))
   .sort();
 
 let failures = 0;

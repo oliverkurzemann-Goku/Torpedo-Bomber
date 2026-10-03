@@ -13,7 +13,7 @@ const helpers=html.slice(html.indexOf('function flightAltitudeLimit('),html.inde
  const randomMath=Object.create(Math);let seed=155;
  randomMath.random=()=>{seed=(seed*1664525+1013904223)>>>0;return seed/4294967296;};
  const ctx=vm.createContext({THREE,GameRuntime,Math:randomMath,P,RTILE:4000,RGRID_W:7,RGRID_H:8,AF_X:23600,AF_Z:25725,
-  europeOps:null,enemyAir:[],scene:new THREE.Scene(),modelTpl:{},APP_SPD:56,AI_G:9.81,
+  europeOps:null,enemyAir:[],scene:new THREE.Scene(),modelTpl:{},APP_SPD:56,AI_G:9.81,windZ:0,
   M:()=>({id:'jetboxes'}),groundY:(x,z)=>dem.getHeight(x,z),D:()=>({id:'rookie'}),
   noseDir:()=>new THREE.Vector3(0,0,1),radioSay(){},spawnSmoke(){},
   buildAircraft(){const g=new THREE.Group();g.add(new THREE.Mesh(new THREE.BoxGeometry(31,8,23)));return g;}

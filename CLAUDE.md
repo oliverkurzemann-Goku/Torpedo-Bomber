@@ -5,7 +5,36 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 156 · Thunderbolt Squadron BUILD 156 · Remagen-Kern 21 / Fahrzeuge 22**
+Stand bei Übergabe: **Torpedo Squadron BUILD 157 · Thunderbolt Squadron BUILD 157 · Remagen-Kern 21 / Fahrzeuge 22**
+
+**Build 157 (03.10.2026): einheitlicher Stick, stabiler Heading und Missionsbewaffnung.**
+Vom Nutzer ausdrücklich gewünschte Steuerungs-/Flugverhaltenskorrekturen:
+Pacific verwendete nur 46 px bis zum Vollausschlag, Europa den ganzen Stickradius.
+Beide benutzen jetzt `GameRuntime.stickInput`: voller Kreis, 8 % radiale Totzone,
+sanftere Kennlinie um die Mitte, identische Pitch-Invertierung und Knob-Bewegung.
+Pointer-up/-cancel/-capture-loss löschen die Eingabe; fremde Finger dürfen den
+gehaltenen Stick nicht lösen. Normale Flugsteuerung richtet die Flügel kritisch
+gedämpft innerhalb von drei Sekunden aus und beseitigt winzige Restquerlagen.
+Flugzeugunterschiede, beschädigungsbedingte Rollneigung und AERO-Manöver bleiben.
+
+Thunderbolt addierte Wind direkt zum Heading (bei 7 m/s fast 96 Grad pro Minute).
+Wind versetzt jetzt die Position quer zur Karte; die Flugzeugnase dreht nur durch
+die bestehenden Flugmanöver. `missionLoadout` gibt Bomben/Raketen nur bei echten
+Bodenzielen oder Free Flight aus. Circuits und reine Jäger-/Bomber-Abfangflüge
+haben nur Bordwaffen. Briefing nennt die Bewaffnung, leere Abfang-Waffenknöpfe
+werden ausgeblendet. Gemischte Einsätze und Me-262-Brückenangriff bleiben bewaffnet.
+Keine GLBs geändert; der aktuelle Me-262-Originalmesh wird nicht zerschnitten.
+
+`flight-controls.js` benutzt die wirklichen Stick-Handler und Flugroutinen:
+gleicher Fingerweg, Totzone, Invertierung und Pointer-Zugehörigkeit; neun Typen
+richten sich bei 20/60/120 FPS weich aus und halten danach eine Minute den Kurs.
+Windtests prüfen echte Positionsversetzung und unveränderten Heading.
+Der Terrain-Runner nimmt jetzt auch `.cjs` auf, sodass `remagen-startup.cjs` im
+CI alle echten Missionsstarts, Briefings, Waffenzahlen/-knöpfe und Abwurfsperren
+prüft. Browser prüft echten halben Stickweg, Mitte und Loslassen zusätzlich zu
+den bestehenden Schuss-, Kontextverlust-, Fallschirm- und Rettungsprüfungen.
+Build 156 ist enthalten; weiterhin keine Decken-/Angreifen-Befehle.
+Kein iPad/Safari-Hardware- oder FPS-Nachweis.
 
 **Build 156 (30.09.2026): Funk-Abfanghilfe und automatische Rettung.**
 Keine Begleiter-Befehle (vom Nutzer ausdrücklich ausgeschlossen), keine neuen

@@ -38,10 +38,12 @@ for(const [file,start,kind] of [
   for(let i=0;i<90;i++)fly(p,1,0,false,.04,d,40,1);
   assert(p.roll>1.05&&p.roll<1.57,file+' full stick must reach a steep bank');
   const bankAtRelease=p.roll;
-  for(let i=0;i<15;i++)fly(p,0,0,false,.04,d,40,1);
-  assert(p.roll>bankAtRelease*.3,file+' normal neutral should not snap level in 0.6 seconds');
-  for(let i=0;i<105;i++)fly(p,0,0,false,.04,d,40,1);
-  assert(Math.abs(p.roll)<.06,file+' normal mode must still return to level');
+  fly(p,0,0,false,.04,d,40,1);
+  assert(p.roll>bankAtRelease*.95,file+' normal neutral must level smoothly, not snap in one frame');
+  for(let i=0;i<14;i++)fly(p,0,0,false,.04,d,40,1);
+  assert(p.roll>bankAtRelease*.12&&p.roll<bankAtRelease*.8,file+' normal neutral should unwind the bank in 0.6 seconds');
+  for(let i=0;i<60;i++)fly(p,0,0,false,.04,d,40,1);
+  assert(Math.abs(p.roll)<.002,file+' normal mode must settle level within three seconds');
   p.roll=Math.PI/2;p.pitch=0;p.heading=0;
   for(let i=0;i<35;i++){fly(p,0,0,true,.04,d,40,1);turn(p,true,.04,d,40);}
   const bankOnly=Math.abs(p.heading);

@@ -42,6 +42,23 @@ vm.runInContext('loadModels=()=>{};ensureModel=async()=>null;WorldVehicles.proto
  assert.match(c.document.getElementById('navArrow').style.transform,/rotate\(-90deg\)/,'fighter due east is left in the northbound chase camera (see navigation.js)');
  vm.runInContext(`enemyAir[enemyAir.length-1].alive=false;updateHUD();`,c);
  assert.notEqual(c.document.getElementById('navKind').textContent,'BANDIT','destroyed fighter must no longer guide the arrow');
+ // Actual mission initialization, weapon UI and release routines must agree.
+ const loadouts=vm.runInContext(`MISSIONS.map((m,i)=>{
+   showBrief(i);const brief=document.getElementById('brText').innerHTML;
+   startMission(i);
+   const initial={id:m.id,bombs:P.bombs,rockets:P.rockets,ammo:P.ammo,
+     drop:document.getElementById('dropBtn').style.display,arm:document.getElementById('armBtn').style.display,brief};
+   if(!P.bombs&&!P.rockets){const count=bombs.length;dropBomb();if(bombs.length!==count)throw Error('Unarmed mission released ordnance');}
+   return initial;
+ })`,c);
+ for(const l of loadouts){
+  const airOnly=['circ','fighter','boxes','libs','jetstrike','jetboxes','komet'].includes(l.id);
+  if(airOnly){assert.equal(l.bombs,0,l.id);assert.equal(l.rockets,0,l.id);assert.equal(l.drop,'none');assert.equal(l.arm,'none');assert.match(l.brief,/ARMAMENT<\/b> Guns(?:<br|$)/);}
+  else{assert(l.bombs>0,l.id+' ground attack/practice must retain bombs');assert.notEqual(l.drop,'none');}
+  assert(l.ammo>0,l.id+' retains guns');
+ }
+ assert.equal(loadouts.find(l=>l.id==='jetjabo').bombs,2,'Me 262 bridge strike carries its two bombs');
+ assert.equal(loadouts.find(l=>l.id==='final').rockets,8,'mixed ground/air P-47 sortie keeps its rockets');
  // Both synchronous initialization errors and rejected terrain loads surface on the loading panel.
  vm.runInContext("const realInit=init;init=()=>{throw new Error('test renderer failure');};",c);
  listeners.load();

@@ -43,6 +43,18 @@
   const t=length?Math.max(0,Math.min(1,((point.x-start.x)*dx+(point.y-start.y)*dy+(point.z-start.z)*dz)/length)):0;
   return Math.hypot(start.x+dx*t-point.x,start.y+dy*t-point.y,start.z+dz*t-point.z);
  }
+ // Both campaigns use the whole touch circle, with a quiet centre for level flight.
+ function stickInput(rect,clientX,clientY,invertPitch=false){
+  let x=(clientX-rect.left-rect.width/2)/(rect.width/2);
+  let y=(clientY-rect.top-rect.height/2)/(rect.height/2);
+  const radius=Math.hypot(x,y);
+  if(radius>.08){
+   const travel=(Math.min(1,radius)-.08)/.92;
+   const response=travel*(.7+.3*travel*travel);
+   x=x/radius*response;y=y/radius*response;
+  }else{x=0;y=0;}
+  return {roll:-x,pitch:invertPitch?y:-y,knobX:x*36,knobY:y*36};
+ }
  // Preserve the existing 60-Hz appearance, while avoiding blade symmetry
  // aliasing at low frame rates. Never change the aircraft physics here.
  function rotorStep(dt,stepAt60,blades=3){
@@ -106,5 +118,5 @@
   });
   return session;
  }
- global.GameRuntime={storage,own,release,segmentDistance,rotorStep,render,HintCoach,attachLifecycle};
+ global.GameRuntime={storage,own,release,segmentDistance,stickInput,rotorStep,render,HintCoach,attachLifecycle};
 })(typeof window!=='undefined'?window:globalThis);

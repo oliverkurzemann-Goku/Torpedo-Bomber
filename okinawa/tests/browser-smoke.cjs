@@ -142,6 +142,14 @@ const cdn={
     console.log('Browser radio '+scenario.kind+': '+guidance.message);
    }
    assert.deepEqual(guidance.after,guidance.before,'radio guidance never flies the aircraft');
+   // Real pointer events use the same gentle range in both campaigns, with a quiet centre.
+   const flightStick=await page.locator('#stick').boundingBox();
+   await page.mouse.move(flightStick.x+flightStick.width*.75,flightStick.y+flightStick.height*.5);await page.mouse.down();
+   const partial=await page.evaluate(()=>inputRoll);
+   assert(partial<-.2&&partial>-.4,'half stick travel must not become full roll');
+   await page.mouse.move(flightStick.x+flightStick.width*.52,flightStick.y+flightStick.height*.51);
+   assert.equal(await page.evaluate(()=>inputRoll),0,'small touch jitter is neutral');
+   await page.mouse.up();assert.equal(await page.evaluate(()=>inputRoll),0,'actual pointer release clears roll');
    // Actual user keyboard events: release must clear a keyboard-owned command.
    await page.keyboard.down('ArrowLeft');await page.waitForTimeout(150);await page.keyboard.up('ArrowLeft');
    await page.waitForFunction(()=>inputRoll===0,{},{timeout:5000});
@@ -235,7 +243,7 @@ const cdn={
     // A real JS frame failure is visible and remains observable, not hidden.
     await page.evaluate(()=>{animateFrame=()=>{throw Error('TEST FRAME FAULT');};});
     await page.locator('#simulationRecovery').waitFor({state:'visible'});
-    assert.match(await page.locator('#simulationRecovery').innerText(),/BUILD 156.*TEST FRAME FAULT/);
+    assert.match(await page.locator('#simulationRecovery').innerText(),/BUILD 157.*TEST FRAME FAULT/);
     assert.equal(await page.locator('#simulationRecovery button').innerText(),'Reload game');
     assert.deepEqual(errors,['TEST FRAME FAULT'],'unexpected runtime errors cannot be swallowed');
    }

@@ -319,7 +319,7 @@
   <div id="flash"></div>
   <div id="ltn" style="position:fixed;inset:0;background:#e6ecff;opacity:0;pointer-events:none;z-index:40;"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 156</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 157</div>
 
   <!-- Optical landing aid -->
   <div id="lso">
@@ -441,13 +441,13 @@
 <script src="okinawa/data.js?v=1"></script>
 <script src="okinawa/world.js?v=133"></script>
 <script src="campaign.js?v=1"></script>
-<script src="game-runtime.js?v=152"></script>
-<script src="pacific-assets.js?v=156"></script>
-<script src="combat-fx.js?v=156"></script>
-<script src="ordnance.js?v=156"></script>
-<script src="pilot-bailout.js?v=156"></script>
-<script src="pilot-rescue.js?v=156"></script>
-<script src="radio-intercept.js?v=156"></script>
+<script src="game-runtime.js?v=157"></script>
+<script src="pacific-assets.js?v=157"></script>
+<script src="combat-fx.js?v=157"></script>
+<script src="ordnance.js?v=157"></script>
+<script src="pilot-bailout.js?v=157"></script>
+<script src="pilot-rescue.js?v=157"></script>
+<script src="radio-intercept.js?v=157"></script>
 <script src="audio/weapon-sound.js?v=144"></script>
 <script src="sortie-systems.js?v=129"></script>
 <script src="operation-plans.js?v=144"></script>
@@ -2230,15 +2230,11 @@ function setupControls(){
   document.getElementById('bailBtn').addEventListener('pointerdown',e=>{e.preventDefault();beginBailout();});
   const stick=document.getElementById('stick');
   const knob=document.getElementById('stickKnob');
-  const R=46; let sid=null;
+  let sid=null;
   function set(e){
-    const r=stick.getBoundingClientRect();
-    let dx=e.clientX-(r.left+r.width/2);
-    let dy=e.clientY-(r.top+r.height/2);
-    const d=Math.hypot(dx,dy); if(d>R){dx*=R/d;dy*=R/d;}
-    knob.style.transform=`translate(calc(-50% + ${dx}px),calc(-50% + ${dy}px))`;
-    inputRoll = -dx/R;
-    inputPitch = (invertPitch? dy/R : -dy/R); // screen up -> nose up by default
+    const command=GameRuntime.stickInput(stick.getBoundingClientRect(),e.clientX,e.clientY,invertPitch);
+    knob.style.transform=`translate(calc(-50% + ${command.knobX}px),calc(-50% + ${command.knobY}px))`;
+    inputRoll=command.roll;inputPitch=command.pitch;
   }
   stick.addEventListener('pointerdown',e=>{ if(sid!==null)return; sid=e.pointerId; P._stickActive=true; stick.setPointerCapture(sid); set(e); e.preventDefault();});
   stick.addEventListener('pointermove',e=>{ if(e.pointerId!==sid)return; set(e);});
@@ -3054,9 +3050,12 @@ function updateFlight(dt){
   }else{
     P.pitchVel=(P.pitchVel||0)+(pitchRate*pitchRate*(inputPitch*0.55-P.pitch) - 2*zeta*pitchRate*P.pitchVel)*dt;
     P.pitch += P.pitchVel*dt;
-    const levelRate=Math.abs(inputRoll)<.075?rollRate*.34:rollRate;
-    P.rollVel=(P.rollVel||0)+(levelRate*levelRate*(rollTarget-P.roll) - 2*zeta*levelRate*P.rollVel)*dt;
+    const neutral=Math.abs(inputRoll)<.001;
+    const levelRate=neutral?Math.max(3.5,rollRate*.7):rollRate;
+    const damping=neutral?1:zeta;
+    P.rollVel=(P.rollVel||0)+(levelRate*levelRate*(rollTarget-P.roll) - 2*damping*levelRate*P.rollVel)*dt;
     P.roll += P.rollVel*dt;
+    if(neutral&&Math.abs(P.roll-P.rollBias)<.002&&Math.abs(P.rollVel)<.01){P.roll=P.rollBias;P.rollVel=0;}
     if(P.pitch>pitchLim){ P.pitch=pitchLim; P.pitchVel=Math.min(0,P.pitchVel); }
     if(P.pitch<-pitchLim){ P.pitch=-pitchLim; P.pitchVel=Math.max(0,P.pitchVel); }
     if(P.roll>rollLim){ P.roll=rollLim; P.rollVel=Math.min(0,P.rollVel); }
@@ -4636,7 +4635,7 @@ function loadPlaneModel(){
       }
       window.__eyeDbg='EYE '+COCKPIT_EYE.map(v=>v.toFixed(2)).join('/');
       const btEl=document.getElementById('buildTag');
-      if(btEl) btEl.textContent='BUILD 156 · '+window.__eyeDbg;
+      if(btEl) btEl.textContent='BUILD 157 · '+window.__eyeDbg;
       let seat=null;
       model.traverse(function(o){
         if(!o.isMesh||!o.material) return;
@@ -5982,7 +5981,7 @@ function setupUIButtons(){
   if(dbgT2) dbgT2.onclick=()=>{
     dbgOn=!dbgOn; GameRuntime.storage.setItem('dbgOn',dbgOn?'1':'0');
     const db=document.getElementById('dbgBox'); if(db) db.textContent=dbgOn?'✓':'';
-    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 156'; }
+    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 157'; }
   };
   const lu=document.getElementById('lookUp'), ld=document.getElementById('lookDn');
   let _lookT=0;
@@ -6217,7 +6216,7 @@ function animate(){
     notice.style.cssText='position:fixed;inset:0;z-index:999998;background:rgba(15,20,15,.95);color:#e8ddbc;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px;text-align:center;font:16px system-ui';
     const title=document.createElement('h2');title.textContent='Simulation interrupted';
     const detail=document.createElement('p');
-    detail.textContent='BUILD 156 · '+(MISSIONS[mission]?.sub||'Menu')+' · '+error.message;
+    detail.textContent='BUILD 157 · '+(MISSIONS[mission]?.sub||'Menu')+' · '+error.message;
     const reload=document.createElement('button');reload.textContent='Reload game';
     reload.style.cssText='padding:12px 24px;font:inherit';reload.onclick=()=>location.reload();
     notice.appendChild(title);notice.appendChild(detail);notice.appendChild(reload);document.body.appendChild(notice);

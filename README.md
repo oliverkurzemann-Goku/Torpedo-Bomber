@@ -82,4 +82,4 @@ No license is currently granted for this repository's own code (`package.json` l
 `UNLICENSED`) — this hasn't been decided yet, not a statement that it never will be.
 Third-party runtime assets keep their own licenses; see `ASSET-CREDITS.md`.
 
-Build 156: supplementary radio calls give target MSL altitude and a leading intercept course; urgent chatter has priority. Safe parachute landings end with a brief, pausable boat or ground-party pickup. No wingman commands; navigation arrows, aircraft models and flight physics unchanged.
+Build 157: both campaigns share the same gentle touch-stick response and centre dead zone; releasing the stick smoothly levels the wings. Thunderbolt wind changes the ground track without turning the heading. Air-only interception sorties carry guns, while ground strikes retain bombs and rockets. Includes the intercept radio calls and automatic parachute rescue from Build 156, without wingman commands.
