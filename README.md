@@ -82,4 +82,4 @@ No license is currently granted for this repository's own code (`package.json` l
 `UNLICENSED`) — this hasn't been decided yet, not a statement that it never will be.
 Third-party runtime assets keep their own licenses; see `ASSET-CREDITS.md`.
 
-Build 157: both campaigns share the same gentle touch-stick response and centre dead zone; releasing the stick smoothly levels the wings. Thunderbolt wind changes the ground track without turning the heading. Air-only interception sorties carry guns, while ground strikes retain bombs and rockets. Includes the intercept radio calls and automatic parachute rescue from Build 156, without wingman commands.
+Build 158 fits the Zero's compact landing gear to the measured wing underside and tail belly; browser checks use the real gear lever and save extended/retracted renders. The confirmed Build 157 controls, stable wind heading and mission-specific armament remain in place, along with intercept radio calls and automatic parachute rescue.

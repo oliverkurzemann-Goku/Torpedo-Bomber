@@ -14,7 +14,7 @@ vm.runInThisContext(fs.readFileSync(require.resolve('three/examples/js/loaders/G
 const root=path.resolve(__dirname,'../..'), html=fs.readFileSync(path.join(root,'torpedo-carrier.html'),'utf8');
 vm.runInThisContext(html.slice(html.indexOf('function readVert('),html.indexOf('function cowlCentre(')));
 vm.runInThisContext(html.slice(html.indexOf('function makeSBDGear('),html.indexOf('function loadSBDModel(){')));
-vm.runInThisContext(html.slice(html.indexOf('function makeZeroGear(){'),html.indexOf('function buildZeroMesh(){')));
+vm.runInThisContext(html.slice(html.indexOf('function makeZeroGear('),html.indexOf('function buildZeroMesh(){')));
 vm.runInThisContext(html.slice(html.indexOf('function makeWingmanModel('),html.indexOf('function spawnWingman(')));
 function glb(file){return new Promise((resolve,reject)=>{const raw=fs.readFileSync(path.join(root,file));
  new THREE.GLTFLoader().parse(raw.buffer.slice(raw.byteOffset,raw.byteOffset+raw.byteLength),'',v=>resolve(v.scene),reject);
@@ -108,15 +108,38 @@ function glb(file){return new Promise((resolve,reject)=>{const raw=fs.readFileSy
  zero.position.sub(zeroBox.getCenter(new THREE.Vector3()));
  zero.scale.setScalar(11/Math.max(zeroSize.x,zeroSize.y,zeroSize.z));
  const zeroHolder=new THREE.Group();zeroHolder.add(zero);
- const airframeBottom=new THREE.Box3().setFromObject(zeroHolder).min.y;
+ zero.traverse(o=>{if(o.isMesh)o.material.side=THREE.DoubleSide;});
+ zeroHolder.updateMatrixWorld(true);
  zeroHolder.add(makeZeroGear());
  for(const player of [true,false]){
    const copy=zeroHolder.clone(true);
+   if(player)copy.rotation.y=Math.PI; // Actual player-facing template orientation.
    setZeroGearVisible(copy,player);
    assert.equal(copy.getObjectByName('zeroGear').visible,player,'Zero landing gear follows player lever; enemy gear stays up');
-   if(player){const bottom=new THREE.Box3().setFromObject(copy).min.y;
-     assert(bottom<airframeBottom-.12&&bottom>airframeBottom-.28,
-       'Zero wheels must show below the loaded GLB without long stilt-like legs');}
+   if(player){
+     copy.updateMatrixWorld(true);
+     const gear=copy.getObjectByName('zeroGear'),ray=new THREE.Raycaster();
+     const body=copy.children[0];
+     for(const label of ['L','R']){
+       const leg=gear.getObjectByName('zeroMainLeg'+label),wheel=gear.getObjectByName('zeroMainWheel'+label);
+       const length=leg.geometry.parameters.height;
+       const root=leg.localToWorld(new THREE.Vector3(0,-length/2,0));
+       const axle=leg.localToWorld(new THREE.Vector3(0,length/2,0));
+       ray.set(new THREE.Vector3(root.x,-5,root.z),new THREE.Vector3(0,1,0));
+       const surface=ray.intersectObject(body,true)[0];
+       assert(surface&&Math.abs(surface.point.y-root.y)<.04,'Zero main leg attaches to the actual wing underside, not empty space');
+       assert(length>.5&&length<.62,'Zero main strut is compact');
+       assert(axle.distanceTo(wheel.getWorldPosition(new THREE.Vector3()))<1e-6,'Zero strut reaches its wheel axle');
+       const bottom=new THREE.Box3().setFromObject(wheel).min.y;
+       assert(root.y-bottom>.75&&root.y-bottom<.85,'wheel-to-wing clearance stays compact');
+     }
+     const tail=gear.getObjectByName('zeroTailLeg'),length=tail.geometry.parameters.height;
+     const root=tail.localToWorld(new THREE.Vector3(0,-length/2,0));
+     ray.set(new THREE.Vector3(root.x,-5,root.z),new THREE.Vector3(0,1,0));
+     const surface=ray.intersectObject(body,true)[0];
+     assert(surface&&Math.abs(surface.point.y-root.y)<.04,'spornrad leg attaches to the actual tail belly');
+     assert(length<.32,'Zero tail strut is short');
+   }
  }
  console.log('SBD GLB: '+cut+' original triangles cut, one independent rotor per aircraft; real Avenger wingman blade cloned ('+blades.name+')');
 })().catch(e=>{console.error(e);process.exitCode=1;});

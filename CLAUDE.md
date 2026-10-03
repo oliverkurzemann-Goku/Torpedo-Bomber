@@ -5,7 +5,30 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 157 · Thunderbolt Squadron BUILD 157 · Remagen-Kern 21 / Fahrzeuge 22**
+Stand bei Übergabe: **Torpedo Squadron BUILD 158 · Thunderbolt Squadron BUILD 157 · Remagen-Kern 21 / Fahrzeuge 22**
+
+**Build 158 (03.10.2026): Zero-Fahrwerk am echten Flügel befestigt und gekürzt.**
+Nutzer bestätigt die Build-157-Steuerung auf dem iPad, meldet aber falsches/langes
+Zero-Fahrwerk. Reale r128-GLB-Messung: bei x=±2,13 und altem z=-0,32 liegt keine
+Tragfläche. Der Hauptflügel liegt dort um z=+1 bis +2,5; der negative Z-Bereich
+enthält das Leitwerk. Alte Hauptbeine hingen frei, die Spornradstrebe begann
+ebenfalls unterhalb des Rumpfs. Der alte Test verglich nur die tiefste Modellkante:
+das war der Propeller, keine Fahrwerksaufnahme. Diese Prüfung war irreführend.
+
+Hauptwurzeln jetzt x=±1,92 / y=-0,41 / z=+1,65, an der gemessenen Flügelunterseite.
+Verbundenes Hauptbein rund 0,57 m, Radradius 0,24 m; Radunterkante 0,80 m unter
+der Aufnahme. Spornradwurzel y=-0,34 / z=-3,30 am Heckbauch, Strebe rund 0,29 m,
+Radradius 0,12 m. Streben werden direkt zwischen Aufnahme und Achse ausgerichtet;
+keine Lücke am Rad. Prozeduraler Ersatz hat eigene Flügel-/Heckhöhen.
+Original-GLB, Propeller, Flugphysik und bestätigte Steuerung nicht geändert.
+Thunderbolt bleibt Build 157. Kein neues Modell oder Bibliothekszugriff.
+
+`carrier-prop.cjs` lädt den echten Zero-GLB und prüft in der tatsächlichen
+Spielerorientierung beide Flügelkontakte sowie Heckkontakt durch Raycasts,
+Beinlänge, Radanschluss und kompakte Rad-Flügel-Distanz. Gegnerfahrwerk bleibt
+eingefahren. Browser betätigt den echten GEAR-Knopf in beide Richtungen und
+rendert `zero-gear-down.png` / `zero-gear-up.png` zur Sichtprüfung.
+Weiterhin kein behaupteter iPad-Sichtnachweis für das neue Fahrwerk.
 
 **Build 157 (03.10.2026): einheitlicher Stick, stabiler Heading und Missionsbewaffnung.**
 Vom Nutzer ausdrücklich gewünschte Steuerungs-/Flugverhaltenskorrekturen:

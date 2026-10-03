@@ -117,6 +117,26 @@ const cdn={
      });
      fs.writeFileSync(path.join(out,scenario.kind+'-banked-guns-ordnance.png'),Buffer.from(png.split(',')[1],'base64'));
     }
+    if(scenario.kind==='defend'&&scenario.ordinal===0){
+     // Exercise the actual gear lever, then render the selected GLB in both states.
+     await page.evaluate(()=>{P.gear=0;P.gearTgt=0;updatePlaneMesh(0);resetControlUI();});
+     const out=path.join(root,'test-visuals');
+     for(const down of [true,false]){
+      await page.locator('#gearBtn').click();
+      await page.waitForFunction(down=>playerZero.getObjectByName('zeroGear').visible===down,down);
+      const png=await page.evaluate(()=>{
+       const studio=new THREE.Scene();studio.background=new THREE.Color(0x8faec0);
+       studio.add(new THREE.HemisphereLight(0xe8f3ff,0x524b39,1.3));
+       const sun=new THREE.DirectionalLight(0xffecd4,.9);sun.position.set(5,12,-10);studio.add(sun);
+       const frame=playerZero.clone(true);studio.add(frame);
+       const cam=new THREE.PerspectiveCamera(38,1024/768,.1,100);cam.position.set(13,-2,-16);cam.lookAt(0,-.3,0);
+       renderer.setPixelRatio(1);renderer.render(studio,cam);
+       const png=renderer.domElement.toDataURL('image/png');renderer.setPixelRatio(.25);return png;
+      });
+      fs.writeFileSync(path.join(out,'zero-gear-'+(down?'down':'up')+'.png'),Buffer.from(png.split(',')[1],'base64'));
+     }
+     console.log('Browser Zero: real gear lever extends and retracts fitted main legs and short tailwheel; down/up GLB renders saved');
+    }
 
    }
    try{await page.waitForFunction(()=>state===ST.FLIGHT||state===ST.PAUSED||state===ST.RESULT);
@@ -243,7 +263,7 @@ const cdn={
     // A real JS frame failure is visible and remains observable, not hidden.
     await page.evaluate(()=>{animateFrame=()=>{throw Error('TEST FRAME FAULT');};});
     await page.locator('#simulationRecovery').waitFor({state:'visible'});
-    assert.match(await page.locator('#simulationRecovery').innerText(),/BUILD 157.*TEST FRAME FAULT/);
+    assert.match(await page.locator('#simulationRecovery').innerText(),/BUILD 158.*TEST FRAME FAULT/);
     assert.equal(await page.locator('#simulationRecovery button').innerText(),'Reload game');
     assert.deepEqual(errors,['TEST FRAME FAULT'],'unexpected runtime errors cannot be swallowed');
    }
