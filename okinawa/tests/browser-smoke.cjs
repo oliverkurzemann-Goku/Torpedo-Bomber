@@ -79,8 +79,8 @@ const cdn={
        images:[...document.querySelectorAll('.board img')].map(i=>i.complete&&i.naturalWidth>1000),
        bottom:document.querySelector('.board').getBoundingClientRect().bottom}));
      assert(boardState.images.every(Boolean),'both generated campaign assets decode');
-     assert(boardState.overflow<=1&&boardState.bottom<=600,'campaign board fits reduced iPad landscape, even with saved progress');
      await board.screenshot({path:path.join(out,'campaign-board-landscape.png')});await board.close();
+     assert(boardState.overflow<=1&&boardState.bottom<=600,'campaign board fits reduced iPad landscape, even with saved progress: '+JSON.stringify(boardState));
     }
    }
    // Keep the real scene and WebGL renderer, but lower GPU fill cost on the
