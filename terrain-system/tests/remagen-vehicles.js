@@ -44,7 +44,7 @@ THREE.FBXLoader.prototype.load=function(file,yes,progress,no){
   const merchantSize=new THREE.Box3().setFromObject(merchant).getSize(new THREE.Vector3());
   assert(Math.abs(Math.max(merchantSize.x,merchantSize.z)-30)<.01);
   const living=new LivingWorld(scene,terrain,osm,{bridge:[13805.25,15769.95],bridgeSpan:[-101.5,-356.1],factory:[13200.6,20489.7],field:[787,18087.6]});
-  assert.equal(living.installVehicleModels(vehicles.templates),27);
+  assert.equal(living.installVehicleModels(vehicles.templates),39);
   const modelStats=e=>{let meshes=0,triangles=0;e.visual.traverse(m=>{if(!m.isMesh)return;meshes++;triangles+=(m.geometry.index?m.geometry.index.count:m.geometry.attributes.position.count)/3;});return {meshes,triangles};};
   assert.equal(living.entities.filter(e=>e.kind==='truck'&&e.visual.userData.sourceModel==='jagdpanther').length,1);
   assert.deepEqual(modelStats(living.entities.find(e=>e.kind==='truck'&&e.meta.vehicleModel==='tiger')),{meshes:13,triangles:910});
