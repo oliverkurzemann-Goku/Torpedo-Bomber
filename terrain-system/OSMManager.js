@@ -73,11 +73,13 @@ class OSMManager {
     this.willowGeo=normaliseOSMForestCrown(makeOSMTreeCrown(4));
     this.shrubGeo = new THREE.DodecahedronGeometry(2.3, 0);
     this.trunkMat = new THREE.MeshStandardMaterial({ color: 0x51402d, roughness: 1 });
-    this.coniferMat = new THREE.MeshStandardMaterial({ color: 0x284d28, roughness: 1 });
-    this.deciduousMat = new THREE.MeshStandardMaterial({ color: 0x3f6835, roughness: 1 });
+    this.coniferMat = new THREE.MeshStandardMaterial({ color: 0x3a4c37, roughness: 1 });
+    this.deciduousMat = new THREE.MeshStandardMaterial({ color: 0x4c6243, roughness: 1 });
     this.shrubMat = new THREE.MeshStandardMaterial({ color: 0x536f3a, roughness: 1 });
     this.poplarMat=new THREE.MeshStandardMaterial({color:0x52613b,roughness:1});
     this.willowMat=new THREE.MeshStandardMaterial({color:0x65735a,roughness:1});
+    this.foliageTexture=makeOSMForestTexture();
+    for(const mat of [this.coniferMat,this.deciduousMat,this.poplarMat,this.willowMat])mat.map=this.foliageTexture;
 
     this.boxGeo = new THREE.BoxGeometry(1, 1, 1);
     this.wallGeo = makeOSMWallGeometry();
@@ -481,7 +483,7 @@ class OSMManager {
 
       const TARGET_TREES = 800;
       const bboxArea = Math.max(1, (maxX-minX) * (maxZ-minZ));
-      const step = Math.min(150, Math.max(20, Math.round(Math.sqrt(bboxArea / TARGET_TREES))));
+      const step = Math.min(48, Math.max(20, Math.round(Math.sqrt(bboxArea / TARGET_TREES))));
 
       for(let x = minX; x <= maxX; x += step){
         for(let z = minZ; z <= maxZ; z += step){
@@ -1231,31 +1233,45 @@ function normaliseOSMForestCrown(geo){
  const a=geo.attributes.position.array;let radius=0;
  for(let i=0;i<a.length;i+=3)radius=Math.max(radius,Math.hypot(a[i],a[i+2]));
  for(let i=0;i<a.length;i+=3){a[i]/=radius;a[i+2]/=radius;}
+ const uv=[];for(let i=0;i<a.length;i+=3)uv.push(a[i]*.5+.5,a[i+2]*.5+.5);
+ geo.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));
  geo.computeVertexNormals();geo.computeBoundingSphere();return geo;
 }
 function makeOSMForestCrown(kind){
- const positions=[],tri=(a,b,c)=>positions.push(...a,...b,...c);
- for(let crown=0;crown<7;crown++){
-  const angle=crown*Math.PI/3,cx=crown?Math.cos(angle)*.52:0,cz=crown?Math.sin(angle)*.52:0;
-  const height=(crown%3-1)*.65;
-  if(kind===0){
-   for(let layer=0;layer<3;layer++)for(let i=0;i<6;i++){
-    const a=i*Math.PI/3,b=(i+1)*Math.PI/3,r=.36-layer*.075,y=-3.4+layer*2+height;
-    tri([cx+r*Math.cos(a),y,cz+r*Math.sin(a)],[cx,y+3.9,cz],[cx+r*Math.cos(b),y,cz+r*Math.sin(b)]);
-   }
-  }else{
-   const point=(ring,sector)=>{const a=ring*Math.PI/2,b=sector*Math.PI/3;
-    return [cx+.43*Math.sin(a)*Math.cos(b),height+Math.cos(a)*2.9,cz+.43*Math.sin(a)*Math.sin(b)];};
-   for(let j=0;j<2;j++)for(let i=0;i<6;i++){const a=point(j,i),b=point(j+1,i),c=point(j+1,i+1),d=point(j,i+1);tri(a,d,b);tri(b,d,c);}
-  }
+ const positions=[0,4.2,0],indices=[],sectors=12;
+ for(const [ring,r,y] of [[0,.35,3.4],[1,.72,1.7],[2,1,-1.5]])for(let i=0;i<sectors;i++){
+  const a=i*Math.PI*2/sectors,bump=1+.06*Math.sin(a*5+kind),height=.35*Math.sin(a*3+ring);
+  positions.push(Math.cos(a)*r*bump,y+height,Math.sin(a)*r*bump);
  }
- const geo=new THREE.BufferGeometry();geo.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));
+ for(let i=0;i<sectors;i++)indices.push(0,1+(i+1)%sectors,1+i);
+ for(let ring=0;ring<2;ring++)for(let i=0;i<sectors;i++){
+  const a=1+ring*sectors+i,b=1+ring*sectors+(i+1)%sectors,c=b+sectors,d=a+sectors;
+  indices.push(a,b,d,b,c,d);
+ }
+ const base=positions.length/3;positions.push(0,-3.5,0);
+ for(let i=0;i<sectors;i++)indices.push(base,1+2*sectors+i,1+2*sectors+(i+1)%sectors);
+ const geo=new THREE.BufferGeometry();geo.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));geo.setIndex(indices);
  return normaliseOSMForestCrown(geo);
+}
+function makeOSMForestTexture(){
+ if(typeof document==='undefined')return null;
+ const n=256,c=document.createElement('canvas');c.width=c.height=n;const ctx=c.getContext('2d'),img=ctx.createImageData(n,n);
+ for(let y=0;y<n;y++)for(let x=0;x<n;x++){
+  const u=x/n*Math.PI*2,v=y/n*Math.PI*2;
+  const leaf=Math.sin(u*13+Math.sin(v*7))*Math.cos(v*11-u*3);
+  const shade=Math.cos(u*5+v*3)*Math.sin(v*7-u*2),grain=osmHash(x,y,284)-.5;
+  const value=Math.round(184+leaf*23+shade*21+grain*13),i=(y*n+x)*4;
+  img.data[i]=img.data[i+1]=img.data[i+2]=value;img.data[i+3]=255;
+ }
+ ctx.putImageData(img,0,0);const tex=new THREE.CanvasTexture(c);tex.wrapS=tex.wrapT=THREE.RepeatWrapping;
+ tex.anisotropy=4;return tex;
 }
 function osmCanopyTerrain(material){
  const previous=material.onBeforeCompile;
  material.onBeforeCompile=shader=>{
   previous(shader);shader.vertexShader='attribute vec4 canopyGround;\n'+shader.vertexShader;
+  shader.vertexShader=shader.vertexShader.replace('#include <uv_vertex>',
+   '#include <uv_vertex>\n#ifdef USE_UV\n#ifdef USE_INSTANCING\nvUv = (instanceMatrix * vec4(position, 1.0)).xz / 48.0;\n#else\nvUv = (modelMatrix * vec4(position, 1.0)).xz / 48.0;\n#endif\n#endif');
   shader.vertexShader=shader.vertexShader.replace('#include <begin_vertex>',
    '#include <begin_vertex>\nvec2 canopyUv = position.xz * 0.5 + 0.5;\n'+
    'float canopySlope = mix(mix(canopyGround.x, canopyGround.y, canopyUv.x), mix(canopyGround.z, canopyGround.w, canopyUv.x), canopyUv.y);\n'+

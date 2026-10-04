@@ -28,7 +28,7 @@ const terrain={getRenderedHeight:(x,z)=>x*.02+z*.03},osm=new OSMManager(new THRE
 const group=new THREE.Group(),ring=[[0,0],[4000,0],[4000,4000],[0,4000],[0,0]];
 const placements=osm._forestPlacements([ring],0,0);
 const stands=placements.filter(p=>p.kind<2&&p.x>300&&p.x<3700&&p.z>300&&p.z<3700);
-assert(stands.some(p=>p.radius>50),'large woods have broad stands instead of isolated crowns');
+assert(stands.some(p=>p.radius>30),'large woods have broad stands instead of isolated crowns');
 let covered=0,samples=0;for(let x=350;x<3650;x+=75)for(let z=350;z<3650;z+=75){samples++;covered+=stands.some(p=>Math.hypot(x-p.x,z-p.z)<p.radius);}
 assert(covered/samples>.65,'woodland crown envelopes form a connected mass: '+covered/samples);
 osm._buildForests(group,[ring],0,0);assert(group.children.length<=7,'forest draw-call budget stays bounded');

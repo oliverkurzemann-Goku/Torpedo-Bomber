@@ -230,7 +230,7 @@ class TerrainManager {
         'vec2 cell = vec2(mod(surface, 4.0), floor(surface / 4.0));\n'+
         'vec2 detailUv = (cell + fract(vUv) * 0.984 + 0.008) / vec2(4.0, 2.0);\n'+
         'float grain = texture2D(surfaceDetails, detailUv).r;\n'+
-        'diffuseColor.rgb *= mapTexelToLinear(vec4(cover.rgb, 1.0)).rgb * (0.32 + grain * 1.35);');
+        'diffuseColor.rgb *= cover.rgb * (0.32 + grain * 1.35);');
     };
     material.customProgramCacheKey=()=> 'terrain-landcover-164';
     if(tile.landcoverTexture)tile.landcoverTexture.dispose();

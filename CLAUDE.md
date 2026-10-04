@@ -37,11 +37,13 @@ Erd-/Kies-, Acker-/Stoppel- und Waldpaletten. Visuelle Ackerparzellen sind zum e
 Farmland-Umriss geclippt, keine neuen behaupteten Kartendaten. Ein geteilter 1024×512
 Graustufen-Atlas enthält acht Bodentexturen (etwa 2,7 MiB inklusive Mips zusätzlich).
 Keine neue Geländegeometrie, Straßen-/Morphänderung, vertexColor oder instanceColor.
-Große Waldkronen werden zu verbundenen, gelappten Beständen statt einzelnen Bäumen.
+Waldkronen werden zu verbundenen, glatt gerundeten Beständen statt einzelnen Bäumen.
+Maximal 48 m Rasterabstand, 72 Dreiecke pro großer Krone und eine geteilte 256px
+Blattstruktur (etwa 0,33 MiB inklusive Mips) vermeiden große kantige Dachflächen.
 Ihre Kreishülle bleibt innerhalb des Waldpolygons, der Kachel und aller Schutzflächen.
 Vier zusätzliche Höhenwerte pro Instanz passen Kronen an den lokalen Hang an;
 Stämme nur am schmalen Waldrand, höchstens sieben Instanz-Buckets pro Kachel.
-CPU-Prüfung: acht Texturmuster, 206 grobe RGB-Farben in 56 Kacheln, etwa 77% Kronen-
+CPU-Prüfung: acht Texturmuster, 206 grobe RGB-Farben in 56 Kacheln, etwa 90% Kronen-
 Abdeckung im großen Testwald; 14.118 Straßen-/Terrainproben weiterhin <0,000114 m.
 Alle realen Waldhüllen werden gegen tatsächlich gerenderte Wasser-Dreiecke geprüft.
 Browser rendert echte Rhein-Felder/Wälder in Übersicht und Nahsicht, prüft Shader

@@ -168,7 +168,7 @@ const cdn={
      renderer.setPixelRatio(1);cam.position.set(13700,y+1350,11200);cam.lookAt(14000,y,14700);
      renderer.render(studio,cam);const overview=renderer.domElement.toDataURL('image/png');
      const content=osmMgr.tiles.get('3,3'),crowns=content.farGroup.children.find(m=>m.name==='osmForestDeciduous');
-     const index=crowns.userData.canopyRadii.findIndex(r=>r>35),matrix=new THREE.Matrix4();crowns.getMatrixAt(index>=0?index:0,matrix);
+     const radii=crowns.userData.canopyRadii,index=radii.indexOf(Math.max(...radii)),matrix=new THREE.Matrix4();crowns.getMatrixAt(index,matrix);
      const p=new THREE.Vector3().setFromMatrixPosition(matrix);cam.position.copy(p).add(new THREE.Vector3(160,105,-200));cam.lookAt(p);
      renderer.render(studio,cam);const close=renderer.domElement.toDataURL('image/png');renderer.setPixelRatio(.25);
      return {overview,close,patches,buckets};

@@ -9,14 +9,15 @@ visual crop parcels are clipped to the shipped farmland outlines. A shared 1024Ã
 atlas supplies eight distinct grain/furrow/litter surfaces without ground meshes
 or added draw calls. Its mipmapped RGBA cost is about 2.7 MiB.
 
-The existing forest sample budget becomes overlapping, lobed crown stands with
-four per-instance height samples to follow slopes. Full crown discs are constrained
+Forests become overlapping, smooth irregular crown stands, with a maximum sample
+spacing of 48m and a shared 256px leaf-grain map (about 0.33 MiB with mipmaps).
+Four per-instance height samples and the centre follow slopes. Full crown discs are constrained
 by woodland edges, tile bounds, roads, rails, buildings, airfields and the global
 water index. Edge shrubs and narrow trees remain; large stands omit giant exposed
 trunks. At most seven forest buckets per tile, no instance colours. Tile-owned
 cloned canopy geometry owns the new height attribute and is freed on unload.
 
-CPU checks cover eight textures, regional palette variation, ~77% synthetic woodland
+CPU checks cover eight textures, regional palette variation, ~90% synthetic woodland
 coverage and actual crown envelopes against rendered water triangles. Existing
 14,118 terrain/road ray samples remain within 0.000114m. Browser captures mapped
 fields and woods at landscape and close range; only real-device testing can establish
