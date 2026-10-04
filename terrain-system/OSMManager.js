@@ -1260,7 +1260,7 @@ function makeOSMForestCrown(kind){
   const [cx,cz]=roots[tree],height=[14,19,16][tree],width=[.52,.45,.50][tree];
   const trunk=positions.length/3;
   for(const y of [0,height*.58])for(let i=0;i<4;i++){const a=i*Math.PI/2;add(cx+Math.cos(a)*.019,y,cz+Math.sin(a)*.019,tree,1);}
-  for(let i=0;i<4;i++){const a=trunk+i,b=trunk+(i+1)%4;indices.push(a,b,a+4,b,b+4,a+4);}
+  for(let i=0;i<4;i++){const a=trunk+i,b=trunk+(i+1)%4;indices.push(a,a+4,b,b,a+4,b+4);}
   if(kind===0){
    for(let layer=0;layer<3;layer++){
     const base=positions.length/3,r=width*(1-layer*.24),y=height*(.20+layer*.22);

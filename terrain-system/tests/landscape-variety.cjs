@@ -40,6 +40,11 @@ for(const mesh of group.children.filter(m=>m.geometry.attributes.canopyGround)){
  if(mesh.geometry.userData.forestRoots){
   assert.equal(mesh.geometry.userData.forestRoots.length,3,'each stand has three separate tree roots');
   const part=mesh.geometry.attributes.forestPart;assert([...part.array].some((v,i)=>i%2===1&&v===1),'real trunks are part of the bounded forest mesh');
+  const normal=mesh.geometry.attributes.normal;
+  for(let vertex=0;vertex<part.count;vertex++)if(part.getY(vertex)===1){
+   const [rx,rz]=mesh.geometry.userData.forestRoots[part.getX(vertex)];
+   assert(normal.getX(vertex)*(pos.getX(vertex)-rx)+normal.getZ(vertex)*(pos.getZ(vertex)-rz)>0,'trunk faces point outward and remain visible with front-face culling');
+  }
   const m=new THREE.Matrix4();
   for(let i=0;i<Math.min(mesh.count,60);i++){
    mesh.getMatrixAt(i,m);
