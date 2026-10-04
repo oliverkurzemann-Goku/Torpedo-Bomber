@@ -9,7 +9,7 @@ vm.runInThisContext(fs.readFileSync(require.resolve('three/examples/js/loaders/G
 require('../../game-runtime.js');require('../../combat-fx.js');
 const {GameRuntime,CombatFX}=global,root=path.resolve(__dirname,'../..'),html=fs.readFileSync(path.join(root,'torpedo-carrier.html'),'utf8');
 const extract=(from,to)=>html.slice(html.indexOf('function '+from+'('),html.indexOf('\nfunction '+to+'(',html.indexOf('function '+from+'(')+1));
-const gunCode=html.slice(html.indexOf('const pacificTracerGeo='),html.indexOf('function updateMinimap('));
+const gunCode=html.slice(html.indexOf('function updateGuns('),html.indexOf('function updateMinimap('));
 const poseCode=html.slice(html.indexOf('function pacificGunMuzzles('),html.indexOf('// ---------- FX: explosions'));
 async function glb(file){const b=fs.readFileSync(path.join(root,file));return new Promise((yes,no)=>new THREE.GLTFLoader().parse(b.buffer.slice(b.byteOffset,b.byteOffset+b.byteLength),'',g=>yes(g.scene),no));}
 (async()=>{
@@ -63,6 +63,7 @@ async function glb(file){const b=fs.readFileSync(path.join(root,file));return ne
     assert(dir.dot(ctx.noseDir())>.99999,'muzzle flame follows the aircraft nose');
    }
    combatFX.update(1/60);
+   assert(ctx.bullets.every(b=>new THREE.Vector3(0,0,1).applyQuaternion(b.mesh.quaternion).dot(b.dir)>.99999),'rounds follow their actual velocity while banking and pitching');
    assert(ctx.bullets.length<30,'live tracers stay bounded during sustained fire');
    assert(combatFX.count<40,'muzzle effects expire and recycle during sustained fire');
    assert.equal(ctx.window.__avStash.length,0,'muzzle sprites never enter the discarded-airframe stash');

@@ -9,6 +9,7 @@
     --olive:#2b3022; --olive2:#1c2017; --khaki:#cabf9c; --amber:#e8b84b;
     --amber-dim:#9a7d34; --oxide:#b1442b; --steel:#8aa0b0; --good:#7fae5a;
     --ink:#0d0f0a;
+    --flightControlsTop:min(33vh,calc(100dvh - max(26px,env(safe-area-inset-bottom)) - 422px));
   }
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
   html,body{margin:0;padding:0;height:100%;height:100dvh;overflow:hidden;background:#000;
@@ -138,11 +139,11 @@
     justify-content:center;text-align:center;line-height:1.25;}
   .ctlBtn:active{transform:scale(.94);}
   .ctlBtn.on{border-color:var(--amber);color:var(--amber);}
-  #gearBtn{left:max(20px,env(safe-area-inset-left));top:33%;}
-  #flapBtn{left:max(20px,env(safe-area-inset-left));top:calc(33% + 56px);}
-  #diveBtn{left:max(20px,env(safe-area-inset-left));top:calc(33% + 112px);display:none;}
-  #hookBtn{left:max(20px,env(safe-area-inset-left));top:calc(33% + 168px);}
-  #aeroBtn{left:max(20px,env(safe-area-inset-left));top:calc(33% + 224px);}
+  #gearBtn{left:max(20px,env(safe-area-inset-left));top:var(--flightControlsTop);}
+  #flapBtn{left:max(20px,env(safe-area-inset-left));top:calc(var(--flightControlsTop) + 56px);}
+  #diveBtn{left:max(20px,env(safe-area-inset-left));top:calc(var(--flightControlsTop) + 112px);display:none;}
+  #hookBtn{left:max(20px,env(safe-area-inset-left));top:calc(var(--flightControlsTop) + 168px);}
+  #aeroBtn{left:max(20px,env(safe-area-inset-left));top:calc(var(--flightControlsTop) + 224px);}
   #bailBtn{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 22px);
     transform:translateX(-50%);z-index:22;display:none;touch-action:manipulation;
     padding:10px 14px;border:1px solid #e2bd79;border-radius:7px;background:rgba(63,43,29,.9);
@@ -154,17 +155,17 @@
     background:radial-gradient(circle at 35% 30%,#9a7a34,#4a3410);border:2px solid rgba(202,191,156,.5);}
   #fireBtn:active{transform:scale(.93);}
   /* minimap sits BELOW the right status panel (5 rows) instead of on top of it */
-  #mmap{position:fixed;top:calc(env(safe-area-inset-top) + 310px);
+  #mmap{position:fixed;top:min(calc(env(safe-area-inset-top) + 310px),calc(100dvh - env(safe-area-inset-bottom) - 326px));
     right:calc(max(12px,env(safe-area-inset-right)) + 92px);width:104px;height:104px;border-radius:50%;
     border:1px solid rgba(202,191,156,.35);background:rgba(8,12,10,.62);z-index:9;}
-  .lookBtn{position:fixed;right:max(20px,env(safe-area-inset-right));top:calc(50% - 104px);z-index:12;display:none;
+  .lookBtn{position:fixed;right:max(20px,env(safe-area-inset-right));top:max(calc(50% - 104px),calc(env(safe-area-inset-top) + 226px));z-index:12;display:none;
     padding:8px 10px;font-family:"Arial Black",sans-serif;font-size:11px;letter-spacing:1px;
     color:rgba(202,191,156,.92);background:rgba(18,22,15,.72);border:1px solid rgba(202,191,156,.4);
     border-radius:7px;pointer-events:auto;touch-action:manipulation;user-select:none;-webkit-user-select:none;}
   .lookBtn:active{background:rgba(202,191,156,.28);}
   #dmgVig{position:fixed;inset:0;z-index:11;pointer-events:none;opacity:0;
     box-shadow:inset 0 0 220px 60px rgba(190,20,10,.85);}
-  #torpRun{position:fixed;left:14px;top:150px;z-index:12;display:none;
+  #torpRun{position:fixed;left:calc(max(20px,env(safe-area-inset-left)) + 76px);top:calc(env(safe-area-inset-top) + 150px);z-index:12;display:none;
     width:158px;padding:8px 10px;border-radius:8px;
     background:rgba(18,22,26,.82);border:1px solid rgba(205,196,168,.25);
     font-family:monospace;color:#cdc4a8;pointer-events:none;}
@@ -288,7 +289,7 @@
   .opsLegend{font:11px/1.5 monospace;color:#d7c797;text-align:left;margin-top:5px;}
   #opsStatus{position:fixed;top:calc(env(safe-area-inset-top) + 76px);left:50%;transform:translateX(-50%);color:#edcc80;background:rgba(14,20,18,.78);padding:5px 9px;font:10px monospace;pointer-events:none;z-index:9;max-width:58vw;text-align:center;}
 </style>
-<link rel="stylesheet" href="menu-layout.css?v=163">
+<link rel="stylesheet" href="menu-layout.css?v=164">
 </head>
 <body>
 <div id="app"></div>
@@ -320,7 +321,7 @@
   <div id="flash"></div>
   <div id="ltn" style="position:fixed;inset:0;background:#e6ecff;opacity:0;pointer-events:none;z-index:40;"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 163</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 164</div>
 
   <!-- Optical landing aid -->
   <div id="lso">
@@ -362,7 +363,7 @@
 
 <!-- Menu -->
 <div class="overlay" id="menu" data-campaign="pacific">
-  <div class="menuTop"><a id="selBtn" href="index.html?v=163">&#9664; Change Game</a><span class="menuMeta">PACIFIC OPERATIONS<br>BUILD 163</span></div>
+  <div class="menuTop"><a id="selBtn" href="index.html?v=164">&#9664; Change Game</a><span class="menuMeta">PACIFIC OPERATIONS<br>BUILD 164</span></div>
   <div class="card menuCard">
     <aside class="menuOverview" aria-label="Campaign and pilot options">
     <div class="campaignArt" aria-hidden="true"></div>
@@ -446,7 +447,7 @@
 <script src="campaign.js?v=1"></script>
 <script src="game-runtime.js?v=163"></script>
 <script src="pacific-assets.js?v=157"></script>
-<script src="combat-fx.js?v=157"></script>
+<script src="combat-fx.js?v=164"></script>
 <script src="ordnance.js?v=157"></script>
 <script src="pilot-bailout.js?v=157"></script>
 <script src="pilot-rescue.js?v=157"></script>
@@ -1955,7 +1956,7 @@ function updateShoreTargets(dt){
   if(t.cool<=0&&p.distanceTo(P.pos)<1700){t.cool=.8+Math.random()*.6;
    const from=p.clone().add(new THREE.Vector3(0,3,0)),aim=P.pos.clone().addScaledVector(noseDir(),P.spd*.6);
    aim.x+=(Math.random()-.5)*45;aim.y+=(Math.random()-.5)*35;aim.z+=(Math.random()-.5)*45;
-   const dir=aim.sub(from).normalize(),mesh=new THREE.Mesh(new THREE.BoxGeometry(.13,.13,3),new THREE.MeshBasicMaterial({color:0xffae66}));
+   const dir=aim.sub(from).normalize(),mesh=CombatFX.round('aa');
    mesh.position.copy(from);mesh.lookAt(from.clone().add(dir));scene.add(mesh);tracers.push({mesh,dir,life:3,speed:560});
   }
  }
@@ -2891,9 +2892,7 @@ function updateZeros(dt){
       for(let k=0;k<2;k++){
         const dir=lead.clone().sub(z.pos).normalize()
           .add(new THREE.Vector3((Math.random()-0.5)*0.03,(Math.random()-0.5)*0.03,(Math.random()-0.5)*0.03)).normalize();
-        const m=new THREE.Mesh(new THREE.CylinderGeometry(0.05,0.05,2.6,5),
-          new THREE.MeshBasicMaterial({color:0xfff0a0,fog:false}));
-        GameRuntime.own(m);
+        const m=CombatFX.round();
         m.position.copy(z.pos).addScaledVector(dir,5);
         m.lookAt(m.position.clone().add(dir));
         scene.add(m); tracers.push({mesh:m,dir,life:2.2,speed:640,foe:true});
@@ -2935,9 +2934,7 @@ function updateTailGun(dt){
     new THREE.Vector3(Math.sin(tgt.heading),Math.sin(tgt.pitch),Math.cos(tgt.heading)), tgt.spd*0.12);
   const dir=lead.clone().sub(gun).normalize()
     .add(new THREE.Vector3((Math.random()-0.5)*0.10,(Math.random()-0.5)*0.10,(Math.random()-0.5)*0.10)).normalize();
-  const m=new THREE.Mesh(new THREE.CylinderGeometry(0.045,0.045,2.4,5),
-    new THREE.MeshBasicMaterial({color:0xffe27a,fog:false}));
-  GameRuntime.own(m);
+  const m=CombatFX.round();
   m.position.copy(gun).addScaledVector(dir,3);
   m.lookAt(m.position.clone().add(dir));
   scene.add(m); bullets.push({mesh:m,dir,life:0.9,speed:620,tail:true});
@@ -2965,9 +2962,7 @@ function updateFlak(dt){
         const to=lead.clone().add(new THREE.Vector3((Math.random()-0.5)*70,
           (Math.random()-0.5)*46,(Math.random()-0.5)*70));
         const dir=to.clone().sub(from).normalize();
-        const mesh=new THREE.Mesh(new THREE.CylinderGeometry(0.11,0.11,3.4,5),
-          new THREE.MeshBasicMaterial({color:0xff6a3c,fog:false}));
-        GameRuntime.own(mesh);
+        const mesh=CombatFX.round('aa');
         mesh.position.copy(from).addScaledVector(dir,k*14);
         mesh.lookAt(mesh.position.clone().add(dir));
         scene.add(mesh);
@@ -3032,8 +3027,8 @@ function updateCarrierDefense(dt){
     for(let k=0;k<3;k++){
       const aim=lead.clone().add(new THREE.Vector3((Math.random()-.5)*spread,(Math.random()-.5)*spread,(Math.random()-.5)*spread));
       const dir=aim.sub(from).normalize();
-      const mesh=new THREE.Mesh(new THREE.CylinderGeometry(.10,.10,3.8,5),new THREE.MeshBasicMaterial({color:0xffd07b,fog:false}));
-      GameRuntime.own(mesh);mesh.position.copy(from).addScaledVector(dir,k*12);mesh.lookAt(mesh.position.clone().add(dir));scene.add(mesh);
+      const mesh=CombatFX.round('aa');
+      mesh.position.copy(from).addScaledVector(dir,k*12);mesh.lookAt(mesh.position.clone().add(dir));scene.add(mesh);
       tracers.push({mesh,dir,life:3.3,speed:560,fleet:true});
     }
     if(combatFX)combatFX.muzzle(scene,[from],true);
@@ -4705,7 +4700,7 @@ function loadPlaneModel(){
       }
       window.__eyeDbg='EYE '+COCKPIT_EYE.map(v=>v.toFixed(2)).join('/');
       const btEl=document.getElementById('buildTag');
-      if(btEl) btEl.textContent='BUILD 163 · '+window.__eyeDbg;
+      if(btEl) btEl.textContent='BUILD 164 · '+window.__eyeDbg;
       let seat=null;
       model.traverse(function(o){
         if(!o.isMesh||!o.material) return;
@@ -5510,8 +5505,6 @@ function sfxBolter(){
 }
 function sfxGun(){ WeaponSound.fire(actx,out(),'pacific'); }
 
-const pacificTracerGeo=new THREE.CylinderGeometry(0.05,0.05,2.4,6);
-const pacificTracerMat=new THREE.MeshBasicMaterial({color:0xfff0a0,fog:false});
 function updateGuns(dt){
   gunCool-=dt;
   if(firing && state===ST.FLIGHT && P.alive && P.ammo>0 && gunCool<=0){
@@ -5524,8 +5517,8 @@ function updateGuns(dt){
     for(const port of ports){
       const start=planeGroup.localToWorld(port.clone());
       localPorts.push(mount.worldToLocal(start.clone()));
-      const m=new THREE.Mesh(pacificTracerGeo,pacificTracerMat);
-      m.position.copy(start); m.lookAt(start.clone().add(nd)); m.rotateX(Math.PI/2);
+      const m=CombatFX.round();
+      m.position.copy(start); m.lookAt(start.clone().add(nd));
       scene.add(m); bullets.push({mesh:m,dir:nd.clone(),life:0.7,speed:650});
     }
     if(combatFX){
@@ -6063,7 +6056,7 @@ function setupUIButtons(){
   if(dbgT2) dbgT2.onclick=()=>{
     dbgOn=!dbgOn; GameRuntime.storage.setItem('dbgOn',dbgOn?'1':'0');
     const db=document.getElementById('dbgBox'); if(db) db.textContent=dbgOn?'✓':'';
-    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 163'; }
+    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 164'; }
   };
   const lu=document.getElementById('lookUp'), ld=document.getElementById('lookDn');
   let _lookT=0;
@@ -6079,7 +6072,7 @@ function setupUIButtons(){
   if(pb) pb.addEventListener('pointerdown',e=>{ e.preventDefault(); togglePause(); });
   const rb=document.getElementById('resumeBtn'); if(rb) rb.onclick=resumeGame;
   const mb=document.getElementById('menuBtn'); if(mb) mb.onclick=exitToMenu;
-  document.getElementById('pauseMainMenu').onclick=()=>{exitToMenu();window.location.href='index.html?v=163';};
+  document.getElementById('pauseMainMenu').onclick=()=>{exitToMenu();window.location.href='index.html?v=164';};
   document.getElementById('resultBtn').onclick=()=>{
     // the logbook borrows this screen from the menu — send the player straight back
     if(logbookOpen){ logbookOpen=false; showOverlay('menu'); return; }
@@ -6310,7 +6303,7 @@ function animate(){
     notice.style.cssText='position:fixed;inset:0;z-index:999998;background:rgba(15,20,15,.95);color:#e8ddbc;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px;text-align:center;font:16px system-ui';
     const title=document.createElement('h2');title.textContent='Simulation interrupted';
     const detail=document.createElement('p');
-    detail.textContent='BUILD 163 · '+(MISSIONS[mission]?.sub||'Menu')+' · '+error.message;
+    detail.textContent='BUILD 164 · '+(MISSIONS[mission]?.sub||'Menu')+' · '+error.message;
     const reload=document.createElement('button');reload.textContent='Reload game';
     reload.style.cssText='padding:12px 24px;font:inherit';reload.onclick=()=>location.reload();
     notice.appendChild(title);notice.appendChild(detail);notice.appendChild(reload);document.body.appendChild(notice);

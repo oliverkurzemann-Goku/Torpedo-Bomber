@@ -11,6 +11,7 @@ function context(){
    isDefend:()=>true,spawnSmoke:()=>{},spawnFlakBurst:()=>{},sfxPop:()=>{},spawnEnemyTorp:()=>{ctx.drops++;},
    drops:0,fleetKills:0,killRaider:r=>{r.alive=false;ctx.fleetKills++;}};
  vm.createContext(ctx);vm.runInContext(moduleCode,ctx);
+ vm.runInContext(fs.readFileSync('combat-fx.js','utf8'),ctx);
  vm.runInContext(extract('function updateRaiders(dt){','function spawnEnemyTorp'),ctx);
  vm.runInContext(extract('let carrierGunTimers=','function spawnFlakBurst'),ctx);
  vm.runInContext(extract('function updateFlak(dt){','// Four deck-edge'),ctx);
@@ -36,6 +37,7 @@ for(const fps of [20,60,120]){
 const c=context();const r=raider(350,800);r.pos.y=70;c.raiders.push(r);
 for(let i=0;i<600;i++)c.updateFlak(1/60);
 assert(c.tracers.some(t=>t.fleet),'carrier fires visible friendly AA');
+assert(c.tracers.every(t=>new THREE.Vector3(0,0,1).applyQuaternion(t.mesh.quaternion).dot(t.dir)>.99999),'carrier rounds point along their flight path, not upright');
 assert(c.tracers.length<=45,'bounded active tracer count');assert.equal(c.P.hull,100,'no friendly fire against Zero');
 assert(r.hp<4,'physical AA rounds damage hostile Avengers');
 const before=c.tracers.length;c.carrierHP=0;c.updateCarrierDefense(2);assert.equal(c.tracers.length,before,'lost carrier stops firing');

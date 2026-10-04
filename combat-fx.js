@@ -1,6 +1,19 @@
 /* Bounded, pooled combat sprites shared by both campaigns. Three.js r128. */
 (function(root){
  'use strict';
+ // The long axis is local Z, matching Object3D.lookAt. Mixing a Y-axis
+ // cylinder with lookAt made the Pacific AA appear as upright sticks.
+ const rounds=new Map();let roundNumber=0;
+ function round(kind='rifle'){
+  if(!rounds.has(kind)){
+   const [width,length]=kind==='aa'?[.13,2]:kind==='cannon'?[.10,1.35]:[.08,1.15];
+   const geometry=new THREE.BoxGeometry(width,width,length);
+   const materials=[0x373a37,0xd8c4a0].map(color=>new THREE.MeshBasicMaterial({color,fog:false}));
+   rounds.set(kind,{geometry,materials});
+  }
+  const {geometry,materials}=rounds.get(kind);
+  return new THREE.Mesh(geometry,materials[roundNumber++%4===0?1:0]);
+ }
  function texture(flare){
   const n=64,p=new Uint8Array(n*n*4);
   for(let y=0;y<n;y++)for(let x=0;x<n;x++){
@@ -67,5 +80,5 @@
    get count(){return live.length;}
   };
  }
- root.CombatFX={create};
+ root.CombatFX={create,round};
 })(typeof window==='undefined'?globalThis:window);

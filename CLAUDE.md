@@ -5,7 +5,25 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 163 · Thunderbolt Squadron BUILD 163 · Remagen-Kern 23 / Fahrzeuge 22**
+Stand bei Übergabe: **Torpedo Squadron BUILD 164 · Thunderbolt Squadron BUILD 164 · Remagen-Kern 23 / Fahrzeuge 22**
+
+**Build 164 (04.10.2026): ausgerichtete Geschosse und freie Torpedoanzeige.**
+Pacific-MG und leichte Schiffsflak hatten Y-lange Zylinder, aber lookAt richtet Z
+aus: dadurch wirkten die Geschosse wie senkrechte Stäbe. CombatFX.round verwendet
+Z-lange, kürzere Geometrie und drei dunkle / ein gedämpft helles Geschoss.
+Spieler, Jäger, Heck-MG, Küsten- und Schiffsflak verwenden die geteilten Ressourcen;
+EU-Spieler, Jäger und leichte Flak ebenfalls. Die korrekt ausgerichteten schweren
+88-mm-Granaten, Bomber-Turmpositionen, Mündungsfeuer, Schaden, Schussfrequenz,
+Geschwindigkeit und Kollisionspfade bleiben unverändert. Geteilte Geschossressourcen
+niemals pro Geschoss mit GameRuntime.own markieren oder entsorgen.
+Torpedoanzeige steht rechts neben der linken Bedienreihe. Bei reduzierter
+Querformat-Höhe rücken Bedienreihe und Karte hoch; LOOK UP bleibt unter dem
+rechten Statuspanel. Touch-Flächen bleiben gleich groß. Browser prüft sämtliche
+Bedienrechtecke bei 1024×600, 1180×680, 1366×768 und 1366×900, außerdem echte
+Trägerabwehr, Avenger-Ausflug und WebGL-Prüfbilder der Geschosse und Anzeige.
+Neue Geometrie-Regression prüft tatsächliche Schiffsflak und 3.000 Richtungen;
+die vorhandenen 20/60/120-FPS-Abwehr- und Dauerfeuer-Regressionen bleiben aktiv.
+Cache-Version von combat-fx.js auf 164; unveränderte Module behalten ihre Version.
 
 **Build 163 (04.10.2026): konsistente Schadens- und Notlandeanzeigen.**
 Rumpfanzeigen in HUD, Pause und Ergebnis beziehen sich auf die echte maximale

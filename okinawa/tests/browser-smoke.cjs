@@ -73,6 +73,25 @@ const cdn={
     await page.setViewportSize({width:1024,height:768});
     console.log('Browser '+campaign+': every mission, difficulty, launch and large Change Game fit 1024×600, 1180×680 and 1366×768');
     if(!eu){
+     for(const size of [{width:1024,height:600},{width:1180,height:680},{width:1366,height:768},{width:1366,height:900}]){
+      await page.setViewportSize(size);
+      const boxes=await page.evaluate(()=>{
+       document.getElementById('torpRun').classList.add('show');
+       // Include every flight control, including the Dauntless-only brake.
+       const ids=['instLeft','instRight','obj','gearBtn','flapBtn','diveBtn','hookBtn','aeroBtn','stick','throttle','dropBtn','fireBtn','steerBtn','lookUp','lookDn','mmap','pauseBtn','torpRun'];
+       return ids.map(id=>{const e=document.getElementById(id),old=e.style.display;
+        if(['diveBtn','lookUp','lookDn'].includes(id))e.style.display='flex';
+        const r=e.getBoundingClientRect();e.style.display=old;return {id,x:r.x,y:r.y,w:r.width,h:r.height};});
+      });
+      for(const a of boxes){
+       assert(a.w>0&&a.h>0&&a.x>=0&&a.y>=0&&a.x+a.w<=size.width+1&&a.y+a.h<=size.height+1,a.id+' visible inside '+JSON.stringify(size));
+       for(const b of boxes)if(a.id<b.id)assert(a.x+a.w<=b.x+1||b.x+b.w<=a.x+1||a.y+a.h<=b.y+1||b.y+b.h<=a.y+1,
+        a.id+' overlaps '+b.id+' at '+JSON.stringify(size)+' '+JSON.stringify([a,b]));
+      }
+     }
+     await page.evaluate(()=>document.getElementById('torpRun').classList.remove('show'));
+     await page.setViewportSize({width:1024,height:768});
+     console.log('Browser flight HUD: torpedo run, all flight controls, joystick, guns, minimap and status panels do not overlap at four landscape sizes.');
      const board=await context.newPage();await board.setViewportSize({width:1024,height:600});
      await board.goto('http://127.0.0.1:'+server.address().port+'/index.html');
      await board.evaluate(()=>{document.querySelectorAll('.progress').forEach(p=>p.textContent='Campaign complete');});
@@ -331,7 +350,7 @@ const cdn={
      await page.waitForFunction(()=>(state===ST.LAUNCH||state===ST.FLIGHT)&&eng.master.gain.value>.5);
      await page.locator('#pauseBtn').click();await page.locator('#menuBtn').click();
     }else{
-     await page.locator('#pauseMainMenu').click();await page.waitForURL('**/index.html?v=163');
+     await page.locator('#pauseMainMenu').click();await page.waitForURL('**/index.html?v=164');
      await page.locator('main.board').waitFor();
     }
     console.log('Browser pause: '+(scenario.ordinal===0?'abort, retained record and audible relaunch':'Main Menu returns to campaign board'));
@@ -439,6 +458,13 @@ const cdn={
     console.log('Browser upgrades: native ambience, visible independent damage, actual belly recovery, original Me262/Me163 and both special-operation routes.');
    }
    if(!eu&&scenario.kind==='defend'&&scenario.ordinal===0){
+    await page.evaluate(()=>{
+     document.getElementById('pause').classList.add('hidden');document.getElementById('torpRun').classList.add('show');
+     for(const [id,value] of Object.entries({trRange:'642 m',trAlt:'174 ft',trSpd:'128 kt',trWings:'LEVEL',trDrop:'TOO FAST'}))document.getElementById(id).textContent=value;
+     renderer.setPixelRatio(1);renderer.render(scene,camera);renderer.setPixelRatio(.25);
+    });
+    await page.screenshot({path:path.join(root,'test-visuals','torpedo-flight-hud.png')});
+    await page.evaluate(()=>{document.getElementById('pause').classList.remove('hidden');document.getElementById('torpRun').classList.remove('show');});
     const defense=await page.evaluate(()=>{
      const r=raiders.find(r=>r.alive);r.hp=100;r.pos.set(carrierX+650,70,1100);r.heading=Math.atan2(carrierX-r.pos.x,-r.pos.z);r.roll=r.pitch=0;r.spd=76;r.runIn=true;r.dropped=false;
      r.vel.set(Math.sin(r.heading)*r.spd,0,Math.cos(r.heading)*r.spd);
@@ -450,12 +476,28 @@ const cdn={
      }
      const native=renderer.render.bind(renderer);camera.up.set(0,1,0);camera.position.set(carrierX+120,85,145);camera.lookAt(carrierX,DECK_Y,0);
      renderer.setPixelRatio(1);native(scene,camera);const png=renderer.domElement.toDataURL('image/png');renderer.setPixelRatio(.25);
-     return {egress,shots:tracers.filter(t=>t.fleet).length,png};
+     const fleet=tracers.filter(t=>t.fleet);
+     return {egress,shots:fleet.length,aligned:fleet.every(t=>new THREE.Vector3(0,0,1).applyQuaternion(t.mesh.quaternion).dot(t.dir)>.99999),png};
     });
     assert(defense.egress&&defense.egress.forward>650&&defense.egress.turn<.05,'actual loaded Avenger flies forward after release');
     assert(defense.shots>0,'the visible IJN carrier fires its deck-edge batteries');
+    assert(defense.aligned,'actual carrier AA geometry points along its flight path');
     fs.writeFileSync(path.join(root,'test-visuals','carrier-active-defense.png'),Buffer.from(defense.png.split(',')[1],'base64'));
     console.log('Browser Pacific: loaded Avenger forward egress and visible IJN carrier batteries verified.');
+    const rounds=await page.evaluate(()=>{
+     const studio=new THREE.Scene();studio.background=new THREE.Color(0x9fbbc6);
+     const colors=new Set(),kinds=['rifle','cannon','aa'];
+     for(let row=0;row<kinds.length;row++)for(let col=0;col<4;col++){
+      const mesh=CombatFX.round(kinds[row]);mesh.position.set(-6+col*4,4-row*4,0);
+      const dir=new THREE.Vector3(1,(col%2?-.35:.2),.1).normalize();mesh.lookAt(mesh.position.clone().add(dir));
+      colors.add(mesh.material.color.getHex());studio.add(mesh);
+     }
+     const cam=new THREE.OrthographicCamera(-10,10,7.5,-7.5,.1,100);cam.position.set(0,0,30);cam.lookAt(0,0,0);
+     renderer.setPixelRatio(1);renderer.render(studio,cam);const png=renderer.domElement.toDataURL('image/png');renderer.setPixelRatio(.25);
+     return {colors:colors.size,png};
+    });
+    assert.equal(rounds.colors,2,'real WebGL rounds use mixed dark and lit materials');
+    fs.writeFileSync(path.join(root,'test-visuals','projectile-directions.png'),Buffer.from(rounds.png.split(',')[1],'base64'));
     const emergency=await page.evaluate(()=>{
      P.systemDamage.gearLock=0;P.gear=P.gearTgt=0;
      togglePause();togglePause();return document.getElementById('pauseOrders').textContent;
@@ -464,7 +506,7 @@ const cdn={
     // A real JS frame failure is visible and remains observable, not hidden.
     await page.evaluate(()=>{animateFrame=()=>{throw Error('TEST FRAME FAULT');};});
     await page.locator('#simulationRecovery').waitFor({state:'visible'});
-    assert.match(await page.locator('#simulationRecovery').innerText(),/BUILD 163.*TEST FRAME FAULT/);
+    assert.match(await page.locator('#simulationRecovery').innerText(),/BUILD 164.*TEST FRAME FAULT/);
     assert.equal(await page.locator('#simulationRecovery button').innerText(),'Reload game');
     assert.deepEqual(errors,['TEST FRAME FAULT'],'unexpected runtime errors cannot be swallowed');
    }

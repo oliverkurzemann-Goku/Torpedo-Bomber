@@ -266,7 +266,7 @@
   #opsStatus{position:fixed;top:calc(env(safe-area-inset-top) + 76px);left:50%;transform:translateX(-50%);color:#edcc80;background:rgba(14,20,18,.78);padding:5px 9px;font:10px monospace;pointer-events:none;z-index:9;max-width:58vw;text-align:center;}
   #systemsStatus{position:fixed;top:calc(env(safe-area-inset-top) + 116px);left:50%;transform:translateX(-50%);color:#ffbf96;background:#251810db;padding:5px 9px;font:10px monospace;pointer-events:none;z-index:9;max-width:60vw;text-align:center;}#systemsStatus:empty{display:none;}
 </style>
-<link rel="stylesheet" href="menu-layout.css?v=163">
+<link rel="stylesheet" href="menu-layout.css?v=164">
 </head>
 <body>
 <!-- ===== TEMP TEST-ONLY VERSION BANNER — asked for by Oliver: "kannst du irgendwo einbauen,
@@ -288,7 +288,7 @@
   <div style="width:100%;height:4px;background:repeating-linear-gradient(45deg,#ffd400,#ffd400 8px,#111 8px,#111 16px);"></div>
   <span id="testVersionBannerText" style="background:#111;color:#ffd400;font-family:monospace;font-weight:800;font-size:11px;letter-spacing:.5px;padding:3px 10px;border:1px solid #ffd400;border-top:none;border-radius:0 0 6px 6px;"></span>
 </div>
-<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 163';</script>
+<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 164';</script>
 <!-- ===== END TEMP TEST-ONLY VERSION BANNER ===== -->
 <div id="app"></div>
 
@@ -317,7 +317,7 @@
   <div id="flash"></div>
   <div id="gunsight"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 163 · REAL RHINE</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 164 · REAL RHINE</div>
 
   <div id="apr">
     <div id="aprCall"></div>
@@ -367,7 +367,7 @@
 </div>
 
 <div class="overlay hidden" id="menu" data-campaign="europe">
-  <div class="menuTop"><a id="selBtn" href="index.html?v=163">&#9664; Change Game</a><span class="menuMeta">RHINE OPERATIONS<br>BUILD 163</span></div>
+  <div class="menuTop"><a id="selBtn" href="index.html?v=164">&#9664; Change Game</a><span class="menuMeta">RHINE OPERATIONS<br>BUILD 164</span></div>
   <div class="card menuCard">
     <aside class="menuOverview" aria-label="Campaign and pilot options">
     <div class="campaignArt" aria-hidden="true"></div>
@@ -473,7 +473,7 @@
 <script src="terrain-system/LivingWorld.js?v=162"></script>
 <script src="campaign.js?v=1"></script>
 <script src="game-runtime.js?v=163"></script>
-<script src="combat-fx.js?v=157"></script>
+<script src="combat-fx.js?v=164"></script>
 <script src="ordnance.js?v=157"></script>
 <script src="pilot-bailout.js?v=157"></script>
 <script src="pilot-rescue.js?v=157"></script>
@@ -799,7 +799,7 @@ async function loadRealWorld(){
 
   if(OSMManager.BUILD!==23||HistoricalObjectManager.BUILD!==21||LivingWorld.BUILD!==22||WorldVehicles.BUILD!==22) throw new Error('Terrain version mismatch. Reload Remagen.');
   document.getElementById('testVersionBannerText').textContent=
-    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 163 · MODULE 23';
+    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 164 · MODULE 23';
   heightProvider=new DEMHeightProvider(RTILE,'terrain-system/real/data/dem/');
   terrain=new TerrainManager(scene,RTILE,heightProvider);
   osmMgr=new OSMManager(scene,RTILE,terrain,'terrain-system/real/data/osm/');
@@ -3107,8 +3107,6 @@ function gunMuzzles(){
   if(P.ac==='p47')return [-3.1,-2.85,-2.6,-2.35,2.35,2.6,2.85,3.1].map(x=>new THREE.Vector3(x,-.15,1.6));
   return [-2.1,-.3,.3,2.1].map(x=>new THREE.Vector3(x,0,2.6));
 }
-const cannonTracerGeo=new THREE.BoxGeometry(.12,.12,1.4),gunTracerGeo=new THREE.BoxGeometry(.12,.12,2.8);
-const playerTracerMat=new THREE.MeshBasicMaterial({color:0xffd78a});
 function fireGuns(dt){
   if(!P.alive||state!==ST.FLIGHT)return;
   const d=acDef();gunT-=dt;
@@ -3118,7 +3116,7 @@ function fireGuns(dt){
   const n=noseDir(),q=new THREE.Quaternion().setFromEuler(new THREE.Euler(-P.pitch,P.heading,-P.roll,'YXZ'));
   for(const port of ports){
     const dir=n.clone().add(new THREE.Vector3((Math.random()-.5)*.01,(Math.random()-.5)*.01,(Math.random()-.5)*.01)).normalize();
-    const m=new THREE.Mesh(JET_KINDS.includes(P.ac)?cannonTracerGeo:gunTracerGeo,playerTracerMat);
+    const m=CombatFX.round(JET_KINDS.includes(P.ac)?'cannon':'rifle');
     m.position.copy(port).applyQuaternion(q).add(P.pos);m.lookAt(m.position.clone().add(dir));scene.add(m);
     bullets.push({mesh:m,dir,speed:JET_KINDS.includes(P.ac)?540:760,life:2.4,dmg:d.gunDmg*(JET_KINDS.includes(P.ac)?1:P.ac==='p47'?.5:.25)});
   }
@@ -3280,9 +3278,7 @@ function updateFlak(dt){
       lead.x+=(Math.random()-0.5)*err; lead.y+=(Math.random()-0.5)*err; lead.z+=(Math.random()-0.5)*err;
       const origin=p.clone().add(new THREE.Vector3(0,f.entity?2.4:5,0));
       const dir=lead.sub(origin).normalize();
-      const m=new THREE.Mesh(new THREE.BoxGeometry(0.30,0.30,6.5),
-        new THREE.MeshBasicMaterial({color:0xffab52}));
-      GameRuntime.own(m);
+      const m=CombatFX.round('aa');
       m.position.copy(origin).addScaledVector(dir,1); m.lookAt(m.position.clone().add(dir));
       scene.add(m);
       tracers.push({mesh:m,dir,speed:620,life:3.0});
@@ -3755,9 +3751,7 @@ function updateEnemyAir(dt){
       const err=(1.5-D().aim*0.6)*17;
       lead.x+=(Math.random()-0.5)*err; lead.y+=(Math.random()-0.5)*err; lead.z+=(Math.random()-0.5)*err;
       const dir=lead.sub(e.pos).normalize();
-      const m=new THREE.Mesh(new THREE.BoxGeometry(0.30,0.30,6.5),
-        new THREE.MeshBasicMaterial({color:0xffc06a}));
-      GameRuntime.own(m);
+      const m=CombatFX.round();
       m.position.copy(e.pos).addScaledVector(dir,7); m.lookAt(m.position.clone().add(dir));
       scene.add(m);
       tracers.push({mesh:m,dir,speed:700,life:2.4});
@@ -5400,7 +5394,7 @@ function init(){
   buildMenu();
   // menu wiring
   document.getElementById('startBtn').onclick=()=>showBrief(selectedMission);
-  document.getElementById('pauseMainMenu').onclick=()=>{exitToMenuFromPause();window.location.href='index.html?v=163';};
+  document.getElementById('pauseMainMenu').onclick=()=>{exitToMenuFromPause();window.location.href='index.html?v=164';};
   document.getElementById('logBtn').onclick=()=>{ show('menu',false); showLogbook(); };
   document.getElementById('brBack').onclick=()=>{ show('brief',false); show('menu',true); state=ST.MENU; };
   document.getElementById('brGo').onclick=async()=>{
