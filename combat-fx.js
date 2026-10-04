@@ -4,7 +4,7 @@
  // The long axis is local Z, matching Object3D.lookAt. Mixing a Y-axis
  // cylinder with lookAt made the Pacific AA appear as upright sticks.
  const rounds=new Map();let roundNumber=0;
- function round(kind='rifle'){
+ function round(kind='rifle',shotIndex=null){
   if(!rounds.has(kind)){
    const [width,length]=kind==='aa'?[.13,2]:kind==='cannon'?[.10,1.35]:[.08,1.15];
    const geometry=new THREE.BoxGeometry(width,width,length);
@@ -12,7 +12,7 @@
    rounds.set(kind,{geometry,materials});
   }
   const {geometry,materials}=rounds.get(kind);
-  const tracer=roundNumber++%4===0,mesh=new THREE.Mesh(geometry,materials[tracer?1:0]);
+  const tracer=(shotIndex===null?roundNumber++:shotIndex)%4===0,mesh=new THREE.Mesh(geometry,materials[tracer?1:0]);
   mesh.userData.roundKind=kind;mesh.userData.litTracer=tracer;
   // Short exposure streak; physical flight/hit geometry stays in the callers.
   if(tracer)mesh.scale.z=kind==='aa'?6:kind==='cannon'?7:7.5;

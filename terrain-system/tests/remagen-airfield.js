@@ -112,11 +112,28 @@ global.fetch=async url=>{
   assert.notDeepEqual(activity.people.limbs.instanceMatrix.array,pose,'crew must actually animate');
   let activityMeshes=0;activity.group.traverse(o=>{if(o.isMesh)activityMeshes++;});
   assert(activityMeshes<=30,'service scenes exceed draw-call budget: '+activityMeshes);
-  for(let t=0;t<160;t++){
-    activity.update(1,787,18087.6);
+  let mountedSeen=false,cartTravel=0,last=activity.trolley.position.clone(),payloadMaxStep=0;
+  const lastPayload=activity.payload.position.clone();
+  for(let t=0;t<288;t+=.25){
+    activity.update(.25,787,18087.6);
     for(const crew of activity.crew)assert(crew.drawZ<-27,'crew walks into active runway');
     for(const truck of activity.trucks)assert(truck.model.position.z<-42,'supply truck drives into active runway');
+    assert(activity.trolley.position.z+2<-27&&activity.payload.position.z+2<-27,'moving trolley and ordnance stay clear of the runway');
+    assert(Math.abs(activity.trolley.position.y-activity.ground(activity.trolley.position.x,activity.trolley.position.z))<.001,'trolley follows rendered terrain throughout its route');
+    for(const loader of activity.crew.slice(0,2))assert(Math.hypot(loader.drawX-activity.loading.x,loader.drawZ-activity.loading.z)<2,'loaders accompany the actual trolley');
+    mountedSeen ||= activity.loading.mounted;
+    cartTravel+=activity.trolley.position.distanceTo(last);last.copy(activity.trolley.position);
+    payloadMaxStep=Math.max(payloadMaxStep,activity.payload.position.distanceTo(lastPayload));lastPayload.copy(activity.payload.position);
   }
+  assert(mountedSeen&&cartTravel>100,'service cycle transfers the load and returns the trolley');
+  assert(payloadMaxStep<2,'payload must not teleport at transfer or cycle boundaries: '+payloadMaxStep);
+  const sharedGeo=new THREE.BoxGeometry(10,2,8),template=new THREE.Group();
+  template.add(new THREE.Mesh(sharedGeo,new THREE.MeshLambertMaterial()));
+  let sharedDisposed=false;sharedGeo.addEventListener('dispose',()=>sharedDisposed=true);
+  activity.setAircraft(template,'p47');activity.time=36;activity.update(0,787,18087.6);
+  assert(activity.payload.visible&&activity.loading.mounted,'P47 receives the external practice load');
+  activity.setAircraft(template,'me163');assert(!activity.payload.visible,'Komet service must not fit an external bomb');
+  assert(!sharedDisposed,'service aircraft preserve shared loaded model resources');
   for(const part of activity.parts)assert(Math.abs(part.z)-part.d/2>27,'supplies obstruct runway');
-  console.log(JSON.stringify({meshes:meshes.length,groundBatches:f.ground.length,parts:f.parts.length,samples,maxDrapeError,spawnAndRunwayClear:true,browserTest:false},null,2));
+  console.log(JSON.stringify({meshes:meshes.length,groundBatches:f.ground.length,parts:f.parts.length,samples,maxDrapeError,activityMeshes,cartTravel,payloadMaxStep,spawnAndRunwayClear:true,browserTest:false},null,2));
 })().catch(e=>{console.error(e);process.exit(1);});

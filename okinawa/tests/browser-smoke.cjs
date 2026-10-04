@@ -182,12 +182,13 @@ const cdn={
      fs.writeFileSync(path.join(out,name+'.png'),Buffer.from(png.split(',')[1],'base64'));
     const service=await page.evaluate(()=>{
      const activity=alliedActivity;activity.setAircraft(modelTpl.p47,'p47');
+     activity.time=15;activity.update(0,ALLIED_AF_X,ALLIED_AF_Z);
+     const cartBefore=activity.trolley.position.clone(),payloadBefore=activity.payload.position.clone();
      const before=activity.people.limbs.instanceMatrix.array.slice();activity.update(2,ALLIED_AF_X,ALLIED_AF_Z);
      const animated=before.some((v,i)=>v!==activity.people.limbs.instanceMatrix.array[i]);
      const studio=new THREE.Scene();studio.background=new THREE.Color(0xb8c8cf);
-     studio.add(new THREE.HemisphereLight(0xfff4db,0x4d543c,1.1));
-     const sun=new THREE.DirectionalLight(0xfff0d2,1);sun.position.set(ALLIED_AF_X-150,500,ALLIED_AF_Z+120);
-     sun.target.position.set(ALLIED_AF_X,0,ALLIED_AF_Z);studio.add(sun,sun.target);
+     for(const light of scene.children.filter(o=>o.isLight))studio.add(light.clone());
+     if(scene.fog)studio.fog=scene.fog.clone();
      const terrainTile=terrain.tiles.get('0,4'),ground=new THREE.Mesh(terrainTile.mesh.geometry,terrainTile.mesh.material);
      ground.position.copy(terrainTile.mesh.position);studio.add(ground);
      // Terrain userData contains the owning tile, which references its mesh.
@@ -196,22 +197,46 @@ const cdn={
       const mesh=new THREE.Mesh(source.geometry,source.material);mesh.position.copy(source.position);
       mesh.quaternion.copy(source.quaternion);mesh.scale.copy(source.scale);field.add(mesh);
      }
-     const crew=activity.group.clone(true);crew.visible=true;
-     crew.traverse(o=>{if(o.isInstancedMesh)o.visible=true;});studio.add(field,crew);
+     // Reuse the live activity for each phase, including the shared GLB rig.
+     const previousParent=activity.group.parent,crew=activity.group;crew.visible=true;studio.add(field,crew);
      const cam=new THREE.PerspectiveCamera(50,1024/768,.5,5500),y=groundY(ALLIED_AF_X-310,ALLIED_AF_Z-70);
      renderer.setPixelRatio(1);
      cam.position.set(ALLIED_AF_X-291,y+9,ALLIED_AF_Z-26);cam.lookAt(ALLIED_AF_X-318,y+2,ALLIED_AF_Z-77);
      renderer.render(studio,cam);const close=renderer.domElement.toDataURL('image/png');
+     const cartMoved=activity.trolley.position.distanceTo(cartBefore)>1&&activity.payload.position.distanceTo(payloadBefore)>1;
+     activity.time=29;activity.update(0,ALLIED_AF_X,ALLIED_AF_Z);
+     cam.position.set(ALLIED_AF_X-299,y+4,ALLIED_AF_Z-63);cam.lookAt(ALLIED_AF_X-315,y+2,ALLIED_AF_Z-82);
+     renderer.render(studio,cam);const lifting=renderer.domElement.toDataURL('image/png');
+     const liftingActive=activity.loading.progress>.3&&activity.loading.progress<.7;
+     activity.time=36;activity.update(0,ALLIED_AF_X,ALLIED_AF_Z);
+     renderer.render(studio,cam);const mounted=renderer.domElement.toDataURL('image/png');
+     const mountedActive=activity.loading.mounted&&activity.payload.visible;
      cam.position.set(ALLIED_AF_X-212,y+46,ALLIED_AF_Z+45);cam.lookAt(ALLIED_AF_X-295,y+1,ALLIED_AF_Z-90);
      renderer.render(studio,cam);const overview=renderer.domElement.toDataURL('image/png');renderer.setPixelRatio(.25);
-     return {close,overview,animated,crew:activity.crew.length,parked:activity.parked.length,
+     previousParent.add(crew);
+     return {close,overview,lifting,mounted,cartMoved,liftingActive,mountedActive,animated,crew:activity.crew.length,parked:activity.parked.length,
        originalModel:activity.parked[0].children[0].children.some(o=>o.isMesh||o.children.length),
        hasLandcover:!!terrainTile.landcoverTexture};
     });
-    assert(service.animated&&service.crew===12&&service.parked===2&&service.originalModel&&service.hasLandcover,
+    assert(service.cartMoved&&service.liftingActive&&service.mountedActive&&service.animated&&service.crew===12&&service.parked===2&&service.originalModel&&service.hasLandcover,
       'visible field uses moving crew, loaded aircraft and terrain land cover');
     fs.writeFileSync(path.join(out,'airfield-loading-crew.png'),Buffer.from(service.close.split(',')[1],'base64'));
     fs.writeFileSync(path.join(out,'airfield-service-overview.png'),Buffer.from(service.overview.split(',')[1],'base64'));
+    fs.writeFileSync(path.join(out,'airfield-bomb-lift.png'),Buffer.from(service.lifting.split(',')[1],'base64'));
+    fs.writeFileSync(path.join(out,'airfield-loaded-wing.png'),Buffer.from(service.mounted.split(',')[1],'base64'));
+    const street=await page.evaluate(()=>{
+     const candidates=livingWorld.entities.filter(e=>e.meta.ambient),entity=candidates[0];
+     const point=livingWorld._sampleEntity(entity),y=groundY(point.x,point.z);
+     livingWorld.update(0,point.x,point.z);
+     const oldVisible=planeGroup.visible;planeGroup.visible=false;
+     const cam=new THREE.PerspectiveCamera(48,1024/768,1,8500);
+     cam.position.set(point.x+130,y+100,point.z-210);cam.lookAt(point.x,y,point.z+80);
+     renderer.setPixelRatio(1);renderer.render(scene,cam);const png=renderer.domElement.toDataURL('image/png');renderer.setPixelRatio(.25);
+     planeGroup.visible=oldVisible;
+     return {png,count:candidates.length,routes:livingWorld.routes.ambient.length,visible:candidates.filter(e=>e.model.visible).length};
+    });
+    assert(street.count===24&&street.routes===8&&street.visible>0&&street.visible<=12,'actual mapped road traffic is present within its draw budget');
+    fs.writeFileSync(path.join(out,'rhine-road-traffic.png'),Buffer.from(street.png.split(',')[1],'base64'));
     assert.deepEqual(shaderErrors,[],'r128 compiles facade instancing and crown shaders');
     await page.locator('#pmResume').click();
     const internal=await page.evaluate(()=>P.fuel);await page.locator('#tankBtn').click();
@@ -262,10 +287,10 @@ const cdn={
      assert(!modelRequests.some(p=>p.includes('dauntless')||p.includes('midway')||p.includes('merchant')),'Zero defence loads no unused US deck, SBD or merchant');
     }
     assert.equal(modelRequests.filter(p=>p.includes('merchant')).length,scenario.kind==='defend'?0:1,'escort and freighter share one model decode');
-    if(scenario.kind==='avenger'){
+    if(scenario.ordinal===0){
      const shots=await page.evaluate(()=>{
-      const oldHull=P.hull,before=tracers.length;for(let i=0;i<600;i++)updateCarrierDefense(1/60);
-      if(tracers.length!==before||P.hull!==oldHull)throw Error('Home carrier fired at its Avenger');
+      if(!isDefend()&&!isSBD()){const oldHull=P.hull,before=tracers.length;for(let i=0;i<600;i++)updateCarrierDefense(1/60);
+       if(tracers.length!==before||P.hull!==oldHull)throw Error('Home carrier fired at its Avenger');}
       P.pos.set(carrierX+BOW_X+160,DECK_Y+90,0);P.heading=Math.PI/2;P.pitch=.01;P.roll=0;P.spd=65;
       updatePlaneMesh(0);updateCamera(1);firing=true;gunCool=0;
       for(const b of bullets)GameRuntime.release(b.mesh);bullets=[];
@@ -277,13 +302,19 @@ const cdn={
       for(const b of bullets)b.mesh.visible=false;renderer.render(scene,camera);gl.readPixels(0,0,w,h,gl.RGBA,gl.UNSIGNED_BYTE,off);
       for(const b of lit)b.mesh.visible=true;renderer.render(scene,camera);gl.readPixels(0,0,w,h,gl.RGBA,gl.UNSIGNED_BYTE,on);
       let changed=0;for(let i=0;i<on.length;i+=4)if(Math.max(Math.abs(on[i]-off[i]),Math.abs(on[i+1]-off[i+1]),Math.abs(on[i+2]-off[i+2]))>35)changed++;
+      const sidePixels=[];
+      for(const side of [-1,1]){
+       for(const b of bullets)b.mesh.visible=b.mesh.userData.litTracer&&b.mesh.userData.roundSide===side;
+       renderer.render(scene,camera);gl.readPixels(0,0,w,h,gl.RGBA,gl.UNSIGNED_BYTE,on);
+       let pixels=0;for(let i=0;i<on.length;i+=4)if(Math.max(Math.abs(on[i]-off[i]),Math.abs(on[i+1]-off[i+1]),Math.abs(on[i+2]-off[i+2]))>35)pixels++;sidePixels.push(pixels);
+      }
       for(const b of bullets)b.mesh.visible=true;renderer.render(scene,camera);
       const png=renderer.domElement.toDataURL('image/png');renderer.setPixelRatio(.25);
-      return {lit:lit.length,changed,png};
+      return {lit:lit.length,changed,sidePixels,png};
      });
-     assert(shots.lit>=2&&shots.changed>=4,'actual Avenger chase-camera tracers must change visible WebGL pixels: '+JSON.stringify({lit:shots.lit,changed:shots.changed}));
-     fs.mkdirSync(path.join(root,'test-visuals'),{recursive:true});fs.writeFileSync(path.join(root,'test-visuals','avenger-chase-gunfire.png'),Buffer.from(shots.png.split(',')[1],'base64'));
-     console.log('Browser Avenger: real launch and forward gunfire, '+shots.changed+' visible tracer pixels; own carrier never fires at the Avenger.');
+     assert(shots.lit>=2&&shots.changed>=4&&shots.sidePixels.every(n=>n>=1),'actual '+scenario.kind+' chase-camera tracers must be visible from both muzzles: '+JSON.stringify({lit:shots.lit,changed:shots.changed,sidePixels:shots.sidePixels}));
+     fs.mkdirSync(path.join(root,'test-visuals'),{recursive:true});fs.writeFileSync(path.join(root,'test-visuals',(scenario.kind==='defend'?'zero':scenario.kind==='sbd'?'dauntless':'avenger')+'-chase-gunfire.png'),Buffer.from(shots.png.split(',')[1],'base64'));
+     console.log('Browser '+scenario.kind+': real forward gunfire, '+shots.changed+' visible tracer pixels, left/right '+shots.sidePixels.join('/'));
     }
     console.log('Browser Pacific '+label+': 15 simulated seconds with sustained fire, original aircraft and live AI; requests '+modelRequests.join(', '));
     if(scenario.ordinal===0){
@@ -406,7 +437,7 @@ const cdn={
      await page.waitForFunction(()=>(state===ST.LAUNCH||state===ST.FLIGHT)&&eng.master.gain.value>.5);
      await page.locator('#pauseBtn').click();await page.locator('#menuBtn').click();
     }else{
-     await page.locator('#pauseMainMenu').click();await page.waitForURL('**/index.html?v=165');
+     await page.locator('#pauseMainMenu').click();await page.waitForURL('**/index.html?v=166');
      await page.locator('main.board').waitFor();
     }
     console.log('Browser pause: '+(scenario.ordinal===0?'abort, retained record and audible relaunch':'Main Menu returns to campaign board'));
@@ -562,7 +593,7 @@ const cdn={
     // A real JS frame failure is visible and remains observable, not hidden.
     await page.evaluate(()=>{animateFrame=()=>{throw Error('TEST FRAME FAULT');};});
     await page.locator('#simulationRecovery').waitFor({state:'visible'});
-    assert.match(await page.locator('#simulationRecovery').innerText(),/BUILD 165.*TEST FRAME FAULT/);
+    assert.match(await page.locator('#simulationRecovery').innerText(),/BUILD 166.*TEST FRAME FAULT/);
     assert.equal(await page.locator('#simulationRecovery button').innerText(),'Reload game');
     assert.deepEqual(errors,['TEST FRAME FAULT'],'unexpected runtime errors cannot be swallowed');
    }

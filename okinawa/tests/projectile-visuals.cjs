@@ -29,6 +29,11 @@ for(const g of geometries)g.addEventListener('dispose',()=>disposed++);
 for(const m of materials)m.addEventListener('dispose',()=>disposed++);
 const sample=CombatFX.round();GameRuntime.release(sample);assert.equal(disposed,0,'cleanup preserves cached round resources');
 assert.equal(geometries.size,3);assert.equal(materials.size,6);assert.equal(colors.size,2);
+for(let volley=0;volley<12;volley++){
+ const left=CombatFX.round('rifle',volley),right=CombatFX.round('rifle',volley);
+ assert.equal(left.userData.litTracer,right.userData.litTracer,'paired guns cannot lock visible shots to one wing');
+ assert.equal(left.userData.litTracer,volley%4===0);
+}
 const camera=new THREE.PerspectiveCamera(50,1024/768,.1,4000),renderer={domElement:{clientHeight:768}};
 const shots=Array.from({length:12},()=>({mesh:CombatFX.round(),dir:new THREE.Vector3(0,0,-1)}));
 for(const distance of [30,120,400]){

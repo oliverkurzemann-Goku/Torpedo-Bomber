@@ -289,7 +289,7 @@
   .opsLegend{font:11px/1.5 monospace;color:#d7c797;text-align:left;margin-top:5px;}
   #opsStatus{position:fixed;top:calc(env(safe-area-inset-top) + 76px);left:50%;transform:translateX(-50%);color:#edcc80;background:rgba(14,20,18,.78);padding:5px 9px;font:10px monospace;pointer-events:none;z-index:9;max-width:58vw;text-align:center;}
 </style>
-<link rel="stylesheet" href="menu-layout.css?v=165">
+<link rel="stylesheet" href="menu-layout.css?v=166">
 </head>
 <body>
 <div id="app"></div>
@@ -321,7 +321,7 @@
   <div id="flash"></div>
   <div id="ltn" style="position:fixed;inset:0;background:#e6ecff;opacity:0;pointer-events:none;z-index:40;"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 165</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 166</div>
 
   <!-- Optical landing aid -->
   <div id="lso">
@@ -363,7 +363,7 @@
 
 <!-- Menu -->
 <div class="overlay" id="menu" data-campaign="pacific">
-  <div class="menuTop"><a id="selBtn" href="index.html?v=165">&#9664; Change Game</a><span class="menuMeta">PACIFIC OPERATIONS<br>BUILD 165</span></div>
+  <div class="menuTop"><a id="selBtn" href="index.html?v=166">&#9664; Change Game</a><span class="menuMeta">PACIFIC OPERATIONS<br>BUILD 166</span></div>
   <div class="card menuCard">
     <aside class="menuOverview" aria-label="Campaign and pilot options">
     <div class="campaignArt" aria-hidden="true"></div>
@@ -447,7 +447,7 @@
 <script src="campaign.js?v=1"></script>
 <script src="game-runtime.js?v=163"></script>
 <script src="pacific-assets.js?v=157"></script>
-<script src="combat-fx.js?v=165"></script>
+<script src="combat-fx.js?v=166"></script>
 <script src="ordnance.js?v=157"></script>
 <script src="pilot-bailout.js?v=157"></script>
 <script src="pilot-rescue.js?v=157"></script>
@@ -2006,7 +2006,7 @@ function startMission(idx){
   if(aeroButton){aeroButton.classList.remove('on');aeroButton.innerHTML='AERO<br>OFF';}
   const stickHint=document.getElementById('stickHint');if(stickHint)stickHint.textContent='PITCH / ROLL';
   if(combatFX)combatFX.clear();
-  mission=idx;
+  mission=idx;P.gunVolley=0;
   selectedMission=idx;
   const menuChips=document.querySelectorAll('#missionSel .chip');
   menuChips.forEach((chip,i)=>{chip.classList.toggle('sel',i===idx);chip.setAttribute('aria-pressed',String(i===idx));});
@@ -4704,7 +4704,7 @@ function loadPlaneModel(){
       }
       window.__eyeDbg='EYE '+COCKPIT_EYE.map(v=>v.toFixed(2)).join('/');
       const btEl=document.getElementById('buildTag');
-      if(btEl) btEl.textContent='BUILD 165 · '+window.__eyeDbg;
+      if(btEl) btEl.textContent='BUILD 166 · '+window.__eyeDbg;
       let seat=null;
       model.traverse(function(o){
         if(!o.isMesh||!o.material) return;
@@ -5517,11 +5517,13 @@ function updateGuns(dt){
     planeGroup.quaternion.copy(pacificAircraftQuaternion());planeGroup.position.copy(P.pos);
     planeGroup.updateMatrixWorld(true);
     const mount=(isDefend()&&playerZero)||(isSBD()&&playerSBD)||planeGroup;
-    const ports=pacificGunMuzzles(),localPorts=[];
+    const ports=pacificGunMuzzles(),localPorts=[],volley=P.gunVolley||0;P.gunVolley=volley+1;
     for(const port of ports){
       const start=planeGroup.localToWorld(port.clone());
       localPorts.push(mount.worldToLocal(start.clone()));
-      const m=CombatFX.round();
+      // Each weapon has the same 3 dark / 1 lit cadence. A global counter
+      // locked every tracer to the left muzzle of a two-gun aircraft.
+      const m=CombatFX.round(isDefend()?'cannon':'rifle',volley);m.userData.roundSide=Math.sign(port.x);
       m.position.copy(start); m.lookAt(start.clone().add(nd));
       scene.add(m); bullets.push({mesh:m,dir:nd.clone(),life:0.7,speed:650});
     }
@@ -6060,7 +6062,7 @@ function setupUIButtons(){
   if(dbgT2) dbgT2.onclick=()=>{
     dbgOn=!dbgOn; GameRuntime.storage.setItem('dbgOn',dbgOn?'1':'0');
     const db=document.getElementById('dbgBox'); if(db) db.textContent=dbgOn?'✓':'';
-    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 165'; }
+    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 166'; }
   };
   const lu=document.getElementById('lookUp'), ld=document.getElementById('lookDn');
   let _lookT=0;
@@ -6076,7 +6078,7 @@ function setupUIButtons(){
   if(pb) pb.addEventListener('pointerdown',e=>{ e.preventDefault(); togglePause(); });
   const rb=document.getElementById('resumeBtn'); if(rb) rb.onclick=resumeGame;
   const mb=document.getElementById('menuBtn'); if(mb) mb.onclick=exitToMenu;
-  document.getElementById('pauseMainMenu').onclick=()=>{exitToMenu();window.location.href='index.html?v=165';};
+  document.getElementById('pauseMainMenu').onclick=()=>{exitToMenu();window.location.href='index.html?v=166';};
   document.getElementById('resultBtn').onclick=()=>{
     // the logbook borrows this screen from the menu — send the player straight back
     if(logbookOpen){ logbookOpen=false; showOverlay('menu'); return; }
@@ -6307,7 +6309,7 @@ function animate(){
     notice.style.cssText='position:fixed;inset:0;z-index:999998;background:rgba(15,20,15,.95);color:#e8ddbc;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px;text-align:center;font:16px system-ui';
     const title=document.createElement('h2');title.textContent='Simulation interrupted';
     const detail=document.createElement('p');
-    detail.textContent='BUILD 165 · '+(MISSIONS[mission]?.sub||'Menu')+' · '+error.message;
+    detail.textContent='BUILD 166 · '+(MISSIONS[mission]?.sub||'Menu')+' · '+error.message;
     const reload=document.createElement('button');reload.textContent='Reload game';
     reload.style.cssText='padding:12px 24px;font:inherit';reload.onclick=()=>location.reload();
     notice.appendChild(title);notice.appendChild(detail);notice.appendChild(reload);document.body.appendChild(notice);

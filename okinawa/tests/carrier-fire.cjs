@@ -64,6 +64,8 @@ async function glb(file){const b=fs.readFileSync(path.join(root,file));return ne
    }
    combatFX.update(1/60);
    assert(ctx.bullets.every(b=>new THREE.Vector3(0,0,1).applyQuaternion(b.mesh.quaternion).dot(b.dir)>.99999),'rounds follow their actual velocity while banking and pitching');
+   const litSides=new Set(ctx.bullets.filter(b=>b.mesh.userData.litTracer).map(b=>b.mesh.userData.roundSide));
+   if(litSides.size)assert(litSides.has(-1)&&litSides.has(1),'actual '+kind+' firing must show tracers on both sides');
    assert(ctx.bullets.length<30,'live tracers stay bounded during sustained fire');
    assert(combatFX.count<40,'muzzle effects expire and recycle during sustained fire');
    assert.equal(ctx.window.__avStash.length,0,'muzzle sprites never enter the discarded-airframe stash');

@@ -5,7 +5,51 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 165 · Thunderbolt Squadron BUILD 165 · Remagen-Kern 23 / Fahrzeuge 22**
+Stand bei Übergabe: **Torpedo Squadron BUILD 166 · Thunderbolt Squadron BUILD 166 · Remagen-Kern 23 / Fahrzeuge 22**
+
+**Build 166 (05.10.2026): beidseitige Leuchtspur, belebte Straßen und Beladung.**
+Pacifics globaler Vierer-Zähler traf bei zwei gleichzeitig erzeugten Geschossen
+immer dieselbe Mündung: die rechte Seite schoss physisch, blieb jedoch dunkel.
+CombatFX.round nimmt optional einen Volley-Index; beide Waffen zeigen jetzt jeden
+vierten Schuss hell. Die Munition, Ballistik, Treffer-/Schadenslogik und korrekten
+GLB-Mündungen bleiben. Zero nutzt für die vorhandenen Flügelwaffen die Cannon-
+Geometrie; SBD bleibt an der Motorhaube, Avenger in beiden Flügeln. CPU prüft alle
+drei Original-GLBs beim Rollen/Pitchen; Browser prüft sichtbare Pixel jeder Seite
+in der echten Verfolgerkamera aller drei Flugzeuge. CombatFX-Cache 166.
+
+24 zivile Fahrzeuge statt 12 verteilen sich auf acht zusätzliche, echte OSM-
+Routen. Gegenverkehr nutzt die rechte Spur; diese Routen meiden beide Flugplätze.
+Primäre Militärkolonnen-/Missionsrouten bleiben erhalten. Höchstens zwölf zivile
+Fahrzeuge werden gleichzeitig in Sichtweite gezeichnet. Prozedurale Stand-ins
+werden nach Material zusammengeführt, geteilte GLB-/FBX-Templates weiterverwendet.
+Keine zusätzlichen Modelldownloads. Fassaden erhalten unterscheidbare Creme-,
+Stein-, Ocker- und Ziegeltöne sowie 16 geteilte Farb-/Stilfelder. Mehr Farbmischung
+innerhalb einer Ortschaft und bei Dächern; gleiche Fensterzahl, Geometrie,
+vier Wandmaterialien, vorhandene Atlanten und höchstens zwölf Gebäudebuckets.
+LivingWorld-Cache 166; BUILD-API 22 bleibt.
+
+Laubkronen bekommen einen unregelmäßigen unteren Kronenteil und einen versetzten
+oberen Blattbüschel. 108 statt 84 Dreiecke je Dreiergruppe, keine neuen Instanz-
+Buckets, Texturen oder Modelle. Individuelle leichte Schattierung je Baum und eine
+auch auf steilen Kronenseiten verteilte Blattstruktur brechen die gleichförmigen
+Klumpen. Radius, Wurzelsampling, Ausschlussflächen und Abstandsraster bleiben.
+
+AirfieldActivity trennt den Wagen und die Bombe aus dem statischen Material-Merge.
+Zwei Loader begleiten ihn vom Lager zum geparkten Flugzeug; eine sichtbare Hubstütze
+hebt die Bombe unter den Flügel, danach fährt der leere Wagen zurück. Der zweite
+Durchlauf nimmt die Übungslast wieder ab. Ein durchgehender 144-s-Zyklus verhindert
+Payload-Sprünge oder doppelte Bomben. Der Anschlusspunkt wird beim einmaligen Klonen
+mit einer echten Mesh-Rayprobe unter dem Flügel gesucht. Beladung nur bei P47,
+Fw190 und Ju87; kein externer Bombenanbau beim Komet. Mechaniker stehen an den
+Flugzeugen, statt bei einer entfernten Arbeitsbank. Bestehende LKW, Versorgung und
+Engine-Start bleiben. Keine zusätzlichen GLB-Downloads, geteilte Modellressourcen
+bleiben im Besitz des Templates. Runway und Spielerflugmodell bleiben unverändert.
+
+CPU prüft zwei vollständige Zyklen, Wagen-/Crew-/Payload-Abstände zur Runway,
+Terrainkontakt, stetige Übergänge und Modell-Ressourcen. Browser-Prüfbilder zeigen
+Anfahrt, tatsächlichen Hub und angeschlossene Last mit dem geladenen P47-Modell
+und echten Spiellichtern. Geänderte Helfer OSMManager/AirfieldActivity tragen
+Cache-Version 166. Keine Messung oder Behauptung zu physischem iPad-FPS.
 
 **Build 165 (05.10.2026): sichtbare Avenger-Leuchtspur, verwurzelte Baumgruppen, organische Wiesen.**
 Build 164 war bei Geschossen geometrisch korrekt, aber aus der Verfolgerkamera

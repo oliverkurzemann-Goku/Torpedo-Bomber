@@ -1,5 +1,29 @@
 # Remagen terrain handoff
 
+## Game Build 166 — lively roads, varied villages and connected loading activity
+
+Ambient road traffic increases from 12 to 24 vehicles over eight selected OSM
+routes, with right-hand lane offsets and both airfields excluded. Only the nearest
+12 ambient vehicles can be visible at once. Static fallback geometry is merged by
+material; real templates remain shared. Military mission routes are unchanged.
+Four wall palettes and existing facade atlas fields have clearer cream, stone,
+ochre and brick variation; local palette/roof mixing stops uniform town blocks.
+No additional building meshes, windows, material buckets or texture memory.
+
+Broadleaf groups have irregular lower crowns and offset upper tufts: 108 triangles
+per group versus 84, with unchanged instance counts, six material buckets, textures,
+full clearance envelopes and independent rooted placement. Subtle per-tree shading
+and height-aware leaf UVs reduce uniform rounded silhouettes. No treepack download
+or extra texture memory is introduced.
+
+Airfield service now moves the trolley, two loaders, lift support and single payload
+through a continuous 144-second loading/unloading cycle beside the parked aircraft.
+The actual cloned model supplies a wing underside ray sample. Bomb loading is
+limited to the P47, Fw190 and Ju87; other aircraft retain general supply/service crew.
+Mesh merging and shared templates remain; dynamic objects stay clear of the runway.
+CPU checks cycle continuity, terrain contact and runway clearance; browser captures
+arrival, lifting and mounted phases with the real aircraft and game lighting.
+
 ## Game Build 165 — rooted tree groups and organic surface grain
 
 Build 164's broad domes are replaced by three-tree groups with unequal heights,

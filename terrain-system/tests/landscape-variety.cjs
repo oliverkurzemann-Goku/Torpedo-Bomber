@@ -31,6 +31,7 @@ const stands=placements.filter(p=>p.kind<2&&p.x>300&&p.x<3700&&p.z>300&&p.z<3700
 assert(stands.some(p=>p.radius>18)&&stands.every(p=>p.radius<=20),'woodland uses small rooted tree groups, not giant domes');
 let covered=0,samples=0;for(let x=350;x<3650;x+=75)for(let z=350;z<3650;z+=75){samples++;covered+=stands.some(p=>Math.hypot(x-p.x,z-p.z)<p.radius);}
 assert(covered/samples>.65,'woodland crown envelopes form a connected mass: '+covered/samples);
+assert.equal(osm.deciduousGeo.index.count/3,108,'lobed broadleaf tree group stays within its triangle budget');
 osm._buildForests(group,[ring],0,0);assert(group.children.length<=7,'forest draw-call budget stays bounded');
 for(const mesh of group.children.filter(m=>m.geometry.attributes.canopyGround)){
  const ground=mesh.geometry.attributes.canopyGround;assert.equal(ground.count,mesh.count);

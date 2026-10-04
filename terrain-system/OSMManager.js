@@ -32,10 +32,10 @@ class OSMManager {
     });
 
     // Building palette: still cheap/instanced, but no longer one identical box everywhere.
-    this.buildingWarmMat = new THREE.MeshStandardMaterial({ color: 0xb1a48c, roughness: 0.95 });
-    this.buildingCoolMat = new THREE.MeshStandardMaterial({ color: 0x8b8a82, roughness: 0.98 });
-    this.buildingOchreMat = new THREE.MeshStandardMaterial({ color: 0xae8960, roughness: 0.97 });
-    this.buildingBrickMat = new THREE.MeshStandardMaterial({ color: 0x895f51, roughness: 0.98 });
+    this.buildingWarmMat = new THREE.MeshStandardMaterial({ color: 0xcfc4ac, roughness: 0.95 });
+    this.buildingCoolMat = new THREE.MeshStandardMaterial({ color: 0x9fa5a2, roughness: 0.98 });
+    this.buildingOchreMat = new THREE.MeshStandardMaterial({ color: 0xc09b66, roughness: 0.97 });
+    this.buildingBrickMat = new THREE.MeshStandardMaterial({ color: 0xa26e5c, roughness: 0.98 });
     this.roofMat = new THREE.MeshStandardMaterial({ color: 0x653b31, roughness: 0.95 });
     this.roofSlateMat = new THREE.MeshStandardMaterial({ color: 0x454b4a, roughness: 0.98 });
     this.roofBrownMat = new THREE.MeshStandardMaterial({ color: 0x574439, roughness: 1 });
@@ -53,7 +53,7 @@ class OSMManager {
           shader.vertexShader="attribute vec2 facadeVariant;\n"+shader.vertexShader;
           shader.vertexShader=shader.vertexShader.replace("#include <uv_vertex>","#include <uv_vertex>\n#ifdef USE_UV\nvUv = vUv * 0.5 + facadeVariant;\n#endif");
         };
-        mat.customProgramCacheKey=()=>"period-facade-atlas-161";
+        mat.customProgramCacheKey=()=>"period-facade-atlas-166";
       });
     this.roofMat.map = this.roofSlateMat.map = this.roofBrownMat.map = this.roofTexture;
 
@@ -675,9 +675,11 @@ class OSMManager {
       // Neighbourhood-scale wall palette creates coherent streets; a fine hash
       // keeps every block from being literally identical.
       let palette=Math.min(3,Math.floor(osmValueNoise(x/260,z/260,122)*4));
+      if(osmHash(x,z,265)>.60)palette=Math.floor(osmHash(x,z,266)*4);
       if(barn)palette=osmHash(x,z,123)>.45?2:3;
       if(church)palette=1;
       let roofTone=Math.min(2,Math.floor(osmValueNoise(x/330,z/330,124)*3));
+      if(osmHash(x,z,267)>.78)roofTone=Math.floor(osmHash(x,z,268)*3);
       if(church)roofTone=1;
       const chimney=pitched&&!church&&!barn&&area<1700&&Math.min(b.w,b.d)>5&&osmHash(x,z,24)>.24;
       const ground=this._buildingGroundRange(b,x,z,ox,oz);
@@ -1041,7 +1043,8 @@ function makeOSMFacadePanel(variant=0,style=0){
   };
   for(let panel=0;panel<2;panel++){
     const y=panel*256;
-    c.fillStyle=style===3?'#a89b81':style===1?'#d7c7ab':'#e2dbca'; c.fillRect(0,y,512,256);
+    c.fillStyle=[['#ede5d3','#e0d0b5','#e9d5bb','#ccbfa8'],['#d8d7cc','#c2c9c7','#d9d5c7','#b2b8b4'],
+      ['#e4ce9e','#d3b27d','#e1c9a3','#bfa684'],['#c39a84','#b78f7a','#ceae99','#a88c79']][variant%4][style]; c.fillRect(0,y,512,256);
     if(style===1){
       c.strokeStyle='#756048';c.lineWidth=8;
       for(const x of [5,127,255,383,507]){c.beginPath();c.moveTo(x,y);c.lineTo(x,y+224);c.stroke();}
@@ -1270,11 +1273,17 @@ function makeOSMForestCrown(kind){
    }
   }else{
    const base=positions.length/3;
+   // A broad, irregular lower crown and an offset upper tuft give each tree
+   // a branching silhouette. Only eight more faces per tree, no new buckets.
    for(let i=0;i<ico.length;i++){
-    const v=ico[i],d=Math.hypot(...v),bump=.91+.17*osmHash(i,tree,411);
-    add(cx+v[0]/d*width*bump,height*(.60+v[1]/d*.34),cz+v[2]/d*width*(1.04-.10*tree)*bump,tree);
+    const v=ico[i],d=Math.hypot(...v),bump=.78+.28*osmHash(i,tree,411);
+    add(cx+(v[0]/d*bump+.07*v[1]/d)*width,height*(.57+v[1]/d*.25),cz+v[2]/d*width*(1.04-.10*tree)*bump,tree);
    }
    for(const f of faces)indices.push(...f.map(i=>base+i));
+   const tuft=positions.length/3,tx=cx+width*[.15,-.19,.23][tree],tz=cz+width*[.12,.08,-.15][tree];
+   for(const v of [[1,0,0],[0,0,1],[-1,0,0],[0,0,-1],[0,1,0],[0,-1,0]])
+    add(tx+v[0]*width*.65,height*(.79+v[1]*.23),tz+v[2]*width*.64,tree);
+   for(let i=0;i<4;i++){const a=tuft+i,b=tuft+(i+1)%4;indices.push(a,tuft+4,b,a,b,tuft+5);}
   }
  }
  const geo=new THREE.BufferGeometry();geo.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));geo.setIndex(indices);
@@ -1297,17 +1306,17 @@ function makeOSMForestTexture(){
 function osmCanopyTerrain(material){
  const previous=material.onBeforeCompile;
  material.onBeforeCompile=shader=>{
-  previous(shader);shader.vertexShader='attribute vec4 canopyGround;\nattribute vec2 forestPart;\nvarying float forestStem;\n'+shader.vertexShader;
-  shader.fragmentShader='varying float forestStem;\n'+shader.fragmentShader;
+  previous(shader);shader.vertexShader='attribute vec4 canopyGround;\nattribute vec2 forestPart;\nvarying float forestStem;\nvarying float forestShade;\n'+shader.vertexShader;
+  shader.fragmentShader='varying float forestStem;\nvarying float forestShade;\n'+shader.fragmentShader;
   shader.vertexShader=shader.vertexShader.replace('#include <uv_vertex>',
-   '#include <uv_vertex>\n#ifdef USE_UV\n#ifdef USE_INSTANCING\nvUv = (instanceMatrix * vec4(position, 1.0)).xz / 48.0;\n#else\nvUv = (modelMatrix * vec4(position, 1.0)).xz / 48.0;\n#endif\n#endif');
+   '#include <uv_vertex>\n#ifdef USE_UV\n#ifdef USE_INSTANCING\nvec3 leafWorld = (instanceMatrix * vec4(position, 1.0)).xyz;\nvUv = (leafWorld.xz + leafWorld.y * vec2(0.37,0.21)) / 48.0;\n#else\nvUv = (modelMatrix * vec4(position, 1.0)).xz / 48.0;\n#endif\n#endif');
   shader.vertexShader=shader.vertexShader.replace('#include <begin_vertex>',
-   '#include <begin_vertex>\nforestStem = forestPart.y;\n'+
+   '#include <begin_vertex>\nforestStem = forestPart.y;\nforestShade = 1.0;\n#ifdef USE_INSTANCING\nforestShade = 0.88 + 0.22 * fract(sin(dot(instanceMatrix[3].xz + vec2(forestPart.x * 17.0), vec2(0.013,0.019))) * 43758.5453);\n#endif\n'+
    'transformed.y += forestPart.x < 0.5 ? canopyGround.x : forestPart.x < 1.5 ? canopyGround.y : canopyGround.z;');
   shader.fragmentShader=shader.fragmentShader.replace('#include <color_fragment>',
-   '#include <color_fragment>\ndiffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.25,0.19,0.12), forestStem);');
+   '#include <color_fragment>\ndiffuseColor.rgb = mix(diffuseColor.rgb * forestShade, vec3(0.25,0.19,0.12), forestStem);');
  };
- material.customProgramCacheKey=()=> 'rooted-tree-groups-165';
+ material.customProgramCacheKey=()=> 'rooted-tree-groups-166';
 }
 function makeOSMTreeCrown(kind){
  const positions=[];

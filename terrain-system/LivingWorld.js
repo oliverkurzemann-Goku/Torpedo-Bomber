@@ -14,7 +14,7 @@ class LivingWorld {
     this.scene=scene;this.terrain=terrain;this.osm=osm;this.landmarks=landmarks;
     this.group=new THREE.Group();this.group.name='livingWorld';scene.add(this.group);
     this.details=new THREE.Group();this.details.name='livingWorldRuralDetails';this.group.add(this.details);
-    this.entities=[];this.routes={road:[],rail:[],water:[]};this.smokeSources=[];
+    this.entities=[];this.routes={road:[],rail:[],water:[],ambient:[]};this.smokeSources=[];
     this._smokeClock=0;this._mission='';
     this._makeMaterials();
     this._buildRoutes();
@@ -82,6 +82,9 @@ class LivingWorld {
     const factory=this.landmarks.factory||[13201,20490];
     const field=this.landmarks.field||[787,18088];
     this.routes.road=this._pickRoutes(roadCandidates,[factory,bridge,field,[20500,10500]],[0,1,2,3].length);
+    const ambientAnchors=[field,bridge,factory,this.landmarks.airfields?.[1]||[23600,25725],
+      [14000,14000],[6000,21000],[16000,9000],[20500,10500]];
+    this.routes.ambient=this._pickRoutes(roadCandidates.filter(r=>this._trafficRouteSafe(r)),ambientAnchors,8);
     this.routes.rail=this._pickRoutes(railCandidates,[bridge,factory],2);
     const water=this._traceRhineRoute(bridge,this.landmarks.bridgeSpan||[-101.5,-356.1]);
     if(water.length>500)this.routes.water=[water];
@@ -196,11 +199,30 @@ class LivingWorld {
     this._rememberMaterials(g);return g;
   }
 
+  _trafficRouteSafe(route){
+    const fields=this.landmarks.airfields||[this.landmarks.field||[787,18088],[23600,25725]];
+    for(let i=1;i<route.points.length;i++)for(const [x,z] of fields){
+      const a=route.points[i-1],b=route.points[i];
+      if(Math.max(a[0],b[0])>x-580&&Math.min(a[0],b[0])<x+580&&
+        Math.max(a[1],b[1])>z-105&&Math.min(a[1],b[1])<z+105)return false;
+    }
+    return true;
+  }
+  _sampleEntity(e){
+    const p=this._sample(e.route,e.phase);
+    if(e.meta.ambient){p.x+=Math.cos(p.yaw)*1.1;p.z-=Math.sin(p.yaw)*1.1;}
+    return p;
+  }
   _addEntity(kind,visual,route,speed,phase,meta={}){
+    if(kind!=='wagon'){
+      const source=visual;visual=WorldVehicles.mergeStaticByMaterial(source);
+      const discarded=new Set();source.traverse(o=>{if(o.geometry)discarded.add(o.geometry);});
+      for(const geo of discarded)geo.dispose();this._rememberMaterials(visual);
+    }
     const model=new THREE.Group();model.name='living-'+kind;visual.name='living-'+kind+'-fallback';model.add(visual);this.group.add(model);
     const radius=kind==='train'?4800:((kind==='civil'||kind==='wagon')?5200:3600);
     const e={kind,model,visual,fallbackVisual:visual,route,speed,phase,initialPhase:phase,alive:true,meta,last:{x:0,z:0},visibleRadius:radius};
-    e.last=this._sample(route,phase);model.position.set(e.last.x,this._groundEntity(e,e.last),e.last.z);model.rotation.y=e.last.yaw;
+    e.last=this._sampleEntity(e);model.position.set(e.last.x,this._groundEntity(e,e.last),e.last.z);model.rotation.y=e.last.yaw;
     model.userData.livingEntity=e;this.entities.push(e);return e;
   }
   _buildTraffic(){
@@ -209,14 +231,11 @@ class LivingWorld {
         {convoy:r,vehicleModel:r===0&&i===0?'jagdpanther':'tiger'});
     if(this.routes.rail[0])this._addEntity('train',this._makeTrain(),this.routes.rail[0],17,260,{train:0});
     if(this.routes.water[0])for(let i=0;i<2;i++)this._addEntity('ferry',this._makeFerry(),this.routes.water[0],5.2,220+i*this.routes.water[0].length*.48,{ferry:i});
-    const nearField=this.routes.road[2]||this.routes.road[0];
-    const ambientRoutes=[nearField,nearField,nearField,this.routes.road[0],this.routes.road[1],nearField,
-      this.routes.road[3],this.routes.road[0],nearField,this.routes.road[1],nearField,this.routes.road[3]].filter(Boolean);
-    for(let i=0;i<ambientRoutes.length;i++){
-      const route=ambientRoutes[i];
-      const model=i%3===0?this._makeCivilCar():this._makeWagon();
+    for(let r=0;r<this.routes.ambient.length;r++)for(let i=0;i<3;i++){
+      const route=this.routes.ambient[r],car=i===0,model=car?this._makeCivilCar():this._makeWagon();
       model.scale.setScalar(1.22);
-      this._addEntity(i%3===0?'civil':'wagon',model,route,i%3===0?6.5:3.1,430+i*211,{ambient:true});
+      const phase=route.length*(.12+i*.31)+(r%2?route.length:0);
+      this._addEntity(car?'civil':'wagon',model,route,car?6.5+(r%4)*.3:2.7+(r%5)*.2,phase,{ambient:true});
     }
   }
 
@@ -263,13 +282,17 @@ class LivingWorld {
     return this.terrain.getRenderedHeight(p.x,p.z)+(water?1.15:.18);
   }
   update(dt,focusX,focusZ,emitSmoke=null){
+    // Wider coverage without drawing all cloned cars/horses at once.
+    const nearby=this.entities.filter(e=>e.meta.ambient)
+      .sort((a,b)=>Math.hypot(a.last.x-focusX,a.last.z-focusZ)-Math.hypot(b.last.x-focusX,b.last.z-focusZ));
+    const visibleAmbient=new Set(nearby.slice(0,12));
     for(const e of this.entities){
       e.alertT=Math.max(0,(e.alertT||0)-dt);
       // Threatened columns stop, then disperse ALONG their mapped road.
       const multiplier=e.alertT>5?0:e.alertT>0?(e.meta.vehicleModel==='m16'?.45:1.55):1;
       if(e.alive)e.phase+=dt*e.speed*multiplier;
-      if(e.alive||!Number.isFinite(e.last.x))e.last=this._sample(e.route,e.phase);
-      const p=e.last,near=Math.hypot(p.x-focusX,p.z-focusZ)<e.visibleRadius;
+      if(e.alive||!Number.isFinite(e.last.x))e.last=this._sampleEntity(e);
+      const p=e.last,near=Math.hypot(p.x-focusX,p.z-focusZ)<e.visibleRadius&&(!e.meta.ambient||visibleAmbient.has(e));
       e.model.visible=near;
       if(near&&e.alive){e.model.position.set(p.x,this._groundEntity(e,p),p.z);e.model.rotation.y=p.yaw;if(e.mixer)e.mixer.update(dt);}
     }
@@ -300,7 +323,7 @@ class LivingWorld {
           e.model.remove(e.visual);e.visual=visual;e.model.add(visual);
         }
       }
-      e.alive=true;e.alertT=0;e.phase=e.initialPhase;e.last=this._sample(e.route,e.phase);e.model.rotation.z=0;
+      e.alive=true;e.alertT=0;e.phase=e.initialPhase;e.last=this._sampleEntity(e);e.model.rotation.z=0;
       e.model.position.set(e.last.x,this._groundEntity(e,e.last),e.last.z);e.model.rotation.y=e.last.yaw;
       e.model.traverse(o=>{if(o.isMesh&&o.userData.baseMaterial)o.material=o.userData.baseMaterial;});
     }

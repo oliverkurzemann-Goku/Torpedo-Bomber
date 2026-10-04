@@ -57,7 +57,7 @@ global.fetch=async url=>{const b=fs.readFileSync(path.join(root,url.split('?')[0
   vm.runInContext(html.slice(roadStart,roadEnd)+'\nclearRoadsOnRunways();',roadContext);
   assert.deepEqual(runwayFaces(),{road:[0,0],farm:[0,0],forest:[0,0]},
     'mapped road, farmland and forest floors must not cover either runway');
-  assert(html.includes('LivingWorld.js?v=162'));assert(html.includes('MODULE 23'));
+  assert(html.includes('LivingWorld.js?v=166'));assert(html.includes('MODULE 23'));
   for(const id of ['convoy','train','ferry'])assert(html.includes(`id:'${id}'`),`mission ${id} missing`);
   assert(html.includes("livingWorld.missionTargets(m.traffic||m.id)"));assert(html.includes('livingWorld.destroyEntity(t.entity)'));
   // Execute the actual mission table/population logic with lightweight target
@@ -112,7 +112,12 @@ global.fetch=async url=>{const b=fs.readFileSync(path.join(root,url.split('?')[0
   assert(world.smokeSources.length>2&&world.smokeSources.length<=26,'real chimney smoke sources are bounded');
   const count=kind=>world.entities.filter(e=>e.kind===kind).length;
   assert.equal(count('truck'),12);assert.equal(count('train'),1);assert.equal(count('ferry'),2);
-  assert.equal(count('wagon')+count('civil'),12);
+  assert.equal(count('wagon')+count('civil'),24);
+  assert.equal(world.routes.ambient.length,8);
+  assert(world.routes.ambient.every(r=>world._trafficRouteSafe(r)),'ambient traffic routes clear both runways');
+  for(const e of world.entities.filter(e=>e.meta.ambient)){
+    const p=world._sample(e.route,e.phase);assert(Math.abs(Math.hypot(e.last.x-p.x,e.last.z-p.z)-1.1)<.001,'civilian traffic uses its right-hand lane');
+  }
   assert.equal(world.missionTargets('convoy').length,4);
   assert.equal(world.missionTargets('train').length,1);
   assert.equal(world.missionTargets('ferry').length,1);
@@ -151,6 +156,7 @@ global.fetch=async url=>{const b=fs.readFileSync(path.join(root,url.split('?')[0
 
   const truck=world.missionTargets('convoy')[0],before=truck.phase;
   const start=world._sample(truck.route,truck.phase);world.update(2,start.x,start.z);
+  assert(world.entities.filter(e=>e.meta.ambient&&e.model.visible).length<=12,'nearby ambient traffic draw budget stays bounded');
   assert(truck.phase>before&&truck.model.visible);assert(truck.model.position.toArray().every(Number.isFinite));
   const alerted=truck.phase;world.alertConvoy(truck);world.update(2,start.x,start.z);
   assert.equal(truck.phase,alerted,'hit convoy halts on its actual mapped road');
