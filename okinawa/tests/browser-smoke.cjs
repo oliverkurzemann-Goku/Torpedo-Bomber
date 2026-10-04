@@ -269,7 +269,7 @@ const cdn={
       P.pos.set(carrierX+BOW_X+160,DECK_Y+90,0);P.heading=Math.PI/2;P.pitch=.01;P.roll=0;P.spd=65;
       updatePlaneMesh(0);updateCamera(1);firing=true;gunCool=0;
       for(const b of bullets)GameRuntime.release(b.mesh);bullets=[];
-      for(let i=0;i<12;i++)updateGuns(1/60);firing=false;
+      for(let i=0;i<20;i++){updateGuns(1/60);if(combatFX)combatFX.update(1/60);}firing=false;
       renderer.setPixelRatio(1);CombatFX.updateRounds(bullets,camera,renderer);
       const lit=bullets.filter(b=>b.mesh.userData.litTracer);
       const gl=renderer.getContext(),w=renderer.domElement.width,h=renderer.domElement.height;
