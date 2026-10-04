@@ -33,6 +33,9 @@ const Damage={
   s.fuelLeak=Math.min(.16,s.fuelLeak+.04);return 'WING TANK HIT — FUEL LEAK WORSENING';
  },
  power(p){return p.systemDamage?.engine??1;},
+ hullPercent(p){return Math.round(clamp(p.hull/(p.systemDamage?.maxHull||100)*100,0,100));},
+ gearLocked(p){return p.systemDamage?.gearLock!=null;},
+ needsBelly(p){return this.gearLocked(p)&&p.systemDamage.gearLock<.6;},
  tick(p,dt){
   const s=p.systemDamage;if(!s)return false;
   if(s.gearLock!=null)p.gearTgt=s.gearLock;
@@ -43,7 +46,7 @@ const Damage={
   return false;
  },
  status(p){const s=p.systemDamage;if(!s)return '';
-  return [s.fuelLeak?'FUEL LEAK':'',s.engine<1?'ENGINE '+Math.round(s.engine*100)+'%':'',s.gearLock!=null?'GEAR JAM':''].filter(Boolean).join(' · ');
+  return [s.fuelLeak?'FUEL LEAK':'',s.engine<1?'ENGINE '+Math.round(s.engine*100)+'%':'',s.gearLock!=null?'GEAR JAM '+(s.gearLock<.6?'UP':'DOWN'):''].filter(Boolean).join(' · ');
  },
  belly(p,sink,speedLimit){return p.systemDamage?.gearLock!=null&&p.systemDamage.gearLock<.6&&sink<3&&p.spd<speedLimit&&Math.abs(p.roll)<.16&&Math.abs(p.pitch)<.18;}
 };

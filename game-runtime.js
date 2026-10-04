@@ -81,7 +81,7 @@
     ['recovery',s.rtb&&s.homeDistance<2200,'RECOVERY — '+s.recovery],
     ['dive',s.dive&&s.pitch<-.3&&s.agl>180&&!s.diveBrake,'EXTEND DIVE BRAKES BEFORE THE ATTACK.'],
     ['torpedo',s.torpedo&&s.ordnance>0&&s.targetDistance<1500&&s.altitude>s.dropAltitude,'TORPEDO ATTACK — DESCEND, LEVEL THE WINGS AND CHECK THE DROP LIMITS.'],
-    ['gear',!s.fixedGear&&!s.rtb&&s.agl>100&&s.gear>.7&&s.homeDistance>500,'AIRBORNE — RETRACT THE GEAR TO REDUCE DRAG.'],
+    ['gear',!s.fixedGear&&!s.gearLocked&&!s.rtb&&s.agl>100&&s.gear>.7&&s.homeDistance>500,'AIRBORNE — RETRACT THE GEAR TO REDUCE DRAG.'],
     ['start',s.onGround&&s.speed<10,'TAKE-OFF — ADD THROTTLE, KEEP STRAIGHT AND PULL BACK GENTLY.']
    ];
    for(const [id,ready,message] of rules)if(ready&&!this.seen.has(id)){

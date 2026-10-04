@@ -331,7 +331,7 @@ const cdn={
      await page.waitForFunction(()=>(state===ST.LAUNCH||state===ST.FLIGHT)&&eng.master.gain.value>.5);
      await page.locator('#pauseBtn').click();await page.locator('#menuBtn').click();
     }else{
-     await page.locator('#pauseMainMenu').click();await page.waitForURL('**/index.html?v=162');
+     await page.locator('#pauseMainMenu').click();await page.waitForURL('**/index.html?v=163');
      await page.locator('main.board').waitFor();
     }
     console.log('Browser pause: '+(scenario.ordinal===0?'abort, retained record and audible relaunch':'Main Menu returns to campaign board'));
@@ -393,6 +393,7 @@ const cdn={
     await page.locator('#missionSel .chip').nth(2).click();await page.locator('#startBtn').click();await page.locator('#brGo').click();
     await page.waitForFunction(()=>state===ST.FLIGHT&&!!playerModel);
     await page.locator('#pauseBtn').click();
+    assert.match(await page.locator('#pauseOrders').innerText(),/100% HULL/,'intact P-47 strength is displayed as 100%');
     const damage=await page.evaluate(()=>{
      P.gear=P.gearTgt=0;const random=Math.random;
      try{for(const value of [.2,.6,.95]){Math.random=()=>value;damagePlayer(30,'flak');}}finally{Math.random=random;}
@@ -403,7 +404,12 @@ const cdn={
     assert(damage.leak>0&&damage.power<1&&damage.lock===0,'real hit callback distinguishes tank, engine and gear');
     assert.match(await page.locator('#systemsStatus').innerText(),/FUEL LEAK.*ENGINE.*GEAR JAM/);
     assert(damage.events.includes('engine')&&damage.events.includes('battle')&&damage.sources>0&&damage.sources<=4,'native WebAudio ambience is connected and bounded');
+    await page.evaluate(()=>{togglePause();togglePause();});
+    assert.match(await page.locator('#pauseOrders').innerText(),/31% HULL.*FUEL LEAK.*ENGINE.*GEAR JAM UP.*Emergency belly landing/,'actual pause instructions explain damaged recovery');
+    await page.screenshot({path:path.join(root,'test-visuals','damage-recovery-orders.png')});
+    await page.evaluate(()=>show('pauseMenu',false));
     await page.screenshot({path:path.join(root,'test-visuals','aircraft-system-damage.png')});
+    await page.evaluate(()=>show('pauseMenu',true));
     const landed=await page.evaluate(()=>{
      P.pos.set(AF_X,groundY(AF_X,AF_Z)+2,AF_Z);P.spd=50;P.vSpeed=-2;P.roll=P.pitch=0;P.heading=Math.PI/2;
      P.onGround=false;P.touchResolved=false;missionOver=false;resolveGround(.05);
@@ -450,10 +456,15 @@ const cdn={
     assert(defense.shots>0,'the visible IJN carrier fires its deck-edge batteries');
     fs.writeFileSync(path.join(root,'test-visuals','carrier-active-defense.png'),Buffer.from(defense.png.split(',')[1],'base64'));
     console.log('Browser Pacific: loaded Avenger forward egress and visible IJN carrier batteries verified.');
+    const emergency=await page.evaluate(()=>{
+     P.systemDamage.gearLock=0;P.gear=P.gearTgt=0;
+     togglePause();togglePause();return document.getElementById('pauseOrders').textContent;
+    });
+    assert.match(emergency,/GEAR JAM UP.*Emergency belly recovery: flaps and hook down/,'carrier pause gives achievable jammed-gear recovery instructions');
     // A real JS frame failure is visible and remains observable, not hidden.
     await page.evaluate(()=>{animateFrame=()=>{throw Error('TEST FRAME FAULT');};});
     await page.locator('#simulationRecovery').waitFor({state:'visible'});
-    assert.match(await page.locator('#simulationRecovery').innerText(),/BUILD 162.*TEST FRAME FAULT/);
+    assert.match(await page.locator('#simulationRecovery').innerText(),/BUILD 163.*TEST FRAME FAULT/);
     assert.equal(await page.locator('#simulationRecovery button').innerText(),'Reload game');
     assert.deepEqual(errors,['TEST FRAME FAULT'],'unexpected runtime errors cannot be swallowed');
    }

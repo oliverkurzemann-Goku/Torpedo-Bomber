@@ -5,7 +5,22 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 162 · Thunderbolt Squadron BUILD 162 · Remagen-Kern 23 / Fahrzeuge 22**
+Stand bei Übergabe: **Torpedo Squadron BUILD 163 · Thunderbolt Squadron BUILD 163 · Remagen-Kern 23 / Fahrzeuge 22**
+
+**Build 163 (04.10.2026): konsistente Schadens- und Notlandeanzeigen.**
+Rumpfanzeigen in HUD, Pause und Ergebnis beziehen sich auf die echte maximale
+Trefferfestigkeit des gewählten Flugzeugs (unbeschädigte P47 = 100%, nicht 130%).
+Trefferfestigkeit, Schaden und Flugphysik bleiben unverändert. Fahrwerksstatus
+zeigt JAM UP/DOWN; die Pausenübersicht enthält alle Systemfehler und bei JAM UP
+eine erreichbare Bauchlande-Anweisung. Pacific behält dabei Flaps/Hook als nötig.
+HintCoach verlangt bei blockiertem Fahrwerk kein Einfahren; die wiederholte
+Pacific-LOWER-GEAR-Warnung ist bei JAM UP unterdrückt. Gesunde Gear-Tipps bleiben.
+Systemschaden-Rauch entsteht hinter dem Flugzeug, wie der bestehende Rumpfrauch,
+damit die neue Rauchquelle nicht direkt vor der Cockpitkamera liegt.
+Regressionen prüfen Prozentwerte aller sechs Hull-Kapazitäten, Gear-Lock-Hinweise
+und echte EU/Pacific-Pausenwege im Browser. Schadens-HUD wird ohne verdeckende
+Pausenebene zusätzlich gerendert; Emergency-Pause erhält ein separates Prüfbild.
+Cache-Versionen nur der veränderten gemeinsamen Module auf 163, übrige unverändert.
 
 **Build 162 (04.10.2026): Missionsphasen, Reaktionen, Schäden und Spezialoperationen.**
 Pacific-Avengers halten nach dem Abwurf ihren bisherigen Kurs, steigen aus und

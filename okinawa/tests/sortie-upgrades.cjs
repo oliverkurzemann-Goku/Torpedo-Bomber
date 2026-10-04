@@ -24,6 +24,13 @@ for(const roll of [.2,.6,.95]){
  Damage.reset(p);assert.equal(Damage.power(p),1);assert.equal(Damage.status(p),'');
 }
 for(const ac of ['ju87','me163']){const p={ac,alive:true,hull:55,fuel:30,gear:1};Damage.reset(p);Damage.hit(p,40,'flak',()=>.99);assert.equal(p.systemDamage.gearLock,null,'fixed gear / skid is not locked up');}
+for(const maxHull of [75,88,95,102,115,130]){
+ const p={hull:maxHull};Damage.reset(p,maxHull);assert.equal(Damage.hullPercent(p),100,'every intact original aircraft reads 100%');
+ p.hull=maxHull/2;assert.equal(Damage.hullPercent(p),50,'display follows the aircraft\'s actual remaining strength');
+ p.hull=-1;assert.equal(Damage.hullPercent(p),0);p.hull=maxHull+40;assert.equal(Damage.hullPercent(p),100);
+ p.systemDamage.gearLock=0;assert(Damage.needsBelly(p));assert.match(Damage.status(p),/GEAR JAM UP/);
+ p.systemDamage.gearLock=1;assert(!Damage.needsBelly(p)&&Damage.gearLocked(p));assert.match(Damage.status(p),/GEAR JAM DOWN/);
+}
 const env={SpeechSynthesisUtterance:function(text){this.text=text;},speechSynthesis:{getVoices:()=>[{localService:false,lang:'en-US'},{localService:true,lang:'en-GB'}],speak:u=>env.last=u,cancel:()=>{env.cancelled=true;}},setTimeout:()=>1,clearTimeout:()=>{},localStorage:{getItem:()=>null,setItem:()=>{}}};
 const voice=ctx.FlightAtmosphere.voiceRadio(env);assert(!voice.say('before gesture'));
 voice.unlock();assert(env.last.voice.localService,'remote speech service never selected');assert(!voice.say('no backlog'));

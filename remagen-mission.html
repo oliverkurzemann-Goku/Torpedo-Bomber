@@ -266,7 +266,7 @@
   #opsStatus{position:fixed;top:calc(env(safe-area-inset-top) + 76px);left:50%;transform:translateX(-50%);color:#edcc80;background:rgba(14,20,18,.78);padding:5px 9px;font:10px monospace;pointer-events:none;z-index:9;max-width:58vw;text-align:center;}
   #systemsStatus{position:fixed;top:calc(env(safe-area-inset-top) + 116px);left:50%;transform:translateX(-50%);color:#ffbf96;background:#251810db;padding:5px 9px;font:10px monospace;pointer-events:none;z-index:9;max-width:60vw;text-align:center;}#systemsStatus:empty{display:none;}
 </style>
-<link rel="stylesheet" href="menu-layout.css?v=162">
+<link rel="stylesheet" href="menu-layout.css?v=163">
 </head>
 <body>
 <!-- ===== TEMP TEST-ONLY VERSION BANNER — asked for by Oliver: "kannst du irgendwo einbauen,
@@ -288,7 +288,7 @@
   <div style="width:100%;height:4px;background:repeating-linear-gradient(45deg,#ffd400,#ffd400 8px,#111 8px,#111 16px);"></div>
   <span id="testVersionBannerText" style="background:#111;color:#ffd400;font-family:monospace;font-weight:800;font-size:11px;letter-spacing:.5px;padding:3px 10px;border:1px solid #ffd400;border-top:none;border-radius:0 0 6px 6px;"></span>
 </div>
-<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 162';</script>
+<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 163';</script>
 <!-- ===== END TEMP TEST-ONLY VERSION BANNER ===== -->
 <div id="app"></div>
 
@@ -317,7 +317,7 @@
   <div id="flash"></div>
   <div id="gunsight"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 162 · REAL RHINE</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 163 · REAL RHINE</div>
 
   <div id="apr">
     <div id="aprCall"></div>
@@ -367,7 +367,7 @@
 </div>
 
 <div class="overlay hidden" id="menu" data-campaign="europe">
-  <div class="menuTop"><a id="selBtn" href="index.html?v=162">&#9664; Change Game</a><span class="menuMeta">RHINE OPERATIONS<br>BUILD 162</span></div>
+  <div class="menuTop"><a id="selBtn" href="index.html?v=163">&#9664; Change Game</a><span class="menuMeta">RHINE OPERATIONS<br>BUILD 163</span></div>
   <div class="card menuCard">
     <aside class="menuOverview" aria-label="Campaign and pilot options">
     <div class="campaignArt" aria-hidden="true"></div>
@@ -472,7 +472,7 @@
 <script src="terrain-system/WorldVehicles.js?v=remagen-22"></script>
 <script src="terrain-system/LivingWorld.js?v=162"></script>
 <script src="campaign.js?v=1"></script>
-<script src="game-runtime.js?v=157"></script>
+<script src="game-runtime.js?v=163"></script>
 <script src="combat-fx.js?v=157"></script>
 <script src="ordnance.js?v=157"></script>
 <script src="pilot-bailout.js?v=157"></script>
@@ -482,7 +482,7 @@
 <script src="audio/jet-engine.js?v=144"></script>
 <script src="audio/flight-atmosphere.js?v=162"></script>
 <script src="sortie-systems.js?v=162"></script>
-<script src="sortie-features.js?v=162"></script>
+<script src="sortie-features.js?v=163"></script>
 <script src="sortie-fuel.js?v=161"></script>
 <script src="operation-plans.js?v=162"></script>
 <script>
@@ -799,7 +799,7 @@ async function loadRealWorld(){
 
   if(OSMManager.BUILD!==23||HistoricalObjectManager.BUILD!==21||LivingWorld.BUILD!==22||WorldVehicles.BUILD!==22) throw new Error('Terrain version mismatch. Reload Remagen.');
   document.getElementById('testVersionBannerText').textContent=
-    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 162 · MODULE 23';
+    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 163 · MODULE 23';
   heightProvider=new DEMHeightProvider(RTILE,'terrain-system/real/data/dem/');
   terrain=new TerrainManager(scene,RTILE,heightProvider);
   osmMgr=new OSMManager(scene,RTILE,terrain,'terrain-system/real/data/osm/');
@@ -4225,7 +4225,7 @@ function landed(onStrip){
     (done?'Every target on the list is burning. ':'You are home, but the job is not finished. ')
     +(promoted?'<br><br><b>Promoted to '+rank+'.</b>':'')
     +'<br><br>This sortie: '+(bag.length?bag.join(' &middot; '):'nothing claimed')
-    +'<br>Hull '+Math.round(P.hull)+'% &middot; '+hitsTaken+' hits taken &middot; fuel '+Math.round(P.fuel)+'%'
+    +'<br>Hull '+SortieFeatures.Damage.hullPercent(P)+'% &middot; '+hitsTaken+' hits taken &middot; fuel '+Math.round(P.fuel)+'%'
     +'<br>SCORE '+score+' &middot; BEST '+Math.max(bestScore(),score)
     +'<br><br><b>LOGBOOK</b> — '+(l.sorties||0)+' sorties &middot; '+(l.landings||0)+' landings &middot; '
      +(l.lost||0)+' aircraft lost &middot; '+(l.bailouts||0)+' bailouts'
@@ -4496,7 +4496,7 @@ function updateHUD(){
   document.getElementById('hVsi').innerHTML=Math.round(P.vSpeed*FT*60/50)*50+'<small> FPM</small>';
   document.getElementById('hFuel').innerHTML=Math.round(P.fuel)+'<small> %'+(P.tankAttached?' + '+Math.ceil(P.tankFuel)+' EXT':'')+'</small>';
   syncTankButton();
-  document.getElementById('hHull').innerHTML=Math.round(P.hull)+'<small> %</small>';
+  document.getElementById('hHull').innerHTML=SortieFeatures.Damage.hullPercent(P)+'<small> %</small>';
   document.getElementById('hullRow').title=SortieFeatures.Damage.status(P);
   document.getElementById('systemsStatus').textContent=SortieFeatures.Damage.status(P);
   document.getElementById('hOrd').textContent=P.bombs;
@@ -5276,7 +5276,9 @@ function togglePause(reason='Sortie held'){
     releaseHeldControls();
     prevState=state; state=ST.PAUSED;
     document.getElementById('pauseReason').textContent=reason;
-    document.getElementById('pauseOrders').textContent=bailRescue&&!bailDone?'RESCUE INBOUND — automatic pickup. Resume to continue.':bailout&&!bailDone?'PARACHUTE — stick or arrow keys: left/right turn, up glide, down brake.':objectiveText()+' · '+Math.round(P.fuel)+'% FUEL · '+Math.round(P.hull)+'% HULL. Recovery: '+airfieldName(M())+'.';
+    const faults=SortieFeatures.Damage.status(P);
+    const recovery=SortieFeatures.Damage.needsBelly(P)?'Emergency belly landing at '+airfieldName(M())+' — wings level, low sink rate.':'Recovery: '+airfieldName(M())+'.';
+    document.getElementById('pauseOrders').textContent=bailRescue&&!bailDone?'RESCUE INBOUND — automatic pickup. Resume to continue.':bailout&&!bailDone?'PARACHUTE — stick or arrow keys: left/right turn, up glide, down brake.':objectiveText()+' · '+Math.round(P.fuel)+'% FUEL · '+SortieFeatures.Damage.hullPercent(P)+'% HULL. '+(faults?faults+'. ':'')+recovery;
     show('pauseMenu',true);
     if(eng) eng.master.gain.setTargetAtTime(0.0001,actx.currentTime,0.05);
   }
@@ -5310,11 +5312,11 @@ let runtimeSession=null,releaseHeldControls=()=>{};
 let flightCoach=new GameRuntime.HintCoach();
 function updateFlightHints(dt){
   flightCoach.tick(dt,{enabled:document.getElementById('flightHints').checked,alive:P.alive,busy:flashT>0,
-    hull:P.hull,agl:P.pos.y-groundY(P.pos.x,P.pos.z),altitude:P.pos.y,
+    hull:SortieFeatures.Damage.hullPercent(P),agl:P.pos.y-groundY(P.pos.x,P.pos.z),altitude:P.pos.y,
     rtb:P.rtb,homeDistance:Math.hypot(P.pos.x-AF_X,P.pos.z-AF_Z),
-    recovery:'LAND AT '+airfieldName(M())+' WITH '+(P.ac==='me163'?'SKID':'GEAR')+' AND FLAPS DOWN.',
+    recovery:SortieFeatures.Damage.needsBelly(P)?'GEAR JAMMED UP — GENTLE BELLY LANDING AT '+airfieldName(M())+'; WINGS LEVEL, LOW SINK RATE.':'LAND AT '+airfieldName(M())+' WITH '+(P.ac==='me163'?'SKID':'GEAR')+' AND FLAPS DOWN.',
     dive:P.ac==='ju87'&&P.bombs>0,pitch:P.pitch,diveBrake:P.diveBrake,fixedGear:P.ac==='ju87'||P.ac==='me163',
-    gear:P.gear,onGround:P.onGround,speed:P.spd},message=>flash(message,3600));
+    gear:P.gear,gearLocked:SortieFeatures.Damage.gearLocked(P),onGround:P.onGround,speed:P.spd},message=>flash(message,3600));
 }
 function updateSortieAtmosphere(dt){
   const baseRange=Math.hypot(P.pos.x-AF_X,P.pos.z-AF_Z);
@@ -5398,7 +5400,7 @@ function init(){
   buildMenu();
   // menu wiring
   document.getElementById('startBtn').onclick=()=>showBrief(selectedMission);
-  document.getElementById('pauseMainMenu').onclick=()=>{exitToMenuFromPause();window.location.href='index.html?v=162';};
+  document.getElementById('pauseMainMenu').onclick=()=>{exitToMenuFromPause();window.location.href='index.html?v=163';};
   document.getElementById('logBtn').onclick=()=>{ show('menu',false); showLogbook(); };
   document.getElementById('brBack').onclick=()=>{ show('brief',false); show('menu',true); state=ST.MENU; };
   document.getElementById('brGo').onclick=async()=>{
@@ -5511,7 +5513,7 @@ function animate(){
   if(state===ST.FLIGHT||state===ST.DEAD){
     if(state===ST.FLIGHT&&P.alive){
       if(SortieFeatures.Damage.tick(P,dt)){
-        const p=P.pos.clone().addScaledVector(noseDir(),2);spawnSmoke(p.x,p.y,p.z,P.systemDamage.engine<1?0x343434:0xaaa99b,.4);
+        const p=P.pos.clone().addScaledVector(noseDir(),-3);p.y-=.6;spawnSmoke(p.x,p.y,p.z,P.systemDamage.engine<1?0x343434:0xaaa99b,.4);
       }
       updateFlight(dt);
       updateEuropeOperation(dt);
