@@ -199,6 +199,7 @@ const cdn={
      }
      // Reuse the live activity for each phase, including the shared GLB rig.
      const previousParent=activity.group.parent,crew=activity.group;crew.visible=true;studio.add(field,crew);
+     const crewVisibility=[];crew.traverse(o=>{if(o.isInstancedMesh){crewVisibility.push([o,o.visible]);o.visible=true;}});
      const cam=new THREE.PerspectiveCamera(50,1024/768,.5,5500),y=groundY(ALLIED_AF_X-310,ALLIED_AF_Z-70);
      renderer.setPixelRatio(1);
      cam.position.set(ALLIED_AF_X-291,y+9,ALLIED_AF_Z-26);cam.lookAt(ALLIED_AF_X-318,y+2,ALLIED_AF_Z-77);
@@ -213,7 +214,7 @@ const cdn={
      const mountedActive=activity.loading.mounted&&activity.payload.visible;
      cam.position.set(ALLIED_AF_X-212,y+46,ALLIED_AF_Z+45);cam.lookAt(ALLIED_AF_X-295,y+1,ALLIED_AF_Z-90);
      renderer.render(studio,cam);const overview=renderer.domElement.toDataURL('image/png');renderer.setPixelRatio(.25);
-     previousParent.add(crew);
+     previousParent.add(crew);for(const [mesh,visible] of crewVisibility)mesh.visible=visible;
      return {close,overview,lifting,mounted,cartMoved,liftingActive,mountedActive,animated,crew:activity.crew.length,parked:activity.parked.length,
        originalModel:activity.parked[0].children[0].children.some(o=>o.isMesh||o.children.length),
        hasLandcover:!!terrainTile.landcoverTexture};
@@ -229,10 +230,12 @@ const cdn={
      const point=livingWorld._sampleEntity(entity),y=groundY(point.x,point.z);
      livingWorld.update(0,point.x,point.z);
      const oldVisible=planeGroup.visible;planeGroup.visible=false;
+     const visibility=[],tile=osmMgr.tiles.get(Math.floor(point.x/4000)+','+Math.floor(point.z/4000));
+     if(tile?.farGroup)tile.farGroup.traverse(o=>{if(o.isInstancedMesh&&o.name.startsWith('osmBuilding')){visibility.push([o,o.visible]);o.visible=true;}});
      const cam=new THREE.PerspectiveCamera(48,1024/768,1,8500);
      cam.position.set(point.x+130,y+100,point.z-210);cam.lookAt(point.x,y,point.z+80);
      renderer.setPixelRatio(1);renderer.render(scene,cam);const png=renderer.domElement.toDataURL('image/png');renderer.setPixelRatio(.25);
-     planeGroup.visible=oldVisible;
+     planeGroup.visible=oldVisible;for(const [mesh,visible] of visibility)mesh.visible=visible;
      return {png,count:candidates.length,routes:livingWorld.routes.ambient.length,visible:candidates.filter(e=>e.model.visible).length};
     });
     assert(street.count===24&&street.routes===8&&street.visible>0&&street.visible<=12,'actual mapped road traffic is present within its draw budget');

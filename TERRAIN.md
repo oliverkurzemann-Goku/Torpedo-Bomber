@@ -10,10 +10,12 @@ Four wall palettes and existing facade atlas fields have clearer cream, stone,
 ochre and brick variation; local palette/roof mixing stops uniform town blocks.
 No additional building meshes, windows, material buckets or texture memory.
 
-Broadleaf groups have irregular lower crowns and offset upper tufts: 108 triangles
-per group versus 84, with unchanged instance counts, six material buckets, textures,
-full clearance envelopes and independent rooted placement. Subtle per-tree shading
-and height-aware leaf UVs reduce uniform rounded silhouettes. No treepack download
+Tree base heights increase from 14/19/16m to 20/26/23m, with Y scale capped at 1.35.
+The earlier wide, short crowns looked like green rocks in the actual low-view GPU
+capture. Broadleaf groups retain 84 triangles and uneven crowns; additional stacked
+tufts were rejected in visual review. Instance counts, six material buckets,
+textures, full clearance envelopes and independent rooted placement remain.
+Subtle per-tree shading and height-aware leaf UVs reduce uniform rounded silhouettes. No treepack download
 or extra texture memory is introduced.
 
 Airfield service now moves the trolley, two loaders, lift support and single payload

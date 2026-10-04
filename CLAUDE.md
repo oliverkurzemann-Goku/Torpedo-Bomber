@@ -28,11 +28,17 @@ innerhalb einer Ortschaft und bei Dächern; gleiche Fensterzahl, Geometrie,
 vier Wandmaterialien, vorhandene Atlanten und höchstens zwölf Gebäudebuckets.
 LivingWorld-Cache 166; BUILD-API 22 bleibt.
 
-Laubkronen bekommen einen unregelmäßigen unteren Kronenteil und einen versetzten
-oberen Blattbüschel. 108 statt 84 Dreiecke je Dreiergruppe, keine neuen Instanz-
-Buckets, Texturen oder Modelle. Individuelle leichte Schattierung je Baum und eine
+Die bislang 14/19/16 m hohen Bäume waren für die 20-m-Dreiergruppen zu breit
+und wirkten im Tiefblick wie grüne Felsen. Grundhöhen 20/26/23 m und begrenzte
+Y-Skalierung (maximal 1,35) ergeben höhere, ungleiche Stämme und Kronen. Laubkronen
+bleiben bei 84 Dreiecken je Dreiergruppe; keine gestapelten zusätzlichen Blatt-
+Halbkugeln, Instanz-Buckets, Texturen oder Modelle. Individuelle leichte Schattierung je Baum und eine
 auch auf steilen Kronenseiten verteilte Blattstruktur brechen die gleichförmigen
-Klumpen. Radius, Wurzelsampling, Ausschlussflächen und Abstandsraster bleiben.
+Klumpen. Radius, Wurzelsampling, Ausschlussflächen und Abstandsraster bleiben. Die echten
+Spiellichter zeigten beim ersten Bildcheck die zu flachen Proportionen; deshalb
+keine Auslieferung dieser Zwischenfassung. Crew-Instanzen werden für die Service-
+Prüfbilder ausdrücklich wieder sichtbar gemacht (der Steuerungs-Dauertest blendet
+statische Instanzen zur CPU-GPU-Entlastung aus).
 
 AirfieldActivity trennt den Wagen und die Bombe aus dem statischen Material-Merge.
 Zwei Loader begleiten ihn vom Lager zum geparkten Flugzeug; eine sichtbare Hubstütze

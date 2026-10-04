@@ -612,7 +612,7 @@ class OSMManager {
         q.setFromAxisAngle(OSM_UP,p.rot);
         if(mat===this.shrubMat){pos.set(p.x,y+yFactor*p.scale,p.z);scale.set(p.scale*sx*p.width,p.scale*sy*p.height,p.scale*sz*p.width);}
         else{
-          const height=p.scale*sy*p.height;
+          const height=Math.min(1.35,p.scale*sy*p.height);
           pos.set(p.x,y+yFactor*p.scale,p.z);scale.set(p.radius,height,p.radius);
           const r=p.radius;
           const roots=geo.userData?.forestRoots||[[0,0]],c=Math.cos(p.rot),s=Math.sin(p.rot);
@@ -1260,7 +1260,7 @@ function makeOSMForestCrown(kind){
  const ico=[[-1,phi,0],[1,phi,0],[-1,-phi,0],[1,-phi,0],[0,-1,phi],[0,1,phi],[0,-1,-phi],[0,1,-phi],[phi,0,-1],[phi,0,1],[-phi,0,-1],[-phi,0,1]];
  const faces=[[0,11,5],[0,5,1],[0,1,7],[0,7,10],[0,10,11],[1,5,9],[5,11,4],[11,10,2],[10,7,6],[7,1,8],[3,9,4],[3,4,2],[3,2,6],[3,6,8],[3,8,9],[4,9,5],[2,4,11],[6,2,10],[8,6,7],[9,8,1]];
  for(let tree=0;tree<3;tree++){
-  const [cx,cz]=roots[tree],height=[14,19,16][tree],width=[.52,.45,.50][tree];
+  const [cx,cz]=roots[tree],height=[20,26,23][tree],width=[.52,.45,.50][tree];
   const trunk=positions.length/3;
   for(const y of [0,height*.58])for(let i=0;i<4;i++){const a=i*Math.PI/2;add(cx+Math.cos(a)*.019,y,cz+Math.sin(a)*.019,tree,1);}
   for(let i=0;i<4;i++){const a=trunk+i,b=trunk+(i+1)%4;indices.push(a,a+4,b,b,a+4,b+4);}
@@ -1273,17 +1273,14 @@ function makeOSMForestCrown(kind){
    }
   }else{
    const base=positions.length/3;
-   // A broad, irregular lower crown and an offset upper tuft give each tree
-   // a branching silhouette. Only eight more faces per tree, no new buckets.
+   // Mature trees need enough height for their validated 20m group envelope:
+   // short, wide crowns read as green rocks from a low-flight camera.
    for(let i=0;i<ico.length;i++){
-    const v=ico[i],d=Math.hypot(...v),bump=.78+.28*osmHash(i,tree,411);
-    add(cx+(v[0]/d*bump+.07*v[1]/d)*width,height*(.57+v[1]/d*.25),cz+v[2]/d*width*(1.04-.10*tree)*bump,tree);
+    const v=ico[i],d=Math.hypot(...v),bump=.83+.25*osmHash(i,tree,411);
+    add(cx+(v[0]/d*bump+.07*v[1]/d)*width,height*(.60+v[1]/d*.34),cz+v[2]/d*width*(1.04-.10*tree)*bump,tree);
    }
    for(const f of faces)indices.push(...f.map(i=>base+i));
-   const tuft=positions.length/3,tx=cx+width*[.15,-.19,.23][tree],tz=cz+width*[.12,.08,-.15][tree];
-   for(const v of [[1,0,0],[0,0,1],[-1,0,0],[0,0,-1],[0,1,0],[0,-1,0]])
-    add(tx+v[0]*width*.65,height*(.79+v[1]*.23),tz+v[2]*width*.64,tree);
-   for(let i=0;i<4;i++){const a=tuft+i,b=tuft+(i+1)%4;indices.push(a,tuft+4,b,a,b,tuft+5);}
+
   }
  }
  const geo=new THREE.BufferGeometry();geo.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));geo.setIndex(indices);
