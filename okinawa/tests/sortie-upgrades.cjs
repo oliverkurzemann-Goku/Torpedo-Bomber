@@ -33,8 +33,14 @@ for(const maxHull of [75,88,95,102,115,130]){
 }
 const env={SpeechSynthesisUtterance:function(text){this.text=text;},speechSynthesis:{getVoices:()=>[{localService:false,lang:'en-US'},{localService:true,lang:'en-GB'}],speak:u=>env.last=u,cancel:()=>{env.cancelled=true;}},setTimeout:()=>1,clearTimeout:()=>{},localStorage:{getItem:()=>null,setItem:()=>{}}};
 const voice=ctx.FlightAtmosphere.voiceRadio(env);assert(!voice.say('before gesture'));
-voice.unlock();assert(env.last.voice.localService,'remote speech service never selected');assert(!voice.say('no backlog'));
+voice.unlock();assert.equal(env.last,undefined,'radio is silent by default, including radio check');
+let changed;const control={addEventListener:(_name,fn)=>changed=fn};
+env.localStorage.getItem=key=>key==='spokenRadio'?'1':null;
+voice.bind(control);assert.equal(control.checked,false,'legacy default-on preference cannot unmute this release');
+control.checked=true;changed();assert(env.last.voice.localService,'explicit opt-in uses a local voice only');assert(!voice.say('no backlog'));
 voice.cancel();assert(env.cancelled&&!voice.speaking,'pause/exit cancels immediately');
+control.checked=false;changed();assert(!voice.say('muted warning'),'muted radio never speaks warnings');
+control.checked=true;changed();voice.cancel();
 env.speechSynthesis.getVoices=()=>[{localService:false,lang:'en-US'}];assert(!voice.say('remote unavailable'),'no remote fallback');
 const silent=ctx.FlightAtmosphere.voiceRadio({});assert(!silent.available&&!silent.say('text still works'));
 const eu=fs.readFileSync('remagen-mission.html','utf8');

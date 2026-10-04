@@ -116,8 +116,8 @@ function validateBuffers(mesh){
    if(mesh.name==='osmForestTrunks'||mesh.name==='osmForestFloor')continue;
    for(let i=0;i<mesh.count;i++){
     mesh.getMatrixAt(i,matrix);const p=[matrix.elements[12],matrix.elements[14]];
-    // BUILD 16's broader deciduous crown remains below a 6.8m envelope.
-    for(const tri of nearby([p],6.8))assert(!circleTriangle(p,6.8,tri),`canopy intersects water at ${p}`);
+    const radius=mesh.userData.canopyRadii?.[i]||6.8;
+    for(const tri of nearby([p],radius))assert(!circleTriangle(p,radius,tri),`canopy intersects water at ${p}, radius ${radius}`);
     trees++;
    }
   }

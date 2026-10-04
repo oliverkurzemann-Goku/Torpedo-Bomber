@@ -36,6 +36,7 @@ const cdn={
   ]){
    const {campaign}=scenario;
    const eu=campaign.startsWith('remagen'),context=await browser.newContext({viewport:{width:1024,height:768},deviceScaleFactor:1,hasTouch:true});
+   await context.addInitScript(()=>{try{localStorage.setItem('spokenRadio','1');}catch(e){}});
    await context.route('https://**',async route=>{
     const file=cdn[new URL(route.request().url()).pathname.split('/').pop()];
     if(file)await route.fulfill({path:file,contentType:'application/javascript'});else await route.abort();
@@ -46,6 +47,7 @@ const cdn={
    page.on('console',m=>{if(/Shader Error|VALIDATE_STATUS|not compiled/i.test(m.text()))shaderErrors.push(m.text());if(m.type()==='error'&&!m.text().includes('Failed to load resource'))console.error('Browser console '+campaign+': '+m.text());});
    await page.goto('http://127.0.0.1:'+server.address().port+'/'+campaign,{waitUntil:'domcontentloaded'});
    await page.waitForFunction(()=>typeof state!=='undefined'&&state===ST.MENU&&document.querySelector('#menu:not(.hidden)'));
+   assert.equal(await page.locator('#spokenRadio').isChecked(),false,'spoken radio stays muted after upgrading a legacy preference');
    if(eu||scenario.kind==='defend'&&scenario.ordinal===0){
     // Real CSS geometry, including a reduced landscape content area.
     // Chrome tablet viewports are not physical iPad/Safari hardware.
@@ -77,10 +79,12 @@ const cdn={
       await page.setViewportSize(size);
       const boxes=await page.evaluate(()=>{
        document.getElementById('torpRun').classList.add('show');
+       const tip=document.getElementById('flash');tip.textContent='FLIGHT TIP: RECOVERY — GEAR AND FLAPS DOWN; FOLLOW THE LANDING SIGNAL.';tip.classList.add('show','tip');
+       const radio=document.getElementById('radio');radio.textContent='CONTROL — BOMBERS 1.5 KM · ALT 800 FT MSL · INTERCEPT 304° · DESCEND 200 FT';radio.classList.add('show');
        // Include every flight control, including the Dauntless-only brake.
-       const ids=['instLeft','instRight','obj','gearBtn','flapBtn','diveBtn','hookBtn','aeroBtn','stick','throttle','dropBtn','fireBtn','steerBtn','lookUp','lookDn','mmap','pauseBtn','torpRun'];
+       const ids=['instLeft','instRight','obj','gearBtn','flapBtn','diveBtn','hookBtn','aeroBtn','stick','throttle','dropBtn','fireBtn','steerBtn','lookUp','lookDn','mmap','pauseBtn','torpRun','flash','radio','bailBtn'];
        return ids.map(id=>{const e=document.getElementById(id),old=e.style.display;
-        if(['diveBtn','lookUp','lookDn'].includes(id))e.style.display='flex';
+        if(['diveBtn','lookUp','lookDn','bailBtn'].includes(id))e.style.display='flex';
         const r=e.getBoundingClientRect();e.style.display=old;return {id,x:r.x,y:r.y,w:r.width,h:r.height};});
       });
       for(const a of boxes){
@@ -89,9 +93,9 @@ const cdn={
         a.id+' overlaps '+b.id+' at '+JSON.stringify(size)+' '+JSON.stringify([a,b]));
       }
      }
-     await page.evaluate(()=>document.getElementById('torpRun').classList.remove('show'));
+     await page.evaluate(()=>{document.getElementById('torpRun').classList.remove('show');document.getElementById('flash').classList.remove('show','tip');document.getElementById('radio').classList.remove('show');});
      await page.setViewportSize({width:1024,height:768});
-     console.log('Browser flight HUD: torpedo run, all flight controls, joystick, guns, minimap and status panels do not overlap at four landscape sizes.');
+     console.log('Browser flight HUD: torpedo run, flight controls, recovery tip, radio, bailout, joystick, guns, minimap and status panels do not overlap at four landscape sizes.');
      const board=await context.newPage();await board.setViewportSize({width:1024,height:600});
      await board.goto('http://127.0.0.1:'+server.address().port+'/index.html');
      await board.evaluate(()=>{document.querySelectorAll('.progress').forEach(p=>p.textContent='Campaign complete');});
@@ -147,6 +151,31 @@ const cdn={
      for(const g of geometries)g.dispose();for(const m of materials){m.map?.dispose();m.dispose();}return png;
     });
     fs.writeFileSync(path.join(out,'rhine-village-variants.png'),Buffer.from(villagePng.split(',')[1],'base64'));
+    const landscape=await page.evaluate(()=>{
+     const studio=new THREE.Scene();studio.background=new THREE.Color(0xb8c8cf);
+     studio.add(new THREE.HemisphereLight(0xfff4db,0x4d543c,1.1));
+     const sun=new THREE.DirectionalLight(0xfff0d2,1);sun.position.set(11000,4000,10000);studio.add(sun);
+     let patches=0,buckets=0;
+     for(const key of ['3,3','3,4']){
+      const tile=terrain.tiles.get(key),ground=new THREE.Mesh(tile.mesh.geometry,tile.mesh.material);ground.position.copy(tile.mesh.position);studio.add(ground);
+      const content=osmMgr.tiles.get(key);
+      for(const source of content.group.children){const mesh=source.clone();mesh.visible=true;studio.add(mesh);}
+      for(const source of content.farGroup.children.filter(m=>m.name.startsWith('osmForest'))){
+       const mesh=source.clone();mesh.visible=true;mesh.frustumCulled=false;studio.add(mesh);patches+=mesh.count;buckets++;
+      }
+     }
+     const cam=new THREE.PerspectiveCamera(50,1024/768,1,13000),y=groundY(14000,14300);
+     renderer.setPixelRatio(1);cam.position.set(13700,y+1350,11200);cam.lookAt(14000,y,14700);
+     renderer.render(studio,cam);const overview=renderer.domElement.toDataURL('image/png');
+     const content=osmMgr.tiles.get('3,3'),crowns=content.farGroup.children.find(m=>m.name==='osmForestDeciduous');
+     const index=crowns.userData.canopyRadii.findIndex(r=>r>35),matrix=new THREE.Matrix4();crowns.getMatrixAt(index>=0?index:0,matrix);
+     const p=new THREE.Vector3().setFromMatrixPosition(matrix);cam.position.copy(p).add(new THREE.Vector3(160,105,-200));cam.lookAt(p);
+     renderer.render(studio,cam);const close=renderer.domElement.toDataURL('image/png');renderer.setPixelRatio(.25);
+     return {overview,close,patches,buckets};
+    });
+    assert(landscape.patches>100&&landscape.buckets<=14,'mapped woodland stays in bounded instanced buckets');
+    for(const [name,png] of [['rhine-fields-and-woods',landscape.overview],['rhine-forest-close',landscape.close]])
+     fs.writeFileSync(path.join(out,name+'.png'),Buffer.from(png.split(',')[1],'base64'));
     const service=await page.evaluate(()=>{
      const activity=alliedActivity;activity.setAircraft(modelTpl.p47,'p47');
      const before=activity.people.limbs.instanceMatrix.array.slice();activity.update(2,ALLIED_AF_X,ALLIED_AF_Z);
@@ -461,10 +490,10 @@ const cdn={
     await page.evaluate(()=>{
      document.getElementById('pause').classList.add('hidden');document.getElementById('torpRun').classList.add('show');
      for(const [id,value] of Object.entries({trRange:'642 m',trAlt:'174 ft',trSpd:'128 kt',trWings:'LEVEL',trDrop:'TOO FAST'}))document.getElementById(id).textContent=value;
-     renderer.setPixelRatio(1);renderer.render(scene,camera);renderer.setPixelRatio(.25);
+     renderer.setPixelRatio(1);renderer.render(scene,camera);
     });
     await page.screenshot({path:path.join(root,'test-visuals','torpedo-flight-hud.png')});
-    await page.evaluate(()=>{document.getElementById('pause').classList.remove('hidden');document.getElementById('torpRun').classList.remove('show');});
+    await page.evaluate(()=>{renderer.setPixelRatio(.25);document.getElementById('pause').classList.remove('hidden');document.getElementById('torpRun').classList.remove('show');});
     const defense=await page.evaluate(()=>{
      const r=raiders.find(r=>r.alive);r.hp=100;r.pos.set(carrierX+650,70,1100);r.heading=Math.atan2(carrierX-r.pos.x,-r.pos.z);r.roll=r.pitch=0;r.spd=76;r.runIn=true;r.dropped=false;
      r.vel.set(Math.sin(r.heading)*r.spd,0,Math.cos(r.heading)*r.spd);

@@ -1,5 +1,28 @@
 # Remagen terrain handoff
 
+## Game Build 164 — varied surfaces and connected woodland
+
+The stable terrain/road geometry from Build 161 stays intact. Ground colour now
+comes from a tile mask directly, rather than multiplying every cover by green.
+World-coordinate palettes separate dry meadow, earth, crops, stubble and woodland;
+visual crop parcels are clipped to the shipped farmland outlines. A shared 1024×512
+atlas supplies eight distinct grain/furrow/litter surfaces without ground meshes
+or added draw calls. Its mipmapped RGBA cost is about 2.7 MiB.
+
+The existing forest sample budget becomes overlapping, lobed crown stands with
+four per-instance height samples to follow slopes. Full crown discs are constrained
+by woodland edges, tile bounds, roads, rails, buildings, airfields and the global
+water index. Edge shrubs and narrow trees remain; large stands omit giant exposed
+trunks. At most seven forest buckets per tile, no instance colours. Tile-owned
+cloned canopy geometry owns the new height attribute and is freed on unload.
+
+CPU checks cover eight textures, regional palette variation, ~77% synthetic woodland
+coverage and actual crown envelopes against rendered water triangles. Existing
+14,118 terrain/road ray samples remain within 0.000114m. Browser captures mapped
+fields and woods at landscape and close range; only real-device testing can establish
+iPad appearance/performance. Changed script cache versions are 164; the module API
+identity remains OSM 23.
+
 ## Build 161 — low-pass ground stability and airfield activity
 
 Measured on shipped tile 3,3: ordinary roads differ by up to 5.96m, rail by 10.36m,

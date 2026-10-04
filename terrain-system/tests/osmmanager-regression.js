@@ -121,6 +121,8 @@ const filtered=osm._forestPlacements([forestA,forestB],0,0,exclusion);
 assert(filtered.length>0,'exclusion: removed every forest placement');
 assert(filtered.every(p=>!osm._treeExcluded(p.x,p.z,exclusion)),
   'exclusion: emitted a tree on a blocked feature');
+assert(filtered.filter(p=>p.kind!==2).every(p=>Math.abs(p.z-500)>p.radius+13),
+  'woodland stands must leave the whole road corridor clear');
 let neighbourPairs=0,sameStandPairs=0,edgeShrubs=0,edgeTotal=0;
 for(let i=0;i<filtered.length;i++){
   if(filtered[i].edge<24){edgeTotal++;edgeShrubs+=filtered[i].kind===2;}

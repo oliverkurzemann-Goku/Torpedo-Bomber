@@ -67,10 +67,10 @@ class OSMManager {
     // Vegetation palette. Four tree draw calls plus one forest-floor draw call
     // maximum per tile regardless of how many source polygons exist.
     this.trunkGeo = new THREE.CylinderGeometry(0.34, 0.48, 5.5, 6);
-    this.coniferGeo = makeOSMTreeCrown(0);
-    this.deciduousGeo = makeOSMTreeCrown(1);
-    this.poplarGeo=makeOSMTreeCrown(3);
-    this.willowGeo=makeOSMTreeCrown(4);
+    this.coniferGeo = makeOSMForestCrown(0);
+    this.deciduousGeo = makeOSMForestCrown(1);
+    this.poplarGeo=normaliseOSMForestCrown(makeOSMTreeCrown(3));
+    this.willowGeo=normaliseOSMForestCrown(makeOSMTreeCrown(4));
     this.shrubGeo = new THREE.DodecahedronGeometry(2.3, 0);
     this.trunkMat = new THREE.MeshStandardMaterial({ color: 0x51402d, roughness: 1 });
     this.coniferMat = new THREE.MeshStandardMaterial({ color: 0x284d28, roughness: 1 });
@@ -97,6 +97,7 @@ class OSMManager {
       this.roofMat,this.roofSlateMat,this.roofBrownMat,this.flatRoofMat,this.chimneyMat,
       this.trunkMat,this.coniferMat,this.deciduousMat,this.shrubMat,this.poplarMat,this.willowMat])
       osmFadeScenery(mat);
+    for(const mat of [this.coniferMat,this.deciduousMat,this.poplarMat,this.willowMat])osmCanopyTerrain(mat);
   }
 
   _key(tx, tz){ return tx + ',' + tz; }
@@ -509,11 +510,14 @@ class OSMManager {
           // edges; individual-tree hash only softens the boundaries.
           const jitter=(osmHash(px,pz,7)-.5)*.16;
           let kind=stand+jitter<.47?0:1;
-          if(kind===1&&osmValueNoise(px/180,pz/180,193)>.63)kind=3;
+          if(kind===1&&edge<42&&osmValueNoise(px/180,pz/180,193)>.63)kind=3;
           if(kind===1&&edge<42&&osmHash(px,pz,194)>.74)kind=4;
           if(edge<24&&osmHash(px,pz,92)<.48)kind=2;
+          const radius=kind===2?6.8:Math.min(kind>=3?6.2:90,
+            this._forestCanopyRadius(px,pz,step,edge,ox,oz,exclusion));
+          if(radius<1.5)continue;
           placements.push({
-            x:px, z:pz, kind,
+            x:px, z:pz, kind, radius,
             scale:0.78 + osmHash(px,pz,3)*0.62,
             width:0.82+osmHash(px,pz,5)*0.28,
             height:0.84+osmHash(px,pz,6)*0.42,
@@ -526,6 +530,33 @@ class OSMManager {
     return placements;
   }
 
+  _forestCanopyRadius(x,z,step,edge,ox,oz,index){
+    // A stand fills the former large gaps, but its whole crown must remain
+    // inside mapped woodland and outside roads, buildings, runways and water.
+    let radius=Math.min(90,step*.75,edge-1,x-ox,ox+this.tileSize-x,z-oz,oz+this.tileSize-z);
+    if(radius<=0||!index)return Math.max(0,radius);
+    const seen=new Set(),cs=index.cellSize;
+    for(let ix=Math.floor((x-radius)/cs);ix<=Math.floor((x+radius)/cs);ix++)
+      for(let iz=Math.floor((z-radius)/cs);iz<=Math.floor((z+radius)/cs);iz++)
+        for(const f of index.cells.get(ix+','+iz)||[])seen.add(f);
+    for(const f of seen){
+      let distance=Infinity;
+      if(f.kind==='segment')distance=Math.sqrt(pointSegmentDistanceSq(x,z,f.ax,f.az,f.bx,f.bz))-Math.sqrt(f.r2);
+      if(f.kind==='polygon')distance=pointInPolygon(x,z,f.ring)?0:osmRingEdgeDistance(x,z,f.ring);
+      if(f.kind==='building'){
+        const dx=x-f.x,dz=z-f.z,lx=dx*f.c-dz*f.s,lz=dx*f.s+dz*f.c;
+        distance=Math.hypot(Math.max(0,Math.abs(lx)-f.hw),Math.max(0,Math.abs(lz)-f.hd));
+      }
+      radius=Math.min(radius,Math.max(0,distance-.5));
+    }
+    if(radius>0&&osmWaterOverlaps([[x,z]],radius,index.water)){
+      let lo=0,hi=radius;for(let i=0;i<8;i++){const mid=(lo+hi)*.5;
+        if(osmWaterOverlaps([[x,z]],mid,index.water))hi=mid;else lo=mid;}
+      radius=lo;
+    }
+    return radius;
+  }
+
   _buildForests(group, polys, ox, oz, exclusion=null){
     if(!polys || polys.length === 0) return 0;
     const placements = this._forestPlacements(polys, ox, oz, exclusion);
@@ -534,7 +565,7 @@ class OSMManager {
     const conifers = placements.filter(p => p.kind === 0);
     const deciduous = placements.filter(p => p.kind === 1);
     const shrubs = placements.filter(p => p.kind === 2);
-    const trunked = placements.filter(p => p.kind !== 2);
+    const trunked = placements.filter(p => p.kind !== 2&&p.radius<8);
 
     const m = new THREE.Matrix4();
     const q = new THREE.Quaternion();
@@ -559,13 +590,24 @@ class OSMManager {
 
     const addCanopies = (items, geo, mat, yFactor, sx, sy, sz) => {
       if(!items.length) return;
-      const mesh = new THREE.InstancedMesh(geo, mat, items.length);
+      // The extra instanced height attribute belongs to this tile's clone.
+      const canopyGeo=geo.clone?geo.clone():geo;
+      const ground=new Float32Array(items.length*4);
+      if(mat!==this.shrubMat)canopyGeo.setAttribute('canopyGround',new THREE.InstancedBufferAttribute(ground,4));
+      const mesh = new THREE.InstancedMesh(canopyGeo, mat, items.length);
+      mesh.userData.canopyRadii=items.map(p=>p.radius);
       mesh.name = geo===this.coniferGeo?'osmForestConifers':geo===this.deciduousGeo?'osmForestDeciduous':geo===this.poplarGeo?'osmForestPoplars':geo===this.willowGeo?'osmForestWillows':'osmForestShrubs';
       for(let i=0;i<items.length;i++){
         const p=items[i], y=this._safeRenderedHeight(p.x,p.z,ox,oz);
         q.setFromAxisAngle(OSM_UP,p.rot);
-        pos.set(p.x,y+yFactor*p.scale,p.z);
-        scale.set(p.scale*sx*p.width,p.scale*sy*p.height,p.scale*sz*p.width);
+        if(mat===this.shrubMat){pos.set(p.x,y+yFactor*p.scale,p.z);scale.set(p.scale*sx*p.width,p.scale*sy*p.height,p.scale*sz*p.width);}
+        else{
+          const height=p.scale*sy*p.height;
+          pos.set(p.x,y+yFactor*p.scale,p.z);scale.set(p.radius,height,p.radius);
+          const r=p.radius;
+          for(const [j,dx,dz] of [[0,-r,-r],[1,r,-r],[2,-r,r],[3,r,r]])
+            ground[i*4+j]=(this._safeRenderedHeight(p.x+dx,p.z+dz,ox,oz)-y)/height;
+        }
         m.compose(pos,q,scale);
         mesh.setMatrixAt(i,m);
       }
@@ -573,8 +615,8 @@ class OSMManager {
       group.add(mesh);
     };
 
-    addCanopies(conifers, this.coniferGeo, this.coniferMat, 5.6, 1.0, 1.0, 1.0);
-    addCanopies(deciduous, this.deciduousGeo, this.deciduousMat, 5.5, 1.15, 1.05, 1.15);
+    addCanopies(conifers, this.coniferGeo, this.coniferMat, 11, 1.0, 1.0, 1.0);
+    addCanopies(deciduous, this.deciduousGeo, this.deciduousMat, 11, 1.15, 1.05, 1.15);
     addCanopies(shrubs, this.shrubGeo, this.shrubMat, 1.5, 1.25, 0.85, 1.25);
     addCanopies(placements.filter(p=>p.kind===3),this.poplarGeo,this.poplarMat,6.6,1,1,1);
     addCanopies(placements.filter(p=>p.kind===4),this.willowGeo,this.willowMat,5.1,1,1,1);
@@ -1185,6 +1227,43 @@ function addUpwardTriOSM(indices, positions, a, b, c){
 
 // Shared low-poly crowns: layered fir, clustered oak, narrow poplar, drooping willow.
 // All dimensions stay within the existing 6.8m canopy/water exclusion envelope.
+function normaliseOSMForestCrown(geo){
+ const a=geo.attributes.position.array;let radius=0;
+ for(let i=0;i<a.length;i+=3)radius=Math.max(radius,Math.hypot(a[i],a[i+2]));
+ for(let i=0;i<a.length;i+=3){a[i]/=radius;a[i+2]/=radius;}
+ geo.computeVertexNormals();geo.computeBoundingSphere();return geo;
+}
+function makeOSMForestCrown(kind){
+ const positions=[],tri=(a,b,c)=>positions.push(...a,...b,...c);
+ for(let crown=0;crown<7;crown++){
+  const angle=crown*Math.PI/3,cx=crown?Math.cos(angle)*.52:0,cz=crown?Math.sin(angle)*.52:0;
+  const height=(crown%3-1)*.65;
+  if(kind===0){
+   for(let layer=0;layer<3;layer++)for(let i=0;i<6;i++){
+    const a=i*Math.PI/3,b=(i+1)*Math.PI/3,r=.36-layer*.075,y=-3.4+layer*2+height;
+    tri([cx+r*Math.cos(a),y,cz+r*Math.sin(a)],[cx,y+3.9,cz],[cx+r*Math.cos(b),y,cz+r*Math.sin(b)]);
+   }
+  }else{
+   const point=(ring,sector)=>{const a=ring*Math.PI/2,b=sector*Math.PI/3;
+    return [cx+.43*Math.sin(a)*Math.cos(b),height+Math.cos(a)*2.9,cz+.43*Math.sin(a)*Math.sin(b)];};
+   for(let j=0;j<2;j++)for(let i=0;i<6;i++){const a=point(j,i),b=point(j+1,i),c=point(j+1,i+1),d=point(j,i+1);tri(a,d,b);tri(b,d,c);}
+  }
+ }
+ const geo=new THREE.BufferGeometry();geo.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));
+ return normaliseOSMForestCrown(geo);
+}
+function osmCanopyTerrain(material){
+ const previous=material.onBeforeCompile;
+ material.onBeforeCompile=shader=>{
+  previous(shader);shader.vertexShader='attribute vec4 canopyGround;\n'+shader.vertexShader;
+  shader.vertexShader=shader.vertexShader.replace('#include <begin_vertex>',
+   '#include <begin_vertex>\nvec2 canopyUv = position.xz * 0.5 + 0.5;\n'+
+   'float canopySlope = mix(mix(canopyGround.x, canopyGround.y, canopyUv.x), mix(canopyGround.z, canopyGround.w, canopyUv.x), canopyUv.y);\n'+
+   'float canopyCentre = dot(canopyGround, vec4(0.25));\n'+
+   'transformed.y += canopySlope - canopyCentre * (1.0-position.x*position.x) * (1.0-position.z*position.z);');
+ };
+ material.customProgramCacheKey=()=> 'terrain-following-forest-164';
+}
 function makeOSMTreeCrown(kind){
  const positions=[];
  const tri=(a,b,c)=>positions.push(...a,...b,...c);

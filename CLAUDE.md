@@ -7,7 +7,7 @@ ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wie
 
 Stand bei Übergabe: **Torpedo Squadron BUILD 164 · Thunderbolt Squadron BUILD 164 · Remagen-Kern 23 / Fahrzeuge 22**
 
-**Build 164 (04.10.2026): ausgerichtete Geschosse und freie Torpedoanzeige.**
+**Build 164 (04.10.2026): Geschosse, freies HUD, stummer Funk und zusammenhängende Wälder.**
 Pacific-MG und leichte Schiffsflak hatten Y-lange Zylinder, aber lookAt richtet Z
 aus: dadurch wirkten die Geschosse wie senkrechte Stäbe. CombatFX.round verwendet
 Z-lange, kürzere Geometrie und drei dunkle / ein gedämpft helles Geschoss.
@@ -18,12 +18,35 @@ Geschwindigkeit und Kollisionspfade bleiben unverändert. Geteilte Geschossresso
 niemals pro Geschoss mit GameRuntime.own markieren oder entsorgen.
 Torpedoanzeige steht rechts neben der linken Bedienreihe. Bei reduzierter
 Querformat-Höhe rücken Bedienreihe und Karte hoch; LOOK UP bleibt unter dem
-rechten Statuspanel. Touch-Flächen bleiben gleich groß. Browser prüft sämtliche
-Bedienrechtecke bei 1024×600, 1180×680, 1366×768 und 1366×900, außerdem echte
+rechten Statuspanel. Touch-Flächen bleiben gleich groß. Browser prüft die
+Bedienelemente auch zusammen mit langem Flugtipp, Funkmeldung und Bailout:
+Pacific-Flugtipps passen in die freie Mitte, Funk sitzt rechts der Bedienreihe.
+Prüfgrößen sind 1024×600, 1180×680, 1366×768 und 1366×900, außerdem echte
 Trägerabwehr, Avenger-Ausflug und WebGL-Prüfbilder der Geschosse und Anzeige.
 Neue Geometrie-Regression prüft tatsächliche Schiffsflak und 3.000 Richtungen;
 die vorhandenen 20/60/120-FPS-Abwehr- und Dauerfeuer-Regressionen bleiben aktiv.
 Cache-Version von combat-fx.js auf 164; unveränderte Module behalten ihre Version.
+
+Gesprochener Funk ist in beiden Kampagnen standardmäßig AUS. Der frühere
+default-on-Wert spokenRadio wird nicht übernommen; nur ein ausdrücklicher neuer
+Opt-in über spokenRadioOptIn kann Sprache aktivieren. Radio-Check bleibt stumm,
+Textfunk, Motor-/Waffenklänge und Atmosphäre bleiben vorhanden.
+Terrainfarben ersetzen die grüne Grundtönung statt mit ihr multipliziert zu werden.
+Die vorhandenen 128px-Kachelmasken enthalten nun Weltkoordinaten-basierte Wiesen-,
+Erd-/Kies-, Acker-/Stoppel- und Waldpaletten. Visuelle Ackerparzellen sind zum echten
+Farmland-Umriss geclippt, keine neuen behaupteten Kartendaten. Ein geteilter 1024×512
+Graustufen-Atlas enthält acht Bodentexturen (etwa 2,7 MiB inklusive Mips zusätzlich).
+Keine neue Geländegeometrie, Straßen-/Morphänderung, vertexColor oder instanceColor.
+Große Waldkronen werden zu verbundenen, gelappten Beständen statt einzelnen Bäumen.
+Ihre Kreishülle bleibt innerhalb des Waldpolygons, der Kachel und aller Schutzflächen.
+Vier zusätzliche Höhenwerte pro Instanz passen Kronen an den lokalen Hang an;
+Stämme nur am schmalen Waldrand, höchstens sieben Instanz-Buckets pro Kachel.
+CPU-Prüfung: acht Texturmuster, 206 grobe RGB-Farben in 56 Kacheln, etwa 77% Kronen-
+Abdeckung im großen Testwald; 14.118 Straßen-/Terrainproben weiterhin <0,000114 m.
+Alle realen Waldhüllen werden gegen tatsächlich gerenderte Wasser-Dreiecke geprüft.
+Browser rendert echte Rhein-Felder/Wälder in Übersicht und Nahsicht, prüft Shader
+und stummen Funk nach einem alten gespeicherten Ein-Wert. Keine iPad/FPS-Behauptung.
+TerrainManager, OSMManager und flight-atmosphere erhalten Cache-Version 164.
 
 **Build 163 (04.10.2026): konsistente Schadens- und Notlandeanzeigen.**
 Rumpfanzeigen in HUD, Pause und Ergebnis beziehen sich auf die echte maximale

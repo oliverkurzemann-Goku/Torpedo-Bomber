@@ -67,6 +67,7 @@ class TerrainManager {
     // dominated BUILD 7. It is shared by every tile and mipmapped, so memory
     // and draw-call cost stay essentially unchanged.
     this.groundTexture = makeTerrainGroundTexture();
+    this.surfaceDetailTexture = makeTerrainSurfaceAtlas();
     this.material = new THREE.MeshStandardMaterial({
       color: 0xffffff, map: this.groundTexture, roughness: 1.0, metalness: 0
     });
@@ -212,32 +213,28 @@ class TerrainManager {
   setLandcover(tx,tz,data){
     const tile=this.tiles.get(this._key(tx,tz));
     if(!tile||typeof document==='undefined')return;
-    const canvas=document.createElement('canvas');canvas.width=canvas.height=128;
-    const ctx=canvas.getContext('2d'),scale=128/this.tileSize;
-    ctx.clearRect(0,0,128,128);
-    for(const [rings,colour] of [[data.farmland||[],'rgba(222,212,176,0.20)'],
-      [data.forests||[],'rgba(111,147,111,0.48)']]){
-      ctx.fillStyle=colour;
-      for(const ring of rings){
-        if(ring.length<3)continue;ctx.beginPath();ctx.moveTo(ring[0][0]*scale,ring[0][1]*scale);
-        for(let i=1;i<ring.length;i++)ctx.lineTo(ring[i][0]*scale,ring[i][1]*scale);
-        ctx.closePath();ctx.fill();
-      }
-    }
+    const canvas=makeTerrainLandcover(tx,tz,this.tileSize,data);
     const texture=new THREE.CanvasTexture(canvas);
     texture.generateMipmaps=true;texture.minFilter=THREE.LinearMipmapLinearFilter;
     const material=this.material.clone();
     material.onBeforeCompile=shader=>{
       shader.uniforms.landCoverMap={value:texture};
+      shader.uniforms.surfaceDetails={value:this.surfaceDetailTexture};
       shader.vertexShader='varying vec2 landCoverUv;\n'+shader.vertexShader;
       shader.vertexShader=shader.vertexShader.replace('#include <uv_vertex>',
         '#include <uv_vertex>\nlandCoverUv = uv;');
-      shader.fragmentShader='uniform sampler2D landCoverMap;\nvarying vec2 landCoverUv;\n'+shader.fragmentShader;
+      shader.fragmentShader='uniform sampler2D landCoverMap;\nuniform sampler2D surfaceDetails;\nvarying vec2 landCoverUv;\n'+shader.fragmentShader;
       shader.fragmentShader=shader.fragmentShader.replace('#include <map_fragment>',
-        '#include <map_fragment>\nvec4 cover = texture2D(landCoverMap, landCoverUv);\n'+
-        'diffuseColor.rgb *= mix(vec3(1.0), cover.rgb, cover.a);');
+        'vec4 cover = texture2D(landCoverMap, landCoverUv);\n'+
+        'float surface = clamp(floor(cover.a * 9.0 - 1.0 + 0.5), 0.0, 7.0);\n'+
+        'vec2 cell = vec2(mod(surface, 4.0), floor(surface / 4.0));\n'+
+        'vec2 detailUv = (cell + fract(vUv) * 0.984 + 0.008) / vec2(4.0, 2.0);\n'+
+        'float grain = texture2D(surfaceDetails, detailUv).r;\n'+
+        'diffuseColor.rgb *= mapTexelToLinear(vec4(cover.rgb, 1.0)).rgb * (0.32 + grain * 1.35);');
     };
-    material.customProgramCacheKey=()=> 'terrain-landcover-161';
+    material.customProgramCacheKey=()=> 'terrain-landcover-164';
+    if(tile.landcoverTexture)tile.landcoverTexture.dispose();
+    if(tile.materialOverride)tile.materialOverride.dispose();
     tile.landcoverTexture=texture;tile.materialOverride=material;tile.mesh.material=material;
   }
 
@@ -250,7 +247,88 @@ class TerrainManager {
     }
     this.tiles.clear();
     this.material.dispose();
+    if(this.groundTexture)this.groundTexture.dispose();
+    if(this.surfaceDetailTexture)this.surfaceDetailTexture.dispose();
   }
+}
+
+function terrainSurfaceHash(x,z,seed=0){
+  const n=Math.sin(x*127.1+z*311.7+seed*74.7)*43758.5453;return n-Math.floor(n);
+}
+function terrainSurfaceNoise(x,z,seed=0){
+  const ix=Math.floor(x),iz=Math.floor(z),u=x-ix,v=z-iz,a=u*u*(3-2*u),b=v*v*(3-2*v);
+  const mix=(p,q,t)=>p+(q-p)*t;
+  return mix(mix(terrainSurfaceHash(ix,iz,seed),terrainSurfaceHash(ix+1,iz,seed),a),
+    mix(terrainSurfaceHash(ix,iz+1,seed),terrainSurfaceHash(ix+1,iz+1,seed),a),b);
+}
+// Eight shared, code-generated surfaces: meadow, earth, crop, stubble,
+// leaf litter, gravel, dry pasture and mottled woodland. No extra ground meshes.
+function makeTerrainSurfaceAtlas(){
+  const n=256,canvas=document.createElement('canvas');canvas.width=n*4;canvas.height=n*2;
+  const ctx=canvas.getContext('2d'),img=ctx.createImageData(canvas.width,canvas.height),tau=Math.PI*2;
+  for(let kind=0;kind<8;kind++)for(let y=0;y<n;y++)for(let x=0;x<n;x++){
+    const u=x/n*tau,v=y/n*tau,hash=terrainSurfaceHash(x,y,kind),fine=hash-.5;
+    const broad=(Math.sin(u*2+v)+Math.cos(v*3-u))*.5;
+    let value=.5+broad*.055+fine*.055;
+    if(kind===0)value+=Math.sin(u*23+Math.sin(v*7))*.027;
+    if(kind===1)value+=Math.sin(u*37)*.065+Math.cos(v*4+u*9)*.025;
+    if(kind===2)value+=Math.sin((u+v)*29)*.055+Math.sin(v*71)*.025;
+    if(kind===3)value+=Math.sin(u*41)*.045+(hash>.91?.11:0);
+    if(kind===4)value+=Math.sin(u*13+v*17)*Math.cos(v*11-u*3)*.07;
+    if(kind===5)value+=(hash>.85?.12:hash<.14?-.09:0);
+    if(kind===6)value+=Math.sin(u*17-v*11)*.04+Math.cos(v*37)*.025;
+    if(kind===7)value+=Math.cos(u*11+Math.sin(v*7))*Math.sin(v*13-u*5)*.10;
+    const i=((y+Math.floor(kind/4)*n)*canvas.width+x+(kind%4)*n)*4;
+    img.data[i]=img.data[i+1]=img.data[i+2]=Math.round(Math.max(.28,Math.min(.73,value))*255);img.data[i+3]=255;
+  }
+  ctx.putImageData(img,0,0);const tex=new THREE.CanvasTexture(canvas);
+  tex.generateMipmaps=true;tex.minFilter=THREE.LinearMipmapLinearFilter;tex.anisotropy=4;return tex;
+}
+function makeTerrainLandcover(tx,tz,tileSize,data){
+  const n=128,canvas=document.createElement('canvas');canvas.width=canvas.height=n;
+  const ctx=canvas.getContext('2d'),base=ctx.createImageData(n,n);
+  const makePattern=(forest=false)=>{
+    const c=document.createElement('canvas');c.width=c.height=n;const p=c.getContext('2d'),img=p.createImageData(n,n);
+    for(let y=0;y<n;y++)for(let x=0;x<n;x++){
+      const wx=(tx+(x+.5)/n)*tileSize,wz=(tz+(y+.5)/n)*tileSize;
+      const px=Math.floor((wx*.94+wz*.342)/270),pz=Math.floor((-wx*.342+wz*.94)/185);
+      const pick=Math.floor(terrainSurfaceHash(px,pz,61)*5);
+      const shade=terrainSurfaceNoise(wx/170,wz/170,13)*14-7;
+      const palette=forest?[[57,72,47],[78,77,49],[66,82,56],[88,85,54],[53,66,44]]:
+        [[145,115,82],[170,151,103],[124,133,79],[151,142,100],[130,115,89]];
+      const rgb=palette[forest?Math.min(4,Math.floor(terrainSurfaceNoise(wx/470,wz/470,71)*5)):pick];
+      const i=(y*n+x)*4;for(let ch=0;ch<3;ch++)img.data[i+ch]=rgb[ch]+shade;img.data[i+3]=255;
+    }
+    p.putImageData(img,0,0);return c;
+  };
+  const farms=makePattern(),woods=makePattern(true),kindCanvas=document.createElement('canvas');kindCanvas.width=kindCanvas.height=n;
+  const kinds=kindCanvas.getContext('2d'),kindImg=kinds.createImageData(n,n);
+  const farmKindCanvas=document.createElement('canvas');farmKindCanvas.width=farmKindCanvas.height=n;
+  const farmKindCtx=farmKindCanvas.getContext('2d'),farmKinds=farmKindCtx.createImageData(n,n);
+  for(let y=0;y<n;y++)for(let x=0;x<n;x++){
+    const wx=(tx+(x+.5)/n)*tileSize,wz=(tz+(y+.5)/n)*tileSize;
+    const dry=terrainSurfaceNoise(wx/850,wz/850,23),soil=terrainSurfaceNoise(wx/290,wz/290,24);
+    const rgb=dry>.58?[148,141,101]:soil>.66?[130,117,89]:[112,127,87];
+    const shade=terrainSurfaceNoise(wx/180,wz/180,25)*16-8,kind=dry>.58?6:soil>.66?5:0,i=(y*n+x)*4;
+    for(let ch=0;ch<3;ch++)base.data[i+ch]=rgb[ch]+shade;
+    base.data[i+3]=255;kindImg.data[i]=Math.round((kind+1)/9*255);kindImg.data[i+3]=255;
+    const pick=Math.floor(terrainSurfaceHash(Math.floor((wx*.94+wz*.342)/270),Math.floor((-wx*.342+wz*.94)/185),61)*5);
+    farmKinds.data[i]=Math.round(([1,3,2,6,1][pick]+1)/9*255);farmKinds.data[i+3]=255;
+  }
+  ctx.putImageData(base,0,0);kinds.putImageData(kindImg,0,0);farmKindCtx.putImageData(farmKinds,0,0);
+  const trace=(c,ring)=>{c.beginPath();c.moveTo(ring[0][0]/tileSize*n,ring[0][1]/tileSize*n);
+    for(let i=1;i<ring.length;i++)c.lineTo(ring[i][0]/tileSize*n,ring[i][1]/tileSize*n);c.closePath();};
+  for(const [rings,pattern,isForest] of [[data.farmland||[],farms,false],[data.forests||[],woods,true]])for(const ring of rings){
+    if(ring.length<3)continue;ctx.fillStyle=ctx.createPattern(pattern,'no-repeat');trace(ctx,ring);ctx.fill();
+    if(isForest){kinds.fillStyle='rgb(227,0,0)';trace(kinds,ring);kinds.fill();}
+    else{
+      // Clip world-aligned visual crop parcels to the real farmland outline.
+      kinds.fillStyle=kinds.createPattern(farmKindCanvas,'no-repeat');trace(kinds,ring);kinds.fill();
+    }
+  }
+  const result=ctx.getImageData(0,0,n,n),types=kinds.getImageData(0,0,n,n);
+  for(let i=0;i<result.data.length;i+=4)result.data[i+3]=types.data[i];
+  ctx.putImageData(result,0,0);return canvas;
 }
 
 function makeTerrainGroundTexture(){

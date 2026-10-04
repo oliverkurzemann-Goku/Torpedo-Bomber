@@ -50,7 +50,7 @@
     font-size:34px;font-weight:800;letter-spacing:3px;text-transform:uppercase;opacity:0;
     transition:opacity .25s;text-shadow:0 2px 14px rgba(0,0,0,.8);}
   #flash.show{opacity:1;}
-  #flash.tip{width:75%;max-width:640px;padding:10px 14px;border-radius:7px;background:rgba(15,24,17,.82);
+  #flash.tip{width:min(75%,max(260px,calc(100vw - 560px)));max-width:640px;padding:10px 14px;border-radius:7px;background:rgba(15,24,17,.82);
     font-size:clamp(14px,2vw,20px);font-weight:600;letter-spacing:1px;line-height:1.4;}
   #pauseBtn{position:absolute;top:max(10px,env(safe-area-inset-top));right:calc(max(12px,env(safe-area-inset-right)) + 132px);
     z-index:36;pointer-events:auto;touch-action:manipulation;width:42px;height:42px;border-radius:7px;
@@ -58,7 +58,7 @@
     font-size:15px;letter-spacing:2px;color:rgba(202,191,156,.9);background:rgba(18,22,15,.72);
     border:1px solid rgba(202,191,156,.4);cursor:pointer;user-select:none;-webkit-user-select:none;}
   #pauseBtn:active{background:rgba(202,191,156,.3);}
-  #radio{position:fixed;left:14px;bottom:max(230px,calc(env(safe-area-inset-bottom) + 220px));
+  #radio{position:fixed;left:calc(max(20px,env(safe-area-inset-left)) + 76px);bottom:max(230px,calc(env(safe-area-inset-bottom) + 220px));
     z-index:12;max-width:46vw;pointer-events:none;font-family:"SFMono-Regular",Menlo,monospace;
     font-size:12px;letter-spacing:1px;color:#9fd6a4;text-shadow:0 0 6px rgba(60,120,70,.6);
     opacity:0;transition:opacity .25s;}
@@ -379,7 +379,7 @@
         <b id="menuLandingSpeed"></b> Watch the landing signal and keep the sink rate gentle.</div>
     </details>
     <details class="extraSettings"><summary>More options &amp; credits</summary><div class="settingsContent">
-      <label class="toggle"><input id="spokenRadio" type="checkbox" checked> Spoken radio (local device voice)</label>
+      <label class="toggle"><input id="spokenRadio" type="checkbox"> Spoken radio (local device voice)</label>
       <label class="toggle" id="loadToggle"><span class="box" id="loadBox"></span> Dive-bomb loadout (SBD)</label>
       <label class="toggle" id="dbgToggle"><span class="box" id="dbgBox"></span> Debug overlay</label>
       <label class="toggle" id="timeToggle"><span class="box" id="timeBox">☀</span> <span id="timeName">Day</span></label>
@@ -453,7 +453,7 @@
 <script src="pilot-rescue.js?v=157"></script>
 <script src="radio-intercept.js?v=157"></script>
 <script src="audio/weapon-sound.js?v=144"></script>
-<script src="audio/flight-atmosphere.js?v=162"></script>
+<script src="audio/flight-atmosphere.js?v=164"></script>
 <script src="sortie-systems.js?v=162"></script>
 <script src="sortie-features.js?v=163"></script>
 <script src="operation-plans.js?v=162"></script>

@@ -2,16 +2,17 @@
 (function(root){
 'use strict';
 function voiceRadio(env=root){
- let enabled=true,unlocked=false,current=null,timeout=null;
+ let enabled=false,unlocked=false,current=null,timeout=null;
  const synth=env.speechSynthesis,available=!!(synth&&env.SpeechSynthesisUtterance);
  const voice=()=>available?synth.getVoices().find(v=>v.localService&&/^en\b/i.test(v.lang)):null;
  const cancel=()=>{if(timeout){env.clearTimeout(timeout);timeout=null;}if(current&&available)synth.cancel();current=null;};
  const api={
   bind(control){if(!control)return;
-   try{enabled=env.localStorage.getItem('spokenRadio')!=='0';}catch(e){}
+   // Earlier releases spoke by default. Require a fresh, explicit opt-in.
+   try{enabled=env.localStorage.getItem('spokenRadioOptIn')==='1';}catch(e){}
    control.checked=enabled;
    if(!available){control.checked=false;control.disabled=true;control.title='Device speech is unavailable; text radio remains active.';}
-   control.addEventListener('change',()=>{enabled=control.checked;cancel();try{env.localStorage.setItem('spokenRadio',enabled?'1':'0');}catch(e){}if(enabled)api.unlock();});
+   control.addEventListener('change',()=>{enabled=control.checked;cancel();try{env.localStorage.setItem('spokenRadioOptIn',enabled?'1':'0');}catch(e){}if(enabled)api.unlock();});
   },
   unlock(){unlocked=true;if(enabled)api.say('Radio check.');},
   say(text){
