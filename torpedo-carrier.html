@@ -5876,7 +5876,10 @@ function updateInterceptRadio(dt){
  const message=interceptRadio.tick(dt,P,contacts,radioT>0||radioQ.length>0);
  if(message)radioSay(message);
 }
-function radioSay(text){ if(radioQ.length<4) radioQ.push(text); }
+function radioSay(text){
+  if(/FUEL LEAK|ENGINE HIT|GEAR JAM|MAYDAY|TORPEDO IN THE WATER/.test(text)){voiceRadio.cancel();radioT=0;radioQ.unshift(text);radioQ.length=Math.min(4,radioQ.length);}
+  else if(radioQ.length<4)radioQ.push(text);
+}
 function updateRadio(dt){
   const r=document.getElementById('radio');
   if(radioT>0){ radioT-=dt; if(radioT<=0) r.classList.remove('show'); return; }

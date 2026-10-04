@@ -2987,7 +2987,10 @@ function flash(msg,ms){
   el.textContent=msg; el.classList.add('show'); flashT=(ms||1200)/1000;
   el.classList.toggle('tip',msg.startsWith('FLIGHT TIP:'));
 }
-function radioSay(msg){ radioQ.push(msg); }
+function radioSay(msg){
+  if(/FUEL LEAK|ENGINE HIT|GEAR JAM|MAYDAY|ROCKET CUTOFF/.test(msg)){voiceRadio.cancel();radioT=0;radioQ.unshift(msg);radioQ.length=Math.min(4,radioQ.length);}
+  else if(radioQ.length<4)radioQ.push(msg);
+}
 function updateRadio(dt){
   const el=document.getElementById('radio'); if(!el) return;
   if(radioT>0){ radioT-=dt; if(radioT<=0) el.classList.remove('show'); return; }
@@ -5021,6 +5024,7 @@ function toggleDiveBrakes(){
 // ============================================================
 function show(id,on){ const e=document.getElementById(id); if(e) e.classList.toggle('hidden',!on); }
 function showBrief(i){
+  voiceRadio.cancel();soundscape.stop();
   selectedMission=i; const m=MISSIONS[i];
   const loadout=missionLoadout(m);
   selectMissionAirfield(m);
@@ -5050,6 +5054,7 @@ function showResult(good,title,sub,html,btn){
   document.getElementById('rsGo').textContent=btn||'Continue';
   show('result',true);
   document.getElementById('rsGo').onclick=()=>{
+    voiceRadio.cancel();soundscape.stop();
     show('result',false);
     if(good && selectedMission===MISSIONS.length-1){
       show('menu',true);
@@ -5419,7 +5424,7 @@ function init(){
       console.error('Mission start stopped:',err);
     }finally{button.disabled=false;}
   };
-  document.getElementById('rsMenu').onclick=()=>{ show('result',false); show('menu',true);
+  document.getElementById('rsMenu').onclick=()=>{ voiceRadio.cancel();soundscape.stop();show('result',false); show('menu',true);
     buildMenu(); state=ST.MENU; };
   document.getElementById('pmResume').onclick=()=>{ if(state===ST.PAUSED) togglePause(); };
   document.getElementById('pmMenu').onclick=exitToMenuFromPause;

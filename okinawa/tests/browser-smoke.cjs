@@ -58,12 +58,12 @@ const cdn={
       return {count:document.querySelectorAll('#missionSel .chip').length,expected:MISSIONS.length,
         overflow:menu.scrollHeight-menu.clientHeight,rects:buttons.map(b=>{const r=b.getBoundingClientRect();return {id:b.id||b.textContent,x:r.x,y:r.y,w:r.width,h:r.height}})};
      });
+     if(size.height===600)await page.screenshot({path:path.join(out,(eu?'europe':'pacific')+'-menu-landscape.png')});
      assert.equal(layout.count,layout.expected,'every mission appears on the board');
      assert(layout.overflow<=1,campaign+' '+JSON.stringify(size)+' default menu overflow '+layout.overflow);
      for(const r of layout.rects)assert(r.x>=0&&r.y>=0&&r.x+r.w<=size.width+1&&r.y+r.h<=size.height+1,JSON.stringify(r)+' fits landscape');
      const change=layout.rects.find(r=>r.id==='selBtn');assert(change.w>=184&&change.h>=50,'Change Game has a large touch target');
      assert(layout.rects.filter(r=>r.id!=='flightHints').every(r=>r.h>=44),'mission and difficulty buttons have touch-sized targets');
-     if(size.height===600)await page.screenshot({path:path.join(out,(eu?'europe':'pacific')+'-menu-landscape.png')});
     }
     await page.locator('#missionSel .chip').last().focus();await page.keyboard.press('Enter');
     assert.equal(await page.locator('#missionSel .chip').last().getAttribute('aria-pressed'),'true','keyboard selection announces state');
