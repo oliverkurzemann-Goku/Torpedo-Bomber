@@ -41,5 +41,13 @@ assert(c.tracers.every(t=>new THREE.Vector3(0,0,1).applyQuaternion(t.mesh.quater
 assert(c.tracers.length<=45,'bounded active tracer count');assert.equal(c.P.hull,100,'no friendly fire against Zero');
 assert(r.hp<4,'physical AA rounds damage hostile Avengers');
 const before=c.tracers.length;c.carrierHP=0;c.updateCarrierDefense(2);assert.equal(c.tracers.length,before,'lost carrier stops firing');
+const friendly=context();friendly.isDefend=()=>false;friendly.raiders.push(raider(350,800));
+for(let i=0;i<600;i++)friendly.updateCarrierDefense(1/60);
+assert.equal(friendly.tracers.length,0,'Avenger/Dauntless sorties never activate the home-carrier enemy-Avenger batteries');
+const blocked=context(),blockedRaider=raider(350,800);blocked.raiders.push(blockedRaider);
+blocked.P.pos.copy(blockedRaider.pos);blockedRaider.vel.set(0,0,0);blocked.updateCarrierDefense(.1);
+assert.equal(blocked.tracers.length,0,'carrier withholds fire when the friendly player blocks its shot');
+blockedRaider.team='friendly';blocked.P.pos.set(0,200,-100);blocked.updateCarrierDefense(5);
+assert.equal(blocked.tracers.length,0,'friendly aircraft cannot become a carrier target');
 assert(c.SortieFeatures.segmentDistance(new THREE.Vector3(),new THREE.Vector3(0,0,30),new THREE.Vector3(0,0,15))===0,'swept hit does not tunnel');
 console.log('Raider flight: 20/60/120fps, forward egress, bounded speed/turn. Carrier AA: visible, physical, bounded, no friendly fire.');

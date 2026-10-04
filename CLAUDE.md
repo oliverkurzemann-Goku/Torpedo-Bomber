@@ -5,7 +5,36 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 164 · Thunderbolt Squadron BUILD 164 · Remagen-Kern 23 / Fahrzeuge 22**
+Stand bei Übergabe: **Torpedo Squadron BUILD 165 · Thunderbolt Squadron BUILD 165 · Remagen-Kern 23 / Fahrzeuge 22**
+
+**Build 165 (05.10.2026): sichtbare Avenger-Leuchtspur, verwurzelte Baumgruppen, organische Wiesen.**
+Build 164 war bei Geschossen geometrisch korrekt, aber aus der Verfolgerkamera
+end-on häufig unter einem Pixel breit. Nur die Leuchtspur jedes vierten Schusses
+bekommt jetzt eine kurze Z-lange Belichtungsspur und mindestens 1,15 CSS-Pixel Breite
+(Weltbreite auf 1,7 m begrenzt). Die übrigen Geschosse, Ballistik, Kollision, Schaden,
+Feuerrate und Mündungen bleiben unverändert. Sichtanpassung nach der Kamera, vor
+dem Rendern in beiden Kampagnen; geteilte Geometrien/Materialien bleiben erhalten.
+Browser prüft erstmals auch einen echten Avenger-Start und sichtbare WebGL-Pixel
+von tatsächlichen Schüssen in seiner Verfolgerkamera, statt nur Studio-Geometrie.
+Die eigene Trägerflak bleibt auf Zero-Abwehrmissionen beschränkt. Zusätzliche
+Team-/Identitäts- und Schusslinien-Sperren schützen Spieler und Wingmen. Mündungs-
+feuer der Batterie zeigt jetzt in dieselbe Richtung wie ihre Schüsse.
+
+Die großen Halbkugeln aus Build 164 sind entfernt. Laub- und Nadelwald bestehen
+aus kleinen Dreiergruppen mit ungleichen Baumhöhen, echten Stämmen und unterschied-
+lichen Kronenformen; Cluster-Radius maximal 20 m statt 36 m. Mindestabstände
+verhindern nahezu deckungsgleiche Gruppen aus überlappenden Quellpolygonen.
+Jeder Stamm bekommt seinen eigenen Terrainwert nach der zufälligen Y-Drehung.
+Die bisherige Interpolation aus ungedrehten Kronenecken erzeugte schiefe/gestapelte
+Decken auf Hängen. Wald-, Straßen-, Gebäude-, Runway- und komplette Wasserhüllen-
+Sperren bleiben aktiv; sechs vorhandene Instanz-Buckets, keine vertex-/instanceColors.
+Sine/Cosine-Interferenz auf Wiesen/Waldboden wird durch verzerrtes, periodisches
+Mehrskalen-Rauschen ersetzt. Kontrast der Körnung reduziert; Ackerfurchen nur auf
+Ackertexturen. Die Farbfamilien aus Build 164 bleiben bestehen.
+CPU prüft insbesondere gedrehte Stammwurzeln auf Hängen und alle realen Wasser-
+Abstände; Browser rendert die Wald-Nahaufnahme mit echten Spiellichtern.
+Nur geänderte Helfer TerrainManager/OSMManager/combat-fx tragen Cache-Version 165.
+Keine Messung oder Behauptung zu physischem iPad-FPS.
 
 **Build 164 (04.10.2026): Geschosse, freies HUD, stummer Funk und zusammenhängende Wälder.**
 Pacific-MG und leichte Schiffsflak hatten Y-lange Zylinder, aber lookAt richtet Z

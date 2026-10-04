@@ -8,11 +8,26 @@
   if(!rounds.has(kind)){
    const [width,length]=kind==='aa'?[.13,2]:kind==='cannon'?[.10,1.35]:[.08,1.15];
    const geometry=new THREE.BoxGeometry(width,width,length);
-   const materials=[0x373a37,0xd8c4a0].map(color=>new THREE.MeshBasicMaterial({color,fog:false}));
+   const materials=[0x373a37,0xffd395].map(color=>new THREE.MeshBasicMaterial({color,fog:false,toneMapped:false}));
    rounds.set(kind,{geometry,materials});
   }
   const {geometry,materials}=rounds.get(kind);
-  return new THREE.Mesh(geometry,materials[roundNumber++%4===0?1:0]);
+  const tracer=roundNumber++%4===0,mesh=new THREE.Mesh(geometry,materials[tracer?1:0]);
+  mesh.userData.roundKind=kind;mesh.userData.litTracer=tracer;
+  // Short exposure streak; physical flight/hit geometry stays in the callers.
+  if(tracer)mesh.scale.z=kind==='aa'?6:kind==='cannon'?7:7.5;
+  return mesh;
+ }
+ function updateRounds(items,camera,renderer){
+  if(!camera||!renderer)return;
+  const height=renderer.domElement.clientHeight||renderer.domElement.height||768;
+  const metresPerPixel=2*Math.tan((camera.fov||50)*Math.PI/360)/height;
+  for(const item of items){const mesh=item.mesh;if(!mesh?.userData.litTracer)continue;
+   const width=mesh.userData.roundKind==='aa'?.13:mesh.userData.roundKind==='cannon'?.10:.08;
+   // End-on shots otherwise vanish below one pixel in the chase camera.
+   const visibleWidth=Math.min(1.7,Math.max(width,mesh.position.distanceTo(camera.position)*metresPerPixel*1.15));
+   mesh.scale.x=mesh.scale.y=visibleWidth/width;
+  }
  }
  function texture(flare){
   const n=64,p=new Uint8Array(n*n*4);
@@ -80,5 +95,5 @@
    get count(){return live.length;}
   };
  }
- root.CombatFX={create,round};
+ root.CombatFX={create,round,updateRounds};
 })(typeof window==='undefined'?globalThis:window);

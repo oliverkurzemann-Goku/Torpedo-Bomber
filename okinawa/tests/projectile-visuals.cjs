@@ -29,4 +29,15 @@ for(const g of geometries)g.addEventListener('dispose',()=>disposed++);
 for(const m of materials)m.addEventListener('dispose',()=>disposed++);
 const sample=CombatFX.round();GameRuntime.release(sample);assert.equal(disposed,0,'cleanup preserves cached round resources');
 assert.equal(geometries.size,3);assert.equal(materials.size,6);assert.equal(colors.size,2);
+const camera=new THREE.PerspectiveCamera(50,1024/768,.1,4000),renderer={domElement:{clientHeight:768}};
+const shots=Array.from({length:12},()=>({mesh:CombatFX.round(),dir:new THREE.Vector3(0,0,-1)}));
+for(const distance of [30,120,400]){
+ shots.forEach(s=>s.mesh.position.set(0,0,-distance));CombatFX.updateRounds(shots,camera,renderer);
+ for(const s of shots.filter(s=>s.mesh.userData.litTracer)){
+  const pixels=.08*s.mesh.scale.x/(2*distance*Math.tan(camera.fov*Math.PI/360)/768);
+  assert(pixels>=1.149,'end-on chase-view tracer remains at least a pixel across');
+  assert(s.mesh.scale.z>5,'lit shots have a short velocity-aligned exposure streak');
+ }
+ assert(shots.every(s=>s.mesh.position.z===-distance),'visibility correction cannot move a physical projectile');
+}
 console.log('Projectiles: actual ship AA, 3,000 varied shot directions aligned to velocity, mixed dark/lit rounds, fixed shared resource count.');

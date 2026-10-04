@@ -230,9 +230,9 @@ class TerrainManager {
         'vec2 cell = vec2(mod(surface, 4.0), floor(surface / 4.0));\n'+
         'vec2 detailUv = (cell + fract(vUv) * 0.984 + 0.008) / vec2(4.0, 2.0);\n'+
         'float grain = texture2D(surfaceDetails, detailUv).r;\n'+
-        'diffuseColor.rgb *= cover.rgb * (0.32 + grain * 1.35);');
+        'diffuseColor.rgb *= cover.rgb * (0.70 + grain * 0.60);');
     };
-    material.customProgramCacheKey=()=> 'terrain-landcover-164';
+    material.customProgramCacheKey=()=> 'terrain-landcover-165';
     if(tile.landcoverTexture)tile.landcoverTexture.dispose();
     if(tile.materialOverride)tile.materialOverride.dispose();
     tile.landcoverTexture=texture;tile.materialOverride=material;tile.mesh.material=material;
@@ -263,21 +263,28 @@ function terrainSurfaceNoise(x,z,seed=0){
 }
 // Eight shared, code-generated surfaces: meadow, earth, crop, stubble,
 // leaf litter, gravel, dry pasture and mottled woodland. No extra ground meshes.
+function terrainPeriodicNoise(x,y,period,seed){
+ const ix=Math.floor(x),iy=Math.floor(y),u=x-ix,v=y-iy,a=u*u*(3-2*u),b=v*v*(3-2*v);
+ const wrap=n=>(n%period+period)%period,h=(dx,dy)=>terrainSurfaceHash(wrap(ix+dx),wrap(iy+dy),seed);
+ const mix=(p,q,t)=>p+(q-p)*t;return mix(mix(h(0,0),h(1,0),a),mix(h(0,1),h(1,1),a),b);
+}
 function makeTerrainSurfaceAtlas(){
   const n=256,canvas=document.createElement('canvas');canvas.width=n*4;canvas.height=n*2;
   const ctx=canvas.getContext('2d'),img=ctx.createImageData(canvas.width,canvas.height),tau=Math.PI*2;
   for(let kind=0;kind<8;kind++)for(let y=0;y<n;y++)for(let x=0;x<n;x++){
-    const u=x/n*tau,v=y/n*tau,hash=terrainSurfaceHash(x,y,kind),fine=hash-.5;
-    const broad=(Math.sin(u*2+v)+Math.cos(v*3-u))*.5;
-    let value=.5+broad*.055+fine*.055;
-    if(kind===0)value+=Math.sin(u*23+Math.sin(v*7))*.027;
-    if(kind===1)value+=Math.sin(u*37)*.065+Math.cos(v*4+u*9)*.025;
-    if(kind===2)value+=Math.sin((u+v)*29)*.055+Math.sin(v*71)*.025;
-    if(kind===3)value+=Math.sin(u*41)*.045+(hash>.91?.11:0);
-    if(kind===4)value+=Math.sin(u*13+v*17)*Math.cos(v*11-u*3)*.07;
+    const u=x/n,v=y/n,hash=terrainSurfaceHash(x,y,kind),fine=hash-.5;
+    const warp=terrainPeriodicNoise(u*3,v*3,3,170+kind)-.5;
+    const broad=terrainPeriodicNoise(u*5+warp,v*5-warp,5,180+kind)-.5;
+    const medium=terrainPeriodicNoise(u*17+warp*3,v*17-warp*2,17,190+kind)-.5;
+    let value=.5+broad*.10+medium*.09+fine*.055;
+    if(kind===0)value+=terrainPeriodicNoise(u*47,v*47,47,201)*.025;
+    if(kind===1)value+=terrainPeriodicNoise(u*31,v*31,31,202)*.035;
+    if(kind===2)value+=Math.sin((u*31+warp*.6)*tau)*.025;
+    if(kind===3)value+=(hash>.91?.055:0);
+    if(kind===4)value+=terrainPeriodicNoise(u*39+warp,v*39,39,204)*.04;
     if(kind===5)value+=(hash>.85?.12:hash<.14?-.09:0);
-    if(kind===6)value+=Math.sin(u*17-v*11)*.04+Math.cos(v*37)*.025;
-    if(kind===7)value+=Math.cos(u*11+Math.sin(v*7))*Math.sin(v*13-u*5)*.10;
+    if(kind===6)value+=terrainPeriodicNoise(u*23+warp*2,v*23,23,206)*.035;
+    if(kind===7)value+=terrainPeriodicNoise(u*29-warp,v*29+warp,29,207)*.065;
     const i=((y+Math.floor(kind/4)*n)*canvas.width+x+(kind%4)*n)*4;
     img.data[i]=img.data[i+1]=img.data[i+2]=Math.round(Math.max(.28,Math.min(.73,value))*255);img.data[i+3]=255;
   }

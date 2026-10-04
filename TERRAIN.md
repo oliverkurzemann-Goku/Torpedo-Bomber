@@ -1,5 +1,23 @@
 # Remagen terrain handoff
 
+## Game Build 165 — rooted tree groups and organic surface grain
+
+Build 164's broad domes are replaced by three-tree groups with unequal heights,
+visible trunks, broadleaf crowns and layered conifers. Group radii are capped at
+20m; neighbour spacing removes near-duplicate groups. Every root is sampled after
+instance rotation, rather than warping an entire roof from unrotated corner samples.
+Static `forestPart` metadata selects each of three per-instance root offsets and
+the trunk tint. Full group footprints still obey all exclusions; no vertex colours,
+instance colours or added draw-call buckets. Six existing forest buckets remain.
+
+Meadow and woodland grain use domain-warped periodic value noise at several scales,
+replacing the sinusoidal interference that looked like a checker/diamond weave.
+Surface contrast is reduced. The eight texture families and ground colour palettes
+remain; only crops retain subtle furrows. Terrain morphing and road geometry are
+unchanged. The root regression checks rotation on sloped ground; WebGL views use
+the actual game lights and a low camera inside a dense mapped woodland area.
+Physical iPad appearance/performance still requires device feedback.
+
 ## Game Build 164 — varied surfaces and connected woodland
 
 The stable terrain/road geometry from Build 161 stays intact. Ground colour now

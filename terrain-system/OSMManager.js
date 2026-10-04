@@ -471,6 +471,7 @@ class OSMManager {
   _forestPlacements(polys, ox, oz, exclusion=null){
     const placements = [];
     const usedCells = new Set();
+    const standCells=new Map();
 
     for(const localRing of polys){
       if(!localRing || localRing.length < 4) continue;
@@ -483,7 +484,7 @@ class OSMManager {
 
       const TARGET_TREES = 800;
       const bboxArea = Math.max(1, (maxX-minX) * (maxZ-minZ));
-      const step = Math.min(48, Math.max(20, Math.round(Math.sqrt(bboxArea / TARGET_TREES))));
+      const step = Math.min(36, Math.max(24, Math.round(Math.sqrt(bboxArea / TARGET_TREES))));
 
       for(let x = minX; x <= maxX; x += step){
         for(let z = minZ; z <= maxZ; z += step){
@@ -497,7 +498,7 @@ class OSMManager {
 
           // Low-frequency density produces irregular glades without the square
           // checkerboard of per-tree random thinning.
-          const density=0.76+0.22*osmValueNoise(px/420,pz/420,88);
+          const density=0.88+0.10*osmValueNoise(px/420,pz/420,88);
           if(osmHash(px,pz,89)>density) continue;
 
           // Overlapping source polygons used to create visibly doubled trees.
@@ -515,9 +516,16 @@ class OSMManager {
           if(kind===1&&edge<42&&osmValueNoise(px/180,pz/180,193)>.63)kind=3;
           if(kind===1&&edge<42&&osmHash(px,pz,194)>.74)kind=4;
           if(edge<24&&osmHash(px,pz,92)<.48)kind=2;
-          const radius=kind===2?6.8:Math.min(kind>=3?6.2:90,
+          const radius=kind===2?6.8:Math.min(kind>=3?6.2:20,
             this._forestCanopyRadius(px,pz,step,edge,ox,oz,exclusion));
           if(radius<1.5)continue;
+          const gx=Math.floor(px/24),gz=Math.floor(pz/24);let crowded=false;
+          for(let ix=gx-2;ix<=gx+2;ix++)for(let iz=gz-2;iz<=gz+2;iz++)
+            for(const other of standCells.get(ix+','+iz)||[])
+              if(Math.hypot(px-other.x,pz-other.z)<Math.max(7,(radius+other.radius)*.45))crowded=true;
+          if(crowded)continue;
+          const standKey=gx+','+gz;if(!standCells.has(standKey))standCells.set(standKey,[]);
+          standCells.get(standKey).push({x:px,z:pz,radius});
           placements.push({
             x:px, z:pz, kind, radius,
             scale:0.78 + osmHash(px,pz,3)*0.62,
@@ -567,7 +575,7 @@ class OSMManager {
     const conifers = placements.filter(p => p.kind === 0);
     const deciduous = placements.filter(p => p.kind === 1);
     const shrubs = placements.filter(p => p.kind === 2);
-    const trunked = placements.filter(p => p.kind !== 2&&p.radius<8);
+      const trunked = placements.filter(p => p.kind >= 3);
 
     const m = new THREE.Matrix4();
     const q = new THREE.Quaternion();
@@ -607,8 +615,11 @@ class OSMManager {
           const height=p.scale*sy*p.height;
           pos.set(p.x,y+yFactor*p.scale,p.z);scale.set(p.radius,height,p.radius);
           const r=p.radius;
-          for(const [j,dx,dz] of [[0,-r,-r],[1,r,-r],[2,-r,r],[3,r,r]])
-            ground[i*4+j]=(this._safeRenderedHeight(p.x+dx,p.z+dz,ox,oz)-y)/height;
+          const roots=geo.userData?.forestRoots||[[0,0]],c=Math.cos(p.rot),s=Math.sin(p.rot);
+          for(let j=0;j<4;j++){
+            const root=roots[Math.min(j,roots.length-1)],dx=root[0]*r,dz=root[1]*r;
+            ground[i*4+j]=(this._safeRenderedHeight(p.x+c*dx+s*dz,p.z-s*dx+c*dz,ox,oz)-y)/height;
+          }
         }
         m.compose(pos,q,scale);
         mesh.setMatrixAt(i,m);
@@ -617,8 +628,8 @@ class OSMManager {
       group.add(mesh);
     };
 
-    addCanopies(conifers, this.coniferGeo, this.coniferMat, 11, 1.0, 1.0, 1.0);
-    addCanopies(deciduous, this.deciduousGeo, this.deciduousMat, 11, 1.15, 1.05, 1.15);
+    addCanopies(conifers, this.coniferGeo, this.coniferMat, 0, 1.0, 1.0, 1.0);
+    addCanopies(deciduous, this.deciduousGeo, this.deciduousMat, 0, 1.0, 1.0, 1.0);
     addCanopies(shrubs, this.shrubGeo, this.shrubMat, 1.5, 1.25, 0.85, 1.25);
     addCanopies(placements.filter(p=>p.kind===3),this.poplarGeo,this.poplarMat,6.6,1,1,1);
     addCanopies(placements.filter(p=>p.kind===4),this.willowGeo,this.willowMat,5.1,1,1,1);
@@ -1227,40 +1238,57 @@ function addUpwardTriOSM(indices, positions, a, b, c){
   else indices.push(a,c,b);
 }
 
-// Shared low-poly crowns: layered fir, clustered oak, narrow poplar, drooping willow.
-// All dimensions stay within the existing 6.8m canopy/water exclusion envelope.
+// Small tree groups, each root sampled on the terrain after instance rotation.
+// All vertices fit the full disc validated against woodland and exclusions.
 function normaliseOSMForestCrown(geo){
  const a=geo.attributes.position.array;let radius=0;
  for(let i=0;i<a.length;i+=3)radius=Math.max(radius,Math.hypot(a[i],a[i+2]));
  for(let i=0;i<a.length;i+=3){a[i]/=radius;a[i+2]/=radius;}
  const uv=[];for(let i=0;i<a.length;i+=3)uv.push(a[i]*.5+.5,a[i+2]*.5+.5);
  geo.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));
+ if(!geo.attributes.forestPart)geo.setAttribute('forestPart',new THREE.Float32BufferAttribute(new Float32Array(a.length/3*2),2));
+ if(geo.userData?.forestRoots)geo.userData.forestRoots=geo.userData.forestRoots.map(([x,z])=>[x/radius,z/radius]);
  geo.computeVertexNormals();geo.computeBoundingSphere();return geo;
 }
 function makeOSMForestCrown(kind){
- const positions=[0,4.2,0],indices=[],sectors=12;
- for(const [ring,r,y] of [[0,.35,3.4],[1,.72,1.7],[2,1,-1.5]])for(let i=0;i<sectors;i++){
-  const a=i*Math.PI*2/sectors,bump=1+.06*Math.sin(a*5+kind),height=.35*Math.sin(a*3+ring);
-  positions.push(Math.cos(a)*r*bump,y+height,Math.sin(a)*r*bump);
+ const positions=[],parts=[],indices=[],roots=[[.35,.03],[-.24,.39],[-.30,-.35]];
+ const add=(x,y,z,tree,stem=0)=>{parts.push(tree,stem);positions.push(x,y,z);return positions.length/3-1;};
+ const phi=(1+Math.sqrt(5))/2;
+ const ico=[[-1,phi,0],[1,phi,0],[-1,-phi,0],[1,-phi,0],[0,-1,phi],[0,1,phi],[0,-1,-phi],[0,1,-phi],[phi,0,-1],[phi,0,1],[-phi,0,-1],[-phi,0,1]];
+ const faces=[[0,11,5],[0,5,1],[0,1,7],[0,7,10],[0,10,11],[1,5,9],[5,11,4],[11,10,2],[10,7,6],[7,1,8],[3,9,4],[3,4,2],[3,2,6],[3,6,8],[3,8,9],[4,9,5],[2,4,11],[6,2,10],[8,6,7],[9,8,1]];
+ for(let tree=0;tree<3;tree++){
+  const [cx,cz]=roots[tree],height=[14,19,16][tree],width=[.52,.45,.50][tree];
+  const trunk=positions.length/3;
+  for(const y of [0,height*.58])for(let i=0;i<4;i++){const a=i*Math.PI/2;add(cx+Math.cos(a)*.019,y,cz+Math.sin(a)*.019,tree,1);}
+  for(let i=0;i<4;i++){const a=trunk+i,b=trunk+(i+1)%4;indices.push(a,b,a+4,b,b+4,a+4);}
+  if(kind===0){
+   for(let layer=0;layer<3;layer++){
+    const base=positions.length/3,r=width*(1-layer*.24),y=height*(.20+layer*.22);
+    for(let i=0;i<6;i++){const a=i*Math.PI/3;add(cx+Math.cos(a)*r,y,cz+Math.sin(a)*r,tree);}
+    const top=add(cx+.025*(tree-1),y+height*.40,cz,tree);
+    for(let i=0;i<6;i++)indices.push(base+i,top,base+(i+1)%6);
+   }
+  }else{
+   const base=positions.length/3;
+   for(let i=0;i<ico.length;i++){
+    const v=ico[i],d=Math.hypot(...v),bump=.91+.17*osmHash(i,tree,411);
+    add(cx+v[0]/d*width*bump,height*(.60+v[1]/d*.34),cz+v[2]/d*width*(1.04-.10*tree)*bump,tree);
+   }
+   for(const f of faces)indices.push(...f.map(i=>base+i));
+  }
  }
- for(let i=0;i<sectors;i++)indices.push(0,1+(i+1)%sectors,1+i);
- for(let ring=0;ring<2;ring++)for(let i=0;i<sectors;i++){
-  const a=1+ring*sectors+i,b=1+ring*sectors+(i+1)%sectors,c=b+sectors,d=a+sectors;
-  indices.push(a,b,d,b,c,d);
- }
- const base=positions.length/3;positions.push(0,-3.5,0);
- for(let i=0;i<sectors;i++)indices.push(base,1+2*sectors+i,1+2*sectors+(i+1)%sectors);
  const geo=new THREE.BufferGeometry();geo.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));geo.setIndex(indices);
+ geo.setAttribute('forestPart',new THREE.Float32BufferAttribute(parts,2));geo.userData=geo.userData||{};geo.userData.forestRoots=roots;
  return normaliseOSMForestCrown(geo);
 }
 function makeOSMForestTexture(){
  if(typeof document==='undefined')return null;
  const n=256,c=document.createElement('canvas');c.width=c.height=n;const ctx=c.getContext('2d'),img=ctx.createImageData(n,n);
  for(let y=0;y<n;y++)for(let x=0;x<n;x++){
-  const u=x/n*Math.PI*2,v=y/n*Math.PI*2;
-  const leaf=Math.sin(u*13+Math.sin(v*7))*Math.cos(v*11-u*3);
-  const shade=Math.cos(u*5+v*3)*Math.sin(v*7-u*2),grain=osmHash(x,y,284)-.5;
-  const value=Math.round(184+leaf*23+shade*21+grain*13),i=(y*n+x)*4;
+  const warp=osmValueNoise(x/45,y/45,280)*13;
+  const leaf=osmValueNoise((x+warp)/5,(y-warp)/5,281)-.5;
+  const shade=osmValueNoise((x-warp)/17,(y+warp)/17,282)-.5,grain=osmHash(x,y,284)-.5;
+  const value=Math.round(190+leaf*30+shade*20+grain*15),i=(y*n+x)*4;
   img.data[i]=img.data[i+1]=img.data[i+2]=value;img.data[i+3]=255;
  }
  ctx.putImageData(img,0,0);const tex=new THREE.CanvasTexture(c);tex.wrapS=tex.wrapT=THREE.RepeatWrapping;
@@ -1269,16 +1297,17 @@ function makeOSMForestTexture(){
 function osmCanopyTerrain(material){
  const previous=material.onBeforeCompile;
  material.onBeforeCompile=shader=>{
-  previous(shader);shader.vertexShader='attribute vec4 canopyGround;\n'+shader.vertexShader;
+  previous(shader);shader.vertexShader='attribute vec4 canopyGround;\nattribute vec2 forestPart;\nvarying float forestStem;\n'+shader.vertexShader;
+  shader.fragmentShader='varying float forestStem;\n'+shader.fragmentShader;
   shader.vertexShader=shader.vertexShader.replace('#include <uv_vertex>',
    '#include <uv_vertex>\n#ifdef USE_UV\n#ifdef USE_INSTANCING\nvUv = (instanceMatrix * vec4(position, 1.0)).xz / 48.0;\n#else\nvUv = (modelMatrix * vec4(position, 1.0)).xz / 48.0;\n#endif\n#endif');
   shader.vertexShader=shader.vertexShader.replace('#include <begin_vertex>',
-   '#include <begin_vertex>\nvec2 canopyUv = position.xz * 0.5 + 0.5;\n'+
-   'float canopySlope = mix(mix(canopyGround.x, canopyGround.y, canopyUv.x), mix(canopyGround.z, canopyGround.w, canopyUv.x), canopyUv.y);\n'+
-   'float canopyCentre = dot(canopyGround, vec4(0.25));\n'+
-   'transformed.y += canopySlope - canopyCentre * (1.0-position.x*position.x) * (1.0-position.z*position.z);');
+   '#include <begin_vertex>\nforestStem = forestPart.y;\n'+
+   'transformed.y += forestPart.x < 0.5 ? canopyGround.x : forestPart.x < 1.5 ? canopyGround.y : canopyGround.z;');
+  shader.fragmentShader=shader.fragmentShader.replace('#include <color_fragment>',
+   '#include <color_fragment>\ndiffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.25,0.19,0.12), forestStem);');
  };
- material.customProgramCacheKey=()=> 'terrain-following-forest-164';
+ material.customProgramCacheKey=()=> 'rooted-tree-groups-165';
 }
 function makeOSMTreeCrown(kind){
  const positions=[];

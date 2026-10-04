@@ -29,6 +29,7 @@ const cdn={
  try{
   for(const scenario of [
    {campaign:'remagen-mission.html'},
+   {campaign:'torpedo-carrier.html',kind:'avenger',ordinal:0},
    {campaign:'torpedo-carrier.html',kind:'defend',ordinal:0},
    {campaign:'torpedo-carrier.html',kind:'sbd',ordinal:0},
    {campaign:'torpedo-carrier.html',kind:'sbd',ordinal:1},
@@ -153,8 +154,8 @@ const cdn={
     fs.writeFileSync(path.join(out,'rhine-village-variants.png'),Buffer.from(villagePng.split(',')[1],'base64'));
     const landscape=await page.evaluate(()=>{
      const studio=new THREE.Scene();studio.background=new THREE.Color(0xb8c8cf);
-     studio.add(new THREE.HemisphereLight(0xfff4db,0x4d543c,1.1));
-     const sun=new THREE.DirectionalLight(0xfff0d2,1);sun.position.set(11000,4000,10000);studio.add(sun);
+     for(const light of scene.children.filter(o=>o.isLight))studio.add(light.clone());
+     if(scene.fog)studio.fog=scene.fog.clone();
      let patches=0,buckets=0;
      for(const key of ['3,3','3,4']){
       const tile=terrain.tiles.get(key),ground=new THREE.Mesh(tile.mesh.geometry,tile.mesh.material);ground.position.copy(tile.mesh.position);studio.add(ground);
@@ -168,8 +169,11 @@ const cdn={
      renderer.setPixelRatio(1);cam.position.set(13700,y+1350,11200);cam.lookAt(14000,y,14700);
      renderer.render(studio,cam);const overview=renderer.domElement.toDataURL('image/png');
      const content=osmMgr.tiles.get('3,3'),crowns=content.farGroup.children.find(m=>m.name==='osmForestDeciduous');
-     const radii=crowns.userData.canopyRadii,index=radii.indexOf(Math.max(...radii)),matrix=new THREE.Matrix4();crowns.getMatrixAt(index,matrix);
-     const p=new THREE.Vector3().setFromMatrixPosition(matrix);cam.position.copy(p).add(new THREE.Vector3(160,105,-200));cam.lookAt(p);
+     const matrix=new THREE.Matrix4(),points=[];for(let i=0;i<crowns.count;i++){crowns.getMatrixAt(i,matrix);points.push(new THREE.Vector3().setFromMatrixPosition(matrix));}
+     let index=0,best=-1;for(let i=0;i<points.length;i+=Math.max(1,Math.floor(points.length/180))){
+      const count=points.filter(p=>p.distanceTo(points[i])<100).length;if(count>best){best=count;index=i;}
+     }
+     const p=points[index];cam.position.copy(p).add(new THREE.Vector3(40,52,-120));cam.lookAt(p.clone().add(new THREE.Vector3(0,12,90)));
      renderer.render(studio,cam);const close=renderer.domElement.toDataURL('image/png');renderer.setPixelRatio(.25);
      return {overview,close,patches,buckets};
     });
@@ -219,7 +223,7 @@ const cdn={
    }
    else{
     assert.equal(modelRequests.length,0,'menu must not eagerly decode every GLB');
-    const selected=await page.evaluate(s=>MISSIONS.map((m,i)=>m[s.kind]?i:-1).filter(i=>i>=0)[s.ordinal],scenario);
+    const selected=await page.evaluate(s=>s.kind==='avenger'?2:MISSIONS.map((m,i)=>m[s.kind]?i:-1).filter(i=>i>=0)[s.ordinal],scenario);
     await page.locator('#missionSel .chip').nth(selected).click();await page.locator('#startBtn').click();
     await page.locator('#launchBtn').waitFor({state:'visible'});await reduceSceneryCost();await page.locator('#launchBtn').click();
    }
@@ -248,16 +252,39 @@ const cdn={
     await page.mouse.up();
     assert(await page.evaluate(()=>state===ST.FLIGHT&&P.alive&&!runtimeFault&&pacificOps.elapsed>=15),label+' must keep flying past 15 simulated seconds');
     assert(await page.evaluate(a=>P.ammo<a-100,ammo),'actual fire button must produce sustained gunfire');
-    assert(await page.evaluate(()=>isSBD()?!!playerSBD?.userData.fromTemplate:!!playerZero?.userData.fromTemplate),'selected original aircraft must be attached');
+    assert(await page.evaluate(()=>isDefend()?!!playerZero?.userData.fromTemplate:isSBD()?!!playerSBD?.userData.fromTemplate:!!gltfRoot?.visible),'selected original aircraft must be attached');
     if(scenario.kind==='sbd'){
      assert.equal(await page.evaluate(()=>wingmen.length),2,'Dauntless join-up completes');
      await page.evaluate(()=>{P.diveBrake=true;});
      await page.waitForFunction(()=>sbdDiveFlapL?.visible&&sbdDiveFlapL.getObjectByName('sbdDiveUpper').rotation.x>.2);
      assert(!modelRequests.some(p=>p.includes('avenger')),'SBD sortie must not load unused Avenger');
-    }else{
+    }else if(scenario.kind==='defend'){
      assert(!modelRequests.some(p=>p.includes('dauntless')||p.includes('midway')||p.includes('merchant')),'Zero defence loads no unused US deck, SBD or merchant');
     }
-    assert.equal(modelRequests.filter(p=>p.includes('merchant')).length,scenario.kind==='sbd'?1:0,'escort and freighter share one model decode');
+    assert.equal(modelRequests.filter(p=>p.includes('merchant')).length,scenario.kind==='defend'?0:1,'escort and freighter share one model decode');
+    if(scenario.kind==='avenger'){
+     const shots=await page.evaluate(()=>{
+      const oldHull=P.hull,before=tracers.length;for(let i=0;i<600;i++)updateCarrierDefense(1/60);
+      if(tracers.length!==before||P.hull!==oldHull)throw Error('Home carrier fired at its Avenger');
+      P.pos.set(carrierX+BOW_X+160,DECK_Y+90,0);P.heading=Math.PI/2;P.pitch=.01;P.roll=0;P.spd=65;
+      updatePlaneMesh(0);updateCamera(1);firing=true;gunCool=0;
+      for(const b of bullets)GameRuntime.release(b.mesh);bullets=[];
+      for(let i=0;i<12;i++)updateGuns(1/60);firing=false;
+      renderer.setPixelRatio(1);CombatFX.updateRounds(bullets,camera,renderer);
+      const lit=bullets.filter(b=>b.mesh.userData.litTracer);
+      const gl=renderer.getContext(),w=renderer.domElement.width,h=renderer.domElement.height;
+      const off=new Uint8Array(w*h*4),on=new Uint8Array(w*h*4);
+      for(const b of bullets)b.mesh.visible=false;renderer.render(scene,camera);gl.readPixels(0,0,w,h,gl.RGBA,gl.UNSIGNED_BYTE,off);
+      for(const b of lit)b.mesh.visible=true;renderer.render(scene,camera);gl.readPixels(0,0,w,h,gl.RGBA,gl.UNSIGNED_BYTE,on);
+      let changed=0;for(let i=0;i<on.length;i+=4)if(Math.max(Math.abs(on[i]-off[i]),Math.abs(on[i+1]-off[i+1]),Math.abs(on[i+2]-off[i+2]))>35)changed++;
+      for(const b of bullets)b.mesh.visible=true;renderer.render(scene,camera);
+      const png=renderer.domElement.toDataURL('image/png');renderer.setPixelRatio(.25);
+      return {lit:lit.length,changed,png};
+     });
+     assert(shots.lit>=2&&shots.changed>=4,'actual Avenger chase-camera tracers must change visible WebGL pixels: '+JSON.stringify({lit:shots.lit,changed:shots.changed}));
+     fs.mkdirSync(path.join(root,'test-visuals'),{recursive:true});fs.writeFileSync(path.join(root,'test-visuals','avenger-chase-gunfire.png'),Buffer.from(shots.png.split(',')[1],'base64'));
+     console.log('Browser Avenger: real launch and forward gunfire, '+shots.changed+' visible tracer pixels; own carrier never fires at the Avenger.');
+    }
     console.log('Browser Pacific '+label+': 15 simulated seconds with sustained fire, original aircraft and live AI; requests '+modelRequests.join(', '));
     if(scenario.ordinal===0){
      const out=path.join(root,'test-visuals');fs.mkdirSync(out,{recursive:true});
@@ -265,7 +292,7 @@ const cdn={
       const studio=new THREE.Scene();studio.background=new THREE.Color(0x8faec0);
       studio.add(new THREE.HemisphereLight(0xe8f3ff,0x524b39,1.2));
       const sun=new THREE.DirectionalLight(0xffecd4,.9);sun.position.set(5,12,-10);studio.add(sun);
-      const frame=(isSBD()?playerSBD:playerZero).clone(true);studio.add(frame);frame.rotation.z=.9;
+      const frame=(isDefend()?playerZero:isSBD()?playerSBD:gltfRoot).clone(true);studio.add(frame);frame.rotation.z=.9;
       const fx=CombatFX.create(studio);fx.muzzle(frame,pacificGunMuzzles(),false,new THREE.Vector3(0,0,-1));
       const bomb=Ordnance.create('bomb'),torp=Ordnance.create('torpedo');
       bomb.rotation.y=torp.rotation.y=Math.PI;bomb.position.set(-3,-3,-1);torp.position.set(2,-3,-1);studio.add(bomb,torp);
@@ -379,7 +406,7 @@ const cdn={
      await page.waitForFunction(()=>(state===ST.LAUNCH||state===ST.FLIGHT)&&eng.master.gain.value>.5);
      await page.locator('#pauseBtn').click();await page.locator('#menuBtn').click();
     }else{
-     await page.locator('#pauseMainMenu').click();await page.waitForURL('**/index.html?v=164');
+     await page.locator('#pauseMainMenu').click();await page.waitForURL('**/index.html?v=165');
      await page.locator('main.board').waitFor();
     }
     console.log('Browser pause: '+(scenario.ordinal===0?'abort, retained record and audible relaunch':'Main Menu returns to campaign board'));
@@ -535,7 +562,7 @@ const cdn={
     // A real JS frame failure is visible and remains observable, not hidden.
     await page.evaluate(()=>{animateFrame=()=>{throw Error('TEST FRAME FAULT');};});
     await page.locator('#simulationRecovery').waitFor({state:'visible'});
-    assert.match(await page.locator('#simulationRecovery').innerText(),/BUILD 164.*TEST FRAME FAULT/);
+    assert.match(await page.locator('#simulationRecovery').innerText(),/BUILD 165.*TEST FRAME FAULT/);
     assert.equal(await page.locator('#simulationRecovery button').innerText(),'Reload game');
     assert.deepEqual(errors,['TEST FRAME FAULT'],'unexpected runtime errors cannot be swallowed');
    }

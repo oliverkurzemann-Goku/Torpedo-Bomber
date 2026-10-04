@@ -28,7 +28,7 @@ const terrain={getRenderedHeight:(x,z)=>x*.02+z*.03},osm=new OSMManager(new THRE
 const group=new THREE.Group(),ring=[[0,0],[4000,0],[4000,4000],[0,4000],[0,0]];
 const placements=osm._forestPlacements([ring],0,0);
 const stands=placements.filter(p=>p.kind<2&&p.x>300&&p.x<3700&&p.z>300&&p.z<3700);
-assert(stands.some(p=>p.radius>30),'large woods have broad stands instead of isolated crowns');
+assert(stands.some(p=>p.radius>18)&&stands.every(p=>p.radius<=20),'woodland uses small rooted tree groups, not giant domes');
 let covered=0,samples=0;for(let x=350;x<3650;x+=75)for(let z=350;z<3650;z+=75){samples++;covered+=stands.some(p=>Math.hypot(x-p.x,z-p.z)<p.radius);}
 assert(covered/samples>.65,'woodland crown envelopes form a connected mass: '+covered/samples);
 osm._buildForests(group,[ring],0,0);assert(group.children.length<=7,'forest draw-call budget stays bounded');
@@ -37,6 +37,19 @@ for(const mesh of group.children.filter(m=>m.geometry.attributes.canopyGround)){
  assert([...ground.array].every(Number.isFinite),'canopy terrain correction has finite samples');
  const pos=mesh.geometry.attributes.position;
  for(let i=0;i<pos.count;i++)assert(Math.hypot(pos.getX(i),pos.getZ(i))<=1.00001,'rendered crown fits its validated envelope');
+ if(mesh.geometry.userData.forestRoots){
+  assert.equal(mesh.geometry.userData.forestRoots.length,3,'each stand has three separate tree roots');
+  const part=mesh.geometry.attributes.forestPart;assert([...part.array].some((v,i)=>i%2===1&&v===1),'real trunks are part of the bounded forest mesh');
+  const m=new THREE.Matrix4();
+  for(let i=0;i<Math.min(mesh.count,60);i++){
+   mesh.getMatrixAt(i,m);
+   for(let root=0;root<3;root++){
+    const [x,z]=mesh.geometry.userData.forestRoots[root],p=new THREE.Vector3(x,0,z).applyMatrix4(m);
+    p.y+=ground.array[i*4+root]*m.elements[5];
+    assert(Math.abs(p.y-terrain.getRenderedHeight(p.x,p.z))<.0001,'rotated tree roots follow the terrain, without floating/stacked sheets');
+   }
+  }
+ }
 }
 console.log(JSON.stringify({surfaces:surfaces.size,landcoverTypes:types.size,paletteColors:colors.size,earthPixels:earth,greenPixels:green,
  forestCoverage:covered/samples,forestBuckets:group.children.length,stands:placements.length}));

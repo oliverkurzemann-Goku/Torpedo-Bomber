@@ -289,7 +289,7 @@
   .opsLegend{font:11px/1.5 monospace;color:#d7c797;text-align:left;margin-top:5px;}
   #opsStatus{position:fixed;top:calc(env(safe-area-inset-top) + 76px);left:50%;transform:translateX(-50%);color:#edcc80;background:rgba(14,20,18,.78);padding:5px 9px;font:10px monospace;pointer-events:none;z-index:9;max-width:58vw;text-align:center;}
 </style>
-<link rel="stylesheet" href="menu-layout.css?v=164">
+<link rel="stylesheet" href="menu-layout.css?v=165">
 </head>
 <body>
 <div id="app"></div>
@@ -321,7 +321,7 @@
   <div id="flash"></div>
   <div id="ltn" style="position:fixed;inset:0;background:#e6ecff;opacity:0;pointer-events:none;z-index:40;"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 164</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 165</div>
 
   <!-- Optical landing aid -->
   <div id="lso">
@@ -363,7 +363,7 @@
 
 <!-- Menu -->
 <div class="overlay" id="menu" data-campaign="pacific">
-  <div class="menuTop"><a id="selBtn" href="index.html?v=164">&#9664; Change Game</a><span class="menuMeta">PACIFIC OPERATIONS<br>BUILD 164</span></div>
+  <div class="menuTop"><a id="selBtn" href="index.html?v=165">&#9664; Change Game</a><span class="menuMeta">PACIFIC OPERATIONS<br>BUILD 165</span></div>
   <div class="card menuCard">
     <aside class="menuOverview" aria-label="Campaign and pilot options">
     <div class="campaignArt" aria-hidden="true"></div>
@@ -447,7 +447,7 @@
 <script src="campaign.js?v=1"></script>
 <script src="game-runtime.js?v=163"></script>
 <script src="pacific-assets.js?v=157"></script>
-<script src="combat-fx.js?v=164"></script>
+<script src="combat-fx.js?v=165"></script>
 <script src="ordnance.js?v=157"></script>
 <script src="pilot-bailout.js?v=157"></script>
 <script src="pilot-rescue.js?v=157"></script>
@@ -3013,25 +3013,29 @@ function updateFlak(dt){
 // Avengers, never the friendly player Zero. Sweep collision prevents tunnelling.
 let carrierGunTimers=[0,.21,.43,.65];
 function updateCarrierDefense(dt){
-  if(carrierHP<=0)return;
+  if(!isDefend()||carrierHP<=0)return;
   for(let i=0;i<carrierGunTimers.length;i++){
     carrierGunTimers[i]-=dt;if(carrierGunTimers[i]>0)continue;
     const side=i%2?-1:1;
     const from=new THREE.Vector3(carrierX+(i<2?STERN_X+48:BOW_X-48),DECK_Y-4,side*(DECK_HALF_W+2));
-    const target=raiders.filter(r=>r.alive&&r.pos.distanceTo(from)<1800&&side*r.pos.z>-35)
+    const target=raiders.filter(r=>r.alive&&r.team!=='friendly'&&r.pos!==P.pos&&r.pos.distanceTo(from)<1800&&side*r.pos.z>-35)
       .sort((a,b)=>a.pos.distanceToSquared(from)-b.pos.distanceToSquared(from))[0];
     if(!target){carrierGunTimers[i]=.18;continue;}
     carrierGunTimers[i]=1.05+Math.random()*.35;
     const range=target.pos.distanceTo(from),lead=target.pos.clone().addScaledVector(target.vel,range/560);
+    if(SortieFeatures.segmentDistance(from,lead,P.pos)<35)continue;
+    if(wingmen.some(w=>w.alive&&SortieFeatures.segmentDistance(from,lead,w.pos)<35))continue;
     const spread=18+range*.018;
     for(let k=0;k<3;k++){
       const aim=lead.clone().add(new THREE.Vector3((Math.random()-.5)*spread,(Math.random()-.5)*spread,(Math.random()-.5)*spread));
       const dir=aim.sub(from).normalize();
+      const end=from.clone().addScaledVector(dir,range+spread);
+      if(SortieFeatures.segmentDistance(from,end,P.pos)<20||wingmen.some(w=>w.alive&&SortieFeatures.segmentDistance(from,end,w.pos)<20))continue;
       const mesh=CombatFX.round('aa');
       mesh.position.copy(from).addScaledVector(dir,k*12);mesh.lookAt(mesh.position.clone().add(dir));scene.add(mesh);
       tracers.push({mesh,dir,life:3.3,speed:560,fleet:true});
     }
-    if(combatFX)combatFX.muzzle(scene,[from],true);
+    if(combatFX)combatFX.muzzle(scene,[from],true,lead.clone().sub(from).normalize());
     if(P.pos.distanceTo(from)<1600)sfxPop();
     target.fleetBurstT=(target.fleetBurstT||0)-1;
     if(target.fleetBurstT<=0){target.fleetBurstT=5;spawnFlakBurst(lead.clone().add(new THREE.Vector3((Math.random()-.5)*100,(Math.random()-.5)*60,(Math.random()-.5)*100)));}
@@ -4700,7 +4704,7 @@ function loadPlaneModel(){
       }
       window.__eyeDbg='EYE '+COCKPIT_EYE.map(v=>v.toFixed(2)).join('/');
       const btEl=document.getElementById('buildTag');
-      if(btEl) btEl.textContent='BUILD 164 · '+window.__eyeDbg;
+      if(btEl) btEl.textContent='BUILD 165 · '+window.__eyeDbg;
       let seat=null;
       model.traverse(function(o){
         if(!o.isMesh||!o.material) return;
@@ -6056,7 +6060,7 @@ function setupUIButtons(){
   if(dbgT2) dbgT2.onclick=()=>{
     dbgOn=!dbgOn; GameRuntime.storage.setItem('dbgOn',dbgOn?'1':'0');
     const db=document.getElementById('dbgBox'); if(db) db.textContent=dbgOn?'✓':'';
-    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 164'; }
+    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 165'; }
   };
   const lu=document.getElementById('lookUp'), ld=document.getElementById('lookDn');
   let _lookT=0;
@@ -6072,7 +6076,7 @@ function setupUIButtons(){
   if(pb) pb.addEventListener('pointerdown',e=>{ e.preventDefault(); togglePause(); });
   const rb=document.getElementById('resumeBtn'); if(rb) rb.onclick=resumeGame;
   const mb=document.getElementById('menuBtn'); if(mb) mb.onclick=exitToMenu;
-  document.getElementById('pauseMainMenu').onclick=()=>{exitToMenu();window.location.href='index.html?v=164';};
+  document.getElementById('pauseMainMenu').onclick=()=>{exitToMenu();window.location.href='index.html?v=165';};
   document.getElementById('resultBtn').onclick=()=>{
     // the logbook borrows this screen from the menu — send the player straight back
     if(logbookOpen){ logbookOpen=false; showOverlay('menu'); return; }
@@ -6303,7 +6307,7 @@ function animate(){
     notice.style.cssText='position:fixed;inset:0;z-index:999998;background:rgba(15,20,15,.95);color:#e8ddbc;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px;text-align:center;font:16px system-ui';
     const title=document.createElement('h2');title.textContent='Simulation interrupted';
     const detail=document.createElement('p');
-    detail.textContent='BUILD 164 · '+(MISSIONS[mission]?.sub||'Menu')+' · '+error.message;
+    detail.textContent='BUILD 165 · '+(MISSIONS[mission]?.sub||'Menu')+' · '+error.message;
     const reload=document.createElement('button');reload.textContent='Reload game';
     reload.style.cssText='padding:12px 24px;font:inherit';reload.onclick=()=>location.reload();
     notice.appendChild(title);notice.appendChild(detail);notice.appendChild(reload);document.body.appendChild(notice);
@@ -6438,6 +6442,8 @@ function animateFrame(){
   }
   updateFlash(dt);
 
+  CombatFX.updateRounds(bullets,camera,renderer);
+  CombatFX.updateRounds(tracers,camera,renderer);
   GameRuntime.render(renderer,scene,camera);
 }
 

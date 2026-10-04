@@ -266,7 +266,7 @@
   #opsStatus{position:fixed;top:calc(env(safe-area-inset-top) + 76px);left:50%;transform:translateX(-50%);color:#edcc80;background:rgba(14,20,18,.78);padding:5px 9px;font:10px monospace;pointer-events:none;z-index:9;max-width:58vw;text-align:center;}
   #systemsStatus{position:fixed;top:calc(env(safe-area-inset-top) + 116px);left:50%;transform:translateX(-50%);color:#ffbf96;background:#251810db;padding:5px 9px;font:10px monospace;pointer-events:none;z-index:9;max-width:60vw;text-align:center;}#systemsStatus:empty{display:none;}
 </style>
-<link rel="stylesheet" href="menu-layout.css?v=164">
+<link rel="stylesheet" href="menu-layout.css?v=165">
 </head>
 <body>
 <!-- ===== TEMP TEST-ONLY VERSION BANNER — asked for by Oliver: "kannst du irgendwo einbauen,
@@ -288,7 +288,7 @@
   <div style="width:100%;height:4px;background:repeating-linear-gradient(45deg,#ffd400,#ffd400 8px,#111 8px,#111 16px);"></div>
   <span id="testVersionBannerText" style="background:#111;color:#ffd400;font-family:monospace;font-weight:800;font-size:11px;letter-spacing:.5px;padding:3px 10px;border:1px solid #ffd400;border-top:none;border-radius:0 0 6px 6px;"></span>
 </div>
-<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 164';</script>
+<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 165';</script>
 <!-- ===== END TEMP TEST-ONLY VERSION BANNER ===== -->
 <div id="app"></div>
 
@@ -317,7 +317,7 @@
   <div id="flash"></div>
   <div id="gunsight"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 164 · REAL RHINE</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 165 · REAL RHINE</div>
 
   <div id="apr">
     <div id="aprCall"></div>
@@ -367,7 +367,7 @@
 </div>
 
 <div class="overlay hidden" id="menu" data-campaign="europe">
-  <div class="menuTop"><a id="selBtn" href="index.html?v=164">&#9664; Change Game</a><span class="menuMeta">RHINE OPERATIONS<br>BUILD 164</span></div>
+  <div class="menuTop"><a id="selBtn" href="index.html?v=165">&#9664; Change Game</a><span class="menuMeta">RHINE OPERATIONS<br>BUILD 165</span></div>
   <div class="card menuCard">
     <aside class="menuOverview" aria-label="Campaign and pilot options">
     <div class="campaignArt" aria-hidden="true"></div>
@@ -464,8 +464,8 @@
      not rewrite them. -->
 <script src="terrain-system/HeightProvider.js?v=remagen-21"></script>
 <script src="terrain-system/TerrainTile.js?v=161"></script>
-<script src="terrain-system/TerrainManager.js?v=164"></script>
-<script src="terrain-system/OSMManager.js?v=164"></script>
+<script src="terrain-system/TerrainManager.js?v=165"></script>
+<script src="terrain-system/OSMManager.js?v=165"></script>
 <script src="terrain-system/HistoricalObjectManager.js?v=remagen-21"></script>
 <script src="terrain-system/AirfieldDetails.js?v=161"></script>
 <script src="terrain-system/AirfieldActivity.js?v=162"></script>
@@ -473,7 +473,7 @@
 <script src="terrain-system/LivingWorld.js?v=162"></script>
 <script src="campaign.js?v=1"></script>
 <script src="game-runtime.js?v=163"></script>
-<script src="combat-fx.js?v=164"></script>
+<script src="combat-fx.js?v=165"></script>
 <script src="ordnance.js?v=157"></script>
 <script src="pilot-bailout.js?v=157"></script>
 <script src="pilot-rescue.js?v=157"></script>
@@ -799,7 +799,7 @@ async function loadRealWorld(){
 
   if(OSMManager.BUILD!==23||HistoricalObjectManager.BUILD!==21||LivingWorld.BUILD!==22||WorldVehicles.BUILD!==22) throw new Error('Terrain version mismatch. Reload Remagen.');
   document.getElementById('testVersionBannerText').textContent=
-    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 164 · MODULE 23';
+    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 165 · MODULE 23';
   heightProvider=new DEMHeightProvider(RTILE,'terrain-system/real/data/dem/');
   terrain=new TerrainManager(scene,RTILE,heightProvider);
   osmMgr=new OSMManager(scene,RTILE,terrain,'terrain-system/real/data/osm/');
@@ -5394,7 +5394,7 @@ function init(){
   buildMenu();
   // menu wiring
   document.getElementById('startBtn').onclick=()=>showBrief(selectedMission);
-  document.getElementById('pauseMainMenu').onclick=()=>{exitToMenuFromPause();window.location.href='index.html?v=164';};
+  document.getElementById('pauseMainMenu').onclick=()=>{exitToMenuFromPause();window.location.href='index.html?v=165';};
   document.getElementById('logBtn').onclick=()=>{ show('menu',false); showLogbook(); };
   document.getElementById('brBack').onclick=()=>{ show('brief',false); show('menu',true); state=ST.MENU; };
   document.getElementById('brGo').onclick=async()=>{
@@ -5578,6 +5578,8 @@ function animate(){
   // Menu/briefing transitions also fade the engine; pause uses the master gain above.
   updateAudio(raw);
   if(combatFX)combatFX.update(raw);
+  CombatFX.updateRounds(bullets,camera,renderer);
+  CombatFX.updateRounds(tracers,camera,renderer);
   GameRuntime.render(renderer,scene,camera);
 }
 function reportStartupError(err){
