@@ -57,7 +57,7 @@ global.fetch=async url=>{const b=fs.readFileSync(path.join(root,url.split('?')[0
   vm.runInContext(html.slice(roadStart,roadEnd)+'\nclearRoadsOnRunways();',roadContext);
   assert.deepEqual(runwayFaces(),{road:[0,0],farm:[0,0],forest:[0,0]},
     'mapped road, farmland and forest floors must not cover either runway');
-  assert(html.includes('LivingWorld.js?v=161'));assert(html.includes('MODULE 23'));
+  assert(html.includes('LivingWorld.js?v=162'));assert(html.includes('MODULE 23'));
   for(const id of ['convoy','train','ferry'])assert(html.includes(`id:'${id}'`),`mission ${id} missing`);
   assert(html.includes("livingWorld.missionTargets(m.traffic||m.id)"));assert(html.includes('livingWorld.destroyEntity(t.entity)'));
   // Execute the actual mission table/population logic with lightweight target
@@ -152,6 +152,11 @@ global.fetch=async url=>{const b=fs.readFileSync(path.join(root,url.split('?')[0
   const truck=world.missionTargets('convoy')[0],before=truck.phase;
   const start=world._sample(truck.route,truck.phase);world.update(2,start.x,start.z);
   assert(truck.phase>before&&truck.model.visible);assert(truck.model.position.toArray().every(Number.isFinite));
+  const alerted=truck.phase;world.alertConvoy(truck);world.update(2,start.x,start.z);
+  assert.equal(truck.phase,alerted,'hit convoy halts on its actual mapped road');
+  world.update(6,start.x,start.z);assert(truck.phase>alerted,'survivors resume along the route');
+  const expected=world._sample(truck.route,truck.phase);
+  assert(Math.hypot(truck.model.position.x-expected.x,truck.model.position.z-expected.z)<.001,'dispersal cannot teleport off the route');
   const ferry=world.missionTargets('ferry')[0],fp=world._sample(ferry.route,ferry.phase);
   world.update(.5,fp.x,fp.z);assert(world._pointOnWater(ferry.model.position.x,ferry.model.position.z));
   world.destroyEntity(truck);const stopped=truck.phase;world.update(3,truck.model.position.x,truck.model.position.z);assert.equal(truck.phase,stopped);
@@ -164,6 +169,7 @@ global.fetch=async url=>{const b=fs.readFileSync(path.join(root,url.split('?')[0
   world.resetForMission('jabo');
   assert.deepEqual(world.missionTargets('convoy').map(e=>e.meta.vehicleModel),
     ['sherman','sherman','m16','m16'],'Fw 190 also attacks Allied armour and AA');
+  world.resetForMission('jetambush');assert.deepEqual(world.missionTargets('convoy').map(e=>e.meta.vehicleModel),['sherman','sherman','m16','m16'],'optional Jet gun target is Allied, not a friendly German gun');
   world.resetForMission('convoy');
   assert.deepEqual(world.missionTargets('convoy').map(e=>e.meta.vehicleModel),
     ['jagdpanther','tiger','tiger','tiger'],'German convoy restores for American strike sorties');

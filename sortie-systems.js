@@ -44,9 +44,11 @@ class Operation{
  constructor(config={}){
   this.config=config;this.elapsed=0;this.fired=new Set();this.failed=false;
   this.reconDone=!config.recon;this.reconHold=0;this.warned=false;
+  this.phaseIndex=0;this.phaseHold=0;
  }
  pending(){return (this.config.events||[]).some((e,i)=>!this.fired.has(i)&&e.required);}
- ready(){return !this.failed&&this.reconDone&&!this.pending();}
+ phase(){return (this.config.phases||[])[this.phaseIndex]||null;}
+ ready(){return !this.failed&&this.reconDone&&!this.pending()&&!this.phase();}
  tick(dt,state){
   this.elapsed+=dt;const out=[];
   (this.config.events||[]).forEach((e,i)=>{
@@ -63,17 +65,37 @@ class Operation{
    this.reconHold=valid?this.reconHold+dt:Math.max(0,this.reconHold-dt*2);
    if(this.reconHold>=r.seconds){this.reconDone=true;out.push({recon:true,message:'RECON FIX CONFIRMED — CONTINUE THE ATTACK'});}
   }
+  const phase=this.phase();
+  if(phase&&this.reconDone){
+   const valid=phase.id==='locate'?state.located:phase.id==='suppress'?state.suppressed:
+     phase.id==='glide'?state.glide:state.clear&&!this.pending()&&!out.some(e=>e.fighters||e.bombers||e.raiders);
+   this.phaseHold=valid?this.phaseHold+dt:0;
+   if(this.phaseHold>=(phase.seconds||.1)){
+    this.phaseIndex++;this.phaseHold=0;
+    const next=this.phase();out.push({phase:true,message:next?'CONTROL — '+next.message:'CONTROL — ATTACK COMPLETE, RECOVER YOUR AIRCRAFT'});
+   }
+  }
   const remaining=(this.config.deadline||Infinity)-this.elapsed;
   if(remaining<=60&&!this.warned&&!state.complete){this.warned=true;out.push({message:'ONE MINUTE LEFT IN THE ATTACK WINDOW'});}
-  if(remaining<=0&&!state.complete&&!this.failed){this.failed=true;out.push({failed:true,message:'ATTACK WINDOW MISSED — RECOVER YOUR AIRCRAFT'});}
+  if(remaining<=0&&!state.complete&&!(state.clear&&this.ready())&&!this.failed){this.failed=true;out.push({failed:true,message:'ATTACK WINDOW MISSED — RECOVER YOUR AIRCRAFT'});}
   return out;
  }
  status(){
   if(this.failed)return 'WINDOW MISSED — RTB';
   if(!this.reconDone)return 'RECON '+Math.floor(this.reconHold)+'/'+this.config.recon.seconds+'s';
-  if(this.config.deadline){const t=Math.max(0,Math.ceil(this.config.deadline-this.elapsed));return 'WINDOW '+Math.floor(t/60)+':'+String(t%60).padStart(2,'0');}
+  const p=this.phase(),prefix=p?'PHASE '+(this.phaseIndex+1)+'/'+this.config.phases.length+' '+p.label+' · ':'';
+  if(this.config.deadline){const t=Math.max(0,Math.ceil(this.config.deadline-this.elapsed));return prefix+'WINDOW '+Math.floor(t/60)+':'+String(t%60).padStart(2,'0');}
+  if(p)return prefix.replace(/ · $/,'');
   return this.pending()?'MORE CONTACTS EXPECTED':'RECOVER WHEN TARGETS CLEAR';
  }
+}
+function withPhases(m,config){
+ if(config.practice)return config;
+ const phases=[{id:'locate',label:m.defend?'INTERCEPT':'LOCATE',seconds:2,message:m.defend?'INTERCEPT THE INBOUND RAIDERS':'LOCATE THE CONTACT — FOLLOW THE ROUTE'}];
+ if(m.kills?.flak)phases.push({id:'suppress',label:'SUPPRESS FLAK',message:'SILENCE THE REQUIRED FLAK POSITIONS BEFORE THE STRIKE'});
+ phases.push({id:'strike',label:m.defend?'DEFEND FLEET':m.bombers?'INTERCEPT':'STRIKE',message:m.defend?'PROTECT THE DECK — SHIP\'S GUNS ARE ENGAGING':m.bombers?'BREAK THE BOMBER FORMATION — KEEP YOUR SPEED':'CONTACT CONFIRMED — PRESS THE ATTACK'});
+ if(m.ac==='me163')phases.push({id:'glide',label:'GLIDE HOME',message:'ROCKET OFF — BEGIN YOUR GLIDE HOME'});
+ return {...config,phases};
 }
 function briefText(name,config,wind){
  const w=wx(name),r=config.recon;
@@ -82,11 +104,12 @@ function briefText(name,config,wind){
  +(config.deadline?'<br><b>ATTACK WINDOW</b> '+Math.round(config.deadline/60)+' minutes from take-off':'')
  +(r?'<br><b>RECON</b> Cross the blue circle at '+Math.round(r.min*3.281)+'–'+Math.round(r.max*3.281)+' ft MSL for '+r.seconds+' seconds.':'')
  +(config.notes?'<br><b>EXECUTION</b> '+config.notes:'')
+ +(config.phases?'<br><b>PHASES</b> '+config.phases.map(p=>p.label).join(' → ')+' → RECOVERY':'')
  +(config.practice?'<br><b>RECOVERY</b> Landing practice — no timed combat objectives.':'<br><b>RECOVERY</b> Keep fuel and ammunition for the return. Land to complete the sortie.');
 }
 function drawMap(canvas,opt){
  if(!canvas)return;const g=canvas.getContext('2d'),W=canvas.width,H=canvas.height;
- const pts=[opt.base,...opt.targets,...(opt.recon?[opt.recon]:[])];
+ const pts=[opt.base,...opt.targets,...(opt.recon?[opt.recon]:[]),...(opt.approach?[opt.approach]:[])];
  const minX=Math.min(...pts.map(p=>p.x)),maxX=Math.max(...pts.map(p=>p.x));
  const minZ=Math.min(...pts.map(p=>p.z)),maxZ=Math.max(...pts.map(p=>p.z));
  const span=Math.max(4200,(maxX-minX)*1.32,(maxZ-minZ)*(W-70)/(H-130)),cx=(minX+maxX)/2,cz=(minZ+maxZ)/2;
@@ -103,10 +126,11 @@ function drawMap(canvas,opt){
  for(let x=20;x<W;x+=60){g.beginPath();g.moveTo(x,top);g.lineTo(x,bottom);g.stroke();}
  for(let y=top;y<bottom;y+=60){g.beginPath();g.moveTo(20,y);g.lineTo(W-20,y);g.stroke();}
  if(opt.lines)opt.lines(g,put);
- const ordered=opt.targets.filter(p=>!p.optional),route=[opt.base,...(opt.recon?[opt.recon]:[]),...ordered,opt.base];
+ const ordered=opt.targets.filter(p=>!p.optional),route=[opt.base,...(opt.approach?[opt.approach]:[]),...(opt.recon?[opt.recon]:[]),...ordered,opt.base];
  g.strokeStyle='#e1c878';g.lineWidth=2;g.setLineDash([7,5]);g.beginPath();
  route.forEach((p,i)=>{const q=put(p);i?g.lineTo(...q):g.moveTo(...q);});g.stroke();g.setLineDash([]);
  if(opt.recon){const p=put(opt.recon);g.strokeStyle='#80c9df';g.lineWidth=2;g.beginPath();g.arc(...p,Math.max(8,opt.recon.radius*scale),0,7);g.stroke();}
+ if(opt.approach){const p=put(opt.approach);g.strokeStyle='#b9a5ed';g.lineWidth=2;g.beginPath();g.arc(...p,Math.max(8,opt.approach.radius*scale),0,7);g.stroke();g.fillStyle='#d5c4f3';g.font='11px monospace';g.fillText(opt.approach.label,p[0]+9,p[1]+17);}
  for(const [i,t] of opt.targets.entries()){
   const p=put(t);g.fillStyle=t.optional?'#dba774':'#f06a4b';g.beginPath();g.arc(...p,5,0,7);g.fill();
   g.font='bold 13px monospace';g.fillStyle='#fff0cf';g.fillText(String(i+1),p[0]+8,p[1]-6);
@@ -116,7 +140,7 @@ function drawMap(canvas,opt){
  g.font='bold 14px monospace';g.fillStyle='#e6dbb8';g.fillText('OPERATIONS MAP  /  '+opt.title,20,22);
  g.fillText('N ↑',W-52,22);g.font='11px monospace';g.fillText('RED: TARGETS   AMBER: DEFENCES   BLUE: RECON',20,H-24);
  const km=1000*scale;g.strokeStyle='#eee0b5';g.beginPath();g.moveTo(W-30-km,H-12);g.lineTo(W-30,H-12);g.stroke();g.fillText('1 km',W-60,H-17);
- return opt.targets.map((p,i)=>(i+1)+'. '+p.label+(p.optional?' (optional)':'')).join(' · ');
+ return (opt.approach?'APPROACH: '+opt.approach.label+' · ':'')+opt.targets.map((p,i)=>(i+1)+'. '+p.label+(p.optional?' (optional)':'')).join(' · ');
 }
-global.FlightOps={weather,wx,clouds,visibility,Operation,briefText,drawMap};
+global.FlightOps={weather,wx,clouds,visibility,Operation,withPhases,briefText,drawMap};
 })(typeof window!=='undefined'?window:globalThis);

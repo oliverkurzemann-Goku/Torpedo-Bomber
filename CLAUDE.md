@@ -5,7 +5,59 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 161 · Thunderbolt Squadron BUILD 161 · Remagen-Kern 23 / Fahrzeuge 22**
+Stand bei Übergabe: **Torpedo Squadron BUILD 162 · Thunderbolt Squadron BUILD 162 · Remagen-Kern 23 / Fahrzeuge 22**
+
+**Build 162 (04.10.2026): Missionsphasen, Reaktionen, Schäden und Spezialoperationen.**
+Pacific-Avengers halten nach dem Abwurf ihren bisherigen Kurs, steigen aus und
+wenden erst nach ausreichender Entfernung in einem geschwindigkeitsbegrenzten,
+koordinierten Kurvenflug. Kein radial rückwärts gesetztes Ausflugziel mehr,
+keine Geschwindigkeitsumkehr durch einen fast stehenden Velocity-Vektor.
+Vier sichtbare Deckrand-Batterien verteidigen den IJN-Träger gegen Avengers:
+Vorhalt, gestreute physische Geschosse mit Segment-Kollision, Mündungsfeuer,
+Flak-Wolken und beschränkte Lebensdauer. Kein Beschuss des eigenen Zero;
+Schiffsabschüsse zählen für die Verteidigung, geben aber keine Spieler-Abschusspunkte.
+Erholung erst nach allen Wellen UND Auflösung noch laufender feindlicher Torpedos.
+
+FlightOps.Operation führt Ortung, erforderliche Flak-Unterdrückung, Angriff
+und beim Komet Gleitflug. Fortschritt wird aus echten Zielen/Abschüssen gelesen;
+gerade ausgelöste Verstärkungen können die Angriffsphase nicht im selben Tick beenden.
+Primäre Flak hat während Unterdrückung Navigationspriorität. Frühe Treffer bleiben
+gültig; keine künstliche Ziel-Unverwundbarkeit. Verletzte Kolonnen stoppen und
+verteilen sich ausschließlich entlang ihrer bisherigen OSM-Straße, M16 langsamer.
+Angriffe auf ausgewählte Werke/Brücken und Okinawa-Abstellplätze alarmieren
+Abfangjäger vom gegnerischen Flugplatz. Flottenschiffe alarmieren nahe Flak-Eskorten.
+
+sortie-features.js trennt Tankleck, Motorleistung und klemmendes Fahrwerk vom
+Rumpfwert. Gesunde Flugzeuge haben Faktor 1 und keinen Zusatzverbrauch: bestätigte
+Steuerung/Fluggefühl unverändert. Behutsame Bauchlandung mit beschädigtem, oben
+verklemmtem Fahrwerk ist möglich; absichtlich eingefahrenes gesundes Fahrwerk
+bleibt ein Fehler. Ju87-Festfahrwerk und Me163-Skid werden nicht oben blockiert.
+Sichtbarer Status, Rauch, Funkmeldung; Deck-Reparatur setzt Systeme zurück.
+Nach Factory/Whole Rhine kann ein beschädigter Kamerad optional eskortiert werden,
+ohne Wingman-Befehle. Sein Autopilot nutzt den normalen AI-Flug, kommt von OSTEN
+in Beaufort (Westgrenze nur 787 m entfernt), landet und rollt aus. Bonus +500
+bei mindestens 20 s innerhalb 650 m; eigene Missionswertung bleibt unabhängig.
+
+audio/flight-atmosphere.js: optionale kurze Sprachausgabe nur mit lokaler
+englischer Gerätestimme, kein Remote-Fallback. Erst nach Nutzer-Geste, keine
+unabhängige Sprach-Warteschlange, Abbruch bei Pause/Exit. Textfunk bleibt immer.
+Native WebAudio-Atmosphäre: begrenzte Bodenmotor-Starts und entfernte Gefechte,
+alles am bestehenden Master-Gain, maximal vier Quellen. Zweites abgestelltes
+Flugzeug kann seinen echten Propeller starten; keine neuen GLB-Downloads.
+
+Zwei angehängte Bonuseinsätze (alte Speicher-Indizes unverändert): Me262
+Low-Level Ambush (2 B24 + Eskorte, optionales echtes Allied M16-Ziel) und
+Me163 Rocket Dash & Glide (1 B17, 42 Tank-Einheiten, Gleitflug-Verfolger,
+optionaler Höhenbonus). Alle Jet-/Komet-Einsätze bieten variierende oder
+wählbare Ridge-Gap/South-Valley-Anflugwege, in Briefingkarte und Navigation.
+Routen sind optional (+150); direkter Abfangkurs bleibt möglich. Menü mit
+20 Karten bleibt im Sechs-Spalten-Raster, 66px Karten im Querformat.
+Zusätzliche Regressionen prüfen 20/60/120-FPS-Ausflug, echte Trägergeschosse,
+Phasen/Wellen, Schadenspfade, Sprach-Lifecycle, Kolonnen auf echter Straße und
+Wingman-Rückkehr über alle 56 DEM-Kacheln. Browser prüft zusätzlich native
+WebAudio, Original-Me262/Me163, neue Briefingrouten, sichtbare Schäden,
+tatsächliche Bauchlandung und IJN-Feuer; Bilder als Build162-CI-Artefakt.
+Echte iPad-/Safari-FPS oder Stimme werden nicht als getestet ausgegeben.
 
 **Build 161 (04.10.2026): stabiler Tiefflug-Boden, sparsame Fenster und sichtbare Flugplatzarbeit.**
 Auf echter Kachel 3,3 waren selbst bei LOD0 Straßen bis 5,96 m, Bahn bis 10,36 m,

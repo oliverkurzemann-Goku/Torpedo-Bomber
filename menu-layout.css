@@ -65,6 +65,7 @@
   #menu .campaignArt{height:auto;margin-bottom:12px;}
   #menu h1.stencil{font-size:26px;}
   #menu #missionSel .chip{min-height:86px;}
+  #menu[data-campaign="europe"] #missionSel .chip{min-height:66px;}
   #menu .sub{font-size:10px;line-height:1.4;margin:6px 0 10px;}
   #menu .menuIntro{font-size:12px;margin-bottom:10px;}
   #menu .menuConfig,#menu .menuActions{margin-top:12px;}

@@ -50,19 +50,19 @@ assert.equal(pilot.rtb,true,'second kill unlocks carrier recovery');assert.equal
 const script=html('remagen-mission.html');
 const start=script.indexOf('const MISSIONS=['),end=script.indexOf('\nfunction M()',start);
 const missions=vm.runInNewContext(script.slice(start,end)+'\nMISSIONS',{});
-assert.equal(missions.length,18,'training plus sixteen real-terrain combat sorties');
+assert.equal(missions.length,20,'training plus eighteen real-terrain combat sorties');
 assert.deepEqual([...new Set(missions.map(m=>m.ac))].sort(),['bf109','fw190','ju87','me163','me262','p47']);
-assert.equal(missions.filter(m=>m.kills||m.enemyAir||m.bombers).length,16);
-assert.equal(missions.filter(m=>m.ac==='me262').length,3,'three jet sorties');
-assert.equal(missions.at(-2).ac,'me163','Komet interception leads into the bonus sortie');
-assert.equal(missions.at(-1).ac,'ju87','Ju 87 dive-bombing bonus closes the campaign');
-assert.equal(missions.at(-1).traffic,'convoy','bonus sortie targets real moving vehicles');
+assert.equal(missions.filter(m=>m.kills||m.enemyAir||m.bombers).length,18);
+assert.equal(missions.filter(m=>m.ac==='me262').length,4,'four jet sorties');
+assert.equal(missions[16].ac,'me163','original Komet interception retains its index');
+assert.equal(missions[17].ac,'ju87','Ju 87 bonus retains its index');
+assert.equal(missions[17].traffic,'convoy','Stuka bonus targets real moving vehicles');
+assert.equal(missions.at(-2).id,'jetambush');assert.equal(missions.at(-1).id,'kometdash');
 const plans=vm.runInNewContext(html('operation-plans.js')+'\nwindow.FlightPlans',{window:{}});
 assert.equal(plans.europe.length,missions.length,'every Rhine sortie gets its own weather/operation plan');
-assert.equal(plans.europe.at(-2).fuel,65,'rocket sortie has limited powered flight');
-assert.equal(plans.europe.at(-2).events[0].glide,true,'Komet pursuit starts after the engine stops');
-assert.equal(plans.europe.at(-2).events[0].escapeThreat,true,'pursuer can be evaded on landing');
+assert.equal(plans.europe[16].fuel,65,'original rocket sortie has limited powered flight');
+for(const i of [16,19]){assert.equal(plans.europe[i].events[0].glide,true,'both Komet pursuits start after the engine stops');assert.equal(plans.europe[i].events[0].escapeThreat,true,'pursuer can be evaded on landing');}
 for(const m of missions){if(m.kills?.truck)assert.equal(m.traffic||m.id,'convoy');
  if(m.kills?.ferry)assert.equal(m.traffic||m.id,'ferry');
  if(m.kills?.train)assert.equal(m.traffic||m.id,'train');}
-console.log('Two playable modes, sixteen real-Rhine sorties and fresh progression verified');
+console.log('Two playable modes, eighteen real-Rhine sorties, original saved indices and fresh progression verified');

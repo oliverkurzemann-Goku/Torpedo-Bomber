@@ -1,6 +1,7 @@
 'use strict';
 const fs=require('node:fs'),path=require('node:path'),vm=require('node:vm'),assert=require('node:assert/strict');
 const THREE=require('three');
+require('../../sortie-features.js');
 const html=fs.readFileSync(path.resolve(__dirname,'../../remagen-mission.html'),'utf8');
 const a=html.indexOf('function relaunch(){'),b=html.indexOf('function startMission(i){',a);
 assert(a>0&&b>a,'real mission launch found');
@@ -14,7 +15,7 @@ assert(P.pos.y>800&&P.spd>140&&P.throttle>.5,'intercept has an initial powered c
 const first=html.indexOf('  const stallSpd=STALL_SPD+P.gear*2-P.flap*4;',html.indexOf('function updateFlight(dt){'));
 const last=html.indexOf('  // ---- attitude:',first);
 assert(first>0&&last>first);
-const speed=vm.runInNewContext('(function(P,dt,STALL_SPD,THR_MIN_SPD,MAX_SPD){'+html.slice(first,last)+'})');
+const speed=vm.runInNewContext('(function(P,dt,STALL_SPD,THR_MIN_SPD,MAX_SPD){'+html.slice(first,last)+'})',{SortieFeatures:global.SortieFeatures});
 P.fuel=0;P.throttle=0;P.pitch=0;P.gear=1;P.spd=155;
 for(let i=0;i<200;i++)speed(P,.05,51,33,238);
 assert(P.spd<140&&P.spd>65,'spent rocket glides and gradually slows instead of receiving idle jet thrust');

@@ -264,7 +264,10 @@ class LivingWorld {
   }
   update(dt,focusX,focusZ,emitSmoke=null){
     for(const e of this.entities){
-      if(e.alive)e.phase+=dt*e.speed;
+      e.alertT=Math.max(0,(e.alertT||0)-dt);
+      // Threatened columns stop, then disperse ALONG their mapped road.
+      const multiplier=e.alertT>5?0:e.alertT>0?(e.meta.vehicleModel==='m16'?.45:1.55):1;
+      if(e.alive)e.phase+=dt*e.speed*multiplier;
       if(e.alive||!Number.isFinite(e.last.x))e.last=this._sample(e.route,e.phase);
       const p=e.last,near=Math.hypot(p.x-focusX,p.z-focusZ)<e.visibleRadius;
       e.model.visible=near;
@@ -288,7 +291,7 @@ class LivingWorld {
     let convoyIndex=0;
     for(const e of this.entities){
       if(e.kind==='truck'&&e.meta.convoy===0){
-        const allied=id==='stuka'||id==='jabo';
+        const allied=['stuka','jabo','jetambush','jetjabo','jetstrike','jetboxes'].includes(id);
         const index=convoyIndex++;
         e.meta.vehicleModel=allied?(index<2?'sherman':'m16'):(index===0?'jagdpanther':'tiger');
         if(e.visual.userData.sourceModel!==e.meta.vehicleModel){
@@ -297,7 +300,7 @@ class LivingWorld {
           e.model.remove(e.visual);e.visual=visual;e.model.add(visual);
         }
       }
-      e.alive=true;e.phase=e.initialPhase;e.last=this._sample(e.route,e.phase);e.model.rotation.z=0;
+      e.alive=true;e.alertT=0;e.phase=e.initialPhase;e.last=this._sample(e.route,e.phase);e.model.rotation.z=0;
       e.model.position.set(e.last.x,this._groundEntity(e,e.last),e.last.z);e.model.rotation.y=e.last.yaw;
       e.model.traverse(o=>{if(o.isMesh&&o.userData.baseMaterial)o.material=o.userData.baseMaterial;});
     }
@@ -317,6 +320,11 @@ class LivingWorld {
     }});
     e.model.rotation.z=e.kind==='ferry'?.12:(e.kind==='train'?-.08:.18);
     e.model.position.y-=e.kind==='ferry'?.55:.35;
+  }
+  alertConvoy(entity){
+    if(!entity||entity.kind!=='truck')return false;
+    for(const e of this.entities)if(e.alive&&e.kind==='truck'&&e.meta.convoy===entity.meta.convoy)e.alertT=12;
+    return true;
   }
 
   _buildingClear(data,ox,oz,x,z,r){

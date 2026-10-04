@@ -288,7 +288,7 @@
   .opsLegend{font:11px/1.5 monospace;color:#d7c797;text-align:left;margin-top:5px;}
   #opsStatus{position:fixed;top:calc(env(safe-area-inset-top) + 76px);left:50%;transform:translateX(-50%);color:#edcc80;background:rgba(14,20,18,.78);padding:5px 9px;font:10px monospace;pointer-events:none;z-index:9;max-width:58vw;text-align:center;}
 </style>
-<link rel="stylesheet" href="menu-layout.css?v=161">
+<link rel="stylesheet" href="menu-layout.css?v=162">
 </head>
 <body>
 <div id="app"></div>
@@ -320,7 +320,7 @@
   <div id="flash"></div>
   <div id="ltn" style="position:fixed;inset:0;background:#e6ecff;opacity:0;pointer-events:none;z-index:40;"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 161</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 162</div>
 
   <!-- Optical landing aid -->
   <div id="lso">
@@ -356,12 +356,13 @@
 <button id="bailBtn" type="button" title="Emergency parachute (B)">BAIL OUT</button>
 <div id="fireBtn">GUNS</div>
 <div id="opsStatus"></div>
+<div id="systemsStatus" role="status" style="position:fixed;top:calc(env(safe-area-inset-top) + 116px);left:50%;transform:translateX(-50%);color:#ffbf96;background:#251810db;font:10px monospace;pointer-events:none;z-index:9;max-width:60vw;text-align:center"></div>
 <canvas id="mmap" width="120" height="120"></canvas>
 <div id="dmgVig"></div>
 
 <!-- Menu -->
 <div class="overlay" id="menu" data-campaign="pacific">
-  <div class="menuTop"><a id="selBtn" href="index.html?v=161">&#9664; Change Game</a><span class="menuMeta">PACIFIC OPERATIONS<br>BUILD 161</span></div>
+  <div class="menuTop"><a id="selBtn" href="index.html?v=162">&#9664; Change Game</a><span class="menuMeta">PACIFIC OPERATIONS<br>BUILD 162</span></div>
   <div class="card menuCard">
     <aside class="menuOverview" aria-label="Campaign and pilot options">
     <div class="campaignArt" aria-hidden="true"></div>
@@ -377,6 +378,7 @@
         <b id="menuLandingSpeed"></b> Watch the landing signal and keep the sink rate gentle.</div>
     </details>
     <details class="extraSettings"><summary>More options &amp; credits</summary><div class="settingsContent">
+      <label class="toggle"><input id="spokenRadio" type="checkbox" checked> Spoken radio (local device voice)</label>
       <label class="toggle" id="loadToggle"><span class="box" id="loadBox"></span> Dive-bomb loadout (SBD)</label>
       <label class="toggle" id="dbgToggle"><span class="box" id="dbgBox"></span> Debug overlay</label>
       <label class="toggle" id="timeToggle"><span class="box" id="timeBox">☀</span> <span id="timeName">Day</span></label>
@@ -450,8 +452,10 @@
 <script src="pilot-rescue.js?v=157"></script>
 <script src="radio-intercept.js?v=157"></script>
 <script src="audio/weapon-sound.js?v=144"></script>
-<script src="sortie-systems.js?v=129"></script>
-<script src="operation-plans.js?v=144"></script>
+<script src="audio/flight-atmosphere.js?v=162"></script>
+<script src="sortie-systems.js?v=162"></script>
+<script src="sortie-features.js?v=162"></script>
+<script src="operation-plans.js?v=162"></script>
 <script>
 "use strict";
 /* ============================================================
@@ -520,6 +524,8 @@ let aeroMode=false;
 function shake(mag){ shakeT=Math.max(shakeT,0.4); shakeMag=Math.max(shakeMag,mag); }
 let hitsTaken=0;
 function registerHit(){ hitsTaken++; const vig=document.getElementById('dmgVig');
+  const systemMessage=!isFree()&&!isQual()?SortieFeatures.Damage.hit(P,6*D().dmg):null;
+  if(systemMessage){radioSay(systemMessage);flash(systemMessage,2600);}
   if(vig){ vig.style.opacity=0.6; setTimeout(()=>{ if(vig) vig.style.opacity=0; },140); } }
 let bubbles=[], slicks=[], killCam=null, score=0, scoreStart=0, selectedMission=0;
 // ---- pilot's logbook (persisted like the best score) ----
@@ -899,6 +905,7 @@ function updateFlightHints(dt){
     onGround:P.onDeck,speed:P.spd},message=>flash(message,3600));
 }
 function init(){
+  voiceRadio.bind(document.getElementById('spokenRadio'));
   const app=document.getElementById('app');
   renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:"high-performance"});
   renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
@@ -1921,7 +1928,16 @@ function resetShoreTargets(enabled){
   shoreTargets.push({def,group,hp:def.hp,alive:true,loaded:false,cool:2});}
 }
 function hitShoreTarget(t,damage){
- if(!t.alive)return;t.hp-=damage;
+  if(!t.alive)return;t.hp-=damage;
+  if(pacificOps&&!pacificOps.scrambled){
+    pacificOps.scrambled=true;const first=zeros.length;spawnZero(0,1);
+    for(const z of zeros.slice(first)){
+      z.pos.set(7500,shoreHeight(7500,-1044)+300,-1044);
+      z.heading=Math.atan2(P.pos.x-z.pos.x,P.pos.z-z.pos.z);
+      z.vel=new THREE.Vector3(Math.sin(z.heading),0,Math.cos(z.heading)).multiplyScalar(z.spd);
+    }
+    radioSay('AIRFIELD ALERT — ZERO TAKING OFF TO INTERCEPT');
+  }
  const p=t.group.position;spawnSmoke(p.x,p.y+3,p.z,0x554a3a,.9);
  if(t.hp>0)return;t.alive=false;t.group.visible=false;addScore(t.def.optional?300:900);
  spawnExplosion(p.x,p.y+2,p.z,1.1);spawnDebris(p.x,p.y+3,p.z,8);sfxBoom(.8);
@@ -1944,13 +1960,14 @@ function updateShoreTargets(dt){
 }
 function choosePacificPlan(i){
  const config={...(FlightPlans.pacific[i]||{}),practice:!!(MISSIONS[i].free||MISSIONS[i].qual)},names=MISSIONS[i].free?[document.getElementById('practiceWx').value||'clear']:config.weather||[MISSIONS[i].weather||'clear'];
- return {config,weather:names[Math.floor(Math.random()*names.length)],wind:(Math.random()<.5?-1:1)*(2+i*.28)};
+ return {config:FlightOps.withPhases(MISSIONS[i],config),weather:names[Math.floor(Math.random()*names.length)],wind:(Math.random()<.5?-1:1)*(2+i*.28)};
 }
 function updatePacificOperation(dt){
  if(!pacificOps||isFree()||isQual())return;
- const clear=isDefend()?raiders.every(r=>!r.alive):ships.filter(s=>s.def.type!=='destroyer').every(s=>!s.alive)&&shoreTargets.filter(t=>!t.def.optional).every(t=>!t.alive);
+ const clear=isDefend()?raiders.every(r=>!r.alive)&&etorps.length===0:ships.filter(s=>s.def.type!=='destroyer').every(s=>!s.alive)&&shoreTargets.filter(t=>!t.def.optional).every(t=>!t.alive);
  const kills=sortieShipsSunk+shoreTargets.filter(t=>!t.alive).length+raiders.filter(r=>!r.alive).length;
- for(const e of pacificOps.tick(dt,{pos:P.pos,kills,clear,complete:P.rtb||clear&&pacificOps.ready()})){
+ const located=kills>0||(isDefend()?raiders.some(r=>r.alive&&P.pos.distanceTo(r.pos)<4500):ships.some(s=>s.alive&&P.pos.distanceTo(s.group.position)<2300));
+ for(const e of pacificOps.tick(dt,{pos:P.pos,kills,clear,located,complete:P.rtb||clear&&pacificOps.ready()})){
   if(e.weather){weather=e.weather;applyWeather();}
   for(let i=0;i<(e.fighters||0);i++)spawnZero(i,e.fighters);
   for(let i=0;i<(e.raiders||0);i++)spawnRaider(i,e.raiders);
@@ -2003,6 +2020,7 @@ function startMission(idx){
   zeros.forEach(z=>GameRuntime.release(z.mesh)); zeros=[];
   shakeT=0; shakeMag=0;
   carrierX=0; CARRIER_SPD=5; if(carrier) carrier.position.x=0;   // task group back on station
+  carrierGunTimers=[0,.21,.43,.65];
   if(carrierModel) carrierModel.position.x=CARRIER_DX;
   if(ijnCarrierModel) ijnCarrierModel.position.x=CARRIER_DX;
   const m=MISSIONS[idx];
@@ -2013,6 +2031,7 @@ function startMission(idx){
   P.pos.set(carrierX+BOW_X+30, DECK_Y+4, 0);
   P.heading=0; P.pitch=0; P.roll=0; P.spd=APP_SPD; P.throttle=0.6;
   P.vSpeed=0; P.fuel=m.fuel; P.hull=100; P.fuelRate=1/D().fuel; P.torps=m.torps; P.alive=true;
+  SortieFeatures.Damage.reset(P);voiceRadio.cancel();soundscape.reset();
   P.touchResolved=false; P.boltMsgTimer=0; P.rtb=false;
   P.gear=1; P.gearTgt=1; P.flap=0; P.flapTgt=0; P.diveBrake=false; P.diveBrakeVisual=0; P.dmgT=0;
   P.hook=1; P.hookTgt=1;   // matches how it always looked before this button existed: deployed
@@ -2217,6 +2236,7 @@ function upgradeShipsToTemplate(type, template){
 function launch(){
   hideOverlays();
   initAudio();
+  soundscape.attach(actx,eng?.master);voiceRadio.unlock();
   state=ST.LAUNCH;
   launchTimer=0;
   P.pos.set(carrierX+BOW_X-60, DECK_Y+3.0, 0);
@@ -2483,7 +2503,7 @@ function hitShip(s, quietCam){
 
 function checkObjectiveCleared(){
   const primary=ships.filter(s=>s.def.type==="freighter"||s.def.type==="cruiser");
-  const cleared = (isDefend()?raiders.length>0&&raiders.every(r=>!r.alive):
+  const cleared = (isDefend()?raiders.length>0&&raiders.every(r=>!r.alive)&&etorps.length===0:
     primary.length>0&&primary.every(s=>!s.alive)&&shoreTargets.filter(t=>!t.def.optional).every(t=>!t.alive));
   const wave=MISSIONS[mission].reinforcement;
   if(cleared && wave && !reinforcementsLaunched){
@@ -2929,12 +2949,13 @@ function updateTailGun(dt){
 }
 
 function updateFlak(dt){
+  if(isDefend())updateCarrierDefense(dt);
   for(const s of ships){
     if(!s.alive||!s.flak) continue;
     const d=Math.hypot(P.pos.x-s.group.position.x, P.pos.z-s.group.position.z);
     s.flakTimer-=dt;
     if(s.flakTimer<=0 && d<2200){
-      s.flakTimer=0.30+Math.random()*0.35;
+      s.flakTimer=(0.30+Math.random()*0.35)*(s.fleetAlertT>0?.85:1);
       // 3-round tracer burst, aimed with lead + spread
       const from=new THREE.Vector3(s.group.position.x,10,s.group.position.z);
       const lead=P.pos.clone().addScaledVector(noseDir(),P.spd*1.1);
@@ -2968,7 +2989,17 @@ function updateFlak(dt){
   }
   for(let i=tracers.length-1;i>=0;i--){
     const t=tracers[i]; t.life-=dt;
+    const previous=t.fleet?t.mesh.position.clone():null;
     t.mesh.position.addScaledVector(t.dir,t.speed*dt);
+    if(t.fleet){
+      for(const r of raiders){
+        if(r.alive&&SortieFeatures.segmentDistance(previous,t.mesh.position,r.pos)<8){
+          r.hp-=.22;t.life=0;spawnSmoke(r.pos.x,r.pos.y,r.pos.z,0x514d46,.22);
+          if(r.hp<=0)killRaider(r,true);
+          break;
+        }
+      }
+    }
     if(t.foe && P.alive && t.mesh.position.distanceTo(P.pos)<9){
       P.hull=Math.max(0,P.hull-5*D().dmg); shake(0.9); t.life=0;
       P.rollBias=(P.rollBias||0)+(Math.random()<0.5?-0.04:0.04)*D().dmg; registerHit(); updateHUD();
@@ -2979,6 +3010,34 @@ function updateFlak(dt){
         if(t.mesh.position.distanceTo(w.pos)<9){ damageWingman(w,1); t.life=0; break; } }
     }
     if(t.life<=0){ GameRuntime.release(t.mesh); tracers.splice(i,1);}
+  }
+}
+// Four deck-edge batteries. Their dispersed physical rounds defend against
+// Avengers, never the friendly player Zero. Sweep collision prevents tunnelling.
+let carrierGunTimers=[0,.21,.43,.65];
+function updateCarrierDefense(dt){
+  if(carrierHP<=0)return;
+  for(let i=0;i<carrierGunTimers.length;i++){
+    carrierGunTimers[i]-=dt;if(carrierGunTimers[i]>0)continue;
+    const side=i%2?-1:1;
+    const from=new THREE.Vector3(carrierX+(i<2?STERN_X+48:BOW_X-48),DECK_Y-4,side*(DECK_HALF_W+2));
+    const target=raiders.filter(r=>r.alive&&r.pos.distanceTo(from)<1800&&side*r.pos.z>-35)
+      .sort((a,b)=>a.pos.distanceToSquared(from)-b.pos.distanceToSquared(from))[0];
+    if(!target){carrierGunTimers[i]=.18;continue;}
+    carrierGunTimers[i]=1.05+Math.random()*.35;
+    const range=target.pos.distanceTo(from),lead=target.pos.clone().addScaledVector(target.vel,range/560);
+    const spread=18+range*.018;
+    for(let k=0;k<3;k++){
+      const aim=lead.clone().add(new THREE.Vector3((Math.random()-.5)*spread,(Math.random()-.5)*spread,(Math.random()-.5)*spread));
+      const dir=aim.sub(from).normalize();
+      const mesh=new THREE.Mesh(new THREE.CylinderGeometry(.10,.10,3.8,5),new THREE.MeshBasicMaterial({color:0xffd07b,fog:false}));
+      GameRuntime.own(mesh);mesh.position.copy(from).addScaledVector(dir,k*12);mesh.lookAt(mesh.position.clone().add(dir));scene.add(mesh);
+      tracers.push({mesh,dir,life:3.3,speed:560,fleet:true});
+    }
+    if(combatFX)combatFX.muzzle(scene,[from],true);
+    if(P.pos.distanceTo(from)<1600)sfxPop();
+    target.fleetBurstT=(target.fleetBurstT||0)-1;
+    if(target.fleetBurstT<=0){target.fleetBurstT=5;spawnFlakBurst(lead.clone().add(new THREE.Vector3((Math.random()-.5)*100,(Math.random()-.5)*60,(Math.random()-.5)*100)));}
   }
 }
 function spawnFlakBurst(p){
@@ -3108,7 +3167,7 @@ function updateFlight(dt){
   P.heading -= (aeroMode?0.72*Math.sin(P.roll):Math.sign(P.roll))*turnRate*dt;
 
   // speed toward throttle target (engine loses power when damaged), minus drag
-  const engineMul = P.hull<60? (0.45+0.55*P.hull/60) : 1.0;
+  const engineMul = (P.hull<60? (0.45+0.55*P.hull/60) : 1.0)*SortieFeatures.Damage.power(P);
   const tgt = (THR_MIN_SPD + (MAX_SPD-THR_MIN_SPD)*P.throttle)*engineMul;
   let eff = tgt - Math.sin(P.pitch)*55 - P.flap*9 - P.gear*4 - (P.diveBrake?34:0);
   P.spd += (eff - P.spd)*Math.min(1,0.6*dt);
@@ -3211,7 +3270,8 @@ function resolveGroundAndDeck(dt){
         if((x-carrierX)>WIRE_X1){ bolter("LANDED LONG — BOLTER"); return; }
         if((x-carrierX)<WIRE_X0-12*D().wire){ bolter("SHORT — BOLTER"); return; }
         if(P.spd<STALL_SPD-2){ crash("STALLED ON DECK","Too slow over the ramp."); return; }
-        if(P.gear<0.6){ crash("WHEELS UP","You boarded on your belly — lower the gear next time."); return; }
+        if(P.gear<0.6&&!SortieFeatures.Damage.belly(P,sink,APP_SPD+6)){ crash("WHEELS UP","You boarded on your belly — lower the gear next time."); return; }
+        if(P.gear<.6)radioSay('EMERGENCY BELLY RECOVERY — DECK CREW STANDING BY');
         if(P.hook<0.6){ bolter("HOOK UP — BOLTER"); return; }
         // TRAP!
         for(let i=0;i<5;i++) spawnSmoke(x-3+i*1.5,DECK_Y+1.5,z+(Math.random()-0.5)*4,0x6a6a64,0.5);
@@ -3324,6 +3384,7 @@ function trap(x){
     const m=MISSIONS[mission];
     P.torps=m.torps; P.fuel=m.fuel; P.ammo=1200;
     P.hull=Math.min(100,P.hull+40);
+    SortieFeatures.Damage.reset(P);
     P.bingo=false; P.lowFuelT=0; P.rtb=false; P.ballCalled=false;
     updateHUD();
     flash("TRAP ABOARD — REARMED  +"+bonus,1600);
@@ -4147,18 +4208,21 @@ function spawnRaider(i,n){
   const a=Math.PI*(0.15+0.7*i/Math.max(1,n));
   const r={ mesh, group:mesh, disc:r_disc, fromModel, def:{type:'avenger'}, bomber:true, hp:4, alive:true, dropped:false, runIn:false,
     pos:new THREE.Vector3(carrierX+Math.cos(a)*(2200+i*700), 260+i*70, waveSide*((1900+i*600)+Math.sin(a)*600)),
-    heading:Math.PI, pitch:0, roll:0, spd:72-i*3 };
+    heading:0, pitch:0, roll:0, spd:72-i*3 };
+  r.heading=Math.atan2(carrierX-r.pos.x,-r.pos.z);
   r.vel=new THREE.Vector3(Math.sin(r.heading),0,Math.cos(r.heading)).multiplyScalar(r.spd);
   mesh.position.copy(r.pos); scene.add(mesh); raiders.push(r);
 }
-function killRaider(r){
-  r.alive=false; addScore(400);
+function killRaider(r,byFleet=false){
+  if(!r.alive)return;
+  r.alive=false; if(!byFleet)addScore(400);
   spawnExplosion(r.pos.x,r.pos.y,r.pos.z,1.3); sfxBoom(0.7);
   spawnDebris(r.pos.x,r.pos.y,r.pos.z,14);
   GameRuntime.release(r.mesh);
   const left=raiders.filter(x=>x.alive).length;
   flash(left?("SPLASH ONE — "+left+" TO GO"):"ALL RAIDERS DOWN — RECOVER ABOARD",1500);
-  if(left) radioSay("SPLASH ONE! "+left+" STILL COMING");
+  if(byFleet)radioSay("SHIP'S GUNS — AVENGER DOWN");
+  else if(left) radioSay("SPLASH ONE! "+left+" STILL COMING");
   else radioSay(pacificOps?.pending()?"FIRST WAVE DOWN — MORE RAIDERS EXPECTED":"THE FLEET IS SAFE — BRING IT HOME");
   checkObjectiveCleared();
 }
@@ -4187,13 +4251,14 @@ function updateRaiders(dt){
       r.fromModel=true;
     }
     const dh2=Math.hypot(r.pos.x-carrierX, r.pos.z);
-    if(r.dropped && dh2>1900){ r.dropped=false; r.runIn=false; r.egressDir=null; }   // enough room to come around
+    r.egressT=Math.max(0,(r.egressT||0)-dt);
+    if(r.dropped && r.egressT<=0 && dh2>1900){ r.dropped=false; r.runIn=false; r.egressDir=null; }
     if(!r.runIn && dh2<1750) r.runIn=true;
     const aimY = r.dropped ? 240 : (r.runIn ? 45 : 220);           // descend to wave height on the run-in
     if(!r.vel) r.vel=new THREE.Vector3(Math.sin(r.heading),0,Math.cos(r.heading)).multiplyScalar(r.spd);
     let goal;
     if(r.dropped){
-      if(!r.egressDir) r.egressDir=new THREE.Vector3(r.pos.x-carrierX,0,r.pos.z).normalize();
+      if(!r.egressDir) r.egressDir=r.vel.clone().setY(0).normalize();
       goal=r.pos.clone().addScaledVector(r.egressDir,650); goal.y=aimY;
     } else {
       // Aim ahead of the moving deck, not at its current centre, and include altitude in the
@@ -4201,31 +4266,16 @@ function updateRaiders(dt){
       const eta=Math.min(7,dh2/Math.max(45,r.spd));
       goal=new THREE.Vector3(carrierX+CARRIER_SPD*eta,aimY,0);
     }
-    const aim=goal.sub(r.pos);
-    if(r.pos.y<70) aim.y=Math.max(aim.y,(70-r.pos.y)*5);
-    aim.normalize();
-    const wanted=aim.multiplyScalar(r.dropped?82:(r.runIn?76:72));
-    const dv=wanted.sub(r.vel), maxDv=13*dt;
-    if(dv.length()>maxDv) dv.setLength(maxDv);
-    r.vel.add(dv);
-    const dir=r.vel.clone().normalize();
-    const oldH=r.heading, desH=Math.atan2(dir.x,dir.z);
-    let dh=desH-r.heading; while(dh>Math.PI)dh-=2*Math.PI; while(dh<-Math.PI)dh+=2*Math.PI;
-    const rate=0.85*dt; r.heading+=Math.max(-rate,Math.min(rate,dh));
-    const desP=Math.max(-0.32,Math.min(0.28,Math.asin(Math.max(-1,Math.min(1,dir.y)))));
-    r.pitch+=(desP-r.pitch)*Math.min(1,2.8*dt);
-    const bank=Math.max(-0.82,Math.min(0.82,((r.heading-oldH)/Math.max(dt,0.001))*0.8));
-    r.roll+=(bank-r.roll)*Math.min(1,3.0*dt);
-    r.spd=r.vel.length();
-    r.pos.addScaledVector(r.vel,dt);
-    if(r.pos.y<28){ r.pos.y=28; r.vel.y=Math.max(3,r.vel.y); }
+    SortieFeatures.flyRaider(r,goal,dt);
     r.mesh.position.copy(r.pos);
     r.mesh.rotation.set(0,0,0);
-    r.mesh.rotateY(r.heading); r.mesh.rotateX(r.pitch); r.mesh.rotateZ(-r.roll);
+    r.mesh.rotateY(r.heading); r.mesh.rotateX(-r.pitch); r.mesh.rotateZ(-r.roll);
     if(r.disc) r.disc.rotation.z-=GameRuntime.rotorStep(dt,PROP_STEP);
-    if(!r.dropped && r.runIn && dh2<820 && r.pos.y<95){
+    const toDeck=new THREE.Vector3(carrierX-r.pos.x,0,-r.pos.z).normalize();
+    const forward=r.vel.clone().setY(0).normalize();
+    if(!r.dropped && r.runIn && dh2<820 && dh2>300 && r.pos.y<95 && Math.abs(r.roll)<.35 && forward.dot(toDeck)>.96){
       r.dropped=true;
-      r.egressDir=new THREE.Vector3(r.pos.x-carrierX,0,r.pos.z).normalize();
+      r.egressDir=forward; r.egressT=14;
       // deflection shot: aim where the carrier WILL be, or the fish always runs astern
       let t=0, ax=carrierX;
       for(let k=0;k<5;k++){ ax=carrierX+CARRIER_SPD*t; t=Math.hypot(ax-r.pos.x, 0-r.pos.z)/22; }
@@ -4653,7 +4703,7 @@ function loadPlaneModel(){
       }
       window.__eyeDbg='EYE '+COCKPIT_EYE.map(v=>v.toFixed(2)).join('/');
       const btEl=document.getElementById('buildTag');
-      if(btEl) btEl.textContent='BUILD 161 · '+window.__eyeDbg;
+      if(btEl) btEl.textContent='BUILD 162 · '+window.__eyeDbg;
       let seat=null;
       model.traverse(function(o){
         if(!o.isMesh||!o.material) return;
@@ -5661,6 +5711,7 @@ function updateHUD(){
   const vsiEl=document.getElementById('hVsi');
   vsiEl.innerHTML=(vsi>0?'+':'')+vsi+'<small> FPM</small>';
   document.getElementById('hFuel').innerHTML=Math.round(P.fuel)+'<small> %</small>';
+  document.getElementById('systemsStatus').textContent=SortieFeatures.Damage.status(P);
   document.getElementById('hHull').innerHTML=Math.round(P.hull)+'<small> %</small>';
   document.getElementById('hTorp').textContent=P.torps;
   document.getElementById('hAmmo').textContent=P.ammo==null?0:P.ammo;
@@ -5818,6 +5869,7 @@ function flash(text,ms){
 // ---- radio chatter (queued, one line at a time, bottom-left) ----
 let radioQ=[], radioT=0;
 const interceptRadio=RadioIntercept.create();
+const voiceRadio=FlightAtmosphere.voiceRadio(),soundscape=FlightAtmosphere.soundscape();
 function updateInterceptRadio(dt){
  if(state!==ST.FLIGHT||!P.alive||P.rtb||pacificOps?.failed)return;
  const contacts=isDefend()?raiders:zeros;
@@ -5828,7 +5880,7 @@ function radioSay(text){ if(radioQ.length<4) radioQ.push(text); }
 function updateRadio(dt){
   const r=document.getElementById('radio');
   if(radioT>0){ radioT-=dt; if(radioT<=0) r.classList.remove('show'); return; }
-  if(radioQ.length){ r.textContent=radioQ.shift(); r.classList.add('show'); radioT=r.textContent.startsWith('CONTROL — ')?7:2.8; sfxRadio(); }
+  if(radioQ.length){ r.textContent=radioQ.shift(); r.classList.add('show'); radioT=r.textContent.startsWith('CONTROL — ')?7:2.8; sfxRadio(); voiceRadio.say(r.textContent); }
 }
 function updateFlash(dt){
   if(flashTimer>0){ flashTimer-=dt; if(flashTimer<=0) document.getElementById('flash').classList.remove('show'); }
@@ -5848,6 +5900,7 @@ function showResult(win,title,sub,body,btn){
 }
 
 function togglePause(reason='Sortie held'){
+  voiceRadio.cancel();soundscape.stop();
   if(state===ST.FLIGHT || state===ST.LAUNCH || steeringParachute()){
     releaseHeldControls();
     prePauseState=state; state=ST.PAUSED; firing=false; showOverlay('pause');
@@ -5872,6 +5925,7 @@ function resumeGame(){
   if(eng) eng.master.gain.setTargetAtTime(0.85,actx.currentTime,0.05);
 }
 function exitToMenu(){
+  voiceRadio.cancel();soundscape.stop();
   releaseHeldControls();
   if(bailRescue){bailRescue.dispose();bailRescue=null;}
   if(bailout){bailout.dispose();bailout=null;}
@@ -5918,6 +5972,7 @@ function setupUIButtons(){
   const bv=document.getElementById('bestVal'); if(bv) bv.textContent=bestScore();
   document.getElementById('startBtn').onclick=beginGame;
   document.getElementById('gearBtn').addEventListener('pointerdown',e=>{ e.preventDefault();
+    if(P.systemDamage?.gearLock!=null){flash('GEAR JAMMED — '+(P.systemDamage.gearLock<.6?'GENTLE BELLY RECOVERY':'FIXED DOWN'),2200);return;}
     P.gearTgt = P.gearTgt>0.5?0:1; const b=document.getElementById('gearBtn');
     b.classList.toggle('on',P.gearTgt>0.5); b.innerHTML=P.gearTgt>0.5?'GEAR<br>▼ DN':'GEAR<br>▲ UP';
     flash(P.gearTgt>0.5?'GEAR DOWN':'GEAR UP',700); sfxGearMotor(); });
@@ -6003,7 +6058,7 @@ function setupUIButtons(){
   if(dbgT2) dbgT2.onclick=()=>{
     dbgOn=!dbgOn; GameRuntime.storage.setItem('dbgOn',dbgOn?'1':'0');
     const db=document.getElementById('dbgBox'); if(db) db.textContent=dbgOn?'✓':'';
-    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 161'; }
+    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 162'; }
   };
   const lu=document.getElementById('lookUp'), ld=document.getElementById('lookDn');
   let _lookT=0;
@@ -6019,7 +6074,7 @@ function setupUIButtons(){
   if(pb) pb.addEventListener('pointerdown',e=>{ e.preventDefault(); togglePause(); });
   const rb=document.getElementById('resumeBtn'); if(rb) rb.onclick=resumeGame;
   const mb=document.getElementById('menuBtn'); if(mb) mb.onclick=exitToMenu;
-  document.getElementById('pauseMainMenu').onclick=()=>{exitToMenu();window.location.href='index.html?v=161';};
+  document.getElementById('pauseMainMenu').onclick=()=>{exitToMenu();window.location.href='index.html?v=162';};
   document.getElementById('resultBtn').onclick=()=>{
     // the logbook borrows this screen from the menu — send the player straight back
     if(logbookOpen){ logbookOpen=false; showOverlay('menu'); return; }
@@ -6126,6 +6181,15 @@ function updateLaunch(dt){
   }
 }
 
+function updatePacificAtmosphere(dt){
+  const baseRange=Math.hypot(P.pos.x-carrierX,P.pos.z);
+  const sources=isDefend()?raiders.filter(r=>r.alive).map(r=>r.pos):ships.filter(s=>s.alive&&s.flak).map(s=>s.group.position);
+  const distant=sources.filter(p=>p.distanceTo(P.pos)>1200).sort((a,b)=>a.distanceToSquared(P.pos)-b.distanceToSquared(P.pos))[0];
+  for(const event of soundscape.tick(dt,{baseRange,combatRange:distant?distant.distanceTo(P.pos):Infinity,combat:!isFree()&&!isQual()})){
+    if(event==='battle'&&distant)spawnFlakBurst(distant.clone().add(new THREE.Vector3(35,90,-35)));
+    if(event==='engine'&&baseRange<900&&!soundscape.fieldCalled){soundscape.fieldCalled=true;radioSay('DECK CREW — NEXT AIRCRAFT WARMING UP');}
+  }
+}
 function updateShips(dt){
   for(const s of ships){
     if(!s.alive){
@@ -6168,12 +6232,14 @@ function updateShips(dt){
           evading=true; break; }
       }
       if(evading){
+        for(const escort of ships)if(escort.alive&&escort.flak&&escort.group.position.distanceTo(s.group.position)<3000)escort.fleetAlertT=5;
         if(!s.evadeDir){ s.evadeDir=Math.random()<0.5?-1:1; s.evadeT=2.5+Math.random()*2;
           if(!radioEvadeCalled){ radioEvadeCalled=true; radioSay("SHE'S SEEN THE FISH — TARGET TURNING HARD"); } }
         s.evadeT-=dt;
         if(s.evadeT<=0){ s.evadeDir*=-1; s.evadeT=2.5+Math.random()*2.5; }
         s.group.rotateY(s.evadeDir*0.10*dt);
       } else { s.evadeDir=0; }
+      s.fleetAlertT=Math.max(0,(s.fleetAlertT||0)-dt);
       // ---- island avoidance: ships used to steam straight through the terrain ----
       // Turn the bow toward the bearing that points away from the island's centre. Once clear
       // of the keep-out ring the ship resumes its course, so it curves around instead of
@@ -6239,7 +6305,7 @@ function animate(){
     notice.style.cssText='position:fixed;inset:0;z-index:999998;background:rgba(15,20,15,.95);color:#e8ddbc;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px;text-align:center;font:16px system-ui';
     const title=document.createElement('h2');title.textContent='Simulation interrupted';
     const detail=document.createElement('p');
-    detail.textContent='BUILD 161 · '+(MISSIONS[mission]?.sub||'Menu')+' · '+error.message;
+    detail.textContent='BUILD 162 · '+(MISSIONS[mission]?.sub||'Menu')+' · '+error.message;
     const reload=document.createElement('button');reload.textContent='Reload game';
     reload.style.cssText='padding:12px 24px;font:inherit';reload.onclick=()=>location.reload();
     notice.appendChild(title);notice.appendChild(detail);notice.appendChild(reload);document.body.appendChild(notice);
@@ -6279,6 +6345,9 @@ function animateFrame(){
   }
 
   if(state===ST.FLIGHT){
+    if(SortieFeatures.Damage.tick(P,dt)){
+      const p=P.pos.clone().addScaledVector(noseDir(),2);spawnSmoke(p.x,p.y,p.z,P.systemDamage.engine<1?0x343434:0xaaa99b,.4);
+    }
     document.getElementById('bailBtn').style.display=P.alive&&P.pos.y-shoreHeight(P.pos.x,P.pos.z)>85?'block':'none';
     pollKeys(dt);
     updateFlight(dt);
@@ -6297,7 +6366,7 @@ function animateFrame(){
     }
     if(wingmen.length) updateWingmen(dt);
     if(wingShots.length) updateWingShots(dt);
-    updatePacificOperation(dt);updateShoreTargets(dt);
+    updatePacificOperation(dt);updateShoreTargets(dt);updatePacificAtmosphere(rawDt);
     updateInterceptRadio(rawDt);
     FlightOps.visibility(scene,clouds,P.pos,weather,dt,seaUniforms);
     updateGust(dt); updateRain(dt); updateStorm(dt);

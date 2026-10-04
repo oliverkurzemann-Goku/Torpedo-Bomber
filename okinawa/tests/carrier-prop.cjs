@@ -96,7 +96,7 @@ function glb(file){return new Promise((resolve,reject)=>{const raw=fs.readFileSy
   cowlCentre:()=>null,fitPropeller:()=>{throw Error('loaded Avenger must use the detached GLB rotor');},
   rigOwnProp:()=>null,makePropBlades:()=>null});
  vm.runInContext(html.slice(html.indexOf('function makeWingmanModel('),html.indexOf('function spawnWingman('))+
-  '\n'+html.slice(html.indexOf('function spawnRaider(i,n){'),html.indexOf('function killRaider(r){')),raiderContext);
+  '\n'+html.slice(html.indexOf('function spawnRaider(i,n){'),html.indexOf('function killRaider(r,')),raiderContext);
  for(let i=0;i<3;i++)raiderContext.spawnRaider(i,3);
  assert.equal(raiderContext.raiders.length,3,'Zero defence launches three live attackers');
  for(const r of raiderContext.raiders){

@@ -97,6 +97,10 @@ class AirfieldActivity {
       pad.position.y=Math.max(...heights)-box.min.y;pad.add(model);
     }
   }
+  startEngine(){
+    const rotor=this.parked[1]?.children[0]?.getObjectByName('prop');
+    if(rotor)this.engineStart={rotor,time:0};
+  }
   pose(mesh,index,x,y,z,w,h,d,yaw=0,roll=0){
     this._position.set(x,y,z);this._rotation.setFromEuler(this._euler.set(0,yaw,roll));this._scale.set(w,h,d);
     this._matrix.compose(this._position,this._rotation,this._scale);mesh.setMatrixAt(index,this._matrix);
@@ -105,6 +109,12 @@ class AirfieldActivity {
     this.group.visible=Math.hypot(focusX-this.x,focusZ-this.z)<6500;
     if(!this.group.visible)return;this.time+=dt;
     const time=this.time;
+    if(this.engineStart){
+      const e=this.engineStart;e.time+=dt;
+      const rate=Math.min(1,e.time/3)*Math.max(0,Math.min(1,(12-e.time)/3));
+      e.rotor.rotation.z-=.24*rate*60*dt;
+      if(e.time>12)this.engineStart=null;
+    }
     this.crew.forEach((p,i)=>{
       const walking=p.job==='walk'||p.job==='carry',a=time*.85+p.phase;
       const x=p.x+(walking?Math.sin(a*.18)*9:0),z=p.z+(walking?Math.cos(a*.18)*2:0),y=this.ground(x,z);

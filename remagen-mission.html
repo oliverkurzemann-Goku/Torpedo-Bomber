@@ -264,8 +264,9 @@
   .opsMap{display:block;width:100%;height:auto;margin-top:14px;border:1px solid #778168;border-radius:5px;}
   .opsLegend{font:11px/1.5 monospace;color:#d7c797;text-align:left;margin-top:5px;}
   #opsStatus{position:fixed;top:calc(env(safe-area-inset-top) + 76px);left:50%;transform:translateX(-50%);color:#edcc80;background:rgba(14,20,18,.78);padding:5px 9px;font:10px monospace;pointer-events:none;z-index:9;max-width:58vw;text-align:center;}
+  #systemsStatus{position:fixed;top:calc(env(safe-area-inset-top) + 116px);left:50%;transform:translateX(-50%);color:#ffbf96;background:#251810db;padding:5px 9px;font:10px monospace;pointer-events:none;z-index:9;max-width:60vw;text-align:center;}#systemsStatus:empty{display:none;}
 </style>
-<link rel="stylesheet" href="menu-layout.css?v=161">
+<link rel="stylesheet" href="menu-layout.css?v=162">
 </head>
 <body>
 <!-- ===== TEMP TEST-ONLY VERSION BANNER — asked for by Oliver: "kannst du irgendwo einbauen,
@@ -287,7 +288,7 @@
   <div style="width:100%;height:4px;background:repeating-linear-gradient(45deg,#ffd400,#ffd400 8px,#111 8px,#111 16px);"></div>
   <span id="testVersionBannerText" style="background:#111;color:#ffd400;font-family:monospace;font-weight:800;font-size:11px;letter-spacing:.5px;padding:3px 10px;border:1px solid #ffd400;border-top:none;border-radius:0 0 6px 6px;"></span>
 </div>
-<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 161';</script>
+<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 162';</script>
 <!-- ===== END TEMP TEST-ONLY VERSION BANNER ===== -->
 <div id="app"></div>
 
@@ -316,7 +317,7 @@
   <div id="flash"></div>
   <div id="gunsight"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 161 · REAL RHINE</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 162 · REAL RHINE</div>
 
   <div id="apr">
     <div id="aprCall"></div>
@@ -327,6 +328,7 @@
 </div>
 
 <div id="opsStatus"></div>
+<div id="systemsStatus" role="status"></div>
 <canvas id="mmap" width="104" height="104"></canvas>
 <div id="oilCanopy"></div>
 <div id="dmgVig"></div>
@@ -365,7 +367,7 @@
 </div>
 
 <div class="overlay hidden" id="menu" data-campaign="europe">
-  <div class="menuTop"><a id="selBtn" href="index.html?v=161">&#9664; Change Game</a><span class="menuMeta">RHINE OPERATIONS<br>BUILD 161</span></div>
+  <div class="menuTop"><a id="selBtn" href="index.html?v=162">&#9664; Change Game</a><span class="menuMeta">RHINE OPERATIONS<br>BUILD 162</span></div>
   <div class="card menuCard">
     <aside class="menuOverview" aria-label="Campaign and pilot options">
     <div class="campaignArt" aria-hidden="true"></div>
@@ -382,19 +384,21 @@
         <b id="menuLandingSpeed"></b> Keep the wings level and use the runway, not the surrounding fields.</div>
     </details>
     <details class="extraSettings"><summary>More options &amp; credits</summary><div class="settingsContent">
+      <label class="toggle"><input id="spokenRadio" type="checkbox" checked> Spoken radio (local device voice)</label>
+      <label class="weatherPick" for="approachRoute">Jet / Komet approach<select id="approachRoute"><option value="auto">Vary each sortie</option><option value="ridge">Northern ridge gap</option><option value="valley">Southern valley</option></select></label>
       <label class="toggle" id="dbgToggle"><span class="box" id="dbgBox"></span> Debug overlay</label>
       <label class="weatherPick" for="practiceWx">Free flight weather<select id="practiceWx"><option value="clear">Clear</option><option value="broken">Broken cloud</option><option value="lowcloud">Low overcast</option><option value="fog">Fog</option><option value="rain">Rain</option><option value="squall">Heavy showers</option><option value="storm">Thunderstorm</option></select></label>
     <div class="credit">
       The real Rhine gorge around Remagen — Copernicus elevation data and Overture Maps roads,
       rivers, forests and buildings, not an invented valley.<br>
-      Fifteen sorties and a bonus mission with the P-47D, Bf 109, Fw 190, Me 262, Me 163 and Ju 87.
+      Fifteen sorties, three bonus missions and training with the P-47D, Bf 109, Fw 190, Me 262, Me 163 and Ju 87.
       <br>Vehicles: KojfDiscord / adrielcz, CC BY 4.0 ·
       <a href="ASSET-CREDITS.md" target="_blank" rel="noopener" style="color:inherit">Model credits</a>
     </div>
     </div></details>
     </aside>
     <section class="missionPanel" aria-label="Mission selection">
-      <div class="secLbl">Choose your sortie · 15 missions + bonus &amp; training</div>
+      <div class="secLbl">Choose your sortie · 15 missions + 3 bonus &amp; training</div>
       <div id="missionSel" role="group" aria-label="European missions"></div>
       <div class="menuConfig">
         <div class="difficulty"><div class="secLbl">Difficulty</div><div id="diffSel" role="group" aria-label="Difficulty"></div></div>
@@ -464,9 +468,9 @@
 <script src="terrain-system/OSMManager.js?v=161"></script>
 <script src="terrain-system/HistoricalObjectManager.js?v=remagen-21"></script>
 <script src="terrain-system/AirfieldDetails.js?v=161"></script>
-<script src="terrain-system/AirfieldActivity.js?v=161"></script>
+<script src="terrain-system/AirfieldActivity.js?v=162"></script>
 <script src="terrain-system/WorldVehicles.js?v=remagen-22"></script>
-<script src="terrain-system/LivingWorld.js?v=161"></script>
+<script src="terrain-system/LivingWorld.js?v=162"></script>
 <script src="campaign.js?v=1"></script>
 <script src="game-runtime.js?v=157"></script>
 <script src="combat-fx.js?v=157"></script>
@@ -476,9 +480,11 @@
 <script src="radio-intercept.js?v=157"></script>
 <script src="audio/weapon-sound.js?v=144"></script>
 <script src="audio/jet-engine.js?v=144"></script>
-<script src="sortie-systems.js?v=146"></script>
+<script src="audio/flight-atmosphere.js?v=162"></script>
+<script src="sortie-systems.js?v=162"></script>
+<script src="sortie-features.js?v=162"></script>
 <script src="sortie-fuel.js?v=161"></script>
-<script src="operation-plans.js?v=147"></script>
+<script src="operation-plans.js?v=162"></script>
 <script>
 // ============================================================
 //  REMAGEN 1945 — REAL TERRAIN (forked from thunderbolt-europe.html)
@@ -563,6 +569,7 @@ let windZ=0, weather='clear', ceilingY=4200;
 let clouds=[];
 let radioQ=[], radioT=0, flashT=0;
 let actx=null, eng=null;
+const voiceRadio=FlightAtmosphere.voiceRadio(),soundscape=FlightAtmosphere.soundscape();
 let sortieKills={flak:0,bridge:0,factory:0,truck:0,train:0,ferry:0,air:0,bomber:0};
 let hitsTaken=0, missionOver=false;
 
@@ -792,7 +799,7 @@ async function loadRealWorld(){
 
   if(OSMManager.BUILD!==23||HistoricalObjectManager.BUILD!==21||LivingWorld.BUILD!==22||WorldVehicles.BUILD!==22) throw new Error('Terrain version mismatch. Reload Remagen.');
   document.getElementById('testVersionBannerText').textContent=
-    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 161 · MODULE 23';
+    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 162 · MODULE 23';
   heightProvider=new DEMHeightProvider(RTILE,'terrain-system/real/data/dem/');
   terrain=new TerrainManager(scene,RTILE,heightProvider);
   osmMgr=new OSMManager(scene,RTILE,terrain,'terrain-system/real/data/osm/');
@@ -2716,7 +2723,7 @@ function spawnLivingTarget(entity,opt){
     pts:armoured?400:d.pts,name:vehicle==='sherman'?'M4 SHERMAN':vehicle==='m16'?'M16 AA':armoured?'JAGDPANTHER':d.name,
     primary:opt.primary!==false,cool:0,burnT:0,smokeT:Math.random()};
   targets.push(t);
-  if(vehicle==='m16'&&(M().id==='stuka'||M().id==='jabo'))flakUnits.push(t);
+  if(vehicle==='m16'&&isGermanMission(M()))flakUnits.push(t);
   return t;
 }
 function resetAllRealTargets(){
@@ -2748,6 +2755,20 @@ function damageTarget(t,amount,byGun){
   const d=TDEF[t.kind];
   if(byGun) amount*=d.gun;
   if(amount<=0) return;
+  if(t.entity&&livingWorld?.alertConvoy(t.entity)&&!convoyAlertCalled){convoyAlertCalled=true;radioSay('COLUMN ALERTED — VEHICLES HALTING, THEN DISPERSING ALONG THE ROAD');}
+  if(europeOps&&!europeOps.scrambled&&!P.rtb&&['factory','final','jetjabo'].includes(M().id)){
+    europeOps.scrambled=true;
+    if(blockingEnemyAir().filter(e=>!e.bomber).length<4){
+      const first=enemyAir.length;spawnEnemyAir(1);
+      for(const e of enemyAir.slice(first)){
+        const x=isGermanMission(M())?ALLIED_AF_X+1600:GERMAN_AF_X-1600;
+        const z=isGermanMission(M())?ALLIED_AF_Z:GERMAN_AF_Z;
+        e.pos.set(x,groundY(x,z)+450,z);e.heading=Math.atan2(P.pos.x-x,P.pos.z-z);
+        e.vel.set(Math.sin(e.heading)*e.spd,0,Math.cos(e.heading)*e.spd);
+      }
+      radioSay('ENEMY FIELD ALERTED — INTERCEPTOR SCRAMBLING');
+    }
+  }
   t.hp-=amount;
   if(t.hp<=0){ killTarget(t); }
 }
@@ -2761,6 +2782,7 @@ function killTarget(t){
   addScore(t.pts);
   const key={flak:'flak',bridge:'bridge',factory:'factory',truck:'truck',train:'train',ferry:'ferry'}[t.kind];
   if(key) sortieKills[key]=(sortieKills[key]||0)+1;
+  if(t.secondary){addScore(300);radioSay('OPTIONAL SECONDARY TARGET DESTROYED — BONUS 300');}
   // Darken materials in place and sink the whole permanent sub-group straight down a few metres
   // for a "knocked out" read — deliberately NOT the old rotation-tilt wreck visual
   // (t.group.rotation.z=...), because these meshes' own positions are baked in WORLD coordinates
@@ -2856,7 +2878,13 @@ const MISSIONS=[
         +"two M4 Shermans and two M16 anti-aircraft half-tracks. German batteries are friendly "
         +"and are not targets. Extend DIVE BRAKES (D) before the dive, release your bombs, "
         +"retract them for the climb and return to the forward strip. This is an alternate "
-        +"scenario over the Rhine terrain, not a documented Remagen sortie." }
+        +"scenario over the Rhine terrain, not a documented Remagen sortie." },
+  {id:'jetambush',title:'Bonus Jet',sub:'Low-Level Ambush',ac:'me262',bonus:true,
+    bombers:{n:2,type:'b24'},enemyAir:1,weather:'broken',secondary:true,
+    text:'Fictional special operation. Choose the ridge gap or the southern valley, then climb into a two-aircraft Liberator section. Use crossing attacks, not a slow tail chase. An Allied M16 near the mapped road is an OPTIONAL secondary gun target. Preserve fuel for the forward strip.'},
+  {id:'kometdash',title:'Bonus Komet',sub:'Rocket Dash & Glide',ac:'me163',bonus:true,
+    bombers:{n:1,type:'b17'},weather:'broken',
+    text:'Fictional rocket dash from the forward strip. One Fortress, a short rocket burn and no go-around after cutoff. Reach the approach gate above 4,900 ft MSL for an OPTIONAL high-entry bonus. After the bomber falls, shut down, evade the pursuer and glide back with the landing skid extended.'}
 ];
 function M(){ return MISSIONS[mission]; }
 function isFree(){ return !!M().free; }
@@ -2875,6 +2903,7 @@ function clearWorld(){
   targets=[]; flakUnits=[];
   if(gunMarks){gunMarks.count=0;gunMarkNext=0;}
   for(const e of enemyAir) GameRuntime.release(e.group); enemyAir=[];
+  for(const w of wingmen)GameRuntime.release(w.group);wingmen=[];
   for(const b of bullets) GameRuntime.release(b.mesh); bullets=[];
   for(const t of tracers) GameRuntime.release(t.mesh); tracers=[];
   for(const shell of groundFire)if(shell.mesh)GameRuntime.release(shell.mesh);
@@ -2900,6 +2929,10 @@ function populate(){
   if(m.kills&&m.kills.factory && realFactory) spawnRealTarget('factory',realFactory,{primary:true});
   if(livingWorld&&m.kills&&(m.kills.truck||m.kills.train||m.kills.ferry))
     for(const e of livingWorld.missionTargets(m.traffic||m.id))spawnLivingTarget(e,{primary:true});
+  if(m.secondary&&livingWorld){
+    const entity=livingWorld.entities.find(e=>e.kind==='truck'&&e.meta.convoy===0&&e.meta.vehicleModel==='m16');
+    if(entity){const t=spawnLivingTarget(entity,{primary:false});t.secondary=true;t.name='OPTIONAL M16';}
+  }
 }
 function objectiveLeft(){
   const need=M().kills||{};
@@ -2921,7 +2954,7 @@ function objectiveText(){
   if(m.bombers){
     const b=bombersLeft(), f=blockingEnemyAir().filter(e=>!e.bomber).length;
     if(b||f) return 'BOMBERS '+b+(f?'   ESCORT '+f:'');
-    if(m.id==='komet'&&europeOps?.pending())return 'ROCKET OFF — BEGIN GLIDE';
+    if(m.ac==='me163'&&europeOps?.pending())return 'ROCKET OFF — BEGIN GLIDE';
     return europeOps?.pending()?'NEXT BOMBER BOX EXPECTED':'RTB — LAND AT '+airfieldName(m);
   }
   const left=objectiveLeft();
@@ -2938,9 +2971,10 @@ function checkObjective(){
   const airLeft=blockingEnemyAir().length;
   if(!Object.keys(left).length && airLeft===0 && !M().circuits){
     if(!P.rtb){ P.rtb=true;
-      const pursuer=M().id==='komet'&&enemyAir.some(e=>e.alive&&e.escapeThreat);
+      const pursuer=M().ac==='me163'&&enemyAir.some(e=>e.alive&&e.escapeThreat);
       radioSay(pursuer?'BOMBERS DOWN — EVADE THE PURSUER AND LAND':M().id==='stuka'?'ALLIED COLUMN HIT — RETURN TO THE FORWARD STRIP':'TARGETS DESTROYED — RETURN TO '+airfieldName(M())+' AND PANCAKE');
-      flash(pursuer?'GLIDE HOME — PURSUER ON YOUR SIX':'OBJECTIVE COMPLETE — RTB',2200); }
+      flash(pursuer?'GLIDE HOME — PURSUER ON YOUR SIX':'OBJECTIVE COMPLETE — RTB',2200);
+      if(['factory','final'].includes(M().id))spawnRecoveryEscort(); }
   }
 }
 
@@ -2957,7 +2991,7 @@ function radioSay(msg){ radioQ.push(msg); }
 function updateRadio(dt){
   const el=document.getElementById('radio'); if(!el) return;
   if(radioT>0){ radioT-=dt; if(radioT<=0) el.classList.remove('show'); return; }
-  if(radioQ.length){ el.textContent=radioQ.shift(); el.classList.add('show'); radioT=el.textContent.startsWith('CONTROL — ')?7:2.6; sfxRadio(); }
+  if(radioQ.length){ el.textContent=radioQ.shift(); el.classList.add('show'); radioT=el.textContent.startsWith('CONTROL — ')?7:2.6; sfxRadio(); voiceRadio.say(el.textContent); }
 }
 function addScore(n){ score+=Math.round(n); }
 
@@ -3291,6 +3325,11 @@ function updateTracers(dt){
     if(P.alive && segDist(ax,ay,az,p.x,p.y,p.z,P.pos)<7){
       damagePlayer((t.damage||4.5)*D().dmg,'flak'); shake(0.5); done=true;
     }
+    if(!done)for(const w of wingmen){
+      if(w.alive&&!w.landed&&segDist(ax,ay,az,p.x,p.y,p.z,w.pos)<8){
+        w.hp--;done=true;if(w.hp<=0){w.alive=false;spawnExplosion(w.pos.x,w.pos.y,w.pos.z,1);GameRuntime.release(w.group);radioSay('TWO IS DOWN — CONTINUE YOUR OWN RECOVERY');}break;
+      }
+    }
     if(!done && p.y<=groundY(p.x,p.z)) done=true;
     if(done||t.life<=0){ GameRuntime.release(t.mesh); tracers.splice(i,1); }
   }
@@ -3542,6 +3581,42 @@ function flyAI(e,dt,aimDir,wantSpd){
   e.vel.set(Math.sin(e.heading)*cp*e.spd, Math.sin(e.pitch)*e.spd, Math.cos(e.heading)*cp*e.spd);
 }
 
+function spawnRecoveryEscort(){
+  if(wingmen.length||!modelTpl[P.ac])return;
+  const group=buildAircraft(P.ac),pos=P.pos.clone().addScaledVector(noseDir(),-140);
+  pos.x+=90;pos.y=Math.max(groundY(pos.x,pos.z)+220,pos.y-30);
+  group.getObjectByName('gear')?.traverse(o=>o.visible=false);
+  group.position.copy(pos);scene.add(group);
+  wingmen.push({group,pos,kind:P.ac,vel:noseDir().multiplyScalar(100),heading:P.heading,pitch:0,roll:0,spd:100,
+    hp:2,alive:true,cover:0,smokeT:0,path:0,landed:false,bonus:false});
+  radioSay('TWO — ENGINE HIT, HEADING HOME. OPTIONAL: STAY WITHIN 650 METRES AND ESCORT ME TO THE STRIP');
+}
+function updateRecoveryEscort(dt){
+  for(const w of wingmen){
+    if(!w.alive)continue;
+    if(w.landed){w.spd=Math.max(0,w.spd-12*dt);w.pos.x-=w.spd*dt;w.pos.y=groundY(w.pos.x,w.pos.z)+2;w.group.position.copy(w.pos);continue;}
+    const close=w.pos.distanceTo(P.pos)<650;
+    if(close&&P.alive)w.cover+=dt;
+    // Approach from the EAST: Beaufort is only 787 m from the western map edge.
+    const waypoints=[{x:AF_X+1800,z:AF_Z,y:AF_Y+180},{x:AF_X+600,z:AF_Z,y:AF_Y+68},{x:AF_X-360,z:AF_Z,y:AF_Y+2}];
+    let goal=waypoints[w.path];
+    if(w.path<2&&Math.hypot(w.pos.x-goal.x,w.pos.z-goal.z)<420){w.path++;goal=waypoints[w.path];}
+    const aim=new THREE.Vector3(goal.x-w.pos.x,goal.y-w.pos.y,goal.z-w.pos.z);
+    const groundAhead=groundY(w.pos.x+Math.sin(w.heading)*450,w.pos.z+Math.cos(w.heading)*450);
+    if(w.path===0&&w.pos.y<groundAhead+170)aim.y=Math.max(aim.y,250);
+    flyAI(w,dt,aim,w.path===2?52:w.path===1?68:100);
+    if(w.path<2)w.pos.y=Math.max(w.pos.y,groundY(w.pos.x,w.pos.z)+100);
+    if(w.path===2&&Math.abs(w.pos.z-AF_Z)<45&&Math.abs(w.pos.x-AF_X)<RWY_LEN/2&&w.pos.y-groundY(w.pos.x,w.pos.z)<6){
+      w.landed=true;w.heading=-Math.PI/2;w.pitch=0;w.roll=0;w.pos.y=groundY(w.pos.x,w.pos.z)+2;
+      radioSay('TWO DOWN SAFELY — THANKS FOR THE COVER');
+      if(w.cover>=20&&!w.bonus){w.bonus=true;addScore(500);flash('OPTIONAL ESCORT COMPLETE +500',2400);}
+    }
+    w.group.position.copy(w.pos);w.group.rotation.set(-w.pitch,w.heading,-w.roll,'YXZ');
+    const gear=w.group.getObjectByName('gear');if(gear)gear.traverse(o=>o.visible=w.path>0);
+    const prop=w.group.getObjectByName('prop');if(prop)prop.rotation.z-=GameRuntime.rotorStep(dt,.21,4);
+    w.smokeT-=dt;if(w.smokeT<=0&&!w.landed){w.smokeT=.45;spawnSmoke(w.pos.x,w.pos.y,w.pos.z,0x3c3c3c,.35);}
+  }
+}
 function updateEnemyAir(dt){
   for(const e of enemyAir){
     if(!e.alive) continue;
@@ -3763,6 +3838,8 @@ function updateBomber(e,dt,toP,dist){
 function damagePlayer(amount,cause){
   if(!P.alive) return;
   P.hull=Math.max(0,P.hull-amount);
+  const systemMessage=SortieFeatures.Damage.hit(P,amount,cause);
+  if(systemMessage){radioSay(systemMessage);flash(systemMessage,2600);}
   hitsTaken++;
   P.dmgT=0.5;
   const v=document.getElementById('dmgVig'); if(v) v.style.opacity='0.85';
@@ -3917,6 +3994,7 @@ function updateFlight(dt){
   const stallSpd=STALL_SPD+P.gear*2-P.flap*4;
   // thrust -> target speed, modified by attitude, gear, flaps
   let eff = THR_MIN_SPD + (MAX_SPD-THR_MIN_SPD)*P.throttle;
+  eff*=SortieFeatures.Damage.power(P);
   eff -= Math.sin(P.pitch)*62 + P.flap*11 + P.gear*6 + (P.tankAttached?7:0);
   if(P.ac==='ju87')eff-=P.diveBrakeVisual*(30+Math.max(0,-P.pitch)*25);
   if(P.ac==='me163' && (P.fuel<=0||P.throttle<0.01)){
@@ -4050,7 +4128,7 @@ function resolveGround(dt){
   const wingsLevel=Math.abs(P.roll)<0.30;
   if(!onRwy){
     // a field landing: survivable only if you are slow, level and gentle
-    if(sink<4.5 && P.spd<APP_SPD+8 && wingsLevel && P.gear>0.6 && Math.abs(P.pitch)<0.22){
+    if(sink<4.5 && P.spd<APP_SPD+8 && wingsLevel && (P.gear>0.6||SortieFeatures.Damage.belly(P,sink,APP_SPD+8)) && Math.abs(P.pitch)<0.22){
       P.onGround=true; P.spd*=0.8; P.vSpeed=0; P.pos.y=gy+2.0;
       flash('DOWN IN A FIELD',1800);
       radioSay('YOU ARE DOWN IN ONE PIECE — THAT WILL DO');
@@ -4059,7 +4137,8 @@ function resolveGround(dt){
     crash('CRASHED','Hit the ground away from the strip.'); return;
   }
   if(sink>6.5){ crash('HARD LANDING','Came down too fast — the undercarriage folded.'); return; }
-  if(P.gear<0.6){ crash(P.ac==='me163'?'SKID UP':'WHEELS UP',P.ac==='me163'?'Extend the landing skid before touchdown.':'You landed on the belly.'); return; }
+  if(P.gear<0.6&&!SortieFeatures.Damage.belly(P,sink,APP_SPD+8)){ crash(P.ac==='me163'?'SKID UP':'WHEELS UP',P.ac==='me163'?'Extend the landing skid before touchdown.':'You landed on the belly.'); return; }
+  if(P.gear<.6)radioSay('BELLY LANDING — KEEP HER STRAIGHT, RESCUE CREW STANDING BY');
   if(!wingsLevel){ crash('WINGTIP','Dropped a wing on touchdown.'); return; }
   if(hdgErr>28){ crash('OFF THE CENTRELINE','Landed across the strip instead of along it.'); return; }
   if(P.spd>APP_SPD+34){ flash('TOO FAST — GO AROUND',1400); sfxBolter();
@@ -4198,6 +4277,7 @@ function startMission(i){
   STALL_SPD=d.stall; APP_SPD=d.app; MAX_SPD=d.max; THR_MIN_SPD=d.thrMin;
   const loadout=missionLoadout(m,d);
   P.hull=d.hull; P.ammo=d.ammo; P.bombs=loadout.bombs; P.rockets=loadout.rockets;
+  SortieFeatures.Damage.reset(P,d.hull);voiceRadio.cancel();soundscape.reset();
   P.diveBrake=false;P.diveBrakeVisual=0;
   P.fuel=100; P.alive=true; P.rtb=false; P.bingo=false; P.rollBias=0;
   P.dmgT=0; P.stallWarnT=0; P.edgeWarned=false;
@@ -4206,6 +4286,7 @@ function startMission(i){
   sortieKills={flak:0,bridge:0,factory:0,truck:0,train:0,ferry:0,air:0,bomber:0};
   const plan=briefPlan||chooseEuropePlan(i);
   europeOps=new FlightOps.Operation(plan.config);weather=plan.weather;
+  convoyAlertCalled=false;
   SortieFuel.reset(P,plan.config.fuel??100,!m.free&&!m.circuits);
   clearDropTank();wxTime=0;baseWind=plan.wind;windZ=baseWind;
   document.getElementById('opsStatus').textContent='';
@@ -4229,6 +4310,7 @@ function startMission(i){
 }
 // Sortie weather, operational events and cartography.
 let europeOps=null,briefPlan=null,rhineChart=null,wxTime=0,baseWind=0;
+let convoyAlertCalled=false;
 const interceptRadio=RadioIntercept.create();
 function updateInterceptRadio(dt){
  if(state!==ST.FLIGHT||!P.alive||P.onGround||P.rtb||europeOps?.failed)return;
@@ -4237,13 +4319,30 @@ function updateInterceptRadio(dt){
 }
 function chooseEuropePlan(i){
  const cfg={...(FlightPlans.europe[i]||{}),practice:!!(MISSIONS[i].free||MISSIONS[i].circuits)},names=MISSIONS[i].free?[document.getElementById('practiceWx').value||'clear']:cfg.weather||[MISSIONS[i].weather||'clear'];
- return {config:cfg,weather:names[Math.floor(Math.random()*names.length)],wind:(Math.random()<.5?-1:1)*(2+i*.3)};
+ if(!cfg.practice&&['me262','me163'].includes(MISSIONS[i].ac)){
+  const choice=document.getElementById('approachRoute')?.value||'auto',ridge=choice==='ridge'||choice==='auto'&&Math.random()<.5;
+  cfg.approach=MISSIONS[i].ac==='me163'?{x:ridge?20300:19500,z:ridge?24500:23200,radius:1800,label:ridge?'RIDGE GAP':'SOUTH VALLEY'}:
+    {x:ridge?18100:18400,z:ridge?26000:19400,radius:1300,label:ridge?'RIDGE GAP':'SOUTH VALLEY'};
+  cfg.notes=(cfg.notes||'')+' Approach gate: '+cfg.approach.label+'. Optional route bonus +150; a direct intercept is allowed.';
+ }
+ return {config:FlightOps.withPhases(MISSIONS[i],cfg),weather:names[Math.floor(Math.random()*names.length)],wind:(Math.random()<.5?-1:1)*(2+i*.3)};
 }
 function updateEuropeOperation(dt){
  if(!europeOps||isFree()||isCircuits()||P.onGround)return;
  const clear=!Object.keys(objectiveLeft()).length&&blockingEnemyAir().length===0;
  const kills=Object.values(sortieKills).reduce((a,b)=>a+b,0);
+ if(europeOps.config.approach&&!europeOps.approachDone){
+  const a=europeOps.config.approach;
+  if(Math.hypot(P.pos.x-a.x,P.pos.z-a.z)<a.radius){
+    europeOps.approachDone=true;addScore(150);radioSay('APPROACH GATE CLEARED — TURN TO THE INTERCEPT');
+    if(M().id==='kometdash'&&P.pos.y>=1500){addScore(250);europeOps.highEntry=true;radioSay('HIGH ENTRY CONFIRMED — BONUS 250');}
+  }else if(kills>0||P.rtb)europeOps.approachDone=true;
+ }
+ const phaseState=europeOps.config.phases?{
+   located:kills>0||targets.some(t=>t.alive&&t.primary&&P.pos.distanceTo(t.group.position)<2300&&P.pos.y-groundY(P.pos.x,P.pos.z)<1000)||enemyAir.some(e=>e.alive&&P.pos.distanceTo(e.pos)<4500),
+   suppressed:(sortieKills.flak||0)>=(M().kills?.flak||0)}:{};
  for(const e of europeOps.tick(dt,{pos:P.pos,kills,clear,
+   ...phaseState,
    glide:P.ac==='me163'&&(P.fuel<=0||P.throttle<.02),complete:clear&&europeOps.ready()})){
   if(e.weather){weather=e.weather;applyWeather();}
   if(e.fighters){
@@ -4263,7 +4362,7 @@ function updateEuropeOperation(dt){
  }
  checkObjective();
  const el=document.getElementById('opsStatus');
- if(el)el.textContent=FlightOps.wx(weather).label.toUpperCase()+' · '+(P.rtb&&!europeOps.failed?'RECOVERY':europeOps.status());
+ if(el)el.textContent=FlightOps.wx(weather).label.toUpperCase()+' · '+(P.rtb&&!europeOps.failed?'RECOVERY'+(wingmen.some(w=>w.alive&&!w.landed)?' · ESCORT TWO (OPTIONAL)':''):europeOps.status());
 }
 function buildRhineChart(){
  if(rhineChart||!terrain)return;
@@ -4292,12 +4391,16 @@ function europeBriefTargets(m){
   const label=m.id==='stuka'?(vehicleIndex<2?'M4 Sherman':'M16 AA'):
     e.meta?.vehicleModel==='jagdpanther'?'Jagdpanther':TDEF[e.kind]?.name||e.kind;
   vehicleIndex++;out.push({x:p.x,z:p.z,label});}
+ if(m.secondary&&livingWorld){
+  const e=livingWorld.entities.filter(e=>e.kind==='truck'&&e.meta.convoy===0)[2];
+  if(e){const p=livingWorld._sample(e.route,e.initialPhase);out.push({x:p.x,z:p.z,label:'Optional M16 AA',optional:true});}
+ }
  if(m.enemyAir||m.bombers){const sector=combatSectorPoint();out.push({x:sector.x,z:sector.z,label:m.bombers?'Bomber interception sector':'Fighter patrol sector'});}
  return out;
 }
 function drawEuropeBrief(m){
  buildRhineChart();
- const labels=FlightOps.drawMap(document.getElementById('opsMap'),{title:'RHINE',base:{x:AF_X,z:AF_Z},targets:europeBriefTargets(m),recon:briefPlan.config.recon,
+ const labels=FlightOps.drawMap(document.getElementById('opsMap'),{title:'RHINE',base:{x:AF_X,z:AF_Z},targets:europeBriefTargets(m),recon:briefPlan.config.recon,approach:briefPlan.config.approach,
   background:(g,put)=>{if(!rhineChart)return;const a=put({x:0,z:32000}),b=put({x:28000,z:0});g.drawImage(rhineChart,a[0],a[1],b[0]-a[0],b[1]-a[1]);}});
  document.getElementById('opsLegend').textContent=labels||'Practice area — Beaufort Field';
 }
@@ -4391,6 +4494,8 @@ function updateHUD(){
   document.getElementById('hFuel').innerHTML=Math.round(P.fuel)+'<small> %'+(P.tankAttached?' + '+Math.ceil(P.tankFuel)+' EXT':'')+'</small>';
   syncTankButton();
   document.getElementById('hHull').innerHTML=Math.round(P.hull)+'<small> %</small>';
+  document.getElementById('hullRow').title=SortieFeatures.Damage.status(P);
+  document.getElementById('systemsStatus').textContent=SortieFeatures.Damage.status(P);
   document.getElementById('hOrd').textContent=P.bombs;
   document.getElementById('hRkt').textContent=P.rockets;
   document.getElementById('hScore').textContent=score;
@@ -4402,6 +4507,7 @@ function updateHUD(){
   let bd=1e9;
   for(const t of targets){ if(!t.alive||!t.primary) continue;
     const d=Math.hypot(t.group.position.x-P.pos.x,t.group.position.z-P.pos.z);
+    if(europeOps?.phase()?.id==='suppress'&&t.kind!=='flak')continue;
     if(d<bd){bd=d;tx=t.group.position.x;tz=t.group.position.z;found=true;navKind=t.kind.toUpperCase();} }
   // A nearby moving opponent matters more than a fixed ground waypoint. The
   // arrow follows the closest live aircraft on every HUD update, then returns
@@ -4410,13 +4516,15 @@ function updateHUD(){
   for(const e of enemyAir){if(!e.alive||(e.escapeThreat&&P.rtb))continue;
     const d=Math.hypot(e.pos.x-P.pos.x,e.pos.z-P.pos.z);
     if(d<fd){fd=d;foe=e;}}
-  if(foe&&(!europeOps||europeOps.reconDone||fd<1500)){
+  if(foe&&(!europeOps||europeOps.reconDone||fd<1500)&&!(europeOps?.phase()?.id==='suppress'&&fd>1200)){
     tx=foe.pos.x;tz=foe.pos.z;navKind=foe.bomber?'BOMBER':'BANDIT';found=true;
   }
   if(europeOps&&!europeOps.reconDone&&navKind!=='BANDIT'&&navKind!=='BOMBER'){
     tx=europeOps.config.recon.x;tz=europeOps.config.recon.z;navKind='RECON';
   }
   if(europeOps?.failed){tx=AF_X;tz=AF_Z;navKind='BASE';}
+  const gate=europeOps?.config.approach;
+  if(gate&&!europeOps.approachDone&&!P.rtb&&!europeOps.failed&&fd>1200){tx=gate.x;tz=gate.z;navKind=gate.label;}
   const dx=tx-P.pos.x, dz=tz-P.pos.z;
   const brg=Math.atan2(dx,dz);
   // Looking toward +Z, +X appears on the LEFT of the screen. The old sign
@@ -5062,6 +5170,7 @@ function bindInput(){
   // ---- gear / flaps / weapon / view ----
   document.getElementById('gearBtn').addEventListener('pointerdown',e=>{ e.preventDefault();
     if(P.ac==='ju87'){flash('GEAR FIXED DOWN',700);return;}
+    if(P.systemDamage?.gearLock!=null){flash('GEAR JAMMED — '+(P.systemDamage.gearLock<.6?'GENTLE BELLY LANDING':'FIXED DOWN'),2200);return;}
     P.gearTgt=P.gearTgt>0.5?0:1;
     const b=e.currentTarget; b.classList.toggle('on',P.gearTgt>0.5);
     const name=P.ac==='me163'?'SKID':'GEAR';
@@ -5141,6 +5250,7 @@ function bindInput(){
   window.addEventListener('pointerdown',()=>{ if(actx&&actx.state==='suspended') actx.resume(); });
 }
 function togglePause(reason='Sortie held'){
+  voiceRadio.cancel();soundscape.stop();
   // Reported: no way back to the menu from a Thunderbolt sortie, and the engine kept humming
   // while paused. Both were the same gap - togglePause only ever flipped `state`, with no
   // overlay and nothing telling the audio graph to go quiet. animate() does stop calling
@@ -5167,6 +5277,7 @@ function togglePause(reason='Sortie held'){
   }
 }
 function exitToMenuFromPause(){
+  voiceRadio.cancel();soundscape.stop();
   releaseHeldControls();
   if(bailRescue){bailRescue.dispose();bailRescue=null;}
   if(bailout){bailout.dispose();bailout=null;}
@@ -5200,7 +5311,20 @@ function updateFlightHints(dt){
     dive:P.ac==='ju87'&&P.bombs>0,pitch:P.pitch,diveBrake:P.diveBrake,fixedGear:P.ac==='ju87'||P.ac==='me163',
     gear:P.gear,onGround:P.onGround,speed:P.spd},message=>flash(message,3600));
 }
+function updateSortieAtmosphere(dt){
+  const baseRange=Math.hypot(P.pos.x-AF_X,P.pos.z-AF_Z);
+  const sources=flakUnits.filter(t=>t.alive).map(t=>t.group.position).concat(enemyAir.filter(e=>e.alive).map(e=>e.pos));
+  const distant=sources.filter(p=>p.distanceTo(P.pos)>1200).sort((a,b)=>a.distanceToSquared(P.pos)-b.distanceToSquared(P.pos))[0];
+  for(const event of soundscape.tick(dt,{baseRange,combatRange:distant?distant.distanceTo(P.pos):Infinity,combat:!isFree()&&!isCircuits()})){
+    if(event==='battle'&&distant){const p=distant.clone().add(new THREE.Vector3(40,70,-40));spawnSmoke(p.x,p.y,p.z,0x373737,1.5);combatFX?.blast(p.x,p.y,p.z,.35);}
+    if(event==='engine'&&baseRange<1000){
+      const activity=isGermanMission(M())?germanActivity:alliedActivity;activity?.startEngine();
+      if(!soundscape.fieldCalled){soundscape.fieldCalled=true;radioSay('GROUND CREW — ANOTHER AIRCRAFT STARTING ON THE DISPERSAL');}
+    }
+  }
+}
 function init(){
+  voiceRadio.bind(document.getElementById('spokenRadio'));
   const app=document.getElementById('app');
   renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});
   renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
@@ -5269,7 +5393,7 @@ function init(){
   buildMenu();
   // menu wiring
   document.getElementById('startBtn').onclick=()=>showBrief(selectedMission);
-  document.getElementById('pauseMainMenu').onclick=()=>{exitToMenuFromPause();window.location.href='index.html?v=161';};
+  document.getElementById('pauseMainMenu').onclick=()=>{exitToMenuFromPause();window.location.href='index.html?v=162';};
   document.getElementById('logBtn').onclick=()=>{ show('menu',false); showLogbook(); };
   document.getElementById('brBack').onclick=()=>{ show('brief',false); show('menu',true); state=ST.MENU; };
   document.getElementById('brGo').onclick=async()=>{
@@ -5277,7 +5401,7 @@ function init(){
     if(button.disabled)return;
     document.getElementById('brModelError')?.remove();
     // Safari allows AudioContext reliably only during the actual button gesture.
-    try{initAudio();}catch(err){console.warn('Audio start:',err);}
+    try{initAudio();soundscape.attach(actx,eng?.master);voiceRadio.unlock();}catch(err){console.warn('Audio start:',err);}
     button.disabled=true;show('brief',false);show('loading',true);
     try{
       document.getElementById('loadingText').textContent='Preparing '+AC[m.ac].name+' and enemy aircraft — launching shortly…';
@@ -5381,12 +5505,16 @@ function animate(){
 
   if(state===ST.FLIGHT||state===ST.DEAD){
     if(state===ST.FLIGHT&&P.alive){
+      if(SortieFeatures.Damage.tick(P,dt)){
+        const p=P.pos.clone().addScaledVector(noseDir(),2);spawnSmoke(p.x,p.y,p.z,P.systemDamage.engine<1?0x343434:0xaaa99b,.4);
+      }
       updateFlight(dt);
       updateEuropeOperation(dt);
       updateInterceptRadio(raw);
       updateFlightHints(raw);
       if(firing) fireGuns(dt);
       updateFlak(dt);
+      updateRecoveryEscort(dt);updateSortieAtmosphere(raw);
     }
     advanceBailout(raw);
     document.getElementById('bailBtn').style.display=state===ST.FLIGHT&&!P.onGround&&P.alive?'block':'none';

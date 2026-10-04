@@ -331,7 +331,7 @@ const cdn={
      await page.waitForFunction(()=>(state===ST.LAUNCH||state===ST.FLIGHT)&&eng.master.gain.value>.5);
      await page.locator('#pauseBtn').click();await page.locator('#menuBtn').click();
     }else{
-     await page.locator('#pauseMainMenu').click();await page.waitForURL('**/index.html?v=161');
+     await page.locator('#pauseMainMenu').click();await page.waitForURL('**/index.html?v=162');
      await page.locator('main.board').waitFor();
     }
     console.log('Browser pause: '+(scenario.ordinal===0?'abort, retained record and audible relaunch':'Main Menu returns to campaign board'));
@@ -387,11 +387,73 @@ const cdn={
     assert.deepEqual(errors,[],campaign+' parachute has no browser errors');
     console.log('Browser '+campaign+': actual bail button, arrow/touch steering, release, auto-pause/resume, safe landing and complete pickup');
    }
+   if(eu){
+    await page.evaluate(()=>exitToMenuFromPause());
+    // Actual damage callback, visible independent faults and real gear-up recovery.
+    await page.locator('#missionSel .chip').nth(2).click();await page.locator('#startBtn').click();await page.locator('#brGo').click();
+    await page.waitForFunction(()=>state===ST.FLIGHT&&!!playerModel);
+    await page.locator('#pauseBtn').click();
+    const damage=await page.evaluate(()=>{
+     P.gear=P.gearTgt=0;const random=Math.random;
+     try{for(const value of [.2,.6,.95]){Math.random=()=>value;damagePlayer(30,'flak');}}finally{Math.random=random;}
+     SortieFeatures.Damage.tick(P,.1);updateHUD();
+     soundscape.attach(actx,eng.master);const events=soundscape.tick(30,{baseRange:50,combatRange:2500,combat:true});
+     return {faults:SortieFeatures.Damage.status(P),leak:P.systemDamage.fuelLeak,power:SortieFeatures.Damage.power(P),lock:P.systemDamage.gearLock,events,sources:soundscape.count};
+    });
+    assert(damage.leak>0&&damage.power<1&&damage.lock===0,'real hit callback distinguishes tank, engine and gear');
+    assert.match(await page.locator('#systemsStatus').innerText(),/FUEL LEAK.*ENGINE.*GEAR JAM/);
+    assert(damage.events.includes('engine')&&damage.events.includes('battle')&&damage.sources>0&&damage.sources<=4,'native WebAudio ambience is connected and bounded');
+    await page.screenshot({path:path.join(root,'test-visuals','aircraft-system-damage.png')});
+    const landed=await page.evaluate(()=>{
+     P.pos.set(AF_X,groundY(AF_X,AF_Z)+2,AF_Z);P.spd=50;P.vSpeed=-2;P.roll=P.pitch=0;P.heading=Math.PI/2;
+     P.onGround=false;P.touchResolved=false;missionOver=false;resolveGround(.05);
+     return {ground:P.onGround,alive:P.alive,title:document.getElementById('rsTitle').textContent};
+    });
+    assert(landed.ground&&landed.alive&&!/CRASH|WHEELS UP/.test(landed.title),'jammed-up gear can make a gentle real belly landing');
+    for(const id of ['jetambush','kometdash']){
+     await page.evaluate(()=>exitToMenuFromPause());
+     const idx=await page.evaluate(id=>MISSIONS.findIndex(m=>m.id===id),id);
+     await page.locator('#missionSel .chip').nth(idx).click();await page.locator('#startBtn').click();
+     const route=await page.locator('#opsLegend').innerText();assert.match(route,/APPROACH:/,'selected route is drawn and named in the actual briefing');
+     await page.locator('#opsMap').screenshot({path:path.join(root,'test-visuals',id+'-route.png')});
+     await page.locator('#brGo').click();await page.waitForFunction(()=>state===ST.FLIGHT&&!!modelTpl[P.ac]&&!!modelTpl[M().bombers.type]);
+     await page.locator('#pauseBtn').click();
+     const sortie=await page.evaluate(()=>({id:M().id,aircraft:P.ac,phases:europeOps.config.phases.map(p=>p.id),optional:targets.some(t=>t.secondary&&!t.primary),fuel:P.fuel}));
+     assert.equal(sortie.id,id);assert(sortie.phases.includes('locate'));
+     if(id==='jetambush')assert(sortie.optional,'optional real M16 is active but not required for recovery');
+     else assert(sortie.phases.includes('glide')&&sortie.fuel<=42,'Komet rocket dash has its own fuel budget and mandatory glide');
+     const png=await page.evaluate(()=>{
+      const studio=new THREE.Scene();studio.background=new THREE.Color(0x8faec0);studio.add(new THREE.HemisphereLight(0xffffff,0x525448,1.2));
+      const sun=new THREE.DirectionalLight(0xffecd4,1);sun.position.set(8,12,16);studio.add(sun);
+      const frame=playerModel.clone(true);studio.add(frame);const cam=new THREE.PerspectiveCamera(40,1024/768,.1,100);cam.position.set(11,4,18);cam.lookAt(0,0,0);
+      renderer.setPixelRatio(1);renderer.render(studio,cam);const png=renderer.domElement.toDataURL('image/png');renderer.setPixelRatio(.25);return png;
+     });fs.writeFileSync(path.join(root,'test-visuals',id+'-aircraft.png'),Buffer.from(png.split(',')[1],'base64'));
+    }
+    assert.deepEqual(errors,[],'new sorties, native audio and damage recovery have no browser errors');
+    console.log('Browser upgrades: native ambience, visible independent damage, actual belly recovery, original Me262/Me163 and both special-operation routes.');
+   }
    if(!eu&&scenario.kind==='defend'&&scenario.ordinal===0){
+    const defense=await page.evaluate(()=>{
+     const r=raiders.find(r=>r.alive);r.hp=100;r.pos.set(carrierX+650,70,1100);r.heading=Math.atan2(carrierX-r.pos.x,-r.pos.z);r.roll=r.pitch=0;r.spd=76;r.runIn=true;r.dropped=false;
+     r.vel.set(Math.sin(r.heading)*r.spd,0,Math.cos(r.heading)*r.spd);
+     let release=null,egress=null;
+     for(let i=0;i<1600;i++){updateRaiders(.05);updateFlak(.05);
+      if(r.dropped&&!release)release={time:i*.05,pos:r.pos.clone(),heading:r.heading,dir:r.egressDir.clone()};
+      if(release&&!egress&&i*.05-release.time>=10)egress={forward:r.pos.clone().sub(release.pos).dot(release.dir),turn:Math.abs(r.heading-release.heading)};
+      if(egress)break;
+     }
+     const native=renderer.render.bind(renderer);camera.up.set(0,1,0);camera.position.set(carrierX+120,85,145);camera.lookAt(carrierX,DECK_Y,0);
+     renderer.setPixelRatio(1);native(scene,camera);const png=renderer.domElement.toDataURL('image/png');renderer.setPixelRatio(.25);
+     return {egress,shots:tracers.filter(t=>t.fleet).length,png};
+    });
+    assert(defense.egress&&defense.egress.forward>650&&defense.egress.turn<.05,'actual loaded Avenger flies forward after release');
+    assert(defense.shots>0,'the visible IJN carrier fires its deck-edge batteries');
+    fs.writeFileSync(path.join(root,'test-visuals','carrier-active-defense.png'),Buffer.from(defense.png.split(',')[1],'base64'));
+    console.log('Browser Pacific: loaded Avenger forward egress and visible IJN carrier batteries verified.');
     // A real JS frame failure is visible and remains observable, not hidden.
     await page.evaluate(()=>{animateFrame=()=>{throw Error('TEST FRAME FAULT');};});
     await page.locator('#simulationRecovery').waitFor({state:'visible'});
-    assert.match(await page.locator('#simulationRecovery').innerText(),/BUILD 161.*TEST FRAME FAULT/);
+    assert.match(await page.locator('#simulationRecovery').innerText(),/BUILD 162.*TEST FRAME FAULT/);
     assert.equal(await page.locator('#simulationRecovery button').innerText(),'Reload game');
     assert.deepEqual(errors,['TEST FRAME FAULT'],'unexpected runtime errors cannot be swallowed');
    }

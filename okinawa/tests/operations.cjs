@@ -13,7 +13,7 @@ assert.equal(op.tick(1,{...state,kills:2}).filter(e=>e.fighters).length,1);
 assert.equal(op.tick(1,{...state,kills:3}).filter(e=>e.fighters).length,0,'waves fire once');assert.equal(op.ready(),true);
 op.tick(90,state);assert.equal(op.failed,true);assert.equal(op.ready(),false,'missed window cannot advance campaign');
 op=new Operation({deadline:30});op.tick(60,{...state,complete:true});assert.equal(op.failed,false,'recovery has no artificial attack deadline');
-op=new Operation(plans.europe.at(-2));
+op=new Operation(plans.europe[16]);
 assert.equal(op.tick(1,{...state,clear:true,glide:false}).length,0,'powered Komet does not trigger pursuer');
 assert.equal(op.ready(),false,'glide encounter must be resolved before sortie completion');
 assert.equal(op.tick(1,{...state,clear:false,glide:true}).length,0,'pursuer waits until bombers are down');
@@ -51,9 +51,9 @@ ground.alive=false;objective.checkObjectiveCleared();assert.equal(pilot.rtb,true
 const eu=fs.readFileSync(path.join(root,'remagen-mission.html'),'utf8'),bullets=[];const mesh=new THREE.Mesh();mesh.position.set(0,10,0);
 const rocket={pos:new THREE.Vector3(),onGround:false,ac:'me163',fuel:34,throttle:0,rtb:false};
 const chase=[],calls=[];
-const glide=vm.createContext({THREE,FlightOps:ctx.FlightOps,P:rocket,europeOps:new Operation(plans.europe.at(-2)),
+const glide=vm.createContext({THREE,FlightOps:ctx.FlightOps,P:rocket,europeOps:new Operation(plans.europe[16]),
  enemyAir:chase,sortieKills:{bomber:2},missionOver:false,weather:'clear',document:{getElementById:()=>null},
- M:()=>({id:'komet'}),isFree:()=>false,isCircuits:()=>false,objectiveLeft:()=>({}),
+ M:()=>({id:'komet',ac:'me163'}),isFree:()=>false,isCircuits:()=>false,objectiveLeft:()=>({}),
  spawnEnemyAir:n=>{for(let i=0;i<n;i++)chase.push({alive:true});},spawnBombers(){},
  setThrottleUI:n=>calls.push(['throttle',n]),radioSay:s=>calls.push(['radio',s]),flash:s=>calls.push(['flash',s])});
 vm.runInContext([func(eu,'blockingEnemyAir','objectiveText'),func(eu,'checkObjective','shake'),
