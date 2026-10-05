@@ -124,6 +124,10 @@ const cdn={
    if(eu){
     await page.locator('#missionSel .chip').nth(2).click();await page.locator('#startBtn').click();await page.locator('#brGo').click();
     await page.waitForFunction(()=>state===ST.FLIGHT&&P.tankAttached&&!!dropTank);
+    // Gameplay checks begin after the skippable departure shot. The dedicated
+    // departure test covers the complete camera motion and frozen simulation.
+    await page.locator('#skipLaunchPreview').click();
+    assert(await page.evaluate(()=>!launchIntro),'actual skip button hands over flight controls');
     await page.evaluate(()=>{P.onGround=false;P.pos.y=groundY(P.pos.x,P.pos.z)+500;P.spd=110;planeGroup.position.copy(P.pos);planeGroup.updateMatrixWorld(true);syncTankButton();});
     assert(await page.locator('#tankBtn').isVisible(),'combat tank has a touch control');
     const tankRect=await page.locator('#tankBtn').boundingBox();assert(tankRect.x>=0&&tankRect.y+tankRect.height<=768,'tank lever fits landscape');
