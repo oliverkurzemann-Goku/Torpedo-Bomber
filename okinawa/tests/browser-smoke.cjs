@@ -506,6 +506,7 @@ const cdn={
     // Actual damage callback, visible independent faults and real gear-up recovery.
     await page.locator('#missionSel .chip').nth(2).click();await page.locator('#startBtn').click();await page.locator('#brGo').click();
     await page.waitForFunction(()=>state===ST.FLIGHT&&!!playerModel);
+    await page.evaluate(()=>document.getElementById('skipLaunchPreview').click());
     await page.locator('#pauseBtn').click();
     assert.match(await page.locator('#pauseOrders').innerText(),/100% HULL/,'intact P-47 strength is displayed as 100%');
     const damage=await page.evaluate(()=>{
@@ -537,6 +538,7 @@ const cdn={
      const route=await page.locator('#opsLegend').innerText();assert.match(route,/APPROACH:/,'selected route is drawn and named in the actual briefing');
      await page.locator('#opsMap').screenshot({path:path.join(root,'test-visuals',id+'-route.png')});
      await page.locator('#brGo').click();await page.waitForFunction(()=>state===ST.FLIGHT&&!!modelTpl[P.ac]&&!!modelTpl[M().bombers.type]);
+     await page.evaluate(()=>document.getElementById('skipLaunchPreview').click());
      await page.locator('#pauseBtn').click();
      const sortie=await page.evaluate(()=>({id:M().id,aircraft:P.ac,phases:europeOps.config.phases.map(p=>p.id),optional:targets.some(t=>t.secondary&&!t.primary),fuel:P.fuel}));
      assert.equal(sortie.id,id);assert(sortie.phases.includes('locate'));
