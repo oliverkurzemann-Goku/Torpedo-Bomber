@@ -4,7 +4,7 @@ const fs=require('fs'),path=require('path'),vm=require('vm'),assert=require('ass
 const root=path.resolve(__dirname,'../..');
 global.THREE=require(process.env.THREE_R128||'three');
 assert.equal(THREE.REVISION,'128');
-for(const name of ['HeightProvider','TerrainTile','TerrainManager','OSMManager','WorldVehicles','AirfieldDetails','AirfieldActivity'])
+for(const name of ['HeightProvider','TerrainTile','TerrainManager','OSMManager','WorldVehicles','AirfieldDetails','AircraftGround','AirfieldActivity'])
   vm.runInThisContext(fs.readFileSync(path.join(root,'terrain-system',name+'.js'),'utf8'));
 global.fetch=async url=>{
   const b=fs.readFileSync(path.join(root,url.split('?')[0]));
@@ -29,7 +29,9 @@ global.fetch=async url=>{
   vm.runInContext(html.slice(start,end)+'\nbuildAirfield(); globalThis.field=airfieldDetails;',context);
   const f=context.field;
   assert(scene.children.includes(f.group)); assert.equal(terrain.material,originalTerrainMaterial);
-  assert(html.includes('AirfieldDetails.js?v=168')); assert(html.includes('MODULE 23'));
+  assert(html.includes('AirfieldDetails.js?v=169'));
+  for(const [dx,dz,offset] of [[0,0,.16],[0,5,.22],[-318,-83,.16],[0,100,0]])
+    assert(Math.abs(AircraftGround.height(terrain,787+dx,18087.6+dz)-terrain.getRenderedHeight(787+dx,18087.6+dz)-offset-.02)<1e-8,'tyres touch the visible runway/apron surface'); assert(html.includes('MODULE 23'));
   assert(html.includes('if(airfieldDetails)airfieldDetails.refresh()'));
   assert.equal(OSMManager.BUILD,23);
   const meshes=f.group.children;

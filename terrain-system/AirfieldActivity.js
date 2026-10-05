@@ -105,9 +105,8 @@ class AirfieldActivity {
       if(old.userData.serviceFallback)old.traverse(o=>o.geometry?.dispose());
       const model=template.clone(true),gear=model.getObjectByName('gear');if(gear)gear.visible=true;
       // The shared template owns its materials/geometries. Never dispose them.
-      model.updateMatrixWorld(true);const box=new THREE.Box3().setFromObject(model),p=pad.userData.pad;
-      const heights=[];for(const dx of [-7,0,7])for(const dz of [-5,0,5])heights.push(this.ground(p.x+dx,p.z+dz));
-      pad.position.y=Math.max(...heights)-box.min.y;pad.add(model);
+      model.updateMatrixWorld(true);const box=new THREE.Box3().setFromObject(model);
+      pad.add(model);this.groundAircraft(pad);
       pad.userData.mountHeight=pad.position.y+box.min.y+1.8;
       if(pad===this.parked[0]&&this.payload.visible){
         pad.updateMatrixWorld(true);const mount=this.mountPoint(pad),floor=this.ground(mount.x,mount.z);
@@ -115,14 +114,25 @@ class AirfieldActivity {
         const underside=ray.intersectObject(model,true).find(hit=>hit.point.y>floor+1.1);
         if(underside)pad.userData.mountHeight=underside.point.y-.5;
       }
+      pad.userData.mountOffset=pad.userData.mountHeight-pad.position.y;
     }
+  }
+  groundAircraft(pad){
+    const model=pad.children[0];if(!model)return;
+    const heading=pad.userData.heading??pad.rotation.y;pad.userData.heading=heading;
+    const fit=typeof AircraftGround!=='undefined'?AircraftGround.fit(model,this.aircraftKind,
+      this.x+pad.position.x,this.z+pad.position.z,heading,(x,z)=>AircraftGround.height(this.terrain,x,z)):null;
+    if(fit){pad.position.y=fit.y;pad.quaternion.copy(fit.quaternion);}
+    else {model.updateWorldMatrix(true,true);const inverse=new THREE.Matrix4().copy(pad.matrixWorld).invert();
+      const box=new THREE.Box3().setFromObject(model).applyMatrix4(inverse);pad.position.y=this.ground(pad.position.x,pad.position.z)-box.min.y;}
+    if(pad.userData.mountOffset!=null)pad.userData.mountHeight=pad.position.y+pad.userData.mountOffset;
   }
   startEngine(){
     const rotor=this.parked[1]?.children[0]?.getObjectByName('prop');
     if(rotor)this.engineStart={rotor,time:0};
   }
   mountPoint(pad){
-    const yaw=pad.rotation.y;
+    const yaw=pad.userData.heading??pad.rotation.y;
     return {x:pad.position.x+Math.cos(yaw)*3.8+Math.sin(yaw)*.6,
       z:pad.position.z-Math.sin(yaw)*3.8+Math.cos(yaw)*.6};
   }
@@ -132,7 +142,7 @@ class AirfieldActivity {
     const t=time%72,unloading=Math.floor(time/72)%2===1;
     const travel=Math.max(0,Math.min(1,(t-6)/18));
     const returning=Math.max(0,Math.min(1,(t-42)/18));
-    const u=travel*(1-returning),pad=this.parked[0],yaw=pad.rotation.y;
+    const u=travel*(1-returning),pad=this.parked[0],yaw=pad.userData.heading??pad.rotation.y;
     const end=this.mountPoint(pad),endX=end.x,endZ=end.z;
     const x=-300+(endX+300)*u,z=-64+(endZ+64)*u;
     const y=this.ground(x,z);
@@ -158,6 +168,7 @@ class AirfieldActivity {
   update(dt,focusX,focusZ){
     this.group.visible=Math.hypot(focusX-this.x,focusZ-this.z)<6500;
     if(!this.group.visible)return;this.time+=dt;
+    for(const pad of this.parked)if(!pad.children[0]?.userData.serviceFallback)this.groundAircraft(pad);
     const time=this.time;
     this.updateLoading(time);
     if(this.engineStart){
@@ -170,7 +181,7 @@ class AirfieldActivity {
       const loader=p.job==='load',walking=loader?this.loading.walking:p.job==='walk'||p.job==='carry',a=time*.85+p.phase;
       const x=loader?this.loading.x+(i===0?-1.7:1.7):p.x+(walking?Math.sin(a*.18)*9:0);
       const z=loader?this.loading.z+.6:p.z+(walking?Math.cos(a*.18)*2:0),y=this.ground(x,z);
-      const yaw=loader?this.parked[0].rotation.y:walking?(Math.cos(a*.18)>0?Math.PI/2:-Math.PI/2):Math.PI;
+      const yaw=loader?(this.parked[0].userData.heading??this.parked[0].rotation.y):walking?(Math.cos(a*.18)>0?Math.PI/2:-Math.PI/2):Math.PI;
       p.drawX=x;p.drawZ=z;
       const stride=walking?Math.sin(time*5+p.phase)*.35:0;
       this.pose(this.people.bodies,i,x,y+1.12,z,.43,.62,.27,yaw,p.job==='repair'?.16:0);

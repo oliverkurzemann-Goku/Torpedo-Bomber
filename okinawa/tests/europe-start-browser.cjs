@@ -23,20 +23,39 @@ const server=http.createServer((req,res)=>{
   page.setDefaultTimeout(120000);page.on('pageerror',e=>errors.push(e.message));
   page.on('console',m=>{if(/Shader Error|VALIDATE_STATUS|not compiled/.test(m.text()))errors.push(m.text());});
   await page.addInitScript(()=>{window.requestAnimationFrame=()=>0;});
-  await page.goto('http://127.0.0.1:'+server.address().port+'/remagen-mission.html?campaign=1&v=168');
+  await page.goto('http://127.0.0.1:'+server.address().port+'/remagen-mission.html?campaign=1&v=169');
   await page.waitForFunction(()=>typeof realWorldReady!=='undefined'&&realWorldReady&&state===ST.MENU,null,{polling:200});
   console.log('Browser: real terrain menu loaded');
   await page.evaluate(()=>{renderer.setPixelRatio(.25);renderer.shadowMap.enabled=false;});
   const out=path.join(root,'test-visuals');fs.mkdirSync(out,{recursive:true});
-  for(const ac of ['p47','fw190','me163']){
+  for(const ac of ['p47','bf109','fw190','me262','ju87','me163']){
    const index=await page.evaluate(ac=>MISSIONS.findIndex(m=>m.ac===ac&&!m.free&&!m.circuits),ac);
    await page.locator('#missionSel .chip').nth(index).click();await page.locator('#startBtn').click();await page.locator('#brGo').click();
    await page.waitForFunction(ac=>state===ST.FLIGHT&&P.ac===ac&&launchIntro,ac,{polling:100});
    const initial=await page.evaluate(()=>({fuel:P.fuel,hull:P.hull,pos:P.pos.toArray(),time:launchIntro.time}));
+   // Measure actual wheel/skid geometry in world space at every intro frame.
+   await page.evaluate(()=>{
+    window.checkGroundContact=()=>{
+     const measure=(model,kind,group)=>{
+      const supports=AircraftGround.supports(model,kind);if(supports.length!==3)throw Error(kind+' missing supports');
+      for(const vertices of supports){const low=new THREE.Vector3(0,Infinity,0),p=new THREE.Vector3();
+       for(let i=0;i<vertices.length;i+=3){p.fromArray(vertices,i).applyQuaternion(group.getWorldQuaternion(new THREE.Quaternion()));if(p.y<low.y)low.copy(p);}
+       low.add(group.getWorldPosition(new THREE.Vector3()));
+       if(Math.abs(low.y-AircraftGround.height(terrain,low.x,low.z))>.02)throw Error(kind+' wheel floats or sinks');
+      }
+     };
+     if(P.onGround){
+      const gear=playerModel.getObjectByName('gear');if(gear&&!gear.visible)throw Error(P.ac+' hidden runway gear');
+      measure(playerModel,P.ac,planeGroup);
+      const activity=launchIntro?.activity;
+      if(activity)for(const pad of activity.parked)measure(pad.children[0],P.ac,pad);
+     }
+    };
+   });
    // Drive the real loop, rendering only the sampled views on software WebGL.
    const service=await page.evaluate(()=>{
     const render=GameRuntime.render;GameRuntime.render=()=>true;clock.getDelta=()=>.05;
-    try{for(let i=0;i<40;i++)animate();}finally{GameRuntime.render=render;}
+    try{for(let i=0;i<40;i++){animate();checkGroundContact();}}finally{GameRuntime.render=render;}
     renderer.setPixelRatio(.7);renderer.render(scene,camera);
     const t=launchIntro.target.clone().project(camera);
     const png=renderer.domElement.toDataURL('image/png');renderer.setPixelRatio(.25);
@@ -47,10 +66,17 @@ const server=http.createServer((req,res)=>{
    if(ac==='p47'||ac==='fw190')assert(service.progress>.4&&service.progress<1,'actual visible load lifts during the opening shot');
    fs.writeFileSync(path.join(out,ac+'-start-service.png'),Buffer.from(service.png.split(',')[1],'base64'));
    const paused=await page.evaluate(()=>{const time=launchIntro.time;togglePause();animate();const frozen=launchIntro.time===time;togglePause();return frozen;});assert(paused);
-   await page.evaluate(()=>{const render=GameRuntime.render;GameRuntime.render=()=>true;try{while(launchIntro)animate();}finally{GameRuntime.render=render;}renderer.render(scene,camera);});
+   await page.evaluate(()=>{const render=GameRuntime.render;GameRuntime.render=()=>true;try{while(launchIntro){animate();checkGroundContact();}}finally{GameRuntime.render=render;}renderer.render(scene,camera);});
    assert(await page.evaluate(()=>!launchIntro&&!document.body.classList.contains('launchPreview')));
+   if(ac!=='me163'){
+    const png=await page.evaluate(()=>{
+     checkGroundContact();const centre=planeGroup.position.clone(),offset=new THREE.Vector3(17,7,-18).applyAxisAngle(new THREE.Vector3(0,1,0),P.heading);
+     camera.position.copy(centre).add(offset);camera.lookAt(centre);renderer.setPixelRatio(.7);renderer.render(scene,camera);
+     const png=renderer.domElement.toDataURL('image/png');renderer.setPixelRatio(.25);return png;
+    });fs.writeFileSync(path.join(out,ac+'-runway-gear.png'),Buffer.from(png.split(',')[1],'base64'));
+   }
    await page.evaluate(()=>exitToMenuFromPause());
-   console.log(ac+': service aircraft in frame; real loading, frozen position/fuel/hull, pause/resume and smooth finish pass.');
+   console.log(ac+': service and runway ground contact; aircraft in frame, real loading, frozen position/fuel/hull, pause/resume and smooth finish pass.');
   }
   // Fly across the actual seam that previously had a 69m cliff, then show the river.
   for(const [name,x,y,z,tx,ty,tz] of [['terrain-seam',3250,780,11500,3250,600,12500],['rhine-roads',13750,500,14200,13805,60,15770]]){

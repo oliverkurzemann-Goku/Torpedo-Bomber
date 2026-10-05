@@ -17,8 +17,11 @@ class AirfieldDetails {
       tex.encoding=THREE.sRGBEncoding;terrain.airfieldSoilTexture=tex;
     }
     const patches=new Map();
+    // Wheel contact includes the visible runway/apron layer above the DEM.
+    const groundRegions=terrain.airfieldGroundRegions||(terrain.airfieldGroundRegions=[]);
     const patch=(colour,dx,dz,w,d,offset)=>{
       if(!patches.has(colour))patches.set(colour,{positions:[],indices:[],offset});
+      groundRegions.push({minX:x+dx-w/2,maxX:x+dx+w/2,minZ:z+dz-d/2,maxZ:z+dz+d/2,offset});
       const p=patches.get(colour),n=p.positions.length/3;
       p.positions.push(x+dx-w/2,0,z+dz-d/2, x+dx-w/2,0,z+dz+d/2,
         x+dx+w/2,0,z+dz-d/2, x+dx+w/2,0,z+dz+d/2);

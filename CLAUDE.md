@@ -5,7 +5,27 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 168 · Thunderbolt Squadron BUILD 168 · Remagen-Kern 23 / Fahrzeuge 22**
+Stand bei Übergabe: **Torpedo Squadron BUILD 169 · Thunderbolt Squadron BUILD 169 · Remagen-Kern 23 / Fahrzeuge 22**
+
+**Build 169 (05.10.2026): Radkontakt während der Startkamerafahrt.**
+AircraftGround richtet Höhe und Neigung an drei tatsächlichen Reifen-/Kufen-
+Kontaktpunkten aus. Generierte Räder tragen groundWheel; feste Stuka-Räder und
+Komet-Kufe verwenden ihre Originalgeometrie. Normalisierte GLB-Positionen werden
+in Modellkoordinaten gelesen; Kontaktpunkte sind am Modell gecacht. Die sichtbaren
+Runway-/Kies-Layer über dem DEM zählen zur Bodenhöhe. Spornradflugzeuge stehen
+mit geneigtem Rumpf auf Haupt- und Spornrädern, Me262 auf dem Bugradfahrwerk.
+Geparkte Modelle folgen jedem Geländemorph statt einer einmaligen BoundingBox-
+Höhe. Die Spielermaschine aktualisiert Fahrwerk, Propeller und Bodenpose auch
+während der Intro-Kamera; Flugzustand bleibt dabei eingefroren. In der Luft bleibt
+die bisherige Pitch-/Roll-Ausrichtung erhalten. Keine neuen Modelle/Drawcalls.
+
+Echte GLBs aller acht Modelle bestehen 2.160 Rad-/Kufenproben bei LOD 0/2/0 auf
+realen DEM-Kacheln. WebGL prüft alle sechs fliegbaren Thunderbolt-Muster während
+jedes Intro-Frames samt sichtbarem Fahrwerk, Crew, Pause und Kameraabschluss;
+Service- und Runway-Bilder liegen als CI-Artefakte vor. 31 Terrain- und 21 Okinawa-
+Testdateien sowie Syntax bestehen lokal; Browserprüfungen separat mit Chromium.
+AirfieldDetails, AirfieldActivity und AircraftGround Cache 169. Terrain/OSM-
+Helfer bleiben 168, CombatFX/GameRuntime 167. Beide sichtbaren Spiele und Links 169.
 
 **Build 168 (05.10.2026): geschlossene Geländekanten, bereinigte Straßen und Startkamerafahrt.**
 Die gemeldete Kante ließ sich an der DEM-Kachelgrenze z=12000 als bis zu 69m hoher

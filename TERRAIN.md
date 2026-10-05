@@ -1,5 +1,22 @@
 # Remagen terrain handoff
 
+## Game Build 169 — aircraft wheel contact during departure shots
+
+AircraftGround derives three supports from actual tyre geometry (fixed Stuka
+wheels and the Komet runner use model geometry), including normalized GLB vertices.
+An iterative pose fits all three contacts to rendered terrain plus the visible
+runway/apron layer. Taildraggers rest on the tailwheel; Me262 rests on its nosewheel.
+Service aircraft update during terrain morphs, and the player updates gear and
+ground pose throughout the intro as well as normal play. Flight state remains
+frozen during the shot; airborne pitch/roll and flight physics are unchanged.
+Cached supports require no new model downloads or draw calls.
+
+All eight original aircraft pass 2,160 contact checks across real DEM LOD changes.
+The WebGL start test now covers all six playable types, checks wheel contact each
+intro frame, and saves service and runway views. Runway-contact tests include
+both the gravel layer and wheel-rut offsets. AirfieldDetails/AirfieldActivity and
+the new AircraftGround script use cache 169; terrain/OSM helpers remain 168.
+
 ## Game Build 168 — shared tile edges, dry roads and departure camera
 
 The reported DEM boundary at z=12000 reproduced a 69m cliff between mixed LODs.

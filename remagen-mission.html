@@ -266,7 +266,7 @@
   #opsStatus{position:fixed;top:calc(env(safe-area-inset-top) + 76px);left:50%;transform:translateX(-50%);color:#edcc80;background:rgba(14,20,18,.78);padding:5px 9px;font:10px monospace;pointer-events:none;z-index:9;max-width:58vw;text-align:center;}
   #systemsStatus{position:fixed;top:calc(env(safe-area-inset-top) + 116px);left:50%;transform:translateX(-50%);color:#ffbf96;background:#251810db;padding:5px 9px;font:10px monospace;pointer-events:none;z-index:9;max-width:60vw;text-align:center;}#systemsStatus:empty{display:none;}
 </style>
-<link rel="stylesheet" href="menu-layout.css?v=168">
+<link rel="stylesheet" href="menu-layout.css?v=169">
 </head>
 <body>
 <!-- ===== TEMP TEST-ONLY VERSION BANNER — asked for by Oliver: "kannst du irgendwo einbauen,
@@ -288,7 +288,7 @@
   <div style="width:100%;height:4px;background:repeating-linear-gradient(45deg,#ffd400,#ffd400 8px,#111 8px,#111 16px);"></div>
   <span id="testVersionBannerText" style="background:#111;color:#ffd400;font-family:monospace;font-weight:800;font-size:11px;letter-spacing:.5px;padding:3px 10px;border:1px solid #ffd400;border-top:none;border-radius:0 0 6px 6px;"></span>
 </div>
-<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 168';</script>
+<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 169';</script>
 <!-- ===== END TEMP TEST-ONLY VERSION BANNER ===== -->
 <div id="app"></div>
 <style>
@@ -328,7 +328,7 @@
   <div id="flash"></div>
   <div id="gunsight"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 168 · REAL RHINE</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 169 · REAL RHINE</div>
 
   <div id="apr">
     <div id="aprCall"></div>
@@ -378,7 +378,7 @@
 </div>
 
 <div class="overlay hidden" id="menu" data-campaign="europe">
-  <div class="menuTop"><a id="selBtn" href="index.html?v=168">&#9664; Change Game</a><span class="menuMeta">RHINE OPERATIONS<br>BUILD 168</span></div>
+  <div class="menuTop"><a id="selBtn" href="index.html?v=169">&#9664; Change Game</a><span class="menuMeta">RHINE OPERATIONS<br>BUILD 169</span></div>
   <div class="card menuCard">
     <aside class="menuOverview" aria-label="Campaign and pilot options">
     <div class="campaignArt" aria-hidden="true"></div>
@@ -478,8 +478,9 @@
 <script src="terrain-system/TerrainManager.js?v=168"></script>
 <script src="terrain-system/OSMManager.js?v=168"></script>
 <script src="terrain-system/HistoricalObjectManager.js?v=remagen-21"></script>
-<script src="terrain-system/AirfieldDetails.js?v=168"></script>
-<script src="terrain-system/AirfieldActivity.js?v=166"></script>
+<script src="terrain-system/AirfieldDetails.js?v=169"></script>
+<script src="terrain-system/AircraftGround.js?v=169"></script>
+<script src="terrain-system/AirfieldActivity.js?v=169"></script>
 <script src="terrain-system/WorldVehicles.js?v=remagen-22"></script>
 <script src="terrain-system/LivingWorld.js?v=166"></script>
 <script src="campaign.js?v=1"></script>
@@ -810,7 +811,7 @@ async function loadRealWorld(){
 
   if(OSMManager.BUILD!==23||HistoricalObjectManager.BUILD!==21||LivingWorld.BUILD!==22||WorldVehicles.BUILD!==22) throw new Error('Terrain version mismatch. Reload Remagen.');
   document.getElementById('testVersionBannerText').textContent=
-    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 168 · MODULE 23';
+    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 169 · MODULE 23';
   heightProvider=new DEMHeightProvider(RTILE,'terrain-system/real/data/dem/');
   terrain=new TerrainManager(scene,RTILE,heightProvider);
   osmMgr=new OSMManager(scene,RTILE,terrain,'terrain-system/real/data/osm/');
@@ -2388,6 +2389,7 @@ function buildGear(gear, root, whole, S, kind){
     g.add(strutBetween(new THREE.Vector3(0,0,0), new THREE.Vector3(side*wheelR*1.5,-legLen*0.82,0),
       legR*0.42, strutM, 6));
     const wh=new THREE.Mesh(new THREE.CylinderGeometry(wheelR,wheelR,wheelW*2,20),tyreM);
+    wh.userData.groundWheel=true;
     wh.rotation.z=Math.PI/2; wh.position.y=-legLen-wheelR*0.12; g.add(wh);
     const hub=new THREE.Mesh(new THREE.CylinderGeometry(wheelR*0.42,wheelR*0.42,wheelW*0.3,16),hubM);
     hub.rotation.z=Math.PI/2; hub.position.set(0,-legLen-wheelR*0.12,side*(wheelW-wheelW*0.15)); g.add(hub);
@@ -2404,6 +2406,7 @@ function buildGear(gear, root, whole, S, kind){
   const tl=new THREE.Mesh(new THREE.CylinderGeometry(legR*0.5,legR*0.6,noseLen,8),strutM);
   tl.position.y=-noseLen*0.5; tg.add(tl);
   const tw=new THREE.Mesh(new THREE.CylinderGeometry(wheelR*(jet?.65:.42),wheelR*(jet?.65:.42),wheelW*1.3,14),tyreM);
+  tw.userData.groundWheel=true;
   tw.rotation.z=Math.PI/2; tw.position.y=-noseLen; tg.add(tw);
   const thub=new THREE.Mesh(new THREE.CylinderGeometry(wheelR*(jet?.28:.18),wheelR*(jet?.28:.18),wheelW*0.3,12),hubM);
   thub.rotation.z=Math.PI/2; thub.position.set(0,-noseLen,wheelW*0.55); tg.add(thub);
@@ -4447,6 +4450,30 @@ function applyWeather(){
 // ============================================================
 //  CAMERA
 // ============================================================
+function posePlayerAircraft(dt){
+    planeGroup.position.copy(P.pos);
+    planeGroup.rotation.set(0,0,0);
+    // rotateX is negated: with the nose on +Z a positive X-rotation drops the nose, but the
+    // flight model treats positive pitch as a climb. Without this the aeroplane visibly
+    // pitched the opposite way to the direction it was actually flying.
+    planeGroup.rotateY(P.heading); planeGroup.rotateX(-P.pitch); planeGroup.rotateZ(-P.roll);
+    if(playerModel){
+      updateJetExhaust(playerModel,P.alive?P.throttle:0,dt);
+      if(P.ac==='ju87')for(const side of ['Left','Right']){
+        const brake=playerModel.getObjectByName('diveBrake'+side);
+        if(brake)brake.rotation.x=-1.05*P.diveBrakeVisual;
+      }
+      const gr=playerModel.getObjectByName('gear');
+      if(gr) gr.visible=P.gear>0.05;
+      if(P.onGround&&P.gear>0.5){
+        const fit=AircraftGround.fit(playerModel,P.ac,P.pos.x,P.pos.z,P.heading,(x,z)=>AircraftGround.height(terrain,x,z));
+        if(fit){planeGroup.position.y=fit.y;planeGroup.quaternion.copy(fit.quaternion);}
+      }
+      const pr=playerModel.getObjectByName('prop');
+      if(pr) pr.rotation.z-=GameRuntime.rotorStep(dt,Math.min(0.30,0.10+P.throttle*0.28),P.ac==='p47'?4:3);
+    }
+}
+
 let launchIntro=null;
 function finishLaunchIntro(announce=true){
   if(!launchIntro)return;
@@ -4459,7 +4486,7 @@ function finishLaunchIntro(announce=true){
 }
 function beginLaunchIntro(){
   const activity=isGermanMission(M())?germanActivity:alliedActivity;
-  refreshModels();
+  refreshModels();posePlayerAircraft(0);
   const nose=noseDir(),end=P.pos.clone().addScaledVector(nose,-28).add(new THREE.Vector3(0,8.5,0));
   end.y=Math.max(end.y,groundY(end.x,end.z)+6);
   const aim=P.pos.clone().addScaledVector(nose,50).add(new THREE.Vector3(0,2,0));
@@ -5452,7 +5479,7 @@ function init(){
   buildMenu();
   // menu wiring
   document.getElementById('startBtn').onclick=()=>showBrief(selectedMission);
-  document.getElementById('pauseMainMenu').onclick=()=>{exitToMenuFromPause();window.location.href='index.html?v=168';};
+  document.getElementById('pauseMainMenu').onclick=()=>{exitToMenuFromPause();window.location.href='index.html?v=169';};
   document.getElementById('logBtn').onclick=()=>{ show('menu',false); showLogbook(); };
   document.getElementById('skipLaunchPreview').onclick=()=>finishLaunchIntro();
   document.getElementById('brBack').onclick=()=>{ show('brief',false); show('menu',true); state=ST.MENU; };
@@ -5567,7 +5594,7 @@ function animate(){
   if(launchIntro&&state===ST.FLIGHT){
     // No fuel use, mission timer, enemy fire or player motion during the shot.
     refreshModels();
-    planeGroup.position.copy(P.pos);planeGroup.rotation.set(-P.pitch,P.heading,-P.roll,'YXZ');
+    posePlayerAircraft(raw);
     updateLaunchIntro(raw);updateWeatherFx(raw);updateClouds();updateAudio(raw);
     GameRuntime.render(renderer,scene,camera);return;
   }
@@ -5592,24 +5619,7 @@ function animate(){
     updateExplosions(dt); updateSmoke(dt); updateDebris(dt);
     updateWeatherFx(dt);
     updateClouds();
-    // player model follows the state vector
-    planeGroup.position.copy(P.pos);
-    planeGroup.rotation.set(0,0,0);
-    // rotateX is negated: with the nose on +Z a positive X-rotation drops the nose, but the
-    // flight model treats positive pitch as a climb. Without this the aeroplane visibly
-    // pitched the opposite way to the direction it was actually flying.
-    planeGroup.rotateY(P.heading); planeGroup.rotateX(-P.pitch); planeGroup.rotateZ(-P.roll);
-    if(playerModel){
-      updateJetExhaust(playerModel,P.alive?P.throttle:0,raw);
-      if(P.ac==='ju87')for(const side of ['Left','Right']){
-        const brake=playerModel.getObjectByName('diveBrake'+side);
-        if(brake)brake.rotation.x=-1.05*P.diveBrakeVisual;
-      }
-      const gr=playerModel.getObjectByName('gear');
-      if(gr) gr.visible=P.gear>0.05;
-      const pr=playerModel.getObjectByName('prop');
-      if(pr) pr.rotation.z-=GameRuntime.rotorStep(raw,Math.min(0.30,0.10+P.throttle*0.28),P.ac==='p47'?4:3);
-    }
+    posePlayerAircraft(raw);
     for(const e of enemyAir)if(e.alive)updateJetExhaust(e.group,Math.min(1,e.spd/aiSpec(e.kind).max),raw);
     if(bailout){
       camera.up.set(0,1,0);
