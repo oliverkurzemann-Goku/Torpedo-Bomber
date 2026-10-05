@@ -124,6 +124,7 @@ class TerrainManager {
   // enough that even just the distance checks show up as a cost — the morph
   // update itself is already only ever done for tiles actually transitioning).
   updateLOD(focusX, focusZ, dt){
+    let changed=false;
     for(const tile of this.tiles.values()){
       // An aircraft at a tile corner is still directly above that tile. Centre
       // distance used to coarsen the ground beneath low passes at every seam.
@@ -136,7 +137,14 @@ class TerrainManager {
         const curBoundary = lod < TERRAIN_LOD_DISTANCES.length ? TERRAIN_LOD_DISTANCES[lod] : Infinity;
         if(d >= curBoundary * TERRAIN_LOD_HYSTERESIS) lod = raw;   // downgrade: only once clearly past the band
       }
-      if(lod !== tile.lod) tile.setLOD(lod, tile.materialOverride||this.material);
+      if(lod !== tile.lod){
+        // At runtime, prepare clipped ground in small slices, then commit one
+        // matched terrain/surface transition per frame. Startup stays immediate.
+        const ready=!this.beforeLODChange||this.beforeLODChange(tile,lod);
+        if(ready&&(!this.beforeLODChange||!changed)){
+          tile.setLOD(lod,tile.materialOverride||this.material);changed=true;
+        }
+      }
       if(tile.morphing) tile.updateMorph(dt);
     }
   }

@@ -27,6 +27,9 @@
  function release(object){
   if(!object)return;
   if(object.parent)object.parent.remove(object);
+  if(typeof object.userData.runtimeRecycle==='function'){
+   object.userData.runtimeRecycle(object);return;
+  }
   const geometries=new Set(),materials=new Set();
   object.traverse(o=>{
    const ownership=o.userData.runtimeOwned;if(!ownership)return;

@@ -1,5 +1,31 @@
 # Remagen terrain handoff
 
+## Game Build 167 — prepared terrain transitions and sustained-fire performance
+
+Runtime LOD changes now wait for incrementally prepared surface layouts. A 2ms
+preparation budget spreads clipping over frames, and only one terrain tile starts
+a transition per frame. The previously matched terrain/road/water geometry remains
+visible until ready. Both finer grids and the final coarse grid of downgrades are
+prepared; runway ground is registered too. Startup and prototype callers without
+the optional TerrainManager hook retain synchronous behavior. Source outlines,
+triangulation diagonals, clipping exclusions and DEM flight-height queries remain.
+X-strip clipping avoids iterating empty cells of long triangles; barycentric
+weights are prepared once and continue following the actual rendered morph.
+
+A repeated six-tile real-data test covers early reversal, upgrades, downgrades,
+runway contact and one transition per frame. Every topology change must consume
+a prepared layout, and more than 360,000 sampled surface points stay within 0.1mm
+of the terrain. The existing 14,118 independent raycast samples also pass.
+The reproducible 56-tile CPU transition benchmark fell from roughly 400ms for the
+initial terrain/surface update to a 25ms maximum over 360 deferred frames (P95
+6.4ms). This is CPU profiling in the workspace, not physical iPad FPS.
+
+Projectile meshes now use a bounded reuse pool, and distant dark projectiles skip
+drawing while retaining all physical hit tests. All player gun barrels share a
+volley-based tracer index, fixing the recurring two/one-visible-gun issue.
+Original aircraft/chase-camera WebGL tests check every muzzle individually and
+sustained input. OSM/TerrainManager and combat/runtime script cache keys are 167.
+
 ## Game Build 166 — lively roads, varied villages and connected loading activity
 
 Ambient road traffic increases from 12 to 24 vehicles over eight selected OSM

@@ -15,6 +15,8 @@ class OSMManager {
     this.sourceTiles = new Map();
     this.waterIndex = null;
     this.churchKeys = new Set();
+    this.surfaceMeshes = new Set();
+    this.surfaceJobs = new Map();
 
     this.roadMat = new THREE.MeshStandardMaterial({ color: 0x3a3a3a, roughness: 1 });
     this.railMat = new THREE.MeshStandardMaterial({ color: 0x585048, roughness: 0.8 });
@@ -208,6 +210,7 @@ class OSMManager {
     if(t){
       this.scene.remove(t.group);
       t.group.traverse(o => {
+        this.surfaceMeshes.delete(o);
         if(o.geometry && !this.sharedGeometries.has(o.geometry)) o.geometry.dispose();
         if(o.isInstancedMesh && typeof o.dispose === 'function') o.dispose();
       });
@@ -287,6 +290,7 @@ class OSMManager {
 
   _prepareWaterSurface(mesh,ox,oz,offset){
     // Keep the small source triangulation to rebuild when LOD changes.
+    this.surfaceMeshes.add(mesh);
     mesh.userData.waterSource={positions:mesh.geometry.attributes.position.array.slice(),indices:Array.from(mesh.geometry.index.array),ox,oz,offset};
     if(!this.deferSurfaces)this.redrapeWater(mesh);
   }
@@ -320,63 +324,112 @@ class OSMManager {
       Math.max(src.oz+.001,Math.min(src.oz+this.tileSize-.001,z)))+src.offset;
   }
 
-  redrapeWater(mesh){
+  // Enabled only after startup has selected/draped its initial terrain. Keep
+  // the old matched terrain/surfaces visible while preparing the next grid.
+  enableDeferredLOD(){
+    this.terrain.beforeLODChange=(tile,lod)=>this.prepareLOD(tile,lod);
+  }
+  prepareLOD(tile,lod){
+    const seg=TERRAIN_LOD_SEGMENTS[lod],key=this._key(tile.tileX,tile.tileZ);
+    const meshes=[];
+    for(const mesh of this.surfaceMeshes){
+      const src=mesh.userData.waterSource;
+      if(src.ox!==tile.worldOriginX||src.oz!==tile.worldOriginZ)continue;
+      if(mesh.userData.surfaceSegments!==seg&&mesh.userData.preparedSurface?.seg!==seg)meshes.push(mesh);
+    }
+    if(!meshes.length){this.surfaceJobs.delete(key);return true;}
+    const job=this.surfaceJobs.get(key);
+    if(!job||job.seg!==seg)this.surfaceJobs.set(key,{seg,meshes,index:0,iterator:null});
+    return false;
+  }
+  advanceSurfacePreparation(budgetMs=2){
+    const end=performance.now()+budgetMs;
+    for(const [key,job] of this.surfaceJobs){
+      while(job.index<job.meshes.length){
+        const mesh=job.meshes[job.index];
+        if(!this.surfaceMeshes.has(mesh)){job.index++;job.iterator=null;continue;}
+        if(!job.iterator)job.iterator=this._surfaceLayout(mesh,job.seg);
+        const result=job.iterator.next();
+        if(result.done){mesh.userData.preparedSurface={seg:job.seg,layout:result.value};job.index++;job.iterator=null;}
+        if(performance.now()>=end)return;
+      }
+      this.surfaceJobs.delete(key);
+    }
+  }
+  *_surfaceLayout(mesh,seg){
     const src=mesh.userData.waterSource;
-    if(!src || !this.terrain.tiles) return;
-    const tile=this.terrain.tiles.get(this._key(src.ox/this.tileSize,src.oz/this.tileSize));
-    if(!tile) return;
-    const step=this.tileSize/tile._renderSeg,positions=[];
-    // At an exact seam, TerrainManager normally prefers the next tile. Its
-    // LOD may differ. A surface owned by THIS tile must use THIS tile's edge.
-    const height=(x,z)=>this._surfaceHeight(src,x,z);
+    const step=this.tileSize/seg,positions=[];
     for(let i=0;i<src.indices.length;i+=3){
-      const tri=src.indices.slice(i,i+3).map(j=>[src.positions[j*3],src.positions[j*3+2]]);
-      const xs=tri.map(p=>p[0]),zs=tri.map(p=>p[1]);
-      for(let gx=Math.floor(Math.min(...xs)/step);gx<=Math.floor(Math.max(...xs)/step);gx++)
+      let tri=src.indices.slice(i,i+3).map(j=>[src.positions[j*3],src.positions[j*3+2]]);
+      // Clip to the owning tile once, then to X strips before visiting Z cells.
+      // Testing every cell in the triangle's full bounding rectangle wasted
+      // most of a frame on empty cells for long, narrow river/road triangles.
+      tri=osmClipHalfPlane(tri,1,0,src.ox,true);
+      tri=osmClipHalfPlane(tri,1,0,src.ox+this.tileSize,false);
+      tri=osmClipHalfPlane(tri,0,1,src.oz,true);
+      tri=osmClipHalfPlane(tri,0,1,src.oz+this.tileSize,false);
+      if(tri.length<3)continue;
+      const xs=tri.map(p=>p[0]);
+      for(let gx=Math.floor(Math.min(...xs)/step);gx<=Math.floor(Math.max(...xs)/step);gx++){
+        const x=gx*step;
+        let strip=osmClipHalfPlane(tri,1,0,x,true);
+        strip=osmClipHalfPlane(strip,1,0,x+step,false);
+        if(strip.length<3)continue;
+        const zs=strip.map(p=>p[1]);
         for(let gz=Math.floor(Math.min(...zs)/step);gz<=Math.floor(Math.max(...zs)/step);gz++){
-          const x=gx*step,z=gz*step;
-          let ring=osmClipHalfPlane(tri,1,0,x,true);
-          ring=osmClipHalfPlane(ring,1,0,x+step,false);
-          ring=osmClipHalfPlane(ring,0,1,z,true);
+          const z=gz*step;
+          let ring=osmClipHalfPlane(strip,0,1,z,true);
           ring=osmClipHalfPlane(ring,0,1,z+step,false);
-          ring=osmClipHalfPlane(ring,1,0,src.ox,true);
-          ring=osmClipHalfPlane(ring,1,0,src.ox+this.tileSize,false);
-          ring=osmClipHalfPlane(ring,0,1,src.oz,true);
-          ring=osmClipHalfPlane(ring,0,1,src.oz+this.tileSize,false);
-          // Split at PlaneGeometry's diagonal too, not just the grid edges.
+          if(ring.length<3)continue;
           for(const keepGreater of [false,true]){
             const part=osmClipHalfPlane(ring,1,1,x+z+step,keepGreater);
             for(let j=1;j<part.length-1;j++){
               const a=part[0],b=part[j],c=part[j+1];
               const area=(b[0]-a[0])*(c[1]-a[1])-(b[1]-a[1])*(c[0]-a[0]);
-              if(Math.abs(area)<1e-5) continue;
-              for(const [px,pz] of area<0?[a,b,c]:[a,c,b]) positions.push(px,height(px,pz),pz);
+              if(Math.abs(area)<1e-5)continue;
+              for(const [px,pz] of area<0?[a,b,c]:[a,c,b])positions.push(px,0,pz);
             }
           }
         }
+        yield;
+      }
     }
-    const geo=new THREE.BufferGeometry();
-    geo.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));
-    const uv=[];
-    // One repeat spans 260m. The old 48m repeat made its diagonal waves turn
-    // into a high-frequency screen-door pattern over the broad Rhine.
-    for(let i=0;i<positions.length;i+=3)uv.push(positions[i]/260,positions[i+2]/260);
-    geo.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));
-    geo.computeVertexNormals(); geo.computeBoundingSphere();
-    geo.boundingSphere.radius+=200; // conservative throughout a height blend
-    mesh.geometry.dispose(); mesh.geometry=geo;
-    mesh.userData.yOffsets=new Float32Array(positions.length/3).fill(src.offset);
-    mesh.userData.surfaceSegments=tile._renderSeg;
-    mesh.userData.surfaceGeometry=tile.mesh.geometry;mesh.userData.surfaceMorph=tile.morphT;
-    const p=geo.attributes.position,base=new Uint16Array(p.count),weights=new Float32Array(p.count*2);
-    const seg=tile._renderSeg,n=seg+1;
-    for(let i=0;i<p.count;i++){
-      const fx=Math.max(.001/step,Math.min(seg-.001/step,(p.getX(i)-src.ox)/step));
-      const fz=Math.max(.001/step,Math.min(seg-.001/step,(p.getZ(i)-src.oz)/step));
+    const positionsArray=new Float32Array(positions),count=positionsArray.length/3;
+    const base=new Uint16Array(count),weights=new Float32Array(count*2),uv=new Float32Array(count*2),n=seg+1;
+    for(let i=0;i<count;i++){
+      const x=positionsArray[i*3],z=positionsArray[i*3+2];
+      const fx=Math.max(.001/step,Math.min(seg-.001/step,(x-src.ox)/step));
+      const fz=Math.max(.001/step,Math.min(seg-.001/step,(z-src.oz)/step));
       const ix=Math.min(seg-1,Math.floor(fx)),iz=Math.min(seg-1,Math.floor(fz));
       base[i]=ix+n*iz;weights[i*2]=fx-ix;weights[i*2+1]=fz-iz;
+      uv[i*2]=x/260;uv[i*2+1]=z/260;
+      if(i%2048===2047)yield;
     }
-    mesh.userData.surfaceBase=base;mesh.userData.surfaceWeights=weights;
+    return {positions:positionsArray,base,weights,uv};
+  }
+  redrapeWater(mesh){
+    const src=mesh.userData.waterSource;
+    if(!src||!this.terrain.tiles)return;
+    const tile=this.terrain.tiles.get(this._key(src.ox/this.tileSize,src.oz/this.tileSize));
+    if(!tile)return;
+    const seg=tile._renderSeg,prepared=mesh.userData.preparedSurface;
+    let layout;
+    if(prepared?.seg===seg){layout=prepared.layout;delete mesh.userData.preparedSurface;}
+    else{
+      const iterator=this._surfaceLayout(mesh,seg);let result;
+      do{result=iterator.next();}while(!result.done);
+      layout=result.value;
+    }
+    const geo=new THREE.BufferGeometry();
+    geo.setAttribute('position',new THREE.BufferAttribute(layout.positions,3));
+    geo.setAttribute('uv',new THREE.BufferAttribute(layout.uv,2));
+    mesh.geometry.dispose();mesh.geometry=geo;
+    mesh.userData.yOffsets=new Float32Array(layout.positions.length/3).fill(src.offset);
+    mesh.userData.surfaceSegments=seg;mesh.userData.surfaceBase=layout.base;mesh.userData.surfaceWeights=layout.weights;
+    mesh.userData.surfaceGeometry=null;
+    this.syncSurface(mesh);
+    if(tile.morphing)geo.computeVertexNormals();
+    geo.computeBoundingSphere();geo.boundingSphere.radius+=200;
   }
 
   _buildForestExclusion(data, ox, oz){

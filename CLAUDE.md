@@ -5,7 +5,46 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 166 · Thunderbolt Squadron BUILD 166 · Remagen-Kern 23 / Fahrzeuge 22**
+Stand bei Übergabe: **Torpedo Squadron BUILD 167 · Thunderbolt Squadron BUILD 167 · Remagen-Kern 23 / Fahrzeuge 22**
+
+**Build 167 (05.10.2026): alle Thunderbolt-Waffen sichtbar, geringere Lastspitzen.**
+Der globale CombatFX-Vierer-Zähler beleuchtete bei acht P47-Läufen immer nur zwei,
+bei vier Läufen immer denselben. Thunderbolt zählt jetzt Salven (gunVolley),
+setzt den Zähler beim Missionsstart zurück und beleuchtet jeden vierten Schuss
+an allen Mündungen. Positionen, Munition, Feuerrate und Treffer-/Schadenslogik
+bleiben unverändert. Eigene neue Regression prüft 8 P47-, 4 BF109/FW190/Me262-
+und 2 Me163-Läufe, Bank/Pitch sowie gemischtes Fremdfeuer. Browserprüfung misst
+für jeden einzelnen Lauf sichtbare Pixel in der tatsächlichen Verfolgerkamera
+aller sechs Originalflugzeuge und hält den echten Feuerbutton neun simulierte
+Sekunden. Bilder liegen als CI-Artefakte vor.
+
+CombatFX recycelt Geschoss-Meshes über GameRuntime.release; der Pool ist auf
+512 freie Objekte begrenzt. Wiederverwendung setzt Position, Orientierung,
+Skalierung, Material und Metadaten zurück. Geteilte Ressourcen werden nie
+entsorgt. Dunkle Geschosse bleiben physisch aktiv, werden jenseits 80m zur Kamera
+jedoch nicht gezeichnet; helle Leuchtspur bleibt sichtbar. Der Dauerfeuertest
+misst konstante Mesh-Allokationen nach Aufwärmen und 75% weniger entfernte
+Geschoss-Draws. Dies gilt in beiden aktiven Kampagnen.
+
+Der reproduzierte Wechsel vom Flugplatz (787,18087.6) nach (4001,20001) benötigte
+vorher rund 400ms CPU für Gelände/Oberflächen. OSMManager bereitet die nächste
+Gitteraufteilung jetzt in Generator-Schritten mit einem 2ms-Zeitbudget vor.
+Erst mit fertigen Oberflächen wird die passende Terrain-LOD gestartet; höchstens
+eine Kachel pro Frame. Alte passende Boden-/Wasser-/Straßenflächen bleiben bis
+dahin sichtbar. Auch die endgültige Auflösung einer LOD-Vergröberung wird vor
+Beginn des Morphs vorbereitet; AirfieldDetails ist im selben Register enthalten.
+X-Streifen-Clipping vermeidet leere Zellen im großen Dreiecks-Bounding-Rechteck.
+TerrainManager bleibt ohne den optionalen Hook synchron für Startup/Prototypen.
+Im selben CPU-Prüflauf: 360 Frames, Maximum 25ms, P95 6.4ms, alle Jobs abgeschlossen.
+Keine Behauptung zu physischem iPad/Safari-FPS.
+
+terrain-preparation.cjs prüft echte DEM/OSM-Daten, Richtungswechsel, max. einen
+LOD-Commit pro Frame, vorbereitete Aufteilungen statt synchronem Laufzeit-Clipping
+und Bodenbindung während des Morphs (über 360.000 Proben; Fehler unter 0.1mm).
+Bestehende 14.118 Raycast-Proben und alle übrigen Regressionen bleiben aktiv.
+Cache-Versionen 167: CombatFX, GameRuntime, TerrainManager und OSMManager;
+unveränderte Helfer bleiben bei ihren Versionen. Beide sichtbaren Spiele,
+Campaign-Links und Rückwege tragen BUILD 167; Menü-CSS folgt der Build-Kennung.
 
 **Build 166 (05.10.2026): beidseitige Leuchtspur, belebte Straßen und Beladung.**
 Pacifics globaler Vierer-Zähler traf bei zwei gleichzeitig erzeugten Geschossen

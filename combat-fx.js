@@ -3,17 +3,26 @@
  'use strict';
  // The long axis is local Z, matching Object3D.lookAt. Mixing a Y-axis
  // cylinder with lookAt made the Pacific AA appear as upright sticks.
- const rounds=new Map();let roundNumber=0;
+ const rounds=new Map();let roundNumber=0,pooledRounds=0,allocatedRounds=0;
+ function recycleRound(mesh){
+  if(!mesh.userData.roundActive)return;
+  mesh.userData.roundActive=false;mesh.visible=false;
+  if(pooledRounds<512){rounds.get(mesh.userData.roundKind).pool.push(mesh);pooledRounds++;}
+ }
  function round(kind='rifle',shotIndex=null){
   if(!rounds.has(kind)){
    const [width,length]=kind==='aa'?[.13,2]:kind==='cannon'?[.10,1.35]:[.08,1.15];
    const geometry=new THREE.BoxGeometry(width,width,length);
    const materials=[0x373a37,0xffd395].map(color=>new THREE.MeshBasicMaterial({color,fog:false,toneMapped:false}));
-   rounds.set(kind,{geometry,materials});
+   rounds.set(kind,{geometry,materials,pool:[]});
   }
-  const {geometry,materials}=rounds.get(kind);
-  const tracer=(shotIndex===null?roundNumber++:shotIndex)%4===0,mesh=new THREE.Mesh(geometry,materials[tracer?1:0]);
-  mesh.userData.roundKind=kind;mesh.userData.litTracer=tracer;
+  const {geometry,materials,pool}=rounds.get(kind);
+  const tracer=(shotIndex===null?roundNumber++:shotIndex)%4===0;
+  let mesh=pool.pop();
+  if(mesh)pooledRounds--;else{mesh=new THREE.Mesh(geometry,materials[tracer?1:0]);allocatedRounds++;}
+  mesh.material=materials[tracer?1:0];mesh.position.set(0,0,0);mesh.quaternion.identity();mesh.scale.set(1,1,1);mesh.visible=true;
+  mesh.userData.roundKind=kind;mesh.userData.litTracer=tracer;mesh.userData.roundActive=true;
+  mesh.userData.runtimeRecycle=recycleRound;delete mesh.userData.roundBarrel;delete mesh.userData.roundSide;
   // Short exposure streak; physical flight/hit geometry stays in the callers.
   if(tracer)mesh.scale.z=kind==='aa'?6:kind==='cannon'?7:7.5;
   return mesh;
@@ -22,10 +31,15 @@
   if(!camera||!renderer)return;
   const height=renderer.domElement.clientHeight||renderer.domElement.height||768;
   const metresPerPixel=2*Math.tan((camera.fov||50)*Math.PI/360)/height;
-  for(const item of items){const mesh=item.mesh;if(!mesh?.userData.litTracer)continue;
+  for(const item of items){const mesh=item.mesh;if(!mesh?.userData.roundKind)continue;
+   // Dark rounds remain fully simulated. Beyond 80m they contribute no useful
+   // chase-view detail, but used to cost three extra draw calls per tracer.
+   const distanceSq=mesh.position.distanceToSquared(camera.position);
+   mesh.visible=mesh.userData.litTracer||distanceSq<=6400;
+   if(!mesh.userData.litTracer)continue;
    const width=mesh.userData.roundKind==='aa'?.13:mesh.userData.roundKind==='cannon'?.10:.08;
    // End-on shots otherwise vanish below one pixel in the chase camera.
-   const visibleWidth=Math.min(1.7,Math.max(width,mesh.position.distanceTo(camera.position)*metresPerPixel*1.15));
+   const visibleWidth=Math.min(1.7,Math.max(width,Math.sqrt(distanceSq)*metresPerPixel*1.15));
    mesh.scale.x=mesh.scale.y=visibleWidth/width;
   }
  }
@@ -95,5 +109,5 @@
    get count(){return live.length;}
   };
  }
- root.CombatFX={create,round,updateRounds};
+ root.CombatFX={create,round,updateRounds,get roundStats(){return {allocated:allocatedRounds,pooled:pooledRounds};}};
 })(typeof window==='undefined'?globalThis:window);
