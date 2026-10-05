@@ -53,7 +53,7 @@ for(const [i,m] of missions.entries()){
 }
 // Fly the actual wounded-wingman autopilot to the strip, not just a state stub.
 const P={alive:true,pos:new THREE.Vector3()},w={kind:'p47',group:new THREE.Group(),pos:new THREE.Vector3(4500,700,18000),vel:new THREE.Vector3(0,0,100),heading:0,pitch:0,roll:0,spd:100,alive:true,hp:2,path:0,cover:0,smokeT:0,landed:false,bonus:false};
-const flight=vm.createContext({THREE,Math,P,wingmen:[w],AF_X:787,AF_Z:18087.6,AF_Y:180,RWY_LEN:900,
+const flight=vm.createContext({THREE,Math,P,wingmen:[w],AF_X:6000,AF_Z:15800,AF_Y:180,RWY_LEN:900,
  AC:{p47:{stall:38,max:175,gLim:6,turn:.8}},groundY:()=>180,GameRuntime:{rotorStep:()=>.2},spawnSmoke:()=>{},radioSay:()=>{},addScore:n=>{flight.score+=n;},flash:()=>{},score:0});
 vm.runInContext(eu.slice(eu.indexOf('const AI_G=9.81;'),eu.indexOf('function spawnRecoveryEscort'))+eu.slice(eu.indexOf('function updateRecoveryEscort'),eu.indexOf('function updateEnemyAir')),flight);
 for(let i=0;i<60*400&&!w.landed;i++){P.pos.copy(w.pos).add(new THREE.Vector3(80,15,0));flight.updateRecoveryEscort(1/60);assert(w.pos.y>=180,'escort never falls through ground');assert(w.pos.x>0&&w.pos.x<28000&&w.pos.z>0&&w.pos.z<32000,'escort approach stays inside playable terrain');}

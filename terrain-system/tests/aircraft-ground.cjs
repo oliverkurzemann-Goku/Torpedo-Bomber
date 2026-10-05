@@ -11,7 +11,7 @@ for(const name of ['HeightProvider','TerrainTile','TerrainManager','AircraftGrou
 global.fetch=async url=>{const b=fs.readFileSync(url);return {ok:true,arrayBuffer:async()=>b.buffer.slice(b.byteOffset,b.byteOffset+b.byteLength)}};
 async function load(file){const b=fs.readFileSync(file);return new Promise((yes,no)=>new THREE.GLTFLoader().parse(b.buffer.slice(b.byteOffset,b.byteOffset+b.byteLength),'',g=>yes(g.scene),no));}
 (async()=>{
- const dem=new DEMHeightProvider(4000,'terrain-system/real/data/dem/');await Promise.all([[0,4],[5,6]].map(([x,z])=>dem.loadTile(x,z)));
+ const dem=new DEMHeightProvider(4000,'terrain-system/real/data/dem/');await Promise.all([[1,3],[5,6]].map(([x,z])=>dem.loadTile(x,z)));
  const terrain=Object.create(TerrainManager.prototype);Object.assign(terrain,{scene:new THREE.Scene(),tileSize:4000,heightProvider:dem,tiles:new Map(),material:new THREE.MeshStandardMaterial()});
  const models=[['p47','p47new.glb',12.42],['bf109','bf109new.glb',9.92],['fw190','fw190.glb',10.51],['me262','me262.glb',12.51],['ju87','ju87.glb',13.8],['me163','me163.glb',9.3],['b17','b17.glb',31.62],['b24','b24.glb',33.53]];
  let samples=0,maxGap=0;
@@ -19,7 +19,7 @@ async function load(file){const b=fs.readFileSync(file);return new Promise((yes,
   const src=await load(file),model=new THREE.Group();model.add(src);model.updateMatrixWorld(true);
   src.scale.setScalar(span/new THREE.Box3().setFromObject(model).getSize(new THREE.Vector3()).x);model.updateMatrixWorld(true);
   src.position.copy(new THREE.Box3().setFromObject(model).getCenter(new THREE.Vector3())).negate();model.updateMatrixWorld(true);rigModel(model,kind);
-  const [x,z]=kind==='p47'?[787,18087.6]:[23600,25725],tile=terrain.ensureTile(Math.floor(x/4000),Math.floor(z/4000),2);
+  const [x,z]=kind==='p47'?[6000,15800]:[23600,25725],tile=terrain.ensureTile(Math.floor(x/4000),Math.floor(z/4000),2);
   const activity=new AirfieldActivity(terrain,x,z);activity.setAircraft(model,kind);
   assert.equal(AircraftGround.supports(model,kind).length,3,kind+' needs three measured supports');
   for(const lod of [0,2,0]){

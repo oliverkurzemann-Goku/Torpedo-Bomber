@@ -5,7 +5,35 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 170 · Thunderbolt Squadron BUILD 170 · Remagen-Kern 23 / Fahrzeuge 22**
+Stand bei Übergabe: **Torpedo Squadron BUILD 171 · Thunderbolt Squadron BUILD 171 · Remagen-Kern 23 / Fahrzeuge 22**
+
+**Build 171 (05.10.2026): Flugplatz und Komet-Abflug weiter im Karteninneren.**
+Der fiktive alliierte Flugplatz liegt jetzt bei (6000,15800), statt (787,18087.6).
+Das westliche Ende der 900m-Piste hat 5,55km Abstand zur Kartengrenze; der Startpunkt
+liegt bei x=5690. DEM-Abtastung alle 10m bestätigt weniger als 6m Höhenunterschied
+über die ganze Piste. Der komplette bisherige Freiraum für Apron/Baracken ist auf
+realem Wasser-/Gebäudedatensatz trocken und unbebaut. Gelände wird nicht abgeflacht.
+Bestehende Baum-/Straßen-/Landcover-Ausschlüsse, Bodenszenen, Radkontakt, Karte,
+Anflugprüfung, Verkehr und Rottenflieger-Rückkehr benutzen die neuen Koordinaten.
+Die alte illustrative historische Piste wird weiterhin entfernt.
+
+Beide Me163-Einsätze (komet/kometdash) beginnen 1250m in Richtung Kartenmitte vom
+unveränderten deutschen Feld: etwa (22722,24835), Heading etwa 225° (Südwest).
+Die frühere Ost-Richtung führte direkt zur nur noch 3150m entfernten Grenze.
+Höhe bleibt lokales gerendertes Terrain +760m; Kufe eingefahren, Tempo/Treibstoff
+und Gleitverhalten bleiben erhalten. Selbst 90s geradeaus bei 238m/s bleiben mehr
+als 5km von jeder Grenze entfernt. Browser prüft beide Missionen nach der echten
+Kamerafahrt mit 30s Flugphysik und neutralen Steuereingaben: kein Rand-Clamp und
+mehr als 200m Abstand zum gerenderten Gelände.
+
+Startup prüft sämtliche Alliierten-/Komet-Startpositionen, Wasser/Gebäude und
+Baumfreiheit des neuen Feldes. Reale Straßen/Landcover über beiden Pisten sind
+geometrisch ausgeschnitten; der Test liest jetzt auch nichtindizierte gerenderte
+Flächen (143 Straßen-Dreiecke über der neuen Piste vor dem Ausschneiden, null danach).
+Verkehrswege und verletzter Rottenflieger verwenden das neue Feld. Radkontakt mit Original-GLBs/LOD-Morphs und alle sechs Kamerastarts
+bleiben geprüft. Syntax, 31 Terrain- und 22 Okinawa-Testdateien bestehen lokal;
+WebGL separat mit Chromium. Sichtbare Spiele, Menü-/Campaign-Links und CSS-URL
+171; unveränderte JS-Helfer behalten ihre bisherigen Cacheversionen.
 
 **Build 170 (05.10.2026): freie Flügel und Träger-Startkamerafahrt.**
 AirfieldActivity legt sämtliche Crewpositionen außerhalb des tatsächlichen,

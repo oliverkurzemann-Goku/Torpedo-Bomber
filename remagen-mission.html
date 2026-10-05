@@ -266,7 +266,7 @@
   #opsStatus{position:fixed;top:calc(env(safe-area-inset-top) + 76px);left:50%;transform:translateX(-50%);color:#edcc80;background:rgba(14,20,18,.78);padding:5px 9px;font:10px monospace;pointer-events:none;z-index:9;max-width:58vw;text-align:center;}
   #systemsStatus{position:fixed;top:calc(env(safe-area-inset-top) + 116px);left:50%;transform:translateX(-50%);color:#ffbf96;background:#251810db;padding:5px 9px;font:10px monospace;pointer-events:none;z-index:9;max-width:60vw;text-align:center;}#systemsStatus:empty{display:none;}
 </style>
-<link rel="stylesheet" href="menu-layout.css?v=170">
+<link rel="stylesheet" href="menu-layout.css?v=171">
 </head>
 <body>
 <!-- ===== TEMP TEST-ONLY VERSION BANNER — asked for by Oliver: "kannst du irgendwo einbauen,
@@ -288,7 +288,7 @@
   <div style="width:100%;height:4px;background:repeating-linear-gradient(45deg,#ffd400,#ffd400 8px,#111 8px,#111 16px);"></div>
   <span id="testVersionBannerText" style="background:#111;color:#ffd400;font-family:monospace;font-weight:800;font-size:11px;letter-spacing:.5px;padding:3px 10px;border:1px solid #ffd400;border-top:none;border-radius:0 0 6px 6px;"></span>
 </div>
-<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 170';</script>
+<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 171';</script>
 <!-- ===== END TEMP TEST-ONLY VERSION BANNER ===== -->
 <div id="app"></div>
 <style>
@@ -328,7 +328,7 @@
   <div id="flash"></div>
   <div id="gunsight"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 170 · REAL RHINE</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 171 · REAL RHINE</div>
 
   <div id="apr">
     <div id="aprCall"></div>
@@ -378,7 +378,7 @@
 </div>
 
 <div class="overlay hidden" id="menu" data-campaign="europe">
-  <div class="menuTop"><a id="selBtn" href="index.html?v=170">&#9664; Change Game</a><span class="menuMeta">RHINE OPERATIONS<br>BUILD 170</span></div>
+  <div class="menuTop"><a id="selBtn" href="index.html?v=171">&#9664; Change Game</a><span class="menuMeta">RHINE OPERATIONS<br>BUILD 171</span></div>
   <div class="card menuCard">
     <aside class="menuOverview" aria-label="Campaign and pilot options">
     <div class="campaignArt" aria-hidden="true"></div>
@@ -535,17 +535,13 @@ let realBridge=null, realFlak=[], realFactory=null;
 const AF_Y_FALLBACK=180;     // only used if terrain.getHeight() somehow isn't ready yet when
                              // buildAirfield() runs — real height overwrites this immediately after
 let AF_Y=AF_Y_FALLBACK;      // airfield pad elevation — set from the real DEM once loaded, see loadRealWorld()
-const RWY_LEN=900, RWY_W=40; // matches the real, DEM-checked-flat farmland strip's own length/width
-                             // (real/data/historical, tile (0,4)) — a real WW2 forward strip was
-                             // rarely longer than this
-// Real position of the illustrative airfield (real/tools/fetch_historical.py's own DEM-flatness
-// check, near Sinzig) — world coords, i.e. local (787,2087.6) in tile (0,4) plus that tile's own
-// origin (0*4000, 4*4000). The real data's own rotY=0.3 is NOT applied here — every runway-relative
-// check in this file (Math.abs(x-AF_X)<RWY_LEN/2 style) assumes an axis-aligned strip, and this
-// airfield's own orientation was never historically verified anyway (see fetch_historical.py's own
-// "illustrative, not verified" note) — simpler and lower-risk to keep it axis-aligned than to
-// rederive every one of those checks in a rotated frame for an orientation that was a guess either way.
-const ALLIED_AF_X=787, ALLIED_AF_Z=18087.6;
+const RWY_LEN=900, RWY_W=40; // plausible dimensions for a rough WW2 forward strip
+// Fictional Allied field moved inland from (787,18087.6): even the western
+// runway end now has 5.55 km of terrain for circuits, approaches and rollout.
+// The real DEM varies by less than 6 m over the strip; the complete field is
+// dry and clear of mapped buildings. Existing runway/tree exclusions follow
+// these coordinates. Keep the axis-aligned strip used by all landing checks.
+const ALLIED_AF_X=6000, ALLIED_AF_Z=15800;
 // Separate Luftwaffe strip on a DEM-checked plateau east of the Rhine.
 // OSM has no buildings or roads on its 900 m runway footprint.
 const GERMAN_AF_X=23600, GERMAN_AF_Z=25725;
@@ -811,7 +807,7 @@ async function loadRealWorld(){
 
   if(OSMManager.BUILD!==23||HistoricalObjectManager.BUILD!==21||LivingWorld.BUILD!==22||WorldVehicles.BUILD!==22) throw new Error('Terrain version mismatch. Reload Remagen.');
   document.getElementById('testVersionBannerText').textContent=
-    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 170 · MODULE 23';
+    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 171 · MODULE 23';
   heightProvider=new DEMHeightProvider(RTILE,'terrain-system/real/data/dem/');
   terrain=new TerrainManager(scene,RTILE,heightProvider);
   osmMgr=new OSMManager(scene,RTILE,terrain,'terrain-system/real/data/osm/');
@@ -855,22 +851,9 @@ async function loadRealWorld(){
   // which object is a fact about the real data (real/data/historical/*.json), not something this
   // file should hard-code positions for a second time.
   //
-  // Reported (real iPad, screenshot): "Flugzeuge starten vor der runway im Gras" — measured, not
-  // guessed: real/data/historical/0_4.json's "airfields" entry sits at local (787.0,2087.6) in
-  // tile (0,4); with TILE_SIZE=4000 that is world (787,18087.6) — EXACTLY AF_X/AF_Z, the same
-  // centre buildAirfield() below already uses for its own, axis-aligned runway. But
-  // HistoricalObjectManager._buildAirfield() renders ITS OWN copy of that runway too (this class
-  // is a general-purpose visual layer, not aware that this particular game already builds its
-  // own strip) — rotated by the real, historically-plausible rotY=0.3 rad (~17°) that
-  // buildAirfield() deliberately does NOT use (see that function's own comment: every runway-
-  // relative gameplay check in this file assumes an axis-aligned strip). Two overlapping runway
-  // boxes at the same centre but ~17° apart is exactly what reads as "the plane sits in the
-  // grass in front of the runway" — the visible (real, rotated) strip and the one the plane
-  // actually spawns/taxis on (synthetic, axis-aligned) diverge more the further from centre you
-  // look, including right at the spawn point 310 units off-centre. Removed here (never added to
-  // the scene a second time down in buildAirfield()) rather than kept and reconciled — this file
-  // already has its own, gameplay-correct runway; a second decorative one from a general-purpose
-  // manager that doesn't know about it is pure noise.
+  // The historical layer's illustrative field at (787,18087.6) must not
+  // create a second decorative runway. Active strips, including the inland
+  // Allied field, are built separately with the axis used by flight physics.
   for(const g of historicalMgr.tiles.values()){
     if(!g||!g.userData.objects) continue;
     for(const sub of g.userData.objects.slice()){
@@ -3614,7 +3597,7 @@ function updateRecoveryEscort(dt){
     if(w.landed){w.spd=Math.max(0,w.spd-12*dt);w.pos.x-=w.spd*dt;w.pos.y=groundY(w.pos.x,w.pos.z)+2;w.group.position.copy(w.pos);continue;}
     const close=w.pos.distanceTo(P.pos)<650;
     if(close&&P.alive)w.cover+=dt;
-    // Approach from the EAST: Beaufort is only 787 m from the western map edge.
+    // Approach from the east, opposite the departure direction.
     const waypoints=[{x:AF_X+1800,z:AF_Z,y:AF_Y+180},{x:AF_X+600,z:AF_Z,y:AF_Y+68},{x:AF_X-360,z:AF_Z,y:AF_Y+2}];
     let goal=waypoints[w.path];
     if(w.path<2&&Math.hypot(w.pos.x-goal.x,w.pos.z-goal.z)<420){w.path++;goal=waypoints[w.path];}
@@ -4263,9 +4246,12 @@ function relaunch(){
   P.onGround=true; P.touchResolved=true; P.throttle=0.0; setThrottleUI(0);
   P.gear=1; P.gearTgt=1; P.flap=0; P.flapTgt=0;
   if(P.ac==='me163'){
-    // The original launch trolley has been released. Begin this one sortie
-    // airborne, so recovery is a powered interception followed by a skid glide.
-    P.pos.set(AF_X+1250,groundY(AF_X+1250,AF_Z)+760,AF_Z);
+    // Trolley already released. Both Komet sorties depart southwest toward
+    // the interior interception sector, rather than the eastern map boundary.
+    const inward=new THREE.Vector3(RTILE*RGRID_W/2-AF_X,0,RTILE*RGRID_H/2-AF_Z).normalize();
+    const x=AF_X+inward.x*1250,z=AF_Z+inward.z*1250;
+    P.pos.set(x,groundY(x,z)+760,z);
+    P.heading=Math.atan2(inward.x,inward.z);
     P.spd=155;P.onGround=false;P.touchResolved=false;
     P.gear=0;P.gearTgt=0;P.throttle=0.65;setThrottleUI(0.65);
   }
@@ -5479,7 +5465,7 @@ function init(){
   buildMenu();
   // menu wiring
   document.getElementById('startBtn').onclick=()=>showBrief(selectedMission);
-  document.getElementById('pauseMainMenu').onclick=()=>{exitToMenuFromPause();window.location.href='index.html?v=170';};
+  document.getElementById('pauseMainMenu').onclick=()=>{exitToMenuFromPause();window.location.href='index.html?v=171';};
   document.getElementById('logBtn').onclick=()=>{ show('menu',false); showLogbook(); };
   document.getElementById('skipLaunchPreview').onclick=()=>finishLaunchIntro();
   document.getElementById('brBack').onclick=()=>{ show('brief',false); show('menu',true); state=ST.MENU; };

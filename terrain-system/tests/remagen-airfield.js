@@ -12,10 +12,10 @@ global.fetch=async url=>{
 };
 (async()=>{
   const scene=new THREE.Scene(),dem=new DEMHeightProvider(4000,'terrain-system/real/data/dem/');
-  await Promise.all([[0,4],[5,6],[6,6]].map(([x,z])=>dem.loadTile(x,z)));
+  await Promise.all([[1,3],[5,6],[6,6]].map(([x,z])=>dem.loadTile(x,z)));
   const terrain=Object.create(TerrainManager.prototype);
   Object.assign(terrain,{scene,tileSize:4000,heightProvider:dem,tiles:new Map(),material:new THREE.MeshStandardMaterial()});
-  terrain.ensureTile(0,4,0);
+  terrain.ensureTile(1,3,0);
   terrain.ensureTile(5,6,0);
   terrain.ensureTile(6,6,0);
   const osm=new OSMManager(scene,4000,terrain,'terrain-system/real/data/osm/');
@@ -24,14 +24,14 @@ global.fetch=async url=>{
   // Execute the actual mission integration, not a duplicated constructor invocation.
   const start=html.indexOf('let airfield=null,'),end=html.indexOf('// ===',start);
   const context=vm.createContext({THREE,AirfieldDetails,AirfieldActivity,terrain,osmMgr:osm,scene,
-    AF_X:787,AF_Z:18087.6,ALLIED_AF_X:787,ALLIED_AF_Z:18087.6,
+    AF_X:6000,AF_Z:15800,ALLIED_AF_X:6000,ALLIED_AF_Z:15800,
     GERMAN_AF_X:23600,GERMAN_AF_Z:25725,RWY_LEN:900,RWY_W:40});
   vm.runInContext(html.slice(start,end)+'\nbuildAirfield(); globalThis.field=airfieldDetails;',context);
   const f=context.field;
   assert(scene.children.includes(f.group)); assert.equal(terrain.material,originalTerrainMaterial);
   assert(html.includes('AirfieldDetails.js?v=169'));
   for(const [dx,dz,offset] of [[0,0,.16],[0,5,.22],[-318,-83,.16],[0,100,0]])
-    assert(Math.abs(AircraftGround.height(terrain,787+dx,18087.6+dz)-terrain.getRenderedHeight(787+dx,18087.6+dz)-offset-.02)<1e-8,'tyres touch the visible runway/apron surface'); assert(html.includes('MODULE 23'));
+    assert(Math.abs(AircraftGround.height(terrain,6000+dx,15800+dz)-terrain.getRenderedHeight(6000+dx,15800+dz)-offset-.02)<1e-8,'tyres touch the visible runway/apron surface'); assert(html.includes('MODULE 23'));
   assert(html.includes('if(airfieldDetails)airfieldDetails.refresh()'));
   assert.equal(OSMManager.BUILD,23);
   const meshes=f.group.children;
@@ -64,14 +64,14 @@ global.fetch=async url=>{
     f.group.updateMatrixWorld(true);
     const ray=new THREE.Raycaster();
     for(const dx of [-400,-310,0,400])for(const dz of [-18,0,18]){
-      ray.set(new THREE.Vector3(787+dx,2000,18087.6+dz),new THREE.Vector3(0,-1,0));
+      ray.set(new THREE.Vector3(6000+dx,2000,15800+dz),new THREE.Vector3(0,-1,0));
       const hits=ray.intersectObjects(f.ground);assert(hits.length,'runway has a hole');
-      assert(hits[0].point.y>terrain.getRenderedHeight(787+dx,18087.6+dz));
+      assert(hits[0].point.y>terrain.getRenderedHeight(6000+dx,15800+dz));
     }
   }
   for(const {name,bounds:b} of f.parts){
     // The whole active runway (plus wing clearance) remains clear of solid detail.
-    assert(b.max.z<18087.6-20||b.min.z>18087.6+20,`runway obstruction: ${name}`);
+    assert(b.max.z<15800-20||b.min.z>15800+20,`runway obstruction: ${name}`);
     if(name==='hut'||name==='shelter'){
       for(let i=0;i<=4;i++)for(let j=0;j<=2;j++){
         const h=terrain.getRenderedHeight(b.min.x+(b.max.x-b.min.x)*i/4,b.min.z+(b.max.z-b.min.z)*j/2);
@@ -81,7 +81,7 @@ global.fetch=async url=>{
   }
   ground();
   // No allocations when LOD is unchanged; defer updates while terrain morphs.
-  const tile=terrain.tiles.get('0,4'),before=f.ground.map(m=>m.geometry);
+  const tile=terrain.tiles.get('1,3'),before=f.ground.map(m=>m.geometry);
   f.refresh();assert(f.ground.every((m,i)=>m.geometry===before[i]));
   tile.setLOD(2,terrain.material);tile.updateMorph(.2);f.refresh();
   assert(f.ground.every((m,i)=>m.geometry===before[i]));
@@ -104,20 +104,20 @@ global.fetch=async url=>{
   const selection=vm.createContext({terrain,AF_Y:0});
   vm.runInContext(html.slice(baseStart,baseEnd)+
     '\nglobalThis.select=ac=>{selectMissionAirfield({ac});return [AF_X,AF_Z,AF_Y];};',selection);
-  assert.deepEqual(Array.from(selection.select('p47')),[787,18087.6,terrain.getHeight(787,18087.6)]);
+  assert.deepEqual(Array.from(selection.select('p47')),[6000,15800,terrain.getHeight(6000,15800)]);
   for(const ac of ['bf109','fw190','ju87','me262','me163'])
     assert.deepEqual(Array.from(selection.select(ac)),[23600,25725,terrain.getHeight(23600,25725)],`${ac} starts from the German base`);
   const activity=vm.runInContext('alliedActivity',context);
   assert.equal(activity.crew.length,12);assert.equal(activity.parked.length,2);assert.equal(activity.trucks.length,2);
   const pose=activity.people.limbs.instanceMatrix.array.slice();
-  activity.update(1,787,18087.6);
+  activity.update(1,6000,15800);
   assert.notDeepEqual(activity.people.limbs.instanceMatrix.array,pose,'crew must actually animate');
   let activityMeshes=0;activity.group.traverse(o=>{if(o.isMesh)activityMeshes++;});
   assert(activityMeshes<=30,'service scenes exceed draw-call budget: '+activityMeshes);
   let mountedSeen=false,cartTravel=0,last=activity.trolley.position.clone(),payloadMaxStep=0;
   const lastPayload=activity.payload.position.clone();
   for(let t=0;t<288;t+=.25){
-    activity.update(.25,787,18087.6);
+    activity.update(.25,6000,15800);
     for(const crew of activity.crew)assert(crew.drawZ<-27,'crew walks into active runway');
     for(const truck of activity.trucks)assert(truck.model.position.z<-42,'supply truck drives into active runway');
     assert(activity.trolley.position.z+2<-27&&activity.payload.position.z+2<-27,'moving trolley and ordnance stay clear of the runway');
@@ -132,7 +132,7 @@ global.fetch=async url=>{
   const sharedGeo=new THREE.BoxGeometry(10,2,8),template=new THREE.Group();
   template.add(new THREE.Mesh(sharedGeo,new THREE.MeshLambertMaterial()));
   let sharedDisposed=false;sharedGeo.addEventListener('dispose',()=>sharedDisposed=true);
-  activity.setAircraft(template,'p47');activity.time=36;activity.update(0,787,18087.6);
+  activity.setAircraft(template,'p47');activity.time=36;activity.update(0,6000,15800);
   assert(activity.payload.visible&&activity.loading.mounted,'P47 receives the external practice load');
   activity.setAircraft(template,'me163');assert(!activity.payload.visible,'Komet service must not fit an external bomb');
   assert(!sharedDisposed,'service aircraft preserve shared loaded model resources');

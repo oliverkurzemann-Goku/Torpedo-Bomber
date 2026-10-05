@@ -19,7 +19,7 @@ global.fetch=async url=>{const b=fs.readFileSync(path.join(root,url.split('?')[0
   await osm.prepareRegion(coords,'terrain-system/real/data/waterways.json');
   await Promise.all(coords.map(([x,z])=>osm.loadTile(x,z)));
   const html=fs.readFileSync(path.join(root,'remagen-mission.html'),'utf8');
-  const fields=[[787,18087.6],[23600,25725]],runwayFaces=()=>{
+  const fields=[[6000,15800],[23600,25725]],runwayFaces=()=>{
     const counts={road:[0,0],farm:[0,0],forest:[0,0]};
     const clip=(ring,axis,limit,less)=>{
       const out=[];
@@ -32,10 +32,12 @@ global.fetch=async url=>{const b=fs.readFileSync(path.join(root,url.split('?')[0
     };
     for(const tile of osm.tiles.values())if(tile?.group)for(const mesh of [...tile.group.children,...(tile.farGroup?.children||[])]){
       const kind=mesh.material===osm.roadMat?'road':mesh.material===osm.farmMat?'farm':mesh.material===osm.forestFloorMat?'forest':null;
-      if(!mesh.isMesh||!kind||!mesh.geometry.index)continue;
-      const pos=mesh.geometry.attributes.position,ix=mesh.geometry.index.array;
-      for(let i=0;i<ix.length;i+=3){
-        const a=ix[i],b=ix[i+1],c=ix[i+2];if(a===b&&b===c)continue;
+      if(!mesh.isMesh||!kind)continue;
+      // Prepared/draped surfaces are non-indexed; inspect their actual
+      // rendered triangles as well as the original indexed geometry.
+      const pos=mesh.geometry.attributes.position,ix=mesh.geometry.index?.array;
+      for(let i=0;i<(ix?.length??pos.count);i+=3){
+        const a=ix?ix[i]:i,b=ix?ix[i+1]:i+1,c=ix?ix[i+2]:i+2;if(a===b&&b===c)continue;
         const x0=Math.min(pos.getX(a),pos.getX(b),pos.getX(c)),x1=Math.max(pos.getX(a),pos.getX(b),pos.getX(c));
         const z0=Math.min(pos.getZ(a),pos.getZ(b),pos.getZ(c)),z1=Math.max(pos.getZ(a),pos.getZ(b),pos.getZ(c));
         fields.forEach(([fx,fz],j)=>{
@@ -51,8 +53,9 @@ global.fetch=async url=>{const b=fs.readFileSync(path.join(root,url.split('?')[0
     return counts;
   };
   const crossingBefore=runwayFaces();
+  assert(Object.values(crossingBefore).some(counts=>counts[0]>0),'test must measure actual surfaces crossing the inland runway');
   const roadStart=html.indexOf('function clearRoadsOnRunways(){'),roadEnd=html.indexOf('async function loadRealWorld(){',roadStart);
-  const roadContext=vm.createContext({THREE,terrain,osmMgr:osm,ALLIED_AF_X:787,ALLIED_AF_Z:18087.6,
+  const roadContext=vm.createContext({THREE,terrain,osmMgr:osm,ALLIED_AF_X:6000,ALLIED_AF_Z:15800,
     GERMAN_AF_X:23600,GERMAN_AF_Z:25725,RWY_LEN:900,RWY_W:40});
   vm.runInContext(html.slice(roadStart,roadEnd)+'\nclearRoadsOnRunways();',roadContext);
   assert.deepEqual(runwayFaces(),{road:[0,0],farm:[0,0],forest:[0,0]},
