@@ -8,7 +8,7 @@ for(const [file,pacific] of [['remagen-mission.html',false],['torpedo-carrier.ht
   assert(a>0&&b>a);
   const camera=new THREE.PerspectiveCamera(60,1.5,1,4000),P={pos:new THREE.Vector3(0,1000,0),heading:0,pitch:0,roll:0,spd:150};
   camera.position.set(0,1010,-30);
-  const c=vm.createContext({THREE,camera,P,aeroMode:true,killCam:null,chaseH:6,chaseUp:0,
+  const c=vm.createContext({THREE,camera,P,launchIntro:null,aeroMode:true,killCam:null,chaseH:6,chaseUp:0,
     APP_SPD:70,MAX_SPD:230,groundY:()=>0,shakeT:0,dbgOn:false,
     document:{querySelector:()=>null},applyShake(){},
     noseDir:()=>pacific?new THREE.Vector3(Math.cos(P.pitch),Math.sin(P.pitch),0):

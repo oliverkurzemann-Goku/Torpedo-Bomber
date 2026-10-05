@@ -5,6 +5,17 @@ class AirfieldDetails {
     this.terrain=terrain; this.osm=osm; this.x=x; this.z=z;
     this.group=new THREE.Group(); this.group.name='remagenForwardStrip';
     this.ground=[]; this.parts=[]; this.buckets=new Map(); this.lastSegments=-1;
+    if(!terrain.airfieldSoilTexture&&typeof document!=='undefined'){
+      const canvas=document.createElement('canvas');canvas.width=canvas.height=128;
+      const ctx=canvas.getContext('2d'),img=ctx.createImageData(128,128);
+      for(let y=0;y<128;y++)for(let x=0;x<128;x++){
+        const value=225+Math.floor(osmHash(x,y,168)*22),i=(y*128+x)*4;
+        img.data[i]=img.data[i+1]=img.data[i+2]=value;img.data[i+3]=255;
+      }
+      ctx.putImageData(img,0,0);const tex=new THREE.CanvasTexture(canvas);
+      tex.wrapS=tex.wrapT=THREE.RepeatWrapping;tex.repeat.set(16,16);tex.anisotropy=4;
+      tex.encoding=THREE.sRGBEncoding;terrain.airfieldSoilTexture=tex;
+    }
     const patches=new Map();
     const patch=(colour,dx,dz,w,d,offset)=>{
       if(!patches.has(colour))patches.set(colour,{positions:[],indices:[],offset});
@@ -30,7 +41,7 @@ class AirfieldDetails {
       const geo=new THREE.BufferGeometry();
       geo.setAttribute('position',new THREE.Float32BufferAttribute(p.positions,3));
       geo.setIndex(p.indices);
-      const mat=new THREE.MeshLambertMaterial({color:colour,map:terrain.material.map||null});
+      const mat=new THREE.MeshLambertMaterial({color:colour,map:terrain.airfieldSoilTexture||null});
       const mesh=new THREE.Mesh(geo,mat); mesh.name='airfieldGround';
       // Reuse the established grid/diagonal clipping, not a centre-height ribbon.
       osm._prepareWaterSurface(mesh,tx*size,tz*size,p.offset);

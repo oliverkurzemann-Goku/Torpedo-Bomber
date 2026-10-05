@@ -4,6 +4,7 @@
 const fs=require('node:fs'),path=require('node:path'),http=require('node:http'),assert=require('node:assert/strict');
 const {chromium}=require('playwright');
 const root=path.resolve(__dirname,'../..');
+const gameBuild=Number(fs.readFileSync(path.join(root,'index.html'),'utf8').match(/Operations Board · BUILD (\d+)/)[1]);
 const executable=[process.env.GAME_TEST_CHROME,'/usr/bin/google-chrome','/usr/bin/chromium','/opt/google/chrome/chrome'].find(p=>p&&fs.existsSync(p));
 if(!executable){
  if(process.env.CI)throw Error('Browser smoke test requires Chrome (set GAME_TEST_CHROME).');
@@ -440,7 +441,7 @@ const cdn={
      await page.waitForFunction(()=>(state===ST.LAUNCH||state===ST.FLIGHT)&&eng.master.gain.value>.5);
      await page.locator('#pauseBtn').click();await page.locator('#menuBtn').click();
     }else{
-     await page.locator('#pauseMainMenu').click();await page.waitForURL('**/index.html?v=166');
+     await page.locator('#pauseMainMenu').click();await page.waitForURL('**/index.html?v='+gameBuild);
      await page.locator('main.board').waitFor();
     }
     console.log('Browser pause: '+(scenario.ordinal===0?'abort, retained record and audible relaunch':'Main Menu returns to campaign board'));
@@ -596,7 +597,7 @@ const cdn={
     // A real JS frame failure is visible and remains observable, not hidden.
     await page.evaluate(()=>{animateFrame=()=>{throw Error('TEST FRAME FAULT');};});
     await page.locator('#simulationRecovery').waitFor({state:'visible'});
-    assert.match(await page.locator('#simulationRecovery').innerText(),/BUILD 166.*TEST FRAME FAULT/);
+    assert.match(await page.locator('#simulationRecovery').innerText(),new RegExp('BUILD '+gameBuild+'.*TEST FRAME FAULT'));
     assert.equal(await page.locator('#simulationRecovery button').innerText(),'Reload game');
     assert.deepEqual(errors,['TEST FRAME FAULT'],'unexpected runtime errors cannot be swallowed');
    }

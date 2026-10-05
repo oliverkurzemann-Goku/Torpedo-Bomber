@@ -29,7 +29,7 @@ global.fetch=async url=>{
   vm.runInContext(html.slice(start,end)+'\nbuildAirfield(); globalThis.field=airfieldDetails;',context);
   const f=context.field;
   assert(scene.children.includes(f.group)); assert.equal(terrain.material,originalTerrainMaterial);
-  assert(html.includes('AirfieldDetails.js?v=161')); assert(html.includes('MODULE 23'));
+  assert(html.includes('AirfieldDetails.js?v=168')); assert(html.includes('MODULE 23'));
   assert(html.includes('if(airfieldDetails)airfieldDetails.refresh()'));
   assert.equal(OSMManager.BUILD,23);
   const meshes=f.group.children;

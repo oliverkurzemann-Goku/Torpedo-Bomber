@@ -1,5 +1,31 @@
 # Remagen terrain handoff
 
+## Game Build 168 — shared tile edges, dry roads and departure camera
+
+The reported DEM boundary at z=12000 reproduced a 69m cliff between mixed LODs.
+Adjacent tiles now share the less detailed edge profile throughout transitions.
+Coarse interpolation follows the actual grid triangles rather than bilinear
+patches. Surface normals exclude skirts and use consistent DEM edge gradients;
+morphs retain conservative bounds instead of rescanning a sphere every frame.
+Ground overlays follow surfaceRevision, including edits to stable neighbours.
+The real-data seam test checks 74,304 points, with a maximum gap around 0.1mm.
+
+Road and rail source triangles are subtracted from mapped water polygons before
+terrain draping, so later LOD updates cannot restore asphalt inside the Rhine.
+The separate historic bridge remains. Road ribbons narrow from 10m to 6m, and
+regional endpoint connectivity removes 10,057 short isolated/terminal lines from
+40,739. Cross-tile continuations and connected junction links remain. Original
+OSM classes were discarded by the converter; this is a geometric selection.
+All 497,349 checked dry road triangle centres lie outside water.
+
+Mission starts show a skippable rear oblique service view, then smoothly blend
+into the normal takeoff camera. Real loading is shown beside the parked aircraft;
+player position, fuel, damage and mission progress stay frozen. Ground departures
+last 9s; airborne starts 6s. A neutral shared gravel map corrects the dark soil
+patches. Actual WebGL captures cover P47/FW190/Me163 starts, pause/resume, the
+terrain boundary and Rhine roads. Physical iPad performance remains unmeasured.
+TerrainTile/TerrainManager/OSMManager/AirfieldDetails cache keys are 168.
+
 ## Game Build 167 — prepared terrain transitions and sustained-fire performance
 
 Runtime LOD changes now wait for incrementally prepared surface layouts. A 2ms

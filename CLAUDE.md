@@ -5,7 +5,38 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 167 · Thunderbolt Squadron BUILD 167 · Remagen-Kern 23 / Fahrzeuge 22**
+Stand bei Übergabe: **Torpedo Squadron BUILD 168 · Thunderbolt Squadron BUILD 168 · Remagen-Kern 23 / Fahrzeuge 22**
+
+**Build 168 (05.10.2026): geschlossene Geländekanten, bereinigte Straßen und Startkamerafahrt.**
+Die gemeldete Kante ließ sich an der DEM-Kachelgrenze z=12000 als bis zu 69m hoher
+Versatz zwischen LODs reproduzieren. Nachbarn teilen jetzt ein gemeinsames
+Kantenprofil, auch während des Morphs; Coarse-Interpolation folgt der tatsächlichen
+PlaneGeometry-Diagonale. Oberflächennormalen schließen Skirt-Dreiecke aus; gleiche
+DEM-Randnormalen beseitigen den dunklen Kachelstreifen. Morphs berechnen keine neue
+BoundingSphere pro Frame. OSM-Flächen folgen auch stabilen Kantenänderungen über
+surfaceRevision. 74.304 reale Kantenproben: maximaler Spalt etwa 0,1mm.
+
+Straßen und Schienen werden vor dem Drape geometrisch aus echten Wasserpolygonen
+ausgeschnitten; LOD-Wechsel verwenden weiterhin diese trockenen Quelldreiecke.
+Die separate historische Rheinbrücke bleibt erhalten. Straßenbreite 6 statt 10m;
+regionale Topologie entfernt 10.057 kurze isolierte/terminale Wege von 40.739,
+während beidseitige Anschlüsse und Kachelfortsetzungen bleiben. Klassenangaben
+waren im ursprünglichen OSM-Konverter nicht erhalten: keine historische
+Klassifizierung behaupten. 497.349 geprüfte Straßendreiecke ohne Wasser-Zentrum.
+
+Jede Mission beginnt mit einer überspringbaren Kamerafahrt: Bodencrew und echte
+Beladung am geparkten Modell aus schräg hinten/oben, danach weicher Übergang zur
+normalen Startkamera. Ground-Shot 9s, Luftstart 6s; Position, Treibstoff, Schaden
+und Missionsablauf stehen währenddessen still. Pause und Menüabbruch funktionieren.
+Ein eigener neutraler Kies-Atlas verhindert die zuvor fast schwarze Flugplatzfläche.
+Browserprüfung mit echten P47/FW190/Me163-Modellen zeigt Crew/Beladung, prüft Pause
+und Abschluss und speichert zusätzlich Gelände-/Rheinbilder. Alle 30 Terrain-
+und 21 Okinawa-Testdateien sowie Syntax bestehen; iPad-Leistung nicht gemessen.
+Cache 168 für TerrainTile, TerrainManager, OSMManager und AirfieldDetails; CombatFX
+und GameRuntime bleiben 167. Sichtbare Kennungen und Campaign-Links 168.
+Der vorherige CI-Lauf scheiterte ausschließlich an einer veralteten BUILD-166-
+Erwartung im Browser-Smoke-Test. Fehleranzeige und Rückweg lesen jetzt die aktuelle
+Kennung aus dem Operations Board statt einer festen Nummer.
 
 **Build 167 (05.10.2026): alle Thunderbolt-Waffen sichtbar, geringere Lastspitzen.**
 Der globale CombatFX-Vierer-Zähler beleuchtete bei acht P47-Läufen immer nur zwei,

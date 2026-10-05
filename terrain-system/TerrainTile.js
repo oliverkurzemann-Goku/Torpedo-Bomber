@@ -31,7 +31,7 @@
 //  instantly, a tile blends per-vertex height from where it is now toward
 //  the new LOD's height over TERRAIN_MORPH_DURATION seconds. Upgrading
 //  (going finer) fades newly-appearing detail in from what the coarser mesh
-//  already implied there (bilinear across the coarse quad); downgrading
+//  already implied there (linear across the actual coarse triangles); downgrading
 //  fades it back out the same way before the actual vertex-count swap
 //  happens — by then every point already sits exactly on the coarser
 //  target's plane, so the swap itself is invisible.
@@ -124,11 +124,13 @@ class TerrainTile {
       pos.setY(skirtIdx, pos.getY(this._skirtTopOf[s]) - TERRAIN_SKIRT_DEPTH);
     }
     pos.needsUpdate = true;
-    this.mesh.geometry.computeVertexNormals();
-    this.mesh.geometry.computeBoundingSphere();
+    this._saveEdgeHeights();
+    this._refreshSurfaceNormals();
+    this.surfaceRevision=(this.surfaceRevision||0)+1;
 
     if(this.morphT >= 1){
       this.morphing = false;
+      this._edgeResolution=TERRAIN_LOD_SEGMENTS[this.lod];
       if(this._pendingFinalLod != null){
         const finalLod = this._pendingFinalLod;
         this._pendingFinalLod = null;
@@ -149,6 +151,8 @@ class TerrainTile {
   _buildGeometry(renderSeg, targetSeg, morphSpec, material){
     const gridN = renderSeg + 1;   // vertices per row/column — matches PlaneGeometry's own layout, verified against the r128 source (row-major, k = ix + gridN*iy)
     const geo = new THREE.PlaneGeometry(this.tileSize, this.tileSize, renderSeg, renderSeg);
+    geo.userData.gridSegments=renderSeg;
+    this._edgeResolution=morphSpec?Math.min(morphSpec.fromSeg,targetSeg):renderSeg;
     geo.rotateX(-Math.PI / 2);
     const pos = geo.attributes.position;
     const cx = this.centerX, cz = this.centerZ;
@@ -260,6 +264,55 @@ class TerrainTile {
     this._morphFromMain = morphFromMain;
     this._morphToMain = morphToMain;
     this._skirtTopOf = skirtTopOf;
+    this._saveEdgeHeights();
+    this._refreshSurfaceNormals();
+    this.surfaceRevision=(this.surfaceRevision||0)+1;
+    // The entire 0.6s morph stays inside this conservative bound. Avoid scanning
+    // thousands of vertices for a new sphere on every animation frame.
+    geo.boundingSphere.radius += 200;
+  }
+
+  _saveEdgeHeights(){
+    // During _buildGeometry the new segment count is not assigned yet.
+    const n=this.mesh.geometry.userData.gridSegments+1,p=this.mesh.geometry.attributes.position;
+    if(this._edgeHeights?.[0].length!==n)this._edgeHeights=Array.from({length:4},()=>new Float32Array(n));
+    for(let i=0;i<n;i++){
+      this._edgeHeights[0][i]=p.getY(i*n);this._edgeHeights[1][i]=p.getY(i*n+n-1);
+      this._edgeHeights[2][i]=p.getY(i);this._edgeHeights[3][i]=p.getY(i+n*(n-1));
+    }
+  }
+  _refreshSurfaceNormals(){
+    const g=this.mesh.geometry,seg=g.userData.gridSegments,n=seg+1,p=g.attributes.position;
+    // Skirt triangles must not tilt the surface normals into vertical walls.
+    // Cache DEM gradient normals on each edge; adjacent LODs share the same
+    // normal at the same world position and therefore no dark lighting stripe.
+    if(!g.attributes.normal)g.setAttribute('normal',new THREE.BufferAttribute(new Float32Array(p.count*3),3));
+    const normals=g.attributes.normal.array,idx=g.index.array;
+    normals.fill(0);
+    for(let i=0;i<seg*seg*6;i+=3){
+      const a=idx[i]*3,b=idx[i+1]*3,c=idx[i+2]*3,pa=p.array;
+      const ux=pa[b]-pa[a],uy=pa[b+1]-pa[a+1],uz=pa[b+2]-pa[a+2];
+      const vx=pa[c]-pa[a],vy=pa[c+1]-pa[a+1],vz=pa[c+2]-pa[a+2];
+      const nx=uy*vz-uz*vy,ny=uz*vx-ux*vz,nz=ux*vy-uy*vx;
+      normals[a]+=nx;normals[a+1]+=ny;normals[a+2]+=nz;
+      normals[b]+=nx;normals[b+1]+=ny;normals[b+2]+=nz;
+      normals[c]+=nx;normals[c+1]+=ny;normals[c+2]+=nz;
+    }
+    if(!g.userData.edgeNormals){
+      const edges=[];
+      for(let z=0;z<n;z++)for(let x=0;x<n;x++)if(!x||!z||x===seg||z===seg){
+        const i=x+z*n,wx=this.centerX+p.getX(i),wz=this.centerZ+p.getZ(i),h=this.heightProvider;
+        // Clamp gradient queries at the DEM's outer boundary (no unloaded tile).
+        const sample=(dx,dz)=>{try{return h.getHeight(wx+dx,wz+dz);}catch{return h.getHeight(wx,wz);}};
+        const nx=sample(-31.25,0)-sample(31.25,0),nz=sample(0,-31.25)-sample(0,31.25),len=Math.hypot(nx,62.5,nz);
+        edges.push([i,nx/len,62.5/len,nz/len]);
+      }
+      g.userData.edgeNormals=edges;
+    }
+    for(let i=0;i<n*n;i++){const j=i*3,len=Math.hypot(normals[j],normals[j+1],normals[j+2])||1;normals[j]/=len;normals[j+1]/=len;normals[j+2]/=len;}
+    for(const [i,x,y,z] of g.userData.edgeNormals){normals[i*3]=x;normals[i*3+1]=y;normals[i*3+2]=z;}
+    for(let i=0;i<this._skirtTopOf.length;i++){const j=(n*n+i)*3;normals[j]=normals[this._skirtTopOf[i]*3];normals[j+1]=normals[this._skirtTopOf[i]*3+1];normals[j+2]=normals[this._skirtTopOf[i]*3+2];}
+    g.attributes.normal.needsUpdate=true;
   }
 
   distanceTo(x, z){
@@ -310,9 +363,8 @@ function coarseInterpHeight(heightProvider, tileSize, cx, cz, coarseSeg, localX,
   const h10 = heightProvider.getHeight(wx(ix0+1), wz(iz0));
   const h01 = heightProvider.getHeight(wx(ix0),   wz(iz0+1));
   const h11 = heightProvider.getHeight(wx(ix0+1), wz(iz0+1));
-  const h0 = h00 + (h10 - h00) * tx;
-  const h1 = h01 + (h11 - h01) * tx;
-  return h0 + (h1 - h0) * tz;
+  return tx+tz<=1 ? h00*(1-tx-tz)+h10*tx+h01*tz
+    : h11*(tx+tz-1)+h01*(1-tx)+h10*(1-tz);
 }
 
 // Appends one skirt quad (2 triangles) to indices, connecting top edge

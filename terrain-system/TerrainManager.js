@@ -147,6 +147,32 @@ class TerrainManager {
       }
       if(tile.morphing) tile.updateMorph(dt);
     }
+    this.stitchEdges();
+  }
+
+  stitchEdges(){
+    const dirty=new Set();
+    // Use the less detailed live edge as the shared profile, also during a
+    // partial morph. Skirts hide empty gaps but used to leave 69m cliffs.
+    for(const a of this.tiles.values())for(const [dx,dz,ea,eb] of [[1,0,1,0],[0,1,3,2]]){
+      const b=this.tiles.get(this._key(a.tileX+dx,a.tileZ+dz));if(!b)continue;
+      const owner=a._edgeResolution<=b._edgeResolution?a:b,side=owner===a?ea:eb;
+      const profile=owner._edgeHeights[side],ps=profile.length-1,os=Math.min(a._renderSeg,b._renderSeg);
+      for(const [t,e] of [[a,ea],[b,eb]]){
+        const n=t._renderSeg+1,p=t.mesh.geometry.attributes.position;
+        for(let i=0;i<n;i++){
+          const f=i/(n-1)*os,k=Math.min(os-1,Math.floor(f)),u=f-k;
+          const y=profile[k*ps/os]*(1-u)+profile[(k+1)*ps/os]*u;
+          const j=e===0?i*n:e===1?i*n+n-1:e===2?i:i+n*(n-1);
+          if(Math.abs(p.getY(j)-y)>.00001){p.setY(j,y);dirty.add(t);}
+        }
+      }
+    }
+    for(const t of dirty){
+      const p=t.mesh.geometry.attributes.position,n=(t._renderSeg+1)**2;
+      for(let i=0;i<t._skirtTopOf.length;i++)p.setY(n+i,p.getY(t._skirtTopOf[i])-TERRAIN_SKIRT_DEPTH);
+      p.needsUpdate=true;t._refreshSurfaceNormals();t.surfaceRevision=(t.surfaceRevision||0)+1;
+    }
   }
 
   // World-space height query, independent of tiling — works whether or not a
@@ -257,6 +283,7 @@ class TerrainManager {
     this.material.dispose();
     if(this.groundTexture)this.groundTexture.dispose();
     if(this.surfaceDetailTexture)this.surfaceDetailTexture.dispose();
+    if(this.airfieldSoilTexture)this.airfieldSoilTexture.dispose();
   }
 }
 

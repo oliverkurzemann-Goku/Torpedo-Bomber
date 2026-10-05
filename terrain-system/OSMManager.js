@@ -129,6 +129,7 @@ class OSMManager {
     for(const r of records) this.sourceTiles.set(this._key(r.tx,r.tz),r.data);
     this._prepareSettlementLandmarks(records);
     this.waterIndex = makeOSMWaterIndex(records,this.tileSize);
+    this.roadStats=pruneOSMRoadSpurs(records,this.tileSize);
   }
 
   _prepareSettlementLandmarks(records){
@@ -174,9 +175,9 @@ class OSMManager {
     const ox = tx * this.tileSize, oz = tz * this.tileSize;
     const group = new THREE.Group();
 
-    const roadMesh = this._buildRibbons(data.roads || [], ox, oz, 10, this.roadMat, 1.4);
+    const roadMesh = this._buildRibbons(data.roads || [], ox, oz, 6, this.roadMat, 1.4,data);
     if(roadMesh) group.add(roadMesh);
-    const railMesh = this._buildRibbons(data.rails || [], ox, oz, 3, this.railMat, 1.2);
+    const railMesh = this._buildRibbons(data.rails || [], ox, oz, 3, this.railMat, 1.2,data);
     if(railMesh) group.add(railMesh);
     const riverMesh = this._buildRibbons(data.rivers || [], ox, oz, 12, this.riverMat, 0.65,data);
     if(riverMesh) group.add(riverMesh);
@@ -251,6 +252,14 @@ class OSMManager {
       }
     }
     if(positions.length === 0) return null;
+    if(mat===this.roadMat||mat===this.railMat){
+      const water=this.waterIndex||makeOSMWaterIndex([{tx:ox/this.tileSize,tz:oz/this.tileSize,data:riverData||{}}],this.tileSize);
+      const dry=osmSubtractWater(positions,indices,water);
+      positions.length=0;indices.length=0;
+      for(const v of dry)positions.push(v);
+      for(let i=0;i<positions.length/3;i++)indices.push(i);
+      if(!positions.length)return null;
+    }
     const geo = new THREE.BufferGeometry();
     geo.setAttribute('position', new THREE.Float32BufferAttribute(positions,3));
     geo.setIndex(indices);
@@ -300,7 +309,7 @@ class OSMManager {
     const tile=src&&this.terrain.tiles.get(this._key(src.ox/this.tileSize,src.oz/this.tileSize));
     if(!tile)return;
     if(mesh.userData.surfaceSegments!==tile._renderSeg){this.redrapeWater(mesh);return;}
-    if(mesh.userData.surfaceGeometry===tile.mesh.geometry&&mesh.userData.surfaceMorph===tile.morphT)return;
+    if(mesh.userData.surfaceGeometry===tile.mesh.geometry&&mesh.userData.surfaceMorph===tile.morphT&&mesh.userData.surfaceRevision===tile.surfaceRevision)return;
     const p=mesh.geometry.attributes.position,base=mesh.userData.surfaceBase,uv=mesh.userData.surfaceWeights;
     const heights=tile.mesh.geometry.attributes.position.array,n=tile._renderSeg+1;
     for(let i=0;i<p.count;i++){
@@ -310,7 +319,7 @@ class OSMManager {
     }
     p.needsUpdate=true;
     if(!tile.morphing)mesh.geometry.computeVertexNormals();
-    mesh.userData.surfaceGeometry=tile.mesh.geometry;mesh.userData.surfaceMorph=tile.morphT;
+    mesh.userData.surfaceGeometry=tile.mesh.geometry;mesh.userData.surfaceMorph=tile.morphT;mesh.userData.surfaceRevision=tile.surfaceRevision;
   }
 
   syncTerrainSurfaces(){
@@ -1384,4 +1393,76 @@ function makeOSMTreeCrown(kind){
  else if(kind===4){lobe(0,.8,0,3,2.3,2.7);for(let i=0;i<4;i++){const a=i*Math.PI/2;lobe(Math.cos(a)*1.9,-.9,Math.sin(a)*1.9,1.5,2.5,1.5);}}
  else {lobe(0,.5,0,2.5,2.5,2.5);for(let i=0;i<3;i++){const a=i*Math.PI*2/3;lobe(Math.cos(a)*1.6,-.4,Math.sin(a)*1.6,2,2.1,2);}}
  const geo=new THREE.BufferGeometry();geo.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));geo.computeVertexNormals();geo.computeBoundingSphere();return geo;
+}
+
+// Visual road selection uses geometry/topology only: source classes were not
+// retained by the original converter. Keep junction links and tile-boundary
+// continuations; discard short isolated roads and short terminal access spurs.
+function pruneOSMRoadSpurs(records,tileSize){
+  const cells=new Map(),roads=[],cs=8;
+  const key=(x,z)=>Math.floor(x/cs)+','+Math.floor(z/cs);
+  for(const record of records)for(const line of record.data.roads||[]){
+    if(line.length<2)continue;
+    const world=line.map(p=>[p[0]+record.tx*tileSize,p[1]+record.tz*tileSize]);
+    const road={record,line,world,length:world.slice(1).reduce((n,p,i)=>n+Math.hypot(p[0]-world[i][0],p[1]-world[i][1]),0)};roads.push(road);
+    for(const p of world){const k=key(...p);if(!cells.has(k))cells.set(k,[]);cells.get(k).push({p,road});}
+  }
+  const kept=new Map(records.map(r=>[r,[]]));let removed=0;
+  for(const road of roads){
+    const ends=[road.world[0],road.world.at(-1)],linked=ends.map(p=>{
+      // A clipped map edge is a continuation, never a dead-end evidence.
+      if(p.some(v=>Math.abs(v/tileSize-Math.round(v/tileSize))<.000001))return true;
+      const gx=Math.floor(p[0]/cs),gz=Math.floor(p[1]/cs);
+      for(let x=gx-1;x<=gx+1;x++)for(let z=gz-1;z<=gz+1;z++)
+        for(const q of cells.get(x+','+z)||[])if(q.road!==road&&Math.hypot(q.p[0]-p[0],q.p[1]-p[1])<4)return true;
+      return false;
+    });
+    const boundary=ends.some(p=>p.some(v=>Math.abs(v/tileSize-Math.round(v/tileSize))<.000001));
+    if(!boundary&&((!linked[0]&&!linked[1]&&road.length<350)||((!linked[0]||!linked[1])&&road.length<160))){removed++;continue;}
+    kept.get(road.record).push(road.line);
+  }
+  for(const r of records)r.data.roads=kept.get(r);
+  return {source:roads.length,removed,retained:roads.length-removed};
+}
+
+// Exact 2D polygon subtraction, before terrain draping. Terrain updates keep
+// these dry source triangles, so an LOD change cannot restore roads in water.
+function osmSubtractWater(positions,indices,index){
+  const output=[],cs=index.cellSize;
+  for(let i=0;i<indices.length;i+=3){
+    const tri=indices.slice(i,i+3).map(j=>[positions[j*3],positions[j*3+2]]);
+    const xs=tri.map(p=>p[0]),zs=tri.map(p=>p[1]),minX=Math.min(...xs),maxX=Math.max(...xs),minZ=Math.min(...zs),maxZ=Math.max(...zs),candidates=new Set();
+    for(let x=Math.floor(minX/cs);x<=Math.floor(maxX/cs);x++)for(let z=Math.floor(minZ/cs);z<=Math.floor(maxZ/cs);z++)
+      for(const f of index.cells.get(x+','+z)||[])if(f.maxX>=minX&&f.minX<=maxX&&f.maxZ>=minZ&&f.minZ<=maxZ)candidates.add(f);
+    let pieces=[tri];
+    for(const f of candidates){
+      if(!f.triangles)f.triangles=triangulateSimplePolygon(f.ring).map(ids=>ids.map(j=>f.ring[j]));
+      for(const clip of f.triangles){
+        const area=(clip[1][0]-clip[0][0])*(clip[2][1]-clip[0][1])-(clip[1][1]-clip[0][1])*(clip[2][0]-clip[0][0]);
+        const sign=area>0?1:-1,next=[];
+        for(const poly of pieces){
+          let overlap=poly;
+          for(let j=0;j<3&&overlap.length>=3;j++){
+            const a=clip[j],b=clip[(j+1)%3],nx=-(b[1]-a[1])*sign,nz=(b[0]-a[0])*sign;
+            overlap=osmClipHalfPlane(overlap,nx,nz,nx*a[0]+nz*a[1],true);
+          }
+          if(overlap.length<3){next.push(poly);continue;}
+          let inside=poly;
+          for(let j=0;j<3&&inside.length>=3;j++){
+            const a=clip[j],b=clip[(j+1)%3],nx=-(b[1]-a[1])*sign,nz=(b[0]-a[0])*sign,c=nx*a[0]+nz*a[1];
+            const outside=osmClipHalfPlane(inside,nx,nz,c,false);if(outside.length>=3)next.push(outside);
+            inside=osmClipHalfPlane(inside,nx,nz,c,true);
+          }
+        }
+        pieces=next;if(!pieces.length)break;
+      }
+      if(!pieces.length)break;
+    }
+    for(const poly of pieces)for(let j=1;j<poly.length-1;j++){
+      const a=poly[0],b=poly[j],c=poly[j+1],area=(b[0]-a[0])*(c[1]-a[1])-(b[1]-a[1])*(c[0]-a[0]);
+      if(Math.abs(area)<1e-5)continue;
+      for(const [x,z] of area<0?[a,b,c]:[a,c,b])output.push(x,0,z);
+    }
+  }
+  return output;
 }
