@@ -23,7 +23,7 @@ const server=http.createServer((req,res)=>{
   page.setDefaultTimeout(120000);page.on('pageerror',e=>errors.push(e.message));
   page.on('console',m=>{if(/Shader Error|VALIDATE_STATUS|not compiled/.test(m.text()))errors.push(m.text());});
   await page.addInitScript(()=>{window.requestAnimationFrame=()=>0;});
-  await page.goto('http://127.0.0.1:'+server.address().port+'/remagen-mission.html?campaign=1&v=169');
+  await page.goto('http://127.0.0.1:'+server.address().port+'/remagen-mission.html?campaign=1&v=170');
   await page.waitForFunction(()=>typeof realWorldReady!=='undefined'&&realWorldReady&&state===ST.MENU,null,{polling:200});
   console.log('Browser: real terrain menu loaded');
   await page.evaluate(()=>{renderer.setPixelRatio(.25);renderer.shadowMap.enabled=false;});
@@ -48,7 +48,12 @@ const server=http.createServer((req,res)=>{
       const gear=playerModel.getObjectByName('gear');if(gear&&!gear.visible)throw Error(P.ac+' hidden runway gear');
       measure(playerModel,P.ac,planeGroup);
       const activity=launchIntro?.activity;
-      if(activity)for(const pad of activity.parked)measure(pad.children[0],P.ac,pad);
+      if(activity){
+       for(const pad of activity.parked)measure(pad.children[0],P.ac,pad);
+       for(const crew of activity.crew)for(const pad of activity.parked){const b=pad.userData.crewBox;
+        if(crew.drawX>b.min.x&&crew.drawX<b.max.x&&crew.drawZ>b.min.z&&crew.drawZ<b.max.z)throw Error(P.ac+' crew intersects aircraft');
+       }
+      }
      }
     };
    });

@@ -5,7 +5,39 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 169 · Thunderbolt Squadron BUILD 169 · Remagen-Kern 23 / Fahrzeuge 22**
+Stand bei Übergabe: **Torpedo Squadron BUILD 170 · Thunderbolt Squadron BUILD 170 · Remagen-Kern 23 / Fahrzeuge 22**
+
+**Build 170 (05.10.2026): freie Flügel und Träger-Startkamerafahrt.**
+AirfieldActivity legt sämtliche Crewpositionen außerhalb des tatsächlichen,
+transformierten Flugzeugrahmens mit 0,85m Abstand fest. Die Prüfung berücksichtigt
+auch überlappende Bomber-Standflächen. Beladung/Karren behalten ihren vorhandenen
+Ablauf; Loader stehen neben der Tragfläche statt darin. Alle acht echten Modelle
+prüfen Crewabstand während LOD-Morphs, die sechs Thunderbolt-WebGL-Starts ebenfalls.
+
+Torpedo Carrier zeigt vor jedem Katapultstart eine überspringbare achtsekündige
+Kamerafahrt von schräg hinten/oben in die normale Startperspektive. Avenger,
+Dauntless und Zero stehen mit ausgefahrenen Haupt-/Spornrädern auf dem sichtbaren
+Deck; Rumpfneigung folgt allen drei Reifen. Avenger-Reifen sind in Object_33
+zusammengefasst und werden lokal nach linkem/rechtem Haupt- und Spornrad getrennt.
+Andere gearMesh-Treffer sind keine Reifen und werden nicht als Bodenkontakt benutzt.
+AircraftGround misst die Deckoberfläche einmal am Katapultplatz und speichert die
+Höhe im Hull-Rahmen. Die alte Midway-Konstante lag 12cm unter der sichtbaren Fläche.
+Normalized/interleaved GLB-POSITIONs müssen über getX/Y/Z pro Vertex gelesen und
+normalisiert werden: r128-Raycasts machen dies nicht automatisch. Unabhängige
+Browser-Raycasts benutzen eine decodierte, abgetrennte Geometriekopie; alle neun
+Reifen liegen 2cm über der wirklichen Deckoberfläche. In der Luft bleibt die
+bisherige Orientierung erhalten, Einfahren der Räder funktioniert weiter.
+
+Während der Fahrt stehen Katapult, Schiffbewegung, Position/Treibstoff/Schaden,
+Kampf und Missionstimer still. Start wartet auf das tatsächlich gewählte Modell
+und den zugehörigen Träger; verspätete Zero-GLBs ersetzen den anfänglichen Stand-in.
+Pause/Resume, Skip, Abbruch und anschließender Katapultstart sind geprüft. Der neue
+carrier-start-browser.cjs lädt die Originalmodelle und speichert drei Deckbilder;
+europe-start-browser.cjs prüft nun auch die Crewabstände. Bestehender Browser-Smoke
+überspringt die getrennt geprüfte Fahrt für seine Kampftests. 31 Terrain- und 22
+Okinawa-Testdateien sowie Syntax bestehen lokal; WebGL separat mit Chromium.
+AircraftGround/AirfieldActivity Cache 170; AirfieldDetails 169, Terrain/OSM 168,
+CombatFX/GameRuntime 167. Sichtbare Spiele, Campaign-Links und Menü-CSS 170.
 
 **Build 169 (05.10.2026): Radkontakt während der Startkamerafahrt.**
 AircraftGround richtet Höhe und Neigung an drei tatsächlichen Reifen-/Kufen-

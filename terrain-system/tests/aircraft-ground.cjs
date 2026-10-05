@@ -26,6 +26,9 @@ async function load(file){const b=fs.readFileSync(file);return new Promise((yes,
    tile.setLOD(lod,terrain.material);
    for(let frame=0;frame<15;frame++){
     tile.updateMorph(.05);activity.update(.05,x,z);
+    for(const crew of activity.crew)for(const pad of activity.parked){const b=pad.userData.crewBox;
+      assert(crew.drawX<=b.min.x||crew.drawX>=b.max.x||crew.drawZ<=b.min.z||crew.drawZ>=b.max.z,kind+' crew enters aircraft footprint');
+    }
     for(const pad of activity.parked){
      const supports=AircraftGround.supports(pad.children[0],kind);
      for(const vertices of supports){let low=null;const p=new THREE.Vector3();

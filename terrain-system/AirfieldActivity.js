@@ -106,6 +106,7 @@ class AirfieldActivity {
       const model=template.clone(true),gear=model.getObjectByName('gear');if(gear)gear.visible=true;
       // The shared template owns its materials/geometries. Never dispose them.
       model.updateMatrixWorld(true);const box=new THREE.Box3().setFromObject(model);
+      pad.userData.crewBounds=box;pad.userData.crewBox=new THREE.Box3();
       pad.add(model);this.groundAircraft(pad);
       pad.userData.mountHeight=pad.position.y+box.min.y+1.8;
       if(pad===this.parked[0]&&this.payload.visible){
@@ -125,7 +126,21 @@ class AirfieldActivity {
     if(fit){pad.position.y=fit.y;pad.quaternion.copy(fit.quaternion);}
     else {model.updateWorldMatrix(true,true);const inverse=new THREE.Matrix4().copy(pad.matrixWorld).invert();
       const box=new THREE.Box3().setFromObject(model).applyMatrix4(inverse);pad.position.y=this.ground(pad.position.x,pad.position.z)-box.min.y;}
+    if(pad.userData.crewBounds){pad.updateMatrix();pad.userData.crewBox.copy(pad.userData.crewBounds).applyMatrix4(pad.matrix).expandByScalar(.85);}
     if(pad.userData.mountOffset!=null)pad.userData.mountHeight=pad.position.y+pad.userData.mountOffset;
+  }
+  clearCrewPosition(x,z){
+    // The entire aircraft footprint includes wings, tail and turning propeller.
+    // Keep bodies and swinging arms outside it, including during terrain morphs.
+    const boxes=this.parked.map(p=>p.userData.crewBox).filter(Boolean);
+    const inside=(b,x,z)=>x>b.min.x&&x<b.max.x&&z>b.min.z&&z<b.max.z;
+    if(boxes.some(b=>inside(b,x,z))){
+      const exits=boxes.flatMap(b=>[{x:b.min.x,z},{x:b.max.x,z},{x,z:b.min.z},{x,z:b.max.z}])
+        .filter(p=>boxes.every(b=>!inside(b,p.x,p.z)));
+      exits.sort((a,b)=>(a.x-x)**2+(a.z-z)**2-((b.x-x)**2+(b.z-z)**2));
+      if(exits.length){x=exits[0].x;z=exits[0].z;}
+    }
+    return {x,z};
   }
   startEngine(){
     const rotor=this.parked[1]?.children[0]?.getObjectByName('prop');
@@ -179,8 +194,9 @@ class AirfieldActivity {
     }
     this.crew.forEach((p,i)=>{
       const loader=p.job==='load',walking=loader?this.loading.walking:p.job==='walk'||p.job==='carry',a=time*.85+p.phase;
-      const x=loader?this.loading.x+(i===0?-1.7:1.7):p.x+(walking?Math.sin(a*.18)*9:0);
-      const z=loader?this.loading.z+.6:p.z+(walking?Math.cos(a*.18)*2:0),y=this.ground(x,z);
+      const proposedX=loader?this.loading.x+(i===0?-1.7:1.7):p.x+(walking?Math.sin(a*.18)*9:0);
+      const proposedZ=loader?this.loading.z+.6+(i===0?-.8:.8):p.z+(walking?Math.cos(a*.18)*2:0);
+      const {x,z}=this.clearCrewPosition(proposedX,proposedZ),y=this.ground(x,z);
       const yaw=loader?(this.parked[0].userData.heading??this.parked[0].rotation.y):walking?(Math.cos(a*.18)>0?Math.PI/2:-Math.PI/2):Math.PI;
       p.drawX=x;p.drawZ=z;
       const stride=walking?Math.sin(time*5+p.phase)*.35:0;

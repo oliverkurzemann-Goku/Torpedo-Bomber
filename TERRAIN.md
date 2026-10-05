@@ -1,5 +1,25 @@
 # Remagen terrain handoff
 
+## Game Build 170 — crew clearance and carrier departure camera
+
+Airfield crew positions now stay outside the measured aircraft footprint plus
+0.85m clearance, including overlapping bomber stands and changing ground poses.
+Loading and the trolley continue; personnel stand beside the wing. Real-model
+contact tests and all six European browser starts check crew clearance.
+
+Torpedo Carrier uses an eight-second, skippable rear-oblique camera shot before
+catapult acceleration. All three aircraft show deployed main and tail wheels.
+Avenger's shared tyre mesh is partitioned in aircraft coordinates; the fixed
+Midway reference was 12cm below the actual deck, so the surface is measured once
+from normalized rendered vertices and cached in hull coordinates. Independent
+WebGL raycasts decode interleaved integer positions in detached geometry copies;
+all nine tyres sit 2cm above the rendered deck. r128 CPU raycasts alone cannot
+read normalized POSITIONs correctly. Fuel, damage, player/carrier movement and
+mission/combat timers freeze during the shot. Pause, Skip, Abort, normal catapult
+and gear retraction are covered for original Avenger/Dauntless/Zero models.
+
+AircraftGround and AirfieldActivity use cache 170; AirfieldDetails remains 169.
+
 ## Game Build 169 — aircraft wheel contact during departure shots
 
 AircraftGround derives three supports from actual tyre geometry (fixed Stuka

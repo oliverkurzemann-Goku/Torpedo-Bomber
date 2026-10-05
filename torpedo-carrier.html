@@ -289,10 +289,24 @@
   .opsLegend{font:11px/1.5 monospace;color:#d7c797;text-align:left;margin-top:5px;}
   #opsStatus{position:fixed;top:calc(env(safe-area-inset-top) + 76px);left:50%;transform:translateX(-50%);color:#edcc80;background:rgba(14,20,18,.78);padding:5px 9px;font:10px monospace;pointer-events:none;z-index:9;max-width:58vw;text-align:center;}
 </style>
-<link rel="stylesheet" href="menu-layout.css?v=169">
+<link rel="stylesheet" href="menu-layout.css?v=170">
 </head>
 <body>
 <div id="app"></div>
+<style>
+  #carrierPreview{display:none;position:fixed;bottom:max(28px,env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);z-index:45;text-align:center;font:12px monospace;color:#e1d5b4;}
+  #carrierPreview span{display:block;padding:8px 14px;background:rgba(20,24,21,.75);letter-spacing:2px;}
+  #skipCarrierPreview{margin-top:10px;padding:14px 22px;min-height:48px;border:1px solid #b5a16c;border-radius:5px;background:#252c26;color:#e1d5b4;font:12px monospace;cursor:pointer;}
+  body.carrierPreview #carrierPreview{display:block;}
+  body.carrierPreview #hud > :not(#pauseBtn):not(#buildTag),body.carrierPreview #hud .panel,body.carrierPreview #gunsight,body.carrierPreview #radio,body.carrierPreview #flash,
+  body.carrierPreview #stick,body.carrierPreview #throttle,body.carrierPreview #dropBtn,body.carrierPreview #fireBtn,
+  body.carrierPreview .ctlBtn,body.carrierPreview .lookBtn,body.carrierPreview #steerBtn,body.carrierPreview #bailBtn,
+  body.carrierPreview #systemsStatus,body.carrierPreview #opsStatus,body.carrierPreview #mmap,body.carrierPreview #compassStrip{visibility:hidden;}
+  body.carrierPreview #pause{z-index:50;}
+  body.carrierPreview #carrierPreview button:disabled{opacity:.5;cursor:wait;}
+</style>
+<div id="carrierPreview"><span id="carrierPreviewText">AIRCRAFT · READY FOR LAUNCH</span><button id="skipCarrierPreview" type="button">SKIP · CATAPULT LAUNCH</button></div>
+
 
 <!-- HUD -->
 <div id="hud">
@@ -321,7 +335,7 @@
   <div id="flash"></div>
   <div id="ltn" style="position:fixed;inset:0;background:#e6ecff;opacity:0;pointer-events:none;z-index:40;"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 169</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 170</div>
 
   <!-- Optical landing aid -->
   <div id="lso">
@@ -363,7 +377,7 @@
 
 <!-- Menu -->
 <div class="overlay" id="menu" data-campaign="pacific">
-  <div class="menuTop"><a id="selBtn" href="index.html?v=169">&#9664; Change Game</a><span class="menuMeta">PACIFIC OPERATIONS<br>BUILD 169</span></div>
+  <div class="menuTop"><a id="selBtn" href="index.html?v=170">&#9664; Change Game</a><span class="menuMeta">PACIFIC OPERATIONS<br>BUILD 170</span></div>
   <div class="card menuCard">
     <aside class="menuOverview" aria-label="Campaign and pilot options">
     <div class="campaignArt" aria-hidden="true"></div>
@@ -446,6 +460,7 @@
 <script src="okinawa/world.js?v=133"></script>
 <script src="campaign.js?v=1"></script>
 <script src="game-runtime.js?v=167"></script>
+<script src="terrain-system/AircraftGround.js?v=170"></script>
 <script src="pacific-assets.js?v=157"></script>
 <script src="combat-fx.js?v=167"></script>
 <script src="ordnance.js?v=157"></script>
@@ -1994,6 +2009,7 @@ function drawPacificBrief(m){
 }
 
 function startMission(idx){
+  finishCarrierIntro();
   if(eng) eng.master.gain.setTargetAtTime(0.85,actx.currentTime,0.05);
   flightCoach=new GameRuntime.HintCoach();
   interceptRadio.reset();
@@ -2236,6 +2252,54 @@ function upgradeShipsToTemplate(type, template){
   }
 }
 
+let carrierIntro=null;
+function carrierDeckHeight(x,z){
+  const hull=isDefend()?ijnCarrierModel:carrierModel;
+  if(!hull)return CARRIER_TARGET_DECK_Y+.02;
+  hull.updateWorldMatrix(true,false);
+  const nominal=isDefend()?IJN_DECK_Y_MODEL:CARRIER_DECK_Y_MODEL;
+  if(hull.userData.contactDeckY==null){
+    const reference=new THREE.Vector3(0,nominal,0).applyMatrix4(hull.matrixWorld).y;
+    const measured=AircraftGround.surfaceHeight(hull,P.pos.x,P.pos.z,reference);
+    hull.userData.contactDeckY=hull.worldToLocal(new THREE.Vector3(P.pos.x,measured,P.pos.z)).y;
+  }
+  const centre=new THREE.Vector3(0,hull.userData.contactDeckY,0).applyMatrix4(hull.matrixWorld);
+  const normal=new THREE.Vector3(0,1,0).applyQuaternion(hull.quaternion);
+  return centre.y-(normal.x*(x-centre.x)+normal.z*(z-centre.z))/normal.y+.02;
+}
+function carrierAircraftReady(){
+  return !!(isDefend()?playerZero?.userData.fromTemplate&&ijnCarrierModel:
+    isSBD()?playerSBD?.userData.fromTemplate&&carrierModel:planeModelLoaded&&carrierModel);
+}
+function fitCarrierAircraft(){
+  if(P.gear<.5||state!==ST.LAUNCH||P.pos.x-carrierX>=BOW_X-2)return;
+  const model=isDefend()?playerZero:isSBD()?playerSBD:planeGroup;
+  if(!model||(!isDefend()&&!isSBD()&&!planeModelLoaded))return;
+  const fit=AircraftGround.fit(model,'carrier',P.pos.x,P.pos.z,-Math.PI/2-P.heading,carrierDeckHeight);
+  if(fit){planeGroup.position.y=fit.y;planeGroup.quaternion.copy(fit.quaternion);}
+}
+function finishCarrierIntro(){
+  if(!carrierIntro)return;
+  carrierIntro=null;document.body.classList.remove('carrierPreview');releaseHeldControls();
+  const nd=noseDir();camera.up.set(0,1,0);camera.position.copy(P.pos).addScaledVector(nd,-24).add(new THREE.Vector3(0,chaseH,0));
+  camera.lookAt(P.pos.clone().addScaledVector(nd,30));
+  flash('CATAPULT — CLEARED FOR LAUNCH',1100);
+}
+function updateCarrierIntro(dt){
+  if(!carrierIntro)return;
+  const ready=carrierAircraftReady();
+  document.getElementById('carrierPreviewText').textContent=ready?'AIRCRAFT · READY FOR LAUNCH':'PREPARING AIRCRAFT AND FLIGHT DECK';
+  document.getElementById('skipCarrierPreview').disabled=!ready;
+  if(!ready)return;
+  const intro=carrierIntro;intro.time=Math.min(8,intro.time+dt);
+  const u=Math.max(0,Math.min(1,(intro.time-3)/5)),ease=u*u*u*(u*(u*6-15)+10),nd=noseDir();
+  const target=planeGroup.position.clone(),orbit=Math.min(1,intro.time/3);
+  const from=target.clone().add(new THREE.Vector3(-16-2*orbit,7-.5*orbit,-15+2.5*orbit));
+  const end=P.pos.clone().addScaledVector(nd,-24).add(new THREE.Vector3(0,chaseH,0));
+  camera.position.copy(from.lerp(end,ease));camera.up.set(0,1,0);camera.fov=60;camera.updateProjectionMatrix();
+  camera.lookAt(target.lerp(P.pos.clone().addScaledVector(nd,30),ease));
+  if(intro.time>=8)finishCarrierIntro();
+}
 function launch(){
   hideOverlays();
   initAudio();
@@ -2245,7 +2309,9 @@ function launch(){
   P.pos.set(carrierX+BOW_X-60, DECK_Y+3.0, 0);
   P.spd=24; P.throttle=1.0; setThrottleUI(1.0);
   P.heading=0; P.pitch=0; P.roll=0; P.pitchVel=0; P.rollVel=0;
-  flash("CATAPULT",700);
+  carrierIntro={time:0};document.body.classList.add('carrierPreview');
+  [carrierModel,ijnCarrierModel].forEach(h=>{if(h){h.rotation.x=0;h.rotation.z=0;}});
+  updatePlaneMesh(0);updateCarrierIntro(0);
 }
 
 // ============================================================
@@ -2553,14 +2619,14 @@ function makeSBDGear(){
     const leg=new THREE.Mesh(new THREE.CylinderGeometry(.085,.10,.82,10),metal);
     leg.position.set(x,-1.46,z);gear.add(leg);
     const wheel=new THREE.Mesh(new THREE.CylinderGeometry(.34,.34,.19,16),tyre);
-    wheel.rotation.z=Math.PI/2;wheel.position.set(x,-1.91,z);gear.add(wheel);
+    wheel.userData.groundWheel=true;wheel.rotation.z=Math.PI/2;wheel.position.set(x,-1.91,z);gear.add(wheel);
     const cap=new THREE.Mesh(new THREE.CylinderGeometry(.14,.14,.20,12),hub);
     cap.rotation.z=Math.PI/2;cap.position.set(x,-1.91,z);gear.add(cap);
   }
   const tailLeg=new THREE.Mesh(new THREE.CylinderGeometry(.055,.07,.43,8),metal);
   tailLeg.position.set(0,-.90,-3.62);gear.add(tailLeg);
   const tailWheel=new THREE.Mesh(new THREE.CylinderGeometry(.19,.19,.14,12),tyre);
-  tailWheel.rotation.z=Math.PI/2;tailWheel.position.set(0,-1.18,-3.62);gear.add(tailWheel);
+  tailWheel.userData.groundWheel=true;tailWheel.rotation.z=Math.PI/2;tailWheel.position.set(0,-1.18,-3.62);gear.add(tailWheel);
   return gear;
 }
 function setSBDGearVisible(aircraft,down){
@@ -2728,7 +2794,7 @@ function makeZeroGear({wingY=-.41,wingZ=1.65,tailY=-.34}={}){
     strut('zeroMainBrace'+label,new THREE.Vector3(side*1.72,wingY-.02,wingZ-.15),
       axle.clone().add(new THREE.Vector3(-side*.02,.15,-.02)),.032);
     const wheel=new THREE.Mesh(new THREE.CylinderGeometry(.24,.24,.18,16),tyreMat);
-    wheel.name='zeroMainWheel'+label;
+    wheel.name='zeroMainWheel'+label;wheel.userData.groundWheel=true;
     wheel.rotation.z=Math.PI/2;wheel.position.copy(axle);gear.add(wheel);
     const hub=new THREE.Mesh(new THREE.CylinderGeometry(.10,.10,.21,14),hubMat);
     hub.rotation.z=Math.PI/2;hub.position.copy(wheel.position);gear.add(hub);
@@ -2736,7 +2802,7 @@ function makeZeroGear({wingY=-.41,wingZ=1.65,tailY=-.34}={}){
   const tailAxle=new THREE.Vector3(0,tailY-.28,-3.38);
   strut('zeroTailLeg',new THREE.Vector3(0,tailY,-3.3),tailAxle,.04);
   const wheel=new THREE.Mesh(new THREE.CylinderGeometry(.12,.12,.13,12),tyreMat);
-  wheel.name='zeroTailWheel';
+  wheel.name='zeroTailWheel';wheel.userData.groundWheel=true;
   wheel.rotation.z=Math.PI/2;wheel.position.copy(tailAxle);gear.add(wheel);
   return gear;
 }
@@ -4541,7 +4607,7 @@ function loadPlaneModel(){
           const oldHit = (raw.max.z < -1.0 && track < 5.0 && span < 8.0);
           const sz=bb.getSize(new THREE.Vector3());
           const newHit = (bb.min.y<lowLine && sz.x<maxH*0.20 && sz.z<maxH*0.20 && sz.y<S.y*0.55);
-          if(oldHit || newHit) gearMesh.push(o);
+          if(oldHit || newHit){if(o.name==='Object_33')o.userData.groundWheel=true;gearMesh.push(o);}
         }
       }
       // Undercarriage legs. These used to be COVERED with grey cylinders shown only when the
@@ -4704,7 +4770,7 @@ function loadPlaneModel(){
       }
       window.__eyeDbg='EYE '+COCKPIT_EYE.map(v=>v.toFixed(2)).join('/');
       const btEl=document.getElementById('buildTag');
-      if(btEl) btEl.textContent='BUILD 169 · '+window.__eyeDbg;
+      if(btEl) btEl.textContent='BUILD 170 · '+window.__eyeDbg;
       let seat=null;
       model.traverse(function(o){
         if(!o.isMesh||!o.material) return;
@@ -4899,6 +4965,13 @@ function pacificAircraftQuaternion(){
   return q;
 }
 function updatePlaneMesh(dt){
+  // Replace an early Zero stand-in once its original GLB finishes loading.
+  if(isDefend()&&zeroTemplate&&!playerZero?.userData.fromTemplate){
+    if(playerZero)planeGroup.remove(playerZero);
+    playerZero=new THREE.Group();const inner=zeroTemplate.clone(true);inner.rotation.y+=Math.PI;
+    playerZero.add(inner);playerZero.userData.fromTemplate=true;planeGroup.add(playerZero);
+    zeroRotor=null;zeroRotorAxis=null;zeroProp=null;
+  }
   planeGroup.quaternion.copy(pacificAircraftQuaternion());
   planeGroup.position.copy(P.pos);
   if(planeModelLoaded){
@@ -5103,6 +5176,7 @@ function updatePlaneMesh(dt){
     if(playerZero) playerZero.visible=true;
     if(zeroProp)   zeroProp.visible=true;
   }
+  fitCarrierAircraft();
 }
 
 // ---------- FX: explosions, smoke ----------
@@ -5929,6 +6003,7 @@ function resumeGame(){
   if(eng) eng.master.gain.setTargetAtTime(0.85,actx.currentTime,0.05);
 }
 function exitToMenu(){
+  finishCarrierIntro();
   voiceRadio.cancel();soundscape.stop();
   releaseHeldControls();
   if(bailRescue){bailRescue.dispose();bailRescue=null;}
@@ -6012,6 +6087,7 @@ function setupUIButtons(){
     flash(steerSign<0?"STEERING INVERTED":"STEERING NORMAL",900);
   });
   document.getElementById('launchBtn').onclick=launch;
+  document.getElementById('skipCarrierPreview').onclick=()=>{if(carrierAircraftReady())finishCarrierIntro();};
   document.getElementById('invToggle').onclick=()=>{
     invertPitch=!invertPitch;
     document.getElementById('invBox').textContent=invertPitch?'✓':'';
@@ -6062,7 +6138,7 @@ function setupUIButtons(){
   if(dbgT2) dbgT2.onclick=()=>{
     dbgOn=!dbgOn; GameRuntime.storage.setItem('dbgOn',dbgOn?'1':'0');
     const db=document.getElementById('dbgBox'); if(db) db.textContent=dbgOn?'✓':'';
-    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 169'; }
+    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 170'; }
   };
   const lu=document.getElementById('lookUp'), ld=document.getElementById('lookDn');
   let _lookT=0;
@@ -6078,7 +6154,7 @@ function setupUIButtons(){
   if(pb) pb.addEventListener('pointerdown',e=>{ e.preventDefault(); togglePause(); });
   const rb=document.getElementById('resumeBtn'); if(rb) rb.onclick=resumeGame;
   const mb=document.getElementById('menuBtn'); if(mb) mb.onclick=exitToMenu;
-  document.getElementById('pauseMainMenu').onclick=()=>{exitToMenu();window.location.href='index.html?v=169';};
+  document.getElementById('pauseMainMenu').onclick=()=>{exitToMenu();window.location.href='index.html?v=170';};
   document.getElementById('resultBtn').onclick=()=>{
     // the logbook borrows this screen from the menu — send the player straight back
     if(logbookOpen){ logbookOpen=false; showOverlay('menu'); return; }
@@ -6309,7 +6385,7 @@ function animate(){
     notice.style.cssText='position:fixed;inset:0;z-index:999998;background:rgba(15,20,15,.95);color:#e8ddbc;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px;text-align:center;font:16px system-ui';
     const title=document.createElement('h2');title.textContent='Simulation interrupted';
     const detail=document.createElement('p');
-    detail.textContent='BUILD 169 · '+(MISSIONS[mission]?.sub||'Menu')+' · '+error.message;
+    detail.textContent='BUILD 170 · '+(MISSIONS[mission]?.sub||'Menu')+' · '+error.message;
     const reload=document.createElement('button');reload.textContent='Reload game';
     reload.style.cssText='padding:12px 24px;font:inherit';reload.onclick=()=>location.reload();
     notice.appendChild(title);notice.appendChild(detail);notice.appendChild(reload);document.body.appendChild(notice);
@@ -6326,6 +6402,11 @@ function animateFrame(){
   }
   if(shakeT>0) shakeT=Math.max(0,shakeT-rawDt);
   const t=clock.elapsedTime;
+  if(carrierIntro&&state===ST.LAUNCH){
+    // Hold catapult, carrier motion, fuel, combat and all mission timers.
+    updatePlaneMesh(rawDt);updateCarrierIntro(rawDt);updateAudio(rawDt);updateSea(t);
+    GameRuntime.render(renderer,scene,camera);return;
+  }
 
   // steam the task group forward (bow-first, +X) whenever the sortie is live
   if((state===ST.FLIGHT||state===ST.LAUNCH) && carrier){

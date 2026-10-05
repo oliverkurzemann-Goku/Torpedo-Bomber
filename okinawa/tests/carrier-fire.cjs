@@ -30,7 +30,7 @@ async function glb(file){const b=fs.readFileSync(path.join(root,file));return ne
   const ctx=vm.createContext({THREE,GameRuntime,CombatFX,Math,console,P,scene,planeGroup,combatFX,
    state:3,ST:{FLIGHT:3},firing:true,gunCool:0,bullets:[],ships:[],zeros:[],raiders:[],etorps:[],shoreTargets:[],
    isDefend:()=>kind==='zero',isSBD:()=>kind==='sbd',loadout:'divebomb',
-   playerZero:kind==='zero'?aircraft:null,playerSBD:kind==='sbd'?aircraft:null,
+   zeroTemplate:null,fitCarrierAircraft(){},playerZero:kind==='zero'?aircraft:null,playerSBD:kind==='sbd'?aircraft:null,
    sbdRotor:kind==='sbd'?rotor:null,sbdRotorAxis:'z',zeroRotor:null,zeroRotorAxis:null,zeroProp:null,
    planeModelLoaded:kind==='avenger',gltfRoot:kind==='avenger'?aircraft:null,propSpinner:null,propPivot:null,
    gearMesh:[],gearDoors:[],gearWellCovers:[],ordTorp:null,ordBombs:null,planeBody:null,planeGear:null,

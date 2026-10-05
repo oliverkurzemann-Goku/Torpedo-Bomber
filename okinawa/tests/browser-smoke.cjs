@@ -259,6 +259,8 @@ const cdn={
     const selected=await page.evaluate(s=>s.kind==='avenger'?2:MISSIONS.map((m,i)=>m[s.kind]?i:-1).filter(i=>i>=0)[s.ordinal],scenario);
     await page.locator('#missionSel .chip').nth(selected).click();await page.locator('#startBtn').click();
     await page.locator('#launchBtn').waitFor({state:'visible'});await reduceSceneryCost();await page.locator('#launchBtn').click();
+    await page.locator('#skipCarrierPreview').waitFor({state:'visible'});
+    await page.waitForFunction(()=>carrierAircraftReady());await page.locator('#skipCarrierPreview').click();
    }
    if(!eu){
     await page.waitForFunction(()=>state===ST.FLIGHT||state===ST.PAUSED||runtimeFault);

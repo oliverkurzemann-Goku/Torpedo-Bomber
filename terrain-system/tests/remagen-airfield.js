@@ -122,7 +122,7 @@ global.fetch=async url=>{
     for(const truck of activity.trucks)assert(truck.model.position.z<-42,'supply truck drives into active runway');
     assert(activity.trolley.position.z+2<-27&&activity.payload.position.z+2<-27,'moving trolley and ordnance stay clear of the runway');
     assert(Math.abs(activity.trolley.position.y-activity.ground(activity.trolley.position.x,activity.trolley.position.z))<.001,'trolley follows rendered terrain throughout its route');
-    for(const loader of activity.crew.slice(0,2))assert(Math.hypot(loader.drawX-activity.loading.x,loader.drawZ-activity.loading.z)<2,'loaders accompany the actual trolley');
+    for(const loader of activity.crew.slice(0,2))assert(Math.hypot(loader.drawX-activity.loading.x,loader.drawZ-activity.loading.z)<3,'loaders accompany the actual trolley');
     mountedSeen ||= activity.loading.mounted;
     cartTravel+=activity.trolley.position.distanceTo(last);last.copy(activity.trolley.position);
     payloadMaxStep=Math.max(payloadMaxStep,activity.payload.position.distanceTo(lastPayload));lastPayload.copy(activity.payload.position);

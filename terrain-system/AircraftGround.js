@@ -6,6 +6,27 @@ const AircraftGround={
     for(const r of terrain.airfieldGroundRegions||[])if(x>=r.minX&&x<=r.maxX&&z>=r.minZ&&z<=r.maxZ)offset=Math.max(offset,r.offset);
     return terrain.getRenderedHeight(x,z)+offset+.02;
   },
+  surfaceHeight(root,x,z,reference){
+    // Read the rendered vertices directly: r128 CPU raycasts ignore normalized
+    // integer POSITION attributes used by the ship GLBs. Sample once per hull.
+    root.updateWorldMatrix(true,true);
+    const a=new THREE.Vector3(),b=new THREE.Vector3(),c=new THREE.Vector3();let height=reference,found=false;
+    root.traverse(o=>{
+      if(!o.isMesh||!o.visible)return;const p=o.geometry.attributes.position,idx=o.geometry.index;
+      const divisor=p.array instanceof Int16Array?32767:p.array instanceof Uint16Array?65535:p.array instanceof Int8Array?127:255;
+      const read=(i,v)=>{v.fromBufferAttribute(p,i);if(p.normalized)v.set(Math.max(-1,v.x/divisor),Math.max(-1,v.y/divisor),Math.max(-1,v.z/divisor));return v.applyMatrix4(o.matrixWorld);};
+      for(let i=0;i<(idx?idx.count:p.count);i+=3){
+        const ia=idx?idx.getX(i):i,ib=idx?idx.getX(i+1):i+1,ic=idx?idx.getX(i+2):i+2;
+        if(ia===ib||ib===ic||ia===ic)continue;read(ia,a);read(ib,b);read(ic,c);
+        if(x<Math.min(a.x,b.x,c.x)||x>Math.max(a.x,b.x,c.x)||z<Math.min(a.z,b.z,c.z)||z>Math.max(a.z,b.z,c.z))continue;
+        const det=(b.x-a.x)*(c.z-a.z)-(b.z-a.z)*(c.x-a.x);if(Math.abs(det)<1e-10)continue;
+        const u=((x-a.x)*(c.z-a.z)-(z-a.z)*(c.x-a.x))/det,v=((b.x-a.x)*(z-a.z)-(b.z-a.z)*(x-a.x))/det;
+        if(u<-.000001||v<-.000001||u+v>1.000001)continue;
+        const y=a.y+u*(b.y-a.y)+v*(c.y-a.y);
+        if(Math.abs(y-reference)<1&&(!found||y>height)){height=y;found=true;}
+      }
+    });return height;
+  },
   supports(model,kind){
     if(model.userData.groundSupports)return model.userData.groundSupports;
     model.updateWorldMatrix(true,true);
@@ -22,6 +43,15 @@ const AircraftGround={
     };
     model.traverse(o=>{if(o.isMesh&&visible(o)&&o.userData.groundWheel)wheels.push(vertices(o));});
     if(wheels.length===3)return model.userData.groundSupports=wheels;
+    // Avenger's three tyres are welded into one GLB mesh. Partition only that
+    // tagged mesh in aircraft coordinates, retaining every vertex of each tyre.
+    if(wheels.length===1){
+      const groups=[[],[],[]],v=wheels[0];let width=0;
+      for(let i=0;i<v.length;i+=3)width=Math.max(width,Math.abs(v[i]));
+      for(let i=0;i<v.length;i+=3){const group=v[i]<-width*.35?0:v[i]>width*.35?1:2;groups[group].push(v[i],v[i+1],v[i+2]);}
+      if(groups.every(g=>g.length))return model.userData.groundSupports=groups;
+    }
+    wheels.length=0;
     // Original fixed-wheel GLBs (Stuka) and simple stand-ins have no generated
     // tyre tags. Locate the low support in each main-wheel and small-wheel zone.
     const points=[];model.traverse(o=>{if(o.isMesh&&visible(o))for(const v of vertices(o))points.push(v);});
