@@ -21,7 +21,8 @@
 #menu #missionSel{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:7px;}
 #menu #missionSel .chip{min-width:0;min-height:78px;margin:0;padding:8px 6px;display:flex;flex-direction:column;
   align-items:center;justify-content:center;gap:3px;font-family:inherit;color:inherit;text-align:center;
-  border:1px solid #52604d;background:#253025;border-radius:7px;cursor:pointer;touch-action:manipulation;}
+  border:1px solid #52604d;background:#253025;border-radius:7px;cursor:pointer;touch-action:manipulation;
+  transition:background .18s,border-color .18s,box-shadow .18s;}
 #menu #missionSel .chip .cn{font:800 13px/1 system-ui;letter-spacing:0;color:#e8bd64;}
 #menu #missionSel .chip .cs{font:500 11px/1.25 system-ui;letter-spacing:0;opacity:1;text-transform:none;margin:0;}
 #menu #missionSel .chip .ca{font:700 9px/1.2 monospace;letter-spacing:0;margin:0;padding:2px 5px;}
@@ -74,6 +75,13 @@
   #menu .menuConfig,#menu .menuActions{margin-top:12px;}
 }
 /* Smaller phones and portrait iPads retain a scrollable, readable layout. */
+@media (orientation:landscape) and (min-width:900px) and (max-height:640px){
+  /* The expanded Pacific board has four rows; keep launch inside the viewport. */
+  #menu[data-campaign="pacific"] #missionSel .chip{min-height:66px;padding:5px 4px;gap:2px;}
+  #menu[data-campaign="pacific"] #missionSel .chip .cn{font-size:12px;}
+  #menu[data-campaign="pacific"] #missionSel .chip .cs{font-size:10.5px;line-height:1.12;}
+  #menu[data-campaign="pacific"] #missionSel .chip .ca{font-size:8.5px;padding:1px 4px;}
+}
 @media (max-width:899px){
   #menu .menuCard{grid-template-columns:1fr;max-width:650px;gap:20px;}
   #menu .menuTop{max-width:650px;}

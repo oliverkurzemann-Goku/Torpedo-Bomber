@@ -17,7 +17,7 @@ The material direction follows the region's limestone shore, subtropical broadle
 
 ## Integration
 
-Load Three.js r128, `data.js` and `world.js`, then:
+Load Three.js r128, `data.js` and `world.js`, then (the shipped game and viewer also load `vendor/GLTFLoader-r128.js` and `fortification-assets.js` for the uploaded fortifications):
 
 ```js
 const environment = await new OkinawaWorld(OKINAWA_DATA).build();
@@ -49,4 +49,6 @@ The organisations in charge of the Copernicus programme by law or by delegation 
 - [Yomitan geographic reference](https://visitokinawajapan.com/destinations/okinawa-main-island/central-okinawa-main-island/yomitan/)
 - [Three.js](https://github.com/mrdoob/three.js), MIT licence, r128 as used by the existing games.
 
-All new scenery meshes, procedural materials and viewer code were created for this project. No photographs or satellite imagery have been copied into the assets.
+Procedural scenery meshes, materials and viewer code were created for this project. The two fortification models are user-supplied scans: `putsborough__wwii_observation_post.glb` and `bunker_o323a-160_z.glb`. Their original photographic materials and shapes are retained in optimized `assets/buildings/observation-post.glb` and `bunker.glb`; source hashes and processing statistics are embedded in each GLB. These representative coastal placements do not identify actual Okinawan fortifications.
+
+Reproduce optimization with `node scripts/prepare-fortifications.mjs <original-post.glb> <original-bunker.glb>`. Runtime assets use ordinary glTF 2.0, with textures capped at 512px. Only one bunker and two observation posts draw full geometry near the camera. Cached models share resources and survive individual world disposal.

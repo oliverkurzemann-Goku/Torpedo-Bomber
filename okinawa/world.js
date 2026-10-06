@@ -42,7 +42,7 @@ function frondGeometry(){
 class OkinawaWorld{
  constructor(data, options={}){
   this.data=data;this.root=new THREE.Group();this.root.name='OkinawaEnvironment';this.terrain=new THREE.Group();this.terrain.name='GeographicTerrain';this.root.add(this.terrain);
-  this.tiles=new Map();this.size=16000;this.half=8000;this.mapSize=1024;this.objectCount=0;this.vegetationDensity=options.vegetationDensity===undefined?1:clamp(options.vegetationDensity,.1,1);this.time={value:0};this.warm={value:0};this.sun=new THREE.Vector3(-.48,.72,.46).normalize();this.materials=[];this.decorations=[];this.houseGrid=new Map();this.houseSites=[];this.nearBuildings=[];this.detailTemplates=[];
+  this.tiles=new Map();this.size=16000;this.half=8000;this.mapSize=1024;this.objectCount=0;this.vegetationDensity=options.vegetationDensity===undefined?1:clamp(options.vegetationDensity,.1,1);this.time={value:0};this.warm={value:0};this.sun=new THREE.Vector3(-.48,.72,.46).normalize();this.materials=[];this.decorations=[];this.houseGrid=new Map();this.houseSites=[];this.nearBuildings=[];this.detailTemplates=[];this.fortifications=[];
   for(const t of data.tiles){const bytes=Uint8Array.from(atob(t.dem),c=>c.charCodeAt(0)),d=new DataView(bytes.buffer);if(String.fromCharCode(...bytes.slice(0,4))!=='DEM1'||d.getUint16(4,true)!==65||bytes.length!==16916)throw Error('Invalid DEM tile '+t.x+','+t.z);const h=new Float32Array(4225);for(let i=0;i<h.length;i++){h[i]=d.getFloat32(16+i*4,true);if(!Number.isFinite(h[i]))throw Error('Non-finite DEM sample');}this.tiles.set(t.x+','+t.z,h);}
  }
  rawHeight(x,z){
@@ -100,11 +100,12 @@ class OkinawaWorld{
     for(let i=0;i<p.count;i++){const x=p.getX(i)-6000+col*4000,z=p.getZ(i)-6000+row*4000;p.setXYZ(i,x,this.getHeight(x,z),z);uv.setXY(i,(x+8000)/16000,1-(z+8000)/16000);}
     g.computeVertexNormals();g.computeBoundingSphere();const m=new THREE.Mesh(g,material);m.name='Terrain_'+col+'_'+row;m.receiveShadow=true;this.terrain.add(m);
   }
-  onProgress(.58,'Growing the coastal landscape…');await pause();this.buildSettlements();this.buildVillageDetails();this.buildVegetation();
+  onProgress(.58,'Growing the coastal landscape…');await pause();this.buildSettlements();await this.loadFortifications();this.buildVillageDetails();this.buildVegetation();
   onProgress(.8,'Lighting the sea…');await pause();this.buildWater();this.buildSky();onProgress(1,'Ready');return this;
  }
  batch(geo,mat,placements,name){if(!placements.length)return;const m=new THREE.InstancedMesh(geo,mat,placements.length),dummy=new THREE.Object3D();m.name=name;for(let i=0;i<placements.length;i++){const p=placements[i];dummy.position.set(p.x,p.y,p.z);dummy.rotation.set(0,p.r||0,0);dummy.scale.set(p.sx||p.s||1,p.sy||p.s||1,p.sz||p.s||1);dummy.updateMatrix();m.setMatrixAt(i,dummy.matrix);}m.instanceMatrix.needsUpdate=true;m.frustumCulled=false;m.castShadow=false;m.receiveShadow=true;this.root.add(m);this.objectCount+=placements.length;this.decorations.push(m);return m;}
  nearHouse(x,z){
+  if(this.fortifications.some(e=>Math.hypot(x-e.x,z-e.z)<Math.hypot(e.w,e.d)/2+12))return true;
   const gx=Math.floor(x/64),gz=Math.floor(z/64);
   for(let dx=-1;dx<=1;dx++)for(let dz=-1;dz<=1;dz++)
    for(const p of this.houseGrid.get((gx+dx)+','+(gz+dz))||[])
@@ -332,6 +333,34 @@ class OkinawaWorld{
    slot.position.set(site.x,site.y,site.z);slot.rotation.y=site.rot;slot.scale.set(site.w/10,site.h/3.4,site.depth/8);
   }
  }
+ async loadFortifications(){
+  if(typeof FortificationAssets==='undefined')return;
+  const kinds=['bunker','observation-post'];
+  await Promise.all(kinds.map(kind=>FortificationAssets.load(kind).catch(e=>console.warn('Optional coastal fortification:',kind,e.message))));
+  const anchors=[[-4700,-5800,'observation-post'],[-4100,-3200,'bunker'],[-3500,-800,'observation-post'],[-3600,1800,'bunker']];
+  for(const [ax,az,kind] of anchors){
+   const template=FortificationAssets.get(kind);if(!template)continue;
+   const dimensions=template.userData.fortification,candidates=[];
+   for(let x=-7000;x<7000;x+=120)for(let z=-7000;z<7000;z+=120){
+    if(Math.hypot(x-ax,z-az)>1600||this.nearHouse(x,z)||this.biome(x,z)[2]>.2)continue;
+    // Keep the mission's aircraft dispersal and AA footprint clear as well.
+    if(x>-3250&&x<-2550&&z>-1250&&z<-750)continue;
+    const coast=this.shoreDistance(x,z);if(coast<85||coast>600)continue;
+    const points=[[-7,-7],[7,-7],[-7,7],[7,7],[0,0]],heights=points.map(([dx,dz])=>this.getHeight(x+dx,z+dz));
+    if(Math.max(...heights)-Math.min(...heights)>1.1||points.some(([dx,dz])=>this.shoreDistance(x+dx,z+dz)<40))continue;
+    candidates.push({x,z,y:Math.max(...heights)+.03});
+   }
+   candidates.sort((a,b)=>Math.hypot(a.x-ax,a.z-az)-Math.hypot(b.x-ax,b.z-az));
+   const p=candidates[0];if(!p){console.warn('No dry coastal fortification site:',kind);continue;}
+   const group=new THREE.Group(),model=template.clone(true),proxy=FortificationAssets.proxy(template);group.add(model,proxy);group.position.set(p.x,p.y,p.z);group.rotation.y=Math.PI/2;this.root.add(group);
+   model.visible=false;group.name=template.name;this.fortifications.push({...p,w:dimensions.depth,d:dimensions.width,kind,group,model,proxy});this.objectCount++;
+  }
+ }
+ updateFortifications(x,z){
+  const rank=kind=>this.fortifications.filter(e=>e.kind===kind).sort((a,b)=>Math.hypot(a.x-x,a.z-z)-Math.hypot(b.x-x,b.z-z));
+  const near=[...rank('bunker').slice(0,1),...rank('observation-post').slice(0,2)];
+  for(const e of this.fortifications){const range=Math.hypot(e.x-x,e.z-z);e.group.visible=range<6500;e.model.visible=range<1050&&near.includes(e);e.proxy.visible=!e.model.visible;}
+ }
  buildWater(){
   const material=new THREE.ShaderMaterial({uniforms:{uTime:this.time,uWarm:this.warm,uCoast:{value:this.coastTexture},uSun:{value:this.sun}},vertexShader:`varying vec3 vWorld;varying vec3 vLocal;void main(){vLocal=position;vWorld=(modelMatrix*vec4(position,1.)).xyz;gl_Position=projectionMatrix*viewMatrix*vec4(vWorld,1.);}`,
    fragmentShader:`precision highp float;varying vec3 vWorld;varying vec3 vLocal;uniform float uTime;uniform float uWarm;uniform sampler2D uCoast;uniform vec3 uSun;
@@ -359,9 +388,10 @@ class OkinawaWorld{
    }`});
   this.sky=new THREE.Mesh(new THREE.SphereGeometry(1,24,12),mat);this.sky.frustumCulled=false;this.sky.renderOrder=-10;this.root.add(this.sky);
  }
- update(dt,x=0,z=0){this.time.value+=Math.min(dt,.1);this.detailTimer=(this.detailTimer||0)-dt;if(this.detailTimer<=0){this.detailTimer=.35;this.updateVillageDetails(x,z);}}
+ update(dt,x=0,z=0){this.time.value+=Math.min(dt,.1);this.detailTimer=(this.detailTimer||0)-dt;if(this.detailTimer<=0){this.detailTimer=.35;this.updateVillageDetails(x,z);this.updateFortifications(x,z);}}
  setLight(warm){this.warm.value=warm?1:0;}
- dispose(){const gs=new Set(),ms=new Set(),ts=new Set();[this.root,...this.detailTemplates].forEach(root=>root.traverse(o=>{if(o.geometry)gs.add(o.geometry);if(o.material){for(const m of [].concat(o.material)){ms.add(m);if(m.map)ts.add(m.map);}}}));gs.forEach(g=>g.dispose());ms.forEach(m=>m.dispose());ts.add(this.coastTexture);ts.forEach(t=>t.dispose());if(this.root.parent)this.root.parent.remove(this.root);}
+ dispose(){for(const e of this.fortifications){e.group.remove(e.model);}
+  const gs=new Set(),ms=new Set(),ts=new Set();[this.root,...this.detailTemplates].forEach(root=>root.traverse(o=>{if(o.geometry)gs.add(o.geometry);if(o.material){for(const m of [].concat(o.material)){ms.add(m);if(m.map)ts.add(m.map);}}}));gs.forEach(g=>g.dispose());ms.forEach(m=>m.dispose());ts.add(this.coastTexture);ts.forEach(t=>t.dispose());if(this.root.parent)this.root.parent.remove(this.root);}
 }
 scope.OkinawaWorld=OkinawaWorld;
 })(typeof window!=='undefined'?window:globalThis);

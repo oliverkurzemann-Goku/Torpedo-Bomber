@@ -12,10 +12,18 @@ if(!executable){
 }
 const mime={'.html':'text/html','.css':'text/css','.js':'application/javascript','.json':'application/json','.svg':'image/svg+xml','.png':'image/png','.webp':'image/webp','.glb':'model/gltf-binary','.bin':'application/octet-stream'};
 const server=http.createServer((req,res)=>{
+ const url=new URL(req.url,'http://localhost');
+ // Serve exact installed CDN modules locally, including proxy-restricted QA.
+ if(url.pathname.startsWith('/__deps/')){
+  const dependency=cdn[url.pathname.split('/').pop()];if(!dependency){res.writeHead(404).end();return;}
+  res.writeHead(200,{'Content-Type':'application/javascript'});fs.createReadStream(dependency).pipe(res);return;
+ }
  const file=path.resolve(root,'.'+decodeURIComponent(new URL(req.url,'http://localhost').pathname));
  if(!file.startsWith(root+path.sep)){res.writeHead(403).end();return;}
  fs.stat(file,(err,stat)=>{if(err||!stat.isFile()){res.writeHead(404).end();return;}
-  res.writeHead(200,{'Content-Type':mime[path.extname(file)]||'application/octet-stream'});fs.createReadStream(file).pipe(res);});
+  res.writeHead(200,{'Content-Type':mime[path.extname(file)]||'application/octet-stream'});
+  if(path.extname(file)==='.html'){res.end(fs.readFileSync(file,'utf8').replace(/https:[^" ]+\/(three.min.js|FBXLoader.js|SkeletonUtils.js|index.js)/g,'/__deps/$1'));return;}
+  fs.createReadStream(file).pipe(res);});
 });
 const deps=path.join(root,'node_modules');
 const cdn={
@@ -296,7 +304,13 @@ const cdn={
     }else if(scenario.kind==='defend'){
      assert(!modelRequests.some(p=>p.includes('dauntless')||p.includes('midway')||p.includes('merchant')),'Zero defence loads no unused US deck, SBD or merchant');
     }
-    assert.equal(modelRequests.filter(p=>p.includes('merchant')).length,scenario.kind==='defend'?0:1,'escort and freighter share one model decode');
+    const expectedShips=await page.evaluate(()=>{
+     const m=MISSIONS[mission],defs=[...(m.targets||[]),...(m.reinforcement?.targets||[]),...(m.support||[])];
+     return [...new Set(defs.filter(d=>d.type!=='cruiser').map(d=>'/assets/ships/'+NavalAssets.specs[NavalAssets.key(d)].file+'.glb'))];
+    });
+    assert(!modelRequests.some(p=>p.includes('merchant')),'removed merchant placeholder must never load');
+    for(const ship of expectedShips)assert.equal(modelRequests.filter(p=>p===ship).length,1,'each selected original ship decodes once: '+ship);
+    assert.deepEqual([...new Set(modelRequests.filter(p=>p.startsWith('/assets/ships/')))].sort(),expectedShips.sort(),'only ships used by the selected mission load');
     if(scenario.ordinal===0){
      const shots=await page.evaluate(()=>{
       if(!isDefend()&&!isSBD()){const oldHull=P.hull,before=tracers.length;for(let i=0;i<600;i++)updateCarrierDefense(1/60);

@@ -5,7 +5,39 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 173 · Thunderbolt Squadron BUILD 173 · Remagen-Kern 23 / Fahrzeuge 22**
+Stand bei Übergabe: **Torpedo Squadron BUILD 174 · Thunderbolt Squadron BUILD 174 · Remagen-Kern 23 / Fahrzeuge 22**
+
+**Build 174 (06.10.2026): hochgeladene Bunker und Beobachtungsposten.**
+Die Originale `putsborough__wwii_observation_post.glb` und `bunker_o323a-160_z.glb`
+sind als eigene GLBs in assets/buildings eingebaut. Offline-Aufbereitung mit
+scripts/prepare-fortifications.mjs und meshoptimizer: UV-gewichtete Vereinfachung,
+festgehaltene Randkanten, 512px-JPEG-Texturen. Originaldateien bleiben unverändert;
+SHA256, ursprüngliche/neue Dreieckszahl und Fehler stehen im asset.extras der GLBs.
+Beobachtungsposten: 53.918 → 9.000 Dreiecke, 372.332 Bytes. Bunker: 549.969 →
+103.745 Dreiecke, 5.085.168 Bytes. Ein härteres Bunkerlimit würde die Form verlieren.
+FortificationAssets misst tatsächlich transformierte Vertices (Box3 des gedrehten
+Exporters überschätzt den Boden um 65cm), zentriert X/Z, setzt den Boden auf Y=0
+und skaliert auf 7,5m bzw. 10m maximale horizontale Ausdehnung. Cached Geometry,
+Materialien und Texturen werden zwischen Instanzen/Sorties geteilt.
+Remagen: je ein echter Bunker/Post an beiden Flugplätzen sowie zwei Posts neben
+Flakstellungen. Standorte meiden reale OSM-Wasser-/Straßen-/Gebäudedaten, Hangars,
+Hütten, Piste, Taxiwege und Serviceflugzeugflächen; betroffene Bauminstanzen werden
+mit Kronenradius freigestellt. Terrain-LOD-Revisionen aktualisieren die Fundamente.
+Okinawa: vier repräsentative Küstenstandorte, keine historische Standortbehauptung;
+flache trockene Flächen außerhalb der Flugzeugdispersal, Bebauung und Vegetation.
+Beide Welten zeigen höchstens einen nahen Bunker und zwei nahe Posts detailliert
+bis 1050m, danach billige Silhouetten bis 6500m. World.dispose lässt den gemeinsamen
+Originalmodellcache für die nächste Sortie erhalten. Vorhandene Missionsziele ändern
+sich nicht. Cacheversion 174 nur für neue/geänderte Module und Spiele.
+Der Browser-Smoke-Test prüft nun die ausgewählten NavalAssets statt des entfernten
+Merchant-Platzhalters und serviert die gleichen CDN-Module lokal. Das erweiterte
+Pazifikmenü verkleinert Karten bei höchstens 640px Landscape-Höhe; Start bleibt
+auch bei 1024×600 erreichbar, jede Missionskarte bleibt mindestens 66px hoch.
+Prüfung: native dekodierte Fotografietexturen mit echtem r128-GLTFLoader, alle
+Vertexgrenzen, vier Okinawa-Standorte, Vegetationsabstände, Cache/Dispose; eigener
+WebGL-Test für beide echten Spiele einschließlich Terrain-LOD und Flugplatzabständen.
+Syntax, 31 Terrain- und 26 Okinawa-Testdateien bestehen. Bilder unter test-visuals/
+build174-*.png. Physische iPad-Bildrate bleibt durch den Nutzer zu prüfen.
 
 **Build 173 (06.10.2026): Missionskorrekturen und Okinawa-Fassaden.**
 Corsair benutzt dieselbe SBD-Modellpipeline, hat jedoch explizit weder Heckschützen
