@@ -42,7 +42,7 @@ function frondGeometry(){
 class OkinawaWorld{
  constructor(data, options={}){
   this.data=data;this.root=new THREE.Group();this.root.name='OkinawaEnvironment';this.terrain=new THREE.Group();this.terrain.name='GeographicTerrain';this.root.add(this.terrain);
-  this.tiles=new Map();this.size=16000;this.half=8000;this.mapSize=1024;this.objectCount=0;this.vegetationDensity=options.vegetationDensity===undefined?1:clamp(options.vegetationDensity,.1,1);this.time={value:0};this.warm={value:0};this.sun=new THREE.Vector3(-.48,.72,.46).normalize();this.materials=[];this.decorations=[];this.houseGrid=new Map();
+  this.tiles=new Map();this.size=16000;this.half=8000;this.mapSize=1024;this.objectCount=0;this.vegetationDensity=options.vegetationDensity===undefined?1:clamp(options.vegetationDensity,.1,1);this.time={value:0};this.warm={value:0};this.sun=new THREE.Vector3(-.48,.72,.46).normalize();this.materials=[];this.decorations=[];this.houseGrid=new Map();this.houseSites=[];this.nearBuildings=[];this.detailTemplates=[];
   for(const t of data.tiles){const bytes=Uint8Array.from(atob(t.dem),c=>c.charCodeAt(0)),d=new DataView(bytes.buffer);if(String.fromCharCode(...bytes.slice(0,4))!=='DEM1'||d.getUint16(4,true)!==65||bytes.length!==16916)throw Error('Invalid DEM tile '+t.x+','+t.z);const h=new Float32Array(4225);for(let i=0;i<h.length;i++){h[i]=d.getFloat32(16+i*4,true);if(!Number.isFinite(h[i]))throw Error('Non-finite DEM sample');}this.tiles.set(t.x+','+t.z,h);}
  }
  rawHeight(x,z){
@@ -100,7 +100,7 @@ class OkinawaWorld{
     for(let i=0;i<p.count;i++){const x=p.getX(i)-6000+col*4000,z=p.getZ(i)-6000+row*4000;p.setXYZ(i,x,this.getHeight(x,z),z);uv.setXY(i,(x+8000)/16000,1-(z+8000)/16000);}
     g.computeVertexNormals();g.computeBoundingSphere();const m=new THREE.Mesh(g,material);m.name='Terrain_'+col+'_'+row;m.receiveShadow=true;this.terrain.add(m);
   }
-  onProgress(.58,'Growing the coastal landscape…');await pause();this.buildSettlements();this.buildVegetation();
+  onProgress(.58,'Growing the coastal landscape…');await pause();this.buildSettlements();this.buildVillageDetails();this.buildVegetation();
   onProgress(.8,'Lighting the sea…');await pause();this.buildWater();this.buildSky();onProgress(1,'Ready');return this;
  }
  batch(geo,mat,placements,name){if(!placements.length)return;const m=new THREE.InstancedMesh(geo,mat,placements.length),dummy=new THREE.Object3D();m.name=name;for(let i=0;i<placements.length;i++){const p=placements[i];dummy.position.set(p.x,p.y,p.z);dummy.rotation.set(0,p.r||0,0);dummy.scale.set(p.sx||p.s||1,p.sy||p.s||1,p.sz||p.s||1);dummy.updateMatrix();m.setMatrixAt(i,dummy.matrix);}m.instanceMatrix.needsUpdate=true;m.frustumCulled=false;m.castShadow=false;m.receiveShadow=true;this.root.add(m);this.objectCount+=placements.length;this.decorations.push(m);return m;}
@@ -146,7 +146,9 @@ class OkinawaWorld{
   const rand=rng(9831),walls=Array.from({length:5},()=>[]),roofs=Array.from({length:5},()=>[]);
   const dark=[],gardenWalls=[],doors=[],windows=[],shutters=[],posts=[],foundations=[],tracks=[],locations=[],yardPalms=[],yardCisterns=[];
   const addHouse=(x,z,w,depth,rot,y,style,annex=false)=>{
-    const h=[3.4,4.5,2.65,3.15,4.1][style],roofH=(style===2||style===3)?w*.42:w*.72;
+    const h=[3.4,4.5,2.65,3.15,4.1][style];
+    this.houseSites.push({x,z,y,w,depth,rot,h,style});
+    const roofH=(style===2||style===3)?w*.42:w*.72;
     const key=Math.floor(x/64)+','+Math.floor(z/64);
     if(!this.houseGrid.has(key))this.houseGrid.set(key,[]);
     this.houseGrid.get(key).push({x,z,radius:Math.hypot(w,depth)*.6});
@@ -236,13 +238,22 @@ class OkinawaWorld{
   // ACES and the Pacific sun wash pale walls almost white; muted pigments keep
   // the doors, different roof types and shadows legible from low flying height.
   const wallColors=[0x817b69,0x514b3f,0x8a806b,0x706b60,0x7a705e];
+  const wallMaps=[false,true,false,false,true].map(timber=>{
+    const image=canvas(256),ctx=image.getContext('2d');ctx.fillStyle=timber?'#a49a87':'#d1c9ad';ctx.fillRect(0,0,256,256);
+    for(let y=0;y<256;y+=timber?9:22)for(let x=0;x<256;x+=timber?256:39){
+      ctx.fillStyle=timber?'#766e60':'#a69f8b';ctx.fillRect(x,y,timber?256:38,1);
+      if(!timber)ctx.fillRect(x+(y%44?18:0),y,1,22);
+    }
+    for(let i=0;i<900;i++){const x=Math.floor(hash(i,27)*256),y=Math.floor(hash(i,63)*256);ctx.fillStyle='rgba(54,43,29,.09)';ctx.fillRect(x,y,1+(i%4),1+(i%7));}
+    const map=new THREE.CanvasTexture(image);map.encoding=THREE.sRGBEncoding;return map;
+  });
   const roofMaterials=[new THREE.MeshStandardMaterial({map:tex,color:0xb5aaa0,roughness:1,side:THREE.DoubleSide}),
     new THREE.MeshStandardMaterial({color:0x403b34,roughness:1,side:THREE.DoubleSide}),
     new THREE.MeshStandardMaterial({color:0x655b42,roughness:1,side:THREE.DoubleSide}),
     new THREE.MeshStandardMaterial({color:0x43443f,roughness:1,side:THREE.DoubleSide}),
     new THREE.MeshStandardMaterial({color:0x48332e,roughness:1,side:THREE.DoubleSide})];
   for(let i=0;i<5;i++){
-    this.batch(new THREE.BoxGeometry(1,1,1),new THREE.MeshStandardMaterial({color:wallColors[i],roughness:1}),walls[i],['Coral homes','Timber workshops','Storehouses','Plastered dwellings','Rural halls'][i]);
+    this.batch(new THREE.BoxGeometry(1,1,1),new THREE.MeshStandardMaterial({color:wallColors[i],map:wallMaps[i],roughness:1}),walls[i],['Coral homes','Timber workshops','Storehouses','Plastered dwellings','Rural halls'][i]);
     this.batch(i===0||i===3?roofGeometry():gableRoofGeometry(),roofMaterials[i],roofs[i],['Red tile roofs','Dark gables','Thatch gables','Grey hip roofs','Oxide roofs'][i]);
   }
   this.batch(new THREE.BoxGeometry(1,1,1),new THREE.MeshStandardMaterial({color:0x302b23,roughness:1}),dark,'Shaded verandas');
@@ -257,6 +268,69 @@ class OkinawaWorld{
   this.batch(frondGeometry(),new THREE.MeshStandardMaterial({color:0x172913,roughness:1,side:THREE.DoubleSide}),yardPalms,'Village palm fronds');
   this.batch(new THREE.CylinderGeometry(1,1,1.8,9).translate(0,.9,0),new THREE.MeshStandardMaterial({color:0x4b382a,roughness:1}),yardCisterns,'Village water jars');
   this.batch(detail,new THREE.MeshStandardMaterial({color:0x8e8c77,roughness:1}),gardenWalls,'Coral garden walls');this.houses=walls.reduce((n,a)=>n+a.length,0);
+ }
+ // Shared close-range architecture adds depth without hundreds of detailed houses
+ // drawing at once. The instanced silhouettes remain for distant villages.
+ buildVillageDetails(){
+  const wood=new THREE.MeshStandardMaterial({color:0x473526,roughness:1}),stone=new THREE.MeshStandardMaterial({color:0x77715b,roughness:1}),tile=new THREE.MeshStandardMaterial({color:0x74412e,roughness:1});
+  for(let style=0;style<5;style++){
+   const groups=[[],[],[],[]],add=(bucket,x,y,z,w,h,d)=>groups[bucket].push(new THREE.BoxGeometry(w,h,d).translate(x,y,z));
+   // Narrow frames, lintels and sills wrap all four walls, including rear and sides.
+   for(const side of [-1,1]){
+    for(const x of [-3.1,0,3.1]){
+     add(3,x,1.66,side*4.105,1.25,.78,.09);
+     add(0,x,2.1,side*4.12,1.45,.12,.18);add(0,x,1.22,side*4.12,1.45,.12,.18);
+     for(const dx of [-.69,0,.69])add(0,x+dx,1.66,side*4.12,.08,.85,.20);
+    }
+    for(const z of [-2,2]){
+     add(3,side*5.105,1.66,z,.09,.78,1.25);
+     add(0,side*5.12,2.1,z,.18,.12,1.4);add(0,side*5.12,1.22,z,.18,.12,1.4);
+     for(const dz of [-.65,0,.65])add(0,side*5.12,1.66,z+dz,.20,.85,.08);
+    }
+    add(0,side*4.95,1.7,4.08,.18,3.4,.18);add(0,side*4.95,1.7,-4.08,.18,3.4,.18);
+   }
+   add(0,0,3.36,0,10.2,.16,8.2);
+   const roofH=(style===2||style===3?10*.42:10*.72)*.32;
+   add(2,0,3.4+roofH,0,style===0||style===3?5.7:12,.20,.28);
+   for(let x=-5.5;x<6;x+=.55)add(0,x,3.25,4.3,.10,.13,1.0);
+   if(style===0||style===3){
+    add(0,0,2.85,4.75,8.5,.18,1.8);add(0,0,.32,4.75,8.5,.15,1.8);
+    for(const x of [-4,-1.4,1.4,4])add(0,x,1.55,5.4,.16,2.5,.16);
+    add(1,0,.18,5.65,2.4,.36,1.0);add(1,0,.08,6.1,2.8,.16,.65);
+   }else{add(1,0,.18,4.45,2.0,.36,.7);}
+   const template=new THREE.Group();template.name='Village facade '+style;
+   for(let i=0;i<groups.length;i++){
+    const mesh=new THREE.Mesh(merge(groups[i]),[wood,stone,tile,new THREE.MeshStandardMaterial({color:0x252a23,roughness:.7})][i]);groups[i].forEach(g=>g.dispose());mesh.receiveShadow=true;template.add(mesh);
+   }
+   this.detailTemplates.push(template);
+  }
+  for(let i=0;i<12;i++){const slot=new THREE.Group();slot.name='Near village detail';slot.visible=false;slot.userData.site=null;this.root.add(slot);this.nearBuildings.push(slot);}
+  this.objectCount+=48;
+  // Cropped strips and low coral walls delineate farm plots on measured flat land.
+  const borders=[],rows=[];
+  for(let x=-7400;x<7400&&borders.length<110;x+=180)for(let z=-7400;z<7400&&borders.length<110;z+=180){
+   if(this.biome(x,z)[1]<.7||this.shoreDistance(x,z)<180||this.nearHouse(x,z))continue;
+   const y=this.getHeight(x,z);if(Math.abs(this.getHeight(x+45,z)-y)>2||Math.abs(this.getHeight(x,z+45)-y)>2)continue;
+   for(let k=-3;k<=3;k++){const zz=z+k*6;borders.push({x,z:zz,y:this.getHeight(x,zz)+.4,sx:.7,sy:.8,sz:6.1});
+    for(let j=0;j<3;j++){const xx=x+6+j*8;rows.push({x:xx,z:zz,y:this.getHeight(xx,zz)+.09,sx:.45,sy:.14,sz:6.1});}}
+  }
+  this.batch(new THREE.BoxGeometry(1,1,1),stone,borders,'Coral field boundaries');
+  this.batch(new THREE.BoxGeometry(1,1,1),new THREE.MeshStandardMaterial({color:0x3c4928,roughness:1}),rows,'Cultivated field rows');
+ }
+ updateVillageDetails(x,z){
+  const closest=this.houseSites.filter(p=>Math.hypot(p.x-x,p.z-z)<1100).sort((a,b)=>Math.hypot(a.x-x,a.z-z)-Math.hypot(b.x-x,b.z-z)).slice(0,12);
+  const wanted=new Set(closest),assigned=new Set();
+  for(const slot of this.nearBuildings){
+   slot.visible=wanted.has(slot.userData.site);
+   if(slot.visible)assigned.add(slot.userData.site);
+  }
+  for(const site of closest){
+   if(assigned.has(site))continue;
+   const slot=this.nearBuildings.find(o=>!o.visible);
+   while(slot.children.length)slot.remove(slot.children[0]);
+   slot.add(this.detailTemplates[site.style].clone(true));slot.userData.site=site;slot.visible=true;
+   slot.position.set(site.x,site.y,site.z);slot.rotation.y=site.rot;slot.scale.set(site.w/10,site.h/3.4,site.depth/8);
+  }
  }
  buildWater(){
   const material=new THREE.ShaderMaterial({uniforms:{uTime:this.time,uWarm:this.warm,uCoast:{value:this.coastTexture},uSun:{value:this.sun}},vertexShader:`varying vec3 vWorld;varying vec3 vLocal;void main(){vLocal=position;vWorld=(modelMatrix*vec4(position,1.)).xyz;gl_Position=projectionMatrix*viewMatrix*vec4(vWorld,1.);}`,
@@ -285,9 +359,9 @@ class OkinawaWorld{
    }`});
   this.sky=new THREE.Mesh(new THREE.SphereGeometry(1,24,12),mat);this.sky.frustumCulled=false;this.sky.renderOrder=-10;this.root.add(this.sky);
  }
- update(dt){this.time.value+=Math.min(dt,.1);}
+ update(dt,x=0,z=0){this.time.value+=Math.min(dt,.1);this.detailTimer=(this.detailTimer||0)-dt;if(this.detailTimer<=0){this.detailTimer=.35;this.updateVillageDetails(x,z);}}
  setLight(warm){this.warm.value=warm?1:0;}
- dispose(){const gs=new Set(),ms=new Set(),ts=new Set();this.root.traverse(o=>{if(o.geometry)gs.add(o.geometry);if(o.material){for(const m of [].concat(o.material)){ms.add(m);if(m.map)ts.add(m.map);}}});gs.forEach(g=>g.dispose());ms.forEach(m=>m.dispose());ts.add(this.coastTexture);ts.forEach(t=>t.dispose());if(this.root.parent)this.root.parent.remove(this.root);}
+ dispose(){const gs=new Set(),ms=new Set(),ts=new Set();[this.root,...this.detailTemplates].forEach(root=>root.traverse(o=>{if(o.geometry)gs.add(o.geometry);if(o.material){for(const m of [].concat(o.material)){ms.add(m);if(m.map)ts.add(m.map);}}}));gs.forEach(g=>g.dispose());ms.forEach(m=>m.dispose());ts.add(this.coastTexture);ts.forEach(t=>t.dispose());if(this.root.parent)this.root.parent.remove(this.root);}
 }
 scope.OkinawaWorld=OkinawaWorld;
 })(typeof window!=='undefined'?window:globalThis);

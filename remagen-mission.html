@@ -266,7 +266,7 @@
   #opsStatus{position:fixed;top:calc(env(safe-area-inset-top) + 76px);left:50%;transform:translateX(-50%);color:#edcc80;background:rgba(14,20,18,.78);padding:5px 9px;font:10px monospace;pointer-events:none;z-index:9;max-width:58vw;text-align:center;}
   #systemsStatus{position:fixed;top:calc(env(safe-area-inset-top) + 116px);left:50%;transform:translateX(-50%);color:#ffbf96;background:#251810db;padding:5px 9px;font:10px monospace;pointer-events:none;z-index:9;max-width:60vw;text-align:center;}#systemsStatus:empty{display:none;}
 </style>
-<link rel="stylesheet" href="menu-layout.css?v=172">
+<link rel="stylesheet" href="menu-layout.css?v=173">
 </head>
 <body>
 <!-- ===== TEMP TEST-ONLY VERSION BANNER — asked for by Oliver: "kannst du irgendwo einbauen,
@@ -288,7 +288,7 @@
   <div style="width:100%;height:4px;background:repeating-linear-gradient(45deg,#ffd400,#ffd400 8px,#111 8px,#111 16px);"></div>
   <span id="testVersionBannerText" style="background:#111;color:#ffd400;font-family:monospace;font-weight:800;font-size:11px;letter-spacing:.5px;padding:3px 10px;border:1px solid #ffd400;border-top:none;border-radius:0 0 6px 6px;"></span>
 </div>
-<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 172';</script>
+<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 173';</script>
 <!-- ===== END TEMP TEST-ONLY VERSION BANNER ===== -->
 <div id="app"></div>
 <style>
@@ -328,7 +328,7 @@
   <div id="flash"></div>
   <div id="gunsight"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 172 · REAL RHINE</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 173 · REAL RHINE</div>
 
   <div id="apr">
     <div id="aprCall"></div>
@@ -378,7 +378,7 @@
 </div>
 
 <div class="overlay hidden" id="menu" data-campaign="europe">
-  <div class="menuTop"><a id="selBtn" href="index.html?v=172">&#9664; Change Game</a><span class="menuMeta">RHINE OPERATIONS<br>BUILD 172</span></div>
+  <div class="menuTop"><a id="selBtn" href="index.html?v=173">&#9664; Change Game</a><span class="menuMeta">RHINE OPERATIONS<br>BUILD 173</span></div>
   <div class="card menuCard">
     <aside class="menuOverview" aria-label="Campaign and pilot options">
     <div class="campaignArt" aria-hidden="true"></div>
@@ -478,7 +478,7 @@
 <script src="terrain-system/TerrainManager.js?v=168"></script>
 <script src="terrain-system/OSMManager.js?v=172"></script>
 <script src="terrain-system/PeriodBuildings.js?v=172"></script>
-<script src="terrain-system/HistoricalObjectManager.js?v=remagen-21"></script>
+<script src="terrain-system/HistoricalObjectManager.js?v=173"></script>
 <script src="terrain-system/AirfieldDetails.js?v=169"></script>
 <script src="terrain-system/AircraftGround.js?v=170"></script>
 <script src="terrain-system/AirfieldActivity.js?v=170"></script>
@@ -809,7 +809,7 @@ async function loadRealWorld(){
 
   if(OSMManager.BUILD!==23||HistoricalObjectManager.BUILD!==21||LivingWorld.BUILD!==22||WorldVehicles.BUILD!==22) throw new Error('Terrain version mismatch. Reload Remagen.');
   document.getElementById('testVersionBannerText').textContent=
-    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 172 · MODULE 23';
+    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 173 · MODULE 23';
   heightProvider=new DEMHeightProvider(RTILE,'terrain-system/real/data/dem/');
   terrain=new TerrainManager(scene,RTILE,heightProvider);
   osmMgr=new OSMManager(scene,RTILE,terrain,'terrain-system/real/data/osm/');
@@ -938,6 +938,13 @@ function updateContentVisibility(focusX,focusZ){
     const [tx,tz]=key.split(',').map(Number);
     const cx=tx*RTILE+RTILE/2, cz=tz*RTILE+RTILE/2;
     g.visible=Math.hypot(cx-focusX,cz-focusZ)<CONTENT_VIS_RADIUS;
+  }
+  historicalMgr.refresh();
+  for(const t of targets){
+    if(t.entity||!t.sub||t.kind==='bridge')continue;
+    t.group.position.y=terrain.getRenderedHeight(t.sub.userData.x,t.sub.userData.z);
+    // An active objective remains visible by its own distance, even at a tile seam.
+    if(t.alive&&t.primary&&P.pos.distanceTo(t.group.position)<CONTENT_VIS_RADIUS)t.sub.parent.visible=true;
   }
   rebakeStaleOsmHeights();
   if(airfieldDetails)airfieldDetails.refresh();
@@ -2677,7 +2684,8 @@ function targetHandle(sub){
   return { position:new THREE.Vector3(sub.userData.x,y,sub.userData.z) };
 }
 function resetRealTarget(sub){
-  sub.position.set(0,0,0);
+  sub.userData.wreckOffset=0;
+  sub.position.set(0,sub.userData.terrainLift||0,0);
   sub.rotation.set(0,0,0);
   sub.traverse(o=>{ if(o.isMesh){
     if(!o.userData.origMat) o.userData.origMat=o.material;
@@ -2774,7 +2782,8 @@ function killTarget(t){
   if(t.entity) livingWorld.destroyEntity(t.entity);
   else {
     t.sub.traverse(o=>{ if(o.isMesh){ o.material=o.material.clone(); o.material.color.multiplyScalar(0.32); } });
-    t.sub.position.y-=(t.kind==='bridge'?7:1.2);
+    t.sub.userData.wreckOffset=-(t.kind==='bridge'?7:1.2);
+    t.sub.position.y=(t.sub.userData.terrainLift||0)+t.sub.userData.wreckOffset;
   }
   if(t.kind==='bridge'||t.kind==='factory') shake(2.0); else shake(0.7);
   flash(t.name+' DESTROYED',900);
@@ -3043,6 +3052,25 @@ function spawnCrater(x,z){
 // ============================================================
 //  BLAST — area damage shared by bombs and rockets
 // ============================================================
+function bridgeBlastDistance(t,x,z){
+  const d=t.sub.userData.data,u=t.sub.userData;
+  const ox=u.x-(d.x1+d.x2)/2,oz=u.z-(d.z1+d.z2)/2;
+  const a=new THREE.Vector3(ox+d.x1,0,oz+d.z1),b=new THREE.Vector3(ox+d.x2,0,oz+d.z2);
+  return new THREE.Line3(a,b).closestPointToPoint(new THREE.Vector3(x,0,z),true,new THREE.Vector3()).distanceTo(new THREE.Vector3(x,0,z));
+}
+// A bomb crosses several metres per frame. Raycast the entire step against the
+// real deck and piers so a direct hit anywhere along the span counts once.
+function directBridgeHit(from,to){
+  const delta=to.clone().sub(from),length=delta.length();if(!length)return null;
+  const ray=new THREE.Raycaster(from,delta.divideScalar(length),0,length);
+  let result=null;
+  for(const t of targets){if(!t.alive||t.kind!=='bridge')continue;
+    t.sub.updateWorldMatrix(true,true);
+    const hit=ray.intersectObject(t.sub,true)[0];
+    if(hit&&(!result||hit.distance<result.distance))result={target:t,point:hit.point,distance:hit.distance};
+  }
+  return result;
+}
 function blast(x,y,z,radius,power){
   spawnExplosion(x,y,z,radius/26+0.7);
   spawnCrater(x,z);
@@ -3052,7 +3080,7 @@ function blast(x,y,z,radius,power){
   for(const t of targets){
     if(!t.alive) continue;
     const p=t.group.position;
-    const d=Math.hypot(p.x-x,p.z-z);
+    const d=t.kind==='bridge'?bridgeBlastDistance(t,x,z):Math.hypot(p.x-x,p.z-z);
     if(d<radius+t.radius){
       const f=1-Math.min(1,d/(radius+t.radius));
       damageTarget(t,power*f*1.6,false);
@@ -3178,14 +3206,16 @@ function fireRocket(){
 }
 function updateOrdnance(dt){
   for(let i=bombs.length-1;i>=0;i--){
-    const b=bombs[i]; b.life-=dt;
+    const b=bombs[i],previous=b.mesh.position.clone(); b.life-=dt;
     b.v.y-=32*dt;
     b.mesh.position.addScaledVector(b.v,dt);
     b.mesh.lookAt(b.mesh.position.clone().add(b.v));
     const p=b.mesh.position;
-    let hit=(p.y<=groundY(p.x,p.z)+0.6);
+    const bridgeHit=directBridgeHit(previous,p);
+    let hit=!!bridgeHit||(p.y<=groundY(p.x,p.z)+0.6);
+    if(bridgeHit){p.copy(bridgeHit.point);damageTarget(bridgeHit.target,bridgeHit.target.hp,false);}
     if(!hit) for(const t of targets){
-      if(!t.alive) continue; const tp=t.group.position;
+      if(!t.alive||t.kind==='bridge') continue; const tp=t.group.position;
       if(Math.hypot(p.x-tp.x,p.z-tp.z)<t.radius+3 && Math.abs(p.y-tp.y)<(t.kind==='bridge'?26:12)){ hit=true; break; }
     }
     if(hit||b.life<=0){
@@ -3194,12 +3224,14 @@ function updateOrdnance(dt){
     }
   }
   for(let i=rockets.length-1;i>=0;i--){
-    const r=rockets[i]; r.life-=dt;
+    const r=rockets[i],previous=r.mesh.position.clone(); r.life-=dt;
     r.dir.y-=0.06*dt;
     r.mesh.position.addScaledVector(r.dir,r.speed*dt);
     const p=r.mesh.position;
     if(Math.random()<0.6) spawnSmoke(p.x,p.y,p.z,0x8d8676,0.22);
-    let hit=(p.y<=groundY(p.x,p.z)+0.5);
+    const bridgeHit=directBridgeHit(previous,p);
+    let hit=!!bridgeHit||(p.y<=groundY(p.x,p.z)+0.5);
+    if(bridgeHit)p.copy(bridgeHit.point);
     if(!hit) for(const t of targets){
       if(!t.alive) continue; const tp=t.group.position;
       if(Math.hypot(p.x-tp.x,p.z-tp.z)<t.radius+2 && Math.abs(p.y-tp.y)<(t.kind==='bridge'?24:10)){ hit=true; break; }
@@ -5450,7 +5482,7 @@ function init(){
   buildMenu();
   // menu wiring
   document.getElementById('startBtn').onclick=()=>showBrief(selectedMission);
-  document.getElementById('pauseMainMenu').onclick=()=>{exitToMenuFromPause();window.location.href='index.html?v=172';};
+  document.getElementById('pauseMainMenu').onclick=()=>{exitToMenuFromPause();window.location.href='index.html?v=173';};
   document.getElementById('logBtn').onclick=()=>{ show('menu',false); showLogbook(); };
   document.getElementById('skipLaunchPreview').onclick=()=>finishLaunchIntro();
   document.getElementById('brBack').onclick=()=>{ show('brief',false); show('menu',true); state=ST.MENU; };

@@ -104,11 +104,14 @@ class HistoricalObjectManager {
         if(sub.userData.kind!=='flak'||sub.userData.sourceModel==='flak88')continue;
         while(sub.children.length)sub.remove(sub.children[0]);
         const visual=template.clone(true),x=sub.userData.x,z=sub.userData.z;
-        visual.position.set(x,this.terrain.getRenderedHeight(x,z),z);
+        const wreckOffset=Math.min(sub.userData.wreckOffset||0,sub.position.y-(sub.userData.terrainLift||0)<-.5?-1.2:0);
+        const foundationY=this.terrain.getRenderedHeight(x,z);
+        visual.position.set(x,foundationY,z);
+        Object.assign(sub.userData,{foundationY,terrainLift:0,wreckOffset});sub.position.y=wreckOffset;
         visual.rotation.y=((Math.abs(x*17+z*31)%628)/100)-Math.PI;
         // If the fallback was destroyed before this asynchronous model arrived,
         // preserve the wreck state. Keep pristine originals for the next sortie.
-        const wrecked=sub.position.y<-.5;
+        const wrecked=wreckOffset<-.5;
         visual.traverse(o=>{if(o.isMesh){
           o.userData.origMat=o.material;
           if(wrecked){
@@ -121,6 +124,16 @@ class HistoricalObjectManager {
       }
     }
     return replaced;
+  }
+
+  // Historical meshes bake world coordinates. Lift their wrapper by the change
+  // in rendered terrain height when a DEM tile changes resolution or morphs.
+  refresh(){
+    for(const group of this.tiles.values())for(const sub of group?.userData.objects||[]){
+      const u=sub.userData;if(u.foundationY===undefined)continue;
+      u.terrainLift=this.terrain.getRenderedHeight(u.x,u.z)-u.foundationY;
+      sub.position.y=u.terrainLift+(u.wreckOffset||0);
+    }
   }
 
   _box(group, mat, x, y, z, w, h, d, rotY = 0){
@@ -164,7 +177,7 @@ class HistoricalObjectManager {
     this._cyl(sub, this.flakBaseMat, x, y+0.6, z, 3, 1.2);
     const barrel = this._cyl(sub, this.flakBarrelMat, x, y+1.6, z, 0.25, 3.2);
     barrel.rotation.z = Math.PI/2 * 0.55;
-    sub.userData = { kind: 'flak', data: f, x, z };
+    sub.userData = { kind: 'flak', data: f, x, z, foundationY:y, terrainLift:0, wreckOffset:0 };
     group.add(sub);
     return sub;
   }
@@ -176,7 +189,7 @@ class HistoricalObjectManager {
     this._box(sub, this.factoryMat, x, y+7, z, 40, 14, 26, f.rotY);
     this._box(sub, this.factoryMat, x + 26*Math.cos(f.rotY), y+5, z + 26*Math.sin(f.rotY), 18, 10, 16, f.rotY);
     this._cyl(sub, this.chimneyMat, x - 14*Math.cos(f.rotY), y+18, z - 14*Math.sin(f.rotY), 1.6, 36);
-    sub.userData = { kind: 'factory', data: f, x, z };
+    sub.userData = { kind: 'factory', data: f, x, z, foundationY:y, terrainLift:0, wreckOffset:0 };
     group.add(sub);
     return sub;
   }

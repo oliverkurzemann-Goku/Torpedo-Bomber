@@ -5,7 +5,32 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 171 · Thunderbolt Squadron BUILD 171 · Remagen-Kern 23 / Fahrzeuge 22**
+Stand bei Übergabe: **Torpedo Squadron BUILD 173 · Thunderbolt Squadron BUILD 173 · Remagen-Kern 23 / Fahrzeuge 22**
+
+**Build 173 (06.10.2026): Missionskorrekturen und Okinawa-Fassaden.**
+Corsair benutzt dieselbe SBD-Modellpipeline, hat jedoch explizit weder Heckschützen
+noch Sturzflugbremsen. HintCoach, Steuerknopf und Heckfeuer prüfen diese Fähigkeiten;
+Schiffsbezeichnungen in Karte, Navigation und Rottenfunk kommen aus NavalAssets.
+Kampfstarts liegen 8 km westlich der bisherigen Trägerstation; Übung und Flottenabwehr
+bleiben lokal. Zero-Patrouillen warten über dem Zielgebiet. Angriffsfenster +180 s,
+Verbrauch in Angriffsmissionen 40% zur passenden Hin-/Rückflugreserve.
+Geschosse prüfen die ganze Flugstrecke gegen den gedrehten Schiffsrumpf. Zerstörer
+benötigen 300 Kanonentreffer pro HP, Frachter 120; MG zählt 0,12, leichte Träger
+können durch Bordkanonen nicht versenkt werden. Torpedo-/Bombenlogik bleibt erhalten.
+Brückenbomben prüfen die reale Deck-/Pfeilergeometrie entlang des gesamten Zeitschritts;
+ein direkter Treffer zerstört die Brücke. Explosionsabstand misst die komplette Spanne.
+Historische Flak/Fabriken folgen gerenderten DEM-LOD-Änderungen mit terrainLift;
+wreckOffset bleibt getrennt und überlebt verspätetes Laden des echten Flak-Modells.
+Aktive Missionsziele bleiben auch am Kachelrand sichtbar.
+Okinawa besitzt strukturierte Wandtexturen, Feldreihen/Steinwälle und gemeinsam genutzte
+Fensterrahmen, Dachrippen, Veranden und Stufen für höchstens zwölf nahe Häuser.
+Detail-Slots werden beim Wechsel der Entfernung weiterverwendet. Geänderte Helfer
+haben Cachekennung 173, unveränderte Modelle behalten 172. Browserregression prüft
+beide Brückenmissionen mit 20/60/120 FPS an drei Stellen, beide Flak-Ziele über
+LOD-Wechsel, Corsair-Fähigkeiten, Anflugdistanz und den Fassadenbudget.
+Build 172 liegt bereits auf main (bc01b3b), einschließlich Original-FW190-/B17-Rotoren,
+Corsair und hochgeladener Schiffe/Gebäude. Build 173 muss vor Auslieferung Browser-
+und Syntaxprüfung bestehen; ein lokaler Browser kann über GAME_TEST_CHROME gewählt werden.
 
 **Build 171 (05.10.2026): Flugplatz und Komet-Abflug weiter im Karteninneren.**
 Der fiktive alliierte Flugplatz liegt jetzt bei (6000,15800), statt (787,18087.6).

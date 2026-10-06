@@ -32,5 +32,7 @@
   }).then(()=>templates.get(name));
   tasks.set(name,task.catch(e=>{tasks.delete(name);throw e;}));return tasks.get(name);
  }
- g.NavalAssets={specs,key,normalize,load,get:name=>templates.get(name)};
+ function label(def){return def.type==='cruiser'?'Zuiho light carrier':specs[key(def)]?.name||'Ship';}
+ function gunThreshold(def){return def.type==='cruiser'?Infinity:def.model==='submarine'?70:def.type==='destroyer'?300:120;}
+ g.NavalAssets={specs,key,label,gunThreshold,normalize,load,get:name=>templates.get(name)};
 })(window);

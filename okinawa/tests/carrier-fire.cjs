@@ -42,7 +42,7 @@ async function glb(file){const b=fs.readFileSync(path.join(root,file));return ne
    document:{querySelectorAll:()=>[]},shoreHeight:()=>0,sfxGun(){},updateHUD(){},radioSay(){},
    setSBDGearVisible(){},setZeroGearVisible(){},spawnSparks(){},spawnSmoke(){},addScore(){},spawnSplash(){}
   });ctx.window={__avStash:[]};
-  vm.runInContext(extract('noseDir','loadPlaneModel')+'\n'+gunCode+'\n'+poseCode,ctx);
+  vm.runInContext(extract('isCorsair','isSBD')+'\n'+extract('noseDir','loadPlaneModel')+'\n'+gunCode+'\n'+poseCode,ctx);
   planeGroup.updateMatrixWorld(true);
   const ports=ctx.pacificGunMuzzles(),nearest=ports.map(()=>Infinity),tri=new THREE.Triangle(),point=new THREE.Vector3();
   function vert(attr,i){const v=new THREE.Vector3().fromBufferAttribute(attr,i);if(attr.normalized){const d=attr.array instanceof Int16Array?32767:attr.array instanceof Uint16Array?65535:1;v.multiplyScalar(1/d);}return v;}
