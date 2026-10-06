@@ -1,6 +1,6 @@
 'use strict';
 const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict');
-global.THREE=require('three');global.self=global;global.window=global;
+global.THREE=require('three');require('../../aircraft-rotors.js');global.self=global;global.window=global;
 class ImageStub{constructor(){this.listeners={};this.width=2;this.height=2;}addEventListener(t,f){this.listeners[t]=f;}removeEventListener(){}set src(_){queueMicrotask(()=>this.listeners.load?.());}}
 global.document={createElementNS:()=>new ImageStub(),createElement:()=>({getContext:()=>({drawImage(){},getImageData:()=>({data:[60,60,60,255]})})})};
 vm.runInThisContext(fs.readFileSync(require.resolve('three/examples/js/loaders/GLTFLoader.js'),'utf8'));

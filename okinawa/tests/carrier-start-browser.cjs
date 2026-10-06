@@ -23,16 +23,20 @@ const server=http.createServer((req,res)=>{
   page.setDefaultTimeout(120000);page.on('pageerror',e=>errors.push(e.message));
   page.on('console',m=>{if(/Shader Error|VALIDATE_STATUS|not compiled/.test(m.text()))errors.push(m.text());});
   await page.addInitScript(()=>{window.requestAnimationFrame=()=>0;});
-  await page.goto('http://127.0.0.1:'+server.address().port+'/torpedo-carrier.html?campaign=1&v=170');
+  await page.goto('http://127.0.0.1:'+server.address().port+'/torpedo-carrier.html?campaign=1&v=172');
   await page.waitForFunction(()=>state===ST.MENU,null,{polling:200});
   console.log('Browser: carrier menu loaded');
   await page.evaluate(()=>{renderer.setPixelRatio(.25);renderer.shadowMap.enabled=false;});
   const out=path.join(root,'test-visuals');fs.mkdirSync(out,{recursive:true});
-  for(const ac of ['avenger','sbd','zero']){
-   const index=await page.evaluate(ac=>MISSIONS.findIndex(m=>ac==='zero'?m.defend:ac==='sbd'?m.sbd:!m.sbd&&!m.defend&&!m.free&&!m.qual),ac);
+  for(const ac of ['avenger','sbd','zero','corsair','submarine','convoy','coastal']){
+   const index=await page.evaluate(ac=>MISSIONS.findIndex(m=>ac==='submarine'?m.sub==='Submarine Sweep':ac==='convoy'?m.sub==='Cover the Landing':ac==='coastal'?m.corsair&&m.shoreStrike:ac==='zero'?m.defend:ac==='corsair'?m.corsair&&!m.shoreStrike:ac==='sbd'?m.sbd&&!m.corsair:!m.sbd&&!m.defend&&!m.free&&!m.qual),ac);
    await page.locator('#missionSel .chip').nth(index).click();await page.locator('#startBtn').click();
    await page.locator('#launchBtn').waitFor({state:'visible'});await page.locator('#launchBtn').click();
    await page.waitForFunction(()=>{updatePlaneMesh(0);return carrierAircraftReady()&&carrierIntro&&state===ST.LAUNCH;},null,{polling:200});
+   const fleet=await page.evaluate(()=>({targets:ships.map(s=>NavalAssets.key(s.def)),support:supportFleet.map(s=>s.def.model),shore:shoreTargets.length}));
+   if(ac==='submarine')assert.equal(fleet.targets.filter(s=>s==='submarine').length,2);
+   if(ac==='convoy')assert.deepEqual(fleet.support.sort(),['fletcher','landing','liberty']);
+   if(ac==='coastal')assert(fleet.shore>0);
    await page.evaluate(()=>{clock.getDelta=()=>.05;animateFrame();});
    const initial=await page.evaluate(()=>({fuel:P.fuel,hull:P.hull,pos:P.pos.toArray(),carrierX,launchTimer}));
    await page.evaluate(()=>{

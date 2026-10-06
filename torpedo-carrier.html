@@ -289,7 +289,7 @@
   .opsLegend{font:11px/1.5 monospace;color:#d7c797;text-align:left;margin-top:5px;}
   #opsStatus{position:fixed;top:calc(env(safe-area-inset-top) + 76px);left:50%;transform:translateX(-50%);color:#edcc80;background:rgba(14,20,18,.78);padding:5px 9px;font:10px monospace;pointer-events:none;z-index:9;max-width:58vw;text-align:center;}
 </style>
-<link rel="stylesheet" href="menu-layout.css?v=171">
+<link rel="stylesheet" href="menu-layout.css?v=172">
 </head>
 <body>
 <div id="app"></div>
@@ -335,7 +335,7 @@
   <div id="flash"></div>
   <div id="ltn" style="position:fixed;inset:0;background:#e6ecff;opacity:0;pointer-events:none;z-index:40;"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 171</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 172</div>
 
   <!-- Optical landing aid -->
   <div id="lso">
@@ -377,7 +377,7 @@
 
 <!-- Menu -->
 <div class="overlay" id="menu" data-campaign="pacific">
-  <div class="menuTop"><a id="selBtn" href="index.html?v=171">&#9664; Change Game</a><span class="menuMeta">PACIFIC OPERATIONS<br>BUILD 171</span></div>
+  <div class="menuTop"><a id="selBtn" href="index.html?v=172">&#9664; Change Game</a><span class="menuMeta">PACIFIC OPERATIONS<br>BUILD 172</span></div>
   <div class="card menuCard">
     <aside class="menuOverview" aria-label="Campaign and pilot options">
     <div class="campaignArt" aria-hidden="true"></div>
@@ -462,6 +462,8 @@
 <script src="game-runtime.js?v=167"></script>
 <script src="terrain-system/AircraftGround.js?v=170"></script>
 <script src="pacific-assets.js?v=157"></script>
+<script src="naval-assets.js?v=172"></script>
+<script src="aircraft-rotors.js?v=172"></script>
 <script src="combat-fx.js?v=167"></script>
 <script src="ordnance.js?v=157"></script>
 <script src="pilot-bailout.js?v=157"></script>
@@ -469,7 +471,7 @@
 <script src="radio-intercept.js?v=157"></script>
 <script src="audio/weapon-sound.js?v=144"></script>
 <script src="audio/flight-atmosphere.js?v=164"></script>
-<script src="sortie-systems.js?v=162"></script>
+<script src="sortie-systems.js?v=172"></script>
 <script src="sortie-features.js?v=163"></script>
 <script src="operation-plans.js?v=162"></script>
 <script>
@@ -622,27 +624,14 @@ let CARRIER_TARGET_DECK_Y = DECK_Y + 0.85;   // 16.85 — the surface the plane 
 let CARRIER_DX = 0, CARRIER_DZ = 0;
 let carrierModel = null, carrierModelLoaded = false;
 
-/* The repository has no valid destroyer GLB. Escort targets reuse its licensed
-   merchant ship model until a real destroyer asset is available. Never render
-   a generated hull in place of a repository ship. */
-const DESTROYER_MODEL_URL = 'merchant_ship.glb?v=2';
-let DEST_TARGET_LEN  = 60;
-let DEST_WATERLINE_Y = -1.0;
-let DEST_YAW = 0;
+/* Distinct uploaded supply ship and Japanese destroyer. */
+const DESTROYER_MODEL_URL = 'assets/ships/samidare.glb?v=172';
+const DEST_TARGET_LEN = 110;
 let destroyerTemplate = null;
-
-/* ---- Merchant ship model : replaces the built-in "freighter" type -----------
-   3D model: "Merchant-Ship" by Ronald_Reagan
-   (https://sketchfab.com/3d-models/merchant-ship-c45b1fa4090a44bca0318091f7fb4476)
-   licensed CC-BY-4.0. Drop merchant_ship.glb next to this HTML. Every mission
-   freighter uses it; hit radius, flak and sinking are unchanged.
-   Tuning: FRT_TARGET_LEN (length + hit radius), FRT_WATERLINE_Y (draft),
-   FRT_YAW (add Math.PI to flip). Falls back to the built-in freighter if missing. */
-const FREIGHTER_MODEL_URL = 'merchant_ship.glb?v=2';
-let FRT_TARGET_LEN  = 72;
-let FRT_WATERLINE_Y = -1.0;
-let FRT_YAW = 0;
+const FREIGHTER_MODEL_URL = 'assets/ships/japanese-cargo.glb?v=172';
+const FRT_TARGET_LEN = 132;
 let freighterTemplate = null;
+let supportFleet = [];
 
 /* ---- Capital ship model (IJN Zuihō light carrier) : replaces the "cruiser" type
    Uses the same canonical licensed carrier asset as the defence sortie. It appears as
@@ -746,7 +735,7 @@ const MISSIONS = [
     targets:[ {type:"freighter", pos:[ -200,0,3600], hp:1},
               {type:"destroyer", pos:[ 250,0,3200], hp:1, flak:true} ] },
   { title:"Sortie 3", sub:"Capital Ship",
-    body:"A heavy <b>cruiser</b> with two destroyers and a <b>pair of Zeros</b> flying top cover. The cruiser needs <b>two hits</b> to go down. Heavy flak. You carry <b>3 torpedoes</b> — spend them well, then bring yourself home.",
+    body:"A Japanese <b>light carrier</b> with two destroyers and a <b>pair of Zeros</b> flying top cover. The carrier needs <b>two hits</b> to go down. Heavy flak. You carry <b>3 torpedoes</b> — spend them well, then bring yourself home.",
     torps:3, fuel:100, zeros:2,
     targets:[ {type:"cruiser",   pos:[ 0,0,4000], hp:2},
               {type:"destroyer", pos:[ -500,0,3500], hp:1, flak:true},
@@ -760,7 +749,7 @@ const MISSIONS = [
               {type:"destroyer", pos:[ 640,0,3600], hp:1, flak:true} ],
     reinforcement:{targets:[{type:"freighter",pos:[2000,0,4600],hp:1}],zeros:1} },
   { title:"Sortie 5", sub:"Night Strike", time:'night', sea:1.8, weather:'haze',
-    body:"A <b>night torpedo attack</b> on a cruiser running dark, one destroyer in company. Low light, heavy flak — the meatball brings you home. The cruiser needs <b>two hits</b>. <b>3 torpedoes</b>.",
+    body:"A <b>night torpedo attack</b> on a light carrier running dark, one destroyer in company. Low light, heavy flak — the meatball brings you home. The carrier needs <b>two hits</b>. <b>3 torpedoes</b>.",
     torps:3, fuel:100, zeros:0,
     targets:[ {type:"cruiser",   pos:[ 0,0,4200], hp:2},
               {type:"destroyer", pos:[ -420,0,3600], hp:1, flak:true} ] },
@@ -770,7 +759,7 @@ const MISSIONS = [
     targets:[] },
 
   { title:"Sortie 7", sub:"Dusk Convoy", time:'night', sea:1.6, weather:'rain',
-    body:"Last light. A <b>cruiser</b> and a heavy escort are slipping through the strait. Two <b>Zeros</b> are already up — your tail gunner earns his pay tonight. The cruiser takes <b>two hits</b>. <b>3 torpedoes</b>, and the deck will be dark when you come home.",
+    body:"Last light. A <b>light carrier</b> and a heavy escort are slipping through the strait. Two <b>Zeros</b> are already up — your tail gunner earns his pay tonight. The carrier takes <b>two hits</b>. <b>3 torpedoes</b>, and the deck will be dark when you come home.",
     torps:3, fuel:100, zeros:2,
     targets:[ {type:"cruiser",   pos:[ 120,0,4400], hp:2},
               {type:"destroyer", pos:[-480,0,3700], hp:1, flak:true},
@@ -798,8 +787,8 @@ const MISSIONS = [
               {type:"destroyer", pos:[  40,0,3300], hp:1, flak:true} ] },
 
   { title:"Sortie 9", sub:"Break Their Back", sbd:true, loadout:'divebomb',
-    body:"The one that matters. A <b>cruiser</b> under two destroyers of cover, and a pair of <b>Zeros</b> on patrol. "
-        +"The cruiser needs <b>two hits</b> — that means two clean dives through the flak, with your rear gunner "
+    body:"The one that matters. A <b>light carrier</b> under two destroyers of cover, and a pair of <b>Zeros</b> on patrol. "
+        +"The carrier needs <b>two hits</b> — that means two clean dives through the flak, with your rear gunner "
         +"earning every cent. <b>3 bombs</b>. This is what Dauntless crews did at Midway.",
     torps:3, fuel:100, zeros:2,
     targets:[ {type:"cruiser",   pos:[  60,0,4300], hp:2},
@@ -827,6 +816,32 @@ const MISSIONS = [
     torps:4, fuel:100, zeros:1,
     targets:[{type:"freighter",pos:[3450,0,160],hp:1},
              {type:"destroyer",pos:[2900,0,-50],hp:1,flak:true}] },
+  { title:"Sortie 13", sub:"Submarine Sweep", sbd:true, loadout:'divebomb', weather:'haze',
+    body:"<b>SBD Dauntless — submarine patrol.</b> Two surfaced Ko-hyoteki boats are heading toward the fleet. "
+      +"Search low over the patrol sector, identify both narrow hulls, then climb for a controlled bombing pass. "
+      +"<b>4 bombs</b>; both submarines must be sunk. A Samidare escort is optional. These boats stay surfaced in this fictional sortie. Return to the carrier.",
+    torps:4,fuel:100,zeros:0,
+    targets:[{type:"freighter",model:'submarine',pos:[-650,0,2900],hp:1,speed:2.2,heading:.35},
+      {type:"freighter",model:'submarine',pos:[700,0,3900],hp:1,speed:2.2,heading:-.2},
+      {type:"destroyer",pos:[1450,0,3500],hp:1,flak:true,heading:.15}] },
+  { title:"Sortie 14", sub:"Cover the Landing", sbd:true, loadout:'divebomb', weather:'broken',
+    body:"<b>SBD Dauntless — convoy cover.</b> A Liberty transport and an LST are steaming toward the landing area under Fletcher escort. "
+      +"A Japanese supply ship and a surfaced submarine threaten the route; sink <b>both hostile contacts</b>. "
+      +"The Samidare destroyer is optional. <b>4 bombs</b>, one Zero patrol. "
+      +"The allied convoy appears in <b>blue</b> on the briefing and radar. Then recover aboard. Fictional open-sea support sortie.",
+    torps:4,fuel:100,zeros:1,
+    targets:[{type:"freighter",pos:[750,0,4200],hp:1,heading:-.2},
+      {type:"freighter",model:'submarine',pos:[-1000,0,4700],hp:1,speed:2.2,heading:.3},
+      {type:"destroyer",pos:[1250,0,3650],hp:1,flak:true,heading:-.2}],
+    support:[{model:'liberty',pos:[-700,0,2100],heading:0},
+      {model:'landing',pos:[-1150,0,1850],heading:0},
+      {model:'fletcher',pos:[-200,0,2450],heading:0,speed:2.4}] },
+  { title:"Sortie 15", sub:"Corsair · Fleet Strike", sbd:true,corsair:true,loadout:'divebomb',weather:'clear',
+    body:"<b>F4U-1C Corsair — fighter-bomber.</b> Four wing cannon, two bombs and fighter handling. Attack the supply ship, suppress its Samidare escort, then recover aboard. Two Zeros patrol the convoy. Your Corsair wingmen join after takeoff.",
+    torps:2,fuel:100,zeros:2,targets:[{type:'freighter',pos:[-200,0,3800],hp:1},{type:'destroyer',pos:[350,0,3300],hp:1,flak:true}] },
+  { title:"Sortie 16", sub:"Corsair · Coastal Assault", sbd:true,corsair:true,okinawa:true,shoreStrike:true,loadout:'divebomb',weather:'broken',
+    body:"<b>F4U-1C Corsair — sea to shore.</b> Strike the airfield installations with cannon and bombs, sink the offshore supply ship, and defeat the intercepting Zero patrol. Four bombs; return to the carrier after all primary targets are destroyed.",
+    torps:4,fuel:100,zeros:1,targets:[{type:'freighter',pos:[3450,0,160],hp:1},{type:'destroyer',pos:[2900,0,-50],hp:1,flak:true}] },
   { title:"Okinawa", sub:"Okinawa Coast · Free Flight", free:true, okinawa:true,
     body:"Fly the Avenger from the carrier toward the Yomitan coast. The 16 × 16 km landscape uses geographic elevation and shoreline data. Houses, reefs and vegetation are illustrative. No enemy, timer or score; land aboard to fly again.<br><br>Head east from the bow to reach the coast. The mapped area ends inland; this is a scenery flight, not a historical mission.",
     torps:0, fuel:100, zeros:0, targets:[] },
@@ -883,14 +898,17 @@ const pacificModelTasks=new Map();
 async function preparePacificModels(m,progress=()=>{}){
   const needed=[['carrier',m.defend?loadIJNCarrierModel:loadCarrierModel,
     ()=>m.defend?ijnCarrierModel:carrierModel]];
-  if(m.sbd)needed.push(['sbd',loadSBDModel,()=>sbdTemplate]);
+  if(m.corsair)needed.push(['corsair',loadCorsairModel,()=>corsairTemplate]);
+  else if(m.sbd)needed.push(['sbd',loadSBDModel,()=>sbdTemplate]);
   if(!m.sbd||m.defend)needed.push(['avenger',loadPlaneModel,()=>gltfRoot&&propPivot]);
   const targets=[...(m.targets||[]),...(m.reinforcement?.targets||[])];
   if(m.defend||m.zeros||m.shoreStrike||!m.free&&!m.qual)
     needed.push(['zero',loadZeroModel,()=>zeroTemplate]);
-  if(targets.some(t=>t.type==='destroyer'))needed.push(['escort',loadDestroyerModel,()=>destroyerTemplate]);
-  if(targets.some(t=>t.type==='freighter'))needed.push(['freighter',loadFreighterModel,()=>freighterTemplate]);
+  if(targets.some(t=>t.type==='destroyer'&&!t.model))needed.push(['escort',loadDestroyerModel,()=>destroyerTemplate]);
+  if(targets.some(t=>t.type==='freighter'&&!t.model))needed.push(['freighter',loadFreighterModel,()=>freighterTemplate]);
   if(targets.some(t=>t.type==='cruiser'))needed.push(['capital',loadCruiserModel,()=>cruiserTemplate]);
+  for(const name of new Set([...targets,...(m.support||[])].filter(t=>t.model).map(t=>t.model)))
+    needed.push(['ship:'+name,()=>NavalAssets.load(name),()=>NavalAssets.get(name)]);
   // Serial decoding avoids overlapping large embedded-image allocations on iPad.
   // Briefing/Start Engine is reached only once the selected sortie is ready.
   for(let i=0;i<needed.length;i++){
@@ -1998,7 +2016,7 @@ function updatePacificOperation(dt){
  if(el)el.textContent=FlightOps.wx(weather).label.toUpperCase()+' · '+(P.rtb&&!pacificOps.failed?'RECOVERY':pacificOps.status());
 }
 function drawPacificBrief(m){
- const targets=m.targets.map(s=>({x:s.pos[0],z:s.pos[2],label:s.type==='destroyer'?'Armed escort':s.type==='cruiser'?'Capital ship':'Supply ship',optional:s.type==='destroyer'}));
+ const targets=m.targets.map(s=>({x:s.pos[0],z:s.pos[2],label:s.model?NavalAssets.specs[s.model].name:s.type==='destroyer'?'Samidare escort':s.type==='cruiser'?'Light carrier':'Japanese supply ship',optional:s.type==='destroyer'}));
  if(m.reinforcement)for(const s of m.reinforcement.targets)targets.push({x:s.pos[0],z:s.pos[2],label:'Second contact: '+s.type,optional:s.type==='destroyer'});
  if(m.shoreStrike)targets.push(...COASTAL_STRIKE);
  if(m.defend)targets.push({x:2200,z:2400,label:'Raider approach sector'});
@@ -2075,6 +2093,7 @@ function startMission(idx){
   torpedoes.forEach(t=>GameRuntime.release(t.mesh)); torpedoes=[];
   tracers.forEach(t=>GameRuntime.release(t.mesh)); tracers=[];
   ships.forEach(s=>GameRuntime.release(s.group)); ships=[];
+  supportFleet.forEach(s=>GameRuntime.release(s.group));supportFleet=[];
   wakeParts.forEach(w=>{ w.m.visible=false; wakePool.push(w.m); }); wakeParts=[];
   bombs.forEach(b=>GameRuntime.release(b.mesh)); bombs=[];
   bullets.forEach(b=>GameRuntime.release(b.mesh)); bullets=[];
@@ -2084,6 +2103,11 @@ function startMission(idx){
 
   // spawn ships
   m.targets.forEach(t=>spawnShip(t));
+  for(const def of m.support||[]){
+    const template=NavalAssets.get(def.model),group=new THREE.Group();group.add(template.clone(true));
+    group.position.set(def.pos[0],0,def.pos[2]);group.rotation.y=def.heading??0;scene.add(group);
+    supportFleet.push({def,group,length:template.userData.naval.length,wakeT:0});
+  }
   resetShoreTargets(!!m.shoreStrike);
   // spawn enemy fighters
   const nz=m.zeros||0;
@@ -2136,15 +2160,16 @@ function startMission(idx){
         window.__avStash.push(o); planeGroup.remove(o);
       });
     }
-    if(playerSBD && sbdTemplate && !playerSBD.userData.fromTemplate){
+    if(playerSBD && (!playerSBD.userData.fromTemplate||playerSBD.userData.corsair!==!!m.corsair)){
+      if(sbdRotor?.parent)sbdRotor.parent.remove(sbdRotor);sbdRotor=null;sbdRotorAxis=null;
       planeGroup.remove(playerSBD); playerSBD=null; sbdRotor=null; sbdRotorAxis=null;
     }
-    if(!playerSBD && sbdTemplate){
+    if(!playerSBD && strikeTemplate()){
       playerSBD=new THREE.Group();
-      const inner=sbdTemplate.clone(true);
+      const inner=strikeTemplate().clone(true);
       inner.rotation.y+=Math.PI;              // template noses +Z; the plane group flies -Z
       playerSBD.add(inner);
-      playerSBD.userData.fromTemplate=true;
+      playerSBD.userData.fromTemplate=true;playerSBD.userData.corsair=!!MISSIONS[mission]?.corsair;
       sbdFlapL=inner.getObjectByName('sbdFlapL');sbdFlapR=inner.getObjectByName('sbdFlapR');
       sbdDiveFlapL=inner.getObjectByName('sbdDiveL');sbdDiveFlapR=inner.getObjectByName('sbdDiveR');
       sbdHookMesh=inner.getObjectByName('sbdHook');
@@ -2190,13 +2215,24 @@ function startMission(idx){
 }
 
 function spawnShip(def){
+  // Optional mission-specific hull (surfaced submarine, etc.).
+  if(def.model){
+    const template=NavalAssets.get(def.model);
+    if(!template)throw Error('Ship not prepared: '+def.model);
+    const g=new THREE.Group();g.add(template.clone(true));
+    g.position.set(def.pos[0],0,def.pos[2]);g.rotation.y=def.heading??0;
+    scene.add(g);
+    ships.push({def,group:g,hp:def.hp,alive:true,flak:!!def.flak,
+      radius:template.userData.naval.length*.55,flakTimer:Math.random()*2,sinkT:0,usedFallback:false});
+    return;
+  }
   // Every visible target is a clone of an existing repository GLB.
   if(def.type==="destroyer" && destroyerTemplate){
     const g=new THREE.Group();
     g.add(destroyerTemplate.clone(true));
     g.traverse(function(o){ if(o.isMesh){ o.castShadow=true; o.receiveShadow=true; } });
     g.position.set(def.pos[0],0,def.pos[2]);
-    g.rotation.y=Math.random()*Math.PI*2;
+    g.rotation.y=def.heading??.15;
     scene.add(g);
     ships.push({def:def, group:g, hp:def.hp, alive:true, flak:!!def.flak,
       radius:DEST_TARGET_LEN*0.55, flakTimer:Math.random()*2, sinkT:0, usedFallback:false});
@@ -2207,7 +2243,7 @@ function spawnShip(def){
     g.add(freighterTemplate.clone(true));
     g.traverse(function(o){ if(o.isMesh){ o.castShadow=true; o.receiveShadow=true; } });
     g.position.set(def.pos[0],0,def.pos[2]);
-    g.rotation.y=Math.random()*Math.PI*2;
+    g.rotation.y=def.heading??.15;
     scene.add(g);
     ships.push({def:def, group:g, hp:def.hp, alive:true, flak:!!def.flak,
       radius:FRT_TARGET_LEN*0.55, flakTimer:Math.random()*2, sinkT:0, usedFallback:false});
@@ -2218,7 +2254,7 @@ function spawnShip(def){
     g.add(cruiserTemplate.clone(true));
     g.traverse(function(o){ if(o.isMesh){ o.castShadow=true; o.receiveShadow=true; } });
     g.position.set(def.pos[0],0,def.pos[2]);
-    g.rotation.y=Math.random()*Math.PI*2;
+    g.rotation.y=def.heading??.15;
     scene.add(g);
     ships.push({def:def, group:g, hp:def.hp, alive:true, flak:!!def.flak,
       radius:CRU_TARGET_LEN*0.55, flakTimer:Math.random()*2, sinkT:0, usedFallback:false});
@@ -2228,7 +2264,7 @@ function spawnShip(def){
   // It stays invisible until upgradeShipsToTemplate installs the repository model.
   const g=new THREE.Group();
   g.position.set(def.pos[0],0,def.pos[2]);
-  g.rotation.y=Math.random()*Math.PI*2;
+  g.rotation.y=def.heading??.15;
   scene.add(g);
   const radius=def.type==='freighter'?FRT_TARGET_LEN*.55:
     def.type==='destroyer'?DEST_TARGET_LEN*.55:CRU_TARGET_LEN*.55;
@@ -2603,7 +2639,8 @@ function updateSplashes(dt){
 
 // flak
 const SBD_MODEL_URL       = 'sbd%20dauntless.glb?v=2';
-let sbdTemplate=null, playerSBD=null, sbdRotor=null, sbdRotorAxis=null;
+let sbdTemplate=null, playerSBD=null, sbdRotor=null, sbdRotorAxis=null,corsairTemplate=null;
+function strikeTemplate(){return MISSIONS[mission]?.corsair?corsairTemplate:sbdTemplate;}
 const ZERO_MODEL_URL='zero.glb?v=2';  // external A6M model (nose +Z)
 let zeroTemplate=null;
 // The SBD GLB has no articulated undercarriage, and the Avenger gear is
@@ -2632,6 +2669,31 @@ function makeSBDGear(){
 function setSBDGearVisible(aircraft,down){
   const gear=aircraft&&aircraft.getObjectByName('sbdGear');
   if(gear)gear.visible=!!down;
+}
+async function loadCorsairModel(){
+ return PacificAssets.loader().load('f4u-1c_corsair_war_thunder.glb?v=172',gltf=>{
+  const source=gltf.scene,holder=new THREE.Group();holder.add(source);source.updateMatrixWorld(true);
+  const width=new THREE.Box3().setFromObject(holder).getSize(new THREE.Vector3()).x;
+  source.scale.setScalar(12.49/width);holder.updateMatrixWorld(true);
+  source.position.copy(new THREE.Box3().setFromObject(holder).getCenter(new THREE.Vector3())).negate();holder.updateMatrixWorld(true);
+  const rotor=AircraftRotors.nose(holder,'corsair');if(!rotor)throw Error('Corsair original propeller could not be rigged');
+  rotor.name='sbdRotorBlade';rotor.userData.spinAxis='z';
+  // Dense concealed engine internals are not needed behind the intact cowling.
+  for(const name of ['Object_5','Object_7']){const internal=holder.getObjectByName(name);if(internal)internal.parent.remove(internal);}
+  const skinAt=(x,z)=>{const ray=new THREE.Raycaster(new THREE.Vector3(x,-6,z),new THREE.Vector3(0,1,0));const hit=ray.intersectObject(source,true)[0];if(!hit)throw Error('Corsair wheel root misses skin');return hit.point.y;};
+  const gear=new THREE.Group();gear.name='sbdGear';
+  const tyre=new THREE.MeshLambertMaterial({color:0x151716}),metal=new THREE.MeshStandardMaterial({color:0x878d88,metalness:.4,roughness:.6});
+  for(const side of [-1,1]){
+   const rootY=skinAt(side*2.05,1.68);
+   const leg=new THREE.Mesh(new THREE.CylinderGeometry(.095,.08,1.1,8),metal);leg.position.set(side*2.05,rootY-.55,1.68);gear.add(leg);
+   const wheel=new THREE.Mesh(new THREE.CylinderGeometry(.39,.39,.19,14),tyre);wheel.rotation.z=Math.PI/2;wheel.position.set(side*2.05,rootY-1.1,1.68);wheel.userData.groundWheel=true;gear.add(wheel);
+  }
+  const tailRoot=skinAt(0,-4.36);
+  const tailLeg=new THREE.Mesh(new THREE.CylinderGeometry(.055,.055,.36,8),metal);tailLeg.position.set(0,tailRoot-.18,-4.36);gear.add(tailLeg);
+  const tail=new THREE.Mesh(new THREE.CylinderGeometry(.17,.17,.12,12),tyre);tail.rotation.z=Math.PI/2;tail.position.set(0,tailRoot-.36,-4.36);tail.userData.groundWheel=true;gear.add(tail);holder.add(gear);
+  const hook=new THREE.Mesh(new THREE.CylinderGeometry(.045,.045,1.5,8),metal);hook.rotation.x=-.9;hook.position.set(0,-1.1,-3.8);hook.name='sbdHook';holder.add(hook);
+  corsairTemplate=holder;
+ });
 }
 function loadSBDModel(){
   if(!SBD_MODEL_URL || typeof THREE.GLTFLoader==='undefined') return;
@@ -3140,6 +3202,8 @@ function updateFlight(dt){
   // the TBM Avenger is an 8-tonne torpedo bomber and must feel like one.
   const AC = isDefend()
     ? { roll:1.45, pitch:1.30, turn:1.30, gLim:7.0, name:'zero'   }   // Zero: light, quick, tight turns
+    : MISSIONS[mission]?.corsair
+    ? {roll:1.35,pitch:1.20,turn:1.18,gLim:7.0,name:'corsair'}
     : isSBD()
     ? { roll:1.00, pitch:1.05, turn:1.00, gLim:5.5, name:'sbd'    }   // Dauntless: nimble for a bomber
     : { roll:0.72, pitch:0.78, turn:0.80, gLim:3.5, name:'avenger'};  // Avenger: heavy, slow to answer
@@ -3235,7 +3299,7 @@ function updateFlight(dt){
 
   // speed toward throttle target (engine loses power when damaged), minus drag
   const engineMul = (P.hull<60? (0.45+0.55*P.hull/60) : 1.0)*SortieFeatures.Damage.power(P);
-  const tgt = (THR_MIN_SPD + (MAX_SPD-THR_MIN_SPD)*P.throttle)*engineMul;
+  const tgt = (THR_MIN_SPD + ((MISSIONS[mission]?.corsair?145:MAX_SPD)-THR_MIN_SPD)*P.throttle)*engineMul;
   let eff = tgt - Math.sin(P.pitch)*55 - P.flap*9 - P.gear*4 - (P.diveBrake?34:0);
   P.spd += (eff - P.spd)*Math.min(1,0.6*dt);
   P.spd = Math.max(0,P.spd);
@@ -3512,6 +3576,7 @@ let raiders=[], etorps=[], playerZero=null, carrierHP=100;
 function isDefend(){ const m=MISSIONS[mission]; return !!(m&&m.defend); }
 function isQual(){ const m=MISSIONS[mission]; return !!(m&&m.qual); }
 function isFree(){ const m=MISSIONS[mission]; return !!(m&&m.free); }
+function isCorsair(){return !!MISSIONS[mission]?.corsair;}
 function isSBD(){ const m=MISSIONS[mission]; return !!(m&&m.sbd); }
 // Short badge for a mission that matches its real title (not the array index, which counts
 // Free Flight + Qual and so ran two ahead of the "Sortie N" the briefing shows).
@@ -3995,12 +4060,12 @@ function makeWingmanModel(tmpl,isAvenger){
 function spawnWingman(i){
   const mesh=new THREE.Group();
   const sbd = isSBD();                       // dive-bomb sorties get Dauntless wingmen
-  let inner=null, tmpl = sbd? (sbdTemplate||gltfRoot) : (gltfRoot||sbdTemplate);
+  let inner=null, tmpl = sbd? ((typeof strikeTemplate==='function'?strikeTemplate():sbdTemplate)||gltfRoot) : (gltfRoot||sbdTemplate);
   if(tmpl) inner=makeWingmanModel(tmpl,tmpl===gltfRoot); else if(planeBody) inner=planeBody.clone(true);
   if(inner){
     // Avenger clone noses -Z and needs the +π flip to face the group's +Z; the SBD template
     // already noses +Z, so it needs none. (Getting this wrong flies them tail-first.)
-    if(!(sbd && sbdTemplate)) inner.rotation.y+=Math.PI;
+    if(!(sbd && tmpl!==gltfRoot)) inner.rotation.y+=Math.PI;
     if(sbd)setSBDGearVisible(inner,false);
     // Wingmen fly gear-UP once airborne — hide the same gear meshes we blank on the raiders.
     if(!sbd){
@@ -4770,7 +4835,7 @@ function loadPlaneModel(){
       }
       window.__eyeDbg='EYE '+COCKPIT_EYE.map(v=>v.toFixed(2)).join('/');
       const btEl=document.getElementById('buildTag');
-      if(btEl) btEl.textContent='BUILD 171 · '+window.__eyeDbg;
+      if(btEl) btEl.textContent='BUILD 172 · '+window.__eyeDbg;
       let seat=null;
       model.traverse(function(o){
         if(!o.isMesh||!o.material) return;
@@ -4871,53 +4936,10 @@ function loadIJNCarrierModel(){
 }
 
 function loadDestroyerModel(){
-  if(!DESTROYER_MODEL_URL || typeof THREE.GLTFLoader==='undefined') return;
-  let loader; try{ loader=PacificAssets.loader(); }catch(e){ return; }
-  return loader.load(DESTROYER_MODEL_URL, function(gltf){
-    try{
-      const model=gltf.scene||(gltf.scenes&&gltf.scenes[0]);
-      if(!model) return;
-      const box=new THREE.Box3().setFromObject(model);
-      const size=new THREE.Vector3(); box.getSize(size);
-      const ctr=new THREE.Vector3();  box.getCenter(ctr);
-      const scale=DEST_TARGET_LEN/(Math.max(size.x,size.z)||1);
-      // centre on X/Z, and lift so the designed waterline sits on the sea (y=0)
-      model.position.set(-ctr.x, -DEST_WATERLINE_Y, -ctr.z);
-      model.traverse(function(o){ if(o.isMesh){ o.castShadow=true; o.receiveShadow=true; o.frustumCulled=false; } });
-      const tmpl=new THREE.Group();
-      tmpl.add(model);
-      tmpl.scale.setScalar(scale);
-      tmpl.rotation.y=DEST_YAW;
-      destroyerTemplate=tmpl;                          // spawnShip() clones this per destroyer
-      upgradeShipsToTemplate('destroyer', tmpl);       // any already-spawned waiting ships appear
-      console.log('Escort repository model loaded:', DESTROYER_MODEL_URL);
-    }catch(e){ console.warn('Escort GLB post-process failed', e); }
-  }, undefined, function(){ console.warn('No destroyer model at "'+DESTROYER_MODEL_URL+'" — repository ship remains invisible.'); });
+  return NavalAssets.load('samidare').then(t=>{destroyerTemplate=t;upgradeShipsToTemplate('destroyer',t);});
 }
-
 function loadFreighterModel(){
-  if(!FREIGHTER_MODEL_URL || typeof THREE.GLTFLoader==='undefined') return;
-  let loader; try{ loader=PacificAssets.loader(); }catch(e){ return; }
-  return loader.load(FREIGHTER_MODEL_URL, function(gltf){
-    try{
-      const model=gltf.scene||(gltf.scenes&&gltf.scenes[0]);
-      if(!model) return;
-      const box=new THREE.Box3().setFromObject(model);
-      const size=new THREE.Vector3(); box.getSize(size);
-      const ctr=new THREE.Vector3();  box.getCenter(ctr);
-      const lenH=Math.max(size.x,size.z)||1;           // longest horizontal axis
-      const scale=FRT_TARGET_LEN/lenH;
-      model.position.set(-ctr.x, -FRT_WATERLINE_Y, -ctr.z);
-      model.traverse(function(o){ if(o.isMesh){ o.castShadow=true; o.receiveShadow=true; o.frustumCulled=false; } });
-      const tmpl=new THREE.Group();
-      tmpl.add(model);
-      tmpl.scale.setScalar(scale);
-      tmpl.rotation.y=FRT_YAW;
-      freighterTemplate=tmpl;
-      upgradeShipsToTemplate('freighter', tmpl);
-      console.log('Freighter model loaded:', FREIGHTER_MODEL_URL);
-    }catch(e){ console.warn('Freighter GLB post-process failed', e); }
-  }, undefined, function(){ console.warn('No freighter model at "'+FREIGHTER_MODEL_URL+'" — repository ship remains invisible.'); });
+  return NavalAssets.load('cargo').then(t=>{freighterTemplate=t;upgradeShipsToTemplate('freighter',t);});
 }
 
 function loadCruiserModel(){
@@ -4946,7 +4968,7 @@ function loadCruiserModel(){
 function pacificGunMuzzles(){
   // Measured on normalized GLBs: wing leading edges for A6M/TBM, cowling for SBD.
   // Plane-group coordinates: +X starboard, -Z forward.
-  const ports=isDefend()?[[-2.15,-.24,-2.52],[2.15,-.24,-2.52]]:
+  const ports=MISSIONS[mission]?.corsair?[[-2.604,-1.337,-3.533],[-2.813,-1.320,-3.294],[2.604,-1.337,-3.533],[2.813,-1.320,-3.294]]:isDefend()?[[-2.15,-.24,-2.52],[2.15,-.24,-2.52]]:
     isSBD()?[[-.38,.10,-2.17],[.38,.10,-2.17]]:[[-3.5,-.11,-2.59],[3.5,-.11,-2.59]];
   return ports.map(p=>new THREE.Vector3(...p));
 }
@@ -4999,12 +5021,12 @@ function updatePlaneMesh(dt){
   // ---- SBD: build the aircraft the moment the model arrives ----
   // The 21 MB model loads asynchronously. Creating it only in startMission meant that
   // starting the sortie early left NO aircraft at all (the Avenger rig is already stashed).
-  if(isSBD() && !playerSBD && sbdTemplate){
+  if(isSBD() && !playerSBD && strikeTemplate()){
     playerSBD=new THREE.Group();
-    const inner=sbdTemplate.clone(true);
+    const inner=strikeTemplate().clone(true);
     inner.rotation.y+=Math.PI;                 // template noses +Z; the plane group flies -Z
     playerSBD.add(inner);
-    playerSBD.userData.fromTemplate=true;
+    playerSBD.userData.fromTemplate=true;playerSBD.userData.corsair=!!MISSIONS[mission]?.corsair;
     planeGroup.add(playerSBD);
     // clone(true) keeps names but not references — find THIS aircraft's own flap/dive-brake
     // clones (built once on the shared sbdTemplate, see loadSBDModel). Kept in their own
@@ -5586,7 +5608,7 @@ function sfxGun(){ WeaponSound.fire(actx,out(),'pacific'); }
 function updateGuns(dt){
   gunCool-=dt;
   if(firing && state===ST.FLIGHT && P.alive && P.ammo>0 && gunCool<=0){
-    gunCool=0.07; P.ammo=Math.max(0,P.ammo-2);
+    gunCool=0.07; P.ammo=Math.max(0,P.ammo-(MISSIONS[mission]?.corsair?4:2));
     const nd=noseDir();
     planeGroup.quaternion.copy(pacificAircraftQuaternion());planeGroup.position.copy(P.pos);
     planeGroup.updateMatrixWorld(true);
@@ -5597,7 +5619,7 @@ function updateGuns(dt){
       localPorts.push(mount.worldToLocal(start.clone()));
       // Each weapon has the same 3 dark / 1 lit cadence. A global counter
       // locked every tracer to the left muzzle of a two-gun aircraft.
-      const m=CombatFX.round(isDefend()?'cannon':'rifle',volley);m.userData.roundSide=Math.sign(port.x);
+      const m=CombatFX.round((isDefend()||MISSIONS[mission]?.corsair)?'cannon':'rifle',volley);m.userData.roundSide=Math.sign(port.x);
       m.position.copy(start); m.lookAt(start.clone().add(nd));
       scene.add(m); bullets.push({mesh:m,dir:nd.clone(),life:0.7,speed:650});
     }
@@ -5688,6 +5710,7 @@ function updateMinimap(){
   for(const s of ships){ if(!s.alive) continue; const q=put(s.group.position.x,s.group.position.z);
     if(Math.hypot(q[0]-c,q[1]-c)<R-1){ mmCtx.fillStyle=s.def.type==='destroyer'?'#e0a050':'#c8412a';
       mmCtx.beginPath(); mmCtx.arc(q[0],q[1],3,0,7); mmCtx.fill(); } }
+  for(const s of supportFleet){const q=put(s.group.position.x,s.group.position.z);if(Math.hypot(q[0]-c,q[1]-c)<R-1){mmCtx.fillStyle='#80c9df';mmCtx.fillRect(q[0]-3,q[1]-3,6,6);}}
   for(const t of shoreTargets){if(!t.alive)continue;const q=put(t.def.x,t.def.z);if(Math.hypot(q[0]-c,q[1]-c)<R-2){mmCtx.fillStyle=t.def.optional?'#dba774':'#f06a4b';mmCtx.fillRect(q[0]-3,q[1]-3,6,6);}}
   if(pacificOps?.config.recon&&!pacificOps.reconDone){const r=pacificOps.config.recon,q=put(r.x,r.z);mmCtx.strokeStyle='#80c9df';mmCtx.beginPath();mmCtx.arc(q[0],q[1],r.radius*scale,0,7);mmCtx.stroke();}
   mmCtx.fillStyle='#e8b84b'; mmCtx.beginPath();
@@ -6138,7 +6161,7 @@ function setupUIButtons(){
   if(dbgT2) dbgT2.onclick=()=>{
     dbgOn=!dbgOn; GameRuntime.storage.setItem('dbgOn',dbgOn?'1':'0');
     const db=document.getElementById('dbgBox'); if(db) db.textContent=dbgOn?'✓':'';
-    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 171'; }
+    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 172'; }
   };
   const lu=document.getElementById('lookUp'), ld=document.getElementById('lookDn');
   let _lookT=0;
@@ -6154,7 +6177,7 @@ function setupUIButtons(){
   if(pb) pb.addEventListener('pointerdown',e=>{ e.preventDefault(); togglePause(); });
   const rb=document.getElementById('resumeBtn'); if(rb) rb.onclick=resumeGame;
   const mb=document.getElementById('menuBtn'); if(mb) mb.onclick=exitToMenu;
-  document.getElementById('pauseMainMenu').onclick=()=>{exitToMenu();window.location.href='index.html?v=171';};
+  document.getElementById('pauseMainMenu').onclick=()=>{exitToMenu();window.location.href='index.html?v=172';};
   document.getElementById('resultBtn').onclick=()=>{
     // the logbook borrows this screen from the menu — send the player straight back
     if(logbookOpen){ logbookOpen=false; showOverlay('menu'); return; }
@@ -6215,7 +6238,7 @@ function applyLoadoutUI(){
   const div = loadout==='divebomb';
   const tl=document.getElementById('torpLbl'); if(tl) tl.textContent=div?'BOMBS':'TORPEDOES';
   const db=document.getElementById('dropBtn'); if(db) db.innerHTML=div?'DROP<br>BOMB':'DROP<br>TORPEDO';
-  const dv=document.getElementById('diveBtn'); if(dv) dv.style.display=div?'flex':'none';
+  const dv=document.getElementById('diveBtn'); if(dv) dv.style.display=div&&!MISSIONS[mission]?.corsair?'flex':'none';
 }
 function resetControlUI(){
   const g=document.getElementById('gearBtn'); if(g){g.classList.add('on'); g.innerHTML='GEAR<br>▼ DN';}
@@ -6271,6 +6294,15 @@ function updatePacificAtmosphere(dt){
   }
 }
 function updateShips(dt){
+  // Allied transports are separate from hostile targets: no friendly AA,
+  // target arrows, wingman attacks or accidental completion requirements.
+  for(const s of supportFleet){
+    const heading=s.group.rotation.y,speed=s.def.speed??2.4;
+    s.group.position.x+=Math.sin(heading)*speed*dt;s.group.position.z+=Math.cos(heading)*speed*dt;
+    s.group.position.y=seaHeightAt(s.group.position.x,s.group.position.z,seaUniforms.uTime.value);
+    s.wakeT-=dt;if(s.wakeT<=0){s.wakeT=.35;spawnWake(s.group.position.x-Math.sin(heading)*s.length*.5,
+      s.group.position.z-Math.cos(heading)*s.length*.5,s.length*.45);}
+  }
   for(const s of ships){
     if(!s.alive){
       if(s.sinkT!==undefined){
@@ -6300,7 +6332,7 @@ function updateShips(dt){
     } else {
       // steam forward (bow-first), bob gently on the swell
       if(s.speed===undefined){
-        s.speed=(s.def.type==='freighter'?4.5:s.def.type==='cruiser'?5.5:7.0)+Math.random()*1.5;
+        s.speed=s.def.speed??((s.def.model==='submarine'?2.2:s.def.type==='freighter'?4.5:s.def.type==='cruiser'?5.5:7.0)+Math.random()*1.5);
         s.fwd=new THREE.Vector3(0,0,1); // every loaded ship's longitudinal axis is Z
         s.wakeT=0;
       }
@@ -6361,7 +6393,7 @@ function updateShips(dt){
       // funnel haze, drifting off the stern
       if(s.smokeT===undefined) s.smokeT=Math.random();
       s.smokeT-=dt;
-      if(s.smokeT<=0){ s.smokeT=0.4+Math.random()*0.3;
+      if(s.smokeT<=0 && s.def.model!=='submarine'){ s.smokeT=0.4+Math.random()*0.3;
         spawnSmoke(s.group.position.x-wf.x*3,13,s.group.position.z-wf.z*3,0x53534e,0.35); }
       // prop wash / wake foam laid on the water behind the ship
       s.wakeT-=dt;
@@ -6385,7 +6417,7 @@ function animate(){
     notice.style.cssText='position:fixed;inset:0;z-index:999998;background:rgba(15,20,15,.95);color:#e8ddbc;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px;text-align:center;font:16px system-ui';
     const title=document.createElement('h2');title.textContent='Simulation interrupted';
     const detail=document.createElement('p');
-    detail.textContent='BUILD 171 · '+(MISSIONS[mission]?.sub||'Menu')+' · '+error.message;
+    detail.textContent='BUILD 172 · '+(MISSIONS[mission]?.sub||'Menu')+' · '+error.message;
     const reload=document.createElement('button');reload.textContent='Reload game';
     reload.style.cssText='padding:12px 24px;font:inherit';reload.onclick=()=>location.reload();
     notice.appendChild(title);notice.appendChild(detail);notice.appendChild(reload);document.body.appendChild(notice);
@@ -6445,7 +6477,7 @@ function animateFrame(){
     // frozen as Avengers. Fall back to whatever's loaded after a few seconds if it never comes.
     if(wingmenPending && P.pos.y>DECK_Y+55){
       wingmenPendingT=(wingmenPendingT||0)+dt;
-      if((isSBD()?sbdTemplate:!!(gltfRoot&&propPivot)) || wingmenPendingT>6){
+      if((isSBD()?strikeTemplate():!!(gltfRoot&&propPivot)) || wingmenPendingT>6){
         wingmenPending=false; wingmen.length=0; spawnWingman(0); spawnWingman(1);
       }
     }

@@ -6,7 +6,7 @@ const THREE=require('three');global.THREE=THREE;global.window=global;global.self
 class ImageStub{constructor(){this.listeners={};this.width=2;this.height=2;}addEventListener(e,f){this.listeners[e]=f;}removeEventListener(){}set src(_){queueMicrotask(()=>this.listeners.load?.call(this));}}
 global.document={createElementNS:()=>new ImageStub()};
 vm.runInThisContext(fs.readFileSync(require.resolve('three/examples/js/loaders/GLTFLoader.js'),'utf8'));
-require('../../game-runtime.js');require('../../combat-fx.js');
+require('../../game-runtime.js');require('../../combat-fx.js');require('../../aircraft-rotors.js');
 const {GameRuntime,CombatFX}=global,root=path.resolve(__dirname,'../..'),html=fs.readFileSync(path.join(root,'torpedo-carrier.html'),'utf8');
 const extract=(from,to)=>html.slice(html.indexOf('function '+from+'('),html.indexOf('\nfunction '+to+'(',html.indexOf('function '+from+'(')+1));
 const gunCode=html.slice(html.indexOf('function updateGuns('),html.indexOf('function updateMinimap('));
@@ -17,10 +17,13 @@ async function glb(file){const b=fs.readFileSync(path.join(root,file));return ne
  const scene=new THREE.Scene(),plane=new THREE.Group();scene.add(plane);
  const fx=CombatFX.create(scene);fx.muzzle(plane,[new THREE.Vector3()]);
  plane.remove(plane.children[0]);assert.doesNotThrow(()=>fx.update(.1));assert.equal(fx.count,0);
- for(const [kind,file] of [['zero','zero.glb'],['sbd','sbd dauntless.glb'],['avenger','grumman tbm avenger.glb']]){
+ for(const [kind,file] of [['zero','zero.glb'],['sbd','sbd dauntless.glb'],['avenger','grumman tbm avenger.glb'],['corsair','f4u-1c_corsair_war_thunder.glb']]){
   const scene=new THREE.Scene(),planeGroup=new THREE.Group(),aircraft=new THREE.Group();
   const model=await glb(file),bb=new THREE.Box3().setFromObject(model),size=bb.getSize(new THREE.Vector3());
-  model.position.sub(bb.getCenter(new THREE.Vector3()));model.scale.setScalar((kind==='zero'?11:kind==='sbd'?12.7:14)/Math.max(size.x,size.y,size.z));
+  if(kind==='corsair'){
+   model.scale.setScalar(12.49/size.x);model.updateMatrixWorld(true);
+   model.position.copy(new THREE.Box3().setFromObject(model).getCenter(new THREE.Vector3())).negate();
+  }else{model.position.sub(bb.getCenter(new THREE.Vector3()));model.scale.setScalar((kind==='zero'?11:kind==='sbd'?12.7:14)/Math.max(size.x,size.y,size.z));}
   const holder=new THREE.Group();holder.add(model);holder.rotation.y=kind==='avenger'?-Math.PI/2:Math.PI;
   aircraft.add(holder);planeGroup.add(aircraft);scene.add(planeGroup);
   // Original model loaded; the propeller is irrelevant to this FX lifecycle
@@ -28,10 +31,10 @@ async function glb(file){const b=fs.readFileSync(path.join(root,file));return ne
   const rotor=new THREE.Group();rotor.name='sbdRotorBlade';aircraft.add(rotor);
   const combatFX=CombatFX.create(scene),P={alive:true,pos:new THREE.Vector3(0,300,0),heading:0,pitch:0,roll:0,throttle:1,gear:0,flap:0,hook:0,torps:2,ammo:5000};
   const ctx=vm.createContext({THREE,GameRuntime,CombatFX,Math,console,P,scene,planeGroup,combatFX,
-   state:3,ST:{FLIGHT:3},firing:true,gunCool:0,bullets:[],ships:[],zeros:[],raiders:[],etorps:[],shoreTargets:[],
-   isDefend:()=>kind==='zero',isSBD:()=>kind==='sbd',loadout:'divebomb',
-   zeroTemplate:null,fitCarrierAircraft(){},playerZero:kind==='zero'?aircraft:null,playerSBD:kind==='sbd'?aircraft:null,
-   sbdRotor:kind==='sbd'?rotor:null,sbdRotorAxis:'z',zeroRotor:null,zeroRotorAxis:null,zeroProp:null,
+   state:3,ST:{FLIGHT:3},MISSIONS:[{corsair:kind==='corsair'}],mission:0,firing:true,gunCool:0,bullets:[],ships:[],zeros:[],raiders:[],etorps:[],shoreTargets:[],
+   isDefend:()=>kind==='zero',isSBD:()=>kind==='sbd'||kind==='corsair',loadout:'divebomb',
+   zeroTemplate:null,fitCarrierAircraft(){},playerZero:kind==='zero'?aircraft:null,playerSBD:kind==='sbd'||kind==='corsair'?aircraft:null,
+   sbdRotor:kind==='sbd'||kind==='corsair'?rotor:null,sbdRotorAxis:'z',zeroRotor:null,zeroRotorAxis:null,zeroProp:null,
    planeModelLoaded:kind==='avenger',gltfRoot:kind==='avenger'?aircraft:null,propSpinner:null,propPivot:null,
    gearMesh:[],gearDoors:[],gearWellCovers:[],ordTorp:null,ordBombs:null,planeBody:null,planeGear:null,
    cockpitLight:null,cockpitInterior:null,flapL:null,flapR:null,diveFlapL:null,diveFlapR:null,
@@ -66,7 +69,7 @@ async function glb(file){const b=fs.readFileSync(path.join(root,file));return ne
    assert(ctx.bullets.every(b=>new THREE.Vector3(0,0,1).applyQuaternion(b.mesh.quaternion).dot(b.dir)>.99999),'rounds follow their actual velocity while banking and pitching');
    const litSides=new Set(ctx.bullets.filter(b=>b.mesh.userData.litTracer).map(b=>b.mesh.userData.roundSide));
    if(litSides.size)assert(litSides.has(-1)&&litSides.has(1),'actual '+kind+' firing must show tracers on both sides');
-   assert(ctx.bullets.length<30,'live tracers stay bounded during sustained fire');
+   assert(ctx.bullets.length<ports.length*15,'live tracers stay bounded per gun during sustained fire');
    assert(combatFX.count<40,'muzzle effects expire and recycle during sustained fire');
    assert.equal(ctx.window.__avStash.length,0,'muzzle sprites never enter the discarded-airframe stash');
   }

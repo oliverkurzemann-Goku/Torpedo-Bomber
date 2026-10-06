@@ -7,7 +7,7 @@ function segment(from,to){
  const a=html.indexOf('function '+from+'('),b=html.indexOf('\nfunction '+to+'(',a+1);
  assert.ok(a>0&&b>a,from+' source found');return html.slice(a,b);
 }
-for(const name of ['merchant_ship.glb','ijn carrier.glb','uss_midway.glb']){
+for(const name of ['assets/ships/japanese-cargo.glb','assets/ships/samidare.glb','assets/ships/liberty.glb','assets/ships/landing-ship.glb','assets/ships/fletcher.glb','assets/ships/ko-hyoteki.glb','ijn carrier.glb','uss_midway.glb']){
  const data=fs.readFileSync(path.resolve(__dirname,'../..',name));
  assert.equal(data.toString('ascii',0,4),'glTF',name+' is a real repository GLB');
  assert.equal(data.readUInt32LE(8),data.length);

@@ -140,3 +140,22 @@ no recording or third-party samples and is not presented as an authentic Jumo 00
 recording. A 23.75-second equal-power noise loop has constant playback speed;
 throttle changes the spectrum and level with gradual spool response. The old
 airshow recording is no longer loaded by the game.
+
+
+## Build 172 — uploaded fleet, Corsair and period buildings
+
+The previous `merchant_ship.glb` is retired. Ship exports preserve original geometry and textures, isolate collection members, bake static world transforms and cap embedded texture size at 1024px. Aircraft preserve the original exterior and animate the original rotor. Optional buildings use 512px textures, shared geometry and bounded nearby detail.
+
+- `assets/ships/fletcher.glb`: [Warships - Call of Duty: World At War ᴴᴰ](https://sketchfab.com/3d-models/warships-call-of-duty-world-at-war-hd-49f465e925f84efa91acb58fc515f90d) by Nazar Okruzhko (Назар Окружко) (https://sketchfab.com/Deduska_1947); CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/).
+- `assets/ships/japanese-cargo.glb`: [Warships - Call of Duty: World At War ᴴᴰ](https://sketchfab.com/3d-models/warships-call-of-duty-world-at-war-hd-49f465e925f84efa91acb58fc515f90d) by Nazar Okruzhko (Назар Окружко) (https://sketchfab.com/Deduska_1947); CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/).
+- `assets/ships/ko-hyoteki.glb`: [Type A Ko-hyoteki Japanese Midget Submarine](https://sketchfab.com/3d-models/type-a-ko-hyoteki-japanese-midget-submarine-93cde98a93fd4b2e9820e780e5ec9c91) by Savy (https://sketchfab.com/SavyTheCreator); CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/).
+- `assets/ships/landing-ship.glb`: [Warships - Call of Duty: World At War ᴴᴰ](https://sketchfab.com/3d-models/warships-call-of-duty-world-at-war-hd-49f465e925f84efa91acb58fc515f90d) by Nazar Okruzhko (Назар Окружко) (https://sketchfab.com/Deduska_1947); CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/).
+- `assets/ships/liberty.glb`: [Liberty ship](https://sketchfab.com/3d-models/liberty-ship-a1db8e8414464c5d8b11383e202fcf26) by AlanTinka (https://sketchfab.com/AlanTinka); CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/).
+- `assets/ships/samidare.glb`: [Samidare destroyer](https://sketchfab.com/3d-models/samidare-destroyer-b37939147c854e61857f5b248f9efd29) by everlasting17th (https://sketchfab.com/everlastinggrey); CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/).
+- `assets/buildings/farm-ruin.glb`: [bombed_farm_buildings from FPS creator classic](https://sketchfab.com/3d-models/bombed-farm-buildings-from-fps-creator-classic-2cf04644ad0944e5b5b845680262d269) by Garbage Raccoon (https://sketchfab.com/GarbageRaccoon); CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/).
+- `assets/buildings/hangar.glb`: [t2 hangar](https://sketchfab.com/3d-models/t2-hangar-a059de1574c84b0a8a2a00930782006f) by ElectricLeo (https://sketchfab.com/ElectricLeo); CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/).
+- `assets/buildings/house.glb`: [World War II House 1 - Low Poly](https://sketchfab.com/3d-models/world-war-ii-house-1-low-poly-4b9b73b30c424857b4cf4a72701de115) by BedoyaCamilo (https://sketchfab.com/BedoyaCamilo); CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/).
+- `assets/buildings/town-ruin.glb`: [BUILDING DESTROYED](https://sketchfab.com/3d-models/building-destroyed-ca13adc8bba0480a8bdde834889c5444) by danieljorge435 (https://sketchfab.com/danieljorge435); CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/).
+- `f4u-1c_corsair_war_thunder.glb`: [F4U-1C Corsair (War Thunder)](https://sketchfab.com/3d-models/f4u-1c-corsair-war-thunder-440585ee30bc4b6299b4b1bd8d09e3d8) by KojfDiscord (https://sketchfab.com/KojfDiscord); CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/).
+
+The concrete observation posts are simple original geometry inspired by the supplied bunker/observation-post references. Large warehouse and Carentan files remain available as reference uploads and are not duplicated throughout the terrain.

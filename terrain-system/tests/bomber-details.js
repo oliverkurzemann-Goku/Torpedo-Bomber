@@ -1,7 +1,7 @@
 // Real bomber assets: each shaft spins and MG rounds leave the turret, not the fuselage centre.
 'use strict';
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
-const THREE=require('three');global.THREE=THREE;global.self=global;global.window=global;
+const THREE=require('three');global.THREE=THREE;require('../../aircraft-rotors.js');global.self=global;global.window=global;
 require('../../game-runtime.js');const {GameRuntime}=global;
 class ImageStub{
   constructor(){this.listeners={};this.width=2;this.height=2;}
@@ -57,10 +57,10 @@ function fixedBladeFaces(group,p){
       kind+' rotors must sit at four separate wing engines');
     if(kind==='b17'){
       assert.equal(originalProps.length,4);
-      assert.equal(group.getObjectByName('0_1'),undefined,'B-17 original rigid propeller assembly must be removed');
+      assert(group.getObjectByName('0_1'),'B-17 radial engine detail and cowls remain intact');
       assert(group.getObjectByName('0_0'),'B-17 wing and engine cowls must remain');
-      assert(originalProps.every(p=>fixedBladeFaces(group,p)<5),
-        'B-17 must have no fixed blade faces around any of its four spinning rotors');
+      assert(rotors.every(r=>r.userData.originalRotorFaces>=60&&r.userData.originalRotorFaces<110),
+        'each complete original B-17 rotor is transferred, including sparse blade tips');
       assert(rotors.every(r=>{
       const s=new THREE.Box3().setFromObject(r).getSize(new THREE.Vector3());
       return s.x>2.3&&s.y>2.0;

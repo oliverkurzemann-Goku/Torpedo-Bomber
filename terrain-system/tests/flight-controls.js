@@ -37,7 +37,7 @@ function flightParts(html,pacific,kind){
  const flight=html.indexOf('function updateFlight(dt)');
  const a=html.indexOf(pacific?'  const dmgF = P.hull<60':'  const dmgF = (P.hull < d.hull',flight);
  const b=html.indexOf(pacific?'  // speed toward throttle target':'  // vertical speed:',a);
- const globals={isDefend:()=>kind==='zero',isSBD:()=>kind==='sbd',bankTurnRate,windZ:0};
+ const globals={MISSIONS:[{corsair:kind==='corsair'}],mission:0,isDefend:()=>kind==='zero',isSBD:()=>kind==='sbd',bankTurnRate,windZ:0};
  const attitude=vm.runInNewContext('(function(P,inputRoll,inputPitch,dt,d,stallSpd){const aeroMode=false,steerSign=1;'+html.slice(a,b)+'})',globals);
  const i=html.indexOf('  // integrate\n',flight),j=html.indexOf('  // fuel\n',i);
  const integration=pacific?null:vm.runInNewContext('(function(P,dt,windZ){const vs=0;'+html.slice(i,j)+'})',

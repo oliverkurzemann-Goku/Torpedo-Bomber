@@ -56,7 +56,9 @@ vm.runInContext(pick('resolveGroundAndDeck','trap'),game);
  const missions=vm.runInNewContext(html.slice(html.indexOf('const MISSIONS = ['),html.indexOf('\n\nasync function prepareOkinawa'))+'; MISSIONS');
  assert.equal(missions.at(-1).free,true,'free flight stays outside combat campaign');
  assert.equal(missions.at(-2).shoreStrike,true,'final campaign sortie combines sea and land attack');
- assert.equal(missions.at(-3).sub,'Okinawa Recon');
+ assert(missions.some(m=>m.sub==='Okinawa Recon'),'existing reconnaissance sortie remains available');
+ assert.equal(missions.filter(m=>m.corsair).length,2,'two Corsair combat sorties');
+ assert.equal(missions.at(-2).corsair,true,'Corsair closes the expanded combat campaign');
  for(const m of missions.filter(m=>!m.free))for(const t of m.targets){
   const x=t.pos[0]-10000,z=t.pos[2];
   assert.ok(world.shoreDistance(x,z)<-300,'Okinawa ship target sits in navigable coastal water: '+m.sub+' '+x+','+z);

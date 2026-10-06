@@ -35,8 +35,8 @@ function geometryStats(group){const stats=[];group.traverse(o=>{if(o.isMesh)stat
   assert(Math.max(t.image.width,t.image.height)<=512);assert.equal(t.flipY,false,'GLB UV orientation retained');
  }});
  const loader=PacificAssets.loader(),copies=[];
- await Promise.all([loader.load('merchant_ship.glb?v=2',g=>copies.push(g.scene)),loader.load('merchant_ship.glb?v=2',g=>copies.push(g.scene))]);
- assert.equal(decoded.filter(x=>x.startsWith('merchant')).length,1,'escort and freighter decode and allocate textures only once');
+ await Promise.all([loader.load('assets/ships/japanese-cargo.glb?v=172',g=>copies.push(g.scene)),loader.load('assets/ships/japanese-cargo.glb?v=172',g=>copies.push(g.scene))]);
+ assert.equal(decoded.filter(x=>x.includes('japanese-cargo')).length,1,'repeated cargo requests decode and allocate textures only once');
  assert.notEqual(copies[0],copies[1],'ship transforms must be independent');
  const meshes=copies.map(g=>{let first;g.traverse(o=>{if(o.isMesh&&!first)first=o;});return first;});
  assert.equal(meshes[0].geometry,meshes[1].geometry);assert.equal(meshes[0].material.map,meshes[1].material.map,'clones share texture objects');

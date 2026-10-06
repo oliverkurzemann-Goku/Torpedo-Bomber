@@ -132,7 +132,7 @@ function drawMap(canvas,opt){
  if(opt.recon){const p=put(opt.recon);g.strokeStyle='#80c9df';g.lineWidth=2;g.beginPath();g.arc(...p,Math.max(8,opt.recon.radius*scale),0,7);g.stroke();}
  if(opt.approach){const p=put(opt.approach);g.strokeStyle='#b9a5ed';g.lineWidth=2;g.beginPath();g.arc(...p,Math.max(8,opt.approach.radius*scale),0,7);g.stroke();g.fillStyle='#d5c4f3';g.font='11px monospace';g.fillText(opt.approach.label,p[0]+9,p[1]+17);}
  for(const [i,t] of opt.targets.entries()){
-  const p=put(t);g.fillStyle=t.optional?'#dba774':'#f06a4b';g.beginPath();g.arc(...p,5,0,7);g.fill();
+  const p=put(t);g.fillStyle=t.friendly?'#80c9df':t.optional?'#dba774':'#f06a4b';g.beginPath();g.arc(...p,5,0,7);g.fill();
   g.font='bold 13px monospace';g.fillStyle='#fff0cf';g.fillText(String(i+1),p[0]+8,p[1]-6);
  }
  const b=put(opt.base);g.fillStyle='#a1d191';g.fillRect(b[0]-5,b[1]-5,10,10);

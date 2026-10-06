@@ -48,7 +48,7 @@ class WorldVehicles {
       const tank=source.getObjectByName('TIGER_H1');
       if(!tank)throw new Error('Tiger vehicle node missing');
       const copy=tank.clone(true);tank.matrixWorld.decompose(copy.position,copy.quaternion,copy.scale);root.add(copy);
-    }else root.add(source);
+    }else{root.add(source);if(kind==='merchant')root.rotation.y=Math.PI/2;}
     const materials=new Map();
     root.traverse(o=>{
       if(!o.isMesh)return;
@@ -156,7 +156,7 @@ class WorldVehicles {
       {kind:'civilCar',url:'assets/remagen/ford1940/1940_ford_v8.fbx',loader:'fbx'},
       {kind:'horse',url:'assets/remagen/horse/quaternius_horse.glb'},
       {kind:'train',url:'assets/remagen/drb0110/drb0110.glb'},
-      {kind:'merchant',url:'merchant_ship.glb'}
+      {kind:'merchant',url:'assets/ships/japanese-cargo.glb'}
     ];
     for(const spec of templateSpecs)try{
       const asset=await loadSource(spec),model=WorldVehicles.prepare(asset.scene,spec.kind);

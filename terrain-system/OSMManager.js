@@ -719,6 +719,7 @@ class OSMManager {
 
     const desc = buildings.map(b => {
       const x=ox+b.x, z=oz+b.z;
+      if(this.periodBuildings?.has(x,z))return null;
       if(this._buildingTouchesWater(b,x,z,exclusion)) return null;
       const area=b.w*b.d,aspect=Math.max(b.w/Math.max(1,b.d),b.d/Math.max(1,b.w));
       const r=osmHash(x,z,21),church=this.churchKeys.has(osmBuildingKey(x,z));

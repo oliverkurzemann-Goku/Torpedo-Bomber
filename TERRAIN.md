@@ -1,3 +1,9 @@
+## Build 172 — original rotors and bounded uploaded scenery
+
+FW 190 moves only connected original nose-blade components into a rotor; wing indices remain intact. B-17 transfers sparse original blade components at all four measured stations instead of cutting cowls or adding duplicate propellers. Quantized rotor bounds explicitly decode selected vertices.
+
+PeriodBuildings replaces at most twelve mapped, dry building footprints near airfields and Remagen with uploaded houses and ruins. At most three house details render near the player; distant silhouettes remain. Two 668-triangle uploaded T2 hangars and two simple concrete observation posts sit clear of runways. Contact heights track terrain surface revisions. Templates share geometry/textures; building textures are capped at 512px.
+
 # Remagen terrain handoff
 
 ## Game Build 170 — crew clearance and carrier departure camera

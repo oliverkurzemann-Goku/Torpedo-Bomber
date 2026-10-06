@@ -266,7 +266,7 @@
   #opsStatus{position:fixed;top:calc(env(safe-area-inset-top) + 76px);left:50%;transform:translateX(-50%);color:#edcc80;background:rgba(14,20,18,.78);padding:5px 9px;font:10px monospace;pointer-events:none;z-index:9;max-width:58vw;text-align:center;}
   #systemsStatus{position:fixed;top:calc(env(safe-area-inset-top) + 116px);left:50%;transform:translateX(-50%);color:#ffbf96;background:#251810db;padding:5px 9px;font:10px monospace;pointer-events:none;z-index:9;max-width:60vw;text-align:center;}#systemsStatus:empty{display:none;}
 </style>
-<link rel="stylesheet" href="menu-layout.css?v=171">
+<link rel="stylesheet" href="menu-layout.css?v=172">
 </head>
 <body>
 <!-- ===== TEMP TEST-ONLY VERSION BANNER — asked for by Oliver: "kannst du irgendwo einbauen,
@@ -288,7 +288,7 @@
   <div style="width:100%;height:4px;background:repeating-linear-gradient(45deg,#ffd400,#ffd400 8px,#111 8px,#111 16px);"></div>
   <span id="testVersionBannerText" style="background:#111;color:#ffd400;font-family:monospace;font-weight:800;font-size:11px;letter-spacing:.5px;padding:3px 10px;border:1px solid #ffd400;border-top:none;border-radius:0 0 6px 6px;"></span>
 </div>
-<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 171';</script>
+<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 172';</script>
 <!-- ===== END TEMP TEST-ONLY VERSION BANNER ===== -->
 <div id="app"></div>
 <style>
@@ -328,7 +328,7 @@
   <div id="flash"></div>
   <div id="gunsight"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 171 · REAL RHINE</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 172 · REAL RHINE</div>
 
   <div id="apr">
     <div id="aprCall"></div>
@@ -378,7 +378,7 @@
 </div>
 
 <div class="overlay hidden" id="menu" data-campaign="europe">
-  <div class="menuTop"><a id="selBtn" href="index.html?v=171">&#9664; Change Game</a><span class="menuMeta">RHINE OPERATIONS<br>BUILD 171</span></div>
+  <div class="menuTop"><a id="selBtn" href="index.html?v=172">&#9664; Change Game</a><span class="menuMeta">RHINE OPERATIONS<br>BUILD 172</span></div>
   <div class="card menuCard">
     <aside class="menuOverview" aria-label="Campaign and pilot options">
     <div class="campaignArt" aria-hidden="true"></div>
@@ -476,7 +476,8 @@
 <script src="terrain-system/HeightProvider.js?v=remagen-21"></script>
 <script src="terrain-system/TerrainTile.js?v=168"></script>
 <script src="terrain-system/TerrainManager.js?v=168"></script>
-<script src="terrain-system/OSMManager.js?v=168"></script>
+<script src="terrain-system/OSMManager.js?v=172"></script>
+<script src="terrain-system/PeriodBuildings.js?v=172"></script>
 <script src="terrain-system/HistoricalObjectManager.js?v=remagen-21"></script>
 <script src="terrain-system/AirfieldDetails.js?v=169"></script>
 <script src="terrain-system/AircraftGround.js?v=170"></script>
@@ -485,6 +486,7 @@
 <script src="terrain-system/LivingWorld.js?v=166"></script>
 <script src="campaign.js?v=1"></script>
 <script src="game-runtime.js?v=167"></script>
+<script src="aircraft-rotors.js?v=172"></script>
 <script src="combat-fx.js?v=167"></script>
 <script src="ordnance.js?v=157"></script>
 <script src="pilot-bailout.js?v=157"></script>
@@ -807,7 +809,7 @@ async function loadRealWorld(){
 
   if(OSMManager.BUILD!==23||HistoricalObjectManager.BUILD!==21||LivingWorld.BUILD!==22||WorldVehicles.BUILD!==22) throw new Error('Terrain version mismatch. Reload Remagen.');
   document.getElementById('testVersionBannerText').textContent=
-    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 171 · MODULE 23';
+    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 172 · MODULE 23';
   heightProvider=new DEMHeightProvider(RTILE,'terrain-system/real/data/dem/');
   terrain=new TerrainManager(scene,RTILE,heightProvider);
   osmMgr=new OSMManager(scene,RTILE,terrain,'terrain-system/real/data/osm/');
@@ -832,6 +834,11 @@ async function loadRealWorld(){
   const osmCoords=[];
   for(let tz=0;tz<RGRID_H;tz++) for(let tx=0;tx<RGRID_W;tx++) osmCoords.push([tx,tz]);
   await osmMgr.prepareRegion(osmCoords,'terrain-system/real/data/waterways.json?v=remagen-21');
+
+  setLoadingText('Preparing period buildings…');
+  periodBuildings=new PeriodBuildings(scene,terrain,osmMgr);
+  await periodBuildings.load([[ALLIED_AF_X,ALLIED_AF_Z],[GERMAN_AF_X,GERMAN_AF_Z],[13805,15770]]);
+  osmMgr.periodBuildings=periodBuildings;
 
   // Phase 3: real roads/rail/river/forest/farmland/buildings (OSMManager) and the historical
   // layer (bridge/flak/factory/airfield) — both need a real TERRAIN TILE already built at their
@@ -936,6 +943,7 @@ function updateContentVisibility(focusX,focusZ){
   if(airfieldDetails)airfieldDetails.refresh();
   if(germanAirfieldDetails)germanAirfieldDetails.refresh();
   if(worldVehicles)worldVehicles.update(focusX,focusZ);
+  if(periodBuildings)periodBuildings.update(focusX,focusZ);
 }
 
 // Ground layers follow the actual terrain triangles in the same rendered frame.
@@ -958,6 +966,7 @@ function at(m,x,y,z){ m.position.set(x,y,z); return m; }
 //  fetch_historical.py ("a plausible site for a forward strip, not a documented one" — a real
 //  WW2 forward strip was rough grass or packed dirt with tents/huts, not a paved airbase).
 // ============================================================
+let periodBuildings=null;
 let airfield=null,airfieldDetails=null,germanAirfieldDetails=null,worldVehicles=null,livingWorld=null;
 let alliedActivity=null,germanActivity=null;
 function buildAirfield(){
@@ -2171,6 +2180,9 @@ function rigModel(root, kind){
   // here that legitimately spins.
   if(kind==='p47'){
     rig=rigP47OriginalProp(root,whole,S)||'P-47 original propeller unavailable';
+  } else if(kind==='fw190'){
+    const rotor=AircraftRotors.nose(root,kind);
+    rig=rotor?'original FW 190 three-blade propeller ('+rotor.userData.originalRotorFaces+' GLB triangles)':'FW 190 original rotor unavailable';
   } else if(kind==='ju87'){
     rig=rigJu87Prop(root,whole,S)||'Ju 87 rotor mesh unavailable';
   } else if(MULTI_ENGINE_KINDS.includes(kind)){
@@ -2178,41 +2190,8 @@ function rigModel(root, kind){
     // real, welded wing propellers with nothing to make them spin - "B17 propeller drehen sich
     // nicht". findWingProps() (above) measures all four engine positions directly, one at a time,
     // instead of the single-hub search findProp() does for a nose-mounted engine.
-    const wprops=findWingProps(root);
-    if(wprops.length===4){
-      let cutTotal=0;
-      // The B-17's 0_1 mesh contains the four original propeller assemblies
-      // (14 m across the nacelles, only 1.5 m deep). Cutting blade triangles
-      // by radius left visible rigid pieces of this mesh behind. Remove that
-      // isolated mesh in full; the original wing and cowls live in 0_0.
-      const fixedProps=root.getObjectByName('0_1');
-      if(fixedProps){fixedProps.parent.remove(fixedProps);cutTotal=fixedProps.geometry.index.count/3;}
-      const wrap=new THREE.Group(); wrap.name='prop';
-      for(const wp of wprops){
-        // A few blade triangles are also welded into the main wing mesh.
-        // Keep the narrow per-hub cut for those while removing the isolated
-        // four-prop assembly as a whole.
-        cutTotal+=cutBlades(root, wp);
-        // The source GLB's blades measure only ~1.6 m across at a 31.6 m
-        // wingspan; at combat distance their movement is invisible. Keep the
-        // measured shaft positions and only bring the new blade diameter to
-        // 2.7 m (still below a full-size B-17 propeller).
-        const pg=makeProp({...wp,tipR:Math.max(wp.tipR,1.35)},3);
-        pg.name='';           // avoid a second, nested object also named 'prop'
-        pg.userData.bomberRotor=true;pg.userData.spinAxis='z';
-        wrap.add(pg);
-      }
-      root.add(wrap);
-      rig='cut '+cutTotal+' moulded blade triangles across 4 engines, real 3-blade propellers '+
-          (Math.max(wprops[0].tipR,1.35)*2).toFixed(1)+'-'+
-          (Math.max(1.35,...wprops.map(p=>p.tipR))*2).toFixed(1)+' m';
-    } else {
-      // Could not confirm all four engines on this model - leave every propeller welded rigid
-      // rather than spin some and not others, which would look more broken than doing nothing.
-      const hub=new THREE.Group(); hub.name='prop';
-      hub.position.set(0,0,whole.max.z); root.add(hub);
-      rig='multi-engine: only found '+wprops.length+'/4 propellers, left model alone';
-    }
+    const rotors=AircraftRotors.b17(root);
+    rig=rotors.length===4?'four original B-17 propellers across 4 engines; cowls retained':'B-17 original rotors unavailable';
   } else if(kind==='b24'){
     const count=rigB24Props(root);
     rig=count===4?'four original B-24 propellers rigged':'B-24 propeller pivots unavailable';
@@ -2251,6 +2230,11 @@ function rigModel(root, kind){
     return rig+', take-off trolley removed; retractable skid added';
   }
   if(kind==='ju87') return rig+', original fixed wheel fairings retained';
+  if(kind==='fw190'){
+    const gear=new THREE.Group();gear.name='gear';root.add(gear);
+    buildGear(gear,root,whole,S,kind);
+    return rig+', built gear; original wings retained';
+  }
   if(kind==='me262'){
     // This GLB has no welded wheels. The generic wheel-cluster detector was
     // removing 5,177 wing/nacelle faces and covering them with metre-wide
@@ -5426,6 +5410,7 @@ function init(){
   // buildAirfield() itself is called only after this awaits, not in this synchronous block above.
   loadRealWorld().then(()=>{
     buildAirfield();buildGermanAirfield();
+    periodBuildings.airfield(ALLIED_AF_X,ALLIED_AF_Z);periodBuildings.airfield(GERMAN_AF_X,GERMAN_AF_Z);
     const bd=realBridge&&realBridge.userData.data;
     osmMgr.enableDeferredLOD();
     livingWorld=new LivingWorld(scene,terrain,osmMgr,{
@@ -5465,7 +5450,7 @@ function init(){
   buildMenu();
   // menu wiring
   document.getElementById('startBtn').onclick=()=>showBrief(selectedMission);
-  document.getElementById('pauseMainMenu').onclick=()=>{exitToMenuFromPause();window.location.href='index.html?v=171';};
+  document.getElementById('pauseMainMenu').onclick=()=>{exitToMenuFromPause();window.location.href='index.html?v=172';};
   document.getElementById('logBtn').onclick=()=>{ show('menu',false); showLogbook(); };
   document.getElementById('skipLaunchPreview').onclick=()=>finishLaunchIntro();
   document.getElementById('brBack').onclick=()=>{ show('brief',false); show('menu',true); state=ST.MENU; };

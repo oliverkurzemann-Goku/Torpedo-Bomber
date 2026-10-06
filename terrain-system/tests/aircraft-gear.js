@@ -2,7 +2,7 @@
 // The former wheel cut removed thousands of wing faces and left visible holes.
 'use strict';
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
-const THREE=require('three');global.THREE=THREE;global.self=global;global.window=global;
+const THREE=require('three');global.THREE=THREE;require('../../aircraft-rotors.js');global.self=global;global.window=global;
 class ImageStub{
  constructor(){this.listeners={};this.width=2;this.height=2;}
  addEventListener(type,fn){this.listeners[type]=fn;}
@@ -55,11 +55,20 @@ function faceCount(group,minimumY){let total=0;group.updateMatrixWorld(true);gro
   const upperBefore=faceCount(model,floor-.36),rig=rigModel(model,kind),upperAfter=faceCount(src,floor-.36);
   // The propeller is intentionally cut from the welded mesh too; even if all
   // its faces sit above this plane, the wing cut may remove none beyond them.
-  const propFaces=Number(rig.match(/cut (\d+) moulded blade triangles/)[1]);
-  assert.ok(upperBefore-upperAfter<=propFaces,kind+' wing skin was removed');
-  assert.match(rig,/cut \d+ welded gear triangles, built gear/);
-  const removed=Number(rig.match(/cut (\d+) welded gear triangles/)[1]);
-  assert.ok(removed>0&&removed<100,kind+' wheel cut must stay local');
+  let removed=0;
+  if(kind==='fw190'){
+    assert.match(rig,/original FW 190 three-blade propeller/);
+    assert.match(rig,/original wings retained/);
+    const rotor=model.getObjectByName('prop');assert(rotor.position.z>4.0,'FW rotor sits ahead of the original cowling');
+    assert.equal(rotor.userData.originalRotorFaces,2251,'all original blades, roots and spinner rotate together');
+    assert(upperBefore-upperAfter<=2251,'FW airframe loses only the extracted original propeller');
+  }else{
+    const propFaces=Number(rig.match(/cut (\d+) moulded blade triangles/)[1]);
+    assert.ok(upperBefore-upperAfter<=propFaces,kind+' wing skin was removed');
+    assert.match(rig,/cut \d+ welded gear triangles, built gear/);
+    removed=Number(rig.match(/cut (\d+) welded gear triangles/)[1]);
+    assert.ok(removed>0&&removed<100,kind+' wheel cut must stay local');
+  }
   const gear=model.getObjectByName('gear');assert.equal(gear.children.length,3);
   const wheels=gear.children.slice(0,2).map(g=>new THREE.Box3().setFromObject(g));
   assert.ok(wheels.every(b=>b.min.y<box.min.y-.55),kind+' main gear is hidden inside wing');

@@ -2,7 +2,7 @@
 // the inverted gull wings, and the rotor must survive cloning for enemy aircraft.
 'use strict';
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
-const THREE=require('three');global.THREE=THREE;global.self=global;global.window=global;
+const THREE=require('three');global.THREE=THREE;require('../../aircraft-rotors.js');global.self=global;global.window=global;
 class ImageStub{
   constructor(){this.listeners={};this.width=2;this.height=2;}
   addEventListener(type,fn){this.listeners[type]=fn;}

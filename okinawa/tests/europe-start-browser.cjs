@@ -23,9 +23,19 @@ const server=http.createServer((req,res)=>{
   page.setDefaultTimeout(120000);page.on('pageerror',e=>errors.push(e.message));
   page.on('console',m=>{if(/Shader Error|VALIDATE_STATUS|not compiled/.test(m.text()))errors.push(m.text());});
   await page.addInitScript(()=>{window.requestAnimationFrame=()=>0;});
-  await page.goto('http://127.0.0.1:'+server.address().port+'/remagen-mission.html?campaign=1&v=171');
+  await page.goto('http://127.0.0.1:'+server.address().port+'/remagen-mission.html?campaign=1&v=172');
   await page.waitForFunction(()=>typeof realWorldReady!=='undefined'&&realWorldReady&&state===ST.MENU,null,{polling:200});
   console.log('Browser: real terrain menu loaded');
+  const landmarks=await page.evaluate(()=>{
+   if(periodBuildings.templates.size!==4)throw Error('Building templates not loaded');
+   if(periodBuildings.reserved.size>12||periodBuildings.reserved.size<6)throw Error('Landmark placement or detail budget failed');
+   for(const e of periodBuildings.entries){periodBuildings.update(e.x,e.z);
+    if(periodBuildings.entries.filter(p=>p.model&&p.kind!=='hangar'&&p.model.visible&&p.group.visible).length>3)throw Error('Too many detailed buildings');
+    if(['hangar','bunker'].includes(e.kind)&&!periodBuildings.clearLand(e.x,e.z,e.w,e.d))throw Error('Airfield landmark blocks mapped road or building');
+   }
+   return {landmarks:periodBuildings.reserved.size,airfieldBuildings:periodBuildings.entries.filter(e=>['hangar','bunker'].includes(e.kind)).length};
+  });assert.equal(landmarks.airfieldBuildings,4);console.log('Building placement and visibility budgets:',landmarks);
+
   await page.evaluate(()=>{renderer.setPixelRatio(.25);renderer.shadowMap.enabled=false;});
   const out=path.join(root,'test-visuals');fs.mkdirSync(out,{recursive:true});
   for(const ac of ['p47','bf109','fw190','me262','ju87','me163','me163-bonus']){
