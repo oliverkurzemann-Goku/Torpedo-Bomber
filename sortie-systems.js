@@ -43,7 +43,7 @@ function visibility(scene,pool,pos,name,dt,sea){
 class Operation{
  constructor(config={}){
   this.config=config;this.elapsed=0;this.fired=new Set();this.failed=false;
-  this.reconDone=!config.recon;this.reconHold=0;this.warned=false;
+  this.reconDone=!config.recon;this.reconHold=0;this.reconCue='FIND BLUE CIRCLE';this.warned=false;
   this.phaseIndex=0;this.phaseHold=0;
  }
  pending(){return (this.config.events||[]).some((e,i)=>!this.fired.has(i)&&e.required);}
@@ -61,9 +61,11 @@ class Operation{
   });
   const r=this.config.recon;
   if(r&&!this.reconDone){
-   const p=state.pos,valid=Math.hypot(p.x-r.x,p.z-r.z)<r.radius&&p.y>=r.min&&p.y<=r.max;
-   this.reconHold=valid?this.reconHold+dt:Math.max(0,this.reconHold-dt*2);
-   if(this.reconHold>=r.seconds){this.reconDone=true;out.push({recon:true,message:'RECON FIX CONFIRMED — CONTINUE THE ATTACK'});}
+   const p=state.pos,inside=Math.hypot(p.x-r.x,p.z-r.z)<=r.radius+Math.min(15,r.radius*.02);
+   const heightOK=!r.enforceAltitude||(p.y>=r.min&&p.y<=r.max),valid=inside&&heightOK;
+   this.reconCue=!inside?'ENTER BLUE CIRCLE':!heightOK?'USE '+Math.round(r.min*3.281)+'–'+Math.round(r.max*3.281)+' FT MSL':'HOLD IN CIRCLE';
+   this.reconHold=valid?Math.min(r.seconds,this.reconHold+dt):Math.max(0,this.reconHold-dt*2);
+   if(this.reconHold+1e-6>=r.seconds){this.reconHold=r.seconds;this.reconDone=true;out.push({recon:true,message:'RECON FIX CONFIRMED — CONTINUE THE ATTACK'});}
   }
   const phase=this.phase();
   if(phase&&this.reconDone){
@@ -82,7 +84,7 @@ class Operation{
  }
  status(){
   if(this.failed)return 'WINDOW MISSED — RTB';
-  if(!this.reconDone)return 'RECON '+Math.floor(this.reconHold)+'/'+this.config.recon.seconds+'s';
+  if(!this.reconDone)return this.reconCue+' · '+Math.max(0,this.config.recon.seconds-this.reconHold).toFixed(1)+'s LEFT';
   const p=this.phase(),prefix=p?'PHASE '+(this.phaseIndex+1)+'/'+this.config.phases.length+' '+p.label+' · ':'';
   if(this.config.deadline){const t=Math.max(0,Math.ceil(this.config.deadline-this.elapsed));return prefix+'WINDOW '+Math.floor(t/60)+':'+String(t%60).padStart(2,'0');}
   if(p)return prefix.replace(/ · $/,'');
@@ -102,7 +104,7 @@ function briefText(name,config,wind){
  return '<br><br><b>WEATHER</b> '+w.label+' · visibility '+(w.far/1000).toFixed(1)+' km · cloud base '+Math.round(w.base*3.281)+' ft MSL'
  +'<br><b>WIND</b> '+(wind<0?'PORT':'STARBOARD')+' crosswind '+Math.round(Math.abs(wind)*1.944)+' kt'
  +(config.deadline?'<br><b>ATTACK WINDOW</b> '+Math.round(config.deadline/60)+' minutes from take-off':'')
- +(r?'<br><b>RECON</b> Cross the blue circle at '+Math.round(r.min*3.281)+'–'+Math.round(r.max*3.281)+' ft MSL for '+r.seconds+' seconds.':'')
+ +(r?'<br><b>RECON</b> Remain inside the blue circle for '+r.seconds+' seconds. '+(r.enforceAltitude?'Required':'Recommended')+' height '+Math.round(r.min*3.281)+'–'+Math.round(r.max*3.281)+' ft MSL.':'')
  +(config.notes?'<br><b>EXECUTION</b> '+config.notes:'')
  +(config.phases?'<br><b>PHASES</b> '+config.phases.map(p=>p.label).join(' → ')+' → RECOVERY':'')
  +(config.practice?'<br><b>RECOVERY</b> Landing practice — no timed combat objectives.':'<br><b>RECOVERY</b> Keep fuel and ammunition for the return. Land to complete the sortie.');

@@ -4,11 +4,11 @@ const fs=require('fs'),path=require('path'),vm=require('vm'),assert=require('ass
 const THREE=require('three'),{createCanvas}=require('@napi-rs/canvas');
 const root=path.resolve(__dirname,'../..'),html=fs.readFileSync(path.join(root,'remagen-mission.html'),'utf8');
 const elements=new Map(),listeners={},requests=[],errors=[];
-function node(){const classes=new Set(['hidden']),attributes={};return {style:{},setAttribute(k,v){attributes[k]=v},getAttribute(k){return attributes[k]},classList:{add:c=>classes.add(c),remove:c=>classes.delete(c),contains:c=>classes.has(c),toggle(c,on){if(on)classes.add(c);else classes.delete(c);}},addEventListener(){},appendChild(){},querySelectorAll(){return []},getBoundingClientRect(){return {left:0,top:0,width:100,height:100}},value:'clear',innerHTML:'',textContent:''};}
+function node(){const classes=new Set(['hidden']),attributes={};return {style:{},setAttribute(k,v){attributes[k]=v},getAttribute(k){return attributes[k]},classList:{add:c=>classes.add(c),remove:c=>classes.delete(c),contains:c=>classes.has(c),toggle(c,on){if(on)classes.add(c);else classes.delete(c);}},addEventListener(){},appendChild(){},after(){},replaceChildren(){},querySelectorAll(){return []},getBoundingClientRect(){return {left:0,top:0,width:100,height:100}},value:'clear',innerHTML:'',textContent:''};}
 const renderer=class{constructor(){this.domElement=node();}setPixelRatio(){}setSize(){}getContext(){return {isContextLost:()=>false};}render(){}};
 const c=vm.createContext({THREE:{...THREE,WebGLRenderer:renderer},console:{...console,error:(...args)=>errors.push(args)},Math,atob,performance:{now:()=>0},navigator:{},location:{search:'?campaign=1'},URLSearchParams,devicePixelRatio:1,
  localStorage:{getItem(){return null},setItem(){}},setTimeout,clearTimeout,setInterval(){},clearInterval(){},requestAnimationFrame(){},innerWidth:1280,innerHeight:800,
- addEventListener(event,cb){listeners[event]=cb;},document:{addEventListener(){},querySelectorAll(){return []},getElementById(id){if(!elements.has(id))elements.set(id,id==='opsMap'?createCanvas(720,420):node());return elements.get(id);},createElement(t){return t==='canvas'?createCanvas(1,1):node();},body:node()},
+ addEventListener(event,cb){listeners[event]=cb;},document:{addEventListener(){},querySelectorAll(){return []},getElementById(id){if(!elements.has(id))elements.set(id,id==='opsMap'?createCanvas(720,420):id==='mmap'?Object.assign(createCanvas(104,104),node()):node());return elements.get(id);},createElement(t){return t==='canvas'?createCanvas(1,1):node();},body:node()},
  fetch:async url=>{requests.push(url);const b=fs.readFileSync(path.join(root,url.split('?')[0]));return {ok:true,json:async()=>JSON.parse(b),arrayBuffer:async()=>b.buffer.slice(b.byteOffset,b.byteOffset+b.byteLength)};}});c.window=c;
 for(const m of html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/g)){
  const src=m[0].match(/src="([^"]+)"/);
@@ -74,7 +74,9 @@ vm.runInContext('loadModels=()=>{};ensureModel=async()=>null;WorldVehicles.proto
  assert(!html.includes('id="flakMarker"'),'flak should be visible in the world, without a floating label');
  assert.match(c.fwStats.bearing,/BRG/);
  vm.runInContext(`enemyAir.push({alive:true,pos:new THREE.Vector3(P.pos.x+1000,P.pos.y,P.pos.z),bomber:false});updateHUD();`,c);
- assert.equal(c.document.getElementById('navKind').textContent,'BANDIT','the moving fighter must override the ground target');
+ assert.notEqual(c.document.getElementById('navKind').textContent,'BANDIT','the moving fighter must preserve the ground objective');
+ vm.runInContext("ensureNavigation().choose(europeContacts().find(c=>c.kind==='BANDIT'));updateHUD();",c);
+ assert.equal(c.document.getElementById('navKind').textContent,'BANDIT','selected fighter guides the arrow');
  assert.match(c.document.getElementById('navArrow').style.transform,/rotate\(-90deg\)/,'fighter due east is left in the northbound chase camera (see navigation.js)');
  vm.runInContext(`enemyAir[enemyAir.length-1].alive=false;updateHUD();`,c);
  assert.notEqual(c.document.getElementById('navKind').textContent,'BANDIT','destroyed fighter must no longer guide the arrow');

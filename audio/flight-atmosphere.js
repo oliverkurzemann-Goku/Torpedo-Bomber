@@ -2,10 +2,12 @@
 (function(root){
 'use strict';
 function voiceRadio(env=root){
- let enabled=false,unlocked=false,current=null,timeout=null;
+ let enabled=false,unlocked=false,current=null,timeout=null,scheduled=null,cachedVoice=null;
  const synth=env.speechSynthesis,available=!!(synth&&env.SpeechSynthesisUtterance);
- const voice=()=>available?synth.getVoices().find(v=>v.localService&&/^en\b/i.test(v.lang)):null;
- const cancel=()=>{if(timeout){env.clearTimeout(timeout);timeout=null;}if(current&&available)synth.cancel();current=null;};
+ const refreshVoice=()=>{cachedVoice=available?synth.getVoices().find(v=>v.localService&&/^en\b/i.test(v.lang)):null;};
+ if(available){refreshVoice();if(synth.addEventListener)synth.addEventListener('voiceschanged',refreshVoice);}
+ const voice=()=>cachedVoice;
+ const cancel=()=>{if(scheduled!==null){env.clearTimeout(scheduled);scheduled=null;}if(timeout){env.clearTimeout(timeout);timeout=null;}if(current&&available)synth.cancel();current=null;};
  const api={
   bind(control){if(!control)return;
    // Earlier releases spoke by default. Require a fresh, explicit opt-in.
@@ -14,14 +16,15 @@ function voiceRadio(env=root){
    if(!available){control.checked=false;control.disabled=true;control.title='Device speech is unavailable; text radio remains active.';}
    control.addEventListener('change',()=>{enabled=control.checked;cancel();try{env.localStorage.setItem('spokenRadioOptIn',enabled?'1':'0');}catch(e){}if(enabled)api.unlock();});
   },
-  unlock(){unlocked=true;if(enabled)api.say('Radio check.');},
+  unlock(){unlocked=true;if(available&&!cachedVoice)refreshVoice();if(enabled)api.say('Radio check.');},
   say(text){
    if(!enabled||!unlocked||!available||current||!voice())return false;
    // Radio panel owns the queue. Never let native speech build an independent backlog.
    const short=text.replace(/CONTROL — /,'Control. ').replace(/[·—]/g,', ').replace(/\bRTB\b/g,'return to base').replace(/\bFT\b/g,'feet').replace(/\bKM\b/g,'kilometres').slice(0,145);
    const u=new env.SpeechSynthesisUtterance(short);u.voice=voice();u.lang=u.voice.lang;u.rate=1.12;u.pitch=.82;u.volume=.66;
    current=u;u.onend=u.onerror=()=>{if(current===u){current=null;if(timeout)env.clearTimeout(timeout);timeout=null;}};
-   try{synth.speak(u);timeout=env.setTimeout(cancel,11000);return true;}catch(e){cancel();return false;}
+   // Native speech dispatch runs outside the animation frame; one pending task only.
+   scheduled=env.setTimeout(()=>{scheduled=null;if(current!==u)return;try{synth.speak(u);timeout=env.setTimeout(cancel,11000);}catch(e){cancel();}},0);return true;
   },cancel,
   get speaking(){return !!current;},get available(){return available&&!!voice();}
  };
@@ -56,5 +59,15 @@ function soundscape(){
   stop(){for(const source of sources){try{source.stop();}catch(e){}}},get count(){return sources.size;}
  };
 }
-root.FlightAtmosphere={voiceRadio,soundscape};
+const radioBuffers=new WeakMap();
+function prepareRadio(ctx){
+ if(radioBuffers.has(ctx))return radioBuffers.get(ctx);
+ const b=ctx.createBuffer(1,Math.ceil(ctx.sampleRate*.1),ctx.sampleRate),p=b.getChannelData(0);let old=0;
+ for(let i=0;i<p.length;i++){const t=i/ctx.sampleRate,n=Math.random()*2-1,env=Math.min(1,t/.015)*Math.exp(-t*48);p[i]=env*(Math.sin(t*1400*Math.PI*2)*.05+(n-old)*.04*(t<.05?1:0));old=n;}
+ radioBuffers.set(ctx,b);return b;
+}
+function radioTone(ctx,destination){
+ if(ctx.state!=='running')return;const source=ctx.createBufferSource();source.buffer=prepareRadio(ctx);source.connect(destination);source.onended=()=>source.disconnect();source.start();
+}
+root.FlightAtmosphere={voiceRadio,soundscape,prepareRadio,radioTone};
 })(typeof window!=='undefined'?window:globalThis);

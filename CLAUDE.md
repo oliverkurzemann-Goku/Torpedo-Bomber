@@ -5,7 +5,55 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 174 · Thunderbolt Squadron BUILD 174 · Remagen-Kern 23 / Fahrzeuge 22**
+Stand bei Übergabe: **Torpedo Squadron BUILD 175 · Thunderbolt Squadron BUILD 175 · Remagen-Kern 23 / Fahrzeuge 22**
+
+**Build 175 (09.10.2026): Missionsabschluss, Navigation und sichtbare Flugzeugfunktionen.**
+Funkton wird beim Audiostart einmal vorbereitet; lokale Stimme wird nur beim Start/
+voiceschanged ermittelt. Sprachdispatch läuft als einzelner abbrechbarer Task außerhalb
+der Animation. Operationsstatus schreibt nur geänderten Text. Retina-Renderauflösung
+im Remagen-Spiel auf Touchgeräten höchstens 1,5; CSS-HUD bleibt scharf. Keine Aussage
+über konkrete iPad-FPS ohne Gerätetest. Baumkollisionen prüfen Rumpf und beide Flügel
+über den gesamten Bewegungsschritt. Remagen enthält rund 651.000 Baumstämme: deshalb
+nur aktuelle/benachbarte Tiles indexieren, höchstens vier im Cache; niemals wieder den
+vollständigen Kollisionsindex beim Start bauen. Tatsächliche forestPart-Geometrie und
+canopyGround verwenden, Terrain-LOD-Verschiebung im nahen Kollisionsraum mitführen.
+Okinawa indexiert seine tatsächlich dargestellten Kronen/Stämme einschließlich Dorfpalmen.
+Brücke: endliche Deckfläche mit Bombenradius über den vollen Schritt; ein direkter
+Bombentreffer zerstört sie. Geringe Y-Absenkung sah vorher wie eine intakte Brücke aus:
+jetzt verschwinden Deck und mittlerer Pfeiler; Neustart stellt beide wieder her.
+Bomben-Vorhersagemarkierung zeigt den erwarteten Einschlag und ein grünes RELEASE-Fenster.
+Suchkreis: genau fünf Sekunden horizontal im blauen Kreis, Höhenband standardmäßig
+Empfehlung statt versteckter Sperre. Optional enforceAltitude aktiviert ein ausdrücklich
+angezeigtes Höhenkriterium. Verbleibende Sekunden und ENTER/HOLD stehen im HUD.
+FlightSupport.Navigation: Radar antippen, bei überlappenden Kontakten Auswahlmenü;
+auch Kontakte außerhalb der Reichweite auf dem Rand sichtbar. Feste Zielwahl bleibt
+bei Luftangriffen bestehen. RTB verändert nur Navigation/LSO, niemals Missionsabschluss.
+Kontakte tragen Typ, Nummer und Entfernung. Auswahlbutton über dem Radar, außerhalb
+von GUNS/DROP; versteckt während Startkamerafahrt und unter Menü/Pauseschirm.
+Avenger erhält eine sichtbare einzelne Heckwaffe, Dauntless zwei Läufe; Mündung und
+Geschosse nutzen dieselbe tatsächliche Waffenpivot-Transformation. Montage auf der
+Originalhaut. Achtung: SBD hat normalisierte Int16-POSITIONs; r128-Raycasts und rohes
+getX/fromBufferAttribute liefern bis zu 32.767-fach zu große Werte! skinHeight decodiert
+normalisierte Vertices und interpoliert Dreiecke im Flugzeugkoordinatensystem.
+Absprung: Avenger drei, SBD zwei, Zero/Corsair einer; jedes Besatzungsmitglied besitzt
+Fallschirm und eigenen Rettungsablauf. Kamera berücksichtigt die Gruppe. Fanghaken
+starten eingefahren und unsichtbar; Corsair-Haken erhält gültige Drehwinkel.
+Pitch-Feder im Pazifik 2,0 → 3,2, Zielpitch 0,55 → 0,70, Steigwiderstand 55 → 38;
+Roll-/Bankparameter bleiben identisch. Avenger im echten Update bei halbem Höhenruder:
+12,94m Gewinn in erster Sekunde, 24,65m/s danach, Pitch 0,286rad.
+MG-Treffer prüfen die Oberfläche über den ganzen Schritt; gepoolte Wasser-/Staubwolken
+stehen darüber, alle Treffer werden ausgelöst. Okinawa hat 24 Dorfverbindungen und
+28 Feldwege: landgebundene Steigungsrouten, außerhalb von Häusern/Flugfeld/Festungen,
+Terrain-Dreiecken exakt angepasst; keine historische Straßenrekonstruktion behaupten.
+Dorfpalmen an neuen Wegen werden aus den Instanzlisten kompakt entfernt, keine
+Nullskalierung (Geometrieprüfungen und Raycasts sollen gültige Matrizen behalten).
+Gezielte Browserregression feedback-browser.cjs verwendet reale dropBomb-Abwürfe
+(3 Spanpositionen × 3 Bildraten), tatsächliche Missionsupdates, Original-GLBs, Radar-
+Pointerklick, Crewzählung/Deploy, Heckmündungen, Steigflug, Baumtreffer, Wegdrapierung
+und Land-/Wassereffekte. Screenshots landen wie bisher in test-visuals/CI-Artefakten.
+Alte Navigationstests erwarteten automatisches Überschreiben durch Bandits; jetzt
+prüfen sie feste Bodenziele sowie ausdrücklich ausgewählte Luftziele. Isolierte
+Waffentests laden FlightSupport und die zugehörigen Surface/FX-Abhängigkeiten.
 
 **Build 174 (06.10.2026): hochgeladene Bunker und Beobachtungsposten.**
 Die Originale `putsborough__wwii_observation_post.glb` und `bunker_o323a-160_z.glb`

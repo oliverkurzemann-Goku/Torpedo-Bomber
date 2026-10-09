@@ -60,7 +60,7 @@
    if(live.length>=220)return;
    let m=pools[hot?1:0].pop();if(!m){if(allocated>=220)return;allocated++;m=new THREE.Sprite(new THREE.SpriteMaterial({map:hot?flash:cloud,blending:hot?THREE.AdditiveBlending:THREE.NormalBlending,transparent:true,depthWrite:false}));}
    m.material.color.setHex(color);m.material.opacity=hot?1:.72;
-   m.material.rotation=Math.random()*6.28;m.visible=true;m.position.copy(pos);m.scale.set(size,size,1);parent.add(m);
+   m.material.rotation=Math.random()*6.28;m.visible=true;m.position.copy(pos);m.scale.set(size,size,1);m.material.fog=false;m.material.toneMapped=false;parent.add(m);
    live.push({m,t:0,life,size,velocity,growth,gravity,hot});
   }
   function recycle(i){const e=live[i];if(e.m.parent)e.m.parent.remove(e.m);e.m.visible=false;pools[e.flame?2:e.hot?1:0].push(e.m);live.splice(i,1);}
@@ -69,7 +69,7 @@
    let m=pools[2].pop();
    if(!m){
     if(allocated>=220)return;allocated++;m=new THREE.Group();
-    for(const color of [0xffa43b,0xffefd2])m.add(new THREE.Mesh(flameGeo,new THREE.MeshBasicMaterial({color,transparent:true,opacity:.85,depthWrite:false,blending:THREE.AdditiveBlending,fog:false})));
+    for(const color of [0xffa43b,0xffefd2])m.add(new THREE.Mesh(flameGeo,new THREE.MeshBasicMaterial({color,transparent:true,opacity:.85,depthWrite:false,blending:THREE.AdditiveBlending,fog:false,toneMapped:false})));
    }
    const radius=heavy?.19:.12,length=(heavy?.85:.55)*(.85+Math.random()*.3);
    m.children[0].scale.set(radius,radius,length);m.children[1].scale.set(radius*.48,radius*.48,length*.62);
@@ -83,6 +83,11 @@
      muzzleFlame(parent,p,direction,heavy);
      if(shots%3===0)emit(parent.localToWorld(p.clone()),heavy?.40:.26,0x97958e,.55,new THREE.Vector3(0,.6,0),false,scene,2.2);
     }
+   },
+   impact(x,y,z,water=false){
+    const at=new THREE.Vector3(x,y+.8,z);
+    emit(at,water?4.2:3.5,water?0xd7f5ff:0xa9946e,water?.75:1.05,new THREE.Vector3(0,water?5:2,0),false,scene,1.4);
+    for(let i=0;i<2;i++)emit(at.clone(),water?1.4:.65,water?0xf0fcff:0x5e4932,.5,new THREE.Vector3(i?3:-3,water?8:4,i?1:-1),false,scene,.5,12);
    },
    blast(x,y,z,scale,ground){
     const s=Math.max(.5,Math.min(3.5,scale||1)),at=new THREE.Vector3(x,y,z);

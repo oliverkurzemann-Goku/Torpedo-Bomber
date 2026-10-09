@@ -163,6 +163,11 @@
     color:rgba(202,191,156,.92);background:rgba(18,22,15,.72);border:1px solid rgba(202,191,156,.4);
     border-radius:7px;pointer-events:auto;touch-action:manipulation;user-select:none;-webkit-user-select:none;}
   .lookBtn:active{background:rgba(202,191,156,.28);}
+  .navSelect{position:fixed;right:calc(max(12px,env(safe-area-inset-right)) + 92px);top:min(calc(env(safe-area-inset-top) + 276px),calc(100dvh - env(safe-area-inset-bottom) - 360px));width:104px;min-height:30px;padding:4px;color:#eeddb0;background:#15231c;border:1px solid #aa9870;border-radius:4px;font:10px monospace;z-index:14;touch-action:manipulation;}
+  .navChoices{position:fixed;right:calc(max(12px,env(safe-area-inset-right)) + 92px);top:calc(env(safe-area-inset-top) + 145px);max-height:45vh;width:230px;overflow-y:auto;background:#142219;border:1px solid #aa9870;padding:5px;z-index:15;}
+  body.launchPreview .navSelect,body.launchPreview .navChoices,body.carrierPreview .navSelect,body.carrierPreview .navChoices{visibility:hidden;}
+  .navChoices[hidden]{display:none}.navChoices button{display:block;width:100%;min-height:38px;text-align:left;background:#253529;color:#f5e4b7;border:1px solid #53604b;font:12px monospace;margin:3px 0;touch-action:manipulation;}
+  #radio{contain:layout paint;}
   #dmgVig{position:fixed;inset:0;z-index:11;pointer-events:none;opacity:0;
     box-shadow:inset 0 0 220px 60px rgba(190,20,10,.85);}
   #torpRun{position:fixed;left:calc(max(20px,env(safe-area-inset-left)) + 76px);top:calc(env(safe-area-inset-top) + 150px);z-index:12;display:none;
@@ -289,7 +294,7 @@
   .opsLegend{font:11px/1.5 monospace;color:#d7c797;text-align:left;margin-top:5px;}
   #opsStatus{position:fixed;top:calc(env(safe-area-inset-top) + 76px);left:50%;transform:translateX(-50%);color:#edcc80;background:rgba(14,20,18,.78);padding:5px 9px;font:10px monospace;pointer-events:none;z-index:9;max-width:58vw;text-align:center;}
 </style>
-<link rel="stylesheet" href="menu-layout.css?v=174">
+<link rel="stylesheet" href="menu-layout.css?v=175">
 </head>
 <body>
 <div id="app"></div>
@@ -335,7 +340,7 @@
   <div id="flash"></div>
   <div id="ltn" style="position:fixed;inset:0;background:#e6ecff;opacity:0;pointer-events:none;z-index:40;"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 174</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 175</div>
 
   <!-- Optical landing aid -->
   <div id="lso">
@@ -366,7 +371,7 @@
 <div id="gearBtn" class="ctlBtn on">GEAR<br>▼ DN</div>
 <div id="flapBtn" class="ctlBtn">FLAPS<br>UP</div>
 <div id="diveBtn" class="ctlBtn">DIVE<br>BRAKE</div>
-<div id="hookBtn" class="ctlBtn on">HOOK<br>▼ DN</div>
+<div id="hookBtn" class="ctlBtn">HOOK<br>▲ UP</div>
 <div id="aeroBtn" class="ctlBtn" title="Rolls and loops in the Zero or Dauntless">AERO<br>OFF</div>
 <button id="bailBtn" type="button" title="Emergency parachute (B)">BAIL OUT</button>
 <div id="fireBtn">GUNS</div>
@@ -377,7 +382,7 @@
 
 <!-- Menu -->
 <div class="overlay" id="menu" data-campaign="pacific">
-  <div class="menuTop"><a id="selBtn" href="index.html?v=174">&#9664; Change Game</a><span class="menuMeta">PACIFIC OPERATIONS<br>BUILD 174</span></div>
+  <div class="menuTop"><a id="selBtn" href="index.html?v=175">&#9664; Change Game</a><span class="menuMeta">PACIFIC OPERATIONS<br>BUILD 175</span></div>
   <div class="card menuCard">
     <aside class="menuOverview" aria-label="Campaign and pilot options">
     <div class="campaignArt" aria-hidden="true"></div>
@@ -456,23 +461,24 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="vendor/GLTFLoader-r128.js?v=147"></script>
-<script src="fortification-assets.js?v=174"></script>
+<script src="fortification-assets.js?v=175"></script>
 <script src="okinawa/data.js?v=1"></script>
-<script src="okinawa/world.js?v=174"></script>
+<script src="okinawa/world.js?v=175"></script>
 <script src="campaign.js?v=1"></script>
 <script src="game-runtime.js?v=167"></script>
 <script src="terrain-system/AircraftGround.js?v=170"></script>
 <script src="pacific-assets.js?v=157"></script>
 <script src="naval-assets.js?v=173"></script>
 <script src="aircraft-rotors.js?v=172"></script>
-<script src="combat-fx.js?v=167"></script>
+<script src="combat-fx.js?v=175"></script>
+<script src="flight-support.js?v=175"></script>
 <script src="ordnance.js?v=157"></script>
 <script src="pilot-bailout.js?v=157"></script>
 <script src="pilot-rescue.js?v=157"></script>
 <script src="radio-intercept.js?v=157"></script>
 <script src="audio/weapon-sound.js?v=144"></script>
-<script src="audio/flight-atmosphere.js?v=164"></script>
-<script src="sortie-systems.js?v=172"></script>
+<script src="audio/flight-atmosphere.js?v=175"></script>
+<script src="sortie-systems.js?v=175"></script>
 <script src="sortie-features.js?v=163"></script>
 <script src="operation-plans.js?v=162"></script>
 <script>
@@ -2015,7 +2021,7 @@ function updatePacificOperation(dt){
  }
  checkObjectiveCleared();
  const el=document.getElementById('opsStatus');
- if(el)el.textContent=FlightOps.wx(weather).label.toUpperCase()+' · '+(P.rtb&&!pacificOps.failed?'RECOVERY':pacificOps.status());
+ if(el){const text=FlightOps.wx(weather).label.toUpperCase()+' · '+(P.rtb&&!pacificOps.failed?'RECOVERY':pacificOps.status());if(el.textContent!==text)el.textContent=text;}
 }
 function drawPacificBrief(m){
  const targets=m.targets.map(s=>({x:s.pos[0],z:s.pos[2],label:NavalAssets.label(s),optional:s.type==='destroyer'}));
@@ -2029,13 +2035,15 @@ function drawPacificBrief(m){
 }
 
 function startMission(idx){
+  if(navigation)navigation.reset();
+  if(rearArmament)rearArmament.userData.pivot.quaternion.identity();
   finishCarrierIntro();
   if(eng) eng.master.gain.setTargetAtTime(0.85,actx.currentTime,0.05);
   flightCoach=new GameRuntime.HintCoach();
   interceptRadio.reset();
   releaseHeldControls();
   if(bailRescue){bailRescue.dispose();bailRescue=null;}
-  if(bailout){bailout.dispose();bailout=null;}
+  clearCrewBailouts();if(bailout){bailout.dispose();bailout=null;}
   planeGroup.visible=true;
   aeroMode=false;
   const aeroButton=document.getElementById('aeroBtn');
@@ -2074,7 +2082,7 @@ function startMission(idx){
   SortieFeatures.Damage.reset(P);voiceRadio.cancel();soundscape.reset();
   P.touchResolved=false; P.boltMsgTimer=0; P.rtb=false;
   P.gear=1; P.gearTgt=1; P.flap=0; P.flapTgt=0; P.diveBrake=false; P.diveBrakeVisual=0; P.dmgT=0;
-  P.hook=1; P.hookTgt=1;   // matches how it always looked before this button existed: deployed
+  P.hook=0; P.hookTgt=0;   // Stow for departure; lower explicitly on recovery.
   P.ammo=1200; P.fireT=0; firing=false;
   P.rollBias=0; P.bingo=false; P.tailCool=0; P.pitchVel=0; P.rollVel=0;
   sortieTorpFired=0; sortieTorpHit=0; sortieShipsSunk=0; sortieZeros=0; hitsTaken=0; sortieWingmenLost=0;
@@ -2694,7 +2702,7 @@ async function loadCorsairModel(){
   const tailRoot=skinAt(0,-4.36);
   const tailLeg=new THREE.Mesh(new THREE.CylinderGeometry(.055,.055,.36,8),metal);tailLeg.position.set(0,tailRoot-.18,-4.36);gear.add(tailLeg);
   const tail=new THREE.Mesh(new THREE.CylinderGeometry(.17,.17,.12,12),tyre);tail.rotation.z=Math.PI/2;tail.position.set(0,tailRoot-.36,-4.36);tail.userData.groundWheel=true;gear.add(tail);holder.add(gear);
-  const hook=new THREE.Mesh(new THREE.CylinderGeometry(.045,.045,1.5,8),metal);hook.rotation.x=-.9;hook.position.set(0,-1.1,-3.8);hook.name='sbdHook';holder.add(hook);
+  const hook=new THREE.Mesh(new THREE.CylinderGeometry(.045,.045,1.5,8),metal);hook.rotation.x=-.9;hook.position.set(0,-1.1,-3.8);hook.name='sbdHook';hook.userData.hookAxis='x';hook.userData.hookDownAngle=-.9;hook.userData.hookUpAngle=Math.PI/2;holder.add(hook);
   corsairTemplate=holder;
  });
 }
@@ -3052,6 +3060,34 @@ function killZero(z){
   const idx=zeros.indexOf(z); if(idx>=0) zeros.splice(idx,1);
 }
 
+let rearArmament=null,rearArmamentType=null;
+function updateRearArmament(){
+ const model=isSBD()?playerSBD:gltfRoot,type=isSBD()?'sbd':'avenger';
+ if(!hasRearGunner()||!model){if(rearArmament)rearArmament.visible=false;return;}
+ if(rearArmamentType!==type){
+  if(rearArmament){if(window.__avStash)window.__avStash=window.__avStash.filter(o=>o!==rearArmament);rearArmament.parent?.remove(rearArmament);rearArmament.traverse(o=>{o.geometry?.dispose();});for(const m of rearArmament.userData.materials)m.dispose();}
+  const aft=type==='avenger'?1.45:.85;
+  planeGroup.updateMatrixWorld(true);
+  const surface=FlightSupport.skinHeight(model,planeGroup,0,aft);if(surface===null)return;
+  const skin=new THREE.Vector3(0,surface,aft);
+  const g=new THREE.Group();g.name='rearArmament';g.position.set(0,skin.y+.05,aft);
+  const metal=new THREE.MeshStandardMaterial({color:0x292d2d,metalness:.55,roughness:.6}),steel=new THREE.MeshStandardMaterial({color:0x737c77,metalness:.5,roughness:.45});
+  g.userData.materials=[metal,steel];
+  const ring=new THREE.Mesh(new THREE.TorusGeometry(type==='avenger'?.36:.25,.045,6,16),steel);ring.rotation.x=Math.PI/2;g.add(ring);
+  const mount=new THREE.Mesh(new THREE.CylinderGeometry(.075,.11,.23,8),steel);mount.position.y=.11;g.add(mount);
+  const pivot=new THREE.Group();pivot.position.y=.23;g.add(pivot);g.userData.pivot=pivot;
+  const ports=[];
+  for(const x of type==='sbd'?[-.10,.10]:[0]){
+   const breech=new THREE.Mesh(new THREE.BoxGeometry(.14,.16,.48),metal);breech.position.set(x,0,.18);pivot.add(breech);
+   const barrel=new THREE.Mesh(new THREE.CylinderGeometry(type==='avenger'?.055:.035,type==='avenger'?.065:.045,1.1,10),metal);barrel.rotation.x=Math.PI/2;barrel.position.set(x,0,.92);pivot.add(barrel);
+   const muzzle=new THREE.Mesh(new THREE.CylinderGeometry(.046,.046,.12,10),steel);muzzle.rotation.x=Math.PI/2;muzzle.position.set(x,0,1.49);pivot.add(muzzle);
+   ports.push(new THREE.Vector3(x,0,1.55));
+  }
+  g.userData.ports=ports;rearArmament=g;rearArmamentType=type;
+ }
+ if(rearArmament.parent!==planeGroup)planeGroup.add(rearArmament);
+ rearArmament.visible=true;rearArmament.traverse(o=>{o.visible=true;});
+}
 function updateTailGun(dt){
   if(!P.alive || state!==ST.FLIGHT || !hasRearGunner()) return;
   P.tailCool=(P.tailCool||0)-dt;
@@ -3066,26 +3102,24 @@ function updateTailGun(dt){
   }
   if(!tgt || P.tailCool>0) return;
   P.tailCool=0.22;   // slower cadence — enemy fighters are a real threat again
-  // turret sits just aft of the cockpit, a little high
-  const gun=P.pos.clone().addScaledVector(nd,-1.6).add(new THREE.Vector3(0,1.0,0));
-  // aim with a little lead and turret dispersion (less accurate than the fixed guns)
-  const lead=tgt.pos.clone().addScaledVector(
-    new THREE.Vector3(Math.sin(tgt.heading),Math.sin(tgt.pitch),Math.cos(tgt.heading)), tgt.spd*0.12);
-  const dir=lead.clone().sub(gun).normalize()
-    .add(new THREE.Vector3((Math.random()-0.5)*0.10,(Math.random()-0.5)*0.10,(Math.random()-0.5)*0.10)).normalize();
-  const m=CombatFX.round();
-  m.position.copy(gun).addScaledVector(dir,3);
-  m.lookAt(m.position.clone().add(dir));
-  scene.add(m); bullets.push({mesh:m,dir,life:0.9,speed:620,tail:true});
-  // muzzle flash
-  const mf=new THREE.Sprite(new THREE.SpriteMaterial({map:smokeTex,color:0xffd060,
-    transparent:true,opacity:0.9,blending:THREE.AdditiveBlending,depthWrite:false,fog:false}));
-  GameRuntime.own(mf,{geometry:false});
-  mf.scale.set(2.4,2.4,1); mf.position.copy(gun); scene.add(mf);
-  explosions.push({mesh:mf,life:0.05,max:0.05,grow:0.3});
-  if(Math.random()<0.5) sfxGun&&sfxGun();
+  updateRearArmament();if(!rearArmament?.visible)return;
+  const pivot=rearArmament.userData.pivot;
+  planeGroup.position.copy(P.pos);planeGroup.quaternion.copy(pacificAircraftQuaternion());planeGroup.updateMatrixWorld(true);
+  const gun=rearArmament.getWorldPosition(new THREE.Vector3());
+  const lead=tgt.pos.clone().addScaledVector(new THREE.Vector3(Math.sin(tgt.heading),Math.sin(tgt.pitch),Math.cos(tgt.heading)),(tgt.spd||0)*best/620);
+  const direction=lead.sub(gun).normalize(),local=direction.clone().applyQuaternion(planeGroup.quaternion.clone().invert());
+  pivot.quaternion.setFromUnitVectors(new THREE.Vector3(0,0,1),local);planeGroup.updateMatrixWorld(true);
+  for(const port of rearArmament.userData.ports){
+    const dir=direction.clone().add(new THREE.Vector3((Math.random()-.5)*.045,(Math.random()-.5)*.045,(Math.random()-.5)*.045)).normalize();
+    const mesh=CombatFX.round();mesh.position.copy(pivot.localToWorld(port.clone()));mesh.lookAt(mesh.position.clone().add(dir));scene.add(mesh);
+    bullets.push({mesh,dir,life:1.5,speed:620,tail:true});
+  }
+  combatFX.muzzle(pivot,rearArmament.userData.ports,typeOfRearGunHeavy());
+  sfxGun();
+
 }
 
+function typeOfRearGunHeavy(){return !isSBD();}
 function updateFlak(dt){
   if(isDefend())updateCarrierDefense(dt);
   for(const s of ships){
@@ -3198,12 +3232,13 @@ function spawnFlakBurst(p){
 //  FLIGHT MODEL
 // ============================================================
 function updateFlight(dt){
+  const previousPosition=P.pos.clone();
   if(!P.alive) return;
 
   // animate gear & flaps toward targets
   P.gear += ((P.gearTgt==null?1:P.gearTgt)-(P.gear==null?1:P.gear))*Math.min(1,3*dt);
   P.flap += ((P.flapTgt==null?0:P.flapTgt)-(P.flap==null?0:P.flap))*Math.min(1,3*dt);
-  P.hook += ((P.hookTgt==null?1:P.hookTgt)-(P.hook==null?1:P.hook))*Math.min(1,3*dt);
+  P.hook += ((P.hookTgt==null?0:P.hookTgt)-(P.hook==null?0:P.hook))*Math.min(1,3*dt);
   const stallSpd=STALL_SPD - P.flap*7;        // flaps lower the stall speed
 
   // control rates (reduced near stall and when damaged)
@@ -3218,7 +3253,7 @@ function updateFlight(dt){
     : isSBD()
     ? { roll:1.00, pitch:1.05, turn:1.00, gLim:5.5, name:'sbd'    }   // Dauntless: nimble for a bomber
     : { roll:0.72, pitch:0.78, turn:0.80, gLim:3.5, name:'avenger'};  // Avenger: heavy, slow to answer
-  const pitchRate=2.0*auth*AC.pitch, rollRate=4.8*auth*AC.roll;
+  const pitchRate=3.2*auth*AC.pitch, rollRate=4.8*auth*AC.roll;
   // ease pitch/roll toward input
   // damaged wing pulls roll toward the hit side; bias decays slowly as you fight it
   // a wounded aircraft pulls, but the pilot trims it out — and far more so on final,
@@ -3267,7 +3302,7 @@ function updateFlight(dt){
     P.heading-=P.pitchVel*Math.sin(P.roll)*dt;
     P.roll=Math.atan2(Math.sin(P.roll+P.rollVel*dt),Math.cos(P.roll+P.rollVel*dt));
   }else{
-    P.pitchVel=(P.pitchVel||0)+(pitchRate*pitchRate*(inputPitch*0.55-P.pitch) - 2*zeta*pitchRate*P.pitchVel)*dt;
+    P.pitchVel=(P.pitchVel||0)+(pitchRate*pitchRate*(inputPitch*0.70-P.pitch) - 2*zeta*pitchRate*P.pitchVel)*dt;
     P.pitch += P.pitchVel*dt;
     const neutral=Math.abs(inputRoll)<.001;
     const levelRate=neutral?Math.max(3.5,rollRate*.7):rollRate;
@@ -3311,7 +3346,7 @@ function updateFlight(dt){
   // speed toward throttle target (engine loses power when damaged), minus drag
   const engineMul = (P.hull<60? (0.45+0.55*P.hull/60) : 1.0)*SortieFeatures.Damage.power(P);
   const tgt = (THR_MIN_SPD + ((MISSIONS[mission]?.corsair?145:MAX_SPD)-THR_MIN_SPD)*P.throttle)*engineMul;
-  let eff = tgt - Math.sin(P.pitch)*55 - P.flap*9 - P.gear*4 - (P.diveBrake?34:0);
+  let eff = tgt - Math.sin(P.pitch)*38 - P.flap*9 - P.gear*4 - (P.diveBrake?34:0);
   P.spd += (eff - P.spd)*Math.min(1,0.6*dt);
   P.spd = Math.max(0,P.spd);
 
@@ -3373,6 +3408,11 @@ function updateFlight(dt){
       if(P.hookWarnT<=0){ P.hookWarnT=2.2; flash("LOWER HOOK",900); } }
   }
 
+  if(okinawaWorld?.root.visible&&P.pos.y-shoreHeight(P.pos.x,P.pos.z)<35){
+    const a=previousPosition.clone(),b=P.pos.clone();a.x-=OKINAWA_OFFSET_X;b.x-=OKINAWA_OFFSET_X;
+    const right=new THREE.Vector3(1,0,0).applyQuaternion(pacificAircraftQuaternion());
+    if(FlightSupport.treeStrike(okinawaWorld.treeIndex,a,b,right,6)){crash('TREE STRIKE','Your aircraft struck a tree.');return;}
+  }
   resolveGroundAndDeck(dt);
 }
 
@@ -4484,7 +4524,18 @@ function crash(title,sub){
     sub+" Take it around again.<br><br>SCORE "+score+" &middot; BEST "+Math.max(bestScore(),score),
     "Retry Sortie");
 }
-let bailout=null,bailRescue=null,bailPlaneCrashed=false,bailDone=false,bailChuteCalled=false;
+let bailout=null,bailRescue=null,bailPlaneCrashed=false,bailDone=false,bailChuteCalled=false,crewBailouts=[];
+function aircraftCrewCount(){return isDefend()||isCorsair()?1:isSBD()?2:3;}
+function clearCrewBailouts(){for(const c of crewBailouts){c.chute.dispose();c.rescue?.dispose();}crewBailouts=[];}
+function updateCrewBailouts(dt){
+ for(const c of crewBailouts){
+  if(c.done)continue;
+  if(c.rescue){if(c.rescue.water)c.chute.position.y=seaHeightAt(c.chute.position.x,c.chute.position.z,seaUniforms?.uTime.value||0)+.9;const status=c.rescue.update(dt);if(status.pickup)c.chute.group.visible=false;if(status.done){c.done=true;c.safe=true;}continue;}
+  const landing=c.chute.update(dt*3,windZ,{turn:c.turn,forward:.1});
+  if(landing.landed){if(!landing.safe){c.done=true;c.safe=false;continue;}const p=c.chute.position,water=shoreHeight(p.x,p.z)<=.6;c.chute.settle(water);c.rescue=PilotRescue.create(THREE,scene,p,shoreHeight,{water,surfaceAt:(x,z)=>seaHeightAt(x,z,seaUniforms?.uTime.value||0)});}
+ }
+}
+
 function steeringParachute(){return !!bailout&&!bailDone&&state===ST.RESULT;}
 function beginBailout(){
   if(state!==ST.FLIGHT||!P.alive)return;
@@ -4492,25 +4543,30 @@ function beginBailout(){
   releaseHeldControls();
   bailout=PilotBailout.create(THREE,scene,P.pos.clone().add(new THREE.Vector3(-2,1,-2)),
     Math.PI/2-P.heading,P.spd,shoreHeight);
+  clearCrewBailouts();const count=aircraftCrewCount(),right=new THREE.Vector3(-Math.sin(P.heading),0,Math.cos(P.heading));
+  for(let i=1;i<count;i++){const side=i%2?1:-1,start=P.pos.clone().addScaledVector(right,side*8).addScaledVector(noseDir(),-5);start.y+=1;
+    crewBailouts.push({chute:PilotBailout.create(THREE,scene,start,Math.PI/2-P.heading+side*.35,P.spd,shoreHeight),turn:side*.2,rescue:null,done:false,safe:null});}
   bailPlaneCrashed=false;bailDone=false;bailChuteCalled=false;
   P.alive=false;state=ST.RESULT;firing=false;
   document.getElementById('bailBtn').style.display='none';
   saveBest(score);
   if(!isFree()){logAircraftLost();logPilotBailout();}
   document.getElementById('stickHint').textContent='CHUTE: TURN / GLIDE';
-  flash('PILOT CLEAR — OPENING PARACHUTE',1800);
+  flash(aircraftCrewCount()+' CREW CLEAR — OPENING PARACHUTES',1800);
 }
 function advanceBailout(dt){
   if(!steeringParachute())return;
+  updateCrewBailouts(dt);
   if(bailRescue){
     if(bailRescue.water)bailout.position.y=seaHeightAt(bailout.position.x,bailout.position.z,seaUniforms?.uTime.value||0)+.9;
     const pickup=bailRescue.update(dt);
     if(pickup.pickup)bailout.group.visible=false;
-    if(pickup.done){
+    if(pickup.done&&crewBailouts.every(c=>c.done)){
       bailDone=true;releaseHeldControls();document.getElementById('stickHint').textContent='PITCH / ROLL';
-      showResult(false,'PILOT SAFE','Rescue complete',
+      const recovered=1+crewBailouts.filter(c=>c.safe).length;
+      showResult(false,recovered===aircraftCrewCount()&&recovered>1?'CREW SAFE':'PILOT SAFE','Rescue complete',
         (bailRescue.water?'A rescue boat picked you up.':'The search party brought you back.')+
-        '<br>The aircraft was lost.<br><br>SCORE '+score+' &middot; BEST '+Math.max(bestScore(),score),'Retry Sortie');
+        '<br>'+recovered+'/'+aircraftCrewCount()+' crew recovered.<br>The aircraft was lost.<br><br>SCORE '+score+' &middot; BEST '+Math.max(bestScore(),score),'Retry Sortie');
     }
     return;
   }
@@ -4848,7 +4904,7 @@ function loadPlaneModel(){
       }
       window.__eyeDbg='EYE '+COCKPIT_EYE.map(v=>v.toFixed(2)).join('/');
       const btEl=document.getElementById('buildTag');
-      if(btEl) btEl.textContent='BUILD 174 · '+window.__eyeDbg;
+      if(btEl) btEl.textContent='BUILD 175 · '+window.__eyeDbg;
       let seat=null;
       model.traverse(function(o){
         if(!o.isMesh||!o.material) return;
@@ -5171,9 +5227,10 @@ function updatePlaneMesh(dt){
   // rotate about local X, the real Avenger model about Z — see where each hook is constructed).
   const curHook = sbdUp? sbdHookMesh : hookMesh;
   if(curHook){
+    curHook.visible=(P.hook||0)>.03;
     const ax=curHook.userData.hookAxis||'x';
     curHook.rotation[ax]=curHook.userData.hookUpAngle+
-      (curHook.userData.hookDownAngle-curHook.userData.hookUpAngle)*(P.hook==null?1:P.hook);
+      (curHook.userData.hookDownAngle-curHook.userData.hookUpAngle)*(P.hook==null?0:P.hook);
   }
   if(cockpitInterior) cockpitInterior.visible=false;
   // LOOK buttons: chase view only, camera height.
@@ -5212,6 +5269,7 @@ function updatePlaneMesh(dt){
     if(zeroProp)   zeroProp.visible=true;
   }
   fitCarrierAircraft();
+  updateRearArmament();
 }
 
 // ---------- FX: explosions, smoke ----------
@@ -5440,7 +5498,7 @@ function initAudio(){
     // freshly-created context still comes up 'suspended' and nothing ever called resume() on it
     // - silent forever, no error, nothing to catch. Belt and braces: resume unconditionally right
     // after creation. A no-op if it's already running, the fix if it wasn't.
-    actx.resume();
+    actx.resume();FlightAtmosphere.prepareRadio(actx);
   }catch(e){ actx=null; return; }
   const master=actx.createGain(); master.gain.value=0.85; master.connect(actx.destination);
   const eg=actx.createGain(); eg.gain.value=0;
@@ -5561,12 +5619,7 @@ function sfxFlapMotor(){ sfxMotor(1.4,140,340); }
 // A radio call used to just appear as text - the actual cockpit habit is a click of static as
 // the transmission opens. Same technique as thunderbolt-europe.html's own sfxRadio().
 function sfxRadio(){
-  if(!actx) return; const ct=actx.currentTime, o2=out();
-  nburst(0.05,'highpass',2600,0,0.09,0,3);
-  const o=actx.createOscillator(); o.type='sine'; o.frequency.value=1400;
-  const g=actx.createGain(); g.gain.setValueAtTime(0.0001,ct);
-  g.gain.linearRampToValueAtTime(0.05,ct+0.015); g.gain.exponentialRampToValueAtTime(0.001,ct+0.09);
-  o.connect(g); g.connect(o2); o.start(ct); o.stop(ct+0.1);
+  if(actx)FlightAtmosphere.radioTone(actx,out());
 }
 // A damaged engine misfiring under load - short, irregular crackle bursts. Triggered from
 // updateAudio() below, scaled by how badly hurt P.hull is.
@@ -5706,8 +5759,8 @@ function updateGuns(dt){
     if(!hit)for(const t of shoreTargets){if(!t.alive)continue;const p=t.group.position,back=b.mesh.position.clone().addScaledVector(b.dir,-b.speed*dt);
       const line=new THREE.Line3(back,b.mesh.position),near=line.closestPointToPoint(p.clone().add(new THREE.Vector3(0,2,0)),true,new THREE.Vector3());
       if(near.distanceTo(p.clone().add(new THREE.Vector3(0,2,0)))<7){hitShoreTarget(t,1);hit=true;break;}}
-    if(!hit&&b.mesh.position.y<shoreHeight(b.mesh.position.x,b.mesh.position.z)){spawnSmoke(b.mesh.position.x,shoreHeight(b.mesh.position.x,b.mesh.position.z)+1,b.mesh.position.z,0x877960,.7);hit=true;}
-    if(!hit && b.mesh.position.y<=0.6){ spawnSplash(b.mesh.position.x,b.mesh.position.z,false); hit=true; }
+    if(!hit){const surface=FlightSupport.surfaceHit(back,b.mesh.position,(x,z)=>Math.max(shoreHeight(x,z),seaHeightAt(x,z,seaUniforms?.uTime.value||0)),.2);
+      if(surface){const water=shoreHeight(surface.x,surface.z)<.6;combatFX.impact(surface.x,surface.y,surface.z,water);hit=true;}}
     if(hit||b.life<=0){ GameRuntime.release(b.mesh); bullets.splice(i,1); }
   }
 }
@@ -5740,6 +5793,7 @@ function updateMinimap(){
   for(const s of supportFleet){const q=put(s.group.position.x,s.group.position.z);if(Math.hypot(q[0]-c,q[1]-c)<R-1){mmCtx.fillStyle='#80c9df';mmCtx.fillRect(q[0]-3,q[1]-3,6,6);}}
   for(const t of shoreTargets){if(!t.alive)continue;const q=put(t.def.x,t.def.z);if(Math.hypot(q[0]-c,q[1]-c)<R-2){mmCtx.fillStyle=t.def.optional?'#dba774':'#f06a4b';mmCtx.fillRect(q[0]-3,q[1]-3,6,6);}}
   if(pacificOps?.config.recon&&!pacificOps.reconDone){const r=pacificOps.config.recon,q=put(r.x,r.z);mmCtx.strokeStyle='#80c9df';mmCtx.beginPath();mmCtx.arc(q[0],q[1],r.radius*scale,0,7);mmCtx.stroke();}
+  ensureNavigation().paint(mmCtx,put,c,R-7);
   mmCtx.fillStyle='#e8b84b'; mmCtx.beginPath();
   mmCtx.moveTo(c,c-6); mmCtx.lineTo(c-4,c+5); mmCtx.lineTo(c+4,c+5); mmCtx.closePath(); mmCtx.fill();
 }
@@ -5896,28 +5950,29 @@ function updateTorpRun(){
   }
 }
 
+let navigation=null;
+function pacificContacts(){
+ const c=[];
+ for(const s of ships)if(s.alive)c.push({ref:s,pos:s.group.position,kind:'SHIP',label:NavalAssets.label(s.def).toUpperCase()+' #'+(ships.indexOf(s)+1)});
+ for(const t of shoreTargets)if(t.alive)c.push({ref:t,pos:t.group.position,kind:'TARGET',label:t.def.label.toUpperCase()});
+ for(const r of raiders)if(r.alive)c.push({ref:r,pos:r.group.position,kind:'BOMBER',label:'INBOUND BOMBER'});
+ for(const z of zeros)if(z.alive)c.push({ref:z,pos:z.pos,kind:'BANDIT',label:'BANDIT — A6M ZERO'});
+ const r=pacificOps?.config.recon;if(r&&!pacificOps.reconDone)c.push({ref:r,pos:r,kind:'RECON',label:'RECON — BLUE CIRCLE'});
+ c.push({ref:'base',pos:{x:carrierX+AIM_X,z:0},kind:'BASE',label:'RETURN TO BASE'});return c.map(contact=>({...contact,range:(Math.hypot(contact.pos.x-P.pos.x,contact.pos.z-P.pos.z)/NM).toFixed(1)+' NM'}));
+}
+function ensureNavigation(){
+ if(!navigation)navigation=new FlightSupport.Navigation(document.getElementById('mmap'),pacificContacts,()=>{updateNav();updateMinimap();});
+ navigation.button.style.display=state===ST.FLIGHT?'block':'none';return navigation;
+}
 function updateNav(){
-  let target=null, label="", kind='BASE';
-  // pick nearest live primary target, else carrier
-  const live=isDefend()? raiders.filter(r=>r.alive) : ships.filter(s=>s.alive && (s.def.type==="freighter"||s.def.type==="cruiser"));
-  if(live.length){
-    let best=null,bd=1e9;
-    for(const s of live){ const d=Math.hypot(P.pos.x-s.group.position.x,P.pos.z-s.group.position.z); if(d<bd){bd=d;best=s;} }
-    target=best.group.position; label="ATTACK: "+NavalAssets.label(best.def).toUpperCase();kind=isDefend()?'BOMBER':'SHIP';
-  } else {
-    target=new THREE.Vector3(carrierX+AIM_X,DECK_Y,0); label="RECOVER ABOARD CARRIER";
-  }
-  const ground=shoreTargets.find(t=>t.alive&&!t.def.optional);
-  if(!live.length&&ground){target=ground.group.position;label='ATTACK: '+ground.def.label.toUpperCase();kind='TARGET';}
-  if(pacificOps&&!pacificOps.reconDone){const r=pacificOps.config.recon;target=new THREE.Vector3(r.x,0,r.z);label='RECON: HOLD IN SEARCH CIRCLE';kind='RECON';}
-  // The A6M is the immediate moving threat. Once close, the direction arrow
-  // follows its actual position instead of a fixed ship/shore waypoint.
-  let foe=null,fd=Infinity;
-  for(const z of zeros){if(!z.alive)continue;
-    const d=Math.hypot(z.pos.x-P.pos.x,z.pos.z-P.pos.z);
-    if(d<fd){fd=d;foe=z;}}
-  if(foe){target=foe.pos;label='BANDIT: A6M ZERO';kind='BANDIT';}
-  if(pacificOps?.failed){target=new THREE.Vector3(carrierX+AIM_X,DECK_Y,0);label='WINDOW MISSED — RECOVER';kind='BASE';}
+  const nav=ensureNavigation(),contacts=pacificContacts(),base=contacts.find(c=>c.kind==='BASE');
+  let list=contacts.filter(c=>c.kind==='TARGET'&&!c.ref.def.optional||c.kind==='SHIP'&&['freighter','cruiser'].includes(c.ref.def.type)||isDefend()&&c.kind==='BOMBER');
+  if(!list.length)list=contacts.filter(c=>c.kind==='BANDIT'||c.kind==='BOMBER');
+  let chosen=list.sort((a,b)=>Math.hypot(a.pos.x-P.pos.x,a.pos.z-P.pos.z)-Math.hypot(b.pos.x-P.pos.x,b.pos.z-P.pos.z))[0]||base;
+  if(pacificOps&&!pacificOps.reconDone)chosen=contacts.find(c=>c.kind==='RECON')||chosen;
+  if(P.rtb||pacificOps?.failed)chosen=base;
+  chosen=nav.resolve(chosen);
+  const target=chosen.pos,kind=chosen.kind,label=kind==='BASE'?'RECOVER ABOARD CARRIER':kind==='RECON'?pacificOps.status():'TRACK: '+chosen.label;
   const objText=document.getElementById('objText'); objText.textContent=label;
   // arrow relative to heading
   const bearing=Math.atan2(target.z-P.pos.z, target.x-P.pos.x);
@@ -5943,7 +5998,7 @@ function updateNav(){
 function updateLSO(){
   const lso=document.getElementById('lso');
   const live=isDefend()? raiders.filter(r=>r.alive) : ships.filter(s=>s.alive && (s.def.type==="freighter"||s.def.type==="cruiser"));
-  const recovering = live.length===0;
+  const recovering = live.length===0||navigation?.mode==='BASE';
   const aimX=carrierX+AIM_X;
   const dx=aimX-P.pos.x;                 // +ve means carrier ahead (we fly +X)
   const distToAim=Math.hypot(aimX-P.pos.x,0-P.pos.z);
@@ -6057,11 +6112,11 @@ function exitToMenu(){
   voiceRadio.cancel();soundscape.stop();
   releaseHeldControls();
   if(bailRescue){bailRescue.dispose();bailRescue=null;}
-  if(bailout){bailout.dispose();bailout=null;}
+  clearCrewBailouts();if(bailout){bailout.dispose();bailout=null;}
   document.getElementById('stickHint').textContent='PITCH / ROLL';
   document.getElementById('bailBtn').style.display='none';
   if(eng) eng.master.gain.setTargetAtTime(0.0001,actx.currentTime,0.05);
-  state=ST.MENU; killCam=null;
+  state=ST.MENU; killCam=null;if(navigation){navigation.reset();navigation.button.style.display='none';}
   setOkinawaActive(false);
   releaseOkinawa();
   carrierX=0; if(carrier) carrier.position.x=0;
@@ -6189,7 +6244,7 @@ function setupUIButtons(){
   if(dbgT2) dbgT2.onclick=()=>{
     dbgOn=!dbgOn; GameRuntime.storage.setItem('dbgOn',dbgOn?'1':'0');
     const db=document.getElementById('dbgBox'); if(db) db.textContent=dbgOn?'✓':'';
-    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 174'; }
+    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 175'; }
   };
   const lu=document.getElementById('lookUp'), ld=document.getElementById('lookDn');
   let _lookT=0;
@@ -6205,7 +6260,7 @@ function setupUIButtons(){
   if(pb) pb.addEventListener('pointerdown',e=>{ e.preventDefault(); togglePause(); });
   const rb=document.getElementById('resumeBtn'); if(rb) rb.onclick=resumeGame;
   const mb=document.getElementById('menuBtn'); if(mb) mb.onclick=exitToMenu;
-  document.getElementById('pauseMainMenu').onclick=()=>{exitToMenu();window.location.href='index.html?v=174';};
+  document.getElementById('pauseMainMenu').onclick=()=>{exitToMenu();window.location.href='index.html?v=175';};
   document.getElementById('resultBtn').onclick=()=>{
     // the logbook borrows this screen from the menu — send the player straight back
     if(logbookOpen){ logbookOpen=false; showOverlay('menu'); return; }
@@ -6272,7 +6327,7 @@ function resetControlUI(){
   const g=document.getElementById('gearBtn'); if(g){g.classList.add('on'); g.innerHTML='GEAR<br>▼ DN';}
   const f=document.getElementById('flapBtn'); if(f){f.classList.remove('on'); f.innerHTML='FLAPS<br>UP';}
   const d=document.getElementById('diveBtn'); if(d) d.classList.remove('on');
-  const h=document.getElementById('hookBtn'); if(h){h.classList.add('on'); h.innerHTML='HOOK<br>▼ DN';}
+  const h=document.getElementById('hookBtn'); if(h){h.classList.toggle('on',P.hookTgt>.5); h.innerHTML=P.hookTgt>.5?'HOOK<br>▼ DN':'HOOK<br>▲ UP';}
 }
 
 // ============================================================
@@ -6445,7 +6500,7 @@ function animate(){
     notice.style.cssText='position:fixed;inset:0;z-index:999998;background:rgba(15,20,15,.95);color:#e8ddbc;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px;text-align:center;font:16px system-ui';
     const title=document.createElement('h2');title.textContent='Simulation interrupted';
     const detail=document.createElement('p');
-    detail.textContent='BUILD 174 · '+(MISSIONS[mission]?.sub||'Menu')+' · '+error.message;
+    detail.textContent='BUILD 175 · '+(MISSIONS[mission]?.sub||'Menu')+' · '+error.message;
     const reload=document.createElement('button');reload.textContent='Reload game';
     reload.style.cssText='padding:12px 24px;font:inherit';reload.onclick=()=>location.reload();
     notice.appendChild(title);notice.appendChild(detail);notice.appendChild(reload);document.body.appendChild(notice);
@@ -6573,8 +6628,11 @@ function animateFrame(){
       spawnSmoke(is.x+(Math.random()-0.5)*10, is.topY+4, is.z+(Math.random()-0.5)*10, 0x6f6f6f, 0.4); } }
   if(state!==ST.MENU){
     if(bailout){camera.up.set(0,1,0);
-      camera.position.lerp(bailout.position.clone().add(new THREE.Vector3(18,11,28)),Math.min(1,4*rawDt));
-      camera.lookAt(bailout.position);
+      const chutes=[bailout,...crewBailouts.map(c=>c.chute)].filter(c=>c.group.visible),centre=new THREE.Vector3();
+      for(const c of chutes)centre.add(c.position);centre.divideScalar(Math.max(1,chutes.length));
+      const spread=Math.max(0,...chutes.map(c=>c.position.distanceTo(centre))),offset=new THREE.Vector3(18,11,28).multiplyScalar(Math.max(1,(spread+16)/24));
+      camera.position.lerp(centre.clone().add(offset),Math.min(1,4*rawDt));
+      camera.lookAt(centre.clone().add(new THREE.Vector3(0,3,0)));
     } else updateCamera(dt);
     updateMinimap();
   }

@@ -154,9 +154,15 @@
     color:rgba(202,191,156,.92);background:rgba(18,22,15,.72);border:1px solid rgba(202,191,156,.4);
     border-radius:7px;pointer-events:auto;touch-action:manipulation;}
   .lookBtn:active{background:rgba(202,191,156,.28);}
-  #mmap{position:fixed;top:calc(env(safe-area-inset-top) + 310px);
+  #mmap{position:fixed;top:min(calc(env(safe-area-inset-top) + 310px),calc(100dvh - env(safe-area-inset-bottom) - 326px));
     right:calc(max(12px,env(safe-area-inset-right)) + 92px);width:104px;height:104px;border-radius:50%;
     border:1px solid rgba(202,191,156,.35);background:rgba(8,12,10,.62);z-index:9;}
+  #bombSight{position:fixed;transform:translate(-50%,-50%);color:#ffeac0;text-shadow:0 1px 2px #000;font:bold 13px monospace;pointer-events:none;z-index:8;}#bombSight.onTarget{color:#a5ff8d;}
+  .navSelect{position:fixed;right:calc(max(12px,env(safe-area-inset-right)) + 92px);top:min(calc(env(safe-area-inset-top) + 276px),calc(100dvh - env(safe-area-inset-bottom) - 360px));width:104px;min-height:30px;padding:4px;color:#eeddb0;background:#15231c;border:1px solid #aa9870;border-radius:4px;font:10px monospace;z-index:14;touch-action:manipulation;}
+  .navChoices{position:fixed;right:calc(max(12px,env(safe-area-inset-right)) + 92px);top:calc(env(safe-area-inset-top) + 145px);max-height:45vh;width:230px;overflow-y:auto;background:#142219;border:1px solid #aa9870;padding:5px;z-index:15;}
+  body.launchPreview .navSelect,body.launchPreview .navChoices,body.carrierPreview .navSelect,body.carrierPreview .navChoices{visibility:hidden;}
+  .navChoices[hidden]{display:none}.navChoices button{display:block;width:100%;min-height:38px;text-align:left;background:#253529;color:#f5e4b7;border:1px solid #53604b;font:12px monospace;margin:3px 0;touch-action:manipulation;}
+  #radio{contain:layout paint;}
   #dmgVig{position:fixed;inset:0;z-index:11;pointer-events:none;opacity:0;
     box-shadow:inset 0 0 220px 60px rgba(190,20,10,.85);}
   #oilCanopy{position:fixed;inset:0;z-index:8;pointer-events:none;opacity:0;
@@ -266,7 +272,7 @@
   #opsStatus{position:fixed;top:calc(env(safe-area-inset-top) + 76px);left:50%;transform:translateX(-50%);color:#edcc80;background:rgba(14,20,18,.78);padding:5px 9px;font:10px monospace;pointer-events:none;z-index:9;max-width:58vw;text-align:center;}
   #systemsStatus{position:fixed;top:calc(env(safe-area-inset-top) + 116px);left:50%;transform:translateX(-50%);color:#ffbf96;background:#251810db;padding:5px 9px;font:10px monospace;pointer-events:none;z-index:9;max-width:60vw;text-align:center;}#systemsStatus:empty{display:none;}
 </style>
-<link rel="stylesheet" href="menu-layout.css?v=174">
+<link rel="stylesheet" href="menu-layout.css?v=175">
 </head>
 <body>
 <!-- ===== TEMP TEST-ONLY VERSION BANNER — asked for by Oliver: "kannst du irgendwo einbauen,
@@ -288,7 +294,7 @@
   <div style="width:100%;height:4px;background:repeating-linear-gradient(45deg,#ffd400,#ffd400 8px,#111 8px,#111 16px);"></div>
   <span id="testVersionBannerText" style="background:#111;color:#ffd400;font-family:monospace;font-weight:800;font-size:11px;letter-spacing:.5px;padding:3px 10px;border:1px solid #ffd400;border-top:none;border-radius:0 0 6px 6px;"></span>
 </div>
-<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 174';</script>
+<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 175';</script>
 <!-- ===== END TEMP TEST-ONLY VERSION BANNER ===== -->
 <div id="app"></div>
 <style>
@@ -328,7 +334,7 @@
   <div id="flash"></div>
   <div id="gunsight"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 174 · REAL RHINE</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 175 · REAL RHINE</div>
 
   <div id="apr">
     <div id="aprCall"></div>
@@ -340,6 +346,7 @@
 
 <div id="opsStatus"></div>
 <div id="systemsStatus" role="status"></div>
+<div id="bombSight" hidden></div>
 <canvas id="mmap" width="104" height="104"></canvas>
 <div id="oilCanopy"></div>
 <div id="dmgVig"></div>
@@ -378,7 +385,7 @@
 </div>
 
 <div class="overlay hidden" id="menu" data-campaign="europe">
-  <div class="menuTop"><a id="selBtn" href="index.html?v=174">&#9664; Change Game</a><span class="menuMeta">RHINE OPERATIONS<br>BUILD 174</span></div>
+  <div class="menuTop"><a id="selBtn" href="index.html?v=175">&#9664; Change Game</a><span class="menuMeta">RHINE OPERATIONS<br>BUILD 175</span></div>
   <div class="card menuCard">
     <aside class="menuOverview" aria-label="Campaign and pilot options">
     <div class="campaignArt" aria-hidden="true"></div>
@@ -463,7 +470,7 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="vendor/GLTFLoader-r128.js?v=147"></script>
-<script src="fortification-assets.js?v=174"></script>
+<script src="fortification-assets.js?v=175"></script>
 <script src="https://cdn.jsdelivr.net/npm/fflate@0.6.9/umd/index.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/FBXLoader.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/utils/SkeletonUtils.js"></script>
@@ -478,7 +485,7 @@
 <script src="terrain-system/TerrainTile.js?v=168"></script>
 <script src="terrain-system/TerrainManager.js?v=168"></script>
 <script src="terrain-system/OSMManager.js?v=172"></script>
-<script src="terrain-system/PeriodBuildings.js?v=174"></script>
+<script src="terrain-system/PeriodBuildings.js?v=175"></script>
 <script src="terrain-system/HistoricalObjectManager.js?v=173"></script>
 <script src="terrain-system/AirfieldDetails.js?v=169"></script>
 <script src="terrain-system/AircraftGround.js?v=170"></script>
@@ -488,15 +495,16 @@
 <script src="campaign.js?v=1"></script>
 <script src="game-runtime.js?v=167"></script>
 <script src="aircraft-rotors.js?v=172"></script>
-<script src="combat-fx.js?v=167"></script>
+<script src="combat-fx.js?v=175"></script>
+<script src="flight-support.js?v=175"></script>
 <script src="ordnance.js?v=157"></script>
 <script src="pilot-bailout.js?v=157"></script>
 <script src="pilot-rescue.js?v=157"></script>
 <script src="radio-intercept.js?v=157"></script>
 <script src="audio/weapon-sound.js?v=144"></script>
 <script src="audio/jet-engine.js?v=144"></script>
-<script src="audio/flight-atmosphere.js?v=164"></script>
-<script src="sortie-systems.js?v=162"></script>
+<script src="audio/flight-atmosphere.js?v=175"></script>
+<script src="sortie-systems.js?v=175"></script>
 <script src="sortie-features.js?v=163"></script>
 <script src="sortie-fuel.js?v=161"></script>
 <script src="operation-plans.js?v=162"></script>
@@ -810,7 +818,7 @@ async function loadRealWorld(){
 
   if(OSMManager.BUILD!==23||HistoricalObjectManager.BUILD!==21||LivingWorld.BUILD!==22||WorldVehicles.BUILD!==22) throw new Error('Terrain version mismatch. Reload Remagen.');
   document.getElementById('testVersionBannerText').textContent=
-    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 174 · MODULE 23';
+    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 175 · MODULE 23';
   heightProvider=new DEMHeightProvider(RTILE,'terrain-system/real/data/dem/');
   terrain=new TerrainManager(scene,RTILE,heightProvider);
   osmMgr=new OSMManager(scene,RTILE,terrain,'terrain-system/real/data/osm/');
@@ -894,6 +902,7 @@ async function loadRealWorld(){
   osmMgr.deferSurfaces=false;osmMgr.syncTerrainSurfaces();
 
   AF_Y=terrain.getHeight(AF_X,AF_Z);
+  buildEuropeTreeIndex();
   realWorldReady=true;
   setLoadingText('Ready.');
 }
@@ -2690,7 +2699,8 @@ function resetRealTarget(sub){
   sub.rotation.set(0,0,0);
   sub.traverse(o=>{ if(o.isMesh){
     if(!o.userData.origMat) o.userData.origMat=o.material;
-    o.material=o.userData.origMat;
+    if(o.material!==o.userData.origMat)o.material.dispose();
+    o.material=o.userData.origMat;o.visible=true;
   }});
 }
 function spawnRealTarget(kind,sub,opt){
@@ -2783,7 +2793,8 @@ function killTarget(t){
   if(t.entity) livingWorld.destroyEntity(t.entity);
   else {
     t.sub.traverse(o=>{ if(o.isMesh){ o.material=o.material.clone(); o.material.color.multiplyScalar(0.32); } });
-    t.sub.userData.wreckOffset=-(t.kind==='bridge'?7:1.2);
+    if(t.kind==='bridge'){t.sub.children[0].visible=false;const pier=t.sub.children[2];if(pier)pier.visible=false;}
+    t.sub.userData.wreckOffset=-(t.kind==='bridge'?2:1.2);
     t.sub.position.y=(t.sub.userData.terrainLift||0)+t.sub.userData.wreckOffset;
   }
   if(t.kind==='bridge'||t.kind==='factory') shake(2.0); else shake(0.7);
@@ -3062,15 +3073,35 @@ function bridgeBlastDistance(t,x,z){
 // A bomb crosses several metres per frame. Raycast the entire step against the
 // real deck and piers so a direct hit anywhere along the span counts once.
 function directBridgeHit(from,to){
-  const delta=to.clone().sub(from),length=delta.length();if(!length)return null;
-  const ray=new THREE.Raycaster(from,delta.divideScalar(length),0,length);
-  let result=null;
-  for(const t of targets){if(!t.alive||t.kind!=='bridge')continue;
-    t.sub.updateWorldMatrix(true,true);
-    const hit=ray.intersectObject(t.sub,true)[0];
-    if(hit&&(!result||hit.distance<result.distance))result={target:t,point:hit.point,distance:hit.distance};
+  let nearest=null;
+  for(const target of targets){
+    if(!target.alive||target.kind!=='bridge')continue;
+    const sub=target.sub,d=sub.userData.data,u=sub.userData,deck=sub.children[0].geometry.attributes.position.getY(0)+sub.position.y;
+    const dy=to.y-from.y;if(Math.abs(dy)<1e-8)continue;
+    const f=(deck-from.y)/dy;if(f<0||f>1)continue;
+    const x=from.x+(to.x-from.x)*f,z=from.z+(to.z-from.z)*f;
+    const ox=u.x-(d.x1+d.x2)/2,oz=u.z-(d.z1+d.z2)/2,dx=d.x2-d.x1,dz=d.z2-d.z1,L=Math.hypot(dx,dz);
+    const along=((x-ox-d.x1)*dx+(z-oz-d.z1)*dz)/L,cross=Math.abs((x-ox-d.x1)*dz-(z-oz-d.z1)*dx)/L;
+    if(along>=-.8&&along<=L+.8&&cross<=d.width/2+.8&&(!nearest||f<nearest.f))nearest={target,point:new THREE.Vector3(x,deck,z),distance:from.distanceTo(to)*f,f};
   }
-  return result;
+  return nearest;
+}
+function bombImpactPrediction(){
+ const p=P.pos.clone().addScaledVector(noseDir(),2);p.y-=1.4;const v=noseDir().multiplyScalar(P.spd);
+ for(let i=0;i<180;i++){
+  const before=p.clone();v.y-=32*.1;p.addScaledVector(v,.1);
+  const hit=directBridgeHit(before,p);if(hit)return hit.point;
+  if(p.y<=groundY(p.x,p.z)+.6)return FlightSupport.surfaceHit(before,p,groundY,.6)||p;
+ }
+ return null;
+}
+function updateBombSight(){
+ const el=document.getElementById('bombSight');
+ if(state!==ST.FLIGHT||!P.alive||P.onGround||weapon!=='bomb'||P.bombs<=0){el.hidden=true;return;}
+ const impact=bombImpactPrediction();if(!impact){el.hidden=true;return;}
+ const bridge=targets.find(t=>t.alive&&t.kind==='bridge'),near=bridge&&bridgeBlastDistance(bridge,impact.x,impact.z)<18;
+ const ndc=impact.clone().project(camera);el.hidden=ndc.z>1||ndc.z<0||Math.abs(ndc.x)>1||Math.abs(ndc.y)>1;
+ el.style.left=(ndc.x*.5+.5)*innerWidth+'px';el.style.top=(-ndc.y*.5+.5)*innerHeight+'px';el.classList.toggle('onTarget',!!near);el.textContent=near?'⊕ RELEASE':'⊕ BOMB';
 }
 function blast(x,y,z,radius,power){
   spawnExplosion(x,y,z,radius/26+0.7);
@@ -3154,14 +3185,8 @@ function updateBullets(dt){
     const ax=p.x, ay=p.y, az=p.z;              // where the round was
     p.addScaledVector(b.dir,step);             // where it is now
     let done=false;
-    // ground
-    if(p.y<=groundY(p.x,p.z)+0.4){
-      let lo=0,hi=1;
-      for(let n=0;n<9;n++){const t=(lo+hi)/2,x=ax+(p.x-ax)*t,z=az+(p.z-az)*t;
-        if(ay+(p.y-ay)*t>groundY(x,z)+.1)lo=t;else hi=t;}
-      groundGunImpact(ax+(p.x-ax)*hi,az+(p.z-az)*hi);
-      done=true;
-    }
+    const surface=FlightSupport.surfaceHit(new THREE.Vector3(ax,ay,az),p,groundY,.2);
+    if(surface){groundGunImpact(surface.x,surface.z);done=true;}
     if(!done) for(const t of targets){
       if(!t.alive) continue;
       const tp=t.group.position;
@@ -3215,6 +3240,7 @@ function updateOrdnance(dt){
     const bridgeHit=directBridgeHit(previous,p);
     let hit=!!bridgeHit||(p.y<=groundY(p.x,p.z)+0.6);
     if(bridgeHit){p.copy(bridgeHit.point);damageTarget(bridgeHit.target,bridgeHit.target.hp,false);}
+    else if(hit){const surface=FlightSupport.surfaceHit(previous,p,groundY,.6);if(surface)p.copy(surface);}
     if(!hit) for(const t of targets){
       if(!t.alive||t.kind==='bridge') continue; const tp=t.group.position;
       if(Math.hypot(p.x-tp.x,p.z-tp.z)<t.radius+3 && Math.abs(p.y-tp.y)<(t.kind==='bridge'?26:12)){ hit=true; break; }
@@ -3969,6 +3995,7 @@ function clampToWorldBounds(){
 }
 
 function updateFlight(dt){
+  const previousPosition=P.pos.clone();
   const d=acDef();
   // control surfaces
   P.diveBrakeVisual+=(Number(P.ac==='ju87'&&P.diveBrake)-P.diveBrakeVisual)*Math.min(1,dt*5);
@@ -4125,10 +4152,42 @@ function updateFlight(dt){
       P.tankEmptyWarned=true;flash('EXTERNAL TANK EMPTY — DROP TANK / T',2400);
     }
   }
+  if(!P.onGround&&P.alive&&P.pos.y-groundY(P.pos.x,P.pos.z)<60){
+    const right=new THREE.Vector3(1,0,0).applyQuaternion(new THREE.Quaternion().setFromEuler(new THREE.Euler(-P.pitch,P.heading,-P.roll,'YXZ')));
+    if(FlightSupport.treeStrike(europeTrees,previousPosition,P.pos,right,acDef().span?acDef().span/2:5)){crash('TREE STRIKE','Your aircraft struck a tree.');return;}
+  }
   resolveGround(dt);
 }
 
 // ---- ground contact: landing, or the end of the sortie ----
+function buildEuropeTreeIndex(){
+ const cache=new Map(),partBounds=new WeakMap();
+ const build=tile=>{
+  const index=new FlightSupport.TreeIndex(groundY),m=new THREE.Matrix4(),v=new THREE.Vector3(),scale=new THREE.Vector3();
+  for(const mesh of tile.farGroup?.children||[]){
+   if(!mesh.isInstancedMesh||!mesh.userData.canopyRadii)continue;
+   const geo=mesh.geometry,p=geo.attributes.position,parts=geo.attributes.forestPart,roots=geo.userData.forestRoots;if(!roots)continue;
+   let bounds=partBounds.get(geo);
+   if(!bounds){bounds=roots.map(()=>({minY:Infinity,maxY:-Infinity,radius:0}));
+    for(let j=0;j<p.count;j++){const k=Math.min(bounds.length-1,Math.round(parts.getX(j))),b=bounds[k];b.minY=Math.min(b.minY,p.getY(j));b.maxY=Math.max(b.maxY,p.getY(j));b.radius=Math.max(b.radius,Math.hypot(p.getX(j)-roots[k][0],p.getZ(j)-roots[k][1]));}partBounds.set(geo,bounds);}
+   for(let i=0;i<mesh.count;i++){mesh.getMatrixAt(i,m);scale.setFromMatrixScale(m);if(scale.x<.001)continue;
+    for(let k=0;k<roots.length;k++){const b=bounds[k];v.set(roots[k][0],b.minY,roots[k][1]).applyMatrix4(m);const offset=(geo.attributes.canopyGround?.array[i*4+k]||0)*scale.y;
+     index.add(v.x,v.z,v.y+offset,(b.maxY-b.minY)*scale.y,b.radius*scale.x,.019*scale.x);
+    }
+   }
+  }
+  return index;
+ };
+ europeTrees={
+  focus(x,z){const key=Math.floor(x/RTILE)+','+Math.floor(z/RTILE);if(!cache.has(key)){const tile=osmMgr.tiles.get(key);if(tile)cache.set(key,build(tile));}
+   if(cache.size>4)cache.delete(cache.keys().next().value);return cache.get(key);},
+  hit(a,b,padding){const indices=new Set();for(const x of [Math.min(a.x,b.x)-40,Math.max(a.x,b.x)+40])for(const z of [Math.min(a.z,b.z)-40,Math.max(a.z,b.z)+40]){const index=this.focus(x,z);if(index)indices.add(index);}for(const index of indices){const hit=index.hit(a,b,padding);if(hit)return hit;}return null;},
+  get cells(){return this.focus(P.pos.x,P.pos.z)?.cells||new Map();},
+  get count(){return [...cache.values()].reduce((sum,i)=>sum+i.count,0);}
+ };
+ // Only the player's current tile is indexed; the full region contains 650k tree stems.
+ europeTrees.focus(AF_X,AF_Z);
+}
 function resolveGround(dt){
   const gy=groundY(P.pos.x,P.pos.z);
   const agl=P.pos.y-gy;
@@ -4275,6 +4334,7 @@ function relaunch(){
   state=ST.FLIGHT;
 }
 function startMission(i){
+  if(navigation)navigation.reset();
   finishLaunchIntro(false);
   if(eng) eng.master.gain.setTargetAtTime(0.85,actx.currentTime,0.05);
   flightCoach=new GameRuntime.HintCoach();
@@ -4381,7 +4441,7 @@ function updateEuropeOperation(dt){
  }
  checkObjective();
  const el=document.getElementById('opsStatus');
- if(el)el.textContent=FlightOps.wx(weather).label.toUpperCase()+' · '+(P.rtb&&!europeOps.failed?'RECOVERY'+(wingmen.some(w=>w.alive&&!w.landed)?' · ESCORT TWO (OPTIONAL)':''):europeOps.status());
+ if(el){const text=FlightOps.wx(weather).label.toUpperCase()+' · '+(P.rtb&&!europeOps.failed?'RECOVERY'+(wingmen.some(w=>w.alive&&!w.landed)?' · ESCORT TWO (OPTIONAL)':''):europeOps.status());if(el.textContent!==text)el.textContent=text;}
 }
 function buildRhineChart(){
  if(rhineChart||!terrain)return;
@@ -4435,7 +4495,7 @@ function groundGunImpact(x,z){
  const q=new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,0,1),n),s=.65+Math.random()*.7;
  const mat=new THREE.Matrix4().compose(new THREE.Vector3(x,y+.16,z),q,new THREE.Vector3(s,s,1));
  gunMarks.setMatrixAt(gunMarkNext,mat);gunMarks.count=Math.min(320,gunMarks.count+1);gunMarkNext=(gunMarkNext+1)%320;gunMarks.instanceMatrix.needsUpdate=true;
- if(gunMarkNext%2===0)spawnSmoke(x,y+1.6,z,0x958368,.85);
+ combatFX.impact(x,y,z,!!livingWorld?livingWorld._pointOnWater(x,z):y<.7);
 }
 
 function applyWeather(){
@@ -4564,6 +4624,17 @@ function setThrottleUI(v){
   if(f) f.style.height=Math.round(P.throttle*100)+'%';
   if(t) t.textContent=Math.round(P.throttle*100);
 }
+let navigation=null,europeTrees=null;
+function europeContacts(){
+ const contacts=targets.filter(t=>t.alive).map((t,i)=>({ref:t,pos:t.group.position,kind:t.kind.toUpperCase(),label:(t.primary?'OBJECTIVE: ':'')+(t.name||t.kind).toUpperCase()+' #'+(i+1)}));
+ for(const e of enemyAir)if(e.alive)contacts.push({ref:e,pos:e.pos,kind:e.bomber?'BOMBER':'BANDIT',label:e.bomber?'BOMBER':'BANDIT'});
+ const r=europeOps?.config.recon;if(r&&!europeOps.reconDone)contacts.push({ref:r,pos:r,kind:'RECON',label:'RECON — BLUE CIRCLE'});
+ contacts.push({ref:'base',pos:{x:AF_X,z:AF_Z},kind:'BASE',label:'RETURN TO BASE'});return contacts.map(c=>({...c,range:(Math.hypot(c.pos.x-P.pos.x,c.pos.z-P.pos.z)/MI).toFixed(1)+' MI'}));
+}
+function ensureNavigation(){
+ if(!navigation)navigation=new FlightSupport.Navigation(document.getElementById('mmap'),europeContacts,()=>{updateHUD();drawMinimap();});
+ navigation.button.style.display=state===ST.FLIGHT?'block':'none';return navigation;
+}
 function updateHUD(){
   const gy=groundY(P.pos.x,P.pos.z);
   const nearField=Math.abs(P.pos.x-AF_X)<RWY_LEN*1.6 && Math.abs(P.pos.z-AF_Z)<900;
@@ -4585,29 +4656,17 @@ function updateHUD(){
   document.getElementById('hAmmo').textContent=Math.max(0,P.ammo);
   document.getElementById('hullRow').classList.toggle('warn',P.hull<40);
   document.getElementById('objText').textContent=objectiveText();
-  // nav arrow to the nearest live primary target, or home when the job is done
-  let tx=AF_X,tz=AF_Z,found=false,navKind='BASE';
-  let bd=1e9;
-  for(const t of targets){ if(!t.alive||!t.primary) continue;
-    const d=Math.hypot(t.group.position.x-P.pos.x,t.group.position.z-P.pos.z);
-    if(europeOps?.phase()?.id==='suppress'&&t.kind!=='flak')continue;
-    if(d<bd){bd=d;tx=t.group.position.x;tz=t.group.position.z;found=true;navKind=t.kind.toUpperCase();} }
-  // A nearby moving opponent matters more than a fixed ground waypoint. The
-  // arrow follows the closest live aircraft on every HUD update, then returns
-  // to the mission target when the sky is clear.
-  let foe=null,fd=Infinity;
-  for(const e of enemyAir){if(!e.alive||(e.escapeThreat&&P.rtb))continue;
-    const d=Math.hypot(e.pos.x-P.pos.x,e.pos.z-P.pos.z);
-    if(d<fd){fd=d;foe=e;}}
-  if(foe&&(!europeOps||europeOps.reconDone||fd<1500)&&!(europeOps?.phase()?.id==='suppress'&&fd>1200)){
-    tx=foe.pos.x;tz=foe.pos.z;navKind=foe.bomber?'BOMBER':'BANDIT';found=true;
-  }
-  if(europeOps&&!europeOps.reconDone&&navKind!=='BANDIT'&&navKind!=='BOMBER'){
-    tx=europeOps.config.recon.x;tz=europeOps.config.recon.z;navKind='RECON';
-  }
-  if(europeOps?.failed){tx=AF_X;tz=AF_Z;navKind='BASE';}
+  updateBombSight();
+  const nav=ensureNavigation(),contacts=europeContacts(),base=contacts.find(c=>c.kind==='BASE');
+  let candidates=contacts.filter(c=>c.ref?.primary&&(europeOps?.phase()?.id!=='suppress'||c.kind==='FLAK'));
+  if(!candidates.length)candidates=contacts.filter(c=>c.kind==='BANDIT'||c.kind==='BOMBER');
+  let chosen=candidates.sort((a,b)=>Math.hypot(a.pos.x-P.pos.x,a.pos.z-P.pos.z)-Math.hypot(b.pos.x-P.pos.x,b.pos.z-P.pos.z))[0]||base;
+  if(europeOps&&!europeOps.reconDone)chosen=contacts.find(c=>c.kind==='RECON')||chosen;
   const gate=europeOps?.config.approach;
-  if(gate&&!europeOps.approachDone&&!P.rtb&&!europeOps.failed&&fd>1200){tx=gate.x;tz=gate.z;navKind=gate.label;}
+  if(gate&&!europeOps.approachDone&&!P.rtb)chosen={pos:gate,kind:gate.label};
+  if(P.rtb||europeOps?.failed)chosen=base;
+  chosen=nav.resolve(chosen);
+  const tx=chosen.pos.x,tz=chosen.pos.z,navKind=chosen.kind;
   const dx=tx-P.pos.x, dz=tz-P.pos.z;
   const brg=Math.atan2(dx,dz);
   // Looking toward +Z, +X appears on the LEFT of the screen. The old sign
@@ -4705,6 +4764,7 @@ function drawMinimap(){
     if(e.alive&&(e.kind==='civil'||e.kind==='wagon'))rim(e.model.position.x,e.model.position.z,'#b9d6cf');
   rim(AF_X,AF_Z,'#7fae5a');
   g.restore();
+  ensureNavigation().paint(g,put,R,R-7);
   g.fillStyle='#cabf9c'; g.beginPath();
   g.moveTo(R,R-6); g.lineTo(R-4,R+5); g.lineTo(R+4,R+5); g.closePath(); g.fill();
 }
@@ -4750,7 +4810,7 @@ function initAudio(){
     // freshly-created context still comes up 'suspended' and nothing ever called resume() on it
     // - silent forever, no error, nothing to catch. Belt and braces: resume unconditionally right
     // after creation. A no-op if it's already running, the fix if it wasn't.
-    actx.resume();
+    actx.resume();FlightAtmosphere.prepareRadio(actx);
   }catch(e){ actx=null; return; }
   const master=actx.createGain(); master.gain.value=0.85; master.connect(actx.destination);
   const eg=actx.createGain(); eg.gain.value=0;
@@ -4873,12 +4933,7 @@ function sfxFlapMotor(){ sfxMotor(1.4,140,340); }
 // A radio call used to just appear as text - the actual cockpit habit is a click of static as
 // the transmission opens. Cheap, and it sells every radioSay() as someone actually keying a mic.
 function sfxRadio(){
-  if(!actx) return; const ct=actx.currentTime, o2=out();
-  nburst(0.05,'highpass',2600,0,0.09,0,3);
-  const o=actx.createOscillator(); o.type='sine'; o.frequency.value=1400;
-  const g=actx.createGain(); g.gain.setValueAtTime(0.0001,ct);
-  g.gain.linearRampToValueAtTime(0.05,ct+0.015); g.gain.exponentialRampToValueAtTime(0.001,ct+0.09);
-  o.connect(g); g.connect(o2); o.start(ct); o.stop(ct+0.1);
+  if(actx)FlightAtmosphere.radioTone(actx,out());
 }
 // A damaged engine misfiring under load - short, irregular crackle bursts, probability and
 // frequency scaled by how badly hurt P.hull is. Triggered from updateAudio() below, same hull
@@ -5137,7 +5192,7 @@ function showResult(good,title,sub,html,btn){
     voiceRadio.cancel();soundscape.stop();
     show('result',false);
     if(good && selectedMission===MISSIONS.length-1){
-      show('menu',true);
+      show('menu',true);if(navigation){navigation.reset();navigation.button.style.display='none';}
     }
     else if(good && selectedMission<MISSIONS.length-1) showBrief(selectedMission+1);
     else showBrief(selectedMission);
@@ -5195,7 +5250,7 @@ function showLogbook(){
     +(l.air||0)+' aircraft destroyed<br><br>'
     +'<b>DECORATIONS</b>  🥇'+(medals.gold||0)+'  🥈'+(medals.silver||0)+'  🥉'+(medals.bronze||0)+'<br><br>'
     +'<b>CAREER SCORE</b> '+(l.score||0),'Close');
-  document.getElementById('rsGo').onclick=()=>{ show('result',false); show('menu',true); };
+  document.getElementById('rsGo').onclick=()=>{ show('result',false); show('menu',true);if(navigation){navigation.reset();navigation.button.style.display='none';} };
 }
 
 // ============================================================
@@ -5381,7 +5436,7 @@ function exitToMenuFromPause(){
   radioQ=[];radioT=0;flashT=0;
   combatFX?.clear();
   show('result',false); show('brief',false);
-  show('menu',true);
+  show('menu',true);if(navigation){navigation.reset();navigation.button.style.display='none';}
   buildMenu();
 }
 
@@ -5415,7 +5470,8 @@ function init(){
   voiceRadio.bind(document.getElementById('spokenRadio'));
   const app=document.getElementById('app');
   renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+  // Bound Retina fill rate on touch devices; the CSS HUD keeps its native resolution.
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio,navigator.maxTouchPoints>0?1.5:2));
   renderer.setSize(window.innerWidth,window.innerHeight);
   app.appendChild(renderer.domElement);
   scene=new THREE.Scene();
@@ -5454,7 +5510,7 @@ function init(){
       field:[ALLIED_AF_X,ALLIED_AF_Z],
       airfields:[[ALLIED_AF_X,ALLIED_AF_Z],[GERMAN_AF_X,GERMAN_AF_Z]]
     });
-    show('loading',false); show('menu',true); state=ST.MENU;
+    show('loading',false); show('menu',true);if(navigation){navigation.reset();navigation.button.style.display='none';} state=ST.MENU;
     worldVehicles=new WorldVehicles(scene,terrain,osmMgr);
     worldVehicles.onTemplate=(kind,template)=>{
       if(livingWorld)livingWorld.installVehicleModels(worldVehicles.templates);
@@ -5484,10 +5540,10 @@ function init(){
   buildMenu();
   // menu wiring
   document.getElementById('startBtn').onclick=()=>showBrief(selectedMission);
-  document.getElementById('pauseMainMenu').onclick=()=>{exitToMenuFromPause();window.location.href='index.html?v=174';};
+  document.getElementById('pauseMainMenu').onclick=()=>{exitToMenuFromPause();window.location.href='index.html?v=175';};
   document.getElementById('logBtn').onclick=()=>{ show('menu',false); showLogbook(); };
   document.getElementById('skipLaunchPreview').onclick=()=>finishLaunchIntro();
-  document.getElementById('brBack').onclick=()=>{ show('brief',false); show('menu',true); state=ST.MENU; };
+  document.getElementById('brBack').onclick=()=>{ show('brief',false); show('menu',true);if(navigation){navigation.reset();navigation.button.style.display='none';} state=ST.MENU; };
   document.getElementById('brGo').onclick=async()=>{
     const idx=selectedMission,m=MISSIONS[idx],button=document.getElementById('brGo');
     if(button.disabled)return;
@@ -5511,7 +5567,7 @@ function init(){
       console.error('Mission start stopped:',err);
     }finally{button.disabled=false;}
   };
-  document.getElementById('rsMenu').onclick=()=>{ voiceRadio.cancel();soundscape.stop();show('result',false); show('menu',true);
+  document.getElementById('rsMenu').onclick=()=>{ voiceRadio.cancel();soundscape.stop();show('result',false); show('menu',true);if(navigation){navigation.reset();navigation.button.style.display='none';}
     buildMenu(); state=ST.MENU; };
   document.getElementById('pmResume').onclick=()=>{ if(state===ST.PAUSED) togglePause(); };
   document.getElementById('pmMenu').onclick=exitToMenuFromPause;

@@ -58,6 +58,63 @@ class OkinawaWorld{
   const coast=clamp(d/26,0,1),micro=(noise(x*.028,z*.028)-.5)*1.5*clamp(d/40,0,1);
   return Math.max(.15,h*coast+micro);
  }
+ getSurfaceHeight(x,z){
+  const step=31.25,gx=Math.floor((x+8000)/step)*step-8000,gz=Math.floor((z+8000)/step)*step-8000,u=(x-gx)/step,v=(z-gz)/step;
+  const a=this.getHeight(gx,gz),b=this.getHeight(gx+step,gz),c=this.getHeight(gx,gz+step),d=this.getHeight(gx+step,gz+step);
+  return u+v<=1?a+u*(b-a)+v*(c-a):d+(1-u)*(c-d)+(1-v)*(b-d);
+ }
+ buildRoads(){
+  // Authored period-style hamlet links and farm tracks; no modern Overture road claim.
+  const N=100,step=160,heights=new Float32Array(N*N),valid=new Uint8Array(N*N),key=(x,z)=>z*N+x,point=k=>[k%N*step-7920,Math.floor(k/N)*step-7920];
+  for(let z=0;z<N;z++)for(let x=0;x<N;x++){const k=key(x,z),p=point(k);heights[k]=this.getSurfaceHeight(...p);valid[k]=this.shoreDistance(...p)>30&&this.biome(...p)[2]<.1&&!this.nearHouse(...p)?1:0;}
+  const nearest=p=>{let best=-1,dist=Infinity;for(let k=0;k<valid.length;k++)if(valid[k]){const q=point(k),d=Math.hypot(q[0]-p[0],q[1]-p[1]);if(d<dist){dist=d;best=k;}}return dist<700?best:-1;};
+  const nodes=[...new Set((this.hamletCenters||[]).map(nearest).filter(k=>k>=0))],routes=[],connected=new Set(nodes.length?[nodes[0]]:[]);
+  const heapPush=(heap,item)=>{heap.push(item);let i=heap.length-1;while(i){const p=(i-1)>>1;if(heap[p][0]<=item[0])break;heap[i]=heap[p];i=p;}heap[i]=item;};
+  const heapPop=heap=>{const top=heap[0],last=heap.pop();if(heap.length){let i=0;while(i*2+1<heap.length){let j=i*2+1;if(j+1<heap.length&&heap[j+1][0]<heap[j][0])j++;if(heap[j][0]>=last[0])break;heap[i]=heap[j];i=j;}heap[i]=last;}return top;};
+  const route=(start,end)=>{
+   const cost=new Float32Array(N*N);cost.fill(Infinity);cost[start]=0;const prev=new Int32Array(N*N);prev.fill(-1);const heap=[],goal=point(end);heapPush(heap,[0,start]);let iterations=0;
+   while(heap.length&&iterations++<20000){const [,a]=heapPop(heap);if(a===end){const path=[];for(let k=end;k>=0;k=prev[k]){path.push(point(k));if(k===start)break;}return path.reverse();}
+    const x=a%N,z=Math.floor(a/N);
+    for(const [dx,dz]of [[-1,0],[1,0],[0,-1],[0,1],[-1,-1],[-1,1],[1,-1],[1,1]]){
+     const xx=x+dx,zz=z+dz;if(xx<0||zz<0||xx>=N||zz>=N)continue;const b=key(xx,zz);if(!valid[b])continue;
+     const length=step*Math.hypot(dx,dz),slope=Math.abs(heights[a]-heights[b])/length;if(slope>.48)continue;
+     const pa=point(a),pb=point(b);let clear=true;
+     for(let f=.125;f<1;f+=.125){const px=pa[0]+(pb[0]-pa[0])*f,pz=pa[1]+(pb[1]-pa[1])*f;if(this.shoreDistance(px,pz)<24||this.nearHouse(px,pz)){clear=false;break;}}
+     if(!clear)continue;const next=cost[a]+length*(1+slope*5);if(next>=cost[b])continue;
+     cost[b]=next;prev[b]=a;heapPush(heap,[next+Math.hypot(pb[0]-goal[0],pb[1]-goal[1]),b]);
+    }
+   }
+   return null;
+  };
+  // Shortest available link adds one hamlet at a time. Disconnected offshore cells stay separate.
+  const remaining=new Set(nodes.slice(1));
+  while(remaining.size){let edge=null,distance=Infinity;for(const a of connected)for(const b of remaining){const p=point(a),q=point(b),d=Math.hypot(p[0]-q[0],p[1]-q[1]);if(d<distance){distance=d;edge=[a,b];}}
+   const path=edge&&route(...edge);if(path&&distance<6000)routes.push({path,width:5.5,kind:'road'});const b=edge?.[1]??remaining.values().next().value;remaining.delete(b);connected.add(b);
+  }
+  // Connect mapped agricultural patches to the nearest hamlet road node.
+  this.polygons('fields',ring=>{if(ring.length<3||routes.filter(r=>r.kind==='track').length>=28)return;const c=ring.reduce((a,p)=>[a[0]+p[0]/ring.length,a[1]+p[1]/ring.length],[0,0]),end=nearest(c);if(end<0)return;
+   let start=-1,d=Infinity;for(const k of nodes){const p=point(k),dist=Math.hypot(p[0]-c[0],p[1]-c[1]);if(dist<d){d=dist;start=k;}}if(start<0||d>2200||d<200)return;const path=route(start,end);if(path)routes.push({path,width:2.6,kind:'track'});
+  });
+  this.roadRoutes=routes;this.roadGrid=new Map();const buckets={road:[],track:[]};
+  const clip=(poly,a,b)=>{const side=p=>(b[0]-a[0])*(p[1]-a[1])-(b[1]-a[1])*(p[0]-a[0]),out=[];for(let i=0;i<poly.length;i++){const p=poly[i],q=poly[(i+1)%poly.length],sp=side(p),sq=side(q);if(sp>=-1e-7)out.push(p);if((sp>=0)!==(sq>=0)){const f=sp/(sp-sq);out.push([p[0]+(q[0]-p[0])*f,p[1]+(q[1]-p[1])*f]);}}return out;};
+  const strip=(a,b,width,vertices)=>{
+   const dx=b[0]-a[0],dz=b[1]-a[1],L=Math.hypot(dx,dz);if(L<.1)return;const nx=-dz/L*width/2,nz=dx/L*width/2,quad=[[a[0]+nx,a[1]+nz],[a[0]-nx,a[1]-nz],[b[0]-nx,b[1]-nz],[b[0]+nx,b[1]+nz]];
+   const x0=Math.floor((Math.min(...quad.map(p=>p[0]))+8000)/31.25),x1=Math.floor((Math.max(...quad.map(p=>p[0]))+8000)/31.25),z0=Math.floor((Math.min(...quad.map(p=>p[1]))+8000)/31.25),z1=Math.floor((Math.max(...quad.map(p=>p[1]))+8000)/31.25);
+   for(let ix=x0;ix<=x1;ix++)for(let iz=z0;iz<=z1;iz++){const x=ix*31.25-8000,z=iz*31.25-8000;for(const tri of [[[x,z],[x+31.25,z],[x,z+31.25]],[[x+31.25,z+31.25],[x,z+31.25],[x+31.25,z]]]){
+    let poly=quad;for(let j=0;j<3&&poly.length;j++)poly=clip(poly,tri[j],tri[(j+1)%3]);
+    for(let j=1;j<poly.length-1;j++)for(const p of [poly[0],poly[j+1],poly[j]])vertices.push(p[0],this.getSurfaceHeight(...p)+.14,p[1]);
+   }}
+  };
+  for(const r of routes)for(let i=1;i<r.path.length;i++){
+   const a=r.path[i-1],b=r.path[i];strip(a,b,r.width,buckets[r.kind]);
+   const L=Math.hypot(b[0]-a[0],b[1]-a[1]);for(let f=0;f<=L;f+=8){const x=mix(a[0],b[0],f/L),z=mix(a[1],b[1],f/L),k=Math.floor(x/64)+','+Math.floor(z/64);if(!this.roadGrid.has(k))this.roadGrid.set(k,[]);this.roadGrid.get(k).push({x,z,r:r.width/2+5});}
+  }
+  const tex=canvas(64),ctx=tex.getContext('2d'),rand=rng(1153);ctx.fillStyle='#b0a17d';ctx.fillRect(0,0,64,64);for(let i=0;i<1100;i++){ctx.fillStyle=rand()<.5?'#988968':'#c1b18a';ctx.fillRect(rand()*64,rand()*64,1+rand()*2,1+rand()*2);}const map=new THREE.CanvasTexture(tex);map.wrapS=map.wrapT=THREE.RepeatWrapping;
+  for(const kind of ['road','track']){const vertices=buckets[kind];if(!vertices.length)continue;const geo=new THREE.BufferGeometry();geo.setAttribute('position',new THREE.Float32BufferAttribute(vertices,3));const uv=[];for(let i=0;i<vertices.length;i+=3)uv.push(vertices[i]/5,vertices[i+2]/5);geo.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));geo.computeVertexNormals();const mesh=new THREE.Mesh(geo,new THREE.MeshStandardMaterial({map,color:kind==='road'?0x9c8d70:0x897654,roughness:1,side:THREE.DoubleSide,polygonOffset:true,polygonOffsetFactor:-1}));mesh.name=kind==='road'?'Hamlet earth roads':'Farm tracks';mesh.receiveShadow=true;this.root.add(mesh);this.decorations.push(mesh);}
+ }
+ nearRoad(x,z){
+  if(!this.roadGrid)return false;const gx=Math.floor(x/64),gz=Math.floor(z/64);for(let dx=-1;dx<=1;dx++)for(let dz=-1;dz<=1;dz++)for(const p of this.roadGrid.get((gx+dx)+','+(gz+dz))||[])if(Math.hypot(x-p.x,z-p.z)<p.r)return true;return false;
+ }
  polygons(key,fn){for(const t of this.data.tiles)for(const ring of t[key])fn(ring.map(p=>[t.x*4000+p[0]-16000,28000-t.z*4000-p[1]]));}
  paintPolygons(ctx,key,color){ctx.fillStyle=color;this.polygons(key,p=>{ctx.beginPath();p.forEach((q,i)=>ctx[i?'lineTo':'moveTo']((q[0]+8000)/16000*this.mapSize,(q[1]+8000)/16000*this.mapSize));ctx.closePath();ctx.fill();});}
  buildMasks(){
@@ -100,7 +157,7 @@ class OkinawaWorld{
     for(let i=0;i<p.count;i++){const x=p.getX(i)-6000+col*4000,z=p.getZ(i)-6000+row*4000;p.setXYZ(i,x,this.getHeight(x,z),z);uv.setXY(i,(x+8000)/16000,1-(z+8000)/16000);}
     g.computeVertexNormals();g.computeBoundingSphere();const m=new THREE.Mesh(g,material);m.name='Terrain_'+col+'_'+row;m.receiveShadow=true;this.terrain.add(m);
   }
-  onProgress(.58,'Growing the coastal landscape…');await pause();this.buildSettlements();await this.loadFortifications();this.buildVillageDetails();this.buildVegetation();
+  onProgress(.58,'Growing the coastal landscape…');await pause();this.buildSettlements();await this.loadFortifications();this.buildVillageDetails();this.buildRoads();this.buildVegetation();
   onProgress(.8,'Lighting the sea…');await pause();this.buildWater();this.buildSky();onProgress(1,'Ready');return this;
  }
  batch(geo,mat,placements,name){if(!placements.length)return;const m=new THREE.InstancedMesh(geo,mat,placements.length),dummy=new THREE.Object3D();m.name=name;for(let i=0;i<placements.length;i++){const p=placements[i];dummy.position.set(p.x,p.y,p.z);dummy.rotation.set(0,p.r||0,0);dummy.scale.set(p.sx||p.s||1,p.sy||p.s||1,p.sz||p.s||1);dummy.updateMatrix();m.setMatrixAt(i,dummy.matrix);}m.instanceMatrix.needsUpdate=true;m.frustumCulled=false;m.castShadow=false;m.receiveShadow=true;this.root.add(m);this.objectCount+=placements.length;this.decorations.push(m);return m;}
@@ -113,18 +170,22 @@ class OkinawaWorld{
   return false;
  }
  buildVegetation(){
+  this.treeIndex=scope.FlightSupport?new scope.FlightSupport.TreeIndex():null;
   const rand=rng(680422),buckets=[[],[],[]],trunks=[],palms=[],rocks=[];
   for(let i=0;i<Math.round(68000*this.vegetationDensity);i++){
    const x=rand()*15400-7700,z=rand()*15400-7700,d=this.shoreDistance(x,z);if(d<20)continue;
    const h=this.getHeight(x,z),[forest,field,air]=this.biome(x,z),patch=noise(x*.0028,z*.0028);
-   if(air>.2||field>.2||this.nearHouse(x,z))continue;
+   if(air>.2||field>.2||this.nearHouse(x,z)||this.nearRoad(x,z))continue;
    const density=forest>.3?.86:(h>90?.68:(patch>.48?.42:.08));if(rand()>density)continue;
    const slope=Math.hypot(this.getHeight(x+15,z)-h,this.getHeight(x,z+15)-h)/15;if(slope>.9)continue;
    // Trunk radius used to be s*.15 (height:radius up to ~22:1, a toothpick under a
    // canopy blob from any real flight altitude); s*.27 reads as an actual trunk.
-   const s=5.2+rand()*7.6,p={x,z,y:h-.4,s,r:rand()*Math.PI*2};buckets[i%3].push(p);trunks.push({...p,sx:s*.27,sy:s*.72,sz:s*.27});
-   if(d<160&&d>35&&rand()<.08)palms.push({x:x+4,z:z+3,y:this.getHeight(x+4,z+3)-.2,s:.9+rand()*.45,r:rand()*6.28});
+   const s=5.2+rand()*7.6,p={x,z,y:h-.4,s,r:rand()*Math.PI*2};buckets[i%3].push(p);this.treeIndex?.add(x,z,h-.4,s*1.19,s*.66,s*.065);trunks.push({...p,sx:s*.27,sy:s*.72,sz:s*.27});
+   if(d<160&&d>35&&rand()<.08&&!this.nearRoad(x+4,z+3))palms.push({x:x+4,z:z+3,y:this.getHeight(x+4,z+3)-.2,s:.9+rand()*.45,r:rand()*6.28});
   }
+  const yardTrees=(this.yardPalms||[]).filter(p=>!this.nearRoad(p.x,p.z)),matrix=new THREE.Matrix4();
+  for(const mesh of this.decorations.filter(m=>m.name==='Village palm trunks'||m.name==='Village palm fronds')){let count=0;for(let i=0;i<(this.yardPalms||[]).length;i++)if(!this.nearRoad(this.yardPalms[i].x,this.yardPalms[i].z)){mesh.getMatrixAt(i,matrix);mesh.setMatrixAt(count++,matrix);}mesh.count=count;mesh.instanceMatrix.needsUpdate=true;}
+  this.yardPalms=yardTrees;for(const p of yardTrees)this.treeIndex?.add(p.x,p.z,p.y,10*p.s,4*p.s,.2*p.s);
   for(let v=0;v<3;v++){
    const gs=[];for(let j=0;j<4;j++){const g=new THREE.SphereGeometry(.42,7,5);g.scale(1,.7+(j%2)*.2,.9);g.translate(Math.cos(j*2.4)*.24,.63+(j%2)*.20,Math.sin(j*2.4)*.24);gs.push(g);}
    // These used to be 0x344c25/0x425b2c/0x4f6531 -- a plausible dark-green hex on
@@ -136,6 +197,7 @@ class OkinawaWorld{
    const geo=merge(gs),mat=new THREE.MeshStandardMaterial({color:[0x16240e,0x1c2e14,0x233a19][v],roughness:1});this.materials.push(mat);this.batch(geo,mat,buckets[v],'Broadleaf canopy '+v);
   }
   this.batch(new THREE.CylinderGeometry(.15,.24,1,5).translate(0,.5,0),new THREE.MeshStandardMaterial({color:0x4a3d2e,roughness:1}),trunks,'Tree trunks');
+  for(const p of palms)this.treeIndex?.add(p.x,p.z,p.y,10*p.s,4*p.s,.2*p.s);
   this.batch(new THREE.CylinderGeometry(.12,.24,9,7).translate(0,4.5,0),new THREE.MeshStandardMaterial({color:0x5c4f3a,roughness:1}),palms,'Palm trunks');
   this.batch(frondGeometry(),new THREE.MeshStandardMaterial({color:0x1e3018,roughness:1,side:THREE.DoubleSide}),palms,'Palm fronds');
   for(let i=0;i<Math.round(18000*this.vegetationDensity);i++){const x=rand()*15500-7750,z=rand()*15500-7750,d=this.shoreDistance(x,z);if(d>3&&d<42&&rand()>.35)rocks.push({x,z,y:this.getHeight(x,z)-1,sx:2+rand()*5,sy:1+rand()*2,sz:2+rand()*4,r:rand()*6.28});}
@@ -194,6 +256,7 @@ class OkinawaWorld{
    if(rand()>.32)continue;
    hamletCenters.push([jx,jz]);
   }
+  this.hamletCenters=hamletCenters;
   for(const c of hamletCenters){
    for(let i=0;i<46;i++){
     const angle=rand()*6.28,r=40+Math.sqrt(rand())*330,x=c[0]+Math.cos(angle)*r,z=c[1]+Math.sin(angle)*r;
@@ -265,6 +328,7 @@ class OkinawaWorld{
   this.batch(detail,new THREE.MeshStandardMaterial({color:0x5a4b39,roughness:1}),posts,'Porch supports');
   this.batch(detail,new THREE.MeshStandardMaterial({color:0x454037,roughness:1}),foundations,'Raised foundations');
   this.batch(detail,new THREE.MeshStandardMaterial({color:0x44372e,roughness:1}),tracks,'Dirt approaches');
+  this.yardPalms=yardPalms;
   this.batch(new THREE.CylinderGeometry(.12,.24,9,7).translate(0,4.5,0),new THREE.MeshStandardMaterial({color:0x51422f,roughness:1}),yardPalms,'Village palm trunks');
   this.batch(frondGeometry(),new THREE.MeshStandardMaterial({color:0x172913,roughness:1,side:THREE.DoubleSide}),yardPalms,'Village palm fronds');
   this.batch(new THREE.CylinderGeometry(1,1,1.8,9).translate(0,.9,0),new THREE.MeshStandardMaterial({color:0x4b382a,roughness:1}),yardCisterns,'Village water jars');

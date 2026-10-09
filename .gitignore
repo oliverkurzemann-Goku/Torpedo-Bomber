@@ -7,3 +7,6 @@ Thumbs.db
 *.swp
 *.swo
 *~
+
+# Browser QA images are uploaded by CI.
+test-visuals/

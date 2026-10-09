@@ -1,0 +1,38 @@
+'use strict';
+const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict'),THREE=require('three');
+const element=()=>({style:{},hidden:true,textContent:'',listeners:{},addEventListener(k,f){this.listeners[k]=f;},after(){},replaceChildren(){},append(){}});
+const context=vm.createContext({THREE,Math,document:{createElement:element}});context.window=context;
+for(const file of ['flight-support.js','sortie-systems.js','audio/flight-atmosphere.js'])vm.runInContext(fs.readFileSync(file,'utf8'),context);
+const {surfaceHit,TreeIndex,treeStrike,Navigation}=context.FlightSupport;
+const hit=surfaceHit(new THREE.Vector3(0,10,0),new THREE.Vector3(40,-20,0),x=>x*.25);
+assert(hit&&Math.abs(hit.y-hit.x*.25-.15)<1e-6,'fast rounds stop at the actual sloped surface');
+assert.equal(surfaceHit(new THREE.Vector3(0,30,0),new THREE.Vector3(40,30,0),()=>0),null,'empty air has no splash');
+assert(surfaceHit(new THREE.Vector3(0,5,0),new THREE.Vector3(16,5,0),x=>Math.max(0,9-Math.abs(x-8))),'a ridge crossed between two airborne endpoints is hit');
+const quantized=new THREE.BufferGeometry();quantized.setAttribute('position',new THREE.BufferAttribute(new Int16Array([-32767,0,-32767,32767,0,-32767,0,0,32767]),3,true));
+const airframe=new THREE.Group(),skin=new THREE.Mesh(quantized,new THREE.MeshBasicMaterial()),parent=new THREE.Group();skin.scale.set(2,1,2);skin.position.y=.7;airframe.add(skin);parent.add(airframe);
+assert(Math.abs(context.FlightSupport.skinHeight(airframe,parent,0,.5)-.7)<1e-6,'normalized original GLB mounts are measured in metres');
+let ground=0;const trees=new TreeIndex(()=>ground);trees.add(0,0,0,15,5,.2);
+assert(trees.hit(new THREE.Vector3(-20,10,0),new THREE.Vector3(20,10,0)),'canopy stops swept aircraft');
+assert(trees.hit(new THREE.Vector3(-20,1,0),new THREE.Vector3(20,1,0)),'trunk stops low flight');
+assert(!trees.hit(new THREE.Vector3(-20,23,0),new THREE.Vector3(20,23,0)),'clearance above the tree remains flyable');
+assert(treeStrike(trees,new THREE.Vector3(-5,10,-20),new THREE.Vector3(-5,10,20),new THREE.Vector3(1,0,0),5),'wing can strike even when the fuselage misses');
+ground=8;assert(trees.hit(new THREE.Vector3(-20,20,0),new THREE.Vector3(20,20,0)),'tree collision follows terrain LOD movement');
+const target={alive:true},bandit={alive:true},base={ref:'base',pos:{x:10,z:0},kind:'BASE',label:'RETURN TO BASE'};
+let contacts=[{ref:target,pos:{x:0,z:1000},kind:'SHIP',label:'MERCHANT'},{ref:bandit,pos:{x:3,z:3},kind:'BANDIT',label:'BANDIT'},base];
+let changes=0;const nav=new Navigation({...element(),width:120,height:120},()=>contacts,()=>changes++);
+nav.choose(contacts[0]);assert.equal(nav.resolve(contacts[1]).ref,target,'nearby enemy cannot replace the selected surface objective');
+nav.choose(base);assert.equal(nav.resolve(contacts[0]),base,'manual recovery retains its waypoint');
+nav.choose(contacts[0]);contacts=contacts.slice(1);assert.equal(nav.resolve(base),base,'destroyed contact falls back without a dangling reference');
+assert.equal(nav.mode,'AUTO');assert.equal(changes,3);
+const r={x:0,z:0,radius:100,min:60,max:650,seconds:5};
+for(const y of [40,100,900]){const op=new context.FlightOps.Operation({recon:r});for(let i=0;i<300;i++)op.tick(1/60,{pos:{x:0,y,z:0}});assert(op.reconDone,'five seconds in the circle completes recon at advisory heights');assert.equal(op.reconHold,5);}
+const required=new context.FlightOps.Operation({recon:{...r,enforceAltitude:true}});required.tick(10,{pos:{x:0,y:40,z:0}});assert(!required.reconDone);assert.match(required.status(),/FT MSL/);
+const outside=new context.FlightOps.Operation({recon:r});outside.tick(10,{pos:{x:200,y:100,z:0}});assert(!outside.reconDone);assert.match(outside.status(),/ENTER BLUE CIRCLE/);
+let voiceReads=0,spoken=0,voicesChanged;const tasks=new Map();let next=0;
+const env={SpeechSynthesisUtterance:function(text){this.text=text;},localStorage:{getItem:()=>null,setItem(){}},setTimeout:(fn)=>{tasks.set(++next,fn);return next;},clearTimeout:id=>tasks.delete(id),speechSynthesis:{getVoices:()=>{voiceReads++;return [{localService:true,lang:'en-GB'}];},addEventListener:(_,fn)=>voicesChanged=fn,speak:()=>spoken++,cancel(){}}};
+const radio=context.FlightAtmosphere.voiceRadio(env),control={checked:false,addEventListener:(_,fn)=>control.change=fn};radio.bind(control);control.checked=true;control.change();
+assert.equal(spoken,0,'native speech is deferred outside the caller animation frame');assert.equal(tasks.size,1);
+radio.cancel();for(const fn of [...tasks.values()])fn();assert.equal(spoken,0,'pause cancels pending speech too');
+for(let i=0;i<20;i++){radio.say('CONTROL — TEST');const [id,fn]=tasks.entries().next().value;tasks.delete(id);fn();radio.cancel();}
+assert.equal(voiceReads,1,'radio messages never re-enumerate native voices');assert.equal(spoken,20);voicesChanged();assert.equal(voiceReads,2);
+console.log('Build 175: swept surfaces, fuselage/wing trees with LOD, stable radar/RTB, five-second recon and bounded deferred radio passed');

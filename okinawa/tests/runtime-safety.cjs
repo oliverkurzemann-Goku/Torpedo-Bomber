@@ -2,7 +2,7 @@
 'use strict';
 const fs=require('node:fs'),path=require('node:path'),vm=require('node:vm'),assert=require('node:assert/strict');
 const THREE=require('three'),root=path.resolve(__dirname,'../..');
-require('../../game-runtime.js');const {GameRuntime}=global;
+global.THREE=THREE;require('../../flight-support.js');require('../../game-runtime.js');const {GameRuntime}=global;
 const runtime=fs.readFileSync(path.join(root,'game-runtime.js'),'utf8');
 const pac=fs.readFileSync(path.join(root,'torpedo-carrier.html'),'utf8');
 const eu=fs.readFileSync(path.join(root,'remagen-mission.html'),'utf8');
@@ -25,7 +25,7 @@ for(const fps of [20,30,60,120])for(const kind of ['zero','raider','torpedo']){
  const scene=new THREE.Scene(),mesh=new THREE.Mesh();mesh.position.set(0,100,0);scene.add(mesh);
  const foe={alive:true,hp:4,pos:new THREE.Vector3(10,100,0)};
  const torp={mesh:new THREE.Mesh()};torp.mesh.position.copy(foe.pos);scene.add(torp.mesh);
- const ctx=vm.createContext({THREE,GameRuntime,Math,scene,gunCool:1,firing:false,
+ const ctx=vm.createContext({THREE,FlightSupport:global.FlightSupport,seaUniforms:null,seaHeightAt:()=>0,combatFX:{impact(){}},GameRuntime,Math,scene,gunCool:1,firing:false,
   P:{alive:true},ST:{FLIGHT:3},state:3,ships:[],zeros:kind==='zero'?[foe]:[],raiders:kind==='raider'?[foe]:[],
   etorps:kind==='torpedo'?[torp]:[],shoreTargets:[],bullets:[{mesh,dir:new THREE.Vector3(1,0,0),speed:650,life:.7}],
   spawnSparks(){},spawnSmoke(){},addScore(){},killZero(){},killRaider(){},spawnSplash(){},spawnExplosion(){},flash(){},shoreHeight:()=>0});

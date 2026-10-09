@@ -6,7 +6,7 @@ const THREE=require('three');global.THREE=THREE;global.window=global;global.self
 class ImageStub{constructor(){this.listeners={};this.width=2;this.height=2;}addEventListener(e,f){this.listeners[e]=f;}removeEventListener(){}set src(_){queueMicrotask(()=>this.listeners.load?.call(this));}}
 global.document={createElementNS:()=>new ImageStub()};
 vm.runInThisContext(fs.readFileSync(require.resolve('three/examples/js/loaders/GLTFLoader.js'),'utf8'));
-require('../../game-runtime.js');require('../../combat-fx.js');require('../../aircraft-rotors.js');
+require('../../flight-support.js');require('../../game-runtime.js');require('../../combat-fx.js');require('../../aircraft-rotors.js');
 const {GameRuntime,CombatFX}=global,root=path.resolve(__dirname,'../..'),html=fs.readFileSync(path.join(root,'torpedo-carrier.html'),'utf8');
 const extract=(from,to)=>html.slice(html.indexOf('function '+from+'('),html.indexOf('\nfunction '+to+'(',html.indexOf('function '+from+'(')+1));
 const gunCode=html.slice(html.indexOf('function updateGuns('),html.indexOf('function updateMinimap('));
@@ -30,7 +30,7 @@ async function glb(file){const b=fs.readFileSync(path.join(root,file));return ne
   // check. Existing real-model prop tests independently check its geometry.
   const rotor=new THREE.Group();rotor.name='sbdRotorBlade';aircraft.add(rotor);
   const combatFX=CombatFX.create(scene),P={alive:true,pos:new THREE.Vector3(0,300,0),heading:0,pitch:0,roll:0,throttle:1,gear:0,flap:0,hook:0,torps:2,ammo:5000};
-  const ctx=vm.createContext({THREE,GameRuntime,CombatFX,Math,console,P,scene,planeGroup,combatFX,
+  const ctx=vm.createContext({THREE,FlightSupport:global.FlightSupport,seaUniforms:null,seaHeightAt:()=>0,updateRearArmament(){},GameRuntime,CombatFX,Math,console,P,scene,planeGroup,combatFX,
    state:3,ST:{FLIGHT:3},MISSIONS:[{corsair:kind==='corsair'}],mission:0,firing:true,gunCool:0,bullets:[],ships:[],zeros:[],raiders:[],etorps:[],shoreTargets:[],
    isDefend:()=>kind==='zero',isSBD:()=>kind==='sbd'||kind==='corsair',loadout:'divebomb',
    zeroTemplate:null,fitCarrierAircraft(){},playerZero:kind==='zero'?aircraft:null,playerSBD:kind==='sbd'||kind==='corsair'?aircraft:null,
