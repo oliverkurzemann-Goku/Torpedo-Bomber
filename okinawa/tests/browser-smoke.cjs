@@ -45,18 +45,52 @@ const cdn={
    {campaign:'torpedo-carrier.html',kind:'defend',ordinal:1}
   ]){
    const {campaign}=scenario;
+   console.log('Browser smoke: loading '+campaign+' '+(scenario.kind||'p47')+' '+(scenario.ordinal||0));
    const eu=campaign.startsWith('remagen'),context=await browser.newContext({viewport:{width:1024,height:768},deviceScaleFactor:1,hasTouch:true});
-   await context.addInitScript(()=>{try{localStorage.setItem('spokenRadio','1');}catch(e){}});
+   await context.addInitScript(()=>{
+    try{localStorage.setItem('spokenRadio','1');}catch(e){}
+    // Let native assets and the menu initialize before the first expensive
+    // scenery frame. Gameplay still runs the real animation loop below.
+    const nativeRAF=requestAnimationFrame.bind(window),pending=[];let running=false;
+    const schedule=callback=>nativeRAF(time=>{if(running)callback(time);else pending.push(callback);});
+    window.requestAnimationFrame=callback=>running?schedule(callback):(pending.push(callback),-pending.length);
+    window.__holdSmokeFrames=()=>{running=false;};
+    window.__startSmokeFrames=()=>{if(running)return;running=true;for(const callback of pending.splice(0))schedule(callback);};
+   });
    await context.route('https://**',async route=>{
     const file=cdn[new URL(route.request().url()).pathname.split('/').pop()];
     if(file)await route.fulfill({path:file,contentType:'application/javascript'});else await route.abort();
    });
    const page=await context.newPage(),errors=[],shaderErrors=[],modelRequests=[];
+   // A continuously rendering software GPU can starve screenshot composition.
+   // Hold simulation for the capture and resume the same state immediately after.
+   const screenshot=page.screenshot.bind(page);
+   page.screenshot=async options=>{
+    const held=await page.evaluate(()=>{window.__holdSmokeFrames?.();if(typeof state==='undefined')return null;const previous=state;state=ST.PAUSED;return previous;});
+    try{return await screenshot(options);}finally{await page.evaluate(previous=>{if(previous!==null)state=previous;window.__startSmokeFrames?.();},held);}
+   };
    page.on('request',r=>{if(new URL(r.url()).pathname.endsWith('.glb'))modelRequests.push(decodeURIComponent(new URL(r.url()).pathname));});
    page.on('pageerror',e=>{errors.push(e.message);console.error('Browser error '+campaign+': '+e.stack);});page.setDefaultTimeout(120000);
    page.on('console',m=>{if(/Shader Error|VALIDATE_STATUS|not compiled/i.test(m.text()))shaderErrors.push(m.text());if(m.type()==='error'&&!m.text().includes('Failed to load resource'))console.error('Browser console '+campaign+': '+m.text());});
    await page.goto('http://127.0.0.1:'+server.address().port+'/'+campaign,{waitUntil:'domcontentloaded'});
-   await page.waitForFunction(()=>typeof state!=='undefined'&&state===ST.MENU&&document.querySelector('#menu:not(.hidden)'));
+   await page.waitForFunction(()=>typeof state!=='undefined'&&state===ST.MENU&&document.querySelector('#menu:not(.hidden)'),null,{polling:100});
+   // Keep native WebGL and the full CSS viewport; lower CPU-only GPU fill cost
+   // before its first frame, rather than after menu screenshot composition.
+   async function reduceSceneryCost(){await page.evaluate(()=>{
+    renderer.setPixelRatio(.25);renderer.shadowMap.enabled=false;
+    // Static instancing has separate geometry and visual regressions.
+    scene.traverse(o=>{if(o.isInstancedMesh)o.visible=false;});
+    if(!renderer.__smokeReduced){
+     const nativeRender=renderer.render.bind(renderer);renderer.__smokeReduced=true;
+     renderer.render=(world,view)=>{
+      // The normal scenery LOD update can restore visibility each frame.
+      // Studio proof scenes and explicitly paused native captures retain it.
+      if(world===scene&&state!==ST.PAUSED)world.traverse(o=>{if(o.isInstancedMesh)o.visible=false;});
+      return nativeRender(world,view);
+     };
+    }
+   });}
+   await reduceSceneryCost();await page.evaluate(()=>window.__startSmokeFrames());
    assert.equal(await page.locator('#spokenRadio').isChecked(),false,'spoken radio stays muted after upgrading a legacy preference');
    if(eu||scenario.kind==='defend'&&scenario.ordinal===0){
     // Real CSS geometry, including a reduced landscape content area.
@@ -117,14 +151,6 @@ const cdn={
      assert(boardState.overflow<=1&&boardState.bottom<=600,'campaign board fits reduced iPad landscape, even with saved progress: '+JSON.stringify(boardState));
     }
    }
-   // Keep the real scene and WebGL renderer, but lower GPU fill cost on the
-   // CPU-only CI runner. CSS still uses the full iPad viewport; no FPS claim.
-   async function reduceSceneryCost(){await page.evaluate(()=>{
-    renderer.setPixelRatio(.25);renderer.shadowMap.enabled=false;
-    // Static instanced vegetation is covered by the geometry regressions. It
-    // is not part of this controls/context-lifecycle test on a CPU-only GPU.
-    scene.traverse(o=>{if(o.isInstancedMesh)o.visible=false;});
-   });}
    await reduceSceneryCost();
    await page.locator('#flightHints').uncheck();
    assert.equal(await page.evaluate(()=>GameRuntime.storage.getItem('flightHints')),'0');
