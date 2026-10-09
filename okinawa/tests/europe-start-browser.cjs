@@ -27,11 +27,21 @@ const server=http.createServer((req,res)=>{
   await page.waitForFunction(()=>typeof realWorldReady!=='undefined'&&realWorldReady&&state===ST.MENU,null,{polling:200});
   console.log('Browser: real terrain menu loaded');
   const landmarks=await page.evaluate(()=>{
-   if(periodBuildings.templates.size!==4)throw Error('Building templates not loaded');
+   const expected=['house','farm-ruin','town-ruin','hangar',...Object.keys(FortificationAssets.specs)];
+   if(expected.some(kind=>!periodBuildings.templates.has(kind)))throw Error('Building templates not loaded');
    if(periodBuildings.reserved.size>12||periodBuildings.reserved.size<6)throw Error('Landmark placement or detail budget failed');
    for(const e of periodBuildings.entries){periodBuildings.update(e.x,e.z);
-    if(periodBuildings.entries.filter(p=>p.model&&p.kind!=='hangar'&&p.model.visible&&p.group.visible).length>3)throw Error('Too many detailed buildings');
-    if(['hangar','bunker'].includes(e.kind)&&!periodBuildings.clearLand(e.x,e.z,e.w,e.d))throw Error('Airfield landmark blocks mapped road or building');
+    const detailed=periodBuildings.entries.filter(p=>p.model&&p.model.visible&&p.group.visible);
+    if(detailed.filter(p=>!['hangar','bunker','observation-post'].includes(p.kind)).length>3||
+       detailed.filter(p=>p.kind==='bunker').length>1||detailed.filter(p=>p.kind==='observation-post').length>2)throw Error('Too many detailed buildings');
+    if(['hangar','bunker'].includes(e.kind)){
+     // Recheck mapped roads/buildings and neighbouring landmarks, excluding
+     // the occupied footprint of the very landmark being checked.
+     const entries=periodBuildings.entries;
+     try{periodBuildings.entries=entries.filter(p=>p!==e);
+      if(!periodBuildings.clearLand(e.x,e.z,e.w,e.d))throw Error('Airfield landmark blocks mapped road or building');
+     }finally{periodBuildings.entries=entries;}
+    }
    }
    return {landmarks:periodBuildings.reserved.size,airfieldBuildings:periodBuildings.entries.filter(e=>['hangar','bunker'].includes(e.kind)).length};
   });assert.equal(landmarks.airfieldBuildings,4);console.log('Building placement and visibility budgets:',landmarks);

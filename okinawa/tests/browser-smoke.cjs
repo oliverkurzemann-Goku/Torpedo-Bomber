@@ -34,7 +34,8 @@ const cdn={
 };
 (async()=>{
  await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
- const browser=await chromium.launch({executablePath:executable,headless:true,args:['--no-sandbox','--disable-dev-shm-usage','--use-angle=swiftshader','--enable-unsafe-swiftshader',...(process.env.GAME_TEST_SINGLE_PROCESS?['--single-process','--no-zygote','--in-process-gpu']:[])]});
+ const launch=()=>chromium.launch({executablePath:executable,headless:true,args:['--no-sandbox','--disable-dev-shm-usage','--use-angle=swiftshader','--enable-unsafe-swiftshader',...(process.env.GAME_TEST_SINGLE_PROCESS?['--single-process','--no-zygote','--in-process-gpu']:[])]});
+ let browser=await launch(),used=false;
  try{
   for(const scenario of [
    {campaign:'remagen-mission.html'},
@@ -45,6 +46,8 @@ const cdn={
    {campaign:'torpedo-carrier.html',kind:'defend',ordinal:1}
   ]){
    const {campaign}=scenario;
+   // Single-process Chrome cannot safely reuse a closed isolated context.
+   if(used&&process.env.GAME_TEST_SINGLE_PROCESS){await browser.close();browser=await launch();}used=true;
    console.log('Browser smoke: loading '+campaign+' '+(scenario.kind||'p47')+' '+(scenario.ordinal||0));
    const eu=campaign.startsWith('remagen'),context=await browser.newContext({viewport:{width:1024,height:768},deviceScaleFactor:1,hasTouch:true});
    await context.addInitScript(()=>{
