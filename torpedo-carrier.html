@@ -294,7 +294,7 @@
   .opsLegend{font:11px/1.5 monospace;color:#d7c797;text-align:left;margin-top:5px;}
   #opsStatus{position:fixed;top:calc(env(safe-area-inset-top) + 76px);left:50%;transform:translateX(-50%);color:#edcc80;background:rgba(14,20,18,.78);padding:5px 9px;font:10px monospace;pointer-events:none;z-index:9;max-width:58vw;text-align:center;}
 </style>
-<link rel="stylesheet" href="menu-layout.css?v=175">
+<link rel="stylesheet" href="menu-layout.css?v=176">
 </head>
 <body>
 <div id="app"></div>
@@ -340,7 +340,7 @@
   <div id="flash"></div>
   <div id="ltn" style="position:fixed;inset:0;background:#e6ecff;opacity:0;pointer-events:none;z-index:40;"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 175</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 176</div>
 
   <!-- Optical landing aid -->
   <div id="lso">
@@ -382,7 +382,7 @@
 
 <!-- Menu -->
 <div class="overlay" id="menu" data-campaign="pacific">
-  <div class="menuTop"><a id="selBtn" href="index.html?v=175">&#9664; Change Game</a><span class="menuMeta">PACIFIC OPERATIONS<br>BUILD 175</span></div>
+  <div class="menuTop"><a id="selBtn" href="index.html?v=176">&#9664; Change Game</a><span class="menuMeta">PACIFIC OPERATIONS<br>BUILD 176</span></div>
   <div class="card menuCard">
     <aside class="menuOverview" aria-label="Campaign and pilot options">
     <div class="campaignArt" aria-hidden="true"></div>
@@ -471,10 +471,12 @@
 <script src="naval-assets.js?v=173"></script>
 <script src="aircraft-rotors.js?v=172"></script>
 <script src="combat-fx.js?v=175"></script>
+<script src="aircraft-smoke.js?v=176"></script>
 <script src="flight-support.js?v=175"></script>
 <script src="ordnance.js?v=157"></script>
-<script src="pilot-bailout.js?v=157"></script>
-<script src="pilot-rescue.js?v=157"></script>
+<script src="crew-visuals.js?v=176"></script>
+<script src="pilot-bailout.js?v=176"></script>
+<script src="pilot-rescue.js?v=176"></script>
 <script src="radio-intercept.js?v=157"></script>
 <script src="audio/weapon-sound.js?v=144"></script>
 <script src="audio/flight-atmosphere.js?v=175"></script>
@@ -898,7 +900,7 @@ function releaseOkinawa(){
 // ============================================================
 //  INIT
 // ============================================================
-let combatFX=null;
+let combatFX=null,aircraftSmoke=null;
 let runtimeSession=null,releaseHeldControls=()=>{};
 let flightCoach=new GameRuntime.HintCoach();
 const pacificModelTasks=new Map();
@@ -961,7 +963,7 @@ function init(){
   app.appendChild(renderer.domElement);
 
   scene=new THREE.Scene();
-  combatFX=CombatFX.create(scene);
+  combatFX=CombatFX.create(scene);aircraftSmoke=AircraftSmoke.create(THREE,scene);
   scene.background=new THREE.Color(0xaecfe6);
   scene.fog=new THREE.Fog(0xaecfe6, 3200, 15000);   // deeper horizon now nothing fakes the far shore
 
@@ -2049,7 +2051,7 @@ function startMission(idx){
   const aeroButton=document.getElementById('aeroBtn');
   if(aeroButton){aeroButton.classList.remove('on');aeroButton.innerHTML='AERO<br>OFF';}
   const stickHint=document.getElementById('stickHint');if(stickHint)stickHint.textContent='PITCH / ROLL';
-  if(combatFX)combatFX.clear();
+  if(combatFX)combatFX.clear();aircraftSmoke?.clear();
   mission=idx;P.gunVolley=0;
   selectedMission=idx;
   const menuChips=document.querySelectorAll('#missionSel .chip');
@@ -3024,6 +3026,7 @@ function updateZeros(dt){
     z.spd=z.vel.length();
     z.pos.addScaledVector(z.vel,dt);
     if(z.pos.y<28){ z.pos.y=28; z.vel.y=Math.max(4,z.vel.y); }
+    if(typeof aircraftSmoke!=="undefined"&&aircraftSmoke)aircraftSmoke.trail(z,z.pos,z.vel.clone().normalize(),z.spd,z.hp<3?1-z.hp/3:0,dt,windZ);
     z.mesh.position.copy(z.pos);
     z.mesh.quaternion.setFromEuler(new THREE.Euler(0,z.heading,0,'YXZ'));
     z.mesh.rotateX(-z.pitch); z.mesh.rotateZ(-z.roll);
@@ -3164,7 +3167,7 @@ function updateFlak(dt){
     if(t.fleet){
       for(const r of raiders){
         if(r.alive&&SortieFeatures.segmentDistance(previous,t.mesh.position,r.pos)<8){
-          r.hp-=.22;t.life=0;spawnSmoke(r.pos.x,r.pos.y,r.pos.z,0x514d46,.22);
+          r.hp-=.22;t.life=0;spawnSparks(r.pos,4);
           if(r.hp<=0)killRaider(r,true);
           break;
         }
@@ -3380,13 +3383,6 @@ function updateFlight(dt){
   if(P.fuel<=0 && P.throttle>0){ P.throttle=Math.max(0,P.throttle-0.5*dt); setThrottleUI(P.throttle);
     flash("FUEL EXHAUSTED — DEADSTICK",1000); }
 
-  // damage smoke trail when badly hit
-  if(P.hull<50){ P.dmgT-=dt; if(P.dmgT<=0){ P.dmgT=0.14;
-    // Trail it BEHIND the aircraft. Spawning it ahead put the puff right where the
-    // cockpit camera sits — that is why a damaged aircraft filled the pit with haze.
-    const snd=noseDir();
-    const sp=P.pos.clone().addScaledVector(snd,-3.0).add(new THREE.Vector3(0,-0.6,0));
-    spawnSmoke(sp.x,sp.y,sp.z, P.hull<25?0x111111:0x444444, 0.28); } }
   // engine fire when critical
   if(P.hull<20){ P.fireT=(P.fireT||0)-dt; if(P.fireT<=0){ P.fireT=0.1;
     const nd=noseDir();
@@ -4270,6 +4266,7 @@ function updateWingmen(dt){
     w.roll  += (bank-w.roll)*Math.min(1,1.5*dt);
     w.spd = w.vel.length();
 
+    if(typeof aircraftSmoke!=="undefined"&&aircraftSmoke)aircraftSmoke.trail(w,w.pos,w.vel.clone().normalize(),w.spd,w.hp<3?1-w.hp/3:0,dt,windZ);
     w.mesh.position.copy(w.pos);
     w.mesh.rotation.set(0,0,0);
     w.mesh.rotateY(w.heading); w.mesh.rotateX(w.pitch); w.mesh.rotateZ(-w.roll);
@@ -4452,6 +4449,7 @@ function updateRaiders(dt){
       goal=new THREE.Vector3(carrierX+CARRIER_SPD*eta,aimY,0);
     }
     SortieFeatures.flyRaider(r,goal,dt);
+    if(typeof aircraftSmoke!=="undefined"&&aircraftSmoke)aircraftSmoke.trail(r,r.pos,r.vel.clone().normalize(),r.spd,r.hp<4?1-r.hp/4:0,dt,windZ);
     r.mesh.position.copy(r.pos);
     r.mesh.rotation.set(0,0,0);
     r.mesh.rotateY(r.heading); r.mesh.rotateX(-r.pitch); r.mesh.rotateZ(-r.roll);
@@ -4532,7 +4530,7 @@ function updateCrewBailouts(dt){
   if(c.done)continue;
   if(c.rescue){if(c.rescue.water)c.chute.position.y=seaHeightAt(c.chute.position.x,c.chute.position.z,seaUniforms?.uTime.value||0)+.9;const status=c.rescue.update(dt);if(status.pickup)c.chute.group.visible=false;if(status.done){c.done=true;c.safe=true;}continue;}
   const landing=c.chute.update(dt*3,windZ,{turn:c.turn,forward:.1});
-  if(landing.landed){if(!landing.safe){c.done=true;c.safe=false;continue;}const p=c.chute.position,water=shoreHeight(p.x,p.z)<=.6;c.chute.settle(water);c.rescue=PilotRescue.create(THREE,scene,p,shoreHeight,{water,surfaceAt:(x,z)=>seaHeightAt(x,z,seaUniforms?.uTime.value||0)});}
+  if(landing.landed){if(!landing.safe){c.done=true;c.safe=false;continue;}const p=c.chute.position,water=shoreHeight(p.x,p.z)<=.6;c.chute.settle(water);c.rescue=PilotRescue.create(THREE,scene,p,shoreHeight,{water,service:isDefend()?"ijn":"usnavy",srgbOutput:true,surfaceAt:(x,z)=>seaHeightAt(x,z,seaUniforms?.uTime.value||0)});}
  }
 }
 
@@ -4542,10 +4540,10 @@ function beginBailout(){
   if(P.pos.y-shoreHeight(P.pos.x,P.pos.z)<85){flash('TOO LOW TO BAIL OUT',1400);return;}
   releaseHeldControls();
   bailout=PilotBailout.create(THREE,scene,P.pos.clone().add(new THREE.Vector3(-2,1,-2)),
-    Math.PI/2-P.heading,P.spd,shoreHeight);
+    Math.PI/2-P.heading,P.spd,shoreHeight,{service:isDefend()?"ijn":"usnavy",srgbOutput:true});
   clearCrewBailouts();const count=aircraftCrewCount(),right=new THREE.Vector3(-Math.sin(P.heading),0,Math.cos(P.heading));
   for(let i=1;i<count;i++){const side=i%2?1:-1,start=P.pos.clone().addScaledVector(right,side*8).addScaledVector(noseDir(),-5);start.y+=1;
-    crewBailouts.push({chute:PilotBailout.create(THREE,scene,start,Math.PI/2-P.heading+side*.35,P.spd,shoreHeight),turn:side*.2,rescue:null,done:false,safe:null});}
+    crewBailouts.push({chute:PilotBailout.create(THREE,scene,start,Math.PI/2-P.heading+side*.35,P.spd,shoreHeight,{service:isDefend()?"ijn":"usnavy",srgbOutput:true,variant:i}),turn:side*.2,rescue:null,done:false,safe:null});}
   bailPlaneCrashed=false;bailDone=false;bailChuteCalled=false;
   P.alive=false;state=ST.RESULT;firing=false;
   document.getElementById('bailBtn').style.display='none';
@@ -4574,6 +4572,7 @@ function advanceBailout(dt){
   if(bailout.deployed&&!bailChuteCalled){bailChuteCalled=true;radioSay('PARACHUTE OPEN — STEER TO A CLEAR LANDING');
     flash('PARACHUTE: STICK / ARROWS — TURN, GLIDE OR BRAKE',4000);}
   if(!bailPlaneCrashed){
+    if(typeof aircraftSmoke!=="undefined"&&aircraftSmoke)aircraftSmoke.damage("player",P,noseDir(),dt,windZ);
     P.pos.addScaledVector(noseDir(),P.spd*dt*.7);
     P.pos.y-=Math.min(95,12+bailout.position.y*.05)*dt*3;
     P.roll+=dt*.8;P.pitch-=dt*.2;
@@ -4585,7 +4584,7 @@ function advanceBailout(dt){
   if(landing.landed){
     if(landing.safe){
       releaseHeldControls();const p=bailout.position,water=shoreHeight(p.x,p.z)<=.6;
-      bailout.settle(water);bailRescue=PilotRescue.create(THREE,scene,p,shoreHeight,{water,surfaceAt:(x,z)=>seaHeightAt(x,z,seaUniforms?.uTime.value||0)});
+      bailout.settle(water);bailRescue=PilotRescue.create(THREE,scene,p,shoreHeight,{water,service:isDefend()?"ijn":"usnavy",srgbOutput:true,surfaceAt:(x,z)=>seaHeightAt(x,z,seaUniforms?.uTime.value||0)});
       radioQ=[];radioT=0;radioSay(water?'RESCUE BOAT — WE HAVE YOUR SIGNAL, HOLD POSITION':'SEARCH PARTY — SIGNAL SEEN, WE ARE COMING TO YOU');
       document.getElementById('stickHint').textContent='RESCUE INBOUND';flash('PILOT SAFE — RESCUE INBOUND',4000);
       return;
@@ -4904,7 +4903,7 @@ function loadPlaneModel(){
       }
       window.__eyeDbg='EYE '+COCKPIT_EYE.map(v=>v.toFixed(2)).join('/');
       const btEl=document.getElementById('buildTag');
-      if(btEl) btEl.textContent='BUILD 175 · '+window.__eyeDbg;
+      if(btEl) btEl.textContent='BUILD 176 · '+window.__eyeDbg;
       let seat=null;
       model.traverse(function(o){
         if(!o.isMesh||!o.material) return;
@@ -5735,7 +5734,6 @@ function updateGuns(dt){
     if(!hit) for(const z of zeros){ if(!z.alive) continue;
       if(GameRuntime.segmentDistance(back,b.mesh.position,z.pos)<5.5){
         z.hp--; spawnSparks(b.mesh.position,4); addScore(30);
-        spawnSmoke(z.pos.x,z.pos.y,z.pos.z,0x333330,0.4);
         if(z.hp<=0) killZero(z);
         hit=true; break;
       }
@@ -5743,7 +5741,6 @@ function updateGuns(dt){
     if(!hit) for(const r of raiders){ if(!r.alive) continue;
       if(GameRuntime.segmentDistance(back,b.mesh.position,r.pos)<7.5){
         r.hp--; spawnSparks(b.mesh.position,4); addScore(30);
-        spawnSmoke(r.pos.x,r.pos.y,r.pos.z,0x333330,0.5);
         if(r.hp<=0) killRaider(r);
         hit=true; break;
       }
@@ -6128,7 +6125,7 @@ function exitToMenu(){
   document.getElementById('flash').classList.remove('show');
   document.getElementById('radio').classList.remove('show');
   radioQ=[];radioT=0;flashTimer=0;
-  combatFX?.clear();
+  combatFX?.clear();aircraftSmoke?.clear();
   showOverlay('menu');
 }
 
@@ -6244,7 +6241,7 @@ function setupUIButtons(){
   if(dbgT2) dbgT2.onclick=()=>{
     dbgOn=!dbgOn; GameRuntime.storage.setItem('dbgOn',dbgOn?'1':'0');
     const db=document.getElementById('dbgBox'); if(db) db.textContent=dbgOn?'✓':'';
-    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 175'; }
+    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 176'; }
   };
   const lu=document.getElementById('lookUp'), ld=document.getElementById('lookDn');
   let _lookT=0;
@@ -6260,7 +6257,7 @@ function setupUIButtons(){
   if(pb) pb.addEventListener('pointerdown',e=>{ e.preventDefault(); togglePause(); });
   const rb=document.getElementById('resumeBtn'); if(rb) rb.onclick=resumeGame;
   const mb=document.getElementById('menuBtn'); if(mb) mb.onclick=exitToMenu;
-  document.getElementById('pauseMainMenu').onclick=()=>{exitToMenu();window.location.href='index.html?v=175';};
+  document.getElementById('pauseMainMenu').onclick=()=>{exitToMenu();window.location.href='index.html?v=176';};
   document.getElementById('resultBtn').onclick=()=>{
     // the logbook borrows this screen from the menu — send the player straight back
     if(logbookOpen){ logbookOpen=false; showOverlay('menu'); return; }
@@ -6500,7 +6497,7 @@ function animate(){
     notice.style.cssText='position:fixed;inset:0;z-index:999998;background:rgba(15,20,15,.95);color:#e8ddbc;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px;text-align:center;font:16px system-ui';
     const title=document.createElement('h2');title.textContent='Simulation interrupted';
     const detail=document.createElement('p');
-    detail.textContent='BUILD 175 · '+(MISSIONS[mission]?.sub||'Menu')+' · '+error.message;
+    detail.textContent='BUILD 176 · '+(MISSIONS[mission]?.sub||'Menu')+' · '+error.message;
     const reload=document.createElement('button');reload.textContent='Reload game';
     reload.style.cssText='padding:12px 24px;font:inherit';reload.onclick=()=>location.reload();
     notice.appendChild(title);notice.appendChild(detail);notice.appendChild(reload);document.body.appendChild(notice);
@@ -6545,12 +6542,11 @@ function animateFrame(){
   }
 
   if(state===ST.FLIGHT){
-    if(SortieFeatures.Damage.tick(P,dt)){
-      const p=P.pos.clone().addScaledVector(noseDir(),-3);p.y-=.6;spawnSmoke(p.x,p.y,p.z,P.systemDamage.engine<1?0x343434:0xaaa99b,.4);
-    }
+    SortieFeatures.Damage.tick(P,dt);
     document.getElementById('bailBtn').style.display=P.alive&&P.pos.y-shoreHeight(P.pos.x,P.pos.z)>85?'block':'none';
     pollKeys(dt);
     updateFlight(dt);
+    if(aircraftSmoke&&P.alive)aircraftSmoke.damage("player",P,noseDir(),dt,windZ);
     updateFlightHints(rawDt);
     if(isQual()) updateQualCoach();
     if(isDefend()){ updateRaiders(dt); updateEnemyTorps(dt); }
@@ -6600,7 +6596,7 @@ function animateFrame(){
   updateClouds();
   updateShadow();
   updateAudio(dt);
-  if(combatFX)combatFX.update(dt);
+  if(combatFX)combatFX.update(dt);if(aircraftSmoke)aircraftSmoke.update(dt);
   updateSea(t);
   if(okinawaWorld && okinawaWorld.root.visible)okinawaWorld.update(dt,P.pos.x-10000,P.pos.z);
   updatePlaneMesh(dt);

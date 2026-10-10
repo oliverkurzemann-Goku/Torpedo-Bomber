@@ -272,7 +272,7 @@
   #opsStatus{position:fixed;top:calc(env(safe-area-inset-top) + 76px);left:50%;transform:translateX(-50%);color:#edcc80;background:rgba(14,20,18,.78);padding:5px 9px;font:10px monospace;pointer-events:none;z-index:9;max-width:58vw;text-align:center;}
   #systemsStatus{position:fixed;top:calc(env(safe-area-inset-top) + 116px);left:50%;transform:translateX(-50%);color:#ffbf96;background:#251810db;padding:5px 9px;font:10px monospace;pointer-events:none;z-index:9;max-width:60vw;text-align:center;}#systemsStatus:empty{display:none;}
 </style>
-<link rel="stylesheet" href="menu-layout.css?v=175">
+<link rel="stylesheet" href="menu-layout.css?v=176">
 </head>
 <body>
 <!-- ===== TEMP TEST-ONLY VERSION BANNER — asked for by Oliver: "kannst du irgendwo einbauen,
@@ -294,7 +294,7 @@
   <div style="width:100%;height:4px;background:repeating-linear-gradient(45deg,#ffd400,#ffd400 8px,#111 8px,#111 16px);"></div>
   <span id="testVersionBannerText" style="background:#111;color:#ffd400;font-family:monospace;font-weight:800;font-size:11px;letter-spacing:.5px;padding:3px 10px;border:1px solid #ffd400;border-top:none;border-radius:0 0 6px 6px;"></span>
 </div>
-<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 175';</script>
+<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 176';</script>
 <!-- ===== END TEMP TEST-ONLY VERSION BANNER ===== -->
 <div id="app"></div>
 <style>
@@ -334,7 +334,7 @@
   <div id="flash"></div>
   <div id="gunsight"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 175 · REAL RHINE</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 176 · REAL RHINE</div>
 
   <div id="apr">
     <div id="aprCall"></div>
@@ -385,7 +385,7 @@
 </div>
 
 <div class="overlay hidden" id="menu" data-campaign="europe">
-  <div class="menuTop"><a id="selBtn" href="index.html?v=175">&#9664; Change Game</a><span class="menuMeta">RHINE OPERATIONS<br>BUILD 175</span></div>
+  <div class="menuTop"><a id="selBtn" href="index.html?v=176">&#9664; Change Game</a><span class="menuMeta">RHINE OPERATIONS<br>BUILD 176</span></div>
   <div class="card menuCard">
     <aside class="menuOverview" aria-label="Campaign and pilot options">
     <div class="campaignArt" aria-hidden="true"></div>
@@ -489,17 +489,19 @@
 <script src="terrain-system/HistoricalObjectManager.js?v=173"></script>
 <script src="terrain-system/AirfieldDetails.js?v=169"></script>
 <script src="terrain-system/AircraftGround.js?v=170"></script>
-<script src="terrain-system/AirfieldActivity.js?v=170"></script>
+<script src="terrain-system/AirfieldActivity.js?v=176"></script>
 <script src="terrain-system/WorldVehicles.js?v=172"></script>
 <script src="terrain-system/LivingWorld.js?v=166"></script>
 <script src="campaign.js?v=1"></script>
 <script src="game-runtime.js?v=167"></script>
 <script src="aircraft-rotors.js?v=172"></script>
 <script src="combat-fx.js?v=175"></script>
+<script src="aircraft-smoke.js?v=176"></script>
 <script src="flight-support.js?v=175"></script>
 <script src="ordnance.js?v=157"></script>
-<script src="pilot-bailout.js?v=157"></script>
-<script src="pilot-rescue.js?v=157"></script>
+<script src="crew-visuals.js?v=176"></script>
+<script src="pilot-bailout.js?v=176"></script>
+<script src="pilot-rescue.js?v=176"></script>
 <script src="radio-intercept.js?v=157"></script>
 <script src="audio/weapon-sound.js?v=144"></script>
 <script src="audio/jet-engine.js?v=144"></script>
@@ -818,7 +820,7 @@ async function loadRealWorld(){
 
   if(OSMManager.BUILD!==23||HistoricalObjectManager.BUILD!==21||LivingWorld.BUILD!==22||WorldVehicles.BUILD!==22) throw new Error('Terrain version mismatch. Reload Remagen.');
   document.getElementById('testVersionBannerText').textContent=
-    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 175 · MODULE 23';
+    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 176 · MODULE 23';
   heightProvider=new DEMHeightProvider(RTILE,'terrain-system/real/data/dem/');
   terrain=new TerrainManager(scene,RTILE,heightProvider);
   osmMgr=new OSMManager(scene,RTILE,terrain,'terrain-system/real/data/osm/');
@@ -995,7 +997,7 @@ function buildAirfield(){
 function buildGermanAirfield(){
   germanAirfieldDetails=new AirfieldDetails(terrain,osmMgr,GERMAN_AF_X,GERMAN_AF_Z,RWY_LEN,RWY_W);
   scene.add(germanAirfieldDetails.group);
-  germanActivity=new AirfieldActivity(terrain,GERMAN_AF_X,GERMAN_AF_Z);scene.add(germanActivity.group);
+  germanActivity=new AirfieldActivity(terrain,GERMAN_AF_X,GERMAN_AF_Z,{service:"luftwaffe"});scene.add(germanActivity.group);
 }
 
 // ============================================================
@@ -2898,7 +2900,7 @@ function missionLoadout(m,d=AC[m.ac||'p47']){
 }
 
 function clearWorld(){
-  if(combatFX)combatFX.clear();
+  if(combatFX)combatFX.clear();aircraftSmoke?.clear();
   // Every real target (flak/bridge/factory) is permanent world scenery, built once by
   // loadRealWorld() — never removed here, only reset (resetAllRealTargets(), called by the next
   // populate()), the same way the old synthetic game's own permanent worldBridge always was.
@@ -3488,7 +3490,7 @@ function spawnBombers(n,kind){
 function damageEnemyAir(e,amount){
   if(!e.alive) return;
   e.hp-=amount;
-  spawnSmoke(e.pos.x,e.pos.y,e.pos.z,0x6a6252,0.3);
+  spawnSparks(e.pos,4);
   if(e.hp<=0){
     e.alive=false;
     spawnExplosion(e.pos.x,e.pos.y,e.pos.z,e.bomber?3.2:1.4);
@@ -3657,7 +3659,7 @@ function updateRecoveryEscort(dt){
     w.group.position.copy(w.pos);w.group.rotation.set(-w.pitch,w.heading,-w.roll,'YXZ');
     const gear=w.group.getObjectByName('gear');if(gear)gear.traverse(o=>o.visible=w.path>0);
     const prop=w.group.getObjectByName('prop');if(prop)prop.rotation.z-=GameRuntime.rotorStep(dt,.21,4);
-    w.smokeT-=dt;if(w.smokeT<=0&&!w.landed){w.smokeT=.45;spawnSmoke(w.pos.x,w.pos.y,w.pos.z,0x3c3c3c,.35);}
+    if(typeof aircraftSmoke!=="undefined"&&aircraftSmoke&&!w.landed)aircraftSmoke.trail(w,w.pos,new THREE.Vector3(Math.sin(w.heading),0,Math.cos(w.heading)),w.spd||80,.65,dt,new THREE.Vector3(windZ,0,0));
   }
 }
 function updateEnemyAir(dt){
@@ -3779,6 +3781,7 @@ function updateEnemyAir(dt){
     // hard floor, so a bad decision does not end with them in the ground
     if(e.pos.y<gnd+70){ e.pos.y=gnd+70; if(e.pitch<0) e.pitch=Math.max(e.pitch,0.05); }
 
+    if(typeof aircraftSmoke!=="undefined"&&aircraftSmoke){const maximum=e.kind==="p47"?7:e.kind==="fw190"?5:e.kind==="me163"?3:4;aircraftSmoke.trail(e,e.pos,e.vel.clone().normalize(),e.spd,e.hp<maximum?1-e.hp/maximum:0,dt,new THREE.Vector3(windZ,0,0));}
     e.group.position.copy(e.pos);
     e.group.rotation.set(0,0,0);
     e.group.rotateY(e.heading); e.group.rotateX(-e.pitch); e.group.rotateZ(-e.roll);
@@ -3830,8 +3833,7 @@ function updateBomber(e,dt,toP,dist){
   // rebuilt Z-axis rotors; the B-24's own animated pivots use local Y.
   for(const rotor of e.rotors||[])rotor.rotation[rotor.userData.spinAxis]-=GameRuntime.rotorStep(dt,29/60,3);
   // smoke once she is badly hurt, so you can see your work
-  if(e.hp<e.maxhp*0.45){ e.smokeT=(e.smokeT||0)-dt;
-    if(e.smokeT<=0){ e.smokeT=0.25; spawnSmoke(e.pos.x,e.pos.y,e.pos.z,0x3a3630,1.4); } }
+  if(typeof aircraftSmoke!=="undefined"&&aircraftSmoke)aircraftSmoke.trail(e,e.pos,e.vel.clone().normalize(),e.vel.length(),e.hp<e.maxhp*.45?1-e.hp/e.maxhp:0,dt,new THREE.Vector3(windZ,0,0));
   // defensive fire: several stations, so the closer you get the more of it there is
   // Reported "Liberators at Noon" unbeatable on Rookie. Measured, not guessed: parked a stationary
   // player at various ranges from a live 6-bomber box and ran the real fire code for 10 simulated
@@ -3907,7 +3909,7 @@ function beginBailout(){
   if(P.onGround||agl<85){flash('TOO LOW TO BAIL OUT',1400);return;}
   releaseHeldControls();
   bailout=PilotBailout.create(THREE,scene,P.pos.clone().add(new THREE.Vector3(-2,1,-2)),
-    P.heading,P.spd,groundY);
+    P.heading,P.spd,groundY,{service:P.ac==="p47"?"usaaf":"luftwaffe"});
   bailPlaneCrashed=false;bailDone=false;bailChuteCalled=false;
   P.alive=false;state=ST.DEAD;firing=false;
   document.getElementById('bailBtn').style.display='none';
@@ -3937,6 +3939,7 @@ function advanceBailout(dt){
   if(bailout.deployed&&!bailChuteCalled){bailChuteCalled=true;radioSay('PARACHUTE OPEN — STEER TO A CLEAR LANDING');
     flash('PARACHUTE: STICK / ARROWS — TURN, GLIDE OR BRAKE',4000);}
   if(!bailPlaneCrashed){
+    if(typeof aircraftSmoke!=="undefined"&&aircraftSmoke)aircraftSmoke.damage("player",P,noseDir(),dt,new THREE.Vector3(windZ,0,0));
     const forward=noseDir();
     P.pos.addScaledVector(forward,P.spd*dt*.7);
     P.pos.x=Math.max(1,Math.min(RTILE*RGRID_W-1,P.pos.x));
@@ -3953,7 +3956,7 @@ function advanceBailout(dt){
       releaseHeldControls();const p=bailout.position;
       const waterAt=(x,z)=>!!(livingWorld&&livingWorld._pointOnWater(x,z)),water=waterAt(p.x,p.z);
       bailout.settle(water);
-      bailRescue=PilotRescue.create(THREE,scene,p,groundY,{water,waterAt,bounds:{minX:WORLD_EDGE_MARGIN,maxX:RTILE*RGRID_W-WORLD_EDGE_MARGIN,minZ:WORLD_EDGE_MARGIN,maxZ:RTILE*RGRID_H-WORLD_EDGE_MARGIN}});
+      bailRescue=PilotRescue.create(THREE,scene,p,groundY,{water,waterAt,service:P.ac==="p47"?"usaaf":"luftwaffe",bounds:{minX:WORLD_EDGE_MARGIN,maxX:RTILE*RGRID_W-WORLD_EDGE_MARGIN,minZ:WORLD_EDGE_MARGIN,maxZ:RTILE*RGRID_H-WORLD_EDGE_MARGIN}});
       radioQ=[];radioT=0;radioSay(water?'RESCUE BOAT — WE HAVE YOUR SIGNAL, HOLD POSITION':'SEARCH PARTY — SIGNAL SEEN, WE ARE COMING TO YOU');
       document.getElementById('stickHint').textContent='RESCUE INBOUND';flash('PILOT SAFE — RESCUE INBOUND',4000);
       return;
@@ -5434,7 +5437,7 @@ function exitToMenuFromPause(){
   document.getElementById('flash').classList.remove('show');
   document.getElementById('radio').classList.remove('show');
   radioQ=[];radioT=0;flashT=0;
-  combatFX?.clear();
+  combatFX?.clear();aircraftSmoke?.clear();
   show('result',false); show('brief',false);
   show('menu',true);if(navigation){navigation.reset();navigation.button.style.display='none';}
   buildMenu();
@@ -5443,7 +5446,7 @@ function exitToMenuFromPause(){
 // ============================================================
 //  INIT
 // ============================================================
-let combatFX=null;
+let combatFX=null,aircraftSmoke=null;
 let runtimeSession=null,releaseHeldControls=()=>{};
 let flightCoach=new GameRuntime.HintCoach();
 function updateFlightHints(dt){
@@ -5475,7 +5478,7 @@ function init(){
   renderer.setSize(window.innerWidth,window.innerHeight);
   app.appendChild(renderer.domElement);
   scene=new THREE.Scene();
-  combatFX=CombatFX.create(scene);
+  combatFX=CombatFX.create(scene);aircraftSmoke=AircraftSmoke.create(THREE,scene);
   // near was 0.6, which threw away depth precision for no gain - nothing is ever that close
   // to a chase camera. 2.5 keeps far ground and water cleanly separated in the depth buffer.
   camera=new THREE.PerspectiveCamera(62,window.innerWidth/window.innerHeight,2.5,30000);
@@ -5540,7 +5543,7 @@ function init(){
   buildMenu();
   // menu wiring
   document.getElementById('startBtn').onclick=()=>showBrief(selectedMission);
-  document.getElementById('pauseMainMenu').onclick=()=>{exitToMenuFromPause();window.location.href='index.html?v=175';};
+  document.getElementById('pauseMainMenu').onclick=()=>{exitToMenuFromPause();window.location.href='index.html?v=176';};
   document.getElementById('logBtn').onclick=()=>{ show('menu',false); showLogbook(); };
   document.getElementById('skipLaunchPreview').onclick=()=>finishLaunchIntro();
   document.getElementById('brBack').onclick=()=>{ show('brief',false); show('menu',true);if(navigation){navigation.reset();navigation.button.style.display='none';} state=ST.MENU; };
@@ -5661,10 +5664,9 @@ function animate(){
   }
   if(state===ST.FLIGHT||state===ST.DEAD){
     if(state===ST.FLIGHT&&P.alive){
-      if(SortieFeatures.Damage.tick(P,dt)){
-        const p=P.pos.clone().addScaledVector(noseDir(),-3);p.y-=.6;spawnSmoke(p.x,p.y,p.z,P.systemDamage.engine<1?0x343434:0xaaa99b,.4);
-      }
+      SortieFeatures.Damage.tick(P,dt);
       updateFlight(dt);
+      if(aircraftSmoke&&P.alive)aircraftSmoke.damage("player",P,noseDir(),dt,new THREE.Vector3(windZ,0,0));
       updateEuropeOperation(dt);
       updateInterceptRadio(raw);
       updateFlightHints(raw);
@@ -5715,7 +5717,7 @@ function animate(){
   }
   // Menu/briefing transitions also fade the engine; pause uses the master gain above.
   updateAudio(raw);
-  if(combatFX)combatFX.update(raw);
+  if(combatFX)combatFX.update(raw);if(aircraftSmoke)aircraftSmoke.update(raw);
   CombatFX.updateRounds(bullets,camera,renderer);
   CombatFX.updateRounds(tracers,camera,renderer);
   GameRuntime.render(renderer,scene,camera);

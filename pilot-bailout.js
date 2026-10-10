@@ -1,16 +1,17 @@
 /* Small shared parachute sequence for both campaigns. Coordinates are metres, Y up. */
 (function(root){
  'use strict';
- function create(THREE,scene,start,heading,speed,groundAt){
+ function create(THREE,scene,start,heading,speed,groundAt,options={}){
   const group=new THREE.Group();group.name='pilotParachute';
-  const cloth=new THREE.MeshStandardMaterial({color:0xc8b792,roughness:1,side:THREE.DoubleSide});
-  const suit=new THREE.MeshStandardMaterial({color:0x464b3b,roughness:1});
-  const boots=new THREE.MeshStandardMaterial({color:0x242821,roughness:1});
-  const skin=new THREE.MeshStandardMaterial({color:0xb49473,roughness:1});
-  const harness=new THREE.MeshStandardMaterial({color:0xb8a78a,roughness:1});
-  const goggles=new THREE.MeshStandardMaterial({color:0x354952,metalness:.12,roughness:.24});
+  const cloth=new THREE.MeshStandardMaterial({color:0xffffff,roughness:1,side:THREE.DoubleSide,vertexColors:true});
   const line=new THREE.MeshBasicMaterial({color:0xddd3b3});
-  const canopy=new THREE.Mesh(new THREE.SphereGeometry(3.1,16,8,0,Math.PI*2,0,Math.PI/2),cloth);
+  const canopyGeo=new THREE.SphereGeometry(3.1,32,12,0,Math.PI*2,0,Math.PI/2),fabric=[];
+  for(let i=0;i<canopyGeo.attributes.uv.count;i++){
+   const u=canopyGeo.attributes.uv.getX(i),v=canopyGeo.attributes.uv.getY(i),panel=Math.floor(u*16)%2;
+   const c=new THREE.Color(panel?0xdedbd1:0xf0eee4);c.multiplyScalar(.94+v*.06);fabric.push(c.r,c.g,c.b);
+  }
+  canopyGeo.setAttribute('color',new THREE.Float32BufferAttribute(fabric,3));
+  const canopy=new THREE.Mesh(canopyGeo,cloth);
   canopy.position.y=4.4;canopy.visible=false;group.add(canopy);
   for(let i=0;i<8;i++){
    const a=i*Math.PI/4,p=new THREE.Vector3(Math.cos(a)*3.05,4.4,Math.sin(a)*3.05);
@@ -20,37 +21,9 @@
    cord.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),dir.normalize());
    cord.visible=false;group.add(cord);
   }
-  // Recognisable aircrew silhouette at chase-camera distance: jacket, harness,
-  // arms with gloves, two separated legs and boots, bare face and leather helmet.
-  const pilot=new THREE.Group();pilot.name='pilot';group.add(pilot);
-  const body=new THREE.Mesh(new THREE.CylinderGeometry(.23,.19,.66,10),suit);
-  body.name='flightJacket';body.position.y=.17;pilot.add(body);
-  const head=new THREE.Mesh(new THREE.SphereGeometry(.18,10,8),skin);
-  head.position.y=.68;head.name='face';pilot.add(head);
-  const helmet=new THREE.Mesh(new THREE.SphereGeometry(.205,12,8,0,Math.PI*2,0,Math.PI*.57),boots);
-  helmet.position.y=.74;helmet.name='helmet';pilot.add(helmet);
-  const visor=new THREE.Mesh(new THREE.BoxGeometry(.32,.105,.09),goggles);
-  visor.position.set(0,.72,.145);visor.name='goggles';pilot.add(visor);
-  const pack=new THREE.Mesh(new THREE.BoxGeometry(.43,.46,.20),cloth);
-  pack.position.set(0,.20,-.23);pack.name='parachutePack';pilot.add(pack);
-  const limb=(name,a,b,r,material)=>{
-   const v=new THREE.Vector3().subVectors(b,a);
-   const mesh=new THREE.Mesh(new THREE.CylinderGeometry(r*.85,r,v.length(),8),material);
-   mesh.name=name;mesh.position.copy(a).add(b).multiplyScalar(.5);
-   mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),v.normalize());pilot.add(mesh);
-  };
-  for(const side of [-1,1]){
-   limb(side<0?'leftArm':'rightArm',new THREE.Vector3(side*.23,.41,0),
-     new THREE.Vector3(side*.38,-.12,.12),.085,suit);
-   const glove=new THREE.Mesh(new THREE.SphereGeometry(.09,8,6),boots);
-   glove.position.set(side*.38,-.15,.12);pilot.add(glove);
-   limb(side<0?'leftLeg':'rightLeg',new THREE.Vector3(side*.11,-.14,0),
-     new THREE.Vector3(side*.15,-.68,.04),.11,suit);
-   const boot=new THREE.Mesh(new THREE.BoxGeometry(.18,.25,.30),boots);
-   boot.name=side<0?'leftBoot':'rightBoot';boot.position.set(side*.15,-.76,.12);pilot.add(boot);
-   const strap=new THREE.Mesh(new THREE.BoxGeometry(.045,.65,.045),harness);
-   strap.position.set(side*.115,.18,.195);strap.rotation.z=side*.22;pilot.add(strap);
-  }
+  const visuals=root.CrewVisuals||(typeof require==='function'?require('./crew-visuals.js'):null);
+  const pilot=visuals.create(THREE,{service:options.service||'usaaf',variant:options.variant||0,pose:'chute',srgbOutput:options.srgbOutput});
+  pilot.position.y=-.9;group.add(pilot);
   group.rotation.y=heading;
   group.position.copy(start);scene.add(group);
   const velocity=new THREE.Vector3(Math.sin(heading)*Math.min(speed,190)*.18,0,
@@ -60,10 +33,10 @@
    group, get position(){return group.position;},get deployed(){return deployed;},get heading(){return yaw;},
    settle(water=false){
     for(const child of group.children)if(child.material===line)child.visible=false;
-    canopy.scale.set(.5,.07,.34);canopy.position.set(2.2,-.65,-1.4);cloth.color.setHex(0x887a59);group.rotation.set(0,yaw,0);
+    canopy.scale.set(.5,.07,.34);canopy.position.set(2.2,-.65,-1.4);group.rotation.set(0,yaw,0);
     if(water){
      canopy.visible=false;pilot.position.y=-.3;
-     const raft=new THREE.Mesh(new THREE.TorusGeometry(1.15,.23,8,16),cloth);
+     const raft=new THREE.Mesh(new THREE.TorusGeometry(1.15,.23,8,24),new THREE.MeshStandardMaterial({color:0xbfa24d,roughness:.88}));
      raft.name='pilotDinghy';raft.rotation.x=Math.PI/2;raft.position.y=-.5;raft.scale.y=1.35;group.add(raft);
     }
    },
@@ -96,7 +69,8 @@
     if(group.position.y<=floor+.9){group.position.y=floor+.9;landed=true;}
     return {landed,safe:landed&&deployed};
    },
-   dispose(){scene.remove(group);group.traverse(o=>{if(o.geometry)o.geometry.dispose();if(o.material)o.material.dispose();});}
+   dispose(){scene.remove(group);const geometries=new Set(),materials=new Set();group.traverse(o=>{if(o.geometry)geometries.add(o.geometry);if(o.material)materials.add(o.material);});for(const g of geometries)g.dispose();for(const m of materials)m.dispose();}
+
   };
  }
  root.PilotBailout={create};

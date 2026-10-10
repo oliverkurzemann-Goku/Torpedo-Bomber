@@ -5,7 +5,42 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 175 · Thunderbolt Squadron BUILD 175 · Remagen-Kern 23 / Fahrzeuge 22**
+Stand bei Übergabe: **Torpedo Squadron BUILD 176 · Thunderbolt Squadron BUILD 176 · Remagen-Kern 23 / Fahrzeuge 22**
+
+**Build 176 (10.10.2026): detaillierte Personen, Flugzeugrauch und Rettungsboote.**
+`crew-visuals.js` baut gemeinsame Figuren mit Gesicht, Ohren/Nase, Helm/Kappe,
+Brillengläsern, Kragen, Taschen, Gürtel, Schnallen, Stiefelsohlen und Schnürung.
+Piloten tragen Rettungsweste, Fallschirmpack und Gurte; Arme/Beine bleiben getrennt
+beweglich. Farbsätze für USAAF, US Navy, Luftwaffe und IJN sind zeittypisch inspiriert,
+keine konkrete Uniform-/Einheitsrekonstruktion. Pazifik übergibt srgbOutput:true:
+Materialfarben müssen vor Three r128s sRGB-Ausgabe in den linearen Raum umgerechnet
+werden, sonst erscheinen Haut, Bootsrumpf und Holzdeck ausgebleicht. Remagen behält
+seine bestehende Ausgabe. PilotBailout reicht diese Option und die Seite weiter.
+AirfieldActivity backt Gesicht, Kappe, Hals, Taschen, Kragen und Stiefeldetails in
+bestehende Instanzgeometrien; eine zusätzliche Handgruppe ergänzt 24 Hände. Kopf
+folgt der Körperrichtung. Alliierte und deutsche Bodencrew erhalten getrennte Farben.
+Flugplatz-Aktivität: 29 statt 28 Meshes, weiterhin unter dem bestehenden Limit 30.
+`aircraft-smoke.js` ersetzt die schwarzen Kugel-/Sprite-Abgase beschädigter Flugzeuge
+in beiden Spielen durch eine räumlich zusammenhängende, weiche, verwirbelte Fahne.
+Dichte nach Strecke statt einzelnen Bildratenpulsen; Start hinter dem Rumpf, Wachstum,
+Winddrift, Grautönung und Ausblenden. Spieler, verlassene beschädigte Flugzeuge,
+Jäger, Bomber und Rottenflieger nutzen dieselbe begrenzte Instanzgruppe. Maximal
+256 Partikel, 24 aktive Emitter und ein Rauch-Draw; zusätzliche Emitter verdrängen
+keine bestehenden, inaktive Referenzen verfallen. Pause stoppt Simulation; Start/
+Abbruch leert Partikel und Emitter. Bodeneffekte und Missionsphysik bleiben separat.
+PilotRescue: ausgeformter graublauer Rumpf mit dunkler Wasserlinie, Holzdeck/Planken,
+Steuerhaus/Fenster, Canvasdach, Reling, Antenne, Fender, Rettungsringe, Tau und zwei
+sichtbare Matrosen. Statische Bootdetails werden nach Material zusammengefasst.
+Landrettung verwendet detaillierte Bodenfiguren; Route, Wasserhöhe und bestehende
+Abholung nach 6,2s/Abschluss nach 8s bleiben erhalten. Gemeinsam benutzte Materialien
+werden beim Entfernen genau einmal entsorgt. Fallschirmstoff hat helle Stoffbahnen,
+Schlauchboot gedecktes Rettungsgelb. Geänderte Module und Spiele haben Cachekennung
+176; unveränderte Module behalten ihre Kennung.
+Neue Tests `okinawa/tests/aircraft-smoke.cjs` (Dichte 20/60/120 FPS, hinter dem Flugzeug,
+Drift/Ausblenden, Poollimit, Referenz- und Ressourcenabbau) und
+`okinawa/tests/crew-smoke-browser.cjs` (echte Spiele/Frame-Loop, sichtbare Rauchpixel,
+Pause, detaillierter Absprung, Bootabholung, Neustart). Bilder `test-visuals/build176-*.png`.
+CI lädt alle Bilder als build-176-visual-checks hoch. Konkrete iPad-FPS nicht behaupten.
 
 **Build 175 (09.10.2026): Missionsabschluss, Navigation und sichtbare Flugzeugfunktionen.**
 Funkton wird beim Audiostart einmal vorbereitet; lokale Stimme wird nur beim Start/

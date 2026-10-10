@@ -11,30 +11,52 @@
   const glow=new THREE.MeshBasicMaterial({color:0xec713e,transparent:true,opacity:.55,depthWrite:false});
   const smoke=new THREE.MeshBasicMaterial({color:0x99694f,transparent:true,opacity:.16,depthWrite:false});
   function box(parent,size,pos,material){const m=new THREE.Mesh(new THREE.BoxGeometry(...size),material);m.position.set(...pos);parent.add(m);return m;}
+  const visuals=root.CrewVisuals||(typeof require==='function'?require('./crew-visuals.js'):null);
   function crew(x,z){
-   const g=new THREE.Group();g.position.set(x,water?1.1:0,z);group.add(g);
-   box(g,[.42,.62,.26],[0,.92,0],olive);
-   const head=new THREE.Mesh(new THREE.SphereGeometry(.19,8,6),skin);head.position.y=1.47;g.add(head);
-   const helmet=new THREE.Mesh(new THREE.SphereGeometry(.21,8,6,0,Math.PI*2,0,Math.PI/2),olive);helmet.position.y=1.55;g.add(helmet);
-   const legs=[],arms=[];
-   for(const side of [-1,1]){
-    const leg=box(g,[.15,.62,.17],[side*.12,.34,0],dark);legs.push(leg);
-    const arm=box(g,[.12,.55,.13],[side*.29,.91,.02],olive);arms.push(arm);
-   }
-   return {g,legs,arms};
+   const g=visuals.create(THREE,{service:options.service||(water?'usnavy':'usaaf'),role:water?'sailor':'ground',srgbOutput:options.srgbOutput});
+   g.position.set(x,water?.85:0,z);group.add(g);return {g,legs:g.userData.legs,arms:g.userData.arms};
   }
   if(water){
-   const shape=new THREE.Shape();shape.moveTo(-1.5,-3);shape.lineTo(0,-4.5);shape.lineTo(1.5,-3);
-   shape.lineTo(1.5,3);shape.lineTo(0,4.5);shape.lineTo(-1.5,3);shape.closePath();
-   const hull=new THREE.Mesh(new THREE.ExtrudeGeometry(shape,{depth:.9,bevelEnabled:true,bevelSegments:1,steps:1,bevelSize:.12,bevelThickness:.12}),grey);
-   hull.rotation.x=-Math.PI/2;hull.position.y=.1;group.add(hull);
-   box(group,[2,1.35,2.3],[0,1.6,-.7],olive);
-   box(group,[2.04,.45,.06],[0,1.95,.49],dark);
-   box(group,[2.4,.14,2.6],[0,2.35,-.7],grey);
-   box(group,[.07,2,.07],[0,3.2,-1],dark);
-   box(group,[.65,.4,.03],[.3,3.6,-1],olive);
+   // A small naval motor launch, with shaped hull, dark waterline and timber deck.
+   const hullMat=new THREE.MeshStandardMaterial({color:0x586b73,roughness:.8});
+   const waterline=new THREE.MeshStandardMaterial({color:0x283b42,roughness:.9});
+   const timber=new THREE.MeshStandardMaterial({color:0x887151,roughness:1});
+   const trim=new THREE.MeshStandardMaterial({color:0x88958d,roughness:.74});
+   const glass=new THREE.MeshStandardMaterial({color:0x304b56,roughness:.28,metalness:.15});
+   const canvas=new THREE.MeshStandardMaterial({color:0xa79b7b,roughness:1});
+   const ringMat=new THREE.MeshStandardMaterial({color:0xb57840,roughness:.9});
+   const contour=[[-1.15,-3.8],[-1.5,-2.6],[-1.45,2.45],[-.85,3.65],[0,4.5],[.85,3.65],[1.45,2.45],[1.5,-2.6],[1.15,-3.8]];
+   function sides(bottom,top,material,inset=1){
+    const vertices=[];
+    for(let i=0;i<contour.length;i++){const a=contour[i],b=contour[(i+1)%contour.length],rise=(a[1]>2? .15:0),riseB=(b[1]>2?.15:0);
+     vertices.push(a[0]*inset,bottom,a[1],b[0]*inset,bottom,b[1],b[0],top+riseB,b[1],a[0]*inset,bottom,a[1],b[0],top+riseB,b[1],a[0],top+rise,a[1]);}
+    const geo=new THREE.BufferGeometry();geo.setAttribute('position',new THREE.Float32BufferAttribute(vertices,3));geo.computeVertexNormals();const mesh=new THREE.Mesh(geo,material);mesh.material.side=THREE.DoubleSide;group.add(mesh);return mesh;
+   }
+   sides(-.45,.20,waterline,.62).name='launchWaterline';sides(.20,.90,hullMat).name='launchHull';
+   const deck=new THREE.Shape();contour.forEach(([x,z],i)=>i?deck.lineTo(x,-z):deck.moveTo(x,-z));deck.closePath();
+   const deckMesh=new THREE.Mesh(new THREE.ShapeGeometry(deck),timber);deckMesh.rotation.x=-Math.PI/2;deckMesh.position.y=.84;group.add(deckMesh);
+   for(let i=0;i<9;i++)box(group,[.018,.012,5.9],[-1.15+i*.285,.85,-.45],waterline);
+   box(group,[2.15,1.10,2.15],[0,1.43,-1.0],hullMat);
+   for(const side of [-1,1]){box(group,[.83,.48,.035],[side*.5,1.61,.086],glass);box(group,[.035,.48,1.1],[side*1.085,1.62,-.8],glass);}
+   box(group,[.09,.66,.07],[0,1.6,.12],trim);
+   box(group,[2.40,.13,2.4],[0,2.02,-1],canvas);
+   box(group,[1.85,.14,.48],[0,1.02,2.1],timber);
+   box(group,[1.85,.14,.48],[0,1.02,-3],timber);
+   function rod(a,b,r,material){const d=new THREE.Vector3(...b).sub(new THREE.Vector3(...a)),o=new THREE.Mesh(new THREE.CylinderGeometry(r,r,d.length(),7),material);o.position.set((a[0]+b[0])/2,(a[1]+b[1])/2,(a[2]+b[2])/2);o.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),d.normalize());group.add(o);}
+   for(const side of [-1,1]){for(const z of [-3.3,-2.3,1.4,2.6])rod([side*1.36,.85,z],[side*1.36,1.35,z],.026,trim);
+    rod([side*1.36,1.35,-3.3],[side*1.36,1.35,2.6],.025,trim);
+    const ring=new THREE.Mesh(new THREE.TorusGeometry(.28,.065,7,18),ringMat);ring.position.set(side*1.12,1.48,-1.3);ring.rotation.y=Math.PI/2;group.add(ring);
+    for(const z of [-1.5,1.2]){const fender=new THREE.Mesh(new THREE.SphereGeometry(.18,8,6),dark);fender.scale.set(.8,1.5,.8);fender.position.set(side*1.48,.67,z);group.add(fender);}
+   }
+   rod([0,2.08,-1.5],[0,3.25,-1.5],.025,dark);
+   const rope=new THREE.Mesh(new THREE.TorusGeometry(.32,.045,6,20),canvas);rope.rotation.x=Math.PI/2;rope.position.set(.65,.9,2.8);group.add(rope);
+   box(group,[.65,.34,.42],[-.68,1.08,-2.65],canvas);
+   const wheel=new THREE.Mesh(new THREE.TorusGeometry(.19,.025,6,16),dark);wheel.position.set(.48,1.34,.35);wheel.rotation.x=.5;group.add(wheel);
+   const cleat=box(group,[.35,.075,.065],[0,.96,3.4],trim);cleat.name='bowCleat';
+   if(options.srgbOutput)for(const material of [hullMat,waterline,timber,trim,glass,canvas,ringMat,dark])material.color.convertSRGBToLinear();
+   visuals.batch(THREE,group);
   }
-  const people=water?[crew(-.75,1.4)]:[crew(-.8,0),crew(.8,-.6)];
+  const people=water?[crew(-.6,1.35),crew(.5,2.65)]:[crew(-.8,0),crew(.8,-.6)];
   const flare=new THREE.Mesh(new THREE.SphereGeometry(.1,8,6),glow);flare.position.set(.8,.2,.5);marker.add(flare);
   const puffs=[];
   for(let i=0;i<6;i++){
