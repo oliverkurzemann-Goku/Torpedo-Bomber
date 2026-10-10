@@ -83,12 +83,44 @@
   end.x+=Math.sin(direction)*stop;end.z+=Math.cos(direction)*stop;
   if(!found){start.copy(position);end.copy(position);}
   group.rotation.y=direction+Math.PI;group.position.copy(start);if(water)group.position.y=surfaceAt(start.x,start.z);
-  let elapsed=0,disposed=false;
-  return {group,marker,water,get elapsed(){return elapsed;},get pickup(){return elapsed>=6.2;},
+  let elapsed=0,disposed=false,travelTime=6.2,route=[start.clone(),end.clone()],lengths=[start.distanceTo(end)],passengers=0;
+  const validPoint=p=>waterAt(p.x,p.z)&&(!options.bounds||p.x>=options.bounds.minX&&p.x<=options.bounds.maxX&&p.z>=options.bounds.minZ&&p.z<=options.bounds.maxZ);
+  function validLeg(a,b){const steps=Math.max(12,Math.ceil(a.distanceTo(b)/4)),sample=new THREE.Vector3();for(let i=0;i<=steps;i++)if(!validPoint(sample.lerpVectors(a,b,i/steps)))return false;return true;}
+  function waterRoute(a,b){
+   if(validLeg(a,b))return [a,b];
+   // Try coastal detours, checking every segment against the actual shoreline.
+   // A disconnected lake cannot be reached by this launch; never teleport it.
+   const middle=a.clone().lerp(b,.5),heading=Math.atan2(b.x-a.x,b.z-a.z);
+   for(const distance of [24,64,160,400,1000])for(let i=0;i<16;i++){
+    const angle=heading+i*Math.PI/8,offset=new THREE.Vector3(Math.sin(angle)*distance,0,Math.cos(angle)*distance),mid=middle.clone().add(offset);
+    if(validLeg(a,mid)&&validLeg(mid,b))return [a,mid,b];
+    const left=a.clone().add(offset),right=b.clone().add(offset);
+    if(validLeg(a,left)&&validLeg(left,right)&&validLeg(right,b))return [a,left,right,b];
+   }
+   return null;
+  }
+  return {group,marker,water,get elapsed(){return elapsed;},get pickup(){return elapsed>=travelTime;},
+   retarget(position){
+    if(disposed||!water)return false;
+    const next=waterRoute(group.position.clone().setY(0),position.clone().setY(0));if(!next)return false;
+    const last=next[next.length-1],previous=next[next.length-2],distance=last.distanceTo(previous);
+    if(distance>0)last.lerp(previous,Math.min(3,distance)/distance);
+    route=next;lengths=next.slice(1).map((p,i)=>p.distanceTo(next[i]));travelTime=Math.max(1,lengths.reduce((a,b)=>a+b,0)/7);elapsed=0;
+    marker.position.copy(position);marker.position.y=surfaceAt(position.x,position.z)+.12;return true;
+   },
+   boardPassenger(){
+    if(!water||passengers>=3)return;
+    const p=visuals.create(THREE,{service:options.service||'usnavy',role:'pilot',variant:passengers,srgbOutput:options.srgbOutput});p.name='rescuedCrew';
+    p.position.set(passengers===2?0:passengers===0?-.55:.55,.28,passengers===2?-3:2.1);p.rotation.y=passengers===2?0:Math.PI;
+    for(const leg of p.userData.legs)leg.rotation.x=-1.1;for(const arm of p.userData.arms)arm.rotation.x=-.45;group.add(p);passengers++;
+   },
    update(dt){
     if(disposed)return {done:true,pickup:true};
-    elapsed=Math.min(8,elapsed+Math.max(0,dt));const t=Math.min(1,elapsed/6.2);
-    group.position.lerpVectors(start,end,t);group.position.y=(water?surfaceAt:groundAt)(group.position.x,group.position.z)+(water?Math.sin(elapsed*2)*.07:0);
+    elapsed=Math.min(travelTime+1.8,elapsed+Math.max(0,dt));const t=Math.min(1,elapsed/travelTime);
+    let remaining=lengths.reduce((a,b)=>a+b,0)*t,index=0;while(index<lengths.length-1&&remaining>lengths[index])remaining-=lengths[index++];
+    group.position.lerpVectors(route[index],route[index+1],lengths[index]?Math.min(1,remaining/lengths[index]):1);
+    if(water&&lengths[index]>0)group.rotation.y=Math.atan2(route[index+1].x-route[index].x,route[index+1].z-route[index].z);
+    group.position.y=(water?surfaceAt:groundAt)(group.position.x,group.position.z)+(water?Math.sin(elapsed*2)*.07:0);
     if(water)marker.position.y=surfaceAt(marker.position.x,marker.position.z)+.12;
     if(water)group.rotation.z=Math.sin(elapsed*1.4)*.018;
     else for(const p of people)for(let i=0;i<2;i++){
@@ -100,7 +132,7 @@
      const t=(elapsed*.22+i/6)%1,puff=puffs[i];
      puff.position.set(.8+t*.5,.35+t*3,.5+Math.sin(i+t*3)*.15);puff.scale.setScalar(.65+t*.9);
     }
-    return {done:elapsed>=8,pickup:elapsed>=6.2};
+    return {done:elapsed>=travelTime+1.8,pickup:elapsed>=travelTime};
    },
    dispose(){
     if(disposed)return;disposed=true;
@@ -110,6 +142,29 @@
    }
   };
  }
- root.PilotRescue={create};
+ // One motor launch per aircraft. Tickets expose individual pickup state, while
+ // only this coordinator advances the boat once per simulation frame.
+ function createCrew(THREE,scene,groundAt,options={}){
+  let boat=null,active=null,disposed=false;const pending=[];
+  function begin(ticket){
+   if(boat&&!boat.retarget(ticket.position)){ticket.status={done:true,pickup:false};return false;}
+   if(!boat)boat=create(THREE,scene,ticket.position,groundAt,{...options,water:true});boat.marker.visible=true;active=ticket;return true;
+  }
+  return {
+   add(position){
+    const ticket={position:position.clone(),status:{done:false,pickup:false},time:0,boarded:false};
+    if(!boat&&!active)begin(ticket);else pending.push(ticket);
+    return {water:true,get group(){return boat.group;},get marker(){return boat.marker;},get elapsed(){return ticket.time;},get pickup(){return ticket.status.pickup;},update(){return ticket.status;},dispose(){}};
+   },
+   update(dt){
+    if(disposed)return;
+    if(active){active.status=boat.update(dt);active.time=boat.elapsed;if(active.status.pickup&&!active.boarded){boat.boardPassenger();boat.marker.visible=false;active.boarded=true;}if(active.status.done)active=null;}
+    while(!active&&pending.length){pending.sort((a,b)=>a.position.distanceToSquared(boat.group.position)-b.position.distanceToSquared(boat.group.position));begin(pending.shift());}
+   },
+   get group(){return boat?.group;},
+   dispose(){if(disposed)return;disposed=true;boat?.dispose();pending.length=0;active=null;}
+  };
+ }
+ root.PilotRescue={create,createCrew};
  if(typeof module==='object'&&module.exports)module.exports=root.PilotRescue;
 })(typeof window!=='undefined'?window:globalThis);

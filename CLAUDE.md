@@ -5,7 +5,32 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 177 · Thunderbolt Squadron BUILD 177 · Remagen-Kern 23 / Fahrzeuge 22**
+Stand bei Übergabe: **Torpedo Squadron BUILD 178 · Thunderbolt Squadron BUILD 178 · Remagen-Kern 23 / Fahrzeuge 22**
+
+**Build 178 (10.10.2026): ein gemeinsames Rettungsboot pro Besatzung.**
+`PilotRescue.createCrew` hält genau einen Motorlaunch und individuelle Abhol-Tickets.
+Avenger drei / Dauntless zwei Fallschirme bleiben unabhängig. Der erste sicher im
+Wasser gelandete Überlebende ruft das Boot; weitere, auch später gelandete Personen
+kommen in die Warteschlange. Das Boot fährt kontinuierlich zum nächsten erreichbaren
+Überlebenden, folgt dem vorhandenen Wellenspiegel und prüft alle Routensegmente gegen
+die Küste. Begrenzte Umwege statt Teleportation oder Fahrt über Inseln. Nicht erreichbare
+getrennte Gewässer zählen nicht als erfolgte Abholung. Landrettung bleibt eine Suchgruppe.
+Gerettete Personen sitzen sichtbar an Bord; Signale enden nach der jeweiligen Abholung.
+Nur der Koordinator bewegt das gemeinsame Boot einmal pro Frame. Pause friert es ein;
+Menu/Restart entsorgen Boot, Figuren und Marker einmal. Ergebnis wartet auf jedes
+Crew-Ticket und zählt tatsächlich abgeholte Personen. Kamera folgt nach der letzten
+Abholung dem Boot statt einem leeren Fallschirm-Mittelpunkt bei Weltursprung.
+Feindjäger-Fallschirme sind seit Build 177 vorhanden: ein Pilot ab 85m AGL, automatisch
+geöffnete Haube, keine garantierte Rettung bei tiefem Abschuss. Der neue reale Remagen-
+Jäger-Abschusstest prüft eine BF109-Haube, keine Doppelzählung und keinen Absprung bei
+20m AGL; der bestehende echte Zero-Abschussfall prüft die Pazifik-Haube weiter.
+`terrain-system/tests/pilot-rescue.js` ergänzt gemeinsame drei Personen, späte Ankunft,
+kontinuierliche Fahrt, Küstenumweg, getrennte Gewässer und Ressourcen-Freigabe.
+`okinawa/tests/crew-smoke-browser.cjs` ergänzt tatsächliche Avenger-/Dauntless-Rettung
+mit genau einem Boot, 3/3 beziehungsweise 2/2 sichtbaren Passagieren, spätem Piloten,
+Pause und Menü-/Neustartbereinigung. Browserbilder `build178-shared-*.png`, CI-Artefakt
+`build-178-visual-checks`. Gemeinsames Rettungsmodul Cache 178; sichtbare Buildnummern
+und Menülinks 178. Unveränderte Module behalten ihre bisherigen Cachekennungen.
 
 **Build 177 (10.10.2026): Darstellung, Flugzeugverluste und weitere Einsatzabläufe.**
 Die bestätigte Flugsteuerung bleibt unverändert. GameRuntime.frames.report() liefert

@@ -23,9 +23,9 @@ const server=http.createServer((req,res)=>{
   page.setDefaultTimeout(120000);page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error'&&/shader|WebGLProgram/i.test(m.text()))errors.push(m.text());});
   await page.addInitScript(()=>{window.requestAnimationFrame=()=>0;});
   const out=path.join(root,'test-visuals');fs.mkdirSync(out,{recursive:true});
-  async function proof(name,pose){await page.evaluate(pose);const data=await page.evaluate(()=>{scene.updateMatrixWorld(true);renderer.render(scene,camera);return renderer.domElement.toDataURL('image/png');});fs.writeFileSync(path.join(out,'build176-'+name+'.png'),Buffer.from(data.split(',')[1],'base64'));}
+  async function proof(name,pose){await page.evaluate(pose);const data=await page.evaluate(()=>{scene.updateMatrixWorld(true);renderer.render(scene,camera);return renderer.domElement.toDataURL('image/png');});fs.writeFileSync(path.join(out,(name.startsWith('shared-')?'build178-':'build176-')+name+'.png'),Buffer.from(data.split(',')[1],'base64'));}
   for(const game of ['remagen-mission.html','torpedo-carrier.html']){
-   const pacific=game.startsWith('torpedo');await page.goto('http://127.0.0.1:'+server.address().port+'/'+game+'?v=176');
+   const pacific=game.startsWith('torpedo');await page.goto('http://127.0.0.1:'+server.address().port+'/'+game+'?v=178');
    await page.waitForFunction(p=>state===ST.MENU&&(p||realWorldReady),pacific,{polling:200});
    await page.evaluate(()=>{renderer.setPixelRatio(1);renderer.shadowMap.enabled=false;});
    if(pacific){await page.evaluate(async()=>{await prepareOkinawa();await preparePacificModels(MISSIONS[0]);});await page.waitForFunction(()=>planeModelLoaded,null,{polling:200});}
@@ -40,11 +40,25 @@ const server=http.createServer((req,res)=>{
    if(!pacific){
     await proof('ground-crew',()=>{alliedActivity.update(0,ALLIED_AF_X,ALLIED_AF_Z);const c=alliedActivity.crew.find(c=>c.job==='signal'),x=ALLIED_AF_X+c.drawX,z=ALLIED_AF_Z+c.drawZ,y=terrain.getRenderedHeight(x,z);updateContentVisibility(x,z);camera.position.set(x-.5,y+2.3,z-3.2);camera.lookAt(x,y+1.1,z);});
    }else{
-    const rescue=await page.evaluate(()=>{for(let i=0;i<6000&&!bailDone&&!bailRescue;i++)advanceBailout(.05);if(!bailRescue?.water)throw Error('Water pickup did not start');bailRescue.update(3);return {crew:bailRescue.group.children.filter(o=>o.name==='pilot').length,pickup:bailRescue.pickup};});
+    const rescue=await page.evaluate(()=>{for(let i=0;i<6000&&!bailDone&&!bailRescue;i++)advanceBailout(.05);if(!bailRescue?.water)throw Error('Water pickup did not start');advanceBailout(3);return {crew:bailRescue.group.children.filter(o=>o.name==='pilot').length,pickup:bailRescue.pickup};});
     assert.equal(rescue.crew,2);assert.equal(rescue.pickup,false);
     await proof('rescue-boat',()=>{const p=bailRescue.group.position;camera.position.copy(p).add(new THREE.Vector3(9,6,10));camera.lookAt(p.clone().add(new THREE.Vector3(0,1.2,0)));});
+    const avenger=await page.evaluate(()=>{let boats=0;for(let i=0;i<12000&&!bailDone;i++){advanceBailout(.05);boats=Math.max(boats,scene.children.filter(o=>o.name==='rescueBoat').length);}return {boats,done:bailDone,recovered:crewBailouts.filter(c=>c.safe).length+Number(bailRescue.pickup),aboard:bailRescue.group.children.filter(o=>o.name==='rescuedCrew').length};});
+    assert.deepEqual(avenger,{boats:1,done:true,recovered:3,aboard:3});
+    await proof('shared-avenger-rescue',()=>{const p=bailRescue.group.position;camera.position.copy(p).add(new THREE.Vector3(8,5,9));camera.lookAt(p.clone().add(new THREE.Vector3(0,1,0)));});
+    // The Dauntless gunner lands first; a later pilot reuses that same launch.
+    await page.evaluate(async()=>{await preparePacificModels(MISSIONS.find(m=>m.sbd&&!m.corsair));startMission(MISSIONS.findIndex(m=>m.sbd&&!m.corsair));carrierIntro=null;state=ST.FLIGHT;hideOverlays();P.pos.set(-1000,300,0);P.alive=true;P.spd=90;});
+    await page.locator('#bailBtn').dispatchEvent('pointerdown',{pointerId:178});
+    await page.evaluate(()=>{for(let i=0;i<60;i++)advanceBailout(1/60);bailout.position.set(-1040,150,20);crewBailouts[0].chute.position.set(-990,4,-15);for(let i=0;i<100&&!crewWaterRescue;i++)advanceBailout(.05);if(!crewWaterRescue||bailRescue)throw Error('Gunner should signal before the pilot lands');window.__rescueBoat=crewWaterRescue.group;});
+    const paused=await page.evaluate(()=>{togglePause();const p=crewWaterRescue.group.position.clone(),t=crewBailouts[0].rescue.elapsed;animate();const held=state===ST.PAUSED&&p.equals(crewWaterRescue.group.position)&&t===crewBailouts[0].rescue.elapsed;togglePause();return held;});assert(paused,'shared launch freezes while paused');
+    const dauntless=await page.evaluate(()=>{let boats=0;for(let i=0;i<12000&&!bailDone;i++){advanceBailout(.05);boats=Math.max(boats,scene.children.filter(o=>o.name==='rescueBoat').length);}if(bailRescue.group!==window.__rescueBoat)throw Error('Late pilot created another launch');return {boats,done:bailDone,recovered:crewBailouts.filter(c=>c.safe).length+Number(bailRescue.pickup),aboard:bailRescue.group.children.filter(o=>o.name==='rescuedCrew').length};});
+    assert.deepEqual(dauntless,{boats:1,done:true,recovered:2,aboard:2});
+    await proof('shared-dauntless-rescue',()=>{const p=bailRescue.group.position;camera.position.copy(p).add(new THREE.Vector3(8,5,9));camera.lookAt(p.clone().add(new THREE.Vector3(0,1,0)));});
+    await page.evaluate(()=>{exitToMenu();if(crewWaterRescue||scene.children.some(o=>o.name==='rescueBoat'||o.name==='rescueBeacon'))throw Error('Menu retains shared rescue geometry');});
+    console.log('One shared launch per original aircraft:',{avenger,dauntless,paused});
+    await page.evaluate(async()=>{await prepareOkinawa();});
    }
-   const reset=await page.evaluate(()=>{startMission(0);return {smoke:aircraftSmoke.count,emitters:aircraftSmoke.stats.emitters,bailout:!!bailout};});assert.equal(reset.smoke,0);assert.equal(reset.emitters,0);assert.equal(reset.bailout,false);
+   const reset=await page.evaluate(()=>{startMission(0);if(typeof crewWaterRescue!=='undefined'&&crewWaterRescue||scene.children.some(o=>o.name==='rescueBoat'))throw Error('Restart retains shared launch');return {smoke:aircraftSmoke.count,emitters:aircraftSmoke.stats.emitters,bailout:!!bailout};});assert.equal(reset.smoke,0);assert.equal(reset.emitters,0);assert.equal(reset.bailout,false);
    console.log(game,{trail,smokePixels,reset});
   }
   assert.deepEqual(errors,[]);console.log('Detailed crews, original aircraft damage trails, pause, bailout, water pickup and restart: passed');

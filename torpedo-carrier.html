@@ -340,7 +340,7 @@
   <div id="flash"></div>
   <div id="ltn" style="position:fixed;inset:0;background:#e6ecff;opacity:0;pointer-events:none;z-index:40;"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 177</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 178</div>
 
   <!-- Optical landing aid -->
   <div id="lso">
@@ -383,7 +383,7 @@
 
 <!-- Menu -->
 <div class="overlay" id="menu" data-campaign="pacific">
-  <div class="menuTop"><a id="selBtn" href="index.html?v=177">&#9664; Change Game</a><span class="menuMeta">PACIFIC OPERATIONS<br>BUILD 177</span></div>
+  <div class="menuTop"><a id="selBtn" href="index.html?v=178">&#9664; Change Game</a><span class="menuMeta">PACIFIC OPERATIONS<br>BUILD 178</span></div>
   <div class="card menuCard">
     <aside class="menuOverview" aria-label="Campaign and pilot options">
     <div class="campaignArt" aria-hidden="true"></div>
@@ -482,7 +482,7 @@
 <script src="enemy-bailouts.js?v=177"></script>
 <script src="flare-support.js?v=177"></script>
 <script src="sortie-service.js?v=177"></script>
-<script src="pilot-rescue.js?v=176"></script>
+<script src="pilot-rescue.js?v=178"></script>
 <script src="radio-intercept.js?v=157"></script>
 <script src="audio/weapon-sound.js?v=144"></script>
 <script src="audio/flight-atmosphere.js?v=175"></script>
@@ -4552,15 +4552,21 @@ function crash(title,sub){
     sub+" Take it around again.<br><br>SCORE "+score+" &middot; BEST "+Math.max(bestScore(),score),
     "Retry Sortie");
 }
-let bailout=null,bailRescue=null,bailPlaneCrashed=false,bailDone=false,bailChuteCalled=false,crewBailouts=[];
+let bailout=null,bailRescue=null,bailPlaneCrashed=false,bailDone=false,bailChuteCalled=false,crewBailouts=[],crewWaterRescue=null;
 function aircraftCrewCount(){return isDefend()||isCorsair()?1:isSBD()?2:3;}
-function clearCrewBailouts(){for(const c of crewBailouts){c.chute.dispose();c.rescue?.dispose();}crewBailouts=[];}
+function clearCrewBailouts(){for(const c of crewBailouts){c.chute.dispose();c.rescue?.dispose();}crewBailouts=[];crewWaterRescue?.dispose();crewWaterRescue=null;}
+function rescueCrewMember(position,water){
+ const options={service:isDefend()?"ijn":"usnavy",srgbOutput:true,surfaceAt:(x,z)=>seaHeightAt(x,z,seaUniforms?.uTime.value||0)};
+ if(water){if(!crewWaterRescue)crewWaterRescue=PilotRescue.createCrew(THREE,scene,shoreHeight,options);return crewWaterRescue.add(position);}
+ return PilotRescue.create(THREE,scene,position,shoreHeight,{...options,water:false});
+}
 function updateCrewBailouts(dt){
+ crewWaterRescue?.update(dt);
  for(const c of crewBailouts){
   if(c.done)continue;
-  if(c.rescue){if(c.rescue.water)c.chute.position.y=seaHeightAt(c.chute.position.x,c.chute.position.z,seaUniforms?.uTime.value||0)+.9;const status=c.rescue.update(dt);if(status.pickup)c.chute.group.visible=false;if(status.done){c.done=true;c.safe=true;}continue;}
+  if(c.rescue){if(c.rescue.water)c.chute.position.y=seaHeightAt(c.chute.position.x,c.chute.position.z,seaUniforms?.uTime.value||0)+.9;const status=c.rescue.update(dt);if(status.pickup)c.chute.group.visible=false;if(status.done){c.done=true;c.safe=status.pickup;}continue;}
   const landing=c.chute.update(dt*3,windZ,{turn:c.turn,forward:.1});
-  if(landing.landed){if(!landing.safe){c.done=true;c.safe=false;continue;}const p=c.chute.position,water=shoreHeight(p.x,p.z)<=.6;c.chute.settle(water);c.rescue=PilotRescue.create(THREE,scene,p,shoreHeight,{water,service:isDefend()?"ijn":"usnavy",srgbOutput:true,surfaceAt:(x,z)=>seaHeightAt(x,z,seaUniforms?.uTime.value||0)});}
+  if(landing.landed){if(!landing.safe){c.done=true;c.safe=false;continue;}const p=c.chute.position,water=shoreHeight(p.x,p.z)<=.6;c.chute.settle(water);c.rescue=rescueCrewMember(p,water);}
  }
 }
 
@@ -4591,9 +4597,9 @@ function advanceBailout(dt){
     if(pickup.pickup)bailout.group.visible=false;
     if(pickup.done&&crewBailouts.every(c=>c.done)){
       bailDone=true;releaseHeldControls();document.getElementById('stickHint').textContent='PITCH / ROLL';
-      const recovered=1+crewBailouts.filter(c=>c.safe).length;
-      showResult(false,recovered===aircraftCrewCount()&&recovered>1?'CREW SAFE':'PILOT SAFE','Rescue complete',
-        (bailRescue.water?'A rescue boat picked you up.':'The search party brought you back.')+
+      const recovered=(pickup.pickup?1:0)+crewBailouts.filter(c=>c.safe).length;
+      showResult(false,recovered===aircraftCrewCount()&&recovered>1?'CREW SAFE':pickup.pickup?'PILOT SAFE':'RESCUE INCOMPLETE','Rescue complete',
+        (bailRescue.water?'One rescue boat collected the crew.':'The search party brought you back.')+
         '<br>'+recovered+'/'+aircraftCrewCount()+' crew recovered.<br>The aircraft was lost.<br><br>SCORE '+score+' &middot; BEST '+Math.max(bestScore(),score),'Retry Sortie');
     }
     return;
@@ -4614,7 +4620,7 @@ function advanceBailout(dt){
   if(landing.landed){
     if(landing.safe){
       releaseHeldControls();const p=bailout.position,water=shoreHeight(p.x,p.z)<=.6;
-      bailout.settle(water);bailRescue=PilotRescue.create(THREE,scene,p,shoreHeight,{water,service:isDefend()?"ijn":"usnavy",srgbOutput:true,surfaceAt:(x,z)=>seaHeightAt(x,z,seaUniforms?.uTime.value||0)});
+      bailout.settle(water);bailRescue=rescueCrewMember(p,water);
       radioQ=[];radioT=0;radioSay(water?'RESCUE BOAT — WE HAVE YOUR SIGNAL, HOLD POSITION':'SEARCH PARTY — SIGNAL SEEN, WE ARE COMING TO YOU');
       document.getElementById('stickHint').textContent='RESCUE INBOUND';flash('PILOT SAFE — RESCUE INBOUND',4000);
       return;
@@ -4933,7 +4939,7 @@ function loadPlaneModel(){
       }
       window.__eyeDbg='EYE '+COCKPIT_EYE.map(v=>v.toFixed(2)).join('/');
       const btEl=document.getElementById('buildTag');
-      if(btEl) btEl.textContent='BUILD 177 · '+window.__eyeDbg;
+      if(btEl) btEl.textContent='BUILD 178 · '+window.__eyeDbg;
       let seat=null;
       model.traverse(function(o){
         if(!o.isMesh||!o.material) return;
@@ -6274,7 +6280,7 @@ function setupUIButtons(){
   if(dbgT2) dbgT2.onclick=()=>{
     dbgOn=!dbgOn; GameRuntime.storage.setItem('dbgOn',dbgOn?'1':'0');
     const db=document.getElementById('dbgBox'); if(db) db.textContent=dbgOn?'✓':'';
-    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 177'; }
+    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 178'; }
   };
   const lu=document.getElementById('lookUp'), ld=document.getElementById('lookDn');
   let _lookT=0;
@@ -6290,7 +6296,7 @@ function setupUIButtons(){
   if(pb) pb.addEventListener('pointerdown',e=>{ e.preventDefault(); togglePause(); });
   const rb=document.getElementById('resumeBtn'); if(rb) rb.onclick=resumeGame;
   const mb=document.getElementById('menuBtn'); if(mb) mb.onclick=exitToMenu;
-  document.getElementById('pauseMainMenu').onclick=()=>{exitToMenu();window.location.href='index.html?v=177';};
+  document.getElementById('pauseMainMenu').onclick=()=>{exitToMenu();window.location.href='index.html?v=178';};
   document.getElementById('resultBtn').onclick=()=>{
     // the logbook borrows this screen from the menu — send the player straight back
     if(logbookOpen){ logbookOpen=false; showOverlay('menu'); return; }
@@ -6530,7 +6536,7 @@ function animate(){
     notice.style.cssText='position:fixed;inset:0;z-index:999998;background:rgba(15,20,15,.95);color:#e8ddbc;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px;text-align:center;font:16px system-ui';
     const title=document.createElement('h2');title.textContent='Simulation interrupted';
     const detail=document.createElement('p');
-    detail.textContent='BUILD 177 · '+(MISSIONS[mission]?.sub||'Menu')+' · '+error.message;
+    detail.textContent='BUILD 178 · '+(MISSIONS[mission]?.sub||'Menu')+' · '+error.message;
     const reload=document.createElement('button');reload.textContent='Reload game';
     reload.style.cssText='padding:12px 24px;font:inherit';reload.onclick=()=>location.reload();
     notice.appendChild(title);notice.appendChild(detail);notice.appendChild(reload);document.body.appendChild(notice);
@@ -6664,6 +6670,7 @@ function animateFrame(){
   if(state!==ST.MENU){
     if(bailout){camera.up.set(0,1,0);
       const chutes=[bailout,...crewBailouts.map(c=>c.chute)].filter(c=>c.group.visible),centre=new THREE.Vector3();
+      if(!chutes.length&&bailRescue)chutes.push({position:bailRescue.group.position});
       for(const c of chutes)centre.add(c.position);centre.divideScalar(Math.max(1,chutes.length));
       const spread=Math.max(0,...chutes.map(c=>c.position.distanceTo(centre))),offset=new THREE.Vector3(18,11,28).multiplyScalar(Math.max(1,(spread+16)/24));
       camera.position.lerp(centre.clone().add(offset),Math.min(1,4*rawDt));

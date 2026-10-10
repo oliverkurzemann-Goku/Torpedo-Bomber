@@ -294,7 +294,7 @@
   <div style="width:100%;height:4px;background:repeating-linear-gradient(45deg,#ffd400,#ffd400 8px,#111 8px,#111 16px);"></div>
   <span id="testVersionBannerText" style="background:#111;color:#ffd400;font-family:monospace;font-weight:800;font-size:11px;letter-spacing:.5px;padding:3px 10px;border:1px solid #ffd400;border-top:none;border-radius:0 0 6px 6px;"></span>
 </div>
-<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 177';</script>
+<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 178';</script>
 <!-- ===== END TEMP TEST-ONLY VERSION BANNER ===== -->
 <div id="app"></div>
 <style>
@@ -334,7 +334,7 @@
   <div id="flash"></div>
   <div id="gunsight"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 177 · REAL RHINE</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 178 · REAL RHINE</div>
 
   <div id="apr">
     <div id="aprCall"></div>
@@ -386,7 +386,7 @@
 </div>
 
 <div class="overlay hidden" id="menu" data-campaign="europe">
-  <div class="menuTop"><a id="selBtn" href="index.html?v=177">&#9664; Change Game</a><span class="menuMeta">RHINE OPERATIONS<br>BUILD 177</span></div>
+  <div class="menuTop"><a id="selBtn" href="index.html?v=178">&#9664; Change Game</a><span class="menuMeta">RHINE OPERATIONS<br>BUILD 178</span></div>
   <div class="card menuCard">
     <aside class="menuOverview" aria-label="Campaign and pilot options">
     <div class="campaignArt" aria-hidden="true"></div>
@@ -506,7 +506,7 @@
 <script src="enemy-bailouts.js?v=177"></script>
 <script src="flare-support.js?v=177"></script>
 <script src="sortie-service.js?v=177"></script>
-<script src="pilot-rescue.js?v=176"></script>
+<script src="pilot-rescue.js?v=178"></script>
 <script src="radio-intercept.js?v=157"></script>
 <script src="audio/weapon-sound.js?v=144"></script>
 <script src="audio/jet-engine.js?v=144"></script>
@@ -825,7 +825,7 @@ async function loadRealWorld(){
 
   if(OSMManager.BUILD!==23||HistoricalObjectManager.BUILD!==21||LivingWorld.BUILD!==22||WorldVehicles.BUILD!==22) throw new Error('Terrain version mismatch. Reload Remagen.');
   document.getElementById('testVersionBannerText').textContent=
-    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 177 · MODULE 23';
+    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 178 · MODULE 23';
   heightProvider=new DEMHeightProvider(RTILE,'terrain-system/real/data/dem/');
   terrain=new TerrainManager(scene,RTILE,heightProvider);
   osmMgr=new OSMManager(scene,RTILE,terrain,'terrain-system/real/data/osm/');
@@ -5576,7 +5576,7 @@ function init(){
   buildMenu();
   // menu wiring
   document.getElementById('startBtn').onclick=()=>showBrief(selectedMission);
-  document.getElementById('pauseMainMenu').onclick=()=>{exitToMenuFromPause();window.location.href='index.html?v=177';};
+  document.getElementById('pauseMainMenu').onclick=()=>{exitToMenuFromPause();window.location.href='index.html?v=178';};
   document.getElementById('logBtn').onclick=()=>{ show('menu',false); showLogbook(); };
   document.getElementById('skipLaunchPreview').onclick=()=>finishLaunchIntro();
   document.getElementById('brBack').onclick=()=>{ show('brief',false); show('menu',true);if(navigation){navigation.reset();navigation.button.style.display='none';} state=ST.MENU; };
