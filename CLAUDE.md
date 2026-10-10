@@ -46,7 +46,9 @@ visuell geprüft; keine iPad/Safari-Geräte- oder FPS-Freigabe behaupten. Verwun
 Rhein-Begleiter benutzt weiter flyAI; sein realer 56-Tile-DEM-Heimflugtest bestand.
 SBD-/Avenger-Rotor-/Modelltest und Syntax bestanden. Komplette Terrain-/Okinawa-Suiten
 werden am finalen Stand separat ausgeführt; Status nicht aus Browser-Code ableiten.
-Build-/Seitenlinks 182, shared FlightSupport Cache 182; unveränderte Module behalten
+Gesamtsuite fand die noch auf 181 verlinkte Menu-CSS-Kennung (start-menu.cjs);
+mit sichtbarer Buildnummer auf 182 synchronisiert, betroffener Test erneut bestanden.
+Build-/Seiten-/Menu-CSS-Links 182, shared FlightSupport Cache 182; unveränderte Module behalten
 vorige Cachekennung. CI-Artefakt build-182-visual-checks.
 
 **Build 181 (10.10.2026): Rheinwasser, natürliche Armhaltung, Me262-Steigflug, Notwasserung und stärkerer Startstaub.**
