@@ -72,6 +72,7 @@ class TerrainManager {
       color: 0xffffff, map: this.groundTexture, roughness: 1.0, metalness: 0
     });
     this.tiles = new Map();   // "tx,tz" -> TerrainTile
+    this._stitchedRevisions=new Map();
   }
 
   _key(tx, tz){ return tx + ',' + tz; }
@@ -125,6 +126,7 @@ class TerrainManager {
   // update itself is already only ever done for tiles actually transitioning).
   updateLOD(focusX, focusZ, dt){
     let changed=false;
+    let activeMorphs=0;for(const tile of this.tiles.values())if(tile.morphing)activeMorphs++;
     for(const tile of this.tiles.values()){
       // An aircraft at a tile corner is still directly above that tile. Centre
       // distance used to coarsen the ground beneath low passes at every seam.
@@ -140,14 +142,23 @@ class TerrainManager {
       if(lod !== tile.lod){
         // At runtime, prepare clipped ground in small slices, then commit one
         // matched terrain/surface transition per frame. Startup stays immediate.
-        const ready=!this.beforeLODChange||this.beforeLODChange(tile,lod);
+        const capacity=!this.beforeLODChange||activeMorphs<2;
+        const ready=capacity&&(!this.beforeLODChange||this.beforeLODChange(tile,lod));
         if(ready&&(!this.beforeLODChange||!changed)){
-          tile.setLOD(lod,tile.materialOverride||this.material);changed=true;
+          tile.setLOD(lod,tile.materialOverride||this.material);changed=true;activeMorphs++;
         }
       }
       if(tile.morphing) tile.updateMorph(dt);
     }
-    this.stitchEdges();
+    // Settled terrain has exactly the same edge profile. Avoid scanning and
+    // rewriting it on every frame; morphs and external LOD changes invalidate it.
+    if(!this._stitchedRevisions)this._stitchedRevisions=new Map();
+    let edgesChanged=this._stitchedRevisions.size!==this.tiles.size;
+    for(const t of this.tiles.values())if(!this._stitchedRevisions.has(t)||this._stitchedRevisions.get(t)!==t.surfaceRevision)edgesChanged=true;
+    if(edgesChanged){
+      this.stitchEdges();this._stitchedRevisions.clear();
+      for(const t of this.tiles.values())this._stitchedRevisions.set(t,t.surfaceRevision);
+    }
   }
 
   stitchEdges(){

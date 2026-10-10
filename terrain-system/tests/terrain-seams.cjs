@@ -35,5 +35,9 @@ global.fetch=async url=>{const b=fs.readFileSync(url);return {ok:true,arrayBuffe
  for(let iz=0;iz<=s;iz++)for(let ix=0;ix<=s;ix++)before.push([p.getX(ix+iz*n),p.getY(ix+iz*n),p.getZ(ix+iz*n)]);
  a.updateMorph(.02);
  for(const [lx,y,lz] of before){const expected=coarseInterpHeight(dem,4000,a.centerX,a.centerZ,4,lx,lz);assert(Math.abs(y-expected)<.02,'last morph step remains bounded');}
+ for(let i=0;i<100;i++)t.updateLOD(100,8100,1/60);
+ let restitches=0;const stitch=t.stitchEdges;t.stitchEdges=function(){restitches++;return stitch.call(this);};
+ for(let i=0;i<60;i++)t.updateLOD(100,8100,1/60);assert.equal(restitches,0,'settled terrain performs no repeated edge scan');
+ t.tiles.values().next().value.surfaceRevision++;t.updateLOD(100,8100,1/60);assert.equal(restitches,1,'changed rendered terrain invalidates the seam cache');
  console.log(JSON.stringify({seamSamples:samples,maxGap,noSkirtLighting:true}));
 })().catch(e=>{console.error(e);process.exit(1)});

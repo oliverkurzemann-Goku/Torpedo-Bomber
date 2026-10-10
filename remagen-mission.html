@@ -272,7 +272,7 @@
   #opsStatus{position:fixed;top:calc(env(safe-area-inset-top) + 76px);left:50%;transform:translateX(-50%);color:#edcc80;background:rgba(14,20,18,.78);padding:5px 9px;font:10px monospace;pointer-events:none;z-index:9;max-width:58vw;text-align:center;}
   #systemsStatus{position:fixed;top:calc(env(safe-area-inset-top) + 116px);left:50%;transform:translateX(-50%);color:#ffbf96;background:#251810db;padding:5px 9px;font:10px monospace;pointer-events:none;z-index:9;max-width:60vw;text-align:center;}#systemsStatus:empty{display:none;}
 </style>
-<link rel="stylesheet" href="menu-layout.css?v=176">
+<link rel="stylesheet" href="menu-layout.css?v=177">
 </head>
 <body>
 <!-- ===== TEMP TEST-ONLY VERSION BANNER — asked for by Oliver: "kannst du irgendwo einbauen,
@@ -294,7 +294,7 @@
   <div style="width:100%;height:4px;background:repeating-linear-gradient(45deg,#ffd400,#ffd400 8px,#111 8px,#111 16px);"></div>
   <span id="testVersionBannerText" style="background:#111;color:#ffd400;font-family:monospace;font-weight:800;font-size:11px;letter-spacing:.5px;padding:3px 10px;border:1px solid #ffd400;border-top:none;border-radius:0 0 6px 6px;"></span>
 </div>
-<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 176';</script>
+<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 177';</script>
 <!-- ===== END TEMP TEST-ONLY VERSION BANNER ===== -->
 <div id="app"></div>
 <style>
@@ -334,7 +334,7 @@
   <div id="flash"></div>
   <div id="gunsight"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 176 · REAL RHINE</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 177 · REAL RHINE</div>
 
   <div id="apr">
     <div id="aprCall"></div>
@@ -362,6 +362,7 @@
 <div id="aeroBtn" class="ctlBtn" title="Rate control for rolls and loops">AERO<br>OFF</div>
 <div id="diveBrakeBtn" class="ctlBtn" title="Stuka dive brakes (D)">DIVE<br>BRAKES</div>
 <button id="tankBtn" class="ctlBtn" type="button" title="Jettison external fuel tank (T)">DROP<br>TANK</button>
+<button id="flareBtn" class="ctlBtn" type="button" title="Parachute flare (L)" style="display:none;left:max(86px,calc(env(safe-area-inset-left) + 86px));top:calc(30% + 56px)">FLARE<br>4</button>
 <button id="bailBtn" type="button" title="Emergency parachute (B)">BAIL OUT</button>
 <div id="steerBtn">STEER<br>L/R</div>
 <div id="turnBtn" class="ctlBtn" style="display:none;left:max(20px,env(safe-area-inset-left));top:calc(30% + 280px);width:58px;height:50px;">TURN<br>MODEL</div>
@@ -385,7 +386,7 @@
 </div>
 
 <div class="overlay hidden" id="menu" data-campaign="europe">
-  <div class="menuTop"><a id="selBtn" href="index.html?v=176">&#9664; Change Game</a><span class="menuMeta">RHINE OPERATIONS<br>BUILD 176</span></div>
+  <div class="menuTop"><a id="selBtn" href="index.html?v=177">&#9664; Change Game</a><span class="menuMeta">RHINE OPERATIONS<br>BUILD 177</span></div>
   <div class="card menuCard">
     <aside class="menuOverview" aria-label="Campaign and pilot options">
     <div class="campaignArt" aria-hidden="true"></div>
@@ -398,7 +399,7 @@
       <div>Left stick: pitch / bank. Right bar: throttle. GEAR and FLAPS down for landing.
         The arrow points toward the next target; the compass shows heading and bearing.
         AERO enables rolls and loops once airborne and fast enough.
-        Press B or BAIL OUT to parachute from a damaged aircraft while high enough.
+        L / FLARE illuminates night targets. Press B or BAIL OUT to parachute from a damaged aircraft while high enough.
         <b id="menuLandingSpeed"></b> Keep the wings level and use the runway, not the surrounding fields.</div>
     </details>
     <details class="extraSettings"><summary>More options &amp; credits</summary><div class="settingsContent">
@@ -416,7 +417,7 @@
     </div></details>
     </aside>
     <section class="missionPanel" aria-label="Mission selection">
-      <div class="secLbl">Choose your sortie · 15 missions + 3 bonus &amp; training</div>
+      <div class="secLbl">Choose your sortie · 15 missions + 4 bonus &amp; training</div>
       <div id="missionSel" role="group" aria-label="European missions"></div>
       <div class="menuConfig">
         <div class="difficulty"><div class="secLbl">Difficulty</div><div id="diffSel" role="group" aria-label="Difficulty"></div></div>
@@ -483,24 +484,28 @@
      not rewrite them. -->
 <script src="terrain-system/HeightProvider.js?v=remagen-21"></script>
 <script src="terrain-system/TerrainTile.js?v=168"></script>
-<script src="terrain-system/TerrainManager.js?v=168"></script>
-<script src="terrain-system/OSMManager.js?v=172"></script>
+<script src="terrain-system/TerrainManager.js?v=177"></script>
+<script src="terrain-system/OSMManager.js?v=177"></script>
 <script src="terrain-system/PeriodBuildings.js?v=175"></script>
 <script src="terrain-system/HistoricalObjectManager.js?v=173"></script>
 <script src="terrain-system/AirfieldDetails.js?v=169"></script>
 <script src="terrain-system/AircraftGround.js?v=170"></script>
-<script src="terrain-system/AirfieldActivity.js?v=176"></script>
+<script src="terrain-system/AirfieldActivity.js?v=177"></script>
 <script src="terrain-system/WorldVehicles.js?v=172"></script>
 <script src="terrain-system/LivingWorld.js?v=166"></script>
 <script src="campaign.js?v=1"></script>
-<script src="game-runtime.js?v=167"></script>
+<script src="game-runtime.js?v=177"></script>
 <script src="aircraft-rotors.js?v=172"></script>
-<script src="combat-fx.js?v=175"></script>
+<script src="combat-fx.js?v=177"></script>
 <script src="aircraft-smoke.js?v=176"></script>
+<script src="aircraft-damage.js?v=177"></script>
 <script src="flight-support.js?v=175"></script>
 <script src="ordnance.js?v=157"></script>
 <script src="crew-visuals.js?v=176"></script>
 <script src="pilot-bailout.js?v=176"></script>
+<script src="enemy-bailouts.js?v=177"></script>
+<script src="flare-support.js?v=177"></script>
+<script src="sortie-service.js?v=177"></script>
 <script src="pilot-rescue.js?v=176"></script>
 <script src="radio-intercept.js?v=157"></script>
 <script src="audio/weapon-sound.js?v=144"></script>
@@ -509,7 +514,7 @@
 <script src="sortie-systems.js?v=175"></script>
 <script src="sortie-features.js?v=163"></script>
 <script src="sortie-fuel.js?v=161"></script>
-<script src="operation-plans.js?v=162"></script>
+<script src="operation-plans.js?v=177"></script>
 <script>
 // ============================================================
 //  REMAGEN 1945 — REAL TERRAIN (forked from thunderbolt-europe.html)
@@ -820,7 +825,7 @@ async function loadRealWorld(){
 
   if(OSMManager.BUILD!==23||HistoricalObjectManager.BUILD!==21||LivingWorld.BUILD!==22||WorldVehicles.BUILD!==22) throw new Error('Terrain version mismatch. Reload Remagen.');
   document.getElementById('testVersionBannerText').textContent=
-    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 176 · MODULE 23';
+    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 177 · MODULE 23';
   heightProvider=new DEMHeightProvider(RTILE,'terrain-system/real/data/dem/');
   terrain=new TerrainManager(scene,RTILE,heightProvider);
   osmMgr=new OSMManager(scene,RTILE,terrain,'terrain-system/real/data/osm/');
@@ -1148,7 +1153,7 @@ function refreshModels(){
   if(activity)activity.setAircraft(modelTpl[k],k);
   if(modelTpl[k] && builtFrom.player!==k+':'+(modelAdj[k]||0)){
     builtFrom.player=k+':'+(modelAdj[k]||0);
-    if(playerModel) planeGroup.remove(playerModel);
+    if(playerModel){aircraftDamage?.forget(planeGroup);planeGroup.remove(playerModel);}
     playerModel=buildAircraft(k); planeGroup.add(playerModel);
   }
   for(const e of enemyAir){
@@ -1156,7 +1161,7 @@ function refreshModels(){
     const tag=e.kind+':'+(modelAdj[e.kind]||0);
     if(modelTpl[e.kind] && e.builtFrom!==tag){
       e.builtFrom=tag;
-      GameRuntime.release(e.group);
+      aircraftDamage?.forget(e.group);GameRuntime.release(e.group);
       const g=buildAircraft(e.kind);
       const gr=g.getObjectByName('gear'); if(gr) gr.visible=false;
       scene.add(g); e.group=g; e.prop=g.getObjectByName('prop');
@@ -2888,7 +2893,8 @@ const MISSIONS=[
     text:'Fictional special operation. Choose the ridge gap or the southern valley, then climb into a two-aircraft Liberator section. Use crossing attacks, not a slow tail chase. An Allied M16 near the mapped road is an OPTIONAL secondary gun target. Preserve fuel for the forward strip.'},
   {id:'kometdash',title:'Bonus Komet',sub:'Rocket Dash & Glide',ac:'me163',bonus:true,
     bombers:{n:1,type:'b17'},weather:'broken',
-    text:'Fictional rocket dash from the forward strip. One Fortress, a short rocket burn and no go-around after cutoff. Reach the approach gate above 4,900 ft MSL for an OPTIONAL high-entry bonus. After the bomber falls, shut down, evade the pursuer and glide back with the landing skid extended.'}
+    text:'Fictional rocket dash from the forward strip. One Fortress, a short rocket burn and no go-around after cutoff. Reach the approach gate above 4,900 ft MSL for an OPTIONAL high-entry bonus. After the bomber falls, shut down, evade the pursuer and glide back with the landing skid extended.'},
+  {id:'nightworks',title:'Bonus Night',sub:'Moonlight Works',ac:'p47',bonus:true,night:true,weather:'clear',kills:{factory:1,flak:1},flakDefense:1,text:'Fictional night raid over the Rhine. Mark the works with parachute flares (L / FLARE), silence the battery and bomb the factory. Four flares are carried. Return to the field for fuel, ammunition and repairs if another attack is needed.'}
 ];
 function M(){ return MISSIONS[mission]; }
 function isFree(){ return !!M().free; }
@@ -2900,7 +2906,7 @@ function missionLoadout(m,d=AC[m.ac||'p47']){
 }
 
 function clearWorld(){
-  if(combatFX)combatFX.clear();aircraftSmoke?.clear();
+  if(combatFX)combatFX.clear();aircraftSmoke?.clear();aircraftDamage?.clear();enemyBailouts?.clear();flareSupport?.clear();sortieService?.clear();fieldServicePending=false;GameRuntime.frames.reset();
   // Every real target (flak/bridge/factory) is permanent world scenery, built once by
   // loadRealWorld() — never removed here, only reset (resetAllRealTargets(), called by the next
   // populate()), the same way the old synthetic game's own permanent worldBridge always was.
@@ -3034,6 +3040,7 @@ function updateExplosions(dt){
     if(k>=1){ GameRuntime.release(e.mesh); explosions.splice(i,1); }
   }
 }
+function spawnSparks(position,count=4){if(combatFX?.sparks)combatFX.sparks(position,count);}
 function spawnDebris(x,y,z,n){
   for(let i=0;i<n;i++){
     const m=new THREE.Mesh(new THREE.BoxGeometry(0.5+Math.random(),0.4,0.5+Math.random()),
@@ -3490,14 +3497,16 @@ function spawnBombers(n,kind){
 function damageEnemyAir(e,amount){
   if(!e.alive) return;
   e.hp-=amount;
+  if(typeof aircraftDamage!=="undefined"&&aircraftDamage)aircraftDamage.damage(e.group,Math.max(0,e.hp/e.maxhp),1,null,1,e.kind);
   spawnSparks(e.pos,4);
   if(e.hp<=0){
+    if(typeof enemyBailouts!=="undefined"&&enemyBailouts)enemyBailouts.spawn(e,e.kind,["p47","b17","b24"].includes(e.kind)?"usaaf":"luftwaffe");
     e.alive=false;
-    spawnExplosion(e.pos.x,e.pos.y,e.pos.z,e.bomber?3.2:1.4);
-    spawnDebris(e.pos.x,e.pos.y,e.pos.z,e.bomber?34:16);
+    if(typeof aircraftDamage!=="undefined"&&aircraftDamage)aircraftDamage.wreck(e.group,e,(x,y,z)=>{spawnExplosion(x,y,z,e.bomber?3:1.4);spawnDebris(x,y,z,e.bomber?28:14);sfxBoom(1);});
+    else {spawnExplosion(e.pos.x,e.pos.y,e.pos.z,e.bomber?3.2:1.4);spawnDebris(e.pos.x,e.pos.y,e.pos.z,e.bomber?34:16);}
     sfxBoom(e.bomber?1.4:0.9);
     if(e.bomber) shake(1.8);
-    GameRuntime.release(e.group);
+    if(typeof aircraftDamage==="undefined"||!aircraftDamage)GameRuntime.release(e.group);
     addScore(e.bomber?1800:650);
     if(e.bomber) sortieKills.bomber=(sortieKills.bomber||0)+1;
     else sortieKills.air=(sortieKills.air||0)+1;
@@ -3881,6 +3890,7 @@ function updateBomber(e,dt,toP,dist){
 function damagePlayer(amount,cause){
   if(!P.alive) return;
   P.hull=Math.max(0,P.hull-amount);
+  if(typeof aircraftDamage!=="undefined"&&aircraftDamage)aircraftDamage.damage(planeGroup,P.hull/(P.systemDamage?.maxHull||100),P.systemDamage?.engine??1,null,1,P.ac);
   const systemMessage=SortieFeatures.Damage.hit(P,amount,cause);
   if(systemMessage){radioSay(systemMessage);flash(systemMessage,2600);}
   hitsTaken++;
@@ -3998,6 +4008,7 @@ function clampToWorldBounds(){
 }
 
 function updateFlight(dt){
+  if(typeof sortieService!=="undefined"&&sortieService?.active){P.spd=0;P.throttle=0;return;}
   const previousPosition=P.pos.clone();
   const d=acDef();
   // control surfaces
@@ -4014,6 +4025,7 @@ function updateFlight(dt){
     const brake=(P.throttle<0.05)?58:0;
     P.spd += ((tgt-P.spd)*0.55 - brake)*dt;
     P.spd=Math.max(0,P.spd);
+    if(typeof fieldServicePending!=="undefined"&&fieldServicePending&&P.spd<1){beginFieldService();return;}
     // steer with the stick's roll axis, tailwheel style — same sense as in the air
     P.heading += inputRoll*steerSign*Math.min(1,P.spd/40)*0.9*dt;
     P.roll*=Math.max(0,1-3*dt); P.pitch*=Math.max(0,1-3*dt);
@@ -4257,7 +4269,7 @@ function logSortie(rec){
 function landed(onStrip){
   if(missionOver) return;
   const m=M();
-  if(isFree()){ flash('DOWN — TAXI BACK OR TAKE OFF AGAIN',1600); return; }
+  if(isFree()){fieldServicePending=true;P.throttle=0;setThrottleUI(0);flash('DOWN — BRAKING FOR GROUND SERVICE',1600);return;}
   if(isCircuits()){
     circuitsDone++;
     if(circuitsDone<m.circuits){
@@ -4276,6 +4288,7 @@ function landed(onStrip){
   const left=objectiveLeft();
   const airLeft=blockingEnemyAir().length;
   const done=(!Object.keys(left).length && airLeft===0 && (!europeOps||europeOps.ready()));
+  if(!done&&onStrip&&!europeOps?.failed){fieldServicePending=true;P.throttle=0;setThrottleUI(0);flash('OBJECTIVES REMAIN — BRAKING FOR GROUND SERVICE',2200);return;}
   if(done && window.SquadronCampaign)SquadronCampaign.record('europeRhine',mission);
   missionOver=true;
   addScore(onStrip?400:150);
@@ -4511,6 +4524,8 @@ function applyWeather(){
   if(hemi)hemi.intensity=.4+w.sun*.45;
   if(sun)sun.intensity=w.sun;
   FlightOps.clouds(clouds,weather);
+  const night=!!M()?.night;flareSupport?.setNight(night);
+  if(night){scene.background.setHex(0x101829);scene.fog.color.setHex(0x101829);if(sun){sun.intensity=.12;sun.color.setHex(0x9aafcb);}if(hemi)hemi.intensity=.20;}else if(sun)sun.color.setHex(0xffffff);
 }
 
 // ============================================================
@@ -4643,14 +4658,14 @@ function updateHUD(){
   const nearField=Math.abs(P.pos.x-AF_X)<RWY_LEN*1.6 && Math.abs(P.pos.z-AF_Z)<900;
   const ftAlt=(nearField? (P.pos.y-AF_Y) : (P.pos.y-gy))*FT;
   const lb=document.getElementById('hAltLbl'); if(lb) lb.textContent=nearField?'FIELD':'AGL';
-  document.getElementById('hSpd').innerHTML=Math.round(P.spd*KT)+'<small> MPH</small>';
-  document.getElementById('hAlt').innerHTML=Math.max(0,Math.round(ftAlt))+'<small> FT</small>';
+  GameRuntime.setHTML(document.getElementById('hSpd'),Math.round(P.spd*KT)+'<small> MPH</small>');
+  GameRuntime.setHTML(document.getElementById('hAlt'),Math.max(0,Math.round(ftAlt))+'<small> FT</small>');
   const hdg=((P.heading*R2D)%360+360)%360;
   document.getElementById('hHdg').textContent=String(Math.round(hdg)%360).padStart(3,'0');
-  document.getElementById('hVsi').innerHTML=Math.round(P.vSpeed*FT*60/50)*50+'<small> FPM</small>';
-  document.getElementById('hFuel').innerHTML=Math.round(P.fuel)+'<small> %'+(P.tankAttached?' + '+Math.ceil(P.tankFuel)+' EXT':'')+'</small>';
+  GameRuntime.setHTML(document.getElementById('hVsi'),Math.round(P.vSpeed*FT*60/50)*50+'<small> FPM</small>');
+  GameRuntime.setHTML(document.getElementById('hFuel'),Math.round(P.fuel)+'<small> %'+(P.tankAttached?' + '+Math.ceil(P.tankFuel)+' EXT':'')+'</small>');
   syncTankButton();
-  document.getElementById('hHull').innerHTML=SortieFeatures.Damage.hullPercent(P)+'<small> %</small>';
+  GameRuntime.setHTML(document.getElementById('hHull'),SortieFeatures.Damage.hullPercent(P)+'<small> %</small>');
   document.getElementById('hullRow').title=SortieFeatures.Damage.status(P);
   document.getElementById('systemsStatus').textContent=SortieFeatures.Damage.status(P);
   document.getElementById('hOrd').textContent=P.bombs;
@@ -5328,6 +5343,7 @@ function bindInput(){
     flash(weapon==='rocket'?'ROCKETS ARMED':'BOMBS ARMED',700); });
   document.getElementById('aeroBtn').addEventListener('pointerdown',e=>{ e.preventDefault();toggleAero(); });
   document.getElementById('diveBrakeBtn').addEventListener('pointerdown',e=>{e.preventDefault();toggleDiveBrakes();});
+  document.getElementById('flareBtn').addEventListener('pointerdown',e=>{e.preventDefault();dropFlare();});
   document.getElementById('bailBtn').addEventListener('pointerdown',e=>{e.preventDefault();beginBailout();});
   document.getElementById('tankBtn').addEventListener('pointerdown',e=>{e.preventDefault();jettisonDropTank();});
   // ---- live left/right invert, exactly as in the carrier game ----
@@ -5376,6 +5392,7 @@ function bindInput(){
     if(e.key===' '){ e.preventDefault(); dropBomb(); }
     if(e.key==='f'||e.key==='F') firing=true;
     if((e.key==='g'||e.key==='G')&&P.ac!=='ju87') P.gearTgt=P.gearTgt>0.5?0:1;
+    if((e.key==='l'||e.key==='L')&&!e.repeat)dropFlare();
     if((e.key==='a'||e.key==='A')&&!e.repeat) toggleAero();
     if((e.key==='d'||e.key==='D')&&!e.repeat) toggleDiveBrakes();
     if((e.key==='t'||e.key==='T')&&!e.repeat) jettisonDropTank();
@@ -5437,7 +5454,7 @@ function exitToMenuFromPause(){
   document.getElementById('flash').classList.remove('show');
   document.getElementById('radio').classList.remove('show');
   radioQ=[];radioT=0;flashT=0;
-  combatFX?.clear();aircraftSmoke?.clear();
+  combatFX?.clear();aircraftSmoke?.clear();aircraftDamage?.clear();enemyBailouts?.clear();flareSupport?.clear();sortieService?.clear();fieldServicePending=false;GameRuntime.frames.reset();
   show('result',false); show('brief',false);
   show('menu',true);if(navigation){navigation.reset();navigation.button.style.display='none';}
   buildMenu();
@@ -5446,7 +5463,7 @@ function exitToMenuFromPause(){
 // ============================================================
 //  INIT
 // ============================================================
-let combatFX=null,aircraftSmoke=null;
+let combatFX=null,aircraftSmoke=null,aircraftDamage=null,enemyBailouts=null,flareSupport=null,sortieService=null,fieldServicePending=false;
 let runtimeSession=null,releaseHeldControls=()=>{};
 let flightCoach=new GameRuntime.HintCoach();
 function updateFlightHints(dt){
@@ -5469,6 +5486,22 @@ function updateSortieAtmosphere(dt){
     }
   }
 }
+function beginFieldService(){
+  fieldServicePending=false;releaseHeldControls();P.spd=0;P.throttle=0;P.onGround=true;
+  const d=acDef(),load=missionLoadout(M(),d);
+  sortieService.begin(P,{ammo:d.ammo,bombs:load.bombs,rockets:load.rockets,maxHull:d.hull});
+  radioSay('GROUND CREW — REFUEL, REARM AND REPAIR. MISSION REMAINS ACTIVE');
+}
+function dropFlare(){
+  if(state!==ST.FLIGHT||!P.alive||sortieService?.active||!flareSupport?.night)return;
+  if(flareSupport.drop(P.pos,noseDir(),P.spd)){flash('FLARE AWAY — '+flareSupport.remaining+' LEFT',1000);updateFlareUI();}
+  else flash(flareSupport.remaining?'CLIMB ABOVE 165 FT AGL TO RELEASE':'NO FLARES',1000);
+}
+function updateFlareUI(){
+  const button=document.getElementById('flareBtn');if(!button||!flareSupport)return;
+  const display=state===ST.FLIGHT&&flareSupport.night&&!sortieService?.active?'flex':'none';if(button.style.display!==display)button.style.display=display;
+  GameRuntime.setHTML(button,'FLARE<br>'+flareSupport.remaining);
+}
 function init(){
   voiceRadio.bind(document.getElementById('spokenRadio'));
   const app=document.getElementById('app');
@@ -5478,7 +5511,7 @@ function init(){
   renderer.setSize(window.innerWidth,window.innerHeight);
   app.appendChild(renderer.domElement);
   scene=new THREE.Scene();
-  combatFX=CombatFX.create(scene);aircraftSmoke=AircraftSmoke.create(THREE,scene);
+  combatFX=CombatFX.create(scene);aircraftSmoke=AircraftSmoke.create(THREE,scene);flareSupport=FlareSupport.create(THREE,scene,groundY);sortieService=SortieService.create({onLaunch:()=>{P.rtb=false;flareSupport.rearm();SortieFuel.reset(P,100,!isFree()&&!isCircuits());clearDropTank();installDropTank();relaunch();beginLaunchIntro();},onRepair:()=>{aircraftDamage?.forget(planeGroup);resetCtlUI();}});aircraftDamage=AircraftDamage.create(THREE,scene,groundY, {smoke:aircraftSmoke,forward:1});enemyBailouts=EnemyBailouts.create(THREE,scene,groundY,{waterAt:(x,z)=>livingWorld?livingWorld._pointOnWater(x,z):false,bounds:{minX:WORLD_EDGE_MARGIN,maxX:RTILE*RGRID_W-WORLD_EDGE_MARGIN,minZ:WORLD_EDGE_MARGIN,maxZ:RTILE*RGRID_H-WORLD_EDGE_MARGIN}});
   // near was 0.6, which threw away depth precision for no gain - nothing is ever that close
   // to a chase camera. 2.5 keeps far ground and water cleanly separated in the depth buffer.
   camera=new THREE.PerspectiveCamera(62,window.innerWidth/window.innerHeight,2.5,30000);
@@ -5543,7 +5576,7 @@ function init(){
   buildMenu();
   // menu wiring
   document.getElementById('startBtn').onclick=()=>showBrief(selectedMission);
-  document.getElementById('pauseMainMenu').onclick=()=>{exitToMenuFromPause();window.location.href='index.html?v=176';};
+  document.getElementById('pauseMainMenu').onclick=()=>{exitToMenuFromPause();window.location.href='index.html?v=177';};
   document.getElementById('logBtn').onclick=()=>{ show('menu',false); showLogbook(); };
   document.getElementById('skipLaunchPreview').onclick=()=>finishLaunchIntro();
   document.getElementById('brBack').onclick=()=>{ show('brief',false); show('menu',true);if(navigation){navigation.reset();navigation.button.style.display='none';} state=ST.MENU; };
@@ -5632,7 +5665,8 @@ function animate(){
   requestAnimationFrame(animate);
   if(!renderer) return;
   if(state===ST.PAUSED||document.hidden||runtimeSession?.graphicsLost||renderer.getContext().isContextLost())return;
-  const raw=Math.min(0.05,clock.getDelta());
+  const frameInterval=clock.getDelta(),raw=Math.min(0.05,frameInterval);
+  GameRuntime.frames.begin(frameInterval);
   let dt=raw;
   updateDropTank(raw);
   if(killCam){ killCam.t-=raw; killCam.ang+=raw*0.6; if(killCam.t<=0) killCam=null; else dt=raw*0.45; }
@@ -5655,12 +5689,13 @@ function animate(){
   if(P.dmgT>0){ P.dmgT-=raw;
     if(P.dmgT<=0){ const v=document.getElementById('dmgVig'); if(v) v.style.opacity='0'; } }
 
+  GameRuntime.frames.mark('world');
   if(launchIntro&&state===ST.FLIGHT){
     // No fuel use, mission timer, enemy fire or player motion during the shot.
     refreshModels();
     posePlayerAircraft(raw);
     updateLaunchIntro(raw);updateWeatherFx(raw);updateClouds();updateAudio(raw);
-    GameRuntime.render(renderer,scene,camera);return;
+    GameRuntime.render(renderer,scene,camera);GameRuntime.frames.end();return;
   }
   if(state===ST.FLIGHT||state===ST.DEAD){
     if(state===ST.FLIGHT&&P.alive){
@@ -5674,11 +5709,13 @@ function animate(){
       updateFlak(dt);
       updateRecoveryEscort(dt);updateSortieAtmosphere(raw);
     }
+    GameRuntime.frames.mark('flight');
     advanceBailout(raw);
     document.getElementById('bailBtn').style.display=state===ST.FLIGHT&&!P.onGround&&P.alive?'block':'none';
     refreshModels();
     updateTargets(dt); updateEnemyAir(dt);
     updateBullets(dt); updateTracers(dt); updateOrdnance(dt);
+    GameRuntime.frames.mark('combat');
     updateExplosions(dt); updateSmoke(dt); updateDebris(dt);
     updateWeatherFx(dt);
     updateClouds();
@@ -5715,12 +5752,14 @@ function animate(){
     camera.lookAt(AF_X,AF_Y+40,AF_Z);
     updateWeatherFx(raw);
   }
+  if(sortieService?.active)sortieService.update(raw);
   // Menu/briefing transitions also fade the engine; pause uses the master gain above.
   updateAudio(raw);
-  if(combatFX)combatFX.update(raw);if(aircraftSmoke)aircraftSmoke.update(raw);
+  if(combatFX)combatFX.update(raw);if(flareSupport)flareSupport.update(raw,new THREE.Vector3(windZ,0,0));updateFlareUI();if(enemyBailouts)enemyBailouts.update(raw,camera,windZ);if(aircraftDamage)aircraftDamage.update(raw);if(aircraftSmoke)aircraftSmoke.update(raw);
   CombatFX.updateRounds(bullets,camera,renderer);
   CombatFX.updateRounds(tracers,camera,renderer);
-  GameRuntime.render(renderer,scene,camera);
+  GameRuntime.frames.mark('effects');
+  GameRuntime.render(renderer,scene,camera);GameRuntime.frames.end();
 }
 function reportStartupError(err){
   console.error('Thunderbolt startup failed:',err);

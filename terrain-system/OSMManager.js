@@ -312,13 +312,16 @@ class OSMManager {
     if(mesh.userData.surfaceGeometry===tile.mesh.geometry&&mesh.userData.surfaceMorph===tile.morphT&&mesh.userData.surfaceRevision===tile.surfaceRevision)return;
     const p=mesh.geometry.attributes.position,base=mesh.userData.surfaceBase,uv=mesh.userData.surfaceWeights;
     const heights=tile.mesh.geometry.attributes.position.array,n=tile._renderSeg+1;
+    let moved=false;
     for(let i=0;i<p.count;i++){
       const a=base[i],b=a+n,d=a+1,c=b+1,u=uv[i*2],v=uv[i*2+1];
-      p.array[i*3+1]=(u+v<=1 ? heights[a*3+1]*(1-u-v)+heights[d*3+1]*u+heights[b*3+1]*v
+      const y=(u+v<=1 ? heights[a*3+1]*(1-u-v)+heights[d*3+1]*u+heights[b*3+1]*v
         : heights[c*3+1]*(u+v-1)+heights[b*3+1]*(1-u)+heights[d*3+1]*(1-v))+src.offset;
+      if(Math.abs(p.array[i*3+1]-y)>.0001){p.array[i*3+1]=y;moved=true;}
     }
-    p.needsUpdate=true;
-    if(!tile.morphing)mesh.geometry.computeVertexNormals();
+    if(moved)p.needsUpdate=true;
+    if(!tile.morphing&&(moved||mesh.userData.surfaceWasMorphing))mesh.geometry.computeVertexNormals();
+    mesh.userData.surfaceWasMorphing=tile.morphing;
     mesh.userData.surfaceGeometry=tile.mesh.geometry;mesh.userData.surfaceMorph=tile.morphT;mesh.userData.surfaceRevision=tile.surfaceRevision;
   }
 

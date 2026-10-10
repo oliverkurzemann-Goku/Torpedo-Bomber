@@ -19,7 +19,8 @@ g.FlightPlans={
   {weather:['clear','broken'],deadline:620,fuel:65,notes:'Rocket interception after trolley jettison. Once the bombers are down, close the throttle and glide home; a fighter will chase you, but you can evade it and land.',events:[{clear:true,glide:true,fighters:1,escapeThreat:true,required:true,message:'ROCKET OFF — THUNDERBOLT PURSUER! EVADE AND GLIDE HOME'}]},
   {weather:['broken','haze'],deadline:780,notes:'Fictional Luftwaffe bonus: dive brakes on, strike two Allied Shermans and two M16 AA half-tracks, then return to the forward strip. No German flak is hostile.',events:[{kills:2,fighters:1,message:'ALLIED ROAD COLUMN CALLING THUNDERBOLT COVER — WATCH YOUR EXIT'}]},
   {deadline:700,fuel:95,weather:['broken','haze'],notes:'Two Liberators and their escort. Optional road-side M16 can be attacked with cannon; recovery does not depend on it.',events:[]},
-  {deadline:520,fuel:42,weather:['clear','broken'],notes:'One bomber, short rocket endurance. Gain altitude before cutoff. The glide pursuer may be evaded; it is not a mandatory kill.',events:[{clear:true,glide:true,fighters:1,escapeThreat:true,required:true,message:'ROCKET CUTOFF — PURSUER INBOUND, GLIDE HOME'}]}
+  {deadline:520,fuel:42,weather:['clear','broken'],notes:'One bomber, short rocket endurance. Gain altitude before cutoff. The glide pursuer may be evaded; it is not a mandatory kill.',events:[{clear:true,glide:true,fighters:1,escapeThreat:true,required:true,message:'ROCKET CUTOFF — PURSUER INBOUND, GLIDE HOME'}]},
+  {weather:['clear'],deadline:900,notes:'Night attack on the works and battery. Four parachute flares: L / FLARE. Land for ground service if a second attack is required.',events:[]}
  ],
  pacific:[{}, {},
   {weather:['broken','haze'],deadline:480,notes:'Confirm the contact in the blue search area, then intercept the moving merchant.',recon:{x:600,z:2450,radius:850,min:60,max:650,seconds:5}},

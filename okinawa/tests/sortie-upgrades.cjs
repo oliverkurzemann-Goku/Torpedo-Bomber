@@ -60,7 +60,7 @@ vm.runInContext(eu.slice(eu.indexOf('const AI_G=9.81;'),eu.indexOf('function spa
 for(let i=0;i<60*400&&!w.landed;i++){P.pos.copy(w.pos).add(new THREE.Vector3(80,15,0));flight.updateRecoveryEscort(1/60);assert(w.pos.y>=180,'escort never falls through ground');assert(w.pos.x>0&&w.pos.x<28000&&w.pos.z>0&&w.pos.z<32000,'escort approach stays inside playable terrain');}
 assert(w.landed,'damaged wingman flies the approach and lands');assert(w.bonus&&flight.score===500,'optional escort reward paid exactly once');
 flight.updateRecoveryEscort(1);assert.equal(flight.score,500);
-console.log('Upgrades: real phase/wave gating, three independent damage paths, safe belly recovery, local-only voice lifecycle, 20 mission plans and wounded-wingman landing/reward.');
+console.log('Upgrades: real phase/wave gating, three independent damage paths, safe belly recovery, local-only voice lifecycle, '+missions.length+' mission plans and wounded-wingman landing/reward.');
 (async()=>{
  const demContext=vm.createContext({fetch:async url=>{const b=fs.readFileSync(url);return {ok:true,arrayBuffer:async()=>b.buffer.slice(b.byteOffset,b.byteOffset+b.byteLength)};}});
  vm.runInContext(fs.readFileSync('terrain-system/HeightProvider.js','utf8'),demContext);

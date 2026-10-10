@@ -77,6 +77,7 @@
    live.push({m,t:0,life:.055,flame:true});
   }
   return {
+   sparks(pos,count=4){for(let i=0;i<Math.min(10,count);i++)emit(pos.clone(),.20,0xffdc99,.18+Math.random()*.15,new THREE.Vector3((Math.random()-.5)*10,Math.random()*6,(Math.random()-.5)*10),true,scene,.3,12);},
    muzzle(parent,points,heavy=false,direction=new THREE.Vector3(0,0,1)){
     parent.updateMatrixWorld(true);shots++;
     for(const p of points){

@@ -153,6 +153,18 @@ class AirfieldActivity {
   groundAircraft(pad){
     const model=pad.children[0];if(!model)return;
     const heading=pad.userData.heading??pad.rotation.y;pad.userData.heading=heading;
+    // Parked aircraft are stationary. Refitting every tyre vertex five times
+    // per frame was far more expensive than the crew animation. Refit only
+    // when the actual terrain under the entire aircraft changes or a model swaps.
+    const x=this.x+pad.position.x,z=this.z+pad.position.z;
+    let revision='';
+    for(const dx of [-64,64])for(const dz of [-64,64]){
+      const tile=this.terrain.tiles.get(Math.floor((x+dx)/4000)+','+Math.floor((z+dz)/4000));
+      revision+=(tile?.surfaceRevision||0)+':';
+    }
+    if(!this._groundFits)this._groundFits=new WeakMap();
+    const cache=this._groundFits.get(pad);
+    if(cache&&cache.model===model&&cache.revision===revision&&cache.x===x&&cache.z===z&&cache.heading===heading)return;
     const fit=typeof AircraftGround!=='undefined'?AircraftGround.fit(model,this.aircraftKind,
       this.x+pad.position.x,this.z+pad.position.z,heading,(x,z)=>AircraftGround.height(this.terrain,x,z)):null;
     if(fit){pad.position.y=fit.y;pad.quaternion.copy(fit.quaternion);}
@@ -160,6 +172,7 @@ class AirfieldActivity {
       const box=new THREE.Box3().setFromObject(model).applyMatrix4(inverse);pad.position.y=this.ground(pad.position.x,pad.position.z)-box.min.y;}
     if(pad.userData.crewBounds){pad.updateMatrix();pad.userData.crewBox.copy(pad.userData.crewBounds).applyMatrix4(pad.matrix).expandByScalar(.85);}
     if(pad.userData.mountOffset!=null)pad.userData.mountHeight=pad.position.y+pad.userData.mountOffset;
+    this._groundFits.set(pad,{model,revision,x,z,heading});
   }
   clearCrewPosition(x,z){
     // The entire aircraft footprint includes wings, tail and turning propeller.

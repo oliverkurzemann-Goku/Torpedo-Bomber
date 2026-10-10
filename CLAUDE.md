@@ -5,7 +5,74 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 176 · Thunderbolt Squadron BUILD 176 · Remagen-Kern 23 / Fahrzeuge 22**
+Stand bei Übergabe: **Torpedo Squadron BUILD 177 · Thunderbolt Squadron BUILD 177 · Remagen-Kern 23 / Fahrzeuge 22**
+
+**Build 177 (10.10.2026): Darstellung, Flugzeugverluste und weitere Einsatzabläufe.**
+Die bestätigte Flugsteuerung bleibt unverändert. GameRuntime.frames.report() liefert
+CPU-Phasen und ungekappte Frameintervalle in einem festen 240-Sample-Ring. Keine
+Behauptung über iPad-FPS: lokaler Chromium/SwiftShader-Test, 100 manuelle echte Frames,
+letzte 60 CPU-Samples ohne renderer.render: Remagen Median 38,9 → 19,6 ms, P95
+57,3 → 29,7 ms. Unterschiedliche lokale Läufe streuen; das ist keine Hardwaremessung.
+TerrainManager überspringt ruhende Kachelränder, verfolgt surfaceRevision und begrenzt
+zur Laufzeit parallele Morphs auf zwei. Startup bleibt sofortig. OSMManager aktualisiert
+nur wirklich geänderte Vertexhöhen und berechnet Normalen nach Morph/Änderung; reine
+Revisionen benachbarter Kacheln lösten bisher teure komplette Normalenberechnungen aus.
+AirfieldActivity passt parkende Reifen nur bei geänderter Unterlage/Modell/Standort an;
+Cache in WeakMap, keine zyklischen Object3D-Referenzen in userData. Pazifik-HUD 10 Hz,
+Radar 5 Hz, unveränderte HTML-Inhalte werden nicht neu geschrieben. Physik bleibt pro Frame.
+
+AircraftDamage baut kleine Einschuss-/Rußmarken auf der wirklichen Haut, decodiert
+normalisierte Int16-POSITIONs für Raycasts und klont nur eigene Schadensgeometrien.
+Ein beschädigter Außenflügel verformt sich bei kritischer Hülle; örtliches Motorfeuer
+sitzt bei B-17 an den tatsächlich separierten Rotoren, bei anderen Bombern an einer
+Flügelgondel, bei Me262 an einer Turbine. Avenger-Farbe/Markengröße berücksichtigen
+sRGB-Ausgabe und Modellskalierung. Geteilte Originalgeometrie/Materialien bleiben intakt;
+forget/clear stellt die Haut zurück und entsorgt nur eigene Ressourcen. Maximal 24 Rigs,
+28 Marken pro Flugzeug, zehn weiterfliegende Wracks. KI-Verluste behalten Geschwindigkeit,
+fallen mit Schwerkraft/Drag und erzeugen erst beim Boden-/Wasseraufschlag das Wrack.
+Schadenslose Flugzeuge erzeugen keine zusätzlichen Schadens-Draws. Remagens bislang
+fehlendes spawnSparks ist ergänzt; CombatFX liefert gepoolte kurze Trefferfunken.
+
+EnemyBailouts: Zero/Jäger ein Pilot, Avenger drei, SBD zwei, B-17/B-24 zehn. Absprung
+ab 85m AGL, gestaffelt aus dem bewegten Rumpf, vorhandene automatische Deploy-/Fallphysik.
+Keine garantierte Rettung in Bodennähe. Maximal 80 Crewmitglieder; ab 220m kleine Figuren,
+ab 600m keine einzelnen Fangleinen. Gelandete Figuren verschwinden nach 18s; Start/Menu
+räumen alles ab. Besatzungsrettung verändert Ziel- und Abschusszählung nicht.
+ShipDamage speichert Treffer in Bug/Mitte/Heck, Seite und Waffentyp. Schwarze Schadstellen
+liegen auf der realen, ggf. quantisierten Schiffshaut; Torpedos fluten stärker als Bomben.
+Fortschreitende Flutung bewirkt Tiefgang, Schlagseite und Bug-/Hecklastigkeit; Feuer bleibt
+am Trefferort. HP und vorgegebene Trefferzahl bleiben maßgeblich. Nach tödlichem Treffer
+sinkt der Rumpf über 38s und verschwindet vollständig; keine identische Kippbewegung für
+jeden Treffer. Explosions-/Spritzpositionen folgen dem Einschlag, nicht dem Schiffszentrum.
+
+FlareSupport: L / FLARE, vier Leuchtmittel pro Start, drei wiederverwendete aktive Slots,
+65s Brennzeit, sinkende kleine Fallschirme, Winddrift und warme PointLights ohne Schatten.
+Nachtbeleuchtung hat feste Lichtslots; keine Licht-Erzeugung beim Abwurf. Pazifik nutzt
+bestehende Nachtmissionen; Remagen ergänzt die ausdrücklich fiktive Bonusmission
+Moonlight Works am Ende der Liste (bestehende Missionsindizes bleiben stabil). Der neue
+FlightPlans-Eintrag trägt das passende Zeit-/Treibstoffbudget. Flare-Button nur nachts.
+SortieService: bei erfolgreicher Trägerlandung mit verbleibenden Aufgaben und bei
+unvollständiger Pistenlandung: 5s Kraftstoff, 4s Bewaffnung, 4s Reparatur, dann START AGAIN.
+Das ist beschleunigte Spielzeit. Piste bremst erst zum Stillstand; Träger bleibt in Fahrt,
+Aircraft folgt dem Deck. Pause/Lifecycle halten Timer an. Weiterstart benutzt denselben
+Welt-/Operationszustand, Ziele und Punktestand; weder populate noch startMission werden
+aufgerufen. Schaden repariert, Munition und Leuchtmittel aufgefüllt; neuer Trägerstart
+staut den Haken. Qualifikation und regulärer Abschluss bleiben erhalten. Zerstörte
+Flugzeuge können durch Service nicht wiederbelebt werden. Menü/Restart räumen den Ablauf ab.
+
+Neue Regressionen: combat-systems.cjs (20/60/120 FPS, genau ein Wrackaufschlag,
+Flutungsseite/Kompartiment, Ressourcen, Leuchtmittelbudget, Serviceetappen) und
+combat-sorties-browser.cjs (Originalmodelle, tatsächliche Schadens-/Abschusspfade,
+zehn Bomber-Fallschirme, Hautmarken und Lichtpixel, echter FLARE-Pointerklick,
+reale gültige Deck-/Pistenkontakte, Service-Pause, START AGAIN mit erhaltenen Zielen).
+terrain-seams prüft zusätzlich, dass ruhendes Terrain nicht erneut genäht wird und
+Revisionen den Cache invalidieren. Bilder test-visuals/build177-*.png, CI-Artefakt
+build-177-visual-checks. Sichtbare Buildnummer und geänderte Module Cache 177.
+Lokal nachgewiesen: sieben HTML-Dateien / sieben Inline-Blöcke ohne Syntaxfehler,
+31 Terrain-Testdateien ohne Fehler sowie die gezielten neuen Logik- und echten
+Chromium-/WebGL-Tests. campaign.cjs zählt jetzt 21 Missionen und prüft ausdrücklich
+die unveränderten Alt-Indizes 16–19 plus nightworks an Index 20. Workflow-Erfolg
+immer am exakten Commit über GitHub Actions prüfen, nicht aus Browser-Code ableiten.
 
 **Build 176 (10.10.2026): detaillierte Personen, Flugzeugrauch und Rettungsboote.**
 `crew-visuals.js` baut gemeinsame Figuren mit Gesicht, Ohren/Nase, Helm/Kappe,
