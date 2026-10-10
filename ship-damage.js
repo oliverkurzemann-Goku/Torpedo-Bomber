@@ -40,7 +40,9 @@
     if(s.sunk)for(let i=0;i<3;i++)s.compartments[i]=Math.min(1,s.compartments[i]+dt*.025);
     s.flood=s.compartments.reduce((n,c)=>n+c,0)/3;
     const lost=s.sunk?Math.min(1,s.elapsed/38):0,sign=s.side>=0?-1:1;
-    const roll=sign*(Math.min(.22,Math.abs(s.side)*.28)+lost*.82),pitch=-s.trim*(.18+lost*.9);
+    // Ships move bow-first along local +Z. Positive X rotation lowers +Z;
+    // verify world-space bow/stern heights rather than assuming Euler signs.
+    const roll=sign*(Math.min(.22,Math.abs(s.side)*.28)+lost*.82),pitch=s.trim*(.18+lost*.9);
     ship.group.rotation.z+=(roll-ship.group.rotation.z)*(1-Math.exp(-dt*.45));ship.group.rotation.x+=(pitch-ship.group.rotation.x)*(1-Math.exp(-dt*.35));
     const depth=s.sunk?lost*(s.box.max.y-s.box.min.y+Math.max(Math.abs(s.box.min.x),Math.abs(s.box.max.x))+6):s.flood*1.3;
     ship.group.position.y=seaY-depth;

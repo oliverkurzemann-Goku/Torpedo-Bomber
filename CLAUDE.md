@@ -73,6 +73,8 @@ Lokal nachgewiesen: sieben HTML-Dateien / sieben Inline-Blöcke ohne Syntaxfehle
 Chromium-/WebGL-Tests. campaign.cjs zählt jetzt 21 Missionen und prüft ausdrücklich
 die unveränderten Alt-Indizes 16–19 plus nightworks an Index 20. Workflow-Erfolg
 immer am exakten Commit über GitHub Actions prüfen, nicht aus Browser-Code ableiten.
+Flutungs-Trim über tatsächliche Weltpositionen prüfen: lokales +Z ist der Bug,
+positive X-Rotation senkt ihn. Tests vergleichen Bug-/Heckhöhe, nicht nur Euler-Vorzeichen.
 
 **Build 176 (10.10.2026): detaillierte Personen, Flugzeugrauch und Rettungsboote.**
 `crew-visuals.js` baut gemeinsame Figuren mit Gesicht, Ohren/Nase, Helm/Kappe,

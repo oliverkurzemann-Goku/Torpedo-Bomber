@@ -11,7 +11,8 @@ for(const fps of [20,60,120]){
  assert.equal(impacts,1,'exactly one eventual impact');assert.equal(damage.stats.wrecks,0);assert.equal(damage.stats.rigs,0);assert.equal(model.children[0].geometry,original,'shared mesh is restored');damage.dispose();
  const ship={hp:1,group:new THREE.Group()};ship.group.add(new THREE.Mesh(new THREE.BoxGeometry(20,12,100),skin));scene.add(ship.group);
  const floods=ShipDamage.create(THREE,scene);floods.hit(ship,new THREE.Vector3(10,1,38),'torpedo');for(let i=0;i<fps*8;i++)floods.update(ship,1/fps,2);
- const s=floods.get(ship);assert(s.compartments[2]>s.compartments[0]);assert(ship.group.rotation.z<0);assert(ship.group.rotation.x<0,'bow hit trims bow down');assert.equal(ship.hp,1,'animation does not change weapon balance');
+ const s=floods.get(ship);assert(s.compartments[2]>s.compartments[0]);assert(ship.group.rotation.z<0);
+ ship.group.updateWorldMatrix(true,false);assert(ship.group.localToWorld(new THREE.Vector3(0,0,40)).y<ship.group.localToWorld(new THREE.Vector3(0,0,-40)).y,'flooded bow is physically below the stern');assert.equal(ship.hp,1,'animation does not change weapon balance');
  ship.hp=0;floods.hit(ship,new THREE.Vector3(-10,1,-30),'torpedo');for(let i=0;i<fps*42;i++)floods.update(ship,1/fps,2);assert.equal(ship.group.visible,false);assert(ship.group.position.y<-10);floods.dispose();
  const flares=FlareSupport.create(THREE,scene,()=>0);assert(!flares.drop(new THREE.Vector3(0,300,0),new THREE.Vector3(0,0,1),100));flares.setNight(true);assert.equal(flares.slots.length,3);
  for(let i=0;i<4;i++)assert(flares.drop(new THREE.Vector3(i*100,300,0),new THREE.Vector3(0,0,1),100));assert(!flares.drop(new THREE.Vector3(0,300,0),new THREE.Vector3(0,0,1),100));assert.equal(flares.active,3);
