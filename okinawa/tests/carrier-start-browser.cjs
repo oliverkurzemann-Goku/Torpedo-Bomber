@@ -93,7 +93,9 @@ const server=http.createServer((req,res)=>{
    });
    assert(await page.evaluate(()=>state===ST.LAUNCH&&!carrierIntro&&!document.body.classList.contains('carrierPreview')));
    await page.evaluate(()=>{const render=GameRuntime.render;GameRuntime.render=()=>true;try{for(let i=0;i<40;i++){animateFrame();if(state===ST.LAUNCH&&P.pos.x-carrierX<BOW_X-2)checkDeckContact();}}finally{GameRuntime.render=render;}});
-   assert(await page.evaluate(()=>state===ST.FLIGHT&&launchTimer>1.6),'catapult only runs after camera');
+   assert(await page.evaluate(()=>state===ST.LAUNCH&&launchTimer>=1.9&&P.pos.x-carrierX<BOW_X),'first two seconds remain on the flight deck');
+   await page.evaluate(()=>{const render=GameRuntime.render;GameRuntime.render=()=>true;try{for(let i=0;i<260&&state===ST.LAUNCH;i++){animateFrame();if(state===ST.LAUNCH&&P.pos.x-carrierX<BOW_X-2)checkDeckContact();}}finally{GameRuntime.render=render;}});
+   assert(await page.evaluate(()=>state===ST.FLIGHT&&launchTimer>6&&launchTimer<12&&P.pos.x-carrierX>BOW_X),'departure follows the full deck run and actual bow exit');
    const fired=await page.evaluate(()=>{
     P.pos.y=300;P.spd=80;const ammo=P.ammo;firing=true;
     const render=GameRuntime.render;GameRuntime.render=()=>true;

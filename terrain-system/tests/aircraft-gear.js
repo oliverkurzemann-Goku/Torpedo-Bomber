@@ -75,15 +75,15 @@ function faceCount(group,minimumY){let total=0;group.updateMatrixWorld(true);gro
   if(kind==='bf109')assert.ok(wheels.every(b=>b.min.y>box.min.y-1.05),
     'Bf 109 wheels must not hang on long stilts');
   assert.ok(Math.abs(wheels[0].min.y-wheels[1].min.y)<.05,kind+' wheel axles differ in height');
-  brightenFighterSkin(src,kind);
-  const painted=[];src.traverse(o=>{if(o.isMesh)painted.push(...[].concat(o.material).filter(m=>m?.emissiveIntensity>.1));});
-  assert.ok(painted.length>0&&painted.every(m=>m.emissiveMap===null),kind+' body textures still block the ambient fill');
+  if(kind==='fw190'){
+    brightenFighterSkin(src,kind);
+    const painted=[];src.traverse(o=>{if(o.isMesh)painted.push(...[].concat(o.material).filter(m=>m?.emissiveIntensity>.1));});
+    assert.ok(painted.length>0&&painted.every(m=>m.emissiveMap===null),'FW ambient fill remains intact');
+  }
+  // Bf109/Me262 finish needs a real PMREM/WebGL renderer: deck-night-browser.cjs.
   console.log(kind,JSON.stringify({removedWheelFaces:removed,upperWingFaces:upperAfter,wheelBottom:wheels[0].min.y}));
  }
- const jet=(await load('me262.glb')).scene;brightenFighterSkin(jet,'me262');
- const jetMaterials=[];jet.traverse(o=>{if(o.isMesh)jetMaterials.push(...[].concat(o.material).filter(m=>m?.emissiveIntensity===.04));});
- assert.ok(jetMaterials.length>0&&jetMaterials.every(m=>m.emissiveMap===null),
-  'Me 262 skin uses the darker ambient setting');
+ const jet=(await load('me262.glb')).scene;
  const jetRoot=new THREE.Group();jetRoot.add(jet);
  const original=new Map();jet.traverse(o=>{if(o.isMesh&&o.geometry?.index)original.set(o,o.geometry.index.array.slice());});
  assert(original.size>0,'shipped Me 262 has indexed wing meshes');

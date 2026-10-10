@@ -294,6 +294,7 @@ class LivingWorld {
       if(e.alive||!Number.isFinite(e.last.x))e.last=this._sampleEntity(e);
       const p=e.last,near=Math.hypot(p.x-focusX,p.z-focusZ)<e.visibleRadius&&(!e.meta.ambient||visibleAmbient.has(e));
       e.model.visible=near;
+      if(e.kind==='ferry'&&e.alive&&near)this.landmarks.wakes?.track(e,e.last,{x:Math.sin(p.yaw),z:Math.cos(p.yaw)},35,7,e.speed*multiplier,dt);
       if(near&&e.alive){e.model.position.set(p.x,this._groundEntity(e,p),p.z);e.model.rotation.y=p.yaw;if(e.mixer)e.mixer.update(dt);}
     }
     this._smokeClock-=dt;

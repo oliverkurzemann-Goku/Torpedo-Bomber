@@ -83,6 +83,7 @@
   end.x+=Math.sin(direction)*stop;end.z+=Math.cos(direction)*stop;
   if(!found){start.copy(position);end.copy(position);}
   group.rotation.y=direction+Math.PI;group.position.copy(start);if(water)group.position.y=surfaceAt(start.x,start.z);
+  const wakePosition=group.position.clone();
   let elapsed=0,disposed=false,travelTime=6.2,route=[start.clone(),end.clone()],lengths=[start.distanceTo(end)],passengers=0;
   const validPoint=p=>waterAt(p.x,p.z)&&(!options.bounds||p.x>=options.bounds.minX&&p.x<=options.bounds.maxX&&p.z>=options.bounds.minZ&&p.z<=options.bounds.maxZ);
   function validLeg(a,b){const steps=Math.max(12,Math.ceil(a.distanceTo(b)/4)),sample=new THREE.Vector3();for(let i=0;i<=steps;i++)if(!validPoint(sample.lerpVectors(a,b,i/steps)))return false;return true;}
@@ -121,7 +122,11 @@
     group.position.lerpVectors(route[index],route[index+1],lengths[index]?Math.min(1,remaining/lengths[index]):1);
     if(water&&lengths[index]>0)group.rotation.y=Math.atan2(route[index+1].x-route[index].x,route[index+1].z-route[index].z);
     group.position.y=(water?surfaceAt:groundAt)(group.position.x,group.position.z)+(water?Math.sin(elapsed*2)*.07:0);
-    if(water)marker.position.y=surfaceAt(marker.position.x,marker.position.z)+.12;
+    if(water){
+     const distance=Math.hypot(group.position.x-wakePosition.x,group.position.z-wakePosition.z);
+     options.wakes?.track(group,group.position,{x:Math.sin(group.rotation.y),z:Math.cos(group.rotation.y)},8.3,3,dt>0?distance/dt:0,dt);wakePosition.copy(group.position);
+     marker.position.y=surfaceAt(marker.position.x,marker.position.z)+.12;
+    }
     if(water)group.rotation.z=Math.sin(elapsed*1.4)*.018;
     else for(const p of people)for(let i=0;i<2;i++){
      p.legs[i].rotation.x=t<1?Math.sin(elapsed*7+i*Math.PI)*.25:0;
@@ -135,7 +140,7 @@
     return {done:elapsed>=travelTime+1.8,pickup:elapsed>=travelTime};
    },
    dispose(){
-    if(disposed)return;disposed=true;
+    if(disposed)return;disposed=true;options.wakes?.forget(group);
     const geometries=new Set(),materials=new Set();
     for(const object of [group,marker]){scene.remove(object);object.traverse(o=>{if(o.geometry)geometries.add(o.geometry);if(o.material)for(const m of [].concat(o.material))materials.add(m);});}
     for(const g of geometries)g.dispose();for(const m of new Set([...materials,olive,grey,skin,dark,glow,smoke]))m.dispose();

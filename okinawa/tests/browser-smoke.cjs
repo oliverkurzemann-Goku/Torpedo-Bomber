@@ -300,6 +300,10 @@ const cdn={
     await page.waitForFunction(()=>carrierAircraftReady());await page.locator('#skipCarrierPreview').click();
    }
    if(!eu){
+    // Run the longer rolling departure at a fixed simulation rate on software
+    // WebGL. The dedicated departure test measures time and all tyre contacts.
+    await page.evaluate(()=>{window.__holdSmokeFrames?.();clock.getDelta=()=>.05;const draw=GameRuntime.render;GameRuntime.render=()=>true;
+      try{for(let i=0;i<260&&state===ST.LAUNCH&&!runtimeFault;i++)animateFrame();}finally{GameRuntime.render=draw;window.__startSmokeFrames?.();}});
     await page.waitForFunction(()=>state===ST.FLIGHT||state===ST.PAUSED||runtimeFault);
     assert(await page.evaluate(()=>state===ST.FLIGHT&&!runtimeFault),'launch must enter flight before the duration test');
     // Exercise the live update/render path well beyond the reported six-second
@@ -562,7 +566,8 @@ const cdn={
      return {faults:SortieFeatures.Damage.status(P),leak:P.systemDamage.fuelLeak,power:SortieFeatures.Damage.power(P),lock:P.systemDamage.gearLock,events,sources:soundscape.count};
     });
     assert(damage.leak>0&&damage.power<1&&damage.lock===0,'real hit callback distinguishes tank, engine and gear');
-    assert.match(await page.locator('#systemsStatus').innerText(),/FUEL LEAK.*ENGINE.*GEAR JAM/);
+    assert.match(await page.locator('#systemsStatus').getAttribute('aria-label'),/Power reduced.*Fuel leak.*Gear jammed up/);
+    assert.deepEqual(await page.locator('.warningLamp').evaluateAll(ls=>ls.map(l=>l.dataset.level)),['1','1','2','1'],'real damage lights engine, leaking tank, jammed gear and hull warnings');
     assert(damage.events.includes('engine')&&damage.events.includes('battle')&&damage.sources>0&&damage.sources<=4,'native WebAudio ambience is connected and bounded');
     await page.evaluate(()=>{togglePause();togglePause();});
     assert.match(await page.locator('#pauseOrders').innerText(),/31% HULL.*FUEL LEAK.*ENGINE.*GEAR JAM UP.*Emergency belly landing/,'actual pause instructions explain damaged recovery');

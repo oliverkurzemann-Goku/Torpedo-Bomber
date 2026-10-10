@@ -60,7 +60,7 @@ global.fetch=async url=>{const b=fs.readFileSync(path.join(root,url.split('?')[0
   vm.runInContext(html.slice(roadStart,roadEnd)+'\nclearRoadsOnRunways();',roadContext);
   assert.deepEqual(runwayFaces(),{road:[0,0],farm:[0,0],forest:[0,0]},
     'mapped road, farmland and forest floors must not cover either runway');
-  assert(html.includes('LivingWorld.js?v=166'));assert(html.includes('MODULE 23'));
+  assert(/LivingWorld\.js\?v=\d+/.test(html));assert(html.includes('MODULE 23'));
   for(const id of ['convoy','train','ferry'])assert(html.includes(`id:'${id}'`),`mission ${id} missing`);
   assert(html.includes("livingWorld.missionTargets(m.traffic||m.id)"));assert(html.includes('livingWorld.destroyEntity(t.entity)'));
   // Execute the actual mission table/population logic with lightweight target

@@ -26,7 +26,7 @@
   const service=options.service||'usaaf',p=palettes[service]||palettes.usaaf,naval=options.role==='sailor',pilot=options.role!=='ground'&&!naval,chute=options.pose==='chute';
   const figure=new THREE.Group();figure.name='pilot';figure.userData.service=service;
   const mat=c=>{const material=new THREE.MeshStandardMaterial({color:c,roughness:.92});if(options.srgbOutput)material.color.convertSRGBToLinear();return material;};
-  const m={coat:mat(naval?0x697b83:pilot?p.jacket:service==='luftwaffe'?0x616963:0x62664b),pants:mat(naval?0x404e5a:p.trousers),skin:mat([0xb99679,0xc4a183,0xa77f60][(options.variant||0)%3]),
+  const m={coat:mat(options.jacketColor??(naval?0x697b83:pilot?p.jacket:service==='luftwaffe'?0x616963:0x62664b)),pants:mat(naval?0x404e5a:p.trousers),skin:mat([0xb99679,0xc4a183,0xa77f60][(options.variant||0)%3]),
    leather:mat(p.helmet),boot:mat(0x302b25),sole:mat(0x1c201e),web:mat(0xc0b28d),metal:mat(0x8d9289),glass:mat(0x34464a),vest:mat(p.vest),shirt:mat(p.shirt)};
   function part(name,parent=figure){const g=new THREE.Group();g.name=name;parent.add(g);return g;}
   function box(g,size,pos,material){const o=new THREE.Mesh(new THREE.BoxGeometry(...size),material);o.position.set(...pos);g.add(o);return o;}

@@ -271,8 +271,10 @@
   .opsLegend{font:11px/1.5 monospace;color:#d7c797;text-align:left;margin-top:5px;}
   #opsStatus{position:fixed;top:calc(env(safe-area-inset-top) + 76px);left:50%;transform:translateX(-50%);color:#edcc80;background:rgba(14,20,18,.78);padding:5px 9px;font:10px monospace;pointer-events:none;z-index:9;max-width:58vw;text-align:center;}
   #systemsStatus{position:fixed;top:calc(env(safe-area-inset-top) + 116px);left:50%;transform:translateX(-50%);color:#ffbf96;background:#251810db;padding:5px 9px;font:10px monospace;pointer-events:none;z-index:9;max-width:60vw;text-align:center;}#systemsStatus:empty{display:none;}
+  .warningLamps{display:flex!important;gap:10px;padding:5px 9px!important;background:#141813dd!important;border:1px solid #535744;border-radius:4px;white-space:nowrap;}
+  .warningLamp{color:#646c5c;font:9px monospace;letter-spacing:.35px;} .warningLamp[data-level="1"]{color:#ffd088;text-shadow:0 0 6px #e0a432a0;} .warningLamp[data-level="2"]{color:#ff8c70;text-shadow:0 0 7px #ff6638b0;}
 </style>
-<link rel="stylesheet" href="menu-layout.css?v=178">
+<link rel="stylesheet" href="menu-layout.css?v=179">
 </head>
 <body>
 <!-- ===== TEMP TEST-ONLY VERSION BANNER — asked for by Oliver: "kannst du irgendwo einbauen,
@@ -294,7 +296,7 @@
   <div style="width:100%;height:4px;background:repeating-linear-gradient(45deg,#ffd400,#ffd400 8px,#111 8px,#111 16px);"></div>
   <span id="testVersionBannerText" style="background:#111;color:#ffd400;font-family:monospace;font-weight:800;font-size:11px;letter-spacing:.5px;padding:3px 10px;border:1px solid #ffd400;border-top:none;border-radius:0 0 6px 6px;"></span>
 </div>
-<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 178';</script>
+<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 179';</script>
 <!-- ===== END TEMP TEST-ONLY VERSION BANNER ===== -->
 <div id="app"></div>
 <style>
@@ -334,7 +336,7 @@
   <div id="flash"></div>
   <div id="gunsight"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 178 · REAL RHINE</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 179 · REAL RHINE</div>
 
   <div id="apr">
     <div id="aprCall"></div>
@@ -386,7 +388,7 @@
 </div>
 
 <div class="overlay hidden" id="menu" data-campaign="europe">
-  <div class="menuTop"><a id="selBtn" href="index.html?v=178">&#9664; Change Game</a><span class="menuMeta">RHINE OPERATIONS<br>BUILD 178</span></div>
+  <div class="menuTop"><a id="selBtn" href="index.html?v=179">&#9664; Change Game</a><span class="menuMeta">RHINE OPERATIONS<br>BUILD 179</span></div>
   <div class="card menuCard">
     <aside class="menuOverview" aria-label="Campaign and pilot options">
     <div class="campaignArt" aria-hidden="true"></div>
@@ -492,7 +494,7 @@
 <script src="terrain-system/AircraftGround.js?v=170"></script>
 <script src="terrain-system/AirfieldActivity.js?v=177"></script>
 <script src="terrain-system/WorldVehicles.js?v=172"></script>
-<script src="terrain-system/LivingWorld.js?v=166"></script>
+<script src="terrain-system/LivingWorld.js?v=179"></script>
 <script src="campaign.js?v=1"></script>
 <script src="game-runtime.js?v=177"></script>
 <script src="aircraft-rotors.js?v=172"></script>
@@ -501,18 +503,23 @@
 <script src="aircraft-damage.js?v=177"></script>
 <script src="flight-support.js?v=175"></script>
 <script src="ordnance.js?v=157"></script>
-<script src="crew-visuals.js?v=176"></script>
+<script src="crew-visuals.js?v=179"></script>
+<script src="aircraft-finish.js?v=179"></script>
+<script src="runway-lights.js?v=179"></script>
+<script src="ship-wakes.js?v=179"></script>
 <script src="pilot-bailout.js?v=176"></script>
 <script src="enemy-bailouts.js?v=177"></script>
 <script src="flare-support.js?v=177"></script>
 <script src="sortie-service.js?v=177"></script>
-<script src="pilot-rescue.js?v=178"></script>
+<script src="pilot-rescue.js?v=179"></script>
 <script src="radio-intercept.js?v=157"></script>
 <script src="audio/weapon-sound.js?v=144"></script>
 <script src="audio/jet-engine.js?v=144"></script>
 <script src="audio/flight-atmosphere.js?v=175"></script>
 <script src="sortie-systems.js?v=175"></script>
 <script src="sortie-features.js?v=163"></script>
+<script src="ground-run.js?v=179"></script>
+<script src="flight-indicators.js?v=179"></script>
 <script src="sortie-fuel.js?v=161"></script>
 <script src="operation-plans.js?v=177"></script>
 <script>
@@ -579,7 +586,8 @@ let STALL_SPD=38, APP_SPD=52, MAX_SPD=175, THR_MIN_SPD=32;
 const ST={MENU:0,BRIEF:1,ROLL:2,FLIGHT:3,DEAD:4,PAUSED:5};
 let state=ST.MENU, prevState=ST.FLIGHT;
 
-let scene,camera,renderer,clock,sun,hemi;
+let scene,camera,renderer,clock,sun,hemi,moonFill,aircraftFinish,runwayLights,shipWakes;
+const warningLamps=FlightIndicators.mount(document.getElementById('systemsStatus'));
 let planeGroup=null, playerModel=null;
 let mission=0, selectedMission=0, score=0, scoreStart=0, bestS=0;
 let targets=[], flakUnits=[], bullets=[], tracers=[], bombs=[], rockets=[];
@@ -825,7 +833,7 @@ async function loadRealWorld(){
 
   if(OSMManager.BUILD!==23||HistoricalObjectManager.BUILD!==21||LivingWorld.BUILD!==22||WorldVehicles.BUILD!==22) throw new Error('Terrain version mismatch. Reload Remagen.');
   document.getElementById('testVersionBannerText').textContent=
-    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 178 · MODULE 23';
+    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 179 · MODULE 23';
   heightProvider=new DEMHeightProvider(RTILE,'terrain-system/real/data/dem/');
   terrain=new TerrainManager(scene,RTILE,heightProvider);
   osmMgr=new OSMManager(scene,RTILE,terrain,'terrain-system/real/data/osm/');
@@ -957,6 +965,7 @@ function updateContentVisibility(focusX,focusZ){
     g.visible=Math.hypot(cx-focusX,cz-focusZ)<CONTENT_VIS_RADIUS;
   }
   historicalMgr.refresh();
+  if(runwayLights?.group.visible)runwayLights.refresh();
   for(const t of targets){
     if(t.entity||!t.sub||t.kind==='bridge')continue;
     t.group.position.y=terrain.getRenderedHeight(t.sub.userData.x,t.sub.userData.z);
@@ -2408,13 +2417,14 @@ function buildGear(gear, root, whole, S, kind){
   gear.add(tg);
 }
 function brightenFighterSkin(src,kind){
+  if(kind==='me262'||kind==='bf109'){aircraftFinish.decorate(src,kind);aircraftFinish.setNight(!!M()?.night);return;}
   src.traverse(o=>{if(!o.isMesh)return;
     const materials=(Array.isArray(o.material)?o.material:[o.material]).map(m=>{
       if(!m||!m.color||m.transparent&&m.opacity<.9)return m;
-      const n=m.clone();n.color.multiplyScalar(kind==='me262'?.72:1.24);
+      const n=m.clone();n.color.multiplyScalar(1.24);
       // A constant ambient contribution makes the dark embedded diffuse textures
       // readable even in wing shadow. Do not multiply it by the same dark map.
-      if(n.emissive){n.emissiveMap=null;n.emissive.setHex(0xa4aaa0);n.emissiveIntensity=kind==='me262'?.04:.29;}
+      if(n.emissive){n.emissiveMap=null;n.emissive.setHex(0xa4aaa0);n.emissiveIntensity=.29;}
       if(n.aoMapIntensity!==undefined)n.aoMapIntensity=.22;
       if(n.metalness!==undefined)n.metalness=Math.min(n.metalness,.08);
       if(n.roughness!==undefined)n.roughness=.64;
@@ -2906,7 +2916,7 @@ function missionLoadout(m,d=AC[m.ac||'p47']){
 }
 
 function clearWorld(){
-  if(combatFX)combatFX.clear();aircraftSmoke?.clear();aircraftDamage?.clear();enemyBailouts?.clear();flareSupport?.clear();sortieService?.clear();fieldServicePending=false;GameRuntime.frames.reset();
+  if(combatFX)combatFX.clear();aircraftSmoke?.clear();aircraftDamage?.clear();enemyBailouts?.clear();flareSupport?.clear();sortieService?.clear();fieldServicePending=false;shipWakes?.clear();GameRuntime.frames.reset();
   // Every real target (flak/bridge/factory) is permanent world scenery, built once by
   // loadRealWorld() — never removed here, only reset (resetAllRealTargets(), called by the next
   // populate()), the same way the old synthetic game's own permanent worldBridge always was.
@@ -3966,7 +3976,7 @@ function advanceBailout(dt){
       releaseHeldControls();const p=bailout.position;
       const waterAt=(x,z)=>!!(livingWorld&&livingWorld._pointOnWater(x,z)),water=waterAt(p.x,p.z);
       bailout.settle(water);
-      bailRescue=PilotRescue.create(THREE,scene,p,groundY,{water,waterAt,service:P.ac==="p47"?"usaaf":"luftwaffe",bounds:{minX:WORLD_EDGE_MARGIN,maxX:RTILE*RGRID_W-WORLD_EDGE_MARGIN,minZ:WORLD_EDGE_MARGIN,maxZ:RTILE*RGRID_H-WORLD_EDGE_MARGIN}});
+      bailRescue=PilotRescue.create(THREE,scene,p,groundY,{water,waterAt,wakes:shipWakes,service:P.ac==="p47"?"usaaf":"luftwaffe",bounds:{minX:WORLD_EDGE_MARGIN,maxX:RTILE*RGRID_W-WORLD_EDGE_MARGIN,minZ:WORLD_EDGE_MARGIN,maxZ:RTILE*RGRID_H-WORLD_EDGE_MARGIN}});
       radioQ=[];radioT=0;radioSay(water?'RESCUE BOAT — WE HAVE YOUR SIGNAL, HOLD POSITION':'SEARCH PARTY — SIGNAL SEEN, WE ARE COMING TO YOU');
       document.getElementById('stickHint').textContent='RESCUE INBOUND';flash('PILOT SAFE — RESCUE INBOUND',4000);
       return;
@@ -4019,12 +4029,8 @@ function updateFlight(dt){
 
   if(P.onGround){
     // ---- ground roll ----
-    const tgt=THR_MIN_SPD*0.2+ (MAX_SPD*0.62)*P.throttle;
-    // no separate brake button any more (that key is the steering invert, as in part one):
-    // closing the throttle on the ground brakes her, which is what a pilot does anyway
-    const brake=(P.throttle<0.05)?58:0;
-    P.spd += ((tgt-P.spd)*0.55 - brake)*dt;
-    P.spd=Math.max(0,P.spd);
+    // Thrust spools up; rolling resistance and drag grow with speed.
+    GroundRun.step(P,dt,{jet:P.ac==='me262',power:SortieFeatures.Damage.power(P)});
     if(typeof fieldServicePending!=="undefined"&&fieldServicePending&&P.spd<1){beginFieldService();return;}
     // steer with the stick's roll axis, tailwheel style — same sense as in the air
     P.heading += inputRoll*steerSign*Math.min(1,P.spd/40)*0.9*dt;
@@ -4335,7 +4341,7 @@ function relaunch(){
   P.pos.set(spawnX, terrain.getHeight(spawnX,AF_Z)+2.0, AF_Z);
   P.heading=Math.PI/2; P.pitch=0; P.roll=0; P.spd=0; P.vSpeed=0;
   P.pitchVel=0; P.rollVel=0;
-  P.onGround=true; P.touchResolved=true; P.throttle=0.0; setThrottleUI(0);
+  P.onGround=true; P.groundPower=0; P.touchResolved=true; P.throttle=0.0; setThrottleUI(0);
   P.gear=1; P.gearTgt=1; P.flap=0; P.flapTgt=0;
   if(P.ac==='me163'){
     // Trolley already released. Both Komet sorties depart southwest toward
@@ -4525,7 +4531,10 @@ function applyWeather(){
   if(sun)sun.intensity=w.sun;
   FlightOps.clouds(clouds,weather);
   const night=!!M()?.night;flareSupport?.setNight(night);
-  if(night){scene.background.setHex(0x101829);scene.fog.color.setHex(0x101829);if(sun){sun.intensity=.12;sun.color.setHex(0x9aafcb);}if(hemi)hemi.intensity=.20;}else if(sun)sun.color.setHex(0xffffff);
+  if(night){scene.background.setHex(0x0b1220);scene.fog.color.setHex(0x0b1220);if(sun){sun.intensity=.10;sun.color.setHex(0x9aafcb);}if(hemi)hemi.intensity=.16;}else if(sun)sun.color.setHex(0xffffff);
+  // The old .42 fill stayed at daylight strength throughout the night.
+  if(moonFill){moonFill.intensity=night?.20:.42;moonFill.color.setHex(night?0xa3b8d2:0xbfd4e6);}
+  aircraftFinish?.setNight(night);runwayLights?.setActive(night,AF_X,AF_Z);
 }
 
 // ============================================================
@@ -4667,7 +4676,7 @@ function updateHUD(){
   syncTankButton();
   GameRuntime.setHTML(document.getElementById('hHull'),SortieFeatures.Damage.hullPercent(P)+'<small> %</small>');
   document.getElementById('hullRow').title=SortieFeatures.Damage.status(P);
-  document.getElementById('systemsStatus').textContent=SortieFeatures.Damage.status(P);
+  warningLamps.update(P);
   document.getElementById('hOrd').textContent=P.bombs;
   document.getElementById('hRkt').textContent=P.rockets;
   document.getElementById('hScore').textContent=score;
@@ -5454,7 +5463,7 @@ function exitToMenuFromPause(){
   document.getElementById('flash').classList.remove('show');
   document.getElementById('radio').classList.remove('show');
   radioQ=[];radioT=0;flashT=0;
-  combatFX?.clear();aircraftSmoke?.clear();aircraftDamage?.clear();enemyBailouts?.clear();flareSupport?.clear();sortieService?.clear();fieldServicePending=false;GameRuntime.frames.reset();
+  combatFX?.clear();aircraftSmoke?.clear();aircraftDamage?.clear();enemyBailouts?.clear();flareSupport?.clear();sortieService?.clear();fieldServicePending=false;shipWakes?.clear();GameRuntime.frames.reset();
   show('result',false); show('brief',false);
   show('menu',true);if(navigation){navigation.reset();navigation.button.style.display='none';}
   buildMenu();
@@ -5520,8 +5529,11 @@ function init(){
   // Stronger sky fill plus a soft bounce off the ground keeps it readable from every angle.
   hemi=new THREE.HemisphereLight(0xcfe2f2,0x5a6448,1.12); scene.add(hemi);
   sun=new THREE.DirectionalLight(0xfff0d0,1.05); sun.position.set(-1800,2600,1400); scene.add(sun);
-  const fill=new THREE.DirectionalLight(0xbfd4e6,0.42); fill.position.set(1500,900,-1600);
-  scene.add(fill);
+  moonFill=new THREE.DirectionalLight(0xbfd4e6,0.42); moonFill.position.set(1500,900,-1600);
+  scene.add(moonFill);
+  aircraftFinish=AircraftFinish.create(THREE,renderer);
+  runwayLights=RunwayLights.create(THREE,scene,groundY,RWY_LEN,RWY_W);
+  shipWakes=ShipWakes.create(THREE,scene,{height:(x,z)=>terrain?groundY(x,z):.10,waterAt:(x,z)=>!livingWorld||livingWorld._pointOnWater(x,z)});
   applyWeather();
   buildRain();
   buildClouds(); applyWeather();   // clouds need ceilingY (set above) to place, then re-tint them
@@ -5540,6 +5552,7 @@ function init(){
     const bd=realBridge&&realBridge.userData.data;
     osmMgr.enableDeferredLOD();
     livingWorld=new LivingWorld(scene,terrain,osmMgr,{
+      wakes:shipWakes,
       bridge:realBridge?[realBridge.userData.x,realBridge.userData.z]:undefined,
       bridgeSpan:bd?[bd.x2-bd.x1,bd.z2-bd.z1]:undefined,
       factory:realFactory?[realFactory.userData.x,realFactory.userData.z]:undefined,
@@ -5576,7 +5589,7 @@ function init(){
   buildMenu();
   // menu wiring
   document.getElementById('startBtn').onclick=()=>showBrief(selectedMission);
-  document.getElementById('pauseMainMenu').onclick=()=>{exitToMenuFromPause();window.location.href='index.html?v=178';};
+  document.getElementById('pauseMainMenu').onclick=()=>{exitToMenuFromPause();window.location.href='index.html?v=179';};
   document.getElementById('logBtn').onclick=()=>{ show('menu',false); showLogbook(); };
   document.getElementById('skipLaunchPreview').onclick=()=>finishLaunchIntro();
   document.getElementById('brBack').onclick=()=>{ show('brief',false); show('menu',true);if(navigation){navigation.reset();navigation.button.style.display='none';} state=ST.MENU; };
@@ -5695,6 +5708,7 @@ function animate(){
     refreshModels();
     posePlayerAircraft(raw);
     updateLaunchIntro(raw);updateWeatherFx(raw);updateClouds();updateAudio(raw);
+    runwayLights?.update(camera);
     GameRuntime.render(renderer,scene,camera);GameRuntime.frames.end();return;
   }
   if(state===ST.FLIGHT||state===ST.DEAD){
@@ -5755,10 +5769,11 @@ function animate(){
   if(sortieService?.active)sortieService.update(raw);
   // Menu/briefing transitions also fade the engine; pause uses the master gain above.
   updateAudio(raw);
-  if(combatFX)combatFX.update(raw);if(flareSupport)flareSupport.update(raw,new THREE.Vector3(windZ,0,0));updateFlareUI();if(enemyBailouts)enemyBailouts.update(raw,camera,windZ);if(aircraftDamage)aircraftDamage.update(raw);if(aircraftSmoke)aircraftSmoke.update(raw);
+  if(combatFX)combatFX.update(raw);if(flareSupport)flareSupport.update(raw,new THREE.Vector3(windZ,0,0));updateFlareUI();if(enemyBailouts)enemyBailouts.update(raw,camera,windZ);if(aircraftDamage)aircraftDamage.update(raw);if(aircraftSmoke)aircraftSmoke.update(raw);shipWakes?.update(raw);
   CombatFX.updateRounds(bullets,camera,renderer);
   CombatFX.updateRounds(tracers,camera,renderer);
   GameRuntime.frames.mark('effects');
+  runwayLights?.update(camera);
   GameRuntime.render(renderer,scene,camera);GameRuntime.frames.end();
 }
 function reportStartupError(err){

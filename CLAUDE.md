@@ -5,7 +5,76 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 178 · Thunderbolt Squadron BUILD 178 · Remagen-Kern 23 / Fahrzeuge 22**
+Stand bei Übergabe: **Torpedo Squadron BUILD 179 · Thunderbolt Squadron BUILD 179 · Remagen-Kern 23 / Fahrzeuge 22**
+
+**Build 179 (10.10.2026): Deckbetrieb, Kielwasser, Nachtanflug und langsamere Starts.**
+Keine neuen Rottenflieger-Befehle: vom Nutzer ausdrücklich abgelehnt. DeckActivity
+zeigt acht detaillierte, artikulierte Personen in sechs instanzierten Draws, darunter
+Startsignale und Servicebewegungen. US-Deckkleidung blau/grau, japanische Deckcrew
+khaki, Signalgeber gelb. Wege bleiben seitlich außerhalb der Roll-/Landezone. Figuren
+folgen der gemessenen Deckhöhe und dem bewegten Träger; Pause hält die Animation an.
+Bei Trägerwechsel werden eigene Geometrien/Materialien entsorgt. Der neue Startpunkt
+liegt weiter achtern: Deckkontakt-Cache nach dem Umsetzen neu messen, sonst lagen die
+Reifen rund 10cm im erhöhten hinteren Deck. Echte GLB-Raycasts prüfen Avenger, SBD,
+Zero und Corsair; tatsächliche Kontaktlücken jetzt 0,011–0,044m.
+
+FlightIndicators ersetzt die alte reine Schadenszeile durch vier stetige Warnlampen
+ENG/FUEL/GEAR/HULL. Gelb/Rot folgen tatsächlichem Motorzustand, Tankleck bzw. Reserve,
+Fahrwerksblockierung und Hüllenanteil. Zugängliche Beschriftung enthält den konkreten
+Schaden. Reparatur und Neustart löschen die Warnungen; keine CSS-Blinktimer in Pause.
+ShipWakes zeichnet die aufgezeichnete Weltspur jedes fahrenden Schiffes einschließlich
+Kurven: gegnerische Ziele, eigene Träger, alliierte Transporter/Eskorten, das gemeinsame
+Rettungsboot und Rheinschiffe. Eine gemeinsame transparente Geometrie, höchstens
+24 Schiffe × 80 Punkte, 38s Lebensdauer, Geometrieaufbau 10Hz. Schaum folgt dem
+Wellenspiegel; Rhein-Wassermaske verhindert Spuren auf Land. Stillstand erzeugt keine
+neuen Punkte. Versenkte Schiffe verlieren ihre alte Spur durch Ausblenden, Pause friert
+alles ein, Menü/Neustart leert den Ring. PilotRescue meldet tatsächliche Bootbewegung
+und entfernt seinen Eintrag beim Entsorgen. Kein zweites Rettungsboot hinzugefügt.
+
+Das zusätzlich hochgeladene Me262-Modell (SHA256 4f929ef9745f3e3a9746802974273ed3154b447a4bcf5c1139a036f984b57f0a)
+wurde im echten Chromium unter gleichem Licht verglichen: 73 statt 10 Draws, gröbere
+Oberflächenzeichnung. Vorhandenes War-Thunder-Modell bleibt deshalb erhalten. Neue
+AircraftFinish-Materialien gelten nur für Me262/Bf109: Original-Diffuse-/Normalmaps und
+Tarnfarben, keine zusätzliche Me262-Abdunklung, weniger matte Oberflächen, reflektierendes
+Glas und gemeinsame vorgefilterte Himmelsreflexion. Einmal erzeugtes 64px-Cubemap-PMREM,
+keine laufende Szenenkopie und keine weiteren Lichter. Nacht reduziert die Reflexion.
+P47-Materialien und bestätigte Flugsteuerung bleiben unverändert. Browserbilder und
+Ein-/Aus-Pixelvergleich belegen reale Reflexionen: lokal BF109 7.912 / Me262 16.092
+veränderte Pixel im jeweiligen tatsächlichen Spielbild; keine iPad/Safari-FPS-Aussage.
+
+Rhine nightworks: Himmel/Fog 0x0b1220, Sonne .10, Hemi .16, Fülllicht .20 statt der
+früher immer aktiven Tagesstärke .42. Leuchtmittel bleiben unverändert wirksam.
+RunwayLights zeigt 52 warmweiße Rand- und grün/rote Schwellenmarker am tatsächlich
+aktiven Feld, mit Geländehöhe, kleinen Fassungen und kameragerichteten weichen Halos.
+Drei instanzierte Draws, keine zusätzlichen PointLights/Shadows. Höhen aktualisieren
+sich bei Terrainwechsel. Nachtanflug-Ein-/Aus-Vergleich lokal: 4.836 sichtbare Lichtpixel.
+Tagesmissionen verbergen die Gruppe.
+
+GroundRun betrifft ausschließlich den Bodenlauf: Leistungsaufbau, Rollwiderstand und
+Geschwindigkeitsdrag statt sofortiger Annäherung an hohe Zielgeschwindigkeit. Gas zu
+behält die bisherige starke automatische Radbremsung. Propellerflugzeug etwa 11,2s /
+248m zur Rotation, Me262 etwa 21,5s / 657m; bei 20/60/120 FPS geprüft. Trägerabflug
+beginnt bei STERN_X+26 mit null Rollgeschwindigkeit, folgt der Trägerbewegung und geht
+erst nach tatsächlicher Bugpassage in FLIGHT: etwa 8,3s / 218m Deckstrecke. Der alte
+unbedingte FLIGHT-Wechsel nach 1,6s ist entfernt. Kameraintro/Skip/Pause bleiben erhalten.
+
+Neue Tests: okinawa/tests/deck-wakes.cjs (Schrittweiten, Rollstrecke, Bremsen, Schäden,
+Kurvenspur, Stillstand, Wellenspiegel, Budgets, Entsorgung, Decksignale, Lampenpositionen)
+und deck-night-browser.cjs (echte Frames, GLBs, Reifenkontakt, Kurven/Pause/Reset,
+Warnzustände, sichtbare Reflexions- und Pistenpixel, echter FLARE-Pointerklick).
+carrier-start-browser prüft ausdrücklich noch am Deck nach 2s sowie echte Bugpassage.
+Allgemeiner Browser-Smoke treibt den längeren Start im CPU-WebGL mit festem 20Hz-Takt;
+keine Abkürzung durch direktes Setzen von FLIGHT. Die früheren Text-/Cache-Erwartungen
+wurden an Warnlampen und Build 179 angepasst. Geometrie-Unit-Tests prüfen weiter alle
+Originalflügel/-räder; deutsche GPU-Materialien prüft jetzt der echte Browser.
+Lokal: Syntax 7 Dateien/7 Inline-Blöcke ohne Fehler; 31 Terrain-Testdateien ohne Fehler.
+Erster Okinawa-Gesamtlauf 32/34 grün; zwei veraltete Erwartungen (alte Schadenszeile,
+Europa-Startlink) korrigiert und separat erneut geprüft. Neue funktionale und native
+WebGL-Prüfungen grün, einschließlich Start-/Pause-/Service-/Rettungsregressionen.
+Endgültigen CI-Status am exakten Commit separat prüfen. Bilder test-visuals/build179-*.png,
+CI-Artefakt build-179-visual-checks. Sichtbare Version und geänderte Modul-URLs 179;
+auch beide menu-layout.css-URLs und alle Operations-Board-/Pause-Links synchron 179.
+Build 178 am finalen f1029be: GitHub-CI 38082105117 am 10.10.2026 als SUCCESS geprüft.
 
 **Build 178 (10.10.2026): ein gemeinsames Rettungsboot pro Besatzung.**
 `PilotRescue.createCrew` hält genau einen Motorlaunch und individuelle Abhol-Tickets.
