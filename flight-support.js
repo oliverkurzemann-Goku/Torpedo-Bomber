@@ -35,9 +35,44 @@ function skinHeight(model,parent,x,z){
  });return Number.isFinite(top)?top:null;
 }
 function canDitch(p,stall,approach){
- return p.alive&&p.hull>0&&p.gear<.25&&p.hook<.3&&p.throttle<=.35&&
+ // Judge the actual impact, including the flap-adjusted stall speed. A hook
+ // left down, or power needed by a damaged engine, cannot turn a gentle
+ // wheels-up water landing into a bounce. Low power is still good guidance.
+ return p.alive&&p.hull>0&&p.gear<.25&&
   p.spd>=stall*.8&&p.spd<=approach+14&&p.vSpeed>=-3.5&&p.vSpeed<=1.5&&
   p.pitch>=-.06&&p.pitch<=.20&&Math.abs(p.roll)<=.18;
+}
+function guideWingman(w,desiredVelocity,dt,forming){
+ // Steer the flight path itself, then render the same attitude. Previously
+ // velocity turned independently of the rate-limited mesh, so close escorts
+ // slid sideways even when their displayed bank/yaw looked smooth.
+ const clamp=(v,limit)=>Math.max(-limit,Math.min(limit,v));
+ const approach=(v,target,step)=>v+clamp(target-v,step);
+ const horizontal=Math.hypot(desiredVelocity.x,desiredVelocity.z);
+ const heading=Math.atan2(desiredVelocity.x,desiredVelocity.z);
+ const pitch=clamp(Math.atan2(desiredVelocity.y,Math.max(1,horizontal)),.5);
+ const speed=desiredVelocity.length(),steps=Math.max(1,Math.ceil(dt*60)),h=dt/steps;
+ w.spd=w.spd??w.vel.length();
+ for(let i=0;i<steps;i++){
+  const error=Math.atan2(Math.sin(heading-w.heading),Math.cos(heading-w.heading));
+  const maxYaw=Math.min(.25,25/Math.max(28,w.spd));
+  const yaw=w.yawRate||0;
+  w.yawRate=approach(yaw,clamp(error*1.5,maxYaw),(forming?.12:.18)*h);
+  w.heading+=(yaw+w.yawRate)*.5*h;
+  const pitchRate=w.pitchRate||0;
+  w.pitchRate=approach(pitchRate,clamp((pitch-w.pitch)*1.8,forming?.14:.22),(forming?.24:.36)*h);
+  w.pitch+=(pitchRate+w.pitchRate)*.5*h;
+  const acceleration=w.acceleration||0;
+  w.acceleration=approach(acceleration,clamp((speed-w.spd)*.8,forming?3:5),(forming?1.8:3)*h);
+  w.spd=Math.max(1,w.spd+(acceleration+w.acceleration)*.5*h);
+  const bank=clamp(Math.atan2(w.spd*Math.cos(w.pitch)*w.yawRate,9.81),forming?.55:.65);
+  const rollRate=w.rollRate||0;
+  w.rollRate=approach(rollRate,clamp((bank-w.roll)*2,forming?.32:.5),(forming?.7:1)*h);
+  w.roll+=(rollRate+w.rollRate)*.5*h;
+  const cp=Math.cos(w.pitch);
+  w.vel.set(Math.sin(w.heading)*cp*w.spd,Math.sin(w.pitch)*w.spd,Math.cos(w.heading)*cp*w.spd);
+  w.pos.addScaledVector(w.vel,h);
+ }
 }
 class TreeIndex{
  constructor(groundAt=null){this.cells=new Map();this.size=64;this.count=0;this.groundAt=groundAt;}
@@ -116,5 +151,5 @@ class Navigation{
   }
  }
 }
-root.FlightSupport={surfaceHit,skinHeight,canDitch,TreeIndex,treeStrike,Navigation};
+root.FlightSupport={surfaceHit,skinHeight,canDitch,guideWingman,TreeIndex,treeStrike,Navigation};
 })(typeof window==='undefined'?globalThis:window);

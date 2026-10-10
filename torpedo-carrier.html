@@ -342,7 +342,7 @@
   <div id="flash"></div>
   <div id="ltn" style="position:fixed;inset:0;background:#e6ecff;opacity:0;pointer-events:none;z-index:40;"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 181</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 182</div>
 
   <!-- Optical landing aid -->
   <div id="lso">
@@ -385,7 +385,7 @@
 
 <!-- Menu -->
 <div class="overlay" id="menu" data-campaign="pacific">
-  <div class="menuTop"><a id="selBtn" href="index.html?v=181">&#9664; Change Game</a><span class="menuMeta">PACIFIC OPERATIONS<br>BUILD 181</span></div>
+  <div class="menuTop"><a id="selBtn" href="index.html?v=182">&#9664; Change Game</a><span class="menuMeta">PACIFIC OPERATIONS<br>BUILD 182</span></div>
   <div class="card menuCard">
     <aside class="menuOverview" aria-label="Campaign and pilot options">
     <div class="campaignArt" aria-hidden="true"></div>
@@ -487,7 +487,7 @@
 <script src="aircraft-smoke.js?v=176"></script>
 <script src="aircraft-damage.js?v=177"></script>
 <script src="ship-damage.js?v=177"></script>
-<script src="flight-support.js?v=181"></script>
+<script src="flight-support.js?v=182"></script>
 <script src="ordnance.js?v=157"></script>
 <script src="crew-visuals.js?v=179"></script>
 <script src="deck-activity.js?v=179"></script>
@@ -962,7 +962,7 @@ function pacificPauseOrders(){
   const faults=SortieFeatures.Damage.status(P);
   const recovery=SortieFeatures.Damage.needsBelly(P)?'Emergency belly recovery: flaps and hook down, wings level, low sink rate.':'Recovery: gear, flaps and hook down; target ~'+Math.round(APP_SPD*KT)+' kt.';
   return task+' · '+Math.round(P.fuel)+'% FUEL · '+SortieFeatures.Damage.hullPercent(P)+'% HULL. '+
-    (faults?faults+'. ':'')+(pacificOps?pacificOps.status()+'. ':'')+recovery+' Ditching: gear/hook up, low power, slow and level, gentle sink.';
+    (faults?faults+'. ':'')+(pacificOps?pacificOps.status()+'. ':'')+recovery+' Ditching: gear up, flaps down, low power, slow and level, gentle sink.';
 }
 function updateFlightHints(dt){
   const distance=ships.reduce((d,s)=>s.alive?Math.min(d,Math.hypot(P.pos.x-s.group.position.x,P.pos.z-s.group.position.z)):d,Infinity);
@@ -4188,13 +4188,15 @@ function spawnWingman(i){
   const side = i===0? -1 : 1;                 // one off each wing
   // Spawn ALREADY IN THE AIR, in a proper formation slot on the player — never on the deck.
   const lat=playerLateral(), nose=noseDir();
-  const pos=P.pos.clone().addScaledVector(lat, side*30).addScaledVector(nose,-26);
+  const pos=P.pos.clone().addScaledVector(lat, side*34).addScaledVector(nose,-32-(side>0?8:0));
   pos.y=Math.max(70, P.pos.y-3);
-  const startSpd=Math.max(P.spd,APP_SPD);
+  const startSpd=Math.max(P.spd,STALL_SPD);
   const w={ mesh, disc, sbd, alive:true, hp:3, side, mode:'form', cool:2+i*1.5, dropped:false,
-    target:null, egressT:0, pos, slotPos:pos.clone(), heading:Math.atan2(nose.x,nose.z), pitch:0, roll:0, spd:startSpd,
-    vel:nose.clone().multiplyScalar(startSpd) };
-  mesh.position.copy(w.pos); mesh.rotation.y=w.heading; scene.add(mesh); wingmen.push(w);
+    target:null, egressT:0, pos, slotPos:pos.clone(), slotOffset:pos.clone().sub(P.pos),
+    heading:Math.atan2(nose.x,nose.z), pitch:Math.atan2(P.vSpeed||0,Math.max(1,P.spd*Math.cos(P.pitch))), roll:0, spd:startSpd,
+    vel:new THREE.Vector3() };
+  const cp=Math.cos(w.pitch);w.vel.set(Math.sin(w.heading)*cp*startSpd,Math.sin(w.pitch)*startSpd,Math.cos(w.heading)*cp*startSpd);
+  mesh.position.copy(w.pos);mesh.rotation.set(-w.pitch,w.heading,0,'YXZ');scene.add(mesh);wingmen.push(w);
 }
 // Wingman AI. Three modes: FORM (hold a formation slot on the player), ATTACK (a staged
 // run-in on a ship, descending to weapons altitude, drop, then break away), EGRESS (climb
@@ -4218,7 +4220,7 @@ function updateWingmen(dt){
     if(w.mode==='attack' && (!w.target || !w.target.alive)){ w.mode='egress'; w.egressT=2.4; }
 
     // --- desired position / speed per mode ---
-    let desPos, desSpd;
+    let desPos, desSpd, slotVelocity=new THREE.Vector3();
     if(w.mode==='attack' && w.target){
       w.attackT=(w.attackT||0)+dt;
       const tp=w.target.group.position;
@@ -4244,19 +4246,20 @@ function updateWingmen(dt){
       const nf=new THREE.Vector3(Math.sin(w.heading),0,Math.cos(w.heading));
       desPos=w.pos.clone().addScaledVector(nf,140); desPos.y=w.pos.y+45;   // climbing break
       desSpd=Math.min(112,P.spd+8);
-      if(w.egressT<=0){ w.mode='form'; w.target=null; w.slotPos=w.pos.clone(); }
+      if(w.egressT<=0){ w.mode='form'; w.target=null; }
     } else {
       // FORM: finger-four slot square to the player's heading, out and back, depth-staggered
       const lat=playerLateral();
       const nose=noseDir();
-      const rawSlot=P.pos.clone().addScaledVector(lat,w.side*28)
-                                 .addScaledVector(nose,-22-(w.side>0?8:0));
-      rawSlot.y=P.pos.y-2;
-      if(!w.slotPos) w.slotPos=w.pos.clone();
-      // The slot rotates around the leader during a turn. Driving straight at its raw position
-      // made it leap from one side of the screen to the other; move the slot itself smoothly.
-      w.slotPos.lerp(rawSlot,Math.min(1,1.0*dt));
-      desPos=w.slotPos.clone();
+      const rawOffset=lat.multiplyScalar(w.side*34).addScaledVector(nose,-32-(w.side>0?8:0));
+      rawOffset.y=-2;
+      if(!w.slotOffset)w.slotOffset=rawOffset.clone();
+      const previousOffset=w.slotOffset.clone();
+      // Ease only the rotating offset, not the leader's absolute position: the
+      // latter left a whole second of positional lag even in straight flight.
+      w.slotOffset.lerp(rawOffset,1-Math.exp(-.8*dt));
+      if(dt>0)slotVelocity.copy(w.slotOffset).sub(previousOffset).multiplyScalar(1/dt);
+      desPos=P.pos.clone().add(w.slotOffset);w.slotPos=desPos.clone();
       desSpd=P.spd;
     }
     if(desPos.y<44) desPos.y=44;
@@ -4267,51 +4270,47 @@ function updateWingmen(dt){
     // other way — the "jumping/darting". Instead we build a desired VELOCITY: carry the slot's
     // own motion (≈ the player's velocity) plus a capped proportional pull toward the slot, so
     // as the gap closes the correction fades and the wingman settles smoothly.
-    const leadVel = noseDir().multiplyScalar(P.spd);   // the slot moves with the player
+    const leadVel = noseDir().multiplyScalar(P.spd);
+    // Pitch is angle of attack in the player's model; its actual sink rate
+    // differs from nose.y * airspeed, especially on a slow, flapped approach.
+    if(Number.isFinite(P.vSpeed))leadVel.y=P.vSpeed;
+    const drift=(typeof windZ==='number'?windZ:0)+(typeof windGust==='number'?windGust*3:0);
+    leadVel.z+=drift*(P.pos.y<250?1:Math.max(.3,250/P.pos.y));
     if(!w.vel) w.vel = leadVel.clone();
     let desVel;
     if(w.mode==='form'){
-      const corr = desPos.clone().sub(w.pos).multiplyScalar(0.55);
-      if(corr.length()>24) corr.setLength(24);         // catch up without slot-sprint oscillation
-      desVel = leadVel.add(corr);
+      // The leader has already advanced this frame; compare both aircraft at
+      // the same instant before integrating the follower, including at 20 FPS.
+      const corr = desPos.clone().addScaledVector(leadVel,-dt).addScaledVector(slotVelocity,-dt).sub(w.pos).multiplyScalar(0.55);
+      if(corr.length()>18) corr.setLength(18);
+      desVel = leadVel.clone().add(slotVelocity).add(corr);
     } else {
       const gap = desPos.clone().sub(w.pos);
       const dir = gap.length()>0.5? gap.normalize() : noseDir();
       desVel = dir.multiplyScalar(w.mode==='attack'?desSpd:Math.min(112,P.spd+10));
     }
+    // Predict close passes and ease away before overlap. This is a continuous
+    // velocity correction, never a teleport or an abrupt evade/rejoin switch.
+    for(const other of [{pos:P.pos,vel:leadVel},...wingmen.filter(o=>o!==w&&o.alive)]){
+      const away=w.pos.clone().sub(other.pos),future=away.clone().addScaledVector(w.vel.clone().sub(other.vel||leadVel),1.8);
+      const proximity=Math.max(0,1-away.length()/38,1-future.length()/38);
+      if(proximity>0){
+        if(away.lengthSq()<.01)away.copy(playerLateral()).multiplyScalar(w.side);
+        desVel.addScaledVector(away.normalize(),12*proximity*proximity);
+      }
+    }
     const vlen=desVel.length(), vmax=(w.mode==='attack'&&!w.sbd?DROP_MAX_SPD-4:112);
-    if(vlen>vmax) desVel.setLength(vmax); else if(vlen<42) desVel.setLength(42);
-    // Acceleration-limited steering prevents one slow frame or a mode change from producing a
-    // visible position jump. Formation flying is gentler than an attack/egress manoeuvre.
-    const dv=desVel.sub(w.vel), maxDv=(w.mode==='form'?20:16)*dt;
-    if(dv.length()>maxDv) dv.setLength(maxDv);
-    w.vel.add(dv);
-    w.pos.addScaledVector(w.vel, dt);
+    const minSpeed=w.mode==='form'?Math.max(24,Math.min(42,P.spd*.88)):42;
+    if(vlen>vmax)desVel.setLength(vmax);else if(vlen<minSpeed)desVel.setLength(minSpeed);
     const minFlightY=(w.mode==='attack'&&!w.sbd)?44:55;
-    if(w.pos.y<minFlightY) w.vel.y+=Math.min(16,(minFlightY-w.pos.y)*0.6)*dt;
-    if(w.pos.y<28){ w.pos.y=28; w.vel.y=Math.max(3,w.vel.y); }
-
-    // attitude follows the velocity vector: heading tracks it, bank into the turn, pitch to climb
-    const vhoriz=Math.hypot(w.vel.x,w.vel.z);
-    const vH=Math.atan2(w.vel.x,w.vel.z);
-    let dh=vH-w.heading; while(dh>Math.PI)dh-=2*Math.PI; while(dh<-Math.PI)dh+=2*Math.PI;
-    // A powered aircraft cannot yaw on the spot. Its turn rate falls with airspeed:
-    // at ~100 m/s a three-g coordinated turn takes seconds, not one animation frame.
-    const maxTurn=Math.min(.25,9.81*Math.sqrt(3*3-1)/Math.max(42,vhoriz));
-    const desiredYaw=Math.max(-maxTurn,Math.min(maxTurn,dh*.8));
-    w.yawRate=(w.yawRate||0)+Math.max(-.18*dt,Math.min(.18*dt,desiredYaw-(w.yawRate||0)));
-    const yawStep=w.yawRate*dt;
-    w.heading += yawStep;
-    const desPitch=Math.max(-0.5,Math.min(0.5, Math.atan2(w.vel.y, Math.max(1,vhoriz))));
-    w.pitch += (desPitch-w.pitch)*Math.min(1,1.8*dt);
-    const bank=Math.max(-.65,Math.min(.65,Math.atan2(vhoriz*yawStep/Math.max(dt,.001),9.81)));
-    w.roll  += (bank-w.roll)*Math.min(1,1.5*dt);
-    w.spd = w.vel.length();
+    // Begin the pull-out before the altitude floor, allowing for pitch inertia.
+    desVel.y=Math.max(desVel.y,Math.min(16,(minFlightY-w.pos.y)*.22));
+    FlightSupport.guideWingman(w,desVel,dt,w.mode==='form');
 
     if(typeof aircraftSmoke!=="undefined"&&aircraftSmoke)aircraftSmoke.trail(w,w.pos,w.vel.clone().normalize(),w.spd,w.hp<3?1-w.hp/3:0,dt,windZ);
     w.mesh.position.copy(w.pos);
     w.mesh.rotation.set(0,0,0);
-    w.mesh.rotateY(w.heading); w.mesh.rotateX(w.pitch); w.mesh.rotateZ(-w.roll);
+    w.mesh.rotateY(w.heading); w.mesh.rotateX(-w.pitch); w.mesh.rotateZ(-w.roll);
     if(w.disc) w.disc.rotation.z-=GameRuntime.rotorStep(dt,PROP_STEP);
   }
 }
@@ -4594,7 +4593,7 @@ function updateCrewBailouts(dt){
 function steeringParachute(){return !!bailout&&!bailDone&&state===ST.RESULT;}
 function beginBailout(){
   if(state!==ST.FLIGHT||!P.alive)return;
-  if(P.pos.y-shoreHeight(P.pos.x,P.pos.z)<85){flash('TOO LOW TO BAIL — DITCH SLOW, LEVEL, GEAR / HOOK UP',3000);return;}
+  if(P.pos.y-shoreHeight(P.pos.x,P.pos.z)<85){flash('TOO LOW TO BAIL — DITCH SLOW, LEVEL, GEAR UP / FLAPS DOWN',3000);return;}
   releaseHeldControls();
   bailout=PilotBailout.create(THREE,scene,P.pos.clone().add(new THREE.Vector3(-2,1,-2)),
     Math.PI/2-P.heading,P.spd,shoreHeight,{service:isDefend()?"ijn":"usnavy",srgbOutput:true});
@@ -4989,7 +4988,7 @@ function loadPlaneModel(){
       }
       window.__eyeDbg='EYE '+COCKPIT_EYE.map(v=>v.toFixed(2)).join('/');
       const btEl=document.getElementById('buildTag');
-      if(btEl) btEl.textContent='BUILD 181 · '+window.__eyeDbg;
+      if(btEl) btEl.textContent='BUILD 182 · '+window.__eyeDbg;
       let seat=null;
       model.traverse(function(o){
         if(!o.isMesh||!o.material) return;
@@ -6331,7 +6330,7 @@ function setupUIButtons(){
   if(dbgT2) dbgT2.onclick=()=>{
     dbgOn=!dbgOn; GameRuntime.storage.setItem('dbgOn',dbgOn?'1':'0');
     const db=document.getElementById('dbgBox'); if(db) db.textContent=dbgOn?'✓':'';
-    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 181'; }
+    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 182'; }
   };
   const lu=document.getElementById('lookUp'), ld=document.getElementById('lookDn');
   let _lookT=0;
@@ -6347,7 +6346,7 @@ function setupUIButtons(){
   if(pb) pb.addEventListener('pointerdown',e=>{ e.preventDefault(); togglePause(); });
   const rb=document.getElementById('resumeBtn'); if(rb) rb.onclick=resumeGame;
   const mb=document.getElementById('menuBtn'); if(mb) mb.onclick=exitToMenu;
-  document.getElementById('pauseMainMenu').onclick=()=>{exitToMenu();window.location.href='index.html?v=181';};
+  document.getElementById('pauseMainMenu').onclick=()=>{exitToMenu();window.location.href='index.html?v=182';};
   document.getElementById('resultBtn').onclick=()=>{
     // the logbook borrows this screen from the menu — send the player straight back
     if(logbookOpen){ logbookOpen=false; showOverlay('menu'); return; }
@@ -6587,7 +6586,7 @@ function animate(){
     notice.style.cssText='position:fixed;inset:0;z-index:999998;background:rgba(15,20,15,.95);color:#e8ddbc;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px;text-align:center;font:16px system-ui';
     const title=document.createElement('h2');title.textContent='Simulation interrupted';
     const detail=document.createElement('p');
-    detail.textContent='BUILD 181 · '+(MISSIONS[mission]?.sub||'Menu')+' · '+error.message;
+    detail.textContent='BUILD 182 · '+(MISSIONS[mission]?.sub||'Menu')+' · '+error.message;
     const reload=document.createElement('button');reload.textContent='Reload game';
     reload.style.cssText='padding:12px 24px;font:inherit';reload.onclick=()=>location.reload();
     notice.appendChild(title);notice.appendChild(detail);notice.appendChild(reload);document.body.appendChild(notice);

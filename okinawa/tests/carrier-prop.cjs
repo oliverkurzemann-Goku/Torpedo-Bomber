@@ -82,7 +82,7 @@ function glb(file){return new Promise((resolve,reject)=>{const raw=fs.readFileSy
  assert.match(html,/disc=propPivot\.clone\(true\)/,'Avenger wingman copies the detached real blade');
  const escortContext=vm.createContext({THREE,P:{pos:new THREE.Vector3(0,180,0),heading:0,pitch:0,spd:80},
    gltfRoot:avenger,sbdTemplate:null,propPivot:pivot,gearMesh:[],planeBody:null,
-   APP_SPD:65,wingmen:[],scene:new THREE.Scene(),isSBD:()=>false});
+   APP_SPD:65,STALL_SPD:31,wingmen:[],scene:new THREE.Scene(),isSBD:()=>false});
  vm.runInContext(html.slice(html.indexOf('function playerLateral(){'),html.indexOf('function updateWingmen(dt){'))+
    '\n'+html.slice(html.indexOf('function noseDir(){'),html.indexOf('function loadPlaneModel(){')),escortContext);
  escortContext.spawnWingman(0);escortContext.spawnWingman(1);

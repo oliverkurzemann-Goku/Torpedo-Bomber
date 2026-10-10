@@ -5,7 +5,49 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 181 · Thunderbolt Squadron BUILD 181 · Remagen-Kern 23 / Fahrzeuge 22**
+Stand bei Übergabe: **Torpedo Squadron BUILD 182 · Thunderbolt Squadron BUILD 182 · Remagen-Kern 23 / Fahrzeuge 22**
+
+**Build 182 (10.10.2026): sanfte Notwasserung mit Klappen und ruhige Rottenflieger.**
+Nutzerfall: Gear up / Flaps down bei 65kt und 100–200ft/min führte immer zum Rookie-
+Wasserskip. Nachgestellt: FlightSupport.canDitch blockierte allein wegen Hook down;
+der alte Power-Cutoff .35 blockierte zusätzlich den für beschädigte Motoren nötigen
+Gashebel. Survivability folgt jetzt tatsächlicher Speed, flap-adjustiertem Stall,
+Sinkrate, Pitch/Bank, Hull und Gear. Hook und Throttle sind keine versteckten Veto-
+Schalter. Langsam/level, Gear up, Flaps down und niedrige Leistung bleiben die Hinweise.
+Speed-/Sink-/Bank-/Gear-Grenzen unverändert; Deckfanghaken-/Trap-Prüfung unverändert.
+Neuer ditch-formation-browser.cjs benutzt das echte updateFlight bis Wasserkontakt,
+fängt Speed/VSpeed direkt vor beginDitching ab und prüft exakt 65.0kt sowie 100/200ft/min.
+16 Fälle: Avenger/SBD/Corsair/Zero × Rookie/Ace × zwei Sinkraten, Hook down, bei 200ft/min
+Hull 30 und entsprechend höhere Motorleistung. Alle bestanden im nativen Browser;
+ganze Crew gerettet, maximal ein Boot, Pause hält Wrack/Timer an. Gear-down, zu viel
+Bank und harter Aufprall scheitern weiter; Restart entsorgt alle Rettungsobjekte.
+
+Die alte Formation hielt Wingmen auf mindestens 42m/s (~82kt): Nach 20s bei 65kt
+war der Begleiter 150m entfernt. Außerdem drehte die reale Velocity schneller als die
+sichtbare rate-limitierte Heading; die Modelle flogen sichtbar seitwärts. guideWingman
+steuert jetzt Flugweg UND Model gemeinsam, mit begrenztem Yaw-/Pitch-/Bank-Rate-Aufbau,
+Speed-Acceleration und Jerk. Pitch-Rendering korrigiert: positive Steigrate hebt die
+Nase. Formation darf auf 24m/s herunter und leicht unter Leader-Speed abbremsen.
+Slots liegen 34m seitlich, 32/40m zurück. Nur Slot-Offset wird geglättet, nicht die
+absolute Leader-Position (bisher 1s Lag); actual VSpeed und Winddrift werden übernommen.
+Korrektur vergleicht Leader/Follower zur selben Framezeit. Kontinuierliche 1.8s-
+Annäherungsvorschau trennt nahe Flugzeuge; keine Teleports oder Evade-Mode-Sprünge.
+Der Altitude-Pullout beginnt vor dem Floor, damit Pitch-Trägheit nicht ins Wasser führt.
+Angriffs-/Abwurf-/Egress-/Rejoin-Pfad bleibt aktiv, keine Rottenflieger-Befehle ergänzt.
+
+formation.cjs prüft den ausgelieferten Controller bei 20/60/120 FPS: 65kt-Slothaltung,
+Kurswechsel, Steigen/Sinken, enge Startposition, echte Torpedo-Release-Bedingung mit
+Egress/Rejoin; gerenderte Nase stimmt mit Bewegung überein. Sanfte Formation im
+Kurswechsel blieb 38–58m vom Leader entfernt, max. Yaw ~.149rad/s, Bankrate .32rad/s,
+Pitchrate .14rad/s, Gesamtbeschleunigung ~7.1m/s²; finale Slots stimmen auf <1m überein.
+Browser prüft originale Avenger-/SBD-Modelle mit echtem Player-Flight, zwei Begleitern,
+Nahposition, Kurswechsel und Pause. Beide bestanden, Screenshots build182-*-formation.png
+visuell geprüft; keine iPad/Safari-Geräte- oder FPS-Freigabe behaupten. Verwundeter
+Rhein-Begleiter benutzt weiter flyAI; sein realer 56-Tile-DEM-Heimflugtest bestand.
+SBD-/Avenger-Rotor-/Modelltest und Syntax bestanden. Komplette Terrain-/Okinawa-Suiten
+werden am finalen Stand separat ausgeführt; Status nicht aus Browser-Code ableiten.
+Build-/Seitenlinks 182, shared FlightSupport Cache 182; unveränderte Module behalten
+vorige Cachekennung. CI-Artefakt build-182-visual-checks.
 
 **Build 181 (10.10.2026): Rheinwasser, natürliche Armhaltung, Me262-Steigflug, Notwasserung und stärkerer Startstaub.**
 Build 180 hatte keine Oberflächen-/Terraintexturen reduziert. Das schon bestehende
