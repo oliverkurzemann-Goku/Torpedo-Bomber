@@ -30,7 +30,12 @@ kontinuierliche Fahrt, Küstenumweg, getrennte Gewässer und Ressourcen-Freigabe
 mit genau einem Boot, 3/3 beziehungsweise 2/2 sichtbaren Passagieren, spätem Piloten,
 Pause und Menü-/Neustartbereinigung. Browserbilder `build178-shared-*.png`, CI-Artefakt
 `build-178-visual-checks`. Gemeinsames Rettungsmodul Cache 178; sichtbare Buildnummern
-und Menülinks 178. Unveränderte Module behalten ihre bisherigen Cachekennungen.
+und Menülinks 178. Auch menu-layout.css trägt 178, weil start-menu.cjs die sichtbare
+Buildnummer und diese Stylesheet-Kennung zusammen prüft. Andere unveränderte Module
+behalten ihre bisherigen Cachekennungen. CI am ersten Commit: Syntax + 31 Terrain-Tests
+grün; 31/32 Okinawa-Tests grün, einschließlich beider realen Rettungs- und Abschusstests.
+Einziger Fehler: alte Stylesheet-URL; in diesem Nachtrag korrigiert. Workflow-Erfolg am
+endgültigen Commit separat prüfen, nicht aus diesen Teilergebnissen ableiten.
 
 **Build 177 (10.10.2026): Darstellung, Flugzeugverluste und weitere Einsatzabläufe.**
 Die bestätigte Flugsteuerung bleibt unverändert. GameRuntime.frames.report() liefert
