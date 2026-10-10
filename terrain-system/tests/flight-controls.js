@@ -33,16 +33,36 @@ for(const {c,listeners} of handlers){
 const defs=vm.runInNewContext(eu.slice(eu.indexOf('const AC={'),eu.indexOf('function acDef('))+'\nAC');
 const turnStart=eu.indexOf('const TURN_K='),turnEnd=eu.indexOf('\n}',eu.indexOf('function bankTurnRate(',turnStart));
 const bankTurnRate=vm.runInNewContext(eu.slice(turnStart,turnEnd+2)+'\nbankTurnRate');
-function flightParts(html,pacific,kind){
+function flightParts(html,pacific,kind,aeroMode=false){
  const flight=html.indexOf('function updateFlight(dt)');
  const a=html.indexOf(pacific?'  const dmgF = P.hull<60':'  const dmgF = (P.hull < d.hull',flight);
  const b=html.indexOf(pacific?'  // speed toward throttle target':'  // vertical speed:',a);
  const globals={MISSIONS:[{corsair:kind==='corsair'}],mission:0,isDefend:()=>kind==='zero',isSBD:()=>kind==='sbd',bankTurnRate,windZ:0};
- const attitude=vm.runInNewContext('(function(P,inputRoll,inputPitch,dt,d,stallSpd){const aeroMode=false,steerSign=1;'+html.slice(a,b)+'})',globals);
+ const attitude=vm.runInNewContext('(function(P,inputRoll,inputPitch,dt,d,stallSpd){const aeroMode='+aeroMode+',steerSign=1;'+html.slice(a,b)+'})',globals);
  const i=html.indexOf('  // integrate\n',flight),j=html.indexOf('  // fuel\n',i);
  const integration=pacific?null:vm.runInNewContext('(function(P,dt,windZ){const vs=0;'+html.slice(i,j)+'})',
   {flightAltitudeLimit:()=>8000,clampToWorldBounds(){}});
  return {attitude,integration};
+}
+// Measure the flown response against the formerly abrupt FW190 at the same speed.
+// Full stick retains the bank limit; short touchscreen inputs become easier to meter.
+const oldFw={...defs.fw190,rollAuth:1.85,pitchAuth:1.10,turn:1.05,
+ stickExponent:undefined,controlDamping:undefined,aeroResponse:undefined};
+function response(def,fps,aero){
+ const {attitude}=flightParts(eu,false,'fw190',aero);
+ const p={ac:'fw190',hull:def.hull,spd:150,gear:0,rollBias:0,pitch:0,roll:0,rollVel:0,pitchVel:0,heading:0};
+ for(let i=0;i<Math.round(.5*fps);i++)attitude(p,.5,.25,1/fps,def,def.stall);
+ return {roll:p.roll,pitch:p.pitch,heading:p.heading};
+}
+for(const aero of [false,true]){
+ const samples=[20,60,120].map(fps=>{
+  const old=response(oldFw,fps,aero),now=response(defs.fw190,fps,aero);
+  assert(now.roll>old.roll*.3&&now.roll<old.roll*.85,'FW190 responds gently without becoming inert');
+  assert(now.pitch>old.pitch*.25&&now.pitch<old.pitch*.95,'FW190 pitch response is easier to meter');
+  assert(now.heading<old.heading,'short roll input no longer yanks the heading as hard');
+  return now.roll;
+ });
+ assert(Math.max(...samples)-Math.min(...samples)<.055,'FW190 response remains consistent across frame rates');
 }
 for(const fps of [20,60,120])for(const kind of [...Object.keys(defs),'avenger','sbd','zero']){
  const pacific=!defs[kind],d=defs[kind],{attitude,integration}=flightParts(pacific?pac:eu,pacific,kind);

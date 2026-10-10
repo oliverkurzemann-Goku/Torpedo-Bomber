@@ -274,7 +274,7 @@
   .warningLamps{display:flex!important;gap:10px;padding:5px 9px!important;background:#141813dd!important;border:1px solid #535744;border-radius:4px;white-space:nowrap;}
   .warningLamp{color:#646c5c;font:9px monospace;letter-spacing:.35px;} .warningLamp[data-level="1"]{color:#ffd088;text-shadow:0 0 6px #e0a432a0;} .warningLamp[data-level="2"]{color:#ff8c70;text-shadow:0 0 7px #ff6638b0;}
 </style>
-<link rel="stylesheet" href="menu-layout.css?v=179">
+<link rel="stylesheet" href="menu-layout.css?v=180">
 </head>
 <body>
 <!-- ===== TEMP TEST-ONLY VERSION BANNER — asked for by Oliver: "kannst du irgendwo einbauen,
@@ -296,7 +296,7 @@
   <div style="width:100%;height:4px;background:repeating-linear-gradient(45deg,#ffd400,#ffd400 8px,#111 8px,#111 16px);"></div>
   <span id="testVersionBannerText" style="background:#111;color:#ffd400;font-family:monospace;font-weight:800;font-size:11px;letter-spacing:.5px;padding:3px 10px;border:1px solid #ffd400;border-top:none;border-radius:0 0 6px 6px;"></span>
 </div>
-<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 179';</script>
+<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 180';</script>
 <!-- ===== END TEMP TEST-ONLY VERSION BANNER ===== -->
 <div id="app"></div>
 <style>
@@ -336,7 +336,7 @@
   <div id="flash"></div>
   <div id="gunsight"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 179 · REAL RHINE</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 180 · REAL RHINE</div>
 
   <div id="apr">
     <div id="aprCall"></div>
@@ -388,7 +388,7 @@
 </div>
 
 <div class="overlay hidden" id="menu" data-campaign="europe">
-  <div class="menuTop"><a id="selBtn" href="index.html?v=179">&#9664; Change Game</a><span class="menuMeta">RHINE OPERATIONS<br>BUILD 179</span></div>
+  <div class="menuTop"><a id="selBtn" href="index.html?v=180">&#9664; Change Game</a><span class="menuMeta">RHINE OPERATIONS<br>BUILD 180</span></div>
   <div class="card menuCard">
     <aside class="menuOverview" aria-label="Campaign and pilot options">
     <div class="campaignArt" aria-hidden="true"></div>
@@ -433,15 +433,24 @@
 
 <!-- ---------------- BRIEFING ---------------- -->
 <div class="overlay hidden" id="brief">
-  <div class="card menuCard">
-    <div class="sub" id="brSub">Sortie</div>
-    <h1 class="stencil" id="brTitle">Title</h1>
-    <div class="stamp" id="brStamp">Secret</div>
-    <div class="brief" id="brText"></div>
-    <div class="landingNote" id="briefLandingSpeed"></div>
-    <canvas class="opsMap" id="opsMap" width="720" height="420" aria-label="Mission map with numbered targets and route"></canvas><div id="opsLegend" class="opsLegend"></div>
-    <button class="btn" id="brGo">Start Engine</button>
-    <button class="btn ghost" id="brBack">Back</button>
+  <div class="card menuCard briefingCard">
+    <header class="briefHeading">
+      <div class="sub" id="brSub">Sortie</div>
+      <h1 class="stencil" id="brTitle">Title</h1>
+      <div class="stamp" id="brStamp">Secret</div>
+    </header>
+    <section class="briefOrders" aria-label="Mission orders">
+      <div class="brief" id="brText"></div>
+      <div class="landingNote" id="briefLandingSpeed"></div>
+    </section>
+    <section class="briefNavigation" aria-label="Mission route">
+      <canvas class="opsMap" id="opsMap" width="720" height="420" aria-label="Mission map with numbered targets and route"></canvas>
+      <div id="opsLegend" class="opsLegend"></div>
+    </section>
+    <div class="briefActions">
+      <button class="btn" id="brGo">Start Engine</button>
+      <button class="btn ghost" id="brBack">Back</button>
+    </div>
   </div>
 </div>
 
@@ -519,6 +528,7 @@
 <script src="sortie-systems.js?v=175"></script>
 <script src="sortie-features.js?v=163"></script>
 <script src="ground-run.js?v=179"></script>
+<script src="ground-dust.js?v=180"></script>
 <script src="flight-indicators.js?v=179"></script>
 <script src="sortie-fuel.js?v=161"></script>
 <script src="operation-plans.js?v=177"></script>
@@ -586,7 +596,7 @@ let STALL_SPD=38, APP_SPD=52, MAX_SPD=175, THR_MIN_SPD=32;
 const ST={MENU:0,BRIEF:1,ROLL:2,FLIGHT:3,DEAD:4,PAUSED:5};
 let state=ST.MENU, prevState=ST.FLIGHT;
 
-let scene,camera,renderer,clock,sun,hemi,moonFill,aircraftFinish,runwayLights,shipWakes;
+let scene,camera,renderer,clock,sun,hemi,moonFill,aircraftFinish,runwayLights,shipWakes,groundDust;
 const warningLamps=FlightIndicators.mount(document.getElementById('systemsStatus'));
 let planeGroup=null, playerModel=null;
 let mission=0, selectedMission=0, score=0, scoreStart=0, bestS=0;
@@ -638,8 +648,9 @@ const AC={
         rollLim:1.56, pitchLim:1.15, stall:40, app:54, max:190, thrMin:34,
         hull:130, ammo:3400, bombs:2, rockets:8, gunDmg:1.0, gunRate:0.055, wing:12.4,
         col:0x6e7a63, band:0xf0f0e4 },
-  // The Focke-Wulf rolls quickly; its turning arc still depends on speed.
-  fw190:{ name:'Fw 190A-8', rollAuth:1.85, pitchAuth:1.10, turn:1.05, gLim:5.5,
+  // The Focke-Wulf stays agile, with a gentler centre response and more damping.
+  fw190:{ name:'Fw 190A-8', rollAuth:1.20, pitchAuth:0.92, turn:0.92, gLim:5.5,
+        stickExponent:1.18, controlDamping:0.94, aeroResponse:0.24,
         rollLim:1.56, pitchLim:1.20, stall:39, app:53, max:194, thrMin:32,
         hull:102, ammo:1800, bombs:1, rockets:0, gunDmg:1.5, gunRate:0.075, wing:10.5,
         col:0x7d8478, band:0x2f3a2a },
@@ -833,7 +844,7 @@ async function loadRealWorld(){
 
   if(OSMManager.BUILD!==23||HistoricalObjectManager.BUILD!==21||LivingWorld.BUILD!==22||WorldVehicles.BUILD!==22) throw new Error('Terrain version mismatch. Reload Remagen.');
   document.getElementById('testVersionBannerText').textContent=
-    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 179 · MODULE 23';
+    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 180 · MODULE 23';
   heightProvider=new DEMHeightProvider(RTILE,'terrain-system/real/data/dem/');
   terrain=new TerrainManager(scene,RTILE,heightProvider);
   osmMgr=new OSMManager(scene,RTILE,terrain,'terrain-system/real/data/osm/');
@@ -2916,7 +2927,7 @@ function missionLoadout(m,d=AC[m.ac||'p47']){
 }
 
 function clearWorld(){
-  if(combatFX)combatFX.clear();aircraftSmoke?.clear();aircraftDamage?.clear();enemyBailouts?.clear();flareSupport?.clear();sortieService?.clear();fieldServicePending=false;shipWakes?.clear();GameRuntime.frames.reset();
+  if(combatFX)combatFX.clear();aircraftSmoke?.clear();groundDust?.clear();aircraftDamage?.clear();enemyBailouts?.clear();flareSupport?.clear();sortieService?.clear();fieldServicePending=false;shipWakes?.clear();GameRuntime.frames.reset();
   // Every real target (flak/bridge/factory) is permanent world scenery, built once by
   // loadRealWorld() — never removed here, only reset (resetAllRealTargets(), called by the next
   // populate()), the same way the old synthetic game's own permanent worldBridge always was.
@@ -4079,9 +4090,11 @@ function updateFlight(dt){
   const dmgF = (P.hull < d.hull*0.6) ? (0.55+0.45*P.hull/(d.hull*0.6)) : 1.0;
   const auth = (P.spd<stallSpd ? 0.4 : 1.0)*dmgF;
   const pitchRate=2.0*auth*d.pitchAuth, rollRate=4.8*auth*d.rollAuth;
+  const commandRoll=d.stickExponent?Math.sign(inputRoll)*Math.pow(Math.abs(inputRoll),d.stickExponent):inputRoll;
+  const commandPitch=d.stickExponent?Math.sign(inputPitch)*Math.pow(Math.abs(inputPitch),d.stickExponent):inputPitch;
   const biasDecay = (P.gear>0.5)? 0.9 : 0.35;
   P.rollBias = Math.max(-0.16, Math.min(0.16, (P.rollBias||0)*(1-biasDecay*dt)));
-  const rollTarget = inputRoll*steerSign*(d.rollLim*0.86) + P.rollBias;
+  const rollTarget = commandRoll*steerSign*(d.rollLim*0.86) + P.rollBias;
   // Full stick was worth only 0.55 rad = 31 degrees, inherited from the carrier game where a
   // gentle approach matters more than climb. A ground-attack aeroplane needs to pull up hard
   // off a target run, so full deflection now commands most of the aircraft's real pitch limit.
@@ -4089,26 +4102,28 @@ function updateFlight(dt){
   // feedback after flying it: "much too sluggish". Doubling the rate constant (the spring's
   // natural frequency) roughly halves every settling time while, at zeta=0.80, actually lowering
   // overshoot versus the old zeta=0.85 (checked numerically for all three types here).
-  const zeta=0.80;
+  const zeta=d.controlDamping||0.80;
   if(aeroMode){
     // Pull acts along the aircraft's own lift axis: wings level -> climb,
     // knife-edge -> turn, 70 degrees -> turn AND climb. Keep the full pitch
     // rotation for loops and the roll rate for barrel rolls.
     const energy=Math.max(.35,Math.min(1,P.spd/(stallSpd*1.8)));
     const pull=Math.min(.95*d.pitchAuth,1.6*9.81*(d.gLim-1)/Math.max(P.spd,60))*energy;
-    P.pitchVel=inputPitch*pull;
+    const response=d.aeroResponse?1-Math.exp(-dt/d.aeroResponse):1;
+    P.pitchVel=d.aeroResponse?(P.pitchVel||0)+(commandPitch*pull-(P.pitchVel||0))*response:commandPitch*pull;
     // Held stick still commands a full roll. Neutral stick now levels the
     // wings smoothly, following the shortest path even after a half roll.
     const bankErr=Math.atan2(Math.sin(P.roll-P.rollBias),Math.cos(P.roll-P.rollBias));
     const rollAuthority=2.1*d.rollAuth*energy;
     // Neutral self-levels gently; held controls keep the original responsive roll.
-    P.rollVel=(Math.abs(inputRoll)>0.075||Math.abs(inputPitch)>0.075)?inputRoll*steerSign*rollAuthority:
+    const rollCommand=(Math.abs(inputRoll)>0.075||Math.abs(inputPitch)>0.075)?commandRoll*steerSign*rollAuthority:
       Math.max(-rollAuthority,Math.min(rollAuthority,-bankErr*.7*d.rollAuth*energy));
+    P.rollVel=d.aeroResponse?(P.rollVel||0)+(rollCommand-(P.rollVel||0))*response:rollCommand;
     P.pitch=Math.atan2(Math.sin(P.pitch+P.pitchVel*Math.cos(P.roll)*dt),Math.cos(P.pitch+P.pitchVel*Math.cos(P.roll)*dt));
     P.heading+=P.pitchVel*Math.sin(P.roll)*dt;
     P.roll=Math.atan2(Math.sin(P.roll+P.rollVel*dt),Math.cos(P.roll+P.rollVel*dt));
   }else{
-    P.pitchVel=(P.pitchVel||0)+(pitchRate*pitchRate*(inputPitch*d.pitchLim*0.92-P.pitch) - 2*zeta*pitchRate*P.pitchVel)*dt;
+    P.pitchVel=(P.pitchVel||0)+(pitchRate*pitchRate*(commandPitch*d.pitchLim*0.92-P.pitch) - 2*zeta*pitchRate*P.pitchVel)*dt;
     P.pitch += P.pitchVel*dt;
     const neutral=Math.abs(inputRoll)<.001;
     const levelRate=neutral?Math.max(3.5,rollRate*.7):rollRate;
@@ -5463,7 +5478,7 @@ function exitToMenuFromPause(){
   document.getElementById('flash').classList.remove('show');
   document.getElementById('radio').classList.remove('show');
   radioQ=[];radioT=0;flashT=0;
-  combatFX?.clear();aircraftSmoke?.clear();aircraftDamage?.clear();enemyBailouts?.clear();flareSupport?.clear();sortieService?.clear();fieldServicePending=false;shipWakes?.clear();GameRuntime.frames.reset();
+  combatFX?.clear();aircraftSmoke?.clear();groundDust?.clear();aircraftDamage?.clear();enemyBailouts?.clear();flareSupport?.clear();sortieService?.clear();fieldServicePending=false;shipWakes?.clear();GameRuntime.frames.reset();
   show('result',false); show('brief',false);
   show('menu',true);if(navigation){navigation.reset();navigation.button.style.display='none';}
   buildMenu();
@@ -5533,6 +5548,7 @@ function init(){
   scene.add(moonFill);
   aircraftFinish=AircraftFinish.create(THREE,renderer);
   runwayLights=RunwayLights.create(THREE,scene,groundY,RWY_LEN,RWY_W);
+  groundDust=GroundDust.create(THREE,scene,(x,z)=>terrain?AircraftGround.height(terrain,x,z):groundY(x,z));
   shipWakes=ShipWakes.create(THREE,scene,{height:(x,z)=>terrain?groundY(x,z):.10,waterAt:(x,z)=>!livingWorld||livingWorld._pointOnWater(x,z)});
   applyWeather();
   buildRain();
@@ -5589,7 +5605,7 @@ function init(){
   buildMenu();
   // menu wiring
   document.getElementById('startBtn').onclick=()=>showBrief(selectedMission);
-  document.getElementById('pauseMainMenu').onclick=()=>{exitToMenuFromPause();window.location.href='index.html?v=179';};
+  document.getElementById('pauseMainMenu').onclick=()=>{exitToMenuFromPause();window.location.href='index.html?v=180';};
   document.getElementById('logBtn').onclick=()=>{ show('menu',false); showLogbook(); };
   document.getElementById('skipLaunchPreview').onclick=()=>finishLaunchIntro();
   document.getElementById('brBack').onclick=()=>{ show('brief',false); show('menu',true);if(navigation){navigation.reset();navigation.button.style.display='none';} state=ST.MENU; };
@@ -5715,6 +5731,7 @@ function animate(){
     if(state===ST.FLIGHT&&P.alive){
       SortieFeatures.Damage.tick(P,dt);
       updateFlight(dt);
+      groundDust?.trail(P,raw,{wetness:FlightOps.wx(weather).rain,light:flareSupport?.night?.24:1});
       if(aircraftSmoke&&P.alive)aircraftSmoke.damage("player",P,noseDir(),dt,new THREE.Vector3(windZ,0,0));
       updateEuropeOperation(dt);
       updateInterceptRadio(raw);
@@ -5769,7 +5786,7 @@ function animate(){
   if(sortieService?.active)sortieService.update(raw);
   // Menu/briefing transitions also fade the engine; pause uses the master gain above.
   updateAudio(raw);
-  if(combatFX)combatFX.update(raw);if(flareSupport)flareSupport.update(raw,new THREE.Vector3(windZ,0,0));updateFlareUI();if(enemyBailouts)enemyBailouts.update(raw,camera,windZ);if(aircraftDamage)aircraftDamage.update(raw);if(aircraftSmoke)aircraftSmoke.update(raw);shipWakes?.update(raw);
+  if(combatFX)combatFX.update(raw);if(flareSupport)flareSupport.update(raw,new THREE.Vector3(windZ,0,0));updateFlareUI();if(enemyBailouts)enemyBailouts.update(raw,camera,windZ);if(aircraftDamage)aircraftDamage.update(raw);if(aircraftSmoke)aircraftSmoke.update(raw);shipWakes?.update(raw);groundDust?.update(raw,windZ);
   CombatFX.updateRounds(bullets,camera,renderer);
   CombatFX.updateRounds(tracers,camera,renderer);
   GameRuntime.frames.mark('effects');

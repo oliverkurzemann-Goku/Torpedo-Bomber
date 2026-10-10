@@ -296,7 +296,7 @@
   .warningLamps{display:flex!important;gap:10px;padding:5px 9px!important;background:#141813dd!important;border:1px solid #535744;border-radius:4px;white-space:nowrap;}
   .warningLamp{color:#646c5c;font:9px monospace;letter-spacing:.35px;} .warningLamp[data-level="1"]{color:#ffd088;text-shadow:0 0 6px #e0a432a0;} .warningLamp[data-level="2"]{color:#ff8c70;text-shadow:0 0 7px #ff6638b0;}
 </style>
-<link rel="stylesheet" href="menu-layout.css?v=179">
+<link rel="stylesheet" href="menu-layout.css?v=180">
 </head>
 <body>
 <div id="app"></div>
@@ -342,7 +342,7 @@
   <div id="flash"></div>
   <div id="ltn" style="position:fixed;inset:0;background:#e6ecff;opacity:0;pointer-events:none;z-index:40;"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 179</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 180</div>
 
   <!-- Optical landing aid -->
   <div id="lso">
@@ -385,7 +385,7 @@
 
 <!-- Menu -->
 <div class="overlay" id="menu" data-campaign="pacific">
-  <div class="menuTop"><a id="selBtn" href="index.html?v=179">&#9664; Change Game</a><span class="menuMeta">PACIFIC OPERATIONS<br>BUILD 179</span></div>
+  <div class="menuTop"><a id="selBtn" href="index.html?v=180">&#9664; Change Game</a><span class="menuMeta">PACIFIC OPERATIONS<br>BUILD 180</span></div>
   <div class="card menuCard">
     <aside class="menuOverview" aria-label="Campaign and pilot options">
     <div class="campaignArt" aria-hidden="true"></div>
@@ -426,14 +426,24 @@
 
 <!-- Briefing -->
 <div class="overlay hidden" id="brief">
-  <div class="card">
-    <h1 class="stencil" id="briefTitle">Sortie 1</h1>
-    <div class="sub" id="briefSub">Lone Merchant</div>
-    <div class="brief" id="briefBody"></div>
-    <div class="landingNote" id="briefLandingSpeed"></div>
-    <canvas class="opsMap" id="opsMap" width="720" height="420" aria-label="Mission map with numbered targets and route"></canvas><div id="opsLegend" class="opsLegend"></div>
-    <div class="stamp">For Action</div><br>
-    <button class="btn" id="launchBtn">Catapult Launch</button>
+  <div class="card briefingCard">
+    <header class="briefHeading">
+      <h1 class="stencil" id="briefTitle">Sortie 1</h1>
+      <div class="sub" id="briefSub">Lone Merchant</div>
+      <div class="stamp">For Action</div>
+    </header>
+    <section class="briefOrders" aria-label="Mission orders">
+      <div class="brief" id="briefBody"></div>
+      <div class="landingNote" id="briefLandingSpeed"></div>
+    </section>
+    <section class="briefNavigation" aria-label="Mission route">
+      <canvas class="opsMap" id="opsMap" width="720" height="420" aria-label="Mission map with numbered targets and route"></canvas>
+      <div id="opsLegend" class="opsLegend"></div>
+    </section>
+    <div class="briefActions">
+      <button class="btn" id="launchBtn">Begin Sortie</button>
+      <button class="btn ghost" id="briefBack">Back</button>
+    </div>
   </div>
 </div>
 
@@ -4947,7 +4957,7 @@ function loadPlaneModel(){
       }
       window.__eyeDbg='EYE '+COCKPIT_EYE.map(v=>v.toFixed(2)).join('/');
       const btEl=document.getElementById('buildTag');
-      if(btEl) btEl.textContent='BUILD 179 · '+window.__eyeDbg;
+      if(btEl) btEl.textContent='BUILD 180 · '+window.__eyeDbg;
       let seat=null;
       model.traverse(function(o){
         if(!o.isMesh||!o.material) return;
@@ -6237,6 +6247,7 @@ function setupUIButtons(){
     flash(steerSign<0?"STEERING INVERTED":"STEERING NORMAL",900);
   });
   document.getElementById('launchBtn').onclick=launch;
+  document.getElementById('briefBack').onclick=exitToMenu;
   document.getElementById('skipCarrierPreview').onclick=()=>{if(carrierAircraftReady())finishCarrierIntro();};
   document.getElementById('invToggle').onclick=()=>{
     invertPitch=!invertPitch;
@@ -6288,7 +6299,7 @@ function setupUIButtons(){
   if(dbgT2) dbgT2.onclick=()=>{
     dbgOn=!dbgOn; GameRuntime.storage.setItem('dbgOn',dbgOn?'1':'0');
     const db=document.getElementById('dbgBox'); if(db) db.textContent=dbgOn?'✓':'';
-    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 179'; }
+    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 180'; }
   };
   const lu=document.getElementById('lookUp'), ld=document.getElementById('lookDn');
   let _lookT=0;
@@ -6304,7 +6315,7 @@ function setupUIButtons(){
   if(pb) pb.addEventListener('pointerdown',e=>{ e.preventDefault(); togglePause(); });
   const rb=document.getElementById('resumeBtn'); if(rb) rb.onclick=resumeGame;
   const mb=document.getElementById('menuBtn'); if(mb) mb.onclick=exitToMenu;
-  document.getElementById('pauseMainMenu').onclick=()=>{exitToMenu();window.location.href='index.html?v=179';};
+  document.getElementById('pauseMainMenu').onclick=()=>{exitToMenu();window.location.href='index.html?v=180';};
   document.getElementById('resultBtn').onclick=()=>{
     // the logbook borrows this screen from the menu — send the player straight back
     if(logbookOpen){ logbookOpen=false; showOverlay('menu'); return; }
@@ -6544,7 +6555,7 @@ function animate(){
     notice.style.cssText='position:fixed;inset:0;z-index:999998;background:rgba(15,20,15,.95);color:#e8ddbc;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px;text-align:center;font:16px system-ui';
     const title=document.createElement('h2');title.textContent='Simulation interrupted';
     const detail=document.createElement('p');
-    detail.textContent='BUILD 179 · '+(MISSIONS[mission]?.sub||'Menu')+' · '+error.message;
+    detail.textContent='BUILD 180 · '+(MISSIONS[mission]?.sub||'Menu')+' · '+error.message;
     const reload=document.createElement('button');reload.textContent='Reload game';
     reload.style.cssText='padding:12px 24px;font:inherit';reload.onclick=()=>location.reload();
     notice.appendChild(title);notice.appendChild(detail);notice.appendChild(reload);document.body.appendChild(notice);

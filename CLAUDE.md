@@ -5,7 +5,51 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 179 · Thunderbolt Squadron BUILD 179 · Remagen-Kern 23 / Fahrzeuge 22**
+Stand bei Übergabe: **Torpedo Squadron BUILD 180 · Thunderbolt Squadron BUILD 180 · Remagen-Kern 23 / Fahrzeuge 22**
+
+**Build 180 (10.10.2026): Startstaub, sanftere FW190 und vollständige Querformat-Briefings.**
+GroundDust zeigt nur am Boden Leistungsaufbau und Bewegung: breiter, langsam
+aufwirbelnder Propellerstrahl, bei Me262 zwei flachere, schnellere Jetstrahlen hinter
+den Triebwerken, zusätzlich Reifenstaub bei Fahrt. Keine schwarzen Rauchkugeln.
+Weiche prozedurale Dichtetextur, kameragerichtete instanzierte Flächen, beige/braune
+Farben, Ausbreitung/Drift, Lebensdauer/Fade. Höhe folgt AircraftGround.height inklusive
+der tatsächlichen Pisten-/Spurrillenschicht; nur Terrainhöhe ließ die untere Staubwolke
+in der sichtbaren Bahn verschwinden. 192 Partikel maximal, Wiederverwendung, eine
+zusätzliche Draw. Geschlossenes Gas/Service, Abheben, Regen und Tod stoppen Emission;
+vorhandener Staub verfliegt, Pause hält alles an. Restart/Menu leert den Pool. Nacht
+reduziert die Helligkeit. Echte Spielbilder: P47 22.299 und Me262 9.803 geänderte Pixel
+im Ein-/Aus-Vergleich; keine iPad-FPS-Behauptung. Erster visueller Versuch war zu schwach
+und wurde vor Veröffentlichung korrigiert. Bilder build180-*-takeoff-dust.png.
+
+Nur Spieler-FW190 geändert: rollAuth 1.85 -> 1.20, pitchAuth 1.10 -> .92, turn 1.05 -> .92,
+mehr Dämpfung (.94), weicherer Knüppelbereich nahe der Mitte (Exponent 1.18), im AERO-
+Modus 0.24s Leistungsaufbau der Drehraten. Volle Bank-/Pitch-Grenzen, Kurvenphysik und
+Neutralrückstellung bleiben erhalten. Andere Flugzeugtypen benutzen exakt ihre bisherige
+Eingabe und AERO-Drehraten; kein neues globales Steuerungsmodell. flight-controls.js
+vergleicht die tatsächliche Reaktion bei 150m/s mit der früheren FW190 bei 20/60/120 FPS
+in Normal und AERO. Reales Flug-Update: halber Rollinput für .5s ergibt etwa .491rad,
+anschließend stabile Neutralrückstellung ohne Absturz.
+
+Beide Briefings haben Heading, Orders, Navigation und Actions als eigene DOM-Bereiche.
+Im iPad-Querformat stehen vollständiger Text und Karte nebeneinander, Start/Back darunter,
+mit mindestens 48px hohen Touchzielen. Keine Texte/Zielinformationen ausgeblendet und
+kein overflow:hidden als Scheinreparatur. Kompaktere Missionsauswahl bei kurzen Browser-
+Viewports. Portrait und kleine Telefone behalten die lesbare vertikale Anordnung. Pazifik
+hat jetzt auch im Briefing einen sichtbaren Back-Button mit dem vorhandenen vollständigen
+Menü-/Ressourcenpfad; Launch heißt Begin Sortie. Neue takeoff-briefing-browser.cjs prüft
+alle 19 Pazifik- und 21 Rhein-Briefings bei 1024x600, 1194x660, 1366x768 und 1024x520:
+Text, Karte, Legende und Start/Back sind vollständig im Viewport; kein Scrollbedarf,
+keine blockierten Startknöpfe. Reale Back-/Mission-Start-Klicks und Pixelprüfungen sowie
+Startstaub-Pause/Abheben/Fade/Reset und echte FW190-Steuerung geprüft. Screenshot des
+konkreten gemeldeten Sortie-8-SBD-Falls: build180-sbd-briefing.png. Prüfung in Chromium,
+keine Behauptung eines physischen iPad/Safari-Gerätetests.
+
+Lokal bestätigte Kernprüfungen: Syntax 7 Dateien/7 Inline-Blöcke ohne Fehler, 31 Terrain-
+Testdateien ohne Fehler, neuer GroundDust-Unit-Test und neuer nativer WebGL-/Layouttest
+bestanden. Gesamter Okinawa-Regressionstest und GitHub-CI jeweils separat am endgültigen
+Commit prüfen. Buildnummern, Operations-Board-, Pause- und Stylesheet-URLs 180; unveränderte
+Module behalten ihre Cachekennungen. CI-Artefakt build-180-visual-checks. Vorheriger
+Build 179: GitHub-CI 38085260901 am 10.10.2026 am exakten 2daddef als SUCCESS verifiziert.
 
 **Build 179 (10.10.2026): Deckbetrieb, Kielwasser, Nachtanflug und langsamere Starts.**
 Keine neuen Rottenflieger-Befehle: vom Nutzer ausdrücklich abgelehnt. DeckActivity
