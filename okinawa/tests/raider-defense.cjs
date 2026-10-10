@@ -8,7 +8,7 @@ function context(){
    carrierX:0,CARRIER_SPD:5,carrierHP:100,STERN_X:-115,BOW_X:115,DECK_Y:18,DECK_HALF_W:16,
    P:{pos:new THREE.Vector3(0,100,300),hull:100,alive:true},D:()=>({dmg:1}),
    scene:new THREE.Scene(),combatFX:null,GameRuntime:{own:()=>{},release:m=>m?.parent?.remove(m),rotorStep:()=>.2},PROP_STEP:.2,
-   isDefend:()=>true,spawnSmoke:()=>{},spawnFlakBurst:()=>{},sfxPop:()=>{},spawnEnemyTorp:()=>{ctx.drops++;},
+   isDefend:()=>true,spawnSmoke:()=>{},spawnSparks:()=>{},spawnFlakBurst:()=>{},sfxPop:()=>{},spawnEnemyTorp:()=>{ctx.drops++;},
    drops:0,fleetKills:0,killRaider:r=>{r.alive=false;ctx.fleetKills++;}};
  vm.createContext(ctx);vm.runInContext(moduleCode,ctx);
  vm.runInContext(fs.readFileSync('combat-fx.js','utf8'),ctx);
