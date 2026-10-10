@@ -237,7 +237,7 @@ class AirfieldActivity {
       for(const side of [-1,1]){
         const j=i*4+(side===-1?0:2),arm=p.job==='signal'?.9+Math.sin(time*2)*.25:loader?-.5+(this.loading.servicing?Math.sin(a*2)*.22:0):p.job==='carry'?-.7:stride*side;
         this.pose(this.people.limbs,j,x+side*.29,y+1.14,z,.14,.59,.15,yaw,arm*side);
-        this.people.limbs.getMatrixAt(j,this._handMatrix);this._handPosition.set(0,-.59,0).applyMatrix4(this._handMatrix);
+        this.people.limbs.getMatrixAt(j,this._handMatrix);this._handPosition.set(0,p.job==='signal'?.59:-.59,0).applyMatrix4(this._handMatrix);
         this.pose(this.people.hands,i*2+(side===-1?0:1),this._handPosition.x,this._handPosition.y,this._handPosition.z,1,1,1,yaw,arm*side);
         this.pose(this.people.limbs,j+1,x+side*.13,y+.48,z+stride*side*.2,.16,.75,.18,yaw,stride*side);
         this.pose(this.people.boots,i*2+(side===-1?0:1),x+side*.13,y+.11,z+stride*side*.2+.08,.18,.2,.32,yaw);
