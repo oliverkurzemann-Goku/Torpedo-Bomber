@@ -22,30 +22,35 @@
    cord.visible=false;group.add(cord);
   }
   const visuals=root.CrewVisuals||(typeof require==='function'?require('./crew-visuals.js'):null);
-  const pilot=visuals.create(THREE,{service:options.service||'usaaf',variant:options.variant||0,pose:'chute',srgbOutput:options.srgbOutput});
+  const pilot=visuals.create(THREE,{service:options.service||'usaaf',variant:options.variant||0,pose:'ground',srgbOutput:options.srgbOutput});
   pilot.position.y=-.9;group.add(pilot);
   group.rotation.y=heading;
   group.position.copy(start);scene.add(group);
   const velocity=new THREE.Vector3(Math.sin(heading)*Math.min(speed,190)*.18,0,
     Math.cos(heading)*Math.min(speed,190)*.18);
-  let elapsed=0,fall=0,deployed=false,landed=false,yaw=heading,yawRate=0;
-  return {
+  let elapsed=0,fall=0,deployed=false,landed=!!options.landed,yaw=heading,yawRate=0;
+  let settled=false;
+  const sequence={
    group, get position(){return group.position;},get deployed(){return deployed;},get heading(){return yaw;},
    settle(water=false){
+    if(settled)return;settled=true;
+    for(const arm of pilot.userData.arms)arm.rotation.set(water?-.55:0,0,0);
+    for(const leg of pilot.userData.legs)leg.rotation.set(water?-1.1:0,0,0);
     for(const child of group.children)if(child.material===line)child.visible=false;
     canopy.scale.set(.5,.07,.34);canopy.position.set(2.2,-.65,-1.4);group.rotation.set(0,yaw,0);
     if(water){
-     canopy.visible=false;pilot.position.y=-.3;
+     canopy.visible=false;pilot.position.y=-.85;
      const raft=new THREE.Mesh(new THREE.TorusGeometry(1.15,.23,8,24),new THREE.MeshStandardMaterial({color:0xbfa24d,roughness:.88}));
      raft.name='pilotDinghy';raft.rotation.x=Math.PI/2;raft.position.y=-.5;raft.scale.y=1.35;group.add(raft);
     }
    },
    update(dt,wind=0,controls=null){
-    if(landed)return {landed:true,safe:deployed};
+    if(landed)return {landed:true,safe:deployed||!!options.landed};
     elapsed+=dt;
     const ground=groundAt(group.position.x,group.position.z);
     if(!deployed&&elapsed>.8&&group.position.y-ground>38){
      deployed=true;canopy.visible=true;
+     pilot.userData.arms.forEach((arm,i)=>arm.rotation.z=(i?1:-1)*2.45);
      for(const child of group.children)if(child.material===line)child.visible=true;
     }
     if(deployed)fall+=(5.5-fall)*Math.min(1,dt*1.8);
@@ -72,6 +77,8 @@
    dispose(){scene.remove(group);const geometries=new Set(),materials=new Set();group.traverse(o=>{if(o.geometry)geometries.add(o.geometry);if(o.material)materials.add(o.material);});for(const g of geometries)g.dispose();for(const m of materials)m.dispose();}
 
   };
+  if(options.landed)sequence.settle(true);
+  return sequence;
  }
  root.PilotBailout={create};
  if(typeof module==='object'&&module.exports)module.exports=root.PilotBailout;

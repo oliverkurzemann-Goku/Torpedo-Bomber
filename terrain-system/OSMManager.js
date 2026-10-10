@@ -20,12 +20,14 @@ class OSMManager {
 
     this.roadMat = new THREE.MeshStandardMaterial({ color: 0x3a3a3a, roughness: 1 });
     this.railMat = new THREE.MeshStandardMaterial({ color: 0x585048, roughness: 0.8 });
-    // Muted, fairly rough water suits an overcast inland river. BUILD 16's
-    // bright 48m wave tile produced a severe checker/moire pattern on iPad.
-    this.riverMat = new THREE.MeshStandardMaterial({ color: 0x365f66, roughness: 0.84, metalness: 0 });
-    this.lakeMat = new THREE.MeshStandardMaterial({ color: 0x3a6268, roughness: 0.82, metalness: 0 });
+    // World-space ripples and broad sky reflection; no repeated bright grid.
+    // Geometry and DEM draping remain shared with the shoreline masks.
+    this.riverMat = new THREE.MeshStandardMaterial({ color: 0x344f4b, roughness: 0.55, metalness: 0 });
+    this.lakeMat = new THREE.MeshStandardMaterial({ color: 0x3a5551, roughness: 0.58, metalness: 0 });
     this.waterTexture=makeOSMWaterTexture();
     this.riverMat.map=this.lakeMat.map=this.waterTexture;
+    this.waterUniforms={waterTime:{value:0},waterSky:{value:new THREE.Color(0xa8bdc8)},waterDetail:{value:1}};
+    for(const mat of [this.riverMat,this.lakeMat])osmWaterShading(mat,this.waterUniforms);
     // Farmland is a subtle tint over the textured terrain, not an opaque map
     // polygon. Opaque yellow polygons made whole valleys read like a board game.
     this.farmMat = new THREE.MeshStandardMaterial({
@@ -323,6 +325,11 @@ class OSMManager {
     if(!tile.morphing&&(moved||mesh.userData.surfaceWasMorphing))mesh.geometry.computeVertexNormals();
     mesh.userData.surfaceWasMorphing=tile.morphing;
     mesh.userData.surfaceGeometry=tile.mesh.geometry;mesh.userData.surfaceMorph=tile.morphT;mesh.userData.surfaceRevision=tile.surfaceRevision;
+  }
+
+  updateWater(dt){
+    this.waterUniforms.waterTime.value+=Math.max(0,Math.min(.1,dt));
+    if(this.scene.background?.isColor)this.waterUniforms.waterSky.value.copy(this.scene.background);
   }
 
   syncTerrainSurfaces(){
@@ -943,15 +950,47 @@ function osmClipHalfPlane(ring,nx,nz,limit,greater){
   return out;
 }
 
+function osmWaterShading(material,uniforms){
+ material.userData.water=uniforms;
+ material.extensions={derivatives:true};
+ material.onBeforeCompile=shader=>{
+  Object.assign(shader.uniforms,uniforms);
+  shader.vertexShader='varying vec3 waterWorld;\n'+shader.vertexShader;
+  shader.vertexShader=shader.vertexShader.replace('#include <begin_vertex>',
+   '#include <begin_vertex>\nwaterWorld=(modelMatrix*vec4(position,1.0)).xyz;');
+  shader.fragmentShader='uniform float waterTime; uniform float waterDetail; uniform vec3 waterSky; varying vec3 waterWorld;\n'+shader.fragmentShader;
+  shader.fragmentShader=shader.fragmentShader.replace('#include <normal_fragment_begin>',`#include <normal_fragment_begin>
+   float waterDistance=length(cameraPosition-waterWorld);
+   float nearRipple=1.0-smoothstep(180.0,1200.0,waterDistance);
+   float warp=sin(waterWorld.x*.037-waterWorld.z*.023)*1.4+sin(waterWorld.z*.049+waterWorld.x*.031)*.85;
+   float w1=waterWorld.x*.12+waterWorld.z*.28-waterTime*.8+warp;
+   float w2=waterWorld.x*-.39+waterWorld.z*.17-waterTime*1.15+warp*.7;
+   float w3=waterWorld.x*.71+waterWorld.z*.43-waterTime*1.5+warp*1.2;
+   vec3 rippleAA=1.0/(1.0+vec3(fwidth(w1),fwidth(w2),fwidth(w3))*vec3(fwidth(w1),fwidth(w2),fwidth(w3))*.4);
+   vec2 slope=vec2(.12,.28)*cos(w1)*.22*rippleAA.x + vec2(-.39,.17)*cos(w2)*.11*rippleAA.y
+     + vec2(.71,.43)*cos(w3)*.035*rippleAA.z*nearRipple;
+   normal=normalize(mat3(viewMatrix)*vec3(-slope.x*waterDetail,1.0,-slope.y*waterDetail));`);
+  shader.fragmentShader=shader.fragmentShader.replace('#include <output_fragment>',`
+   vec3 eye=normalize(cameraPosition-waterWorld);
+   vec3 surfaceNormal=normalize(vec3(-slope.x*waterDetail,1.0,-slope.y*waterDetail));
+   vec3 reflected=reflect(-eye,surfaceNormal);
+   float fresnel=.12+.65*pow(1.0-max(0.0,dot(eye,surfaceNormal)),3.0);
+   float cloud=.82+.10*sin(reflected.x*13.0+reflected.z*7.0)+.06*sin(reflected.z*21.0-reflected.x*9.0);
+   outgoingLight=mix(outgoingLight,waterSky*cloud,fresnel*waterDetail);
+   #include <output_fragment>`);
+ };
+ material.customProgramCacheKey=()=> 'rhine-ripple-reflection-181';
+}
+
 function makeOSMWaterTexture(){
   if(typeof THREE.DataTexture!=='function')return null;
-  // Very broad, low-contrast neutral undulation. Integer wave frequencies
-  // keep the texture tileable; low amplitudes and the 260m world repeat keep
+  // Broad neutral undulation complements the moving reflection normals. Integer
+  // frequencies keep the texture tileable; the 260m world repeat keeps
   // it from becoming a visible screen pattern at low flight altitude.
   const n=128,pixels=new Uint8Array(n*n*4);
   for(let y=0;y<n;y++)for(let x=0;x<n;x++){
     const a=x/n*Math.PI*2,b=y/n*Math.PI*2,i=(y*n+x)*4;
-    const v=Math.round(249+2.2*Math.sin(a+2*b)+1.4*Math.sin(2*a-b)+.8*Math.sin(3*a+b));
+    const v=Math.round(236+8*Math.sin(a+2*b)+5*Math.sin(2*a-b)+3*Math.sin(3*a+b));
     pixels[i]=pixels[i+1]=pixels[i+2]=v;pixels[i+3]=255;
   }
   const tex=new THREE.DataTexture(pixels,n,n,THREE.RGBAFormat);

@@ -82,6 +82,18 @@ for(const fps of [20,60,120])for(const kind of [...Object.keys(defs),'avenger','
   assert(Math.abs(p.pos.x-stillAir.pos.x-7*60)<.001,kind+' crosswind translates the ground track');
  }
 }
+// Normal Me262 back-stick has a speed-dependent climb envelope, while AERO
+// remains available for a loop. Execute the shipped attitude function at three rates.
+for(const fps of [20,60,120])for(const speed of [55,75,120,200]){
+ const d=defs.me262,p={ac:'me262',hull:d.hull,spd:speed,gear:0,rollBias:0,pitch:.10,roll:0,pitchVel:0,rollVel:0,heading:0};
+ const normal=flightParts(eu,false,'me262').attitude;let max=0;
+ for(let i=0;i<8*fps;i++){normal(p,0,1,1/fps,d,d.stall);max=Math.max(max,p.pitch);}
+ assert(max<.25,'jet rotation/climb no longer shoots nose beyond fourteen degrees');
+ assert(speed*Math.sin(p.pitch)<19,'normal climb remains sustainable throughout speed range');
+ const aero=flightParts(eu,false,'me262',true).attitude;
+ for(let i=0;i<4*fps;i++)aero(p,0,1,1/fps,d,d.stall);
+ assert(Math.abs(p.pitch)>.7,'AERO retains high-pitch manoeuvres');
+}
 // Begin level in strong wind: the turn routine itself must never yaw the nose.
 const a=eu.indexOf('  // bank-to-turn:',eu.indexOf('function updateFlight(dt)')),b=eu.indexOf('  // vertical speed:',a);
 for(const windZ of [-12,0,12]){

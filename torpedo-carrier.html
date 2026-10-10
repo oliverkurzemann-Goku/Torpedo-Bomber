@@ -296,7 +296,7 @@
   .warningLamps{display:flex!important;gap:10px;padding:5px 9px!important;background:#141813dd!important;border:1px solid #535744;border-radius:4px;white-space:nowrap;}
   .warningLamp{color:#646c5c;font:9px monospace;letter-spacing:.35px;} .warningLamp[data-level="1"]{color:#ffd088;text-shadow:0 0 6px #e0a432a0;} .warningLamp[data-level="2"]{color:#ff8c70;text-shadow:0 0 7px #ff6638b0;}
 </style>
-<link rel="stylesheet" href="menu-layout.css?v=180">
+<link rel="stylesheet" href="menu-layout.css?v=181">
 </head>
 <body>
 <div id="app"></div>
@@ -342,7 +342,7 @@
   <div id="flash"></div>
   <div id="ltn" style="position:fixed;inset:0;background:#e6ecff;opacity:0;pointer-events:none;z-index:40;"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 180</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 181</div>
 
   <!-- Optical landing aid -->
   <div id="lso">
@@ -385,7 +385,7 @@
 
 <!-- Menu -->
 <div class="overlay" id="menu" data-campaign="pacific">
-  <div class="menuTop"><a id="selBtn" href="index.html?v=180">&#9664; Change Game</a><span class="menuMeta">PACIFIC OPERATIONS<br>BUILD 180</span></div>
+  <div class="menuTop"><a id="selBtn" href="index.html?v=181">&#9664; Change Game</a><span class="menuMeta">PACIFIC OPERATIONS<br>BUILD 181</span></div>
   <div class="card menuCard">
     <aside class="menuOverview" aria-label="Campaign and pilot options">
     <div class="campaignArt" aria-hidden="true"></div>
@@ -487,12 +487,12 @@
 <script src="aircraft-smoke.js?v=176"></script>
 <script src="aircraft-damage.js?v=177"></script>
 <script src="ship-damage.js?v=177"></script>
-<script src="flight-support.js?v=175"></script>
+<script src="flight-support.js?v=181"></script>
 <script src="ordnance.js?v=157"></script>
 <script src="crew-visuals.js?v=179"></script>
 <script src="deck-activity.js?v=179"></script>
 <script src="ship-wakes.js?v=179"></script>
-<script src="pilot-bailout.js?v=176"></script>
+<script src="pilot-bailout.js?v=181"></script>
 <script src="enemy-bailouts.js?v=177"></script>
 <script src="flare-support.js?v=177"></script>
 <script src="sortie-service.js?v=177"></script>
@@ -962,7 +962,7 @@ function pacificPauseOrders(){
   const faults=SortieFeatures.Damage.status(P);
   const recovery=SortieFeatures.Damage.needsBelly(P)?'Emergency belly recovery: flaps and hook down, wings level, low sink rate.':'Recovery: gear, flaps and hook down; target ~'+Math.round(APP_SPD*KT)+' kt.';
   return task+' · '+Math.round(P.fuel)+'% FUEL · '+SortieFeatures.Damage.hullPercent(P)+'% HULL. '+
-    (faults?faults+'. ':'')+(pacificOps?pacificOps.status()+'. ':'')+recovery;
+    (faults?faults+'. ':'')+(pacificOps?pacificOps.status()+'. ':'')+recovery+' Ditching: gear/hook up, low power, slow and level, gentle sink.';
 }
 function updateFlightHints(dt){
   const distance=ships.reduce((d,s)=>s.alive?Math.min(d,Math.hypot(P.pos.x-s.group.position.x,P.pos.z-s.group.position.z)):d,Infinity);
@@ -2067,7 +2067,7 @@ function startMission(idx){
   interceptRadio.reset();
   releaseHeldControls();
   if(bailRescue){bailRescue.dispose();bailRescue=null;}
-  clearCrewBailouts();if(bailout){bailout.dispose();bailout=null;}
+  ditching=null;clearCrewBailouts();if(bailout){bailout.dispose();bailout=null;}
   planeGroup.visible=true;
   aeroMode=false;
   const aeroButton=document.getElementById('aeroBtn');
@@ -3525,6 +3525,9 @@ function resolveGroundAndDeck(dt){
       // above this) still kills at every difficulty, same as it always did - this only forgives a
       // pull-out that was ALMOST there, not a dive flown straight into the water.
       const sink=-P.vSpeed;
+      const clearOfCarrier=(x-carrierX)<STERN_X-16||(x-carrierX)>BOW_X+16||Math.abs(z)>DECK_HALF_W+16;
+      const clearOfShore=[[-12,-12],[-12,12],[12,-12],[12,12]].every(([dx,dz])=>shoreHeight(x+dx,z+dz)<=.6);
+      if(clearOfCarrier&&clearOfShore&&shoreHeight(x,z)<=.6&&FlightSupport.canDitch(P,STALL_SPD-P.flap*7,APP_SPD)){beginDitching();return;}
       if(DIFF==='rookie' && sink<22){
         P.pos.y=1.4; P.vSpeed=Math.max(P.vSpeed,3); P.pitch=Math.max(P.pitch,0.05);
         P.hull=Math.max(0,P.hull-40); shake(2.0); sfxBoom(0.7); registerHit();
@@ -4570,7 +4573,7 @@ function crash(title,sub){
     sub+" Take it around again.<br><br>SCORE "+score+" &middot; BEST "+Math.max(bestScore(),score),
     "Retry Sortie");
 }
-let bailout=null,bailRescue=null,bailPlaneCrashed=false,bailDone=false,bailChuteCalled=false,crewBailouts=[],crewWaterRescue=null;
+let bailout=null,bailRescue=null,bailPlaneCrashed=false,bailDone=false,bailChuteCalled=false,crewBailouts=[],crewWaterRescue=null,ditching=null;
 function aircraftCrewCount(){return isDefend()||isCorsair()?1:isSBD()?2:3;}
 function clearCrewBailouts(){for(const c of crewBailouts){c.chute.dispose();c.rescue?.dispose();}crewBailouts=[];crewWaterRescue?.dispose();crewWaterRescue=null;}
 function rescueCrewMember(position,water){
@@ -4591,7 +4594,7 @@ function updateCrewBailouts(dt){
 function steeringParachute(){return !!bailout&&!bailDone&&state===ST.RESULT;}
 function beginBailout(){
   if(state!==ST.FLIGHT||!P.alive)return;
-  if(P.pos.y-shoreHeight(P.pos.x,P.pos.z)<85){flash('TOO LOW TO BAIL OUT',1400);return;}
+  if(P.pos.y-shoreHeight(P.pos.x,P.pos.z)<85){flash('TOO LOW TO BAIL — DITCH SLOW, LEVEL, GEAR / HOOK UP',3000);return;}
   releaseHeldControls();
   bailout=PilotBailout.create(THREE,scene,P.pos.clone().add(new THREE.Vector3(-2,1,-2)),
     Math.PI/2-P.heading,P.spd,shoreHeight,{service:isDefend()?"ijn":"usnavy",srgbOutput:true});
@@ -4606,9 +4609,38 @@ function beginBailout(){
   document.getElementById('stickHint').textContent='CHUTE: TURN / GLIDE';
   flash(aircraftCrewCount()+' CREW CLEAR — OPENING PARACHUTES',1800);
 }
+function beginDitching(){
+  if(state!==ST.FLIGHT||!P.alive)return;
+  releaseHeldControls();clearCrewBailouts();
+  const service=isDefend()?'ijn':'usnavy',right=new THREE.Vector3(-Math.sin(P.heading),0,Math.cos(P.heading));
+  const survivor=i=>{
+    const p=P.pos.clone().addScaledVector(right,i===0?-5:5+i*2).addScaledVector(noseDir(),-4);
+    p.y=seaHeightAt(p.x,p.z,seaUniforms?.uTime.value||0)+.9;
+    return PilotBailout.create(THREE,scene,p,Math.PI/2-P.heading,0,shoreHeight,{service,srgbOutput:true,variant:i,landed:true});
+  };
+  bailout=survivor(0);bailRescue=rescueCrewMember(bailout.position,true);
+  for(let i=1;i<aircraftCrewCount();i++){const chute=survivor(i);crewBailouts.push({chute,rescue:rescueCrewMember(chute.position,true),done:false,safe:null});}
+  ditching={time:0,speed:P.spd*.4};
+  bailDone=false;bailPlaneCrashed=true;bailChuteCalled=true;
+  P.alive=false;P.throttle=0;P.vSpeed=0;P.pitch=.04;P.roll=0;state=ST.RESULT;firing=false;
+  setThrottleUI(0);document.getElementById('bailBtn').style.display='none';
+  document.getElementById('stickHint').textContent='DITCHED — RESCUE INBOUND';
+  saveBest(score);if(!isFree())logAircraftLost();
+  for(const side of [-1,1]){const p=P.pos.clone().addScaledVector(right,side*3);combatFX?.impact(p.x,seaHeightAt(p.x,p.z,seaUniforms?.uTime.value||0),p.z,true);}
+  shake(.6);radioQ=[];radioT=0;radioSay('DITCHING SURVIVED — RESCUE BOAT INBOUND, STAY TOGETHER');
+  flash(aircraftCrewCount()+' CREW CLEAR — RESCUE INBOUND',4000);
+}
 function advanceBailout(dt){
   if(!steeringParachute())return;
   updateCrewBailouts(dt);
+  if(ditching){
+    ditching.time+=dt;ditching.speed*=Math.exp(-dt*.7);
+    P.pos.addScaledVector(noseDir(),ditching.speed*dt);
+    P.pos.y=seaHeightAt(P.pos.x,P.pos.z,seaUniforms?.uTime.value||0)+.25-Math.max(0,ditching.time-4)*.22;
+    P.spd=ditching.speed;
+    if(ditching.time<=12)shipWakes?.track(planeGroup,P.pos,noseDir(),12,12,ditching.speed,dt);
+    else {planeGroup.visible=false;shipWakes?.forget(planeGroup);}
+  }
   if(bailRescue){
     if(bailRescue.water)bailout.position.y=seaHeightAt(bailout.position.x,bailout.position.z,seaUniforms?.uTime.value||0)+.9;
     const pickup=bailRescue.update(dt);
@@ -4957,7 +4989,7 @@ function loadPlaneModel(){
       }
       window.__eyeDbg='EYE '+COCKPIT_EYE.map(v=>v.toFixed(2)).join('/');
       const btEl=document.getElementById('buildTag');
-      if(btEl) btEl.textContent='BUILD 180 · '+window.__eyeDbg;
+      if(btEl) btEl.textContent='BUILD 181 · '+window.__eyeDbg;
       let seat=null;
       model.traverse(function(o){
         if(!o.isMesh||!o.material) return;
@@ -6166,7 +6198,7 @@ function exitToMenu(){
   voiceRadio.cancel();soundscape.stop();
   releaseHeldControls();
   if(bailRescue){bailRescue.dispose();bailRescue=null;}
-  clearCrewBailouts();if(bailout){bailout.dispose();bailout=null;}
+  ditching=null;clearCrewBailouts();if(bailout){bailout.dispose();bailout=null;}
   document.getElementById('stickHint').textContent='PITCH / ROLL';
   document.getElementById('bailBtn').style.display='none';
   if(eng) eng.master.gain.setTargetAtTime(0.0001,actx.currentTime,0.05);
@@ -6299,7 +6331,7 @@ function setupUIButtons(){
   if(dbgT2) dbgT2.onclick=()=>{
     dbgOn=!dbgOn; GameRuntime.storage.setItem('dbgOn',dbgOn?'1':'0');
     const db=document.getElementById('dbgBox'); if(db) db.textContent=dbgOn?'✓':'';
-    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 180'; }
+    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 181'; }
   };
   const lu=document.getElementById('lookUp'), ld=document.getElementById('lookDn');
   let _lookT=0;
@@ -6315,7 +6347,7 @@ function setupUIButtons(){
   if(pb) pb.addEventListener('pointerdown',e=>{ e.preventDefault(); togglePause(); });
   const rb=document.getElementById('resumeBtn'); if(rb) rb.onclick=resumeGame;
   const mb=document.getElementById('menuBtn'); if(mb) mb.onclick=exitToMenu;
-  document.getElementById('pauseMainMenu').onclick=()=>{exitToMenu();window.location.href='index.html?v=180';};
+  document.getElementById('pauseMainMenu').onclick=()=>{exitToMenu();window.location.href='index.html?v=181';};
   document.getElementById('resultBtn').onclick=()=>{
     // the logbook borrows this screen from the menu — send the player straight back
     if(logbookOpen){ logbookOpen=false; showOverlay('menu'); return; }
@@ -6555,7 +6587,7 @@ function animate(){
     notice.style.cssText='position:fixed;inset:0;z-index:999998;background:rgba(15,20,15,.95);color:#e8ddbc;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px;text-align:center;font:16px system-ui';
     const title=document.createElement('h2');title.textContent='Simulation interrupted';
     const detail=document.createElement('p');
-    detail.textContent='BUILD 180 · '+(MISSIONS[mission]?.sub||'Menu')+' · '+error.message;
+    detail.textContent='BUILD 181 · '+(MISSIONS[mission]?.sub||'Menu')+' · '+error.message;
     const reload=document.createElement('button');reload.textContent='Reload game';
     reload.style.cssText='padding:12px 24px;font:inherit';reload.onclick=()=>location.reload();
     notice.appendChild(title);notice.appendChild(detail);notice.appendChild(reload);document.body.appendChild(notice);

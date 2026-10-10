@@ -34,6 +34,11 @@ function skinHeight(model,parent,x,z){
   }
  });return Number.isFinite(top)?top:null;
 }
+function canDitch(p,stall,approach){
+ return p.alive&&p.hull>0&&p.gear<.25&&p.hook<.3&&p.throttle<=.35&&
+  p.spd>=stall*.8&&p.spd<=approach+14&&p.vSpeed>=-3.5&&p.vSpeed<=1.5&&
+  p.pitch>=-.06&&p.pitch<=.20&&Math.abs(p.roll)<=.18;
+}
 class TreeIndex{
  constructor(groundAt=null){this.cells=new Map();this.size=64;this.count=0;this.groundAt=groundAt;}
  add(x,z,y,height,radius,trunk=.2){
@@ -111,5 +116,5 @@ class Navigation{
   }
  }
 }
-root.FlightSupport={surfaceHit,skinHeight,TreeIndex,treeStrike,Navigation};
+root.FlightSupport={surfaceHit,skinHeight,canDitch,TreeIndex,treeStrike,Navigation};
 })(typeof window==='undefined'?globalThis:window);

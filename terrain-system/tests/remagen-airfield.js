@@ -113,7 +113,15 @@ global.fetch=async url=>{
   activity.update(1,6000,15800);
   assert.notDeepEqual(activity.people.limbs.instanceMatrix.array,pose,'crew must actually animate');
   const signalIndex=activity.crew.findIndex(p=>p.job==='signal'),signal=activity.crew[signalIndex],handMatrix=new THREE.Matrix4(),handPosition=new THREE.Vector3();
-  for(const side of [0,1]){activity.people.hands.getMatrixAt(signalIndex*2+side,handMatrix);handPosition.setFromMatrixPosition(handMatrix);assert(Math.abs(handPosition.x-signal.drawX)>.45,'raised hands remain at the outer wrists, not inside the jacket');}
+  for(const side of [0,1]){
+    const armMatrix=new THREE.Matrix4(),wrist=new THREE.Vector3();activity.people.limbs.getMatrixAt(signalIndex*4+side*2,armMatrix);
+    wrist.set(0,-.5,0).applyMatrix4(armMatrix);activity.people.hands.getMatrixAt(signalIndex*2+side,handMatrix);handPosition.setFromMatrixPosition(handMatrix);
+    assert(wrist.distanceTo(handPosition)<.00003,'hands follow actual wrists');
+    assert(handPosition.y<activity.ground(signal.drawX,signal.drawZ)+1.2,'idle marshaller keeps hands down');
+  }
+  activity.update(0,activity.x,activity.z,{launching:true});
+  activity.people.hands.getMatrixAt(signalIndex*2,handMatrix);const low=handMatrix.elements[13];
+  activity.people.hands.getMatrixAt(signalIndex*2+1,handMatrix);assert(handMatrix.elements[13]>low+.7,'only departure marshaller signals with one arm');
   let activityMeshes=0;activity.group.traverse(o=>{if(o.isMesh)activityMeshes++;});
   assert(activityMeshes<=30,'service scenes exceed draw-call budget: '+activityMeshes);
   let mountedSeen=false,cartTravel=0,last=activity.trolley.position.clone(),payloadMaxStep=0;

@@ -2,7 +2,7 @@
 (function(root){
  'use strict';
  function create(THREE,scene,heightAt){
-  const limit=192,n=64,pixels=new Uint8Array(n*n*4);
+  const limit=256,n=64,pixels=new Uint8Array(n*n*4);
   for(let y=0;y<n;y++)for(let x=0;x<n;x++){
    const u=(x+.5)/n*2-1,v=(y+.5)/n*2-1;
    const density=.62+.18*Math.sin(u*13+Math.sin(v*9))+.12*Math.cos(v*21-u*7);
@@ -33,9 +33,9 @@
    d.pos.y=heightAt(d.pos.x,d.pos.z)+.75;
    const blast=wheel?2:jet?10+power*15:4+power*7,lateral=(Math.random()-.5)*(jet?2:5);
    d.velocity.set(-fX*blast+rX*lateral,-.05,-fZ*blast+rZ*lateral);
-   d.age=0;d.life=wheel?1.6:jet?2.4:3.0;d.width=wheel?1.4:jet?2.8:4.8;
+   d.age=0;d.life=wheel?1.6:jet?2.4:3.0;d.width=wheel?1.9:jet?3.7:6.2;
    d.rise=wheel?.45:jet?.55:1.1;d.jet=jet;d.wheel=wheel;d.seed=Math.random()*6.28;
-   d.opacity=(wheel?.52:jet?.78:.68)*Math.max(.15,power)*(1-wet*.92);d.light=light;
+   d.opacity=(wheel?.72:jet?.95:.88)*Math.max(.15,power)*(1-wet*.92);d.light=light;
    particles.push(d);emitted++;
   }
   return {
@@ -46,7 +46,7 @@
     if(haveLast&&last.distanceTo(p.pos)>Math.max(30,(p.spd||0)*dt*4)){carry=0;}
     last.copy(p.pos);haveLast=true;
     const jet=p.ac==='me262'||p.ac==='me163';lastMode=jet?'jet':'prop';
-    const rate=(jet?20:15)*power*(1-wet*.8),count=Math.min(3,Math.floor(carry+dt*rate));
+    const rate=(jet?30:24)*power*(1-wet*.8),count=Math.min(3,Math.floor(carry+dt*rate));
     carry=(carry+dt*rate)%1;
     for(let i=0;i<count;i++){
      const light=options.light??1;

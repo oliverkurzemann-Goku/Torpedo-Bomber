@@ -274,7 +274,7 @@
   .warningLamps{display:flex!important;gap:10px;padding:5px 9px!important;background:#141813dd!important;border:1px solid #535744;border-radius:4px;white-space:nowrap;}
   .warningLamp{color:#646c5c;font:9px monospace;letter-spacing:.35px;} .warningLamp[data-level="1"]{color:#ffd088;text-shadow:0 0 6px #e0a432a0;} .warningLamp[data-level="2"]{color:#ff8c70;text-shadow:0 0 7px #ff6638b0;}
 </style>
-<link rel="stylesheet" href="menu-layout.css?v=180">
+<link rel="stylesheet" href="menu-layout.css?v=181">
 </head>
 <body>
 <!-- ===== TEMP TEST-ONLY VERSION BANNER — asked for by Oliver: "kannst du irgendwo einbauen,
@@ -296,7 +296,7 @@
   <div style="width:100%;height:4px;background:repeating-linear-gradient(45deg,#ffd400,#ffd400 8px,#111 8px,#111 16px);"></div>
   <span id="testVersionBannerText" style="background:#111;color:#ffd400;font-family:monospace;font-weight:800;font-size:11px;letter-spacing:.5px;padding:3px 10px;border:1px solid #ffd400;border-top:none;border-radius:0 0 6px 6px;"></span>
 </div>
-<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 180';</script>
+<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 181';</script>
 <!-- ===== END TEMP TEST-ONLY VERSION BANNER ===== -->
 <div id="app"></div>
 <style>
@@ -336,7 +336,7 @@
   <div id="flash"></div>
   <div id="gunsight"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 180 · REAL RHINE</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 181 · REAL RHINE</div>
 
   <div id="apr">
     <div id="aprCall"></div>
@@ -388,7 +388,7 @@
 </div>
 
 <div class="overlay hidden" id="menu" data-campaign="europe">
-  <div class="menuTop"><a id="selBtn" href="index.html?v=180">&#9664; Change Game</a><span class="menuMeta">RHINE OPERATIONS<br>BUILD 180</span></div>
+  <div class="menuTop"><a id="selBtn" href="index.html?v=181">&#9664; Change Game</a><span class="menuMeta">RHINE OPERATIONS<br>BUILD 181</span></div>
   <div class="card menuCard">
     <aside class="menuOverview" aria-label="Campaign and pilot options">
     <div class="campaignArt" aria-hidden="true"></div>
@@ -496,12 +496,12 @@
 <script src="terrain-system/HeightProvider.js?v=remagen-21"></script>
 <script src="terrain-system/TerrainTile.js?v=168"></script>
 <script src="terrain-system/TerrainManager.js?v=177"></script>
-<script src="terrain-system/OSMManager.js?v=177"></script>
+<script src="terrain-system/OSMManager.js?v=181"></script>
 <script src="terrain-system/PeriodBuildings.js?v=175"></script>
 <script src="terrain-system/HistoricalObjectManager.js?v=173"></script>
 <script src="terrain-system/AirfieldDetails.js?v=169"></script>
 <script src="terrain-system/AircraftGround.js?v=170"></script>
-<script src="terrain-system/AirfieldActivity.js?v=177"></script>
+<script src="terrain-system/AirfieldActivity.js?v=181"></script>
 <script src="terrain-system/WorldVehicles.js?v=172"></script>
 <script src="terrain-system/LivingWorld.js?v=179"></script>
 <script src="campaign.js?v=1"></script>
@@ -510,13 +510,13 @@
 <script src="combat-fx.js?v=177"></script>
 <script src="aircraft-smoke.js?v=176"></script>
 <script src="aircraft-damage.js?v=177"></script>
-<script src="flight-support.js?v=175"></script>
+<script src="flight-support.js?v=181"></script>
 <script src="ordnance.js?v=157"></script>
 <script src="crew-visuals.js?v=179"></script>
 <script src="aircraft-finish.js?v=179"></script>
 <script src="runway-lights.js?v=179"></script>
 <script src="ship-wakes.js?v=179"></script>
-<script src="pilot-bailout.js?v=176"></script>
+<script src="pilot-bailout.js?v=181"></script>
 <script src="enemy-bailouts.js?v=177"></script>
 <script src="flare-support.js?v=177"></script>
 <script src="sortie-service.js?v=177"></script>
@@ -528,7 +528,7 @@
 <script src="sortie-systems.js?v=175"></script>
 <script src="sortie-features.js?v=163"></script>
 <script src="ground-run.js?v=179"></script>
-<script src="ground-dust.js?v=180"></script>
+<script src="ground-dust.js?v=181"></script>
 <script src="flight-indicators.js?v=179"></script>
 <script src="sortie-fuel.js?v=161"></script>
 <script src="operation-plans.js?v=177"></script>
@@ -844,7 +844,7 @@ async function loadRealWorld(){
 
   if(OSMManager.BUILD!==23||HistoricalObjectManager.BUILD!==21||LivingWorld.BUILD!==22||WorldVehicles.BUILD!==22) throw new Error('Terrain version mismatch. Reload Remagen.');
   document.getElementById('testVersionBannerText').textContent=
-    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 180 · MODULE 23';
+    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 181 · MODULE 23';
   heightProvider=new DEMHeightProvider(RTILE,'terrain-system/real/data/dem/');
   terrain=new TerrainManager(scene,RTILE,heightProvider);
   osmMgr=new OSMManager(scene,RTILE,terrain,'terrain-system/real/data/osm/');
@@ -4075,6 +4075,11 @@ function updateFlight(dt){
     // With the rocket off the Komet trades altitude for airspeed. Closing the
     // throttle cannot conjure minimum jet thrust during its glide home.
     P.spd+=(-1.1-P.spd*.008-9.81*Math.sin(P.pitch))*dt;
+  } else if(P.ac==='me262'){
+    // Continue the jet's spool/acceleration after rotation; do not jump toward
+    // cruise speed with the propeller target-speed spring. Climbing costs energy.
+    const thrust=7.6*P.throttle*SortieFeatures.Damage.power(P);
+    P.spd+=(thrust-.00013*P.spd*P.spd-9.81*Math.sin(P.pitch)-P.gear*.7-P.flap*1.2)*dt;
   } else P.spd += (eff-P.spd)*Math.min(1,(P.ac==='me163'?1.15:0.5)*dt);
   P.spd = Math.max(6,P.spd);
 
@@ -4123,7 +4128,11 @@ function updateFlight(dt){
     P.heading+=P.pitchVel*Math.sin(P.roll)*dt;
     P.roll=Math.atan2(Math.sin(P.roll+P.rollVel*dt),Math.cos(P.roll+P.rollVel*dt));
   }else{
-    P.pitchVel=(P.pitchVel||0)+(pitchRate*pitchRate*(commandPitch*d.pitchLim*0.92-P.pitch) - 2*zeta*pitchRate*P.pitchVel)*dt;
+    // Full back-stick in normal jet flight commands a sustainable climb.
+    // Low-speed rotation stays near ten degrees; AERO still permits loops.
+    const noseUpLimit=P.ac==='me262'?Math.min(d.pitchLim*.92,Math.asin(Math.min(.65,(10+Math.max(0,P.spd-55)*.055)/P.spd))):d.pitchLim*.92;
+    const pitchTarget=commandPitch*(commandPitch>0?noseUpLimit:d.pitchLim*.92);
+    P.pitchVel=(P.pitchVel||0)+(pitchRate*pitchRate*(pitchTarget-P.pitch) - 2*zeta*pitchRate*P.pitchVel)*dt;
     P.pitch += P.pitchVel*dt;
     const neutral=Math.abs(inputRoll)<.001;
     const levelRate=neutral?Math.max(3.5,rollRate*.7):rollRate;
@@ -5605,7 +5614,7 @@ function init(){
   buildMenu();
   // menu wiring
   document.getElementById('startBtn').onclick=()=>showBrief(selectedMission);
-  document.getElementById('pauseMainMenu').onclick=()=>{exitToMenuFromPause();window.location.href='index.html?v=180';};
+  document.getElementById('pauseMainMenu').onclick=()=>{exitToMenuFromPause();window.location.href='index.html?v=181';};
   document.getElementById('logBtn').onclick=()=>{ show('menu',false); showLogbook(); };
   document.getElementById('skipLaunchPreview').onclick=()=>finishLaunchIntro();
   document.getElementById('brBack').onclick=()=>{ show('brief',false); show('menu',true);if(navigation){navigation.reset();navigation.button.style.display='none';} state=ST.MENU; };
@@ -5708,8 +5717,8 @@ function animate(){
     osmMgr.syncTerrainSurfaces();
     if(airfieldDetails)airfieldDetails.refresh();
     if(germanAirfieldDetails)germanAirfieldDetails.refresh();
-    if(alliedActivity)alliedActivity.update(raw,focusX,focusZ);
-    if(germanActivity)germanActivity.update(raw,focusX,focusZ);
+    if(alliedActivity)alliedActivity.update(raw,focusX,focusZ,{launching:state===ST.FLIGHT&&P.onGround&&P.spd>1&&P.spd<45});
+    if(germanActivity)germanActivity.update(raw,focusX,focusZ,{launching:state===ST.FLIGHT&&P.onGround&&P.spd>1&&P.spd<45});
     if(livingWorld)livingWorld.update(raw,focusX,focusZ,state===ST.FLIGHT?p=>
       spawnSmoke(p.x,p.y,p.z,p.color,p.scale):null);
     contentVisT-=raw; if(contentVisT<=0){ contentVisT=0.5; updateContentVisibility(focusX,focusZ); }
@@ -5786,6 +5795,7 @@ function animate(){
   if(sortieService?.active)sortieService.update(raw);
   // Menu/briefing transitions also fade the engine; pause uses the master gain above.
   updateAudio(raw);
+  osmMgr?.updateWater(raw);
   if(combatFX)combatFX.update(raw);if(flareSupport)flareSupport.update(raw,new THREE.Vector3(windZ,0,0));updateFlareUI();if(enemyBailouts)enemyBailouts.update(raw,camera,windZ);if(aircraftDamage)aircraftDamage.update(raw);if(aircraftSmoke)aircraftSmoke.update(raw);shipWakes?.update(raw);groundDust?.update(raw,windZ);
   CombatFX.updateRounds(bullets,camera,renderer);
   CombatFX.updateRounds(tracers,camera,renderer);

@@ -38,7 +38,8 @@ class BufferGeometry extends Geometry {
 class Float32BufferAttribute {
   constructor(array,itemSize){ this.array=array; this.itemSize=itemSize; }
 }
-class MeshStandardMaterial { constructor(opts){ this.opts=opts; } }
+class MeshStandardMaterial { constructor(opts){ this.opts=opts;this.userData={}; } }
+class Color {constructor(value){this.value=value;}copy(color){this.value=color.value;return this;}}
 class Group {
   constructor(){ this.children=[]; }
   add(o){ this.children.push(o); }
@@ -62,7 +63,7 @@ class InstancedMesh extends Mesh {
   dispose(){ this.didDispose=true; }
 }
 
-global.THREE={
+global.THREE={Color,
   Vector3,Quaternion,Matrix4,BoxGeometry,CylinderGeometry,ConeGeometry,
   DodecahedronGeometry,BufferGeometry,Float32BufferAttribute,InstancedBufferAttribute:Float32BufferAttribute,
   MeshStandardMaterial,Group,Mesh,InstancedMesh

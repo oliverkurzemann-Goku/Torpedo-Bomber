@@ -5,7 +5,66 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 180 · Thunderbolt Squadron BUILD 180 · Remagen-Kern 23 / Fahrzeuge 22**
+Stand bei Übergabe: **Torpedo Squadron BUILD 181 · Thunderbolt Squadron BUILD 181 · Remagen-Kern 23 / Fahrzeuge 22**
+
+**Build 181 (10.10.2026): Rheinwasser, natürliche Armhaltung, Me262-Steigflug, Notwasserung und stärkerer Startstaub.**
+Build 180 hatte keine Oberflächen-/Terraintexturen reduziert. Das schon bestehende
+Rheinmaterial war jedoch sehr matt (.84 Roughness) und fast kontrastlos (10 Graustufen).
+Jetzt gedecktes graugrünes Wasser, breite neutrale Textur (128px, 28 Graustufen), bewegte
+Weltkoordinaten-Normalen, Blickwinkel-/Himmelsreflexion und .55/.58 Roughness. Gewarpte
+Wellenphasen und Fragmentableitungen dämpfen periodisches Glitzern/Aliasing. Keine
+Spiegelkamera, neuen Wassermeshes, Texturauflösungsreduktion oder Änderungen an DEM-
+Drapierung, Quellmasken, Ufergeometrie/LOD. Uniform-Zeit folgt Pause; Himmel folgt Wetter.
+Native Ein-/Aus-Pixelprüfung am tatsächlich gerenderten breiten Rheindreieck: 22.901
+geänderte Detailpixel, 36.325 bewegte Pixel nach vier Sekunden, Screenshot geprüft.
+Der erste Testkamera-Boundingbox-Mittelpunkt lag auf trockenem Land; korrigiert auf
+Dreieckszentrum. Erster Wasserentwurf zeigte ein zu regelmäßiges Glitzermuster und
+wurde vor Auslieferung geglättet; keine iPad-FPS-/Safari-Freigabe behaupten.
+
+PilotBailout verwendet die hochgestreckten Arme erst ab Schirmöffnung. Settle setzt
+Arme nach Bodenlandung nach unten, im Dinghy zu einer sitzenden Haltung mit gefalteten
+Beinen; keine hängende Fallschirmhaltung nach der Landung. Wiederholtes Settle baut kein
+zweites Floß. AirfieldActivity: Hände folgen den tatsächlichen Schulter-/Handgelenk-
+Transformationen. Ein Marshaller hebt während eines Startlaufs einen Arm, im Leerlauf
+bleiben alle Hände unten. Lade-/Tragearme greifen nach vorn statt entgegengesetzt.
+Native Prüfung: 1.728 Hand-/Kopfpositionen durch einen ganzen 144s Servicezyklus.
+
+Nur Me262: Normalmodus fordert einen airspeedabhängigen Steigflug (etwa 10–20m/s)
+statt 60 Grad Pitch bei vollem Stick. Airborne-Beschleunigung folgt Schub, quadratischem
+Widerstand und Gravitationsverlust im Steigflug statt plötzlich zum Cruise-Target zu
+springen. AERO-Drehraten/Loops bleiben vorhanden. Reales UpdateFlight vom Boden mit
+voll gezogenem Stick: Rotation nach 19.85s, maximal 9.68 Grad, 12.79m/s und 5.53m/s²
+in den ersten zehn Flugsekunden. Pitch-/AERO-Prüfung bei 20/60/120 FPS und vier Speeds.
+P47-/FW190-/Komet-Physik bleibt unverändert.
+
+Carrier-Notwasserung: FlightSupport.canDitch verlangt niedrige Leistung, Gear/Hook oben,
+moderate Speed, kleine Bank/Pitch und höchstens 3.5m/s Sinkrate. Nur tatsächlicher
+Wasserkontakt außerhalb des Trägerhulls und mit trockenen Ufern außerhalb eines 24m-
+Prüffelds. Sichere Notwasserung: Sprüh-/Kielwassereffekte, Abbremsen/Ausgleiten und langsam
+sinkendes Flugzeug, Besatzung direkt in Dinghys, kein geöffneter Phantom-Fallschirm.
+PilotRescue.createCrew sammelt alle Personen mit exakt einem Boot. Luftfahrzeug wird
+als verloren gezählt; kein falscher Parachute-Bailout-Statistikeintrag. Pause/Restart/Menu
+bereinigen Wrack, Passagiere und Boot. Pause und zu niedriger Bailout zeigen Ditch-Hinweise.
+Native echte Sea-Contact-/Rettungsfälle: Avenger 3/3, SBD 2/2, Corsair und Zero je 1/1,
+maximal ein Boot, alle Passagiere sichtbar aufgenommen, Pause hält Wrack/Boot/Timer;
+gefährlicher Gear-down-Aufprall scheitert weiter, Reset entsorgt die Rettung.
+
+GroundDust: Propeller 24 statt 15, Jet 30 statt 20 Emissionszyklen/s, größere Wolken und
+höhere Deckkraft; Propwash und zwei flache Jetstrahlen bleiben verschieden. Bounded
+256 statt 192 Slots, weiterhin genau ein instanzierter Draw. Echte Browserpixel an
+P47 und Me262 jeweils über 35.000 gegenüber deaktiviertem Staub. Regen-/Gas-/Service-
+Abheben-/Fade-/Pause-/Reset-Regeln bleiben bestehen. Bilder build181-*.png.
+
+Syntax, die neuen nativen Kernfälle und alle 31 Terrain-Testdateien bestanden lokal.
+Gesamte Okinawa-Suite und GitHub-CI separat am finalen Commit prüfen. CI-Artefakt build-181-visual-checks.
+Neue Tests: ditch-safety.cjs (Grenzen, Boden-/Schirm-/Sitzpose, 20/60/120 FPS) und
+water-ditching-browser.cjs (Framebuffer, Servicehände, tatsächlicher Me262-Start und
+vier Carrier-Flugzeugtypen). Alte Airfield-Assertion setzte absichtlich beide Hände
+hoch voraus: durch echte Wrist-Position plus Idle/Departure-Pose ersetzt. OSM-Stubs
+unterstützen nun Color und Material.userData; native Shaderprüfung bleibt separat.
+Build-181-Seiten und geänderte Module verwenden Cache 181; Remagen-Kern bleibt 23,
+weil weder Quell-/DEMformat noch Geometrievertrag geändert wurde. Build180-CI
+38088796603 wurde am exakten f3b3a261 am 10.10.2026 als SUCCESS verifiziert.
 
 **Build 180 (10.10.2026): Startstaub, sanftere FW190 und vollständige Querformat-Briefings.**
 GroundDust zeigt nur am Boden Leistungsaufbau und Bewegung: breiter, langsam

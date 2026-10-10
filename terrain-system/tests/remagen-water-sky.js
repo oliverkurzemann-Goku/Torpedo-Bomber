@@ -22,8 +22,8 @@ for(let y=0;y<water.image.height;y++)for(let x=0;x<water.image.width;x++){
   if(x){waterDelta+=Math.abs(v-water.image.data[i-4]);waterEdges++;}
   if(y){waterDelta+=Math.abs(v-water.image.data[i-water.image.width*4]);waterEdges++;}
 }
-assert.equal(water.image.width,128);assert(waterMax-waterMin<=10,'water texture contrast is too harsh');
-assert(waterDelta/waterEdges<.5,'water texture contains high-frequency screen pattern');
+assert.equal(water.image.width,128);assert(waterMax-waterMin<=34,'water texture contrast is too harsh');
+assert(waterDelta/waterEdges<1.5,'water texture contains high-frequency screen pattern');
 // BUILD 18's rain mesh followed the player without changing a single vertex,
 // so its grey lines appeared glued to the screen. Execute the actual weather
 // functions and prove a rain frame changes the drop positions.

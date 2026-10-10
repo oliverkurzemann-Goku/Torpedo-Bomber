@@ -225,7 +225,7 @@ class AirfieldActivity {
     this._position.set(x,y,z);this._rotation.setFromEuler(this._euler.set(0,yaw,roll));this._scale.set(w,h,d);
     this._matrix.compose(this._position,this._rotation,this._scale);mesh.setMatrixAt(index,this._matrix);
   }
-  update(dt,focusX,focusZ){
+  update(dt,focusX,focusZ,options={}){
     this.group.visible=Math.hypot(focusX-this.x,focusZ-this.z)<6500;
     if(!this.group.visible)return;this.time+=dt;
     for(const pad of this.parked)if(!pad.children[0]?.userData.serviceFallback)this.groundAircraft(pad);
@@ -248,10 +248,14 @@ class AirfieldActivity {
       this.pose(this.people.bodies,i,x,y+1.12,z,.43,.62,.27,yaw,p.job==='repair'?.16:0);
       this.pose(this.people.heads,i,x,y+1.61,z,1,1,1,yaw);
       for(const side of [-1,1]){
-        const j=i*4+(side===-1?0:2),arm=p.job==='signal'?.9+Math.sin(time*2)*.25:loader?-.5+(this.loading.servicing?Math.sin(a*2)*.22:0):p.job==='carry'?-.7:stride*side;
-        this.pose(this.people.limbs,j,x+side*.29,y+1.14,z,.14,.59,.15,yaw,arm*side);
-        this.people.limbs.getMatrixAt(j,this._handMatrix);this._handPosition.set(0,p.job==='signal'?.59:-.59,0).applyMatrix4(this._handMatrix);
-        this.pose(this.people.hands,i*2+(side===-1?0:1),this._handPosition.x,this._handPosition.y,this._handPosition.z,1,1,1,yaw,arm*side);
+        const signal=p.job==='signal'&&options.launching&&side===1;
+        const j=i*4+(side===-1?0:2),arm=signal?2.1+Math.sin(time*3)*.2:loader?-.5+(this.loading.servicing?Math.sin(a*2)*.22:0):p.job==='carry'?-.7:stride*side;
+        const armRotation=signal?-arm:loader||p.job==='carry'?arm:stride*side;
+        // Shoulder pivot, then an exact wrist endpoint; hands cannot hover over heads.
+        const reach=-.295*Math.sin(armRotation);
+        this.pose(this.people.limbs,j,x+side*.29+Math.sin(yaw)*reach,y+1.435-.295*Math.cos(armRotation),z+Math.cos(yaw)*reach,.14,.59,.15,yaw,armRotation);
+        this.people.limbs.getMatrixAt(j,this._handMatrix);this._handPosition.set(0,-.5,0).applyMatrix4(this._handMatrix);
+        this.pose(this.people.hands,i*2+(side===-1?0:1),this._handPosition.x,this._handPosition.y,this._handPosition.z,1,1,1,yaw,armRotation);
         this.pose(this.people.limbs,j+1,x+side*.13,y+.48,z+stride*side*.2,.16,.75,.18,yaw,stride*side);
         this.pose(this.people.boots,i*2+(side===-1?0:1),x+side*.13,y+.11,z+stride*side*.2+.08,.18,.2,.32,yaw);
       }
