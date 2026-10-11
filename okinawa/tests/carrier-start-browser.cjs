@@ -1,4 +1,4 @@
-/* Actual carrier models, aircraft tyres, camera and frozen catapult sequence.
+/* Actual carrier models, aircraft tyres, camera and frozen rolling departure sequence.
  * Local Chrome can be selected with GAME_TEST_CHROME; required in CI. */
 'use strict';
 const fs=require('node:fs'),path=require('node:path'),http=require('node:http'),assert=require('node:assert/strict');
@@ -106,11 +106,11 @@ const server=http.createServer((req,res)=>{
    assert(await page.evaluate(()=>isDefend()?!playerZero.getObjectByName('zeroGear').visible:isSBD()?!playerSBD.getObjectByName('sbdGear').visible:gearMesh.every(g=>!g.visible)),'all wheels retract normally');
    await page.evaluate(()=>launch());
    assert(await page.locator('#skipCarrierPreview').isEnabled());await page.locator('#skipCarrierPreview').click();
-   assert(await page.evaluate(()=>!carrierIntro&&state===ST.LAUNCH),'real Skip starts the catapult');
+   assert(await page.evaluate(()=>!carrierIntro&&state===ST.LAUNCH),'real Skip starts the rolling departure');
    // Abort while the shot is showing, then choose another actual aircraft.
    await page.evaluate(()=>{launch();togglePause();exitToMenu();});
    assert(await page.evaluate(()=>state===ST.MENU&&!carrierIntro&&!document.body.classList.contains('carrierPreview')));
-   console.log(ac+': original GLB, three deck contacts, camera framing, frozen mission, pause/resume, catapult, nine seconds of real flight/fire, retraction, Skip and Abort pass.');
+   console.log(ac+': original GLB, three deck contacts, camera framing, frozen mission, pause/resume, rolling departure, nine seconds of real flight/fire, retraction, Skip and Abort pass.');
   }
 
   assert.deepEqual(errors,[]);

@@ -27,8 +27,8 @@ for(const fps of [20,60,120]){
  for(let i=0;i<40*fps;i++)wake.update(1/fps);assert.equal(wake.stats.ships,0);assert.equal(wake.stats.vertices,0,'old wake fades and expires');
  for(let i=0;i<40;i++)wake.track({},position,{x:1,z:0},100,16,8,1);assert.equal(wake.stats.ships,24,'fixed ship budget');wake.clear();assert.equal(wake.stats.ships,0);assert.equal(wake.mesh.geometry.drawRange.count,0);wake.dispose();assert.equal(scene.children.length,0);
 }
-const scene=new THREE.Scene(),deck=Deck.create(THREE,scene,{deckY:14});assert.equal(deck.crew.length,8);assert.equal(deck.group.children.filter(o=>o.isInstancedMesh).length,6);
-const marshal=deck.group.children[4],before=marshal.instanceMatrix.array.slice();deck.update(.3,{launching:true});assert(before.some((v,i)=>v!==marshal.instanceMatrix.array[i]),'marshaller signals actual launch');
+const scene=new THREE.Scene(),deck=Deck.create(THREE,scene,{deckY:14});assert.equal(deck.crew.length,8);assert.equal(deck.group.children.filter(o=>o.isInstancedMesh).length,10);
+const marshal=deck.group.children.find(o=>o.name==='deckCrew-arms'&&o.count===2),before=marshal.instanceMatrix.array.slice();deck.update(.3,{launching:true});assert(before.some((v,i)=>v!==marshal.instanceMatrix.array[i]),'marshaller signals actual launch');
 for(let i=0;i<120;i++){deck.update(.05,{servicing:true});assert(deck.crew.every(c=>Math.abs(c.z)>=10),'walking/repair stays outside landing path');}deck.reset();assert.equal(deck.time,0);deck.dispose();assert.equal(scene.children.length,0);
 const lights=Runway.create(THREE,scene,(x,z)=>x*.01+z*.02);lights.setActive(true,1000,2000);assert.equal(lights.positions.length,52);assert.equal(lights.group.children.length,3);assert(!scene.children.some(o=>o.isLight),'runway adds no GPU light slots');
 const m=new THREE.Matrix4(),v=new THREE.Vector3();for(let i=0;i<52;i++){lights.group.children[1].getMatrixAt(i,m);v.setFromMatrixPosition(m);const [x,z]=lights.positions[i];assert(Math.abs(v.y-((1000+x)*.01+(2000+z)*.02+.48))<.00001);}

@@ -42,6 +42,9 @@ The appended sorties preserve the earlier combat indices:
 - **20 · Fuel Reserve (SBD):** one required merchant, an optional destroyer, 42% starting
   fuel and rain on the return. A solo sortie with no additional raid.
 
+Deck crew walk with planted feet, raised swing steps and articulated knees. Aircraft depart
+under engine power with a full deck run; launch text and effects describe a piston-era takeoff.
+
 Carrier recovery uses headwind along the moving deck. The existing speed instrument
 shows **REF 78 KT** for recovery and turns red before the current flap-dependent stall
 speed. A missed wire leads to a powered deck run without a position or speed jump.

@@ -5,7 +5,38 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 187 · Thunderbolt Squadron BUILD 187 · Remagen-Kern 23 / Fahrzeuge 22**
+Stand bei Übergabe: **Torpedo Squadron BUILD 188 · Thunderbolt Squadron BUILD 188 · Remagen-Kern 23 / Fahrzeuge 22**
+
+**Build 188 (11.10.2026): feste Schritte der Decksmannschaft und korrekte Starttexte.**
+Nutzer meldete Moonwalk und fragte nach historischen Katapultstarts. US-Träger nutzten
+im Zweiten Weltkrieg Katapulte, viele Starts erfolgten aber mit Deck Run; japanische
+Träger ausschließlich per Deck Run (USNI Proceedings, The Ski Jump Is the Future,
+1995, sowie NHHC Naval Aviation in World War II). Das Spiel verwendete bereits
+GroundRun statt Katapultphysik: am echten Modell ~8.3 s Rollstrecke. Katapult-Label
+bei Skip, Freigabe und Tutorial korrigiert; die drei weißen Smoke/Spray-Sprites pro
+Launch-Frame entfernt, damit der Propellerstart nicht wie eine Dampfkatapultierung wirkt.
+
+DeckActivity hatte Positions-Sinus und Bein-Sinus mit unabhängigen Perioden sowie
+XYZ-Euler-Reihenfolge für gedrehte Beine. Nun sind Fußschritte mit tatsächlicher
+Wegstrecke gekoppelt: in der Standphase bleibt der Stiefel deckfest, Schwungbein
+hebt 10 cm, Knie passen Hüfte und Knöchel per IK zusammen. An Routenenden stoppt
+und wendet jede Figur mit vier angehobenen Fußsetzungen statt Richtungs-Snap.
+Torso bewegt sich leicht, Arme folgen Schritten. Vollständige abgerundete Hosen-
+Segmente überdecken Knie; kein Triangle-Cut mit ausgefransten Öffnungen. Originale
+CrewVisuals-Piloten/Wasserposen unverändert. Acht Figuren, zehn Instanced Draws,
+geteilte Geometrien und zwei Materialien. heightAt wird an beiden Füßen abgetastet.
+
+Neue deck-gait.cjs prüft tatsächliche Instanzmatrizen über beide Wendepunkte bei
+20/60/120 FPS: kein Standfuß-Slide, Sohle deckfest (Float32 <.001 mm), 10-cm-Hub,
+kontinuierliche Schritte und geschlossene Beinlängen. Bestehende Draw-Budget-Tests
+auf zehn aktualisiert; Marshaller-Test adressiert jetzt wirklich dessen Arme.
+Native Deck/Start/Combat-Browsertests bestanden; Walking-A/B-Bilder unter test-visuals
+und sieben Deck-/Skip-/Pause-/Flight-/Fire-Starts mit originalen GLBs.
+Build187-Gesamt-CI scheiterte ausschließlich an einer alten Combat-Service-Fixture,
+die nach resolveGroundAndDeck sofort Service erwartete. Sie prüft jetzt echten
+progressiven Arrest und wartet auf Stillstand vor Service; native Combat-Fixture
+bestanden, keine Änderung der Produktions-Recovery. 31 Terrain-/48 Okinawa-Dateien
+und Syntax bestanden. Keine physische iPad/Safari-Freigabe behaupten.
 
 **Build 187 (11.10.2026): Landereferenz, Fahrwerk und sichtbarer Fangseilweg.**
 Thunderbolt-HUD zeigt REF in den bestehenden MPH-Einheiten, aus AC[P.ac].app:

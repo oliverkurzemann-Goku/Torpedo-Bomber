@@ -297,7 +297,7 @@
   .warningLamps{display:flex!important;gap:10px;padding:5px 9px!important;background:#141813dd!important;border:1px solid #535744;border-radius:4px;white-space:nowrap;}
   .warningLamp{color:#646c5c;font:9px monospace;letter-spacing:.35px;} .warningLamp[data-level="1"]{color:#ffd088;text-shadow:0 0 6px #e0a432a0;} .warningLamp[data-level="2"]{color:#ff8c70;text-shadow:0 0 7px #ff6638b0;}
 </style>
-<link rel="stylesheet" href="menu-layout.css?v=187">
+<link rel="stylesheet" href="menu-layout.css?v=188">
 </head>
 <body>
 <div id="app"></div>
@@ -314,7 +314,7 @@
   body.carrierPreview #pause{z-index:50;}
   body.carrierPreview #carrierPreview button:disabled{opacity:.5;cursor:wait;}
 </style>
-<div id="carrierPreview"><span id="carrierPreviewText">AIRCRAFT · READY FOR LAUNCH</span><button id="skipCarrierPreview" type="button">SKIP · CATAPULT LAUNCH</button></div>
+<div id="carrierPreview"><span id="carrierPreviewText">AIRCRAFT · READY FOR LAUNCH</span><button id="skipCarrierPreview" type="button">SKIP · START TAKEOFF</button></div>
 
 
 <!-- HUD -->
@@ -346,7 +346,7 @@
   <div id="flash"></div>
   <div id="ltn" style="position:fixed;inset:0;background:#e6ecff;opacity:0;pointer-events:none;z-index:40;"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 187</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 188</div>
 
   <!-- Optical landing aid -->
   <div id="lso">
@@ -389,7 +389,7 @@
 
 <!-- Menu -->
 <div class="overlay" id="menu" data-campaign="pacific">
-  <div class="menuTop"><a id="selBtn" href="index.html?v=187">&#9664; Change Game</a><span class="menuMeta">PACIFIC OPERATIONS<br>BUILD 187</span></div>
+  <div class="menuTop"><a id="selBtn" href="index.html?v=188">&#9664; Change Game</a><span class="menuMeta">PACIFIC OPERATIONS<br>BUILD 188</span></div>
   <div class="card menuCard">
     <aside class="menuOverview" aria-label="Campaign and pilot options">
     <div class="campaignArt" aria-hidden="true"></div>
@@ -491,11 +491,11 @@
 <script src="combat-fx.js?v=177"></script>
 <script src="aircraft-smoke.js?v=176"></script>
 <script src="aircraft-damage.js?v=177"></script>
-<script src="ship-damage.js?v=187"></script>
-<script src="flight-support.js?v=187"></script>
+<script src="ship-damage.js?v=188"></script>
+<script src="flight-support.js?v=188"></script>
 <script src="ordnance.js?v=157"></script>
 <script src="crew-visuals.js?v=179"></script>
-<script src="deck-activity.js?v=179"></script>
+<script src="deck-activity.js?v=188"></script>
 <script src="ship-wakes.js?v=179"></script>
 <script src="pilot-bailout.js?v=181"></script>
 <script src="enemy-bailouts.js?v=177"></script>
@@ -505,13 +505,13 @@
 <script src="radio-intercept.js?v=157"></script>
 <script src="audio/weapon-sound.js?v=144"></script>
 <script src="audio/flight-atmosphere.js?v=175"></script>
-<script src="sortie-systems.js?v=187"></script>
+<script src="sortie-systems.js?v=188"></script>
 <script src="sortie-features.js?v=163"></script>
 <script src="ground-run.js?v=179"></script>
 <script src="flight-indicators.js?v=179"></script>
-<script src="operation-plans.js?v=187"></script>
-<script src="pacific-theater.js?v=187"></script>
-<script src="carrier-recovery.js?v=187"></script>
+<script src="operation-plans.js?v=188"></script>
+<script src="pacific-theater.js?v=188"></script>
+<script src="carrier-recovery.js?v=188"></script>
 <script>
 "use strict";
 /* ============================================================
@@ -758,7 +758,7 @@ const MISSIONS = [
   // no enemy, no clock, just the boat. It is the single most useful thing for a new player.
   { title:"Qual", sub:"Carrier Qualification", qual:true,
     body:"Before the squadron lets you near a target, you qualify on the boat.<br><br>"
-        +"<b>1.</b> Full throttle, ride the catapult off the bow.<br>"
+        +"<b>1.</b> Full throttle, accelerate along the deck into the wind.<br>"
         +"<b>2.</b> Gear up, climb away, turn downwind.<br>"
         +"<b>3.</b> Abeam the ship: gear down, flaps down, throttle back.<br>"
         +"<b>4.</b> Turn final and fly the <b>meatball</b> — keep the amber light between the green bars.<br>"
@@ -2208,7 +2208,7 @@ function startMission(idx){
   // two wingmen fly the strike/dive-bomb sorties with you — not the qual, free flight, or
   // the Zero defence sortie (there you ARE the fighter cover)
   // Wingmen no longer spawn on the deck (one used to sit crossways at the bow at launch).
-  // They join up in the air once the player is off the catapult — see the flight loop.
+  // They join up in the air once the player is airborne after the deck run — see the flight loop.
   wingmenPending = !m.qual && !m.free && !m.defend && (m.targets||[]).length>0;
   wingmenPendingT = 0;
   // (loadout is set earlier, before applyLoadoutUI builds the control buttons)
@@ -2421,7 +2421,7 @@ function finishCarrierIntro(){
   carrierIntro=null;document.body.classList.remove('carrierPreview');releaseHeldControls();
   const nd=noseDir();camera.up.set(0,1,0);camera.position.copy(P.pos).addScaledVector(nd,-24).add(new THREE.Vector3(0,chaseH,0));
   camera.lookAt(P.pos.clone().addScaledVector(nd,30));
-  flash('CATAPULT — CLEARED FOR LAUNCH',1100);
+  flash('DECK CLEAR — CLEARED FOR TAKEOFF',1100);
 }
 function updateCarrierIntro(dt){
   if(!carrierIntro)return;
@@ -3695,7 +3695,7 @@ function trap(x,arrested=false){
       P.fuel=MISSIONS[mission].fuel; P.hull=100; P.ammo=1200;
       P.bingo=false; P.lowFuelT=0; P.rtb=false; P.ballCalled=false;
       updateHUD();
-      launch();                       // catapult straight back off the deck
+      launch();                       // start another rolling departure
       return;
     }
     saveBest(score); state=ST.RESULT;
@@ -5233,7 +5233,7 @@ function loadPlaneModel(){
       }
       window.__eyeDbg='EYE '+COCKPIT_EYE.map(v=>v.toFixed(2)).join('/');
       const btEl=document.getElementById('buildTag');
-      if(btEl) btEl.textContent='BUILD 187 · '+window.__eyeDbg;
+      if(btEl) btEl.textContent='BUILD 188 · '+window.__eyeDbg;
       let seat=null;
       model.traverse(function(o){
         if(!o.isMesh||!o.material) return;
@@ -6602,7 +6602,7 @@ function setupUIButtons(){
   if(dbgT2) dbgT2.onclick=()=>{
     dbgOn=!dbgOn; GameRuntime.storage.setItem('dbgOn',dbgOn?'1':'0');
     const db=document.getElementById('dbgBox'); if(db) db.textContent=dbgOn?'✓':'';
-    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 187'; }
+    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 188'; }
   };
   const lu=document.getElementById('lookUp'), ld=document.getElementById('lookDn');
   let _lookT=0;
@@ -6618,7 +6618,7 @@ function setupUIButtons(){
   if(pb) pb.addEventListener('pointerdown',e=>{ e.preventDefault(); togglePause(); });
   const rb=document.getElementById('resumeBtn'); if(rb) rb.onclick=resumeGame;
   const mb=document.getElementById('menuBtn'); if(mb) mb.onclick=exitToMenu;
-  document.getElementById('pauseMainMenu').onclick=()=>{exitToMenu();window.location.href='index.html?v=187';};
+  document.getElementById('pauseMainMenu').onclick=()=>{exitToMenu();window.location.href='index.html?v=188';};
   document.getElementById('resultBtn').onclick=()=>{
     // the logbook borrows this screen from the menu — send the player straight back
     if(logbookOpen){ logbookOpen=false; showOverlay('menu'); return; }
@@ -6705,13 +6705,7 @@ function updateLaunch(dt){
   // accelerate down the deck then lift
   GroundRun.step(P,dt,{carrier:true,limit:48,power:SortieFeatures.Damage.power(P)});
   P.pos.x += (P.spd+CARRIER_SPD)*dt;
-  if((P.pos.x-carrierX)<BOW_X){
-    spawnSmoke(P.pos.x-2,DECK_Y+1,P.pos.z+(Math.random()-0.5)*5,0xdddddd,0.6);
-    // prop wash spray whipping off the deck behind the aircraft
-    for(let s=-1;s<=1;s+=2){
-      spawnSmoke(P.pos.x-5,DECK_Y+0.6,P.pos.z+s*1.4+(Math.random()-0.5)*1.2,0xeef2f4,0.32);
-    }
-  }
+  // Piston aircraft depart under engine power; there is no steam-catapult plume.
   if((P.pos.x-carrierX)>BOW_X){ // off the bow
     P.pos.y += 7*dt;
     P.pitch=0.06;
@@ -6868,7 +6862,7 @@ function animate(){
     notice.style.cssText='position:fixed;inset:0;z-index:999998;background:rgba(15,20,15,.95);color:#e8ddbc;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px;text-align:center;font:16px system-ui';
     const title=document.createElement('h2');title.textContent='Simulation interrupted';
     const detail=document.createElement('p');
-    detail.textContent='BUILD 187 · '+(MISSIONS[mission]?.sub||'Menu')+' · '+error.message;
+    detail.textContent='BUILD 188 · '+(MISSIONS[mission]?.sub||'Menu')+' · '+error.message;
     const reload=document.createElement('button');reload.textContent='Reload game';
     reload.style.cssText='padding:12px 24px;font:inherit';reload.onclick=()=>location.reload();
     notice.appendChild(title);notice.appendChild(detail);notice.appendChild(reload);document.body.appendChild(notice);
@@ -6887,7 +6881,7 @@ function animateFrame(){
   if(shakeT>0) shakeT=Math.max(0,shakeT-rawDt);
   const t=clock.elapsedTime;
   if(carrierIntro&&state===ST.LAUNCH){
-    // Hold catapult, carrier motion, fuel, combat and all mission timers.
+    // Hold departure, carrier motion, fuel, combat and all mission timers.
     deckActivity?.update(rawDt,{launching:true});
     if(deckActivity)deckActivity.group.position.x=carrierX;
     updatePlaneMesh(rawDt);updateCarrierIntro(rawDt);updateAudio(rawDt);updateSea(t);
