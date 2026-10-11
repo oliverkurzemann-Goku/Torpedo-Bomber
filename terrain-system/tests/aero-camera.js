@@ -13,6 +13,7 @@ for(const [file,pacific] of [['remagen-mission.html',false],['torpedo-carrier.ht
     document:{querySelector:()=>null},applyShake(){},
     noseDir:()=>pacific?new THREE.Vector3(Math.cos(P.pitch),Math.sin(P.pitch),0):
       new THREE.Vector3(0,Math.sin(P.pitch),Math.cos(P.pitch))});
+  vm.runInContext(fs.readFileSync(path.join(root,'flight-support.js'),'utf8'),c);
   vm.runInContext(html.slice(a,b),c);
   P.pitch=Math.PI/3;c.updateCamera(1);camera.updateMatrixWorld(true);
   assert(camera.getWorldDirection(new THREE.Vector3()).y>.4,file+' AERO camera must follow the climb');

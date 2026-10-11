@@ -5,7 +5,27 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 182 · Thunderbolt Squadron BUILD 182 · Remagen-Kern 23 / Fahrzeuge 22**
+Stand bei Übergabe: **Torpedo Squadron BUILD 183 · Thunderbolt Squadron BUILD 183 · Remagen-Kern 23 / Fahrzeuge 22**
+
+**Build 183 (11.10.2026): mittige Verfolgerkamera unabhängig von Kurs und Seitenwind.**
+Nutzerbilder mit Kurs 120/289 Grad zeigten links/rechts wanderndes Flugzeug und Visier;
+derselbe Effekt trat im Rheinspiel auf. Beide Kameras glätteten die Weltposition und
+hingen dadurch auch hinter dem Seitenwind zurück. FlightSupport.centerChase entfernt
+nur diesen seitlichen Versatz relativ zum aktuellen Kurs nach der vorhandenen Glättung.
+Abstand/Höhe, LOOK, Bankreferenz, Loop-Horizont und Trefferwackeln behalten ihre Abläufe;
+Kill-/Start-/Fallschirmkameras nutzen ihre bestehenden Sonderpfade. Pacific projiziert
+das Visier erst nach dem aktuellen LookAt/Shake, statt mit der vorherigen Kameramatrix.
+
+chase-heading.cjs prüft beide echten updateCamera-Funktionen: Normal/AERO,
+20/60/120 FPS, acht Kurse einschließlich 120/289 Grad und Wind -12/0/+12 m/s.
+Außerdem aktuelle Visierpixel, gespeicherte LOOK-Höhen und komplette Loop-Horizonte.
+chase-heading-browser.cjs verwendet echte SBD-/P-47-Modelle, updateFlight und den
+nativen Browser: alte Glättung reproduziert den Versatz; die neue hält Kamera und
+Visier mittig, prüft Kurswechsel/Pause und rendert beide Nutzerkurse. Bei deaktivierter
+RAF muss P-47 nach Template-Laden explizit per refreshModels angehängt werden;
+auf playerModel ohne einen Frame zu warten wäre ein falscher Test-Timeout.
+Build-/Seiten-/CSS-/FlightSupport-Cachekennungen folgen 183. Keine iPad/Safari-
+Geräteprüfung oder FPS-Freigabe behaupten; GitHub-Gesamtlauf separat ausweisen.
 
 **Build 182 (10.10.2026): sanfte Notwasserung mit Klappen und ruhige Rottenflieger.**
 Nutzerfall: Gear up / Flaps down bei 65kt und 100–200ft/min führte immer zum Rookie-

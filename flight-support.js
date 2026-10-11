@@ -42,6 +42,16 @@ function canDitch(p,stall,approach){
   p.spd>=stall*.8&&p.spd<=approach+14&&p.vSpeed>=-3.5&&p.vSpeed<=1.5&&
   p.pitch>=-.06&&p.pitch<=.20&&Math.abs(p.roll)<=.18;
 }
+function centerChase(camera,position,track){
+ // World-space follow easing lags behind crosswind as well as forward motion.
+ // Remove only its sideways component in the current heading frame, retaining
+ // the existing distance/height easing and the intentional bank/impact shake.
+ const length=Math.hypot(track.x,track.z);
+ if(length<1e-6)return;
+ const x=-track.z/length,z=track.x/length;
+ const side=(camera.position.x-position.x)*x+(camera.position.z-position.z)*z;
+ camera.position.x-=x*side;camera.position.z-=z*side;
+}
 function guideWingman(w,desiredVelocity,dt,forming){
  // Steer the flight path itself, then render the same attitude. Previously
  // velocity turned independently of the rate-limited mesh, so close escorts
@@ -151,5 +161,5 @@ class Navigation{
   }
  }
 }
-root.FlightSupport={surfaceHit,skinHeight,canDitch,guideWingman,TreeIndex,treeStrike,Navigation};
+root.FlightSupport={surfaceHit,skinHeight,canDitch,centerChase,guideWingman,TreeIndex,treeStrike,Navigation};
 })(typeof window==='undefined'?globalThis:window);
