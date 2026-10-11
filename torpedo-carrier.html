@@ -296,7 +296,7 @@
   .warningLamps{display:flex!important;gap:10px;padding:5px 9px!important;background:#141813dd!important;border:1px solid #535744;border-radius:4px;white-space:nowrap;}
   .warningLamp{color:#646c5c;font:9px monospace;letter-spacing:.35px;} .warningLamp[data-level="1"]{color:#ffd088;text-shadow:0 0 6px #e0a432a0;} .warningLamp[data-level="2"]{color:#ff8c70;text-shadow:0 0 7px #ff6638b0;}
 </style>
-<link rel="stylesheet" href="menu-layout.css?v=184">
+<link rel="stylesheet" href="menu-layout.css?v=185">
 </head>
 <body>
 <div id="app"></div>
@@ -342,7 +342,7 @@
   <div id="flash"></div>
   <div id="ltn" style="position:fixed;inset:0;background:#e6ecff;opacity:0;pointer-events:none;z-index:40;"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 184</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 185</div>
 
   <!-- Optical landing aid -->
   <div id="lso">
@@ -385,7 +385,7 @@
 
 <!-- Menu -->
 <div class="overlay" id="menu" data-campaign="pacific">
-  <div class="menuTop"><a id="selBtn" href="index.html?v=184">&#9664; Change Game</a><span class="menuMeta">PACIFIC OPERATIONS<br>BUILD 184</span></div>
+  <div class="menuTop"><a id="selBtn" href="index.html?v=185">&#9664; Change Game</a><span class="menuMeta">PACIFIC OPERATIONS<br>BUILD 185</span></div>
   <div class="card menuCard">
     <aside class="menuOverview" aria-label="Campaign and pilot options">
     <div class="campaignArt" aria-hidden="true"></div>
@@ -406,6 +406,7 @@
       <label class="toggle" id="dbgToggle"><span class="box" id="dbgBox"></span> Debug overlay</label>
       <label class="toggle" id="timeToggle"><span class="box" id="timeBox">☀</span> <span id="timeName">Day</span></label>
       <label class="weatherPick" for="practiceWx">Free flight weather<select id="practiceWx"><option value="clear">Clear</option><option value="broken">Broken cloud</option><option value="lowcloud">Low overcast</option><option value="fog">Fog</option><option value="rain">Rain</option><option value="squall">Heavy showers</option><option value="storm">Thunderstorm</option></select></label>
+      <button type="button" id="resetPacificEffects" style="min-height:44px">Reset harbor / convoy campaign effects</button>
     <div class="credit">
       Aircraft: &ldquo;Grumman Tbm Avenger&rdquo; by helijah &amp; &ldquo;Mitsubishi A6M3 Zero&rdquo; by Mamoru&#95;Morimoto (sketchfab.com), CC&#8209;BY&#8209;4.0.
     </div>
@@ -487,7 +488,7 @@
 <script src="aircraft-smoke.js?v=176"></script>
 <script src="aircraft-damage.js?v=177"></script>
 <script src="ship-damage.js?v=177"></script>
-<script src="flight-support.js?v=184"></script>
+<script src="flight-support.js?v=185"></script>
 <script src="ordnance.js?v=157"></script>
 <script src="crew-visuals.js?v=179"></script>
 <script src="deck-activity.js?v=179"></script>
@@ -504,7 +505,8 @@
 <script src="sortie-features.js?v=163"></script>
 <script src="ground-run.js?v=179"></script>
 <script src="flight-indicators.js?v=179"></script>
-<script src="operation-plans.js?v=184"></script>
+<script src="operation-plans.js?v=185"></script>
+<script src="pacific-theater.js?v=185"></script>
 <script>
 "use strict";
 /* ============================================================
@@ -875,6 +877,7 @@ const MISSIONS = [
   { title:"Sortie 16", sub:"Corsair · Coastal Assault", sbd:true,corsair:true,okinawa:true,shoreStrike:true,loadout:'divebomb',weather:'broken',
     body:"<b>F4U-1C Corsair — sea to shore.</b> Strike the airfield installations with cannon and bombs, sink the offshore supply ship, and defeat the intercepting Zero patrol. Four bombs; return to the carrier after all primary targets are destroyed.",
     torps:4,fuel:100,zeros:1,targets:[{type:'freighter',pos:[3450,0,160],hp:1},{type:'destroyer',pos:[2900,0,-50],hp:1,flak:true}] },
+  ...PacificTheater.missions,
   { title:"Okinawa", sub:"Okinawa Coast · Free Flight", free:true, okinawa:true,
     body:"Fly the Avenger from the carrier toward the Yomitan coast. The 16 × 16 km landscape uses geographic elevation and shoreline data. Houses, reefs and vegetation are illustrative. No enemy, timer or score; land aboard to fly again.<br><br>Head east from the bow to reach the coast. The mapped area ends inland; this is a scenery flight, not a historical mission.",
     torps:0, fuel:100, zeros:0, targets:[] },
@@ -942,6 +945,7 @@ async function preparePacificModels(m,progress=()=>{}){
   if(targets.some(t=>t.type==='cruiser'))needed.push(['capital',loadCruiserModel,()=>cruiserTemplate]);
   for(const name of new Set([...targets,...(m.support||[])].filter(t=>t.model).map(t=>t.model)))
     needed.push(['ship:'+name,()=>NavalAssets.load(name),()=>NavalAssets.get(name)]);
+  if(m.theater==='fleet')needed.push(['ship:fletcher',()=>NavalAssets.load('fletcher'),()=>NavalAssets.get('fletcher')]);
   // Serial decoding avoids overlapping large embedded-image allocations on iPad.
   // Briefing/Start Engine is reached only once the selected sortie is ready.
   for(let i=0;i<needed.length;i++){
@@ -956,7 +960,7 @@ async function preparePacificModels(m,progress=()=>{}){
 }
 function pacificPauseOrders(){
   const m=MISSIONS[mission];
-  const task=isDefend()?'RAIDERS '+raiders.filter(r=>r.alive).length+' · CARRIER '+Math.round(carrierHP)+'%':
+  const task=MISSIONS[mission].theater==='escort'?'TRANSPORTS ARRIVED '+convoyProof().arrived+'/2 · RAIDERS '+raiders.filter(r=>r.alive).length:hasRaiders()?'RAIDERS '+raiders.filter(r=>r.alive).length+' · CARRIER '+Math.round(carrierHP)+'%':
     m.qual?'CARRIER QUALIFICATION · TRAPS '+qualTraps+'/'+(m.quals||3):m.free?'FREE FLIGHT':
     'SHIPS '+ships.filter(s=>s.alive&&s.def.type!=='destroyer').length+' · SHORE TARGETS '+shoreTargets.filter(t=>t.alive&&!t.def.optional).length;
   const faults=SortieFeatures.Damage.status(P);
@@ -1241,6 +1245,7 @@ function updateShadow(){
     if(Math.abs(lx)<7980 && Math.abs(z)<7980 && okinawaWorld.shoreDistance(lx,z)>1)
       baseY=(terrainY=okinawaWorld.getHeight(lx,z))+0.12;
   }
+  if(!onDeck&&MISSIONS[mission]?.theater==='escort'){const h=PacificTheater.islandHeight(P.pos.x,P.pos.z);if(h>1)baseY=(terrainY=h)+.12;}
   const alt=Math.max(0,P.pos.y-(onDeck?DECK_Y:(terrainY===null?0:terrainY)));
   planeShadow.position.set(P.pos.x,baseY,P.pos.z);
   const s=1+alt*0.018; planeShadow.scale.set(s,s,s);
@@ -1972,18 +1977,35 @@ function buildPlane(){
 //  MISSION FLOW
 // ============================================================
 let pacificOps=null,pacificPlan=null,shoreTargets=[],shoreAsset=null,shoreAssetLoading=false;
+let operationalScenery=null,enemyBombs=[],patrolRecovery=null;
+function isUSDefense(){return ['escort','fleet'].includes(MISSIONS[mission]?.theater);}
+function hasRaiders(){return isDefend()||isUSDefense();}
+function convoyProof(){return PacificTheater.escortStatus(supportFleet,raiders,enemyBombs,!pacificOps?.pending());}
+function pacificTargetsClear(){
+ if(MISSIONS[mission]?.theater==='escort')return convoyProof().clear;
+ if(hasRaiders())return raiders.length>0&&raiders.every(r=>!r.alive)&&etorps.length===0&&enemyBombs.length===0;
+ const primary=ships.filter(s=>s.def.type!=='destroyer'&&!s.def.optional),shore=shoreTargets.filter(t=>!t.def.optional);
+ return primary.length+shore.length>0&&primary.every(s=>!s.alive)&&shore.every(t=>!t.alive);
+}
 const COASTAL_STRIKE=[
  {x:6990,z:-1044,kind:'aircraft',label:'Parked aircraft A',hp:16},
  {x:7200,z:-1044,kind:'aircraft',label:'Parked aircraft B',hp:16},
  {x:7260,z:-940,kind:'flak',label:'Dispersal AA',hp:22,optional:true}
 ];
 function shoreHeight(x,z){
- if(!okinawaWorld)return 0;const lx=x-OKINAWA_OFFSET_X;
- if(Math.abs(lx)>7990||Math.abs(z)>7990||okinawaWorld.shoreDistance(lx,z)<=0)return 0;
- return okinawaWorld.getHeight(lx,z);
+ const authored=MISSIONS[mission]?.theater==='escort'?PacificTheater.islandHeight(x,z):0;
+ if(!okinawaWorld)return authored;const lx=x-OKINAWA_OFFSET_X;
+ if(Math.abs(lx)>7990||Math.abs(z)>7990||okinawaWorld.shoreDistance(lx,z)<=0)return authored;
+ return Math.max(authored,okinawaWorld.getHeight(lx,z));
 }
 function resetShoreTargets(enabled){
  shoreTargets.forEach(t=>GameRuntime.release(t.group));shoreTargets=[];
+ operationalScenery?.dispose();operationalScenery=null;
+ const m=MISSIONS[mission];
+ if(m.theater){
+  operationalScenery=new PacificTheater.Scenery(THREE,scene,m,shoreHeight);
+  if(m.theater==='harbor')for(const def of PacificTheater.harborTargets){const group=operationalScenery.target(def,shoreHeight);shoreTargets.push({def,group,hp:def.hp,alive:true,loaded:true,cool:2});}
+ }
  if(!enabled)return;
  if(!shoreAsset&&!shoreAssetLoading){
   shoreAssetLoading=true;new THREE.GLTFLoader().load('m16_mgmc.glb',g=>{
@@ -1996,7 +2018,7 @@ function resetShoreTargets(enabled){
 }
 function hitShoreTarget(t,damage){
   if(!t.alive)return;t.hp-=damage;
-  if(pacificOps&&!pacificOps.scrambled){
+  if(pacificOps&&!pacificOps.scrambled&&!MISSIONS[mission].theater){
     pacificOps.scrambled=true;const first=zeros.length;spawnZero(0,1);
     for(const z of zeros.slice(first)){
       z.pos.set(7500,shoreHeight(7500,-1044)+300,-1044);
@@ -2006,12 +2028,15 @@ function hitShoreTarget(t,damage){
     radioSay('AIRFIELD ALERT — ZERO TAKING OFF TO INTERCEPT');
   }
  const p=t.group.position;spawnSmoke(p.x,p.y+3,p.z,0x554a3a,.9);
- if(t.hp>0)return;t.alive=false;t.group.visible=false;addScore(t.def.optional?300:900);
+ if(t.hp>0)return;t.alive=false;t.group.visible=false;
+ if(t.def.kind==='fuel'&&operationalScenery){t.group.visible=true;t.group.traverse(o=>{if(o.isMesh)o.material=operationalScenery.charred;});t.burnT=0;}
+ addScore(t.def.optional?300:900);
  spawnExplosion(p.x,p.y+2,p.z,1.1);spawnDebris(p.x,p.y+3,p.z,8);sfxBoom(.8);
  flash(t.def.label.toUpperCase()+' DESTROYED',1400);checkObjectiveCleared();
 }
 function updateShoreTargets(dt){
  for(const t of shoreTargets){
+  if(!t.alive&&t.def.kind==='fuel'){t.burnT-=dt;if(t.burnT<=0){t.burnT=.7;const p=t.group.position;spawnFire(p.x,p.y+10,p.z,.9);spawnSmoke(p.x,p.y+17,p.z,0x252521,.8);}continue;}
   if(!t.loaded){const source=t.def.kind==='aircraft'?zeroTemplate:shoreAsset;
    if(source){const model=source.clone(true);const b=new THREE.Box3().setFromObject(model);model.position.y-=b.min.y;
     model.rotation.y=Math.PI/2;t.group.add(model);t.loaded=true;}}
@@ -2026,34 +2051,39 @@ function updateShoreTargets(dt){
  }
 }
 function choosePacificPlan(i){
- const config={...(FlightPlans.pacific[i]||{}),practice:!!(MISSIONS[i].free||MISSIONS[i].qual)},names=MISSIONS[i].free?[document.getElementById('practiceWx').value||'clear']:config.weather||[MISSIONS[i].weather||'clear'];
+ const config={...(MISSIONS[i].operation?PacificTheater.plan(MISSIONS[i]):FlightPlans.pacific[i]||{}),practice:!!(MISSIONS[i].free||MISSIONS[i].qual)},names=MISSIONS[i].free?[document.getElementById('practiceWx').value||'clear']:config.weather||[MISSIONS[i].weather||'clear'];
  if(!config.practice&&!MISSIONS[i].defend&&config.deadline)config.deadline+=180;
- return {config:FlightOps.withPhases(MISSIONS[i],config),weather:names[Math.floor(Math.random()*names.length)],wind:(Math.random()<.5?-1:1)*(2+i*.28)};
+ return {config:config.phases?config:FlightOps.withPhases(MISSIONS[i],config),weather:names[Math.floor(Math.random()*names.length)],wind:(Math.random()<.5?-1:1)*Math.min(6,2+i*.28)};
 }
 function updatePacificOperation(dt){
  if(!pacificOps||isFree()||isQual())return;
- const clear=isDefend()?raiders.every(r=>!r.alive)&&etorps.length===0:ships.filter(s=>s.def.type!=='destroyer').every(s=>!s.alive)&&shoreTargets.filter(t=>!t.def.optional).every(t=>!t.alive);
+ if(MISSIONS[mission].theater==='escort'&&convoyProof().failed){pacificOps.failed=true;P.rtb=true;state=ST.RESULT;showResult(false,'CONVOY LOST',MISSIONS[mission].sub,'A required transport was sunk. Both transports must reach the anchorage.','Retry Sortie');return;}
+ const clear=pacificTargetsClear();
  const kills=sortieShipsSunk+shoreTargets.filter(t=>!t.alive).length+raiders.filter(r=>!r.alive).length;
- const located=kills>0||(isDefend()?raiders.some(r=>r.alive&&P.pos.distanceTo(r.pos)<4500):ships.some(s=>s.alive&&P.pos.distanceTo(s.group.position)<2300));
+ const located=kills>0||(hasRaiders()?raiders.some(r=>r.alive&&P.pos.distanceTo(r.pos)<4500)||supportFleet.some(s=>P.pos.distanceTo(s.group.position)<1600):ships.some(s=>s.alive&&P.pos.distanceTo(s.group.position)<2300));
  for(const e of pacificOps.tick(dt,{pos:P.pos,kills,clear,located,complete:P.rtb||clear&&pacificOps.ready()})){
   if(e.weather){weather=e.weather;applyWeather();}
   for(let i=0;i<(e.fighters||0);i++)spawnZero(i,e.fighters);
-  for(let i=0;i<(e.raiders||0);i++)spawnRaider(i,e.raiders);
+  for(let i=0;i<(e.raiders||0);i++)isUSDefense()?spawnJapaneseRaider(i,e.raiders):spawnRaider(i,e.raiders);
   if(e.recon)addScore(250);
   if(e.failed)P.rtb=true;
   if(e.message){flash(e.message,2200);radioSay(e.message);}
  }
  checkObjectiveCleared();
  const el=document.getElementById('opsStatus');
- if(el){const text=FlightOps.wx(weather).label.toUpperCase()+' · '+(P.rtb&&!pacificOps.failed?'RECOVERY':pacificOps.status());if(el.textContent!==text)el.textContent=text;}
+ if(el){const convoy=MISSIONS[mission].theater==='escort'?' · ARRIVED '+convoyProof().arrived+'/2':MISSIONS[mission].theater==='fleet'?' · DECK '+carrierHP+'%':'';const text=FlightOps.wx(weather).label.toUpperCase()+' · '+(P.rtb&&!pacificOps.failed?'RECOVERY':pacificOps.status())+convoy;if(el.textContent!==text)el.textContent=text;}
 }
 function drawPacificBrief(m){
- const targets=m.targets.map(s=>({x:s.pos[0],z:s.pos[2],label:NavalAssets.label(s),optional:s.type==='destroyer'}));
+ const targets=m.targets.map(s=>({x:s.pos[0],z:s.pos[2],label:NavalAssets.label(s),optional:s.type==='destroyer'||s.optional}));
+ if(m.theater==='harbor')targets.push(...PacificTheater.harborTargets);
+ if(m.theater==='escort'){for(const s of m.support.filter(s=>s.transport))targets.push({x:s.pos[0],z:s.pos[2],label:NavalAssets.label(s)+' — protect',friendly:true});targets.push({x:-1800,z:4400,label:'Anchorage — both transports',friendly:true});}
+ if(m.theater==='fleet')targets.push({x:3200,z:2300,label:'Japanese bomb-carrier raid'});
  if(m.reinforcement)for(const s of m.reinforcement.targets)targets.push({x:s.pos[0],z:s.pos[2],label:'Second contact: '+NavalAssets.label(s),optional:s.type==='destroyer'});
  if(m.shoreStrike)targets.push(...COASTAL_STRIKE);
  if(m.defend)targets.push({x:2200,z:2400,label:'Raider approach sector'});
- const labels=FlightOps.drawMap(document.getElementById('opsMap'),{title:'OKINAWA COAST',northSign:-1,base:{x:carrierX,z:0},targets,recon:pacificPlan.config.recon,
-  sample:(x,z)=>{const lx=x-OKINAWA_OFFSET_X;if(!okinawaWorld||Math.abs(lx)>7990||Math.abs(z)>7990||okinawaWorld.shoreDistance(lx,z)<0)return '#24434c';
+ const labels=FlightOps.drawMap(document.getElementById('opsMap'),{title:m.theater==='escort'?'ISLAND CHANNEL':m.theater==='harbor'?'COASTAL HARBOR':'OKINAWA COAST',northSign:-1,base:{x:carrierX,z:0},targets,recon:pacificPlan.config.recon,
+  approach:m.theater==='harbor'?{x:3600,z:-4200,radius:500,label:'Open bay'}:null,
+  sample:(x,z)=>{if(m.theater==='escort'&&PacificTheater.islandHeight(x,z)>1)return '#637653';const lx=x-OKINAWA_OFFSET_X;if(!okinawaWorld||Math.abs(lx)>7990||Math.abs(z)>7990||okinawaWorld.shoreDistance(lx,z)<0)return '#24434c';
    const h=okinawaWorld.getHeight(lx,z),v=Math.min(1,h/250);return 'rgb('+Math.round(63+v*45)+','+Math.round(86+v*30)+','+Math.round(46+v*20)+')';}});
  document.getElementById('opsLegend').textContent=labels||'Carrier training area';
 }
@@ -2092,7 +2122,7 @@ function startMission(idx){
   shakeT=0; shakeMag=0;
   const m=MISSIONS[idx];
   // Combat stations leave a real outbound leg; practice and fleet defence stay local.
-  carrierX=(m.free||m.qual||m.defend)?0:-8000; CARRIER_SPD=5; if(carrier) carrier.position.x=carrierX;
+  carrierX=(m.free||m.qual||m.defend||m.theater==='fleet')?0:m.theater==='escort'?-4000:-8000; CARRIER_SPD=5; if(carrier) carrier.position.x=carrierX;
   carrierGunTimers=[0,.21,.43,.65];
   if(carrierModel) carrierModel.position.x=carrierX+CARRIER_DX;
   if(ijnCarrierModel) ijnCarrierModel.position.x=carrierX+CARRIER_DX;
@@ -2144,8 +2174,9 @@ function startMission(idx){
   for(const def of m.support||[]){
     const template=NavalAssets.get(def.model),group=new THREE.Group();group.add(template.clone(true));
     group.position.set(def.pos[0],0,def.pos[2]);group.rotation.y=def.heading??0;scene.add(group);
-    supportFleet.push({def,group,length:template.userData.naval.length,wakeT:0});
+    supportFleet.push(PacificTheater.initializeConvoy({def,group,length:template.userData.naval.length,wakeT:0}));
   }
+  if(m.theater==='fleet'&&PacificTheater.effects().reinforced){const template=NavalAssets.get('fletcher'),group=new THREE.Group();group.add(template.clone(true));group.position.set(carrierX-350,0,-450);scene.add(group);supportFleet.push(PacificTheater.initializeConvoy({def:{model:'fletcher',speed:0},group,length:115,wakeT:0}));}
   resetShoreTargets(!!m.shoreStrike);
   // spawn enemy fighters
   const nz=m.zeros||0;
@@ -2154,6 +2185,7 @@ function startMission(idx){
   // ---- fleet defence: clear old raiders/torps, then set the sortie up ----
   raiders.forEach(r=>{ if(r.mesh) GameRuntime.release(r.mesh); }); raiders=[];
   etorps.forEach(t=>GameRuntime.release(t.mesh)); etorps=[];
+  enemyBombs.forEach(t=>GameRuntime.release(t.mesh));enemyBombs=[];patrolRecovery=null;
   carrierHP=100; qualTraps=0; qualStep=0;
   seaState=m.sea||1.0;
   if(seaUniforms) seaUniforms.uSeaState.value=seaState;
@@ -2241,11 +2273,12 @@ function startMission(idx){
     if(planeBody) planeBody.visible=!planeModelLoaded;
     if(propPivot) propPivot.visible=true;
   }
+  if(m.theater==='fleet')for(let i=0;i<m.raiders;i++)spawnJapaneseRaider(i,m.raiders);
 
   // briefing
   document.getElementById('briefTitle').textContent=m.title;
   document.getElementById('briefSub').textContent=m.sub;
-  document.getElementById('briefBody').innerHTML=m.body+FlightOps.briefText(weather,pacificPlan.config,windZ);
+  document.getElementById('briefBody').innerHTML=m.body+PacificTheater.effectText(m)+FlightOps.briefText(weather,pacificPlan.config,windZ);
   document.getElementById('briefLandingSpeed').textContent='LANDING TARGET: ~'+Math.round(APP_SPD*KT)+' KT · GEAR / FLAPS / HOOK DOWN.';
   drawPacificBrief(m);
   showOverlay('brief');
@@ -2665,9 +2698,7 @@ function hitShip(s, quietCam,point=null,weapon="torpedo"){
 }
 
 function checkObjectiveCleared(){
-  const primary=ships.filter(s=>s.def.type==="freighter"||s.def.type==="cruiser");
-  const cleared = (isDefend()?raiders.length>0&&raiders.every(r=>!r.alive)&&etorps.length===0:
-    primary.length>0&&primary.every(s=>!s.alive)&&shoreTargets.filter(t=>!t.def.optional).every(t=>!t.alive));
+  const cleared=pacificTargetsClear();
   const wave=MISSIONS[mission].reinforcement;
   if(cleared && wave && !reinforcementsLaunched){
     reinforcementsLaunched=true;
@@ -2677,7 +2708,7 @@ function checkObjectiveCleared(){
     radioSay('SECOND CONTACT CONFIRMED — ESCORT AND FIGHTER COVER');
     return;
   }
-  if(cleared && (!pacificOps||pacificOps.ready()) && !P.rtb){ P.rtb=true; addScore(500); flash("TARGETS DOWN  +500 — RETURN TO SHIP",1500); }
+  if(cleared && (!pacificOps||pacificOps.ready()) && !P.rtb){ P.rtb=true; addScore(500); flash(MISSIONS[mission].theater==='escort'?"CONVOY SAFE  +500 — RETURN TO SHIP":"TARGETS DOWN  +500 — RETURN TO SHIP",1500); }
 }
 
 function spawnSplash(x,z,big){
@@ -3174,7 +3205,7 @@ function updateTailGun(dt){
 
 function typeOfRearGunHeavy(){return !isSBD();}
 function updateFlak(dt){
-  if(isDefend())updateCarrierDefense(dt);
+  if(hasRaiders())updateCarrierDefense(dt);
   for(const s of ships){
     if(!s.alive||!s.flak) continue;
     const d=Math.hypot(P.pos.x-s.group.position.x, P.pos.z-s.group.position.z);
@@ -3240,7 +3271,7 @@ function updateFlak(dt){
 // Avengers, never the friendly player Zero. Sweep collision prevents tunnelling.
 let carrierGunTimers=[0,.21,.43,.65];
 function updateCarrierDefense(dt){
-  if(!isDefend()||carrierHP<=0)return;
+  if(!hasRaiders()||carrierHP<=0)return;
   for(let i=0;i<carrierGunTimers.length;i++){
     carrierGunTimers[i]-=dt;if(carrierGunTimers[i]>0)continue;
     const side=i%2?-1:1;
@@ -3469,6 +3500,9 @@ function overDeck(x,z){
 
 function resolveGroundAndDeck(dt){
   const x=P.pos.x, z=P.pos.z, y=P.pos.y;
+  if(MISSIONS[mission]?.theater==='escort'){
+    const h=PacificTheater.islandHeight(x,z);if(h>1&&y<h+2){crash('TERRAIN','You flew into a channel island.');return;}
+  }
 
   // island terrain
   if(okinawaWorld && okinawaWorld.root.visible){
@@ -3603,9 +3637,10 @@ function trap(x){
     'Aircraft recovered. The attack window closed before all tasks were completed.','Try Again');return;}
   // ---- REARM: if primary targets are still afloat, refuel/rearm and go again ----
   const remaining = ships.filter(s=>s.alive &&
-    (s.def.type==='freighter'||s.def.type==='cruiser')).length
+    !s.def.optional&&(s.def.type==='freighter'||s.def.type==='cruiser')).length
     +shoreTargets.filter(t=>t.alive&&!t.def.optional).length
-    +(isDefend()?raiders.filter(r=>r.alive).length:0)
+    +(hasRaiders()?raiders.filter(r=>r.alive).length+etorps.length+enemyBombs.length:0)
+    +(MISSIONS[mission].theater==='escort'&&!convoyProof().clear?1:0)
     +(pacificOps&&!pacificOps.ready()?1:0);
   if(remaining>0){
     flash('TRAP ABOARD — DECK SERVICE  +'+bonus,1600);
@@ -3616,6 +3651,8 @@ function trap(x){
   state=ST.RESULT;
   const last = mission===MISSIONS.length-2; // final Okinawa sortie; free flight follows
   if(window.SquadronCampaign)SquadronCampaign.record('pacific',mission);
+  const previousEffects=PacificTheater.effects();PacificTheater.record(MISSIONS[mission],shoreTargets,supportFleet);
+  const campaignLine=MISSIONS[mission].theater==='harbor'&&!previousEffects.fuelDenied?'<br>Fuel supplies denied: later second raids lose one aircraft.':MISSIONS[mission].theater==='escort'&&!previousEffects.reinforced?'<br>Both transports delivered: Fletcher reinforcement available for Fleet Alarm.':'';
   // ---- medal for this sortie ----
   const acc = sortieTorpFired? sortieTorpHit/sortieTorpFired : 0;
   let medal='bronze';
@@ -3640,7 +3677,7 @@ function trap(x){
     +(promoted?"<br><br><b>Promoted to "+rank+".</b>":"")
     +"<br><br>This sortie: "+sortieShipsSunk+" sunk · "+sortieZeros+" Zeros · "+sortieTorpHit+"/"+sortieTorpFired
       +" fish on target · hull "+SortieFeatures.Damage.hullPercent(P)+"% · "+hitsTaken+" hits taken"+lostLine
-    +"<br>Landing bonus +"+bonus+" · SCORE "+score+" · BEST "+Math.max(bestScore(),score)
+    +campaignLine+"<br>Landing bonus +"+bonus+" · SCORE "+score+" · BEST "+Math.max(bestScore(),score)
     +"<br><br><b>LOGBOOK</b> — "+l.sorties+" sorties · "+(l.shipsSunk||0)+" sunk · "+lifeAcc+"% torpedo accuracy"
       +"<br>LSO grades: "+(Object.keys(l.grades||{}).length
         ? Object.keys(l.grades).map(k=>k+"×"+l.grades[k]).join("  ") : "—")
@@ -4208,6 +4245,7 @@ function updateWingmen(dt){
   let someoneAttacking = wingmen.some(w=>w.alive && w.mode==='attack');
   for(const w of wingmen){
     if(!w.alive) continue;
+    if(w.patrolRecovery)continue; // dedicated optional wounded-pilot recovery path
     if(w.cool>0) w.cool-=dt;
 
     // --- pick a target: nearest live ship in reach, and only if no wingman is mid-run ---
@@ -4399,6 +4437,80 @@ function updateQualCoach(){
   if(qualStep===5 && alt<160){ qualStep=6; radioSay("ON GLIDESLOPE — DO NOT CHASE IT, SMALL CORRECTIONS"); return; }
 }
 let qualTraps=0, qualStep=0, logbookOpen=false;
+function spawnJapaneseRaider(i,n){
+  // Honest A6M fighter-bomber raid, not an Avenger painted into the opposing fleet.
+  const count=zeros.length;spawnZero(i,n);const r=zeros.pop();if(zeros.length!==count)throw Error('Raider registration failed');
+  r.japanese=true;r.bomber=true;r.def={type:'zero'};r.hp=4;r.fromModel=true;r.disc=r.disk;r.group=r.mesh;r.dropped=false;r.runIn=false;
+  setZeroGearVisible(r.mesh,false);
+  const west=pacificOps?.elapsed>60,base=MISSIONS[mission].theater==='escort'?supportFleet.find(s=>s.alive&&s.def.transport)?.group.position:new THREE.Vector3(carrierX,0,0);
+  r.pos.set(base.x+(west?-1:1)*(3300+i*300),300+i*60,base.z+(west?-1900:1900)+i*240);
+  r.heading=Math.atan2(base.x-r.pos.x,base.z-r.pos.z);r.pitch=0;r.roll=0;r.spd=72;
+  r.vel=new THREE.Vector3(Math.sin(r.heading),0,Math.cos(r.heading)).multiplyScalar(r.spd);
+  const bomb=Ordnance.create('bomb');bomb.position.set(0,-1.6,0);r.mesh.add(bomb);r.bombRack=bomb;
+  r.mesh.position.copy(r.pos);r.mesh.rotation.set(0,r.heading,0);raiders.push(r);
+}
+function japaneseAim(r){
+  if(MISSIONS[mission].theater==='escort'){
+    const ts=supportFleet.filter(s=>s.alive&&!s.arrived&&s.def.transport),target=ts[raiders.indexOf(r)%Math.max(1,ts.length)]||supportFleet.find(s=>s.alive&&s.def.transport);
+    return target?{pos:target.group.position,speed:target.arrived?0:target.def.speed*(target.hp<60?.65:1),heading:target.group.rotation.y}:null;
+  }
+  return {pos:new THREE.Vector3(carrierX,0,0),speed:CARRIER_SPD,heading:Math.PI/2};
+}
+function updateJapaneseRaider(r,dt){
+ const target=japaneseAim(r);if(!target)return;
+ const d=r.pos.distanceTo(target.pos);r.egressT=Math.max(0,(r.egressT||0)-dt);
+ if(r.dropped&&r.egressT<=0&&d>2200){r.dropped=false;r.runIn=false;r.egressDir=null;r.bombRack.visible=true;}
+ r.runIn=d<2100;const altitude=r.dropped?340:r.runIn?120:300;
+ const fallTime=()=>{const h=Math.max(0,r.pos.y-2-.6),vy=r.vel.y;return (vy+Math.sqrt(vy*vy+36*h))/18;};
+ let tof=fallTime(),lead=target.pos.clone().add(new THREE.Vector3(Math.sin(target.heading),0,Math.cos(target.heading)).multiplyScalar(target.speed*tof));
+ const goal=r.dropped?r.pos.clone().addScaledVector(r.egressDir,600):lead.clone();goal.y=altitude;
+ SortieFeatures.flyRaider(r,goal,dt);r.mesh.position.copy(r.pos);r.mesh.rotation.set(-r.pitch,r.heading,-r.roll,'YXZ');
+ if(r.disc)r.disc.rotation.z-=GameRuntime.rotorStep(dt,PROP_STEP);
+ aircraftSmoke?.trail(r,r.pos,r.vel.clone().normalize(),r.spd,r.hp<4?1-r.hp/4:0,dt,windZ);
+ // Release follows actual velocity/gravity, not a guaranteed hit or homing weapon.
+ tof=fallTime();lead=target.pos.clone().add(new THREE.Vector3(Math.sin(target.heading),0,Math.cos(target.heading)).multiplyScalar(target.speed*tof));
+ const horizontal=r.vel.clone().setY(0),impact=r.pos.clone().addScaledVector(horizontal,tof);
+ const error=Math.hypot(impact.x-lead.x,impact.z-lead.z);
+ if(!r.dropped&&r.runIn&&r.pos.y<190&&error<40&&Math.abs(r.roll)<.4){
+  const mesh=Ordnance.create('bomb');GameRuntime.own(mesh);mesh.position.copy(r.pos).add(new THREE.Vector3(0,-2,0));scene.add(mesh);
+  enemyBombs.push({mesh,vel:r.vel.clone(),life:12});r.dropped=true;r.bombRack.visible=false;r.egressDir=horizontal.normalize();r.egressT=22;
+  radioSay('BOMB AWAY — CLEAR THE APPROACH');
+ }
+}
+function updateEnemyBombs(dt){
+ for(let i=enemyBombs.length-1;i>=0;i--){const b=enemyBombs[i],before=b.mesh.position.clone();b.life-=dt;b.vel.y-=18*dt;b.mesh.position.addScaledVector(b.vel,dt);b.mesh.lookAt(b.mesh.position.clone().add(b.vel));
+  const hit=FlightSupport.surfaceHit(before,b.mesh.position,()=>.6,0);
+  if(hit){let victim=null;
+   if(MISSIONS[mission].theater==='escort')victim=supportFleet.find(s=>s.alive&&Math.hypot(hit.x-s.group.position.x,hit.z-s.group.position.z)<s.length*.45);
+   else if(hit.x-carrierX>STERN_X-12&&hit.x-carrierX<BOW_X+12&&Math.abs(hit.z)<DECK_HALF_W+18)victim='carrier';
+   if(victim){spawnExplosion(hit.x,5,hit.z,1.4);sfxBoom(1);if(victim==='carrier'){carrierHP=Math.max(0,carrierHP-25);shake(1.8);if(carrierHP<=0)carrierLost();else flash('FLIGHT DECK HIT — '+carrierHP+'%',1400);}
+    else {victim.hp=Math.max(0,victim.hp-40);victim.alive=victim.hp>0;if(!victim.alive)victim.sinkT=0;flash(NavalAssets.label(victim.def).toUpperCase()+' HIT — '+victim.hp+'%',1400);}}
+   else spawnSplash(hit.x,hit.z,true);
+  }
+  if(hit||b.life<=0){GameRuntime.release(b.mesh);enemyBombs.splice(i,1);}
+ }
+}
+function updateAlliedDefense(dt){
+ if(!isUSDefense())return;
+ for(const s of supportFleet){if(!s.alive||s.def.model!=='fletcher')continue;s.aaCool=(s.aaCool||0)-dt;if(s.aaCool>0)continue;s.aaCool=.7;
+  const r=raiders.filter(r=>r.alive&&r.pos.distanceTo(s.group.position)<1600).sort((a,b)=>a.pos.distanceToSquared(s.group.position)-b.pos.distanceToSquared(s.group.position))[0];if(!r)continue;
+  const from=s.group.position.clone().add(new THREE.Vector3(0,12,0)),aim=r.pos.clone().addScaledVector(r.vel,.45),dir=aim.sub(from).normalize();
+  if(GameRuntime.segmentDistance(from,from.clone().addScaledVector(dir,1600),P.pos)<35)continue;
+  const mesh=CombatFX.round('aa');mesh.position.copy(from);mesh.lookAt(from.clone().add(dir));scene.add(mesh);tracers.push({mesh,dir,life:2.7,speed:560,fleet:true});
+ }
+}
+function updatePatrolRecovery(dt){
+ if(MISSIONS[mission].theater!=='fleet')return;
+ if(!patrolRecovery&&pacificOps.elapsed>=35){spawnWingman(0);const w=wingmen.at(-1);w.patrolRecovery=true;w.hp=1.5;w.pos.set(carrierX-1800,170,-100);w.heading=Math.PI/2;w.vel.set(60,0,0);patrolRecovery=w;radioSay('WOUNDED PATROL CORSAIR RETURNING — KEEP THE DECK APPROACH CLEAR');}
+ const w=patrolRecovery;if(!w?.alive)return;
+ const waiting=raiders.some(r=>r.alive&&Math.hypot(r.pos.x-carrierX,r.pos.z)<1800)||enemyBombs.length>0;
+ const goal=waiting?new THREE.Vector3(carrierX-2200,170,-350):new THREE.Vector3(carrierX+AIM_X,DECK_Y+2,0),gap=goal.sub(w.pos);
+ // Hold outside the approach while the raid is active. Recovery bonus is never required.
+ const velocity=gap.length()>15?gap.normalize().multiplyScalar(52):new THREE.Vector3(52,0,0);velocity.y=Math.max(-5,Math.min(5,velocity.y));
+ FlightSupport.guideWingman(w,velocity,dt,false);w.mesh.position.copy(w.pos);w.mesh.rotation.set(-w.pitch,w.heading,-w.roll,'YXZ');
+ aircraftSmoke?.trail(w,w.pos,w.vel.clone().normalize(),w.spd,.5,dt,windZ);if(w.disc)w.disc.rotation.z-=GameRuntime.rotorStep(dt,PROP_STEP);
+ if(!waiting&&Math.hypot(w.pos.x-carrierX-AIM_X,w.pos.z)<100&&w.pos.y<DECK_Y+14){w.alive=false;w.recovered=true;w.mesh.visible=false;addScore(300);flash('PATROL PILOT RECOVERED +300',1500);}
+}
 function spawnRaider(i,n){
   const mesh=new THREE.Group(); let r_disc=null;
   let inner=null;
@@ -4443,7 +4555,7 @@ function spawnRaider(i,n){
 }
 function killRaider(r,byFleet=false){
   if(!r.alive)return;
-  if(typeof enemyBailouts!=="undefined"&&enemyBailouts)enemyBailouts.spawn(r,"avenger","usnavy");
+  if(typeof enemyBailouts!=="undefined"&&enemyBailouts)enemyBailouts.spawn(r,r.japanese?"zero":"avenger",r.japanese?"ijn":"usnavy");
   r.alive=false; if(!byFleet)addScore(400);
   if(typeof aircraftDamage!=="undefined"&&aircraftDamage)aircraftDamage.wreck(r.mesh,r, (x,y,z)=>{spawnExplosion(x,y,z,1.4);spawnDebris(x,y,z,12);sfxBoom(.8);});
   else {
@@ -4453,7 +4565,7 @@ function killRaider(r,byFleet=false){
   if(typeof aircraftDamage==="undefined"||!aircraftDamage)GameRuntime.release(r.mesh);
   const left=raiders.filter(x=>x.alive).length;
   flash(left?("SPLASH ONE — "+left+" TO GO"):"ALL RAIDERS DOWN — RECOVER ABOARD",1500);
-  if(byFleet)radioSay("SHIP'S GUNS — AVENGER DOWN");
+  if(byFleet)radioSay("SHIP'S GUNS — RAIDER DOWN");
   else if(left) radioSay("SPLASH ONE! "+left+" STILL COMING");
   else radioSay(pacificOps?.pending()?"FIRST WAVE DOWN — MORE RAIDERS EXPECTED":"THE FLEET IS SAFE — BRING IT HOME");
   checkObjectiveCleared();
@@ -4461,6 +4573,7 @@ function killRaider(r,byFleet=false){
 function updateRaiders(dt){
   for(let i=raiders.length-1;i>=0;i--){
     const r=raiders[i]; if(!r.alive) continue;
+    if(r.japanese){updateJapaneseRaider(r,dt);continue;}
     // If the sortie started before the 15 MB Avenger finished loading, the raider was built
     // from the white procedural stand-in. Swap in the real model the moment it is ready.
     if(!r.fromModel && gltfRoot){
@@ -4988,7 +5101,7 @@ function loadPlaneModel(){
       }
       window.__eyeDbg='EYE '+COCKPIT_EYE.map(v=>v.toFixed(2)).join('/');
       const btEl=document.getElementById('buildTag');
-      if(btEl) btEl.textContent='BUILD 184 · '+window.__eyeDbg;
+      if(btEl) btEl.textContent='BUILD 185 · '+window.__eyeDbg;
       let seat=null;
       model.traverse(function(o){
         if(!o.isMesh||!o.material) return;
@@ -5561,6 +5674,10 @@ function spawnSmoke(x,y,z,color,op){
   const sc=7+Math.random()*7; s.scale.set(sc,sc,1);
   smokes.push({mesh:s,life:2.6,max:2.6,vy:5+Math.random()*4,grow:9});
 }
+function spawnScreenSmoke(x,y,z,color){
+ const before=smokes.length;spawnSmoke(x,y,z,color,.7);
+ if(smokes.length>before){const s=smokes.at(-1);s.life=s.max=12;s.vy=1.3;s.grow=8;s.mesh.scale.set(50,38,1);}
+}
 function updateSmoke(dt){
   for(let i=smokes.length-1;i>=0;i--){
     const sm=smokes[i]; sm.life-=dt; sm.mesh.position.y+=sm.vy*dt;
@@ -5842,8 +5959,10 @@ function updateGuns(dt){
       }
     }
     if(!hit)for(const t of shoreTargets){if(!t.alive)continue;const p=t.group.position,back=b.mesh.position.clone().addScaledVector(b.dir,-b.speed*dt);
-      const line=new THREE.Line3(back,b.mesh.position),near=line.closestPointToPoint(p.clone().add(new THREE.Vector3(0,2,0)),true,new THREE.Vector3());
-      if(near.distanceTo(p.clone().add(new THREE.Vector3(0,2,0)))<7){hitShoreTarget(t,1);hit=true;break;}}
+      const line=new THREE.Line3(back,b.mesh.position);
+      const center=p.clone().add(new THREE.Vector3(0,t.def.height||2,0));
+      const closest=line.closestPointToPoint(center,true,new THREE.Vector3());
+      if(closest.distanceTo(center)<(t.def.radius||7)){hitShoreTarget(t,1);hit=true;break;}}
     if(!hit){const surface=FlightSupport.surfaceHit(back,b.mesh.position,(x,z)=>Math.max(shoreHeight(x,z),seaHeightAt(x,z,seaUniforms?.uTime.value||0)),.2);
       if(surface){const water=shoreHeight(surface.x,surface.z)<.6;combatFX.impact(surface.x,surface.y,surface.z,water);hit=true;}}
     if(hit||b.life<=0){ GameRuntime.release(b.mesh); bullets.splice(i,1); }
@@ -5868,6 +5987,11 @@ function updateMinimap(){
     }
     mmCtx.restore();
   }
+  if(MISSIONS[mission].theater==='escort'){
+    mmCtx.save();mmCtx.beginPath();mmCtx.arc(c,c,R-1,0,7);mmCtx.clip();mmCtx.fillStyle='#637653';
+    for(const a of PacificTheater.islets){const q=put(a.x,a.z);mmCtx.beginPath();mmCtx.arc(...q,a.r*scale,0,7);mmCtx.fill();}
+    const q=put(-1800,4400);mmCtx.strokeStyle='#80c9df';mmCtx.beginPath();mmCtx.arc(...q,6,0,7);mmCtx.stroke();mmCtx.restore();
+  }
   mmCtx.fillStyle='#b8a06a';
   if(!okinawaWorld || !okinawaWorld.root.visible)for(const is of islands){ const p=put(is.x,is.z);
     if(Math.hypot(p[0]-c,p[1]-c)<R-1){ mmCtx.beginPath(); mmCtx.arc(p[0],p[1],Math.max(2,is.r*scale),0,7); mmCtx.fill(); } }
@@ -5875,7 +5999,7 @@ function updateMinimap(){
   for(const s of ships){ if(!s.alive) continue; const q=put(s.group.position.x,s.group.position.z);
     if(Math.hypot(q[0]-c,q[1]-c)<R-1){ mmCtx.fillStyle=s.def.type==='destroyer'?'#e0a050':'#c8412a';
       mmCtx.beginPath(); mmCtx.arc(q[0],q[1],3,0,7); mmCtx.fill(); } }
-  for(const s of supportFleet){const q=put(s.group.position.x,s.group.position.z);if(Math.hypot(q[0]-c,q[1]-c)<R-1){mmCtx.fillStyle='#80c9df';mmCtx.fillRect(q[0]-3,q[1]-3,6,6);}}
+  for(const s of supportFleet){if(s.alive===false)continue;const q=put(s.group.position.x,s.group.position.z);if(Math.hypot(q[0]-c,q[1]-c)<R-1){mmCtx.fillStyle=s.arrived?'#a1d191':'#80c9df';mmCtx.fillRect(q[0]-3,q[1]-3,6,6);}}
   for(const t of shoreTargets){if(!t.alive)continue;const q=put(t.def.x,t.def.z);if(Math.hypot(q[0]-c,q[1]-c)<R-2){mmCtx.fillStyle=t.def.optional?'#dba774':'#f06a4b';mmCtx.fillRect(q[0]-3,q[1]-3,6,6);}}
   if(pacificOps?.config.recon&&!pacificOps.reconDone){const r=pacificOps.config.recon,q=put(r.x,r.z);mmCtx.strokeStyle='#80c9df';mmCtx.beginPath();mmCtx.arc(q[0],q[1],r.radius*scale,0,7);mmCtx.stroke();}
   ensureNavigation().paint(mmCtx,put,c,R-7);
@@ -6041,7 +6165,9 @@ function pacificContacts(){
  const c=[];
  for(const s of ships)if(s.alive)c.push({ref:s,pos:s.group.position,kind:'SHIP',label:NavalAssets.label(s.def).toUpperCase()+' #'+(ships.indexOf(s)+1)});
  for(const t of shoreTargets)if(t.alive)c.push({ref:t,pos:t.group.position,kind:'TARGET',label:t.def.label.toUpperCase()});
- for(const r of raiders)if(r.alive)c.push({ref:r,pos:r.group.position,kind:'BOMBER',label:'INBOUND BOMBER'});
+ for(const r of raiders)if(r.alive)c.push({ref:r,pos:r.group.position,kind:'BOMBER',label:r.japanese?'A6M BOMB CARRIER':'INBOUND BOMBER'});
+ if(MISSIONS[mission].theater==='escort')for(const s of supportFleet)if(s.alive&&s.def.transport)c.push({ref:s,pos:s.group.position,kind:'ALLY',label:NavalAssets.label(s.def).toUpperCase()+' '+s.hp+'%'+(s.arrived?' — ARRIVED':' — PROTECT')});
+ if(patrolRecovery?.alive)c.push({ref:patrolRecovery,pos:patrolRecovery.pos,kind:'ALLY',label:'WOUNDED CORSAIR — KEEP APPROACH CLEAR (OPTIONAL)'});
  for(const z of zeros)if(z.alive)c.push({ref:z,pos:z.pos,kind:'BANDIT',label:'BANDIT — A6M ZERO'});
  const r=pacificOps?.config.recon;if(r&&!pacificOps.reconDone)c.push({ref:r,pos:r,kind:'RECON',label:'RECON — BLUE CIRCLE'});
  c.push({ref:'base',pos:{x:carrierX+AIM_X,z:0},kind:'BASE',label:'RETURN TO BASE'});return c.map(contact=>({...contact,range:(Math.hypot(contact.pos.x-P.pos.x,contact.pos.z-P.pos.z)/NM).toFixed(1)+' NM'}));
@@ -6052,7 +6178,8 @@ function ensureNavigation(){
 }
 function updateNav(){
   const nav=ensureNavigation(),contacts=pacificContacts(),base=contacts.find(c=>c.kind==='BASE');
-  let list=contacts.filter(c=>c.kind==='TARGET'&&!c.ref.def.optional||c.kind==='SHIP'&&['freighter','cruiser'].includes(c.ref.def.type)||isDefend()&&c.kind==='BOMBER');
+  let list=contacts.filter(c=>c.kind==='TARGET'&&!c.ref.def.optional||c.kind==='SHIP'&&!c.ref.def.optional&&['freighter','cruiser'].includes(c.ref.def.type)||hasRaiders()&&c.kind==='BOMBER');
+  if(!list.length&&MISSIONS[mission].theater==='escort'&&!P.rtb)list=contacts.filter(c=>c.kind==='ALLY'&&!c.ref.arrived);
   if(!list.length)list=contacts.filter(c=>c.kind==='BANDIT'||c.kind==='BOMBER');
   let chosen=list.sort((a,b)=>Math.hypot(a.pos.x-P.pos.x,a.pos.z-P.pos.z)-Math.hypot(b.pos.x-P.pos.x,b.pos.z-P.pos.z))[0]||base;
   if(pacificOps&&!pacificOps.reconDone)chosen=contacts.find(c=>c.kind==='RECON')||chosen;
@@ -6138,7 +6265,7 @@ const interceptRadio=RadioIntercept.create();
 const voiceRadio=FlightAtmosphere.voiceRadio(),soundscape=FlightAtmosphere.soundscape();
 function updateInterceptRadio(dt){
  if(state!==ST.FLIGHT||!P.alive||P.rtb||pacificOps?.failed)return;
- const contacts=isDefend()?raiders:zeros;
+ const contacts=hasRaiders()?raiders:zeros;
  const message=interceptRadio.tick(dt,P,contacts,radioT>0||radioQ.length>0);
  if(message)radioSay(message);
 }
@@ -6205,6 +6332,8 @@ function exitToMenu(){
   state=ST.MENU; killCam=null;if(navigation){navigation.reset();navigation.button.style.display='none';}
   setOkinawaActive(false);
   releaseOkinawa();
+  operationalScenery?.dispose();operationalScenery=null;
+  enemyBombs.forEach(b=>GameRuntime.release(b.mesh));enemyBombs=[];
   carrierX=0; if(carrier) carrier.position.x=0;
   if(carrierModel) carrierModel.position.x=CARRIER_DX;
   if(ijnCarrierModel) ijnCarrierModel.position.x=CARRIER_DX;
@@ -6219,6 +6348,9 @@ function exitToMenu(){
 }
 
 function setupUIButtons(){
+  document.getElementById('resetPacificEffects').onclick=()=>{
+    if(confirm('Reset harbor and convoy effects? Mission progress and the pilot logbook are kept.')){PacificTheater.resetEffects();flash('HARBOR / CONVOY EFFECTS RESET',1800);}
+  };
   const hints=document.getElementById('flightHints');hints.checked=GameRuntime.storage.getItem('flightHints')!=='0';
   hints.onchange=()=>GameRuntime.storage.setItem('flightHints',hints.checked?'1':'0');
   document.getElementById('menuLandingSpeed').textContent='LANDING TARGET: ~'+Math.round(APP_SPD*KT)+' KT.';
@@ -6331,7 +6463,7 @@ function setupUIButtons(){
   if(dbgT2) dbgT2.onclick=()=>{
     dbgOn=!dbgOn; GameRuntime.storage.setItem('dbgOn',dbgOn?'1':'0');
     const db=document.getElementById('dbgBox'); if(db) db.textContent=dbgOn?'✓':'';
-    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 184'; }
+    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 185'; }
   };
   const lu=document.getElementById('lookUp'), ld=document.getElementById('lookDn');
   let _lookT=0;
@@ -6347,7 +6479,7 @@ function setupUIButtons(){
   if(pb) pb.addEventListener('pointerdown',e=>{ e.preventDefault(); togglePause(); });
   const rb=document.getElementById('resumeBtn'); if(rb) rb.onclick=resumeGame;
   const mb=document.getElementById('menuBtn'); if(mb) mb.onclick=exitToMenu;
-  document.getElementById('pauseMainMenu').onclick=()=>{exitToMenu();window.location.href='index.html?v=184';};
+  document.getElementById('pauseMainMenu').onclick=()=>{exitToMenu();window.location.href='index.html?v=185';};
   document.getElementById('resultBtn').onclick=()=>{
     // the logbook borrows this screen from the menu — send the player straight back
     if(logbookOpen){ logbookOpen=false; showOverlay('menu'); return; }
@@ -6457,7 +6589,7 @@ function updateLaunch(dt){
 
 function updatePacificAtmosphere(dt){
   const baseRange=Math.hypot(P.pos.x-carrierX,P.pos.z);
-  const sources=isDefend()?raiders.filter(r=>r.alive).map(r=>r.pos):ships.filter(s=>s.alive&&s.flak).map(s=>s.group.position);
+  const sources=hasRaiders()?raiders.filter(r=>r.alive).map(r=>r.pos):ships.filter(s=>s.alive&&s.flak).map(s=>s.group.position);
   const distant=sources.filter(p=>p.distanceTo(P.pos)>1200).sort((a,b)=>a.distanceToSquared(P.pos)-b.distanceToSquared(P.pos))[0];
   for(const event of soundscape.tick(dt,{baseRange,combatRange:distant?distant.distanceTo(P.pos):Infinity,combat:!isFree()&&!isQual()})){
     if(event==='battle'&&distant)spawnFlakBurst(distant.clone().add(new THREE.Vector3(35,90,-35)));
@@ -6468,11 +6600,16 @@ function trackShipWake(group,forward,length,beam,speed,dt){
   if(state!==ST.MENU&&state!==ST.BRIEF&&state!==ST.RESULT)shipWakes?.track(group,group.position,forward,length,beam,speed,dt);
 }
 function updateShips(dt){
+  if(state!==ST.FLIGHT&&state!==ST.LAUNCH&&state!==ST.SERVICE)return;
   // Allied transports are separate from hostile targets: no friendly AA,
   // target arrows, wingman attacks or accidental completion requirements.
   for(const s of supportFleet){
-    const heading=s.group.rotation.y,speed=s.def.speed??2.4;
-    s.group.position.x+=Math.sin(heading)*speed*dt;s.group.position.z+=Math.cos(heading)*speed*dt;
+    if(s.alive===false){s.sinkT=(s.sinkT||0)+dt;s.group.position.y=-Math.min(20,s.sinkT*1.2);s.group.rotation.z=Math.min(.65,s.sinkT*.03);continue;}
+    let speed=s.def.speed??2.4;
+    if(s.def.destination)speed=PacificTheater.moveConvoy(s,dt);
+    const heading=s.group.rotation.y;
+    if(!s.def.destination){s.group.position.x+=Math.sin(heading)*speed*dt;s.group.position.z+=Math.cos(heading)*speed*dt;}
+    if(MISSIONS[mission].theater==='fleet')s.group.position.x=carrierX-350;
     s.group.position.y=seaHeightAt(s.group.position.x,s.group.position.z,seaUniforms.uTime.value);
     trackShipWake(s.group,new THREE.Vector3(Math.sin(heading),0,Math.cos(heading)),s.length,s.group.children[0]?.userData.naval?.beam||18,speed,dt);
   }
@@ -6509,13 +6646,15 @@ function updateShips(dt){
         s.wakeT=0;
       }
       const wf=s.fwd.clone().applyQuaternion(s.group.quaternion); wf.y=0; wf.normalize();
-      // ---- evasive zigzag while a torpedo is in the water nearby ----
+      const enhanced=MISSIONS[mission].tactics||mission>=3&&!isFree()&&!isQual();
+      if(enhanced)PacificTheater.shipTactics(s,dt,P,torpedoes,ships,spawnScreenSmoke);
+      // Legacy early-sortie zigzag; advanced ships use bounded course changes above.
       let evading=false;
       for(const t of torpedoes){
         if(Math.hypot(t.mesh.position.x-s.group.position.x, t.mesh.position.z-s.group.position.z)<1400){
           evading=true; break; }
       }
-      if(evading){
+      if(evading&&!enhanced&&!s.def.moored){
         for(const escort of ships)if(escort.alive&&escort.flak&&escort.group.position.distanceTo(s.group.position)<3000)escort.fleetAlertT=5;
         if(!s.evadeDir){ s.evadeDir=Math.random()<0.5?-1:1; s.evadeT=2.5+Math.random()*2;
           if(!radioEvadeCalled){ radioEvadeCalled=true; radioSay("SHE'S SEEN THE FISH — TARGET TURNING HARD"); } }
@@ -6528,7 +6667,7 @@ function updateShips(dt){
       // Turn the bow toward the bearing that points away from the island's centre. Once clear
       // of the keep-out ring the ship resumes its course, so it curves around instead of
       // circling. Checked against the nearest island only — they never overlap.
-      if(okinawaWorld && okinawaWorld.root.visible){
+      if(!s.def.moored&&okinawaWorld && okinawaWorld.root.visible){
         const aheadX=s.group.position.x+wf.x*(s.radius+180)-OKINAWA_OFFSET_X;
         const aheadZ=s.group.position.z+wf.z*(s.radius+180);
         if(Math.abs(aheadX)<7950 && Math.abs(aheadZ)<7950 &&
@@ -6537,7 +6676,7 @@ function updateShips(dt){
           const right=okinawaWorld.shoreDistance(aheadX+wf.z*180,aheadZ-wf.x*180);
           s.group.rotateY((left<right?-1:1)*.24*dt);
         }
-      }else{
+      }else if(!s.def.moored){
         let near=null, nd=1e9;
         for(const is of islands){
           const d=Math.hypot(s.group.position.x-is.x, s.group.position.z-is.z);
@@ -6587,7 +6726,7 @@ function animate(){
     notice.style.cssText='position:fixed;inset:0;z-index:999998;background:rgba(15,20,15,.95);color:#e8ddbc;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px;text-align:center;font:16px system-ui';
     const title=document.createElement('h2');title.textContent='Simulation interrupted';
     const detail=document.createElement('p');
-    detail.textContent='BUILD 184 · '+(MISSIONS[mission]?.sub||'Menu')+' · '+error.message;
+    detail.textContent='BUILD 185 · '+(MISSIONS[mission]?.sub||'Menu')+' · '+error.message;
     const reload=document.createElement('button');reload.textContent='Reload game';
     reload.style.cssText='padding:12px 24px;font:inherit';reload.onclick=()=>location.reload();
     notice.appendChild(title);notice.appendChild(detail);notice.appendChild(reload);document.body.appendChild(notice);
@@ -6638,7 +6777,7 @@ function animateFrame(){
     if(aircraftSmoke&&P.alive)aircraftSmoke.damage("player",P,noseDir(),dt,windZ);
     updateFlightHints(rawDt);
     if(isQual()) updateQualCoach();
-    if(isDefend()){ updateRaiders(dt); updateEnemyTorps(dt); }
+    if(hasRaiders()){updateRaiders(dt);updateEnemyTorps(dt);updateEnemyBombs(dt);updateAlliedDefense(dt);updatePatrolRecovery(dt);}
     // wingmen join up in the air once the player is off the deck (no more deck pile-ups)
     // Join up once airborne. In SBD sorties wait for the Dauntless model to finish loading
     // (10 MB — it often isn't ready the instant you're off the deck), so wingmen don't get
@@ -6679,6 +6818,7 @@ function animateFrame(){
   advanceBailout(rawDt);
 
   updateShips(dt);
+  if(operationalScenery&&(state===ST.FLIGHT||state===ST.LAUNCH||state===ST.SERVICE))operationalScenery.update(dt,P.pos);
   updateWakes(dt);shipWakes?.update(dt);
   if(deckActivity){deckActivity.group.position.x=carrierX;deckActivity.update(rawDt,{visible:Math.hypot(P.pos.x-carrierX,P.pos.z)<1500||state===ST.MENU,launching:state===ST.LAUNCH,servicing:state===ST.SERVICE});}
   updateSplashes(dt);

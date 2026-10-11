@@ -33,7 +33,8 @@ assert.match(html('torpedo-carrier.html'),/await prepareOkinawa\(\);[\s\S]*?awai
 const carrier=html('torpedo-carrier.html');
 const waveStart=carrier.indexOf('function checkObjectiveCleared(){');
 const waveEnd=carrier.indexOf('\nfunction ',waveStart+10);
-const carrierMissions=vm.runInNewContext(carrier.slice(carrier.indexOf('const MISSIONS = ['),carrier.indexOf('\nasync function prepareOkinawa'))+'\nMISSIONS',{});
+const theater=vm.runInNewContext(html('pacific-theater.js')+'\nwindow.PacificTheater',{window:{}});
+const carrierMissions=vm.runInNewContext(carrier.slice(carrier.indexOf('const MISSIONS = ['),carrier.indexOf('\nasync function prepareOkinawa'))+'\nMISSIONS',{PacificTheater:theater});
 const sortie=carrierMissions[12];
 assert.equal(sortie.reinforcement.targets.length,2,'Okinawa reconnaissance has a second convoy');
 const spawned=[],jets=[],pilot={rtb:false};let points=0;
@@ -41,6 +42,8 @@ const stage=vm.createContext({MISSIONS:carrierMissions,mission:12,reinforcements
  ships:[{def:sortie.targets[0],alive:false}],P:pilot,isDefend:()=>false,shoreTargets:[],pacificOps:null,
  spawnShip:def=>{spawned.push(def);stage.ships.push({def,alive:true});},
  spawnZero:i=>jets.push(i),flash(){},radioSay(){},addScore:n=>{points+=n;}});
+stage.hasRaiders=()=>false;
+vm.runInContext(carrier.slice(carrier.indexOf('function pacificTargetsClear(){'),carrier.indexOf('const COASTAL_STRIKE=')),stage);
 vm.runInContext(carrier.slice(waveStart,waveEnd),stage);
 stage.checkObjectiveCleared();
 assert.equal(spawned.length,2);assert.equal(jets.length,1);assert.equal(pilot.rtb,false,'first kill starts second phase');

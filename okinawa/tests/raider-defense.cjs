@@ -11,6 +11,7 @@ function context(){
    isDefend:()=>true,spawnSmoke:()=>{},spawnSparks:()=>{},spawnFlakBurst:()=>{},sfxPop:()=>{},spawnEnemyTorp:()=>{ctx.drops++;},
    drops:0,fleetKills:0,killRaider:r=>{r.alive=false;ctx.fleetKills++;}};
  vm.createContext(ctx);vm.runInContext(moduleCode,ctx);
+ ctx.hasRaiders=()=>ctx.isDefend();
  vm.runInContext(fs.readFileSync('combat-fx.js','utf8'),ctx);
  vm.runInContext(extract('function updateRaiders(dt){','function spawnEnemyTorp'),ctx);
  vm.runInContext(extract('let carrierGunTimers=','function spawnFlakBurst'),ctx);

@@ -11,7 +11,7 @@ function aligned(mesh,direction){
 }
 // Exercise the actual ship AA routine, including different deck/target bearings.
 const ctx=vm.createContext({THREE,CombatFX,GameRuntime,Math,scene:new THREE.Scene(),ships:[],tracers:[],raiders:[],wingmen:[],
- P:{pos:new THREE.Vector3(),alive:true,spd:65},isDefend:()=>false,noseDir:()=>new THREE.Vector3(1,0,0),sfxPop(){},spawnFlakBurst(){}});
+ P:{pos:new THREE.Vector3(),alive:true,spd:65},hasRaiders:()=>false,isDefend:()=>false,noseDir:()=>new THREE.Vector3(1,0,0),sfxPop(){},spawnFlakBurst(){}});
 vm.runInContext(extract('function updateFlak(dt){','// Four deck-edge'),ctx);
 for(const target of [new THREE.Vector3(650,35,0),new THREE.Vector3(0,35,650),new THREE.Vector3(-650,35,-650)]){
  ctx.P.pos.copy(target);ctx.ships=[{alive:true,flak:true,flakTimer:0,group:new THREE.Group()}];ctx.tracers=[];

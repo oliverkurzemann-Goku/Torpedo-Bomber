@@ -9,7 +9,7 @@ const getElementById=id=>{if(!elements.has(id))elements.set(id,{style:{},textCon
 const fighter={alive:true,pos:new THREE.Vector3(0,500,1000)};
 const c=vm.createContext({THREE,document:{getElementById},P:{pos:new THREE.Vector3(0,500,0),heading:0},
   R2D:180/Math.PI,NM:1852,zeros:[fighter],ships:[],raiders:[],shoreTargets:[],pacificOps:null,
-  carrierX:0,AIM_X:0,DECK_Y:20,isDefend:()=>false,NavalAssets:{label:d=>d.type},ensureNavigation:()=>({resolve:c=>c})});
+  carrierX:0,AIM_X:0,DECK_Y:20,MISSIONS:[{}],mission:0,supportFleet:[],patrolRecovery:null,hasRaiders:()=>false,isDefend:()=>false,NavalAssets:{label:d=>d.type},ensureNavigation:()=>({resolve:c=>c})});
 const contacts=html.slice(html.indexOf('function pacificContacts(){'),html.indexOf('function ensureNavigation(){'));
 vm.runInContext(contacts,c);
 vm.runInContext(html.slice(a,b),c);

@@ -22,7 +22,7 @@ for(const file of ['remagen-mission.html','torpedo-carrier.html']){
  const html=fs.readFileSync(path.join(root,file),'utf8'),a=html.indexOf('function updateInterceptRadio('),b=html.indexOf('\nfunction ',a+1);
  const lines=[],c=vm.createContext({ST:{FLIGHT:1},state:1,P:{...player},enemyAir:[{...bomber,alive:true}],
   zeros:[],raiders:[{...bomber,alive:true}],europeOps:null,pacificOps:null,radioQ:[],radioT:0,
-  interceptRadio:RadioIntercept.create(),radioSay:m=>lines.push(m),isDefend:()=>true});
+  interceptRadio:RadioIntercept.create(),radioSay:m=>lines.push(m),hasRaiders:()=>true,isDefend:()=>true});
  vm.runInContext(html.slice(a,b),c);c.updateInterceptRadio(8);assert.equal(lines.length,1,'actual '+file+' callback delivers guidance');
  c.state=2;c.updateInterceptRadio(30);assert.equal(lines.length,1,'paused/dead aircraft gets no guidance');
 }

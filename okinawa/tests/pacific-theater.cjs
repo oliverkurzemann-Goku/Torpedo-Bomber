@@ -1,0 +1,42 @@
+'use strict';
+const fs=require('fs'),vm=require('vm'),assert=require('node:assert/strict'),THREE=require('three'),{createCanvas}=require('@napi-rs/canvas');
+const storage=new Map(),c={THREE,window:null,localStorage:{getItem:k=>storage.get(k),setItem:(k,v)=>storage.set(k,v)},document:{createElement:()=>createCanvas(1,1)},atob};c.window=c;vm.createContext(c);
+for(const f of ['pacific-theater.js','okinawa/data.js','okinawa/world.js'])vm.runInContext(fs.readFileSync(f,'utf8'),c);
+const T=c.PacificTheater;
+assert.deepEqual(Array.from(T.missions,m=>m.theater),['harbor','escort','fleet']);
+assert(T.missions.every(m=>!m.defend),'US defense is not silently the Japanese/Zero mode');
+assert(T.missions.every(m=>!m.combined),'no coordinated combined attack');
+const w=new c.OkinawaWorld(c.OKINAWA_DATA);w.buildMasks();
+const height=(x,z)=>w.shoreDistance(x-10000,z)>0?w.getHeight(x-10000,z):0;
+for(const d of T.harborTargets)assert(height(d.x,d.z)>2,'port target rests on mapped land');
+for(const d of T.missions[0].targets)assert(w.shoreDistance(d.pos[0]-10000,d.pos[2])< -90,'port ships have navigable water and draft clearance');
+for(const d of T.missions[0].targets.filter(t=>t.moored))for(const dx of [-10,0,10])for(const dz of [-66,0,66])assert(w.getHeight(d.pos[0]+dx-10000,d.pos[2]+dz)<-3.5,'full cargo hull has depth exceeding its actual 3.5m draft');
+for(const fps of [20,60,120]){
+ const convoy=T.missions[1].support.map(def=>T.initializeConvoy({def,group:new THREE.Group()}));
+ convoy.forEach(s=>s.group.position.set(...s.def.pos));
+ for(let i=0;i<fps*274;i++)for(const s of convoy)T.moveConvoy(s,1/fps);
+ assert.equal(T.escortStatus(convoy,[],[],true).clear,false,'kills alone or almost-arrival cannot complete escort');
+ for(let i=0;i<fps*5;i++)for(const s of convoy)T.moveConvoy(s,1/fps);
+ assert.equal(T.escortStatus(convoy,[],[],false).clear,false,'arrival cannot skip the pending raid');
+ assert.equal(T.escortStatus(convoy,[],[{}],true).clear,false,'falling bombs still block victory');
+ assert.equal(T.escortStatus(convoy,[],[],true).clear,true);
+ convoy[0].alive=false;assert.equal(T.escortStatus(convoy,[],[],true).failed,true);
+ const s={def:{hp:2,speed:6},group:new THREE.Group(),hp:1,speed:6,alive:true};
+ const escort={def:{hp:1},group:new THREE.Group(),hp:1,speed:7,alive:true,flak:true};escort.group.position.x=300;
+ const p={pos:new THREE.Vector3(-1200,100,0),heading:0},smoke=[];let maxTurn=0;
+ for(let i=0;i<fps*14;i++){const before=s.group.rotation.y;T.shipTactics(s,1/fps,p,[],[s,escort],()=>{});T.shipTactics(escort,1/fps,p,[],[s,escort],(...a)=>smoke.push(a));maxTurn=Math.max(maxTurn,Math.abs(s.group.rotation.y-before)*fps);}
+ assert(maxTurn<=.0450001,'bounded evasive turn');assert(s.speed<=2.71,'damaged merchant falls behind');assert(smoke.length>10&&smoke.length<=19,'escort screen is bounded and triggered before torpedo release');
+ const moored={def:{moored:true,hp:1},group:new THREE.Group(),hp:1,speed:0,alive:true};T.shipTactics(moored,10,p,[],[moored],()=>{});assert.equal(moored.group.rotation.y,0);
+}
+const scene=new THREE.Scene(),port=new T.Scenery(THREE,scene,T.missions[0],height);
+assert.equal(port.cranes.length,4);assert.equal(port.trucks.length,4);
+let meshes=0;port.root.traverse(o=>{if(o.isMesh){meshes++;o.geometry.computeBoundingSphere();assert(Number.isFinite(o.geometry.boundingSphere.radius));}});assert(meshes<40,'static port batched into bounded draw calls, with moving trucks/cranes retained');
+const truckZ=port.trucks[0].group.position.z;port.update(2,new THREE.Vector3(4600,200,-4200));assert.notEqual(port.trucks[0].group.position.z,truckZ);
+const target=port.target(T.harborTargets[0],height);assert(target.position.y>0);let disposed=0;port.geometries.forEach(x=>x.addEventListener('dispose',()=>disposed++));port.dispose();assert.equal(scene.children.length,0);assert(disposed>0);
+T.resetEffects();assert.deepEqual({...T.effects()},{fuelDenied:false,reinforced:false});
+T.record(T.missions[0],T.harborTargets.map(def=>({def,alive:false})),[]);assert.equal(T.effects().fuelDenied,true);assert.equal(T.plan(T.missions[1]).events[1].raiders,1);
+const delivered=T.missions[1].support.map(def=>({def,alive:true,arrived:true}));T.record(T.missions[1],[],delivered);assert(T.effects().reinforced);assert.match(T.effectText(T.missions[2]),/Fletcher/);
+const reload={window:{},localStorage:c.localStorage};vm.createContext(reload);vm.runInContext(fs.readFileSync('pacific-theater.js','utf8'),reload);assert.equal(reload.window.PacificTheater.effects().reinforced,true,'survives page reload');
+T.resetEffects();assert(!T.effects().fuelDenied&&!T.effects().reinforced);assert.equal(T.plan(T.missions[2]).events[0].raiders,2,'reset returns baseline, no stacked replay bonuses');
+const blocked={window:{},localStorage:{getItem(){throw Error('blocked');},setItem(){throw Error('blocked');}}};vm.createContext(blocked);vm.runInContext(fs.readFileSync('pacific-theater.js','utf8'),blocked);blocked.window.PacificTheater.record(T.missions[1],[],delivered);assert(blocked.window.PacificTheater.effects().reinforced,'blocked storage retains session progress without crash');
+console.log('Pacific theater: real coast placement, all FPS arrival/failure gates, bounded evasions/screens, damage slowdown, scenery disposal and persistent non-stacking consequences.');

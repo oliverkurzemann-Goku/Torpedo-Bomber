@@ -5,7 +5,59 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 184 · Thunderbolt Squadron BUILD 184 · Remagen-Kern 23 / Fahrzeuge 22**
+Stand bei Übergabe: **Torpedo Squadron BUILD 185 · Thunderbolt Squadron BUILD 185 · Remagen-Kern 23 / Fahrzeuge 22**
+
+**Build 185 (11.10.2026): klar gegliederte Pacific-Erweiterung ohne koordinierte Massenangriffe.**
+Nutzer wünscht alle Vorschläge außer kombinierten Verbandsangriffen. Sorties 17–19
+hängen vor dem bisherigen Okinawa-Freiflug; frühere Combat-Indizes bleiben erhalten.
+pacific-theater.js besitzt Manifest, Operationspläne, begrenzte Hafendekoration,
+Channel-Islets und eigenständige boolesche Kampagnenfolgen unter pacific_theater_v1.
+Hafen: zwei echte, fest vertäute Frachter, zwei Fuel-Depots, optionale Warehouse/
+auslaufender beschädigbarer Frachter/Samidare. Vier bewegte Kräne und vier Lastwagen;
+statische Geometrie nach Material zusammengefasst, Ziegeldach-Winding nach oben,
+Fundamente aus tatsächlichen DEM-Ecken; Tanks sitzen auf dem Fundament, nicht darin.
+Moored hulls in geprüftem Wasser mit ausreichendem Abstand zur Landmaske und Pier.
+Fuel-Treffer nutzen echte Bomben-/Gun-Pfade und lassen verkohlte, brennende Tanks stehen.
+
+Konvoi: Corsair, zwei Liberty/LST-Transporte mit tatsächlicher Strecke zur Anchorage
+zwischen drei authored Islets; beide müssen leben UND angekommen sein, und beide
+kleinen Raids sowie fallende Bomben müssen erledigt sein. Verlust eines Transports
+endet als Fehlschlag, vorzeitige Landung bleibt Service statt Erfolg. Keine neuen
+Flugbefehle. Channel-Islets erscheinen auf Chart/Radar, haben Terrain-Kollision/
+Schattenhöhe und liegen außerhalb der Schiffsroute. US-Fleet-Alarm verwendet US-Deck
+und Corsair, NICHT m.defend (weiterhin japanische Zero-/Avenger-Sorties). hasRaiders
+verbindet nur Operations-/AA-/Nav-Pfade; bestehende Flugzeug-/Deck-/Crew-Schalter
+bleiben isDefend. A6M-Bombenträger sind ausdrücklich so benannt; kein falsches
+japanisches Schwerbomber-Modell. Ein optionaler beschädigter Corsair hält außerhalb
+der bedrohten Anflugzone und kann für +300 recovern, ohne den Spielerabschluss zu blockieren.
+
+Japanische Bomben erben reale Velocity und fliegen nur mit Schwerkraft. Vorhalt löst
+die Fallzeit einschließlich VSpeed; ohne diese Korrektur verfehlten sämtliche Raids
+den fahrenden Konvoi. Native Tests zeigen nun reale Bombentreffer und einen versenkten
+ungeschützten Transport; früh abgeschossene Raids erlauben sichere Ankunft. Fletcher-
+AA nutzt sichtbare physische fleet-Tracer und hält bei blockiertem Spieler zurück.
+Hostile advanced ships spot the incoming player before fish release, bounded .045rad/s
+course evasion, escort screen with pooled 12s sprites, damaged merchant .45 cruise speed.
+Alle Missionsschiffe/Port-Animationen bleiben im Briefing/Menü/Result eingefroren.
+
+Nur erfolgreicher Trap schreibt Fuel-Denial/Convoy-Delivery. Fuel-Denial reduziert
+die zweite Escort/Fleet-Welle um eins; Convoy-Delivery ergänzt einen Fletcher bei
+Fleet Alarm. Keine stapelnden Replay-Boni, keine neuen Unlock-Sperren. Briefing und
+Debrief erklären die Folgen; expliziter Reset in More Options erhält Logbuch/Progress.
+Gespeicherte Effekte fehlen bei blockiertem localStorage nicht in der laufenden Session.
+
+pacific-theater.cjs prüft reale Landmaske, Draft/Pier-Abstand, 20/60/120-FPS-Ankunft/
+Sieg/Verlust, begrenzte Rauch-/Drehzahl, beschädigte Fahrt, Resource-Disposal, Reload/
+Reset/Storage-Blockade. pacific-theater-browser.cjs lädt echte Schiffe/SBD/Corsair/Zero,
+führt wirkliche Bomben-/Gun-/Trap-Funktionen aus, prüft Harbor-Zielgates, geschützte
+Konvois bei drei FPS, gefährliche ungeschützte Raids, US-Deck, beschädigte Rückkehr,
+Campaign-Folgen, Pause und Missionswechsel. Bilder unter test-visuals, CI-Artifact 185.
+Bestehende extrahierte Funktions-Tests bekommen die neuen echten Manifest-/Clear-
+Abhängigkeiten; erwartete finale Mission lautet jetzt US Fleet Alarm. Kein Abschwächen
+der alten Kollisions-/Waffentests. Build184-CI scheiterte nur am langen Komet-Briefing
+bei 1024x520: Shared CSS kompakter, Actions behalten 48px. Nativer Komplett-Briefingtest
+bestätigt alle 22 Pacific / 21 Rhine Briefings bei vier Tablet-Größen ohne Scrollen.
+Keine physische iPad/Safari- oder FPS-Freigabe behaupten. Full CI separat verifizieren.
 
 **Build 184 (11.10.2026): Komet-Missionsabschluss, sanfteres Einrollen und Me262-Speedübergang.**
 Me163-Recovery hing bei einem nicht ganz geschlossenen Gashebel: das erforderliche

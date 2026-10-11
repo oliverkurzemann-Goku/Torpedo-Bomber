@@ -26,6 +26,30 @@ Current build numbers are shown in-game (bottom of the HUD) and tracked in `CLAU
 "Stand bei Übergabe" line, which is the source of truth — this README doesn't repeat them
 so it doesn't go stale.
 
+### Pacific operations
+
+The appended sorties preserve the earlier combat indices:
+
+- **17 · Harbor Supply Denial (SBD):** two moored merchants and two fuel depots;
+  optional departing ship, escort and warehouse. Cranes, trucks and a coastal bluff
+  give the attack a recognizable setting. Port scenery is batched, not one draw per box.
+- **18 · Convoy Safe Passage (Corsair):** both allied transports must actually reach
+  the island anchorage, survive bombing and clear both small raids. Killing aircraft
+  alone is insufficient. Blue radar contacts identify the ships being protected.
+- **19 · Fleet Alarm (Corsair):** US carrier defense against Japanese A6M bomb carriers,
+  using the existing Japanese aircraft asset (not fictitious heavy-bomber models).
+  A damaged returning Corsair is optional; normal carrier recovery finishes the sortie.
+
+There are no coordinated mixed-flight strikes or extra command controls. Advanced hostile
+ships spot approaching aircraft, turn with bounded rates, lay escort smoke and lose speed
+after damage. Moored ships stay still.
+
+Successful recovery after the harbor raid reduces later second waves by one aircraft.
+Delivering both convoy transports adds Fletcher AA to Fleet Alarm. These device-local
+effects persist across reloads but do not stack on replay. **More options & credits →
+Reset harbor / convoy campaign effects** restores the baseline without erasing mission
+progress or the pilot logbook. Failures do not award these consequences.
+
 ## Running it
 
 No server-side code, no build step. To play locally:

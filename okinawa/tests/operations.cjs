@@ -44,6 +44,8 @@ const pac=fs.readFileSync(path.join(root,'torpedo-carrier.html'),'utf8');
 function func(s,name,next){const a=s.indexOf('function '+name+'('),b=s.indexOf('\nfunction '+next+'(',a);assert(a>0&&b>a);return s.slice(a,b);}
 const pilot={rtb:false},ship={alive:false,def:{type:'freighter'}},ground={alive:true,def:{optional:false}};
 const objective=vm.createContext({MISSIONS:[{}],mission:0,ships:[ship],shoreTargets:[ground],isDefend:()=>false,pacificOps:new Operation(),P:pilot,addScore(){},flash(){},radioSay(){}});
+objective.hasRaiders=()=>false;
+vm.runInContext(pac.slice(pac.indexOf('function pacificTargetsClear(){'),pac.indexOf('const COASTAL_STRIKE=')),objective);
 vm.runInContext(func(pac,'checkObjectiveCleared','spawnSplash'),objective);
 objective.checkObjectiveCleared();assert.equal(pilot.rtb,false,'sinking the ship does not finish a combined land strike');
 ground.alive=false;objective.checkObjectiveCleared();assert.equal(pilot.rtb,true);

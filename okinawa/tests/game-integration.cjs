@@ -53,15 +53,16 @@ vm.runInContext(pick('resolveGroundAndDeck','trap'),game);
  assert.match(world.water.material.vertexShader,/vLocal=position/);
  assert.match(world.water.material.fragmentShader,/p=vLocal\.xz/);
  assert.match(html,/title:"Okinawa", sub:"Okinawa Coast · Free Flight", free:true, okinawa:true/);
- const missions=vm.runInNewContext(html.slice(html.indexOf('const MISSIONS = ['),html.indexOf('\n\nasync function prepareOkinawa'))+'; MISSIONS');
+ const theater=vm.runInNewContext(fs.readFileSync(path.join(root,'pacific-theater.js'),'utf8')+'\nwindow.PacificTheater',{window:{}});
+ const missions=vm.runInNewContext(html.slice(html.indexOf('const MISSIONS = ['),html.indexOf('\n\nasync function prepareOkinawa'))+'; MISSIONS',{PacificTheater:theater});
  assert.equal(missions.at(-1).free,true,'free flight stays outside combat campaign');
- assert.equal(missions.at(-2).shoreStrike,true,'final campaign sortie combines sea and land attack');
+ assert.equal(missions.at(-2).theater,'fleet','US fleet alarm closes the expanded cruise');
  assert(missions.some(m=>m.sub==='Okinawa Recon'),'existing reconnaissance sortie remains available');
- assert.equal(missions.filter(m=>m.corsair).length,2,'two Corsair combat sorties');
+ assert.equal(missions.filter(m=>m.corsair).length,4,'two strikes plus convoy escort and US fleet defense');
  assert.equal(missions.at(-2).corsair,true,'Corsair closes the expanded combat campaign');
  for(const m of missions.filter(m=>!m.free))for(const t of m.targets){
   const x=t.pos[0]-10000,z=t.pos[2];
-  assert.ok(world.shoreDistance(x,z)<-300,'Okinawa ship target sits in navigable coastal water: '+m.sub+' '+x+','+z);
+  assert.ok(world.shoreDistance(x,z)<-(t.moored?90:300),'Okinawa ship target has offshore or moored draft clearance: '+m.sub+' '+x+','+z);
  }
  assert.match(html,/launchCampaignMission\(mission\+1\)/,'campaign advances through the world preparation path');
  assert.match(html,/const last=mission===MISSIONS\.length-2/);

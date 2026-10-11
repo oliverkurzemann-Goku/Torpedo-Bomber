@@ -128,4 +128,11 @@
   #brief .briefHeading{min-height:44px;}
   #brief .briefHeading h1{font-size:28px;}
   #brief .brief{font-size:12px;line-height:1.35;padding:9px 11px;}
+  /* Long Komet orders and campaign notes must not push launch beneath Safari chrome. */
+  #brief .briefingCard{max-height:calc(100dvh - 24px);grid-template-rows:auto minmax(0,1fr) auto;}
+  #brief .briefOrders{min-height:0;}
+  #brief .brief{font-size:11px;line-height:1.28;padding:8px 10px;}
+  #brief .briefHeading h1{font-size:25px;}
+  #brief .briefHeading .sub{font-size:10px;}
+  #brief .opsMap{max-height:230px;object-fit:contain;}
 }
