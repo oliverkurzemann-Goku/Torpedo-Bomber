@@ -4447,7 +4447,9 @@ function updateWingmen(dt){
     if(w.mode==='form'){
       // The leader has already advanced this frame; compare both aircraft at
       // the same instant before integrating the follower, including at 20 FPS.
-      const corr = desPos.clone().addScaledVector(leadVel,-dt).addScaledVector(slotVelocity,-dt).sub(w.pos).multiplyScalar(0.55);
+      // Keep correction gentle enough for the bounded yaw controller to follow
+      // instead of circling its slot at slow approach speed in a headwind.
+      const corr = desPos.clone().addScaledVector(leadVel,-dt).addScaledVector(slotVelocity,-dt).sub(w.pos).multiplyScalar(0.45);
       if(corr.length()>18) corr.setLength(18);
       desVel = leadVel.clone().add(slotVelocity).add(corr);
     } else {
@@ -4466,7 +4468,9 @@ function updateWingmen(dt){
       }
     }
     const vlen=desVel.length(), vmax=(w.mode==='attack'&&!w.sbd?DROP_MAX_SPD-4:112);
-    const minSpeed=w.mode==='form'?Math.max(24,Math.min(42,P.spd*.88)):42;
+    // Formation velocities are measured over the ground. A minimum based on
+    // the leader's airspeed forces escorts to overshoot in carrier headwind.
+    const minSpeed=w.mode==='form'?Math.max(12,Math.min(42,leadVel.length()*.88)):42;
     if(vlen>vmax)desVel.setLength(vmax);else if(vlen<minSpeed)desVel.setLength(minSpeed);
     const minFlightY=(w.mode==='attack'&&!w.sbd)?44:55;
     // Begin the pull-out before the altitude floor, allowing for pitch inertia.

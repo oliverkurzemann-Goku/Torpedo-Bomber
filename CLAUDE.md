@@ -35,6 +35,13 @@ gleicher Ausrichtung. Arrest dämpft jetzt den kürzesten Winkel zur Deckachse; 
 Tests vergleichen den kompletten Off-Centre-Rollout bei 0 und ±2 Vollkreisen. Auch
 der Deckkontakt-Headingcheck nutzt denselben kürzesten Winkel: negatives JS-Modulo
 hatte links herum geflogene volle Platzrunden fälschlich als Alignment-Bolter erkannt.
+Build186-CI hatte zusätzlich einen echten Formation-Testfehler: der nahe Escort
+schwang im 65-kt-Langsamflug um seinen Slot, maximale Entfernung 100.32 m statt
+unter 100 m. Die Korrekturverstärkung .55 war für begrenzte Yaw-Inertia zu hoch;
+.45 hält den nativen 40-s-Test bei ~55 m. Die Mindestgeschwindigkeit richtet sich
+nach tatsächlicher Leader-Ground-Velocity statt Airspeed, damit starker Headwind
+kein zwangsläufiges Überholen erzeugt. Formation-Tests decken jetzt 2/6/12 m/s
+Headwind bei 20/60/120 FPS ab; bestehende Sicherheitsgrenzen bleiben erhalten.
 
 Pacific-BombSight projiziert den tatsächlichen Release-Punkt, Velocity, 18 m/s²
 Gravity und 8 s Lifetime; berücksichtigt Shore-Ziele und fahrende Schiffe. Nur beim

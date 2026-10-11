@@ -2,6 +2,7 @@
 const fs=require('node:fs'),path=require('node:path'),vm=require('node:vm'),assert=require('node:assert/strict');
 const THREE=require('three');
 require('../../game-runtime.js');require('../../flight-support.js');const {GameRuntime,FlightSupport}=global;
+const CarrierRecovery=require('../../carrier-recovery.js');
 const html=fs.readFileSync(path.resolve(__dirname,'../../torpedo-carrier.html'),'utf8');
 function source(name,next){const a=html.indexOf('function '+name+'('),b=html.indexOf('\nfunction '+next+'(',a+1);
  assert.ok(a>0&&b>a);return html.slice(a,b);}
@@ -30,17 +31,17 @@ console.log('Formation: aligned launch, bounded bank/yaw, and continuous travel 
 
 // Close formation is particularly sensitive to speed floors, lateral sliding
 // and frame-rate-dependent corrections. Run the shipped controller, not a copy.
-function simulation(fps,speed=65/1.94384){
+function simulation(fps,speed=65/1.94384,headwind=0){
  const leader={pos:new THREE.Vector3(0,300,0),heading:0,pitch:0,spd:speed,vSpeed:0};
  const escorts=[-1,1].map(side=>({alive:true,mode:'form',cool:999,side,
   pos:new THREE.Vector3(-32-(side>0?8:0),298,side*34),
   heading:Math.PI/2,pitch:0,roll:0,spd:speed,vel:new THREE.Vector3(speed,0,0),mesh:new THREE.Group()}));
- const c=vm.createContext({GameRuntime,FlightSupport,THREE,Math,P:leader,ships:[],wingmen:escorts,PROP_STEP:.3,isDefend:()=>false,
-  DROP_MAX_SPD:62,DROP_MAX_ALT:55,windZ:0,windGust:0,radioSay:()=>{},NavalAssets:{label:()=> 'FREIGHTER'}});
+ const c=vm.createContext({GameRuntime,FlightSupport,CarrierRecovery,THREE,Math,P:leader,ships:[],wingmen:escorts,PROP_STEP:.3,isDefend:()=>false,
+  DROP_MAX_SPD:62,DROP_MAX_ALT:55,windHead:headwind,windZ:0,windGust:0,radioSay:()=>{},NavalAssets:{label:()=> 'FREIGHTER'}});
  vm.runInContext(source('playerLateral','spawnWingman')+'\n'+source('updateWingmen','updateWingShots')+'\n'+source('noseDir','loadPlaneModel'),c);
  const dt=1/fps,stats={yaw:0,bank:0,pitch:0,acceleration:0,minClearance:Infinity,maxGap:0};
  function step(){
-  leader.pos.add(new THREE.Vector3(Math.cos(leader.heading)*leader.spd,leader.vSpeed,Math.sin(leader.heading)*leader.spd).multiplyScalar(dt));
+  leader.pos.add(new THREE.Vector3(Math.cos(leader.heading)*leader.spd+CarrierRecovery.wind(headwind).x,leader.vSpeed,Math.sin(leader.heading)*leader.spd).multiplyScalar(dt));
   const before=escorts.map(e=>({pos:e.pos.clone(),vel:e.vel.clone(),heading:e.heading,pitch:e.pitch,roll:e.roll}));
   c.updateWingmen(dt);
   escorts.forEach((e,i)=>{
@@ -88,3 +89,14 @@ for(const fps of [20,60,120]){
 for(let i=1;i<outcomes.length;i++)for(let j=0;j<2;j++)
  assert(outcomes[i].positions[j].distanceTo(outcomes[0].positions[j])<1,'close formation agrees within one metre at 20/60/120 FPS');
 console.log('Close formation, 65kt, reversals/climb/descent, safe separation and real attack/egress/rejoin at 20/60/120 FPS:',outcomes);
+for(const fps of [20,60,120])for(const wind of [2,6,12]){
+ const s=simulation(fps,65/1.94384,wind);
+ s.escorts[0].pos.copy(s.leader.pos).add(new THREE.Vector3(-12,-2,-22));
+ for(let i=0;i<fps*60;i++){
+  const t=i/fps;s.leader.heading=t<10?0:t<18?-.025*(t-10):t<26?-.2+.025*(t-18):0;
+  s.leader.vSpeed=-.8;s.step();
+ }
+ assert(s.stats.minClearance>20&&s.stats.maxGap<100,'headwind escorts remain close and separated: '+JSON.stringify({fps,wind,...s.stats}));
+ assert(s.escorts.every(e=>e.pos.distanceTo(s.leader.pos)<70),'headwind escorts settle near their formation slots');
+}
+console.log('65kt headwind formation at 2/6/12 m/s and 20/60/120 FPS remains close and safe');

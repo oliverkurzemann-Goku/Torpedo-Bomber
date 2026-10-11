@@ -89,7 +89,7 @@ const server=http.createServer((req,res)=>{
       return {kind,alive:P.alive,escorts:wingmen.length,maxYaw,maxBank,maxAcceleration,minDistance,maxDistance,paused,png};
     },kind);
     fs.writeFileSync(path.join(out,'build182-'+kind+'-formation.png'),Buffer.from(result.png.split(',')[1],'base64'));delete result.png;
-    assert(result.alive&&result.escorts===2&&result.maxYaw<=.25001&&result.maxBank<=.32001&&result.maxAcceleration<20&&result.minDistance>20&&result.maxDistance<100&&result.paused,'actual close formation remains continuous and safe');
+    assert(result.alive&&result.escorts===2&&result.maxYaw<=.25001&&result.maxBank<=.32001&&result.maxAcceleration<20&&result.minDistance>20&&result.maxDistance<100&&result.paused,'actual close formation remains continuous and safe: '+JSON.stringify(result));
     console.log('Original aircraft, actual flight/formation and pause:',result);
   }
   const unsafe=await page.evaluate(()=>{
