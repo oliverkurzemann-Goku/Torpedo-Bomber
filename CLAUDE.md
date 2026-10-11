@@ -21,9 +21,10 @@ chase-heading.cjs prüft beide echten updateCamera-Funktionen: Normal/AERO,
 Außerdem aktuelle Visierpixel, gespeicherte LOOK-Höhen und komplette Loop-Horizonte.
 chase-heading-browser.cjs verwendet echte SBD-/P-47-Modelle, updateFlight und den
 nativen Browser: alte Glättung reproduziert den Versatz; die neue hält Kamera und
-Visier mittig, prüft Kurswechsel/Pause und rendert beide Nutzerkurse. Bei deaktivierter
-RAF muss P-47 nach Template-Laden explizit per refreshModels angehängt werden;
-auf playerModel ohne einen Frame zu warten wäre ein falscher Test-Timeout.
+Visier mittig, prüft Kurswechsel/Pause und rendert beide Nutzerkurse. Der direkte
+startMission-Aufruf lädt kein neues Template: wie der Briefingpfad wartet der Test
+zuerst ensureModel('p47') ab, danach refreshModels bei deaktivierter RAF.
+Auf ein noch gar nicht angefordertes Template zu warten wäre ein falscher Test-Timeout.
 Build-/Seiten-/CSS-/FlightSupport-Cachekennungen folgen 183. Keine iPad/Safari-
 Geräteprüfung oder FPS-Freigabe behaupten; GitHub-Gesamtlauf separat ausweisen.
 

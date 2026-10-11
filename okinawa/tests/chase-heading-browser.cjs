@@ -30,7 +30,7 @@ const server=http.createServer((req,res)=>{
    await page.evaluate(async pacific=>{
     renderer.setPixelRatio(.5);renderer.shadowMap.enabled=false;
     if(pacific){await prepareOkinawa();const m=MISSIONS.find(m=>m.sbd&&!m.corsair);await preparePacificModels(m);startMission(MISSIONS.indexOf(m));finishCarrierIntro();hideOverlays();}
-    else{startMission(MISSIONS.findIndex(m=>m.ac==='p47'&&!m.free&&!m.circuits));finishLaunchIntro(false);show('menu',false);show('brief',false);}
+    else{await ensureModel('p47');startMission(MISSIONS.findIndex(m=>m.ac==='p47'&&!m.free&&!m.circuits));finishLaunchIntro(false);show('menu',false);show('brief',false);}
     state=ST.FLIGHT;shakeT=0;
    },pacific);
    if(!pacific){await page.waitForFunction(()=>!!modelTpl.p47,null,{polling:100});await page.evaluate(()=>{refreshModels();if(!playerModel)throw Error('Original P-47 model not attached');});}
