@@ -5,7 +5,39 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 183 · Thunderbolt Squadron BUILD 183 · Remagen-Kern 23 / Fahrzeuge 22**
+Stand bei Übergabe: **Torpedo Squadron BUILD 184 · Thunderbolt Squadron BUILD 184 · Remagen-Kern 23 / Fahrzeuge 22**
+
+**Build 184 (11.10.2026): Komet-Missionsabschluss, sanfteres Einrollen und Me262-Speedübergang.**
+Me163-Recovery hing bei einem nicht ganz geschlossenen Gashebel: das erforderliche
+glide-Event blieb pending und landed startete stattdessen Ground Service. Nach dem
+letzten Bomber führt updateEuropeOperation den angekündigten Rocket-Cutoff automatisch
+aus; Event/Pursuer bleiben einmalig und optional zu bekämpfen. Beide Komet-Sorties
+enden nach der Landung; eine Rückkehr mit verbleibenden Zielen endet unvollständig,
+ohne erfundenen Trolley-Neustart. Andere Flugzeuge behalten Zwischenstopps/Service.
+Me163 rollAuth 1.48 → 1.08, pitchAuth 1.16 → 1.08; Stickexponent 1.20,
+Dämpfung .94 und AERO-Response .26s glätten kurze Inputs. Bankbereich/turn/gLim bleiben.
+Me262-Normalpitch bleibt bis 80m/s im bisherigen sanften Startbereich. Smoothstep
+80–140m/s löst diese Begrenzung; ab 140m/s gilt wieder der ursprüngliche Pitchbefehl.
+Jet-Schubträgheit, Steigenergieverlust, negative Pitchbefehle und AERO bleiben erhalten.
+
+komet-recovery.cjs prüft beide echten Operations-/Landefunktionen mit drei Gashebel-
+stellungen bei 20/60/120 FPS, einen Debrief/Logeintrag, keine Serviceanforderung und
+keinen falschen Erfolg bei vorzeitiger Rückkehr. komet-jets-browser.cjs lädt echte
+Komet/Me262/B17/P47-GLBs und echtes DEM: letzter damageEnemyAir-Abschuss, tatsächliche
+updateFlight-Skidlandung, verbleibende Munition statt Nachfüllen, sanfte Inputs in
+beiden Richtungen/Normal/AERO und langsamer Start vs. schneller Me262-Steigflug.
+Alle sechs nativen Komet-Recoveries bestanden, ohne Service, mit MISSION ACCOMPLISHED.
+Me262 im nativen Start bis 80m/s maximal 9.73 Grad/11.72m/s; bei anfangs 200m/s
+und zwei Sekunden vollem Stick etwa 60 Grad/168m/s. Das ist der wieder freigegebene
+Spiel-Pitchbefehl, keine Behauptung historisch nachhaltiger Steigleistung.
+flight-controls.js ergänzt Speed-/Handlingregressionen; alter water-ditching-Test
+prüft die sanfte Startgrenze jetzt im niedrigen Speedband, statt alle späteren
+Geschwindigkeiten künstlich auf denselben Steigwert zu begrenzen. Briefings erklären
+den automatischen Cutoff. Geänderte Operation-Plans erhalten Cache 184. Keine
+physische iPad/Safari- oder FPS-Freigabe behaupten. Syntax, 31 Terrain- und 43
+Okinawa-Testdateien lokal ohne Fehler; letztere überspringen ohne GAME_TEST_CHROME
+die Browserfälle. Die gezielten komet-jets- und water-ditching-Browserprüfungen
+bestanden separat mit nativem Chromium. Vollständigen GitHub-CI-Status separat prüfen.
 
 **Build 183 (11.10.2026): mittige Verfolgerkamera unabhängig von Kurs und Seitenwind.**
 Nutzerbilder mit Kurs 120/289 Grad zeigten links/rechts wanderndes Flugzeug und Visier;

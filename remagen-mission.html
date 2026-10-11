@@ -274,7 +274,7 @@
   .warningLamps{display:flex!important;gap:10px;padding:5px 9px!important;background:#141813dd!important;border:1px solid #535744;border-radius:4px;white-space:nowrap;}
   .warningLamp{color:#646c5c;font:9px monospace;letter-spacing:.35px;} .warningLamp[data-level="1"]{color:#ffd088;text-shadow:0 0 6px #e0a432a0;} .warningLamp[data-level="2"]{color:#ff8c70;text-shadow:0 0 7px #ff6638b0;}
 </style>
-<link rel="stylesheet" href="menu-layout.css?v=183">
+<link rel="stylesheet" href="menu-layout.css?v=184">
 </head>
 <body>
 <!-- ===== TEMP TEST-ONLY VERSION BANNER — asked for by Oliver: "kannst du irgendwo einbauen,
@@ -296,7 +296,7 @@
   <div style="width:100%;height:4px;background:repeating-linear-gradient(45deg,#ffd400,#ffd400 8px,#111 8px,#111 16px);"></div>
   <span id="testVersionBannerText" style="background:#111;color:#ffd400;font-family:monospace;font-weight:800;font-size:11px;letter-spacing:.5px;padding:3px 10px;border:1px solid #ffd400;border-top:none;border-radius:0 0 6px 6px;"></span>
 </div>
-<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 183';</script>
+<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 184';</script>
 <!-- ===== END TEMP TEST-ONLY VERSION BANNER ===== -->
 <div id="app"></div>
 <style>
@@ -336,7 +336,7 @@
   <div id="flash"></div>
   <div id="gunsight"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 183 · REAL RHINE</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 184 · REAL RHINE</div>
 
   <div id="apr">
     <div id="aprCall"></div>
@@ -388,7 +388,7 @@
 </div>
 
 <div class="overlay hidden" id="menu" data-campaign="europe">
-  <div class="menuTop"><a id="selBtn" href="index.html?v=183">&#9664; Change Game</a><span class="menuMeta">RHINE OPERATIONS<br>BUILD 183</span></div>
+  <div class="menuTop"><a id="selBtn" href="index.html?v=184">&#9664; Change Game</a><span class="menuMeta">RHINE OPERATIONS<br>BUILD 184</span></div>
   <div class="card menuCard">
     <aside class="menuOverview" aria-label="Campaign and pilot options">
     <div class="campaignArt" aria-hidden="true"></div>
@@ -510,7 +510,7 @@
 <script src="combat-fx.js?v=177"></script>
 <script src="aircraft-smoke.js?v=176"></script>
 <script src="aircraft-damage.js?v=177"></script>
-<script src="flight-support.js?v=183"></script>
+<script src="flight-support.js?v=184"></script>
 <script src="ordnance.js?v=157"></script>
 <script src="crew-visuals.js?v=179"></script>
 <script src="aircraft-finish.js?v=179"></script>
@@ -531,7 +531,7 @@
 <script src="ground-dust.js?v=181"></script>
 <script src="flight-indicators.js?v=179"></script>
 <script src="sortie-fuel.js?v=161"></script>
-<script src="operation-plans.js?v=177"></script>
+<script src="operation-plans.js?v=184"></script>
 <script>
 // ============================================================
 //  REMAGEN 1945 — REAL TERRAIN (forked from thunderbolt-europe.html)
@@ -673,7 +673,8 @@ const AC={
         rollLim:1.56, pitchLim:1.15, stall:49, app:56, max:242, thrMin:42,
         hull:95, ammo:1200, bombs:2, rockets:0, gunDmg:3.0, gunRate:0.09, wing:12.51,
         col:0x626b58, band:0x33392a },
-  me163:{ name:'Me 163B Komet', rollAuth:1.48, pitchAuth:1.16, turn:1.20, gLim:5.4,
+  me163:{ name:'Me 163B Komet', rollAuth:1.08, pitchAuth:1.08, turn:1.20, gLim:5.4,
+        stickExponent:1.20, controlDamping:0.94, aeroResponse:0.26,
         rollLim:1.53, pitchLim:1.18, stall:51, app:67, max:238, thrMin:33,
         hull:75, ammo:160, bombs:0, rockets:0, gunDmg:2.8, gunRate:0.14, wing:9.3,
         col:0x68715f, band:0x353c30 }
@@ -844,7 +845,7 @@ async function loadRealWorld(){
 
   if(OSMManager.BUILD!==23||HistoricalObjectManager.BUILD!==21||LivingWorld.BUILD!==22||WorldVehicles.BUILD!==22) throw new Error('Terrain version mismatch. Reload Remagen.');
   document.getElementById('testVersionBannerText').textContent=
-    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 183 · MODULE 23';
+    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 184 · MODULE 23';
   heightProvider=new DEMHeightProvider(RTILE,'terrain-system/real/data/dem/');
   terrain=new TerrainManager(scene,RTILE,heightProvider);
   osmMgr=new OSMManager(scene,RTILE,terrain,'terrain-system/real/data/osm/');
@@ -2899,7 +2900,8 @@ const MISSIONS=[
   { id:'komet', title:'Sortie 15', sub:'Komet Intercept', ac:'me163', weather:'clear',
     bombers:{n:2,type:'b17'},
     text:"Fictional Rhine interception. The trolley has already dropped: catch the two Fortresses "
-        +"with the Me 163 while rocket fuel lasts, then glide home in a shallow descent. Extend "
+        +"with the Me 163 while rocket fuel lasts. After the last bomber, automatic rocket cutoff "
+        +"starts your glide home. Extend "
         +"the SKID before touchdown; there is no go-around without power. A pursuer may attack "
         +"during the glide; evade it or shoot it down." },
   { id:'stuka', title:'Bonus Sortie', sub:'Stuka Convoy Dive', ac:'ju87', bonus:true,
@@ -2914,7 +2916,7 @@ const MISSIONS=[
     text:'Fictional special operation. Choose the ridge gap or the southern valley, then climb into a two-aircraft Liberator section. Use crossing attacks, not a slow tail chase. An Allied M16 near the mapped road is an OPTIONAL secondary gun target. Preserve fuel for the forward strip.'},
   {id:'kometdash',title:'Bonus Komet',sub:'Rocket Dash & Glide',ac:'me163',bonus:true,
     bombers:{n:1,type:'b17'},weather:'broken',
-    text:'Fictional rocket dash from the forward strip. One Fortress, a short rocket burn and no go-around after cutoff. Reach the approach gate above 4,900 ft MSL for an OPTIONAL high-entry bonus. After the bomber falls, shut down, evade the pursuer and glide back with the landing skid extended.'},
+    text:'Fictional rocket dash from the forward strip. One Fortress, a short rocket burn and no go-around after cutoff. Reach the approach gate above 4,900 ft MSL for an OPTIONAL high-entry bonus. After the bomber falls, automatic rocket cutoff begins the recovery. Evade the pursuer and glide back with the landing skid extended; landing ends the sortie.'},
   {id:'nightworks',title:'Bonus Night',sub:'Moonlight Works',ac:'p47',bonus:true,night:true,weather:'clear',kills:{factory:1,flak:1},flakDefense:1,text:'Fictional night raid over the Rhine. Mark the works with parachute flares (L / FLARE), silence the battery and bomb the factory. Four flares are carried. Return to the field for fuel, ammunition and repairs if another attack is needed.'}
 ];
 function M(){ return MISSIONS[mission]; }
@@ -4128,9 +4130,16 @@ function updateFlight(dt){
     P.heading+=P.pitchVel*Math.sin(P.roll)*dt;
     P.roll=Math.atan2(Math.sin(P.roll+P.rollVel*dt),Math.cos(P.roll+P.rollVel*dt));
   }else{
-    // Full back-stick in normal jet flight commands a sustainable climb.
-    // Low-speed rotation stays near ten degrees; AERO still permits loops.
-    const noseUpLimit=P.ac==='me262'?Math.min(d.pitchLim*.92,Math.asin(Math.min(.65,(10+Math.max(0,P.spd-55)*.055)/P.spd))):d.pitchLim*.92;
+    // Only the slow jet departure needs the gentle rotation envelope. Release
+    // it smoothly from 80 to 140 m/s; fast flight regains the original pitch
+    // authority instead of carrying a 10–20 m/s climb ceiling all sortie.
+    let noseUpLimit=d.pitchLim*.92;
+    if(P.ac==='me262'){
+      const departure=Math.min(noseUpLimit,Math.asin(Math.min(.65,(10+Math.max(0,P.spd-55)*.055)/P.spd)));
+      const speedBlend=Math.max(0,Math.min(1,(P.spd-80)/60));
+      const release=speedBlend*speedBlend*(3-2*speedBlend);
+      noseUpLimit=departure+(noseUpLimit-departure)*release;
+    }
     const pitchTarget=commandPitch*(commandPitch>0?noseUpLimit:d.pitchLim*.92);
     P.pitchVel=(P.pitchVel||0)+(pitchRate*pitchRate*(pitchTarget-P.pitch) - 2*zeta*pitchRate*P.pitchVel)*dt;
     P.pitch += P.pitchVel*dt;
@@ -4318,7 +4327,9 @@ function landed(onStrip){
   const left=objectiveLeft();
   const airLeft=blockingEnemyAir().length;
   const done=(!Object.keys(left).length && airLeft===0 && (!europeOps||europeOps.ready()));
-  if(!done&&onStrip&&!europeOps?.failed){fieldServicePending=true;P.throttle=0;setThrottleUI(0);flash('OBJECTIVES REMAIN — BRAKING FOR GROUND SERVICE',2200);return;}
+  // A Komet recovery ends its rocket sortie. An early return is incomplete,
+  // rather than a refuel/rearm cycle that invents another trolley launch.
+  if(!done&&onStrip&&!europeOps?.failed&&P.ac!=='me163'){fieldServicePending=true;P.throttle=0;setThrottleUI(0);flash('OBJECTIVES REMAIN — BRAKING FOR GROUND SERVICE',2200);return;}
   if(done && window.SquadronCampaign)SquadronCampaign.record('europeRhine',mission);
   missionOver=true;
   addScore(onStrip?400:150);
@@ -4455,6 +4466,11 @@ function chooseEuropePlan(i){
 function updateEuropeOperation(dt){
  if(!europeOps||isFree()||isCircuits()||P.onGround)return;
  const clear=!Object.keys(objectiveLeft()).length&&blockingEnemyAir().length===0;
+ // The last bomber starts the promised unpowered recovery. A nonzero slider
+ // must not leave the required glide encounter pending through touchdown.
+ if(clear&&P.ac==='me163'&&!europeOps.failed&&(P.fuel>0||P.throttle>0)){
+  P.fuel=0;P.throttle=0;setThrottleUI(0);
+ }
  const kills=Object.values(sortieKills).reduce((a,b)=>a+b,0);
  if(europeOps.config.approach&&!europeOps.approachDone){
   const a=europeOps.config.approach;
@@ -5615,7 +5631,7 @@ function init(){
   buildMenu();
   // menu wiring
   document.getElementById('startBtn').onclick=()=>showBrief(selectedMission);
-  document.getElementById('pauseMainMenu').onclick=()=>{exitToMenuFromPause();window.location.href='index.html?v=183';};
+  document.getElementById('pauseMainMenu').onclick=()=>{exitToMenuFromPause();window.location.href='index.html?v=184';};
   document.getElementById('logBtn').onclick=()=>{ show('menu',false); showLogbook(); };
   document.getElementById('skipLaunchPreview').onclick=()=>finishLaunchIntro();
   document.getElementById('brBack').onclick=()=>{ show('brief',false); show('menu',true);if(navigation){navigation.reset();navigation.button.style.display='none';} state=ST.MENU; };

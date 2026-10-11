@@ -48,11 +48,27 @@ function flightParts(html,pacific,kind,aeroMode=false){
 // Full stick retains the bank limit; short touchscreen inputs become easier to meter.
 const oldFw={...defs.fw190,rollAuth:1.85,pitchAuth:1.10,turn:1.05,
  stickExponent:undefined,controlDamping:undefined,aeroResponse:undefined};
-function response(def,fps,aero){
- const {attitude}=flightParts(eu,false,'fw190',aero);
- const p={ac:'fw190',hull:def.hull,spd:150,gear:0,rollBias:0,pitch:0,roll:0,rollVel:0,pitchVel:0,heading:0};
+function response(def,fps,aero,kind='fw190'){
+ const {attitude}=flightParts(eu,false,kind,aero);
+ const p={ac:kind,hull:def.hull,spd:150,gear:0,rollBias:0,pitch:0,roll:0,rollVel:0,pitchVel:0,heading:0};
  for(let i=0;i<Math.round(.5*fps);i++)attitude(p,.5,.25,1/fps,def,def.stall);
  return {roll:p.roll,pitch:p.pitch,heading:p.heading};
+}
+const oldKomet={...defs.me163,rollAuth:1.48,pitchAuth:1.16,
+ stickExponent:undefined,controlDamping:undefined,aeroResponse:undefined};
+for(const aero of [false,true]){
+ const samples=[20,60,120].map(fps=>{
+  const old=response(oldKomet,fps,aero,'me163'),now=response(defs.me163,fps,aero,'me163');
+  assert(now.roll>old.roll*.3&&now.roll<old.roll*.8,'Komet short roll input is progressive, but remains agile');
+  assert(Math.abs(now.heading)<Math.abs(old.heading)*.8,'Komet no longer yanks into a turn');
+  const {attitude}=flightParts(eu,false,'me163',aero),d=defs.me163;
+  const p={ac:'me163',hull:d.hull,spd:150,gear:0,rollBias:0,pitch:0,roll:0,rollVel:0,pitchVel:0,heading:0};
+  for(let i=0;i<fps*2;i++)attitude(p,1,0,1/fps,d,d.stall);
+  if(!aero)assert(p.roll>d.rollLim*.8,'held stick retains the Komet bank range');
+  else assert(Math.abs(p.roll)>1,'held AERO input retains full rolls');
+  return now.roll;
+ });
+ assert(Math.max(...samples)-Math.min(...samples)<.055,'Komet response consistent across frame rates');
 }
 for(const aero of [false,true]){
  const samples=[20,60,120].map(fps=>{
@@ -84,15 +100,31 @@ for(const fps of [20,60,120])for(const kind of [...Object.keys(defs),'avenger','
 }
 // Normal Me262 back-stick has a speed-dependent climb envelope, while AERO
 // remains available for a loop. Execute the shipped attitude function at three rates.
-for(const fps of [20,60,120])for(const speed of [55,75,120,200]){
+for(const fps of [20,60,120])for(const speed of [55,75,80,100,120,140,200]){
  const d=defs.me262,p={ac:'me262',hull:d.hull,spd:speed,gear:0,rollBias:0,pitch:.10,roll:0,pitchVel:0,rollVel:0,heading:0};
  const normal=flightParts(eu,false,'me262').attitude;let max=0;
  for(let i=0;i<8*fps;i++){normal(p,0,1,1/fps,d,d.stall);max=Math.max(max,p.pitch);}
- assert(max<.25,'jet rotation/climb no longer shoots nose beyond fourteen degrees');
- assert(speed*Math.sin(p.pitch)<19,'normal climb remains sustainable throughout speed range');
+ if(speed<=80){
+  assert(max<.25,'jet rotation/low-speed climb stays gentle');
+  assert(speed*Math.sin(p.pitch)<15,'low-speed climb retains the takeoff envelope');
+ }else if(speed>=140){
+  assert(p.pitch>1,'fast normal flight restores the original full pitch command');
+  assert(speed*Math.sin(p.pitch)>100,'fast jet can climb strongly again');
+ }else assert(p.pitch>.15&&p.pitch<1.06,'airspeed smoothly releases the rotation limit');
  const aero=flightParts(eu,false,'me262',true).attitude;
  for(let i=0;i<4*fps;i++)aero(p,0,1,1/fps,d,d.stall);
  assert(Math.abs(p.pitch)>.7,'AERO retains high-pitch manoeuvres');
+}
+// Crossing either handover boundary must not introduce a pitch jump.
+let lastSpeed=0,lastPitch=0;
+for(const speed of [79.99,80,80.01,139.99,140,140.01]){
+ const d=defs.me262,p={ac:'me262',hull:d.hull,spd:speed,gear:0,rollBias:0,pitch:0,roll:0,pitchVel:0,rollVel:0,heading:0};
+ const normal=flightParts(eu,false,'me262').attitude;
+ for(let i=0;i<480;i++)normal(p,0,1,1/60,d,d.stall);
+ if(speed-lastSpeed<.02)assert(Math.abs(p.pitch-lastPitch)<.001,'normal pitch stays continuous at the speed handover');
+ lastSpeed=speed;lastPitch=p.pitch;
+ for(let i=0;i<480;i++)normal(p,0,-.5,1/60,d,d.stall);
+ assert(Math.abs(p.pitch+d.pitchLim*.92*.5)<.001,'dive commands retain their original authority');
 }
 // Begin level in strong wind: the turn routine itself must never yaw the nose.
 const a=eu.indexOf('  // bank-to-turn:',eu.indexOf('function updateFlight(dt)')),b=eu.indexOf('  // vertical speed:',a);

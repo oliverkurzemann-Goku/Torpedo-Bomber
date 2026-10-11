@@ -70,14 +70,14 @@ const server=http.createServer((req,res)=>{
   fs.writeFileSync(path.join(out,'build181-ground-crew.png'),Buffer.from(crew.png.split(',')[1],'base64'));delete crew.png;console.log('Ground wrist positions through service cycle:',crew);
   const jet=await page.evaluate(async()=>{
     await ensureModel('me262');startMission(MISSIONS.findIndex(m=>m.ac==='me262'));finishLaunchIntro(false);inputPitch=1;inputRoll=0;P.throttle=1;
-    let elapsed=0,rotation=null,maxPitch=0,maxVS=0,maxAccel=0,previousSpeed=P.spd;
+    let elapsed=0,rotation=null,maxPitch=0,maxVS=0,lowSpeedPitch=0,lowSpeedVS=0,maxAccel=0,previousSpeed=P.spd;
     while(elapsed<45&&P.alive){updateFlight(.05);elapsed+=.05;
-      if(!P.onGround){if(rotation===null)rotation=elapsed;maxPitch=Math.max(maxPitch,P.pitch);maxVS=Math.max(maxVS,P.vSpeed);maxAccel=Math.max(maxAccel,(P.spd-previousSpeed)/.05);if(elapsed-rotation>=10)break;}
+      if(!P.onGround){if(rotation===null)rotation=elapsed;maxPitch=Math.max(maxPitch,P.pitch);maxVS=Math.max(maxVS,P.vSpeed);if(P.spd<=80){lowSpeedPitch=Math.max(lowSpeedPitch,P.pitch);lowSpeedVS=Math.max(lowSpeedVS,P.vSpeed);}maxAccel=Math.max(maxAccel,(P.spd-previousSpeed)/.05);if(elapsed-rotation>=10)break;}
       previousSpeed=P.spd;
     }
-    return {alive:P.alive,rotation,maxPitchDegrees:maxPitch*180/Math.PI,maxVS,maxAccel,speed:P.spd,height:P.pos.y-groundY(P.pos.x,P.pos.z)};
+    return {alive:P.alive,rotation,maxPitchDegrees:maxPitch*180/Math.PI,maxVS,lowSpeedPitchDegrees:lowSpeedPitch*180/Math.PI,lowSpeedVS,maxAccel,speed:P.spd,height:P.pos.y-groundY(P.pos.x,P.pos.z)};
   });
-  assert(jet.alive&&jet.rotation>12&&jet.rotation<35&&jet.maxPitchDegrees<14&&jet.maxVS<15&&jet.maxAccel<8&&jet.height>50,'actual Me262 full-stick takeoff has gentle climb/continuous thrust');console.log('Live Me262 takeoff, ten seconds held back-stick:',jet);
+  assert(jet.alive&&jet.rotation>12&&jet.rotation<35&&jet.lowSpeedPitchDegrees<14&&jet.lowSpeedVS<15&&jet.maxAccel<8&&jet.height>50,'actual Me262 full-stick takeoff has gentle low-speed climb/continuous thrust');console.log('Live Me262 takeoff, ten seconds held back-stick:',jet);
   for(const ac of ['p47','me262']){
     const proof=await page.evaluate(async ac=>{
       await ensureModel(ac);startMission(MISSIONS.findIndex(m=>m.ac===ac&&!m.free&&!m.circuits));finishLaunchIntro(false);P.throttle=1;inputPitch=inputRoll=0;
