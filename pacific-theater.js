@@ -41,7 +41,11 @@ const missions=[
   operation:{weather:['clear','broken'],deadline:540,notes:'A roughly five-minute crossing. Both transports must arrive. Early recovery does not count as success.',events:[{at:18,raiders:2,required:true,message:'CONVOY CONTROL — TWO BOMB CARRIERS FROM THE EAST'},{at:135,raiders:2,required:true,message:'SECOND RAID FROM THE WEST — COVER THE TRANSPORTS'}]}},
  {title:'Sortie 19',sub:'Corsair · Fleet Alarm',theater:'fleet',sbd:true,corsair:true,loadout:'divebomb',torps:0,fuel:100,zeros:0,raiders:2,targets:[],
   body:'<b>Corsair alarm launch from the US carrier.</b> Intercept two small waves of Japanese <b>A6M bomb carriers</b>. Guns only; save the flight deck, then trap aboard. A damaged Corsair is returning from patrol: keeping the approach clear lets it recover for an optional bonus. The carrier can take three bomb hits, not a fourth. Earlier harbor and convoy successes affect this sortie. No formation-command workload.',
-  operation:{weather:['broken'],notes:'Clear both raids and bombs still falling before recovery. The damaged patrol pilot is optional; follow the normal target/RTB control.',events:[{at:85,raiders:2,required:true,message:'SECOND RAID — TWO BOMB CARRIERS, OPPOSITE BEARING'}]}}
+  operation:{weather:['broken'],notes:'Clear both raids and bombs still falling before recovery. The damaged patrol pilot is optional; follow the normal target/RTB control.',events:[{at:85,raiders:2,required:true,message:'SECOND RAID — TWO BOMB CARRIERS, OPPOSITE BEARING'}]}},
+ {title:'Sortie 20',sub:'Dauntless · Fuel Reserve',theater:'reserve',sbd:true,solo:true,loadout:'divebomb',torps:2,fuel:42,zeros:0,tactics:true,returnWeather:'rain',
+  body:'<b>One aircraft, one supply ship, a demanding return.</b> Sink the merchant with your two bombs. The destroyer is optional: avoid spending your reserve on another attack. Fuel starts at <b>42%</b>; rain reaches the carrier after the strike. Return promptly, keep the aircraft clean until the landing pattern, and recover at <b>78 kt with flaps, gear and hook down</b>. Damage taken during the attack remains for the return. No extra raid or wingman commands.',
+  targets:[{type:'freighter',pos:[-1300,0,3400],hp:1,speed:4.5,heading:0},{type:'destroyer',pos:[-1800,0,3700],hp:1,flak:true,speed:5,heading:0,optional:true}],
+  operation:{weather:['broken'],deadline:600,notes:'One required merchant. Aircraft fuel reserve and a rain-front return are the challenge; the escort is optional. The ship steams into wind for recovery.'}}
 ];
 function plan(m){const v=effects(),p={...(m.operation||{}),events:(m.operation?.events||[]).map(e=>({...e}))};
  if(v.fuelDenied&&(m.theater==='escort'||m.theater==='fleet')){const wave=p.events.filter(e=>e.raiders).at(-1);if(wave){wave.raiders=Math.max(1,wave.raiders-1);wave.message='FUEL SHORTAGE — SECOND RAID REDUCED TO ONE BOMB CARRIER';}}
@@ -60,7 +64,7 @@ function escortStatus(convoy,raiders,bombs,ready){const ts=convoy.filter(s=>s.de
  return {failed:ts.some(s=>!s.alive),clear:ts.length===2&&ts.every(s=>s.alive&&s.arrived)&&raiders.every(r=>!r.alive)&&bombs.length===0&&ready,
   arrived:ts.filter(s=>s.alive&&s.arrived).length,total:ts.length};
 }
-function shipTactics(s,dt,player,fish,all,emit){
+function shipTactics(s,dt,player,fish,all,emit,performance={steering:1}){
  const p=s.group.position;if(s.def.moored)return;
  if(s.baseHeading==null){s.baseHeading=s.group.rotation.y;s.cruiseSpeed=s.speed;}
  const dx=p.x-player.pos.x,dz=p.z-player.pos.z,d=Math.hypot(dx,dz),nose={x:Math.cos(player.heading),z:Math.sin(player.heading)};
@@ -69,7 +73,7 @@ function shipTactics(s,dt,player,fish,all,emit){
  s.tacticCool=Math.max(0,(s.tacticCool||0)-dt);s.alertT=Math.max(0,(s.alertT||0)-dt);
  if((spotted||torp)&&s.tacticCool<=0){s.alertT=16;s.tacticCool=30;s.tacticSide=(Math.sin(s.baseHeading)*dz-Math.cos(s.baseHeading)*dx)>0?1:-1;
   for(const e of all)if(e.alive&&e.flak&&e.group.position.distanceTo(p)<2200)e.smokeScreenT=Math.max(e.smokeScreenT||0,18);}
- const target=s.baseHeading+(s.alertT>0?s.tacticSide*.55:0),turn=clamp(angle(target-s.group.rotation.y),-.045*dt,.045*dt);
+ const target=s.baseHeading+(s.alertT>0?s.tacticSide*.55:0),turn=clamp(angle(target-s.group.rotation.y),-.045*dt*performance.steering,.045*dt*performance.steering);
  s.group.rotation.y+=turn;
  const wounded=s.hp<s.def.hp;const speed=s.cruiseSpeed*(wounded?.45:1);s.speed+=clamp(speed-s.speed,-.5*dt,.25*dt);
  s.smokeScreenT=Math.max(0,(s.smokeScreenT||0)-dt);s.screenCool=(s.screenCool||0)-dt;

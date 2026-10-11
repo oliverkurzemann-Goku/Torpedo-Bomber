@@ -102,7 +102,7 @@ function withPhases(m,config){
 function briefText(name,config,wind){
  const w=wx(name),r=config.recon;
  return '<br><br><b>WEATHER</b> '+w.label+' · visibility '+(w.far/1000).toFixed(1)+' km · cloud base '+Math.round(w.base*3.281)+' ft MSL'
- +'<br><b>WIND</b> '+(wind<0?'PORT':'STARBOARD')+' crosswind '+Math.round(Math.abs(wind)*1.944)+' kt'
+ +'<br><b>WIND</b> '+(wind&&typeof wind==='object'?'Carrier into wind · headwind '+Math.round(wind.headwind*1.944)+' kt':(wind<0?'PORT':'STARBOARD')+' crosswind '+Math.round(Math.abs(wind)*1.944)+' kt')
  +(config.deadline?'<br><b>ATTACK WINDOW</b> '+Math.round(config.deadline/60)+' minutes from take-off':'')
  +(r?'<br><b>RECON</b> Remain inside the blue circle for '+r.seconds+' seconds. '+(r.enforceAltitude?'Required':'Recommended')+' height '+Math.round(r.min*3.281)+'–'+Math.round(r.max*3.281)+' ft MSL.':'')
  +(config.notes?'<br><b>EXECUTION</b> '+config.notes:'')

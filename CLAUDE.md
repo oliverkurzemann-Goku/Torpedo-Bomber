@@ -5,7 +5,36 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 185 · Thunderbolt Squadron BUILD 185 · Remagen-Kern 23 / Fahrzeuge 22**
+Stand bei Übergabe: **Torpedo Squadron BUILD 186 · Thunderbolt Squadron BUILD 186 · Remagen-Kern 23 / Fahrzeuge 22**
+
+**Build 186 (11.10.2026): Headwind, stabiler Deckkontakt und klarere Landegeschwindigkeit.**
+Nutzer lehnt zusätzliche Anfluggrafiken ab; keine neue Mittellinie, Flightpath-Markierung
+oder Windanzeige. Pacific-Wind wirkt entlang der +X-Landeachse gegen die Flugrichtung,
+einschließlich Gusts; keine seitliche Spielerversetzung. CarrierRecovery enthält das
+Spiel-Flugenvelope und Bewertungslogik; REF 78 KT in vorhandenen Instrumenten, Speed
+rot vor dem tatsächlichen flapabhängigen Stall. Das ist eine Spielreferenz.
+
+Deckkontakt kommt aus den echten tyre-support-Vertices und der bewegten Deckebene.
+P.onDeck/deckQuaternion halten sichtbares Modell und Physik zusammen; Bodenneigung
+settelt kontinuierlich. bolter() setzt weder Höhe noch Speed sprunghaft hoch, sondern
+startet GroundRun mit realer Geschwindigkeit und Power-Spool; erneuter Wire-Check ist
+verriegelt. P.landingSample wird vor dem Arrestieren aufgenommen, daher bewertet das
+Debrief tatsächliche Speed/Sink/Offset/Bank und nicht die anschließend genullte Speed.
+Start/Missionswechsel löschen sämtliche Deck- und Sample-Zustände.
+
+Akzeptierte Erweiterungen: Schiffssysteme Engine/Rudder/Deck beeinflussen Fahrt,
+Ruder und AA, getrennt vom bestehenden HP-/Sinking-/Objective-Pfad. Shell-Hits wirken
+schrittweise. Bombenpräzision und Zustand beider abgelieferter Konvoitransporte gehen
+in Medaillen ein. Sortie 20 Fuel Reserve: SBD solo, zwei Bomben, 42% Sprit, ein nötiger
+Frachter und optionaler Samidare; Regen beginnt nach Zielabschluss, keine neuen Raids.
+Vorhandene Schäden bleiben auf dem Rückweg erhalten; Status zeigt geschätzte Reserve.
+
+Neue Tests carrier-recovery.cjs und carrier-recovery-browser.cjs prüfen originales
+Flight/Deck/Ship/HUD mit echten GLBs: alle vier Pacific-Flugzeuge bei 20/60/120 FPS,
+je spätes und gültiges Aufsetzen, keine Reifenpenetration, Teleportation oder künstliche
+Speed-Injektion; echte Engine-/Rudder-Auswirkungen und Reserve-/Regen-/RTB-Missionsgate.
+Native Chrome-Headless-Shell lokal mit GAME_TEST_CHROME und GAME_TEST_SINGLE_PROCESS=1.
+Das ersetzt keinen physischen iPad/Safari-Test. Bilder in test-visuals, CI-Artifact 186.
 
 **Build 185 (11.10.2026): klar gegliederte Pacific-Erweiterung ohne koordinierte Massenangriffe.**
 Nutzer wünscht alle Vorschläge außer kombinierten Verbandsangriffen. Sorties 17–19

@@ -56,10 +56,10 @@ vm.runInContext(pick('resolveGroundAndDeck','trap'),game);
  const theater=vm.runInNewContext(fs.readFileSync(path.join(root,'pacific-theater.js'),'utf8')+'\nwindow.PacificTheater',{window:{}});
  const missions=vm.runInNewContext(html.slice(html.indexOf('const MISSIONS = ['),html.indexOf('\n\nasync function prepareOkinawa'))+'; MISSIONS',{PacificTheater:theater});
  assert.equal(missions.at(-1).free,true,'free flight stays outside combat campaign');
- assert.equal(missions.at(-2).theater,'fleet','US fleet alarm closes the expanded cruise');
+ assert.equal(missions.at(-2).theater,'reserve','fuel-reserve return closes the expanded cruise');
  assert(missions.some(m=>m.sub==='Okinawa Recon'),'existing reconnaissance sortie remains available');
  assert.equal(missions.filter(m=>m.corsair).length,4,'two strikes plus convoy escort and US fleet defense');
- assert.equal(missions.at(-2).corsair,true,'Corsair closes the expanded combat campaign');
+ assert.equal(missions.at(-2).sbd,true,'Dauntless closes the cruise with a focused reserve recovery');
  for(const m of missions.filter(m=>!m.free))for(const t of m.targets){
   const x=t.pos[0]-10000,z=t.pos[2];
   assert.ok(world.shoreDistance(x,z)<-(t.moored?90:300),'Okinawa ship target has offshore or moored draft clearance: '+m.sub+' '+x+','+z);

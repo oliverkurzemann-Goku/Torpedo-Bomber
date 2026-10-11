@@ -296,7 +296,7 @@
   .warningLamps{display:flex!important;gap:10px;padding:5px 9px!important;background:#141813dd!important;border:1px solid #535744;border-radius:4px;white-space:nowrap;}
   .warningLamp{color:#646c5c;font:9px monospace;letter-spacing:.35px;} .warningLamp[data-level="1"]{color:#ffd088;text-shadow:0 0 6px #e0a432a0;} .warningLamp[data-level="2"]{color:#ff8c70;text-shadow:0 0 7px #ff6638b0;}
 </style>
-<link rel="stylesheet" href="menu-layout.css?v=185">
+<link rel="stylesheet" href="menu-layout.css?v=186">
 </head>
 <body>
 <div id="app"></div>
@@ -322,6 +322,7 @@
     <div><div class="lbl" id="hAltLbl">ALT</div><div class="val" id="hAlt">0<small> FT</small></div></div>
     <div><div class="lbl">HDG</div><div class="val" id="hHdg">000</div></div>
     <div><div class="lbl">VSI</div><div class="val" id="hVsi">0<small> FPM</small></div></div>
+    <div id="landingRef" hidden style="grid-column:1/-1;font-size:10px;letter-spacing:.4px;line-height:1.3;"></div>
   </div>
   <div class="panel" id="instRight">
     <div><div class="lbl">FUEL</div><div class="val" id="hFuel">100<small> %</small></div></div>
@@ -338,11 +339,12 @@
   <div class="pitReticle"></div>
   <div id="lookUp" class="lookBtn">LOOK ▲</div>
   <div id="lookDn" class="lookBtn" style="top:calc(50% + 56px);">LOOK ▼</div>
+  <style>#hSpd.lowSpeed{color:#ff574c;}#landingRef.lowSpeed{color:#ff574c;}</style>
   <div id="pauseBtn" title="Pause">❚❚</div>
   <div id="flash"></div>
   <div id="ltn" style="position:fixed;inset:0;background:#e6ecff;opacity:0;pointer-events:none;z-index:40;"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 185</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 186</div>
 
   <!-- Optical landing aid -->
   <div id="lso">
@@ -385,7 +387,7 @@
 
 <!-- Menu -->
 <div class="overlay" id="menu" data-campaign="pacific">
-  <div class="menuTop"><a id="selBtn" href="index.html?v=185">&#9664; Change Game</a><span class="menuMeta">PACIFIC OPERATIONS<br>BUILD 185</span></div>
+  <div class="menuTop"><a id="selBtn" href="index.html?v=186">&#9664; Change Game</a><span class="menuMeta">PACIFIC OPERATIONS<br>BUILD 186</span></div>
   <div class="card menuCard">
     <aside class="menuOverview" aria-label="Campaign and pilot options">
     <div class="campaignArt" aria-hidden="true"></div>
@@ -487,8 +489,8 @@
 <script src="combat-fx.js?v=177"></script>
 <script src="aircraft-smoke.js?v=176"></script>
 <script src="aircraft-damage.js?v=177"></script>
-<script src="ship-damage.js?v=177"></script>
-<script src="flight-support.js?v=185"></script>
+<script src="ship-damage.js?v=186"></script>
+<script src="flight-support.js?v=186"></script>
 <script src="ordnance.js?v=157"></script>
 <script src="crew-visuals.js?v=179"></script>
 <script src="deck-activity.js?v=179"></script>
@@ -501,12 +503,13 @@
 <script src="radio-intercept.js?v=157"></script>
 <script src="audio/weapon-sound.js?v=144"></script>
 <script src="audio/flight-atmosphere.js?v=175"></script>
-<script src="sortie-systems.js?v=175"></script>
+<script src="sortie-systems.js?v=186"></script>
 <script src="sortie-features.js?v=163"></script>
 <script src="ground-run.js?v=179"></script>
 <script src="flight-indicators.js?v=179"></script>
-<script src="operation-plans.js?v=185"></script>
-<script src="pacific-theater.js?v=185"></script>
+<script src="operation-plans.js?v=186"></script>
+<script src="pacific-theater.js?v=186"></script>
+<script src="carrier-recovery.js?v=186"></script>
 <script>
 "use strict";
 /* ============================================================
@@ -570,7 +573,7 @@ let dbgT=0, zeroRotor=null, zeroRotorAxis=null, zeroProp=null, zeroGear=null, pr
 let seatMeshG=null, cockpitLight=null, ordTorp=null, ordBombs=null;
 let glassMeshes=[], headX=0, headY=0, headBob=0, pitHideMeshes=[];
 let debris=[];
-let zeros=[], flakPuffs=[], shakeT=0, shakeMag=0, windZ=0;
+let zeros=[], flakPuffs=[], shakeT=0, shakeMag=0, windZ=0,windHead=0;
 let aeroMode=false;
 function shake(mag){ shakeT=Math.max(shakeT,0.4); shakeMag=Math.max(shakeMag,mag); }
 let hitsTaken=0;
@@ -581,7 +584,7 @@ function registerHit(){ hitsTaken++;
   if(vig){ vig.style.opacity=0.6; setTimeout(()=>{ if(vig) vig.style.opacity=0; },140); } }
 let bubbles=[], slicks=[], killCam=null, score=0, scoreStart=0, selectedMission=0;
 // ---- pilot's logbook (persisted like the best score) ----
-let sortieTorpFired=0, sortieTorpHit=0, sortieShipsSunk=0, sortieZeros=0, radioEvadeCalled=false;
+let sortieTorpFired=0, sortieTorpHit=0, sortieBombFired=0,sortieBombHit=0,sortieShipsSunk=0, sortieZeros=0, radioEvadeCalled=false;
 let sortieWingmenLost=0, reinforcementsLaunched=false;
 const RANKS=['Ensign','Lieutenant j.g.','Lieutenant','Lt Commander','Commander'];
 function rankIndexForTraps(t){ return t>=25?4 : t>=15?3 : t>=8?2 : t>=3?1 : 0; }
@@ -600,6 +603,8 @@ function logSortie(rec){
   l.shipsSunk=(l.shipsSunk||0)+rec.shipsSunk;
   l.zeros=(l.zeros||0)+(rec.zeros||0);
   l.traps=(l.traps||0)+(rec.trapped?1:0);
+  l.cleanLandings=(l.cleanLandings||0)+(rec.cleanLanding?1:0);l.protectedShips=(l.protectedShips||0)+(rec.protectedShips||0);
+  l.bombsFired=(l.bombsFired||0)+(rec.bombsFired||0);l.bombsHit=(l.bombsHit||0)+(rec.bombsHit||0);
   l.wingmenLost=(l.wingmenLost||0)+(rec.wingmenLost||0);
   l.aircraftLost=(l.aircraftLost||0)+(rec.aircraftLost||0);
   l.wires=l.wires||{1:0,2:0,3:0,4:0};
@@ -958,6 +963,10 @@ async function preparePacificModels(m,progress=()=>{}){
     if(!ready()){pacificModelTasks.delete(taskKey);throw Error(key+' model could not load. Please retry.');}
   }
 }
+function pacificRecoveryText(){
+  const distance=Math.hypot(P.pos.x-carrierX-AIM_X,P.pos.z),r=CarrierRecovery.reserve(P,distance,windHead,D().fuel),fault=SortieFeatures.Damage.status(P);
+  return 'RECOVERY'+(fault?' · '+fault:'')+' · '+(r.margin<3?'LOW RESERVE — DIRECT TO SHIP':'RESERVE ~'+Math.max(0,Math.round(r.margin))+'%');
+}
 function pacificPauseOrders(){
   const m=MISSIONS[mission];
   const task=MISSIONS[mission].theater==='escort'?'TRANSPORTS ARRIVED '+convoyProof().arrived+'/2 · RAIDERS '+raiders.filter(r=>r.alive).length:hasRaiders()?'RAIDERS '+raiders.filter(r=>r.alive).length+' · CARRIER '+Math.round(carrierHP)+'%':
@@ -966,7 +975,7 @@ function pacificPauseOrders(){
   const faults=SortieFeatures.Damage.status(P);
   const recovery=SortieFeatures.Damage.needsBelly(P)?'Emergency belly recovery: flaps and hook down, wings level, low sink rate.':'Recovery: gear, flaps and hook down; target ~'+Math.round(APP_SPD*KT)+' kt.';
   return task+' · '+Math.round(P.fuel)+'% FUEL · '+SortieFeatures.Damage.hullPercent(P)+'% HULL. '+
-    (faults?faults+'. ':'')+(pacificOps?pacificOps.status()+'. ':'')+recovery+' Ditching: gear up, flaps down, low power, slow and level, gentle sink.';
+    (faults?faults+'. ':'')+(pacificOps?pacificOps.status()+'. ':'')+(P.rtb?pacificRecoveryText()+'. ':'')+recovery+' Ditching: gear up, flaps down, low power, slow and level, gentle sink.';
 }
 function updateFlightHints(dt){
   const distance=ships.reduce((d,s)=>s.alive?Math.min(d,Math.hypot(P.pos.x-s.group.position.x,P.pos.z-s.group.position.z)):d,Infinity);
@@ -2071,7 +2080,7 @@ function updatePacificOperation(dt){
  }
  checkObjectiveCleared();
  const el=document.getElementById('opsStatus');
- if(el){const convoy=MISSIONS[mission].theater==='escort'?' · ARRIVED '+convoyProof().arrived+'/2':MISSIONS[mission].theater==='fleet'?' · DECK '+carrierHP+'%':'';const text=FlightOps.wx(weather).label.toUpperCase()+' · '+(P.rtb&&!pacificOps.failed?'RECOVERY':pacificOps.status())+convoy;if(el.textContent!==text)el.textContent=text;}
+ if(el){const convoy=MISSIONS[mission].theater==='escort'?' · ARRIVED '+convoyProof().arrived+'/2':MISSIONS[mission].theater==='fleet'?' · DECK '+carrierHP+'%':'';const text=FlightOps.wx(weather).label.toUpperCase()+' · '+(P.rtb&&!pacificOps.failed?pacificRecoveryText():pacificOps.status())+convoy;if(el.textContent!==text)el.textContent=text;}
 }
 function drawPacificBrief(m){
  const targets=m.targets.map(s=>({x:s.pos[0],z:s.pos[2],label:NavalAssets.label(s),optional:s.type==='destroyer'||s.optional}));
@@ -2137,16 +2146,16 @@ function startMission(idx){
   P.heading=0; P.pitch=0; P.roll=0; P.spd=APP_SPD; P.throttle=0.6;
   P.vSpeed=0; P.fuel=m.fuel; P.hull=100; P.fuelRate=1/D().fuel; P.torps=m.torps; P.alive=true;
   SortieFeatures.Damage.reset(P);voiceRadio.cancel();soundscape.reset();
-  P.touchResolved=false; P.boltMsgTimer=0; P.rtb=false;
+  P.touchResolved=false; P.boltMsgTimer=0; P.rtb=false;P.onDeck=false;P.deckRun=null;P.deckQuaternion=null;P.landingSample=null;P.bolters=0;
   P.gear=1; P.gearTgt=1; P.flap=0; P.flapTgt=0; P.diveBrake=false; P.diveBrakeVisual=0; P.dmgT=0;
   P.hook=0; P.hookTgt=0;   // Stow for departure; lower explicitly on recovery.
   P.ammo=1200; P.fireT=0; firing=false;
   P.rollBias=0; P.bingo=false; P.tailCool=0; P.pitchVel=0; P.rollVel=0;
-  sortieTorpFired=0; sortieTorpHit=0; sortieShipsSunk=0; sortieZeros=0; hitsTaken=0; sortieWingmenLost=0;
+  sortieTorpFired=0; sortieTorpHit=0;sortieBombFired=0;sortieBombHit=0; sortieShipsSunk=0; sortieZeros=0; hitsTaken=0; sortieWingmenLost=0;
   reinforcementsLaunched=false;
   radioEvadeCalled=false; radioQ=[]; radioT=0; P.ballCalled=false;
-  // per-sortie crosswind: grows with mission index, random side
-  windZ=pacificPlan.wind;
+  // The carrier frame is bow-first into wind (+X): no lateral recovery wind.
+  windHead=Math.abs(pacificPlan.wind);windZ=0;
   inputPitch=0; inputRoll=0;
   setThrottleUI(P.throttle);
   // The sortie's loadout must be set BEFORE the control UI is built: applyLoadoutUI() reads
@@ -2278,7 +2287,7 @@ function startMission(idx){
   // briefing
   document.getElementById('briefTitle').textContent=m.title;
   document.getElementById('briefSub').textContent=m.sub;
-  document.getElementById('briefBody').innerHTML=m.body+PacificTheater.effectText(m)+FlightOps.briefText(weather,pacificPlan.config,windZ);
+  document.getElementById('briefBody').innerHTML=m.body+PacificTheater.effectText(m)+FlightOps.briefText(weather,pacificPlan.config,{headwind:Math.abs(pacificPlan.wind)});
   document.getElementById('briefLandingSpeed').textContent='LANDING TARGET: ~'+Math.round(APP_SPD*KT)+' KT · GEAR / FLAPS / HOOK DOWN.';
   drawPacificBrief(m);
   showOverlay('brief');
@@ -2378,7 +2387,26 @@ function carrierAircraftReady(){
   return !!(isDefend()?playerZero?.userData.fromTemplate&&ijnCarrierModel:
     isSBD()?playerSBD?.userData.fromTemplate&&carrierModel:planeModelLoaded&&carrierModel);
 }
-function fitCarrierAircraft(){
+function carrierContactHeight(q=pacificAircraftQuaternion()){
+  const model=isDefend()?playerZero:isSBD()?playerSBD:planeGroup;
+  if(P.gear<.5)return carrierDeckHeight(P.pos.x,P.pos.z)+.75;
+  const supports=model&&AircraftGround.supports(model,'carrier');
+  if(!supports||supports.length!==3)return carrierDeckHeight(P.pos.x,P.pos.z)+1.8;
+  const point=new THREE.Vector3();let y=-Infinity;
+  for(const vertices of supports){let low=null;
+    for(let i=0;i<vertices.length;i+=3){point.fromArray(vertices,i).applyQuaternion(q);if(!low||point.y<low.y)low=point.clone();}
+    y=Math.max(y,carrierDeckHeight(P.pos.x+low.x,P.pos.z+low.z)-low.y);
+  }
+  return y;
+}
+function fitCarrierAircraft(dt=0){
+  if(P.onDeck){
+    const model=isDefend()?playerZero:isSBD()?playerSBD:planeGroup;
+    const fit=P.gear>=.5&&model&&AircraftGround.fit(model,'carrier',P.pos.x,P.pos.z,-Math.PI/2-P.heading,carrierDeckHeight);
+    if(fit&&P.deckQuaternion)P.deckQuaternion.slerp(fit.quaternion,1-Math.exp(-4*dt));
+    const q=P.deckQuaternion||pacificAircraftQuaternion();P.pos.y=carrierContactHeight(q);
+    planeGroup.position.copy(P.pos);planeGroup.quaternion.copy(q);return;
+  }
   if(P.gear<.5||(state!==ST.LAUNCH&&state!==ST.SERVICE)||P.pos.x-carrierX>=BOW_X-2)return;
   const model=isDefend()?playerZero:isSBD()?playerSBD:planeGroup;
   if(!model||(!isDefend()&&!isSBD()&&!planeModelLoaded))return;
@@ -2412,6 +2440,7 @@ function launch(){
   initAudio();
   soundscape.attach(actx,eng?.master);voiceRadio.unlock();
   state=ST.LAUNCH;
+  P.onDeck=false;P.deckRun=null;P.deckQuaternion=null;P.landingSample=null;
   launchTimer=0;
   P.pos.set(carrierX+STERN_X+26, DECK_Y+3.0, 0);
   P.spd=0; P.groundPower=0; P.throttle=1.0; setThrottleUI(1.0);
@@ -2582,7 +2611,7 @@ function releaseBomb(){
   if(P.pitch>-0.30){ flash("DIVE STEEPER TO BOMB",800); return; }   // need a real dive
   if(P.pos.y>650){ flash("TOO HIGH — PRESS THE DIVE",800); return; }
   if(P.pos.y<25){ flash("TOO LOW — PULL UP",800); return; }
-  P.torps--; updateHUD();
+  P.torps--;sortieBombFired++;updateHUD();
   const mesh=Ordnance.create('bomb');
   GameRuntime.own(mesh);
   mesh.position.set(P.pos.x,P.pos.y-1.3,P.pos.z);
@@ -2603,7 +2632,9 @@ function updateBombs(dt){
     let done=false;
     const gy=shoreHeight(b.mesh.position.x,b.mesh.position.z);
     if(gy>0&&b.mesh.position.y<=gy+1){
-      for(const t of shoreTargets)if(t.alive&&Math.hypot(t.def.x-b.mesh.position.x,t.def.z-b.mesh.position.z)<85)hitShoreTarget(t,30);
+      let struck=false;
+      for(const t of shoreTargets)if(t.alive&&Math.hypot(t.def.x-b.mesh.position.x,t.def.z-b.mesh.position.z)<85){hitShoreTarget(t,30);struck=true;}
+      if(struck)sortieBombHit++;
       spawnExplosion(b.mesh.position.x,gy+2,b.mesh.position.z,1.2);sfxBoom(.8);done=true;
     }
     for(const s of ships){
@@ -2667,6 +2698,7 @@ function hitShip(s, quietCam,point=null,weapon="torpedo"){
   if(!s.alive)return;
   const impactPoint=point||s.group.position;
   s.hp--;
+  if(!quietCam&&weapon==='bomb')sortieBombHit++;
   if(typeof shipDamage!=="undefined"&&shipDamage)shipDamage.hit(s,point,weapon);
   spawnSplash(impactPoint.x,impactPoint.z,true);
   // a brief camera cut on ANY hit, not just the kill blow — a solid hit deserves to be seen.
@@ -2692,7 +2724,7 @@ function hitShip(s, quietCam,point=null,weapon="torpedo"){
     spawnDebris(impactPoint.x,Math.max(4,impactPoint.y+2),impactPoint.z,6);
     addScore(400);
     sfxBoom(0.7);
-    flash("HIT — STILL AFLOAT  +400",900);
+    const fault=shipDamage?.status(s);flash((fault||'HIT — STILL AFLOAT')+'  +400',1300);
   }
   checkObjectiveCleared();
 }
@@ -2708,7 +2740,11 @@ function checkObjectiveCleared(){
     radioSay('SECOND CONTACT CONFIRMED — ESCORT AND FIGHTER COVER');
     return;
   }
-  if(cleared && (!pacificOps||pacificOps.ready()) && !P.rtb){ P.rtb=true; addScore(500); flash(MISSIONS[mission].theater==='escort'?"CONVOY SAFE  +500 — RETURN TO SHIP":"TARGETS DOWN  +500 — RETURN TO SHIP",1500); }
+  if(cleared && (!pacificOps||pacificOps.ready()) && !P.rtb){
+    P.rtb=true;addScore(500);
+    if(MISSIONS[mission].returnWeather){weather=MISSIONS[mission].returnWeather;applyWeather();}
+    flash(MISSIONS[mission].theater==='escort'?'CONVOY SAFE  +500 — RETURN TO SHIP':MISSIONS[mission].returnWeather?'TARGET DOWN — RAIN AT THE SHIP, CHECK YOUR FUEL':'TARGETS DOWN  +500 — RETURN TO SHIP',1800);
+  }
 }
 
 function spawnSplash(x,z,big){
@@ -3211,7 +3247,7 @@ function updateFlak(dt){
     const d=Math.hypot(P.pos.x-s.group.position.x, P.pos.z-s.group.position.z);
     s.flakTimer-=dt;
     if(s.flakTimer<=0 && d<2200){
-      s.flakTimer=(0.30+Math.random()*0.35)*(s.fleetAlertT>0?.85:1);
+      s.flakTimer=(0.30+Math.random()*0.35)*(s.fleetAlertT>0?.85:1)/Math.max(.25,shipDamage?.performance(s).aa??1);
       // 3-round tracer burst, aimed with lead + spread
       const from=new THREE.Vector3(s.group.position.x,10,s.group.position.z);
       const lead=P.pos.clone().addScaledVector(noseDir(),P.spd*1.1);
@@ -3319,12 +3355,13 @@ function spawnFlakBurst(p){
 function updateFlight(dt){
   const previousPosition=P.pos.clone();
   if(!P.alive) return;
+  if(P.deckRun){updateDeckRun(dt);return;}
 
   // animate gear & flaps toward targets
   P.gear += ((P.gearTgt==null?1:P.gearTgt)-(P.gear==null?1:P.gear))*Math.min(1,3*dt);
   P.flap += ((P.flapTgt==null?0:P.flapTgt)-(P.flap==null?0:P.flap))*Math.min(1,3*dt);
   P.hook += ((P.hookTgt==null?0:P.hookTgt)-(P.hook==null?0:P.hook))*Math.min(1,3*dt);
-  const stallSpd=STALL_SPD - P.flap*7;        // flaps lower the stall speed
+  const stallSpd=CarrierRecovery.envelope(P,STALL_SPD,APP_SPD).stall;
 
   // control rates (reduced near stall and when damaged)
   const dmgF = P.hull<60? (0.55+0.45*P.hull/60) : 1.0;
@@ -3448,11 +3485,10 @@ function updateFlight(dt){
   }
   P.vSpeed=vs;
 
-  // integrate position (+ crosswind drift, strongest at low level where it matters for the trap)
-  const horiz=P.spd*Math.cos(P.pitch);
-  const windMul = P.pos.y<250 ? 1 : Math.max(0.3, 250/P.pos.y);
-  P.pos.x += Math.cos(P.heading)*horiz*dt;
-  P.pos.z += Math.sin(P.heading)*horiz*dt + (windZ+windGust*3.0)*windMul*dt;   // gust scaled to match windZ's own range (0.4-3.15)
+  // Airspeed retains its stall meaning. Headwind reduces ground speed along +X.
+  const horiz=P.spd*Math.cos(P.pitch),wind=CarrierRecovery.wind(windHead,windGust);
+  P.pos.x += (Math.cos(P.heading)*horiz+wind.x)*dt;
+  P.pos.z += Math.sin(P.heading)*horiz*dt;
   P.pos.y += vs*dt;
 
   // fuel burn — idle sip + throttle burn + extra when climbing hard on full power
@@ -3491,14 +3527,14 @@ function updateFlight(dt){
     const right=new THREE.Vector3(1,0,0).applyQuaternion(pacificAircraftQuaternion());
     if(FlightSupport.treeStrike(okinawaWorld.treeIndex,a,b,right,6)){crash('TREE STRIKE','Your aircraft struck a tree.');return;}
   }
-  resolveGroundAndDeck(dt);
+  resolveGroundAndDeck(dt,previousPosition);
 }
 
 function overDeck(x,z){
   return (x-carrierX)>STERN_X && (x-carrierX)<BOW_X && Math.abs(z)<DECK_HALF_W;
 }
 
-function resolveGroundAndDeck(dt){
+function resolveGroundAndDeck(dt,previousPosition=null){
   const x=P.pos.x, z=P.pos.z, y=P.pos.y;
   if(MISSIONS[mission]?.theater==='escort'){
     const h=PacificTheater.islandHeight(x,z);if(h>1&&y<h+2){crash('TERRAIN','You flew into a channel island.');return;}
@@ -3518,9 +3554,12 @@ function resolveGroundAndDeck(dt){
     }
   }
 
-  // touching deck level while descending over deck
+  // Contact uses the actual low tyre vertex and the moving rendered deck plane.
   if(overDeck(x,z)){
-    if(y<=DECK_Y+1.6){
+    const contact=carrierContactHeight();
+    if(y<=contact&&P.vSpeed<=0){
+      if(previousPosition&&previousPosition.y<carrierDeckHeight(x,z)-.5){crash('STRUCK THE SHIP','The aircraft hit the hull below the flight deck.');return;}
+      P.pos.y=contact;
       if(!P.touchResolved){
         P.touchResolved=true;
         const sink=-P.vSpeed;                 // +ve = descending
@@ -3532,10 +3571,13 @@ function resolveGroundAndDeck(dt){
         if(P.spd>54){ bolter("TOO FAST — BOLTER"); return; }
         if((x-carrierX)>WIRE_X1){ bolter("LANDED LONG — BOLTER"); return; }
         if((x-carrierX)<WIRE_X0-12*D().wire){ bolter("SHORT — BOLTER"); return; }
-        if(P.spd<STALL_SPD-2){ crash("STALLED ON DECK","Too slow over the ramp."); return; }
+        if(P.spd<CarrierRecovery.envelope(P,STALL_SPD,APP_SPD).stall){ crash("STALLED ON DECK","Too slow over the ramp."); return; }
         if(P.gear<0.6&&!SortieFeatures.Damage.belly(P,sink,APP_SPD+6)){ crash("WHEELS UP","You boarded on your belly — lower the gear next time."); return; }
         if(P.gear<.6)radioSay('EMERGENCY BELLY RECOVERY — DECK CREW STANDING BY');
         if(P.hook<0.6){ bolter("HOOK UP — BOLTER"); return; }
+        // Save the airborne touchdown values BEFORE arresting sets airspeed to zero.
+        P.landingSample={speed:P.spd,sink,offset:z,bank:P.roll};
+        P.onDeck=true;P.deckQuaternion=pacificAircraftQuaternion();
         // TRAP!
         for(let i=0;i<5;i++) spawnSmoke(x-3+i*1.5,DECK_Y+1.5,z+(Math.random()-0.5)*4,0x6a6a64,0.5);
         trap(x);
@@ -3590,21 +3632,16 @@ function trap(x){
   else if(lx>WIRE_X0+(WIRE_X1-WIRE_X0)*0.25) wire=2;
   else wire=1;
   P.alive=true; P.spd=0; P.vSpeed=0; P.throttle=0; setThrottleUI(0);
-  P.pos.y=DECK_Y+1.5;
-  // ---- LSO grade: the wire tells the story, centreline and speed refine it ----
-  const offCL=Math.abs(P.pos.z);                       // how far off the centreline
-  const kt=P.spd*KT;
-  let grade, gPts;
-  if(wire===3 && offCL<7)                { grade='OK-3';     gPts=250; }
-  else if(wire===3)                      { grade='(OK)-3';   gPts=180; }
-  else if(wire===2||wire===4)            { grade='FAIR-'+wire; gPts=100; }
-  else                                   { grade='NO GRADE-1'; gPts=0; }
+  P.onDeck=true;P.deckRun=null;P.deckQuaternion=P.deckQuaternion||pacificAircraftQuaternion();
+  P.pos.y=carrierContactHeight(P.deckQuaternion);
+  const landing=CarrierRecovery.landing(P.landingSample&&{...P.landingSample,wire},APP_SPD);
+  const grade=landing.grade,gPts=landing.points;
   const bonus=500+gPts;
   addScore(bonus); scoreStart=score; saveBest(score);
   sfxTrap();
   lastGrade=grade;
   flash(grade+'  ·  '+bonus+' PTS',2200);
-  radioSay(wire===3 ? 'THAT WAS A ROGER PASS — OK THREE WIRE'
+  radioSay(grade==='OK-3' ? 'THAT WAS A ROGER PASS — OK THREE WIRE'
         : (wire===1 ? 'TAXI OUT OF THE WIRES — YOU WERE LOW AND SLOW'
                     : 'FAIR PASS, '+wire+' WIRE'));
 
@@ -3653,15 +3690,17 @@ function trap(x){
   if(window.SquadronCampaign)SquadronCampaign.record('pacific',mission);
   const previousEffects=PacificTheater.effects();PacificTheater.record(MISSIONS[mission],shoreTargets,supportFleet);
   const campaignLine=MISSIONS[mission].theater==='harbor'&&!previousEffects.fuelDenied?'<br>Fuel supplies denied: later second raids lose one aircraft.':MISSIONS[mission].theater==='escort'&&!previousEffects.reinforced?'<br>Both transports delivered: Fletcher reinforcement available for Fleet Alarm.':'';
-  // ---- medal for this sortie ----
-  const acc = sortieTorpFired? sortieTorpHit/sortieTorpFired : 0;
-  let medal='bronze';
-  if(P.hull>=70 && hitsTaken<=4 && (wire===3||wire===2) && acc>=0.6) medal='gold';
-  else if(P.hull>=45 && hitsTaken<=10) medal='silver';
+  const review=CarrierRecovery.assessment({complete:true,released:sortieTorpFired+sortieBombFired,hit:sortieTorpHit+sortieBombHit,
+    transports:supportFleet.filter(s=>s.def.transport),hull:SortieFeatures.Damage.hullPercent(P),cleanLanding:landing.clean,safeLanding:landing.safe});
+  const medal=review.medal;addScore(review.points);saveBest(score);
+  const qualityLine='<br>Attack precision: '+(review.accuracy==null?'objective completed':Math.round(review.accuracy*100)+'%')
+    +(review.total?' · Transports delivered '+review.kept+'/'+review.total+' · convoy condition '+Math.round(review.protection*100)+'%':'')
+    +'<br>Touchdown: '+(P.landingSample?Math.round(P.landingSample.speed*KT)+' kt · '+Math.round(P.landingSample.sink*FT*60)+' fpm · '+Math.abs(P.landingSample.offset).toFixed(1)+' m off centre':'not recorded')+' · '+grade
+    +'<br>Mission quality bonus +'+review.points;
   const medalIcon={gold:'🥇 GOLD',silver:'🥈 SILVER',bronze:'🥉 BRONZE'}[medal];
   const trapsBefore=(loadLog().traps||0);
   const l=logSortie({torpFired:sortieTorpFired, torpHit:sortieTorpHit, shipsSunk:sortieShipsSunk,
-    zeros:sortieZeros, trapped:true, wire, medal, grade:lastGrade, wingmenLost:sortieWingmenLost});
+    zeros:sortieZeros, trapped:true, wire, medal, grade:lastGrade, wingmenLost:sortieWingmenLost,cleanLanding:landing.clean,protectedShips:review.kept,bombsFired:sortieBombFired,bombsHit:sortieBombHit});
   const lifeAcc=l.torpFired? Math.round(100*l.torpHit/l.torpFired):0;
   // career promotion — crossing a rank threshold on this recovery is a moment worth marking
   const promoted = rankName(l.traps)!==rankName(trapsBefore);
@@ -3677,7 +3716,7 @@ function trap(x){
     +(promoted?"<br><br><b>Promoted to "+rank+".</b>":"")
     +"<br><br>This sortie: "+sortieShipsSunk+" sunk · "+sortieZeros+" Zeros · "+sortieTorpHit+"/"+sortieTorpFired
       +" fish on target · hull "+SortieFeatures.Damage.hullPercent(P)+"% · "+hitsTaken+" hits taken"+lostLine
-    +campaignLine+"<br>Landing bonus +"+bonus+" · SCORE "+score+" · BEST "+Math.max(bestScore(),score)
+    +campaignLine+qualityLine+"<br>Landing bonus +"+bonus+" · SCORE "+score+" · BEST "+Math.max(bestScore(),score)
     +"<br><br><b>LOGBOOK</b> — "+l.sorties+" sorties · "+(l.shipsSunk||0)+" sunk · "+lifeAcc+"% torpedo accuracy"
       +"<br>LSO grades: "+(Object.keys(l.grades||{}).length
         ? Object.keys(l.grades).map(k=>k+"×"+l.grades[k]).join("  ") : "—")
@@ -3687,12 +3726,29 @@ function trap(x){
 }
 
 function bolter(msg){
-  // recover: bounce back to air, keep flying
-  P.pos.y=DECK_Y+3; P.vSpeed=4; P.pitch=0.12;
-  P.spd=Math.max(P.spd,APP_SPD+4);
-  sfxBolter();
-  flash(msg,1400);
-  P.touchResolved=false;
+  // A missed wire is a powered deck run; never teleport up or add airspeed.
+  if(P.deckRun)return;
+  P.deckQuaternion=pacificAircraftQuaternion();P.pos.y=carrierContactHeight(P.deckQuaternion);
+  P.deckRun={elapsed:0,speed:Math.max(0,P.spd-(-CarrierRecovery.wind(windHead,windGust).x)-CARRIER_SPD)};
+  P.onDeck=true;P.vSpeed=0;P.touchResolved=true;P.bolters++;
+  P.throttle=1;P.groundPower=.35;setThrottleUI(1);
+  sfxBolter();flash(msg+' — FULL POWER, GO AROUND',1800);
+}
+function updateDeckRun(dt){
+  const run=P.deckRun;if(!run)return;run.elapsed+=dt;
+  if(!isFree())P.fuel=Math.max(0,P.fuel-(.11+P.throttle*P.throttle*.42)*dt/D().fuel*((isQual()||isDefend())?1:.4));
+  if(P.fuel<=0)P.throttle=Math.max(0,P.throttle-.5*dt);
+  const ground={spd:run.speed,throttle:P.throttle,groundPower:P.groundPower};
+  GroundRun.step(ground,dt,{carrier:true,power:SortieFeatures.Damage.power(P),limit:90});
+  run.speed=ground.spd;P.groundPower=ground.groundPower;
+  const wind=CarrierRecovery.wind(windHead,windGust);P.spd=run.speed+CARRIER_SPD-wind.x;
+  P.pos.x+=(run.speed+CARRIER_SPD)*dt;P.vSpeed=0;
+  if((run.elapsed>.8&&P.spd>=APP_SPD+4&&P.groundPower>.5)||P.pos.x-carrierX>=BOW_X){
+    const nd=new THREE.Vector3(0,0,-1).applyQuaternion(P.deckQuaternion);
+    P.pitch=Math.max(.08,Math.asin(Math.max(-1,Math.min(1,nd.y))));P.roll=0;
+    P.pitchVel=P.rollVel=0;P.onDeck=false;P.deckRun=null;P.touchResolved=false;
+    P.vSpeed=P.spd*Math.sin(P.pitch);P.deckQuaternion=null;
+  }
 }
 
 // ============================================================
@@ -4312,8 +4368,8 @@ function updateWingmen(dt){
     // Pitch is angle of attack in the player's model; its actual sink rate
     // differs from nose.y * airspeed, especially on a slow, flapped approach.
     if(Number.isFinite(P.vSpeed))leadVel.y=P.vSpeed;
-    const drift=(typeof windZ==='number'?windZ:0)+(typeof windGust==='number'?windGust*3:0);
-    leadVel.z+=drift*(P.pos.y<250?1:Math.max(.3,250/P.pos.y));
+    if(typeof CarrierRecovery!=='undefined')leadVel.x+=CarrierRecovery.wind(
+      typeof windHead==='number'?windHead:0,typeof windGust==='number'?windGust:0).x;
     if(!w.vel) w.vel = leadVel.clone();
     let desVel;
     if(w.mode==='form'){
@@ -5101,7 +5157,7 @@ function loadPlaneModel(){
       }
       window.__eyeDbg='EYE '+COCKPIT_EYE.map(v=>v.toFixed(2)).join('/');
       const btEl=document.getElementById('buildTag');
-      if(btEl) btEl.textContent='BUILD 185 · '+window.__eyeDbg;
+      if(btEl) btEl.textContent='BUILD 186 · '+window.__eyeDbg;
       let seat=null;
       model.traverse(function(o){
         if(!o.isMesh||!o.material) return;
@@ -5465,7 +5521,7 @@ function updatePlaneMesh(dt){
     if(playerZero) playerZero.visible=true;
     if(zeroProp)   zeroProp.visible=true;
   }
-  fitCarrierAircraft();
+  fitCarrierAircraft(dt);
   updateRearArmament();
 }
 
@@ -5929,6 +5985,7 @@ function updateGuns(dt){
         if(s.strafe>18 && Math.random()<0.22)
           spawnFire(b.mesh.position.x,b.mesh.position.y+0.5,b.mesh.position.z,0.7);
         s.gunDamage=(s.gunDamage||0)+(b.weapon==='cannon'?1:.12);
+        shipDamage?.systemHit(s,b.mesh.position,'shell',b.weapon==='cannon'?.008:.001);
         const threshold=NavalAssets.gunThreshold(s.def);
         if(s.gunDamage>=threshold){s.gunDamage-=threshold;hitShip(s,false,b.mesh.position,"shell");}
         hit=true; break;
@@ -6081,7 +6138,13 @@ function applyShake(){
 //  HUD UPDATE
 // ============================================================
 function updateHUD(){
-  GameRuntime.setHTML(document.getElementById('hSpd'),Math.round(P.spd*KT)+'<small> KT</small>');
+  const speeds=CarrierRecovery.envelope(P,STALL_SPD,APP_SPD),speedEl=document.getElementById('hSpd');
+  GameRuntime.setHTML(speedEl,Math.round(P.spd*KT)+'<small> KT</small>');
+  speedEl.classList.toggle('lowSpeed',state===ST.FLIGHT&&P.alive&&!P.onDeck&&speeds.low);
+  const ref=document.getElementById('landingRef'),near=Math.hypot(P.pos.x-carrierX-AIM_X,P.pos.z)<2200;
+  ref.hidden=state!==ST.FLIGHT||!P.alive||P.onDeck||!(P.rtb||near&&P.gear>.5);
+  ref.textContent='REF '+Math.round(speeds.reference*KT)+' KT · '+(speeds.stalled?'STALL':speeds.low?'LOW SPEED':P.flap<.8?'FLAPS DOWN':'LANDING');
+  ref.classList.toggle('lowSpeed',speeds.low);
   // ALT normally reads height above the SEA — but the deck sits 16 m up, so on short final
   // "62 FT" actually meant about 3 m of clearance. That is why touchdown kept arriving while
   // the gauge still showed height, and why passes ended up short and low. In the landing
@@ -6163,7 +6226,7 @@ function updateTorpRun(){
 let navigation=null;
 function pacificContacts(){
  const c=[];
- for(const s of ships)if(s.alive)c.push({ref:s,pos:s.group.position,kind:'SHIP',label:NavalAssets.label(s.def).toUpperCase()+' #'+(ships.indexOf(s)+1)});
+ for(const s of ships)if(s.alive)c.push({ref:s,pos:s.group.position,kind:'SHIP',label:NavalAssets.label(s.def).toUpperCase()+' #'+(ships.indexOf(s)+1)+(shipDamage?.status(s)?' · '+shipDamage.status(s):'')});
  for(const t of shoreTargets)if(t.alive)c.push({ref:t,pos:t.group.position,kind:'TARGET',label:t.def.label.toUpperCase()});
  for(const r of raiders)if(r.alive)c.push({ref:r,pos:r.group.position,kind:'BOMBER',label:r.japanese?'A6M BOMB CARRIER':'INBOUND BOMBER'});
  if(MISSIONS[mission].theater==='escort')for(const s of supportFleet)if(s.alive&&s.def.transport)c.push({ref:s,pos:s.group.position,kind:'ALLY',label:NavalAssets.label(s.def).toUpperCase()+' '+s.hp+'%'+(s.arrived?' — ARRIVED':' — PROTECT')});
@@ -6236,9 +6299,9 @@ function updateLSO(){
 
   // speed cue
   const cue=document.getElementById('spdCue');
-  if(P.spd>APP_SPD+5){ cue.textContent="FAST"; cue.style.color='var(--oxide)'; }
-  else if(P.spd<APP_SPD-5){ cue.textContent="SLOW"; cue.style.color='var(--steel)'; }
-  else { cue.textContent="ON SPEED"; cue.style.color='var(--good)'; }
+  if(P.spd>APP_SPD+5){ cue.textContent="FAST · REF "+Math.round(APP_SPD*KT)+" KT"; cue.style.color='var(--oxide)'; }
+  else if(P.spd<APP_SPD-5){ cue.textContent="SLOW · REF "+Math.round(APP_SPD*KT)+" KT"; cue.style.color='var(--steel)'; }
+  else { cue.textContent="ON SPEED · REF "+Math.round(APP_SPD*KT)+" KT"; cue.style.color='var(--good)'; }
 
   const call=document.getElementById('lsoCall');
   const near=distToAim<720;
@@ -6463,7 +6526,7 @@ function setupUIButtons(){
   if(dbgT2) dbgT2.onclick=()=>{
     dbgOn=!dbgOn; GameRuntime.storage.setItem('dbgOn',dbgOn?'1':'0');
     const db=document.getElementById('dbgBox'); if(db) db.textContent=dbgOn?'✓':'';
-    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 185'; }
+    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 186'; }
   };
   const lu=document.getElementById('lookUp'), ld=document.getElementById('lookDn');
   let _lookT=0;
@@ -6479,7 +6542,7 @@ function setupUIButtons(){
   if(pb) pb.addEventListener('pointerdown',e=>{ e.preventDefault(); togglePause(); });
   const rb=document.getElementById('resumeBtn'); if(rb) rb.onclick=resumeGame;
   const mb=document.getElementById('menuBtn'); if(mb) mb.onclick=exitToMenu;
-  document.getElementById('pauseMainMenu').onclick=()=>{exitToMenu();window.location.href='index.html?v=185';};
+  document.getElementById('pauseMainMenu').onclick=()=>{exitToMenu();window.location.href='index.html?v=186';};
   document.getElementById('resultBtn').onclick=()=>{
     // the logbook borrows this screen from the menu — send the player straight back
     if(logbookOpen){ logbookOpen=false; showOverlay('menu'); return; }
@@ -6646,8 +6709,9 @@ function updateShips(dt){
         s.wakeT=0;
       }
       const wf=s.fwd.clone().applyQuaternion(s.group.quaternion); wf.y=0; wf.normalize();
+      const shipPerformance=shipDamage?.performance(s)||{speed:1,steering:1,aa:1};
       const enhanced=MISSIONS[mission].tactics||mission>=3&&!isFree()&&!isQual();
-      if(enhanced)PacificTheater.shipTactics(s,dt,P,torpedoes,ships,spawnScreenSmoke);
+      if(enhanced)PacificTheater.shipTactics(s,dt,P,torpedoes,ships,spawnScreenSmoke,shipPerformance);
       // Legacy early-sortie zigzag; advanced ships use bounded course changes above.
       let evading=false;
       for(const t of torpedoes){
@@ -6660,7 +6724,7 @@ function updateShips(dt){
           if(!radioEvadeCalled){ radioEvadeCalled=true; radioSay("SHE'S SEEN THE FISH — TARGET TURNING HARD"); } }
         s.evadeT-=dt;
         if(s.evadeT<=0){ s.evadeDir*=-1; s.evadeT=2.5+Math.random()*2.5; }
-        s.group.rotateY(s.evadeDir*0.10*dt);
+        s.group.rotateY(s.evadeDir*0.10*dt*shipPerformance.steering);
       } else { s.evadeDir=0; }
       s.fleetAlertT=Math.max(0,(s.fleetAlertT||0)-dt);
       // ---- island avoidance: ships used to steam straight through the terrain ----
@@ -6674,7 +6738,7 @@ function updateShips(dt){
            okinawaWorld.shoreDistance(aheadX,aheadZ)>-s.radius-35){
           const left=okinawaWorld.shoreDistance(aheadX-wf.z*180,aheadZ+wf.x*180);
           const right=okinawaWorld.shoreDistance(aheadX+wf.z*180,aheadZ-wf.x*180);
-          s.group.rotateY((left<right?-1:1)*.24*dt);
+          s.group.rotateY((left<right?-1:1)*.24*dt*shipPerformance.steering);
         }
       }else if(!s.def.moored){
         let near=null, nd=1e9;
@@ -6693,12 +6757,14 @@ function updateShips(dt){
             tgt = Math.abs(norm(t1-cur))<Math.abs(norm(t2-cur))? t1 : t2;  // reversing course
           }
           const diff=norm(tgt-cur);
-          if(Math.abs(diff)>0.05) s.group.rotateY(Math.sign(diff)*0.35*dt);
+          if(Math.abs(diff)>0.05) s.group.rotateY(Math.sign(diff)*0.35*dt*shipPerformance.steering);
         }
       }
       wf.copy(s.fwd).applyQuaternion(s.group.quaternion);wf.y=0;wf.normalize();
-      s.group.position.x+=wf.x*s.speed*dt;
-      s.group.position.z+=wf.z*s.speed*dt;
+      s.driveMultiplier=(s.driveMultiplier??1)+(shipPerformance.speed-(s.driveMultiplier??1))*(1-Math.exp(-dt*.5));
+      const driveSpeed=s.speed*s.driveMultiplier;
+      s.group.position.x+=wf.x*driveSpeed*dt;
+      s.group.position.z+=wf.z*driveSpeed*dt;
       s.group.position.y=seaHeightAt(s.group.position.x,s.group.position.z,seaUniforms.uTime.value)
         +Math.sin(performance.now()*.0008+s.group.position.x*.012)*.13*seaState;
       if(typeof shipDamage!=="undefined"&&shipDamage)shipDamage.update(s,dt,s.group.position.y);
@@ -6708,7 +6774,7 @@ function updateShips(dt){
       if(s.smokeT<=0 && s.def.model!=='submarine'){ s.smokeT=0.4+Math.random()*0.3;
         spawnSmoke(s.group.position.x-wf.x*3,13,s.group.position.z-wf.z*3,0x53534e,0.35); }
       const spec=s.group.children[0]?.userData.naval;
-      trackShipWake(s.group,wf,spec?.length||s.radius*2,spec?.beam||s.radius*.25,s.speed,dt);
+      trackShipWake(s.group,wf,spec?.length||s.radius*2,spec?.beam||s.radius*.25,driveSpeed,dt);
     }
   }
 }
@@ -6726,7 +6792,7 @@ function animate(){
     notice.style.cssText='position:fixed;inset:0;z-index:999998;background:rgba(15,20,15,.95);color:#e8ddbc;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px;text-align:center;font:16px system-ui';
     const title=document.createElement('h2');title.textContent='Simulation interrupted';
     const detail=document.createElement('p');
-    detail.textContent='BUILD 185 · '+(MISSIONS[mission]?.sub||'Menu')+' · '+error.message;
+    detail.textContent='BUILD 186 · '+(MISSIONS[mission]?.sub||'Menu')+' · '+error.message;
     const reload=document.createElement('button');reload.textContent='Reload game';
     reload.style.cssText='padding:12px 24px;font:inherit';reload.onclick=()=>location.reload();
     notice.appendChild(title);notice.appendChild(detail);notice.appendChild(reload);document.body.appendChild(notice);
@@ -6782,7 +6848,7 @@ function animateFrame(){
     // Join up once airborne. In SBD sorties wait for the Dauntless model to finish loading
     // (10 MB — it often isn't ready the instant you're off the deck), so wingmen don't get
     // frozen as Avengers. Fall back to whatever's loaded after a few seconds if it never comes.
-    if(wingmenPending && P.pos.y>DECK_Y+55){
+    if(wingmenPending && !MISSIONS[mission].solo && P.pos.y>DECK_Y+55){
       wingmenPendingT=(wingmenPendingT||0)+dt;
       if((isSBD()?strikeTemplate():!!(gltfRoot&&propPivot)) || wingmenPendingT>6){
         wingmenPending=false; wingmen.length=0; spawnWingman(0); spawnWingman(1);

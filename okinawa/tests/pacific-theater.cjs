@@ -3,7 +3,7 @@ const fs=require('fs'),vm=require('vm'),assert=require('node:assert/strict'),THR
 const storage=new Map(),c={THREE,window:null,localStorage:{getItem:k=>storage.get(k),setItem:(k,v)=>storage.set(k,v)},document:{createElement:()=>createCanvas(1,1)},atob};c.window=c;vm.createContext(c);
 for(const f of ['pacific-theater.js','okinawa/data.js','okinawa/world.js'])vm.runInContext(fs.readFileSync(f,'utf8'),c);
 const T=c.PacificTheater;
-assert.deepEqual(Array.from(T.missions,m=>m.theater),['harbor','escort','fleet']);
+assert.deepEqual(Array.from(T.missions,m=>m.theater),['harbor','escort','fleet','reserve']);
 assert(T.missions.every(m=>!m.defend),'US defense is not silently the Japanese/Zero mode');
 assert(T.missions.every(m=>!m.combined),'no coordinated combined attack');
 const w=new c.OkinawaWorld(c.OKINAWA_DATA);w.buildMasks();

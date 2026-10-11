@@ -39,6 +39,15 @@ The appended sorties preserve the earlier combat indices:
 - **19 · Fleet Alarm (Corsair):** US carrier defense against Japanese A6M bomb carriers,
   using the existing Japanese aircraft asset (not fictitious heavy-bomber models).
   A damaged returning Corsair is optional; normal carrier recovery finishes the sortie.
+- **20 · Fuel Reserve (SBD):** one required merchant, an optional destroyer, 42% starting
+  fuel and rain on the return. A solo sortie with no additional raid.
+
+Carrier recovery uses headwind along the moving deck. The existing speed instrument
+shows **REF 78 KT** for recovery and turns red before the current flap-dependent stall
+speed. A missed wire leads to a powered deck run without a position or speed jump.
+Landing grades use recorded touchdown speed, sink, offset and bank; medals also count
+bomb precision and the delivered transports' condition. Engine, rudder and deck damage
+affect ship speed, turning and AA independently of hull HP and objective credit.
 
 There are no coordinated mixed-flight strikes or extra command controls. Advanced hostile
 ships spot approaching aircraft, turn with bounded rates, lay escort smoke and lose speed
