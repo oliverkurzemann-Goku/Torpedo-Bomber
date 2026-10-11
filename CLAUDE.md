@@ -5,7 +5,46 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 186 · Thunderbolt Squadron BUILD 186 · Remagen-Kern 23 / Fahrzeuge 22**
+Stand bei Übergabe: **Torpedo Squadron BUILD 187 · Thunderbolt Squadron BUILD 187 · Remagen-Kern 23 / Fahrzeuge 22**
+
+**Build 187 (11.10.2026): Landereferenz, Fahrwerk und sichtbarer Fangseilweg.**
+Thunderbolt-HUD zeigt REF in den bestehenden MPH-Einheiten, aus AC[P.ac].app:
+P-47 121 MPH, Bf 109 112 MPH; auch die anderen vier Spielerflugzeuge haben eigene
+Referenzen. Die Warnschwelle nutzt dieselbe Stallformel wie updateFlight und wird
+15% vor dem aktuellen Stall rot. Auf dem Boden ist die Warnung ausgeblendet.
+Zusätzlich enthalten die bestehenden Approach-Speed-Cues den Zahlenwert.
+
+buildGear hatte alle Haupträder auf minZ + Länge*.56 gesetzt. Die neuen Positionen
+liegen bei P-47 z=1.989 m an der vorderen Tragfläche und Bf 109 z=.916 m, passend
+zur ursprünglichen GLB-Radstation (.913 m). Keine Veränderung der Originaldateien,
+Wings/Propeller-Cuts oder sonstiger Flugzeug-Fahrwerke. aircraft-gear.js prüft den
+gemessenen Bf-Radabstand und den P-47-Frontflügelbereich, weiterhin Wing-Face-Erhalt.
+
+Carrier: tatsächlich erkannter Kontakt beginnt P.arrestRun, bleibt grounded und
+bremst über 2.2 s mit kontinuierlichem Speedprofil ab (~32 m bei der 78-kt-Fixture).
+Ein wiederverwendbarer, beim Stop/Missionswechsel entsorgter Line-Cable verbindet
+Deck und Heck. Erst nach Stillstand läuft trap() mit der ursprünglichen Touch-X,
+damit Wire/Grade/Debrief nicht vom Rollout-Endpunkt abhängen. Der direkte trap()-Pfad
+bleibt für die bestehenden Fixture-Tests. Offset bis 14 m ist recoverbar; größere
+Abweichung oder Heading verlangen Bolter statt künstlichem Off-Centreline-Crash.
+Lateralbewegung/Yaw werden stetig gedämpft, kein Positionssprung. Echte Hull-/Terrain-
+und Hard-Landing-Kollisionen bleiben erhalten. Keine zusätzlichen Anflugmarkierungen.
+Beim Fortsetzen wurde eine weitere Arrest-Yaw-Ursache gefunden: Flight-Heading ist
+nach Platzrunden unbeschränkt, direkte Skalierung von 2π/4π drehte das Flugzeug trotz
+gleicher Ausrichtung. Arrest dämpft jetzt den kürzesten Winkel zur Deckachse; native
+Tests vergleichen den kompletten Off-Centre-Rollout bei 0 und ±2 Vollkreisen. Auch
+der Deckkontakt-Headingcheck nutzt denselben kürzesten Winkel: negatives JS-Modulo
+hatte links herum geflogene volle Platzrunden fälschlich als Alignment-Bolter erkannt.
+
+Pacific-BombSight projiziert den tatsächlichen Release-Punkt, Velocity, 18 m/s²
+Gravity und 8 s Lifetime; berücksichtigt Shore-Ziele und fahrende Schiffe. Nur beim
+Divebomb-Loadout in der Luft; RELEASE grün nur bei Ziel und zulässigem Release-Pitch/
+Höhenfenster. Prediction 10 Hz, Projection pro Frame. Native Tests vergleichen reale
+Abwürfe bei 20/60/120 FPS, max. Abweichung 2.64 m; weitere Tests prüfen originale
+vier Pacific-GLBs, graduellen Arrest, 12-m-Offset-Recovery und niedrige Bewertung,
+beide europäischen GLBs und alle sechs Landereferenzen. Lokale Syntax, 31 Terrain-
+und 47 Okinawa-Testdateien bestanden; native Screenshots unter test-visuals, Artifact187.
+Native Chrome-Headless-Shell ist ein Browsertest, kein physischer iPad/Safari-Test.
 
 **Build 186 (11.10.2026): Headwind, stabiler Deckkontakt und klarere Landegeschwindigkeit.**
 Nutzer lehnt zusätzliche Anfluggrafiken ab; keine neue Mittellinie, Flightpath-Markierung

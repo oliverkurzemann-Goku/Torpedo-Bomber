@@ -293,13 +293,15 @@
   .opsMap{display:block;width:100%;height:auto;margin-top:14px;border:1px solid #778168;border-radius:5px;}
   .opsLegend{font:11px/1.5 monospace;color:#d7c797;text-align:left;margin-top:5px;}
   #opsStatus{position:fixed;top:calc(env(safe-area-inset-top) + 76px);left:50%;transform:translateX(-50%);color:#edcc80;background:rgba(14,20,18,.78);padding:5px 9px;font:10px monospace;pointer-events:none;z-index:9;max-width:58vw;text-align:center;}
+  #bombSight{position:fixed;transform:translate(-50%,-50%);color:#ffeac0;text-shadow:0 1px 2px #000;font:bold 13px monospace;pointer-events:none;z-index:8;}#bombSight.onTarget{color:#a5ff8d;}
   .warningLamps{display:flex!important;gap:10px;padding:5px 9px!important;background:#141813dd!important;border:1px solid #535744;border-radius:4px;white-space:nowrap;}
   .warningLamp{color:#646c5c;font:9px monospace;letter-spacing:.35px;} .warningLamp[data-level="1"]{color:#ffd088;text-shadow:0 0 6px #e0a432a0;} .warningLamp[data-level="2"]{color:#ff8c70;text-shadow:0 0 7px #ff6638b0;}
 </style>
-<link rel="stylesheet" href="menu-layout.css?v=186">
+<link rel="stylesheet" href="menu-layout.css?v=187">
 </head>
 <body>
 <div id="app"></div>
+<div id="bombSight" hidden></div>
 <style>
   #carrierPreview{display:none;position:fixed;bottom:max(28px,env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);z-index:45;text-align:center;font:12px monospace;color:#e1d5b4;}
   #carrierPreview span{display:block;padding:8px 14px;background:rgba(20,24,21,.75);letter-spacing:2px;}
@@ -344,7 +346,7 @@
   <div id="flash"></div>
   <div id="ltn" style="position:fixed;inset:0;background:#e6ecff;opacity:0;pointer-events:none;z-index:40;"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 186</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 187</div>
 
   <!-- Optical landing aid -->
   <div id="lso">
@@ -387,7 +389,7 @@
 
 <!-- Menu -->
 <div class="overlay" id="menu" data-campaign="pacific">
-  <div class="menuTop"><a id="selBtn" href="index.html?v=186">&#9664; Change Game</a><span class="menuMeta">PACIFIC OPERATIONS<br>BUILD 186</span></div>
+  <div class="menuTop"><a id="selBtn" href="index.html?v=187">&#9664; Change Game</a><span class="menuMeta">PACIFIC OPERATIONS<br>BUILD 187</span></div>
   <div class="card menuCard">
     <aside class="menuOverview" aria-label="Campaign and pilot options">
     <div class="campaignArt" aria-hidden="true"></div>
@@ -489,8 +491,8 @@
 <script src="combat-fx.js?v=177"></script>
 <script src="aircraft-smoke.js?v=176"></script>
 <script src="aircraft-damage.js?v=177"></script>
-<script src="ship-damage.js?v=186"></script>
-<script src="flight-support.js?v=186"></script>
+<script src="ship-damage.js?v=187"></script>
+<script src="flight-support.js?v=187"></script>
 <script src="ordnance.js?v=157"></script>
 <script src="crew-visuals.js?v=179"></script>
 <script src="deck-activity.js?v=179"></script>
@@ -503,13 +505,13 @@
 <script src="radio-intercept.js?v=157"></script>
 <script src="audio/weapon-sound.js?v=144"></script>
 <script src="audio/flight-atmosphere.js?v=175"></script>
-<script src="sortie-systems.js?v=186"></script>
+<script src="sortie-systems.js?v=187"></script>
 <script src="sortie-features.js?v=163"></script>
 <script src="ground-run.js?v=179"></script>
 <script src="flight-indicators.js?v=179"></script>
-<script src="operation-plans.js?v=186"></script>
-<script src="pacific-theater.js?v=186"></script>
-<script src="carrier-recovery.js?v=186"></script>
+<script src="operation-plans.js?v=187"></script>
+<script src="pacific-theater.js?v=187"></script>
+<script src="carrier-recovery.js?v=187"></script>
 <script>
 "use strict";
 /* ============================================================
@@ -2146,6 +2148,7 @@ function startMission(idx){
   P.heading=0; P.pitch=0; P.roll=0; P.spd=APP_SPD; P.throttle=0.6;
   P.vSpeed=0; P.fuel=m.fuel; P.hull=100; P.fuelRate=1/D().fuel; P.torps=m.torps; P.alive=true;
   SortieFeatures.Damage.reset(P);voiceRadio.cancel();soundscape.reset();
+  clearArrestCable();P.arrestRun=null;
   P.touchResolved=false; P.boltMsgTimer=0; P.rtb=false;P.onDeck=false;P.deckRun=null;P.deckQuaternion=null;P.landingSample=null;P.bolters=0;
   P.gear=1; P.gearTgt=1; P.flap=0; P.flapTgt=0; P.diveBrake=false; P.diveBrakeVisual=0; P.dmgT=0;
   P.hook=0; P.hookTgt=0;   // Stow for departure; lower explicitly on recovery.
@@ -2440,6 +2443,7 @@ function launch(){
   initAudio();
   soundscape.attach(actx,eng?.master);voiceRadio.unlock();
   state=ST.LAUNCH;
+  clearArrestCable();P.arrestRun=null;
   P.onDeck=false;P.deckRun=null;P.deckQuaternion=null;P.landingSample=null;
   launchTimer=0;
   P.pos.set(carrierX+STERN_X+26, DECK_Y+3.0, 0);
@@ -2584,7 +2588,7 @@ function pollKeys(dt){
 //  WEAPONS
 // ============================================================
 function dropTorpedo(){           // primary weapon button (torpedo OR bomb)
-  if(state!==ST.FLIGHT || !P.alive) return;
+  if(state!==ST.FLIGHT || !P.alive || P.onDeck) return;
   if(loadout==='divebomb') return releaseBomb();
   if(P.torps<=0){ flash("NO TORPEDOES",600); return; }
   const alt=P.pos.y;
@@ -2607,6 +2611,7 @@ function dropTorpedo(){           // primary weapon button (torpedo OR bomb)
 }
 
 function releaseBomb(){
+  if(P.onDeck)return;
   if(P.torps<=0){ flash("NO BOMBS",600); return; }
   if(P.pitch>-0.30){ flash("DIVE STEEPER TO BOMB",800); return; }   // need a real dive
   if(P.pos.y>650){ flash("TOO HIGH — PRESS THE DIVE",800); return; }
@@ -2623,6 +2628,33 @@ function releaseBomb(){
   sfxWhoosh(); flash("BOMB GONE — PULL UP",600);
 }
 
+function bombImpactPrediction(){
+  // Same release point, inherited velocity, gravity and lifetime as real bombs.
+  const p=P.pos.clone();p.y-=1.3;const v=noseDir().multiplyScalar(P.spd),dt=1/60;
+  for(let i=0;i<480;i++){
+    v.y-=18*dt;p.addScaledVector(v,dt);
+    const gy=shoreHeight(p.x,p.z);
+    if(gy>0&&p.y<=gy+1)return {point:p.clone().setY(gy+1),onTarget:shoreTargets.some(t=>t.alive&&Math.hypot(t.def.x-p.x,t.def.z-p.z)<85)};
+    for(const s of ships){
+      if(!s.alive||p.y>=26)continue;
+      const future=s.group.position.clone().addScaledVector(s.fwd||new THREE.Vector3(),(s.speed||0)*(s.driveMultiplier||1)*(i+1)*dt);
+      if(Math.hypot(p.x-future.x,p.z-future.z)<s.radius)return {point:p.clone().setY(26),onTarget:true};
+    }
+    if(p.y<=.4)return {point:p.clone().setY(.4),onTarget:false};
+  }
+  return null;
+}
+let bombSightT=0,bombSightHit=null;
+function updateBombSight(dt=0){
+  const el=document.getElementById('bombSight');
+  if(state!==ST.FLIGHT||!P.alive||P.onDeck||loadout!=='divebomb'||P.torps<=0){el.hidden=true;bombSightHit=null;return;}
+  bombSightT-=dt;if(!bombSightHit||bombSightT<=0||dt===0){bombSightHit=bombImpactPrediction();bombSightT=.1;}
+  const hit=bombSightHit;if(!hit){el.hidden=true;return;}
+  const ndc=hit.point.clone().project(camera),ready=hit.onTarget&&P.pitch<=-.30&&P.pos.y>=25&&P.pos.y<=650;
+  el.hidden=ndc.z>1||ndc.z<0||Math.abs(ndc.x)>1||Math.abs(ndc.y)>1;
+  el.style.left=(ndc.x*.5+.5)*innerWidth+'px';el.style.top=(-ndc.y*.5+.5)*innerHeight+'px';
+  el.classList.toggle('onTarget',ready);el.textContent=ready?'⊕ RELEASE':'⊕ BOMB';
+}
 function updateBombs(dt){
   for(let i=bombs.length-1;i>=0;i--){
     const b=bombs[i]; b.life-=dt;
@@ -3355,6 +3387,7 @@ function spawnFlakBurst(p){
 function updateFlight(dt){
   const previousPosition=P.pos.clone();
   if(!P.alive) return;
+  if(P.arrestRun){updateArrestRun(dt);return;}
   if(P.deckRun){updateDeckRun(dt);return;}
 
   // animate gear & flaps toward targets
@@ -3563,11 +3596,13 @@ function resolveGroundAndDeck(dt,previousPosition=null){
       if(!P.touchResolved){
         P.touchResolved=true;
         const sink=-P.vSpeed;                 // +ve = descending
-        const hdgErr=Math.abs(((P.heading+Math.PI)%(Math.PI*2))-Math.PI)*R2D; // ~deg off 0
+        const hdgErr=Math.abs(Math.atan2(Math.sin(P.heading),Math.cos(P.heading)))*R2D;
         const lineupOff=Math.abs(z);
         if(sink>7.5){ crash("HARD LANDING","Sink rate too high — the gear collapsed."); return; }
-        const clTol=13*D().wire, hdgTol=22*D().wire;   // deck is 32 m wide — 9 m was punishing
-        if(lineupOff>clTol || hdgErr>hdgTol){ crash("OFF CENTRELINE","Drifted off the deck on touchdown."); return; }
+        const clTol=DECK_HALF_W-2,hdgTol=28+8*(D().wire-1);
+        // A marginal lineup on intact deck calls for another pass, not an
+        // instant crash. Landing grade still records the actual lateral error.
+        if(lineupOff>clTol || hdgErr>hdgTol){bolter('ALIGN WITH DECK — BOLTER');return;}
         if(P.spd>54){ bolter("TOO FAST — BOLTER"); return; }
         if((x-carrierX)>WIRE_X1){ bolter("LANDED LONG — BOLTER"); return; }
         if((x-carrierX)<WIRE_X0-12*D().wire){ bolter("SHORT — BOLTER"); return; }
@@ -3580,7 +3615,7 @@ function resolveGroundAndDeck(dt,previousPosition=null){
         P.onDeck=true;P.deckQuaternion=pacificAircraftQuaternion();
         // TRAP!
         for(let i=0;i<5;i++) spawnSmoke(x-3+i*1.5,DECK_Y+1.5,z+(Math.random()-0.5)*4,0x6a6a64,0.5);
-        trap(x);
+        beginArrestRun(x);
         return;
       }
     } else {
@@ -3623,7 +3658,7 @@ function resolveGroundAndDeck(dt,previousPosition=null){
   }
 }
 
-function trap(x){
+function trap(x,arrested=false){
   // which wire (measured relative to the moving deck)
   const lx=x-carrierX;
   let wire=1;
@@ -3633,12 +3668,13 @@ function trap(x){
   else wire=1;
   P.alive=true; P.spd=0; P.vSpeed=0; P.throttle=0; setThrottleUI(0);
   P.onDeck=true;P.deckRun=null;P.deckQuaternion=P.deckQuaternion||pacificAircraftQuaternion();
+  P.arrestRun=null;clearArrestCable();
   P.pos.y=carrierContactHeight(P.deckQuaternion);
   const landing=CarrierRecovery.landing(P.landingSample&&{...P.landingSample,wire},APP_SPD);
   const grade=landing.grade,gPts=landing.points;
   const bonus=500+gPts;
   addScore(bonus); scoreStart=score; saveBest(score);
-  sfxTrap();
+  if(!arrested)sfxTrap();
   lastGrade=grade;
   flash(grade+'  ·  '+bonus+' PTS',2200);
   radioSay(grade==='OK-3' ? 'THAT WAS A ROGER PASS — OK THREE WIRE'
@@ -3725,6 +3761,42 @@ function trap(x){
     last?"Campaign Complete":"Next Sortie");
 }
 
+let arrestCable=null;
+function clearArrestCable(){
+  if(!arrestCable)return;scene.remove(arrestCable);arrestCable.geometry.dispose();arrestCable.material.dispose();arrestCable=null;
+}
+function beginArrestRun(x){
+  const wind=CarrierRecovery.wind(windHead,windGust),speed=Math.max(0,P.spd-CARRIER_SPD+wind.x);
+  P.arrestRun={elapsed:0,duration:2.2,speed,initialSpeed:speed,touchX:x-carrierX,heading:P.heading};
+  P.throttle=0;P.vSpeed=0;setThrottleUI(0);firing=false;killCam=null;
+  clearArrestCable();
+  const geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.BufferAttribute(new Float32Array(9),3));
+  arrestCable=new THREE.Line(geometry,new THREE.LineBasicMaterial({color:0xbab8aa}));arrestCable.frustumCulled=false;scene.add(arrestCable);
+  sfxTrap();flash('WIRE CAUGHT — HOLD STRAIGHT',1400);updateArrestCable();
+}
+function updateArrestCable(){
+  if(!arrestCable||!P.arrestRun)return;
+  const x=carrierX+P.arrestRun.touchX,hookX=P.pos.x-4,hookZ=P.pos.z;
+  const a=arrestCable.geometry.attributes.position;
+  a.setXYZ(0,x,carrierDeckHeight(x,-DECK_HALF_W+2)+.18,-DECK_HALF_W+2);
+  a.setXYZ(1,hookX,carrierDeckHeight(hookX,hookZ)+.25,hookZ);
+  a.setXYZ(2,x,carrierDeckHeight(x,DECK_HALF_W-2)+.18,DECK_HALF_W-2);a.needsUpdate=true;
+}
+function updateArrestRun(dt){
+  const r=P.arrestRun;if(!r)return;
+  r.elapsed=Math.min(r.duration,r.elapsed+dt);
+  const t=r.elapsed/r.duration,next=r.initialSpeed*(1-t*t*(3-2*t)),travel=(r.speed+next)*.5*dt;
+  P.pos.x+=CARRIER_SPD*dt+travel*Math.cos(P.heading);
+  // Cable tension damps yaw and sideways motion continuously; no centreline snap.
+  P.pos.z+=travel*Math.sin(P.heading)*Math.exp(-3*r.elapsed);
+  P.pos.z*=Math.exp(-.10*dt);
+  // Flight headings accumulate across circuits. Damp the shortest yaw error,
+  // so 360/720-degree approaches behave exactly like the same heading at zero.
+  P.heading=Math.atan2(Math.sin(P.heading),Math.cos(P.heading))*Math.exp(-2*dt);
+  P.spd=r.initialSpeed>0?(P.landingSample.speed*next/r.initialSpeed):0;
+  P.vSpeed=0;P.pitchVel=P.rollVel=0;r.speed=next;updateArrestCable();
+  if(r.elapsed>=r.duration)trap(carrierX+r.touchX,true);
+}
 function bolter(msg){
   // A missed wire is a powered deck run; never teleport up or add airspeed.
   if(P.deckRun)return;
@@ -5157,7 +5229,7 @@ function loadPlaneModel(){
       }
       window.__eyeDbg='EYE '+COCKPIT_EYE.map(v=>v.toFixed(2)).join('/');
       const btEl=document.getElementById('buildTag');
-      if(btEl) btEl.textContent='BUILD 186 · '+window.__eyeDbg;
+      if(btEl) btEl.textContent='BUILD 187 · '+window.__eyeDbg;
       let seat=null;
       model.traverse(function(o){
         if(!o.isMesh||!o.material) return;
@@ -5944,7 +6016,7 @@ function shipBulletHit(s,from,to){
 }
 function updateGuns(dt){
   gunCool-=dt;
-  if(firing && state===ST.FLIGHT && P.alive && P.ammo>0 && gunCool<=0){
+  if(firing && state===ST.FLIGHT && P.alive && !P.onDeck && P.ammo>0 && gunCool<=0){
     gunCool=0.07; P.ammo=Math.max(0,P.ammo-(MISSIONS[mission]?.corsair?4:2));
     const nd=noseDir();
     planeGroup.quaternion.copy(pacificAircraftQuaternion());planeGroup.position.copy(P.pos);
@@ -6526,7 +6598,7 @@ function setupUIButtons(){
   if(dbgT2) dbgT2.onclick=()=>{
     dbgOn=!dbgOn; GameRuntime.storage.setItem('dbgOn',dbgOn?'1':'0');
     const db=document.getElementById('dbgBox'); if(db) db.textContent=dbgOn?'✓':'';
-    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 186'; }
+    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 187'; }
   };
   const lu=document.getElementById('lookUp'), ld=document.getElementById('lookDn');
   let _lookT=0;
@@ -6542,7 +6614,7 @@ function setupUIButtons(){
   if(pb) pb.addEventListener('pointerdown',e=>{ e.preventDefault(); togglePause(); });
   const rb=document.getElementById('resumeBtn'); if(rb) rb.onclick=resumeGame;
   const mb=document.getElementById('menuBtn'); if(mb) mb.onclick=exitToMenu;
-  document.getElementById('pauseMainMenu').onclick=()=>{exitToMenu();window.location.href='index.html?v=186';};
+  document.getElementById('pauseMainMenu').onclick=()=>{exitToMenu();window.location.href='index.html?v=187';};
   document.getElementById('resultBtn').onclick=()=>{
     // the logbook borrows this screen from the menu — send the player straight back
     if(logbookOpen){ logbookOpen=false; showOverlay('menu'); return; }
@@ -6792,7 +6864,7 @@ function animate(){
     notice.style.cssText='position:fixed;inset:0;z-index:999998;background:rgba(15,20,15,.95);color:#e8ddbc;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px;text-align:center;font:16px system-ui';
     const title=document.createElement('h2');title.textContent='Simulation interrupted';
     const detail=document.createElement('p');
-    detail.textContent='BUILD 186 · '+(MISSIONS[mission]?.sub||'Menu')+' · '+error.message;
+    detail.textContent='BUILD 187 · '+(MISSIONS[mission]?.sub||'Menu')+' · '+error.message;
     const reload=document.createElement('button');reload.textContent='Reload game';
     reload.style.cssText='padding:12px 24px;font:inherit';reload.onclick=()=>location.reload();
     notice.appendChild(title);notice.appendChild(detail);notice.appendChild(reload);document.body.appendChild(notice);
@@ -6938,6 +7010,7 @@ function animateFrame(){
     camera.position.set(Math.cos(a)*260,120,Math.sin(a)*260);
     camera.lookAt(0,DECK_Y,0);
   }
+  updateBombSight(dt);
   updateFlash(dt);
 
   CombatFX.updateRounds(bullets,camera,renderer);

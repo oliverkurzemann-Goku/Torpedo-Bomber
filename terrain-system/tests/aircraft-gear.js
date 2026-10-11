@@ -33,6 +33,8 @@ function faceCount(group,minimumY){let total=0;group.updateMatrixWorld(true);gro
  const wing=p47.getObjectByName('Object_3'),nose=p47.getObjectByName('Object_4');
  const originalWing=wing.geometry.index.array.slice(),originalNose=nose.geometry.index.array.slice();
  const p47Rig=rigModel(p47Root,'p47');
+ const p47Main=p47Root.getObjectByName('gear').children.slice(0,2);
+ assert(p47Main.every(g=>g.position.z>1.7&&g.position.z<2.4),'P-47 main wheels belong under the forward wing, ahead of the cockpit');
  assert.match(p47Rig,/original P-47 four-blade propeller/);
  const rotor=p47Root.getObjectByName('prop'),originalPart=rotor.getObjectByName('original P-47 propeller');
  assert(originalPart?.geometry?.index.count>=4500,'the GLB blades, roots and spinner rotate together');
@@ -52,6 +54,7 @@ function faceCount(group,minimumY){let total=0;group.updateMatrixWorld(true);gro
   const size=new THREE.Box3().setFromObject(model).getSize(new THREE.Vector3());src.scale.setScalar(span/size.x);
   model.updateMatrixWorld(true);src.position.copy(new THREE.Box3().setFromObject(model).getCenter(new THREE.Vector3())).negate();model.updateMatrixWorld(true);
   const box=new THREE.Box3().setFromObject(model),s=box.getSize(new THREE.Vector3()),floor=box.min.y+s.y*.30;
+  const originalWheels=kind==='bf109'?findGearClusters(model,box,s,kind).clusters:null;
   const upperBefore=faceCount(model,floor-.36),rig=rigModel(model,kind),upperAfter=faceCount(src,floor-.36);
   // The propeller is intentionally cut from the welded mesh too; even if all
   // its faces sit above this plane, the wing cut may remove none beyond them.
@@ -70,6 +73,10 @@ function faceCount(group,minimumY){let total=0;group.updateMatrixWorld(true);gro
     assert.ok(removed>0&&removed<100,kind+' wheel cut must stay local');
   }
   const gear=model.getObjectByName('gear');assert.equal(gear.children.length,3);
+  if(kind==='bf109'){
+   const station=originalWheels.reduce((n,w)=>n+w.cz,0)/originalWheels.length;
+   assert(gear.children.slice(0,2).every(g=>Math.abs(g.position.z-station)<.1),'Bf 109 replacement axles match the real GLB wheel station');
+  }
   const wheels=gear.children.slice(0,2).map(g=>new THREE.Box3().setFromObject(g));
   assert.ok(wheels.every(b=>b.min.y<box.min.y-.55),kind+' main gear is hidden inside wing');
   if(kind==='bf109')assert.ok(wheels.every(b=>b.min.y>box.min.y-1.05),

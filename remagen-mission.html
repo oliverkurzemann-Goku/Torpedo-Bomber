@@ -274,7 +274,7 @@
   .warningLamps{display:flex!important;gap:10px;padding:5px 9px!important;background:#141813dd!important;border:1px solid #535744;border-radius:4px;white-space:nowrap;}
   .warningLamp{color:#646c5c;font:9px monospace;letter-spacing:.35px;} .warningLamp[data-level="1"]{color:#ffd088;text-shadow:0 0 6px #e0a432a0;} .warningLamp[data-level="2"]{color:#ff8c70;text-shadow:0 0 7px #ff6638b0;}
 </style>
-<link rel="stylesheet" href="menu-layout.css?v=186">
+<link rel="stylesheet" href="menu-layout.css?v=187">
 </head>
 <body>
 <!-- ===== TEMP TEST-ONLY VERSION BANNER — asked for by Oliver: "kannst du irgendwo einbauen,
@@ -296,7 +296,7 @@
   <div style="width:100%;height:4px;background:repeating-linear-gradient(45deg,#ffd400,#ffd400 8px,#111 8px,#111 16px);"></div>
   <span id="testVersionBannerText" style="background:#111;color:#ffd400;font-family:monospace;font-weight:800;font-size:11px;letter-spacing:.5px;padding:3px 10px;border:1px solid #ffd400;border-top:none;border-radius:0 0 6px 6px;"></span>
 </div>
-<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 186';</script>
+<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 187';</script>
 <!-- ===== END TEMP TEST-ONLY VERSION BANNER ===== -->
 <div id="app"></div>
 <style>
@@ -317,6 +317,7 @@
     <div><div class="lbl" id="hAltLbl">ALT</div><div class="val" id="hAlt">0<small> FT</small></div></div>
     <div><div class="lbl">HDG</div><div class="val" id="hHdg">000</div></div>
     <div><div class="lbl">VSI</div><div class="val" id="hVsi">0<small> FPM</small></div></div>
+    <div id="landingRef" hidden style="grid-column:1/-1;font-size:10px;line-height:1.3;"></div>
   </div>
   <div class="panel" id="instRight">
     <div><div class="lbl">FUEL</div><div class="val" id="hFuel">100<small> %</small></div></div>
@@ -336,7 +337,7 @@
   <div id="flash"></div>
   <div id="gunsight"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 186 · REAL RHINE</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 187 · REAL RHINE</div>
 
   <div id="apr">
     <div id="aprCall"></div>
@@ -388,7 +389,7 @@
 </div>
 
 <div class="overlay hidden" id="menu" data-campaign="europe">
-  <div class="menuTop"><a id="selBtn" href="index.html?v=186">&#9664; Change Game</a><span class="menuMeta">RHINE OPERATIONS<br>BUILD 186</span></div>
+  <div class="menuTop"><a id="selBtn" href="index.html?v=187">&#9664; Change Game</a><span class="menuMeta">RHINE OPERATIONS<br>BUILD 187</span></div>
   <div class="card menuCard">
     <aside class="menuOverview" aria-label="Campaign and pilot options">
     <div class="campaignArt" aria-hidden="true"></div>
@@ -510,7 +511,7 @@
 <script src="combat-fx.js?v=177"></script>
 <script src="aircraft-smoke.js?v=176"></script>
 <script src="aircraft-damage.js?v=177"></script>
-<script src="flight-support.js?v=186"></script>
+<script src="flight-support.js?v=187"></script>
 <script src="ordnance.js?v=157"></script>
 <script src="crew-visuals.js?v=179"></script>
 <script src="aircraft-finish.js?v=179"></script>
@@ -525,13 +526,13 @@
 <script src="audio/weapon-sound.js?v=144"></script>
 <script src="audio/jet-engine.js?v=144"></script>
 <script src="audio/flight-atmosphere.js?v=175"></script>
-<script src="sortie-systems.js?v=186"></script>
+<script src="sortie-systems.js?v=187"></script>
 <script src="sortie-features.js?v=163"></script>
 <script src="ground-run.js?v=179"></script>
 <script src="ground-dust.js?v=181"></script>
 <script src="flight-indicators.js?v=179"></script>
 <script src="sortie-fuel.js?v=161"></script>
-<script src="operation-plans.js?v=186"></script>
+<script src="operation-plans.js?v=187"></script>
 <script>
 // ============================================================
 //  REMAGEN 1945 — REAL TERRAIN (forked from thunderbolt-europe.html)
@@ -845,7 +846,7 @@ async function loadRealWorld(){
 
   if(OSMManager.BUILD!==23||HistoricalObjectManager.BUILD!==21||LivingWorld.BUILD!==22||WorldVehicles.BUILD!==22) throw new Error('Terrain version mismatch. Reload Remagen.');
   document.getElementById('testVersionBannerText').textContent=
-    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 186 · MODULE 23';
+    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 187 · MODULE 23';
   heightProvider=new DEMHeightProvider(RTILE,'terrain-system/real/data/dem/');
   terrain=new TerrainManager(scene,RTILE,heightProvider);
   osmMgr=new OSMManager(scene,RTILE,terrain,'terrain-system/real/data/osm/');
@@ -2375,7 +2376,9 @@ function buildGear(gear, root, whole, S, kind){
   const wheelW=span*0.0078;
   const halfTrack=span*(kind==='bf109'?0.126:0.150);
   const embed=span*0.008;          // tuck the leg top slightly into the skin, no visible seam
-  const mainZ=whole.min.z+S.z*0.56;
+  // +Z is forward. Match the P-47 forward wing station and the original
+  // Bf 109 wheel pair (z ~= .91 m), rather than the old rearward generic pivot.
+  const mainZ=whole.min.z+S.z*(kind==='p47'?.68:kind==='bf109'?.60:.56);
   // Two materials, not one: a single flat-grey cylinder read as a placeholder stick. A darker
   // fixed tube plus a lighter, metallic sliding piston reads as an oleo strut instead - same
   // two-tone trick a real gear leg uses, no new geometry technique needed.
@@ -4709,6 +4712,13 @@ function updateHUD(){
   const ftAlt=(nearField? (P.pos.y-AF_Y) : (P.pos.y-gy))*FT;
   const lb=document.getElementById('hAltLbl'); if(lb) lb.textContent=nearField?'FIELD':'AGL';
   GameRuntime.setHTML(document.getElementById('hSpd'),Math.round(P.spd*KT)+'<small> MPH</small>');
+  const flight=AC[P.ac],stall=flight.stall+P.gear*2-P.flap*4;
+  const low=state===ST.FLIGHT&&P.alive&&!P.onGround&&P.spd<stall*1.15;
+  document.getElementById('hSpd').style.color=low?'#ff574c':'';
+  const ref=document.getElementById('landingRef');
+  ref.hidden=state!==ST.FLIGHT||!P.alive||P.onGround||!(P.gear>.4||nearField&&P.spd<flight.app*1.3);
+  ref.textContent='REF '+Math.round(flight.app*KT)+' MPH'+(low?' · LOW SPEED':P.flap<.8?' · FLAPS DOWN':'');
+  ref.style.color=low?'#ff574c':'';
   GameRuntime.setHTML(document.getElementById('hAlt'),Math.max(0,Math.round(ftAlt))+'<small> FT</small>');
   const hdg=((P.heading*R2D)%360+360)%360;
   document.getElementById('hHdg').textContent=String(Math.round(hdg)%360).padStart(3,'0');
@@ -4855,9 +4865,9 @@ function updateApproach(){
   const cue=document.getElementById('spdCue');
   const mph=P.spd*KT, tgt=APP_SPD*KT;
   if(cue){
-    if(mph>tgt+16){ cue.textContent='FAST'; cue.style.color='var(--oxide)'; }
-    else if(mph<tgt-10){ cue.textContent='SLOW'; cue.style.color='var(--steel)'; }
-    else { cue.textContent='ON SPEED'; cue.style.color='var(--good)'; }
+    if(mph>tgt+16){ cue.textContent='FAST · REF '+Math.round(tgt)+' MPH'; cue.style.color='var(--oxide)'; }
+    else if(mph<tgt-10){ cue.textContent='SLOW · REF '+Math.round(tgt)+' MPH'; cue.style.color='var(--steel)'; }
+    else { cue.textContent='ON SPEED · REF '+Math.round(tgt)+' MPH'; cue.style.color='var(--good)'; }
   }
   const call=document.getElementById('aprCall');
   if(call){
@@ -5631,7 +5641,7 @@ function init(){
   buildMenu();
   // menu wiring
   document.getElementById('startBtn').onclick=()=>showBrief(selectedMission);
-  document.getElementById('pauseMainMenu').onclick=()=>{exitToMenuFromPause();window.location.href='index.html?v=186';};
+  document.getElementById('pauseMainMenu').onclick=()=>{exitToMenuFromPause();window.location.href='index.html?v=187';};
   document.getElementById('logBtn').onclick=()=>{ show('menu',false); showLogbook(); };
   document.getElementById('skipLaunchPreview').onclick=()=>finishLaunchIntro();
   document.getElementById('brBack').onclick=()=>{ show('brief',false); show('menu',true);if(navigation){navigation.reset();navigation.button.style.display='none';} state=ST.MENU; };

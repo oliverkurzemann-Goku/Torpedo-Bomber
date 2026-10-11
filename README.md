@@ -45,6 +45,10 @@ The appended sorties preserve the earlier combat indices:
 Carrier recovery uses headwind along the moving deck. The existing speed instrument
 shows **REF 78 KT** for recovery and turns red before the current flap-dependent stall
 speed. A missed wire leads to a powered deck run without a position or speed jump.
+The wire catches visibly and slows the aircraft over a short grounded rollout before
+the debrief; marginal deck alignment calls for a bolter. Dive-bomb missions show the
+predicted impact point using the real bomb trajectory. Thunderbolt displays each
+aircraft's landing reference in MPH and a flap-dependent pre-stall speed warning.
 Landing grades use recorded touchdown speed, sink, offset and bank; medals also count
 bomb precision and the delivered transports' condition. Engine, rudder and deck damage
 affect ship speed, turning and AA independently of hull HP and objective credit.
