@@ -10,10 +10,19 @@
    {key:'hull',label:'HULL',level:hull<25?2:hull<50?1:0,text:hull<50?'Hull damage '+Math.round(hull)+'%':'Hull normal'}
   ];
  }
+ function controlFaults(p){
+  const s=p.systemDamage?.surfaces||{};
+  return [s.aileronLeft<1?'L AIL':'',s.aileronRight<1?'R AIL':'',s.elevator<1?'ELEV':'',
+   s.flapLeft!=null?'L FLAP':'',s.flapRight!=null?'R FLAP':''].filter(Boolean).join(' / ');
+ }
  function mount(element){
   element.textContent='';element.classList.add('warningLamps');
   const lamps=states({hull:100,fuel:100}).map(s=>{const lamp=element.ownerDocument.createElement('span');lamp.className='warningLamp';lamp.dataset.system=s.key;lamp.textContent='● '+s.label;element.appendChild(lamp);return lamp;});
-  return {update(p){const status=states(p);status.forEach((s,i)=>{const lamp=lamps[i],level=String(s.level);if(lamp.dataset.level!==level)lamp.dataset.level=level;lamp.title=s.text;lamp.setAttribute('aria-label',s.text);});element.setAttribute('aria-label',status.filter(s=>s.level).map(s=>s.text).join('; ')||'Aircraft systems normal');},element};
+  const controls=element.ownerDocument.createElement('span');controls.className='controlFault';controls.hidden=true;
+  controls.style.cssText='color:#ffd088;font:9px monospace;white-space:normal';element.appendChild(controls);
+  return {update(p){const status=states(p),faults=controlFaults(p);status.forEach((s,i)=>{const lamp=lamps[i],level=String(s.level);if(lamp.dataset.level!==level)lamp.dataset.level=level;lamp.title=s.text;lamp.setAttribute('aria-label',s.text);});
+   controls.hidden=!faults;controls.textContent=faults?'CTRL: '+faults:'';
+   element.setAttribute('aria-label',[...status.filter(s=>s.level).map(s=>s.text),faults?'Control damage: '+faults:''].filter(Boolean).join('; ')||'Aircraft systems normal');},element};
  }
- root.FlightIndicators={states,mount};if(typeof module==='object'&&module.exports)module.exports=root.FlightIndicators;
+ root.FlightIndicators={states,mount,controlFaults};if(typeof module==='object'&&module.exports)module.exports=root.FlightIndicators;
 })(typeof window==='undefined'?globalThis:window);

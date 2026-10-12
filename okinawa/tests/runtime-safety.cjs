@@ -54,7 +54,7 @@ function watchOwned(scene){
 const ec=vm.createContext({THREE,GameRuntime,Math,scene:new THREE.Scene(),debris:[],groundY:()=>0});
 vm.runInContext(routine(eu,'spawnDebris','spawnCrater'),ec);
 for(let n=0;n<30;n++){ec.spawnDebris(0,150,0,12);const check=watchOwned(ec.scene);ec.updateDebris(10);check();assert.equal(ec.debris.length,0);}
-const pc=vm.createContext({THREE,GameRuntime,Math,performance,scene:new THREE.Scene(),smokeTex:new THREE.Texture(),
+const pc=vm.createContext({THREE,GameRuntime,renderer:{},Math,performance,scene:new THREE.Scene(),smokeTex:new THREE.Texture(),
  combatFX:null,shoreHeight:()=>0,debris:[],bubbles:[],slicks:[],explosions:[],smokes:[],smokePool:[],spawnSplash(){}});
 vm.runInContext(routine(pac,'spawnExplosion','initAudio'),pc);
 for(let n=0;n<30;n++){

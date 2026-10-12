@@ -43,10 +43,10 @@ const server=http.createServer((req,res)=>{
       startMission(i);finishCarrierIntro();state=ST.FLIGHT;hideOverlays();
       P.alive=true;P.hull=sinkFpm===200?30:100;P.pos.set(-1500,2,0);P.spd=65/KT;
       P.gear=P.gearTgt=0;P.flap=P.flapTgt=1;P.hook=P.hookTgt=1;P.roll=P.rollBias=P.pitchVel=P.rollVel=0;
-      const sink=-sinkFpm*.3048/60,liftLoss=(1-P.spd**2/(APP_SPD-6)**2)*28;
+      const mass=SortieFeatures.Handling.sample(P),sink=-sinkFpm*.3048/60,liftLoss=(1-P.spd**2/((APP_SPD-6)*mass.speed)**2)*28;
       P.pitch=Math.asin((sink+liftLoss)/P.spd);inputPitch=P.pitch/.70;inputRoll=0;
       const engineMul=(P.hull<60?.45+.55*P.hull/60:1)*SortieFeatures.Damage.power(P);
-      P.throttle=((P.spd+Math.sin(P.pitch)*38+9)/engineMul-THR_MIN_SPD)/((isCorsair()?145:MAX_SPD)-THR_MIN_SPD);
+      P.throttle=((P.spd+Math.sin(P.pitch)*38*mass.ratio+9)/engineMul-THR_MIN_SPD)/((isCorsair()?145:MAX_SPD)-THR_MIN_SPD);
       const power=P.throttle;let steps=0,contactSpeed=null,contactSink=null;const enter=beginDitching;beginDitching=()=>{contactSpeed=P.spd*KT;contactSink=-P.vSpeed*60/.3048;enter();};
       try{while(P.alive&&steps++<250)updateFlight(.02);}finally{beginDitching=enter;}
       if(!ditching||!bailRescue)throw Error('65kt '+sinkFpm+'fpm gear-up / flaps-down / hook-down rejected: '+kind+' '+difficulty+' '+document.getElementById('flash')?.textContent);
@@ -65,8 +65,9 @@ const server=http.createServer((req,res)=>{
       DIFF='ace';startMission(MISSIONS.findIndex(m=>kind==='sbd'?m.sbd&&!m.corsair:!m.sbd&&!m.corsair&&!m.defend));
       finishCarrierIntro();state=ST.FLIGHT;hideOverlays();P.alive=true;P.hull=100;P.pos.set(-2200,300,0);P.heading=0;P.spd=65/KT;
       P.gear=P.gearTgt=P.hook=P.hookTgt=0;P.flap=P.flapTgt=1;P.roll=P.rollBias=P.pitchVel=P.rollVel=0;
-      P.pitch=Math.asin((-.8+(1-P.spd**2/(APP_SPD-6)**2)*28)/P.spd);inputPitch=P.pitch/.7;inputRoll=0;
-      P.throttle=(P.spd+Math.sin(P.pitch)*38+9-THR_MIN_SPD)/(MAX_SPD-THR_MIN_SPD);
+      const mass=SortieFeatures.Handling.sample(P);
+      P.pitch=Math.asin((-.8+(1-P.spd**2/((APP_SPD-6)*mass.speed)**2)*28)/P.spd);inputPitch=P.pitch/.7;inputRoll=0;
+      P.throttle=(P.spd+Math.sin(P.pitch)*38*mass.ratio+9-THR_MIN_SPD)/(MAX_SPD-THR_MIN_SPD);
       wingmenPending=false;spawnWingman(0);spawnWingman(1);for(const w of wingmen)w.cool=9999;
       wingmen[0].pos.copy(P.pos).add(new THREE.Vector3(-12,-2,-22));
       let maxYaw=0,maxBank=0,maxAcceleration=0,minDistance=Infinity,maxDistance=0,png=null;

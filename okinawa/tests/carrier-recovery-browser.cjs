@@ -91,7 +91,8 @@ const server=http.createServer((req,res)=>{
     P.onDeck=false;state=ST.FLIGHT;P.pos.y=120;P.flap=1;P.spd=27;updateHUD();
     const low=document.getElementById('hSpd').classList.contains('lowSpeed'),ref=document.getElementById('landingRef').textContent;
     P.spd=40;updateHUD();const clear=!document.getElementById('hSpd').classList.contains('lowSpeed');
-    if(!low||!clear||!ref.includes('REF 78 KT'))throw Error('Stall/ref HUD missing');
+    const expected=CarrierRecovery.envelope(P,STALL_SPD,APP_SPD).reference;
+    if(!low||!clear||!ref.includes('REF '+Math.round(expected*KT)+' KT'))throw Error('Stall/ref HUD missing');
     return {kind,fps,late,sample,arrestFrames,rollout,maxDecel,reference:ref};
    },{kind,fps});console.log('Actual model recovery:',result);
   }
@@ -156,14 +157,15 @@ const server=http.createServer((req,res)=>{
     const nd=noseDir(),side=new THREE.Vector3(nd.z,0,-nd.x);camera.position.copy(planeGroup.position).addScaledVector(nd,7).addScaledVector(side,17).add(new THREE.Vector3(0,1.7,0));
     camera.up.set(0,1,0);camera.lookAt(planeGroup.position);camera.updateMatrixWorld(true);scene.updateMatrixWorld(true);renderer.render(scene,camera);
     P.onGround=false;P.pos.y=AF_Y+150;P.flap=1;P.spd=AC[kind].app;updateHUD();const reference=document.getElementById('landingRef').textContent;
-    if(document.getElementById('landingRef').hidden||!reference.includes(Math.round(AC[kind].app*KT)+' MPH'))throw Error('Missing aircraft-specific landing speed');
+    const expected=SortieFeatures.Handling.speeds(P,AC[kind].stall,AC[kind].app).reference;
+    if(document.getElementById('landingRef').hidden||!reference.includes(Math.round(expected*KT)+' MPH'))throw Error('Missing aircraft-specific landing speed');
     P.spd=(AC[kind].stall+P.gear*2-P.flap*4)*1.10;updateHUD();if(document.getElementById('hSpd').style.color!=='rgb(255, 87, 76)')throw Error('No pre-stall red speed');
     P.onGround=true;updateHUD();return {kind,stations,reference,source:window.__modelSrc[kind],tyres};
    },kind);console.log('Actual Europe gear and speed:',JSON.stringify(aircraft));
    await page.screenshot({path:path.join(out,'build187-'+kind+'-gear.png')});
   }
   for(const kind of ['fw190','ju87','me262','me163']){
-   const ref=await page.evaluate(kind=>{P.ac=kind;P.onGround=false;P.gear=1;P.flap=1;P.spd=AC[kind].app;state=ST.FLIGHT;updateHUD();return {visible:!document.getElementById('landingRef').hidden,text:document.getElementById('landingRef').textContent,expected:Math.round(AC[kind].app*KT)+' MPH'};},kind);
+   const ref=await page.evaluate(kind=>{P.ac=kind;SortieFeatures.Handling.configure(P,kind);P.onGround=false;P.gear=1;P.flap=1;P.spd=AC[kind].app;state=ST.FLIGHT;updateHUD();return {visible:!document.getElementById('landingRef').hidden,text:document.getElementById('landingRef').textContent,expected:Math.round(SortieFeatures.Handling.speeds(P,AC[kind].stall,AC[kind].app).reference*KT)+' MPH'};},kind);
    assert(ref.visible&&ref.text.includes(ref.expected));
   }
   assert.deepEqual(errors,[]);console.log('Build187 native powered bolters, progressive arrests, offset recoveries, real bomb/sight impacts and Europe model/speed checks passed.');

@@ -28,6 +28,19 @@ so it doesn't go stale.
 
 ### Pacific operations
 
+Both current campaigns sample fuel and remaining stores continuously: heavier
+sorties accelerate/climb/turn more slowly and show higher live stall/landing
+references. Individual aileron/elevator damage and jammed left/right flaps affect
+handling, announce a persistent CTRL warning, and are cleared by repair or restart.
+Existing sticks, normal self-centering and AERO controls are unchanged.
+
+Touch devices automatically lower and recover rendering quality after sustained
+slow/fast frames. Only pixel resolution and decorative smoke/cloud/rain budgets
+change; physics, fog/visibility, weapons, smoke screens, objectives and HTML controls
+do not. `flightQuality.report()` exposes the current tier; this is not an iPad
+hardware benchmark. Loading coefficients are declared gameplay curves, not
+certified historical aircraft weights.
+
 The appended sorties preserve the earlier combat indices:
 
 - **17 · Harbor Supply Denial (SBD):** two moored merchants and two fuel depots;

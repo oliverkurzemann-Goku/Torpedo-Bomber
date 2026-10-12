@@ -5,7 +5,41 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 188 · Thunderbolt Squadron BUILD 188 · Remagen-Kern 23 / Fahrzeuge 22**
+Stand bei Übergabe: **Torpedo Squadron BUILD 189 · Thunderbolt Squadron BUILD 189 · Remagen-Kern 23 / Fahrzeuge 22**
+
+**Build 189 (12.10.2026): Beladung, einzelne Steuerflächenschäden, adaptive Touch-Grafik.**
+Nutzer wählte Verbesserungen 1, 2 und 5; keine neuen Eingaben, kein Missionseditor.
+SortieFeatures.Handling liest interne/externe Tankfüllung und verbliebene Bomben,
+Raketen/Torpedos live. Zehn abgestufte Gameplay-Massenprofile, begrenzt auf .90–1.24,
+keine Behauptung historisch zertifizierter Flugleistungen. Bodenbeschleunigung,
+Rotation, Steigen, Roll-/Pitch-Trägheit, Kurven und Stall/REF folgen der Beladung.
+Abwurf, Tanktransfer und Tank-Jettison entlasten sofort; keine künstliche Speed-Injektion.
+Rhine-HUD und Approach behalten MPH, Pacific-HUD/LSO/Touchdown-Grade KT.
+
+Schwere Treffer können L/R-Querruder, Höhenruder oder eine Klappe beschädigen.
+Klappen verriegeln auf ihrer tatsächlichen Stellung, erzeugen mittleren Auftrieb,
+Zusatzwiderstand und dauerhafte, mit dem bestehenden Stick ausgleichbare Roll-Bias.
+Me163 hat keine Klappenstörung. Autorität bleibt begrenzt/recoverbar, beide AERO-
+und Normal-Modi bleiben erhalten. Pacific-Klappen zeigen die jeweilige Stellung.
+Originale GLB-Geometrie unverändert. Funk/Flash und CTRL-Zusatz im vorhandenen
+Warnstreifen zeigen die konkrete Störung; Reparatur/Neustart löschen sie.
+
+GameRuntime.AdaptiveQuality ist auf Touch aktiviert: drei Sekunden Warmup,
+geglättete ungekappte Frameintervalle, zwei Sekunden langsame Frames zum Absenken,
+15 Sekunden gute Frames zum Anheben, acht Sekunden Hysterese. Vier Budgets für DPR,
+dekorativen Rauch, Wolken-Puffs und sichtbaren Regen. Pause/Intro/Background und
+große Lade-Hitches sind keine Qualitätsmessung. Wetter-Fog/LOS-Gruppen, Flug-dt,
+Waffen/Tracer, Schaden, Ziele, Seegang und HTML-Bedienung bleiben unverändert.
+Smoke-Screens sind ausdrücklich kritisch und nicht ausgedünnt. Explizite niedrige
+Diagnose-DPR bleibt als Obergrenze erhalten. Diagnose: flightQuality.report().
+
+Neue handling-quality.cjs und handling-quality-browser.cjs prüfen alle zehn Typen,
+echte updateFlight-Funktionen bei 20/60/120 FPS, Gegensteuern, Klappenstellung,
+Reparatur, dynamische Anzeigen sowie reine Renderanpassung und Wiederherstellung.
+Native Browserprüfung mit originalen Modellen bestanden; keine physische
+iPad/Safari-Freigabe daraus ableiten. Alte Recovery-/Ditch-Fixtures berechnen ihre
+REF/65-kt-Sinkflug-Trimmung aus der aktuellen Beladung, statt alte Konstanten zu
+erzwingen. Screenshots: test-visuals/build189-{pacific,rhine}-adaptive.png.
 
 **Build 188 (11.10.2026): feste Schritte der Decksmannschaft und korrekte Starttexte.**
 Nutzer meldete Moonwalk und fragte nach historischen Katapultstarts. US-Träger nutzten

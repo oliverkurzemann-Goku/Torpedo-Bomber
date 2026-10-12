@@ -2,6 +2,7 @@
 'use strict';
 const fs=require('node:fs'),path=require('node:path'),vm=require('node:vm'),assert=require('node:assert/strict');
 const root=path.resolve(__dirname,'../..');
+require('../../sortie-features.js');const {SortieFeatures}=global;
 const angleDelta=(a,b)=>Math.atan2(Math.sin(a-b),Math.cos(a-b));
 function controller(file,start){
   const html=fs.readFileSync(path.join(root,file),'utf8');
@@ -9,7 +10,7 @@ function controller(file,start){
   const b=html.indexOf('  // bank-to-turn:',a);
   assert(a>0&&b>a,file+' attitude controller not found');
   return vm.runInNewContext('(function(P,inputRoll,inputPitch,aeroMode,dt,d,stallSpd,steerSign){'+
-    html.slice(a,b)+'})',{isDefend:()=>true,isSBD:()=>false});
+    'const load=SortieFeatures.Handling.sample(P),controls=SortieFeatures.Damage.controls(P);'+html.slice(a,b)+'})',{SortieFeatures,isDefend:()=>true,isSBD:()=>false});
 }
 function turnController(file){
   const html=fs.readFileSync(path.join(root,file),'utf8');
@@ -23,8 +24,8 @@ function turnController(file){
     assert(start>0&&end>start,file+' turn physics not found');
     bank=vm.runInNewContext(html.slice(start,end+2)+'\nbankTurnRate');
   }
-  return vm.runInNewContext('(function(P,aeroMode,dt,d,stallSpd){'+html.slice(a,b)+'})',
-    {bankTurnRate:bank,windZ:0,AC:{turn:1.3,gLim:7}});
+  return vm.runInNewContext('(function(P,aeroMode,dt,d,stallSpd){const load=SortieFeatures.Handling.sample(P);'+html.slice(a,b)+'})',
+    {SortieFeatures,bankTurnRate:bank,windZ:0,AC:{turn:1.3,gLim:7}});
 }
 for(const [file,start,kind] of [
   ['remagen-mission.html','  const dmgF = (P.hull < d.hull','p47'],

@@ -20,6 +20,53 @@
   }
  }
  const frames=new FrameMeter();
+ // Touch-only, hysteretic render budget. Simulation dt, collision objects,
+ // weather visibility, weapons and HTML touch controls are never changed.
+ const qualities=new WeakMap();
+ const qualityPresets=[{scale:1,effects:1,stride:1,rain:1},{scale:.85,effects:.75,stride:1,rain:.8},
+  {scale:.70,effects:.5,stride:2,rain:.6},{scale:.55,effects:.35,stride:3,rain:.4}];
+ class AdaptiveQuality{
+  constructor(renderer,{enabled=(global.navigator?.maxTouchPoints||0)>0}={}){
+   this.renderer=renderer;this.enabled=enabled;this.baseRatio=this.lastRatio=renderer.getPixelRatio();this.tier=0;
+   this.buckets=new Map();this.reset();
+  }
+  reset(){this.warmup=3;this.mean=0;this.bad=0;this.good=0;this.cooldown=0;}
+  get budget(){return qualityPresets[this.tier];}
+  sample(dt,active=true){
+   if(!this.enabled)return;
+   const current=this.renderer.getPixelRatio();
+   if(current!==this.lastRatio){this.baseRatio=Math.min(this.baseRatio,current);this.lastRatio=current;this.reset();}
+   if(!active||!Number.isFinite(dt)||dt>.2){this.reset();return;}
+   if(dt<.008)return; // Artificial test loops are not a frame-rate measurement.
+   if(this.warmup>0){this.warmup-=dt;return;}
+   this.mean=this.mean?this.mean+(dt-this.mean)*(1-Math.exp(-dt/1.5)):dt;
+   this.cooldown=Math.max(0,this.cooldown-dt);
+   this.bad=this.mean>.026?this.bad+dt:0;
+   this.good=this.mean<.019?this.good+dt:0;
+   if(!this.cooldown&&this.bad>2&&this.tier<3)this.setTier(this.tier+1);
+   else if(!this.cooldown&&this.good>15&&this.tier>0)this.setTier(this.tier-1);
+  }
+  setTier(tier){
+   this.tier=Math.max(0,Math.min(3,Math.round(tier)));this.bad=this.good=0;this.cooldown=8;
+   this.renderer.setPixelRatio(Math.min(this.baseRatio,Math.max(Math.min(.75,this.baseRatio),this.baseRatio*this.budget.scale)));
+   this.lastRatio=this.renderer.getPixelRatio();
+  }
+  allow(kind='smoke',critical=false){
+   if(critical||!this.enabled||this.tier===0)return true;
+   const balance=(this.buckets.get(kind)||0)+this.budget.effects;
+   this.buckets.set(kind,balance>=1?balance-1:balance);return balance>=1;
+  }
+  weather(clouds,rain){
+   if(!this.enabled)return;
+   // Only decorative puffs, never the fog/LOS-bearing cloud groups.
+   for(const c of clouds||[])c.children.forEach((p,i)=>{p.visible=i%this.budget.stride===0;});
+   if(rain?.isInstancedMesh)rain.count=Math.ceil(rain.instanceMatrix.count*this.budget.rain);
+   else if(rain?.geometry&&rain.userData.dropCount)rain.geometry.setDrawRange(0,Math.ceil(rain.userData.dropCount*this.budget.rain)*2);
+  }
+  report(){return {enabled:this.enabled,tier:this.tier,pixelRatio:this.renderer.getPixelRatio(),meanMs:this.mean*1000,...this.budget};}
+ }
+ function createQuality(renderer,options){const q=new AdaptiveQuality(renderer,options);qualities.set(renderer,q);return q;}
+ function allowEffect(renderer,kind,critical=false){return qualities.get(renderer)?.allow(kind,critical)??true;}
  function setHTML(node,value){if(node&&node.innerHTML!==String(value))node.innerHTML=value;}
  const storage={
   getItem(key){
@@ -140,5 +187,5 @@
   });
   return session;
  }
- global.GameRuntime={storage,own,release,segmentDistance,stickInput,rotorStep,render,HintCoach,attachLifecycle,FrameMeter,frames,setHTML};
+ global.GameRuntime={storage,own,release,segmentDistance,stickInput,rotorStep,render,HintCoach,attachLifecycle,FrameMeter,frames,setHTML,AdaptiveQuality,createQuality,allowEffect};
 })(typeof window!=='undefined'?window:globalThis);

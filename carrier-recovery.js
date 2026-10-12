@@ -5,12 +5,14 @@
 const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
 function wind(base,gust=0){return {x:-Math.max(0,Math.abs(base)+gust*3),z:0};}
 function envelope(p,stall=31,reference=40){
+ if(root.SortieFeatures?.Handling)return root.SortieFeatures.Handling.speeds(p,stall,reference,7,0);
  const limit=stall-clamp(p.flap||0,0,1)*7;
  return {stall:limit,warning:limit*1.15,reference,
   stalled:p.spd<limit,low:p.spd<limit*1.15};
 }
 function landing(sample,reference=40){
  if(!sample)return {grade:'UNRECORDED',points:0};
+ reference=sample.reference||reference;
  const speed=Math.abs(sample.speed-reference),centre=Math.abs(sample.offset),sink=Math.max(0,sample.sink);
  const clean=speed<=3&&centre<=4&&sink<=3.5&&Math.abs(sample.bank)<=.12;
  const safe=speed<=6&&centre<=8&&sink<=5&&Math.abs(sample.bank)<=.22;
