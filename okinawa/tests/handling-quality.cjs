@@ -24,6 +24,7 @@ for(const theatre of ['europe','pacific']){
  const left=make('avenger',theatre),right=make('avenger',theatre);
  Damage.surfaceHit(left,'aileron','left');Damage.surfaceHit(right,'aileron','right');
  assert.equal(Damage.controls(left).bias,-Damage.controls(right).bias);
+ assert(Damage.controls(left).bias>0,'loss of left-wing authority banks the physical left wing down');
  assert(Damage.controls(left).roll<1&&Damage.controls(left).pitch===1);
  Damage.surfaceHit(left,'elevator');assert(Damage.controls(left).pitch<1);
  Damage.surfaceHit(left,'flap','left');left.flap=right.flap=1;

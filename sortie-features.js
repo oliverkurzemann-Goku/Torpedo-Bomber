@@ -86,7 +86,9 @@ const Damage={
  controls(p){
   const s=p.systemDamage?.surfaces,flap=clamp(p.flap||0,0,1),left=s?.flapLeft??flap,right=s?.flapRight??flap;
   const aL=s?.aileronLeft??1,aR=s?.aileronRight??1,pitch=s?.elevator??1,roll=(aL+aR)/2,asymmetry=Math.abs(left-right);
-  const sign=p.loadProfile?.theatre==='pacific'?-1:1;
+  // Both player conventions bank the pilot's LEFT wing down for positive roll:
+  // Rhine noses +Z / rotates -roll, Pacific noses -Z / rotates +roll.
+  const sign=-1;
   return {roll,pitch,bias:clamp(((aL-aR)*.06+(left-right)*.14)*sign,-.16,.16),
    drag:asymmetry*5+(1-roll)*2,stallPenalty:asymmetry*2+(1-roll)*1.5,
    flaps:{left,right,mean:(left+right)/2,asymmetry}};

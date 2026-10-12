@@ -45,6 +45,9 @@ const server=http.createServer((req,res)=>{
      setup(false);SortieFeatures.Damage.surfaceHit(P,'aileron','left');inputRoll=inputPitch=0;
      for(let i=0;i<fps*4;i++)updateFlight(1/fps);const bias=SortieFeatures.Damage.controls(P).bias;
      if(Math.abs(P.roll-bias)>.003||Math.abs(P.roll)<.005)throw Error('Permanent surface bias missing');
+     if(pacific)updatePlaneMesh(0);else posePlayerAircraft(0);
+     const leftTip=new THREE.Vector3(pacific?-1:1,0,0).applyQuaternion(planeGroup.quaternion);
+     if(leftTip.y>=0)throw Error('Named left-aileron damage banks the wrong physical wing down');
      const rollLim=pacific?(kind==='zero'?1.52:kind==='sbd'?1.50:1.42)*(kind==='avenger'?.78:.86):acDef().rollLim*.86;
      inputRoll=-bias/(rollLim*steerSign);
      // Europe types with progressive stick response invert their exponent.
@@ -78,7 +81,9 @@ const server=http.createServer((req,res)=>{
     if(flightQuality.tier!==0||renderer.getPixelRatio()!==1.5||snapshot()!==before)throw Error('Quality fails to recover');
     flightQuality.setTier(3);renderer.shadowMap.enabled=false;
     if(p){P.pos.set(carrierX-300,50,0);P.heading=0;updatePlaneMesh(0);camera.position.copy(P.pos).add(new THREE.Vector3(-22,7,0));camera.lookAt(P.pos.clone().add(new THREE.Vector3(20,0,0)));}
-    else {P.ac='p47';SortieFeatures.Handling.configure(P,'p47');P.pos.set(AF_X,AF_Y+150,AF_Z);posePlayerAircraft(0);camera.position.copy(P.pos).add(new THREE.Vector3(-25,8,0));camera.lookAt(P.pos);}
+    else {P.pos.set(AF_X,AF_Y+150,AF_Z);posePlayerAircraft(0);camera.position.copy(P.pos).add(new THREE.Vector3(-25,8,0));camera.lookAt(P.pos);}
+    P.spd=p?CarrierRecovery.envelope(P,STALL_SPD,APP_SPD).reference:SortieFeatures.Handling.speeds(P,acDef().stall,acDef().app).reference;
+    document.getElementById('flash').classList.remove('show');
     updateHUD();scene.updateMatrixWorld(true);GameRuntime.render(renderer,scene,camera);return down;
    },pacific);console.log('Render-only adaptation:',quality);
    const out=path.join(root,'test-visuals');fs.mkdirSync(out,{recursive:true});await page.screenshot({path:path.join(out,'build189-'+(pacific?'pacific':'rhine')+'-adaptive.png')});
