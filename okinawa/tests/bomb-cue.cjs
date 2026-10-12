@@ -50,6 +50,10 @@ assert(cue.opacity>0&&cue.opacity<opacity&&!el.hidden,'offscreen transition fade
 for(let i=0;i<90;i++)cue.update(1/60,{enabled:true,position,camera,predict:exact});
 assert(el.hidden&&cue.x===null,'offscreen cue fades completely and clears old position');
 point=new THREE.Vector3(0,0,0);cue.update(0,{enabled:true,position,camera,predict:exact});
+cue.reset();point=new THREE.Vector3(-496.4,0,0);
+for(let i=0;i<120;i++)cue.update(1/120,{enabled:true,position,camera,predict:exact});
+assert(!el.hidden&&cue.opacity>.035,'a faint returning edge cue accumulates its fade even before it becomes visible');
+point=new THREE.Vector3(0,0,0);
 global.innerWidth=800;cue.update(1/60,{enabled:true,position,camera,predict:exact});
 assert.equal(cue.x,400,'resize reacquires at the new viewport coordinates');
 cue.update(1/60,{enabled:false});assert(el.hidden&&cue.hit===null&&cue.opacity===0,'weapon switch/death/grounding clears the display immediately');

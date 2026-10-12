@@ -75,6 +75,13 @@ const server=http.createServer((req,res)=>{
    if(document.getElementById('bombSight').hidden||Math.abs(bombCue.x-innerWidth/2)>1)throw Error('Reentry traverses from old offscreen position');
    return {first,intermediate,returned:bombCue.opacity};
   });console.log('Actual camera edge/reentry:',edges);
+  await page.evaluate(()=>{
+   const edgeCamera=new THREE.OrthographicCamera(-innerWidth/2,innerWidth/2,innerHeight/2,-innerHeight/2,.1,100);
+   edgeCamera.position.z=10;edgeCamera.lookAt(0,0,0);bombCue.reset();
+   for(let i=0;i<120;i++)bombCue.update(1/120,{enabled:true,position:new THREE.Vector3(),camera:edgeCamera,predict:()=>({point:new THREE.Vector3(-innerWidth/2+3.6,0,0),onTarget:false})});
+   if(document.getElementById('bombSight').hidden||bombCue.opacity<.035)throw Error('Faint edge entry never fades in at 120 FPS');
+   bombCue.reset();
+  });
   await page.evaluate(()=>{P.pitch=-.5;const hit=bombImpactPrediction();camera.position.copy(P.pos).add(new THREE.Vector3(-25,9,0));camera.lookAt(hit.point);for(let i=0;i<60;i++)updateBombSight(1/60);GameRuntime.render(renderer,scene,camera);});
   await page.screenshot({path:path.join(out,'build191-pacific-dive-bomb-cue.png')});
   await page.goto('http://127.0.0.1:'+server.address().port+'/remagen-mission.html?v=191');

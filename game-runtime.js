@@ -123,7 +123,7 @@
    this.element.classList.toggle('onTarget',ready);
    this.label.textContent=ready?'RELEASE':'BOMB';
    if(this.x!==null)this.element.style.transform='translate3d('+this.x.toFixed(2)+'px,'+this.y.toFixed(2)+'px,0) translate(-50%,-50%)';
-   if(this.element.hidden)this.x=this.y=null;
+   if(this.element.hidden&&targetOpacity===0)this.x=this.y=null;
   }
  }
  function stackHUD(doc,top=8){
