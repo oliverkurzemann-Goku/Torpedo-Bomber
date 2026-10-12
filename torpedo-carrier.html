@@ -3883,6 +3883,7 @@ function applyWeather(){
   if(seaUniforms){ seaUniforms.uFogNear.value=w.fogNear; seaUniforms.uFogFar.value=w.fogFar; }
   FlightOps.clouds(clouds,weather);
   maritimeWeather?.reset(weather,carrierX,MISSIONS[mission]?.targets.map(t=>({x:t.pos[0],z:t.pos[2]}))||[]);
+  if(maritimeWeather)maritimeWeather.layers.material.color.setHex(timeMode==='night'?0x374657:timeMode==='dusk'||timeMode==='dawn'?0xe2c5ac:0xffffff);
   const mood=new THREE.Color(w.color);if(timeMode!=='night'){scene.fog.color.copy(mood);scene.background.copy(mood);}
   if(sun)sun.intensity=(timeMode==='night'?.45:1.32)*w.sun;
   if(hemiLight)hemiLight.intensity=(timeMode==='night'?.25:.45)+w.sun*(timeMode==='night'?.12:.4);
