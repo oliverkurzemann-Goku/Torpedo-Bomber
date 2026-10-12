@@ -25,7 +25,7 @@ function clouds(pool,name){
   });
  });
 }
-function visibility(scene,pool,pos,name,dt,sea){
+function visibility(scene,pool,pos,name,dt,sea,local){
  const w=wx(name);let inside=0;
  for(const c of pool){if(!c.visible)continue;
   const d=Math.hypot((pos.x-c.position.x)/(c.userData.wxRadius||700),
@@ -34,7 +34,7 @@ function visibility(scene,pool,pos,name,dt,sea){
   inside=Math.max(inside,Math.max(0,1-d));
  }
  const above=name==='fog'?Math.min(1,Math.max(0,(pos.y-350)/600)):0;
- const far=(w.far+(9500-w.far)*above)*(1-inside*.94),near=Math.min(w.near,far*.18);
+ const far=Math.min((w.far+(9500-w.far)*above)*(1-inside*.94),local?.far??Infinity),near=Math.min(w.near,far*.18);
  const k=1-Math.exp(-dt*2);
  if(scene.fog){scene.fog.near+=(near-scene.fog.near)*k;scene.fog.far+=(far-scene.fog.far)*k;}
  if(sea&&scene.fog){sea.uFogNear.value=scene.fog.near;sea.uFogFar.value=scene.fog.far;}
@@ -111,7 +111,7 @@ function briefText(name,config,wind){
 }
 function drawMap(canvas,opt){
  if(!canvas)return;const g=canvas.getContext('2d'),W=canvas.width,H=canvas.height;
- const pts=[opt.base,...opt.targets,...(opt.recon?[opt.recon]:[]),...(opt.approach?[opt.approach]:[])];
+ const pts=[opt.base,...opt.targets,...(opt.recon?[opt.recon]:[]),...(opt.approach?[opt.approach]:[]),...(opt.extraPoints||[])];
  const minX=Math.min(...pts.map(p=>p.x)),maxX=Math.max(...pts.map(p=>p.x));
  const minZ=Math.min(...pts.map(p=>p.z)),maxZ=Math.max(...pts.map(p=>p.z));
  const span=Math.max(4200,(maxX-minX)*1.32,(maxZ-minZ)*(W-70)/(H-130)),cx=(minX+maxX)/2,cz=(minZ+maxZ)/2;

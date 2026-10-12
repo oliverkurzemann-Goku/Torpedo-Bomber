@@ -34,6 +34,16 @@ references. Individual aileron/elevator damage and jammed left/right flaps affec
 handling, announce a persistent CTRL warning, and are cleared by repair or restart.
 Existing sticks, normal self-centering and AERO controls are unchanged.
 
+Carrier departure power and missed-wire rotation are supplied by the pilot.
+Safe early touchdowns roll to the wires; they do not launch the aircraft back into
+the air. Recovery shows a live green speed band and red TOO SLOW cue above stall.
+Target, system and weather status panels stack without covering each other.
+
+Pacific weather includes anchored CB towers/anvils, rain showers and sea-fog banks.
+Amber cells appear on the briefing/radar and sustained CB penetration causes
+turbulence/damage. Small point droplets replace long rain cylinders; cloud/rain
+effects use bounded instancing and keep the carrier recovery area clear of CBs.
+
 Touch devices automatically lower and recover rendering quality after sustained
 slow/fast frames. Only pixel resolution and decorative smoke/cloud/rain budgets
 change; physics, fog/visibility, weapons, smoke screens, objectives and HTML controls

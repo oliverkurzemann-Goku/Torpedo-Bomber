@@ -19,6 +19,10 @@ function landing(sample,reference=40){
  const grade=sample.wire===3&&clean?'OK-3':safe?'FAIR-'+sample.wire:'NO GRADE-'+sample.wire;
  return {grade,points:grade==='OK-3'?250:safe?100:0,clean,safe};
 }
+function approach(p,stall=31,reference=40){
+ const e=envelope(p,stall,reference),low=Math.max(e.warning,e.reference-4),high=e.reference+5;
+ return {...e,lowLimit:low,highLimit:high,tooSlow:p.spd<low,tooFast:p.spd>high};
+}
 function assessment(s){
  const release=s.released||0,accuracy=release?clamp((s.hit||0)/release,0,1):null;
  const protectedShips=s.transports||[],escort=protectedShips.length>0,
@@ -36,6 +40,6 @@ function reserve(p,distance,headwind=0,difficultyFuel=1){
   required=seconds*rate;
  return {required,margin:p.fuel-required,minutes:seconds/60};
 }
-root.CarrierRecovery={wind,envelope,landing,assessment,reserve};
+root.CarrierRecovery={wind,envelope,approach,landing,assessment,reserve};
 if(typeof module==='object'&&module.exports)module.exports=root.CarrierRecovery;
 })(typeof window==='undefined'?globalThis:window);

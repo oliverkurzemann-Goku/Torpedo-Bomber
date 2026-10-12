@@ -274,7 +274,7 @@
   .warningLamps{display:flex!important;gap:10px;padding:5px 9px!important;background:#141813dd!important;border:1px solid #535744;border-radius:4px;white-space:nowrap;}
   .warningLamp{color:#646c5c;font:9px monospace;letter-spacing:.35px;} .warningLamp[data-level="1"]{color:#ffd088;text-shadow:0 0 6px #e0a432a0;} .warningLamp[data-level="2"]{color:#ff8c70;text-shadow:0 0 7px #ff6638b0;}
 </style>
-<link rel="stylesheet" href="menu-layout.css?v=189">
+<link rel="stylesheet" href="menu-layout.css?v=190">
 </head>
 <body>
 <!-- ===== TEMP TEST-ONLY VERSION BANNER — asked for by Oliver: "kannst du irgendwo einbauen,
@@ -296,7 +296,7 @@
   <div style="width:100%;height:4px;background:repeating-linear-gradient(45deg,#ffd400,#ffd400 8px,#111 8px,#111 16px);"></div>
   <span id="testVersionBannerText" style="background:#111;color:#ffd400;font-family:monospace;font-weight:800;font-size:11px;letter-spacing:.5px;padding:3px 10px;border:1px solid #ffd400;border-top:none;border-radius:0 0 6px 6px;"></span>
 </div>
-<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 189';</script>
+<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 190';</script>
 <!-- ===== END TEMP TEST-ONLY VERSION BANNER ===== -->
 <div id="app"></div>
 <style>
@@ -337,7 +337,7 @@
   <div id="flash"></div>
   <div id="gunsight"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 189 · REAL RHINE</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 190 · REAL RHINE</div>
 
   <div id="apr">
     <div id="aprCall"></div>
@@ -389,7 +389,7 @@
 </div>
 
 <div class="overlay hidden" id="menu" data-campaign="europe">
-  <div class="menuTop"><a id="selBtn" href="index.html?v=189">&#9664; Change Game</a><span class="menuMeta">RHINE OPERATIONS<br>BUILD 189</span></div>
+  <div class="menuTop"><a id="selBtn" href="index.html?v=190">&#9664; Change Game</a><span class="menuMeta">RHINE OPERATIONS<br>BUILD 190</span></div>
   <div class="card menuCard">
     <aside class="menuOverview" aria-label="Campaign and pilot options">
     <div class="campaignArt" aria-hidden="true"></div>
@@ -506,12 +506,12 @@
 <script src="terrain-system/WorldVehicles.js?v=172"></script>
 <script src="terrain-system/LivingWorld.js?v=179"></script>
 <script src="campaign.js?v=1"></script>
-<script src="game-runtime.js?v=189"></script>
+<script src="game-runtime.js?v=190"></script>
 <script src="aircraft-rotors.js?v=172"></script>
 <script src="combat-fx.js?v=177"></script>
 <script src="aircraft-smoke.js?v=176"></script>
 <script src="aircraft-damage.js?v=177"></script>
-<script src="flight-support.js?v=189"></script>
+<script src="flight-support.js?v=190"></script>
 <script src="ordnance.js?v=157"></script>
 <script src="crew-visuals.js?v=179"></script>
 <script src="aircraft-finish.js?v=179"></script>
@@ -526,13 +526,13 @@
 <script src="audio/weapon-sound.js?v=144"></script>
 <script src="audio/jet-engine.js?v=144"></script>
 <script src="audio/flight-atmosphere.js?v=175"></script>
-<script src="sortie-systems.js?v=189"></script>
-<script src="sortie-features.js?v=189"></script>
-<script src="ground-run.js?v=189"></script>
+<script src="sortie-systems.js?v=190"></script>
+<script src="sortie-features.js?v=190"></script>
+<script src="ground-run.js?v=190"></script>
 <script src="ground-dust.js?v=181"></script>
-<script src="flight-indicators.js?v=189"></script>
+<script src="flight-indicators.js?v=190"></script>
 <script src="sortie-fuel.js?v=161"></script>
-<script src="operation-plans.js?v=189"></script>
+<script src="operation-plans.js?v=190"></script>
 <script>
 // ============================================================
 //  REMAGEN 1945 — REAL TERRAIN (forked from thunderbolt-europe.html)
@@ -599,6 +599,7 @@ let state=ST.MENU, prevState=ST.FLIGHT;
 
 let scene,camera,renderer,clock,sun,hemi,moonFill,aircraftFinish,runwayLights,shipWakes,groundDust;
 const warningLamps=FlightIndicators.mount(document.getElementById('systemsStatus'));
+GameRuntime.stackHUD(document,34);
 let planeGroup=null, playerModel=null;
 let mission=0, selectedMission=0, score=0, scoreStart=0, bestS=0;
 let targets=[], flakUnits=[], bullets=[], tracers=[], bombs=[], rockets=[];
@@ -612,6 +613,7 @@ let inputPitch=0, inputRoll=0;
 let steerSign=1;                 // live left/right invert, same as the carrier game
 let windZ=0, weather='clear', ceilingY=4200;
 let clouds=[];
+let wheelContactShadows=null;
 let radioQ=[], radioT=0, flashT=0;
 let actx=null, eng=null;
 const voiceRadio=FlightAtmosphere.voiceRadio(),soundscape=FlightAtmosphere.soundscape();
@@ -846,7 +848,7 @@ async function loadRealWorld(){
 
   if(OSMManager.BUILD!==23||HistoricalObjectManager.BUILD!==21||LivingWorld.BUILD!==22||WorldVehicles.BUILD!==22) throw new Error('Terrain version mismatch. Reload Remagen.');
   document.getElementById('testVersionBannerText').textContent=
-    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 189 · MODULE 23';
+    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 190 · MODULE 23';
   heightProvider=new DEMHeightProvider(RTILE,'terrain-system/real/data/dem/');
   terrain=new TerrainManager(scene,RTILE,heightProvider);
   osmMgr=new OSMManager(scene,RTILE,terrain,'terrain-system/real/data/osm/');
@@ -2354,6 +2356,7 @@ function strutBetween(p1,p2,radius,mat,segments){
   return m;
 }
 function buildGear(gear, root, whole, S, kind){
+  if(kind==='p47'){buildP47Gear(gear,root,whole,S);return;}
   // Deliberately UNDERSIZED against the real aeroplane. Three times now the real numbers
   // (1.40 m leg, 0.89 m tyre, 4.90 m track) have looked wrong in the game — but the size was
   // never the actual problem. Every leg hung off ONE global anchor, `whole.min.y`: the single
@@ -2430,6 +2433,55 @@ function buildGear(gear, root, whole, S, kind){
   // above); everything else about the small wheel (size, leg, localFloor anchoring) is identical.
   tg.position.set(0, (smallFloorY!=null? smallFloorY : whole.min.y)+embed, smallZ);
   gear.add(tg);
+}
+// Fitted to the normalized original P-47, with readable rounded tyres and
+// correctly coaxial hubs. The old generic fractions halved the wheel diameter.
+function buildP47Gear(gear,root,whole,S){
+  const tyre=new THREE.MeshLambertMaterial({color:0x171a17});
+  const metal=new THREE.MeshStandardMaterial({color:0x687168,roughness:.48,metalness:.5});
+  const piston=new THREE.MeshStandardMaterial({color:0xbfc4c6,roughness:.25,metalness:.75});
+  const mainZ=whole.min.z+S.z*.68,track=2.40,leg=1.10;
+  const skin=[-1,1].map(side=>localFloor(root,side*track,mainZ,.42));
+  const anchor=skin.every(y=>y!=null)?(skin[0]+skin[1])/2:whole.min.y+.7;
+  const wheel=(radius,width)=>{
+    const assembly=new THREE.Group();assembly.userData.wheelRadius=radius;
+    const tire=new THREE.Mesh(new THREE.TorusGeometry(radius-width*.42,width*.42,8,28),tyre);
+    tire.rotation.y=Math.PI/2;tire.userData.groundWheel=true;assembly.add(tire);
+    const hub=new THREE.Mesh(new THREE.CylinderGeometry(radius*.48,radius*.48,width*.92,16),metal);
+    hub.rotation.z=Math.PI/2;assembly.add(hub);
+    for(const side of [-1,1]){
+      const cap=new THREE.Mesh(new THREE.CylinderGeometry(radius*.24,radius*.30,.025,12),piston);
+      cap.rotation.z=Math.PI/2;cap.position.x=side*width*.49;assembly.add(cap);
+    }
+    return assembly;
+  };
+  for(const side of [-1,1]){
+    const hinge=new THREE.Group();hinge.name=side<0?'p47GearLeft':'p47GearRight';
+    hinge.position.set(side*track,anchor+.08,mainZ);
+    hinge.userData.gearSide=side;hinge.userData.gearDown=side*.045;
+    hinge.rotation.z=hinge.userData.gearDown;
+    hinge.add(strutBetween(new THREE.Vector3(0,.06,0),new THREE.Vector3(0,-.65,.03),.075,metal,10));
+    hinge.add(strutBetween(new THREE.Vector3(0,-.48,.025),new THREE.Vector3(0,-leg,.07),.048,piston,10));
+    hinge.add(strutBetween(new THREE.Vector3(-side*.20,-.02,-.25),new THREE.Vector3(0,-.88,.07),.038,metal,8));
+    // Torque links and a fork terminate at the same axle as tyre/hub.
+    hinge.add(strutBetween(new THREE.Vector3(0,-.58,.10),new THREE.Vector3(0,-.78,.23),.027,metal,6));
+    hinge.add(strutBetween(new THREE.Vector3(0,-.78,.23),new THREE.Vector3(0,-.95,.10),.027,metal,6));
+    const main=wheel(.44,.26);main.position.set(side*.055,-leg,.07);hinge.add(main);gear.add(hinge);
+  }
+  const tail=new THREE.Group();tail.name='p47TailGear';const z=whole.min.z+S.z*.065;
+  const tailSkin=localFloor(root,0,z,.36);tail.position.set(0,(tailSkin??whole.min.y+.65)+.04,z);
+  tail.add(strutBetween(new THREE.Vector3(0,.06,.06),new THREE.Vector3(0,-.32,-.10),.038,metal,8));
+  const small=wheel(.165,.13);small.position.set(0,-.36,-.10);tail.add(small);gear.add(tail);
+  gear.userData.p47Rig=true;
+}
+function poseP47Gear(model,deployment){
+  const gear=model?.getObjectByName('gear');if(!gear?.userData.p47Rig)return;
+  const g=Math.max(0,Math.min(1,deployment));
+  for(const hinge of gear.children){
+    if(hinge.userData.gearSide)hinge.rotation.z=hinge.userData.gearDown*g-hinge.userData.gearSide*1.48*(1-g);
+    else hinge.rotation.x=1.15*(1-g);
+  }
+  if(gear.userData.deployment!==g){delete model.userData.groundSupports;gear.userData.deployment=g;}
 }
 function brightenFighterSkin(src,kind){
   if(kind==='me262'||kind==='bf109'){aircraftFinish.decorate(src,kind);aircraftFinish.setNight(!!M()?.night);return;}
@@ -4605,11 +4657,23 @@ function posePlayerAircraft(dt){
         if(brake)brake.rotation.x=-1.05*P.diveBrakeVisual;
       }
       const gr=playerModel.getObjectByName('gear');
+      if(P.ac==='p47')poseP47Gear(playerModel,P.gear);
       if(gr) gr.visible=P.gear>0.05;
       if(P.onGround&&P.gear>0.5){
         const fit=AircraftGround.fit(playerModel,P.ac,P.pos.x,P.pos.z,P.heading,(x,z)=>AircraftGround.height(terrain,x,z));
-        if(fit){planeGroup.position.y=fit.y;planeGroup.quaternion.copy(fit.quaternion);}
+        if(fit){planeGroup.position.y=fit.y;planeGroup.quaternion.copy(fit.quaternion);
+          if(P.ac==='p47'){
+            if(!wheelContactShadows){
+              wheelContactShadows=new THREE.InstancedMesh(new THREE.PlaneGeometry(1,1),new THREE.MeshBasicMaterial({map:makeSoftSprite(),color:0x11150e,transparent:true,opacity:.32,depthWrite:false}),3);
+              wheelContactShadows.frustumCulled=false;scene.add(wheelContactShadows);
+            }
+            const dummy=new THREE.Object3D();
+            fit.contacts.forEach((p,i)=>{const x=P.pos.x+p.x,z=P.pos.z+p.z;dummy.position.set(x,AircraftGround.height(terrain,x,z)+.015,z);dummy.rotation.set(-Math.PI/2,0,P.heading);dummy.scale.set(i<2?.50:.24,i<2?.82:.32,1);dummy.updateMatrix();wheelContactShadows.setMatrixAt(i,dummy.matrix);});
+            wheelContactShadows.instanceMatrix.needsUpdate=true;
+          }
+        }
       }
+      if(wheelContactShadows)wheelContactShadows.visible=P.ac==='p47'&&P.onGround&&P.gear>.9&&planeGroup.visible;
       const pr=playerModel.getObjectByName('prop');
       if(pr) pr.rotation.z-=GameRuntime.rotorStep(dt,Math.min(0.30,0.10+P.throttle*0.28),P.ac==='p47'?4:3);
     }
@@ -5650,7 +5714,7 @@ function init(){
   buildMenu();
   // menu wiring
   document.getElementById('startBtn').onclick=()=>showBrief(selectedMission);
-  document.getElementById('pauseMainMenu').onclick=()=>{exitToMenuFromPause();window.location.href='index.html?v=189';};
+  document.getElementById('pauseMainMenu').onclick=()=>{exitToMenuFromPause();window.location.href='index.html?v=190';};
   document.getElementById('logBtn').onclick=()=>{ show('menu',false); showLogbook(); };
   document.getElementById('skipLaunchPreview').onclick=()=>finishLaunchIntro();
   document.getElementById('brBack').onclick=()=>{ show('brief',false); show('menu',true);if(navigation){navigation.reset();navigation.button.style.display='none';} state=ST.MENU; };

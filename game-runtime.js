@@ -68,6 +68,19 @@
  function createQuality(renderer,options){const q=new AdaptiveQuality(renderer,options);qualities.set(renderer,q);return q;}
  function allowEffect(renderer,kind,critical=false){return qualities.get(renderer)?.allow(kind,critical)??true;}
  function setHTML(node,value){if(node&&node.innerHTML!==String(value))node.innerHTML=value;}
+ function stackHUD(doc,top=8){
+  const objective=doc.getElementById('obj');if(!objective?.parentNode)return;
+  const stack=doc.createElement('div');stack.id='hudStack';
+  stack.style.cssText='position:fixed;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:7px;width:min(460px,calc(100vw - 300px));pointer-events:none;z-index:12;';
+  stack.style.top='max('+top+'px,calc(env(safe-area-inset-top) + '+(top>8?26:8)+'px))';
+  objective.parentNode.insertBefore(stack,objective);
+  for(const id of ['obj','systemsStatus','opsStatus','wxHazard']){
+   const node=doc.getElementById(id);if(!node)continue;stack.appendChild(node);
+   Object.assign(node.style,{position:'relative',top:'auto',left:'auto',transform:'none',maxWidth:'100%',boxSizing:'border-box'});
+  }
+  const lamps=doc.getElementById('systemsStatus');if(lamps){lamps.style.flexWrap='wrap';lamps.style.justifyContent='center';}
+  return stack;
+ }
  const storage={
   getItem(key){
    if(removed.has(key))return null;
@@ -187,5 +200,5 @@
   });
   return session;
  }
- global.GameRuntime={storage,own,release,segmentDistance,stickInput,rotorStep,render,HintCoach,attachLifecycle,FrameMeter,frames,setHTML,AdaptiveQuality,createQuality,allowEffect};
+ global.GameRuntime={storage,own,release,segmentDistance,stickInput,rotorStep,render,HintCoach,attachLifecycle,FrameMeter,frames,setHTML,AdaptiveQuality,createQuality,allowEffect,stackHUD};
 })(typeof window!=='undefined'?window:globalThis);

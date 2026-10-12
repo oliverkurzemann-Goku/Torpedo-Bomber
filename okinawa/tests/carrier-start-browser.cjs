@@ -92,6 +92,8 @@ const server=http.createServer((req,res)=>{
     try{while(carrierIntro){animateFrame();checkDeckContact();}}finally{GameRuntime.render=render;}
    });
    assert(await page.evaluate(()=>state===ST.LAUNCH&&!carrierIntro&&!document.body.classList.contains('carrierPreview')));
+   assert.equal(await page.evaluate(()=>P.throttle),0,'pilot supplies departure power');
+   await page.evaluate(()=>{P.throttle=1;setThrottleUI(1);});
    await page.evaluate(()=>{const render=GameRuntime.render;GameRuntime.render=()=>true;try{for(let i=0;i<40;i++){animateFrame();if(state===ST.LAUNCH&&P.pos.x-carrierX<BOW_X-2)checkDeckContact();}}finally{GameRuntime.render=render;}});
    assert(await page.evaluate(()=>state===ST.LAUNCH&&launchTimer>=1.9&&P.pos.x-carrierX<BOW_X),'first two seconds remain on the flight deck');
    await page.evaluate(()=>{const render=GameRuntime.render;GameRuntime.render=()=>true;try{for(let i=0;i<260&&state===ST.LAUNCH;i++){animateFrame();if(state===ST.LAUNCH&&P.pos.x-carrierX<BOW_X-2)checkDeckContact();}}finally{GameRuntime.render=render;}});

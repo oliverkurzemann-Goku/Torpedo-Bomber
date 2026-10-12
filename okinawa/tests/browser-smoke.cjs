@@ -302,7 +302,7 @@ const cdn={
    if(!eu){
     // Run the longer rolling departure at a fixed simulation rate on software
     // WebGL. The dedicated departure test measures time and all tyre contacts.
-    await page.evaluate(()=>{window.__holdSmokeFrames?.();clock.getDelta=()=>.05;const draw=GameRuntime.render;GameRuntime.render=()=>true;
+    await page.evaluate(()=>{P.throttle=1;setThrottleUI(1);window.__holdSmokeFrames?.();clock.getDelta=()=>.05;const draw=GameRuntime.render;GameRuntime.render=()=>true;
       try{for(let i=0;i<260&&state===ST.LAUNCH&&!runtimeFault;i++)animateFrame();}finally{GameRuntime.render=draw;window.__startSmokeFrames?.();}});
     await page.waitForFunction(()=>state===ST.FLIGHT||state===ST.PAUSED||runtimeFault);
     assert(await page.evaluate(()=>state===ST.FLIGHT&&!runtimeFault),'launch must enter flight before the duration test');

@@ -35,6 +35,11 @@ function faceCount(group,minimumY){let total=0;group.updateMatrixWorld(true);gro
  const p47Rig=rigModel(p47Root,'p47');
  const p47Main=p47Root.getObjectByName('gear').children.slice(0,2);
  assert(p47Main.every(g=>g.position.z>1.7&&g.position.z<2.4),'P-47 main wheels belong under the forward wing, ahead of the cockpit');
+ const tyres=[];p47Root.getObjectByName('gear').traverse(o=>{if(o.userData.groundWheel)tyres.push(o);});
+ assert.equal(tyres.length,3);assert(tyres.slice(0,2).every(t=>t.geometry.type==='TorusGeometry'));
+ assert(Math.abs(p47Main[0].position.x-p47Main[1].position.x)>4.7,'P-47 gear spans the forward wing, not fuselage');
+ for(const tire of tyres.slice(0,2)){const size=new THREE.Box3().setFromObject(tire).getSize(new THREE.Vector3());assert(size.y>.85&&size.z>.85&&size.x<.28,'readable round tyres, correct lateral axle');}
+ const beforeGear=p47Main.map(g=>g.rotation.z);poseP47Gear(p47Root,.5);assert(p47Main.every((g,i)=>Math.abs(g.rotation.z-beforeGear[i])>.6),'P-47 folds into the wings');poseP47Gear(p47Root,1);
  assert.match(p47Rig,/original P-47 four-blade propeller/);
  const rotor=p47Root.getObjectByName('prop'),originalPart=rotor.getObjectByName('original P-47 propeller');
  assert(originalPart?.geometry?.index.count>=4500,'the GLB blades, roots and spinner rotate together');

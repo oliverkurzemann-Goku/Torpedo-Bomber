@@ -48,7 +48,7 @@ const server=http.createServer((req,res)=>{
     const originalBolter=bolter;bolter=msg=>{firstSpeed=P.spd;originalBolter(msg);bolterSpeed=P.spd;};
     for(let i=0;i<fps*7;i++){
      const oldY=P.pos.y,oldSpeed=P.spd;step();peakStep=Math.max(peakStep,P.pos.y-oldY);
-     if(P.deckRun){inputPitch=.15;contact=true;framesOnDeck++;deckStep=Math.max(deckStep,P.pos.y-oldY);lastGap=0;
+     if(P.deckRun){P.throttle=1;setThrottleUI(1);inputPitch=.2;contact=true;framesOnDeck++;deckStep=Math.max(deckStep,P.pos.y-oldY);lastGap=0;
       const model=isDefend()?playerZero:isSBD()?playerSBD:planeGroup;
       const supports=AircraftGround.supports(model,'carrier'),v=new THREE.Vector3();
       for(const vertices of supports){let low=null;for(let k=0;k<vertices.length;k+=3){v.fromArray(vertices,k).applyQuaternion(planeGroup.quaternion);if(!low||v.y<low.y)low=v.clone();}
@@ -90,7 +90,7 @@ const server=http.createServer((req,res)=>{
     }
     P.onDeck=false;state=ST.FLIGHT;P.pos.y=120;P.flap=1;P.spd=27;updateHUD();
     const low=document.getElementById('hSpd').classList.contains('lowSpeed'),ref=document.getElementById('landingRef').textContent;
-    P.spd=40;updateHUD();const clear=!document.getElementById('hSpd').classList.contains('lowSpeed');
+    P.spd=CarrierRecovery.envelope(P,STALL_SPD,APP_SPD).reference;updateHUD();const clear=!document.getElementById('hSpd').classList.contains('lowSpeed');
     const expected=CarrierRecovery.envelope(P,STALL_SPD,APP_SPD).reference;
     if(!low||!clear||!ref.includes('REF '+Math.round(expected*KT)+' KT'))throw Error('Stall/ref HUD missing');
     return {kind,fps,late,sample,arrestFrames,rollout,maxDecel,reference:ref};

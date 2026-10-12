@@ -5,7 +5,56 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 189 · Thunderbolt Squadron BUILD 189 · Remagen-Kern 23 / Fahrzeuge 22**
+Stand bei Übergabe: **Torpedo Squadron BUILD 190 · Thunderbolt Squadron BUILD 190 · Remagen-Kern 23 / Fahrzeuge 22**
+
+**Build 190 (12.10.2026): P47-Fahrwerk, freie Warnlampen, manuelle Trägerkontrolle und Pazifik-Wetter.**
+Nutzer lieferte BUILD-189-iPad-Fotos: fast unsichtbare Räder und Zielpanel über den
+Warnlampen. p47new.glb entspricht SHA256-genau der beigefügten Originaldatei.
+Neues P47-spezifisches Rig statt der stark verkleinerten generischen Anteile:
+.88-m-Torusreifen, .26-m-Breite, 4.8-m-Spur, lokale Flügelhaut-Anker an der bereits
+gemessenen vorderen Z-Station, Oleo/Scheren/Drag-Brace, korrekt koaxiale Radnaben,
+Tailwheel und Einfalten der Hauptbeine in die Flügel. Keine Originaldatei geändert,
+kein neuer Flügel-Cut. AircraftGround passt weiterhin die echten Reifenvertices an
+das gerenderte DEM an; eine gepoolte Instanzgruppe ergänzt drei Kontakt-Schatten.
+
+GameRuntime.stackHUD ordnet Zielpanel, Warnlampen, Ops und Wetterwarnung in einem
+vertikalen Flex-Stack an. Keine festen konkurrierenden Y-Positionen mehr; lange
+Ziel-/Schadenstexte passen bei 1024x520, 1194x660 und 1536x930 ohne Überlagerung.
+
+Pacific: Launch beginnt mit Idle; Touch/Keyboard liefern die Leistung. Bei frühem,
+sicherem Kontakt vor den Seilen rollt P.deckRun.wireEligible auf dem Deck bis zu den
+Fangseilen und kann dort normal gefangen werden. Bolter verändert nicht das Gas.
+Automatische .35-Spool, Full-Power und zeit-/speedgesteuerte Rotation entfernt.
+Rotation auf dem Deck verlangt bewussten Back-Stick und ausreichende Fahrt/Power;
+beim Verlassen des Bugs löst sich nur die Bodenbindung, ohne vertikale Injektion.
+Anfangsrollout konvertiert Deckgeschwindigkeit zu Airspeed samt Fahrtwind. Physisches
+P.pos.y folgt dem gerenderten Deck-Fit, damit beim Wechsel kein Höhen-Pop entsteht.
+Auch beginArrestRun stiehlt nicht mehr den Gashebel; Stillstand/Service bleiben.
+
+Anflug: dynamisches grünes Speed-Band unter SPD. Unter REF-4 m/s bzw. der höheren
+Stall-Warnschwelle wird SPD/REF/LSO rot mit TOO SLOW; obere Bandkante REF+5 m/s.
+Nur bei tatsächlicher Recovery-Konfiguration/Nähe, keine Rotwarnung beim Deckstart.
+Die Briefing-/Menütexte verweisen auf die live berechnete Referenz statt pauschal 78 KT.
+
+MaritimeWeather: ortsfeste CB-Zellen mit gestapelten Turm-/Amboss-Layern, lokale
+Schauer und Seenebelbanken; CBs halten den Trägerbereich frei und stehen amber auf
+Briefingkarte/Radar. Ein Instanced-Mesh (max.160 Puffs) und ein Points-Draw (max.1000
+kleine Regenpunkte) statt 2.2-m-Regenzylindern; DPR/Regenbudget bleibt adaptiv. Tropfen
+fallen relativ zur Kamera, oberhalb der Wolken endet der Regen. Höhere Wolkentürme
+bleiben über der flachen Nebelschicht erkennbar; r128 fogDepth korrekt verwenden,
+kein vFogDepth. Unit allein genügt nicht: native Tests prüfen Compilerlogs und
+>1000 tatsächlich veränderte Framebuffer-Pixel durch die CB-Layer (gemessen >120k).
+CB-Kerne erzeugen begrenzte Vertikal-/Attitüdstörungen und bei anhaltendem Durchflug
+Schaden; nach Verlassen keine Schadens-Callbacks. Spielkurven, keine zertifizierte
+Meteorologie/Flugleistung. Pause/Intro halten die Schadens-/Flugphysik weiterhin an.
+
+Neue carrier-weather-gear-browser.cjs und maritime-weather.cjs prüfen Original-P47,
+alle drei Bodenkontakte, HUD-Rechtecke, echte Touch-Gasbedienung, Idle-Stillstand,
+frühes Fangen ohne Jump und manuelles Durchstarten bei 20/60/120 FPS, rotes Band,
+CB-Framebuffer/Compiler und feine Regenpunkte. Bestehende Launch-Fixtures geben jetzt
+explizit Pilotengas; Recovery-HUD-Fixture prüft gesund an der dynamischen Referenz.
+BUILD-189-CI auf main und Featurebranch inzwischen vollständig grün bestätigt.
+Keine physische iPad-/Safari-Freigabe behaupten; native QA hier ist Desktop-Chrome.
 
 **Build 189 (12.10.2026): Beladung, einzelne Steuerflächenschäden, adaptive Touch-Grafik.**
 Nutzer wählte Verbesserungen 1, 2 und 5; keine neuen Eingaben, kein Missionseditor.
