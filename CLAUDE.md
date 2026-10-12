@@ -14,6 +14,12 @@ Raketen/Torpedos live. Zehn abgestufte Gameplay-Massenprofile, begrenzt auf .90�
 keine Behauptung historisch zertifizierter Flugleistungen. Bodenbeschleunigung,
 Rotation, Steigen, Roll-/Pitch-Trägheit, Kurven und Stall/REF folgen der Beladung.
 Abwurf, Tanktransfer und Tank-Jettison entlasten sofort; keine künstliche Speed-Injektion.
+Rotation skaliert die bisherige clean-stall-Referenz, nicht zusätzlich den Gear-
+Landestall. Me262-Bodenschub als Gameplay-Kurve auf 6.8 angepasst: der alte 4.8-
+Wert konnte mit Beladung die Rotation auf der 900-m-Bahn nicht mehr erreichen.
+Langsames Jet-Spooling und höhere Rollzeit/Rotation bei Bombenlast bleiben erhalten.
+Neue native Tests starten Free/volle P47 und beide Jet-Lasten bei drei Frameraten,
+mit tatsächlicher Bahnlänge und vier Sekunden weiterem Steigflug.
 Rhine-HUD und Approach behalten MPH, Pacific-HUD/LSO/Touchdown-Grade KT.
 
 Schwere Treffer können L/R-Querruder, Höhenruder oder eine Klappe beschädigen.

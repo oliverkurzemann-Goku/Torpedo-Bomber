@@ -3,7 +3,7 @@
 const assert=require('node:assert/strict'),THREE=require('three');
 const GroundRun=require('../../ground-run.js'),Indicators=require('../../flight-indicators.js'),Wakes=require('../../ship-wakes.js');
 require('../../crew-visuals.js');const Deck=require('../../deck-activity.js'),Runway=require('../../runway-lights.js');
-for(const [kind,vr,minTime,maxTime,maxDistance] of [['prop',44.8,9,14,450],['jet',57.12,18,25,730],['carrier',44,6,11,250]]){
+for(const [kind,vr,minTime,maxTime,maxDistance] of [['prop',44.8,9,14,450],['jet',57.12,12,20,600],['carrier',44,6,11,250]]){
  const results=[];
  for(const fps of [20,60,120]){
   const p={spd:0,throttle:1};let t=0,distance=0,twoSeconds;

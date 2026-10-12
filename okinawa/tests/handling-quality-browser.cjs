@@ -18,7 +18,7 @@ const server=http.createServer((req,res)=>{
  try{
   const page=await browser.newPage({viewport:{width:1194,height:660},hasTouch:true,deviceScaleFactor:1.5}),errors=[];
   page.setDefaultTimeout(120000);page.on('pageerror',e=>errors.push(e.message));await page.addInitScript(()=>window.requestAnimationFrame=()=>0);
-  for(const pacific of [true,false]){
+  for(const pacific of process.env.GAME_TEST_RHINE_ONLY?[false]:[true,false]){
    await page.goto('http://127.0.0.1:'+server.address().port+'/'+(pacific?'torpedo-carrier.html':'remagen-mission.html')+'?v=189');
    await page.waitForFunction(p=>state===ST.MENU&&(p||realWorldReady),pacific,{polling:200});
    await page.evaluate(async p=>{
@@ -26,6 +26,20 @@ const server=http.createServer((req,res)=>{
     else await Promise.all(['p47','bf109','fw190','ju87','me262','me163'].map(ensureModel));
     renderer.setPixelRatio(.3);renderer.shadowMap.enabled=false;flightQuality.enabled=false;
    },pacific);
+   if(!pacific)for(const fps of [20,60,120]){
+    const takeoffs=await page.evaluate(fps=>{
+     return [0,MISSIONS.findIndex(m=>m.id==='final'),MISSIONS.findIndex(m=>m.id==='jetstrike'),MISSIONS.findIndex(m=>m.id==='jetjabo')].map(index=>{
+      startMission(index);finishLaunchIntro(false);show('menu',false);show('brief',false);state=ST.FLIGHT;inputRoll=0;inputPitch=.6;P.throttle=1;
+      const mass=SortieFeatures.Handling.sample(P).ratio,start=P.pos.x;let time=0;
+      while(P.onGround&&P.alive&&time<35){updateFlight(1/fps);time+=1/fps;}
+      const distance=P.pos.x-start,rotation=time;
+      if(!P.alive||P.onGround||distance>RWY_LEN-140)throw Error('Loaded runway departure failed '+JSON.stringify({mission:MISSIONS[index].id,fps,mass,time,distance,spd:P.spd}));
+      for(let i=0;i<fps*4;i++)updateFlight(1/fps);
+      if(!P.alive||P.onGround||P.pos.y-groundY(P.pos.x,P.pos.z)<10)throw Error('Loaded aircraft cannot continue climbing '+JSON.stringify({mission:MISSIONS[index].id,fps,mass,rotation,distance,alive:P.alive,ground:P.onGround,agl:P.pos.y-groundY(P.pos.x,P.pos.z),spd:P.spd,title:document.getElementById('resTitle')?.textContent}));
+      return {mission:MISSIONS[index].id,fps,mass,rotation,distance};
+     });
+    },fps);console.log('Original loaded runway departures:',takeoffs);
+   }
    for(const kind of pacific?['avenger','sbd','corsair','zero']:['p47','bf109','fw190','ju87','me262','me163'])for(const fps of [20,60,120]){
     const result=await page.evaluate(({kind,fps,pacific})=>{
      const index=MISSIONS.findIndex(m=>pacific?(kind==='zero'?m.defend:kind==='corsair'?m.corsair:kind==='sbd'?m.sbd&&!m.corsair:!m.sbd&&!m.defend&&!m.free&&!m.qual):(m.ac||'p47')===kind&&!m.free);

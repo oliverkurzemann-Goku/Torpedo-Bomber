@@ -4057,7 +4057,7 @@ function updateFlight(dt){
     P.roll*=Math.max(0,1-3*dt); P.pitch*=Math.max(0,1-3*dt);
     P.rollVel=0; P.pitchVel=0;   // wheels down: no airborne rotational inertia carries over
     // rotate off the ground: stick back (which is DOWN on the screen by default)
-    const vr=speeds.stall*1.12;
+    const vr=(d.stall*load.speed+controls.stallPenalty)*1.12;
     if(P.spd>vr && inputPitch>0.15 && P.gear>0.5){
       P.onGround=false; P.pitch=0.10; P.vSpeed=2;
       flash('AIRBORNE',900); radioSay('WHEELS IN THE WELL — GOOD LUCK');

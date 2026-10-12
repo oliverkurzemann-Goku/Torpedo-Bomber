@@ -87,7 +87,10 @@ const server=http.createServer((req,res)=>{
    if(P.hookTgt!==0||!rearArmament?.visible||rearArmament.userData.ports.length!==1)throw Error('Avenger hook/gun setup');
    const nd=noseDir(),tgt=P.pos.clone().addScaledVector(nd,-200).add(new THREE.Vector3(0,10,0));zeros.push({alive:true,pos:tgt,heading:0,pitch:0,spd:0});P.tailCool=0;updateTailGun(.1);zeros.pop();
    const round=bullets.at(-1);const muzzle=rearArmament.userData.pivot.localToWorld(rearArmament.userData.ports[0].clone());if(round.mesh.position.distanceTo(muzzle)>.0001||!round.tail)throw Error('Rear rounds leave cockpit');
-   const y=P.pos.y;inputPitch=.5;for(let i=0;i<60;i++)updateFlight(1/60);const climb={gain:P.pos.y-y,pitch:P.pitch,vsi:P.vSpeed};if(climb.gain<12||climb.pitch<.27)throw Error('Avenger climb response remains sluggish');inputPitch=0;
+   // Existing responsiveness at the declared neutral loading; separate loading
+   // tests exercise the full-fuel/stores climb penalty in the actual game.
+   P.fuel=50;P.torps=0;
+   const y=P.pos.y;inputPitch=.5;for(let i=0;i<60;i++)updateFlight(1/60);const climb={gain:P.pos.y-y,pitch:P.pitch,vsi:P.vSpeed};if(climb.gain<12||climb.pitch<.27)throw Error('Avenger climb response remains sluggish '+JSON.stringify(climb));inputPitch=0;
    beginBailout();for(let i=0;i<60;i++)advanceBailout(1/60);
    if(aircraftCrewCount()!==3||crewBailouts.length!==2||!bailout.deployed||crewBailouts.some(c=>!c.chute.deployed))throw Error('Avenger crew missing');
    return {climb,crew:3,mount:rearArmament.position.toArray(),muzzle:muzzle.toArray()};

@@ -96,7 +96,8 @@ const server=http.createServer((req,res)=>{
     const result=await page.evaluate(kind=>{
       const i=MISSIONS.findIndex(m=>kind==='sbd'?m.sbd&&!m.corsair:kind==='corsair'?m.corsair:kind==='zero'?m.defend:!m.sbd&&!m.corsair&&!m.defend);
       if(i<0)throw Error('Missing mission '+kind);startMission(i);finishCarrierIntro();state=ST.FLIGHT;hideOverlays();P.alive=true;P.hull=100;P.pos.set(-1500,.55,0);P.spd=APP_SPD;P.pitch=-.015;P.roll=0;P.pitchVel=P.rollVel=0;P.gear=P.gearTgt=0;P.hook=P.hookTgt=0;P.flap=P.flapTgt=0;P.throttle=0;inputPitch=inputRoll=0;
-      updateFlight(.05);if(!ditching||!bailRescue)throw Error('Sea contact did not enter ditching '+kind);
+      P.spd=CarrierRecovery.envelope(P,STALL_SPD,APP_SPD).reference;
+      updateFlight(.05);if(!ditching||!bailRescue)throw Error('Sea contact did not enter ditching '+kind+' '+JSON.stringify({speed:P.spd,sink:P.vSpeed,mass:SortieFeatures.Handling.sample(P).ratio}));
       const all=[bailout,...crewBailouts.map(c=>c.chute)];
       if(all.some(c=>c.deployed||c.group.children.some(o=>o.isMesh&&o.geometry.type==='SphereGeometry'&&o.position.y>3&&o.visible)))throw Error('Ditching deployed a parachute');
       for(const c of all){const pilot=c.group.getObjectByName('pilot');if(pilot.userData.arms.some(a=>Math.abs(a.rotation.z)>.01))throw Error('Raft retains raised chute arms');}
