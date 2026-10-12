@@ -5,7 +5,29 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 190 · Thunderbolt Squadron BUILD 190 · Remagen-Kern 23 / Fahrzeuge 22**
+Stand bei Übergabe: **Torpedo Squadron BUILD 191 · Thunderbolt Squadron BUILD 191 · Remagen-Kern 23 / Fahrzeuge 22**
+
+**Build 191 (12.10.2026): ruhige, dezentere Bombenanzeige.**
+Nutzer meldete im Geradeausflug stark hüpfenden BOMB-Hinweis, möchte die hilfreiche
+Einschlaganzeige behalten. Ursache: ortsfester Prediction-Cache bei 10 Hz, während
+Flugzeug/Kamera pro Frame weiterlaufen. GameRuntime.BombCue transportiert den
+berechneten Punkt zwischen Samples mit der Positionsänderung des Flugzeugs und
+filtert ausschließlich Bildschirmkoordinaten, framerateunabhängig und im Anflug
+mit kürzerer Reaktion. Cruise 10 Hz/.42 Opazität, Dive 30 Hz/.92; kein zusätzlicher
+3D-Draw. Bombenphysik, Abwurfbedingungen und beide echten Predictor unverändert.
+
+Pipper und BOMB/RELEASE-Label sind getrennte Elemente: Textbreite verschiebt nicht
+mehr den Zielpunkt. Transform statt Left/Top-Layout pro Frame. Weiches Fade vor
+Bildschirmrand und Bailout-Zone, keine am Rand festgeklemmte falsche Einschlagposition.
+Grün verlangt aktuelle Freigabebedingungen und <8 px Display-Abweichung. Missions-
+Reset, fehlende Bomben, Waffenschalter und Ground/Death löschen den Cache; Resize
+erfasst neue Koordinaten. Rhine ruft den Hinweis jetzt nach der aktuellen Kamera
+pro Frame auf, nicht ungefiltert aus beliebigen updateHUD-Aufrufen.
+
+Neue bomb-cue.cjs und bomb-cue-browser.cjs prüfen reale Predictor/Abwürfe,
+Geradeausflug bei 20/60/120 FPS, begrenzte Sample-Raten, Rauschdämpfung,
+Anflugreaktion, dezentes/helles Display, ehrliches Grün, Rand-Fade/Reentry und
+Rhine-HUD-Aufrufe. Native Chrome-Tests sind keine physische iPad-/Safari-Freigabe.
 
 **Build 190 (12.10.2026): P47-Fahrwerk, freie Warnlampen, manuelle Trägerkontrolle und Pazifik-Wetter.**
 Nutzer lieferte BUILD-189-iPad-Fotos: fast unsichtbare Räder und Zielpanel über den

@@ -39,6 +39,11 @@ Safe early touchdowns roll to the wires; they do not launch the aircraft back in
 the air. Recovery shows a live green speed band and red TOO SLOW cue above stall.
 Target, system and weather status panels stack without covering each other.
 
+Both campaigns keep a stable bomb-impact pipper: cached ballistic samples travel
+with the aircraft between updates, and only their screen presentation is filtered.
+The cue is subdued in cruise, brighter during a dive, and fades at the viewport
+edge. RELEASE turns green only with a valid, settled cue; bomb physics is unchanged.
+
 Pacific weather includes anchored CB towers/anvils, rain showers and sea-fog banks.
 Amber cells appear on the briefing/radar and sustained CB penetration causes
 turbulence/damage. Small point droplets replace long rain cylinders; cloud/rain

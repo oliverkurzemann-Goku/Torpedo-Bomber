@@ -157,7 +157,8 @@
   #mmap{position:fixed;top:min(calc(env(safe-area-inset-top) + 310px),calc(100dvh - env(safe-area-inset-bottom) - 326px));
     right:calc(max(12px,env(safe-area-inset-right)) + 92px);width:104px;height:104px;border-radius:50%;
     border:1px solid rgba(202,191,156,.35);background:rgba(8,12,10,.62);z-index:9;}
-  #bombSight{position:fixed;transform:translate(-50%,-50%);color:#ffeac0;text-shadow:0 1px 2px #000;font:bold 13px monospace;pointer-events:none;z-index:8;}#bombSight.onTarget{color:#a5ff8d;}
+  #bombSight{position:fixed;left:0;top:0;width:20px;height:20px;color:#ffeac0;text-shadow:0 1px 2px #000;font:bold 12px monospace;pointer-events:none;z-index:8;will-change:transform,opacity;}#bombSight.onTarget{color:#a5ff8d;}
+  .bombPipper{display:block;text-align:center;font-size:20px;line-height:20px;}.bombCueLabel{position:absolute;left:50%;top:23px;transform:translateX(-50%);white-space:nowrap;}
   .navSelect{position:fixed;right:calc(max(12px,env(safe-area-inset-right)) + 92px);top:min(calc(env(safe-area-inset-top) + 276px),calc(100dvh - env(safe-area-inset-bottom) - 360px));width:104px;min-height:30px;padding:4px;color:#eeddb0;background:#15231c;border:1px solid #aa9870;border-radius:4px;font:10px monospace;z-index:14;touch-action:manipulation;}
   .navChoices{position:fixed;right:calc(max(12px,env(safe-area-inset-right)) + 92px);top:calc(env(safe-area-inset-top) + 145px);max-height:45vh;width:230px;overflow-y:auto;background:#142219;border:1px solid #aa9870;padding:5px;z-index:15;}
   body.launchPreview .navSelect,body.launchPreview .navChoices,body.carrierPreview .navSelect,body.carrierPreview .navChoices{visibility:hidden;}
@@ -274,7 +275,7 @@
   .warningLamps{display:flex!important;gap:10px;padding:5px 9px!important;background:#141813dd!important;border:1px solid #535744;border-radius:4px;white-space:nowrap;}
   .warningLamp{color:#646c5c;font:9px monospace;letter-spacing:.35px;} .warningLamp[data-level="1"]{color:#ffd088;text-shadow:0 0 6px #e0a432a0;} .warningLamp[data-level="2"]{color:#ff8c70;text-shadow:0 0 7px #ff6638b0;}
 </style>
-<link rel="stylesheet" href="menu-layout.css?v=190">
+<link rel="stylesheet" href="menu-layout.css?v=191">
 </head>
 <body>
 <!-- ===== TEMP TEST-ONLY VERSION BANNER — asked for by Oliver: "kannst du irgendwo einbauen,
@@ -296,7 +297,7 @@
   <div style="width:100%;height:4px;background:repeating-linear-gradient(45deg,#ffd400,#ffd400 8px,#111 8px,#111 16px);"></div>
   <span id="testVersionBannerText" style="background:#111;color:#ffd400;font-family:monospace;font-weight:800;font-size:11px;letter-spacing:.5px;padding:3px 10px;border:1px solid #ffd400;border-top:none;border-radius:0 0 6px 6px;"></span>
 </div>
-<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 190';</script>
+<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 191';</script>
 <!-- ===== END TEMP TEST-ONLY VERSION BANNER ===== -->
 <div id="app"></div>
 <style>
@@ -337,7 +338,7 @@
   <div id="flash"></div>
   <div id="gunsight"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 190 · REAL RHINE</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 191 · REAL RHINE</div>
 
   <div id="apr">
     <div id="aprCall"></div>
@@ -389,7 +390,7 @@
 </div>
 
 <div class="overlay hidden" id="menu" data-campaign="europe">
-  <div class="menuTop"><a id="selBtn" href="index.html?v=190">&#9664; Change Game</a><span class="menuMeta">RHINE OPERATIONS<br>BUILD 190</span></div>
+  <div class="menuTop"><a id="selBtn" href="index.html?v=191">&#9664; Change Game</a><span class="menuMeta">RHINE OPERATIONS<br>BUILD 191</span></div>
   <div class="card menuCard">
     <aside class="menuOverview" aria-label="Campaign and pilot options">
     <div class="campaignArt" aria-hidden="true"></div>
@@ -506,12 +507,12 @@
 <script src="terrain-system/WorldVehicles.js?v=172"></script>
 <script src="terrain-system/LivingWorld.js?v=179"></script>
 <script src="campaign.js?v=1"></script>
-<script src="game-runtime.js?v=190"></script>
+<script src="game-runtime.js?v=191"></script>
 <script src="aircraft-rotors.js?v=172"></script>
 <script src="combat-fx.js?v=177"></script>
 <script src="aircraft-smoke.js?v=176"></script>
 <script src="aircraft-damage.js?v=177"></script>
-<script src="flight-support.js?v=190"></script>
+<script src="flight-support.js?v=191"></script>
 <script src="ordnance.js?v=157"></script>
 <script src="crew-visuals.js?v=179"></script>
 <script src="aircraft-finish.js?v=179"></script>
@@ -526,13 +527,13 @@
 <script src="audio/weapon-sound.js?v=144"></script>
 <script src="audio/jet-engine.js?v=144"></script>
 <script src="audio/flight-atmosphere.js?v=175"></script>
-<script src="sortie-systems.js?v=190"></script>
-<script src="sortie-features.js?v=190"></script>
-<script src="ground-run.js?v=190"></script>
+<script src="sortie-systems.js?v=191"></script>
+<script src="sortie-features.js?v=191"></script>
+<script src="ground-run.js?v=191"></script>
 <script src="ground-dust.js?v=181"></script>
-<script src="flight-indicators.js?v=190"></script>
+<script src="flight-indicators.js?v=191"></script>
 <script src="sortie-fuel.js?v=161"></script>
-<script src="operation-plans.js?v=190"></script>
+<script src="operation-plans.js?v=191"></script>
 <script>
 // ============================================================
 //  REMAGEN 1945 — REAL TERRAIN (forked from thunderbolt-europe.html)
@@ -606,6 +607,7 @@ let targets=[], flakUnits=[], bullets=[], tracers=[], bombs=[], rockets=[];
 let explosions=[], smokes=[], smokePool=[], debris=[], craters=[];
 let enemyAir=[], wingmen=[], groundFire=[];
 let killCam=null, shakeT=0, shakeAmt=0;
+const bombCue=new GameRuntime.BombCue(document.getElementById('bombSight'));
 let chaseUp=0, invertPitch=true, dbgOn=false;
 let firing=false, gunT=0, gunVolley=0, weapon='bomb';
 let aeroMode=false;
@@ -848,7 +850,7 @@ async function loadRealWorld(){
 
   if(OSMManager.BUILD!==23||HistoricalObjectManager.BUILD!==21||LivingWorld.BUILD!==22||WorldVehicles.BUILD!==22) throw new Error('Terrain version mismatch. Reload Remagen.');
   document.getElementById('testVersionBannerText').textContent=
-    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 190 · MODULE 23';
+    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 191 · MODULE 23';
   heightProvider=new DEMHeightProvider(RTILE,'terrain-system/real/data/dem/');
   terrain=new TerrainManager(scene,RTILE,heightProvider);
   osmMgr=new OSMManager(scene,RTILE,terrain,'terrain-system/real/data/osm/');
@@ -3184,13 +3186,14 @@ function bombImpactPrediction(){
  }
  return null;
 }
-function updateBombSight(){
- const el=document.getElementById('bombSight');
- if(state!==ST.FLIGHT||!P.alive||P.onGround||weapon!=='bomb'||P.bombs<=0){el.hidden=true;return;}
- const impact=bombImpactPrediction();if(!impact){el.hidden=true;return;}
- const bridge=targets.find(t=>t.alive&&t.kind==='bridge'),near=bridge&&bridgeBlastDistance(bridge,impact.x,impact.z)<18;
- const ndc=impact.clone().project(camera);el.hidden=ndc.z>1||ndc.z<0||Math.abs(ndc.x)>1||Math.abs(ndc.y)>1;
- el.style.left=(ndc.x*.5+.5)*innerWidth+'px';el.style.top=(-ndc.y*.5+.5)*innerHeight+'px';el.classList.toggle('onTarget',!!near);el.textContent=near?'⊕ RELEASE':'⊕ BOMB';
+function predictBombCue(){
+ const impact=bombImpactPrediction();if(!impact)return null;
+ const bridge=targets.find(t=>t.alive&&t.kind==='bridge');
+ return {point:impact,onTarget:!!bridge&&bridgeBlastDistance(bridge,impact.x,impact.z)<18};
+}
+function updateBombSight(dt=0){
+ bombCue.update(dt,{enabled:state===ST.FLIGHT&&P.alive&&!P.onGround&&weapon==='bomb'&&P.bombs>0,
+  position:P.pos,camera,predict:predictBombCue,attack:P.pitch<-.18,releaseAllowed:true});
 }
 function blast(x,y,z,radius,power){
   spawnExplosion(x,y,z,radius/26+0.7);
@@ -4453,6 +4456,7 @@ function relaunch(){
   state=ST.FLIGHT;
 }
 function startMission(i){
+  bombCue.reset();
   if(navigation)navigation.reset();
   finishLaunchIntro(false);
   if(eng) eng.master.gain.setTargetAtTime(0.85,actx.currentTime,0.05);
@@ -4806,7 +4810,6 @@ function updateHUD(){
   document.getElementById('hAmmo').textContent=Math.max(0,P.ammo);
   document.getElementById('hullRow').classList.toggle('warn',P.hull<40);
   document.getElementById('objText').textContent=objectiveText();
-  updateBombSight();
   const nav=ensureNavigation(),contacts=europeContacts(),base=contacts.find(c=>c.kind==='BASE');
   let candidates=contacts.filter(c=>c.ref?.primary&&(europeOps?.phase()?.id!=='suppress'||c.kind==='FLAK'));
   if(!candidates.length)candidates=contacts.filter(c=>c.kind==='BANDIT'||c.kind==='BOMBER');
@@ -5714,7 +5717,7 @@ function init(){
   buildMenu();
   // menu wiring
   document.getElementById('startBtn').onclick=()=>showBrief(selectedMission);
-  document.getElementById('pauseMainMenu').onclick=()=>{exitToMenuFromPause();window.location.href='index.html?v=190';};
+  document.getElementById('pauseMainMenu').onclick=()=>{exitToMenuFromPause();window.location.href='index.html?v=191';};
   document.getElementById('logBtn').onclick=()=>{ show('menu',false); showLogbook(); };
   document.getElementById('skipLaunchPreview').onclick=()=>finishLaunchIntro();
   document.getElementById('brBack').onclick=()=>{ show('brief',false); show('menu',true);if(navigation){navigation.reset();navigation.button.style.display='none';} state=ST.MENU; };
@@ -5894,6 +5897,7 @@ function animate(){
     updateWeatherFx(raw);
   }
   if(sortieService?.active)sortieService.update(raw);
+  updateBombSight(raw);
   // Menu/briefing transitions also fade the engine; pause uses the master gain above.
   updateAudio(raw);
   osmMgr?.updateWater(raw);

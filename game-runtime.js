@@ -68,6 +68,64 @@
  function createQuality(renderer,options){const q=new AdaptiveQuality(renderer,options);qualities.set(renderer,q);return q;}
  function allowEffect(renderer,kind,critical=false){return qualities.get(renderer)?.allow(kind,critical)??true;}
  function setHTML(node,value){if(node&&node.innerHTML!==String(value))node.innerHTML=value;}
+ // A display filter only: bomb release, collision and the predictor stay exact.
+ // Transport the cached point with the aircraft between ballistic samples. A
+ // stationary world-space cache otherwise sawtooths under a moving chase camera.
+ class BombCue{
+  constructor(element){
+   this.element=element;
+   element.innerHTML='<span class="bombPipper">⊕</span><span class="bombCueLabel">BOMB</span>';
+   this.label=element.lastElementChild;this.reset();
+  }
+  reset(){
+   this.hit=null;this.sampled=false;this.timer=0;this.origin={x:0,y:0,z:0};this.view=null;
+   this.x=this.y=null;this.opacity=0;this.width=this.height=0;
+   this.element.hidden=true;this.element.style.opacity='0';this.element.classList.remove('onTarget');
+  }
+  update(dt,{enabled,position,camera,predict,attack=false,releaseAllowed=false}){
+   if(!enabled){this.reset();return;}
+   const width=global.innerWidth,height=global.innerHeight,step=Math.max(0,Math.min(.05,dt||0));
+   if(width!==this.width||height!==this.height){this.reset();this.width=width;this.height=height;}
+   const interval=attack?1/30:.1;
+   this.timer=Math.min(this.timer,interval)-step;
+   if(!this.sampled||this.timer<=1e-6||dt===0){
+    this.hit=predict();this.sampled=true;this.timer=Math.max(this.timer,-interval)+interval;
+    Object.assign(this.origin,{x:position.x,y:position.y,z:position.z});
+   }
+   let targetOpacity=0,ready=false;
+   if(this.hit){
+    if(!this.view)this.view=this.hit.point.clone();
+    this.view.copy(this.hit.point);
+    this.view.x+=position.x-this.origin.x;this.view.y+=position.y-this.origin.y;this.view.z+=position.z-this.origin.z;
+    camera.updateMatrixWorld(true);this.view.project(camera);
+    const p=this.view,x=(p.x*.5+.5)*width,y=(-p.y*.5+.5)*height;
+    if(Number.isFinite(x)&&Number.isFinite(y)&&p.z>=-1&&p.z<=1){
+     // Fade before the edge and the bottom bailout control; never pin a false
+     // impact point to the screen border or flicker hidden at a one-pixel limit.
+     const edge=Math.max(0,Math.min(1,x/36,(width-x)/36,(y-24)/36,(height-80-y)/40));
+     if(edge>0){
+      const error=this.x===null?0:Math.hypot(x-this.x,y-this.y);
+      if(this.x===null||error>Math.min(width,height)*.45){this.x=x;this.y=y;this.opacity=0;}
+      else if(error>.6){
+       const tau=(attack?.055:.16)/(1+error/80),blend=step?1-Math.exp(-step/tau):1;
+       this.x+=(x-this.x)*blend;this.y+=(y-this.y)*blend;
+      }
+      // Green belongs to a current valid release with a settled pipper, never
+      // to a lagging position during a fast turn or a camera cut.
+      ready=!!this.hit.onTarget&&releaseAllowed&&Math.hypot(x-this.x,y-this.y)<8;
+      targetOpacity=edge*(ready?1:attack?.92:.42);
+     }
+    }
+   }
+   this.opacity+=(targetOpacity-this.opacity)*(step?1-Math.exp(-step/.12):1);
+   this.element.hidden=this.opacity<.015;
+   this.element.style.opacity=this.opacity.toFixed(3);
+   this.element.classList.toggle('onTarget',ready);
+   this.label.textContent=ready?'RELEASE':'BOMB';
+   if(this.x!==null)this.element.style.transform='translate3d('+this.x.toFixed(2)+'px,'+this.y.toFixed(2)+'px,0) translate(-50%,-50%)';
+   if(this.element.hidden)this.x=this.y=null;
+  }
+ }
  function stackHUD(doc,top=8){
   const objective=doc.getElementById('obj');if(!objective?.parentNode)return;
   const stack=doc.createElement('div');stack.id='hudStack';
@@ -200,5 +258,5 @@
   });
   return session;
  }
- global.GameRuntime={storage,own,release,segmentDistance,stickInput,rotorStep,render,HintCoach,attachLifecycle,FrameMeter,frames,setHTML,AdaptiveQuality,createQuality,allowEffect,stackHUD};
+ global.GameRuntime={storage,own,release,segmentDistance,stickInput,rotorStep,render,HintCoach,attachLifecycle,FrameMeter,frames,setHTML,AdaptiveQuality,createQuality,allowEffect,stackHUD,BombCue};
 })(typeof window!=='undefined'?window:globalThis);

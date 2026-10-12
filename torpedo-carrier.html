@@ -293,11 +293,12 @@
   .opsMap{display:block;width:100%;height:auto;margin-top:14px;border:1px solid #778168;border-radius:5px;}
   .opsLegend{font:11px/1.5 monospace;color:#d7c797;text-align:left;margin-top:5px;}
   #opsStatus{position:fixed;top:calc(env(safe-area-inset-top) + 76px);left:50%;transform:translateX(-50%);color:#edcc80;background:rgba(14,20,18,.78);padding:5px 9px;font:10px monospace;pointer-events:none;z-index:9;max-width:58vw;text-align:center;}
-  #bombSight{position:fixed;transform:translate(-50%,-50%);color:#ffeac0;text-shadow:0 1px 2px #000;font:bold 13px monospace;pointer-events:none;z-index:8;}#bombSight.onTarget{color:#a5ff8d;}
+  #bombSight{position:fixed;left:0;top:0;width:20px;height:20px;color:#ffeac0;text-shadow:0 1px 2px #000;font:bold 12px monospace;pointer-events:none;z-index:8;will-change:transform,opacity;}#bombSight.onTarget{color:#a5ff8d;}
+  .bombPipper{display:block;text-align:center;font-size:20px;line-height:20px;}.bombCueLabel{position:absolute;left:50%;top:23px;transform:translateX(-50%);white-space:nowrap;}
   .warningLamps{display:flex!important;gap:10px;padding:5px 9px!important;background:#141813dd!important;border:1px solid #535744;border-radius:4px;white-space:nowrap;}
   .warningLamp{color:#646c5c;font:9px monospace;letter-spacing:.35px;} .warningLamp[data-level="1"]{color:#ffd088;text-shadow:0 0 6px #e0a432a0;} .warningLamp[data-level="2"]{color:#ff8c70;text-shadow:0 0 7px #ff6638b0;}
 </style>
-<link rel="stylesheet" href="menu-layout.css?v=190">
+<link rel="stylesheet" href="menu-layout.css?v=191">
 </head>
 <body>
 <div id="app"></div>
@@ -350,7 +351,7 @@
   <div id="flash"></div>
   <div id="ltn" style="position:fixed;inset:0;background:#e6ecff;opacity:0;pointer-events:none;z-index:40;"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 190</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 191</div>
 
   <!-- Optical landing aid -->
   <div id="lso">
@@ -394,7 +395,7 @@
 
 <!-- Menu -->
 <div class="overlay" id="menu" data-campaign="pacific">
-  <div class="menuTop"><a id="selBtn" href="index.html?v=190">&#9664; Change Game</a><span class="menuMeta">PACIFIC OPERATIONS<br>BUILD 190</span></div>
+  <div class="menuTop"><a id="selBtn" href="index.html?v=191">&#9664; Change Game</a><span class="menuMeta">PACIFIC OPERATIONS<br>BUILD 191</span></div>
   <div class="card menuCard">
     <aside class="menuOverview" aria-label="Campaign and pilot options">
     <div class="campaignArt" aria-hidden="true"></div>
@@ -488,7 +489,7 @@
 <script src="okinawa/data.js?v=1"></script>
 <script src="okinawa/world.js?v=175"></script>
 <script src="campaign.js?v=1"></script>
-<script src="game-runtime.js?v=190"></script>
+<script src="game-runtime.js?v=191"></script>
 <script src="terrain-system/AircraftGround.js?v=170"></script>
 <script src="pacific-assets.js?v=157"></script>
 <script src="naval-assets.js?v=173"></script>
@@ -496,11 +497,11 @@
 <script src="combat-fx.js?v=177"></script>
 <script src="aircraft-smoke.js?v=176"></script>
 <script src="aircraft-damage.js?v=177"></script>
-<script src="ship-damage.js?v=190"></script>
-<script src="flight-support.js?v=190"></script>
+<script src="ship-damage.js?v=191"></script>
+<script src="flight-support.js?v=191"></script>
 <script src="ordnance.js?v=157"></script>
 <script src="crew-visuals.js?v=179"></script>
-<script src="deck-activity.js?v=190"></script>
+<script src="deck-activity.js?v=191"></script>
 <script src="ship-wakes.js?v=179"></script>
 <script src="pilot-bailout.js?v=181"></script>
 <script src="enemy-bailouts.js?v=177"></script>
@@ -510,14 +511,14 @@
 <script src="radio-intercept.js?v=157"></script>
 <script src="audio/weapon-sound.js?v=144"></script>
 <script src="audio/flight-atmosphere.js?v=175"></script>
-<script src="sortie-systems.js?v=190"></script>
-<script src="sortie-features.js?v=190"></script>
-<script src="ground-run.js?v=190"></script>
-<script src="flight-indicators.js?v=190"></script>
-<script src="operation-plans.js?v=190"></script>
-<script src="pacific-theater.js?v=190"></script>
-<script src="carrier-recovery.js?v=190"></script>
-<script src="maritime-weather.js?v=190"></script>
+<script src="sortie-systems.js?v=191"></script>
+<script src="sortie-features.js?v=191"></script>
+<script src="ground-run.js?v=191"></script>
+<script src="flight-indicators.js?v=191"></script>
+<script src="operation-plans.js?v=191"></script>
+<script src="pacific-theater.js?v=191"></script>
+<script src="carrier-recovery.js?v=191"></script>
+<script src="maritime-weather.js?v=191"></script>
 <script>
 "use strict";
 /* ============================================================
@@ -582,6 +583,7 @@ let seatMeshG=null, cockpitLight=null, ordTorp=null, ordBombs=null;
 let glassMeshes=[], headX=0, headY=0, headBob=0, pitHideMeshes=[];
 let debris=[];
 let zeros=[], flakPuffs=[], shakeT=0, shakeMag=0, windZ=0,windHead=0;
+const bombCue=new GameRuntime.BombCue(document.getElementById('bombSight'));
 let aeroMode=false;
 function shake(mag){ shakeT=Math.max(shakeT,0.4); shakeMag=Math.max(shakeMag,mag); }
 let hitsTaken=0;
@@ -2112,6 +2114,7 @@ function drawPacificBrief(m){
 }
 
 function startMission(idx){
+  bombCue.reset();
   if(navigation)navigation.reset();
   if(rearArmament)rearArmament.userData.pivot.quaternion.identity();
   finishCarrierIntro();
@@ -2657,16 +2660,10 @@ function bombImpactPrediction(){
   }
   return null;
 }
-let bombSightT=0,bombSightHit=null;
 function updateBombSight(dt=0){
-  const el=document.getElementById('bombSight');
-  if(state!==ST.FLIGHT||!P.alive||P.onDeck||loadout!=='divebomb'||P.torps<=0){el.hidden=true;bombSightHit=null;return;}
-  bombSightT-=dt;if(!bombSightHit||bombSightT<=0||dt===0){bombSightHit=bombImpactPrediction();bombSightT=.1;}
-  const hit=bombSightHit;if(!hit){el.hidden=true;return;}
-  const ndc=hit.point.clone().project(camera),ready=hit.onTarget&&P.pitch<=-.30&&P.pos.y>=25&&P.pos.y<=650;
-  el.hidden=ndc.z>1||ndc.z<0||Math.abs(ndc.x)>1||Math.abs(ndc.y)>1;
-  el.style.left=(ndc.x*.5+.5)*innerWidth+'px';el.style.top=(-ndc.y*.5+.5)*innerHeight+'px';
-  el.classList.toggle('onTarget',ready);el.textContent=ready?'⊕ RELEASE':'⊕ BOMB';
+  bombCue.update(dt,{enabled:state===ST.FLIGHT&&P.alive&&!P.onDeck&&loadout==='divebomb'&&P.torps>0,
+    position:P.pos,camera,predict:bombImpactPrediction,attack:P.pitch<-.18,
+    releaseAllowed:P.pitch<=-.30&&P.pos.y>=25&&P.pos.y<=650});
 }
 function updateBombs(dt){
   for(let i=bombs.length-1;i>=0;i--){
@@ -5239,7 +5236,7 @@ function loadPlaneModel(){
       }
       window.__eyeDbg='EYE '+COCKPIT_EYE.map(v=>v.toFixed(2)).join('/');
       const btEl=document.getElementById('buildTag');
-      if(btEl) btEl.textContent='BUILD 190 · '+window.__eyeDbg;
+      if(btEl) btEl.textContent='BUILD 191 · '+window.__eyeDbg;
       let seat=null;
       model.traverse(function(o){
         if(!o.isMesh||!o.material) return;
@@ -6627,7 +6624,7 @@ function setupUIButtons(){
   if(dbgT2) dbgT2.onclick=()=>{
     dbgOn=!dbgOn; GameRuntime.storage.setItem('dbgOn',dbgOn?'1':'0');
     const db=document.getElementById('dbgBox'); if(db) db.textContent=dbgOn?'✓':'';
-    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 190'; }
+    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 191'; }
   };
   const lu=document.getElementById('lookUp'), ld=document.getElementById('lookDn');
   let _lookT=0;
@@ -6643,7 +6640,7 @@ function setupUIButtons(){
   if(pb) pb.addEventListener('pointerdown',e=>{ e.preventDefault(); togglePause(); });
   const rb=document.getElementById('resumeBtn'); if(rb) rb.onclick=resumeGame;
   const mb=document.getElementById('menuBtn'); if(mb) mb.onclick=exitToMenu;
-  document.getElementById('pauseMainMenu').onclick=()=>{exitToMenu();window.location.href='index.html?v=190';};
+  document.getElementById('pauseMainMenu').onclick=()=>{exitToMenu();window.location.href='index.html?v=191';};
   document.getElementById('resultBtn').onclick=()=>{
     // the logbook borrows this screen from the menu — send the player straight back
     if(logbookOpen){ logbookOpen=false; showOverlay('menu'); return; }
@@ -6886,7 +6883,7 @@ function animate(){
     notice.style.cssText='position:fixed;inset:0;z-index:999998;background:rgba(15,20,15,.95);color:#e8ddbc;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px;text-align:center;font:16px system-ui';
     const title=document.createElement('h2');title.textContent='Simulation interrupted';
     const detail=document.createElement('p');
-    detail.textContent='BUILD 190 · '+(MISSIONS[mission]?.sub||'Menu')+' · '+error.message;
+    detail.textContent='BUILD 191 · '+(MISSIONS[mission]?.sub||'Menu')+' · '+error.message;
     const reload=document.createElement('button');reload.textContent='Reload game';
     reload.style.cssText='padding:12px 24px;font:inherit';reload.onclick=()=>location.reload();
     notice.appendChild(title);notice.appendChild(detail);notice.appendChild(reload);document.body.appendChild(notice);
