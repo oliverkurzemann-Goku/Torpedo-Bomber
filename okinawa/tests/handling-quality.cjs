@@ -37,7 +37,7 @@ for(const theatre of ['europe','pacific']){
  assert.equal(global.FlightIndicators.controlFaults(left),'L AIL / ELEV / L FLAP');
  Damage.reset(left);assert.equal(Damage.status(left),'');assert.equal(global.FlightIndicators.controlFaults(left),'');assert.equal(Damage.controls(left).roll,1);assert.equal(Damage.controls(left).flaps.left,1);
 }
-const komet=make('me163');assert.equal(Damage.surfaceHit(komet,'flap'),null);
+const komet=make('me163');assert.match(Damage.surfaceHit(komet,'flap'),/FLAP JAMMED/);
 for(const roll of [.83,.85,.88,.91,.93]){
  const p=make('p47');assert(Damage.hit(p,25,'',()=>roll));assert(Damage.status(p));
 }

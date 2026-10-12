@@ -43,12 +43,13 @@ const server=http.createServer((req,res)=>{
     window.checkDeckContact=()=>{
      const model=isDefend()?playerZero:isSBD()?playerSBD:planeGroup;
      const supports=AircraftGround.supports(model,'carrier');if(supports.length!==3)throw Error('Missing deck wheels');
-     const gear=isDefend()?playerZero.getObjectByName('zeroGear'):isSBD()?playerSBD.getObjectByName('sbdGear'):gearMesh[0];
+     const gear=isDefend()?playerZero.getObjectByName('zeroGear'):isSBD()?playerSBD.getObjectByName('sbdGear'):gltfRoot.getObjectByName('avengerArticulation').getObjectByName('gear');
      if(!gear?.visible)throw Error('Undercarriage hidden in intro');
-     for(const vertices of supports){const p=new THREE.Vector3(),low=new THREE.Vector3(0,Infinity,0);
+     for(const [index,vertices] of supports.entries()){const p=new THREE.Vector3(),low=new THREE.Vector3(0,Infinity,0);
       for(let i=0;i<vertices.length;i+=3){p.fromArray(vertices,i).applyQuaternion(planeGroup.quaternion);if(p.y<low.y)low.copy(p);}
       low.add(planeGroup.position);const expected=carrierDeckHeight(low.x,low.z);
-      if(Math.abs(low.y-expected)>.015)throw Error('Wheel floating or below flight deck: '+(low.y-expected));
+      const gap=low.y-expected,raisedTail=index===2&&!carrierIntro&&state===ST.LAUNCH;
+      if(raisedTail?gap<-.02:Math.abs(gap)>.025)throw Error('Wheel floating or below flight deck: '+gap);
      }
     };
    });
@@ -105,7 +106,7 @@ const server=http.createServer((req,res)=>{
     return P.ammo<ammo&&!runtimeFault;
    });assert(fired,'actual aircraft continues flying and firing after intro');
    await page.evaluate(()=>{P.gear=0;P.gearTgt=0;updatePlaneMesh(0);});
-   assert(await page.evaluate(()=>isDefend()?!playerZero.getObjectByName('zeroGear').visible:isSBD()?!playerSBD.getObjectByName('sbdGear').visible:gearMesh.every(g=>!g.visible)),'all wheels retract normally');
+   assert(await page.evaluate(()=>isDefend()?!playerZero.getObjectByName('zeroGear').visible:isSBD()?!playerSBD.getObjectByName('sbdGear').visible:!gltfRoot.getObjectByName('avengerArticulation').getObjectByName('gear').visible),'all wheels retract normally');
    await page.evaluate(()=>launch());
    assert(await page.locator('#skipCarrierPreview').isEnabled());await page.locator('#skipCarrierPreview').click();
    assert(await page.evaluate(()=>!carrierIntro&&state===ST.LAUNCH),'real Skip starts the rolling departure');

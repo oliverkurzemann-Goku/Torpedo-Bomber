@@ -5,7 +5,45 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 191 · Thunderbolt Squadron BUILD 191 · Remagen-Kern 23 / Fahrzeuge 22**
+Stand bei Übergabe: **Torpedo Squadron BUILD 192 · Thunderbolt Squadron BUILD 192 · Remagen-Kern 23 / Fahrzeuge 22**
+
+**Build 192 (12.10.2026): mechanisches Fahrwerk, sichtbare Landeklappen und abgestimmter Anfangsflug für alle Muster.**
+aircraft-articulation.js ergänzt die zwölf aktiven Originalmodelle: P47, Bf109,
+Fw190, Ju87, Me262, Me163, Avenger, SBD, Corsair, Zero sowie B17/B24 (AI).
+Bewährtes P47-Rig bleibt; Ju87 behält feste Radverkleidungen, Me163 eine Kufe.
+Bf109 erhält rumpfnahe Gelenke, nach außen klappende Beine und schmale Spur;
+Fw190 sitzt an der gemessenen vorderen Flügelstation. Gerundete Reifen mit
+koaxialen Naben, Gelenken/Oleos/Scheren; Corsair faltet nach hinten und dreht
+die Räder. B24/Me262 haben an die Hauptreifen angepasste Bugbeinlängen.
+GroundSupports werden nach Gelenkbewegung auch in äußeren Modellgruppen invalidiert.
+Original-GLBs unverändert; zusätzliche untere Flügelpanels übernehmen Haut/UVs,
+folgen einzelnen beschädigten Klappen und bleiben eingefahren unsichtbar.
+Quantisierte POSITION/UVs werden nur für temporäre CPU-Ray-Proxies dekodiert.
+Keine neuen Schnitte an den statischen Flügeln, SBD-Divebrakes bleiben erhalten.
+
+Das Kanonenvisier projiziert den Mittelpunkt der tatsächlichen Mündungen entlang
+der Schussrichtung in die aktuelle Kamera. Die Sichtentfernung folgt der Fahrt,
+die Bildschirmposition wird kurz geglättet. Kein Ziel-Lock oder Vorhaltcomputer;
+bestehende Geschossstreuung und Waffenphysik bleiben. BombCue aus Build 191 bleibt.
+
+Alle zehn spielbaren Muster erhalten Beladungs-/Fahrwerks-/Klappenabhängigkeit
+der Anflugsteuerung sowie einen sanft auslaufenden Anfangssteigflug. Bei Props
+und Rakete wächst Fahrt nach Rotation begrenzt statt durch die Cruise-Speed-Feder
+sofort hochzuspringen. Me262 behält sein physisches Spooling. Tail-up und Rotation
+folgen Geschwindigkeit und Piloteneingabe; AircraftGround hält die Hauptreifen
+auf dem Boden, anschließend bleibt die CG-Höhe kontinuierlich. Die bisherige
+APP-Sinkkalibrierung wird erst nach dem Anfangsflug eingeblendet, damit beladene
+Flugzeuge bei echter Rotationsfahrt nicht künstlich wieder absinken.
+Diese Kurven sind Gameplay-Abstimmungen, keine zertifizierten Flugleistungsdaten.
+Manuelles Trägergas, frühes Fangen, Bolter, Wetter und HUD-Stack bleiben erhalten.
+
+aircraft-systems-browser.cjs lädt alle zwölf echten Modelle, prüft bewegte
+Gelenke, asymmetrische Klappen und deren tatsächliche Framebuffer-Pixel. Die zehn
+Flugcontroller werden bei 20/60/120 FPS in Normal/AERO-Konfiguration geprüft;
+reale abgefeuerte Mündungsbahnen stimmen mit dem DOM-Kreiszentrum überein.
+Runway-/Carrier-Start-, Recovery-, BombCue- und Handling-Regressionen verwenden
+die ausgelieferten Funktionen und Originalmodelle. Native QA ist Desktop-Chrome;
+eine physische iPad-/Safari-Freigabe wurde nicht durchgeführt.
 
 **Build 191 (12.10.2026): ruhige, dezentere Bombenanzeige.**
 Nutzer meldete im Geradeausflug stark hüpfenden BOMB-Hinweis, möchte die hilfreiche

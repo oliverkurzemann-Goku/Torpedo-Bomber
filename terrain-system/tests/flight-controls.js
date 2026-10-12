@@ -38,8 +38,8 @@ function flightParts(html,pacific,kind,aeroMode=false){
  const flight=html.indexOf('function updateFlight(dt)');
  const a=html.indexOf(pacific?'  const dmgF = P.hull<60':'  const dmgF = (P.hull < d.hull',flight);
  const b=html.indexOf(pacific?'  // speed toward throttle target':'  // vertical speed:',a);
- const globals={SortieFeatures,MISSIONS:[{corsair:kind==='corsair'}],mission:0,isDefend:()=>kind==='zero',isSBD:()=>kind==='sbd',bankTurnRate,windZ:0};
- const attitude=vm.runInNewContext('(function(P,inputRoll,inputPitch,dt,d,stallSpd){const load=SortieFeatures.Handling.sample(P),controls=SortieFeatures.Damage.controls(P),aeroMode='+aeroMode+',steerSign=1;'+html.slice(a,b)+'})',globals);
+ const globals={SortieFeatures,STALL_SPD:40,MISSIONS:[{corsair:kind==='corsair'}],mission:0,isDefend:()=>kind==='zero',isSBD:()=>kind==='sbd',bankTurnRate,windZ:0};
+ const attitude=vm.runInNewContext('(function(P,inputRoll,inputPitch,dt,d,stallSpd){const load=SortieFeatures.Handling.sample(P),controls=SortieFeatures.Damage.controls(P),configuration=SortieFeatures.Handling.configuration(P,stallSpd),departure=SortieFeatures.Handling.departure(P,dt,stallSpd),aeroMode='+aeroMode+',steerSign=1;'+html.slice(a,b)+'})',globals);
  const i=html.indexOf('  // integrate\n',flight),j=html.indexOf('  // fuel\n',i);
  const integration=pacific?null:vm.runInNewContext('(function(P,dt,windZ){const vs=0;'+html.slice(i,j)+'})',
   {flightAltitudeLimit:()=>8000,clampToWorldBounds(){}});
@@ -130,7 +130,7 @@ for(const speed of [79.99,80,80.01,139.99,140,140.01]){
 // Begin level in strong wind: the turn routine itself must never yaw the nose.
 const a=eu.indexOf('  // bank-to-turn:',eu.indexOf('function updateFlight(dt)')),b=eu.indexOf('  // vertical speed:',a);
 for(const windZ of [-12,0,12]){
- const turn=vm.runInNewContext('(function(P,dt){const load=SortieFeatures.Handling.sample(P),aeroMode=false,d=AC.p47,stallSpd=d.stall;'+eu.slice(a,b)+'})',{SortieFeatures,bankTurnRate,windZ,AC:defs});
+ const turn=vm.runInNewContext('(function(P,dt){const load=SortieFeatures.Handling.sample(P),aeroMode=false,d=AC.p47,stallSpd=d.stall,configuration=SortieFeatures.Handling.configuration(P,stallSpd);'+eu.slice(a,b)+'})',{SortieFeatures,bankTurnRate,windZ,AC:defs});
  const p={ac:'p47',roll:0,spd:150,heading:1.2};for(let i=0;i<1200;i++)turn(p,.05);
  assert.equal(p.heading,1.2,'wind must not turn a wings-level aircraft');
 }

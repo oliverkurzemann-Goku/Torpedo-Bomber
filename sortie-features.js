@@ -10,12 +10,30 @@ const loadProfiles={
  bf109:{fuel:.11,bomb:.085,rocket:.002,tank:.022,tankFuel:.055},
  fw190:{fuel:.12,bomb:.065,rocket:.0025,tank:.025,tankFuel:.06},
  ju87:{fuel:.12,bomb:.055,rocket:.002},me262:{fuel:.14,bomb:.055,rocket:.002},
- me163:{fuel:.20,bomb:0,rocket:0,flaps:false},
+ me163:{fuel:.20,bomb:0,rocket:0},
  avenger:{fuel:.15,bomb:.040,torpedo:.095},sbd:{fuel:.12,bomb:.045},
  corsair:{fuel:.12,bomb:.040,rocket:.0025},zero:{fuel:.10,bomb:.045,torpedo:0}
 };
 const Handling={
  configure(p,kind,weapon='bomb',theatre='europe'){p.loadProfile={kind,weapon,theatre};},
+ configuration(p,stall){
+  const kind=p.loadProfile?.kind||p.ac,gear=kind==='ju87'?0:clamp(p.gear||0,0,1),flap=Damage.controls(p).flaps.mean;
+  const slow=clamp((1.95-p.spd/Math.max(1,stall))/.85,0,1);
+  return {authority:1-(gear*.13+flap*.17)*(.45+.55*slow),bank:1-(gear*.10+flap*.12)*slow,
+   gFactor:1-(gear*.12+flap*.14)*slow,climb:1-gear*.10-flap*.12};
+ },
+ beginDeparture(p){p.departureAge=0;p.departureHeight=p.pos.y;},
+ departure(p,dt,stall){
+  if(p.departureAge==null)return {release:1,rate:Infinity,acceleration:Infinity};
+  p.departureAge+=dt;
+  const kind=p.loadProfile?.kind||p.ac;
+  const initial={p47:8,bf109:10,fw190:9,ju87:5,me262:7,me163:24,avenger:6,sbd:6.5,corsair:10,zero:9}[kind]||7;
+  const phase=clamp(Math.max((p.departureAge-7)/20,(p.pos.y-p.departureHeight-90)/190),0,1),release=phase*phase*(3-2*phase);
+  const rate=(initial+Math.max(0,p.spd-stall*1.22)*.055)*(.35+.65*clamp(p.throttle||0,0,1))*Damage.power(p);
+  if(release>=1)p.departureAge=null;
+  const acceleration={p47:3,bf109:3.8,fw190:3.5,ju87:2,me262:5,me163:8,avenger:2.2,sbd:2.4,corsair:3.8,zero:3.6}[kind]||3;
+  return {release,rate,acceleration};
+ },
  sample(p){
   const config=p.loadProfile,profile=config&&loadProfiles[config.kind];
   if(!profile)return {ratio:1,speed:1,acceleration:1,climb:1,turn:1,inertia:1,stores:0};

@@ -11,7 +11,10 @@ for(const [file,pacific] of [['torpedo-carrier.html',true],['remagen-mission.htm
   camera.position.copy(P.pos).addScaledVector(nd,-30).add(new THREE.Vector3(0,8,0));
   const c=vm.createContext({THREE,camera,P,launchIntro:null,aeroMode,killCam:null,chaseH:6,chaseUp:0,
    APP_SPD:70,MAX_SPD:230,groundY:()=>0,shakeT:0,dbgOn:false,ST:{FLIGHT:1},state:1,
-   document:{querySelector:()=>reticle},window:{innerWidth:1536,innerHeight:927},applyShake(){},noseDir});
+   document:{querySelector:()=>reticle},window:{innerWidth:1536,innerHeight:927},applyShake(){},noseDir,
+   pacificGunMuzzles:()=>[new THREE.Vector3(-3.5,-.11,-2.59),new THREE.Vector3(3.5,-.11,-2.59)],
+   pacificAircraftQuaternion:()=>new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,0,-1),nd)});
+  vm.runInContext(fs.readFileSync(path.join(root,'game-runtime.js'),'utf8'),c);c.GameRuntime=c.window.GameRuntime;
   vm.runInContext(fs.readFileSync(path.join(root,'flight-support.js'),'utf8'),c);
   c.FlightSupport=c.window.FlightSupport;
   vm.runInContext(html.slice(start,end),c);
@@ -21,7 +24,7 @@ for(const [file,pacific] of [['torpedo-carrier.html',true],['remagen-mission.htm
    if(frame>fps){
     const screen=P.pos.clone().project(camera),offsetPixels=screen.x*1536/2;
     assert(Math.abs(offsetPixels)<.05,`${file}: ${degrees} degrees, ${wind} m/s crosswind, ${fps} FPS shifts aircraft ${offsetPixels.toFixed(3)} px`);
-    if(pacific){const aim=P.pos.clone().addScaledVector(nd,400).project(camera);assert(Math.abs(parseFloat(reticle.style.left)-(aim.x*.5+.5)*1536)<.01,'gunsight follows the camera in this frame');}
+    if(pacific){const aim=c.GameRuntime.gunAim(camera,P.pos,c.pacificAircraftQuaternion(),c.pacificGunMuzzles(),nd,P.spd,650);assert(Math.abs(parseFloat(reticle.style.left)-aim.x)<.01,'muzzle-based gunsight follows the camera in this frame');}
     assert((1-screen.y)/2>.5&&(1-screen.y)/2<.7,file+' keeps normal vertical framing');
    }
   }

@@ -10,7 +10,7 @@ function controller(file,start){
   const b=html.indexOf('  // bank-to-turn:',a);
   assert(a>0&&b>a,file+' attitude controller not found');
   return vm.runInNewContext('(function(P,inputRoll,inputPitch,aeroMode,dt,d,stallSpd,steerSign){'+
-    'const load=SortieFeatures.Handling.sample(P),controls=SortieFeatures.Damage.controls(P);'+html.slice(a,b)+'})',{SortieFeatures,isDefend:()=>true,isSBD:()=>false});
+    'const load=SortieFeatures.Handling.sample(P),controls=SortieFeatures.Damage.controls(P),configuration=SortieFeatures.Handling.configuration(P,stallSpd),departure=SortieFeatures.Handling.departure(P,dt,stallSpd);'+html.slice(a,b)+'})',{SortieFeatures,STALL_SPD:40,isDefend:()=>true,isSBD:()=>false});
 }
 function turnController(file){
   const html=fs.readFileSync(path.join(root,file),'utf8');
@@ -24,7 +24,7 @@ function turnController(file){
     assert(start>0&&end>start,file+' turn physics not found');
     bank=vm.runInNewContext(html.slice(start,end+2)+'\nbankTurnRate');
   }
-  return vm.runInNewContext('(function(P,aeroMode,dt,d,stallSpd){const load=SortieFeatures.Handling.sample(P);'+html.slice(a,b)+'})',
+  return vm.runInNewContext('(function(P,aeroMode,dt,d,stallSpd){const load=SortieFeatures.Handling.sample(P),configuration=SortieFeatures.Handling.configuration(P,stallSpd);'+html.slice(a,b)+'})',
     {SortieFeatures,bankTurnRate:bank,windZ:0,AC:{turn:1.3,gLim:7}});
 }
 for(const [file,start,kind] of [
@@ -33,7 +33,7 @@ for(const [file,start,kind] of [
 ]){
   const fly=controller(file,start),turn=turnController(file),p={roll:0,pitch:0,spd:kind==='zero'?105:150,ac:kind,
     hull:130,gear:0,rollBias:0,pitchVel:0,rollVel:0};
-  const d={rollLim:1.56,pitchLim:1.15,pitchAuth:.85,rollAuth:.9,gLim:6,hull:130};
+  const d={rollLim:1.56,pitchLim:1.15,pitchAuth:.85,rollAuth:.9,gLim:6,hull:130,stall:40};
   // The Zero/Thunderbolt normal mode now permits steep banking yet still
   // self-centres when the touch stick is released.
   for(let i=0;i<90;i++)fly(p,1,0,false,.04,d,40,1);

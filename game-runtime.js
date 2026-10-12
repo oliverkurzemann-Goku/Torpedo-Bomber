@@ -68,6 +68,24 @@
  function createQuality(renderer,options){const q=new AdaptiveQuality(renderer,options);qualities.set(renderer,q);return q;}
  function allowEffect(renderer,kind,critical=false){return qualities.get(renderer)?.allow(kind,critical)??true;}
  function setHTML(node,value){if(node&&node.innerHTML!==String(value))node.innerHTML=value;}
+ // A bore-sight at a bounded reference distance, never a target lock or lead
+ // solution. Matches the actual parallel muzzle paths, retaining gun dispersion.
+ function gunAim(camera,position,quaternion,muzzles,direction,airspeed,roundSpeed){
+  const centre=position.clone().set(0,0,0);for(const port of muzzles)centre.add(port);
+  centre.multiplyScalar(1/Math.max(1,muzzles.length)).applyQuaternion(quaternion).add(position);
+  const range=Math.max(220,Math.min(430,roundSpeed*(.34+Math.max(0,airspeed)*.00075)));
+  camera.updateMatrixWorld(true);const point=centre.addScaledVector(direction,range).project(camera);
+  return {x:(point.x*.5+.5)*global.innerWidth,y:(-point.y*.5+.5)*global.innerHeight,visible:point.z>=-1&&point.z<=1&&Math.abs(point.x)<1&&Math.abs(point.y)<1,range};
+ }
+ function showGunAim(element,aim,dt=0){
+  if(!element)return;
+  element.style.display=aim?.visible?'block':'none';if(!aim?.visible){delete element._gunCue;return;}
+  let cue=element._gunCue;
+  if(!cue||Math.hypot(aim.x-cue.x,aim.y-cue.y)>160)cue=element._gunCue={x:aim.x,y:aim.y};
+  const blend=dt?1-Math.exp(-Math.min(.05,dt)/.065):1;
+  cue.x+=(aim.x-cue.x)*blend;cue.y+=(aim.y-cue.y)*blend;
+  element.style.left=cue.x+'px';element.style.top=cue.y+'px';
+ }
  // A display filter only: bomb release, collision and the predictor stay exact.
  // Transport the cached point with the aircraft between ballistic samples. A
  // stationary world-space cache otherwise sawtooths under a moving chase camera.
@@ -258,5 +276,5 @@
   });
   return session;
  }
- global.GameRuntime={storage,own,release,segmentDistance,stickInput,rotorStep,render,HintCoach,attachLifecycle,FrameMeter,frames,setHTML,AdaptiveQuality,createQuality,allowEffect,stackHUD,BombCue};
+ global.GameRuntime={storage,own,release,segmentDistance,stickInput,rotorStep,render,HintCoach,attachLifecycle,FrameMeter,frames,setHTML,AdaptiveQuality,createQuality,allowEffect,stackHUD,BombCue,gunAim,showGunAim};
 })(typeof window!=='undefined'?window:globalThis);

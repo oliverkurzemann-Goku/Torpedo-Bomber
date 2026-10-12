@@ -6,7 +6,7 @@ const html=fs.readFileSync(path.resolve(__dirname,'../../remagen-mission.html'),
 const a=html.indexOf('function relaunch(){'),b=html.indexOf('function startMission(i){',a);
 assert(a>0&&b>a,'real mission launch found');
 const P={pos:new THREE.Vector3(),ac:'me163',gear:1,gearTgt:1,flap:0,flapTgt:0};
-const ctx=vm.createContext({P,THREE,AF_X:23600,AF_Z:25725,RWY_LEN:900,RTILE:4000,RGRID_W:7,RGRID_H:8,ST:{FLIGHT:3},
+const ctx=vm.createContext({P,THREE,SortieFeatures:global.SortieFeatures,AF_X:23600,AF_Z:25725,RWY_LEN:900,RTILE:4000,RGRID_W:7,RGRID_H:8,ST:{FLIGHT:3},
  terrain:{getHeight:()=>180},groundY:()=>180,setThrottleUI:v=>{P.throttle=v;}});
 vm.runInContext(html.slice(a,b),ctx);ctx.relaunch();
 assert.equal(P.onGround,false,'Me 163 starts airborne after trolley release');
@@ -23,7 +23,7 @@ for(let seconds=0;seconds<=90;seconds++){
 const first=html.indexOf('  const stallSpd=speeds.stall;',html.indexOf('function updateFlight(dt){'));
 const last=html.indexOf('  // ---- attitude:',first);
 assert(first>0&&last>first);
-const speed=vm.runInNewContext('(function(P,dt,STALL_SPD,THR_MIN_SPD,MAX_SPD){const load=SortieFeatures.Handling.sample(P),controls=SortieFeatures.Damage.controls(P),speeds=SortieFeatures.Handling.speeds(P,STALL_SPD,52);'+html.slice(first,last)+'})',{SortieFeatures:global.SortieFeatures});
+const speed=vm.runInNewContext('(function(P,dt,STALL_SPD,THR_MIN_SPD,MAX_SPD){const load=SortieFeatures.Handling.sample(P),controls=SortieFeatures.Damage.controls(P),speeds=SortieFeatures.Handling.speeds(P,STALL_SPD,52),departure=SortieFeatures.Handling.departure(P,dt,speeds.stall);'+html.slice(first,last)+'})',{SortieFeatures:global.SortieFeatures});
 P.fuel=0;P.throttle=0;P.pitch=0;P.gear=1;P.spd=155;
 for(let i=0;i<200;i++)speed(P,.05,51,33,238);
 assert(P.spd<140&&P.spd>65,'spent rocket glides and gradually slows instead of receiving idle jet thrust');

@@ -32,7 +32,19 @@ Both current campaigns sample fuel and remaining stores continuously: heavier
 sorties accelerate/climb/turn more slowly and show higher live stall/landing
 references. Individual aileron/elevator damage and jammed left/right flaps affect
 handling, announce a persistent CTRL warning, and are cleared by repair or restart.
-Existing sticks, normal self-centering and AERO controls are unchanged.
+Stick conventions, normal self-centering and AERO controls are retained.
+
+All twelve active aircraft models have visible landing flaps and mechanical
+landing-gear rigs. The P47 keeps its proven rig, Ju87 its fixed fairings and Me163
+its landing skid; B24/Me262 use nose wheels. Left/right flap damage drives each
+visible surface independently. Original GLB assets are unchanged. Landing
+configuration softens controls, and each playable type builds speed and climbs
+more gradually after rotation. Ground stance follows actual tyre vertices while
+the tail rises and the pilot rotates. These are calibrated gameplay curves.
+
+Both gun sights follow the actual muzzle centroid and shot direction through
+the current camera, with a speed-dependent sighting distance and short display
+smoothing. Existing dispersion is retained without automatic target lead.
 
 Carrier departure power and missed-wire rotation are supplied by the pilot.
 Safe early touchdowns roll to the wires; they do not launch the aircraft back into

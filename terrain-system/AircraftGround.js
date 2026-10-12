@@ -75,6 +75,18 @@ const AircraftGround={
     }
     return model.userData.groundSupports=wheels;
   },
+  departureFit(model,kind,x,z,heading,height,speedRatio,rotation,noseSign=1){
+    const fit=this.fit(model,kind,x,z,heading,height);if(!fit)return null;
+    const nose=new THREE.Vector3(0,0,noseSign).applyQuaternion(fit.quaternion),pitch=Math.asin(Math.max(-1,Math.min(1,nose.y)));
+    const fraction=Math.max(0,Math.min(1,(speedRatio-.55)/.55)),tailLift=fraction*fraction*(3-2*fraction);
+    const raise=noseSign*((kind==='me262'||kind==='b24'?0:Math.max(0,pitch)*tailLift)-(rotation||0));
+    const q=fit.quaternion.clone().multiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1,0,0),raise));
+    const point=new THREE.Vector3(),contacts=this.supports(model,kind).map(vertices=>{
+      let low=null;for(let i=0;i<vertices.length;i+=3){point.fromArray(vertices,i).applyQuaternion(q);if(!low||point.y<low.y)low=point.clone();}return low;
+    });
+    const y=(height(x+contacts[0].x,z+contacts[0].z)-contacts[0].y+height(x+contacts[1].x,z+contacts[1].z)-contacts[1].y)/2;
+    return {y,quaternion:q,contacts};
+  },
   fit(model,kind,x,z,heading,height){
     const supports=this.supports(model,kind);if(supports.length!==3)return null;
     const q=new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,1,0),heading);
