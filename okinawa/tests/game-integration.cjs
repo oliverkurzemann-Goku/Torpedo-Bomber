@@ -70,7 +70,7 @@ vm.runInContext(pick('resolveGroundAndDeck','trap'),game);
  assert.match(html,/const last = mission===MISSIONS\.length-2/);
  assert.match(html,/await prepareOkinawa\(\);[\s\S]*?await preparePacificModels\(MISSIONS\[idx\][\s\S]*?startMission\(idx\);/,'all sorties prepare the coastline and models');
  assert.match(html,/if\(shoreMetres>5\.0\)discard/,'reflective sea masks the mapped land');
- assert.match(html,/function exitToMenu\(\)[\s\S]*?setOkinawaActive\(false\);\s*releaseOkinawa\(\)/);
+ assert.match(html,/function exitToMenu\(keepCheckpoint=false\)[\s\S]*?setOkinawaActive\(false\);\s*releaseOkinawa\(\)/);
  const count=world.objectCount;game.releaseOkinawa();
  assert.equal(game.okinawaWorld,null,'Leaving Okinawa releases the cached world');
  assert.equal(world.root.parent,null,'Leaving Okinawa detaches its scene from the renderer');

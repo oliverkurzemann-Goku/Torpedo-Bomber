@@ -5,7 +5,53 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 195 · Thunderbolt Squadron BUILD 195 · Remagen-Kern 23 / Fahrzeuge 22**
+Stand bei Übergabe: **Torpedo Squadron BUILD 196 · Thunderbolt Squadron BUILD 196 · Remagen-Kern 23 / Fahrzeuge 22**
+
+**Build 196 (14.10.2026): iPad-App-Grundlage, lokale Abhängigkeiten und airborne Checkpoints.**
+Nutzer möchte so viel wie möglich Richtung iPad-App umgesetzt. Die beiden aktiven
+HTMLs laden nun checked-in Three r128, FBX/SkeletonUtils und fflate 0.8.3 statt CDNs.
+Capacitor 8.5.3 mit App/Preferences, Swift-Package-Xcode-Projekt, iPad/Querformat/
+Fullscreen, app-private CA92.1-PrivacyInfo als Resource. Kein remote server.url,
+kein Signing-Team/App-Store-Upload, Bundle-ID/Artwork noch Prototyp. build:app erzeugt
+allowlisted dist-app mit etwa 267 MiB; ungenutzte Rootmodelle/Classic/Tools/Repo/Tests
+sind ausgeschlossen, Original-GLB/FBX/DEM-Binaries SHA256-identisch. Native Bridge wird
+nur dort injiziert, Pages bleiben buildless. Mac/Xcode und reales iPad bleiben Gate;
+kein iOS-Compile, WKWebView- oder Hardware-FPS-Nachweis aus Linux behaupten.
+
+sortie-checkpoint.js: Schema1/Compatibility196, zwei CRC-ähnlich checksummierte Slots
+pro Kampagne (FNV, keine Security-Signatur), 2-MiB-Budget, 20s-Autosave und Pause/
+Background/Main Menu. Native Slots werden zusätzlich nach Preferences gespiegelt,
+hydratiert und geordnet geschrieben/gelöscht. Defekte neueste Slots fallen auf
+gültige ältere zurück; Blockade bleibt Session-Fallback, nicht angeblich persistent.
+Generationguard verhindert alte Native-Hydration nach Clear. Continue lädt alle
+benötigten Originalmodelle, restauriert World/Player/Operation/AI/aktive Waffen/
+Schiffe/Flooding/Convoys/Targets/Flares, dann PAUSED bis zum bewussten Resume.
+Keine Kill-/Award-Funktionen beim Restore; zerstörte Ziele werden visuell rekonstruiert.
+Keine Renderer-Ressourcen/Smoke/Debris oder kosmetischen Flugzeuglöcher im Snapshot.
+Takeoff/Ground/Deck/Service/Result/Rescue sind bewusst ausgeschlossen. Abort/neuer
+Start und Ergebnis-/Verlust-/Bailout-Pfade löschen, Main Menu hält den letzten
+zulässigen Airborne-Stand. Browser-Karriere bleibt localStorage; Safari→App-Migration
+und durable Native-Logbook-Backup noch offen. Checkpoint-Resume bleibt kampagnengetrennt.
+
+Vollständige BUILD195-CI hatte genau einen echten Testfehler: Zero schwebte 16–20cm
+über dem gewölbten IJN-Heckdeck. Zentrums-Ebene war dort keine reale Oberfläche.
+ShipContact.surfaceHeight nutzt den vorhandenen geteilten BVH, keine neuen Draws/
+Originalmesh-Änderung. Kontakt fragt tatsächlich getroffene Deckoberfläche ab;
+ein Punkt außerhalb der abgerundeten Modellheckkante hat keine feste Deckfläche.
+Carrier-start misst weiterhin per dekodiertem Original-Raycaster; ship-contact
+vergleicht Reifen mit tatsächlich vorhandenen Decktriangles, nicht einer fiktiven
+Ebene außerhalb des Schiffs. Beide Hauptreifen brauchen Oberfläche vor Touchdown.
+Desktop-Chrome 20/60/120-Decktests bleiben Pflicht.
+
+Neue app-payload.cjs / checkpoint.cjs / checkpoint-browser.cjs prüfen Originalhashes,
+lokale Dependency-Closure, Corruption/Quota/Native-Queue, kaltes echtes Reload/
+Continue/Resume inklusive SBD/Zero/P47, AI/Phasen/Schäden/abgeworfener Bomben ohne
+doppelte Awards. Derselbe Browsertest läuft aus dist-app mit gesperrten externen
+Requests. Alte Startup-VM behält injiziertes r128/GPU-Stub, statt durch den jetzt
+lokalen Vendor-Core den echten WebGLRenderer darüberzuladen. Exit-Regex akzeptiert
+keepCheckpoint-Parameter. APP-DEVELOPMENT.md benennt Geräte-/Signierungsgrenzen;
+APP-ASSET-AUDIT.md lässt Rechtefreigaben ausdrücklich offen, nicht aus CC-Reupload
+oder GitHub-Publikation ableiten. Noch keine TestFlight-/App-Store-Veröffentlichung.
 
 **Build 195 (13.10.2026): reale Schiffskollisionen, kontinuierliche Trägerkontakte und weichere Waldkanten.**
 Spieler-Schiffskollisionen fehlten außerhalb des eigenen Trägers. ShipContact

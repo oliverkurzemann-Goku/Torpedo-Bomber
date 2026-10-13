@@ -136,3 +136,8 @@
   #brief .briefHeading .sub{font-size:10px;}
   #brief .opsMap{max-height:230px;object-fit:contain;}
 }
+#menu .menuActions .checkpointResume{display:block;margin:0;box-sizing:border-box;min-height:52px;padding:10px;
+  font:650 12px/1.3 system-ui;letter-spacing:0;text-transform:none;white-space:normal;background:#bcc7a3;color:#101510;box-shadow:none;border-radius:7px;}
+.menuActions .checkpointResume[hidden]{display:none!important;}
+.menuActions.checkpointAvailable{display:flex;gap:8px;}
+.menuActions.checkpointAvailable>.btn{flex:1;min-width:0;}

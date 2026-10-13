@@ -83,7 +83,7 @@ const server=http.createServer((req,res)=>{
     P.heading=0;P.pitch=-.04;P.roll=.018;P.pitchVel=P.rollVel=0;P.flap=P.flapTgt=P.gear=P.gearTgt=P.hook=P.hookTgt=1;
     P.spd=40;P.throttle=.275;windHead=6;windGust=0;inputPitch=P.pitch/.70;inputRoll=0;
     P.pos.set(carrierX-125,30,0);updatePlaneMesh(0);P.pos.y=carrierContactHeight()+.2;
-    let minGap=Infinity,maxRise=0,minForward=Infinity,grounded=0,time=0;
+    let minGap=Infinity,maxRise=0,minForward=Infinity,grounded=0,time=0,worst=null;
     for(let i=0;i<fps*6&&state===ST.FLIGHT&&P.alive;i++){
      const old=P.pos.clone(),oldX=P.pos.x-carrierX,dt=1/fps;time+=dt;CARRIER_SPD=5;carrierX+=5*dt;carrier.position.x=carrierX;
      for(const hull of [carrierModel,ijnCarrierModel])if(hull){hull.position.x=carrierX;hull.rotation.x=.025*Math.sin(time*.9);hull.rotation.z=.025*Math.cos(time*.7);}
@@ -93,12 +93,18 @@ const server=http.createServer((req,res)=>{
       grounded++;const model=isDefend()?playerZero:isSBD()?playerSBD:planeGroup,plane=carrierDeckPlane(),p=new THREE.Vector3();
       for(const vertices of AircraftGround.supports(model,'carrier'))for(let j=0;j<vertices.length;j+=3){
        p.fromArray(vertices,j).applyQuaternion(planeGroup.quaternion).add(planeGroup.position);
-       minGap=Math.min(minGap,p.y-(plane.y+plane.sx*(p.x-plane.x)+plane.sz*(p.z-plane.z)));
+       // A tyre can overhang the physical stern during early contact. Do not
+       // mistake the fallback reference plane OUTSIDE the hull for solid deck.
+       const reference=plane.y+plane.sx*(p.x-plane.x)+plane.sz*(p.z-plane.z)-.02;
+       const surface=shipContact.surfaceHeight(isDefend()?ijnCarrierModel:carrierModel,p.x,p.z,reference,1.25,null);
+       if(surface!==null){const height=surface+.02,gap=p.y-height;
+        if(gap<minGap){minGap=gap;worst={point:p.toArray(),height,time,carrierX,plane,q:planeGroup.quaternion.toArray(),pos:P.pos.toArray(),onDeck:P.onDeck,arrest:!!P.arrestRun};}
+       }
       }
      }
     }
     const result={kind,fps,alive:P.alive,state,minGap,maxRise,minForward,grounded};
-    if(!P.alive||!grounded||state!==ST.RESULT||minGap<-.002||maxRise>.4||minForward<-.002)throw Error('Rolling carrier penetration/pop/backward motion '+JSON.stringify(result));
+    if(!P.alive||!grounded||state!==ST.RESULT||minGap<-.002||maxRise>.4||minForward<-.002)throw Error('Rolling carrier penetration/pop/backward motion '+JSON.stringify({...result,worst}));
     return result;
    },{kind,fps});console.log('Rolling original-model deck recovery:',result);
   }

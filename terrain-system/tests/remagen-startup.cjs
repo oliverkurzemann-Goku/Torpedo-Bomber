@@ -12,7 +12,9 @@ const c=vm.createContext({THREE:{...THREE,WebGLRenderer:renderer},console:{...co
  fetch:async url=>{requests.push(url);const b=fs.readFileSync(path.join(root,url.split('?')[0]));return {ok:true,json:async()=>JSON.parse(b),arrayBuffer:async()=>b.buffer.slice(b.byteOffset,b.byteOffset+b.byteLength)};}});c.window=c;
 for(const m of html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/g)){
  const src=m[0].match(/src="([^"]+)"/);
- if(src){if(!src[1].startsWith('https:'))vm.runInContext(fs.readFileSync(path.join(root,src[1].split('?')[0]),'utf8'),c,{filename:src[1]});}
+ // The local core is the same pinned r128 already injected above. Do not
+ // overwrite the deliberately GPU-free renderer with the real WebGLRenderer.
+ if(src){if(!src[1].startsWith('https:')&&!src[1].startsWith('vendor/three-r128.min.js'))vm.runInContext(fs.readFileSync(path.join(root,src[1].split('?')[0]),'utf8'),c,{filename:src[1]});}
  else vm.runInContext(m[1],c,{filename:'remagen-mission.html'});
 }
 vm.runInContext('loadModels=()=>{};ensureModel=async()=>null;WorldVehicles.prototype.load=async()=>{};',c);

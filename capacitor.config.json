@@ -1,0 +1,12 @@
+{
+  "appId": "at.kurzemann.squadron",
+  "appName": "Squadron",
+  "webDir": "dist-app",
+  "ios": {
+    "contentInset": "never",
+    "preferredContentMode": "mobile",
+    "scrollEnabled": false,
+    "allowsLinkPreview": false,
+    "backgroundColor": "#101510"
+  }
+}

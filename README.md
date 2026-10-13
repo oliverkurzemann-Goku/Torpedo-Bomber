@@ -1,8 +1,10 @@
 # Torpedo-Bomber
 
 Standalone WW2 flight-sim browser games, plus the real-terrain data pipeline behind two of
-them. No build step — Three.js r128 loaded from a CDN, everything runs directly in the
-browser. Deployed via GitHub Pages, target device is iPad/iPhone Safari.
+them. The two active games run directly from locally bundled Three.js r128 and loaders,
+without a web build step or external CDN dependency. Deployed via GitHub Pages; target
+device is iPad/iPhone Safari. `npm run build:app` also prepares a self-contained Capacitor
+iPad payload and `ios/` contains the native Xcode project. See [APP-DEVELOPMENT.md](APP-DEVELOPMENT.md).
 
 | File | Game |
 |---|---|
@@ -132,7 +134,7 @@ progress or the pilot logbook. Failures do not award these consequences.
 
 ## Running it
 
-No server-side code, no build step. To play locally:
+No server-side code or build step is needed for the browser version. To play locally:
 
 ```bash
 python3 -m http.server 8000

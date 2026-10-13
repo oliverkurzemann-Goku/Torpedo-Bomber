@@ -253,6 +253,7 @@
   const interrupt=reason=>{resetControls();pause(reason);};
   global.addEventListener('blur',()=>interrupt('Window inactive — tap Resume when ready.'));
   global.addEventListener('pagehide',()=>interrupt('Game left in background — sortie paused.'));
+  global.addEventListener('squadronbackground',()=>interrupt('App left in background — sortie paused.'));
   doc.addEventListener('visibilitychange',()=>{
    if(doc.hidden)interrupt('Game left in background — tap Resume when ready.');
   });

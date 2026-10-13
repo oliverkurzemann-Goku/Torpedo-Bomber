@@ -66,6 +66,11 @@
     if(s.sunk&&lost>=1)ship.group.visible=false;return true;
    },
    get(ship){return states.get(ship);},
+   checkpoint(ship){const s=states.get(ship);if(!s)return null;return {systems:{...s.systems},compartments:s.compartments.slice(),breaches:s.breaches.slice(),side:s.side,trim:s.trim,flood:s.flood,sunk:s.sunk,elapsed:s.elapsed,emitT:s.emitT,hits:s.hits.map(h=>({at:h.at.toArray(),fire:h.fire}))};},
+   restoreCheckpoint(ship,saved){if(!saved)return;const s=state(ship);
+    for(const key of ['side','trim','flood','sunk','elapsed','emitT'])s[key]=saved[key];
+    s.systems={...saved.systems};s.compartments=saved.compartments.slice();s.breaches=saved.breaches.slice();s.hits=saved.hits.map(h=>({at:new THREE.Vector3().fromArray(h.at),fire:h.fire}));
+   },
    clear(){for(const s of states.values()){for(const p of s.patches)s.ship.group.remove(p);for(const m of s.surfaces)m.geometry.dispose();}states.clear();},
    dispose(){this.clear();geometry.dispose();material.dispose();}
   };

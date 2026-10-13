@@ -83,6 +83,21 @@ function create(THREE){
    }
   }return false;
  }
+ function surfaceHeight(model,x,z,reference,range=1.25,fallback=reference){
+  const profile=prepare(model);if(!profile.tree)return fallback;
+  model.updateWorldMatrix(true,false);inverse.copy(model.matrixWorld).invert();
+  const start=new THREE.Vector3(x,reference+range,z).applyMatrix4(inverse);
+  const end=new THREE.Vector3(x,reference-range,z).applyMatrix4(inverse);
+  const delta=end.sub(start);let nearest=Infinity,point=null;
+  const visit=n=>{
+   if(!boxHit(n,start.x,start.y,start.z,delta.x,delta.y,delta.z))return;
+   if(n.ids){for(const id of n.ids)if(triangleHit(profile.triangles,id,start.x,start.y,start.z,delta.x,delta.y,delta.z,null)){
+    const hit=stats.lastHit.point,dist=(hit[0]-start.x)**2+(hit[1]-start.y)**2+(hit[2]-start.z)**2;
+    if(dist<nearest){nearest=dist;point=hit;}
+   }}else{visit(n.left);visit(n.right);}
+  };visit(profile.tree);
+  return point?new THREE.Vector3().fromArray(point).applyMatrix4(model.matrixWorld).y:fallback;
+ }
 function probesFor(model,frame,fallback){
   if(!model)return fallback;
   if(model.userData.aircraftShipProbes)return model.userData.aircraftShipProbes;
@@ -113,7 +128,7 @@ function probesFor(model,frame,fallback){
   }
   return model.userData.aircraftShipProbes=probes;
 }
- return {prepare,sweep,probesFor,stats};
+ return {prepare,sweep,probesFor,surfaceHeight,stats};
 }
 root.ShipContact={create};if(typeof module==='object'&&module.exports)module.exports=root.ShipContact;
 })(typeof window==='undefined'?globalThis:window);

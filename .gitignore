@@ -10,3 +10,12 @@ Thumbs.db
 
 # Browser QA images are uploaded by CI.
 test-visuals/
+dist-app/
+dist-app-test-*/
+ios/App/App/public/
+ios/App/App/capacitor.config.json
+ios/App/Pods/
+ios/App/build/
+ios/App/DerivedData/
+*.xcuserstate
+xcuserdata/

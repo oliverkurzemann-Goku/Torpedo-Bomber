@@ -2,12 +2,15 @@
   "name": "torpedo-bomber",
   "version": "1.0.0",
   "private": true,
-  "description": "Standalone WW2 flight-sim HTML games (Three.js r128, no build step) plus the terrain-system real-DEM/OSM pipeline behind remagen-mission.html.",
+  "description": "WW2 WebGL flight games, real DEM/OSM terrain and an offline Capacitor iPad app package.",
   "scripts": {
     "test": "npm run test:syntax && npm run test:terrain && npm run test:okinawa",
     "test:syntax": "node scripts/check-syntax.js",
     "test:terrain": "node scripts/run-terrain-tests.js",
-    "test:okinawa": "node scripts/run-okinawa-tests.js"
+    "test:okinawa": "node scripts/run-okinawa-tests.js",
+    "build:app": "node scripts/build-app.mjs",
+    "app:sync": "npm run build:app && cap sync ios",
+    "app:open": "cap open ios"
   },
   "repository": {
     "type": "git",
@@ -19,7 +22,15 @@
     "url": "https://github.com/oliverkurzemann-Goku/Torpedo-Bomber/issues"
   },
   "homepage": "https://github.com/oliverkurzemann-Goku/Torpedo-Bomber#readme",
+  "dependencies": {
+    "@capacitor/app": "8.1.2",
+    "@capacitor/core": "8.5.3",
+    "@capacitor/ios": "8.5.3",
+    "@capacitor/preferences": "8.0.1"
+  },
   "devDependencies": {
+    "@capacitor/cli": "8.5.3",
+    "esbuild": "0.28.2",
     "@napi-rs/canvas": "^1.0.9",
     "fflate": "^0.8.3",
     "meshoptimizer": "^1.3.0",

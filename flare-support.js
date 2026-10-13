@@ -22,6 +22,10 @@
     if(s.life<=0||s.g.position.y<=groundAt(s.g.position.x,s.g.position.z)+2){s.live=false;s.g.visible=false;s.light.intensity=0;}
    }},
    rearm(){remaining=4;},
+   checkpoint(){return {night,remaining,time,slots:slots.map(s=>({live:s.live,life:s.life,pos:s.g.position.toArray(),velocity:s.velocity.toArray()}))};},
+   restoreCheckpoint(saved){if(!saved)return;night=saved.night;remaining=saved.remaining;time=saved.time;
+    saved.slots.forEach((v,i)=>{const s=slots[i];if(!s)return;s.live=v.live;s.life=v.life;s.velocity.fromArray(v.velocity);s.g.position.fromArray(v.pos);s.g.visible=s.live;s.light.position.copy(s.g.position);s.light.visible=night;s.light.intensity=s.live?1.2:0;});
+   },
    clear(){for(const s of slots){s.live=false;s.g.visible=false;s.light.intensity=0;}remaining=4;},
    get remaining(){return remaining;},get active(){return slots.filter(s=>s.live).length;},get night(){return night;},get slots(){return slots;},
    dispose(){this.clear();for(const s of slots){scene.remove(s.g);scene.remove(s.light);s.g.children[2].geometry.dispose();s.g.children[2].material.dispose();}cloth.dispose();ember.dispose();canopyGeo.dispose();coreGeo.dispose();}
