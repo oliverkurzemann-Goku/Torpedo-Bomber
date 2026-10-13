@@ -15,6 +15,10 @@ const loadProfiles={
  corsair:{fuel:.12,bomb:.040,rocket:.0025},zero:{fuel:.10,bomb:.045,torpedo:0}
 };
 const Handling={
+ // Normal final approach (m/s), not touchdown speed; gameplay reference loading.
+ fieldLanding:{p47:{reference:115*.44704,cleanAdd:5.4,flapGain:6},bf109:{reference:110*.44704,cleanAdd:6,flapGain:7},
+  fw190:{reference:125*.44704,cleanAdd:6,flapGain:7},ju87:{reference:150/3.6,cleanAdd:6.5,flapGain:7},
+  me262:{reference:230/3.6,cleanAdd:8,flapGain:5},me163:{reference:200/3.6,cleanAdd:9,flapGain:10}},
  configure(p,kind,weapon='bomb',theatre='europe'){p.loadProfile={kind,weapon,theatre};},
  configuration(p,stall){
   const kind=p.loadProfile?.kind||p.ac,gear=kind==='ju87'?0:clamp(p.gear||0,0,1),flap=Damage.controls(p).flaps.mean;
@@ -22,14 +26,16 @@ const Handling={
   return {authority:1-(gear*.13+flap*.17)*(.45+.55*slow),bank:1-(gear*.10+flap*.12)*slow,
    gFactor:1-(gear*.12+flap*.14)*slow,climb:1-gear*.10-flap*.12};
  },
- beginDeparture(p){p.departureAge=0;p.departureHeight=p.pos.y;},
+ beginDeparture(p){p.departureAge=0;},
  departure(p,dt,stall){
   if(p.departureAge==null)return {release:1,rate:Infinity,acceleration:Infinity};
   p.departureAge+=dt;
   const kind=p.loadProfile?.kind||p.ac;
-  const initial={p47:8,bf109:10,fw190:9,ju87:5,me262:7,me163:24,avenger:6,sbd:6.5,corsair:10,zero:9}[kind]||7;
-  const phase=clamp(Math.max((p.departureAge-7)/20,(p.pos.y-p.departureHeight-90)/190),0,1),release=phase*phase*(3-2*phase);
-  const rate=(initial+Math.max(0,p.spd-stall*1.22)*.055)*(.35+.65*clamp(p.throttle||0,0,1))*Damage.power(p);
+  const initial={p47:10,bf109:12,fw190:11,ju87:7.5,me262:14,me163:24,avenger:8,sbd:8.5,corsair:12,zero:11}[kind]||9;
+  const climbSpeed={p47:100,bf109:105,fw190:108,ju87:78,me262:140,me163:200,avenger:90,sbd:86,corsair:110,zero:94}[kind]||100;
+  // Only airspeed opens the envelope: waiting or gaining height cannot release it.
+  const entry=stall*1.12,phase=clamp((p.spd-entry)/Math.max(15,climbSpeed-entry),0,1),release=phase*phase*(3-2*phase);
+  const rate=(initial+Math.max(0,p.spd-entry)*.16)*(.35+.65*clamp(p.throttle||0,0,1))*Damage.power(p);
   if(release>=1)p.departureAge=null;
   const acceleration={p47:3,bf109:3.8,fw190:3.5,ju87:2,me262:5,me163:8,avenger:2.2,sbd:2.4,corsair:3.8,zero:3.6}[kind]||3;
   return {release,rate,acceleration};
@@ -45,9 +51,20 @@ const Handling={
    turn:1/Math.sqrt(ratio),inertia:1/Math.pow(ratio,.35),stores};
  },
  speeds(p,stall,reference,flapGain=4,gearGain=2){
-  const load=this.sample(p),controls=Damage.controls(p),limit=(stall+(p.gear||0)*gearGain-controls.flaps.mean*flapGain)*load.speed+controls.stallPenalty;
-  return {stall:limit,warning:limit*1.15,reference:reference*load.speed*(1+controls.flaps.asymmetry*.08),
+  const load=this.sample(p),controls=Damage.controls(p),kind=p.loadProfile?.kind||p.ac;
+  const field=p.loadProfile?.theatre==='europe'?this.fieldLanding[kind]:null;
+  const limit=(stall+(p.gear||0)*gearGain-controls.flaps.mean*(field?.flapGain??flapGain))*load.speed+controls.stallPenalty;
+  let target=field?field.reference+field.cleanAdd*(1-controls.flaps.mean):reference;
+  if(field&&kind==='p47'&&(p.throttle||0)<.05)target+=2.2;
+  target*=load.speed*(1+controls.flaps.asymmetry*.08);
+  if(field)target=Math.max(target,limit*1.25);
+  return {stall:limit,warning:limit*1.15,reference:target,
    low:p.spd<limit*1.15,stalled:p.spd<limit};
+ },
+ fieldSink(p,stall){
+  const controls=Damage.controls(p),speed=Math.max(1,p.spd),supported=stall*1.10;
+  const deficit=clamp(1-speed*speed/(supported*supported),0,1);
+  return deficit*20+controls.flaps.mean*.65*(1-clamp(p.throttle||0,0,1));
  }
 };
 function flyRaider(r,goal,dt){

@@ -106,8 +106,8 @@ for(const fps of [20,60,120])for(const speed of [55,75,80,100,120,140,200]){
  const normal=flightParts(eu,false,'me262').attitude;let max=0;
  for(let i=0;i<8*fps;i++){normal(p,0,1,1/fps,d,d.stall);max=Math.max(max,p.pitch);}
  if(speed<=80){
-  assert(max<.25,'jet rotation/low-speed climb stays gentle');
-  assert(speed*Math.sin(p.pitch)<15,'low-speed climb retains the takeoff envelope');
+  assert(max<.35,'low-speed jet attitude stays below twenty degrees while clearing departure obstacles');
+  assert(speed*Math.sin(p.pitch)<19,'low-speed climb retains a bounded takeoff envelope');
  }else if(speed>=140){
   assert(p.pitch>1,'fast normal flight restores the original full pitch command');
   assert(speed*Math.sin(p.pitch)>100,'fast jet can climb strongly again');

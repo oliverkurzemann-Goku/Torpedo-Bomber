@@ -44,10 +44,10 @@ const server=http.createServer((req,res)=>{
     const cleared=europeOps.ready()&&P.rtb,cutoff=P.fuel===0&&P.throttle===0;
     const pursuers=enemyAir.filter(e=>e.alive&&e.escapeThreat).length;
     // Fly a real gentle skid touchdown on the DEM strip, rather than call landed().
-    P.pos.set(AF_X-200,groundY(AF_X-200,AF_Z)+7,AF_Z);P.heading=RWY_HDG;P.spd=68;
+    P.pos.set(AF_X-350,groundY(AF_X-350,AF_Z)+7,AF_Z);P.heading=RWY_HDG;P.spd=68;
     P.gear=P.gearTgt=1;P.flap=P.flapTgt=.5;P.pitch=-.025;P.roll=P.rollBias=P.pitchVel=P.rollVel=0;P.touchResolved=false;
     inputPitch=-Math.pow(.025/(AC.me163.pitchLim*.92),1/AC.me163.stickExponent);inputRoll=0;
-    for(let i=0;i<fps*15&&!P.onGround&&P.alive;i++){updateFlight(1/fps);updateEuropeOperation(1/fps);}
+    for(let i=0;i<fps*60&&!missionOver&&P.alive;i++){updateFlight(1/fps);updateEuropeOperation(1/fps);}
     // A phantom service cycle must not refill this recovered aircraft.
     sortieService.update(20);
     return {id,fps,count,fuelBefore,cleared,cutoff,pursuers,alive:P.alive,onGround:P.onGround,missionOver,
@@ -92,8 +92,8 @@ const server=http.createServer((req,res)=>{
    }
    return samples;
   });
-  assert(jets.every(s=>s.alive&&(s.type==='departure'?s.rotation>12&&s.rotation<35&&s.pitch<14&&s.vs<15&&!s.ground:s.pitch>45&&s.vs>100&&s.speed>140)),'native Me262 retains slow departure, regains fast climb');
   console.log('Native Me262 slow/fast climb:',jets);
+  assert(jets.every(s=>s.alive&&(s.type==='departure'?s.rotation>12&&s.rotation<35&&s.pitch<19&&s.vs<19&&!s.ground:s.pitch>45&&s.vs>100&&s.speed>140)),'native Me262 clears the runway trees with controlled initial climb and regains fast climb');
   await page.evaluate(()=>{posePlayerAircraft(0);for(let i=0;i<120;i++)updateCamera(.05);setThrottleUI(P.throttle);resetCtlUI();updateHUD();drawMinimap();document.getElementById('flash').classList.remove('show');updateContentVisibility(P.pos.x,P.pos.z);scene.updateMatrixWorld(true);renderer.render(scene,camera);});
   await page.screenshot({path:path.join(out,'build184-me262-fast-climb.png')});
   assert.deepEqual(errors,[]);

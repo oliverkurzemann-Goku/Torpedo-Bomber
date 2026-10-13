@@ -42,6 +42,21 @@ configuration softens controls, and each playable type builds speed and climbs
 more gradually after rotation. Ground stance follows actual tyre vertices while
 the tail rises and the pilot rotates. These are calibrated gameplay curves.
 
+Initial climb now opens with airspeed alone and has enough immediate climb for
+departure clearance. Waiting or gaining altitude does not unlock it. More speed
+provides more climb reserve without a sudden boost toward cruise speed.
+
+Rhine finals use separate full-flap references for all six playable types, in
+MPH, adjusted for fuel, stores and actual flaps. Approach references are distinct
+from touchdown speed. Flaps buy low-speed lift instead of triggering the former
+large APP-based sink penalty; actual slow-flight sinking remains.
+
+After Rhine touchdown, keep straight and bring power to idle: the aircraft rolls
+and brakes to a stop before the debrief, circuit credit or ground service. Wheel
+and skid contact follow the rendered terrain, and the tail settles gradually.
+Power and back-stick allow a touch-and-go; a late touchdown can overrun the strip.
+Both resting and caught carrier arresting wires are black.
+
 Both gun sights follow the actual muzzle centroid and shot direction through
 the current camera, with a speed-dependent sighting distance and short display
 smoothing. Existing dispersion is retained without automatic target lead.

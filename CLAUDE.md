@@ -5,7 +5,57 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 192 · Thunderbolt Squadron BUILD 192 · Remagen-Kern 23 / Fahrzeuge 22**
+Stand bei Übergabe: **Torpedo Squadron BUILD 193 · Thunderbolt Squadron BUILD 193 · Remagen-Kern 23 / Fahrzeuge 22**
+
+**Build 193 (13.10.2026): geschwindigkeitsabhängiger Anfangsflug, Ausrollen und musterabhängige Landereferenzen.**
+Nutzerfeedback: BUILD-192-Anfangsflug zu flach, Freigabe über Höhe unerwünscht.
+Handling.departure öffnet nun ausschließlich nach Airspeed; weder Zeit noch
+Höhe ändern das Envelope. Mehr Grundsteigen direkt nach Rotation; normaler
+positiver Stick wird gegen das Nose-up-Limit begrenzt, statt das schon begrenzte
+Limit erneut mit dem Stick zu multiplizieren. Mehr Fahrt gibt mehr Steigreserve.
+Die Props/Rakete behalten begrenzte Beschleunigung, die mit Fahrt weich zunimmt;
+Me262 behält seinen Schub-/Widerstands-/Steigenergiepfad. Keine neue Liftoff-Injektion.
+
+Thunderbolt zeigt weiterhin MPH, Pacific KT. fieldLanding gibt sechs unabhängige
+Normal-Final-Referenzen bei Spiel-Referenzbeladung und vollen Klappen: P47 115 MPH,
+Bf109 110, Fw190 125, Ju87 150 km/h (~93 MPH), Me262 230 km/h (~143 MPH),
+Me163 200 km/h (~124 MPH). Das sind Anflug-, keine Aufsetzgeschwindigkeiten.
+P47 orientiert sich an AN 01-65BC-1A (Jan.1945: powered 115–120 MPH), Me262 an
+Fritz Wendels RAF-Übersetzung (25.Mai1945: 230–250 km/h Anflug, danach Abfangen
+und langsameres Aufsetzen). Bf109-G6-Training nennt schnelleren Gleitflug und
+160 km/h an der Schwelle, Ju87-B2-Handbuch 150 km/h Anschweben. Fw190/Me163 sind
+Spielabstimmungen, keine vollständige historische Gewichtstabelle. Fuel/Stores,
+fehlende oder asymmetrische Klappen erhöhen die live REF; P47 engine-off hat
+zusätzliche Reserve. Sicherer Abstand zum aktuellen Stall bleibt. Klappen senken
+Stall und Anflugreferenz; der alte APP-basierte hohe Sinkabzug ist im Rhine-Modell
+entfernt. fieldSink setzt unterhalb stall*1.10 eine zunehmende Low-Speed-Senke
+und geringe powerabhängige Klappendrag-Senke an. Wirklicher Stall bleibt gefährlich.
+
+resolveGround misst mit den echten Reifen-/Kufenvertices statt fixer CG-Höhe.
+beginLandingRoll behält Touchdown-Fahrt und Gas. GroundRun.landing rollt mit
+begrenztem Widerstand/Idle-Bremsung bzw. Kufenschleifen aus; AircraftGround.landingFit
+senkt das Heck weich ab und hält die unteren Kontaktpunkte auf dem gerenderten DEM.
+Erst bei Stillstand ruft updateLandingRoll landed() auf: Auswertung, Missionscredit,
+Circuits oder Service erfolgen einmal am Ende. Vollgas plus bewusster Back-Stick
+erlaubt Touch-and-Go; zu spätes/schräges Ausrollen kann zum Runway Overrun führen.
+Der frühere automatische +9m/+5m/s-TOO-FAST-Launch ist entfernt. Für normales
+Ausrollen nach dem Abfangen Idle setzen und mit dem bestehenden Stick geradehalten.
+
+Pacific: gefangenes Seil und vier ruhende Seile sind schwarz (0x080808).
+Ein gepoolter LineSegments-Draw folgt der gerenderten Deckebene beider Träger
+samt Bewegung/Roll; auch die vier Fallback-Deckstreifen sind schwarz.
+BombCue, Fahrwerks-/Klappenrigs, Wetter und manuelle Trägerleistung bleiben erhalten.
+
+Neue field-landing.cjs / field-landing-browser.cjs prüfen sechs tatsächliche
+Originalmodelle bei 20/60/120 FPS: REF/Flap-Senkung, mäßigen realen Final-Sinkflug,
+Kontakt ohne Speed-Jump, kontinuierliches Bremsen, Reifen über dem DEM,
+Stillstand vor Debrief, einmaliges Loggen, Durchstarten und zu spätes Aufsetzen.
+Handling-native prüft beladene Starts und 4/8 Sekunden weitere Baumfreiheit;
+Komet-native wartet jetzt auf das vollständige Ausrollen. Carrier-Recovery prüft
+schwarze ruhende/gefangene Seile. BUILD-192-CI hatte nur eine veraltete Gunsight-
+Fixture: neue Mündungszentrierung mit altem fixen 400m-Ziel verglichen. Chase-Heading
+prüft jetzt tatsächlichen Mündungs-Mittelpunkt und die kurze Display-Glättung.
+Native QA bleibt Desktop-Chrome, keine physische iPad-/Safari-Freigabe.
 
 **Build 192 (12.10.2026): mechanisches Fahrwerk, sichtbare Landeklappen und abgestimmter Anfangsflug für alle Muster.**
 aircraft-articulation.js ergänzt die zwölf aktiven Originalmodelle: P47, Bf109,

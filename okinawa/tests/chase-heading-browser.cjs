@@ -40,17 +40,25 @@ const server=http.createServer((req,res)=>{
      P.heading=(pacific?90-degrees:degrees)*Math.PI/180;P.pitch=P.roll=P.rollBias=P.pitchVel=P.rollVel=0;
      P.gear=P.gearTgt=P.flap=P.flapTgt=0;P.spd=pacific?80/KT:110;P.throttle=.6;inputPitch=inputRoll=0;windZ=6;
      if(pacific)windGust=0;shakeT=0;camera.position.copy(P.pos).addScaledVector(noseDir(),-30).add(new THREE.Vector3(0,8,0));
+     delete (pacific?document.querySelector('.pitReticle'):document.getElementById('gunsight'))._gunCue;
     };
     const before=FlightSupport.centerChase;let legacy=0;
     try{FlightSupport.centerChase=()=>{};setup(120,false);for(let i=0;i<180;i++){updateFlight(1/60);updateCamera(1/60);}camera.updateMatrixWorld(true);legacy=Math.abs(P.pos.clone().project(camera).x*innerWidth/2);}
     finally{FlightSupport.centerChase=before;}
-    const cases=[];let maxOffset=0,maxSight=0;
+    const cases=[];let maxOffset=0,maxSight=0,settledSight=0;
     for(const aero of [false,true])for(const fps of [20,60,120])for(const degrees of [120,289]){
      setup(degrees,aero);
      for(let i=0;i<fps*3;i++){
       updateFlight(1/fps);updateCamera(1/fps);camera.updateMatrixWorld(true);
       const screen=P.pos.clone().project(camera);maxOffset=Math.max(maxOffset,Math.abs(screen.x*innerWidth/2));
-      if(pacific){const reticle=document.querySelector('.pitReticle'),aim=P.pos.clone().addScaledVector(noseDir(),400).project(camera);maxSight=Math.max(maxSight,Math.abs(parseFloat(reticle.style.left)-(aim.x*.5+.5)*innerWidth));}
+      if(pacific){
+       const reticle=document.querySelector('.pitReticle'),ports=pacificGunMuzzles(),q=pacificAircraftQuaternion();
+       const range=Math.max(220,Math.min(430,650*(.34+P.spd*.00075))),aim=new THREE.Vector3();
+       for(const port of ports)aim.add(port.clone().applyQuaternion(q).add(P.pos).addScaledVector(noseDir(),range));
+       aim.divideScalar(ports.length).project(camera);
+       const error=Math.abs(parseFloat(reticle.style.left)-(aim.x*.5+.5)*innerWidth);
+       maxSight=Math.max(maxSight,error);if(i>fps*2.75)settledSight=Math.max(settledSight,error);
+      }
      }
      if(!P.alive)throw Error('Camera check crashed during real flight');
      cases.push({aero,fps,degrees});
@@ -59,11 +67,11 @@ const server=http.createServer((req,res)=>{
     setup(350,false);inputRoll=.08;
     for(let i=0;i<360;i++){if(i===180)inputRoll=0;updateFlight(1/60);updateCamera(1/60);}
     const from=camera.position.clone(),pos=P.pos.clone();clock.getDelta=()=>.05;togglePause();animate();const paused=from.equals(camera.position)&&pos.equals(P.pos);togglePause();
-    return {pacific,legacy,maxOffset,maxSight,cases:cases.length,paused};
+    return {pacific,legacy,maxOffset,maxSight,settledSight,cases:cases.length,paused};
    },pacific);
-   assert(result.legacy>1,'legacy world-space easing reproduces a visible crosswind shift');
-   assert(result.maxOffset<.05&&result.maxSight<.05&&result.paused,'actual flight frames and current gunsight remain centred, including pause');
    console.log('Actual flight/chase-camera regression:',result);
+   assert(result.legacy>1,'legacy world-space easing reproduces a visible crosswind shift');
+   assert(result.maxOffset<.05&&result.maxSight<3&&result.settledSight<.5&&result.paused,'aircraft remains centred and the briefly smoothed gunsight follows the muzzle centroid, including pause');
    for(const degrees of [120,289]){
     await page.evaluate(({pacific,degrees})=>{
      aeroMode=false;P.pos.set(pacific?-4500:AF_X,pacific?170:groundY(AF_X,AF_Z)+600,pacific?0:AF_Z);P.heading=(pacific?90-degrees:degrees)*Math.PI/180;P.pitch=P.roll=P.rollBias=P.pitchVel=P.rollVel=0;P.spd=pacific?80/KT:110;

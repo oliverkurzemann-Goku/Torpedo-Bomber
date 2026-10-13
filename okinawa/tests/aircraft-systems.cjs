@@ -7,11 +7,12 @@ for(const kind of ['p47','bf109','fw190','ju87','me262','me163','avenger','sbd',
  const clean=Handling.configuration(p,40);p.gear=p.flap=1;const landing=Handling.configuration(p,40);
  assert(landing.authority<clean.authority&&landing.bank<clean.bank&&landing.gFactor<clean.gFactor&&landing.climb<clean.climb,'landing response is gently bounded: '+kind);
  assert(landing.authority>.65&&landing.gFactor>.7,'landing control stays usable');
- Handling.beginDeparture(p);let early;
- for(let i=0;i<120;i++){const d=Handling.departure(p,1/60,40);if(i===0)early=d;assert.equal(d.release,0);p.pos.y+=1/60;}
+ p.spd=40*1.12;Handling.beginDeparture(p);let early;
+ for(let i=0;i<120;i++){const d=Handling.departure(p,1/60,40);if(i===0)early=d;assert.equal(d.release,0);p.pos.y+=20;}
  assert(Number.isFinite(early.rate)&&early.rate>4&&early.rate<30,'type-specific initial climb, including rocket exception');
- for(let i=0;i<60*30;i++)Handling.departure(p,1/60,40);
- assert.equal(p.departureAge,null,'initial envelope is released, not a permanent cruise ceiling');
+ for(let i=0;i<60*30;i++)assert.equal(Handling.departure(p,1/60,40).release,0,'time or height cannot release the departure envelope');
+ p.spd=230;Handling.departure(p,1/60,40);
+ assert.equal(p.departureAge,null,'airspeed releases the initial envelope');
  assert.equal(Handling.departure(p,1/60,40).release,1);
 }
 const camera=new THREE.PerspectiveCamera(60,1194/660,.1,30000);

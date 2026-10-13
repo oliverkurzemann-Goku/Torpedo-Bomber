@@ -275,7 +275,7 @@
   .warningLamps{display:flex!important;gap:10px;padding:5px 9px!important;background:#141813dd!important;border:1px solid #535744;border-radius:4px;white-space:nowrap;}
   .warningLamp{color:#646c5c;font:9px monospace;letter-spacing:.35px;} .warningLamp[data-level="1"]{color:#ffd088;text-shadow:0 0 6px #e0a432a0;} .warningLamp[data-level="2"]{color:#ff8c70;text-shadow:0 0 7px #ff6638b0;}
 </style>
-<link rel="stylesheet" href="menu-layout.css?v=192">
+<link rel="stylesheet" href="menu-layout.css?v=193">
 </head>
 <body>
 <!-- ===== TEMP TEST-ONLY VERSION BANNER — asked for by Oliver: "kannst du irgendwo einbauen,
@@ -297,7 +297,7 @@
   <div style="width:100%;height:4px;background:repeating-linear-gradient(45deg,#ffd400,#ffd400 8px,#111 8px,#111 16px);"></div>
   <span id="testVersionBannerText" style="background:#111;color:#ffd400;font-family:monospace;font-weight:800;font-size:11px;letter-spacing:.5px;padding:3px 10px;border:1px solid #ffd400;border-top:none;border-radius:0 0 6px 6px;"></span>
 </div>
-<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 192';</script>
+<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 193';</script>
 <!-- ===== END TEMP TEST-ONLY VERSION BANNER ===== -->
 <div id="app"></div>
 <style>
@@ -338,7 +338,7 @@
   <div id="flash"></div>
   <div id="gunsight"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 192 · REAL RHINE</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 193 · REAL RHINE</div>
 
   <div id="apr">
     <div id="aprCall"></div>
@@ -390,7 +390,7 @@
 </div>
 
 <div class="overlay hidden" id="menu" data-campaign="europe">
-  <div class="menuTop"><a id="selBtn" href="index.html?v=192">&#9664; Change Game</a><span class="menuMeta">RHINE OPERATIONS<br>BUILD 192</span></div>
+  <div class="menuTop"><a id="selBtn" href="index.html?v=193">&#9664; Change Game</a><span class="menuMeta">RHINE OPERATIONS<br>BUILD 193</span></div>
   <div class="card menuCard">
     <aside class="menuOverview" aria-label="Campaign and pilot options">
     <div class="campaignArt" aria-hidden="true"></div>
@@ -502,18 +502,18 @@
 <script src="terrain-system/PeriodBuildings.js?v=175"></script>
 <script src="terrain-system/HistoricalObjectManager.js?v=173"></script>
 <script src="terrain-system/AirfieldDetails.js?v=169"></script>
-<script src="terrain-system/AircraftGround.js?v=170"></script>
+<script src="terrain-system/AircraftGround.js?v=193"></script>
 <script src="terrain-system/AirfieldActivity.js?v=181"></script>
 <script src="terrain-system/WorldVehicles.js?v=172"></script>
 <script src="terrain-system/LivingWorld.js?v=179"></script>
 <script src="campaign.js?v=1"></script>
-<script src="game-runtime.js?v=192"></script>
-<script src="aircraft-articulation.js?v=192"></script>
+<script src="game-runtime.js?v=193"></script>
+<script src="aircraft-articulation.js?v=193"></script>
 <script src="aircraft-rotors.js?v=172"></script>
 <script src="combat-fx.js?v=177"></script>
 <script src="aircraft-smoke.js?v=176"></script>
 <script src="aircraft-damage.js?v=177"></script>
-<script src="flight-support.js?v=192"></script>
+<script src="flight-support.js?v=193"></script>
 <script src="ordnance.js?v=157"></script>
 <script src="crew-visuals.js?v=179"></script>
 <script src="aircraft-finish.js?v=179"></script>
@@ -528,13 +528,13 @@
 <script src="audio/weapon-sound.js?v=144"></script>
 <script src="audio/jet-engine.js?v=144"></script>
 <script src="audio/flight-atmosphere.js?v=175"></script>
-<script src="sortie-systems.js?v=192"></script>
-<script src="sortie-features.js?v=192"></script>
-<script src="ground-run.js?v=192"></script>
+<script src="sortie-systems.js?v=193"></script>
+<script src="sortie-features.js?v=193"></script>
+<script src="ground-run.js?v=193"></script>
 <script src="ground-dust.js?v=181"></script>
-<script src="flight-indicators.js?v=192"></script>
+<script src="flight-indicators.js?v=193"></script>
 <script src="sortie-fuel.js?v=161"></script>
-<script src="operation-plans.js?v=192"></script>
+<script src="operation-plans.js?v=193"></script>
 <script>
 // ============================================================
 //  REMAGEN 1945 — REAL TERRAIN (forked from thunderbolt-europe.html)
@@ -651,37 +651,37 @@ const AC={
   // angle; the carrier game's dive bomber already runs safely at 1.28 rad (73 deg), so 66-72 is
   // conservative by comparison, not a leap into new territory.
   p47:{ name:'P-47D Thunderbolt', rollAuth:0.90, pitchAuth:0.85, turn:0.85, gLim:6.5,
-        rollLim:1.56, pitchLim:1.15, stall:40, app:54, max:190, thrMin:34,
+        rollLim:1.56, pitchLim:1.15, stall:40, app:115*.44704, max:190, thrMin:34,
         hull:130, ammo:3400, bombs:2, rockets:8, gunDmg:1.0, gunRate:0.055, wing:12.4,
         col:0x6e7a63, band:0xf0f0e4 },
   // The Focke-Wulf stays agile, with a gentler centre response and more damping.
   fw190:{ name:'Fw 190A-8', rollAuth:1.20, pitchAuth:0.92, turn:0.92, gLim:5.5,
         stickExponent:1.18, controlDamping:0.94, aeroResponse:0.24,
-        rollLim:1.56, pitchLim:1.20, stall:39, app:53, max:194, thrMin:32,
+        rollLim:1.56, pitchLim:1.20, stall:39, app:125*.44704, max:194, thrMin:32,
         hull:102, ammo:1800, bombs:1, rockets:0, gunDmg:1.5, gunRate:0.075, wing:10.5,
         col:0x7d8478, band:0x2f3a2a },
   bf109:{ name:'Bf 109G-6', rollAuth:1.08, pitchAuth:1.03, turn:1.02, gLim:5.2,
-        rollLim:1.47, pitchLim:1.18, stall:36, app:50, max:196, thrMin:30,
+        rollLim:1.47, pitchLim:1.18, stall:36, app:110*.44704, max:196, thrMin:30,
         hull:88, ammo:1500, bombs:1, rockets:0, gunDmg:1.35, gunRate:0.085, wing:9.9,
         col:0x8d9384, band:0x3d4636 },
   ju87:{ name:'Ju 87B-2 Stuka', rollAuth:0.87, pitchAuth:0.92, turn:0.79, gLim:5.0,
-        rollLim:1.48, pitchLim:1.26, stall:37, app:51, max:113, thrMin:27,
+        rollLim:1.48, pitchLim:1.26, stall:37, app:150/3.6, max:113, thrMin:27,
         hull:115, ammo:1100, bombs:4, rockets:0, gunDmg:1.1, gunRate:0.10, wing:13.8,
         col:0x606950, band:0x343d2f },
   // The Me262: a genuinely different kind of aeroplane, not just another set of numbers on the
   // same curve - real top speed ~870 km/h (242 m/s) against 190-196 for the prop fighters here,
   // and real landing/stall speeds high enough that pilots trained on it specifically for that
-  // (~200/175 km/h approach/stall, both well above every other type). turn/gLim deliberately
+  // (230–250 km/h approach, then decelerate for the flare). turn/gLim deliberately
   // lower than the Bf109/Fw190: this aircraft's real advantage was outrunning a fight, not
   // out-turning one. gunDmg reflects 4x30mm MK108 cannon. The generous total ammo gives the
   // player enough time to use them throughout a sortie; it is a gameplay allowance.
   me262:{ name:'Me 262A-1a/Jabo', rollAuth:1.10, pitchAuth:1.00, turn:0.80, gLim:5.0,
-        rollLim:1.56, pitchLim:1.15, stall:49, app:56, max:242, thrMin:42,
+        rollLim:1.56, pitchLim:1.15, stall:49, app:230/3.6, max:242, thrMin:42,
         hull:95, ammo:1200, bombs:2, rockets:0, gunDmg:3.0, gunRate:0.09, wing:12.51,
         col:0x626b58, band:0x33392a },
   me163:{ name:'Me 163B Komet', rollAuth:1.08, pitchAuth:1.08, turn:1.20, gLim:5.4,
         stickExponent:1.20, controlDamping:0.94, aeroResponse:0.26,
-        rollLim:1.53, pitchLim:1.18, stall:51, app:67, max:238, thrMin:33,
+        rollLim:1.53, pitchLim:1.18, stall:51, app:200/3.6, max:238, thrMin:33,
         hull:75, ammo:160, bombs:0, rockets:0, gunDmg:2.8, gunRate:0.14, wing:9.3,
         col:0x68715f, band:0x353c30 }
 };
@@ -851,7 +851,7 @@ async function loadRealWorld(){
 
   if(OSMManager.BUILD!==23||HistoricalObjectManager.BUILD!==21||LivingWorld.BUILD!==22||WorldVehicles.BUILD!==22) throw new Error('Terrain version mismatch. Reload Remagen.');
   document.getElementById('testVersionBannerText').textContent=
-    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 192 · MODULE 23';
+    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 193 · MODULE 23';
   heightProvider=new DEMHeightProvider(RTILE,'terrain-system/real/data/dem/');
   terrain=new TerrainManager(scene,RTILE,heightProvider);
   osmMgr=new OSMManager(scene,RTILE,terrain,'terrain-system/real/data/osm/');
@@ -4111,6 +4111,7 @@ function updateFlight(dt){
   const departure=SortieFeatures.Handling.departure(P,dt,speeds.stall);
 
   if(P.onGround){
+    if(P.landingRoll){updateLandingRoll(dt,load);return;}
     // ---- ground roll ----
     // Thrust spools up; rolling resistance and drag grow with speed.
     GroundRun.step(P,dt,{jet:P.ac==='me262',power:SortieFeatures.Damage.power(P),massRatio:load.ratio});
@@ -4165,7 +4166,7 @@ function updateFlight(dt){
     P.spd+=(thrust-.00013*P.spd*P.spd-9.81*Math.sin(P.pitch)-P.gear*.7-controls.flaps.mean*1.2-controls.drag*.15)*dt;
   } else {
     let acceleration=(eff-P.spd)*(P.ac==='me163'?1.15:.5)*load.acceleration;
-    if(acceleration>0&&departure.release<1)acceleration=Math.min(acceleration,departure.acceleration*load.acceleration+Math.max(0,acceleration-departure.acceleration*load.acceleration)*departure.release);
+    if(acceleration>0&&departure.release<1)acceleration=Math.min(acceleration,departure.acceleration*load.acceleration*(1+2*departure.release));
     P.spd+=acceleration*dt;
   }
   P.spd = Math.max(6,P.spd);
@@ -4223,12 +4224,12 @@ function updateFlight(dt){
     const initialLimit=Math.asin(Math.min(.6,departure.rate/Math.max(1,P.spd)));
     if(departure.release<1)noseUpLimit=Math.min(noseUpLimit,initialLimit+(noseUpLimit-initialLimit)*departure.release);
     if(P.ac==='me262'){
-      const departure=Math.min(noseUpLimit,Math.asin(Math.min(.65,(10+Math.max(0,P.spd-55)*.055)/P.spd)));
+      const departure=Math.min(noseUpLimit,Math.asin(Math.min(.65,(15+Math.max(0,P.spd-55)*.075)/P.spd)));
       const speedBlend=Math.max(0,Math.min(1,(P.spd-80)/60));
       const release=speedBlend*speedBlend*(3-2*speedBlend);
       noseUpLimit=departure+(noseUpLimit-departure)*release;
     }
-    const pitchTarget=commandPitch*(commandPitch>0?noseUpLimit:d.pitchLim*.92);
+    const pitchTarget=commandPitch>0?Math.min(commandPitch*d.pitchLim*.92,noseUpLimit):commandPitch*d.pitchLim*.92;
     P.pitchVel=(P.pitchVel||0)+(pitchRate*pitchRate*(pitchTarget-P.pitch) - 2*zeta*pitchRate*P.pitchVel)*dt;
     P.pitch += P.pitchVel*dt;
     const neutral=Math.abs(inputRoll)<.001;
@@ -4261,18 +4262,11 @@ function updateFlight(dt){
   }
 
   // vertical speed: climb from attitude + speed-dependent lift
-  const approachLiftRef=(APP_SPD-controls.flaps.mean*6)*load.speed;
-  // Rotation already requires flying speed. The approach descent calibration
-  // must not force a newly airborne, loaded aircraft back onto the runway.
-  const liftRefSpd=Math.min(approachLiftRef,stallSpd*1.10+(approachLiftRef-stallSpd*1.10)*departure.release);
   let vs = P.spd*Math.sin(P.pitch);
-  if(P.spd < liftRefSpd){
-    const k = 1-(P.spd*P.spd)/(liftRefSpd*liftRefSpd);
-    vs -= k*24;   // tuned so the throttle band that gives a flyable descent is usable, not knife-edge
-    if(P.spd < stallSpd){
-      P.pitch -= (stallSpd-P.spd)*0.02*dt;
-      if(!P.stallWarnT||P.stallWarnT<=0){ P.stallWarnT=1.6; flash('STALL',600); sfxAlarm(); }
-    }
+  vs-=SortieFeatures.Handling.fieldSink(P,stallSpd);
+  if(P.spd < stallSpd){
+    P.pitch -= (stallSpd-P.spd)*0.02*dt;
+    if(!P.stallWarnT||P.stallWarnT<=0){ P.stallWarnT=1.6; flash('STALL',600); sfxAlarm(); }
   }
   if(P.stallWarnT>0) P.stallWarnT-=dt;
   if(vs>0){if(departure.release<1)vs=Math.min(vs,departure.rate+Math.max(0,vs-departure.rate)*departure.release);vs*=load.climb*configuration.climb;}
@@ -4338,7 +4332,22 @@ function resolveGround(dt){
   const APP_SPD=SortieFeatures.Handling.speeds(P,acDef().stall,acDef().app).reference;
   const gy=groundY(P.pos.x,P.pos.z);
   const agl=P.pos.y-gy;
-  if(agl>2.4){ P.touchResolved=false; return; }
+  if(agl>12){ P.touchResolved=false; return; }
+  let gap=agl-2.4;
+  if(P.gear>.6&&typeof playerModel!=='undefined'&&playerModel){
+    if(P.ac==='p47')poseP47Gear(playerModel,P.gear);
+    AircraftArticulation.pose(playerModel,P.gear,SortieFeatures.Damage.controls(P).flaps);
+    const gear=playerModel.getObjectByName('gear');if(gear)gear.visible=true;
+    const q=new THREE.Quaternion().setFromEuler(new THREE.Euler(-P.pitch,P.heading,-P.roll,'YXZ')),point=new THREE.Vector3();
+    const supports=AircraftGround.supports(playerModel,P.ac);
+    if(supports.length===3){gap=Infinity;
+      for(const vertices of supports){let low=null;
+        for(let i=0;i<vertices.length;i+=3){point.fromArray(vertices,i).applyQuaternion(q);if(!low||point.y<low.y)low=point.clone();}
+        low.add(P.pos);gap=Math.min(gap,low.y-AircraftGround.height(terrain,low.x,low.z));
+      }
+    }
+  }
+  if(gap>.06){P.touchResolved=false;return;}
   if(P.touchResolved) return;
   P.touchResolved=true;
   const sink=-P.vSpeed;
@@ -4350,10 +4359,9 @@ function resolveGround(dt){
   if(!onRwy){
     // a field landing: survivable only if you are slow, level and gentle
     if(sink<4.5 && P.spd<APP_SPD+8 && wingsLevel && (P.gear>0.6||SortieFeatures.Damage.belly(P,sink,APP_SPD+8)) && Math.abs(P.pitch)<0.22){
-      P.onGround=true; P.spd*=0.8; P.vSpeed=0; P.pos.y=gy+2.0;
       flash('DOWN IN A FIELD',1800);
       radioSay('YOU ARE DOWN IN ONE PIECE — THAT WILL DO');
-      landed(false); return;
+      beginLandingRoll(false,gap);return;
     }
     crash('CRASHED','Hit the ground away from the strip.'); return;
   }
@@ -4362,11 +4370,38 @@ function resolveGround(dt){
   if(P.gear<.6)radioSay('BELLY LANDING — KEEP HER STRAIGHT, RESCUE CREW STANDING BY');
   if(!wingsLevel){ crash('WINGTIP','Dropped a wing on touchdown.'); return; }
   if(hdgErr>28){ crash('OFF THE CENTRELINE','Landed across the strip instead of along it.'); return; }
-  if(P.spd>APP_SPD+34){ flash('TOO FAST — GO AROUND',1400); sfxBolter();
-    P.pos.y=gy+9; P.vSpeed=5; P.pitch=0.12; P.spd=Math.max(P.spd,APP_SPD+6);
-    P.touchResolved=false; return; }
-  P.onGround=true; P.vSpeed=0; P.pos.y=gy+2.0;
-  landed(true);
+  beginLandingRoll(true,gap);
+}
+function beginLandingRoll(onStrip,gap){
+  P.landingRoll={onStrip,elapsed:0,travel:0,contactPitch:P.pitch,touchSpeed:P.spd,belly:P.gear<.6};
+  P.onGround=true;P.vSpeed=0;P.pitchVel=P.rollVel=0;P.departureAge=null;
+  P.pos.y-=Math.min(0,gap);P.groundPower=P.throttle;firing=false;
+  const reference=SortieFeatures.Handling.speeds(P,acDef().stall,acDef().app).reference;
+  flash(P.ac==='me163'?'SKID DOWN — KEEP STRAIGHT':P.spd>reference+12?'FAST TOUCHDOWN — IDLE TO BRAKE':'TOUCHDOWN — IDLE TO BRAKE, KEEP STRAIGHT',2200);
+}
+function updateLandingRoll(dt,load=SortieFeatures.Handling.sample(P)){
+  const run=P.landingRoll;if(!run)return;
+  const step=GroundRun.landing(P,dt,{jet:P.ac==='me262',skid:P.ac==='me163',offField:!run.onStrip,
+    power:SortieFeatures.Damage.power(P),massRatio:load.ratio});
+  P.heading+=inputRoll*steerSign*Math.min(.25,P.spd*.012)*dt;
+  P.pos.x+=Math.sin(P.heading)*step.travel;P.pos.z+=Math.cos(P.heading)*step.travel;
+  P.roll*=Math.exp(-dt*5);P.groundPose=null;
+  const vr=(acDef().stall*load.speed+SortieFeatures.Damage.controls(P).stallPenalty)*1.12;
+  if(P.gear>.6&&playerModel){
+    const fit=AircraftGround.landingFit(playerModel,P.ac,P.pos.x,P.pos.z,P.heading,
+      (x,z)=>AircraftGround.height(terrain,x,z),P.spd/vr,run.contactPitch,run.elapsed);
+    if(fit){P.groundPose=fit;P.pos.y=fit.y;
+      P.pitch=Math.asin(Math.max(-1,Math.min(1,new THREE.Vector3(0,0,1).applyQuaternion(fit.quaternion).y)));
+    }
+  }else{P.pitch*=Math.exp(-dt*3);P.pos.y=groundY(P.pos.x,P.pos.z)+1.0;}
+  if(run.onStrip&&(Math.abs(P.pos.x-AF_X)>RWY_LEN/2+40||Math.abs(P.pos.z-AF_Z)>RWY_W/2+8)&&P.spd>12){
+    P.landingRoll=null;crash('RUNWAY OVERRUN','Ran off the landing strip before stopping.');return;
+  }
+  if(P.ac!=='me163'&&!run.belly&&P.throttle>.82&&inputPitch>.15&&P.spd>vr){
+    P.landingRoll=null;P.onGround=false;P.touchResolved=true;P.groundPose=null;
+    SortieFeatures.Handling.beginDeparture(P);flash('GOING AROUND — BUILD SPEED',1300);return;
+  }
+  if(step.stopped){P.spd=0;P.landingRoll=null;landed(run.onStrip);}
 }
 
 // ============================================================
@@ -4460,7 +4495,7 @@ function landed(onStrip){
 //  MISSION START
 // ============================================================
 function relaunch(){
-  P.departureAge=null;P.takeoffRotation=0;P.groundPose=null;
+  P.departureAge=null;P.takeoffRotation=0;P.groundPose=null;P.landingRoll=null;
   // Spawn height sampled at the plane's OWN x/z, not the single centre-point AF_Y — the real
   // DEM relief across this 900m strip varies up to +-3.5 units from AF_Y (measured directly
   // against the loaded tile data), so AF_Y+2.0 alone could leave the plane sitting well above
@@ -4820,12 +4855,14 @@ function updateHUD(){
   const lb=document.getElementById('hAltLbl'); if(lb) lb.textContent=nearField?'FIELD':'AGL';
   GameRuntime.setHTML(document.getElementById('hSpd'),Math.round(P.spd*KT)+'<small> MPH</small>');
   const flight=AC[P.ac],speeds=SortieFeatures.Handling.speeds(P,flight.stall,flight.app),stall=speeds.stall;
-  const low=state===ST.FLIGHT&&P.alive&&!P.onGround&&P.spd<stall*1.15;
+  const configured=P.gear>.4&&P.departureAge==null;
+  const low=state===ST.FLIGHT&&P.alive&&!P.onGround&&P.spd<Math.max(stall*1.15,configured?speeds.reference-4:0);
   document.getElementById('hSpd').style.color=low?'#ff574c':'';
   const ref=document.getElementById('landingRef');
   ref.hidden=state!==ST.FLIGHT||!P.alive||P.onGround||!(P.gear>.4||nearField&&P.spd<flight.app*1.3);
-  ref.textContent='REF '+Math.round(speeds.reference*KT)+' MPH'+(low?' · LOW SPEED':P.flap<.8?' · FLAPS DOWN':'');
+  ref.textContent='REF '+Math.round(speeds.reference*KT)+' MPH'+(low?' · TOO SLOW':P.flap<.8?' · FLAPS DOWN':' · FULL FLAPS');
   ref.style.color=low?'#ff574c':'';
+  if(P.landingRoll){ref.hidden=false;ref.textContent=P.ac==='me163'?'SKID RUN — KEEP STRAIGHT':P.throttle<.15?'ROLL OUT — KEEP STRAIGHT':'ROLL OUT — IDLE TO BRAKE';}
   GameRuntime.setHTML(document.getElementById('hAlt'),Math.max(0,Math.round(ftAlt))+'<small> FT</small>');
   const hdg=((P.heading*R2D)%360+360)%360;
   document.getElementById('hHdg').textContent=String(Math.round(hdg)%360).padStart(3,'0');
@@ -5387,7 +5424,7 @@ function showResult(good,title,sub,html,btn){
 // AC[...].col (the same colour it's rendered in in-flight) so the badge doubles as a legend.
 const ACSHORT={p47:'P-47',bf109:'BF 109',fw190:'FW 190',ju87:'JU 87',me262:'ME 262',me163:'ME 163'};
 function acHex(kind){ return '#'+(AC[kind]&&AC[kind].col!==undefined?AC[kind].col:0x888888).toString(16).padStart(6,'0'); }
-function landingSpeedNote(m){return 'LANDING TARGET: ~'+Math.round(AC[m.ac||'p47'].app*KT)+' MPH · '+AC[m.ac||'p47'].name+(m.ac==='me163'?' · SKID DOWN.':m.ac==='ju87'?' · GEAR FIXED.':'.');}
+function landingSpeedNote(m){return 'FINAL APPROACH: ~'+Math.round(AC[m.ac||'p47'].app*KT)+' MPH WITH FULL FLAPS · '+AC[m.ac||'p47'].name+(m.ac==='me163'?' · SKID DOWN.':m.ac==='ju87'?' · GEAR FIXED.':'.')+' Live REF follows fuel, stores and actual flaps. Flare, then idle and keep straight until stopped.';}
 function buildMenu(){
   const sel=document.getElementById('missionSel');
   if(sel && !sel.childElementCount){
@@ -5614,6 +5651,7 @@ function exitToMenuFromPause(){
   show('pauseMenu',false);
   if(eng) eng.master.gain.setTargetAtTime(0.0001,actx.currentTime,0.05);
   state=ST.MENU;
+  P.landingRoll=null;
   clearDropTank();syncTankButton();
   document.getElementById('bailBtn').style.display='none';
   document.getElementById('opsStatus').textContent='';
@@ -5748,7 +5786,7 @@ function init(){
   buildMenu();
   // menu wiring
   document.getElementById('startBtn').onclick=()=>showBrief(selectedMission);
-  document.getElementById('pauseMainMenu').onclick=()=>{exitToMenuFromPause();window.location.href='index.html?v=192';};
+  document.getElementById('pauseMainMenu').onclick=()=>{exitToMenuFromPause();window.location.href='index.html?v=193';};
   document.getElementById('logBtn').onclick=()=>{ show('menu',false); showLogbook(); };
   document.getElementById('skipLaunchPreview').onclick=()=>finishLaunchIntro();
   document.getElementById('brBack').onclick=()=>{ show('brief',false); show('menu',true);if(navigation){navigation.reset();navigation.button.style.display='none';} state=ST.MENU; };

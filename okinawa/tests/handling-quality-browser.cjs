@@ -30,13 +30,20 @@ const server=http.createServer((req,res)=>{
     const takeoffs=await page.evaluate(fps=>{
      return [0,MISSIONS.findIndex(m=>m.id==='final'),MISSIONS.findIndex(m=>m.id==='jetstrike'),MISSIONS.findIndex(m=>m.id==='jetjabo')].map(index=>{
       startMission(index);finishLaunchIntro(false);show('menu',false);show('brief',false);state=ST.FLIGHT;inputRoll=0;inputPitch=.6;P.throttle=1;
+      const originalCrash=crash;let crashReason=null;
+      crash=(title,message)=>{crashReason={title,message,pos:P.pos.toArray(),agl:P.pos.y-groundY(P.pos.x,P.pos.z)};originalCrash(title,message);};
       const mass=SortieFeatures.Handling.sample(P).ratio,start=P.pos.x;let time=0;
       while(P.onGround&&P.alive&&time<35){updateFlight(1/fps);time+=1/fps;}
       const distance=P.pos.x-start,rotation=time;
       if(!P.alive||P.onGround||distance>RWY_LEN-140)throw Error('Loaded runway departure failed '+JSON.stringify({mission:MISSIONS[index].id,fps,mass,time,distance,spd:P.spd}));
       for(let i=0;i<fps*4;i++)updateFlight(1/fps);
-      if(!P.alive||P.onGround||P.pos.y-groundY(P.pos.x,P.pos.z)<10)throw Error('Loaded aircraft cannot continue climbing '+JSON.stringify({mission:MISSIONS[index].id,fps,mass,rotation,distance,alive:P.alive,ground:P.onGround,agl:P.pos.y-groundY(P.pos.x,P.pos.z),spd:P.spd,title:document.getElementById('resTitle')?.textContent}));
-      return {mission:MISSIONS[index].id,fps,mass,rotation,distance};
+      const agl4=P.pos.y-groundY(P.pos.x,P.pos.z),speed4=P.spd;
+      if(!P.alive||P.onGround||agl4<20)throw Error('Loaded aircraft cannot continue climbing '+JSON.stringify({mission:MISSIONS[index].id,fps,mass,rotation,distance,alive:P.alive,ground:P.onGround,agl:agl4,spd:P.spd,title:document.getElementById('resTitle')?.textContent}));
+      for(let i=0;i<fps*4;i++)updateFlight(1/fps);
+      const agl8=P.pos.y-groundY(P.pos.x,P.pos.z);
+      crash=originalCrash;
+      if(!P.alive||P.onGround||agl8<agl4+20||(P.ac!=='me262'&&P.spd<=speed4))throw Error('Departure loses tree clearance '+JSON.stringify({mission:MISSIONS[index].id,fps,agl4,agl8,speed4,speed8:P.spd,alive:P.alive,crashReason}));
+      return {mission:MISSIONS[index].id,fps,mass,rotation,distance,agl4,agl8,speed4,speed8:P.spd};
      });
     },fps);console.log('Original loaded runway departures:',takeoffs);
    }

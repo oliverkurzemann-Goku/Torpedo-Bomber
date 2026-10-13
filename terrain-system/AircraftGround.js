@@ -66,7 +66,7 @@ const AircraftGround={
       const runner=model.getObjectByName('gear');
       if(runner){const b=new THREE.Box3();runner.traverse(o=>{if(o.isMesh&&visible(o)){
         const v=vertices(o);for(let i=0;i<v.length;i+=3)b.expandByPoint(point.fromArray(v,i));
-      }});return model.userData.groundSupports=[
+      }});if(b.isEmpty())return [];return model.userData.groundSupports=[
         [b.min.x,b.min.y,b.min.z],[b.max.x,b.min.y,b.min.z],[(b.min.x+b.max.x)/2,b.min.y,b.max.z]];}
     }
     for(const zone of zones){let low=null;
@@ -85,6 +85,16 @@ const AircraftGround={
       let low=null;for(let i=0;i<vertices.length;i+=3){point.fromArray(vertices,i).applyQuaternion(q);if(!low||point.y<low.y)low=point.clone();}return low;
     });
     const y=(height(x+contacts[0].x,z+contacts[0].z)-contacts[0].y+height(x+contacts[1].x,z+contacts[1].z)-contacts[1].y)/2;
+    return {y,quaternion:q,contacts};
+  },
+  landingFit(model,kind,x,z,heading,height,speedRatio,contactPitch,elapsed){
+    const fit=this.departureFit(model,kind,x,z,heading,height,speedRatio,0);if(!fit)return null;
+    const contact=new THREE.Quaternion().setFromEuler(new THREE.Euler(-contactPitch,heading,0,'YXZ'));
+    const q=contact.slerp(fit.quaternion,1-Math.exp(-elapsed/.75)),point=new THREE.Vector3();
+    const contacts=this.supports(model,kind).map(vertices=>{
+      let low=null;for(let i=0;i<vertices.length;i+=3){point.fromArray(vertices,i).applyQuaternion(q);if(!low||point.y<low.y)low=point.clone();}return low;
+    });
+    const y=Math.max(...contacts.map(p=>height(x+p.x,z+p.z)-p.y));
     return {y,quaternion:q,contacts};
   },
   fit(model,kind,x,z,heading,height){

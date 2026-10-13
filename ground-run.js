@@ -15,5 +15,19 @@
   p.spd=Math.max(0,Math.min(options.limit||90,speed+(thrust-drag-brake)*dt));
   return p.spd;
  }
- root.GroundRun={step};if(typeof module==='object'&&module.exports)module.exports=root.GroundRun;
+ function landing(p,dt,options={}){
+  dt=Math.max(0,Math.min(.05,dt));
+  const speed=Math.max(0,p.spd),throttle=Math.max(0,Math.min(1,p.throttle||0)),run=p.landingRoll;
+  if(!run)return {travel:0,stopped:false};
+  run.elapsed+=dt;
+  p.groundPower=(p.groundPower??throttle)+(throttle-(p.groundPower??throttle))*(1-Math.exp(-dt/(options.jet?2.6:1.1)));
+  const rough=options.offField?1.6:1,skid=options.skid||run.belly;
+  const drag=rough*((skid?2.1:.85)+speed*speed*(skid?.0015:.0008));
+  const brake=skid?0:throttle<.15?1.35*(1-Math.exp(-run.elapsed/.7)):0;
+  const thrust=skid?0:(options.jet?6.8:5.5)*p.groundPower*(options.power??1)/(options.massRatio||1);
+  p.spd=Math.max(0,speed+(thrust-drag-brake)*dt);
+  const travel=(speed+p.spd)*.5*dt;run.travel+=travel;
+  return {travel,stopped:p.spd<.65&&run.elapsed>=3};
+ }
+ root.GroundRun={step,landing};if(typeof module==='object'&&module.exports)module.exports=root.GroundRun;
 })(typeof window==='undefined'?globalThis:window);

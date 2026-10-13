@@ -140,6 +140,8 @@ const server=http.createServer((req,res)=>{
    weather='clear';applyWeather();seaState=0;for(const s of ships)s.alive=false;
    P.pos.set(carrierX-82,30,1);P.heading=0;P.pitch=-.06;P.roll=0;P.spd=40;P.flap=P.flapTgt=P.gear=P.gearTgt=P.hook=P.hookTgt=1;
    P.pos.y=carrierContactHeight();P.vSpeed=-2.4;resolveGroundAndDeck(1/60);
+   updateDeckArrestWires();
+   if(!arrestCable||arrestCable.material.color.getHex()!==0x080808||deckArrestWires.material.color.getHex()!==0x080808||deckArrestWires.geometry.attributes.position.count!==8)throw Error('Caught and resting arresting wires must be black');
    for(let i=0;i<42;i++){updateFlight(1/60);updatePlaneMesh(1/60);}
    updateFlash(5);updateHUD();camera.position.copy(P.pos).add(new THREE.Vector3(-23,7,0));camera.lookAt(P.pos.clone().add(new THREE.Vector3(9,-1.5,0)));scene.updateMatrixWorld(true);renderer.render(scene,camera);
   });
