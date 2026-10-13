@@ -77,7 +77,10 @@ const server=http.createServer((req,res)=>{
     }
     return {alive:P.alive,rotation,maxPitchDegrees:maxPitch*180/Math.PI,maxVS,lowSpeedPitchDegrees:lowSpeedPitch*180/Math.PI,lowSpeedVS,maxAccel,speed:P.spd,height:P.pos.y-groundY(P.pos.x,P.pos.z)};
   });
-  assert(jet.alive&&jet.rotation>12&&jet.rotation<35&&jet.lowSpeedPitchDegrees<14&&jet.lowSpeedVS<15&&jet.maxAccel<8&&jet.height>50,'actual Me262 full-stick takeoff has gentle low-speed climb/continuous thrust');console.log('Live Me262 takeoff, ten seconds held back-stick:',jet);
+  console.log('Live Me262 takeoff, ten seconds held back-stick:',jet);
+  // Build 193 raises low-speed climb enough to clear the actual runway-end trees.
+  // Keep the same bounded pitch/VSI contract as the other native jet fixtures.
+  assert(jet.alive&&jet.rotation>12&&jet.rotation<35&&jet.lowSpeedPitchDegrees<20&&jet.lowSpeedVS<19&&jet.maxAccel<8&&jet.height>50,'actual Me262 full-stick takeoff clears obstacles with bounded low-speed climb/continuous thrust');
   for(const ac of ['p47','me262']){
     const proof=await page.evaluate(async ac=>{
       await ensureModel(ac);startMission(MISSIONS.findIndex(m=>m.ac===ac&&!m.free&&!m.circuits));finishLaunchIntro(false);P.throttle=1;inputPitch=inputRoll=0;

@@ -56,7 +56,33 @@ const server=http.createServer((req,res)=>{
    }
    // An actual valid ground/deck contact reaches the turnaround path. Keep the
    // same targets, operation state and accumulated score across the next start.
-   await page.evaluate(p=>{window.__targets=p?ships.slice():targets.slice();window.__operation=p?pacificOps:europeOps;window.__score=score;P.fuel=15;P.hull=40;P.ammo=0;P.alive=true;P.roll=P.pitch=0;P.gear=P.gearTgt=1;P.spd=40;P.throttle=0;P.vSpeed=-1;P.touchResolved=false;if(p){P.torps=0;P.heading=0;P.hook=P.hookTgt=1;P.pos.set(carrierX+(WIRE_X0+WIRE_X1)/2,DECK_Y+1.4,0);resolveGroundAndDeck(1/60);if(!P.arrestRun||sortieService.active)throw Error('Recovery must finish arrest before deck service');for(let i=0;i<180&&!sortieService.active;i++){updateFlight(1/60);updatePlaneMesh(1/60);}}else{P.bombs=P.rockets=0;P.heading=RWY_HDG;P.pos.set(AF_X,groundY(AF_X,AF_Z)+1.5,AF_Z);resolveGround(1/60);for(let i=0;i<120&&!sortieService.active;i++)updateFlight(1/60);}if(!sortieService.active)throw Error('Landing did not begin service');},pacific);
+   const recovery=await page.evaluate(p=>{
+    window.__targets=p?ships.slice():targets.slice();window.__operation=p?pacificOps:europeOps;window.__score=score;
+    P.fuel=15;P.hull=40;P.ammo=0;P.alive=true;P.onGround=false;P.roll=P.pitch=0;P.gear=P.gearTgt=1;P.spd=40;P.throttle=0;P.vSpeed=-1;P.touchResolved=false;inputPitch=inputRoll=0;
+    let elapsed=0;
+    if(p){
+     P.torps=0;P.heading=0;P.hook=P.hookTgt=1;P.pos.set(carrierX+(WIRE_X0+WIRE_X1)/2,DECK_Y+1.4,0);resolveGroundAndDeck(1/60);
+     if(!P.arrestRun||sortieService.active)throw Error('Recovery must finish arrest before deck service');
+     for(let i=0;i<180&&!sortieService.active;i++){updateFlight(1/60);updatePlaneMesh(1/60);elapsed+=1/60;}
+    }else{
+     P.bombs=P.rockets=0;P.heading=RWY_HDG;P.landingRoll=null;P.departureAge=null;P.pos.set(AF_X-250,groundY(AF_X-250,AF_Z)+20,AF_Z);posePlayerAircraft(0);
+     // Put the actual extended tyres at contact, rather than a guessed CG height.
+     const q=new THREE.Quaternion().setFromEuler(new THREE.Euler(0,P.heading,0,'YXZ')),point=new THREE.Vector3();let contactY=-Infinity;
+     for(const vertices of AircraftGround.supports(playerModel,P.ac)){
+      let low=null;for(let i=0;i<vertices.length;i+=3){point.fromArray(vertices,i).applyQuaternion(q);if(!low||point.y<low.y)low=point.clone();}
+      contactY=Math.max(contactY,AircraftGround.height(terrain,P.pos.x+low.x,P.pos.z+low.z)-low.y);
+     }
+     P.pos.y=contactY+.04;resolveGround(1/60);
+     if(!P.landingRoll||sortieService.active||fieldServicePending||P.spd!==40)throw Error('Contact must begin rollout before field service');
+     for(let i=0;i<3600&&!sortieService.active&&P.alive;i++){
+      updateFlight(1/60);elapsed+=1/60;
+      if(P.landingRoll&&(sortieService.active||fieldServicePending))throw Error('Service begins before rollout finishes');
+     }
+     if(elapsed<7||P.spd!==0||P.landingRoll)throw Error('Field turnaround skipped continuous braking');
+    }
+    if(!sortieService.active)throw Error('Landing did not begin service '+JSON.stringify({elapsed,alive:P.alive,speed:P.spd}));
+    return {elapsed,speed:P.spd};
+   },pacific);console.log('Recovery before service:',{game,...recovery});
    const servicePause=await page.evaluate(()=>{togglePause();const t=sortieService.elapsed;animate();if(state!==ST.PAUSED||sortieService.elapsed!==t)throw Error('Service continues while paused');togglePause();return true;});assert(servicePause);
    await page.evaluate(()=>{const draw=GameRuntime.render;GameRuntime.render=()=>{};try{for(let i=0;i<800;i++)animate();}finally{GameRuntime.render=draw;}if(!sortieService.ready||P.fuel!==100||P.ammo<=0||P.hull!==(P.systemDamage?.maxHull||100))throw Error('Fuel/armament/repair did not complete');});
    await page.locator('#serviceLaunch').click();

@@ -5,7 +5,20 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 193 · Thunderbolt Squadron BUILD 193 · Remagen-Kern 23 / Fahrzeuge 22**
+Stand bei Übergabe: **Torpedo Squadron BUILD 194 · Thunderbolt Squadron BUILD 194 · Remagen-Kern 23 / Fahrzeuge 22**
+
+**Build 194 (13.10.2026): CI-Fixtures an BUILD-193-Ausrollen und Baumfreiheit angeglichen.**
+Beim Statuscheck waren Pages erfolgreich, aber zwei alte native Tests rot:
+combat-sorties-browser erwartete nach 2 Sekunden Bodenservice mit fixer CG-Höhe;
+water-ditching-browser hielt noch die alten Me262-Grenzen von 14°/15 m/s fest.
+Der Combat-Test setzt die echten ausgefahrenen Reifen an den gerenderten Boden,
+verlangt kontinuierliches Ausrollen ohne frühen Service und wartet bis zum
+Stillstand. Ziele, Operation und Score müssen durch Service/Relaunch erhalten bleiben.
+Der Jet-Test protokolliert die reale Zehn-Sekunden-Abflugbahn und verwendet
+dieselben begrenzten 20°/19-m/s-Low-Speed-Werte wie die BUILD-193-Jet-Fixtures;
+lange Rollzeit, stetiger Schub, Baumfreiheit und Überleben bleiben Pflicht.
+Keine Änderung an Flug-/Landungsphysik oder Originalmodellen. Native QA bleibt
+Desktop-Chrome; keine physische iPad-/Safari-Zertifizierung.
 
 **Build 193 (13.10.2026): geschwindigkeitsabhängiger Anfangsflug, Ausrollen und musterabhängige Landereferenzen.**
 Nutzerfeedback: BUILD-192-Anfangsflug zu flach, Freigabe über Höhe unerwünscht.
