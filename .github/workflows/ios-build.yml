@@ -1,0 +1,64 @@
+name: iPad app build
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ['main', 'feat/ipad-foundation-196']
+    paths:
+      - '.github/workflows/ios-build.yml'
+      - 'ios/**'
+      - 'app/**'
+      - 'capacitor.config.json'
+      - 'scripts/build-app.mjs'
+      - 'package.json'
+      - 'package-lock.json'
+  pull_request:
+    paths:
+      - '.github/workflows/ios-build.yml'
+      - 'ios/**'
+      - 'app/**'
+      - 'capacitor.config.json'
+      - 'scripts/build-app.mjs'
+      - 'package.json'
+      - 'package-lock.json'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ipad-build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  simulator:
+    runs-on: macos-15
+    timeout-minutes: 15
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_26.3.app/Contents/Developer
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: xcodebuild -version
+      - run: npm ci
+      - name: Bundle local game and synchronize native project
+        run: npm run app:sync
+      - name: Compile unsigned iPad simulator app
+        shell: bash
+        run: |
+          set -o pipefail
+          xcodebuild -project ios/App/App.xcodeproj -scheme App \
+            -configuration Debug -sdk iphonesimulator \
+            -destination 'generic/platform=iOS Simulator' \
+            -derivedDataPath "$RUNNER_TEMP/squadron-native-qa" \
+            CODE_SIGNING_ALLOWED=NO build 2>&1 | tee ios-build.log
+      - name: Retain compiler diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-compiler-diagnostics
+          path: ios-build.log
+          if-no-files-found: ignore
+          retention-days: 7
