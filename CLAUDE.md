@@ -5,7 +5,43 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 194 · Thunderbolt Squadron BUILD 194 · Remagen-Kern 23 / Fahrzeuge 22**
+Stand bei Übergabe: **Torpedo Squadron BUILD 195 · Thunderbolt Squadron BUILD 195 · Remagen-Kern 23 / Fahrzeuge 22**
+
+**Build 195 (13.10.2026): reale Schiffskollisionen, kontinuierliche Trägerkontakte und weichere Waldkanten.**
+Spieler-Schiffskollisionen fehlten außerhalb des eigenen Trägers. ShipContact
+dekodiert die Originalmesh-Triangles einschließlich normalisierter/interleaved
+POSITION einmal je Template und baut eine geteilte BVH. Gesweepte Rumpf-/Nasen-/
+Heck-/Flügelproben folgen tatsächlichen Hautvertices; entfernte Schiffe lösen
+keine Triangle-Tests aus. Targets, SupportFleet und beide Heimträger sind erfasst;
+die vorhandene Deckoberseite bleibt beim gültigen Anflug dem Reifenkontakt vorbehalten.
+Rhine-Fähren verwenden dieselbe Prüfung, mit kleinem vorherigem Distanzfenster.
+Original-GLBs, Waffen-Schadenspfade und Draw-Calls unverändert.
+
+CarrierContactHeight aktualisiert die mechanische Gear-Pose vor dem Ablesen.
+Deckdatum wird fest am Schiffs-Mittelpunkt gemessen, nicht an einer beliebigen
+aktuellen Spielerposition. Alle Reifenvertices werden gegen die geneigte Ebene
+geprüft. Deck-/Arrest-Runs aktualisieren den Ground-Fit bereits in der Physik;
+der Renderer integriert ihn nicht nochmals. Bolter-Release hält den Kontaktguard
+bis zur echten Bodenfreiheit. Qualifikations-Zwischenlandungen wechseln nach dem
+Seilstopp in Deckservice und warten auf READY; der alte sofortige launch()-Sprung
+zum Heck ist entfernt. Bei physischer Galerie-/Aufbautenkollision gibt es keinen
+falschen Recovery-Credit; Off-centre-Fixtures nutzen einen freien Deckkorridor.
+
+Waldkanten: kleine deterministische Einbuchtungen innerhalb der realen Polygone,
+keine zusätzlichen Bäume. Die bestehende 128px-Landcover-Textur erhält einen
+weicheren, gewellten Übergang; eine temporäre Distance-Map wird nur beim Backen
+erzeugt. Tile-Clip-Kanten erzeugen keinen neuen Waldspalt. Unveränderte Shader,
+Texturmaße, Instanz-/Materialgruppen und kein zusätzlicher Frame-Update-Pfad.
+Native Vergleichsansicht des echten Rhine-Tiles 3,3: jeweils 7 Draw-Calls / 3
+Texturen; 6050→5635 Baumgruppen und 501356→474552 gerenderte Dreiecke.
+
+ship-contact-browser prüft sechs Originalschiffe bei drei Ausrichtungen und
+20/60/120 FPS, freie Luft, Allied-Flight-Crash, konstante BVH-Profile sowie vier
+Originalflugzeuge auf rollendem Deck bei drei Frameraten: keine Penetration,
+kein Rückwärtsjump, Qualifikation wartet auf den Spieler. woodland-edge-browser
+prüft echte Framebuffer-Differenz, Budgets/Seams und tatsächlichen P47-Fährenhit.
+Bestehende Carrier-Recovery und Weather/Gear-Prüfungen bleiben erforderlich.
+Desktop-Chrome ist keine physische iPad-/Safari-Zertifizierung.
 
 **Build 194 (13.10.2026): CI-Fixtures an BUILD-193-Ausrollen und Baumfreiheit angeglichen.**
 Beim Statuscheck waren Pages erfolgreich, aber zwei alte native Tests rot:

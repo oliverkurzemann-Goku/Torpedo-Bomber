@@ -540,7 +540,7 @@ class OSMManager {
     return osmWaterOverlaps(osmBuildingFootprint(b,x,z),2,index && index.water);
   }
 
-  _forestPlacements(polys, ox, oz, exclusion=null){
+  _forestPlacements(polys, ox, oz, exclusion=null,softEdge=true){
     const placements = [];
     const usedCells = new Set();
     const standCells=new Map();
@@ -568,6 +568,13 @@ class OSMManager {
           if(!pointInPolygon(px,pz,world)) continue;
           if(this._treeExcluded(px,pz,exclusion)) continue;
 
+          const edge=osmRingEdgeDistance(px,pz,world);
+          // Scallop inward only: no new trees outside the mapped woodland, and
+          // no artificial clearing along polygon edges clipped to tile seams.
+          const border=Math.min(px-ox,pz-oz,ox+this.tileSize-px,oz+this.tileSize-pz);
+          const inset=Math.max(4,13+8*Math.sin(px*.019+1.8*Math.sin(pz*.006))+7*Math.sin(pz*.027+Math.cos(px*.011)));
+          if(softEdge&&edge<inset&&edge<border-.1)continue;
+
           // Low-frequency density produces irregular glades without the square
           // checkerboard of per-tree random thinning.
           const density=0.88+0.10*osmValueNoise(px/420,pz/420,88);
@@ -579,7 +586,6 @@ class OSMManager {
           if(usedCells.has(cell)) continue;
           usedCells.add(cell);
 
-          const edge=osmRingEdgeDistance(px,pz,world);
           const stand=osmValueNoise(px/310,pz/310,91);
           // Species change in broad, blended stands. Shrubs favour real polygon
           // edges; individual-tree hash only softens the boundaries.
@@ -639,9 +645,9 @@ class OSMManager {
     return radius;
   }
 
-  _buildForests(group, polys, ox, oz, exclusion=null){
+  _buildForests(group, polys, ox, oz, exclusion=null,softEdge=true){
     if(!polys || polys.length === 0) return 0;
-    const placements = this._forestPlacements(polys, ox, oz, exclusion);
+    const placements = this._forestPlacements(polys, ox, oz, exclusion,softEdge);
     if(placements.length === 0) return 0;
 
     const conifers = placements.filter(p => p.kind === 0);

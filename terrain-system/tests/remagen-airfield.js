@@ -23,7 +23,7 @@ global.fetch=async url=>{
   const html=fs.readFileSync(path.join(root,'remagen-mission.html'),'utf8');
   // Execute the actual mission integration, not a duplicated constructor invocation.
   const start=html.indexOf('let airfield=null,'),end=html.indexOf('// ===',start);
-  const context=vm.createContext({THREE,AirfieldDetails,AirfieldActivity,terrain,osmMgr:osm,scene,
+  const context=vm.createContext({THREE,ShipContact:require('../../ship-contact.js'),AirfieldDetails,AirfieldActivity,terrain,osmMgr:osm,scene,
     AF_X:6000,AF_Z:15800,ALLIED_AF_X:6000,ALLIED_AF_Z:15800,
     GERMAN_AF_X:23600,GERMAN_AF_Z:25725,RWY_LEN:900,RWY_W:40});
   vm.runInContext(html.slice(start,end)+'\nbuildAirfield(); globalThis.field=airfieldDetails;',context);

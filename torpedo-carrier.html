@@ -298,7 +298,7 @@
   .warningLamps{display:flex!important;gap:10px;padding:5px 9px!important;background:#141813dd!important;border:1px solid #535744;border-radius:4px;white-space:nowrap;}
   .warningLamp{color:#646c5c;font:9px monospace;letter-spacing:.35px;} .warningLamp[data-level="1"]{color:#ffd088;text-shadow:0 0 6px #e0a432a0;} .warningLamp[data-level="2"]{color:#ff8c70;text-shadow:0 0 7px #ff6638b0;}
 </style>
-<link rel="stylesheet" href="menu-layout.css?v=194">
+<link rel="stylesheet" href="menu-layout.css?v=195">
 </head>
 <body>
 <div id="app"></div>
@@ -351,7 +351,7 @@
   <div id="flash"></div>
   <div id="ltn" style="position:fixed;inset:0;background:#e6ecff;opacity:0;pointer-events:none;z-index:40;"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 194</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 195</div>
 
   <!-- Optical landing aid -->
   <div id="lso">
@@ -395,7 +395,7 @@
 
 <!-- Menu -->
 <div class="overlay" id="menu" data-campaign="pacific">
-  <div class="menuTop"><a id="selBtn" href="index.html?v=194">&#9664; Change Game</a><span class="menuMeta">PACIFIC OPERATIONS<br>BUILD 194</span></div>
+  <div class="menuTop"><a id="selBtn" href="index.html?v=195">&#9664; Change Game</a><span class="menuMeta">PACIFIC OPERATIONS<br>BUILD 195</span></div>
   <div class="card menuCard">
     <aside class="menuOverview" aria-label="Campaign and pilot options">
     <div class="campaignArt" aria-hidden="true"></div>
@@ -489,20 +489,21 @@
 <script src="okinawa/data.js?v=1"></script>
 <script src="okinawa/world.js?v=175"></script>
 <script src="campaign.js?v=1"></script>
-<script src="game-runtime.js?v=194"></script>
-<script src="aircraft-articulation.js?v=194"></script>
-<script src="terrain-system/AircraftGround.js?v=194"></script>
+<script src="game-runtime.js?v=195"></script>
+<script src="aircraft-articulation.js?v=195"></script>
+<script src="terrain-system/AircraftGround.js?v=195"></script>
 <script src="pacific-assets.js?v=157"></script>
-<script src="naval-assets.js?v=173"></script>
+<script src="naval-assets.js?v=195"></script>
 <script src="aircraft-rotors.js?v=172"></script>
 <script src="combat-fx.js?v=177"></script>
 <script src="aircraft-smoke.js?v=176"></script>
 <script src="aircraft-damage.js?v=177"></script>
-<script src="ship-damage.js?v=194"></script>
-<script src="flight-support.js?v=194"></script>
+<script src="ship-damage.js?v=195"></script>
+<script src="ship-contact.js?v=195"></script>
+<script src="flight-support.js?v=195"></script>
 <script src="ordnance.js?v=157"></script>
 <script src="crew-visuals.js?v=179"></script>
-<script src="deck-activity.js?v=194"></script>
+<script src="deck-activity.js?v=195"></script>
 <script src="ship-wakes.js?v=179"></script>
 <script src="pilot-bailout.js?v=181"></script>
 <script src="enemy-bailouts.js?v=177"></script>
@@ -512,14 +513,14 @@
 <script src="radio-intercept.js?v=157"></script>
 <script src="audio/weapon-sound.js?v=144"></script>
 <script src="audio/flight-atmosphere.js?v=175"></script>
-<script src="sortie-systems.js?v=194"></script>
-<script src="sortie-features.js?v=194"></script>
-<script src="ground-run.js?v=194"></script>
-<script src="flight-indicators.js?v=194"></script>
-<script src="operation-plans.js?v=194"></script>
-<script src="pacific-theater.js?v=194"></script>
-<script src="carrier-recovery.js?v=194"></script>
-<script src="maritime-weather.js?v=194"></script>
+<script src="sortie-systems.js?v=195"></script>
+<script src="sortie-features.js?v=195"></script>
+<script src="ground-run.js?v=195"></script>
+<script src="flight-indicators.js?v=195"></script>
+<script src="operation-plans.js?v=195"></script>
+<script src="pacific-theater.js?v=195"></script>
+<script src="carrier-recovery.js?v=195"></script>
+<script src="maritime-weather.js?v=195"></script>
 <script>
 "use strict";
 /* ============================================================
@@ -945,6 +946,13 @@ function releaseOkinawa(){
 //  INIT
 // ============================================================
 let combatFX=null,aircraftSmoke=null,aircraftDamage=null,enemyBailouts=null,shipDamage=null,flareSupport=null,sortieService=null,deckServiceX=0;
+const shipContact=ShipContact.create(THREE);
+ShipContact.instance=shipContact;
+const shipAircraftProbes=[[0,0,0],[0,-.65,0],[0,.65,0],[0,0,-4.5],[0,0,4.5],[-7,0,-.7],[-4.5,0,-.7],[-2,0,-.7],[2,0,-.7],[4.5,0,-.7],[7,0,-.7]];
+const shipWingProbes={};
+for(const [kind,span,y,z] of [['avenger',14*MODEL_SCALE,-.15,-.2],['sbd',12.7,.2,-.1],['corsair',12.49,-1,-1.5],['zero',11,-.1,-1]]){
+  shipWingProbes[kind]=shipAircraftProbes.slice(0,5).concat([-.98,-.65,-.30,.30,.65,.98].map(f=>[span/2*f,y,z]));
+}
 let runtimeSession=null,releaseHeldControls=()=>{};
 let flightCoach=new GameRuntime.HintCoach();
 const pacificModelTasks=new Map();
@@ -2389,19 +2397,22 @@ function upgradeShipsToTemplate(type, template){
 }
 
 let carrierIntro=null;
-function carrierDeckHeight(x,z){
+function carrierDeckPlane(){
   const hull=isDefend()?ijnCarrierModel:carrierModel;
-  if(!hull)return CARRIER_TARGET_DECK_Y+.02;
+  if(!hull)return {x:carrierX,y:CARRIER_TARGET_DECK_Y+.02,z:0,sx:0,sz:0};
   hull.updateWorldMatrix(true,false);
   const nominal=isDefend()?IJN_DECK_Y_MODEL:CARRIER_DECK_Y_MODEL;
   if(hull.userData.contactDeckY==null){
-    const reference=new THREE.Vector3(0,nominal,0).applyMatrix4(hull.matrixWorld).y;
-    const measured=AircraftGround.surfaceHeight(hull,P.pos.x,P.pos.z,reference);
-    hull.userData.contactDeckY=hull.worldToLocal(new THREE.Vector3(P.pos.x,measured,P.pos.z)).y;
+    const centre=new THREE.Vector3(0,nominal,0).applyMatrix4(hull.matrixWorld);
+    const measured=AircraftGround.surfaceHeight(hull,centre.x,centre.z,centre.y);
+    hull.userData.contactDeckY=hull.worldToLocal(new THREE.Vector3(centre.x,measured,centre.z)).y;
   }
   const centre=new THREE.Vector3(0,hull.userData.contactDeckY,0).applyMatrix4(hull.matrixWorld);
   const normal=new THREE.Vector3(0,1,0).applyQuaternion(hull.quaternion);
-  return centre.y-(normal.x*(x-centre.x)+normal.z*(z-centre.z))/normal.y+.02;
+  return {x:centre.x,y:centre.y+.02,z:centre.z,sx:-normal.x/normal.y,sz:-normal.z/normal.y};
+}
+function carrierDeckHeight(x,z){
+  const plane=carrierDeckPlane();return plane.y+plane.sx*(x-plane.x)+plane.sz*(z-plane.z);
 }
 function carrierAircraftReady(){
   return !!(isDefend()?playerZero?.userData.fromTemplate&&ijnCarrierModel:
@@ -2409,13 +2420,18 @@ function carrierAircraftReady(){
 }
 function carrierContactHeight(q=pacificAircraftQuaternion()){
   const model=isDefend()?playerZero:isSBD()?playerSBD:planeGroup;
-  if(P.gear<.5)return carrierDeckHeight(P.pos.x,P.pos.z)+.75;
+  // Update mechanical deployment before reading the contacts, not one rendered frame later.
+  const frame=isDefend()?playerZero?.getObjectByName('zeroGear')?.parent:isSBD()?playerSBD?.getObjectByName('sbdGear')?.parent:gltfRoot?.getObjectByName('avengerArticulation');
+  if(frame)AircraftArticulation.pose(frame,P.gear,SortieFeatures.Damage.controls(P).flaps);
+  const plane=carrierDeckPlane(),height=(x,z)=>plane.y+plane.sx*(x-plane.x)+plane.sz*(z-plane.z);
+  if(P.gear<.5)return height(P.pos.x,P.pos.z)+.75;
   const supports=model&&AircraftGround.supports(model,'carrier');
-  if(!supports||supports.length!==3)return carrierDeckHeight(P.pos.x,P.pos.z)+1.8;
+  if(!supports||supports.length!==3)return height(P.pos.x,P.pos.z)+1.8;
   const point=new THREE.Vector3();let y=-Infinity;
-  for(const vertices of supports){let low=null;
-    for(let i=0;i<vertices.length;i+=3){point.fromArray(vertices,i).applyQuaternion(q);if(!low||point.y<low.y)low=point.clone();}
-    y=Math.max(y,carrierDeckHeight(P.pos.x+low.x,P.pos.z+low.z)-low.y);
+  for(const vertices of supports){
+    for(let i=0;i<vertices.length;i+=3){point.fromArray(vertices,i).applyQuaternion(q);
+      y=Math.max(y,height(P.pos.x+point.x,P.pos.z+point.z)-point.y);
+    }
   }
   return y;
 }
@@ -3406,6 +3422,7 @@ function spawnFlakBurst(p){
 // ============================================================
 function updateFlight(dt){
   const previousPosition=P.pos.clone();
+  const previousQuaternion=pacificAircraftQuaternion();
   if(!P.alive) return;
   if(P.arrestRun){updateArrestRun(dt);return;}
   if(P.deckRun){updateDeckRun(dt);return;}
@@ -3590,15 +3607,40 @@ function updateFlight(dt){
     const right=new THREE.Vector3(1,0,0).applyQuaternion(pacificAircraftQuaternion());
     if(FlightSupport.treeStrike(okinawaWorld.treeIndex,a,b,right,6)){crash('TREE STRIKE','Your aircraft struck a tree.');return;}
   }
-  resolveGroundAndDeck(dt,previousPosition);
+  resolveGroundAndDeck(dt,previousPosition,previousQuaternion);
 }
 
 function overDeck(x,z){
   return (x-carrierX)>STERN_X && (x-carrierX)<BOW_X && Math.abs(z)<DECK_HALF_W;
 }
 
-function resolveGroundAndDeck(dt,previousPosition=null){
+function resolveShipContact(from,to,q0,q1,dt){
+  const probes=pacificShipProbes();
+  // Templates share decoded surfaces and the BVH; hidden placeholders have no collider.
+  for(const ship of ships.concat(supportFleet)){
+    if(ship.group.visible===false||ship.usedFallback)continue;
+    const model=ship.group.children.find(o=>o.userData.shipContactKey);
+    if(model&&shipContact.sweep(model,from,to,q0,q1,probes)){
+      crash('STRUCK A SHIP','Your aircraft hit the ship hull or superstructure.');return true;
+    }
+  }
+  const hull=isDefend()?ijnCarrierModel:carrierModel;
+  if(hull){
+    const above=from.y>=carrierDeckHeight(from.x,from.z)-.3&&to.y>=carrierDeckHeight(to.x,to.z)-.3;
+    const deck=above?{y:hull.userData.contactDeckY,tolerance:.3/hull.scale.y}:null;
+    if(shipContact.sweep(hull,from,to,q0,q1,probes,{deck,translation:new THREE.Vector3(CARRIER_SPD*dt,0,0)})){
+      crash('STRUCK THE SHIP','Your aircraft hit the carrier hull or island.');return true;
+    }
+  }return false;
+}
+function pacificShipProbes(){
+  const model=isDefend()?playerZero:isSBD()?playerSBD:gltfRoot;
+  const kind=isDefend()?'zero':isCorsair()?'corsair':isSBD()?'sbd':'avenger';
+  return shipContact.probesFor(model,planeGroup,shipWingProbes[kind]);
+}
+function resolveGroundAndDeck(dt,previousPosition=null,previousQuaternion=null){
   const x=P.pos.x, z=P.pos.z, y=P.pos.y;
+  if(previousPosition&&resolveShipContact(previousPosition,P.pos,previousQuaternion||pacificAircraftQuaternion(),pacificAircraftQuaternion(),dt))return;
   if(MISSIONS[mission]?.theater==='escort'){
     const h=PacificTheater.islandHeight(x,z);if(h>1&&y<h+2){crash('TERRAIN','You flew into a channel island.');return;}
   }
@@ -3622,8 +3664,8 @@ function resolveGroundAndDeck(dt,previousPosition=null){
     const contact=carrierContactHeight();
     if(y<=contact&&P.vSpeed<=0){
       if(previousPosition&&previousPosition.y<carrierDeckHeight(x,z)-.5){crash('STRUCK THE SHIP','The aircraft hit the hull below the flight deck.');return;}
-      P.pos.y=contact;
       if(!P.touchResolved){
+        P.pos.y=contact;
         P.touchResolved=true;
         const sink=-P.vSpeed;                 // +ve = descending
         const hdgErr=Math.abs(Math.atan2(Math.sin(P.heading),Math.cos(P.heading)))*R2D;
@@ -3727,7 +3769,7 @@ function trap(x,arrested=false){
       P.fuel=MISSIONS[mission].fuel; P.hull=100; P.ammo=1200;
       P.bingo=false; P.lowFuelT=0; P.rtb=false; P.ballCalled=false;
       updateHUD();
-      launch();                       // start another rolling departure
+      beginDeckService();             // hold the stopped aircraft until the pilot chooses READY
       return;
     }
     saveBest(score); state=ST.RESULT;
@@ -3840,6 +3882,7 @@ function updateArrestRun(dt){
   P.heading=Math.atan2(Math.sin(P.heading),Math.cos(P.heading))*Math.exp(-2*dt);
   P.spd=r.initialSpeed>0?(P.landingSample.speed*next/r.initialSpeed):0;
   P.vSpeed=0;P.pitchVel=P.rollVel=0;r.speed=next;updateArrestCable();
+  fitCarrierAircraft(dt);
   if(r.elapsed>=r.duration)trap(carrierX+r.touchX,true);
 }
 function bolter(msg){
@@ -3864,6 +3907,7 @@ function updateDeckRun(dt){
   const wind=CarrierRecovery.wind(windHead,windGust);P.spd=run.speed+CARRIER_SPD-wind.x;
   const previousX=P.pos.x-carrierX;P.pos.x+=(run.speed+CARRIER_SPD)*dt;P.vSpeed=0;
   const deckX=P.pos.x-carrierX;
+  fitCarrierAircraft(dt);
   if(run.wireEligible&&deckX>=WIRE_X0&&previousX<=WIRE_X1){
     if(P.hook>=.6){beginArrestRun(carrierX+Math.max(WIRE_X0,Math.min(WIRE_X1,deckX)));return;}
     if(deckX>WIRE_X1){run.wireEligible=false;P.bolters++;flash('HOOK UP — ADD POWER AND PULL BACK',1800);}
@@ -3873,7 +3917,9 @@ function updateDeckRun(dt){
   if(rotate||deckX>=BOW_X){
     const nd=new THREE.Vector3(0,0,-1).applyQuaternion(P.deckQuaternion);
     P.pitch=rotate?Math.max(.06,Math.asin(Math.max(-1,Math.min(1,nd.y)))):Math.asin(Math.max(-1,Math.min(1,nd.y)));P.roll=0;
-    P.pitchVel=P.rollVel=0;P.onDeck=false;P.deckRun=null;P.touchResolved=false;
+    const right=new THREE.Vector3(1,0,0).applyQuaternion(P.deckQuaternion);
+    P.roll=Math.asin(Math.max(-1,Math.min(1,right.y)));
+    P.pitchVel=P.rollVel=0;P.onDeck=false;P.deckRun=null;P.touchResolved=true;
     SortieFeatures.Handling.beginDeparture(P);
     P.vSpeed=P.spd*Math.sin(P.pitch);P.deckQuaternion=null;
   }
@@ -5268,7 +5314,7 @@ function loadPlaneModel(){
       }
       window.__eyeDbg='EYE '+COCKPIT_EYE.map(v=>v.toFixed(2)).join('/');
       const btEl=document.getElementById('buildTag');
-      if(btEl) btEl.textContent='BUILD 194 · '+window.__eyeDbg;
+      if(btEl) btEl.textContent='BUILD 195 · '+window.__eyeDbg;
       let seat=null;
       model.traverse(function(o){
         if(!o.isMesh||!o.material) return;
@@ -5324,6 +5370,7 @@ function loadCarrierModel(){
         }
       });
       scene.add(root);
+      shipContact.prepare(root);
       carrierModel=root;
       carrier.visible=false;   // hide the built-in blocky carrier (its nodes/anim still exist)
       carrierModelLoaded=true;
@@ -5366,7 +5413,7 @@ function loadIJNCarrierModel(){
           if(o.material) o.material.side=THREE.DoubleSide; }
       });
       root.visible=false;                          // only shown in the defence sortie
-      scene.add(root); ijnCarrierModel=root;
+      shipContact.prepare(root);scene.add(root); ijnCarrierModel=root;
       console.log('IJN carrier loaded:', IJN_CARRIER_URL);
     }catch(e){ console.warn('IJN carrier post-process failed', e); }
   }).catch(function(){ console.warn('No IJN carrier at "'+IJN_CARRIER_URL+'"'); });
@@ -5395,6 +5442,7 @@ function loadCruiserModel(){
       tmpl.add(model);
       tmpl.scale.setScalar(scale);
       tmpl.rotation.y=CRU_YAW;
+      shipContact.prepare(tmpl);
       cruiserTemplate=tmpl;
       upgradeShipsToTemplate('cruiser', tmpl);
       console.log('Cruiser (Zuihō) model loaded:', CRUISER_MODEL_URL);
@@ -5641,7 +5689,7 @@ function updatePlaneMesh(dt){
     if(playerZero) playerZero.visible=true;
     if(zeroProp)   zeroProp.visible=true;
   }
-  fitCarrierAircraft(dt);
+  fitCarrierAircraft(P.deckRun||P.arrestRun?0:dt);
   updateRearArmament();
 }
 
@@ -6659,7 +6707,7 @@ function setupUIButtons(){
   if(dbgT2) dbgT2.onclick=()=>{
     dbgOn=!dbgOn; GameRuntime.storage.setItem('dbgOn',dbgOn?'1':'0');
     const db=document.getElementById('dbgBox'); if(db) db.textContent=dbgOn?'✓':'';
-    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 194'; }
+    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 195'; }
   };
   const lu=document.getElementById('lookUp'), ld=document.getElementById('lookDn');
   let _lookT=0;
@@ -6675,7 +6723,7 @@ function setupUIButtons(){
   if(pb) pb.addEventListener('pointerdown',e=>{ e.preventDefault(); togglePause(); });
   const rb=document.getElementById('resumeBtn'); if(rb) rb.onclick=resumeGame;
   const mb=document.getElementById('menuBtn'); if(mb) mb.onclick=exitToMenu;
-  document.getElementById('pauseMainMenu').onclick=()=>{exitToMenu();window.location.href='index.html?v=194';};
+  document.getElementById('pauseMainMenu').onclick=()=>{exitToMenu();window.location.href='index.html?v=195';};
   document.getElementById('resultBtn').onclick=()=>{
     // the logbook borrows this screen from the menu — send the player straight back
     if(logbookOpen){ logbookOpen=false; showOverlay('menu'); return; }
@@ -6921,7 +6969,7 @@ function animate(){
     notice.style.cssText='position:fixed;inset:0;z-index:999998;background:rgba(15,20,15,.95);color:#e8ddbc;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px;text-align:center;font:16px system-ui';
     const title=document.createElement('h2');title.textContent='Simulation interrupted';
     const detail=document.createElement('p');
-    detail.textContent='BUILD 194 · '+(MISSIONS[mission]?.sub||'Menu')+' · '+error.message;
+    detail.textContent='BUILD 195 · '+(MISSIONS[mission]?.sub||'Menu')+' · '+error.message;
     const reload=document.createElement('button');reload.textContent='Reload game';
     reload.style.cssText='padding:12px 24px;font:inherit';reload.onclick=()=>location.reload();
     notice.appendChild(title);notice.appendChild(detail);notice.appendChild(reload);document.body.appendChild(notice);

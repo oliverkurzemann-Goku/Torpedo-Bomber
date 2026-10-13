@@ -255,10 +255,10 @@ class TerrainManager {
 
   get tileCount(){ return this.tiles.size; }
 
-  setLandcover(tx,tz,data){
+  setLandcover(tx,tz,data,softEdge=true){
     const tile=this.tiles.get(this._key(tx,tz));
     if(!tile||typeof document==='undefined')return;
-    const canvas=makeTerrainLandcover(tx,tz,this.tileSize,data);
+    const canvas=makeTerrainLandcover(tx,tz,this.tileSize,data,softEdge);
     const texture=new THREE.CanvasTexture(canvas);
     texture.generateMipmaps=true;texture.minFilter=THREE.LinearMipmapLinearFilter;
     const material=this.material.clone();
@@ -337,7 +337,7 @@ function makeTerrainSurfaceAtlas(){
   ctx.putImageData(img,0,0);const tex=new THREE.CanvasTexture(canvas);
   tex.generateMipmaps=true;tex.minFilter=THREE.LinearMipmapLinearFilter;tex.anisotropy=4;return tex;
 }
-function makeTerrainLandcover(tx,tz,tileSize,data){
+function makeTerrainLandcover(tx,tz,tileSize,data,softEdge=true){
   const n=128,canvas=document.createElement('canvas');canvas.width=canvas.height=n;
   const ctx=canvas.getContext('2d'),base=ctx.createImageData(n,n);
   const makePattern=(forest=false)=>{
@@ -371,15 +371,48 @@ function makeTerrainLandcover(tx,tz,tileSize,data){
   ctx.putImageData(base,0,0);kinds.putImageData(kindImg,0,0);farmKindCtx.putImageData(farmKinds,0,0);
   const trace=(c,ring)=>{c.beginPath();c.moveTo(ring[0][0]/tileSize*n,ring[0][1]/tileSize*n);
     for(let i=1;i<ring.length;i++)c.lineTo(ring[i][0]/tileSize*n,ring[i][1]/tileSize*n);c.closePath();};
-  for(const [rings,pattern,isForest] of [[data.farmland||[],farms,false],[data.forests||[],woods,true]])for(const ring of rings){
+  let underWood=null,underKinds=null;
+  for(const [rings,pattern,isForest] of [[data.farmland||[],farms,false],[data.forests||[],woods,true]]){
+   if(isForest){underWood=ctx.getImageData(0,0,n,n);underKinds=kinds.getImageData(0,0,n,n);}
+   for(const ring of rings){
     if(ring.length<3)continue;ctx.fillStyle=ctx.createPattern(pattern,'no-repeat');trace(ctx,ring);ctx.fill();
     if(isForest){kinds.fillStyle='rgb(227,0,0)';trace(kinds,ring);kinds.fill();}
     else{
       // Clip world-aligned visual crop parcels to the real farmland outline.
       kinds.fillStyle=kinds.createPattern(farmKindCanvas,'no-repeat');trace(kinds,ring);kinds.fill();
     }
+   }
   }
   const result=ctx.getImageData(0,0,n,n),types=kinds.getImageData(0,0,n,n);
+  if(softEdge){
+  // The edge is baked into the existing 128px tile texture. A two-pass distance
+  // field keeps clipped tile borders continuous; shaders and draw calls stay identical.
+  const distance=new Float32Array(n*n),diagonal=Math.SQRT2;
+  for(let i=0;i<distance.length;i++)distance[i]=types.data[i*4]>220?10000:0;
+  for(let y=0;y<n;y++)for(let x=0;x<n;x++){
+    const i=y*n+x;if(!distance[i])continue;
+    if(x)distance[i]=Math.min(distance[i],distance[i-1]+1);
+    if(y)distance[i]=Math.min(distance[i],distance[i-n]+1);
+    if(x&&y)distance[i]=Math.min(distance[i],distance[i-n-1]+diagonal);
+    if(x<n-1&&y)distance[i]=Math.min(distance[i],distance[i-n+1]+diagonal);
+  }
+  for(let y=n-1;y>=0;y--)for(let x=n-1;x>=0;x--){
+    const i=y*n+x;if(!distance[i])continue;
+    if(x<n-1)distance[i]=Math.min(distance[i],distance[i+1]+1);
+    if(y<n-1)distance[i]=Math.min(distance[i],distance[i+n]+1);
+    if(x<n-1&&y<n-1)distance[i]=Math.min(distance[i],distance[i+n+1]+diagonal);
+    if(x&&y<n-1)distance[i]=Math.min(distance[i],distance[i+n-1]+diagonal);
+  }
+  const pixel=tileSize/n;
+  for(let y=0;y<n;y++)for(let x=0;x<n;x++){
+    const i=y*n+x,at=i*4;if(distance[i]===0||distance[i]>5)continue;
+    const wx=(tx+(x+.5)/n)*tileSize,wz=(tz+(y+.5)/n)*tileSize;
+    const inset=Math.max(4,13+8*Math.sin(wx*.019+1.8*Math.sin(wz*.006))+7*Math.sin(wz*.027+Math.cos(wx*.011)));
+    const blend=Math.max(0,Math.min(1,((distance[i]-.5)*pixel-inset)/(pixel*.65)+.5));
+    for(let ch=0;ch<3;ch++)result.data[at+ch]=underWood.data[at+ch]*(1-blend)+result.data[at+ch]*blend;
+    if(blend<.5)types.data[at]=underKinds.data[at];
+  }
+  }
   for(let i=0;i<result.data.length;i+=4)result.data[i+3]=types.data[i];
   ctx.putImageData(result,0,0);return canvas;
 }

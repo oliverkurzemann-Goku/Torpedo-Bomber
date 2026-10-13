@@ -57,6 +57,15 @@ and skid contact follow the rendered terrain, and the tail settles gradually.
 Power and back-stick allow a touch-and-go; a late touchdown can overrun the strip.
 Both resting and caught carrier arresting wires are black.
 
+Aircraft now collide with the actual hull and superstructure of visible Pacific
+ships and Rhine vessels, using shared decoded meshes and swept probes. Carrier
+qualification holds the stopped aircraft for deck service and a player-selected
+relaunch. Mechanical gear updates precede deck contact and follow the rolling hull.
+
+Rhine woodland boundaries have small inward irregularities and softer baked ground
+transitions. Existing texture dimensions, shaders and draw budgets are retained;
+the trees and rendering work decrease in the native comparison view.
+
 Both gun sights follow the actual muzzle centroid and shot direction through
 the current camera, with a speed-dependent sighting distance and short display
 smoothing. Existing dispersion is retained without automatic target lead.

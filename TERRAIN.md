@@ -1,3 +1,22 @@
+## Build 195 — irregular woodland edges within the existing render budget
+
+Woodland placements gain small world-aligned insets along real polygon borders,
+while clipped tile edges retain continuous stands. No extra tree instances are
+added. A temporary distance field softens the border in the existing 128px ground
+mask at bake time. Shader instructions, texture dimensions, material buckets and
+per-frame terrain work remain unchanged. Roads, buildings, water and runways retain
+their exclusion checks.
+
+The real tile 3,3 browser comparison uses the same game terrain, lighting and camera:
+seven draws and three textures in both cases; trees 6050 to 5635, rendered triangles
+501356 to 474552. The changed border reaches 25,543 framebuffer pixels. Full-forest
+tile seams remain filled. Geometry/landscape regressions and the native view are
+required; this is render-budget evidence, not a physical iPad FPS measurement.
+
+Rhine merchant vessels also use decoded original surfaces for swept player contact.
+Their shared BVH is prepared when the existing vehicle template arrives; only nearby
+visible ferries reach the narrow collision query.
+
 ## Build 172 — original rotors and bounded uploaded scenery
 
 FW 190 moves only connected original nose-blade components into a rotor; wing indices remain intact. B-17 transfers sparse original blade components at all four measured stations instead of cutting cowls or adding duplicate propellers. Quantized rotor bounds explicitly decode selected vertices.

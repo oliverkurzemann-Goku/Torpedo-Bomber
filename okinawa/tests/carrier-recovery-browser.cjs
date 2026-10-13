@@ -78,12 +78,13 @@ const server=http.createServer((req,res)=>{
     const sample={...P.landingSample,grade:lastGrade};
     let offsetRecovery=null;
     for(const turns of [0,-2,2]){
-     setup(false);P.pos.z=12;P.heading=.12+turns*Math.PI*2;updatePlaneMesh(0);
+     const offset=-6; // Stay clear of the real carrier galleries and island.
+     setup(false);P.pos.z=offset;P.heading=.12+turns*Math.PI*2;updatePlaneMesh(0);
      for(let i=0;i<fps*4&&state===ST.FLIGHT;i++){
       step();
       if(P.arrestRun&&Math.abs(Math.atan2(Math.sin(P.heading),Math.cos(P.heading)))>.121)throw Error('Cable yaw spun aircraft after a full circuit');
      }
-     if(state!==ST.RESULT||!P.alive||!P.landingSample||P.landingSample.offset<12||Math.abs(P.pos.z)>14||lastGrade.startsWith('OK'))throw Error('Valid off-centre landing must recover with a lower grade '+JSON.stringify({kind,fps,turns,state,alive:P.alive,sample:P.landingSample,offset:P.pos.z,grade:lastGrade}));
+     if(state!==ST.RESULT||!P.alive||!P.landingSample||Math.abs(P.landingSample.offset)<Math.abs(offset)-2||Math.abs(P.pos.z)>14||lastGrade.startsWith('OK'))throw Error('Valid off-centre landing must recover with a lower grade '+JSON.stringify({kind,fps,turns,state,alive:P.alive,sample:P.landingSample,offset:P.pos.z,grade:lastGrade,contact:shipContact.stats.lastHit}));
      const final=[P.pos.x-carrierX,P.pos.z,Math.atan2(Math.sin(P.heading),Math.cos(P.heading))];
      if(offsetRecovery&&final.some((v,i)=>Math.abs(v-offsetRecovery[i])>.00001))throw Error('Recovery changed after complete heading turns');
      offsetRecovery=final;

@@ -22,7 +22,7 @@
   template.add(offset);template.scale.setScalar(scale);template.name=spec.name;
   template.userData.naval={length:spec.length,beam:size.x*scale,draft:spec.draft,height:size.y*scale-spec.draft};
   template.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;o.frustumCulled=true;}});
-  template.updateMatrixWorld(true);return template;
+  template.updateMatrixWorld(true);g.ShipContact?.instance?.prepare(template);return template;
  }
  function load(name){
   if(tasks.has(name))return tasks.get(name);
