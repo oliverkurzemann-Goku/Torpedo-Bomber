@@ -53,6 +53,14 @@ keepCheckpoint-Parameter. APP-DEVELOPMENT.md benennt Geräte-/Signierungsgrenzen
 APP-ASSET-AUDIT.md lässt Rechtefreigaben ausdrücklich offen, nicht aus CC-Reupload
 oder GitHub-Publikation ableiten. Noch keine TestFlight-/App-Store-Veröffentlichung.
 
+BUILD196-Nachtrag: iPad app build auf macos-15 mit Xcode26.3/17C529 erfolgreich:
+Run38481797488, Commit e5008c6135b607d2364cf7c78cb9471757a01e34. Beide Simulator-
+Architekturen arm64/x86_64 und AppDelegate/SceneDelegate kompiliert, BUILD SUCCEEDED.
+Workflow .github/workflows/ios-build.yml hat read-only Contents, keine Signing-
+Credentials/Distribution, maximal15min und Compilerlog-Artifact. Das ist ein echter
+Remote-Mac-Compile, aber kein WKWebView-Gameplay-/Geräte-/Thermiktest. Signing,
+Owner-Bundle-ID, finale Artwork und Rechtefreigaben bleiben offen; siehe APP-DEVELOPMENT.
+
 **Build 195 (13.10.2026): reale Schiffskollisionen, kontinuierliche Trägerkontakte und weichere Waldkanten.**
 Spieler-Schiffskollisionen fehlten außerhalb des eigenen Trägers. ShipContact
 dekodiert die Originalmesh-Triangles einschließlich normalisierter/interleaved

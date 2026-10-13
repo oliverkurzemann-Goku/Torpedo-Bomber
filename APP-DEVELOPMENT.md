@@ -69,6 +69,12 @@ xcodebuild -project ios/App/App.xcodeproj -scheme App -configuration Debug \
 
 ## Verification
 
+- Native compilation verified on a macOS 15 runner with **Xcode 26.3 / 17C529**:
+  [successful unsigned simulator build](https://github.com/oliverkurzemann-Goku/Torpedo-Bomber/actions/runs/38481797488),
+  commit `e5008c6135b607d2364cf7c78cb9471757a01e34`. Both arm64 and x86_64
+  AppDelegate/SceneDelegate compile and the log ends `BUILD SUCCEEDED`. The
+  `iPad app build` workflow retains compiler diagnostics and reruns for native
+  project/dependency changes. This is not device signing, installation or play-testing.
 - `npm test`: syntax, terrain and gameplay regression suites.
 - `app-payload.cjs`: payload hashes, original-asset equality, local HTML dependency closure,
   exclusions, landscape config, local `webDir` and native privacy reason.
@@ -81,8 +87,9 @@ xcodebuild -project ios/App/App.xcodeproj -scheme App -configuration Debug \
   including the bundled native bridge in its non-native fallback mode.
 - Existing carrier start/recovery/ship-contact and combat-sortie tests remain required.
 
-Desktop headless Chrome tests are **not** WKWebView, an iOS compile/signing check or an
-iPad performance/thermal benchmark. No native iOS build is claimed from this Linux host.
+Desktop headless Chrome tests are **not** WKWebView or an iPad performance/thermal
+benchmark. Native compilation was performed separately on the Mac runner above;
+no signing, physical-device or native gameplay test is claimed from this Linux host.
 
 ## Gates before TestFlight/publication
 
