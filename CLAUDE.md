@@ -7,6 +7,26 @@ ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wie
 
 Stand bei Übergabe: **Torpedo Squadron BUILD 196 · Thunderbolt Squadron BUILD 196 · Remagen-Kern 23 / Fahrzeuge 22**
 
+**App-Vorbereitung 14.10.2026, Spiel weiterhin Build 196:** Nutzer bestätigt Mac ohne
+bezahlten Developer-Account. `iPad-vorbereiten.command`, read-only `app:doctor`, deutsche
+Own-Device-Anleitung und unausgefüllte echte Geräte-Testmatrix unter `app/release/`.
+Personal Team für direkten Test; sieben Tage Provisioning, TestFlight später mit Mitgliedschaft.
+Keine Anmeldung/Signierung, Geräteinstallation, externen Nachrichten oder Modelleingriffe erfolgt.
+
+Rechteprüfung: tatsächliches Offline-Paket 302 Dateien / 266.5 MiB, 35 Modelle (34GLB+1FBX),
+alle SHA256 in `app/release/asset-register.json`. 31 Sketchfab-IDs aktuell geprüft:29API
+lesbar, B24 404, IJN 401. B17 tatsächlich CC BY-NC und Arma/Helijah-Kette; IJN-Titel
+nennt World of Warships; Midway ohne Quelle/Lizenz. 12 War-Thunder-Dateien +3COD-Schiffe
++1IJN bleiben Originalrechte-offen. Kein CC-Label als Rechtefreigabe behandeln.
+Beide Fortification-Derivate gegen sourceSha256 der Originals geprüft; fehlende Credits
+rekonstruiert. 24 angehängte GLBs nur gelesen, darunter ungenutzte Referenz-/Alternativmodelle.
+Anfragen für Gaijin/Activision/B17/andere vorbereitet, NICHT gesendet.
+`app:assets` prüft echte Payloadbytes und Originalscan-Hashes; verweigert manipulierte
+Payload bzw. falsch zugeordnetes Original. Nur Register/Docs/Buildvorbereitung geändert;
+keine neue Spiel- oder Speicherstandversion. Native Workflow prüft Doctor/Register mit.
+Lokaler Payloadbau, Capacitor-Sync, bestehender App-Payload-Test, JS/Bash-Syntax und
+gezielte Negativprüfungen bestanden. Neuer Mac-CI-/Gesamtsuitenstatus separat prüfen.
+
 **Build 196 (14.10.2026): iPad-App-Grundlage, lokale Abhängigkeiten und airborne Checkpoints.**
 Nutzer möchte so viel wie möglich Richtung iPad-App umgesetzt. Die beiden aktiven
 HTMLs laden nun checked-in Three r128, FBX/SkeletonUtils und fflate 0.8.3 statt CDNs.

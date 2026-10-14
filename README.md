@@ -180,7 +180,10 @@ these checks do not establish iPad/Safari performance or hardware stability.
   workflow rules this project runs on. Read this before changing any game file.
 - **`TERRAIN.md`** — technical handoff for the `terrain-system/` real-DEM/OSM pipeline.
 - **`ASSET-CREDITS.md`** — sources and licenses for third-party models used at runtime
-  (Sketchfab CC BY 4.0 / CC0 assets, with the exact runtime modifications made to each).
+  (including CC BY-NC and unresolved upstream game-asset rights; license labels are not blanket clearance).
+
+- **[iPad installation, German](app/release/IPAD-INSTALLATION-DE.md)** — own-device installation using an Apple Personal Team, no paid membership required.
+- **[Asset rights review](APP-ASSET-AUDIT.md)** — exact-file register, source evidence and prepared permission enquiries.
 
 ## License
 

@@ -1,28 +1,82 @@
-# App asset provenance gate
+# App asset rights review — checked 14 October 2026
 
-This is a release checklist, **not clearance or a legal opinion**. Existing original
-files have not been modified or substituted. `ASSET-CREDITS.md` records known uploader
-metadata/attribution; that alone does not establish permission from an original rightsholder.
+**Result: source/license evidence improved; app distribution clearance is still open.**
+This review records evidence and concrete unresolved uses. It is not an authoritative
+rightsholder grant or a conclusion that any particular file is unlawfully supplied.
 
-## Priority evidence to obtain
+The actual Build 196 offline payload contains **302 files / 266.5 MiB**, including
+**35 models: 34 GLB and one FBX**. Every payload file has a SHA-256 in
+[asset-register.json](app/release/asset-register.json); embedded GLB textures are covered by
+their binary's hash. [Readable model table](app/release/asset-register.md).
 
-| Runtime family | Existing evidence/concern | Release action |
+## What was actually checked
+
+- Read the exact runtime GLB headers, including embedded author/license/source and image counts.
+- Read all 24 supplied original GLBs; distinguish references/alternatives from shipped models.
+  In particular, the separately supplied Saratoga is not evidence for `uss_midway.glb`.
+- Checked 31 unique Sketchfab source IDs through the public model-metadata API: **29 readable**,
+  B-24 returned **404**, IJN carrier **401** on retry. Their retained embedded declarations
+  are evidence, but current public-page access was not established.
+- Confirmed Quaternius Horse's CC0 label on the creator-attributed Poly Pizza page.
+- Matched the two optimized fortification scans' embedded `sourceSha256` to the exact originals.
+  Restored their missing source/author/license attribution through a separate provenance record;
+  the model binaries and uploaded originals were not edited.
+- Read current primary Apple, Creative Commons, Gaijin and Activision guidance. Current source
+  terms are distinct from a separate written grant covering this app's exact files and uses.
+
+Evidence: [source observations](app/release/model-source-evidence.json),
+[supplemental provenance](app/release/model-provenance.json).
+Acquisition dates, private correspondence and grant/receipt records have not been supplied.
+
+## Findings and next actions
+
+| Files / family | Finding | Required next action |
 | --- | --- | --- |
-| War Thunder-labelled aircraft/vehicles | Several source entries explicitly name War Thunder; uploader metadata may not establish original game-asset rights. | Obtain original rightsholder authorization or independently licensed replacements. Confirm every active aircraft file, including P47/Bf109/Fw190/Ju87 and jets, rather than assuming filenames prove origin. |
-| Fletcher, Japanese cargo and landing ship | Credits identify a Call of Duty: World at War upload under CC-BY metadata. | Verify authority to license those meshes/textures; otherwise replace before distribution. |
-| Avenger, Zero, SBD, B17/B24, carriers, other ships | Attribution/source records exist to differing extents. | Match each shipped file to a source/version, obtain license evidence, satisfy attribution and check any third-party textures. No blanket approval inferred. |
-| Buildings, Ford FBX/textures, train, horse, tree pack | Mixed source/licensing records. | Include all embedded/external textures and derived assets in the inventory; document allowed redistribution. |
-| Terrain/OSM/Copernicus/Overture | Documented pipeline/data provenance. | Review required notices and database obligations for the shipped offline datasets. |
-| Audio and campaign artwork | Current jet audio is procedural; archived recordings are not in the app payload. Campaign images are labelled generated. | Inventory every active sound/image and retain generation/source/license records. |
-| Code libraries | Local pinned Three.js/fflate and npm/Capacitor dependencies. | Retain bundled license notices and audit native-package notices before release. |
+| 12 War Thunder-labelled aircraft/vehicle files | Runtime source titles and current uploader metadata identify the game. CC BY labels alone do not establish original mesh/texture authority. | Ask Gaijin/the actual rightsholders for app-bundle redistribution rights, or obtain independently authored replacements. |
+| Fletcher, Japanese cargo, landing ship | Three runtime exports derive from a collection explicitly titled Call of Duty: World at War. | Establish original authority with the relevant rightsholder; uploader confirmation alone may be insufficient. |
+| `ijn carrier.glb` | Embedded Chinese title names World of Warships. Current API access returned 401; exact original ownership remains unconfirmed. | Verify provenance and Wargaming/other required rights or replace. Do not call this cleared merely because embedded CC BY is present. |
+| `b17.glb` | Exact file and current public source declare CC BY-NC 4.0; source references an Arma adaptation of Helijah's model. | Preserve both creator/adaptor credit. Obtain an appropriate grant for commercial use, or replace. A free download is not automatically a determination of noncommercial use. |
+| `uss_midway.glb` | No embedded author, source or license. | Obtain the actual source/version/license record; do not substitute a different carrier's license. |
+| FPS Creator farm ruin | Source title identifies upstream game/tool content. | Verify geometry/texture provenance and redistribution terms, or replace. |
+| B-24, independent CC BY assets, Ford/train/horse, scans, tree pack | Embedded or existing credit records identify licenses; many current source declarations match. | Retain source evidence, author/source/license/change notices and verify textures and redistribution conditions. A valid applicable CC grant does not inherently need another bespoke permission. B-24 source access remains unresolved. |
+| Copernicus / Overture / OSM datasets | Exact offline datasets and conversion code are inventoried; Rhine pipeline names Overture release 2026-08-19.0. | Preserve Copernicus notices and OSM/Overture attribution; review each shipped adapted database and release's upstream conditions. Conversion strips detailed contributor fields, so blanket attribution alone is not a completed source audit. |
+| Code / generated art / procedural audio | MIT notices for bundled runtime libraries are retained; recorded jet audio is excluded; campaign generation prompts retained. | Review native package/store conditions and final notices. Own-code licensing remains the owner's decision; no change to `UNLICENSED`. |
 
-## Required per-asset record
+The 16 “original-game-rights-open” model rows comprise the 12 War Thunder files, three
+Call of Duty exports and one World of Warships-labelled carrier. There is one additional
+noncommercial B-17 row, one upstream FPS Creator row and one missing-source US carrier row.
+These are review priorities, not 19 findings of infringement.
 
-Runtime path and SHA-256; original author/rightsholder; source URL and acquisition date;
-exact license/grant; evidence that the licensor can grant the required rights; commercial
-and app-bundle redistribution permission where applicable; attribution text; embedded
-texture/audio provenance; replacement decision and approval status.
+## Prepared enquiries and replacement path
 
-The offline builder generates a SHA-256 inventory of the payload and preserves the original
-binary bytes. **All rights-clearance rows remain open** until documentary evidence is supplied
-and reviewed. A successful build/test or existing GitHub publication is not clearance.
+[Four targeted request drafts and follow-up record](app/release/rights-requests.md) are ready.
+Gaijin's official content-guideline contact is verified; Activision/Wargaming licensing
+recipients still require authoritative routing. **No messages have been sent.**
+
+If no suitable grant is available, the practical release route is independently authored,
+clearly licensed replacement models/textures. Match proportions, pivots, surface rigs,
+weapon origins and deck collision geometry, then rerun the existing actual-model tests.
+Do not silently swap models or import another game's asset as a supposed clean replacement.
+
+For valid CC assets, retain notices and review app-store terms/technical restrictions;
+separate asset access or an additional grant may be needed depending on the actual distribution
+conditions. Do not assume that embedding assets in a signed app settles this question.
+
+## Primary sources checked
+
+- [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/): attribution/change notices;
+  commercial adaptation and redistribution within the grant; no blanket guarantee of other rights.
+- [CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/): noncommercial scope.
+- [Gaijin Content Creator Guidelines §1.1.5](https://legal.gaijin.net/contentrules): restriction
+  on extracting and separately distributing game elements; §4.1 provides the contact route.
+  **Inference for this project:** the general content-creator rules do not establish a grant
+  for repackaging these labelled meshes in a separate game.
+- [Activision Terms of Use §§2–3](https://www.activision.com/legal/terms-of-use): limited product
+  use and restrictions on reuse/distribution. No separate app-model license was identified.
+- [Quaternius Horse](https://poly.pizza/m/qvTrSG9pZF): creator-attributed CC0 source listing.
+- [OpenStreetMap copyright](https://www.openstreetmap.org/copyright),
+  [Overture attribution/licensing](https://docs.overturemaps.org/attribution/),
+  [Copernicus DEM](https://dataspace.copernicus.eu/explore-data/data-collections/copernicus-contributing-missions/collections-description/COP-DEM).
+
+To regenerate the exact register after any payload change: `npm run app:assets`.
+The tool verifies bytes/hashes and source links; **it never automatically approves rights**.

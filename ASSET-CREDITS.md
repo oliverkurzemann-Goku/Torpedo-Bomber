@@ -158,4 +158,40 @@ The previous `merchant_ship.glb` is retired. Ship exports preserve original geom
 - `assets/buildings/town-ruin.glb`: [BUILDING DESTROYED](https://sketchfab.com/3d-models/building-destroyed-ca13adc8bba0480a8bdde834889c5444) by danieljorge435 (https://sketchfab.com/danieljorge435); CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/).
 - `f4u-1c_corsair_war_thunder.glb`: [F4U-1C Corsair (War Thunder)](https://sketchfab.com/3d-models/f4u-1c-corsair-war-thunder-440585ee30bc4b6299b4b1bd8d09e3d8) by KojfDiscord (https://sketchfab.com/KojfDiscord); CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/).
 
-The concrete observation posts are simple original geometry inspired by the supplied bunker/observation-post references. Large warehouse and Carentan files remain available as reference uploads and are not duplicated throughout the terrain.
+Build 175 replaced the earlier procedural observation-post stand-ins with optimized versions of the supplied photographic scans. `assets/buildings/observation-post.glb` derives from davidetheridge’s Putsborough scan; `assets/buildings/bunker.glb` derives from matousekfoto’s bunker scan. Their exact original hashes and attribution are recorded in `app/release/model-provenance.json`. Large warehouse and Carentan files remain references, excluded from the native payload.
+
+
+## Build 196 — complete native model inventory, checked 2026-10-14
+
+The offline package contains 35 model files (34 GLB + one FBX). The full exact-file
+register is [app/release/asset-register.md](app/release/asset-register.md), with SHA-256
+hashes and all 302 payload files in its adjacent JSON. Source metadata observations
+are dated, and uploader declarations are kept separate from underlying rights grants.
+
+Important qualifications: `b17.glb` is **CC BY-NC 4.0**, not a commercial-use grant;
+several aircraft/vehicles explicitly identify War Thunder; three ships identify
+Call of Duty: World at War; the IJN carrier metadata names World of Warships.
+`uss_midway.glb` has no embedded author/license/source. App distribution clearance
+remains open; see [APP-ASSET-AUDIT.md](APP-ASSET-AUDIT.md).
+
+Previously missing aircraft/scan attribution is listed below. These are source
+metadata declarations, not assertions that the uploader owns all underlying rights.
+Original runtime model binaries remain unchanged by this preparation.
+
+| File | Title / uploader | Declared license | Source |
+| --- | --- | --- | --- |
+| `assets/buildings/bunker.glb` | Bunker O3/23/A-160 Z — matousekfoto (https://sketchfab.com/matousekfoto) | CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/) | https://sketchfab.com/3d-models/bunker-o323a-160-z-11ae7599f3b640569f7ed4692acabf38 |
+| `assets/buildings/observation-post.glb` | Putsborough  WWII Observation Post — davidetheridge (https://sketchfab.com/davidetheridge) | CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/) | https://sketchfab.com/3d-models/putsborough-wwii-observation-post-05255e1e580140e6ab6742c399c8affb |
+| `b17.glb` | Helijah's B-17 — Secret Weapons - Arma 3 Mod (https://sketchfab.com/sabrezor) | CC-BY-NC-4.0 (http://creativecommons.org/licenses/by-nc/4.0/) | https://sketchfab.com/3d-models/helijahs-b-17-fe911eaf8d5e41eab65fae25b58664b1 |
+| `b24.glb` | B-24 Liberator — CreadorDeMu (https://sketchfab.com/creadordemu) | CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/) | https://sketchfab.com/3d-models/b-24-liberator-c64e58edfacb4c519b5602278a7e51aa |
+| `bf109new.glb` | Bf 109 F-1 (War Thunder) — KojfDiscord (https://sketchfab.com/KojfDiscord) | CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/) | https://sketchfab.com/3d-models/bf-109-f-1-war-thunder-0fec6a4fbae549e1929bd5978e89c4f4 |
+| `fw190.glb` | Fw 190 F-8 (#2 Custom Payload) (War Thunder) — KojfDiscord (https://sketchfab.com/KojfDiscord) | CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/) | https://sketchfab.com/3d-models/fw-190-f-8-2-custom-payload-war-thunder-17aea959a7a949c6801a7ea19d43e9b4 |
+| `grumman tbm avenger.glb` | Grumman Tbm Avenger — helijah (https://sketchfab.com/helijah) | CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/) | https://sketchfab.com/3d-models/grumman-tbm-avenger-4db814ed356a498cabe4badafd06ff6c |
+| `ijn carrier.glb` | 小鬼子Japs瑞凤 Leyte1944 ( 战舰世界 ) — 世界战争游戏 World of WarGames (https://sketchfab.com/123112) | CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/) | https://sketchfab.com/3d-models/japs-leyte1944-5054abd931554d1d81d0b8a3af77c08c |
+| `p47new.glb` | P-47D-28 Thunderbolt (#1 Custom) (War Thunder) — KojfDiscord (https://sketchfab.com/KojfDiscord) | CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/) | https://sketchfab.com/3d-models/p-47d-28-thunderbolt-1-custom-war-thunder-1d469251c5994dfd9169f11a97b1b56a |
+| `sbd dauntless.glb` | SBD-3 Dauntless (War Thunder) — KojfDiscord (https://sketchfab.com/KojfDiscord) | CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/) | https://sketchfab.com/3d-models/sbd-3-dauntless-war-thunder-6c950d0b5ff34bd1b43d713ec7237a59 |
+| `sherman_m4a1.glb` | M4A1 (76) W (War Thunder) — KojfDiscord (https://sketchfab.com/KojfDiscord) | CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/) | https://sketchfab.com/3d-models/m4a1-76-w-war-thunder-8492cfd6dec94c90ae7d210acf7e58ed |
+| `uss_midway.glb` | uss_midway.glb — unknown | unknown | not established |
+| `zero.glb` | A6M Zero Low Poly — Waroxed (https://sketchfab.com/Waroxed) | CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/) | https://sketchfab.com/3d-models/a6m-zero-low-poly-38311e82157449448f703b53648614a5 |
+
+Geographic source notices: [okinawa/README.md](okinawa/README.md) and [TERRAIN.md](TERRAIN.md). Offline packaging does not remove database/attribution obligations or resolve exact upstream contributor tracing.

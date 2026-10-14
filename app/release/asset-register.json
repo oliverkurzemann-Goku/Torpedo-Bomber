@@ -1,0 +1,2911 @@
+{
+  "schema": 1,
+  "reviewedOn": "2026-10-14",
+  "build": 196,
+  "status": "OPEN — source declarations checked; no external rights authorization obtained",
+  "payload": {
+    "bytes": 279415854,
+    "fileCount": 302,
+    "modelCount": 35,
+    "manifestSha256": "c743628fd166669d45a50e132253c74f739d3f839372658f9123157e20111ad5"
+  },
+  "files": [
+    {
+      "path": "ASSET-CREDITS.md",
+      "bytes": 17423,
+      "sha256": "b63acafe14325fd310b5ac9a9b323b4263b35e9b790c3c86298088c2a7fbc8c6",
+      "kind": "code-or-notice"
+    },
+    {
+      "path": "aircraft-articulation.js",
+      "bytes": 12387,
+      "sha256": "db8940b65527742f1d25dad7770fbfff791bbcd8e485dc29f915a63a51715e4a",
+      "kind": "code-or-notice"
+    },
+    {
+      "path": "aircraft-damage.js",
+      "bytes": 9888,
+      "sha256": "b85e215c4cd39040197719638767a8088199a6f981b48c844cbe52ba46dea6f2",
+      "kind": "code-or-notice"
+    },
+    {
+      "path": "aircraft-finish.js",
+      "bytes": 2621,
+      "sha256": "fb618f233252240ec167e9c4ce32eeef0bc979d0260ebf1810826319107d76a5",
+      "kind": "code-or-notice"
+    },
+    {
+      "path": "aircraft-rotors.js",
+      "bytes": 4744,
+      "sha256": "5b8ecd7408484369050d04b77c94a3618caaeda9085569a8eb88ec692e6d7a8b",
+      "kind": "code-or-notice"
+    },
+    {
+      "path": "aircraft-smoke.js",
+      "bytes": 6109,
+      "sha256": "b9a59e9fe9f036d6b3c431adf6f27778aba1cd009faaad478ccdea3912bb3fc1",
+      "kind": "code-or-notice"
+    },
+    {
+      "path": "assets/buildings/bunker.glb",
+      "bytes": 5085168,
+      "sha256": "c9b54e30b99302ddaa0ab486c79318c7bd46c881b9fd11b3f77c60758efaa253",
+      "kind": "model"
+    },
+    {
+      "path": "assets/buildings/farm-ruin.glb",
+      "bytes": 131708,
+      "sha256": "f0978da9e2642f1eb3f92fe461340b911962e0929aa2892077c9c0f9d9822115",
+      "kind": "model"
+    },
+    {
+      "path": "assets/buildings/hangar.glb",
+      "bytes": 242552,
+      "sha256": "af53aa083ffef0eeefcfe115ad82b4088643cfd7c9bbbfcf807311f059e81c60",
+      "kind": "model"
+    },
+    {
+      "path": "assets/buildings/house.glb",
+      "bytes": 1527124,
+      "sha256": "f7acf459193c5469244285599c2ed81e148e7d3e7dbc821f6066305c65a17475",
+      "kind": "model"
+    },
+    {
+      "path": "assets/buildings/observation-post.glb",
+      "bytes": 372332,
+      "sha256": "39b7a3f1b2eb1fa352ad42185730d08b427e3b7516e0de4cc28e332278fdc921",
+      "kind": "model"
+    },
+    {
+      "path": "assets/buildings/town-ruin.glb",
+      "bytes": 214212,
+      "sha256": "9a9c3b1617a6d1c0b046ca3882ebfa965f49c1dd942e84a2bad5a362aa4a7862",
+      "kind": "model"
+    },
+    {
+      "path": "assets/europe-campaign.svg",
+      "bytes": 1617,
+      "sha256": "4a3e79e64de949cba3a3a6d77802d3c1a825c8d463be95997a944cdd3d713d8a",
+      "kind": "image"
+    },
+    {
+      "path": "assets/europe-campaign.webp",
+      "bytes": 138002,
+      "sha256": "fb210c942ffc3171d2516045eb9105a2118da183c32eec32fa64c480b5d78bc9",
+      "kind": "image"
+    },
+    {
+      "path": "assets/pacific-campaign.svg",
+      "bytes": 1725,
+      "sha256": "ab5f71f7ddc41926fcd6bb5cfe419c559b755fc3a0407e710719f3bc519fe5ef",
+      "kind": "image"
+    },
+    {
+      "path": "assets/pacific-campaign.webp",
+      "bytes": 143966,
+      "sha256": "e8896b2da91178c67380958b2605410207c7887e47d2d9dfc328766601dc328e",
+      "kind": "image"
+    },
+    {
+      "path": "assets/remagen/drb0110/drb0110.glb",
+      "bytes": 797032,
+      "sha256": "5a100410a8d2d9bdfb592c4ef0ffadf72ab51f90a74cb5eea9ab6602e4ba93fd",
+      "kind": "model"
+    },
+    {
+      "path": "assets/remagen/ford1940/1940_ford_v8.fbx",
+      "bytes": 2239376,
+      "sha256": "9182f095ca9845f68a479e21f69a9d727849c06d3e1019f5cc0b2e677d3e6a25",
+      "kind": "model"
+    },
+    {
+      "path": "assets/remagen/ford1940/3dcc58e0.png",
+      "bytes": 48299,
+      "sha256": "d227e6d8963c390cf4e56e216b2ab776d4019ed4f5cfe3ffe0609154b4814dc1",
+      "kind": "image"
+    },
+    {
+      "path": "assets/remagen/ford1940/3dcc6220.png",
+      "bytes": 11994,
+      "sha256": "ce65236d9fd1cd31ebf552129ff9c2b7e7c47aa1705878cd5b4a2db9394e54ee",
+      "kind": "image"
+    },
+    {
+      "path": "assets/remagen/ford1940/3dcc6b60.png",
+      "bytes": 57468,
+      "sha256": "c5bc1aff2269c01d4dbe0d6a29ee544da906ef6fee21b0ca629d94243eb36fb2",
+      "kind": "image"
+    },
+    {
+      "path": "assets/remagen/ford1940/3dcc6ee0.png",
+      "bytes": 40055,
+      "sha256": "1584cc40926150c0890c8bfa305dae98d8ed690017c12366b0d2c58af813f54f",
+      "kind": "image"
+    },
+    {
+      "path": "assets/remagen/ford1940/3dcc7120.png",
+      "bytes": 583542,
+      "sha256": "1e333186d599500dbc569c0a8f477bd5d7804a6a0ba821d42191786f05713dd6",
+      "kind": "image"
+    },
+    {
+      "path": "assets/remagen/ford1940/3dddf0e0.png",
+      "bytes": 40035,
+      "sha256": "4a24b29d4d372de3718fd0afd25ab879e843a759d2522e087183d52906e53510",
+      "kind": "image"
+    },
+    {
+      "path": "assets/remagen/ford1940/3dddf460.png",
+      "bytes": 35986,
+      "sha256": "1ff7131073153e5701243c919c7aeb8f843a6b79d608a9adbabf84d597418873",
+      "kind": "image"
+    },
+    {
+      "path": "assets/remagen/ford1940/3dddfda0.png",
+      "bytes": 31046,
+      "sha256": "a052809ed45cc042cd3305683200e313201b7337946eeafe79ad3812757f4299",
+      "kind": "image"
+    },
+    {
+      "path": "assets/remagen/ford1940/3dde0240.png",
+      "bytes": 33553,
+      "sha256": "67e58c318f70e6b93d878ca46839e191b0c738ea6e4486f066a3401c923087a1",
+      "kind": "image"
+    },
+    {
+      "path": "assets/remagen/ford1940/3dde0480.png",
+      "bytes": 17776,
+      "sha256": "b3d5ac03f8a92463cdfaaebcc6f6b2382bbc62d3bbaf5da0cbcee1c93792b226",
+      "kind": "image"
+    },
+    {
+      "path": "assets/remagen/ford1940/3dde1700.png",
+      "bytes": 109048,
+      "sha256": "f5401726c398bc762fe9c2ede22726f83e1e23c9e1a233fa57cb4957d33a03bf",
+      "kind": "image"
+    },
+    {
+      "path": "assets/remagen/ford1940/3dde1ba0.png",
+      "bytes": 8392,
+      "sha256": "7517d5ae0266668f05ae3ace0a25e9703310e5d94ced5c29ce81cd58013aeea4",
+      "kind": "image"
+    },
+    {
+      "path": "assets/remagen/ford1940/3de46900.png",
+      "bytes": 947,
+      "sha256": "948b02ab8590df357b8c0fe00c0399197466e0dc8b175d58588ff545e815e8ee",
+      "kind": "image"
+    },
+    {
+      "path": "assets/remagen/ford1940/3de46a40.png",
+      "bytes": 3190,
+      "sha256": "41418c95c0a3354caaa4df223ab9bd3b05106146a8e403999a4d9507e7acc544",
+      "kind": "image"
+    },
+    {
+      "path": "assets/remagen/ford1940/3df7f900.png",
+      "bytes": 25116,
+      "sha256": "834b32501f0d824f70155b368a21e28aa742ba1c6c0a5cbe4e7725376e6675cf",
+      "kind": "image"
+    },
+    {
+      "path": "assets/remagen/ford1940/3df81960.png",
+      "bytes": 35687,
+      "sha256": "d64612e19177cd8f41c1bf36476b4544ae33474d657ad87e0372a9497c899625",
+      "kind": "image"
+    },
+    {
+      "path": "assets/remagen/ford1940/3df82740.png",
+      "bytes": 16161,
+      "sha256": "912fdcbece97af60023f559dce7036fcc5a81aa3dd7a181af990546015810d3b",
+      "kind": "image"
+    },
+    {
+      "path": "assets/remagen/ford1940/3df82980.png",
+      "bytes": 198,
+      "sha256": "21958d3df289117c59d421b5f3182aecad0d5036005a43a01bf7bb726d8a8716",
+      "kind": "image"
+    },
+    {
+      "path": "assets/remagen/ford1940/3dfca020.png",
+      "bytes": 2497,
+      "sha256": "0707d3983960758d2446dcd48a906e62993849b34dec9ec75c413d2caff6f949",
+      "kind": "image"
+    },
+    {
+      "path": "assets/remagen/ford1940/internal_ground_ao_texture.jpeg",
+      "bytes": 18397,
+      "sha256": "2288235d362c837f49905f28cb17cc6463e0064e66a60f30daf9380b6623b64c",
+      "kind": "image"
+    },
+    {
+      "path": "assets/remagen/horse/quaternius_horse.glb",
+      "bytes": 1108124,
+      "sha256": "fae7a7ec91e0d6a33554efb896fac9c4e8c632644183bcb8cc962f673d3ce609",
+      "kind": "model"
+    },
+    {
+      "path": "assets/ships/fletcher.glb",
+      "bytes": 2384584,
+      "sha256": "caad31ef5d5a1eea12f2b42555e95409561fd3321e62cfd5780ba8a64bcbb51b",
+      "kind": "model"
+    },
+    {
+      "path": "assets/ships/japanese-cargo.glb",
+      "bytes": 3745304,
+      "sha256": "07f8d7ed988c18430d5db8a8cf2b31d2f321da67939881ae347572e1972b1f9c",
+      "kind": "model"
+    },
+    {
+      "path": "assets/ships/ko-hyoteki.glb",
+      "bytes": 1424360,
+      "sha256": "231f04bb9b2c277a0253c2f343d8aa77630031bb1b8e413ca8ef364312fa4838",
+      "kind": "model"
+    },
+    {
+      "path": "assets/ships/landing-ship.glb",
+      "bytes": 4321916,
+      "sha256": "29d2f4620a6989e8038fc38b62853e5ead597f4a845f9cb1c6d9a17e3157314d",
+      "kind": "model"
+    },
+    {
+      "path": "assets/ships/liberty.glb",
+      "bytes": 9249748,
+      "sha256": "18e1019a667b59668f9326dc9bba554873215894262724161aa46e82f4f75f0d",
+      "kind": "model"
+    },
+    {
+      "path": "assets/ships/samidare.glb",
+      "bytes": 11997084,
+      "sha256": "b4eba4977d7ef97235599788c7820fe8a19187ebbd3bfb3e89b3fc6f1998e978",
+      "kind": "model"
+    },
+    {
+      "path": "audio/flight-atmosphere.js",
+      "bytes": 5186,
+      "sha256": "0ef4129a2cf6d74b7b9559c18f8bc881561a40eff72198dbc7c6e921f0681f57",
+      "kind": "code-or-notice"
+    },
+    {
+      "path": "audio/jet-engine.js",
+      "bytes": 3164,
+      "sha256": "da51cae254e0287fa36c08c263099bb730ea8a5b42c82f83f96a3d3f342f1a53",
+      "kind": "code-or-notice"
+    },
+    {
+      "path": "audio/weapon-sound.js",
+      "bytes": 1618,
+      "sha256": "73176c8cdcacaaebd784df97b321951fe7b44716aaace29f3dfb81c36c7f5fab",
+      "kind": "code-or-notice"
+    },
+    {
+      "path": "b17.glb",
+      "bytes": 6027460,
+      "sha256": "f21be57500ed897183ff73d20131226c150b569bb03784fe10d20adc47154a58",
+      "kind": "model"
+    },
+    {
+      "path": "b24.glb",
+      "bytes": 5939004,
+      "sha256": "5366c1b690c559d1e25291cd16191886de8c5864266528d5acc28510c4adc761",
+      "kind": "model"
+    },
+    {
+      "path": "bf109new.glb",
+      "bytes": 3461468,
+      "sha256": "bd6c828563ad0aa0a0c2f89067f68491afedb5df8eb3504900c31b4f0aaed6bf",
+      "kind": "model"
+    },
+    {
+      "path": "campaign.js",
+      "bytes": 731,
+      "sha256": "36a9a811cc1687a5515a637689111315bf027af20a692b0161e2ac522c094aad",
+      "kind": "code-or-notice"
+    },
+    {
+      "path": "carrier-recovery.js",
+      "bytes": 2662,
+      "sha256": "d3e22151b060dd78149ba3632390ac4106c1a89ef5a8a288e7dd79c5ce9a7c41",
+      "kind": "code-or-notice"
+    },
+    {
+      "path": "checkpoint-pacific.js",
+      "bytes": 6368,
+      "sha256": "21fc13a04c01c46ae2e563752a23695265a4901f1e50aff2d255b7e7ec461ab7",
+      "kind": "code-or-notice"
+    },
+    {
+      "path": "checkpoint-rhine.js",
+      "bytes": 4815,
+      "sha256": "2adf4d4b10d0e27117cf2a3c1e1d67aacbfb5eaaf8af9225db2c1e0530124afa",
+      "kind": "code-or-notice"
+    },
+    {
+      "path": "combat-fx.js",
+      "bytes": 7845,
+      "sha256": "c1b67a1c61edf7a5900b9f79c2f26aee0c1849bbfe608a3a050b838830e71f34",
+      "kind": "code-or-notice"
+    },
+    {
+      "path": "crew-visuals.js",
+      "bytes": 6308,
+      "sha256": "76a1d601e41fa485bf0a984724ab73616e017b5ef99b68a258d25f73752b450f",
+      "kind": "code-or-notice"
+    },
+    {
+      "path": "deck-activity.js",
+      "bytes": 9914,
+      "sha256": "10d55bb6dd5611af650c4ece75a60db4d63ffe55b6cc93381d74baca02e635d4",
+      "kind": "code-or-notice"
+    },
+    {
+      "path": "enemy-bailouts.js",
+      "bytes": 2718,
+      "sha256": "b994931bc345769767923756db5d2e5a84c7382f468acac224f0e2a034279e77",
+      "kind": "code-or-notice"
+    },
+    {
+      "path": "f4u-1c_corsair_war_thunder.glb",
+      "bytes": 16443976,
+      "sha256": "b9a4ef749a786743dfaf19d5a36262d570734dad4c48e516857d4650150c329a",
+      "kind": "model"
+    },
+    {
+      "path": "flak88_sfl.glb",
+      "bytes": 14888828,
+      "sha256": "4095ba76835dbc07d494c6d324837daa3b6c84e09ef21299e94554fb06ae6b7a",
+      "kind": "model"
+    },
+    {
+      "path": "flare-support.js",
+      "bytes": 3439,
+      "sha256": "4e9e15105400590c81cb4d59e1c9aebf62402adad36d3ddeab6a1a60114bdf24",
+      "kind": "code-or-notice"
+    },
+    {
+      "path": "flight-indicators.js",
+      "bytes": 2296,
+      "sha256": "ed7d0b104c6bba9826ddf1c3ce1774cd94efe448403c1535bed21c48ea6a604d",
+      "kind": "code-or-notice"
+    },
+    {
+      "path": "flight-support.js",
+      "bytes": 9918,
+      "sha256": "2b4170ed727cd25c033015fe33bf31d03c89c820d5f14aaa7a8c16accd9ee568",
+      "kind": "code-or-notice"
+    },
+    {
+      "path": "fortification-assets.js",
+      "bytes": 2289,
+      "sha256": "c13e478bbee86be4605872d6d0c67305f8297dc26b2966777b6f0b0a91947d85",
+      "kind": "code-or-notice"
+    },
+    {
+      "path": "fw190.glb",
+      "bytes": 5702612,
+      "sha256": "6ea8ecf36027d49b69fa8eeb5da02987675bfe7f410b88543a2a9ab7c1da1811",
+      "kind": "model"
+    },
+    {
+      "path": "game-runtime.js",
+      "bytes": 15977,
+      "sha256": "6618b052f9ce102fc2b164a713bb1add3905ab1c7183c44ac604823c698825b7",
+      "kind": "code-or-notice"
+    },
+    {
+      "path": "ground-dust.js",
+      "bytes": 5810,
+      "sha256": "bb89577aeeed720fc87ed059fa9b964fc335c1fdf5be51cb78b12eb82f81f3f5",
+      "kind": "code-or-notice"
+    },
+    {
+      "path": "ground-run.js",
+      "bytes": 1859,
+      "sha256": "b76357f648edf9963334b0dafb0a4d499ce79271f0d7c84ad34ef312e362cced",
+      "kind": "code-or-notice"
+    },
+    {
+      "path": "grumman tbm avenger.glb",
+      "bytes": 15080808,
+      "sha256": "9065b7e65419b2efd4618bcb138ce199d16ac3151801d2d90afb7ae92ebb10a6",
+      "kind": "model"
+    },
+    {
+      "path": "ijn carrier.glb",
+      "bytes": 11345996,
+      "sha256": "a0c2a40f01faaa97218ed23f3f13bfc688a4440df4cc9fa9aa6a043d6b6017e5",
+      "kind": "model"
+    },
+    {
+      "path": "index.html",
+      "bytes": 7260,
+      "sha256": "e6a8ba7dc1c7686c1da49ddf493beb4431259fa80cd2ba7ee73318a1d71cd927",
+      "kind": "code-or-notice"
+    },
+    {
+      "path": "jagdpanther.glb",
+      "bytes": 12763168,
+      "sha256": "4324d874f5ab4717336cc420f2d26810d2cc3ea19338064e7e5abed6c6d25b0b",
+      "kind": "model"
+    },
+    {
+      "path": "ju87.glb",
+      "bytes": 17381696,
+      "sha256": "63f1e3c0448edcc332cdbd3c26f40a04758be11df558937c19d0ea59b03fa9b6",
+      "kind": "model"
+    },
+    {
+      "path": "m16_mgmc.glb",
+      "bytes": 13651260,
+      "sha256": "eb836c5d64ad2b04bb6f7e0dca5dcd121dbfc2983805b084d44fb60c0be9b463",
+      "kind": "model"
+    },
+    {
+      "path": "maritime-weather.js",
+      "bytes": 8759,
+      "sha256": "ceb47ea2de117b52b0fa51de152677c14e7ece1e4b532603efe1469d91f21888",
+      "kind": "code-or-notice"
+    },
+    {
+      "path": "me163.glb",
+      "bytes": 4974720,
+      "sha256": "1ac6f59cd3b06aa613ea497462936094ce6e50eb4b9eef8f0f3f73460f8a848e",
+      "kind": "model"
+    },
+    {
+      "path": "me262.glb",
+      "bytes": 4503732,
+      "sha256": "bddfaf0fcc3971045566cb3e0616ca3c6dec3d213aa2869f5a1576dc9d6206d5",
+      "kind": "model"
+    },
+    {
+      "path": "menu-layout.css",
+      "bytes": 10937,
+      "sha256": "686ac167f6750781be2fc246de921c197cbd6ac07af036276f84e74f89066d55",
+      "kind": "code-or-notice"
+    },
+    {
+      "path": "naval-assets.js",
+      "bytes": 2577,
+      "sha256": "afc81509d8239b1cace4baf184b296d8076e6aaad6f3a88d5f1857078b329e78",
+      "kind": "code-or-notice"
+    },
+    {
+      "path": "okinawa/data.js",
+      "bytes": 650863,
+      "sha256": "579d3cfc40686f3a99abf5abe8b4a00718f201851f305ca9d9ebb8c9f5bc1f64",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "okinawa/viewer.js",
+      "bytes": 12005,
+      "sha256": "a634be40c132e1c8ed4ec348113d8714455c1ddee5172b78773512b832db84bd",
+      "kind": "code-or-notice"
+    },
+    {
+      "path": "okinawa/world.js",
+      "bytes": 42330,
+      "sha256": "d007c431b875fb1ce2add118045241547bfca7b855dfca530083d97b2432f194",
+      "kind": "code-or-notice"
+    },
+    {
+      "path": "operation-plans.js",
+      "bytes": 8096,
+      "sha256": "37c7bb79849fc4ff9208479a805574af1bfef9f5e296b818373f8e316d5b7bd8",
+      "kind": "code-or-notice"
+    },
+    {
+      "path": "ordnance.js",
+      "bytes": 2085,
+      "sha256": "5da46cd7c6b5bc0f79ad6fb950872c21ef1d08ad9a8ed71fa524dd93e939b65f",
+      "kind": "code-or-notice"
+    },
+    {
+      "path": "p47new.glb",
+      "bytes": 8029172,
+      "sha256": "61cb9510ad9ffc5eeb25abbd5eb620b0e17fb49f44b2e78fb6ba09b681e38174",
+      "kind": "model"
+    },
+    {
+      "path": "pacific-assets.js",
+      "bytes": 2656,
+      "sha256": "616b2e7066b2e9e9a4a7b7cb0e279c55814287b04b49959012ef9148bc646e5c",
+      "kind": "code-or-notice"
+    },
+    {
+      "path": "pacific-theater.js",
+      "bytes": 17002,
+      "sha256": "8667d42c3d36d48b40d379cec4731181d035b6059c6b6d78087ab560a37d6131",
+      "kind": "code-or-notice"
+    },
+    {
+      "path": "pilot-bailout.js",
+      "bytes": 5025,
+      "sha256": "9a6aba5709d7c727ba3583d1b2794c697ac3c40ca96a2366a5498cf8021fb842",
+      "kind": "code-or-notice"
+    },
+    {
+      "path": "pilot-rescue.js",
+      "bytes": 13027,
+      "sha256": "24e3c2aa4c0c2c492a5bb64aa3fca74c55326ad4e5cc4e2474dbdfc86dfb67be",
+      "kind": "code-or-notice"
+    },
+    {
+      "path": "radio-intercept.js",
+      "bytes": 2383,
+      "sha256": "d0885392f144925be7531256904cb598d2a771ea2ee4a973038f6f7b7a17ed5c",
+      "kind": "code-or-notice"
+    },
+    {
+      "path": "remagen-mission.html",
+      "bytes": 358781,
+      "sha256": "fa2980c51632ed806c07fe8044927e98e698759f9a125d5c3561ed89177a3b5d",
+      "kind": "code-or-notice"
+    },
+    {
+      "path": "runway-lights.js",
+      "bytes": 3140,
+      "sha256": "b3bb12d36fc1bef76fd130def56d7069952b22de80f4bb5145c1ef3eac63118f",
+      "kind": "code-or-notice"
+    },
+    {
+      "path": "sbd dauntless.glb",
+      "bytes": 10739532,
+      "sha256": "02dc31dae8fcd29e130d4007e24c0887507bed62d018a3801af2cf2905d90b55",
+      "kind": "model"
+    },
+    {
+      "path": "sherman_m4a1.glb",
+      "bytes": 18796228,
+      "sha256": "fd1c8651befd8dc5f8cce22449e4d42f8c18337861f22e28c544c93fe50f889b",
+      "kind": "model"
+    },
+    {
+      "path": "ship-contact.js",
+      "bytes": 8355,
+      "sha256": "2dee2cb3047c00553dd8924a45dfccbdb6072f203739f53b11ec94b4d9d822be",
+      "kind": "code-or-notice"
+    },
+    {
+      "path": "ship-damage.js",
+      "bytes": 6851,
+      "sha256": "769ed54e8a26b93b099c47a2d72770aa377dd0c2d0243124068299e8ef9f4ee0",
+      "kind": "code-or-notice"
+    },
+    {
+      "path": "ship-wakes.js",
+      "bytes": 5228,
+      "sha256": "fbe9acc5178d66c9db7819eeeddd7ef98d341674e1a7882688cec02c15853079",
+      "kind": "code-or-notice"
+    },
+    {
+      "path": "sortie-checkpoint.js",
+      "bytes": 10446,
+      "sha256": "db6d89f4dd2f943b625ec22ba0d9f32e0f072cf6c813676727b5c27814a0610b",
+      "kind": "code-or-notice"
+    },
+    {
+      "path": "sortie-features.js",
+      "bytes": 9390,
+      "sha256": "a2df7836dd5713a17e1c86944803e46ca3efc52cad07561117e2beb2e6c6d19e",
+      "kind": "code-or-notice"
+    },
+    {
+      "path": "sortie-fuel.js",
+      "bytes": 898,
+      "sha256": "d53585d3f7f18f6e25edeaaaf7ef75f5451221e5ad78f08277d7c1282086949f",
+      "kind": "code-or-notice"
+    },
+    {
+      "path": "sortie-service.js",
+      "bytes": 2856,
+      "sha256": "df84e55296bffd3605c7fe109af8220833f39ff262a26b35d7bf0e7ff478da47",
+      "kind": "code-or-notice"
+    },
+    {
+      "path": "sortie-systems.js",
+      "bytes": 10374,
+      "sha256": "412bd1ba0be21fe95bee054d5ac5411c8d811cc1b2dce4ce14dcff5280ebc9d1",
+      "kind": "code-or-notice"
+    },
+    {
+      "path": "terrain-system/AircraftGround.js",
+      "bytes": 8164,
+      "sha256": "54599b01e15d123395c8e196597e340b3e0fe5778bedbfe724e12de175404130",
+      "kind": "code-or-notice"
+    },
+    {
+      "path": "terrain-system/AirfieldActivity.js",
+      "bytes": 18257,
+      "sha256": "9c236ab4eff9f6ba394c8e786e98f6343ce2544c22da3ee1d54e17e6af0ec95d",
+      "kind": "code-or-notice"
+    },
+    {
+      "path": "terrain-system/AirfieldDetails.js",
+      "bytes": 8031,
+      "sha256": "95c33f29e0086c52d22bc52e81a5479b5e71b8fa6f89f29ba1d53cb6cd1cfd5e",
+      "kind": "code-or-notice"
+    },
+    {
+      "path": "terrain-system/HeightProvider.js",
+      "bytes": 10009,
+      "sha256": "e72861b3e27370a80cbffad7be132581656a49c7db10c00c28ea2d570589eae1",
+      "kind": "code-or-notice"
+    },
+    {
+      "path": "terrain-system/HistoricalObjectManager.js",
+      "bytes": 11846,
+      "sha256": "e602750b5e337446b013c213f0ec67ce4cf6c0f2ac0d37339bdceb3b22012af4",
+      "kind": "code-or-notice"
+    },
+    {
+      "path": "terrain-system/LivingWorld.js",
+      "bytes": 29635,
+      "sha256": "a800b3ffea1eea0eabc516fa28d6f3e2fb22cc189790bc0fedb3419fd7b93bfe",
+      "kind": "code-or-notice"
+    },
+    {
+      "path": "terrain-system/OSMManager.js",
+      "bytes": 76761,
+      "sha256": "503b0b393286e039e3c8e8167a2bca64352e415a7db9ed3a98e6f0576c7a4def",
+      "kind": "code-or-notice"
+    },
+    {
+      "path": "terrain-system/PeriodBuildings.js",
+      "bytes": 9340,
+      "sha256": "1f86b27332bc2b913186d624bd456b2e7ab7b29ef38ab4f6411d1b9485f0fe1a",
+      "kind": "code-or-notice"
+    },
+    {
+      "path": "terrain-system/TerrainManager.js",
+      "bytes": 25091,
+      "sha256": "1ad6b8f3b1be17fdce90e79222334affa3694a415475ded3ba1b5a4791bbf53e",
+      "kind": "code-or-notice"
+    },
+    {
+      "path": "terrain-system/TerrainTile.js",
+      "bytes": 20125,
+      "sha256": "72c98e06dbd1eba6bce5310d33f31bca12368486363f8d79d9319322c9091fbc",
+      "kind": "code-or-notice"
+    },
+    {
+      "path": "terrain-system/VegetationManager.js",
+      "bytes": 6551,
+      "sha256": "c1c49fbadb6a658f7bbd46934e3fa4f42ef87000bf6f369be58efd1a98165ccc",
+      "kind": "code-or-notice"
+    },
+    {
+      "path": "terrain-system/WaterRoadManager.js",
+      "bytes": 8437,
+      "sha256": "9b2577f8f5f775a4741fcdb203dc53a2f93c9e6471736eec1a938096871ddee8",
+      "kind": "code-or-notice"
+    },
+    {
+      "path": "terrain-system/WorldStreamer.js",
+      "bytes": 11084,
+      "sha256": "d4bcc36211530ded446d9a96dda09fc00bcdd8b93052bd6f2b12320f43914831",
+      "kind": "code-or-notice"
+    },
+    {
+      "path": "terrain-system/WorldVehicles.js",
+      "bytes": 9355,
+      "sha256": "1dcc274acb9399b6be1e33b7ed658e8e0cc6dc6fe8c634da83e66ac28eb4111f",
+      "kind": "code-or-notice"
+    },
+    {
+      "path": "terrain-system/data/dem/-1_-1.bin",
+      "bytes": 16916,
+      "sha256": "d1648f79f10cc106acdcecc9f891b2faedea67d89b74f59e772ed6ad472fb2d8",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/data/dem/-1_-2.bin",
+      "bytes": 16916,
+      "sha256": "641ed2820ad2b4d2d0a4e086b52579b5b6114293c319c28fce4353891be1d483",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/data/dem/-1_0.bin",
+      "bytes": 16916,
+      "sha256": "f89304741b4c205ef4b698818c75ae6cfa8a81c0cb91102ebc97a63259b2a6d1",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/data/dem/-1_1.bin",
+      "bytes": 16916,
+      "sha256": "46afff651c7b0ec7a1de4f8ab3e75e5a815969b166d769f491eff08a5555cb26",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/data/dem/-1_2.bin",
+      "bytes": 16916,
+      "sha256": "54077ecf96ee240991d52c7f2dee9ea1f850c99d5ade81176f4ee991e50bb1e5",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/data/dem/-2_-1.bin",
+      "bytes": 16916,
+      "sha256": "58de2a3555d1f32ed41e8e3d1558c803ebb1b3d57b42b0c8f65c78ea1ea77183",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/data/dem/-2_-2.bin",
+      "bytes": 16916,
+      "sha256": "14b8041e8e3b9496d9cab80807c473bfbf4b1a1385d4f86a22184e7c09726d67",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/data/dem/-2_0.bin",
+      "bytes": 16916,
+      "sha256": "3900dc401ec97681c643ce7abd7ac556bd1bee448ec670a001cc0b6562e77e37",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/data/dem/-2_1.bin",
+      "bytes": 16916,
+      "sha256": "4124d5da1ff513056881d32a8d95b96bd476afebac1ff741d0c1e777b1050191",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/data/dem/-2_2.bin",
+      "bytes": 16916,
+      "sha256": "655ac9bc4002cac3a4487fb0c308b779d1ebe0fef2ced6ece41924acbe9aba95",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/data/dem/0_-1.bin",
+      "bytes": 16916,
+      "sha256": "841b1f42e5b3a55382aa4273a220e3b4df8990f810cab1a3db8d5793136670bb",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/data/dem/0_-2.bin",
+      "bytes": 16916,
+      "sha256": "964529f2ba40cc80efae4903245c19e3168ef115b46c1484fc89416aafab099b",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/data/dem/0_0.bin",
+      "bytes": 16916,
+      "sha256": "2ca7c975a4d02bcc39f1da860ca0acf85c6b1bffbc7af24eeb818fe80308859f",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/data/dem/0_1.bin",
+      "bytes": 16916,
+      "sha256": "40a755d05d547e24551714e46b243c5145d686755b5711185fd95e386340481c",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/data/dem/0_2.bin",
+      "bytes": 16916,
+      "sha256": "27d1f81503a4dbffec370af4a7830fd98367986144648d06b7a724946b0574f1",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/data/dem/1_-1.bin",
+      "bytes": 16916,
+      "sha256": "b0f0c68c25aedf985ce80d15e829c43801261fe6e9c4c9dc8e3f8df4db8aeb69",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/data/dem/1_-2.bin",
+      "bytes": 16916,
+      "sha256": "be354615cd2ce166afa87c7610aaec3ac20d15b7e108d8f3efbc32709dba474e",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/data/dem/1_0.bin",
+      "bytes": 16916,
+      "sha256": "4e634cf3c819aded93e02a54dca8cd395d15c81e8960b575e92ade8533407116",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/data/dem/1_1.bin",
+      "bytes": 16916,
+      "sha256": "7ec9d4d8f6312f3702c072a6995a7eae2344296fc0e5ad8c4c4f907cfdd53db0",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/data/dem/1_2.bin",
+      "bytes": 16916,
+      "sha256": "c3ad2473246b65e740703c4aed79ff5ff70610ed9a7d13ee6a4f7dc7d81fb38a",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/data/dem/2_-1.bin",
+      "bytes": 16916,
+      "sha256": "a8fe1cf85af8fb1473b1d2681223329cf26cb3fd0050c6f582c272ea55cd972b",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/data/dem/2_-2.bin",
+      "bytes": 16916,
+      "sha256": "df623c590968aae2fead6487fe3e58cf2afcd2adba42b54943d9a362090014a8",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/data/dem/2_0.bin",
+      "bytes": 16916,
+      "sha256": "599beb9e01a9bc2bf9611a4bd24e2275cfb087a3ce274e175f34a8838264bb28",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/data/dem/2_1.bin",
+      "bytes": 16916,
+      "sha256": "d8c2568fd8caea94e2e6e9041f0e66e75faf3cc87f55d426ed16a34d7708dadd",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/data/dem/2_2.bin",
+      "bytes": 16916,
+      "sha256": "9c7b2667787285844762e8a674d1063fb81783fef31ac7aaa33c2d352e13aa69",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/data/historical/-1_0.json",
+      "bytes": 174,
+      "sha256": "0fe15114f846cafb0c441a4710369676e9f095513676e526b723c924181e1cf5",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/data/historical/-2_1.json",
+      "bytes": 120,
+      "sha256": "612d394c40bec63c70eb3e1f887fd21602e589571e09702d0b9f2d55b831cde9",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/data/historical/0_0.json",
+      "bytes": 143,
+      "sha256": "ae6ced72c24d0e7c540dab0801d50421772cdb0321533321bcff06c618abaee9",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/data/osm/-1_-1.json",
+      "bytes": 103,
+      "sha256": "0884eb4a8d656ce30a865f12c4f05abeffc2ef7b97dc1cb8abe73223fd9bfe3a",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/data/osm/-1_-2.json",
+      "bytes": 103,
+      "sha256": "0884eb4a8d656ce30a865f12c4f05abeffc2ef7b97dc1cb8abe73223fd9bfe3a",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/data/osm/-1_0.json",
+      "bytes": 8906,
+      "sha256": "188ea3e45e4ff0eeb2c390e4aed557bd1be0beecb5638aad753e7f3999bdfa92",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/data/osm/-1_1.json",
+      "bytes": 300,
+      "sha256": "d59b6627e568c35c06b12441691108686b55025bff31b097b2b189938cd5b1d9",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/data/osm/-1_2.json",
+      "bytes": 533,
+      "sha256": "3f92e389c5d9a969adebd9b5fc52a7ca06decd205908f47751ef89e04c91c816",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/data/osm/-2_-1.json",
+      "bytes": 990,
+      "sha256": "7d774192a7ac152da057581a293031bd95165c0868c1e9e78ab7bb1bb8a28c84",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/data/osm/-2_-2.json",
+      "bytes": 701,
+      "sha256": "b1df08c7f2b0722c11c04d48af4c4475450bbb1c87f3331f9fac8b878c174578",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/data/osm/-2_0.json",
+      "bytes": 7273,
+      "sha256": "b24f026c23217b0c813b8ebd0269fcb5ffacc3a72107f0fc1834a2f67294a102",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/data/osm/-2_1.json",
+      "bytes": 541,
+      "sha256": "62b77c510d3d392952b2e16c25d5a52638217b3b7258d7ac72c2e2673f9b1175",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/data/osm/-2_2.json",
+      "bytes": 299,
+      "sha256": "f41acf820c13826d7dbe4cfead86d06db58cfc0125c8296e1d5ede335ea64c86",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/data/osm/0_-1.json",
+      "bytes": 103,
+      "sha256": "0884eb4a8d656ce30a865f12c4f05abeffc2ef7b97dc1cb8abe73223fd9bfe3a",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/data/osm/0_-2.json",
+      "bytes": 776,
+      "sha256": "cdf85be5d1c7281423daf09acaa981fbf9eef74a1ce4a69c790dccf6b3b99af9",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/data/osm/0_0.json",
+      "bytes": 5912,
+      "sha256": "44a9cefb5c1fbfa7b526a1fd63d0eb3b019abb7eafeb20b0425f1f96369c8cea",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/data/osm/0_1.json",
+      "bytes": 2258,
+      "sha256": "29289f12c7981279934426f58dcb5f8dd187cff4059959b909b9a617ee34182f",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/data/osm/0_2.json",
+      "bytes": 299,
+      "sha256": "ff16991b8958fc357080517005f911f94bb2034b49a309485662f47d6edede06",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/data/osm/1_-1.json",
+      "bytes": 103,
+      "sha256": "0884eb4a8d656ce30a865f12c4f05abeffc2ef7b97dc1cb8abe73223fd9bfe3a",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/data/osm/1_-2.json",
+      "bytes": 103,
+      "sha256": "0884eb4a8d656ce30a865f12c4f05abeffc2ef7b97dc1cb8abe73223fd9bfe3a",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/data/osm/1_0.json",
+      "bytes": 4607,
+      "sha256": "36abd92fdf27d8541015123997eefb6a1e2ddcb735f1474604dbc59245e73043",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/data/osm/1_1.json",
+      "bytes": 3807,
+      "sha256": "059b3ce3d448c99b360177c6d1e25e66fedbbdcf6ed0fb1495c83b81ff76f0cb",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/data/osm/1_2.json",
+      "bytes": 303,
+      "sha256": "0903b3da578bbb53f96f4fa617fc2be5f043632c323a06fc54ae6f76d0e0b9f3",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/data/osm/2_-1.json",
+      "bytes": 586,
+      "sha256": "4d4ac05a8ec71acc5beeca117966eabd4ea8acaebdd0671d31beaeeb184cff61",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/data/osm/2_-2.json",
+      "bytes": 299,
+      "sha256": "1c6a64dd9838efb8d9e375fbab5ae6f7a7f01f1fd4350b55a742e785498a402c",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/data/osm/2_0.json",
+      "bytes": 7944,
+      "sha256": "35ea750955ab74c84877e7dce243ad53ffe76f863876378c8bdccdaf3f0ac4eb",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/data/osm/2_1.json",
+      "bytes": 502,
+      "sha256": "c8ddc156e9520b2982ab07cf1c5df7adf6ba3a7e6d36c1965914655f80399fe7",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/data/osm/2_2.json",
+      "bytes": 1113,
+      "sha256": "c2c523be1a199ccb7d294371fca4ae6b99478a271ec1bb5188f15727fbd3e105",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/real/config.json",
+      "bytes": 1462,
+      "sha256": "32896f6cab2c3abd650a03066ce6652273637311c9e05a699b8907afae931709",
+      "kind": "code-or-notice"
+    },
+    {
+      "path": "terrain-system/real/data/dem/0_0.bin",
+      "bytes": 16916,
+      "sha256": "7caecf0d7184b46b9fb9597bd9287813fec514913435dd2e2efdddcb957efe38",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/real/data/dem/0_1.bin",
+      "bytes": 16916,
+      "sha256": "891f14290ac204d6f005f7609b08c0d5c58dd7973c98377d6578db2f62a1df11",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/real/data/dem/0_2.bin",
+      "bytes": 16916,
+      "sha256": "8ae83ab6c8525b1bd044bfd4509944e232b21cb9c083b396461514f3e1298ab1",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/real/data/dem/0_3.bin",
+      "bytes": 16916,
+      "sha256": "5b36985ed1812dc012fc8840eda14132b4c454c3c463fcd433057a4a3590bfbc",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/real/data/dem/0_4.bin",
+      "bytes": 16916,
+      "sha256": "e85557593029402cd8f0a39a4508f5b76365f153e5cb17a7722dd72426c521f1",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/real/data/dem/0_5.bin",
+      "bytes": 16916,
+      "sha256": "6f10c22c358fdbc009e8ea500debdb43dd85ef9e5aa627b555c2c34cc6916df5",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/real/data/dem/0_6.bin",
+      "bytes": 16916,
+      "sha256": "f85ba7e86831ca8464fd688d11b2bdaa3918268c3533435a3c490ea2f4f8d836",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/real/data/dem/0_7.bin",
+      "bytes": 16916,
+      "sha256": "c9bbd04706ee83aaa076e67dbaa5e82c276ee932a1f11c56b7513c388753fb7e",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/real/data/dem/1_0.bin",
+      "bytes": 16916,
+      "sha256": "828b47deac09df3f5eac14dad725401e3d4d4169d7e3e0c0d1207b8e88376aff",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/real/data/dem/1_1.bin",
+      "bytes": 16916,
+      "sha256": "2bf71b265d883a55bf8dfb76caec4514f6d6fad886c1eb47ad51f3b9b6ffe3ec",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/real/data/dem/1_2.bin",
+      "bytes": 16916,
+      "sha256": "c9fca9fc7949c8eb83a3306191775d4c86deec15a73af2889381a484aa912354",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/real/data/dem/1_3.bin",
+      "bytes": 16916,
+      "sha256": "c22211a10ece28896ffb9ce5a4e41ff0b42fa74e6913c380d2b11259d9d3aa2a",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/real/data/dem/1_4.bin",
+      "bytes": 16916,
+      "sha256": "81551181f39fc0a8100adcc975d002c810abfb030b3de8a38d565e6c458672f8",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/real/data/dem/1_5.bin",
+      "bytes": 16916,
+      "sha256": "8579c0878b7c9ad9210c60909c3744c185054c4f385d41c6ce99f58a9accdbc5",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/real/data/dem/1_6.bin",
+      "bytes": 16916,
+      "sha256": "ebaa1751d48f34156d6e5484fc526391cb6ac730298997f28fdd4705561af783",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/real/data/dem/1_7.bin",
+      "bytes": 16916,
+      "sha256": "c7cea58b5f82cab6120c0a6de286b7f9157a0e4df31f4d9cdb563e0cc5dcaf8a",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/real/data/dem/2_0.bin",
+      "bytes": 16916,
+      "sha256": "dcab9e1e716ae744a2bff3da59d0a2d00f01e469f83cf101761f49068905ebce",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/real/data/dem/2_1.bin",
+      "bytes": 16916,
+      "sha256": "9510e4b8c7763a8789dd6c186d6d900518b1bf54c2b6e3e1c3386906a5dc822c",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/real/data/dem/2_2.bin",
+      "bytes": 16916,
+      "sha256": "25ec0d45979f191f226dae88581a11732deaa774f22cee30f5628d0adfe0e6b5",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/real/data/dem/2_3.bin",
+      "bytes": 16916,
+      "sha256": "04b256f1f64bd8997294ac000877c342ef087811bd32e5ed7ab51cd16f784cc8",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/real/data/dem/2_4.bin",
+      "bytes": 16916,
+      "sha256": "48fea4fdd1ae3bc8986ccf495053821151e48569dda546a53f1fb7af7c36a642",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/real/data/dem/2_5.bin",
+      "bytes": 16916,
+      "sha256": "6b6d2c60b9bd90f4cd5301fad3de74aa4bc18c385e0a47d26fead44987e3e52a",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/real/data/dem/2_6.bin",
+      "bytes": 16916,
+      "sha256": "7294f901bbc9f62b8dfdb17ed06776f19017095246c0ab27705207cf09b11b37",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/real/data/dem/2_7.bin",
+      "bytes": 16916,
+      "sha256": "08457a99dcf2e79214bfa38ee35c0eb18e99f9bc283bbf94745fb45ec389cbd5",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/real/data/dem/3_0.bin",
+      "bytes": 16916,
+      "sha256": "0911fbdce33bbdd01abc729d4922918c887bc16ee9febd55689927dad08cbf4f",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/real/data/dem/3_1.bin",
+      "bytes": 16916,
+      "sha256": "40b56b654a5c54fb74bbc779bc00151c99f855c723fde644b5046f88a496139d",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/real/data/dem/3_2.bin",
+      "bytes": 16916,
+      "sha256": "bd31cefbc7abdd7e4ae268163b44a9db53667f78331d89427daed019a99ad985",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/real/data/dem/3_3.bin",
+      "bytes": 16916,
+      "sha256": "812e86d4d5cbf4e87a27fdb26097f92cf4868b12fb59e35f96f3c06aafa60585",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/real/data/dem/3_4.bin",
+      "bytes": 16916,
+      "sha256": "7477fbc98e7fb73bb97b437fe502de3c3e4f60370f5bfd707a934faa12e792d1",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/real/data/dem/3_5.bin",
+      "bytes": 16916,
+      "sha256": "6d19717d66e1ac4b7d6647dfb643a4b67050d89f31bfdc933a792ef8d1976f54",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/real/data/dem/3_6.bin",
+      "bytes": 16916,
+      "sha256": "2e8b74a647b971e2ba26a3230fbe5bf4b3d3d291e98bd9dc5f5eb29edc31cc52",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/real/data/dem/3_7.bin",
+      "bytes": 16916,
+      "sha256": "755bab7ff20f51ce1f42d814bf324688b3b0eedfc6b56a6ab655ce2b2ffe4c38",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/real/data/dem/4_0.bin",
+      "bytes": 16916,
+      "sha256": "ce626b2636f4e952115d373e8d2a5d910fcc1b0285c96607d972311ac966e648",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/real/data/dem/4_1.bin",
+      "bytes": 16916,
+      "sha256": "3e6e0dea1820c6d269efa5c124c453cff1b8ca82113fbd772e6f115c03c1c873",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/real/data/dem/4_2.bin",
+      "bytes": 16916,
+      "sha256": "1e02504315fd22c8868ff2227afe034db55d32b8320b2b4e06a7099ea490ab2e",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/real/data/dem/4_3.bin",
+      "bytes": 16916,
+      "sha256": "4968a284a38f118601d5d95b9b1eba0531f9683e1652aba43d089f98b89f2fa5",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/real/data/dem/4_4.bin",
+      "bytes": 16916,
+      "sha256": "cffaa0da5037ef50b29ddbcd0c2cf840d445b6e3fcd993daca458a39bcbea815",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/real/data/dem/4_5.bin",
+      "bytes": 16916,
+      "sha256": "c120a4e63ffa5f00e4e9aee4c31c5eaf99b8a9a96dd7db28778bfd6c969e0992",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/real/data/dem/4_6.bin",
+      "bytes": 16916,
+      "sha256": "31d78d3f1170ed208cabef65f6ca180b6a8804a70b913683688434639da34f85",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/real/data/dem/4_7.bin",
+      "bytes": 16916,
+      "sha256": "33ec9b31031da1d7b045859f57e18cabb30289ca86a632cd2cde03e2a3221352",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/real/data/dem/5_0.bin",
+      "bytes": 16916,
+      "sha256": "98d78083c708942124a67a2b78681793ea001c5625d97cea9e632aea597ca030",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/real/data/dem/5_1.bin",
+      "bytes": 16916,
+      "sha256": "2bda1f84a9b6883b2734adb23f5cb6908c7d1ec7e1d8bdd53d91852e267eb8c2",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/real/data/dem/5_2.bin",
+      "bytes": 16916,
+      "sha256": "fde41ee8c01e9e821fe92cdd1c4e2d2f75c8870c50f1c329544d3b275092c28d",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/real/data/dem/5_3.bin",
+      "bytes": 16916,
+      "sha256": "740a77cdcbcab387975dbd88d6ef6b8716519d6e950392d56f6e4a468c6f1e0e",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/real/data/dem/5_4.bin",
+      "bytes": 16916,
+      "sha256": "923a3ed9f8beb31f50fdf35a9c28c508bcf715dda23fb07816adb7fb0ee8f90e",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/real/data/dem/5_5.bin",
+      "bytes": 16916,
+      "sha256": "9c013c241953bb2e04755cc7cd3cc3cc92bbfcd7d47be0f2559ed7fd19ec3c63",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/real/data/dem/5_6.bin",
+      "bytes": 16916,
+      "sha256": "30ade7b06048300d1c156617750b4154e62be7f441733a9f35c4a01ead37ca23",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/real/data/dem/5_7.bin",
+      "bytes": 16916,
+      "sha256": "668339610a1a3c56b9f532112e6ef539d4503fc3d436ccda0aba34e6572edfa8",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/real/data/dem/6_0.bin",
+      "bytes": 16916,
+      "sha256": "27d7afce0fc7e584cf9c7b222dea867354a1dcbb3886acd28d5cb6f49441e242",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/real/data/dem/6_1.bin",
+      "bytes": 16916,
+      "sha256": "b2585f230e7585ec1529e488362dd18c621f691ab854b4be06cb68ea2b59edff",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/real/data/dem/6_2.bin",
+      "bytes": 16916,
+      "sha256": "4a1d8badb61229a7cd384ed28d94958a755731900f2133dbad5b255c45481ad7",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/real/data/dem/6_3.bin",
+      "bytes": 16916,
+      "sha256": "8dcbf1d80e92c178887a6fdde70426f27e5d7bb749944666e0399fa6ffdaa62a",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/real/data/dem/6_4.bin",
+      "bytes": 16916,
+      "sha256": "e18520dff0aabd6507b1197a1fe8586c6b86ade0d7434b3c1de1a1ea02bc1838",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/real/data/dem/6_5.bin",
+      "bytes": 16916,
+      "sha256": "75c4196a14c17a83d577f58ca8a2c1fd01fdf128d375cf0a453beb240716338f",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/real/data/dem/6_6.bin",
+      "bytes": 16916,
+      "sha256": "04ded8e8789724c40cc550bebac286ef78ed1249baaa5b8b6b9b3014cf4971a9",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/real/data/dem/6_7.bin",
+      "bytes": 16916,
+      "sha256": "7c37a7a6437b728dfd48d4b58bcd0a0805d6e12de00194159a3af2998fcb4aa4",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/real/data/historical/0_4.json",
+      "bytes": 140,
+      "sha256": "e87344f2efb257f58b61b246e5319f5a451a5be1485709be73ecada378e2e352",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/real/data/historical/3_3.json",
+      "bytes": 169,
+      "sha256": "9b3ad30572d659fb9c9b979ac41ba0e10e98fa8447ebf5db38e5e8f11729c105",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/real/data/historical/3_4.json",
+      "bytes": 97,
+      "sha256": "2f10f59bbf9ab698da515bbcebfc6a6bdce04e77c0e3b9efa2388262ff98b18e",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/real/data/historical/3_5.json",
+      "bytes": 112,
+      "sha256": "3e7998a1ebb7285e3a654e8b52a895b0f6a4b9909f0c5b6c53a56460fd56207e",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/real/data/osm/0_0.json",
+      "bytes": 211676,
+      "sha256": "b4e4ea429f2b2eaa915cb0d724cdae4f8c9128098a47fe223dae1104445d6a51",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/real/data/osm/0_1.json",
+      "bytes": 311900,
+      "sha256": "34a369a5d3c24c2df0d5b33b7788adbab44ca0db86532af43795dd3f13e68c1c",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/real/data/osm/0_2.json",
+      "bytes": 410561,
+      "sha256": "d0bd4d2a6012a02477470e204ab929ff30e5c2cf6ad48580cda8c93b06c8775f",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/real/data/osm/0_3.json",
+      "bytes": 306198,
+      "sha256": "98b0ddff7f196ffb69039ae580be8235afb8d314672fa68fbdea04b62f02a79f",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/real/data/osm/0_4.json",
+      "bytes": 355805,
+      "sha256": "8885805a2dcfe3dfb12308c36bddcccb3134c15b0f070db07cc28cfec564fbc4",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/real/data/osm/0_5.json",
+      "bytes": 233917,
+      "sha256": "bd731c880504de9087b29e7e2274641fc925f339bea6dcfd90eba046b97ee55a",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/real/data/osm/0_6.json",
+      "bytes": 168143,
+      "sha256": "8cadaafd0b355eebb3a8e52b01f190d5d5e567ebc6186c7765510d674dce6180",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/real/data/osm/0_7.json",
+      "bytes": 480370,
+      "sha256": "98107917cfe084037d63f132a1386b23299019a670fa4b238daabb6d5a34101d",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/real/data/osm/1_0.json",
+      "bytes": 239421,
+      "sha256": "3f033ae2ce78f7f1c7ca71fbab803cdd8437f1f25ea595c3861c1a2877abbd7a",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/real/data/osm/1_1.json",
+      "bytes": 355881,
+      "sha256": "68484ad2f7d0525a56e1dc841c666ba8b5802b0e830a85f5c173983d283737e1",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/real/data/osm/1_2.json",
+      "bytes": 402657,
+      "sha256": "6ad203afb07740560bc84dac1f40c6bfed709f4e764ce22adb710a9a58e884c4",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/real/data/osm/1_3.json",
+      "bytes": 598509,
+      "sha256": "7562e0e9acac6b35948000148ea98da0a4669ae8e815ee315635b79aec0a29ee",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/real/data/osm/1_4.json",
+      "bytes": 448013,
+      "sha256": "7bb56241d3d328db8172227230ae1643cf9dddd0476b235eadd740b56964bcab",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/real/data/osm/1_5.json",
+      "bytes": 457098,
+      "sha256": "70be2dd60927bde03cf3aade826ce19ffcb8cf3e918cf3da3fadffa27b7b3666",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/real/data/osm/1_6.json",
+      "bytes": 215168,
+      "sha256": "889155ac90270e1fcb6770882f2e0dd5ddc593522ff8437c4e98ca1fa5ae4d57",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/real/data/osm/1_7.json",
+      "bytes": 830937,
+      "sha256": "9bb117dacdc33f230e0ace1143fb3cf5155453677f135a872257d2a2dcb09769",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/real/data/osm/2_0.json",
+      "bytes": 393483,
+      "sha256": "5e0cb73e643563888377b288d9eb002fdfaf5eb44dd08bc3aa90fec0cc138f12",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/real/data/osm/2_1.json",
+      "bytes": 363938,
+      "sha256": "86d26b4f1b9cfff68ae34e14af38ea8e0b5fb56ad30f5271136c32a99df78690",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/real/data/osm/2_2.json",
+      "bytes": 358508,
+      "sha256": "bd86e2067c38c46fddaa1b77a50a9ffbfd4cb6f524a7a1498adf6a7a72788c5b",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/real/data/osm/2_3.json",
+      "bytes": 470410,
+      "sha256": "897f2c01abd85d645842fd43492c3217b1e60fa60e96ac3a743e323dcab7b02b",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/real/data/osm/2_4.json",
+      "bytes": 360536,
+      "sha256": "112857066cdcaaf856021f7fcfad29beec6bc97c4f244a0fd2f8eff66be1c254",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/real/data/osm/2_5.json",
+      "bytes": 532444,
+      "sha256": "cdb294dd6d43d2f8eea4ec531b4b53feff5604eab0f1ad7cfe3fcffa07a8bf3d",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/real/data/osm/2_6.json",
+      "bytes": 722002,
+      "sha256": "5eb944396ef5464594766fc16cdf3e1803204972d45de6e3b8eebcd6208326b0",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/real/data/osm/2_7.json",
+      "bytes": 529103,
+      "sha256": "8d7e9a0383da2afb0664923a5bf90ef357ad8f1892525d185ed5d3da91f3c573",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/real/data/osm/3_0.json",
+      "bytes": 407077,
+      "sha256": "23be5f433045c14a83fde8be86be720e1221fb7b44aa938874b2e3f7bd267baa",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/real/data/osm/3_1.json",
+      "bytes": 423930,
+      "sha256": "6f5848a92b31da335009fc67b961ce674147d68b36a8a5d33bbc3b1e9f2565e3",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/real/data/osm/3_2.json",
+      "bytes": 419640,
+      "sha256": "70e4ef3fb3e04d31ccd0c7f7c76d46ef73955856576fdda841699c5403be04fc",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/real/data/osm/3_3.json",
+      "bytes": 590761,
+      "sha256": "5bc19082cb247dbf281136c3c19648d9105bc7ab8555378a19177bb79cb1bf5a",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/real/data/osm/3_4.json",
+      "bytes": 536660,
+      "sha256": "31d30c56248928410efab2302f43b8ea1c9a1c1e0628d28b8e51c560c2266bab",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/real/data/osm/3_5.json",
+      "bytes": 536513,
+      "sha256": "4fcea297efc7b35e3622cfd421059d50f4ec4c9dc2f817270d9ffdeb28f6c342",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/real/data/osm/3_6.json",
+      "bytes": 377615,
+      "sha256": "c106a32ba4b162d5b7e309ff8c168b1fbaa320309e27c93c5445122499c1613b",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/real/data/osm/3_7.json",
+      "bytes": 451633,
+      "sha256": "538f4ffc74f7293af7bbfc29ee03d191166fb49dd02f2bfc5dbda75374d6b1c2",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/real/data/osm/4_0.json",
+      "bytes": 346415,
+      "sha256": "35741c91f29225f4587673001e203d0bf17d5ecc7df867b5970ee650f3e255ad",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/real/data/osm/4_1.json",
+      "bytes": 457946,
+      "sha256": "c1ef982eb322d95ecc0ee79087415b3848d73c12801a98ee6670784ee8246aba",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/real/data/osm/4_2.json",
+      "bytes": 437576,
+      "sha256": "8cb3f94a5a2f6fd12586ba4975151016e58cff307cf64ee15e8c0a94a599850e",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/real/data/osm/4_3.json",
+      "bytes": 488065,
+      "sha256": "1dfc23c2f6e0923047396d749ab2f87cbb5f39f07add381489dc3fe86e767255",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/real/data/osm/4_4.json",
+      "bytes": 306909,
+      "sha256": "8b9b297617da5afe5418cdf8682c9c7c654b98fb1ffa678ac44cdbe1c0629c56",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/real/data/osm/4_5.json",
+      "bytes": 248844,
+      "sha256": "9d205f0c51cfa9b8c52576394e8c431f9d235cfc1ed9eaf001edcc28641fa361",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/real/data/osm/4_6.json",
+      "bytes": 494976,
+      "sha256": "0713ac1600813da800a7569137145c84b9cece7d8be352f308ca8c0a7e88567c",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/real/data/osm/4_7.json",
+      "bytes": 442497,
+      "sha256": "4a08665581ee075ef9bb2470229d97a430f79875eb0328716066b9c717d192e4",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/real/data/osm/5_0.json",
+      "bytes": 260321,
+      "sha256": "3f1368f3c3b4443daec27a4d3be98bf3413e1b05f2a63f74ce9a227e7dd9575b",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/real/data/osm/5_1.json",
+      "bytes": 371810,
+      "sha256": "d80aa786765886b9396380f4747306c4a610277b16b4c8fe09109ac0070e6b1d",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/real/data/osm/5_2.json",
+      "bytes": 256694,
+      "sha256": "52c268a84f3d064af8b845f24197c83c2922be7c822eaf99f4935b47266c9f03",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/real/data/osm/5_3.json",
+      "bytes": 280796,
+      "sha256": "1c9009f98d6766c1b046a39ae88799642e257c89389090a1ed2ee5e87edd038a",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/real/data/osm/5_4.json",
+      "bytes": 499754,
+      "sha256": "48a2c4c5a0e64f3edd8835c567f5fe27623296c98d179fd518b63029361ef198",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/real/data/osm/5_5.json",
+      "bytes": 475944,
+      "sha256": "b3118911c1e7e908cf8fbe3a54574769805b0bff812891025d7917e9a2b734f6",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/real/data/osm/5_6.json",
+      "bytes": 361404,
+      "sha256": "bfa0c8c33a6394ed8c53124490872e18a9d269719040149756823bc207b3be1b",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/real/data/osm/5_7.json",
+      "bytes": 337321,
+      "sha256": "130bb3c9e335f8b2b2a5c7483fdbbc322e1eca9b5a2faa08c0199ef178084d42",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/real/data/osm/6_0.json",
+      "bytes": 234742,
+      "sha256": "eecf3619148910459b4dfad9543e33f62e82cb03794f6bb00b029a2ef66ea5c3",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/real/data/osm/6_1.json",
+      "bytes": 118689,
+      "sha256": "1ab497a1dd1e7ccc5aed4b7a946022e07f796e444cf3a060bfef29c69ce488b4",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/real/data/osm/6_2.json",
+      "bytes": 361191,
+      "sha256": "ac8cb64d2a3dc35b9855b3bf7391b57827fd3d370312f28e117332fe43215f18",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/real/data/osm/6_3.json",
+      "bytes": 389204,
+      "sha256": "a067f058f842c02e37e9f7cc089e099dc1ce605430d9ffc98bc71b3f7e2a8643",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/real/data/osm/6_4.json",
+      "bytes": 495927,
+      "sha256": "bb6e367ed2acae9ca46c2f1a84f20259e6bbbd7a4fd3cfcbe947f32992222b41",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/real/data/osm/6_5.json",
+      "bytes": 473160,
+      "sha256": "fd5863988c99f0fc5a406e00438777dddd17b061fb301ff5870a488ef410ac82",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/real/data/osm/6_6.json",
+      "bytes": 498519,
+      "sha256": "e7200b3dd5717f259aa27adb347925b3d150226e1fd9551aaf0289f570130cd5",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/real/data/osm/6_7.json",
+      "bytes": 403832,
+      "sha256": "f2c2b44deb34a86b9753b24e548eed41e309c3e0feae3e4389a9e561d85a9bdf",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "terrain-system/real/data/waterways.json",
+      "bytes": 1102679,
+      "sha256": "940f327ed8fe3450dc6c8f5b8c75aed15520dd3e1f6e0316d1b1e749d105aa19",
+      "kind": "geographic-data"
+    },
+    {
+      "path": "tiger.glb",
+      "bytes": 1735368,
+      "sha256": "12da29fd4c83ab47ceb6866b2f1d6300294b592b6181da941e34010fb85ea965",
+      "kind": "model"
+    },
+    {
+      "path": "torpedo-carrier.html",
+      "bytes": 422962,
+      "sha256": "0b1917fe3f71508e31e878dcd1768dcaaf9a0c243f9719eda55c296f13d691e6",
+      "kind": "code-or-notice"
+    },
+    {
+      "path": "treepack.glb",
+      "bytes": 10258136,
+      "sha256": "a7aabc44265f961037684ae9a47c93396167a6d35f15cb743cfedd3bb08df411",
+      "kind": "model"
+    },
+    {
+      "path": "uss_midway.glb",
+      "bytes": 22351848,
+      "sha256": "1734a3160b0a0ec59807d603e2b6547f18d0e30b0935b671ff04d15d9dc87cd7",
+      "kind": "model"
+    },
+    {
+      "path": "vendor/CAPACITOR-LICENSE.txt",
+      "bytes": 1075,
+      "sha256": "9c6ebf3e5ab832ba4d5af38f340978e1fedbfee6e3d23662dfdb8917a9d864dd",
+      "kind": "vendor"
+    },
+    {
+      "path": "vendor/FBXLoader-r128.js",
+      "bytes": 100686,
+      "sha256": "a5732b0dcdf530ecfd5ff21eb96e9343fc8e40dd75e548730352e6cfb79342b1",
+      "kind": "vendor"
+    },
+    {
+      "path": "vendor/FFLATE-LICENSE.txt",
+      "bytes": 1069,
+      "sha256": "0a1df3a083d0c010560aa342e87959c8c1070e6fd54545741f083f22d0c8b551",
+      "kind": "vendor"
+    },
+    {
+      "path": "vendor/GLTFLoader-r128.js",
+      "bytes": 96550,
+      "sha256": "5c15967ba830918a9caea6338712c994c354bccd4edc4569bde411c3ec06a3e6",
+      "kind": "vendor"
+    },
+    {
+      "path": "vendor/SkeletonUtils-r128.js",
+      "bytes": 11872,
+      "sha256": "cc2e2e1a3183ab55169d185565f86f43f80c6dfafe73610d991e741ea990ac1a",
+      "kind": "vendor"
+    },
+    {
+      "path": "vendor/THREE-LICENSE.txt",
+      "bytes": 1081,
+      "sha256": "7dddf7c5b8fd10ee654db8857d75d104b5557889aa5a91fc4ca545ea7c07062f",
+      "kind": "vendor"
+    },
+    {
+      "path": "vendor/fflate-0.8.3.js",
+      "bytes": 33044,
+      "sha256": "462ef8041fc970e3615a20a9dd2b2e3047a073b2da729ef4f02b634bba8b7b83",
+      "kind": "vendor"
+    },
+    {
+      "path": "vendor/three-r128.min.js",
+      "bytes": 603445,
+      "sha256": "9274bbcec8d96168626c732b5d31c775aa8cfb7eaa0599bec0c175908a2c1ce2",
+      "kind": "vendor"
+    },
+    {
+      "path": "zero.glb",
+      "bytes": 1129808,
+      "sha256": "289d8e1db2385fea38b7cf2e9160d3e5f0f553328d8d12d466b28886254c4f43",
+      "kind": "model"
+    },
+    {
+      "path": "app-native.js",
+      "bytes": 27031,
+      "sha256": "a52b43eb6c9accbde530c1e3832548614838e605c05ed4869a6b9b9734ddaa24",
+      "kind": "code-or-notice"
+    }
+  ],
+  "models": [
+    {
+      "path": "assets/buildings/bunker.glb",
+      "bytes": 5085168,
+      "sha256": "c9b54e30b99302ddaa0ab486c79318c7bd46c881b9fd11b3f77c60758efaa253",
+      "title": "Bunker O3/23/A-160 Z",
+      "uploader": "matousekfoto (https://sketchfab.com/matousekfoto)",
+      "originalRightsholder": null,
+      "sourceUrl": "https://sketchfab.com/3d-models/bunker-o323a-160-z-11ae7599f3b640569f7ed4692acabf38",
+      "acquiredOn": null,
+      "declaredLicense": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+      "licenseUrl": "http://creativecommons.org/licenses/by/4.0/",
+      "licenseEvidence": "Exact repository original GLB asset.extras, matched to derivative sourceSha256",
+      "sourceCheck": {
+        "status": "verified-public-api",
+        "checkedOn": "2026-10-14",
+        "apiUrl": "https://api.sketchfab.com/v3/models/11ae7599f3b640569f7ed4692acabf38",
+        "licenseMatch": true,
+        "descriptionSignals": []
+      },
+      "embeddedImageCount": 2,
+      "externalImages": [],
+      "originalFile": "bunker_o323a-160_z.glb",
+      "originalSha256": "4d04e27f25c15f65fe657107a59c825b8876462c63d6ef6e7090cbe22ae5a379",
+      "changes": "Texture-aware mesh simplification, locked boundaries and 512px textures; see original derivative asset.extras.",
+      "issue": "uploader-license-review-open",
+      "commercialPermissionDocument": null,
+      "bundleRedistributionGrant": null,
+      "releaseApproved": false,
+      "nextAction": "Retain license/attribution/change notices, validate mesh/texture provenance and app-store redistribution conditions."
+    },
+    {
+      "path": "assets/buildings/farm-ruin.glb",
+      "bytes": 131708,
+      "sha256": "f0978da9e2642f1eb3f92fe461340b911962e0929aa2892077c9c0f9d9822115",
+      "title": "bombed_farm_buildings from FPS creator classic",
+      "uploader": "Garbage Raccoon (https://sketchfab.com/GarbageRaccoon)",
+      "originalRightsholder": null,
+      "sourceUrl": "https://sketchfab.com/3d-models/bombed-farm-buildings-from-fps-creator-classic-2cf04644ad0944e5b5b845680262d269",
+      "acquiredOn": null,
+      "declaredLicense": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+      "licenseUrl": "http://creativecommons.org/licenses/by/4.0/",
+      "licenseEvidence": "Exact runtime GLB asset.extras",
+      "sourceCheck": {
+        "status": "verified-public-api",
+        "checkedOn": "2026-10-14",
+        "apiUrl": "https://api.sketchfab.com/v3/models/2cf04644ad0944e5b5b845680262d269",
+        "licenseMatch": true,
+        "descriptionSignals": []
+      },
+      "embeddedImageCount": 1,
+      "externalImages": [],
+      "originalFile": null,
+      "originalSha256": null,
+      "changes": "Original geometry preserved; bounded embedded textures for the game.",
+      "issue": "upstream-game-rights-open",
+      "commercialPermissionDocument": null,
+      "bundleRedistributionGrant": null,
+      "releaseApproved": false,
+      "nextAction": "Establish original mesh/texture ownership; obtain an app redistribution grant or independently authored replacement."
+    },
+    {
+      "path": "assets/buildings/hangar.glb",
+      "bytes": 242552,
+      "sha256": "af53aa083ffef0eeefcfe115ad82b4088643cfd7c9bbbfcf807311f059e81c60",
+      "title": "t2 hangar",
+      "uploader": "ElectricLeo (https://sketchfab.com/ElectricLeo)",
+      "originalRightsholder": null,
+      "sourceUrl": "https://sketchfab.com/3d-models/t2-hangar-a059de1574c84b0a8a2a00930782006f",
+      "acquiredOn": null,
+      "declaredLicense": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+      "licenseUrl": "http://creativecommons.org/licenses/by/4.0/",
+      "licenseEvidence": "Exact runtime GLB asset.extras",
+      "sourceCheck": {
+        "status": "verified-public-api",
+        "checkedOn": "2026-10-14",
+        "apiUrl": "https://api.sketchfab.com/v3/models/a059de1574c84b0a8a2a00930782006f",
+        "licenseMatch": true,
+        "descriptionSignals": []
+      },
+      "embeddedImageCount": 3,
+      "externalImages": [],
+      "originalFile": null,
+      "originalSha256": null,
+      "changes": "Original geometry preserved; bounded embedded textures for the game.",
+      "issue": "uploader-license-review-open",
+      "commercialPermissionDocument": null,
+      "bundleRedistributionGrant": null,
+      "releaseApproved": false,
+      "nextAction": "Retain license/attribution/change notices, validate mesh/texture provenance and app-store redistribution conditions."
+    },
+    {
+      "path": "assets/buildings/house.glb",
+      "bytes": 1527124,
+      "sha256": "f7acf459193c5469244285599c2ed81e148e7d3e7dbc821f6066305c65a17475",
+      "title": "World War II House 1 - Low Poly",
+      "uploader": "BedoyaCamilo (https://sketchfab.com/BedoyaCamilo)",
+      "originalRightsholder": null,
+      "sourceUrl": "https://sketchfab.com/3d-models/world-war-ii-house-1-low-poly-4b9b73b30c424857b4cf4a72701de115",
+      "acquiredOn": null,
+      "declaredLicense": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+      "licenseUrl": "http://creativecommons.org/licenses/by/4.0/",
+      "licenseEvidence": "Exact runtime GLB asset.extras",
+      "sourceCheck": {
+        "status": "verified-public-api",
+        "checkedOn": "2026-10-14",
+        "apiUrl": "https://api.sketchfab.com/v3/models/4b9b73b30c424857b4cf4a72701de115",
+        "licenseMatch": true,
+        "descriptionSignals": []
+      },
+      "embeddedImageCount": 1,
+      "externalImages": [],
+      "originalFile": null,
+      "originalSha256": null,
+      "changes": "Original geometry preserved; bounded embedded textures for the game.",
+      "issue": "uploader-license-review-open",
+      "commercialPermissionDocument": null,
+      "bundleRedistributionGrant": null,
+      "releaseApproved": false,
+      "nextAction": "Retain license/attribution/change notices, validate mesh/texture provenance and app-store redistribution conditions."
+    },
+    {
+      "path": "assets/buildings/observation-post.glb",
+      "bytes": 372332,
+      "sha256": "39b7a3f1b2eb1fa352ad42185730d08b427e3b7516e0de4cc28e332278fdc921",
+      "title": "Putsborough  WWII Observation Post",
+      "uploader": "davidetheridge (https://sketchfab.com/davidetheridge)",
+      "originalRightsholder": null,
+      "sourceUrl": "https://sketchfab.com/3d-models/putsborough-wwii-observation-post-05255e1e580140e6ab6742c399c8affb",
+      "acquiredOn": null,
+      "declaredLicense": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+      "licenseUrl": "http://creativecommons.org/licenses/by/4.0/",
+      "licenseEvidence": "Exact repository original GLB asset.extras, matched to derivative sourceSha256",
+      "sourceCheck": {
+        "status": "verified-public-api",
+        "checkedOn": "2026-10-14",
+        "apiUrl": "https://api.sketchfab.com/v3/models/05255e1e580140e6ab6742c399c8affb",
+        "licenseMatch": true,
+        "descriptionSignals": []
+      },
+      "embeddedImageCount": 1,
+      "externalImages": [],
+      "originalFile": "putsborough__wwii_observation_post.glb",
+      "originalSha256": "666482f67d0b06712c41308bdfb03a6ae83150d29a37e4fcf290d4b96db79207",
+      "changes": "Texture-aware mesh simplification, locked boundaries and 512px textures; see original derivative asset.extras.",
+      "issue": "uploader-license-review-open",
+      "commercialPermissionDocument": null,
+      "bundleRedistributionGrant": null,
+      "releaseApproved": false,
+      "nextAction": "Retain license/attribution/change notices, validate mesh/texture provenance and app-store redistribution conditions."
+    },
+    {
+      "path": "assets/buildings/town-ruin.glb",
+      "bytes": 214212,
+      "sha256": "9a9c3b1617a6d1c0b046ca3882ebfa965f49c1dd942e84a2bad5a362aa4a7862",
+      "title": "BUILDING DESTROYED",
+      "uploader": "danieljorge435 (https://sketchfab.com/danieljorge435)",
+      "originalRightsholder": null,
+      "sourceUrl": "https://sketchfab.com/3d-models/building-destroyed-ca13adc8bba0480a8bdde834889c5444",
+      "acquiredOn": null,
+      "declaredLicense": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+      "licenseUrl": "http://creativecommons.org/licenses/by/4.0/",
+      "licenseEvidence": "Exact runtime GLB asset.extras",
+      "sourceCheck": {
+        "status": "verified-public-api",
+        "checkedOn": "2026-10-14",
+        "apiUrl": "https://api.sketchfab.com/v3/models/ca13adc8bba0480a8bdde834889c5444",
+        "licenseMatch": true,
+        "descriptionSignals": []
+      },
+      "embeddedImageCount": 3,
+      "externalImages": [],
+      "originalFile": null,
+      "originalSha256": null,
+      "changes": "Original geometry preserved; bounded embedded textures for the game.",
+      "issue": "uploader-license-review-open",
+      "commercialPermissionDocument": null,
+      "bundleRedistributionGrant": null,
+      "releaseApproved": false,
+      "nextAction": "Retain license/attribution/change notices, validate mesh/texture provenance and app-store redistribution conditions."
+    },
+    {
+      "path": "assets/remagen/drb0110/drb0110.glb",
+      "bytes": 797032,
+      "sha256": "5a100410a8d2d9bdfb592c4ef0ffadf72ab51f90a74cb5eea9ab6602e4ba93fd",
+      "title": "DRB 01.10 Steam Locomotive (low poly)",
+      "uploader": "Götz von Berlichingen (https://sketchfab.com/vonBerlichingen)",
+      "originalRightsholder": null,
+      "sourceUrl": "https://sketchfab.com/3d-models/drb-0110-steam-locomotive-low-poly-b4e4252632f44492b6c018627a6b4a60",
+      "acquiredOn": null,
+      "declaredLicense": "CC-BY-4.0 (https://creativecommons.org/licenses/by/4.0/)",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "licenseEvidence": "ASSET-CREDITS.md; acquisition date not recorded",
+      "sourceCheck": {
+        "status": "verified-public-api",
+        "checkedOn": "2026-10-14",
+        "apiUrl": "https://api.sketchfab.com/v3/models/b4e4252632f44492b6c018627a6b4a60",
+        "licenseMatch": true,
+        "descriptionSignals": []
+      },
+      "embeddedImageCount": 2,
+      "externalImages": [],
+      "originalFile": null,
+      "originalSha256": null,
+      "changes": "Collada/textures converted to embedded GLB; runtime normalization/material conversion.",
+      "issue": "uploader-license-review-open",
+      "commercialPermissionDocument": null,
+      "bundleRedistributionGrant": null,
+      "releaseApproved": false,
+      "nextAction": "Retain license/attribution/change notices, validate mesh/texture provenance and app-store redistribution conditions."
+    },
+    {
+      "path": "assets/remagen/ford1940/1940_ford_v8.fbx",
+      "bytes": 2239376,
+      "sha256": "9182f095ca9845f68a479e21f69a9d727849c06d3e1019f5cc0b2e677d3e6a25",
+      "title": "1940 Ford V8",
+      "uploader": "Saurav Maity (https://sketchfab.com/saurav.maity)",
+      "originalRightsholder": null,
+      "sourceUrl": "https://sketchfab.com/3d-models/1940-ford-v8-d9e2efb283534eebae96cf0963820d35",
+      "acquiredOn": null,
+      "declaredLicense": "CC-BY-4.0 (https://creativecommons.org/licenses/by/4.0/)",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "licenseEvidence": "ASSET-CREDITS.md; original archive acquisition date not recorded",
+      "sourceCheck": {
+        "status": "verified-public-api",
+        "checkedOn": "2026-10-14",
+        "apiUrl": "https://api.sketchfab.com/v3/models/d9e2efb283534eebae96cf0963820d35",
+        "licenseMatch": true,
+        "descriptionSignals": []
+      },
+      "embeddedImageCount": null,
+      "externalImages": [],
+      "originalFile": null,
+      "originalSha256": null,
+      "changes": "External DDS suffixes mapped to supplied PNG files; runtime normalization/material batching.",
+      "issue": "uploader-license-review-open",
+      "commercialPermissionDocument": null,
+      "bundleRedistributionGrant": null,
+      "releaseApproved": false,
+      "nextAction": "Retain license/attribution/change notices, validate mesh/texture provenance and app-store redistribution conditions."
+    },
+    {
+      "path": "assets/remagen/horse/quaternius_horse.glb",
+      "bytes": 1108124,
+      "sha256": "fae7a7ec91e0d6a33554efb896fac9c4e8c632644183bcb8cc962f673d3ce609",
+      "title": "Horse",
+      "uploader": "Quaternius (https://quaternius.com/)",
+      "originalRightsholder": null,
+      "sourceUrl": "https://poly.pizza/m/qvTrSG9pZF",
+      "acquiredOn": null,
+      "declaredLicense": "CC0-1.0 (https://creativecommons.org/publicdomain/zero/1.0/)",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "licenseEvidence": "Poly Pizza creator-attributed page checked 2026-10-14; ASSET-CREDITS.md",
+      "sourceCheck": null,
+      "embeddedImageCount": 0,
+      "externalImages": [],
+      "originalFile": null,
+      "originalSha256": null,
+      "changes": "Runtime normalization and skeleton-safe clones; supplied Walk animation.",
+      "issue": "cc0-source-recorded",
+      "commercialPermissionDocument": null,
+      "bundleRedistributionGrant": null,
+      "releaseApproved": false,
+      "nextAction": "Retain license/attribution/change notices, validate mesh/texture provenance and app-store redistribution conditions."
+    },
+    {
+      "path": "assets/ships/fletcher.glb",
+      "bytes": 2384584,
+      "sha256": "caad31ef5d5a1eea12f2b42555e95409561fd3321e62cfd5780ba8a64bcbb51b",
+      "title": "Warships - Call of Duty: World At War ᴴᴰ",
+      "uploader": "Nazar Okruzhko (Назар Окружко) (https://sketchfab.com/Deduska_1947)",
+      "originalRightsholder": null,
+      "sourceUrl": "https://sketchfab.com/3d-models/warships-call-of-duty-world-at-war-hd-49f465e925f84efa91acb58fc515f90d",
+      "acquiredOn": null,
+      "declaredLicense": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+      "licenseUrl": "http://creativecommons.org/licenses/by/4.0/",
+      "licenseEvidence": "Exact runtime GLB asset.extras",
+      "sourceCheck": {
+        "status": "verified-public-api",
+        "checkedOn": "2026-10-14",
+        "apiUrl": "https://api.sketchfab.com/v3/models/49f465e925f84efa91acb58fc515f90d",
+        "licenseMatch": true,
+        "descriptionSignals": []
+      },
+      "embeddedImageCount": 6,
+      "externalImages": [],
+      "originalFile": null,
+      "originalSha256": null,
+      "changes": "Static world-space meshes; source geometry retained; texture limit 1024 pixels; isolated ship from collection.",
+      "issue": "original-game-rights-open",
+      "commercialPermissionDocument": null,
+      "bundleRedistributionGrant": null,
+      "releaseApproved": false,
+      "nextAction": "Establish original mesh/texture ownership; obtain an app redistribution grant or independently authored replacement."
+    },
+    {
+      "path": "assets/ships/japanese-cargo.glb",
+      "bytes": 3745304,
+      "sha256": "07f8d7ed988c18430d5db8a8cf2b31d2f321da67939881ae347572e1972b1f9c",
+      "title": "Warships - Call of Duty: World At War ᴴᴰ",
+      "uploader": "Nazar Okruzhko (Назар Окружко) (https://sketchfab.com/Deduska_1947)",
+      "originalRightsholder": null,
+      "sourceUrl": "https://sketchfab.com/3d-models/warships-call-of-duty-world-at-war-hd-49f465e925f84efa91acb58fc515f90d",
+      "acquiredOn": null,
+      "declaredLicense": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+      "licenseUrl": "http://creativecommons.org/licenses/by/4.0/",
+      "licenseEvidence": "Exact runtime GLB asset.extras",
+      "sourceCheck": {
+        "status": "verified-public-api",
+        "checkedOn": "2026-10-14",
+        "apiUrl": "https://api.sketchfab.com/v3/models/49f465e925f84efa91acb58fc515f90d",
+        "licenseMatch": true,
+        "descriptionSignals": []
+      },
+      "embeddedImageCount": 7,
+      "externalImages": [],
+      "originalFile": null,
+      "originalSha256": null,
+      "changes": "Static world-space meshes; source geometry retained; texture limit 1024 pixels; isolated ship from collection.",
+      "issue": "original-game-rights-open",
+      "commercialPermissionDocument": null,
+      "bundleRedistributionGrant": null,
+      "releaseApproved": false,
+      "nextAction": "Establish original mesh/texture ownership; obtain an app redistribution grant or independently authored replacement."
+    },
+    {
+      "path": "assets/ships/ko-hyoteki.glb",
+      "bytes": 1424360,
+      "sha256": "231f04bb9b2c277a0253c2f343d8aa77630031bb1b8e413ca8ef364312fa4838",
+      "title": "Type A Ko-hyoteki Japanese Midget Submarine",
+      "uploader": "Savy (https://sketchfab.com/SavyTheCreator)",
+      "originalRightsholder": null,
+      "sourceUrl": "https://sketchfab.com/3d-models/type-a-ko-hyoteki-japanese-midget-submarine-93cde98a93fd4b2e9820e780e5ec9c91",
+      "acquiredOn": null,
+      "declaredLicense": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+      "licenseUrl": "http://creativecommons.org/licenses/by/4.0/",
+      "licenseEvidence": "Exact runtime GLB asset.extras",
+      "sourceCheck": {
+        "status": "verified-public-api",
+        "checkedOn": "2026-10-14",
+        "apiUrl": "https://api.sketchfab.com/v3/models/93cde98a93fd4b2e9820e780e5ec9c91",
+        "licenseMatch": true,
+        "descriptionSignals": []
+      },
+      "embeddedImageCount": 3,
+      "externalImages": [],
+      "originalFile": null,
+      "originalSha256": null,
+      "changes": "Static world-space meshes; source geometry retained; texture limit 1024 pixels; isolated ship from collection.",
+      "issue": "uploader-license-review-open",
+      "commercialPermissionDocument": null,
+      "bundleRedistributionGrant": null,
+      "releaseApproved": false,
+      "nextAction": "Retain license/attribution/change notices, validate mesh/texture provenance and app-store redistribution conditions."
+    },
+    {
+      "path": "assets/ships/landing-ship.glb",
+      "bytes": 4321916,
+      "sha256": "29d2f4620a6989e8038fc38b62853e5ead597f4a845f9cb1c6d9a17e3157314d",
+      "title": "Warships - Call of Duty: World At War ᴴᴰ",
+      "uploader": "Nazar Okruzhko (Назар Окружко) (https://sketchfab.com/Deduska_1947)",
+      "originalRightsholder": null,
+      "sourceUrl": "https://sketchfab.com/3d-models/warships-call-of-duty-world-at-war-hd-49f465e925f84efa91acb58fc515f90d",
+      "acquiredOn": null,
+      "declaredLicense": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+      "licenseUrl": "http://creativecommons.org/licenses/by/4.0/",
+      "licenseEvidence": "Exact runtime GLB asset.extras",
+      "sourceCheck": {
+        "status": "verified-public-api",
+        "checkedOn": "2026-10-14",
+        "apiUrl": "https://api.sketchfab.com/v3/models/49f465e925f84efa91acb58fc515f90d",
+        "licenseMatch": true,
+        "descriptionSignals": []
+      },
+      "embeddedImageCount": 7,
+      "externalImages": [],
+      "originalFile": null,
+      "originalSha256": null,
+      "changes": "Static world-space meshes; source geometry retained; texture limit 1024 pixels; isolated ship from collection.",
+      "issue": "original-game-rights-open",
+      "commercialPermissionDocument": null,
+      "bundleRedistributionGrant": null,
+      "releaseApproved": false,
+      "nextAction": "Establish original mesh/texture ownership; obtain an app redistribution grant or independently authored replacement."
+    },
+    {
+      "path": "assets/ships/liberty.glb",
+      "bytes": 9249748,
+      "sha256": "18e1019a667b59668f9326dc9bba554873215894262724161aa46e82f4f75f0d",
+      "title": "Liberty ship",
+      "uploader": "AlanTinka (https://sketchfab.com/AlanTinka)",
+      "originalRightsholder": null,
+      "sourceUrl": "https://sketchfab.com/3d-models/liberty-ship-a1db8e8414464c5d8b11383e202fcf26",
+      "acquiredOn": null,
+      "declaredLicense": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+      "licenseUrl": "http://creativecommons.org/licenses/by/4.0/",
+      "licenseEvidence": "Exact runtime GLB asset.extras",
+      "sourceCheck": {
+        "status": "verified-public-api",
+        "checkedOn": "2026-10-14",
+        "apiUrl": "https://api.sketchfab.com/v3/models/a1db8e8414464c5d8b11383e202fcf26",
+        "licenseMatch": true,
+        "descriptionSignals": []
+      },
+      "embeddedImageCount": 3,
+      "externalImages": [],
+      "originalFile": null,
+      "originalSha256": null,
+      "changes": "Static world-space meshes; source geometry retained; texture limit 1024 pixels; isolated ship from collection.",
+      "issue": "uploader-license-review-open",
+      "commercialPermissionDocument": null,
+      "bundleRedistributionGrant": null,
+      "releaseApproved": false,
+      "nextAction": "Retain license/attribution/change notices, validate mesh/texture provenance and app-store redistribution conditions."
+    },
+    {
+      "path": "assets/ships/samidare.glb",
+      "bytes": 11997084,
+      "sha256": "b4eba4977d7ef97235599788c7820fe8a19187ebbd3bfb3e89b3fc6f1998e978",
+      "title": "Samidare destroyer",
+      "uploader": "everlasting17th (https://sketchfab.com/everlastinggrey)",
+      "originalRightsholder": null,
+      "sourceUrl": "https://sketchfab.com/3d-models/samidare-destroyer-b37939147c854e61857f5b248f9efd29",
+      "acquiredOn": null,
+      "declaredLicense": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+      "licenseUrl": "http://creativecommons.org/licenses/by/4.0/",
+      "licenseEvidence": "Exact runtime GLB asset.extras",
+      "sourceCheck": {
+        "status": "verified-public-api",
+        "checkedOn": "2026-10-14",
+        "apiUrl": "https://api.sketchfab.com/v3/models/b37939147c854e61857f5b248f9efd29",
+        "licenseMatch": true,
+        "descriptionSignals": []
+      },
+      "embeddedImageCount": 23,
+      "externalImages": [],
+      "originalFile": null,
+      "originalSha256": null,
+      "changes": "Static world-space meshes; source geometry retained; texture limit 1024 pixels; isolated ship from collection.",
+      "issue": "uploader-license-review-open",
+      "commercialPermissionDocument": null,
+      "bundleRedistributionGrant": null,
+      "releaseApproved": false,
+      "nextAction": "Retain license/attribution/change notices, validate mesh/texture provenance and app-store redistribution conditions."
+    },
+    {
+      "path": "b17.glb",
+      "bytes": 6027460,
+      "sha256": "f21be57500ed897183ff73d20131226c150b569bb03784fe10d20adc47154a58",
+      "title": "Helijah's B-17",
+      "uploader": "Secret Weapons - Arma 3 Mod (https://sketchfab.com/sabrezor)",
+      "originalRightsholder": null,
+      "sourceUrl": "https://sketchfab.com/3d-models/helijahs-b-17-fe911eaf8d5e41eab65fae25b58664b1",
+      "acquiredOn": null,
+      "declaredLicense": "CC-BY-NC-4.0 (http://creativecommons.org/licenses/by-nc/4.0/)",
+      "licenseUrl": "http://creativecommons.org/licenses/by-nc/4.0/",
+      "licenseEvidence": "Exact runtime GLB asset.extras",
+      "sourceCheck": {
+        "status": "verified-public-api",
+        "checkedOn": "2026-10-14",
+        "apiUrl": "https://api.sketchfab.com/v3/models/fe911eaf8d5e41eab65fae25b58664b1",
+        "licenseMatch": true,
+        "descriptionSignals": [
+          "Arma",
+          "original"
+        ]
+      },
+      "embeddedImageCount": 7,
+      "externalImages": [],
+      "originalFile": null,
+      "originalSha256": null,
+      "changes": "Original runtime binary preserved; runtime scaling, materials, rigging and placement are described in ASSET-CREDITS.md / CLAUDE.md.",
+      "issue": "noncommercial-release-open",
+      "commercialPermissionDocument": null,
+      "bundleRedistributionGrant": null,
+      "releaseApproved": false,
+      "nextAction": "Obtain a grant covering the intended app/business model from all relevant creators, or replace the model."
+    },
+    {
+      "path": "b24.glb",
+      "bytes": 5939004,
+      "sha256": "5366c1b690c559d1e25291cd16191886de8c5864266528d5acc28510c4adc761",
+      "title": "B-24 Liberator",
+      "uploader": "CreadorDeMu (https://sketchfab.com/creadordemu)",
+      "originalRightsholder": null,
+      "sourceUrl": "https://sketchfab.com/3d-models/b-24-liberator-c64e58edfacb4c519b5602278a7e51aa",
+      "acquiredOn": null,
+      "declaredLicense": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+      "licenseUrl": "http://creativecommons.org/licenses/by/4.0/",
+      "licenseEvidence": "Exact runtime GLB asset.extras",
+      "sourceCheck": {
+        "status": "not-verified",
+        "checkedOn": "2026-10-14",
+        "apiUrl": "https://api.sketchfab.com/v3/models/c64e58edfacb4c519b5602278a7e51aa",
+        "licenseMatch": false,
+        "descriptionSignals": []
+      },
+      "embeddedImageCount": 18,
+      "externalImages": [],
+      "originalFile": null,
+      "originalSha256": null,
+      "changes": "Original runtime binary preserved; runtime scaling, materials, rigging and placement are described in ASSET-CREDITS.md / CLAUDE.md.",
+      "issue": "uploader-license-review-open",
+      "commercialPermissionDocument": null,
+      "bundleRedistributionGrant": null,
+      "releaseApproved": false,
+      "nextAction": "Retain license/attribution/change notices, validate mesh/texture provenance and app-store redistribution conditions."
+    },
+    {
+      "path": "bf109new.glb",
+      "bytes": 3461468,
+      "sha256": "bd6c828563ad0aa0a0c2f89067f68491afedb5df8eb3504900c31b4f0aaed6bf",
+      "title": "Bf 109 F-1 (War Thunder)",
+      "uploader": "KojfDiscord (https://sketchfab.com/KojfDiscord)",
+      "originalRightsholder": null,
+      "sourceUrl": "https://sketchfab.com/3d-models/bf-109-f-1-war-thunder-0fec6a4fbae549e1929bd5978e89c4f4",
+      "acquiredOn": null,
+      "declaredLicense": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+      "licenseUrl": "http://creativecommons.org/licenses/by/4.0/",
+      "licenseEvidence": "Exact runtime GLB asset.extras",
+      "sourceCheck": {
+        "status": "verified-public-api",
+        "checkedOn": "2026-10-14",
+        "apiUrl": "https://api.sketchfab.com/v3/models/0fec6a4fbae549e1929bd5978e89c4f4",
+        "licenseMatch": true,
+        "descriptionSignals": []
+      },
+      "embeddedImageCount": 22,
+      "externalImages": [],
+      "originalFile": null,
+      "originalSha256": null,
+      "changes": "Original runtime binary preserved; runtime scaling, materials, rigging and placement are described in ASSET-CREDITS.md / CLAUDE.md.",
+      "issue": "original-game-rights-open",
+      "commercialPermissionDocument": null,
+      "bundleRedistributionGrant": null,
+      "releaseApproved": false,
+      "nextAction": "Establish original mesh/texture ownership; obtain an app redistribution grant or independently authored replacement."
+    },
+    {
+      "path": "f4u-1c_corsair_war_thunder.glb",
+      "bytes": 16443976,
+      "sha256": "b9a4ef749a786743dfaf19d5a36262d570734dad4c48e516857d4650150c329a",
+      "title": "F4U-1C Corsair (War Thunder)",
+      "uploader": "KojfDiscord (https://sketchfab.com/KojfDiscord)",
+      "originalRightsholder": null,
+      "sourceUrl": "https://sketchfab.com/3d-models/f4u-1c-corsair-war-thunder-440585ee30bc4b6299b4b1bd8d09e3d8",
+      "acquiredOn": null,
+      "declaredLicense": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+      "licenseUrl": "http://creativecommons.org/licenses/by/4.0/",
+      "licenseEvidence": "Exact runtime GLB asset.extras",
+      "sourceCheck": {
+        "status": "verified-public-api",
+        "checkedOn": "2026-10-14",
+        "apiUrl": "https://api.sketchfab.com/v3/models/440585ee30bc4b6299b4b1bd8d09e3d8",
+        "licenseMatch": true,
+        "descriptionSignals": []
+      },
+      "embeddedImageCount": 12,
+      "externalImages": [],
+      "originalFile": null,
+      "originalSha256": null,
+      "changes": "Original runtime binary preserved; runtime scaling, materials, rigging and placement are described in ASSET-CREDITS.md / CLAUDE.md.",
+      "issue": "original-game-rights-open",
+      "commercialPermissionDocument": null,
+      "bundleRedistributionGrant": null,
+      "releaseApproved": false,
+      "nextAction": "Establish original mesh/texture ownership; obtain an app redistribution grant or independently authored replacement."
+    },
+    {
+      "path": "flak88_sfl.glb",
+      "bytes": 14888828,
+      "sha256": "4095ba76835dbc07d494c6d324837daa3b6c84e09ef21299e94554fb06ae6b7a",
+      "title": "8,8 cm Flak 37 Sfl. (War Thunder)",
+      "uploader": "KojfDiscord (https://sketchfab.com/KojfDiscord)",
+      "originalRightsholder": null,
+      "sourceUrl": "https://sketchfab.com/3d-models/88-cm-flak-37-sfl-war-thunder-7a9b4abbc2884ef6bbf5dbffbe8adf2b",
+      "acquiredOn": null,
+      "declaredLicense": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+      "licenseUrl": "http://creativecommons.org/licenses/by/4.0/",
+      "licenseEvidence": "Exact runtime GLB asset.extras",
+      "sourceCheck": {
+        "status": "verified-public-api",
+        "checkedOn": "2026-10-14",
+        "apiUrl": "https://api.sketchfab.com/v3/models/7a9b4abbc2884ef6bbf5dbffbe8adf2b",
+        "licenseMatch": true,
+        "descriptionSignals": []
+      },
+      "embeddedImageCount": 22,
+      "externalImages": [],
+      "originalFile": null,
+      "originalSha256": null,
+      "changes": "Original runtime binary preserved; runtime scaling, materials, rigging and placement are described in ASSET-CREDITS.md / CLAUDE.md.",
+      "issue": "original-game-rights-open",
+      "commercialPermissionDocument": null,
+      "bundleRedistributionGrant": null,
+      "releaseApproved": false,
+      "nextAction": "Establish original mesh/texture ownership; obtain an app redistribution grant or independently authored replacement."
+    },
+    {
+      "path": "fw190.glb",
+      "bytes": 5702612,
+      "sha256": "6ea8ecf36027d49b69fa8eeb5da02987675bfe7f410b88543a2a9ab7c1da1811",
+      "title": "Fw 190 F-8 (#2 Custom Payload) (War Thunder)",
+      "uploader": "KojfDiscord (https://sketchfab.com/KojfDiscord)",
+      "originalRightsholder": null,
+      "sourceUrl": "https://sketchfab.com/3d-models/fw-190-f-8-2-custom-payload-war-thunder-17aea959a7a949c6801a7ea19d43e9b4",
+      "acquiredOn": null,
+      "declaredLicense": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+      "licenseUrl": "http://creativecommons.org/licenses/by/4.0/",
+      "licenseEvidence": "Exact runtime GLB asset.extras",
+      "sourceCheck": {
+        "status": "verified-public-api",
+        "checkedOn": "2026-10-14",
+        "apiUrl": "https://api.sketchfab.com/v3/models/17aea959a7a949c6801a7ea19d43e9b4",
+        "licenseMatch": true,
+        "descriptionSignals": []
+      },
+      "embeddedImageCount": 10,
+      "externalImages": [],
+      "originalFile": null,
+      "originalSha256": null,
+      "changes": "Original runtime binary preserved; runtime scaling, materials, rigging and placement are described in ASSET-CREDITS.md / CLAUDE.md.",
+      "issue": "original-game-rights-open",
+      "commercialPermissionDocument": null,
+      "bundleRedistributionGrant": null,
+      "releaseApproved": false,
+      "nextAction": "Establish original mesh/texture ownership; obtain an app redistribution grant or independently authored replacement."
+    },
+    {
+      "path": "grumman tbm avenger.glb",
+      "bytes": 15080808,
+      "sha256": "9065b7e65419b2efd4618bcb138ce199d16ac3151801d2d90afb7ae92ebb10a6",
+      "title": "Grumman Tbm Avenger",
+      "uploader": "helijah (https://sketchfab.com/helijah)",
+      "originalRightsholder": null,
+      "sourceUrl": "https://sketchfab.com/3d-models/grumman-tbm-avenger-4db814ed356a498cabe4badafd06ff6c",
+      "acquiredOn": null,
+      "declaredLicense": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+      "licenseUrl": "http://creativecommons.org/licenses/by/4.0/",
+      "licenseEvidence": "Exact runtime GLB asset.extras",
+      "sourceCheck": {
+        "status": "verified-public-api",
+        "checkedOn": "2026-10-14",
+        "apiUrl": "https://api.sketchfab.com/v3/models/4db814ed356a498cabe4badafd06ff6c",
+        "licenseMatch": true,
+        "descriptionSignals": []
+      },
+      "embeddedImageCount": 27,
+      "externalImages": [],
+      "originalFile": null,
+      "originalSha256": null,
+      "changes": "Original runtime binary preserved; runtime scaling, materials, rigging and placement are described in ASSET-CREDITS.md / CLAUDE.md.",
+      "issue": "uploader-license-review-open",
+      "commercialPermissionDocument": null,
+      "bundleRedistributionGrant": null,
+      "releaseApproved": false,
+      "nextAction": "Retain license/attribution/change notices, validate mesh/texture provenance and app-store redistribution conditions."
+    },
+    {
+      "path": "ijn carrier.glb",
+      "bytes": 11345996,
+      "sha256": "a0c2a40f01faaa97218ed23f3f13bfc688a4440df4cc9fa9aa6a043d6b6017e5",
+      "title": "小鬼子Japs瑞凤 Leyte1944 ( 战舰世界 )",
+      "uploader": "世界战争游戏 World of WarGames (https://sketchfab.com/123112)",
+      "originalRightsholder": null,
+      "sourceUrl": "https://sketchfab.com/3d-models/japs-leyte1944-5054abd931554d1d81d0b8a3af77c08c",
+      "acquiredOn": null,
+      "declaredLicense": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+      "licenseUrl": "http://creativecommons.org/licenses/by/4.0/",
+      "licenseEvidence": "Exact runtime GLB asset.extras",
+      "sourceCheck": {
+        "status": "not-verified",
+        "checkedOn": "2026-10-14",
+        "apiUrl": "https://api.sketchfab.com/v3/models/5054abd931554d1d81d0b8a3af77c08c",
+        "licenseMatch": false,
+        "descriptionSignals": []
+      },
+      "embeddedImageCount": 74,
+      "externalImages": [],
+      "originalFile": null,
+      "originalSha256": null,
+      "changes": "Original runtime binary preserved; runtime scaling, materials, rigging and placement are described in ASSET-CREDITS.md / CLAUDE.md.",
+      "issue": "original-game-rights-open",
+      "commercialPermissionDocument": null,
+      "bundleRedistributionGrant": null,
+      "releaseApproved": false,
+      "nextAction": "Establish original mesh/texture ownership; obtain an app redistribution grant or independently authored replacement."
+    },
+    {
+      "path": "jagdpanther.glb",
+      "bytes": 12763168,
+      "sha256": "4324d874f5ab4717336cc420f2d26810d2cc3ea19338064e7e5abed6c6d25b0b",
+      "title": "Jadgpanther (War Thunder)",
+      "uploader": "PolyDucky (https://sketchfab.com/salphytheunemployed)",
+      "originalRightsholder": null,
+      "sourceUrl": "https://sketchfab.com/3d-models/jadgpanther-war-thunder-813e100326194334b52887a17416e0b8",
+      "acquiredOn": null,
+      "declaredLicense": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+      "licenseUrl": "http://creativecommons.org/licenses/by/4.0/",
+      "licenseEvidence": "Exact runtime GLB asset.extras",
+      "sourceCheck": {
+        "status": "verified-public-api",
+        "checkedOn": "2026-10-14",
+        "apiUrl": "https://api.sketchfab.com/v3/models/813e100326194334b52887a17416e0b8",
+        "licenseMatch": true,
+        "descriptionSignals": []
+      },
+      "embeddedImageCount": 9,
+      "externalImages": [],
+      "originalFile": null,
+      "originalSha256": null,
+      "changes": "Original runtime binary preserved; runtime scaling, materials, rigging and placement are described in ASSET-CREDITS.md / CLAUDE.md.",
+      "issue": "original-game-rights-open",
+      "commercialPermissionDocument": null,
+      "bundleRedistributionGrant": null,
+      "releaseApproved": false,
+      "nextAction": "Establish original mesh/texture ownership; obtain an app redistribution grant or independently authored replacement."
+    },
+    {
+      "path": "ju87.glb",
+      "bytes": 17381696,
+      "sha256": "63f1e3c0448edcc332cdbd3c26f40a04758be11df558937c19d0ea59b03fa9b6",
+      "title": "Ju 87 B-2 (War Thunder)",
+      "uploader": "KojfDiscord (https://sketchfab.com/KojfDiscord)",
+      "originalRightsholder": null,
+      "sourceUrl": "https://sketchfab.com/3d-models/ju-87-b-2-war-thunder-c09430ec8b9f46669bf8a008dd80d336",
+      "acquiredOn": null,
+      "declaredLicense": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+      "licenseUrl": "http://creativecommons.org/licenses/by/4.0/",
+      "licenseEvidence": "Exact runtime GLB asset.extras",
+      "sourceCheck": {
+        "status": "verified-public-api",
+        "checkedOn": "2026-10-14",
+        "apiUrl": "https://api.sketchfab.com/v3/models/c09430ec8b9f46669bf8a008dd80d336",
+        "licenseMatch": true,
+        "descriptionSignals": []
+      },
+      "embeddedImageCount": 28,
+      "externalImages": [],
+      "originalFile": null,
+      "originalSha256": null,
+      "changes": "Original runtime binary preserved; runtime scaling, materials, rigging and placement are described in ASSET-CREDITS.md / CLAUDE.md.",
+      "issue": "original-game-rights-open",
+      "commercialPermissionDocument": null,
+      "bundleRedistributionGrant": null,
+      "releaseApproved": false,
+      "nextAction": "Establish original mesh/texture ownership; obtain an app redistribution grant or independently authored replacement."
+    },
+    {
+      "path": "m16_mgmc.glb",
+      "bytes": 13651260,
+      "sha256": "eb836c5d64ad2b04bb6f7e0dca5dcd121dbfc2983805b084d44fb60c0be9b463",
+      "title": "M16 MGMC (War Thunder)",
+      "uploader": "KojfDiscord (https://sketchfab.com/KojfDiscord)",
+      "originalRightsholder": null,
+      "sourceUrl": "https://sketchfab.com/3d-models/m16-mgmc-war-thunder-fbdb51b1f92f45eebe791a16d805acd4",
+      "acquiredOn": null,
+      "declaredLicense": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+      "licenseUrl": "http://creativecommons.org/licenses/by/4.0/",
+      "licenseEvidence": "Exact runtime GLB asset.extras",
+      "sourceCheck": {
+        "status": "verified-public-api",
+        "checkedOn": "2026-10-14",
+        "apiUrl": "https://api.sketchfab.com/v3/models/fbdb51b1f92f45eebe791a16d805acd4",
+        "licenseMatch": true,
+        "descriptionSignals": []
+      },
+      "embeddedImageCount": 21,
+      "externalImages": [],
+      "originalFile": null,
+      "originalSha256": null,
+      "changes": "Original runtime binary preserved; runtime scaling, materials, rigging and placement are described in ASSET-CREDITS.md / CLAUDE.md.",
+      "issue": "original-game-rights-open",
+      "commercialPermissionDocument": null,
+      "bundleRedistributionGrant": null,
+      "releaseApproved": false,
+      "nextAction": "Establish original mesh/texture ownership; obtain an app redistribution grant or independently authored replacement."
+    },
+    {
+      "path": "me163.glb",
+      "bytes": 4974720,
+      "sha256": "1ac6f59cd3b06aa613ea497462936094ce6e50eb4b9eef8f0f3f73460f8a848e",
+      "title": "Me 163 B (War Thunder)",
+      "uploader": "KojfDiscord (https://sketchfab.com/KojfDiscord)",
+      "originalRightsholder": null,
+      "sourceUrl": "https://sketchfab.com/3d-models/me-163-b-war-thunder-b803273028ee4ebc87ca4af2e15766fb",
+      "acquiredOn": null,
+      "declaredLicense": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+      "licenseUrl": "http://creativecommons.org/licenses/by/4.0/",
+      "licenseEvidence": "Exact runtime GLB asset.extras",
+      "sourceCheck": {
+        "status": "verified-public-api",
+        "checkedOn": "2026-10-14",
+        "apiUrl": "https://api.sketchfab.com/v3/models/b803273028ee4ebc87ca4af2e15766fb",
+        "licenseMatch": true,
+        "descriptionSignals": []
+      },
+      "embeddedImageCount": 9,
+      "externalImages": [],
+      "originalFile": null,
+      "originalSha256": null,
+      "changes": "Original runtime binary preserved; runtime scaling, materials, rigging and placement are described in ASSET-CREDITS.md / CLAUDE.md.",
+      "issue": "original-game-rights-open",
+      "commercialPermissionDocument": null,
+      "bundleRedistributionGrant": null,
+      "releaseApproved": false,
+      "nextAction": "Establish original mesh/texture ownership; obtain an app redistribution grant or independently authored replacement."
+    },
+    {
+      "path": "me262.glb",
+      "bytes": 4503732,
+      "sha256": "bddfaf0fcc3971045566cb3e0616ca3c6dec3d213aa2869f5a1576dc9d6206d5",
+      "title": "Me 262 A-1a/Jabo (War Thunder)",
+      "uploader": "KojfDiscord (https://sketchfab.com/KojfDiscord)",
+      "originalRightsholder": null,
+      "sourceUrl": "https://sketchfab.com/3d-models/me-262-a-1ajabo-war-thunder-a6e4bd7a047f49b292e59ad285850310",
+      "acquiredOn": null,
+      "declaredLicense": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+      "licenseUrl": "http://creativecommons.org/licenses/by/4.0/",
+      "licenseEvidence": "Exact runtime GLB asset.extras",
+      "sourceCheck": {
+        "status": "verified-public-api",
+        "checkedOn": "2026-10-14",
+        "apiUrl": "https://api.sketchfab.com/v3/models/a6e4bd7a047f49b292e59ad285850310",
+        "licenseMatch": true,
+        "descriptionSignals": []
+      },
+      "embeddedImageCount": 7,
+      "externalImages": [],
+      "originalFile": null,
+      "originalSha256": null,
+      "changes": "Original runtime binary preserved; runtime scaling, materials, rigging and placement are described in ASSET-CREDITS.md / CLAUDE.md.",
+      "issue": "original-game-rights-open",
+      "commercialPermissionDocument": null,
+      "bundleRedistributionGrant": null,
+      "releaseApproved": false,
+      "nextAction": "Establish original mesh/texture ownership; obtain an app redistribution grant or independently authored replacement."
+    },
+    {
+      "path": "p47new.glb",
+      "bytes": 8029172,
+      "sha256": "61cb9510ad9ffc5eeb25abbd5eb620b0e17fb49f44b2e78fb6ba09b681e38174",
+      "title": "P-47D-28 Thunderbolt (#1 Custom) (War Thunder)",
+      "uploader": "KojfDiscord (https://sketchfab.com/KojfDiscord)",
+      "originalRightsholder": null,
+      "sourceUrl": "https://sketchfab.com/3d-models/p-47d-28-thunderbolt-1-custom-war-thunder-1d469251c5994dfd9169f11a97b1b56a",
+      "acquiredOn": null,
+      "declaredLicense": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+      "licenseUrl": "http://creativecommons.org/licenses/by/4.0/",
+      "licenseEvidence": "Exact runtime GLB asset.extras",
+      "sourceCheck": {
+        "status": "verified-public-api",
+        "checkedOn": "2026-10-14",
+        "apiUrl": "https://api.sketchfab.com/v3/models/1d469251c5994dfd9169f11a97b1b56a",
+        "licenseMatch": true,
+        "descriptionSignals": []
+      },
+      "embeddedImageCount": 16,
+      "externalImages": [],
+      "originalFile": null,
+      "originalSha256": null,
+      "changes": "Original runtime binary preserved; runtime scaling, materials, rigging and placement are described in ASSET-CREDITS.md / CLAUDE.md.",
+      "issue": "original-game-rights-open",
+      "commercialPermissionDocument": null,
+      "bundleRedistributionGrant": null,
+      "releaseApproved": false,
+      "nextAction": "Establish original mesh/texture ownership; obtain an app redistribution grant or independently authored replacement."
+    },
+    {
+      "path": "sbd dauntless.glb",
+      "bytes": 10739532,
+      "sha256": "02dc31dae8fcd29e130d4007e24c0887507bed62d018a3801af2cf2905d90b55",
+      "title": "SBD-3 Dauntless (War Thunder)",
+      "uploader": "KojfDiscord (https://sketchfab.com/KojfDiscord)",
+      "originalRightsholder": null,
+      "sourceUrl": "https://sketchfab.com/3d-models/sbd-3-dauntless-war-thunder-6c950d0b5ff34bd1b43d713ec7237a59",
+      "acquiredOn": null,
+      "declaredLicense": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+      "licenseUrl": "http://creativecommons.org/licenses/by/4.0/",
+      "licenseEvidence": "Exact runtime GLB asset.extras",
+      "sourceCheck": {
+        "status": "verified-public-api",
+        "checkedOn": "2026-10-14",
+        "apiUrl": "https://api.sketchfab.com/v3/models/6c950d0b5ff34bd1b43d713ec7237a59",
+        "licenseMatch": true,
+        "descriptionSignals": []
+      },
+      "embeddedImageCount": 25,
+      "externalImages": [],
+      "originalFile": null,
+      "originalSha256": null,
+      "changes": "Original runtime binary preserved; runtime scaling, materials, rigging and placement are described in ASSET-CREDITS.md / CLAUDE.md.",
+      "issue": "original-game-rights-open",
+      "commercialPermissionDocument": null,
+      "bundleRedistributionGrant": null,
+      "releaseApproved": false,
+      "nextAction": "Establish original mesh/texture ownership; obtain an app redistribution grant or independently authored replacement."
+    },
+    {
+      "path": "sherman_m4a1.glb",
+      "bytes": 18796228,
+      "sha256": "fd1c8651befd8dc5f8cce22449e4d42f8c18337861f22e28c544c93fe50f889b",
+      "title": "M4A1 (76) W (War Thunder)",
+      "uploader": "KojfDiscord (https://sketchfab.com/KojfDiscord)",
+      "originalRightsholder": null,
+      "sourceUrl": "https://sketchfab.com/3d-models/m4a1-76-w-war-thunder-8492cfd6dec94c90ae7d210acf7e58ed",
+      "acquiredOn": null,
+      "declaredLicense": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+      "licenseUrl": "http://creativecommons.org/licenses/by/4.0/",
+      "licenseEvidence": "Exact runtime GLB asset.extras",
+      "sourceCheck": {
+        "status": "verified-public-api",
+        "checkedOn": "2026-10-14",
+        "apiUrl": "https://api.sketchfab.com/v3/models/8492cfd6dec94c90ae7d210acf7e58ed",
+        "licenseMatch": true,
+        "descriptionSignals": []
+      },
+      "embeddedImageCount": 40,
+      "externalImages": [],
+      "originalFile": null,
+      "originalSha256": null,
+      "changes": "Original runtime binary preserved; runtime scaling, materials, rigging and placement are described in ASSET-CREDITS.md / CLAUDE.md.",
+      "issue": "original-game-rights-open",
+      "commercialPermissionDocument": null,
+      "bundleRedistributionGrant": null,
+      "releaseApproved": false,
+      "nextAction": "Establish original mesh/texture ownership; obtain an app redistribution grant or independently authored replacement."
+    },
+    {
+      "path": "tiger.glb",
+      "bytes": 1735368,
+      "sha256": "12da29fd4c83ab47ceb6866b2f1d6300294b592b6181da941e34010fb85ea965",
+      "title": "Free Tiger And Crew Kit",
+      "uploader": "adrielcz (https://sketchfab.com/adrielcz)",
+      "originalRightsholder": null,
+      "sourceUrl": "https://sketchfab.com/3d-models/free-tiger-and-crew-kit-6290669ab2cb49599f1606507626af39",
+      "acquiredOn": null,
+      "declaredLicense": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+      "licenseUrl": "http://creativecommons.org/licenses/by/4.0/",
+      "licenseEvidence": "Exact runtime GLB asset.extras",
+      "sourceCheck": {
+        "status": "verified-public-api",
+        "checkedOn": "2026-10-14",
+        "apiUrl": "https://api.sketchfab.com/v3/models/6290669ab2cb49599f1606507626af39",
+        "licenseMatch": true,
+        "descriptionSignals": []
+      },
+      "embeddedImageCount": 32,
+      "externalImages": [],
+      "originalFile": null,
+      "originalSha256": null,
+      "changes": "Original runtime binary preserved; runtime scaling, materials, rigging and placement are described in ASSET-CREDITS.md / CLAUDE.md.",
+      "issue": "uploader-license-review-open",
+      "commercialPermissionDocument": null,
+      "bundleRedistributionGrant": null,
+      "releaseApproved": false,
+      "nextAction": "Retain license/attribution/change notices, validate mesh/texture provenance and app-store redistribution conditions."
+    },
+    {
+      "path": "treepack.glb",
+      "bytes": 10258136,
+      "sha256": "a7aabc44265f961037684ae9a47c93396167a6d35f15cb743cfedd3bb08df411",
+      "title": "Low Poly Forest Tree Pack",
+      "uploader": "99.Miles (https://sketchfab.com/99.Miles)",
+      "originalRightsholder": null,
+      "sourceUrl": "https://sketchfab.com/3d-models/low-poly-forest-tree-pack-5ff5a51e74324845a4e4905f182dfb2b",
+      "acquiredOn": null,
+      "declaredLicense": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+      "licenseUrl": "http://creativecommons.org/licenses/by/4.0/",
+      "licenseEvidence": "Exact runtime GLB asset.extras",
+      "sourceCheck": {
+        "status": "verified-public-api",
+        "checkedOn": "2026-10-14",
+        "apiUrl": "https://api.sketchfab.com/v3/models/5ff5a51e74324845a4e4905f182dfb2b",
+        "licenseMatch": true,
+        "descriptionSignals": []
+      },
+      "embeddedImageCount": 17,
+      "externalImages": [],
+      "originalFile": null,
+      "originalSha256": null,
+      "changes": "Original runtime binary preserved; runtime scaling, materials, rigging and placement are described in ASSET-CREDITS.md / CLAUDE.md.",
+      "issue": "uploader-license-review-open",
+      "commercialPermissionDocument": null,
+      "bundleRedistributionGrant": null,
+      "releaseApproved": false,
+      "nextAction": "Retain license/attribution/change notices, validate mesh/texture provenance and app-store redistribution conditions."
+    },
+    {
+      "path": "uss_midway.glb",
+      "bytes": 22351848,
+      "sha256": "1734a3160b0a0ec59807d603e2b6547f18d0e30b0935b671ff04d15d9dc87cd7",
+      "title": "uss_midway.glb",
+      "uploader": null,
+      "originalRightsholder": null,
+      "sourceUrl": null,
+      "acquiredOn": null,
+      "declaredLicense": null,
+      "licenseUrl": null,
+      "licenseEvidence": "Exact runtime GLB asset.extras",
+      "sourceCheck": null,
+      "embeddedImageCount": 173,
+      "externalImages": [],
+      "originalFile": null,
+      "originalSha256": null,
+      "changes": "Original runtime binary preserved; runtime scaling, materials, rigging and placement are described in ASSET-CREDITS.md / CLAUDE.md.",
+      "issue": "source-or-license-missing",
+      "commercialPermissionDocument": null,
+      "bundleRedistributionGrant": null,
+      "releaseApproved": false,
+      "nextAction": "Identify the exact author/source/version and license before distribution."
+    },
+    {
+      "path": "zero.glb",
+      "bytes": 1129808,
+      "sha256": "289d8e1db2385fea38b7cf2e9160d3e5f0f553328d8d12d466b28886254c4f43",
+      "title": "A6M Zero Low Poly",
+      "uploader": "Waroxed (https://sketchfab.com/Waroxed)",
+      "originalRightsholder": null,
+      "sourceUrl": "https://sketchfab.com/3d-models/a6m-zero-low-poly-38311e82157449448f703b53648614a5",
+      "acquiredOn": null,
+      "declaredLicense": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+      "licenseUrl": "http://creativecommons.org/licenses/by/4.0/",
+      "licenseEvidence": "Exact runtime GLB asset.extras",
+      "sourceCheck": {
+        "status": "verified-public-api",
+        "checkedOn": "2026-10-14",
+        "apiUrl": "https://api.sketchfab.com/v3/models/38311e82157449448f703b53648614a5",
+        "licenseMatch": true,
+        "descriptionSignals": []
+      },
+      "embeddedImageCount": 1,
+      "externalImages": [],
+      "originalFile": null,
+      "originalSha256": null,
+      "changes": "Original runtime binary preserved; runtime scaling, materials, rigging and placement are described in ASSET-CREDITS.md / CLAUDE.md.",
+      "issue": "uploader-license-review-open",
+      "commercialPermissionDocument": null,
+      "bundleRedistributionGrant": null,
+      "releaseApproved": false,
+      "nextAction": "Retain license/attribution/change notices, validate mesh/texture provenance and app-store redistribution conditions."
+    }
+  ],
+  "otherGroups": [
+    {
+      "paths": [
+        "assets/remagen/ford1940/*.png",
+        "assets/remagen/ford1940/*.jpeg"
+      ],
+      "status": "Included under the Ford source review; separate provenance per texture not yet demonstrated."
+    },
+    {
+      "paths": [
+        "terrain-system/real/data/**",
+        "okinawa/data.js"
+      ],
+      "status": "Copernicus/Overture/OSM notices and adapted-database redistribution to verify against the exact releases and source rows."
+    },
+    {
+      "paths": [
+        "terrain-system/data/**"
+      ],
+      "status": "Synthetic prototype and historical fixtures are also currently copied by the payload builder; distinguish them from real datasets."
+    },
+    {
+      "paths": [
+        "assets/*-campaign.webp",
+        "assets/*-campaign.svg"
+      ],
+      "status": "Generated/original project art; generation record in assets/CAMPAIGN-ART.md. No blanket grant for depicted third-party marks is inferred."
+    },
+    {
+      "paths": [
+        "audio/*.js"
+      ],
+      "status": "Procedural Web Audio, no recorded samples in this payload. Archived WAV/MP3 excluded."
+    },
+    {
+      "paths": [
+        "vendor/**",
+        "app-native.js"
+      ],
+      "status": "Bundled Three.js/fflate/Capacitor MIT notices retained; native package and distribution review remains open."
+    }
+  ]
+}

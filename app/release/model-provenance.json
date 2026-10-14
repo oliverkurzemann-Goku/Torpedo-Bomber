@@ -1,0 +1,49 @@
+{
+  "schema": 1,
+  "models": {
+    "assets/remagen/ford1940/1940_ford_v8.fbx": {
+      "title": "1940 Ford V8",
+      "author": "Saurav Maity (https://sketchfab.com/saurav.maity)",
+      "license": "CC-BY-4.0 (https://creativecommons.org/licenses/by/4.0/)",
+      "source": "https://sketchfab.com/3d-models/1940-ford-v8-d9e2efb283534eebae96cf0963820d35",
+      "evidence": "ASSET-CREDITS.md; original archive acquisition date not recorded",
+      "changes": "External DDS suffixes mapped to supplied PNG files; runtime normalization/material batching."
+    },
+    "assets/remagen/drb0110/drb0110.glb": {
+      "title": "DRB 01.10 Steam Locomotive (low poly)",
+      "author": "Götz von Berlichingen (https://sketchfab.com/vonBerlichingen)",
+      "license": "CC-BY-4.0 (https://creativecommons.org/licenses/by/4.0/)",
+      "source": "https://sketchfab.com/3d-models/drb-0110-steam-locomotive-low-poly-b4e4252632f44492b6c018627a6b4a60",
+      "evidence": "ASSET-CREDITS.md; acquisition date not recorded",
+      "changes": "Collada/textures converted to embedded GLB; runtime normalization/material conversion."
+    },
+    "assets/remagen/horse/quaternius_horse.glb": {
+      "title": "Horse",
+      "author": "Quaternius (https://quaternius.com/)",
+      "license": "CC0-1.0 (https://creativecommons.org/publicdomain/zero/1.0/)",
+      "source": "https://poly.pizza/m/qvTrSG9pZF",
+      "evidence": "Poly Pizza creator-attributed page checked 2026-10-14; ASSET-CREDITS.md",
+      "changes": "Runtime normalization and skeleton-safe clones; supplied Walk animation."
+    },
+    "assets/buildings/bunker.glb": {
+      "author": "matousekfoto (https://sketchfab.com/matousekfoto)",
+      "license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+      "source": "https://sketchfab.com/3d-models/bunker-o323a-160-z-11ae7599f3b640569f7ed4692acabf38",
+      "title": "Bunker O3/23/A-160 Z",
+      "evidence": "Exact repository original GLB asset.extras, matched to derivative sourceSha256",
+      "originalFile": "bunker_o323a-160_z.glb",
+      "originalSha256": "4d04e27f25c15f65fe657107a59c825b8876462c63d6ef6e7090cbe22ae5a379",
+      "changes": "Texture-aware mesh simplification, locked boundaries and 512px textures; see original derivative asset.extras."
+    },
+    "assets/buildings/observation-post.glb": {
+      "author": "davidetheridge (https://sketchfab.com/davidetheridge)",
+      "license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+      "source": "https://sketchfab.com/3d-models/putsborough-wwii-observation-post-05255e1e580140e6ab6742c399c8affb",
+      "title": "Putsborough  WWII Observation Post",
+      "evidence": "Exact repository original GLB asset.extras, matched to derivative sourceSha256",
+      "originalFile": "putsborough__wwii_observation_post.glb",
+      "originalSha256": "666482f67d0b06712c41308bdfb03a6ae83150d29a37e4fcf290d4b96db79207",
+      "changes": "Texture-aware mesh simplification, locked boundaries and 512px textures; see original derivative asset.extras."
+    }
+  }
+}

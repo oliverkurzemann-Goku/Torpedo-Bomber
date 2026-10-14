@@ -1,0 +1,577 @@
+{
+  "schema": 1,
+  "checkedOn": "2026-10-14",
+  "method": "Public Sketchfab model metadata API; uploader declarations are not original-rightsholder authorization. Excerpts limited to 24 words per model.",
+  "sources": [
+    {
+      "modelId": "d9e2efb283534eebae96cf0963820d35",
+      "sourceUrl": "https://sketchfab.com/3d-models/1940-ford-v8-d9e2efb283534eebae96cf0963820d35",
+      "apiUrl": "https://api.sketchfab.com/v3/models/d9e2efb283534eebae96cf0963820d35",
+      "checkedOn": "2026-10-14",
+      "fetchStatus": "verified-public-api",
+      "title": "1940_ford_v8",
+      "uploader": "Saurav Maity",
+      "profileUrl": "https://sketchfab.com/saurav.maity",
+      "declaredLicense": {
+        "label": "CC Attribution",
+        "url": "http://creativecommons.org/licenses/by/4.0/",
+        "slug": "by"
+      },
+      "descriptionSignals": [],
+      "descriptionExcerpt": "–GENERAL– This is high quality Ford-1940 car model with complete interior and machines .(Edge loops, quad poly, simple overall structure). Model is suitable for",
+      "publishedAt": "2023-06-22T14:16:07.232313",
+      "updatedAt": "2023-06-23T18:47:05.396204"
+    },
+    {
+      "modelId": "7a9b4abbc2884ef6bbf5dbffbe8adf2b",
+      "sourceUrl": "https://sketchfab.com/3d-models/88-cm-flak-37-sfl-war-thunder-7a9b4abbc2884ef6bbf5dbffbe8adf2b",
+      "apiUrl": "https://api.sketchfab.com/v3/models/7a9b4abbc2884ef6bbf5dbffbe8adf2b",
+      "checkedOn": "2026-10-14",
+      "fetchStatus": "verified-public-api",
+      "title": "8,8 cm Flak 37 Sfl. (War Thunder)",
+      "uploader": "KojfDiscord",
+      "profileUrl": "https://sketchfab.com/KojfDiscord",
+      "declaredLicense": {
+        "label": "CC Attribution",
+        "url": "http://creativecommons.org/licenses/by/4.0/",
+        "slug": "by"
+      },
+      "descriptionSignals": [],
+      "descriptionExcerpt": "",
+      "publishedAt": "2025-10-13T19:12:31.140896",
+      "updatedAt": "2025-10-13T19:12:31.582507"
+    },
+    {
+      "modelId": "38311e82157449448f703b53648614a5",
+      "sourceUrl": "https://sketchfab.com/3d-models/a6m-zero-low-poly-38311e82157449448f703b53648614a5",
+      "apiUrl": "https://api.sketchfab.com/v3/models/38311e82157449448f703b53648614a5",
+      "checkedOn": "2026-10-14",
+      "fetchStatus": "verified-public-api",
+      "title": "A6M Zero Low Poly",
+      "uploader": "Waroxed",
+      "profileUrl": "https://sketchfab.com/Waroxed",
+      "declaredLicense": {
+        "label": "CC Attribution",
+        "url": "http://creativecommons.org/licenses/by/4.0/",
+        "slug": "by"
+      },
+      "descriptionSignals": [],
+      "descriptionExcerpt": "The Mitsubishi A6M \"Zero\" is a long-range carrier-capable fighter aircraft formerly manufactured by Mitsubishi Aircraft Company.",
+      "publishedAt": "2025-08-04T20:33:13.541068",
+      "updatedAt": "2025-08-04T20:33:13.627916"
+    },
+    {
+      "modelId": "c64e58edfacb4c519b5602278a7e51aa",
+      "sourceUrl": "https://sketchfab.com/3d-models/b-24-liberator-c64e58edfacb4c519b5602278a7e51aa",
+      "apiUrl": "https://api.sketchfab.com/v3/models/c64e58edfacb4c519b5602278a7e51aa",
+      "checkedOn": "2026-10-14",
+      "fetchStatus": "not-verified",
+      "error": "HTTP Error 404: Not Found"
+    },
+    {
+      "modelId": "0fec6a4fbae549e1929bd5978e89c4f4",
+      "sourceUrl": "https://sketchfab.com/3d-models/bf-109-f-1-war-thunder-0fec6a4fbae549e1929bd5978e89c4f4",
+      "apiUrl": "https://api.sketchfab.com/v3/models/0fec6a4fbae549e1929bd5978e89c4f4",
+      "checkedOn": "2026-10-14",
+      "fetchStatus": "verified-public-api",
+      "title": "Bf 109 F-1 (War Thunder)",
+      "uploader": "KojfDiscord",
+      "profileUrl": "https://sketchfab.com/KojfDiscord",
+      "declaredLicense": {
+        "label": "CC Attribution",
+        "url": "http://creativecommons.org/licenses/by/4.0/",
+        "slug": "by"
+      },
+      "descriptionSignals": [],
+      "descriptionExcerpt": "",
+      "publishedAt": "2025-08-07T14:01:39.097036",
+      "updatedAt": "2025-08-07T14:01:39.190914"
+    },
+    {
+      "modelId": "2cf04644ad0944e5b5b845680262d269",
+      "sourceUrl": "https://sketchfab.com/3d-models/bombed-farm-buildings-from-fps-creator-classic-2cf04644ad0944e5b5b845680262d269",
+      "apiUrl": "https://api.sketchfab.com/v3/models/2cf04644ad0944e5b5b845680262d269",
+      "checkedOn": "2026-10-14",
+      "fetchStatus": "verified-public-api",
+      "title": "bombed_farm_buildings from FPS creator classic",
+      "uploader": "𝗜 𝘁   𝘄 𝗮 𝘀   𝗦 𝗼 𝗻 𝘆 𝗮",
+      "profileUrl": "https://sketchfab.com/it_was_sonya",
+      "declaredLicense": {
+        "label": "CC Attribution",
+        "url": "http://creativecommons.org/licenses/by/4.0/",
+        "slug": "by"
+      },
+      "descriptionSignals": [],
+      "descriptionExcerpt": "**download furniture_b:** [https://stfly.vip/91p8r](https://stfly.vip/91p8r) **Watch about section for support my work**",
+      "publishedAt": "2025-07-03T17:20:20.274431",
+      "updatedAt": "2026-08-25T07:19:04.386464"
+    },
+    {
+      "modelId": "ca13adc8bba0480a8bdde834889c5444",
+      "sourceUrl": "https://sketchfab.com/3d-models/building-destroyed-ca13adc8bba0480a8bdde834889c5444",
+      "apiUrl": "https://api.sketchfab.com/v3/models/ca13adc8bba0480a8bdde834889c5444",
+      "checkedOn": "2026-10-14",
+      "fetchStatus": "verified-public-api",
+      "title": "BUILDING DESTROYED",
+      "uploader": "danieljorge435",
+      "profileUrl": "https://sketchfab.com/danieljorge435",
+      "declaredLicense": {
+        "label": "CC Attribution",
+        "url": "http://creativecommons.org/licenses/by/4.0/",
+        "slug": "by"
+      },
+      "descriptionSignals": [],
+      "descriptionExcerpt": "Building abandoned",
+      "publishedAt": "2019-03-14T23:22:05.494369",
+      "updatedAt": "2022-07-18T21:59:49.955043"
+    },
+    {
+      "modelId": "11ae7599f3b640569f7ed4692acabf38",
+      "sourceUrl": "https://sketchfab.com/3d-models/bunker-o323a-160-z-11ae7599f3b640569f7ed4692acabf38",
+      "apiUrl": "https://api.sketchfab.com/v3/models/11ae7599f3b640569f7ed4692acabf38",
+      "checkedOn": "2026-10-14",
+      "fetchStatus": "verified-public-api",
+      "title": "Bunker O3/23/A-160 Z",
+      "uploader": "matousekfoto",
+      "profileUrl": "https://sketchfab.com/matousekfoto",
+      "declaredLicense": {
+        "label": "CC Attribution",
+        "url": "http://creativecommons.org/licenses/by/4.0/",
+        "slug": "by"
+      },
+      "descriptionSignals": [],
+      "descriptionExcerpt": "Infantry casemate bunker concrete fortress \"O3/23/A-160 Z\" řopík near Velké Březno, Czechia https://www.ropiky.net/dbase_objekt.php?id=1075725593 🟢 Download: https://www.fab.com/listings/052a238c-c15a-42b5-95e8-51aa5a33a7e2 Map: https://goo.gl/maps/6kvGAnSVkM2Yb7gC6 https://en.wikipedia.org/wiki/Czechoslovak_border_fortifications Former part of Czechoslovak border",
+      "publishedAt": "2021-04-05T11:27:03.573607",
+      "updatedAt": "2026-08-28T09:01:49.330832"
+    },
+    {
+      "modelId": "b4e4252632f44492b6c018627a6b4a60",
+      "sourceUrl": "https://sketchfab.com/3d-models/drb-0110-steam-locomotive-low-poly-b4e4252632f44492b6c018627a6b4a60",
+      "apiUrl": "https://api.sketchfab.com/v3/models/b4e4252632f44492b6c018627a6b4a60",
+      "checkedOn": "2026-10-14",
+      "fetchStatus": "verified-public-api",
+      "title": "DRB 01.10 Steam Locomotive (low poly)",
+      "uploader": "Götz von Berlichingen",
+      "profileUrl": "https://sketchfab.com/vonBerlichingen",
+      "declaredLicense": {
+        "label": "CC Attribution",
+        "url": "http://creativecommons.org/licenses/by/4.0/",
+        "slug": "by"
+      },
+      "descriptionSignals": [],
+      "descriptionExcerpt": "The Deutsche Reichsbahn Class 01.10 was a series of german express steam locomotives. Developed in the late 1930s it was part of the standard",
+      "publishedAt": "2023-12-04T00:42:35.218687",
+      "updatedAt": "2026-02-03T20:14:22.184647"
+    },
+    {
+      "modelId": "440585ee30bc4b6299b4b1bd8d09e3d8",
+      "sourceUrl": "https://sketchfab.com/3d-models/f4u-1c-corsair-war-thunder-440585ee30bc4b6299b4b1bd8d09e3d8",
+      "apiUrl": "https://api.sketchfab.com/v3/models/440585ee30bc4b6299b4b1bd8d09e3d8",
+      "checkedOn": "2026-10-14",
+      "fetchStatus": "verified-public-api",
+      "title": "F4U-1C Corsair (War Thunder)",
+      "uploader": "KojfDiscord",
+      "profileUrl": "https://sketchfab.com/KojfDiscord",
+      "declaredLicense": {
+        "label": "CC Attribution",
+        "url": "http://creativecommons.org/licenses/by/4.0/",
+        "slug": "by"
+      },
+      "descriptionSignals": [],
+      "descriptionExcerpt": "",
+      "publishedAt": "2026-07-07T08:44:11.374352",
+      "updatedAt": "2026-07-07T08:44:11.536471"
+    },
+    {
+      "modelId": "6290669ab2cb49599f1606507626af39",
+      "sourceUrl": "https://sketchfab.com/3d-models/free-tiger-and-crew-kit-6290669ab2cb49599f1606507626af39",
+      "apiUrl": "https://api.sketchfab.com/v3/models/6290669ab2cb49599f1606507626af39",
+      "checkedOn": "2026-10-14",
+      "fetchStatus": "verified-public-api",
+      "title": "Free Tiger And Crew Kit",
+      "uploader": "adrielcz",
+      "profileUrl": "https://sketchfab.com/adrielcz",
+      "declaredLicense": {
+        "label": "CC Attribution",
+        "url": "http://creativecommons.org/licenses/by/4.0/",
+        "slug": "by"
+      },
+      "descriptionSignals": [],
+      "descriptionExcerpt": "Here's the promised downlodable file, it have a Tiger, 5 Crew heads variants, The Panzertruppe, MP40 (usualy for the Tank Comander), P38 pistol, and",
+      "publishedAt": "2022-03-09T17:42:31.662212",
+      "updatedAt": "2022-07-12T14:58:49.907173"
+    },
+    {
+      "modelId": "17aea959a7a949c6801a7ea19d43e9b4",
+      "sourceUrl": "https://sketchfab.com/3d-models/fw-190-f-8-2-custom-payload-war-thunder-17aea959a7a949c6801a7ea19d43e9b4",
+      "apiUrl": "https://api.sketchfab.com/v3/models/17aea959a7a949c6801a7ea19d43e9b4",
+      "checkedOn": "2026-10-14",
+      "fetchStatus": "verified-public-api",
+      "title": "Fw 190 F-8 (#2 Custom Payload) (War Thunder)",
+      "uploader": "KojfDiscord",
+      "profileUrl": "https://sketchfab.com/KojfDiscord",
+      "declaredLicense": {
+        "label": "CC Attribution",
+        "url": "http://creativecommons.org/licenses/by/4.0/",
+        "slug": "by"
+      },
+      "descriptionSignals": [],
+      "descriptionExcerpt": "",
+      "publishedAt": "2025-08-07T14:05:14.862859",
+      "updatedAt": "2025-08-07T14:05:14.950087"
+    },
+    {
+      "modelId": "4db814ed356a498cabe4badafd06ff6c",
+      "sourceUrl": "https://sketchfab.com/3d-models/grumman-tbm-avenger-4db814ed356a498cabe4badafd06ff6c",
+      "apiUrl": "https://api.sketchfab.com/v3/models/4db814ed356a498cabe4badafd06ff6c",
+      "checkedOn": "2026-10-14",
+      "fetchStatus": "verified-public-api",
+      "title": "Grumman Tbm Avenger",
+      "uploader": "helijah",
+      "profileUrl": "https://sketchfab.com/helijah",
+      "declaredLicense": {
+        "label": "CC Attribution",
+        "url": "http://creativecommons.org/licenses/by/4.0/",
+        "slug": "by"
+      },
+      "descriptionSignals": [],
+      "descriptionExcerpt": "The Grumman TBF Avenger (designated TBM for aircraft manufactured by General Motors) was a torpedo bomber developed initially for the United States Navy and",
+      "publishedAt": "2015-05-18T08:38:37",
+      "updatedAt": "2022-07-18T21:00:26.492331"
+    },
+    {
+      "modelId": "fe911eaf8d5e41eab65fae25b58664b1",
+      "sourceUrl": "https://sketchfab.com/3d-models/helijahs-b-17-fe911eaf8d5e41eab65fae25b58664b1",
+      "apiUrl": "https://api.sketchfab.com/v3/models/fe911eaf8d5e41eab65fae25b58664b1",
+      "checkedOn": "2026-10-14",
+      "fetchStatus": "verified-public-api",
+      "title": "Helijah's B-17",
+      "uploader": "Secret Weapons - Arma 3 Mod",
+      "profileUrl": "https://sketchfab.com/sabrezor",
+      "declaredLicense": {
+        "label": "CC Attribution-NonCommercial",
+        "url": "http://creativecommons.org/licenses/by-nc/4.0/",
+        "slug": "by-nc"
+      },
+      "descriptionSignals": [
+        "Arma",
+        "original"
+      ],
+      "descriptionExcerpt": "From Arma 3 Mod Secret Weapons Reloaded Original model: “ B-17” (https://skfb.ly/ZEpn) by helijah Thanks to Helijah for sharing!!",
+      "publishedAt": "2024-02-23T21:53:28.510788",
+      "updatedAt": "2024-03-10T16:13:50.718462"
+    },
+    {
+      "modelId": "813e100326194334b52887a17416e0b8",
+      "sourceUrl": "https://sketchfab.com/3d-models/jadgpanther-war-thunder-813e100326194334b52887a17416e0b8",
+      "apiUrl": "https://api.sketchfab.com/v3/models/813e100326194334b52887a17416e0b8",
+      "checkedOn": "2026-10-14",
+      "fetchStatus": "verified-public-api",
+      "title": "Jadgpanther (War Thunder)",
+      "uploader": "A Certain Duck",
+      "profileUrl": "https://sketchfab.com/TheOminousDuck",
+      "declaredLicense": {
+        "label": "CC Attribution",
+        "url": "http://creativecommons.org/licenses/by/4.0/",
+        "slug": "by"
+      },
+      "descriptionSignals": [],
+      "descriptionExcerpt": "Textures were taken from screenshots in game. The Jagdpanther (German: \"hunting panther\"), Sd.Kfz. 173, was a highly-successful tank destroyer built by Germany during World",
+      "publishedAt": "2020-03-28T01:20:25.650434",
+      "updatedAt": "2022-07-20T22:41:20.092592"
+    },
+    {
+      "modelId": "5054abd931554d1d81d0b8a3af77c08c",
+      "sourceUrl": "https://sketchfab.com/3d-models/japs-leyte1944-5054abd931554d1d81d0b8a3af77c08c",
+      "apiUrl": "https://api.sketchfab.com/v3/models/5054abd931554d1d81d0b8a3af77c08c",
+      "checkedOn": "2026-10-14",
+      "fetchStatus": "not-verified",
+      "error": "HTTP Error 401: Unauthorized"
+    },
+    {
+      "modelId": "c09430ec8b9f46669bf8a008dd80d336",
+      "sourceUrl": "https://sketchfab.com/3d-models/ju-87-b-2-war-thunder-c09430ec8b9f46669bf8a008dd80d336",
+      "apiUrl": "https://api.sketchfab.com/v3/models/c09430ec8b9f46669bf8a008dd80d336",
+      "checkedOn": "2026-10-14",
+      "fetchStatus": "verified-public-api",
+      "title": "Ju 87 B-2 (War Thunder)",
+      "uploader": "KojfDiscord",
+      "profileUrl": "https://sketchfab.com/KojfDiscord",
+      "declaredLicense": {
+        "label": "CC Attribution",
+        "url": "http://creativecommons.org/licenses/by/4.0/",
+        "slug": "by"
+      },
+      "descriptionSignals": [],
+      "descriptionExcerpt": "",
+      "publishedAt": "2024-12-20T18:06:48.382867",
+      "updatedAt": "2024-12-20T18:06:48.463030"
+    },
+    {
+      "modelId": "a1db8e8414464c5d8b11383e202fcf26",
+      "sourceUrl": "https://sketchfab.com/3d-models/liberty-ship-a1db8e8414464c5d8b11383e202fcf26",
+      "apiUrl": "https://api.sketchfab.com/v3/models/a1db8e8414464c5d8b11383e202fcf26",
+      "checkedOn": "2026-10-14",
+      "fetchStatus": "verified-public-api",
+      "title": "Liberty ship",
+      "uploader": "AlanTinka",
+      "profileUrl": "https://sketchfab.com/AlanTinka",
+      "declaredLicense": {
+        "label": "CC Attribution",
+        "url": "http://creativecommons.org/licenses/by/4.0/",
+        "slug": "by"
+      },
+      "descriptionSignals": [],
+      "descriptionExcerpt": "Liberty ship Ersebet Moore free to download and free to use everywhere Liberty ships were a class of cargo ship built in the United",
+      "publishedAt": "2023-06-18T19:39:20.690737",
+      "updatedAt": "2023-11-21T18:58:15.637148"
+    },
+    {
+      "modelId": "5ff5a51e74324845a4e4905f182dfb2b",
+      "sourceUrl": "https://sketchfab.com/3d-models/low-poly-forest-tree-pack-5ff5a51e74324845a4e4905f182dfb2b",
+      "apiUrl": "https://api.sketchfab.com/v3/models/5ff5a51e74324845a4e4905f182dfb2b",
+      "checkedOn": "2026-10-14",
+      "fetchStatus": "verified-public-api",
+      "title": "Low Poly Forest Tree Pack",
+      "uploader": "99.Miles",
+      "profileUrl": "https://sketchfab.com/99.Miles",
+      "declaredLicense": {
+        "label": "CC Attribution",
+        "url": "http://creativecommons.org/licenses/by/4.0/",
+        "slug": "by"
+      },
+      "descriptionSignals": [],
+      "descriptionExcerpt": "This pack contains 12 unique trees. It also has some individual ferns and shrubs along with some rocks. A single 2K PBR material is",
+      "publishedAt": "2026-05-13T13:00:06.522404",
+      "updatedAt": "2026-05-13T13:00:06.983189"
+    },
+    {
+      "modelId": "fbdb51b1f92f45eebe791a16d805acd4",
+      "sourceUrl": "https://sketchfab.com/3d-models/m16-mgmc-war-thunder-fbdb51b1f92f45eebe791a16d805acd4",
+      "apiUrl": "https://api.sketchfab.com/v3/models/fbdb51b1f92f45eebe791a16d805acd4",
+      "checkedOn": "2026-10-14",
+      "fetchStatus": "verified-public-api",
+      "title": "M16 MGMC (War Thunder)",
+      "uploader": "KojfDiscord",
+      "profileUrl": "https://sketchfab.com/KojfDiscord",
+      "declaredLicense": {
+        "label": "CC Attribution",
+        "url": "http://creativecommons.org/licenses/by/4.0/",
+        "slug": "by"
+      },
+      "descriptionSignals": [],
+      "descriptionExcerpt": "",
+      "publishedAt": "2025-01-17T06:01:22.452423",
+      "updatedAt": "2025-01-17T06:01:22.535978"
+    },
+    {
+      "modelId": "8492cfd6dec94c90ae7d210acf7e58ed",
+      "sourceUrl": "https://sketchfab.com/3d-models/m4a1-76-w-war-thunder-8492cfd6dec94c90ae7d210acf7e58ed",
+      "apiUrl": "https://api.sketchfab.com/v3/models/8492cfd6dec94c90ae7d210acf7e58ed",
+      "checkedOn": "2026-10-14",
+      "fetchStatus": "verified-public-api",
+      "title": "M4A1 (76) W (War Thunder)",
+      "uploader": "KojfDiscord",
+      "profileUrl": "https://sketchfab.com/KojfDiscord",
+      "declaredLicense": {
+        "label": "CC Attribution",
+        "url": "http://creativecommons.org/licenses/by/4.0/",
+        "slug": "by"
+      },
+      "descriptionSignals": [],
+      "descriptionExcerpt": "",
+      "publishedAt": "2024-12-25T17:46:20.526868",
+      "updatedAt": "2024-12-25T17:46:20.603609"
+    },
+    {
+      "modelId": "b803273028ee4ebc87ca4af2e15766fb",
+      "sourceUrl": "https://sketchfab.com/3d-models/me-163-b-war-thunder-b803273028ee4ebc87ca4af2e15766fb",
+      "apiUrl": "https://api.sketchfab.com/v3/models/b803273028ee4ebc87ca4af2e15766fb",
+      "checkedOn": "2026-10-14",
+      "fetchStatus": "verified-public-api",
+      "title": "Me 163 B (War Thunder)",
+      "uploader": "KojfDiscord",
+      "profileUrl": "https://sketchfab.com/KojfDiscord",
+      "declaredLicense": {
+        "label": "CC Attribution",
+        "url": "http://creativecommons.org/licenses/by/4.0/",
+        "slug": "by"
+      },
+      "descriptionSignals": [],
+      "descriptionExcerpt": "",
+      "publishedAt": "2025-04-15T00:39:35.772378",
+      "updatedAt": "2025-04-15T00:39:35.859625"
+    },
+    {
+      "modelId": "a6e4bd7a047f49b292e59ad285850310",
+      "sourceUrl": "https://sketchfab.com/3d-models/me-262-a-1ajabo-war-thunder-a6e4bd7a047f49b292e59ad285850310",
+      "apiUrl": "https://api.sketchfab.com/v3/models/a6e4bd7a047f49b292e59ad285850310",
+      "checkedOn": "2026-10-14",
+      "fetchStatus": "verified-public-api",
+      "title": "Me 262 A-1a/Jabo (War Thunder)",
+      "uploader": "KojfDiscord",
+      "profileUrl": "https://sketchfab.com/KojfDiscord",
+      "declaredLicense": {
+        "label": "CC Attribution",
+        "url": "http://creativecommons.org/licenses/by/4.0/",
+        "slug": "by"
+      },
+      "descriptionSignals": [],
+      "descriptionExcerpt": "",
+      "publishedAt": "2025-08-07T14:05:40.765861",
+      "updatedAt": "2025-08-07T14:05:40.881264"
+    },
+    {
+      "modelId": "1d469251c5994dfd9169f11a97b1b56a",
+      "sourceUrl": "https://sketchfab.com/3d-models/p-47d-28-thunderbolt-1-custom-war-thunder-1d469251c5994dfd9169f11a97b1b56a",
+      "apiUrl": "https://api.sketchfab.com/v3/models/1d469251c5994dfd9169f11a97b1b56a",
+      "checkedOn": "2026-10-14",
+      "fetchStatus": "verified-public-api",
+      "title": "P-47D-28 Thunderbolt (#1 Custom) (War Thunder)",
+      "uploader": "KojfDiscord",
+      "profileUrl": "https://sketchfab.com/KojfDiscord",
+      "declaredLicense": {
+        "label": "CC Attribution",
+        "url": "http://creativecommons.org/licenses/by/4.0/",
+        "slug": "by"
+      },
+      "descriptionSignals": [],
+      "descriptionExcerpt": "",
+      "publishedAt": "2026-03-27T18:53:31.353999",
+      "updatedAt": "2026-03-27T18:53:31.529238"
+    },
+    {
+      "modelId": "05255e1e580140e6ab6742c399c8affb",
+      "sourceUrl": "https://sketchfab.com/3d-models/putsborough-wwii-observation-post-05255e1e580140e6ab6742c399c8affb",
+      "apiUrl": "https://api.sketchfab.com/v3/models/05255e1e580140e6ab6742c399c8affb",
+      "checkedOn": "2026-10-14",
+      "fetchStatus": "verified-public-api",
+      "title": "Putsborough  WWII Observation Post",
+      "uploader": "davidetheridge",
+      "profileUrl": "https://sketchfab.com/davidetheridge",
+      "declaredLicense": {
+        "label": "CC Attribution",
+        "url": "http://creativecommons.org/licenses/by/4.0/",
+        "slug": "by"
+      },
+      "descriptionSignals": [],
+      "descriptionExcerpt": "This building was one of three built around Woolacombe Bay to shelter observers of the WRAF (Women's Royal Air Force), whose job was to",
+      "publishedAt": "2023-04-11T19:04:38.583525",
+      "updatedAt": "2023-04-11T19:05:32.958196"
+    },
+    {
+      "modelId": "b37939147c854e61857f5b248f9efd29",
+      "sourceUrl": "https://sketchfab.com/3d-models/samidare-destroyer-b37939147c854e61857f5b248f9efd29",
+      "apiUrl": "https://api.sketchfab.com/v3/models/b37939147c854e61857f5b248f9efd29",
+      "checkedOn": "2026-10-14",
+      "fetchStatus": "verified-public-api",
+      "title": "Samidare destroyer",
+      "uploader": "everlasting17th",
+      "profileUrl": "https://sketchfab.com/everlastinggrey",
+      "declaredLicense": {
+        "label": "CC Attribution",
+        "url": "http://creativecommons.org/licenses/by/4.0/",
+        "slug": "by"
+      },
+      "descriptionSignals": [],
+      "descriptionExcerpt": "You should use HD textures . Samidare was a Japanese Shiratsuyu-class destroyer. Near the end of WW2 she ran agroun near Palau and a",
+      "publishedAt": "2017-07-31T17:59:31.123523",
+      "updatedAt": "2022-07-20T19:11:32.374245"
+    },
+    {
+      "modelId": "6c950d0b5ff34bd1b43d713ec7237a59",
+      "sourceUrl": "https://sketchfab.com/3d-models/sbd-3-dauntless-war-thunder-6c950d0b5ff34bd1b43d713ec7237a59",
+      "apiUrl": "https://api.sketchfab.com/v3/models/6c950d0b5ff34bd1b43d713ec7237a59",
+      "checkedOn": "2026-10-14",
+      "fetchStatus": "verified-public-api",
+      "title": "SBD-3 Dauntless (War Thunder)",
+      "uploader": "KojfDiscord",
+      "profileUrl": "https://sketchfab.com/KojfDiscord",
+      "declaredLicense": {
+        "label": "CC Attribution",
+        "url": "http://creativecommons.org/licenses/by/4.0/",
+        "slug": "by"
+      },
+      "descriptionSignals": [],
+      "descriptionExcerpt": "",
+      "publishedAt": "2025-11-11T16:42:57.740408",
+      "updatedAt": "2025-11-11T16:42:57.824597"
+    },
+    {
+      "modelId": "a059de1574c84b0a8a2a00930782006f",
+      "sourceUrl": "https://sketchfab.com/3d-models/t2-hangar-a059de1574c84b0a8a2a00930782006f",
+      "apiUrl": "https://api.sketchfab.com/v3/models/a059de1574c84b0a8a2a00930782006f",
+      "checkedOn": "2026-10-14",
+      "fetchStatus": "verified-public-api",
+      "title": "t2 hangar",
+      "uploader": "ElectricL",
+      "profileUrl": "https://sketchfab.com/ElectricLeo",
+      "declaredLicense": {
+        "label": "CC Attribution",
+        "url": "http://creativecommons.org/licenses/by/4.0/",
+        "slug": "by"
+      },
+      "descriptionSignals": [],
+      "descriptionExcerpt": "a ww2 metal hangar that can act as a industrial warehouse or a hangar.",
+      "publishedAt": "2022-08-06T16:31:10.601088",
+      "updatedAt": "2022-08-06T16:36:04.972090"
+    },
+    {
+      "modelId": "93cde98a93fd4b2e9820e780e5ec9c91",
+      "sourceUrl": "https://sketchfab.com/3d-models/type-a-ko-hyoteki-japanese-midget-submarine-93cde98a93fd4b2e9820e780e5ec9c91",
+      "apiUrl": "https://api.sketchfab.com/v3/models/93cde98a93fd4b2e9820e780e5ec9c91",
+      "checkedOn": "2026-10-14",
+      "fetchStatus": "verified-public-api",
+      "title": "Type A Ko-hyoteki Japanese Midget Submarine",
+      "uploader": "Savy",
+      "profileUrl": "https://sketchfab.com/SavyTheCreator",
+      "declaredLicense": {
+        "label": "CC Attribution",
+        "url": "http://creativecommons.org/licenses/by/4.0/",
+        "slug": "by"
+      },
+      "descriptionSignals": [],
+      "descriptionExcerpt": "The Type A Ko-hyoteki class was a class of Japanese midget submarines used during World War II. They had hull numbers but no names.",
+      "publishedAt": "2023-03-06T17:41:27.966209",
+      "updatedAt": "2023-03-07T01:42:36.409923"
+    },
+    {
+      "modelId": "49f465e925f84efa91acb58fc515f90d",
+      "sourceUrl": "https://sketchfab.com/3d-models/warships-call-of-duty-world-at-war-hd-49f465e925f84efa91acb58fc515f90d",
+      "apiUrl": "https://api.sketchfab.com/v3/models/49f465e925f84efa91acb58fc515f90d",
+      "checkedOn": "2026-10-14",
+      "fetchStatus": "verified-public-api",
+      "title": "Warships - Call of Duty: World At War ᴴᴰ",
+      "uploader": "Nazar Okruzhko (Назар Окружко)",
+      "profileUrl": "https://sketchfab.com/Hot-Dog_1947",
+      "declaredLicense": {
+        "label": "CC Attribution",
+        "url": "http://creativecommons.org/licenses/by/4.0/",
+        "slug": "by"
+      },
+      "descriptionSignals": [],
+      "descriptionExcerpt": "❗❗ NOTE: you will NEVER see and get any kind of 4K HD Textures™ UNTIL YOU DOWNLOAD THIS MODEL AS .GLB WITH 8K/4K TEXTURE",
+      "publishedAt": "2025-07-11T21:41:29.672686",
+      "updatedAt": "2025-07-24T20:45:59.924506"
+    },
+    {
+      "modelId": "4b9b73b30c424857b4cf4a72701de115",
+      "sourceUrl": "https://sketchfab.com/3d-models/world-war-ii-house-1-low-poly-4b9b73b30c424857b4cf4a72701de115",
+      "apiUrl": "https://api.sketchfab.com/v3/models/4b9b73b30c424857b4cf4a72701de115",
+      "checkedOn": "2026-10-14",
+      "fetchStatus": "verified-public-api",
+      "title": "World War II House 1 - Low Poly",
+      "uploader": "BedoyaCamilo",
+      "profileUrl": "https://sketchfab.com/BedoyaCamilo",
+      "declaredLicense": {
+        "label": "CC Attribution",
+        "url": "http://creativecommons.org/licenses/by/4.0/",
+        "slug": "by"
+      },
+      "descriptionSignals": [],
+      "descriptionExcerpt": "World War II House 1 - Low Poly First house I've done, I'll be building more :) -------------------------------------------------------------------- Primera casa que he hecho, estaré",
+      "publishedAt": "2022-04-02T20:48:31.573082",
+      "updatedAt": "2022-07-17T09:19:57.652346"
+    }
+  ]
+}

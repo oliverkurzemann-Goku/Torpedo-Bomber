@@ -43,6 +43,12 @@ Corrupt/latest-incompatible slots are rejected, with the previous valid slot ret
 
 ## Build on a Mac
 
+For Oliver's current setup (**Mac, no paid Developer Program membership**), use the
+[German own-iPad installation guide](app/release/IPAD-INSTALLATION-DE.md) and
+`bash iPad-vorbereiten.command`. A free Apple Personal Team supports direct testing on
+his own device, with Apple's seven-day provisioning limit. TestFlight is a later paid-
+membership distribution step, not required for the initial cable installation.
+
 Prerequisites: supported Node (22+), Xcode 26+, an actual iPad for device QA. Native signing
 requires the owner's selected development team; none is configured in this repository.
 The provisional bundle ID `at.kurzemann.squadron` and name `Squadron` must be confirmed
@@ -58,6 +64,14 @@ Select the App scheme and development team in Xcode, then run on the connected i
 The generated payload and native copied `public/` are ignored; rebuild/sync after changes.
 Default Capacitor icon/splash are prototype placeholders, not final store artwork.
 `PrivacyInfo.xcprivacy` is explicitly part of the Xcode Resources build phase.
+Choose an Xcode/macOS combination that supports the actual connected iPadOS; the previously
+verified Xcode 26.3 simulator compile is not a promise of compatibility with later device OSs.
+`npm run app:doctor` performs read-only local checks; account/team selection and Run remain in Xcode.
+The [device-test sheet](app/release/DEVICE-TEST-DE.md) is prepared and intentionally unfilled.
+
+The current rights evidence/register and unsent licensing drafts are linked from
+[APP-ASSET-AUDIT.md](APP-ASSET-AUDIT.md). These preparation files do not change the
+Build 196 game/physics or certify any model for distribution.
 
 An unsigned simulator build can be run with:
 
