@@ -94,17 +94,17 @@
   small.add(strut(new T.Vector3(0,.05,.04),new T.Vector3(0,-leg,-.05),.037,materials.metal));
   const axle=wheel(radius,radius*.68,materials);axle.position.set(0,-leg,-.05);small.add(axle);gear.add(small);frame.add(gear);return gear;
  }
- function buildFlaps(frame,kind,list){
-  const p=profiles[kind],flaps=new T.Group();flaps.name='flightFlaps';flaps.userData.articulationPart=true;
+ function buildFlaps(frame,kind,list,surfaceProfile=null){
+  const p=surfaceProfile||profiles[kind],flaps=new T.Group();flaps.name='flightFlaps';flaps.userData.articulationPart=true;
   for(const side of [-1,1]){
    const sections=[];
    for(let i=0;i<=6;i++){
     const x=side*(p.flapSpan[0]+(p.flapSpan[1]-p.flapSpan[0])*i/6);
     let trailing=null;
-    for(let z=p.wingZ[0];z<=p.wingZ[1];z+=.06){const hit=probe(frame,list,x,z,p.wingY);if(hit){trailing={z,hit};break;}}
+    for(let z=p.wingZ[0];z<=p.wingZ[1];z+=.06){const hit=probe(frame,list,x,z,p.wingY,!!p.closestSkin);if(hit){trailing={z,hit};break;}}
     if(!trailing)continue;
     const back=trailing.z+(p.midChord?p.chord*.7:.055),front=back+p.chord;
-    const a=probe(frame,list,x,front,p.wingY),b=probe(frame,list,x,back,p.wingY);
+    const a=probe(frame,list,x,front,p.wingY,!!p.closestSkin),b=probe(frame,list,x,back,p.wingY,!!p.closestSkin);
     if(!a||!b)continue;
     sections.push({a:a.local,b:b.local,au:a.uv?.clone()||new T.Vector2(),bu:b.uv?.clone()||new T.Vector2(),material:Array.isArray(a.object.material)?a.object.material[a.face.materialIndex||0]:a.object.material});
    }
@@ -125,18 +125,19 @@
   }
   frame.add(flaps);return flaps;
  }
- function install(frame,kind,{gearName='gear',skin=frame,gear=true,flaps=true}={}){
+ function install(frame,kind,{gearName='gear',skin=frame,gear=true,flaps=true,surfaceProfile=null}={}){
   if(!profiles[kind])return;
   const list=meshes(skin,frame);
   if(gear)buildGear(frame,kind,gearName,list);
-  if(flaps&&!frame.getObjectByName('flightFlaps'))buildFlaps(frame,kind,list);
+  if(flaps&&!frame.getObjectByName('flightFlaps'))buildFlaps(frame,kind,list,surfaceProfile);
   const materials=new Set();for(const proxy of list){proxy.geometry.dispose();for(const m of [].concat(proxy.material))materials.add(m);}for(const m of materials)m.dispose();
-  frame.userData.articulation={kind,gearName};pose(frame,1,{left:0,right:0});return frame;
+  frame.userData.articulation={kind,gearName,surfaceProfile};pose(frame,1,{left:0,right:0});return frame;
  }
  function pose(frame,deployment,flaps={left:0,right:0}){
   const info=frame?.userData.articulation;if(!info)return;
-  const p=profiles[info.kind],gear=frame.getObjectByName(info.gearName),g=clamp(deployment);
-  if(gear&&info.kind!=='p47'&&!p.fixed){
+  const p=info.surfaceProfile||profiles[info.kind],gear=frame.getObjectByName(info.gearName),g=clamp(deployment);
+  if(gear?.userData.originalSkinRig)global.AircraftSourceProfiles?.poseGear(frame,g);
+  else if(gear&&info.kind!=='p47'&&!p.fixed){
    gear.visible=g>.005;
    for(const hinge of gear.children){
     if(p.skid){hinge.position.y=-.34-.31*g;continue;}

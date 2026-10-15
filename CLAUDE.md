@@ -1,5 +1,18 @@
 # Torpedo-Bomber — Übergabe an Claude Code
 
+**15.10.2026, Prüfbranch `feat/app-model-qualification`:** Nutzer autorisiert Code und
+Bf-109-Ersatzdatei ausdrücklich nur in diesem Prüfbranch; Main/Live unverändert lassen.
+Opt-in `remagen-mission.html?appModels=preview` lädt den gelieferten manilov.ap/Sabre-Remix.
+Originaldatei unverändert, source-spezifisch originale Propeller-/Fahrwerks-/Haubenteile
+separiert; UV-Gleichheit geprüft, keine Shaderänderung. Desktop-WebGL-Prüfung bestanden:
+43→10 Draw Calls, 25.524→27.104 Dreiecke, sichtbare Propeller/Klappen, Bodenkontakt und
+kontinuierliche Fahrwerkspose bei simulierten 20/60/120 FPS. Kein iPad-/Sortien-/finaler
+Rechtenachweis. `app/model-candidates/README.md` enthält Status und Downloadliste.
+P-47 zwingend Bubble-Canopy, bevorzugt D-28; kein Razorback. Verlinkter P47-Kandidat
+darauf noch NICHT geprüft. Kandidatenverzeichnis nicht im Offline-Release-Payload.
+Vorhandene lokale Änderungen an `ju87.glb` und `uss_midway.glb` stammen nicht aus dieser
+Arbeit und sind nicht im Prüfcommit enthalten. CPU-Gesamttests deshalb in sauberem Worktree.
+
 **Lies diese Datei komplett, bevor du irgendetwas änderst.** Sie beschreibt ein Projekt mit
 langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in einem Chat ohne
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"

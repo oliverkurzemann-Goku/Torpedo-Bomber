@@ -510,6 +510,7 @@
 <script src="game-runtime.js?v=196"></script>
 <script src="sortie-checkpoint.js?v=196"></script>
 <script src="aircraft-articulation.js?v=196"></script>
+<script src="aircraft-source-profiles.js?v=1"></script>
 <script src="aircraft-rotors.js?v=172"></script>
 <script src="combat-fx.js?v=177"></script>
 <script src="aircraft-smoke.js?v=176"></script>
@@ -1047,6 +1048,7 @@ function buildGermanAirfield(){
 //  saved for that file wins over the automatic guess. Adding an aircraft is then: drop the
 //  .glb next to this file, open model-check.html, line it up, press Save.
 // ============================================================
+const MODEL_REPLACEMENT_PREVIEW=new URLSearchParams(location.search).get('appModels')==='preview';
 const MODEL_URL={
   // the newer War Thunder P-47 first: measured span 12.47 m against a real 12.42, and it
   // carries a perfectly round 3.95 m disc at its +Z end - that is the propeller, so it is
@@ -1054,7 +1056,7 @@ const MODEL_URL={
   p47:   ['p47new.glb','p-47d-28_thunderbolt_1_custom_war_thunder.glb',
           'p-47d-28%20thunderbolt%201%20custom%20war%20thunder.glb',   // uploads turn _ into space
           'p47new.glb','p47.glb','p-47.glb','p_47.glb'],
-  bf109: ['bf109new.glb','bf_109_f-1_war_thunder.glb',
+  bf109: MODEL_REPLACEMENT_PREVIEW?['app/model-candidates/bf109-manilov-remix.glb']:['bf109new.glb','bf_109_f-1_war_thunder.glb',
           'bf%20109%20f-1%20war%20thunder.glb',
           'bf%20109%20-%20messerschmitt.glb','bf_109_-_messerschmitt.glb',
           'bf109.glb','bf%20109.glb'],
@@ -1096,6 +1098,7 @@ const TRICYCLE_KINDS=['me262'];
 // Anything not listed here gets worked out automatically; if that lands wrong, model-check.html
 // fixes it in a few seconds and its answer overrides everything below.
 const MODEL_FIX={
+  'app/model-candidates/bf109-manilov-remix.glb': {yaw:0,pitch:Math.atan2(.25235,.96764)},
   'p47.glb':                      {yaw:Math.PI},
   'bf 109 - messerschmitt.glb':   {yaw:-Math.PI/2},
   'bf_109_-_messerschmitt.glb':   {yaw:-Math.PI/2},
@@ -1150,6 +1153,7 @@ function buildTemplate(k){
   if(!modelRaw[k]) return null;
   const src=modelRaw[k].clone(true);
   const root=new THREE.Group(); root.add(src);
+  root.userData.aircraftSourceProfile=src.userData.aircraftSourceProfile||null;
   const b=modelBase[k]||{yaw:0,pitch:0,roll:0,scale:0};
   // pitch and roll from model-check are kept, not just the yaw - a model that sits nose-down
   // or upside down needs those, and quarter turns alone would never fix it
@@ -1165,7 +1169,9 @@ function buildTemplate(k){
   root.updateMatrixWorld(true);
   const rig=rigModel(root,k);
   if(k==='ju87')attachJu87DiveBrakes(root);
-  AircraftArticulation.install(root,k);
+  if(root.userData.aircraftSourceProfile&&root.userData.aircraftSourceProfile===globalThis.AircraftSourceProfiles?.SOURCE)
+    AircraftArticulation.install(root,k,{gear:false,surfaceProfile:{...AircraftArticulation.profiles[k],wingY:.06,closestSkin:true,wingZ:[-.25,2.4]}});
+  else AircraftArticulation.install(root,k);
   modelTpl[k]=root;
   const sz=new THREE.Box3().setFromObject(root).getSize(new THREE.Vector3());
   window.__modelInfo=(window.__modelInfo||{});
@@ -2215,6 +2221,7 @@ function rigP47OriginalProp(root, whole, S){
   return 'original P-47 four-blade propeller ('+count+' GLB triangles)';
 }
 function rigModel(root, kind){
+  if(root.userData.aircraftSourceProfile&&root.userData.aircraftSourceProfile===globalThis.AircraftSourceProfiles?.SOURCE)return AircraftSourceProfiles.rig(root);
   root.updateMatrixWorld(true);
   const whole=new THREE.Box3().setFromObject(root);
   const S=whole.getSize(new THREE.Vector3());
@@ -2593,6 +2600,7 @@ function tryLoad(L,k,i,onReady,onFailed,lastError){
       o.material=Array.isArray(o.material)? out : out[0];
     });
     if(k==='me262'||k==='fw190'||k==='bf109')brightenFighterSkin(src,k);
+    if(k==='bf109'&&url==='app/model-candidates/bf109-manilov-remix.glb')AircraftSourceProfiles.prepare(src);
     modelRaw[k]=src;
     window.__modelSrc=(window.__modelSrc||{}); window.__modelSrc[k]=url;
     buildTemplate(k);

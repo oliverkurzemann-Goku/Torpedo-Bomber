@@ -1,0 +1,29 @@
+{
+  "schema": 1,
+  "updatedOn": "2026-10-15",
+  "releasePolicy": "No candidate ships by default until provenance, visual quality, moving parts and actual-sortie checks pass.",
+  "aircraft": {
+    "p47": {
+      "requiredCanopy": "bubble",
+      "excludedCanopy": "razorback",
+      "preferredVariant": "P-47D-28",
+      "currentRuntimeFile": "p47new.glb",
+      "preserveCurrentUntilQualified": true,
+      "candidateUrl": "https://sketchfab.com/3d-models/p47-30002b04d490465b90c7ecbfe01e0f52",
+      "candidateCanopyVerified": false,
+      "candidateDownloadStatus": "requires-sketchfab-sign-in",
+      "releaseApproved": false
+    },
+    "bf109": {
+      "candidateFile": "app/model-candidates/bf109-manilov-remix.glb",
+      "sha256": "0d3ed09912fb5b5eb7f91f2e7835de25b33c603be96a4614e928b5ed2c78cac0",
+      "source": "https://sketchfab.com/3d-models/manilovaps-bf-109-remix-4a663a81690b41a1a700c0a501b00001",
+      "author": "Sabre / Secret Weapons - Arma 3 Mod",
+      "originalAuthor": "manilov.ap",
+      "originalSource": "https://sketchfab.com/3d-models/bf109-109ef10964dc404089507fc33aad2982",
+      "declaredLicense": "CC-BY-4.0",
+      "previewQuery": "appModels=preview",
+      "releaseApproved": false
+    }
+  }
+}
