@@ -1,5 +1,32 @@
 # Torpedo-Bomber — Übergabe an Claude Code
 
+**19.10.2026, Ersatzmodell-Download aus der Cloud-Session nicht möglich; Prüfwerkzeug ergänzt
+(kein Spielcode, kein Build-Sprung, Main unverändert):** Auftrag war, die rechtlich offenen
+Modelle (Flugzeuge, Fahrzeuge, Schiffe, Bauernhof-Ruine) durch Sketchfab-Downloads mit CC0/
+CC BY 4.0 zu ersetzen. Das scheitert an zwei Dingen, die nur der Kontoinhaber ändern kann:
+(1) die Egress-Policy der Umgebung beantwortet `sketchfab.com`, `api.sketchfab.com`,
+`media.sketchfab.com`, `static.sketchfab.com`, `poly.pizza`, `quaternius.com` mit **403 auf
+CONNECT** (im Proxy-Status als `connect_rejected` protokolliert, nicht umgangen); (2) der
+Sketchfab-Download braucht das API-Token des Kontos, einen Connector gibt es nicht. Benötigt:
+Umgebungseinstellungen → Network access → die Hosts unter *Allowed domains*, dazu ein Token
+als Umgebungsvariable (vorgesehen `SKETCHFAB_TOKEN`, nie in den Chat einfügen). Es wurde
+keine Modell-URL, Lizenz oder Datei erfunden. Bis dahin lädt eine angemeldete Person herunter
+(Liste/Checkliste in `app/model-candidates/README.md`).
+Neu, damit jeder gelieferte Kandidat sofort nach Projektregeln eingestuft wird:
+`npm run app:candidates` (`scripts/qualify-candidate.mjs`) liest die eingebetteten
+Sketchfab-Metadaten und meldet BLOCKED (NC/ND, keine Lizenz, Titel/Quelle nennt Spiel oder
+Spiel-Werkzeug — ein CC-Label auf solchen Reuploads gilt nicht als Freigabe), NEEDS DECISION
+(BY-SA/andere Versionen), INCOMPLETE (Quelle/Autor/Lizenzseiten-Screenshot fehlt) oder READY
+FOR QUALIFICATION, dazu Dreiecke/Meshes/Bilder, Decoder-Bedarf (Draco/meshopt) und Knotennamen-
+Hinweise auf getrennte Propeller/Fahrwerke/Klappen. Gegen die echten Register-Zeilen
+gegengeprüft: B-17 (NC), die War-Thunder-Dateien und `uss_midway.glb` (ohne Lizenz) kommen als
+BLOCKED, die unabhängigen CC-BY-Modelle (Zero, Avenger) als INCOMPLETE, der Bf-109-Kandidat
+als INCOMPLETE (Lizenzseiten-Screenshot fehlt, Ablage `app/model-candidates/evidence/<Datei>/
+license-page.png`). Reine Heuristik: kein Treffer ist keine Freigabe, READY ist keine
+Release-Freigabe. `okinawa/tests/candidate-qualification.cjs` (synthetische GLBs, bleibt auch
+nach dem Modelltausch gültig) ist Teil von `npm test`. Nicht angefasst: Spielcode,
+`requirements.json`, Registerdateien, jede Freigabeentscheidung.
+
 **15.10.2026, Prüfbranch `feat/app-model-qualification`:** Nutzer autorisiert Code und
 Bf-109-Ersatzdatei ausdrücklich nur in diesem Prüfbranch; Main/Live unverändert lassen.
 Opt-in `remagen-mission.html?appModels=preview` lädt den gelieferten manilov.ap/Sabre-Remix.
