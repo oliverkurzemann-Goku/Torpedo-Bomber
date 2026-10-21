@@ -36,6 +36,13 @@ references. Individual aileron/elevator damage and jammed left/right flaps affec
 handling, announce a persistent CTRL warning, and are cleared by repair or restart.
 Stick conventions, normal self-centering and AERO controls are retained.
 
+The P-47 now selects a weathered bubble-canopy derivative with photo-inspired
+black/white checkerboard livery, baked oil/exhaust/dust/scuff wear and native
+round-tyre gear with covers. Original rotor and control surfaces move directly;
+no generic flap overlays are added. The supplied original remains a fallback.
+The new model's GPU appearance and iPad Safari gameplay remain unverified here:
+the managed test browser cannot create a WebGL context.
+
 All twelve active aircraft models have visible landing flaps and mechanical
 landing-gear rigs. The P47 keeps its proven rig, Ju87 its fixed fairings and Me163
 its landing skid; B24/Me262 use nose wheels. Left/right flap damage drives each

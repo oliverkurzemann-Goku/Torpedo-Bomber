@@ -1,6 +1,16 @@
 {
   "schema": 1,
   "models": {
+    "assets/aircraft/p47-weathered.glb": {
+      "title": "P-47D-28 Thunderbolt (War Thunder derivative; photo livery and service wear v3)",
+      "author": "KojfDiscord (https://sketchfab.com/KojfDiscord)",
+      "license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+      "source": "https://sketchfab.com/3d-models/p-47d-28-thunderbolt-1-custom-war-thunder-1d469251c5994dfd9169f11a97b1b56a",
+      "evidence": "Exact supplied p47new.glb embedded attribution; original mesh/texture rights status unchanged.",
+      "originalFile": "p47new.glb",
+      "originalSha256": "61cb9510ad9ffc5eeb25abbd5eb620b0e17fb49f44b2e78fb6ba09b681e38174",
+      "changes": "User-photo inspired checkerboard livery, baked oil/exhaust/dust/scuff wear and PBR surface map; native rotor/control groups; newly built round tyres and forward-raked gear covers. No reference photograph embedded. Generator: scripts/build-p47-weathered.py. Original game rights remain open."
+    },
     "assets/remagen/ford1940/1940_ford_v8.fbx": {
       "title": "1940 Ford V8",
       "author": "Saurav Maity (https://sketchfab.com/saurav.maity)",

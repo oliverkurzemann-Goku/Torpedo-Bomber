@@ -5,7 +5,31 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 196 · Thunderbolt Squadron BUILD 196 · Remagen-Kern 23 / Fahrzeuge 22**
+Stand bei Übergabe: **Torpedo Squadron BUILD 197 · Thunderbolt Squadron BUILD 197 · Remagen-Kern 23 / Fahrzeuge 22**
+
+**Build 197 (22.10.2026): P-47-Fotolackierung, Einsatzspuren und natives Fahrwerk.**
+`assets/aircraft/p47-weathered.glb` ist ein ausdrücklich gekennzeichnetes Derivat des
+vorhandenen `p47new.glb`, nicht unabhängig neu modelliert. Original unverändert als
+Fallback. Schwarzes/weißes Schachbrett und B–WZ bleiben; das neue Alamy-Seitenfoto
+dient ausschließlich als Fahrwerksreferenz, kein Foto oder Wasserzeichen wurde eingebettet.
+Öl-/Abgasspuren, Unterseitenstaub, Laufwegabrieb und Lackchips sind in Albedo und
+PBR-Oberflächenmap eingebrannt, ohne zusätzliche Decals/Frameupdates. 12.42m/11.02m.
+Runde .88-m-Hauptreifen statt der versehentlich Y-gestreckten V2-Reifen, nach vorn
+geneigte Beine, Oleos/Scheren/Bremsleitungen, trapezförmige Abdeckungen und Spornrad.
+Fahrwerk je Material gebündelt: insgesamt 31 Modell-Meshes / 49,455 Dreiecke.
+
+`AircraftArticulation.nativeP47` übernimmt vorhandenen Rotor/Fahrwerk/Klappen ohne
+Legacy-Schnitte oder zweite generische Flächen. CPU-Bodenkontakt nutzt echte Reifen,
+AI-Klone bleiben unabhängig. Native Steuerflächen folgen dem Spieler-Stick.
+Alle zwölf anderen Original-/Fallbackpfade bleiben unverändert. Checkpoint-Schema
+bleibt kompatibel (196): ausschließlich Modell-/Darstellungsänderung.
+
+glTF-Validator und echter r128-Loader/Produktionsrig/Bodencode geprüft. Managed
+Browser scheitert mit `Error creating WebGL context`; aktuelle GPU-Sichtprüfung,
+Safari-/iPad-Gameplay und Thermik sind ausdrücklich NICHT verifiziert. Keine neue
+Browserkontroll-Umgehung als Ersatz. Regressionen und App-Payload werden separat
+protokolliert. Herkunft/Originalhash im Rechteinventar; kommerzielle Freigaben
+bleiben unverändert offen.
 
 **App-Vorbereitung 14.10.2026, Spiel weiterhin Build 196:** Nutzer bestätigt Mac ohne
 bezahlten Developer-Account. `iPad-vorbereiten.command`, read-only `app:doctor`, deutsche
