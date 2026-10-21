@@ -16,15 +16,22 @@ computeVertexNormals-Vorstufe, DEM-Kantennormalen je Auflösung gemerkt (nur ohn
 Streaming-Demos), Grobraster-Ecken je Build einmal abgefragt, Downgrade ohne überschriebene Höhen.
 Ergebnis Feinmessung 900 Frames: Bodenflächen-Sync 4599→1061 ms (Nachbarn 4197→518). Umschalt-Frame
 ~100–175 → ~30–35 ms, Überblendungs-Frame ~60–140 → ~10–20 ms, Kachelbau warm 10–13 → 4–7 ms (Sandbox,
-keine iPad-Zahlen). Nachweis: alte/neue Module parallel, 2000 Frames inkl. 611 Morph-Frames, Gelände-
+keine iPad-Zahlen). Ganzer Flug wiederholt (4600 Frames, ohne den Auflösungswechsel der Qualitäts-
+automatik): p95 62→12 ms, p99 90→19 ms, Frames >33 ms 820→7, >50 ms 386→1, Ø Überblendungs-Frame
+72→9 ms. Nachweis: alte/neue Module parallel, 2000 Frames inkl. 611 Morph-Frames, Gelände-
 Positionen/-Normalen und alle Bodenflächen bitidentisch. Neuer Test morph-surface-shading.cjs
-(Schattierung bitgleich, keine Fehlalarm-Revisionen, scheitert gegen den alten Code).
+(Schattierung bitgleich, keine Fehlalarm-Revisionen, scheitert gegen den alten Code). Terrain 32/32,
+Okinawa 65/65 (Browser lokal übersprungen), europe-start-browser und woodland-edge-browser nativ grün.
+Nebenbefund, offen: AdaptiveQuality hält die alten Ruckelphasen für ein langsames Gerät und legt beim
+Stufenwechsel die Bildfläche neu an (in SwiftShader 27 s, auf dem iPad unbekannt); neu bewerten.
 VERWORFEN, nicht ausgeliefert: Neuaufbau der Bodenflächen über Frames verteilen. Gemessen bis 24 m
 Versatz für wenige Frames: Beim Verfeinern startet die neue Kachel im Randstreifen nicht exakt auf der
 alten Oberfläche (vorbestehender kleiner Kanten-Sprung nach stitchEdges; Bodenflächen sprangen bisher
 sofort mit). Möglicher späterer Schritt: Upgrade-Startzustand aus dem live Gitter interpolieren (beseitigt
 den Sprung), dann exakt verteilbar. Build 197 an Board/beiden Spielen/Menü-CSS-Links, App-Payload und
-Xcode-Buildnummer; Pazifik-Code unverändert. Modul-Cache TerrainTile/TerrainManager/OSMManager 197,
+Xcode-Buildnummer, asset-register per app:assets neu erzeugt (Branch-Stand 303 Dateien inkl.
+aircraft-source-profiles.js aus dem Prüfbranch); Pazifik-Code unverändert. Liegt auf
+claude/dauntless-propeller-edit-uwy3eg (= Prüfbranch + diese Arbeit), nicht auf main/Pages. Modul-Cache TerrainTile/TerrainManager/OSMManager 197,
 Remagen-Kern bleibt 23, Checkpoint-Compatibility bleibt 196 (Format unverändert). Kein iPad-Test.
 
 **19.10.2026, Ersatzmodell-Download aus der Cloud-Session nicht möglich; Prüfwerkzeug ergänzt
