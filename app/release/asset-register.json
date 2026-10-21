@@ -1,13 +1,13 @@
 {
   "schema": 1,
   "reviewedOn": "2026-10-14",
-  "build": 196,
+  "build": 197,
   "status": "OPEN — source declarations checked; no external rights authorization obtained",
   "payload": {
-    "bytes": 279415854,
+    "bytes": 279419870,
     "fileCount": 302,
     "modelCount": 35,
-    "manifestSha256": "c743628fd166669d45a50e132253c74f739d3f839372658f9123157e20111ad5"
+    "manifestSha256": "f709fea8dd45f324e020f978871a695367b53779156ee4898c57114a727b4787"
   },
   "files": [
     {
@@ -439,7 +439,7 @@
     {
       "path": "index.html",
       "bytes": 7260,
-      "sha256": "e6a8ba7dc1c7686c1da49ddf493beb4431259fa80cd2ba7ee73318a1d71cd927",
+      "sha256": "07cb52f418d5c9293dc624ea70aef707b910de08ccaf085df9b8c2d74ddbe379",
       "kind": "code-or-notice"
     },
     {
@@ -559,7 +559,7 @@
     {
       "path": "remagen-mission.html",
       "bytes": 358781,
-      "sha256": "fa2980c51632ed806c07fe8044927e98e698759f9a125d5c3561ed89177a3b5d",
+      "sha256": "2e580d71e78e7380b776121e9afd032b0ede0d46c1ed1f7546432086f16af8ed",
       "kind": "code-or-notice"
     },
     {
@@ -666,8 +666,8 @@
     },
     {
       "path": "terrain-system/OSMManager.js",
-      "bytes": 76761,
-      "sha256": "503b0b393286e039e3c8e8167a2bca64352e415a7db9ed3a98e6f0576c7a4def",
+      "bytes": 78582,
+      "sha256": "4473b125eee81ed0ed5b166cce259894a812eb2d49f0c66c6711c3e1646ea450",
       "kind": "code-or-notice"
     },
     {
@@ -678,14 +678,14 @@
     },
     {
       "path": "terrain-system/TerrainManager.js",
-      "bytes": 25091,
-      "sha256": "1ad6b8f3b1be17fdce90e79222334affa3694a415475ded3ba1b5a4791bbf53e",
+      "bytes": 25907,
+      "sha256": "a6a07cc7a5a8c2354df7aa520d94a8703cbe1d26f062db892527c449819832db",
       "kind": "code-or-notice"
     },
     {
       "path": "terrain-system/TerrainTile.js",
-      "bytes": 20125,
-      "sha256": "72c98e06dbd1eba6bce5310d33f31bca12368486363f8d79d9319322c9091fbc",
+      "bytes": 21504,
+      "sha256": "b9369fec7dcc48c211a8354a85fc0dc58baae76edcc3ecfc7836b0ba606aba5c",
       "kind": "code-or-notice"
     },
     {
@@ -1747,7 +1747,7 @@
     {
       "path": "torpedo-carrier.html",
       "bytes": 422962,
-      "sha256": "0b1917fe3f71508e31e878dcd1768dcaaf9a0c243f9719eda55c296f13d691e6",
+      "sha256": "c3e0af81c13b01291b3b8304c60c085481a54490bfe3bdaa720e8e23fb9c0d0f",
       "kind": "code-or-notice"
     },
     {
