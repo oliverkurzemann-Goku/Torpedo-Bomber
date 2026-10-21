@@ -1,3 +1,28 @@
+## Build 197 — LOD transitions without per-frame neighbour rebuilds
+
+A runtime LOD switch blends one tile for 0.6s. Its settled neighbours were treated as
+changed on every blend frame: `stitchEdges()` compared Float32 heights with a 1e-5
+tolerance (exceeded by rounding alone above ~128m) and corners written by two edges in
+turn. Each false change rebuilt the tile normals, bumped `surfaceRevision` and ran a full
+`computeVertexNormals()` on all of its draped roads/rivers/fields. Rules now:
+
+- `stitchEdges()` keeps its write order and rule; a tile is dirty only if a stored
+  height differs at the end of the pass. Consumers of `surfaceRevision` (OSM layers,
+  airfield details, period buildings) therefore refit only on real changes.
+- Draped layers are non-indexed; `osmSurfaceNormals()` reproduces three r128
+  `computeVertexNormals()` bit for bit and re-shades only triangles whose vertices moved.
+  A full pass still runs when a blend ends or a layer is rebuilt.
+- `TerrainTile._buildGeometry()` no longer runs a normal pass that
+  `_refreshSurfaceNormals()` overwrote, caches DEM edge normals per resolution (only when
+  no sample was clamped), samples each coarse corner once and skips true heights a
+  downgrade overwrites.
+
+Old and new modules were run side by side for 2000 frames (611 blend frames): terrain
+and every draped layer are bit-identical. `tests/morph-surface-shading.cjs` guards it.
+Not adopted: spreading layer rebuilds over frames. An upgrade does not start exactly on
+the old surface inside the stitched edge strip (a small pre-existing step); waiting
+layers were measured up to 24m off for a few frames.
+
 ## Build 195 — irregular woodland edges within the existing render budget
 
 Woodland placements gain small world-aligned insets along real polygon borders,
