@@ -31,7 +31,8 @@ sofort mit). Möglicher späterer Schritt: Upgrade-Startzustand aus dem live Git
 den Sprung), dann exakt verteilbar. Build 197 an Board/beiden Spielen/Menü-CSS-Links, App-Payload und
 Xcode-Buildnummer, asset-register per app:assets neu erzeugt (Branch-Stand 303 Dateien inkl.
 aircraft-source-profiles.js aus dem Prüfbranch); Pazifik-Code unverändert. Liegt auf
-claude/dauntless-propeller-edit-uwy3eg (= Prüfbranch + diese Arbeit), nicht auf main/Pages. Modul-Cache TerrainTile/TerrainManager/OSMManager 197,
+claude/dauntless-propeller-edit-uwy3eg (= Prüfbranch + diese Arbeit). Am 21.10. auf Nutzerfreigabe nur
+diese Arbeit nach main übernommen (ohne Bf-109-Vorschau/Kandidaten-Triage) und main hier zurückgeführt. Modul-Cache TerrainTile/TerrainManager/OSMManager 197,
 Remagen-Kern bleibt 23, Checkpoint-Compatibility bleibt 196 (Format unverändert). Kein iPad-Test.
 
 **19.10.2026, Ersatzmodell-Download aus der Cloud-Session nicht möglich; Prüfwerkzeug ergänzt
