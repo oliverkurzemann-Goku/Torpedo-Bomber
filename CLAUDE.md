@@ -1,5 +1,32 @@
 # Torpedo-Bomber — Übergabe an Claude Code
 
+**21.10.2026, Build 197: Rhein-Ruckeln beim Gelände-Detailwechsel behoben, bildgleich.**
+Nutzer: Rhein ruckelt „zwischendurch“, Pazifik weniger; Auftrag Punkte 1–3, aber ausdrücklich
+keine schlechtere Grafik. Messung zuerst (echtes remagen-mission.html, Chromium/SwiftShader,
+P-47 26 km quer über die Karte, jeder Frame mit Ursache; Skripte nicht im Repo): normaler Frame
+~3–4 ms CPU, aber 54 Detailwechsel, danach je ~0,6 s ~70 ms/Frame (23 % aller Flugframes). Zu
+~90 % OSMManager.syncTerrainSurfaces. Nicht die umschaltende Kachel (~2 ms), sondern ihre
+Nachbarn: stitchEdges meldete Float32-Rundung (über ~128 m Höhe >1e-5) und Ecken, die zwei Kanten
+nacheinander schreiben, als Änderung → surfaceRevision++, kompletter Normalen-Neuaufbau der Kachel
+und computeVertexNormals aller ihrer Straßen/Flüsse/Felder in JEDEM Morph-Frame (bis 28 ms je Nachbar).
+Behoben, alles bildgleich: stitchEdges schreibt unverändert, zählt aber nur echte Änderungen am
+Passende; syncSurface schattiert nur bewegte Dreiecke neu (osmSurfaceNormals reproduziert three r128
+computeVertexNormals, non-indexed, Bit für Bit; auch für redrapeWater); TerrainTile ohne verworfene
+computeVertexNormals-Vorstufe, DEM-Kantennormalen je Auflösung gemerkt (nur ohne Rand-Clamp, wegen
+Streaming-Demos), Grobraster-Ecken je Build einmal abgefragt, Downgrade ohne überschriebene Höhen.
+Ergebnis Feinmessung 900 Frames: Bodenflächen-Sync 4599→1061 ms (Nachbarn 4197→518). Umschalt-Frame
+~100–175 → ~30–35 ms, Überblendungs-Frame ~60–140 → ~10–20 ms, Kachelbau warm 10–13 → 4–7 ms (Sandbox,
+keine iPad-Zahlen). Nachweis: alte/neue Module parallel, 2000 Frames inkl. 611 Morph-Frames, Gelände-
+Positionen/-Normalen und alle Bodenflächen bitidentisch. Neuer Test morph-surface-shading.cjs
+(Schattierung bitgleich, keine Fehlalarm-Revisionen, scheitert gegen den alten Code).
+VERWORFEN, nicht ausgeliefert: Neuaufbau der Bodenflächen über Frames verteilen. Gemessen bis 24 m
+Versatz für wenige Frames: Beim Verfeinern startet die neue Kachel im Randstreifen nicht exakt auf der
+alten Oberfläche (vorbestehender kleiner Kanten-Sprung nach stitchEdges; Bodenflächen sprangen bisher
+sofort mit). Möglicher späterer Schritt: Upgrade-Startzustand aus dem live Gitter interpolieren (beseitigt
+den Sprung), dann exakt verteilbar. Build 197 an Board/beiden Spielen/Menü-CSS-Links, App-Payload und
+Xcode-Buildnummer; Pazifik-Code unverändert. Modul-Cache TerrainTile/TerrainManager/OSMManager 197,
+Remagen-Kern bleibt 23, Checkpoint-Compatibility bleibt 196 (Format unverändert). Kein iPad-Test.
+
 **19.10.2026, Ersatzmodell-Download aus der Cloud-Session nicht möglich; Prüfwerkzeug ergänzt
 (kein Spielcode, kein Build-Sprung, Main unverändert):** Auftrag war, die rechtlich offenen
 Modelle (Flugzeuge, Fahrzeuge, Schiffe, Bauernhof-Ruine) durch Sketchfab-Downloads mit CC0/
@@ -45,7 +72,7 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 196 · Thunderbolt Squadron BUILD 196 · Remagen-Kern 23 / Fahrzeuge 22**
+Stand bei Übergabe: **Torpedo Squadron BUILD 197 · Thunderbolt Squadron BUILD 197 · Remagen-Kern 23 / Fahrzeuge 22**
 
 **App-Vorbereitung 14.10.2026, Spiel weiterhin Build 196:** Nutzer bestätigt Mac ohne
 bezahlten Developer-Account. `iPad-vorbereiten.command`, read-only `app:doctor`, deutsche

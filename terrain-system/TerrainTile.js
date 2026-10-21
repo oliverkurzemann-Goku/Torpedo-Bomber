@@ -158,9 +158,13 @@ class TerrainTile {
     const cx = this.centerX, cz = this.centerZ;
     const mainCount = pos.count;
 
-    for(let i = 0; i < mainCount; i++){
-      const wx = cx + pos.getX(i), wz = cz + pos.getZ(i);
-      pos.setY(i, this.heightProvider.getHeight(wx, wz));
+    // A downgrade starts from the live buffer and blends to coarse heights;
+    // every true height sampled here would be overwritten below.
+    if(!morphSpec || morphSpec.upgrade){
+      for(let i = 0; i < mainCount; i++){
+        const wx = cx + pos.getX(i), wz = cz + pos.getZ(i);
+        pos.setY(i, this.heightProvider.getHeight(wx, wz));
+      }
     }
 
     let morphFromMain = null, morphToMain = null;
@@ -170,6 +174,8 @@ class TerrainTile {
       const oldPos = this.mesh.geometry.attributes.position;   // whatever is live right now
       const ratio = morphSpec.upgrade ? renderSeg / morphSpec.fromSeg : 1;
       const oldGridN = morphSpec.upgrade ? morphSpec.fromSeg + 1 : 0;
+      const coarseSeg = morphSpec.upgrade ? morphSpec.fromSeg : targetSeg;
+      const coarseGrid = new Float64Array((coarseSeg + 1) ** 2).fill(NaN);
 
       for(let iy = 0; iy < gridN; iy++){
         for(let ix = 0; ix < gridN; ix++){
@@ -181,12 +187,12 @@ class TerrainTile {
               const oldIdx = (ix / ratio) + oldGridN * (iy / ratio);
               morphFromMain[i] = oldPos.getY(oldIdx);   // exact carry-over — this vertex already existed
             } else {
-              morphFromMain[i] = coarseInterpHeight(this.heightProvider, this.tileSize, cx, cz, morphSpec.fromSeg, localX, localZ);
+              morphFromMain[i] = coarseInterpHeight(this.heightProvider, this.tileSize, cx, cz, morphSpec.fromSeg, localX, localZ, coarseGrid);
             }
           } else {
             // Downgrade: renderSeg === currentSeg, so the live buffer lines up 1:1.
             morphFromMain[i] = oldPos.getY(i);
-            morphToMain[i] = coarseInterpHeight(this.heightProvider, this.tileSize, cx, cz, targetSeg, localX, localZ);
+            morphToMain[i] = coarseInterpHeight(this.heightProvider, this.tileSize, cx, cz, targetSeg, localX, localZ, coarseGrid);
           }
           pos.setY(i, morphFromMain[i]);   // start the visible mesh at the FROM state
         }
@@ -243,7 +249,9 @@ class TerrainTile {
     geo.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
     if(uvs) geo.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
     geo.deleteAttribute('normal');   // stale, mainCount-sized -- force a fresh one at the new vertex count, see the comment above
-    geo.computeVertexNormals();
+    // No computeVertexNormals() here: _refreshSurfaceNormals() at the end of this
+    // method creates the correctly-sized attribute and overwrites every vertex
+    // (grid, cached DEM edge normals, skirts), so a first pass was discarded.
     geo.computeBoundingSphere();     // required for Three.js's own frustum culling to work
 
     if(this.mesh){
@@ -298,16 +306,21 @@ class TerrainTile {
       normals[b]+=nx;normals[b+1]+=ny;normals[b+2]+=nz;
       normals[c]+=nx;normals[c+1]+=ny;normals[c+2]+=nz;
     }
+    // DEM edge normals depend only on the static heights and this grid size:
+    // reuse them on the next switch back to the same resolution. Only cached
+    // when no neighbour sample was clamped (streamed demos may load it later).
+    if(!g.userData.edgeNormals&&this._edgeNormalCache?.[seg])g.userData.edgeNormals=this._edgeNormalCache[seg];
     if(!g.userData.edgeNormals){
-      const edges=[];
+      const edges=[];let clamped=false;
       for(let z=0;z<n;z++)for(let x=0;x<n;x++)if(!x||!z||x===seg||z===seg){
         const i=x+z*n,wx=this.centerX+p.getX(i),wz=this.centerZ+p.getZ(i),h=this.heightProvider;
         // Clamp gradient queries at the DEM's outer boundary (no unloaded tile).
-        const sample=(dx,dz)=>{try{return h.getHeight(wx+dx,wz+dz);}catch{return h.getHeight(wx,wz);}};
+        const sample=(dx,dz)=>{try{return h.getHeight(wx+dx,wz+dz);}catch{clamped=true;return h.getHeight(wx,wz);}};
         const nx=sample(-31.25,0)-sample(31.25,0),nz=sample(0,-31.25)-sample(0,31.25),len=Math.hypot(nx,62.5,nz);
         edges.push([i,nx/len,62.5/len,nz/len]);
       }
       g.userData.edgeNormals=edges;
+      if(!clamped)(this._edgeNormalCache??={})[seg]=edges;
     }
     for(let i=0;i<n*n;i++){const j=i*3,len=Math.hypot(normals[j],normals[j+1],normals[j+2])||1;normals[j]/=len;normals[j+1]/=len;normals[j+2]/=len;}
     for(const [i,x,y,z] of g.userData.edgeNormals){normals[i*3]=x;normals[i*3+1]=y;normals[i*3+2]=z;}
@@ -350,7 +363,10 @@ class TerrainTile {
 // swap (see file header). Exact at the coarser grid's own vertex positions
 // (bilinear interpolation at t=0 returns the corner value exactly), which is
 // what makes the eventual instant swap after a completed downgrade invisible.
-function coarseInterpHeight(heightProvider, tileSize, cx, cz, coarseSeg, localX, localZ){
+// `grid` (optional): a Float64Array of (coarseSeg+1)^2 NaNs shared by one
+// geometry build. Each coarse corner is then sampled once instead of up to six
+// times; the heights are identical because the DEM is static.
+function coarseInterpHeight(heightProvider, tileSize, cx, cz, coarseSeg, localX, localZ, grid=null){
   const half = tileSize / 2;
   const segLen = tileSize / coarseSeg;
   const fx = (localX + half) / segLen, fz = (localZ + half) / segLen;
@@ -359,10 +375,16 @@ function coarseInterpHeight(heightProvider, tileSize, cx, cz, coarseSeg, localX,
   const tx = fx - ix0, tz = fz - iz0;
   const wx = i => cx - half + i * segLen;
   const wz = i => cz - half + i * segLen;
-  const h00 = heightProvider.getHeight(wx(ix0),   wz(iz0));
-  const h10 = heightProvider.getHeight(wx(ix0+1), wz(iz0));
-  const h01 = heightProvider.getHeight(wx(ix0),   wz(iz0+1));
-  const h11 = heightProvider.getHeight(wx(ix0+1), wz(iz0+1));
+  const corner = (i, j) => {
+    if(!grid) return heightProvider.getHeight(wx(i), wz(j));
+    const k = i + j * (coarseSeg + 1);
+    if(Number.isNaN(grid[k])) grid[k] = heightProvider.getHeight(wx(i), wz(j));
+    return grid[k];
+  };
+  const h00 = corner(ix0,   iz0);
+  const h10 = corner(ix0+1, iz0);
+  const h01 = corner(ix0,   iz0+1);
+  const h11 = corner(ix0+1, iz0+1);
   return tx+tz<=1 ? h00*(1-tx-tz)+h10*tx+h01*tz
     : h11*(tx+tz-1)+h01*(1-tx)+h10*(1-tz);
 }

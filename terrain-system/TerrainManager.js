@@ -162,7 +162,13 @@ class TerrainManager {
   }
 
   stitchEdges(){
-    const dirty=new Set();
+    // Writes keep their original order and rule, so stitched heights are
+    // unchanged. A tile only counts as changed (normal rebuild, new revision,
+    // resync of its roads/rivers/fields) if a stored height differs at the end
+    // of the pass. Float32 rounding of already-stitched heights, and corners
+    // written by two edges in turn, used to flag settled tiles on every morph
+    // frame and cost up to ~30ms per neighbour without changing a pixel.
+    const before=new Map();
     // Use the less detailed live edge as the shared profile, also during a
     // partial morph. Skirts hide empty gaps but used to leave 69m cliffs.
     for(const a of this.tiles.values())for(const [dx,dz,ea,eb] of [[1,0,1,0],[0,1,3,2]]){
@@ -175,9 +181,19 @@ class TerrainManager {
           const f=i/(n-1)*os,k=Math.min(os-1,Math.floor(f)),u=f-k;
           const y=profile[k*ps/os]*(1-u)+profile[(k+1)*ps/os]*u;
           const j=e===0?i*n:e===1?i*n+n-1:e===2?i:i+n*(n-1);
-          if(Math.abs(p.getY(j)-y)>.00001){p.setY(j,y);dirty.add(t);}
+          const old=p.getY(j);
+          if(Math.abs(old-y)>.00001){
+            let stored=before.get(t);if(!stored)before.set(t,stored=new Map());
+            if(!stored.has(j))stored.set(j,old);
+            p.setY(j,y);
+          }
         }
       }
+    }
+    const dirty=[];
+    for(const [t,stored] of before){
+      const p=t.mesh.geometry.attributes.position;
+      for(const [j,y] of stored)if(p.getY(j)!==y){dirty.push(t);break;}
     }
     for(const t of dirty){
       const p=t.mesh.geometry.attributes.position,n=(t._renderSeg+1)**2;

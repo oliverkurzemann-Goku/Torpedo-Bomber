@@ -314,15 +314,24 @@ class OSMManager {
     if(mesh.userData.surfaceGeometry===tile.mesh.geometry&&mesh.userData.surfaceMorph===tile.morphT&&mesh.userData.surfaceRevision===tile.surfaceRevision)return;
     const p=mesh.geometry.attributes.position,base=mesh.userData.surfaceBase,uv=mesh.userData.surfaceWeights;
     const heights=tile.mesh.geometry.attributes.position.array,n=tile._renderSeg+1;
+    // A settled neighbour of a morphing tile only moves along the shared edge.
+    // Re-shade just those triangles: the same face normals a full
+    // computeVertexNormals() gives, without rescanning ~100k untouched vertices
+    // on every morph frame (measured up to 28ms per neighbour).
+    const movedTriangles=OSM_MOVED_TRIANGLES;movedTriangles.length=0;
     let moved=false;
     for(let i=0;i<p.count;i++){
       const a=base[i],b=a+n,d=a+1,c=b+1,u=uv[i*2],v=uv[i*2+1];
       const y=(u+v<=1 ? heights[a*3+1]*(1-u-v)+heights[d*3+1]*u+heights[b*3+1]*v
         : heights[c*3+1]*(u+v-1)+heights[b*3+1]*(1-u)+heights[d*3+1]*(1-v))+src.offset;
-      if(Math.abs(p.array[i*3+1]-y)>.0001){p.array[i*3+1]=y;moved=true;}
+      if(Math.abs(p.array[i*3+1]-y)>.0001){
+        p.array[i*3+1]=y;moved=true;
+        const t=(i/3)|0;if(movedTriangles[movedTriangles.length-1]!==t)movedTriangles.push(t);
+      }
     }
     if(moved)p.needsUpdate=true;
-    if(!tile.morphing&&(moved||mesh.userData.surfaceWasMorphing))mesh.geometry.computeVertexNormals();
+    if(!tile.morphing&&(moved||mesh.userData.surfaceWasMorphing))
+      osmSurfaceNormals(mesh.geometry,mesh.userData.surfaceWasMorphing?null:movedTriangles);
     mesh.userData.surfaceWasMorphing=tile.morphing;
     mesh.userData.surfaceGeometry=tile.mesh.geometry;mesh.userData.surfaceMorph=tile.morphT;mesh.userData.surfaceRevision=tile.surfaceRevision;
   }
@@ -447,7 +456,7 @@ class OSMManager {
     mesh.userData.surfaceSegments=seg;mesh.userData.surfaceBase=layout.base;mesh.userData.surfaceWeights=layout.weights;
     mesh.userData.surfaceGeometry=null;
     this.syncSurface(mesh);
-    if(tile.morphing)geo.computeVertexNormals();
+    if(tile.morphing)osmSurfaceNormals(geo,null);
     geo.computeBoundingSphere();geo.boundingSphere.radius+=200;
   }
 
@@ -941,6 +950,32 @@ function osmRingEdgeDistance(x,z,ring){
   return Math.sqrt(best);
 }
 
+// Draped ground layers are non-indexed triangle lists, so a vertex normal is
+// its triangle's face normal. This reproduces BufferGeometry.computeVertexNormals()
+// (three r128, non-indexed branch) bit for bit: cross product stored as Float32,
+// then normalised by 1/length and stored again. `triangles` null = every triangle.
+const OSM_MOVED_TRIANGLES=[];
+function osmSurfaceNormals(geo,triangles){
+  const position=geo.attributes.position;
+  if(geo.index||position.count%3){geo.computeVertexNormals();return;}
+  let normal=geo.attributes.normal;
+  if(!normal||normal.count!==position.count){
+    normal=new THREE.BufferAttribute(new Float32Array(position.count*3),3);
+    geo.setAttribute('normal',normal);triangles=null;
+  }
+  const p=position.array,out=normal.array,f=Math.fround;
+  const face=t=>{
+    const a=t*9;
+    const cbx=p[a+6]-p[a+3],cby=p[a+7]-p[a+4],cbz=p[a+8]-p[a+5];
+    const abx=p[a]-p[a+3],aby=p[a+1]-p[a+4],abz=p[a+2]-p[a+5];
+    const x=f(cby*abz-cbz*aby),y=f(cbz*abx-cbx*abz),z=f(cbx*aby-cby*abx);
+    const s=1/(Math.sqrt(x*x+y*y+z*z)||1),nx=x*s,ny=y*s,nz=z*s;
+    for(let k=a;k<a+9;k+=3){out[k]=nx;out[k+1]=ny;out[k+2]=nz;}
+  };
+  if(triangles)for(const t of triangles)face(t);
+  else for(let t=0,n=position.count/3;t<n;t++)face(t);
+  normal.needsUpdate=true;
+}
 function osmClipHalfPlane(ring,nx,nz,limit,greater){
   if(!ring.length) return [];
   const out=[],sign=greater?1:-1;
