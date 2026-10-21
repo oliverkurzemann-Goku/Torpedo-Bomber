@@ -1,25 +1,25 @@
 {
   "schema": 1,
   "reviewedOn": "2026-10-14",
-  "build": 197,
+  "build": 198,
   "status": "OPEN — source declarations checked; no external rights authorization obtained",
   "payload": {
-    "bytes": 279419870,
-    "fileCount": 302,
-    "modelCount": 35,
-    "manifestSha256": "f709fea8dd45f324e020f978871a695367b53779156ee4898c57114a727b4787"
+    "bytes": 289449288,
+    "fileCount": 304,
+    "modelCount": 36,
+    "manifestSha256": "d9821350591e4cad1bb16fbac87369e92fa52fd8c33e1aa5833fca61b19232c7"
   },
   "files": [
     {
       "path": "ASSET-CREDITS.md",
-      "bytes": 17423,
-      "sha256": "b63acafe14325fd310b5ac9a9b323b4263b35e9b790c3c86298088c2a7fbc8c6",
+      "bytes": 18293,
+      "sha256": "545b14be2bc5ab6118104563a065dcbcaf17ed722e205053c6b77ed2a94d3d3a",
       "kind": "code-or-notice"
     },
     {
       "path": "aircraft-articulation.js",
-      "bytes": 12387,
-      "sha256": "db8940b65527742f1d25dad7770fbfff791bbcd8e485dc29f915a63a51715e4a",
+      "bytes": 15173,
+      "sha256": "bfcffb9397f7b25570ae37f8894cdd30014fa8c22f51671204da81cad38da933",
       "kind": "code-or-notice"
     },
     {
@@ -45,6 +45,18 @@
       "bytes": 6109,
       "sha256": "b9a59e9fe9f036d6b3c431adf6f27778aba1cd009faaad478ccdea3912bb3fc1",
       "kind": "code-or-notice"
+    },
+    {
+      "path": "assets/aircraft/P47-CREDITS.txt",
+      "bytes": 1267,
+      "sha256": "a785ac1904b181a0bb4d47f02cb47ebf5fd7a91140d86acb69d2f02cc2557706",
+      "kind": "code-or-notice"
+    },
+    {
+      "path": "assets/aircraft/p47-weathered.glb",
+      "bytes": 10024200,
+      "sha256": "8b5ed7be80e7c06e694c276f3cd1e130b63173513f7368b89e8a9ebca5e2213c",
+      "kind": "model"
     },
     {
       "path": "assets/buildings/bunker.glb",
@@ -439,7 +451,7 @@
     {
       "path": "index.html",
       "bytes": 7260,
-      "sha256": "07cb52f418d5c9293dc624ea70aef707b910de08ccaf085df9b8c2d74ddbe379",
+      "sha256": "448193568194ab1d4e33ae3c887b8448d31b1c1525419be32cc70ee021f160c7",
       "kind": "code-or-notice"
     },
     {
@@ -558,8 +570,8 @@
     },
     {
       "path": "remagen-mission.html",
-      "bytes": 358781,
-      "sha256": "2e580d71e78e7380b776121e9afd032b0ede0d46c1ed1f7546432086f16af8ed",
+      "bytes": 359076,
+      "sha256": "47c66a559c4e793a253feaf8d7187d3a2f8ab6ae3b27f27798ea2cac215032dc",
       "kind": "code-or-notice"
     },
     {
@@ -1747,7 +1759,7 @@
     {
       "path": "torpedo-carrier.html",
       "bytes": 422962,
-      "sha256": "c3e0af81c13b01291b3b8304c60c085481a54490bfe3bdaa720e8e23fb9c0d0f",
+      "sha256": "7e3fe5aa2a9921525a0ccd047f906ec30fe56eb5e3eb48bd1dd83352cb6a61c7",
       "kind": "code-or-notice"
     },
     {
@@ -1824,6 +1836,36 @@
     }
   ],
   "models": [
+    {
+      "path": "assets/aircraft/p47-weathered.glb",
+      "bytes": 10024200,
+      "sha256": "8b5ed7be80e7c06e694c276f3cd1e130b63173513f7368b89e8a9ebca5e2213c",
+      "title": "P-47D-28 Thunderbolt (War Thunder derivative; photo livery and service wear v3)",
+      "uploader": "KojfDiscord (https://sketchfab.com/KojfDiscord)",
+      "originalRightsholder": null,
+      "sourceUrl": "https://sketchfab.com/3d-models/p-47d-28-thunderbolt-1-custom-war-thunder-1d469251c5994dfd9169f11a97b1b56a",
+      "acquiredOn": null,
+      "declaredLicense": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+      "licenseUrl": "http://creativecommons.org/licenses/by/4.0/",
+      "licenseEvidence": "Exact supplied p47new.glb embedded attribution; original mesh/texture rights status unchanged.",
+      "sourceCheck": {
+        "status": "verified-public-api",
+        "checkedOn": "2026-10-14",
+        "apiUrl": "https://api.sketchfab.com/v3/models/1d469251c5994dfd9169f11a97b1b56a",
+        "licenseMatch": true,
+        "descriptionSignals": []
+      },
+      "embeddedImageCount": 8,
+      "externalImages": [],
+      "originalFile": "p47new.glb",
+      "originalSha256": "61cb9510ad9ffc5eeb25abbd5eb620b0e17fb49f44b2e78fb6ba09b681e38174",
+      "changes": "User-photo inspired checkerboard livery, baked oil/exhaust/dust/scuff wear and PBR surface map; native rotor/control groups; newly built round tyres and forward-raked gear covers. No reference photograph embedded. Generator: scripts/build-p47-weathered.py. Original game rights remain open.",
+      "issue": "original-game-rights-open",
+      "commercialPermissionDocument": null,
+      "bundleRedistributionGrant": null,
+      "releaseApproved": false,
+      "nextAction": "Establish original mesh/texture ownership; obtain an app redistribution grant or independently authored replacement."
+    },
     {
       "path": "assets/buildings/bunker.glb",
       "bytes": 5085168,

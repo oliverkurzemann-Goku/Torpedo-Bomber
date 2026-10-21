@@ -1,11 +1,12 @@
-# Offline app asset register — Build 197
+# Offline app asset register — Build 198
 
-Checked 2026-10-14. 302 payload files, 35 model files, 266.5 MiB.
+Checked 2026-10-14. 304 payload files, 36 model files, 276.0 MiB.
 
 Generated from the actual dist-app payload by npm run app:assets. Hashes cover embedded textures too. This is an evidence inventory; no row is automatically approved for distribution. Acquisition dates remain unknown where not recorded.
 
 | Runtime file | Source / uploader | Declared license | Open issue | SHA-256 |
 | --- | --- | --- | --- | --- |
+| assets/aircraft/p47-weathered.glb | [KojfDiscord (https://sketchfab.com/KojfDiscord)](https://sketchfab.com/3d-models/p-47d-28-thunderbolt-1-custom-war-thunder-1d469251c5994dfd9169f11a97b1b56a) | CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/) | original-game-rights-open | 8b5ed7be80e7c06e694c276f3cd1e130b63173513f7368b89e8a9ebca5e2213c |
 | assets/buildings/bunker.glb | [matousekfoto (https://sketchfab.com/matousekfoto)](https://sketchfab.com/3d-models/bunker-o323a-160-z-11ae7599f3b640569f7ed4692acabf38) | CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/) | uploader-license-review-open | c9b54e30b99302ddaa0ab486c79318c7bd46c881b9fd11b3f77c60758efaa253 |
 | assets/buildings/farm-ruin.glb | [Garbage Raccoon (https://sketchfab.com/GarbageRaccoon)](https://sketchfab.com/3d-models/bombed-farm-buildings-from-fps-creator-classic-2cf04644ad0944e5b5b845680262d269) | CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/) | upstream-game-rights-open | f0978da9e2642f1eb3f92fe461340b911962e0929aa2892077c9c0f9d9822115 |
 | assets/buildings/hangar.glb | [ElectricLeo (https://sketchfab.com/ElectricLeo)](https://sketchfab.com/3d-models/t2-hangar-a059de1574c84b0a8a2a00930782006f) | CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/) | uploader-license-review-open | af53aa083ffef0eeefcfe115ad82b4088643cfd7c9bbbfcf807311f059e81c60 |
