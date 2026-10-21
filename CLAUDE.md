@@ -1,5 +1,22 @@
 # Torpedo-Bomber — Übergabe an Claude Code
 
+**21.10.2026, eigene TBM-3 Avenger (noch NICHT im Spiel, kein Build-Sprung):** Auf Nutzerwunsch
+ein rechtlich eigenes Avenger-Modell rein aus Code: `own-avenger.js` (`OwnAvenger.create(THREE,opts)`,
+Rahmen wie `planeGroup`: Nase −Z, oben +Y, rechts +X, Meter, Ursprung 3,5 m hinter Spinnerspitze).
+Keine Geometrie/Textur/UV aus fremden Dateien; Lackierung, Sterne, „10“, Staffelwappen auf Canvas
+selbst gezeichnet (3 Schemata: museum/navy42/tricolor). Gemessen: Spannweite 16,51, Länge 12,48,
+Flügelfläche 45,4 m², gefaltet 5,81 m, Propeller 3,96, Höhe 5,00 m Fluglage, 9,4° Dreipunktlage,
+Bauchfreiheit 0,36 m. Bewegt: Propeller (`spin`), Fahrwerk nach außen mit flach liegenden Rädern
+innerhalb der Faltlinie, Spornrad, Spreizklappen (Primer-Innenseite nur ausgefahren sichtbar, sonst
+z-Fighting an der dünnen Hinterkante), Haken, Sto-Wing-Faltung (eine schräge Achse), Bombenschacht +
+Mk-13 mit Nasenring/Kastenleitwerk, Kühlklappen, Turm. `set({gear,flaps,hook,fold,bay,cowl,turretYaw,
+turretPitch})`. Wicklung automatisch nach außen (Ring-Schwerpunkt), sonst unsichtbare FrontSide-Häute.
+48.728 Dreiecke, 99 Meshes, 4 Canvas-Texturen — vor Spielintegration statische Teile je Material mergen
+(Rottenflieger/Raider klonen). Test `okinawa/tests/own-avenger.cjs` (Maße, Teile, Rückkehr, Torpedo im
+Bauch, Außenwicklung, Budget, Dispose). Vorschau als Artifact geteilt. Integration in
+`torpedo-carrier.html` erst nach Nutzerfreigabe; dort hängen viele Heuristiken (propPivot, gearMesh,
+14-m-Autofit, Spannweiten-Proben, Heckwaffe, Crew-Absprung) am alten GLB.
+
 **21.10.2026, Build 197: Rhein-Ruckeln beim Gelände-Detailwechsel behoben, bildgleich.**
 Nutzer: Rhein ruckelt „zwischendurch“, Pazifik weniger; Auftrag Punkte 1–3, aber ausdrücklich
 keine schlechtere Grafik. Messung zuerst (echtes remagen-mission.html, Chromium/SwiftShader,
