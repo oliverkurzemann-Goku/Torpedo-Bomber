@@ -1,19 +1,19 @@
 {
   "schema": 1,
   "reviewedOn": "2026-10-14",
-  "build": 197,
+  "build": 198,
   "status": "OPEN — source declarations checked; no external rights authorization obtained",
   "payload": {
-    "bytes": 279426136,
-    "fileCount": 303,
+    "bytes": 280672704,
+    "fileCount": 307,
     "modelCount": 35,
-    "manifestSha256": "83a4c04b0e28768ee2923d02dc935779a7f5fa3ff9d3822aa55ee98966ce30db"
+    "manifestSha256": "459ccdab1d9a0d3ce545a8a994c88798cfbd9a4072631e81ce1f7e72e3e48a4c"
   },
   "files": [
     {
       "path": "ASSET-CREDITS.md",
-      "bytes": 17423,
-      "sha256": "b63acafe14325fd310b5ac9a9b323b4263b35e9b790c3c86298088c2a7fbc8c6",
+      "bytes": 18400,
+      "sha256": "349627c0fdaa1f8d008b4a2dbf235b581c58d83cc981dcf2ee55e9316729f0b8",
       "kind": "code-or-notice"
     },
     {
@@ -51,6 +51,18 @@
       "bytes": 5066,
       "sha256": "8fa0a93c1714b227480dba6e6716b2be5fd885bc23e81a595e0f9c7c9be84e93",
       "kind": "code-or-notice"
+    },
+    {
+      "path": "assets/aircraft/avenger-1942-livery.webp",
+      "bytes": 364834,
+      "sha256": "793f0d566aaaa509a62a093f86dbd34b73e2bdfb5cf039bd501b9f1220121d97",
+      "kind": "image"
+    },
+    {
+      "path": "assets/aircraft/avenger-1942-normal.png",
+      "bytes": 819803,
+      "sha256": "f9baa5de859bf29607c7981036b1842b5eb263b0ac2586b6d5c9aae23afcdf08",
+      "kind": "image"
     },
     {
       "path": "assets/buildings/bunker.glb",
@@ -305,6 +317,12 @@
       "kind": "code-or-notice"
     },
     {
+      "path": "avenger-finish.js",
+      "bytes": 2927,
+      "sha256": "5555b4aac3d0e81b005bd09c051ece9c6e877551ebe1268b257237e35d7495b0",
+      "kind": "code-or-notice"
+    },
+    {
       "path": "b17.glb",
       "bytes": 6027460,
       "sha256": "f21be57500ed897183ff73d20131226c150b569bb03784fe10d20adc47154a58",
@@ -445,7 +463,7 @@
     {
       "path": "index.html",
       "bytes": 7260,
-      "sha256": "07cb52f418d5c9293dc624ea70aef707b910de08ccaf085df9b8c2d74ddbe379",
+      "sha256": "448193568194ab1d4e33ae3c887b8448d31b1c1525419be32cc70ee021f160c7",
       "kind": "code-or-notice"
     },
     {
@@ -527,6 +545,12 @@
       "kind": "code-or-notice"
     },
     {
+      "path": "own-avenger.js",
+      "bytes": 56623,
+      "sha256": "e403050eea28739860f9cb77e82e1195f0d0b61a556f74f1d4f2f57ce6f5dc08",
+      "kind": "code-or-notice"
+    },
+    {
       "path": "p47new.glb",
       "bytes": 8029172,
       "sha256": "61cb9510ad9ffc5eeb25abbd5eb620b0e17fb49f44b2e78fb6ba09b681e38174",
@@ -534,8 +558,8 @@
     },
     {
       "path": "pacific-assets.js",
-      "bytes": 2656,
-      "sha256": "616b2e7066b2e9e9a4a7b7cb0e279c55814287b04b49959012ef9148bc646e5c",
+      "bytes": 3399,
+      "sha256": "0ded04f46f3f04706b8b0232a5c7c84ac6d37ef484ad5edb22b9d941070eed1f",
       "kind": "code-or-notice"
     },
     {
@@ -565,7 +589,7 @@
     {
       "path": "remagen-mission.html",
       "bytes": 359735,
-      "sha256": "9c9cff7caf051d26435d61c1c9d0c09833ed230f8b32fb5299dd15bb6be3c633",
+      "sha256": "c70071e5123e48b055f82c2b4c93196fb922b17b12a8c1f5d00c4db50e734c94",
       "kind": "code-or-notice"
     },
     {
@@ -1752,8 +1776,8 @@
     },
     {
       "path": "torpedo-carrier.html",
-      "bytes": 422962,
-      "sha256": "c3e0af81c13b01291b3b8304c60c085481a54490bfe3bdaa720e8e23fb9c0d0f",
+      "bytes": 423623,
+      "sha256": "d40df9a8a8b4fce0d12f751b3c36dac38e9227f6110b7fa7713521dafc1293d5",
       "kind": "code-or-notice"
     },
     {
@@ -2892,6 +2916,12 @@
         "terrain-system/data/**"
       ],
       "status": "Synthetic prototype and historical fixtures are also currently copied by the payload builder; distinguish them from real datasets."
+    },
+    {
+      "paths": [
+        "assets/aircraft/avenger-1942-*"
+      ],
+      "status": "Adapted from the CC BY 4.0 airframe texture in grumman tbm avenger.glb (helijah / Emmanuel Baranger, with Laurent Hayvel) by scripts/bake-avenger-livery.cjs; same review as that model, changes listed in ASSET-CREDITS.md."
     },
     {
       "paths": [

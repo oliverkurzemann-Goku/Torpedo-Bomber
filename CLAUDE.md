@@ -1,5 +1,34 @@
 # Torpedo-Bomber — Übergabe an Claude Code
 
+**22.10.2026, Build 198: helijahs Avenger bekommt eine 1942er-Lackierung in voller Auflösung;
+Eigenbau gestoppt.** Nutzer zum Eigenbau: „Proportionen stimmen überhaupt nicht“, dann: „Ist die
+avenger die wir haben von hellija? Die dürften wir verwenden“ → „Ja, nur verbessern“. Geprüft:
+`grumman tbm avenger.glb` = „Grumman Tbm Avenger“ von helijah (Emmanuel Baranger), CC BY 4.0,
+vom eigenen Account hochgeladen, kein Spiel-Reupload; die Textur nennt zusätzlich „HAYVEL Laurent“
+(jetzt in den Credits). Register-Status bleibt `uploader-license-review-open` (Screenshot der
+Lizenzseite fehlt). Wichtigster Fund: `PacificAssets` kappt auf Touch-Geräten ALLE Pazifik-Texturen
+auf 512 px – der 2048er Avenger-Atlas lief auf dem iPad mit ~25 px/m, die P-47 am Rhein in voller
+Auflösung. Neu: `scripts/bake-avenger-livery.cjs` malt den Original-Atlas offline um (1942
+Non-specular Blue-Gray über Light Gray, Panel-/Nietlinien und Schattierung aus helijahs Textur
+übernommen, Ruderstreifen/1943-Balken/„4“/Rauten/Trägername entfernt, Stern im Kreis, „10“ am
+Seitenleitwerk, eigenes Staffelwappen, Stencils, Ausbleichen, Ruß, Abplatzer, Laufstege, gelbe
+Propellerspitzen) und erzeugt eine Normal-Map aus den Blechfugen. Ergebnis:
+`assets/aircraft/avenger-1942-livery.webp` (2048², 373 KB) und `…-normal.png` (1024², 820 KB).
+`avenger-finish.js` tauscht beim Laden nur Atlas+Normal-Map und setzt Roughness .86/Metalness 0
+(Glas leicht spiegelnd); über den neuen `PacificAssets.configure(match,prepare)`-Haken läuft das
+einmal am dekodierten Quellmodell, Spieler, Rottenflieger, Raider und die Klappenhaut-Klone teilen
+es. Der Livery-Atlas bleibt auch auf Touch-Geräten 2048 px (≈+27 MB GPU), alle anderen Texturen
+behalten 512 px. Fehlt eine Datei, bleibt die Originaltextur. Atlas-Inseln per Raycast vermessen:
+auf diesem Atlas zeigt +y im Bild nach „oben“ (Rumpf/Leitwerk) bzw. „vorn“ (Flügel) → alle Stempel
+vertikal gespiegelt; Vorderkanten sind der untere Inselrand. VERWORFEN: Umlackieren zur Laufzeit
+(2,5 s Hauptthread in Chromium, ~250 MB Zwischenspeicher) – deshalb offline gebacken. Tests:
+`okinawa/tests/avenger-finish.cjs` (ausgelieferte Dateien = Bake-Skript, keine Ruderstreifen, Stern
+ohne Balken, Blaugrau/Hellgrau, Geometrie/UV/andere Texturen unverändert, Rückfall, eine geteilte
+Dekodierung) und `avenger-livery-browser.cjs` (echtes Spiel, Touch: Atlas 2048, Rest ≤512,
+0 rote Pixel im Bild). Build 198 an Board/beiden Spielen/Menü-CSS-Links, App-Payload, Xcode;
+Register per app:assets neu (307 Dateien). Rhein-Code unverändert. Der Eigenbau `own-avenger.js`
+ist auf Nutzerwunsch gestoppt, bleibt nur auf dem Branch. Kein iPad-Test.
+
 **22.10.2026, eigene Avenger überarbeitet (weiterhin NICHT im Spiel):** Nutzer: „sieht nach
 Kinderspielzeug aus“. Ursachen: helles, glänzendes Museumsgrau (unter ACES 1,12 fast weiß), Chromkugel
 als Nabe, dicke helle Haubenrahmen, braune Kugelköpfe, gleichförmiges Panelraster, buntes Parkettdeck.
@@ -109,7 +138,7 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 197 · Thunderbolt Squadron BUILD 197 · Remagen-Kern 23 / Fahrzeuge 22**
+Stand bei Übergabe: **Torpedo Squadron BUILD 198 · Thunderbolt Squadron BUILD 198 · Remagen-Kern 23 / Fahrzeuge 22**
 
 **App-Vorbereitung 14.10.2026, Spiel weiterhin Build 196:** Nutzer bestätigt Mac ohne
 bezahlten Developer-Account. `iPad-vorbereiten.command`, read-only `app:doctor`, deutsche
