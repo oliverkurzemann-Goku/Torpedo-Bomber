@@ -43,7 +43,7 @@ Tests:
   - Die TRACK-Zeile ist frei von Bedienelementen.
 - Bild: `test-visuals/build200-torpedo-run-hud.png`.
 Build 200 steht an Board, beiden Spielen, den Menü-CSS-Links, App-Payload und Xcode. Das Register wurde per
-app:assets neu erzeugt (310 Dateien). Kein iPad-Test. Historische Korrektur: Meine frühere Begründung „beim
+app:assets neu erzeugt (310 Dateien). Syntax 7/7, Terrain 33/33, Okinawa 70/70 (Browser nativ). Kein iPad-Test. Historische Korrektur: Meine frühere Begründung „beim
 Mark-13-Zünder so gewesen“ ist nicht belegt. Belegt ist beim Mark 14 sogar das Gegenteil: Schräge Treffer
 zündeten, senkrechte Treffer verbogen den Schlagbolzen. Der Winkelabgleiter ist deshalb eine bewusste
 Spielregel. Noch offen aus der Vorschlagsliste: weiche Abwurfgrenzen (2), Zufalls-Patrouille (14), Zielsuche
