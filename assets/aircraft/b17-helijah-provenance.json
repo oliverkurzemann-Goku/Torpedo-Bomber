@@ -1,0 +1,21 @@
+{
+  "author": "helijah",
+  "license": "CC-BY-4.0 (https://creativecommons.org/licenses/by/4.0/)",
+  "source": "https://sketchfab.com/3d-models/boeing-b-17-flying-fortress-927f07f6ddcf470ab0387ce5829024d5",
+  "title": "Boeing B-17 Flying Fortress \u2014 Squadron animated derivative",
+  "sourceSha256": "5ba6eaae156fdd6fa029d2fd7b10e74beae9d487eef9cfbcc7eafb374994a662",
+  "changes": "Whole original components articulated; cooling fins and cockpit instruments simplified; original textures retained.",
+  "derivedSha256": "bcdf03e6bed86bd8b246a24cf1b8f86a259debe426dbbdd42986d8c278b778db",
+  "derivedBytes": 5977464,
+  "spanMetres": 31.62,
+  "triangles": 71535,
+  "animations": [
+    "Ailerons_Bank",
+    "Elevators_Up",
+    "Flaps_Down",
+    "Gear_Retract",
+    "Propellers_Spin",
+    "Rudder_Right",
+    "Turrets_Track"
+  ]
+}

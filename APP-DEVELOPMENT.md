@@ -1,15 +1,24 @@
-# Squadron — iPad prototype, Build 196
+# Squadron — iPad prototype, Build 200
 
 The existing Three.js flight engine is retained. This is a **native project and tested
 offline web payload**, not an App Store submission, signed IPA or physical-iPad certification.
+
+## Build 200 B-17
+
+The helijah CC BY 4.0 B-17 replaces the prior noncommercial file, which is no longer
+in the payload. Four original propellers, native gear/flaps/control surfaces and tracked
+turrets use named pivots; MG effects start at the original barrels. The 31.62 m model
+is 5.98 MB / 71,535 triangles with simplified internal detail and original paint.
+The model, production rig and actual browser mission/preview/fire paths were tested;
+physical iPad performance and signing remain untested.
 
 ## Already implemented
 
 - Both current campaigns use checked-in Three.js r128, GLTF/FBX loaders, SkeletonUtils and
   fflate. No runtime CDN dependency. Original GLBs/FBX/DEM binaries are copied byte-for-byte.
-- Reproducible, allowlisted `dist-app/` payload: around 267 MiB uncompressed. Archived
+- Reproducible, allowlisted `dist-app/` payload: around 277 MiB uncompressed. Archived
   games, calibration tools, unused alternative aircraft, repository metadata and test
-  sources are excluded. Model files are not re-exported or destructively optimized.
+  sources are excluded. The payload builder copies selected runtime binaries byte-for-byte; documented P-47/B-17 derivatives are prepared separately.
 - Capacitor 8.5.3 / Swift Package Manager iPad project, landscape-only/fullscreen, local
   `webDir`, no remote `server.url`, iPadOS 15.4+ provisional minimum. Browser Pages remains
   available and does not load the native bridge.

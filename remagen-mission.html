@@ -275,7 +275,7 @@
   .warningLamps{display:flex!important;gap:10px;padding:5px 9px!important;background:#141813dd!important;border:1px solid #535744;border-radius:4px;white-space:nowrap;}
   .warningLamp{color:#646c5c;font:9px monospace;letter-spacing:.35px;} .warningLamp[data-level="1"]{color:#ffd088;text-shadow:0 0 6px #e0a432a0;} .warningLamp[data-level="2"]{color:#ff8c70;text-shadow:0 0 7px #ff6638b0;}
 </style>
-<link rel="stylesheet" href="menu-layout.css?v=199">
+<link rel="stylesheet" href="menu-layout.css?v=200">
 </head>
 <body>
 <!-- ===== TEMP TEST-ONLY VERSION BANNER — asked for by Oliver: "kannst du irgendwo einbauen,
@@ -297,7 +297,7 @@
   <div style="width:100%;height:4px;background:repeating-linear-gradient(45deg,#ffd400,#ffd400 8px,#111 8px,#111 16px);"></div>
   <span id="testVersionBannerText" style="background:#111;color:#ffd400;font-family:monospace;font-weight:800;font-size:11px;letter-spacing:.5px;padding:3px 10px;border:1px solid #ffd400;border-top:none;border-radius:0 0 6px 6px;"></span>
 </div>
-<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 199';</script>
+<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 200';</script>
 <!-- ===== END TEMP TEST-ONLY VERSION BANNER ===== -->
 <div id="app"></div>
 <style>
@@ -338,7 +338,7 @@
   <div id="flash"></div>
   <div id="gunsight"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 199 · REAL RHINE</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 200 · REAL RHINE</div>
 
   <div id="apr">
     <div id="aprCall"></div>
@@ -390,7 +390,7 @@
 </div>
 
 <div class="overlay hidden" id="menu" data-campaign="europe">
-  <div class="menuTop"><a id="selBtn" href="index.html?v=199">&#9664; Change Game</a><span class="menuMeta">RHINE OPERATIONS<br>BUILD 199</span></div>
+  <div class="menuTop"><a id="selBtn" href="index.html?v=200">&#9664; Change Game</a><span class="menuMeta">RHINE OPERATIONS<br>BUILD 200</span></div>
   <div class="card menuCard">
     <aside class="menuOverview" aria-label="Campaign and pilot options">
     <div class="campaignArt" aria-hidden="true"></div>
@@ -509,8 +509,9 @@
 <script src="campaign.js?v=1"></script>
 <script src="game-runtime.js?v=198"></script>
 <script src="sortie-checkpoint.js?v=198"></script>
-<script src="aircraft-articulation.js?v=198"></script>
+<script src="aircraft-articulation.js?v=200"></script>
 <script src="aircraft-rotors.js?v=172"></script>
+<script src="b17-native.js?v=200"></script>
 <script src="combat-fx.js?v=177"></script>
 <script src="aircraft-smoke.js?v=176"></script>
 <script src="aircraft-damage.js?v=177"></script>
@@ -853,7 +854,7 @@ async function loadRealWorld(){
 
   if(OSMManager.BUILD!==23||HistoricalObjectManager.BUILD!==21||LivingWorld.BUILD!==22||WorldVehicles.BUILD!==22) throw new Error('Terrain version mismatch. Reload Remagen.');
   document.getElementById('testVersionBannerText').textContent=
-    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 199 · MODULE 23';
+    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 200 · MODULE 23';
   heightProvider=new DEMHeightProvider(RTILE,'terrain-system/real/data/dem/');
   terrain=new TerrainManager(scene,RTILE,heightProvider);
   osmMgr=new OSMManager(scene,RTILE,terrain,'terrain-system/real/data/osm/');
@@ -1059,7 +1060,7 @@ const MODEL_URL={
           'bf109.glb','bf%20109.glb'],
   fw190: ['fw190.glb','fw_190_f-8_2_custom_payload_war_thunder.glb',
           'fw%20190%20f-8%202%20custom%20payload%20war%20thunder.glb'],
-  b17:   ['b17.glb','helijahs_b-17.glb','b-17.glb'],
+  b17:   ['assets/aircraft/b17-helijah.glb'],
   b24:   ['b24.glb','b-24_liberator.glb','b-24.glb'],
   ju87:  ['ju87.glb'],
   me163: ['me163.glb'],
@@ -1095,6 +1096,7 @@ const TRICYCLE_KINDS=['me262'];
 // Anything not listed here gets worked out automatically; if that lands wrong, model-check.html
 // fixes it in a few seconds and its answer overrides everything below.
 const MODEL_FIX={
+  'assets/aircraft/b17-helijah.glb': {yaw:0},
   'assets/aircraft/p47-weathered.glb': {yaw:0},
   'p47.glb':                      {yaw:Math.PI},
   'bf 109 - messerschmitt.glb':   {yaw:-Math.PI/2},
@@ -2215,6 +2217,7 @@ function rigP47OriginalProp(root, whole, S){
   return 'original P-47 four-blade propeller ('+count+' GLB triangles)';
 }
 function rigModel(root, kind){
+  if(kind==='b17'&&typeof B17Rig!=='undefined'&&B17Rig.install(root))return 'native helijah B-17: original propellers across 4 engines, gear, flaps, flight controls and turret origins; no runtime mesh cuts';
   if(kind==='p47'&&typeof AircraftArticulation!=='undefined'&&AircraftArticulation.nativeP47?.(root))return 'native weathered P-47: original four-blade rotor, round tyres, original flaps/control surfaces; no mesh cuts';
   root.updateMatrixWorld(true);
   const whole=new THREE.Box3().setFromObject(root);
@@ -3545,6 +3548,7 @@ function bomberRotors(group){
   return out;
 }
 function bomberGunStations(group){
+  const native=typeof B17Rig!=='undefined'?B17Rig.stations(group):null;if(native)return native;
   // The loaded GLBs are centred and scaled to real wingspan. Use their actual
   // nose, tail and height so each tracer begins at a plausible gun position.
   const bb=new THREE.Box3().setFromObject(group),x=Math.min(1.35,bb.max.x*.085);
@@ -3933,8 +3937,9 @@ function updateBomber(e,dt,toP,dist){
   e.group.rotateY(e.heading); e.group.rotateX(-e.pitch); e.group.rotateZ(-e.roll);
   e.group.updateWorldMatrix(true,false); // update the carrier of the turrets, not 1781 B-24 nodes
   // Spin four separate shafts, not the common wrapper. The B-17 has four
-  // rebuilt Z-axis rotors; the B-24's own animated pivots use local Y.
+  // original Z-axis rotors; the B-24's own animated pivots use local Y.
   for(const rotor of e.rotors||[])rotor.rotation[rotor.userData.spinAxis]-=GameRuntime.rotorStep(dt,29/60,3);
+  if(e.group.userData.nativeB17&&typeof B17Rig!=='undefined'){B17Rig.controls(e.group,e.roll/.48,e.pitch/.3);B17Rig.track(e.group,P.pos,dt);}
   // smoke once she is badly hurt, so you can see your work
   if(typeof aircraftSmoke!=="undefined"&&aircraftSmoke)aircraftSmoke.trail(e,e.pos,e.vel.clone().normalize(),e.vel.length(),e.hp<e.maxhp*.45?1-e.hp/e.maxhp:0,dt,new THREE.Vector3(windZ,0,0));
   // defensive fire: several stations, so the closer you get the more of it there is
@@ -3957,11 +3962,12 @@ function updateBomber(e,dt,toP,dist){
     const stations=(e.gunStations||[]).map(s=>({s,score:s.arc.dot(localP.clone().sub(s.pos).normalize())}))
       .filter(a=>a.score>.05).sort((a,b)=>b.score-a.score);
     for(let g=0;g<Math.min(guns,stations.length);g++){
-      const from=e.group.localToWorld(stations[g].s.pos.clone());
+      const fallbackFrom=e.group.localToWorld(stations[g].s.pos.clone());
       // Short, discrete MG rounds from the chosen turret. Two rounds per burst
       // preserve the old total damage but look like fire rather than a lone
       // six-metre yellow bar floating beside the bomber.
       for(let burst=0;burst<2;burst++){
+        const from=(typeof B17Rig!=='undefined'&&B17Rig.muzzle(e.group,stations[g].s,e.shotN||0))||fallbackFrom;
         const tof=dist/620;
         const lead=P.pos.clone().addScaledVector(noseDir(),P.spd*tof*0.8);
         const err=((1.6-D().aim*0.6)*22) * (rookieB?2.0:1);
@@ -5813,7 +5819,7 @@ function init(){
   buildMenu();
   // menu wiring
   document.getElementById('startBtn').onclick=()=>showBrief(selectedMission);
-  document.getElementById('pauseMainMenu').onclick=async()=>{globalThis.sortieCheckpoint?.save();await globalThis.sortieCheckpoint?.flush();exitToMenuFromPause(true);window.location.href='index.html?v=199';};
+  document.getElementById('pauseMainMenu').onclick=async()=>{globalThis.sortieCheckpoint?.save();await globalThis.sortieCheckpoint?.flush();exitToMenuFromPause(true);window.location.href='index.html?v=200';};
   document.getElementById('logBtn').onclick=()=>{ show('menu',false); showLogbook(); };
   document.getElementById('skipLaunchPreview').onclick=()=>finishLaunchIntro();
   document.getElementById('brBack').onclick=()=>{ show('brief',false); show('menu',true);if(navigation){navigation.reset();navigation.button.style.display='none';} state=ST.MENU; };
