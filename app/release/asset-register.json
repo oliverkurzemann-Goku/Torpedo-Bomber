@@ -1,19 +1,19 @@
 {
   "schema": 1,
   "reviewedOn": "2026-10-14",
-  "build": 198,
+  "build": 199,
   "status": "OPEN — source declarations checked; no external rights authorization obtained",
   "payload": {
-    "bytes": 289449288,
-    "fileCount": 304,
+    "bytes": 290639577,
+    "fileCount": 307,
     "modelCount": 36,
-    "manifestSha256": "d9821350591e4cad1bb16fbac87369e92fa52fd8c33e1aa5833fca61b19232c7"
+    "manifestSha256": "2de0a22ab61624e1a41d89ca601873addb4515ca8aaa9714d0510d9c902277ad"
   },
   "files": [
     {
       "path": "ASSET-CREDITS.md",
-      "bytes": 18293,
-      "sha256": "545b14be2bc5ab6118104563a065dcbcaf17ed722e205053c6b77ed2a94d3d3a",
+      "bytes": 19270,
+      "sha256": "4a8778ddcd9c104fb5151ddac0ced98bb940ee97e3d16d517e4920382d0fecd2",
       "kind": "code-or-notice"
     },
     {
@@ -51,6 +51,18 @@
       "bytes": 1267,
       "sha256": "a785ac1904b181a0bb4d47f02cb47ebf5fd7a91140d86acb69d2f02cc2557706",
       "kind": "code-or-notice"
+    },
+    {
+      "path": "assets/aircraft/avenger-1942-livery.webp",
+      "bytes": 364834,
+      "sha256": "793f0d566aaaa509a62a093f86dbd34b73e2bdfb5cf039bd501b9f1220121d97",
+      "kind": "image"
+    },
+    {
+      "path": "assets/aircraft/avenger-1942-normal.png",
+      "bytes": 819803,
+      "sha256": "f9baa5de859bf29607c7981036b1842b5eb263b0ac2586b6d5c9aae23afcdf08",
+      "kind": "image"
     },
     {
       "path": "assets/aircraft/p47-weathered.glb",
@@ -311,6 +323,12 @@
       "kind": "code-or-notice"
     },
     {
+      "path": "avenger-finish.js",
+      "bytes": 2927,
+      "sha256": "5f9861e48895cd12577416f76807f38404c2a65df4e66bcdfcb83e4dbcb066fa",
+      "kind": "code-or-notice"
+    },
+    {
       "path": "b17.glb",
       "bytes": 6027460,
       "sha256": "f21be57500ed897183ff73d20131226c150b569bb03784fe10d20adc47154a58",
@@ -451,7 +469,7 @@
     {
       "path": "index.html",
       "bytes": 7260,
-      "sha256": "448193568194ab1d4e33ae3c887b8448d31b1c1525419be32cc70ee021f160c7",
+      "sha256": "e94d1476221cf7863ddd47a24c20b866f1db3e27baed3d99e07019be9460032d",
       "kind": "code-or-notice"
     },
     {
@@ -540,8 +558,8 @@
     },
     {
       "path": "pacific-assets.js",
-      "bytes": 2656,
-      "sha256": "616b2e7066b2e9e9a4a7b7cb0e279c55814287b04b49959012ef9148bc646e5c",
+      "bytes": 3399,
+      "sha256": "0ded04f46f3f04706b8b0232a5c7c84ac6d37ef484ad5edb22b9d941070eed1f",
       "kind": "code-or-notice"
     },
     {
@@ -571,7 +589,7 @@
     {
       "path": "remagen-mission.html",
       "bytes": 359076,
-      "sha256": "47c66a559c4e793a253feaf8d7187d3a2f8ab6ae3b27f27798ea2cac215032dc",
+      "sha256": "76fbeb7bc66ac535161400a46ba3a9d87a05679ab94a92ceda451a3e6514264e",
       "kind": "code-or-notice"
     },
     {
@@ -1758,8 +1776,8 @@
     },
     {
       "path": "torpedo-carrier.html",
-      "bytes": 422962,
-      "sha256": "7e3fe5aa2a9921525a0ccd047f906ec30fe56eb5e3eb48bd1dd83352cb6a61c7",
+      "bytes": 423623,
+      "sha256": "e8f3c9b71a5360fddf37eb1d5d903d8db280a463df23065f575525305515808e",
       "kind": "code-or-notice"
     },
     {
@@ -1830,8 +1848,8 @@
     },
     {
       "path": "app-native.js",
-      "bytes": 27031,
-      "sha256": "a52b43eb6c9accbde530c1e3832548614838e605c05ed4869a6b9b9734ddaa24",
+      "bytes": 27375,
+      "sha256": "27e5199ea188ecaa03bd9c8e16ab7caae1f7a21c3163ae3e7fddce0544b9e9c8",
       "kind": "code-or-notice"
     }
   ],
@@ -2928,6 +2946,12 @@
         "terrain-system/data/**"
       ],
       "status": "Synthetic prototype and historical fixtures are also currently copied by the payload builder; distinguish them from real datasets."
+    },
+    {
+      "paths": [
+        "assets/aircraft/avenger-1942-*"
+      ],
+      "status": "Adapted from the CC BY 4.0 airframe texture in grumman tbm avenger.glb (helijah / Emmanuel Baranger, with Laurent Hayvel) by scripts/bake-avenger-livery.cjs; same review as that model, changes listed in ASSET-CREDITS.md."
     },
     {
       "paths": [

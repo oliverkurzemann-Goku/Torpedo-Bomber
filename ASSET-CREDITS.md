@@ -208,4 +208,18 @@ Original runtime model binaries remain unchanged by this preparation.
 | `uss_midway.glb` | uss_midway.glb — unknown | unknown | not established |
 | `zero.glb` | A6M Zero Low Poly — Waroxed (https://sketchfab.com/Waroxed) | CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/) | https://sketchfab.com/3d-models/a6m-zero-low-poly-38311e82157449448f703b53648614a5 |
 
+### Avenger 1942 livery (Build 199)
+
+`assets/aircraft/avenger-1942-livery.webp` and `assets/aircraft/avenger-1942-normal.png` are an
+**adaptation** of the airframe texture inside `grumman tbm avenger.glb`: "Grumman Tbm Avenger"
+by **helijah** (Emmanuel Baranger), with **Laurent Hayvel** credited in the original texture
+("GRUMMAN TBM/TBF Avenger : 2008 - BARANGER Emmanuel / HAYVEL Laurent"), Sketchfab,
+CC BY 4.0 (http://creativecommons.org/licenses/by/4.0/). Changes: repainted from the
+tri-colour scheme to 1942 non-specular Blue-Gray over Light Gray; 1941 rudder stripes,
+1943 insignia bars, numbers, diamonds and the carrier name removed; star-in-circle insignia,
+fin number, an original squadron badge, stencils, weathering, walkways, chipped edges and
+yellow propeller tips added; panel-line normal map derived from the original art. Made by
+`scripts/bake-avenger-livery.cjs`; the GLB itself is unchanged. The adapted files are
+offered under the same CC BY 4.0 terms.
+
 Geographic source notices: [okinawa/README.md](okinawa/README.md) and [TERRAIN.md](TERRAIN.md). Offline packaging does not remove database/attribution obligations or resolve exact upstream contributor tracing.
