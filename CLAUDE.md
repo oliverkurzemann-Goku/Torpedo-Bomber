@@ -1,5 +1,54 @@
 # Torpedo-Bomber — Übergabe an Claude Code
 
+**22.10.2026, Build 200: Torpedoangriff mit Können statt Glück (nur Feature-Branch, NICHT auf main).**
+Nutzerauftrag: die früher vorgeschlagenen Verbesserungen für die Torpedo-Missionen beginnen, damit es
+weniger langweilig ist. Umgesetzt wurde die empfohlene erste Gruppe: Trefferwinkel, Scharfmachstrecke,
+Trefferort mit Folgen und schlauere Kapitäne. Gemessen vor dem Ändern, im echten Spiel: Ein Spieler-
+Torpedo starb nach 16 s bei **367–382 m**, das HUD zeigte DROP NOW aber von 350 bis 950 m. Abwürfe
+ab etwa 450 m konnten einen querab fahrenden Frachter also nie erreichen. Dazu war die Trefferzone ein
+Kreis mit 0,55 × Länge (Frachter 72,6 m) statt des 18 m breiten Rumpfs.
+Neu ist `torpedo-attack.js` (`TorpedoAttack`):
+- Laufstrecke 1400 m statt einer festen Lebenszeit; `life` gilt nur noch für die kurze Luftphase.
+- Scharf erst nach 200 m Wasserlauf. Davor gibt es Funken, die Meldung „NOT ARMED — TOO CLOSE“ und keine Wirkung.
+- Echter Rumpf-Test: ein Rechteck aus Länge × Breite (Naval-Spec, sonst gemessen), über das ganze Bild-
+  Intervall geprüft, mit einem Rand je Schwierigkeit von 10, 4 bzw. 2,5 m.
+- Trefferwinkel (Spielregel): unter 40° zum Kiel kann der Fisch abgleiten, mit Rookie-Faktor .4. Ab 60° gilt
+  er als BEAM SHOT und bringt +150. Der Winkel steht im Flash, in der neuen Zeile TRACK der Torpedo-Anzeige
+  und im Debrief.
+- Kapitäne kämmen die Bahn: Wer die Blasenbahn sieht (900 m am Tag, 650 m in der Dämmerung, 380 m nachts,
+  bei Regen oder Sturm weniger), dreht nach einer Reaktionszeit Bug oder Heck auf den Torpedo. Die
+  Drehraten sind begrenzt: Zerstörer .06, Träger .035, Frachter .028 rad/s. Der Zufalls-Zickzack ist entfernt.
+Messung (Unit, vorgehaltener 600-m-Querschuss): Ein Frachter wird bei 64° getroffen, ein Zerstörer kämmt auf 19°.
+Nachts kommt der Torpedo durch, lange Schüsse geben dem Kapitän Zeit.
+Trefferort über `ShipDamage`:
+- Heck-Torpedo: Das Ruder klemmt (`rudderJam`), und das Schiff fährt Kreise.
+- Bug: Wassereinbruch vorn, das Schiff muss langsamer fahren.
+- Mitte: Maschinenraum (wie bisher).
+- Wirkt nur bei Schiffen mit mehreren HP, also beim leichten Träger. Die Funkmeldung folgt dem tatsächlich
+  beschädigten System (`lastPart`).
+Ältere Checkpoints ohne die Felder `bow`/`jam` laden weiter.
+**Gefundener Altfehler:** `PacificTheater.shipTactics` steuert über `rotation.y`. In der Standard-Eulerordnung
+XYZ klappt dieser Winkel jenseits ±90° um. Ein Schiff, das weit eindrehte, drehte danach endlos weiter
+(gemessen: Zerstörer bis 170°). Zielschiffe nutzen jetzt `rotation.order='YXZ'`.
+Tests:
+- `okinawa/tests/torpedo-attack.cjs`: 20/60/120 FPS; Reichweite, Scharfmachen, Rumpf statt Kreis, Winkel,
+  Kämmen bildratenunabhängig, Nacht, Rookie, Trefferort, alte Checkpoints.
+- `torpedo-attack-browser.cjs` mit echtem Spiel, echten Schiffs-GLBs und echtem `dropTorpedo`, `updateTorpedoes`
+  und `updateShips`:
+  - Ein 600-m-Querschuss trifft und versenkt bei 20, 60 und 120 FPS nach 573 m Lauf.
+  - Ein Abwurf aus 150 m ist nicht scharf.
+  - Ein Bugschuss gleitet ab.
+  - Der Zerstörer dreht höchstens etwa 89° ein und keinen Grad weiter.
+  - Ein Hecktreffer lässt den leichten Träger mit 1 HP kreisen.
+  - Die TRACK-Zeile ist frei von Bedienelementen.
+- Bild: `test-visuals/build200-torpedo-run-hud.png`.
+Build 200 steht an Board, beiden Spielen, den Menü-CSS-Links, App-Payload und Xcode. Das Register wurde per
+app:assets neu erzeugt (310 Dateien). Kein iPad-Test. Historische Korrektur: Meine frühere Begründung „beim
+Mark-13-Zünder so gewesen“ ist nicht belegt. Belegt ist beim Mark 14 sogar das Gegenteil: Schräge Treffer
+zündeten, senkrechte Treffer verbogen den Schlagbolzen. Der Winkelabgleiter ist deshalb eine bewusste
+Spielregel. Noch offen aus der Vorschlagsliste: weiche Abwurfgrenzen (2), Zufalls-Patrouille (14), Zielsuche
+nach Sichtmeldung (7), Vorposten (8) und Debrief-Karte (15).
+
 **22.10.2026, Build 199: helijahs Avenger bekommt eine 1942er-Lackierung in voller Auflösung;
 Eigenbau gestoppt.** Nutzer zum Eigenbau: „Proportionen stimmen überhaupt nicht“, dann: „Ist die
 avenger die wir haben von hellija? Die dürften wir verwenden“ → „Ja, nur verbessern“. Geprüft:
@@ -138,7 +187,7 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 199 · Thunderbolt Squadron BUILD 199 · Remagen-Kern 23 / Fahrzeuge 22**
+Stand bei Übergabe: **Torpedo Squadron BUILD 200 · Thunderbolt Squadron BUILD 200 · Remagen-Kern 23 / Fahrzeuge 22**
 
 **Build 198 (22.10.2026): P-47-Fotolackierung, Einsatzspuren und natives Fahrwerk; Terrain-Fix aus Build 197 erhalten.**
 `assets/aircraft/p47-weathered.glb` ist ein ausdrücklich gekennzeichnetes Derivat des

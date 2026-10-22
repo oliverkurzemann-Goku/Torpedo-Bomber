@@ -11,7 +11,7 @@
     const geo=o.geometry.clone(),p=geo.attributes.position;if(p.normalized){const data=new Float32Array(p.count*3),div=p.array instanceof Int16Array?32767:65535;for(let i=0;i<p.count;i++){data[i*3]=p.getX(i)/div;data[i*3+1]=p.getY(i)/div;data[i*3+2]=p.getZ(i)/div;}geo.setAttribute('position',new THREE.BufferAttribute(data,3));}
     geo.computeBoundingBox();const m=new THREE.Mesh(geo,material);m.matrixWorld.multiplyMatrices(inv,o.matrixWorld);box.union(geo.boundingBox.clone().applyMatrix4(m.matrixWorld));surfaces.push(m);
    });
-   const s={ship,box,surfaces,systems:{engine:1,rudder:1,deck:1},compartments:[0,0,0],breaches:[0,0,0],hits:[],side:0,trim:0,flood:0,sunk:false,elapsed:0,emitT:0,patches:[]};
+   const s={ship,box,surfaces,systems:{engine:1,rudder:1,deck:1,bow:1,jam:0},compartments:[0,0,0],breaches:[0,0,0],hits:[],side:0,trim:0,flood:0,sunk:false,elapsed:0,emitT:0,patches:[]};
    states.set(ship,s);g.rotation.order='YXZ';return s;
   }
   function systemHit(ship,worldPoint=null,weapon='torpedo',weight=1){
@@ -19,12 +19,16 @@
    const fraction=Math.max(0,Math.min(1,(local.z-b.min.z)/(b.max.z-b.min.z||1))),power=(weapon==='torpedo'?.65:weapon==='bomb'?.5:.28)*weight;
    let part=fraction<.28?'rudder':fraction<.68?'engine':null;
    if(ship.def?.type==='cruiser'&&weapon==='bomb')part='deck';
+   // Build 200: an underwater hit forward floods the bow; the master must slow down to hold the
+   // bulkheads. A stern torpedo jams the rudder hard over, so a surviving ship steams in circles.
+   if(!part&&weapon==='torpedo')part='bow';
    if(part)s.systems[part]=Math.max(.12,s.systems[part]-power);
+   if(part==='rudder'&&weapon==='torpedo'&&!s.systems.jam)s.systems.jam=(local.x>=0?-1:1);
    return part;
   }
   function hit(ship,worldPoint=null,weapon='torpedo'){
-   systemHit(ship,worldPoint,weapon);
-   const s=state(ship),b=s.box,local=worldPoint?ship.group.worldToLocal(worldPoint.clone()):new THREE.Vector3(b.max.x,1,0);
+   const part=systemHit(ship,worldPoint,weapon);
+   const s=state(ship);s.lastPart=part;const b=s.box,local=worldPoint?ship.group.worldToLocal(worldPoint.clone()):new THREE.Vector3(b.max.x,1,0);
    local.x=Math.max(b.min.x,Math.min(b.max.x,local.x));local.z=Math.max(b.min.z,Math.min(b.max.z,local.z));
    const fraction=(local.z-b.min.z)/(b.max.z-b.min.z||1),compartment=Math.min(2,Math.floor(fraction*3));
    const side=local.x>=0?1:-1,underwater=weapon==='torpedo',severity=underwater?.32:weapon==='bomb'?.16:.035;
@@ -43,8 +47,9 @@
    return s;
   }
   return {hit,systemHit,
-   performance(ship){const v=states.get(ship)?.systems;return {speed:v?.engine??1,steering:v?.rudder??1,aa:v?.deck??1};},
-   status(ship){const v=states.get(ship)?.systems;if(!v)return '';return [v.engine<.75?'ENGINE DAMAGED':null,v.rudder<.75?'RUDDER DAMAGED':null,v.deck<.75?'FLIGHT DECK DAMAGED':null].filter(Boolean).join(' · ');},
+   performance(ship){const v=states.get(ship)?.systems;return {speed:(v?.engine??1)*(v?.bow??1),steering:v?.rudder??1,aa:v?.deck??1};},
+   rudderJam(ship){return states.get(ship)?.systems.jam||0;},
+   status(ship){const v=states.get(ship)?.systems;if(!v)return '';return [v.engine<.75?'ENGINE DAMAGED':null,v.jam?'RUDDER JAMMED':v.rudder<.75?'RUDDER DAMAGED':null,(v.bow??1)<.75?'FLOODING FORWARD':null,v.deck<.75?'FLIGHT DECK DAMAGED':null].filter(Boolean).join(' · ');},
    update(ship,dt,seaY=0){
     const s=states.get(ship);if(!s)return false;s.elapsed+=dt;s.emitT-=dt;
     for(let i=0;i<3;i++)s.compartments[i]=Math.min(s.sunk?1:.65,s.compartments[i]+s.breaches[i]*dt);
@@ -69,7 +74,7 @@
    checkpoint(ship){const s=states.get(ship);if(!s)return null;return {systems:{...s.systems},compartments:s.compartments.slice(),breaches:s.breaches.slice(),side:s.side,trim:s.trim,flood:s.flood,sunk:s.sunk,elapsed:s.elapsed,emitT:s.emitT,hits:s.hits.map(h=>({at:h.at.toArray(),fire:h.fire}))};},
    restoreCheckpoint(ship,saved){if(!saved)return;const s=state(ship);
     for(const key of ['side','trim','flood','sunk','elapsed','emitT'])s[key]=saved[key];
-    s.systems={...saved.systems};s.compartments=saved.compartments.slice();s.breaches=saved.breaches.slice();s.hits=saved.hits.map(h=>({at:new THREE.Vector3().fromArray(h.at),fire:h.fire}));
+    s.systems={engine:1,rudder:1,deck:1,bow:1,jam:0,...saved.systems};s.compartments=saved.compartments.slice();s.breaches=saved.breaches.slice();s.hits=saved.hits.map(h=>({at:new THREE.Vector3().fromArray(h.at),fire:h.fire}));
    },
    clear(){for(const s of states.values()){for(const p of s.patches)s.ship.group.remove(p);for(const m of s.surfaces)m.geometry.dispose();}states.clear();},
    dispose(){this.clear();geometry.dispose();material.dispose();}

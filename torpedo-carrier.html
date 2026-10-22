@@ -298,7 +298,7 @@
   .warningLamps{display:flex!important;gap:10px;padding:5px 9px!important;background:#141813dd!important;border:1px solid #535744;border-radius:4px;white-space:nowrap;}
   .warningLamp{color:#646c5c;font:9px monospace;letter-spacing:.35px;} .warningLamp[data-level="1"]{color:#ffd088;text-shadow:0 0 6px #e0a432a0;} .warningLamp[data-level="2"]{color:#ff8c70;text-shadow:0 0 7px #ff6638b0;}
 </style>
-<link rel="stylesheet" href="menu-layout.css?v=199">
+<link rel="stylesheet" href="menu-layout.css?v=200">
 </head>
 <body>
 <div id="app"></div>
@@ -351,7 +351,7 @@
   <div id="flash"></div>
   <div id="ltn" style="position:fixed;inset:0;background:#e6ecff;opacity:0;pointer-events:none;z-index:40;"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 199</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 200</div>
 
   <!-- Optical landing aid -->
   <div id="lso">
@@ -375,6 +375,7 @@
   <div class="trRow"><span>ALT</span><b id="trAlt">—</b></div>
   <div class="trRow"><span>SPEED</span><b id="trSpd">—</b></div>
   <div class="trRow"><span>WINGS</span><b id="trWings">—</b></div>
+  <div class="trRow"><span>TRACK</span><b id="trTrack">—</b></div>
   <div id="trDrop">SET UP</div>
 </div>
 <div id="torpLead"><div id="torpLeadRing"></div><div id="torpLeadDot"></div></div>
@@ -395,7 +396,7 @@
 
 <!-- Menu -->
 <div class="overlay" id="menu" data-campaign="pacific">
-  <div class="menuTop"><a id="selBtn" href="index.html?v=199">&#9664; Change Game</a><span class="menuMeta">PACIFIC OPERATIONS<br>BUILD 199</span></div>
+  <div class="menuTop"><a id="selBtn" href="index.html?v=200">&#9664; Change Game</a><span class="menuMeta">PACIFIC OPERATIONS<br>BUILD 200</span></div>
   <div class="card menuCard">
     <aside class="menuOverview" aria-label="Campaign and pilot options">
     <div class="campaignArt" aria-hidden="true"></div>
@@ -406,7 +407,9 @@
     <button type="button" id="logBtn">Pilot's Logbook</button>
     <details class="quickGuide"><summary>Controls &amp; landing guide</summary>
       <div>Left stick: pitch / bank. Right bar: throttle. Launch, fly to the arrow,
-        then return to the carrier. Drop torpedoes low, level and below the indicated speed.
+        then return to the carrier. Drop torpedoes low, level and below the indicated speed,
+        at least 350 m out so the fish can arm, and from her beam: a fine track angle can skid off the hull,
+        and alert captains turn to comb the tracks.
         GEAR, FLAPS and HOOK down on final. L / FLARE lights night targets. B or BAIL OUT deploys a parachute when high enough.
         <b id="menuLandingSpeed"></b> Watch the landing signal and keep the sink rate gentle.</div>
     </details>
@@ -500,7 +503,8 @@
 <script src="combat-fx.js?v=177"></script>
 <script src="aircraft-smoke.js?v=176"></script>
 <script src="aircraft-damage.js?v=177"></script>
-<script src="ship-damage.js?v=198"></script>
+<script src="ship-damage.js?v=200"></script>
+<script src="torpedo-attack.js?v=200"></script>
 <script src="ship-contact.js?v=198"></script>
 <script src="flight-support.js?v=198"></script>
 <script src="ordnance.js?v=157"></script>
@@ -520,7 +524,7 @@
 <script src="ground-run.js?v=198"></script>
 <script src="flight-indicators.js?v=198"></script>
 <script src="operation-plans.js?v=198"></script>
-<script src="pacific-theater.js?v=198"></script>
+<script src="pacific-theater.js?v=200"></script>
 <script src="carrier-recovery.js?v=198"></script>
 <script src="maritime-weather.js?v=198"></script>
 <script>
@@ -716,7 +720,7 @@ const DROP_MAX_SPD= 62;          // m/s
 let renderer, scene, camera, clock;
 let sea, seaGeo, seaBase;
 let carrier, planeGroup, propDisk;
-let torpedoes=[], ships=[], tracers=[], splashes=[], wakeParts=[];
+let torpedoes=[], ships=[], tracers=[], splashes=[], wakeParts=[], torpedoReport=[];
 let sun, sunSprite, planeShadow, propSpinner, smokeTex;
 let clouds=[], smokes=[], explosions=[];
 let smokePool=[], wakePool=[], wakeGeo=null;   // particle pools (declared before first use)
@@ -2204,7 +2208,7 @@ function startMission(idx){
   applyLoadoutUI(); resetControlUI();
 
   // clear dynamic objects
-  torpedoes.forEach(t=>GameRuntime.release(t.mesh)); torpedoes=[];
+  torpedoes.forEach(t=>GameRuntime.release(t.mesh)); torpedoes=[]; torpedoReport=[];
   tracers.forEach(t=>GameRuntime.release(t.mesh)); tracers=[];
   ships.forEach(s=>GameRuntime.release(s.group)); ships=[];
   supportFleet.forEach(s=>GameRuntime.release(s.group));supportFleet=[];
@@ -2332,12 +2336,14 @@ function startMission(idx){
 }
 
 function spawnShip(def){
+  // Build 200: yaw-first Euler order. PacificTheater.shipTactics steers on rotation.y; in the
+  // default XYZ order that angle folds back past ±90° and a combing ship then never stops turning.
   // Optional mission-specific hull (surfaced submarine, etc.).
   if(def.model){
     const template=NavalAssets.get(def.model);
     if(!template)throw Error('Ship not prepared: '+def.model);
     const g=new THREE.Group();g.add(template.clone(true));
-    g.position.set(def.pos[0],0,def.pos[2]);g.rotation.y=def.heading??0;
+    g.position.set(def.pos[0],0,def.pos[2]);g.rotation.order='YXZ';g.rotation.y=def.heading??0;
     scene.add(g);
     ships.push({def,group:g,hp:def.hp,alive:true,flak:!!def.flak,
       radius:template.userData.naval.length*.55,flakTimer:Math.random()*2,sinkT:0,usedFallback:false});
@@ -2349,7 +2355,7 @@ function spawnShip(def){
     g.add(destroyerTemplate.clone(true));
     g.traverse(function(o){ if(o.isMesh){ o.castShadow=true; o.receiveShadow=true; } });
     g.position.set(def.pos[0],0,def.pos[2]);
-    g.rotation.y=def.heading??.15;
+    g.rotation.order='YXZ';g.rotation.y=def.heading??.15;
     scene.add(g);
     ships.push({def:def, group:g, hp:def.hp, alive:true, flak:!!def.flak,
       radius:DEST_TARGET_LEN*0.55, flakTimer:Math.random()*2, sinkT:0, usedFallback:false});
@@ -2360,7 +2366,7 @@ function spawnShip(def){
     g.add(freighterTemplate.clone(true));
     g.traverse(function(o){ if(o.isMesh){ o.castShadow=true; o.receiveShadow=true; } });
     g.position.set(def.pos[0],0,def.pos[2]);
-    g.rotation.y=def.heading??.15;
+    g.rotation.order='YXZ';g.rotation.y=def.heading??.15;
     scene.add(g);
     ships.push({def:def, group:g, hp:def.hp, alive:true, flak:!!def.flak,
       radius:FRT_TARGET_LEN*0.55, flakTimer:Math.random()*2, sinkT:0, usedFallback:false});
@@ -2371,7 +2377,7 @@ function spawnShip(def){
     g.add(cruiserTemplate.clone(true));
     g.traverse(function(o){ if(o.isMesh){ o.castShadow=true; o.receiveShadow=true; } });
     g.position.set(def.pos[0],0,def.pos[2]);
-    g.rotation.y=def.heading??.15;
+    g.rotation.order='YXZ';g.rotation.y=def.heading??.15;
     scene.add(g);
     ships.push({def:def, group:g, hp:def.hp, alive:true, flak:!!def.flak,
       radius:CRU_TARGET_LEN*0.55, flakTimer:Math.random()*2, sinkT:0, usedFallback:false});
@@ -2381,7 +2387,7 @@ function spawnShip(def){
   // It stays invisible until upgradeShipsToTemplate installs the repository model.
   const g=new THREE.Group();
   g.position.set(def.pos[0],0,def.pos[2]);
-  g.rotation.y=def.heading??.15;
+  g.rotation.order='YXZ';g.rotation.y=def.heading??.15;
   scene.add(g);
   const radius=def.type==='freighter'?FRT_TARGET_LEN*.55:
     def.type==='destroyer'?DEST_TARGET_LEN*.55:CRU_TARGET_LEN*.55;
@@ -2671,7 +2677,8 @@ function dropTorpedo(){           // primary weapon button (torpedo OR bomb)
   scene.add(mesh);
   const fwd=Math.max(16, Math.min(42, P.spd*0.5));     // carries the plane's momentum
   const isDud = (Math.random()<D().dud) && !lastTorpDud; lastTorpDud=isDud;
-  torpedoes.push({mesh, dir, life:16, speed:23, dud:isDud,
+  // life only bounds the short air phase; the water run is limited by distance (TorpedoAttack.MAX_RUN).
+  torpedoes.push({mesh, dir, life:16, speed:23, dud:isDud, run:0, armed:false,
     phase:'air', vy:-1.5, fwd});
   sfxWhoosh(); flash("FISH AWAY",500);
 }
@@ -2741,6 +2748,7 @@ function updateBombs(dt){
   }
 }
 
+const torpPrev=new THREE.Vector3();
 function updateTorpedoes(dt){
   for(let i=torpedoes.length-1;i>=0;i--){
     const t=torpedoes[i];
@@ -2760,7 +2768,9 @@ function updateTorpedoes(dt){
       if(t.life<=0){ GameRuntime.release(t.mesh); torpedoes.splice(i,1); }
       continue;
     }
+    torpPrev.copy(t.mesh.position);
     t.mesh.position.addScaledVector(t.dir, t.speed*dt);
+    TorpedoAttack.advance(t,dt);
     // ride just under the surface — visible, leaving a churning wake
     t.mesh.position.y=0.7+Math.sin(performance.now()*0.01)*0.12;
     t.wk=(t.wk||0)-dt;
@@ -2770,29 +2780,46 @@ function updateTorpedoes(dt){
     if(t.bub<=0 && t.mesh.position.y<3){ t.bub=0.08; spawnBubble(t.mesh.position.x,t.mesh.position.z); }
     for(const s of ships){
       if(!s.alive) continue;
-      const d=Math.hypot(t.mesh.position.x-s.group.position.x, t.mesh.position.z-s.group.position.z);
-      if(d<s.radius){
-        if(t.dud){
-          // Mark 13 failure — clunk, splash, no boom, no hit credit
-          spawnSplash(t.mesh.position.x,t.mesh.position.z,false);
-          spawnSparks(new THREE.Vector3(t.mesh.position.x,1.2,t.mesh.position.z),5);
-          sfxPop(); radioSay("DUD! FISH BOUNCED OFF THE HULL — MARK 13 AGAIN");
-          flash("DUD TORPEDO",900);
-        } else { sortieTorpHit++; hitShip(s,false,t.mesh.position,"torpedo"); }
-        hit=true; break;
+      // Build 200: the fish has to touch the real hull rectangle, swept over the frame.
+      const contact=TorpedoAttack.strike(s,torpPrev,t.mesh.position,TorpedoAttack.DIFF[DIFF]?.margin??4);
+      if(!contact) continue;
+      const impact=new THREE.Vector3(contact.x,t.mesh.position.y,contact.z);
+      const outcome=TorpedoAttack.resolve(t,s,contact,{diff:DIFF});
+      if(outcome.result==='unarmed'){
+        spawnSplash(impact.x,impact.z,false);spawnSparks(new THREE.Vector3(impact.x,1.2,impact.z),4);sfxPop();
+        radioSay("FISH DIDN'T ARM — ONLY "+Math.round(outcome.run)+" M RUN. DROP FURTHER OUT");flash("NOT ARMED — TOO CLOSE",1100);
+      } else if(outcome.result==='glanced'){
+        spawnSplash(impact.x,impact.z,false);spawnSparks(new THREE.Vector3(impact.x,1.2,impact.z),6);sfxPop();
+        radioSay("FISH GLANCED OFF AT "+Math.round(outcome.angle)+"° — GET ON HER BEAM");flash("GLANCING HIT — NO DETONATION",1100);
+      } else if(outcome.result==='dud'){
+        // Mark 13 failure — clunk, splash, no boom, no hit credit
+        spawnSplash(impact.x,impact.z,false);
+        spawnSparks(new THREE.Vector3(impact.x,1.2,impact.z),5);
+        sfxPop(); radioSay("DUD! FISH BOUNCED OFF THE HULL — MARK 13 AGAIN");
+        flash("DUD TORPEDO",900);
+      } else {
+        sortieTorpHit++;
+        hitShip(s,false,impact,"torpedo",outcome);
       }
+      torpedoReport.push({result:outcome.result,angle:Math.round(outcome.angle),part:outcome.part,run:Math.round(outcome.run)});
+      hit=true; break;
     }
-    if(hit||t.life<=0){ GameRuntime.release(t.mesh); torpedoes.splice(i,1); }
+    if(!hit&&t.spent)torpedoReport.push({result:'spent',run:Math.round(t.run)});
+    if(hit||t.spent){ GameRuntime.release(t.mesh); torpedoes.splice(i,1); }
   }
 }
 
-function hitShip(s, quietCam,point=null,weapon="torpedo"){
+function hitShip(s, quietCam,point=null,weapon="torpedo",attack=null){
   if(!s.alive)return;
   const impactPoint=point||s.group.position;
   s.hp--;
   if(!quietCam&&weapon==='bomb')sortieBombHit++;
   if(typeof shipDamage!=="undefined"&&shipDamage)shipDamage.hit(s,point,weapon);
+  if(attack)attack.part={rudder:'stern',engine:'midships',bow:'bow'}[shipDamage?.get(s)?.lastPart]||attack.part;
   spawnSplash(impactPoint.x,impactPoint.z,true);
+  // Build 200: a square beam shot is rewarded, and the track angle is always reported.
+  if(attack?.beam)addScore(150);
+  const attackTag=attack?'  ·  '+Math.round(attack.angle)+'° TRACK'+(attack.beam?' · BEAM SHOT +150':''):'';
   // a brief camera cut on ANY hit, not just the kill blow — a solid hit deserves to be seen.
   // quietCam skips the cut for wingman hits, so the camera doesn't yank away from the player.
   if(s.hp>0 && state===ST.FLIGHT && !quietCam) killCam={t:1.1, ang:Math.random()*Math.PI*2,
@@ -2810,13 +2837,16 @@ function hitShip(s, quietCam,point=null,weapon="torpedo"){
     if(state===ST.FLIGHT && !quietCam) killCam={t:2.0+1.4*heft, ang:Math.random()*Math.PI*2,
       target:s.group.position.clone(), slow:0.45-0.18*heft};
     sfxBoom(1.4);
-    flash("SHIP SINKING  +"+pts,1100);
+    flash("SHIP SINKING  +"+pts+attackTag,1300);
   } else {
     spawnExplosion(impactPoint.x,Math.max(3,impactPoint.y),impactPoint.z,1.15);
     spawnDebris(impactPoint.x,Math.max(4,impactPoint.y+2),impactPoint.z,6);
     addScore(400);
     sfxBoom(0.7);
-    const fault=shipDamage?.status(s);flash((fault||'HIT — STILL AFLOAT')+'  +400',1300);
+    const fault=shipDamage?.status(s);flash((fault||'HIT — STILL AFLOAT')+'  +400'+attackTag,1500);
+    // Where the fish struck decides what the survivor can still do (ShipDamage.systemHit).
+    if(weapon==='torpedo'&&!quietCam&&attack)radioSay(attack.part==='stern'?"HIT AFT — HER RUDDER'S JAMMED, SHE'S STEAMING IN CIRCLES":
+      attack.part==='bow'?"HIT FORWARD — SHE'S DOWN BY THE BOW AND SLOWING":"HIT AMIDSHIPS — ENGINE ROOM FLOODING, SHE'S LISTING");
   }
   checkObjectiveCleared();
 }
@@ -3835,6 +3865,7 @@ function trap(x,arrested=false){
   const qualityLine='<br>Attack precision: '+(review.accuracy==null?'objective completed':Math.round(review.accuracy*100)+'%')
     +(review.total?' · Transports delivered '+review.kept+'/'+review.total+' · convoy condition '+Math.round(review.protection*100)+'%':'')
     +'<br>Touchdown: '+(P.landingSample?Math.round(P.landingSample.speed*KT)+' kt · '+Math.round(P.landingSample.sink*FT*60)+' fpm · '+Math.abs(P.landingSample.offset).toFixed(1)+' m off centre':'not recorded')+' · '+grade
+    +torpedoDebrief()
     +'<br>Mission quality bonus +'+review.points;
   const medalIcon={gold:'🥇 GOLD',silver:'🥈 SILVER',bronze:'🥉 BRONZE'}[medal];
   const trapsBefore=(loadLog().traps||0);
@@ -3864,6 +3895,16 @@ function trap(x,arrested=false){
     last?"Campaign Complete":"Next Sortie");
 }
 
+// Build 200: short torpedo-attack review in the debrief (track angle, arming, glancing, misses).
+function torpedoDebrief(){
+  if(!torpedoReport.length)return '';
+  const n=k=>torpedoReport.filter(r=>r.result===k).length,hits=torpedoReport.filter(r=>r.result==='hit');
+  const best=hits.length?Math.max(...hits.map(r=>r.angle)):null,parts=hits.map(r=>r.part).filter(Boolean);
+  return '<br>Torpedo runs: '+hits.length+' hit'+(hits.length===1?'':'s')+(best!=null?' · best track '+best+'°':'')
+    +(parts.length?' ('+parts.join(', ')+')':'')+(n('glanced')?' · '+n('glanced')+' glanced off':'')
+    +(n('unarmed')?' · '+n('unarmed')+' not armed (too close)':'')+(n('dud')?' · '+n('dud')+' dud':'')
+    +(n('spent')?' · '+n('spent')+' ran out':'');
+}
 let arrestCable=null,deckArrestWires=null;
 function updateDeckArrestWires(){
  if(!deckArrestWires){
@@ -5347,7 +5388,7 @@ function loadPlaneModel(){
       }
       window.__eyeDbg='EYE '+COCKPIT_EYE.map(v=>v.toFixed(2)).join('/');
       const btEl=document.getElementById('buildTag');
-      if(btEl) btEl.textContent='BUILD 199 · '+window.__eyeDbg;
+      if(btEl) btEl.textContent='BUILD 200 · '+window.__eyeDbg;
       let seat=null;
       model.traverse(function(o){
         if(!o.isMesh||!o.material) return;
@@ -6407,6 +6448,9 @@ function updateTorpRun(){
   set('trSpd', Math.round(P.spd*KT)+' kt', sOk);
   const wOk=Math.abs(P.roll)<0.3;
   set('trWings', wOk?'LEVEL':'BANKED', wOk);
+  // Advisory only: the fish arms after TorpedoAttack.ARM_RUN and may skid off at a fine track angle.
+  const track=tgt.group?TorpedoAttack.trackAngle(tgt,{x:Math.cos(P.heading),z:Math.sin(P.heading)}):90;
+  set('trTrack', Math.round(track)+'°'+(track>=60?' BEAM':track<40?' FINE':''), track>=40);
   const drop=document.getElementById('trDrop');
   const allGo = aOk&&sOk&&wOk&&rOk;
   if(allGo){ drop.textContent='DROP NOW'; drop.className='go'; }
@@ -6742,7 +6786,7 @@ function setupUIButtons(){
   if(dbgT2) dbgT2.onclick=()=>{
     dbgOn=!dbgOn; GameRuntime.storage.setItem('dbgOn',dbgOn?'1':'0');
     const db=document.getElementById('dbgBox'); if(db) db.textContent=dbgOn?'✓':'';
-    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 199'; }
+    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 200'; }
   };
   const lu=document.getElementById('lookUp'), ld=document.getElementById('lookDn');
   let _lookT=0;
@@ -6758,7 +6802,7 @@ function setupUIButtons(){
   if(pb) pb.addEventListener('pointerdown',e=>{ e.preventDefault(); togglePause(); });
   const rb=document.getElementById('resumeBtn'); if(rb) rb.onclick=resumeGame;
   const mb=document.getElementById('menuBtn'); if(mb) mb.onclick=exitToMenu;
-  document.getElementById('pauseMainMenu').onclick=async()=>{globalThis.sortieCheckpoint?.save();await globalThis.sortieCheckpoint?.flush();exitToMenu(true);window.location.href='index.html?v=199';};
+  document.getElementById('pauseMainMenu').onclick=async()=>{globalThis.sortieCheckpoint?.save();await globalThis.sortieCheckpoint?.flush();exitToMenu(true);window.location.href='index.html?v=200';};
   document.getElementById('resultBtn').onclick=()=>{
     // the logbook borrows this screen from the menu — send the player straight back
     if(logbookOpen){ logbookOpen=false; showOverlay('menu'); return; }
@@ -6874,6 +6918,10 @@ function updatePacificAtmosphere(dt){
 function trackShipWake(group,forward,length,beam,speed,dt){
   if(state!==ST.MENU&&state!==ST.BRIEF&&state!==ST.RESULT)shipWakes?.track(group,group.position,forward,length,beam,speed,dt);
 }
+function announceComb(ship){
+  if(radioEvadeCalled||state!==ST.FLIGHT)return;radioEvadeCalled=true;
+  radioSay(NavalAssets.label(ship.def).toUpperCase()+" HAS SEEN THE FISH — SHE'S COMBING THE TRACKS");
+}
 function updateShips(dt){
   if(state!==ST.FLIGHT&&state!==ST.LAUNCH&&state!==ST.SERVICE)return;
   // Allied transports are separate from hostile targets: no friendly AA,
@@ -6923,21 +6971,18 @@ function updateShips(dt){
       const wf=s.fwd.clone().applyQuaternion(s.group.quaternion); wf.y=0; wf.normalize();
       const shipPerformance=shipDamage?.performance(s)||{speed:1,steering:1,aa:1};
       const enhanced=MISSIONS[mission].tactics||mission>=3&&!isFree()&&!isQual();
+      // Build 200: lookouts who see a wake comb the track (bow or stern onto the fish) instead of
+      // zig-zagging at random; a jammed rudder (stern torpedo) leaves the ship circling.
+      const jam=shipDamage?.rudderJam?.(s)||0;
+      const comb=jam?null:TorpedoAttack.captain(s,dt,torpedoes,{detect:TorpedoAttack.detectRange({timeMode,weather,diff:DIFF}),
+        diff:DIFF,speed:s.speed*(s.driveMultiplier??1),announce:announceComb});
+      if(jam)s.comb=null;
       if(enhanced)PacificTheater.shipTactics(s,dt,P,torpedoes,ships,spawnScreenSmoke,shipPerformance);
-      // Legacy early-sortie zigzag; advanced ships use bounded course changes above.
-      let evading=false;
-      for(const t of torpedoes){
-        if(Math.hypot(t.mesh.position.x-s.group.position.x, t.mesh.position.z-s.group.position.z)<1400){
-          evading=true; break; }
-      }
-      if(evading&&!enhanced&&!s.def.moored){
+      if(jam)s.group.rotateY(jam*.045*dt);
+      else if(comb!=null&&!s.def.moored){
+        TorpedoAttack.steer(s,comb,dt,shipPerformance.steering,DIFF);
         for(const escort of ships)if(escort.alive&&escort.flak&&escort.group.position.distanceTo(s.group.position)<3000)escort.fleetAlertT=5;
-        if(!s.evadeDir){ s.evadeDir=Math.random()<0.5?-1:1; s.evadeT=2.5+Math.random()*2;
-          if(!radioEvadeCalled){ radioEvadeCalled=true; radioSay("SHE'S SEEN THE FISH — TARGET TURNING HARD"); } }
-        s.evadeT-=dt;
-        if(s.evadeT<=0){ s.evadeDir*=-1; s.evadeT=2.5+Math.random()*2.5; }
-        s.group.rotateY(s.evadeDir*0.10*dt*shipPerformance.steering);
-      } else { s.evadeDir=0; }
+      }
       s.fleetAlertT=Math.max(0,(s.fleetAlertT||0)-dt);
       // ---- island avoidance: ships used to steam straight through the terrain ----
       // Turn the bow toward the bearing that points away from the island's centre. Once clear
@@ -7004,7 +7049,7 @@ function animate(){
     notice.style.cssText='position:fixed;inset:0;z-index:999998;background:rgba(15,20,15,.95);color:#e8ddbc;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px;text-align:center;font:16px system-ui';
     const title=document.createElement('h2');title.textContent='Simulation interrupted';
     const detail=document.createElement('p');
-    detail.textContent='BUILD 199 · '+(MISSIONS[mission]?.sub||'Menu')+' · '+error.message;
+    detail.textContent='BUILD 200 · '+(MISSIONS[mission]?.sub||'Menu')+' · '+error.message;
     const reload=document.createElement('button');reload.textContent='Reload game';
     reload.style.cssText='padding:12px 24px;font:inherit';reload.onclick=()=>location.reload();
     notice.appendChild(title);notice.appendChild(detail);notice.appendChild(reload);document.body.appendChild(notice);
