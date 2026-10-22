@@ -18,7 +18,7 @@
         "slug": "by"
       },
       "descriptionSignals": [],
-      "descriptionExcerpt": "–GENERAL– This is high quality Ford-1940 car model with complete interior and machines .(Edge loops, quad poly, simple overall structure). Model is suitable for",
+      "descriptionExcerpt": "\u2013GENERAL\u2013 This is high quality Ford-1940 car model with complete interior and machines .(Edge loops, quad poly, simple overall structure). Model is suitable for",
       "publishedAt": "2023-06-22T14:16:07.232313",
       "updatedAt": "2023-06-23T18:47:05.396204"
     },
@@ -94,7 +94,7 @@
       "checkedOn": "2026-10-14",
       "fetchStatus": "verified-public-api",
       "title": "bombed_farm_buildings from FPS creator classic",
-      "uploader": "𝗜 𝘁   𝘄 𝗮 𝘀   𝗦 𝗼 𝗻 𝘆 𝗮",
+      "uploader": "\ud835\udddc \ud835\ude01   \ud835\ude04 \ud835\uddee \ud835\ude00   \ud835\udde6 \ud835\uddfc \ud835\uddfb \ud835\ude06 \ud835\uddee",
       "profileUrl": "https://sketchfab.com/it_was_sonya",
       "declaredLicense": {
         "label": "CC Attribution",
@@ -140,7 +140,7 @@
         "slug": "by"
       },
       "descriptionSignals": [],
-      "descriptionExcerpt": "Infantry casemate bunker concrete fortress \"O3/23/A-160 Z\" řopík near Velké Březno, Czechia https://www.ropiky.net/dbase_objekt.php?id=1075725593 🟢 Download: https://www.fab.com/listings/052a238c-c15a-42b5-95e8-51aa5a33a7e2 Map: https://goo.gl/maps/6kvGAnSVkM2Yb7gC6 https://en.wikipedia.org/wiki/Czechoslovak_border_fortifications Former part of Czechoslovak border",
+      "descriptionExcerpt": "Infantry casemate bunker concrete fortress \"O3/23/A-160 Z\" \u0159op\u00edk near Velk\u00e9 B\u0159ezno, Czechia https://www.ropiky.net/dbase_objekt.php?id=1075725593 \ud83d\udfe2 Download: https://www.fab.com/listings/052a238c-c15a-42b5-95e8-51aa5a33a7e2 Map: https://goo.gl/maps/6kvGAnSVkM2Yb7gC6 https://en.wikipedia.org/wiki/Czechoslovak_border_fortifications Former part of Czechoslovak border",
       "publishedAt": "2021-04-05T11:27:03.573607",
       "updatedAt": "2026-08-28T09:01:49.330832"
     },
@@ -151,7 +151,7 @@
       "checkedOn": "2026-10-14",
       "fetchStatus": "verified-public-api",
       "title": "DRB 01.10 Steam Locomotive (low poly)",
-      "uploader": "Götz von Berlichingen",
+      "uploader": "G\u00f6tz von Berlichingen",
       "profileUrl": "https://sketchfab.com/vonBerlichingen",
       "declaredLicense": {
         "label": "CC Attribution",
@@ -257,7 +257,7 @@
         "Arma",
         "original"
       ],
-      "descriptionExcerpt": "From Arma 3 Mod Secret Weapons Reloaded Original model: “ B-17” (https://skfb.ly/ZEpn) by helijah Thanks to Helijah for sharing!!",
+      "descriptionExcerpt": "From Arma 3 Mod Secret Weapons Reloaded Original model: \u201c B-17\u201d (https://skfb.ly/ZEpn) by helijah Thanks to Helijah for sharing!!",
       "publishedAt": "2024-02-23T21:53:28.510788",
       "updatedAt": "2024-03-10T16:13:50.718462"
     },
@@ -541,8 +541,8 @@
       "apiUrl": "https://api.sketchfab.com/v3/models/49f465e925f84efa91acb58fc515f90d",
       "checkedOn": "2026-10-14",
       "fetchStatus": "verified-public-api",
-      "title": "Warships - Call of Duty: World At War ᴴᴰ",
-      "uploader": "Nazar Okruzhko (Назар Окружко)",
+      "title": "Warships - Call of Duty: World At War \u1d34\u1d30",
+      "uploader": "Nazar Okruzhko (\u041d\u0430\u0437\u0430\u0440 \u041e\u043a\u0440\u0443\u0436\u043a\u043e)",
       "profileUrl": "https://sketchfab.com/Hot-Dog_1947",
       "declaredLicense": {
         "label": "CC Attribution",
@@ -550,7 +550,7 @@
         "slug": "by"
       },
       "descriptionSignals": [],
-      "descriptionExcerpt": "❗❗ NOTE: you will NEVER see and get any kind of 4K HD Textures™ UNTIL YOU DOWNLOAD THIS MODEL AS .GLB WITH 8K/4K TEXTURE",
+      "descriptionExcerpt": "\u2757\u2757 NOTE: you will NEVER see and get any kind of 4K HD Textures\u2122 UNTIL YOU DOWNLOAD THIS MODEL AS .GLB WITH 8K/4K TEXTURE",
       "publishedAt": "2025-07-11T21:41:29.672686",
       "updatedAt": "2025-07-24T20:45:59.924506"
     },
@@ -569,9 +569,25 @@
         "slug": "by"
       },
       "descriptionSignals": [],
-      "descriptionExcerpt": "World War II House 1 - Low Poly First house I've done, I'll be building more :) -------------------------------------------------------------------- Primera casa que he hecho, estaré",
+      "descriptionExcerpt": "World War II House 1 - Low Poly First house I've done, I'll be building more :) -------------------------------------------------------------------- Primera casa que he hecho, estar\u00e9",
       "publishedAt": "2022-04-02T20:48:31.573082",
       "updatedAt": "2022-07-17T09:19:57.652346"
+    },
+    {
+      "modelId": "927f07f6ddcf470ab0387ce5829024d5",
+      "sourceUrl": "https://sketchfab.com/3d-models/boeing-b-17-flying-fortress-927f07f6ddcf470ab0387ce5829024d5",
+      "apiUrl": "https://api.sketchfab.com/v3/models/927f07f6ddcf470ab0387ce5829024d5",
+      "checkedOn": "2026-10-22",
+      "fetchStatus": "verified-public-api",
+      "title": "Boeing B-17 Flying Fortress",
+      "uploader": "helijah",
+      "profileUrl": "https://sketchfab.com/helijah",
+      "declaredLicense": {
+        "label": "CC Attribution",
+        "url": "http://creativecommons.org/licenses/by/4.0/",
+        "slug": "by"
+      },
+      "descriptionSignals": []
     }
   ]
 }

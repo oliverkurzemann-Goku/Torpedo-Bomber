@@ -1,5 +1,24 @@
 # Torpedo-Bomber — Übergabe an Claude Code
 
+**Build 200, 23.10.2026: gelieferte helijah-B-17 animiert und eingebaut.**
+Neue Quelle 927f07f6ddcf470ab0387ce5829024d5 (helijah, CC BY 4.0), keine NC-Arma-
+Adaption. `assets/aircraft/b17-helijah.glb`: 31.62 m, 71,535 Dreiecke / 5,977,464 Bytes;
+ursprüngliche Außenhaut/UVs/silber-rote Lackierung erhalten; Motorkühlrippen und
+Cockpit-Instrumente vereinfacht. Vier Originalpropeller, drei Fahrwerksgruppen,
+Klappen/Steuerflächen und vier Türme mit nativen Drehpunkten; sieben Clips eingebettet.
+`b17-native.js` installiert Gruppen ohne Legacy-Schnitte oder zweite Propellerhaut;
+WeakMap-Cache je Klon, native Flugsteuerflächen, begrenzte Turmbewegung, MG-Runden aus
+Originalmündungen/wechselnden Zwillingsläufen. Feuerrate/Schaden unverändert. Beide
+EU-Spiele laden nur die neue Datei, alte `b17.glb` nur historische Tests und kein
+App-Payload/Fallback. `model-check.html?aircraft=b17` mit Gear/Flap-Bedienung und vier
+drehenden Rotoren; Three/Loader lokal. Modellhash/Quelle/Credits dokumentiert.
+Build 200 an Board, beiden Spielen, Payload und Xcode; Checkpoint-Kompatibilität 196.
+Keine Avenger-/Terrain-Änderung. Vor Workspace-Reset waren glTF-Validator (0 Fehler/
+Warnungen), r128-Loader/Produktionsrig/Klone/7 Clips und echter Chromium-Browser mit
+Vorschau und 3 Bombern/Feuer erfolgreich geprüft; identisches Modell per Git-Blob
+85b04e0bfc1cd472c41dd034e3e0ba7352e3eedd gerettet, Einbindung wiederhergestellt und
+vor Veröffentlichung erneut geprüft. Kein echter iPad-Test.
+
 **22.10.2026, Build 199: helijahs Avenger bekommt eine 1942er-Lackierung in voller Auflösung;
 Eigenbau gestoppt.** Nutzer zum Eigenbau: „Proportionen stimmen überhaupt nicht“, dann: „Ist die
 avenger die wir haben von hellija? Die dürften wir verwenden“ → „Ja, nur verbessern“. Geprüft:

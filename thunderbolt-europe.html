@@ -340,6 +340,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
 <script src="campaign.js?v=1"></script>
+<script src="b17-native.js?v=200"></script>
 <script>
 // ============================================================
 //  THUNDERBOLT SQUADRON — GROUND ATTACK (Europe, 1944)
@@ -1565,7 +1566,7 @@ const MODEL_URL={
           'bf109.glb','bf%20109.glb'],
   fw190: ['fw190.glb','fw_190_f-8_2_custom_payload_war_thunder.glb',
           'fw%20190%20f-8%202%20custom%20payload%20war%20thunder.glb'],
-  b17:   ['b17.glb','helijahs_b-17.glb','b-17.glb'],
+  b17:   ['assets/aircraft/b17-helijah.glb'],
   b24:   ['b24.glb','b-24_liberator.glb','b-24.glb'],
   me262: ['me262.glb','me_262_a1ajabo_war_thunder.glb',
           'me%20262%20a1ajabo%20war%20thunder.glb']
@@ -1604,6 +1605,7 @@ const TRICYCLE_KINDS=['me262'];
 // Anything not listed here gets worked out automatically; if that lands wrong, model-check.html
 // fixes it in a few seconds and its answer overrides everything below.
 const MODEL_FIX={
+  'assets/aircraft/b17-helijah.glb': {yaw:0},
   'p47.glb':                      {yaw:Math.PI},
   'bf 109 - messerschmitt.glb':   {yaw:-Math.PI/2},
   'bf_109_-_messerschmitt.glb':   {yaw:-Math.PI/2},
@@ -2610,6 +2612,7 @@ function coverGearCut(root, clusters, floor, rfUsed, maxR){
   });
 }
 function rigModel(root, kind){
+  if(kind==='b17'&&typeof B17Rig!=='undefined'&&B17Rig.install(root))return 'native helijah B-17: original propellers across 4 engines, gear, flaps, flight controls and turret origins; no runtime mesh cuts';
   root.updateMatrixWorld(true);
   const whole=new THREE.Box3().setFromObject(root);
   const S=whole.getSize(new THREE.Vector3());

@@ -1,5 +1,23 @@
 # Remagen vehicle credits
 
+## B-17 original-component animation (Build 200)
+
+Boeing B-17 Flying Fortress — animated derivative (Squadron Build 200)
+Original model and textures: helijah (Emmanuel Baranger), https://sketchfab.com/helijah
+Source: https://sketchfab.com/3d-models/boeing-b-17-flying-fortress-927f07f6ddcf470ab0387ce5829024d5
+License: Creative Commons Attribution 4.0 International (CC BY 4.0)
+https://creativecommons.org/licenses/by/4.0/
+Changes: named original propellers, gear, flaps, flight controls and turret pivots;
+seven animation clips and actual barrel origins; uniform metre-scale normalization
+to 31.62 m span, +Z forward; cooling fins and cockpit instruments simplified for
+formations. Original exterior geometry, UVs and paint retained. This adaptation
+is offered under the same CC BY 4.0 terms. Source/output hashes are recorded in
+b17-helijah-provenance.json. No photograph embedded. This is an adaptation of the
+supplied model, not a claim of newly authored geometry or CAD accuracy.
+The former sabrezor/Arma CC BY-NC model b17.glb is excluded from runtime and the
+native app payload; it remains a historical repository file and legacy test fixture.
+
+
 ## P-47 service-wear model (Build 198)
 
 `assets/aircraft/p47-weathered.glb` is a derivative of the supplied P-47D-28
@@ -177,12 +195,12 @@ Build 175 replaced the earlier procedural observation-post stand-ins with optimi
 
 ## Build 196 — complete native model inventory, checked 2026-10-14
 
-The offline package contains 35 model files (34 GLB + one FBX). The full exact-file
+The Build 196 offline package contained 35 model files (34 GLB + one FBX). The full exact-file
 register is [app/release/asset-register.md](app/release/asset-register.md), with SHA-256
 hashes and all 302 payload files in its adjacent JSON. Source metadata observations
 are dated, and uploader declarations are kept separate from underlying rights grants.
 
-Important qualifications: `b17.glb` is **CC BY-NC 4.0**, not a commercial-use grant;
+Historical qualification: `b17.glb` carried **CC BY-NC 4.0** and was replaced in Build 200 by helijah’s separately supplied CC BY model;
 several aircraft/vehicles explicitly identify War Thunder; three ships identify
 Call of Duty: World at War; the IJN carrier metadata names World of Warships.
 `uss_midway.glb` has no embedded author/license/source. App distribution clearance

@@ -1,13 +1,22 @@
-# App asset rights review — checked 14 October 2026
+# App asset rights review — B-17 updated 23 October 2026
 
 **Result: source/license evidence improved; app distribution clearance is still open.**
 This review records evidence and concrete unresolved uses. It is not an authoritative
 rightsholder grant or a conclusion that any particular file is unlawfully supplied.
 
-The actual Build 196 offline payload contains **302 files / 266.5 MiB**, including
+Historical Build 196 payload contained **302 files / 266.5 MiB**, including
 **35 models: 34 GLB and one FBX**. Every payload file has a SHA-256 in
 [asset-register.json](app/release/asset-register.json); embedded GLB textures are covered by
 their binary's hash. [Readable model table](app/release/asset-register.md).
+
+## Build 200 replacement
+
+`assets/aircraft/b17-helijah.glb` is the separately supplied Boeing B-17 by helijah,
+CC BY 4.0; original embedded declaration and public creator-account API matched on
+22 October 2026. It replaces the sabrezor/Arma CC BY-NC file in runtime and app payload.
+Author/source/license/change notices and exact source/output hashes are included.
+The regenerated register records the current 36-model payload. Other observations
+retain their original dates and unresolved status.
 
 ## What was actually checked
 
@@ -35,7 +44,7 @@ Acquisition dates, private correspondence and grant/receipt records have not bee
 | 12 War Thunder-labelled aircraft/vehicle files | Runtime source titles and current uploader metadata identify the game. CC BY labels alone do not establish original mesh/texture authority. | Ask Gaijin/the actual rightsholders for app-bundle redistribution rights, or obtain independently authored replacements. |
 | Fletcher, Japanese cargo, landing ship | Three runtime exports derive from a collection explicitly titled Call of Duty: World at War. | Establish original authority with the relevant rightsholder; uploader confirmation alone may be insufficient. |
 | `ijn carrier.glb` | Embedded Chinese title names World of Warships. Current API access returned 401; exact original ownership remains unconfirmed. | Verify provenance and Wargaming/other required rights or replace. Do not call this cleared merely because embedded CC BY is present. |
-| `b17.glb` | Exact file and current public source declare CC BY-NC 4.0; source references an Arma adaptation of Helijah's model. | Preserve both creator/adaptor credit. Obtain an appropriate grant for commercial use, or replace. A free download is not automatically a determination of noncommercial use. |
+| `assets/aircraft/b17-helijah.glb` | New helijah creator-account source declares CC BY 4.0. Prior NC file excluded from runtime/app. | Retain author/source/license/change notices and source evidence; review actual distribution conditions. |
 | `uss_midway.glb` | No embedded author, source or license. | Obtain the actual source/version/license record; do not substitute a different carrier's license. |
 | FPS Creator farm ruin | Source title identifies upstream game/tool content. | Verify geometry/texture provenance and redistribution terms, or replace. |
 | B-24, independent CC BY assets, Ford/train/horse, scans, tree pack | Embedded or existing credit records identify licenses; many current source declarations match. | Retain source evidence, author/source/license/change notices and verify textures and redistribution conditions. A valid applicable CC grant does not inherently need another bespoke permission. B-24 source access remains unresolved. |
@@ -43,9 +52,9 @@ Acquisition dates, private correspondence and grant/receipt records have not bee
 | Code / generated art / procedural audio | MIT notices for bundled runtime libraries are retained; recorded jet audio is excluded; campaign generation prompts retained. | Review native package/store conditions and final notices. Own-code licensing remains the owner's decision; no change to `UNLICENSED`. |
 
 The 16 “original-game-rights-open” model rows comprise the 12 War Thunder files, three
-Call of Duty exports and one World of Warships-labelled carrier. There is one additional
-noncommercial B-17 row, one upstream FPS Creator row and one missing-source US carrier row.
-These are review priorities, not 19 findings of infringement.
+Call of Duty exports and one World of Warships-labelled carrier. The former noncommercial B-17 has been replaced. There is one upstream FPS Creator
+row and one missing-source US carrier row. These are review priorities, not findings
+of infringement.
 
 ## Prepared enquiries and replacement path
 

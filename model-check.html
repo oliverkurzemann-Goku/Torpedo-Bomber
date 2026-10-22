@@ -69,6 +69,7 @@
     <button id="btnFile">Choose file…</button>
   </div>
   <input type="file" id="file" accept=".glb,.gltf" style="display:none">
+  <div class="row"><button id="b17Preset" class="wide">B-17 Flying Fortress</button></div>
 
   <div class="sec">2 · Real wingspan</div>
   <label>Metres, tip to tip (P-47D 12.42 · Bf 109 9.92 · Me 262 12.60)</label>
@@ -104,6 +105,7 @@
   </div>
   <div class="row"><button id="spin" class="wide">Propeller test: spin</button></div>
 
+  <div id="b17Controls" hidden><label><input type="checkbox" id="b17Gear" checked> Landing gear</label><label>Flaps</label><input id="b17Flaps" type="range" min="0" max="1" step=".01" value="0"></div>
   <div id="status">No model loaded.</div>
 
   <div class="sec">5 · Paste this into the game</div>
@@ -121,8 +123,9 @@
 </div>
 <div id="tab">&#9776;</div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+<script src="vendor/three-r128.min.js"></script>
+<script src="vendor/GLTFLoader-r128.js"></script>
+<script src="b17-native.js?v=200"></script>
 <script>
 'use strict';
 // ============================================================
@@ -223,6 +226,10 @@ function bind(){
   $('vTop').onclick=()=>setView('top');
   $('vSide').onclick=()=>setView('side');
   $('spin').onclick=()=>{ spinning=!spinning; };
+  const nativePose=()=>{if(B17Rig.isNative(model))B17Rig.pose(model,$('b17Gear').checked?1:0,{left:+$('b17Flaps').value,right:+$('b17Flaps').value});};
+  $('b17Gear').onchange=nativePose;$('b17Flaps').oninput=nativePose;
+  $('b17Preset').onclick=()=>{$('span').value='31.62';$('url').value='assets/aircraft/b17-helijah.glb';loadURL($('url').value);};
+  if(new URLSearchParams(location.search).get('aircraft')==='b17')$('b17Preset').click();
   $('save').onclick=()=>{
     if(!srcName){ say('Load a model first.','bad'); return; }
     try{
@@ -271,8 +278,9 @@ function place(gl){
   model.updateMatrixWorld(true);
   const bb=new THREE.Box3().setFromObject(model);
   rawSize=bb.getSize(new THREE.Vector3());
-  // first guess, then let the eye decide
-  autoGuess();
+  document.getElementById('b17Controls').hidden=!B17Rig.isNative(model);
+  if(B17Rig.isNative(model)){B17Rig.install(model);document.getElementById('span').value='31.62';spinning=true;}
+  else autoGuess();
   scaleToSpan(parseFloat(document.getElementById('span').value)||12.42);
 }
 // A first guess so most models start close: the aircraft's plane of symmetry contains the
@@ -355,6 +363,7 @@ function apply(){
 function findProp(){
   propGroup=null;
   if(!model) return;
+  if(B17Rig.isNative(model)){propGroup={native:true,rotors:model.getObjectByName('prop').children};return;}
   model.updateMatrixWorld(true);
   const whole=new THREE.Box3().setFromObject(model);
   const S=whole.getSize(new THREE.Vector3());
@@ -381,7 +390,7 @@ function report(){
   const target=parseFloat(document.getElementById('span').value)||12.42;
   // rough expectation: most WWII fighters are a little shorter than their span
   const lenPct=Math.round(100*(s.z/target)/0.89-100);
-  const propTxt=propGroup? '<span class="ok">propeller found — it will spin</span>'
+  const propTxt=propGroup?.native? '<span class="ok">four original propellers · native gear and flaps</span>' : propGroup? '<span class="ok">propeller found — it will spin</span>'
                          : 'no separate propeller — the game will build one';
   document.getElementById('status').innerHTML=
     'span (X) <b>'+s.x.toFixed(2)+' m</b>   length (Z) <b>'+s.z.toFixed(2)
@@ -404,6 +413,7 @@ function setView(m){ viewMode=m; }
 function animate(){
   requestAnimationFrame(animate);
   const dt=clock.getDelta();
+  if(spinning && propGroup?.native)for(const rotor of propGroup.rotors)rotor.rotation.z-=Math.min(.85,Math.max(0,dt)*18);
   if(spinning && propGroup && propGroup.obj){
     // spin about the nose axis, through the disc's own centre
     const o=propGroup.obj, c=propGroup.centre;

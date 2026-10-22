@@ -1,25 +1,25 @@
 {
   "schema": 1,
   "reviewedOn": "2026-10-14",
-  "build": 199,
+  "build": 200,
   "status": "OPEN — source declarations checked; no external rights authorization obtained",
   "payload": {
-    "bytes": 290639577,
-    "fileCount": 307,
+    "bytes": 290598594,
+    "fileCount": 310,
     "modelCount": 36,
-    "manifestSha256": "2de0a22ab61624e1a41d89ca601873addb4515ca8aaa9714d0510d9c902277ad"
+    "manifestSha256": "ae4f2c3b849eb41999bf955dc9ff4f80b54158ba4f49809584f234360332d29b"
   },
   "files": [
     {
       "path": "ASSET-CREDITS.md",
-      "bytes": 19270,
-      "sha256": "4a8778ddcd9c104fb5151ddac0ced98bb940ee97e3d16d517e4920382d0fecd2",
+      "bytes": 20490,
+      "sha256": "48ff748a8302d881b9b3e9258cc4ba3c0af566e190bcc35e62b849bb198dce6f",
       "kind": "code-or-notice"
     },
     {
       "path": "aircraft-articulation.js",
-      "bytes": 15173,
-      "sha256": "bfcffb9397f7b25570ae37f8894cdd30014fa8c22f51671204da81cad38da933",
+      "bytes": 15505,
+      "sha256": "fb726fc1cb4e419203ead2873f733182a3cf69793e150b684f146ae2c5a261fe",
       "kind": "code-or-notice"
     },
     {
@@ -47,6 +47,12 @@
       "kind": "code-or-notice"
     },
     {
+      "path": "assets/aircraft/B17-CREDITS.txt",
+      "bytes": 1103,
+      "sha256": "6d6acec9c48b256abfc77783d712ae657186cc2a1b154b7f5d05a9a675e5dd56",
+      "kind": "code-or-notice"
+    },
+    {
       "path": "assets/aircraft/P47-CREDITS.txt",
       "bytes": 1267,
       "sha256": "a785ac1904b181a0bb4d47f02cb47ebf5fd7a91140d86acb69d2f02cc2557706",
@@ -63,6 +69,18 @@
       "bytes": 819803,
       "sha256": "f9baa5de859bf29607c7981036b1842b5eb263b0ac2586b6d5c9aae23afcdf08",
       "kind": "image"
+    },
+    {
+      "path": "assets/aircraft/b17-helijah-provenance.json",
+      "bytes": 827,
+      "sha256": "f9bcdbbf7f22502cd757e6d26f55e2e49e3b823e5608860cba587d0e4f43114f",
+      "kind": "code-or-notice"
+    },
+    {
+      "path": "assets/aircraft/b17-helijah.glb",
+      "bytes": 5977464,
+      "sha256": "bcdf03e6bed86bd8b246a24cf1b8f86a259debe426dbbdd42986d8c278b778db",
+      "kind": "model"
     },
     {
       "path": "assets/aircraft/p47-weathered.glb",
@@ -329,10 +347,10 @@
       "kind": "code-or-notice"
     },
     {
-      "path": "b17.glb",
-      "bytes": 6027460,
-      "sha256": "f21be57500ed897183ff73d20131226c150b569bb03784fe10d20adc47154a58",
-      "kind": "model"
+      "path": "b17-native.js",
+      "bytes": 5224,
+      "sha256": "afa02968733c54e2b9f4547e79e961739f10ef3b2092c3f5da5b6d34631cebe5",
+      "kind": "code-or-notice"
     },
     {
       "path": "b24.glb",
@@ -469,7 +487,7 @@
     {
       "path": "index.html",
       "bytes": 7260,
-      "sha256": "e94d1476221cf7863ddd47a24c20b866f1db3e27baed3d99e07019be9460032d",
+      "sha256": "f3f872f4faf0091fd8ffa119d228085693dac8689ae2ef768871a055b92f50fe",
       "kind": "code-or-notice"
     },
     {
@@ -588,8 +606,8 @@
     },
     {
       "path": "remagen-mission.html",
-      "bytes": 359076,
-      "sha256": "76fbeb7bc66ac535161400a46ba3a9d87a05679ab94a92ceda451a3e6514264e",
+      "bytes": 359727,
+      "sha256": "54fef11e7721af0ab0356fd9e9713859ee22024647037be8f923de7f7e5191cc",
       "kind": "code-or-notice"
     },
     {
@@ -1777,7 +1795,7 @@
     {
       "path": "torpedo-carrier.html",
       "bytes": 423623,
-      "sha256": "e8f3c9b71a5360fddf37eb1d5d903d8db280a463df23065f575525305515808e",
+      "sha256": "131ad1c65b8892c4f8e6afb64b83c00c85a12ba188228d157c29814ba5efebc9",
       "kind": "code-or-notice"
     },
     {
@@ -1848,12 +1866,42 @@
     },
     {
       "path": "app-native.js",
-      "bytes": 27375,
-      "sha256": "27e5199ea188ecaa03bd9c8e16ab7caae1f7a21c3163ae3e7fddce0544b9e9c8",
+      "bytes": 27031,
+      "sha256": "a52b43eb6c9accbde530c1e3832548614838e605c05ed4869a6b9b9734ddaa24",
       "kind": "code-or-notice"
     }
   ],
   "models": [
+    {
+      "path": "assets/aircraft/b17-helijah.glb",
+      "bytes": 5977464,
+      "sha256": "bcdf03e6bed86bd8b246a24cf1b8f86a259debe426dbbdd42986d8c278b778db",
+      "title": "Boeing B-17 Flying Fortress — Squadron animated derivative",
+      "uploader": "helijah",
+      "originalRightsholder": null,
+      "sourceUrl": "https://sketchfab.com/3d-models/boeing-b-17-flying-fortress-927f07f6ddcf470ab0387ce5829024d5",
+      "acquiredOn": null,
+      "declaredLicense": "CC-BY-4.0 (https://creativecommons.org/licenses/by/4.0/)",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "licenseEvidence": "Exact runtime GLB asset.extras",
+      "sourceCheck": {
+        "status": "verified-public-api",
+        "checkedOn": "2026-10-22",
+        "apiUrl": "https://api.sketchfab.com/v3/models/927f07f6ddcf470ab0387ce5829024d5",
+        "licenseMatch": true,
+        "descriptionSignals": []
+      },
+      "embeddedImageCount": 26,
+      "externalImages": [],
+      "originalFile": null,
+      "originalSha256": null,
+      "changes": "Whole original components articulated; cooling fins and cockpit instruments simplified; original textures retained.",
+      "issue": "uploader-license-review-open",
+      "commercialPermissionDocument": null,
+      "bundleRedistributionGrant": null,
+      "releaseApproved": false,
+      "nextAction": "Retain license/attribution/change notices, validate mesh/texture provenance and app-store redistribution conditions."
+    },
     {
       "path": "assets/aircraft/p47-weathered.glb",
       "bytes": 10024200,
@@ -2327,39 +2375,6 @@
       "bundleRedistributionGrant": null,
       "releaseApproved": false,
       "nextAction": "Retain license/attribution/change notices, validate mesh/texture provenance and app-store redistribution conditions."
-    },
-    {
-      "path": "b17.glb",
-      "bytes": 6027460,
-      "sha256": "f21be57500ed897183ff73d20131226c150b569bb03784fe10d20adc47154a58",
-      "title": "Helijah's B-17",
-      "uploader": "Secret Weapons - Arma 3 Mod (https://sketchfab.com/sabrezor)",
-      "originalRightsholder": null,
-      "sourceUrl": "https://sketchfab.com/3d-models/helijahs-b-17-fe911eaf8d5e41eab65fae25b58664b1",
-      "acquiredOn": null,
-      "declaredLicense": "CC-BY-NC-4.0 (http://creativecommons.org/licenses/by-nc/4.0/)",
-      "licenseUrl": "http://creativecommons.org/licenses/by-nc/4.0/",
-      "licenseEvidence": "Exact runtime GLB asset.extras",
-      "sourceCheck": {
-        "status": "verified-public-api",
-        "checkedOn": "2026-10-14",
-        "apiUrl": "https://api.sketchfab.com/v3/models/fe911eaf8d5e41eab65fae25b58664b1",
-        "licenseMatch": true,
-        "descriptionSignals": [
-          "Arma",
-          "original"
-        ]
-      },
-      "embeddedImageCount": 7,
-      "externalImages": [],
-      "originalFile": null,
-      "originalSha256": null,
-      "changes": "Original runtime binary preserved; runtime scaling, materials, rigging and placement are described in ASSET-CREDITS.md / CLAUDE.md.",
-      "issue": "noncommercial-release-open",
-      "commercialPermissionDocument": null,
-      "bundleRedistributionGrant": null,
-      "releaseApproved": false,
-      "nextAction": "Obtain a grant covering the intended app/business model from all relevant creators, or replace the model."
     },
     {
       "path": "b24.glb",
