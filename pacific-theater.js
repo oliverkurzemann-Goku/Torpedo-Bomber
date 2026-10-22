@@ -73,8 +73,9 @@ function shipTactics(s,dt,player,fish,all,emit,performance={steering:1}){
  s.tacticCool=Math.max(0,(s.tacticCool||0)-dt);s.alertT=Math.max(0,(s.alertT||0)-dt);
  if((spotted||torp)&&s.tacticCool<=0){s.alertT=16;s.tacticCool=30;s.tacticSide=(Math.sin(s.baseHeading)*dz-Math.cos(s.baseHeading)*dx)>0?1:-1;
   for(const e of all)if(e.alive&&e.flak&&e.group.position.distanceTo(p)<2200)e.smokeScreenT=Math.max(e.smokeScreenT||0,18);}
+ // While the captain combs a seen torpedo (TorpedoAttack.captain) the helm belongs to that manoeuvre.
  const target=s.baseHeading+(s.alertT>0?s.tacticSide*.55:0),turn=clamp(angle(target-s.group.rotation.y),-.045*dt*performance.steering,.045*dt*performance.steering);
- s.group.rotation.y+=turn;
+ if(s.comb?.heading==null)s.group.rotation.y+=turn;
  const wounded=s.hp<s.def.hp;const speed=s.cruiseSpeed*(wounded?.45:1);s.speed+=clamp(speed-s.speed,-.5*dt,.25*dt);
  s.smokeScreenT=Math.max(0,(s.smokeScreenT||0)-dt);s.screenCool=(s.screenCool||0)-dt;
  if(s.flak&&s.smokeScreenT>0&&s.screenCool<=0){s.screenCool=.8;emit(p.x,8,p.z,0xb6b8b2,2.6);}

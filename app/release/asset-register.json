@@ -1,13 +1,13 @@
 {
   "schema": 1,
   "reviewedOn": "2026-10-23",
-  "build": 201,
+  "build": 202,
   "status": "OPEN — source declarations checked; no external rights authorization obtained",
   "payload": {
-    "bytes": 287553523,
-    "fileCount": 314,
+    "bytes": 287565678,
+    "fileCount": 315,
     "modelCount": 36,
-    "manifestSha256": "5f7ca49fc9d49f4729c1a31fc2d799b9e924ccbab28890ddd8784a2e714a8fb3"
+    "manifestSha256": "2fa0c720e79e6e864d029790b6f16054ec5da0d764622c581cab95e5ab209ac2"
   },
   "files": [
     {
@@ -511,7 +511,7 @@
     {
       "path": "index.html",
       "bytes": 7260,
-      "sha256": "38e78988392a722a61991ebad9da8ab365a74ed1c652fd89e3a11b088337e6a1",
+      "sha256": "4ba56f22fbf32c38906ee62ac88674c5d35d57434e381fad993404e0138c412d",
       "kind": "code-or-notice"
     },
     {
@@ -606,8 +606,8 @@
     },
     {
       "path": "pacific-theater.js",
-      "bytes": 17002,
-      "sha256": "8667d42c3d36d48b40d379cec4731181d035b6059c6b6d78087ab560a37d6131",
+      "bytes": 17130,
+      "sha256": "8afa9f8cf51a5a195db534fe6c8a5307400bf908ad5239e60326fef7ac69bfe9",
       "kind": "code-or-notice"
     },
     {
@@ -631,7 +631,7 @@
     {
       "path": "remagen-mission.html",
       "bytes": 359727,
-      "sha256": "78ae598d51275e0dfb3805ab5c457786858bae5c9511abf33c5155dfd7901266",
+      "sha256": "bfd7dfa267780af3b1da46fb0f5851805ec258ac18efaa5fdb521b41d043688f",
       "kind": "code-or-notice"
     },
     {
@@ -660,8 +660,8 @@
     },
     {
       "path": "ship-damage.js",
-      "bytes": 6851,
-      "sha256": "769ed54e8a26b93b099c47a2d72770aa377dd0c2d0243124068299e8ef9f4ee0",
+      "bytes": 7401,
+      "sha256": "4897c697761576e2b52d32592c6d358a1500a3f96f236816816a17abad121d29",
       "kind": "code-or-notice"
     },
     {
@@ -1817,9 +1817,15 @@
       "kind": "model"
     },
     {
+      "path": "torpedo-attack.js",
+      "bytes": 7341,
+      "sha256": "536a50aea0171aedb681a388103e9912b53c1f9940a02b0bcfe3c20ba2a31ed9",
+      "kind": "code-or-notice"
+    },
+    {
       "path": "torpedo-carrier.html",
-      "bytes": 425290,
-      "sha256": "ab3baaefb5011dd53124aaefcf8771733ac7146f331e85a7a8221c542cabf062",
+      "bytes": 429082,
+      "sha256": "5a294c6056b166dceee3284ee47895cc6a36b2e7610648fa1933cf8421689e70",
       "kind": "code-or-notice"
     },
     {
@@ -1890,8 +1896,8 @@
     },
     {
       "path": "app-native.js",
-      "bytes": 27031,
-      "sha256": "a52b43eb6c9accbde530c1e3832548614838e605c05ed4869a6b9b9734ddaa24",
+      "bytes": 27375,
+      "sha256": "27e5199ea188ecaa03bd9c8e16ab7caae1f7a21c3163ae3e7fddce0544b9e9c8",
       "kind": "code-or-notice"
     }
   ],

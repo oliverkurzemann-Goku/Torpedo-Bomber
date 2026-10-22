@@ -1,5 +1,69 @@
 # Torpedo-Bomber — Übergabe an Claude Code
 
+**24.10.2026, Build 202: Torpedoangriff mit Können statt Glück, jetzt auf main.**
+Auf Nutzerfreigabe („Übernimm jetzt Build 200 in Main“) übernommen. Auf dem Feature-Branch hieß diese Arbeit
+Build 200; main hatte inzwischen Build 200 (helijah-B-17) und 201 (HappySunpore-Dauntless) aus einer anderen
+Sitzung. Deshalb nur die zwei Torpedo-Commits auf main übertragen (ohne Bf-109-Vorschau, Kandidaten-Triage und
+own-avenger.js) und als Build 202 nummeriert. Konflikte waren reine Build-Kennungen.
+Nutzerauftrag: die früher vorgeschlagenen Verbesserungen für die Torpedo-Missionen beginnen, damit es
+weniger langweilig ist. Umgesetzt wurde die empfohlene erste Gruppe: Trefferwinkel, Scharfmachstrecke,
+Trefferort mit Folgen und schlauere Kapitäne. Gemessen vor dem Ändern, im echten Spiel: Ein Spieler-
+Torpedo starb nach 16 s bei **367–382 m**, das HUD zeigte DROP NOW aber von 350 bis 950 m. Abwürfe
+ab etwa 450 m konnten einen querab fahrenden Frachter also nie erreichen. Dazu war die Trefferzone ein
+Kreis mit 0,55 × Länge (Frachter 72,6 m) statt des 18 m breiten Rumpfs.
+Neu ist `torpedo-attack.js` (`TorpedoAttack`):
+- Laufstrecke 1400 m statt einer festen Lebenszeit; `life` gilt nur noch für die kurze Luftphase.
+- Scharf erst nach 200 m Wasserlauf. Davor gibt es Funken, die Meldung „NOT ARMED — TOO CLOSE“ und keine Wirkung.
+- Echter Rumpf-Test: ein Rechteck aus Länge × Breite (Naval-Spec, sonst gemessen), über das ganze Bild-
+  Intervall geprüft, mit einem Rand je Schwierigkeit von 10, 4 bzw. 2,5 m.
+- Trefferwinkel (Spielregel): unter 40° zum Kiel kann der Fisch abgleiten, mit Rookie-Faktor .4. Ab 60° gilt
+  er als BEAM SHOT und bringt +150. Der Winkel steht im Flash, in der neuen Zeile TRACK der Torpedo-Anzeige
+  und im Debrief.
+- Kapitäne kämmen die Bahn: Wer die Blasenbahn sieht (900 m am Tag, 650 m in der Dämmerung, 380 m nachts,
+  bei Regen oder Sturm weniger), dreht nach einer Reaktionszeit Bug oder Heck auf den Torpedo. Die
+  Drehraten sind begrenzt: Zerstörer .06, Träger .035, Frachter .028 rad/s. Der Zufalls-Zickzack ist entfernt.
+Messung (Unit, vorgehaltener 600-m-Querschuss): Ein Frachter wird bei 64° getroffen, ein Zerstörer kämmt auf 19°.
+Nachts kommt der Torpedo durch, lange Schüsse geben dem Kapitän Zeit.
+Trefferort über `ShipDamage`:
+- Heck-Torpedo: Das Ruder klemmt (`rudderJam`), und das Schiff fährt Kreise.
+- Bug: Wassereinbruch vorn, das Schiff muss langsamer fahren.
+- Mitte: Maschinenraum (wie bisher).
+- Wirkt nur bei Schiffen mit mehreren HP, also beim leichten Träger. Die Funkmeldung folgt dem tatsächlich
+  beschädigten System (`lastPart`).
+Ältere Checkpoints ohne die Felder `bow`/`jam` laden weiter.
+**Gefundener Altfehler:** `PacificTheater.shipTactics` steuert über `rotation.y`. In der Standard-Eulerordnung
+XYZ klappt dieser Winkel jenseits ±90° um. Ein Schiff, das weit eindrehte, drehte danach endlos weiter
+(gemessen: Zerstörer bis 170°). Zielschiffe nutzen jetzt `rotation.order='YXZ'`.
+Tests:
+- `okinawa/tests/torpedo-attack.cjs`: 20/60/120 FPS; Reichweite, Scharfmachen, Rumpf statt Kreis, Winkel,
+  Kämmen bildratenunabhängig, Nacht, Rookie, Trefferort, alte Checkpoints.
+- `torpedo-attack-browser.cjs` mit echtem Spiel, echten Schiffs-GLBs und echtem `dropTorpedo`, `updateTorpedoes`
+  und `updateShips`:
+  - Ein 600-m-Querschuss trifft und versenkt bei 20, 60 und 120 FPS nach 573 m Lauf.
+  - Ein Abwurf aus 150 m ist nicht scharf.
+  - Ein Bugschuss gleitet ab.
+  - Der Zerstörer dreht höchstens etwa 89° ein und keinen Grad weiter.
+  - Ein Hecktreffer lässt den leichten Träger mit 1 HP kreisen.
+  - Die TRACK-Zeile ist frei von Bedienelementen.
+- Bild: `test-visuals/build202-torpedo-run-hud.png`.
+Build 202 steht an Board, beiden Spielen, den Menü-CSS-Links, App-Payload und Xcode. Cache 202 nur für die
+geänderten Module ship-damage.js, torpedo-attack.js und pacific-theater.js; SBD-/B-17-/Artikulations-Module
+behalten 201. Register per app:assets neu erzeugt (315 Dateien, 36 Modelle). Auf dem neuen main erneut geprüft: Syntax 7/7,
+Terrain 35/35, Okinawa im Gesamtlauf 66/69 (Browser nativ); beide Torpedotests liefern dieselben Werte wie auf dem
+Feature-Branch. Die drei roten Dateien waren schon auf dem unveränderten main (Build 201, CI-Lauf 39931902368 rot)
+rot und haben nichts mit dem Torpedo zu tun: Sie prüften noch die alten Dauntless-Ersatzteile. Die native SBD hält
+ihre sbdGear-Gruppe sichtbar und klappt GearLeft/GearRight über rotation.z ein, öffnet eigene BrakeUpper*/Lower*
+(restQuaternion + 1,08·dive um lokal X) und feuert hinten aus ihrem RearGun-Drehpunkt; der generische rearArmament
+bleibt dafür absichtlich unsichtbar. Umgestellt, nicht abgeschwächt: carrier-start-browser prüft beide Beine bei
+rotation.z 0, browser-smoke wartet auf mehr als 0,2 rad Öffnung der echten BrakeUpperLeft, feedback-browser prüft zwei
+Mündungen, Geschossstart ≤1,5 m am RearGun und dessen Lage am Flugzeug (gemessen 0/0,53/0,23 m). Alle drei danach
+einzeln grün; die alte Prüfung bleibt für Nicht-native-Modelle erhalten.
+Kein iPad-Test. Historische Korrektur: Meine frühere Begründung „beim Mark-13-Zünder so gewesen“ ist nicht
+belegt. Belegt ist beim Mark 14 sogar das Gegenteil: Schräge Treffer zündeten, senkrechte Treffer verbogen den
+Schlagbolzen. Der Winkelabgleiter ist deshalb eine bewusste Spielregel. Noch offen aus der Vorschlagsliste:
+weiche Abwurfgrenzen (2), Zufalls-Patrouille (14), Zielsuche nach Sichtmeldung (7), Vorposten (8) und
+Debrief-Karte (15).
+
 **Build 201, 23.10.2026: gelieferte HappySunpore-Dauntless lackiert und nativ animiert.**
 Quelle 31e14fecfd9b4d51bdf0c4b27a0572f0, CC BY 4.0; Rohdatei stb_dauntless.glb
 unverändert separat erhalten. Neue assets/aircraft/sbd-dauntless.glb: 7,229,376 Bytes,
@@ -115,7 +179,7 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 199 · Thunderbolt Squadron BUILD 199 · Remagen-Kern 23 / Fahrzeuge 22**
+Stand bei Übergabe: **Torpedo Squadron BUILD 202 · Thunderbolt Squadron BUILD 202 · Remagen-Kern 23 / Fahrzeuge 22**
 
 **Build 198 (22.10.2026): P-47-Fotolackierung, Einsatzspuren und natives Fahrwerk; Terrain-Fix aus Build 197 erhalten.**
 `assets/aircraft/p47-weathered.glb` ist ein ausdrücklich gekennzeichnetes Derivat des
