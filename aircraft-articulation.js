@@ -3,6 +3,41 @@
 (function(global){
  'use strict';
  const T=global.THREE,clamp=n=>Math.max(0,Math.min(1,n));
+ // The weathered P-47 exports its own real surfaces. Never overlay generic flaps or cut it again.
+ function nativeP47(frame){
+  if(frame.userData.nativeP47)return true;
+  const source=frame.getObjectByName('P47D_Weathered_v3');
+  if(!source||source.userData.nativeAircraft!=='p47-v3')return false;
+  const rotor=source.getObjectByName('Propeller'),names=['GearLeft','GearRight','TailGear'];
+  const hinges=names.map(n=>source.getObjectByName(n)),flaps=['FlapLeft','FlapRight'].map(n=>source.getObjectByName(n));
+  if(!rotor||hinges.some(n=>!n)||flaps.some(n=>!n))throw Error('Incomplete native P-47 rig');
+  const gear=new T.Group();gear.name='gear';gear.userData.nativeP47=true;frame.add(gear);frame.updateMatrixWorld(true);
+  for(const hinge of hinges){gear.attach(hinge);hinge.userData.articulationPart=true;}
+  const panels=new T.Group();panels.name='flightFlaps';panels.userData.articulationPart=true;frame.add(panels);frame.updateMatrixWorld(true);
+  for(let i=0;i<2;i++){
+   const skin=flaps[i];panels.attach(skin);
+   const hinge=new T.Group();hinge.name=skin.name;hinge.position.copy(skin.position);hinge.quaternion.copy(skin.quaternion);hinge.scale.copy(skin.scale);hinge.userData.flapSide=i===0?-1:1;
+   skin.name+='Skin';skin.position.set(0,0,0);skin.quaternion.identity();skin.scale.setScalar(1);panels.add(hinge);hinge.add(skin);
+  }
+  rotor.name='prop';rotor.userData.nativeP47=true;rotor.userData.articulationPart=true;
+  frame.userData.nativeP47=true;return true;
+ }
+ function nativePose(frame,deployment,flaps){
+  const g=clamp(deployment),gear=frame.getObjectByName('gear');gear.visible=g>.005;
+  for(const [name,side] of [['GearLeft',-1],['GearRight',1],['TailGear',0]]){
+   const hinge=gear.getObjectByName(name);hinge.scale.setScalar(1);
+   if(side)hinge.rotation.z=-side*1.48*(1-g);else hinge.rotation.x=1.30*(1-g);
+  }
+  for(const [name,amount] of [['FlapLeft',flaps.left],['FlapRight',flaps.right]])frame.getObjectByName(name).rotation.x=-.66*clamp(amount||0);
+  if(gear.userData.deployment!==g){for(let o=frame;o;o=o.parent)delete o.userData.groundSupports;gear.userData.deployment=g;}
+ }
+ function controls(frame,roll,pitch){
+  if(!frame?.userData.nativeP47)return;
+  const r=Math.max(-1,Math.min(1,roll||0)),p=Math.max(-1,Math.min(1,pitch||0));
+  frame.getObjectByName('AileronLeft').rotation.x=.22*r;frame.getObjectByName('AileronRight').rotation.x=-.22*r;
+  frame.getObjectByName('ElevatorLeft').rotation.x=-.25*p;frame.getObjectByName('ElevatorRight').rotation.x=-.25*p;
+  frame.getObjectByName('Rudder').rotation.y=-.12*r;
+ }
  const profiles={
   p47:{mainX:2.40,mainZ:1.99,leg:1.10,radius:.44,tailZ:-4.81,flapSpan:[1.45,3.30],wingZ:[-.6,3.2],wingY:-.45,chord:.64,flapAngle:.70},
   bf109:{mainX:.58,mainZ:.915,leg:.80,radius:.32,down:.63,fold:'out',tailZ:-3.85,flapSpan:[.86,2.48],wingZ:[.15,2.4],wingY:-.63,chord:.43,flapAngle:.70},
@@ -127,6 +162,7 @@
  }
  function install(frame,kind,{gearName='gear',skin=frame,gear=true,flaps=true,surfaceProfile=null}={}){
   if(!profiles[kind])return;
+  if(kind==='p47'&&nativeP47(frame)){frame.userData.articulation={kind,gearName:'gear',native:true};pose(frame,1,{left:0,right:0});return frame;}
   const list=meshes(skin,frame);
   if(gear)buildGear(frame,kind,gearName,list);
   if(flaps&&!frame.getObjectByName('flightFlaps'))buildFlaps(frame,kind,list,surfaceProfile);
@@ -135,6 +171,7 @@
  }
  function pose(frame,deployment,flaps={left:0,right:0}){
   const info=frame?.userData.articulation;if(!info)return;
+  if(info.native){nativePose(frame,deployment,flaps);return;}
   const p=info.surfaceProfile||profiles[info.kind],gear=frame.getObjectByName(info.gearName),g=clamp(deployment);
   if(gear?.userData.originalSkinRig)global.AircraftSourceProfiles?.poseGear(frame,g);
   else if(gear&&info.kind!=='p47'&&!p.fixed){
@@ -156,6 +193,6 @@
    if(p.externalFlap)hinge.position.y=hinge.userData.baseY??hinge.position.y;
   }
  }
- global.AircraftArticulation={profiles,install,pose,probe,meshes};
+ global.AircraftArticulation={profiles,install,pose,probe,meshes,nativeP47,controls};
  if(typeof module==='object'&&module.exports)module.exports=global.AircraftArticulation;
 })(typeof window==='undefined'?globalThis:window);

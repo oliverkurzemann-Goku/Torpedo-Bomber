@@ -1,6 +1,6 @@
 # Torpedo-Bomber — Übergabe an Claude Code
 
-**22.10.2026, Build 198: helijahs Avenger bekommt eine 1942er-Lackierung in voller Auflösung;
+**22.10.2026, Build 199: helijahs Avenger bekommt eine 1942er-Lackierung in voller Auflösung;
 Eigenbau gestoppt.** Nutzer zum Eigenbau: „Proportionen stimmen überhaupt nicht“, dann: „Ist die
 avenger die wir haben von hellija? Die dürften wir verwenden“ → „Ja, nur verbessern“. Geprüft:
 `grumman tbm avenger.glb` = „Grumman Tbm Avenger“ von helijah (Emmanuel Baranger), CC BY 4.0,
@@ -25,9 +25,9 @@ vertikal gespiegelt; Vorderkanten sind der untere Inselrand. VERWORFEN: Umlackie
 `okinawa/tests/avenger-finish.cjs` (ausgelieferte Dateien = Bake-Skript, keine Ruderstreifen, Stern
 ohne Balken, Blaugrau/Hellgrau, Geometrie/UV/andere Texturen unverändert, Rückfall, eine geteilte
 Dekodierung) und `avenger-livery-browser.cjs` (echtes Spiel, Touch: Atlas 2048, Rest ≤512,
-0 rote Pixel im Bild). Build 198 an Board/beiden Spielen/Menü-CSS-Links, App-Payload, Xcode;
-Register per app:assets neu (307 Dateien). Rhein-Code unverändert. Der Eigenbau `own-avenger.js`
-ist auf Nutzerwunsch gestoppt, bleibt nur auf dem Branch. Kein iPad-Test.
+0 rote Pixel im Bild). Build 199 (auf main nach dem dortigen P-47-Build 198) an Board/beiden Spielen/Menü-CSS-Links,
+App-Payload, Xcode; Register per app:assets neu. Rhein-Code unverändert. Der Eigenbau `own-avenger.js`
+ist auf Nutzerwunsch gestoppt und liegt nur auf claude/dauntless-propeller-edit-uwy3eg. Kein iPad-Test.
 
 **22.10.2026, eigene Avenger überarbeitet (weiterhin NICHT im Spiel):** Nutzer: „sieht nach
 Kinderspielzeug aus“. Ursachen: helles, glänzendes Museumsgrau (unter ACES 1,12 fast weiß), Chromkugel
@@ -138,7 +138,31 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 198 · Thunderbolt Squadron BUILD 198 · Remagen-Kern 23 / Fahrzeuge 22**
+Stand bei Übergabe: **Torpedo Squadron BUILD 199 · Thunderbolt Squadron BUILD 199 · Remagen-Kern 23 / Fahrzeuge 22**
+
+**Build 198 (22.10.2026): P-47-Fotolackierung, Einsatzspuren und natives Fahrwerk; Terrain-Fix aus Build 197 erhalten.**
+`assets/aircraft/p47-weathered.glb` ist ein ausdrücklich gekennzeichnetes Derivat des
+vorhandenen `p47new.glb`, nicht unabhängig neu modelliert. Original unverändert als
+Fallback. Schwarzes/weißes Schachbrett und B–WZ bleiben; das neue Alamy-Seitenfoto
+dient ausschließlich als Fahrwerksreferenz, kein Foto oder Wasserzeichen wurde eingebettet.
+Öl-/Abgasspuren, Unterseitenstaub, Laufwegabrieb und Lackchips sind in Albedo und
+PBR-Oberflächenmap eingebrannt, ohne zusätzliche Decals/Frameupdates. 12.42m/11.02m.
+Runde .88-m-Hauptreifen statt der versehentlich Y-gestreckten V2-Reifen, nach vorn
+geneigte Beine, Oleos/Scheren/Bremsleitungen, trapezförmige Abdeckungen und Spornrad.
+Fahrwerk je Material gebündelt: insgesamt 31 Modell-Meshes / 49,455 Dreiecke.
+
+`AircraftArticulation.nativeP47` übernimmt vorhandenen Rotor/Fahrwerk/Klappen ohne
+Legacy-Schnitte oder zweite generische Flächen. CPU-Bodenkontakt nutzt echte Reifen,
+AI-Klone bleiben unabhängig. Native Steuerflächen folgen dem Spieler-Stick.
+Alle zwölf anderen Original-/Fallbackpfade bleiben unverändert. Checkpoint-Schema
+bleibt kompatibel (196): ausschließlich Modell-/Darstellungsänderung.
+
+glTF-Validator und echter r128-Loader/Produktionsrig/Bodencode geprüft. Managed
+Browser scheitert mit `Error creating WebGL context`; aktuelle GPU-Sichtprüfung,
+Safari-/iPad-Gameplay und Thermik sind ausdrücklich NICHT verifiziert. Keine neue
+Browserkontroll-Umgehung als Ersatz. Regressionen und App-Payload werden separat
+protokolliert. Herkunft/Originalhash im Rechteinventar; kommerzielle Freigaben
+bleiben unverändert offen.
 
 **App-Vorbereitung 14.10.2026, Spiel weiterhin Build 196:** Nutzer bestätigt Mac ohne
 bezahlten Developer-Account. `iPad-vorbereiten.command`, read-only `app:doctor`, deutsche

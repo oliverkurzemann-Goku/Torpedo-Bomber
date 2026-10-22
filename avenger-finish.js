@@ -12,7 +12,7 @@
  */
 (function(root){
 'use strict';
-const FILES={map:'assets/aircraft/avenger-1942-livery.webp?v=198',normal:'assets/aircraft/avenger-1942-normal.png?v=198'};
+const FILES={map:'assets/aircraft/avenger-1942-livery.webp?v=199',normal:'assets/aircraft/avenger-1942-normal.png?v=199'};
 const ATLAS='DefaultWhite_texture.png',GLASS='transparentExt';
 
 function findAtlas(model){

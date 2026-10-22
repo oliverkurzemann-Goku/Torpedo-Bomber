@@ -25,7 +25,7 @@ const server=http.createServer((req,res)=>{
   page.setDefaultTimeout(180000);page.on('pageerror',e=>errors.push(e.message));
   page.on('console',m=>{if(/Shader Error|VALIDATE_STATUS|not compiled|livery not loaded|finish failed/i.test(m.text()))errors.push(m.text());});
   await page.addInitScript(()=>{window.requestAnimationFrame=()=>0;});
-  await page.goto('http://127.0.0.1:'+server.address().port+'/torpedo-carrier.html?v=198');
+  await page.goto('http://127.0.0.1:'+server.address().port+'/torpedo-carrier.html?v=199');
   await page.waitForFunction(()=>state===ST.MENU,null,{polling:100});
   const result=await page.evaluate(async()=>{
    renderer.setPixelRatio(1);
@@ -54,7 +54,7 @@ const server=http.createServer((req,res)=>{
     shared:AvengerFinish.findAtlas(clone)===atlas,cap:PacificAssets.maxTextureSize,others:Math.max(...sizes.filter(s=>!s[3]).map(s=>s[0])),big:sizes.filter(s=>s[0]>512&&!s[3]),flapSkins:sizes.filter(s=>s[3]).length,rect,plane,red,blueGray,canvas:renderer.domElement.toDataURL('image/png')};
   });
   const out=path.join(root,'test-visuals');fs.mkdirSync(out,{recursive:true});
-  fs.writeFileSync(path.join(out,'build198-avenger-livery.png'),Buffer.from(result.canvas.split(',')[1],'base64'));delete result.canvas;
+  fs.writeFileSync(path.join(out,'build199-avenger-livery.png'),Buffer.from(result.canvas.split(',')[1],'base64'));delete result.canvas;
   assert.deepEqual(errors,[],'no page, shader or livery errors');
   assert(result.finish,'the 1942 livery was applied to the decoded Avenger');
   assert.equal(result.cap,512,'touch device: Pacific textures are capped at 512 px');

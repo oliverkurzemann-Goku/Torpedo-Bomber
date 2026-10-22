@@ -1,5 +1,19 @@
 # Remagen vehicle credits
 
+## P-47 service-wear model (Build 198)
+
+`assets/aircraft/p47-weathered.glb` is a derivative of the supplied P-47D-28
+Thunderbolt (#1 Custom) (War Thunder), by KojfDiscord:
+https://sketchfab.com/KojfDiscord
+https://sketchfab.com/3d-models/p-47d-28-thunderbolt-1-custom-war-thunder-1d469251c5994dfd9169f11a97b1b56a
+Declared license: CC BY 4.0, https://creativecommons.org/licenses/by/4.0/.
+Changes: photo-inspired checkerboard livery, procedural oil/exhaust/dust/scuff wear,
+PBR surface map, separated original mechanical groups, newly built round tyres,
+forward-raked landing gear and covers. No reference photograph embedded.
+The original `p47new.glb` is unchanged and remains a fallback. Source geometry,
+normal maps and interior/engine textures are not claimed as original work;
+original-game rights review is unchanged. Details in `assets/aircraft/P47-CREDITS.txt`.
+
 ## Campaign menu artwork (Build 159)
 
 `assets/pacific-campaign.webp` and `assets/europe-campaign.webp` are original
@@ -194,7 +208,7 @@ Original runtime model binaries remain unchanged by this preparation.
 | `uss_midway.glb` | uss_midway.glb — unknown | unknown | not established |
 | `zero.glb` | A6M Zero Low Poly — Waroxed (https://sketchfab.com/Waroxed) | CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/) | https://sketchfab.com/3d-models/a6m-zero-low-poly-38311e82157449448f703b53648614a5 |
 
-### Avenger 1942 livery (Build 198)
+### Avenger 1942 livery (Build 199)
 
 `assets/aircraft/avenger-1942-livery.webp` and `assets/aircraft/avenger-1942-normal.png` are an
 **adaptation** of the airframe texture inside `grumman tbm avenger.glb`: "Grumman Tbm Avenger"

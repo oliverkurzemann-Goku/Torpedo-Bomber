@@ -1,0 +1,20 @@
+P-47D Thunderbolt — weathered photo-livery derivative v3, Build 198.
+
+Source: P-47D-28 Thunderbolt (#1 Custom) (War Thunder), KojfDiscord.
+https://sketchfab.com/KojfDiscord
+https://sketchfab.com/3d-models/p-47d-28-thunderbolt-1-custom-war-thunder-1d469251c5994dfd9169f11a97b1b56a
+Declared source license: CC BY 4.0, https://creativecommons.org/licenses/by/4.0/
+
+Changes: photo-inspired exterior livery; procedurally baked oil, exhaust soot,
+dust, walkway scuffs and paint chips; roughness/metalness map; axis/dimension
+normalization; original rotor and control surfaces separated; new round-tyre
+landing gear, oleos, brake lines and trapezoid gear covers; native game rig.
+This is a derivative, not independently authored source geometry. Original
+normal maps and engine/interior textures are retained. Original-game rights
+review remains open; repainting does not remove source rights obligations.
+No endorsement by the original creators is implied.
+
+Reference photographs were used visually only and are not embedded or redistributed.
+Lettering was newly rasterized using DejaVu Sans (Bitstream Vera license;
+DejaVu changes public domain). No font file is included in the runtime model.
+Generator: scripts/build-p47-weathered.py (Python 3, NumPy, SciPy, Pillow).

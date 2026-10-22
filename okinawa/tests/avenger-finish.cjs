@@ -78,7 +78,7 @@ const geometryHash=scene=>{let h=0;scene.traverse(o=>{if(!o.isMesh)return;const 
 
  // 4. The game wiring: one decode, finished before any clone is handed out, clones share it.
  const html=fs.readFileSync(path.join(root,'torpedo-carrier.html'),'utf8');
- assert(html.includes('<script src="avenger-finish.js?v=198"></script>')&&/PacificAssets\.configure\('grumman%20tbm%20avenger\.glb',root=>AvengerFinish\.apply\(THREE,root/.test(html),'torpedo-carrier.html registers the livery');
+ assert(html.includes('<script src="avenger-finish.js?v=199"></script>')&&/PacificAssets\.configure\('grumman%20tbm%20avenger\.glb',root=>AvengerFinish\.apply\(THREE,root/.test(html),'torpedo-carrier.html registers the livery');
  const decoded=[];THREE.GLTFLoader.prototype.load=function(url,yes,_p,no){decoded.push(url);const b=fs.readFileSync(path.join(root,decodeURIComponent(url.split('?')[0])));return this.parse(b.buffer.slice(b.byteOffset,b.byteOffset+b.byteLength),'',yes,no);};
  PacificAssets.configure('grumman%20tbm%20avenger.glb',r=>AvengerFinish.apply(THREE,r));
  const loader=PacificAssets.loader(),copies=[];
