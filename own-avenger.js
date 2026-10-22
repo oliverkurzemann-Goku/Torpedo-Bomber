@@ -19,10 +19,11 @@ const SPEC={span:16.51,length:12.48,height:5.00,wingArea:45.52,foldedWidth:5.8,p
 const Z0=3.5;
 const zs=s=>s-Z0;
 const FOLD_X=2.63,HALF_SPAN=SPEC.span/2,PROP_R=SPEC.propDiameter/2;
+// Wartime US Navy finishes (approximate non-specular colours) plus a museum restoration.
 const SCHEMES={
-  museum:{upper:'#8d969b',lower:'#c8cac5',frame:'#858e93',label:'Museum grey (TBM-3 restoration)'},
-  navy42:{upper:'#56697a',lower:'#b2b6b3',frame:'#506373',label:'1942 Blue-Gray / Light Gray'},
-  tricolor:{upper:'#2f3f55',lower:'#dadad3',frame:'#2f3f55',label:'1943 Tri-color'}
+  navy42:{upper:'#3f4c5a',lower:'#878b88',number:'#dddbd2',code:'T-10',model:'TBF-1',bars:false,label:'1942 Non-specular Blue-Gray / Light Gray'},
+  tricolor:{upper:'#232f40',side:'#384759',lower:'#a9aaa3',number:'#dddbd2',code:null,model:'TBM-1C',bars:true,label:'1943-44 Tri-color (Sea Blue / Intermediate Blue / White)'},
+  museum:{upper:'#626a6e',lower:'#999c98',number:'#17191b',code:null,model:'TBM-3',bars:false,label:'Museum grey (TBM-3 restoration)'}
 };
 
 function pchip(xs,ys){
@@ -61,7 +62,7 @@ const nearestLower=(af,f)=>{let best=af.lo[0];for(const q of af.lo)if(Math.abs(q
 
 function create(THREE,opts={}){
   const T=THREE;
-  const scheme=SCHEMES[opts.scheme]||SCHEMES.museum;
+  const scheme=SCHEMES[opts.scheme]||SCHEMES.navy42;
   const owned={geometries:[],materials:[],textures:[]};
   const geo=g=>(owned.geometries.push(g),g);
   const srgb=hex=>{const c=new T.Color(hex);if(opts.srgbOutput!==false)c.convertSRGBToLinear();return c;};
@@ -108,10 +109,11 @@ function create(THREE,opts={}){
     }
     return g;
   }
-  // Revolve [[station,radius],...] around the thrust line.
+  // Revolve [[station,radius],...] around the thrust line; u follows the profile's arc length.
   function revolve(profile,seg){
     const rows=profile.map(([s,r])=>{const ring=[];for(let k=0;k<=seg;k++){const a=2*Math.PI*k/seg;ring.push([Math.sin(a)*r,Math.cos(a)*r,zs(s)]);}return ring;});
-    return gridSurface(rows,(i,j)=>[i/(rows.length-1),j/seg],{seam:true});
+    const arc=[0];for(let i=1;i<profile.length;i++)arc.push(arc[i-1]+Math.hypot(profile[i][0]-profile[i-1][0],profile[i][1]-profile[i-1][1]));
+    return gridSurface(rows,(i,j)=>[arc[i]/arc[arc.length-1],j/seg],{seam:true});
   }
   // Flat fan cap facing `out`.
   function capFrom(ring,uvFn,out){
@@ -241,20 +243,59 @@ function create(THREE,opts={}){
   const GEAR={attach:[0.85,-0.33,zs(3.30)],leg:1.36,r:.405,w:.21,splay:10*Math.PI/180};
 
   // ---------- livery ----------
+  // Painted here on canvases: wartime US Navy non-specular finishes with original markings,
+  // engraved seams and rivet rows, sun-faded upper paint, chipping, exhaust soot and oil.
+  const rnd=seed=>{let x=seed;return ()=>((x=(x*16807)%2147483647)/2147483647);};
+  const fade0=c=>c.replace(/[\d.]+\)$/,'0)');
+  const SIDE=scheme.side||scheme.upper,CHIP='rgba(150,155,156,.8)',SOOT='rgba(36,31,27,A)';
   function star(ctx,r){ctx.beginPath();for(let i=0;i<10;i++){const a=-Math.PI/2+i*Math.PI/5,rr=i%2?r*0.382:r;ctx.lineTo(Math.cos(a)*rr,Math.sin(a)*rr);}ctx.closePath();}
-  function insignia(ctx,r){ctx.fillStyle='#1f2f5c';ctx.beginPath();ctx.arc(0,0,r,0,Math.PI*2);ctx.fill();ctx.fillStyle='#f1f0e8';star(ctx,r*0.98);ctx.fill();}
-  function weathering(ctx,w,h,seed,amount){
-    let x=seed;const rnd=()=>((x=(x*16807)%2147483647)/2147483647);
-    for(let i=0;i<w*h/1400;i++){ctx.fillStyle=`rgba(${rnd()<.55?'0,0,0':'255,255,255'},${amount*rnd()})`;const s=6+rnd()*34;ctx.fillRect(rnd()*w,rnd()*h,s,s*(.25+rnd()*.5));}
+  // National insignia: blue disc with white star; from mid-1943 also white bars in a blue surround.
+  function insignia(ctx,r){
+    const blue='#1d2a47',white='#d9d7ce';
+    if(scheme.bars){const b=r/8;ctx.fillStyle=blue;ctx.fillRect(-2*r-b,-r/4-b,4*r+2*b,r/2+2*b);ctx.beginPath();ctx.arc(0,0,r+b,0,Math.PI*2);ctx.fill();ctx.fillStyle=white;ctx.fillRect(-2*r,-r/4,4*r,r/2);}
+    ctx.fillStyle=blue;ctx.beginPath();ctx.arc(0,0,r,0,Math.PI*2);ctx.fill();ctx.fillStyle=white;star(ctx,r*0.98);ctx.fill();
   }
   // Own squadron-style badge (original artwork): torpedo and lightning bolt on a roundel.
   function badge(ctx,r){
-    ctx.fillStyle='#e0b531';ctx.beginPath();ctx.arc(0,0,r,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle='#22406e';ctx.beginPath();ctx.arc(0,0,r*.86,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle='#e9e7de';ctx.beginPath();ctx.ellipse(-r*.05,r*.18,r*.55,r*.11,0,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#c9a234';ctx.beginPath();ctx.arc(0,0,r,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#22385e';ctx.beginPath();ctx.arc(0,0,r*.86,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#dcd9cf';ctx.beginPath();ctx.ellipse(-r*.05,r*.18,r*.55,r*.11,0,0,Math.PI*2);ctx.fill();
     ctx.beginPath();ctx.moveTo(r*.48,r*.18);ctx.lineTo(r*.66,r*.04);ctx.lineTo(r*.66,r*.32);ctx.closePath();ctx.fill();
-    ctx.fillStyle='#e0b531';ctx.beginPath();ctx.moveTo(-r*.08,-r*.62);ctx.lineTo(r*.18,-r*.62);ctx.lineTo(r*.02,-r*.25);ctx.lineTo(r*.22,-r*.25);ctx.lineTo(-r*.18,r*.06);ctx.lineTo(-r*.02,-r*.20);ctx.lineTo(-r*.22,-r*.20);ctx.closePath();ctx.fill();
+    ctx.fillStyle='#c9a234';ctx.beginPath();ctx.moveTo(-r*.08,-r*.62);ctx.lineTo(r*.18,-r*.62);ctx.lineTo(r*.02,-r*.25);ctx.lineTo(r*.22,-r*.25);ctx.lineTo(-r*.18,r*.06);ctx.lineTo(-r*.02,-r*.20);ctx.lineTo(-r*.22,-r*.20);ctx.closePath();ctx.fill();
   }
+  const path=(ctx,pts)=>{ctx.beginPath();pts.forEach(([x,y],i)=>i?ctx.lineTo(x,y):ctx.moveTo(x,y));};
+  // Engraved seam: dark groove with a faint light lip on one side.
+  function seam(ctx,pts,dark=.32){ctx.lineWidth=1.6;ctx.strokeStyle=`rgba(12,16,20,${dark})`;path(ctx,pts);ctx.stroke();ctx.lineWidth=1;ctx.strokeStyle='rgba(255,255,255,.07)';path(ctx,pts.map(([x,y])=>[x+1.2,y+1.2]));ctx.stroke();}
+  // Rivet heads evenly spaced along a polyline.
+  function rivets(ctx,pts,step,alpha=.26){
+    ctx.fillStyle=`rgba(14,18,22,${alpha})`;let carry=0;
+    for(let i=1;i<pts.length;i++){const [x0,y0]=pts[i-1],[x1,y1]=pts[i],d=Math.hypot(x1-x0,y1-y0);let t=carry;
+      while(t<d){ctx.fillRect(x0+(x1-x0)*t/d-.9,y0+(y1-y0)*t/d-.9,1.8,1.8);t+=step;}carry=t-d;}
+  }
+  // Irregular small flecks: paint chips down to bare metal, dirt specks.
+  function flecks(ctx,r,x0,y0,w,h,n,color,size){
+    ctx.fillStyle=color;
+    for(let i=0;i<n;i++){const x=x0+r()*w,y=y0+r()*h,s=size*(.3+r()*r()*1.8),k=4+(r()*4|0);ctx.beginPath();
+      for(let j=0;j<k;j++){const a=j/k*Math.PI*2+r()*.7,rr=s*(.45+r()*.7);ctx.lineTo(x+Math.cos(a)*rr,y+Math.sin(a)*rr*(.55+r()*.6));}ctx.closePath();ctx.fill();}
+  }
+  // Soft blotches (fading, grime), stretched along the texture x axis.
+  function blotches(ctx,r,x0,y0,w,h,n,color,rad,stretch=2){
+    for(let i=0;i<n;i++){const x=x0+r()*w,y=y0+r()*h,rr=rad*(.4+r()),g=ctx.createRadialGradient(0,0,0,0,0,rr);
+      g.addColorStop(0,color);g.addColorStop(1,fade0(color));ctx.save();ctx.translate(x,y);ctx.scale(1+r()*stretch,1);ctx.fillStyle=g;ctx.fillRect(-rr,-rr,2*rr,2*rr);ctx.restore();}
+  }
+  // Streaks blown along the airflow: dx,dy is the flow direction in texture pixels.
+  function streaks(ctx,r,x0,y0,w,h,n,color,len,width,dx=1,dy=0){
+    for(let i=0;i<n;i++){const x=x0+r()*w,y=y0+r()*h,l=len*(.3+r()*.7),wd=width*(.4+r()*1.1),ex=x+dx*l,ey=y+dy*l,nx=-dy*wd/2,ny=dx*wd/2;
+      const g=ctx.createLinearGradient(x,y,ex,ey);g.addColorStop(0,color);g.addColorStop(1,fade0(color));ctx.fillStyle=g;
+      ctx.beginPath();ctx.moveTo(x+nx,y+ny);ctx.lineTo(ex+nx*.4,ey+ny*.4);ctx.lineTo(ex-nx*.4,ey-ny*.4);ctx.lineTo(x-nx,y-ny);ctx.closePath();ctx.fill();}
+  }
+  // Flecks scattered along an edge polyline (leading edges, cowl lip).
+  function edgeFlecks(ctx,r,pts,density,color,size,pad){
+    for(let i=1;i<pts.length;i++){const [x0,y0]=pts[i-1],[x1,y1]=pts[i],n=Math.round(density*Math.hypot(x1-x0,y1-y0)/100);
+      flecks(ctx,r,Math.min(x0,x1)-pad,Math.min(y0,y1)-pad,Math.abs(x1-x0)+2*pad,Math.abs(y1-y0)+2*pad,n,color,size);}
+  }
+  function tone(ctx,r,pts,amount){const d=r()-.5;ctx.fillStyle=d>0?`rgba(255,255,255,${d*amount*1.6})`:`rgba(0,0,0,${-d*amount*2})`;path(ctx,pts);ctx.closePath();ctx.fill();}
+  const soot=a=>SOOT.replace('A',a);
   const FTW=2048,FTH=1024;
   // Draw in metres at station s and ring index k, readable from outside on either side.
   function onFuselage(ctx,s,k,draw){
@@ -263,100 +304,211 @@ function create(THREE,opts={}){
     ctx.scale((FTW/(FUS_U[1]-FUS_U[0]))*(right?-1:1),(FTH/r.per)*(right?-1:1));
     draw();ctx.restore();
   }
+  function vAt(s,x,y){const rr=ringRow(s);let best=0,bd=Infinity;rr.pts.forEach((p,k)=>{const d=Math.hypot(p[0]-x,p[1]-y);if(d<bd){bd=d;best=k;}});return rr.acc[best]/rr.per;}
+  const FRAMES=[1.86,2.42,3.02,3.55,4.30,5.12,5.80,6.42,7.02,7.58,8.20,8.84,9.46,10.05,10.62,11.12,11.62,12.05];
+  const LAPS=[.07,.16,.25,.36,.45,.55,.64,.75,.84,.93];
+  function demarcation(ctx,w,h,e){
+    const g=ctx.createLinearGradient(0,h,0,0),soft=.014;
+    g.addColorStop(0,scheme.upper);g.addColorStop(.09,SIDE);g.addColorStop(e-soft,SIDE);g.addColorStop(e+soft,scheme.lower);
+    g.addColorStop(1-e-soft,scheme.lower);g.addColorStop(1-e+soft,SIDE);g.addColorStop(.91,SIDE);g.addColorStop(1,scheme.upper);
+    ctx.fillStyle=g;ctx.fillRect(0,0,w,h);
+  }
   function paintFuselage(){
-    const c=makeCanvas(FTW,FTH);if(!c)return null;const ctx=c.getContext('2d');
-    const up=scheme.upper,lo=scheme.lower,g=ctx.createLinearGradient(0,FTH,0,0);
-    g.addColorStop(0,up);g.addColorStop(.26,up);g.addColorStop(.34,lo);g.addColorStop(.66,lo);g.addColorStop(.74,up);g.addColorStop(1,up);
-    ctx.fillStyle=g;ctx.fillRect(0,0,FTW,FTH);weathering(ctx,FTW,FTH,11,.035);
-    ctx.strokeStyle='rgba(18,22,26,.24)';ctx.lineWidth=2;
-    for(let s=2.0;s<12.2;s+=0.52){const x=fusU(s)*FTW;ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,FTH);ctx.stroke();}
-    for(const v of [.09,.18,.31,.42,.58,.69,.82,.91]){const y=(1-v)*FTH;ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(FTW,y);ctx.stroke();}
-    ctx.strokeStyle='rgba(12,14,16,.6)';ctx.lineWidth=3;
-    const bx0=fusU(BAY[0])*FTW,bx1=fusU(BAY[1])*FTW;
-    for(const v of [.5-DOOR_K/RING,.5,.5+DOOR_K/RING]){const y=(1-v)*FTH;ctx.beginPath();ctx.moveTo(bx0,y);ctx.lineTo(bx1,y);ctx.stroke();}
-    for(const v of [.29,.71]){
-      const y=(1-v)*FTH,x0=fusU(1.95)*FTW,x1=fusU(5.4)*FTW,eg=ctx.createLinearGradient(x0,0,x1,0);
-      eg.addColorStop(0,'rgba(34,30,27,.6)');eg.addColorStop(1,'rgba(34,30,27,0)');
-      ctx.fillStyle=eg;ctx.beginPath();ctx.ellipse((x0+x1)/2,y,(x1-x0)/2,FTH*.03,0,0,Math.PI*2);ctx.fill();
-    }
-    ctx.fillStyle='rgba(28,38,44,.92)';
-    for(const v of [.42,.58]){const x=fusU(7.0)*FTW;ctx.fillRect(x,(1-v)*FTH-FTH*.022,fusU(7.32)*FTW-x,FTH*.044);}
+    const c=makeCanvas(FTW,FTH);if(!c)return null;const ctx=c.getContext('2d'),r=rnd(11);
+    const X=s=>fusU(s)*FTW,Y=v=>(1-v)*FTH;
+    demarcation(ctx,FTW,FTH,.30);
+    const bands=[0,...LAPS,1];
+    for(let i=0;i<FRAMES.length-1;i++)for(let j=0;j<bands.length-1;j++){const x0=X(FRAMES[i]),x1=X(FRAMES[i+1]),y0=Y(bands[j]),y1=Y(bands[j+1]);tone(ctx,r,[[x0,y0],[x1,y0],[x1,y1],[x0,y1]],.035);}
+    // sun-faded, chalky upper paint and rain-washed streaks on the sides
+    for(const [a,b] of [[0,.24],[.76,1]])blotches(ctx,r,0,Y(b),FTW,Y(a)-Y(b),90,'rgba(222,230,236,.05)',70,3);
+    for(const [a,b] of [[.12,.28],[.72,.88]])streaks(ctx,r,X(2.0),Y(b),FTW-X(2.0),Y(a)-Y(b),50,'rgba(225,230,232,.03)',360,14);
+    // seams, rivet rows, access panels
+    for(const s of FRAMES){const x=X(s),step=.035*FTH/ringRow(s).per;seam(ctx,[[x,0],[x,FTH]]);rivets(ctx,[[x+4,0],[x+4,FTH]],step);}
+    for(let i=0;i<FRAMES.length-1;i++){const s=(FRAMES[i]+FRAMES[i+1])/2,x=X(s);rivets(ctx,[[x,0],[x,FTH]],.04*FTH/ringRow(s).per,.15);}
+    for(const v of LAPS){const y=Y(v);seam(ctx,[[X(1.86),y],[FTW,y]],.22);rivets(ctx,[[X(1.86),y+3],[FTW,y+3]],7,.2);}
+    const hatch=(s0,s1,v0,v1,dark=.38)=>{const x0=X(s0),x1=X(s1),y0=Y(v1),y1=Y(v0);seam(ctx,[[x0,y0],[x1,y0],[x1,y1],[x0,y1],[x0,y0]],dark);
+      ctx.fillStyle='rgba(14,18,22,.42)';for(const [x,y] of [[x0+4,y0+4],[x1-4,y0+4],[x1-4,y1-4],[x0+4,y1-4],[(x0+x1)/2,y0+4],[(x0+x1)/2,y1-4]])ctx.fillRect(x-1.3,y-1.3,2.6,2.6);};
+    for(const [a,b] of [[.17,.23],[.77,.83]])hatch(2.48,2.92,a,b);
+    for(const [a,b] of [[.10,.16],[.84,.90]])hatch(7.66,8.02,a,b);
+    for(const [a,b] of [[.37,.43],[.57,.63]])hatch(10.66,11.02,a,b);
+    hatch(6.45,6.98,.26,.39,.5); // starboard entry door to the radio compartment
+    ctx.strokeStyle='rgba(12,14,16,.62)';ctx.lineWidth=3;
+    const bx0=X(BAY[0]),bx1=X(BAY[1]);
+    for(const v of [.5-DOOR_K/RING,.5,.5+DOOR_K/RING]){const y=Y(v);ctx.beginPath();ctx.moveTo(bx0,y);ctx.lineTo(bx1,y);ctx.stroke();}
+    ctx.fillStyle='rgba(24,32,38,.94)';
+    for(const v of [.42,.58]){const x=X(7.0);ctx.fillRect(x,Y(v)-FTH*.022,X(7.32)-x,FTH*.044);}
+    ctx.fillStyle='rgba(16,18,20,.8)';for(const v of [.14,.86])ctx.fillRect(X(3.95),Y(v)-3,22,6); // hand holds
+    // markings
     for(const k of [RING/4,3*RING/4]){
       const out=k<RING/2?-1:1;
-      onFuselage(ctx,8.15,k,()=>insignia(ctx,.52));
-      onFuselage(ctx,10.45,k+out*2,()=>{ctx.fillStyle='#16191c';ctx.textAlign='center';ctx.textBaseline='middle';ctx.font='bold 0.12px sans-serif';ctx.fillText('U.S. NAVY',0,0);ctx.font='0.075px sans-serif';ctx.fillText('TBM-3',0,0.12);});
-      onFuselage(ctx,2.75,k+out*3,()=>badge(ctx,.30));
+      onFuselage(ctx,8.15,k,()=>insignia(ctx,scheme.bars?.44:.52));
+      if(scheme.code)onFuselage(ctx,9.80,k,()=>{ctx.fillStyle=scheme.number;ctx.textAlign='center';ctx.textBaseline='middle';ctx.font='bold 0.34px sans-serif';ctx.fillText(scheme.code,0,0);});
+      onFuselage(ctx,10.95,k-out*2,()=>{ctx.fillStyle='rgba(20,22,24,.8)';ctx.textAlign='center';ctx.textBaseline='middle';ctx.font='bold 0.07px sans-serif';ctx.fillText('U.S. NAVY',0,0);ctx.font='0.05px sans-serif';ctx.fillText(scheme.model,0,0.07);});
+      onFuselage(ctx,2.75,k+out*3,()=>badge(ctx,.27));
     }
+    // grime and oil under the belly, running aft from the engine and the bay doors
+    blotches(ctx,r,X(1.9),Y(.62),FTW-X(1.9),Y(.38)-Y(.62),70,'rgba(38,36,30,.09)',60,3);
+    streaks(ctx,r,X(1.85),Y(.55),X(2.3)-X(1.85),Y(.45)-Y(.55),26,'rgba(32,25,18,.32)',X(5.5)-X(1.9),4);
+    streaks(ctx,r,X(2.8),Y(.5+DOOR_K/RING+.01),X(6.6)-X(2.8),Y(.5-DOOR_K/RING-.01)-Y(.5+DOOR_K/RING+.01),30,'rgba(30,26,20,.18)',260,5);
+    // exhaust soot from the stacks on the lower cowl sides, fanning back along the fuselage
+    const vEx=vAt(2.2,.70,-.50);
+    for(const v of [vEx,1-vEx]){
+      const y=Y(v),down=v<.5?1:-1;
+      blotches(ctx,r,X(2.2),y-40,X(4.2)-X(2.2),80,26,soot(.07),46,3);
+      streaks(ctx,r,X(2.12),y-30,40,60,46,soot(.09),X(6.3)-X(2.2),46,1,down*.07);
+      streaks(ctx,r,X(2.12),y-16,24,32,26,soot(.13),X(4.8)-X(2.2),22,1,down*.05);
+      streaks(ctx,r,X(2.15),y-6,10,12,10,'rgba(150,145,136,.10)',X(4.0)-X(2.2),10,1,down*.03);
+    }
+    // chipped paint where crew and mechanics climb, sit and work
+    for(const [a,b] of [[.075,.10],[.90,.925]])flecks(ctx,r,X(3.2),Y(b),X(6.3)-X(3.2),Y(a)-Y(b),150,CHIP,1.9);
+    for(const [a,b] of [[0,.06],[.94,1]])flecks(ctx,r,X(6.3),Y(b),X(7.5)-X(6.3),Y(a)-Y(b),60,CHIP,1.6);
+    for(const [a,b] of [[.19,.31],[.69,.81]]){flecks(ctx,r,X(3.0),Y(b),X(5.2)-X(3.0),Y(a)-Y(b),70,CHIP,1.6);blotches(ctx,r,X(3.0),Y(b),X(5.2)-X(3.0),Y(a)-Y(b),14,'rgba(40,36,30,.08)',40,1);}
+    flecks(ctx,r,X(1.80),0,X(2.02)-X(1.80),FTH,160,CHIP,1.6);
+    flecks(ctx,r,X(BAY[0]),Y(.5+DOOR_K/RING+.012),X(BAY[1])-X(BAY[0]),Y(.5-DOOR_K/RING-.012)-Y(.5+DOOR_K/RING+.012),220,CHIP,1.5);
+    flecks(ctx,r,0,0,FTW,FTH,160,CHIP,1.0);
     return tex(c);
   }
+  const RIBS=[.81,1.25,1.72,2.18,FOLD_X,3.10,3.62,4.15,4.70,5.25,5.80,6.40,7.00,7.55,8.05];
   function paintWing(left){
-    const c=makeCanvas(WTW,WTH);if(!c)return null;const ctx=c.getContext('2d');
+    const c=makeCanvas(WTW,WTH);if(!c)return null;const ctx=c.getContext('2d'),r=rnd(left?37:23);
     ctx.fillStyle=scheme.upper;ctx.fillRect(0,0,WTW,WTH/2);ctx.fillStyle=scheme.lower;ctx.fillRect(0,WTH/2,WTW,WTH/2);
-    weathering(ctx,WTW,WTH,left?37:23,.03);
     const pxU=WTW/W_U,pxV=(WTH/2)/(W_ZMAX-W_ZMIN);
-    const chordLine=(x0,x1,f,upper)=>{ctx.beginPath();for(let x=x0;x<=x1+1e-6;x+=.05){const w=wingAt(x),[px,py]=wingPx(x,w.le+f*w.c,upper);x===x0?ctx.moveTo(px,py):ctx.lineTo(px,py);}ctx.stroke();};
-    const cross=(x,f0,f1,upper)=>{const w=wingAt(x),a=wingPx(x,w.le+f0*w.c,upper),b=wingPx(x,w.le+f1*w.c,upper);ctx.beginPath();ctx.moveTo(...a);ctx.lineTo(...b);ctx.stroke();};
+    const P=(x,f,upper)=>{const w=wingAt(x);return wingPx(x,w.le+f*w.c,upper);};
+    const quad=(x0,x1,f0,f1,upper)=>[P(x0,f0,upper),P(x1,f0,upper),P(x1,f1,upper),P(x0,f1,upper)];
+    const span=(f,upper,x0=.81,x1=8.12)=>{const pts=[];for(let x=x0;x<=x1+1e-6;x+=.08)pts.push(P(x,f,upper));return pts;};
+    const chord=(x,upper,f0=0,f1=1)=>{const pts=[];for(let f=f0;f<=f1+1e-6;f+=.05)pts.push(P(x,f,upper));return pts;};
+    const CH=[0,.06,.25,.62,.76,1];
+    for(const upper of [true,false])for(let i=0;i<RIBS.length-1;i++)for(let j=0;j<CH.length-1;j++)tone(ctx,r,quad(RIBS[i],RIBS[i+1],CH[j],CH[j+1],upper),.035);
+    blotches(ctx,r,0,0,WTW,WTH/2,70,'rgba(222,230,236,.045)',70,2.5);
+    streaks(ctx,r,0,WTH*.04,WTW,WTH*.42,50,'rgba(228,232,234,.025)',220,14,0,-1);
     for(const upper of [true,false]){
-      ctx.strokeStyle='rgba(18,22,26,.24)';ctx.lineWidth=2;
-      for(let x=0.9;x<8.2;x+=0.55)cross(x,0,1,upper);
-      for(const f of [.15,.42,.66])chordLine(0,8.2,f,upper);
-      ctx.strokeStyle='rgba(10,12,14,.62)';ctx.lineWidth=3;
-      chordLine(5.25,7.85,.74,upper);cross(5.25,.74,1,upper);cross(7.85,.74,1,upper);
-      cross(FOLD_X,0,1,upper);
-      if(!upper){chordLine(.92,FOLD_X-.06,.76,upper);chordLine(FOLD_X+.06,5.15,.76,upper);}
+      RIBS.forEach((x,i)=>{const pts=chord(x,upper);if(i%2===0)seam(ctx,pts,.22);rivets(ctx,pts.map(([a,b])=>[a+3,b]),6,.24);});
+      for(const f of [.06,.25,.62]){const pts=span(f,upper);seam(ctx,pts,.26);rivets(ctx,pts.map(([a,b])=>[a,b-3]),6,.22);rivets(ctx,pts.map(([a,b])=>[a,b+3]),6,.16);}
+      ctx.strokeStyle='rgba(10,12,14,.6)';ctx.lineWidth=2.6;
+      path(ctx,span(.74,upper,5.25,7.85));ctx.stroke();path(ctx,chord(5.25,upper,.74,1));ctx.stroke();path(ctx,chord(7.85,upper,.74,1));ctx.stroke();
+      path(ctx,chord(FOLD_X,upper));ctx.stroke();
+      if(!upper){path(ctx,span(.76,upper,.92,FOLD_X-.06));ctx.stroke();path(ctx,span(.76,upper,FOLD_X+.06,5.15));ctx.stroke();}
+      // fabric-covered aileron: rib tapes
+      ctx.strokeStyle='rgba(255,255,255,.07)';ctx.lineWidth=3;for(let x=5.45;x<7.8;x+=.26){path(ctx,chord(x,upper,.76,.99));ctx.stroke();}
+      // leading-edge erosion and grime
+      edgeFlecks(ctx,r,span(.02,upper,.9,8.1),30,CHIP,1.6,9);
+      edgeFlecks(ctx,r,span(.01,upper,.9,8.1),10,'rgba(30,28,24,.18)',2.4,6);
     }
-    {const w=wingAt(1.2),[x0,y0]=wingPx(0.85,w.le+.18*w.c,true),[x1,y1]=wingPx(1.70,w.le+.55*w.c,true);ctx.fillStyle='rgba(36,38,38,.30)';ctx.fillRect(x0,y1,x1-x0,y0-y1);}
-    // leading-edge slots ahead of the ailerons (upper surface)
-    ctx.strokeStyle='rgba(14,16,18,.75)';ctx.lineWidth=5;chordLine(5.35,7.75,.09,true);
-    {const [cx,cy]=wingPx(GEAR.attach[0]+GEAR.leg,GEAR.attach[2],false);ctx.fillStyle='rgba(20,22,20,.85)';ctx.beginPath();ctx.ellipse(cx,cy,(GEAR.r+.04)*pxU,(GEAR.r+.04)*pxV,0,0,Math.PI*2);ctx.fill();
-     const [lx0,ly0]=wingPx(GEAR.attach[0]-.08,GEAR.attach[2]-.12,false),[lx1,ly1]=wingPx(GEAR.attach[0]+GEAR.leg-.25,GEAR.attach[2]+.12,false);ctx.fillRect(lx0,ly1,lx1-lx0,ly0-ly1);}
-    {const w=wingAt(3.35),[gx,gy]=wingPx(3.35,w.le+.02,true);ctx.fillStyle='#1a1c1d';ctx.beginPath();ctx.arc(gx,gy,6,0,Math.PI*2);ctx.fill();}
+    // gun bay and ammunition doors on the outer panel, fuel filler on the centre section
+    const panel=(x0,x1,f0,f1)=>{const q=quad(x0,x1,f0,f1,true);seam(ctx,[...q,q[0]],.42);ctx.fillStyle='rgba(14,18,22,.45)';for(const [x,y] of q)ctx.fillRect(x-1.4,y-1.4,2.8,2.8);};
+    panel(3.22,3.70,.08,.36);panel(3.80,4.62,.10,.38);
+    {const [fx,fy]=P(1.95,.40,true);streaks(ctx,r,fx-10,fy-4,20,8,8,'rgba(58,50,32,.22)',150,12,0,-1);
+     ctx.strokeStyle='rgba(12,14,16,.7)';ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(fx,fy,.075*pxU,.075*pxV,0,0,Math.PI*2);ctx.stroke();
+     ctx.fillStyle='rgba(120,120,112,.5)';ctx.beginPath();ctx.ellipse(fx,fy,.045*pxU,.045*pxV,0,0,Math.PI*2);ctx.fill();}
+    // walkway at the root, scuffed by boots
+    ctx.fillStyle='rgba(28,30,30,.86)';path(ctx,quad(.84,1.62,.14,.56,true));ctx.closePath();ctx.fill();
+    {const q=quad(.84,1.62,.14,.56,true),xs=q.map(p=>p[0]),ys=q.map(p=>p[1]),x0=Math.min(...xs),y0=Math.min(...ys),w=Math.max(...xs)-x0,h=Math.max(...ys)-y0;
+     flecks(ctx,r,x0,y0,w,h,90,'rgba(70,72,70,.35)',1.6);flecks(ctx,r,x0-14,y0-14,w+40,h+28,80,CHIP,1.7);blotches(ctx,r,x0-10,y0-10,w+40,h+20,16,'rgba(34,32,28,.10)',50,1);}
+    // lower surface: exhaust soot over the wing root and oil around the gear well
+    {const [x0,y0]=P(.81,.02,false),[x1,y1]=P(1.55,.30,false);streaks(ctx,r,x0,y1,x1-x0,y0-y1,30,soot(.20),y1-P(.9,1,false)[1],30,0,-1);}
+    {const [cx,cy]=wingPx(GEAR.attach[0]+GEAR.leg,GEAR.attach[2],false);
+     ctx.fillStyle='rgba(20,22,20,.85)';ctx.beginPath();ctx.ellipse(cx,cy,(GEAR.r+.04)*pxU,(GEAR.r+.04)*pxV,0,0,Math.PI*2);ctx.fill();
+     const [lx0,ly0]=wingPx(GEAR.attach[0]-.08,GEAR.attach[2]-.12,false),[lx1,ly1]=wingPx(GEAR.attach[0]+GEAR.leg-.25,GEAR.attach[2]+.12,false);ctx.fillRect(lx0,ly1,lx1-lx0,ly0-ly1);
+     streaks(ctx,r,lx0,ly1-8,cx-lx0,30,16,'rgba(30,25,18,.26)',220,5,0,-1);}
+    {const w=wingAt(3.35),[gx,gy]=wingPx(3.35,w.le+.02,true);ctx.fillStyle='#1a1c1d';ctx.beginPath();ctx.arc(gx,gy,6,0,Math.PI*2);ctx.fill();
+     streaks(ctx,r,gx-6,gy-6,12,6,10,soot(.25),120,10,0,-1);}
     // US Navy practice: star on the upper left wing and the lower right wing.
-    const upper=left,x=6.0,w=wingAt(x),[cx,cy]=wingPx(x,w.le+.46*w.c,upper),r=Math.min(.66,w.c*.36);
-    ctx.save();ctx.translate(cx,cy);ctx.scale(pxU,pxV);
-    if(upper)ctx.rotate(Math.PI);
-    insignia(ctx,r);ctx.restore();
+    const upper=left,x=6.0,w=wingAt(x),[cx,cy]=wingPx(x,w.le+.46*w.c,upper),ri=Math.min(.66,w.c*.36)*(scheme.bars?.8:1);
+    ctx.save();ctx.translate(cx,cy);ctx.scale(pxU,pxV);if(upper)ctx.rotate(Math.PI);insignia(ctx,ri);ctx.restore();
+    flecks(ctx,r,cx-ri*pxU*2.2,cy-ri*pxV*1.2,ri*pxU*4.4,ri*pxV*2.4,40,CHIP,1.2);
+    flecks(ctx,r,0,0,WTW,WTH,160,CHIP,1.0);
     return tex(c);
   }
   function paintTail(){
-    const c=makeCanvas(TTW,TTH);if(!c)return null;const ctx=c.getContext('2d');
-    ctx.fillStyle=scheme.upper;ctx.fillRect(0,0,TTW,TTH);ctx.fillStyle=scheme.lower;ctx.fillRect(TTW/2,TTH/2,TTW/2,TTH/2);
-    weathering(ctx,TTW,TTH,51,.03);
-    ctx.strokeStyle='rgba(10,12,14,.62)';ctx.lineWidth=3;
-    for(const left of [false,true]){ctx.beginPath();for(let y=FIN_Y0+.2;y<=FIN_TOP-.1;y+=.05){const z=lerp(finLE(y),finTE(y),.72),[px,py]=finPx(z,y,left);y===FIN_Y0+.2?ctx.moveTo(px,py):ctx.lineTo(px,py);}ctx.stroke();}
-    for(const upper of [true,false]){ctx.beginPath();for(let x=0;x<=STAB_HALF;x+=.05){const s=stabAt(x),[px,py]=stabPx(x,s.le+.70*s.c,upper);x?ctx.lineTo(px,py):ctx.moveTo(px,py);}ctx.stroke();}
+    const c=makeCanvas(TTW,TTH);if(!c)return null;const ctx=c.getContext('2d'),r=rnd(51);
+    ctx.fillStyle=SIDE;ctx.fillRect(0,0,TTW/2,TTH);ctx.fillStyle=scheme.upper;ctx.fillRect(TTW/2,0,TTW/2,TTH/2);ctx.fillStyle=scheme.lower;ctx.fillRect(TTW/2,TTH/2,TTW/2,TTH/2);
+    for(const left of [false,true])for(let y=FIN_Y0;y<FIN_TOP;y+=.42)for(const [f0,f1] of [[0,.3],[.3,.72],[.72,1]]){
+      const q=[[f0,y],[f1,y],[f1,y+.42],[f0,y+.42]].map(([f,yy])=>finPx(lerp(finLE(yy),finTE(yy),f),yy,left));tone(ctx,r,q,.035);}
+    blotches(ctx,r,0,0,TTW,TTH/2,40,'rgba(222,230,236,.07)',60,1.5);blotches(ctx,r,0,TTH/2,TTW/2,TTH/2,40,'rgba(222,230,236,.07)',60,1.5);
+    for(const left of [false,true]){
+      ctx.strokeStyle='rgba(10,12,14,.6)';ctx.lineWidth=2.6;ctx.beginPath();for(let y=FIN_Y0+.2;y<=FIN_TOP-.1;y+=.05){const z=lerp(finLE(y),finTE(y),.72),[px,py]=finPx(z,y,left);y===FIN_Y0+.2?ctx.moveTo(px,py):ctx.lineTo(px,py);}ctx.stroke();
+      for(let y=FIN_Y0+.25;y<FIN_TOP-.1;y+=.22){const a=finPx(lerp(finLE(y),finTE(y),.74),y,left),b=finPx(finTE(y)-.03,y,left);ctx.strokeStyle='rgba(255,255,255,.07)';ctx.lineWidth=3;path(ctx,[a,b]);ctx.stroke();}
+      for(let y=FIN_Y0+.3;y<FIN_TOP-.1;y+=.42){const pts=[];for(let f=0;f<=.7;f+=.05)pts.push(finPx(lerp(finLE(y),finTE(y),f),y,left));rivets(ctx,pts,6,.22);}
+      for(const f of [.3]){const pts=[];for(let y=FIN_Y0;y<=FIN_TOP-.15;y+=.05)pts.push(finPx(lerp(finLE(y),finTE(y),f),y,left));seam(ctx,pts,.24);rivets(ctx,pts.map(([a,b])=>[a+3,b]),6,.2);}
+      const le=[];for(let y=FIN_Y0+.1;y<=FIN_TOP-.1;y+=.1)le.push(finPx(finLE(y)+.02,y,left));
+      edgeFlecks(ctx,r,le,40,CHIP,1.5,8);
+    }
+    for(const upper of [true,false]){
+      ctx.strokeStyle='rgba(10,12,14,.6)';ctx.lineWidth=2.6;ctx.beginPath();for(let x=0;x<=STAB_HALF;x+=.05){const s=stabAt(x),[px,py]=stabPx(x,s.le+.70*s.c,upper);x?ctx.lineTo(px,py):ctx.moveTo(px,py);}ctx.stroke();
+      for(let x=.3;x<STAB_HALF-.15;x+=.28){const s=stabAt(x),a=stabPx(x,s.le+.73*s.c,upper),b=stabPx(x,s.le+.98*s.c,upper);ctx.strokeStyle='rgba(255,255,255,.07)';ctx.lineWidth=3;path(ctx,[a,b]);ctx.stroke();}
+      for(let x=.2;x<STAB_HALF-.1;x+=.55){const s=stabAt(x),pts=[];for(let f=0;f<=.68;f+=.05)pts.push(stabPx(x,s.le+f*s.c,upper));rivets(ctx,pts,6,.22);}
+      const le=[];for(let x=.1;x<=STAB_HALF-.1;x+=.1){const s=stabAt(x);le.push(stabPx(x,s.le+.02*s.c,upper));}
+      edgeFlecks(ctx,r,le,40,CHIP,1.4,8);
+    }
     for(const left of [false,true]){
       const [x,y]=finPx(zs(11.62),1.50,left);
       ctx.save();ctx.translate(x,y);ctx.scale(((TTW/2)/FIN_ZR)*(left?1:-1),(TTH/2)/FIN_YR);
-      ctx.fillStyle='#16181a';ctx.textAlign='center';ctx.textBaseline='middle';
+      ctx.fillStyle=scheme.number;ctx.textAlign='center';ctx.textBaseline='middle';
       ctx.font='bold 0.60px sans-serif';ctx.fillText('10',0,0);ctx.restore();
     }
+    flecks(ctx,r,0,0,TTW,TTH,120,CHIP,1.0);
     return tex(c);
+  }
+  // Cowling: u runs along the revolved profile's arc length, v around the ring (0 = top).
+  const COWL=[[0.74,.60],[0.52,.625],[0.46,.66],[0.45,.71],[0.48,.752],[0.60,.774],[1.10,.781],[1.62,.774],[1.86,.762]];
+  const COWL_ARC=(()=>{const a=[0];for(let i=1;i<COWL.length;i++)a.push(a[i-1]+Math.hypot(COWL[i][0]-COWL[i-1][0],COWL[i][1]-COWL[i-1][1]));return a.map(v=>v/a[a.length-1]);})();
+  const cowlU=s=>{for(let i=3;i<COWL.length-1;i++)if(s<=COWL[i+1][0])return lerp(COWL_ARC[i],COWL_ARC[i+1],clamp((s-COWL[i][0])/(COWL[i+1][0]-COWL[i][0]),0,1));return 1;};
+  const CTW=1024,CTH=512;
+  function paintCowl(){
+    const c=makeCanvas(CTW,CTH);if(!c)return null;const ctx=c.getContext('2d'),r=rnd(71);
+    const X=s=>cowlU(s)*CTW,Y=v=>(1-v)*CTH,SEAMS=[.125,.375,.625,.875];
+    demarcation(ctx,CTW,CTH,.30);
+    ctx.fillStyle='rgba(20,22,24,.35)';ctx.fillRect(0,0,X(.45),CTH); // inside of the intake lip
+    const bands=[0,...SEAMS,1];
+    for(const [s0,s1] of [[.60,1.62],[1.62,1.86]])for(let j=0;j<bands.length-1;j++){const x0=X(s0),x1=X(s1),y0=Y(bands[j]),y1=Y(bands[j+1]);tone(ctx,r,[[x0,y0],[x1,y0],[x1,y1],[x0,y1]],.04);}
+    blotches(ctx,r,X(.5),Y(.22),CTW-X(.5),Y(0)-Y(.22),24,'rgba(222,230,236,.08)',40,2);blotches(ctx,r,X(.5),0,CTW-X(.5),Y(.78),24,'rgba(222,230,236,.08)',40,2);
+    for(const s of [.60,1.62]){const x=X(s);seam(ctx,[[x,0],[x,CTH]],.42);}
+    ctx.fillStyle='rgba(14,18,22,.5)';
+    for(const v of SEAMS){const y=Y(v);seam(ctx,[[X(.60),y],[CTW,y]],.42);ctx.fillStyle='rgba(14,18,22,.5)';for(let s=.68;s<1.84;s+=.11){const x=X(s);ctx.fillRect(x-1.5,y-6.5,3,3);ctx.fillRect(x-1.5,y+3.5,3,3);}}
+    for(let v=0;v<1;v+=.03)ctx.fillRect(X(1.62)-6.5,Y(v)-1.5,3,3);
+    streaks(ctx,r,X(.9),Y(.55),X(1.3)-X(.9),Y(.45)-Y(.55),14,'rgba(32,25,18,.30)',CTW-X(1.1),3);
+    blotches(ctx,r,X(.6),Y(.65),CTW-X(.6),Y(.35)-Y(.65),18,'rgba(38,36,30,.10)',40,2);
+    flecks(ctx,r,X(.44),0,X(.62)-X(.44),CTH,520,CHIP,1.6);
+    flecks(ctx,r,0,0,CTW,CTH,90,CHIP,1.0);
+    return tex(c);
+  }
+  // Small sky/sea cube map, used only by the glazing so it reads as glass.
+  function envCube(){
+    const S=64,faces=[];
+    for(let i=0;i<6;i++){const c=makeCanvas(S,S);if(!c)return null;const x=c.getContext('2d');
+      if(i===2)x.fillStyle='#8db2d2';else if(i===3)x.fillStyle='#22313c';
+      else{const g=x.createLinearGradient(0,0,0,S);g.addColorStop(0,'#83aacd');g.addColorStop(.46,'#d2dfe7');g.addColorStop(.52,'#5a7182');g.addColorStop(1,'#25343e');x.fillStyle=g;}
+      x.fillRect(0,0,S,S);faces.push(c);}
+    const t=new T.CubeTexture(faces);t.encoding=T.sRGBEncoding;t.needsUpdate=true;owned.textures.push(t);return t;
   }
 
   // ---------- materials ----------
-  const fusMap=paintFuselage(),wingMapR=paintWing(false),wingMapL=paintWing(true),tailMap=paintTail();
-  const skin=(map,hex)=>mat({color:map?0xffffff:srgb(hex),map,roughness:.58,metalness:.12});
+  const fusMap=paintFuselage(),wingMapR=paintWing(false),wingMapL=paintWing(true),tailMap=paintTail(),cowlMap=paintCowl(),env=envCube();
+  const PAINT={roughness:.82,metalness:0};
+  const skin=(map,hex)=>mat({color:map?0xffffff:srgb(hex),map,...PAINT});
   const mats={
-    fus:skin(fusMap,scheme.upper),wingR:skin(wingMapR,scheme.upper),wingL:skin(wingMapL,scheme.upper),tail:skin(tailMap,scheme.upper),
-    paint:mat({color:srgb(scheme.upper),roughness:.6,metalness:.12}),
-    paintLow:mat({color:srgb(scheme.lower),roughness:.6,metalness:.12}),
-    frame:mat({color:srgb(scheme.frame),roughness:.55,metalness:.15}),
-    glass:mat({color:srgb('#c2d6df'),roughness:.05,metalness:.35,transparent:true,opacity:.24,depthWrite:false,side:T.DoubleSide}),
-    interior:mat({color:srgb('#4f5838'),roughness:.85,metalness:.05,side:T.DoubleSide}),
-    primer:mat({color:srgb('#626b46'),roughness:.8,metalness:.05}),
-    dark:mat({color:srgb('#1c1e1e'),roughness:.8,metalness:.2,side:T.DoubleSide}),
-    engine:mat({color:srgb('#4a4c4d'),roughness:.42,metalness:.6}),
-    steel:mat({color:srgb('#b8bdc1'),roughness:.26,metalness:.85}),
-    tire:mat({color:srgb('#1b1b1b'),roughness:.92,metalness:0}),
-    blade:mat({color:srgb('#151515'),roughness:.5,metalness:.25}),
-    tip:mat({color:srgb('#d7a91c'),roughness:.45,metalness:.1}),
-    gun:mat({color:srgb('#202224'),roughness:.4,metalness:.7}),
-    exhaust:mat({color:srgb('#3b2b23'),roughness:.9,metalness:.3}),
-    torpedo:mat({color:srgb('#5d625b'),roughness:.5,metalness:.35}),
-    wood:mat({color:srgb('#8a6a43'),roughness:.8,metalness:0,side:T.DoubleSide}),
-    flight:mat({color:srgb('#6b4b30'),roughness:.8,metalness:0}),
-    face:mat({color:srgb('#c49a7c'),roughness:.7,metalness:0}),
+    fus:skin(fusMap,scheme.upper),wingR:skin(wingMapR,scheme.upper),wingL:skin(wingMapL,scheme.upper),tail:skin(tailMap,scheme.upper),cowl:skin(cowlMap,scheme.upper),
+    paint:mat({color:srgb(scheme.upper),...PAINT}),
+    paintLow:mat({color:srgb(scheme.lower),...PAINT}),
+    frame:mat({color:srgb(scheme.frame||scheme.upper),roughness:.75,metalness:0}),
+    glass:mat({color:srgb('#7d939f'),roughness:.04,metalness:.45,envMap:env,envMapIntensity:1.15,transparent:true,opacity:.40,depthWrite:false,side:T.DoubleSide}),
+    interior:mat({color:srgb('#414933'),roughness:.9,metalness:0,side:T.DoubleSide}),
+    primer:mat({color:srgb('#5e6744'),roughness:.85,metalness:0}),
+    dark:mat({color:srgb('#1b1d1d'),roughness:.85,metalness:.1,side:T.DoubleSide}),
+    engine:mat({color:srgb('#3f4243'),roughness:.55,metalness:.5}),
+    steel:mat({color:srgb('#a9aeb1'),roughness:.32,metalness:.85}),
+    hub:mat({color:srgb('#55595b'),roughness:.55,metalness:.4}),
+    tire:mat({color:srgb('#1f1f1f'),roughness:.95,metalness:0}),
+    blade:mat({color:srgb('#141414'),roughness:.62,metalness:.1}),
+    tip:mat({color:srgb('#cba01f'),roughness:.62,metalness:0}),
+    gun:mat({color:srgb('#1d1f21'),roughness:.45,metalness:.6}),
+    exhaust:mat({color:srgb('#3a2b22'),roughness:.9,metalness:.3}),
+    torpedo:mat({color:srgb('#5a5f58'),roughness:.55,metalness:.3}),
+    wood:mat({color:srgb('#806240'),roughness:.85,metalness:0,side:T.DoubleSide}),
+    flight:mat({color:srgb('#57503c'),roughness:.9,metalness:0}),
+    helmet:mat({color:srgb('#33271d'),roughness:.7,metalness:0}),
+    vest:mat({color:srgb('#8c7742'),roughness:.9,metalness:0}),
+    face:mat({color:srgb('#a37c64'),roughness:.75,metalness:0}),
     red:mat({color:srgb('#c21a1a'),emissive:srgb('#5a0000'),roughness:.3}),
     green:mat({color:srgb('#13a33a'),emissive:srgb('#004a14'),roughness:.3}),
     white:mat({color:srgb('#f4f4ee'),emissive:srgb('#3a3a36'),roughness:.3})
@@ -394,7 +546,7 @@ function create(THREE,opts={}){
   }
   // ---------- cowling, engine ----------
   {
-    add(root,mesh(revolve([[0.74,.60],[0.52,.625],[0.46,.66],[0.45,.71],[0.48,.752],[0.60,.774],[1.10,.781],[1.62,.774],[1.86,.762]],48),mats.paint,'cowling'));
+    add(root,mesh(revolve(COWL,48),mats.cowl,'cowling'));
     add(root,mesh(revolve([[1.20,0],[1.20,.61]],24),mats.dark,'cowlBaffle'));
     const eng=[revolve([[0.40,0],[0.44,.20],[0.62,.30],[0.80,.38],[0.95,.40]],20)];
     const ring=geo(new T.TorusGeometry(.43,.018,6,40));ring.translate(0,0,zs(0.84));eng.push(ring);
@@ -421,7 +573,7 @@ function create(THREE,opts={}){
   {
     const p=new T.Group();p.name='propeller';p.position.set(0,0,zs(0.36));
     const hub=revolve([[0.00,0],[0.02,.09],[0.08,.17],[0.18,.225],[0.32,.25],[0.46,.25]],32);hub.translate(0,0,-zs(0.36));
-    p.add(mesh(hub,mats.steel,'propHub'));
+    p.add(mesh(hub,mats.hub,'propHub'));
     const seg=12,N=10,rows=[];
     for(let i=0;i<=seg;i++){
       const t=i/seg,r=lerp(.20,PROP_R,t);
@@ -449,8 +601,9 @@ function create(THREE,opts={}){
     const rows=ss.map(s=>{const r=[];for(let k=0;k<=24;k++)r.push(canopyPoint(s,-Math.PI/2+Math.PI*k/24));return r;});
     add(root,mesh(gridSurface(rows,(i,j)=>[i/(rows.length-1),j/24]),mats.glass,'canopyGlass'));
     const frames=[];
-    for(const s of [3.55,4.10,4.75,5.20,5.75,6.25]){const pts=[];for(let k=0;k<=24;k++)pts.push(canopyPoint(s,-Math.PI/2+Math.PI*k/24));for(let k=0;k<24;k++)frames.push(cylinderBetween(pts[k],pts[k+1],.022,6));}
-    for(const a of [-Math.PI/2,-1.05,-.45,0,.45,1.05,Math.PI/2]){const pts=ss.filter((_,i)=>i%2===0).map(s=>canopyPoint(s,a));for(let k=0;k<pts.length-1;k++)frames.push(cylinderBetween(pts[k],pts[k+1],.018,6));}
+    // slim painted frames: windscreen bow, sliding hoods, sills and roof rails
+    for(const s of [3.55,4.10,4.75,5.20,5.75,6.25]){const pts=[];for(let k=0;k<=24;k++)pts.push(canopyPoint(s,-Math.PI/2+Math.PI*k/24));for(let k=0;k<24;k++)frames.push(cylinderBetween(pts[k],pts[k+1],s===3.55?.017:.012,5));}
+    for(const a of [-Math.PI/2,-1.05,-.45,0,.45,1.05,Math.PI/2]){const pts=ss.filter((_,i)=>i%2===0).map(s=>canopyPoint(s,a));for(let k=0;k<pts.length-1;k++)frames.push(cylinderBetween(pts[k],pts[k+1],Math.abs(a)>1.5?.016:.010,5));}
     add(root,mesh(merge(frames),mats.frame,'canopyFrames'));
     const mastBase=[0,SILL(3.9)+CH(3.9)-.02,zs(3.9)],mastTop=[0,SILL(3.9)+CH(3.9)+.36,zs(3.98)];
     add(root,mesh(merge([cylinderBetween(mastBase,mastTop,.032,6,.018),cylinderBetween(mastTop,[0,FIN_TOP-.10,zs(11.95)],.006,4)]),mats.gun,'antenna'));
@@ -460,9 +613,16 @@ function create(THREE,opts={}){
     add(root,mesh(merge(tub),mats.interior,'cockpitTub'));
     add(root,mesh(boxAt(.36,.24,.02,0,.62,zs(3.13)),mats.dark,'instrumentPanel'));
     if(opts.crew!==false){
-      const suit=[],faces=[];
-      for(const [s,y] of [[4.45,.98],[5.55,.92]]){suit.push(sphereAt(.13,0,y,zs(s)),boxAt(.46,.32,.26,0,y-.27,zs(s)+.04));faces.push(sphereAt(.105,0,y-.035,zs(s)-.035,12,8));}
+      // pilot and radioman: leather helmet with goggles, inflatable life vest, flight suit
+      const suit=[],faces=[],helmets=[],vests=[];
+      for(const [s,y] of [[4.45,.98],[5.55,.92]]){
+        helmets.push(sphereAt(.112,0,y,zs(s)+.01,14,10),boxAt(.20,.035,.05,0,y+.035,zs(s)-.085));
+        faces.push(sphereAt(.088,0,y-.035,zs(s)-.045,12,8));
+        vests.push(boxAt(.38,.18,.24,0,y-.26,zs(s)+.03),boxAt(.14,.07,.18,0,y-.14,zs(s)+.01));
+        suit.push(boxAt(.38,.26,.24,0,y-.45,zs(s)+.05));
+      }
       add(root,mesh(merge(suit),mats.flight,'crew'));add(root,mesh(merge(faces),mats.face,'crewFaces'));
+      add(root,mesh(merge(helmets),mats.helmet,'crewHelmets'));add(root,mesh(merge(vests),mats.vest,'crewVests'));
     }
   }
   // ---------- dorsal turret and ventral gun ----------
@@ -478,7 +638,7 @@ function create(THREE,opts={}){
     const gun=new T.Group();gun.name='turretGun';gun.position.set(.13,.04,0);
     gun.add(mesh(merge([cylinderBetween([0,0,.10],[0,0,1.25],.024,8),cylinderBetween([0,0,.02],[0,0,.55],.05,8)]),mats.gun,'turretBarrel'));
     t.add(gun);
-    if(opts.crew!==false)t.add(mesh(sphereAt(.12,-.08,.08,-.05),mats.flight,'gunnerHead'));
+    if(opts.crew!==false)t.add(mesh(sphereAt(.11,-.08,.08,-.05,14,10),mats.helmet,'gunnerHead'));
     add(root,t);parts.turret=t;parts.turretGun=gun;
     add(root,mesh(cylinderBetween([0,fusBot(7.25)+.10,zs(7.15)],[0,fusBot(7.25)-.02,zs(7.95)],.018,6),mats.gun,'ventralGun'));
   }
@@ -556,7 +716,7 @@ function create(THREE,opts={}){
     const wheel=new T.Group();wheel.position.set(0,-L,0);wheel.name='mainWheel';wheel.userData.groundWheel=true;
     const tyre=geo(new T.TorusGeometry(GEAR.r-.10,.10,12,36));tyre.scale(1,1,1.05);tyre.rotateY(Math.PI/2);
     wheel.add(mesh(tyre,mats.tire,'tyre'));
-    const hub=geo(new T.CylinderGeometry(.215,.215,.17,24));hub.rotateZ(Math.PI/2);wheel.add(mesh(hub,mats.steel,'hub'));
+    const hub=geo(new T.CylinderGeometry(.215,.215,.17,24));hub.rotateZ(Math.PI/2);wheel.add(mesh(hub,mats.paintLow,'hub'));
     leg.add(wheel);
     // fairing on the face that becomes the underside once the leg folds outward
     leg.add(mesh(boxAt(.025,L*.74,.42,-.12,-L*.43,0),mats.paintLow,'gearDoor'));
@@ -569,7 +729,7 @@ function create(THREE,opts={}){
     g.add(mesh(merge([cylinderBetween([0,.05,-.02],[0,-.40,.10],.042,8),boxAt(.04,.20,.06,-.07,-.44,.12),boxAt(.04,.20,.06,.07,-.44,.12)]),mats.paintLow,'tailStrut'));
     const w=new T.Group();w.position.set(0,-.50,.13);w.name='tailWheel';w.userData.groundWheel=true;
     const ty=geo(new T.TorusGeometry(.12,.055,10,20));ty.rotateY(Math.PI/2);w.add(mesh(ty,mats.tire,'tailTyre'));
-    const th=geo(new T.CylinderGeometry(.08,.08,.08,14));th.rotateZ(Math.PI/2);w.add(mesh(th,mats.steel,'tailHub'));
+    const th=geo(new T.CylinderGeometry(.08,.08,.08,14));th.rotateZ(Math.PI/2);w.add(mesh(th,mats.paintLow,'tailHub'));
     g.add(w);add(root,g);parts.tailGear=g;
   }
   // ---------- arrestor hook: stows along the underside of the tail cone ----------

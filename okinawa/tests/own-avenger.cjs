@@ -72,8 +72,14 @@ for(const n of ['wingCentre','stabR','fin'])assert(facing(n,v=>{if(n==='fin')ret
 
 // 7. Budget and clean disposal.
 const stats=plane.stats();
-assert(stats.triangles<60000&&stats.meshes<110&&stats.textures===4,'budget '+JSON.stringify(stats));
+assert(stats.triangles<60000&&stats.meshes<110&&stats.textures===6,'budget '+JSON.stringify(stats));
 let bad=0;each(root,v=>{if(!Number.isFinite(v.x+v.y+v.z))bad++;});assert.equal(bad,0,'finite geometry');
 const scene=new THREE.Scene();scene.add(root);plane.dispose();assert.equal(root.parent,null,'dispose detaches the model');
+// 8. Wartime finish: blue-gray by default, non-specular paint, reflective glazing.
+{const p=OwnAvenger.create(THREE,{createCanvas});
+ assert.equal(p.scheme,OwnAvenger.SCHEMES.navy42,'1942 blue-gray is the default finish');
+ for(const k of ['fus','wingL','wingR','tail','cowl','paint'])assert(p.mats[k].metalness===0&&p.mats[k].roughness>=.8,k+' is flat, non-specular paint');
+ assert(p.mats.glass.envMap&&p.mats.glass.envMap.isCubeTexture,'glazing reflects a sky/sea environment');
+ p.dispose();}
 for(const scheme of Object.keys(OwnAvenger.SCHEMES)){const p=OwnAvenger.create(THREE,{createCanvas,scheme});assert.equal(p.scheme,OwnAvenger.SCHEMES[scheme]);p.dispose();}
 console.log(JSON.stringify({span:+(x1-x0).toFixed(2),length:+(z1-z0).toFixed(2),folded:+(f1-f0).toFixed(2),wingArea:+(2*area).toFixed(1),attitudeDeg:+(attitude*180/Math.PI).toFixed(1),height:+levelTop.toFixed(2),groundClearance:+clearance.toFixed(2),...stats}));

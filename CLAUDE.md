@@ -1,5 +1,17 @@
 # Torpedo-Bomber — Übergabe an Claude Code
 
+**22.10.2026, eigene Avenger überarbeitet (weiterhin NICHT im Spiel):** Nutzer: „sieht nach
+Kinderspielzeug aus“. Ursachen: helles, glänzendes Museumsgrau (unter ACES 1,12 fast weiß), Chromkugel
+als Nabe, dicke helle Haubenrahmen, braune Kugelköpfe, gleichförmiges Panelraster, buntes Parkettdeck.
+Jetzt: Standard `navy42` = 1942 mattes Blue-Gray/Light Gray (Stern ohne Balken, „T-10“, TBF-1-Stencil),
+`tricolor` mit Stern+Balken, `museum` dunkler; alle Lackflächen roughness .82/metalness 0. Auf Canvas:
+gravierte Nähte, Nietreihen, dezente Paneltöne, ausgeblichene Oberseiten, Abgasruß, Öl, Abplatzer an
+Kanten/Laufflächen/Haubenrand, Laufsteg; eigene Cowling-Textur mit Dzus-Verschlüssen. Verglasung mit
+kleiner eigener Himmel/See-Cubemap (nur Glas), schmale lackierte Rahmen, Nabe lackiert, Besatzung mit
+Lederhaube/Schwimmweste. 6 Texturen (4×2048×1024, Cowling 1024×512, Cube 6×64²), 101 Meshes, 47.140
+Dreiecke. Vorschau-Deck jetzt Deck Blue gebeizt. Test prüft zusätzlich Standardlackierung, matte Lacke
+und Cubemap-Glas.
+
 **21.10.2026, eigene TBM-3 Avenger (noch NICHT im Spiel, kein Build-Sprung):** Auf Nutzerwunsch
 ein rechtlich eigenes Avenger-Modell rein aus Code: `own-avenger.js` (`OwnAvenger.create(THREE,opts)`,
 Rahmen wie `planeGroup`: Nase −Z, oben +Y, rechts +X, Meter, Ursprung 3,5 m hinter Spinnerspitze).
