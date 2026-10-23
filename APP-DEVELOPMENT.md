@@ -1,7 +1,18 @@
-# Squadron — iPad prototype, Build 200
+# Squadron — iPad prototype, Build 201
 
 The existing Three.js flight engine is retained. This is a **native project and tested
 offline web payload**, not an App Store submission, signed IPA or physical-iPad certification.
+
+## Build 201 Dauntless
+
+The supplied HappySunpore CC BY 4.0 model replaces the War-Thunder-labelled SBD
+in runtime and offline app payload. Photo-inspired blue-gray/light-gray paint,
+1942 stars, original propeller and native gear/flaps/control surfaces, perforated
+split dive brakes, hook, two crew and original rear guns. Seven animation clips;
+12.66 m span, 7.23 MB / 73,414 triangles. The embedded 2048 atlas is retained on
+touch devices; other Pacific texture limits and Avenger finishing are unchanged.
+Credits/source/output hashes are included. Preview: model-check.html?aircraft=sbd.
+Physical iPad performance and signing remain untested.
 
 ## Build 200 B-17
 

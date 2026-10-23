@@ -1,0 +1,32 @@
+{
+  "schema": 1,
+  "preparedOn": "2026-10-23",
+  "sourceFile": "stb_dauntless.glb",
+  "sourceSha256": "41041f1cef18175ccffdf36338859c4159fb931bbe264fa5305ffa5cf2098774",
+  "sourceBytes": 6952916,
+  "outputFile": "sbd-dauntless.glb",
+  "outputSha256": "80b06926d6c4d3168e9a52a61379b1a00a1841a8130afcca71f842870d8336e1",
+  "outputBytes": 7229376,
+  "triangles": 73414,
+  "spanMetres": 12.66,
+  "sourceLengthMetres": 9.514547,
+  "atlas": "sbd-1942-livery.jpg",
+  "metadata": {
+    "author": "HappySunpore (https://sketchfab.com/happysunpore)",
+    "license": "CC-BY-4.0 (https://creativecommons.org/licenses/by/4.0/)",
+    "source": "https://sketchfab.com/3d-models/stb-dauntless-31e14fecfd9b4d51bdf0c4b27a0572f0",
+    "title": "SBD Dauntless \u2014 Squadron 1942 animated derivative",
+    "sourceSha256": "41041f1cef18175ccffdf36338859c4159fb931bbe264fa5305ffa5cf2098774",
+    "changes": "Original airframe and cockpit retained; own photo-inspired blue-gray/light-gray livery; original propeller, gear, controls, rear gun and hook articulated; same-outline perforated split dive brakes and two original procedural crew added; smoothing preserves positions."
+  },
+  "animations": [
+    "Propeller_Spin",
+    "Gear_Retract",
+    "Landing_Flaps",
+    "Dive_Brakes",
+    "Flight_Controls",
+    "Arrestor_Hook",
+    "Rear_Guns"
+  ],
+  "note": "Original raw file preserved separately. Final GLB contains the complete geometry, materials, textures, pivots and clips. Photo is a visual reference only."
+}

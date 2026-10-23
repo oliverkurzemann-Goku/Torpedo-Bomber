@@ -15,8 +15,8 @@ for(const entry of ['index.html','torpedo-carrier.html','remagen-mission.html'])
   assert(fs.existsSync(path.join(out,decodeURIComponent(relative))),entry+' missing dependency '+relative);
  }
 }
-for(const unwanted of ['.git','node_modules','CLAUDE.md','thunderbolt-europe.html','torpedo-carrier-open-sea.html','model-check.html','p47d_alt.glb','b17.glb'])assert(!fs.existsSync(path.join(out,unwanted)));
-for(const required of ['assets/aircraft/b17-helijah.glb','assets/aircraft/B17-CREDITS.txt','b17-native.js'])assert(fs.existsSync(path.join(out,required)),'Missing B-17 payload '+required);
+for(const unwanted of ['.git','node_modules','CLAUDE.md','thunderbolt-europe.html','torpedo-carrier-open-sea.html','model-check.html','p47d_alt.glb','b17.glb','sbd dauntless.glb'])assert(!fs.existsSync(path.join(out,unwanted)));
+for(const required of ['assets/aircraft/b17-helijah.glb','assets/aircraft/B17-CREDITS.txt','b17-native.js','sbd-native.js','assets/aircraft/sbd-dauntless.glb','assets/aircraft/SBD-CREDITS.txt'])assert(fs.existsSync(path.join(out,required)),'Missing B-17 payload '+required);
 assert(fs.readFileSync(path.join(out,'remagen-mission.html'),'utf8').includes("b17:   ['assets/aircraft/b17-helijah.glb']"));
 const config=JSON.parse(fs.readFileSync(path.join(root,'capacitor.config.json'),'utf8'));assert.equal(config.webDir,'dist-app');assert(!config.server?.url);
 const plist=fs.readFileSync(path.join(root,'ios/App/App/Info.plist'),'utf8');assert(!plist.includes('UIInterfaceOrientationPortrait'));
