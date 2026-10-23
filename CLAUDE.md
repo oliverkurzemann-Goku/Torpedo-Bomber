@@ -19,6 +19,13 @@ Voreinstellung ?aircraft=sbd mit Fahrwerk/Klappen/Sturzflugbremsen/Fanghaken. Al
 War-Thunder-sbd dauntless.glb kein Runtime-/App-Fallback. Build 201 an Menüs/Spielen,
 Payload/Xcode; Checkpoint-Kompatibilität 196 unverändert. Credits und Hashes vorhanden.
 Kein echter iPad-Test; andere App-Rechteprüfungen bleiben offen.
+Verifiziert: glTF-Validator 0 Fehler/0 Warnungen; echter r128-Loader, alle 7 Clips,
+Original-Rotorradius 1.735 m, unabhängige Klone und drei Reifen auf 20-m-Deck <3 mm.
+Chromium-Vorschau und echte Touch-Trägermission: Atlas 2048, zwei Rottenflieger, je
+zwei Front-/Heckrunden an Modellmündungen, echte Bremslöcher, Fanghaken und Stores.
+34 Terrain-Regressionsdateien plus neuer nativer SBD-Test bestanden; 67 Okinawa-
+Dateien geprüft, einziger alter Build-Link im Europamenü korrigiert und campaign.cjs
+erneut bestanden. App: 314 Dateien/274.2 MiB/36 Modelle, Hash-/Dependency-Check grün.
 
 
 **Build 200, 23.10.2026: gelieferte helijah-B-17 animiert und eingebaut.**

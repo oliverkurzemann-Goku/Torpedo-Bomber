@@ -3344,7 +3344,7 @@ function updateTailGun(dt){
     const mesh=CombatFX.round();mesh.position.copy(pivot.localToWorld(port.clone()));mesh.lookAt(mesh.position.clone().add(dir));scene.add(mesh);
     bullets.push({mesh,dir,life:1.5,speed:620,tail:true});
   }
-  combatFX.muzzle(pivot,ports,typeOfRearGunHeavy());
+  combatFX.muzzle(pivot,ports,typeOfRearGunHeavy(),nativeRear?ports[0].clone().add(ports[1]).normalize():undefined);
   sfxGun();
 
 }

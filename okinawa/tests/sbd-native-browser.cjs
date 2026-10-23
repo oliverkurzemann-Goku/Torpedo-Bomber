@@ -48,6 +48,7 @@ const server=http.createServer((req,res)=>{const file=path.resolve(root,'.'+deco
    wingmen.length=0;spawnWingman(0);spawnWingman(1);if(wingmen.length!==2||wingmen.some(w=>!SBDRig.isNative(w.mesh)))throw Error('Wrong wingmen');
    const w0=wingmen[0].mesh.getObjectByName('sbdRotorBlade'),w1=wingmen[1].mesh.getObjectByName('sbdRotorBlade'),wz=w1.rotation.z;w0.rotation.z+=.1;if(w1.rotation.z!==wz)throw Error('Shared wingman transform');
    P.torps=0;P.diveBrake=false;for(let i=0;i<40;i++)updatePlaneMesh(1/30);if(playerSBD.getObjectByName('CenterBomb').visible)throw Error('Stores not hidden');
+   combatFX.update(.2); // Finish muzzle flashes before the studio proof image.
    const studio=new THREE.Scene();studio.background=new THREE.Color(0xb7c8d4);studio.add(new THREE.HemisphereLight(0xcfe8ff,0x33402f,.9));const sun=new THREE.DirectionalLight(0xfff0d2,1.6);sun.position.set(8,15,-12);studio.add(sun);
    const hero=playerSBD.clone(true);hero.position.set(0,0,0);hero.rotation.set(0,0,0);SBDRig.update(hero,{gear:0,bombs:0});studio.add(hero);
    const cam=new THREE.PerspectiveCamera(36,1194/834,.1,150);cam.position.set(13,5,-17);cam.lookAt(0,0,0);renderer.setPixelRatio(1);renderer.setSize(1194,834);renderer.render(studio,cam);
