@@ -298,7 +298,7 @@
   .warningLamps{display:flex!important;gap:10px;padding:5px 9px!important;background:#141813dd!important;border:1px solid #535744;border-radius:4px;white-space:nowrap;}
   .warningLamp{color:#646c5c;font:9px monospace;letter-spacing:.35px;} .warningLamp[data-level="1"]{color:#ffd088;text-shadow:0 0 6px #e0a432a0;} .warningLamp[data-level="2"]{color:#ff8c70;text-shadow:0 0 7px #ff6638b0;}
 </style>
-<link rel="stylesheet" href="menu-layout.css?v=200">
+<link rel="stylesheet" href="menu-layout.css?v=201">
 </head>
 <body>
 <div id="app"></div>
@@ -351,7 +351,7 @@
   <div id="flash"></div>
   <div id="ltn" style="position:fixed;inset:0;background:#e6ecff;opacity:0;pointer-events:none;z-index:40;"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 200</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 201</div>
 
   <!-- Optical landing aid -->
   <div id="lso">
@@ -395,7 +395,7 @@
 
 <!-- Menu -->
 <div class="overlay" id="menu" data-campaign="pacific">
-  <div class="menuTop"><a id="selBtn" href="index.html?v=200">&#9664; Change Game</a><span class="menuMeta">PACIFIC OPERATIONS<br>BUILD 200</span></div>
+  <div class="menuTop"><a id="selBtn" href="index.html?v=201">&#9664; Change Game</a><span class="menuMeta">PACIFIC OPERATIONS<br>BUILD 201</span></div>
   <div class="card menuCard">
     <aside class="menuOverview" aria-label="Campaign and pilot options">
     <div class="campaignArt" aria-hidden="true"></div>
@@ -491,9 +491,10 @@
 <script src="campaign.js?v=1"></script>
 <script src="game-runtime.js?v=198"></script>
 <script src="sortie-checkpoint.js?v=198"></script>
-<script src="aircraft-articulation.js?v=200"></script>
+<script src="aircraft-articulation.js?v=201"></script>
 <script src="terrain-system/AircraftGround.js?v=198"></script>
-<script src="pacific-assets.js?v=199"></script>
+<script src="pacific-assets.js?v=201"></script>
+<script src="sbd-native.js?v=201"></script>
 <script src="avenger-finish.js?v=199"></script>
 <script src="naval-assets.js?v=198"></script>
 <script src="aircraft-rotors.js?v=172"></script>
@@ -565,6 +566,7 @@ const PLANE_MODEL_URL = 'grumman%20tbm%20avenger.glb?v=2';
 // Swap the bright tri-colour atlas (cut to 512 px on touch devices) for the full-size 1942
 // livery once per decoded model; wingmen and raiders clone the finished source.
 if(globalThis.PacificAssets?.configure&&globalThis.AvengerFinish)PacificAssets.configure('grumman%20tbm%20avenger.glb',root=>AvengerFinish.apply(THREE,root,{anisotropy:8}));
+PacificAssets.configure('assets/aircraft/sbd-dauntless.glb',()=>{}, {textureLimit:2048});
 let MODEL_YAW = -Math.PI/2;
 let MODEL_SCALE = 1;
 let COCKPIT_EYE = [0, 0.70, -1.5];
@@ -2135,6 +2137,7 @@ function startMission(idx){
   bombCue.reset();
   if(navigation)navigation.reset();
   if(rearArmament)rearArmament.userData.pivot.quaternion.identity();
+  if(typeof SBDRig!=='undefined')SBDRig.reset(playerSBD);
   finishCarrierIntro();
   if(eng) eng.master.gain.setTargetAtTime(0.85,actx.currentTime,0.05);
   flightCoach=new GameRuntime.HintCoach();
@@ -2855,7 +2858,7 @@ function updateSplashes(dt){
 }
 
 // flak
-const SBD_MODEL_URL       = 'sbd%20dauntless.glb?v=2';
+const SBD_MODEL_URL       = 'assets/aircraft/sbd-dauntless.glb?v=201';
 let sbdTemplate=null, playerSBD=null, sbdRotor=null, sbdRotorAxis=null,corsairTemplate=null;
 function strikeTemplate(){return MISSIONS[mission]?.corsair?corsairTemplate:sbdTemplate;}
 const ZERO_MODEL_URL='zero.glb?v=2';  // external A6M model (nose +Z)
@@ -2884,6 +2887,7 @@ function makeSBDGear(){
   return gear;
 }
 function setSBDGearVisible(aircraft,down){
+  if(typeof SBDRig!=='undefined'&&SBDRig.isNative(aircraft)){SBDRig.pose(aircraft,down?1:0,{left:0,right:0});return;}
   const gear=aircraft&&aircraft.getObjectByName('sbdGear');
   if(gear)gear.visible=!!down;
 }
@@ -2919,6 +2923,12 @@ function loadSBDModel(){
   return loader.load(SBD_MODEL_URL, function(gltf){
     try{
       const model=gltf.scene||gltf.scenes[0]; if(!model) return;
+      if(typeof SBDRig!=='undefined'&&SBDRig.isNative(model)){
+        const holder=new THREE.Group();holder.add(model);
+        model.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});
+        AircraftArticulation.install(holder,'sbd',{gearName:'sbdGear'});sbdTemplate=holder;
+        console.log('Native 1942 Dauntless loaded: original propeller, gear and cockpit');return;
+      }
       const box=new THREE.Box3().setFromObject(model);
       const size=box.getSize(new THREE.Vector3()), c=box.getCenter(new THREE.Vector3());
       model.position.sub(c);
@@ -3280,6 +3290,7 @@ let rearArmament=null,rearArmamentType=null;
 function updateRearArmament(){
  const model=isSBD()?playerSBD:gltfRoot,type=isSBD()?'sbd':'avenger';
  if(!hasRearGunner()||!model){if(rearArmament)rearArmament.visible=false;return;}
+ if(type==='sbd'&&typeof SBDRig!=='undefined'&&SBDRig.isNative(model)){if(rearArmament)rearArmament.visible=false;return;}
  if(rearArmamentType!==type){
   if(rearArmament){if(window.__avStash)window.__avStash=window.__avStash.filter(o=>o!==rearArmament);rearArmament.parent?.remove(rearArmament);rearArmament.traverse(o=>{o.geometry?.dispose();});for(const m of rearArmament.userData.materials)m.dispose();}
   const aft=type==='avenger'?1.45:.85;
@@ -3318,19 +3329,22 @@ function updateTailGun(dt){
   }
   if(!tgt || P.tailCool>0) return;
   P.tailCool=0.22;   // slower cadence — enemy fighters are a real threat again
-  updateRearArmament();if(!rearArmament?.visible)return;
-  const pivot=rearArmament.userData.pivot;
+  const nativeRear=isSBD()&&typeof SBDRig!=='undefined'?SBDRig.rear(playerSBD):null;
+  updateRearArmament();if(!nativeRear&&!rearArmament?.visible)return;
+  const pivot=nativeRear?nativeRear.pivot:rearArmament.userData.pivot;
+  const ports=nativeRear?nativeRear.ports:rearArmament.userData.ports;
   planeGroup.position.copy(P.pos);planeGroup.quaternion.copy(pacificAircraftQuaternion());planeGroup.updateMatrixWorld(true);
-  const gun=rearArmament.getWorldPosition(new THREE.Vector3());
+  const gun=(nativeRear?pivot:rearArmament).getWorldPosition(new THREE.Vector3());
   const lead=tgt.pos.clone().addScaledVector(new THREE.Vector3(Math.sin(tgt.heading),Math.sin(tgt.pitch),Math.cos(tgt.heading)),(tgt.spd||0)*best/620);
   const direction=lead.sub(gun).normalize(),local=direction.clone().applyQuaternion(planeGroup.quaternion.clone().invert());
-  pivot.quaternion.setFromUnitVectors(new THREE.Vector3(0,0,1),local);planeGroup.updateMatrixWorld(true);
-  for(const port of rearArmament.userData.ports){
+  if(nativeRear)SBDRig.aimRear(playerSBD,direction,dt);
+  else pivot.quaternion.setFromUnitVectors(new THREE.Vector3(0,0,1),local);planeGroup.updateMatrixWorld(true);
+  for(const port of ports){
     const dir=direction.clone().add(new THREE.Vector3((Math.random()-.5)*.045,(Math.random()-.5)*.045,(Math.random()-.5)*.045)).normalize();
     const mesh=CombatFX.round();mesh.position.copy(pivot.localToWorld(port.clone()));mesh.lookAt(mesh.position.clone().add(dir));scene.add(mesh);
     bullets.push({mesh,dir,life:1.5,speed:620,tail:true});
   }
-  combatFX.muzzle(pivot,rearArmament.userData.ports,typeOfRearGunHeavy());
+  combatFX.muzzle(pivot,ports,typeOfRearGunHeavy(),nativeRear?ports[0].clone().add(ports[1]).normalize():undefined);
   sfxGun();
 
 }
@@ -4592,6 +4606,7 @@ function updateWingmen(dt){
     w.mesh.rotation.set(0,0,0);
     w.mesh.rotateY(w.heading); w.mesh.rotateX(-w.pitch); w.mesh.rotateZ(-w.roll);
     if(w.disc) w.disc.rotation.z-=GameRuntime.rotorStep(dt,PROP_STEP);
+    if(typeof SBDRig!=='undefined'&&SBDRig.isNative(w.mesh))SBDRig.update(w.mesh,{gear:0,dive:w.mode==='attack'?.65:0,bombs:w.dropped?0:1,roll:w.roll||0,pitch:w.pitch||0,dt});
   }
 }
 // Visible ordnance a wingman drops on its run-in: a torpedo runs along the surface, a bomb
@@ -5347,7 +5362,7 @@ function loadPlaneModel(){
       }
       window.__eyeDbg='EYE '+COCKPIT_EYE.map(v=>v.toFixed(2)).join('/');
       const btEl=document.getElementById('buildTag');
-      if(btEl) btEl.textContent='BUILD 200 · '+window.__eyeDbg;
+      if(btEl) btEl.textContent='BUILD 201 · '+window.__eyeDbg;
       let seat=null;
       model.traverse(function(o){
         if(!o.isMesh||!o.material) return;
@@ -5484,6 +5499,7 @@ function loadCruiserModel(){
 }
 
 function pacificGunMuzzles(){
+  const native=typeof SBDRig!=='undefined'&&isSBD()?SBDRig.frontMuzzles(playerSBD,planeGroup):null;if(native)return native;
   // Measured on normalized GLBs: wing leading edges for A6M/TBM, cowling for SBD.
   // Plane-group coordinates: +X starboard, -Z forward.
   const ports=MISSIONS[mission]?.corsair?[[-2.604,-1.337,-3.533],[-2.813,-1.320,-3.294],[2.604,-1.337,-3.533],[2.813,-1.320,-3.294]]:isDefend()?[[-2.15,-.24,-2.52],[2.15,-.24,-2.52]]:
@@ -5686,6 +5702,7 @@ function updatePlaneMesh(dt){
     curHook.rotation[ax]=curHook.userData.hookUpAngle+
       (curHook.userData.hookDownAngle-curHook.userData.hookUpAngle)*(P.hook==null?0:P.hook);
   }
+  if(isSBD()&&playerSBD&&typeof SBDRig!=='undefined'&&SBDRig.isNative(playerSBD))SBDRig.update(playerSBD,{gear:g,flaps:actualFlaps,dive:P.diveBrakeVisual,hook:P.hook,bombs:P.torps,roll:inputRoll,pitch:inputPitch,dt});
   if(cockpitInterior) cockpitInterior.visible=false;
   // LOOK buttons: chase view only, camera height.
   document.querySelectorAll('.lookBtn').forEach(el=>{ el.style.display=(state===ST.FLIGHT)?'block':'none'; });
@@ -6742,7 +6759,7 @@ function setupUIButtons(){
   if(dbgT2) dbgT2.onclick=()=>{
     dbgOn=!dbgOn; GameRuntime.storage.setItem('dbgOn',dbgOn?'1':'0');
     const db=document.getElementById('dbgBox'); if(db) db.textContent=dbgOn?'✓':'';
-    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 200'; }
+    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 201'; }
   };
   const lu=document.getElementById('lookUp'), ld=document.getElementById('lookDn');
   let _lookT=0;
@@ -6758,7 +6775,7 @@ function setupUIButtons(){
   if(pb) pb.addEventListener('pointerdown',e=>{ e.preventDefault(); togglePause(); });
   const rb=document.getElementById('resumeBtn'); if(rb) rb.onclick=resumeGame;
   const mb=document.getElementById('menuBtn'); if(mb) mb.onclick=exitToMenu;
-  document.getElementById('pauseMainMenu').onclick=async()=>{globalThis.sortieCheckpoint?.save();await globalThis.sortieCheckpoint?.flush();exitToMenu(true);window.location.href='index.html?v=200';};
+  document.getElementById('pauseMainMenu').onclick=async()=>{globalThis.sortieCheckpoint?.save();await globalThis.sortieCheckpoint?.flush();exitToMenu(true);window.location.href='index.html?v=201';};
   document.getElementById('resultBtn').onclick=()=>{
     // the logbook borrows this screen from the menu — send the player straight back
     if(logbookOpen){ logbookOpen=false; showOverlay('menu'); return; }
@@ -7004,7 +7021,7 @@ function animate(){
     notice.style.cssText='position:fixed;inset:0;z-index:999998;background:rgba(15,20,15,.95);color:#e8ddbc;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px;text-align:center;font:16px system-ui';
     const title=document.createElement('h2');title.textContent='Simulation interrupted';
     const detail=document.createElement('p');
-    detail.textContent='BUILD 200 · '+(MISSIONS[mission]?.sub||'Menu')+' · '+error.message;
+    detail.textContent='BUILD 201 · '+(MISSIONS[mission]?.sub||'Menu')+' · '+error.message;
     const reload=document.createElement('button');reload.textContent='Reload game';
     reload.style.cssText='padding:12px 24px;font:inherit';reload.onclick=()=>location.reload();
     notice.appendChild(title);notice.appendChild(detail);notice.appendChild(reload);document.body.appendChild(notice);

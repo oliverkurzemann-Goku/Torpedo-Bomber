@@ -34,7 +34,7 @@
  // Per-model finishing step, run once on the decoded source before any clone is handed out
  // (e.g. the Avenger's repainted livery). A failed step keeps the delivered model.
  const prepares=[];
- function configure(match,prepare){prepares.push({match,prepare});}
+ function configure(match,prepare,{textureLimit=null}={}){prepares.push({match,prepare,textureLimit});}
  function source(url){
   if(sources.has(url))return sources.get(url);
   const task=new Promise((resolve,reject)=>{
@@ -43,7 +43,8 @@
    try{new global.THREE.GLTFLoader().load(url,async gltf=>{
     try{
      const root=gltf.scene||gltf.scenes?.[0];if(!root)throw Error('GLB has no scene: '+url);
-     boundTextures(root);
+     const requested=prepares.find(p=>url.includes(p.match)&&p.textureLimit)?.textureLimit;
+     boundTextures(root,requested||maxTextureSize);
      global.clearTimeout(timeout);   // download done; the finish has its own bound
      // At most 20 s: a stalled finish never blocks the mission (a late one still applies).
      for(const p of prepares)if(url.includes(p.match)){

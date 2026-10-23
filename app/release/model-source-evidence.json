@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "checkedOn": "2026-10-14",
+  "checkedOn": "2026-10-23",
   "method": "Public Sketchfab model metadata API; uploader declarations are not original-rightsholder authorization. Excerpts limited to 24 words per model.",
   "sources": [
     {
@@ -588,6 +588,25 @@
         "slug": "by"
       },
       "descriptionSignals": []
+    },
+    {
+      "modelId": "31e14fecfd9b4d51bdf0c4b27a0572f0",
+      "sourceUrl": "https://sketchfab.com/3d-models/stb-dauntless-31e14fecfd9b4d51bdf0c4b27a0572f0",
+      "apiUrl": "https://api.sketchfab.com/v3/models/31e14fecfd9b4d51bdf0c4b27a0572f0",
+      "checkedOn": "2026-10-23",
+      "fetchStatus": "verified-public-api",
+      "title": "STB Dauntless",
+      "uploader": "HappySunpore",
+      "profileUrl": "https://sketchfab.com/happysunpore",
+      "declaredLicense": {
+        "label": "CC Attribution",
+        "url": "http://creativecommons.org/licenses/by/4.0/",
+        "slug": "by"
+      },
+      "descriptionSignals": [],
+      "descriptionExcerpt": "",
+      "publishedAt": "2023-12-05T02:29:00.666248",
+      "updatedAt": "2023-12-05T02:29:19.613801"
     }
   ]
 }

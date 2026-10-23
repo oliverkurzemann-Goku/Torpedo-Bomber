@@ -1,5 +1,33 @@
 # Torpedo-Bomber — Übergabe an Claude Code
 
+**Build 201, 23.10.2026: gelieferte HappySunpore-Dauntless lackiert und nativ animiert.**
+Quelle 31e14fecfd9b4d51bdf0c4b27a0572f0, CC BY 4.0; Rohdatei stb_dauntless.glb
+unverändert separat erhalten. Neue assets/aircraft/sbd-dauntless.glb: 7,229,376 Bytes,
+73,414 Dreiecke, 39 Meshes, 12.66 m Spannweite, ursprüngliche Länge ~9.515 m erhalten.
+Eigener 2048er Blaugrau-/Hellgrau-Atlas mit 1942er Sternen ohne Balken, Oberflächenspuren;
+Foto nicht eingebettet. Originalhaut/Cockpit/Motor/Dreiblattpropeller erhalten, echte
+Fahrwerk-/Steuerflächen-/MG-/Haken-Drehpunkte, gelochte geteilte Sturzflugbremsen und
+zwei prozedurale Besatzungsfiguren. Sieben Clips. sbd-native.js hält Klon-Zustand in
+WeakMap, Brake-restQuaternion vor lokaler X-Drehung erhalten! Keine Legacy-Schnitte,
+keine zweite Propellerhaut, generischen hinteren MG-Aufbau bei nativer SBD ausblenden.
+Original-Spornrad bleibt eingefahren sichtbar. gear-Gruppe bleibt sichtbar; Hauptbeine
+rotieren von Z +/- PI/2 (unten) auf 0 (oben). CenterBomb folgt vorhandenen Stores.
+Front-/Heck-MG-Effekte starten an nativen Mündungen, Spielwerte unverändert. Zwei
+Rottenflieger verwenden unabhängige Klone. PacificAssets behält nur für diese SBD
+2048er Atlas auch auf Touch; Avenger/andere Limits unverändert. Neue model-check-
+Voreinstellung ?aircraft=sbd mit Fahrwerk/Klappen/Sturzflugbremsen/Fanghaken. Alte
+War-Thunder-sbd dauntless.glb kein Runtime-/App-Fallback. Build 201 an Menüs/Spielen,
+Payload/Xcode; Checkpoint-Kompatibilität 196 unverändert. Credits und Hashes vorhanden.
+Kein echter iPad-Test; andere App-Rechteprüfungen bleiben offen.
+Verifiziert: glTF-Validator 0 Fehler/0 Warnungen; echter r128-Loader, alle 7 Clips,
+Original-Rotorradius 1.735 m, unabhängige Klone und drei Reifen auf 20-m-Deck <3 mm.
+Chromium-Vorschau und echte Touch-Trägermission: Atlas 2048, zwei Rottenflieger, je
+zwei Front-/Heckrunden an Modellmündungen, echte Bremslöcher, Fanghaken und Stores.
+34 Terrain-Regressionsdateien plus neuer nativer SBD-Test bestanden; 67 Okinawa-
+Dateien geprüft, einziger alter Build-Link im Europamenü korrigiert und campaign.cjs
+erneut bestanden. App: 314 Dateien/274.2 MiB/36 Modelle, Hash-/Dependency-Check grün.
+
+
 **Build 200, 23.10.2026: gelieferte helijah-B-17 animiert und eingebaut.**
 Neue Quelle 927f07f6ddcf470ab0387ce5829024d5 (helijah, CC BY 4.0), keine NC-Arma-
 Adaption. `assets/aircraft/b17-helijah.glb`: 31.62 m, 71,535 Dreiecke / 5,977,464 Bytes;

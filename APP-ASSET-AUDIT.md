@@ -1,4 +1,4 @@
-# App asset rights review — B-17 updated 23 October 2026
+# App asset rights review — Dauntless updated 23 October 2026
 
 **Result: source/license evidence improved; app distribution clearance is still open.**
 This review records evidence and concrete unresolved uses. It is not an authoritative
@@ -8,6 +8,15 @@ Historical Build 196 payload contained **302 files / 266.5 MiB**, including
 **35 models: 34 GLB and one FBX**. Every payload file has a SHA-256 in
 [asset-register.json](app/release/asset-register.json); embedded GLB textures are covered by
 their binary's hash. [Readable model table](app/release/asset-register.md).
+
+## Build 201 Dauntless replacement
+
+The supplied HappySunpore model (31e14fecfd9b4d51bdf0c4b27a0572f0) declares CC BY 4.0;
+embedded attribution and public creator-account metadata matched on 23 October.
+Own photo-inspired paint and animation retain attribution/change notices and exact
+source/output hashes. The former War-Thunder-labelled sbd dauntless.glb is excluded
+from runtime and the offline payload. This changes that model's source evidence;
+other files retain their own unresolved status. Painting never removes a license.
 
 ## Build 200 replacement
 
@@ -41,7 +50,7 @@ Acquisition dates, private correspondence and grant/receipt records have not bee
 
 | Files / family | Finding | Required next action |
 | --- | --- | --- |
-| 12 War Thunder-labelled aircraft/vehicle files | Runtime source titles and current uploader metadata identify the game. CC BY labels alone do not establish original mesh/texture authority. | Ask Gaijin/the actual rightsholders for app-bundle redistribution rights, or obtain independently authored replacements. |
+| 11 remaining War Thunder-labelled aircraft/vehicle files | Runtime source titles and current uploader metadata identify the game. CC BY labels alone do not establish original mesh/texture authority. | Ask Gaijin/the actual rightsholders for app-bundle redistribution rights, or obtain independently authored replacements. |
 | Fletcher, Japanese cargo, landing ship | Three runtime exports derive from a collection explicitly titled Call of Duty: World at War. | Establish original authority with the relevant rightsholder; uploader confirmation alone may be insufficient. |
 | `ijn carrier.glb` | Embedded Chinese title names World of Warships. Current API access returned 401; exact original ownership remains unconfirmed. | Verify provenance and Wargaming/other required rights or replace. Do not call this cleared merely because embedded CC BY is present. |
 | `assets/aircraft/b17-helijah.glb` | New helijah creator-account source declares CC BY 4.0. Prior NC file excluded from runtime/app. | Retain author/source/license/change notices and source evidence; review actual distribution conditions. |
@@ -51,7 +60,7 @@ Acquisition dates, private correspondence and grant/receipt records have not bee
 | Copernicus / Overture / OSM datasets | Exact offline datasets and conversion code are inventoried; Rhine pipeline names Overture release 2026-08-19.0. | Preserve Copernicus notices and OSM/Overture attribution; review each shipped adapted database and release's upstream conditions. Conversion strips detailed contributor fields, so blanket attribution alone is not a completed source audit. |
 | Code / generated art / procedural audio | MIT notices for bundled runtime libraries are retained; recorded jet audio is excluded; campaign generation prompts retained. | Review native package/store conditions and final notices. Own-code licensing remains the owner's decision; no change to `UNLICENSED`. |
 
-The 16 “original-game-rights-open” model rows comprise the 12 War Thunder files, three
+The 15 remaining “original-game-rights-open” model rows comprise the 11 War Thunder files, three
 Call of Duty exports and one World of Warships-labelled carrier. The former noncommercial B-17 has been replaced. There is one upstream FPS Creator
 row and one missing-source US carrier row. These are review priorities, not findings
 of infringement.

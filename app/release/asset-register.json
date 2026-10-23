@@ -1,25 +1,25 @@
 {
   "schema": 1,
-  "reviewedOn": "2026-10-14",
-  "build": 200,
+  "reviewedOn": "2026-10-23",
+  "build": 201,
   "status": "OPEN — source declarations checked; no external rights authorization obtained",
   "payload": {
-    "bytes": 290598594,
-    "fileCount": 310,
+    "bytes": 287553523,
+    "fileCount": 314,
     "modelCount": 36,
-    "manifestSha256": "ae4f2c3b849eb41999bf955dc9ff4f80b54158ba4f49809584f234360332d29b"
+    "manifestSha256": "5f7ca49fc9d49f4729c1a31fc2d799b9e924ccbab28890ddd8784a2e714a8fb3"
   },
   "files": [
     {
       "path": "ASSET-CREDITS.md",
-      "bytes": 20490,
-      "sha256": "48ff748a8302d881b9b3e9258cc4ba3c0af566e190bcc35e62b849bb198dce6f",
+      "bytes": 22467,
+      "sha256": "984ae93971f6df430343801131df6286f2eaf0a89f68b3baba4f154be0f571ab",
       "kind": "code-or-notice"
     },
     {
       "path": "aircraft-articulation.js",
-      "bytes": 15505,
-      "sha256": "fb726fc1cb4e419203ead2873f733182a3cf69793e150b684f146ae2c5a261fe",
+      "bytes": 15840,
+      "sha256": "a8702457e828b7a8241f353fcd4710f79c7cd8716ae0b48a37ad7e790e35805e",
       "kind": "code-or-notice"
     },
     {
@@ -59,6 +59,12 @@
       "kind": "code-or-notice"
     },
     {
+      "path": "assets/aircraft/SBD-CREDITS.txt",
+      "bytes": 1946,
+      "sha256": "ec4703b30c8c3abb25436062e529206b960bf657b04f93ad4f9014e6cd1c1a58",
+      "kind": "code-or-notice"
+    },
+    {
       "path": "assets/aircraft/avenger-1942-livery.webp",
       "bytes": 364834,
       "sha256": "793f0d566aaaa509a62a093f86dbd34b73e2bdfb5cf039bd501b9f1220121d97",
@@ -86,6 +92,24 @@
       "path": "assets/aircraft/p47-weathered.glb",
       "bytes": 10024200,
       "sha256": "8b5ed7be80e7c06e694c276f3cd1e130b63173513f7368b89e8a9ebca5e2213c",
+      "kind": "model"
+    },
+    {
+      "path": "assets/aircraft/sbd-1942-livery.jpg",
+      "bytes": 452589,
+      "sha256": "f8018bdd3c4b6e5991167445fac058460283a09ae9ba38629c208b39036b8f9e",
+      "kind": "image"
+    },
+    {
+      "path": "assets/aircraft/sbd-dauntless-provenance.json",
+      "bytes": 1495,
+      "sha256": "d5fea0e7b8aa5606b3b31227cc71b63d40e23dd1dc89bdddf0591b9c618afd71",
+      "kind": "code-or-notice"
+    },
+    {
+      "path": "assets/aircraft/sbd-dauntless.glb",
+      "bytes": 7229376,
+      "sha256": "80b06926d6c4d3168e9a52a61379b1a00a1841a8130afcca71f842870d8336e1",
       "kind": "model"
     },
     {
@@ -487,7 +511,7 @@
     {
       "path": "index.html",
       "bytes": 7260,
-      "sha256": "f3f872f4faf0091fd8ffa119d228085693dac8689ae2ef768871a055b92f50fe",
+      "sha256": "38e78988392a722a61991ebad9da8ab365a74ed1c652fd89e3a11b088337e6a1",
       "kind": "code-or-notice"
     },
     {
@@ -576,8 +600,8 @@
     },
     {
       "path": "pacific-assets.js",
-      "bytes": 3399,
-      "sha256": "0ded04f46f3f04706b8b0232a5c7c84ac6d37ef484ad5edb22b9d941070eed1f",
+      "bytes": 3553,
+      "sha256": "b1044183a49e5b1405cb2d5bba72d4c11e58013da172df5ea3fd6c629c72fe9e",
       "kind": "code-or-notice"
     },
     {
@@ -607,7 +631,7 @@
     {
       "path": "remagen-mission.html",
       "bytes": 359727,
-      "sha256": "54fef11e7721af0ab0356fd9e9713859ee22024647037be8f923de7f7e5191cc",
+      "sha256": "78ae598d51275e0dfb3805ab5c457786858bae5c9511abf33c5155dfd7901266",
       "kind": "code-or-notice"
     },
     {
@@ -617,10 +641,10 @@
       "kind": "code-or-notice"
     },
     {
-      "path": "sbd dauntless.glb",
-      "bytes": 10739532,
-      "sha256": "02dc31dae8fcd29e130d4007e24c0887507bed62d018a3801af2cf2905d90b55",
-      "kind": "model"
+      "path": "sbd-native.js",
+      "bytes": 4922,
+      "sha256": "554df174209da6d8d387cad61fdc837011bb94c477a53f0793ae963c194326f7",
+      "kind": "code-or-notice"
     },
     {
       "path": "sherman_m4a1.glb",
@@ -1794,8 +1818,8 @@
     },
     {
       "path": "torpedo-carrier.html",
-      "bytes": 423623,
-      "sha256": "131ad1c65b8892c4f8e6afb64b83c00c85a12ba188228d157c29814ba5efebc9",
+      "bytes": 425290,
+      "sha256": "ab3baaefb5011dd53124aaefcf8771733ac7146f331e85a7a8221c542cabf062",
       "kind": "code-or-notice"
     },
     {
@@ -1931,6 +1955,36 @@
       "bundleRedistributionGrant": null,
       "releaseApproved": false,
       "nextAction": "Establish original mesh/texture ownership; obtain an app redistribution grant or independently authored replacement."
+    },
+    {
+      "path": "assets/aircraft/sbd-dauntless.glb",
+      "bytes": 7229376,
+      "sha256": "80b06926d6c4d3168e9a52a61379b1a00a1841a8130afcca71f842870d8336e1",
+      "title": "SBD Dauntless — Squadron 1942 animated derivative",
+      "uploader": "HappySunpore (https://sketchfab.com/happysunpore)",
+      "originalRightsholder": null,
+      "sourceUrl": "https://sketchfab.com/3d-models/stb-dauntless-31e14fecfd9b4d51bdf0c4b27a0572f0",
+      "acquiredOn": null,
+      "declaredLicense": "CC-BY-4.0 (https://creativecommons.org/licenses/by/4.0/)",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "licenseEvidence": "Exact runtime GLB asset.extras",
+      "sourceCheck": {
+        "status": "verified-public-api",
+        "checkedOn": "2026-10-23",
+        "apiUrl": "https://api.sketchfab.com/v3/models/31e14fecfd9b4d51bdf0c4b27a0572f0",
+        "licenseMatch": true,
+        "descriptionSignals": []
+      },
+      "embeddedImageCount": 1,
+      "externalImages": [],
+      "originalFile": null,
+      "originalSha256": null,
+      "changes": "Original airframe and cockpit retained; own photo-inspired blue-gray/light-gray livery; original propeller, gear, controls, rear gun and hook articulated; same-outline perforated split dive brakes and two original procedural crew added; smoothing preserves positions.",
+      "issue": "uploader-license-review-open",
+      "commercialPermissionDocument": null,
+      "bundleRedistributionGrant": null,
+      "releaseApproved": false,
+      "nextAction": "Retain license/attribution/change notices, validate mesh/texture provenance and app-store redistribution conditions."
     },
     {
       "path": "assets/buildings/bunker.glb",
@@ -2756,36 +2810,6 @@
         "descriptionSignals": []
       },
       "embeddedImageCount": 16,
-      "externalImages": [],
-      "originalFile": null,
-      "originalSha256": null,
-      "changes": "Original runtime binary preserved; runtime scaling, materials, rigging and placement are described in ASSET-CREDITS.md / CLAUDE.md.",
-      "issue": "original-game-rights-open",
-      "commercialPermissionDocument": null,
-      "bundleRedistributionGrant": null,
-      "releaseApproved": false,
-      "nextAction": "Establish original mesh/texture ownership; obtain an app redistribution grant or independently authored replacement."
-    },
-    {
-      "path": "sbd dauntless.glb",
-      "bytes": 10739532,
-      "sha256": "02dc31dae8fcd29e130d4007e24c0887507bed62d018a3801af2cf2905d90b55",
-      "title": "SBD-3 Dauntless (War Thunder)",
-      "uploader": "KojfDiscord (https://sketchfab.com/KojfDiscord)",
-      "originalRightsholder": null,
-      "sourceUrl": "https://sketchfab.com/3d-models/sbd-3-dauntless-war-thunder-6c950d0b5ff34bd1b43d713ec7237a59",
-      "acquiredOn": null,
-      "declaredLicense": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
-      "licenseUrl": "http://creativecommons.org/licenses/by/4.0/",
-      "licenseEvidence": "Exact runtime GLB asset.extras",
-      "sourceCheck": {
-        "status": "verified-public-api",
-        "checkedOn": "2026-10-14",
-        "apiUrl": "https://api.sketchfab.com/v3/models/6c950d0b5ff34bd1b43d713ec7237a59",
-        "licenseMatch": true,
-        "descriptionSignals": []
-      },
-      "embeddedImageCount": 25,
       "externalImages": [],
       "originalFile": null,
       "originalSha256": null,
