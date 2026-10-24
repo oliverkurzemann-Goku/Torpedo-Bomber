@@ -510,6 +510,7 @@
 <script src="game-runtime.js?v=198"></script>
 <script src="sortie-checkpoint.js?v=198"></script>
 <script src="aircraft-articulation.js?v=201"></script>
+<script src="aircraft-source-profiles.js?v=1"></script>
 <script src="aircraft-rotors.js?v=172"></script>
 <script src="b17-native.js?v=201"></script>
 <script src="combat-fx.js?v=177"></script>
@@ -2222,6 +2223,7 @@ function rigP47OriginalProp(root, whole, S){
   return 'original P-47 four-blade propeller ('+count+' GLB triangles)';
 }
 function rigModel(root, kind){
+  if(root.userData.aircraftSourceProfile&&root.userData.aircraftSourceProfile===globalThis.AircraftSourceProfiles?.SOURCE)return AircraftSourceProfiles.rig(root);
   if(kind==='b17'&&typeof B17Rig!=='undefined'&&B17Rig.install(root))return 'native helijah B-17: original propellers across 4 engines, gear, flaps, flight controls and turret origins; no runtime mesh cuts';
   if(kind==='p47'&&typeof AircraftArticulation!=='undefined'&&AircraftArticulation.nativeP47?.(root))return 'native weathered P-47: original four-blade rotor, round tyres, original flaps/control surfaces; no mesh cuts';
   root.updateMatrixWorld(true);

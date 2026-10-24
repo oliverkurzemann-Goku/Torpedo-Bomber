@@ -4,10 +4,10 @@
   "build": 202,
   "status": "OPEN — source declarations checked; no external rights authorization obtained",
   "payload": {
-    "bytes": 287628004,
+    "bytes": 287628223,
     "fileCount": 317,
     "modelCount": 36,
-    "manifestSha256": "cee21b6a3cbbd29a255241b64bfaf440ed6c2a0190353e7654521e342601a19b"
+    "manifestSha256": "87aca0b380685666466c7b51f60203b590e34ff9c7642dced6f0f033f77b725d"
   },
   "files": [
     {
@@ -642,8 +642,8 @@
     },
     {
       "path": "remagen-mission.html",
-      "bytes": 360462,
-      "sha256": "4b59e76a50ec92a1f8470fa57e0769e8cfbbe86b8521fa37e27047639b893b49",
+      "bytes": 360681,
+      "sha256": "9e5b175c4393ba64bede1ced4a06a61150e19f3a79545cb81a33ec6168c712a0",
       "kind": "code-or-notice"
     },
     {
