@@ -1,0 +1,24 @@
+{
+  "checkedOn": "2026-10-24",
+  "title": "Republic P-47D Thunderbolt \u2014 RAF scheme",
+  "author": "mgg8",
+  "profile": "https://sketchfab.com/mgg8",
+  "publishedAt": "2026-10-22T20:24:15.795627",
+  "license": {
+    "uri": "https://api.sketchfab.com/v3/licenses/7c23a1ba438d4306920229c12afcb5f9",
+    "label": "CC0 Public Domain",
+    "fullName": "CC0 Public Domain",
+    "requirements": "Credit is not mandatory. Commercial use is allowed.",
+    "url": "http://creativecommons.org/publicdomain/zero/1.0/",
+    "slug": "cc0"
+  },
+  "sourceUrl": "https://sketchfab.com/3d-models/republic-p-47d-thunderbolt-raf-scheme-e831a70ab29c42d3a1dbd352d8bd4684",
+  "directDownload": "https://airmuseums.co.uk/models/aircraft/republic-p-47-thunderbolt.glb",
+  "creatorWebsite": "https://airmuseums.co.uk/hangar/republic-p-47-thunderbolt",
+  "sourceSha256": "b46c80f2cd1839723843fa2bb99647a0257b54ab55772c6a208a9c83e1379bf4",
+  "sourceBytes": 1221892,
+  "sourceTriangles": 175224,
+  "sourceVariant": "P-47D-40-RA",
+  "originalCreationStatement": "Creator describes a procedural Blender model with AI assistance, based on published dimensions/drawings/photos; details and markings approximate.",
+  "evidenceLimit": "CC0 declaration and creator-hosted download observed; no third-party title warranty. Source has no embedded attribution metadata."
+}

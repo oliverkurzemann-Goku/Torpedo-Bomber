@@ -1,0 +1,206 @@
+{
+  "animationCount": 0,
+  "categories": [
+    {
+      "uid": "22a2f677efad4d7bbca5ad45f9b5868e",
+      "name": "Cars & Vehicles",
+      "slug": "cars-vehicles",
+      "uri": "https://api.sketchfab.com/v3/categories/22a2f677efad4d7bbca5ad45f9b5868e",
+      "icon": "https://static.sketchfab.com/static/builds/web/dist/static/assets/images/icons/categories/45dd0cc0860ac57fcd63bde1cc3f2b7c-v2.svg",
+      "thumbnails": [
+        {
+          "width": "512",
+          "height": "288",
+          "url": "https://static.sketchfab.com/categories/22a2f677efad4d7bbca5ad45f9b5868e/512x288.png"
+        },
+        {
+          "width": "800",
+          "height": "450",
+          "url": "https://static.sketchfab.com/categories/22a2f677efad4d7bbca5ad45f9b5868e/800x450.png"
+        }
+      ]
+    },
+    {
+      "uid": "86f23935367b4a1f9647c8a20e03d716",
+      "name": "Cultural Heritage & History",
+      "slug": "cultural-heritage-history",
+      "uri": "https://api.sketchfab.com/v3/categories/86f23935367b4a1f9647c8a20e03d716",
+      "icon": "https://static.sketchfab.com/static/builds/web/dist/static/assets/images/icons/categories/bb22d75450272105e64c47756c323f1f-v2.svg",
+      "thumbnails": [
+        {
+          "width": "512",
+          "height": "288",
+          "url": "https://static.sketchfab.com/categories/86f23935367b4a1f9647c8a20e03d716/512x288.png"
+        },
+        {
+          "width": "800",
+          "height": "450",
+          "url": "https://static.sketchfab.com/categories/86f23935367b4a1f9647c8a20e03d716/800x450.png"
+        }
+      ]
+    }
+  ],
+  "commentCount": 0,
+  "createdAt": "2026-10-22T20:19:03.553904",
+  "embedUrl": "https://sketchfab.com/models/e831a70ab29c42d3a1dbd352d8bd4684/embed",
+  "faceCount": 175224,
+  "isAgeRestricted": false,
+  "license": {
+    "uri": "https://api.sketchfab.com/v3/licenses/7c23a1ba438d4306920229c12afcb5f9",
+    "label": "CC0 Public Domain",
+    "fullName": "CC0 Public Domain",
+    "requirements": "Credit is not mandatory. Commercial use is allowed.",
+    "url": "http://creativecommons.org/publicdomain/zero/1.0/",
+    "slug": "cc0"
+  },
+  "likeCount": 2,
+  "name": "Republic P-47D Thunderbolt \u2014 RAF scheme",
+  "publishedAt": "2026-10-22T20:24:15.795627",
+  "soundCount": 0,
+  "staffpickedAt": null,
+  "tags": [
+    {
+      "name": "ww2",
+      "slug": "ww2",
+      "uri": "https://api.sketchfab.com/v3/tags/ww2"
+    },
+    {
+      "name": "aviation",
+      "slug": "aviation",
+      "uri": "https://api.sketchfab.com/v3/tags/aviation"
+    },
+    {
+      "name": "p47",
+      "slug": "p47",
+      "uri": "https://api.sketchfab.com/v3/tags/p47"
+    },
+    {
+      "name": "thunderbolt",
+      "slug": "thunderbolt",
+      "uri": "https://api.sketchfab.com/v3/tags/thunderbolt"
+    },
+    {
+      "name": "aircraft",
+      "slug": "aircraft",
+      "uri": "https://api.sketchfab.com/v3/tags/aircraft"
+    },
+    {
+      "name": "republic",
+      "slug": "republic",
+      "uri": "https://api.sketchfab.com/v3/tags/republic"
+    },
+    {
+      "name": "p-47",
+      "slug": "p-47",
+      "uri": "https://api.sketchfab.com/v3/tags/p-47"
+    },
+    {
+      "name": "blender",
+      "slug": "blender",
+      "uri": "https://api.sketchfab.com/v3/tags/blender"
+    },
+    {
+      "name": "airmuseums",
+      "slug": "airmuseums",
+      "uri": "https://api.sketchfab.com/v3/tags/airmuseums"
+    }
+  ],
+  "thumbnails": {
+    "images": [
+      {
+        "uid": "64e009d55dda48cbaed8b3bc297e6a91",
+        "width": 1920,
+        "height": 1080,
+        "size": 55116,
+        "url": "https://media.sketchfab.com/models/e831a70ab29c42d3a1dbd352d8bd4684/thumbnails/2e2d216f240443e89fe3515fbf742e1d/6ed08cddcffb40169ef0c89a85b4aa91.jpeg"
+      },
+      {
+        "uid": "d6c7bf8e6fda4e8183f21d331385ac58",
+        "width": 1024,
+        "height": 576,
+        "size": 18838,
+        "url": "https://media.sketchfab.com/models/e831a70ab29c42d3a1dbd352d8bd4684/thumbnails/2e2d216f240443e89fe3515fbf742e1d/c4ac3807f5114c199e0b993be07bb09f.jpeg"
+      },
+      {
+        "uid": "93026fb492094f8489fb4c18b7f42c30",
+        "width": 720,
+        "height": 405,
+        "size": 11117,
+        "url": "https://media.sketchfab.com/models/e831a70ab29c42d3a1dbd352d8bd4684/thumbnails/2e2d216f240443e89fe3515fbf742e1d/ab1b4673285e4ddd8bf395754ef5460e.jpeg"
+      },
+      {
+        "uid": "30ceea9ecf4c4d8e875369c2b6c5eee1",
+        "width": 256,
+        "height": 144,
+        "size": 2630,
+        "url": "https://media.sketchfab.com/models/e831a70ab29c42d3a1dbd352d8bd4684/thumbnails/2e2d216f240443e89fe3515fbf742e1d/1b21c014b6ff4cb29d2df013da161976.jpeg"
+      },
+      {
+        "uid": "531869f177d8442bb4b2ca228a334187",
+        "width": 64,
+        "height": 36,
+        "size": 931,
+        "url": "https://media.sketchfab.com/models/e831a70ab29c42d3a1dbd352d8bd4684/thumbnails/2e2d216f240443e89fe3515fbf742e1d/b6a6162adb154e1b886116e13ca78524.jpeg"
+      }
+    ]
+  },
+  "uid": "e831a70ab29c42d3a1dbd352d8bd4684",
+  "uri": "https://api.sketchfab.com/v3/models/e831a70ab29c42d3a1dbd352d8bd4684",
+  "user": {
+    "uid": "20de18a6117045a39d1629ed58a2d877",
+    "username": "mgg8",
+    "displayName": "mgg8",
+    "account": "basic",
+    "profileUrl": "https://sketchfab.com/mgg8",
+    "avatar": {
+      "uid": "3e5241e8ea7b4c9aa346c87947d3de81",
+      "uri": "https://api.sketchfab.com/v3/avatars/3e5241e8ea7b4c9aa346c87947d3de81",
+      "images": [
+        {
+          "width": 32,
+          "height": 32,
+          "size": 1066,
+          "url": "https://media.sketchfab.com/avatars/3e5241e8ea7b4c9aa346c87947d3de81/12c1df61ba6147a2a7148b61d3e72b4e.jpeg"
+        },
+        {
+          "width": 48,
+          "height": 48,
+          "size": 1511,
+          "url": "https://media.sketchfab.com/avatars/3e5241e8ea7b4c9aa346c87947d3de81/c909ec18f77649e6a8254fecca096fc1.jpeg"
+        },
+        {
+          "width": 90,
+          "height": 90,
+          "size": 3317,
+          "url": "https://media.sketchfab.com/avatars/3e5241e8ea7b4c9aa346c87947d3de81/934c1c37107442058ad330a864bd18a9.jpeg"
+        },
+        {
+          "width": 100,
+          "height": 100,
+          "size": 3855,
+          "url": "https://media.sketchfab.com/avatars/3e5241e8ea7b4c9aa346c87947d3de81/a135f47828e14f85bcdb8dc7f1a3d1cb.jpeg"
+        }
+      ]
+    },
+    "uri": "https://api.sketchfab.com/v3/users/20de18a6117045a39d1629ed58a2d877"
+  },
+  "vertexCount": 92348,
+  "viewCount": 5,
+  "viewerUrl": "https://sketchfab.com/3d-models/republic-p-47d-thunderbolt-raf-scheme-e831a70ab29c42d3a1dbd352d8bd4684",
+  "isDownloadable": true,
+  "isProtected": false,
+  "description": "Republic P-47D Thunderbolt \u2014 RAF scheme. Procedural 3D aircraft model with embedded textures. Modelled variant: P-47D-40-RA.\n\nExplore this aircraft, its depicted airframe and UK aviation museums on Aviation Gazetteer:\nhttps://airmuseums.co.uk/hangar/republic-p-47-thunderbolt?utm_source=sketchfab&utm_medium=referral&utm_campaign=free_aircraft_50\n\nCreated in Blender with AI assistance. A visual interpretation based on published dimensions, drawings and photographs; some details and markings are approximate.\n\nFree download under CC0 1.0 (public domain). Commercial use is allowed and attribution is optional. A link to airmuseums.co.uk is appreciated. Suitable for visualisation, education and creative projects; not a certified engineering model.",
+  "price": null,
+  "downloadCount": 7,
+  "editorUrl": "https://sketchfab.com/models/e831a70ab29c42d3a1dbd352d8bd4684/edit",
+  "status": {
+    "warning": {},
+    "processing": "SUCCEEDED"
+  },
+  "source": "unknown",
+  "hasCommentsDisabled": false,
+  "updatedAt": "2026-10-22T20:24:16.085270",
+  "pbrType": "metalness",
+  "textureCount": 10,
+  "materialCount": 10
+}
