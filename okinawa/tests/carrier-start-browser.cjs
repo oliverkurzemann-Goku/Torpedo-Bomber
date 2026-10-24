@@ -106,7 +106,7 @@ const server=http.createServer((req,res)=>{
     return P.ammo<ammo&&!runtimeFault;
    });assert(fired,'actual aircraft continues flying and firing after intro');
    await page.evaluate(()=>{P.gear=0;P.gearTgt=0;updatePlaneMesh(0);});
-   assert(await page.evaluate(()=>isDefend()?!playerZero.getObjectByName('zeroGear').visible:isSBD()?!playerSBD.getObjectByName('sbdGear').visible:!gltfRoot.getObjectByName('avengerArticulation').getObjectByName('gear').visible),'all wheels retract normally');
+   assert(await page.evaluate(()=>isDefend()?!playerZero.getObjectByName('zeroGear').visible:isSBD()?(SBDRig.isNative(playerSBD)?['GearLeft','GearRight'].every(n=>Math.abs(playerSBD.getObjectByName(n).rotation.z)<1e-6):!playerSBD.getObjectByName('sbdGear').visible):!gltfRoot.getObjectByName('avengerArticulation').getObjectByName('gear').visible),'all wheels retract normally');
    await page.evaluate(()=>launch());
    assert(await page.locator('#skipCarrierPreview').isEnabled());await page.locator('#skipCarrierPreview').click();
    assert(await page.evaluate(()=>!carrierIntro&&state===ST.LAUNCH),'real Skip starts the rolling departure');
