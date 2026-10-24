@@ -1,0 +1,282 @@
+{
+  "scope": "Known restricted or unresolved baseline model binaries. Renaming a file does not clear its hash. This list is not an exhaustive rights decision for unknown files.",
+  "models": [
+    {
+      "path": "assets/aircraft/p47-weathered.glb",
+      "sha256": "8b5ed7be80e7c06e694c276f3cd1e130b63173513f7368b89e8a9ebca5e2213c",
+      "category": "documented-use-restriction",
+      "source": "https://sketchfab.com/3d-models/p-47d-28-thunderbolt-1-custom-war-thunder-1d469251c5994dfd9169f11a97b1b56a",
+      "restrictionEvidence": {
+        "url": "https://legal.gaijin.net/termsofservice/",
+        "checkedOn": "2026-10-24",
+        "sections": [
+          "Terms 4.1, 4.3.2",
+          "EULA 3.2.1, 3.2.2, 3.2.5"
+        ],
+        "finding": "Published personal/noncommercial, nontransferable game license; redistribution and derivative reuse not granted. A third-party uploader CC label does not demonstrate a separate Gaijin permission.",
+        "limit": "Applies if the supplied identification as War Thunder content is correct; no judicial ownership finding or search of private contracts."
+      }
+    },
+    {
+      "path": "assets/buildings/farm-ruin.glb",
+      "sha256": "f0978da9e2642f1eb3f92fe461340b911962e0929aa2892077c9c0f9d9822115",
+      "category": "unclear-origin",
+      "source": "https://sketchfab.com/3d-models/bombed-farm-buildings-from-fps-creator-classic-2cf04644ad0944e5b5b845680262d269",
+      "restrictionEvidence": null
+    },
+    {
+      "path": "assets/ships/fletcher.glb",
+      "sha256": "caad31ef5d5a1eea12f2b42555e95409561fd3321e62cfd5780ba8a64bcbb51b",
+      "category": "documented-use-restriction",
+      "source": "https://sketchfab.com/3d-models/warships-call-of-duty-world-at-war-hd-49f465e925f84efa91acb58fc515f90d",
+      "restrictionEvidence": {
+        "url": "https://www.activision.com/legal/terms-of-use",
+        "checkedOn": "2026-10-24",
+        "sections": [
+          "3.A",
+          "20 (ownership)"
+        ],
+        "finding": "Personal noncommercial license; redistribution and derivative reuse of product parts restricted. No written exception found in project records.",
+        "limit": "Supplied ship source explicitly identifies Call of Duty World at War; no private contract has been inspected."
+      }
+    },
+    {
+      "path": "assets/ships/japanese-cargo.glb",
+      "sha256": "07f8d7ed988c18430d5db8a8cf2b31d2f321da67939881ae347572e1972b1f9c",
+      "category": "documented-use-restriction",
+      "source": "https://sketchfab.com/3d-models/warships-call-of-duty-world-at-war-hd-49f465e925f84efa91acb58fc515f90d",
+      "restrictionEvidence": {
+        "url": "https://www.activision.com/legal/terms-of-use",
+        "checkedOn": "2026-10-24",
+        "sections": [
+          "3.A",
+          "20 (ownership)"
+        ],
+        "finding": "Personal noncommercial license; redistribution and derivative reuse of product parts restricted. No written exception found in project records.",
+        "limit": "Supplied ship source explicitly identifies Call of Duty World at War; no private contract has been inspected."
+      }
+    },
+    {
+      "path": "assets/ships/landing-ship.glb",
+      "sha256": "29d2f4620a6989e8038fc38b62853e5ead597f4a845f9cb1c6d9a17e3157314d",
+      "category": "documented-use-restriction",
+      "source": "https://sketchfab.com/3d-models/warships-call-of-duty-world-at-war-hd-49f465e925f84efa91acb58fc515f90d",
+      "restrictionEvidence": {
+        "url": "https://www.activision.com/legal/terms-of-use",
+        "checkedOn": "2026-10-24",
+        "sections": [
+          "3.A",
+          "20 (ownership)"
+        ],
+        "finding": "Personal noncommercial license; redistribution and derivative reuse of product parts restricted. No written exception found in project records.",
+        "limit": "Supplied ship source explicitly identifies Call of Duty World at War; no private contract has been inspected."
+      }
+    },
+    {
+      "path": "b24.glb",
+      "sha256": "5366c1b690c559d1e25291cd16191886de8c5864266528d5acc28510c4adc761",
+      "category": "unclear-origin",
+      "source": "https://sketchfab.com/3d-models/b-24-liberator-c64e58edfacb4c519b5602278a7e51aa",
+      "restrictionEvidence": null
+    },
+    {
+      "path": "bf109new.glb",
+      "sha256": "bd6c828563ad0aa0a0c2f89067f68491afedb5df8eb3504900c31b4f0aaed6bf",
+      "category": "documented-use-restriction",
+      "source": "https://sketchfab.com/3d-models/bf-109-f-1-war-thunder-0fec6a4fbae549e1929bd5978e89c4f4",
+      "restrictionEvidence": {
+        "url": "https://legal.gaijin.net/termsofservice/",
+        "checkedOn": "2026-10-24",
+        "sections": [
+          "Terms 4.1, 4.3.2",
+          "EULA 3.2.1, 3.2.2, 3.2.5"
+        ],
+        "finding": "Published personal/noncommercial, nontransferable game license; redistribution and derivative reuse not granted. A third-party uploader CC label does not demonstrate a separate Gaijin permission.",
+        "limit": "Applies if the supplied identification as War Thunder content is correct; no judicial ownership finding or search of private contracts."
+      }
+    },
+    {
+      "path": "f4u-1c_corsair_war_thunder.glb",
+      "sha256": "b9a4ef749a786743dfaf19d5a36262d570734dad4c48e516857d4650150c329a",
+      "category": "documented-use-restriction",
+      "source": "https://sketchfab.com/3d-models/f4u-1c-corsair-war-thunder-440585ee30bc4b6299b4b1bd8d09e3d8",
+      "restrictionEvidence": {
+        "url": "https://legal.gaijin.net/termsofservice/",
+        "checkedOn": "2026-10-24",
+        "sections": [
+          "Terms 4.1, 4.3.2",
+          "EULA 3.2.1, 3.2.2, 3.2.5"
+        ],
+        "finding": "Published personal/noncommercial, nontransferable game license; redistribution and derivative reuse not granted. A third-party uploader CC label does not demonstrate a separate Gaijin permission.",
+        "limit": "Applies if the supplied identification as War Thunder content is correct; no judicial ownership finding or search of private contracts."
+      }
+    },
+    {
+      "path": "flak88_sfl.glb",
+      "sha256": "4095ba76835dbc07d494c6d324837daa3b6c84e09ef21299e94554fb06ae6b7a",
+      "category": "documented-use-restriction",
+      "source": "https://sketchfab.com/3d-models/88-cm-flak-37-sfl-war-thunder-7a9b4abbc2884ef6bbf5dbffbe8adf2b",
+      "restrictionEvidence": {
+        "url": "https://legal.gaijin.net/termsofservice/",
+        "checkedOn": "2026-10-24",
+        "sections": [
+          "Terms 4.1, 4.3.2",
+          "EULA 3.2.1, 3.2.2, 3.2.5"
+        ],
+        "finding": "Published personal/noncommercial, nontransferable game license; redistribution and derivative reuse not granted. A third-party uploader CC label does not demonstrate a separate Gaijin permission.",
+        "limit": "Applies if the supplied identification as War Thunder content is correct; no judicial ownership finding or search of private contracts."
+      }
+    },
+    {
+      "path": "fw190.glb",
+      "sha256": "6ea8ecf36027d49b69fa8eeb5da02987675bfe7f410b88543a2a9ab7c1da1811",
+      "category": "documented-use-restriction",
+      "source": "https://sketchfab.com/3d-models/fw-190-f-8-2-custom-payload-war-thunder-17aea959a7a949c6801a7ea19d43e9b4",
+      "restrictionEvidence": {
+        "url": "https://legal.gaijin.net/termsofservice/",
+        "checkedOn": "2026-10-24",
+        "sections": [
+          "Terms 4.1, 4.3.2",
+          "EULA 3.2.1, 3.2.2, 3.2.5"
+        ],
+        "finding": "Published personal/noncommercial, nontransferable game license; redistribution and derivative reuse not granted. A third-party uploader CC label does not demonstrate a separate Gaijin permission.",
+        "limit": "Applies if the supplied identification as War Thunder content is correct; no judicial ownership finding or search of private contracts."
+      }
+    },
+    {
+      "path": "ijn carrier.glb",
+      "sha256": "a0c2a40f01faaa97218ed23f3f13bfc688a4440df4cc9fa9aa6a043d6b6017e5",
+      "category": "documented-use-restriction",
+      "source": "https://sketchfab.com/3d-models/japs-leyte1944-5054abd931554d1d81d0b8a3af77c08c",
+      "restrictionEvidence": {
+        "url": "https://legal.wargaming.net/en/user-documents/eula/end-user-license-agreement/view",
+        "checkedOn": "2026-10-24",
+        "sections": [
+          "5.1",
+          "5.3(b,c)"
+        ],
+        "finding": "Content reuse, distribution, derivative and commercial uses require authorization. Player Content Policy is not a license to redistribute extracted ship meshes inside another game.",
+        "limit": "IJN listing currently inaccessible; upstream identification rests on supplied embedded metadata. No private permission reviewed."
+      }
+    },
+    {
+      "path": "jagdpanther.glb",
+      "sha256": "4324d874f5ab4717336cc420f2d26810d2cc3ea19338064e7e5abed6c6d25b0b",
+      "category": "documented-use-restriction",
+      "source": "https://sketchfab.com/3d-models/jadgpanther-war-thunder-813e100326194334b52887a17416e0b8",
+      "restrictionEvidence": {
+        "url": "https://legal.gaijin.net/termsofservice/",
+        "checkedOn": "2026-10-24",
+        "sections": [
+          "Terms 4.1, 4.3.2",
+          "EULA 3.2.1, 3.2.2, 3.2.5"
+        ],
+        "finding": "Published personal/noncommercial, nontransferable game license; redistribution and derivative reuse not granted. A third-party uploader CC label does not demonstrate a separate Gaijin permission.",
+        "limit": "Applies if the supplied identification as War Thunder content is correct; no judicial ownership finding or search of private contracts."
+      }
+    },
+    {
+      "path": "ju87.glb",
+      "sha256": "63f1e3c0448edcc332cdbd3c26f40a04758be11df558937c19d0ea59b03fa9b6",
+      "category": "documented-use-restriction",
+      "source": "https://sketchfab.com/3d-models/ju-87-b-2-war-thunder-c09430ec8b9f46669bf8a008dd80d336",
+      "restrictionEvidence": {
+        "url": "https://legal.gaijin.net/termsofservice/",
+        "checkedOn": "2026-10-24",
+        "sections": [
+          "Terms 4.1, 4.3.2",
+          "EULA 3.2.1, 3.2.2, 3.2.5"
+        ],
+        "finding": "Published personal/noncommercial, nontransferable game license; redistribution and derivative reuse not granted. A third-party uploader CC label does not demonstrate a separate Gaijin permission.",
+        "limit": "Applies if the supplied identification as War Thunder content is correct; no judicial ownership finding or search of private contracts."
+      }
+    },
+    {
+      "path": "m16_mgmc.glb",
+      "sha256": "eb836c5d64ad2b04bb6f7e0dca5dcd121dbfc2983805b084d44fb60c0be9b463",
+      "category": "documented-use-restriction",
+      "source": "https://sketchfab.com/3d-models/m16-mgmc-war-thunder-fbdb51b1f92f45eebe791a16d805acd4",
+      "restrictionEvidence": {
+        "url": "https://legal.gaijin.net/termsofservice/",
+        "checkedOn": "2026-10-24",
+        "sections": [
+          "Terms 4.1, 4.3.2",
+          "EULA 3.2.1, 3.2.2, 3.2.5"
+        ],
+        "finding": "Published personal/noncommercial, nontransferable game license; redistribution and derivative reuse not granted. A third-party uploader CC label does not demonstrate a separate Gaijin permission.",
+        "limit": "Applies if the supplied identification as War Thunder content is correct; no judicial ownership finding or search of private contracts."
+      }
+    },
+    {
+      "path": "me163.glb",
+      "sha256": "1ac6f59cd3b06aa613ea497462936094ce6e50eb4b9eef8f0f3f73460f8a848e",
+      "category": "documented-use-restriction",
+      "source": "https://sketchfab.com/3d-models/me-163-b-war-thunder-b803273028ee4ebc87ca4af2e15766fb",
+      "restrictionEvidence": {
+        "url": "https://legal.gaijin.net/termsofservice/",
+        "checkedOn": "2026-10-24",
+        "sections": [
+          "Terms 4.1, 4.3.2",
+          "EULA 3.2.1, 3.2.2, 3.2.5"
+        ],
+        "finding": "Published personal/noncommercial, nontransferable game license; redistribution and derivative reuse not granted. A third-party uploader CC label does not demonstrate a separate Gaijin permission.",
+        "limit": "Applies if the supplied identification as War Thunder content is correct; no judicial ownership finding or search of private contracts."
+      }
+    },
+    {
+      "path": "me262.glb",
+      "sha256": "bddfaf0fcc3971045566cb3e0616ca3c6dec3d213aa2869f5a1576dc9d6206d5",
+      "category": "documented-use-restriction",
+      "source": "https://sketchfab.com/3d-models/me-262-a-1ajabo-war-thunder-a6e4bd7a047f49b292e59ad285850310",
+      "restrictionEvidence": {
+        "url": "https://legal.gaijin.net/termsofservice/",
+        "checkedOn": "2026-10-24",
+        "sections": [
+          "Terms 4.1, 4.3.2",
+          "EULA 3.2.1, 3.2.2, 3.2.5"
+        ],
+        "finding": "Published personal/noncommercial, nontransferable game license; redistribution and derivative reuse not granted. A third-party uploader CC label does not demonstrate a separate Gaijin permission.",
+        "limit": "Applies if the supplied identification as War Thunder content is correct; no judicial ownership finding or search of private contracts."
+      }
+    },
+    {
+      "path": "p47new.glb",
+      "sha256": "61cb9510ad9ffc5eeb25abbd5eb620b0e17fb49f44b2e78fb6ba09b681e38174",
+      "category": "documented-use-restriction",
+      "source": "https://sketchfab.com/3d-models/p-47d-28-thunderbolt-1-custom-war-thunder-1d469251c5994dfd9169f11a97b1b56a",
+      "restrictionEvidence": {
+        "url": "https://legal.gaijin.net/termsofservice/",
+        "checkedOn": "2026-10-24",
+        "sections": [
+          "Terms 4.1, 4.3.2",
+          "EULA 3.2.1, 3.2.2, 3.2.5"
+        ],
+        "finding": "Published personal/noncommercial, nontransferable game license; redistribution and derivative reuse not granted. A third-party uploader CC label does not demonstrate a separate Gaijin permission.",
+        "limit": "Applies if the supplied identification as War Thunder content is correct; no judicial ownership finding or search of private contracts."
+      }
+    },
+    {
+      "path": "sherman_m4a1.glb",
+      "sha256": "fd1c8651befd8dc5f8cce22449e4d42f8c18337861f22e28c544c93fe50f889b",
+      "category": "documented-use-restriction",
+      "source": "https://sketchfab.com/3d-models/m4a1-76-w-war-thunder-8492cfd6dec94c90ae7d210acf7e58ed",
+      "restrictionEvidence": {
+        "url": "https://legal.gaijin.net/termsofservice/",
+        "checkedOn": "2026-10-24",
+        "sections": [
+          "Terms 4.1, 4.3.2",
+          "EULA 3.2.1, 3.2.2, 3.2.5"
+        ],
+        "finding": "Published personal/noncommercial, nontransferable game license; redistribution and derivative reuse not granted. A third-party uploader CC label does not demonstrate a separate Gaijin permission.",
+        "limit": "Applies if the supplied identification as War Thunder content is correct; no judicial ownership finding or search of private contracts."
+      }
+    },
+    {
+      "path": "uss_midway.glb",
+      "sha256": "1734a3160b0a0ec59807d603e2b6547f18d0e30b0935b671ff04d15d9dc87cd7",
+      "category": "unclear-origin",
+      "source": null,
+      "restrictionEvidence": null
+    }
+  ]
+}

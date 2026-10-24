@@ -1,0 +1,255 @@
+{
+  "package": "dist-app",
+  "scope": "P47 superseded binary exclusion only",
+  "modelFiles": 35,
+  "pass": true,
+  "failures": 0,
+  "files": [
+    {
+      "file": "bf109new.glb",
+      "bytes": 3461468,
+      "sha256": "bd6c828563ad0aa0a0c2f89067f68491afedb5df8eb3504900c31b4f0aaed6bf",
+      "status": "PASS",
+      "knownBlockedSource": null
+    },
+    {
+      "file": "tiger.glb",
+      "bytes": 1735368,
+      "sha256": "12da29fd4c83ab47ceb6866b2f1d6300294b592b6181da941e34010fb85ea965",
+      "status": "PASS",
+      "knownBlockedSource": null
+    },
+    {
+      "file": "me262.glb",
+      "bytes": 4503732,
+      "sha256": "bddfaf0fcc3971045566cb3e0616ca3c6dec3d213aa2869f5a1576dc9d6206d5",
+      "status": "PASS",
+      "knownBlockedSource": null
+    },
+    {
+      "file": "grumman tbm avenger.glb",
+      "bytes": 15080808,
+      "sha256": "9065b7e65419b2efd4618bcb138ce199d16ac3151801d2d90afb7ae92ebb10a6",
+      "status": "PASS",
+      "knownBlockedSource": null
+    },
+    {
+      "file": "flak88_sfl.glb",
+      "bytes": 14888828,
+      "sha256": "4095ba76835dbc07d494c6d324837daa3b6c84e09ef21299e94554fb06ae6b7a",
+      "status": "PASS",
+      "knownBlockedSource": null
+    },
+    {
+      "file": "b24.glb",
+      "bytes": 5939004,
+      "sha256": "5366c1b690c559d1e25291cd16191886de8c5864266528d5acc28510c4adc761",
+      "status": "PASS",
+      "knownBlockedSource": null
+    },
+    {
+      "file": "ijn carrier.glb",
+      "bytes": 11345996,
+      "sha256": "a0c2a40f01faaa97218ed23f3f13bfc688a4440df4cc9fa9aa6a043d6b6017e5",
+      "status": "PASS",
+      "knownBlockedSource": null
+    },
+    {
+      "file": "me163.glb",
+      "bytes": 4974720,
+      "sha256": "1ac6f59cd3b06aa613ea497462936094ce6e50eb4b9eef8f0f3f73460f8a848e",
+      "status": "PASS",
+      "knownBlockedSource": null
+    },
+    {
+      "file": "ju87.glb",
+      "bytes": 17381696,
+      "sha256": "63f1e3c0448edcc332cdbd3c26f40a04758be11df558937c19d0ea59b03fa9b6",
+      "status": "PASS",
+      "knownBlockedSource": null
+    },
+    {
+      "file": "f4u-1c_corsair_war_thunder.glb",
+      "bytes": 16443976,
+      "sha256": "b9a4ef749a786743dfaf19d5a36262d570734dad4c48e516857d4650150c329a",
+      "status": "PASS",
+      "knownBlockedSource": null
+    },
+    {
+      "file": "m16_mgmc.glb",
+      "bytes": 13651260,
+      "sha256": "eb836c5d64ad2b04bb6f7e0dca5dcd121dbfc2983805b084d44fb60c0be9b463",
+      "status": "PASS",
+      "knownBlockedSource": null
+    },
+    {
+      "file": "treepack.glb",
+      "bytes": 10258136,
+      "sha256": "a7aabc44265f961037684ae9a47c93396167a6d35f15cb743cfedd3bb08df411",
+      "status": "PASS",
+      "knownBlockedSource": null
+    },
+    {
+      "file": "jagdpanther.glb",
+      "bytes": 12763168,
+      "sha256": "4324d874f5ab4717336cc420f2d26810d2cc3ea19338064e7e5abed6c6d25b0b",
+      "status": "PASS",
+      "knownBlockedSource": null
+    },
+    {
+      "file": "fw190.glb",
+      "bytes": 5702612,
+      "sha256": "6ea8ecf36027d49b69fa8eeb5da02987675bfe7f410b88543a2a9ab7c1da1811",
+      "status": "PASS",
+      "knownBlockedSource": null
+    },
+    {
+      "file": "uss_midway.glb",
+      "bytes": 22351848,
+      "sha256": "1734a3160b0a0ec59807d603e2b6547f18d0e30b0935b671ff04d15d9dc87cd7",
+      "status": "PASS",
+      "knownBlockedSource": null
+    },
+    {
+      "file": "sherman_m4a1.glb",
+      "bytes": 18796228,
+      "sha256": "fd1c8651befd8dc5f8cce22449e4d42f8c18337861f22e28c544c93fe50f889b",
+      "status": "PASS",
+      "knownBlockedSource": null
+    },
+    {
+      "file": "zero.glb",
+      "bytes": 1129808,
+      "sha256": "289d8e1db2385fea38b7cf2e9160d3e5f0f553328d8d12d466b28886254c4f43",
+      "status": "PASS",
+      "knownBlockedSource": null
+    },
+    {
+      "file": "assets/ships/liberty.glb",
+      "bytes": 9249748,
+      "sha256": "18e1019a667b59668f9326dc9bba554873215894262724161aa46e82f4f75f0d",
+      "status": "PASS",
+      "knownBlockedSource": null
+    },
+    {
+      "file": "assets/ships/ko-hyoteki.glb",
+      "bytes": 1424360,
+      "sha256": "231f04bb9b2c277a0253c2f343d8aa77630031bb1b8e413ca8ef364312fa4838",
+      "status": "PASS",
+      "knownBlockedSource": null
+    },
+    {
+      "file": "assets/ships/samidare.glb",
+      "bytes": 11997084,
+      "sha256": "b4eba4977d7ef97235599788c7820fe8a19187ebbd3bfb3e89b3fc6f1998e978",
+      "status": "PASS",
+      "knownBlockedSource": null
+    },
+    {
+      "file": "assets/ships/landing-ship.glb",
+      "bytes": 4321916,
+      "sha256": "29d2f4620a6989e8038fc38b62853e5ead597f4a845f9cb1c6d9a17e3157314d",
+      "status": "PASS",
+      "knownBlockedSource": null
+    },
+    {
+      "file": "assets/ships/fletcher.glb",
+      "bytes": 2384584,
+      "sha256": "caad31ef5d5a1eea12f2b42555e95409561fd3321e62cfd5780ba8a64bcbb51b",
+      "status": "PASS",
+      "knownBlockedSource": null
+    },
+    {
+      "file": "assets/ships/japanese-cargo.glb",
+      "bytes": 3745304,
+      "sha256": "07f8d7ed988c18430d5db8a8cf2b31d2f321da67939881ae347572e1972b1f9c",
+      "status": "PASS",
+      "knownBlockedSource": null
+    },
+    {
+      "file": "assets/aircraft/sbd-dauntless.glb",
+      "bytes": 7229376,
+      "sha256": "80b06926d6c4d3168e9a52a61379b1a00a1841a8130afcca71f842870d8336e1",
+      "status": "PASS",
+      "knownBlockedSource": null
+    },
+    {
+      "file": "assets/aircraft/b17-helijah.glb",
+      "bytes": 5977464,
+      "sha256": "bcdf03e6bed86bd8b246a24cf1b8f86a259debe426dbbdd42986d8c278b778db",
+      "status": "PASS",
+      "knownBlockedSource": null
+    },
+    {
+      "file": "assets/aircraft/p47-independent.glb",
+      "bytes": 3313956,
+      "sha256": "330306dcf08860757160d8ec8e493412d3458e68052a980bc75fa8f20b5b09ad",
+      "status": "PASS",
+      "knownBlockedSource": null
+    },
+    {
+      "file": "assets/buildings/house.glb",
+      "bytes": 1527124,
+      "sha256": "f7acf459193c5469244285599c2ed81e148e7d3e7dbc821f6066305c65a17475",
+      "status": "PASS",
+      "knownBlockedSource": null
+    },
+    {
+      "file": "assets/buildings/town-ruin.glb",
+      "bytes": 214212,
+      "sha256": "9a9c3b1617a6d1c0b046ca3882ebfa965f49c1dd942e84a2bad5a362aa4a7862",
+      "status": "PASS",
+      "knownBlockedSource": null
+    },
+    {
+      "file": "assets/buildings/hangar.glb",
+      "bytes": 242552,
+      "sha256": "af53aa083ffef0eeefcfe115ad82b4088643cfd7c9bbbfcf807311f059e81c60",
+      "status": "PASS",
+      "knownBlockedSource": null
+    },
+    {
+      "file": "assets/buildings/observation-post.glb",
+      "bytes": 372332,
+      "sha256": "39b7a3f1b2eb1fa352ad42185730d08b427e3b7516e0de4cc28e332278fdc921",
+      "status": "PASS",
+      "knownBlockedSource": null
+    },
+    {
+      "file": "assets/buildings/farm-ruin.glb",
+      "bytes": 131708,
+      "sha256": "f0978da9e2642f1eb3f92fe461340b911962e0929aa2892077c9c0f9d9822115",
+      "status": "PASS",
+      "knownBlockedSource": null
+    },
+    {
+      "file": "assets/buildings/bunker.glb",
+      "bytes": 5085168,
+      "sha256": "c9b54e30b99302ddaa0ab486c79318c7bd46c881b9fd11b3f77c60758efaa253",
+      "status": "PASS",
+      "knownBlockedSource": null
+    },
+    {
+      "file": "assets/remagen/horse/quaternius_horse.glb",
+      "bytes": 1108124,
+      "sha256": "fae7a7ec91e0d6a33554efb896fac9c4e8c632644183bcb8cc962f673d3ce609",
+      "status": "PASS",
+      "knownBlockedSource": null
+    },
+    {
+      "file": "assets/remagen/ford1940/1940_ford_v8.fbx",
+      "bytes": 2239376,
+      "sha256": "9182f095ca9845f68a479e21f69a9d727849c06d3e1019f5cc0b2e677d3e6a25",
+      "status": "PASS",
+      "knownBlockedSource": null
+    },
+    {
+      "file": "assets/remagen/drb0110/drb0110.glb",
+      "bytes": 797032,
+      "sha256": "5a100410a8d2d9bdfb592c4ef0ffadf72ab51f90a74cb5eea9ab6602e4ba93fd",
+      "status": "PASS",
+      "knownBlockedSource": null
+    }
+  ],
+  "physicalIpadTest": "NOT PERFORMED"
+}

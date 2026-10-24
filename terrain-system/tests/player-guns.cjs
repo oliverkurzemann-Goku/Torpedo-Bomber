@@ -4,7 +4,7 @@ global.THREE=THREE;require('../../combat-fx.js');require('../../game-runtime.js'
 const html=fs.readFileSync('remagen-mission.html','utf8');
 const code=html.slice(html.indexOf('function gunMuzzles(){'),html.indexOf('function updateGunUI(){'));
 for(const [ac,count] of [['p47',8],['bf109',4],['fw190',4],['me262',4],['me163',2],['ju87',4]]){
- const ctx=vm.createContext({THREE,CombatFX,GameRuntime,Math,scene:new THREE.Scene(),planeGroup:new THREE.Group(),combatFX:null,
+ const ctx=vm.createContext({playerModel:null,THREE,CombatFX,GameRuntime,Math,scene:new THREE.Scene(),planeGroup:new THREE.Group(),combatFX:null,
   P:{ac,alive:true,ammo:10000,pos:new THREE.Vector3(100,500,300),pitch:.21,heading:.8,roll:.65},
   state:1,ST:{FLIGHT:1},JET_KINDS:['me262','me163'],gunT:0,gunVolley:0,bullets:[],
   noseDir:()=>new THREE.Vector3(Math.sin(.8)*Math.cos(.21),Math.sin(.21),Math.cos(.8)*Math.cos(.21)),

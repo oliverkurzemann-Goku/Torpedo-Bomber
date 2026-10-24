@@ -66,6 +66,10 @@ jobs:
             -destination 'generic/platform=iOS Simulator' \
             -derivedDataPath "$RUNNER_TEMP/squadron-native-qa" \
             CODE_SIGNING_ALLOWED=NO build 2>&1 | tee ios-build.log
+      - name: Verify P-47 exclusion in the compiled simulator bundle
+        run: |
+          python3 scripts/check-model-package.py "$RUNNER_TEMP/squadron-native-qa/Build/Products/Debug-iphonesimulator/App.app" \
+            --p47-only --report compiled-p47-exclusion.json
       - name: Retain compiler diagnostics
         if: always()
         uses: actions/upload-artifact@v4

@@ -1,0 +1,65 @@
+{
+  "overall": "NOT ACCEPTED",
+  "criteria": [
+    {
+      "criterion": "Herkunft / Datenweg",
+      "status": "PASS",
+      "evidence": "CC0-Original vom verlinkten Urheber; exakte Eingabehashes; keine alten Spielmodelle als Generator-Eingabe."
+    },
+    {
+      "criterion": "Variante D-28",
+      "status": "PENDING",
+      "evidence": "D-40-RA als Ausgangsmodell. Rückenfillet entfernt; Unterseitenmerkmale und genaue D-28-Ausführung noch unabhängig zu belegen."
+    },
+    {
+      "criterion": "Spannweite / Länge",
+      "status": "PASS",
+      "evidence": "12.420000 m / 11.004575 m. Ein gleichmäßiger Maßstab; beide innerhalb 1 % des Handbuchs."
+    },
+    {
+      "criterion": "Höhe",
+      "status": "FAIL",
+      "evidence": "Maximale Propellerhülle am Boden 4.4862 m; Handbuch 4,318 m. Referenzdefinition/Bodenlage klären; bisher +3,90 %."
+    },
+    {
+      "criterion": "Konturen / Rumpfspanten",
+      "status": "PENDING",
+      "evidence": "Zehn tatsächliche Modellschnitte und Orthogonalansichten vorhanden. Original-Stationen zum unabhängigen Soll/Ist-Vergleich fehlen."
+    },
+    {
+      "criterion": "Eigene Lackierung / Spuren",
+      "status": "PASS",
+      "evidence": "Eigene silberne Spielinterpretation mit Schachbrettbug, PBR-Gebrauchsspuren; vier eingebettete Bilder, keine alten P-47-Texturhashes. Historische Einzelmaschine nicht behauptet."
+    },
+    {
+      "criterion": "Mechanik / Klone",
+      "status": "PASS / PENDING",
+      "evidence": "Funktion: echter Rotor, drei Originalreifen, originale Flächen, unabhängige Klone, Bodenkontakt <5 mm. Historisch exakte Scharnierlage ist Teil der offenen Variantenprüfung."
+    },
+    {
+      "criterion": "Quelldateien / GLB",
+      "status": "PASS",
+      "evidence": ".blend mit gepackten Bildern, Original-CC0-Quelle, reproduzierbarer Generator, unkomprimierte GLB, Herkunftsakte und Messdaten."
+    },
+    {
+      "criterion": "Modellbudget",
+      "status": "PASS",
+      "evidence": "87,334 Dreiecke, 21 Meshes, 3,313,956 Bytes. Ziel ≤100.000 / ≤40 / ≤12 MiB."
+    },
+    {
+      "criterion": "Spiel / alte P-47 ausschließen",
+      "status": "PASS",
+      "evidence": "Produktionsloader r128, Spieler/KI, acht Modellmündungen, vier Clips. Fehlende Ersatz-GLB lädt keine alte Datei nach; App-Paket enthält keine der zwei alten P-47-Dateien."
+    },
+    {
+      "criterion": "Gesamtes App-Paket",
+      "status": "FAIL",
+      "evidence": "17 andere Modelle bleiben gesperrt/ungeklärt. Voller Hash-/Freigabecheck endet absichtlich mit Fehlerstatus."
+    },
+    {
+      "criterion": "Ziel-iPad / 15-Minuten-Messung",
+      "status": "PENDING",
+      "evidence": "Kein physisches Zielgerät, kein installiertes IPA und kein gemessener Safari/WKWebView-Test. Desktop-WebGL ist kein Ersatz."
+    }
+  ]
+}

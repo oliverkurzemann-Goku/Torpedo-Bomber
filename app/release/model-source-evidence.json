@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "checkedOn": "2026-10-23",
+  "checkedOn": "2026-10-24",
   "method": "Public Sketchfab model metadata API; uploader declarations are not original-rightsholder authorization. Excerpts limited to 24 words per model.",
   "sources": [
     {
@@ -607,6 +607,30 @@
       "descriptionExcerpt": "",
       "publishedAt": "2023-12-05T02:29:00.666248",
       "updatedAt": "2023-12-05T02:29:19.613801"
+    },
+    {
+      "modelId": "e831a70ab29c42d3a1dbd352d8bd4684",
+      "sourceUrl": "https://sketchfab.com/3d-models/republic-p-47d-thunderbolt-raf-scheme-e831a70ab29c42d3a1dbd352d8bd4684",
+      "apiUrl": "https://api.sketchfab.com/v3/models/e831a70ab29c42d3a1dbd352d8bd4684",
+      "checkedOn": "2026-10-24",
+      "fetchStatus": "verified-public-api",
+      "title": "Republic P-47D Thunderbolt \u2014 RAF scheme",
+      "uploader": "mgg8",
+      "profileUrl": "https://sketchfab.com/mgg8",
+      "declaredLicense": {
+        "uri": "https://api.sketchfab.com/v3/licenses/7c23a1ba438d4306920229c12afcb5f9",
+        "label": "CC0 Public Domain",
+        "fullName": "CC0 Public Domain",
+        "requirements": "Credit is not mandatory. Commercial use is allowed.",
+        "url": "http://creativecommons.org/publicdomain/zero/1.0/",
+        "slug": "cc0"
+      },
+      "descriptionSignals": [
+        "Creator states independently procedurally constructed in Blender with AI assistance; visual approximations."
+      ],
+      "descriptionExcerpt": "Republic P-47D Thunderbolt \u2014 RAF scheme. Procedural 3D aircraft model with embedded textures. Modelled variant: P-47D-40-RA.\n\nExplore this aircraft, i",
+      "publishedAt": "2026-10-22T20:24:15.795627",
+      "updatedAt": "2026-10-22T20:24:16.085270"
     }
   ]
 }

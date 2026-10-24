@@ -1,0 +1,37 @@
+{
+  "gaijin": {
+    "url": "https://legal.gaijin.net/termsofservice/",
+    "checkedOn": "2026-10-24",
+    "sections": [
+      "Terms 4.1, 4.3.2",
+      "EULA 3.2.1, 3.2.2, 3.2.5"
+    ],
+    "finding": "Published personal/noncommercial, nontransferable game license; redistribution and derivative reuse not granted. A third-party uploader CC label does not demonstrate a separate Gaijin permission.",
+    "limit": "Applies if the supplied identification as War Thunder content is correct; no judicial ownership finding or search of private contracts."
+  },
+  "activision": {
+    "url": "https://www.activision.com/legal/terms-of-use",
+    "checkedOn": "2026-10-24",
+    "sections": [
+      "3.A",
+      "20 (ownership)"
+    ],
+    "finding": "Personal noncommercial license; redistribution and derivative reuse of product parts restricted. No written exception found in project records.",
+    "limit": "Supplied ship source explicitly identifies Call of Duty World at War; no private contract has been inspected."
+  },
+  "wargaming": {
+    "url": "https://legal.wargaming.net/en/user-documents/eula/end-user-license-agreement/view",
+    "checkedOn": "2026-10-24",
+    "sections": [
+      "5.1",
+      "5.3(b,c)"
+    ],
+    "finding": "Content reuse, distribution, derivative and commercial uses require authorization. Player Content Policy is not a license to redistribute extracted ship meshes inside another game.",
+    "limit": "IJN listing currently inaccessible; upstream identification rests on supplied embedded metadata. No private permission reviewed."
+  },
+  "fpsCreator": {
+    "url": "https://github.com/Dark-Basic-Software-Limited/FPS-Creator-Classic/blob/master/README.md",
+    "checkedOn": "2026-10-24",
+    "finding": "Selling games made with FPS Creator is expressly permitted. This does not establish the exact stock-media pack and rights chain for the uploaded bombed farm. Treat that file as unresolved, not proven noncommercial-only."
+  }
+}

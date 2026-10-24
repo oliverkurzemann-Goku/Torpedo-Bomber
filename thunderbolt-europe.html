@@ -341,6 +341,7 @@
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
 <script src="campaign.js?v=1"></script>
 <script src="b17-native.js?v=200"></script>
+<script src="aircraft-articulation.js?v=202"></script>
 <script>
 // ============================================================
 //  THUNDERBOLT SQUADRON — GROUND ATTACK (Europe, 1944)
@@ -1554,12 +1555,8 @@ function buildAirfield(){
 //  .glb next to this file, open model-check.html, line it up, press Save.
 // ============================================================
 const MODEL_URL={
-  // the newer War Thunder P-47 first: measured span 12.47 m against a real 12.42, and it
-  // carries a perfectly round 3.95 m disc at its +Z end - that is the propeller, so it is
-  // already facing the right way. The older p47.glb stays as a fallback.
-  p47:   ['p-47d-28_thunderbolt_1_custom_war_thunder.glb',
-          'p-47d-28%20thunderbolt%201%20custom%20war%20thunder.glb',   // uploads turn _ into space
-          'p47new.glb','p47.glb','p-47.glb','p_47.glb'],
+  // Independent-source P-47 only; no former-game fallback.
+  p47:   ['assets/aircraft/p47-independent.glb'],
   bf109: ['bf109new.glb','bf_109_f-1_war_thunder.glb',
           'bf%20109%20f-1%20war%20thunder.glb',
           'bf%20109%20-%20messerschmitt.glb','bf_109_-_messerschmitt.glb',
@@ -1605,8 +1602,8 @@ const TRICYCLE_KINDS=['me262'];
 // Anything not listed here gets worked out automatically; if that lands wrong, model-check.html
 // fixes it in a few seconds and its answer overrides everything below.
 const MODEL_FIX={
+  'assets/aircraft/p47-independent.glb': {yaw:0},
   'assets/aircraft/b17-helijah.glb': {yaw:0},
-  'p47.glb':                      {yaw:Math.PI},
   'bf 109 - messerschmitt.glb':   {yaw:-Math.PI/2},
   'bf_109_-_messerschmitt.glb':   {yaw:-Math.PI/2},
   'bf109.glb':                    {yaw:-Math.PI/2},
@@ -1614,11 +1611,6 @@ const MODEL_FIX={
   //  P-47 (new) - round 3.95 m propeller disc at +Z
   //  B-17       - narrow 5.4 m tall fin and the 12.8 m tailplane both at -Z
   //  B-24       - the 8 m wide twin tail at -Z
-  'p-47d-28_thunderbolt_1_custom_war_thunder.glb': {yaw:0},
-  'p-47d-28 thunderbolt 1 custom war thunder.glb': {yaw:0},
-  'p47new.glb': {yaw:0},
-  'b17.glb':            {yaw:0},
-  'helijahs_b-17.glb':  {yaw:0},
   'b24.glb':            {yaw:0},
   'b-24_liberator.glb': {yaw:0},
   // both War Thunder fighters carry a round propeller disc at +Z (roundness 0.88 and 0.87
@@ -2612,6 +2604,7 @@ function coverGearCut(root, clusters, floor, rfUsed, maxR){
   });
 }
 function rigModel(root, kind){
+  if(kind==='p47'&&AircraftArticulation.nativeP47(root))return 'native independent P-47; original geometry retained';
   if(kind==='b17'&&typeof B17Rig!=='undefined'&&B17Rig.install(root))return 'native helijah B-17: original propellers across 4 engines, gear, flaps, flight controls and turret origins; no runtime mesh cuts';
   root.updateMatrixWorld(true);
   const whole=new THREE.Box3().setFromObject(root);

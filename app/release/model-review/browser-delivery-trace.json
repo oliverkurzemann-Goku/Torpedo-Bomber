@@ -1,0 +1,355 @@
+{
+  "checkedOn": "2026-10-24",
+  "environment": "Chromium headless / SwiftShader on Linux, 1024x768 touch viewport. Not Safari/WKWebView and not a physical iPad.",
+  "scope": "Actual Rhine mission, player/AI, mechanics, muzzle volley, observed resource hashes and deliberate missing-replacement route. Static audit covers other potential paths; this is not an exhaustive mission trace.",
+  "scenarios": [
+    {
+      "scenario": "local-app-normal",
+      "entry": "http://127.0.0.1:35397/remagen-mission.html",
+      "info": {
+        "modelSource": "assets/aircraft/p47-independent.glb",
+        "modelInfo": "assets/aircraft/p47-independent.glb | turn 0deg | native independent P-47: original four-blade rotor, round tyres, original flaps/control surfaces; no mesh cuts | span 12.4m len 11.1m",
+        "p47Ready": true
+      },
+      "mechanical": {
+        "native": true,
+        "ports": [
+          [
+            -2.7254394182818946,
+            -0.3590235641445361,
+            3.036678512873551
+          ],
+          [
+            -2.8955511953590762,
+            -0.34678024368554367,
+            2.9095142088344805
+          ],
+          [
+            -3.0651447069303694,
+            -0.33462550291324084,
+            2.7812168831960666
+          ],
+          [
+            -3.2348802090527906,
+            -0.3230355654909545,
+            2.6312649106839676
+          ],
+          [
+            2.7257410420588717,
+            -0.3590235641445361,
+            3.0366785128744604
+          ],
+          [
+            2.8953345536319834,
+            -0.34678024368577104,
+            2.9095142088344805
+          ],
+          [
+            3.065070055752586,
+            -0.33462550291324084,
+            2.7812168831960666
+          ],
+          [
+            3.2347487616552835,
+            -0.3230355654909545,
+            2.631264910684877
+          ]
+        ],
+        "source": "assets/aircraft/p47-independent.glb",
+        "aiNative": true,
+        "aiCloneIndependent": true,
+        "aiShotOriginError": 0,
+        "groundContactResiduals": [
+          -2.842170943040401e-14,
+          2.842170943040401e-14,
+          -2.842170943040401e-14
+        ],
+        "halfGear": 0.74,
+        "volleyAmmo": 8,
+        "render": {
+          "calls": 1395,
+          "triangles": 22492944,
+          "textures": 118,
+          "geometries": 866
+        }
+      },
+      "oldP47Requests": [],
+      "errors": [],
+      "requests": [
+        "http://127.0.0.1:35397/assets/buildings/house.glb?v=172",
+        "http://127.0.0.1:35397/assets/buildings/farm-ruin.glb?v=172",
+        "http://127.0.0.1:35397/assets/buildings/town-ruin.glb?v=172",
+        "http://127.0.0.1:35397/assets/buildings/hangar.glb?v=172",
+        "http://127.0.0.1:35397/assets/buildings/bunker.glb?v=174",
+        "http://127.0.0.1:35397/assets/buildings/observation-post.glb?v=174",
+        "http://127.0.0.1:35397/tiger.glb",
+        "http://127.0.0.1:35397/assets/europe-campaign.webp",
+        "http://127.0.0.1:35397/m16_mgmc.glb",
+        "http://127.0.0.1:35397/flak88_sfl.glb",
+        "http://127.0.0.1:35397/jagdpanther.glb",
+        "http://127.0.0.1:35397/assets/remagen/ford1940/1940_ford_v8.fbx",
+        "http://127.0.0.1:35397/assets/remagen/horse/quaternius_horse.glb",
+        "http://127.0.0.1:35397/assets/remagen/drb0110/drb0110.glb",
+        "http://127.0.0.1:35397/assets/ships/japanese-cargo.glb",
+        "http://127.0.0.1:35397/assets/aircraft/p47-independent.glb?v=3"
+      ],
+      "responses": [
+        {
+          "url": "http://127.0.0.1:35397/assets/aircraft/p47-independent.glb?v=3",
+          "status": 200,
+          "bytes": 3313956,
+          "sha256": "330306dcf08860757160d8ec8e493412d3458e68052a980bc75fa8f20b5b09ad"
+        },
+        {
+          "url": "http://127.0.0.1:35397/assets/buildings/bunker.glb?v=174",
+          "status": 200,
+          "bytes": 5085168,
+          "sha256": "c9b54e30b99302ddaa0ab486c79318c7bd46c881b9fd11b3f77c60758efaa253"
+        },
+        {
+          "url": "http://127.0.0.1:35397/assets/buildings/farm-ruin.glb?v=172",
+          "status": 200,
+          "bytes": 131708,
+          "sha256": "f0978da9e2642f1eb3f92fe461340b911962e0929aa2892077c9c0f9d9822115"
+        },
+        {
+          "url": "http://127.0.0.1:35397/assets/buildings/hangar.glb?v=172",
+          "status": 200,
+          "bytes": 242552,
+          "sha256": "af53aa083ffef0eeefcfe115ad82b4088643cfd7c9bbbfcf807311f059e81c60"
+        },
+        {
+          "url": "http://127.0.0.1:35397/assets/buildings/house.glb?v=172",
+          "status": 200,
+          "bytes": 1527124,
+          "sha256": "f7acf459193c5469244285599c2ed81e148e7d3e7dbc821f6066305c65a17475"
+        },
+        {
+          "url": "http://127.0.0.1:35397/assets/buildings/observation-post.glb?v=174",
+          "status": 200,
+          "bytes": 372332,
+          "sha256": "39b7a3f1b2eb1fa352ad42185730d08b427e3b7516e0de4cc28e332278fdc921"
+        },
+        {
+          "url": "http://127.0.0.1:35397/assets/buildings/town-ruin.glb?v=172",
+          "status": 200,
+          "bytes": 214212,
+          "sha256": "9a9c3b1617a6d1c0b046ca3882ebfa965f49c1dd942e84a2bad5a362aa4a7862"
+        },
+        {
+          "url": "http://127.0.0.1:35397/assets/europe-campaign.webp",
+          "status": 200,
+          "bytes": 138002,
+          "sha256": "fb210c942ffc3171d2516045eb9105a2118da183c32eec32fa64c480b5d78bc9"
+        },
+        {
+          "url": "http://127.0.0.1:35397/assets/remagen/drb0110/drb0110.glb",
+          "status": 200,
+          "bytes": 797032,
+          "sha256": "5a100410a8d2d9bdfb592c4ef0ffadf72ab51f90a74cb5eea9ab6602e4ba93fd"
+        },
+        {
+          "url": "http://127.0.0.1:35397/assets/remagen/ford1940/1940_ford_v8.fbx",
+          "status": 200,
+          "bytes": 2239376,
+          "sha256": "9182f095ca9845f68a479e21f69a9d727849c06d3e1019f5cc0b2e677d3e6a25"
+        },
+        {
+          "url": "http://127.0.0.1:35397/assets/remagen/horse/quaternius_horse.glb",
+          "status": 200,
+          "bytes": 1108124,
+          "sha256": "fae7a7ec91e0d6a33554efb896fac9c4e8c632644183bcb8cc962f673d3ce609"
+        },
+        {
+          "url": "http://127.0.0.1:35397/assets/ships/japanese-cargo.glb",
+          "status": 200,
+          "bytes": 3745304,
+          "sha256": "07f8d7ed988c18430d5db8a8cf2b31d2f321da67939881ae347572e1972b1f9c"
+        },
+        {
+          "url": "http://127.0.0.1:35397/flak88_sfl.glb",
+          "status": 200,
+          "bytes": 14888828,
+          "sha256": "4095ba76835dbc07d494c6d324837daa3b6c84e09ef21299e94554fb06ae6b7a"
+        },
+        {
+          "url": "http://127.0.0.1:35397/jagdpanther.glb",
+          "status": 200,
+          "bytes": 12763168,
+          "sha256": "4324d874f5ab4717336cc420f2d26810d2cc3ea19338064e7e5abed6c6d25b0b"
+        },
+        {
+          "url": "http://127.0.0.1:35397/m16_mgmc.glb",
+          "status": 200,
+          "bytes": 13651260,
+          "sha256": "eb836c5d64ad2b04bb6f7e0dca5dcd121dbfc2983805b084d44fb60c0be9b463"
+        },
+        {
+          "url": "http://127.0.0.1:35397/tiger.glb",
+          "status": 200,
+          "bytes": 1735368,
+          "sha256": "12da29fd4c83ab47ceb6866b2f1d6300294b592b6181da941e34010fb85ea965"
+        }
+      ]
+    },
+    {
+      "scenario": "local-app-replacement-404",
+      "entry": "http://127.0.0.1:35397/remagen-mission.html",
+      "info": {
+        "modelSource": null,
+        "modelInfo": null,
+        "p47Ready": false
+      },
+      "mechanical": {
+        "native": false,
+        "ports": [
+          [
+            -3.1,
+            -0.15,
+            1.6
+          ],
+          [
+            -2.85,
+            -0.15,
+            1.6
+          ],
+          [
+            -2.6,
+            -0.15,
+            1.6
+          ],
+          [
+            -2.35,
+            -0.15,
+            1.6
+          ],
+          [
+            2.35,
+            -0.15,
+            1.6
+          ],
+          [
+            2.6,
+            -0.15,
+            1.6
+          ],
+          [
+            2.85,
+            -0.15,
+            1.6
+          ],
+          [
+            3.1,
+            -0.15,
+            1.6
+          ]
+        ],
+        "source": null,
+        "render": {
+          "calls": 1060,
+          "triangles": 21806840,
+          "textures": 24,
+          "geometries": 636
+        }
+      },
+      "oldP47Requests": [],
+      "errors": [],
+      "requests": [
+        "http://127.0.0.1:35397/assets/buildings/house.glb?v=172",
+        "http://127.0.0.1:35397/assets/buildings/farm-ruin.glb?v=172",
+        "http://127.0.0.1:35397/assets/buildings/town-ruin.glb?v=172",
+        "http://127.0.0.1:35397/assets/buildings/hangar.glb?v=172",
+        "http://127.0.0.1:35397/assets/buildings/bunker.glb?v=174",
+        "http://127.0.0.1:35397/assets/buildings/observation-post.glb?v=174",
+        "http://127.0.0.1:35397/tiger.glb",
+        "http://127.0.0.1:35397/assets/europe-campaign.webp",
+        "http://127.0.0.1:35397/m16_mgmc.glb",
+        "http://127.0.0.1:35397/flak88_sfl.glb",
+        "http://127.0.0.1:35397/assets/aircraft/p47-independent.glb?v=3",
+        "http://127.0.0.1:35397/jagdpanther.glb",
+        "http://127.0.0.1:35397/assets/aircraft/p47-independent.glb?v=3",
+        "http://127.0.0.1:35397/assets/remagen/ford1940/1940_ford_v8.fbx"
+      ],
+      "responses": [
+        {
+          "url": "http://127.0.0.1:35397/assets/aircraft/p47-independent.glb?v=3",
+          "status": 404,
+          "bytes": 36,
+          "sha256": "896891964cb2d88dc976097c8b6b81c9ce18348387e6029b8cdc52eb34785a58"
+        },
+        {
+          "url": "http://127.0.0.1:35397/assets/aircraft/p47-independent.glb?v=3",
+          "status": 404,
+          "bytes": 36,
+          "sha256": "896891964cb2d88dc976097c8b6b81c9ce18348387e6029b8cdc52eb34785a58"
+        },
+        {
+          "url": "http://127.0.0.1:35397/assets/buildings/bunker.glb?v=174",
+          "status": 200,
+          "bytes": 5085168,
+          "sha256": "c9b54e30b99302ddaa0ab486c79318c7bd46c881b9fd11b3f77c60758efaa253"
+        },
+        {
+          "url": "http://127.0.0.1:35397/assets/buildings/farm-ruin.glb?v=172",
+          "status": 200,
+          "bytes": 131708,
+          "sha256": "f0978da9e2642f1eb3f92fe461340b911962e0929aa2892077c9c0f9d9822115"
+        },
+        {
+          "url": "http://127.0.0.1:35397/assets/buildings/hangar.glb?v=172",
+          "status": 200,
+          "bytes": 242552,
+          "sha256": "af53aa083ffef0eeefcfe115ad82b4088643cfd7c9bbbfcf807311f059e81c60"
+        },
+        {
+          "url": "http://127.0.0.1:35397/assets/buildings/house.glb?v=172",
+          "status": 200,
+          "bytes": 1527124,
+          "sha256": "f7acf459193c5469244285599c2ed81e148e7d3e7dbc821f6066305c65a17475"
+        },
+        {
+          "url": "http://127.0.0.1:35397/assets/buildings/observation-post.glb?v=174",
+          "status": 200,
+          "bytes": 372332,
+          "sha256": "39b7a3f1b2eb1fa352ad42185730d08b427e3b7516e0de4cc28e332278fdc921"
+        },
+        {
+          "url": "http://127.0.0.1:35397/assets/buildings/town-ruin.glb?v=172",
+          "status": 200,
+          "bytes": 214212,
+          "sha256": "9a9c3b1617a6d1c0b046ca3882ebfa965f49c1dd942e84a2bad5a362aa4a7862"
+        },
+        {
+          "url": "http://127.0.0.1:35397/assets/europe-campaign.webp",
+          "status": 200,
+          "bytes": 138002,
+          "sha256": "fb210c942ffc3171d2516045eb9105a2118da183c32eec32fa64c480b5d78bc9"
+        },
+        {
+          "url": "http://127.0.0.1:35397/flak88_sfl.glb",
+          "status": 200,
+          "bytes": 14888828,
+          "sha256": "4095ba76835dbc07d494c6d324837daa3b6c84e09ef21299e94554fb06ae6b7a"
+        },
+        {
+          "url": "http://127.0.0.1:35397/jagdpanther.glb",
+          "status": 200,
+          "bytes": 12763168,
+          "sha256": "4324d874f5ab4717336cc420f2d26810d2cc3ea19338064e7e5abed6c6d25b0b"
+        },
+        {
+          "url": "http://127.0.0.1:35397/m16_mgmc.glb",
+          "status": 200,
+          "bytes": 13651260,
+          "sha256": "eb836c5d64ad2b04bb6f7e0dca5dcd121dbfc2983805b084d44fb60c0be9b463"
+        },
+        {
+          "url": "http://127.0.0.1:35397/tiger.glb",
+          "status": 200,
+          "bytes": 1735368,
+          "sha256": "12da29fd4c83ab47ceb6866b2f1d6300294b592b6181da941e34010fb85ea965"
+        }
+      ]
+    }
+  ]
+}

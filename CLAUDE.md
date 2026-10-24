@@ -1,3 +1,26 @@
+# Independent model review — 24.10.2026, Build 202 REVIEW BRANCH
+
+**NOT a historical-quality or App Store release. Do not merge the P-47 candidate as accepted.**
+Actual deployed Build 201: 61 model/raster-image URLs downloaded and SHA-256 matched to
+recorded baseline. Baseline app payload 36 models: 17 compatible-license records,
+16 restricted-upstream records, 3 unresolved (farm ruin, B24, Midway). FPS Creator
+origin alone is not a commercial prohibition; exact media rights are unresolved.
+New review payload removes both former-game P47 files and their fallback aliases,
+adds creator-hosted mgg8 CC0-source bubbletop. Candidate: 87,334 triangles, 21 meshes,
+4 clips, two own 2048 paint/surface maps, source detail palette, actual shaft axis,
+three original tyres, native surfaces, measured eight mouth markers. Player/AI
+barrel origins; preserve AI fire cadence/count/speed. Old models never feed generator.
+New project paint/adaptation is reserved project work for Oliver, not dedicated CC0;
+base source is CC0. Source raw, decoded hash, metadata and author website chain retained.
+
+P47 passes r128/Validator/mission/clone/contact/muzzle and missing-file fallback tests,
+but FAIL/PENDING historical gates: D40-to-D28 underside, original contour/station
+comparison, maximum parked propeller envelope height vs handbook. No physical iPad,
+installed IPA or macOS compile tested here. All source/model/reference/report files:
+app/release/model-review. Full app release check intentionally fails 17 remaining
+blocked/unresolved models; p47-only package check is not whole-app approval.
+Build202 is an isolated review branch, public main remained Build201 at review time.
+
 # Torpedo-Bomber — Übergabe an Claude Code
 
 **Build 201, 23.10.2026: gelieferte HappySunpore-Dauntless lackiert und nativ animiert.**

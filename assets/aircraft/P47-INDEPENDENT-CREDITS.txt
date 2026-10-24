@@ -1,0 +1,28 @@
+P-47D bubbletop — independent-source review candidate (Build 202)
+
+Base geometry/detail palette: mgg8 / Aviation Gazetteer
+https://sketchfab.com/mgg8
+https://airmuseums.co.uk/hangar/republic-p-47-thunderbolt
+https://sketchfab.com/3d-models/republic-p-47d-thunderbolt-raf-scheme-e831a70ab29c42d3a1dbd352d8bd4684
+Source: CC0 1.0, http://creativecommons.org/publicdomain/zero/1.0/
+Published 22 October 2026; public declaration checked 24 October 2026.
+Original file SHA-256: b46c80f2cd1839723843fa2bb99647a0257b54ab55772c6a208a9c83e1379bf4
+
+Creator states procedural Blender construction with AI assistance from dimensions,
+drawings and photographs, with approximate detail. This is a creator declaration,
+not independent engineering verification or a third-party ownership warranty.
+
+Preparation for Oliver Kurzemann: rigid aircraft-datum correction, one uniform
+metric scale, original shaft-aligned four-blade propeller, separately hinged
+original gear/flaps/ailerons/elevators/rudder, eight barrel-origin markers.
+New paint/adaptation: original project work for Oliver Kurzemann; no public
+dedication of the new project work. New silver/checkerboard paint, fictional
+B/WZ/492024 markings, deterministic wear
+and PBR surface map by scripts/build-p47-independent.py. No reference photograph
+or former War Thunder mesh, UV, normal map or paint was used. CC0 source detail
+palette retained. RAF decal geometry and D-40 dorsal fillet removed.
+
+D-40-RA source adapted towards D-28: original station/underside variant comparisons
+and actual target-iPad performance remain OPEN. This file is not a fully approved
+historical-quality or App Store release. CC0 does not give the client exclusive
+ownership of the original historical shape or the publicly dedicated source.

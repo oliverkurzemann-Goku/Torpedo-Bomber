@@ -1,0 +1,559 @@
+{
+  "checkedOn": "2026-10-24",
+  "scope": "GET and streamed SHA-256 of deployed model/standalone raster-image resources from the recorded Build 201 payload. HTTP availability is distinct from an observed runtime request. Embedded texture bytes are covered by the exact GLB hashes and baseline audit.",
+  "resources": [
+    {
+      "path": "assets/aircraft/avenger-1942-livery.webp",
+      "url": "https://oliverkurzemann-goku.github.io/Torpedo-Bomber/assets/aircraft/avenger-1942-livery.webp",
+      "expectedSha256": "793f0d566aaaa509a62a093f86dbd34b73e2bdfb5cf039bd501b9f1220121d97",
+      "status": 200,
+      "bytes": 364834,
+      "sha256": "793f0d566aaaa509a62a093f86dbd34b73e2bdfb5cf039bd501b9f1220121d97",
+      "matchesBuild201": true
+    },
+    {
+      "path": "assets/aircraft/avenger-1942-normal.png",
+      "url": "https://oliverkurzemann-goku.github.io/Torpedo-Bomber/assets/aircraft/avenger-1942-normal.png",
+      "expectedSha256": "f9baa5de859bf29607c7981036b1842b5eb263b0ac2586b6d5c9aae23afcdf08",
+      "status": 200,
+      "bytes": 819803,
+      "sha256": "f9baa5de859bf29607c7981036b1842b5eb263b0ac2586b6d5c9aae23afcdf08",
+      "matchesBuild201": true
+    },
+    {
+      "path": "assets/aircraft/b17-helijah.glb",
+      "url": "https://oliverkurzemann-goku.github.io/Torpedo-Bomber/assets/aircraft/b17-helijah.glb",
+      "expectedSha256": "bcdf03e6bed86bd8b246a24cf1b8f86a259debe426dbbdd42986d8c278b778db",
+      "status": 200,
+      "bytes": 5977464,
+      "sha256": "bcdf03e6bed86bd8b246a24cf1b8f86a259debe426dbbdd42986d8c278b778db",
+      "matchesBuild201": true
+    },
+    {
+      "path": "assets/aircraft/p47-weathered.glb",
+      "url": "https://oliverkurzemann-goku.github.io/Torpedo-Bomber/assets/aircraft/p47-weathered.glb",
+      "expectedSha256": "8b5ed7be80e7c06e694c276f3cd1e130b63173513f7368b89e8a9ebca5e2213c",
+      "status": 200,
+      "bytes": 10024200,
+      "sha256": "8b5ed7be80e7c06e694c276f3cd1e130b63173513f7368b89e8a9ebca5e2213c",
+      "matchesBuild201": true
+    },
+    {
+      "path": "assets/aircraft/sbd-1942-livery.jpg",
+      "url": "https://oliverkurzemann-goku.github.io/Torpedo-Bomber/assets/aircraft/sbd-1942-livery.jpg",
+      "expectedSha256": "f8018bdd3c4b6e5991167445fac058460283a09ae9ba38629c208b39036b8f9e",
+      "status": 200,
+      "bytes": 452589,
+      "sha256": "f8018bdd3c4b6e5991167445fac058460283a09ae9ba38629c208b39036b8f9e",
+      "matchesBuild201": true
+    },
+    {
+      "path": "assets/aircraft/sbd-dauntless.glb",
+      "url": "https://oliverkurzemann-goku.github.io/Torpedo-Bomber/assets/aircraft/sbd-dauntless.glb",
+      "expectedSha256": "80b06926d6c4d3168e9a52a61379b1a00a1841a8130afcca71f842870d8336e1",
+      "status": 200,
+      "bytes": 7229376,
+      "sha256": "80b06926d6c4d3168e9a52a61379b1a00a1841a8130afcca71f842870d8336e1",
+      "matchesBuild201": true
+    },
+    {
+      "path": "assets/buildings/bunker.glb",
+      "url": "https://oliverkurzemann-goku.github.io/Torpedo-Bomber/assets/buildings/bunker.glb",
+      "expectedSha256": "c9b54e30b99302ddaa0ab486c79318c7bd46c881b9fd11b3f77c60758efaa253",
+      "status": 200,
+      "bytes": 5085168,
+      "sha256": "c9b54e30b99302ddaa0ab486c79318c7bd46c881b9fd11b3f77c60758efaa253",
+      "matchesBuild201": true
+    },
+    {
+      "path": "assets/buildings/farm-ruin.glb",
+      "url": "https://oliverkurzemann-goku.github.io/Torpedo-Bomber/assets/buildings/farm-ruin.glb",
+      "expectedSha256": "f0978da9e2642f1eb3f92fe461340b911962e0929aa2892077c9c0f9d9822115",
+      "status": 200,
+      "bytes": 131708,
+      "sha256": "f0978da9e2642f1eb3f92fe461340b911962e0929aa2892077c9c0f9d9822115",
+      "matchesBuild201": true
+    },
+    {
+      "path": "assets/buildings/hangar.glb",
+      "url": "https://oliverkurzemann-goku.github.io/Torpedo-Bomber/assets/buildings/hangar.glb",
+      "expectedSha256": "af53aa083ffef0eeefcfe115ad82b4088643cfd7c9bbbfcf807311f059e81c60",
+      "status": 200,
+      "bytes": 242552,
+      "sha256": "af53aa083ffef0eeefcfe115ad82b4088643cfd7c9bbbfcf807311f059e81c60",
+      "matchesBuild201": true
+    },
+    {
+      "path": "assets/buildings/house.glb",
+      "url": "https://oliverkurzemann-goku.github.io/Torpedo-Bomber/assets/buildings/house.glb",
+      "expectedSha256": "f7acf459193c5469244285599c2ed81e148e7d3e7dbc821f6066305c65a17475",
+      "status": 200,
+      "bytes": 1527124,
+      "sha256": "f7acf459193c5469244285599c2ed81e148e7d3e7dbc821f6066305c65a17475",
+      "matchesBuild201": true
+    },
+    {
+      "path": "assets/buildings/observation-post.glb",
+      "url": "https://oliverkurzemann-goku.github.io/Torpedo-Bomber/assets/buildings/observation-post.glb",
+      "expectedSha256": "39b7a3f1b2eb1fa352ad42185730d08b427e3b7516e0de4cc28e332278fdc921",
+      "status": 200,
+      "bytes": 372332,
+      "sha256": "39b7a3f1b2eb1fa352ad42185730d08b427e3b7516e0de4cc28e332278fdc921",
+      "matchesBuild201": true
+    },
+    {
+      "path": "assets/buildings/town-ruin.glb",
+      "url": "https://oliverkurzemann-goku.github.io/Torpedo-Bomber/assets/buildings/town-ruin.glb",
+      "expectedSha256": "9a9c3b1617a6d1c0b046ca3882ebfa965f49c1dd942e84a2bad5a362aa4a7862",
+      "status": 200,
+      "bytes": 214212,
+      "sha256": "9a9c3b1617a6d1c0b046ca3882ebfa965f49c1dd942e84a2bad5a362aa4a7862",
+      "matchesBuild201": true
+    },
+    {
+      "path": "assets/europe-campaign.webp",
+      "url": "https://oliverkurzemann-goku.github.io/Torpedo-Bomber/assets/europe-campaign.webp",
+      "expectedSha256": "fb210c942ffc3171d2516045eb9105a2118da183c32eec32fa64c480b5d78bc9",
+      "status": 200,
+      "bytes": 138002,
+      "sha256": "fb210c942ffc3171d2516045eb9105a2118da183c32eec32fa64c480b5d78bc9",
+      "matchesBuild201": true
+    },
+    {
+      "path": "assets/pacific-campaign.webp",
+      "url": "https://oliverkurzemann-goku.github.io/Torpedo-Bomber/assets/pacific-campaign.webp",
+      "expectedSha256": "e8896b2da91178c67380958b2605410207c7887e47d2d9dfc328766601dc328e",
+      "status": 200,
+      "bytes": 143966,
+      "sha256": "e8896b2da91178c67380958b2605410207c7887e47d2d9dfc328766601dc328e",
+      "matchesBuild201": true
+    },
+    {
+      "path": "assets/remagen/drb0110/drb0110.glb",
+      "url": "https://oliverkurzemann-goku.github.io/Torpedo-Bomber/assets/remagen/drb0110/drb0110.glb",
+      "expectedSha256": "5a100410a8d2d9bdfb592c4ef0ffadf72ab51f90a74cb5eea9ab6602e4ba93fd",
+      "status": 200,
+      "bytes": 797032,
+      "sha256": "5a100410a8d2d9bdfb592c4ef0ffadf72ab51f90a74cb5eea9ab6602e4ba93fd",
+      "matchesBuild201": true
+    },
+    {
+      "path": "assets/remagen/ford1940/1940_ford_v8.fbx",
+      "url": "https://oliverkurzemann-goku.github.io/Torpedo-Bomber/assets/remagen/ford1940/1940_ford_v8.fbx",
+      "expectedSha256": "9182f095ca9845f68a479e21f69a9d727849c06d3e1019f5cc0b2e677d3e6a25",
+      "status": 200,
+      "bytes": 2239376,
+      "sha256": "9182f095ca9845f68a479e21f69a9d727849c06d3e1019f5cc0b2e677d3e6a25",
+      "matchesBuild201": true
+    },
+    {
+      "path": "assets/remagen/ford1940/3dcc58e0.png",
+      "url": "https://oliverkurzemann-goku.github.io/Torpedo-Bomber/assets/remagen/ford1940/3dcc58e0.png",
+      "expectedSha256": "d227e6d8963c390cf4e56e216b2ab776d4019ed4f5cfe3ffe0609154b4814dc1",
+      "status": 200,
+      "bytes": 48299,
+      "sha256": "d227e6d8963c390cf4e56e216b2ab776d4019ed4f5cfe3ffe0609154b4814dc1",
+      "matchesBuild201": true
+    },
+    {
+      "path": "assets/remagen/ford1940/3dcc6220.png",
+      "url": "https://oliverkurzemann-goku.github.io/Torpedo-Bomber/assets/remagen/ford1940/3dcc6220.png",
+      "expectedSha256": "ce65236d9fd1cd31ebf552129ff9c2b7e7c47aa1705878cd5b4a2db9394e54ee",
+      "status": 200,
+      "bytes": 11994,
+      "sha256": "ce65236d9fd1cd31ebf552129ff9c2b7e7c47aa1705878cd5b4a2db9394e54ee",
+      "matchesBuild201": true
+    },
+    {
+      "path": "assets/remagen/ford1940/3dcc6b60.png",
+      "url": "https://oliverkurzemann-goku.github.io/Torpedo-Bomber/assets/remagen/ford1940/3dcc6b60.png",
+      "expectedSha256": "c5bc1aff2269c01d4dbe0d6a29ee544da906ef6fee21b0ca629d94243eb36fb2",
+      "status": 200,
+      "bytes": 57468,
+      "sha256": "c5bc1aff2269c01d4dbe0d6a29ee544da906ef6fee21b0ca629d94243eb36fb2",
+      "matchesBuild201": true
+    },
+    {
+      "path": "assets/remagen/ford1940/3dcc6ee0.png",
+      "url": "https://oliverkurzemann-goku.github.io/Torpedo-Bomber/assets/remagen/ford1940/3dcc6ee0.png",
+      "expectedSha256": "1584cc40926150c0890c8bfa305dae98d8ed690017c12366b0d2c58af813f54f",
+      "status": 200,
+      "bytes": 40055,
+      "sha256": "1584cc40926150c0890c8bfa305dae98d8ed690017c12366b0d2c58af813f54f",
+      "matchesBuild201": true
+    },
+    {
+      "path": "assets/remagen/ford1940/3dcc7120.png",
+      "url": "https://oliverkurzemann-goku.github.io/Torpedo-Bomber/assets/remagen/ford1940/3dcc7120.png",
+      "expectedSha256": "1e333186d599500dbc569c0a8f477bd5d7804a6a0ba821d42191786f05713dd6",
+      "status": 200,
+      "bytes": 583542,
+      "sha256": "1e333186d599500dbc569c0a8f477bd5d7804a6a0ba821d42191786f05713dd6",
+      "matchesBuild201": true
+    },
+    {
+      "path": "assets/remagen/ford1940/3dddf0e0.png",
+      "url": "https://oliverkurzemann-goku.github.io/Torpedo-Bomber/assets/remagen/ford1940/3dddf0e0.png",
+      "expectedSha256": "4a24b29d4d372de3718fd0afd25ab879e843a759d2522e087183d52906e53510",
+      "status": 200,
+      "bytes": 40035,
+      "sha256": "4a24b29d4d372de3718fd0afd25ab879e843a759d2522e087183d52906e53510",
+      "matchesBuild201": true
+    },
+    {
+      "path": "assets/remagen/ford1940/3dddf460.png",
+      "url": "https://oliverkurzemann-goku.github.io/Torpedo-Bomber/assets/remagen/ford1940/3dddf460.png",
+      "expectedSha256": "1ff7131073153e5701243c919c7aeb8f843a6b79d608a9adbabf84d597418873",
+      "status": 200,
+      "bytes": 35986,
+      "sha256": "1ff7131073153e5701243c919c7aeb8f843a6b79d608a9adbabf84d597418873",
+      "matchesBuild201": true
+    },
+    {
+      "path": "assets/remagen/ford1940/3dddfda0.png",
+      "url": "https://oliverkurzemann-goku.github.io/Torpedo-Bomber/assets/remagen/ford1940/3dddfda0.png",
+      "expectedSha256": "a052809ed45cc042cd3305683200e313201b7337946eeafe79ad3812757f4299",
+      "status": 200,
+      "bytes": 31046,
+      "sha256": "a052809ed45cc042cd3305683200e313201b7337946eeafe79ad3812757f4299",
+      "matchesBuild201": true
+    },
+    {
+      "path": "assets/remagen/ford1940/3dde0240.png",
+      "url": "https://oliverkurzemann-goku.github.io/Torpedo-Bomber/assets/remagen/ford1940/3dde0240.png",
+      "expectedSha256": "67e58c318f70e6b93d878ca46839e191b0c738ea6e4486f066a3401c923087a1",
+      "status": 200,
+      "bytes": 33553,
+      "sha256": "67e58c318f70e6b93d878ca46839e191b0c738ea6e4486f066a3401c923087a1",
+      "matchesBuild201": true
+    },
+    {
+      "path": "assets/remagen/ford1940/3dde0480.png",
+      "url": "https://oliverkurzemann-goku.github.io/Torpedo-Bomber/assets/remagen/ford1940/3dde0480.png",
+      "expectedSha256": "b3d5ac03f8a92463cdfaaebcc6f6b2382bbc62d3bbaf5da0cbcee1c93792b226",
+      "status": 200,
+      "bytes": 17776,
+      "sha256": "b3d5ac03f8a92463cdfaaebcc6f6b2382bbc62d3bbaf5da0cbcee1c93792b226",
+      "matchesBuild201": true
+    },
+    {
+      "path": "assets/remagen/ford1940/3dde1700.png",
+      "url": "https://oliverkurzemann-goku.github.io/Torpedo-Bomber/assets/remagen/ford1940/3dde1700.png",
+      "expectedSha256": "f5401726c398bc762fe9c2ede22726f83e1e23c9e1a233fa57cb4957d33a03bf",
+      "status": 200,
+      "bytes": 109048,
+      "sha256": "f5401726c398bc762fe9c2ede22726f83e1e23c9e1a233fa57cb4957d33a03bf",
+      "matchesBuild201": true
+    },
+    {
+      "path": "assets/remagen/ford1940/3dde1ba0.png",
+      "url": "https://oliverkurzemann-goku.github.io/Torpedo-Bomber/assets/remagen/ford1940/3dde1ba0.png",
+      "expectedSha256": "7517d5ae0266668f05ae3ace0a25e9703310e5d94ced5c29ce81cd58013aeea4",
+      "status": 200,
+      "bytes": 8392,
+      "sha256": "7517d5ae0266668f05ae3ace0a25e9703310e5d94ced5c29ce81cd58013aeea4",
+      "matchesBuild201": true
+    },
+    {
+      "path": "assets/remagen/ford1940/3de46900.png",
+      "url": "https://oliverkurzemann-goku.github.io/Torpedo-Bomber/assets/remagen/ford1940/3de46900.png",
+      "expectedSha256": "948b02ab8590df357b8c0fe00c0399197466e0dc8b175d58588ff545e815e8ee",
+      "status": 200,
+      "bytes": 947,
+      "sha256": "948b02ab8590df357b8c0fe00c0399197466e0dc8b175d58588ff545e815e8ee",
+      "matchesBuild201": true
+    },
+    {
+      "path": "assets/remagen/ford1940/3de46a40.png",
+      "url": "https://oliverkurzemann-goku.github.io/Torpedo-Bomber/assets/remagen/ford1940/3de46a40.png",
+      "expectedSha256": "41418c95c0a3354caaa4df223ab9bd3b05106146a8e403999a4d9507e7acc544",
+      "status": 200,
+      "bytes": 3190,
+      "sha256": "41418c95c0a3354caaa4df223ab9bd3b05106146a8e403999a4d9507e7acc544",
+      "matchesBuild201": true
+    },
+    {
+      "path": "assets/remagen/ford1940/3df7f900.png",
+      "url": "https://oliverkurzemann-goku.github.io/Torpedo-Bomber/assets/remagen/ford1940/3df7f900.png",
+      "expectedSha256": "834b32501f0d824f70155b368a21e28aa742ba1c6c0a5cbe4e7725376e6675cf",
+      "status": 200,
+      "bytes": 25116,
+      "sha256": "834b32501f0d824f70155b368a21e28aa742ba1c6c0a5cbe4e7725376e6675cf",
+      "matchesBuild201": true
+    },
+    {
+      "path": "assets/remagen/ford1940/3df81960.png",
+      "url": "https://oliverkurzemann-goku.github.io/Torpedo-Bomber/assets/remagen/ford1940/3df81960.png",
+      "expectedSha256": "d64612e19177cd8f41c1bf36476b4544ae33474d657ad87e0372a9497c899625",
+      "status": 200,
+      "bytes": 35687,
+      "sha256": "d64612e19177cd8f41c1bf36476b4544ae33474d657ad87e0372a9497c899625",
+      "matchesBuild201": true
+    },
+    {
+      "path": "assets/remagen/ford1940/3df82740.png",
+      "url": "https://oliverkurzemann-goku.github.io/Torpedo-Bomber/assets/remagen/ford1940/3df82740.png",
+      "expectedSha256": "912fdcbece97af60023f559dce7036fcc5a81aa3dd7a181af990546015810d3b",
+      "status": 200,
+      "bytes": 16161,
+      "sha256": "912fdcbece97af60023f559dce7036fcc5a81aa3dd7a181af990546015810d3b",
+      "matchesBuild201": true
+    },
+    {
+      "path": "assets/remagen/ford1940/3df82980.png",
+      "url": "https://oliverkurzemann-goku.github.io/Torpedo-Bomber/assets/remagen/ford1940/3df82980.png",
+      "expectedSha256": "21958d3df289117c59d421b5f3182aecad0d5036005a43a01bf7bb726d8a8716",
+      "status": 200,
+      "bytes": 198,
+      "sha256": "21958d3df289117c59d421b5f3182aecad0d5036005a43a01bf7bb726d8a8716",
+      "matchesBuild201": true
+    },
+    {
+      "path": "assets/remagen/ford1940/3dfca020.png",
+      "url": "https://oliverkurzemann-goku.github.io/Torpedo-Bomber/assets/remagen/ford1940/3dfca020.png",
+      "expectedSha256": "0707d3983960758d2446dcd48a906e62993849b34dec9ec75c413d2caff6f949",
+      "status": 200,
+      "bytes": 2497,
+      "sha256": "0707d3983960758d2446dcd48a906e62993849b34dec9ec75c413d2caff6f949",
+      "matchesBuild201": true
+    },
+    {
+      "path": "assets/remagen/ford1940/internal_ground_ao_texture.jpeg",
+      "url": "https://oliverkurzemann-goku.github.io/Torpedo-Bomber/assets/remagen/ford1940/internal_ground_ao_texture.jpeg",
+      "expectedSha256": "2288235d362c837f49905f28cb17cc6463e0064e66a60f30daf9380b6623b64c",
+      "status": 200,
+      "bytes": 18397,
+      "sha256": "2288235d362c837f49905f28cb17cc6463e0064e66a60f30daf9380b6623b64c",
+      "matchesBuild201": true
+    },
+    {
+      "path": "assets/remagen/horse/quaternius_horse.glb",
+      "url": "https://oliverkurzemann-goku.github.io/Torpedo-Bomber/assets/remagen/horse/quaternius_horse.glb",
+      "expectedSha256": "fae7a7ec91e0d6a33554efb896fac9c4e8c632644183bcb8cc962f673d3ce609",
+      "status": 200,
+      "bytes": 1108124,
+      "sha256": "fae7a7ec91e0d6a33554efb896fac9c4e8c632644183bcb8cc962f673d3ce609",
+      "matchesBuild201": true
+    },
+    {
+      "path": "assets/ships/fletcher.glb",
+      "url": "https://oliverkurzemann-goku.github.io/Torpedo-Bomber/assets/ships/fletcher.glb",
+      "expectedSha256": "caad31ef5d5a1eea12f2b42555e95409561fd3321e62cfd5780ba8a64bcbb51b",
+      "status": 200,
+      "bytes": 2384584,
+      "sha256": "caad31ef5d5a1eea12f2b42555e95409561fd3321e62cfd5780ba8a64bcbb51b",
+      "matchesBuild201": true
+    },
+    {
+      "path": "assets/ships/japanese-cargo.glb",
+      "url": "https://oliverkurzemann-goku.github.io/Torpedo-Bomber/assets/ships/japanese-cargo.glb",
+      "expectedSha256": "07f8d7ed988c18430d5db8a8cf2b31d2f321da67939881ae347572e1972b1f9c",
+      "status": 200,
+      "bytes": 3745304,
+      "sha256": "07f8d7ed988c18430d5db8a8cf2b31d2f321da67939881ae347572e1972b1f9c",
+      "matchesBuild201": true
+    },
+    {
+      "path": "assets/ships/ko-hyoteki.glb",
+      "url": "https://oliverkurzemann-goku.github.io/Torpedo-Bomber/assets/ships/ko-hyoteki.glb",
+      "expectedSha256": "231f04bb9b2c277a0253c2f343d8aa77630031bb1b8e413ca8ef364312fa4838",
+      "status": 200,
+      "bytes": 1424360,
+      "sha256": "231f04bb9b2c277a0253c2f343d8aa77630031bb1b8e413ca8ef364312fa4838",
+      "matchesBuild201": true
+    },
+    {
+      "path": "assets/ships/landing-ship.glb",
+      "url": "https://oliverkurzemann-goku.github.io/Torpedo-Bomber/assets/ships/landing-ship.glb",
+      "expectedSha256": "29d2f4620a6989e8038fc38b62853e5ead597f4a845f9cb1c6d9a17e3157314d",
+      "status": 200,
+      "bytes": 4321916,
+      "sha256": "29d2f4620a6989e8038fc38b62853e5ead597f4a845f9cb1c6d9a17e3157314d",
+      "matchesBuild201": true
+    },
+    {
+      "path": "assets/ships/liberty.glb",
+      "url": "https://oliverkurzemann-goku.github.io/Torpedo-Bomber/assets/ships/liberty.glb",
+      "expectedSha256": "18e1019a667b59668f9326dc9bba554873215894262724161aa46e82f4f75f0d",
+      "status": 200,
+      "bytes": 9249748,
+      "sha256": "18e1019a667b59668f9326dc9bba554873215894262724161aa46e82f4f75f0d",
+      "matchesBuild201": true
+    },
+    {
+      "path": "assets/ships/samidare.glb",
+      "url": "https://oliverkurzemann-goku.github.io/Torpedo-Bomber/assets/ships/samidare.glb",
+      "expectedSha256": "b4eba4977d7ef97235599788c7820fe8a19187ebbd3bfb3e89b3fc6f1998e978",
+      "status": 200,
+      "bytes": 11997084,
+      "sha256": "b4eba4977d7ef97235599788c7820fe8a19187ebbd3bfb3e89b3fc6f1998e978",
+      "matchesBuild201": true
+    },
+    {
+      "path": "b24.glb",
+      "url": "https://oliverkurzemann-goku.github.io/Torpedo-Bomber/b24.glb",
+      "expectedSha256": "5366c1b690c559d1e25291cd16191886de8c5864266528d5acc28510c4adc761",
+      "status": 200,
+      "bytes": 5939004,
+      "sha256": "5366c1b690c559d1e25291cd16191886de8c5864266528d5acc28510c4adc761",
+      "matchesBuild201": true
+    },
+    {
+      "path": "bf109new.glb",
+      "url": "https://oliverkurzemann-goku.github.io/Torpedo-Bomber/bf109new.glb",
+      "expectedSha256": "bd6c828563ad0aa0a0c2f89067f68491afedb5df8eb3504900c31b4f0aaed6bf",
+      "status": 200,
+      "bytes": 3461468,
+      "sha256": "bd6c828563ad0aa0a0c2f89067f68491afedb5df8eb3504900c31b4f0aaed6bf",
+      "matchesBuild201": true
+    },
+    {
+      "path": "f4u-1c_corsair_war_thunder.glb",
+      "url": "https://oliverkurzemann-goku.github.io/Torpedo-Bomber/f4u-1c_corsair_war_thunder.glb",
+      "expectedSha256": "b9a4ef749a786743dfaf19d5a36262d570734dad4c48e516857d4650150c329a",
+      "status": 200,
+      "bytes": 16443976,
+      "sha256": "b9a4ef749a786743dfaf19d5a36262d570734dad4c48e516857d4650150c329a",
+      "matchesBuild201": true
+    },
+    {
+      "path": "flak88_sfl.glb",
+      "url": "https://oliverkurzemann-goku.github.io/Torpedo-Bomber/flak88_sfl.glb",
+      "expectedSha256": "4095ba76835dbc07d494c6d324837daa3b6c84e09ef21299e94554fb06ae6b7a",
+      "status": 200,
+      "bytes": 14888828,
+      "sha256": "4095ba76835dbc07d494c6d324837daa3b6c84e09ef21299e94554fb06ae6b7a",
+      "matchesBuild201": true
+    },
+    {
+      "path": "fw190.glb",
+      "url": "https://oliverkurzemann-goku.github.io/Torpedo-Bomber/fw190.glb",
+      "expectedSha256": "6ea8ecf36027d49b69fa8eeb5da02987675bfe7f410b88543a2a9ab7c1da1811",
+      "status": 200,
+      "bytes": 5702612,
+      "sha256": "6ea8ecf36027d49b69fa8eeb5da02987675bfe7f410b88543a2a9ab7c1da1811",
+      "matchesBuild201": true
+    },
+    {
+      "path": "grumman tbm avenger.glb",
+      "url": "https://oliverkurzemann-goku.github.io/Torpedo-Bomber/grumman%20tbm%20avenger.glb",
+      "expectedSha256": "9065b7e65419b2efd4618bcb138ce199d16ac3151801d2d90afb7ae92ebb10a6",
+      "status": 200,
+      "bytes": 15080808,
+      "sha256": "9065b7e65419b2efd4618bcb138ce199d16ac3151801d2d90afb7ae92ebb10a6",
+      "matchesBuild201": true
+    },
+    {
+      "path": "ijn carrier.glb",
+      "url": "https://oliverkurzemann-goku.github.io/Torpedo-Bomber/ijn%20carrier.glb",
+      "expectedSha256": "a0c2a40f01faaa97218ed23f3f13bfc688a4440df4cc9fa9aa6a043d6b6017e5",
+      "status": 200,
+      "bytes": 11345996,
+      "sha256": "a0c2a40f01faaa97218ed23f3f13bfc688a4440df4cc9fa9aa6a043d6b6017e5",
+      "matchesBuild201": true
+    },
+    {
+      "path": "jagdpanther.glb",
+      "url": "https://oliverkurzemann-goku.github.io/Torpedo-Bomber/jagdpanther.glb",
+      "expectedSha256": "4324d874f5ab4717336cc420f2d26810d2cc3ea19338064e7e5abed6c6d25b0b",
+      "status": 200,
+      "bytes": 12763168,
+      "sha256": "4324d874f5ab4717336cc420f2d26810d2cc3ea19338064e7e5abed6c6d25b0b",
+      "matchesBuild201": true
+    },
+    {
+      "path": "ju87.glb",
+      "url": "https://oliverkurzemann-goku.github.io/Torpedo-Bomber/ju87.glb",
+      "expectedSha256": "63f1e3c0448edcc332cdbd3c26f40a04758be11df558937c19d0ea59b03fa9b6",
+      "status": 200,
+      "bytes": 17381696,
+      "sha256": "63f1e3c0448edcc332cdbd3c26f40a04758be11df558937c19d0ea59b03fa9b6",
+      "matchesBuild201": true
+    },
+    {
+      "path": "m16_mgmc.glb",
+      "url": "https://oliverkurzemann-goku.github.io/Torpedo-Bomber/m16_mgmc.glb",
+      "expectedSha256": "eb836c5d64ad2b04bb6f7e0dca5dcd121dbfc2983805b084d44fb60c0be9b463",
+      "status": 200,
+      "bytes": 13651260,
+      "sha256": "eb836c5d64ad2b04bb6f7e0dca5dcd121dbfc2983805b084d44fb60c0be9b463",
+      "matchesBuild201": true
+    },
+    {
+      "path": "me163.glb",
+      "url": "https://oliverkurzemann-goku.github.io/Torpedo-Bomber/me163.glb",
+      "expectedSha256": "1ac6f59cd3b06aa613ea497462936094ce6e50eb4b9eef8f0f3f73460f8a848e",
+      "status": 200,
+      "bytes": 4974720,
+      "sha256": "1ac6f59cd3b06aa613ea497462936094ce6e50eb4b9eef8f0f3f73460f8a848e",
+      "matchesBuild201": true
+    },
+    {
+      "path": "me262.glb",
+      "url": "https://oliverkurzemann-goku.github.io/Torpedo-Bomber/me262.glb",
+      "expectedSha256": "bddfaf0fcc3971045566cb3e0616ca3c6dec3d213aa2869f5a1576dc9d6206d5",
+      "status": 200,
+      "bytes": 4503732,
+      "sha256": "bddfaf0fcc3971045566cb3e0616ca3c6dec3d213aa2869f5a1576dc9d6206d5",
+      "matchesBuild201": true
+    },
+    {
+      "path": "p47new.glb",
+      "url": "https://oliverkurzemann-goku.github.io/Torpedo-Bomber/p47new.glb",
+      "expectedSha256": "61cb9510ad9ffc5eeb25abbd5eb620b0e17fb49f44b2e78fb6ba09b681e38174",
+      "status": 200,
+      "bytes": 8029172,
+      "sha256": "61cb9510ad9ffc5eeb25abbd5eb620b0e17fb49f44b2e78fb6ba09b681e38174",
+      "matchesBuild201": true
+    },
+    {
+      "path": "sherman_m4a1.glb",
+      "url": "https://oliverkurzemann-goku.github.io/Torpedo-Bomber/sherman_m4a1.glb",
+      "expectedSha256": "fd1c8651befd8dc5f8cce22449e4d42f8c18337861f22e28c544c93fe50f889b",
+      "status": 200,
+      "bytes": 18796228,
+      "sha256": "fd1c8651befd8dc5f8cce22449e4d42f8c18337861f22e28c544c93fe50f889b",
+      "matchesBuild201": true
+    },
+    {
+      "path": "tiger.glb",
+      "url": "https://oliverkurzemann-goku.github.io/Torpedo-Bomber/tiger.glb",
+      "expectedSha256": "12da29fd4c83ab47ceb6866b2f1d6300294b592b6181da941e34010fb85ea965",
+      "status": 200,
+      "bytes": 1735368,
+      "sha256": "12da29fd4c83ab47ceb6866b2f1d6300294b592b6181da941e34010fb85ea965",
+      "matchesBuild201": true
+    },
+    {
+      "path": "treepack.glb",
+      "url": "https://oliverkurzemann-goku.github.io/Torpedo-Bomber/treepack.glb",
+      "expectedSha256": "a7aabc44265f961037684ae9a47c93396167a6d35f15cb743cfedd3bb08df411",
+      "status": 200,
+      "bytes": 10258136,
+      "sha256": "a7aabc44265f961037684ae9a47c93396167a6d35f15cb743cfedd3bb08df411",
+      "matchesBuild201": true
+    },
+    {
+      "path": "uss_midway.glb",
+      "url": "https://oliverkurzemann-goku.github.io/Torpedo-Bomber/uss_midway.glb",
+      "expectedSha256": "1734a3160b0a0ec59807d603e2b6547f18d0e30b0935b671ff04d15d9dc87cd7",
+      "status": 200,
+      "bytes": 22351848,
+      "sha256": "1734a3160b0a0ec59807d603e2b6547f18d0e30b0935b671ff04d15d9dc87cd7",
+      "matchesBuild201": true
+    },
+    {
+      "path": "zero.glb",
+      "url": "https://oliverkurzemann-goku.github.io/Torpedo-Bomber/zero.glb",
+      "expectedSha256": "289d8e1db2385fea38b7cf2e9160d3e5f0f553328d8d12d466b28886254c4f43",
+      "status": 200,
+      "bytes": 1129808,
+      "sha256": "289d8e1db2385fea38b7cf2e9160d3e5f0f553328d8d12d466b28886254c4f43",
+      "matchesBuild201": true
+    }
+  ],
+  "matched": 61,
+  "total": 61,
+  "liveBrowser": "Chromium request failed with ERR_EMPTY_RESPONSE in this execution environment; no successful live-browser trace claimed.",
+  "installedIpadBinary": "Not available. Repository payload and reproduced app package are not an inspection of an installed .ipa."
+}

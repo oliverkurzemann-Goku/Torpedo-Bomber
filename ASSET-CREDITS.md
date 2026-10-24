@@ -51,7 +51,13 @@ The former sabrezor/Arma CC BY-NC model b17.glb is excluded from runtime and the
 native app payload; it remains a historical repository file and legacy test fixture.
 
 
-## P-47 service-wear model (Build 198)
+## Independent P-47 review candidate (Build 202)
+
+`assets/aircraft/p47-independent.glb` replaces both former-game P-47 paths in this review branch. Base source: [mgg8 / Aviation Gazetteer](https://sketchfab.com/3d-models/e831a70ab29c42d3a1dbd352d8bd4684), CC0 1.0, independently published and creator-hosted. Original source hash, dated metadata, license and changes: `assets/aircraft/P47-INDEPENDENT-CREDITS.txt` and `app/release/model-review/p47/`. New paint and project adaptation are prepared for Oliver Kurzemann; no public dedication of this new project work is made.
+
+This is a review candidate, with historical-station, underside-variant and physical-iPad gates OPEN. The earlier `p47new.glb`, `assets/aircraft/p47-weathered.glb` and its credit file are excluded from this app payload; neither model is a P-47 runtime fallback. Historical provenance records below do not approve those files for distribution. Other model release blockers remain in the dated review.
+
+## Historical P-47 service-wear derivative (Build 198; excluded in review Build 202)
 
 `assets/aircraft/p47-weathered.glb` is a derivative of the supplied P-47D-28
 Thunderbolt (#1 Custom) (War Thunder), by KojfDiscord:

@@ -20,5 +20,7 @@
   "sourceTriangles": 175224,
   "sourceVariant": "P-47D-40-RA",
   "originalCreationStatement": "Creator describes a procedural Blender model with AI assistance, based on published dimensions/drawings/photos; details and markings approximate.",
-  "evidenceLimit": "CC0 declaration and creator-hosted download observed; no third-party title warranty. Source has no embedded attribution metadata."
+  "evidenceLimit": "CC0 declaration and creator-hosted download observed; no third-party title warranty. Source has no embedded attribution metadata.",
+  "decodedSha256": "07a23d0b33cdbccbe27cb5586ee5e7865a4a2e9fab1c52c5102bed4bb481cbf6",
+  "decoder": "@gltf-transform/cli 4.5.1 copy (meshopt decoder), no geometry edits"
 }

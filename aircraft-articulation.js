@@ -6,8 +6,8 @@
  // The weathered P-47 exports its own real surfaces. Never overlay generic flaps or cut it again.
  function nativeP47(frame){
   if(frame.userData.nativeP47)return true;
-  const source=frame.getObjectByName('P47D_Weathered_v3');
-  if(!source||source.userData.nativeAircraft!=='p47-v3')return false;
+  const source=frame.getObjectByName('P47D_Independent_v1')||frame.getObjectByName('P47D_Weathered_v3');
+  if(!source||!['p47-independent-v1','p47-v3'].includes(source.userData.nativeAircraft))return false;
   const rotor=source.getObjectByName('Propeller'),names=['GearLeft','GearRight','TailGear'];
   const hinges=names.map(n=>source.getObjectByName(n)),flaps=['FlapLeft','FlapRight'].map(n=>source.getObjectByName(n));
   if(!rotor||hinges.some(n=>!n)||flaps.some(n=>!n))throw Error('Incomplete native P-47 rig');
@@ -39,6 +39,14 @@
   frame.getObjectByName('AileronLeft').rotation.x=.22*r;frame.getObjectByName('AileronRight').rotation.x=-.22*r;
   frame.getObjectByName('ElevatorLeft').rotation.x=-.25*p;frame.getObjectByName('ElevatorRight').rotation.x=-.25*p;
   frame.getObjectByName('Rudder').rotation.y=-.12*r;
+ }
+ function p47Muzzles(frame,relativeTo=frame){
+  if(!frame?.userData.nativeP47||!frame.getObjectByName('GunMuzzleLeft1'))return [];
+  frame.updateWorldMatrix(true,true);
+  return ['Left','Right'].flatMap(side=>[1,2,3,4].map(i=>{
+   const point=frame.getObjectByName('GunMuzzle'+side+i).getWorldPosition(new T.Vector3());
+   return relativeTo?relativeTo.worldToLocal(point):point;
+  }));
  }
  const profiles={
   p47:{mainX:2.40,mainZ:1.99,leg:1.10,radius:.44,tailZ:-4.81,flapSpan:[1.45,3.30],wingZ:[-.6,3.2],wingY:-.45,chord:.64,flapAngle:.70},
@@ -198,6 +206,6 @@
    if(p.externalFlap)hinge.position.y=hinge.userData.baseY??hinge.position.y;
   }
  }
- global.AircraftArticulation={profiles,install,pose,probe,meshes,nativeP47,controls};
+ global.AircraftArticulation={profiles,install,pose,probe,meshes,nativeP47,controls,p47Muzzles};
  if(typeof module==='object'&&module.exports)module.exports=global.AircraftArticulation;
 })(typeof window==='undefined'?globalThis:window);

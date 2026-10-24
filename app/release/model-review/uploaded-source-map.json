@@ -1,0 +1,434 @@
+[
+  {
+    "file": "01-bf109new.glb",
+    "bytes": 3461468,
+    "sha256": "bd6c828563ad0aa0a0c2f89067f68491afedb5df8eb3504900c31b4f0aaed6bf",
+    "metadata": {
+      "extras": {
+        "author": "KojfDiscord (https://sketchfab.com/KojfDiscord)",
+        "license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+        "source": "https://sketchfab.com/3d-models/bf-109-f-1-war-thunder-0fec6a4fbae549e1929bd5978e89c4f4",
+        "title": "Bf 109 F-1 (War Thunder)"
+      },
+      "generator": "Sketchfab-16.72.0",
+      "version": "2.0"
+    },
+    "exactBaselineMatches": [
+      "bf109new.glb"
+    ],
+    "scope": "Uploaded raw source; does not by itself prove current delivery or ownership."
+  },
+  {
+    "file": "02-free_tiger_and_crew_kit.glb",
+    "bytes": 1735368,
+    "sha256": "12da29fd4c83ab47ceb6866b2f1d6300294b592b6181da941e34010fb85ea965",
+    "metadata": {
+      "extras": {
+        "author": "adrielcz (https://sketchfab.com/adrielcz)",
+        "license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+        "source": "https://sketchfab.com/3d-models/free-tiger-and-crew-kit-6290669ab2cb49599f1606507626af39",
+        "title": "Free Tiger And Crew Kit"
+      },
+      "generator": "Sketchfab-12.67.0",
+      "version": "2.0"
+    },
+    "exactBaselineMatches": [
+      "tiger.glb"
+    ],
+    "scope": "Uploaded raw source; does not by itself prove current delivery or ownership."
+  },
+  {
+    "file": "03-me_163_b_war_thunder.glb",
+    "bytes": 4974720,
+    "sha256": "1ac6f59cd3b06aa613ea497462936094ce6e50eb4b9eef8f0f3f73460f8a848e",
+    "metadata": {
+      "extras": {
+        "author": "KojfDiscord (https://sketchfab.com/KojfDiscord)",
+        "license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+        "source": "https://sketchfab.com/3d-models/me-163-b-war-thunder-b803273028ee4ebc87ca4af2e15766fb",
+        "title": "Me 163 B (War Thunder)"
+      },
+      "generator": "Sketchfab-16.64.0",
+      "version": "2.0"
+    },
+    "exactBaselineMatches": [
+      "me163.glb"
+    ],
+    "scope": "Uploaded raw source; does not by itself prove current delivery or ownership."
+  },
+  {
+    "file": "04-fw_190_f-8_war_thunder-2.glb",
+    "bytes": 3677364,
+    "sha256": "ad818b5333aa9f832da33b5c9321f29a92729723d36de06b8bdecc9533c87698",
+    "metadata": {
+      "extras": {
+        "author": "KojfDiscord (https://sketchfab.com/KojfDiscord)",
+        "license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+        "source": "https://sketchfab.com/3d-models/fw-190-f-8-war-thunder-1cc783fc6d454a8dbddfdce521890040",
+        "title": "Fw 190 F-8 (War Thunder)"
+      },
+      "generator": "Sketchfab-16.62.0",
+      "version": "2.0"
+    },
+    "exactBaselineMatches": [],
+    "scope": "Uploaded raw source; does not by itself prove current delivery or ownership."
+  },
+  {
+    "file": "05-me_262_a-1ajabo_war_thunder.glb",
+    "bytes": 4503732,
+    "sha256": "bddfaf0fcc3971045566cb3e0616ca3c6dec3d213aa2869f5a1576dc9d6206d5",
+    "metadata": {
+      "extras": {
+        "author": "KojfDiscord (https://sketchfab.com/KojfDiscord)",
+        "license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+        "source": "https://sketchfab.com/3d-models/me-262-a-1ajabo-war-thunder-a6e4bd7a047f49b292e59ad285850310",
+        "title": "Me 262 A-1a/Jabo (War Thunder)"
+      },
+      "generator": "Sketchfab-16.72.0",
+      "version": "2.0"
+    },
+    "exactBaselineMatches": [
+      "me262.glb"
+    ],
+    "scope": "Uploaded raw source; does not by itself prove current delivery or ownership."
+  },
+  {
+    "file": "06-b17.glb",
+    "bytes": 6027460,
+    "sha256": "f21be57500ed897183ff73d20131226c150b569bb03784fe10d20adc47154a58",
+    "metadata": {
+      "generator": "glTF-Transform v3.10.1",
+      "version": "2.0",
+      "extras": {
+        "author": "Secret Weapons - Arma 3 Mod (https://sketchfab.com/sabrezor)",
+        "license": "CC-BY-NC-4.0 (http://creativecommons.org/licenses/by-nc/4.0/)",
+        "source": "https://sketchfab.com/3d-models/helijahs-b-17-fe911eaf8d5e41eab65fae25b58664b1",
+        "title": "Helijah's B-17"
+      }
+    },
+    "exactBaselineMatches": [],
+    "scope": "Uploaded raw source; does not by itself prove current delivery or ownership."
+  },
+  {
+    "file": "07-b24.glb",
+    "bytes": 5939004,
+    "sha256": "5366c1b690c559d1e25291cd16191886de8c5864266528d5acc28510c4adc761",
+    "metadata": {
+      "generator": "glTF-Transform v3.10.1",
+      "version": "2.0",
+      "extras": {
+        "author": "CreadorDeMu (https://sketchfab.com/creadordemu)",
+        "license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+        "source": "https://sketchfab.com/3d-models/b-24-liberator-c64e58edfacb4c519b5602278a7e51aa",
+        "title": "B-24 Liberator"
+      }
+    },
+    "exactBaselineMatches": [
+      "b24.glb"
+    ],
+    "scope": "Uploaded raw source; does not by itself prove current delivery or ownership."
+  },
+  {
+    "file": "08-manilov.aps_bf_109_-_remix.glb",
+    "bytes": 6279492,
+    "sha256": "0d3ed09912fb5b5eb7f91f2e7835de25b33c603be96a4614e928b5ed2c78cac0",
+    "metadata": {
+      "extras": {
+        "author": "Sabre (https://sketchfab.com/sabrezor)",
+        "license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+        "source": "https://sketchfab.com/3d-models/manilovaps-bf-109-remix-4a663a81690b41a1a700c0a501b00001",
+        "title": "Manilov.ap's Bf 109 - Remix"
+      },
+      "generator": "Sketchfab-15.87.0",
+      "version": "2.0"
+    },
+    "exactBaselineMatches": [],
+    "scope": "Uploaded raw source; does not by itself prove current delivery or ownership."
+  },
+  {
+    "file": "09-jadgpanther_war_thunder.glb",
+    "bytes": 12763168,
+    "sha256": "4324d874f5ab4717336cc420f2d26810d2cc3ea19338064e7e5abed6c6d25b0b",
+    "metadata": {
+      "extras": {
+        "author": "PolyDucky (https://sketchfab.com/salphytheunemployed)",
+        "license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+        "source": "https://sketchfab.com/3d-models/jadgpanther-war-thunder-813e100326194334b52887a17416e0b8",
+        "title": "Jadgpanther (War Thunder)"
+      },
+      "generator": "Sketchfab-12.66.0",
+      "version": "2.0"
+    },
+    "exactBaselineMatches": [
+      "jagdpanther.glb"
+    ],
+    "scope": "Uploaded raw source; does not by itself prove current delivery or ownership."
+  },
+  {
+    "file": "10-p47new.glb",
+    "bytes": 8029172,
+    "sha256": "61cb9510ad9ffc5eeb25abbd5eb620b0e17fb49f44b2e78fb6ba09b681e38174",
+    "metadata": {
+      "extras": {
+        "author": "KojfDiscord (https://sketchfab.com/KojfDiscord)",
+        "license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+        "source": "https://sketchfab.com/3d-models/p-47d-28-thunderbolt-1-custom-war-thunder-1d469251c5994dfd9169f11a97b1b56a",
+        "title": "P-47D-28 Thunderbolt (#1 Custom) (War Thunder)"
+      },
+      "generator": "Sketchfab-17.8.0",
+      "version": "2.0"
+    },
+    "exactBaselineMatches": [
+      "p47new.glb"
+    ],
+    "scope": "Uploaded raw source; does not by itself prove current delivery or ownership."
+  },
+  {
+    "file": "11-88_cm_flak_37_sfl._war_thunder.glb",
+    "bytes": 14888828,
+    "sha256": "4095ba76835dbc07d494c6d324837daa3b6c84e09ef21299e94554fb06ae6b7a",
+    "metadata": {
+      "extras": {
+        "author": "KojfDiscord (https://sketchfab.com/KojfDiscord)",
+        "license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+        "source": "https://sketchfab.com/3d-models/88-cm-flak-37-sfl-war-thunder-7a9b4abbc2884ef6bbf5dbffbe8adf2b",
+        "title": "8,8 cm Flak 37 Sfl. (War Thunder)"
+      },
+      "generator": "Sketchfab-16.75.0",
+      "version": "2.0"
+    },
+    "exactBaselineMatches": [
+      "flak88_sfl.glb"
+    ],
+    "scope": "Uploaded raw source; does not by itself prove current delivery or ownership."
+  },
+  {
+    "file": "12-m16_mgmc_war_thunder.glb",
+    "bytes": 13651260,
+    "sha256": "eb836c5d64ad2b04bb6f7e0dca5dcd121dbfc2983805b084d44fb60c0be9b463",
+    "metadata": {
+      "extras": {
+        "author": "KojfDiscord (https://sketchfab.com/KojfDiscord)",
+        "license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+        "source": "https://sketchfab.com/3d-models/m16-mgmc-war-thunder-fbdb51b1f92f45eebe791a16d805acd4",
+        "title": "M16 MGMC (War Thunder)"
+      },
+      "generator": "Sketchfab-16.59.0",
+      "version": "2.0"
+    },
+    "exactBaselineMatches": [
+      "m16_mgmc.glb"
+    ],
+    "scope": "Uploaded raw source; does not by itself prove current delivery or ownership."
+  },
+  {
+    "file": "13-maus_war_thunder.glb",
+    "bytes": 15852100,
+    "sha256": "1fb1491a877323e792856910d8e7b0df008dd01ca75c6fab2d86e669960bec85",
+    "metadata": {
+      "extras": {
+        "author": "KojfDiscord (https://sketchfab.com/KojfDiscord)",
+        "license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+        "source": "https://sketchfab.com/3d-models/maus-war-thunder-f4e59fb442644624af291ee45d2876b6",
+        "title": "Maus (War Thunder)"
+      },
+      "generator": "Sketchfab-16.56.0",
+      "version": "2.0"
+    },
+    "exactBaselineMatches": [],
+    "scope": "Uploaded raw source; does not by itself prove current delivery or ownership."
+  },
+  {
+    "file": "14-m4a1_76_w_war_thunder.glb",
+    "bytes": 18796228,
+    "sha256": "fd1c8651befd8dc5f8cce22449e4d42f8c18337861f22e28c544c93fe50f889b",
+    "metadata": {
+      "extras": {
+        "author": "KojfDiscord (https://sketchfab.com/KojfDiscord)",
+        "license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+        "source": "https://sketchfab.com/3d-models/m4a1-76-w-war-thunder-8492cfd6dec94c90ae7d210acf7e58ed",
+        "title": "M4A1 (76) W (War Thunder)"
+      },
+      "generator": "Sketchfab-16.59.0",
+      "version": "2.0"
+    },
+    "exactBaselineMatches": [
+      "sherman_m4a1.glb"
+    ],
+    "scope": "Uploaded raw source; does not by itself prove current delivery or ownership."
+  },
+  {
+    "file": "15-ju_87_b-2_war_thunder.glb",
+    "bytes": 17381696,
+    "sha256": "63f1e3c0448edcc332cdbd3c26f40a04758be11df558937c19d0ea59b03fa9b6",
+    "metadata": {
+      "extras": {
+        "author": "KojfDiscord (https://sketchfab.com/KojfDiscord)",
+        "license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+        "source": "https://sketchfab.com/3d-models/ju-87-b-2-war-thunder-c09430ec8b9f46669bf8a008dd80d336",
+        "title": "Ju 87 B-2 (War Thunder)"
+      },
+      "generator": "Sketchfab-16.59.0",
+      "version": "2.0"
+    },
+    "exactBaselineMatches": [
+      "ju87.glb"
+    ],
+    "scope": "Uploaded raw source; does not by itself prove current delivery or ownership."
+  },
+  {
+    "file": "16-cv-3_uss_saratoga_war_thunder.glb",
+    "bytes": 47624912,
+    "sha256": "bebfc298b5fb36e81feecb98dd0207be23794e9a11fdd7f316f333f79fbb29f8",
+    "metadata": {
+      "extras": {
+        "author": "KojfDiscord (https://sketchfab.com/KojfDiscord)",
+        "license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+        "source": "https://sketchfab.com/3d-models/cv-3-uss-saratoga-war-thunder-6266f27fbd634ce8b826b3914e55849c",
+        "title": "CV-3 USS Saratoga (War Thunder)"
+      },
+      "generator": "Sketchfab-17.2.0",
+      "version": "2.0"
+    },
+    "exactBaselineMatches": [],
+    "scope": "Uploaded raw source; does not by itself prove current delivery or ownership."
+  },
+  {
+    "file": "17-type_a_ko-hyoteki_japanese_midget_submarine.glb",
+    "bytes": 3677560,
+    "sha256": "0fb5ca006f686704d42fd0cfaf670fe715da9491ad53b09a7f13b38833e0b590",
+    "metadata": {
+      "extras": {
+        "author": "Savy (https://sketchfab.com/SavyTheCreator)",
+        "license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+        "source": "https://sketchfab.com/3d-models/type-a-ko-hyoteki-japanese-midget-submarine-93cde98a93fd4b2e9820e780e5ec9c91",
+        "title": "Type A Ko-hyoteki Japanese Midget Submarine"
+      },
+      "generator": "Sketchfab-15.5.0",
+      "version": "2.0"
+    },
+    "exactBaselineMatches": [],
+    "scope": "Uploaded raw source; does not by itself prove current delivery or ownership."
+  },
+  {
+    "file": "18-warships_-_call_of_duty_world_at_war_hd.glb",
+    "bytes": 14669220,
+    "sha256": "1955b69b34e0cfbf6e9adf9d0e7ae3ea594db44ad65bde92a4911db6ff379ca6",
+    "metadata": {
+      "extras": {
+        "author": "Nazar Okruzhko (\u041d\u0430\u0437\u0430\u0440 \u041e\u043a\u0440\u0443\u0436\u043a\u043e) (https://sketchfab.com/Deduska_1947)",
+        "license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+        "source": "https://sketchfab.com/3d-models/warships-call-of-duty-world-at-war-hd-49f465e925f84efa91acb58fc515f90d",
+        "title": "Warships - Call of Duty: World At War \u1d34\u1d30"
+      },
+      "generator": "Sketchfab-16.72.0",
+      "version": "2.0"
+    },
+    "exactBaselineMatches": [],
+    "scope": "Uploaded raw source; does not by itself prove current delivery or ownership."
+  },
+  {
+    "file": "19-liberty_ship.glb",
+    "bytes": 12936060,
+    "sha256": "d20e2d2719dd8e6a4175658c36ba5173ca873911d2c44856225ae34e634871ad",
+    "metadata": {
+      "extras": {
+        "author": "AlanTinka (https://sketchfab.com/AlanTinka)",
+        "license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+        "source": "https://sketchfab.com/3d-models/liberty-ship-a1db8e8414464c5d8b11383e202fcf26",
+        "title": "Liberty ship"
+      },
+      "generator": "Sketchfab-15.27.0",
+      "version": "2.0"
+    },
+    "exactBaselineMatches": [],
+    "scope": "Uploaded raw source; does not by itself prove current delivery or ownership."
+  },
+  {
+    "file": "20-samidare_destroyer-4.glb",
+    "bytes": 18393080,
+    "sha256": "b5f77c0b2b87beef1061075a08a722e01cf9f0f7712017fa369524989b152788",
+    "metadata": {
+      "extras": {
+        "author": "everlasting17th (https://sketchfab.com/everlastinggrey)",
+        "license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+        "source": "https://sketchfab.com/3d-models/samidare-destroyer-b37939147c854e61857f5b248f9efd29",
+        "title": "Samidare destroyer"
+      },
+      "generator": "Sketchfab-12.67.0",
+      "version": "2.0"
+    },
+    "exactBaselineMatches": [],
+    "scope": "Uploaded raw source; does not by itself prove current delivery or ownership."
+  },
+  {
+    "file": "21-japan_destroyer_yukikazejmsdf.glb",
+    "bytes": 26083380,
+    "sha256": "27505addc90be546ece87eb1cc1155911db0df941303be4c7ba95c0f05c3a7c5",
+    "metadata": {
+      "extras": {
+        "author": "\u5168\u6597\u7115 (https://sketchfab.com/lxyun_2)",
+        "license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+        "source": "https://sketchfab.com/3d-models/japan-destroyer-yukikazejmsdf-30f5637dd03b4341adc378903bbf6d44",
+        "title": "Japan Destroyer Yukikaze(JMSDF/\u96ea\u98a8)"
+      },
+      "generator": "Sketchfab-14.11.0",
+      "version": "2.0"
+    },
+    "exactBaselineMatches": [],
+    "scope": "Uploaded raw source; does not by itself prove current delivery or ownership."
+  },
+  {
+    "file": "22-f4u-1c_corsair_war_thunder.glb",
+    "bytes": 16443976,
+    "sha256": "b9a4ef749a786743dfaf19d5a36262d570734dad4c48e516857d4650150c329a",
+    "metadata": {
+      "extras": {
+        "author": "KojfDiscord (https://sketchfab.com/KojfDiscord)",
+        "license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+        "source": "https://sketchfab.com/3d-models/f4u-1c-corsair-war-thunder-440585ee30bc4b6299b4b1bd8d09e3d8",
+        "title": "F4U-1C Corsair (War Thunder)"
+      },
+      "generator": "Sketchfab-17.17.0",
+      "version": "2.0"
+    },
+    "exactBaselineMatches": [
+      "f4u-1c_corsair_war_thunder.glb"
+    ],
+    "scope": "Uploaded raw source; does not by itself prove current delivery or ownership."
+  },
+  {
+    "file": "23-putsborough__wwii_observation_post.glb",
+    "bytes": 2139860,
+    "sha256": "666482f67d0b06712c41308bdfb03a6ae83150d29a37e4fcf290d4b96db79207",
+    "metadata": {
+      "extras": {
+        "author": "davidetheridge (https://sketchfab.com/davidetheridge)",
+        "license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+        "source": "https://sketchfab.com/3d-models/putsborough-wwii-observation-post-05255e1e580140e6ab6742c399c8affb",
+        "title": "Putsborough  WWII Observation Post"
+      },
+      "generator": "Sketchfab-15.17.0",
+      "version": "2.0"
+    },
+    "exactBaselineMatches": [],
+    "scope": "Uploaded raw source; does not by itself prove current delivery or ownership."
+  },
+  {
+    "file": "24-bunker_o323a-160_z.glb",
+    "bytes": 20029768,
+    "sha256": "4d04e27f25c15f65fe657107a59c825b8876462c63d6ef6e7090cbe22ae5a379",
+    "metadata": {
+      "extras": {
+        "author": "matousekfoto (https://sketchfab.com/matousekfoto)",
+        "license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+        "source": "https://sketchfab.com/3d-models/bunker-o323a-160-z-11ae7599f3b640569f7ed4692acabf38",
+        "title": "Bunker O3/23/A-160 Z"
+      },
+      "generator": "Sketchfab-12.67.0",
+      "version": "2.0"
+    },
+    "exactBaselineMatches": [],
+    "scope": "Uploaded raw source; does not by itself prove current delivery or ownership."
+  }
+]

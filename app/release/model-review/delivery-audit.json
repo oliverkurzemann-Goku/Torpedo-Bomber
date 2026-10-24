@@ -1,16 +1,16 @@
 {
   "schema": 1,
   "checkedOn": "2026-10-24",
-  "build": 201,
+  "build": 202,
   "scope": {
     "entries": [
       "index.html",
       "torpedo-carrier.html",
       "remagen-mission.html"
     ],
-    "appManifestSha256": "5f7ca49fc9d49f4729c1a31fc2d799b9e924ccbab28890ddd8784a2e714a8fb3",
-    "payloadFiles": 314,
-    "payloadBytes": 287553523,
+    "appManifestSha256": "b066013a63602a31dbbb1f447dbe594517f47e510b3f15209822cbbf93ba63e7",
+    "payloadFiles": 313,
+    "payloadBytes": 272816044,
     "scriptFiles": [
       "aircraft-articulation.js",
       "aircraft-damage.js",
@@ -161,59 +161,11 @@
         "scope": "static-runtime-candidate"
       },
       {
-        "path": "assets/aircraft/p47-weathered.glb",
+        "path": "assets/aircraft/p47-independent.glb",
         "referencedBy": [
           "remagen-mission.html"
         ],
         "exists": true,
-        "scope": "static-runtime-candidate"
-      },
-      {
-        "path": "p47new.glb",
-        "referencedBy": [
-          "remagen-mission.html"
-        ],
-        "exists": true,
-        "scope": "static-runtime-candidate"
-      },
-      {
-        "path": "p-47d-28_thunderbolt_1_custom_war_thunder.glb",
-        "referencedBy": [
-          "remagen-mission.html"
-        ],
-        "exists": false,
-        "scope": "static-runtime-candidate"
-      },
-      {
-        "path": "p-47d-28 thunderbolt 1 custom war thunder.glb",
-        "referencedBy": [
-          "remagen-mission.html"
-        ],
-        "exists": false,
-        "scope": "static-runtime-candidate"
-      },
-      {
-        "path": "p47.glb",
-        "referencedBy": [
-          "remagen-mission.html"
-        ],
-        "exists": false,
-        "scope": "static-runtime-candidate"
-      },
-      {
-        "path": "p-47.glb",
-        "referencedBy": [
-          "remagen-mission.html"
-        ],
-        "exists": false,
-        "scope": "static-runtime-candidate"
-      },
-      {
-        "path": "p_47.glb",
-        "referencedBy": [
-          "remagen-mission.html"
-        ],
-        "exists": false,
         "scope": "static-runtime-candidate"
       },
       {
@@ -369,22 +321,6 @@
         "scope": "static-runtime-candidate"
       },
       {
-        "path": "b17.glb",
-        "referencedBy": [
-          "remagen-mission.html"
-        ],
-        "exists": true,
-        "scope": "static-runtime-candidate"
-      },
-      {
-        "path": "helijahs_b-17.glb",
-        "referencedBy": [
-          "remagen-mission.html"
-        ],
-        "exists": false,
-        "scope": "static-runtime-candidate"
-      },
-      {
         "path": "tiger.glb",
         "referencedBy": [
           "terrain-system/WorldVehicles.js"
@@ -474,9 +410,9 @@
     ]
   },
   "categories": {
-    "documented-compatible-license": 17,
-    "restriction-or-upstream-permission-required": 18,
-    "unclear-origin": 2
+    "documented-compatible-license": 18,
+    "unclear-origin": 3,
+    "documented-use-restriction": 14
   },
   "models": [
     {
@@ -509,6 +445,7 @@
         "updatedAt": "2022-07-20T03:43:11.361921",
         "isDownloadable": true
       },
+      "upstreamRestrictionEvidence": null,
       "category": "documented-compatible-license",
       "reason": "Compatible source license recorded; attribution/change notices and any third-party rights still apply. Not a title guarantee.",
       "inApp": true,
@@ -732,37 +669,38 @@
       "releaseApproved": false
     },
     {
-      "path": "assets/aircraft/p47-weathered.glb",
-      "bytes": 10024200,
-      "sha256": "8b5ed7be80e7c06e694c276f3cd1e130b63173513f7368b89e8a9ebca5e2213c",
-      "title": "P-47D-28 Thunderbolt (War Thunder derivative; photo livery and service wear v3)",
-      "author": "KojfDiscord (https://sketchfab.com/KojfDiscord)",
-      "license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
-      "source": "https://sketchfab.com/3d-models/p-47d-28-thunderbolt-1-custom-war-thunder-1d469251c5994dfd9169f11a97b1b56a",
+      "path": "assets/aircraft/p47-independent.glb",
+      "bytes": 3313956,
+      "sha256": "330306dcf08860757160d8ec8e493412d3458e68052a980bc75fa8f20b5b09ad",
+      "title": "Independent-source P-47D bubbletop (D-28 adaptation review)",
+      "author": "mgg8 / Aviation Gazetteer (https://sketchfab.com/mgg8); adaptation for Oliver Kurzemann",
+      "license": "CC0-1.0 (http://creativecommons.org/publicdomain/zero/1.0/)",
+      "source": "https://sketchfab.com/3d-models/republic-p-47d-thunderbolt-raf-scheme-e831a70ab29c42d3a1dbd352d8bd4684",
       "sourceCheck": {
-        "source": "https://sketchfab.com/3d-models/p-47d-28-thunderbolt-1-custom-war-thunder-1d469251c5994dfd9169f11a97b1b56a",
-        "api": "https://api.sketchfab.com/v3/models/1d469251c5994dfd9169f11a97b1b56a",
+        "source": "https://sketchfab.com/3d-models/republic-p-47d-thunderbolt-raf-scheme-e831a70ab29c42d3a1dbd352d8bd4684",
+        "api": "https://api.sketchfab.com/v3/models/e831a70ab29c42d3a1dbd352d8bd4684",
         "checkedOn": "2026-10-24",
         "status": "verified-public-api",
-        "modelId": "1d469251c5994dfd9169f11a97b1b56a",
-        "author": "KojfDiscord",
-        "profile": "https://sketchfab.com/KojfDiscord",
-        "title": "P-47D-28 Thunderbolt (#1 Custom) (War Thunder)",
+        "modelId": "e831a70ab29c42d3a1dbd352d8bd4684",
+        "author": "mgg8",
+        "profile": "https://sketchfab.com/mgg8",
+        "title": "Republic P-47D Thunderbolt — RAF scheme",
         "license": {
-          "uri": "https://api.sketchfab.com/v3/licenses/322a749bcfa841b29dff1e8a1bb74b0b",
-          "label": "CC Attribution",
-          "fullName": "Creative Commons Attribution",
-          "requirements": "Author must be credited. Commercial use is allowed.",
-          "url": "http://creativecommons.org/licenses/by/4.0/",
-          "slug": "by"
+          "uri": "https://api.sketchfab.com/v3/licenses/7c23a1ba438d4306920229c12afcb5f9",
+          "label": "CC0 Public Domain",
+          "fullName": "CC0 Public Domain",
+          "requirements": "Credit is not mandatory. Commercial use is allowed.",
+          "url": "http://creativecommons.org/publicdomain/zero/1.0/",
+          "slug": "cc0"
         },
-        "descriptionSignals": [],
-        "publishedAt": "2026-03-27T18:53:31.353999",
-        "updatedAt": "2026-03-27T18:53:31.529238",
+        "descriptionSignals": [
+          "Creator describes a procedural Blender model with AI assistance, based on published dimensions/drawings/photos; details and markings approximate."
+        ],
         "isDownloadable": true
       },
-      "category": "restriction-or-upstream-permission-required",
-      "reason": "Identified upstream game/tool content. Uploader CC declaration does not establish upstream permission.",
+      "upstreamRestrictionEvidence": null,
+      "category": "documented-compatible-license",
+      "reason": "Compatible source license recorded; attribution/change notices and any third-party rights still apply. Not a title guarantee.",
       "inApp": true,
       "inWebCandidateGraph": true,
       "referencedBy": [
@@ -771,72 +709,40 @@
       "textures": [
         {
           "index": 0,
-          "name": null,
-          "mimeType": "image/png",
-          "bytes": 6095,
-          "sha256": "56853354098e7909ea11b98244eb762aba04849f0903f88844e5bee9e387aa48",
+          "name": "Own checkerboard/silver livery",
+          "mimeType": "image/jpeg",
+          "bytes": 322401,
+          "sha256": "87a084ad6669520ddc091ac7e357616ba58f8ed3d70e9c4333f061d320f6510b",
           "embedded": true
         },
         {
           "index": 1,
-          "name": null,
+          "name": "Own service-wear surface",
           "mimeType": "image/png",
-          "bytes": 2297945,
-          "sha256": "10fdd3293a9996c3eb3c6d36170f66fdb5772e9fa889181f3d4b26be0be6cb07",
+          "bytes": 589961,
+          "sha256": "503fe1c13dba3e7201cf1146f92822903a4c1852174e2be9a91d9189e9554219",
           "embedded": true
         },
         {
           "index": 2,
-          "name": null,
+          "name": "CC0 PaletteBaseColor",
           "mimeType": "image/png",
-          "bytes": 1969859,
-          "sha256": "8c9e8f8e8a1c097681d1e4e2045fc09edcbf664b65d633f3dc712c032a4c7e39",
+          "bytes": 496,
+          "sha256": "68e91039428dfa3853f4ac548a493f90b9723096c757dbc1c0d62d0d4b181f02",
           "embedded": true
         },
         {
           "index": 3,
-          "name": null,
+          "name": "CC0 PaletteMetallicRoughness",
           "mimeType": "image/png",
-          "bytes": 656449,
-          "sha256": "26adebbf2ce0b2748332a1e9c7abcdf08102c922804976b76a4d97fe5dd06948",
-          "embedded": true
-        },
-        {
-          "index": 4,
-          "name": null,
-          "mimeType": "image/png",
-          "bytes": 423717,
-          "sha256": "70d460beed36d2c9f8f88b7d05ae97ea45597e10dc2a41d0a68364ef91799b3d",
-          "embedded": true
-        },
-        {
-          "index": 5,
-          "name": null,
-          "mimeType": "image/png",
-          "bytes": 327226,
-          "sha256": "55e248901b2ca6b6dc2bfbc37ecef198f7f70126f94576347b68a9b19f52ff62",
-          "embedded": true
-        },
-        {
-          "index": 6,
-          "name": null,
-          "mimeType": "image/png",
-          "bytes": 111440,
-          "sha256": "defbd6703a8d8673f2ce7daea44881cb7407857207d6b453026930a04f6fa058",
-          "embedded": true
-        },
-        {
-          "index": 7,
-          "name": null,
-          "mimeType": "image/png",
-          "bytes": 947320,
-          "sha256": "660075c176ba4a9dd0498e25c0e8f44cc6f483e7de93d48520af7d3af915bbd7",
+          "bytes": 479,
+          "sha256": "7c7f95529975bdc58811f748403364aa2a194f45f49ab7ca4d226e53b1ae95e5",
           "embedded": true
         }
       ],
       "externalTextures": [],
       "supplementalTextures": [],
-      "upstreamSourceHash": "61cb9510ad9ffc5eeb25abbd5eb620b0e17fb49f44b2e78fb6ba09b681e38174",
+      "upstreamSourceHash": "b46c80f2cd1839723843fa2bb99647a0257b54ab55772c6a208a9c83e1379bf4",
       "releaseApproved": false
     },
     {
@@ -869,6 +775,7 @@
         "updatedAt": "2023-12-05T02:29:19.613801",
         "isDownloadable": true
       },
+      "upstreamRestrictionEvidence": null,
       "category": "documented-compatible-license",
       "reason": "Compatible source license recorded; attribution/change notices and any third-party rights still apply. Not a title guarantee.",
       "inApp": true,
@@ -921,6 +828,7 @@
         "updatedAt": "2026-08-28T09:01:49.330832",
         "isDownloadable": true
       },
+      "upstreamRestrictionEvidence": null,
       "category": "documented-compatible-license",
       "reason": "Compatible source license recorded; attribution/change notices and any third-party rights still apply. Not a title guarantee.",
       "inApp": true,
@@ -979,8 +887,9 @@
         "updatedAt": "2026-08-25T07:19:04.386464",
         "isDownloadable": true
       },
-      "category": "restriction-or-upstream-permission-required",
-      "reason": "Identified upstream game/tool content. Uploader CC declaration does not establish upstream permission.",
+      "upstreamRestrictionEvidence": null,
+      "category": "unclear-origin",
+      "reason": "Identified FPS Creator asset: stock-media use in games may be permitted, but the exact original asset, pack and license have not been matched. Uploader CC declaration alone is insufficient; no blanket commercial-use prohibition asserted.",
       "inApp": true,
       "inWebCandidateGraph": false,
       "referencedBy": [],
@@ -1029,6 +938,7 @@
         "updatedAt": "2022-08-06T16:36:04.972090",
         "isDownloadable": true
       },
+      "upstreamRestrictionEvidence": null,
       "category": "documented-compatible-license",
       "reason": "Compatible source license recorded; attribution/change notices and any third-party rights still apply. Not a title guarantee.",
       "inApp": true,
@@ -1095,6 +1005,7 @@
         "updatedAt": "2022-07-17T09:19:57.652346",
         "isDownloadable": true
       },
+      "upstreamRestrictionEvidence": null,
       "category": "documented-compatible-license",
       "reason": "Compatible source license recorded; attribution/change notices and any third-party rights still apply. Not a title guarantee.",
       "inApp": true,
@@ -1145,6 +1056,7 @@
         "updatedAt": "2023-04-11T19:05:32.958196",
         "isDownloadable": true
       },
+      "upstreamRestrictionEvidence": null,
       "category": "documented-compatible-license",
       "reason": "Compatible source license recorded; attribution/change notices and any third-party rights still apply. Not a title guarantee.",
       "inApp": true,
@@ -1195,6 +1107,7 @@
         "updatedAt": "2022-07-18T21:59:49.955043",
         "isDownloadable": true
       },
+      "upstreamRestrictionEvidence": null,
       "category": "documented-compatible-license",
       "reason": "Compatible source license recorded; attribution/change notices and any third-party rights still apply. Not a title guarantee.",
       "inApp": true,
@@ -1261,6 +1174,7 @@
         "updatedAt": "2026-02-03T20:14:22.184647",
         "isDownloadable": true
       },
+      "upstreamRestrictionEvidence": null,
       "category": "documented-compatible-license",
       "reason": "Compatible source license recorded; attribution/change notices and any third-party rights still apply. Not a title guarantee.",
       "inApp": true,
@@ -1321,6 +1235,7 @@
         "updatedAt": "2023-06-23T18:47:05.396204",
         "isDownloadable": true
       },
+      "upstreamRestrictionEvidence": null,
       "category": "documented-compatible-license",
       "reason": "Compatible source license recorded; attribution/change notices and any third-party rights still apply. Not a title guarantee.",
       "inApp": true,
@@ -1444,6 +1359,7 @@
       "license": "CC0-1.0 (https://creativecommons.org/publicdomain/zero/1.0/)",
       "source": "https://poly.pizza/m/qvTrSG9pZF",
       "sourceCheck": null,
+      "upstreamRestrictionEvidence": null,
       "category": "documented-compatible-license",
       "reason": "Compatible source license recorded; attribution/change notices and any third-party rights still apply. Not a title guarantee.",
       "inApp": true,
@@ -1487,8 +1403,18 @@
         "updatedAt": "2025-07-24T20:45:59.924506",
         "isDownloadable": true
       },
-      "category": "restriction-or-upstream-permission-required",
-      "reason": "Identified upstream game/tool content. Uploader CC declaration does not establish upstream permission.",
+      "upstreamRestrictionEvidence": {
+        "url": "https://www.activision.com/legal/terms-of-use",
+        "checkedOn": "2026-10-24",
+        "sections": [
+          "3.A",
+          "20 (ownership)"
+        ],
+        "finding": "Personal noncommercial license; redistribution and derivative reuse of product parts restricted. No written exception found in project records.",
+        "limit": "Supplied ship source explicitly identifies Call of Duty World at War; no private contract has been inspected."
+      },
+      "category": "documented-use-restriction",
+      "reason": "Supplied/source metadata identifies upstream game content. Published upstream terms restrict redistribution/reuse; no applicable override permission is recorded. This is an evidence-based release decision, not an adjudication of ownership.",
       "inApp": true,
       "inWebCandidateGraph": true,
       "referencedBy": [
@@ -1579,8 +1505,18 @@
         "updatedAt": "2025-07-24T20:45:59.924506",
         "isDownloadable": true
       },
-      "category": "restriction-or-upstream-permission-required",
-      "reason": "Identified upstream game/tool content. Uploader CC declaration does not establish upstream permission.",
+      "upstreamRestrictionEvidence": {
+        "url": "https://www.activision.com/legal/terms-of-use",
+        "checkedOn": "2026-10-24",
+        "sections": [
+          "3.A",
+          "20 (ownership)"
+        ],
+        "finding": "Personal noncommercial license; redistribution and derivative reuse of product parts restricted. No written exception found in project records.",
+        "limit": "Supplied ship source explicitly identifies Call of Duty World at War; no private contract has been inspected."
+      },
+      "category": "documented-use-restriction",
+      "reason": "Supplied/source metadata identifies upstream game content. Published upstream terms restrict redistribution/reuse; no applicable override permission is recorded. This is an evidence-based release decision, not an adjudication of ownership.",
       "inApp": true,
       "inWebCandidateGraph": true,
       "referencedBy": [
@@ -1679,6 +1615,7 @@
         "updatedAt": "2023-03-07T01:42:36.409923",
         "isDownloadable": true
       },
+      "upstreamRestrictionEvidence": null,
       "category": "documented-compatible-license",
       "reason": "Compatible source license recorded; attribution/change notices and any third-party rights still apply. Not a title guarantee.",
       "inApp": true,
@@ -1747,8 +1684,18 @@
         "updatedAt": "2025-07-24T20:45:59.924506",
         "isDownloadable": true
       },
-      "category": "restriction-or-upstream-permission-required",
-      "reason": "Identified upstream game/tool content. Uploader CC declaration does not establish upstream permission.",
+      "upstreamRestrictionEvidence": {
+        "url": "https://www.activision.com/legal/terms-of-use",
+        "checkedOn": "2026-10-24",
+        "sections": [
+          "3.A",
+          "20 (ownership)"
+        ],
+        "finding": "Personal noncommercial license; redistribution and derivative reuse of product parts restricted. No written exception found in project records.",
+        "limit": "Supplied ship source explicitly identifies Call of Duty World at War; no private contract has been inspected."
+      },
+      "category": "documented-use-restriction",
+      "reason": "Supplied/source metadata identifies upstream game content. Published upstream terms restrict redistribution/reuse; no applicable override permission is recorded. This is an evidence-based release decision, not an adjudication of ownership.",
       "inApp": true,
       "inWebCandidateGraph": true,
       "referencedBy": [
@@ -1847,6 +1794,7 @@
         "updatedAt": "2023-11-21T18:58:15.637148",
         "isDownloadable": true
       },
+      "upstreamRestrictionEvidence": null,
       "category": "documented-compatible-license",
       "reason": "Compatible source license recorded; attribution/change notices and any third-party rights still apply. Not a title guarantee.",
       "inApp": true,
@@ -1915,6 +1863,7 @@
         "updatedAt": "2022-07-20T19:11:32.374245",
         "isDownloadable": true
       },
+      "upstreamRestrictionEvidence": null,
       "category": "documented-compatible-license",
       "reason": "Compatible source license recorded; attribution/change notices and any third-party rights still apply. Not a title guarantee.",
       "inApp": true,
@@ -2114,85 +2063,6 @@
       "releaseApproved": false
     },
     {
-      "path": "b17.glb",
-      "bytes": 6027460,
-      "sha256": "f21be57500ed897183ff73d20131226c150b569bb03784fe10d20adc47154a58",
-      "title": "Helijah's B-17",
-      "author": "Secret Weapons - Arma 3 Mod (https://sketchfab.com/sabrezor)",
-      "license": "CC-BY-NC-4.0 (http://creativecommons.org/licenses/by-nc/4.0/)",
-      "source": "https://sketchfab.com/3d-models/helijahs-b-17-fe911eaf8d5e41eab65fae25b58664b1",
-      "sourceCheck": null,
-      "category": "restriction-or-upstream-permission-required",
-      "reason": "Declared license has noncommercial, no-derivatives or editorial limitations.",
-      "inApp": false,
-      "inWebCandidateGraph": true,
-      "referencedBy": [
-        "remagen-mission.html"
-      ],
-      "textures": [
-        {
-          "index": 0,
-          "name": null,
-          "mimeType": "image/jpeg",
-          "bytes": 85087,
-          "sha256": "a04373dbd30edf7a73d7cd8cd50f1c89ff31c94892aeb91b04efc0ea35a77a2a",
-          "embedded": true
-        },
-        {
-          "index": 1,
-          "name": null,
-          "mimeType": "image/png",
-          "bytes": 275916,
-          "sha256": "0107aa7f9f9247cb6a3b6c49cffce47c9aaa22ce3266efc1c2aeaef574ef20db",
-          "embedded": true
-        },
-        {
-          "index": 2,
-          "name": null,
-          "mimeType": "image/png",
-          "bytes": 461551,
-          "sha256": "c82898f0c61600d94278c889a5da18f5b7cb413f936cf731ec212d81c29809db",
-          "embedded": true
-        },
-        {
-          "index": 3,
-          "name": null,
-          "mimeType": "image/png",
-          "bytes": 245621,
-          "sha256": "9c1ae92d12dd4bcc86f83ae03b12192696b24c5b8b3353ba2c97bfb31621f4f8",
-          "embedded": true
-        },
-        {
-          "index": 4,
-          "name": null,
-          "mimeType": "image/png",
-          "bytes": 336037,
-          "sha256": "e0fed98f45fe5fd83f7772790ef20f7b659c689af391cc18e6eba605289d3cfe",
-          "embedded": true
-        },
-        {
-          "index": 5,
-          "name": null,
-          "mimeType": "image/png",
-          "bytes": 561262,
-          "sha256": "45183bd2b70784780f3f070f38cc372e5e005d8752dd80e0e73e1086468685c9",
-          "embedded": true
-        },
-        {
-          "index": 6,
-          "name": null,
-          "mimeType": "image/png",
-          "bytes": 933706,
-          "sha256": "8e5663c506f73cb2aabbcb09cfbc0794ccb2f09aaf7b4a25e01d1eecfda9135c",
-          "embedded": true
-        }
-      ],
-      "externalTextures": [],
-      "supplementalTextures": [],
-      "upstreamSourceHash": null,
-      "releaseApproved": false
-    },
-    {
       "path": "b24.glb",
       "bytes": 5939004,
       "sha256": "5366c1b690c559d1e25291cd16191886de8c5864266528d5acc28510c4adc761",
@@ -2207,6 +2077,7 @@
         "status": "not-verified",
         "error": "HTTP Error 404: Not Found"
       },
+      "upstreamRestrictionEvidence": null,
       "category": "unclear-origin",
       "reason": "Source, authorship or applicable use terms have not been established.",
       "inApp": true,
@@ -2395,8 +2266,18 @@
         "updatedAt": "2025-08-07T14:01:39.190914",
         "isDownloadable": true
       },
-      "category": "restriction-or-upstream-permission-required",
-      "reason": "Identified upstream game/tool content. Uploader CC declaration does not establish upstream permission.",
+      "upstreamRestrictionEvidence": {
+        "url": "https://legal.gaijin.net/termsofservice/",
+        "checkedOn": "2026-10-24",
+        "sections": [
+          "Terms 4.1, 4.3.2",
+          "EULA 3.2.1, 3.2.2, 3.2.5"
+        ],
+        "finding": "Published personal/noncommercial, nontransferable game license; redistribution and derivative reuse not granted. A third-party uploader CC label does not demonstrate a separate Gaijin permission.",
+        "limit": "Applies if the supplied identification as War Thunder content is correct; no judicial ownership finding or search of private contracts."
+      },
+      "category": "documented-use-restriction",
+      "reason": "Supplied/source metadata identifies upstream game content. Published upstream terms restrict redistribution/reuse; no applicable override permission is recorded. This is an evidence-based release decision, not an adjudication of ownership.",
       "inApp": true,
       "inWebCandidateGraph": true,
       "referencedBy": [
@@ -2615,8 +2496,18 @@
         "updatedAt": "2026-07-07T08:44:11.536471",
         "isDownloadable": true
       },
-      "category": "restriction-or-upstream-permission-required",
-      "reason": "Identified upstream game/tool content. Uploader CC declaration does not establish upstream permission.",
+      "upstreamRestrictionEvidence": {
+        "url": "https://legal.gaijin.net/termsofservice/",
+        "checkedOn": "2026-10-24",
+        "sections": [
+          "Terms 4.1, 4.3.2",
+          "EULA 3.2.1, 3.2.2, 3.2.5"
+        ],
+        "finding": "Published personal/noncommercial, nontransferable game license; redistribution and derivative reuse not granted. A third-party uploader CC label does not demonstrate a separate Gaijin permission.",
+        "limit": "Applies if the supplied identification as War Thunder content is correct; no judicial ownership finding or search of private contracts."
+      },
+      "category": "documented-use-restriction",
+      "reason": "Supplied/source metadata identifies upstream game content. Published upstream terms restrict redistribution/reuse; no applicable override permission is recorded. This is an evidence-based release decision, not an adjudication of ownership.",
       "inApp": true,
       "inWebCandidateGraph": true,
       "referencedBy": [
@@ -2755,8 +2646,18 @@
         "updatedAt": "2025-10-13T19:12:31.582507",
         "isDownloadable": true
       },
-      "category": "restriction-or-upstream-permission-required",
-      "reason": "Identified upstream game/tool content. Uploader CC declaration does not establish upstream permission.",
+      "upstreamRestrictionEvidence": {
+        "url": "https://legal.gaijin.net/termsofservice/",
+        "checkedOn": "2026-10-24",
+        "sections": [
+          "Terms 4.1, 4.3.2",
+          "EULA 3.2.1, 3.2.2, 3.2.5"
+        ],
+        "finding": "Published personal/noncommercial, nontransferable game license; redistribution and derivative reuse not granted. A third-party uploader CC label does not demonstrate a separate Gaijin permission.",
+        "limit": "Applies if the supplied identification as War Thunder content is correct; no judicial ownership finding or search of private contracts."
+      },
+      "category": "documented-use-restriction",
+      "reason": "Supplied/source metadata identifies upstream game content. Published upstream terms restrict redistribution/reuse; no applicable override permission is recorded. This is an evidence-based release decision, not an adjudication of ownership.",
       "inApp": true,
       "inWebCandidateGraph": true,
       "referencedBy": [
@@ -2975,8 +2876,18 @@
         "updatedAt": "2025-08-07T14:05:14.950087",
         "isDownloadable": true
       },
-      "category": "restriction-or-upstream-permission-required",
-      "reason": "Identified upstream game/tool content. Uploader CC declaration does not establish upstream permission.",
+      "upstreamRestrictionEvidence": {
+        "url": "https://legal.gaijin.net/termsofservice/",
+        "checkedOn": "2026-10-24",
+        "sections": [
+          "Terms 4.1, 4.3.2",
+          "EULA 3.2.1, 3.2.2, 3.2.5"
+        ],
+        "finding": "Published personal/noncommercial, nontransferable game license; redistribution and derivative reuse not granted. A third-party uploader CC label does not demonstrate a separate Gaijin permission.",
+        "limit": "Applies if the supplied identification as War Thunder content is correct; no judicial ownership finding or search of private contracts."
+      },
+      "category": "documented-use-restriction",
+      "reason": "Supplied/source metadata identifies upstream game content. Published upstream terms restrict redistribution/reuse; no applicable override permission is recorded. This is an evidence-based release decision, not an adjudication of ownership.",
       "inApp": true,
       "inWebCandidateGraph": true,
       "referencedBy": [
@@ -3099,6 +3010,7 @@
         "updatedAt": "2022-07-18T21:00:26.492331",
         "isDownloadable": true
       },
+      "upstreamRestrictionEvidence": null,
       "category": "documented-compatible-license",
       "reason": "Compatible source license recorded; attribution/change notices and any third-party rights still apply. Not a title guarantee.",
       "inApp": true,
@@ -3355,8 +3267,18 @@
         "status": "not-verified",
         "error": "HTTP Error 401: Unauthorized"
       },
-      "category": "restriction-or-upstream-permission-required",
-      "reason": "Identified upstream game/tool content. Uploader CC declaration does not establish upstream permission.",
+      "upstreamRestrictionEvidence": {
+        "url": "https://legal.wargaming.net/en/user-documents/eula/end-user-license-agreement/view",
+        "checkedOn": "2026-10-24",
+        "sections": [
+          "5.1",
+          "5.3(b,c)"
+        ],
+        "finding": "Content reuse, distribution, derivative and commercial uses require authorization. Player Content Policy is not a license to redistribute extracted ship meshes inside another game.",
+        "limit": "IJN listing currently inaccessible; upstream identification rests on supplied embedded metadata. No private permission reviewed."
+      },
+      "category": "documented-use-restriction",
+      "reason": "Supplied/source metadata identifies upstream game content. Published upstream terms restrict redistribution/reuse; no applicable override permission is recorded. This is an evidence-based release decision, not an adjudication of ownership.",
       "inApp": true,
       "inWebCandidateGraph": true,
       "referencedBy": [
@@ -3991,8 +3913,18 @@
         "updatedAt": "2022-07-20T22:41:20.092592",
         "isDownloadable": true
       },
-      "category": "restriction-or-upstream-permission-required",
-      "reason": "Identified upstream game/tool content. Uploader CC declaration does not establish upstream permission.",
+      "upstreamRestrictionEvidence": {
+        "url": "https://legal.gaijin.net/termsofservice/",
+        "checkedOn": "2026-10-24",
+        "sections": [
+          "Terms 4.1, 4.3.2",
+          "EULA 3.2.1, 3.2.2, 3.2.5"
+        ],
+        "finding": "Published personal/noncommercial, nontransferable game license; redistribution and derivative reuse not granted. A third-party uploader CC label does not demonstrate a separate Gaijin permission.",
+        "limit": "Applies if the supplied identification as War Thunder content is correct; no judicial ownership finding or search of private contracts."
+      },
+      "category": "documented-use-restriction",
+      "reason": "Supplied/source metadata identifies upstream game content. Published upstream terms restrict redistribution/reuse; no applicable override permission is recorded. This is an evidence-based release decision, not an adjudication of ownership.",
       "inApp": true,
       "inWebCandidateGraph": true,
       "referencedBy": [
@@ -4107,8 +4039,18 @@
         "updatedAt": "2024-12-20T18:06:48.463030",
         "isDownloadable": true
       },
-      "category": "restriction-or-upstream-permission-required",
-      "reason": "Identified upstream game/tool content. Uploader CC declaration does not establish upstream permission.",
+      "upstreamRestrictionEvidence": {
+        "url": "https://legal.gaijin.net/termsofservice/",
+        "checkedOn": "2026-10-24",
+        "sections": [
+          "Terms 4.1, 4.3.2",
+          "EULA 3.2.1, 3.2.2, 3.2.5"
+        ],
+        "finding": "Published personal/noncommercial, nontransferable game license; redistribution and derivative reuse not granted. A third-party uploader CC label does not demonstrate a separate Gaijin permission.",
+        "limit": "Applies if the supplied identification as War Thunder content is correct; no judicial ownership finding or search of private contracts."
+      },
+      "category": "documented-use-restriction",
+      "reason": "Supplied/source metadata identifies upstream game content. Published upstream terms restrict redistribution/reuse; no applicable override permission is recorded. This is an evidence-based release decision, not an adjudication of ownership.",
       "inApp": true,
       "inWebCandidateGraph": true,
       "referencedBy": [
@@ -4375,8 +4317,18 @@
         "updatedAt": "2025-01-17T06:01:22.535978",
         "isDownloadable": true
       },
-      "category": "restriction-or-upstream-permission-required",
-      "reason": "Identified upstream game/tool content. Uploader CC declaration does not establish upstream permission.",
+      "upstreamRestrictionEvidence": {
+        "url": "https://legal.gaijin.net/termsofservice/",
+        "checkedOn": "2026-10-24",
+        "sections": [
+          "Terms 4.1, 4.3.2",
+          "EULA 3.2.1, 3.2.2, 3.2.5"
+        ],
+        "finding": "Published personal/noncommercial, nontransferable game license; redistribution and derivative reuse not granted. A third-party uploader CC label does not demonstrate a separate Gaijin permission.",
+        "limit": "Applies if the supplied identification as War Thunder content is correct; no judicial ownership finding or search of private contracts."
+      },
+      "category": "documented-use-restriction",
+      "reason": "Supplied/source metadata identifies upstream game content. Published upstream terms restrict redistribution/reuse; no applicable override permission is recorded. This is an evidence-based release decision, not an adjudication of ownership.",
       "inApp": true,
       "inWebCandidateGraph": true,
       "referencedBy": [
@@ -4588,8 +4540,18 @@
         "updatedAt": "2025-04-15T00:39:35.859625",
         "isDownloadable": true
       },
-      "category": "restriction-or-upstream-permission-required",
-      "reason": "Identified upstream game/tool content. Uploader CC declaration does not establish upstream permission.",
+      "upstreamRestrictionEvidence": {
+        "url": "https://legal.gaijin.net/termsofservice/",
+        "checkedOn": "2026-10-24",
+        "sections": [
+          "Terms 4.1, 4.3.2",
+          "EULA 3.2.1, 3.2.2, 3.2.5"
+        ],
+        "finding": "Published personal/noncommercial, nontransferable game license; redistribution and derivative reuse not granted. A third-party uploader CC label does not demonstrate a separate Gaijin permission.",
+        "limit": "Applies if the supplied identification as War Thunder content is correct; no judicial ownership finding or search of private contracts."
+      },
+      "category": "documented-use-restriction",
+      "reason": "Supplied/source metadata identifies upstream game content. Published upstream terms restrict redistribution/reuse; no applicable override permission is recorded. This is an evidence-based release decision, not an adjudication of ownership.",
       "inApp": true,
       "inWebCandidateGraph": true,
       "referencedBy": [
@@ -4704,8 +4666,18 @@
         "updatedAt": "2025-08-07T14:05:40.881264",
         "isDownloadable": true
       },
-      "category": "restriction-or-upstream-permission-required",
-      "reason": "Identified upstream game/tool content. Uploader CC declaration does not establish upstream permission.",
+      "upstreamRestrictionEvidence": {
+        "url": "https://legal.gaijin.net/termsofservice/",
+        "checkedOn": "2026-10-24",
+        "sections": [
+          "Terms 4.1, 4.3.2",
+          "EULA 3.2.1, 3.2.2, 3.2.5"
+        ],
+        "finding": "Published personal/noncommercial, nontransferable game license; redistribution and derivative reuse not granted. A third-party uploader CC label does not demonstrate a separate Gaijin permission.",
+        "limit": "Applies if the supplied identification as War Thunder content is correct; no judicial ownership finding or search of private contracts."
+      },
+      "category": "documented-use-restriction",
+      "reason": "Supplied/source metadata identifies upstream game content. Published upstream terms restrict redistribution/reuse; no applicable override permission is recorded. This is an evidence-based release decision, not an adjudication of ownership.",
       "inApp": true,
       "inWebCandidateGraph": true,
       "referencedBy": [
@@ -4775,178 +4747,6 @@
       "releaseApproved": false
     },
     {
-      "path": "p47new.glb",
-      "bytes": 8029172,
-      "sha256": "61cb9510ad9ffc5eeb25abbd5eb620b0e17fb49f44b2e78fb6ba09b681e38174",
-      "title": "P-47D-28 Thunderbolt (#1 Custom) (War Thunder)",
-      "author": "KojfDiscord (https://sketchfab.com/KojfDiscord)",
-      "license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
-      "source": "https://sketchfab.com/3d-models/p-47d-28-thunderbolt-1-custom-war-thunder-1d469251c5994dfd9169f11a97b1b56a",
-      "sourceCheck": {
-        "source": "https://sketchfab.com/3d-models/p-47d-28-thunderbolt-1-custom-war-thunder-1d469251c5994dfd9169f11a97b1b56a",
-        "api": "https://api.sketchfab.com/v3/models/1d469251c5994dfd9169f11a97b1b56a",
-        "checkedOn": "2026-10-24",
-        "status": "verified-public-api",
-        "modelId": "1d469251c5994dfd9169f11a97b1b56a",
-        "author": "KojfDiscord",
-        "profile": "https://sketchfab.com/KojfDiscord",
-        "title": "P-47D-28 Thunderbolt (#1 Custom) (War Thunder)",
-        "license": {
-          "uri": "https://api.sketchfab.com/v3/licenses/322a749bcfa841b29dff1e8a1bb74b0b",
-          "label": "CC Attribution",
-          "fullName": "Creative Commons Attribution",
-          "requirements": "Author must be credited. Commercial use is allowed.",
-          "url": "http://creativecommons.org/licenses/by/4.0/",
-          "slug": "by"
-        },
-        "descriptionSignals": [],
-        "publishedAt": "2026-03-27T18:53:31.353999",
-        "updatedAt": "2026-03-27T18:53:31.529238",
-        "isDownloadable": true
-      },
-      "category": "restriction-or-upstream-permission-required",
-      "reason": "Identified upstream game/tool content. Uploader CC declaration does not establish upstream permission.",
-      "inApp": true,
-      "inWebCandidateGraph": true,
-      "referencedBy": [
-        "remagen-mission.html"
-      ],
-      "textures": [
-        {
-          "index": 0,
-          "name": null,
-          "mimeType": "image/png",
-          "bytes": 6095,
-          "sha256": "56853354098e7909ea11b98244eb762aba04849f0903f88844e5bee9e387aa48",
-          "embedded": true
-        },
-        {
-          "index": 1,
-          "name": null,
-          "mimeType": "image/jpeg",
-          "bytes": 1115388,
-          "sha256": "67993e1c2b1007184ba1105a57e82674dfdd992d38a758808108d9d235733217",
-          "embedded": true
-        },
-        {
-          "index": 2,
-          "name": null,
-          "mimeType": "image/jpeg",
-          "bytes": 124229,
-          "sha256": "86821db874e72413dd5984500f37f26a01868b9953e3febcc2e26735e33631f0",
-          "embedded": true
-        },
-        {
-          "index": 3,
-          "name": null,
-          "mimeType": "image/png",
-          "bytes": 1966056,
-          "sha256": "4213db9313e777cf103f40e6ff38d97d1360baa886aff0fcb16c590268f718da",
-          "embedded": true
-        },
-        {
-          "index": 4,
-          "name": null,
-          "mimeType": "image/jpeg",
-          "bytes": 86472,
-          "sha256": "cb0b3d6e88134649933ac7ee0e286609ac16b7ea2ecfaed991b7be4cec7afded",
-          "embedded": true
-        },
-        {
-          "index": 5,
-          "name": null,
-          "mimeType": "image/jpeg",
-          "bytes": 3356,
-          "sha256": "25279fa0b6974da96625cd0ad9320b841b58c9daebde298a9833f3fabf128a87",
-          "embedded": true
-        },
-        {
-          "index": 6,
-          "name": null,
-          "mimeType": "image/png",
-          "bytes": 1094,
-          "sha256": "c528d70d0b5fd24d942ad8f0ed4ffeb30312ecd20a44d517efc785d08f317428",
-          "embedded": true
-        },
-        {
-          "index": 7,
-          "name": null,
-          "mimeType": "image/jpeg",
-          "bytes": 1281,
-          "sha256": "fbf25258c429d965e78cd1e5bb13432ad4f04011fd9a3b4226cc32d4e51ba5f9",
-          "embedded": true
-        },
-        {
-          "index": 8,
-          "name": null,
-          "mimeType": "image/jpeg",
-          "bytes": 332,
-          "sha256": "13136b83908c8b69f9066707dc67b9ad4ef720e240ca2629173948e05b8e5ce8",
-          "embedded": true
-        },
-        {
-          "index": 9,
-          "name": null,
-          "mimeType": "image/png",
-          "bytes": 2429,
-          "sha256": "ec795d21a37f2ed28d502ff8900d9b95fe6526e98b6757834bd12350f9b12c83",
-          "embedded": true
-        },
-        {
-          "index": 10,
-          "name": null,
-          "mimeType": "image/jpeg",
-          "bytes": 217794,
-          "sha256": "c75afbebea6ff215204df8f5e91260bfac4232712346ec5f9007cdeed23416fc",
-          "embedded": true
-        },
-        {
-          "index": 11,
-          "name": null,
-          "mimeType": "image/jpeg",
-          "bytes": 378410,
-          "sha256": "ac3048655c4859fd4f8861cc00fc498307633c3766a642906bc312212da800dc",
-          "embedded": true
-        },
-        {
-          "index": 12,
-          "name": null,
-          "mimeType": "image/png",
-          "bytes": 421852,
-          "sha256": "cf33233ee70ea645903d44211ba4054eceb8b0ea035aa6de5dc2ba7614236c5b",
-          "embedded": true
-        },
-        {
-          "index": 13,
-          "name": null,
-          "mimeType": "image/png",
-          "bytes": 327156,
-          "sha256": "f3a788f92740418b995f4b0d7b384043a39c5bfbb4f21226575ab0314812ac4c",
-          "embedded": true
-        },
-        {
-          "index": 14,
-          "name": null,
-          "mimeType": "image/jpeg",
-          "bytes": 3356,
-          "sha256": "25279fa0b6974da96625cd0ad9320b841b58c9daebde298a9833f3fabf128a87",
-          "embedded": true
-        },
-        {
-          "index": 15,
-          "name": null,
-          "mimeType": "image/png",
-          "bytes": 111205,
-          "sha256": "1efc321507500ba7c03932e57c9264a597120c09ad74f0908981774da604b80c",
-          "embedded": true
-        }
-      ],
-      "externalTextures": [],
-      "supplementalTextures": [],
-      "upstreamSourceHash": null,
-      "releaseApproved": false
-    },
-    {
       "path": "sherman_m4a1.glb",
       "bytes": 18796228,
       "sha256": "fd1c8651befd8dc5f8cce22449e4d42f8c18337861f22e28c544c93fe50f889b",
@@ -4976,8 +4776,18 @@
         "updatedAt": "2024-12-25T17:46:20.603609",
         "isDownloadable": true
       },
-      "category": "restriction-or-upstream-permission-required",
-      "reason": "Identified upstream game/tool content. Uploader CC declaration does not establish upstream permission.",
+      "upstreamRestrictionEvidence": {
+        "url": "https://legal.gaijin.net/termsofservice/",
+        "checkedOn": "2026-10-24",
+        "sections": [
+          "Terms 4.1, 4.3.2",
+          "EULA 3.2.1, 3.2.2, 3.2.5"
+        ],
+        "finding": "Published personal/noncommercial, nontransferable game license; redistribution and derivative reuse not granted. A third-party uploader CC label does not demonstrate a separate Gaijin permission.",
+        "limit": "Applies if the supplied identification as War Thunder content is correct; no judicial ownership finding or search of private contracts."
+      },
+      "category": "documented-use-restriction",
+      "reason": "Supplied/source metadata identifies upstream game content. Published upstream terms restrict redistribution/reuse; no applicable override permission is recorded. This is an evidence-based release decision, not an adjudication of ownership.",
       "inApp": true,
       "inWebCandidateGraph": false,
       "referencedBy": [],
@@ -5338,6 +5148,7 @@
         "updatedAt": "2022-07-12T14:58:49.907173",
         "isDownloadable": true
       },
+      "upstreamRestrictionEvidence": null,
       "category": "documented-compatible-license",
       "reason": "Compatible source license recorded; attribution/change notices and any third-party rights still apply. Not a title guarantee.",
       "inApp": true,
@@ -5638,6 +5449,7 @@
         "updatedAt": "2026-05-13T13:00:06.983189",
         "isDownloadable": true
       },
+      "upstreamRestrictionEvidence": null,
       "category": "documented-compatible-license",
       "reason": "Compatible source license recorded; attribution/change notices and any third-party rights still apply. Not a title guarantee.",
       "inApp": true,
@@ -5795,6 +5607,7 @@
       "license": null,
       "source": null,
       "sourceCheck": null,
+      "upstreamRestrictionEvidence": null,
       "category": "unclear-origin",
       "reason": "Source, authorship or applicable use terms have not been established.",
       "inApp": true,
@@ -7223,6 +7036,7 @@
         "updatedAt": "2025-08-04T20:33:13.627916",
         "isDownloadable": true
       },
+      "upstreamRestrictionEvidence": null,
       "category": "documented-compatible-license",
       "reason": "Compatible source license recorded; attribution/change notices and any third-party rights still apply. Not a title guarantee.",
       "inApp": true,

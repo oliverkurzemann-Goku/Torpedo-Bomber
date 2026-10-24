@@ -1,25 +1,25 @@
 {
   "schema": 1,
-  "reviewedOn": "2026-10-23",
-  "build": 201,
+  "reviewedOn": "2026-10-24",
+  "build": 202,
   "status": "OPEN — source declarations checked; no external rights authorization obtained",
   "payload": {
-    "bytes": 287553523,
-    "fileCount": 314,
-    "modelCount": 36,
-    "manifestSha256": "5f7ca49fc9d49f4729c1a31fc2d799b9e924ccbab28890ddd8784a2e714a8fb3"
+    "bytes": 272816044,
+    "fileCount": 313,
+    "modelCount": 35,
+    "manifestSha256": "b066013a63602a31dbbb1f447dbe594517f47e510b3f15209822cbbf93ba63e7"
   },
   "files": [
     {
       "path": "ASSET-CREDITS.md",
-      "bytes": 22467,
-      "sha256": "984ae93971f6df430343801131df6286f2eaf0a89f68b3baba4f154be0f571ab",
+      "bytes": 23488,
+      "sha256": "790a057ee49858a1fb0694a36ec566b53cde1e55263eb077716e937d1483c824",
       "kind": "code-or-notice"
     },
     {
       "path": "aircraft-articulation.js",
-      "bytes": 15840,
-      "sha256": "a8702457e828b7a8241f353fcd4710f79c7cd8716ae0b48a37ad7e790e35805e",
+      "bytes": 16318,
+      "sha256": "8eb621589673f9a859abc1781356e38e135b33eedbab39dd780de876f9960246",
       "kind": "code-or-notice"
     },
     {
@@ -53,9 +53,9 @@
       "kind": "code-or-notice"
     },
     {
-      "path": "assets/aircraft/P47-CREDITS.txt",
-      "bytes": 1267,
-      "sha256": "a785ac1904b181a0bb4d47f02cb47ebf5fd7a91140d86acb69d2f02cc2557706",
+      "path": "assets/aircraft/P47-INDEPENDENT-CREDITS.txt",
+      "bytes": 1764,
+      "sha256": "9795018d7332ebabb4b0dbc12a2dd6a3093b1c765cdf2d975b1a1810a685c72d",
       "kind": "code-or-notice"
     },
     {
@@ -89,9 +89,9 @@
       "kind": "model"
     },
     {
-      "path": "assets/aircraft/p47-weathered.glb",
-      "bytes": 10024200,
-      "sha256": "8b5ed7be80e7c06e694c276f3cd1e130b63173513f7368b89e8a9ebca5e2213c",
+      "path": "assets/aircraft/p47-independent.glb",
+      "bytes": 3313956,
+      "sha256": "330306dcf08860757160d8ec8e493412d3458e68052a980bc75fa8f20b5b09ad",
       "kind": "model"
     },
     {
@@ -511,7 +511,7 @@
     {
       "path": "index.html",
       "bytes": 7260,
-      "sha256": "38e78988392a722a61991ebad9da8ab365a74ed1c652fd89e3a11b088337e6a1",
+      "sha256": "4ba56f22fbf32c38906ee62ac88674c5d35d57434e381fad993404e0138c412d",
       "kind": "code-or-notice"
     },
     {
@@ -593,12 +593,6 @@
       "kind": "code-or-notice"
     },
     {
-      "path": "p47new.glb",
-      "bytes": 8029172,
-      "sha256": "61cb9510ad9ffc5eeb25abbd5eb620b0e17fb49f44b2e78fb6ba09b681e38174",
-      "kind": "model"
-    },
-    {
       "path": "pacific-assets.js",
       "bytes": 3553,
       "sha256": "b1044183a49e5b1405cb2d5bba72d4c11e58013da172df5ea3fd6c629c72fe9e",
@@ -630,8 +624,8 @@
     },
     {
       "path": "remagen-mission.html",
-      "bytes": 359727,
-      "sha256": "78ae598d51275e0dfb3805ab5c457786858bae5c9511abf33c5155dfd7901266",
+      "bytes": 359668,
+      "sha256": "24df6bef42b4d3b49edf62e5366eeacd6e6a2f54e261a3156ba3a0c5b2d5e39a",
       "kind": "code-or-notice"
     },
     {
@@ -1819,7 +1813,7 @@
     {
       "path": "torpedo-carrier.html",
       "bytes": 425290,
-      "sha256": "ab3baaefb5011dd53124aaefcf8771733ac7146f331e85a7a8221c542cabf062",
+      "sha256": "e7fef904748d6ebc1eca857dd7dca6b40ded3ed8475ebbe86c8c9d3bf987e05c",
       "kind": "code-or-notice"
     },
     {
@@ -1927,34 +1921,36 @@
       "nextAction": "Retain license/attribution/change notices, validate mesh/texture provenance and app-store redistribution conditions."
     },
     {
-      "path": "assets/aircraft/p47-weathered.glb",
-      "bytes": 10024200,
-      "sha256": "8b5ed7be80e7c06e694c276f3cd1e130b63173513f7368b89e8a9ebca5e2213c",
-      "title": "P-47D-28 Thunderbolt (War Thunder derivative; photo livery and service wear v3)",
-      "uploader": "KojfDiscord (https://sketchfab.com/KojfDiscord)",
+      "path": "assets/aircraft/p47-independent.glb",
+      "bytes": 3313956,
+      "sha256": "330306dcf08860757160d8ec8e493412d3458e68052a980bc75fa8f20b5b09ad",
+      "title": "Independent-source P-47D bubbletop (D-28 adaptation review)",
+      "uploader": "mgg8 / Aviation Gazetteer (https://sketchfab.com/mgg8); adaptation for Oliver Kurzemann",
       "originalRightsholder": null,
-      "sourceUrl": "https://sketchfab.com/3d-models/p-47d-28-thunderbolt-1-custom-war-thunder-1d469251c5994dfd9169f11a97b1b56a",
+      "sourceUrl": "https://sketchfab.com/3d-models/republic-p-47d-thunderbolt-raf-scheme-e831a70ab29c42d3a1dbd352d8bd4684",
       "acquiredOn": null,
-      "declaredLicense": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
-      "licenseUrl": "http://creativecommons.org/licenses/by/4.0/",
-      "licenseEvidence": "Exact supplied p47new.glb embedded attribution; original mesh/texture rights status unchanged.",
+      "declaredLicense": "CC0-1.0 (http://creativecommons.org/publicdomain/zero/1.0/)",
+      "licenseUrl": "http://creativecommons.org/publicdomain/zero/1.0/",
+      "licenseEvidence": "Dated public CC0 metadata; creator profile links airMuseums website; exact creator-hosted original preserved under assets/aircraft/source/p47-independent. No former game mesh or paint used.",
       "sourceCheck": {
         "status": "verified-public-api",
-        "checkedOn": "2026-10-14",
-        "apiUrl": "https://api.sketchfab.com/v3/models/1d469251c5994dfd9169f11a97b1b56a",
+        "checkedOn": "2026-10-24",
+        "apiUrl": "https://api.sketchfab.com/v3/models/e831a70ab29c42d3a1dbd352d8bd4684",
         "licenseMatch": true,
-        "descriptionSignals": []
+        "descriptionSignals": [
+          "Creator states independently procedurally constructed in Blender with AI assistance; visual approximations."
+        ]
       },
-      "embeddedImageCount": 8,
+      "embeddedImageCount": 4,
       "externalImages": [],
-      "originalFile": "p47new.glb",
-      "originalSha256": "61cb9510ad9ffc5eeb25abbd5eb620b0e17fb49f44b2e78fb6ba09b681e38174",
-      "changes": "User-photo inspired checkerboard livery, baked oil/exhaust/dust/scuff wear and PBR surface map; native rotor/control groups; newly built round tyres and forward-raked gear covers. No reference photograph embedded. Generator: scripts/build-p47-weathered.py. Original game rights remain open.",
-      "issue": "original-game-rights-open",
+      "originalFile": null,
+      "originalSha256": "b46c80f2cd1839723843fa2bb99647a0257b54ab55772c6a208a9c83e1379bf4",
+      "changes": "New livery and wear; rigid datum correction and single metric scale; RAF decal geometry and D-40 fillet removed; native gear, rotor, controls and 8 muzzle markers. Original station drawing, underside-variant and physical-device checks pending.",
+      "issue": "cc0-source-recorded",
       "commercialPermissionDocument": null,
       "bundleRedistributionGrant": null,
       "releaseApproved": false,
-      "nextAction": "Establish original mesh/texture ownership; obtain an app redistribution grant or independently authored replacement."
+      "nextAction": "Retain license/attribution/change notices, validate mesh/texture provenance and app-store redistribution conditions."
     },
     {
       "path": "assets/aircraft/sbd-dauntless.glb",
@@ -2780,36 +2776,6 @@
         "descriptionSignals": []
       },
       "embeddedImageCount": 7,
-      "externalImages": [],
-      "originalFile": null,
-      "originalSha256": null,
-      "changes": "Original runtime binary preserved; runtime scaling, materials, rigging and placement are described in ASSET-CREDITS.md / CLAUDE.md.",
-      "issue": "original-game-rights-open",
-      "commercialPermissionDocument": null,
-      "bundleRedistributionGrant": null,
-      "releaseApproved": false,
-      "nextAction": "Establish original mesh/texture ownership; obtain an app redistribution grant or independently authored replacement."
-    },
-    {
-      "path": "p47new.glb",
-      "bytes": 8029172,
-      "sha256": "61cb9510ad9ffc5eeb25abbd5eb620b0e17fb49f44b2e78fb6ba09b681e38174",
-      "title": "P-47D-28 Thunderbolt (#1 Custom) (War Thunder)",
-      "uploader": "KojfDiscord (https://sketchfab.com/KojfDiscord)",
-      "originalRightsholder": null,
-      "sourceUrl": "https://sketchfab.com/3d-models/p-47d-28-thunderbolt-1-custom-war-thunder-1d469251c5994dfd9169f11a97b1b56a",
-      "acquiredOn": null,
-      "declaredLicense": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
-      "licenseUrl": "http://creativecommons.org/licenses/by/4.0/",
-      "licenseEvidence": "Exact runtime GLB asset.extras",
-      "sourceCheck": {
-        "status": "verified-public-api",
-        "checkedOn": "2026-10-14",
-        "apiUrl": "https://api.sketchfab.com/v3/models/1d469251c5994dfd9169f11a97b1b56a",
-        "licenseMatch": true,
-        "descriptionSignals": []
-      },
-      "embeddedImageCount": 16,
       "externalImages": [],
       "originalFile": null,
       "originalSha256": null,

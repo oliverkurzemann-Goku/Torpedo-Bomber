@@ -12,7 +12,9 @@
     "app:sync": "npm run build:app && cap sync ios",
     "app:open": "cap open ios",
     "app:doctor": "node scripts/ipad-doctor.mjs",
-    "app:assets": "npm run build:app && node scripts/audit-app-assets.mjs"
+    "app:assets": "npm run build:app && node scripts/audit-app-assets.mjs",
+    "app:model-audit": "node scripts/audit-model-delivery.mjs",
+    "app:release-check": "npm run app:assets && node scripts/check-model-release.mjs"
   },
   "repository": {
     "type": "git",

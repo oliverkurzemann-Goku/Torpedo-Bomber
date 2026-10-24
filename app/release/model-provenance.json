@@ -21,7 +21,7 @@
     },
     "assets/remagen/drb0110/drb0110.glb": {
       "title": "DRB 01.10 Steam Locomotive (low poly)",
-      "author": "Götz von Berlichingen (https://sketchfab.com/vonBerlichingen)",
+      "author": "G\u00f6tz von Berlichingen (https://sketchfab.com/vonBerlichingen)",
       "license": "CC-BY-4.0 (https://creativecommons.org/licenses/by/4.0/)",
       "source": "https://sketchfab.com/3d-models/drb-0110-steam-locomotive-low-poly-b4e4252632f44492b6c018627a6b4a60",
       "evidence": "ASSET-CREDITS.md; acquisition date not recorded",
@@ -54,6 +54,15 @@
       "originalFile": "putsborough__wwii_observation_post.glb",
       "originalSha256": "666482f67d0b06712c41308bdfb03a6ae83150d29a37e4fcf290d4b96db79207",
       "changes": "Texture-aware mesh simplification, locked boundaries and 512px textures; see original derivative asset.extras."
+    },
+    "assets/aircraft/p47-independent.glb": {
+      "title": "Independent-source P-47D bubbletop (D-28 adaptation review)",
+      "author": "mgg8 / Aviation Gazetteer (https://sketchfab.com/mgg8); adaptation for Oliver Kurzemann",
+      "license": "CC0-1.0 (http://creativecommons.org/publicdomain/zero/1.0/)",
+      "source": "https://sketchfab.com/3d-models/republic-p-47d-thunderbolt-raf-scheme-e831a70ab29c42d3a1dbd352d8bd4684",
+      "originalSha256": "b46c80f2cd1839723843fa2bb99647a0257b54ab55772c6a208a9c83e1379bf4",
+      "evidence": "Dated public CC0 metadata; creator profile links airMuseums website; exact creator-hosted original preserved under assets/aircraft/source/p47-independent. No former game mesh or paint used.",
+      "changes": "New livery and wear; rigid datum correction and single metric scale; RAF decal geometry and D-40 fillet removed; native gear, rotor, controls and 8 muzzle markers. Original station drawing, underside-variant and physical-device checks pending."
     }
   }
 }

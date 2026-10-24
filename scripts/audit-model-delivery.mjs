@@ -12,6 +12,7 @@ const payload=JSON.parse(await fs.readFile(path.join(root,'dist-app/app-payload.
 const old=JSON.parse(await fs.readFile(path.join(root,'app/release/asset-register.json'),'utf8'));
 const provenance=JSON.parse(await fs.readFile(path.join(root,'app/release/model-provenance.json'),'utf8')).models;
 const checks=JSON.parse(await fs.readFile(path.join(reportDir,'source-checks-20261024.json'),'utf8'));
+const upstreamTerms=JSON.parse(await fs.readFile(path.join(reportDir,'upstream-terms-20261024.json'),'utf8'));
 const bySource=new Map(checks.sources.map(s=>[s.source,s]));
 const oldByPath=new Map(old.models.map(m=>[m.path,m]));
 const nativeFiles=new Map(payload.files.map(f=>[f.path,f]));
@@ -52,23 +53,26 @@ for(const rel of [...paths].sort()){
   }
  }
  const previous=oldByPath.get(rel)||{},meta={...embedded,...(provenance[rel]||{})},source=meta.source||previous.sourceUrl||null,check=bySource.get(source),license=meta.license||previous.declaredLicense||null,title=meta.title||previous.title||rel;
- const game=/war thunder|call of duty|world of warships|战舰世界|fps creator/i.test(title),restricted=/by-nc|by-nd|editorial/i.test(license||'');
+ const upstreamKey=/war thunder/i.test(title)?'gaijin':/call of duty/i.test(title)?'activision':/world of warships|战舰世界/i.test(title)?'wargaming':null;
+ const game=!!upstreamKey,restricted=/by-nc|by-nd|editorial/i.test(license||'');
+ const upstreamUnresolved=/fps creator/i.test(title);
  let category='unclear-origin',reason='Source, authorship or applicable use terms have not been established.';
- if(game){category='restriction-or-upstream-permission-required';reason='Identified upstream game/tool content. Uploader CC declaration does not establish upstream permission.';}
- else if(restricted){category='restriction-or-upstream-permission-required';reason='Declared license has noncommercial, no-derivatives or editorial limitations.';}
+ if(game){category='documented-use-restriction';reason='Supplied/source metadata identifies upstream game content. Published upstream terms restrict redistribution/reuse; no applicable override permission is recorded. This is an evidence-based release decision, not an adjudication of ownership.';}
+ else if(restricted){category='documented-use-restriction';reason='Declared license has noncommercial, no-derivatives or editorial limitations.';}
+ else if(upstreamUnresolved){reason='Identified FPS Creator asset: stock-media use in games may be permitted, but the exact original asset, pack and license have not been matched. Uploader CC declaration alone is insufficient; no blanket commercial-use prohibition asserted.';}
  else if(/CC0|by\/4\.0|CC-BY-4\.0/i.test(license||'')&&(check?.status==='verified-public-api'||previous.issue==='cc0-source-recorded')){
   const expected=(license.match(/https?:\/\/[^)\s]+/)||[])[0],actual=check?.license?.url;
   if(!actual||!expected||expected.replace('http:','https:')===actual.replace('http:','https:')){category='documented-compatible-license';reason='Compatible source license recorded; attribution/change notices and any third-party rights still apply. Not a title guarantee.';}
  }
  const supplementalTextures=payload.files.filter(f=>/\.(png|jpe?g|webp|dds)$/i.test(f.path)&&((rel.endsWith('.fbx')&&f.path.startsWith(path.posix.dirname(rel)+'/'))||(rel==='grumman tbm avenger.glb'&&f.path.startsWith('assets/aircraft/avenger-1942-'))));
- models.push({path:rel,bytes:b.length,sha256:sha(b),title,author:meta.author||previous.uploader||null,license,source,sourceCheck:check||null,category,reason,inApp,inWebCandidateGraph:candidates.has(rel),referencedBy:candidates.get(rel)?.referencedBy||[],textures,externalTextures:external,supplementalTextures,upstreamSourceHash:meta.originalSha256||embedded.sourceSha256||null,releaseApproved:false});
+ models.push({path:rel,bytes:b.length,sha256:sha(b),title,author:meta.author||previous.uploader||null,license,source,sourceCheck:check||null,upstreamRestrictionEvidence:upstreamKey?upstreamTerms[upstreamKey]:null,category,reason,inApp,inWebCandidateGraph:candidates.has(rel),referencedBy:candidates.get(rel)?.referencedBy||[],textures,externalTextures:external,supplementalTextures,upstreamSourceHash:meta.originalSha256||embedded.sourceSha256||null,releaseApproved:false});
 }
 const counts={};for(const m of models)counts[m.category]=(counts[m.category]||0)+1;
 const report={schema:1,checkedOn:'2026-10-24',build:payload.build,scope:{entries:['index.html','torpedo-carrier.html','remagen-mission.html'],appManifestSha256:sha(await fs.readFile(path.join(root,'dist-app/app-payload.json'))),payloadFiles:payload.files.length,payloadBytes:payload.bytes,scriptFiles:[...codeFiles].sort(),staticCandidates:[...candidates.values()],networkTrace:'See browser-delivery-trace.json when generated. Static reachability does not assert a request occurred.',limitations:['Web-hosted repository files outside runtime candidates may remain publicly reachable.','Material ownership is not established solely by metadata, hashes or a CC label.','FBX external image resolution follows the existing WorldVehicles texture mappings; related shipped image files are separately hashed.','Other app code, audio, geographic data and marks require their own compliance record.']},categories:counts,models};
 await fs.mkdir(reportDir,{recursive:true});await fs.writeFile(path.join(reportDir,'delivery-audit.json'),JSON.stringify(report,null,2)+'\n');
 const cell=s=>String(s??'—').replaceAll('|','\\|').replaceAll('\n',' ');
 let md='# Model delivery review — 24 October 2026\n\nActual offline payload: '+payload.files.length+' files; '+models.filter(m=>m.inApp).length+' model files. Every model and embedded/external image has a SHA-256. Static candidate URLs are recorded separately from actual browser requests.\n\n';
-md+='Categories describe evidence, not a court finding: documented-compatible-license = a compatible published license is recorded; unclear-origin = incomplete or inaccessible source; restriction-or-upstream-permission-required = declared restrictions or identified upstream-game material. No blanket ownership warranty.\n\n| File | App | Web candidate | Category | Source | Embedded images |\n| --- | --- | --- | --- | --- | --- |\n';
+md+='Categories describe evidence, not a court finding: documented-compatible-license = a compatible published license is recorded; unclear-origin = incomplete source/permission evidence; documented-use-restriction = explicit NC/ND/editorial terms or identified upstream-game content with cited restrictive upstream terms and no recorded exception. A tool asset is not rejected merely because it originated in a tool. No blanket ownership warranty.\n\n| File | App | Web candidate | Category | Source | Embedded images |\n| --- | --- | --- | --- | --- | --- |\n';
 for(const m of models)md+='| '+[m.path,m.inApp?'yes':'no',m.inWebCandidateGraph?'yes':'no',m.category,m.source?'['+cell(m.author||'Source')+']('+m.source+')':'unknown',m.textures.filter(t=>t.embedded).length].map(cell).join(' | ')+' |\n';
 md+='\n## Distribution decision\n\nA development build is not a rights-cleared app release. The release check must reject unresolved/blocked model hashes, including derivatives and fallback files. The existing web game is retained during replacement work; it is not certified for commercial distribution by this report.\n';
 await fs.writeFile(path.join(reportDir,'DELIVERY-AUDIT.md'),md);console.log(JSON.stringify({models:models.length,appModels:models.filter(m=>m.inApp).length,embeddedImages:models.reduce((s,m)=>s+m.textures.filter(t=>t.embedded).length,0),categories:counts,missingCandidates:[...candidates.values()].filter(c=>!c.exists).length}));
