@@ -1,20 +1,21 @@
-P-47D Thunderbolt — weathered photo-livery derivative v3, Build 198.
+P-47D bubbletop — independent replacement, Build 203
 
-Source: P-47D-28 Thunderbolt (#1 Custom) (War Thunder), KojfDiscord.
-https://sketchfab.com/KojfDiscord
-https://sketchfab.com/3d-models/p-47d-28-thunderbolt-1-custom-war-thunder-1d469251c5994dfd9169f11a97b1b56a
-Declared source license: CC BY 4.0, https://creativecommons.org/licenses/by/4.0/
+Base mesh/interior palette: mgg8 / Aviation Gazetteer
+https://sketchfab.com/mgg8
+https://sketchfab.com/3d-models/republic-p-47d-thunderbolt-raf-scheme-e831a70ab29c42d3a1dbd352d8bd4684
+Creator-hosted original: https://airmuseums.co.uk/models/aircraft/republic-p-47-thunderbolt.glb
+Base license: CC0 1.0 https://creativecommons.org/publicdomain/zero/1.0/
+Exact original SHA256: b46c80f2cd1839723843fa2bb99647a0257b54ab55772c6a208a9c83e1379bf4
 
-Changes: photo-inspired exterior livery; procedurally baked oil, exhaust soot,
-dust, walkway scuffs and paint chips; roughness/metalness map; axis/dimension
-normalization; original rotor and control surfaces separated; new round-tyre
-landing gear, oleos, brake lines and trapezoid gear covers; native game rig.
-This is a derivative, not independently authored source geometry. Original
-normal maps and engine/interior textures are retained. Original-game rights
-review remains open; repainting does not remove source rights obligations.
-No endorsement by the original creators is implied.
+New livery, original procedural panel/rivet/wear textures, fittings, articulation
+adaptation and tail strut extension: original project work for Oliver Kurzemann;
+all reserved rights. No blanket CC0 dedication of the new adaptation.
+No geometry or image pixels from former War Thunder P-47 files were used.
+The public creator declaration is retained; no independent title warranty is asserted.
 
-Reference photographs were used visually only and are not embedded or redistributed.
-Lettering was newly rasterized using DejaVu Sans (Bitstream Vera license;
-DejaVu changes public domain). No font file is included in the runtime model.
-Generator: scripts/build-p47-weathered.py (Python 3, NumPy, SciPy, Pillow).
+The 0.24-m extended original tail assembly and native four-blade rotor, gear,
+flaps, ailerons, elevators and rudder are driven by aircraft-articulation.js.
+Original source files, paint/detail scripts and editable packed Blender file:
+assets/aircraft/source/p47-independent/ (excluded from the app payload).
+Performance sources and approximation boundaries: P47-PERFORMANCE.md.
+The historical livery and precise D-28 station geometry are not certified.

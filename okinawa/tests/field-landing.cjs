@@ -1,6 +1,6 @@
 'use strict';
 const assert=require('node:assert/strict');
-require('../../sortie-features.js');require('../../ground-run.js');
+require('../../p47-performance.js');require('../../sortie-features.js');require('../../ground-run.js');
 const {Handling,Damage}=SortieFeatures;
 const types={p47:40,bf109:36,fw190:39,ju87:37,me262:49,me163:51},reports=[];
 for(const [kind,stall] of Object.entries(types)){
@@ -9,7 +9,7 @@ for(const [kind,stall] of Object.entries(types)){
  const clean=Handling.speeds(p,stall,60);p.flap=1;const full=Handling.speeds(p,stall,60);
  assert(full.reference<clean.reference&&full.stall<clean.stall,'flaps reduce both reference and stall: '+kind);
  assert(full.reference>=full.stall*1.25,'live target retains stall margin');
- if(kind==='p47')assert(full.reference*.44704**-1>=114&&full.reference*.44704**-1<=120,'P47 powered final is in its manual range, in MPH');
+ if(kind==='p47')assert(full.referenceIAS*.44704**-1>=129&&full.referenceIAS*.44704**-1<=131,'P47 reference is the documented 130-mph game target with margin above the historical stall anchor');
  p.spd=full.reference;assert(Handling.fieldSink(p,full.stall)<1,'no artificial high sink at the landing reference');
  p.spd=full.stall*.85;assert(Handling.fieldSink(p,full.stall)>6,'true slow flight still sinks');
  p.fuel=100;p.bombs=kind==='me163'?0:2;assert(Handling.speeds(p,stall,60).reference>full.reference,'remaining loading raises REF');

@@ -1,0 +1,27 @@
+{
+  "bytes": 9172416,
+  "sha256": "862be307bc1e923e1a47bda7f1bc4f811a55abfa25970430fbc463e287ba545d",
+  "triangles": 89530,
+  "animationClips": [
+    "Flight_Controls",
+    "Landing_Flaps",
+    "Gear_Retract",
+    "Propeller_Spin"
+  ],
+  "embeddedImages": 5,
+  "finiteAccessors": true,
+  "selfContained": true,
+  "groundCheck": {
+    "tailWheelExtensionMetres": 0.24,
+    "parkPitchDegrees": 7.748036807393191,
+    "groundTangentHeightNeutral": -2.354728764321279,
+    "threeWheelContactErrorsMetres": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "aftAirframeClearanceMetres": 0.5630176290251137,
+    "hasOriginalClips": true,
+    "deliveryState": "saved model candidate; not published to the game; physical iPad test not performed"
+  }
+}

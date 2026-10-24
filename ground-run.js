@@ -9,7 +9,7 @@
   const speed=Math.max(0,p.spd||0),power=options.power??1;
   // Jet calibration must clear the game's 900m strip even with two bombs;
   // retain its slow spool and mass penalty, without an unreachable rotation speed.
-  const thrust=(options.carrier?9.5:options.jet?6.8:5.5)*p.groundPower*power/(options.massRatio||1);
+  const thrust=(options.acceleration??(options.carrier?9.5:options.jet?6.8:5.5))*p.groundPower*power/(options.massRatio||1);
   const drag=.28+speed*speed*(options.carrier?.0011:.0010);
   const brake=throttle<.05?58:0;
   p.spd=Math.max(0,Math.min(options.limit||90,speed+(thrust-drag-brake)*dt));

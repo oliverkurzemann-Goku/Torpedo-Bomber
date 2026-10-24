@@ -1,16 +1,6 @@
 {
   "schema": 1,
   "models": {
-    "assets/aircraft/p47-weathered.glb": {
-      "title": "P-47D-28 Thunderbolt (War Thunder derivative; photo livery and service wear v3)",
-      "author": "KojfDiscord (https://sketchfab.com/KojfDiscord)",
-      "license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
-      "source": "https://sketchfab.com/3d-models/p-47d-28-thunderbolt-1-custom-war-thunder-1d469251c5994dfd9169f11a97b1b56a",
-      "evidence": "Exact supplied p47new.glb embedded attribution; original mesh/texture rights status unchanged.",
-      "originalFile": "p47new.glb",
-      "originalSha256": "61cb9510ad9ffc5eeb25abbd5eb620b0e17fb49f44b2e78fb6ba09b681e38174",
-      "changes": "User-photo inspired checkerboard livery, baked oil/exhaust/dust/scuff wear and PBR surface map; native rotor/control groups; newly built round tyres and forward-raked gear covers. No reference photograph embedded. Generator: scripts/build-p47-weathered.py. Original game rights remain open."
-    },
     "assets/remagen/ford1940/1940_ford_v8.fbx": {
       "title": "1940 Ford V8",
       "author": "Saurav Maity (https://sketchfab.com/saurav.maity)",
@@ -21,7 +11,7 @@
     },
     "assets/remagen/drb0110/drb0110.glb": {
       "title": "DRB 01.10 Steam Locomotive (low poly)",
-      "author": "Götz von Berlichingen (https://sketchfab.com/vonBerlichingen)",
+      "author": "G\u00f6tz von Berlichingen (https://sketchfab.com/vonBerlichingen)",
       "license": "CC-BY-4.0 (https://creativecommons.org/licenses/by/4.0/)",
       "source": "https://sketchfab.com/3d-models/drb-0110-steam-locomotive-low-poly-b4e4252632f44492b6c018627a6b4a60",
       "evidence": "ASSET-CREDITS.md; acquisition date not recorded",
@@ -54,6 +44,17 @@
       "originalFile": "putsborough__wwii_observation_post.glb",
       "originalSha256": "666482f67d0b06712c41308bdfb03a6ae83150d29a37e4fcf290d4b96db79207",
       "changes": "Texture-aware mesh simplification, locked boundaries and 512px textures; see original derivative asset.extras."
+    },
+    "assets/aircraft/p47-independent.glb": {
+      "title": "P-47D bubbletop \u2014 independent source, game livery and service wear v2",
+      "author": "mgg8 / Aviation Gazetteer; original adaptation Oliver Kurzemann",
+      "source": "https://sketchfab.com/3d-models/republic-p-47d-thunderbolt-raf-scheme-e831a70ab29c42d3a1dbd352d8bd4684",
+      "license": "Base model CC0-1.0 (https://creativecommons.org/publicdomain/zero/1.0/). New project work: Oliver Kurzemann, all reserved rights.",
+      "sourceSha256": "b46c80f2cd1839723843fa2bb99647a0257b54ab55772c6a208a9c83e1379bf4",
+      "changes": "Independent source geometry; own WZ-A/B checker livery, panel/rivet normal and wear maps, articulated original controls, 0.24 m extended tail strut. Original D-28 station fidelity not certified.",
+      "evidence": "Creator-hosted CC0 original; SOURCE.json, exact original hash and editable source retained.",
+      "originalFile": "assets/aircraft/source/p47-independent/original-cc0.glb",
+      "originalSha256": "b46c80f2cd1839723843fa2bb99647a0257b54ab55772c6a208a9c83e1379bf4"
     }
   }
 }

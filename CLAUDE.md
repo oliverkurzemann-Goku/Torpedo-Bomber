@@ -1,5 +1,42 @@
 # Torpedo-Bomber — Übergabe an Claude Code
 
+**25.10.2026, Build 203: unabhängige P-47 v2 ersetzt die bisherige Spieladaption.**
+Nutzerfreigabe: „übernimm ... originalen leistungsdaten ... ersetze die p47 im spiel“.
+Neue `assets/aircraft/p47-independent.glb`: 9,173,276 Bytes, 89,530 Dreiecke,
+41 Meshes, fünf eingebettete Bilder, vier Clips. Unabhängiger CC0-Grundkörper von
+mgg8 / Aviation Gazetteer (creator-hosted); eigene WZ-A/B-/549385-Schachbrett-
+Lackierung, Blechstöße/Nieten-Normal, Ruß/Öl/Trittspuren, Fahrwerksdetails.
+Spornrad um 0,24 m weiter vom Rumpf, Originalreifen unverzerrt; gemessene
+Heckfreiheit in der Spiel-Bodenanpassung 0,547 m. Editierbare gepackte Blender-
+Datei, Original und Generatoren unter `assets/aircraft/source/p47-independent/`.
+Keine WT-Geometrie/-Textur übernommen. D-28-Originalspanten weiter nicht zertifiziert.
+
+Loader in beiden EU-HTMLs nur neue Datei; `p47-weathered.glb` entfernt,
+`p47new.glb` bleibt ausschließlich für historische Mesh-Schnitt-Tests im Repo,
+kein Runtime-Fallback und kein App-Payload. Source-Verzeichnis ebenso ausgeschlossen.
+Native-Erkennung über Metadaten statt festen v1-Namen; Original-Rotor und Flächen,
+Spornrad klappt vorwärts mit -1,55 rad ein; acht Mündungen aus dem Modell.
+Neue Modellvorschau `model-check.html?aircraft=p47` mit Gear-/Flap-Bedienung.
+
+`p47-performance.js`: AAF-Vergleich 6.10.1944, 2600-bhp-WEP-Hüllkurve mit
+345/383/417 mph TAS auf SL/10k/20k ft, 435 mph auf 32k ft (im Original geschätzt),
+3180/2920/2470/1100 fpm Steigen. Fitted power/drag statt sofortiger Zielgeschwindigkeits-
+Feder; Masse, Konfiguration und Kurven kosten Energie, Zoom verliert Fahrt.
+IAS/EAS-Näherung aus ISA, P.spd weiter TAS. 116/98-mph-Stallwerte bei 13.230 lb aus
+USAAF-D-Test 15.7.1944 als ausdrücklich benannte Familien-Ersatzanker; Live-REF
+130 mph unbeladen mit vollen Klappen, Lastkorrektur. Keine Behauptung einer exakten
+D-28-Simulation: Turbo/Temperaturen/WEP-Dauer, Lastfraktionen und Drag-Polar bleiben
+vereinfacht. Quellen und Grenzen in P47-PERFORMANCE.md.
+
+Prüfung: echter r128-Loader/Geometrie/Clips/Klone/Original-PBR, drei Reifen auf flacher
+und geneigter Fläche, Originalmündungen; Leistungsanker und Energie bei 20/60/120 FPS.
+Echte Touch-Spielmission in Chromium/SwiftShader: Atlas 4096, Klappen, Fahrwerk,
+Bodenspalt <2 mm, Abheben nach 15,32 s und 517,6 m mit Missionslast, anschließender
+Flug. Erzwungene 404 der neuen Datei lehnt Modellstart ab, kein Legacy-Request.
+WebGL-Nachweis kein iPad-FPS-Nachweis. App-Payload/Audit neu erzeugt; ausschließlich
+neue P-47 im Payload. Kein physischer iPad-Test und keine Installation auf Nutzergerät.
+
+
 **24.10.2026, Build 202: Torpedoangriff mit Können statt Glück, jetzt auf main.**
 Auf Nutzerfreigabe („Übernimm jetzt Build 200 in Main“) übernommen. Auf dem Feature-Branch hieß diese Arbeit
 Build 200; main hatte inzwischen Build 200 (helijah-B-17) und 201 (HappySunpore-Dauntless) aus einer anderen

@@ -1,13 +1,13 @@
-# Offline app asset register — Build 202
+# Offline app asset register — Build 203
 
-Checked 2026-10-23. 315 payload files, 36 model files, 274.2 MiB.
+Checked 2026-10-23. 315 payload files, 35 model files, 265.8 MiB.
 
 Generated from the actual dist-app payload by npm run app:assets. Hashes cover embedded textures too. This is an evidence inventory; no row is automatically approved for distribution. Acquisition dates remain unknown where not recorded.
 
 | Runtime file | Source / uploader | Declared license | Open issue | SHA-256 |
 | --- | --- | --- | --- | --- |
 | assets/aircraft/b17-helijah.glb | [helijah](https://sketchfab.com/3d-models/boeing-b-17-flying-fortress-927f07f6ddcf470ab0387ce5829024d5) | CC-BY-4.0 (https://creativecommons.org/licenses/by/4.0/) | uploader-license-review-open | bcdf03e6bed86bd8b246a24cf1b8f86a259debe426dbbdd42986d8c278b778db |
-| assets/aircraft/p47-weathered.glb | [KojfDiscord (https://sketchfab.com/KojfDiscord)](https://sketchfab.com/3d-models/p-47d-28-thunderbolt-1-custom-war-thunder-1d469251c5994dfd9169f11a97b1b56a) | CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/) | original-game-rights-open | 8b5ed7be80e7c06e694c276f3cd1e130b63173513f7368b89e8a9ebca5e2213c |
+| assets/aircraft/p47-independent.glb | [mgg8 / Aviation Gazetteer; original adaptation Oliver Kurzemann](https://sketchfab.com/3d-models/republic-p-47d-thunderbolt-raf-scheme-e831a70ab29c42d3a1dbd352d8bd4684) | Base model CC0-1.0 (https://creativecommons.org/publicdomain/zero/1.0/). New project work: Oliver Kurzemann, all reserved rights. | cc0-source-recorded | d85ee480aae8bbc60453e75a175c99d8e3694b2f78ca802092298d6f0a8bba3d |
 | assets/aircraft/sbd-dauntless.glb | [HappySunpore (https://sketchfab.com/happysunpore)](https://sketchfab.com/3d-models/stb-dauntless-31e14fecfd9b4d51bdf0c4b27a0572f0) | CC-BY-4.0 (https://creativecommons.org/licenses/by/4.0/) | uploader-license-review-open | 80b06926d6c4d3168e9a52a61379b1a00a1841a8130afcca71f842870d8336e1 |
 | assets/buildings/bunker.glb | [matousekfoto (https://sketchfab.com/matousekfoto)](https://sketchfab.com/3d-models/bunker-o323a-160-z-11ae7599f3b640569f7ed4692acabf38) | CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/) | uploader-license-review-open | c9b54e30b99302ddaa0ab486c79318c7bd46c881b9fd11b3f77c60758efaa253 |
 | assets/buildings/farm-ruin.glb | [Garbage Raccoon (https://sketchfab.com/GarbageRaccoon)](https://sketchfab.com/3d-models/bombed-farm-buildings-from-fps-creator-classic-2cf04644ad0944e5b5b845680262d269) | CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/) | upstream-game-rights-open | f0978da9e2642f1eb3f92fe461340b911962e0929aa2892077c9c0f9d9822115 |
@@ -36,7 +36,6 @@ Generated from the actual dist-app payload by npm run app:assets. Hashes cover e
 | m16_mgmc.glb | [KojfDiscord (https://sketchfab.com/KojfDiscord)](https://sketchfab.com/3d-models/m16-mgmc-war-thunder-fbdb51b1f92f45eebe791a16d805acd4) | CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/) | original-game-rights-open | eb836c5d64ad2b04bb6f7e0dca5dcd121dbfc2983805b084d44fb60c0be9b463 |
 | me163.glb | [KojfDiscord (https://sketchfab.com/KojfDiscord)](https://sketchfab.com/3d-models/me-163-b-war-thunder-b803273028ee4ebc87ca4af2e15766fb) | CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/) | original-game-rights-open | 1ac6f59cd3b06aa613ea497462936094ce6e50eb4b9eef8f0f3f73460f8a848e |
 | me262.glb | [KojfDiscord (https://sketchfab.com/KojfDiscord)](https://sketchfab.com/3d-models/me-262-a-1ajabo-war-thunder-a6e4bd7a047f49b292e59ad285850310) | CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/) | original-game-rights-open | bddfaf0fcc3971045566cb3e0616ca3c6dec3d213aa2869f5a1576dc9d6206d5 |
-| p47new.glb | [KojfDiscord (https://sketchfab.com/KojfDiscord)](https://sketchfab.com/3d-models/p-47d-28-thunderbolt-1-custom-war-thunder-1d469251c5994dfd9169f11a97b1b56a) | CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/) | original-game-rights-open | 61cb9510ad9ffc5eeb25abbd5eb620b0e17fb49f44b2e78fb6ba09b681e38174 |
 | sherman_m4a1.glb | [KojfDiscord (https://sketchfab.com/KojfDiscord)](https://sketchfab.com/3d-models/m4a1-76-w-war-thunder-8492cfd6dec94c90ae7d210acf7e58ed) | CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/) | original-game-rights-open | fd1c8651befd8dc5f8cce22449e4d42f8c18337861f22e28c544c93fe50f889b |
 | tiger.glb | [adrielcz (https://sketchfab.com/adrielcz)](https://sketchfab.com/3d-models/free-tiger-and-crew-kit-6290669ab2cb49599f1606507626af39) | CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/) | uploader-license-review-open | 12da29fd4c83ab47ceb6866b2f1d6300294b592b6181da941e34010fb85ea965 |
 | treepack.glb | [99.Miles (https://sketchfab.com/99.Miles)](https://sketchfab.com/3d-models/low-poly-forest-tree-pack-5ff5a51e74324845a4e4905f182dfb2b) | CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/) | uploader-license-review-open | a7aabc44265f961037684ae9a47c93396167a6d35f15cb743cfedd3bb08df411 |

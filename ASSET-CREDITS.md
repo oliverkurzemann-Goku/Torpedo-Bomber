@@ -51,19 +51,22 @@ The former sabrezor/Arma CC BY-NC model b17.glb is excluded from runtime and the
 native app payload; it remains a historical repository file and legacy test fixture.
 
 
-## P-47 service-wear model (Build 198)
+## P-47 independent replacement (Build 203)
 
-`assets/aircraft/p47-weathered.glb` is a derivative of the supplied P-47D-28
-Thunderbolt (#1 Custom) (War Thunder), by KojfDiscord:
-https://sketchfab.com/KojfDiscord
-https://sketchfab.com/3d-models/p-47d-28-thunderbolt-1-custom-war-thunder-1d469251c5994dfd9169f11a97b1b56a
-Declared license: CC BY 4.0, https://creativecommons.org/licenses/by/4.0/.
-Changes: photo-inspired checkerboard livery, procedural oil/exhaust/dust/scuff wear,
-PBR surface map, separated original mechanical groups, newly built round tyres,
-forward-raked landing gear and covers. No reference photograph embedded.
-The original `p47new.glb` is unchanged and remains a fallback. Source geometry,
-normal maps and interior/engine textures are not claimed as original work;
-original-game rights review is unchanged. Details in `assets/aircraft/P47-CREDITS.txt`.
+`assets/aircraft/p47-independent.glb` replaces the former War Thunder-derived
+P-47 in active loaders and in the offline iPad package. Base model: mgg8 /
+Aviation Gazetteer, CC0 1.0, creator-hosted original:
+https://airmuseums.co.uk/models/aircraft/republic-p-47-thunderbolt.glb
+https://sketchfab.com/3d-models/republic-p-47d-thunderbolt-raf-scheme-e831a70ab29c42d3a1dbd352d8bd4684
+
+New original livery, panel/rivet/wear maps, fittings and extended tail gear are
+project work for Oliver Kurzemann, with all reserved rights. No former-game mesh
+or texture pixels were used. See `assets/aircraft/P47-CREDITS.txt`, documented
+sources and editable Blender in `assets/aircraft/source/p47-independent/`.
+The legacy root `p47new.glb` is retained only for historical mesh-cut regression
+tests; it is excluded from the app payload and is not a runtime fallback.
+The obsolete derivative `p47-weathered.glb` was removed from the active assets.
+Historical performance anchors and explicit approximations: `P47-PERFORMANCE.md`.
 
 ## Campaign menu artwork (Build 159)
 

@@ -6,12 +6,12 @@
  // The weathered P-47 exports its own real surfaces. Never overlay generic flaps or cut it again.
  function nativeP47(frame){
   if(frame.userData.nativeP47)return true;
-  const source=frame.getObjectByName('P47D_Weathered_v3');
-  if(!source||source.userData.nativeAircraft!=='p47-v3')return false;
+  let source=null;frame.traverse(o=>{if(['p47-independent-v1','p47-v3'].includes(o.userData.nativeAircraft))source=o;});
+  if(!source)return false;
   const rotor=source.getObjectByName('Propeller'),names=['GearLeft','GearRight','TailGear'];
   const hinges=names.map(n=>source.getObjectByName(n)),flaps=['FlapLeft','FlapRight'].map(n=>source.getObjectByName(n));
   if(!rotor||hinges.some(n=>!n)||flaps.some(n=>!n))throw Error('Incomplete native P-47 rig');
-  const gear=new T.Group();gear.name='gear';gear.userData.nativeP47=true;frame.add(gear);frame.updateMatrixWorld(true);
+  const gear=new T.Group();gear.name='gear';gear.userData.nativeP47=true;gear.userData.tailRetractAngle=source.userData.nativeAircraft==='p47-independent-v1'?-1.55:1.30;frame.add(gear);frame.updateMatrixWorld(true);
   for(const hinge of hinges){gear.attach(hinge);hinge.userData.articulationPart=true;}
   const panels=new T.Group();panels.name='flightFlaps';panels.userData.articulationPart=true;frame.add(panels);frame.updateMatrixWorld(true);
   for(let i=0;i<2;i++){
@@ -26,7 +26,7 @@
   const g=clamp(deployment),gear=frame.getObjectByName('gear');gear.visible=g>.005;
   for(const [name,side] of [['GearLeft',-1],['GearRight',1],['TailGear',0]]){
    const hinge=gear.getObjectByName(name);hinge.scale.setScalar(1);
-   if(side)hinge.rotation.z=-side*1.48*(1-g);else hinge.rotation.x=1.30*(1-g);
+   if(side)hinge.rotation.z=-side*1.48*(1-g);else hinge.rotation.x=(gear.userData.tailRetractAngle??1.30)*(1-g);
   }
   for(const [name,amount] of [['FlapLeft',flaps.left],['FlapRight',flaps.right]])frame.getObjectByName(name).rotation.x=-.66*clamp(amount||0);
   if(gear.userData.deployment!==g){for(let o=frame;o;o=o.parent)delete o.userData.groundSupports;gear.userData.deployment=g;}
@@ -39,6 +39,11 @@
   frame.getObjectByName('AileronLeft').rotation.x=.22*r;frame.getObjectByName('AileronRight').rotation.x=-.22*r;
   frame.getObjectByName('ElevatorLeft').rotation.x=-.25*p;frame.getObjectByName('ElevatorRight').rotation.x=-.25*p;
   frame.getObjectByName('Rudder').rotation.y=-.12*r;
+ }
+ function p47Muzzles(frame,relativeTo=frame){
+  if(!frame?.userData.nativeP47||!frame.getObjectByName('GunMuzzleLeft1'))return [];
+  frame.updateWorldMatrix(true,true);
+  return ['Left','Right'].flatMap(side=>[1,2,3,4].map(i=>{const p=frame.getObjectByName('GunMuzzle'+side+i).getWorldPosition(new T.Vector3());return relativeTo?relativeTo.worldToLocal(p):p;}));
  }
  const profiles={
   p47:{mainX:2.40,mainZ:1.99,leg:1.10,radius:.44,tailZ:-4.81,flapSpan:[1.45,3.30],wingZ:[-.6,3.2],wingY:-.45,chord:.64,flapAngle:.70},
@@ -198,6 +203,6 @@
    if(p.externalFlap)hinge.position.y=hinge.userData.baseY??hinge.position.y;
   }
  }
- global.AircraftArticulation={profiles,install,pose,probe,meshes,nativeP47,controls};
+ global.AircraftArticulation={profiles,install,pose,probe,meshes,nativeP47,controls,p47Muzzles};
  if(typeof module==='object'&&module.exports)module.exports=global.AircraftArticulation;
 })(typeof window==='undefined'?globalThis:window);

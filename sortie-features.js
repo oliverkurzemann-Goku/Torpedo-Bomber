@@ -16,7 +16,7 @@ const loadProfiles={
 };
 const Handling={
  // Normal final approach (m/s), not touchdown speed; gameplay reference loading.
- fieldLanding:{p47:{reference:115*.44704,cleanAdd:5.4,flapGain:6},bf109:{reference:110*.44704,cleanAdd:6,flapGain:7},
+ fieldLanding:{p47:{reference:130*.44704,cleanAdd:5.4,flapGain:6},bf109:{reference:110*.44704,cleanAdd:6,flapGain:7},
   fw190:{reference:125*.44704,cleanAdd:6,flapGain:7},ju87:{reference:150/3.6,cleanAdd:6.5,flapGain:7},
   me262:{reference:230/3.6,cleanAdd:8,flapGain:5},me163:{reference:200/3.6,cleanAdd:9,flapGain:10}},
  configure(p,kind,weapon='bomb',theatre='europe'){p.loadProfile={kind,weapon,theatre};},
@@ -53,6 +53,7 @@ const Handling={
  speeds(p,stall,reference,flapGain=4,gearGain=2){
   const load=this.sample(p),controls=Damage.controls(p),kind=p.loadProfile?.kind||p.ac;
   const field=p.loadProfile?.theatre==='europe'?this.fieldLanding[kind]:null;
+  if(kind==='p47'&&root.P47Performance){const speeds=root.P47Performance.speeds(p,controls.flaps.mean,load.ratio,controls.stallPenalty);speeds.reference*=1+controls.flaps.asymmetry*.08;return speeds;}
   const limit=(stall+(p.gear||0)*gearGain-controls.flaps.mean*(field?.flapGain??flapGain))*load.speed+controls.stallPenalty;
   let target=field?field.reference+field.cleanAdd*(1-controls.flaps.mean):reference;
   if(field&&kind==='p47'&&(p.throttle||0)<.05)target+=2.2;
