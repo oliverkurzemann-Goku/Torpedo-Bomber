@@ -1,4 +1,4 @@
-/* Build 200, real game and real ship GLBs: a led 600 m beam shot actually reaches and sinks
+/* Build 202, real game and real ship GLBs: a led 600 m beam shot actually reaches and sinks
  * the freighter (the old 16 s fish died after ~375 m), a 150 m drop does not arm, a bow-on
  * shot glances, an alert destroyer combs the tracks, and a stern hit leaves the light carrier
  * circling with a jammed rudder. Fixed steps at 20/60/120 FPS. GAME_TEST_CHROME selects Chrome. */
@@ -25,7 +25,7 @@ const server=http.createServer((req,res)=>{
   page.setDefaultTimeout(180000);page.on('pageerror',e=>errors.push(e.message));
   page.on('console',m=>{if(/Shader Error|VALIDATE_STATUS|not compiled/i.test(m.text()))errors.push(m.text());});
   await page.addInitScript(()=>{window.requestAnimationFrame=()=>0;});
-  await page.goto('http://127.0.0.1:'+server.address().port+'/torpedo-carrier.html?v=200');
+  await page.goto('http://127.0.0.1:'+server.address().port+'/torpedo-carrier.html?v=202');
   await page.waitForFunction(()=>state===ST.MENU,null,{polling:100});
   await page.evaluate(async()=>{
    renderer.setPixelRatio(1);await prepareOkinawa();
@@ -91,7 +91,7 @@ const server=http.createServer((req,res)=>{
   results.hud=hud;
   assert(hud.shown&&/BEAM/.test(hud.text)&&hud.cls==='ok','TRACK row shows a beam set-up: '+JSON.stringify(hud));
   assert.deepEqual(hud.overlap,[],'torpedo panel stays clear of controls');
-  await page.screenshot({path:path.join(root,'test-visuals','build200-torpedo-run-hud.png')});
+  await page.screenshot({path:path.join(root,'test-visuals','build202-torpedo-run-hud.png')});
   assert.deepEqual(errors,[],'no page errors');
   console.log('Torpedo attack in the real game:',JSON.stringify(results));
  }finally{await browser.close();server.close();}

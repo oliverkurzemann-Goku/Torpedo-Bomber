@@ -1,6 +1,10 @@
 # Torpedo-Bomber — Übergabe an Claude Code
 
-**22.10.2026, Build 200: Torpedoangriff mit Können statt Glück (nur Feature-Branch, NICHT auf main).**
+**24.10.2026, Build 202: Torpedoangriff mit Können statt Glück, jetzt auf main.**
+Auf Nutzerfreigabe („Übernimm jetzt Build 200 in Main“) übernommen. Auf dem Feature-Branch hieß diese Arbeit
+Build 200; main hatte inzwischen Build 200 (helijah-B-17) und 201 (HappySunpore-Dauntless) aus einer anderen
+Sitzung. Deshalb nur die zwei Torpedo-Commits auf main übertragen (ohne Bf-109-Vorschau, Kandidaten-Triage und
+own-avenger.js) und als Build 202 nummeriert. Konflikte waren reine Build-Kennungen.
 Nutzerauftrag: die früher vorgeschlagenen Verbesserungen für die Torpedo-Missionen beginnen, damit es
 weniger langweilig ist. Umgesetzt wurde die empfohlene erste Gruppe: Trefferwinkel, Scharfmachstrecke,
 Trefferort mit Folgen und schlauere Kapitäne. Gemessen vor dem Ändern, im echten Spiel: Ein Spieler-
@@ -41,13 +45,71 @@ Tests:
   - Der Zerstörer dreht höchstens etwa 89° ein und keinen Grad weiter.
   - Ein Hecktreffer lässt den leichten Träger mit 1 HP kreisen.
   - Die TRACK-Zeile ist frei von Bedienelementen.
-- Bild: `test-visuals/build200-torpedo-run-hud.png`.
-Build 200 steht an Board, beiden Spielen, den Menü-CSS-Links, App-Payload und Xcode. Das Register wurde per
-app:assets neu erzeugt (310 Dateien). Syntax 7/7, Terrain 33/33, Okinawa 70/70 (Browser nativ). Kein iPad-Test. Historische Korrektur: Meine frühere Begründung „beim
-Mark-13-Zünder so gewesen“ ist nicht belegt. Belegt ist beim Mark 14 sogar das Gegenteil: Schräge Treffer
-zündeten, senkrechte Treffer verbogen den Schlagbolzen. Der Winkelabgleiter ist deshalb eine bewusste
-Spielregel. Noch offen aus der Vorschlagsliste: weiche Abwurfgrenzen (2), Zufalls-Patrouille (14), Zielsuche
-nach Sichtmeldung (7), Vorposten (8) und Debrief-Karte (15).
+- Bild: `test-visuals/build202-torpedo-run-hud.png`.
+Build 202 steht an Board, beiden Spielen, den Menü-CSS-Links, App-Payload und Xcode. Cache 202 nur für die
+geänderten Module ship-damage.js, torpedo-attack.js und pacific-theater.js; SBD-/B-17-/Artikulations-Module
+behalten 201. Register per app:assets neu erzeugt (315 Dateien, 36 Modelle). Auf dem neuen main erneut geprüft: Syntax 7/7,
+Terrain 35/35, Okinawa im Gesamtlauf 66/69 (Browser nativ); beide Torpedotests liefern dieselben Werte wie auf dem
+Feature-Branch. Die drei roten Dateien waren schon auf dem unveränderten main (Build 201, CI-Lauf 39931902368 rot)
+rot und haben nichts mit dem Torpedo zu tun: Sie prüften noch die alten Dauntless-Ersatzteile. Die native SBD hält
+ihre sbdGear-Gruppe sichtbar und klappt GearLeft/GearRight über rotation.z ein, öffnet eigene BrakeUpper*/Lower*
+(restQuaternion + 1,08·dive um lokal X) und feuert hinten aus ihrem RearGun-Drehpunkt; der generische rearArmament
+bleibt dafür absichtlich unsichtbar. Umgestellt, nicht abgeschwächt: carrier-start-browser prüft beide Beine bei
+rotation.z 0, browser-smoke wartet auf mehr als 0,2 rad Öffnung der echten BrakeUpperLeft, feedback-browser prüft zwei
+Mündungen, Geschossstart ≤1,5 m am RearGun und dessen Lage am Flugzeug (gemessen 0/0,53/0,23 m). Alle drei danach
+einzeln grün; die alte Prüfung bleibt für Nicht-native-Modelle erhalten.
+Kein iPad-Test. Historische Korrektur: Meine frühere Begründung „beim Mark-13-Zünder so gewesen“ ist nicht
+belegt. Belegt ist beim Mark 14 sogar das Gegenteil: Schräge Treffer zündeten, senkrechte Treffer verbogen den
+Schlagbolzen. Der Winkelabgleiter ist deshalb eine bewusste Spielregel. Noch offen aus der Vorschlagsliste:
+weiche Abwurfgrenzen (2), Zufalls-Patrouille (14), Zielsuche nach Sichtmeldung (7), Vorposten (8) und
+Debrief-Karte (15).
+
+**Build 201, 23.10.2026: gelieferte HappySunpore-Dauntless lackiert und nativ animiert.**
+Quelle 31e14fecfd9b4d51bdf0c4b27a0572f0, CC BY 4.0; Rohdatei stb_dauntless.glb
+unverändert separat erhalten. Neue assets/aircraft/sbd-dauntless.glb: 7,229,376 Bytes,
+73,414 Dreiecke, 39 Meshes, 12.66 m Spannweite, ursprüngliche Länge ~9.515 m erhalten.
+Eigener 2048er Blaugrau-/Hellgrau-Atlas mit 1942er Sternen ohne Balken, Oberflächenspuren;
+Foto nicht eingebettet. Originalhaut/Cockpit/Motor/Dreiblattpropeller erhalten, echte
+Fahrwerk-/Steuerflächen-/MG-/Haken-Drehpunkte, gelochte geteilte Sturzflugbremsen und
+zwei prozedurale Besatzungsfiguren. Sieben Clips. sbd-native.js hält Klon-Zustand in
+WeakMap, Brake-restQuaternion vor lokaler X-Drehung erhalten! Keine Legacy-Schnitte,
+keine zweite Propellerhaut, generischen hinteren MG-Aufbau bei nativer SBD ausblenden.
+Original-Spornrad bleibt eingefahren sichtbar. gear-Gruppe bleibt sichtbar; Hauptbeine
+rotieren von Z +/- PI/2 (unten) auf 0 (oben). CenterBomb folgt vorhandenen Stores.
+Front-/Heck-MG-Effekte starten an nativen Mündungen, Spielwerte unverändert. Zwei
+Rottenflieger verwenden unabhängige Klone. PacificAssets behält nur für diese SBD
+2048er Atlas auch auf Touch; Avenger/andere Limits unverändert. Neue model-check-
+Voreinstellung ?aircraft=sbd mit Fahrwerk/Klappen/Sturzflugbremsen/Fanghaken. Alte
+War-Thunder-sbd dauntless.glb kein Runtime-/App-Fallback. Build 201 an Menüs/Spielen,
+Payload/Xcode; Checkpoint-Kompatibilität 196 unverändert. Credits und Hashes vorhanden.
+Kein echter iPad-Test; andere App-Rechteprüfungen bleiben offen.
+Verifiziert: glTF-Validator 0 Fehler/0 Warnungen; echter r128-Loader, alle 7 Clips,
+Original-Rotorradius 1.735 m, unabhängige Klone und drei Reifen auf 20-m-Deck <3 mm.
+Chromium-Vorschau und echte Touch-Trägermission: Atlas 2048, zwei Rottenflieger, je
+zwei Front-/Heckrunden an Modellmündungen, echte Bremslöcher, Fanghaken und Stores.
+34 Terrain-Regressionsdateien plus neuer nativer SBD-Test bestanden; 67 Okinawa-
+Dateien geprüft, einziger alter Build-Link im Europamenü korrigiert und campaign.cjs
+erneut bestanden. App: 314 Dateien/274.2 MiB/36 Modelle, Hash-/Dependency-Check grün.
+
+
+**Build 200, 23.10.2026: gelieferte helijah-B-17 animiert und eingebaut.**
+Neue Quelle 927f07f6ddcf470ab0387ce5829024d5 (helijah, CC BY 4.0), keine NC-Arma-
+Adaption. `assets/aircraft/b17-helijah.glb`: 31.62 m, 71,535 Dreiecke / 5,977,464 Bytes;
+ursprüngliche Außenhaut/UVs/silber-rote Lackierung erhalten; Motorkühlrippen und
+Cockpit-Instrumente vereinfacht. Vier Originalpropeller, drei Fahrwerksgruppen,
+Klappen/Steuerflächen und vier Türme mit nativen Drehpunkten; sieben Clips eingebettet.
+`b17-native.js` installiert Gruppen ohne Legacy-Schnitte oder zweite Propellerhaut;
+WeakMap-Cache je Klon, native Flugsteuerflächen, begrenzte Turmbewegung, MG-Runden aus
+Originalmündungen/wechselnden Zwillingsläufen. Feuerrate/Schaden unverändert. Beide
+EU-Spiele laden nur die neue Datei, alte `b17.glb` nur historische Tests und kein
+App-Payload/Fallback. `model-check.html?aircraft=b17` mit Gear/Flap-Bedienung und vier
+drehenden Rotoren; Three/Loader lokal. Modellhash/Quelle/Credits dokumentiert.
+Build 200 an Board, beiden Spielen, Payload und Xcode; Checkpoint-Kompatibilität 196.
+Keine Avenger-/Terrain-Änderung. Vor Workspace-Reset waren glTF-Validator (0 Fehler/
+Warnungen), r128-Loader/Produktionsrig/Klone/7 Clips und echter Chromium-Browser mit
+Vorschau und 3 Bombern/Feuer erfolgreich geprüft; identisches Modell per Git-Blob
+85b04e0bfc1cd472c41dd034e3e0ba7352e3eedd gerettet, Einbindung wiederhergestellt und
+vor Veröffentlichung erneut geprüft. Kein echter iPad-Test.
 
 **22.10.2026, Build 199: helijahs Avenger bekommt eine 1942er-Lackierung in voller Auflösung;
 Eigenbau gestoppt.** Nutzer zum Eigenbau: „Proportionen stimmen überhaupt nicht“, dann: „Ist die
@@ -187,7 +249,7 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 200 · Thunderbolt Squadron BUILD 200 · Remagen-Kern 23 / Fahrzeuge 22**
+Stand bei Übergabe: **Torpedo Squadron BUILD 202 · Thunderbolt Squadron BUILD 202 · Remagen-Kern 23 / Fahrzeuge 22**
 
 **Build 198 (22.10.2026): P-47-Fotolackierung, Einsatzspuren und natives Fahrwerk; Terrain-Fix aus Build 197 erhalten.**
 `assets/aircraft/p47-weathered.glb` ist ein ausdrücklich gekennzeichnetes Derivat des

@@ -1,4 +1,4 @@
-/* Torpedo attack rules for the Pacific carrier game (Build 200).
+/* Torpedo attack rules for the Pacific carrier game (Build 202).
  * Gameplay values, not certified Mark 13 ballistics:
  *  - a player torpedo runs up to MAX_RUN metres in the water instead of a 16 s life
  *    that ended after ~375 m while the HUD recommended drops out to 950 m;

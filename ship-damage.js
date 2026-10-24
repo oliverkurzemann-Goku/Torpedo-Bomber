@@ -19,7 +19,7 @@
    const fraction=Math.max(0,Math.min(1,(local.z-b.min.z)/(b.max.z-b.min.z||1))),power=(weapon==='torpedo'?.65:weapon==='bomb'?.5:.28)*weight;
    let part=fraction<.28?'rudder':fraction<.68?'engine':null;
    if(ship.def?.type==='cruiser'&&weapon==='bomb')part='deck';
-   // Build 200: an underwater hit forward floods the bow; the master must slow down to hold the
+   // Build 202: an underwater hit forward floods the bow; the master must slow down to hold the
    // bulkheads. A stern torpedo jams the rudder hard over, so a surviving ship steams in circles.
    if(!part&&weapon==='torpedo')part='bow';
    if(part)s.systems[part]=Math.max(.12,s.systems[part]-power);

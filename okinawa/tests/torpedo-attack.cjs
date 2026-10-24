@@ -1,4 +1,4 @@
-/* Build 200 torpedo attack rules: distance-limited run, arming run, real hull contact,
+/* Build 202 torpedo attack rules: distance-limited run, arming run, real hull contact,
  * track angle, hit-location effects and combing captains — at 20/60/120 FPS. */
 'use strict';
 const assert=require('node:assert/strict');

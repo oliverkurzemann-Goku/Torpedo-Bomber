@@ -32,6 +32,8 @@
   if(gear.userData.deployment!==g){for(let o=frame;o;o=o.parent)delete o.userData.groundSupports;gear.userData.deployment=g;}
  }
  function controls(frame,roll,pitch){
+  if(frame?.userData.nativeSBD&&global.SBDRig){global.SBDRig.controls(frame,roll,pitch);return;}
+  if(frame?.userData.nativeB17&&global.B17Rig){global.B17Rig.controls(frame,roll,pitch);return;}
   if(!frame?.userData.nativeP47)return;
   const r=Math.max(-1,Math.min(1,roll||0)),p=Math.max(-1,Math.min(1,pitch||0));
   frame.getObjectByName('AileronLeft').rotation.x=.22*r;frame.getObjectByName('AileronRight').rotation.x=-.22*r;
@@ -162,6 +164,8 @@
  }
  function install(frame,kind,{gearName='gear',skin=frame,gear=true,flaps=true,surfaceProfile=null}={}){
   if(!profiles[kind])return;
+  if(kind==='sbd'&&global.SBDRig?.install(frame)){frame.userData.articulation={kind,gearName:'sbdGear',nativeSBD:true};pose(frame,1,{left:0,right:0});return frame;}
+  if(kind==='b17'&&global.B17Rig?.install(frame)){frame.userData.articulation={kind,gearName:'gear',nativeB17:true};pose(frame,1,{left:0,right:0});return frame;}
   if(kind==='p47'&&nativeP47(frame)){frame.userData.articulation={kind,gearName:'gear',native:true};pose(frame,1,{left:0,right:0});return frame;}
   const list=meshes(skin,frame);
   if(gear)buildGear(frame,kind,gearName,list);
@@ -171,6 +175,8 @@
  }
  function pose(frame,deployment,flaps={left:0,right:0}){
   const info=frame?.userData.articulation;if(!info)return;
+  if(info.nativeSBD){global.SBDRig.pose(frame,deployment,flaps);return;}
+  if(info.nativeB17){global.B17Rig.pose(frame,deployment,flaps);return;}
   if(info.native){nativePose(frame,deployment,flaps);return;}
   const p=info.surfaceProfile||profiles[info.kind],gear=frame.getObjectByName(info.gearName),g=clamp(deployment);
   if(gear?.userData.originalSkinRig)global.AircraftSourceProfiles?.poseGear(frame,g);

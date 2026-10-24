@@ -1,4 +1,55 @@
-# Remagen vehicle credits
+# Squadron asset credits
+
+## SBD Dauntless (Build 201)
+
+SBD Dauntless — Squadron 1942 animated derivative (Build 201)
+Original model: STB Dauntless, HappySunpore
+Author: https://sketchfab.com/happysunpore
+Source: https://sketchfab.com/3d-models/stb-dauntless-31e14fecfd9b4d51bdf0c4b27a0572f0
+License: Creative Commons Attribution 4.0 International (CC BY 4.0)
+https://creativecommons.org/licenses/by/4.0/
+
+Changes for Oliver Kurzemann: original airframe, cockpit, engine and three-blade
+propeller retained; uniform normalization to 12.66 m span, metres, +Z forward;
+original gear, controls, rear guns and arrestor hook articulated; seven embedded
+animation clips; same-outline perforated split dive brakes, recessed forward
+barrel stubs and two procedural crew added. Newly painted blue-gray/light-gray
+atlas, weathering, panel lines and 1942 white stars in dark-blue circles. No bars,
+red rudder stripes, museum branding or reference photograph embedded. Smoothing
+does not move the original skin. Adaptation offered under the same CC BY 4.0 terms.
+
+This is an adaptation of the supplied mesh, not independently authored airframe
+geometry or a CAD-accurate reconstruction. Source proportions are preserved:
+12.66 m span and approximately 9.515 m source length, without longitudinal stretch.
+73,414 triangles; 7,229,376 bytes; 2048 x 2048 embedded JPEG atlas.
+Source SHA256: 41041f1cef18175ccffdf36338859c4159fb931bbe264fa5305ffa5cf2098774
+Output SHA256: 80b06926d6c4d3168e9a52a61379b1a00a1841a8130afcca71f842870d8336e1
+Original upload stb_dauntless.glb is preserved separately, unchanged.
+
+Runtime: sbd-native.js; native clone-local pivots and barrel origins, no generic
+replacement gear or stationary duplicate propeller. Former War-Thunder-labelled
+sbd dauntless.glb excluded from runtime and app payload; repository history retained.
+A repaint does not remove source-license obligations. Other app assets retain
+their own provenance and unresolved release status. No physical-iPad certification.
+
+
+## B-17 original-component animation (Build 200)
+
+Boeing B-17 Flying Fortress — animated derivative (Squadron Build 200)
+Original model and textures: helijah (Emmanuel Baranger), https://sketchfab.com/helijah
+Source: https://sketchfab.com/3d-models/boeing-b-17-flying-fortress-927f07f6ddcf470ab0387ce5829024d5
+License: Creative Commons Attribution 4.0 International (CC BY 4.0)
+https://creativecommons.org/licenses/by/4.0/
+Changes: named original propellers, gear, flaps, flight controls and turret pivots;
+seven animation clips and actual barrel origins; uniform metre-scale normalization
+to 31.62 m span, +Z forward; cooling fins and cockpit instruments simplified for
+formations. Original exterior geometry, UVs and paint retained. This adaptation
+is offered under the same CC BY 4.0 terms. Source/output hashes are recorded in
+b17-helijah-provenance.json. No photograph embedded. This is an adaptation of the
+supplied model, not a claim of newly authored geometry or CAD accuracy.
+The former sabrezor/Arma CC BY-NC model b17.glb is excluded from runtime and the
+native app payload; it remains a historical repository file and legacy test fixture.
+
 
 ## P-47 service-wear model (Build 198)
 
@@ -177,12 +228,12 @@ Build 175 replaced the earlier procedural observation-post stand-ins with optimi
 
 ## Build 196 — complete native model inventory, checked 2026-10-14
 
-The offline package contains 35 model files (34 GLB + one FBX). The full exact-file
+The Build 196 offline package contained 35 model files (34 GLB + one FBX). The full exact-file
 register is [app/release/asset-register.md](app/release/asset-register.md), with SHA-256
 hashes and all 302 payload files in its adjacent JSON. Source metadata observations
 are dated, and uploader declarations are kept separate from underlying rights grants.
 
-Important qualifications: `b17.glb` is **CC BY-NC 4.0**, not a commercial-use grant;
+Historical qualification: `b17.glb` carried **CC BY-NC 4.0** and was replaced in Build 200 by helijah’s separately supplied CC BY model;
 several aircraft/vehicles explicitly identify War Thunder; three ships identify
 Call of Duty: World at War; the IJN carrier metadata names World of Warships.
 `uss_midway.glb` has no embedded author/license/source. App distribution clearance

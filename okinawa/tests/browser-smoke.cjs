@@ -332,7 +332,7 @@ const cdn={
     if(scenario.kind==='sbd'){
      assert.equal(await page.evaluate(()=>wingmen.length),2,'Dauntless join-up completes');
      await page.evaluate(()=>{P.diveBrake=true;});
-     await page.waitForFunction(()=>sbdDiveFlapL?.visible&&sbdDiveFlapL.getObjectByName('sbdDiveUpper').rotation.x>.2);
+     await page.waitForFunction(()=>{const b=SBDRig.isNative(playerSBD)?playerSBD.getObjectByName('BrakeUpperLeft'):null;return b?b.visible&&b.quaternion.angleTo(new THREE.Quaternion().fromArray(b.userData.restQuaternion))>.2:sbdDiveFlapL?.visible&&sbdDiveFlapL.getObjectByName('sbdDiveUpper').rotation.x>.2;});
      assert(!modelRequests.some(p=>p.includes('avenger')),'SBD sortie must not load unused Avenger');
     }else if(scenario.kind==='defend'){
      assert(!modelRequests.some(p=>p.includes('dauntless')||p.includes('midway')||p.includes('merchant')),'Zero defence loads no unused US deck, SBD or merchant');

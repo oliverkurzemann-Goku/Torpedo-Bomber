@@ -1,0 +1,14 @@
+Boeing B-17 Flying Fortress — animated derivative (Squadron Build 200)
+Original model and textures: helijah (Emmanuel Baranger), https://sketchfab.com/helijah
+Source: https://sketchfab.com/3d-models/boeing-b-17-flying-fortress-927f07f6ddcf470ab0387ce5829024d5
+License: Creative Commons Attribution 4.0 International (CC BY 4.0)
+https://creativecommons.org/licenses/by/4.0/
+Changes: named original propellers, gear, flaps, flight controls and turret pivots;
+seven animation clips and actual barrel origins; uniform metre-scale normalization
+to 31.62 m span, +Z forward; cooling fins and cockpit instruments simplified for
+formations. Original exterior geometry, UVs and paint retained. This adaptation
+is offered under the same CC BY 4.0 terms. Source/output hashes are recorded in
+b17-helijah-provenance.json. No photograph embedded. This is an adaptation of the
+supplied model, not a claim of newly authored geometry or CAD accuracy.
+The former sabrezor/Arma CC BY-NC model b17.glb is excluded from runtime and the
+native app payload; it remains a historical repository file and legacy test fixture.
