@@ -79,6 +79,8 @@ root=bpy.data.objects['P47D_Independent_v1'];root.name='P47D_Independent_v2';roo
 for o in list(bpy.data.objects):
  if o.type=='CURVE':
   bpy.ops.object.select_all(action='DESELECT');o.select_set(True);bpy.context.view_layer.objects.active=o;bpy.ops.object.convert(target='MESH')
+# Reattach the two residual source gear rods before exporting.
+brace_scope={'__name__':'brace_fix'};exec((ROOT/'fix-static-braces.py').read_text(),brace_scope);brace_scope['fix_static_braces']()
 # Export in neutral flight axes, with original animation clips and pivot names.
 bpy.ops.object.select_all(action='SELECT')
 bpy.ops.export_scene.gltf(filepath=str(OUT/'P47D-Independent-Review.glb'),export_format='GLB',export_extras=True,export_animations=True,export_animation_mode='NLA_TRACKS',export_nla_strips=True,export_force_sampling=True,export_cameras=False,export_lights=False,export_materials='EXPORT',export_image_format='AUTO',export_jpeg_quality=96)

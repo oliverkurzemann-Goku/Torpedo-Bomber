@@ -58,6 +58,15 @@
   const configuration=(p.gear||0)*.85+flaps*1.15+(p.tankAttached?.30:0)+drag*.15;
   return clamp((available-dragPower)/(v*mass)-G*Math.sin(p.pitch||0)-configuration,-14,4.5);
  }
- const api={data,maximum,climb,densityRatio,indicated,trueSpeed,speeds,acceleration};
+ // Build 204: temporary, explicitly non-historical game assistance. Retain the
+ // historical anchors separately for the eventual fleet-wide performance pass.
+ const gameTuning=Object.freeze({extraAcceleration:1.65,maxAcceleration:6});
+ function gameplayAcceleration(p,options={}){
+  const altitude=p.pos?.y||0,v=Math.max(0,p.spd||0),top=maximum(altitude);
+  const reserve=clamp((top-v)/(top*.35),0,1);
+  const assist=gameTuning.extraAcceleration*reserve*clamp(p.throttle||0,0,1)*clamp(options.damage??1,0,1)/Math.sqrt(clamp(options.loadRatio??1,.8,1.5));
+  return clamp(acceleration(p,options)+assist,-14,gameTuning.maxAcceleration);
+ }
+ const api={data,maximum,climb,densityRatio,indicated,trueSpeed,speeds,acceleration,gameplayAcceleration,gameTuning};
  root.P47Performance=api;if(typeof module==='object'&&module.exports)module.exports=api;
 })(typeof window==='undefined'?globalThis:window);

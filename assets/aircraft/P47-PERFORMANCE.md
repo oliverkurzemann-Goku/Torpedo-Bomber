@@ -1,4 +1,4 @@
-# P-47D flight envelope used by Build 203
+# P-47D historical anchors and current game tuning
 
 Game variant: bubbletop P-47D, D-28-style adaptation. Geometry began as the
 independent creator's D-40, with dorsal fillet removed. Original Republic station
@@ -47,3 +47,18 @@ Implementation boundaries:
 - Existing touch controls, normal/acro modes and damage behavior are retained.
   This is a documented historically anchored game envelope, not a validated
   six-degree-of-freedom flight simulator or real-aircraft operating guidance.
+
+## Build 204 temporary P-47 assistance
+
+At Oliver's request after iPad testing, the historical `acceleration()` anchors
+remain available, while runtime uses `gameplayAcceleration()`. It adds up to
+1.65 m/s² of healthy full-throttle assistance (reduced by mass), fading to zero
+at the historical maximum TAS. Idle glide and approach/stall references stay
+unchanged. This is explicitly gameplay tuning, not a revised historical rating.
+Initial climb allowance is 17.5 rather than 10 m/s, released by 92 rather than
+100 m/s airspeed. Ground acceleration coefficient 8.1 rather than 7.4; P-47
+pitch/roll authority 1.04/1.08 rather than .85/.90. Other types are unchanged.
+
+Real-game loaded storm departure, gear retracted after liftoff: 900-m height AGL
+41.3 → 86.4 m; at 1200 m, 94.9 → 170.9 m. No stalls during the measured
+initial-climb segment. A later fleet-wide balance pass remains planned.

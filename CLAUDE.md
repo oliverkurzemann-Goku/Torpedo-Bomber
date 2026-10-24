@@ -1,5 +1,24 @@
 # Torpedo-Bomber — Übergabe an Claude Code
 
+**25.10.2026, Build 204: P-47-Benutzerfeedback, Stützen und Startreserve.**
+Zwei feste Originalrohre in StaticMesh1 (x≈±2.56, y -2.25…-1.05, z 2.12…2.81)
+waren bei der Quellzerlegung statisch geblieben. Exakte zusammenhängende Teile
+mit ihren UVs/Materialien auf GearLeft/GearRight umgehängt; keine Haut gelöscht,
+weiterhin 89.530 Dreiecke, jetzt 43 Meshes. Gepackte Blender-Quelle korrigiert,
+fix-static-braces.py in den Generator eingebunden. Sichtbarkeit im echten Spiel
+bei Gear UP: beide aus; bei Gear DOWN an ursprünglicher Position.
+
+Auf ausdrücklichen Nutzerwunsch vorläufige P-47-Spielhilfe statt strikter
+Leistung: gameplayAcceleration fügt last-/schadenabhängig maximal 1,65 m/s²
+zu, auf null bei der historischen Vmax. Historische Referenzfunktion bleibt
+getrennt verfügbar; keine zusätzliche unbegrenzte Höchstgeschwindigkeit.
+Startlauf-Koeffizient 8,1 statt 7,4; anfängliche Steigerlaubnis 17,5 statt
+10 m/s, Freigabe mit 92 statt 100 m/s; Pitch/Roll 1,04/1,08 statt ,85/,90.
+Unveränderte Stall-/REF-Werte und Gleitflug, andere Flugzeugtypen unangetastet.
+Echte geladene Sturm-Mission: nach 900 m 86,4 statt 41,3 m AGL, nach 1200 m
+170,9 statt 94,9 m, kein Stall. Direkte Nutzer-Geräteprüfung weiterhin offen.
+Die gemeinsame Leistungsabstimmung aller Modelle folgt später.
+
 **25.10.2026, Build 203: unabhängige P-47 v2 ersetzt die bisherige Spieladaption.**
 Nutzerfreigabe: „übernimm ... originalen leistungsdaten ... ersetze die p47 im spiel“.
 Neue `assets/aircraft/p47-independent.glb`: 9,173,276 Bytes, 89,530 Dreiecke,

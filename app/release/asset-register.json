@@ -1,13 +1,13 @@
 {
   "schema": 1,
   "reviewedOn": "2026-10-23",
-  "build": 203,
+  "build": 204,
   "status": "OPEN — source declarations checked; no external rights authorization obtained",
   "payload": {
-    "bytes": 278691221,
+    "bytes": 278696679,
     "fileCount": 315,
     "modelCount": 35,
-    "manifestSha256": "96a80cebf0c2ff3898e2b90663e465c014d330b16a20718ea818d0be41cb706a"
+    "manifestSha256": "5c3d1c2e561c2b5ec7f8c953b3a3019420bfae4b5a7572479545b9b64f27e94b"
   },
   "files": [
     {
@@ -90,8 +90,8 @@
     },
     {
       "path": "assets/aircraft/p47-independent.glb",
-      "bytes": 9173276,
-      "sha256": "d85ee480aae8bbc60453e75a175c99d8e3694b2f78ca802092298d6f0a8bba3d",
+      "bytes": 9178052,
+      "sha256": "fc717521e5d80aefd6063d57bc561574fee3c4a99637c94a8b1a3c7ca889b851",
       "kind": "model"
     },
     {
@@ -511,7 +511,7 @@
     {
       "path": "index.html",
       "bytes": 7260,
-      "sha256": "3f5b7bd447b37764d902086c205fc1eff82d632ef66c5a1eba861875dd1d481f",
+      "sha256": "d966955478b581df89a19e070c9a2d918fb4c54cc24e3d6440a25eece51b98c2",
       "kind": "code-or-notice"
     },
     {
@@ -594,8 +594,8 @@
     },
     {
       "path": "p47-performance.js",
-      "bytes": 3821,
-      "sha256": "b1e6b607dfbe8ea636540ceef5a4dbea3af6af3076c806adb008cc47d023f9d1",
+      "bytes": 4492,
+      "sha256": "dcb11c5d231c9330a8b99e4ef7e7ed6e623d79b78898f1012e722f4cc0ce66d2",
       "kind": "code-or-notice"
     },
     {
@@ -630,8 +630,8 @@
     },
     {
       "path": "remagen-mission.html",
-      "bytes": 360870,
-      "sha256": "2f6657a526889770d2ef7042a4d501a5ba95bef8e4074d1fd430cc445ef03398",
+      "bytes": 360878,
+      "sha256": "dc84383bbb58da11ce03933f57b1768e100a770a32ebba81c4d3bc881216f35a",
       "kind": "code-or-notice"
     },
     {
@@ -678,8 +678,8 @@
     },
     {
       "path": "sortie-features.js",
-      "bytes": 9591,
-      "sha256": "e0aa9f747a41148eb697182db9234b749f79258bbae0d5169e86515d54d7e4a8",
+      "bytes": 9594,
+      "sha256": "c1ae44cde8e62b38e558b9bdc4582c83334ccb9f536e5c01d638fecf53b7a56a",
       "kind": "code-or-notice"
     },
     {
@@ -1825,7 +1825,7 @@
     {
       "path": "torpedo-carrier.html",
       "bytes": 429082,
-      "sha256": "5050884fad529f7971463ef64f3e69adc7ba785a6bdaa63eeaf59da21b7b16e3",
+      "sha256": "2b184301554b3144a0b736b5098bc3a4539c8f5529b53ed8617bde44f89fe11d",
       "kind": "code-or-notice"
     },
     {
@@ -1934,8 +1934,8 @@
     },
     {
       "path": "assets/aircraft/p47-independent.glb",
-      "bytes": 9173276,
-      "sha256": "d85ee480aae8bbc60453e75a175c99d8e3694b2f78ca802092298d6f0a8bba3d",
+      "bytes": 9178052,
+      "sha256": "fc717521e5d80aefd6063d57bc561574fee3c4a99637c94a8b1a3c7ca889b851",
       "title": "P-47D bubbletop — independent source, game livery and service wear v2",
       "uploader": "mgg8 / Aviation Gazetteer; original adaptation Oliver Kurzemann",
       "originalRightsholder": null,

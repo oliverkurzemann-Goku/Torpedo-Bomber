@@ -341,8 +341,8 @@
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
 <script src="campaign.js?v=1"></script>
 <script src="b17-native.js?v=200"></script>
-<script src="aircraft-articulation.js?v=203"></script>
-<script src="p47-performance.js?v=203"></script>
+<script src="aircraft-articulation.js?v=204"></script>
+<script src="p47-performance.js?v=204"></script>
 <script>
 // ============================================================
 //  THUNDERBOLT SQUADRON — GROUND ATTACK (Europe, 1944)
@@ -439,7 +439,7 @@ const AC={
   // pitchLim raised too - 55-62 deg was noticeably shy of a real fighter's zoom-climb/dive
   // angle; the carrier game's dive bomber already runs safely at 1.28 rad (73 deg), so 66-72 is
   // conservative by comparison, not a leap into new territory.
-  p47:{ name:'P-47D Thunderbolt', rollAuth:0.90, pitchAuth:0.85, turn:0.85, gLim:6.5,
+  p47:{ name:'P-47D Thunderbolt', rollAuth:1.08, pitchAuth:1.04, turn:0.90, gLim:6.5,
         rollLim:1.56, pitchLim:1.15, stall:116*.44704, app:130*.44704, max:435*.44704, thrMin:34,
         hull:130, ammo:3400, bombs:2, rockets:8, gunDmg:1.0, gunRate:0.055, wing:12.4,
         col:0x6e7a63, band:0xf0f0e4 },
@@ -2815,7 +2815,7 @@ function tryLoad(L,k,i){
     return;
   }
   const url=list[i];
-  L.load(url+(k==='p47'?'?v=203':'?v=3'), gl=>{
+  L.load(url+(k==='p47'?'?v=204':'?v=3'), gl=>{
     const src=gl.scene||gl.scenes[0]; if(!src){ tryLoad(L,k,i+1); return; }
     const fix=savedFix(url) || knownFix(url);
     let note;

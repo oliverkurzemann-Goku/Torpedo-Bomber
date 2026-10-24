@@ -1,4 +1,4 @@
-# Offline app asset register — Build 203
+# Offline app asset register — Build 204
 
 Checked 2026-10-23. 315 payload files, 35 model files, 265.8 MiB.
 
@@ -7,7 +7,7 @@ Generated from the actual dist-app payload by npm run app:assets. Hashes cover e
 | Runtime file | Source / uploader | Declared license | Open issue | SHA-256 |
 | --- | --- | --- | --- | --- |
 | assets/aircraft/b17-helijah.glb | [helijah](https://sketchfab.com/3d-models/boeing-b-17-flying-fortress-927f07f6ddcf470ab0387ce5829024d5) | CC-BY-4.0 (https://creativecommons.org/licenses/by/4.0/) | uploader-license-review-open | bcdf03e6bed86bd8b246a24cf1b8f86a259debe426dbbdd42986d8c278b778db |
-| assets/aircraft/p47-independent.glb | [mgg8 / Aviation Gazetteer; original adaptation Oliver Kurzemann](https://sketchfab.com/3d-models/republic-p-47d-thunderbolt-raf-scheme-e831a70ab29c42d3a1dbd352d8bd4684) | Base model CC0-1.0 (https://creativecommons.org/publicdomain/zero/1.0/). New project work: Oliver Kurzemann, all reserved rights. | cc0-source-recorded | d85ee480aae8bbc60453e75a175c99d8e3694b2f78ca802092298d6f0a8bba3d |
+| assets/aircraft/p47-independent.glb | [mgg8 / Aviation Gazetteer; original adaptation Oliver Kurzemann](https://sketchfab.com/3d-models/republic-p-47d-thunderbolt-raf-scheme-e831a70ab29c42d3a1dbd352d8bd4684) | Base model CC0-1.0 (https://creativecommons.org/publicdomain/zero/1.0/). New project work: Oliver Kurzemann, all reserved rights. | cc0-source-recorded | fc717521e5d80aefd6063d57bc561574fee3c4a99637c94a8b1a3c7ca889b851 |
 | assets/aircraft/sbd-dauntless.glb | [HappySunpore (https://sketchfab.com/happysunpore)](https://sketchfab.com/3d-models/stb-dauntless-31e14fecfd9b4d51bdf0c4b27a0572f0) | CC-BY-4.0 (https://creativecommons.org/licenses/by/4.0/) | uploader-license-review-open | 80b06926d6c4d3168e9a52a61379b1a00a1841a8130afcca71f842870d8336e1 |
 | assets/buildings/bunker.glb | [matousekfoto (https://sketchfab.com/matousekfoto)](https://sketchfab.com/3d-models/bunker-o323a-160-z-11ae7599f3b640569f7ed4692acabf38) | CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/) | uploader-license-review-open | c9b54e30b99302ddaa0ab486c79318c7bd46c881b9fd11b3f77c60758efaa253 |
 | assets/buildings/farm-ruin.glb | [Garbage Raccoon (https://sketchfab.com/GarbageRaccoon)](https://sketchfab.com/3d-models/bombed-farm-buildings-from-fps-creator-classic-2cf04644ad0944e5b5b845680262d269) | CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/) | upstream-game-rights-open | f0978da9e2642f1eb3f92fe461340b911962e0929aa2892077c9c0f9d9822115 |

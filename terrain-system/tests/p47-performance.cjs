@@ -17,4 +17,6 @@ assert(Math.abs(perf.indicated(perf.trueSpeed(60,8000),8000)-60)<1e-9);
 for(const fps of [20,60,120]){
  let p={...clean,pos:{y:0},spd:80};for(let i=0;i<400*fps;i++)p.spd+=perf.acceleration(p)/fps;assert(Math.abs(p.spd-345*MPH)<.1,'steady sea-level speed at '+fps+' fps');
 }
+assert(perf.gameplayAcceleration(clean,{loadRatio:1.24})>perf.acceleration(clean,{loadRatio:1.24})+1);assert.equal(perf.gameplayAcceleration({...clean,throttle:0}),perf.acceleration({...clean,throttle:0}),'no idle/glide assistance');
+assert.equal(perf.gameplayAcceleration({...clean,spd:perf.maximum(0)}),perf.acceleration({...clean,spd:perf.maximum(0)}),'boost fades at original maximum');
 console.log('P-47 historical anchors, steady energy, load/flaps, IAS/TAS and 20/60/120 FPS passed');

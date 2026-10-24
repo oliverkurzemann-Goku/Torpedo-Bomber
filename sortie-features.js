@@ -31,13 +31,13 @@ const Handling={
   if(p.departureAge==null)return {release:1,rate:Infinity,acceleration:Infinity};
   p.departureAge+=dt;
   const kind=p.loadProfile?.kind||p.ac;
-  const initial={p47:10,bf109:12,fw190:11,ju87:7.5,me262:14,me163:24,avenger:8,sbd:8.5,corsair:12,zero:11}[kind]||9;
-  const climbSpeed={p47:100,bf109:105,fw190:108,ju87:78,me262:140,me163:200,avenger:90,sbd:86,corsair:110,zero:94}[kind]||100;
+  const initial={p47:17.5,bf109:12,fw190:11,ju87:7.5,me262:14,me163:24,avenger:8,sbd:8.5,corsair:12,zero:11}[kind]||9;
+  const climbSpeed={p47:92,bf109:105,fw190:108,ju87:78,me262:140,me163:200,avenger:90,sbd:86,corsair:110,zero:94}[kind]||100;
   // Only airspeed opens the envelope: waiting or gaining height cannot release it.
   const entry=stall*1.12,phase=clamp((p.spd-entry)/Math.max(15,climbSpeed-entry),0,1),release=phase*phase*(3-2*phase);
   const rate=(initial+Math.max(0,p.spd-entry)*.16)*(.35+.65*clamp(p.throttle||0,0,1))*Damage.power(p);
   if(release>=1)p.departureAge=null;
-  const acceleration={p47:3,bf109:3.8,fw190:3.5,ju87:2,me262:5,me163:8,avenger:2.2,sbd:2.4,corsair:3.8,zero:3.6}[kind]||3;
+  const acceleration={p47:4.5,bf109:3.8,fw190:3.5,ju87:2,me262:5,me163:8,avenger:2.2,sbd:2.4,corsair:3.8,zero:3.6}[kind]||3;
   return {release,rate,acceleration};
  },
  sample(p){
