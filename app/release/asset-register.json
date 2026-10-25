@@ -684,14 +684,14 @@
     },
     {
       "path": "sortie-fuel.js",
-      "bytes": 898,
-      "sha256": "d53585d3f7f18f6e25edeaaaf7ef75f5451221e5ad78f08277d7c1282086949f",
+      "bytes": 1174,
+      "sha256": "1b82b71ab01ebb9325307ace2ff3a9cc29df00a5341da0070536d2eb98db67fa",
       "kind": "code-or-notice"
     },
     {
       "path": "sortie-service.js",
-      "bytes": 2856,
-      "sha256": "df84e55296bffd3605c7fe109af8220833f39ff262a26b35d7bf0e7ff478da47",
+      "bytes": 2916,
+      "sha256": "5f1e90d3893ef8bebaad13216c9fe23691a453ad5c8a3fab9bb72cca5c4b95b8",
       "kind": "code-or-notice"
     },
     {

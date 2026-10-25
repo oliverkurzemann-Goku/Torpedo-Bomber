@@ -19,3 +19,4 @@ ios/App/build/
 ios/App/DerivedData/
 *.xcuserstate
 xcuserdata/
+/build/

@@ -509,6 +509,7 @@
 <script src="campaign.js?v=1"></script>
 <script src="game-runtime.js?v=198"></script>
 <script src="sortie-checkpoint.js?v=198"></script>
+<script src="aircraft-contract.js?v=204"></script>
 <script src="aircraft-articulation.js?v=204"></script>
 <script src="aircraft-rotors.js?v=172"></script>
 <script src="b17-native.js?v=201"></script>
@@ -518,14 +519,14 @@
 <script src="flight-support.js?v=198"></script>
 <script src="ordnance.js?v=157"></script>
 <script src="crew-visuals.js?v=179"></script>
-<script src="aircraft-finish.js?v=179"></script>
+<script src="aircraft-finish.js?v=203"></script>
 <script src="runway-lights.js?v=179"></script>
 <script src="ship-wakes.js?v=179"></script>
 <script src="ship-contact.js?v=198"></script>
 <script src="pilot-bailout.js?v=181"></script>
 <script src="enemy-bailouts.js?v=177"></script>
 <script src="flare-support.js?v=177"></script>
-<script src="sortie-service.js?v=177"></script>
+<script src="sortie-service.js?v=203"></script>
 <script src="pilot-rescue.js?v=179"></script>
 <script src="radio-intercept.js?v=157"></script>
 <script src="audio/weapon-sound.js?v=144"></script>
@@ -537,7 +538,7 @@
 <script src="ground-run.js?v=204"></script>
 <script src="ground-dust.js?v=181"></script>
 <script src="flight-indicators.js?v=198"></script>
-<script src="sortie-fuel.js?v=161"></script>
+<script src="sortie-fuel.js?v=203"></script>
 <script src="operation-plans.js?v=198"></script>
 <script>
 // ============================================================
@@ -664,9 +665,26 @@ const AC={
         rollLim:1.56, pitchLim:1.20, stall:39, app:125*.44704, max:194, thrMin:32,
         hull:102, ammo:1800, bombs:1, rockets:0, gunDmg:1.5, gunRate:0.075, wing:10.5,
         col:0x7d8478, band:0x2f3a2a },
-  bf109:{ name:'Bf 109G-6', rollAuth:1.08, pitchAuth:1.03, turn:1.02, gLim:5.2,
-        rollLim:1.47, pitchLim:1.18, stall:36, app:110*.44704, max:196, thrMin:30,
-        hull:88, ammo:1500, bombs:1, rockets:0, gunDmg:1.35, gunRate:0.085, wing:9.9,
+  // Bf 109 F-2 (own model, Moelders' Stab/JG 51 machine, June 1941). Figures from the reference
+  // PDF (app/model-candidates/references/bf109f2): F-2 = DB 601 N, 1020 PS, 400 l tank, 2x MG 17
+  // over the engine + 1x 15 mm MG 151 through the hub. The PDF's F data table is the F-4
+  // (DB 601 E, 1200 PS): 670 km/h at 6300 m, 2890 kg, 16.1 m2, MG 17 500 rounds each for 25-26 s,
+  // hub cannon 200 rounds for ~15 s. The PDF gives no F-2 top speed, so it is DERIVED:
+  // 670 km/h * (1020/1200)^(1/3) = 635 km/h = 176 m/s (same airframe, speed ~ power^1/3).
+  // stall/app/turn scale the previous G-6 values by the PDF wing loadings (G-6 3200 kg/16.4 m2 =
+  // 195 kg/m2, F 2890/16.1 = 180 kg/m2): stall and approach x0.959, turn x1.087. Roll/pitch,
+  // gLim and hull have no PDF figure and stay as before. The single bomb (ETC 250, Ruestsatz R6
+  // in the PDF only from the F-4) is kept for Sortie 7 only.
+  bf109:{ name:'Bf 109F-2', rollAuth:1.08, pitchAuth:1.03, turn:1.11, gLim:5.2,
+        rollLim:1.47, pitchLim:1.18, stall:34.5, app:105.5*.44704, max:176, thrMin:30,
+        hull:88, ammo:1200, bombs:1, rockets:0, gunDmg:1.35, gunRate:0.085, wing:9.97,
+        // Each gun keeps its own rounds and rate (PDF durations). dmg is per round x gunDmg:
+        // the 15 mm shell counts 2.5 MG 17 rounds, which keeps a full load's total damage
+        // (506) where the old four-port G-6 volley had it - a gameplay figure, not ballistics.
+        // MG 151/15 rounds and rate are not in the PDF for the F-2; the F-4 hub entry is used.
+        guns:[{name:'MG 17',muzzle:'MuzzleLeft',base:[.16,.43,3.37],rounds:500,interval:25.5/500,round:'rifle',dmg:.25},
+              {name:'MG 17',muzzle:'MuzzleRight',base:[-.16,.43,3.37],rounds:500,interval:25.5/500,round:'rifle',dmg:.25},
+              {name:'MG 151',muzzle:'MuzzleCannon',base:[0,0,4.47],rounds:200,interval:15/200,round:'cannon',dmg:.625}],
         col:0x8d9384, band:0x3d4636 },
   ju87:{ name:'Ju 87B-2 Stuka', rollAuth:0.87, pitchAuth:0.92, turn:0.79, gLim:5.0,
         rollLim:1.48, pitchLim:1.26, stall:37, app:150/3.6, max:113, thrMin:27,
@@ -1053,7 +1071,9 @@ const MODEL_URL={
   // Independent source, original game livery and native mechanical surfaces.
   // A missing asset stops launch; retired game-derived P-47s are not fallbacks.
   p47:   ['assets/aircraft/p47-independent.glb'],
-  bf109: ['bf109new.glb','bf_109_f-1_war_thunder.glb',
+  // Own Bf 109 F-2 (scripts/build-own-bf109.cjs): measured on the reference PDF's three-view, rig contract v1.
+  // The old War Thunder/remix files stay behind it only as a network/decode fallback.
+  bf109: ['assets/aircraft/bf109f2-own.glb','bf109new.glb','bf_109_f-1_war_thunder.glb',
           'bf%20109%20f-1%20war%20thunder.glb',
           'bf%20109%20-%20messerschmitt.glb','bf_109_-_messerschmitt.glb',
           'bf109.glb','bf%20109.glb'],
@@ -1097,6 +1117,7 @@ const TRICYCLE_KINDS=['me262'];
 const MODEL_FIX={
   'assets/aircraft/b17-helijah.glb': {yaw:0},
   'assets/aircraft/p47-independent.glb': {yaw:0},
+  'assets/aircraft/bf109f2-own.glb':   {yaw:0,scale:1},   // contract frame: metres, nose +Z, span 9.97 m (PDF)
   'p47.glb':                      {yaw:Math.PI},
   'bf 109 - messerschmitt.glb':   {yaw:-Math.PI/2},
   'bf_109_-_messerschmitt.glb':   {yaw:-Math.PI/2},
@@ -2217,6 +2238,9 @@ function rigP47OriginalProp(root, whole, S){
   return 'original P-47 four-blade propeller ('+count+' GLB triangles)';
 }
 function rigModel(root, kind){
+  // Rig-contract models (app/model-candidates/RIG-CONTRACT.md) name and hinge every moving part
+  // themselves: no propeller search, blade cut, gear-cluster cut or cover patch runs on them.
+  if(typeof AircraftContract!=='undefined'&&AircraftContract.install(root))return 'rig contract v'+AircraftContract.VERSION+' '+AircraftContract.source(root).userData.nativeAircraft+': named rotor, gear, flaps and controls; no search, no mesh cuts';
   if(kind==='b17'&&typeof B17Rig!=='undefined'&&B17Rig.install(root))return 'native helijah B-17: original propellers across 4 engines, gear, flaps, flight controls and turret origins; no runtime mesh cuts';
   if(kind==='p47'&&typeof AircraftArticulation!=='undefined'&&AircraftArticulation.nativeP47?.(root))return 'native weathered P-47: original four-blade rotor, round tyres, original flaps/control surfaces; no mesh cuts';
   root.updateMatrixWorld(true);
@@ -2496,6 +2520,8 @@ function poseP47Gear(model,deployment){
   if(gear.userData.deployment!==g){delete model.userData.groundSupports;gear.userData.deployment=g;}
 }
 function brightenFighterSkin(src,kind){
+  // delivered PBR materials keep their authored colours and roughness; they only get the shared sky reflection
+  if(typeof AircraftContract!=='undefined'&&AircraftContract.isContract(src)){if(kind==='me262'||kind==='bf109'){aircraftFinish.decorate(src,kind,{authored:true});aircraftFinish.setNight(!!M()?.night);}return;}
   if(kind==='me262'||kind==='bf109'){aircraftFinish.decorate(src,kind);aircraftFinish.setNight(!!M()?.night);return;}
   src.traverse(o=>{if(!o.isMesh)return;
     const materials=(Array.isArray(o.material)?o.material:[o.material]).map(m=>{
@@ -3245,15 +3271,62 @@ function segDist(ax,ay,az,bx,by,bz,c){
   return Math.hypot(ax+dx*t-c.x, ay+dy*t-c.y, az+dz*t-c.z);
 }
 function gunMuzzles(){
+  // Contract models supply the real gun positions; the volley size (ammo use, damage) stays the game's.
+  if(typeof AircraftContract!=='undefined'&&playerModel?.userData.nativeContract){
+    const ports=AircraftContract.muzzles(playerModel,planeGroup),guns=acDef().guns;
+    // Aircraft with a per-gun list take each gun's own named muzzle (MG 17 left/right, hub cannon).
+    if(ports.length&&guns)return guns.map((g,i)=>ports.find(p=>p.name===g.muzzle)||ports[i%ports.length]);
+    if(ports.length)return gunMuzzles.base().map((_,i)=>ports[i%ports.length]);
+  }
+  return gunMuzzles.base();
+}
+gunMuzzles.base=function(){
+  const guns=acDef().guns;if(guns)return guns.map(g=>new THREE.Vector3(...g.base));
   if(P.ac==='me262')return [[-.28,.18,5.4],[.28,.18,5.4],[-.28,-.16,5.4],[.28,-.16,5.4]].map(p=>new THREE.Vector3(...p));
   if(P.ac==='me163')return [[-1.30,-.12,1.9],[1.30,-.12,1.9]].map(p=>new THREE.Vector3(...p));
   if(P.ac==='p47'&&typeof playerModel!=='undefined'&&playerModel?.userData.nativeP47)return AircraftArticulation.p47Muzzles(playerModel,planeGroup);
   if(P.ac==='p47')return [-3.1,-2.85,-2.6,-2.35,2.35,2.6,2.85,3.1].map(x=>new THREE.Vector3(x,-.15,1.6));
   return [-2.1,-.3,.3,2.1].map(x=>new THREE.Vector3(x,0,2.6));
 }
+// Per-gun magazines: each gun carries its own rounds and fires at its own rate, so the hub
+// cannon runs dry after ~15 s while the cowl MGs keep going (PDF figures, see AC.bf109).
+function armGuns(d=acDef()){
+  P.gunAmmo=d.guns?d.guns.map(g=>g.rounds):null;P.gunT=d.guns?d.guns.map(()=>0):null;
+  P.ammo=d.guns?d.guns.reduce((n,g)=>n+g.rounds,0):d.ammo;
+}
+function fireGunSet(dt,d){
+  if(!Array.isArray(P.gunAmmo)||P.gunAmmo.length!==d.guns.length){// e.g. a checkpoint from before per-gun magazines: keep its share of rounds
+    const total=d.guns.reduce((n,g)=>n+g.rounds,0),share=Math.min(1,Math.max(0,Number.isFinite(P.ammo)?P.ammo/total:1));
+    P.gunAmmo=d.guns.map(g=>Math.round(g.rounds*share));}
+  if(!Array.isArray(P.gunT)||P.gunT.length!==d.guns.length)P.gunT=d.guns.map(()=>0);
+  const muzzles=gunMuzzles(),q=new THREE.Quaternion().setFromEuler(new THREE.Euler(-P.pitch,P.heading,-P.roll,'YXZ'));
+  const n=noseDir(),fired=[];
+  d.guns.forEach((g,barrel)=>{
+    P.gunT[barrel]-=dt;
+    // Accumulated, not reset: the rate is the same at 20, 60 or 120 FPS. Several rounds in one
+    // frame are spaced along their flight path by their firing interval; the newest sits at the muzzle.
+    const due=[];while(due.length<4&&P.gunT[barrel]<=0&&P.gunAmmo[barrel]>0){due.push(-P.gunT[barrel]);P.gunT[barrel]+=g.interval;P.gunAmmo[barrel]--;}
+    for(let k=0;k<due.length;k++){
+      const early=due[k]-due[due.length-1],shot=g.rounds-P.gunAmmo[barrel]-due.length+k,speed=g.speed||760;
+      const dir=n.clone().add(new THREE.Vector3((Math.random()-.5)*.01,(Math.random()-.5)*.01,(Math.random()-.5)*.01)).normalize();
+      const m=CombatFX.round(g.round,shot);m.userData.roundBarrel=barrel;
+      m.position.copy(muzzles[barrel]).applyQuaternion(q).add(P.pos).addScaledVector(dir,speed*early);
+      m.lookAt(m.position.clone().add(dir));scene.add(m);
+      bullets.push({mesh:m,dir,speed,life:2.4,dmg:d.gunDmg*g.dmg});
+      if(!fired.includes(muzzles[barrel]))fired.push(muzzles[barrel]);
+    }
+    if(P.gunT[barrel]<0)P.gunT[barrel]=0;
+  });
+  P.ammo=P.gunAmmo.reduce((a,b)=>a+b,0);
+  if(!fired.length)return;
+  gunVolley++;planeGroup.position.copy(P.pos);planeGroup.quaternion.copy(q);
+  if(combatFX)combatFX.muzzle(planeGroup,fired,false);
+  sfxGun();updateGunUI();
+}
 function fireGuns(dt){
   if(!P.alive||state!==ST.FLIGHT)return;
-  const d=acDef();gunT-=dt;
+  const d=acDef();if(d.guns)return fireGunSet(dt,d);
+  gunT-=dt;
   if(gunT>0||P.ammo<=0)return;
   gunT=d.gunRate;
   const ports=gunMuzzles().slice(0,P.ammo);P.ammo-=ports.length;
@@ -3272,12 +3345,19 @@ function fireGuns(dt){
   if(combatFX)combatFX.muzzle(planeGroup,ports,JET_KINDS.includes(P.ac));
   sfxGun();updateGunUI();
 }
+function gunCount(){
+  // Mixed armament reads per calibre (MG rounds / cannon rounds); single-type guns show one total.
+  const guns=acDef().guns;
+  if(!guns||!Array.isArray(P.gunAmmo))return String(Math.max(0,P.ammo));
+  const sum=f=>guns.reduce((n,g,i)=>n+(f(g)?Math.max(0,P.gunAmmo[i]||0):0),0);
+  return sum(g=>g.round!=='cannon')+'/'+sum(g=>g.round==='cannon');
+}
 function updateGunUI(){
   const jet=JET_KINDS.includes(P.ac),button=document.getElementById('fireBtn');
-  button.innerHTML=(jet?'CANNONS':'GUNS')+'<br>'+Math.max(0,P.ammo);
+  button.innerHTML=(jet?'CANNONS':'GUNS')+'<br>'+gunCount();
   button.classList.toggle('spent',P.ammo<=0);
-  document.getElementById('hAmmoLbl').textContent=jet?'CANNON':'GUN';
-  document.getElementById('hAmmo').textContent=Math.max(0,P.ammo);
+  document.getElementById('hAmmoLbl').textContent=jet?'CANNON':acDef().guns?'MG/CANNON':'GUN';
+  document.getElementById('hAmmo').textContent=gunCount();
 }
 
 function updateBullets(dt){
@@ -4577,7 +4657,7 @@ function startMission(i){
   const d=acDef();
   STALL_SPD=d.stall; APP_SPD=d.app; MAX_SPD=P.ac==='p47'?P47Performance.maximum(P.pos.y):d.max; THR_MIN_SPD=d.thrMin;
   const loadout=missionLoadout(m,d);
-  P.hull=d.hull; P.ammo=d.ammo; P.bombs=loadout.bombs; P.rockets=loadout.rockets;
+  P.hull=d.hull; armGuns(d); P.bombs=loadout.bombs; P.rockets=loadout.rockets;
   SortieFeatures.Handling.configure(P,P.ac,'bomb','europe');
   SortieFeatures.Damage.reset(P,d.hull);voiceRadio.cancel();soundscape.reset();
   P.diveBrake=false;P.diveBrakeVisual=0;
@@ -4910,7 +4990,7 @@ function updateHUD(){
   document.getElementById('hOrd').textContent=P.bombs;
   document.getElementById('hRkt').textContent=P.rockets;
   document.getElementById('hScore').textContent=score;
-  document.getElementById('hAmmo').textContent=Math.max(0,P.ammo);
+  document.getElementById('hAmmo').textContent=gunCount();
   document.getElementById('hullRow').classList.toggle('warn',P.hull<40);
   document.getElementById('objText').textContent=objectiveText();
   const nav=ensureNavigation(),contacts=europeContacts(),base=contacts.find(c=>c.kind==='BASE');
@@ -5431,7 +5511,7 @@ function showBrief(i){
     +'<br><b>ARMAMENT</b> Guns'+(loadout.bombs?' · '+loadout.bombs+' bombs':'')
     +(loadout.rockets?' · '+loadout.rockets+' rockets':'')
     +((m.ac==='me262'||m.ac==='me163')?'<br><b>INTERCEPTION</b> Climb above the clouds; the flight limit is 8,000 m. Contacts patrol inland, not along the map edge.':'')
-    +(SortieFuel.supports(m.ac)&&!m.free&&!m.circuits?'<br><b>FUEL</b> Internal '+(briefPlan.config.fuel??100)+'% + 60 external. External fuel is used first. Drop Tank / T sheds remaining fuel and drag before combat.':'')
+    +(SortieFuel.supports(m.ac)&&!m.free&&!m.circuits?'<br><b>FUEL</b> Internal '+(briefPlan.config.fuel??100)+'% + '+SortieFuel.external(m.ac)+' external. External fuel is used first. Drop Tank / T sheds remaining fuel and drag before combat.':'')
     +FlightOps.briefText(briefPlan.weather,briefPlan.config,briefPlan.wind);
   document.getElementById('briefLandingSpeed').textContent=landingSpeedNote(m);
   drawEuropeBrief(m);
@@ -5730,7 +5810,7 @@ function updateSortieAtmosphere(dt){
 function beginFieldService(){
   fieldServicePending=false;releaseHeldControls();P.spd=0;P.throttle=0;P.onGround=true;
   const d=acDef(),load=missionLoadout(M(),d);
-  sortieService.begin(P,{ammo:d.ammo,bombs:load.bombs,rockets:load.rockets,maxHull:d.hull});
+  sortieService.begin(P,{ammo:d.guns?d.guns.reduce((n,g)=>n+g.rounds,0):d.ammo,gunAmmo:d.guns?d.guns.map(g=>g.rounds):null,bombs:load.bombs,rockets:load.rockets,maxHull:d.hull});
   radioSay('GROUND CREW — REFUEL, REARM AND REPAIR. MISSION REMAINS ACTIVE');
 }
 function dropFlare(){

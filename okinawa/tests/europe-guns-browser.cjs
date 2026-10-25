@@ -27,7 +27,7 @@ const server=http.createServer((req,res)=>{
   await page.goto('http://127.0.0.1:'+server.address().port+'/remagen-mission.html?campaign=1&v=167');
   await page.waitForFunction(()=>typeof state!=='undefined'&&state===ST.MENU&&typeof realWorldReady!=='undefined'&&realWorldReady&&typeof renderer!=='undefined'&&renderer,null,{polling:100});
   await page.evaluate(()=>{renderer.setPixelRatio(.25);renderer.shadowMap.enabled=false;scene.traverse(o=>{if(o.isInstancedMesh)o.visible=false;});});
-  for(const [ac,count] of [['p47',8],['bf109',4],['fw190',4],['me262',4],['me163',2],['ju87',4]]){
+  for(const [ac,count] of [['p47',8],['bf109',3],['fw190',4],['me262',4],['me163',2],['ju87',4]]){
    const index=await page.evaluate(ac=>MISSIONS.findIndex(m=>m.ac===ac&&!m.free&&!m.circuits),ac);
    await page.locator('#missionSel .chip').nth(index).click();await page.locator('#startBtn').click();await page.locator('#brGo').click();
    await page.waitForFunction(ac=>state===ST.FLIGHT&&P.ac===ac&&!!modelTpl[ac],ac,{polling:100});
