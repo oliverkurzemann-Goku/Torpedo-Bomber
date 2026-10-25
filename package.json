@@ -6,6 +6,7 @@
   "scripts": {
     "test": "npm run test:syntax && npm run test:terrain && npm run test:okinawa",
     "test:syntax": "node scripts/check-syntax.js",
+    "test:corsair": "node scripts/test-corsair-native.cjs",
     "test:terrain": "node scripts/run-terrain-tests.js",
     "test:okinawa": "node scripts/run-okinawa-tests.js",
     "build:app": "node scripts/build-app.mjs",
