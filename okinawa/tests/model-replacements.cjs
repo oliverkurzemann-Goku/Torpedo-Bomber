@@ -44,10 +44,13 @@ const server=http.createServer((req,res)=>{
     const groundGap=Math.max(...fit.contacts.map(p=>Math.abs(fit.y+p.y)));if(groundGap>.0001)throw Error('Wheel ground gap '+groundGap);
     const rates=[];
     for(const fps of [20,60,120]){
-     AircraftArticulation.pose(model,1,{left:0,right:0});const hinge=gear.children.find(h=>h.userData.gearSide),down=hinge.quaternion.clone();let half;
+     // Build 203: without the preview flag the game's Bf 109 is the own rig-contract F-2 (GearLeft/FlapLeft);
+     // its retracted gear lies inside the wing skin (own-bf109-browser) and the game hides the group itself.
+     const contract=!!model.userData.nativeContract;
+     AircraftArticulation.pose(model,1,{left:0,right:0});const hinge=gear.children.find(h=>h.userData.gearSide||h.userData.rig?.drive==='gear'),down=hinge.quaternion.clone();let half;
      for(let i=1;i<=fps*2;i++){const g=1-i/(fps*2);AircraftArticulation.pose(model,g,{left:.7,right:.2});if(i===fps)half=hinge.quaternion.clone();}
-     if(down.angleTo(half)<.1||half.angleTo(hinge.quaternion)<.1||gear.visible)throw Error('Continuous gear motion unavailable '+fps);
-     const a=model.getObjectByName('flapLeft'),b=model.getObjectByName('flapRight');
+     if(down.angleTo(half)<.1||half.angleTo(hinge.quaternion)<.1||(gear.visible&&!contract))throw Error('Continuous gear motion unavailable '+fps);
+     const a=model.getObjectByName(contract?'FlapLeft':'flapLeft'),b=model.getObjectByName(contract?'FlapRight':'flapRight');
      if(!a||!b||!(a.rotation.x<b.rotation.x&&b.rotation.x<0))throw Error('Independent flap pose unavailable');
      rates.push({fps,halfAngle:down.angleTo(half),upAngle:down.angleTo(hinge.quaternion)});
     }
