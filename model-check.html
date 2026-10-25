@@ -107,6 +107,7 @@
   <div class="row"><button id="spin" class="wide">Propeller test: spin</button></div>
 
   <div id="p47Controls" hidden><label><input type="checkbox" id="p47Gear" checked> Landing gear</label><label>Flaps</label><input id="p47Flaps" type="range" min="0" max="1" step=".01" value="0"></div>
+  <div id="me262Controls" hidden><label><input id="me262Gear" type="checkbox" checked> Landing gear</label><label>Flaps</label><input id="me262Flaps" type="range" min="0" max="1" step=".01" value="0"></div>
   <div id="b17Controls" hidden><label><input type="checkbox" id="b17Gear" checked> Landing gear</label><label>Flaps</label><input id="b17Flaps" type="range" min="0" max="1" step=".01" value="0"></div>
   <div id="sbdControls" hidden><label><input type="checkbox" id="sbdGear" checked> Landing gear</label><label>Flaps</label><input id="sbdFlaps" type="range" min="0" max="1" step=".01" value="0"><label>Dive brakes</label><input id="sbdDive" type="range" min="0" max="1" step=".01" value="0"><label><input type="checkbox" id="sbdHook"> Arrestor hook</label></div>
   <div id="status">No model loaded.</div>
@@ -129,7 +130,8 @@
 <script src="vendor/three-r128.min.js"></script>
 <script src="vendor/GLTFLoader-r128.js"></script>
 <script src="b17-native.js?v=200"></script>
-<script src="aircraft-articulation.js?v=204"></script>
+<script src="me262-native.js?v=206"></script>
+<script src="aircraft-articulation.js?v=206"></script>
 <script src="sbd-native.js?v=201"></script>
 <script>
 'use strict';
@@ -239,7 +241,8 @@ function bind(){
   for(const id of ['sbdGear','sbdFlaps','sbdDive','sbdHook'])$(id).addEventListener('input',sbdPose);
   $('sbdPreset').onclick=()=>{$('span').value='12.66';$('url').value='assets/aircraft/sbd-dauntless.glb';loadURL($('url').value);};
   const p47Pose=()=>{if(model?.userData.nativeP47)AircraftArticulation.pose(model,$('p47Gear').checked?1:0,{left:+$('p47Flaps').value,right:+$('p47Flaps').value});};$('p47Gear').onchange=p47Pose;$('p47Flaps').oninput=p47Pose;
-  const preset=new URLSearchParams(location.search).get('aircraft');if(preset==='p47')loadURL('assets/aircraft/p47-independent.glb');if(preset==='sbd')$('sbdPreset').click();else if(preset==='b17')$('b17Preset').click();
+  const jetPose=()=>AircraftArticulation.pose(model,$('me262Gear').checked?1:0,{left:+$('me262Flaps').value,right:+$('me262Flaps').value});$('me262Gear').onchange=jetPose;$('me262Flaps').oninput=jetPose;
+  const preset=new URLSearchParams(location.search).get('aircraft');if(preset==='me262'){$('span').value='12.51';loadURL('assets/aircraft/me262-noel.glb');}if(preset==='p47')loadURL('assets/aircraft/p47-independent.glb');if(preset==='sbd')$('sbdPreset').click();else if(preset==='b17')$('b17Preset').click();
   $('save').onclick=()=>{
     if(!srcName){ say('Load a model first.','bad'); return; }
     try{
@@ -291,9 +294,11 @@ function place(gl){
   const nativeP47=AircraftArticulation.nativeP47(model);document.getElementById('p47Controls').hidden=!nativeP47;if(nativeP47){AircraftArticulation.install(model,'p47');spinning=true;}
   document.getElementById('b17Controls').hidden=!B17Rig.isNative(model);
   document.getElementById('sbdControls').hidden=!SBDRig.isNative(model);
-  if(SBDRig.isNative(model)){SBDRig.install(model);document.getElementById('span').value='12.66';spinning=true;}
+  const nativeMe262=Me262Rig.isNative(model);document.getElementById('me262Controls').hidden=!nativeMe262;
+  if(nativeMe262){AircraftArticulation.install(model,'me262');document.getElementById('span').value='12.51';}
+  else if(SBDRig.isNative(model)){SBDRig.install(model);document.getElementById('span').value='12.66';spinning=true;}
   else if(B17Rig.isNative(model)){B17Rig.install(model);document.getElementById('span').value='31.62';spinning=true;}
-  else if(!nativeP47)autoGuess();
+  else if(!nativeP47&&!nativeMe262)autoGuess();
   scaleToSpan(parseFloat(document.getElementById('span').value)||12.42);
 }
 // A first guess so most models start close: the aircraft's plane of symmetry contains the
@@ -377,7 +382,9 @@ function findProp(){
   propGroup=null;
   if(!model) return;
   if(model?.userData.nativeP47){propGroup={native:true,rotors:[model.getObjectByName('prop')]};return;}
-  if(SBDRig.isNative(model)){propGroup={native:true,rotors:[model.getObjectByName('sbdRotorBlade')]};return;}
+  const nativeMe262=Me262Rig.isNative(model);document.getElementById('me262Controls').hidden=!nativeMe262;
+  if(nativeMe262){AircraftArticulation.install(model,'me262');document.getElementById('span').value='12.51';}
+  else if(SBDRig.isNative(model)){propGroup={native:true,rotors:[model.getObjectByName('sbdRotorBlade')]};return;}
   if(B17Rig.isNative(model)){propGroup={native:true,rotors:model.getObjectByName('prop').children};return;}
   model.updateMatrixWorld(true);
   const whole=new THREE.Box3().setFromObject(model);

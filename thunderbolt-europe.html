@@ -341,8 +341,9 @@
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
 <script src="campaign.js?v=1"></script>
 <script src="b17-native.js?v=200"></script>
-<script src="aircraft-articulation.js?v=204"></script>
-<script src="p47-performance.js?v=204"></script>
+<script src="me262-native.js?v=206"></script>
+<script src="aircraft-articulation.js?v=206"></script>
+<script src="p47-performance.js?v=206"></script>
 <script>
 // ============================================================
 //  THUNDERBOLT SQUADRON — GROUND ATTACK (Europe, 1944)
@@ -1568,8 +1569,7 @@ const MODEL_URL={
           'fw%20190%20f-8%202%20custom%20payload%20war%20thunder.glb'],
   b17:   ['assets/aircraft/b17-helijah.glb'],
   b24:   ['b24.glb','b-24_liberator.glb','b-24.glb'],
-  me262: ['me262.glb','me_262_a1ajabo_war_thunder.glb',
-          'me%20262%20a1ajabo%20war%20thunder.glb']
+  me262: ['assets/aircraft/me262-noel.glb']
 };
 const REAL_SPAN={ p47:12.42, bf109:9.92, fw190:10.51, b17:31.62, b24:33.53, me262:12.51 };   // metres, tip to tip
 // Jet/rocket types: no propeller exists, so rigModel() must not go looking for one (see its
@@ -1634,6 +1634,7 @@ const MODEL_FIX={
   // directly against the real model instead of guessed: 99.6% symmetric on X (span), nose +Z via
   // the tail assembly, matching every other aircraft's convention already. Recorded here as
   // known-good rather than left to re-run the detector (and its "unsure" warning path) every load.
+  'assets/aircraft/me262-noel.glb': {yaw:0},
   'me262.glb':                            {yaw:0},
   'me_262_a1ajabo_war_thunder.glb':       {yaw:0},
   'me 262 a1ajabo war thunder.glb':       {yaw:0}
@@ -2613,6 +2614,7 @@ function coverGearCut(root, clusters, floor, rfUsed, maxR){
   });
 }
 function rigModel(root, kind){
+  if(kind==='me262'&&typeof Me262Rig!=='undefined'&&Me262Rig.install(root)){AircraftArticulation.install(root,kind);return 'native Me 262 Noel: original gear and surfaces';}
   if(kind==='p47'&&AircraftArticulation.nativeP47(root)){AircraftArticulation.install(root,kind);return 'native weathered P-47: independent source';}
   if(kind==='b17'&&typeof B17Rig!=='undefined'&&B17Rig.install(root))return 'native helijah B-17: original propellers across 4 engines, gear, flaps, flight controls and turret origins; no runtime mesh cuts';
   root.updateMatrixWorld(true);
@@ -2815,7 +2817,7 @@ function tryLoad(L,k,i){
     return;
   }
   const url=list[i];
-  L.load(url+(k==='p47'?'?v=204':'?v=3'), gl=>{
+  L.load(url+((k==='p47'||k==='me262')?'?v=206':'?v=3'), gl=>{
     const src=gl.scene||gl.scenes[0]; if(!src){ tryLoad(L,k,i+1); return; }
     const fix=savedFix(url) || knownFix(url);
     let note;
@@ -5285,6 +5287,7 @@ function animate(){
     if(playerModel){
       const gr=playerModel.getObjectByName('gear');
       if(gr) gr.visible=P.gear>0.05;
+      if(playerModel.userData.nativeMe262){AircraftArticulation.pose(playerModel,P.gear,{left:P.flap,right:P.flap});AircraftArticulation.controls(playerModel,inputRoll,inputPitch);}
       const pr=playerModel.getObjectByName('prop');
       if(pr) pr.rotation.z-=Math.min(0.30,0.10+P.throttle*0.28);
     }

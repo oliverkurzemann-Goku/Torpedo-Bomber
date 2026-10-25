@@ -297,3 +297,8 @@ yellow propeller tips added; panel-line normal map derived from the original art
 offered under the same CC BY 4.0 terms.
 
 Geographic source notices: [okinawa/README.md](okinawa/README.md) and [TERRAIN.md](TERRAIN.md). Offline packaging does not remove database/attribution obligations or resolve exact upstream contributor tracing.
+
+
+## Me 262 Noel (Build 206)
+
+Runtime: `assets/aircraft/me262-noel.glb`. Independent CC0 base by mgg8 / Aviation Gazetteer; original Noel livery and detailing by Oliver Kurzemann. Native mechanical groups and five animation clips retained. The two Noel names use black Z003 Medium Italic outlines, 0.62 m wide (38% smaller than the original 1 m name). Z003 is from URW Base35, licensed AGPL-3 with the font embedding exception; no font file is needed at runtime. Original supplied model archived under `assets/aircraft/source/me262-noel/original.glb`. Retired root `me262.glb` remains for historical tests only and is excluded from the app payload.

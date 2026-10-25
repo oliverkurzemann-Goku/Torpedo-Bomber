@@ -1,5 +1,8 @@
 # Torpedo-Bomber — Übergabe an Claude Code
 
+**25.10.2026, Build 206: native Me 262 Noel.**
+Neues unabhängiges Modell in beiden EU-Loadern, ohne alten Me262-Fallback. Noel-Namen schwarz, Z003 Medium Italic, 0,62 statt 1 m breit. Originale Haut, PBR und fünf Clips erhalten. Me262Rig übernimmt drei originale Fahrwerksgruppen, Klappen und Steuerflächen, ohne Legacy-Schnitte oder generische Zusatzteile. Auslässe aus dem Quellkoordinatensystem. Modellvorschau mit Gear/Flap-Bedienung. Root-me262.glb nur historische Tests, nicht im App-Payload. Runtime-GLB nach Workspace-Reset byteidentisch aus dem bereits hochgeladenen Git-Blob wiederhergestellt; Einbindung erneut hergestellt und geprüft. Leistungsabstimmung als Spielmodell relativ zur unterstützten P-47: Jet-Spool 2,6 s, 242 m/s saubere Endgeschwindigkeit; Kurven, Steigen, Konfiguration und Schaden kosten Energie. Wiederhergestellte Integration erneut geprüft: r128-GLB, 131.522 Dreiecke, schwarze Namen 0,62 m, fünf Clips, drei Reifenkontakte und unabhängige Klone. Echte WebGL-Mission: Start nach 14,13 s / 378 m, Flug lebend, Fahrwerk/Klappen/Auslässe korrekt, keine JS-Fehler. Syntax 7/7; App-Payload 320 Dateien/36 Modelle. Bf-109-Änderungen aus main Build 205 erhalten. Kein physischer iPad-Test.
+
 **25.10.2026, Build 205: eigene Bf 109 F-2 (Mölders, Stab/JG 51, Juni 1941) im Rheinspiel.**
 Nutzer: „du hast wieder nur geraten … anbei ein PDF, das du als Referenz verwenden sollst … Lackierung mit gelber Nase“,
 dann: Flugleistung, Tankinhalt und Bewaffnung vom Original übernehmen; Fahrwerk verschwindet beim Einfahren nur halb;

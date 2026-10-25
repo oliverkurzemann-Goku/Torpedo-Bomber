@@ -1,25 +1,25 @@
 {
   "schema": 1,
   "reviewedOn": "2026-10-23",
-  "build": 205,
+  "build": 206,
   "status": "OPEN — source declarations checked; no external rights authorization obtained",
   "payload": {
-    "bytes": 283060244,
-    "fileCount": 317,
+    "bytes": 288243656,
+    "fileCount": 320,
     "modelCount": 36,
-    "manifestSha256": "ab53b857b031b80477f65f546db4cc9a6c9c9aeb3aabd41cef3e1c75e329e071"
+    "manifestSha256": "10ad34a3555d140947458e411ec137f3e4b86019a1744f8e004d7ff536f1ec0f"
   },
   "files": [
     {
       "path": "ASSET-CREDITS.md",
-      "bytes": 24000,
-      "sha256": "85637a8f435430db7d992dc6436ce36bb1c636727e903b8cf01117b6afadea87",
+      "bytes": 24649,
+      "sha256": "510ebe241eb798aede56c630b7d9ef65592be9eabaa22dd4a190327e46abf9ca",
       "kind": "code-or-notice"
     },
     {
       "path": "aircraft-articulation.js",
-      "bytes": 16804,
-      "sha256": "fd6634c5acd863258029cb8c69bd9ff6ac7d99bbc7ebb51d9e27961bd8b9ad02",
+      "bytes": 17135,
+      "sha256": "9b63aaff48de9ab29115a9bb4f5a8a5ef63e34cb04cd7341986ecb646ff8a12f",
       "kind": "code-or-notice"
     },
     {
@@ -56,6 +56,12 @@
       "path": "assets/aircraft/B17-CREDITS.txt",
       "bytes": 1103,
       "sha256": "6d6acec9c48b256abfc77783d712ae657186cc2a1b154b7f5d05a9a675e5dd56",
+      "kind": "code-or-notice"
+    },
+    {
+      "path": "assets/aircraft/ME262-SOURCE.json",
+      "bytes": 501,
+      "sha256": "da95640276410605cd6f6e617c3b56b6d12994c5456894e05b0c96f427d72e0b",
       "kind": "code-or-notice"
     },
     {
@@ -98,6 +104,12 @@
       "path": "assets/aircraft/bf109f2-own.glb",
       "bytes": 4348948,
       "sha256": "efb76f22bf5057a1f24feab3f450787f1bc5decad8a76f79cbbac16698981f1f",
+      "kind": "model"
+    },
+    {
+      "path": "assets/aircraft/me262-noel.glb",
+      "bytes": 9681836,
+      "sha256": "6bfd4650965bd16e465037d3bdee08f2fe68eaf3e5ee99b273c435a00c256895",
       "kind": "model"
     },
     {
@@ -523,7 +535,7 @@
     {
       "path": "index.html",
       "bytes": 7260,
-      "sha256": "a5546db44b3e541a689523a34fbdcb4366357e951b4735c5d04260128aecb781",
+      "sha256": "ea66183fc20fd2b3bfe10f1e65ddf5eb61635e0bb6a1a266e76f51e97964372c",
       "kind": "code-or-notice"
     },
     {
@@ -557,10 +569,16 @@
       "kind": "model"
     },
     {
-      "path": "me262.glb",
-      "bytes": 4503732,
-      "sha256": "bddfaf0fcc3971045566cb3e0616ca3c6dec3d213aa2869f5a1576dc9d6206d5",
-      "kind": "model"
+      "path": "me262-native.js",
+      "bytes": 2666,
+      "sha256": "a5287484547216722b8cd41c0b776c2fd45a348e2fb50a475fd0a9a40a888b94",
+      "kind": "code-or-notice"
+    },
+    {
+      "path": "me262-performance.js",
+      "bytes": 948,
+      "sha256": "817036320df2f46017ab65a07b3b9735d87637760ba44970532ab97d575ee0c5",
+      "kind": "code-or-notice"
     },
     {
       "path": "menu-layout.css",
@@ -642,8 +660,8 @@
     },
     {
       "path": "remagen-mission.html",
-      "bytes": 367204,
-      "sha256": "3022bf0ac806f5725cdd9a51e0839062dc5f1e4b51b7a2ef8af31abd47c6594d",
+      "bytes": 367761,
+      "sha256": "66fa25209b248ac80e1a63d93a970a05f65ed39d4aec98613bb6cc3d9aad7d90",
       "kind": "code-or-notice"
     },
     {
@@ -1837,7 +1855,7 @@
     {
       "path": "torpedo-carrier.html",
       "bytes": 429082,
-      "sha256": "a89716a9bc54fc00633be58c9590fd7c0dc6a5412ae588475d1f505490bc613f",
+      "sha256": "252d2936874c8b9604b3c890b37494aa067efa6a04dd828f985f694c7a977135",
       "kind": "code-or-notice"
     },
     {
@@ -1908,8 +1926,8 @@
     },
     {
       "path": "app-native.js",
-      "bytes": 27375,
-      "sha256": "27e5199ea188ecaa03bd9c8e16ab7caae1f7a21c3163ae3e7fddce0544b9e9c8",
+      "bytes": 27031,
+      "sha256": "a52b43eb6c9accbde530c1e3832548614838e605c05ed4869a6b9b9734ddaa24",
       "kind": "code-or-notice"
     }
   ],
@@ -1967,6 +1985,30 @@
       "bundleRedistributionGrant": null,
       "releaseApproved": false,
       "nextAction": "Own mesh and paint; decide whether measuring the CC BY-SA reference drawings makes it an adaptation (attribution/share-alike); credits kept in ASSET-CREDITS.md."
+    },
+    {
+      "path": "assets/aircraft/me262-noel.glb",
+      "bytes": 9681836,
+      "sha256": "6bfd4650965bd16e465037d3bdee08f2fe68eaf3e5ee99b273c435a00c256895",
+      "title": "Me 262 Noel, independent CC0 base and original livery",
+      "uploader": "mgg8 / Aviation Gazetteer; Oliver Kurzemann adaptation",
+      "originalRightsholder": null,
+      "sourceUrl": null,
+      "acquiredOn": null,
+      "declaredLicense": "Base CC0-1.0 (https://creativecommons.org/publicdomain/zero/1.0/); original livery and detailing Oliver Kurzemann",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "licenseEvidence": "Supplied Me262-Noel model package; original archived, nativeAircraft metadata and ME262-SOURCE.json",
+      "sourceCheck": null,
+      "embeddedImageCount": 14,
+      "externalImages": [],
+      "originalFile": null,
+      "originalSha256": null,
+      "changes": "Two Noel names replaced by 0.62 metre black Z003 Medium Italic outlines; original geometry, PBR and native surfaces retained.",
+      "issue": "source-or-license-missing",
+      "commercialPermissionDocument": null,
+      "bundleRedistributionGrant": null,
+      "releaseApproved": false,
+      "nextAction": "Identify the exact author/source/version and license before distribution."
     },
     {
       "path": "assets/aircraft/p47-independent.glb",
@@ -2786,36 +2828,6 @@
         "descriptionSignals": []
       },
       "embeddedImageCount": 9,
-      "externalImages": [],
-      "originalFile": null,
-      "originalSha256": null,
-      "changes": "Original runtime binary preserved; runtime scaling, materials, rigging and placement are described in ASSET-CREDITS.md / CLAUDE.md.",
-      "issue": "original-game-rights-open",
-      "commercialPermissionDocument": null,
-      "bundleRedistributionGrant": null,
-      "releaseApproved": false,
-      "nextAction": "Establish original mesh/texture ownership; obtain an app redistribution grant or independently authored replacement."
-    },
-    {
-      "path": "me262.glb",
-      "bytes": 4503732,
-      "sha256": "bddfaf0fcc3971045566cb3e0616ca3c6dec3d213aa2869f5a1576dc9d6206d5",
-      "title": "Me 262 A-1a/Jabo (War Thunder)",
-      "uploader": "KojfDiscord (https://sketchfab.com/KojfDiscord)",
-      "originalRightsholder": null,
-      "sourceUrl": "https://sketchfab.com/3d-models/me-262-a-1ajabo-war-thunder-a6e4bd7a047f49b292e59ad285850310",
-      "acquiredOn": null,
-      "declaredLicense": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
-      "licenseUrl": "http://creativecommons.org/licenses/by/4.0/",
-      "licenseEvidence": "Exact runtime GLB asset.extras",
-      "sourceCheck": {
-        "status": "verified-public-api",
-        "checkedOn": "2026-10-14",
-        "apiUrl": "https://api.sketchfab.com/v3/models/a6e4bd7a047f49b292e59ad285850310",
-        "licenseMatch": true,
-        "descriptionSignals": []
-      },
-      "embeddedImageCount": 7,
       "externalImages": [],
       "originalFile": null,
       "originalSha256": null,

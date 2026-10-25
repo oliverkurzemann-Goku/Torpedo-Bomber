@@ -1,0 +1,16 @@
+{
+  "name": "Me 262 Noel",
+  "runtime": "assets/aircraft/me262-noel.glb",
+  "baseAuthor": "mgg8 / Aviation Gazetteer",
+  "baseLicense": "CC0-1.0",
+  "newWorkCopyright": "Oliver Kurzemann",
+  "lettering": {
+    "text": "Noel",
+    "font": "Z003 Medium Italic",
+    "ink": "black",
+    "widthMetres": 0.62
+  },
+  "nativeAircraft": "me262-noel-v1",
+  "original": "assets/aircraft/source/me262-noel/original.glb",
+  "limitations": "External game model, not an engineering model; no physical iPad test."
+}

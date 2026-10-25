@@ -11,7 +11,7 @@
     },
     "assets/remagen/drb0110/drb0110.glb": {
       "title": "DRB 01.10 Steam Locomotive (low poly)",
-      "author": "G\u00f6tz von Berlichingen (https://sketchfab.com/vonBerlichingen)",
+      "author": "Götz von Berlichingen (https://sketchfab.com/vonBerlichingen)",
       "license": "CC-BY-4.0 (https://creativecommons.org/licenses/by/4.0/)",
       "source": "https://sketchfab.com/3d-models/drb-0110-steam-locomotive-low-poly-b4e4252632f44492b6c018627a6b4a60",
       "evidence": "ASSET-CREDITS.md; acquisition date not recorded",
@@ -46,7 +46,7 @@
       "changes": "Texture-aware mesh simplification, locked boundaries and 512px textures; see original derivative asset.extras."
     },
     "assets/aircraft/p47-independent.glb": {
-      "title": "P-47D bubbletop \u2014 independent source, game livery and service wear v2",
+      "title": "P-47D bubbletop — independent source, game livery and service wear v2",
       "author": "mgg8 / Aviation Gazetteer; original adaptation Oliver Kurzemann",
       "source": "https://sketchfab.com/3d-models/republic-p-47d-thunderbolt-raf-scheme-e831a70ab29c42d3a1dbd352d8bd4684",
       "license": "Base model CC0-1.0 (https://creativecommons.org/publicdomain/zero/1.0/). New project work: Oliver Kurzemann, all reserved rights.",
@@ -55,6 +55,13 @@
       "evidence": "Creator-hosted CC0 original; SOURCE.json, exact original hash and editable source retained.",
       "originalFile": "assets/aircraft/source/p47-independent/original-cc0.glb",
       "originalSha256": "b46c80f2cd1839723843fa2bb99647a0257b54ab55772c6a208a9c83e1379bf4"
+    },
+    "assets/aircraft/me262-noel.glb": {
+      "title": "Me 262 Noel, independent CC0 base and original livery",
+      "author": "mgg8 / Aviation Gazetteer; Oliver Kurzemann adaptation",
+      "license": "Base CC0-1.0 (https://creativecommons.org/publicdomain/zero/1.0/); original livery and detailing Oliver Kurzemann",
+      "evidence": "Supplied Me262-Noel model package; original archived, nativeAircraft metadata and ME262-SOURCE.json",
+      "changes": "Two Noel names replaced by 0.62 metre black Z003 Medium Italic outlines; original geometry, PBR and native surfaces retained."
     }
   }
 }
