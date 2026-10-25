@@ -916,10 +916,10 @@ const MISSIONS = [
       {model:'landing',pos:[-1150,0,1850],heading:0},
       {model:'fletcher',pos:[-200,0,2450],heading:0,speed:2.4}] },
   { title:"Sortie 15", sub:"Corsair · Fleet Strike", sbd:true,corsair:true,loadout:'divebomb',weather:'clear',
-    body:"<b>F4U-1C Corsair — fighter-bomber.</b> Four wing cannon, two bombs and fighter handling. Attack the supply ship, suppress its Samidare escort, then recover aboard. Two Zeros patrol the convoy. Your Corsair wingmen join after takeoff.",
+    body:"<b>F4U-1C Corsair — fighter-bomber.</b> Four 20mm wing cannon and configurable bombs/HVAR rockets. Choose the weapons before launch, attack the supply ship and its Samidare escort, then recover aboard. Two Zeros patrol the convoy. Your Corsair wingmen join after takeoff.",
     torps:2,fuel:100,zeros:2,targets:[{type:'freighter',pos:[-200,0,3800],hp:1},{type:'destroyer',pos:[350,0,3300],hp:1,flak:true}] },
   { title:"Sortie 16", sub:"Corsair · Coastal Assault", sbd:true,corsair:true,okinawa:true,shoreStrike:true,loadout:'divebomb',weather:'broken',
-    body:"<b>F4U-1C Corsair — sea to shore.</b> Strike the airfield installations with cannon and bombs, sink the offshore supply ship, and defeat the intercepting Zero patrol. Four bombs; return to the carrier after all primary targets are destroyed.",
+    body:"<b>F4U-1C Corsair — sea to shore.</b> Strike the airfield with cannon, bombs and/or HVAR rockets, sink the offshore supply ship, and defeat the intercepting Zero patrol. Choose your loadout before launch; return to the carrier after all primary targets are destroyed.",
     torps:4,fuel:100,zeros:1,targets:[{type:'freighter',pos:[3450,0,160],hp:1},{type:'destroyer',pos:[2900,0,-50],hp:1,flak:true}] },
   ...PacificTheater.missions,
   { title:"Okinawa", sub:"Okinawa Coast · Free Flight", free:true, okinawa:true,
@@ -3669,7 +3669,8 @@ function updateFlight(dt){
 
   // speed toward throttle target (engine loses power when damaged), minus drag
   const engineMul = (P.hull<60? (0.45+0.55*P.hull/60) : 1.0)*SortieFeatures.Damage.power(P);
-  const tgt = (THR_MIN_SPD + ((MISSIONS[mission]?.corsair?145:MAX_SPD)-THR_MIN_SPD)*P.throttle)*engineMul;
+  const corsairStorePenalty=isCorsair()?({mixed:8,bombs:5,rockets:4,guns:0}[corsairLoadout]||0):0;
+  const tgt = (THR_MIN_SPD + ((MISSIONS[mission]?.corsair?165:MAX_SPD)-THR_MIN_SPD)*P.throttle)*engineMul-corsairStorePenalty;
   let eff = tgt - Math.sin(P.pitch)*38*load.ratio - controls.flaps.mean*9 - P.gear*4 - (P.diveBrake?34:0)-controls.drag;
   let acceleration=(eff-P.spd)*.6*load.acceleration;
   if(acceleration>0&&departure.release<1)acceleration=Math.min(acceleration,departure.acceleration*load.acceleration*(1+2*departure.release));
