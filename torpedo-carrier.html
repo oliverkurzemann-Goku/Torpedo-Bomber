@@ -2715,6 +2715,8 @@ function launchCorsairRocket(){
  const rack=airframe?.getObjectByName('Corsair stores');
  const carried=rack?.children.filter(n=>n.name==='HVAR')||[];
  // Fire a paired, alternating-wing sequence; the corresponding underwing store disappears.
+ // AN 01-45HA-1 SINGLE release: one press fires one symmetric pair.
+ for(let pair=0;pair<2&&P.rockets>0;pair++){
  const station=carried[[0,4,1,5,2,6,3,7][8-P.rockets]];
  const from=station?.getWorldPosition(new THREE.Vector3())||P.pos.clone().add(new THREE.Vector3(0,-1,0));
  const vel=noseDir().multiplyScalar(P.spd+190);
@@ -2732,7 +2734,8 @@ function launchCorsairRocket(){
  scene.add(round);round.traverse(o=>{if(o.isMesh)GameRuntime.own(o);});GameRuntime.own(round);
  P.rockets--;if(playerSBD)CorsairNative.consume(playerSBD,'rocket',P.rockets);
  corsairRockets.push({mesh:round,vel,life:7,smoke:0});
- updateHUD();sfxWhoosh();flash('HVAR AWAY',420);
+ }
+ updateHUD();sfxWhoosh();flash('HVAR PAIR AWAY',420);
 }
 function updateCorsairRockets(dt){
  for(let i=corsairRockets.length-1;i>=0;i--){
