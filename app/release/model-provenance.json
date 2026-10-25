@@ -11,7 +11,7 @@
     },
     "assets/remagen/drb0110/drb0110.glb": {
       "title": "DRB 01.10 Steam Locomotive (low poly)",
-      "author": "Götz von Berlichingen (https://sketchfab.com/vonBerlichingen)",
+      "author": "G\u00f6tz von Berlichingen (https://sketchfab.com/vonBerlichingen)",
       "license": "CC-BY-4.0 (https://creativecommons.org/licenses/by/4.0/)",
       "source": "https://sketchfab.com/3d-models/drb-0110-steam-locomotive-low-poly-b4e4252632f44492b6c018627a6b4a60",
       "evidence": "ASSET-CREDITS.md; acquisition date not recorded",
@@ -46,7 +46,7 @@
       "changes": "Texture-aware mesh simplification, locked boundaries and 512px textures; see original derivative asset.extras."
     },
     "assets/aircraft/p47-independent.glb": {
-      "title": "P-47D bubbletop — independent source, game livery and service wear v2",
+      "title": "P-47D bubbletop \u2014 independent source, game livery and service wear v2",
       "author": "mgg8 / Aviation Gazetteer; original adaptation Oliver Kurzemann",
       "source": "https://sketchfab.com/3d-models/republic-p-47d-thunderbolt-raf-scheme-e831a70ab29c42d3a1dbd352d8bd4684",
       "license": "Base model CC0-1.0 (https://creativecommons.org/publicdomain/zero/1.0/). New project work: Oliver Kurzemann, all reserved rights.",
@@ -62,6 +62,14 @@
       "license": "Base CC0-1.0 (https://creativecommons.org/publicdomain/zero/1.0/); original livery and detailing Oliver Kurzemann",
       "evidence": "Supplied Me262-Noel model package; original archived, nativeAircraft metadata and ME262-SOURCE.json",
       "changes": "Two Noel names replaced by 0.62 metre black Z003 Medium Italic outlines; original geometry, PBR and native surfaces retained."
+    },
+    "assets/aircraft/ju87b2-own.glb": {
+      "title": "Ju 87 B-2 \u2014 original game airframe",
+      "author": "Oliver Kurzemann / Torpedo-Bomber",
+      "license": "project-own; supplied historical manual used as dimensional reference",
+      "source": "scripts/own-aircraft/ju87b2/shape.json",
+      "evidence": "Original code-authored geometry, UVs and textures; source manual SHA-256 and trace coordinates recorded in shape.json.",
+      "changes": "Independent visual reconstruction of the exterior; separate VS5 rotor, six flaps, ailerons, elevators, rudder and dive brakes; fixed gear. No geometry or texture from the uploaded War Thunder model."
     }
   }
 }

@@ -33,6 +33,7 @@
  }
  function controls(frame,roll,pitch){
   if(frame?.userData.nativeContract&&global.AircraftContract){global.AircraftContract.controls(frame,roll,pitch);return;}
+  if(frame?.userData.nativeJu87&&global.Ju87Rig){global.Ju87Rig.controls(frame,roll,pitch);return;}
   if(frame?.userData.nativeMe262&&global.Me262Rig){global.Me262Rig.controls(frame,roll,pitch);return;}
   if(frame?.userData.nativeSBD&&global.SBDRig){global.SBDRig.controls(frame,roll,pitch);return;}
   if(frame?.userData.nativeB17&&global.B17Rig){global.B17Rig.controls(frame,roll,pitch);return;}
@@ -173,6 +174,7 @@
   // Rig-contract models hinge their own parts: no skin probes, generated wheels or flap skins.
   if(global.AircraftContract?.install(frame)){frame.userData.articulation={kind,gearName:'gear',nativeContract:true};return frame;}
   if(!profiles[kind])return;
+  if(kind==='ju87'&&global.Ju87Rig?.install(frame)){frame.userData.articulation={kind,nativeJu87:true};pose(frame,1);return frame;}
   if(kind==='me262'&&global.Me262Rig?.install(frame)){frame.userData.articulation={kind,gearName:'gear',nativeMe262:true};pose(frame,1);return frame;}
   if(kind==='sbd'&&global.SBDRig?.install(frame)){frame.userData.articulation={kind,gearName:'sbdGear',nativeSBD:true};pose(frame,1,{left:0,right:0});return frame;}
   if(kind==='b17'&&global.B17Rig?.install(frame)){frame.userData.articulation={kind,gearName:'gear',nativeB17:true};pose(frame,1,{left:0,right:0});return frame;}
@@ -186,6 +188,7 @@
  function pose(frame,deployment,flaps={left:0,right:0}){
   const info=frame?.userData.articulation;if(!info)return;
   if(info.nativeContract){global.AircraftContract.pose(frame,deployment,flaps);return;}
+  if(info.nativeJu87){global.Ju87Rig.pose(frame,deployment,flaps);return;}
   if(info.nativeMe262){global.Me262Rig.pose(frame,deployment,flaps);return;}
   if(info.nativeSBD){global.SBDRig.pose(frame,deployment,flaps);return;}
   if(info.nativeB17){global.B17Rig.pose(frame,deployment,flaps);return;}

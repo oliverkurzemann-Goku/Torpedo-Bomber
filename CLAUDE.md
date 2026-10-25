@@ -1,5 +1,23 @@
 # Torpedo-Bomber — Übergabe an Claude Code
 
+**25.10.2026, Build 207: eigene Ju 87 B-2 im Rheinspiel.**
+Nutzer: „Dann baue jetzt bitte die Ju87“, danach „Weiter“; Referenz `ju-87b2.pdf`.
+`assets/aircraft/ju87b2-own.glb`: eigenständig erzeugte Geometrie/UVs/Lackierung,
+49.654 Dreiecke, 39 Meshes, 3.296.820 Bytes, sechs Clips. Keine WT-Meshes oder -Texturen.
+Umrisse aus der Übersichtszeichnung S. 14; Maße und Referenz-Hash in
+`scripts/own-aircraft/ju87b2/shape.json`, reproduzierbar über `node scripts/build-own-ju87.cjs --release`.
+Knickflügel, 3,4-m-Dreiblattpropeller, Kinnkühler, Tandemhaube, festes verkleidetes Fahrwerk,
+sechs separate Junkers-Klappen, Querruder, Höhen-/Seitenruder und Sturzflugbremsen.
+Querschnitte, Flügelhöhe und Details angenähert; S2+AN-Lackierung fiktiv, keine Genauigkeitszertifizierung.
+`Ju87Rig` übernimmt benannte Originalteile; kein Legacy-Schneiden, keine Zusatzklappen/-bremsen.
+Remagen-Loader nur neue Datei; alter Ju87-GLB nur historisches Testfixture, nicht App-Payload.
+Flugmodell unverändert. Neue Vorschau `ju87-preview.html`, eigenes Modul vor Artikulation geladen.
+Nachweis: Khronos 0 Fehler/0 Warnungen, echte r128-Clips/Geometrie/Klone/Steuerflächen;
+drei Reifenkontakte auf ebener und geneigter Fläche. WebGL-Stuka-Mission: Start nach
+15,12 s / 362,28 m, anschließender Flug lebend, Propeller dreht, sechs Klappen und beide
+Sturzflugbremsen bewegen sich, Fahrwerk bleibt fest. Keine JS-Fehler und kein Legacy-Request.
+Syntax 8/8, App-Payload 321 Dateien/36 Modelle. Kein physischer iPad-Test.
+
 **25.10.2026, Build 206: native Me 262 Noel.**
 Neues unabhängiges Modell in beiden EU-Loadern, ohne alten Me262-Fallback. Noel-Namen schwarz, Z003 Medium Italic, 0,62 statt 1 m breit. Originale Haut, PBR und fünf Clips erhalten. Me262Rig übernimmt drei originale Fahrwerksgruppen, Klappen und Steuerflächen, ohne Legacy-Schnitte oder generische Zusatzteile. Auslässe aus dem Quellkoordinatensystem. Modellvorschau mit Gear/Flap-Bedienung. Root-me262.glb nur historische Tests, nicht im App-Payload. Runtime-GLB nach Workspace-Reset byteidentisch aus dem bereits hochgeladenen Git-Blob wiederhergestellt; Einbindung erneut hergestellt und geprüft. Leistungsabstimmung als Spielmodell relativ zur unterstützten P-47: Jet-Spool 2,6 s, 242 m/s saubere Endgeschwindigkeit; Kurven, Steigen, Konfiguration und Schaden kosten Energie. Wiederhergestellte Integration erneut geprüft: r128-GLB, 131.522 Dreiecke, schwarze Namen 0,62 m, fünf Clips, drei Reifenkontakte und unabhängige Klone. Echte WebGL-Mission: Start nach 14,13 s / 378 m, Flug lebend, Fahrwerk/Klappen/Auslässe korrekt, keine JS-Fehler. Syntax 7/7; App-Payload 320 Dateien/36 Modelle. Bf-109-Änderungen aus main Build 205 erhalten. Kein physischer iPad-Test.
 

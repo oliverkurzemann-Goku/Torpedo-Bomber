@@ -1,25 +1,25 @@
 {
   "schema": 1,
   "reviewedOn": "2026-10-23",
-  "build": 206,
+  "build": 207,
   "status": "OPEN — source declarations checked; no external rights authorization obtained",
   "payload": {
-    "bytes": 288243656,
-    "fileCount": 320,
+    "bytes": 274162690,
+    "fileCount": 321,
     "modelCount": 36,
-    "manifestSha256": "d0f3ac82005b73bf80a1433771d445aaa9d863c952347b1c878cf020307b76e5"
+    "manifestSha256": "2e117b5d54d8f7ed538ed772b46ad3a7c850eeb9d9ddf48d3f628e77a0f79811"
   },
   "files": [
     {
       "path": "ASSET-CREDITS.md",
-      "bytes": 24649,
-      "sha256": "510ebe241eb798aede56c630b7d9ef65592be9eabaa22dd4a190327e46abf9ca",
+      "bytes": 25629,
+      "sha256": "2f8369ae678c9f41fe202064ce9a598ae062869bcb418924e70dc1dc02184d23",
       "kind": "code-or-notice"
     },
     {
       "path": "aircraft-articulation.js",
-      "bytes": 17135,
-      "sha256": "9b63aaff48de9ab29115a9bb4f5a8a5ef63e34cb04cd7341986ecb646ff8a12f",
+      "bytes": 17442,
+      "sha256": "fe9d291647cc3cee8dc86797376d27db3d6c9575752df539ad5270dc0cbd9d4e",
       "kind": "code-or-notice"
     },
     {
@@ -104,6 +104,12 @@
       "path": "assets/aircraft/bf109f2-own.glb",
       "bytes": 4348948,
       "sha256": "efb76f22bf5057a1f24feab3f450787f1bc5decad8a76f79cbbac16698981f1f",
+      "kind": "model"
+    },
+    {
+      "path": "assets/aircraft/ju87b2-own.glb",
+      "bytes": 3296820,
+      "sha256": "d331b579ca37cb4ffcc9a71010b4dabe477b38384b371af9d456e06804b868e4",
       "kind": "model"
     },
     {
@@ -535,7 +541,7 @@
     {
       "path": "index.html",
       "bytes": 7260,
-      "sha256": "ea66183fc20fd2b3bfe10f1e65ddf5eb61635e0bb6a1a266e76f51e97964372c",
+      "sha256": "ce11052358388447f73214a983da505b39d7d23c485b93c48e2b9a83fb8b5829",
       "kind": "code-or-notice"
     },
     {
@@ -545,10 +551,10 @@
       "kind": "model"
     },
     {
-      "path": "ju87.glb",
-      "bytes": 17381696,
-      "sha256": "63f1e3c0448edcc332cdbd3c26f40a04758be11df558937c19d0ea59b03fa9b6",
-      "kind": "model"
+      "path": "ju87-native.js",
+      "bytes": 1994,
+      "sha256": "380e75bc31f6f08bb979856bfa291d84142094bfc833342bdd927ac364093c2e",
+      "kind": "code-or-notice"
     },
     {
       "path": "m16_mgmc.glb",
@@ -660,8 +666,8 @@
     },
     {
       "path": "remagen-mission.html",
-      "bytes": 367761,
-      "sha256": "0c2050249c5b442ed59794565215ce22fd590bd4d5e763da1d6a21e8b37e4e38",
+      "bytes": 368390,
+      "sha256": "173efef57c2721131bd1be37715f48428c0087a97f76aa95a94d1d43e04f01d4",
       "kind": "code-or-notice"
     },
     {
@@ -1855,7 +1861,7 @@
     {
       "path": "torpedo-carrier.html",
       "bytes": 429082,
-      "sha256": "252d2936874c8b9604b3c890b37494aa067efa6a04dd828f985f694c7a977135",
+      "sha256": "fa122e1bf056d404df8ef4bb6d5ac395d1aee0b4b9ce77783c8b07a8b0eed084",
       "kind": "code-or-notice"
     },
     {
@@ -1984,7 +1990,31 @@
       "commercialPermissionDocument": null,
       "bundleRedistributionGrant": null,
       "releaseApproved": false,
-      "nextAction": "Own mesh and paint; decide whether measuring the CC BY-SA reference drawings makes it an adaptation (attribution/share-alike); credits kept in ASSET-CREDITS.md."
+      "nextAction": "Own mesh and paint; review the recorded reference source and any applicable attribution/share-alike obligations; credits kept in ASSET-CREDITS.md."
+    },
+    {
+      "path": "assets/aircraft/ju87b2-own.glb",
+      "bytes": 3296820,
+      "sha256": "d331b579ca37cb4ffcc9a71010b4dabe477b38384b371af9d456e06804b868e4",
+      "title": "Ju 87 B-2 — original game airframe",
+      "uploader": "Oliver Kurzemann / Torpedo-Bomber",
+      "originalRightsholder": null,
+      "sourceUrl": "scripts/own-aircraft/ju87b2/shape.json",
+      "acquiredOn": null,
+      "declaredLicense": "project-own; supplied historical manual used as dimensional reference",
+      "licenseUrl": null,
+      "licenseEvidence": "Original code-authored geometry, UVs and textures; source manual SHA-256 and trace coordinates recorded in shape.json.",
+      "sourceCheck": null,
+      "embeddedImageCount": 2,
+      "externalImages": [],
+      "originalFile": null,
+      "originalSha256": null,
+      "changes": "Independent visual reconstruction of the exterior; separate VS5 rotor, six flaps, ailerons, elevators, rudder and dive brakes; fixed gear. No geometry or texture from the uploaded War Thunder model.",
+      "issue": "own-build-reference-review-open",
+      "commercialPermissionDocument": null,
+      "bundleRedistributionGrant": null,
+      "releaseApproved": false,
+      "nextAction": "Own mesh and paint; review the recorded reference source and any applicable attribution/share-alike obligations; credits kept in ASSET-CREDITS.md."
     },
     {
       "path": "assets/aircraft/me262-noel.glb",
@@ -2738,36 +2768,6 @@
         "descriptionSignals": []
       },
       "embeddedImageCount": 9,
-      "externalImages": [],
-      "originalFile": null,
-      "originalSha256": null,
-      "changes": "Original runtime binary preserved; runtime scaling, materials, rigging and placement are described in ASSET-CREDITS.md / CLAUDE.md.",
-      "issue": "original-game-rights-open",
-      "commercialPermissionDocument": null,
-      "bundleRedistributionGrant": null,
-      "releaseApproved": false,
-      "nextAction": "Establish original mesh/texture ownership; obtain an app redistribution grant or independently authored replacement."
-    },
-    {
-      "path": "ju87.glb",
-      "bytes": 17381696,
-      "sha256": "63f1e3c0448edcc332cdbd3c26f40a04758be11df558937c19d0ea59b03fa9b6",
-      "title": "Ju 87 B-2 (War Thunder)",
-      "uploader": "KojfDiscord (https://sketchfab.com/KojfDiscord)",
-      "originalRightsholder": null,
-      "sourceUrl": "https://sketchfab.com/3d-models/ju-87-b-2-war-thunder-c09430ec8b9f46669bf8a008dd80d336",
-      "acquiredOn": null,
-      "declaredLicense": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
-      "licenseUrl": "http://creativecommons.org/licenses/by/4.0/",
-      "licenseEvidence": "Exact runtime GLB asset.extras",
-      "sourceCheck": {
-        "status": "verified-public-api",
-        "checkedOn": "2026-10-14",
-        "apiUrl": "https://api.sketchfab.com/v3/models/c09430ec8b9f46669bf8a008dd80d336",
-        "licenseMatch": true,
-        "descriptionSignals": []
-      },
-      "embeddedImageCount": 28,
       "externalImages": [],
       "originalFile": null,
       "originalSha256": null,

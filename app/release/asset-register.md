@@ -1,6 +1,6 @@
-# Offline app asset register — Build 206
+# Offline app asset register — Build 207
 
-Checked 2026-10-23. 320 payload files, 36 model files, 274.9 MiB.
+Checked 2026-10-23. 321 payload files, 36 model files, 261.5 MiB.
 
 Generated from the actual dist-app payload by npm run app:assets. Hashes cover embedded textures too. This is an evidence inventory; no row is automatically approved for distribution. Acquisition dates remain unknown where not recorded.
 
@@ -8,6 +8,7 @@ Generated from the actual dist-app payload by npm run app:assets. Hashes cover e
 | --- | --- | --- | --- | --- |
 | assets/aircraft/b17-helijah.glb | [helijah](https://sketchfab.com/3d-models/boeing-b-17-flying-fortress-927f07f6ddcf470ab0387ce5829024d5) | CC-BY-4.0 (https://creativecommons.org/licenses/by/4.0/) | uploader-license-review-open | bcdf03e6bed86bd8b246a24cf1b8f86a259debe426dbbdd42986d8c278b778db |
 | assets/aircraft/bf109f2-own.glb | [Torpedo-Bomber project (code-built, scripts/build-own-bf109.cjs)](scripts/build-own-bf109.cjs) | project-own; geometry measured on a CC BY-SA 2.0 three-view (B. Huber), finish measured on a CC BY-SA 2.5 profile (H. Ringlstetter) | own-build-reference-review-open | efb76f22bf5057a1f24feab3f450787f1bc5decad8a76f79cbbac16698981f1f |
+| assets/aircraft/ju87b2-own.glb | [Oliver Kurzemann / Torpedo-Bomber](scripts/own-aircraft/ju87b2/shape.json) | project-own; supplied historical manual used as dimensional reference | own-build-reference-review-open | d331b579ca37cb4ffcc9a71010b4dabe477b38384b371af9d456e06804b868e4 |
 | assets/aircraft/me262-noel.glb | Source unknown | Base CC0-1.0 (https://creativecommons.org/publicdomain/zero/1.0/); original livery and detailing Oliver Kurzemann | source-or-license-missing | 6bfd4650965bd16e465037d3bdee08f2fe68eaf3e5ee99b273c435a00c256895 |
 | assets/aircraft/p47-independent.glb | [mgg8 / Aviation Gazetteer; original adaptation Oliver Kurzemann](https://sketchfab.com/3d-models/republic-p-47d-thunderbolt-raf-scheme-e831a70ab29c42d3a1dbd352d8bd4684) | Base model CC0-1.0 (https://creativecommons.org/publicdomain/zero/1.0/). New project work: Oliver Kurzemann, all reserved rights. | cc0-source-recorded | fc717521e5d80aefd6063d57bc561574fee3c4a99637c94a8b1a3c7ca889b851 |
 | assets/aircraft/sbd-dauntless.glb | [HappySunpore (https://sketchfab.com/happysunpore)](https://sketchfab.com/3d-models/stb-dauntless-31e14fecfd9b4d51bdf0c4b27a0572f0) | CC-BY-4.0 (https://creativecommons.org/licenses/by/4.0/) | uploader-license-review-open | 80b06926d6c4d3168e9a52a61379b1a00a1841a8130afcca71f842870d8336e1 |
@@ -34,7 +35,6 @@ Generated from the actual dist-app payload by npm run app:assets. Hashes cover e
 | grumman tbm avenger.glb | [helijah (https://sketchfab.com/helijah)](https://sketchfab.com/3d-models/grumman-tbm-avenger-4db814ed356a498cabe4badafd06ff6c) | CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/) | uploader-license-review-open | 9065b7e65419b2efd4618bcb138ce199d16ac3151801d2d90afb7ae92ebb10a6 |
 | ijn carrier.glb | [世界战争游戏 World of WarGames (https://sketchfab.com/123112)](https://sketchfab.com/3d-models/japs-leyte1944-5054abd931554d1d81d0b8a3af77c08c) | CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/) | original-game-rights-open | a0c2a40f01faaa97218ed23f3f13bfc688a4440df4cc9fa9aa6a043d6b6017e5 |
 | jagdpanther.glb | [PolyDucky (https://sketchfab.com/salphytheunemployed)](https://sketchfab.com/3d-models/jadgpanther-war-thunder-813e100326194334b52887a17416e0b8) | CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/) | original-game-rights-open | 4324d874f5ab4717336cc420f2d26810d2cc3ea19338064e7e5abed6c6d25b0b |
-| ju87.glb | [KojfDiscord (https://sketchfab.com/KojfDiscord)](https://sketchfab.com/3d-models/ju-87-b-2-war-thunder-c09430ec8b9f46669bf8a008dd80d336) | CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/) | original-game-rights-open | 63f1e3c0448edcc332cdbd3c26f40a04758be11df558937c19d0ea59b03fa9b6 |
 | m16_mgmc.glb | [KojfDiscord (https://sketchfab.com/KojfDiscord)](https://sketchfab.com/3d-models/m16-mgmc-war-thunder-fbdb51b1f92f45eebe791a16d805acd4) | CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/) | original-game-rights-open | eb836c5d64ad2b04bb6f7e0dca5dcd121dbfc2983805b084d44fb60c0be9b463 |
 | me163.glb | [KojfDiscord (https://sketchfab.com/KojfDiscord)](https://sketchfab.com/3d-models/me-163-b-war-thunder-b803273028ee4ebc87ca4af2e15766fb) | CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/) | original-game-rights-open | 1ac6f59cd3b06aa613ea497462936094ce6e50eb4b9eef8f0f3f73460f8a848e |
 | sherman_m4a1.glb | [KojfDiscord (https://sketchfab.com/KojfDiscord)](https://sketchfab.com/3d-models/m4a1-76-w-war-thunder-8492cfd6dec94c90ae7d210acf7e58ed) | CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/) | original-game-rights-open | fd1c8651befd8dc5f8cce22449e4d42f8c18337861f22e28c544c93fe50f889b |
