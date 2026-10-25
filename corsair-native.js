@@ -144,8 +144,8 @@ function gearRig(root){
   box(hinge,'Main gear door',[.20,.87,.052],[side*.33,-.51,-.10],NAVY);
  }
  const tail=group(g,'TailGear',[0,-.44,-4.39]);tail.userData.control='gear';
- rod(tail,'Tail strut',[0,0,0],[0,-.51,-.2],.048,METAL);
- tyre(tail,.17,.13,[0,-.54,-.18]);
+ rod(tail,'Tail strut',[0,0,0],[0,-1.83,-.2],.048,METAL);
+ tyre(tail,.17,.13,[0,-1.92,-.18]);
  const hook=group(root,'sbdHook',[0,-.40,-4.48]);hook.userData.hookAxis='x';
  hook.userData.hookUpAngle=0;hook.userData.hookDownAngle=-.86;
  rod(hook,'Tailhook shank',[0,0,0],[0,-.10,-.93],.042,METAL);
@@ -179,7 +179,7 @@ function stores(root){
  return {bombs,rockets};
 }
 function create(){
- const root=group(new T.Group(),'Corsair_Original');root.userData.nativeAircraft='f4u1c-bubble-original-v1';
+ const root=group(new T.Group(),'Corsair_Original');root.position.y=-1.45;root.userData.nativeAircraft='f4u1c-bubble-original-v1';
  root.userData.kind='corsair';root.userData.dimensions={span:12.5,length:10.2};
  mainAirframe(root);gearRig(root);
  const load=stores(root);root.userData.stores='bombs';root.userData.bombCount=2;root.userData.rocketCount=0;
