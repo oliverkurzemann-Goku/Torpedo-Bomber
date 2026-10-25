@@ -122,6 +122,8 @@
     justify-content:center;text-align:center;box-shadow:0 6px 16px rgba(0,0,0,.55);}
   #dropBtn:active{transform:scale(.94);}
   #dropBtn.spent{filter:grayscale(.8) brightness(.6);}
+  #rocketBtn{position:fixed;right:max(190px,calc(env(safe-area-inset-right) + 190px));bottom:max(48px,calc(env(safe-area-inset-bottom) + 22px));width:76px;height:76px;border-radius:50%;z-index:22;display:flex;flex-direction:column;align-items:center;justify-content:center;border:2px solid #c1b187;background:rgba(16,32,42,.88);font-family:monospace;font-weight:bold;font-size:13px;color:#f0e4c5;touch-action:none;pointer-events:auto;user-select:none;}
+  #rocketBtn:active{transform:scale(.94);}#rocketBtn.spent{filter:grayscale(.7) brightness(.7);}
 
   #steerBtn{position:fixed;right:max(20px,env(safe-area-inset-right));top:50%;
     transform:translateY(-50%);width:56px;height:56px;border-radius:8px;z-index:21;
@@ -309,7 +311,7 @@
   #skipCarrierPreview{margin-top:10px;padding:14px 22px;min-height:48px;border:1px solid #b5a16c;border-radius:5px;background:#252c26;color:#e1d5b4;font:12px monospace;cursor:pointer;}
   body.carrierPreview #carrierPreview{display:block;}
   body.carrierPreview #hud > :not(#pauseBtn):not(#buildTag),body.carrierPreview #hud .panel,body.carrierPreview #gunsight,body.carrierPreview #radio,body.carrierPreview #flash,
-  body.carrierPreview #stick,body.carrierPreview #throttle,body.carrierPreview #dropBtn,body.carrierPreview #fireBtn,
+  body.carrierPreview #stick,body.carrierPreview #throttle,body.carrierPreview #dropBtn,body.carrierPreview #rocketBtn,body.carrierPreview #fireBtn,
   body.carrierPreview .ctlBtn,body.carrierPreview .lookBtn,body.carrierPreview #steerBtn,body.carrierPreview #bailBtn,
   body.carrierPreview #systemsStatus,body.carrierPreview #opsStatus,body.carrierPreview #mmap,body.carrierPreview #compassStrip{visibility:hidden;}
   body.carrierPreview #pause{z-index:50;}
@@ -369,6 +371,7 @@
 <div id="stick"><div id="stickKnob"></div><div id="stickHint">PITCH / ROLL</div></div>
 <div id="throttle"><div id="thrFill"></div><div id="thrLbl">THR</div><div id="thrVal">60</div></div>
 <div id="dropBtn">DROP<br>TORPEDO</div>
+<div id="rocketBtn" style="display:none">HVAR<br><span id="rocketRemaining">8</span></div>
 <div id="torpRun">
   <div class="trTitle">TORPEDO RUN</div>
   <div class="trRow"><span>RANGE</span><b id="trRange">—</b></div>
@@ -430,6 +433,14 @@
       <div id="missionSel" role="group" aria-label="Pacific missions"></div>
       <div class="menuConfig">
         <div class="difficulty"><div class="secLbl" id="diffRow">Difficulty</div><div id="diffPick" role="group" aria-label="Difficulty"></div></div>
+        <label id="corsairLoadoutWrap" style="display:none;color:#e7d6aa;font-size:12px;">Corsair armament
+          <select id="corsairLoadout" aria-label="Corsair armament" style="min-height:42px;margin-left:10px;background:#15212a;color:#f2e8d2;border:1px solid #82795d;border-radius:4px;padding:5px;">
+            <option value="mixed">2 × 500 lb bombs + 8 × HVAR</option>
+            <option value="bombs">2 × 1,000 lb bombs</option>
+            <option value="rockets">8 × 5-inch HVAR rockets</option>
+            <option value="guns">4 × 20 mm cannons only</option>
+          </select>
+        </label>
         <label class="toggle" id="invToggle"><span class="box" id="invBox"></span> Invert pitch</label>
         <label class="toggle"><input type="checkbox" id="flightHints" checked> Flight hints</label>
       </div>
@@ -498,6 +509,7 @@
 <script src="terrain-system/AircraftGround.js?v=198"></script>
 <script src="pacific-assets.js?v=201"></script>
 <script src="sbd-native.js?v=201"></script>
+<script src="corsair-native.js?v=208"></script>
 <script src="avenger-finish.js?v=199"></script>
 <script src="naval-assets.js?v=198"></script>
 <script src="aircraft-rotors.js?v=172"></script>
@@ -735,7 +747,7 @@ let planeGear, flapL, flapR, diveFlapL, diveFlapR, bigSea, cockpitInterior;
 let sbdFlapL, sbdFlapR, sbdDiveFlapL, sbdDiveFlapR;
 let hookMesh, sbdHookMesh;   // arrestor hook, same split as the flaps above
 let loadout='torpedo';
-let bombs=[];
+let bombs=[],corsairRockets=[],corsairLoadout='mixed';
 let islands=[], volcanoT=0;
 let okinawaWorld=null, okinawaLoading=null;
 const OKINAWA_OFFSET_X=10000;
@@ -2186,7 +2198,11 @@ function startMission(idx){
   // reset plane
   P.pos.set(carrierX+BOW_X+30, DECK_Y+4, 0);
   P.heading=0; P.pitch=0; P.roll=0; P.spd=APP_SPD; P.throttle=0.6;
-  P.vSpeed=0; P.fuel=m.fuel; P.hull=100; P.fuelRate=1/D().fuel; P.torps=m.torps; P.alive=true;
+  P.vSpeed=0; P.fuel=m.fuel; P.hull=100; P.fuelRate=1/D().fuel;
+  P.torps=m.corsair?(['bombs','mixed'].includes(corsairLoadout)?2:0):m.torps;
+  P.rockets=m.corsair?(['rockets','mixed'].includes(corsairLoadout)?8:0):0;P.alive=true;
+  for(const shot of corsairRockets)GameRuntime.release(shot.mesh);corsairRockets=[];
+  if(m.corsair&&corsairTemplate)CorsairNative.configure(corsairTemplate,corsairLoadout);
   SortieFeatures.Damage.reset(P);voiceRadio.cancel();soundscape.reset();
   clearArrestCable();P.arrestRun=null;
   P.touchResolved=false; P.boltMsgTimer=0; P.rtb=false;P.onDeck=false;P.deckRun=null;P.deckQuaternion=null;P.landingSample=null;P.bolters=0;
@@ -2290,6 +2306,7 @@ function startMission(idx){
     if(!playerSBD && strikeTemplate()){
       playerSBD=new THREE.Group();
       const inner=strikeTemplate().clone(true);
+      if(m.corsair)CorsairNative.configure(inner,corsairLoadout);
       inner.rotation.y+=Math.PI;              // template noses +Z; the plane group flies -Z
       playerSBD.add(inner);
       playerSBD.userData.fromTemplate=true;playerSBD.userData.corsair=!!MISSIONS[mission]?.corsair;
@@ -2599,6 +2616,7 @@ function setupControls(){
   // drop
   const drop=document.getElementById('dropBtn');
   drop.addEventListener('pointerdown',e=>{ e.preventDefault(); dropTorpedo();});
+  document.getElementById('rocketBtn').addEventListener('pointerdown',e=>{e.preventDefault();launchCorsairRocket();});
   // guns (hold to fire)
   const fire=document.getElementById('fireBtn');
   fire.addEventListener('pointerdown',e=>{ e.preventDefault(); firing=true; fire.setPointerCapture(e.pointerId);});
@@ -2626,6 +2644,7 @@ function setupKeyboard(){
     keys[e.code]=true;
     if(e.code.startsWith('Arrow')){e.preventDefault();applyKeyboardFlight();}
     if(e.code==='Space'){dropTorpedo(); e.preventDefault();}
+    if(e.code==='KeyR'&&!e.repeat){launchCorsairRocket();e.preventDefault();}
     if(e.code==='KeyF') firing=true;
     if(e.code==='KeyL'&&!e.repeat)dropFlare();
     if(e.code==='KeyA'&&!e.repeat) toggleAero();
@@ -2689,10 +2708,12 @@ function dropTorpedo(){           // primary weapon button (torpedo OR bomb)
 function releaseBomb(){
   if(P.onDeck)return;
   if(P.torps<=0){ flash("NO BOMBS",600); return; }
-  if(P.pitch>-0.30){ flash("DIVE STEEPER TO BOMB",800); return; }   // need a real dive
-  if(P.pos.y>650){ flash("TOO HIGH — PRESS THE DIVE",800); return; }
+  if(!isCorsair()&&P.pitch>-0.30){ flash("DIVE STEEPER TO BOMB",800); return; }
+  if(P.pos.y>(isCorsair()?1100:650)){ flash("TOO HIGH FOR ACCURATE RELEASE",800); return; }
   if(P.pos.y<25){ flash("TOO LOW — PULL UP",800); return; }
-  P.torps--;sortieBombFired++;updateHUD();
+  P.torps--;sortieBombFired++;
+  if(isCorsair()&&playerSBD)CorsairNative.consume(playerSBD,'bomb',P.torps);
+  updateHUD();
   const mesh=Ordnance.create('bomb');
   GameRuntime.own(mesh);
   mesh.position.set(P.pos.x,P.pos.y-1.3,P.pos.z);
@@ -2922,30 +2943,9 @@ function setSBDGearVisible(aircraft,down){
   if(gear)gear.visible=!!down;
 }
 async function loadCorsairModel(){
- return PacificAssets.loader().load('f4u-1c_corsair_war_thunder.glb?v=172',gltf=>{
-  const source=gltf.scene,holder=new THREE.Group();holder.add(source);source.updateMatrixWorld(true);
-  const width=new THREE.Box3().setFromObject(holder).getSize(new THREE.Vector3()).x;
-  source.scale.setScalar(12.49/width);holder.updateMatrixWorld(true);
-  source.position.copy(new THREE.Box3().setFromObject(holder).getCenter(new THREE.Vector3())).negate();holder.updateMatrixWorld(true);
-  const rotor=AircraftRotors.nose(holder,'corsair');if(!rotor)throw Error('Corsair original propeller could not be rigged');
-  rotor.name='sbdRotorBlade';rotor.userData.spinAxis='z';
-  // Dense concealed engine internals are not needed behind the intact cowling.
-  for(const name of ['Object_5','Object_7']){const internal=holder.getObjectByName(name);if(internal)internal.parent.remove(internal);}
-  const skinAt=(x,z)=>{const ray=new THREE.Raycaster(new THREE.Vector3(x,-6,z),new THREE.Vector3(0,1,0));const hit=ray.intersectObject(source,true)[0];if(!hit)throw Error('Corsair wheel root misses skin');return hit.point.y;};
-  const gear=new THREE.Group();gear.name='sbdGear';
-  const tyre=new THREE.MeshLambertMaterial({color:0x151716}),metal=new THREE.MeshStandardMaterial({color:0x878d88,metalness:.4,roughness:.6});
-  for(const side of [-1,1]){
-   const rootY=skinAt(side*2.05,1.68);
-   const leg=new THREE.Mesh(new THREE.CylinderGeometry(.095,.08,1.1,8),metal);leg.position.set(side*2.05,rootY-.55,1.68);gear.add(leg);
-   const wheel=new THREE.Mesh(new THREE.CylinderGeometry(.39,.39,.19,14),tyre);wheel.rotation.z=Math.PI/2;wheel.position.set(side*2.05,rootY-1.1,1.68);wheel.userData.groundWheel=true;gear.add(wheel);
-  }
-  const tailRoot=skinAt(0,-4.36);
-  const tailLeg=new THREE.Mesh(new THREE.CylinderGeometry(.055,.055,.36,8),metal);tailLeg.position.set(0,tailRoot-.18,-4.36);gear.add(tailLeg);
-  const tail=new THREE.Mesh(new THREE.CylinderGeometry(.17,.17,.12,12),tyre);tail.rotation.z=Math.PI/2;tail.position.set(0,tailRoot-.36,-4.36);tail.userData.groundWheel=true;gear.add(tail);holder.add(gear);
-  const hook=new THREE.Mesh(new THREE.CylinderGeometry(.045,.045,1.5,8),metal);hook.rotation.x=-.9;hook.position.set(0,-1.1,-3.8);hook.name='sbdHook';hook.userData.hookAxis='x';hook.userData.hookDownAngle=-.9;hook.userData.hookUpAngle=Math.PI/2;holder.add(hook);
-  corsairTemplate=holder;
-  AircraftArticulation.install(holder,'corsair',{gearName:'sbdGear'});
- });
+ if(!corsairTemplate)corsairTemplate=CorsairNative.create();
+ CorsairNative.configure(corsairTemplate,corsairLoadout);
+ return corsairTemplate;
 }
 function loadSBDModel(){
   if(!SBD_MODEL_URL || typeof THREE.GLTFLoader==='undefined') return;
@@ -5540,6 +5540,9 @@ function loadCruiserModel(){
 }
 
 function pacificGunMuzzles(){
+  if(isCorsair()&&playerSBD&&CorsairNative.isNative(playerSBD)){
+    const ports=CorsairNative.frontMuzzles(playerSBD,planeGroup);if(ports)return ports;
+  }
   const native=typeof SBDRig!=='undefined'&&isSBD()?SBDRig.frontMuzzles(playerSBD,planeGroup):null;if(native)return native;
   // Measured on normalized GLBs: wing leading edges for A6M/TBM, cowling for SBD.
   // Plane-group coordinates: +X starboard, -Z forward.
@@ -5599,6 +5602,7 @@ function updatePlaneMesh(dt){
   if(isSBD() && !playerSBD && strikeTemplate()){
     playerSBD=new THREE.Group();
     const inner=strikeTemplate().clone(true);
+    if(isCorsair())CorsairNative.configure(inner,corsairLoadout);
     inner.rotation.y+=Math.PI;                 // template noses +Z; the plane group flies -Z
     playerSBD.add(inner);
     playerSBD.userData.fromTemplate=true;playerSBD.userData.corsair=!!MISSIONS[mission]?.corsair;
@@ -5744,6 +5748,7 @@ function updatePlaneMesh(dt){
       (curHook.userData.hookDownAngle-curHook.userData.hookUpAngle)*(P.hook==null?0:P.hook);
   }
   if(isSBD()&&playerSBD&&typeof SBDRig!=='undefined'&&SBDRig.isNative(playerSBD))SBDRig.update(playerSBD,{gear:g,flaps:actualFlaps,dive:P.diveBrakeVisual,hook:P.hook,bombs:P.torps,roll:inputRoll,pitch:inputPitch,dt});
+  if(isCorsair()&&playerSBD&&CorsairNative.isNative(playerSBD))CorsairNative.pose(playerSBD,g,actualFlaps,inputRoll,inputPitch,P.hook);
   if(cockpitInterior) cockpitInterior.visible=false;
   // LOOK buttons: chase view only, camera height.
   document.querySelectorAll('.lookBtn').forEach(el=>{ el.style.display=(state===ST.FLIGHT)?'block':'none'; });
@@ -6437,6 +6442,9 @@ function updateHUD(){
   warningLamps.update(P);
   GameRuntime.setHTML(document.getElementById('hHull'),SortieFeatures.Damage.hullPercent(P)+'<small> %</small>');
   document.getElementById('hTorp').textContent=P.torps;
+  const rocketCount=document.getElementById('rocketRemaining'),rb=document.getElementById('rocketBtn');
+  if(rocketCount)rocketCount.textContent=String(P.rockets||0);
+  if(rb){rb.style.display=isCorsair()?'flex':'none';rb.classList.toggle('spent',!P.rockets);}
   document.getElementById('hAmmo').textContent=P.ammo==null?0:P.ammo;
   document.getElementById('hHull').parentElement.classList.toggle('warn',P.hull<40);
   document.getElementById('hFuel').parentElement.classList.toggle('warn',P.fuel<25);
@@ -6705,14 +6713,15 @@ function setupUIButtons(){
       c.innerHTML='<div class="cn">'+missionTag(m)+'</div><div class="cs">'+m.sub+'</div><div class="ca">'+(m.defend?'A6M ZERO':m.corsair?'F4U-1C':m.sbd?'SBD':'TBM')+'</div>';
       c.onclick=()=>{ selectedMission=i;
         sel.querySelectorAll('.chip').forEach((e,j)=>{e.classList.toggle('sel',j===i);e.setAttribute('aria-pressed',String(j===i));});
-        document.getElementById('startBtn').textContent='Begin '+m.title; };
+        document.getElementById('startBtn').textContent='Begin '+m.title; updateCorsairLoadoutMenu(); };
       sel.appendChild(c);
     });
   }
   { const im=MISSIONS[selectedMission]; const sb=document.getElementById('startBtn');
-    if(im && sb) sb.textContent='Begin '+im.title; }
+    if(im && sb) sb.textContent='Begin '+im.title; updateCorsairLoadoutMenu(); }
   const bv=document.getElementById('bestVal'); if(bv) bv.textContent=bestScore();
   document.getElementById('startBtn').onclick=beginGame;
+  document.getElementById('corsairLoadout').onchange=e=>{corsairLoadout=e.target.value;if(corsairTemplate)CorsairNative.configure(corsairTemplate,corsairLoadout);};
   document.getElementById('gearBtn').addEventListener('pointerdown',e=>{ e.preventDefault();
     if(P.systemDamage?.gearLock!=null){flash('GEAR JAMMED — '+(P.systemDamage.gearLock<.6?'GENTLE BELLY RECOVERY':'FIXED DOWN'),2200);return;}
     P.gearTgt = P.gearTgt>0.5?0:1; const b=document.getElementById('gearBtn');
@@ -6876,10 +6885,15 @@ function toggleAero(){
   flash(aeroMode?'AERO — HOLD STICK FOR ROLL OR LOOP':'NORMAL FLIGHT',1100);
 }
 
+function updateCorsairLoadoutMenu(){
+ const wrap=document.getElementById('corsairLoadoutWrap'),select=document.getElementById('corsairLoadout');
+ if(wrap&&select){wrap.style.display=MISSIONS[selectedMission]?.corsair?'flex':'none';select.value=corsairLoadout;}
+}
 function applyLoadoutUI(){
   const div = loadout==='divebomb';
   const tl=document.getElementById('torpLbl'); if(tl) tl.textContent=div?'BOMBS':'TORPEDOES';
   const db=document.getElementById('dropBtn'); if(db) db.innerHTML=div?'DROP<br>BOMB':'DROP<br>TORPEDO';
+  const rocket=document.getElementById('rocketBtn');if(rocket)rocket.style.display=MISSIONS[mission]?.corsair?'flex':'none';
   const dv=document.getElementById('diveBtn'); if(dv) dv.style.display=div&&!MISSIONS[mission]?.corsair?'flex':'none';
 }
 function resetControlUI(){
@@ -7141,6 +7155,7 @@ function animateFrame(){
     GameRuntime.frames.mark('flight');
     updateTorpedoes(dt);
     updateBombs(dt);
+    updateCorsairRockets(dt);
     updateGuns(dt);
     updateFlak(dt);
     updateZeros(dt);
