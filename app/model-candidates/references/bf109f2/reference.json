@@ -1,0 +1,230 @@
+{
+ "title": "Messerschmitt Bf 109 F-2 three-view (PDF Abb. 16) and Moelders F-2 profile (PDF Abb. 53)",
+ "aircraft": "Bf 109 F-2",
+ "frame": "metres; X span (+X port), +Y up, +Z nose; z = 0 at mid length, y = 0 on the propeller axis",
+ "views": {
+  "side": {
+   "file": "side.png",
+   "mode": "lines",
+   "threshold": 215,
+   "close": 1,
+   "calibration": {
+    "u": [
+     [
+      7,
+      4.47
+     ],
+     [
+      461,
+      -4.47
+     ]
+    ],
+    "v": [
+     [
+      81.5,
+      0
+     ],
+     [
+      30.72,
+      1
+     ]
+    ]
+   },
+   "erase": [
+    [
+     216,
+     0,
+     385,
+     37
+    ],
+    [
+     15,
+     28,
+     34,
+     64
+    ],
+    [
+     15,
+     99,
+     34,
+     160
+    ]
+   ],
+   "exclude": [
+    "Blades"
+   ],
+   "note": "erase: antenna wire from the mast to the fin (it closes a false area above the spine) and the two drawn propeller blades; the model's blades are excluded likewise. u: spinner tip (px 7) to rudder trailing edge (px 461) = overall length 8.94 m (PDF table, Bf 109 F). v: same 50.78 px/m, zero on the spinner axis."
+  },
+  "top": {
+   "file": "top.png",
+   "mode": "lines",
+   "threshold": 215,
+   "close": 1,
+   "calibration": {
+    "u": [
+     [
+      5,
+      4.985
+     ],
+     [
+      538,
+      -4.985
+     ]
+    ],
+    "v": [
+     [
+      4,
+      4.47
+     ],
+     [
+      457,
+      -4.47
+     ]
+    ],
+    "anisotropic": "Span is calibrated to the PDF table (9.97 m) and length to the PDF table (8.94 m). The drawing itself is 533 px wide and 453 px long, a ratio 5.3 % above the table's. Measured on this drawing: wing area 16.46 m2 with these two scales (table 16.1 m2) but 15.62 m2 at the span scale alone; propeller diameter 2.94 m at the length scale (3.0 m VDM) but 2.79 m at the span scale. So the fuselage, heights and propeller follow the length scale and only the span is stretched to the table."
+   },
+   "erase": [
+    [
+     200,
+     14,
+     254,
+     30
+    ],
+    [
+     287,
+     14,
+     340,
+     30
+    ]
+   ],
+   "exclude": [
+    "Blades"
+   ],
+   "note": "Plan view rotated a quarter turn, nose up, starboard right (pitot on the port wing at the left). erase: the two drawn blades beside the spinner."
+  },
+  "front": {
+   "file": "front.png",
+   "mode": "lines",
+   "threshold": 215,
+   "close": 1,
+   "calibration": {
+    "u": [
+     [
+      7,
+      -4.985
+     ],
+     [
+      542,
+      4.985
+     ]
+    ],
+    "v": [
+     [
+      81.5,
+      0
+     ],
+     [
+      30.72,
+      1
+     ]
+    ],
+    "anisotropic": "Span to the PDF table (9.97 m, 535 px); heights at the side view's length scale (50.78 px/m) for the reason given in the plan view: the drawing's own scale is uniform, the table disagrees with its span/length ratio by 5.3 %."
+   },
+   "note": "outsideSeeds: the empty triangles that the two upper drawn blades close off against the tailplane and fuselage.",
+   "outsideSeeds": [
+    [
+     240,
+     47
+    ],
+    [
+     306,
+     47
+    ]
+   ],
+   "exclude": [
+    "Blades"
+   ],
+   "ignore": [
+    [
+     [
+      283.0,
+      98.5
+     ],
+     [
+      266.0,
+      98.5
+     ],
+     [
+      266.1,
+      158.5
+     ],
+     [
+      283.1,
+      158.5
+     ]
+    ],
+    [
+     [
+      255.6,
+      79.6
+     ],
+     [
+      264.7,
+      65.2
+     ],
+     [
+      213.5,
+      32.7
+     ],
+     [
+      204.4,
+      47.1
+     ]
+    ],
+    [
+     [
+      284.4,
+      65.3
+     ],
+     [
+      293.4,
+      79.7
+     ],
+     [
+      344.8,
+      47.6
+     ],
+     [
+      335.8,
+      33.2
+     ]
+    ]
+   ],
+   "ignoreNote": "Blades are not compared in any view. In this front view the drawn blades stand at 179.9, -57.6 and +58.0 deg from the hub (measured on the mask), i.e. 112/124/124 deg apart, which no rigid three-blade rotor can match. Each polygon follows one drawn blade from just outside the spinner ring (17 px) to its tip + 2 px, half width = widest projected blade chord / 2 + 2 px; inside it model and drawing are set equal. The spinner is compared."
+  }
+ },
+ "sources": [
+  {
+   "title": "Messerschmitt Bf 109 (German Wikipedia article exported to PDF, 51 pages, oldid 71076859, 2010-02-24)",
+   "file": "Me_109.pdf (supplied by the owner 2026-10-24, not stored)",
+   "sha256": "8d336841232d394f96ac883270ad0f9157dd7466297754fa5c91f78ef0ee33d6",
+   "license": "text CC BY-SA 3.0 / GFDL; images as listed below",
+   "role": "dimensions table (Bf 109 F-4: length 8.94 m, span 9.97 m, area 16.1 m2, height 2.45 m), variant notes"
+  },
+  {
+   "title": "Abb. 16: Bf 109 F-2 = Bf109F_3Seiten_neu.jpg (PDF page 16, image 0)",
+   "file": "side.png, top.png, front.png",
+   "author": "Bjoern Huber (B. Huber, de.wikipedia)",
+   "license": "CC BY-SA 2.0",
+   "role": "three-view outlines (crops, plan view rotated)"
+  },
+  {
+   "title": "Abb. 53: Bf 109 F-2, Stab/JG 51, Werner Moelders, Juni 1941 = Bf109F-2_Moelders_JG51_kl96.jpg (PDF page 44, image 1)",
+   "file": "livery.png",
+   "author": "Herbert Ringlstetter (Aviaticus.com)",
+   "license": "CC BY-SA 2.5",
+   "role": "livery: yellow nose and rudder, RLM 74/75/76 mottle, Kommodore chevron, cross positions"
+  }
+ ],
+ "prepared": "python3 -I scripts/own-aircraft/prepare-bf109f-reference.py Me_109.pdf"
+}

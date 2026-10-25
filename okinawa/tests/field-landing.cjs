@@ -2,7 +2,7 @@
 const assert=require('node:assert/strict');
 require('../../sortie-features.js');require('../../ground-run.js');
 const {Handling,Damage}=SortieFeatures;
-const types={p47:40,bf109:36,fw190:39,ju87:37,me262:49,me163:51},reports=[];
+const types={p47:40,bf109:34.5,fw190:39,ju87:37,me262:49,me163:51},reports=[];
 for(const [kind,stall] of Object.entries(types)){
  const p={ac:kind,alive:true,hull:100,pos:{y:20},spd:60,throttle:.3,fuel:50,bombs:0,flap:0,gear:1};
  Handling.configure(p,kind,'bomb','europe');Damage.reset(p);

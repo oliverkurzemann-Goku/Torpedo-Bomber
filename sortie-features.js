@@ -7,7 +7,7 @@ const angle=n=>Math.atan2(Math.sin(n),Math.cos(n));
 // half an internal tank and no external stores. Existing stick modes are retained.
 const loadProfiles={
  p47:{fuel:.12,bomb:.045,rocket:.0025,tank:.028,tankFuel:.07},
- bf109:{fuel:.11,bomb:.085,rocket:.002,tank:.022,tankFuel:.055},
+ bf109:{fuel:.11,bomb:.085,rocket:.002,tank:.022,tankFuel:.0825}, // tankFuel: 300 l at the 400 l internal fraction
  fw190:{fuel:.12,bomb:.065,rocket:.0025,tank:.025,tankFuel:.06},
  ju87:{fuel:.12,bomb:.055,rocket:.002},me262:{fuel:.14,bomb:.055,rocket:.002},
  me163:{fuel:.20,bomb:0,rocket:0},
@@ -16,7 +16,8 @@ const loadProfiles={
 };
 const Handling={
  // Normal final approach (m/s), not touchdown speed; gameplay reference loading.
- fieldLanding:{p47:{reference:115*.44704,cleanAdd:5.4,flapGain:6},bf109:{reference:110*.44704,cleanAdd:6,flapGain:7},
+ fieldLanding:{p47:{reference:115*.44704,cleanAdd:5.4,flapGain:6},bf109:{reference:105.5*.44704,cleanAdd:6,flapGain:7}, // Bf 109 F: G-6 110 MPH x sqrt(180/195 kg/m2) from the PDF wing loadings
+ 
   fw190:{reference:125*.44704,cleanAdd:6,flapGain:7},ju87:{reference:150/3.6,cleanAdd:6.5,flapGain:7},
   me262:{reference:230/3.6,cleanAdd:8,flapGain:5},me163:{reference:200/3.6,cleanAdd:9,flapGain:10}},
  configure(p,kind,weapon='bomb',theatre='europe'){p.loadProfile={kind,weapon,theatre};},
@@ -45,7 +46,7 @@ const Handling={
   if(!profile)return {ratio:1,speed:1,acceleration:1,climb:1,turn:1,inertia:1,stores:0};
   let stores=Math.max(0,p.bombs||0)*(profile.bomb||0)+Math.max(0,p.rockets||0)*(profile.rocket||0);
   if(p.torps)stores+=Math.max(0,p.torps)*(config.weapon==='torpedo'?(profile.torpedo||0):(profile.bomb||0));
-  if(p.tankAttached)stores+=(profile.tank||0)+(profile.tankFuel||0)*clamp((p.tankFuel||0)/60,0,1);
+  if(p.tankAttached)stores+=(profile.tank||0)+(profile.tankFuel||0)*clamp((p.tankFuel||0)/(p.tankCapacity||60),0,1);
   const ratio=clamp(1+profile.fuel*(clamp(p.fuel??50,0,100)/100-.5)+stores,.90,1.24);
   return {ratio,speed:Math.sqrt(ratio),acceleration:1/ratio,climb:clamp(1-(ratio-1)*.65,.84,1.07),
    turn:1/Math.sqrt(ratio),inertia:1/Math.pow(ratio,.35),stores};

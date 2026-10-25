@@ -1,5 +1,47 @@
 # Torpedo-Bomber — Übergabe an Claude Code
 
+**25.10.2026, Build 203 (nur Feature-Branch): eigene Bf 109 F-2 (Mölders, Stab/JG 51, Juni 1941) im Rheinspiel.**
+Nutzer: „du hast wieder nur geraten … anbei ein PDF, das du als Referenz verwenden sollst … Lackierung mit gelber Nase“,
+dann: Flugleistung, Tankinhalt und Bewaffnung vom Original übernehmen; Fahrwerk verschwindet beim Einfahren nur halb;
+Cockpitscheibe passt nicht. Referenz ist das vom Nutzer gelieferte PDF (dt. Wikipedia „Messerschmitt Bf 109“, 51 S.,
+SHA256 8d3368…). Abb. 16 Dreiseitenansicht (B. Huber, CC BY-SA 2.0) = Geometrie, Abb. 53 Profil (H. Ringlstetter,
+CC BY-SA 2.5) = Lackierung. Beide Bilder werden nur vermessen, nichts davon steckt im Modell.
+- `scripts/own-aircraft/measure-bf109f.mjs` vermisst die Zeichnungen (kalibriert über die PDF-Tabelle 8,94/9,97 m) →
+  `app/model-candidates/references/bf109f2/shape.json`; `scripts/build-own-bf109.cjs` baut daraus
+  `assets/aircraft/bf109f2-own.glb` (71 162 Dreiecke, 4,35 MB, Rig-Vertrag v1, Khronos 0/0). `--release` nur mit
+  bestandenem Silhouetten-Gate (Seite/Draufsicht/Front: P95 4,4/3,8/5,7 cm). Achtung: die Gate-IoU ignoriert ein 1-px-Band
+  an der gezeichneten Linie (Strichstärke); die strenge IoU wird mit ausgegeben (Front 0,87). Alle nicht gemessenen Werte
+  stehen als `assumed` in den GLB-Extras (Blattwinkel, Spornrad fest, Spinnerband, RLM 75, Flügelkreuze, Querschnitte,
+  Rahmenbreite 3,5 cm, Fahrwerksgelenk, Radschacht-Ton, kein Hakenkreuz).
+- Fahrwerk: Die Zeichnung zeigt nur, wo das Bein aus dem Flügel kommt (3–4 cm unter der Haut). Gelenk jetzt auf derselben
+  Beinlinie im Flügel, ein festes Gelenk (~82°), Bein spannweitig, Rad flach über dem Beinende. Builder sucht die Lage und
+  bricht ab, wenn eingefahren irgendein Vertex durch die Haut sticht (jetzt 11 mm unten / 12 mm oben Luft). Vorher ragten
+  Bein/Abdeckung 10–11 cm, Reifen 6 cm unten und 10 cm oben heraus. Offene Radschächte auf die Unterseite gemalt.
+  Hinweis: das Spiel blendet die Gruppe `gear` bei P.gear<0,05 ohnehin aus; sichtbar war der Fehler in der Bewegung/Vorschau.
+- Haube: alte Aufteilung war geraten (Rahmen-Spalten 162/185/206/222 von Hand; Haube nur 1,42–0,97 m, Mast als Glas
+  gemessen, hintere Verglasung ein Kasten). Jetzt gemessen: Vollhöhen-Tintenlinien → Rahmen bei z 1,221 / 0,926 (dünn,
+  ohne Nieten, nicht im Profil) / 0,561 (8 cm); Haube 1,22–0,56 m (klappt nach rechts); Frontscheibe mit schräger
+  Unterkante (Rumpf steigt davor an) und Beginn im Punkt auf der Motorhaubenlinie (keine senkrechte Glasfläche mehr), hintere
+  feste Verglasung als Dreieck mit gerader Schräge bis zum Mast (Rumpfstationen an den Linienenden, Cockpitbereich nicht
+  mehr geglättet; Maststummel zählt nicht als Rumpf). Rahmenfarbe aus dem Profil.
+- Spieldaten (`AC.bf109`, nur Rhein): Name Bf 109F-2; drei Waffen mit eigenem Magazin und Takt aus dem PDF: 2× MG 17
+  je 500 Schuss/25,5 s über dem Motor, 1× MG 151 durch die Nabe 200 Schuss/15 s (Zahl/Takt der F-4-Kanone, für die
+  15-mm-F-2 nicht im PDF). Kanone ist nach 15 s leer, MGs schießen weiter; bildratenunabhängig (Akkumulator).
+  Gesamtschaden eines vollen Vorrats = alter Wert (506), die 15-mm-Granate zählt 2,5 MG-Schuss (Spielwert). HUD
+  „MG/CANNON 1000/200“. Tank 400 l = 100 %, Zusatztank 300 l = 75 (vorher 60; PDF nennt 300 l, Rüstsatz R2 erst bei F-4).
+  Höchstfahrt 176 m/s abgeleitet: 670 km/h (F-4, 1200 PS) × (1020/1200)^(1/3) — keine F-2-Zahl im PDF. stall/app ×0,959 und
+  turn ×1,087 aus den PDF-Flächenbelastungen (G-6 195, F 180 kg/m²); Rollen/Nicken/gLim/Hülle ohne PDF-Wert unverändert.
+  Bombe (ETC 250, laut PDF erst F-4 R6) nur für Sortie 7 behalten. Gegnerische Bf 109 nutzen dieselben Werte/Modell.
+- Nebenfunde: `parts.cjs` hatte das `orient` der Hinterkantenwand in einem Kommentar verschluckt (Wand evtl. falsch herum) —
+  behoben. Spielermündungen jetzt per Name (`MuzzleLeft/Right/Cannon`). `sortie-service` füllt `gunAmmo` mit auf.
+Tests: neu `okinawa/tests/own-bf109-browser.cjs` (echtes Spiel: Modell zuerst, Vertrag, 1000/200, Tank 75, eingefahrene
+Räder/Beine per Strahl durch die echte Haut zu 100 % innen, Geschosse an den Mündungen, Kanone nach 14,9 s leer; Bilder
+`test-visuals/build203-bf109-*.png`). Erweitert: player-guns (Bf 109 20/60/120 FPS), sortie-fuel, own-bf109-pipeline
+(gemessenes Modell, Fahrwerk in der Haut), app-payload, europe-guns-browser (3 Rohre), field-landing (Stall 34,5).
+Build 203 an Board, beiden Spielen, Menü-CSS, App-Payload (319 Dateien, 37 Modelle) und Xcode; Register neu, neuer
+Status `own-build-reference-review-open`: ob das Vermessen der CC-BY-SA-Zeichnungen eine Bearbeitung ist, ist offen.
+Kein iPad-Test. Nicht nach main übernommen (braucht Nutzerfreigabe).
+
 **24.10.2026, Build 202: Torpedoangriff mit Können statt Glück, jetzt auf main.**
 Auf Nutzerfreigabe („Übernimm jetzt Build 200 in Main“) übernommen. Auf dem Feature-Branch hieß diese Arbeit
 Build 200; main hatte inzwischen Build 200 (helijah-B-17) und 201 (HappySunpore-Dauntless) aus einer anderen
@@ -249,7 +291,7 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 202 · Thunderbolt Squadron BUILD 202 · Remagen-Kern 23 / Fahrzeuge 22**
+Stand bei Übergabe: **Torpedo Squadron BUILD 203 · Thunderbolt Squadron BUILD 203 · Remagen-Kern 23 / Fahrzeuge 22**
 
 **Build 198 (22.10.2026): P-47-Fotolackierung, Einsatzspuren und natives Fahrwerk; Terrain-Fix aus Build 197 erhalten.**
 `assets/aircraft/p47-weathered.glb` ist ein ausdrücklich gekennzeichnetes Derivat des

@@ -1,12 +1,13 @@
-# Offline app asset register — Build 202
+# Offline app asset register — Build 203
 
-Checked 2026-10-23. 317 payload files, 36 model files, 274.3 MiB.
+Checked 2026-10-23. 319 payload files, 37 model files, 278.5 MiB.
 
 Generated from the actual dist-app payload by npm run app:assets. Hashes cover embedded textures too. This is an evidence inventory; no row is automatically approved for distribution. Acquisition dates remain unknown where not recorded.
 
 | Runtime file | Source / uploader | Declared license | Open issue | SHA-256 |
 | --- | --- | --- | --- | --- |
 | assets/aircraft/b17-helijah.glb | [helijah](https://sketchfab.com/3d-models/boeing-b-17-flying-fortress-927f07f6ddcf470ab0387ce5829024d5) | CC-BY-4.0 (https://creativecommons.org/licenses/by/4.0/) | uploader-license-review-open | bcdf03e6bed86bd8b246a24cf1b8f86a259debe426dbbdd42986d8c278b778db |
+| assets/aircraft/bf109f2-own.glb | [Torpedo-Bomber project (code-built, scripts/build-own-bf109.cjs)](scripts/build-own-bf109.cjs) | project-own; geometry measured on a CC BY-SA 2.0 three-view (B. Huber), finish measured on a CC BY-SA 2.5 profile (H. Ringlstetter) | own-build-reference-review-open | efb76f22bf5057a1f24feab3f450787f1bc5decad8a76f79cbbac16698981f1f |
 | assets/aircraft/p47-weathered.glb | [KojfDiscord (https://sketchfab.com/KojfDiscord)](https://sketchfab.com/3d-models/p-47d-28-thunderbolt-1-custom-war-thunder-1d469251c5994dfd9169f11a97b1b56a) | CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/) | original-game-rights-open | 8b5ed7be80e7c06e694c276f3cd1e130b63173513f7368b89e8a9ebca5e2213c |
 | assets/aircraft/sbd-dauntless.glb | [HappySunpore (https://sketchfab.com/happysunpore)](https://sketchfab.com/3d-models/stb-dauntless-31e14fecfd9b4d51bdf0c4b27a0572f0) | CC-BY-4.0 (https://creativecommons.org/licenses/by/4.0/) | uploader-license-review-open | 80b06926d6c4d3168e9a52a61379b1a00a1841a8130afcca71f842870d8336e1 |
 | assets/buildings/bunker.glb | [matousekfoto (https://sketchfab.com/matousekfoto)](https://sketchfab.com/3d-models/bunker-o323a-160-z-11ae7599f3b640569f7ed4692acabf38) | CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/) | uploader-license-review-open | c9b54e30b99302ddaa0ab486c79318c7bd46c881b9fd11b3f77c60758efaa253 |

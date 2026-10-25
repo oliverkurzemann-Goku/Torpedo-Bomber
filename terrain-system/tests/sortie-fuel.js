@@ -16,6 +16,9 @@ for(const ac of ['p47','bf109','fw190','ju87','me262','me163']){
  SortieFuel.consume(p,10000,1.3);assert.equal(SortieFuel.total(p),0,'depletion clamps at zero');
  SortieFuel.reset(p,0,false);assert.equal(p.fuel,0);assert(!p.tankAttached,'practice launches without extra tank');
 }
+// Bf 109: 300 l drop tank on 400 l internal (reference PDF) = 75 internal-tank percent.
+{const p={ac:'bf109',throttle:1};SortieFuel.reset(p,100,true);assert.equal(p.tankFuel,75);assert.equal(p.tankCapacity,75);
+ const q={ac:'p47',throttle:1};SortieFuel.reset(q,100,true);assert.equal(q.tankFuel,60,'other types keep their tank');}
 let checked=0;
 for(const [i,m] of missions.entries()){
  const plan=FlightPlans.europe[i];if(m.free||m.circuits||m.ac==='me163')continue;

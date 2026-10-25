@@ -40,6 +40,7 @@ for(const entry of manifest.files){
  else if(!license||!meta.source)issue='source-or-license-missing';
  else if(/fps creator/i.test(title))issue='upstream-game-rights-open';
  else if(/CC0/i.test(license))issue='cc0-source-recorded';
+ else if(/^project-own/i.test(license))issue='own-build-reference-review-open';
  const licenseURL=license?.match(/https?:\/\/[^)\s]+/)?.[0]||null;
  const pageURL=source?.declaredLicense?.url;
  const licenseMatch=!!(licenseURL&&pageURL&&licenseURL.replace(/^http:/,'https:')===pageURL.replace(/^http:/,'https:'));
@@ -53,7 +54,7 @@ for(const entry of manifest.files){
   originalFile:extra.originalFile||null,originalSha256:extra.originalSha256||null,
   changes:meta.changes||embedded.processing||'Original runtime binary preserved; runtime scaling, materials, rigging and placement are described in ASSET-CREDITS.md / CLAUDE.md.',
   issue,commercialPermissionDocument:null,bundleRedistributionGrant:null,releaseApproved:false,
-  nextAction:issue==='noncommercial-release-open'?'Obtain a grant covering the intended app/business model from all relevant creators, or replace the model.':issue==='original-game-rights-open'||issue==='upstream-game-rights-open'?'Establish original mesh/texture ownership; obtain an app redistribution grant or independently authored replacement.':issue==='source-or-license-missing'?'Identify the exact author/source/version and license before distribution.':'Retain license/attribution/change notices, validate mesh/texture provenance and app-store redistribution conditions.'});
+  nextAction:issue==='noncommercial-release-open'?'Obtain a grant covering the intended app/business model from all relevant creators, or replace the model.':issue==='original-game-rights-open'||issue==='upstream-game-rights-open'?'Establish original mesh/texture ownership; obtain an app redistribution grant or independently authored replacement.':issue==='source-or-license-missing'?'Identify the exact author/source/version and license before distribution.':issue==='own-build-reference-review-open'?'Own mesh and paint; decide whether measuring the CC BY-SA reference drawings makes it an adaptation (attribution/share-alike); credits kept in ASSET-CREDITS.md.':'Retain license/attribution/change notices, validate mesh/texture provenance and app-store redistribution conditions.'});
 }
 const register={schema:1,reviewedOn:evidence.checkedOn,build:manifest.build,
  status:'OPEN — source declarations checked; no external rights authorization obtained',

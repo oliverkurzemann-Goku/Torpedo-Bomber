@@ -13,7 +13,8 @@
     "app:open": "cap open ios",
     "app:doctor": "node scripts/ipad-doctor.mjs",
     "app:assets": "npm run build:app && node scripts/audit-app-assets.mjs",
-    "app:candidates": "node scripts/qualify-candidate.mjs"
+    "app:candidates": "node scripts/qualify-candidate.mjs",
+    "app:rig": "node scripts/check-rig-contract.mjs"
   },
   "repository": {
     "type": "git",
@@ -33,9 +34,10 @@
   },
   "devDependencies": {
     "@capacitor/cli": "8.5.3",
-    "esbuild": "0.28.2",
     "@napi-rs/canvas": "^1.0.9",
+    "esbuild": "0.28.2",
     "fflate": "^0.8.3",
+    "gltf-validator": "2.0.0-dev.3.10",
     "meshoptimizer": "^1.3.0",
     "playwright": "^1.63.0",
     "three": "0.128.0"

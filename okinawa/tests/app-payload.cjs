@@ -16,8 +16,9 @@ for(const entry of ['index.html','torpedo-carrier.html','remagen-mission.html'])
  }
 }
 for(const unwanted of ['.git','node_modules','CLAUDE.md','thunderbolt-europe.html','torpedo-carrier-open-sea.html','model-check.html','p47d_alt.glb','b17.glb','sbd dauntless.glb'])assert(!fs.existsSync(path.join(out,unwanted)));
-for(const required of ['assets/aircraft/b17-helijah.glb','assets/aircraft/B17-CREDITS.txt','b17-native.js','sbd-native.js','assets/aircraft/sbd-dauntless.glb','assets/aircraft/SBD-CREDITS.txt'])assert(fs.existsSync(path.join(out,required)),'Missing native aircraft payload '+required);
+for(const required of ['assets/aircraft/b17-helijah.glb','assets/aircraft/B17-CREDITS.txt','b17-native.js','sbd-native.js','assets/aircraft/sbd-dauntless.glb','assets/aircraft/SBD-CREDITS.txt','assets/aircraft/bf109f2-own.glb','aircraft-contract.js'])assert(fs.existsSync(path.join(out,required)),'Missing native aircraft payload '+required);
 assert(fs.readFileSync(path.join(out,'remagen-mission.html'),'utf8').includes("b17:   ['assets/aircraft/b17-helijah.glb']"));
+assert(fs.readFileSync(path.join(out,'remagen-mission.html'),'utf8').includes("['assets/aircraft/bf109f2-own.glb','bf109new.glb',"),'own Bf 109 F-2 is the first Rhine Bf 109 model');
 const config=JSON.parse(fs.readFileSync(path.join(root,'capacitor.config.json'),'utf8'));assert.equal(config.webDir,'dist-app');assert(!config.server?.url);
 const plist=fs.readFileSync(path.join(root,'ios/App/App/Info.plist'),'utf8');assert(!plist.includes('UIInterfaceOrientationPortrait'));
 assert(fs.readFileSync(path.join(root,'ios/App/App/PrivacyInfo.xcprivacy'),'utf8').includes('CA92.1'));

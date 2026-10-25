@@ -64,7 +64,7 @@ const server=http.createServer((req,res)=>{
      gl.readPixels(0,0,renderer.domElement.width,renderer.domElement.height,gl.RGBA,gl.UNSIGNED_BYTE,without);panels.visible=true;GameRuntime.render(renderer,scene,camera);
      let changed=0;for(let i=0;i<pixels.length;i+=4)if(Math.max(Math.abs(pixels[i]-without[i]),Math.abs(pixels[i+1]-without[i+1]),Math.abs(pixels[i+2]-without[i+2]))>5)changed++;
      if(changed<20)throw Error('Flaps do not reach the actual framebuffer: '+kind+' '+changed);
-     return {kind,flapPixels:changed,panels:panels.children.map(p=>({root:p.position.toArray(),faces:p.children[0].geometry.attributes.position.count/3})),tyres:tyres.length,gear:gear?.children.map(p=>p.position.toArray()),down,half};
+     return {kind,flapPixels:changed,panels:panels.children.map(p=>({root:p.position.toArray(),faces:(p.isMesh?p:p.children[0]).geometry.attributes.position.count/3})),tyres:tyres.length,gear:gear?.children.map(p=>p.position.toArray()),down,half};
     },{kind,pacific});console.log('Original aircraft rig:',JSON.stringify(report));
     await page.screenshot({path:path.join(out,'build192-'+kind+'-gear-flaps.png')});
     if(['bf109','fw190','ju87'].includes(kind)){

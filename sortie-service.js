@@ -16,7 +16,7 @@
    begin(plane,config){p=plane;cfg=config;active=true;ready=false;time=0;armed=repaired=false;startFuel=p.fuel;startHull=p.hull;p.throttle=0;panel.hidden=false;button.disabled=true;this.update(0);},
    update(dt){if(!active)return;if(p.alive===false){this.clear();return;}time=Math.min(13,time+Math.max(0,dt));
     p.fuel=startFuel+(100-startFuel)*Math.min(1,time/5);
-    if(time>=9&&!armed){for(const key of ['ammo','bombs','rockets','torps'])if(cfg[key]!=null)p[key]=cfg[key];armed=true;}
+    if(time>=9&&!armed){for(const key of ['ammo','bombs','rockets','torps'])if(cfg[key]!=null)p[key]=cfg[key];if(Array.isArray(cfg.gunAmmo))p.gunAmmo=cfg.gunAmmo.slice();armed=true;}
     if(time>=9)p.hull=startHull+(cfg.maxHull-startHull)*Math.min(1,(time-9)/4);
     if(time>=13&&!repaired){repaired=true;root.SortieFeatures.Damage.reset(p,cfg.maxHull);p.gear=1;p.gearTgt=1;p.bingo=false;p.lowFuelT=0;onRepair();}
     ready=time>=13;bar.value=time;

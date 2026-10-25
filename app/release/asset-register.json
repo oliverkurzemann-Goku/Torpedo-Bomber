@@ -1,25 +1,31 @@
 {
   "schema": 1,
   "reviewedOn": "2026-10-23",
-  "build": 202,
+  "build": 203,
   "status": "OPEN — source declarations checked; no external rights authorization obtained",
   "payload": {
-    "bytes": 287628223,
-    "fileCount": 317,
-    "modelCount": 36,
-    "manifestSha256": "87aca0b380685666466c7b51f60203b590e34ff9c7642dced6f0f033f77b725d"
+    "bytes": 291990579,
+    "fileCount": 319,
+    "modelCount": 37,
+    "manifestSha256": "4a8ab45036c5d18e13b1f392a1df9139db6903a299b1276e8857b38b31b93095"
   },
   "files": [
     {
       "path": "ASSET-CREDITS.md",
-      "bytes": 22467,
-      "sha256": "984ae93971f6df430343801131df6286f2eaf0a89f68b3baba4f154be0f571ab",
+      "bytes": 23810,
+      "sha256": "88a13cd58f1eedd17a87332b5094bee881597f22a1efe84cd4669619484b9d24",
       "kind": "code-or-notice"
     },
     {
       "path": "aircraft-articulation.js",
-      "bytes": 16086,
-      "sha256": "fdbbc377ad19bf3c202c5f5c2dc6243328db51119b0eee3323c1e113fc6315ef",
+      "bytes": 16524,
+      "sha256": "1871c80ec98db6ddc88f6c95f4e5b0e4a26d9fbae6deeeb04c917b790e0fae35",
+      "kind": "code-or-notice"
+    },
+    {
+      "path": "aircraft-contract.js",
+      "bytes": 5257,
+      "sha256": "0cfc95b0ea762def314cd3b9aac9449ab2cacde69ad288c54fe1c35bc14d724f",
       "kind": "code-or-notice"
     },
     {
@@ -92,6 +98,12 @@
       "path": "assets/aircraft/b17-helijah.glb",
       "bytes": 5977464,
       "sha256": "bcdf03e6bed86bd8b246a24cf1b8f86a259debe426dbbdd42986d8c278b778db",
+      "kind": "model"
+    },
+    {
+      "path": "assets/aircraft/bf109f2-own.glb",
+      "bytes": 4348948,
+      "sha256": "efb76f22bf5057a1f24feab3f450787f1bc5decad8a76f79cbbac16698981f1f",
       "kind": "model"
     },
     {
@@ -517,7 +529,7 @@
     {
       "path": "index.html",
       "bytes": 7260,
-      "sha256": "4ba56f22fbf32c38906ee62ac88674c5d35d57434e381fad993404e0138c412d",
+      "sha256": "3f5b7bd447b37764d902086c205fc1eff82d632ef66c5a1eba861875dd1d481f",
       "kind": "code-or-notice"
     },
     {
@@ -642,8 +654,8 @@
     },
     {
       "path": "remagen-mission.html",
-      "bytes": 360681,
-      "sha256": "9e5b175c4393ba64bede1ced4a06a61150e19f3a79545cb81a33ec6168c712a0",
+      "bytes": 366568,
+      "sha256": "e24239142b27f023f67d44de2f10427dd9a9dc8ebfb57db3a3fa87f8186d267b",
       "kind": "code-or-notice"
     },
     {
@@ -690,20 +702,20 @@
     },
     {
       "path": "sortie-features.js",
-      "bytes": 9390,
-      "sha256": "a2df7836dd5713a17e1c86944803e46ca3efc52cad07561117e2beb2e6c6d19e",
+      "bytes": 9537,
+      "sha256": "1f2aa402e46f51714f1b7204e0e48f192aead0e1b0bbdf1cc195839782f6c890",
       "kind": "code-or-notice"
     },
     {
       "path": "sortie-fuel.js",
-      "bytes": 898,
-      "sha256": "d53585d3f7f18f6e25edeaaaf7ef75f5451221e5ad78f08277d7c1282086949f",
+      "bytes": 1174,
+      "sha256": "1b82b71ab01ebb9325307ace2ff3a9cc29df00a5341da0070536d2eb98db67fa",
       "kind": "code-or-notice"
     },
     {
       "path": "sortie-service.js",
-      "bytes": 2856,
-      "sha256": "df84e55296bffd3605c7fe109af8220833f39ff262a26b35d7bf0e7ff478da47",
+      "bytes": 2916,
+      "sha256": "5f1e90d3893ef8bebaad13216c9fe23691a453ad5c8a3fab9bb72cca5c4b95b8",
       "kind": "code-or-notice"
     },
     {
@@ -1837,7 +1849,7 @@
     {
       "path": "torpedo-carrier.html",
       "bytes": 429082,
-      "sha256": "5a294c6056b166dceee3284ee47895cc6a36b2e7610648fa1933cf8421689e70",
+      "sha256": "5e60cf66ba7691af1b2c5b3c4d623c2795b543e70e683399c21a226a795e446a",
       "kind": "code-or-notice"
     },
     {
@@ -1943,6 +1955,30 @@
       "bundleRedistributionGrant": null,
       "releaseApproved": false,
       "nextAction": "Retain license/attribution/change notices, validate mesh/texture provenance and app-store redistribution conditions."
+    },
+    {
+      "path": "assets/aircraft/bf109f2-own.glb",
+      "bytes": 4348948,
+      "sha256": "efb76f22bf5057a1f24feab3f450787f1bc5decad8a76f79cbbac16698981f1f",
+      "title": "Messerschmitt Bf 109 F-2, Stab/JG 51 (own build from the reference PDF)",
+      "uploader": "Torpedo-Bomber project (code-built, scripts/build-own-bf109.cjs)",
+      "originalRightsholder": null,
+      "sourceUrl": "scripts/build-own-bf109.cjs",
+      "acquiredOn": null,
+      "declaredLicense": "project-own; geometry measured on a CC BY-SA 2.0 three-view (B. Huber), finish measured on a CC BY-SA 2.5 profile (H. Ringlstetter)",
+      "licenseUrl": null,
+      "licenseEvidence": "Exact runtime GLB asset.extras",
+      "sourceCheck": null,
+      "embeddedImageCount": 2,
+      "externalImages": [],
+      "originalFile": null,
+      "originalSha256": null,
+      "changes": "No third-party mesh or texture. Station table measured on the drawings (scripts/own-aircraft/measure-bf109f.mjs), lofted and painted procedurally; silhouette gate and rig contract v1 passed at release.",
+      "issue": "own-build-reference-review-open",
+      "commercialPermissionDocument": null,
+      "bundleRedistributionGrant": null,
+      "releaseApproved": false,
+      "nextAction": "Own mesh and paint; decide whether measuring the CC BY-SA reference drawings makes it an adaptation (attribution/share-alike); credits kept in ASSET-CREDITS.md."
     },
     {
       "path": "assets/aircraft/p47-weathered.glb",

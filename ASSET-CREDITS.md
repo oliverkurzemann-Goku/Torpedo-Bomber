@@ -1,5 +1,25 @@
 # Squadron asset credits
 
+## Bf 109 F-2, own build (Build 203)
+
+Messerschmitt Bf 109 F-2, Stab/JG 51, Werner Mölders, June 1941 — `assets/aircraft/bf109f2-own.glb`
+Built by this project in code (scripts/build-own-bf109.cjs); no third-party mesh or texture.
+Shape measured on the three-view in the owner-supplied PDF (German Wikipedia article
+"Messerschmitt Bf 109", oldid 71076859, exported 2010-02-24):
+- Abb. 16 three-view `Bf109F_3Seiten_neu.jpg` — Björn Huber (de.wikipedia), CC BY-SA 2.0
+  https://creativecommons.org/licenses/by-sa/2.0/
+Finish positions and colours measured on:
+- Abb. 53 profile `Bf109F-2_Moelders_JG51_kl96.jpg` — Herbert Ringlstetter (Aviaticus.com), CC BY-SA 2.5
+  https://creativecommons.org/licenses/by-sa/2.5/
+Dimensions, engine, tank and armament from the article's tables (text CC BY-SA 3.0 / GFDL).
+
+Neither drawing is embedded or copied into the model: outlines become a measured station table
+(app/model-candidates/references/bf109f2/shape.json), the paint is drawn procedurally from
+measured positions and colours. Whether that makes the model an adaptation of the drawings
+(attribution / share-alike) is an open rights question, not decided here.
+Swastika on the fin deliberately omitted. 71,162 triangles; 2048 px albedo, 1024 px normal map.
+Output SHA256: efb76f22bf5057a1f24feab3f450787f1bc5decad8a76f79cbbac16698981f1f
+
 ## SBD Dauntless (Build 201)
 
 SBD Dauntless — Squadron 1942 animated derivative (Build 201)

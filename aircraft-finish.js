@@ -17,13 +17,16 @@
    const cube=new THREE.CubeTexture(faces);cube.encoding=THREE.sRGBEncoding;cube.needsUpdate=true;
    const generator=new THREE.PMREMGenerator(renderer);target=generator.fromCubemap(cube);generator.dispose();cube.dispose();return target.texture;
   }
-  function decorate(src,kind){
+  // authored: a delivered PBR model (rig contract) keeps its measured colours and roughness and
+  // only receives the shared sky reflection; the old skins are brightened and glossed as before.
+  function decorate(src,kind,{authored=false}={}){
    if(!['bf109','me262'].includes(kind))return;
    const env=environment(),clones=new Map();
    src.traverse(o=>{if(!o.isMesh)return;const array=Array.isArray(o.material),mats=(array?o.material:[o.material]).map(m=>{
     if(!m||!m.color)return m;if(clones.has(m))return clones.get(m);
     const glass=m.transparent&&m.opacity<.9;
-    const n=m.clone();n.envMap=env;n.envMapIntensity=glass?.72:.75;
+    const n=m.clone();n.envMap=env;n.envMapIntensity=glass?.72:.75;n.userData.dayEnvMap=n.envMapIntensity;
+    if(authored){n.userData.aircraftFinish=kind;n.needsUpdate=true;materials.add(n);clones.set(m,n);return n;}
     if(glass){n.color.setHex(0xa6bdcb);n.roughness=.12;n.metalness=.12;}
     else{
      n.color.multiplyScalar(kind==='me262'?1.32:1.24);
@@ -35,7 +38,7 @@
     n.userData.aircraftFinish=kind;n.needsUpdate=true;materials.add(n);clones.set(m,n);return n;
    });o.material=array?mats:mats[0];});
   }
-  return {decorate,setNight(night){for(const m of materials)m.envMapIntensity=night?.075:(m.transparent?.72:.75);},get materials(){return materials;},dispose(){target?.dispose();materials.clear();}};
+  return {decorate,setNight(night){for(const m of materials)m.envMapIntensity=night?.075:(m.userData.dayEnvMap??(m.transparent?.72:.75));},get materials(){return materials;},dispose(){target?.dispose();materials.clear();}};
  }
  root.AircraftFinish={create};if(typeof module==='object'&&module.exports)module.exports=root.AircraftFinish;
 })(typeof window==='undefined'?globalThis:window);
