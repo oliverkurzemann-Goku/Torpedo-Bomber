@@ -18,7 +18,7 @@ const server=http.createServer((req,res)=>{const file=path.resolve(root,'.'+deco
   const page=await browser.newPage({viewport:{width:1194,height:820},hasTouch:true}),errors=[];page.setDefaultTimeout(180000);
   page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(/Shader Error|VALIDATE_STATUS|not compiled/i.test(m.text()))errors.push(m.text());});
   await page.addInitScript(()=>{window.requestAnimationFrame=()=>0;});// frames are driven explicitly
-  await page.goto('http://127.0.0.1:'+server.address().port+'/remagen-mission.html?campaign=1&v=203');
+  await page.goto('http://127.0.0.1:'+server.address().port+'/remagen-mission.html?campaign=1&v=205');
   await page.waitForFunction(()=>typeof state!=='undefined'&&state===ST.MENU&&typeof realWorldReady!=='undefined'&&realWorldReady&&!!renderer,null,{polling:100});
   await page.evaluate(()=>{renderer.setPixelRatio(.5);renderer.shadowMap.enabled=false;});
   const index=await page.evaluate(()=>MISSIONS.findIndex(m=>m.id==='boxes'));

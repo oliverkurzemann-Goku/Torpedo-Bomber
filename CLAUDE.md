@@ -38,7 +38,7 @@ Tests: neu `okinawa/tests/own-bf109-browser.cjs` (echtes Spiel: Modell zuerst, V
 Räder/Beine per Strahl durch die echte Haut zu 100 % innen, Geschosse an den Mündungen, Kanone nach 14,9 s leer; Bilder
 `test-visuals/build203-bf109-*.png`). Erweitert: player-guns (Bf 109 20/60/120 FPS), sortie-fuel, own-bf109-pipeline
 (gemessenes Modell, Fahrwerk in der Haut), app-payload, europe-guns-browser (3 Rohre), field-landing (Stall 34,5).
-Build 203 an Board, beiden Spielen, Menü-CSS, App-Payload (319 Dateien, 37 Modelle) und Xcode; Register neu, neuer
+Build 205 an Board, beiden Spielen, Menü-CSS, App-Payload (317 Dateien, 36 Modelle) und Xcode; Register neu, neuer
 Status `own-build-reference-review-open`: ob das Vermessen der CC-BY-SA-Zeichnungen eine Bearbeitung ist, ist offen.
 Kein iPad-Test. Auf Nutzerfreigabe („bau endlich die me109 ein“) auf main übertragen; auf dem Feature-Branch hieß
 diese Arbeit Build 203, main hatte inzwischen Build 203/204 (P-47 aus anderer Sitzung) → hier Build 205. Übertragen
@@ -279,7 +279,7 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 203 · Thunderbolt Squadron BUILD 203 · Remagen-Kern 23 / Fahrzeuge 22**
+Stand bei Übergabe: **Torpedo Squadron BUILD 205 · Thunderbolt Squadron BUILD 205 · Remagen-Kern 23 / Fahrzeuge 22**
 
 **Build 198 (22.10.2026): P-47-Fotolackierung, Einsatzspuren und natives Fahrwerk; Terrain-Fix aus Build 197 erhalten.**
 `assets/aircraft/p47-weathered.glb` ist ein ausdrücklich gekennzeichnetes Derivat des
