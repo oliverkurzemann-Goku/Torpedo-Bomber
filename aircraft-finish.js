@@ -26,7 +26,7 @@
     if(!m||!m.color)return m;if(clones.has(m))return clones.get(m);
     const glass=m.transparent&&m.opacity<.9;
     const n=m.clone();n.envMap=env;n.envMapIntensity=glass?.72:.75;n.userData.dayEnvMap=n.envMapIntensity;
-    if(authored){n.userData.aircraftFinish=kind;n.needsUpdate=true;materials.add(n);clones.set(m,n);return n;}
+    if(authored){n.userData.aircraftFinish=kind;n.userData.aircraftFinishAuthored=true;n.needsUpdate=true;materials.add(n);clones.set(m,n);return n;}
     if(glass){n.color.setHex(0xa6bdcb);n.roughness=.12;n.metalness=.12;}
     else{
      n.color.multiplyScalar(kind==='me262'?1.32:1.24);
