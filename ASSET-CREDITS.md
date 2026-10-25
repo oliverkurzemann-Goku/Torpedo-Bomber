@@ -1,3 +1,37 @@
+## F4U-1C Corsair — own original procedural model (Build 208)
+
+Runtime: `corsair-native.js`. The original model is built in JavaScript from authored geometric
+stations and independent mechanical assemblies: inverted gull wing, raised clear-view/bubble
+canopy, R-2800 cowl, three-blade propeller, retracting main and tail undercarriage,
+landing flaps, ailerons, elevators, rudder, arrestor hook and four 20 mm M2 cannon.
+It uses no downloaded, traced or imported third-party 3D mesh or texture.
+The previous `f4u-1c_corsair_war_thunder.glb` remains archived in Git
+but is no longer loaded by the Pacific campaign or copied into the offline app bundle.
+
+Reference facts (not source models):
+- Pilot's Handbook AN 01-45HA-1, F4U-1C, F4U-1D, FG-1 variants,
+  https://www.vmfa251.org/pdffiles/Corsair%20Manual.pdf
+- National Naval Aviation Museum, Corsair variant development, armament and clear-view canopy,
+  https://www.history.navy.mil/content/history/museums/nnam/explore/collections/aircraft/f/fg-1d-corsair.html
+- F4U family variants and dimensions,
+  https://www.uswarplanes.net/corsair.pdf
+- Historical performance reference (F4U-1 family), https://www.wwiiaircraftperformance.org/f4u/f4u.html
+
+The aircraft is named F4U-1C for its 20-mm cannon wing and late cockpit.
+Loadouts in gameplay are configurable: 4 × 20 mm only, 2 × 1,000 lb bombs,
+8 × 5-inch HVAR rockets, or 2 × 500 lb bombs plus 8 HVAR. Missile launchers and heavy
+stores reflect late-war Corsair fighter-bomber developments, especially F4U-1D.
+The mixed cannon/HVAR configuration is a gameplay combination, not a claim that
+every historical F4U-1C airframe had this certified fit. No exact serial-specific
+engineering drawings or store release trials have been verified.
+
+Dynamic display and release: `CorsairNative.configure`,
+`CorsairNative.consume` in the native rig; player armament selection and
+rocket trajectories in `torpedo-carrier.html`. The game flight model is tuned
+for playable low-altitude sorties, not a certified reproduction of performance data.
+Model and test code are original project code. The commercial-release review still
+includes other game assets independently of this Corsair.
+
 # Squadron asset credits
 
 ## Bf 109 F-2, own build (Build 203)
