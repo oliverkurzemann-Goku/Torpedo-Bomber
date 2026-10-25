@@ -14,7 +14,8 @@ vm.runInThisContext(fs.readFileSync(process.env.GLTF_LOADER_R128,'utf8'));
 const root=path.resolve(__dirname,'../..'),html=fs.readFileSync(path.join(root,'remagen-mission.html'),'utf8');
 const start=html.indexOf('let jetHeatTexture=null'),end=html.indexOf('function buildAircraft(kind){',start);
 assert(start>0&&end>start,'jet heat implementation found');
-const {attachJetExhaust,updateJetExhaust}=vm.runInNewContext(html.slice(start,end)+'\n({attachJetExhaust,updateJetExhaust})',{THREE});
+const Me262Rig=require(path.join(root,'me262-native.js'));
+const {attachJetExhaust,updateJetExhaust}=vm.runInNewContext(html.slice(start,end)+'\n({attachJetExhaust,updateJetExhaust})',{THREE,Me262Rig});
 const bytes=fs.readFileSync(path.join(root,'me262.glb'));
 new THREE.GLTFLoader().parse(bytes.buffer.slice(bytes.byteOffset,bytes.byteOffset+bytes.byteLength),'',({scene})=>{
  const plane=new THREE.Group();plane.add(scene);
