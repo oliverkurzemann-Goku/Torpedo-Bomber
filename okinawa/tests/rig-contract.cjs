@@ -66,7 +66,7 @@ function aircraft(mutate={}){
   assert(AircraftContract.isContract(frame));
   // The shipped Rhine rigModel must return on the contract line before any search or cut.
   const html=fs.readFileSync(path.join(root,'remagen-mission.html'),'utf8'),start=html.indexOf('function rigModel(root, kind){'),end=html.indexOf('\n  root.updateMatrixWorld(true);',start);
-  assert(html.includes('<script src="aircraft-contract.js?v=1"></script>\n<script src="aircraft-articulation.js'),'contract loads before articulation');
+  assert(/<script src="aircraft-contract\.js\?v=\d+"><\/script>\n<script src="aircraft-articulation\.js/.test(html),'contract loads before articulation');
   vm.runInThisContext(html.slice(start,end)+'\nthrow Error("contract model fell through to the heuristic rig");}');
   assert.match(rigModel(frame,'bf109'),/^rig contract v1 test-box-1: .*no mesh cuts$/);
   AircraftArticulation.install(frame,'bf109');
