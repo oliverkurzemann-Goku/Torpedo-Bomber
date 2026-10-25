@@ -202,7 +202,10 @@ function renderStores(r){
  const stores=r.getObjectByName('Corsair stores');
  const bombs=stores.children.filter(n=>n.name==='1000lb center-section bomb');
  const rockets=stores.children.filter(n=>n.name==='HVAR');
- bombs.forEach((n,i)=>n.visible=i<bombCount);rockets.forEach((n,i)=>n.visible=i<rocketCount);
+ bombs.forEach((n,i)=>{n.visible=i<bombCount;n.scale.setScalar(r.userData.stores==='mixed'?.76:1);});
+ // Removing rockets alternately from port/starboard preserves symmetric salvos.
+ const order=[0,4,1,5,2,6,3,7],fired=8-rocketCount;
+ rockets.forEach((n,i)=>n.visible=order.indexOf(i)>=fired);
  stores.children.filter(n=>n.name==='Heavy bomb pylon').forEach(n=>n.visible=bombCount>0);
  stores.children.filter(n=>n.name==='HVAR zero-length launcher').forEach(n=>n.visible=rocketCount>0);
 }
