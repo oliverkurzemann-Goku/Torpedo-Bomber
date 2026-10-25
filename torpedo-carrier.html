@@ -2203,6 +2203,7 @@ function startMission(idx){
   P.rockets=m.corsair?(['rockets','mixed'].includes(corsairLoadout)?8:0):0;P.alive=true;
   for(const shot of corsairRockets)GameRuntime.release(shot.mesh);corsairRockets=[];
   if(m.corsair&&corsairTemplate)CorsairNative.configure(corsairTemplate,corsairLoadout);
+  if(m.corsair&&playerSBD&&CorsairNative.isNative(playerSBD))CorsairNative.configure(playerSBD,corsairLoadout);
   SortieFeatures.Damage.reset(P);voiceRadio.cancel();soundscape.reset();
   clearArrestCable();P.arrestRun=null;
   P.touchResolved=false; P.boltMsgTimer=0; P.rtb=false;P.onDeck=false;P.deckRun=null;P.deckQuaternion=null;P.landingSample=null;P.bolters=0;
