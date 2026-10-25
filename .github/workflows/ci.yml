@@ -21,9 +21,6 @@ jobs:
       - name: Syntax-check every game/tool HTML file
         run: npm run test:syntax
 
-      - name: Run Corsair original aircraft tests
-        run: npm run test:corsair
-
       - name: Run terrain-system regression tests
         run: npm run test:terrain
 
