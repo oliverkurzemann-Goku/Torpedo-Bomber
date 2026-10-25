@@ -183,7 +183,7 @@ function create(){
  root.userData.kind='corsair';root.userData.dimensions={span:12.5,length:10.2};
  mainAirframe(root);gearRig(root);
  const load=stores(root);root.userData.stores='bombs';root.userData.bombCount=2;root.userData.rocketCount=0;
- root.userData.corsairStores=load;
+ // Do not store Object3D references in userData: Three.js clone(true) JSON-copies it.
  root.traverse(o=>{if(o.isMesh){o.frustumCulled=false;}});
  configure(root,'bombs');pose(root,1,{left:0,right:0},0,0,0);
  return root;
