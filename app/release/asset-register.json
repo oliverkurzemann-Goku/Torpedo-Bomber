@@ -7,7 +7,7 @@
     "bytes": 288243656,
     "fileCount": 320,
     "modelCount": 36,
-    "manifestSha256": "10ad34a3555d140947458e411ec137f3e4b86019a1744f8e004d7ff536f1ec0f"
+    "manifestSha256": "d0f3ac82005b73bf80a1433771d445aaa9d863c952347b1c878cf020307b76e5"
   },
   "files": [
     {
@@ -661,7 +661,7 @@
     {
       "path": "remagen-mission.html",
       "bytes": 367761,
-      "sha256": "66fa25209b248ac80e1a63d93a970a05f65ed39d4aec98613bb6cc3d9aad7d90",
+      "sha256": "0c2050249c5b442ed59794565215ce22fd590bd4d5e763da1d6a21e8b37e4e38",
       "kind": "code-or-notice"
     },
     {
