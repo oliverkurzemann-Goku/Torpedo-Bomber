@@ -2705,6 +2705,60 @@ function dropTorpedo(){           // primary weapon button (torpedo OR bomb)
   sfxWhoosh(); flash("FISH AWAY",500);
 }
 
+// Four 20mm cannon remain available regardless of the external-store selection.
+function launchCorsairRocket(){
+ if(!isCorsair()||state!==ST.FLIGHT||!P.alive||P.onDeck)return;
+ if(!(P.rockets>0)){flash('NO HVAR ROCKETS',650);return;}
+ planeGroup.quaternion.copy(pacificAircraftQuaternion());
+ planeGroup.position.copy(P.pos);planeGroup.updateMatrixWorld(true);
+ const airframe=playerSBD?.getObjectByName('Corsair_Original');
+ const rack=airframe?.getObjectByName('Corsair stores');
+ const carried=rack?.children.filter(n=>n.name==='HVAR')||[];
+ // Fire a paired, alternating-wing sequence; the corresponding underwing store disappears.
+ const station=carried[P.rockets-1];
+ const from=station?.getWorldPosition(new THREE.Vector3())||P.pos.clone().add(new THREE.Vector3(0,-1,0));
+ const vel=noseDir().multiplyScalar(P.spd+190);
+ const round=new THREE.Group();round.name='5-inch HVAR';
+ const steel=new THREE.MeshStandardMaterial({color:0x63747a,metalness:.35,roughness:.65});
+ const body=new THREE.Mesh(new THREE.CylinderGeometry(.064,.064,1.25,12),steel);
+ body.rotation.x=Math.PI/2;round.add(body);
+ const warhead=new THREE.Mesh(new THREE.ConeGeometry(.071,.22,12),steel);
+ warhead.rotation.x=Math.PI/2;warhead.position.z=.72;round.add(warhead);
+ for(let i=0;i<4;i++){
+  const fin=new THREE.Mesh(new THREE.BoxGeometry(.014,.21,.25),steel);
+  fin.position.z=-.50;fin.rotation.z=i*Math.PI/2;round.add(fin);
+ }
+ round.position.copy(from);round.lookAt(from.clone().add(vel));
+ scene.add(round);GameRuntime.own(round);
+ P.rockets--;if(playerSBD)CorsairNative.consume(playerSBD,'rocket',P.rockets);
+ corsairRockets.push({mesh:round,vel,life:7,smoke:0});
+ updateHUD();sfxWhoosh();flash('HVAR AWAY',420);
+}
+function updateCorsairRockets(dt){
+ for(let i=corsairRockets.length-1;i>=0;i--){
+  const shot=corsairRockets[i];shot.life-=dt;
+  shot.vel.y-=2*dt;
+  const prev=shot.mesh.position.clone();
+  shot.mesh.position.addScaledVector(shot.vel,dt);
+  shot.mesh.lookAt(shot.mesh.position.clone().add(shot.vel));
+  shot.smoke-=dt;
+  if(shot.smoke<=0){shot.smoke=.13;spawnSmoke(prev.x,prev.y,prev.z,0xc7c2b6,.13);}
+  const p=shot.mesh.position,ground=shoreHeight(p.x,p.z);
+  let impact=false;
+  for(const s of ships){
+   if(!s.alive||p.y<0||p.y>28)continue;
+   if(Math.hypot(p.x-s.group.position.x,p.z-s.group.position.z)<s.radius){
+    hitShip(s,false,p.clone(),'rocket');impact=true;break;
+   }
+  }
+  if(!impact&&ground>.2&&p.y<=ground+2){
+   for(const t of shoreTargets)if(t.alive&&Math.hypot(t.def.x-p.x,t.def.z-p.z)<75)hitShoreTarget(t,50);
+   spawnExplosion(p.x,ground+2,p.z,.95);sfxBoom(.6);impact=true;
+  }
+  if(!impact&&p.y<=.4){spawnSplash(p.x,p.z,true);impact=true;}
+  if(impact||shot.life<=0){GameRuntime.release(shot.mesh);corsairRockets.splice(i,1);}
+ }
+}
 function releaseBomb(){
   if(P.onDeck)return;
   if(P.torps<=0){ flash("NO BOMBS",600); return; }
