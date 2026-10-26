@@ -1,0 +1,274 @@
+{
+  "title": "F4U-1D Corsair, late bubble canopy, original game model",
+  "dimensions": {
+    "span": 12.4968,
+    "length": 10.16,
+    "propellerDiameter": 3.9878
+  },
+  "reference": {
+    "document": "AN 01-45HA-1, Corsair Manual.pdf",
+    "sha256": "178c44c51a2f258661196b30382be68146cdd931c9f50af17cd2c3a17899ccb6",
+    "pages": [
+      8,
+      20,
+      21,
+      65
+    ],
+    "use": "General dimensions and arrangement only. No reference images embedded."
+  },
+  "provenance": {
+    "geometry": "Authored station lofts and fittings in scripts/build-own-corsair.cjs",
+    "textures": "Original deterministic paint, panels, rivets and fictional markings",
+    "thirdPartyMeshes": [],
+    "thirdPartyTextures": []
+  },
+  "assumptions": [
+    "Game-scale approximation, not engineering geometry.",
+    "Cross sections, cockpit details and kinematics are authored approximations.",
+    "Fictional number 27 and wear pattern; no copied profile or nose art.",
+    "Existing game performance retained."
+  ],
+  "fuselage": [
+    {
+      "z": -5.7,
+      "top": 0.21,
+      "bottom": 0.04,
+      "half": 0.015,
+      "wide": 0.12,
+      "nTop": 2,
+      "nBot": 2
+    },
+    {
+      "z": -5.45,
+      "top": 0.28,
+      "bottom": -0.02,
+      "half": 0.11,
+      "wide": 0.12,
+      "nTop": 2,
+      "nBot": 2
+    },
+    {
+      "z": -5.0,
+      "top": 0.34,
+      "bottom": -0.12,
+      "half": 0.2,
+      "wide": 0.11,
+      "nTop": 2,
+      "nBot": 2
+    },
+    {
+      "z": -4.4,
+      "top": 0.42,
+      "bottom": -0.23,
+      "half": 0.29,
+      "wide": 0.1,
+      "nTop": 2,
+      "nBot": 2
+    },
+    {
+      "z": -3.8,
+      "top": 0.49,
+      "bottom": -0.35,
+      "half": 0.37,
+      "wide": 0.08,
+      "nTop": 2,
+      "nBot": 2
+    },
+    {
+      "z": -3.0,
+      "top": 0.56,
+      "bottom": -0.49,
+      "half": 0.47,
+      "wide": 0.07,
+      "nTop": 2,
+      "nBot": 2
+    },
+    {
+      "z": -2.2,
+      "top": 0.65,
+      "bottom": -0.59,
+      "half": 0.55,
+      "wide": 0.06,
+      "nTop": 2,
+      "nBot": 2
+    },
+    {
+      "z": -1.5,
+      "top": 0.73,
+      "bottom": -0.66,
+      "half": 0.59,
+      "wide": 0.04,
+      "nTop": 2,
+      "nBot": 2
+    },
+    {
+      "z": -1.1,
+      "top": 0.69,
+      "bottom": -0.69,
+      "half": 0.62,
+      "wide": 0.02,
+      "nTop": 2,
+      "nBot": 2
+    },
+    {
+      "z": -0.4,
+      "top": 0.64,
+      "bottom": -0.72,
+      "half": 0.66,
+      "wide": 0,
+      "nTop": 2,
+      "nBot": 2
+    },
+    {
+      "z": 0.3,
+      "top": 0.67,
+      "bottom": -0.73,
+      "half": 0.7,
+      "wide": 0,
+      "nTop": 2,
+      "nBot": 2
+    },
+    {
+      "z": 1.1,
+      "top": 0.71,
+      "bottom": -0.73,
+      "half": 0.73,
+      "wide": 0,
+      "nTop": 2,
+      "nBot": 2
+    },
+    {
+      "z": 2.1,
+      "top": 0.73,
+      "bottom": -0.72,
+      "half": 0.74,
+      "wide": 0,
+      "nTop": 2,
+      "nBot": 2
+    },
+    {
+      "z": 2.65,
+      "top": 0.72,
+      "bottom": -0.7,
+      "half": 0.72,
+      "wide": 0,
+      "nTop": 2,
+      "nBot": 2
+    },
+    {
+      "z": 2.82,
+      "top": 0.69,
+      "bottom": -0.68,
+      "half": 0.7,
+      "wide": 0,
+      "nTop": 2,
+      "nBot": 2
+    }
+  ],
+  "wing": [
+    {
+      "s": 0,
+      "le": 1.37,
+      "te": -1.65,
+      "y": -0.32,
+      "t": 0.16,
+      "twist": 2
+    },
+    {
+      "s": 0.65,
+      "le": 1.37,
+      "te": -1.65,
+      "y": -0.4,
+      "t": 0.16,
+      "twist": 2
+    },
+    {
+      "s": 1.3,
+      "le": 1.35,
+      "te": -1.62,
+      "y": -0.64,
+      "t": 0.16,
+      "twist": 1.5
+    },
+    {
+      "s": 2.1,
+      "le": 1.3,
+      "te": -1.57,
+      "y": -0.96,
+      "t": 0.15,
+      "twist": 1
+    },
+    {
+      "s": 2.35,
+      "le": 1.27,
+      "te": -1.55,
+      "y": -0.99,
+      "t": 0.14,
+      "twist": 0.5
+    },
+    {
+      "s": 2.65,
+      "le": 1.22,
+      "te": -1.54,
+      "y": -0.94,
+      "t": 0.135,
+      "twist": 0
+    },
+    {
+      "s": 3.2,
+      "le": 1.06,
+      "te": -1.51,
+      "y": -0.85,
+      "t": 0.125,
+      "twist": -0.5
+    },
+    {
+      "s": 4.3,
+      "le": 0.72,
+      "te": -1.42,
+      "y": -0.66,
+      "t": 0.105,
+      "twist": -1
+    },
+    {
+      "s": 5.45,
+      "le": 0.35,
+      "te": -1.27,
+      "y": -0.46,
+      "t": 0.09,
+      "twist": -1.5
+    },
+    {
+      "s": 5.85,
+      "le": 0.16,
+      "te": -1.13,
+      "y": -0.39,
+      "t": 0.085,
+      "twist": -2
+    },
+    {
+      "s": 6.1,
+      "le": -0.08,
+      "te": -0.96,
+      "y": -0.35,
+      "t": 0.075,
+      "twist": -2
+    },
+    {
+      "s": 6.22,
+      "le": -0.35,
+      "te": -0.73,
+      "y": -0.33,
+      "t": 0.055,
+      "twist": -2
+    },
+    {
+      "s": 6.2484,
+      "le": -0.51,
+      "te": -0.55,
+      "y": -0.325,
+      "t": 0.03,
+      "twist": -2
+    }
+  ]
+}
