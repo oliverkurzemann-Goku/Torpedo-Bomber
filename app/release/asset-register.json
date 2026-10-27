@@ -1,25 +1,25 @@
 {
   "schema": 1,
   "reviewedOn": "2026-10-23",
-  "build": 207,
+  "build": 208,
   "status": "OPEN — source declarations checked; no external rights authorization obtained",
   "payload": {
-    "bytes": 274162690,
-    "fileCount": 321,
+    "bytes": 263310136,
+    "fileCount": 322,
     "modelCount": 36,
-    "manifestSha256": "2e117b5d54d8f7ed538ed772b46ad3a7c850eeb9d9ddf48d3f628e77a0f79811"
+    "manifestSha256": "6b6f061294c349a1c6990bd009a62eba9819ae2bec856c73f1c5c13b0015d866"
   },
   "files": [
     {
       "path": "ASSET-CREDITS.md",
-      "bytes": 25629,
-      "sha256": "2f8369ae678c9f41fe202064ce9a598ae062869bcb418924e70dc1dc02184d23",
+      "bytes": 26330,
+      "sha256": "ccff759a7ff8cbf7c935c0f8a50b70ff8672dd8b7786edbfb13c75a5b177578e",
       "kind": "code-or-notice"
     },
     {
       "path": "aircraft-articulation.js",
-      "bytes": 17442,
-      "sha256": "fe9d291647cc3cee8dc86797376d27db3d6c9575752df539ad5270dc0cbd9d4e",
+      "bytes": 17809,
+      "sha256": "554eab2b5551e5c34f6f42f30af8ba5184453d9ab4a04010ce46c8c4cfdcac4f",
       "kind": "code-or-notice"
     },
     {
@@ -104,6 +104,12 @@
       "path": "assets/aircraft/bf109f2-own.glb",
       "bytes": 4348948,
       "sha256": "efb76f22bf5057a1f24feab3f450787f1bc5decad8a76f79cbbac16698981f1f",
+      "kind": "model"
+    },
+    {
+      "path": "assets/aircraft/corsair-f4u1d-own.glb",
+      "bytes": 5584056,
+      "sha256": "5e037186b8c8dc2b21c3d6ed65b0494f17b307f8266fc9f3b4f6d47609af2b9c",
       "kind": "model"
     },
     {
@@ -432,8 +438,8 @@
     },
     {
       "path": "checkpoint-pacific.js",
-      "bytes": 6368,
-      "sha256": "21fc13a04c01c46ae2e563752a23695265a4901f1e50aff2d255b7e7ec461ab7",
+      "bytes": 6539,
+      "sha256": "ac7af3655436a92c8694c0941e1123785892262bdc56500e66ca2dae5981026e",
       "kind": "code-or-notice"
     },
     {
@@ -446,6 +452,12 @@
       "path": "combat-fx.js",
       "bytes": 7845,
       "sha256": "c1b67a1c61edf7a5900b9f79c2f26aee0c1849bbfe608a3a050b838830e71f34",
+      "kind": "code-or-notice"
+    },
+    {
+      "path": "corsair-native.js",
+      "bytes": 4125,
+      "sha256": "ccab7be3c29b3a9e71e44a534f3eb1b343c1356625b683ab746eaa38ddfb972b",
       "kind": "code-or-notice"
     },
     {
@@ -465,12 +477,6 @@
       "bytes": 2718,
       "sha256": "b994931bc345769767923756db5d2e5a84c7382f468acac224f0e2a034279e77",
       "kind": "code-or-notice"
-    },
-    {
-      "path": "f4u-1c_corsair_war_thunder.glb",
-      "bytes": 16443976,
-      "sha256": "b9a4ef749a786743dfaf19d5a36262d570734dad4c48e516857d4650150c329a",
-      "kind": "model"
     },
     {
       "path": "flak88_sfl.glb",
@@ -541,7 +547,7 @@
     {
       "path": "index.html",
       "bytes": 7260,
-      "sha256": "ce11052358388447f73214a983da505b39d7d23c485b93c48e2b9a83fb8b5829",
+      "sha256": "df98593d836513b49d11f46181a3391a847d67d7a86ee079fc7f8fb6e6766d49",
       "kind": "code-or-notice"
     },
     {
@@ -624,8 +630,8 @@
     },
     {
       "path": "ordnance.js",
-      "bytes": 2085,
-      "sha256": "5da46cd7c6b5bc0f79ad6fb950872c21ef1d08ad9a8ed71fa524dd93e939b65f",
+      "bytes": 2184,
+      "sha256": "e735a28bd256c74f32ba0110ca7be861baaea3f4503fe85a16949f69cf9d01ef",
       "kind": "code-or-notice"
     },
     {
@@ -667,7 +673,7 @@
     {
       "path": "remagen-mission.html",
       "bytes": 368390,
-      "sha256": "173efef57c2721131bd1be37715f48428c0087a97f76aa95a94d1d43e04f01d4",
+      "sha256": "0bb939756354b342431eee40d3de6957974ae907b43ed0572db6c65271951ee8",
       "kind": "code-or-notice"
     },
     {
@@ -708,8 +714,8 @@
     },
     {
       "path": "sortie-checkpoint.js",
-      "bytes": 10446,
-      "sha256": "db6d89f4dd2f943b625ec22ba0d9f32e0f072cf6c813676727b5c27814a0610b",
+      "bytes": 10485,
+      "sha256": "aa8e000c2a198b6172753a5029da7be6e8e65040d77ef43a9fb578695c82f404",
       "kind": "code-or-notice"
     },
     {
@@ -1860,8 +1866,8 @@
     },
     {
       "path": "torpedo-carrier.html",
-      "bytes": 429082,
-      "sha256": "fa122e1bf056d404df8ef4bb6d5ac395d1aee0b4b9ce77783c8b07a8b0eed084",
+      "bytes": 430946,
+      "sha256": "e4588c697849da063350517ef4f99fd759b6a51d9ce12245cbdba91ffb7127c6",
       "kind": "code-or-notice"
     },
     {
@@ -1986,6 +1992,30 @@
       "originalFile": null,
       "originalSha256": null,
       "changes": "No third-party mesh or texture. Station table measured on the drawings (scripts/own-aircraft/measure-bf109f.mjs), lofted and painted procedurally; silhouette gate and rig contract v1 passed at release.",
+      "issue": "own-build-reference-review-open",
+      "commercialPermissionDocument": null,
+      "bundleRedistributionGrant": null,
+      "releaseApproved": false,
+      "nextAction": "Own mesh and paint; review the recorded reference source and any applicable attribution/share-alike obligations; credits kept in ASSET-CREDITS.md."
+    },
+    {
+      "path": "assets/aircraft/corsair-f4u1d-own.glb",
+      "bytes": 5584056,
+      "sha256": "5e037186b8c8dc2b21c3d6ed65b0494f17b307f8266fc9f3b4f6d47609af2b9c",
+      "title": "F4U-1D Corsair — original bubble canopy game model",
+      "uploader": "Oliver Kurzemann / Torpedo-Bomber",
+      "originalRightsholder": null,
+      "sourceUrl": "scripts/own-aircraft/corsair/shape.json",
+      "acquiredOn": null,
+      "declaredLicense": "project-own; original authored geometry and textures",
+      "licenseUrl": null,
+      "licenseEvidence": "Deterministic independent generator in scripts/build-own-corsair.cjs; historical manual used for dimensions and general arrangement only. No imported mesh, texture or reference raster.",
+      "sourceCheck": null,
+      "embeddedImageCount": 2,
+      "externalImages": [],
+      "originalFile": null,
+      "originalSha256": null,
+      "changes": "Six flaps, ailerons, elevators, rudder, rotating propeller, retractable gear and hook; main-only dive brake, two bombs and eight rockets. Fictional number 27. Game-scale approximation, not certified engineering geometry.",
       "issue": "own-build-reference-review-open",
       "commercialPermissionDocument": null,
       "bundleRedistributionGrant": null,
@@ -2588,36 +2618,6 @@
         "descriptionSignals": []
       },
       "embeddedImageCount": 22,
-      "externalImages": [],
-      "originalFile": null,
-      "originalSha256": null,
-      "changes": "Original runtime binary preserved; runtime scaling, materials, rigging and placement are described in ASSET-CREDITS.md / CLAUDE.md.",
-      "issue": "original-game-rights-open",
-      "commercialPermissionDocument": null,
-      "bundleRedistributionGrant": null,
-      "releaseApproved": false,
-      "nextAction": "Establish original mesh/texture ownership; obtain an app redistribution grant or independently authored replacement."
-    },
-    {
-      "path": "f4u-1c_corsair_war_thunder.glb",
-      "bytes": 16443976,
-      "sha256": "b9a4ef749a786743dfaf19d5a36262d570734dad4c48e516857d4650150c329a",
-      "title": "F4U-1C Corsair (War Thunder)",
-      "uploader": "KojfDiscord (https://sketchfab.com/KojfDiscord)",
-      "originalRightsholder": null,
-      "sourceUrl": "https://sketchfab.com/3d-models/f4u-1c-corsair-war-thunder-440585ee30bc4b6299b4b1bd8d09e3d8",
-      "acquiredOn": null,
-      "declaredLicense": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
-      "licenseUrl": "http://creativecommons.org/licenses/by/4.0/",
-      "licenseEvidence": "Exact runtime GLB asset.extras",
-      "sourceCheck": {
-        "status": "verified-public-api",
-        "checkedOn": "2026-10-14",
-        "apiUrl": "https://api.sketchfab.com/v3/models/440585ee30bc4b6299b4b1bd8d09e3d8",
-        "licenseMatch": true,
-        "descriptionSignals": []
-      },
-      "embeddedImageCount": 12,
       "externalImages": [],
       "originalFile": null,
       "originalSha256": null,

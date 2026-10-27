@@ -1,6 +1,6 @@
-# Offline app asset register — Build 207
+# Offline app asset register — Build 208
 
-Checked 2026-10-23. 321 payload files, 36 model files, 261.5 MiB.
+Checked 2026-10-23. 322 payload files, 36 model files, 251.1 MiB.
 
 Generated from the actual dist-app payload by npm run app:assets. Hashes cover embedded textures too. This is an evidence inventory; no row is automatically approved for distribution. Acquisition dates remain unknown where not recorded.
 
@@ -8,6 +8,7 @@ Generated from the actual dist-app payload by npm run app:assets. Hashes cover e
 | --- | --- | --- | --- | --- |
 | assets/aircraft/b17-helijah.glb | [helijah](https://sketchfab.com/3d-models/boeing-b-17-flying-fortress-927f07f6ddcf470ab0387ce5829024d5) | CC-BY-4.0 (https://creativecommons.org/licenses/by/4.0/) | uploader-license-review-open | bcdf03e6bed86bd8b246a24cf1b8f86a259debe426dbbdd42986d8c278b778db |
 | assets/aircraft/bf109f2-own.glb | [Torpedo-Bomber project (code-built, scripts/build-own-bf109.cjs)](scripts/build-own-bf109.cjs) | project-own; geometry measured on a CC BY-SA 2.0 three-view (B. Huber), finish measured on a CC BY-SA 2.5 profile (H. Ringlstetter) | own-build-reference-review-open | efb76f22bf5057a1f24feab3f450787f1bc5decad8a76f79cbbac16698981f1f |
+| assets/aircraft/corsair-f4u1d-own.glb | [Oliver Kurzemann / Torpedo-Bomber](scripts/own-aircraft/corsair/shape.json) | project-own; original authored geometry and textures | own-build-reference-review-open | 5e037186b8c8dc2b21c3d6ed65b0494f17b307f8266fc9f3b4f6d47609af2b9c |
 | assets/aircraft/ju87b2-own.glb | [Oliver Kurzemann / Torpedo-Bomber](scripts/own-aircraft/ju87b2/shape.json) | project-own; supplied historical manual used as dimensional reference | own-build-reference-review-open | d331b579ca37cb4ffcc9a71010b4dabe477b38384b371af9d456e06804b868e4 |
 | assets/aircraft/me262-noel.glb | Source unknown | Base CC0-1.0 (https://creativecommons.org/publicdomain/zero/1.0/); original livery and detailing Oliver Kurzemann | source-or-license-missing | 6bfd4650965bd16e465037d3bdee08f2fe68eaf3e5ee99b273c435a00c256895 |
 | assets/aircraft/p47-independent.glb | [mgg8 / Aviation Gazetteer; original adaptation Oliver Kurzemann](https://sketchfab.com/3d-models/republic-p-47d-thunderbolt-raf-scheme-e831a70ab29c42d3a1dbd352d8bd4684) | Base model CC0-1.0 (https://creativecommons.org/publicdomain/zero/1.0/). New project work: Oliver Kurzemann, all reserved rights. | cc0-source-recorded | fc717521e5d80aefd6063d57bc561574fee3c4a99637c94a8b1a3c7ca889b851 |
@@ -29,7 +30,6 @@ Generated from the actual dist-app payload by npm run app:assets. Hashes cover e
 | assets/ships/samidare.glb | [everlasting17th (https://sketchfab.com/everlastinggrey)](https://sketchfab.com/3d-models/samidare-destroyer-b37939147c854e61857f5b248f9efd29) | CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/) | uploader-license-review-open | b4eba4977d7ef97235599788c7820fe8a19187ebbd3bfb3e89b3fc6f1998e978 |
 | b24.glb | [CreadorDeMu (https://sketchfab.com/creadordemu)](https://sketchfab.com/3d-models/b-24-liberator-c64e58edfacb4c519b5602278a7e51aa) | CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/) | uploader-license-review-open | 5366c1b690c559d1e25291cd16191886de8c5864266528d5acc28510c4adc761 |
 | bf109new.glb | [KojfDiscord (https://sketchfab.com/KojfDiscord)](https://sketchfab.com/3d-models/bf-109-f-1-war-thunder-0fec6a4fbae549e1929bd5978e89c4f4) | CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/) | original-game-rights-open | bd6c828563ad0aa0a0c2f89067f68491afedb5df8eb3504900c31b4f0aaed6bf |
-| f4u-1c_corsair_war_thunder.glb | [KojfDiscord (https://sketchfab.com/KojfDiscord)](https://sketchfab.com/3d-models/f4u-1c-corsair-war-thunder-440585ee30bc4b6299b4b1bd8d09e3d8) | CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/) | original-game-rights-open | b9a4ef749a786743dfaf19d5a36262d570734dad4c48e516857d4650150c329a |
 | flak88_sfl.glb | [KojfDiscord (https://sketchfab.com/KojfDiscord)](https://sketchfab.com/3d-models/88-cm-flak-37-sfl-war-thunder-7a9b4abbc2884ef6bbf5dbffbe8adf2b) | CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/) | original-game-rights-open | 4095ba76835dbc07d494c6d324837daa3b6c84e09ef21299e94554fb06ae6b7a |
 | fw190.glb | [KojfDiscord (https://sketchfab.com/KojfDiscord)](https://sketchfab.com/3d-models/fw-190-f-8-2-custom-payload-war-thunder-17aea959a7a949c6801a7ea19d43e9b4) | CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/) | original-game-rights-open | 6ea8ecf36027d49b69fa8eeb5da02987675bfe7f410b88543a2a9ab7c1da1811 |
 | grumman tbm avenger.glb | [helijah (https://sketchfab.com/helijah)](https://sketchfab.com/3d-models/grumman-tbm-avenger-4db814ed356a498cabe4badafd06ff6c) | CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/) | uploader-license-review-open | 9065b7e65419b2efd4618bcb138ce199d16ac3151801d2d90afb7ae92ebb10a6 |

@@ -1,5 +1,39 @@
 # Torpedo-Bomber — Übergabe an Claude Code
 
+**27.10.2026, Build 208: unabhängige F4U-1D Corsair mit Bubble Canopy.**
+Eigenständige Spant-/Flügeltabellen und Generator `scripts/build-own-corsair.cjs`,
+keine übernommene War-Thunder-Geometrie, UVs, Textur oder Profilgrafik.
+`assets/aircraft/corsair-f4u1d-own.glb`: 5.584.056 Bytes, 79.463 Dreiecke, 94 Meshes,
+7 Clips, 12,4968 m Spannweite / 10,16 m Länge, Dreiblattpropeller, gerundete Haube,
+Cockpit/Pilot, eigener dunkelblauer Atlas mit Blechstößen, Nieten und Gebrauchsspuren,
+fiktive Nummer 27. Referenz: Nutzer-Handbuch AN 01-45HA-1, allgemeine Maße und Anordnung;
+Hash/Seiten und angenäherte Details in `scripts/own-aircraft/corsair/shape.json`.
+Eigenes visuelles Spielmodell, keine zertifizierte technische Rekonstruktion.
+`CorsairRig` bewegt benannte Originalteile, ohne Legacy-Schnitte/Zusatzflächen:
+sechs Landeklappen (10°-Schritte bis 50°), gegenläufige Querruder, Höhen-/Seitenruder,
+einfahrbares Fahrwerk, Fanghaken und Propeller. Sturzflugbremse nach Handbuch S.13:
+nur Hauptfahrwerk ausfahren, Spornrad bleibt oben; keine separaten Bremsklappen.
+F4U-1D statt bisheriger -1C: sechs MG-Mündungen/-Geschosse, 2400 Gesamtmunition,
+Auswahl vor Start: 2×1000 lb, 8×HVAR oder 2×500 lb + 8×HVAR. Zusätzlicher SELECT-Knopf
+oder X wechselt Bomben/Raketen im Flug; Space/Drop löst gewählte Außenlast aus.
+Lasten verschwinden einzeln, Abschuss/Abwurf an Modell-Drehpunkten, Deckservice füllt
+die gewählte Beladung. Raketen nutzen eigene gepoolte Geometrie, vereinfachte Spielballistik,
+Unterteilung der Kollisionsschritte und Checkpoint-Erhaltung. Alte Corsair-Checkpoints
+werden auf Bombenbeladung und maximal 2400 MG-Schuss migriert.
+Neuer Loader ausschließlich eigene GLB, alte F4U-1C nicht im Offline-Payload.
+Vorschau `corsair-preview.html` mit Klappen, Fahrwerk, Bremsfunktion, Querrudern und Lasten.
+Belegte Prüfungen: Khronos 0 Fehler/0 Warnungen; echte r128-Geometrie, unabhängige Klone,
+7 Clips, sechs Mündungen und drei Reifen auf flacher/geneigter Fläche.
+WebGL: Fleet Strike und Coastal Assault starten mit drei Kontakten am echten Deck,
+rollen vollständig ab und fliegen/feuern danach. Lastentest: alle drei Beladungen,
+2048er Atlas auf Touch, Hauptfahrwerk-Bremse ohne Spornrad, sechs MG-Geschosse,
+Abwurf-/Abschusspositionen, Raketen-Kollision bei 20/60/120 FPS, Nachladen; kompletter
+Neuladevorgang stellt gemischte Beladung, Restmunition, Flaps und fliegende Rakete wieder her.
+MG/FX-Test mit allen vier Pacific-Typen, Ordnance-/Checkpoint-Tests und Syntax bestanden.
+Offline-Payload 322 Dateien / 36 Modelle, Hashes und Abhängigkeiten geprüft, Register neu.
+Andere Modelle behalten ihren bisherigen Rechteprüfstatus. Kein physischer iPad-/Safari-Test.
+
+
 **25.10.2026, Build 207: eigene Ju 87 B-2 im Rheinspiel.**
 Nutzer: „Dann baue jetzt bitte die Ju87“, danach „Weiter“; Referenz `ju-87b2.pdf`.
 `assets/aircraft/ju87b2-own.glb`: eigenständig erzeugte Geometrie/UVs/Lackierung,
