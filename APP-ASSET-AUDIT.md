@@ -9,10 +9,12 @@ Historical Build 196 payload contained **302 files / 266.5 MiB**, including
 [asset-register.json](app/release/asset-register.json); embedded GLB textures are covered by
 their binary's hash. [Readable model table](app/release/asset-register.md).
 
-## Build 209 Fw 190 / Komet replacements
+## Build 210 Fw 190 / Komet reference rebuild
 
-The active Fw 190 and Me 163 now use independently authored geometry and procedural
-textures, with editable shape tables, museum dimension references and generator code.
+The active Fw 190 and Me 163 use new reference-derived exterior geometry and procedural
+textures, with measured screenshot landmarks, editable shape tables, museum dimensions
+and generator code. Build 210 corrects the inaccurate Build 209 shapes. User-supplied
+screenshots are not redistributed; their underlying artwork/adaptation review is open.
 The former War Thunder-labelled `fw190.glb` and `me163.glb` remain historical test
 fixtures only and are absent from the current app payload. See ASSET-CREDITS.md and
 the freshly generated asset-register for exact shipped files and hashes. Earlier

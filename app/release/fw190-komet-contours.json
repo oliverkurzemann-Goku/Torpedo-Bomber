@@ -1,0 +1,63 @@
+{
+  "units": "metres",
+  "pixelsPerMetre": 100,
+  "scope": "Main airframe exterior contours; digitised screenshot outlines, fittings excluded. IoU is strict; outer-edge distance seals <= 2 cm hinge gaps.",
+  "results": [
+    {
+      "kind": "fw190",
+      "view": "top",
+      "current": {
+        "iou": 0.9661,
+        "p95Metres": 0.06,
+        "maxMetres": 0.11
+      },
+      "build209": {
+        "iou": 0.3891,
+        "p95Metres": 1.24,
+        "maxMetres": 1.35
+      }
+    },
+    {
+      "kind": "fw190",
+      "view": "side",
+      "current": {
+        "iou": 0.9718,
+        "p95Metres": 0.07,
+        "maxMetres": 0.16
+      },
+      "build209": {
+        "iou": 0.7484,
+        "p95Metres": 0.48,
+        "maxMetres": 0.606
+      }
+    },
+    {
+      "kind": "me163",
+      "view": "top",
+      "current": {
+        "iou": 0.9909,
+        "p95Metres": 0.02,
+        "maxMetres": 0.05
+      },
+      "build209": {
+        "iou": 0.7166,
+        "p95Metres": 0.63,
+        "maxMetres": 0.64
+      }
+    },
+    {
+      "kind": "me163",
+      "view": "side",
+      "current": {
+        "iou": 0.9901,
+        "p95Metres": 0.0141,
+        "maxMetres": 0.04
+      },
+      "build209": {
+        "iou": 0.7558,
+        "p95Metres": 0.4443,
+        "maxMetres": 0.4625
+      }
+    }
+  ]
+}

@@ -1,33 +1,98 @@
 {
-  "build": 209,
+  "build": 210,
   "date": "2026-10-27",
   "models": [
     {
       "file": "fw190a8-own.glb",
-      "bytes": 4437732,
-      "triangles": 45878,
-      "meshes": 28,
-      "materials": 13,
+      "bytes": 5223156,
+      "triangles": 68502,
+      "meshes": 33,
+      "materials": 14,
       "animations": 6,
-      "sha256": "1f274f6b2d39e605af5ca1fa4920c6321e9a4558997572a4f33eb7de161e020d"
+      "sha256": "319d846cdd684f63483c906cf1b93525a80d1516ee662582d5f116a4d6fd3edc"
     },
     {
       "file": "me163b-own.glb",
-      "bytes": 3253864,
-      "triangles": 28088,
-      "meshes": 21,
+      "bytes": 3764288,
+      "triangles": 42754,
+      "meshes": 24,
       "materials": 13,
       "animations": 6,
-      "sha256": "5afe9dab84da4ed965eac67e99918502279915f6168e20900f8a94aaab71716f"
+      "sha256": "ddc61b6fb3a222b9716c40ead59f17a77a55bfa295cbcb48c1a1d42f2a977739"
     }
   ],
+  "references": "Four user-supplied screenshots; exact SHA-256 and pixel landmarks in scripts/own-aircraft/fw190-komet-landmarks.json",
   "checks": {
     "gltfValidator": {
       "errors": 0,
       "warnings": 0,
       "models": 2
     },
-    "mechanics": "Dimensions, independent clones, controls, named muzzle origins and three contacts on flat/sloped surfaces passed.",
+    "units": "1 model unit = 1 metre; no per-axis runtime stretching",
+    "mechanics": "Dimensions, independent clones, control surfaces, existing named visual origins and three ground contacts on flat/sloped surfaces passed.",
+    "contours": {
+      "units": "metres",
+      "pixelsPerMetre": 100,
+      "scope": "Main airframe exterior contours; digitised screenshot outlines, fittings excluded. IoU is strict; outer-edge distance seals <= 2 cm hinge gaps.",
+      "results": [
+        {
+          "kind": "fw190",
+          "view": "top",
+          "current": {
+            "iou": 0.9661,
+            "p95Metres": 0.06,
+            "maxMetres": 0.11
+          },
+          "build209": {
+            "iou": 0.3891,
+            "p95Metres": 1.24,
+            "maxMetres": 1.35
+          }
+        },
+        {
+          "kind": "fw190",
+          "view": "side",
+          "current": {
+            "iou": 0.9718,
+            "p95Metres": 0.07,
+            "maxMetres": 0.16
+          },
+          "build209": {
+            "iou": 0.7484,
+            "p95Metres": 0.48,
+            "maxMetres": 0.606
+          }
+        },
+        {
+          "kind": "me163",
+          "view": "top",
+          "current": {
+            "iou": 0.9909,
+            "p95Metres": 0.02,
+            "maxMetres": 0.05
+          },
+          "build209": {
+            "iou": 0.7166,
+            "p95Metres": 0.63,
+            "maxMetres": 0.64
+          }
+        },
+        {
+          "kind": "me163",
+          "view": "side",
+          "current": {
+            "iou": 0.9901,
+            "p95Metres": 0.0141,
+            "maxMetres": 0.04
+          },
+          "build209": {
+            "iou": 0.7558,
+            "p95Metres": 0.4443,
+            "maxMetres": 0.4625
+          }
+        }
+      ]
+    },
     "webgl": [
       {
         "kind": "fw190",
@@ -39,7 +104,7 @@
           "alive": true,
           "airborne": true,
           "seconds": 15.583333333333687,
-          "distance": 393.1622332880755
+          "distance": 393.164374277547
         },
         "moved": 1.5399999999999998,
         "ports": 6,
@@ -52,7 +117,7 @@
           0,
           0
         ],
-        "meshes": 28
+        "meshes": 33
       },
       {
         "kind": "me163",
@@ -68,7 +133,7 @@
           0,
           0
         ],
-        "meshes": 21
+        "meshes": 24
       }
     ],
     "kometRecovery": {
@@ -76,36 +141,25 @@
         "komet",
         "kometdash"
       ],
-      "simulationFps": [
+      "simulatedFPS": [
         20,
         60,
         120
       ],
-      "successfulLandings": 6,
-      "refuelAfterRecovery": false
+      "successfulRecoveries": 6,
+      "result": "Powered flight, cutoff, glide, actual skid touchdown and one MISSION ACCOMPLISHED debrief; no fuel refill. Existing Me262 regression also passed."
     },
-    "orientationMigration": "Former model turns reset once; later adjustments preserved.",
-    "offline": {
+    "syntax": "10 HTML files / 10 inline blocks and modified Node scripts passed",
+    "appPayload": {
+      "build": 210,
       "files": 323,
-      "bytes": 260330709,
-      "retiredModelsExcluded": true
-    },
-    "regressions": {
-      "terrainSuiteFiles": 40,
-      "okinawaSuiteFiles": 79,
-      "remainingFailuresAfterRechecks": 0,
-      "notes": "Full suites executed; seven checks rerun after restoring historical test assets, player-guns rerun after guarding its optional model binding. Broad browser cases skip locally when no system Chrome is present; the two new-aircraft WebGL missions and six Komet recovery scenarios were run explicitly with the available headless browser."
+      "bytes": 261627090,
+      "hashesAndDependencyClosure": "passed"
     }
   },
   "limitations": [
-    "No physical iPad performance test.",
-    "Museum dimensions anchor overall size; cross sections and fittings are original visual approximations."
-  ],
-  "reproduce": [
-    "node scripts/build-own-fw190-komet.cjs --release",
-    "node okinawa/tests/fw190-komet-native.cjs",
-    "GAME_TEST_CHROME=/path/to/chrome node okinawa/tests/fw190-komet-browser.cjs",
-    "GAME_TEST_CHROME=/path/to/chrome node okinawa/tests/komet-jets-browser.cjs",
-    "npm run app:assets"
+    "Exterior screenshot reconstruction, not an engineering-certified aircraft model.",
+    "Cross sections, unseen fittings and small markings remain approximations.",
+    "No physical iPad hardware test."
   ]
 }

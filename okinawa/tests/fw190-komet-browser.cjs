@@ -10,7 +10,7 @@ try{
  const page=await browser.newPage({viewport:{width:1194,height:834},hasTouch:true}),errors=[],requests=[],out=path.join(root,'test-visuals');fs.mkdirSync(out,{recursive:true});page.setDefaultTimeout(150000);
  page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(/shader error|Error compiling|VALIDATE_STATUS/i.test(m.text()))errors.push(m.text());});page.on('request',r=>requests.push(r.url()));
  await page.addInitScript(()=>{window.requestAnimationFrame=()=>0;localStorage.setItem('re_modeladj',JSON.stringify({fw190:2,me163:2}));});
- await page.goto('http://127.0.0.1:'+server.address().port+'/remagen-mission.html?campaign=1&v=209');
+ await page.goto('http://127.0.0.1:'+server.address().port+'/remagen-mission.html?campaign=1&v=210');
  await page.waitForFunction(()=>typeof realWorldReady!=='undefined'&&realWorldReady&&state===ST.MENU,null,{polling:200});
  await page.evaluate(async()=>{renderer.setPixelRatio(.5);renderer.shadowMap.enabled=false;for(const k of ['fw190','me163','p47','b17'])await ensureModel(k);});
  for(const kind of ['fw190','me163']){
@@ -40,9 +40,9 @@ try{
   assert(report.native&&report.contacts===3);assert.equal(report.ports,kind==='fw190'?6:2);assert.equal(report.shots,report.ports);assert(report.originErrors.every(x=>x<.001));
   if(kind==='fw190'){assert(report.departure.alive&&report.departure.airborne&&report.departure.distance<900);assert(report.moved>1.5);}else assert.equal(report.moved,.24);
   await page.evaluate(()=>{scene.updateMatrixWorld(true);camera.position.copy(P.pos).add(new THREE.Vector3(-11,4,13));camera.lookAt(P.pos);GameRuntime.render(renderer,scene,camera);});
-  await page.screenshot({path:path.join(out,'build209-'+kind+'-in-game.png')});console.log('REAL GAME',JSON.stringify(report));
+  await page.screenshot({path:path.join(out,'build210-'+kind+'-in-game.png')});console.log('REAL GAME',JSON.stringify(report));
   await page.evaluate(()=>exitToMenuFromPause());
  }
  assert(!requests.some(u=>/\/(fw190|me163)\.glb(?:\?|$)/.test(u)),'retired aircraft must never be requested');assert.deepEqual(errors,[]);
- fs.writeFileSync(path.join(out,'build209-native-browser.json'),JSON.stringify({requests:requests.filter(u=>/aircraft\//.test(u)),errors},null,2));
+ fs.writeFileSync(path.join(out,'build210-native-browser.json'),JSON.stringify({requests:requests.filter(u=>/aircraft\//.test(u)),errors},null,2));
 }finally{await browser.close();server.close();}})().catch(e=>{console.error(e);server.close();process.exitCode=1;});

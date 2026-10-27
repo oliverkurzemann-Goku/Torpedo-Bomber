@@ -38,7 +38,7 @@ function liftingSurface(name,spec,regions){
     const sv=fin?p[1]:Math.abs(p[0]);return mapUV(r,(sv-sMin)/(sMax-sMin),(zr[1]-p[2])/(zr[1]-zr[0]));};
   const hOf=(c,s)=>c.hAt?c.hAt(s):c.h;// chord fraction of the hinge line at span s
   const breaks=controls.flatMap(c=>[c.from,c.to,...(c.breaks||[])]);
-  const regular=samples(sMin,sMax,spec.step||.08,breaks);
+  const regular=samples(sMin,sMax,spec.step||.08,[...breaks,...(spec.spanSamples||[])]);
   const span=[];for(const s of regular){if(breaks.includes(s)){span.push({s,before:true},{s,before:false});}else span.push({s});}
   const hingeAt=(s,before)=>{let h=1;for(const c of controls){const inside=before===undefined?s>c.from&&s<c.to:before?(s>c.from&&s<=c.to):(s>=c.from&&s<c.to);if(inside)h=Math.min(h,hOf(c,s));}return h;};
   const sides=fin?[1]:spec.mirror===false?[1]:[-1,1],fixed=new Surface(name),parts=[];

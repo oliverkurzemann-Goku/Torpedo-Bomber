@@ -1,5 +1,34 @@
 # Torpedo-Bomber — Übergabe an Claude Code
 
+**27.10.2026, Build 210: Fw 190 / Komet nach Nutzer-Bildvorlagen neu aufgebaut.**
+Build 209 war trotz passender Außenmaße in den Konturen falsch. Nutzer lieferte vier
+Screenshots (IMG_0728–0731) und verlangte originalgetreue Modelle. Neue vermessene
+Flügelgrundrisse (breite gerundete Enden), Rumpf-/Leitwerkskonturen, Hauben und Proportionen.
+Fw-Tragfläche nach vorn versetzt, flache facettierte Haube, Radposition/-höhe korrigiert,
+kleinere Motorhaubenbeulen, enge Lüfteröffnung und Spinner-Spirale, gelbe 12 / orangefarbenes Band.
+Komet: breiter Rumpf, stumpfer Heckabschluss, flaches breites Leitwerk, kurze vordere Haube
+mit geschlossenem Rumpfrücken dahinter, sichtbares Spornrad und Hecköffnung, weiße 54.
+1 Einheit = 1 m, keine Achsenstreckung: Fw 10,50 × 8,95 m; Komet 9,32 × 5,69 m.
+`measure-fw190-komet.cjs` übersetzt dokumentierte Screenshot-Pixel in Meter;
+`fw190-komet-landmarks.json` enthält Kalibrierung, Rohpunkte und vier Originaldatei-Hashes.
+Keine Screenshots/Artwork-Pixel im Repo oder Runtime-Modell. Unbekannte Querschnitte,
+kleine Details und Lackierungsdetails bleiben Näherungen; keine Engineering-Zertifizierung.
+GLBs: Fw 5.223.156 Bytes / 68.502 Dreiecke / 33 Meshes; Komet 3.764.288 / 42.754 / 24.
+Beide sechs Clips, Khronos 0 Fehler / 0 Warnungen, Vertrag und unabhängige Klone bestanden.
+Neue Konturprüfung projiziert gelieferte GLB-Dreiecke gegen die dokumentierten Umrisse:
+strenge IoU Fw oben/Seite 0,9661/0,9718, Komet 0,9909/0,9901. Außenrand-P95
+6/7 cm bzw. 2/1,41 cm; <=2-cm-Steuerflächenspalten nur für Randdistanz geschlossen,
+Innenlöcher nicht als Außenrand gezählt; IoU bleibt ungefiltert. Das ist Vorlagenübereinstimmung,
+kein Nachweis der absoluten historischen Genauigkeit. Script und Okinawa-Test hinzugefügt.
+WebGL: echte Missionsauswahl/Starts, Fw hebt nach 15,58 s / 393,16 m ab; Mechanik und
+bestehende Mündungsanbindung korrekt. Beide Komet-Missionen bei 20/60/120 FPS mit
+Kufenlandung/Debrief bestanden. Flugleistung, Schaden und Munition nicht geändert.
+Syntax 10/10, Offline-Payload 323 Dateien / 36 Modelle / 249,5 MiB, Hashes/Closure geprüft.
+Build-/Cache-Kennungen, Xcode, Register, Credits und Vorschau auf 210.
+Nachweise: `app/release/fw190-komet-validation.json`, `fw190-komet-contours.json`.
+Kein physischer iPad-Test. Vorlagen-Rechteprüfung bleibt im Register offen.
+
+
 **27.10.2026, Build 209: eigene Fw 190 A-8 und Me 163 B Komet.**
 Generator `scripts/build-own-fw190-komet.cjs`, editierbare Spanttabellen und
 Museumsreferenzen unter `scripts/own-aircraft/fw190a8` und `me163b`.

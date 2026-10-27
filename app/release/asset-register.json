@@ -1,19 +1,19 @@
 {
   "schema": 1,
   "reviewedOn": "2026-10-23",
-  "build": 209,
+  "build": 210,
   "status": "OPEN — source declarations checked; no external rights authorization obtained",
   "payload": {
-    "bytes": 260330743,
+    "bytes": 261627090,
     "fileCount": 323,
     "modelCount": 36,
-    "manifestSha256": "90b51a9a6978bd2fc545f8e12e646d9426bd6f797b8b3cc7dc1662d591683b60"
+    "manifestSha256": "e10e94355e5ab1d0a20bd66d5c8a0c352cc61717ca568e64cda50d40d1bf866e"
   },
   "files": [
     {
       "path": "ASSET-CREDITS.md",
-      "bytes": 28143,
-      "sha256": "34d530766c7a18b589e11f79552045b799072ac2dbe21a7d7b419a9ac1c698e3",
+      "bytes": 28730,
+      "sha256": "a8e39ba1c1ebb8106e84325e4187ad671d599749dfc34356448e6c149b5b09ca",
       "kind": "code-or-notice"
     },
     {
@@ -114,8 +114,8 @@
     },
     {
       "path": "assets/aircraft/fw190a8-own.glb",
-      "bytes": 4437732,
-      "sha256": "1f274f6b2d39e605af5ca1fa4920c6321e9a4558997572a4f33eb7de161e020d",
+      "bytes": 5223156,
+      "sha256": "319d846cdd684f63483c906cf1b93525a80d1516ee662582d5f116a4d6fd3edc",
       "kind": "model"
     },
     {
@@ -126,8 +126,8 @@
     },
     {
       "path": "assets/aircraft/me163b-own.glb",
-      "bytes": 3253864,
-      "sha256": "5afe9dab84da4ed965eac67e99918502279915f6168e20900f8a94aaab71716f",
+      "bytes": 3764288,
+      "sha256": "ddc61b6fb3a222b9716c40ead59f17a77a55bfa295cbcb48c1a1d42f2a977739",
       "kind": "model"
     },
     {
@@ -553,7 +553,7 @@
     {
       "path": "index.html",
       "bytes": 7260,
-      "sha256": "22c3e5550c4d14ce054ccabe64eeac37fcb31d47d90a00e878629fbc77c53630",
+      "sha256": "b770d9c898584f87dd2f602ef58be6195db7b6e8752fcdf87c9499913fd2e1be",
       "kind": "code-or-notice"
     },
     {
@@ -679,7 +679,7 @@
     {
       "path": "remagen-mission.html",
       "bytes": 369285,
-      "sha256": "4847e5d60c24720a140515a2fb97bb97f76905a4bc6ac369bfa5232c84f16f71",
+      "sha256": "38c58a6e9d2bbc6b14bfddab74a14268829a48608cf46411826966c92b60c1e0",
       "kind": "code-or-notice"
     },
     {
@@ -1873,7 +1873,7 @@
     {
       "path": "torpedo-carrier.html",
       "bytes": 430946,
-      "sha256": "e03dac4739ec67b214167a9eac4f87e84164b21e62e398c368ed2d769ca643bc",
+      "sha256": "edd9720c28ce1347880f4440e039ca0dff46ebaded38c9983223ac687f6876d6",
       "kind": "code-or-notice"
     },
     {
@@ -1944,8 +1944,8 @@
     },
     {
       "path": "app-native.js",
-      "bytes": 27223,
-      "sha256": "d30e78d0eed8a732ffd2615a617ef37ecadcf40248edb39550da525057077a47",
+      "bytes": 27135,
+      "sha256": "1190961efd8977c63e10d7a6fc79db573c3576a90a08404c76f4345f1ba4d9f9",
       "kind": "code-or-notice"
     }
   ],
@@ -2030,14 +2030,14 @@
     },
     {
       "path": "assets/aircraft/fw190a8-own.glb",
-      "bytes": 4437732,
-      "sha256": "1f274f6b2d39e605af5ca1fa4920c6321e9a4558997572a4f33eb7de161e020d",
-      "title": "Focke-Wulf Fw 190 A-8 — original game model",
+      "bytes": 5223156,
+      "sha256": "319d846cdd684f63483c906cf1b93525a80d1516ee662582d5f116a4d6fd3edc",
+      "title": "Focke-Wulf Fw 190 A-8 — reference reconstruction",
       "uploader": "Oliver Kurzemann / Torpedo-Bomber",
       "originalRightsholder": null,
       "sourceUrl": "scripts/build-own-fw190-komet.cjs",
       "acquiredOn": null,
-      "declaredLicense": "project-own; original authored geometry and textures",
+      "declaredLicense": "project-own; reference-derived exterior geometry and original textures",
       "licenseUrl": null,
       "licenseEvidence": "Exact runtime GLB asset.extras",
       "sourceCheck": null,
@@ -2078,14 +2078,14 @@
     },
     {
       "path": "assets/aircraft/me163b-own.glb",
-      "bytes": 3253864,
-      "sha256": "5afe9dab84da4ed965eac67e99918502279915f6168e20900f8a94aaab71716f",
-      "title": "Messerschmitt Me 163 B Komet — original game model",
+      "bytes": 3764288,
+      "sha256": "ddc61b6fb3a222b9716c40ead59f17a77a55bfa295cbcb48c1a1d42f2a977739",
+      "title": "Messerschmitt Me 163 B — reference reconstruction",
       "uploader": "Oliver Kurzemann / Torpedo-Bomber",
       "originalRightsholder": null,
       "sourceUrl": "scripts/build-own-fw190-komet.cjs",
       "acquiredOn": null,
-      "declaredLicense": "project-own; original authored geometry and textures",
+      "declaredLicense": "project-own; reference-derived exterior geometry and original textures",
       "licenseUrl": null,
       "licenseEvidence": "Exact runtime GLB asset.extras",
       "sourceCheck": null,

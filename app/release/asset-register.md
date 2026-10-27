@@ -1,6 +1,6 @@
-# Offline app asset register — Build 209
+# Offline app asset register — Build 210
 
-Checked 2026-10-23. 323 payload files, 36 model files, 248.3 MiB.
+Checked 2026-10-23. 323 payload files, 36 model files, 249.5 MiB.
 
 Generated from the actual dist-app payload by npm run app:assets. Hashes cover embedded textures too. This is an evidence inventory; no row is automatically approved for distribution. Acquisition dates remain unknown where not recorded.
 
@@ -9,9 +9,9 @@ Generated from the actual dist-app payload by npm run app:assets. Hashes cover e
 | assets/aircraft/b17-helijah.glb | [helijah](https://sketchfab.com/3d-models/boeing-b-17-flying-fortress-927f07f6ddcf470ab0387ce5829024d5) | CC-BY-4.0 (https://creativecommons.org/licenses/by/4.0/) | uploader-license-review-open | bcdf03e6bed86bd8b246a24cf1b8f86a259debe426dbbdd42986d8c278b778db |
 | assets/aircraft/bf109f2-own.glb | [Torpedo-Bomber project (code-built, scripts/build-own-bf109.cjs)](scripts/build-own-bf109.cjs) | project-own; geometry measured on a CC BY-SA 2.0 three-view (B. Huber), finish measured on a CC BY-SA 2.5 profile (H. Ringlstetter) | own-build-reference-review-open | efb76f22bf5057a1f24feab3f450787f1bc5decad8a76f79cbbac16698981f1f |
 | assets/aircraft/corsair-f4u1d-own.glb | [Oliver Kurzemann / Torpedo-Bomber](scripts/own-aircraft/corsair/shape.json) | project-own; original authored geometry and textures | own-build-reference-review-open | 5e037186b8c8dc2b21c3d6ed65b0494f17b307f8266fc9f3b4f6d47609af2b9c |
-| assets/aircraft/fw190a8-own.glb | [Oliver Kurzemann / Torpedo-Bomber](scripts/build-own-fw190-komet.cjs) | project-own; original authored geometry and textures | own-build-reference-review-open | 1f274f6b2d39e605af5ca1fa4920c6321e9a4558997572a4f33eb7de161e020d |
+| assets/aircraft/fw190a8-own.glb | [Oliver Kurzemann / Torpedo-Bomber](scripts/build-own-fw190-komet.cjs) | project-own; reference-derived exterior geometry and original textures | own-build-reference-review-open | 319d846cdd684f63483c906cf1b93525a80d1516ee662582d5f116a4d6fd3edc |
 | assets/aircraft/ju87b2-own.glb | [Oliver Kurzemann / Torpedo-Bomber](scripts/own-aircraft/ju87b2/shape.json) | project-own; supplied historical manual used as dimensional reference | own-build-reference-review-open | d331b579ca37cb4ffcc9a71010b4dabe477b38384b371af9d456e06804b868e4 |
-| assets/aircraft/me163b-own.glb | [Oliver Kurzemann / Torpedo-Bomber](scripts/build-own-fw190-komet.cjs) | project-own; original authored geometry and textures | own-build-reference-review-open | 5afe9dab84da4ed965eac67e99918502279915f6168e20900f8a94aaab71716f |
+| assets/aircraft/me163b-own.glb | [Oliver Kurzemann / Torpedo-Bomber](scripts/build-own-fw190-komet.cjs) | project-own; reference-derived exterior geometry and original textures | own-build-reference-review-open | ddc61b6fb3a222b9716c40ead59f17a77a55bfa295cbcb48c1a1d42f2a977739 |
 | assets/aircraft/me262-noel.glb | Source unknown | Base CC0-1.0 (https://creativecommons.org/publicdomain/zero/1.0/); original livery and detailing Oliver Kurzemann | source-or-license-missing | 6bfd4650965bd16e465037d3bdee08f2fe68eaf3e5ee99b273c435a00c256895 |
 | assets/aircraft/p47-independent.glb | [mgg8 / Aviation Gazetteer; original adaptation Oliver Kurzemann](https://sketchfab.com/3d-models/republic-p-47d-thunderbolt-raf-scheme-e831a70ab29c42d3a1dbd352d8bd4684) | Base model CC0-1.0 (https://creativecommons.org/publicdomain/zero/1.0/). New project work: Oliver Kurzemann, all reserved rights. | cc0-source-recorded | fc717521e5d80aefd6063d57bc561574fee3c4a99637c94a8b1a3c7ca889b851 |
 | assets/aircraft/sbd-dauntless.glb | [HappySunpore (https://sketchfab.com/happysunpore)](https://sketchfab.com/3d-models/stb-dauntless-31e14fecfd9b4d51bdf0c4b27a0572f0) | CC-BY-4.0 (https://creativecommons.org/licenses/by/4.0/) | uploader-license-review-open | 80b06926d6c4d3168e9a52a61379b1a00a1841a8130afcca71f842870d8336e1 |

@@ -1,5 +1,5 @@
 {
-  "title": "Focke-Wulf Fw 190 A-8 \u2014 original game model",
+  "title": "Focke-Wulf Fw 190 A-8 — reference reconstruction",
   "kind": "fw190",
   "dimensions": {
     "span": 10.5,
@@ -8,315 +8,421 @@
   },
   "references": [
     {
-      "title": "Luftfahrtmuseum Hannover \u2014 Focke Wulf 190 A-8",
+      "title": "Luftfahrtmuseum Hannover — Focke Wulf 190 A-8",
       "url": "https://luftfahrtmuseum-hannover.de/index.php/en/infotext/schild-focke-wulf-190gb",
       "license": "Reference only; no source artwork redistributed",
       "role": "Published span 10.50 m, length 8.95 m, radial engine and general exterior configuration",
       "accessedOn": "2026-10-27"
+    },
+    {
+      "userSupplied": true,
+      "file": "IMG_0728.jpeg; IMG_0729.jpeg; IMG_0730.jpeg",
+      "title": "User screenshots IMG_0728 / IMG_0729 / IMG_0730",
+      "role": "Exterior contours, canopy, wing tips, tail and colour arrangement",
+      "license": "User-supplied reference; screenshots not redistributed",
+      "accessedOn": "2026-10-27"
     }
   ],
-  "provenance": "Original station tables, lofts, fittings, UVs and procedural paint authored for Torpedo-Bomber. No imported mesh, traced artwork or third-party texture.",
+  "provenance": "New exterior lofts and planforms digitised from user-supplied reference screenshots, with original UVs and procedural paint. No imported mesh or source image pixels in runtime assets.",
   "assumptions": [
-    "Visual game approximation, not engineering geometry.",
-    "Cross sections, chord stations, cockpit and hinges are independently estimated; museum specifications anchor overall span and length.",
-    "Fictional white 8, grey splinter camouflage, original mottling and weathering.",
-    "Existing A-8 gameplay performance, ammunition and bomb count retained."
+    "Overall dimensions calibrated to museum specifications. Screenshot contours are visual reference, not engineering drawings.",
+    "Unseen cross-sections, surface thickness, internal cockpit and fittings are visual approximations; no claim of engineering accuracy.",
+    "A-8 exterior with the yellow 12 colour arrangement from IMG_0730; minor markings simplified.",
+    "Flight model, damage and ammunition remain unchanged."
   ],
   "fuselage": [
     [
       -4.9,
-      0.23,
-      0.15,
-      0.012
+      0.3326,
+      0.3326,
+      0.001
     ],
     [
-      -4.65,
-      0.3,
-      0.07,
-      0.1
+      -4.59764,
+      0.40819,
+      0.13606,
+      0.065
     ],
     [
-      -4.15,
-      0.36,
-      -0.04,
-      0.18
+      -4.14409,
+      0.48378,
+      0,
+      0.12
     ],
     [
-      -3.5,
-      0.43,
-      -0.18,
-      0.28
+      -3.69054,
+      0.48378,
+      -0.07559,
+      0.15
     ],
     [
-      -2.8,
-      0.52,
-      -0.32,
+      -3.23699,
+      0.43843,
+      -0.13606,
+      0.19
+    ],
+    [
+      -2.78345,
+      0.45355,
+      -0.18142,
+      0.23
+    ],
+    [
+      -2.17872,
+      0.52914,
+      -0.24189,
+      0.29
+    ],
+    [
+      -1.57399,
+      0.63497,
+      -0.30236,
       0.36
     ],
     [
-      -2,
-      0.62,
-      -0.44,
-      0.44
+      -1.04485,
+      0.71056,
+      -0.36284,
+      0.42
     ],
     [
-      -1.2,
-      0.69,
-      -0.54,
-      0.5
+      -0.51571,
+      0.69544,
+      -0.42331,
+      0.47
     ],
     [
-      -0.5,
-      0.67,
-      -0.6,
+      0.01343,
+      0.57449,
+      -0.48378,
+      0.51
+    ],
+    [
+      0.54257,
+      0.57449,
+      -0.52914,
       0.55
     ],
     [
-      0.2,
-      0.64,
-      -0.64,
+      0.99611,
+      0.69544,
+      -0.55937,
       0.59
     ],
     [
-      1,
-      0.69,
-      -0.65,
+      1.29848,
+      0.74079,
+      -0.58961,
+      0.61
+    ],
+    [
+      1.90321,
+      0.72568,
+      -0.58961,
       0.64
-    ],
-    [
-      1.65,
-      0.73,
-      -0.64,
-      0.67
-    ],
-    [
-      2.05,
-      0.73,
-      -0.64,
-      0.68
     ]
   ],
   "wing": [
     [
       0,
-      1.5,
-      -1.32,
-      -0.39,
-      0.16
-    ],
-    [
-      0.65,
-      1.48,
-      -1.31,
+      2.25274,
+      -0.21623,
       -0.37,
-      0.155
+      0.146
     ],
     [
-      1.7,
-      1.25,
-      -1.16,
-      -0.31,
-      0.14
+      0.64701,
+      2.21643,
+      0.00162,
+      -0.35721,
+      0.14179
     ],
     [
-      2.8,
-      0.91,
-      -0.94,
-      -0.22,
-      0.125
+      1.12764,
+      2.08935,
+      0.1287,
+      -0.3154,
+      0.13867
     ],
     [
-      3.9,
-      0.53,
-      -0.72,
-      -0.13,
-      0.105
+      2.05194,
+      1.99858,
+      0.20132,
+      -0.23498,
+      0.13266
     ],
     [
-      4.65,
-      0.28,
-      -0.53,
-      -0.05,
-      0.09
+      2.97623,
+      1.90781,
+      0.25578,
+      -0.15457,
+      0.12665
     ],
     [
-      4.98,
-      0.1,
-      -0.4,
-      -0.02,
-      0.075
+      3.90053,
+      1.83519,
+      0.3284,
+      -0.07415,
+      0.12065
     ],
     [
-      5.18,
-      -0.06,
-      -0.28,
-      0,
-      0.06
+      4.63996,
+      1.74442,
+      0.40101,
+      -0.00982,
+      0.11584
+    ],
+    [
+      4.91725,
+      1.68996,
+      0.50994,
+      0.0143,
+      0.11404
+    ],
+    [
+      5.10211,
+      1.58103,
+      0.72779,
+      0.03038,
+      0.11284
+    ],
+    [
+      5.19454,
+      1.41765,
+      0.90933,
+      0.03843,
+      0.11224
     ],
     [
       5.25,
-      -0.18,
-      -0.2,
-      0.005,
-      0.03
+      1.1998,
+      1.19617,
+      0.04325,
+      0.11188
     ]
   ],
   "tail": [
     [
       0,
-      -3.3,
-      -4.73,
-      0.33,
-      0.105
-    ],
-    [
-      0.55,
-      -3.42,
-      -4.75,
-      0.35,
-      0.1
-    ],
-    [
-      1.3,
-      -3.61,
-      -4.7,
-      0.39,
+      -3.37505,
+      -4.2646,
+      0.42,
       0.09
     ],
     [
-      1.65,
-      -3.86,
-      -4.56,
-      0.41,
-      0.075
+      0.73944,
+      -3.41136,
+      -4.2646,
+      0.42,
+      0.09
     ],
     [
-      1.8,
-      -4.12,
-      -4.4,
+      1.38644,
+      -3.44767,
+      -4.24645,
       0.42,
-      0.05
+      0.09
     ],
     [
-      1.825,
-      -4.25,
-      -4.28,
+      1.64525,
+      -3.50213,
+      -4.19199,
       0.42,
-      0.025
+      0.09
+    ],
+    [
+      1.79313,
+      -3.64736,
+      -4.06491,
+      0.42,
+      0.09
+    ],
+    [
+      1.84859,
+      -3.84706,
+      -3.85069,
+      0.42,
+      0.09
     ]
   ],
   "fin": [
     [
-      0.2,
-      -3.05,
+      0.36284,
+      -3.17652,
       -4.9,
-      0.11
+      0.095
     ],
     [
-      0.65,
-      -3.4,
-      -4.88,
-      0.1
+      0.51402,
+      -3.38818,
+      -4.86976,
+      0.088
     ],
     [
-      1.2,
-      -3.64,
-      -4.79,
-      0.09
+      0.72568,
+      -3.64519,
+      -4.82441,
+      0.0782
     ],
     [
-      1.72,
-      -3.83,
-      -4.62,
-      0.07
+      0.95245,
+      -3.81149,
+      -4.76394,
+      0.0677
     ],
     [
-      1.95,
-      -4.04,
-      -4.4,
-      0.05
+      1.17922,
+      -3.96267,
+      -4.71858,
+      0.0572
     ],
     [
-      2.0,
-      -4.22,
-      -4.25,
-      0.025
+      1.34552,
+      -4.11385,
+      -4.61275,
+      0.0495
+    ],
+    [
+      1.43623,
+      -4.26503,
+      -4.47669,
+      0.0453
+    ],
+    [
+      1.46647,
+      -4.37086,
+      -4.37389,
+      0.0439
     ]
   ],
   "canopy": [
     [
-      -2.02,
-      0.6,
-      0.64,
-      0.16
+      -1.04485,
+      0.71056,
+      0.71056,
+      0.08
     ],
     [
-      -1.68,
-      0.62,
-      0.94,
+      -0.69713,
+      0.61985,
+      0.80127,
+      0.23
+    ],
+    [
+      -0.22846,
+      0.58961,
+      0.89198,
       0.3
     ],
     [
-      -1.15,
-      0.64,
-      1.18,
-      0.38
+      0.0739,
+      0.58961,
+      0.95245,
+      0.31
     ],
     [
-      -0.5,
-      0.64,
-      1.26,
-      0.39
+      0.60304,
+      0.57449,
+      0.95245,
+      0.29
     ],
     [
-      0.05,
-      0.65,
-      1.26,
-      0.38
-    ],
-    [
-      0.36,
-      0.65,
-      1.16,
-      0.34
-    ],
-    [
-      0.83,
-      0.65,
-      0.76,
-      0.26
+      1.04147,
+      0.72568,
+      0.72568,
+      0.24
     ]
   ],
   "muzzles": [
     [
       -0.22,
-      0.7,
-      3.24
+      0.69,
+      3.28
     ],
     [
       0.22,
-      0.7,
-      3.24
+      0.69,
+      3.28
     ],
     [
-      -0.91,
-      -0.3,
-      1.69
+      -0.92,
+      -0.27,
+      2.44
     ],
     [
-      0.91,
-      -0.3,
-      1.69
+      0.92,
+      -0.27,
+      2.44
     ],
     [
       -2.7,
-      -0.22,
-      1.24
+      -0.14,
+      2.18
     ],
     [
       2.7,
-      -0.22,
-      1.24
+      -0.14,
+      2.18
     ]
-  ]
+  ],
+  "canopyFrames": [
+    0.6030405405405403,
+    0.0739020270270272,
+    -1.0448479729729723
+  ],
+  "cowl": [
+    [
+      1.9032094594594593,
+      0.65
+    ],
+    [
+      2.1753378378378376,
+      0.678
+    ],
+    [
+      2.810304054054054,
+      0.678
+    ],
+    [
+      3.233614864864865,
+      0.64
+    ],
+    [
+      3.44527027027027,
+      0.59
+    ],
+    [
+      3.4906249999999996,
+      0.54
+    ],
+    [
+      3.4906249999999996,
+      0.46
+    ]
+  ],
+  "canopyStyle": "faceted",
+  "canopySeat": [
+    0,
+    0.1,
+    0.18
+  ],
+  "revision": 2,
+  "units": "metres",
+  "referenceCalibration": {
+    "side": {
+      "file": "IMG_0730.jpeg",
+      "nose": 468,
+      "tail": 1060,
+      "axisY": 183,
+      "metres": 8.95
+    },
+    "top": {
+      "file": "IMG_0728.jpeg",
+      "nose": 765,
+      "tail": 1258,
+      "centreY": 461,
+      "tipY": 177,
+      "span": 10.5
+    }
+  }
 }
