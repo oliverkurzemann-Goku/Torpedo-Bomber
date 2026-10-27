@@ -9,6 +9,15 @@ Historical Build 196 payload contained **302 files / 266.5 MiB**, including
 [asset-register.json](app/release/asset-register.json); embedded GLB textures are covered by
 their binary's hash. [Readable model table](app/release/asset-register.md).
 
+## Build 209 Fw 190 / Komet replacements
+
+The active Fw 190 and Me 163 now use independently authored geometry and procedural
+textures, with editable shape tables, museum dimension references and generator code.
+The former War Thunder-labelled `fw190.glb` and `me163.glb` remain historical test
+fixtures only and are absent from the current app payload. See ASSET-CREDITS.md and
+the freshly generated asset-register for exact shipped files and hashes. Earlier
+counts and findings below describe their dated inventories.
+
 ## Build 201 Dauntless replacement
 
 The supplied HappySunpore model (31e14fecfd9b4d51bdf0c4b27a0572f0) declares CC BY 4.0;

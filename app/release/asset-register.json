@@ -1,25 +1,25 @@
 {
   "schema": 1,
   "reviewedOn": "2026-10-23",
-  "build": 208,
+  "build": 209,
   "status": "OPEN — source declarations checked; no external rights authorization obtained",
   "payload": {
-    "bytes": 263310136,
-    "fileCount": 322,
+    "bytes": 260330743,
+    "fileCount": 323,
     "modelCount": 36,
-    "manifestSha256": "6b6f061294c349a1c6990bd009a62eba9819ae2bec856c73f1c5c13b0015d866"
+    "manifestSha256": "90b51a9a6978bd2fc545f8e12e646d9426bd6f797b8b3cc7dc1662d591683b60"
   },
   "files": [
     {
       "path": "ASSET-CREDITS.md",
-      "bytes": 26330,
-      "sha256": "ccff759a7ff8cbf7c935c0f8a50b70ff8672dd8b7786edbfb13c75a5b177578e",
+      "bytes": 28143,
+      "sha256": "34d530766c7a18b589e11f79552045b799072ac2dbe21a7d7b419a9ac1c698e3",
       "kind": "code-or-notice"
     },
     {
       "path": "aircraft-articulation.js",
-      "bytes": 17809,
-      "sha256": "554eab2b5551e5c34f6f42f30af8ba5184453d9ab4a04010ce46c8c4cfdcac4f",
+      "bytes": 18140,
+      "sha256": "f9f9e52b623f947f89ce3820aed525b571583b13f3e1d59eb94be29bb66ccc59",
       "kind": "code-or-notice"
     },
     {
@@ -113,9 +113,21 @@
       "kind": "model"
     },
     {
+      "path": "assets/aircraft/fw190a8-own.glb",
+      "bytes": 4437732,
+      "sha256": "1f274f6b2d39e605af5ca1fa4920c6321e9a4558997572a4f33eb7de161e020d",
+      "kind": "model"
+    },
+    {
       "path": "assets/aircraft/ju87b2-own.glb",
       "bytes": 3296820,
       "sha256": "d331b579ca37cb4ffcc9a71010b4dabe477b38384b371af9d456e06804b868e4",
+      "kind": "model"
+    },
+    {
+      "path": "assets/aircraft/me163b-own.glb",
+      "bytes": 3253864,
+      "sha256": "5afe9dab84da4ed965eac67e99918502279915f6168e20900f8a94aaab71716f",
       "kind": "model"
     },
     {
@@ -509,12 +521,6 @@
       "kind": "code-or-notice"
     },
     {
-      "path": "fw190.glb",
-      "bytes": 5702612,
-      "sha256": "6ea8ecf36027d49b69fa8eeb5da02987675bfe7f410b88543a2a9ab7c1da1811",
-      "kind": "model"
-    },
-    {
       "path": "game-runtime.js",
       "bytes": 15977,
       "sha256": "6618b052f9ce102fc2b164a713bb1add3905ab1c7183c44ac604823c698825b7",
@@ -547,7 +553,7 @@
     {
       "path": "index.html",
       "bytes": 7260,
-      "sha256": "df98593d836513b49d11f46181a3391a847d67d7a86ee079fc7f8fb6e6766d49",
+      "sha256": "22c3e5550c4d14ce054ccabe64eeac37fcb31d47d90a00e878629fbc77c53630",
       "kind": "code-or-notice"
     },
     {
@@ -575,10 +581,10 @@
       "kind": "code-or-notice"
     },
     {
-      "path": "me163.glb",
-      "bytes": 4974720,
-      "sha256": "1ac6f59cd3b06aa613ea497462936094ce6e50eb4b9eef8f0f3f73460f8a848e",
-      "kind": "model"
+      "path": "me163-native.js",
+      "bytes": 2741,
+      "sha256": "4ba2dbfd102c2fd88e118473e33a1cea5e9a0f223e9396869c2cf66b261c9e14",
+      "kind": "code-or-notice"
     },
     {
       "path": "me262-native.js",
@@ -672,8 +678,8 @@
     },
     {
       "path": "remagen-mission.html",
-      "bytes": 368390,
-      "sha256": "0bb939756354b342431eee40d3de6957974ae907b43ed0572db6c65271951ee8",
+      "bytes": 369285,
+      "sha256": "4847e5d60c24720a140515a2fb97bb97f76905a4bc6ac369bfa5232c84f16f71",
       "kind": "code-or-notice"
     },
     {
@@ -744,8 +750,8 @@
     },
     {
       "path": "terrain-system/AircraftGround.js",
-      "bytes": 8164,
-      "sha256": "54599b01e15d123395c8e196597e340b3e0fe5778bedbfe724e12de175404130",
+      "bytes": 8535,
+      "sha256": "b49c461125342b332a0af26e6a5bfcf205bafa2a9ff12b18031462df0aa54b48",
       "kind": "code-or-notice"
     },
     {
@@ -1867,7 +1873,7 @@
     {
       "path": "torpedo-carrier.html",
       "bytes": 430946,
-      "sha256": "e4588c697849da063350517ef4f99fd759b6a51d9ce12245cbdba91ffb7127c6",
+      "sha256": "e03dac4739ec67b214167a9eac4f87e84164b21e62e398c368ed2d769ca643bc",
       "kind": "code-or-notice"
     },
     {
@@ -1938,8 +1944,8 @@
     },
     {
       "path": "app-native.js",
-      "bytes": 27031,
-      "sha256": "a52b43eb6c9accbde530c1e3832548614838e605c05ed4869a6b9b9734ddaa24",
+      "bytes": 27223,
+      "sha256": "d30e78d0eed8a732ffd2615a617ef37ecadcf40248edb39550da525057077a47",
       "kind": "code-or-notice"
     }
   ],
@@ -2023,6 +2029,30 @@
       "nextAction": "Own mesh and paint; review the recorded reference source and any applicable attribution/share-alike obligations; credits kept in ASSET-CREDITS.md."
     },
     {
+      "path": "assets/aircraft/fw190a8-own.glb",
+      "bytes": 4437732,
+      "sha256": "1f274f6b2d39e605af5ca1fa4920c6321e9a4558997572a4f33eb7de161e020d",
+      "title": "Focke-Wulf Fw 190 A-8 — original game model",
+      "uploader": "Oliver Kurzemann / Torpedo-Bomber",
+      "originalRightsholder": null,
+      "sourceUrl": "scripts/build-own-fw190-komet.cjs",
+      "acquiredOn": null,
+      "declaredLicense": "project-own; original authored geometry and textures",
+      "licenseUrl": null,
+      "licenseEvidence": "Exact runtime GLB asset.extras",
+      "sourceCheck": null,
+      "embeddedImageCount": 2,
+      "externalImages": [],
+      "originalFile": null,
+      "originalSha256": null,
+      "changes": "Original runtime binary preserved; runtime scaling, materials, rigging and placement are described in ASSET-CREDITS.md / CLAUDE.md.",
+      "issue": "own-build-reference-review-open",
+      "commercialPermissionDocument": null,
+      "bundleRedistributionGrant": null,
+      "releaseApproved": false,
+      "nextAction": "Own mesh and paint; review the recorded reference source and any applicable attribution/share-alike obligations; credits kept in ASSET-CREDITS.md."
+    },
+    {
       "path": "assets/aircraft/ju87b2-own.glb",
       "bytes": 3296820,
       "sha256": "d331b579ca37cb4ffcc9a71010b4dabe477b38384b371af9d456e06804b868e4",
@@ -2040,6 +2070,30 @@
       "originalFile": null,
       "originalSha256": null,
       "changes": "Independent visual reconstruction of the exterior; separate VS5 rotor, six flaps, ailerons, elevators, rudder and dive brakes; fixed gear. No geometry or texture from the uploaded War Thunder model.",
+      "issue": "own-build-reference-review-open",
+      "commercialPermissionDocument": null,
+      "bundleRedistributionGrant": null,
+      "releaseApproved": false,
+      "nextAction": "Own mesh and paint; review the recorded reference source and any applicable attribution/share-alike obligations; credits kept in ASSET-CREDITS.md."
+    },
+    {
+      "path": "assets/aircraft/me163b-own.glb",
+      "bytes": 3253864,
+      "sha256": "5afe9dab84da4ed965eac67e99918502279915f6168e20900f8a94aaab71716f",
+      "title": "Messerschmitt Me 163 B Komet — original game model",
+      "uploader": "Oliver Kurzemann / Torpedo-Bomber",
+      "originalRightsholder": null,
+      "sourceUrl": "scripts/build-own-fw190-komet.cjs",
+      "acquiredOn": null,
+      "declaredLicense": "project-own; original authored geometry and textures",
+      "licenseUrl": null,
+      "licenseEvidence": "Exact runtime GLB asset.extras",
+      "sourceCheck": null,
+      "embeddedImageCount": 2,
+      "externalImages": [],
+      "originalFile": null,
+      "originalSha256": null,
+      "changes": "Original runtime binary preserved; runtime scaling, materials, rigging and placement are described in ASSET-CREDITS.md / CLAUDE.md.",
       "issue": "own-build-reference-review-open",
       "commercialPermissionDocument": null,
       "bundleRedistributionGrant": null,
@@ -2659,36 +2713,6 @@
       "nextAction": "Establish original mesh/texture ownership; obtain an app redistribution grant or independently authored replacement."
     },
     {
-      "path": "fw190.glb",
-      "bytes": 5702612,
-      "sha256": "6ea8ecf36027d49b69fa8eeb5da02987675bfe7f410b88543a2a9ab7c1da1811",
-      "title": "Fw 190 F-8 (#2 Custom Payload) (War Thunder)",
-      "uploader": "KojfDiscord (https://sketchfab.com/KojfDiscord)",
-      "originalRightsholder": null,
-      "sourceUrl": "https://sketchfab.com/3d-models/fw-190-f-8-2-custom-payload-war-thunder-17aea959a7a949c6801a7ea19d43e9b4",
-      "acquiredOn": null,
-      "declaredLicense": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
-      "licenseUrl": "http://creativecommons.org/licenses/by/4.0/",
-      "licenseEvidence": "Exact runtime GLB asset.extras",
-      "sourceCheck": {
-        "status": "verified-public-api",
-        "checkedOn": "2026-10-14",
-        "apiUrl": "https://api.sketchfab.com/v3/models/17aea959a7a949c6801a7ea19d43e9b4",
-        "licenseMatch": true,
-        "descriptionSignals": []
-      },
-      "embeddedImageCount": 10,
-      "externalImages": [],
-      "originalFile": null,
-      "originalSha256": null,
-      "changes": "Original runtime binary preserved; runtime scaling, materials, rigging and placement are described in ASSET-CREDITS.md / CLAUDE.md.",
-      "issue": "original-game-rights-open",
-      "commercialPermissionDocument": null,
-      "bundleRedistributionGrant": null,
-      "releaseApproved": false,
-      "nextAction": "Establish original mesh/texture ownership; obtain an app redistribution grant or independently authored replacement."
-    },
-    {
       "path": "grumman tbm avenger.glb",
       "bytes": 15080808,
       "sha256": "9065b7e65419b2efd4618bcb138ce199d16ac3151801d2d90afb7ae92ebb10a6",
@@ -2798,36 +2822,6 @@
         "descriptionSignals": []
       },
       "embeddedImageCount": 21,
-      "externalImages": [],
-      "originalFile": null,
-      "originalSha256": null,
-      "changes": "Original runtime binary preserved; runtime scaling, materials, rigging and placement are described in ASSET-CREDITS.md / CLAUDE.md.",
-      "issue": "original-game-rights-open",
-      "commercialPermissionDocument": null,
-      "bundleRedistributionGrant": null,
-      "releaseApproved": false,
-      "nextAction": "Establish original mesh/texture ownership; obtain an app redistribution grant or independently authored replacement."
-    },
-    {
-      "path": "me163.glb",
-      "bytes": 4974720,
-      "sha256": "1ac6f59cd3b06aa613ea497462936094ce6e50eb4b9eef8f0f3f73460f8a848e",
-      "title": "Me 163 B (War Thunder)",
-      "uploader": "KojfDiscord (https://sketchfab.com/KojfDiscord)",
-      "originalRightsholder": null,
-      "sourceUrl": "https://sketchfab.com/3d-models/me-163-b-war-thunder-b803273028ee4ebc87ca4af2e15766fb",
-      "acquiredOn": null,
-      "declaredLicense": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
-      "licenseUrl": "http://creativecommons.org/licenses/by/4.0/",
-      "licenseEvidence": "Exact runtime GLB asset.extras",
-      "sourceCheck": {
-        "status": "verified-public-api",
-        "checkedOn": "2026-10-14",
-        "apiUrl": "https://api.sketchfab.com/v3/models/b803273028ee4ebc87ca4af2e15766fb",
-        "licenseMatch": true,
-        "descriptionSignals": []
-      },
-      "embeddedImageCount": 9,
       "externalImages": [],
       "originalFile": null,
       "originalSha256": null,

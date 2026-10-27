@@ -342,7 +342,8 @@
 <script src="campaign.js?v=1"></script>
 <script src="b17-native.js?v=200"></script>
 <script src="me262-native.js?v=206"></script>
-<script src="aircraft-articulation.js?v=206"></script>
+<script src="aircraft-contract.js?v=209"></script>
+<script src="aircraft-articulation.js?v=209"></script>
 <script src="p47-performance.js?v=206"></script>
 <script>
 // ============================================================
@@ -1565,8 +1566,7 @@ const MODEL_URL={
           'bf%20109%20f-1%20war%20thunder.glb',
           'bf%20109%20-%20messerschmitt.glb','bf_109_-_messerschmitt.glb',
           'bf109.glb','bf%20109.glb'],
-  fw190: ['fw190.glb','fw_190_f-8_2_custom_payload_war_thunder.glb',
-          'fw%20190%20f-8%202%20custom%20payload%20war%20thunder.glb'],
+  fw190: ['assets/aircraft/fw190a8-own.glb'],
   b17:   ['assets/aircraft/b17-helijah.glb'],
   b24:   ['b24.glb','b-24_liberator.glb','b-24.glb'],
   me262: ['assets/aircraft/me262-noel.glb']
@@ -1627,6 +1627,7 @@ const MODEL_FIX={
   'bf109new.glb':                      {yaw:0},
   'bf_109_f-1_war_thunder.glb':        {yaw:0},
   'bf 109 f-1 war thunder.glb':        {yaw:0},
+  'assets/aircraft/fw190a8-own.glb': {yaw:0,scale:1},
   'fw190.glb':                                     {yaw:0},
   'fw_190_f-8_2_custom_payload_war_thunder.glb':   {yaw:0},
   'fw 190 f-8 2 custom payload war thunder.glb':   {yaw:0},
@@ -2614,6 +2615,7 @@ function coverGearCut(root, clusters, floor, rfUsed, maxR){
   });
 }
 function rigModel(root, kind){
+  if(typeof AircraftContract!=='undefined'&&AircraftContract.install(root))return 'original named-parts aircraft';
   if(kind==='me262'&&typeof Me262Rig!=='undefined'&&Me262Rig.install(root)){AircraftArticulation.install(root,kind);return 'native Me 262 Noel: original gear and surfaces';}
   if(kind==='p47'&&AircraftArticulation.nativeP47(root)){AircraftArticulation.install(root,kind);return 'native weathered P-47: independent source';}
   if(kind==='b17'&&typeof B17Rig!=='undefined'&&B17Rig.install(root))return 'native helijah B-17: original propellers across 4 engines, gear, flaps, flight controls and turret origins; no runtime mesh cuts';
@@ -5287,7 +5289,7 @@ function animate(){
     if(playerModel){
       const gr=playerModel.getObjectByName('gear');
       if(gr) gr.visible=P.gear>0.05;
-      if(playerModel.userData.nativeMe262){AircraftArticulation.pose(playerModel,P.gear,{left:P.flap,right:P.flap});AircraftArticulation.controls(playerModel,inputRoll,inputPitch);}
+      if(playerModel.userData.nativeMe262||playerModel.userData.nativeContract){AircraftArticulation.pose(playerModel,P.gear,{left:P.flap,right:P.flap});AircraftArticulation.controls(playerModel,inputRoll,inputPitch);}
       const pr=playerModel.getObjectByName('prop');
       if(pr) pr.rotation.z-=Math.min(0.30,0.10+P.throttle*0.28);
     }

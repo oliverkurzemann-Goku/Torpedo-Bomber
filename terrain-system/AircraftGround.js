@@ -41,6 +41,11 @@ const AircraftGround={
         point.applyMatrix4(m);out.push(point.x,point.y,point.z);
       }return out;
     };
+    if(kind==='me163'&&model.userData.nativeMe163){
+      const runner=model.getObjectByName('SkidRunner'),tail=model.getObjectByName('TailGearTyre');
+      if(runner&&tail){const v=vertices(runner),left=[],right=[];for(let i=0;i<v.length;i+=3)(v[i]<0?left:right).push(v[i],v[i+1],v[i+2]);
+        return model.userData.groundSupports=[left,right,vertices(tail)];}
+    }
     model.traverse(o=>{if(o.isMesh&&visible(o)&&o.userData.groundWheel)wheels.push(vertices(o));});
     if(wheels.length===3)return model.userData.groundSupports=wheels;
     // Avenger's three tyres are welded into one GLB mesh. Partition only that

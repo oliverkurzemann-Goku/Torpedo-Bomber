@@ -1,5 +1,35 @@
 # Torpedo-Bomber — Übergabe an Claude Code
 
+**27.10.2026, Build 209: eigene Fw 190 A-8 und Me 163 B Komet.**
+Generator `scripts/build-own-fw190-komet.cjs`, editierbare Spanttabellen und
+Museumsreferenzen unter `scripts/own-aircraft/fw190a8` und `me163b`.
+Eigene Geometrie, UVs und 2048er Lackierung mit Nieten, Blechstößen und Gebrauchsspuren;
+keine importierte Modellgeometrie/Textur. Fiktive weiße 8 / gelbe 12.
+Fw 190: 10,50 m / 8,95 m, rund 45.900 Dreiecke, 28 Meshes, Vertrag v1,
+Dreiblattrotor, nach innen einklappendes Fahrwerk, Klappen, Quer-/Höhen-/Seitenruder,
+sechs benannte Mündungen; alle sechs feuern, der Gesamt-Volley-Schaden bleibt gleich.
+Komet: 9,32 m / 5,69 m, rund 28.100 Dreiecke, 21 Meshes, taillose Form,
+gemischte Elevons, innere Spreizklappen, Seitenruder, einfahrbare Kufe und Spornrad,
+kleiner windgetriebener Nasengenerator. Bestehende Mission startet nach Wagenabwurf.
+`Me163Rig` treibt benannte Originalteile; `AircraftGround` nutzt die echten Kufen- und
+Spornradvertices. Keine generischen Zusatzflächen oder Legacy-Meshschnitte.
+Ladepfade nur neue GLBs, auch Gegner/AI verwenden dieselben Vorlagen.
+Alte `fw190.glb` / `me163.glb` bleiben Test-Fixtures, sind aus dem App-Payload entfernt.
+Vorschau: `fw190-komet-preview.html` mit Ansichten und Steuerflächenreglern.
+GLB/Khronos: beide 0 Fehler / 0 Warnungen. Mechanik-/Kontakt-/Klonprüfung bestanden.
+WebGL: beide Modelle über echte Missionsauswahl geladen, keine alten GLB-Anfragen,
+Fw-190-Start nach 15,58 s / 393,2 m, sechs bzw. zwei Geschosse exakt an den
+Mündungen, Fahrwerk/Kufe und Spielerklone geprüft. Beide Komet-Missionen bei
+20/60/120 simulierten FPS bis zur erfolgreichen Kufenlandung und zum Debrief geprüft.
+Offline-Payload: 323 Dateien, 36 Modelle, 248,3 MiB, Hashes/Abhängigkeiten geprüft.
+Regressionen: 40 Terrain- und 79 Okinawa-Testdateien durchlaufen; fehlende historische
+Testmodelle ergänzt, betroffene Prüfungen wiederholt. Ein VM-Slice-Befund im neuen
+Mündungszweig mit typeof-Guard behoben, player-guns erneut bestanden. Danach keine
+offenen lokalen Fehler. Browserfälle ohne System-Chrome überspringen standardmäßig;
+die oben genannten WebGL-Fälle ausdrücklich mit vorhandenem Headless-Chrome ausgeführt.
+Nachweis: `app/release/fw190-komet-validation.json`.
+Kein Hardwaretest auf dem iPad; die Modellmaße sind keine Engineering-Rekonstruktion.
+
 **27.10.2026, Build 208: unabhängige F4U-1D Corsair mit Bubble Canopy.**
 Eigenständige Spant-/Flügeltabellen und Generator `scripts/build-own-corsair.cjs`,
 keine übernommene War-Thunder-Geometrie, UVs, Textur oder Profilgrafik.

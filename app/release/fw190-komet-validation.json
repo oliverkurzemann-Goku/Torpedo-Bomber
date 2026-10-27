@@ -1,0 +1,111 @@
+{
+  "build": 209,
+  "date": "2026-10-27",
+  "models": [
+    {
+      "file": "fw190a8-own.glb",
+      "bytes": 4437732,
+      "triangles": 45878,
+      "meshes": 28,
+      "materials": 13,
+      "animations": 6,
+      "sha256": "1f274f6b2d39e605af5ca1fa4920c6321e9a4558997572a4f33eb7de161e020d"
+    },
+    {
+      "file": "me163b-own.glb",
+      "bytes": 3253864,
+      "triangles": 28088,
+      "meshes": 21,
+      "materials": 13,
+      "animations": 6,
+      "sha256": "5afe9dab84da4ed965eac67e99918502279915f6168e20900f8a94aaab71716f"
+    }
+  ],
+  "checks": {
+    "gltfValidator": {
+      "errors": 0,
+      "warnings": 0,
+      "models": 2
+    },
+    "mechanics": "Dimensions, independent clones, controls, named muzzle origins and three contacts on flat/sloped surfaces passed.",
+    "webgl": [
+      {
+        "kind": "fw190",
+        "source": "assets/aircraft/fw190a8-own.glb",
+        "info": "assets/aircraft/fw190a8-own.glb | turn 0deg | rig contract v1 fw190a8-original-v1: named rotor, gear, flaps and controls; no search, no mesh cuts | span 10.5m len 9.0m",
+        "native": true,
+        "contacts": 3,
+        "departure": {
+          "alive": true,
+          "airborne": true,
+          "seconds": 15.583333333333687,
+          "distance": 393.1622332880755
+        },
+        "moved": 1.5399999999999998,
+        "ports": 6,
+        "shots": 6,
+        "originErrors": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "meshes": 28
+      },
+      {
+        "kind": "me163",
+        "source": "assets/aircraft/me163b-own.glb",
+        "info": "assets/aircraft/me163b-own.glb | turn 0deg | native original Me 163 B: elevons, landing flaps, retractable skid and tailwheel | span 9.3m len 5.7m",
+        "native": true,
+        "contacts": 3,
+        "departure": null,
+        "moved": 0.24,
+        "ports": 2,
+        "shots": 2,
+        "originErrors": [
+          0,
+          0
+        ],
+        "meshes": 21
+      }
+    ],
+    "kometRecovery": {
+      "missions": [
+        "komet",
+        "kometdash"
+      ],
+      "simulationFps": [
+        20,
+        60,
+        120
+      ],
+      "successfulLandings": 6,
+      "refuelAfterRecovery": false
+    },
+    "orientationMigration": "Former model turns reset once; later adjustments preserved.",
+    "offline": {
+      "files": 323,
+      "bytes": 260330709,
+      "retiredModelsExcluded": true
+    },
+    "regressions": {
+      "terrainSuiteFiles": 40,
+      "okinawaSuiteFiles": 79,
+      "remainingFailuresAfterRechecks": 0,
+      "notes": "Full suites executed; seven checks rerun after restoring historical test assets, player-guns rerun after guarding its optional model binding. Broad browser cases skip locally when no system Chrome is present; the two new-aircraft WebGL missions and six Komet recovery scenarios were run explicitly with the available headless browser."
+    }
+  },
+  "limitations": [
+    "No physical iPad performance test.",
+    "Museum dimensions anchor overall size; cross sections and fittings are original visual approximations."
+  ],
+  "reproduce": [
+    "node scripts/build-own-fw190-komet.cjs --release",
+    "node okinawa/tests/fw190-komet-native.cjs",
+    "GAME_TEST_CHROME=/path/to/chrome node okinawa/tests/fw190-komet-browser.cjs",
+    "GAME_TEST_CHROME=/path/to/chrome node okinawa/tests/komet-jets-browser.cjs",
+    "npm run app:assets"
+  ]
+}
