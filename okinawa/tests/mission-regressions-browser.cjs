@@ -82,7 +82,7 @@ const server=http.createServer((req,res)=>{
   await page.locator('#missionSel .chip').nth(idx).click();await page.locator('#startBtn').click();await page.locator('#launchBtn').click();
   await page.waitForFunction(()=>carrierAircraftReady()&&carrierIntro,null,{polling:200});
   const pacific=await page.evaluate(()=>{
-   if(hasRearGunner()||hasDiveBrakes())throw Error('Corsair capabilities leaked');
+   if(hasRearGunner()||!hasDiveBrakes())throw Error('F4U-1D requires main-gear dive brake and no rear gunner');
    const rear=P.pos.clone().add(new THREE.Vector3(-100,0,0));zeros.push({alive:true,pos:rear});const before=bullets.length;state=ST.FLIGHT;updateTailGun(1);if(bullets.length!==before)throw Error('Corsair tail gun fires');zeros.pop();
    const distance=Math.min(...ships.map(s=>P.pos.distanceTo(s.group.position)));if(distance<7500)throw Error('Target appears at departure');
    if(NavalAssets.gunThreshold({type:'destroyer'})<=NavalAssets.gunThreshold({type:'freighter'}))throw Error('Destroyer weaker than merchant');

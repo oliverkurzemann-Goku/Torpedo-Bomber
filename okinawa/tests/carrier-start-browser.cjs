@@ -28,7 +28,7 @@ const server=http.createServer((req,res)=>{
   console.log('Browser: carrier menu loaded');
   await page.evaluate(()=>{renderer.setPixelRatio(.25);renderer.shadowMap.enabled=false;});
   const out=path.join(root,'test-visuals');fs.mkdirSync(out,{recursive:true});
-  for(const ac of ['avenger','sbd','zero','corsair','submarine','convoy','coastal']){
+  for(const ac of (process.env.GAME_TEST_AIRCRAFT?process.env.GAME_TEST_AIRCRAFT.split(','):['avenger','sbd','zero','corsair','submarine','convoy','coastal'])){
    const index=await page.evaluate(ac=>MISSIONS.findIndex(m=>ac==='submarine'?m.sub==='Submarine Sweep':ac==='convoy'?m.sub==='Cover the Landing':ac==='coastal'?m.corsair&&m.shoreStrike:ac==='zero'?m.defend:ac==='corsair'?m.corsair&&!m.shoreStrike:ac==='sbd'?m.sbd&&!m.corsair:!m.sbd&&!m.defend&&!m.free&&!m.qual),ac);
    await page.locator('#missionSel .chip').nth(index).click();await page.locator('#startBtn').click();
    await page.locator('#launchBtn').waitFor({state:'visible'});await page.locator('#launchBtn').click();

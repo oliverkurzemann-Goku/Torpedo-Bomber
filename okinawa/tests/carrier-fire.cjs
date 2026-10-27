@@ -7,7 +7,7 @@ class ImageStub{constructor(){this.listeners={};this.width=2;this.height=2;}addE
 global.document={createElementNS:()=>new ImageStub()};
 vm.runInThisContext(fs.readFileSync(require.resolve('three/examples/js/loaders/GLTFLoader.js'),'utf8'));
 require('../../flight-support.js');require('../../game-runtime.js');require('../../combat-fx.js');require('../../aircraft-rotors.js');
-require('../../sortie-features.js');require('../../aircraft-articulation.js');
+require('../../corsair-native.js');require('../../sortie-features.js');require('../../aircraft-articulation.js');
 const {GameRuntime,CombatFX}=global,root=path.resolve(__dirname,'../..'),html=fs.readFileSync(path.join(root,'torpedo-carrier.html'),'utf8');
 const extract=(from,to)=>html.slice(html.indexOf('function '+from+'('),html.indexOf('\nfunction '+to+'(',html.indexOf('function '+from+'(')+1));
 const gunCode=html.slice(html.indexOf('function updateGuns('),html.indexOf('function updateMinimap('));
@@ -18,20 +18,17 @@ async function glb(file){const b=fs.readFileSync(path.join(root,file));return ne
  const scene=new THREE.Scene(),plane=new THREE.Group();scene.add(plane);
  const fx=CombatFX.create(scene);fx.muzzle(plane,[new THREE.Vector3()]);
  plane.remove(plane.children[0]);assert.doesNotThrow(()=>fx.update(.1));assert.equal(fx.count,0);
- for(const [kind,file] of [['zero','zero.glb'],['sbd','sbd dauntless.glb'],['avenger','grumman tbm avenger.glb'],['corsair','f4u-1c_corsair_war_thunder.glb']]){
+ for(const [kind,file] of [['zero','zero.glb'],['sbd','sbd dauntless.glb'],['avenger','grumman tbm avenger.glb'],['corsair','assets/aircraft/corsair-f4u1d-own.glb']]){
   const scene=new THREE.Scene(),planeGroup=new THREE.Group(),aircraft=new THREE.Group();
   const model=await glb(file),bb=new THREE.Box3().setFromObject(model),size=bb.getSize(new THREE.Vector3());
-  if(kind==='corsair'){
-   model.scale.setScalar(12.49/size.x);model.updateMatrixWorld(true);
-   model.position.copy(new THREE.Box3().setFromObject(model).getCenter(new THREE.Vector3())).negate();
-  }else{model.position.sub(bb.getCenter(new THREE.Vector3()));model.scale.setScalar((kind==='zero'?11:kind==='sbd'?12.7:14)/Math.max(size.x,size.y,size.z));}
-  const holder=new THREE.Group();holder.add(model);holder.rotation.y=kind==='avenger'?-Math.PI/2:Math.PI;
+  if(kind!=='corsair'){model.position.sub(bb.getCenter(new THREE.Vector3()));model.scale.setScalar((kind==='zero'?11:kind==='sbd'?12.7:14)/Math.max(size.x,size.y,size.z));}
+  const holder=new THREE.Group();holder.add(model);if(kind==='corsair')AircraftArticulation.install(holder,'corsair');holder.rotation.y=kind==='avenger'?-Math.PI/2:Math.PI;
   aircraft.add(holder);planeGroup.add(aircraft);scene.add(planeGroup);
   // Original model loaded; the propeller is irrelevant to this FX lifecycle
   // check. Existing real-model prop tests independently check its geometry.
-  const rotor=new THREE.Group();rotor.name='sbdRotorBlade';aircraft.add(rotor);
+  const rotor=kind==='corsair'?aircraft.getObjectByName('sbdRotorBlade'):new THREE.Group();if(kind!=='corsair'){rotor.name='sbdRotorBlade';aircraft.add(rotor);}
   const combatFX=CombatFX.create(scene),P={alive:true,pos:new THREE.Vector3(0,300,0),heading:0,pitch:0,roll:0,throttle:1,gear:0,flap:0,hook:0,torps:2,ammo:5000};
-  const ctx=vm.createContext({THREE,SortieFeatures:global.SortieFeatures,AircraftArticulation:global.AircraftArticulation,FlightSupport:global.FlightSupport,seaUniforms:null,seaHeightAt:()=>0,updateRearArmament(){},GameRuntime,CombatFX,Math,console,P,scene,planeGroup,combatFX,
+  const ctx=vm.createContext({THREE,CorsairRig:global.CorsairRig,corsairConfig:()=>({bombScale:1}),inputRoll:0,inputPitch:0,SortieFeatures:global.SortieFeatures,AircraftArticulation:global.AircraftArticulation,FlightSupport:global.FlightSupport,seaUniforms:null,seaHeightAt:()=>0,updateRearArmament(){},GameRuntime,CombatFX,Math,console,P,scene,planeGroup,combatFX,
    state:3,ST:{FLIGHT:3},MISSIONS:[{corsair:kind==='corsair'}],mission:0,firing:true,gunCool:0,bullets:[],ships:[],zeros:[],raiders:[],etorps:[],shoreTargets:[],
    isDefend:()=>kind==='zero',isSBD:()=>kind==='sbd'||kind==='corsair',loadout:'divebomb',
    zeroTemplate:null,fitCarrierAircraft(){},playerZero:kind==='zero'?aircraft:null,playerSBD:kind==='sbd'||kind==='corsair'?aircraft:null,

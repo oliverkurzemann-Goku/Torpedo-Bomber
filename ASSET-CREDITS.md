@@ -316,3 +316,7 @@ approximations. S2+AN camouflage/markings are fictional. The game flight model i
 Six preview clips are embedded; the runtime drives the same named parts directly.
 The previous `ju87.glb` remains only as a historical test fixture and is excluded from the
 offline app payload. Preview: `ju87-preview.html`.
+
+## Original F4U-1D Corsair — Build 208
+
+`assets/aircraft/corsair-f4u1d-own.glb` is generated from independently authored station tables and code in `scripts/build-own-corsair.cjs`. Geometry, UVs, paint and weathering are original project work. No War Thunder geometry, textures or raster artwork are used. The supplied AN 01-45HA-1 manual provides general dimensions and configuration only; its SHA-256 and relevant pages are recorded in `scripts/own-aircraft/corsair/shape.json`. Number 27 and wear are fictional. This is an approximate visual game model. The old F4U-1C file is excluded from the runtime and offline app payload. Other existing assets retain their individual provenance statuses.

@@ -70,6 +70,14 @@
       "source": "scripts/own-aircraft/ju87b2/shape.json",
       "evidence": "Original code-authored geometry, UVs and textures; source manual SHA-256 and trace coordinates recorded in shape.json.",
       "changes": "Independent visual reconstruction of the exterior; separate VS5 rotor, six flaps, ailerons, elevators, rudder and dive brakes; fixed gear. No geometry or texture from the uploaded War Thunder model."
+    },
+    "assets/aircraft/corsair-f4u1d-own.glb": {
+      "title": "F4U-1D Corsair \u2014 original bubble canopy game model",
+      "author": "Oliver Kurzemann / Torpedo-Bomber",
+      "license": "project-own; original authored geometry and textures",
+      "source": "scripts/own-aircraft/corsair/shape.json",
+      "evidence": "Deterministic independent generator in scripts/build-own-corsair.cjs; historical manual used for dimensions and general arrangement only. No imported mesh, texture or reference raster.",
+      "changes": "Six flaps, ailerons, elevators, rudder, rotating propeller, retractable gear and hook; main-only dive brake, two bombs and eight rockets. Fictional number 27. Game-scale approximation, not certified engineering geometry."
     }
   }
 }

@@ -53,7 +53,7 @@
  function projectiles(list){return list.map(p=>({...entity(p,p.mesh),roundKind:p.mesh?.userData.roundKind,litTracer:p.mesh?.userData.litTracer}));}
  function restoreProjectiles(saved,kind,scene){return saved.map(s=>{
   const mesh=typeof kind==='function'?kind(s):kind==='round'||kind==='aa'?global.CombatFX.round(s.roundKind||(kind==='aa'?'aa':s.state.weapon||'rifle'),s.litTracer?0:1):kind==='rocket'?
-   global.GameRuntime.own(new global.THREE.Mesh(new global.THREE.CylinderGeometry(.16,.2,1.6,8),new global.THREE.MeshLambertMaterial({color:0x5a5040}))):global.Ordnance.create(kind);
+   global.GameRuntime.own(new global.THREE.Mesh(new global.THREE.CylinderGeometry(.16,.2,1.6,8),new global.THREE.MeshLambertMaterial({color:0x5a5040}))):global.Ordnance.create(kind==='bomb'&&s.state.rocket?'rocket':kind);
   // Round/ordnance resources belong to shared pools, not to this checkpoint.
   scene.add(mesh);const p=applyEntity({mesh},s,mesh);return p;
  });}

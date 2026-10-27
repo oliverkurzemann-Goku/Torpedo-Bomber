@@ -1,7 +1,7 @@
 'use strict';
 const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
 const THREE=require('three');global.THREE=THREE;require('../../game-runtime.js');require('../../ordnance.js');
-for(const kind of ['bomb','torpedo']){
+for(const kind of ['bomb','torpedo','rocket']){
  const scene=new THREE.Scene(),a=Ordnance.create(kind),b=Ordnance.create(kind);scene.add(a,b);
  assert.equal(a.getObjectByName('ogiveBody').geometry,b.getObjectByName('ogiveBody').geometry);
  assert.equal(a.children.filter(c=>c.name==='tailFin').length,4);
@@ -21,7 +21,7 @@ for(const kind of ['bomb','torpedo']){
 const html=fs.readFileSync(require.resolve('../../torpedo-carrier.html'),'utf8');
 const start=html.indexOf('function dropTorpedo('),end=html.indexOf('function updateTorpedoes(');
 const scene=new THREE.Scene(),P={alive:true,torps:2,pos:new THREE.Vector3(0,50,0),pitch:-.5,heading:.3,roll:0,spd:70};
-const ctx=vm.createContext({THREE,Ordnance,GameRuntime,P,scene,state:3,ST:{FLIGHT:3},loadout:'torpedo',
+const ctx=vm.createContext({THREE,Ordnance,GameRuntime,P,scene,state:3,ST:{FLIGHT:3},loadout:'torpedo',isCorsair:()=>false,
  DROP_MAX_ALT:80,DROP_MAX_SPD:90,torpedoes:[],bombs:[],sortieTorpFired:0,sortieBombFired:0,sortieBombHit:0,lastTorpDud:false,D:()=>({dud:0}),updateHUD(){},sfxWhoosh(){},flash(){},
  noseDir:()=>new THREE.Vector3(Math.cos(P.pitch)*Math.cos(P.heading),Math.sin(P.pitch),Math.cos(P.pitch)*Math.sin(P.heading)),
  shoreHeight:()=>0,shoreTargets:[],ships:[],spawnSplash(){},sfxBoom(){}});

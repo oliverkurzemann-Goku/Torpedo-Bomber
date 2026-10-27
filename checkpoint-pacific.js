@@ -25,7 +25,9 @@
   for(const s of [...saved.ships,...saved.support])if(s.state.def?.model)await NavalAssets.load(s.state.def.model);
   loadout=saved.globals.loadout;menuTime=saved.globals.menuTime;
   startMission(saved.mission);finishCarrierIntro();
-  C.restore(P,saved.player);P.onDeck=false;P.deckRun=P.arrestRun=P.deckQuaternion=null;
+  C.restore(P,saved.player);
+  if(isCorsair()&&!saved.player.corsairLoadout){P.corsairLoadout='bombs';P.corsairWeapon='bombs';P.torps=Math.min(2,P.torps);P.rockets=0;P.ammo=Math.min(2400,P.ammo);}
+  P.onDeck=false;P.deckRun=P.arrestRun=P.deckQuaternion=null;
   pacificPlan=C.restore({},saved.plan);pacificOps=new FlightOps.Operation(saved.operation.config);C.restore(pacificOps,saved.operation);
   const g=C.restore({},saved.globals);
   ({carrierX,CARRIER_SPD,score,scoreStart,loadout,DIFF,aeroMode,invertPitch,steerSign,weather,seaState,windZ,windHead,windGust,timeMode,menuTime,

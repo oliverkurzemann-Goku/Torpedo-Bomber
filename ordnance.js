@@ -4,9 +4,9 @@
  const templates={};
  function template(kind){
   if(templates[kind])return templates[kind];
-  const torpedo=kind==='torpedo',r=torpedo?.32:.40,L=torpedo?4.6:2.6;
+  const torpedo=kind==='torpedo',rocket=kind==='rocket',r=rocket?.064:torpedo?.32:.40,L=rocket?1.70:torpedo?4.6:2.6;
   // Closed ogive nose, cylindrical middle, tapered tail. Lathe axis Y -> +Z.
-  const profile=torpedo?[[0,-.50],[.11,-.48],[.20,-.40],[.29,-.31],[.32,-.23],[.32,.33],[.29,.40],[.22,.46],[.10,.495],[0,.50]]:
+  const profile=rocket?[[0,-.5],[r,-.44],[r,.32],[.035,.44],[0,.5]]:torpedo?[[0,-.50],[.11,-.48],[.20,-.40],[.29,-.31],[.32,-.23],[.32,.33],[.29,.40],[.22,.46],[.10,.495],[0,.50]]:
    [[0,-.50],[.10,-.47],[.20,-.39],[.30,-.31],[.39,-.14],[.40,.17],[.34,.32],[.24,.42],[.12,.48],[0,.50]];
   const body=new THREE.LatheGeometry(profile.map(p=>new THREE.Vector2(p[0],p[1]*L)),16);
   body.rotateX(Math.PI/2);
