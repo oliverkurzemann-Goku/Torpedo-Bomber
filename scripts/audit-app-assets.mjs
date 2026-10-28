@@ -66,7 +66,7 @@ const register={schema:1,reviewedOn:evidence.checkedOn,build:manifest.build,
   {paths:['terrain-system/data/**'],status:'Synthetic prototype and historical fixtures are also currently copied by the payload builder; distinguish them from real datasets.'},
   {paths:['assets/aircraft/avenger-1942-*'],status:'Adapted from the CC BY 4.0 airframe texture in grumman tbm avenger.glb (helijah / Emmanuel Baranger, with Laurent Hayvel) by scripts/bake-avenger-livery.cjs; same review as that model, changes listed in ASSET-CREDITS.md.'},
   {paths:['assets/*-campaign.webp','assets/*-campaign.svg'],status:'Generated/original project art; generation record in assets/CAMPAIGN-ART.md. No blanket grant for depicted third-party marks is inferred.'},
-  {paths:['audio/*.js'],status:'Procedural Web Audio, no recorded samples in this payload. Archived WAV/MP3 excluded.'},
+  {paths:['audio/*.js','audio/engines/**'],status:'Recorded piston loops: CC BY 3.0 Fight2FlyPhoto and CC0 craigsmith. Exact sources, hashes, cuts and substitutions in audio/engines/provenance.json and CREDITS.md. Source MP3s excluded from offline payload. Jet/rocket/effects remain procedural.'},
   {paths:['vendor/**','app-native.js'],status:'Bundled Three.js/fflate/Capacitor MIT notices retained; native package and distribution review remains open.'}
  ]};
 await fs.writeFile(path.join(release,'asset-register.json'),JSON.stringify(register,null,2)+'\n');

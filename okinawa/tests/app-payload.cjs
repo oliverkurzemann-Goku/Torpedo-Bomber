@@ -15,6 +15,8 @@ for(const entry of ['index.html','torpedo-carrier.html','remagen-mission.html'])
   assert(fs.existsSync(path.join(out,decodeURIComponent(relative))),entry+' missing dependency '+relative);
  }
 }
+for(const required of ['audio/engines/r2800-idle.wav','audio/engines/r2800-power.wav','audio/engines/bmw801-power.wav','audio/engines/db601-power.wav','audio/engines/r2600-power.wav','audio/engines/jumo-power.wav','audio/engines/r1820-power.wav','audio/engines/CREDITS.md','audio/engines/provenance.json'])assert(fs.existsSync(path.join(out,required)),'Missing recorded engine '+required);
+assert(!fs.existsSync(path.join(out,'audio/engines/source')),'Development recordings excluded');
 for(const unwanted of ['.git','node_modules','CLAUDE.md','thunderbolt-europe.html','torpedo-carrier-open-sea.html','model-check.html','p47d_alt.glb','f4u-1c_corsair_war_thunder.glb','b17.glb','sbd dauntless.glb','fw190.glb','me163.glb'])assert(!fs.existsSync(path.join(out,unwanted)));
 for(const required of ['assets/aircraft/fw190a8-own.glb','assets/aircraft/me163b-own.glb','me163-native.js'])assert(fs.existsSync(path.join(out,required)),'Missing new original aircraft '+required);
 for(const required of ['assets/aircraft/b17-helijah.glb','assets/aircraft/B17-CREDITS.txt','b17-native.js','corsair-native.js','assets/aircraft/corsair-f4u1d-own.glb','sbd-native.js','assets/aircraft/sbd-dauntless.glb','assets/aircraft/SBD-CREDITS.txt','assets/aircraft/bf109f2-own.glb','aircraft-contract.js'])assert(fs.existsSync(path.join(out,required)),'Missing native aircraft payload '+required);

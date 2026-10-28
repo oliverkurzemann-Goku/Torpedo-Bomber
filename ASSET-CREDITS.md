@@ -353,6 +353,12 @@ offline app payload. Preview: `ju87-preview.html`.
 `assets/aircraft/corsair-f4u1d-own.glb` is generated from independently authored station tables and code in `scripts/build-own-corsair.cjs`. Geometry, UVs, paint and weathering are original project work. No War Thunder geometry, textures or raster artwork are used. The supplied AN 01-45HA-1 manual provides general dimensions and configuration only; its SHA-256 and relevant pages are recorded in `scripts/own-aircraft/corsair/shape.json`. Number 27 and wear are fictional. This is an approximate visual game model. The old F4U-1C file is excluded from the runtime and offline app payload. Other existing assets retain their individual provenance statuses.
 
 
-## Build 211 aircraft engine sound
+## Build 212 aircraft engine sound
 
-`audio/aircraft-engine.js` contains original procedural combustion/propeller sound design for eight piston aircraft. `audio/jet-engine.js` supplies the separate jet/rocket voices. No recordings or third-party audio samples were added. Engine-family references and approximation limits are in `FLIGHT-AND-SOUND.md`.
+Piston sound uses edited recordings by **Fight2FlyPhoto (CC BY 3.0)** and
+**craigsmith / USC archive (CC0)**. Full titles, source links, license links,
+changes and explicit aircraft substitutions: [audio/engines/CREDITS.md](audio/engines/CREDITS.md).
+Exact source/loop hashes and cut intervals: [audio/engines/provenance.json](audio/engines/provenance.json).
+P-47, BMW-powered Fw 190 and DB 601-powered Bf 109 recordings replace the rejected
+Build 211 tonal synthesis. Other correspondences and limits are recorded in the notice.
+Jet/rocket voices remain original procedural audio in `audio/jet-engine.js`.

@@ -11,7 +11,7 @@ if(!/^dist-app(?:-test-\d+)?$/.test(outputName))throw Error('Unsafe output name'
 const output=path.join(root,outputName);
 const entries=['index.html','torpedo-carrier.html','remagen-mission.html'];
 const directories=['assets','audio','vendor','okinawa','terrain-system'];
-const extensions=new Set(['.js','.css','.glb','.fbx','.bin','.json','.png','.jpg','.jpeg','.webp','.svg','.txt']);
+const extensions=new Set(['.js','.css','.glb','.fbx','.bin','.json','.png','.jpg','.jpeg','.webp','.svg','.txt','.wav','.md']);
 const excluded=new Set(['tests','node_modules','__pycache__','real-tools','tools','source']);
 const rootModels=['b24.glb','bf109new.glb',
  'grumman tbm avenger.glb','zero.glb','uss_midway.glb','ijn carrier.glb',
@@ -47,5 +47,5 @@ await build({entryPoints:[path.join(root,'app/native-bridge.mjs')],bundle:true,f
 const bridge=await fs.readFile(path.join(output,'app-native.js'));
 manifest.push({path:'app-native.js',bytes:bridge.length,sha256:createHash('sha256').update(bridge).digest('hex')});
 const bytes=manifest.reduce((n,f)=>n+f.bytes,0);
-await fs.writeFile(path.join(output,'app-payload.json'),JSON.stringify({schema:1,build:211,bytes,files:manifest},null,2));
+await fs.writeFile(path.join(output,'app-payload.json'),JSON.stringify({schema:1,build:212,bytes,files:manifest},null,2));
 console.log('Offline app:',manifest.length,'files,',(bytes/1024/1024).toFixed(1),'MiB; original assets preserved.');

@@ -1,0 +1,515 @@
+{
+  "schema": 1,
+  "build": 212,
+  "checkedOn": "2026-10-28",
+  "runtimeSha256": {
+    "audio/aircraft-engine.js": "f5f223a4322de4c79cf555cb01cc25cb8a3bec342c2b63515e07c2993a05a1cc",
+    "flight-dynamics.js": "5b884f97daa4788374c768b5584f03b206cad6d97e756f5ffc52decd068a222a",
+    "remagen-mission.html": "389fa6d50153925d1182faf577a4c8f1d859b5d04085e2d641df07b5546c292c",
+    "torpedo-carrier.html": "d1b3cf79544a45c82264d64dbb702d845d151ed14d1f577b204a559269bfaa20",
+    "thunderbolt-europe.html": "1d677b73262294045060c2f9e97bcd7b7b3a486171bdebc5170f08f770443c38",
+    "engine-preview.html": "282cfc94549ce6e71b46f12675682a331ecc37edba1f02b798302f33e2cdd91e",
+    "audio/engines/provenance.json": "507032e64250434577c92b2cce0cfe3367ddff4bc75f51ca4a025d617cba998c"
+  },
+  "method": "Shipped inline attitude controller before/after, loaded campaigns with real models and WebGL, real OfflineAudioContext rendering of decoded recorded WAVs. Chromium/SwiftShader; no physical iPad listening test.",
+  "pitch": [
+    {
+      "kind": "p47",
+      "fps": 20,
+      "before": 1.5,
+      "after": 1.05,
+      "reduction": 0.29999999999999993
+    },
+    {
+      "kind": "p47",
+      "fps": 60,
+      "before": 1.5166666666666666,
+      "after": 1.05,
+      "reduction": 0.3076923076923076
+    },
+    {
+      "kind": "p47",
+      "fps": 120,
+      "before": 1.525,
+      "after": 1.05,
+      "reduction": 0.3114754098360655
+    },
+    {
+      "kind": "fw190",
+      "fps": 20,
+      "before": 1.8,
+      "after": 1.25,
+      "reduction": 0.3055555555555556
+    },
+    {
+      "kind": "fw190",
+      "fps": 60,
+      "before": 1.8,
+      "after": 1.25,
+      "reduction": 0.3055555555555556
+    },
+    {
+      "kind": "fw190",
+      "fps": 120,
+      "before": 1.8,
+      "after": 1.2416666666666667,
+      "reduction": 0.31018518518518523
+    },
+    {
+      "kind": "bf109",
+      "fps": 20,
+      "before": 1.25,
+      "after": 0.85,
+      "reduction": 0.32000000000000006
+    },
+    {
+      "kind": "bf109",
+      "fps": 60,
+      "before": 1.2166666666666666,
+      "after": 0.85,
+      "reduction": 0.3013698630136986
+    },
+    {
+      "kind": "bf109",
+      "fps": 120,
+      "before": 1.225,
+      "after": 0.8416666666666667,
+      "reduction": 0.3129251700680272
+    },
+    {
+      "kind": "ju87",
+      "fps": 20,
+      "before": 1.75,
+      "after": 1.2,
+      "reduction": 0.3142857142857143
+    },
+    {
+      "kind": "ju87",
+      "fps": 60,
+      "before": 1.7333333333333334,
+      "after": 1.2,
+      "reduction": 0.3076923076923077
+    },
+    {
+      "kind": "ju87",
+      "fps": 120,
+      "before": 1.7333333333333334,
+      "after": 1.1916666666666667,
+      "reduction": 0.3125
+    },
+    {
+      "kind": "me262",
+      "fps": 20,
+      "before": 1.6,
+      "after": 1.1,
+      "reduction": 0.3125
+    },
+    {
+      "kind": "me262",
+      "fps": 60,
+      "before": 1.6166666666666667,
+      "after": 1.1166666666666667,
+      "reduction": 0.30927835051546393
+    },
+    {
+      "kind": "me262",
+      "fps": 120,
+      "before": 1.6166666666666667,
+      "after": 1.1166666666666667,
+      "reduction": 0.30927835051546393
+    },
+    {
+      "kind": "me163",
+      "fps": 20,
+      "before": 1.7,
+      "after": 1.15,
+      "reduction": 0.32352941176470595
+    },
+    {
+      "kind": "me163",
+      "fps": 60,
+      "before": 1.6666666666666667,
+      "after": 1.15,
+      "reduction": 0.31000000000000005
+    },
+    {
+      "kind": "me163",
+      "fps": 120,
+      "before": 1.6666666666666667,
+      "after": 1.15,
+      "reduction": 0.31000000000000005
+    },
+    {
+      "kind": "avenger",
+      "fps": 20,
+      "before": 1.25,
+      "after": 0.95,
+      "reduction": 0.24
+    },
+    {
+      "kind": "avenger",
+      "fps": 60,
+      "before": 1.25,
+      "after": 0.95,
+      "reduction": 0.24
+    },
+    {
+      "kind": "avenger",
+      "fps": 120,
+      "before": 1.2416666666666667,
+      "after": 0.95,
+      "reduction": 0.2348993288590605
+    },
+    {
+      "kind": "sbd",
+      "fps": 20,
+      "before": 0.95,
+      "after": 0.7,
+      "reduction": 0.26315789473684215
+    },
+    {
+      "kind": "sbd",
+      "fps": 60,
+      "before": 0.9333333333333333,
+      "after": 0.7166666666666667,
+      "reduction": 0.2321428571428571
+    },
+    {
+      "kind": "sbd",
+      "fps": 120,
+      "before": 0.9333333333333333,
+      "after": 0.7083333333333334,
+      "reduction": 0.2410714285714285
+    },
+    {
+      "kind": "corsair",
+      "fps": 20,
+      "before": 0.85,
+      "after": 0.65,
+      "reduction": 0.23529411764705876
+    },
+    {
+      "kind": "corsair",
+      "fps": 60,
+      "before": 0.8333333333333334,
+      "after": 0.6333333333333333,
+      "reduction": 0.2400000000000001
+    },
+    {
+      "kind": "corsair",
+      "fps": 120,
+      "before": 0.8333333333333334,
+      "after": 0.6333333333333333,
+      "reduction": 0.2400000000000001
+    },
+    {
+      "kind": "zero",
+      "fps": 20,
+      "before": 0.75,
+      "after": 0.6,
+      "reduction": 0.20000000000000007
+    },
+    {
+      "kind": "zero",
+      "fps": 60,
+      "before": 0.7666666666666667,
+      "after": 0.5833333333333334,
+      "reduction": 0.23913043478260865
+    },
+    {
+      "kind": "zero",
+      "fps": 120,
+      "before": 0.7583333333333333,
+      "after": 0.575,
+      "reduction": 0.2417582417582418
+    }
+  ],
+  "audio": {
+    "p47": {
+      "rms": 0.18620386942068068,
+      "muted": 0,
+      "peak": 0.6523474454879761,
+      "spectrum": [
+        0.0004538917549271501,
+        0.0003477667075832729,
+        0.00023460981544507804,
+        0.0007184308502581784,
+        0.002767710774235967,
+        0.001104215450214798,
+        0.0010596286383842545,
+        0.00040961025554659406,
+        0.002044803470031173,
+        8.777188730194123e-05
+      ],
+      "levels": [
+        {
+          "throttle": 0,
+          "rms": 0.08140361284619244,
+          "peak": 0.31185346841812134
+        },
+        {
+          "throttle": 0.45,
+          "rms": 0.11640402680751215,
+          "peak": 0.4427357614040375
+        }
+      ]
+    },
+    "bf109": {
+      "rms": 0.17235328009366632,
+      "muted": 0,
+      "peak": 0.6107606887817383,
+      "spectrum": [
+        0.0007462293844494467,
+        0.0046710788254892294,
+        0.0013097933907700347,
+        0.0033346914620066277,
+        0.0007929587270911414,
+        0.00048537555749599514,
+        0.0016503499765617552,
+        0.0011849079123948596,
+        0.000710479679492881,
+        0.0007991781438243698
+      ],
+      "levels": [
+        {
+          "throttle": 0,
+          "rms": 0.07774827716762724,
+          "peak": 0.23686742782592773
+        },
+        {
+          "throttle": 0.45,
+          "rms": 0.11628501584515412,
+          "peak": 0.4505559206008911
+        }
+      ]
+    },
+    "fw190": {
+      "rms": 0.1758788394672378,
+      "muted": 0,
+      "peak": 0.7438390851020813,
+      "spectrum": [
+        0.0026321591431330794,
+        0.002506569620877586,
+        0.00553373858062894,
+        0.0005087709882728492,
+        0.003433025672745821,
+        0.00433577510915623,
+        0.002259214434872548,
+        0.004606766156280882,
+        0.007108160224261565,
+        0.0006761062464093026
+      ],
+      "levels": [
+        {
+          "throttle": 0,
+          "rms": 0.07881356132182303,
+          "peak": 0.32566070556640625
+        },
+        {
+          "throttle": 0.45,
+          "rms": 0.11836546386066056,
+          "peak": 0.4607856273651123
+        }
+      ]
+    },
+    "ju87": {
+      "rms": 0.17257495381615728,
+      "muted": 0,
+      "peak": 0.5665881633758545,
+      "spectrum": [
+        0.0005002566428246829,
+        0.00036691855981633824,
+        0.017010205493673977,
+        0.004146722493109069,
+        0.0029160122313573343,
+        0.0012434653259284381,
+        0.01038025248744503,
+        0.001842905610347439,
+        0.00022028147678956918,
+        0.00011110210076190572
+      ],
+      "levels": [
+        {
+          "throttle": 0,
+          "rms": 0.07921317538430807,
+          "peak": 0.24765433371067047
+        },
+        {
+          "throttle": 0.45,
+          "rms": 0.11648676118800438,
+          "peak": 0.41589200496673584
+        }
+      ]
+    },
+    "me262": {
+      "rms": 0.14314365948282257,
+      "muted": 0,
+      "peak": 0.5967008471488953,
+      "spectrum": [
+        0.0015679533240003324,
+        0.0033986056938178242,
+        0.0011833008423175811,
+        0.003206786392077098,
+        0.0019464496297620553,
+        0.0008082316681272892,
+        0.0035895452713768363,
+        0.0017232337595665696,
+        0.001783256108642653,
+        0.002454563066831348
+      ]
+    },
+    "me163": {
+      "rms": 0.1814539631801549,
+      "muted": 0,
+      "peak": 0.7179931402206421,
+      "spectrum": [
+        0.0014630268732929318,
+        0.0031523837034332035,
+        0.001094411436271681,
+        0.002984886164506625,
+        0.0018299672187589797,
+        0.0007737252082277912,
+        0.003489701340996014,
+        0.0014951751579881478,
+        0.00249723691962492,
+        0.003696758641876696
+      ]
+    },
+    "avenger": {
+      "rms": 0.1816449664720336,
+      "muted": 0,
+      "peak": 0.5418844223022461,
+      "spectrum": [
+        0.002497093374672489,
+        0.001247590070660418,
+        0.0021214432258024763,
+        0.002045440716207128,
+        0.00012454655335438926,
+        0.0007319652571738102,
+        0.0004766773995433973,
+        0.0007227102533586982,
+        1.3483762376219337e-05,
+        0.0002959623832107614
+      ],
+      "levels": [
+        {
+          "throttle": 0,
+          "rms": 0.08051841820686358,
+          "peak": 0.22629249095916748
+        },
+        {
+          "throttle": 0.45,
+          "rms": 0.12310069369713736,
+          "peak": 0.40412622690200806
+        }
+      ]
+    },
+    "sbd": {
+      "rms": 0.1793074483752049,
+      "muted": 0,
+      "peak": 0.5673685073852539,
+      "spectrum": [
+        0.026304295880427275,
+        0.004104263815745914,
+        0.007337974953928176,
+        0.005313916408820609,
+        0.004814264359494077,
+        0.008901035052387643,
+        0.0037060400305055853,
+        0.001106589053127064,
+        0.00016241251078707427,
+        0.0004309294981005754
+      ],
+      "levels": [
+        {
+          "throttle": 0,
+          "rms": 0.08198968521391194,
+          "peak": 0.25853556394577026
+        },
+        {
+          "throttle": 0.45,
+          "rms": 0.12564724060058646,
+          "peak": 0.4915744364261627
+        }
+      ]
+    },
+    "corsair": {
+      "rms": 0.1926810253544063,
+      "muted": 0,
+      "peak": 0.6405685544013977,
+      "spectrum": [
+        0.0003254177898677737,
+        0.0002560885850298759,
+        0.0005107128926431125,
+        0.0048772401415137,
+        0.013608842462813181,
+        0.001677265030520067,
+        0.005248214039803625,
+        0.0012743411506116692,
+        0.00040818800004990016,
+        0.0008691246929484985
+      ],
+      "levels": [
+        {
+          "throttle": 0,
+          "rms": 0.0784292449583085,
+          "peak": 0.29837989807128906
+        },
+        {
+          "throttle": 0.45,
+          "rms": 0.11436137537996624,
+          "peak": 0.43127942085266113
+        }
+      ]
+    },
+    "zero": {
+      "rms": 0.16667726804694025,
+      "muted": 0,
+      "peak": 0.5349442362785339,
+      "spectrum": [
+        0.0010887723545948504,
+        0.0008371980361621173,
+        0.0007349996410473155,
+        0.002889654131175959,
+        0.0012360502595465182,
+        0.0019828172285093256,
+        0.0007008372780871883,
+        8.131548395652669e-05,
+        0.0002627305362248161,
+        0.00040831514066215664
+      ],
+      "levels": [
+        {
+          "throttle": 0,
+          "rms": 0.07527893098556011,
+          "peak": 0.21258307993412018
+        },
+        {
+          "throttle": 0.45,
+          "rms": 0.11350695761072274,
+          "peak": 0.38873594999313354
+        }
+      ]
+    }
+  },
+  "sources": "audio/engines/provenance.json",
+  "limitations": [
+    "Voice correspondence relies on recordist labels, not independent authentication.",
+    "Corsair uses the P-47 R-2800 source; SBD a multi-engine B-17 R-1820 family effect; Zero an R-2600 radial substitute, not Sakae audio.",
+    "Avenger and Stuka source files are archival film effects; precise installation and RPM unverified.",
+    "Pitch frequency is explicit arcade tuning, not claimed historical pitch-rate data.",
+    "Numerical audio metrics do not prove subjective sound quality or iPad speaker reproduction."
+  ],
+  "checks": {
+    "syntax": "11 HTML files / 11 script blocks, zero errors; JS node --check passed",
+    "pitch": "30 before/after samples, 10 types at 20/60/120 FPS, same targets, bounded overshoot, neutral settling",
+    "audio": "10 real OfflineAudioContext renders; 8 piston types also idle and half load; no clipping, exact stopped silence, type switching and 404 reporting",
+    "fleet": "30 actual loaded-campaign flight samples; live controls, acceleration, self-levelling and type selection",
+    "handling": "All 10 actual aircraft at 20/60/120 FPS, damage/loading/quality; 21 loaded European runway departures",
+    "carrierStart": "7 mission/aircraft cases, actual deck contacts, rolling launches and sustained climb",
+    "carrierRecovery": "All 4 aircraft at 20/60/120 FPS, bolters and progressive/offset recoveries",
+    "komet": "Both missions at 20/60/120 FPS through powered intercept, glide, skid touchdown and debrief; jet regression",
+    "app": "340 files, 36 models, 253.2 MiB; all payload hashes and original models byte-verified, required recorded loops/notices and dependency closure",
+    "controlsEnergy": "Live input controls, AERO and isolated fleet energy tests passed"
+  }
+}

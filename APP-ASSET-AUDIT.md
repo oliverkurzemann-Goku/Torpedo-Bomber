@@ -1,3 +1,10 @@
+## Build 212 recorded piston audio
+
+Twelve mono PCM loops from eight public HQ MP3 recordings are included with source
+attribution, licenses, exact cuts and hashes in audio/engines/CREDITS.md and provenance.json.
+CC BY 3.0 Fight2FlyPhoto / CC0 craigsmith. Original MP3s remain development sources and
+are excluded from the offline payload. Engine-family substitutions are explicit.
+
 # App asset rights review — Dauntless updated 23 October 2026
 
 **Result: source/license evidence improved; app distribution clearance is still open.**

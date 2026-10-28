@@ -1,76 +1,76 @@
-/* Original combustion/propeller sound design. No sawtooth, recordings or worklet.
- * Historical engine families; timbres are game approximations for tablet speakers. */
+/* Recorded piston engines. Attribution and exact cuts: engines/provenance.json.
+ * Idle/load crossfade retains real exhaust transients. No oscillator bed. */
 (function(root){
 'use strict';
 const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
+const script=typeof document!=='undefined'?document.currentScript:null;
+const base=script?new URL('engines/',script.src).href:'audio/engines/';
 const profiles={
- p47:{engine:'R-2800 · 18-cylinder radial',cylinders:18,blades:4,gear:.50,rpm:2700,body:116,rough:.24,prop:.70,exhaust:.82,air:.15,bright:1600,spool:1.25,seed:47},
- corsair:{engine:'R-2800 · 18-cylinder radial',cylinders:18,blades:3,gear:.50,rpm:2700,body:128,rough:.22,prop:.87,exhaust:.74,air:.19,bright:1800,spool:1.1,seed:41},
- fw190:{engine:'BMW 801 · 14-cylinder radial',cylinders:14,blades:3,gear:.54,rpm:2700,body:146,rough:.29,prop:.68,exhaust:.91,air:.19,bright:1900,spool:.95,seed:190},
- bf109:{engine:'DB 601 · inverted V12',cylinders:12,blades:3,gear:.59,rpm:2600,body:210,rough:.07,prop:.42,exhaust:.98,air:.10,bright:2400,spool:.70,seed:109,inline:true},
- ju87:{engine:'Jumo 211 · inverted V12',cylinders:12,blades:3,gear:.65,rpm:2400,body:173,rough:.12,prop:.56,exhaust:.91,air:.12,bright:1950,spool:1.05,seed:87,inline:true},
- avenger:{engine:'R-2600 · 14-cylinder radial',cylinders:14,blades:3,gear:.56,rpm:2600,body:102,rough:.32,prop:.79,exhaust:.85,air:.18,bright:1450,spool:1.45,seed:2600},
- sbd:{engine:'R-1820 · 9-cylinder radial',cylinders:9,blades:3,gear:.56,rpm:2500,body:135,rough:.36,prop:.66,exhaust:.89,air:.16,bright:1650,spool:1.05,seed:1820},
- zero:{engine:'Sakae · 14-cylinder radial',cylinders:14,blades:3,gear:.69,rpm:2750,body:187,rough:.18,prop:.54,exhaust:.80,air:.13,bright:2200,spool:.65,seed:21}
+ p47:{engine:'R-2800 · 18-cylinder radial',bank:'r2800',rate:1,spool:1.0,bass:1.5,bright:6500,source:'P-47D R-2800 recordings · Fight2FlyPhoto',match:'Recorded P-47; edited stationary loops from startup and flyby.'},
+ corsair:{engine:'R-2800 · 18-cylinder radial',bank:'r2800',rate:1.035,spool:.9,bass:.5,bright:7100,source:'R-2800 recordings from a P-47D · Fight2FlyPhoto',match:'Same engine family; Corsair exhaust and three-blade propeller are an approximation.'},
+ fw190:{engine:'BMW 801 · 14-cylinder radial',bank:'bmw801',rate:1,spool:.8,bass:1,bright:6800,source:'BMW-powered Fw 190 A-5 recordings · Fight2FlyPhoto',match:'BMW-powered A-5 recording adapted for the A-8.'},
+ bf109:{engine:'DB 601 · inverted V12',bank:'db601',rate:1,spool:.6,bass:0,bright:7200,source:'Bf 109E-3 Daimler-Benz run-up · Fight2FlyPhoto',match:'DB 601 family recording; E-3 installation adapted for the F-2.'},
+ ju87:{engine:'Jumo 211 · inverted V12',bank:'jumo',rate:1,spool:.9,bass:1,bright:5800,source:'Stuka-labelled archival effect · craigsmith / USC',match:'Archival film sound effect; exact engine provenance is unverified.'},
+ avenger:{engine:'R-2600 · 14-cylinder radial',bank:'r2600',rate:1,spool:1.2,bass:1.5,bright:6000,source:'TBF Avenger-labelled archival effect · craigsmith / USC',match:'Archival TBF effect; installation and RPM are unverified.'},
+ sbd:{engine:'R-1820 · 9-cylinder radial',bank:'r1820',rate:1.02,spool:.9,bass:1,bright:6200,source:'B-17 R-1820 family archival effect · craigsmith / USC',match:'Engine-family substitute from a multi-engine B-17 effect; not an SBD recording.'},
+ zero:{engine:'Sakae · 14-cylinder radial',bank:'r2600',rate:1.12,spool:.55,bass:-1,bright:7200,source:'Adapted 14-cylinder radial recording · craigsmith / USC',match:'R-2600 recording used as a radial substitute; no verified reusable Sakae recording found.'}
 };
 for(const p of Object.values(profiles))Object.freeze(p);Object.freeze(profiles);
-function synthesize(kind,rate=24000){
- const p=profiles[kind]||profiles.p47,n=rate*8,data=new Float32Array(n),tau=Math.PI*2,crank=40;
- let seed=p.seed,red=0,prev=0,mean=0;
- const bladeHz=Math.round(crank*p.gear*p.blades),fireHz=crank*p.cylinders/2;
- for(let i=0;i<n;i++){
-  const t=i/rate,cycle=t*fireHz,event=Math.floor(cycle),phase=cycle-event;
-  seed=(Math.imul(seed,1664525)+1013904223)>>>0;const white=seed/2147483648-1;red=.965*red+.035*white;
-  const weight=1+p.rough*Math.sin((event%p.cylinders)*2.39996);
-  const pulse=Math.sin(Math.PI*phase)*Math.exp(-phase*(p.inline?2.0:3.4));
-  const firing=weight*(pulse-.12)+.17*Math.sin(tau*fireHz*t)+.07*Math.sin(tau*fireHz*2*t+.4);
-  const blade=.60*Math.sin(tau*bladeHz*t)+.25*Math.sin(tau*bladeHz*2*t+.6)+.12*Math.sin(tau*bladeHz*3*t+.2);
-  const body=(.25*Math.sin(tau*p.body*t)+.12*Math.sin(tau*(p.body+1)*t+.3))*(1+p.rough*.3*Math.sin(tau*13*t));
-  const texture=(red*6*.7+white*.09)*(1+.20*Math.sin(tau*bladeHz*t));
-  const x=firing*p.exhaust+blade*p.prop+body+texture*p.air;
-  prev+=(x-prev)*(p.inline?.57:.40);data[i]=prev;mean+=prev;
- }
- mean/=n;let rms=0;
- for(let i=0;i<n;i++){data[i]-=mean;rms+=data[i]*data[i];}
- const gain=.31/Math.sqrt(rms/n);
- for(let i=0;i<n;i++)data[i]=Math.tanh(data[i]*gain);
- // Whole-second overlap preserves every periodic component and joins the noise
- // continuously: the last returned sample precedes the tail's first sample.
- const blend=rate,out=data.slice(0,n-blend);
- for(let i=0;i<blend;i++){const a=i/blend;out[i]=data[n-blend+i]*(1-a)+data[i]*a;}
- return out;
-}
 function create(ctx,destination){
- const bus=ctx.createGain(),hp=ctx.createBiquadFilter(),tone=ctx.createBiquadFilter(),presence=ctx.createBiquadFilter();
- bus.gain.value=0;hp.type='highpass';hp.frequency.value=48;hp.Q.value=.5;
- tone.type='lowpass';tone.frequency.value=1800;tone.Q.value=.55;
- presence.type='peaking';presence.frequency.value=280;presence.Q.value=.65;presence.gain.value=2.5;
- hp.connect(tone);tone.connect(presence);presence.connect(bus);bus.connect(destination);
- const cache=new Map();let current=null,rpm=.55,load=0;
- function select(kind){
-  if(current?.kind===kind)return;
-  const previous=current;
-  if(!profiles[kind]){current=null;if(previous){previous.gain.gain.setTargetAtTime(0,ctx.currentTime,.055);previous.source.stop(ctx.currentTime+.4);}return;}
-  if(!cache.has(kind)){const samples=synthesize(kind),b=ctx.createBuffer(1,samples.length,24000);b.getChannelData(0).set(samples);cache.set(kind,b);}
-  const source=ctx.createBufferSource(),gain=ctx.createGain();source.buffer=cache.get(kind);source.loop=true;
-  gain.gain.value=0;source.connect(gain);gain.connect(hp);source.start();gain.gain.setTargetAtTime(1,ctx.currentTime,.07);
-  if(previous){previous.gain.gain.setTargetAtTime(0,ctx.currentTime,.055);previous.source.stop(ctx.currentTime+.4);}
-  source.onended=()=>{source.disconnect();gain.disconnect();};
-  current={kind,source,gain};rpm=.55;load=0;
+ const bus=ctx.createGain(),hp=ctx.createBiquadFilter(),tone=ctx.createBiquadFilter(),body=ctx.createBiquadFilter();
+ bus.gain.value=0;hp.type='highpass';hp.frequency.value=28;hp.Q.value=.5;
+ tone.type='lowpass';tone.frequency.value=6500;tone.Q.value=.5;
+ body.type='lowshelf';body.frequency.value=180;body.gain.value=0;
+ hp.connect(body);body.connect(tone);tone.connect(bus);bus.connect(destination);
+ const buffers=new Map();let current=null,selected=null,load=0,rpm=1,version=0,error=null;
+ function ready(kind){
+  const p=profiles[kind];if(!p)return Promise.resolve(null);
+  if(!buffers.has(p.bank)){
+   const promise=Promise.all(['idle','power'].map(async layer=>{
+    const url=base+p.bank+'-'+layer+'.wav',res=await fetch(url);
+    if(!res.ok)throw Error('Engine sample '+res.status+': '+url);
+    return ctx.decodeAudioData(await res.arrayBuffer());
+   }));buffers.set(p.bank,promise);
+   promise.catch(()=>{if(buffers.get(p.bank)===promise)buffers.delete(p.bank);});
+  }
+  return buffers.get(p.bank);
  }
- return {update(dt,kind,throttle,active,options={}){
-  select(kind);const p=profiles[kind];if(!p){bus.gain.setTargetAtTime(0,ctx.currentTime,.045);return;}
-  const t=clamp(throttle||0,0,1),now=ctx.currentTime,powered=options.fuel!==false;
+ function retire(voice){if(!voice)return;voice.fade.gain.setTargetAtTime(0,ctx.currentTime,.05);for(const source of voice.sources)source.stop(ctx.currentTime+.4);}
+ function select(kind){
+  if(selected===kind)return;
+  selected=kind;const ticket=++version;retire(current);current=null;error=null;load=0;
+  if(!profiles[kind])return;
+  ready(kind).then(decoded=>{
+   if(ticket!==version)return;
+   const fade=ctx.createGain();fade.gain.value=0;fade.connect(hp);
+   const layers=decoded.map((buffer,i)=>{
+    const source=ctx.createBufferSource(),gain=ctx.createGain();source.buffer=buffer;source.loop=true;source.playbackRate.value=profiles[kind].rate;
+    gain.gain.value=i===0?1:0;source.connect(gain);gain.connect(fade);
+    source.onended=()=>{source.disconnect();gain.disconnect();};source.start();return {source,gain};
+   });
+   current={kind,fade,layers,sources:layers.map(l=>l.source)};
+   // Both sources share one fade; disconnect it after the last one ends.
+   let ended=0;for(const layer of layers){const cleanup=layer.source.onended;layer.source.onended=()=>{cleanup();if(++ended===2)fade.disconnect();};}
+   fade.gain.setTargetAtTime(1,ctx.currentTime,.08);
+  }).catch(e=>{if(ticket===version){error=e.message;console.warn(error);}});
+ }
+ return {ready,select,update(dt,kind,throttle,active,options={}){
+  select(kind);const p=profiles[kind],now=ctx.currentTime;
+  if(!p||!current){bus.gain.setTargetAtTime(0,now,.045);return;}
+  const powered=options.fuel!==false,t=powered?clamp(throttle||0,0,1):0;
   load+=(t-load)*(1-Math.exp(-Math.max(0,dt)/p.spool));
-  // A governor keeps RPM in a narrow working band: load changes timbre/weight.
-  const target=powered?.40+.60*Math.pow(load,.38):clamp((options.speed||0)/200,0,.45);
-  rpm+=(target-rpm)*(1-Math.exp(-Math.max(0,dt)/(powered?.55:1.6)));
-  current.source.playbackRate.setTargetAtTime((p.rpm/2400)*Math.max(.18,rpm),now,.08);
+  // The recording carries the combustion and propeller rhythm. A small rate
+  // range complements the two load layers instead of transposing it by octaves.
+  const mix=clamp((load-.08)/.82,0,1),idle=Math.cos(mix*Math.PI/2),power=Math.sin(mix*Math.PI/2);
+  rpm=p.rate*(.94+.10*load);
+  current.layers[0].gain.gain.setTargetAtTime(idle*.8,now,.10);
+  current.layers[1].gain.gain.setTargetAtTime(power,now,.10);
+  for(const l of current.layers)l.source.playbackRate.setTargetAtTime(rpm,now,.10);
+  body.gain.setTargetAtTime(p.bass,now,.15);
+  tone.frequency.setTargetAtTime(p.bright*(options.cockpit?.65:1),now,.12);
   const damage=clamp(options.damage||0,0,1);
-  tone.frequency.setTargetAtTime((p.bright*(.48+.52*load))*(options.cockpit?.76:1),now,.12);
-  presence.gain.setTargetAtTime(1.5+load*3,now,.12);
-  bus.gain.setTargetAtTime(active?(powered?.20+.32*load:.035)*(1-damage*.28)*(1-.25*(options.duck||0)):0,now,active?.10:.045);
- },select,get state(){return {kind:current?.kind||null,rpm,load};},output:bus};
+  bus.gain.setTargetAtTime(active?(powered?.45+.35*load:.025)*(1-damage*.28)*(1-.25*(options.duck||0)):0,now,active?.10:.035);
+ },get state(){return {kind:profiles[selected]?selected:null,loaded:current?.kind===selected,loading:!!profiles[selected]&&!current&&!error,error,rpm,load};},output:bus};
 }
-root.AircraftEngine={profiles,synthesize,create};if(typeof module==='object'&&module.exports)module.exports=root.AircraftEngine;
+root.AircraftEngine={profiles,create};if(typeof module==='object'&&module.exports)module.exports=root.AircraftEngine;
 })(typeof window==='undefined'?globalThis:window);

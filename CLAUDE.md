@@ -1,5 +1,30 @@
 # Torpedo-Bomber — Übergabe an Claude Code
 
+**28.10.2026, Build 212: Nutzer lehnt Build-211-Propellersynthese ab; jetzt recherchierte Aufnahmen und schnelleres Pitch.**
+Explizites Feedback: Staubsauger statt tiefem Sternmotor-Brummen/Knattern, Pitch-up zu langsam;
+„nicht raten, ordentlich recherchieren“. Acht frei nutzbare Freesound-HQ-MP3s: Fight2FlyPhoto
+CC BY 3.0 (P47-Start/Pass, BMW-Fw190-A5-Taxi/Pass, DB601-Bf109E3-Runup); craigsmith/USC
+CC0 (TBF-, Stuka-, B17-Effekte). Exakte URLs, Lizenzlinks, Hashes, Intervalle und gemessene
+Doppler-Korrekturkurven: audio/engines/provenance.json; Zuordnungen/Limits: CREDITS.md.
+Zwölf 24-kHz-Mono-PCM-WAVs, echte Transienten, langsame Pegelkorrektur, Crossfade-Loops;
+reproduzierbar mit scripts/engine-audio/build-recorded-loops.py (numpy/scipy/ffmpeg).
+Keine Oszillatorbasis im Propellersound. Lazy Fetch/Decode, Idle/Power-Crossfade, kleine
+PlaybackRate-Spanne, Cache je Motorfamilie, Versionsschutz gegen verspätete Typwechsel.
+Offline-Payload enthält Loops und Notices, keine Quell-MP3s. Keine NC-Aufnahme eingebaut.
+Wichtig: Corsair = P47-R2800-Familie adaptiert; SBD = B17-R1820-Mehrmotoren-Quelle;
+Zero = R2600-14-Zylinder-Ersatz, keine Sakae-Aufnahme. Stuka/TBF sind beschriftete Film-
+Effekte, genaue Motorauthentifizierung offen. Niemals alle acht als Originaltyp-Aufnahmen
+bezeichnen. Vorschau zeigt je Typ Quelle und diese Einschränkungen.
+Normal-Pitch-Regler: Europa 2.0→2.9, Pacific 3.2→4.2. Gemessene 90%-Reaktion bei
+110 m/s/.4 Stick: Europa etwa31%, Pacific etwa24% kürzere Zeit. Zielwinkel, Energie,
+Start-/Steiggrenzen bleiben. Gewollte Arcade-Abstimmung, keine historischen Pitchraten.
+Nachweise: app/release/engine-pitch-validation.json; pitch-response.cjs für alle10 Typen
+bei20/60/120FPS, fleet-audio-browser.cjs rendert echte Dateien (Idle/Mitte/Last), Stille,
+Pegel/Headroom/Typwechsel/404. Geladene Flotten-/Last-/Schaden-/Start-/Recovery-Prüfungen.
+Browser-Hörqualität ist damit nicht bewiesen; kein physischer iPad-/Safari-Hörtest.
+Build-/Cache-/iOS-Kennungen212; App340 Dateien/36 Modelle/253.2MiB, Closure/Hashes geprüft.
+
+
 **28.10.2026, Build 211: Flugverhalten und Motorensound über die ganze spielbare Flotte abgestimmt.**
 Nutzer: jeder Typ soll sich anders anfühlen, plausibler, aber weiterhin Arcade; Motoren
 klangen wie Rasenmäher. Neues `flight-dynamics.js` in beiden aktuellen Kampagnen und

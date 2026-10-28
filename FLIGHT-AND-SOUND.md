@@ -1,4 +1,4 @@
-# Fleet handling and engine audio — Build 211
+# Fleet handling and engine audio — Build 212
 
 Ten playable aircraft now use finite acceleration, engine response and speed-dependent
 control authority. The assisted stick, self-levelling, difficulty choices, weapons and
@@ -9,13 +9,13 @@ mission rules remain. This is an arcade balance pass, not a certified flight sim
 | P-47D | Heavy, stable, good coasting; deliberate low-speed acceleration | Deep R-2800, 18-cylinder radial, four-blade propeller |
 | Bf 109F-2 | Light response, stronger low-speed acceleration/climb, tighter ordinary turns; controls stiffen at speed | Smoother DB 601 V12 exhaust |
 | Fw 190A-8 | Faster roll response to its commanded bank; hard turns shed more energy | Rougher BMW 801, 14-cylinder radial |
-| Ju 87B-2 | Deliberate roll, modest climb, strong dive-brake drag | Lower Jumo 211 V12 |
+| Ju 87B-2 | Deliberate roll, modest climb, strong dive-brake drag | Stuka-labelled archival film effect |
 | Me 262 | Slow engine spool, highest sustained speed, wider turns | Continuous turbine/airflow sound |
 | Me 163 | Strong rocket acceleration, then an unpowered energy-limited glide | Separate rocket roar; silent combustion at cutoff |
-| TBM Avenger | Heavy inertia, slow acceleration, stable approach | Low R-2600, 14-cylinder radial |
-| SBD Dauntless | More responsive than the Avenger, steady dive and recovery | Distinct R-1820, nine-cylinder radial |
-| F4U Corsair | Strong power, faster flight, more inertia than the Zero | R-2800 with its distinct three-blade propeller component |
-| A6M Zero | Tight low-speed turns, fast response; reduced high-speed roll authority | Lighter Sakae, 14-cylinder radial |
+| TBM Avenger | Heavy inertia, slow acceleration, stable approach | TBF-labelled archival film effect |
+| SBD Dauntless | More responsive than the Avenger, steady dive and recovery | R-1820 family archival effect from B-17 |
+| F4U Corsair | Strong power, faster flight, more inertia than the Zero | R-2800 family recording adapted from P-47 |
+| A6M Zero | Tight low-speed turns, fast response; reduced high-speed roll authority | Adapted 14-cylinder radial substitute; not Sakae audio |
 
 ## Flight implementation
 
@@ -48,21 +48,34 @@ power and departure state; checkpoints still capture/restore the complete player
 
 ## Sound implementation and provenance
 
-`audio/aircraft-engine.js` builds original, deterministic seven-second loop buffers from
-soft combustion pulses, firing harmonics, propeller pressure, resonant body components and
-filtered turbulence. Cylinder count, propeller blade count, RPM band and timbre differ.
-A whole-second overlap joins the loop without a noise seam. Runtime power/RPM changes are
-smoothed; engine load changes tone and weight instead of simply making a sawtooth louder.
-The old detuned sawtooth pair and deep periodic gain modulation are removed from all three
-pages. Eight piston buffers are lazy and cached (about 5.4 MB total if all are selected).
+Build 212 replaces the rejected tonal synthesis with recorded PCM loops. Eight full-duration
+HQ MP3 previews were acquired from the credited Freesound pages. The source MP3s are
+retained with SHA-256 hashes; the offline app contains only twelve derived mono WAV loops
+(24 kHz / 16-bit), the notices and the provenance record. Sources use CC BY 3.0 or CC0.
 
-Jets and the rocket use the existing separately synthesized `audio/jet-engine.js` voices;
-the legacy Europe page now uses those voices too. All sound remains under the existing
-master gain, so pause/mute/resume routing and effects mixing continue to work. Piston fuel
-exhaustion leaves only quiet windmilling; the rocket cuts off. No recordings or third-party
-audio samples were introduced. Engine specifications inform the family, not a claimed
-acoustic reconstruction. There has been no listening test through physical iPad speakers.
-`engine-preview.html` lets the user audition every engine with throttle and volume controls.
+`audio/engines/CREDITS.md` lists the exact aircraft/engine correspondence and limitations.
+P-47D, BMW-powered Fw 190 A-5 and DB 601-powered Bf 109E-3 are identifiable recordings.
+Avenger/Stuka are labelled archival film effects, not verified engineering recordings.
+Corsair uses the P-47 R-2800 family recording. SBD uses a B-17 R-1820 family effect
+with multiple engines audible in the original. Zero uses a 14-cylinder R-2600 substitute;
+it is not presented as a Sakae recording. No reusable exact Sakae recording was verified.
+
+The reproducible Python builder selects stable intervals, removes subsonic rumble/hiss,
+levels only the slow distance envelope and crossfades the loop seam. Measured spectral
+ridges remove Doppler sweeps from the two loaded flyby sources. This is an audio edit,
+not a claim about exact engine RPM. Actual combustion transients and broadband exhaust
+remain. No synthetic sine/oscillator bed is mixed into the piston sound.
+
+`audio/aircraft-engine.js` loads idle/power buffers on demand, caches by engine family
+and crossfades between them with throttle. Rate changes span only 0.94–1.04 of each
+profile's base, rather than octave-shifting one buzz. Existing master/pause routing is
+retained. Loading/error state is observable and the soundcheck reports loading failures.
+Jets and the rocket retain `audio/jet-engine.js`. Physical iPad listening is unverified.
+
+Build 212 also raises the normal assisted pitch controller frequency from 2.0 to 2.9
+in Europe, and from 3.2 to 4.2 in the Pacific. These are explicit arcade response choices,
+not historical pitch-rate data. The same target angles, type/load/damage factors and
+energy/climb limits apply. Loaded takeoffs and recovery are tested after the change.
 
 Historical family references consulted (not sources of audio or flight coefficients):
 
@@ -84,7 +97,7 @@ Historical family references consulted (not sources of audio or flight coefficie
   engines, distinct spectra, audible output, clipping headroom, stop silence and UI switching.
 - Existing loaded takeoff, handling/damage, carrier recovery, Komet mission and control
   regressions. Older HUD tests now compare P-47 IAS references to IAS rather than TAS.
-- Exact measurements and final check results: `app/release/fleet-validation.json`.
+- Build 211 evidence: `app/release/fleet-validation.json`. Build 212 pitch and recorded audio: `app/release/engine-pitch-validation.json`.
 
 Browser checks use Chromium/SwiftShader and real Web Audio. They establish functional
 behaviour, not iPad frame rate, Safari hardware behaviour or subjective audio quality.
