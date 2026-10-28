@@ -362,3 +362,11 @@ Exact source/loop hashes and cut intervals: [audio/engines/provenance.json](audi
 P-47, BMW-powered Fw 190 and DB 601-powered Bf 109 recordings replace the rejected
 Build 211 tonal synthesis. Other correspondences and limits are recorded in the notice.
 Jet/rocket voices remain original procedural audio in `audio/jet-engine.js`.
+
+## Build 213 ground-running radial voices
+
+The P-47 and Fw 190 powered voices now use the already credited Fight2FlyPhoto ground
+recordings, with 14.5/12.5 s loops. Avenger/Zero use an adapted BMW 14-cylinder recording;
+SBD uses a single R-2800 substitute. These are explicit game approximations, not recordings
+of the named R-2600/Sakae/R-1820 engines. Details and exact intervals:
+[audio/engines/CREDITS.md](audio/engines/CREDITS.md). No new third-party source added.

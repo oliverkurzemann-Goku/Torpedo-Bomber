@@ -1,5 +1,30 @@
 # Torpedo-Bomber — Übergabe an Claude Code
 
+**28.10.2026, Build 213: hörbare Vorbeiflug-Loops und Carrier-Dronetöne nach Nutzerfeedback ersetzt.**
+Nutzer akzeptiert Jets/Bf109, P47/Fw190-Anlaufklang gut, danach hörbare 1–3-s-Vorbeiflug-
+Wiederholung; Avenger/Zero Rasenmäher, SBD kein Kolben-/Sternmotorklang.
+Neue Powered-Loops ausschließlich aus vorhandenen CC-BY-3.0-Fight2FlyPhoto-Bodenquellen:
+P47-Start35–50.5s/1.0s Seam =14.5s, BMW-Fw-A5-Taxi2–15.3s/.8s Seam=12.5s.
+Kein Flyby und keine Doppler-Korrekturkurve in aktiven Powered-Loops. P47-/BMW-Idle,
+DB601-WAVs und JetEngine byteidentisch zu212. DB601-Rendering RMS/Peak exakt bestätigt.
+Avenger/Zero nun BMW14-Bodenaufnahme als ausdrücklich angenäherte Spielstimme;
+SBD einzelne R2800-Bodenaufnahme statt B17-Drohne. KEINE originalen R2600/Sakae/R1820-
+Aufnahmen und KEINE Rekonstruktion der Neunzylinder-Zündfolge behaupten. Nutzer wollte
+besseren Klang; dafür positiv bewertete echte Sternmotorbasis, keine neue Fantasiequelle.
+Weitere Recherche: Texan191009 geladen, aber wieder Flyby → verworfen. R17-03/G04-25
+(CC0) geladen, unklare Motorzuordnung → nicht benutzt. Keine neue Fremdquelle eingebaut.
+CREDITS.md/provenance.json führen aktuelle Zuordnung, exakte Schnitte, Hashes und
+archivierte Quellen. r2600/r1820-Drone-WAVs bleiben historisch im Repo, aus App und
+Runtime-Auswahl entfernt. Neue Sample-Revisionsquery213 für geänderte Banken.
+Soundcheck: Full power ·60 seconds, Timer und automatisches Ende. 6×60s echte
+OfflineAudioContext-Dauerrenderings, begrenzter Sekunden-RMS statt wiederkehrender
+Vorbeiflug-Abblendung, Peak<.78. Bf/Jets unverändert; subjektive iPad-Hörqualität offen.
+Prüfungen: 10 Stimmen Idle/Mitte/Last/Stille/404, 30 echte geladene Kampagnen-Flugfälle,
+Syntax11/11, App336 Dateien/36 Modelle/252.9MiB, Hashes/Closure/retired-Audio geprüft.
+Keine neue Flugabstimmung. Nachweis app/release/steady-engine-validation.json.
+Generator --steady-only erhält unveränderte Samplebytes und erneuert nur Powered-Loops.
+
+
 **28.10.2026, Build 212: Nutzer lehnt Build-211-Propellersynthese ab; jetzt recherchierte Aufnahmen und schnelleres Pitch.**
 Explizites Feedback: Staubsauger statt tiefem Sternmotor-Brummen/Knattern, Pitch-up zu langsam;
 „nicht raten, ordentlich recherchieren“. Acht frei nutzbare Freesound-HQ-MP3s: Fight2FlyPhoto

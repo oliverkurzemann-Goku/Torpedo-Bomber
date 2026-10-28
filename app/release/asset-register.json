@@ -1,19 +1,19 @@
 {
   "schema": 1,
   "reviewedOn": "2026-10-23",
-  "build": 212,
+  "build": 213,
   "status": "OPEN — source declarations checked; no external rights authorization obtained",
   "payload": {
-    "bytes": 265467963,
-    "fileCount": 340,
+    "bytes": 265161771,
+    "fileCount": 336,
     "modelCount": 36,
-    "manifestSha256": "38189d82ed85e77f38c7290171c6d08b01b0f7691852510bf3223d613d88ddc4"
+    "manifestSha256": "f55c9d8bce3b7e23a0b3c783734907b03a50f33a657ca89f1adf488448b9dcfc"
   },
   "files": [
     {
       "path": "ASSET-CREDITS.md",
-      "bytes": 29375,
-      "sha256": "76e024ba24a1e13846f63680ffc7db197577c0d9cc6b0c30d2f775d97e4872e6",
+      "bytes": 29846,
+      "sha256": "3980f4d254323a6c5a0565f03fc8d95d706ac36969b4496b094da6500f21f611",
       "kind": "code-or-notice"
     },
     {
@@ -396,14 +396,14 @@
     },
     {
       "path": "audio/aircraft-engine.js",
-      "bytes": 6102,
-      "sha256": "f5f223a4322de4c79cf555cb01cc25cb8a3bec342c2b63515e07c2993a05a1cc",
+      "bytes": 6361,
+      "sha256": "24c7bab4ab5c7dd24bef23ed5da85884bfa585863787dc8b812c31c67b289027",
       "kind": "code-or-notice"
     },
     {
       "path": "audio/engines/CREDITS.md",
-      "bytes": 3153,
-      "sha256": "af427a1d9135f1cf309577d237364ffbbfcfa494e5bd35929222b09c89c72c7c",
+      "bytes": 3687,
+      "sha256": "f21b97942e3ef52719c0334d5b123474b13659835fd46e9f0d391ca60831cb46",
       "kind": "code-or-notice"
     },
     {
@@ -414,8 +414,8 @@
     },
     {
       "path": "audio/engines/bmw801-power.wav",
-      "bytes": 150132,
-      "sha256": "b2a8f7177a584e55dfc2308646be69a09b23653fd6c04884fb36cbcdd53a2e45",
+      "bytes": 600044,
+      "sha256": "4c39044bd3c2c92c7867bd1d9386b7b8d0d32f01b3461331be0bc749728ea9ec",
       "kind": "code-or-notice"
     },
     {
@@ -444,32 +444,8 @@
     },
     {
       "path": "audio/engines/provenance.json",
-      "bytes": 11282,
-      "sha256": "507032e64250434577c92b2cce0cfe3367ddff4bc75f51ca4a025d617cba998c",
-      "kind": "code-or-notice"
-    },
-    {
-      "path": "audio/engines/r1820-idle.wav",
-      "bytes": 312044,
-      "sha256": "ff61c0b9498421478cbbf11ac9bbde66dc7015901810419ff5173d239152b490",
-      "kind": "code-or-notice"
-    },
-    {
-      "path": "audio/engines/r1820-power.wav",
-      "bytes": 408044,
-      "sha256": "b707c5d298c09a1ed95967b05f0b384a53c6533f745e9ec5d412b38932ceabb7",
-      "kind": "code-or-notice"
-    },
-    {
-      "path": "audio/engines/r2600-idle.wav",
-      "bytes": 264044,
-      "sha256": "f97324d2dc46ad48665a703174b3dfea63db483564c6ab9428e785b55e530519",
-      "kind": "code-or-notice"
-    },
-    {
-      "path": "audio/engines/r2600-power.wav",
-      "bytes": 312044,
-      "sha256": "05f086b6ffb195b510bcf05723bbf4dc2e84711860064a3ed3381bd30858fc95",
+      "bytes": 11224,
+      "sha256": "87a57eec974e28e1a415921e7dff5522d2e619a0f3a60b6b1354579af288d302",
       "kind": "code-or-notice"
     },
     {
@@ -480,8 +456,8 @@
     },
     {
       "path": "audio/engines/r2800-power.wav",
-      "bytes": 157178,
-      "sha256": "184edfe96557b6180e4561c743b1edff707de02027fb0c6c1c03f50a6742e0df",
+      "bytes": 696044,
+      "sha256": "7cce0ae3af6724d3bacbbc5890513ed866462bf478e54660b34128ead313cd4c",
       "kind": "code-or-notice"
     },
     {
@@ -649,7 +625,7 @@
     {
       "path": "index.html",
       "bytes": 7260,
-      "sha256": "5dcef350a01a7a15ed3babdb313901dcaeb70a7aa6f40816b95b82b687385beb",
+      "sha256": "10e16adda7eab4c39c41e6f1cd176f4909597b4639e711adf4354b2e842425f4",
       "kind": "code-or-notice"
     },
     {
@@ -781,7 +757,7 @@
     {
       "path": "remagen-mission.html",
       "bytes": 366919,
-      "sha256": "f5e425289837652be2b5df99feabcbe0af084f06a22bbc3c6531408e5c65da47",
+      "sha256": "10b93a405e42dde6ea77353f20964ac5ce526bd9e7688788e6b0bc5c7a721ae3",
       "kind": "code-or-notice"
     },
     {
@@ -1975,7 +1951,7 @@
     {
       "path": "torpedo-carrier.html",
       "bytes": 429772,
-      "sha256": "cfda6a5323fd249274733615c2177f4f36ec9f693d5d6727cd03e0544e35661c",
+      "sha256": "7c37bde52461e8f87fc7adfebfeeb2d38d99a801057fb2b65ef2f1534e26c06d",
       "kind": "code-or-notice"
     },
     {
@@ -3118,7 +3094,7 @@
         "audio/*.js",
         "audio/engines/**"
       ],
-      "status": "Recorded piston loops: CC BY 3.0 Fight2FlyPhoto and CC0 craigsmith. Exact sources, hashes, cuts and substitutions in audio/engines/provenance.json and CREDITS.md. Source MP3s excluded from offline payload. Jet/rocket/effects remain procedural."
+      "status": "Recorded piston loops: CC BY 3.0 Fight2FlyPhoto and CC0 craigsmith (Stuka). Build 213 ground-loop/aircraft substitutions and retired drone files are explicit. Exact sources, hashes, cuts and substitutions in audio/engines/provenance.json and CREDITS.md. Source MP3s excluded from offline payload. Jet/rocket/effects remain procedural."
     },
     {
       "paths": [

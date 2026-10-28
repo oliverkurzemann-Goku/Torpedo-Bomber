@@ -46,6 +46,15 @@ const server=http.createServer((req,res)=>{
      result[kind].levels.push({throttle,rms:Math.sqrt(sum/(rendered.length-rate)),peak});
     }
    }
+   // A full minute at constant power covers the former short flyby loop many times.
+   for(const kind of ['p47','fw190','avenger','zero','sbd','corsair']){
+    const rate=24000,offline=new OfflineAudioContext(1,rate*60,rate),node=AircraftEngine.create(offline,offline.destination);
+    await node.ready(kind);node.select(kind);await Promise.resolve();
+    for(let i=0;i<360;i++)node.update(1/60,kind,1,true);
+    const data=(await offline.startRendering()).getChannelData(0),windows=[];let peak=0;
+    for(let sec=3;sec<60;sec++){let sum=0;for(let i=sec*rate;i<(sec+1)*rate;i++){sum+=data[i]**2;peak=Math.max(peak,Math.abs(data[i]));}windows.push(Math.sqrt(sum/rate));}
+    result[kind].sustain={seconds:60,minRms:Math.min(...windows),maxRms:Math.max(...windows),peak};
+   }
    // Missing files surface an error; there is no silent synthesized fallback.
    const oldFetch=window.fetch;let failure;
    try{
@@ -58,8 +67,20 @@ const server=http.createServer((req,res)=>{
   });
   for(const [kind,s] of Object.entries(result)){assert(s.rms>.015&&s.rms<.40,kind+' usable audible level');assert(s.peak<.95,kind+' clipping headroom');assert(s.muted<.00001,kind+' silence after stop');if(s.levels){assert(s.rms>s.levels[0].rms*1.4,kind+' load adds weight');for(const x of s.levels)assert(x.rms>.035&&x.peak<.95,kind+' idle/mid levels');}}
   for(const a of Object.keys(result))for(const b of Object.keys(result))if(a<b){const distance=Math.hypot(...result[a].spectrum.map((v,i)=>v-result[b].spectrum[i]));assert(distance>.0001,a+'/'+b+' distinct rendered spectrum');}
-  assert.deepEqual(errors,[]);fs.mkdirSync(path.join(root,'test-visuals'),{recursive:true});fs.writeFileSync(path.join(root,'test-visuals/build212-audio.json'),JSON.stringify(result,null,2));
-  await page.screenshot({path:path.join(root,'test-visuals/build212-engine-preview.png'),fullPage:true});
+  const old=JSON.parse(fs.readFileSync(path.join(root,'app/release/engine-pitch-validation.json'),'utf8')).audio.bf109;
+  assert(Math.abs(result.bf109.rms-old.rms)<1e-7,'Accepted Bf 109 voice unchanged');
+  assert(Math.abs(result.bf109.peak-old.peak)<1e-7,'Accepted Bf 109 headroom unchanged');
+  for(const [kind,s] of Object.entries(result))if(s.sustain){assert(s.sustain.minRms>.1&&s.sustain.peak<.95,kind+' sustained audible without overload');assert(s.sustain.maxRms/s.sustain.minRms<1.6,kind+' no recurring pass-by fade');}
+  const provenance=JSON.parse(fs.readFileSync(path.join(root,'audio/engines/provenance.json'),'utf8'));
+  for(const bank of ['r2800','bmw801']){const record=provenance.loops.find(r=>r.path==='audio/engines/'+bank+'-power.wav');assert(record.seconds>=12&&!/fly/.test(record.source)&&!record.dopplerRidge,bank+' long ground source');}
+  await page.getByRole('button',{name:'P-47 Thunderbolt',exact:true}).click();
+  await page.evaluate(async()=>{
+   const original=performance.now.bind(performance);let time=original();
+   Object.defineProperty(performance,'now',{configurable:true,value:()=>time});
+   try{await document.getElementById('sustain').onclick();tick();if(!playing||+get('throttle').value!==100)throw Error('Sustained audition does not start at full power');time+=59900;tick();if(!playing)throw Error('Audition ends early');time+=200;tick();if(playing||get('start').textContent!=='Start engine'||get('elapsed').textContent!=='01:00')throw Error('Audition does not end after 60 seconds');}finally{delete performance.now;}
+  });
+  assert.deepEqual(errors,[]);fs.mkdirSync(path.join(root,'test-visuals'),{recursive:true});fs.writeFileSync(path.join(root,'test-visuals/build213-audio.json'),JSON.stringify(result,null,2));
+  await page.screenshot({path:path.join(root,'test-visuals/build213-engine-preview.png'),fullPage:true});
   console.log('Ten real Web Audio renders, levels/headroom, ten distinct spectra, stop silence, gesture and type crossfade:',JSON.stringify(result));
  }finally{await browser.close();await new Promise(r=>server.close(r));}
 })().catch(e=>{console.error(e);process.exitCode=1;});

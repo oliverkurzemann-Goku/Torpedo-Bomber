@@ -1,3 +1,10 @@
+## Build 213 continuous ground radial sound
+
+Two powered loops replace the rejected flybys using already credited Fight2FlyPhoto
+ground material. TBF/B-17 drone voices are retired and their four WAVs excluded from the
+offline payload. Avenger/Zero/SBD source substitutions are explicit in the audio notices.
+Approved idle buffers, DB 601 and jet/rocket audio are unchanged. No new source added.
+
 ## Build 212 recorded piston audio
 
 Twelve mono PCM loops from eight public HQ MP3 recordings are included with source

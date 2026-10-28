@@ -6,14 +6,14 @@ const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
 const script=typeof document!=='undefined'?document.currentScript:null;
 const base=script?new URL('engines/',script.src).href:'audio/engines/';
 const profiles={
- p47:{engine:'R-2800 · 18-cylinder radial',bank:'r2800',rate:1,spool:1.0,bass:1.5,bright:6500,source:'P-47D R-2800 recordings · Fight2FlyPhoto',match:'Recorded P-47; edited stationary loops from startup and flyby.'},
- corsair:{engine:'R-2800 · 18-cylinder radial',bank:'r2800',rate:1.035,spool:.9,bass:.5,bright:7100,source:'R-2800 recordings from a P-47D · Fight2FlyPhoto',match:'Same engine family; Corsair exhaust and three-blade propeller are an approximation.'},
- fw190:{engine:'BMW 801 · 14-cylinder radial',bank:'bmw801',rate:1,spool:.8,bass:1,bright:6800,source:'BMW-powered Fw 190 A-5 recordings · Fight2FlyPhoto',match:'BMW-powered A-5 recording adapted for the A-8.'},
+ p47:{engine:'R-2800 · 18-cylinder radial',bank:'r2800',revision:213,rate:1,spool:1.0,bass:1.5,bright:6500,source:'P-47D R-2800 recordings · Fight2FlyPhoto',match:'P-47 stationary warm-up recording for continuous running; no flyby layer. Full-power character is an edit, not a measured full-power recording.'},
+ corsair:{engine:'R-2800 · 18-cylinder radial',bank:'r2800',revision:213,rate:1.035,spool:.9,bass:.5,bright:7100,source:'R-2800 recordings from a P-47D · Fight2FlyPhoto',match:'Same engine family; Corsair exhaust and three-blade propeller are an approximation.'},
+ fw190:{engine:'BMW 801 · 14-cylinder radial',bank:'bmw801',revision:213,rate:1,spool:.8,bass:1,bright:6800,source:'BMW-powered Fw 190 A-5 ground recording · Fight2FlyPhoto',match:'Low-speed ground/taxi recording adapted for the A-8; no flyby layer.'},
  bf109:{engine:'DB 601 · inverted V12',bank:'db601',rate:1,spool:.6,bass:0,bright:7200,source:'Bf 109E-3 Daimler-Benz run-up · Fight2FlyPhoto',match:'DB 601 family recording; E-3 installation adapted for the F-2.'},
  ju87:{engine:'Jumo 211 · inverted V12',bank:'jumo',rate:1,spool:.9,bass:1,bright:5800,source:'Stuka-labelled archival effect · craigsmith / USC',match:'Archival film sound effect; exact engine provenance is unverified.'},
- avenger:{engine:'R-2600 · 14-cylinder radial',bank:'r2600',rate:1,spool:1.2,bass:1.5,bright:6000,source:'TBF Avenger-labelled archival effect · craigsmith / USC',match:'Archival TBF effect; installation and RPM are unverified.'},
- sbd:{engine:'R-1820 · 9-cylinder radial',bank:'r1820',rate:1.02,spool:.9,bass:1,bright:6200,source:'B-17 R-1820 family archival effect · craigsmith / USC',match:'Engine-family substitute from a multi-engine B-17 effect; not an SBD recording.'},
- zero:{engine:'Sakae · 14-cylinder radial',bank:'r2600',rate:1.12,spool:.55,bass:-1,bright:7200,source:'Adapted 14-cylinder radial recording · craigsmith / USC',match:'R-2600 recording used as a radial substitute; no verified reusable Sakae recording found.'}
+ avenger:{engine:'R-2600 · 14-cylinder radial',bank:'bmw801',revision:213,rate:.94,spool:1.2,bass:3,bright:5600,source:'Recorded 14-cylinder BMW radial · Fight2FlyPhoto',match:'Radial game voice adapted from the BMW ground recording; this is not an R-2600 recording.'},
+ sbd:{engine:'R-1820 · 9-cylinder radial',bank:'r2800',revision:213,rate:.95,spool:.9,bass:.5,bright:6000,source:'Recorded single R-2800 radial · Fight2FlyPhoto',match:'Single-engine radial game voice replaces the B-17 drone. This is a substitute, not an R-1820 recording.'},
+ zero:{engine:'Sakae · 14-cylinder radial',bank:'bmw801',revision:213,rate:1.045,spool:.55,bass:1,bright:6500,source:'Recorded 14-cylinder BMW radial · Fight2FlyPhoto',match:'14-cylinder radial game voice adapted from the BMW ground recording; not a Sakae recording.'}
 };
 for(const p of Object.values(profiles))Object.freeze(p);Object.freeze(profiles);
 function create(ctx,destination){
@@ -27,7 +27,7 @@ function create(ctx,destination){
   const p=profiles[kind];if(!p)return Promise.resolve(null);
   if(!buffers.has(p.bank)){
    const promise=Promise.all(['idle','power'].map(async layer=>{
-    const url=base+p.bank+'-'+layer+'.wav',res=await fetch(url);
+    const url=base+p.bank+'-'+layer+'.wav'+(p.revision?'?v='+p.revision:''),res=await fetch(url);
     if(!res.ok)throw Error('Engine sample '+res.status+': '+url);
     return ctx.decodeAudioData(await res.arrayBuffer());
    }));buffers.set(p.bank,promise);

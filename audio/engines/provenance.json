@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "build": 212,
+  "build": 213,
   "checkedOn": "2026-10-28",
   "sources": [
     {
@@ -9,11 +9,11 @@
       "title": "P-47 Thunderbolt Startup",
       "author": "Fight2FlyPhoto",
       "url": "https://freesound.org/people/Fight2FlyPhoto/sounds/142900/",
+      "downloadUrl": "https://cdn.freesound.org/previews/142/142900_2579915-hq.mp3",
       "download": "Public full-duration HQ MP3 preview, not the uncompressed WAV original",
       "license": "CC BY 3.0",
       "licenseUrl": "https://creativecommons.org/licenses/by/3.0/",
-      "sha256": "0ce0c91fd32c3ac27b337707488b158b71d7e53541602dc426e703549902e10a",
-      "downloadUrl": "https://cdn.freesound.org/previews/142/142900_2579915-hq.mp3"
+      "sha256": "0ce0c91fd32c3ac27b337707488b158b71d7e53541602dc426e703549902e10a"
     },
     {
       "key": "p47-fly",
@@ -21,11 +21,11 @@
       "title": "P-47 Flyby",
       "author": "Fight2FlyPhoto",
       "url": "https://freesound.org/people/Fight2FlyPhoto/sounds/143560/",
+      "downloadUrl": "https://cdn.freesound.org/previews/143/143560_2579915-hq.mp3",
       "download": "Public full-duration HQ MP3 preview, not the uncompressed WAV original",
       "license": "CC BY 3.0",
       "licenseUrl": "https://creativecommons.org/licenses/by/3.0/",
-      "sha256": "58adc742f15658feeeefbb0b0a71d64f8ef2c54083373e21582ef805c11d646e",
-      "downloadUrl": "https://cdn.freesound.org/previews/143/143560_2579915-hq.mp3"
+      "sha256": "58adc742f15658feeeefbb0b0a71d64f8ef2c54083373e21582ef805c11d646e"
     },
     {
       "key": "fw190-idle",
@@ -33,11 +33,11 @@
       "title": "Fw-190 Taxiing",
       "author": "Fight2FlyPhoto",
       "url": "https://freesound.org/people/Fight2FlyPhoto/sounds/143556/",
+      "downloadUrl": "https://cdn.freesound.org/previews/143/143556_2579915-hq.mp3",
       "download": "Public full-duration HQ MP3 preview, not the uncompressed WAV original",
       "license": "CC BY 3.0",
       "licenseUrl": "https://creativecommons.org/licenses/by/3.0/",
-      "sha256": "417412813421a83f6aa1cbf330e4482d9af9ecce7992444c333ca2c6511166fe",
-      "downloadUrl": "https://cdn.freesound.org/previews/143/143556_2579915-hq.mp3"
+      "sha256": "417412813421a83f6aa1cbf330e4482d9af9ecce7992444c333ca2c6511166fe"
     },
     {
       "key": "fw190-fly",
@@ -45,11 +45,11 @@
       "title": "Fw-190 Flyby",
       "author": "Fight2FlyPhoto",
       "url": "https://freesound.org/people/Fight2FlyPhoto/sounds/143562/",
+      "downloadUrl": "https://cdn.freesound.org/previews/143/143562_2579915-hq.mp3",
       "download": "Public full-duration HQ MP3 preview, not the uncompressed WAV original",
       "license": "CC BY 3.0",
       "licenseUrl": "https://creativecommons.org/licenses/by/3.0/",
-      "sha256": "c8125d66523dcb3031bdf468f9a0f50cc512164106838aafe77baf18528b2305",
-      "downloadUrl": "https://cdn.freesound.org/previews/143/143562_2579915-hq.mp3"
+      "sha256": "c8125d66523dcb3031bdf468f9a0f50cc512164106838aafe77baf18528b2305"
     },
     {
       "key": "db601",
@@ -57,11 +57,11 @@
       "title": "Bf-109 - Daimler-Benz Run-Up",
       "author": "Fight2FlyPhoto",
       "url": "https://freesound.org/people/Fight2FlyPhoto/sounds/142898/",
+      "downloadUrl": "https://cdn.freesound.org/previews/142/142898_2579915-hq.mp3",
       "download": "Public full-duration HQ MP3 preview, not the uncompressed WAV original",
       "license": "CC BY 3.0",
       "licenseUrl": "https://creativecommons.org/licenses/by/3.0/",
-      "sha256": "8e1ea363f9d2510833be7b41e5ea91235f2b774728210403637632120f98302f",
-      "downloadUrl": "https://cdn.freesound.org/previews/142/142898_2579915-hq.mp3"
+      "sha256": "8e1ea363f9d2510833be7b41e5ea91235f2b774728210403637632120f98302f"
     },
     {
       "key": "tbf",
@@ -69,11 +69,11 @@
       "title": "G04-14-TBF Avenger Engine Drone.wav",
       "author": "craigsmith",
       "url": "https://freesound.org/people/craigsmith/sounds/437778/",
+      "downloadUrl": "https://cdn.freesound.org/previews/437/437778_2524442-hq.mp3",
       "download": "Public full-duration HQ MP3 preview, not the uncompressed WAV original",
       "license": "CC0 1.0",
       "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
-      "sha256": "c000f778b00a18e6c144e6b48b2d6eeabef4ec77fe976a0913a47163350dcafa",
-      "downloadUrl": "https://cdn.freesound.org/previews/437/437778_2524442-hq.mp3"
+      "sha256": "c000f778b00a18e6c144e6b48b2d6eeabef4ec77fe976a0913a47163350dcafa"
     },
     {
       "key": "stuka",
@@ -81,11 +81,11 @@
       "title": "G04-07-WWII Stuka engine drone.wav",
       "author": "craigsmith",
       "url": "https://freesound.org/people/craigsmith/sounds/437771/",
+      "downloadUrl": "https://cdn.freesound.org/previews/437/437771_2524442-hq.mp3",
       "download": "Public full-duration HQ MP3 preview, not the uncompressed WAV original",
       "license": "CC0 1.0",
       "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
-      "sha256": "0ed21f1cbda2ee75fe7f4478fb3a6c6af6023daf1fae89a686c6de9130941978",
-      "downloadUrl": "https://cdn.freesound.org/previews/437/437771_2524442-hq.mp3"
+      "sha256": "0ed21f1cbda2ee75fe7f4478fb3a6c6af6023daf1fae89a686c6de9130941978"
     },
     {
       "key": "r1820",
@@ -93,11 +93,11 @@
       "title": "G07-18_B-17 4 Engine Prop Steady Engine Noise.wav",
       "author": "craigsmith",
       "url": "https://freesound.org/people/craigsmith/sounds/437862/",
+      "downloadUrl": "https://cdn.freesound.org/previews/437/437862_2524442-hq.mp3",
       "download": "Public full-duration HQ MP3 preview, not the uncompressed WAV original",
       "license": "CC0 1.0",
       "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
-      "sha256": "937bed7c1a7eeb5b7de9e7887f9411edfcf5ec2c2154c9f30c89b0440cce852a",
-      "downloadUrl": "https://cdn.freesound.org/previews/437/437862_2524442-hq.mp3"
+      "sha256": "937bed7c1a7eeb5b7de9e7887f9411edfcf5ec2c2154c9f30c89b0440cce852a"
     }
   ],
   "loops": [
@@ -116,48 +116,26 @@
       "peak": 0.8006822887951075,
       "seamStep": 0.027132064477337525,
       "bassFraction": 0.6167587733760629,
-      "sha256": "19de18c3aab3beb37ded0f8547bc721d0040eb88576a8e829eb8b09e895f7edf"
+      "sha256": "19de18c3aab3beb37ded0f8547bc721d0040eb88576a8e829eb8b09e895f7edf",
+      "runtime": true
     },
     {
       "path": "audio/engines/r2800-power.wav",
-      "source": "p47-fly",
+      "source": "p47-idle",
       "interval": [
-        4.5,
-        8.3
+        35,
+        50.5
       ],
-      "crossfadeSeconds": 0.55,
-      "dopplerRidge": {
-        "time": [
-          4.5,
-          5,
-          5.5,
-          6,
-          6.5,
-          7,
-          7.5,
-          8,
-          8.3
-        ],
-        "hz": [
-          124,
-          123,
-          123,
-          121,
-          117,
-          110,
-          96.5,
-          82,
-          77
-        ],
-        "referenceHz": 110
-      },
+      "crossfadeSeconds": 1.0,
+      "dopplerRidge": null,
       "sampleRate": 24000,
-      "seconds": 3.273625,
-      "rms": 0.2059111422501125,
-      "peak": 0.7718533565182932,
-      "seamStep": 0.009107624056873292,
-      "bassFraction": 0.40118391394907443,
-      "sha256": "184edfe96557b6180e4561c743b1edff707de02027fb0c6c1c03f50a6742e0df"
+      "seconds": 14.5,
+      "rms": 0.20752218178286322,
+      "peak": 0.801691766315372,
+      "seamStep": 0.004026661945034926,
+      "bassFraction": 0.6180219706622921,
+      "sha256": "7cce0ae3af6724d3bacbbc5890513ed866462bf478e54660b34128ead313cd4c",
+      "runtime": true
     },
     {
       "path": "audio/engines/bmw801-idle.wav",
@@ -174,46 +152,26 @@
       "peak": 0.8140302556277359,
       "seamStep": 0.01005301469306015,
       "bassFraction": 0.4039932351497832,
-      "sha256": "75177d650a481622c95fe5c3f10f7eba9df9f7f2c1cb8e3f4c4511aa0d822a2b"
+      "sha256": "75177d650a481622c95fe5c3f10f7eba9df9f7f2c1cb8e3f4c4511aa0d822a2b",
+      "runtime": true
     },
     {
       "path": "audio/engines/bmw801-power.wav",
-      "source": "fw190-fly",
+      "source": "fw190-idle",
       "interval": [
-        0.4,
-        4.2
+        2,
+        15.3
       ],
-      "crossfadeSeconds": 0.45,
-      "dopplerRidge": {
-        "time": [
-          0.4,
-          1,
-          1.5,
-          2,
-          2.5,
-          3,
-          3.5,
-          4.2
-        ],
-        "hz": [
-          227,
-          220,
-          211,
-          193,
-          173,
-          153,
-          138,
-          122
-        ],
-        "referenceHz": 190
-      },
+      "crossfadeSeconds": 0.8,
+      "dopplerRidge": null,
       "sampleRate": 24000,
-      "seconds": 3.1268333333333334,
-      "rms": 0.2075160073723749,
-      "peak": 0.823029826894473,
-      "seamStep": 0.01941664407246617,
-      "bassFraction": 0.40687705658038886,
-      "sha256": "b2a8f7177a584e55dfc2308646be69a09b23653fd6c04884fb36cbcdd53a2e45"
+      "seconds": 12.5,
+      "rms": 0.2020177649141735,
+      "peak": 0.83,
+      "seamStep": 0.07146746863232506,
+      "bassFraction": 0.430153953325325,
+      "sha256": "4c39044bd3c2c92c7867bd1d9386b7b8d0d32f01b3461331be0bc749728ea9ec",
+      "runtime": true
     },
     {
       "path": "audio/engines/db601-idle.wav",
@@ -230,7 +188,8 @@
       "peak": 0.7300781740916368,
       "seamStep": 0.07780319930095811,
       "bassFraction": 0.6184058570537064,
-      "sha256": "275c350b0eaa15d63eb5d3d4a6bdd31be1744dcb8457cba6391a6f60b1948919"
+      "sha256": "275c350b0eaa15d63eb5d3d4a6bdd31be1744dcb8457cba6391a6f60b1948919",
+      "runtime": true
     },
     {
       "path": "audio/engines/db601-power.wav",
@@ -247,7 +206,8 @@
       "peak": 0.7605378122973888,
       "seamStep": 0.07902459854906932,
       "bassFraction": 0.35094899180314626,
-      "sha256": "cea578f61a2e82040086c2bd120aea9e7f8e7cb9fc08e90d6a952f53720ff311"
+      "sha256": "cea578f61a2e82040086c2bd120aea9e7f8e7cb9fc08e90d6a952f53720ff311",
+      "runtime": true
     },
     {
       "path": "audio/engines/r2600-idle.wav",
@@ -264,7 +224,8 @@
       "peak": 0.636606126668271,
       "seamStep": 0.02841554039411026,
       "bassFraction": 0.4169174662011972,
-      "sha256": "f97324d2dc46ad48665a703174b3dfea63db483564c6ab9428e785b55e530519"
+      "sha256": "f97324d2dc46ad48665a703174b3dfea63db483564c6ab9428e785b55e530519",
+      "runtime": false
     },
     {
       "path": "audio/engines/r2600-power.wav",
@@ -281,7 +242,8 @@
       "peak": 0.6567480064940493,
       "seamStep": 0.01257885631905592,
       "bassFraction": 0.40478758432182316,
-      "sha256": "05f086b6ffb195b510bcf05723bbf4dc2e84711860064a3ed3381bd30858fc95"
+      "sha256": "05f086b6ffb195b510bcf05723bbf4dc2e84711860064a3ed3381bd30858fc95",
+      "runtime": false
     },
     {
       "path": "audio/engines/jumo-idle.wav",
@@ -298,7 +260,8 @@
       "peak": 0.65995397531644,
       "seamStep": 0.00860729808647126,
       "bassFraction": 0.47682437548606205,
-      "sha256": "38d9850526920424bd60ff68ff0e92f8db07097e96372a8cb68833b0147bd2f7"
+      "sha256": "38d9850526920424bd60ff68ff0e92f8db07097e96372a8cb68833b0147bd2f7",
+      "runtime": true
     },
     {
       "path": "audio/engines/jumo-power.wav",
@@ -315,7 +278,8 @@
       "peak": 0.688098977458025,
       "seamStep": 0.023019945782464274,
       "bassFraction": 0.4929769709540762,
-      "sha256": "90cc2092918e7e3da6b3e858339acb64d4b06019cd67d3e219c4f6dc1cfb9957"
+      "sha256": "90cc2092918e7e3da6b3e858339acb64d4b06019cd67d3e219c4f6dc1cfb9957",
+      "runtime": true
     },
     {
       "path": "audio/engines/r1820-idle.wav",
@@ -332,7 +296,8 @@
       "peak": 0.6561416621502836,
       "seamStep": 0.009401840994699762,
       "bassFraction": 0.5140628514574803,
-      "sha256": "ff61c0b9498421478cbbf11ac9bbde66dc7015901810419ff5173d239152b490"
+      "sha256": "ff61c0b9498421478cbbf11ac9bbde66dc7015901810419ff5173d239152b490",
+      "runtime": false
     },
     {
       "path": "audio/engines/r1820-power.wav",
@@ -349,7 +314,19 @@
       "peak": 0.6720790292168468,
       "seamStep": 0.01603332740311711,
       "bassFraction": 0.5582753903273495,
-      "sha256": "b707c5d298c09a1ed95967b05f0b384a53c6533f745e9ec5d412b38932ceabb7"
+      "sha256": "b707c5d298c09a1ed95967b05f0b384a53c6533f745e9ec5d412b38932ceabb7",
+      "runtime": false
     }
-  ]
+  ],
+  "runtimeVoices": {
+    "p47": "r2800",
+    "corsair": "r2800",
+    "sbd": "r2800",
+    "fw190": "bmw801",
+    "avenger": "bmw801",
+    "zero": "bmw801",
+    "bf109": "db601",
+    "ju87": "jumo"
+  },
+  "retiredReason": "Build 212 flyby-powered layers and TBF/B-17 drone voices rejected in user listening feedback; ground/warm-up radial recordings replace them."
 }

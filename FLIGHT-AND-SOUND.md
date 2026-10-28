@@ -1,4 +1,4 @@
-# Fleet handling and engine audio — Build 212
+# Fleet handling and engine audio — Build 213
 
 Ten playable aircraft now use finite acceleration, engine response and speed-dependent
 control authority. The assisted stick, self-levelling, difficulty choices, weapons and
@@ -12,10 +12,10 @@ mission rules remain. This is an arcade balance pass, not a certified flight sim
 | Ju 87B-2 | Deliberate roll, modest climb, strong dive-brake drag | Stuka-labelled archival film effect |
 | Me 262 | Slow engine spool, highest sustained speed, wider turns | Continuous turbine/airflow sound |
 | Me 163 | Strong rocket acceleration, then an unpowered energy-limited glide | Separate rocket roar; silent combustion at cutoff |
-| TBM Avenger | Heavy inertia, slow acceleration, stable approach | TBF-labelled archival film effect |
-| SBD Dauntless | More responsive than the Avenger, steady dive and recovery | R-1820 family archival effect from B-17 |
+| TBM Avenger | Heavy inertia, slow acceleration, stable approach | Adapted recorded BMW 14-cylinder radial; not R-2600 audio |
+| SBD Dauntless | More responsive than the Avenger, steady dive and recovery | Single radial recording adapted as a game voice; not R-1820 audio |
 | F4U Corsair | Strong power, faster flight, more inertia than the Zero | R-2800 family recording adapted from P-47 |
-| A6M Zero | Tight low-speed turns, fast response; reduced high-speed roll authority | Adapted 14-cylinder radial substitute; not Sakae audio |
+| A6M Zero | Tight low-speed turns, fast response; reduced high-speed roll authority | Adapted recorded BMW 14-cylinder radial; not Sakae audio |
 
 ## Flight implementation
 
@@ -48,34 +48,40 @@ power and departure state; checkpoints still capture/restore the complete player
 
 ## Sound implementation and provenance
 
-Build 212 replaces the rejected tonal synthesis with recorded PCM loops. Eight full-duration
-HQ MP3 previews were acquired from the credited Freesound pages. The source MP3s are
-retained with SHA-256 hashes; the offline app contains only twelve derived mono WAV loops
-(24 kHz / 16-bit), the notices and the provenance record. Sources use CC BY 3.0 or CC0.
+Build 213 responds to the user's listening feedback: P-47/Fw 190 powered flyby loops
+were recognisable every 2–3 seconds; the TBF/B-17 archive drones did not sound convincing.
+The accepted ground/initial piston timbre is now used throughout the powered voice.
+P-47 uses a 14.5 s ground warm-up loop; Fw 190 a 12.5 s low-speed ground/taxi loop.
+There is no pitch-warped flyby layer. Existing idle buffers and the accepted DB 601
+voice are retained byte-for-byte. Jet/rocket code and sound are untouched.
 
-`audio/engines/CREDITS.md` lists the exact aircraft/engine correspondence and limitations.
-P-47D, BMW-powered Fw 190 A-5 and DB 601-powered Bf 109E-3 are identifiable recordings.
-Avenger/Stuka are labelled archival film effects, not verified engineering recordings.
-Corsair uses the P-47 R-2800 family recording. SBD uses a B-17 R-1820 family effect
-with multiple engines audible in the original. Zero uses a 14-cylinder R-2600 substitute;
-it is not presented as a Sakae recording. No reusable exact Sakae recording was verified.
+Avenger and Zero now use the recorded BMW 14-cylinder radial as explicitly adapted
+game voices. SBD uses the single R-2800 radial ground recording. This prioritises
+recorded radial timbre over the rejected drone effects; it does **not** claim these
+are original R-2600/Sakae/R-1820 recordings or exact firing-order reconstructions.
+Their RPM/tonal differences are deliberate arcade sound choices. Exact engine-specific
+source correspondence remains an approximation. No newly found file was added:
+Texan was rejected as another flyby; generic archive revs lacked engine identification.
 
-The reproducible Python builder selects stable intervals, removes subsonic rumble/hiss,
-levels only the slow distance envelope and crossfades the loop seam. Measured spectral
-ridges remove Doppler sweeps from the two loaded flyby sources. This is an audio edit,
-not a claim about exact engine RPM. Actual combustion transients and broadband exhaust
-remain. No synthetic sine/oscillator bed is mixed into the piston sound.
+Existing Fight2FlyPhoto CC BY 3.0 notices apply. `audio/engines/CREDITS.md` and
+`provenance.json` identify source cuts, hashes, active bank mappings and retired loops.
+The TBF/B-17 drone WAVs remain historical repository assets but are omitted from the
+offline app and runtime selection. `scripts/engine-audio/build-recorded-loops.py`
+builds the files; `--steady-only` preserves unchanged sample bytes and regenerates the
+two powered layers. Source MP3s are development evidence, excluded from the app.
 
-`audio/aircraft-engine.js` loads idle/power buffers on demand, caches by engine family
-and crossfades between them with throttle. Rate changes span only 0.94–1.04 of each
-profile's base, rather than octave-shifting one buzz. Existing master/pause routing is
-retained. Loading/error state is observable and the soundcheck reports loading failures.
-Jets and the rocket retain `audio/jet-engine.js`. Physical iPad listening is unverified.
+The sampler retains idle/power crossfades, small playback-rate changes, shared master,
+pause/mute handling, cache, stale-selection protection and explicit load-error state.
+Changed banks use versioned sample URLs to refresh cached audio on existing devices.
+A full-power 60-second audition button and elapsed timer are added to the soundcheck.
+The extended audio check renders one minute at full power for all six affected aircraft,
+measures bounded output, and compares the Bf 109 rendering to its accepted Build 212
+measurement. Technical checks do not prove subjective quality on iPad speakers.
 
-Build 212 also raises the normal assisted pitch controller frequency from 2.0 to 2.9
-in Europe, and from 3.2 to 4.2 in the Pacific. These are explicit arcade response choices,
-not historical pitch-rate data. The same target angles, type/load/damage factors and
-energy/climb limits apply. Loaded takeoffs and recovery are tested after the change.
+Build 212 pitch response remains: normal controller frequency 2.9 in Europe and 4.2 in
+Pacific, about 31%/24% shorter 90%-response times at the documented test condition.
+These are arcade response choices, not historical pitch-rate claims. No flight tuning
+is changed in Build 213.
 
 Historical family references consulted (not sources of audio or flight coefficients):
 
