@@ -55,6 +55,17 @@ const server=http.createServer((req,res)=>{
     for(let sec=3;sec<60;sec++){let sum=0;for(let i=sec*rate;i<(sec+1)*rate;i++){sum+=data[i]**2;peak=Math.max(peak,Math.abs(data[i]));}windows.push(Math.sqrt(sum/rate));}
     result[kind].sustain={seconds:60,minRms:Math.min(...windows),maxRms:Math.max(...windows),peak};
    }
+   // Real scheduled throttle changes, including the return to idle and mute.
+   for(const kind of ['p47','fw190','avenger']){
+    const rate=24000,offline=new OfflineAudioContext(1,rate*30,rate),node=AircraftEngine.create(offline,offline.destination);
+    await node.ready(kind);node.select(kind);await Promise.resolve();node.update(.5,kind,0,true);
+    const pauses=[];for(let t=.5;t<30;t+=.5)pauses.push(offline.suspend(t).then(()=>{node.update(.5,kind,t>=3&&t<20?1:0,t<27);return offline.resume();}));
+    const data=(await offline.startRendering()).getChannelData(0);await Promise.all(pauses);
+    function metrics(from,to){let sum=0,diff=0,peak=0;for(let i=from*rate;i<to*rate;i++){sum+=data[i]**2;diff+=(data[i]-data[Math.max(0,i-1)])**2;peak=Math.max(peak,Math.abs(data[i]));}return {rms:Math.sqrt(sum/((to-from)*rate)),differenceEnergy:sum?diff/sum:0,peak};}
+    result[kind].transition={idle:metrics(1,2),full:metrics(10,15),returned:metrics(24,26),muted:metrics(29,30)};
+   }
+   // Same-bank legacy aircraft must load their own powered buffer after P47.
+   const originalFetch=window.fetch,urls=[];try{window.fetch=(url,...args)=>{urls.push(String(url));return originalFetch(url,...args);};const offline=new OfflineAudioContext(1,24000,24000),node=AircraftEngine.create(offline,offline.destination);await node.ready('p47');await node.ready('sbd');if(!urls.some(u=>/r2800-power\.wav/.test(u)))throw Error('P47 powered buffer leaked to SBD');}finally{window.fetch=originalFetch;}
    // Missing files surface an error; there is no silent synthesized fallback.
    const oldFetch=window.fetch;let failure;
    try{
@@ -71,6 +82,9 @@ const server=http.createServer((req,res)=>{
   assert(Math.abs(result.bf109.rms-old.rms)<1e-7,'Accepted Bf 109 voice unchanged');
   assert(Math.abs(result.bf109.peak-old.peak)<1e-7,'Accepted Bf 109 headroom unchanged');
   for(const [kind,s] of Object.entries(result))if(s.sustain){assert(s.sustain.minRms>.1&&s.sustain.peak<.95,kind+' sustained audible without overload');assert(s.sustain.maxRms/s.sustain.minRms<1.6,kind+' no recurring pass-by fade');}
+  const baseline=JSON.parse(fs.readFileSync(path.join(root,'app/release/steady-engine-validation.json'),'utf8')).audio;
+  for(const kind of ['bf109','ju87','me262','me163','sbd','corsair','zero'])for(const metric of ['rms','peak'])assert(Math.abs(result[kind][metric]-baseline[kind][metric])<1e-7,kind+' accepted voice unchanged');
+  for(const kind of ['p47','fw190','avenger']){const t=result[kind].transition;assert(t.full.rms>t.idle.rms*1.4,kind+' loaded sound level');assert(t.full.differenceEnergy>t.idle.differenceEnergy*1.3,kind+' loaded texture changes beyond loudness');assert(t.returned.rms<t.full.rms*.7,kind+' returns to idle');assert(t.muted.rms<.00001,kind+' scheduled mute');}
   const provenance=JSON.parse(fs.readFileSync(path.join(root,'audio/engines/provenance.json'),'utf8'));
   for(const bank of ['r2800','bmw801']){const record=provenance.loops.find(r=>r.path==='audio/engines/'+bank+'-power.wav');assert(record.seconds>=12&&!/fly/.test(record.source)&&!record.dopplerRidge,bank+' long ground source');}
   await page.getByRole('button',{name:'P-47 Thunderbolt',exact:true}).click();
@@ -79,8 +93,9 @@ const server=http.createServer((req,res)=>{
    Object.defineProperty(performance,'now',{configurable:true,value:()=>time});
    try{await document.getElementById('sustain').onclick();tick();if(!playing||+get('throttle').value!==100)throw Error('Sustained audition does not start at full power');time+=59900;tick();if(!playing)throw Error('Audition ends early');time+=200;tick();if(playing||get('start').textContent!=='Start engine'||get('elapsed').textContent!=='01:00')throw Error('Audition does not end after 60 seconds');}finally{delete performance.now;}
   });
-  assert.deepEqual(errors,[]);fs.mkdirSync(path.join(root,'test-visuals'),{recursive:true});fs.writeFileSync(path.join(root,'test-visuals/build213-audio.json'),JSON.stringify(result,null,2));
-  await page.screenshot({path:path.join(root,'test-visuals/build213-engine-preview.png'),fullPage:true});
+  await page.evaluate(async()=>{const original=performance.now.bind(performance);let time=original();Object.defineProperty(performance,'now',{configurable:true,value:()=>time});try{await get('sweep').onclick();tick();if(!playing||+get('throttle').value!==0)throw Error('Sweep must start idle');time+=4000;tick();if(+get('throttle').value!==100)throw Error('Sweep must reach full power');time+=17000;tick();if(+get('throttle').value!==0)throw Error('Sweep must return idle');time+=10000;tick();if(playing||get('elapsed').textContent!=='00:30')throw Error('Sweep must stop at 30 seconds');}finally{delete performance.now;}});
+  assert.deepEqual(errors,[]);fs.mkdirSync(path.join(root,'test-visuals'),{recursive:true});fs.writeFileSync(path.join(root,'test-visuals/build214-audio.json'),JSON.stringify(result,null,2));
+  await page.screenshot({path:path.join(root,'test-visuals/build214-engine-preview.png'),fullPage:true});
   console.log('Ten real Web Audio renders, levels/headroom, ten distinct spectra, stop silence, gesture and type crossfade:',JSON.stringify(result));
  }finally{await browser.close();await new Promise(r=>server.close(r));}
 })().catch(e=>{console.error(e);process.exitCode=1;});

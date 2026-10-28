@@ -1,19 +1,19 @@
 {
   "schema": 1,
   "reviewedOn": "2026-10-23",
-  "build": 213,
+  "build": 214,
   "status": "OPEN — source declarations checked; no external rights authorization obtained",
   "payload": {
-    "bytes": 265161771,
-    "fileCount": 336,
+    "bytes": 268370231,
+    "fileCount": 339,
     "modelCount": 36,
-    "manifestSha256": "f55c9d8bce3b7e23a0b3c783734907b03a50f33a657ca89f1adf488448b9dcfc"
+    "manifestSha256": "0979f2d0077cbd737352ba232b860c585cbaf681287edbd24c915f0b5bf60b95"
   },
   "files": [
     {
       "path": "ASSET-CREDITS.md",
-      "bytes": 29846,
-      "sha256": "3980f4d254323a6c5a0565f03fc8d95d706ac36969b4496b094da6500f21f611",
+      "bytes": 32079,
+      "sha256": "37ef4667d6b7158dc0a6176c2590cb2e17dfbb0e3f6eefc1f37471708aaabe6d",
       "kind": "code-or-notice"
     },
     {
@@ -396,14 +396,14 @@
     },
     {
       "path": "audio/aircraft-engine.js",
-      "bytes": 6361,
-      "sha256": "24c7bab4ab5c7dd24bef23ed5da85884bfa585863787dc8b812c31c67b289027",
+      "bytes": 6993,
+      "sha256": "b86f90aa25bb9dd82b2c33f385c7537ca994efb36448206bd8e91878a8e990ea",
       "kind": "code-or-notice"
     },
     {
       "path": "audio/engines/CREDITS.md",
-      "bytes": 3687,
-      "sha256": "f21b97942e3ef52719c0334d5b123474b13659835fd46e9f0d391ca60831cb46",
+      "bytes": 5920,
+      "sha256": "d499af2e4a7aa6bfefaaa0368d069eb49f717a0bfe1c48363a38943939288f83",
       "kind": "code-or-notice"
     },
     {
@@ -443,6 +443,12 @@
       "kind": "code-or-notice"
     },
     {
+      "path": "audio/engines/loaded-provenance.json",
+      "bytes": 3274,
+      "sha256": "6aca4b8c8690cc16352e06ba41dedae2c918bf83c385b5adcf170365bd36b7a7",
+      "kind": "code-or-notice"
+    },
+    {
       "path": "audio/engines/provenance.json",
       "bytes": 11224,
       "sha256": "87a57eec974e28e1a415921e7dff5522d2e619a0f3a60b6b1354579af288d302",
@@ -455,9 +461,21 @@
       "kind": "code-or-notice"
     },
     {
+      "path": "audio/engines/r2800-loaded-power.wav",
+      "bytes": 1600044,
+      "sha256": "24edb86554e38e2c13e0518409e99e7706427de0956091e130ec31ecdfb21db7",
+      "kind": "code-or-notice"
+    },
+    {
       "path": "audio/engines/r2800-power.wav",
       "bytes": 696044,
       "sha256": "7cce0ae3af6724d3bacbbc5890513ed866462bf478e54660b34128ead313cd4c",
+      "kind": "code-or-notice"
+    },
+    {
+      "path": "audio/engines/radial14-loaded-power.wav",
+      "bytes": 1600044,
+      "sha256": "e62643298310c3b5ec60a8c08e5823591317dd7df654822348a5e0cef7f057aa",
       "kind": "code-or-notice"
     },
     {
@@ -625,7 +643,7 @@
     {
       "path": "index.html",
       "bytes": 7260,
-      "sha256": "10e16adda7eab4c39c41e6f1cd176f4909597b4639e711adf4354b2e842425f4",
+      "sha256": "fbeabb7bdf50696417c5f3002a89e1b53b034aa049f3ba4ae48db9bfe278fcea",
       "kind": "code-or-notice"
     },
     {
@@ -757,7 +775,7 @@
     {
       "path": "remagen-mission.html",
       "bytes": 366919,
-      "sha256": "10b93a405e42dde6ea77353f20964ac5ce526bd9e7688788e6b0bc5c7a721ae3",
+      "sha256": "d5f7b445eb85f2e332517d19424af90a9e5d9464bd4bf894e17f15196c6de5ef",
       "kind": "code-or-notice"
     },
     {
@@ -1951,7 +1969,7 @@
     {
       "path": "torpedo-carrier.html",
       "bytes": 429772,
-      "sha256": "7c37bde52461e8f87fc7adfebfeeb2d38d99a801057fb2b65ef2f1534e26c06d",
+      "sha256": "98af6bec01558cfd753e0d7fe1a14f6cd6043b3e5e67347ca652a76aac1940b6",
       "kind": "code-or-notice"
     },
     {
@@ -3094,7 +3112,7 @@
         "audio/*.js",
         "audio/engines/**"
       ],
-      "status": "Recorded piston loops: CC BY 3.0 Fight2FlyPhoto and CC0 craigsmith (Stuka). Build 213 ground-loop/aircraft substitutions and retired drone files are explicit. Exact sources, hashes, cuts and substitutions in audio/engines/provenance.json and CREDITS.md. Source MP3s excluded from offline payload. Jet/rocket/effects remain procedural."
+      "status": "Recorded piston loops: Fight2FlyPhoto CC BY 3.0, craigsmith CC0, and Pole Position free SONNISS GDC Bundle License v2.0 recordings incorporated in this game. Build 214 loaded P47 source and composite Fw190/Avenger voices are explicit; legacy substitutions remain documented. Sources, hashes, cuts and limits in provenance.json, loaded-provenance.json and CREDITS.md. Raw source files excluded from checkout and offline payload. Jet/rocket/effects remain procedural."
     },
     {
       "paths": [

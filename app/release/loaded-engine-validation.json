@@ -1,0 +1,428 @@
+{
+  "schema": 1,
+  "build": 214,
+  "checkedOn": "2026-10-28",
+  "feedback": "P47 train-like and too slow at full power; Fw190/Avenger still idle-like. Sound prioritized; reported P47 lift-off problem remains open.",
+  "change": "Separate airborne recorded R2800 powered layer for P47; explicit composite loaded radial for Fw190/Avenger; earlier transition and separate powered playback rates.",
+  "runtimeSha256": {
+    "audio/aircraft-engine.js": "b86f90aa25bb9dd82b2c33f385c7537ca994efb36448206bd8e91878a8e990ea",
+    "engine-preview.html": "ac107c8589c3f6ea240ccabfd3e83df84dbe22fc028c7e250acf2428830c1ea9",
+    "audio/engines/r2800-loaded-power.wav": "24edb86554e38e2c13e0518409e99e7706427de0956091e130ec31ecdfb21db7",
+    "audio/engines/radial14-loaded-power.wav": "e62643298310c3b5ec60a8c08e5823591317dd7df654822348a5e0cef7f057aa",
+    "audio/engines/loaded-provenance.json": "6aca4b8c8690cc16352e06ba41dedae2c918bf83c385b5adcf170365bd36b7a7"
+  },
+  "samples": [
+    {
+      "path": "audio/engines/r2800-loaded-power.wav",
+      "description": "Airborne R2800 cockpit source; ground warm-up is no longer the powered layer.",
+      "seconds": 25.0,
+      "sampleRate": 32000,
+      "crossfadeSeconds": 1,
+      "rms": 0.20468326139965473,
+      "peak": 0.7699635562903512,
+      "seamStep": 0.07576086082946137,
+      "upperBandFraction": 0.7090296613388799,
+      "sha256": "24edb86554e38e2c13e0518409e99e7706427de0956091e130ec31ecdfb21db7"
+    },
+    {
+      "path": "audio/engines/radial14-loaded-power.wav",
+      "description": "Composite of airborne R2800 exhaust retimed at 14/18, and R2600 low-band ground texture. Not an original R2600/BMW801 full-power take.",
+      "seconds": 25.0,
+      "sampleRate": 32000,
+      "crossfadeSeconds": 1,
+      "rms": 0.20464045196775732,
+      "peak": 0.7362316075193832,
+      "seamStep": 0.03896412029991306,
+      "upperBandFraction": 0.670569859659533,
+      "sha256": "e62643298310c3b5ec60a8c08e5823591317dd7df654822348a5e0cef7f057aa"
+    }
+  ],
+  "audio": {
+    "p47": {
+      "rms": 0.16188312660116677,
+      "muted": 0,
+      "peak": 0.6501716375350952,
+      "spectrum": [
+        0.001053354594104303,
+        0.0016496456481172761,
+        0.002633283327373106,
+        0.0024077837184671327,
+        0.003149080772437722,
+        0.0013634433793563948,
+        0.0007470959286900998,
+        0.0010894674414186883,
+        0.002934904317168291,
+        0.0007268012943463162
+      ],
+      "levels": [
+        {
+          "throttle": 0,
+          "rms": 0.07570475926556108,
+          "peak": 0.3135630786418915
+        },
+        {
+          "throttle": 0.45,
+          "rms": 0.11540839554313331,
+          "peak": 0.49552100896835327
+        }
+      ],
+      "sustain": {
+        "seconds": 60,
+        "minRms": 0.1407722502217822,
+        "maxRms": 0.16562669166019078,
+        "peak": 0.670026421546936
+      },
+      "transition": {
+        "idle": {
+          "rms": 0.07583725986624944,
+          "differenceEnergy": 0.033620631691976564,
+          "peak": 0.3135630786418915
+        },
+        "full": {
+          "rms": 0.16326441768298233,
+          "differenceEnergy": 0.3432752479466051,
+          "peak": 0.5991130471229553
+        },
+        "returned": {
+          "rms": 0.07630825011994141,
+          "differenceEnergy": 0.03408597850014014,
+          "peak": 0.2632511854171753
+        },
+        "muted": {
+          "rms": 0,
+          "differenceEnergy": 0,
+          "peak": 0
+        }
+      }
+    },
+    "bf109": {
+      "rms": 0.17235328009366632,
+      "muted": 0,
+      "peak": 0.6107606887817383,
+      "spectrum": [
+        0.0007462293844494467,
+        0.0046710788254892294,
+        0.0013097933907700347,
+        0.0033346914620066277,
+        0.0007929587270911414,
+        0.00048537555749599514,
+        0.0016503499765617552,
+        0.0011849079123948596,
+        0.000710479679492881,
+        0.0007991781438243698
+      ],
+      "levels": [
+        {
+          "throttle": 0,
+          "rms": 0.07774827716762724,
+          "peak": 0.23686742782592773
+        },
+        {
+          "throttle": 0.45,
+          "rms": 0.11628501584515412,
+          "peak": 0.4505559206008911
+        }
+      ]
+    },
+    "fw190": {
+      "rms": 0.17498484110747378,
+      "muted": 0,
+      "peak": 0.6068246960639954,
+      "spectrum": [
+        0.0071765702195314245,
+        0.001660898020251917,
+        0.004586039690616789,
+        0.0008856624377231002,
+        0.0006359918583094578,
+        0.0006377694656404667,
+        0.001754217934753042,
+        0.0036511311608919423,
+        0.0009522600683393985,
+        0.0006690310233215903
+      ],
+      "levels": [
+        {
+          "throttle": 0,
+          "rms": 0.07881356132182303,
+          "peak": 0.32566070556640625
+        },
+        {
+          "throttle": 0.45,
+          "rms": 0.12516683203548415,
+          "peak": 0.43756577372550964
+        }
+      ],
+      "sustain": {
+        "seconds": 60,
+        "minRms": 0.14927602951445418,
+        "maxRms": 0.17660494918255018,
+        "peak": 0.6617810130119324
+      },
+      "transition": {
+        "idle": {
+          "rms": 0.07804501231185997,
+          "differenceEnergy": 0.0743944187498591,
+          "peak": 0.3047395646572113
+        },
+        "full": {
+          "rms": 0.17286387857460778,
+          "differenceEnergy": 0.2890110483135346,
+          "peak": 0.6581475734710693
+        },
+        "returned": {
+          "rms": 0.07874028708343371,
+          "differenceEnergy": 0.0760771494704579,
+          "peak": 0.3210442066192627
+        },
+        "muted": {
+          "rms": 0,
+          "differenceEnergy": 0,
+          "peak": 0
+        }
+      }
+    },
+    "ju87": {
+      "rms": 0.17257495381615728,
+      "muted": 0,
+      "peak": 0.5665881633758545,
+      "spectrum": [
+        0.0005002566428246829,
+        0.00036691855981633824,
+        0.017010205493673977,
+        0.004146722493109069,
+        0.0029160122313573343,
+        0.0012434653259284381,
+        0.01038025248744503,
+        0.001842905610347439,
+        0.00022028147678956918,
+        0.00011110210076190572
+      ],
+      "levels": [
+        {
+          "throttle": 0,
+          "rms": 0.07921317538430807,
+          "peak": 0.24765433371067047
+        },
+        {
+          "throttle": 0.45,
+          "rms": 0.11648676118800438,
+          "peak": 0.41589200496673584
+        }
+      ]
+    },
+    "me262": {
+      "rms": 0.14314365952479674,
+      "muted": 0,
+      "peak": 0.5967008471488953,
+      "spectrum": [
+        0.0015679533290286183,
+        0.0033986056889967523,
+        0.001183300870389926,
+        0.003206786355682653,
+        0.0019464496437620706,
+        0.0008082316427434852,
+        0.0035895452783908724,
+        0.0017232337558271027,
+        0.0017832561206851392,
+        0.0024545630734846813
+      ]
+    },
+    "me163": {
+      "rms": 0.1814539631801549,
+      "muted": 0,
+      "peak": 0.7179931402206421,
+      "spectrum": [
+        0.0014630268732929318,
+        0.0031523837034332035,
+        0.001094411436271681,
+        0.002984886164506625,
+        0.0018299672187589797,
+        0.0007737252082277912,
+        0.003489701340996014,
+        0.0014951751579881478,
+        0.00249723691962492,
+        0.003696758641876696
+      ]
+    },
+    "avenger": {
+      "rms": 0.17726735788104478,
+      "muted": 0,
+      "peak": 0.6247188448905945,
+      "spectrum": [
+        0.0021288473206918265,
+        0.003600651035531271,
+        0.0021845081017410747,
+        0.0031891583963556762,
+        0.0006097508379821157,
+        0.0016917497808292322,
+        0.0038964227867754947,
+        0.002031975791447719,
+        0.000503804375479497,
+        0.0010167817272730315
+      ],
+      "levels": [
+        {
+          "throttle": 0,
+          "rms": 0.08041820705631718,
+          "peak": 0.32401952147483826
+        },
+        {
+          "throttle": 0.45,
+          "rms": 0.12757605729431584,
+          "peak": 0.46500375866889954
+        }
+      ],
+      "sustain": {
+        "seconds": 60,
+        "minRms": 0.14648444234401434,
+        "maxRms": 0.1829127639181743,
+        "peak": 0.6677326560020447
+      },
+      "transition": {
+        "idle": {
+          "rms": 0.07956648864534346,
+          "differenceEnergy": 0.06318270871137836,
+          "peak": 0.2601856291294098
+        },
+        "full": {
+          "rms": 0.17717124332440928,
+          "differenceEnergy": 0.2567201396420755,
+          "peak": 0.6610466837882996
+        },
+        "returned": {
+          "rms": 0.08113324211050088,
+          "differenceEnergy": 0.05794535096882418,
+          "peak": 0.3116249144077301
+        },
+        "muted": {
+          "rms": 0,
+          "differenceEnergy": 0,
+          "peak": 0
+        }
+      }
+    },
+    "sbd": {
+      "rms": 0.17158789669767588,
+      "muted": 0,
+      "peak": 0.6508393883705139,
+      "spectrum": [
+        0.0023727436523970323,
+        0.0037796124962666032,
+        0.007799888954821262,
+        0.00778409107631812,
+        0.0032751681606373166,
+        0.0006556700878783125,
+        0.002803323583400335,
+        0.0005534824810663824,
+        0.0022159620054632333,
+        0.0002769836109841763
+      ],
+      "levels": [
+        {
+          "throttle": 0,
+          "rms": 0.07856706699899811,
+          "peak": 0.3009845018386841
+        },
+        {
+          "throttle": 0.45,
+          "rms": 0.119773082316911,
+          "peak": 0.5211752653121948
+        }
+      ],
+      "sustain": {
+        "seconds": 60,
+        "minRms": 0.14391723132772136,
+        "maxRms": 0.17969821752623483,
+        "peak": 0.6638078093528748
+      }
+    },
+    "corsair": {
+      "rms": 0.17131736768895753,
+      "muted": 0,
+      "peak": 0.6428817510604858,
+      "spectrum": [
+        0.0010875785205510177,
+        0.007982711254111175,
+        0.0037254197975601726,
+        0.005134489369115293,
+        0.0031853361247692683,
+        0.004268746864018838,
+        0.007366998134915976,
+        0.0007415155253855407,
+        0.0017482124546559002,
+        0.00043516673080503954
+      ],
+      "levels": [
+        {
+          "throttle": 0,
+          "rms": 0.0784292449583085,
+          "peak": 0.29837989807128906
+        },
+        {
+          "throttle": 0.45,
+          "rms": 0.11988668631329007,
+          "peak": 0.5170804858207703
+        }
+      ],
+      "sustain": {
+        "seconds": 60,
+        "minRms": 0.14551525761224493,
+        "maxRms": 0.17794493451043467,
+        "peak": 0.6587064266204834
+      }
+    },
+    "zero": {
+      "rms": 0.17004858043831103,
+      "muted": 0,
+      "peak": 0.7268086671829224,
+      "spectrum": [
+        0.0007536403530026521,
+        0.004033045671584906,
+        0.006665881924978388,
+        0.003492030071420415,
+        0.008392276265797721,
+        0.0032631806494513764,
+        0.003051444559720176,
+        0.003884066157095285,
+        0.002394359454451999,
+        0.001194623970863764
+      ],
+      "levels": [
+        {
+          "throttle": 0,
+          "rms": 0.07861342540007259,
+          "peak": 0.3154328763484955
+        },
+        {
+          "throttle": 0.45,
+          "rms": 0.16657124886141544,
+          "peak": 0.68257737159729
+        }
+      ],
+      "sustain": {
+        "seconds": 60,
+        "minRms": 0.1523168481132006,
+        "maxRms": 0.17272171619231888,
+        "peak": 0.7395287752151489
+      }
+    }
+  },
+  "app": {
+    "bytes": 268370231,
+    "fileCount": 339,
+    "modelCount": 36,
+    "manifestSha256": "0979f2d0077cbd737352ba232b860c585cbaf681287edbd24c915f0b5bf60b95"
+  },
+  "checks": {
+    "audio": "Ten real Web Audio renders; six 60-second sustain renders; three timed idle/full/idle/mute transitions; cache isolation and 404 reporting. Seven other voice RMS/peak results match Build213 within 1e-7. UI 60-second and 30-second timers/stop passed.",
+    "flight": "Thirty actual loaded campaign scenarios: ten types at 20/60/120 FPS, launch gesture, sound selection, flight control and self-level. Flight modules and jet audio unchanged.",
+    "syntax": "11 HTML files / 11 inline blocks, zero errors; engine JS and Python scripts compile.",
+    "app": "339 payload files; 36 original models; hashes, closure, new loop inclusion and raw-source exclusion passed. Unchanged source payloads verified against published Build213 hashes after workspace restore."
+  },
+  "limitations": [
+    "P47 powered source is onboard Bearcat R2800 family, not original P47 exhaust installation; RPM/manifold pressure unmeasured.",
+    "Fw190/Avenger powered voice is a composite of airborne R2800 and low-band ground R2600 texture, not an original BMW801/Avenger full-power take or physical firing-order reconstruction.",
+    "Numerical metrics do not establish subjective iPad listening quality or calibrated RPM. No hardware listening test performed.",
+    "P47 takeoff difficulty remains open. No flight tuning in this release."
+  ]
+}

@@ -6,12 +6,12 @@ const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
 const script=typeof document!=='undefined'?document.currentScript:null;
 const base=script?new URL('engines/',script.src).href:'audio/engines/';
 const profiles={
- p47:{engine:'R-2800 · 18-cylinder radial',bank:'r2800',revision:213,rate:1,spool:1.0,bass:1.5,bright:6500,source:'P-47D R-2800 recordings · Fight2FlyPhoto',match:'P-47 stationary warm-up recording for continuous running; no flyby layer. Full-power character is an edit, not a measured full-power recording.'},
+ p47:{engine:'R-2800 · 18-cylinder radial',bank:'r2800',revision:214,powerFile:'r2800-loaded-power.wav',powerRate:1.05,lowCut:45,rate:1,spool:.8,bass:-.5,bright:7500,source:'R-2800 flight recording · Pole Position / Sonniss GDC',match:'Loaded Bearcat cockpit recording; P-47 installation is adapted. Source RPM is unmeasured. Ground recording retained at idle.'},
  corsair:{engine:'R-2800 · 18-cylinder radial',bank:'r2800',revision:213,rate:1.035,spool:.9,bass:.5,bright:7100,source:'R-2800 recordings from a P-47D · Fight2FlyPhoto',match:'Same engine family; Corsair exhaust and three-blade propeller are an approximation.'},
- fw190:{engine:'BMW 801 · 14-cylinder radial',bank:'bmw801',revision:213,rate:1,spool:.8,bass:1,bright:6800,source:'BMW-powered Fw 190 A-5 ground recording · Fight2FlyPhoto',match:'Low-speed ground/taxi recording adapted for the A-8; no flyby layer.'},
+ fw190:{engine:'BMW 801 · 14-cylinder radial',bank:'bmw801',revision:214,powerFile:'radial14-loaded-power.wav',powerRate:1.05,rate:1,spool:.7,bass:1,bright:6800,source:'BMW idle + composite loaded radial · Fight2FlyPhoto / Pole Position',match:'Ground BMW recording at idle; loaded game voice combines airborne R-2800 exhaust texture and recorded R-2600 low-band texture. Not an original BMW full-power take.'},
  bf109:{engine:'DB 601 · inverted V12',bank:'db601',rate:1,spool:.6,bass:0,bright:7200,source:'Bf 109E-3 Daimler-Benz run-up · Fight2FlyPhoto',match:'DB 601 family recording; E-3 installation adapted for the F-2.'},
  ju87:{engine:'Jumo 211 · inverted V12',bank:'jumo',rate:1,spool:.9,bass:1,bright:5800,source:'Stuka-labelled archival effect · craigsmith / USC',match:'Archival film sound effect; exact engine provenance is unverified.'},
- avenger:{engine:'R-2600 · 14-cylinder radial',bank:'bmw801',revision:213,rate:.94,spool:1.2,bass:3,bright:5600,source:'Recorded 14-cylinder BMW radial · Fight2FlyPhoto',match:'Radial game voice adapted from the BMW ground recording; this is not an R-2600 recording.'},
+ avenger:{engine:'R-2600 · 14-cylinder radial',bank:'bmw801',revision:214,powerFile:'radial14-loaded-power.wav',powerRate:1.02,rate:.94,spool:1.0,bass:1.5,bright:6200,source:'Recorded R-2600 texture + airborne radial · Pole Position / Sonniss GDC',match:'Composite loaded game voice; idle remains the BMW substitute. Not an original Avenger recording or a measured R-2600 full-power take.'},
  sbd:{engine:'R-1820 · 9-cylinder radial',bank:'r2800',revision:213,rate:.95,spool:.9,bass:.5,bright:6000,source:'Recorded single R-2800 radial · Fight2FlyPhoto',match:'Single-engine radial game voice replaces the B-17 drone. This is a substitute, not an R-1820 recording.'},
  zero:{engine:'Sakae · 14-cylinder radial',bank:'bmw801',revision:213,rate:1.045,spool:.55,bass:1,bright:6500,source:'Recorded 14-cylinder BMW radial · Fight2FlyPhoto',match:'14-cylinder radial game voice adapted from the BMW ground recording; not a Sakae recording.'}
 };
@@ -25,15 +25,17 @@ function create(ctx,destination){
  const buffers=new Map();let current=null,selected=null,load=0,rpm=1,version=0,error=null;
  function ready(kind){
   const p=profiles[kind];if(!p)return Promise.resolve(null);
-  if(!buffers.has(p.bank)){
+  const key=p.bank+'|'+(p.powerFile||'');
+  if(!buffers.has(key)){
    const promise=Promise.all(['idle','power'].map(async layer=>{
-    const url=base+p.bank+'-'+layer+'.wav'+(p.revision?'?v='+p.revision:''),res=await fetch(url);
+    const file=layer==='power'&&p.powerFile?p.powerFile:p.bank+'-'+layer+'.wav';
+    const url=base+file+(p.revision?'?v='+p.revision:''),res=await fetch(url);
     if(!res.ok)throw Error('Engine sample '+res.status+': '+url);
     return ctx.decodeAudioData(await res.arrayBuffer());
-   }));buffers.set(p.bank,promise);
-   promise.catch(()=>{if(buffers.get(p.bank)===promise)buffers.delete(p.bank);});
+   }));buffers.set(key,promise);
+   promise.catch(()=>{if(buffers.get(key)===promise)buffers.delete(key);});
   }
-  return buffers.get(p.bank);
+  return buffers.get(key);
  }
  function retire(voice){if(!voice)return;voice.fade.gain.setTargetAtTime(0,ctx.currentTime,.05);for(const source of voice.sources)source.stop(ctx.currentTime+.4);}
  function select(kind){
@@ -59,18 +61,20 @@ function create(ctx,destination){
   if(!p||!current){bus.gain.setTargetAtTime(0,now,.045);return;}
   const powered=options.fuel!==false,t=powered?clamp(throttle||0,0,1):0;
   load+=(t-load)*(1-Math.exp(-Math.max(0,dt)/p.spool));
-  // The recording carries the combustion and propeller rhythm. A small rate
-  // range complements the two load layers instead of transposing it by octaves.
-  const mix=clamp((load-.08)/.82,0,1),idle=Math.cos(mix*Math.PI/2),power=Math.sin(mix*Math.PI/2);
+  // New loaded recordings have a separate rate and transition. Legacy accepted
+  // voices retain their exact Build-213 processing, including the DB601.
+  const mix=clamp((load-.08)/(p.powerFile?.64:.82),0,1),idle=Math.cos(mix*Math.PI/2),power=Math.sin(mix*Math.PI/2);
   rpm=p.rate*(.94+.10*load);
   current.layers[0].gain.gain.setTargetAtTime(idle*.8,now,.10);
   current.layers[1].gain.gain.setTargetAtTime(power,now,.10);
-  for(const l of current.layers)l.source.playbackRate.setTargetAtTime(rpm,now,.10);
+  current.layers[0].source.playbackRate.setTargetAtTime(rpm,now,.10);
+  current.layers[1].source.playbackRate.setTargetAtTime(p.powerFile?p.powerRate*(.90+.10*load):rpm,now,.10);
+  hp.frequency.setTargetAtTime(p.lowCut||28,now,.12);
   body.gain.setTargetAtTime(p.bass,now,.15);
   tone.frequency.setTargetAtTime(p.bright*(options.cockpit?.65:1),now,.12);
   const damage=clamp(options.damage||0,0,1);
   bus.gain.setTargetAtTime(active?(powered?.45+.35*load:.025)*(1-damage*.28)*(1-.25*(options.duck||0)):0,now,active?.10:.035);
- },get state(){return {kind:profiles[selected]?selected:null,loaded:current?.kind===selected,loading:!!profiles[selected]&&!current&&!error,error,rpm,load};},output:bus};
+ },get state(){return {kind:profiles[selected]?selected:null,loaded:current?.kind===selected,loading:!!profiles[selected]&&!current&&!error,error,rpm,load,powerFile:profiles[selected]?.powerFile||null};},output:bus};
 }
 root.AircraftEngine={profiles,create};if(typeof module==='object'&&module.exports)module.exports=root.AircraftEngine;
 })(typeof window==='undefined'?globalThis:window);

@@ -1,5 +1,23 @@
 # Torpedo-Bomber — Übergabe an Claude Code
 
+**28.10.2026, Build 214: Lastklang P47/Fw190/Avenger nach erneutem Feedback ersetzt.**
+P47 wurde als Güterzug/zu langsam, Fw190/Avenger bei Vollgas als Leerlauf kritisiert.
+Sound zuerst; gemeldetes P47-Abhebeproblem bleibt offen, keine Flugabstimmung geändert.
+Neue 25s-Loops aus freien SONNISS GDC2017/Pole-Position-Aufnahmen: onboard fliegender
+Bearcat/R2800 für P47; Laststimme Fw190/Avenger ausdrücklich Composite aus retimter
+R2800-Flugtextur + R2600-B25-Tiefband vom Boden. Keine Original-BMW/Avenger-Vollgas-
+Aufnahme, keine geeichte Drehzahl oder physische Zündfolgenrekonstruktion behaupten.
+Raw-WAVs außerhalb des Repos; Provenienz/Hashes/Lizenz v2.0/Schnitte und Builder im Repo.
+Getrennte Power-Rate, früherer Lastübergang, P47-Kabinenboom reduziert. Cache-Schlüssel
+enthält Power-Datei, damit neue P47-Datei nicht auf SBD/Corsair übergreift. Sieben andere
+Stimmen numerisch wie213, Bf109/Jets unverändert. Vorschau mit60s-Last und30s-Gaswechsel.
+Nach Arbeitsumgebungs-Rücksprung auf211 wiederhergestellt von veröffentlichtem213;
+beide neuen WAV-SHA256 identisch zum ersten214-Durchlauf, Runtime wieder6993Bytes.
+Erneut geprüft: tatsächliche WebAudio-Renderings, Dauerlast, zeitgesteuerte Gaswechsel,
+Cache-Isolation/404, UI-Timer; Flottenfälle20/60/120FPS; Syntax und App-Payload.
+Numerische Audiometrik beweist keine subjektive iPad-Hörqualität; Hardware-Hörtest offen.
+Nachweis app/release/loaded-engine-validation.json; aktuelle Quellen in CREDITS.md.
+
 **28.10.2026, Build 213: hörbare Vorbeiflug-Loops und Carrier-Dronetöne nach Nutzerfeedback ersetzt.**
 Nutzer akzeptiert Jets/Bf109, P47/Fw190-Anlaufklang gut, danach hörbare 1–3-s-Vorbeiflug-
 Wiederholung; Avenger/Zero Rasenmäher, SBD kein Kolben-/Sternmotorklang.

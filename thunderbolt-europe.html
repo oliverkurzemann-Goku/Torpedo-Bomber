@@ -342,12 +342,12 @@
 <script src="campaign.js?v=1"></script>
 <script src="b17-native.js?v=200"></script>
 <script src="me262-native.js?v=206"></script>
-<script src="aircraft-contract.js?v=213"></script>
-<script src="aircraft-articulation.js?v=213"></script>
-<script src="me262-performance.js?v=213"></script>
-<script src="audio/jet-engine.js?v=213"></script>
-<script src="flight-dynamics.js?v=213"></script>
-<script src="audio/aircraft-engine.js?v=213"></script>
+<script src="aircraft-contract.js?v=214"></script>
+<script src="aircraft-articulation.js?v=214"></script>
+<script src="me262-performance.js?v=214"></script>
+<script src="audio/jet-engine.js?v=214"></script>
+<script src="flight-dynamics.js?v=214"></script>
+<script src="audio/aircraft-engine.js?v=214"></script>
 <script src="p47-performance.js?v=206"></script>
 <script>
 // ============================================================
@@ -4195,7 +4195,7 @@ function updateFlight(dt){
   const dmgF = (P.hull < d.hull*0.6) ? (0.55+0.45*P.hull/(d.hull*0.6)) : 1.0;
   const auth = (P.spd<stallSpd ? 0.4 : 1.0)*dmgF;
   const feel=FlightDynamics.authority(P.ac,P.spd,stallSpd);
-  // Build 213: quicker assisted pitch response; target and energy envelope stay unchanged.
+  // Build 214: quicker assisted pitch response; target and energy envelope stay unchanged.
   const pitchRate=2.9*auth*d.pitchAuth*feel.pitch, rollRate=4.8*auth*d.rollAuth*feel.roll;
   const biasDecay = (P.gear>0.5)? 0.9 : 0.35;
   P.rollBias = Math.max(-0.16, Math.min(0.16, (P.rollBias||0)*(1-biasDecay*dt)));

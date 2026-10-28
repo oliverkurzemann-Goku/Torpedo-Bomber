@@ -1,5 +1,39 @@
 # Squadron asset credits
 
+## Build 214 — loaded radial sound (28 October 2026)
+
+P-47 uses a new 25-second onboard flying R-2800 recording from Pole Position
+Production's Grumman F8F Bearcat selection in the free SONNISS GameAudioGDC 2017
+bundle. The onboard microphone travels with the aircraft, avoiding an exterior
+pass-by Doppler sweep. The P-47 exhaust installation is adapted; source RPM and
+manifold pressure are unmeasured. This is not a calibrated 2,700-RPM P-47 take.
+
+Fw 190 and Avenger use an explicitly composite loaded game voice: airborne R-2800
+exhaust texture retimed at 14/18, mixed with low-band R-2600 texture from the B-25
+exterior startup/idle recording. This is not an original BMW 801 or Avenger
+full-power take, and is not a physical firing-order reconstruction. Existing
+idle recordings are retained. Separate power playback rate and an earlier
+idle/load crossfade make throttle affect timbre as well as level.
+
+Sources: [free GDC collection](https://sonniss.com/gameaudiogdc/),
+[Bearcat](https://sonniss.com/sound-effects/grumman-f8f-bearcat/),
+[B-25](https://pole.se/product/north-american-b-25-mitchell/),
+[SONNISS GDC Bundle License](https://sonniss.com/gdc-bundle-license/), v2.0 effective
+27 August 2026, acquired 28 October 2026. The selected free bundle recordings permit
+incorporation and modification in commercial/noncommercial games and interactive
+projects; attribution is not required. No standalone sound/sample-library
+redistribution or AI training. Only edited game loops are included here; raw
+source WAVs remain outside the public checkout and app payload.
+
+Exact source identities, archive ranges, SHA-256 values, cuts, transformations and
+output hashes are in `audio/engines/loaded-provenance.json`. Rebuild with
+`scripts/engine-audio/build-loaded-radials.py --source-dir <external-source-dir>`;
+`scripts/engine-audio/fetch-loaded-sources.py --dest <external-source-dir>` acquires
+only the two used free bundle files. Seven other aircraft voices remain as in
+Build 213. Actual Web Audio tests cover 60-second sustain and timed idle/full/idle
+transitions; numerical results do not establish subjective iPad listening quality.
+The reported P-47 lift-off difficulty is still open; no flight tuning in this build.
+
 ## Fw 190 A-8 and Me 163 B Komet — reference rebuild, Build 210
 
 `assets/aircraft/fw190a8-own.glb` and `assets/aircraft/me163b-own.glb` replace the
