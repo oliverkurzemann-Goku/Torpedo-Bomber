@@ -298,7 +298,7 @@
   .warningLamps{display:flex!important;gap:10px;padding:5px 9px!important;background:#141813dd!important;border:1px solid #535744;border-radius:4px;white-space:nowrap;}
   .warningLamp{color:#646c5c;font:9px monospace;letter-spacing:.35px;} .warningLamp[data-level="1"]{color:#ffd088;text-shadow:0 0 6px #e0a432a0;} .warningLamp[data-level="2"]{color:#ff8c70;text-shadow:0 0 7px #ff6638b0;}
 </style>
-<link rel="stylesheet" href="menu-layout.css?v=210">
+<link rel="stylesheet" href="menu-layout.css?v=211">
 </head>
 <body>
 <div id="app"></div>
@@ -351,7 +351,7 @@
   <div id="flash"></div>
   <div id="ltn" style="position:fixed;inset:0;background:#e6ecff;opacity:0;pointer-events:none;z-index:40;"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 210</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 211</div>
 
   <!-- Optical landing aid -->
   <div id="lso">
@@ -397,7 +397,7 @@
 
 <!-- Menu -->
 <div class="overlay" id="menu" data-campaign="pacific">
-  <div class="menuTop"><a id="selBtn" href="index.html?v=210">&#9664; Change Game</a><span class="menuMeta">PACIFIC OPERATIONS<br>BUILD 210</span></div>
+  <div class="menuTop"><a id="selBtn" href="index.html?v=211">&#9664; Change Game</a><span class="menuMeta">PACIFIC OPERATIONS<br>BUILD 211</span></div>
   <div class="card menuCard">
     <aside class="menuOverview" aria-label="Campaign and pilot options">
     <div class="campaignArt" aria-hidden="true"></div>
@@ -495,12 +495,12 @@
 <script src="okinawa/world.js?v=175"></script>
 <script src="campaign.js?v=1"></script>
 <script src="game-runtime.js?v=198"></script>
-<script src="sortie-checkpoint.js?v=210"></script>
-<script src="aircraft-articulation.js?v=210"></script>
+<script src="sortie-checkpoint.js?v=211"></script>
+<script src="aircraft-articulation.js?v=211"></script>
 <script src="terrain-system/AircraftGround.js?v=198"></script>
 <script src="pacific-assets.js?v=201"></script>
 <script src="sbd-native.js?v=201"></script>
-<script src="corsair-native.js?v=210"></script>
+<script src="corsair-native.js?v=211"></script>
 <script src="avenger-finish.js?v=199"></script>
 <script src="naval-assets.js?v=198"></script>
 <script src="aircraft-rotors.js?v=172"></script>
@@ -511,7 +511,7 @@
 <script src="torpedo-attack.js?v=206"></script>
 <script src="ship-contact.js?v=198"></script>
 <script src="flight-support.js?v=198"></script>
-<script src="ordnance.js?v=210"></script>
+<script src="ordnance.js?v=211"></script>
 <script src="crew-visuals.js?v=179"></script>
 <script src="deck-activity.js?v=198"></script>
 <script src="ship-wakes.js?v=179"></script>
@@ -524,7 +524,9 @@
 <script src="audio/weapon-sound.js?v=144"></script>
 <script src="audio/flight-atmosphere.js?v=175"></script>
 <script src="sortie-systems.js?v=198"></script>
-<script src="sortie-features.js?v=206"></script>
+<script src="flight-dynamics.js?v=211"></script>
+<script src="audio/aircraft-engine.js?v=211"></script>
+<script src="sortie-features.js?v=211"></script>
 <script src="ground-run.js?v=198"></script>
 <script src="flight-indicators.js?v=198"></script>
 <script src="operation-plans.js?v=198"></script>
@@ -2190,6 +2192,7 @@ function startMission(idx){
   // reset plane
   P.pos.set(carrierX+BOW_X+30, DECK_Y+4, 0);
   P.heading=0; P.pitch=0; P.roll=0; P.spd=APP_SPD; P.throttle=0.6;
+  P.groundPower=null;P.departureAge=null;
   P.vSpeed=0; P.fuel=m.fuel; P.hull=100; P.fuelRate=1/D().fuel; P.torps=m.torps; P.alive=true;
   SortieFeatures.Damage.reset(P);voiceRadio.cancel();soundscape.reset();
   clearArrestCable();P.arrestRun=null;
@@ -2337,7 +2340,7 @@ function startMission(idx){
   // briefing
   document.getElementById('briefTitle').textContent=m.title;
   document.getElementById('briefSub').textContent=m.sub;
-  document.getElementById('briefBody').innerHTML=m.body+PacificTheater.effectText(m)+FlightOps.briefText(weather,pacificPlan.config,{headwind:Math.abs(pacificPlan.wind)});
+  document.getElementById('briefBody').innerHTML=m.body+'<br><br><b>HANDLING</b> '+FlightDynamics.profile(m.defend?'zero':m.corsair?'corsair':m.sbd?'sbd':'avenger').character+PacificTheater.effectText(m)+FlightOps.briefText(weather,pacificPlan.config,{headwind:Math.abs(pacificPlan.wind)});
   document.getElementById('briefLandingSpeed').textContent='LANDING: LIVE REF / GREEN BAND · GEAR / FLAPS / HOOK DOWN.';
   drawPacificBrief(m);
   showOverlay('brief');
@@ -2953,7 +2956,7 @@ function setSBDGearVisible(aircraft,down){
   if(gear)gear.visible=!!down;
 }
 async function loadCorsairModel(){
- return PacificAssets.loader().load('assets/aircraft/corsair-f4u1d-own.glb?v=210',gltf=>{
+ return PacificAssets.loader().load('assets/aircraft/corsair-f4u1d-own.glb?v=211',gltf=>{
   const holder=new THREE.Group();holder.add(gltf.scene);
   if(!CorsairRig.isNative(holder))throw Error('Expected original F4U-1D model');
   AircraftArticulation.install(holder,'corsair',{gearName:'sbdGear'});corsairTemplate=holder;
@@ -3525,13 +3528,14 @@ function updateFlight(dt){
   // Per-aircraft handling. The A6M was the most agile fighter of the early Pacific war;
   // the TBM Avenger is an 8-tonne torpedo bomber and must feel like one.
   const AC = isDefend()
-    ? { roll:1.45, pitch:1.30, turn:1.30, gLim:7.0, name:'zero'   }   // Zero: light, quick, tight turns
+    ? { roll:1.25, pitch:1.24, turn:1.30, gLim:7.0, name:'zero'   }   // Zero: light, quick, tight turns
     : MISSIONS[mission]?.corsair
-    ? {roll:1.35,pitch:1.20,turn:1.18,gLim:7.0,name:'corsair'}
+    ? {roll:1.20,pitch:1.12,turn:1.05,gLim:7.0,name:'corsair'}
     : isSBD()
-    ? { roll:1.00, pitch:1.05, turn:1.00, gLim:5.5, name:'sbd'    }   // Dauntless: nimble for a bomber
-    : { roll:0.72, pitch:0.78, turn:0.80, gLim:3.5, name:'avenger'};  // Avenger: heavy, slow to answer
-  const pitchRate=3.2*auth*AC.pitch*controls.pitch*load.inertia*configuration.authority, rollRate=4.8*auth*AC.roll*controls.roll*load.inertia*configuration.authority;
+    ? { roll:0.96, pitch:1.00, turn:0.94, gLim:5.5, name:'sbd'    }   // Dauntless: nimble for a bomber
+    : { roll:0.72, pitch:0.75, turn:0.78, gLim:3.5, name:'avenger'};  // Avenger: heavy, slow to answer
+  const feel=FlightDynamics.authority(AC.name,P.spd,stallSpd);
+  const pitchRate=3.2*auth*AC.pitch*feel.pitch*controls.pitch*load.inertia*configuration.authority, rollRate=4.8*auth*AC.roll*feel.roll*controls.roll*load.inertia*configuration.authority;
   // ease pitch/roll toward input
   // damaged wing pulls roll toward the hit side; bias decays slowly as you fight it
   // a wounded aircraft pulls, but the pilot trims it out — and far more so on final,
@@ -3568,9 +3572,9 @@ function updateFlight(dt){
   // alone tells them apart again, same fix as thunderbolt-europe.html's rollLim table.
   if(aeroMode){
     const energy=Math.max(.35,Math.min(1,P.spd/(Math.max(1,STALL_SPD*load.speed+controls.stallPenalty)*1.8)));
-    const pull=Math.min(.95*AC.pitch,1.6*9.81*(AC.gLim*configuration.gFactor-1)/Math.max(P.spd,50))*energy*controls.pitch*load.turn*configuration.authority;
+    const pull=Math.min(.95*AC.pitch*feel.pitch,1.6*9.81*(AC.gLim*configuration.gFactor-1)/Math.max(P.spd,50))*energy*controls.pitch*load.turn*configuration.authority;
     P.pitchVel=inputPitch*pull;
-    const rollAuthority=2.1*AC.roll*energy*controls.roll*load.inertia*configuration.authority;
+    const rollAuthority=2.1*AC.roll*feel.roll*energy*controls.roll*load.inertia*configuration.authority;
     const bankErr=Math.atan2(Math.sin(P.roll-totalBias),Math.cos(P.roll-totalBias));
     // Neutral still self-levels, but the bank should last long enough to fly
     // through a turn instead of springing upright as soon as a thumb lifts.
@@ -3621,24 +3625,18 @@ function updateFlight(dt){
   const gUse=Math.max(1.05, Math.min(AC.gLim*configuration.gFactor, nLift));
   const vT=Math.max(TURN_VREF, P.spd);
   const turnRate=Math.min(
-    TURN_K*Math.sin(Math.abs(P.roll))*(TURN_VREF/vT)*AC.turn*load.turn,
+    TURN_K*Math.sin(Math.abs(P.roll))*(TURN_VREF/vT)*AC.turn*feel.turn*load.turn,
     TURN_CEIL*9.81*Math.sqrt(Math.max(0,gUse*gUse-1))/vT);
   P.heading -= (aeroMode?0.72*Math.sin(P.roll):Math.sign(P.roll))*turnRate*dt;
 
-  // speed toward throttle target (engine loses power when damaged), minus drag
-  const engineMul = (P.hull<60? (0.45+0.55*P.hull/60) : 1.0)*SortieFeatures.Damage.power(P);
-  const tgt = (THR_MIN_SPD + ((MISSIONS[mission]?.corsair?145:MAX_SPD)-THR_MIN_SPD)*P.throttle)*engineMul;
-  let eff = tgt - Math.sin(P.pitch)*38*load.ratio - controls.flaps.mean*9 - P.gear*4 - (P.diveBrake?34:0)-controls.drag;
-  let acceleration=(eff-P.spd)*.6*load.acceleration;
-  if(acceleration>0&&departure.release<1)acceleration=Math.min(acceleration,departure.acceleration*load.acceleration*(1+2*departure.release));
-  P.spd+=acceleration*dt;
-  P.spd = Math.max(0,P.spd);
+  // speed toward throttle target is replaced by finite power, drag and energy.
+  FlightDynamics.step(P,dt,{kind:AC.name,loadRatio:load.ratio,power:(P.hull<60?(.45+.55*P.hull/60):1)*SortieFeatures.Damage.power(P),flaps:controls.flaps.mean,drag:controls.drag,bank:P.roll,departure});
 
   // vertical speed: climb from pitch (angle of attack) + speed-dependent lift.
   // Lift rises with airspeed². At the approach reference speed the wing holds
   // altitude in level flight; below it the aircraft sinks progressively, so the
   // pilot flies the approach on the throttle — the core skill of a carrier trap.
-  const approachLiftRef=(APP_SPD-controls.flaps.mean*6)*load.speed;
+  const approachLiftRef=CarrierRecovery.envelope(P,STALL_SPD,APP_SPD).reference-controls.flaps.mean*6*load.speed;
   const liftRefSpd=Math.min(approachLiftRef,stallSpd*1.10+(approachLiftRef-stallSpd*1.10)*departure.release);
   let vs = P.spd*Math.sin(P.pitch);
   if(P.spd < liftRefSpd){
@@ -3998,7 +3996,7 @@ function updateDeckRun(dt){
   if(!isFree())P.fuel=Math.max(0,P.fuel-(.11+P.throttle*P.throttle*.42)*dt/D().fuel*((isQual()||isDefend())?1:.4));
   if(P.fuel<=0)P.throttle=Math.max(0,P.throttle-.5*dt);
   const ground={spd:run.speed,throttle:P.throttle,groundPower:P.groundPower};
-  GroundRun.step(ground,dt,{carrier:true,power:SortieFeatures.Damage.power(P),limit:90,massRatio:SortieFeatures.Handling.sample(P).ratio});
+  GroundRun.step(ground,dt,{carrier:true,acceleration:FlightDynamics.profile(FlightDynamics.kind(P)).ground,power:SortieFeatures.Damage.power(P),limit:90,massRatio:SortieFeatures.Handling.sample(P).ratio});
   run.speed=ground.spd;P.groundPower=ground.groundPower;
   const wind=CarrierRecovery.wind(windHead,windGust);P.spd=run.speed+CARRIER_SPD-wind.x;
   const previousX=P.pos.x-carrierX;P.pos.x+=(run.speed+CARRIER_SPD)*dt;P.vSpeed=0;
@@ -5416,7 +5414,7 @@ function loadPlaneModel(){
       }
       window.__eyeDbg='EYE '+COCKPIT_EYE.map(v=>v.toFixed(2)).join('/');
       const btEl=document.getElementById('buildTag');
-      if(btEl) btEl.textContent='BUILD 210 · '+window.__eyeDbg;
+      if(btEl) btEl.textContent='BUILD 211 · '+window.__eyeDbg;
       let seat=null;
       model.traverse(function(o){
         if(!o.isMesh||!o.material) return;
@@ -6035,39 +6033,18 @@ function initAudio(){
     actx.resume();FlightAtmosphere.prepareRadio(actx);
   }catch(e){ actx=null; return; }
   const master=actx.createGain(); master.gain.value=0.85; master.connect(actx.destination);
-  const eg=actx.createGain(); eg.gain.value=0;
-  const lp=actx.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=950;
-  const o1=actx.createOscillator(); o1.type='sawtooth'; o1.frequency.value=60;
-  const o2=actx.createOscillator(); o2.type='sawtooth'; o2.frequency.value=61;
-  o1.connect(lp); o2.connect(lp); lp.connect(eg); eg.connect(master);
-  const lfo=actx.createOscillator(); lfo.type='sine'; lfo.frequency.value=24;
-  const lfoG=actx.createGain(); lfoG.gain.value=0; lfo.connect(lfoG); lfoG.connect(eg.gain);
-  const nbuf=actx.createBuffer(1,actx.sampleRate,actx.sampleRate);
-  const nd=nbuf.getChannelData(0); for(let i=0;i<nd.length;i++) nd[i]=Math.random()*2-1;
-  const noise=actx.createBufferSource(); noise.buffer=nbuf; noise.loop=true;
-  const nbp=actx.createBiquadFilter(); nbp.type='bandpass'; nbp.frequency.value=210; nbp.Q.value=0.7;
-  const ng=actx.createGain(); ng.gain.value=0; noise.connect(nbp); nbp.connect(ng); ng.connect(master);
-  o1.start(); o2.start(); lfo.start(); noise.start();
-  eng={master,eg,lp,o1,o2,lfo,lfoG,ng,freq:60};
+  eng={master,piston:AircraftEngine.create(actx,master)};
+
 }
 function out(){ return eng?eng.master:(actx?actx.destination:null); }
 function updateAudio(dt){
-  if(!actx||!eng) return;
-  const flying=(state===ST.FLIGHT||state===ST.LAUNCH)&&P.alive;
-  const rpm=flying?(0.35+P.throttle*0.65):0;
-  const tf=46+rpm*72+(P.spd/MAX_SPD)*22; eng.freq+=(tf-eng.freq)*Math.min(1,5*dt);
-  const ct=actx.currentTime;
-  eng.o1.frequency.setTargetAtTime(eng.freq,ct,0.04);
-  eng.o2.frequency.setTargetAtTime(eng.freq*1.012,ct,0.04);
-  eng.lfo.frequency.setTargetAtTime(Math.max(6,eng.freq*0.42),ct,0.05);
-  const vol=flying?(0.045+rpm*0.12):0;
-  eng.eg.gain.setTargetAtTime(vol,ct,0.12);
-  eng.lfoG.gain.setTargetAtTime(flying?vol*0.6:0,ct,0.12);
-  eng.ng.gain.setTargetAtTime(flying?0.015+rpm*0.04:0,ct,0.12);
-  // damaged engine misfiring under load - same hull<50 threshold the smoke-trail visual uses
-  const dmgF=Math.max(0,(50-P.hull)/50);
-  if(flying && dmgF>0 && Math.random()<dmgF*dt*1.2) sfxSputter();
+  if(!actx||!eng)return;
+  const flying=(state===ST.FLIGHT||state===ST.LAUNCH)&&P.alive,kind=FlightDynamics.kind(P);
+  const damage=Math.max(0,(55-P.hull)/55);
+  eng.piston.update(dt,kind,P.throttle,flying,{fuel:P.fuel>0,speed:P.spd,damage});
+  if(flying&&AircraftEngine.profiles[kind]&&P.fuel>0&&damage>0&&Math.random()<damage*dt*1.2)sfxSputter();
 }
+
 function sfxBoom(level){
   if(!actx) return; const ct=actx.currentTime, dur=0.45+level*0.5, o2=out();
   const nb=actx.createBuffer(1,actx.sampleRate*dur,actx.sampleRate);
@@ -6819,7 +6796,7 @@ function setupUIButtons(){
   if(dbgT2) dbgT2.onclick=()=>{
     dbgOn=!dbgOn; GameRuntime.storage.setItem('dbgOn',dbgOn?'1':'0');
     const db=document.getElementById('dbgBox'); if(db) db.textContent=dbgOn?'✓':'';
-    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 210'; }
+    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 211'; }
   };
   const lu=document.getElementById('lookUp'), ld=document.getElementById('lookDn');
   let _lookT=0;
@@ -6835,7 +6812,7 @@ function setupUIButtons(){
   if(pb) pb.addEventListener('pointerdown',e=>{ e.preventDefault(); togglePause(); });
   const rb=document.getElementById('resumeBtn'); if(rb) rb.onclick=resumeGame;
   const mb=document.getElementById('menuBtn'); if(mb) mb.onclick=exitToMenu;
-  document.getElementById('pauseMainMenu').onclick=async()=>{globalThis.sortieCheckpoint?.save();await globalThis.sortieCheckpoint?.flush();exitToMenu(true);window.location.href='index.html?v=210';};
+  document.getElementById('pauseMainMenu').onclick=async()=>{globalThis.sortieCheckpoint?.save();await globalThis.sortieCheckpoint?.flush();exitToMenu(true);window.location.href='index.html?v=211';};
   document.getElementById('resultBtn').onclick=()=>{
     // the logbook borrows this screen from the menu — send the player straight back
     if(logbookOpen){ logbookOpen=false; showOverlay('menu'); return; }
@@ -6921,8 +6898,8 @@ function updateLaunch(dt){
   if(launchTimer===0){ shake(.35); } // rolling departure
   launchTimer+=dt;
   // accelerate down the deck then lift
-  GroundRun.step(P,dt,{carrier:true,limit:48,power:SortieFeatures.Damage.power(P),massRatio:SortieFeatures.Handling.sample(P).ratio});
-  const rotationTarget=inputPitch>.15&&P.spd>STALL_SPD*.90?.07:0;
+  GroundRun.step(P,dt,{carrier:true,acceleration:FlightDynamics.profile(FlightDynamics.kind(P)).ground,limit:48,power:SortieFeatures.Damage.power(P),massRatio:SortieFeatures.Handling.sample(P).ratio});
+  const rotationTarget=inputPitch>.15&&P.spd>CarrierRecovery.envelope(P,STALL_SPD,APP_SPD).stall*.90?.07:0;
   P.takeoffRotation=(P.takeoffRotation||0)+(rotationTarget-(P.takeoffRotation||0))*(1-Math.exp(-dt/1.1));
   P.pos.x += (P.spd+CARRIER_SPD)*dt;
   // Piston aircraft depart under engine power; there is no steam-catapult plume.
@@ -7083,7 +7060,7 @@ function animate(){
     notice.style.cssText='position:fixed;inset:0;z-index:999998;background:rgba(15,20,15,.95);color:#e8ddbc;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px;text-align:center;font:16px system-ui';
     const title=document.createElement('h2');title.textContent='Simulation interrupted';
     const detail=document.createElement('p');
-    detail.textContent='BUILD 210 · '+(MISSIONS[mission]?.sub||'Menu')+' · '+error.message;
+    detail.textContent='BUILD 211 · '+(MISSIONS[mission]?.sub||'Menu')+' · '+error.message;
     const reload=document.createElement('button');reload.textContent='Reload game';
     reload.style.cssText='padding:12px 24px;font:inherit';reload.onclick=()=>location.reload();
     notice.appendChild(title);notice.appendChild(detail);notice.appendChild(reload);document.body.appendChild(notice);
@@ -7247,6 +7224,6 @@ function animateFrame(){
 
 init();
 </script>
-<script src="checkpoint-pacific.js?v=210"></script>
+<script src="checkpoint-pacific.js?v=211"></script>
 </body>
 </html>

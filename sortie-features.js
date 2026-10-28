@@ -53,6 +53,8 @@ const Handling={
  speeds(p,stall,reference,flapGain=4,gearGain=2){
   const load=this.sample(p),controls=Damage.controls(p),kind=p.loadProfile?.kind||p.ac;
   const field=p.loadProfile?.theatre==='europe'?this.fieldLanding[kind]:null;
+  const carrier=p.loadProfile?.theatre==='pacific'&&root.FlightDynamics?.profiles[kind];
+  if(carrier){stall=carrier.stall??stall;reference=carrier.reference??reference;}
   if(kind==='p47'&&root.P47Performance){const speeds=root.P47Performance.speeds(p,controls.flaps.mean,load.ratio,controls.stallPenalty);speeds.reference*=1+controls.flaps.asymmetry*.08;return speeds;}
   const limit=(stall+(p.gear||0)*gearGain-controls.flaps.mean*(field?.flapGain??flapGain))*load.speed+controls.stallPenalty;
   let target=field?field.reference+field.cleanAdd*(1-controls.flaps.mean):reference;

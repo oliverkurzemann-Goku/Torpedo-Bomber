@@ -160,9 +160,9 @@ const server=http.createServer((req,res)=>{
     const nd=noseDir(),side=new THREE.Vector3(nd.z,0,-nd.x);camera.position.copy(planeGroup.position).addScaledVector(nd,7).addScaledVector(side,17).add(new THREE.Vector3(0,1.7,0));
     camera.up.set(0,1,0);camera.lookAt(planeGroup.position);camera.updateMatrixWorld(true);scene.updateMatrixWorld(true);renderer.render(scene,camera);
     P.onGround=false;P.pos.y=AF_Y+150;P.flap=1;P.spd=AC[kind].app;updateHUD();const reference=document.getElementById('landingRef').textContent;
-    const expected=SortieFeatures.Handling.speeds(P,AC[kind].stall,AC[kind].app).reference;
+    const envelope=SortieFeatures.Handling.speeds(P,AC[kind].stall,AC[kind].app),expected=envelope.referenceIAS??envelope.reference;
     if(document.getElementById('landingRef').hidden||!reference.includes(Math.round(expected*KT)+' MPH'))throw Error('Missing aircraft-specific landing speed');
-    P.spd=(AC[kind].stall+P.gear*2-P.flap*4)*1.10;updateHUD();if(document.getElementById('hSpd').style.color!=='rgb(255, 87, 76)')throw Error('No pre-stall red speed');
+    P.spd=envelope.stall*1.10;updateHUD();if(document.getElementById('hSpd').style.color!=='rgb(255, 87, 76)')throw Error('No pre-stall red speed');
     P.onGround=true;updateHUD();return {kind,stations,reference,source:window.__modelSrc[kind],tyres};
    },kind);console.log('Actual Europe gear and speed:',JSON.stringify(aircraft));
    await page.screenshot({path:path.join(out,'build187-'+kind+'-gear.png')});

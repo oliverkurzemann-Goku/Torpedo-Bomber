@@ -1,5 +1,35 @@
 # Torpedo-Bomber — Übergabe an Claude Code
 
+**28.10.2026, Build 211: Flugverhalten und Motorensound über die ganze spielbare Flotte abgestimmt.**
+Nutzer: jeder Typ soll sich anders anfühlen, plausibler, aber weiterhin Arcade; Motoren
+klangen wie Rasenmäher. Neues `flight-dynamics.js` in beiden aktuellen Kampagnen und
+Legacy-Europa: endlicher Leistungsaufbau, Leistung/Widerstand statt Zielgeschwindigkeits-
+Feder, Last-/Kurven-/Konfigurationsverluste, Steigen/Tauchen tauscht Energie, kein Schub
+bei leerem Tank. Zehn Profile; P-47 behält historische Hüllkurve + deklarierte Spielhilfe,
+Me262 ihr langsames Spool-Modell, Komet ihre getestete Gleit-/Kufenrückkehr. Progressive
+Touch-Eingaben, Selbstaufrichtung, AERO und Missionen bleiben. Bf109 enger in normalen
+Kurven, Fw schneller zur kommandierten Bank; Zero bei hoher Fahrt deutlich schwergängiger.
+P-47-Abflugwinkel lässt beim schweren Start Leistung für Beschleunigung übrig.
+Carrier-REF/Stall je Typ, gleiche Quelle für HUD/Landung/Rotation, typabhängiger Startlauf.
+Motorleistung/Departure-Zustand beim Carrier-Missionswechsel zurückgesetzt; vorher konnten
+Werte der vorigen Maschine weiterwirken. Spielbare Typen, keine Waffenänderung.
+`audio/aircraft-engine.js`: acht eigene Sternmotor-/V12-Stimmen aus Verbrennungsimpulsen,
+Propellerdruck, Resonanz und Rauschen; alte Sägezahn-Paare und tiefe Gain-Modulation entfernt.
+Me262/Komet behalten separate JetEngine-Stimmen, jetzt auch in Legacy-Europa.
+Lazy 7-s-Loops, weiche Übergänge, gleiche Pause/Master-Routing; keine Fremdaufnahmen.
+`engine-preview.html` mit allen zehn Typen und Gas/Lautstärke; Link im Workshop.
+Briefings beschreiben den Flugcharakter. `FLIGHT-AND-SOUND.md` enthält Spielwerte,
+Quellen/Abgrenzung; `app/release/fleet-validation.json` die Messungen.
+Nachweis: tatsächliche Flüge/Audioauswahl aller zehn Typen bei 20/60/120 FPS,
+Last/Schaden/Neutralflug, 21 geladene Landstarts (alle fünf Bahn-Typen) und vier echte Trägerstarts mit Steigflug
+ab Deckkante, zwölf Träger-Rückkehrfälle, sechs Komet-Missionen bis Kufenlandung/Debrief,
+echte OfflineAudioContext-Renderings aller Stimmen (Pegel, Headroom, Stille, Unterschiede).
+11 HTML-Syntaxprüfungen, 83 Okinawa-Tests ohne Fehler; Terrain 39/40 im Gesamtlauf,
+übrige AERO-Prüfung nach Anpassung der absichtlich geänderten 109-Balance einzeln bestanden.
+Ältere P-47-HUD-Tests verglichen fälschlich TAS mit IAS; korrigiert. App: 325 Dateien,
+36 Modelle, 249,5 MiB, Hashes/Closure geprüft. Kein physischer iPad-Test/Hörnachweis.
+
+
 **27.10.2026, Build 210: Fw 190 / Komet nach Nutzer-Bildvorlagen neu aufgebaut.**
 Build 209 war trotz passender Außenmaße in den Konturen falsch. Nutzer lieferte vier
 Screenshots (IMG_0728–0731) und verlangte originalgetreue Modelle. Neue vermessene

@@ -9,6 +9,12 @@ Historical Build 196 payload contained **302 files / 266.5 MiB**, including
 [asset-register.json](app/release/asset-register.json); embedded GLB textures are covered by
 their binary's hash. [Readable model table](app/release/asset-register.md).
 
+## Build 211 fleet handling and engine audio
+
+The 325-file payload adds original procedural piston-engine audio and shared arcade
+flight dynamics. No recorded samples, external audio libraries or model binaries were
+added or changed. The existing asset review status is unchanged.
+
 ## Build 210 Fw 190 / Komet reference rebuild
 
 The active Fw 190 and Me 163 use new reference-derived exterior geometry and procedural

@@ -28,7 +28,7 @@ const server=http.createServer((req,res)=>{
    },pacific);
    if(!pacific)for(const fps of [20,60,120]){
     const takeoffs=await page.evaluate(fps=>{
-     return [0,MISSIONS.findIndex(m=>m.id==='final'),MISSIONS.findIndex(m=>m.id==='jetstrike'),MISSIONS.findIndex(m=>m.id==='jetjabo')].map(index=>{
+     return [0,MISSIONS.findIndex(m=>m.id==='final'),MISSIONS.findIndex(m=>m.id==='jetstrike'),MISSIONS.findIndex(m=>m.id==='jetjabo'),...['bf109','fw190','ju87'].map(kind=>MISSIONS.findIndex(m=>m.ac===kind&&!m.free))].map(index=>{
       startMission(index);finishLaunchIntro(false);show('menu',false);show('brief',false);state=ST.FLIGHT;inputRoll=0;inputPitch=.6;P.throttle=1;
       const originalCrash=crash;let crashReason=null;
       crash=(title,message)=>{crashReason={title,message,pos:P.pos.toArray(),agl:P.pos.y-groundY(P.pos.x,P.pos.z)};originalCrash(title,message);};
@@ -84,7 +84,8 @@ const server=http.createServer((req,res)=>{
      }
      SortieFeatures.Damage.reset(P,pacific?100:acDef().hull);P.gear=P.gearTgt=1;updateHUD();
      if(!document.querySelector('.controlFault').hidden)throw Error('Repair left a control warning');
-     const reference=pacific?CarrierRecovery.envelope(P,STALL_SPD,APP_SPD).reference:SortieFeatures.Handling.speeds(P,acDef().stall,acDef().app).reference;
+     const envelope=pacific?CarrierRecovery.envelope(P,STALL_SPD,APP_SPD):SortieFeatures.Handling.speeds(P,acDef().stall,acDef().app);
+     const reference=envelope.referenceIAS??envelope.reference;
      if(!document.getElementById('landingRef').textContent.includes(Math.round(reference*KT)+(pacific?' KT':' MPH')))throw Error('HUD reference differs from physics');
      return {kind,fps,heavy,light,reference,asymmetry:asymmetry?.flaps};
     },{kind,fps,pacific});console.log('Shipped handling:',JSON.stringify(result));

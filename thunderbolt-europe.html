@@ -342,8 +342,12 @@
 <script src="campaign.js?v=1"></script>
 <script src="b17-native.js?v=200"></script>
 <script src="me262-native.js?v=206"></script>
-<script src="aircraft-contract.js?v=210"></script>
-<script src="aircraft-articulation.js?v=210"></script>
+<script src="aircraft-contract.js?v=211"></script>
+<script src="aircraft-articulation.js?v=211"></script>
+<script src="me262-performance.js?v=211"></script>
+<script src="audio/jet-engine.js?v=211"></script>
+<script src="flight-dynamics.js?v=211"></script>
+<script src="audio/aircraft-engine.js?v=211"></script>
 <script src="p47-performance.js?v=206"></script>
 <script>
 // ============================================================
@@ -441,16 +445,16 @@ const AC={
   // pitchLim raised too - 55-62 deg was noticeably shy of a real fighter's zoom-climb/dive
   // angle; the carrier game's dive bomber already runs safely at 1.28 rad (73 deg), so 66-72 is
   // conservative by comparison, not a leap into new territory.
-  p47:{ name:'P-47D Thunderbolt', rollAuth:1.08, pitchAuth:1.04, turn:0.90, gLim:6.5,
+  p47:{ name:'P-47D Thunderbolt', rollAuth:1.0, pitchAuth:0.98, turn:0.86, gLim:6.5,
         rollLim:1.56, pitchLim:1.15, stall:116*.44704, app:130*.44704, max:435*.44704, thrMin:34,
         hull:130, ammo:3400, bombs:2, rockets:8, gunDmg:1.0, gunRate:0.055, wing:12.4,
         col:0x6e7a63, band:0xf0f0e4 },
   // The Focke-Wulf: rolls like nothing else in the war, but will not out-turn a 109.
-  fw190:{ name:'Fw 190A-8', rollAuth:1.85, pitchAuth:1.10, turn:1.05, gLim:5.5,
+  fw190:{ name:'Fw 190A-8', rollAuth:1.35, pitchAuth:1.0, turn:0.98, gLim:5.5,
         rollLim:1.56, pitchLim:1.20, stall:39, app:53, max:194, thrMin:32,
         hull:102, ammo:1800, bombs:1, rockets:0, gunDmg:1.5, gunRate:0.075, wing:10.5,
         col:0x7d8478, band:0x2f3a2a },
-  bf109:{ name:'Bf 109G-6', rollAuth:1.45, pitchAuth:1.25, turn:1.25, gLim:5.5,
+  bf109:{ name:'Bf 109G-6', rollAuth:1.13, pitchAuth:1.22, turn:1.15, gLim:5.5,
         rollLim:1.56, pitchLim:1.25, stall:36, app:50, max:196, thrMin:30,
         hull:88, ammo:1500, bombs:1, rockets:0, gunDmg:1.35, gunRate:0.085, wing:9.9,
         col:0x8d9384, band:0x3d4636 },
@@ -461,7 +465,7 @@ const AC={
   // lower than the Bf109/Fw190: this aircraft's real advantage was outrunning a fight, not
   // out-turning one. ammo/gunDmg reflect 4x30mm MK108 cannon - roughly a tenth of the P-47's
   // eight-gun belt count, but each round is a 30mm autocannon shell, not a rifle-calibre bullet.
-  me262:{ name:'Me 262A-1a/Jabo', rollAuth:1.10, pitchAuth:1.00, turn:0.80, gLim:5.0,
+  me262:{ name:'Me 262A-1a/Jabo', rollAuth:0.95, pitchAuth:0.92, turn:0.72, gLim:5.0,
         rollLim:1.56, pitchLim:1.15, stall:49, app:56, max:242, thrMin:42,
         hull:95, ammo:400, bombs:2, rockets:0, gunDmg:3.0, gunRate:0.09, wing:12.51,
         col:0x6b7360, band:0x33392a }
@@ -4176,11 +4180,8 @@ function updateFlight(dt){
   // ---- airborne ----
   STALL_SPD=d.stall; APP_SPD=d.app; MAX_SPD=d.max; THR_MIN_SPD=d.thrMin;
   const stallSpd=STALL_SPD+P.gear*2-P.flap*4;
-  // thrust -> target speed, modified by attitude, gear, flaps
-  let eff = THR_MIN_SPD + (MAX_SPD-THR_MIN_SPD)*P.throttle;
-  eff -= Math.sin(P.pitch)*62 + P.flap*11 + P.gear*6;
-  P.spd += (eff-P.spd)*Math.min(1,0.5*dt);
-  P.spd = Math.max(6,P.spd);
+  // speed toward throttle target is replaced by finite power, drag and energy.
+  FlightDynamics.step(P,dt,{kind:P.ac,flaps:P.flap,bank:P.roll,power:Math.min(1,P.hull/(d.hull*.6))});
 
   // ---- attitude: stick POSITION still commands an attitude, exactly as before ----
   // The old code drove roll and pitch as RATES, so the aeroplane stayed wherever you left it
@@ -4193,10 +4194,11 @@ function updateFlight(dt){
   // Exact same change as torpedo-carrier.html's updateFlight; see its comment for the derivation.
   const dmgF = (P.hull < d.hull*0.6) ? (0.55+0.45*P.hull/(d.hull*0.6)) : 1.0;
   const auth = (P.spd<stallSpd ? 0.4 : 1.0)*dmgF;
-  const pitchRate=2.0*auth*d.pitchAuth, rollRate=4.8*auth*d.rollAuth;
+  const feel=FlightDynamics.authority(P.ac,P.spd,stallSpd);
+  const pitchRate=2.0*auth*d.pitchAuth*feel.pitch, rollRate=4.8*auth*d.rollAuth*feel.roll;
   const biasDecay = (P.gear>0.5)? 0.9 : 0.35;
   P.rollBias = Math.max(-0.16, Math.min(0.16, (P.rollBias||0)*(1-biasDecay*dt)));
-  const rollTarget = inputRoll*steerSign*0.7 + P.rollBias;
+  const rollTarget = inputRoll*steerSign*d.rollLim*.86 + P.rollBias;
   // Full stick was worth only 0.55 rad = 31 degrees, inherited from the carrier game where a
   // gentle approach matters more than climb. A ground-attack aeroplane needs to pull up hard
   // off a target run, so full deflection now commands most of the aircraft's real pitch limit.
@@ -4615,6 +4617,7 @@ function updateApproach(){
 // ============================================================
 //  AUDIO
 // ============================================================
+let jetEngine=null,rocketEngine=null,jetGunDuck=0;
 function initAudio(){
   if(actx){ if(actx.state==='suspended') actx.resume(); return; }
   try{ const AC2=window.AudioContext||window.webkitAudioContext; actx=new AC2();
@@ -4626,123 +4629,23 @@ function initAudio(){
     actx.resume();
   }catch(e){ actx=null; return; }
   const master=actx.createGain(); master.gain.value=0.85; master.connect(actx.destination);
-  const eg=actx.createGain(); eg.gain.value=0;
-  const lp=actx.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=950;
-  const o1=actx.createOscillator(); o1.type='sawtooth'; o1.frequency.value=60;
-  const o2=actx.createOscillator(); o2.type='sawtooth'; o2.frequency.value=61;
-  o1.connect(lp); o2.connect(lp); lp.connect(eg); eg.connect(master);
-  const lfo=actx.createOscillator(); lfo.type='sine'; lfo.frequency.value=24;
-  const lfoG=actx.createGain(); lfoG.gain.value=0; lfo.connect(lfoG); lfoG.connect(eg.gain);
-  const nbuf=actx.createBuffer(1,actx.sampleRate,actx.sampleRate);
-  const nd=nbuf.getChannelData(0); for(let i=0;i<nd.length;i++) nd[i]=Math.random()*2-1;
-  const noise=actx.createBufferSource(); noise.buffer=nbuf; noise.loop=true;
-  const nbp=actx.createBiquadFilter(); nbp.type='bandpass'; nbp.frequency.value=210; nbp.Q.value=0.7;
-  const ng=actx.createGain(); ng.gain.value=0; noise.connect(nbp); nbp.connect(ng); ng.connect(master);
-  // Separate low turbine/body layer for jets. Trying to make the same high sawtooth pair do
-  // both whine and mass is what left the Me 262 sounding thin and almost flute-like.
-  const jetBody=actx.createOscillator(); jetBody.type='triangle'; jetBody.frequency.value=95;
-  const jetBodyLP=actx.createBiquadFilter(); jetBodyLP.type='lowpass'; jetBodyLP.frequency.value=520;
-  const jetBodyG=actx.createGain(); jetBodyG.gain.value=0;
-  jetBody.connect(jetBodyLP); jetBodyLP.connect(jetBodyG); jetBodyG.connect(master);
-  o1.start(); o2.start(); lfo.start(); noise.start(); jetBody.start();
-  eng={master,eg,lp,o1,o2,lfo,lfoG,nbp,ng,jetBody,jetBodyLP,jetBodyG,freq:60};
+  eng={master,piston:AircraftEngine.create(actx,master)};
+  jetEngine=JetEngine.create(actx,master);
+  rocketEngine=JetEngine.create(actx,master,{rocket:true});
+
 }
 function out(){ return eng?eng.master:(actx?actx.destination:null); }
 function updateAudio(dt){
-  if(!actx||!eng) return;
-  const flying=(state===ST.FLIGHT)&&P.alive;
-  const rpm=flying?(0.30+P.throttle*0.70):0;
-  const ct=actx.currentTime;
-  // Reported four times running now (EU BUILD 52/53/54/55): "hairdryer", "mosquito", "klingt
-  // fuerchterlich", and after EU BUILD 55's literature-research pass, still not right - the
-  // literature gave a correct general SHAPE (tonal, turbine-register, no piston wobble) but no
-  // numbers specific to what this engine actually sounds like. This round the user supplied an
-  // actual reference recording ("So klingt in etwa eine me262") - analysed it directly (Python +
-  // numpy FFT, not by ear, since audio still cannot be heard from here) instead of researching
-  // engine specs a fifth time. Measured across 12 windows spanning the 8 s clip:
-  // - The fundamental sits in an unexpectedly NARROW, high band: 1790 Hz at its quietest, rising
-  //   smoothly to a 2200-2350 Hz plateau it holds for the back half of the clip - not the wide
-  //   650-2200 Hz idle-to-full spread the Jumo 004's raw 3-4x rpm ratio implied. EU BUILD 55's
-  //   TOP end already landed almost exactly on this reference's plateau; the bottom end was much
-  //   too low.
-  // - A strong, clean second peak at almost EXACTLY 2x the fundamental shows up in every single
-  //   window (e.g. 2213 Hz and 4425 Hz; 2347 Hz and 4689 Hz) - a genuine octave overtone, not the
-  //   5% "buzz-saw" detune EU BUILD 55 built between o1/o2. That octave was already sitting right
-  //   there for free (a sawtooth's own natural harmonic series includes one at half the
-  //   fundamental's amplitude) - EU BUILD 55's lowpass (topping out at 3000 Hz) was silently
-  //   filtering it back out before it could ever be heard.
-  // - The two closest simultaneous peaks in every window (the actual "roughness" in the tone) sit
-  //   only 0.2-0.3% apart (e.g. 2213 vs 2218 Hz), not 5% - EU BUILD 53's original 0.6% "mosquito"
-  //   detune was in fact closer to this reference than EU BUILD 55's wider one; the mosquito
-  //   complaint traces to the missing octave and the noise balance below, not the detune width.
-  // - Spectral flatness across every window measured 0.008-0.011 - extremely tonal, next to no
-  //   broadband texture audible in the spectrum at all. EU BUILD 55's noise layer (22% of the
-  //   tone's gain) is too prominent for what this specific reference actually contains.
-  // Rebuilt directly on these numbers: fundamental narrowed to 1300-2300 Hz (still idle-to-full,
-  // but centred on the reference's measured plateau instead of the raw rpm-ratio calculation),
-  // o1/o2 detune tightened to 0.25% (the reference's own measured spacing), lowpass raised well
-  // past 2x the fundamental's peak (5000-6500 Hz) specifically so that free second harmonic is
-  // finally audible instead of filtered away, and the noise layer cut back to 9% of the tone's
-  // gain to match the reference's near-total tonal dominance. `nbp.Q` is shared with the piston
-  // engine's own noise layer; the else branch below still resets it, same as every revision
-  // before this one. Same honest limit as always with pure WebAudio synthesis: the numbers below
-  // are now grounded in a direct FFT of the user's own reference clip, not a guess and not a
-  // generic literature figure - but whether it actually sounds right is still only Oliver's call.
-  //
-  // Reported again after EU BUILD 56 shipped this reference-matched version: "immer noch
-  // furchtbar, muss dumpfer werden" - a clear, unambiguous direction this time (duller/more
-  // muffled), not another vague "wrong" to re-research from scratch. Acted on directly rather
-  // than guessing yet another register/detune (this project's own lesson from four rounds of
-  // that: change the LEVER, not the same two numbers again). The FFT-matched reference clip is a
-  // close-mic'd recording; EU BUILD 56's lowpass (5000-6500 Hz) sits so far above the 1300-2300 Hz
-  // fundamental that almost the sawtooth's ENTIRE harmonic series passes through close to
-  // unfiltered - harmonics 2-4 alone reach up to ~9200 Hz at full rpm, all audible under a
-  // 6500 Hz ceiling - which is exactly what a raw, bright, buzzy tone sounds like up close, not
-  // what a jet engine sounds like from a cockpit or from the ground. "Dumpfer" is a lowpass
-  // problem before anything else: brought down to just above the second harmonic (2300-3400 Hz,
-  // versus the reference's own measured 2x peaks at 4425-4689 Hz) so that harmonic still colours
-  // the tone slightly without the higher, harsher ones ringing through, and the noise layer
-  // (already fairly small) trimmed further and darkened (mid-band lowered) so it reads as a
-  // distant rumble rather than an audible hiss riding on top.
-  // BUILD 58 follows the user's much more specific observation that it still sounds almost like
-  // a whistle: the tonal register is now roughly an octave lower, its harmonic ceiling is lower,
-  // and a separate sub-250 Hz turbine/body layer carries the weight of the two engines.
-  if(JET_KINDS.includes(P.ac)){
-    const tf=430+rpm*520+(P.spd/Math.max(1,MAX_SPD))*85;
-    eng.freq+=(tf-eng.freq)*Math.min(1,4*dt);
-    eng.o1.frequency.setTargetAtTime(eng.freq,ct,0.10);
-    eng.o2.frequency.setTargetAtTime(eng.freq*1.004,ct,0.10);
-    eng.lp.frequency.setTargetAtTime(1250+rpm*850,ct,0.15);
-    const vol=flying?(0.035+rpm*0.075):0;
-    eng.eg.gain.setTargetAtTime(vol,ct,0.18);
-    eng.lfoG.gain.setTargetAtTime(0,ct,0.2);
-    eng.nbp.frequency.setTargetAtTime(260+rpm*330,ct,0.15);
-    eng.nbp.Q.setTargetAtTime(0.38,ct,0.2);
-    eng.ng.gain.setTargetAtTime(vol*0.34,ct,0.15);
-    eng.jetBody.frequency.setTargetAtTime(72+rpm*105+(P.spd/Math.max(1,MAX_SPD))*18,ct,0.12);
-    eng.jetBodyLP.frequency.setTargetAtTime(360+rpm*250,ct,0.15);
-    eng.jetBodyG.gain.setTargetAtTime(flying?(0.045+rpm*0.085):0,ct,0.18);
-  } else {
-    eng.jetBodyG.gain.setTargetAtTime(0,ct,0.12);
-    eng.nbp.Q.setTargetAtTime(0.7,ct,0.15);
-    // the Jug's R-2800 sits lower and rougher than the 109's inline
-    const base=(P.ac==='p47')?42:52;
-    const tf=base+rpm*74+(P.spd/Math.max(1,MAX_SPD))*22;
-    eng.freq+=(tf-eng.freq)*Math.min(1,5*dt);
-    eng.o1.frequency.setTargetAtTime(eng.freq,ct,0.04);
-    eng.o2.frequency.setTargetAtTime(eng.freq*1.012,ct,0.04);
-    eng.lfo.frequency.setTargetAtTime(Math.max(6,eng.freq*0.42),ct,0.05);
-    eng.lp.frequency.setTargetAtTime(950,ct,0.15);
-    const vol=flying?(0.05+rpm*0.13):0;
-    eng.eg.gain.setTargetAtTime(vol,ct,0.12);
-    eng.lfoG.gain.setTargetAtTime(flying?vol*0.6:0,ct,0.12);
-    eng.nbp.frequency.setTargetAtTime(210,ct,0.15);
-    eng.ng.gain.setTargetAtTime(flying?0.015+rpm*0.04:0,ct,0.12);
-  }
-  // damaged engine misfiring under load - same hull<55 threshold the oil-on-canopy visual uses
-  const dmgF=Math.max(0,(55-P.hull)/55);
-  if(flying && dmgF>0 && Math.random()<dmgF*dt*1.2) sfxSputter();
+  if(!actx||!eng)return;
+  const flying=state===ST.FLIGHT&&P.alive,kind=P.ac;
+  const damage=Math.max(0,(55-P.hull)/55);
+  jetGunDuck=Math.max(0,jetGunDuck-dt);
+  jetEngine.update(dt,P.throttle,flying&&kind==='me262'&&P.fuel>0,damage,jetGunDuck>0?1:0);
+  rocketEngine.update(dt,P.throttle,flying&&kind==='me163'&&P.fuel>0&&P.throttle>.01,0,jetGunDuck>0?1:0);
+  eng.piston.update(dt,kind,P.throttle,flying,{fuel:P.fuel>0,speed:P.spd,damage});
+  if(flying&&AircraftEngine.profiles[kind]&&P.fuel>0&&damage>0&&Math.random()<damage*dt*1.2)sfxSputter();
 }
+
 function nburst(dur,type,freq,q,peak,delay,curve){
   if(!actx) return; const ct=actx.currentTime, o2=out();
   const n=Math.max(1,Math.floor(actx.sampleRate*dur));

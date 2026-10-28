@@ -23,7 +23,7 @@ for(let seconds=0;seconds<=90;seconds++){
 const first=html.indexOf('  const stallSpd=speeds.stall;',html.indexOf('function updateFlight(dt){'));
 const last=html.indexOf('  // ---- attitude:',first);
 assert(first>0&&last>first);
-const speed=vm.runInNewContext('(function(P,dt,STALL_SPD,THR_MIN_SPD,MAX_SPD){const load=SortieFeatures.Handling.sample(P),controls=SortieFeatures.Damage.controls(P),speeds=SortieFeatures.Handling.speeds(P,STALL_SPD,52),departure=SortieFeatures.Handling.departure(P,dt,speeds.stall);'+html.slice(first,last)+'})',{SortieFeatures:global.SortieFeatures});
+const speed=vm.runInNewContext('(function(P,dt,STALL_SPD,THR_MIN_SPD,MAX_SPD){const load=SortieFeatures.Handling.sample(P),controls=SortieFeatures.Damage.controls(P),speeds=SortieFeatures.Handling.speeds(P,STALL_SPD,52),departure=SortieFeatures.Handling.departure(P,dt,speeds.stall);'+html.slice(first,last)+'})',{SortieFeatures:global.SortieFeatures,FlightDynamics:require('../../flight-dynamics')});
 P.fuel=0;P.throttle=0;P.pitch=0;P.gear=1;P.spd=155;
 for(let i=0;i<200;i++)speed(P,.05,51,33,238);
 assert(P.spd<140&&P.spd>65,'spent rocket glides and gradually slows instead of receiving idle jet thrust');

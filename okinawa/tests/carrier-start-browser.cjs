@@ -99,6 +99,13 @@ const server=http.createServer((req,res)=>{
    assert(await page.evaluate(()=>state===ST.LAUNCH&&launchTimer>=1.9&&P.pos.x-carrierX<BOW_X),'first two seconds remain on the flight deck');
    await page.evaluate(()=>{const render=GameRuntime.render;GameRuntime.render=()=>true;try{for(let i=0;i<260&&state===ST.LAUNCH;i++){animateFrame();if(state===ST.LAUNCH&&P.pos.x-carrierX<BOW_X-2)checkDeckContact();}}finally{GameRuntime.render=render;}});
    assert(await page.evaluate(()=>state===ST.FLIGHT&&launchTimer>6&&launchTimer<12&&P.pos.x-carrierX>BOW_X),'departure follows the full deck run and actual bow exit');
+   const climb=await page.evaluate(()=>{
+    const y=P.pos.y,startSpeed=P.spd;inputPitch=.35;P.gearTgt=0;
+    const render=GameRuntime.render;GameRuntime.render=()=>true;
+    try{for(let i=0;i<80;i++)animateFrame();}finally{GameRuntime.render=render;}
+    return {alive:P.alive,gain:P.pos.y-y,startSpeed,speed:P.spd,stall:CarrierRecovery.envelope(P,STALL_SPD,APP_SPD).stall};
+   });assert(climb.alive&&climb.gain>8&&climb.speed>climb.stall*1.1,'powered departure clears the bow and climbs: '+JSON.stringify({ac,climb}));
+   console.log(ac+' four seconds after bow exit:',climb);
    const fired=await page.evaluate(()=>{
     P.pos.y=300;P.spd=80;const ammo=P.ammo;firing=true;
     const render=GameRuntime.render;GameRuntime.render=()=>true;

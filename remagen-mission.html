@@ -275,7 +275,7 @@
   .warningLamps{display:flex!important;gap:10px;padding:5px 9px!important;background:#141813dd!important;border:1px solid #535744;border-radius:4px;white-space:nowrap;}
   .warningLamp{color:#646c5c;font:9px monospace;letter-spacing:.35px;} .warningLamp[data-level="1"]{color:#ffd088;text-shadow:0 0 6px #e0a432a0;} .warningLamp[data-level="2"]{color:#ff8c70;text-shadow:0 0 7px #ff6638b0;}
 </style>
-<link rel="stylesheet" href="menu-layout.css?v=210">
+<link rel="stylesheet" href="menu-layout.css?v=211">
 </head>
 <body>
 <!-- ===== TEMP TEST-ONLY VERSION BANNER — asked for by Oliver: "kannst du irgendwo einbauen,
@@ -297,7 +297,7 @@
   <div style="width:100%;height:4px;background:repeating-linear-gradient(45deg,#ffd400,#ffd400 8px,#111 8px,#111 16px);"></div>
   <span id="testVersionBannerText" style="background:#111;color:#ffd400;font-family:monospace;font-weight:800;font-size:11px;letter-spacing:.5px;padding:3px 10px;border:1px solid #ffd400;border-top:none;border-radius:0 0 6px 6px;"></span>
 </div>
-<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 210';</script>
+<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 211';</script>
 <!-- ===== END TEMP TEST-ONLY VERSION BANNER ===== -->
 <div id="app"></div>
 <style>
@@ -338,7 +338,7 @@
   <div id="flash"></div>
   <div id="gunsight"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 210 · REAL RHINE</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 211 · REAL RHINE</div>
 
   <div id="apr">
     <div id="aprCall"></div>
@@ -390,7 +390,7 @@
 </div>
 
 <div class="overlay hidden" id="menu" data-campaign="europe">
-  <div class="menuTop"><a id="selBtn" href="index.html?v=210">&#9664; Change Game</a><span class="menuMeta">RHINE OPERATIONS<br>BUILD 210</span></div>
+  <div class="menuTop"><a id="selBtn" href="index.html?v=211">&#9664; Change Game</a><span class="menuMeta">RHINE OPERATIONS<br>BUILD 211</span></div>
   <div class="card menuCard">
     <aside class="menuOverview" aria-label="Campaign and pilot options">
     <div class="campaignArt" aria-hidden="true"></div>
@@ -502,18 +502,18 @@
 <script src="terrain-system/PeriodBuildings.js?v=175"></script>
 <script src="terrain-system/HistoricalObjectManager.js?v=173"></script>
 <script src="terrain-system/AirfieldDetails.js?v=169"></script>
-<script src="terrain-system/AircraftGround.js?v=210"></script>
+<script src="terrain-system/AircraftGround.js?v=211"></script>
 <script src="terrain-system/AirfieldActivity.js?v=181"></script>
 <script src="terrain-system/WorldVehicles.js?v=172"></script>
 <script src="terrain-system/LivingWorld.js?v=179"></script>
 <script src="campaign.js?v=1"></script>
 <script src="game-runtime.js?v=198"></script>
 <script src="sortie-checkpoint.js?v=198"></script>
-<script src="ju87-native.js?v=210"></script>
+<script src="ju87-native.js?v=211"></script>
 <script src="me262-native.js?v=206"></script>
-<script src="me163-native.js?v=210"></script>
+<script src="me163-native.js?v=211"></script>
 <script src="aircraft-contract.js?v=206"></script>
-<script src="aircraft-articulation.js?v=210"></script>
+<script src="aircraft-articulation.js?v=211"></script>
 <script src="aircraft-rotors.js?v=172"></script>
 <script src="b17-native.js?v=201"></script>
 <script src="combat-fx.js?v=177"></script>
@@ -537,8 +537,10 @@
 <script src="audio/flight-atmosphere.js?v=175"></script>
 <script src="sortie-systems.js?v=198"></script>
 <script src="me262-performance.js?v=206"></script>
+<script src="flight-dynamics.js?v=211"></script>
+<script src="audio/aircraft-engine.js?v=211"></script>
 <script src="p47-performance.js?v=204"></script>
-<script src="sortie-features.js?v=206"></script>
+<script src="sortie-features.js?v=211"></script>
 <script src="ground-run.js?v=204"></script>
 <script src="ground-dust.js?v=181"></script>
 <script src="flight-indicators.js?v=198"></script>
@@ -659,12 +661,12 @@ const AC={
   // pitchLim raised too - 55-62 deg was noticeably shy of a real fighter's zoom-climb/dive
   // angle; the carrier game's dive bomber already runs safely at 1.28 rad (73 deg), so 66-72 is
   // conservative by comparison, not a leap into new territory.
-  p47:{ name:'P-47D Thunderbolt', rollAuth:1.08, pitchAuth:1.04, turn:0.90, gLim:6.5,
+  p47:{ name:'P-47D Thunderbolt', rollAuth:1.0, pitchAuth:0.98, turn:0.86, gLim:6.5,
         rollLim:1.56, pitchLim:1.15, stall:116*.44704, app:130*.44704, max:435*.44704, thrMin:34,
         hull:130, ammo:3400, bombs:2, rockets:8, gunDmg:1.0, gunRate:0.055, wing:12.4,
         col:0x6e7a63, band:0xf0f0e4 },
   // The Focke-Wulf stays agile, with a gentler centre response and more damping.
-  fw190:{ name:'Fw 190A-8', rollAuth:1.20, pitchAuth:0.92, turn:0.92, gLim:5.5,
+  fw190:{ name:'Fw 190A-8', rollAuth:1.35, pitchAuth:1.0, turn:0.98, gLim:5.5,
         stickExponent:1.18, controlDamping:0.94, aeroResponse:0.24,
         rollLim:1.56, pitchLim:1.20, stall:39, app:125*.44704, max:194, thrMin:32,
         hull:102, ammo:1800, bombs:1, rockets:0, gunDmg:1.5, gunRate:0.075, wing:10.5,
@@ -679,7 +681,7 @@ const AC={
   // 195 kg/m2, F 2890/16.1 = 180 kg/m2): stall and approach x0.959, turn x1.087. Roll/pitch,
   // gLim and hull have no PDF figure and stay as before. The single bomb (ETC 250, Ruestsatz R6
   // in the PDF only from the F-4) is kept for Sortie 7 only.
-  bf109:{ name:'Bf 109F-2', rollAuth:1.08, pitchAuth:1.03, turn:1.11, gLim:5.2,
+  bf109:{ name:'Bf 109F-2', rollAuth:1.13, pitchAuth:1.22, turn:1.15, gLim:5.2,
         rollLim:1.47, pitchLim:1.18, stall:34.5, app:105.5*.44704, max:176, thrMin:30,
         hull:88, ammo:1200, bombs:1, rockets:0, gunDmg:1.35, gunRate:0.085, wing:9.97,
         // Each gun keeps its own rounds and rate (PDF durations). dmg is per round x gunDmg:
@@ -690,7 +692,7 @@ const AC={
               {name:'MG 17',muzzle:'MuzzleRight',base:[-.16,.43,3.37],rounds:500,interval:25.5/500,round:'rifle',dmg:.25},
               {name:'MG 151',muzzle:'MuzzleCannon',base:[0,0,4.47],rounds:200,interval:15/200,round:'cannon',dmg:.625}],
         col:0x8d9384, band:0x3d4636 },
-  ju87:{ name:'Ju 87B-2 Stuka', rollAuth:0.87, pitchAuth:0.92, turn:0.79, gLim:5.0,
+  ju87:{ name:'Ju 87B-2 Stuka', rollAuth:0.76, pitchAuth:0.86, turn:0.75, gLim:5.0,
         rollLim:1.48, pitchLim:1.26, stall:37, app:150/3.6, max:113, thrMin:27,
         hull:115, ammo:1100, bombs:4, rockets:0, gunDmg:1.1, gunRate:0.10, wing:13.8,
         col:0x606950, band:0x343d2f },
@@ -701,11 +703,11 @@ const AC={
   // lower than the Bf109/Fw190: this aircraft's real advantage was outrunning a fight, not
   // out-turning one. gunDmg reflects 4x30mm MK108 cannon. The generous total ammo gives the
   // player enough time to use them throughout a sortie; it is a gameplay allowance.
-  me262:{ name:'Me 262A-1a/Jabo', rollAuth:1.10, pitchAuth:1.00, turn:0.80, gLim:5.0,
+  me262:{ name:'Me 262A-1a/Jabo', rollAuth:0.95, pitchAuth:0.92, turn:0.72, gLim:5.0,
         rollLim:1.56, pitchLim:1.15, stall:49, app:230/3.6, max:242, thrMin:42,
         hull:95, ammo:1200, bombs:2, rockets:0, gunDmg:3.0, gunRate:0.09, wing:12.51,
         col:0x626b58, band:0x33392a },
-  me163:{ name:'Me 163B Komet', rollAuth:1.08, pitchAuth:1.08, turn:1.20, gLim:5.4,
+  me163:{ name:'Me 163B Komet', rollAuth:1.08, pitchAuth:1.08, turn:1.05, gLim:5.4,
         stickExponent:1.20, controlDamping:0.94, aeroResponse:0.26,
         rollLim:1.53, pitchLim:1.18, stall:51, app:200/3.6, max:238, thrMin:33,
         hull:75, ammo:160, bombs:0, rockets:0, gunDmg:2.8, gunRate:0.14, wing:9.3,
@@ -877,7 +879,7 @@ async function loadRealWorld(){
 
   if(OSMManager.BUILD!==23||HistoricalObjectManager.BUILD!==21||LivingWorld.BUILD!==22||WorldVehicles.BUILD!==22) throw new Error('Terrain version mismatch. Reload Remagen.');
   document.getElementById('testVersionBannerText').textContent=
-    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 210 · MODULE 23';
+    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 211 · MODULE 23';
   heightProvider=new DEMHeightProvider(RTILE,'terrain-system/real/data/dem/');
   terrain=new TerrainManager(scene,RTILE,heightProvider);
   osmMgr=new OSMManager(scene,RTILE,terrain,'terrain-system/real/data/osm/');
@@ -2597,7 +2599,7 @@ function tryLoad(L,k,i,onReady,onFailed,lastError){
     return;
   }
   const url=list[i];
-  L.load(url+((['p47','me262','ju87','fw190','me163'].includes(k))?'?v=210':'?v=3'), gl=>{
+  L.load(url+((['p47','me262','ju87','fw190','me163'].includes(k))?'?v=211':'?v=3'), gl=>{
     try{
     const src=gl.scene||gl.scenes[0]; if(!src){ tryLoad(L,k,i+1,onReady,onFailed,new Error('empty GLB')); return; }
     const fix=savedFix(url) || knownFix(url);
@@ -4233,7 +4235,7 @@ function updateFlight(dt){
     if(P.landingRoll){updateLandingRoll(dt,load);return;}
     // ---- ground roll ----
     // Thrust spools up; rolling resistance and drag grow with speed.
-    GroundRun.step(P,dt,{jet:P.ac==='me262',power:SortieFeatures.Damage.power(P),massRatio:load.ratio,acceleration:P.ac==='p47'?8.1:undefined});
+    GroundRun.step(P,dt,{jet:P.ac==='me262',power:SortieFeatures.Damage.power(P),massRatio:load.ratio,acceleration:FlightDynamics.profile(P.ac).ground});
     if(typeof fieldServicePending!=="undefined"&&fieldServicePending&&P.spd<1){beginFieldService();return;}
     // steer with the stick's roll axis, tailwheel style — same sense as in the air
     P.heading += inputRoll*steerSign*Math.min(1,P.spd/40)*0.9*dt;
@@ -4269,27 +4271,8 @@ function updateFlight(dt){
   // ---- airborne ----
   STALL_SPD=d.stall; APP_SPD=d.app; MAX_SPD=P.ac==='p47'?P47Performance.maximum(P.pos.y):d.max; THR_MIN_SPD=d.thrMin;
   const stallSpd=speeds.stall;
-  // thrust -> target speed, modified by attitude, gear, flaps
-  let eff = THR_MIN_SPD + (MAX_SPD-THR_MIN_SPD)*P.throttle;
-  eff*=SortieFeatures.Damage.power(P);
-  eff -= Math.sin(P.pitch)*62*load.ratio + controls.flaps.mean*11 + P.gear*6 + (P.tankAttached?7:0)+controls.drag;
-  if(P.ac==='ju87')eff-=P.diveBrakeVisual*(30+Math.max(0,-P.pitch)*25);
-  if(P.ac==='me163' && (P.fuel<=0||P.throttle<0.01)){
-    // With the rocket off the Komet trades altitude for airspeed. Closing the
-    // throttle cannot conjure minimum jet thrust during its glide home.
-    P.spd+=(-1.1-P.spd*.008-9.81*Math.sin(P.pitch))*dt;
-  } else if(P.ac==='p47'){
-    P.spd+=P47Performance.gameplayAcceleration(P,{loadRatio:load.ratio,flaps:controls.flaps.mean,damage:SortieFeatures.Damage.power(P),drag:controls.drag,bank:P.roll})*dt;
-  } else if(P.ac==='me262'){
-    // Continue the jet's spool/acceleration after rotation; do not jump toward
-    // cruise speed with the propeller target-speed spring. Climbing costs energy.
-    Me262Performance.step(P,dt,{loadRatio:load.ratio,power:SortieFeatures.Damage.power(P),flaps:controls.flaps.mean,drag:controls.drag,bank:P.roll});
-  } else {
-    let acceleration=(eff-P.spd)*(P.ac==='me163'?1.15:.5)*load.acceleration;
-    if(acceleration>0&&departure.release<1)acceleration=Math.min(acceleration,departure.acceleration*load.acceleration*(1+2*departure.release));
-    P.spd+=acceleration*dt;
-  }
-  P.spd = Math.max(6,P.spd);
+  // speed toward throttle target is replaced by finite power, drag and energy.
+  FlightDynamics.step(P,dt,{kind:P.ac,loadRatio:load.ratio,power:SortieFeatures.Damage.power(P),flaps:controls.flaps.mean,drag:controls.drag,bank:P.roll,departure});
 
   // ---- attitude: stick POSITION still commands an attitude, exactly as before ----
   // The old code drove roll and pitch as RATES, so the aeroplane stayed wherever you left it
@@ -4302,7 +4285,8 @@ function updateFlight(dt){
   // Exact same change as torpedo-carrier.html's updateFlight; see its comment for the derivation.
   const dmgF = (P.hull < d.hull*0.6) ? (0.55+0.45*P.hull/(d.hull*0.6)) : 1.0;
   const auth = (P.spd<stallSpd ? 0.4 : 1.0)*dmgF;
-  const pitchRate=2.0*auth*d.pitchAuth*controls.pitch*load.inertia*configuration.authority, rollRate=4.8*auth*d.rollAuth*controls.roll*load.inertia*configuration.authority;
+  const feel=FlightDynamics.authority(P.ac,P.spd,stallSpd);
+  const pitchRate=2.0*auth*d.pitchAuth*feel.pitch*controls.pitch*load.inertia*configuration.authority, rollRate=4.8*auth*d.rollAuth*feel.roll*controls.roll*load.inertia*configuration.authority;
   const commandRoll=d.stickExponent?Math.sign(inputRoll)*Math.pow(Math.abs(inputRoll),d.stickExponent):inputRoll;
   const commandPitch=d.stickExponent?Math.sign(inputPitch)*Math.pow(Math.abs(inputPitch),d.stickExponent):inputPitch;
   const biasDecay = (P.gear>0.5)? 0.9 : 0.35;
@@ -4322,13 +4306,13 @@ function updateFlight(dt){
     // knife-edge -> turn, 70 degrees -> turn AND climb. Keep the full pitch
     // rotation for loops and the roll rate for barrel rolls.
     const energy=Math.max(.35,Math.min(1,P.spd/(Math.max(1,d.stall*load.speed+controls.stallPenalty)*1.8)));
-    const pull=Math.min(.95*d.pitchAuth,1.6*9.81*(d.gLim*configuration.gFactor-1)/Math.max(P.spd,60))*energy*controls.pitch*load.turn*configuration.authority;
+    const pull=Math.min(.95*d.pitchAuth*feel.pitch,1.6*9.81*(d.gLim*configuration.gFactor-1)/Math.max(P.spd,60))*energy*controls.pitch*load.turn*configuration.authority;
     const response=d.aeroResponse?1-Math.exp(-dt/d.aeroResponse):1;
     P.pitchVel=d.aeroResponse?(P.pitchVel||0)+(commandPitch*pull-(P.pitchVel||0))*response:commandPitch*pull;
     // Held stick still commands a full roll. Neutral stick now levels the
     // wings smoothly, following the shortest path even after a half roll.
     const bankErr=Math.atan2(Math.sin(P.roll-totalBias),Math.cos(P.roll-totalBias));
-    const rollAuthority=2.1*d.rollAuth*energy*controls.roll*load.inertia*configuration.authority;
+    const rollAuthority=2.1*d.rollAuth*feel.roll*energy*controls.roll*load.inertia*configuration.authority;
     // Neutral self-levels gently; held controls keep the original responsive roll.
     const rollCommand=(Math.abs(inputRoll)>0.075||Math.abs(inputPitch)>0.075)?commandRoll*steerSign*rollAuthority:
       Math.max(-rollAuthority,Math.min(rollAuthority,-bankErr*.7*d.rollAuth*energy));
@@ -4343,6 +4327,13 @@ function updateFlight(dt){
     let noseUpLimit=d.pitchLim*.92;
     const initialLimit=Math.asin(Math.min(.6,departure.rate/Math.max(1,P.spd)));
     if(departure.release<1)noseUpLimit=Math.min(noseUpLimit,initialLimit+(noseUpLimit-initialLimit)*departure.release);
+    if(P.ac==='p47'&&departure.release<1){
+      // Reserve some power for accelerating a loaded, gear-down departure.
+      // Do not let assisted pitch consume all energy just above the stall.
+      const levelAcceleration=P47Performance.gameplayAcceleration({...P,pitch:0},{loadRatio:load.ratio,flaps:controls.flaps.mean,damage:SortieFeatures.Damage.power(P),drag:controls.drag,bank:P.roll});
+      const sustainable=Math.asin(Math.max(.10,Math.min(.35,(levelAcceleration-.8)/9.81)));
+      noseUpLimit=Math.min(noseUpLimit,sustainable+(noseUpLimit-sustainable)*departure.release);
+    }
     if(P.ac==='me262'){
       const departure=Math.min(noseUpLimit,Math.asin(Math.min(.65,(15+Math.max(0,P.spd-55)*.075)/P.spd)));
       const speedBlend=Math.max(0,Math.min(1,(P.spd-80)/60));
@@ -4374,7 +4365,7 @@ function updateFlight(dt){
     // 50° of bank, which is why this played like flying straight ahead).
     const nLift=Math.max(1.05, Math.pow(P.spd/Math.max(1,stallSpd),2)*0.85);
     const gUse=Math.max(1.05, Math.min(d.gLim*configuration.gFactor, nLift));
-    const curve=P.ac==='bf109'?0.72:1;
+    const curve=feel.turn;
     const bank=bankTurnRate(P.roll,P.spd,gUse,d.turn)*curve*load.turn;
     // Bank alone still turns in AERO, while pulling tightens the turn. The
     // old AERO path removed this entirely, making even 90° of bank feel inert.
@@ -4515,7 +4506,7 @@ function beginLandingRoll(onStrip,gap){
 function updateLandingRoll(dt,load=SortieFeatures.Handling.sample(P)){
   const run=P.landingRoll;if(!run)return;
   const step=GroundRun.landing(P,dt,{jet:P.ac==='me262',skid:P.ac==='me163',offField:!run.onStrip,
-    power:SortieFeatures.Damage.power(P),massRatio:load.ratio,acceleration:P.ac==='p47'?8.1:undefined});
+    power:SortieFeatures.Damage.power(P),massRatio:load.ratio,acceleration:FlightDynamics.profile(P.ac).ground});
   P.heading+=inputRoll*steerSign*Math.min(.25,P.spd*.012)*dt;
   P.pos.x+=Math.sin(P.heading)*step.travel;P.pos.z+=Math.cos(P.heading)*step.travel;
   P.roll*=Math.exp(-dt*5);P.groundPose=null;
@@ -5173,58 +5164,23 @@ function initAudio(){
     actx.resume();FlightAtmosphere.prepareRadio(actx);
   }catch(e){ actx=null; return; }
   const master=actx.createGain(); master.gain.value=0.85; master.connect(actx.destination);
-  const eg=actx.createGain(); eg.gain.value=0;
-  const lp=actx.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=950;
-  const o1=actx.createOscillator(); o1.type='sawtooth'; o1.frequency.value=60;
-  const o2=actx.createOscillator(); o2.type='sawtooth'; o2.frequency.value=61;
-  o1.connect(lp); o2.connect(lp); lp.connect(eg); eg.connect(master);
-  const lfo=actx.createOscillator(); lfo.type='sine'; lfo.frequency.value=24;
-  const lfoG=actx.createGain(); lfoG.gain.value=0; lfo.connect(lfoG); lfoG.connect(eg.gain);
-  const nbuf=actx.createBuffer(1,actx.sampleRate,actx.sampleRate);
-  const nd=nbuf.getChannelData(0); for(let i=0;i<nd.length;i++) nd[i]=Math.random()*2-1;
-  const noise=actx.createBufferSource(); noise.buffer=nbuf; noise.loop=true;
-  const nbp=actx.createBiquadFilter(); nbp.type='bandpass'; nbp.frequency.value=210; nbp.Q.value=0.7;
-  const ng=actx.createGain(); ng.gain.value=0; noise.connect(nbp); nbp.connect(ng); ng.connect(master);
-  o1.start(); o2.start(); lfo.start(); noise.start();
-  eng={master,eg,lp,o1,o2,lfo,lfoG,nbp,ng,freq:60};
+  eng={master,piston:AircraftEngine.create(actx,master)};
   jetEngine=JetEngine.create(actx,master);
   rocketEngine=JetEngine.create(actx,master,{rocket:true});
+
 }
 function out(){ return eng?eng.master:(actx?actx.destination:null); }
 function updateAudio(dt){
-  if(!actx||!eng) return;
-  const flying=(state===ST.FLIGHT)&&P.alive;
-  const rpm=flying?(0.30+P.throttle*0.70):0;
-  const ct=actx.currentTime;
-  const isJet=JET_KINDS.includes(P.ac);
+  if(!actx||!eng)return;
+  const flying=state===ST.FLIGHT&&P.alive,kind=P.ac;
+  const damage=Math.max(0,(55-P.hull)/55);
   jetGunDuck=Math.max(0,jetGunDuck-dt);
-  jetEngine.update(dt,P.throttle,flying&&P.ac==='me262',Math.max(0,(55-P.hull)/55),P.ac==='me262'&&jetGunDuck>0?1:0);
-  rocketEngine.update(dt,P.throttle,flying&&P.ac==='me163'&&P.fuel>0&&P.throttle>.01,0,P.ac==='me163'&&jetGunDuck>0?1:0);
-  if(isJet){
-    // Keep every piston-engine source and its pulse modulator silent.
-    eng.eg.gain.setTargetAtTime(0,ct,.08);
-    eng.ng.gain.setTargetAtTime(0,ct,.08);
-    eng.lfoG.gain.setTargetAtTime(0,ct,.08);
-  } else {
-    eng.nbp.Q.setTargetAtTime(0.7,ct,0.15);
-    // the Jug's R-2800 sits lower and rougher than the 109's inline
-    const base=(P.ac==='p47')?42:52;
-    const tf=base+rpm*74+(P.spd/Math.max(1,MAX_SPD))*22;
-    eng.freq+=(tf-eng.freq)*Math.min(1,5*dt);
-    eng.o1.frequency.setTargetAtTime(eng.freq,ct,0.04);
-    eng.o2.frequency.setTargetAtTime(eng.freq*1.012,ct,0.04);
-    eng.lfo.frequency.setTargetAtTime(Math.max(6,eng.freq*0.42),ct,0.05);
-    eng.lp.frequency.setTargetAtTime(950,ct,0.15);
-    const vol=flying?(0.05+rpm*0.13):0;
-    eng.eg.gain.setTargetAtTime(vol,ct,0.12);
-    eng.lfoG.gain.setTargetAtTime(flying?vol*0.6:0,ct,0.12);
-    eng.nbp.frequency.setTargetAtTime(210,ct,0.15);
-    eng.ng.gain.setTargetAtTime(flying?0.015+rpm*0.04:0,ct,0.12);
-  }
-  // damaged engine misfiring under load - same hull<55 threshold the oil-on-canopy visual uses
-  const dmgF=Math.max(0,(55-P.hull)/55);
-  if(flying && !isJet && dmgF>0 && Math.random()<dmgF*dt*1.2) sfxSputter();
+  jetEngine.update(dt,P.throttle,flying&&kind==='me262'&&P.fuel>0,damage,jetGunDuck>0?1:0);
+  rocketEngine.update(dt,P.throttle,flying&&kind==='me163'&&P.fuel>0&&P.throttle>.01,0,jetGunDuck>0?1:0);
+  eng.piston.update(dt,kind,P.throttle,flying,{fuel:P.fuel>0,speed:P.spd,damage});
+  if(flying&&AircraftEngine.profiles[kind]&&P.fuel>0&&damage>0&&Math.random()<damage*dt*1.2)sfxSputter();
 }
+
 function nburst(dur,type,freq,q,peak,delay,curve){
   if(!actx) return; const ct=actx.currentTime, o2=out();
   const n=Math.max(1,Math.floor(actx.sampleRate*dur));
@@ -5532,6 +5488,7 @@ function showBrief(i){
   document.getElementById('brStamp').textContent=(m.ac==='bf109'||m.ac==='fw190'||m.ac==='ju87'||m.ac==='me262'||m.ac==='me163')?'Luftwaffe':'Secret';
   document.getElementById('brText').innerHTML=m.text
     +'<br><br><b>AIRCRAFT</b> '+AC[m.ac||'p47'].name
+    +'<br><b>HANDLING</b> '+FlightDynamics.profile(m.ac||'p47').character
     +'<br><b>ARMAMENT</b> Guns'+(loadout.bombs?' · '+loadout.bombs+' bombs':'')
     +(loadout.rockets?' · '+loadout.rockets+' rockets':'')
     +((m.ac==='me262'||m.ac==='me163')?'<br><b>INTERCEPTION</b> Climb above the clouds; the flight limit is 8,000 m. Contacts patrol inland, not along the map edge.':'')
@@ -5928,7 +5885,7 @@ function init(){
   buildMenu();
   // menu wiring
   document.getElementById('startBtn').onclick=()=>showBrief(selectedMission);
-  document.getElementById('pauseMainMenu').onclick=async()=>{globalThis.sortieCheckpoint?.save();await globalThis.sortieCheckpoint?.flush();exitToMenuFromPause(true);window.location.href='index.html?v=210';};
+  document.getElementById('pauseMainMenu').onclick=async()=>{globalThis.sortieCheckpoint?.save();await globalThis.sortieCheckpoint?.flush();exitToMenuFromPause(true);window.location.href='index.html?v=211';};
   document.getElementById('logBtn').onclick=()=>{ show('menu',false); showLogbook(); };
   document.getElementById('skipLaunchPreview').onclick=()=>finishLaunchIntro();
   document.getElementById('brBack').onclick=()=>{ show('brief',false); show('menu',true);if(navigation){navigation.reset();navigation.button.style.display='none';} state=ST.MENU; };
