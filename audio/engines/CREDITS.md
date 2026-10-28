@@ -1,4 +1,21 @@
-# Recorded piston engine audio — Build 213
+# Recorded piston engine audio — Build 215
+
+## Build 215 — cleaner loaded voices (29 October 2026)
+
+P-47, Fw 190 and Avenger use the prepared 25-second loaded recordings with
+persistent cabin tones and hiss reduced and circular envelope leveling. The same
+adapted source families now supply the SBD and Zero power layers, with quicker
+playback at high power. These remain declared substitutes, not authenticated
+R-1820/Sakae recordings or measured engine RPM. Accepted idle recordings and
+processing, Bf 109, Ju 87, Corsair and jet/rocket audio are unchanged.
+
+Output rises across idle, 25%, 50%, 75% and full power. Actual Web Audio rendering
+checks sixty-second sustain, short level dips, clipping headroom, throttle return,
+stop silence, cache isolation and missing-file reporting. Source cuts, processing,
+output SHA-256 and measured sample statistics are in `detail-provenance.json`.
+Reproduce with `scripts/engine-audio/refine-loaded-radials.py --source-dir <external-source-dir>`
+after acquiring the same verified sources as Build 214. Existing source licenses
+and attribution below apply. Raw WAV sources remain outside the checkout.
 
 ## Build 214 — loaded radial sound (28 October 2026)
 
@@ -49,11 +66,11 @@ Edits: mono downmix, 28–6500 Hz filtering, slow level correction, selected cut
 
 | Aircraft | Source and limitation |
 | --- | --- | --- |
-| P-47D | P-47 R-2800 ground warm-up. Powered layer: source 35.0–50.5 s, 1 s seam, 14.5 s loop. Full-power impression is edited warm-up audio, not a measured full-power recording. |
+| P-47D | P-47 ground idle; cleaned Bearcat R-2800 airborne power layer. Adapted installation, unmeasured source RPM. |
 | Corsair | Same R-2800 family source from P-47; exhaust/three-blade installation approximate. |
-| Fw 190 A-8 | BMW-powered A-5 low-speed ground/taxi recording. Powered layer: source 2.0–15.3 s, .8 s seam, 12.5 s loop. Not a stationary test-stand/full-power recording. |
-| Avenger / Zero | Adapted BMW 14-cylinder radial ground recording. These are not R-2600 or Sakae recordings. |
-| SBD Dauntless | Adapted single R-2800 radial recording replaces the B-17 drone. Not an R-1820 recording; no claim to reconstruct nine-cylinder firing order. |
+| Fw 190 A-8 | BMW-powered A-5 ground idle; cleaned composite R-2800/R-2600 loaded layer. Not an original BMW full-power take. |
+| Avenger / Zero | BMW ground idle; cleaned adapted composite R-2800/R-2600 loaded layer. Not original Avenger or Sakae full-power recordings. |
+| SBD Dauntless | Single R-2800 ground idle and cleaned Bearcat airborne power layer. Not an R-1820 recording or nine-cylinder firing-order reconstruction. |
 | Bf 109F-2 | Accepted Build 212 DB 601-powered E-3 run-up unchanged. Legacy G-6 also uses this voice; not DB 605 audio. |
 | Ju 87B-2 | Accepted Build 212 Stuka-labelled USC archival effect unchanged; exact engine provenance unverified. |
 | Me 262 / Komet | Procedural jet/rocket audio unchanged. |

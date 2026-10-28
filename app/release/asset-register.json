@@ -1,19 +1,19 @@
 {
   "schema": 1,
   "reviewedOn": "2026-10-23",
-  "build": 214,
+  "build": 215,
   "status": "OPEN — source declarations checked; no external rights authorization obtained",
   "payload": {
-    "bytes": 268370231,
-    "fileCount": 339,
+    "bytes": 268383267,
+    "fileCount": 342,
     "modelCount": 36,
-    "manifestSha256": "0979f2d0077cbd737352ba232b860c585cbaf681287edbd24c915f0b5bf60b95"
+    "manifestSha256": "bae6dbb7547144d39f6ab06878692868e5cb83ab2b7e03588175dce3704cd823"
   },
   "files": [
     {
       "path": "ASSET-CREDITS.md",
-      "bytes": 32079,
-      "sha256": "37ef4667d6b7158dc0a6176c2590cb2e17dfbb0e3f6eefc1f37471708aaabe6d",
+      "bytes": 33180,
+      "sha256": "7e372508d4c492cbf7ac8b4c378c0b761a59da4a05d9d361d65268600108eb77",
       "kind": "code-or-notice"
     },
     {
@@ -53,6 +53,12 @@
       "kind": "code-or-notice"
     },
     {
+      "path": "assets/CAMPAIGN-ART.md",
+      "bytes": 2707,
+      "sha256": "b28b032aa9ec9d2a0fcd9e14c4c5eafbc32cda723d242bd49b16af4e62577405",
+      "kind": "code-or-notice"
+    },
+    {
       "path": "assets/aircraft/B17-CREDITS.txt",
       "bytes": 1103,
       "sha256": "6d6acec9c48b256abfc77783d712ae657186cc2a1b154b7f5d05a9a675e5dd56",
@@ -68,6 +74,12 @@
       "path": "assets/aircraft/P47-CREDITS.txt",
       "bytes": 1345,
       "sha256": "c87c6e7b15bdbffb0c3144c75a8fa4fa5d915c4b722ca5c3bf1ac0c1d64fed74",
+      "kind": "code-or-notice"
+    },
+    {
+      "path": "assets/aircraft/P47-PERFORMANCE.md",
+      "bytes": 4121,
+      "sha256": "a9e0df1fd74f05cf628e0eef8d6b65e9bd4d789bcdc301b8626f80e939fd8cd5",
       "kind": "code-or-notice"
     },
     {
@@ -396,14 +408,14 @@
     },
     {
       "path": "audio/aircraft-engine.js",
-      "bytes": 6993,
-      "sha256": "b86f90aa25bb9dd82b2c33f385c7537ca994efb36448206bd8e91878a8e990ea",
+      "bytes": 7322,
+      "sha256": "6d02cce8f2aa341da93f74fb52a9e401c475a4abf9fe0e192cfe3ca7b99b2804",
       "kind": "code-or-notice"
     },
     {
       "path": "audio/engines/CREDITS.md",
-      "bytes": 5920,
-      "sha256": "d499af2e4a7aa6bfefaaa0368d069eb49f717a0bfe1c48363a38943939288f83",
+      "bytes": 6940,
+      "sha256": "8d8c053556b6fe874a039506bce41708f3bdcf2e83275b641f719ce5ad36df99",
       "kind": "code-or-notice"
     },
     {
@@ -431,6 +443,12 @@
       "kind": "code-or-notice"
     },
     {
+      "path": "audio/engines/detail-provenance.json",
+      "bytes": 3630,
+      "sha256": "759c32d7c3765f7a4620d9e6a5b0594fb74d15ab526536307f83fc78debd4b90",
+      "kind": "code-or-notice"
+    },
+    {
       "path": "audio/engines/jumo-idle.wav",
       "bytes": 312044,
       "sha256": "38d9850526920424bd60ff68ff0e92f8db07097e96372a8cb68833b0147bd2f7",
@@ -455,15 +473,15 @@
       "kind": "code-or-notice"
     },
     {
-      "path": "audio/engines/r2800-idle.wav",
-      "bytes": 453644,
-      "sha256": "19de18c3aab3beb37ded0f8547bc721d0040eb88576a8e829eb8b09e895f7edf",
+      "path": "audio/engines/r2800-detail-power.wav",
+      "bytes": 1600044,
+      "sha256": "84eb7844f3ac1cd09eeb20ee2264dd5569f74e6ff98be194e9d63d4a1511541e",
       "kind": "code-or-notice"
     },
     {
-      "path": "audio/engines/r2800-loaded-power.wav",
-      "bytes": 1600044,
-      "sha256": "24edb86554e38e2c13e0518409e99e7706427de0956091e130ec31ecdfb21db7",
+      "path": "audio/engines/r2800-idle.wav",
+      "bytes": 453644,
+      "sha256": "19de18c3aab3beb37ded0f8547bc721d0040eb88576a8e829eb8b09e895f7edf",
       "kind": "code-or-notice"
     },
     {
@@ -473,9 +491,9 @@
       "kind": "code-or-notice"
     },
     {
-      "path": "audio/engines/radial14-loaded-power.wav",
+      "path": "audio/engines/radial14-detail-power.wav",
       "bytes": 1600044,
-      "sha256": "e62643298310c3b5ec60a8c08e5823591317dd7df654822348a5e0cef7f057aa",
+      "sha256": "5384781cdeef289b60e1fcd09f6649f92743ef9b3031ae7992cb070b559088e5",
       "kind": "code-or-notice"
     },
     {
@@ -643,7 +661,7 @@
     {
       "path": "index.html",
       "bytes": 7260,
-      "sha256": "fbeabb7bdf50696417c5f3002a89e1b53b034aa049f3ba4ae48db9bfe278fcea",
+      "sha256": "3047bf10fa23b3b7e7f7879fb1144c4ed30caf306751819a8c641d694e35fd28",
       "kind": "code-or-notice"
     },
     {
@@ -775,7 +793,7 @@
     {
       "path": "remagen-mission.html",
       "bytes": 366919,
-      "sha256": "d5f7b445eb85f2e332517d19424af90a9e5d9464bd4bf894e17f15196c6de5ef",
+      "sha256": "cfc8a790cff0dd44157a55848d87bfc9d8886049d5c15df32b0c227f1ccf7389",
       "kind": "code-or-notice"
     },
     {
@@ -1969,7 +1987,7 @@
     {
       "path": "torpedo-carrier.html",
       "bytes": 429772,
-      "sha256": "98af6bec01558cfd753e0d7fe1a14f6cd6043b3e5e67347ca652a76aac1940b6",
+      "sha256": "648c5e8e00f01faa33e17fc88003a263ab8425f9c98bc61993acf2ecfb6eabdc",
       "kind": "code-or-notice"
     },
     {
@@ -2040,8 +2058,8 @@
     },
     {
       "path": "app-native.js",
-      "bytes": 27135,
-      "sha256": "1190961efd8977c63e10d7a6fc79db573c3576a90a08404c76f4345f1ba4d9f9",
+      "bytes": 27263,
+      "sha256": "20cc1f39416e5ee56a4650cf65d502b54ab193cf9e012e462bb593d923fc5fab",
       "kind": "code-or-notice"
     }
   ],
@@ -3112,7 +3130,7 @@
         "audio/*.js",
         "audio/engines/**"
       ],
-      "status": "Recorded piston loops: Fight2FlyPhoto CC BY 3.0, craigsmith CC0, and Pole Position free SONNISS GDC Bundle License v2.0 recordings incorporated in this game. Build 214 loaded P47 source and composite Fw190/Avenger voices are explicit; legacy substitutions remain documented. Sources, hashes, cuts and limits in provenance.json, loaded-provenance.json and CREDITS.md. Raw source files excluded from checkout and offline payload. Jet/rocket/effects remain procedural."
+      "status": "Recorded piston loops: Fight2FlyPhoto CC BY 3.0, craigsmith CC0, and Pole Position free SONNISS GDC Bundle License v2.0 recordings incorporated in this game. Build 215 cleans loaded voices and extends them to SBD/Zero with declared substitutions; legacy substitutions remain documented. Sources, hashes, cuts and limits in provenance.json, loaded-provenance.json, detail-provenance.json and CREDITS.md. Raw source files excluded from checkout and offline payload. Jet/rocket/effects remain procedural."
     },
     {
       "paths": [

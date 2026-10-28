@@ -1,5 +1,22 @@
 # Torpedo-Bomber — Übergabe an Claude Code
 
+**29.10.2026, Build 215: vorbereitete Soundkorrekturen wiederhergestellt und veröffentlicht.**
+Vorheriger Upload endete vor dem Commit; remote blieb Build 214. Erhaltene 215-
+Dateien und WAVs übernommen, fehlenden Sampler auf dem aktuellen 214-Stand ergänzt.
+P47/Fw190/Avenger: Kabinentöne/Hiss reduziert, fertige Loops zirkulär gepegelt.
+SBD/Zero: gleiche ausdrücklich angenäherte Lastquellen, höhere Power-Playbackrate.
+Lautstärke steigt über fünf Leistungsstufen. Akzeptierte Idle-Renderings exakt wie214;
+Bf109, Ju87, Corsair, Jets/Komet numerisch unverändert. Keine Flugphysik geändert.
+Neue WAVs/Generator/Provenienz, Cache215 und Offline-Payload; alte214-Lastdateien
+im Repo als Historie erhalten, aus dem App-Payload ausgeschlossen.
+Erneute echte WebAudio-Prüfung bestanden; fünf 60s-Dauerrenderings: kurzfristige
+Pegelschwankung 0.43–0.72dB, Peak mit Reserve. Syntax und Offline-Hashes/Closure
+bestanden. 30 echte Flotten-/Soundfälle bei20/60/120FPS bestanden.
+Testdaten: app/release/detail-engine-validation.json. Kein iPad-Hörtest.
+Build214-CI hatte bereits sechs Gameplay-Browserfehler (Aircraft-Systems, Combat,
+Deck-Nacht, Ditch-Formation, Field-Landing und Ship-Contact);
+diese Soundveröffentlichung ändert weder deren Code noch die Tests.
+
 **28.10.2026, Build 214: Lastklang P47/Fw190/Avenger nach erneutem Feedback ersetzt.**
 P47 wurde als Güterzug/zu langsam, Fw190/Avenger bei Vollgas als Leerlauf kritisiert.
 Sound zuerst; gemeldetes P47-Abhebeproblem bleibt offen, keine Flugabstimmung geändert.
