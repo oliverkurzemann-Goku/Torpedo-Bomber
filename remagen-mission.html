@@ -4214,19 +4214,20 @@ function p47CoreOptions(load,controls){
     gear:P.gear,flaps:controls.flaps.mean,tank:!!P.tankAttached,clFactor:(vs/(vs+controls.stallPenalty))**2,
     elevator:controls.pitch,extraDrag:controls.drag*.15,gain:P47Core.gain}};
 }
-function updateP47Core(dt,d,load,controls,speeds,departure){
+function updateP47Core(dt,d,load,controls,speeds,departure,configuration){
   const {m,o}=p47CoreOptions(load,controls),stallSpd=speeds.stall,y0=P.pos.y;
   const atm=FlightCore.atmosphere(P.pos.y),W=m.mass*load.ratio*FlightCore.G;
   const lim=FlightCore.loadLimits(m,Math.max(1,P.spd),atm.rho,W,o);
   const dmgF=(P.hull<d.hull*0.6)?(0.55+0.45*P.hull/(d.hull*0.6)):1.0;
   const auth=(P.spd<stallSpd?0.4:1.0)*dmgF,feel=FlightDynamics.authority(P.ac,P.spd,stallSpd);
-  const rollRate=4.8*auth*d.rollAuth*feel.roll*controls.roll*load.inertia;
-  const pitchRate=2.9*auth*d.pitchAuth*feel.pitch*controls.pitch*load.inertia;
+  // Same attitude-spring constants as the shared law below (Build 214/215), gear/flap derate included.
+  const rollRate=4.8*auth*d.rollAuth*feel.roll*controls.roll*load.inertia*configuration.authority;
+  const pitchRate=2.9*auth*d.pitchAuth*feel.pitch*controls.pitch*load.inertia*configuration.authority;
   const biasDecay=(P.gear>0.5)?0.9:0.35;
   P.rollBias=Math.max(-0.16,Math.min(0.16,(P.rollBias||0)*(1-biasDecay*dt)));
   const totalBias=P.rollBias+controls.bias,zeta=d.controlDamping||0.80;
-  // Path time constant of the lift (s), compressed by the declared gain: sets the pitch loop's damping.
-  const tau=2*m.mass*load.ratio/(atm.rho*Math.max(20,P.spd)*m.S*m.lift)/P47Core.gain;
+  // Flight-path lag behind the attitude (s), compressed by the declared gain: caps the attitude law.
+  const tau=FlightCore.pathLag(m,P.spd,P.pos.y,load.ratio)/P47Core.gain;
   let command;
   if(aeroMode){
     const bankErr=Math.atan2(Math.sin(P.roll-totalBias),Math.cos(P.roll-totalBias));
@@ -4235,7 +4236,7 @@ function updateP47Core(dt,d,load,controls,speeds,departure){
       Math.max(-rollAuthority,Math.min(rollAuthority,-bankErr*.9*Math.max(.6,feel.roll)));
     P.roll=Math.atan2(Math.sin(P.roll+P.rollVel*dt),Math.cos(P.roll+P.rollVel*dt));
     // Pull is a load factor: neutral holds the flight path, full stick the most the wing can give.
-    const pull=inputPitch;
+    const pull=inputPitch;P.pitchRef=null;
     command=(s,V,l)=>{const hold=Math.max(l.min,Math.min(l.max,FlightCore.holdLoad(s.pitch,s.roll,0,.5)));
       return pull>=0?hold+pull*(l.max-hold):hold+pull*(hold-l.min);};
   }else{
@@ -4262,17 +4263,26 @@ function updateP47Core(dt,d,load,controls,speeds,departure){
     }
     const commandPitch=d.stickExponent?Math.sign(inputPitch)*Math.pow(Math.abs(inputPitch),d.stickExponent):inputPitch;
     const pitchTarget=commandPitch>0?Math.min(commandPitch*d.pitchLim*.92,noseUpLimit):commandPitch*d.pitchLim*.92;
-    // Critically damped with the lift lag: gain no higher than 0.5/tau.
-    const k=Math.min(pitchRate*.65,.5/tau);
-    let rate=k*(pitchTarget-P.pitch);
-    if(P.pitch>d.pitchLim)rate=Math.min(rate,0);if(P.pitch<-d.pitchLim)rate=Math.max(rate,0);
-    command=(s,V)=>FlightCore.holdLoad(s.pitch,s.roll,V*rate/(FlightCore.G*P47Core.gain));
+    // The unchanged Build 215 attitude spring is the reference path; the wing flies it as far as its
+    // load factor allows (feed-forward of the reference rate, path lag tau corrects the remainder).
+    // Re-sync whenever the attitude was set from outside the core (relaunch, checkpoint, ground, AERO).
+    if(!Number.isFinite(P.pitchRef)||P.p47CorePitch!==P.pitch){P.pitchRef=P.pitch;P.pitchRefVel=0;}
+    P.pitchRefVel+=(pitchRate*pitchRate*(pitchTarget-P.pitchRef)-2*zeta*pitchRate*P.pitchRefVel)*dt;
+    P.pitchRef+=P.pitchRefVel*dt;
+    // No wind-up while the wing is at its limit: the reference stays within 0.3 rad of the real path.
+    P.pitchRef=Math.max(P.pitch-.3,Math.min(P.pitch+.3,P.pitchRef));
+    const ref=P.pitchRef,refVel=P.pitchRefVel;
+    command=(s,V)=>{let rate=refVel+(ref-s.pitch)/tau;
+      if(s.pitch>d.pitchLim)rate=Math.min(rate,0);if(s.pitch<-d.pitchLim)rate=Math.max(rate,0);
+      return FlightCore.holdLoad(s.pitch,s.roll,V*rate/(FlightCore.G*P47Core.gain));};
   }
   const s={spd:P.spd,pitch:P.pitch,heading:P.heading,roll:P.roll,nLoad:P.nLoad||1,power:P.groundPower??P.throttle,altitude:P.pos.y};
   const pitch0=P.pitch;
-  P.p47Core=FlightCore.step(m,s,dt,{...o,command});
+  // Elevator damage already slows the Normal attitude law (pitchRate); in AERO it caps the pull.
+  P.p47Core=FlightCore.step(m,s,dt,{...o,elevator:aeroMode?o.elevator:1,command});
   P.spd=s.spd;P.heading=s.heading;P.roll=s.roll;P.nLoad=s.nLoad;P.groundPower=s.power;
   P.pitch=s.pitch;P.pitchVel=dt>0?Math.atan2(Math.sin(P.pitch-pitch0),Math.cos(P.pitch-pitch0))/dt:0;
+  P.p47CorePitch=P.pitch;
   if(P.spd<stallSpd){if(!P.stallWarnT||P.stallWarnT<=0){P.stallWarnT=1.6;flash('STALL',600);sfxAlarm();}}
   if(P.stallWarnT>0)P.stallWarnT-=dt;
   const climb=dt>0?(s.altitude-y0)/dt:0;
@@ -4304,7 +4314,7 @@ function updateFlight(dt){
     // steer with the stick's roll axis, tailwheel style — same sense as in the air
     P.heading += inputRoll*steerSign*Math.min(1,P.spd/40)*0.9*dt;
     P.roll*=Math.max(0,1-3*dt); P.pitch*=Math.max(0,1-3*dt);
-    P.rollVel=0; P.pitchVel=0; P.nLoad=1;   // wheels down: no airborne rotational inertia carries over
+    P.rollVel=0; P.pitchVel=0; P.nLoad=1; P.pitchRef=null;   // wheels down: no airborne rotational inertia carries over
     // Raise the tail as the wing takes weight, then rotate with the pilot's stick.
     const vr=(P.ac==='p47'?speeds.stall:d.stall*load.speed+controls.stallPenalty)*1.12;
     const rotationTarget=P.spd>vr*.85&&inputPitch>.15?.07:0;
@@ -4339,7 +4349,7 @@ function updateFlight(dt){
   if(P.ac==='p47'&&P47Core.on){
     // Computed flight core: speed, load factor, turn and climb from forces solved from the
     // published P-47 figures (flight-core.js, FLIGHT-CORE.md). The stick laws stay the game's.
-    vs=updateP47Core(dt,d,load,controls,speeds,departure);
+    vs=updateP47Core(dt,d,load,controls,speeds,departure,configuration);
   }else{
   // speed toward throttle target is replaced by finite power, drag and energy.
   FlightDynamics.step(P,dt,{kind:P.ac,loadRatio:load.ratio,power:SortieFeatures.Damage.power(P),flaps:controls.flaps.mean,drag:controls.drag,bank:P.roll,n:P.nLoad||1,departure});
@@ -4706,7 +4716,7 @@ function relaunch(){
   const spawnX=AF_X-RWY_LEN/2+140;
   P.pos.set(spawnX, terrain.getHeight(spawnX,AF_Z)+2.0, AF_Z);
   P.heading=Math.PI/2; P.pitch=0; P.roll=0; P.spd=0; P.vSpeed=0;
-  P.pitchVel=0; P.rollVel=0; P.nLoad=1;
+  P.pitchVel=0; P.rollVel=0; P.nLoad=1; P.pitchRef=null;
   P.onGround=true; P.groundPower=0; P.touchResolved=true; P.throttle=0.0; setThrottleUI(0);
   P.gear=1; P.gearTgt=1; P.flap=0; P.flapTgt=0;
   if(P.ac==='me163'){

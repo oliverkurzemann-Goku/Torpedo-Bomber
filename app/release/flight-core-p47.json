@@ -73,30 +73,30 @@
   "vmaxAt1000m_ms": 160.9,
   "45%Vmax_gain2.2": {
    "entrySpeed": 72.4,
-   "seconds": 15.28,
-   "endSpeed": 89.2,
-   "altitudeChange": 0.5,
+   "seconds": 15.32,
+   "endSpeed": 89.3,
+   "altitudeChange": 0,
    "bankDeg": 57
   },
   "45%Vmax_gain1": {
    "entrySpeed": 72.4,
-   "seconds": 37.83,
-   "endSpeed": 109.6,
-   "altitudeChange": 0.5,
+   "seconds": 37.88,
+   "endSpeed": 109.7,
+   "altitudeChange": 0,
    "bankDeg": 57
   },
   "70%Vmax_gain2.2": {
    "entrySpeed": 112.6,
-   "seconds": 8.28,
-   "endSpeed": 100.6,
-   "altitudeChange": -10.2,
+   "seconds": 8.47,
+   "endSpeed": 101.5,
+   "altitudeChange": -13.4,
    "bankDeg": 77
   },
   "70%Vmax_gain1": {
    "entrySpeed": 112.6,
-   "seconds": 20,
-   "endSpeed": 97.7,
-   "altitudeChange": -48.4,
+   "seconds": 21.05,
+   "endSpeed": 102.5,
+   "altitudeChange": -68.8,
    "bankDeg": 77
   }
  },
@@ -115,39 +115,39 @@
  "loop": {
   "from140": {
    "complete": true,
-   "seconds": 7.4,
-   "minSpeed": 107.8,
-   "altitudeChange": -8
+   "seconds": 7.1,
+   "minSpeed": 107.4,
+   "altitudeChange": -2
   },
   "from140_gain1": {
    "complete": true,
-   "seconds": 18.9,
-   "minSpeed": 72.7,
-   "altitudeChange": -67
+   "seconds": 18,
+   "minSpeed": 71.9,
+   "altitudeChange": -8
   }
  },
  "aeroGate_ms": {
-  "gain": 93.2,
-  "physics": 131.8
+  "gain": 93.9,
+  "physics": 132.8
  },
  "frameRate": {
   "20": {
-   "speed": 109.7162,
-   "heading": 5.26751,
-   "altitude": 1565.297
+   "speed": 110.6013,
+   "heading": 5.57027,
+   "altitude": 1536.846
   },
   "60": {
-   "speed": 109.7162,
-   "heading": 5.26751,
-   "altitude": 1565.297
+   "speed": 110.6013,
+   "heading": 5.57027,
+   "altitude": 1536.846
   },
   "120": {
-   "speed": 109.7162,
-   "heading": 5.26751,
-   "altitude": 1565.297
+   "speed": 110.6013,
+   "heading": 5.57027,
+   "altitude": 1536.846
   }
  },
- "energyDrift60sPct": 0.0047,
+ "energyDrift60sPct": 0.0054,
  "sources": {
   "name": "P-47D Thunderbolt (R-2800-59, 2600 bhp WEP)",
   "weightLb": 12731,

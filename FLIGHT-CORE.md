@@ -41,8 +41,11 @@ Die 32 000-ft-Werte fließen nicht ein (im Original geschätzt, über der Spielh
 - Auftrieb: `n_max = min(Struktur, CLmax·q·S/W)`; `CLmax` clean und mit Klappen aus den Stalltests:
   `CLmax = 2W/(ρ₀·S·Vs²)` → 1,282 / 1,796.
 - Auftriebs-Steigung: Helmbold `a = 2πA/(2+√(A²+4))` = 4,41 /rad.
-- Bahn: das Lastvielfache baut sich mit der Bahn-Zeitkonstante `T_θ2 = 2m/(ρ·V·S·a)` auf
-  (Auftriebsreaktion; bei 130 m/s auf Meereshöhe 0,59 s). Die Flugbahn dreht mit
+- Bahn: Die Flugbahn folgt der Längslage mit der Bahn-Zeitkonstante `T_θ2 = 2m/(ρ·V·S·a)`
+  (Auftriebsreaktion; bei 130 m/s auf Meereshöhe 0,59 s). Die Längslage selbst (Anstellwinkel-
+  Schwingung) gilt als schnell dagegen — es gibt keine Trägheitsdaten —, deshalb liefert der Flügel
+  das vom Steuergesetz verlangte Lastvielfache sofort, und `T_θ2` begrenzt, wie schnell das
+  Nick-Steuergesetz die Bahn drehen darf. Die Flugbahn dreht mit
   `dγ/dt = g/V·(n·cos φ − cos γ)`, `dψ/dt = g/V·n·sin φ/cos γ` — in Vektorform integriert, damit ein
   Looping durch die Senkrechte geht. Fester 120-Hz-Teilschritt: Ergebnis ist von der Bildrate unabhängig.
 - Kompressibilität: Lock'sches Gesetz `ΔCD = 20·(M − Mcrit)⁴` über `Mcrit`.
@@ -103,8 +106,10 @@ Masse im Spiel: 5 775 kg × Beladungsfaktor aus `SortieFeatures.Handling.sample`
 - **Normal-Modus**: Knüppel quer = Querlage einer Horizontalkurve mit demselben Anteil der
   verfügbaren Last wie im bisherigen Gesetz (voller Ausschlag = engste Kurve, die der Flügel bei
   dieser Fahrt halten kann; bei wenig Fahrt automatisch flacher, mindestens 30°). Knüppel längs =
-  Bahnwinkel, selbstzentrierend, dieselben Ziele und Startgrenzen wie bisher. Der Nick-Regler ist
-  mit der Bahn-Zeitkonstante kritisch gedämpft.
+  Bahnwinkel, selbstzentrierend: die unveränderte Lage-Feder aus Build 214/215 (gleiche Ziele,
+  Startgrenzen, Dämpfung) erzeugt die Sollbahn; der Flügel fliegt sie, soweit sein Lastvielfaches
+  reicht (Vorsteuerung der Sollrate, Rest über `T_θ2`). Innerhalb der Grenzen also das gewohnte
+  Nickgefühl, an der Grenze (wenig Fahrt, hohe Last) entscheidet die Physik.
 - **AERO**: Ziehen = Lastvielfaches (neutral hält die Bahn, voll = was der Flügel kann),
   Rollen wie bisher.
 - Rollrate unverändert aus FLIGHT-ENVELOPE.md (Quelle B, ±30 %).
