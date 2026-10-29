@@ -126,6 +126,10 @@
    "altitudeChange": -67
   }
  },
+ "aeroGate_ms": {
+  "gain": 93.2,
+  "physics": 131.8
+ },
  "frameRate": {
   "20": {
    "speed": 109.7162,

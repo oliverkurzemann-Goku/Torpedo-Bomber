@@ -53,6 +53,8 @@ function loop(V0,gain){const s={spd:V0,pitch:0,heading:0,roll:0,nLoad:1,power:1,
   turned+=Math.abs(Math.atan2(Math.sin(s.pitch-prev),Math.cos(s.pitch-prev)));prev=s.pitch;minV=Math.min(minV,s.spd);t+=1/60;}
  return {complete:turned>=2*Math.PI,seconds:r(t,1),minSpeed:r(minV,1),altitudeChange:r(s.altitude-1000,0)};}
 out.loop={from140:loop(140,F.GAME.manoeuvreGain),from140_gain1:loop(140,1)};
+// AERO gate: lowest entry speed whose full-pull loop stays above the 1-g stall (1500 m), +8 %
+out.aeroGate_ms={gain:r(F.aeroEntry(m),1),physics:r(F.aeroEntry(m,1),1)};
 // frame-rate independence: same 10 s manoeuvre at 20/60/120 FPS
 const fr={};for(const fps of [20,60,120]){const s={spd:120,pitch:0,heading:0,roll:1.0,nLoad:1,power:.8,altitude:1500};
  fly(s,10,fps,{throttle:1,command:(st)=>F.holdLoad(st.pitch,st.roll,.3)});fr[fps]={speed:r(s.spd,4),heading:r(s.heading,5),altitude:r(s.altitude,3)};}

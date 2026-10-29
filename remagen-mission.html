@@ -4724,6 +4724,8 @@ function relaunch(){
 }
 function startMission(i){
   if(globalThis.sortieCheckpoint&&!globalThis.sortieCheckpoint.restoring)globalThis.sortieCheckpoint.clear();
+  // Solve the P-47 core and its loop gate now (~0.2 s once), not on the first AERO tap in flight.
+  if((MISSIONS[i]?.ac||'p47')==='p47'&&P47Core.on)aeroGateSpeed('p47');
   bombCue.reset();
   if(navigation)navigation.reset();
   finishLaunchIntro(false);
@@ -5659,10 +5661,15 @@ function showLogbook(){
 // ============================================================
 //  INPUT
 // ============================================================
+// Minimum AERO entry speed (TAS): the computed P-47 core simulates its own loop; others keep the envelope.
+function aeroGateSpeed(kind){
+  if(kind==='p47'&&P47Core.on){const m=P47Core.model||(P47Core.model=FlightCore.model('p47'));return Math.max(1.5*FlightCore.stallSpeed(m,0),FlightCore.aeroEntry(m,P47Core.gain));}
+  return FlightEnvelope.aeroGate(kind);
+}
 function toggleAero(){
   if(state!==ST.FLIGHT||!P.alive)return;
   const d=acDef(),agl=P.pos.y-groundY(P.pos.x,P.pos.z);
-  const gate=Math.max(d.stall*1.3,FlightEnvelope.aeroGate(P.ac));
+  const gate=Math.max(d.stall*1.3,aeroGateSpeed(P.ac));
   if(!aeroMode&&(P.onGround||P.gear>0.35||P.spd<gate||agl<280)){
     // Show the speed the loop needs in the same (indicated) units as the speed readout.
     const need=Math.ceil((P.ac==='p47'?P47Performance.indicated(gate,P.pos.y):gate)*KT);

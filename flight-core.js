@@ -275,7 +275,23 @@ function levelAcceleration(m,V,h,o={}){
  return (thrust(m,V,rho,(o.power??1)*(o.damage??1),h)-drag(m,V,rho,a,1,W,o)-windmillDrag(m,V,rho,o.power??1))/mass-(o.extraDrag||0);
 }
 
+// Lowest entry speed from which a full-pull, full-power loop at height h never drops below the
+// 1-g clean stall speed (same criterion as FlightEnvelope.aeroEntry), plus the same 8 % margin.
+const entryCache={};
+function aeroEntry(m,gain=GAME.manoeuvreGain,h=1500){
+ const key=m.kind+':'+gain+':'+h;if(entryCache[key])return entryCache[key];
+ const vs=stallSpeed(m,h),run=v0=>{
+  const s={spd:v0,pitch:0,heading:0,roll:0,nLoad:1,power:1,altitude:h};let turned=0,prev=0;
+  for(let t=0;t<40&&turned<2*Math.PI;t+=1/60){step(m,s,1/60,{throttle:1,gain,command:(st,V,l)=>l.max});
+   turned+=Math.abs(wrap(s.pitch-prev));prev=s.pitch;if(s.spd<vs*.98)return false;}
+  return turned>=2*Math.PI;};
+ let lo=vs*1.05,hi=vs*5;
+ if(!run(hi))return entryCache[key]=hi;
+ for(let i=0;i<14;i++){const mid=(lo+hi)/2;if(run(mid))hi=mid;else lo=mid;}
+ return entryCache[key]=hi*1.08;
+}
+
 const api={SOURCES,ASSUMED,GAME,G,HP,LB,FT,MPH,FPM,atmosphere,propThrust,liftSlope,model,step,holdLoad,axes,eulerFrom,
- levelMaxSpeed,bestClimb,climbAt,levelAcceleration,stallSpeed,equivalent,loadLimits,thrust,shaft,drag,windmillDrag};
+ levelMaxSpeed,bestClimb,climbAt,levelAcceleration,stallSpeed,equivalent,loadLimits,thrust,shaft,drag,windmillDrag,aeroEntry};
 root.FlightCore=api;if(typeof module==='object'&&module.exports)module.exports=api;
 })(typeof window==='undefined'?globalThis:window);
