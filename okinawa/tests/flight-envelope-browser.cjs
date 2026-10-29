@@ -64,7 +64,7 @@ const server=http.createServer((req,res)=>{
      // AERO gate and loop from the gate speed, camera sampled every frame
      // The game's own gate (the computed P-47 core simulates its loop; other types use the envelope).
      const gate=typeof aeroGateSpeed==='function'?aeroGateSpeed(kind):E.aeroGate(kind);out.gate=gate;
-     out.core=kind==='p47'&&typeof P47Core!=='undefined'&&P47Core.on;
+     out.core=typeof coreOn==='function'&&coreOn(kind);
      const loopFrom=(v,fps)=>{
       setup(v);aeroMode=true;for(let i=0;i<fps;i++){updateFlight(1/fps);updateCamera(1/fps);}setup(v);aeroMode=true;for(let i=0;i<fps;i++)updateCamera(1/fps);
       inputPitch=1;let travelled=0,last=P.pitch,t=null,minV=P.spd,front=0,frames=0,maxStep=0,lastCam=camera.position.clone(),lastPos=P.pos.clone();
@@ -98,7 +98,11 @@ const server=http.createServer((req,res)=>{
    // its own figures are checked in p47-core-browser.cjs and scripts/flight/derive-p47.cjs.
    if(!r.core)for(const [v,x] of Object.entries(r.roll))assert(x.measured>x.expected*.75&&x.measured<x.expected*1.25,`${kind} measured roll rate ${x.measured.toFixed(0)} deg/s at ${v} m/s vs envelope ${x.expected.toFixed(0)}`);
    const t=r.turn[90];if(!r.core)assert(t.t!==null&&t.t>t.predicted*.7&&t.t<t.predicted*1.5,`${kind} 360 turn ${t.t} s vs envelope ${t.predicted.toFixed(1)} s`);
-   for(const f of ['0.5','0.75']){const jet=kind==='me262'||kind==='me163';if(!jet)assert(r.idle[f]>(f==='0.5'?1.3:2.2),`${kind} closed throttle at ${f} vmax brakes ${r.idle[f].toFixed(2)} m/s2`);}
+   // Build 220: on the computed core the closed-throttle deceleration is drag + windmilling propeller over
+   // the real mass, so the slow heavy Avenger/SBD/Ju 87 shed less speed at half their (low) top speed than a
+   // fighter. Required: a clear brake at half speed and a stronger one at 75 % (drag grows with V^2).
+   for(const f of ['0.5','0.75']){const jet=kind==='me262'||kind==='me163';const floor=r.core?(f==='0.5'?.9:1.35):(f==='0.5'?1.3:2.2);if(!jet)assert(r.idle[f]>floor,`${kind} closed throttle at ${f} vmax brakes ${r.idle[f].toFixed(2)} m/s2`);}
+   if(r.core)assert(r.idle['0.75']>r.idle['0.5']*1.25,`${kind} idle deceleration grows with speed`);
    for(const [fps,l] of Object.entries(r.loop)){
     assert(l.alive&&l.t!==null&&l.t<20,`${kind} completes a loop from the AERO gate at ${fps} FPS (${l.t})`);
     assert(l.minV>l.stall*.9,`${kind} stays above its stall over the top at ${fps} FPS: min ${l.minV.toFixed(0)} vs ${l.stall.toFixed(0)}`);

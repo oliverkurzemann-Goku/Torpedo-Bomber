@@ -56,7 +56,9 @@ const server=http.createServer((req,res)=>{
   assert.equal(idle.power,0);assert.equal(idle.after,0);assert(Math.abs(idle.relativeTravel)<.001&&idle.state===2,'no autonomous deck departure');console.log('Manual launch idle:',idle);
   const throttle=await page.locator('#throttle').boundingBox();await page.touchscreen.tap(throttle.x+throttle.width/2,throttle.y+2);
   assert(await page.evaluate(()=>P.throttle>.95),'actual touch throttle supplies power');
-  const departure=await page.evaluate(()=>{const begin=launchTimer,draw=GameRuntime.render;GameRuntime.render=()=>true;try{for(let i=0;i<300&&state===ST.LAUNCH;i++)animateFrame();}finally{GameRuntime.render=draw;}return {time:launchTimer-begin,state,speed:P.spd,pos:P.pos.toArray()};});assert.equal(departure.state,3);assert(departure.time>6&&departure.time<12);console.log('Touch-powered departure:',departure);
+  const departure=await page.evaluate(()=>{const begin=launchTimer,draw=GameRuntime.render;GameRuntime.render=()=>true;try{for(let i=0;i<400&&state===ST.LAUNCH;i++)animateFrame();}finally{GameRuntime.render=draw;}return {time:launchTimer-begin,state,speed:P.spd,pos:P.pos.toArray()};});assert.equal(departure.state,3);
+  // Build 220: computed deck run (15 m/s wind over the deck); a loaded Avenger reaches the bow after about 15 s.
+  assert(departure.time>6&&departure.time<18,'deck run '+JSON.stringify(departure));console.log('Touch-powered departure:',departure);
   for(const fps of [20,60,120]){
    const contact=await page.evaluate(fps=>{
     function setup(hook,power,x){startMission(0);finishCarrierIntro();hideOverlays();state=ST.FLIGHT;DIFF='ace';windHead=6;windGust=0;seaState=0;

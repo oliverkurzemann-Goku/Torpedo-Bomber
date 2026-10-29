@@ -6,18 +6,18 @@
   "flap": 0.5,
   "massKg": 7214,
   "launch": {
-   "t": 14.3,
-   "deckRun": 214,
-   "airKmh": 157,
+   "t": 13.8,
+   "deckRun": 200,
+   "airKmh": 155,
    "stallKmh": 142,
    "y": 18.4,
    "wodMs": 15,
    "alive": true,
    "death": null,
    "after25s": {
-    "kmh": 175,
-    "y": 131,
-    "climb": 5
+    "kmh": 172,
+    "y": 132,
+    "climb": 4.9
    }
   },
   "vmax1500": 409,
@@ -74,18 +74,18 @@
   "flap": 0.5,
   "massKg": 4717,
   "launch": {
-   "t": 14.7,
-   "deckRun": 214,
-   "airKmh": 152,
+   "t": 13.4,
+   "deckRun": 180,
+   "airKmh": 147,
    "stallKmh": 135,
    "y": 19,
    "wodMs": 15,
    "alive": true,
    "death": null,
    "after25s": {
-    "kmh": 153,
-    "y": 122,
-    "climb": 4.3
+    "kmh": 149,
+    "y": 121,
+    "climb": 4.1
    }
   },
   "vmax1500": 365,
@@ -217,18 +217,18 @@
   "flap": 0.5,
   "massKg": 2410,
   "launch": {
-   "t": 11.4,
-   "deckRun": 214,
-   "airKmh": 176,
+   "t": 6.4,
+   "deckRun": 70,
+   "airKmh": 136,
    "stallKmh": 116,
    "y": 18.3,
    "wodMs": 15,
    "alive": true,
    "death": null,
    "after25s": {
-    "kmh": 212,
-    "y": 293,
-    "climb": 12.3
+    "kmh": 201,
+    "y": 268,
+    "climb": 11.7
    }
   },
   "vmax1500": 482,

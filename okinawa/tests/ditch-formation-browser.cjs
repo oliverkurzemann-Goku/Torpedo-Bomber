@@ -43,21 +43,34 @@ const server=http.createServer((req,res)=>{
       startMission(i);finishCarrierIntro();state=ST.FLIGHT;hideOverlays();
       P.alive=true;P.hull=sinkFpm===200?30:100;P.pos.set(-1500,2,0);P.spd=65/KT;
       P.gear=P.gearTgt=0;P.flap=P.flapTgt=1;P.hook=P.hookTgt=1;P.roll=P.rollBias=P.pitchVel=P.rollVel=0;
-      const mass=SortieFeatures.Handling.sample(P),sink=-sinkFpm*.3048/60,liftLoss=(1-P.spd**2/((APP_SPD-6)*mass.speed)**2)*28;
-      P.pitch=Math.asin((sink+liftLoss)/P.spd);inputPitch=P.pitch/.70;inputRoll=0;
-      const engineMul=(P.hull<60?.45+.55*P.hull/60:1)*SortieFeatures.Damage.power(P);
-      P.throttle=((P.spd+Math.sin(P.pitch)*38*mass.ratio+9)/engineMul-THR_MIN_SPD)/((isCorsair()?145:MAX_SPD)-THR_MIN_SPD);
+      const mass=SortieFeatures.Handling.sample(P),sink=-sinkFpm*.3048/60,core=typeof coreOn==='function'&&coreOn(kind);
+      let targetKt=65,hold=()=>{};
+      if(core){
+        // Build 220: on the computed core 65 kt is the heavy Avenger's own full-flap stall, so a pilot cannot
+        // hold it. Fly the same configuration (gear up, flaps and hook down, 100/200 ft/min) at 1.2x the live
+        // full-flap stall instead, settled from 12 m: the stick sets the glide path, the throttle holds speed.
+        P.pos.y=12;const target=CarrierRecovery.envelope(P,STALL_SPD,APP_SPD).stall*1.2;targetKt=target*KT;
+        P.spd=target;P.pitch=Math.asin(sink/target);P.throttle=.45;inputRoll=0;let integral=0;
+        hold=dt=>{const e=target-P.spd;integral=Math.max(-20,Math.min(20,integral+e*dt));
+          P.throttle=Math.max(0,Math.min(1,.45+.12*e+.04*integral));
+          inputPitch=(Math.asin(sink/Math.max(20,P.spd))+.06*(sink-P.vSpeed))/.70;};
+      }else{
+        const liftLoss=(1-P.spd**2/((APP_SPD-6)*mass.speed)**2)*28;
+        P.pitch=Math.asin((sink+liftLoss)/P.spd);inputPitch=P.pitch/.70;inputRoll=0;
+        const engineMul=(P.hull<60?.45+.55*P.hull/60:1)*SortieFeatures.Damage.power(P);
+        P.throttle=((P.spd+Math.sin(P.pitch)*38*mass.ratio+9)/engineMul-THR_MIN_SPD)/((isCorsair()?145:MAX_SPD)-THR_MIN_SPD);
+      }
       const power=P.throttle;let steps=0,contactSpeed=null,contactSink=null;const enter=beginDitching;beginDitching=()=>{contactSpeed=P.spd*KT;contactSink=-P.vSpeed*60/.3048;enter();};
-      try{while(P.alive&&steps++<250)updateFlight(.02);}finally{beginDitching=enter;}
+      try{while(P.alive&&steps++<(core?2500:250)){hold(.02);updateFlight(.02);}}finally{beginDitching=enter;}
       if(!ditching||!bailRescue)throw Error('65kt '+sinkFpm+'fpm gear-up / flaps-down / hook-down rejected: '+kind+' '+difficulty+' '+document.getElementById('flash')?.textContent);
       const crew=[bailout,...crewBailouts.map(c=>c.chute)];if(crew.some(c=>c.deployed))throw Error('Ditching opened a chute');
       let boats=scene.children.filter(o=>o.name==='rescueBoat').length;
       const p=P.pos.clone(),time=ditching.time;togglePause();animate();const paused=p.equals(P.pos)&&time===ditching.time;togglePause();
       for(let j=0;j<1800&&!bailDone;j++){advanceBailout(.05);boats=Math.max(boats,scene.children.filter(o=>o.name==='rescueBoat').length);}
       const recovered=Number(bailRescue.pickup)+crewBailouts.filter(c=>c.safe).length,count=aircraftCrewCount();
-      return {kind,sinkFpm,difficulty,power,steps,contactSpeed,contactSink,crew:count,recovered,boats,paused,done:bailDone};
+      return {kind,sinkFpm,difficulty,core,targetKt,power,steps,contactSpeed,contactSink,crew:count,recovered,boats,paused,done:bailDone};
     },{kind,sinkFpm,difficulty});
-    assert(Math.abs(result.contactSpeed-65)<.1&&Math.abs(result.contactSink-sinkFpm)<2&&result.done&&result.recovered===result.crew&&result.boats===1&&result.paused,'one boat recovers all crew after actual slow sea contact');
+    assert(Math.abs(result.contactSpeed-result.targetKt)<(result.core?2:.1)&&Math.abs(result.contactSink-sinkFpm)<(result.core?20:2)&&result.done&&result.recovered===result.crew&&result.boats===1&&result.paused,'one boat recovers all crew after actual slow sea contact '+JSON.stringify(result));
     console.log('User ditching configuration:',result);
   }
   for(const kind of ['avenger','sbd']){
@@ -65,23 +78,34 @@ const server=http.createServer((req,res)=>{
       DIFF='ace';startMission(MISSIONS.findIndex(m=>kind==='sbd'?m.sbd&&!m.corsair:!m.sbd&&!m.corsair&&!m.defend));
       finishCarrierIntro();state=ST.FLIGHT;hideOverlays();P.alive=true;P.hull=100;P.pos.set(-2200,300,0);P.heading=0;P.spd=65/KT;
       P.gear=P.gearTgt=P.hook=P.hookTgt=0;P.flap=P.flapTgt=1;P.roll=P.rollBias=P.pitchVel=P.rollVel=0;
-      const mass=SortieFeatures.Handling.sample(P);
-      P.pitch=Math.asin((-.8+(1-P.spd**2/((APP_SPD-6)*mass.speed)**2)*28)/P.spd);inputPitch=P.pitch/.7;inputRoll=0;
-      P.throttle=(P.spd+Math.sin(P.pitch)*38*mass.ratio+9-THR_MIN_SPD)/(MAX_SPD-THR_MIN_SPD);
+      const mass=SortieFeatures.Handling.sample(P),core=typeof coreOn==='function'&&coreOn(kind);let hold=()=>{};
+      if(core){
+        // Build 220: slow flapped formation at 1.25x the live full-flap stall (65 kt is below the core's
+        // Avenger stall); the throttle holds that speed, the stick a shallow -0.8 m/s glide as before.
+        const target=CarrierRecovery.envelope(P,STALL_SPD,APP_SPD).stall*1.25;P.spd=target;P.pitch=Math.asin(-.8/target);P.throttle=.45;let integral=0;
+        hold=dt=>{const e=target-P.spd;integral=Math.max(-20,Math.min(20,integral+e*dt));P.throttle=Math.max(0,Math.min(1,.45+.12*e+.04*integral));
+          inputPitch=(Math.asin(-.8/Math.max(20,P.spd))+.06*(-.8-P.vSpeed))/.7;};
+      }else{
+        P.pitch=Math.asin((-.8+(1-P.spd**2/((APP_SPD-6)*mass.speed)**2)*28)/P.spd);inputPitch=P.pitch/.7;inputRoll=0;
+        P.throttle=(P.spd+Math.sin(P.pitch)*38*mass.ratio+9-THR_MIN_SPD)/(MAX_SPD-THR_MIN_SPD);
+      }
       wingmenPending=false;spawnWingman(0);spawnWingman(1);for(const w of wingmen)w.cool=9999;
       wingmen[0].pos.copy(P.pos).add(new THREE.Vector3(-12,-2,-22));
       let maxYaw=0,maxBank=0,maxAcceleration=0,minDistance=Infinity,maxDistance=0,png=null;
       for(let i=0;i<2400;i++){
         const t=i/60;inputRoll=t<10?0:t<18?.05:t<26?-.05:0;
         const previous=wingmen.map(w=>({heading:w.heading,roll:w.roll,vel:w.vel.clone(),pos:w.pos.clone()}));
-        updateFlight(1/60);updateWingmen(1/60);
+        hold(1/60);updateFlight(1/60);updateWingmen(1/60);
         for(let j=0;j<wingmen.length;j++){
           const w=wingmen[j],b=previous[j],d=w.pos.distanceTo(P.pos);
           minDistance=Math.min(minDistance,d);maxDistance=Math.max(maxDistance,d);
           maxYaw=Math.max(maxYaw,Math.abs(Math.atan2(Math.sin(w.heading-b.heading),Math.cos(w.heading-b.heading)))*60);
           maxBank=Math.max(maxBank,Math.abs(w.roll-b.roll)*60);maxAcceleration=Math.max(maxAcceleration,w.vel.distanceTo(b.vel)*60);
           const forward=new THREE.Vector3(0,0,1).applyQuaternion(w.mesh.quaternion);
-          if(forward.dot(w.vel.clone().normalize())<.999999)throw Error('Real escort mesh slides sideways');
+          // On the core the escort flies through the air mass and drifts with the wind (the headwind along +X),
+          // so its nose points along its AIR velocity - a crab, not a slide.
+          const wind=core?CarrierRecovery.wind(windHead,windGust):{x:0,z:0},air=w.vel.clone().sub(new THREE.Vector3(wind.x,0,wind.z));
+          if(forward.dot(air.normalize())<.999999)throw Error('Real escort mesh slides sideways '+forward.dot(air));
           if(w.pos.distanceTo(b.pos)>115/60)throw Error('Real escort teleports');
         }
         if(i===1200){updatePlaneMesh(1/60);camera.position.copy(P.pos).add(new THREE.Vector3(-90,20,70));camera.lookAt(P.pos.clone().add(new THREE.Vector3(-25,0,0)));scene.updateMatrixWorld(true);renderer.render(scene,camera);png=renderer.domElement.toDataURL();}
@@ -101,6 +125,6 @@ const server=http.createServer((req,res)=>{
     }
     startMission(0);return {rejected:results,reset:!ditching&&!bailout&&!crewWaterRescue&&!scene.children.some(o=>o.name==='rescueBoat')};
   });assert(unsafe.rejected.every(Boolean)&&unsafe.reset);console.log('Unsafe impact limits and restart:',unsafe);
-  assert.deepEqual(errors,[]);console.log('Build182 actual 65kt / 100–200fpm water contacts, one-boat rescues, close formations and pause passed');
+  assert.deepEqual(errors,[]);console.log('Build182/220 slow flapped (core: 1.2x live stall) 100–200fpm water contacts, one-boat rescues, close formations and pause passed');
  }finally{await browser.close();server.close();}
 })().catch(error=>{console.error(error);server.close();process.exitCode=1;});

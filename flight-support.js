@@ -80,7 +80,9 @@ function guideWingman(w,desiredVelocity,dt,forming,wind=null){
   root.FlightControl.ai(w,dt,air,Math.hypot(air.x,air.y,air.z),{maxBank:forming?.8:.9,maxYaw:Math.min(.25,25/Math.max(28,w.spd)),
    // Station keeping needs a tighter throttle than free flight: the slot correction asks for speed changes
    // faster than the default pilot's loose speed hold follows, which left the escort surging in and out.
-   maxPitchRate:forming?.135:.21,maxRollRate:forming?.32:.5,turnGain:1.5,kp:forming?.5:.09,ki:forming?.03:.05});
+   // Rates commanded a few per cent inside the calm-formation limits (pitch .14/.22, roll .32 rad/s): the
+   // core's attitude integration adds a little coupling on top of the commanded rate.
+   maxPitchRate:forming?.135:.21,maxRollRate:forming?.31:.5,turnGain:1.5,kp:forming?.5:.09,ki:forming?.03:.05});
   w.vel.x+=wx;w.vel.z+=wz;w.pos.x+=wx*dt;w.pos.z+=wz*dt;
   return;
  }

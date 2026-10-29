@@ -44,7 +44,9 @@ const server=http.createServer((req,res)=>{
     const cleared=europeOps.ready()&&P.rtb,cutoff=P.fuel===0&&P.throttle===0;
     const pursuers=enemyAir.filter(e=>e.alive&&e.escapeThreat).length;
     // Fly a real gentle skid touchdown on the DEM strip, rather than call landed().
-    P.pos.set(AF_X-350,groundY(AF_X-350,AF_Z)+7,AF_Z);P.heading=RWY_HDG;P.spd=68;
+    // Build 220: on the computed core the unpowered Komet stalls at about 40 m/s with half flap; touch down at
+    // 1.3x that (52 m/s) - at the old 68 m/s the skid, still half-unloaded by lift, runs off the 900 m strip.
+    P.pos.set(AF_X-350,groundY(AF_X-350,AF_Z)+7,AF_Z);P.heading=RWY_HDG;P.spd=52;
     P.gear=P.gearTgt=1;P.flap=P.flapTgt=.5;P.pitch=-.025;P.roll=P.rollBias=P.pitchVel=P.rollVel=0;P.touchResolved=false;
     inputPitch=-Math.pow(.025/(AC.me163.pitchLim*.92),1/AC.me163.stickExponent);inputRoll=0;
     for(let i=0;i<fps*60&&!missionOver&&P.alive;i++){updateFlight(1/fps);updateEuropeOperation(1/fps);}
@@ -55,7 +57,7 @@ const server=http.createServer((req,res)=>{
      title:document.getElementById('rsTitle').textContent};
    },{id,fps});
    assert(result.fuelBefore>0&&result.cleared&&result.cutoff&&result.pursuers===1,'last powered kill releases the recovery');
-   assert(result.alive&&result.onGround&&result.missionOver&&!result.service&&result.fuel===0&&result.ammo===42&&result.sorties===1,'native skid touchdown finishes once without refuelling');
+   assert(result.alive&&result.onGround&&result.missionOver&&!result.service&&result.fuel===0&&result.ammo===42&&result.sorties===1,'native skid touchdown finishes once without refuelling '+JSON.stringify(result));
    assert.equal(result.title,'MISSION ACCOMPLISHED');console.log('Native Komet recovery:',result);
    if(fps===60)await page.screenshot({path:path.join(out,'build184-'+id+'-debrief.png')});
   }
@@ -75,7 +77,18 @@ const server=http.createServer((req,res)=>{
    }}finally{Object.assign(d,saved);}
    return samples;
   });
-  assert(handling.every(s=>s.now.bank>s.old.bank*.3&&s.now.bank<s.old.bank*.8&&s.now.heading<s.old.heading*.8),'native Komet inputs start both turns progressively');
+  // Build 220: the Komet flies the computed core, which does not use rollAuth/pitchAuth at all, so the
+  // Build 184 old-vs-new comparison no longer applies. A half-second half-stick input must still start the
+  // turn progressively (rolling in at the type's computed roll rate, not snapping), alike in both directions
+  // and at every frame rate.
+  const kometCore=await page.evaluate(()=>typeof coreOn==='function'&&coreOn('me163'));
+  console.log('Komet half-second half-stick:',JSON.stringify(handling.map(s=>({aero:s.aero,fps:s.fps,sign:s.sign,bank:+s.now.bank.toFixed(1),heading:+s.now.heading.toFixed(2)}))));
+  if(kometCore){
+   for(const aero of [false,true]){const g=handling.filter(s=>s.aero===aero),b=g.map(s=>s.now.bank);
+    // measured: 48 deg Normal / 32 deg AERO after 0.5 s at 155 m/s, i.e. still rolling in at the core's rate
+    assert(b.every(x=>x>4&&x<60),'native Komet rolls in progressively '+b);
+    assert(Math.max(...b)-Math.min(...b)<2.5,'same roll-in both ways and at 20/60/120 FPS '+b);}
+  }else assert(handling.every(s=>s.now.bank>s.old.bank*.3&&s.now.bank<s.old.bank*.8&&s.now.heading<s.old.heading*.8),'native Komet inputs start both turns progressively');
   console.log('Native Komet half-second inputs:',handling.filter(s=>s.fps===60&&s.sign===1));
   const jets=await page.evaluate(()=>{
    const samples=[];

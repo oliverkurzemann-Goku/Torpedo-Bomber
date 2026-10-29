@@ -13,7 +13,7 @@
    "rato": null,
    "after40s": {
     "spd": 67,
-    "agl": 355,
+    "agl": 372,
     "climb": 9.6
    }
   },
@@ -28,7 +28,7 @@
    "rato": null,
    "after40s": {
     "spd": 67,
-    "agl": 372,
+    "agl": 355,
     "climb": 9.6
    }
   },
@@ -195,7 +195,7 @@
    "rato": null,
    "after40s": {
     "spd": 72.7,
-    "agl": 331,
+    "agl": 328,
     "climb": 9.4
    }
   },

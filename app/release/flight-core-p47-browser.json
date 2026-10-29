@@ -4,109 +4,55 @@
   "mission": "Sortie 1",
   "takeoff": {
    "alive": true,
-   "liftoff": 15.42,
-   "groundRun": 540,
+   "liftoff": 18.78,
+   "groundRun": 589,
    "after60s": {
-    "spd": 72.6,
-    "agl": 409,
-    "climb": 11.1
+    "spd": 67,
+    "agl": 359,
+    "climb": 9.6
    }
   },
   "turn": {
    "90": {
-    "seconds": 11.6,
-    "endSpd": 90,
-    "altChange": -3,
-    "bankDeg": 67,
-    "n": 2.58
+    "seconds": 10.8,
+    "endSpd": 92,
+    "altChange": -19,
+    "bankDeg": 70,
+    "n": 2.89
    },
    "130": {
-    "seconds": 8.4,
-    "endSpd": 111,
-    "altChange": -8,
-    "bankDeg": 75,
-    "n": 3.95
+    "seconds": 7.9,
+    "endSpd": 113,
+    "altChange": -16,
+    "bankDeg": 77,
+    "n": 4.33
    }
   },
   "loop": {
-   "seconds": 7.3,
-   "minSpd": 115,
-   "altChange": -2,
+   "seconds": 6.7,
+   "minSpd": 117,
+   "altChange": 1,
    "alive": true
   },
-  "idleDecel1s": 2,
+  "idleDecel1s": 2.16,
   "fps": {
    "20": {
-    "spd": 87.69,
-    "heading": 5.616,
-    "alt": 1731.5
+    "spd": 90.9,
+    "heading": 6.012,
+    "alt": 1702.7
    },
    "60": {
-    "spd": 87.74,
-    "heading": 5.606,
-    "alt": 1731.2
+    "spd": 90.94,
+    "heading": 6.002,
+    "alt": 1702.5
    },
    "120": {
-    "spd": 87.76,
-    "heading": 5.604,
-    "alt": 1731.1
+    "spd": 90.95,
+    "heading": 5.999,
+    "alt": 1702.4
    }
   },
   "errors": []
  },
- "old": {
-  "core": false,
-  "mission": "Sortie 1",
-  "takeoff": {
-   "alive": true,
-   "liftoff": 15.42,
-   "groundRun": 540,
-   "after60s": {
-    "spd": 75.1,
-    "agl": 606,
-    "climb": 16.2
-   }
-  },
-  "turn": {
-   "90": {
-    "seconds": 9,
-    "endSpd": 97,
-    "altChange": 0,
-    "bankDeg": 77,
-    "n": 3.53
-   },
-   "130": {
-    "seconds": 6.2,
-    "endSpd": 133,
-    "altChange": 0,
-    "bankDeg": 77,
-    "n": 6.56
-   }
-  },
-  "loop": {
-   "seconds": 6.8,
-   "minSpd": 130,
-   "altChange": 5,
-   "alive": true
-  },
-  "idleDecel1s": 2.17,
-  "fps": {
-   "20": {
-    "spd": 96.97,
-    "heading": 6.517,
-    "alt": 1834.4
-   },
-   "60": {
-    "spd": 96.96,
-    "heading": 6.488,
-    "alt": 1832.9
-   },
-   "120": {
-    "spd": 96.96,
-    "heading": 6.481,
-    "alt": 1832.5
-   }
-  },
-  "errors": []
- }
+ "old": null
 }

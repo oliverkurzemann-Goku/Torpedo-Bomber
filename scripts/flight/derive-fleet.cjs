@@ -26,10 +26,10 @@ function loop(m,V0,gain){
 }
 // Ground run to lift-off at the published mass: full power, take-off flap (0.4 for carrier types, 0.2 else),
 // rotation once above 1.1 x the take-off stall; sea level, still air, firm surface mu 0.04.
-function takeoff(m,{flaps=.2,mu=.04,headwind=0}={}){
- const vs=F.stallSpeed(m,0,1,flaps),vr=1.1*vs;let v=headwind,x=0,t=0,power=0;const dt=1/60;
+function takeoff(m,{flaps=.2,mu=.04,headwind=0,massKg=m.mass}={}){
+ const vs=F.stallSpeed(m,0,massKg/m.mass,flaps),vr=1.1*vs;let v=headwind,x=0,t=0,power=0;const dt=1/60;
  while(t<90){power+=(1-power)*(1-Math.exp(-dt/m.assumed.spool));
-  const g=F.groundAcceleration(m,v,{power,flaps,rotated:v>vr?1:0,mu});
+  const g=F.groundAcceleration(m,v,{power,flaps,rotated:v>vr?1:0,mu,massKg});
   if(v>vr&&g.liftoff)break;v+=g.accel*dt;x+=(v-headwind)*dt;t+=dt;}
  return {seconds:r(t,1),groundRun:r(x,0),liftoffIAS:r(v*3.6,0),stallIAS:r(vs*3.6,0)};
 }
@@ -49,11 +49,14 @@ for(const kind of Object.keys(F.SOURCES)){
   loop:loop(m,Math.max(1.4*F.aeroEntry(m)/1.08,.6*v1000),F.GAME.manoeuvreGain),aeroGate_ms:r(F.aeroEntry(m),1),
   idleDecel75pct:r(-F.levelAcceleration(m,.75*v1000,1000,{power:0}),2),
   takeoff:takeoff(m,{flaps:['avenger','sbd','corsair','zero'].includes(kind)?.4:.2})};
+ // Published take-off distances the solve did not use, as an independent check (game take-off flap 0.5).
+ if(src.check?.takeoff){const c=src.check.takeoff,t=takeoff(m,{flaps:.5,massKg:c.mass});
+  o.check={figure:c.text,ref:c.ref,published:c.distance+' m',modelGroundRun:t.groundRun+' m',errorPct:r((t.groundRun-c.distance)/c.distance*100,1)};}
  out.types[kind]=o;
 }
 fs.writeFileSync(path.join(root,'app/release/flight-core-fleet.json'),JSON.stringify(out,null,1)+'\n');
 for(const [k,o] of Object.entries(out.types)){
- console.log(k.padEnd(8),JSON.stringify(o.solved));
+ console.log(k.padEnd(8),JSON.stringify(o.solved));if(o.check)console.log('    check',JSON.stringify(o.check));
  for(const v of o.verification)console.log('   ',v.figure.padEnd(36),v.published.padStart(12),v.model.padStart(12),(v.errorPct+'%').padStart(8));
  console.log('    game',JSON.stringify(o.game));
 }

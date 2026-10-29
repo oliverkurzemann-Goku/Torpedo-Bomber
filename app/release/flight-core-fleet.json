@@ -440,6 +440,13 @@
      "liftoffIAS": 222,
      "stallIAS": 202
     }
+   },
+   "check": {
+    "figure": "about 1 005 m at 7 130 kg (whether ground roll or to 15 m is not stated)",
+    "ref": "B5",
+    "published": "1005 m",
+    "modelGroundRun": "1064 m",
+    "errorPct": 5.9
    }
   },
   "me163": {
