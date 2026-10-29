@@ -103,9 +103,11 @@ Masse im Spiel: 5 775 kg × Beladungsfaktor aus `SortieFeatures.Handling.sample`
   als in der Physik, für zwei Daumen am Tablet. Kräfte, Widerstand und Energie werden **nicht**
   verstärkt: Eine harte Kurve kostet pro Sekunde genau die reale Fahrt. `?p47core=physics` schaltet
   auf 1 (reine Physik), `?p47core=off` auf das bisherige Modell.
-- **Normal-Modus**: Knüppel quer = Querlage einer Horizontalkurve mit demselben Anteil der
-  verfügbaren Last wie im bisherigen Gesetz (voller Ausschlag = engste Kurve, die der Flügel bei
-  dieser Fahrt halten kann; bei wenig Fahrt automatisch flacher, mindestens 30°). Knüppel längs =
+- **Normal-Modus**: Knüppel quer = Querlage einer Horizontalkurve, deren Kurvenrate dieser Anteil
+  der verfügbaren ist (`tan φ = Anteil·√(n_max²−1)`): linear und fein in der Mitte, voller Ausschlag =
+  engste Kurve, die der Flügel bei dieser Fahrt halten kann; bei wenig Fahrt automatisch flacher
+  (mindestens Anteil × 30°). Die alte Zuordnung über den Lastanteil war in der Mitte zu empfindlich
+  (4 % Ausschlag ≈ 37° Querlage). Knüppel längs =
   Bahnwinkel, selbstzentrierend: die unveränderte Lage-Feder aus Build 214/215 (gleiche Ziele,
   Startgrenzen, Dämpfung) erzeugt die Sollbahn; der Flügel fliegt sie, soweit sein Lastvielfaches
   reicht (Vorsteuerung der Sollrate, Rest über `T_θ2`). Innerhalb der Grenzen also das gewohnte

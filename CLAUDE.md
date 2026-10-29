@@ -13,7 +13,7 @@ Werte ±1,7 %, Stall 116 mph exakt, 20/60/120 FPS identisch, Energiedrift 0,005 
 (`node scripts/flight/derive-p47.cjs`). Ohne Quelle (Kennung C, in `ASSUMED` benannt): ±g-Grenzen, Mcrit,
 ΔCD Fahrwerk/Klappen/Tank, Leerlaufbremse, Leistungsaufbau. Spielentscheidungen in `GAME`: eine
 Manöver-Verstärkung 2,2 nur auf die Bahndrehung (Kräfte/Energie unverstärkt), Normal-Knüppel = Querlage
-einer Horizontalkurve mit dem Lastanteil des alten Gesetzes, Nicken = Bahnwinkel (kritisch gedämpft),
+einer Horizontalkurve mit diesem Anteil der verfügbaren Kurvenrate, Nicken = alte Lage-Feder als Sollbahn,
 AERO-Ziehen = Lastvielfaches; Rollrate unverändert. `?p47core=off` altes Modell, `?p47core=physics`
 Verstärkung 1. Nur Luftphase der P-47 in `remagen-mission.html` (`updateP47Core`); Startlauf, Landung,
 KI, andere Typen, Pazifik und Legacy-Europa unverändert. Test `okinawa/tests/p47-core-browser.cjs`

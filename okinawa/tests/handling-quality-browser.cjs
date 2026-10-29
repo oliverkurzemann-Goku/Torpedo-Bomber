@@ -73,6 +73,8 @@ const server=http.createServer((req,res)=>{
      inputRoll=-bias/(rollLim*steerSign);
      // Europe types with progressive stick response invert their exponent.
      if(!pacific&&acDef().stickExponent)inputRoll=Math.sign(inputRoll)*Math.pow(Math.abs(inputRoll),1/acDef().stickExponent);
+     // The computed P-47 core maps the stick to a level-turn bank (FLIGHT-CORE.md): use its inverse.
+     if(!pacific&&kind==='p47'&&typeof P47Core!=='undefined'&&P47Core.on)inputRoll=p47StickForBank(-bias)/steerSign;
      for(let i=0;i<fps*4;i++)updateFlight(1/fps);if(Math.abs(P.roll)>.003)throw Error('Existing stick cannot counter damage');
      let asymmetry=null;
      if(kind!=='me163'){
