@@ -1,10 +1,18 @@
-# Berechneter Flugkern — erster Typ: P-47D
+# Berechneter Flugkern — alle Flugzeuge (Build 220)
 
-Stand 29.10.2026, nur im Rheinspiel (`remagen-mission.html`) und nur für die Luftphase der P-47.
-Start-Rollstrecke, Landung, Gegner-KI und alle anderen Typen sind unverändert.
-Code: `flight-core.js`. Nachrechnung: `node scripts/flight/derive-p47.cjs`
-(schreibt `app/release/flight-core-p47.json`). Spieltest im echten Code:
-`okinawa/tests/p47-core-browser.cjs` (schreibt `app/release/flight-core-p47-browser.json`).
+Stand 29.10.2026. Seit Build 220 fliegen **alle zehn spielbaren Typen** (Rhein: P-47, Bf 109, Fw 190,
+Ju 87, Me 262, Me 163; Pazifik: Avenger, SBD, Corsair, Zero) **und alle KI-Flugzeuge** (Jäger, Rottenflieger,
+Begleiter, Angreifer, B-17/B-24-Pulks) auf demselben berechneten Modell — in der Luft, beim Start, auf dem
+Trägerdeck und beim Ausrollen. Die P-47 (Build 219) war der erste Typ; ihr Abschnitt steht unten.
+
+- Daten und Physik: `flight-core.js` (`FlightCore`): `SOURCES` (Quellen, Kennung A/B), `ASSUMED`/`CLASS`
+  (ohne Quelle, Kennung C), `GAME` (Spielentscheidungen), `CAPACITY` (was ein Typ physisch tragen kann).
+- Steuergesetze: `flight-control.js` (`FlightControl.player` für den Spieler, `FlightControl.ai` für jede KI).
+- Nachrechnung aller Typen: `node scripts/flight/derive-fleet.cjs` → `app/release/flight-core-fleet.json`.
+- Echte Spiele im Browser: `okinawa/tests/fleet-core-browser.cjs` (Rhein) und `pacific-core-browser.cjs`
+  → `app/release/flight-core-fleet-browser.json` / `flight-core-pacific-browser.json`.
+- `?core=off` fliegt das alte Modell (Build 215/219), `?core=physics` den Kern ohne Manöver-Verstärkung.
+  `?p47core=…` wirkt weiter wie `?core=…`.
 
 ## Grundsatz
 
@@ -14,7 +22,110 @@ beschrieben; Widerstand, Propellerwirkungsgrad und Leistungsabfall mit der Höhe
 (Kennung C), die Entscheidungen des Spiels (wie der Knüppel in eine Last übersetzt wird, eine
 Manöver-Verstärkung) getrennt in `GAME`. Es gibt keine Werte pro Typ zum Nachstellen.
 
-## Quellen (Kennung A = Primärdokument, B = übereinstimmende Sekundärangaben)
+## Build 220: Was neu berechnet wird (die Punkte 1–7)
+
+1. **Strömungsabriss, mild:** Der Flügel reißt ab, wenn verlangt wird, was er nicht hat. Zustand steigt mit
+   0,25 s, fällt mit 0,6 s; Auftrieb bis −30 %, Widerstand +0,12·Abriss; ein Flügel kippt mit
+   `Typ-Heftigkeit × GAME.stallRoll (65°/s)` (Heftigkeit C: Fw 190 0,9 nach Pilotenberichten B4, Corsair 0,7,
+   P-47 0,3, Zero 0,15, Bomber 0,1); Buffet-Wackeln ab 88 % des Maximums. **Spielentscheidung:** Der
+   Normal-Modus verlangt nie mehr als der Flügel hat (eine zu steile Kurve sinkt dann), nur die 1 g des
+   Geradeausflugs — zu langsam reißt er also trotzdem ab. Im AERO-Modus ist Vollausschlag genau die
+   Flügelgrenze (Looping am Rand des Abrisses, mit Buffet); zu langsam reißt er ab. Loslassen = Erholung,
+   sobald wieder Fahrt da ist. Gemessen im echten Spiel: Abriss nach 3–5 s Hochhalten mit Leerlauf,
+   abkippen 0–33°, Erholung 3,3–5,2 s nach dem Loslassen, 36–128 m Höhenverlust.
+2. **Rollrate aus veröffentlichten Werten:** unterhalb der Fahrt der Spitzenrate durch den Rollwiderstand
+   begrenzt (∝ V), darüber durch die Steuerkraft (∝ (V_peak/V)^fall); Spielrollrate = min(220°/s, 1,53 × real)
+   (`GAME.rollGain`, damit die P-47 ihr bisheriges Rollgefühl behält).
+3. **Masse im Flug:** Leermasse + Kraftstoff (Füllstand des Spiels) + Lasten bis zur physischen Kapazität
+   (`CAPACITY`: z. B. Avenger 1 Torpedo, auch wenn das Spiel „4 Torps“ zählt); Abwurf, Raketen, Zusatztank,
+   Treibstoffverbrauch ändern Masse und (über Außenlast-Widerstandsflächen, C) den Widerstand sofort.
+4. **Hochgeschwindigkeit:** über `mlimit` Machtrimm (Nase drückt, Höhenruder wird steif), über `vne` (EAS)
+   Überfahrt (Höhenruder −60 %); Warnung COMPRESSIBILITY / OVERSPEED.
+5. **Motorarten:** Kolben mit Volldruckhöhe (Gagg & Ferrar darüber), Turbolader (linearer Abfall, gelöst),
+   Strahl `T0·σ^n` (n gelöst), Rakete mit konstantem Schub und Massenstrom `T0/isp` (die Me 163 wird beim
+   Brennen leichter, danach echter Gleitflug).
+6. **Start und Landung auf demselben Modell** (`FlightCore.groundAcceleration`): Schub, Widerstand und
+   Flügelauftrieb wie in der Luft, Bodenreibung und Radbremse (0,30·Normalkraft, C) auf dem Gewicht, das der
+   Flügel noch nicht trägt, Bodeneffekt nach McCormick. Abheben, sobald der rotierte Flügel das Gewicht trägt.
+   Träger: dieselben Kräfte bei der Fahrt über Deck (Schiff + Wind).
+7. **KI auf demselben Modell** (`FlightControl.ai`): gleiche Kräfte, Lastgrenzen, Rollraten und Verstärkung wie
+   der Spieler; der KI-Pilot steuert Querlage (Kurswunsch), Bahnwinkel und Gas (PI-Regler auf Fahrt), setzt bei
+   Langsamflug selbst Klappen und entscheidet mindestens 60-mal pro Sekunde (gleicher Weg bei 20/60/120 FPS).
+
+### Quellen und Nachrechnung je Typ
+
+Gelöst (Levenberg–Marquardt) werden je Motorart nur so viele Größen, wie veröffentlichte Werte da sind:
+Kolben/Turbo `CD0, η_p (, Höhenabfall)`, Strahl `CD0, n`, Rakete `CD0, Mcrit`. Alles andere ist Quelle (A/B)
+oder benannte Annahme (C). Einzelheiten und Quellenzeilen stehen in `SOURCES`/`ASSUMED` in `flight-core.js`.
+
+| Typ | Veröffentlicht (Kennung) | Modell gegen Quelle | Vmax 1 km | Stall clean/Landung IAS | Rollrate Spitze | Vollkreis 70 % | Start (Masse publ.) |
+|---|---|---|---|---|---|---|---|
+| P-47D-28 | AAF-Vergleich 6.10.1944 (A) | ±1,7 % | 579 km/h | 183/155 | 145°/s | 8,5 s | 385 m |
+| Bf 109F-2 | Nutzer-PDF (A), IL-2-Datenblatt (B) | ±2,1 % | 551 | 161/154 | 153 | 6,9 | 299 |
+| Fw 190A-8 | IL-2-Datenblatt (B) | Vmax ±0,7 %, Steigen −14/+10 % (Zweigang-Lader nicht nachgebildet) | 579 | 190/176 | 220 | 9,2 | 504 |
+| Ju 87B-2 | Betriebsanleitung/Sammlungen (B) | exakt (2 Werte, 2 Größen) | 347 | 141/121 | 84 | 8,8 | 398 |
+| Me 262A-1a | Fliegerweb/flugrevue (B) | exakt; **Kontrolle** Startstrecke 1 005 m bei 7 130 kg (B5): Modell 1 064 m (+6 %) | 800 | 209/180 | 122 | 8,0 | 895 |
+| Me 163B | migflug/ww2db (B) | exakt (Steigen 2→10 km, 960 km/h) | 955 | 204/190 | 153 | 9,1 | — (Luftstart) |
+| TBF-1 Avenger | Fiddler's Green (B), Grumman (A) | exakt | 403 | 153/132 | 77 | 8,9 | 434 |
+| SBD-3 | NNAM (A/B), armedconflicts 1 190 ft/min (B3) | exakt | 360 | 146/126 | 107 | 9,4 | 405 |
+| F4U-1D | AN 01-45HA-1 (A), Vought-Versuch (B) | exakt | 578 | 161/138 | 153 | 6,8 | 265 |
+| A6M2 | j-aircraft/Francillon (B) | exakt | 474 | 126/109 | 176 | 4,8 | 150 |
+| B-17G (KI) | Sally B (B) | exakt; η_p 0,52 auffällig (Steigzeit vermutlich unter Volllast geflogen) | 392 | 167/144 | 46 | 11,2 | 1 113 |
+| B-24J (KI) | kasselmission (B) | ±0,02 % | 387 | 197/169 | 46 | 15,8 | 1 348 |
+
+„Exakt“ heißt: so viele Werte wie gelöste Größen — eine Bestätigung ist das nicht, nur die Fw 190, P-47,
+Bf 109 und B-24 haben überzählige Werte, und die Me 262 die unabhängige Startstrecke.
+
+### Spielentscheidungen und Annahmen (C) dieses Builds
+
+| Was | Wert | Warum |
+|---|---|---|
+| Startklappen | 50 % des Klappenwegs (Corsair 20°) beim Start aller Typen | Handbücher nennen 10–30°; ohne braucht eine beladene P-47/Fw 190/Me 262 550–800 m |
+| Startpunkt Piste | 40 m hinter der Schwelle (vorher 140 m) | 860 m Rollweg auf der 900-m-Piste |
+| Abflugschneisen | 1 200 m vor beiden Pistenenden, 60 m halbe Breite, +15 % | Fw 190/Me 262 überflogen das Pistenende in ~20 m — unter den 20–26 m hohen Bäumen |
+| Me-262-Starthilfe | zwei RI 502 (2 × 600 kp, 6 s, B6), automatisch bei 60 % der Rotationsfahrt | beladen ~1 000 m Startstrecke (B5) > Piste |
+| Startwind Träger | Schiff dampft beim Start auf 15 m/s Wind über Deck | mit 5 m/s kommt eine beladene Avenger auf 214 m Deck nicht hoch |
+| Reibung | Piste 0,04, Feld 0,08, Kufe/Bauch 0,35; Radbremse 0,30 | keine Messung |
+| Abriss-Schwellen | Abriss ab 100 % des Flügelmaximums, voll bei 110 %; Buffet ab 88 % | keine Messung |
+| KI-Formation | Querlage ≤ 0,8 rad, Gierrate ≤ 0,25 rad/s, Rollrate ≤ 0,32 rad/s, Gasregler kp 0,5 / ki 0,03 | ruhige Rottenflieger (Build 182), stabil auf dem Kern |
+| Bomber | 72 m/s, Querlage ≤ 0,48 rad, Kurs ≤ 0,09 rad/s | Pulk wie bisher |
+
+### Im echten Spiel gemessen (Chromium/SwiftShader, `fleet-core-browser`, `pacific-core-browser`)
+
+Rhein, Start mit der Missionslast (P-47: zwei Bomben und Zusatztank) bzw. allen Bomben, die der Typ trägt:
+
+| Typ | Masse | Abheben | Rollstrecke (Rest der Piste) | 40 s danach | Vollkreis 45/70 % Vmax | Loop ab Gate | Abriss: Kippen / Erholung |
+|---|---|---|---|---|---|---|---|
+| P-47 | 7 080 kg | 19,4 s | 624 m (236 m) | 355 m, 9,6 m/s | 12,6 / 8,7 s | 372 km/h, 10,2 s | 11° / 4,3 s |
+| Bf 109 | 3 285 kg | 16,7 s | 498 m (362 m) | 351 m | 10,5 / 7,4 s | 320 km/h, 9,4 s | 9° / 3,9 s |
+| Fw 190 | 4 887 kg | 20,6 s | 698 m (162 m) | 331 m | 13,9 / 9,5 s | 394 km/h, 10,9 s | 33° / 4,2 s |
+| Ju 87 | 4 250 kg | 18,2 s | 408 m (452 m) | 202 m, 4,4 m/s | 12,9 / 8,3 s | 305 km/h, 6,9 s | 7° / 3,6 s |
+| Me 262 | 6 155 kg (2 Bomben: 6 655) | 24,7 s mit RATO | 609 m (2 Bomben: 723 m) | 406 m, 14,6 m/s | 11,6 / 9,4 s | 432 km/h, 10,8 s | 13° / 5,2 s |
+| Me 163 | Luftstart | — | — | — | 7,9 / 10,8 s | 388 km/h, 9,1 s | 0° / 3,9 s |
+
+Pazifik, Trägerstart mit der Missionslast (Pilot zieht bei Abhebefahrt):
+
+| Typ | Masse | Abheben nach | Decklauf | Fahrt / Stall | 25 s danach | Vollkreis 45/70 % | Loop |
+|---|---|---|---|---|---|---|---|
+| Avenger (Torpedo) | 7 214 kg | 13,8 s | 200 m | 155 / 142 km/h | 132 m, 4,9 m/s | 11,4 / 7,7 s | — (kein AERO) |
+| SBD | 4 717 kg | 13,4 s | 180 m | 147 / 135 | 121 m | 12,7 / 8,2 s | 321 km/h, 6,7 s |
+| Corsair (2 × 1 000 lb + 8 HVAR) | 6 369 kg | 11,9 s | 214 m (Bug) | 181 / 163 | 185 m | 9,9 / 7,6 s | — |
+| Zero | 2 410 kg | 6,4 s | 70 m | 136 / 116 | 268 m | 7,0 / 5,1 s | 241 km/h, 6,8 s |
+
+Alle Typen: 8-s-Steigkurve bei 20 und 120 FPS innerhalb 0,4 m/s Fahrt, 0,06 rad Kurs, 6 m Höhe.
+KI: Bf 109 kehrt bei 145 m/s in 6,4 s um (vorher 11–32 s, langsamer als der Spieler), hält dabei die Höhe;
+Rottenflieger halten bei 80 kt den Platz auf ±1 m (20/60/120 FPS innerhalb 0,1 m).
+
+### Ehrlich offen
+
+- Kein iPad-Test, kein Spielgefühl-Nachweis.
+- Fw-190-Steigwerte ±14 % (Zweigang-Lader nicht modelliert); B-17 mit auffälligem η_p (nur KI).
+- Rollraten, Abriss-Heftigkeit, Mcrit/mlimit, Lastgrenzen sind überwiegend Sekundärquellen oder C.
+- Formation langsamer als 80 kt geht mit einer Avenger physikalisch nicht mehr (Landeklappen-Stall 65 kt).
+
+## Erster Typ: P-47 (Build 219, unverändert gültig)
+
+### Quellen (Kennung A = Primärdokument, B = übereinstimmende Sekundärangaben)
 
 | Größe | Wert | Quelle |
 |---|---|---|
@@ -28,7 +139,7 @@ Manöver-Verstärkung) getrennt in `GAME`. Es gibt keine Werte pro Typ zum Nachs
 
 Die 32 000-ft-Werte fließen nicht ein (im Original geschätzt, über der Spielhöhe von 5 000 m).
 
-## Physik
+### Physik
 
 - Atmosphäre: ISA.
 - Widerstand: `D = q·S·(CD0 + k·CL² + ΔCD_Konfiguration + ΔCD_Mach)`, `k = 1/(π·A·e)`,
@@ -50,7 +161,7 @@ Die 32 000-ft-Werte fließen nicht ein (im Original geschätzt, über der Spielh
   Looping durch die Senkrechte geht. Fester 120-Hz-Teilschritt: Ergebnis ist von der Bildrate unabhängig.
 - Kompressibilität: Lock'sches Gesetz `ΔCD = 20·(M − Mcrit)⁴` über `Mcrit`.
 
-## Gelöst aus den sechs AAF-Werten
+### Gelöst aus den sechs AAF-Werten
 
 Kleinste Quadrate (Levenberg–Marquardt) über die drei Höchstgeschwindigkeiten **und** die drei
 Steigraten; die Steigrate ist die beste über alle Fahrten, mit Lift = W·cos γ und der Korrektur für
@@ -69,7 +180,7 @@ CD0 und η_p sind miteinander verknüpft — scharf bestimmt ist vor allem ihr V
 pro Leistung). Der gelöste Leistungsabfall kann ebenso gut Turbolader wie Propeller zugeschrieben
 werden; beide Deutungen ergeben dieselben Kräfte.
 
-## Nachrechnung gegen die Quellen
+### Nachrechnung gegen die Quellen
 
 | Größe | Quelle | Modell | Abweichung |
 |---|---|---|---|
@@ -84,7 +195,7 @@ werden; beide Deutungen ergeben dieselben Kräfte.
 Daraus folgend (keine Quelle zum Vergleich): beste Steiggeschwindigkeit 161 / 154 / 148 mph IAS,
 Eckgeschwindigkeit 134,6 m/s auf Meereshöhe.
 
-## Ohne Quelle verwendet (Kennung C)
+### Ohne Quelle verwendet (Kennung C)
 
 | Wert | Grund |
 |---|---|
@@ -97,7 +208,7 @@ Eckgeschwindigkeit 134,6 m/s auf Meereshöhe.
 
 Masse im Spiel: 5 775 kg × Beladungsfaktor aus `SortieFeatures.Handling.sample` (Spielwert).
 
-## Was das Spiel festlegt (keine Flugzeugdaten)
+### Was das Spiel festlegt (keine Flugzeugdaten)
 
 - **Manöver-Verstärkung 2,2**: Die Drehung der Flugbahn (Kurven, Hochziehen) läuft 2,2-mal schneller
   als in der Physik, für zwei Daumen am Tablet. Kräfte, Widerstand und Energie werden **nicht**
@@ -116,7 +227,7 @@ Masse im Spiel: 5 775 kg × Beladungsfaktor aus `SortieFeatures.Handling.sample`
   Rollen wie bisher.
 - Rollrate unverändert aus FLIGHT-ENVELOPE.md (Quelle B, ±30 %).
 
-## Folgen fürs Spiel (aus dem Kern, 1 000 m, Vollgas)
+### Folgen fürs Spiel (aus dem Kern, 1 000 m, Vollgas)
 
 | | Verstärkung 2,2 | reine Physik |
 |---|---|---|
@@ -130,7 +241,7 @@ Masse im Spiel: 5 775 kg × Beladungsfaktor aus `SortieFeatures.Handling.sample`
 Energieerhaltung (ohne Schub und Widerstand, 60 s Manöver): Drift 0,005 %.
 20 / 60 / 120 FPS: identisches Ergebnis.
 
-## Im echten Spiel gemessen (`p47-core-browser.cjs`, alter Stand mit `?p47core=off`)
+### Im echten Spiel gemessen (`p47-core-browser.cjs`, alter Stand mit `?p47core=off`)
 
 | | neu (Kern) | alt (Build 215) |
 |---|---|---|
@@ -147,7 +258,7 @@ Kurve kostet Fahrt. Die anderen neun Typen laufen noch auf dem alten Gesetz, des
 Build 211 etwa 2,3–3,5 × real ist — im direkten Vergleich wirkt die P-47 deshalb vorerst schwächer
 als Bf 109 / Fw 190 (Beschleunigung von 85 m/s in 10 s: P-47 auf 101 m/s, beide anderen auf 130).
 
-## Bestandstests
+### Bestandstests
 
 Grün mit dem Kern: `handling-quality-browser`, `fleet-flight-browser`, `flight-envelope-browser`,
 `p47-integration-browser`, `pitch-response`, Landungsteil von `field-landing-browser` für die P-47
@@ -157,7 +268,7 @@ auf Build 214 identisch rot, im unveränderten Bodencode. Angepasst (mit Begrün
 Vergleiche mit Sollwerten des alten Kurven-/Roll-Gesetzes gelten nicht für einen Typ auf dem Kern;
 dessen Werte prüfen `p47-core-browser` und `derive-p47`.
 
-## Nicht behauptet
+### Nicht behauptet
 
 - Kein iPad-Test, kein Hörtest, kein Spielgefühl-Nachweis — das entscheidet nur der Flug auf dem Gerät.
 - Die P-47 hat keine gemessene Rollrate, kein Trägheitsmoment, keine Klappen-/Fahrwerkswiderstände

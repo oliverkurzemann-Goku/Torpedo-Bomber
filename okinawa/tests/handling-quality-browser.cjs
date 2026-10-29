@@ -73,8 +73,8 @@ const server=http.createServer((req,res)=>{
      inputRoll=-bias/(rollLim*steerSign);
      // Europe types with progressive stick response invert their exponent.
      if(!pacific&&acDef().stickExponent)inputRoll=Math.sign(inputRoll)*Math.pow(Math.abs(inputRoll),1/acDef().stickExponent);
-     // The computed P-47 core maps the stick to a level-turn bank (FLIGHT-CORE.md): use its inverse.
-     if(!pacific&&kind==='p47'&&typeof P47Core!=='undefined'&&P47Core.on)inputRoll=p47StickForBank(-bias)/steerSign;
+     // The computed core maps the stick to a level-turn bank (FLIGHT-CORE.md): use its inverse.
+     if(typeof coreOn==='function'&&coreOn(kind))inputRoll=coreStickForBank(-bias)/steerSign;
      for(let i=0;i<fps*4;i++)updateFlight(1/fps);if(Math.abs(P.roll)>.003)throw Error('Existing stick cannot counter damage');
      let asymmetry=null;
      if(kind!=='me163'){
@@ -87,7 +87,8 @@ const server=http.createServer((req,res)=>{
      SortieFeatures.Damage.reset(P,pacific?100:acDef().hull);P.gear=P.gearTgt=1;updateHUD();
      if(!document.querySelector('.controlFault').hidden)throw Error('Repair left a control warning');
      const envelope=pacific?CarrierRecovery.envelope(P,STALL_SPD,APP_SPD):SortieFeatures.Handling.speeds(P,acDef().stall,acDef().app);
-     const reference=envelope.referenceIAS??envelope.reference;
+     // The Pacific HUD reads true airspeed (no IAS tape), so its REF is the TAS of the core's reference.
+     const reference=pacific?envelope.reference:(envelope.referenceIAS??envelope.reference);
      if(!document.getElementById('landingRef').textContent.includes(Math.round(reference*KT)+(pacific?' KT':' MPH')))throw Error('HUD reference differs from physics');
      return {kind,fps,heavy,light,reference,asymmetry:asymmetry?.flaps};
     },{kind,fps,pacific});console.log('Shipped handling:',JSON.stringify(result));

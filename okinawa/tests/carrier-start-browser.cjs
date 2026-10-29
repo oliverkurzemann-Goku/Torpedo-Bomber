@@ -97,8 +97,10 @@ const server=http.createServer((req,res)=>{
    await page.evaluate(()=>{P.throttle=1;setThrottleUI(1);});
    await page.evaluate(()=>{const render=GameRuntime.render;GameRuntime.render=()=>true;try{for(let i=0;i<40;i++){animateFrame();if(state===ST.LAUNCH&&P.pos.x-carrierX<BOW_X-2)checkDeckContact();}}finally{GameRuntime.render=render;}});
    assert(await page.evaluate(()=>state===ST.LAUNCH&&launchTimer>=1.9&&P.pos.x-carrierX<BOW_X),'first two seconds remain on the flight deck');
-   await page.evaluate(()=>{const render=GameRuntime.render;GameRuntime.render=()=>true;try{for(let i=0;i<260&&state===ST.LAUNCH;i++){animateFrame();if(state===ST.LAUNCH&&P.pos.x-carrierX<BOW_X-2)checkDeckContact();}}finally{GameRuntime.render=render;}});
-   assert(await page.evaluate(()=>state===ST.FLIGHT&&launchTimer>6&&launchTimer<12&&P.pos.x-carrierX>BOW_X),'departure follows the full deck run and actual bow exit');
+   await page.evaluate(()=>{const render=GameRuntime.render;GameRuntime.render=()=>true;try{for(let i=0;i<400&&state===ST.LAUNCH;i++){animateFrame();if(state===ST.LAUNCH&&P.pos.x-carrierX<BOW_X-2)checkDeckContact();}}finally{GameRuntime.render=render;}});
+   assert(await page.evaluate(()=>state===ST.FLIGHT&&launchTimer>6&&launchTimer<18&&P.pos.x-carrierX>BOW_X),'departure follows the full deck run and actual bow exit');
+   // Build 220: the deck run is computed (FlightCore.groundAcceleration at 15 m/s wind over the deck):
+   // without a pull a loaded Avenger reaches the bow after about 15 s, a Zero after about 9 s.
    const climb=await page.evaluate(()=>{
     const y=P.pos.y,startSpeed=P.spd;inputPitch=.35;P.gearTgt=0;
     const render=GameRuntime.render;GameRuntime.render=()=>true;

@@ -15,52 +15,51 @@
  },
  "verification": [
   {
-   "figure": "max speed mph TAS",
-   "altitudeFt": 0,
-   "published": 345,
-   "model": 351,
-   "errorPct": 1.67
-  },
-  {
-   "figure": "max speed mph TAS",
-   "altitudeFt": 10000,
-   "published": 383,
-   "model": 380,
-   "errorPct": -0.81
-  },
-  {
-   "figure": "max speed mph TAS",
-   "altitudeFt": 20000,
-   "published": 417,
-   "model": 413,
-   "errorPct": -0.92
-  },
-  {
    "figure": "climb fpm",
    "altitudeFt": 0,
-   "published": 3180,
+   "published": null,
    "model": 3198,
-   "errorPct": 0.56
+   "errorPct": null
   },
   {
    "figure": "climb fpm",
    "altitudeFt": 10000,
-   "published": 2920,
+   "published": null,
    "model": 2870,
-   "errorPct": -1.72
+   "errorPct": null
   },
   {
    "figure": "climb fpm",
    "altitudeFt": 20000,
-   "published": 2470,
+   "published": null,
    "model": 2497,
-   "errorPct": 1.08
+   "errorPct": null
+  },
+  {
+   "figure": "climb fpm",
+   "altitudeFt": 0,
+   "published": null,
+   "model": 3198,
+   "errorPct": null
+  },
+  {
+   "figure": "climb fpm",
+   "altitudeFt": 10000,
+   "published": null,
+   "model": 2870,
+   "errorPct": null
+  },
+  {
+   "figure": "climb fpm",
+   "altitudeFt": 20000,
+   "published": null,
+   "model": 2497,
+   "errorPct": null
   },
   {
    "figure": "clean stall mph IAS at 13,230 lb",
-   "published": 116,
-   "model": 116,
-   "errorPct": 0
+   "model": null,
+   "errorPct": null
   }
  ],
  "bestClimbIAS_mph": [
@@ -87,16 +86,16 @@
   },
   "70%Vmax_gain2.2": {
    "entrySpeed": 112.6,
-   "seconds": 8.47,
-   "endSpeed": 101.5,
-   "altitudeChange": -13.4,
+   "seconds": 120.02,
+   "endSpeed": 254.5,
+   "altitudeChange": -7960.4,
    "bankDeg": 77
   },
   "70%Vmax_gain1": {
    "entrySpeed": 112.6,
-   "seconds": 21.05,
-   "endSpeed": 102.5,
-   "altitudeChange": -68.8,
+   "seconds": 120.02,
+   "endSpeed": 206.7,
+   "altitudeChange": -3355.7,
    "bankDeg": 77
   }
  },
@@ -132,74 +131,142 @@
  },
  "frameRate": {
   "20": {
-   "speed": 110.6013,
-   "heading": 5.57027,
-   "altitude": 1536.846
+   "speed": 105.0326,
+   "heading": 1.22922,
+   "altitude": 1582.916
   },
   "60": {
-   "speed": 110.6013,
-   "heading": 5.57027,
-   "altitude": 1536.846
+   "speed": 105.0326,
+   "heading": 1.22922,
+   "altitude": 1582.916
   },
   "120": {
-   "speed": 110.6013,
-   "heading": 5.57027,
-   "altitude": 1536.846
+   "speed": 105.0326,
+   "heading": 1.22922,
+   "altitude": 1582.916
   }
  },
  "energyDrift60sPct": 0.0054,
  "sources": {
-  "name": "P-47D Thunderbolt (R-2800-59, 2600 bhp WEP)",
-  "weightLb": 12731,
-  "wingAreaFt2": 300,
-  "spanM": 12.42,
-  "shaftHp": 2600,
-  "propDiameterM": 3.99,
-  "maxSpeedMph": [
-   [
-    0,
-    345
-   ],
-   [
-    10000,
-    383
-   ],
-   [
-    20000,
-    417
-   ]
+  "name": "P-47D-28 Thunderbolt (R-2800-59, 2600 bhp WEP)",
+  "refs": {
+   "A1": "USAAF performance comparison, 6 Oct 1944 (assets/aircraft/P47-PERFORMANCE.md)",
+   "A2": "USAAF Flight Test Engineering Branch Eng-47-1774-A, 15 Jul 1944",
+   "B1": "Curtiss Electric 836 propeller, 13 ft 1-2 in",
+   "B2": "Roll rate compilation, FLIGHT-ENVELOPE.md"
+  },
+  "mass": 5774.684462470001,
+  "massRef": "A1",
+  "S": 27.870912,
+  "b": 12.42,
+  "geomRef": "A1",
+  "propD": 3.99,
+  "propRef": "B1",
+  "engine": {
+   "kind": "turbo",
+   "power": 1938819.662,
+   "count": 1,
+   "ref": "A1",
+   "text": "2600 bhp WEP"
+  },
+  "perf": [
+   {
+    "q": "speed",
+    "h": 0,
+    "v": 154.2288,
+    "ref": "A1",
+    "text": "345 mph @ SL",
+    "mode": "max"
+   },
+   {
+    "q": "speed",
+    "h": 3048,
+    "v": 171.21632,
+    "ref": "A1",
+    "text": "383 mph @ 10 000 ft",
+    "mode": "max"
+   },
+   {
+    "q": "speed",
+    "h": 6096,
+    "v": 186.41568,
+    "ref": "A1",
+    "text": "417 mph @ 20 000 ft",
+    "mode": "max"
+   },
+   {
+    "q": "climb",
+    "h": 0,
+    "v": 16.154400000000003,
+    "ref": "A1",
+    "text": "3180 ft/min @ SL",
+    "mode": "max"
+   },
+   {
+    "q": "climb",
+    "h": 3048,
+    "v": 14.8336,
+    "ref": "A1",
+    "text": "2920 ft/min @ 10 000 ft",
+    "mode": "max"
+   },
+   {
+    "q": "climb",
+    "h": 6096,
+    "v": 12.547600000000001,
+    "ref": "A1",
+    "text": "2470 ft/min @ 20 000 ft",
+    "mode": "max"
+   }
   ],
-  "climbFpm": [
-   [
-    0,
-    3180
-   ],
-   [
-    10000,
-    2920
-   ],
-   [
-    20000,
-    2470
-   ]
-  ],
-  "stallTestLb": 13230,
-  "stallCleanMph": 116,
-  "stallLandingMph": 98
+  "stall": {
+   "mass": 6001.0270551,
+   "clean": 51.85664,
+   "landing": 43.80992,
+   "ref": "A2",
+   "text": "116 / 98 mph IAS power off at 13 230 lb"
+  },
+  "roll": {
+   "peak": 95,
+   "at": 130,
+   "fall": 0.8,
+   "ref": "B2"
+  }
  },
  "assumed": {
-  "nLimit": 7,
   "nNegative": 3,
   "clMinRatio": 0.6,
-  "mcrit": 0.72,
   "gearCD": 0.02,
   "flapCD": 0.05,
-  "tankCD": 0.006,
   "windmill": 0.07,
-  "spool": 1.25
+  "spool": 1.25,
+  "clClean": 1.4,
+  "clLandingRatio": 1.35,
+  "severity": 0.3,
+  "tankArea": 0.05,
+  "bombArea": 0.02,
+  "heavyBombArea": 0.03,
+  "rocketArea": 0.005,
+  "tankShell": 30,
+  "mcrit": 0.72,
+  "nLimit": 7,
+  "mlimit": 0.75,
+  "vne": 223.52,
+  "stores": {
+   "bomb": 227,
+   "bombArea": 0.02,
+   "rocket": 64,
+   "rocketArea": 0.005,
+   "tankFuel": 294.35362032384,
+   "tankShell": 45,
+   "fuel": 1008.4336992575999
+  }
  },
  "game": {
   "manoeuvreGain": 2.2,
+  "rollGain": 1.5305263157894737,
+  "rollCeiling": 3.839724354387525,
+  "stallRoll": 1.1344640137963142,
   "substepHz": 120
  }
 }

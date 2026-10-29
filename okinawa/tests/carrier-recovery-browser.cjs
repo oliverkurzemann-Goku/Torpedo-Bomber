@@ -36,6 +36,9 @@ const server=http.createServer((req,res)=>{
      for(const s of ships)s.alive=false;raiders=[];etorps=[];enemyBombs=[];shoreTargets=[];pacificOps=null;
      windHead=6;windZ=0;windGust=0;seaState=0;P.heading=0;P.pitch=-.06;P.roll=0;P.pitchVel=P.rollVel=0;
      P.flap=P.flapTgt=P.gear=P.gearTgt=P.hook=P.hookTgt=1;P.spd=40;P.throttle=.275;
+     // Build 220 (computed core): a returning aircraft - stores gone, 30 % fuel. Fully loaded, a Corsair
+     // stalls at 41.5 m/s and could not fly this 40 m/s approach at all.
+     P.torps=0;P.rockets=0;P.fuel=30;
      inputPitch=P.pitch/.70;inputRoll=0;P.pos.set(carrierX+(late?-8:-80),30,0);updatePlaneMesh(0);
      P.pos.y=carrierContactHeight()+.55;updatePlaneMesh(0);
     }

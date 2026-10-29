@@ -1,6 +1,6 @@
 /* The computed P-47 flight core (flight-core.js) inside the shipped remagen-mission.html updateFlight():
  * real take-off from the strip, full-stick turn, AERO loop, idle deceleration, 20/60/120 FPS, no page
- * errors. Compares the old model (?p47core=off) on the same manoeuvres. */
+ * errors. Compares the old model (?core=off) on the same manoeuvres. */
 'use strict';
 const fs=require('node:fs'),path=require('node:path'),http=require('node:http'),assert=require('node:assert/strict');
 const {chromium}=require('playwright'),root=path.resolve(__dirname,'../..');
@@ -23,7 +23,7 @@ async function run(browser,query){
  const out=await page.evaluate(()=>{
   const index=MISSIONS.findIndex(m=>(m.ac||'p47')==='p47'&&!m.free&&!m.circuits&&!m.qual);
   startMission(index);finishLaunchIntro(false);show('menu',false);show('brief',false);
-  const res={core:typeof P47Core!=='undefined'&&P47Core.on,mission:MISSIONS[index].title};
+  const res={core:typeof coreOn==='function'&&coreOn('p47'),mission:MISSIONS[index].title};
   const unwrap=(a,b)=>Math.atan2(Math.sin(a-b),Math.cos(a-b));
   // 1. take-off from the strip: full power, rotate with half back stick, gear up at 40 m
   state=ST.FLIGHT;P.throttle=1;inputRoll=inputPitch=0;aeroMode=false;
@@ -61,7 +61,7 @@ async function run(browser,query){
  await new Promise(r=>server.listen(0,'127.0.0.1',r));
  const browser=await chromium.launch({executablePath:executable,headless:true,args:['--no-sandbox','--disable-dev-shm-usage','--use-angle=swiftshader','--enable-unsafe-swiftshader']});
  try{
-  const core=await run(browser,''),old=process.env.P47_CORE_COMPARE?await run(browser,'&p47core=off'):null;
+  const core=await run(browser,''),old=process.env.P47_CORE_COMPARE?await run(browser,'&core=off'):null;
   const report={core,old};console.log(JSON.stringify(report,null,1));
   assert.deepEqual(core.errors,[]);assert.ok(core.core,'core active for the P-47');
   assert.ok(core.takeoff.alive&&core.takeoff.liftoff>0,'take-off completes');

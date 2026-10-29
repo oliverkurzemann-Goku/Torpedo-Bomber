@@ -61,8 +61,11 @@ const server=http.createServer((req,res)=>{
    const at=kind=>rows.find(r=>r.kind===kind&&r.fps===60);
    // On the computed core (flight-core.js) the P-47's half stick commands the level-turn bank of the same
    // load-factor share (about 70 deg here), not half of rollLim, so this normalisation does not apply to it.
-   const p47Core=!pacific&&await page.evaluate(()=>typeof P47Core!=='undefined'&&P47Core.on);
-   if(pacific){assert(at('zero').turn>at('avenger').turn*1.4);assert(at('corsair').acceleration>at('avenger').acceleration+12);assert(at('sbd').roll>at('avenger').roll*1.1);}
+   const p47Core=!pacific&&await page.evaluate(()=>typeof coreOn==='function'&&coreOn('p47'));
+   // Build 220: on the core the gain from 85 m/s in 10 s is the real excess power over the real mass (no
+   // thrust multiplier any more): the Corsair gains about twice what the Avenger does, not a fixed +12 m/s.
+   const pacCore=pacific&&await page.evaluate(()=>typeof coreOn==='function'&&coreOn('corsair'));
+   if(pacific){assert(at('zero').turn>at('avenger').turn*1.4);if(pacCore)assert(at('corsair').acceleration-85>(at('avenger').acceleration-85)*1.6,'Corsair out-accelerates the Avenger');else assert(at('corsair').acceleration>at('avenger').acceleration+12);assert(at('sbd').roll>at('avenger').roll*1.1);}
    else {if(!p47Core)assert(at('fw190').roll/(Math.pow(.5,1.18)*1.56)>at('p47').roll/(.5*1.56)*1.06,'Fw 190 reaches its commanded bank sooner');assert(at('bf109').pitch>at('p47').pitch*1.03,'Bf 109 answers the stick a little sooner than the Jug (Build 215: wing-loading graded, no longer 25 % apart)');assert(at('p47').coast>at('bf109').coast+2);assert(at('me163').acceleration>at('me262').acceleration+30);assert(at('bf109').turn>at('me262').turn*1.25);}
    for(const kind of new Set(rows.map(r=>r.kind))){const samples=rows.filter(r=>r.kind===kind);for(const key of ['acceleration','coast','turnSpeed'])assert(Math.max(...samples.map(r=>r[key]))-Math.min(...samples.map(r=>r[key]))<1.5,kind+' FPS '+key);}
 
