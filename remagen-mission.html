@@ -511,7 +511,7 @@
 <script src="terrain-system/LivingWorld.js?v=179"></script>
 <script src="campaign.js?v=1"></script>
 <script src="game-runtime.js?v=198"></script>
-<script src="sortie-checkpoint.js?v=198"></script>
+<script src="sortie-checkpoint.js?v=221"></script>
 <script src="ju87-native.js?v=218"></script>
 <script src="me262-native.js?v=206"></script>
 <script src="me163-native.js?v=218"></script>
@@ -3048,7 +3048,6 @@ const MISSIONS=[
     text:'Fictional rocket dash from the forward strip. One Fortress, a short rocket burn and no go-around after cutoff. Reach the approach gate above 4,900 ft MSL for an OPTIONAL high-entry bonus. After the bomber falls, automatic rocket cutoff begins the recovery. Evade the pursuer and glide back with the landing skid extended; landing ends the sortie.'},
   {id:'nightworks',title:'Bonus Night',sub:'Moonlight Works',ac:'p47',bonus:true,night:true,weather:'clear',kills:{factory:1,flak:1},flakDefense:1,text:'Fictional night raid over the Rhine. Mark the works with parachute flares (L / FLARE), silence the battery and bomb the factory. Four flares are carried. Return to the field for fuel, ammunition and repairs if another attack is needed.'}
 ];
-const hangarRequest=CustomSortie.install('europe',MISSIONS,FlightPlans.europe,window.location.search);
 function M(){ return MISSIONS[mission]; }
 function isFree(){ return !!M().free; }
 function isCircuits(){ return !!M().circuits; }
@@ -4948,7 +4947,7 @@ function applyWeather(){
   if(night){scene.background.setHex(0x0b1220);scene.fog.color.setHex(0x0b1220);if(sun){sun.intensity=.10;sun.color.setHex(0x9aafcb);}if(hemi)hemi.intensity=.16;}else if(sun)sun.color.setHex(0xffffff);
   // The old .42 fill stayed at daylight strength throughout the night.
   if(moonFill){moonFill.intensity=night?.20:.42;moonFill.color.setHex(night?0xa3b8d2:0xbfd4e6);}
-  aircraftFinish?.setNight(night);runwayLights?.setActive(night,AF_X,AF_Z);
+  aircraftFinish?.setNight(night);runwayLights?.setActive(night&&realWorldReady,AF_X,AF_Z);
 }
 
 // ============================================================
@@ -6223,6 +6222,7 @@ function reportStartupError(err){
   show('menu',false);show('loading',true);
   document.getElementById('loadingText').textContent='Unable to start Thunderbolt: '+err.message+' — please reload the page.';
 }
+const hangarRequest=CustomSortie.install('europe',MISSIONS,FlightPlans.europe,window.location.search);
 window.addEventListener('load',()=>{try{init();}catch(err){reportStartupError(err);}});
 </script>
 <script src="checkpoint-rhine.js?v=221"></script>

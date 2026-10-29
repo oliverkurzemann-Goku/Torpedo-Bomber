@@ -42,7 +42,13 @@ const server=http.createServer((req,res)=>{const file=path.resolve(root,'.'+deco
    },{cfg,pac});
    // Restore through the real adapter, including custom identity, loaded models and active mission.
    await page.evaluate(async()=>{await sortieCheckpoint.flush();await sortieCheckpoint.resume();});assert(await page.evaluate(()=>MISSIONS[mission].customId===CustomSortie.fingerprint(MISSIONS[mission].custom)));
-   results.push(row);
+   if(cfg.theatre==='europe'&&cfg.ac==='p47'){
+    await page.evaluate(()=>localStorage.removeItem('custom-sortie-v1-europe'));
+    await page.goto(base+'/remagen-mission.html?v=221');await page.waitForFunction(()=>realWorldReady&&state===ST.MENU,null,{polling:200});
+    await page.evaluate(async()=>{await sortieCheckpoint.resume();});
+    assert.deepEqual(await page.evaluate(()=>MISSIONS[mission].custom),cfg);row.selfContainedRestore=true;
+   }
+   console.log('PASS',row);results.push(row);
   }
   assert.deepEqual(errors,[]);console.log(JSON.stringify({configuredCampaigns:results,errors},null,2));fs.mkdirSync(path.join(root,'test-visuals'),{recursive:true});fs.writeFileSync(path.join(root,'test-visuals/hangar-gameplay.json'),JSON.stringify(results,null,2));
  }finally{await browser.close();await new Promise(r=>server.close(r));}

@@ -2,10 +2,10 @@
 'use strict';
 (function(){
  const C=SortieCheckpoint;
- const identity=i=>MISSIONS[i]?MISSIONS[i].title+'|'+MISSIONS[i].sub+(MISSIONS[i].customId?'|'+MISSIONS[i].customId:''):null;
+ const identity=(i,saved)=>CustomSortie.checkpointIdentity('pacific',MISSIONS,i,saved);
  function airborne(){return (state===ST.FLIGHT||state===ST.PAUSED&&prePauseState===ST.FLIGHT)&&P.alive&&!P.onDeck&&!P.deckRun&&!P.arrestRun&&!carrierIntro&&!bailout&&!ditching;}
  function snapshot(){
-  return {mission,identity:identity(mission),label:MISSIONS[mission].sub,
+  return {mission,custom:MISSIONS[mission].custom||null,identity:identity(mission),label:MISSIONS[mission].sub,
    player:C.capture(P,['_keys','_stickActive','_keyboardFlightActive']),operation:C.capture(pacificOps),plan:C.capture(pacificPlan),
    globals:C.capture({carrierX,CARRIER_SPD,score,scoreStart,loadout,DIFF,aeroMode,invertPitch,steerSign,weather,seaState,windZ,windHead,windGust,timeMode,menuTime,
     qualTraps,qualStep,carrierHP,sortieTorpFired,sortieTorpHit,sortieBombFired,sortieBombHit,sortieShipsSunk,sortieZeros,hitsTaken,sortieWingmenLost,
@@ -19,6 +19,7 @@
    flares:flareSupport?.checkpoint()};
  }
  async function load(saved){
+  CustomSortie.restoreSaved('pacific',saved,MISSIONS,FlightPlans.pacific);
   if(!saved.operation?.config||!saved.plan?.config)throw Error('Missing operation in checkpoint');
   await prepareOkinawa();
   await preparePacificModels(MISSIONS[saved.mission]);

@@ -19,7 +19,7 @@
   $('enemies').querySelector('option[value="0"]').disabled=['fighter','intercept','defend'].includes(c.task);
   $('stores').textContent=detail.armament;$('aircraftNote').textContent=c.ac==='me163'?'The Komet starts airborne after trolley release. Plan an unpowered skid landing.':c.kit==='range'?'External fuel is consumed first. Jettison the drop tank before combat.':c.kit==='torpedo'?'One torpedo in the internal bay. Land aboard to rearm for another attack.':'Gun installation stays specific to the selected aircraft.';
   const art=$('theatreArt');art.src=c.theatre==='pacific'?'assets/pacific-campaign.webp':'assets/europe-campaign.webp';art.alt=c.theatre==='pacific'?'Pacific carrier operations':'Rhine valley operations';
-  const strong=document.createElement('strong');strong.textContent=detail.title+' · '+detail.aircraft;const line=document.createElement('small');line.textContent=detail.conditions+' · '+(c.task==='free'?'Unlimited practice fuel':c.fuel+'% fuel')+' · '+c.difficulty;$('summary').replaceChildren(strong,line);
+  const strong=document.createElement('strong');strong.textContent=detail.title+' · '+detail.aircraft;const line=document.createElement('small');line.textContent=detail.conditions+' · '+(c.task==='free'?'Unlimited practice fuel':c.fuel+'% fuel')+' · '+({rookie:'Rookie',vet:'Veteran',ace:'Ace'})[c.difficulty];$('summary').replaceChildren(strong,line);
   try{localStorage.setItem(draftKey,JSON.stringify(c));}catch(_){}
  }
  options($('weather'),Object.entries(C.weatherNames),'clear');

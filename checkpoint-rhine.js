@@ -1,9 +1,9 @@
 /* Rhine checkpoint adapter. Rebuild from original templates, restore state, no awards. */
 'use strict';
 (function(){
- const C=SortieCheckpoint,identity=i=>MISSIONS[i]?MISSIONS[i].id+'|'+MISSIONS[i].ac+(MISSIONS[i].customId?'|'+MISSIONS[i].customId:''):null;
+ const C=SortieCheckpoint,identity=(i,saved)=>CustomSortie.checkpointIdentity('europe',MISSIONS,i,saved);
  function airborne(){return (state===ST.FLIGHT||state===ST.PAUSED&&prevState===ST.FLIGHT)&&P.alive&&!P.onGround&&!P.landingRoll&&!launchIntro&&!bailout&&!missionOver&&!sortieService?.active;}
- function snapshot(){return {mission,identity:identity(mission),label:MISSIONS[mission].sub,
+ function snapshot(){return {mission,custom:MISSIONS[mission].custom||null,identity:identity(mission),label:MISSIONS[mission].sub,
   player:C.capture(P,['_keys','_stickActive','_keyboardFlightActive']),operation:C.capture(europeOps),
   globals:C.capture({score,scoreStart,sortieKills,hitsTaken,circuitsDone,weather,baseWind,windZ,wxTime,diffIdx,weapon,aeroMode,invertPitch,steerSign,convoyAlertCalled}),
   targets:targets.map(t=>C.entity(t,t.sub)),air:enemyAir.map(e=>C.entity(e)),wingmen:wingmen.map(w=>C.entity(w)),
@@ -11,6 +11,7 @@
   weapons:{bullets:C.projectiles(bullets),tracers:C.projectiles(tracers),bombs:C.projectiles(bombs),rockets:C.projectiles(rockets),groundFire:C.projectiles(groundFire)},
   navigation:C.navigationState(navigation),clock:clock.elapsedTime,flares:flareSupport?.checkpoint()};}
  async function load(saved){
+  CustomSortie.restoreSaved('europe',saved,MISSIONS,FlightPlans.europe);
   if(!saved.operation?.config)throw Error('Missing operation in checkpoint');
   const kinds=new Set([MISSIONS[saved.mission].ac,...saved.air.map(e=>e.state.kind),...saved.wingmen.map(e=>e.state.kind)]);
   for(const kind of kinds)await ensureModel(kind);

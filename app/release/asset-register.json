@@ -4,10 +4,10 @@
   "build": 221,
   "status": "OPEN — source declarations checked; no external rights authorization obtained",
   "payload": {
-    "bytes": 271946123,
+    "bytes": 271947756,
     "fileCount": 359,
     "modelCount": 36,
-    "manifestSha256": "2e12b232215c8e2dd98a307c82af740100e365d4c9cfd1cb94fee6681da246e5"
+    "manifestSha256": "7e633f840c402e4bd771a5311b59e4e5f502360127b6003928a53dee3574b7c7"
   },
   "files": [
     {
@@ -612,14 +612,14 @@
     },
     {
       "path": "checkpoint-pacific.js",
-      "bytes": 6730,
-      "sha256": "530c307638ecae799b7fbe8f43378354febe222b2032b4db043036c5e8e1fbb3",
+      "bytes": 6805,
+      "sha256": "e76aa3222d3effa377d54342fb2978126c777e3bae0100f609c1e75ecd0db68b",
       "kind": "code-or-notice"
     },
     {
       "path": "checkpoint-rhine.js",
-      "bytes": 4866,
-      "sha256": "4cd8b4fa88fa93d21cee6cbb3460b341debcf02ba99a5a0684918dd9890e71c9",
+      "bytes": 4942,
+      "sha256": "94c0d3074b36f7cb4d75ccf9aad90be1cd27bc5425ec7fb8da407d2dd3516382",
       "kind": "code-or-notice"
     },
     {
@@ -642,8 +642,8 @@
     },
     {
       "path": "custom-sortie.js",
-      "bytes": 9277,
-      "sha256": "4f4de89e2156304241e288d651b05886edeaec3a4bf2317b63f1ddde6b273e4a",
+      "bytes": 10227,
+      "sha256": "478de97a93957beafee784928bed57ee8aa8135995565b8ac9d9ff1a38d5295c",
       "kind": "code-or-notice"
     },
     {
@@ -732,8 +732,8 @@
     },
     {
       "path": "hangar.css",
-      "bytes": 3977,
-      "sha256": "2f345161eec0a54230fbd108b44f0a8ab6d8d93a9d99fb3256149c90f8e5be7e",
+      "bytes": 4443,
+      "sha256": "99a7554a0f7ce515bf1e3b6d2483fdd11707089f72f0ebfbc77e99319d89461a",
       "kind": "code-or-notice"
     },
     {
@@ -744,8 +744,8 @@
     },
     {
       "path": "hangar.js",
-      "bytes": 3692,
-      "sha256": "2c424ad0bbe7c0e63170577e3f2679ed2d6b5f271502a59b8eb4f58c71c73fd1",
+      "bytes": 3737,
+      "sha256": "a570926a6690c50a4c14f18cda9e611cf067c361b42482ff4fe1671a4642a52b",
       "kind": "code-or-notice"
     },
     {
@@ -888,8 +888,8 @@
     },
     {
       "path": "remagen-mission.html",
-      "bytes": 377518,
-      "sha256": "d73ccc5c7ce4e76d7be7e5cde4542aab8c4cb0e4a0fc580d915760df5733183d",
+      "bytes": 377534,
+      "sha256": "3744b2f54070ccf197dce18acb7227709cb762be0aca8c5fe79a7c995d0ad333",
       "kind": "code-or-notice"
     },
     {
@@ -930,8 +930,8 @@
     },
     {
       "path": "sortie-checkpoint.js",
-      "bytes": 10485,
-      "sha256": "aa8e000c2a198b6172753a5029da7be6e8e65040d77ef43a9fb578695c82f404",
+      "bytes": 10490,
+      "sha256": "f41a3262781a29b6b09c3e801ea740a20fdcdd8a9d2cc08efd15c31231090743",
       "kind": "code-or-notice"
     },
     {
@@ -2083,7 +2083,7 @@
     {
       "path": "torpedo-carrier.html",
       "bytes": 434525,
-      "sha256": "05cc9d54022b36b3459466d99de890dd2da4245f9dd403308a0a92ce250e4498",
+      "sha256": "b72cb1b79cedda58ec74af58591cbbeab3802abb503fe4ff723943180041a653",
       "kind": "code-or-notice"
     },
     {

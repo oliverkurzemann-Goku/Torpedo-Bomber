@@ -498,7 +498,7 @@
 <script src="okinawa/world.js?v=175"></script>
 <script src="campaign.js?v=1"></script>
 <script src="game-runtime.js?v=198"></script>
-<script src="sortie-checkpoint.js?v=218"></script>
+<script src="sortie-checkpoint.js?v=221"></script>
 <script src="aircraft-articulation.js?v=218"></script>
 <script src="terrain-system/AircraftGround.js?v=198"></script>
 <script src="pacific-assets.js?v=201"></script>
@@ -928,7 +928,6 @@ const MISSIONS = [
     torps:0, fuel:100, zeros:0, targets:[] },
 ];
 
-const hangarRequest=CustomSortie.install('pacific',MISSIONS,FlightPlans.pacific,window.location.search);
 async function prepareOkinawa(){
   if(okinawaWorld)return okinawaWorld;
   if(okinawaLoading)return okinawaLoading;
@@ -7269,6 +7268,7 @@ function animateFrame(){
   GameRuntime.render(renderer,scene,camera);GameRuntime.frames.end();
 }
 
+const hangarRequest=CustomSortie.install('pacific',MISSIONS,FlightPlans.pacific,window.location.search);
 init();
 if(hangarRequest.requested&&hangarRequest.config){selectedMission=0;launchCampaignMission(0);}
 if(hangarRequest.error)flash(hangarRequest.error,8000);

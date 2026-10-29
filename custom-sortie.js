@@ -74,6 +74,7 @@
   return m;
  }
  function operation(input){const c=normalize(input);return {weather:[c.weather],practice:c.task==='free',fuel:c.fuel,events:[],notes:summary(c).notes};}
+ const originals=new WeakMap();
  const key=theatre=>'custom-sortie-v1-'+theatre;
  function read(theatre,search='',storage){
   if(storage===undefined)try{storage=root.localStorage;}catch(_){storage=null;}
@@ -85,7 +86,18 @@
   }catch(e){return {config:null,requested:fromURL,error:'Custom sortie could not load: '+e.message};}
  }
  function url(input){const c=normalize(input),params=new URLSearchParams({sortie:JSON.stringify(c),v:'221'});return (c.theatre==='pacific'?'torpedo-carrier.html':'remagen-mission.html')+'?'+params;}
- function install(theatre,missions,plans,search,storage){const request=read(theatre,search,storage);if(request.config){missions[0]=mission(request.config);plans[0]=operation(request.config);}return request;}
+ function install(theatre,missions,plans,search,storage){if(!originals.has(missions))originals.set(missions,{mission:missions[0],plan:plans[0]});const request=read(theatre,search,storage);if(request.config){missions[0]=mission(request.config);plans[0]=operation(request.config);}return request;}
+ function checkpointIdentity(theatre,missions,i,saved){
+  let m=saved&&!saved.custom&&i===0?(originals.get(missions)?.mission||missions[i]):missions[i];
+  if(saved?.custom){try{const c=normalize(saved.custom);if(i!==0||c.theatre!==theatre)return null;m=mission(c);}catch(_){return null;}}
+  if(!m)return null;
+  return (theatre==='europe'?m.id+'|'+m.ac:m.title+'|'+m.sub)+(m.customId?'|'+m.customId:'');
+ }
+ function restoreSaved(theatre,saved,missions,plans){
+  if(!saved.custom){const old=originals.get(missions);if(saved.mission===0&&old){missions[0]=old.mission;plans[0]=old.plan;}return null;}
+  const c=normalize(saved.custom);if(saved.mission!==0||c.theatre!==theatre)throw Error('Checkpoint sortie does not match this theatre.');
+  missions[0]=mission(c);plans[0]=operation(c);return c;
+ }
  function launchState(input,kind,ctx){
   const c=normalize(input),p=ctx.P;ctx.setDifficulty?.(c.difficulty);
   if(c.start!=='air')return false;
@@ -94,6 +106,6 @@
   p.gear=p.gearTgt=p.flap=p.flapTgt=0;p.departureAge=null;p.groundPower=null;p.touchResolved=false;p.onGround=false;p.onDeck=false;p.deckRun=p.arrestRun=p.deckQuaternion=p.landingSample=null;
   ctx.setThrottle?.(.75);ctx.flight?.();return true;
  }
- const API={planes,tasks,kitNames,weatherNames,defaults,normalize,aircraft,loadouts,stores,summary,mission,operation,fingerprint,read,url,install,launchState};
+ const API={planes,tasks,kitNames,weatherNames,defaults,normalize,aircraft,loadouts,stores,summary,mission,operation,fingerprint,read,url,install,checkpointIdentity,restoreSaved,launchState};
  root.CustomSortie=API;if(typeof module==='object'&&module.exports)module.exports=API;
 })(typeof window==='undefined'?globalThis:window);

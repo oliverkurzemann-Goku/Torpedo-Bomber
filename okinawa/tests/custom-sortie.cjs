@@ -25,11 +25,24 @@ for(const theatre of Object.keys(C.tasks))for(const task of C.tasks[theatre])for
  }
  const missions=[{id:'original-free'},{id:'first-campaign'},{id:'last-campaign'}],before=JSON.stringify(missions.slice(1)),plans=[{},{}];C.install(theatre,missions,plans,params,storage);assert.equal(missions.length,3);assert.equal(JSON.stringify(missions.slice(1)),before);
 }
+// A custom airborne save carries its setup even when the active Hangar draft is gone or different.
+for(const theatre of ['europe','pacific']){
+ const cfg=C.normalize({...C.defaults(theatre),time:'night'}),m=C.mission(cfg),saved={mission:0,custom:cfg};
+ const missions=[{id:'original',ac:'p47',title:'Original',sub:'Original'}],plans=[{}];
+ const id=C.checkpointIdentity(theatre,[m],0);
+ assert.equal(C.checkpointIdentity(theatre,missions,0,saved),id);
+ C.install(theatre,missions,plans,new URL(C.url(cfg),'https://test.invalid').search,{getItem(){},setItem(){}});
+ assert.equal(C.checkpointIdentity(theatre,missions,0,{mission:0}),theatre==='europe'?'original|p47':'Original|Original');
+ C.restoreSaved(theatre,{mission:0},missions,plans);assert.equal(missions[0].id,'original');
+ C.restoreSaved(theatre,saved,missions,plans);assert.deepEqual(missions[0].custom,cfg);assert.equal(C.checkpointIdentity(theatre,missions,0),id);
+ assert.equal(C.checkpointIdentity(theatre,missions,1,saved),null);
+ assert.equal(C.checkpointIdentity(theatre,missions,0,{custom:{...cfg,kit:'invalid'}}),null);
+}
 assert.equal(aircraft.size,10);assert(count>100);
 for(const bad of [{task:'bridge',kit:'guns'},{ac:'me163',task:'bridge',kit:'bombs'},{theatre:'pacific',ac:'zero',task:'torpedo',kit:'torpedo'},{enemies:99},{weather:'<script>'},{fuel:-1}])assert.throws(()=>C.normalize({...C.defaults(),...bad}));
 assert(C.read('europe','?sortie=bad').error);assert(C.read('europe','?sortie='+encodeURIComponent('x'.repeat(1501))).error);assert(C.read('europe',new URL(C.url(C.defaults('pacific')),'https://test.invalid').search).error);
 const first=C.defaults(),second={...first,time:'night'};assert.notEqual(C.fingerprint(first),C.fingerprint(second));
-for(const [html,script]of [[european,'checkpoint-rhine.js'],[pacific,'checkpoint-pacific.js']]){assert(html.includes('custom-sortie.js?v=221'));assert(html.includes(script+'?v=221'));assert(fs.readFileSync(script,'utf8').includes('customId'));assert(html.includes('hangar.html?theatre='));}
+for(const [html,script]of [[european,'checkpoint-rhine.js'],[pacific,'checkpoint-pacific.js']]){assert(html.includes('custom-sortie.js?v=221'));assert(html.includes(script+'?v=221'));assert(fs.readFileSync(script,'utf8').includes('checkpointIdentity'));assert(html.includes('hangar.html?theatre='));}
 // Same installed mission data reaches real load/mass and accelerated deck service.
 const p={fuel:100,torps:1,gear:0,flap:0,systemDamage:{},spd:70};SortieFeatures.Handling.configure(p,'avenger','torpedo','pacific');const loaded=SortieFeatures.Handling.sample(p).ratio;p.torps=0;assert(loaded>SortieFeatures.Handling.sample(p).ratio);
 console.log(JSON.stringify({validConfigurations:count,aircraft:aircraft.size,operationsReady:operations,airStartStateChecks:true,urlStorageRoundTrips:true,invalidSetupsRejected:true,campaignIndicesPreserved:true,checkpointIdentity:true,realMassResponse:true},null,2));

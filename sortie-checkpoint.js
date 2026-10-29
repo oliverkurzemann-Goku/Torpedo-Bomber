@@ -70,7 +70,7 @@
       typeof envelope.payload!=='string'||hash(envelope.payload)!==envelope.hash||!Number.isSafeInteger(envelope.sequence)||
       envelope.sequence<1||!Number.isFinite(envelope.savedAt))return null;
    const data=JSON.parse(envelope.payload);
-   if(!Number.isInteger(data.mission)||data.identity!==identity(data.mission)||!data.player?.pos?.v?.every(Number.isFinite)||
+   if(!Number.isInteger(data.mission)||data.identity!==identity(data.mission,data)||!data.player?.pos?.v?.every(Number.isFinite)||
       data.player.pos.v.length!==3||data.player.alive!==true||!Number.isFinite(data.player.spd)||data.player.spd<0)return null;
    return {...envelope,data};
   }catch(_){return null;}
