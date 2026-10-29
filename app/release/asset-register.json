@@ -1,13 +1,13 @@
 {
   "schema": 1,
   "reviewedOn": "2026-10-23",
-  "build": 215,
+  "build": 216,
   "status": "OPEN — source declarations checked; no external rights authorization obtained",
   "payload": {
-    "bytes": 268383267,
+    "bytes": 268387661,
     "fileCount": 342,
     "modelCount": 36,
-    "manifestSha256": "bae6dbb7547144d39f6ab06878692868e5cb83ab2b7e03588175dce3704cd823"
+    "manifestSha256": "32f440f1e76263329701c5e5776d90756c20ba8a899b156b3b5295900ec7ec23"
   },
   "files": [
     {
@@ -408,14 +408,14 @@
     },
     {
       "path": "audio/aircraft-engine.js",
-      "bytes": 7322,
-      "sha256": "6d02cce8f2aa341da93f74fb52a9e401c475a4abf9fe0e192cfe3ca7b99b2804",
+      "bytes": 10452,
+      "sha256": "60c3f69f7cdfd7d70c75f638f41e4b40831a463d84ad15bf834226b55da48326",
       "kind": "code-or-notice"
     },
     {
       "path": "audio/engines/CREDITS.md",
-      "bytes": 6940,
-      "sha256": "8d8c053556b6fe874a039506bce41708f3bdcf2e83275b641f719ce5ad36df99",
+      "bytes": 8204,
+      "sha256": "26f09036fe031c40a8e481709c71eaf4393f6b7895c28bb9cb432b4b1f810f0c",
       "kind": "code-or-notice"
     },
     {
@@ -661,7 +661,7 @@
     {
       "path": "index.html",
       "bytes": 7260,
-      "sha256": "3047bf10fa23b3b7e7f7879fb1144c4ed30caf306751819a8c641d694e35fd28",
+      "sha256": "dd0663ad7826f563ee535934a3ea0b4e147df170d291bd78f344d07bdee344e6",
       "kind": "code-or-notice"
     },
     {
@@ -793,7 +793,7 @@
     {
       "path": "remagen-mission.html",
       "bytes": 366919,
-      "sha256": "cfc8a790cff0dd44157a55848d87bfc9d8886049d5c15df32b0c227f1ccf7389",
+      "sha256": "a59b2e23f2fcf37b7639515bcd9ec3824a8d7e7c541e708fc93eee3062208e9d",
       "kind": "code-or-notice"
     },
     {
@@ -1987,7 +1987,7 @@
     {
       "path": "torpedo-carrier.html",
       "bytes": 429772,
-      "sha256": "648c5e8e00f01faa33e17fc88003a263ab8425f9c98bc61993acf2ecfb6eabdc",
+      "sha256": "2022667484657730d60a5944e0cd1807bb839e1cfec82ecbf90ae1c3c74459c8",
       "kind": "code-or-notice"
     },
     {
@@ -3130,7 +3130,7 @@
         "audio/*.js",
         "audio/engines/**"
       ],
-      "status": "Recorded piston loops: Fight2FlyPhoto CC BY 3.0, craigsmith CC0, and Pole Position free SONNISS GDC Bundle License v2.0 recordings incorporated in this game. Build 215 cleans loaded voices and extends them to SBD/Zero with declared substitutions; legacy substitutions remain documented. Sources, hashes, cuts and limits in provenance.json, loaded-provenance.json, detail-provenance.json and CREDITS.md. Raw source files excluded from checkout and offline payload. Jet/rocket/effects remain procedural."
+      "status": "Recorded piston loops: Fight2FlyPhoto CC BY 3.0, craigsmith CC0, and Pole Position free SONNISS GDC Bundle License v2.0 recordings incorporated in this game. Build 216 prepares lower, rougher recorded radial power voices with circular leveling; declared source substitutions remain; legacy substitutions remain documented. Sources, hashes, cuts and limits in provenance.json, loaded-provenance.json, detail-provenance.json and CREDITS.md. Raw source files excluded from checkout and offline payload. Jet/rocket/effects remain procedural."
     },
     {
       "paths": [

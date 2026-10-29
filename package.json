@@ -13,7 +13,8 @@
     "app:open": "cap open ios",
     "app:doctor": "node scripts/ipad-doctor.mjs",
     "app:assets": "npm run build:app && node scripts/audit-app-assets.mjs",
-    "app:rig": "node scripts/check-rig-contract.mjs"
+    "app:rig": "node scripts/check-rig-contract.mjs",
+    "test:audio": "node okinawa/tests/fleet-audio-browser.cjs && node audio/tests/radial-voicing.cjs"
   },
   "repository": {
     "type": "git",

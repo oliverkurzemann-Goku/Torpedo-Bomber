@@ -1,0 +1,94 @@
+{
+  "build": 216,
+  "baselineBuild": 215,
+  "sampleRate": 24000,
+  "baseline215": {
+    "p47": {
+      "rms": 0.19604153861115153,
+      "centroid": 1009.9265398683626,
+      "above1000Fraction": 0.39466363487955597,
+      "lowBodyFraction": 0.22838530155994102,
+      "peak": 0.7537053823471069
+    },
+    "fw190": {
+      "rms": 0.20023654990631742,
+      "centroid": 756.5889669585281,
+      "above1000Fraction": 0.2520677179784064,
+      "lowBodyFraction": 0.2961113921114737,
+      "peak": 0.7503325343132019
+    },
+    "avenger": {
+      "rms": 0.20324476965313554,
+      "centroid": 705.5042638688425,
+      "above1000Fraction": 0.2299904210207802,
+      "lowBodyFraction": 0.33511666993258765,
+      "peak": 0.7636139392852783
+    },
+    "sbd": {
+      "rms": 0.2000447236054634,
+      "centroid": 1175.1058703637332,
+      "above1000Fraction": 0.460365689815913,
+      "lowBodyFraction": 0.22493447986293136,
+      "peak": 0.7592698335647583
+    },
+    "zero": {
+      "rms": 0.2000293703868143,
+      "centroid": 878.1756460590282,
+      "above1000Fraction": 0.3102991839841913,
+      "lowBodyFraction": 0.26794355999786157,
+      "peak": 0.7477228045463562
+    },
+    "corsair": {
+      "rms": 0.17268295253735205,
+      "centroid": 441.46758233117185,
+      "above1000Fraction": 0.07287619779448665,
+      "lowBodyFraction": 0.8392297033584867,
+      "peak": 0.6588897705078125
+    }
+  },
+  "audio216": {
+    "p47": {
+      "rms": 0.19785855499652177,
+      "centroid": 429.15862636109284,
+      "above1000Fraction": 0.13541767233178037,
+      "lowBodyFraction": 0.5362645319806425,
+      "peak": 0.7530626058578491
+    },
+    "fw190": {
+      "rms": 0.20400206147928382,
+      "centroid": 469.2628385341202,
+      "above1000Fraction": 0.09999523742056103,
+      "lowBodyFraction": 0.5982550617998241,
+      "peak": 0.7492375373840332
+    },
+    "avenger": {
+      "rms": 0.2096498546250784,
+      "centroid": 389.69565483996706,
+      "above1000Fraction": 0.03964103971882456,
+      "lowBodyFraction": 0.658553317109334,
+      "peak": 0.7701207399368286
+    },
+    "sbd": {
+      "rms": 0.20133298788415188,
+      "centroid": 444.5918732240463,
+      "above1000Fraction": 0.14962539914845768,
+      "lowBodyFraction": 0.5006579362194858,
+      "peak": 0.75058513879776
+    },
+    "zero": {
+      "rms": 0.20285033706923083,
+      "centroid": 493.4141495223459,
+      "above1000Fraction": 0.11981006114968464,
+      "lowBodyFraction": 0.6164075971454126,
+      "peak": 0.7439802885055542
+    },
+    "corsair": {
+      "rms": 0.19943172851334504,
+      "centroid": 258.2963368415661,
+      "above1000Fraction": 0.0026573356510019353,
+      "lowBodyFraction": 0.9279354728597783,
+      "peak": 0.6825911402702332
+    }
+  },
+  "verification": "Chromium OfflineAudioContext. 10-second full-power renders; Welch spectrum uses seconds 2 to 10. Hardware listening on the target iPad is not verified."
+}

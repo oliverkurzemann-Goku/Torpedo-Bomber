@@ -1,4 +1,25 @@
-# Recorded piston engine audio — Build 215
+# Recorded piston engine audio — Build 216
+
+## Build 216 — low exhaust voicing (29 October 2026)
+
+P-47, Fw 190, Avenger, SBD, Zero and Corsair power layers are prepared from
+the same licensed recordings during loading. Broad low/mid recorded exhaust
+transients receive mild saturation. Narrow onboard cabin ridges at source
+492/648 Hz are reduced in the airborne/composite sources, and the high band
+is rolled off. Recorded playback pacing remains intact. Circular envelope
+leveling follows the processing to prevent recurring low-band fades; rare
+peaks are softened. No oscillator, periodic click or synthetic rhythm is added.
+
+Implementation: `audio/aircraft-engine.js`. Source recordings, hashes and
+adaptation limits below still apply; the processed buffers are temporary runtime
+derivatives, not new claims about authentic aircraft recordings. Accepted idle,
+Bf 109, Ju 87 and jet/rocket voices retain their processing.
+
+`audio/tests/radial-voicing.cjs` compares rendered spectral balance against
+Build 215 at 24/48 kHz. `okinawa/tests/fleet-audio-browser.cjs` checks load levels,
+60-second sustain, switching, missing files, stop silence and clipping headroom.
+Results: `app/release/radial-tone-validation.json` and
+`app/release/growl-engine-validation.json`. Target-iPad listening is not verified.
 
 ## Build 215 — cleaner loaded voices (29 October 2026)
 
