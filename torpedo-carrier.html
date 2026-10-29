@@ -298,7 +298,7 @@
   .warningLamps{display:flex!important;gap:10px;padding:5px 9px!important;background:#141813dd!important;border:1px solid #535744;border-radius:4px;white-space:nowrap;}
   .warningLamp{color:#646c5c;font:9px monospace;letter-spacing:.35px;} .warningLamp[data-level="1"]{color:#ffd088;text-shadow:0 0 6px #e0a432a0;} .warningLamp[data-level="2"]{color:#ff8c70;text-shadow:0 0 7px #ff6638b0;}
 </style>
-<link rel="stylesheet" href="menu-layout.css?v=218">
+<link rel="stylesheet" href="menu-layout.css?v=219">
 </head>
 <body>
 <div id="app"></div>
@@ -351,7 +351,7 @@
   <div id="flash"></div>
   <div id="ltn" style="position:fixed;inset:0;background:#e6ecff;opacity:0;pointer-events:none;z-index:40;"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 218</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 219</div>
 
   <!-- Optical landing aid -->
   <div id="lso">
@@ -397,7 +397,7 @@
 
 <!-- Menu -->
 <div class="overlay" id="menu" data-campaign="pacific">
-  <div class="menuTop"><a id="selBtn" href="index.html?v=218">&#9664; Change Game</a><span class="menuMeta">PACIFIC OPERATIONS<br>BUILD 218</span></div>
+  <div class="menuTop"><a id="selBtn" href="index.html?v=219">&#9664; Change Game</a><span class="menuMeta">PACIFIC OPERATIONS<br>BUILD 219</span></div>
   <div class="card menuCard">
     <aside class="menuOverview" aria-label="Campaign and pilot options">
     <div class="campaignArt" aria-hidden="true"></div>
@@ -5421,7 +5421,7 @@ function loadPlaneModel(){
       }
       window.__eyeDbg='EYE '+COCKPIT_EYE.map(v=>v.toFixed(2)).join('/');
       const btEl=document.getElementById('buildTag');
-      if(btEl) btEl.textContent='BUILD 218 · '+window.__eyeDbg;
+      if(btEl) btEl.textContent='BUILD 219 · '+window.__eyeDbg;
       let seat=null;
       model.traverse(function(o){
         if(!o.isMesh||!o.material) return;
@@ -6807,7 +6807,7 @@ function setupUIButtons(){
   if(dbgT2) dbgT2.onclick=()=>{
     dbgOn=!dbgOn; GameRuntime.storage.setItem('dbgOn',dbgOn?'1':'0');
     const db=document.getElementById('dbgBox'); if(db) db.textContent=dbgOn?'✓':'';
-    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 218'; }
+    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 219'; }
   };
   const lu=document.getElementById('lookUp'), ld=document.getElementById('lookDn');
   let _lookT=0;
@@ -6823,7 +6823,7 @@ function setupUIButtons(){
   if(pb) pb.addEventListener('pointerdown',e=>{ e.preventDefault(); togglePause(); });
   const rb=document.getElementById('resumeBtn'); if(rb) rb.onclick=resumeGame;
   const mb=document.getElementById('menuBtn'); if(mb) mb.onclick=exitToMenu;
-  document.getElementById('pauseMainMenu').onclick=async()=>{globalThis.sortieCheckpoint?.save();await globalThis.sortieCheckpoint?.flush();exitToMenu(true);window.location.href='index.html?v=218';};
+  document.getElementById('pauseMainMenu').onclick=async()=>{globalThis.sortieCheckpoint?.save();await globalThis.sortieCheckpoint?.flush();exitToMenu(true);window.location.href='index.html?v=219';};
   document.getElementById('resultBtn').onclick=()=>{
     // the logbook borrows this screen from the menu — send the player straight back
     if(logbookOpen){ logbookOpen=false; showOverlay('menu'); return; }
@@ -7072,7 +7072,7 @@ function animate(){
     notice.style.cssText='position:fixed;inset:0;z-index:999998;background:rgba(15,20,15,.95);color:#e8ddbc;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px;text-align:center;font:16px system-ui';
     const title=document.createElement('h2');title.textContent='Simulation interrupted';
     const detail=document.createElement('p');
-    detail.textContent='BUILD 218 · '+(MISSIONS[mission]?.sub||'Menu')+' · '+error.message;
+    detail.textContent='BUILD 219 · '+(MISSIONS[mission]?.sub||'Menu')+' · '+error.message;
     const reload=document.createElement('button');reload.textContent='Reload game';
     reload.style.cssText='padding:12px 24px;font:inherit';reload.onclick=()=>location.reload();
     notice.appendChild(title);notice.appendChild(detail);notice.appendChild(reload);document.body.appendChild(notice);

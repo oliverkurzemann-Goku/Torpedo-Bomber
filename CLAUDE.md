@@ -1,6 +1,6 @@
 # Torpedo-Bomber — Übergabe an Claude Code
 
-**29.10.2026, Feature-Branch (noch nicht auf main): berechneter Flugkern, erster Typ P-47 im Rheinspiel.**
+**29.10.2026, Build 219 (auf main): berechneter Flugkern, erster Typ P-47 im Rheinspiel.**
 Nutzer: „möchte, dass du ein Modell berechnest. Keine Schätzwerte und unzählige Tests“ (nach Konzept
 `FLIGHT-REBUILD.md`, dessen Empfehlungen in §12 er gut fand). Neu `flight-core.js` (`FlightCore`) +
 `FLIGHT-CORE.md`: Punktmasse mit Polare `CD0 + k·CL²`, Schub per Propellerscheibe (Impulssatz), ISA,
@@ -17,10 +17,13 @@ einer Horizontalkurve mit diesem Anteil der verfügbaren Kurvenrate, Nicken = al
 AERO-Ziehen = Lastvielfaches; Rollrate unverändert. `?p47core=off` altes Modell, `?p47core=physics`
 Verstärkung 1. Nur Luftphase der P-47 in `remagen-mission.html` (`updateP47Core`); Startlauf, Landung,
 KI, andere Typen, Pazifik und Legacy-Europa unverändert. Test `okinawa/tests/p47-core-browser.cjs`
-(echter Start, Kurve, Loop, Leerlauf, Bildraten). Kein iPad-Test. Bei Übernahme nach main Build 217
-vergeben (main hat bereits 215/216 Sound, dieser Branch 215 Flug).
+(echter Start, Kurve, Loop, Leerlauf, Bildraten). Kein iPad-Test. Auf main als Build 219
+vergeben (main hatte schon 215–218 Sound; auf dem Review-Branch hieß die Flughüllkurve Build 215).
+Aufruf mit `?v=219`. Zum Vergleichen `?p47core=off` (altes Modell) und `?p47core=physics` (Verstärkung 1).
+Geänderte Module mit Cache 219: flight-core.js, flight-envelope.js, flight-dynamics.js, flight-support.js;
+Sound-Module behalten 218.
 
-**29.10.2026, Build 215: Flugverhalten aller zehn Typen analytisch aus realen Daten abgeleitet; AERO-Kamera repariert.**
+**29.10.2026, Build 219 (auf dem Review-Branch Build 215 genannt): Flugverhalten aller zehn Typen analytisch aus realen Daten abgeleitet; AERO-Kamera repariert.**
 Nutzer: Bf 109 und Zero zu aggressiv, P-47 zu träge; im AERO-Modus bei manchen Typen kein Looping, man sieht
 das Flugzeug „praktisch von vorne“; beim Gaswegnehmen bremsen die Flugzeuge kaum. Verlangt: analytischer,
 fein abgestimmter Ansatz mit Abstufung nach realen Daten. Zuerst gemessen (echtes `updateFlight`/`updateCamera`
@@ -54,7 +57,7 @@ Zero 194 → 147/137/108, Fw 190 195 → 173/188/171, Corsair 174 → 116/146/13
 50/75 % Vmax: P-47 0,7/1,0 → 1,5/2,7; Bf 109 1,6/2,3 → 2,3/3,7; Zero 1,5/2,0 → 2,0/3,1; Corsair 2,1/2,4 → 2,7/3,7 m/s². Loops aus dem Einstiegsspeed
 bei allen zehn Typen vollständig, Mindestgeschwindigkeit über Stall, Kamera in 0 % der Loop-Frames vor der Nase (vorher 6–21 %). Ältere Absätze unten nennen `TURN_K`, `bankTurnRate`, `rollAuth/pitchAuth`: nur noch historisch.
 Neue/angepasste Tests: `flight-envelope.cjs`, `flight-envelope-browser.cjs`, `aero-camera.js` (schlägt gegen den alten Code fehl),
-`aerobatics.js`, `flight-controls.js`, `pitch-response.cjs`. Build-/Cache-Kennungen 215 (nur geänderte Module), App-Register neu.
+`aerobatics.js`, `flight-controls.js`, `pitch-response.cjs`. Build-/Cache-Kennungen 219 (nur geänderte Module), App-Register neu.
 Regressionsläufe (Chromium/SwiftShader, Browser-Tests der Flug-, Träger-, Landungs-, Kamera- und Missionspfade): grün bis auf sechs Dateien, die auf dem unveränderten Build 214 identisch rot sind und mit dem
 Flugmodell nichts zu tun haben: field-landing-browser (Powered touch-and-go), ditch-formation-browser (Rookie-Abprall), combat-sorties-browser (Haut-/Feuer-
 Schaden), aircraft-systems-browser (`attributes` undefined), ship-contact-browser (Corsair auf rollendem Träger), deck-night-browser (Material-/Reflexionsprüfung).

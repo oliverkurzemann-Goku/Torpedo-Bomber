@@ -20,7 +20,7 @@ const server=http.createServer((req,res)=>{
   const page=await browser.newPage({viewport:{width:1194,height:660},hasTouch:true,deviceScaleFactor:1}),errors=[];
   page.setDefaultTimeout(240000);page.on('pageerror',e=>errors.push(e.message));await page.addInitScript(()=>window.requestAnimationFrame=()=>0);
   for(const pacific of process.env.GAME_TEST_RHINE_ONLY?[false]:[true,false]){
-   await page.goto('http://127.0.0.1:'+server.address().port+'/'+(pacific?'torpedo-carrier.html':'remagen-mission.html')+'?v=215');
+   await page.goto('http://127.0.0.1:'+server.address().port+'/'+(pacific?'torpedo-carrier.html':'remagen-mission.html')+'?v=219');
    await page.waitForFunction(p=>state===ST.MENU&&(p||realWorldReady),pacific,{polling:200});
    await page.evaluate(async p=>{
     if(p){await prepareOkinawa();for(const kind of ['avenger','sbd','corsair','zero']){const m=MISSIONS.find(m=>kind==='zero'?m.defend:kind==='corsair'?m.corsair:kind==='sbd'?m.sbd&&!m.corsair:!m.sbd&&!m.defend&&!m.free&&!m.qual);await preparePacificModels(m);}}
@@ -115,6 +115,6 @@ const server=http.createServer((req,res)=>{
   if(all.p47&&all.bf109&&!all.p47.core){assert(T('bf109')<T('p47'),'Bf 109 out-turns the P-47 at 90 m/s');assert(T('p47')/T('bf109')<1.7,'the Jug is no longer 2.5x slower than the 109');}
   const R=(k,v)=>all[k].roll[Object.keys(all[k].roll)[v]].measured;
   if(all.p47&&all.fw190&&!all.p47.core)assert(R('fw190',1)>R('p47',1)*1.15,'Fw 190 rolls faster than the P-47 at 70% of top speed');
-  fs.mkdirSync(path.join(root,'test-visuals'),{recursive:true});fs.writeFileSync(path.join(root,'test-visuals/build215-flight-envelope.json'),JSON.stringify(all,null,2));
+  fs.mkdirSync(path.join(root,'test-visuals'),{recursive:true});fs.writeFileSync(path.join(root,'test-visuals/build219-flight-envelope.json'),JSON.stringify(all,null,2));
  }finally{await browser.close();await new Promise(r=>server.close(r));}
 })().catch(e=>{console.error(e);process.exitCode=1;});

@@ -1,13 +1,13 @@
 {
   "schema": 1,
   "reviewedOn": "2026-10-23",
-  "build": 218,
+  "build": 219,
   "status": "OPEN — source declarations checked; no external rights authorization obtained",
   "payload": {
-    "bytes": 271869575,
-    "fileCount": 351,
+    "bytes": 271908397,
+    "fileCount": 353,
     "modelCount": 36,
-    "manifestSha256": "d6d7bd0bac1cb3963bcd789a9f718fd39e3fe9b1dc5e7feff9c6dec00d22dbfe"
+    "manifestSha256": "5c3cac74d6a663047b004419af05ab66d481196f16ea8b8b7f673263d44dc9ec"
   },
   "files": [
     {
@@ -659,9 +659,21 @@
       "kind": "code-or-notice"
     },
     {
+      "path": "flight-core.js",
+      "bytes": 16594,
+      "sha256": "739f4ad2ffa6802adca24da76a949a54479896656d5ee0d4ad0bddc6c222e617",
+      "kind": "code-or-notice"
+    },
+    {
       "path": "flight-dynamics.js",
-      "bytes": 4841,
-      "sha256": "5b884f97daa4788374c768b5584f03b206cad6d97e756f5ffc52decd068a222a",
+      "bytes": 5638,
+      "sha256": "cd9a4e81ced52ee464e728642013f4252855e45c6f9953fa9631bba8b98b1e51",
+      "kind": "code-or-notice"
+    },
+    {
+      "path": "flight-envelope.js",
+      "bytes": 10300,
+      "sha256": "9fae84485c9671907a01932ff00ff404e1dc7a4e19833659172ced787cce59f0",
       "kind": "code-or-notice"
     },
     {
@@ -672,8 +684,8 @@
     },
     {
       "path": "flight-support.js",
-      "bytes": 9918,
-      "sha256": "2b4170ed727cd25c033015fe33bf31d03c89c820d5f14aaa7a8c16accd9ee568",
+      "bytes": 10998,
+      "sha256": "d38026baf134751a5f494fc8789939b9dcf1db31e66431c636e0af6e6039a811",
       "kind": "code-or-notice"
     },
     {
@@ -715,7 +727,7 @@
     {
       "path": "index.html",
       "bytes": 7260,
-      "sha256": "93da2310e8c6e2688226204b4e5d91846c1f4940eefe22d687498c9d70c42021",
+      "sha256": "aea0c5e964accffad99529ccd2ac54683a1a92fca0f507aebff2025fb2a1b2a0",
       "kind": "code-or-notice"
     },
     {
@@ -846,8 +858,8 @@
     },
     {
       "path": "remagen-mission.html",
-      "bytes": 366975,
-      "sha256": "641c54295a04d762719c9bbddeefac803bd6cc4bf116958f89ce14a08d9136d8",
+      "bytes": 375872,
+      "sha256": "91a26093f13a83bb2029d3971c23b63b52def9808a3b8471f17fa769f18a993b",
       "kind": "code-or-notice"
     },
     {
@@ -2040,8 +2052,8 @@
     },
     {
       "path": "torpedo-carrier.html",
-      "bytes": 429828,
-      "sha256": "827b9b8776525b726dcda9e9dfbb9aacb3ba2c35cf6eebc6a34f7d6bcc83671b",
+      "bytes": 431214,
+      "sha256": "477304cd43e7c34d5756a10041f1e49232d506122f1ab676db5a8104d3edc57f",
       "kind": "code-or-notice"
     },
     {
@@ -2112,8 +2124,8 @@
     },
     {
       "path": "app-native.js",
-      "bytes": 27263,
-      "sha256": "20cc1f39416e5ee56a4650cf65d502b54ab193cf9e012e462bb593d923fc5fab",
+      "bytes": 27031,
+      "sha256": "a52b43eb6c9accbde530c1e3832548614838e605c05ed4869a6b9b9734ddaa24",
       "kind": "code-or-notice"
     }
   ],
