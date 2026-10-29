@@ -1,0 +1,58 @@
+{
+ "core": {
+  "core": true,
+  "mission": "Sortie 1",
+  "takeoff": {
+   "alive": true,
+   "liftoff": 15.42,
+   "groundRun": 540,
+   "after60s": {
+    "spd": 72.6,
+    "agl": 407,
+    "climb": 11.2
+   }
+  },
+  "turn": {
+   "90": {
+    "seconds": 11.4,
+    "endSpd": 93,
+    "altChange": -38,
+    "bankDeg": 68,
+    "n": 2.74
+   },
+   "130": {
+    "seconds": 8.5,
+    "endSpd": 113,
+    "altChange": -29,
+    "bankDeg": 76,
+    "n": 4.07
+   }
+  },
+  "loop": {
+   "seconds": 7.7,
+   "minSpd": 116,
+   "altChange": -8,
+   "alive": true
+  },
+  "idleDecel1s": 2,
+  "fps": {
+   "20": {
+    "spd": 101.89,
+    "heading": 5.836,
+    "alt": 1553.2
+   },
+   "60": {
+    "spd": 101.8,
+    "heading": 5.81,
+    "alt": 1555.5
+   },
+   "120": {
+    "spd": 101.79,
+    "heading": 5.803,
+    "alt": 1556
+   }
+  },
+  "errors": []
+ },
+ "old": null
+}

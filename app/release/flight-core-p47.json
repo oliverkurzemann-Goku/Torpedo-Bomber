@@ -1,0 +1,201 @@
+{
+ "coefficients": {
+  "CD0": 0.01913,
+  "oswald": 0.884,
+  "k": 0.0651,
+  "propProfileEfficiency": 0.697,
+  "powerAt20kft": 0.913,
+  "aspectRatio": 5.535,
+  "liftSlopePerRad": 4.41,
+  "CLmaxClean": 1.282,
+  "CLmaxLanding": 1.796,
+  "cornerSpeedSL_ms": 134.6,
+  "dragAreaM2": 0.533,
+  "fitRms": "1.21 %"
+ },
+ "verification": [
+  {
+   "figure": "max speed mph TAS",
+   "altitudeFt": 0,
+   "published": 345,
+   "model": 351,
+   "errorPct": 1.67
+  },
+  {
+   "figure": "max speed mph TAS",
+   "altitudeFt": 10000,
+   "published": 383,
+   "model": 380,
+   "errorPct": -0.81
+  },
+  {
+   "figure": "max speed mph TAS",
+   "altitudeFt": 20000,
+   "published": 417,
+   "model": 413,
+   "errorPct": -0.92
+  },
+  {
+   "figure": "climb fpm",
+   "altitudeFt": 0,
+   "published": 3180,
+   "model": 3198,
+   "errorPct": 0.56
+  },
+  {
+   "figure": "climb fpm",
+   "altitudeFt": 10000,
+   "published": 2920,
+   "model": 2870,
+   "errorPct": -1.72
+  },
+  {
+   "figure": "climb fpm",
+   "altitudeFt": 20000,
+   "published": 2470,
+   "model": 2497,
+   "errorPct": 1.08
+  },
+  {
+   "figure": "clean stall mph IAS at 13,230 lb",
+   "published": 116,
+   "model": 116,
+   "errorPct": 0
+  }
+ ],
+ "bestClimbIAS_mph": [
+  161,
+  154,
+  148
+ ],
+ "turns": {
+  "note": "full stick in Normal mode: level turn at the bank of the available load factor, full power, 1000 m",
+  "vmaxAt1000m_ms": 160.9,
+  "45%Vmax_gain2.2": {
+   "entrySpeed": 72.4,
+   "seconds": 15.28,
+   "endSpeed": 89.2,
+   "altitudeChange": 0.5,
+   "bankDeg": 57
+  },
+  "45%Vmax_gain1": {
+   "entrySpeed": 72.4,
+   "seconds": 37.83,
+   "endSpeed": 109.6,
+   "altitudeChange": 0.5,
+   "bankDeg": 57
+  },
+  "70%Vmax_gain2.2": {
+   "entrySpeed": 112.6,
+   "seconds": 8.28,
+   "endSpeed": 100.6,
+   "altitudeChange": -10.2,
+   "bankDeg": 77
+  },
+  "70%Vmax_gain1": {
+   "entrySpeed": 112.6,
+   "seconds": 20,
+   "endSpeed": 97.7,
+   "altitudeChange": -48.4,
+   "bankDeg": 77
+  }
+ },
+ "level": {
+  "50%Vmax": {
+   "speed": 80.4,
+   "idleDecel": 1.24,
+   "fullPowerAccel": 1.97
+  },
+  "75%Vmax": {
+   "speed": 120.7,
+   "idleDecel": 2.13,
+   "fullPowerAccel": 0.96
+  }
+ },
+ "loop": {
+  "from140": {
+   "complete": true,
+   "seconds": 7.4,
+   "minSpeed": 107.8,
+   "altitudeChange": -8
+  },
+  "from140_gain1": {
+   "complete": true,
+   "seconds": 18.9,
+   "minSpeed": 72.7,
+   "altitudeChange": -67
+  }
+ },
+ "frameRate": {
+  "20": {
+   "speed": 109.7162,
+   "heading": 5.26751,
+   "altitude": 1565.297
+  },
+  "60": {
+   "speed": 109.7162,
+   "heading": 5.26751,
+   "altitude": 1565.297
+  },
+  "120": {
+   "speed": 109.7162,
+   "heading": 5.26751,
+   "altitude": 1565.297
+  }
+ },
+ "energyDrift60sPct": 0.0047,
+ "sources": {
+  "name": "P-47D Thunderbolt (R-2800-59, 2600 bhp WEP)",
+  "weightLb": 12731,
+  "wingAreaFt2": 300,
+  "spanM": 12.42,
+  "shaftHp": 2600,
+  "propDiameterM": 3.99,
+  "maxSpeedMph": [
+   [
+    0,
+    345
+   ],
+   [
+    10000,
+    383
+   ],
+   [
+    20000,
+    417
+   ]
+  ],
+  "climbFpm": [
+   [
+    0,
+    3180
+   ],
+   [
+    10000,
+    2920
+   ],
+   [
+    20000,
+    2470
+   ]
+  ],
+  "stallTestLb": 13230,
+  "stallCleanMph": 116,
+  "stallLandingMph": 98
+ },
+ "assumed": {
+  "nLimit": 7,
+  "nNegative": 3,
+  "clMinRatio": 0.6,
+  "mcrit": 0.72,
+  "gearCD": 0.02,
+  "flapCD": 0.05,
+  "tankCD": 0.006,
+  "windmill": 0.07,
+  "spool": 1.25
+ },
+ "game": {
+  "manoeuvreGain": 2.2,
+  "substepHz": 120
+ }
+}
