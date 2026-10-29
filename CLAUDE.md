@@ -41,6 +41,7 @@ Schaden), aircraft-systems-browser (`attributes` undefined), ship-contact-browse
 Von mir mitgezogen: fleet-flight-browser (Bf-109-Nick-Annahme), chase-heading-browser (AERO-Rig springt bei Teleport statt zu schwenken).
 Offen: kein iPad-Test; ob Rollen/Kurven „richtig“ wirken, entscheidet allein Spielgefühl – die ARC-Gewichte sind dafür da. Thrust-Gesetz
 trägt weiter λ≈2,3–3,5× realen Schub (Build 211): echte Sustained-Turn-Grenzen entstehen dadurch noch nicht.
+Konzept für einen vollständigen Neuaufbau (gemeinsamer Flugkern, Boden/Träger, Gegner-KI als Piloten, Meilensteine M0–M7, Abnahmekennzahlen): `FLIGHT-REBUILD.md` — nur Konzept, nichts umgesetzt, Entscheidungen in Abschnitt 12 offen.
 
 **28.10.2026, Build 214: Lastklang P47/Fw190/Avenger nach erneutem Feedback ersetzt.**
 P47 wurde als Güterzug/zu langsam, Fw190/Avenger bei Vollgas als Leerlauf kritisiert.
