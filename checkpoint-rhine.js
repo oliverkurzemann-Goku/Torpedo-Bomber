@@ -11,7 +11,7 @@
   weapons:{bullets:C.projectiles(bullets),tracers:C.projectiles(tracers),bombs:C.projectiles(bombs),rockets:C.projectiles(rockets),groundFire:C.projectiles(groundFire)},
   navigation:C.navigationState(navigation),clock:clock.elapsedTime,flares:flareSupport?.checkpoint()};}
  async function load(saved){
-  CustomSortie.restoreSaved('europe',saved,MISSIONS,FlightPlans.europe);
+  CustomSortie.restoreSaved('europe',saved,MISSIONS,FlightPlans.europe);selectedMission=saved.mission;
   if(!saved.operation?.config)throw Error('Missing operation in checkpoint');
   const kinds=new Set([MISSIONS[saved.mission].ac,...saved.air.map(e=>e.state.kind),...saved.wingmen.map(e=>e.state.kind)]);
   for(const kind of kinds)await ensureModel(kind);

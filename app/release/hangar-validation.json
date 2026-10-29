@@ -1,0 +1,79 @@
+{
+  "build": 221,
+  "date": "2026-10-29",
+  "scope": "Configurable solo sorties in a shared Hangar. No new Wingman commands or multiplayer.",
+  "baseCommit": "c071d3dc9b0341fdd101b99f22b208e91536c895",
+  "aircraft": 10,
+  "validConfigurationCases": 160,
+  "missionSlot": 0,
+  "campaignIndicesPreserved": true,
+  "physicsChanged": false,
+  "checks": {
+    "syntax": "12 HTML files, 11 inline blocks, zero errors",
+    "terrain": "40 files, zero failures",
+    "okinawaLocal": "90 files, zero failures; browser tests skipped locally without Chrome",
+    "offlinePayload": "359 files; hashes, local HTML dependency closure and original model bytes verified",
+    "browserBaseline": {
+      "commit": "e79bb787b6e58a486a960af8c2d449ff66f8747e",
+      "run": "https://github.com/oliverkurzemann-Goku/Torpedo-Bomber/actions/runs/40954882042",
+      "result": "success",
+      "cases": [
+        "P47 bridge, bombs, air, 75% fuel, rain/night",
+        "Bf109 fighter, drop tank, ground, 50% fuel",
+        "Me163 intercept, guns, air",
+        "Avenger torpedo, one internal store, air, 75% fuel",
+        "Corsair ship strike, 2 bombs + 8 rockets, ground",
+        "Zero free flight, guns, air, no raiders"
+      ],
+      "assertions": [
+        "configured briefing and mission",
+        "weather and time",
+        "aircraft and stores",
+        "fuel and airborne/ground flags",
+        "service retains weapons",
+        "three simulated flight seconds with finite state",
+        "real checkpoint save/resume",
+        "P47 self-contained restore after reload without active custom setup"
+      ],
+      "jsErrors": 0,
+      "notes": "Optional scenery resource 404s were logged; no JavaScript exceptions. Final release workflow reruns the same suite including restored menu selection."
+    },
+    "responsiveLayout": [
+      {
+        "viewport": "1194x660",
+        "horizontalOverflow": false,
+        "allControlsVisible": true
+      },
+      {
+        "viewport": "1024x700",
+        "horizontalOverflow": false,
+        "allControlsVisible": true
+      },
+      {
+        "viewport": "390x844",
+        "horizontalOverflow": false,
+        "verticalScroll": true
+      }
+    ],
+    "minimumTouchTargetPx": 44
+  },
+  "limits": [
+    "No physical iPad acceptance test.",
+    "Six representative browser configurations; the 160 catalogue cases are validation/operation tests, not 160 complete GPU flights.",
+    "Multiplayer deferred."
+  ],
+  "sha256": {
+    "custom-sortie.js": "478de97a93957beafee784928bed57ee8aa8135995565b8ac9d9ff1a38d5295c",
+    "hangar.html": "1bb58027deed03351c91e33feaa316252eda740d94017e13d0e0a732fca3ab36",
+    "hangar.css": "99a7554a0f7ce515bf1e3b6d2483fdd11707089f72f0ebfbc77e99319d89461a",
+    "hangar.js": "a570926a6690c50a4c14f18cda9e611cf067c361b42482ff4fe1671a4642a52b",
+    "remagen-mission.html": "b746e2dc6dd5378fe9e61cf2448127bc9c9145027d773fecb5add60a38c4f299",
+    "torpedo-carrier.html": "0bfc1ee95e2ee5c9e92a277df71ca4cd9484cbe4be2962ba01e44240e924602b",
+    "checkpoint-rhine.js": "d561492de6d2fe61abc3c837752fdc316d39f0185be06b58631e2bcd30d088d9",
+    "checkpoint-pacific.js": "060981935083371b0dcd6b6452a34e30b97c8ddcef8094ae6091c714db454bfd",
+    "sortie-checkpoint.js": "f41a3262781a29b6b09c3e801ea740a20fdcdd8a9d2cc08efd15c31231090743",
+    "flight-core.js": "739f4ad2ffa6802adca24da76a949a54479896656d5ee0d4ad0bddc6c222e617",
+    "flight-envelope.js": "9fae84485c9671907a01932ff00ff404e1dc7a4e19833659172ced787cce59f0",
+    "flight-dynamics.js": "cd9a4e81ced52ee464e728642013f4252855e45c6f9953fa9631bba8b98b1e51"
+  }
+}

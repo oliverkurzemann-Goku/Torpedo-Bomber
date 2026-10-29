@@ -1,5 +1,23 @@
 # Torpedo-Bomber — Übergabe an Claude Code
 
+**29.10.2026, Build 221: gemeinsamer Hangar und frei konfigurierbare Solo-Einsaetze.**
+Nutzer: Flugzeug-/Bewaffnungswahl fuer verschiedene Missionen umsetzen, ohne Wingman-Befehle.
+`hangar.html` + `hangar.js`/CSS und validierter gemeinsamer Katalog `custom-sortie.js`.
+Alle zehn vorhandenen Flugzeuge, getrennt nach Schauplatz, mit auftragsgerechten Kits;
+Wetter, Tag/Nacht, Boden-/Luftstart, Schwierigkeit, Gegnerzahl und interner Treibstoff.
+Keine neuen Wingman-Befehle, kein Multiplayer. Keine Aenderung am Build219-Flugkern.
+Eigene Auftraege verwenden Slot0; Kampagnen-Indizes, Freischaltungen und Missionen1+ bleiben.
+URL-Konfiguration validiert; letzter Hangar-Entwurf lokal. Eigene Ergebnisse schalten keine
+Kampagnenmissionen frei. Checkpoints tragen die komplette Konfiguration selbst und koennen
+ohne letzten Hangar-Entwurf fortgesetzt werden; originale Slot0-Saves werden wiederhergestellt.
+Nachtstart aktiviert RunwayLights erst nach geladenem DEM (sonst Terrain-null beim Start).
+Test-Fixtures fuer Build220-Bay-Abhaengigkeiten aktualisiert, ein Torpedo pro Avenger.
+Validierung: 160 gueltige Kombinationen, Terrain40/40, lokale Okinawa-Suite90Dateien/0Fehler
+(Browserdateien lokal mangels Chrome uebersprungen); sechs echte konfigurierte Spielstarts
+Chromium/SwiftShader in GitHub Actions inkl. Service/Flug/Checkpoint gruen.
+Touch-Layout1194x660,1024x700,390x844 ohne horizontalen Overflow; Touchziele>=44px.
+Weitere Details/Pruefgrenzen: `app/release/hangar-validation.json`. Kein physischer iPad-Test.
+
 **29.10.2026, Build 220: Zero-Haube, Dauntless-Streifen und interner Avenger-Torpedo.**
 Nutzer-Screenshot IMG_0732: heller, fest ausgefahrener Streifen zwischen innerer
 SBD-Sturzflugbremsenkante und Rumpf. Zwei getrennte statische Original-Flap-Inseln

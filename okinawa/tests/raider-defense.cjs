@@ -10,7 +10,7 @@ function context(){
    scene:new THREE.Scene(),combatFX:null,GameRuntime:{own:()=>{},release:m=>m?.parent?.remove(m),rotorStep:()=>.2},PROP_STEP:.2,
    isDefend:()=>true,spawnSmoke:()=>{},spawnSparks:()=>{},spawnFlakBurst:()=>{},sfxPop:()=>{},spawnEnemyTorp:()=>{ctx.drops++;},
    drops:0,fleetKills:0,killRaider:r=>{r.alive=false;ctx.fleetKills++;}};
- vm.createContext(ctx);vm.runInContext(moduleCode,ctx);
+ vm.createContext(ctx);vm.runInContext(moduleCode,ctx);vm.runInContext(fs.readFileSync('avenger-bay.js','utf8'),ctx);
  ctx.hasRaiders=()=>ctx.isDefend();
  vm.runInContext(fs.readFileSync('combat-fx.js','utf8'),ctx);
  vm.runInContext(extract('function updateRaiders(dt){','function spawnEnemyTorp'),ctx);

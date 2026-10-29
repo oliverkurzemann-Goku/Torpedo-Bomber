@@ -19,7 +19,7 @@
    flares:flareSupport?.checkpoint()};
  }
  async function load(saved){
-  CustomSortie.restoreSaved('pacific',saved,MISSIONS,FlightPlans.pacific);
+  CustomSortie.restoreSaved('pacific',saved,MISSIONS,FlightPlans.pacific);selectedMission=saved.mission;
   if(!saved.operation?.config||!saved.plan?.config)throw Error('Missing operation in checkpoint');
   await prepareOkinawa();
   await preparePacificModels(MISSIONS[saved.mission]);

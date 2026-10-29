@@ -46,7 +46,7 @@ const server=http.createServer((req,res)=>{const file=path.resolve(root,'.'+deco
     await page.evaluate(()=>localStorage.removeItem('custom-sortie-v1-europe'));
     await page.goto(base+'/remagen-mission.html?v=221');await page.waitForFunction(()=>realWorldReady&&state===ST.MENU,null,{polling:200});
     await page.evaluate(async()=>{await sortieCheckpoint.resume();});
-    assert.deepEqual(await page.evaluate(()=>MISSIONS[mission].custom),cfg);row.selfContainedRestore=true;
+    assert.deepEqual(await page.evaluate(()=>MISSIONS[mission].custom),cfg);assert(await page.evaluate(()=>selectedMission===mission));row.selfContainedRestore=true;
    }
    console.log('PASS',row);results.push(row);
   }
