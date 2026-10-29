@@ -1,0 +1,22 @@
+/* Run the shared native browser checks in CI or a Chrome-equipped checkout. */
+'use strict';
+const fs=require('node:fs'),path=require('node:path'),http=require('node:http'),assert=require('node:assert/strict');
+const {chromium}=require('playwright'),root=path.resolve(__dirname,'../..');
+const executable=[process.env.GAME_TEST_CHROME,'/usr/bin/google-chrome','/usr/bin/chromium'].find(p=>p&&fs.existsSync(p));
+if(!executable){if(process.env.CI)throw Error('Chrome required');console.log('Approved engine voices: skipped locally (no Chrome).');process.exit(0);}
+const server=http.createServer((req,res)=>{
+ const url=new URL(req.url,'http://localhost');
+ if(url.pathname==='/__approved-audio-test'){
+  res.setHeader('Content-Type','text/html');res.end('<!doctype html><title>Approved audio checks</title><script src="/audio/aircraft-engine.js"></script><script src="/audio/tests/approved-engine-checks.js"></script>');return;
+ }
+ const file=path.resolve(root,'.'+url.pathname);if(!file.startsWith(root+path.sep)){res.writeHead(403).end();return;}
+ fs.readFile(file,(e,b)=>{if(e){res.writeHead(404).end();return;}res.setHeader('Content-Type',file.endsWith('.html')?'text/html':'application/javascript');res.end(b);});
+});
+(async()=>{
+ await new Promise(r=>server.listen(0,'127.0.0.1',r));const browser=await chromium.launch({executablePath:executable,headless:true,args:['--no-sandbox']});
+ try{
+  const page=await browser.newPage();await page.goto('http://127.0.0.1:'+server.address().port+'/__approved-audio-test');
+  const result=await page.evaluate(()=>runApprovedEngineChecks());assert.equal(result.build,217);
+  fs.mkdirSync(path.join(root,'test-visuals'),{recursive:true});fs.writeFileSync(path.join(root,'test-visuals/build217-approved-audio.json'),JSON.stringify(result,null,2));console.log('Approved engine voices:',result.checks.join('; '));
+ }finally{await browser.close();await new Promise(r=>server.close(r));}
+})().catch(e=>{console.error(e);process.exitCode=1;});

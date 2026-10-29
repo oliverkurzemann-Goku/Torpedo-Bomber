@@ -22,6 +22,8 @@ async function collect(relative){
  // Build 213 retires the rejected TBF/B-17 drone loops from the runtime payload.
  if(/^audio\/engines\/(r2600|r1820)-(idle|power)\.wav$/.test(relative))return;
  if(/audio\/engines\/(r2800-loaded-power|radial14-loaded-power)\.wav$/.test(relative))return;
+ // Build 217 replaces these historical loaded voices with approved pulse loops.
+ if(/audio\/engines\/(r2800-detail-power|radial14-detail-power)\.wav$/.test(relative))return;
  const absolute=path.join(root,relative),stat=await fs.stat(absolute);
  if(stat.isDirectory()){
   for(const name of (await fs.readdir(absolute)).sort())if(!excluded.has(name))await collect(path.posix.join(relative,name));
@@ -50,5 +52,5 @@ await build({entryPoints:[path.join(root,'app/native-bridge.mjs')],bundle:true,f
 const bridge=await fs.readFile(path.join(output,'app-native.js'));
 manifest.push({path:'app-native.js',bytes:bridge.length,sha256:createHash('sha256').update(bridge).digest('hex')});
 const bytes=manifest.reduce((n,f)=>n+f.bytes,0);
-await fs.writeFile(path.join(output,'app-payload.json'),JSON.stringify({schema:1,build:216,bytes,files:manifest},null,2));
+await fs.writeFile(path.join(output,'app-payload.json'),JSON.stringify({schema:1,build:217,bytes,files:manifest},null,2));
 console.log('Offline app:',manifest.length,'files,',(bytes/1024/1024).toFixed(1),'MiB; original assets preserved.');

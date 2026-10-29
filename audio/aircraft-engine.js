@@ -1,19 +1,19 @@
 /* Recorded piston engines. Attribution and exact cuts: engines/provenance.json.
- * Idle/load crossfade retains real exhaust transients. No oscillator bed. */
+ * Approved voices combine credited ground recordings and original exhaust accents. */
 (function(root){
 'use strict';
 const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
 const script=typeof document!=='undefined'?document.currentScript:null;
 const base=script?new URL('engines/',script.src).href:'audio/engines/';
 const profiles={
- p47:{engine:'R-2800 · 18-cylinder radial',bank:'r2800',revision:216,growl:true,powerFile:'r2800-detail-power.wav',powerRate:1.12,lowCut:45,rate:1,spool:.8,bass:-.5,bright:7500,source:'R-2800 flight recording · Pole Position / Sonniss GDC',match:'Loaded Bearcat recording with cabin tones and hiss reduced; adapted for P-47. Source RPM is unmeasured. Accepted ground recording retained at idle.'},
+ p47:{"engine":"R-2800 · 18-cylinder radial","bank":"r2800","revision":217,"approved":true,"approvedChoice":"P47 A","idleFile":"approved/r2800-idle.wav","powerFile":"approved/p47-a-power.wav","rate":1,"spool":0.3,"bass":0,"bright":10000,"source":"Fight2FlyPhoto ground recording + original game exhaust accents","match":"Approved deep, gritty P-47 audition A. Ground recording plus original exhaust accents."},
  corsair:{engine:'R-2800 · 18-cylinder radial',bank:'r2800',revision:216,growl:true,rate:1.035,spool:.9,bass:.5,bright:7100,source:'R-2800 recordings from a P-47D · Fight2FlyPhoto',match:'Same engine family; Corsair exhaust and three-blade propeller are an approximation.'},
- fw190:{engine:'BMW 801 · 14-cylinder radial',bank:'bmw801',revision:216,growl:true,powerFile:'radial14-detail-power.wav',powerRate:1.15,rate:1,spool:.7,bass:1,bright:6800,source:'BMW idle + composite loaded radial · Fight2FlyPhoto / Pole Position',match:'Ground BMW recording at idle; cleaned composite of airborne R-2800 and recorded R-2600 low-band texture under load. Not an original BMW full-power take.'},
- bf109:{engine:'DB 601 · inverted V12',bank:'db601',rate:1,spool:.6,bass:0,bright:7200,source:'Bf 109E-3 Daimler-Benz run-up · Fight2FlyPhoto',match:'DB 601 family recording; E-3 installation adapted for the F-2.'},
+ fw190:{"engine":"BMW 801 · 14-cylinder radial","bank":"bmw801","revision":217,"approved":true,"approvedChoice":"Fw190 Kerniger Sternmotor","idleFile":"approved/bmw801-idle.wav","powerFile":"approved/fw190-power.wav","rate":1,"spool":0.3,"bass":0,"bright":10000,"source":"Fight2FlyPhoto ground recording + original game exhaust accents","match":"Approved Fw 190 audition: BMW ground recording with original exhaust accents."},
+ bf109:{"engine":"DB 601 · inverted V12","bank":"db601","revision":217,"approved":true,"approvedChoice":"Me109 Trockenes V12 Knurren","idleFile":"approved/db601-idle.wav","powerFile":"approved/bf109-power.wav","rate":1,"spool":0.3,"bass":0,"bright":10000,"source":"Fight2FlyPhoto ground recording + original game exhaust accents","match":"Approved dry V12 audition: DB 601 ground recording with original exhaust accents."},
  ju87:{engine:'Jumo 211 · inverted V12',bank:'jumo',rate:1,spool:.9,bass:1,bright:5800,source:'Stuka-labelled archival effect · craigsmith / USC',match:'Archival film sound effect; exact engine provenance is unverified.'},
- avenger:{engine:'R-2600 · 14-cylinder radial',bank:'bmw801',revision:216,growl:true,powerFile:'radial14-detail-power.wav',powerRate:1.09,rate:.94,spool:1.0,bass:1.5,bright:6200,source:'Recorded R-2600 texture + airborne radial · Pole Position / Sonniss GDC',match:'Cleaned composite loaded game voice; idle remains the BMW substitute. Not an original Avenger recording or a measured R-2600 full-power take.'},
- sbd:{engine:'R-1820 · 9-cylinder radial',bank:'r2800',revision:216,growl:true,powerFile:'r2800-detail-power.wav',powerRate:1.28,rate:.95,spool:.9,bass:.5,bright:6000,source:'Recorded R-2800 radial · Fight2FlyPhoto / Pole Position',match:'Ground radial at idle, cleaned airborne radial under load with quicker playback at high power. Adapted game voice, not an R-1820 recording or measured RPM.'},
- zero:{engine:'Sakae · 14-cylinder radial',bank:'bmw801',revision:216,growl:true,powerFile:'radial14-detail-power.wav',powerRate:1.31,rate:1.045,spool:.55,bass:1,bright:6500,source:'BMW idle + composite loaded radial · Fight2FlyPhoto / Pole Position',match:'BMW idle retained; quicker, cleaned composite airborne radial under load. Adapted game voice, not a Sakae recording or measured RPM.'}
+ avenger:{"engine":"R-2600 · 14-cylinder radial","bank":"r2800","revision":217,"approved":true,"approvedChoice":"P47 C","idleFile":"approved/r2800-idle.wav","powerFile":"approved/avenger-c-power.wav","rate":1,"spool":0.3,"bass":0,"bright":10000,"source":"Fight2FlyPhoto ground recording + original game exhaust accents","match":"Approved powerful audition C, adapted from the P-47 source family for Avenger."},
+ sbd:{"engine":"R-1820 · 9-cylinder radial","bank":"r2800","revision":217,"approved":true,"approvedChoice":"P47 B","idleFile":"approved/r2800-idle.wav","powerFile":"approved/sbd-b-power.wav","rate":1,"spool":0.3,"bass":0,"bright":10000,"source":"Fight2FlyPhoto ground recording + original game exhaust accents","match":"Approved rough, uneven audition B, adapted from the P-47 source family for Dauntless."},
+ zero:{"engine":"Sakae · 14-cylinder radial","bank":"bmw801","revision":217,"approved":true,"approvedChoice":"Zero Leicht und lebhaft","idleFile":"approved/bmw801-idle.wav","powerFile":"approved/zero-power.wav","rate":1.075,"spool":0.3,"bass":0,"bright":10000,"source":"Fight2FlyPhoto ground recording + original game exhaust accents","match":"Approved lively Zero audition. Adapted BMW source; not a Sakae recording."},
 };
 for(const p of Object.values(profiles))Object.freeze(p);Object.freeze(profiles);
 // Prepare each loaded voice once while loading. Native offline filters remove
@@ -61,10 +61,10 @@ function create(ctx,destination){
  const buffers=new Map();let current=null,selected=null,load=0,rpm=1,version=0,error=null;
  function ready(kind){
   const p=profiles[kind];if(!p)return Promise.resolve(null);
-  const key=p.bank+'|'+(p.powerFile||'')+(p.growl?'|growl216|'+kind:'');
+  const key=(p.idleFile||p.bank)+'|'+(p.powerFile||'')+(p.growl?'|growl216|'+kind:'');
   if(!buffers.has(key)){
    const promise=Promise.all(['idle','power'].map(async layer=>{
-    const file=layer==='power'&&p.powerFile?p.powerFile:p.bank+'-'+layer+'.wav';
+    const file=layer==='idle'&&p.idleFile?p.idleFile:layer==='power'&&p.powerFile?p.powerFile:p.bank+'-'+layer+'.wav';
     const url=base+file+(p.revision?'?v='+p.revision:''),res=await fetch(url);
     if(!res.ok)throw Error('Engine sample '+res.status+': '+url);
     const decoded=await ctx.decodeAudioData(await res.arrayBuffer());
@@ -81,9 +81,9 @@ function create(ctx,destination){
   if(!profiles[kind])return;
   ready(kind).then(decoded=>{
    if(ticket!==version)return;
-   const fade=ctx.createGain();fade.gain.value=0;fade.connect(hp);
+   const fade=ctx.createGain();fade.gain.value=0;fade.connect(profiles[kind].approved?bus:hp);
    const layers=decoded.map((buffer,i)=>{
-    const source=ctx.createBufferSource(),gain=ctx.createGain();source.buffer=buffer;source.loop=true;source.playbackRate.value=profiles[kind].rate;
+    const source=ctx.createBufferSource(),gain=ctx.createGain();source.buffer=buffer;source.loop=true;source.playbackRate.value=profiles[kind].approved&&i===1?1:profiles[kind].rate;
     gain.gain.value=i===0?1:0;source.connect(gain);gain.connect(fade);
     source.onended=()=>{source.disconnect();gain.disconnect();};source.start();return {source,gain};
    });
@@ -98,6 +98,19 @@ function create(ctx,destination){
   if(!p||!current){bus.gain.setTargetAtTime(0,now,.045);return;}
   const powered=options.fuel!==false,t=powered?clamp(throttle||0,0,1):0;
   load+=(t-load)*(1-Math.exp(-Math.max(0,dt)/p.spool));
+  if(p.approved){
+   // Same low/full character and dynamics as the approved listening prototypes.
+   // Only steady loop layers run here; the audition's automatic gas sweep is absent.
+   const x=clamp((load-.5)/.5,0,1),mix=x*x*(3-2*x);
+   current.layers[0].gain.gain.setTargetAtTime(Math.cos(mix*Math.PI/2),now,.08);
+   current.layers[1].gain.gain.setTargetAtTime(Math.sin(mix*Math.PI/2),now,.08);
+   rpm=p.rate*(.94+.10*load);
+   current.layers[0].source.playbackRate.setTargetAtTime(rpm,now,.08);
+   current.layers[1].source.playbackRate.setTargetAtTime(.74+.26*load,now,.08);
+   const damage=clamp(options.damage||0,0,1),gain=powered?(.078+.095*load+.053*mix)/.20:.025;
+   bus.gain.setTargetAtTime(active?gain*(1-damage*.28)*(1-.25*(options.duck||0)):0,now,active?.10:.035);
+   return;
+  }
   // Preserve recorded idle and RPM pacing; loaded radials use the low exhaust path.
   const detailed=p.revision>=215;
   const mix=clamp((load-.08)/(detailed?.72:p.powerFile?.64:.82),0,1),idle=Math.cos(mix*Math.PI/2),power=Math.sin(mix*Math.PI/2);
@@ -112,7 +125,7 @@ function create(ctx,destination){
   tone.frequency.setTargetAtTime(p.bright*(options.cockpit?.65:1),now,.12);
   const damage=clamp(options.damage||0,0,1);
   bus.gain.setTargetAtTime(active?(powered?.45+(detailed?.50:.35)*load:.025)*(1-damage*.28)*(1-.25*(options.duck||0)):0,now,active?.10:.035);
- },get state(){return {kind:profiles[selected]?selected:null,loaded:current?.kind===selected,loading:!!profiles[selected]&&!current&&!error,error,rpm,load,powerFile:profiles[selected]?.powerFile||null};},output:bus};
+ },get state(){return {kind:profiles[selected]?selected:null,loaded:current?.kind===selected,loading:!!profiles[selected]&&!current&&!error,error,rpm,load,powerFile:profiles[selected]?.powerFile||null,approvedChoice:profiles[selected]?.approvedChoice||null};},output:bus};
 }
 root.AircraftEngine={profiles,create};if(typeof module==='object'&&module.exports)module.exports=root.AircraftEngine;
 })(typeof window==='undefined'?globalThis:window);

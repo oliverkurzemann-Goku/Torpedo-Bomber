@@ -1,5 +1,22 @@
 # Torpedo-Bomber — Übergabe an Claude Code
 
+**29.10.2026, Build 217: sechs freigegebene Hoerproben lokal integriert.**
+Zuordnung: P47=A, Avenger=C, SBD=B; Fw190/Zero/Me109 wie zuletzt angehoert.
+Neue statische PCM-Loops unter audio/engines/approved; Generator/Parameter/Hashes
+im Repo. Echter Gasregler: Low-Layer bis Halbgas, danach Equal-Power-Ueberblendung
+zur gepulsten Laststimme, Lautstaerke und Wiedergaberate steigen mit Leistung.
+Freigegebene Laststimmen umgehen die alte Growl-Nachfilterung. Keine 22s-Demo
+als Loop einbauen: die Hoerproben enthalten einen automatischen Gasablauf.
+Urheber-/Lizenzhinweise und bewusst adaptierte Avenger/SBD/Zero-Quellen erhalten.
+Native Chromium-Pruefung bei24/48kHz bestanden: sechs90s-Loops, Gasstufen,
+Pause/Resume, Dateifehler/Typwechsel; Vollgas-Wellenform bleibt erhalten.
+Nachweis: app/release/approved-engine-validation.json. App350Dateien/259.3MiB,
+alle12neuen Sample-Verweise und beide Kampagnen geprueft; unveraenderte native
+Bridge fuer inkrementelles App-Paket verifiziert wiederverwendet. Syntax11/11.
+Kein physischer iPad-Test, keine gesamte Gameplay-Suite erneut gelaufen.
+Keine Flugphysik- oder Modell-Aenderung. Quellstand fuer Veroeffentlichung von Build217; Deploymentstatus in GitHub Actions pruefen.
+
+
 **29.10.2026, Build 215: vorbereitete Soundkorrekturen wiederhergestellt und veröffentlicht.**
 Vorheriger Upload endete vor dem Commit; remote blieb Build 214. Erhaltene 215-
 Dateien und WAVs übernommen, fehlenden Sampler auf dem aktuellen 214-Stand ergänzt.

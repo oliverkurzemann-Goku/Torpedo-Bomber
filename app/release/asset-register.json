@@ -1,13 +1,13 @@
 {
   "schema": 1,
   "reviewedOn": "2026-10-23",
-  "build": 216,
+  "build": 217,
   "status": "OPEN — source declarations checked; no external rights authorization obtained",
   "payload": {
-    "bytes": 268387661,
-    "fileCount": 342,
+    "bytes": 271866563,
+    "fileCount": 350,
     "modelCount": 36,
-    "manifestSha256": "32f440f1e76263329701c5e5776d90756c20ba8a899b156b3b5295900ec7ec23"
+    "manifestSha256": "453397feb5d76fa8114673f23a2d3d5b366a815c4c9693af184b12b45b9cb92d"
   },
   "files": [
     {
@@ -408,14 +408,74 @@
     },
     {
       "path": "audio/aircraft-engine.js",
-      "bytes": 10452,
-      "sha256": "60c3f69f7cdfd7d70c75f638f41e4b40831a463d84ad15bf834226b55da48326",
+      "bytes": 11693,
+      "sha256": "7ff50e85e510523b7d069da679f571f45d2030d9240ffa7854596aeb7343219e",
       "kind": "code-or-notice"
     },
     {
       "path": "audio/engines/CREDITS.md",
-      "bytes": 8204,
-      "sha256": "26f09036fe031c40a8e481709c71eaf4393f6b7895c28bb9cb432b4b1f810f0c",
+      "bytes": 10121,
+      "sha256": "dacbb1be07d61a8451d4df5b227786357ce9b355cae9d3d7bb27c6b3c8ca7553",
+      "kind": "code-or-notice"
+    },
+    {
+      "path": "audio/engines/approved/avenger-c-power.wav",
+      "bytes": 940844,
+      "sha256": "061f0a95ed190b87ea6346934a93e6b00b4aac8583307997b4b725799a005982",
+      "kind": "code-or-notice"
+    },
+    {
+      "path": "audio/engines/approved/bf109-power.wav",
+      "bytes": 940844,
+      "sha256": "366d0557e2ac11e2361c9e102e06c00fc59c43350b00cb8cebadcd7ab156c6c3",
+      "kind": "code-or-notice"
+    },
+    {
+      "path": "audio/engines/approved/bmw801-idle.wav",
+      "bytes": 247244,
+      "sha256": "d23e878a7df8dc4a3f34b0f22b2bd70edf0557cec4f1faaa6ba16ec0ade3482e",
+      "kind": "code-or-notice"
+    },
+    {
+      "path": "audio/engines/approved/db601-idle.wav",
+      "bytes": 340844,
+      "sha256": "e3ab79763eb1c4c9537b1acbe5e42a10817f1307c7246c52203bba61ab76d3d0",
+      "kind": "code-or-notice"
+    },
+    {
+      "path": "audio/engines/approved/fw190-power.wav",
+      "bytes": 940844,
+      "sha256": "214fb000ac95a9e728e40d47c2ebd71a91d2ff48f43e99f57f4bbac8a0008553",
+      "kind": "code-or-notice"
+    },
+    {
+      "path": "audio/engines/approved/p47-a-power.wav",
+      "bytes": 940844,
+      "sha256": "6bd6b14ba2e007a26c4689d55d509b658cdb482c054d5e622a3760fc0c206750",
+      "kind": "code-or-notice"
+    },
+    {
+      "path": "audio/engines/approved/provenance.json",
+      "bytes": 8236,
+      "sha256": "b5a8a4018962456f83d805a82b2ee6af4d6f1b9aba7a00d46197a7ea9fca6a31",
+      "kind": "code-or-notice"
+    },
+    {
+      "path": "audio/engines/approved/r2800-idle.wav",
+      "bytes": 434444,
+      "sha256": "432946307faf04c3aac3b12da2ae8acdf1e3dcde85e8bac0defb7aa2c300d5bf",
+      "kind": "code-or-notice"
+    },
+    {
+      "path": "audio/engines/approved/sbd-b-power.wav",
+      "bytes": 940844,
+      "sha256": "40309ef34d8909589ee084723cb2bd78afe8e7fb5f783709e4b68d8a0f58809f",
+      "kind": "code-or-notice"
+    },
+    {
+      "path": "audio/engines/approved/zero-power.wav",
+      "bytes": 940844,
+      "sha256": "d16084952c11baa12fc193f1140b7c511f319bbf2d1d14a3e8e788ffa12f0ac8",
       "kind": "code-or-notice"
     },
     {
@@ -473,12 +533,6 @@
       "kind": "code-or-notice"
     },
     {
-      "path": "audio/engines/r2800-detail-power.wav",
-      "bytes": 1600044,
-      "sha256": "84eb7844f3ac1cd09eeb20ee2264dd5569f74e6ff98be194e9d63d4a1511541e",
-      "kind": "code-or-notice"
-    },
-    {
       "path": "audio/engines/r2800-idle.wav",
       "bytes": 453644,
       "sha256": "19de18c3aab3beb37ded0f8547bc721d0040eb88576a8e829eb8b09e895f7edf",
@@ -488,12 +542,6 @@
       "path": "audio/engines/r2800-power.wav",
       "bytes": 696044,
       "sha256": "7cce0ae3af6724d3bacbbc5890513ed866462bf478e54660b34128ead313cd4c",
-      "kind": "code-or-notice"
-    },
-    {
-      "path": "audio/engines/radial14-detail-power.wav",
-      "bytes": 1600044,
-      "sha256": "5384781cdeef289b60e1fcd09f6649f92743ef9b3031ae7992cb070b559088e5",
       "kind": "code-or-notice"
     },
     {
@@ -661,7 +709,7 @@
     {
       "path": "index.html",
       "bytes": 7260,
-      "sha256": "dd0663ad7826f563ee535934a3ea0b4e147df170d291bd78f344d07bdee344e6",
+      "sha256": "4574809685bbc3eca9860546c41cc31584ecc11e12c37634d2151b08c328810e",
       "kind": "code-or-notice"
     },
     {
@@ -793,7 +841,7 @@
     {
       "path": "remagen-mission.html",
       "bytes": 366919,
-      "sha256": "a59b2e23f2fcf37b7639515bcd9ec3824a8d7e7c541e708fc93eee3062208e9d",
+      "sha256": "c260151b4b195153584d843788b0478fd729423b192a913c87aedd031ccc683f",
       "kind": "code-or-notice"
     },
     {
@@ -1987,7 +2035,7 @@
     {
       "path": "torpedo-carrier.html",
       "bytes": 429772,
-      "sha256": "2022667484657730d60a5944e0cd1807bb839e1cfec82ecbf90ae1c3c74459c8",
+      "sha256": "830d8e558d9c8139b49ed74aa7bd8b50d3c852239db50e4aa3bc61febf733a43",
       "kind": "code-or-notice"
     },
     {
@@ -3130,7 +3178,7 @@
         "audio/*.js",
         "audio/engines/**"
       ],
-      "status": "Recorded piston loops: Fight2FlyPhoto CC BY 3.0, craigsmith CC0, and Pole Position free SONNISS GDC Bundle License v2.0 recordings incorporated in this game. Build 216 prepares lower, rougher recorded radial power voices with circular leveling; declared source substitutions remain; legacy substitutions remain documented. Sources, hashes, cuts and limits in provenance.json, loaded-provenance.json, detail-provenance.json and CREDITS.md. Raw source files excluded from checkout and offline payload. Jet/rocket/effects remain procedural."
+      "status": "Recorded piston loops: Fight2FlyPhoto CC BY 3.0, craigsmith CC0, and Pole Position free SONNISS GDC Bundle License v2.0 recordings incorporated in this game. Build 217 adds six user-approved recorded/procedural voices with declared P47/BMW substitutions; legacy substitutions remain documented. Sources, hashes, cuts and limits in provenance.json, loaded-provenance.json, detail-provenance.json, approved/provenance.json and CREDITS.md. Raw source files excluded from checkout and offline payload. Jet/rocket/effects remain procedural."
     },
     {
       "paths": [

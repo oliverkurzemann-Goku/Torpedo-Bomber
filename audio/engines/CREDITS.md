@@ -1,4 +1,37 @@
-# Recorded piston engine audio — Build 216
+# Recorded piston engine audio — Build 217
+
+## Build 217 — user-approved game voices (29 October 2026)
+
+| Aircraft | Approved audition | Runtime power loop |
+| --- | --- | --- |
+| P-47 | P47 A, Tief und kernig | approved/p47-a-power.wav |
+| Avenger | P47 C, Kraeftiges Vollgas | approved/avenger-c-power.wav |
+| Dauntless | P47 B, Rau und rucklig | approved/sbd-b-power.wav |
+| Fw 190 | Kerniger Sternmotor | approved/fw190-power.wav |
+| Zero | Leicht und lebhaft | approved/zero-power.wav |
+| Bf/Me 109 | Trockenes V12-Knurren | approved/bf109-power.wav |
+
+These voices retain the timbres and settings accepted in the listening tests.
+They combine the credited Fight2FlyPhoto ground-engine recordings below with
+original procedural exhaust/propeller accents. They are creative game sound
+voicings, not calibrated RPM or authenticated acoustic installation models.
+The accepted P47 family supplies P47, Avenger and Dauntless; Zero explicitly
+uses an adapted BMW source rather than a Sakae recording. Source attribution
+and CC BY 3.0 obligations continue to apply to the recorded components.
+
+The runtime uses separate steady loops with throttle-controlled playback,
+equal-power crossfades above half throttle, and progressively increasing output.
+The 22-second audition throttle schedules are not used as runtime sounds.
+No further low-pass, bass boost or saturation is applied to these approved
+buffers during playback. Loop seams and slow level drift are processed once
+by the generator. Corsair, Ju87 and jet/rocket voices retain their prior paths.
+
+Rebuild: `python scripts/engine-audio/build-approved-voices.py` (numpy/scipy).
+Input/output SHA-256, accepted choices, parameters and loop statistics:
+`approved/provenance.json`. Native-browser waveform/throttle/sustain/pause
+checks: `audio/tests/approved-engine-checks.js` and
+`audio/tests/approved-voices.cjs`. Device listening on the target iPad remains
+separate from these browser integration checks.
 
 ## Build 216 — low exhaust voicing (29 October 2026)
 
