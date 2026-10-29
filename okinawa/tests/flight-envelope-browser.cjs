@@ -62,7 +62,9 @@ const server=http.createServer((req,res)=>{
      out.idle={};
      for(const f of [.5,.75]){const v=Math.round(vmax*f);setup(v,0);for(let i=0;i<60*6;i++)updateFlight(1/60);out.idle[f]=(v-P.spd)/6;}
      // AERO gate and loop from the gate speed, camera sampled every frame
-     const gate=E.aeroGate(kind);out.gate=gate;
+     // The game's own gate (the computed P-47 core simulates its loop; other types use the envelope).
+     const gate=typeof aeroGateSpeed==='function'?aeroGateSpeed(kind):E.aeroGate(kind);out.gate=gate;
+     out.core=kind==='p47'&&typeof P47Core!=='undefined'&&P47Core.on;
      const loopFrom=(v,fps)=>{
       setup(v);aeroMode=true;for(let i=0;i<fps;i++){updateFlight(1/fps);updateCamera(1/fps);}setup(v);aeroMode=true;for(let i=0;i<fps;i++)updateCamera(1/fps);
       inputPitch=1;let travelled=0,last=P.pitch,t=null,minV=P.spd,front=0,frames=0,maxStep=0,lastCam=camera.position.clone(),lastPos=P.pos.clone();
@@ -92,8 +94,10 @@ const server=http.createServer((req,res)=>{
   assert.deepEqual(errors,[]);
   // ---- assertions ----
   for(const [kind,r] of Object.entries(all)){
-   for(const [v,x] of Object.entries(r.roll))assert(x.measured>x.expected*.75&&x.measured<x.expected*1.25,`${kind} measured roll rate ${x.measured.toFixed(0)} deg/s at ${v} m/s vs envelope ${x.expected.toFixed(0)}`);
-   const t=r.turn[90];assert(t.t!==null&&t.t>t.predicted*.7&&t.t<t.predicted*1.5,`${kind} 360 turn ${t.t} s vs envelope ${t.predicted.toFixed(1)} s`);
+   // A type on the computed flight core (flight-core.js) no longer follows the envelope's turn/roll law;
+   // its own figures are checked in p47-core-browser.cjs and scripts/flight/derive-p47.cjs.
+   if(!r.core)for(const [v,x] of Object.entries(r.roll))assert(x.measured>x.expected*.75&&x.measured<x.expected*1.25,`${kind} measured roll rate ${x.measured.toFixed(0)} deg/s at ${v} m/s vs envelope ${x.expected.toFixed(0)}`);
+   const t=r.turn[90];if(!r.core)assert(t.t!==null&&t.t>t.predicted*.7&&t.t<t.predicted*1.5,`${kind} 360 turn ${t.t} s vs envelope ${t.predicted.toFixed(1)} s`);
    for(const f of ['0.5','0.75']){const jet=kind==='me262'||kind==='me163';if(!jet)assert(r.idle[f]>(f==='0.5'?1.3:2.2),`${kind} closed throttle at ${f} vmax brakes ${r.idle[f].toFixed(2)} m/s2`);}
    for(const [fps,l] of Object.entries(r.loop)){
     assert(l.alive&&l.t!==null&&l.t<20,`${kind} completes a loop from the AERO gate at ${fps} FPS (${l.t})`);
@@ -108,9 +112,9 @@ const server=http.createServer((req,res)=>{
   // fleet grading in the real game
   const T=k=>all[k].turn[90].t;
   if(all.zero&&all.avenger){assert(T('zero')<T('avenger')*.9,'Zero out-turns the Avenger at 90 m/s');}
-  if(all.p47&&all.bf109){assert(T('bf109')<T('p47'),'Bf 109 out-turns the P-47 at 90 m/s');assert(T('p47')/T('bf109')<1.7,'the Jug is no longer 2.5x slower than the 109');}
+  if(all.p47&&all.bf109&&!all.p47.core){assert(T('bf109')<T('p47'),'Bf 109 out-turns the P-47 at 90 m/s');assert(T('p47')/T('bf109')<1.7,'the Jug is no longer 2.5x slower than the 109');}
   const R=(k,v)=>all[k].roll[Object.keys(all[k].roll)[v]].measured;
-  if(all.p47&&all.fw190)assert(R('fw190',1)>R('p47',1)*1.15,'Fw 190 rolls faster than the P-47 at 70% of top speed');
+  if(all.p47&&all.fw190&&!all.p47.core)assert(R('fw190',1)>R('p47',1)*1.15,'Fw 190 rolls faster than the P-47 at 70% of top speed');
   fs.mkdirSync(path.join(root,'test-visuals'),{recursive:true});fs.writeFileSync(path.join(root,'test-visuals/build215-flight-envelope.json'),JSON.stringify(all,null,2));
  }finally{await browser.close();await new Promise(r=>server.close(r));}
 })().catch(e=>{console.error(e);process.exitCode=1;});
