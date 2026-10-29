@@ -63,6 +63,9 @@ const server=http.createServer((req,res)=>{
    const contact=await page.evaluate(fps=>{
     function setup(hook,power,x){startMission(0);finishCarrierIntro();hideOverlays();state=ST.FLIGHT;DIFF='ace';windHead=6;windGust=0;seaState=0;
      for(const cm of [carrierModel,ijnCarrierModel])if(cm){cm.rotation.x=cm.rotation.z=0;cm.position.x=carrierX;}
+     // Build 220: a returning aircraft (torpedo gone, 30 % fuel). On the computed core a fully loaded Avenger
+     // (7.2 t) braked below its 37 m/s flap stall needs nearly the whole deck to fly off again.
+     P.torps=0;P.rockets=0;P.fuel=30;
      P.rtb=true;P.onDeck=false;P.heading=0;P.pitch=-.045;P.roll=P.rollBias=P.pitchVel=P.rollVel=0;P.spd=40;P.throttle=power;P.gear=P.gearTgt=P.flap=P.flapTgt=1;P.hook=P.hookTgt=hook;P.pos.set(carrierX+x,30,0);P.vSpeed=-2;updatePlaneMesh(0);P.pos.y=carrierContactHeight();P.touchResolved=false;inputPitch=inputRoll=0;resolveGroundAndDeck(1/fps);}
     setup(1,.25,WIRE_X0-16);const power=P.throttle,startY=P.pos.y;
     if(!P.deckRun||!P.deckRun.wireEligible||P.bolters||P.throttle!==.25)throw Error('Early touchdown did not stay grounded '+JSON.stringify({x:P.pos.x-carrierX,stern:STERN_X,wire:WIRE_X0,run:P.deckRun,arrest:P.arrestRun,bolters:P.bolters,power:P.throttle,alive:P.alive,result:document.getElementById('result')?.textContent}));
