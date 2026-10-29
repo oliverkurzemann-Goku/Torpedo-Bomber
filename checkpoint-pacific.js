@@ -2,7 +2,7 @@
 'use strict';
 (function(){
  const C=SortieCheckpoint;
- const identity=i=>MISSIONS[i]?MISSIONS[i].title+'|'+MISSIONS[i].sub:null;
+ const identity=i=>MISSIONS[i]?MISSIONS[i].title+'|'+MISSIONS[i].sub+(MISSIONS[i].customId?'|'+MISSIONS[i].customId:''):null;
  function airborne(){return (state===ST.FLIGHT||state===ST.PAUSED&&prePauseState===ST.FLIGHT)&&P.alive&&!P.onDeck&&!P.deckRun&&!P.arrestRun&&!carrierIntro&&!bailout&&!ditching;}
  function snapshot(){
   return {mission,identity:identity(mission),label:MISSIONS[mission].sub,

@@ -1,7 +1,7 @@
 /* Rhine checkpoint adapter. Rebuild from original templates, restore state, no awards. */
 'use strict';
 (function(){
- const C=SortieCheckpoint,identity=i=>MISSIONS[i]?MISSIONS[i].id+'|'+MISSIONS[i].ac:null;
+ const C=SortieCheckpoint,identity=i=>MISSIONS[i]?MISSIONS[i].id+'|'+MISSIONS[i].ac+(MISSIONS[i].customId?'|'+MISSIONS[i].customId:''):null;
  function airborne(){return (state===ST.FLIGHT||state===ST.PAUSED&&prevState===ST.FLIGHT)&&P.alive&&!P.onGround&&!P.landingRoll&&!launchIntro&&!bailout&&!missionOver&&!sortieService?.active;}
  function snapshot(){return {mission,identity:identity(mission),label:MISSIONS[mission].sub,
   player:C.capture(P,['_keys','_stickActive','_keyboardFlightActive']),operation:C.capture(europeOps),
