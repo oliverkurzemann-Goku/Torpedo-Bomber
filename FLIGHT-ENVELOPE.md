@@ -14,8 +14,8 @@ stall/approach references, take-off and landing are unchanged (Builds 204–214)
 
 | Complaint | Cause found by measurement | Now |
 | --- | --- | --- |
-| Bf 109 / Zero too aggressive | Full stick rolled every type at 94–195 deg/s regardless of speed; 360° turns in 5 s (≈ 8–10 g) | Roll rate follows the published curve of each type and **falls with speed** (Zero 167 → 88 deg/s from 85 → 150 m/s); turn rate is the load factor the wing can really pull × one fleet gain |
-| P-47 too sluggish | The P-47 uses its realistic clean stall (51.9 m/s) while the others used arcade stalls of 29–39 m/s, so its lift-limited turn at 87 m/s took 12.6 s against 5 s for the others | One physical lift model for all ten types (P-47 87 m/s: 9.4 s, 136 m/s: 6.0 s); spread P-47 : Bf 109 at 80 m/s 1.35 instead of 2.5 |
+| Bf 109 / Zero too aggressive | Full stick rolled every type at 94–195 deg/s regardless of speed; 360° turns in 5 s (≈ 8–10 g) | Roll rate follows the published curve of each type and **falls with speed** (Zero 147 → 108 deg/s from 45 → 90 % of top speed); turn rate is the load factor the wing can really pull × one fleet gain |
+| P-47 too sluggish | The P-47 uses its realistic clean stall (51.9 m/s) while the others used arcade stalls of 29–39 m/s, so its lift-limited turn at 87 m/s took 12.6 s against 5 s for the others | One physical lift model for all ten types (P-47 94 m/s: 9.3 s, 138 m/s: 6.0 s); full circle P-47 : Bf 109 at 45 % of top speed 9.3 : 6.7 s instead of 12.6 : 5.1 s |
 | No loop in AERO, "I see the aircraft from the front" | The chase camera followed the *heading* with a compressed pitch; past vertical it ended in front of the nose (measured: 6–21 % of the frames of every loop, camera 180° round) | Camera follows the aircraft's own nose and wing axis; 0 % of frames in front of the nose; AERO entry gate derived per type |
 | Aircraft barely slow down when power is cut | Clean fighters coast (P-47 0.7–1.0 m/s² at idle); no propeller drag was modelled | Windmilling-propeller drag (disc area / mass): P-47 1.6 / 2.9 m/s² at 50 / 75 % of top speed, others 2.0–3.7 |
 

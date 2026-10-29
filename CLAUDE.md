@@ -27,13 +27,18 @@ Neu: `flight-envelope.js` (`FlightEnvelope`) + `FLIGHT-ENVELOPE.md`:
 - Eingebaut in `torpedo-carrier.html` und `remagen-mission.html`; `flight-dynamics.js` bekommt Leerlaufbremse, n-basierte
   Induktivwiderstand-Skalierung und Rollautorität aus der Rollkurve. Schub-/Widerstandsgesetz (Vmax, Beschleunigung),
   Start/Landung/Referenzen, Gegner-KI (`flyAI`) und Legacy-Europa bleiben unverändert (altes `bankTurnRate` im Rheinspiel entfernt).
-Messung vorher → nachher (Vollkreis, Vollausschlag): P-47 87 m/s 12,6 → 9,4 s, 136 m/s 7,8 → 6,0 s; Bf 109 79 m/s 5,1 → 6,7 s;
-Zero 5,3 → 5,0 s; Fw 190 5,3 → 8,6 s; Rolle Spitze P-47 159 → 103–128, Bf 109 169 → 133 (fällt auf 79 °/s bei 70 % Vmax), Zero 194 → 141
-(→ 102), Fw 190 195 → 168–194, Avenger 94 → 65–90. Leerlauf bei 50/75 % Vmax: P-47 0,7/1,0 → 1,5/2,7; Bf 109 1,6/2,3 → 2,3/3,7;
-Zero 1,5/2,0 → 2,0/3,1; Corsair 2,1/2,4 → 2,7/3,7. Loops aus dem Einstiegsspeed bei allen zehn Typen vollständig, Mindestgeschwindigkeit über
-Stall, Kamera nie vor der Nase. Ältere Absätze unten nennen `TURN_K`, `bankTurnRate`, `rollAuth/pitchAuth`: nur noch historisch.
+Messung vorher → nachher (`app/release/flight-envelope-validation.json`, echtes `updateFlight`, Vollausschlag, bei 45 % / 70 % Vmax):
+Vollkreis P-47 12,6 s (94 m/s) → 9,3 s und 7,8 → 6,0 s; Bf 109 5,1 → 6,7 s und 7,2 → 5,9 s; Fw 190 5,3 → 8,6 s und 7,2 → 6,5 s; Zero 5,3 → 5,0 s und
+6,9 → 5,5 s; Avenger 9,3 → 8,3 s. Rollrate Spitze bei 45/70/90 % Vmax (vorher je Typ konstant): P-47 159 → 119/143/126, Bf 109 169 → 139/113/86,
+Zero 194 → 147/137/108, Fw 190 195 → 173/188/171, Corsair 174 → 116/146/139, Avenger 94 → 77/96/82, Me 262 151 → 125/91/70 °/s. Leerlauf-Verzögerung bei
+50/75 % Vmax: P-47 0,7/1,0 → 1,5/2,7; Bf 109 1,6/2,3 → 2,3/3,7; Zero 1,5/2,0 → 2,0/3,1; Corsair 2,1/2,4 → 2,7/3,7 m/s². Loops aus dem Einstiegsspeed
+bei allen zehn Typen vollständig, Mindestgeschwindigkeit über Stall, Kamera in 0 % der Loop-Frames vor der Nase (vorher 6–21 %). Ältere Absätze unten nennen `TURN_K`, `bankTurnRate`, `rollAuth/pitchAuth`: nur noch historisch.
 Neue/angepasste Tests: `flight-envelope.cjs`, `flight-envelope-browser.cjs`, `aero-camera.js` (schlägt gegen den alten Code fehl),
 `aerobatics.js`, `flight-controls.js`, `pitch-response.cjs`. Build-/Cache-Kennungen 215 (nur geänderte Module), App-Register neu.
+Regressionsläufe (Chromium/SwiftShader, Browser-Tests der Flug-, Träger-, Landungs-, Kamera- und Missionspfade): grün bis auf sechs Dateien, die auf dem unveränderten Build 214 identisch rot sind und mit dem
+Flugmodell nichts zu tun haben: field-landing-browser (Powered touch-and-go), ditch-formation-browser (Rookie-Abprall), combat-sorties-browser (Haut-/Feuer-
+Schaden), aircraft-systems-browser (`attributes` undefined), ship-contact-browser (Corsair auf rollendem Träger), deck-night-browser (Material-/Reflexionsprüfung).
+Von mir mitgezogen: fleet-flight-browser (Bf-109-Nick-Annahme), chase-heading-browser (AERO-Rig springt bei Teleport statt zu schwenken).
 Offen: kein iPad-Test; ob Rollen/Kurven „richtig“ wirken, entscheidet allein Spielgefühl – die ARC-Gewichte sind dafür da. Thrust-Gesetz
 trägt weiter λ≈2,3–3,5× realen Schub (Build 211): echte Sustained-Turn-Grenzen entstehen dadurch noch nicht.
 
