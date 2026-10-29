@@ -44,9 +44,9 @@ async function preparePower(ctx,buffer,p,kind){
   for(let i=0;i<length;i++){out[i]=sum/width;sum+=a[(i+width-half)%length]-a[(i-half+length)%length];}return out;
  }
  let total=0;const energy=new Float32Array(length);for(let i=0;i<length;i++){energy[i]=rendered[i]**2;total+=energy[i];}
- const rms=Math.sqrt(total/length),envelope=circularMean(energy,Math.round(rate*.22));
+ const rms=Math.sqrt(total/length),envelope=circularMean(energy,Math.round(rate*.16));
  const gains=new Float32Array(length);for(let i=0;i<length;i++)gains[i]=clamp(rms/Math.sqrt(envelope[i]+1e-12),.4,2.5);
- const smooth=circularMean(gains,Math.round(rate*.16));total=0;
+ const smooth=circularMean(gains,Math.round(rate*.10));total=0;
  for(let i=0;i<length;i++){rendered[i]*=smooth[i];total+=rendered[i]**2;}
  const normalize=.205/Math.sqrt(total/length),out=ctx.createBuffer(1,length,rate),samples=out.getChannelData(0);
  for(let i=0;i<length;i++){let x=rendered[i]*normalize,mag=Math.abs(x);samples[i]=mag>.64?Math.sign(x)*(.64+.12*(-Math.expm1(-(mag-.64)/.12))):x;}
@@ -57,7 +57,7 @@ function create(ctx,destination){
  bus.gain.value=0;hp.type='highpass';hp.frequency.value=28;hp.Q.value=.5;
  tone.type='lowpass';tone.frequency.value=6500;tone.Q.value=.5;
  body.type='lowshelf';body.frequency.value=180;body.gain.value=0;
- hp.connect(body);body.connect(tone);tone.connect(bus);bus.connect(destination);
+ hp.connect(body);body.connect(tone);tone.connect(bus);bus.connect(root.EngineThrottle.peakGuard(ctx,destination));
  const buffers=new Map();let current=null,selected=null,load=0,rpm=1,version=0,error=null;
  function ready(kind){
   const p=profiles[kind];if(!p)return Promise.resolve(null);
@@ -98,34 +98,21 @@ function create(ctx,destination){
   if(!p||!current){bus.gain.setTargetAtTime(0,now,.045);return;}
   const powered=options.fuel!==false,t=powered?clamp(throttle||0,0,1):0;
   load+=(t-load)*(1-Math.exp(-Math.max(0,dt)/p.spool));
-  if(p.approved){
-   // Same low/full character and dynamics as the approved listening prototypes.
-   // Only steady loop layers run here; the audition's automatic gas sweep is absent.
-   const x=clamp((load-.5)/.5,0,1),mix=x*x*(3-2*x);
-   current.layers[0].gain.gain.setTargetAtTime(Math.cos(mix*Math.PI/2),now,.08);
-   current.layers[1].gain.gain.setTargetAtTime(Math.sin(mix*Math.PI/2),now,.08);
-   rpm=p.rate*(.94+.10*load);
-   current.layers[0].source.playbackRate.setTargetAtTime(rpm,now,.08);
-   current.layers[1].source.playbackRate.setTargetAtTime(.74+.26*load,now,.08);
-   const damage=clamp(options.damage||0,0,1),gain=powered?(.078+.095*load+.053*mix)/.20:.025;
-   bus.gain.setTargetAtTime(active?gain*(1-damage*.28)*(1-.25*(options.duck||0)):0,now,active?.10:.035);
-   return;
-  }
-  // Preserve recorded idle and RPM pacing; loaded radials use the low exhaust path.
-  const detailed=p.revision>=215;
-  const mix=clamp((load-.08)/(detailed?.72:p.powerFile?.64:.82),0,1),idle=Math.cos(mix*Math.PI/2),power=Math.sin(mix*Math.PI/2);
-  rpm=p.rate*(.94+.10*load);
-  current.layers[0].gain.gain.setTargetAtTime(idle*.8,now,.10);
-  current.layers[1].gain.gain.setTargetAtTime(power,now,.10);
-  current.layers[0].source.playbackRate.setTargetAtTime(rpm,now,.10);
-  const powerRate=p.powerFile?p.powerRate*(detailed?.78+.22*load:.90+.10*load):rpm;
-  current.layers[1].source.playbackRate.setTargetAtTime(powerRate,now,.10);
+  // The power layer contributes throughout the range. Squared layer gains
+  // represent a linear share of sound energy: half throttle is half of each voice.
+  const mix=load;
+  current.layers[0].gain.gain.setTargetAtTime(Math.sqrt(1-mix),now,.08);
+  current.layers[1].gain.gain.setTargetAtTime(Math.sqrt(mix),now,.08);
+  rpm=p.rate*(.94+.18*load);
+  const powerRate=p.approved?.68+.44*load:p.rate*(.78+.34*load);
+  current.layers[0].source.playbackRate.setTargetAtTime(rpm,now,.08);
+  current.layers[1].source.playbackRate.setTargetAtTime(powerRate,now,.08);
   hp.frequency.setTargetAtTime(p.lowCut||28,now,.12);
   body.gain.setTargetAtTime(p.bass,now,.15);
   tone.frequency.setTargetAtTime(p.bright*(options.cockpit?.65:1),now,.12);
-  const damage=clamp(options.damage||0,0,1);
-  bus.gain.setTargetAtTime(active?(powered?.45+(detailed?.50:.35)*load:.025)*(1-damage*.28)*(1-.25*(options.duck||0)):0,now,active?.10:.035);
- },get state(){return {kind:profiles[selected]?selected:null,loaded:current?.kind===selected,loading:!!profiles[selected]&&!current&&!error,error,rpm,load,powerFile:profiles[selected]?.powerFile||null,approvedChoice:profiles[selected]?.approvedChoice||null};},output:bus};
+  const damage=clamp(options.damage||0,0,1),gain=powered?root.EngineThrottle.level('piston',load)/.20:.025;
+  bus.gain.setTargetAtTime(active?gain*(1-damage*.28)*(1-.25*(options.duck||0)):0,now,active?.10:.035);
+ },get state(){return {kind:profiles[selected]?selected:null,loaded:current?.kind===selected,loading:!!profiles[selected]&&!current&&!error,error,rpm,load,powerFile:profiles[selected]?.powerFile||null,approvedChoice:profiles[selected]?.approvedChoice||null,powerBlend:load,powerPlaybackRate:current?.layers[1].source.playbackRate.value||0};},output:bus};
 }
 root.AircraftEngine={profiles,create};if(typeof module==='object'&&module.exports)module.exports=root.AircraftEngine;
 })(typeof window==='undefined'?globalThis:window);

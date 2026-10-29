@@ -1,4 +1,25 @@
-# Recorded piston engine audio — Build 217
+# Recorded piston engine audio — Build 218
+
+## Build 218 — linear throttle response (29 October 2026)
+
+All eight piston voices now blend continuously from idle to their existing
+power layers over the whole throttle range. The power layer's share of sound
+energy equals throttle; 50% no longer remains on the idle-only layer. Output
+level and playback pacing rise linearly, with a stronger/faster full-power end.
+The six user-approved source choices and all sample files remain unchanged.
+Corsair's prepared low-band level correction is slightly tightened for sustain.
+
+Me262 and Komet use the same linear level contract. Their procedural noise-band
+levels are calibrated once against the actual native filter responses so opening
+the exhaust spectrum does not introduce a nonlinear level jump. Engine spool-up,
+gun ducking, damage color and pause routing remain active. A transparent soft
+peak guard acts only on rare high peaks, preserving the pulsed source texture.
+
+Implementation: `audio/throttle-response.js`, `audio/aircraft-engine.js` and
+`audio/jet-engine.js`. Native-browser acceptance covers seven throttle steps for
+all ten aircraft at 24/48kHz, the audible midpoint, full-power headroom and
+one-minute sustain/pause checks. Source recording attribution and adaptation
+limits below still apply.
 
 ## Build 217 — user-approved game voices (29 October 2026)
 

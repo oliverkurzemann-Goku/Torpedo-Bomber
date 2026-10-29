@@ -14,7 +14,7 @@
     "app:doctor": "node scripts/ipad-doctor.mjs",
     "app:assets": "npm run build:app && node scripts/audit-app-assets.mjs",
     "app:rig": "node scripts/check-rig-contract.mjs",
-    "test:audio": "node okinawa/tests/fleet-audio-browser.cjs && node audio/tests/approved-voices.cjs"
+    "test:audio": "node okinawa/tests/fleet-audio-browser.cjs && node audio/tests/approved-voices.cjs && node audio/tests/linear-throttle.cjs"
   },
   "repository": {
     "type": "git",

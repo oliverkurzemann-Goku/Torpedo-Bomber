@@ -7,7 +7,7 @@ if(!executable){if(process.env.CI)throw Error('Chrome required');console.log('Ap
 const server=http.createServer((req,res)=>{
  const url=new URL(req.url,'http://localhost');
  if(url.pathname==='/__approved-audio-test'){
-  res.setHeader('Content-Type','text/html');res.end('<!doctype html><title>Approved audio checks</title><script src="/audio/aircraft-engine.js"></script><script src="/audio/tests/approved-engine-checks.js"></script>');return;
+  res.setHeader('Content-Type','text/html');res.end('<!doctype html><title>Approved audio checks</title><script src="/audio/throttle-response.js"></script><script src="/audio/aircraft-engine.js"></script><script src="/audio/tests/approved-engine-checks.js"></script>');return;
  }
  const file=path.resolve(root,'.'+url.pathname);if(!file.startsWith(root+path.sep)){res.writeHead(403).end();return;}
  fs.readFile(file,(e,b)=>{if(e){res.writeHead(404).end();return;}res.setHeader('Content-Type',file.endsWith('.html')?'text/html':'application/javascript');res.end(b);});
@@ -16,7 +16,7 @@ const server=http.createServer((req,res)=>{
  await new Promise(r=>server.listen(0,'127.0.0.1',r));const browser=await chromium.launch({executablePath:executable,headless:true,args:['--no-sandbox']});
  try{
   const page=await browser.newPage();await page.goto('http://127.0.0.1:'+server.address().port+'/__approved-audio-test');
-  const result=await page.evaluate(()=>runApprovedEngineChecks());assert.equal(result.build,217);
-  fs.mkdirSync(path.join(root,'test-visuals'),{recursive:true});fs.writeFileSync(path.join(root,'test-visuals/build217-approved-audio.json'),JSON.stringify(result,null,2));console.log('Approved engine voices:',result.checks.join('; '));
+  const result=await page.evaluate(()=>runApprovedEngineChecks());assert.equal(result.build,218);
+  fs.mkdirSync(path.join(root,'test-visuals'),{recursive:true});fs.writeFileSync(path.join(root,'test-visuals/build218-approved-audio.json'),JSON.stringify(result,null,2));console.log('Approved engine voices:',result.checks.join('; '));
  }finally{await browser.close();await new Promise(r=>server.close(r));}
 })().catch(e=>{console.error(e);process.exitCode=1;});

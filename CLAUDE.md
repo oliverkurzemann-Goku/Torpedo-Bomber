@@ -1,5 +1,16 @@
 # Torpedo-Bomber — Übergabe an Claude Code
 
+**29.10.2026, Build 218: linearer Gasweg fuer alle zehn Flugzeugstimmen.**
+Die sechs freigegebenen 217-Sounddateien bleiben unveraendert. Der bisherige
+Lastklang-Schwellwert oberhalb50% entfaellt: sqrt(1-Gas)/sqrt(Gas) fuer einen
+linear steigenden Last-Energieanteil. Zielpegel und Playbackraten steigen ueber
+den gesamten Gasweg; Vollgas kraeftiger/schneller. Gilt auch fuer Corsair/Ju87.
+Me262/Komet erhalten kalibrierte Rauschbaender mit linearer Gesamtlautstaerke;
+Spool-up, Schadenfaerbung und Waffen-Ducking bleiben. Gemeinsamer Peak-Guard
+in audio/throttle-response.js (muss vor Engine-Initialisierung geladen sein).
+Keine Flugphysik-/Modell-Aenderung. Prüfbericht: linear-throttle-validation.json.
+
+
 **29.10.2026, Build 217: sechs freigegebene Hoerproben lokal integriert.**
 Zuordnung: P47=A, Avenger=C, SBD=B; Fw190/Zero/Me109 wie zuletzt angehoert.
 Neue statische PCM-Loops unter audio/engines/approved; Generator/Parameter/Hashes

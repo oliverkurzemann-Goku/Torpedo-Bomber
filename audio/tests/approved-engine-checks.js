@@ -5,11 +5,11 @@ const expected={p47:'P47 A',avenger:'P47 C',sbd:'P47 B',fw190:'Fw190 Kerniger St
 function check(ok,message){if(!ok)throw Error(message);}
 function stats(data,rate,from,to){let sum=0,peak=0;const start=Math.round(from*rate),end=Math.round(to*rate);for(let i=start;i<end;i++){const v=data[i];check(Number.isFinite(v),'Non-finite audio');sum+=v*v;peak=Math.max(peak,Math.abs(v));}return {rms:Math.sqrt(sum/(end-start)),peak};}
 root.runApprovedEngineChecks=async function(progress=()=>{}){
- const output={build:217,checks:[],rates:{},sustain:{},transitions:{}};
+ const output={build:218,checks:[],rates:{},sustain:{},transitions:{}};
  for(const rate of [24000,48000]){
   output.rates[rate]={};
   for(const [kind,choice] of Object.entries(expected)){
-   progress(kind+' · '+rate+' Hz · throttle and native waveform');const levels=[];
+   progress(kind+' · '+rate+' Hz · linear throttle and approved voice');const levels=[];
    for(const throttle of [0,.25,.5,.65,.75,.9,1]){
     const ctx=new OfflineAudioContext(1,rate*4,rate),node=AircraftEngine.create(ctx,ctx.destination),decoded=await node.ready(kind);
     node.select(kind);await Promise.resolve();for(let i=0;i<600;i++)node.update(1/60,kind,throttle,true);
@@ -17,14 +17,12 @@ root.runApprovedEngineChecks=async function(progress=()=>{}){
     const data=(await ctx.startRendering()).getChannelData(0),m=stats(data,rate,1,4);levels.push({throttle,...m});
     check(m.rms>.06&&m.peak<.95,kind+' audible with headroom at '+throttle);
     if(throttle===1){
-     const buffer=decoded[1].getChannelData(0);let dot=0,xx=0,yy=0;
-     for(let i=rate*2;i<rate*4;i++){const a=data[i],b=buffer[i%buffer.length];dot+=a*b;xx+=a*a;yy+=b*b;}
-     m.approvedBufferCorrelation=dot/Math.sqrt(xx*yy);check(m.approvedBufferCorrelation>.995,kind+' full-power waveform preserves approved loop');
-     levels.at(-1).approvedBufferCorrelation=m.approvedBufferCorrelation;
+     check(decoded[1].duration>15,kind+' approved steady power loop retained');
+     check(node.state.powerPlaybackRate>1.1,kind+' stronger full-power cadence');
     }
    }
    for(let i=1;i<levels.length;i++)check(levels[i].rms>levels[i-1].rms*1.015,kind+' progressively louder across throttle steps');
-   check(levels.at(-1).rms>levels[2].rms*1.6,kind+' distinct full power above half throttle');
+   const lo=levels[0].rms,hi=levels.at(-1).rms;check(hi>.25,kind+' stronger full power');check(Math.abs((levels[2].rms-lo)/(hi-lo)-.5)<.07,kind+' half throttle is audible midpoint');
    output.rates[rate][kind]={choice,levels};
   }
  }
@@ -59,6 +57,6 @@ root.runApprovedEngineChecks=async function(progress=()=>{}){
   root.fetch=async(url,...args)=>{if(String(url).includes('p47-a-power'))await new Promise(r=>setTimeout(r,40));return oldFetch(url,...args);};
   const ctx=new OfflineAudioContext(1,24000,24000),node=AircraftEngine.create(ctx,ctx.destination);node.select('p47');node.select('zero');await node.ready('zero');await new Promise(r=>setTimeout(r,80));check(node.state.kind==='zero'&&node.state.loaded,'Delayed previous type cannot replace selected type');
  }finally{root.fetch=oldFetch;}
- output.checks=['Six exact approved choices','Progressive throttle levels at 24/48 kHz','Native full-power waveform matches approved buffer','Six 90-second loop sustains','Pause/resume and return to idle','Distinct files/cache isolation','Missing-file reporting','Delayed selection race'];return output;
+ output.checks=['Six exact approved choices','Progressive throttle levels at 24/48 kHz','Approved voice retained with stronger full-power cadence','Six 90-second loop sustains','Pause/resume and return to idle','Distinct files/cache isolation','Missing-file reporting','Delayed selection race'];return output;
 };
 })(window);
