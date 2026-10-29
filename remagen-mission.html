@@ -542,7 +542,8 @@
 <script src="me262-performance.js?v=206"></script>
 <script src="flight-envelope.js?v=219"></script>
 <script src="flight-dynamics.js?v=219"></script>
-<script src="flight-core.js?v=219"></script>
+<script src="flight-core.js?v=220"></script>
+<script src="flight-control.js?v=220"></script>
 <script src="audio/aircraft-engine.js?v=218"></script>
 <script src="p47-performance.js?v=204"></script>
 <script src="sortie-features.js?v=218"></script>
@@ -4202,114 +4203,65 @@ function clampToWorldBounds(){
   }
 }
 
-// ---- P-47 computed flight core (flight-core.js) ----
-// Forces come from coefficients solved from published P-47 figures; nothing here is tuned per type.
-// What the stick commands stays the game's control law (declared in FLIGHT-CORE.md):
-//  Normal: stick roll -> the bank of a level turn at that share of the available turn rate
-//          (so full stick = the hardest turn the wing can hold at this speed);
+// ---- computed flight core (flight-core.js, flight-control.js) for every type ----
+// Forces come from coefficients solved from each aircraft's published figures; nothing here is tuned
+// per type. What the stick commands stays the game's control law (declared in FLIGHT-CORE.md):
+//  Normal: stick roll -> the bank of a level turn at that share of the available turn rate;
 //          stick pitch -> flight-path attitude, self-centring.  AERO: stick pull -> load factor, roll rate.
-// ?p47core=off restores the previous model; ?p47core=physics drops the declared manoeuvre gain to 1.
-const P47Core=(()=>{const q=new URLSearchParams(location.search).get('p47core');
-  return {on:q!=='off',gain:q==='physics'?1:FlightCore.GAME.manoeuvreGain,model:null};})();
-function p47CoreOptions(load,controls){
-  const m=P47Core.model||(P47Core.model=FlightCore.model('p47'));
-  // Control-surface damage raises the stall speed by a fixed amount (m/s IAS): same as lowering CLmax.
-  const vs=FlightCore.stallSpeed(m,0,load.ratio,controls.flaps.mean);
-  return {m,o:{throttle:(P.fuel??100)<=0?0:P.throttle,damage:SortieFeatures.Damage.power(P),mass:load.ratio,
-    gear:P.gear,flaps:controls.flaps.mean,tank:!!P.tankAttached,clFactor:(vs/(vs+controls.stallPenalty))**2,
-    elevator:controls.pitch,extraDrag:controls.drag*.15,gain:P47Core.gain}};
+// ?core=off restores the previous model for every type; ?core=physics drops the declared manoeuvre
+// gain to 1 (the older ?p47core= links still work).
+const Core=(()=>{const q=new URLSearchParams(location.search),v=q.get('core')||q.get('p47core');
+  return {on:v!=='off',gain:v==='physics'?1:FlightCore.GAME.manoeuvreGain};})();
+globalThis.FlightCoreEnabled=Core.on;
+function coreOn(kind=P.ac){return Core.on&&FlightCore.has(kind);}
+function coreLoadout(){return {fuel:P.fuel,bombs:P.bombs,rockets:P.rockets,tankAttached:P.tankAttached,tankFuel:P.tankFuel,tankCapacity:P.tankCapacity};}
+function coreEnv(controls,departure,configuration){
+  const d=acDef();
+  return {kind:P.ac,convention:'rhine',stickRoll:inputRoll*steerSign,stickPitch:inputPitch,aero:aeroMode,
+    throttle:(P.fuel??100)<=0?0:P.throttle,damage:SortieFeatures.Damage.power(P),brakes:P.ac==='ju87'?P.diveBrakeVisual||0:0,
+    gain:Core.gain,controls,configuration,departure,loadout:coreLoadout(),d,rollFrac:.86,pitchBase:2.9,pitchScale:d.pitchLim*.92,
+    hullFactor:(P.hull<d.hull*0.6)?(0.55+0.45*P.hull/(d.hull*0.6)):1.0};
 }
-// Normal-mode stick -> bank of a level turn whose turn rate is that share of the most the wing can hold
-// (tan(bank) = share * sqrt(nMax^2 - 1)): linear and precise around the centre, full stick = the
-// tightest level turn at this speed; never less than share x 30 deg so a slow aircraft can still bank.
-function p47CoreBank(stick,nMax,d){
-  const a=Math.min(1,Math.abs(stick)),bank=Math.max(Math.atan(a*Math.sqrt(Math.max(0,nMax*nMax-1))),a*Math.PI/6);
-  return Math.sign(stick)*Math.min(d.rollLim*.95,bank);
+// Inverse for the current state (the stick that holds a given bank, e.g. against damage).
+function coreStickForBank(bank){
+  const controls=SortieFeatures.Damage.controls(P),configuration=SortieFeatures.Handling.configuration(P,STALL_SPD);
+  return FlightControl.stickForBank(P,coreEnv(controls,{release:1,rate:Infinity},configuration),bank);
 }
-// Inverse for the current state (used to find the stick that holds a given bank, e.g. against damage).
-function p47StickForBank(bank){
-  const d=acDef(),load=SortieFeatures.Handling.sample(P),{m,o}=p47CoreOptions(load,SortieFeatures.Damage.controls(P));
-  const lim=FlightCore.loadLimits(m,Math.max(1,P.spd),FlightCore.atmosphere(P.pos.y).rho,m.mass*load.ratio*FlightCore.G,o);
-  let lo=0,hi=1;for(let i=0;i<40;i++){const mid=(lo+hi)/2;if(Math.abs(p47CoreBank(mid,lim.max,d))<Math.abs(bank))lo=mid;else hi=mid;}
-  return Math.sign(bank)*(lo+hi)/2;
-}
-function updateP47Core(dt,d,load,controls,speeds,departure,configuration){
-  const {m,o}=p47CoreOptions(load,controls),stallSpd=speeds.stall,y0=P.pos.y;
-  const atm=FlightCore.atmosphere(P.pos.y),W=m.mass*load.ratio*FlightCore.G;
-  const lim=FlightCore.loadLimits(m,Math.max(1,P.spd),atm.rho,W,o);
-  const dmgF=(P.hull<d.hull*0.6)?(0.55+0.45*P.hull/(d.hull*0.6)):1.0;
-  const auth=(P.spd<stallSpd?0.4:1.0)*dmgF,feel=FlightDynamics.authority(P.ac,P.spd,stallSpd);
-  // Same attitude-spring constants as the shared law below (Build 214/215), gear/flap derate included.
-  const rollRate=4.8*auth*d.rollAuth*feel.roll*controls.roll*load.inertia*configuration.authority;
-  const pitchRate=2.9*auth*d.pitchAuth*feel.pitch*controls.pitch*load.inertia*configuration.authority;
+function updateCore(dt,d,controls,departure,configuration){
   const biasDecay=(P.gear>0.5)?0.9:0.35;
   P.rollBias=Math.max(-0.16,Math.min(0.16,(P.rollBias||0)*(1-biasDecay*dt)));
-  const totalBias=P.rollBias+controls.bias,zeta=d.controlDamping||0.80;
-  // Flight-path lag behind the attitude (s), compressed by the declared gain: caps the attitude law.
-  const tau=FlightCore.pathLag(m,P.spd,P.pos.y,load.ratio)/P47Core.gain;
-  let command;
-  if(aeroMode){
-    const bankErr=Math.atan2(Math.sin(P.roll-totalBias),Math.cos(P.roll-totalBias));
-    const rollAuthority=FlightEnvelope.rollPeak(P.ac)*feel.roll*controls.roll*load.inertia;
-    P.rollVel=(Math.abs(inputRoll)>0.075||Math.abs(inputPitch)>0.075)?inputRoll*steerSign*rollAuthority:
-      Math.max(-rollAuthority,Math.min(rollAuthority,-bankErr*.9*Math.max(.6,feel.roll)));
-    P.roll=Math.atan2(Math.sin(P.roll+P.rollVel*dt),Math.cos(P.roll+P.rollVel*dt));
-    // Pull is a load factor: neutral holds the flight path, full stick the most the wing can give.
-    const pull=inputPitch;P.pitchRef=null;
-    command=(s,V,l)=>{const hold=Math.max(l.min,Math.min(l.max,FlightCore.holdLoad(s.pitch,s.roll,0,.5)));
-      return pull>=0?hold+pull*(l.max-hold):hold+pull*(hold-l.min);};
-  }else{
-    // Bank: stick deflection = share of the available level-turn rate (see p47CoreBank).
-    const rollTarget=p47CoreBank(inputRoll*steerSign,lim.max,d)+totalBias;
-    const neutral=Math.abs(inputRoll)<.001,levelRate=neutral?Math.max(3.5,rollRate*.7):rollRate,damping=neutral?1:zeta;
-    // Same roll spring as the shared law, stepped at 120 Hz: on the core every degree of bank costs energy.
-    for(let i=0,n=Math.max(1,Math.ceil(dt*FlightCore.GAME.substepHz)),h=dt/n;i<n;i++){
-      P.rollVel=(P.rollVel||0)+(levelRate*levelRate*(rollTarget-P.roll)-2*damping*levelRate*P.rollVel)*h;
-      P.roll+=P.rollVel*h;
-    }
-    if(neutral&&Math.abs(P.roll-totalBias)<.002&&Math.abs(P.rollVel)<.01){P.roll=totalBias;P.rollVel=0;}
-    if(P.roll>d.rollLim){P.roll=d.rollLim;P.rollVel=Math.min(0,P.rollVel);}
-    if(P.roll<-d.rollLim){P.roll=-d.rollLim;P.rollVel=Math.max(0,P.rollVel);}
-    // Pitch: flight-path attitude command, same targets and departure envelope as before.
-    let noseUpLimit=d.pitchLim*.92;
-    const initialLimit=Math.asin(Math.min(.6,departure.rate/Math.max(1,P.spd)));
-    if(departure.release<1){
-      noseUpLimit=Math.min(noseUpLimit,initialLimit+(noseUpLimit-initialLimit)*departure.release);
-      // Reserve power for accelerating a loaded, gear-down departure (now from the computed forces).
-      const level=FlightCore.levelAcceleration(m,P.spd,P.pos.y,{...o,power:o.throttle});
-      const sustainable=Math.asin(Math.max(.10,Math.min(.35,(level-.8)/9.81)));
-      noseUpLimit=Math.min(noseUpLimit,sustainable+(noseUpLimit-sustainable)*departure.release);
-    }
-    const commandPitch=d.stickExponent?Math.sign(inputPitch)*Math.pow(Math.abs(inputPitch),d.stickExponent):inputPitch;
-    const pitchTarget=commandPitch>0?Math.min(commandPitch*d.pitchLim*.92,noseUpLimit):commandPitch*d.pitchLim*.92;
-    // The unchanged Build 215 attitude spring is the reference path; the wing flies it as far as its
-    // load factor allows (feed-forward of the reference rate, path lag tau corrects the remainder).
-    // Re-sync whenever the attitude was set from outside the core (relaunch, checkpoint, ground, AERO).
-    if(!Number.isFinite(P.pitchRef)||P.p47CorePitch!==P.pitch){P.pitchRef=P.pitch;P.pitchRefVel=0;}
-    // Same spring, stepped at the core's 120 Hz so the reference does not depend on the frame rate.
-    for(let i=0,n=Math.max(1,Math.ceil(dt*FlightCore.GAME.substepHz)),h=dt/n;i<n;i++){
-      P.pitchRefVel+=(pitchRate*pitchRate*(pitchTarget-P.pitchRef)-2*zeta*pitchRate*P.pitchRefVel)*h;
-      P.pitchRef+=P.pitchRefVel*h;
-    }
-    // No wind-up while the wing is at its limit: the reference stays within 0.3 rad of the real path.
-    P.pitchRef=Math.max(P.pitch-.3,Math.min(P.pitch+.3,P.pitchRef));
-    const ref=P.pitchRef,refVel=P.pitchRefVel;
-    command=(s,V)=>{let rate=refVel+(ref-s.pitch)/tau;
-      if(s.pitch>d.pitchLim)rate=Math.min(rate,0);if(s.pitch<-d.pitchLim)rate=Math.max(rate,0);
-      return FlightCore.holdLoad(s.pitch,s.roll,V*rate/(FlightCore.G*P47Core.gain));};
-  }
-  const s={spd:P.spd,pitch:P.pitch,heading:P.heading,roll:P.roll,nLoad:P.nLoad||1,power:P.groundPower??P.throttle,altitude:P.pos.y};
-  const pitch0=P.pitch;
-  // Elevator damage already slows the Normal attitude law (pitchRate); in AERO it caps the pull.
-  P.p47Core=FlightCore.step(m,s,dt,{...o,elevator:aeroMode?o.elevator:1,command});
-  P.spd=s.spd;P.heading=s.heading;P.roll=s.roll;P.nLoad=s.nLoad;P.groundPower=s.power;
-  P.pitch=s.pitch;P.pitchVel=dt>0?Math.atan2(Math.sin(P.pitch-pitch0),Math.cos(P.pitch-pitch0))/dt:0;
-  P.p47CorePitch=P.pitch;
-  if(P.spd<stallSpd){if(!P.stallWarnT||P.stallWarnT<=0){P.stallWarnT=1.6;flash('STALL',600);sfxAlarm();}}
+  const r=FlightControl.player(P,dt,coreEnv(controls,departure,configuration));
+  // Warn on the wing's own state: buffet near CLmax, the stall itself, or flying below the stall speed.
+  if(r.out.stall>.3||P.spd<r.stall){if(!P.stallWarnT||P.stallWarnT<=0){P.stallWarnT=1.6;flash('STALL',600);sfxAlarm();}}
+  if(r.out.buffet>.35)shake(.18*r.out.buffet);
+  if(r.out.overspeed>0||r.out.tuck>0){P.overspeedT=(P.overspeedT||0)-dt;
+    if(P.overspeedT<=0){P.overspeedT=2.2;flash(r.out.tuck>0?'COMPRESSIBILITY — THROTTLE BACK':'OVERSPEED — EASE OFF',900);}shake(.25*Math.max(r.out.overspeed,r.out.tuck));}
   if(P.stallWarnT>0)P.stallWarnT-=dt;
-  const climb=dt>0?(s.altitude-y0)/dt:0;
-  P.vSpeed=climb;
-  return climb;
+  return r.climb;
+}
+
+// Wheels on the ground, on the same core: thrust, drag and wing lift as in the air, plus rolling
+// friction and wheel brakes on the weight the wing does not yet carry (FlightCore.groundAcceleration).
+// The Me 262 fires its two RI 502 take-off rockets (flight-core.js SOURCES.me262.rato, B) on every
+// departure once it passes this fraction of its rotation speed; firing them automatically is a game
+// decision (C) - a loaded Me 262 needs about 1 000 m (SOURCES.me262.check) and the strip is 900 m.
+const GAME_RATO={fireAt:.6};
+// Surface friction (C): firm strip, rough field away from it, and a skid or a belly on grass.
+const GROUND_MU={strip:.04,rough:.08,skid:.35};
+function coreGround(dt,o={}){
+  const m=FlightCore.model(P.ac),lo=FlightCore.loadout(m,coreLoadout());
+  const thr=(P.fuel??100)<=0?0:P.throttle;
+  P.groundPower=(P.groundPower??0)+(thr-(P.groundPower??0))*(1-Math.exp(-dt/m.assumed.spool));
+  let extra=0;const rato=FlightCore.SOURCES[P.ac]?.rato;
+  if(rato&&o.vr&&P.rato!==undefined){
+    if(P.rato===null&&P.throttle>.8&&P.spd>GAME_RATO.fireAt*o.vr){P.rato=0;flash('RATO — TAKE-OFF ROCKETS FIRED',1600);}
+    if(P.rato!==null&&P.rato<rato.burn){P.rato+=dt;extra=rato.thrust;}
+  }
+  const g=FlightCore.groundAcceleration(m,P.spd,{power:P.groundPower,damage:SortieFeatures.Damage.power(P),massKg:lo.mass,
+    flaps:SortieFeatures.Damage.controls(P).flaps.mean,gear:o.belly?0:P.gear,storeArea:lo.storeArea,tank:lo.tank,
+    brake:o.brake||0,rotated:o.rotated||0,mu:o.mu??GROUND_MU.strip,altitude:P.pos.y,extraThrust:extra});
+  P.spd=Math.max(0,P.spd+g.accel*dt);
+  return g;
 }
 
 function updateFlight(dt){
@@ -4331,14 +4283,17 @@ function updateFlight(dt){
     if(P.landingRoll){updateLandingRoll(dt,load);return;}
     // ---- ground roll ----
     // Thrust spools up; rolling resistance and drag grow with speed.
-    GroundRun.step(P,dt,{jet:P.ac==='me262',power:SortieFeatures.Damage.power(P),massRatio:load.ratio,acceleration:FlightDynamics.profile(P.ac).ground});
+    // Core: rotate at 1.1 x the live stall (mass, flaps, damage), the usual 1.1 Vs rule.
+    const vr=coreOn()?speeds.stall*1.1:(P.ac==='p47'?speeds.stall:d.stall*load.speed+controls.stallPenalty)*1.12;
+    let ground=null;
+    if(coreOn())ground=coreGround(dt,{vr,brake:P.throttle<.05?1:0,rotated:(P.takeoffRotation||0)/.07});
+    else GroundRun.step(P,dt,{jet:P.ac==='me262',power:SortieFeatures.Damage.power(P),massRatio:load.ratio,acceleration:FlightDynamics.profile(P.ac).ground});
     if(typeof fieldServicePending!=="undefined"&&fieldServicePending&&P.spd<1){beginFieldService();return;}
     // steer with the stick's roll axis, tailwheel style — same sense as in the air
     P.heading += inputRoll*steerSign*Math.min(1,P.spd/40)*0.9*dt;
     P.roll*=Math.max(0,1-3*dt); P.pitch*=Math.max(0,1-3*dt);
     P.rollVel=0; P.pitchVel=0; P.nLoad=1; P.pitchRef=null;   // wheels down: no airborne rotational inertia carries over
     // Raise the tail as the wing takes weight, then rotate with the pilot's stick.
-    const vr=(P.ac==='p47'?speeds.stall:d.stall*load.speed+controls.stallPenalty)*1.12;
     const rotationTarget=P.spd>vr*.85&&inputPitch>.15?.07:0;
     P.takeoffRotation=(P.takeoffRotation||0)+(rotationTarget-(P.takeoffRotation||0))*(1-Math.exp(-dt/1.1));
     const gy=groundY(P.pos.x,P.pos.z);
@@ -4352,7 +4307,8 @@ function updateFlight(dt){
         (x,z)=>AircraftGround.height(terrain,x,z),P.spd/vr,P.takeoffRotation);
       if(P.groundPose)P.pos.y=P.groundPose.y;
     }
-    if(P.spd>vr&&inputPitch>.15&&P.takeoffRotation>.045&&P.gear>.5){
+    // Core: she leaves the ground when the rotated wing actually carries her weight.
+    if((ground?ground.liftoff:P.spd>vr)&&inputPitch>.15&&P.takeoffRotation>.045&&P.gear>.5){
       P.onGround=false;
       P.pitch=P.groundPose?Math.asin(Math.max(-1,Math.min(1,new THREE.Vector3(0,0,1).applyQuaternion(P.groundPose.quaternion).y))):.07;
       P.vSpeed=0;SortieFeatures.Handling.beginDeparture(P);
@@ -4368,10 +4324,10 @@ function updateFlight(dt){
   STALL_SPD=d.stall; APP_SPD=d.app; MAX_SPD=P.ac==='p47'?P47Performance.maximum(P.pos.y):d.max; THR_MIN_SPD=d.thrMin;
   const stallSpd=speeds.stall;
   let vs;
-  if(P.ac==='p47'&&P47Core.on){
+  if(coreOn()){
     // Computed flight core: speed, load factor, turn and climb from forces solved from the
-    // published P-47 figures (flight-core.js, FLIGHT-CORE.md). The stick laws stay the game's.
-    vs=updateP47Core(dt,d,load,controls,speeds,departure,configuration);
+    // aircraft's published figures (flight-core.js, FLIGHT-CORE.md). The stick laws stay the game's.
+    vs=updateCore(dt,d,controls,departure,configuration);
   }else{
   // speed toward throttle target is replaced by finite power, drag and energy.
   FlightDynamics.step(P,dt,{kind:P.ac,loadRatio:load.ratio,power:SortieFeatures.Damage.power(P),flaps:controls.flaps.mean,drag:controls.drag,bank:P.roll,n:P.nLoad||1,departure});
@@ -4614,12 +4570,22 @@ function beginLandingRoll(onStrip,gap){
 }
 function updateLandingRoll(dt,load=SortieFeatures.Handling.sample(P)){
   const run=P.landingRoll;if(!run)return;
-  const step=GroundRun.landing(P,dt,{jet:P.ac==='me262',skid:P.ac==='me163',offField:!run.onStrip,
+  let step;
+  if(coreOn()){
+    // Core: the same ground forces; the wheel brakes come on gently with idle power (0.7 s), a skid or
+    // a belly slides on its own friction and cannot brake.
+    run.elapsed+=dt;const v0=P.spd,skid=P.ac==='me163'||run.belly;
+    coreGround(dt,{belly:run.belly,mu:skid?GROUND_MU.skid:run.onStrip?GROUND_MU.strip:GROUND_MU.rough,
+      brake:!skid&&P.throttle<.15?1-Math.exp(-run.elapsed/.7):0});
+    const travel=(v0+P.spd)*.5*dt;run.travel+=travel;
+    step={travel,stopped:P.spd<.65&&run.elapsed>=3};
+  }else step=GroundRun.landing(P,dt,{jet:P.ac==='me262',skid:P.ac==='me163',offField:!run.onStrip,
     power:SortieFeatures.Damage.power(P),massRatio:load.ratio,acceleration:FlightDynamics.profile(P.ac).ground});
   P.heading+=inputRoll*steerSign*Math.min(.25,P.spd*.012)*dt;
   P.pos.x+=Math.sin(P.heading)*step.travel;P.pos.z+=Math.cos(P.heading)*step.travel;
   P.roll*=Math.exp(-dt*5);P.groundPose=null;
-  const vr=(acDef().stall*load.speed+SortieFeatures.Damage.controls(P).stallPenalty)*1.12;
+  const vr=coreOn()?SortieFeatures.Handling.speeds(P,acDef().stall,acDef().app).stall*1.1:
+    (acDef().stall*load.speed+SortieFeatures.Damage.controls(P).stallPenalty)*1.12;
   if(P.gear>.6&&playerModel){
     const fit=AircraftGround.landingFit(playerModel,P.ac,P.pos.x,P.pos.z,P.heading,
       (x,z)=>AircraftGround.height(terrain,x,z),P.spd/vr,run.contactPitch,run.elapsed);
@@ -4735,12 +4701,14 @@ function relaunch(){
   // against the loaded tile data), so AF_Y+2.0 alone could leave the plane sitting well above
   // or below the actual ground at this particular spawn point. See buildAirfield()'s own
   // comment for the fuller story ("Flugzeug steht vor der Landebahn").
-  const spawnX=AF_X-RWY_LEN/2+140;
+  // The Me 262 lines up at the threshold with take-off flap (C): a loaded jet needs most of the strip.
+  const jet=P.ac==='me262'&&coreOn(),spawnX=AF_X-RWY_LEN/2+(jet?40:140);
   P.pos.set(spawnX, terrain.getHeight(spawnX,AF_Z)+2.0, AF_Z);
   P.heading=Math.PI/2; P.pitch=0; P.roll=0; P.spd=0; P.vSpeed=0;
-  P.pitchVel=0; P.rollVel=0; P.nLoad=1; P.pitchRef=null;
+  P.pitchVel=0; P.rollVel=0; P.nLoad=1; P.pitchRef=null; P.coreStall=0; P.coreDrop=0; P.core=null;
   P.onGround=true; P.groundPower=0; P.touchResolved=true; P.throttle=0.0; setThrottleUI(0);
-  P.gear=1; P.gearTgt=1; P.flap=0; P.flapTgt=0;
+  P.gear=1; P.gearTgt=1; P.flap=0; P.flapTgt=0; P.rato=FlightCore.SOURCES[P.ac]?.rato&&coreOn()?null:undefined;
+  if(jet){P.flap=P.flapTgt=.5;}
   if(P.ac==='me163'){
     // Trolley already released. Both Komet sorties depart southwest toward
     // the interior interception sector, rather than the eastern map boundary.
@@ -4756,8 +4724,8 @@ function relaunch(){
 }
 function startMission(i){
   if(globalThis.sortieCheckpoint&&!globalThis.sortieCheckpoint.restoring)globalThis.sortieCheckpoint.clear();
-  // Solve the P-47 core and its loop gate now (~0.2 s once), not on the first AERO tap in flight.
-  if((MISSIONS[i]?.ac||'p47')==='p47'&&P47Core.on)aeroGateSpeed('p47');
+  // Solve the aircraft's core and its loop gate now (a few ms once), not on the first AERO tap in flight.
+  if(coreOn(MISSIONS[i]?.ac||'p47'))aeroGateSpeed(MISSIONS[i]?.ac||'p47');
   bombCue.reset();
   if(navigation)navigation.reset();
   finishLaunchIntro(false);
@@ -5107,7 +5075,7 @@ function updateHUD(){
   const nearField=Math.abs(P.pos.x-AF_X)<RWY_LEN*1.6 && Math.abs(P.pos.z-AF_Z)<900;
   const ftAlt=(nearField? (P.pos.y-AF_Y) : (P.pos.y-gy))*FT;
   const lb=document.getElementById('hAltLbl'); if(lb) lb.textContent=nearField?'FIELD':'AGL';
-  GameRuntime.setHTML(document.getElementById('hSpd'),Math.round((P.ac==='p47'?P47Performance.indicated(P.spd,P.pos.y):P.spd)*KT)+'<small> MPH</small>');
+  GameRuntime.setHTML(document.getElementById('hSpd'),Math.round(indicatedSpeed(P.spd,P.pos.y)*KT)+'<small> MPH</small>');
   const flight=AC[P.ac],speeds=SortieFeatures.Handling.speeds(P,flight.stall,flight.app),stall=speeds.stall;
   const configured=P.gear>.4&&P.departureAge==null;
   const low=state===ST.FLIGHT&&P.alive&&!P.onGround&&P.spd<Math.max(stall*1.15,configured?speeds.reference-4:0);
@@ -5580,11 +5548,16 @@ function syncDiveBtn(){
   dive.classList.toggle('on',!!P.diveBrake);
   dive.innerHTML=P.diveBrake?'DIVE<br>OUT':'DIVE<br>BRAKES';
 }
+// Three positions: the Me 262 starts with take-off flap (T/O); one press always retracts a lowered
+// setting, the next lowers them fully.
+function syncFlapBtn(){
+  const f=document.getElementById('flapBtn');if(!f)return;f.style.display='';
+  f.classList.toggle('on',P.flapTgt>0);f.innerHTML='FLAPS<br>'+(P.flapTgt>=1?'DN':P.flapTgt>0?'T/O':'UP');
+}
 function resetCtlUI(){
   const g=document.getElementById('gearBtn'); if(g){ g.classList.toggle('on',P.gearTgt>0.5);
     g.innerHTML=P.ac==='ju87'?'GEAR<br>FIXED':(P.ac==='me163'?'SKID':'GEAR')+'<br>'+(P.gearTgt>0.5?'&#9660; DN':'&#9650; UP'); }
-  const f=document.getElementById('flapBtn'); if(f){f.style.display='';
-    f.classList.remove('on'); f.innerHTML='FLAPS<br>UP'; }
+  syncFlapBtn();
   syncDiveBtn();
   syncTankButton();
 }
@@ -5700,16 +5673,18 @@ function showLogbook(){
 // ============================================================
 // Minimum AERO entry speed (TAS): the computed P-47 core simulates its own loop; others keep the envelope.
 function aeroGateSpeed(kind){
-  if(kind==='p47'&&P47Core.on){const m=P47Core.model||(P47Core.model=FlightCore.model('p47'));return Math.max(1.5*FlightCore.stallSpeed(m,0),FlightCore.aeroEntry(m,P47Core.gain));}
+  if(coreOn(kind))return FlightControl.aeroGate(kind,Core.gain);
   return FlightEnvelope.aeroGate(kind);
 }
+// The HUD's indicated speed: equivalent airspeed from the core's atmosphere (every type), P-47 table otherwise.
+function indicatedSpeed(v,h){return coreOn()?FlightCore.equivalent(v,h):P.ac==='p47'?P47Performance.indicated(v,h):v;}
 function toggleAero(){
   if(state!==ST.FLIGHT||!P.alive)return;
   const d=acDef(),agl=P.pos.y-groundY(P.pos.x,P.pos.z);
   const gate=Math.max(d.stall*1.3,aeroGateSpeed(P.ac));
   if(!aeroMode&&(P.onGround||P.gear>0.35||P.spd<gate||agl<280)){
     // Show the speed the loop needs in the same (indicated) units as the speed readout.
-    const need=Math.ceil((P.ac==='p47'?P47Performance.indicated(gate,P.pos.y):gate)*KT);
+    const need=Math.ceil(indicatedSpeed(gate,P.pos.y)*KT);
     flash('AERO: CLIMB, GEAR UP, BUILD SPEED'+(P.spd<gate?' · '+need+' MPH':''),1200);return;
   }
   if(aeroMode&&(Math.abs(P.pitch)>d.pitchLim*.95||Math.abs(P.roll)>d.rollLim*.95)){
@@ -5767,9 +5742,8 @@ function bindInput(){
     b.innerHTML=name+'<br>'+(P.gearTgt>0.5?'&#9660; DN':'&#9650; UP');
     flash(name+(P.gearTgt>0.5?' DOWN':' UP'),700); sfxGearMotor(); });
   document.getElementById('flapBtn').addEventListener('pointerdown',e=>{ e.preventDefault();
-    P.flapTgt=P.flapTgt>0.5?0:1;
-    const b=e.currentTarget; b.classList.toggle('on',P.flapTgt>0.5);
-    b.innerHTML=P.flapTgt>0.5?'FLAPS<br>DN':'FLAPS<br>UP'; sfxFlapMotor(); });
+    P.flapTgt=P.flapTgt>0?0:1;
+    syncFlapBtn(); sfxFlapMotor(); });
   document.getElementById('armBtn').addEventListener('pointerdown',e=>{ e.preventDefault();
     weapon=(weapon==='rocket')?'bomb':'rocket'; applyWeaponUI();
     flash(weapon==='rocket'?'ROCKETS ARMED':'BOMBS ARMED',700); });

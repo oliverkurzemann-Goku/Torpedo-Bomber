@@ -50,10 +50,29 @@ const Handling={
   return {ratio,speed:Math.sqrt(ratio),acceleration:1/ratio,climb:clamp(1-(ratio-1)*.65,.84,1.07),
    turn:1/Math.sqrt(ratio),inertia:1/Math.pow(ratio,.35),stores};
  },
+ // Live mass input for the computed flight core (flight-core.js) from the game's own loadout fields.
+ coreLoadout(p){return {fuel:p.fuel,bombs:p.bombs,rockets:p.rockets,torps:p.torps,torpedo:p.loadProfile?.weapon==='torpedo',
+  bombKg:p.bombKg,tankAttached:p.tankAttached,tankFuel:p.tankFuel,tankCapacity:p.tankCapacity};},
+ // Stall and approach speeds from the computed core: stall from the published CLmax at the live mass,
+ // flap setting and damage; the approach reference is the published one (manuals for the Rhine types,
+ // the carrier references for the Pacific types) scaled by sqrt(live mass / published mass), and never
+ // closer than 1.2 x the live landing stall.
+ coreSpeeds(p,kind,controls,field,carrier,reference){
+  const F=root.FlightCore,m=F.model(kind),lo=F.loadout(m,this.coreLoadout(p)),flaps=controls.flaps.mean;
+  const h=p.pos?.y||0,vs0=F.stallSpeed(m,0,lo.ratio,flaps),pen=(vs0/(vs0+controls.stallPenalty))**2;
+  const stall=F.stallSpeed(m,h,lo.ratio,flaps,pen),stallIAS=F.equivalent(stall,h);
+  const landing=F.equivalent(F.stallSpeed(m,h,lo.ratio,1,pen),h);
+  let ref=field?field.reference+field.cleanAdd*(1-flaps):carrier?.reference??reference;
+  ref=Math.max(ref*Math.sqrt(lo.ratio)*(1+controls.flaps.asymmetry*.08),landing*1.2,stallIAS*1.15);
+  const ias=F.equivalent(p.spd||0,h),referenceTAS=ref*stall/Math.max(1e-6,stallIAS);
+  return {stall,warning:stall*1.15,reference:referenceTAS,stallIAS,referenceIAS:ref,indicated:ias,
+   low:ias<stallIAS*1.15,stalled:ias<stallIAS,core:true};
+ },
  speeds(p,stall,reference,flapGain=4,gearGain=2){
   const load=this.sample(p),controls=Damage.controls(p),kind=p.loadProfile?.kind||p.ac;
   const field=p.loadProfile?.theatre==='europe'?this.fieldLanding[kind]:null;
   const carrier=p.loadProfile?.theatre==='pacific'&&root.FlightDynamics?.profiles[kind];
+  if(root.FlightCoreEnabled&&root.FlightCore?.has(kind))return this.coreSpeeds(p,kind,controls,field,carrier,reference);
   if(carrier){stall=carrier.stall??stall;reference=carrier.reference??reference;}
   if(kind==='p47'&&root.P47Performance){const speeds=root.P47Performance.speeds(p,controls.flaps.mean,load.ratio,controls.stallPenalty);speeds.reference*=1+controls.flaps.asymmetry*.08;return speeds;}
   const limit=(stall+(p.gear||0)*gearGain-controls.flaps.mean*(field?.flapGain??flapGain))*load.speed+controls.stallPenalty;

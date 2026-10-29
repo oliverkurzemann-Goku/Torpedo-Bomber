@@ -1,0 +1,916 @@
+{
+ "game": {
+  "manoeuvreGain": 2.2,
+  "rollGain": 1.5305263157894737,
+  "rollCeiling": 3.839724354387525,
+  "stallRoll": 1.1344640137963142,
+  "substepHz": 120
+ },
+ "class": {
+  "nNegative": 3,
+  "clMinRatio": 0.6,
+  "gearCD": 0.02,
+  "flapCD": 0.05,
+  "windmill": 0.07,
+  "spool": 1.25,
+  "clClean": 1.4,
+  "clLandingRatio": 1.35,
+  "severity": 0.25,
+  "tankArea": 0.05,
+  "bombArea": 0.02,
+  "heavyBombArea": 0.03,
+  "rocketArea": 0.005,
+  "tankShell": 30,
+  "mcrit": 0.72
+ },
+ "types": {
+  "p47": {
+   "name": "P-47D-28 Thunderbolt (R-2800-59, 2600 bhp WEP)",
+   "solved": {
+    "CD0": 0.01913,
+    "etaP": 0.69734,
+    "lapse": 0.000014235,
+    "rms": "1.21 %",
+    "oswald": 0.884,
+    "aspect": 5.53,
+    "CLmaxClean": 1.282,
+    "CLmaxLanding": 1.796,
+    "diveBrakeCD": null,
+    "massPublished": 5775,
+    "massEmptyNoFuel": 4766,
+    "fuelKg": 1008
+   },
+   "verification": [
+    {
+     "figure": "345 mph @ SL",
+     "ref": "A1",
+     "published": "555.2 km/h",
+     "model": "564.5 km/h",
+     "errorPct": 1.67
+    },
+    {
+     "figure": "383 mph @ 10 000 ft",
+     "ref": "A1",
+     "published": "616.4 km/h",
+     "model": "611.4 km/h",
+     "errorPct": -0.81
+    },
+    {
+     "figure": "417 mph @ 20 000 ft",
+     "ref": "A1",
+     "published": "671.1 km/h",
+     "model": "664.9 km/h",
+     "errorPct": -0.92
+    },
+    {
+     "figure": "3180 ft/min @ SL",
+     "ref": "A1",
+     "published": "16.2 m/s",
+     "model": "16.2 m/s",
+     "errorPct": 0.56
+    },
+    {
+     "figure": "2920 ft/min @ 10 000 ft",
+     "ref": "A1",
+     "published": "14.8 m/s",
+     "model": "14.6 m/s",
+     "errorPct": -1.72
+    },
+    {
+     "figure": "2470 ft/min @ 20 000 ft",
+     "ref": "A1",
+     "published": "12.5 m/s",
+     "model": "12.7 m/s",
+     "errorPct": 1.08
+    }
+   ],
+   "game": {
+    "vmax1000m_kmh": 579,
+    "climbSL_ms": 16.2,
+    "bestClimbIAS_kmh": 259,
+    "stallCleanIAS_kmh": 183,
+    "stallLandingIAS_kmh": 155,
+    "rollPeak_degs": 145,
+    "rollAt70pct_degs": 126,
+    "circle45pct": {
+     "seconds": 15.32,
+     "endSpeed": 89.3,
+     "altitudeChange": 0,
+     "bankDeg": 57
+    },
+    "circle70pct": {
+     "seconds": 8.47,
+     "endSpeed": 101.5,
+     "altitudeChange": -13.4,
+     "bankDeg": 77
+    },
+    "loop": {
+     "complete": true,
+     "seconds": 8.1,
+     "minSpeed": 90.2
+    },
+    "aeroGate_ms": 93.9,
+    "idleDecel75pct": 2.13,
+    "takeoff": {
+     "seconds": 13.5,
+     "groundRun": 385,
+     "liftoffIAS": 194,
+     "stallIAS": 176
+    }
+   }
+  },
+  "bf109": {
+   "name": "Bf 109F-2 (DB 601N)",
+   "solved": {
+    "CD0": 0.01859,
+    "etaP": 0.73472,
+    "fth": 3741.02023,
+    "rms": "1.21 %",
+    "oswald": 0.866,
+    "aspect": 6.11,
+    "CLmaxClean": 1.382,
+    "CLmaxLanding": 1.52,
+    "diveBrakeCD": null,
+    "massPublished": 2789,
+    "massEmptyNoFuel": 2501,
+    "fuelKg": 288
+   },
+   "verification": [
+    {
+     "figure": "528 km/h @ SL (emergency)",
+     "ref": "B1",
+     "published": "528 km/h",
+     "model": "533.7 km/h",
+     "errorPct": 1.08
+    },
+    {
+     "figure": "563 km/h @ 2 000 m",
+     "ref": "B1",
+     "published": "563 km/h",
+     "model": "568.4 km/h",
+     "errorPct": 0.96
+    },
+    {
+     "figure": "606 km/h @ 5 000 m",
+     "ref": "B1",
+     "published": "606 km/h",
+     "model": "593 km/h",
+     "errorPct": -2.14
+    },
+    {
+     "figure": "16.4 m/s @ SL",
+     "ref": "B1",
+     "published": "16.4 m/s",
+     "model": "16.3 m/s",
+     "errorPct": -0.61
+    },
+    {
+     "figure": "10 m/s @ 6 000 m",
+     "ref": "B1",
+     "published": "10 m/s",
+     "model": "10.1 m/s",
+     "errorPct": 0.53
+    }
+   ],
+   "game": {
+    "vmax1000m_kmh": 551,
+    "climbSL_ms": 16.3,
+    "bestClimbIAS_kmh": 241,
+    "stallCleanIAS_kmh": 161,
+    "stallLandingIAS_kmh": 154,
+    "rollPeak_degs": 153,
+    "rollAt70pct_degs": 125,
+    "circle45pct": {
+     "seconds": 11.53,
+     "endSpeed": 80.5,
+     "altitudeChange": 0,
+     "bankDeg": 62.2
+    },
+    "circle70pct": {
+     "seconds": 6.88,
+     "endSpeed": 95.4,
+     "altitudeChange": -9.3,
+     "bankDeg": 78.9
+    },
+    "loop": {
+     "complete": true,
+     "seconds": 7.2,
+     "minSpeed": 78.1
+    },
+    "aeroGate_ms": 80.7,
+    "idleDecel75pct": 2.22,
+    "takeoff": {
+     "seconds": 11.8,
+     "groundRun": 299,
+     "liftoffIAS": 176,
+     "stallIAS": 160
+    }
+   }
+  },
+  "fw190": {
+   "name": "Fw 190A-8 (BMW 801 D-2)",
+   "solved": {
+    "CD0": 0.0202,
+    "etaP": 0.74657,
+    "fth": 4769.05613,
+    "combatRatio": 0.87282,
+    "rms": "6.42 %",
+    "oswald": 0.868,
+    "aspect": 6.02,
+    "CLmaxClean": 1.373,
+    "CLmaxLanding": 1.599,
+    "diveBrakeCD": null,
+    "massPublished": 4391,
+    "massEmptyNoFuel": 3893,
+    "fuelKg": 498
+   },
+   "verification": [
+    {
+     "figure": "558 km/h @ SL (emergency)",
+     "ref": "B1",
+     "published": "558 km/h",
+     "model": "561.3 km/h",
+     "errorPct": 0.59
+    },
+    {
+     "figure": "641 km/h @ 6 200 m (emergency)",
+     "ref": "B1",
+     "published": "641 km/h",
+     "model": "637.6 km/h",
+     "errorPct": -0.53
+    },
+    {
+     "figure": "532 km/h @ SL (combat)",
+     "ref": "B1",
+     "published": "532 km/h",
+     "model": "533.6 km/h",
+     "errorPct": 0.3
+    },
+    {
+     "figure": "612 km/h @ 5 800 m (combat)",
+     "ref": "B1",
+     "published": "612 km/h",
+     "model": "607.6 km/h",
+     "errorPct": -0.72
+    },
+    {
+     "figure": "13.8 m/s @ SL (combat)",
+     "ref": "B1",
+     "published": "13.8 m/s",
+     "model": "11.9 m/s",
+     "errorPct": -13.75
+    },
+    {
+     "figure": "10.1 m/s @ 3 000 m (combat)",
+     "ref": "B1",
+     "published": "10.1 m/s",
+     "model": "11.1 m/s",
+     "errorPct": 9.91
+    },
+    {
+     "figure": "7.8 m/s @ 6 000 m (combat)",
+     "ref": "B1",
+     "published": "7.8 m/s",
+     "model": "7.8 m/s",
+     "errorPct": 0.3
+    }
+   ],
+   "game": {
+    "vmax1000m_kmh": 579,
+    "climbSL_ms": 14.2,
+    "bestClimbIAS_kmh": 264,
+    "stallCleanIAS_kmh": 190,
+    "stallLandingIAS_kmh": 176,
+    "rollPeak_degs": 220,
+    "rollAt70pct_degs": 220,
+    "circle45pct": {
+     "seconds": 17.27,
+     "endSpeed": 89.8,
+     "altitudeChange": 0,
+     "bankDeg": 53.9
+    },
+    "circle70pct": {
+     "seconds": 9.22,
+     "endSpeed": 101.6,
+     "altitudeChange": -15.9,
+     "bankDeg": 75.9
+    },
+    "loop": {
+     "complete": true,
+     "seconds": 8.4,
+     "minSpeed": 95.1
+    },
+    "aeroGate_ms": 99.4,
+    "idleDecel75pct": 1.96,
+    "takeoff": {
+     "seconds": 16.3,
+     "groundRun": 504,
+     "liftoffIAS": 206,
+     "stallIAS": 187
+    }
+   }
+  },
+  "ju87": {
+   "name": "Ju 87B-2 Stuka (Jumo 211 Da)",
+   "solved": {
+    "CD0": 0.0254,
+    "etaP": 0.53963,
+    "rms": "0 %",
+    "oswald": 0.87,
+    "aspect": 5.97,
+    "CLmaxClean": 1.4,
+    "CLmaxLanding": 1.89,
+    "diveBrakeCD": 0.0636,
+    "massPublished": 4250,
+    "massEmptyNoFuel": 3404,
+    "fuelKg": 346
+   },
+   "verification": [
+    {
+     "figure": "380 km/h @ 4 100 m",
+     "ref": "B1",
+     "published": "380 km/h",
+     "model": "380 km/h",
+     "errorPct": 0
+    },
+    {
+     "figure": "4 000 m in 12 min",
+     "ref": "B1",
+     "published": "12 min",
+     "model": "12 min",
+     "errorPct": 0
+    }
+   ],
+   "game": {
+    "vmax1000m_kmh": 347,
+    "climbSL_ms": 5.9,
+    "bestClimbIAS_kmh": 186,
+    "stallCleanIAS_kmh": 141,
+    "stallLandingIAS_kmh": 121,
+    "rollPeak_degs": 84,
+    "rollAt70pct_degs": 81,
+    "circle45pct": {
+     "seconds": 33.48,
+     "endSpeed": 71.4,
+     "altitudeChange": 0,
+     "bankDeg": 26.6
+    },
+    "circle70pct": {
+     "seconds": 8.75,
+     "endSpeed": 62.8,
+     "altitudeChange": -11.8,
+     "bankDeg": 68.3
+    },
+    "loop": {
+     "complete": true,
+     "seconds": 6,
+     "minSpeed": 72.6
+    },
+    "aeroGate_ms": 77,
+    "idleDecel75pct": 1.26,
+    "takeoff": {
+     "seconds": 17.8,
+     "groundRun": 398,
+     "liftoffIAS": 150,
+     "stallIAS": 136
+    }
+   }
+  },
+  "me262": {
+   "name": "Me 262A-1a (2 x Jumo 004B)",
+   "solved": {
+    "CD0": 0.02722,
+    "nT": 0.63605,
+    "rms": "0 %",
+    "oswald": 0.828,
+    "aspect": 7.37,
+    "CLmaxClean": 1.4,
+    "CLmaxLanding": 1.89,
+    "diveBrakeCD": null,
+    "massPublished": 6400,
+    "massEmptyNoFuel": 4765,
+    "fuelKg": 1635
+   },
+   "verification": [
+    {
+     "figure": "870 km/h @ 6 000 m",
+     "ref": "B1",
+     "published": "870 km/h",
+     "model": "870 km/h",
+     "errorPct": 0
+    },
+    {
+     "figure": "20 m/s @ SL",
+     "ref": "B1",
+     "published": "20 m/s",
+     "model": "20 m/s",
+     "errorPct": 0
+    }
+   ],
+   "game": {
+    "vmax1000m_kmh": 800,
+    "climbSL_ms": 20,
+    "bestClimbIAS_kmh": 446,
+    "stallCleanIAS_kmh": 209,
+    "stallLandingIAS_kmh": 180,
+    "rollPeak_degs": 122,
+    "rollAt70pct_degs": 81,
+    "circle45pct": {
+     "seconds": 11.88,
+     "endSpeed": 102.4,
+     "altitudeChange": 0,
+     "bankDeg": 68.2
+    },
+    "circle70pct": {
+     "seconds": 8.03,
+     "endSpeed": 138.3,
+     "altitudeChange": -0.4,
+     "bankDeg": 79.5
+    },
+    "loop": {
+     "complete": true,
+     "seconds": 9,
+     "minSpeed": 108.4
+    },
+    "aeroGate_ms": 109.1,
+    "idleDecel75pct": 1.52,
+    "takeoff": {
+     "seconds": 30.9,
+     "groundRun": 895,
+     "liftoffIAS": 222,
+     "stallIAS": 202
+    }
+   }
+  },
+  "me163": {
+   "name": "Me 163B-1a Komet (Walter HWK 109-509A)",
+   "solved": {
+    "CD0": 0.01684,
+    "mcrit": 0.66526,
+    "rms": "0 %",
+    "oswald": 0.919,
+    "aspect": 4.44,
+    "CLmaxClean": 1.1,
+    "CLmaxLanding": 1.265,
+    "diveBrakeCD": null,
+    "massPublished": 4310,
+    "massEmptyNoFuel": 2292,
+    "fuelKg": 2018
+   },
+   "verification": [
+    {
+     "figure": "2 000 -> 10 000 m in 1.71 min",
+     "ref": "B2",
+     "published": "1.7 min",
+     "model": "1.7 min",
+     "errorPct": 0
+    },
+    {
+     "figure": "960 km/h level (altitude C: 4 000 m)",
+     "ref": "B3",
+     "published": "960 km/h",
+     "model": "960 km/h",
+     "errorPct": 0
+    }
+   ],
+   "game": {
+    "vmax1000m_kmh": 955,
+    "climbSL_ms": 36.4,
+    "bestClimbIAS_kmh": 551,
+    "stallCleanIAS_kmh": 204,
+    "stallLandingIAS_kmh": 190,
+    "rollPeak_degs": 153,
+    "rollAt70pct_degs": 91,
+    "circle45pct": {
+     "seconds": 8.93,
+     "endSpeed": 118.6,
+     "altitudeChange": -0.1,
+     "bankDeg": 75.7
+    },
+    "circle70pct": {
+     "seconds": 9.08,
+     "endSpeed": 179.4,
+     "altitudeChange": 0,
+     "bankDeg": 80.4
+    },
+    "loop": {
+     "complete": true,
+     "seconds": 7.6,
+     "minSpeed": 130.2
+    },
+    "aeroGate_ms": 98.1,
+    "idleDecel75pct": 1.76,
+    "takeoff": {
+     "seconds": 18.4,
+     "groundRun": 560,
+     "liftoffIAS": 221,
+     "stallIAS": 201
+    }
+   }
+  },
+  "avenger": {
+   "name": "TBF-1 Avenger (R-2600-8)",
+   "solved": {
+    "CD0": 0.02286,
+    "etaP": 0.73964,
+    "rms": "0 %",
+    "oswald": 0.869,
+    "aspect": 5.99,
+    "CLmaxClean": 1.4,
+    "CLmaxLanding": 1.89,
+    "diveBrakeCD": null,
+    "massPublished": 7214,
+    "massEmptyNoFuel": 5296,
+    "fuelKg": 913
+   },
+   "verification": [
+    {
+     "figure": "271 mph @ 12 000 ft",
+     "ref": "B1",
+     "published": "436.1 km/h",
+     "model": "436.1 km/h",
+     "errorPct": 0
+    },
+    {
+     "figure": "1 430 ft/min @ SL",
+     "ref": "B1",
+     "published": "7.3 m/s",
+     "model": "7.3 m/s",
+     "errorPct": 0
+    }
+   ],
+   "game": {
+    "vmax1000m_kmh": 403,
+    "climbSL_ms": 7.3,
+    "bestClimbIAS_kmh": 210,
+    "stallCleanIAS_kmh": 153,
+    "stallLandingIAS_kmh": 132,
+    "rollPeak_degs": 77,
+    "rollAt70pct_degs": 70,
+    "circle45pct": {
+     "seconds": 22.47,
+     "endSpeed": 70,
+     "altitudeChange": 0,
+     "bankDeg": 37.9
+    },
+    "circle70pct": {
+     "seconds": 8.85,
+     "endSpeed": 71.8,
+     "altitudeChange": -13.5,
+     "bankDeg": 71
+    },
+    "loop": {
+     "complete": true,
+     "seconds": 6.9,
+     "minSpeed": 78.6
+    },
+    "aeroGate_ms": 83.4,
+    "idleDecel75pct": 1.28,
+    "takeoff": {
+     "seconds": 18.3,
+     "groundRun": 434,
+     "liftoffIAS": 158,
+     "stallIAS": 144
+    }
+   }
+  },
+  "sbd": {
+   "name": "SBD-3 Dauntless (R-1820-52)",
+   "solved": {
+    "CD0": 0.02844,
+    "etaP": 0.77603,
+    "rms": "0 %",
+    "oswald": 0.891,
+    "aspect": 5.31,
+    "CLmaxClean": 1.524,
+    "CLmaxLanding": 2.057,
+    "diveBrakeCD": 0.1059,
+    "massPublished": 4717,
+    "massEmptyNoFuel": 3555,
+    "fuelKg": 709
+   },
+   "verification": [
+    {
+     "figure": "250 mph @ 16 000 ft",
+     "ref": "B1",
+     "published": "402.3 km/h",
+     "model": "402.3 km/h",
+     "errorPct": 0
+    },
+    {
+     "figure": "1 190 ft/min @ SL",
+     "ref": "B3",
+     "published": "6 m/s",
+     "model": "6 m/s",
+     "errorPct": 0
+    }
+   ],
+   "game": {
+    "vmax1000m_kmh": 360,
+    "climbSL_ms": 6,
+    "bestClimbIAS_kmh": 199,
+    "stallCleanIAS_kmh": 146,
+    "stallLandingIAS_kmh": 126,
+    "rollPeak_degs": 107,
+    "rollAt70pct_degs": 88,
+    "circle45pct": {
+     "seconds": 34.18,
+     "endSpeed": 72.7,
+     "altitudeChange": 0,
+     "bankDeg": 26.6
+    },
+    "circle70pct": {
+     "seconds": 9.42,
+     "endSpeed": 64.2,
+     "altitudeChange": -17.7,
+     "bankDeg": 68.3
+    },
+    "loop": {
+     "complete": true,
+     "seconds": 6.3,
+     "minSpeed": 74.8
+    },
+    "aeroGate_ms": 81,
+    "idleDecel75pct": 1.29,
+    "takeoff": {
+     "seconds": 17.9,
+     "groundRun": 405,
+     "liftoffIAS": 150,
+     "stallIAS": 137
+    }
+   }
+  },
+  "corsair": {
+   "name": "F4U-1D Corsair (R-2800-8W)",
+   "solved": {
+    "CD0": 0.01701,
+    "etaP": 0.73245,
+    "rms": "0 %",
+    "oswald": 0.889,
+    "aspect": 5.36,
+    "CLmaxClean": 1.502,
+    "CLmaxLanding": 2.028,
+    "diveBrakeCD": null,
+    "massPublished": 5461,
+    "massEmptyNoFuel": 4815,
+    "fuelKg": 646
+   },
+   "verification": [
+    {
+     "figure": "425 mph @ 20 000 ft",
+     "ref": "B1",
+     "published": "684 km/h",
+     "model": "684 km/h",
+     "errorPct": 0
+    },
+    {
+     "figure": "3 120 ft/min @ SL",
+     "ref": "B1",
+     "published": "15.8 m/s",
+     "model": "15.8 m/s",
+     "errorPct": 0
+    }
+   ],
+   "game": {
+    "vmax1000m_kmh": 578,
+    "climbSL_ms": 15.8,
+    "bestClimbIAS_kmh": 254,
+    "stallCleanIAS_kmh": 161,
+    "stallLandingIAS_kmh": 138,
+    "rollPeak_degs": 153,
+    "rollAt70pct_degs": 132,
+    "circle45pct": {
+     "seconds": 10.05,
+     "endSpeed": 75.4,
+     "altitudeChange": 0,
+     "bankDeg": 65.1
+    },
+    "circle70pct": {
+     "seconds": 6.75,
+     "endSpeed": 95.5,
+     "altitudeChange": -12.3,
+     "bankDeg": 80
+    },
+    "loop": {
+     "complete": true,
+     "seconds": 7.2,
+     "minSpeed": 78
+    },
+    "aeroGate_ms": 82.2,
+    "idleDecel75pct": 2.22,
+    "takeoff": {
+     "seconds": 11.2,
+     "groundRun": 265,
+     "liftoffIAS": 166,
+     "stallIAS": 151
+    }
+   }
+  },
+  "zero": {
+   "name": "A6M2 Model 21 Zero (Sakae 12)",
+   "solved": {
+    "CD0": 0.01746,
+    "etaP": 0.74816,
+    "rms": "0 %",
+    "oswald": 0.856,
+    "aspect": 6.42,
+    "CLmaxClean": 1.4,
+    "CLmaxLanding": 1.89,
+    "diveBrakeCD": null,
+    "massPublished": 2410,
+    "massEmptyNoFuel": 2037,
+    "fuelKg": 373
+   },
+   "verification": [
+    {
+     "figure": "533 km/h @ 4 550 m",
+     "ref": "B1",
+     "published": "533 km/h",
+     "model": "533 km/h",
+     "errorPct": 0
+    },
+    {
+     "figure": "945 m/min @ SL",
+     "ref": "B1",
+     "published": "15.8 m/s",
+     "model": "15.7 m/s",
+     "errorPct": 0
+    }
+   ],
+   "game": {
+    "vmax1000m_kmh": 474,
+    "climbSL_ms": 15.7,
+    "bestClimbIAS_kmh": 211,
+    "stallCleanIAS_kmh": 126,
+    "stallLandingIAS_kmh": 109,
+    "rollPeak_degs": 176,
+    "rollAt70pct_degs": 156,
+    "circle45pct": {
+     "seconds": 7.73,
+     "endSpeed": 66.5,
+     "altitudeChange": 0,
+     "bankDeg": 67.3
+    },
+    "circle70pct": {
+     "seconds": 4.78,
+     "endSpeed": 81,
+     "altitudeChange": -3.5,
+     "bankDeg": 80.4
+    },
+    "loop": {
+     "complete": true,
+     "seconds": 5.7,
+     "minSpeed": 59.9
+    },
+    "aeroGate_ms": 60.9,
+    "idleDecel75pct": 2.03,
+    "takeoff": {
+     "seconds": 8.4,
+     "groundRun": 150,
+     "liftoffIAS": 130,
+     "stallIAS": 118
+    }
+   }
+  },
+  "b17": {
+   "name": "B-17G Flying Fortress (4 x R-1820-97 turbo)",
+   "solved": {
+    "CD0": 0.01548,
+    "etaP": 0.52472,
+    "rms": "0 %",
+    "oswald": 0.822,
+    "aspect": 7.58,
+    "CLmaxClean": 1.4,
+    "CLmaxLanding": 1.89,
+    "diveBrakeCD": null,
+    "massPublished": 24948,
+    "massEmptyNoFuel": 24948,
+    "fuelKg": 0
+   },
+   "verification": [
+    {
+     "figure": "287 mph @ 25 000 ft",
+     "ref": "B1",
+     "published": "461.9 km/h",
+     "model": "461.9 km/h",
+     "errorPct": 0
+    },
+    {
+     "figure": "20 000 ft in 37 min",
+     "ref": "B1",
+     "published": "37 min",
+     "model": "37 min",
+     "errorPct": 0
+    }
+   ],
+   "game": {
+    "vmax1000m_kmh": 392,
+    "climbSL_ms": 3.4,
+    "bestClimbIAS_kmh": 222,
+    "stallCleanIAS_kmh": 167,
+    "stallLandingIAS_kmh": 144,
+    "rollPeak_degs": 46,
+    "rollAt70pct_degs": 45,
+    "circle45pct": {
+     "seconds": 120.02,
+     "endSpeed": 94.1,
+     "altitudeChange": 0,
+     "bankDeg": 7
+    },
+    "circle70pct": {
+     "seconds": 11.22,
+     "endSpeed": 71,
+     "altitudeChange": -19,
+     "bankDeg": 65.8
+    },
+    "loop": {
+     "complete": true,
+     "seconds": 10.3,
+     "minSpeed": 82.6
+    },
+    "aeroGate_ms": 93.4,
+    "idleDecel75pct": 0.96,
+    "takeoff": {
+     "seconds": 38.2,
+     "groundRun": 1113,
+     "liftoffIAS": 178,
+     "stallIAS": 162
+    }
+   }
+  },
+  "b24": {
+   "name": "B-24J Liberator (4 x R-1830-65 turbo)",
+   "solved": {
+    "CD0": 0.0301,
+    "etaP": 0.69334,
+    "lapse": -4e-8,
+    "rms": "0.01 %",
+    "oswald": 0.717,
+    "aspect": 11.55,
+    "CLmaxClean": 1.4,
+    "CLmaxLanding": 1.89,
+    "diveBrakeCD": null,
+    "massPublished": 25401,
+    "massEmptyNoFuel": 25401,
+    "fuelKg": 0
+   },
+   "verification": [
+    {
+     "figure": "277 mph @ 20 000 ft",
+     "ref": "B1",
+     "published": "445.8 km/h",
+     "model": "445.9 km/h",
+     "errorPct": 0.02
+    },
+    {
+     "figure": "300 mph @ 30 000 ft",
+     "ref": "B1",
+     "published": "482.8 km/h",
+     "model": "482.7 km/h",
+     "errorPct": -0.02
+    },
+    {
+     "figure": "20 000 ft in 25 min",
+     "ref": "B1",
+     "published": "25 min",
+     "model": "25 min",
+     "errorPct": 0
+    }
+   ],
+   "game": {
+    "vmax1000m_kmh": 387,
+    "climbSL_ms": 4.7,
+    "bestClimbIAS_kmh": 214,
+    "stallCleanIAS_kmh": 197,
+    "stallLandingIAS_kmh": 169,
+    "rollPeak_degs": 46,
+    "rollAt70pct_degs": 46,
+    "circle45pct": {
+     "seconds": 120.02,
+     "endSpeed": 186.1,
+     "altitudeChange": -3998.9,
+     "bankDeg": 0
+    },
+    "circle70pct": {
+     "seconds": 15.8,
+     "endSpeed": 74.9,
+     "altitudeChange": -1.3,
+     "bankDeg": 54.4
+    },
+    "loop": {
+     "complete": true,
+     "seconds": 12,
+     "minSpeed": 95.8
+    },
+    "aeroGate_ms": 108.3,
+    "idleDecel75pct": 1.07,
+    "takeoff": {
+     "seconds": 38.8,
+     "groundRun": 1348,
+     "liftoffIAS": 209,
+     "stallIAS": 190
+    }
+   }
+  }
+ }
+}
