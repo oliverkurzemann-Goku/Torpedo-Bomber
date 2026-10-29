@@ -275,7 +275,7 @@
   .warningLamps{display:flex!important;gap:10px;padding:5px 9px!important;background:#141813dd!important;border:1px solid #535744;border-radius:4px;white-space:nowrap;}
   .warningLamp{color:#646c5c;font:9px monospace;letter-spacing:.35px;} .warningLamp[data-level="1"]{color:#ffd088;text-shadow:0 0 6px #e0a432a0;} .warningLamp[data-level="2"]{color:#ff8c70;text-shadow:0 0 7px #ff6638b0;}
 </style>
-<link rel="stylesheet" href="menu-layout.css?v=214">
+<link rel="stylesheet" href="menu-layout.css?v=215">
 </head>
 <body>
 <!-- ===== TEMP TEST-ONLY VERSION BANNER — asked for by Oliver: "kannst du irgendwo einbauen,
@@ -297,7 +297,7 @@
   <div style="width:100%;height:4px;background:repeating-linear-gradient(45deg,#ffd400,#ffd400 8px,#111 8px,#111 16px);"></div>
   <span id="testVersionBannerText" style="background:#111;color:#ffd400;font-family:monospace;font-weight:800;font-size:11px;letter-spacing:.5px;padding:3px 10px;border:1px solid #ffd400;border-top:none;border-radius:0 0 6px 6px;"></span>
 </div>
-<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 214';</script>
+<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 215';</script>
 <!-- ===== END TEMP TEST-ONLY VERSION BANNER ===== -->
 <div id="app"></div>
 <style>
@@ -338,7 +338,7 @@
   <div id="flash"></div>
   <div id="gunsight"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 214 · REAL RHINE</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 215 · REAL RHINE</div>
 
   <div id="apr">
     <div id="aprCall"></div>
@@ -390,7 +390,7 @@
 </div>
 
 <div class="overlay hidden" id="menu" data-campaign="europe">
-  <div class="menuTop"><a id="selBtn" href="index.html?v=214">&#9664; Change Game</a><span class="menuMeta">RHINE OPERATIONS<br>BUILD 214</span></div>
+  <div class="menuTop"><a id="selBtn" href="index.html?v=215">&#9664; Change Game</a><span class="menuMeta">RHINE OPERATIONS<br>BUILD 215</span></div>
   <div class="card menuCard">
     <aside class="menuOverview" aria-label="Campaign and pilot options">
     <div class="campaignArt" aria-hidden="true"></div>
@@ -519,7 +519,7 @@
 <script src="combat-fx.js?v=177"></script>
 <script src="aircraft-smoke.js?v=176"></script>
 <script src="aircraft-damage.js?v=177"></script>
-<script src="flight-support.js?v=198"></script>
+<script src="flight-support.js?v=215"></script>
 <script src="ordnance.js?v=157"></script>
 <script src="crew-visuals.js?v=179"></script>
 <script src="aircraft-finish.js?v=206"></script>
@@ -537,7 +537,8 @@
 <script src="audio/flight-atmosphere.js?v=175"></script>
 <script src="sortie-systems.js?v=198"></script>
 <script src="me262-performance.js?v=206"></script>
-<script src="flight-dynamics.js?v=214"></script>
+<script src="flight-envelope.js?v=215"></script>
+<script src="flight-dynamics.js?v=215"></script>
 <script src="audio/aircraft-engine.js?v=214"></script>
 <script src="p47-performance.js?v=204"></script>
 <script src="sortie-features.js?v=214"></script>
@@ -714,6 +715,13 @@ const AC={
         col:0x68715f, band:0x353c30 }
 };
 function acDef(){ return AC[P.ac]||AC.p47; }
+// Build 215: the player's attitude-spring numbers are no longer typed in. They are derived from the
+// aircraft data sheet in flight-envelope.js (published roll rate curve, wing loading, aircraft class);
+// 'turn' and 'gLim' above remain only for the enemy AI, whose turn law is unchanged.
+for(const kind of Object.keys(AC)){
+  const h=FlightEnvelope.handling(kind,{rollLim:AC[kind].rollLim,zeta:AC[kind].controlDamping});
+  AC[kind].rollAuth=h.rollAuth;AC[kind].pitchAuth=h.pitchAuth;
+}
 
 // ---- difficulty (same three tiers as the carrier game) ----
 // The comment above was aspirational, not actual: flak/dmg here were 20-45% harsher than the
@@ -879,7 +887,7 @@ async function loadRealWorld(){
 
   if(OSMManager.BUILD!==23||HistoricalObjectManager.BUILD!==21||LivingWorld.BUILD!==22||WorldVehicles.BUILD!==22) throw new Error('Terrain version mismatch. Reload Remagen.');
   document.getElementById('testVersionBannerText').textContent=
-    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 214 · MODULE 23';
+    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 215 · MODULE 23';
   heightProvider=new DEMHeightProvider(RTILE,'terrain-system/real/data/dem/');
   terrain=new TerrainManager(scene,RTILE,heightProvider);
   osmMgr=new OSMManager(scene,RTILE,terrain,'terrain-system/real/data/osm/');
@@ -3739,37 +3747,9 @@ function aiSpec(kind,altitude=0){
                 rollRate:kind==='fw190'?2.9:(kind==='bf109'?2.5:2.2), thrust:(kind==='p47')?1.10:1.0};
   return {stall:38, max:180, gLim:5.5, rollRate:2.5, thrust:1.0};
 }
-// ---- how fast a given bank angle actually turns the aeroplane -------------------------
-// BUILD 104 replaced the old arcade curve with the textbook coordinated-turn rate
-// (g·√(n²−1)/v, n=1/cos bank). That formula is correct and it made the game unflyable: at a
-// normal 50° of bank and normal cruise it yields 5°/s, a full circle in 66 SECONDS — measured,
-// not guessed, and 15x slower than the game had always been. Reported exactly that way: "man
-// fliegt trotz 50 Grad Querlage fast geradeaus". Real aeroplanes genuinely are that lazy at 50°
-// of bank; a game flown with two thumbs on a tablet cannot be.
-// So this is a deliberate, declared gameplay curve, not a physics claim:
-//   * sin(bank) instead of √(n²−1)  — bites early and keeps biting, instead of doing nothing
-//     until you are past 70° and then exploding upward
-//   * still falls as speed rises   — the one thing the pre-BUILD-104 arcade curve had backwards
-//   * VREF is a floor, not a target: below it the turn stops tightening, so slow flight cannot
-//     produce absurd rates
-//   * the aircraft's own structural gLim still caps it, which is what keeps a Thunderbolt and a
-//     Bf 109 (and, in the carrier game, an Avenger) telling themselves apart
-// Verified numerically over all six aircraft in both games: turn rate rises monotonically with
-// bank, always falls as speed rises, the bomber stays >=1.5x worse than the best turner, and a
-// full 360 at 50° bank goes from 41-67 s to 7.5-12.2 s. Enemy AI uses this same function so the
-// dogfight balance moves with it rather than the player quietly becoming untouchable.
-// Raised again after real feedback that the turn was still too weak. The decisive number I had
-// wrong: I tuned against an assumed 105 m/s cruise, but the reported screenshot showed 375 mph
-// = 167 m/s, and this curve falls with 1/v - so what I had measured as a 12 s circle was really
-// a 19 s one in the air he actually flies. Re-tuned at the speeds actually flown: a P-47 at
-// 167 m/s now needs 10.6 s at 50 deg of bank instead of 19.2 s, and 8.1 s at full bank.
-const TURN_K=1.90, TURN_VREF=80, TURN_CEIL=2.4;
-function bankTurnRate(rollRad, spd, gLim, turnFactor){
-  const v=Math.max(TURN_VREF, spd);
-  const play=TURN_K*Math.sin(Math.abs(rollRad))*(TURN_VREF/v)*(turnFactor||1);
-  const ceil=TURN_CEIL*9.81*Math.sqrt(Math.max(0,gLim*gLim-1))/v;
-  return Math.min(play, ceil);
-}
+// Build 215: the player's turn law moved to FlightEnvelope.turn() (load factor from the aircraft data
+// sheet, flight-envelope.js). The hand-typed bankTurnRate()/TURN_K curve that used to sit here is gone;
+// enemy fighters below use their own coordinated-turn model (flyAI) and are unchanged.
 // Fly the aeroplane towards aimDir. Everything here is ordinary flight mechanics.
 function flyAI(e,dt,aimDir,wantSpd){
   const S=aiSpec(e.kind,e.pos.y);
@@ -4240,7 +4220,7 @@ function updateFlight(dt){
     // steer with the stick's roll axis, tailwheel style — same sense as in the air
     P.heading += inputRoll*steerSign*Math.min(1,P.spd/40)*0.9*dt;
     P.roll*=Math.max(0,1-3*dt); P.pitch*=Math.max(0,1-3*dt);
-    P.rollVel=0; P.pitchVel=0;   // wheels down: no airborne rotational inertia carries over
+    P.rollVel=0; P.pitchVel=0; P.nLoad=1;   // wheels down: no airborne rotational inertia carries over
     // Raise the tail as the wing takes weight, then rotate with the pilot's stick.
     const vr=(P.ac==='p47'?speeds.stall:d.stall*load.speed+controls.stallPenalty)*1.12;
     const rotationTarget=P.spd>vr*.85&&inputPitch>.15?.07:0;
@@ -4272,7 +4252,7 @@ function updateFlight(dt){
   STALL_SPD=d.stall; APP_SPD=d.app; MAX_SPD=P.ac==='p47'?P47Performance.maximum(P.pos.y):d.max; THR_MIN_SPD=d.thrMin;
   const stallSpd=speeds.stall;
   // speed toward throttle target is replaced by finite power, drag and energy.
-  FlightDynamics.step(P,dt,{kind:P.ac,loadRatio:load.ratio,power:SortieFeatures.Damage.power(P),flaps:controls.flaps.mean,drag:controls.drag,bank:P.roll,departure});
+  FlightDynamics.step(P,dt,{kind:P.ac,loadRatio:load.ratio,power:SortieFeatures.Damage.power(P),flaps:controls.flaps.mean,drag:controls.drag,bank:P.roll,n:P.nLoad||1,departure});
 
   // ---- attitude: stick POSITION still commands an attitude, exactly as before ----
   // The old code drove roll and pitch as RATES, so the aeroplane stayed wherever you left it
@@ -4286,6 +4266,8 @@ function updateFlight(dt){
   const dmgF = (P.hull < d.hull*0.6) ? (0.55+0.45*P.hull/(d.hull*0.6)) : 1.0;
   const auth = (P.spd<stallSpd ? 0.4 : 1.0)*dmgF;
   const feel=FlightDynamics.authority(P.ac,P.spd,stallSpd);
+  // Build 215: lift / load-factor context shared by turn, pull and the energy model.
+  const liftCtx={loadSpeed:load.speed,stallPenalty:controls.stallPenalty,gFactor:configuration.gFactor,flaps:controls.flaps.mean};
   // Build 214: quicker assisted pitch response; target and energy envelope stay unchanged.
   const pitchRate=2.9*auth*d.pitchAuth*feel.pitch*controls.pitch*load.inertia*configuration.authority, rollRate=4.8*auth*d.rollAuth*feel.roll*controls.roll*load.inertia*configuration.authority;
   const commandRoll=d.stickExponent?Math.sign(inputRoll)*Math.pow(Math.abs(inputRoll),d.stickExponent):inputRoll;
@@ -4306,17 +4288,18 @@ function updateFlight(dt){
     // Pull acts along the aircraft's own lift axis: wings level -> climb,
     // knife-edge -> turn, 70 degrees -> turn AND climb. Keep the full pitch
     // rotation for loops and the roll rate for barrel rolls.
-    const energy=Math.max(.35,Math.min(1,P.spd/(Math.max(1,d.stall*load.speed+controls.stallPenalty)*1.8)));
-    const pull=Math.min(.95*d.pitchAuth*feel.pitch,1.6*9.81*(d.gLim*configuration.gFactor-1)/Math.max(P.spd,60))*energy*controls.pitch*load.turn*configuration.authority;
+    // Build 215: pull is the load factor the wing can deliver at this speed (lift below the corner
+    // speed, structure above it) - so a loop tightens at the top and cannot out-turn the airframe.
+    const pull=Math.min(.95*d.pitchAuth*feel.pitch,FlightEnvelope.pitchRateLimit(P.ac,P.spd,P.pitch,liftCtx))*controls.pitch*configuration.authority;
     const response=d.aeroResponse?1-Math.exp(-dt/d.aeroResponse):1;
     P.pitchVel=d.aeroResponse?(P.pitchVel||0)+(commandPitch*pull-(P.pitchVel||0))*response:commandPitch*pull;
     // Held stick still commands a full roll. Neutral stick now levels the
     // wings smoothly, following the shortest path even after a half roll.
     const bankErr=Math.atan2(Math.sin(P.roll-totalBias),Math.cos(P.roll-totalBias));
-    const rollAuthority=2.1*d.rollAuth*feel.roll*energy*controls.roll*load.inertia*configuration.authority;
+    const rollAuthority=FlightEnvelope.rollPeak(P.ac)*feel.roll*controls.roll*load.inertia*configuration.authority;
     // Neutral self-levels gently; held controls keep the original responsive roll.
     const rollCommand=(Math.abs(inputRoll)>0.075||Math.abs(inputPitch)>0.075)?commandRoll*steerSign*rollAuthority:
-      Math.max(-rollAuthority,Math.min(rollAuthority,-bankErr*.7*d.rollAuth*energy));
+      Math.max(-rollAuthority,Math.min(rollAuthority,-bankErr*.9*Math.max(.6,feel.roll)));
     P.rollVel=d.aeroResponse?(P.rollVel||0)+(rollCommand-(P.rollVel||0))*response:rollCommand;
     P.pitch=Math.atan2(Math.sin(P.pitch+P.pitchVel*Math.cos(P.roll)*dt),Math.cos(P.pitch+P.pitchVel*Math.cos(P.roll)*dt));
     P.heading+=P.pitchVel*Math.sin(P.roll)*dt;
@@ -4343,6 +4326,9 @@ function updateFlight(dt){
     }
     const pitchTarget=commandPitch>0?Math.min(commandPitch*d.pitchLim*.92,noseUpLimit):commandPitch*d.pitchLim*.92;
     P.pitchVel=(P.pitchVel||0)+(pitchRate*pitchRate*(pitchTarget-P.pitch) - 2*zeta*pitchRate*P.pitchVel)*dt;
+    // The wing cannot pitch faster than the load factor it can deliver at this speed allows.
+    const pitchCap=FlightEnvelope.pitchRateLimit(P.ac,P.spd,P.pitch,liftCtx)*controls.pitch;
+    P.pitchVel=Math.max(-pitchCap,Math.min(pitchCap,P.pitchVel));
     P.pitch += P.pitchVel*dt;
     const neutral=Math.abs(inputRoll)<.001;
     const levelRate=neutral?Math.max(3.5,rollRate*.7):rollRate;
@@ -4361,16 +4347,15 @@ function updateFlight(dt){
   // aeroplane, where a given bank turns SLOWER at higher speed, not faster. Matched to this
   // game's heading convention (nose +Z, heading grows toward +X).
   {
-    // Available lift still gates the turn near the stall, but the rate itself now comes from
-    // bankTurnRate (see its comment: BUILD 104's textbook formula gave a 66-second circle at
-    // 50° of bank, which is why this played like flying straight ahead).
-    const nLift=Math.max(1.05, Math.pow(P.spd/Math.max(1,stallSpd),2)*0.85);
-    const gUse=Math.max(1.05, Math.min(d.gLim*configuration.gFactor, nLift));
-    const curve=feel.turn;
-    const bank=bankTurnRate(P.roll,P.spd,gUse,d.turn)*curve*load.turn;
+    // Build 215: heading rate from the load factor the aircraft can really pull at this speed
+    // (lift-limited below its corner speed, structure-limited above), scaled by one fleet-wide
+    // arcade gain. See flight-envelope.js / FLIGHT-ENVELOPE.md for the derivation and data sheet.
+    const law=FlightEnvelope.turn(P.ac,P.roll,P.spd,liftCtx);
     // Bank alone still turns in AERO, while pulling tightens the turn. The
     // old AERO path removed this entirely, making even 90° of bank feel inert.
-    P.heading+=(aeroMode?0.72*Math.sin(P.roll):Math.sign(P.roll))*bank*dt;
+    P.heading+=(aeroMode?0.72*Math.sin(P.roll):Math.sign(P.roll))*law.rate*dt;
+    // The load factor really flown feeds the energy model next frame (turns and pull-ups cost speed).
+    P.nLoad=FlightEnvelope.flownLoad(P.ac,law.n,P.pitch,P.pitchVel,P.spd);
   }
 
   // vertical speed: climb from attitude + speed-dependent lift
@@ -4630,7 +4615,7 @@ function relaunch(){
   const spawnX=AF_X-RWY_LEN/2+140;
   P.pos.set(spawnX, terrain.getHeight(spawnX,AF_Z)+2.0, AF_Z);
   P.heading=Math.PI/2; P.pitch=0; P.roll=0; P.spd=0; P.vSpeed=0;
-  P.pitchVel=0; P.rollVel=0;
+  P.pitchVel=0; P.rollVel=0; P.nLoad=1;
   P.onGround=true; P.groundPower=0; P.touchResolved=true; P.throttle=0.0; setThrottleUI(0);
   P.gear=1; P.gearTgt=1; P.flap=0; P.flapTgt=0;
   if(P.ac==='me163'){
@@ -4936,22 +4921,31 @@ function updateCamera(dt){
   const wantFov=60+fast*11;
   camera.fov += (wantFov-camera.fov)*Math.min(1,2*dt);
   camera.updateProjectionMatrix();
-  // Follow pitch and bank again in AERO. Close to the top of a loop a literal
-  // nose chase crosses vertical and flips the horizon, so ease only the camera
-  // pitch through that point; the aircraft still performs the full manoeuvre.
-  const viewPitch=Math.atan2(1.25*Math.sin(P.pitch),.42+Math.abs(Math.cos(P.pitch)));
-  const track=aeroMode?new THREE.Vector3(Math.sin(P.heading)*Math.cos(viewPitch),Math.sin(viewPitch),
-    Math.cos(P.heading)*Math.cos(viewPitch)):nose;
+  // Build 215: in AERO the camera follows the aircraft's own nose and up axis (smoothed), so it
+  // stays behind the aircraft through the top of a loop. Before, it followed the HEADING with a
+  // compressed pitch: past vertical the camera ended up in front of the nose ("praktisch von vorne").
+  let track=nose,camUp=null;
+  const rig=camera.userData.aeroRig||(camera.userData.aeroRig=FlightSupport.createAeroRig());
+  if(aeroMode){
+    // Wing-axis 'up' of the aircraft as rendered (same Euler order as the model); continuous through loops.
+    const up=new THREE.Vector3(0,1,0).applyQuaternion(new THREE.Quaternion().setFromEuler(new THREE.Euler(-P.pitch,P.heading,-P.roll,'YXZ')));
+    FlightSupport.aeroChase(rig,nose,up,dt);
+    track=rig.dir;camUp=rig.up;
+  }else rig.dir=null;
   const back=track.clone().multiplyScalar(-(28+fast*5));
-  const want=P.pos.clone().add(back).add(new THREE.Vector3(0,8.5+chaseUp*8+fast*1.5,0));
+  const lift=8.5+chaseUp*8+fast*1.5;
+  const want=P.pos.clone().add(back);
+  if(camUp)want.addScaledVector(camUp,lift);else want.y+=lift;
   const gy=groundY(want.x,want.z)+6;
   if(want.y<gy) want.y=gy;
-  camera.position.lerp(want,Math.min(1,7*dt));
-  FlightSupport.centerChase(camera,P.pos,track);
-  const cameraBank=aeroMode ? .82*Math.sin(P.roll) : P.roll*.55;
-  const up=new THREE.Vector3(0,1,0).applyAxisAngle(track,-cameraBank);
-  camera.up.copy(up);
-  camera.lookAt(P.pos.clone().addScaledVector(track,50).add(new THREE.Vector3(0,2,0)));
+  camera.position.lerp(want,Math.min(1,(aeroMode?10:7)*dt));
+  // Remove the sideways lag of the follow easing (crosswind); near the vertical the heading frame is undefined.
+  if(Math.hypot(track.x,track.z)>.6)FlightSupport.centerChase(camera,P.pos,track);
+  if(camUp)camera.up.copy(camUp);
+  else camera.up.set(0,1,0).applyAxisAngle(track,-P.roll*.55);
+  const aim=P.pos.clone().addScaledVector(track,50);
+  if(camUp)aim.addScaledVector(camUp,2);else aim.y+=2;
+  camera.lookAt(aim);
   if(shakeT>0){
     const k=shakeAmt*shakeT;
     camera.position.x+=(Math.random()-0.5)*k; camera.position.y+=(Math.random()-0.5)*k;
@@ -5577,8 +5571,11 @@ function showLogbook(){
 function toggleAero(){
   if(state!==ST.FLIGHT||!P.alive)return;
   const d=acDef(),agl=P.pos.y-groundY(P.pos.x,P.pos.z);
-  if(!aeroMode&&(P.onGround||P.gear>0.35||P.spd<d.stall*1.7||agl<280)){
-    flash('AERO: CLIMB, GEAR UP, BUILD SPEED',1200);return;
+  const gate=Math.max(d.stall*1.3,FlightEnvelope.aeroGate(P.ac));
+  if(!aeroMode&&(P.onGround||P.gear>0.35||P.spd<gate||agl<280)){
+    // Show the speed the loop needs in the same (indicated) units as the speed readout.
+    const need=Math.ceil((P.ac==='p47'?P47Performance.indicated(gate,P.pos.y):gate)*KT);
+    flash('AERO: CLIMB, GEAR UP, BUILD SPEED'+(P.spd<gate?' · '+need+' MPH':''),1200);return;
   }
   if(aeroMode&&(Math.abs(P.pitch)>d.pitchLim*.95||Math.abs(P.roll)>d.rollLim*.95)){
     flash('COMPLETE THE MANOEUVRE FIRST',1200);return;
@@ -5886,7 +5883,7 @@ function init(){
   buildMenu();
   // menu wiring
   document.getElementById('startBtn').onclick=()=>showBrief(selectedMission);
-  document.getElementById('pauseMainMenu').onclick=async()=>{globalThis.sortieCheckpoint?.save();await globalThis.sortieCheckpoint?.flush();exitToMenuFromPause(true);window.location.href='index.html?v=214';};
+  document.getElementById('pauseMainMenu').onclick=async()=>{globalThis.sortieCheckpoint?.save();await globalThis.sortieCheckpoint?.flush();exitToMenuFromPause(true);window.location.href='index.html?v=215';};
   document.getElementById('logBtn').onclick=()=>{ show('menu',false); showLogbook(); };
   document.getElementById('skipLaunchPreview').onclick=()=>finishLaunchIntro();
   document.getElementById('brBack').onclick=()=>{ show('brief',false); show('menu',true);if(navigation){navigation.reset();navigation.button.style.display='none';} state=ST.MENU; };

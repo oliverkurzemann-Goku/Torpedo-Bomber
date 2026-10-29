@@ -2,36 +2,32 @@
 'use strict';
 const fs=require('node:fs'),path=require('node:path'),vm=require('node:vm'),assert=require('node:assert/strict');
 const root=path.resolve(__dirname,'../..');
-require('../../sortie-features.js');const {SortieFeatures}=global;const FlightDynamics=require('../../flight-dynamics');
+require('../../sortie-features.js');const {SortieFeatures}=global;require('../../p47-performance');require('../../me262-performance');
+require('../../flight-envelope');const {FlightEnvelope}=global;const FlightDynamics=require('../../flight-dynamics');
 const angleDelta=(a,b)=>Math.atan2(Math.sin(a-b),Math.cos(a-b));
 function controller(file,start){
   const html=fs.readFileSync(path.join(root,file),'utf8');
   const a=html.indexOf(start,html.indexOf('function updateFlight(dt)'));
   const b=html.indexOf('  // bank-to-turn:',a);
   assert(a>0&&b>a,file+' attitude controller not found');
+  const handling=Object.fromEntries(['zero','corsair','sbd','avenger'].map(kind=>{const h=FlightEnvelope.handling(kind,{rollLim:kind==='zero'?1.52:1.42});return [kind,{roll:h.rollAuth,pitch:h.pitchAuth,name:kind}];}));
   return vm.runInNewContext('(function(P,inputRoll,inputPitch,aeroMode,dt,d,stallSpd,steerSign){'+
-    'const load=SortieFeatures.Handling.sample(P),controls=SortieFeatures.Damage.controls(P),configuration=SortieFeatures.Handling.configuration(P,stallSpd),departure=SortieFeatures.Handling.departure(P,dt,stallSpd);'+html.slice(a,b)+'})',{SortieFeatures,FlightDynamics,P47Performance:require('../../p47-performance'),STALL_SPD:40,isDefend:()=>true,isSBD:()=>false});
+    'const load=SortieFeatures.Handling.sample(P),controls=SortieFeatures.Damage.controls(P),configuration=SortieFeatures.Handling.configuration(P,stallSpd),departure=SortieFeatures.Handling.departure(P,dt,stallSpd);'+html.slice(a,b)+'})',{SortieFeatures,FlightDynamics,FlightEnvelope,PAC_HANDLING:handling,MISSIONS:[{}],mission:0,P47Performance:require('../../p47-performance'),STALL_SPD:40,isDefend:()=>true,isSBD:()=>false});
 }
-function turnController(file){
+function turnController(file,kind){
   const html=fs.readFileSync(path.join(root,file),'utf8');
   const a=html.indexOf('  // bank-to-turn:',html.indexOf('function updateFlight(dt)'));
   const b=html.indexOf(file==='remagen-mission.html'?'  // vertical speed:':'  // speed toward throttle target',a);
   assert(a>0&&b>a,file+' turn controller not found');
-  let bank=()=>0;
-  if(file==='remagen-mission.html'){
-    const start=html.indexOf('const TURN_K=');
-    const end=html.indexOf('\n}',html.indexOf('function bankTurnRate(',start));
-    assert(start>0&&end>start,file+' turn physics not found');
-    bank=vm.runInNewContext(html.slice(start,end+2)+'\nbankTurnRate');
-  }
-  return vm.runInNewContext('(function(P,aeroMode,dt,d,stallSpd){const load=SortieFeatures.Handling.sample(P),configuration=SortieFeatures.Handling.configuration(P,stallSpd),feel=FlightDynamics.authority(P.ac,P.spd,stallSpd);'+html.slice(a,b)+'})',
-    {SortieFeatures,FlightDynamics,bankTurnRate:bank,windZ:0,AC:{turn:1.3,gLim:7}});
+  return vm.runInNewContext('(function(P,aeroMode,dt,d,stallSpd){const load=SortieFeatures.Handling.sample(P),controls=SortieFeatures.Damage.controls(P),configuration=SortieFeatures.Handling.configuration(P,stallSpd),feel=FlightDynamics.authority(P.ac,P.spd,stallSpd),'+
+    'liftCtx={loadSpeed:load.speed,stallPenalty:controls.stallPenalty,gFactor:configuration.gFactor,flaps:controls.flaps.mean};'+html.slice(a,b)+'})',
+    {SortieFeatures,FlightDynamics,FlightEnvelope,windZ:0,AC:{name:kind,turn:1.3,gLim:7}});
 }
 for(const [file,start,kind] of [
   ['remagen-mission.html','  const dmgF = (P.hull < d.hull','p47'],
   ['torpedo-carrier.html','  const dmgF = P.hull<60','zero']
 ]){
-  const fly=controller(file,start),turn=turnController(file),p={roll:0,pitch:0,spd:kind==='zero'?105:150,ac:kind,
+  const fly=controller(file,start),turn=turnController(file,kind),p={roll:0,pitch:0,spd:kind==='zero'?105:150,ac:kind,
     hull:130,gear:0,rollBias:0,pitchVel:0,rollVel:0};
   const d={rollLim:1.56,pitchLim:1.15,pitchAuth:.85,rollAuth:.9,gLim:6,hull:130,stall:40};
   // The Zero/Thunderbolt normal mode now permits steep banking yet still
@@ -85,13 +81,14 @@ const rhine=fs.readFileSync(path.join(root,'remagen-mission.html'),'utf8');
 const a=rhine.indexOf('const AC={'),b=rhine.indexOf('\n};',a);
 assert(a>0&&b>a,'Rhine aircraft definitions not found');
 const AC=vm.runInNewContext(rhine.slice(a,b+3)+'\nAC');
-const turn=turnController('remagen-mission.html');
-const headingAfterTurn=kind=>{
-  // Compare a normal bank before either structural-g cap dominates.
-  const p={ac:kind,roll:.7,spd:150,heading:0};
+const headingAfterTurn=(kind,speed)=>{
+  // Compare a normal bank at a speed where the wing, not the structure, limits the pull.
+  const turn=turnController('remagen-mission.html',kind),p={ac:kind,roll:.7,spd:speed,heading:0};
   for(let i=0;i<35;i++)turn(p,true,.04,AC[kind],AC[kind].stall);
   return p.heading;
 };
-assert(headingAfterTurn('bf109')>headingAfterTurn('p47')*1.15,
-  'Fleet balance: the light Bf 109 turns tighter than the heavy P-47 at equal speed and bank');
+assert(headingAfterTurn('bf109',80)>headingAfterTurn('p47',80)*1.15,
+  'Fleet balance: the light Bf 109 turns tighter than the heavy P-47 at equal speed and bank (below corner speed)');
+assert(headingAfterTurn('p47',150)>headingAfterTurn('bf109',150)*.95,
+  'Fleet balance: above corner speed the structure limits both fighters, so the Jug holds its own');
 assert(AC.bf109.rollAuth<AC.fw190.rollAuth,'Bf 109 roll response must be gentler than Fw 190');

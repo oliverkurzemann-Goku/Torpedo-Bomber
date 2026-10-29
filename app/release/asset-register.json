@@ -1,13 +1,13 @@
 {
   "schema": 1,
   "reviewedOn": "2026-10-23",
-  "build": 214,
+  "build": 215,
   "status": "OPEN — source declarations checked; no external rights authorization obtained",
   "payload": {
-    "bytes": 268370231,
-    "fileCount": 339,
+    "bytes": 268390308,
+    "fileCount": 342,
     "modelCount": 36,
-    "manifestSha256": "0979f2d0077cbd737352ba232b860c585cbaf681287edbd24c915f0b5bf60b95"
+    "manifestSha256": "17cd23886255f7feb2b7ddad02f2623a98c31abc5983ff42fcecbdb7958b3fe9"
   },
   "files": [
     {
@@ -53,6 +53,12 @@
       "kind": "code-or-notice"
     },
     {
+      "path": "assets/CAMPAIGN-ART.md",
+      "bytes": 2707,
+      "sha256": "b28b032aa9ec9d2a0fcd9e14c4c5eafbc32cda723d242bd49b16af4e62577405",
+      "kind": "code-or-notice"
+    },
+    {
       "path": "assets/aircraft/B17-CREDITS.txt",
       "bytes": 1103,
       "sha256": "6d6acec9c48b256abfc77783d712ae657186cc2a1b154b7f5d05a9a675e5dd56",
@@ -68,6 +74,12 @@
       "path": "assets/aircraft/P47-CREDITS.txt",
       "bytes": 1345,
       "sha256": "c87c6e7b15bdbffb0c3144c75a8fa4fa5d915c4b722ca5c3bf1ac0c1d64fed74",
+      "kind": "code-or-notice"
+    },
+    {
+      "path": "assets/aircraft/P47-PERFORMANCE.md",
+      "bytes": 4121,
+      "sha256": "a9e0df1fd74f05cf628e0eef8d6b65e9bd4d789bcdc301b8626f80e939fd8cd5",
       "kind": "code-or-notice"
     },
     {
@@ -588,8 +600,14 @@
     },
     {
       "path": "flight-dynamics.js",
-      "bytes": 4841,
-      "sha256": "5b884f97daa4788374c768b5584f03b206cad6d97e756f5ffc52decd068a222a",
+      "bytes": 5638,
+      "sha256": "cd9a4e81ced52ee464e728642013f4252855e45c6f9953fa9631bba8b98b1e51",
+      "kind": "code-or-notice"
+    },
+    {
+      "path": "flight-envelope.js",
+      "bytes": 10300,
+      "sha256": "9fae84485c9671907a01932ff00ff404e1dc7a4e19833659172ced787cce59f0",
       "kind": "code-or-notice"
     },
     {
@@ -600,8 +618,8 @@
     },
     {
       "path": "flight-support.js",
-      "bytes": 9918,
-      "sha256": "2b4170ed727cd25c033015fe33bf31d03c89c820d5f14aaa7a8c16accd9ee568",
+      "bytes": 10998,
+      "sha256": "d38026baf134751a5f494fc8789939b9dcf1db31e66431c636e0af6e6039a811",
       "kind": "code-or-notice"
     },
     {
@@ -643,7 +661,7 @@
     {
       "path": "index.html",
       "bytes": 7260,
-      "sha256": "fbeabb7bdf50696417c5f3002a89e1b53b034aa049f3ba4ae48db9bfe278fcea",
+      "sha256": "3047bf10fa23b3b7e7f7879fb1144c4ed30caf306751819a8c641d694e35fd28",
       "kind": "code-or-notice"
     },
     {
@@ -774,8 +792,8 @@
     },
     {
       "path": "remagen-mission.html",
-      "bytes": 366919,
-      "sha256": "d5f7b445eb85f2e332517d19424af90a9e5d9464bd4bf894e17f15196c6de5ef",
+      "bytes": 366709,
+      "sha256": "94b453f3b56376dc53e43dba42dca19731d98a2b1f28ed9ebc5d43f0a3933167",
       "kind": "code-or-notice"
     },
     {
@@ -1968,8 +1986,8 @@
     },
     {
       "path": "torpedo-carrier.html",
-      "bytes": 429772,
-      "sha256": "98af6bec01558cfd753e0d7fe1a14f6cd6043b3e5e67347ca652a76aac1940b6",
+      "bytes": 431158,
+      "sha256": "2779607e0aec322b1bf15db4c60d1434ca9ca105ac8dd34018c07bbc02188dcc",
       "kind": "code-or-notice"
     },
     {
@@ -2040,8 +2058,8 @@
     },
     {
       "path": "app-native.js",
-      "bytes": 27135,
-      "sha256": "1190961efd8977c63e10d7a6fc79db573c3576a90a08404c76f4345f1ba4d9f9",
+      "bytes": 27031,
+      "sha256": "a52b43eb6c9accbde530c1e3832548614838e605c05ed4869a6b9b9734ddaa24",
       "kind": "code-or-notice"
     }
   ],
