@@ -10,7 +10,10 @@
  *             speeds AND climbs at 0/10k/20k ft; Oswald e from Raymer's straight-wing formula
  *             (left free, e runs to its 0.4 bound: these six figures cannot separate it)
  *   lift      CLmax clean / landing from the USAAF stall tests; n_max = min(structure, CLmax q S / W)
- *   lag       flight path follows the load factor with T_theta2 = 2 m / (rho V S a)  (lift response)
+ *   lag       the flight path lags the pitch attitude by T_theta2 = 2 m / (rho V S a) (lift response);
+ *             the attitude itself (short period) is taken as fast against that - no inertia data exist -
+ *             so the load factor follows the control law directly and T_theta2 caps how fast the
+ *             game's attitude law may turn the path
  *   path      d(gamma)/dt = g/V (n cos(phi) - cos(gamma)),  d(psi)/dt = g/V n sin(phi) / cos(gamma)
  *             integrated in vector form so loops pass the vertical
  *
@@ -238,10 +241,9 @@ function step(m,s,dt,o){
   let nCmd=o.command?o.command(s,V,lim):holdLoad(s.pitch,s.roll);
   const el=clamp(o.elevator??1,0,1),hold=clamp(holdLoad(s.pitch,s.roll),lim.min,lim.max);
   nCmd=clamp(hold+(nCmd-hold)*el,lim.min,lim.max);
-  // lift builds with the flight-path time constant (compressed by the declared manoeuvre gain)
+  // Pitch attitude is fast against the path (see header): the wing delivers the commanded load factor.
   const tau=2*mass/(atm.rho*V*m.S*m.lift);
-  s.nLoad=(s.nLoad??1)+(nCmd-(s.nLoad??1))*(1-Math.exp(-h*gain/tau));
-  s.nLoad=clamp(s.nLoad,lim.min,lim.max);
+  s.nLoad=nCmd;
   // speed: thrust - drag - weight component along the path
   const T=thrust(m,V,atm.rho,s.power*clamp(o.damage??1,0,1),s.altitude);
   const D=drag(m,V,atm.rho,atm.a,s.nLoad,W,o)+windmillDrag(m,V,atm.rho,s.power);
@@ -291,7 +293,10 @@ function aeroEntry(m,gain=GAME.manoeuvreGain,h=1500){
  return entryCache[key]=hi*1.08;
 }
 
+// Flight-path time constant T_theta2 (s): the path follows a pitch-attitude step with this lag.
+function pathLag(m,V,h,massRatio=1){return 2*m.mass*massRatio/(atmosphere(h).rho*Math.max(20,V)*m.S*m.lift);}
+
 const api={SOURCES,ASSUMED,GAME,G,HP,LB,FT,MPH,FPM,atmosphere,propThrust,liftSlope,model,step,holdLoad,axes,eulerFrom,
- levelMaxSpeed,bestClimb,climbAt,levelAcceleration,stallSpeed,equivalent,loadLimits,thrust,shaft,drag,windmillDrag,aeroEntry};
+ levelMaxSpeed,bestClimb,climbAt,levelAcceleration,stallSpeed,equivalent,loadLimits,thrust,shaft,drag,windmillDrag,aeroEntry,pathLag};
 root.FlightCore=api;if(typeof module==='object'&&module.exports)module.exports=api;
 })(typeof window==='undefined'?globalThis:window);

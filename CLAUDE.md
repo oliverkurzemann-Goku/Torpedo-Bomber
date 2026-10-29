@@ -4,7 +4,8 @@
 Nutzer: „möchte, dass du ein Modell berechnest. Keine Schätzwerte und unzählige Tests“ (nach Konzept
 `FLIGHT-REBUILD.md`, dessen Empfehlungen in §12 er gut fand). Neu `flight-core.js` (`FlightCore`) +
 `FLIGHT-CORE.md`: Punktmasse mit Polare `CD0 + k·CL²`, Schub per Propellerscheibe (Impulssatz), ISA,
-`n_max=min(Struktur, CLmax·q·S/W)`, Bahn-Zeitkonstante `2m/(ρVSa)`, Bahn in Vektorform (Loops durch die
+`n_max=min(Struktur, CLmax·q·S/W)`, Bahn folgt der Lage mit `T_θ2=2m/(ρVSa)` (Lage selbst als schnell
+angenommen, keine Trägheitsdaten), Bahn in Vektorform (Loops durch die
 Senkrechte), 120-Hz-Teilschritt. CD0 0,0191, η_p 0,697 und Leistung bei 20 000 ft 0,913 werden beim Laden
 per Levenberg–Marquardt aus den sechs AAF-Werten (Vmax + Steigen bei 0/10k/20k ft) GELÖST, nichts davon
 eingetippt; Oswald-e nicht bestimmbar (läuft frei an 0,4) → Raymer-Formel 0,884. Nachrechnung: alle sechs
