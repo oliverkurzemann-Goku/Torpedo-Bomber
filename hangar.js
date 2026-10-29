@@ -3,6 +3,7 @@
  const C=CustomSortie,$=id=>document.getElementById(id),draftKey='hangar-draft-v1';let c=C.defaults();
  try{const saved=localStorage.getItem(draftKey);if(saved)c=C.normalize(JSON.parse(saved));}catch(_){}
  const requested=new URLSearchParams(location.search).get('theatre');if(['europe','pacific'].includes(requested)&&requested!==c.theatre)c=C.defaults(requested);
+ const preview=SortiePreview.create({host:$('aircraftPreview'),status:$('previewStatus'),reset:$('previewReset'),closer:$('previewIn'),further:$('previewOut'),retry:$('previewRetry')});
  function options(el,rows,value){el.replaceChildren(...rows.map(([key,label])=>{const o=document.createElement('option');o.value=key;o.textContent=label;return o;}));el.value=value;}
  function draw(){
   const allowed=C.aircraft(c.theatre,c.task);if(!allowed.includes(c.ac))c.ac=allowed[0];
@@ -20,6 +21,7 @@
   $('stores').textContent=detail.armament;$('aircraftNote').textContent=c.ac==='me163'?'The Komet starts airborne after trolley release. Plan an unpowered skid landing.':c.kit==='range'?'External fuel is consumed first. Jettison the drop tank before combat.':c.kit==='torpedo'?'One torpedo in the internal bay. Land aboard to rearm for another attack.':'Gun installation stays specific to the selected aircraft.';
   const art=$('theatreArt');art.src=c.theatre==='pacific'?'assets/pacific-campaign.webp':'assets/europe-campaign.webp';art.alt=c.theatre==='pacific'?'Pacific carrier operations':'Rhine valley operations';
   const strong=document.createElement('strong');strong.textContent=detail.title+' · '+detail.aircraft;const line=document.createElement('small');line.textContent=detail.conditions+' · '+(c.task==='free'?'Unlimited practice fuel':c.fuel+'% fuel')+' · '+({rookie:'Rookie',vet:'Veteran',ace:'Ace'})[c.difficulty];$('summary').replaceChildren(strong,line);
+  preview.update(c);
   try{localStorage.setItem(draftKey,JSON.stringify(c));}catch(_){}
  }
  options($('weather'),Object.entries(C.weatherNames),'clear');

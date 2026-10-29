@@ -85,7 +85,7 @@
    return {config,requested:fromURL,error:null};
   }catch(e){return {config:null,requested:fromURL,error:'Custom sortie could not load: '+e.message};}
  }
- function url(input){const c=normalize(input),params=new URLSearchParams({sortie:JSON.stringify(c),v:'221'});return (c.theatre==='pacific'?'torpedo-carrier.html':'remagen-mission.html')+'?'+params;}
+ function url(input){const c=normalize(input),params=new URLSearchParams({sortie:JSON.stringify(c),v:'222'});return (c.theatre==='pacific'?'torpedo-carrier.html':'remagen-mission.html')+'?'+params;}
  function install(theatre,missions,plans,search,storage){if(!originals.has(missions))originals.set(missions,{mission:missions[0],plan:plans[0]});const request=read(theatre,search,storage);if(request.config){missions[0]=mission(request.config);plans[0]=operation(request.config);}return request;}
  function checkpointIdentity(theatre,missions,i,saved){
   let m=saved&&!saved.custom&&i===0?(originals.get(missions)?.mission||missions[i]):missions[i];
