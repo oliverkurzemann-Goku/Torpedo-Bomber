@@ -8,51 +8,105 @@
    "groundRun": 540,
    "after60s": {
     "spd": 72.6,
-    "agl": 407,
-    "climb": 11.2
+    "agl": 409,
+    "climb": 11.1
    }
   },
   "turn": {
    "90": {
-    "seconds": 11.4,
-    "endSpd": 93,
-    "altChange": -38,
-    "bankDeg": 68,
-    "n": 2.74
+    "seconds": 11.6,
+    "endSpd": 90,
+    "altChange": -3,
+    "bankDeg": 67,
+    "n": 2.58
    },
    "130": {
-    "seconds": 8.5,
-    "endSpd": 113,
-    "altChange": -29,
-    "bankDeg": 76,
-    "n": 4.07
+    "seconds": 8.4,
+    "endSpd": 111,
+    "altChange": -8,
+    "bankDeg": 75,
+    "n": 3.95
    }
   },
   "loop": {
-   "seconds": 7.7,
-   "minSpd": 116,
-   "altChange": -8,
+   "seconds": 7.3,
+   "minSpd": 115,
+   "altChange": -2,
    "alive": true
   },
   "idleDecel1s": 2,
   "fps": {
    "20": {
-    "spd": 101.89,
-    "heading": 5.836,
-    "alt": 1553.2
+    "spd": 87.69,
+    "heading": 5.616,
+    "alt": 1731.5
    },
    "60": {
-    "spd": 101.8,
-    "heading": 5.81,
-    "alt": 1555.5
+    "spd": 87.74,
+    "heading": 5.606,
+    "alt": 1731.2
    },
    "120": {
-    "spd": 101.79,
-    "heading": 5.803,
-    "alt": 1556
+    "spd": 87.76,
+    "heading": 5.604,
+    "alt": 1731.1
    }
   },
   "errors": []
  },
- "old": null
+ "old": {
+  "core": false,
+  "mission": "Sortie 1",
+  "takeoff": {
+   "alive": true,
+   "liftoff": 15.42,
+   "groundRun": 540,
+   "after60s": {
+    "spd": 75.1,
+    "agl": 606,
+    "climb": 16.2
+   }
+  },
+  "turn": {
+   "90": {
+    "seconds": 9,
+    "endSpd": 97,
+    "altChange": 0,
+    "bankDeg": 77,
+    "n": 3.53
+   },
+   "130": {
+    "seconds": 6.2,
+    "endSpd": 133,
+    "altChange": 0,
+    "bankDeg": 77,
+    "n": 6.56
+   }
+  },
+  "loop": {
+   "seconds": 6.8,
+   "minSpd": 130,
+   "altChange": 5,
+   "alive": true
+  },
+  "idleDecel1s": 2.17,
+  "fps": {
+   "20": {
+    "spd": 96.97,
+    "heading": 6.517,
+    "alt": 1834.4
+   },
+   "60": {
+    "spd": 96.96,
+    "heading": 6.488,
+    "alt": 1832.9
+   },
+   "120": {
+    "spd": 96.96,
+    "heading": 6.481,
+    "alt": 1832.5
+   }
+  },
+  "errors": []
+ }
 }
