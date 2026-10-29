@@ -8,7 +8,7 @@ const server=http.createServer((req,res)=>{const file=path.resolve(root,'.'+deco
  await new Promise(r=>server.listen(0,'127.0.0.1',r));const base='http://127.0.0.1:'+server.address().port,browser=await chromium.launch({executablePath:executable,headless:true,args:['--no-sandbox','--disable-dev-shm-usage','--use-angle=swiftshader','--enable-unsafe-swiftshader']});
  const results=[];
  try{
-  const page=await browser.newPage({viewport:{width:1194,height:834},hasTouch:true}),errors=[];page.setDefaultTimeout(180000);page.on('pageerror',e=>errors.push(e.message));await page.addInitScript(()=>window.requestAnimationFrame=()=>0);
+  const page=await browser.newPage({viewport:{width:1194,height:834},hasTouch:true}),errors=[];page.setDefaultTimeout(180000);page.on('pageerror',e=>{errors.push(e.message);console.error('PAGE ERROR:',e.stack);});page.on('console',m=>{if(m.type()==='error')console.error('CONSOLE:',m.text());});await page.addInitScript(()=>window.requestAnimationFrame=()=>0);
   const cases=[
    {theatre:'europe',task:'bridge',ac:'p47',kit:'bombs',start:'air',fuel:75,time:'night',weather:'rain',enemies:0},
    {theatre:'europe',task:'fighter',ac:'bf109',kit:'range',start:'ground',fuel:50,enemies:1},
@@ -18,8 +18,8 @@ const server=http.createServer((req,res)=>{const file=path.resolve(root,'.'+deco
    {theatre:'pacific',task:'free',ac:'zero',kit:'guns',start:'air',enemies:0}
   ];
   for(const input of cases){
-   const cfg=C.normalize({...C.defaults(input.theatre),...input});await page.goto(base+'/'+C.url(cfg));const pac=cfg.theatre==='pacific';
-   await page.waitForFunction(p=>p?state===ST.BRIEF:realWorldReady&&state===ST.BRIEF,pac,{polling:200});
+   const cfg=C.normalize({...C.defaults(input.theatre),...input});console.log('CASE',cfg);await page.goto(base+'/'+C.url(cfg));const pac=cfg.theatre==='pacific';
+   try{await page.waitForFunction(p=>p?state===ST.BRIEF:realWorldReady&&state===ST.BRIEF,pac,{polling:200,timeout:90000});}catch(e){console.error('STARTUP STATE',await page.evaluate(()=>({state:typeof state==='undefined'?null:state,loading:document.querySelector('#loadingText')?.textContent,body:document.body.innerText.slice(-2500)})));throw e;}
    assert.equal(await page.locator(pac?'#briefTitle':'#brTitle').textContent(),'Custom Sortie');
    await page.locator(pac?'#launchBtn':'#brGo').click();await page.waitForFunction(()=>state===ST.FLIGHT||state===ST.LAUNCH,null,{polling:100});
    const row=await page.evaluate(({cfg,pac})=>{
