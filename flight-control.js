@@ -67,10 +67,12 @@ function player(P,dt,env){
   P.rollVel=(Math.abs(stickRoll)>.075||Math.abs(stickPitch)>.075)?stickRoll*authority:
    clamp(-bankErr*.9*Math.max(.6,slow),-authority,authority);
   P.roll=wrap(P.roll+P.rollVel*dt);
-  // Pull is a load factor: neutral holds the path, full stick asks 12 % past the wing (an accelerated stall).
+  // Pull is a load factor: neutral holds the path, full stick is the most the wing gives at this speed
+  // (the buffet boundary, so a loop is flown on the edge of the stall). The wing stalls when the path
+  // alone asks more than it has - too slow - and stays stalled until speed returns.
   const pull=stickPitch;P.pitchRef=null;
-  command=(s,V,l)=>{const hold=clamp(F.holdLoad(s.pitch,s.roll,0,.5),l.min,l.max);
-   return pull>=0?hold+pull*(1.12*l.max-hold):hold+pull*(hold-1.12*l.min);};
+  command=(s,V,l)=>{const hold=Math.max(l.min,F.holdLoad(s.pitch,s.roll,0,.5));
+   return pull>=0?Math.max(hold,hold+pull*(l.max-hold)):hold+pull*(hold-l.min);};
  }else{
   const rollTarget=bankFor(stickRoll,lim.max,d.rollLim)+bias,neutral=Math.abs(stickRoll)<.001;
   const levelRate=neutral?Math.max(3.5,rollRate*.7):rollRate,damping=neutral?1:zeta;
@@ -100,9 +102,12 @@ function player(P,dt,env){
   }
   P.pitchRef=clamp(P.pitchRef,P.pitch-.3,P.pitch+.3);
   const ref=P.pitchRef,refVel=P.pitchRefVel;
-  command=(s,V)=>{let rate=refVel+(ref-s.pitch)/tau;
+  // The assisted law never asks more of the wing than it has (a turn too steep for the speed sinks
+  // instead), except the 1 g of wings-level flight: flown slower than that, the wing stalls all the same.
+  command=(s,V,l)=>{let rate=refVel+(ref-s.pitch)/tau;
    if(s.pitch>d.pitchLim)rate=Math.min(rate,0);if(s.pitch<-d.pitchLim)rate=Math.max(rate,0);
-   return F.holdLoad(s.pitch,s.roll,V*rate/(F.G*o.gain));};
+   const n=F.holdLoad(s.pitch,s.roll,V*rate/(F.G*o.gain));
+   return Math.min(n,Math.max(.97*l.max,Math.cos(s.pitch)));};
  }
  const conv=env.convention||'rhine',h0=toCore(P.heading,conv);
  const s={spd:P.spd,pitch:P.pitch,heading:h0,roll:P.roll,nLoad:P.nLoad||1,power:P.groundPower??P.throttle,altitude:P.pos.y,

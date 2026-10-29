@@ -526,6 +526,8 @@
 <script src="sortie-systems.js?v=198"></script>
 <script src="flight-envelope.js?v=219"></script>
 <script src="flight-dynamics.js?v=219"></script>
+<script src="flight-core.js?v=220"></script>
+<script src="flight-control.js?v=220"></script>
 <script src="audio/throttle-response.js?v=218"></script><script src="audio/aircraft-engine.js?v=218"></script>
 <script src="sortie-features.js?v=218"></script>
 <script src="ground-run.js?v=198"></script>
@@ -2203,6 +2205,8 @@ function startMission(idx){
   P.ammo=m.corsair?2400:1200; P.fireT=0; firing=false;
   P.corsairLoadout=document.getElementById('corsairLoadout').value;P.rockets=m.corsair?corsairConfig().rockets:0;P.rocketCooldown=0;
   if(m.corsair)P.torps=corsairConfig().bombs;P.corsairWeapon=P.torps?'bombs':'rockets';
+  P.bombKg=m.corsair&&corsairConfig().bombScale<1?227:undefined;   // the mixed Corsair load carries 500 lb bombs
+  P.core=null;P.coreStall=0;P.coreDrop=0;P.pitchRef=null;
   P.rollBias=0; P.bingo=false; P.tailCool=0; P.pitchVel=0; P.rollVel=0; P.nLoad=1;
   sortieTorpFired=0; sortieTorpHit=0;sortieBombFired=0;sortieBombHit=0; sortieShipsSunk=0; sortieZeros=0; hitsTaken=0; sortieWingmenLost=0;
   reinforcementsLaunched=false;
@@ -2534,6 +2538,9 @@ function launch(){
   P.pos.set(carrierX+STERN_X+26, DECK_Y+3.0, 0);
   P.spd=0; P.groundPower=0; P.throttle=0; setThrottleUI(0);
   P.heading=0; P.pitch=0; P.roll=0; P.pitchVel=0; P.rollVel=0; P.nLoad=1;
+  P.core=null;P.coreStall=0;P.coreDrop=0;P.pitchRef=null;
+  // On the core every type launches with take-off flap (C; the manuals use 20-30 deg on deck runs).
+  if(coreOn()){P.flap=P.flapTgt=isCorsair()?.4:.5;resetControlUI();}
   carrierIntro={time:0};document.body.classList.add('carrierPreview');
   [carrierModel,ijnCarrierModel].forEach(h=>{if(h){h.rotation.x=0;h.rotation.z=0;delete h.userData.contactDeckY;}});
   updatePlaneMesh(0);updateCarrierIntro(0);
@@ -3514,6 +3521,36 @@ const PAC_HANDLING=Object.fromEntries(['zero','corsair','sbd','avenger'].map(kin
   const rollLim=kind==='zero'?1.52:kind==='sbd'?1.50:1.42,h=FlightEnvelope.handling(kind,{rollLim,rollFrac:kind==='avenger'?.78:.86});
   return [kind,{roll:h.rollAuth,pitch:h.pitchAuth,name:kind}];
 }));
+// ---- computed flight core (flight-core.js, flight-control.js, FLIGHT-CORE.md) for all four types ----
+// Speed, load factor, turn, climb, stall and the deck run come from forces solved from each aircraft's
+// published figures; the stick laws and the one manoeuvre gain are the game's. ?core=off flies the
+// previous model, ?core=physics the core with gain 1.
+const Core=(()=>{const v=new URLSearchParams(location.search).get('core');
+  return {on:v!=='off',gain:v==='physics'?1:FlightCore.GAME.manoeuvreGain};})();
+globalThis.FlightCoreEnabled=Core.on;
+function pacificKind(){return isDefend()?'zero':MISSIONS[mission]?.corsair?'corsair':isSBD()?'sbd':'avenger';}
+function coreOn(kind=pacificKind()){return Core.on&&FlightCore.has(kind);}
+function coreLoadout(){return SortieFeatures.Handling.coreLoadout(P);}
+const PAC_LIMITS={zero:{rollLim:1.52,pitchLim:1.05},sbd:{rollLim:1.50,pitchLim:1.28},corsair:{rollLim:1.42,pitchLim:.85},avenger:{rollLim:1.42,pitchLim:.85}};
+function coreEnv(AC,controls,departure,configuration){
+  const kind=AC.name,lim=PAC_LIMITS[kind];
+  return {kind,convention:'pacific',stickRoll:inputRoll*steerSign,stickPitch:inputPitch,aero:aeroMode,
+    throttle:P.fuel<=0?0:P.throttle,damage:(P.hull<60?(.45+.55*P.hull/60):1)*SortieFeatures.Damage.power(P),
+    brakes:hasDiveBrakes()?P.diveBrakeVisual||0:0,gain:Core.gain,controls,configuration,departure,loadout:coreLoadout(),
+    d:{rollLim:lim.rollLim,pitchLim:lim.pitchLim,pitchAuth:AC.pitch,controlDamping:.80},rollFrac:kind==='avenger'?.78:.86,
+    pitchBase:4.2,pitchScale:.70,hullFactor:P.hull<60?(0.55+0.45*P.hull/60):1};
+}
+function updateCore(dt,AC,controls,departure,configuration){
+  const biasDecay=(P.gear!=null&&P.gear>0.5)?0.9:0.35;
+  P.rollBias=Math.max(-0.16,Math.min(0.16,(P.rollBias||0)*(1-biasDecay*dt)));
+  const r=FlightControl.player(P,dt,coreEnv(AC,controls,departure,configuration));
+  if(r.out.stall>.3||P.spd<r.stall){if(!P.stallWarnT||P.stallWarnT<=0){P.stallWarnT=1.6;flash('STALL',600);sfxAlarm();}}
+  if(r.out.buffet>.35)shake(.12*r.out.buffet);
+  if(r.out.overspeed>0||r.out.tuck>0){P.overspeedT=(P.overspeedT||0)-dt;
+    if(P.overspeedT<=0){P.overspeedT=2.2;flash(r.out.tuck>0?'COMPRESSIBILITY — THROTTLE BACK':'OVERSPEED — EASE OFF',900);}shake(.25*Math.max(r.out.overspeed,r.out.tuck));}
+  if(P.stallWarnT>0)P.stallWarnT-=dt;
+  return r.climb;
+}
 function updateFlight(dt){
   const previousPosition=P.pos.clone();
   const previousQuaternion=pacificAircraftQuaternion();
@@ -3534,7 +3571,15 @@ function updateFlight(dt){
   const auth = (P.spd<stallSpd? 0.4 : 1.0)*dmgF;
   // Per-aircraft handling. The A6M was the most agile fighter of the early Pacific war;
   // the TBM Avenger is an 8-tonne torpedo bomber and must feel like one.
-  const AC = PAC_HANDLING[isDefend()?'zero':MISSIONS[mission]?.corsair?'corsair':isSBD()?'sbd':'avenger'];
+  const AC = PAC_HANDLING[pacificKind()];
+  if(coreOn(AC.name)){
+    const vs=updateCore(dt,AC,controls,departure,configuration);
+    // Airspeed retains its stall meaning. Headwind reduces ground speed along +X.
+    const horiz=P.spd*Math.cos(P.pitch),wind=CarrierRecovery.wind(windHead,windGust);
+    P.pos.x += (Math.cos(P.heading)*horiz+wind.x)*dt;
+    P.pos.z += Math.sin(P.heading)*horiz*dt;
+    P.pos.y += vs*dt;
+  }else{
   const feel=FlightDynamics.authority(AC.name,P.spd,stallSpd);
   // Build 219: lift / load-factor context shared by turn, pull and the energy model.
   const liftCtx={loadSpeed:load.speed,stallPenalty:controls.stallPenalty,gFactor:configuration.gFactor,flaps:controls.flaps.mean};
@@ -3659,6 +3704,7 @@ function updateFlight(dt){
   P.pos.x += (Math.cos(P.heading)*horiz+wind.x)*dt;
   P.pos.z += Math.sin(P.heading)*horiz*dt;
   P.pos.y += vs*dt;
+  }
 
   // fuel burn — idle sip + throttle burn + extra when climbing hard on full power
   const climbBurn = (P.pitch>0.12 && P.throttle>0.85) ? 0.14 : 0;
@@ -3998,13 +4044,33 @@ function beginDeckRoll(wireEligible){
   P.onDeck=true;P.vSpeed=0;P.touchResolved=true;
   P.groundPower=P.throttle;
 }
+// Deck run on the core: the same ground forces as the runway, at the airspeed over the deck. For a
+// launch the ship steams up to LAUNCH_WOD of wind over the deck (C: carriers launched into wind at
+// speed; on the core a loaded Avenger needs about 190 m, a Corsair with 2 x 1 000 lb and eight rockets
+// about 230 m of this 214 m run at 15 m/s - she leaves the bow just above her stall speed).
+const LAUNCH_WOD=15;
+function deckWind(){return CARRIER_SPD-CarrierRecovery.wind(windHead,windGust).x;}
+function coreDeckStep(dt,deckSpeed,brake=0,rotated=0){
+  const m=FlightCore.model(pacificKind()),lo=FlightCore.loadout(m,coreLoadout());
+  const thr=P.fuel<=0?0:P.throttle;
+  P.groundPower=(P.groundPower??0)+(thr-(P.groundPower??0))*(1-Math.exp(-dt/m.assumed.spool));
+  const air=Math.max(0,deckSpeed+deckWind());
+  const o={power:P.groundPower,damage:SortieFeatures.Damage.power(P)*(P.hull<60?(.45+.55*P.hull/60):1),massKg:lo.mass,
+    flaps:SortieFeatures.Damage.controls(P).flaps.mean,gear:P.gear,storeArea:lo.storeArea,tank:lo.tank,brake,rotated,mu:.04,altitude:DECK_Y};
+  const g=FlightCore.groundAcceleration(m,air,o);
+  // liftoff: the wing would carry her once rotated; lifting: it carries her at the present rotation
+  return {speed:Math.max(0,deckSpeed+g.accel*dt),air,lifting:g.liftoff,liftoff:FlightCore.groundAcceleration(m,air,{...o,rotated:1}).liftoff};
+}
 function updateDeckRun(dt){
   const run=P.deckRun;if(!run)return;run.elapsed+=dt;
   if(!isFree())P.fuel=Math.max(0,P.fuel-(.11+P.throttle*P.throttle*.42)*dt/D().fuel*((isQual()||isDefend())?1:.4));
   if(P.fuel<=0)P.throttle=Math.max(0,P.throttle-.5*dt);
+  let canFly=null;
+  if(coreOn()){const r=coreDeckStep(dt,run.speed,P.throttle<.05?1:0);run.speed=r.speed;canFly=r.liftoff;}
+  else{
   const ground={spd:run.speed,throttle:P.throttle,groundPower:P.groundPower};
   GroundRun.step(ground,dt,{carrier:true,acceleration:FlightDynamics.profile(FlightDynamics.kind(P)).ground,power:SortieFeatures.Damage.power(P),limit:90,massRatio:SortieFeatures.Handling.sample(P).ratio});
-  run.speed=ground.spd;P.groundPower=ground.groundPower;
+  run.speed=ground.spd;P.groundPower=ground.groundPower;}
   const wind=CarrierRecovery.wind(windHead,windGust);P.spd=run.speed+CARRIER_SPD-wind.x;
   const previousX=P.pos.x-carrierX;P.pos.x+=(run.speed+CARRIER_SPD)*dt;P.vSpeed=0;
   const deckX=P.pos.x-carrierX;
@@ -4014,7 +4080,8 @@ function updateDeckRun(dt){
     if(deckX>WIRE_X1){run.wireEligible=false;P.bolters++;flash('HOOK UP — ADD POWER AND PULL BACK',1800);}
   }
   const recovery=CarrierRecovery.envelope(P,STALL_SPD,APP_SPD);
-  const rotate=run.elapsed>.8&&inputPitch>.15&&P.spd>recovery.stall*1.22&&P.groundPower>.3;
+  // Core: rotate when the wing, rotated, would carry her at this airspeed.
+  const rotate=run.elapsed>.8&&inputPitch>.15&&(canFly??P.spd>recovery.stall*1.22)&&P.groundPower>.3;
   if(rotate||deckX>=BOW_X){
     const nd=new THREE.Vector3(0,0,-1).applyQuaternion(P.deckQuaternion);
     P.pitch=rotate?Math.max(.06,Math.asin(Math.max(-1,Math.min(1,nd.y)))):Math.asin(Math.max(-1,Math.min(1,nd.y)));P.roll=0;
@@ -6723,7 +6790,7 @@ function setupUIButtons(){
     b.classList.toggle('on',P.gearTgt>0.5); b.innerHTML=P.gearTgt>0.5?'GEAR<br>▼ DN':'GEAR<br>▲ UP';
     flash(P.gearTgt>0.5?'GEAR DOWN':'GEAR UP',700); sfxGearMotor(); });
   document.getElementById('flapBtn').addEventListener('pointerdown',e=>{ e.preventDefault();
-    P.flapTgt=isCorsair()?((Math.round(P.flapTgt*5)+1)%6)/5:P.flapTgt>0.5?0:1;const b=document.getElementById('flapBtn'),label=P.flapTgt>0?(isCorsair()?Math.round(P.flapTgt*50)+'°':'DN'):'UP';
+    P.flapTgt=isCorsair()?((Math.round(P.flapTgt*5)+1)%6)/5:P.flapTgt>0?0:1;const b=document.getElementById('flapBtn'),label=flapLabel();
     b.classList.toggle('on',P.flapTgt>0);b.innerHTML='FLAPS<br>'+label;
     flash('FLAPS '+label,700); sfxFlapMotor(); });
   document.getElementById('diveBtn').addEventListener('pointerdown',e=>{ e.preventDefault();
@@ -6866,7 +6933,7 @@ function toggleAero(){
   if(state!==ST.FLIGHT||!P.alive)return;
   if(!isDefend()&&!isSBD()){flash('AERO: ZERO OR DAUNTLESS ONLY',1200);return;}
   const pitchLim=isSBD()?1.28:1.05,rollLim=isSBD()?1.50:1.52;
-  const gate=Math.max(STALL_SPD*1.3,FlightEnvelope.aeroGate(isSBD()?'sbd':'zero'));
+  const gate=coreOn()?FlightControl.aeroGate(pacificKind(),Core.gain):Math.max(STALL_SPD*1.3,FlightEnvelope.aeroGate(isSBD()?'sbd':'zero'));
   if(!aeroMode&&(P.gear>0.35||P.spd<gate||P.pos.y<300)){
     flash('AERO: CLIMB, GEAR UP, BUILD SPEED'+(P.spd<gate?' · '+Math.ceil(gate*KT)+' KT':''),1200);return;
   }
@@ -6888,9 +6955,11 @@ function applyLoadoutUI(){
   const dv=document.getElementById('diveBtn');if(dv){dv.style.display=div?'flex':'none';dv.innerHTML=corsair?'GEAR<br>BRAKE':'DIVE<br>BRAKE';}
   const wb=document.getElementById('weaponBtn');if(wb){wb.style.display=corsair?'flex':'none';wb.innerHTML=rocket?'SELECT<br>BOMBS':'SELECT<br>ROCKETS';}
 }
+// Avenger, SBD and Zero launch with take-off flap (T/O); one press retracts any lowered setting.
+function flapLabel(){return P.flapTgt>0?(isCorsair()?Math.round(P.flapTgt*50)+'°':P.flapTgt>=1?'DN':'T/O'):'UP';}
 function resetControlUI(){
   const g=document.getElementById('gearBtn'); if(g){g.classList.toggle('on',P.gearTgt>.5);g.innerHTML=P.gearTgt>.5?'GEAR<br>▼ DN':'GEAR<br>▲ UP';}
-  const f=document.getElementById('flapBtn'); if(f){f.classList.toggle('on',P.flapTgt>0);f.innerHTML='FLAPS<br>'+(P.flapTgt>0?(isCorsair()?Math.round(P.flapTgt*50)+'°':'DN'):'UP');}
+  const f=document.getElementById('flapBtn'); if(f){f.classList.toggle('on',P.flapTgt>0);f.innerHTML='FLAPS<br>'+flapLabel();}
   const d=document.getElementById('diveBtn'); if(d)d.classList.toggle('on',!!P.diveBrake);
   const h=document.getElementById('hookBtn'); if(h){h.classList.toggle('on',P.hookTgt>.5); h.innerHTML=P.hookTgt>.5?'HOOK<br>▼ DN':'HOOK<br>▲ UP';}
 }
@@ -6910,12 +6979,17 @@ function updateLaunch(dt){
   if(launchTimer===0){ shake(.35); } // rolling departure
   launchTimer+=dt;
   // accelerate down the deck then lift
-  GroundRun.step(P,dt,{carrier:true,acceleration:FlightDynamics.profile(FlightDynamics.kind(P)).ground,limit:48,power:SortieFeatures.Damage.power(P),massRatio:SortieFeatures.Handling.sample(P).ratio});
-  const rotationTarget=inputPitch>.15&&P.spd>CarrierRecovery.envelope(P,STALL_SPD,APP_SPD).stall*.90?.07:0;
+  let deck=null;
+  if(coreOn()){deck=coreDeckStep(dt,P.spd,P.throttle<.05?1:0,Math.min(1,(P.takeoffRotation||0)/.063));P.spd=deck.speed;}
+  else GroundRun.step(P,dt,{carrier:true,acceleration:FlightDynamics.profile(FlightDynamics.kind(P)).ground,limit:48,power:SortieFeatures.Damage.power(P),massRatio:SortieFeatures.Handling.sample(P).ratio});
+  // P.spd is the speed along the deck here; the wing feels it plus the wind over the deck.
+  const rotationTarget=inputPitch>.15&&P.spd+(coreOn()?deckWind():0)>CarrierRecovery.envelope(P,STALL_SPD,APP_SPD).stall*.90?.07:0;
   P.takeoffRotation=(P.takeoffRotation||0)+(rotationTarget-(P.takeoffRotation||0))*(1-Math.exp(-dt/1.1));
   P.pos.x += (P.spd+CARRIER_SPD)*dt;
   // Piston aircraft depart under engine power; there is no steam-catapult plume.
-  if(P.pos.x-carrierX>BOW_X){
+  // Core: a light aircraft rotated by the pilot flies off before the bow once the wing carries her.
+  const flown=deck&&deck.lifting&&inputPitch>.15&&P.takeoffRotation>.045;
+  if(P.pos.x-carrierX>BOW_X||flown){
     // Convert deck-relative speed to airspeed at the edge; no vertical impulse.
     P.spd+=CARRIER_SPD-CarrierRecovery.wind(windHead,windGust).x;
     const nd=new THREE.Vector3(0,0,-1).applyQuaternion(planeGroup.quaternion);
@@ -7102,6 +7176,8 @@ function animateFrame(){
   flightQuality.sample(frameInterval,(state===ST.FLIGHT||state===ST.LAUNCH)&&P.alive);flightQuality.weather(clouds,rainMesh);
   if((state===ST.FLIGHT||state===ST.LAUNCH||state===ST.SERVICE) && carrier){
     CARRIER_SPD=Math.max(0,Math.min(5,(1800-carrierX)*.02)); // offshore holding station on long sorties
+    // On the core the ship steams up to launch wind while an aircraft is launched (recovery stays slow).
+    if(coreOn()&&state===ST.LAUNCH)CARRIER_SPD=Math.max(CARRIER_SPD,LAUNCH_WOD+CarrierRecovery.wind(windHead,windGust).x);
     carrierX += CARRIER_SPD*dt;
     carrier.position.x=carrierX;                              // gameplay reference (blocky/hidden)
     if(carrierModel) carrierModel.position.x=CARRIER_DX+carrierX; // the VISIBLE ship
