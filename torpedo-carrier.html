@@ -3232,7 +3232,7 @@ function spawnZero(i,n){
   const a=Math.PI*(0.3+0.4*i/Math.max(1,n));
   const heading=Math.PI;
   const anchor=ships.find(s=>s.alive&&s.def.type!=='destroyer')?.group.position||P.pos;
-  const z={ mesh, disk, hp:3, alive:true, cool:1+Math.random()*2,
+  const z={ mesh, disk, kind:'zero', hp:3, alive:true, cool:1+Math.random()*2,
     pos:new THREE.Vector3(anchor.x+Math.cos(a)*900, 220+i*70, anchor.z+900+Math.sin(a)*300),
     patrol:anchor.clone(),engaged:false,
     heading, pitch:0, roll:0, spd:88, reengage:0,
@@ -3307,6 +3307,10 @@ function updateZeros(dt){
     if(z.pos.y<85) aim.y=Math.max(aim.y,(85-z.pos.y)/70); // progressive sea avoidance
     aim.y=Math.max(-0.48,Math.min(0.48,aim.y)); aim.normalize();
     const desiredSpeed=86+(dist>650?9:0)+(z.reengage>0?12:0);
+    if(Core.on){
+      // Computed core: an A6M2 with the player Zero's own forces, load limits and roll rate.
+      FlightControl.ai(z,dt,aim,desiredSpeed,{maxBank:1.3});
+    }else{
     const desiredVel=aim.multiplyScalar(desiredSpeed);
     const dv=desiredVel.sub(z.vel), maxDv=24*dt;
     if(dv.length()>maxDv) dv.setLength(maxDv);
@@ -3323,7 +3327,8 @@ function updateZeros(dt){
     z.roll+=(bankTarget-z.roll)*Math.min(1,3.2*dt);
     z.spd=z.vel.length();
     z.pos.addScaledVector(z.vel,dt);
-    if(z.pos.y<28){ z.pos.y=28; z.vel.y=Math.max(4,z.vel.y); }
+    }
+    if(z.pos.y<28){ z.pos.y=28; z.vel.y=Math.max(4,z.vel.y); if(z.pitch<0)z.pitch=.05; }
     if(typeof aircraftSmoke!=="undefined"&&aircraftSmoke)aircraftSmoke.trail(z,z.pos,z.vel.clone().normalize(),z.spd,z.hp<3?1-z.hp/3:0,dt,windZ);
     z.mesh.position.copy(z.pos);
     z.mesh.quaternion.setFromEuler(new THREE.Euler(0,z.heading,0,'YXZ'));
@@ -3593,20 +3598,20 @@ function updateFlight(dt){
   const stallSpd=CarrierRecovery.envelope(P,STALL_SPD,APP_SPD).stall;
   const configuration=SortieFeatures.Handling.configuration(P,stallSpd),departure=SortieFeatures.Handling.departure(P,dt,stallSpd);
 
-  // control rates (reduced near stall and when damaged)
-  const dmgF = P.hull<60? (0.55+0.45*P.hull/60) : 1.0;
-  const auth = (P.spd<stallSpd? 0.4 : 1.0)*dmgF;
-  // Per-aircraft handling. The A6M was the most agile fighter of the early Pacific war;
-  // the TBM Avenger is an 8-tonne torpedo bomber and must feel like one.
-  const AC = PAC_HANDLING[pacificKind()];
-  if(coreOn(AC.name)){
-    const vs=updateCore(dt,AC,controls,departure,configuration);
+  if(coreOn()){
+    const vs=updateCore(dt,PAC_HANDLING[pacificKind()],controls,departure,configuration);
     // Airspeed retains its stall meaning. Headwind reduces ground speed along +X.
     const horiz=P.spd*Math.cos(P.pitch),wind=CarrierRecovery.wind(windHead,windGust);
     P.pos.x += (Math.cos(P.heading)*horiz+wind.x)*dt;
     P.pos.z += Math.sin(P.heading)*horiz*dt;
     P.pos.y += vs*dt;
   }else{
+  // control rates (reduced near stall and when damaged)
+  const dmgF = P.hull<60? (0.55+0.45*P.hull/60) : 1.0;
+  const auth = (P.spd<stallSpd? 0.4 : 1.0)*dmgF;
+  // Per-aircraft handling. The A6M was the most agile fighter of the early Pacific war;
+  // the TBM Avenger is an 8-tonne torpedo bomber and must feel like one.
+  const AC = PAC_HANDLING[isDefend()?'zero':MISSIONS[mission]?.corsair?'corsair':isSBD()?'sbd':'avenger'];
   const feel=FlightDynamics.authority(AC.name,P.spd,stallSpd);
   // Build 219: lift / load-factor context shared by turn, pull and the energy model.
   const liftCtx={loadSpeed:load.speed,stallPenalty:controls.stallPenalty,gFactor:configuration.gFactor,flaps:controls.flaps.mean};
@@ -4633,7 +4638,7 @@ function spawnWingman(i){
   const pos=P.pos.clone().addScaledVector(lat, side*34).addScaledVector(nose,-32-(side>0?8:0));
   pos.y=Math.max(70, P.pos.y-3);
   const startSpd=Math.max(P.spd,STALL_SPD);
-  const w={ mesh, disc, sbd, alive:true, hp:3, side, mode:'form', cool:2+i*1.5, dropped:false,
+  const w={ mesh, disc, sbd, kind:isCorsair()?'corsair':isSBD()?'sbd':'avenger', alive:true, hp:3, side, mode:'form', cool:2+i*1.5, dropped:false,
     target:null, torpedoes:sbd?0:1, egressT:0, pos, slotPos:pos.clone(), slotOffset:pos.clone().sub(P.pos),
     heading:Math.atan2(nose.x,nose.z), pitch:Math.atan2(P.vSpeed||0,Math.max(1,P.spd*Math.cos(P.pitch))), roll:0, spd:startSpd,
     vel:new THREE.Vector3() };
@@ -4752,7 +4757,7 @@ function updateWingmen(dt){
     const minFlightY=(w.mode==='attack'&&!w.sbd)?44:55;
     // Begin the pull-out before the altitude floor, allowing for pitch inertia.
     desVel.y=Math.max(desVel.y,Math.min(16,(minFlightY-w.pos.y)*.22));
-    FlightSupport.guideWingman(w,desVel,dt,w.mode==='form');
+    FlightSupport.guideWingman(w,desVel,dt,w.mode==='form',typeof CarrierRecovery!=='undefined'?CarrierRecovery.wind(windHead,windGust):null);
 
     if(typeof aircraftSmoke!=="undefined"&&aircraftSmoke)aircraftSmoke.trail(w,w.pos,w.vel.clone().normalize(),w.spd,w.hp<3?1-w.hp/3:0,dt,windZ);
     w.mesh.position.copy(w.pos);
@@ -4914,13 +4919,13 @@ function updateAlliedDefense(dt){
 }
 function updatePatrolRecovery(dt){
  if(MISSIONS[mission].theater!=='fleet')return;
- if(!patrolRecovery&&pacificOps.elapsed>=35){spawnWingman(0);const w=wingmen.at(-1);w.patrolRecovery=true;w.hp=1.5;w.pos.set(carrierX-1800,170,-100);w.heading=Math.PI/2;w.vel.set(60,0,0);patrolRecovery=w;radioSay('WOUNDED PATROL CORSAIR RETURNING — KEEP THE DECK APPROACH CLEAR');}
+ if(!patrolRecovery&&pacificOps.elapsed>=35){spawnWingman(0);const w=wingmen.at(-1);w.patrolRecovery=true;w.kind='corsair';w.hp=1.5;w.pos.set(carrierX-1800,170,-100);w.heading=Math.PI/2;w.vel.set(60,0,0);patrolRecovery=w;radioSay('WOUNDED PATROL CORSAIR RETURNING — KEEP THE DECK APPROACH CLEAR');}
  const w=patrolRecovery;if(!w?.alive)return;
  const waiting=raiders.some(r=>r.alive&&Math.hypot(r.pos.x-carrierX,r.pos.z)<1800)||enemyBombs.length>0;
  const goal=waiting?new THREE.Vector3(carrierX-2200,170,-350):new THREE.Vector3(carrierX+AIM_X,DECK_Y+2,0),gap=goal.sub(w.pos);
  // Hold outside the approach while the raid is active. Recovery bonus is never required.
  const velocity=gap.length()>15?gap.normalize().multiplyScalar(52):new THREE.Vector3(52,0,0);velocity.y=Math.max(-5,Math.min(5,velocity.y));
- FlightSupport.guideWingman(w,velocity,dt,false);w.mesh.position.copy(w.pos);w.mesh.rotation.set(-w.pitch,w.heading,-w.roll,'YXZ');
+ FlightSupport.guideWingman(w,velocity,dt,false,CarrierRecovery.wind(windHead,windGust));w.mesh.position.copy(w.pos);w.mesh.rotation.set(-w.pitch,w.heading,-w.roll,'YXZ');
  aircraftSmoke?.trail(w,w.pos,w.vel.clone().normalize(),w.spd,.5,dt,windZ);if(w.disc)w.disc.rotation.z-=GameRuntime.rotorStep(dt,PROP_STEP);
  if(!waiting&&Math.hypot(w.pos.x-carrierX-AIM_X,w.pos.z)<100&&w.pos.y<DECK_Y+14){w.alive=false;w.recovered=true;w.mesh.visible=false;addScore(300);flash('PATROL PILOT RECOVERED +300',1500);}
 }

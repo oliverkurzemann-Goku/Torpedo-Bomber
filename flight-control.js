@@ -138,13 +138,22 @@ function aeroGate(kind,gain){const m=F.model(kind);return Math.max(1.5*F.stallSp
  *   maxPitchRate, flaps, gear, brakes, gain, substepHz, massKg, power} - all pilot (game) choices.
  * The aircraft itself is the player's: same FlightCore forces, load limits, roll rates and gain. */
 function ai(e,dt,aim,wantSpd,o={}){
+ // The pilot re-decides at least 60 times a second, so a slow frame rate flies the same path.
+ const n=Math.max(1,Math.ceil(dt*60-1e-9));let out=null;
+ for(let i=0;i<n;i++)out=aiStep(e,dt/n,aim,wantSpd,o);
+ return out;
+}
+function aiStep(e,dt,aim,wantSpd,o){
  const m=F.model(e.kind);if(!m||!(dt>0))return null;
+ if(!Number.isFinite(e.spd))e.spd=e.vel?.length?.()||wantSpd;   // entities spawned with only a velocity
  const c=e.core||(e.core={thr:.75,power:.75,n:1,flaps:0});
  const mass=o.massKg??F.loadout(m,e.loadout||{fuel:70}).mass,W=mass*F.G,gain=o.gain??F.GAME.manoeuvreGain;
  const atm=F.atmosphere(e.pos.y),V=Math.max(10,e.spd),eas=V*Math.sqrt(atm.rho/1.225);
- // A pilot lowers flaps when asked to fly slower than the clean wing allows (formation on a slow leader).
+ // A pilot lowers flaps when asked to fly slower than the clean wing allows (formation on a slow leader);
+ // he sets them for the speed he is flying on average (8 s), not for every throttle correction.
  const vsClean=F.stallSpeed(m,e.pos.y,mass/m.mass,0);
- const flapsWanted=o.flaps??clamp((1.3*vsClean-wantSpd)/(.3*vsClean),0,1);
+ c.want=(c.want??wantSpd)+(wantSpd-(c.want??wantSpd))*(1-Math.exp(-dt/8));
+ const flapsWanted=o.flaps??clamp((1.3*vsClean-c.want)/(.3*vsClean),0,1);
  c.flaps+=(flapsWanted-c.flaps)*Math.min(1,dt*.7);
  const cfg={flaps:c.flaps,gear:o.gear||0,brakes:o.brakes||0};
  const lim=F.loadLimits(m,V,atm.rho,W,cfg),margin=o.margin??.92;

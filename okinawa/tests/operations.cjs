@@ -75,10 +75,14 @@ assert(Math.abs(p.y-(p.x*.01+p.z*.02)-.16)<.001,'mark sits above the terrain, no
 for(let i=0;i<500;i++)impacts.groundGunImpact(i*.1,0);assert.equal(marks.count,320,'long strafing runs keep a bounded decal pool');
 console.log('Operations: deadlines, reconnaissance, waves, cloud visibility, coastal completion and swept ground impacts OK');
 // Long sorties must not strand bombers beyond the flight boundary or drive the carrier ashore.
-const ai=vm.createContext({GameRuntime,THREE,Math,RTILE:4000,RGRID_W:7,RGRID_H:8,groundY:()=>100,D:()=>({id:'rookie'}),P:{alive:false}});
+// Build 220: the bomber flies the computed core (FlightCore/FlightControl) as a B-17.
+const FlightCore=require('../../flight-core.js'),FlightControl=require('../../flight-control.js');
+const ai=vm.createContext({GameRuntime,THREE,Math,RTILE:4000,RGRID_W:7,RGRID_H:8,groundY:()=>100,D:()=>({id:'rookie'}),P:{alive:false},
+ FlightCore,FlightControl,coreOn:kind=>FlightCore.has(kind)});
 vm.runInContext(eu.slice(eu.indexOf('function flightAltitudeLimit('),eu.indexOf('function spawnEnemyAir('))+func(eu,'updateBomber','damagePlayer'),ai);
-const e={pos:new THREE.Vector3(1800,1100,16000),vel:new THREE.Vector3(-72,0,0),heading:-Math.PI/2,pitch:0,roll:0,group:new THREE.Group(),hp:30,maxhp:30,cool:999};
+const e={kind:'b17',pos:new THREE.Vector3(1800,1100,16000),vel:new THREE.Vector3(-72,0,0),heading:-Math.PI/2,pitch:0,roll:0,spd:72,group:new THREE.Group(),hp:30,maxhp:30,cool:999};
 for(let i=0;i<24000;i++){ai.updateBomber(e,.05,null,99999);assert(e.pos.x>0&&e.pos.x<28000&&e.pos.z>0&&e.pos.z<32000,'bomber remains reachable inside terrain');}
-const movement=pac.match(/CARRIER_SPD=Math\.max\(0,Math\.min\(5,\(1800-carrierX\)\*\.02\)\);[^\n]*\n\s*carrierX \+= CARRIER_SPD\*dt;/)[0];
-const fleet=vm.createContext({Math,carrierX:0,CARRIER_SPD:5,dt:.05});vm.runInContext('for(let i=0;i<72000;i++){'+movement+'}',fleet);
+// Build 220 adds the launch-wind override between the two lines (inactive outside a deck launch).
+const movement=pac.match(/CARRIER_SPD=Math\.max\(0,Math\.min\(5,\(1800-carrierX\)\*\.02\)\);[\s\S]*?\n\s*carrierX \+= CARRIER_SPD\*dt;/)[0];
+const fleet=vm.createContext({Math,carrierX:0,CARRIER_SPD:5,dt:.05,coreOn:()=>true,state:3,ST:{LAUNCH:2,FLIGHT:3}});vm.runInContext('for(let i=0;i<72000;i++){'+movement+'}',fleet);
 assert(fleet.carrierX<=1800&&fleet.carrierX>1799);console.log('20-minute bomber route and one-hour offshore carrier station OK');

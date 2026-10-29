@@ -3754,7 +3754,17 @@ function damageEnemyAir(e,amount){
 //  too fast. The tactics on top are only about choosing where to point.
 // ============================================================
 const AI_G=9.81;
+// On the core the tactics read the aircraft's own computed numbers: clean stall and level top speed at
+// this height (AI mass: 70 % fuel), structural g and the published roll rate.
 function aiSpec(kind,altitude=0){
+  if(coreOn(kind)){
+    const band=Math.round(Math.max(0,altitude)/500)*500,key=kind+':'+band,cache=aiSpec.cache||(aiSpec.cache=new Map());
+    let spec=cache.get(key);
+    if(!spec){const m=FlightCore.model(kind),mass=FlightCore.loadout(m,{fuel:70}).mass;
+      spec={stall:FlightCore.stallSpeed(m,band,mass/m.mass),max:FlightCore.levelMaxSpeed(m,band,mass*FlightCore.G),
+        gLim:m.assumed.nLimit,rollRate:FlightCore.rollPeak(m),thrust:1};cache.set(key,spec);}
+    return spec;
+  }
   if(kind==='p47')return {stall:P47Performance.trueSpeed(116*.44704,altitude),max:P47Performance.maximum(altitude),gLim:AC.p47.gLim,rollRate:2.2,thrust:1};
   if(kind==='me163') return {stall:58,max:235,gLim:4.6,rollRate:2.4,thrust:1};
   const d=AC[kind];
@@ -3767,6 +3777,8 @@ function aiSpec(kind,altitude=0){
 // enemy fighters below use their own coordinated-turn model (flyAI) and are unchanged.
 // Fly the aeroplane towards aimDir. Everything here is ordinary flight mechanics.
 function flyAI(e,dt,aimDir,wantSpd){
+  // Computed core: the same forces, load limits and roll rate as the player's aeroplane of this type.
+  if(coreOn(e.kind)){FlightControl.ai(e,dt,aimDir,wantSpd,{maxBank:1.3});return;}
   const S=aiSpec(e.kind,e.pos.y);
   const nose=new THREE.Vector3(Math.sin(e.heading)*Math.cos(e.pitch), Math.sin(e.pitch),
                                Math.cos(e.heading)*Math.cos(e.pitch));
@@ -4023,6 +4035,14 @@ const bomberTracerLit=new THREE.MeshBasicMaterial({color:0xd8c4a0});
 function updateBomber(e,dt,toP,dist){
   // Turn the stream back into the playable sector before it becomes unreachable.
   const inward=enemyEdgeAvoidance(e);
+  if(coreOn(e.kind)){
+    // Computed core: the box flies straight and level at formation speed, banking gently (28 deg at most)
+    // to turn back inside; below the floor the pilots climb.
+    const aim=inward?new THREE.Vector3(inward.x,0,inward.z):new THREE.Vector3(Math.sin(e.heading),0,Math.cos(e.heading));
+    const floorY=groundY(e.pos.x,e.pos.z)+400;aim.normalize();aim.y=e.pos.y<floorY?.12:(e.cruiseY!=null?Math.max(-.05,Math.min(.05,(e.cruiseY-e.pos.y)*.002)):0);
+    if(e.cruiseY==null)e.cruiseY=e.pos.y;
+    FlightControl.ai(e,dt,aim,72,{maxBank:.48,maxYaw:.09,substepHz:30});
+  }else{
   if(inward){
     const home=Math.atan2(inward.x,inward.z);
     let turn=home-e.heading;while(turn>Math.PI)turn-=Math.PI*2;while(turn<-Math.PI)turn+=Math.PI*2;
@@ -4031,6 +4051,7 @@ function updateBomber(e,dt,toP,dist){
   const fwd=new THREE.Vector3(Math.sin(e.heading),0,Math.cos(e.heading));
   e.vel.lerp(fwd.multiplyScalar(72),Math.min(1,1.2*dt));
   e.pos.addScaledVector(e.vel,dt);
+  }
   interiorAirPosition(e.pos,ENEMY_EDGE_MARGIN-1200);
   const floor=groundY(e.pos.x,e.pos.z)+400;
   if(e.pos.y<floor) e.pos.y+=Math.min(20*dt*10,floor-e.pos.y);

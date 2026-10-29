@@ -6,7 +6,9 @@ const html=fs.readFileSync(path.resolve(__dirname,'../../remagen-mission.html'),
 const a=html.indexOf('function relaunch(){'),b=html.indexOf('function startMission(i){',a);
 assert(a>0&&b>a,'real mission launch found');
 const P={pos:new THREE.Vector3(),ac:'me163',gear:1,gearTgt:1,flap:0,flapTgt:0};
+const FlightCore=require('../../flight-core.js');
 const ctx=vm.createContext({P,THREE,SortieFeatures:global.SortieFeatures,AF_X:23600,AF_Z:25725,RWY_LEN:900,RTILE:4000,RGRID_W:7,RGRID_H:8,ST:{FLIGHT:3},
+ FlightCore,coreOn:()=>true,
  terrain:{getHeight:()=>180},groundY:()=>180,setThrottleUI:v=>{P.throttle=v;}});
 vm.runInContext(html.slice(a,b),ctx);ctx.relaunch();
 assert.equal(P.onGround,false,'Me 163 starts airborne after trolley release');
@@ -35,4 +37,13 @@ assert(P.spd>level+5,'shallow descent trades altitude for energy on the glide ho
 P.fuel=65;P.throttle=1;const before=P.spd;
 for(let i=0;i<20;i++)speed(P,.05,51,33,238);
 assert(P.spd>before,'powered Komet accelerates when fuel remains');
-console.log('Me 163 starts airborne with stowed skid, then powers the intercept and glides home');
+// Build 220: the shipped default flies the computed core - the same three checks on it.
+const m=FlightCore.model('me163'),empty=FlightCore.loadout(m,{fuel:0}).mass,full=FlightCore.loadout(m,{fuel:65}).mass;
+const fly=(s,o,seconds)=>{for(let i=0;i<seconds*20;i++)FlightCore.step(m,s,.05,{gain:FlightCore.GAME.manoeuvreGain,command:st=>FlightCore.holdLoad(st.pitch,st.roll,0),...o});return s;};
+const glide=fly({spd:155,pitch:0,heading:0,roll:0,nLoad:1,power:0,altitude:2000},{throttle:0,massKg:empty},10);
+assert(glide.spd<140&&glide.spd>65,'core: spent rocket glides and slows: '+glide.spd);
+const dive=fly({spd:155,pitch:-.11,heading:0,roll:0,nLoad:1,power:0,altitude:2000},{throttle:0,massKg:empty},10);
+assert(dive.spd>glide.spd+5,'core: shallow descent trades altitude for energy');
+const powered=fly({spd:155,pitch:0,heading:0,roll:0,nLoad:1,power:1,altitude:2000},{throttle:1,massKg:full},1);
+assert(powered.spd>155,'core: powered Komet accelerates when fuel remains');
+console.log('Me 163 starts airborne with stowed skid, then powers the intercept and glides home (legacy and computed core)');
