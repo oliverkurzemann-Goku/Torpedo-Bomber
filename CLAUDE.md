@@ -1,5 +1,24 @@
 # Torpedo-Bomber — Übergabe an Claude Code
 
+**29.10.2026, Feature-Branch (noch nicht auf main): berechneter Flugkern, erster Typ P-47 im Rheinspiel.**
+Nutzer: „möchte, dass du ein Modell berechnest. Keine Schätzwerte und unzählige Tests“ (nach Konzept
+`FLIGHT-REBUILD.md`, dessen Empfehlungen in §12 er gut fand). Neu `flight-core.js` (`FlightCore`) +
+`FLIGHT-CORE.md`: Punktmasse mit Polare `CD0 + k·CL²`, Schub per Propellerscheibe (Impulssatz), ISA,
+`n_max=min(Struktur, CLmax·q·S/W)`, Bahn-Zeitkonstante `2m/(ρVSa)`, Bahn in Vektorform (Loops durch die
+Senkrechte), 120-Hz-Teilschritt. CD0 0,0191, η_p 0,697 und Leistung bei 20 000 ft 0,913 werden beim Laden
+per Levenberg–Marquardt aus den sechs AAF-Werten (Vmax + Steigen bei 0/10k/20k ft) GELÖST, nichts davon
+eingetippt; Oswald-e nicht bestimmbar (läuft frei an 0,4) → Raymer-Formel 0,884. Nachrechnung: alle sechs
+Werte ±1,7 %, Stall 116 mph exakt, 20/60/120 FPS identisch, Energiedrift 0,005 %/60 s
+(`node scripts/flight/derive-p47.cjs`). Ohne Quelle (Kennung C, in `ASSUMED` benannt): ±g-Grenzen, Mcrit,
+ΔCD Fahrwerk/Klappen/Tank, Leerlaufbremse, Leistungsaufbau. Spielentscheidungen in `GAME`: eine
+Manöver-Verstärkung 2,2 nur auf die Bahndrehung (Kräfte/Energie unverstärkt), Normal-Knüppel = Querlage
+einer Horizontalkurve mit dem Lastanteil des alten Gesetzes, Nicken = Bahnwinkel (kritisch gedämpft),
+AERO-Ziehen = Lastvielfaches; Rollrate unverändert. `?p47core=off` altes Modell, `?p47core=physics`
+Verstärkung 1. Nur Luftphase der P-47 in `remagen-mission.html` (`updateP47Core`); Startlauf, Landung,
+KI, andere Typen, Pazifik und Legacy-Europa unverändert. Test `okinawa/tests/p47-core-browser.cjs`
+(echter Start, Kurve, Loop, Leerlauf, Bildraten). Kein iPad-Test. Bei Übernahme nach main Build 217
+vergeben (main hat bereits 215/216 Sound, dieser Branch 215 Flug).
+
 **29.10.2026, Build 215: Flugverhalten aller zehn Typen analytisch aus realen Daten abgeleitet; AERO-Kamera repariert.**
 Nutzer: Bf 109 und Zero zu aggressiv, P-47 zu träge; im AERO-Modus bei manchen Typen kein Looping, man sieht
 das Flugzeug „praktisch von vorne“; beim Gaswegnehmen bremsen die Flugzeuge kaum. Verlangt: analytischer,
