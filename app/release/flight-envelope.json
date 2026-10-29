@@ -5,7 +5,7 @@
   "pitchFloor": 0.25,
   "rollRef": 100,
   "rollGain": 1.5,
-  "rollGamma": 0.75,
+  "rollGamma": 0.65,
   "bankSat": 0.9599310885968813,
   "windmill": 0.07,
   "inducedBleed": 0.3
@@ -23,8 +23,8 @@
     "vs": 51.86,
     "nLimit": 7,
     "roll": {
-     "peak": 85,
-     "at": 125,
+     "peak": 95,
+     "at": 130,
      "fall": 0.8
     },
     "pitchClass": 1,
@@ -48,8 +48,8 @@
      "n": 1.34,
      "turn360Real": 43.2,
      "turn360Game": 19.6,
-     "rollRealDegS": 41,
-     "rollGameDegS": 77,
+     "rollRealDegS": 51,
+     "rollGameDegS": 97,
      "pitchCapDegS": 14,
      "idleWindmill": 0.33
     },
@@ -57,8 +57,8 @@
      "n": 3.01,
      "turn360Real": 20.3,
      "turn360Game": 9.2,
-     "rollRealDegS": 61,
-     "rollGameDegS": 104,
+     "rollRealDegS": 71,
+     "rollGameDegS": 120,
      "pitchCapDegS": 33,
      "idleWindmill": 0.75
     },
@@ -66,8 +66,8 @@
      "n": 5.35,
      "turn360Real": 14.6,
      "turn360Game": 6.6,
-     "rollRealDegS": 82,
-     "rollGameDegS": 129,
+     "rollRealDegS": 89,
+     "rollGameDegS": 139,
      "pitchCapDegS": 53,
      "idleWindmill": 1.34
     },
@@ -75,8 +75,8 @@
      "n": 7,
      "turn360Real": 13.9,
      "turn360Game": 6.3,
-     "rollRealDegS": 73,
-     "rollGameDegS": 119,
+     "rollRealDegS": 85,
+     "rollGameDegS": 135,
      "pitchCapDegS": 58,
      "idleWindmill": 2.09
     }
@@ -119,8 +119,8 @@
      "n": 1.78,
      "turn360Real": 26.1,
      "turn360Game": 11.9,
-     "rollRealDegS": 63,
-     "rollGameDegS": 106,
+     "rollRealDegS": 69,
+     "rollGameDegS": 118,
      "pitchCapDegS": 19,
      "idleWindmill": 0.38
     },
@@ -128,8 +128,8 @@
      "n": 4,
      "turn360Real": 14.9,
      "turn360Game": 6.8,
-     "rollRealDegS": 95,
-     "rollGameDegS": 144,
+     "rollRealDegS": 96,
+     "rollGameDegS": 146,
      "pitchCapDegS": 49,
      "idleWindmill": 0.85
     },
@@ -138,7 +138,7 @@
      "turn360Real": 12,
      "turn360Game": 5.4,
      "rollRealDegS": 67,
-     "rollGameDegS": 111,
+     "rollGameDegS": 116,
      "pitchCapDegS": 67,
      "idleWindmill": 1.51
     },
@@ -147,7 +147,7 @@
      "turn360Real": 15,
      "turn360Game": 6.8,
      "rollRealDegS": 46,
-     "rollGameDegS": 84,
+     "rollGameDegS": 91,
      "pitchCapDegS": 54,
      "idleWindmill": 2.36
     }
@@ -169,7 +169,7 @@
      "at": 115,
      "fall": 0.55
     },
-    "pitchClass": 0.95,
+    "pitchClass": 1,
     "tag": {
      "m": "A",
      "S": "A",
@@ -190,8 +190,8 @@
      "n": 1.35,
      "turn360Real": 42.5,
      "turn360Game": 19.3,
-     "rollRealDegS": 78,
-     "rollGameDegS": 125,
+     "rollRealDegS": 89,
+     "rollGameDegS": 139,
      "pitchCapDegS": 14,
      "idleWindmill": 0.31
     },
@@ -199,8 +199,8 @@
      "n": 3.03,
      "turn360Real": 20.1,
      "turn360Game": 9.1,
-     "rollRealDegS": 117,
-     "rollGameDegS": 169,
+     "rollRealDegS": 123,
+     "rollGameDegS": 172,
      "pitchCapDegS": 33,
      "idleWindmill": 0.7
     },
@@ -209,7 +209,7 @@
      "turn360Real": 14.5,
      "turn360Game": 6.6,
      "rollRealDegS": 147,
-     "rollGameDegS": 200,
+     "rollGameDegS": 192,
      "pitchCapDegS": 54,
      "idleWindmill": 1.24
     },
@@ -218,7 +218,7 @@
      "turn360Real": 15,
      "turn360Game": 6.8,
      "rollRealDegS": 130,
-     "rollGameDegS": 182,
+     "rollGameDegS": 178,
      "pitchCapDegS": 54,
      "idleWindmill": 1.93
     }
@@ -261,8 +261,8 @@
      "n": 2.53,
      "turn360Real": 16.5,
      "turn360Game": 7.5,
-     "rollRealDegS": 47,
-     "rollGameDegS": 85,
+     "rollRealDegS": 49,
+     "rollGameDegS": 94,
      "pitchCapDegS": 37,
      "idleWindmill": 0.31
     },
@@ -271,7 +271,7 @@
      "turn360Real": 10.3,
      "turn360Game": 4.7,
      "rollRealDegS": 43,
-     "rollGameDegS": 79,
+     "rollGameDegS": 86,
      "pitchCapDegS": 76,
      "idleWindmill": 0.7
     },
@@ -280,7 +280,7 @@
      "turn360Real": 13,
      "turn360Game": 5.9,
      "rollRealDegS": 32,
-     "rollGameDegS": 64,
+     "rollGameDegS": 72,
      "pitchCapDegS": 61,
      "idleWindmill": 1.24
     },
@@ -289,7 +289,7 @@
      "turn360Real": 16.2,
      "turn360Game": 7.4,
      "rollRealDegS": 26,
-     "rollGameDegS": 54,
+     "rollGameDegS": 62,
      "pitchCapDegS": 49,
      "idleWindmill": 1.94
     }
@@ -329,11 +329,11 @@
    "loopEntry": 76,
    "atSpeed": {
     "60": {
-     "n": 1.05,
-     "turn360Real": 114.4,
-     "turn360Game": 52,
-     "rollRealDegS": 40,
-     "rollGameDegS": 75,
+     "n": 1.15,
+     "turn360Real": 67.7,
+     "turn360Game": 30.8,
+     "rollRealDegS": 46,
+     "rollGameDegS": 90,
      "pitchCapDegS": 14,
      "idleWindmill": 0
     },
@@ -341,8 +341,8 @@
      "n": 2.37,
      "turn360Real": 26.8,
      "turn360Game": 12.2,
-     "rollRealDegS": 60,
-     "rollGameDegS": 102,
+     "rollRealDegS": 64,
+     "rollGameDegS": 112,
      "pitchCapDegS": 22,
      "idleWindmill": 0
     },
@@ -351,7 +351,7 @@
      "turn360Real": 18.7,
      "turn360Game": 8.5,
      "rollRealDegS": 80,
-     "rollGameDegS": 127,
+     "rollGameDegS": 130,
      "pitchCapDegS": 39,
      "idleWindmill": 0
     },
@@ -360,7 +360,7 @@
      "turn360Real": 17.8,
      "turn360Game": 8.1,
      "rollRealDegS": 56,
-     "rollGameDegS": 97,
+     "rollGameDegS": 103,
      "pitchCapDegS": 44,
      "idleWindmill": 0
     }
@@ -403,8 +403,8 @@
      "n": 1.18,
      "turn360Real": 61.5,
      "turn360Game": 28,
-     "rollRealDegS": 50,
-     "rollGameDegS": 89,
+     "rollRealDegS": 57,
+     "rollGameDegS": 105,
      "pitchCapDegS": 14,
      "idleWindmill": 0
     },
@@ -412,8 +412,8 @@
      "n": 2.65,
      "turn360Real": 23.5,
      "turn360Game": 10.7,
-     "rollRealDegS": 75,
-     "rollGameDegS": 121,
+     "rollRealDegS": 79,
+     "rollGameDegS": 129,
      "pitchCapDegS": 27,
      "idleWindmill": 0
     },
@@ -431,7 +431,7 @@
      "turn360Real": 16.2,
      "turn360Game": 7.4,
      "rollRealDegS": 77,
-     "rollGameDegS": 123,
+     "rollGameDegS": 126,
      "pitchCapDegS": 49,
      "idleWindmill": 0
     }
@@ -474,8 +474,8 @@
      "n": 2.11,
      "turn360Real": 20.7,
      "turn360Game": 9.4,
-     "rollRealDegS": 35,
-     "rollGameDegS": 69,
+     "rollRealDegS": 38,
+     "rollGameDegS": 80,
      "pitchCapDegS": 27,
      "idleWindmill": 0.29
     },
@@ -484,7 +484,7 @@
      "turn360Real": 13.1,
      "turn360Game": 6,
      "rollRealDegS": 47,
-     "rollGameDegS": 85,
+     "rollGameDegS": 92,
      "pitchCapDegS": 57,
      "idleWindmill": 0.64
     },
@@ -493,7 +493,7 @@
      "turn360Real": 17.5,
      "turn360Game": 8,
      "rollRealDegS": 35,
-     "rollGameDegS": 69,
+     "rollGameDegS": 76,
      "pitchCapDegS": 43,
      "idleWindmill": 1.15
     },
@@ -502,7 +502,7 @@
      "turn360Real": 21.9,
      "turn360Game": 10,
      "rollRealDegS": 28,
-     "rollGameDegS": 58,
+     "rollGameDegS": 66,
      "pitchCapDegS": 34,
      "idleWindmill": 1.79
     }
@@ -545,8 +545,8 @@
      "n": 2.01,
      "turn360Real": 22,
      "turn360Game": 10,
-     "rollRealDegS": 49,
-     "rollGameDegS": 88,
+     "rollRealDegS": 53,
+     "rollGameDegS": 99,
      "pitchCapDegS": 25,
      "idleWindmill": 0.31
     },
@@ -555,7 +555,7 @@
      "turn360Real": 13,
      "turn360Game": 5.9,
      "rollRealDegS": 66,
-     "rollGameDegS": 110,
+     "rollGameDegS": 115,
      "pitchCapDegS": 57,
      "idleWindmill": 0.71
     },
@@ -564,7 +564,7 @@
      "turn360Real": 14.2,
      "turn360Game": 6.5,
      "rollRealDegS": 50,
-     "rollGameDegS": 89,
+     "rollGameDegS": 95,
      "pitchCapDegS": 55,
      "idleWindmill": 1.26
     },
@@ -573,7 +573,7 @@
      "turn360Real": 17.8,
      "turn360Game": 8.1,
      "rollRealDegS": 40,
-     "rollGameDegS": 75,
+     "rollGameDegS": 82,
      "pitchCapDegS": 44,
      "idleWindmill": 1.97
     }
@@ -616,8 +616,8 @@
      "n": 1.62,
      "turn360Real": 30.1,
      "turn360Game": 13.7,
-     "rollRealDegS": 46,
-     "rollGameDegS": 84,
+     "rollRealDegS": 54,
+     "rollGameDegS": 100,
      "pitchCapDegS": 15,
      "idleWindmill": 0.37
     },
@@ -625,8 +625,8 @@
      "n": 3.65,
      "turn360Real": 16.4,
      "turn360Game": 7.5,
-     "rollRealDegS": 69,
-     "rollGameDegS": 114,
+     "rollRealDegS": 75,
+     "rollGameDegS": 124,
      "pitchCapDegS": 43,
      "idleWindmill": 0.82
     },
@@ -634,8 +634,8 @@
      "n": 6.48,
      "turn360Real": 12,
      "turn360Game": 5.5,
-     "rollRealDegS": 92,
-     "rollGameDegS": 141,
+     "rollRealDegS": 94,
+     "rollGameDegS": 144,
      "pitchCapDegS": 67,
      "idleWindmill": 1.46
     },
@@ -644,7 +644,7 @@
      "turn360Real": 13.9,
      "turn360Game": 6.3,
      "rollRealDegS": 89,
-     "rollGameDegS": 138,
+     "rollGameDegS": 139,
      "pitchCapDegS": 58,
      "idleWindmill": 2.29
     }
@@ -687,8 +687,8 @@
      "n": 2.93,
      "turn360Real": 14,
      "turn360Game": 6.3,
-     "rollRealDegS": 81,
-     "rollGameDegS": 128,
+     "rollRealDegS": 87,
+     "rollGameDegS": 137,
      "pitchCapDegS": 47,
      "idleWindmill": 0.42
     },
@@ -697,7 +697,7 @@
      "turn360Real": 9.7,
      "turn360Game": 4.4,
      "rollRealDegS": 106,
-     "rollGameDegS": 156,
+     "rollGameDegS": 155,
      "pitchCapDegS": 81,
      "idleWindmill": 0.95
     },
@@ -706,7 +706,7 @@
      "turn360Real": 13,
      "turn360Game": 5.9,
      "rollRealDegS": 69,
-     "rollGameDegS": 113,
+     "rollGameDegS": 117,
      "pitchCapDegS": 61,
      "idleWindmill": 1.69
     },
@@ -715,7 +715,7 @@
      "turn360Real": 16.2,
      "turn360Game": 7.4,
      "rollRealDegS": 49,
-     "rollGameDegS": 88,
+     "rollGameDegS": 94,
      "pitchCapDegS": 49,
      "idleWindmill": 2.64
     }

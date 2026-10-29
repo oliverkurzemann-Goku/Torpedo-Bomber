@@ -1,0 +1,2050 @@
+{
+ "build": 215,
+ "date": "2026-10-29",
+ "method": "Shipped updateFlight()/updateCamera() of remagen-mission.html (Rhine kinds) and torpedo-carrier.html (Pacific kinds), driven in Chromium/SwiftShader with simulated frame steps; before = origin/main Build 214, after = this build.",
+ "limits": "Functional measurements only. Not an iPad or Safari measurement. Thrust law (Vmax, acceleration) is unchanged, so sustained-turn limits are still those of the Build 211 power law.",
+ "before": {
+  "avenger": {
+   "vmax": 121,
+   "stall": 31,
+   "roll": {
+    "54": {
+     "t60": 0.9666666666666667,
+     "peakDegS": 93.9,
+     "finalBankDeg": 63
+    },
+    "85": {
+     "t60": 0.9666666666666667,
+     "peakDegS": 93.9,
+     "finalBankDeg": 63
+    },
+    "109": {
+     "t60": 0.9666666666666667,
+     "peakDegS": 93.9,
+     "finalBankDeg": 63
+    }
+   },
+   "turn": {
+    "54@1": {
+     "t360": 9.35,
+     "v0": 54,
+     "vEnd": 70,
+     "minV": 54
+    },
+    "54@0.5": {
+     "t360": 15.6,
+     "v0": 54,
+     "vEnd": 94,
+     "minV": 54
+    },
+    "85@1": {
+     "t360": 10.066666666666666,
+     "v0": 85,
+     "vEnd": 94,
+     "minV": 85
+    },
+    "85@0.5": {
+     "t360": 18.333333333333332,
+     "v0": 85,
+     "vEnd": 107,
+     "minV": 85
+    }
+   },
+   "pitch": {
+    "54": {
+     "peakDegS": 27,
+     "finalDeg": 20.1,
+     "t90": 0.95
+    },
+    "85": {
+     "peakDegS": 27,
+     "finalDeg": 20.1,
+     "t90": 0.95
+    }
+   },
+   "idle": {
+    "61": 2.19,
+    "91": 2.1
+   },
+   "eq50": 90,
+   "eq100": 121,
+   "loop": {
+    "67": {
+     "t": 11.316666666666666,
+     "done": true,
+     "travelDeg": 360,
+     "minV": 56,
+     "endV": 102,
+     "dAlt": -130,
+     "climb": 195,
+     "sink": 130,
+     "camFrontFrames": 81,
+     "frames": 679,
+     "maxFrontDot": 1,
+     "alive": true
+    },
+    "97": {
+     "t": 14.55,
+     "done": true,
+     "travelDeg": 360,
+     "minV": 72,
+     "endV": 123,
+     "dAlt": -147,
+     "climb": 353,
+     "sink": 147,
+     "camFrontFrames": 87,
+     "frames": 873,
+     "maxFrontDot": 1,
+     "alive": true
+    }
+   }
+  },
+  "sbd": {
+   "vmax": 113,
+   "stall": 31,
+   "roll": {
+    "51": {
+     "t60": 0.5333333333333333,
+     "peakDegS": 146.3,
+     "finalBankDeg": 74
+    },
+    "79": {
+     "t60": 0.5333333333333333,
+     "peakDegS": 146.3,
+     "finalBankDeg": 74
+    },
+    "102": {
+     "t60": 0.5333333333333333,
+     "peakDegS": 146.3,
+     "finalBankDeg": 74
+    }
+   },
+   "turn": {
+    "51@1": {
+     "t360": 8.416666666666666,
+     "v0": 51,
+     "vEnd": 77,
+     "minV": 51
+    },
+    "51@0.5": {
+     "t360": 11.166666666666666,
+     "v0": 51,
+     "vEnd": 88,
+     "minV": 51
+    },
+    "79@1": {
+     "t360": 7.4,
+     "v0": 79,
+     "vEnd": 91,
+     "minV": 79
+    },
+    "79@0.5": {
+     "t360": 12.4,
+     "v0": 79,
+     "vEnd": 100,
+     "minV": 79
+    }
+   },
+   "pitch": {
+    "51": {
+     "peakDegS": 36.1,
+     "finalDeg": 20.1,
+     "t90": 0.7166666666666667
+    },
+    "79": {
+     "peakDegS": 36.1,
+     "finalDeg": 20.1,
+     "t90": 0.7166666666666667
+    }
+   },
+   "idle": {
+    "57": 2.01,
+    "85": 2.23
+   },
+   "eq50": 86,
+   "eq100": 113,
+   "loop": {
+    "62": {
+     "t": 6.7,
+     "done": true,
+     "travelDeg": 360,
+     "minV": 57,
+     "endV": 84,
+     "dAlt": -27,
+     "climb": 126,
+     "sink": 27,
+     "camFrontFrames": 57,
+     "frames": 402,
+     "maxFrontDot": 1,
+     "alive": true
+    },
+    "90": {
+     "t": 7.733333333333333,
+     "done": true,
+     "travelDeg": 360,
+     "minV": 76,
+     "endV": 104,
+     "dAlt": -40,
+     "climb": 194,
+     "sink": 40,
+     "camFrontFrames": 48,
+     "frames": 464,
+     "maxFrontDot": 1,
+     "alive": true
+    }
+   }
+  },
+  "corsair": {
+   "vmax": 172,
+   "stall": 31,
+   "roll": {
+    "77": {
+     "t60": 0.4666666666666667,
+     "peakDegS": 173.8,
+     "finalBankDeg": 70
+    },
+    "120": {
+     "t60": 0.4666666666666667,
+     "peakDegS": 173.8,
+     "finalBankDeg": 70
+    },
+    "155": {
+     "t60": 0.4666666666666667,
+     "peakDegS": 173.8,
+     "finalBankDeg": 70
+    }
+   },
+   "turn": {
+    "77@1": {
+     "t360": 7.183333333333334,
+     "v0": 77,
+     "vEnd": 102,
+     "minV": 77
+    },
+    "77@0.5": {
+     "t360": 13.233333333333333,
+     "v0": 77,
+     "vEnd": 127,
+     "minV": 77
+    },
+    "120@1": {
+     "t360": 10.016666666666667,
+     "v0": 120,
+     "vEnd": 137,
+     "minV": 120
+    },
+    "120@0.5": {
+     "t360": 17.4,
+     "v0": 120,
+     "vEnd": 151,
+     "minV": 120
+    }
+   },
+   "pitch": {
+    "77": {
+     "peakDegS": 40.6,
+     "finalDeg": 20.1,
+     "t90": 0.6333333333333333
+    },
+    "120": {
+     "peakDegS": 40.6,
+     "finalDeg": 20.1,
+     "t90": 0.6333333333333333
+    }
+   },
+   "idle": {
+    "86": 2.07,
+    "129": 2.42
+   },
+   "eq50": 130,
+   "eq100": 172,
+   "loop": {
+    "95": {
+     "t": 6.633333333333334,
+     "done": true,
+     "travelDeg": 360,
+     "minV": 91,
+     "endV": 119,
+     "dAlt": -50,
+     "climb": 185,
+     "sink": 50,
+     "camFrontFrames": 33,
+     "frames": 398,
+     "maxFrontDot": 1,
+     "alive": true
+    },
+    "138": {
+     "t": 8.95,
+     "done": true,
+     "travelDeg": 360,
+     "minV": 122,
+     "endV": 154,
+     "dAlt": -51,
+     "climb": 357,
+     "sink": 51,
+     "camFrontFrames": 6,
+     "frames": 537,
+     "maxFrontDot": 0.94,
+     "alive": true
+    }
+   }
+  },
+  "zero": {
+   "vmax": 147,
+   "stall": 31,
+   "roll": {
+    "66": {
+     "t60": 0.4,
+     "peakDegS": 194,
+     "finalBankDeg": 75
+    },
+    "103": {
+     "t60": 0.4,
+     "peakDegS": 194,
+     "finalBankDeg": 75
+    },
+    "132": {
+     "t60": 0.5166666666666667,
+     "peakDegS": 154.5,
+     "finalBankDeg": 75
+    }
+   },
+   "turn": {
+    "66@1": {
+     "t360": 5.333333333333333,
+     "v0": 66,
+     "vEnd": 89,
+     "minV": 66
+    },
+    "66@0.5": {
+     "t360": 8.566666666666666,
+     "v0": 66,
+     "vEnd": 102,
+     "minV": 66
+    },
+    "103@1": {
+     "t360": 6.866666666666666,
+     "v0": 103,
+     "vEnd": 118,
+     "minV": 103
+    },
+    "103@0.5": {
+     "t360": 11.383333333333333,
+     "v0": 103,
+     "vEnd": 126,
+     "minV": 103
+    }
+   },
+   "pitch": {
+    "66": {
+     "peakDegS": 45,
+     "finalDeg": 20.1,
+     "t90": 0.5833333333333334
+    },
+    "103": {
+     "peakDegS": 45,
+     "finalDeg": 20.1,
+     "t90": 0.5833333333333334
+    }
+   },
+   "idle": {
+    "74": 1.46,
+    "110": 2.02
+   },
+   "eq50": 114,
+   "eq100": 147,
+   "loop": {
+    "81": {
+     "t": 5.666666666666667,
+     "done": true,
+     "travelDeg": 361,
+     "minV": 77,
+     "endV": 100,
+     "dAlt": -33,
+     "climb": 135,
+     "sink": 33,
+     "camFrontFrames": 37,
+     "frames": 340,
+     "maxFrontDot": 1,
+     "alive": true
+    },
+    "118": {
+     "t": 7.616666666666666,
+     "done": true,
+     "travelDeg": 360,
+     "minV": 104,
+     "endV": 131,
+     "dAlt": -35,
+     "climb": 260,
+     "sink": 35,
+     "camFrontFrames": 28,
+     "frames": 457,
+     "maxFrontDot": 1,
+     "alive": true
+    }
+   }
+  },
+  "p47": {
+   "vmax": 194,
+   "stall": 51.85664,
+   "roll": {
+    "87": {
+     "t60": 0.48333333333333334,
+     "peakDegS": 158.7,
+     "finalBankDeg": 77
+    },
+    "136": {
+     "t60": 0.48333333333333334,
+     "peakDegS": 158.7,
+     "finalBankDeg": 77
+    },
+    "175": {
+     "t60": 0.48333333333333334,
+     "peakDegS": 158.7,
+     "finalBankDeg": 77
+    }
+   },
+   "turn": {
+    "87@1": {
+     "t360": 12.566666666666666,
+     "v0": 87,
+     "vEnd": 97,
+     "minV": 87
+    },
+    "87@0.5": {
+     "t360": 10.916666666666666,
+     "v0": 87,
+     "vEnd": 117,
+     "minV": 87
+    },
+    "136@1": {
+     "t360": 7.85,
+     "v0": 136,
+     "vEnd": 139,
+     "minV": 136
+    },
+    "136@0.5": {
+     "t360": 11.35,
+     "v0": 136,
+     "vEnd": 148,
+     "minV": 136
+    }
+   },
+   "pitch": {
+    "87": {
+     "peakDegS": 36.8,
+     "finalDeg": 30.3,
+     "t90": 1.05
+    },
+    "136": {
+     "peakDegS": 36.8,
+     "finalDeg": 30.3,
+     "t90": 1.05
+    }
+   },
+   "idle": {
+    "97": 0.7,
+    "146": 0.98
+   },
+   "eq50": 143,
+   "eq100": 167,
+   "loop": {
+    "107": {
+     "t": 7.533333333333333,
+     "done": true,
+     "travelDeg": 361,
+     "minV": 95,
+     "endV": 117,
+     "dAlt": -23,
+     "climb": 236,
+     "sink": 23,
+     "camFrontFrames": 65,
+     "frames": 452,
+     "maxFrontDot": 1,
+     "alive": true
+    },
+    "155": {
+     "t": 10.3,
+     "done": true,
+     "travelDeg": 360,
+     "minV": 129,
+     "endV": 154,
+     "dAlt": -4,
+     "climb": 462,
+     "sink": 4,
+     "camFrontFrames": 77,
+     "frames": 618,
+     "maxFrontDot": 1,
+     "alive": true
+    }
+   }
+  },
+  "bf109": {
+   "vmax": 176,
+   "stall": 34.5,
+   "roll": {
+    "79": {
+     "t60": 0.4666666666666667,
+     "peakDegS": 169.3,
+     "finalBankDeg": 72
+    },
+    "123": {
+     "t60": 0.4666666666666667,
+     "peakDegS": 169.3,
+     "finalBankDeg": 72
+    },
+    "158": {
+     "t60": 0.5833333333333334,
+     "peakDegS": 135.8,
+     "finalBankDeg": 72
+    }
+   },
+   "turn": {
+    "79@1": {
+     "t360": 5.066666666666666,
+     "v0": 79,
+     "vEnd": 105,
+     "minV": 79
+    },
+    "79@0.5": {
+     "t360": 6.183333333333334,
+     "v0": 79,
+     "vEnd": 112,
+     "minV": 79
+    },
+    "123@1": {
+     "t360": 7.15,
+     "v0": 123,
+     "vEnd": 141,
+     "minV": 123
+    },
+    "123@0.5": {
+     "t360": 8.6,
+     "v0": 123,
+     "vEnd": 145,
+     "minV": 123
+    }
+   },
+   "pitch": {
+    "79": {
+     "peakDegS": 47.1,
+     "finalDeg": 31.1,
+     "t90": 0.85
+    },
+    "123": {
+     "peakDegS": 47.1,
+     "finalDeg": 31.1,
+     "t90": 0.85
+    }
+   },
+   "idle": {
+    "88": 1.58,
+    "132": 2.29
+   },
+   "eq50": 136,
+   "eq100": 176,
+   "loop": {
+    "97": {
+     "t": 10.066666666666666,
+     "done": true,
+     "travelDeg": 360,
+     "minV": 92,
+     "endV": 136,
+     "dAlt": -125,
+     "climb": 278,
+     "sink": 125,
+     "camFrontFrames": 86,
+     "frames": 604,
+     "maxFrontDot": 1,
+     "alive": true
+    },
+    "141": {
+     "t": 13.116666666666667,
+     "done": true,
+     "travelDeg": 360,
+     "minV": 120,
+     "endV": 168,
+     "dAlt": -129,
+     "climb": 513,
+     "sink": 129,
+     "camFrontFrames": 98,
+     "frames": 787,
+     "maxFrontDot": 1,
+     "alive": true
+    }
+   }
+  },
+  "fw190": {
+   "vmax": 194,
+   "stall": 39,
+   "roll": {
+    "87": {
+     "t60": 0.4166666666666667,
+     "peakDegS": 194.9,
+     "finalBankDeg": 77
+    },
+    "136": {
+     "t60": 0.4166666666666667,
+     "peakDegS": 194.9,
+     "finalBankDeg": 77
+    },
+    "175": {
+     "t60": 0.4166666666666667,
+     "peakDegS": 194.8,
+     "finalBankDeg": 77
+    }
+   },
+   "turn": {
+    "87@1": {
+     "t360": 5.283333333333333,
+     "v0": 87,
+     "vEnd": 102,
+     "minV": 87
+    },
+    "87@0.5": {
+     "t360": 8.216666666666667,
+     "v0": 87,
+     "vEnd": 121,
+     "minV": 87
+    },
+    "136@1": {
+     "t360": 7.166666666666667,
+     "v0": 136,
+     "vEnd": 147,
+     "minV": 136
+    },
+    "136@0.5": {
+     "t360": 11.483333333333333,
+     "v0": 136,
+     "vEnd": 159,
+     "minV": 136
+    }
+   },
+   "pitch": {
+    "87": {
+     "peakDegS": 31.3,
+     "finalDeg": 27.9,
+     "t90": 1.25
+    },
+    "136": {
+     "peakDegS": 31.3,
+     "finalDeg": 27.9,
+     "t90": 1.25
+    }
+   },
+   "idle": {
+    "97": 1.76,
+    "146": 2.16
+   },
+   "eq50": 147,
+   "eq100": 193,
+   "loop": {
+    "107": {
+     "t": 10.183333333333334,
+     "done": true,
+     "travelDeg": 360,
+     "minV": 99,
+     "endV": 140,
+     "dAlt": -94,
+     "climb": 312,
+     "sink": 94,
+     "camFrontFrames": 82,
+     "frames": 611,
+     "maxFrontDot": 1,
+     "alive": true
+    },
+    "155": {
+     "t": 13.45,
+     "done": true,
+     "travelDeg": 360,
+     "minV": 131,
+     "endV": 178,
+     "dAlt": -93,
+     "climb": 582,
+     "sink": 93,
+     "camFrontFrames": 93,
+     "frames": 807,
+     "maxFrontDot": 1,
+     "alive": true
+    }
+   }
+  },
+  "ju87": {
+   "vmax": 113,
+   "stall": 37,
+   "roll": {
+    "51": {
+     "t60": 0.7,
+     "peakDegS": 114,
+     "finalBankDeg": 73
+    },
+    "79": {
+     "t60": 0.7,
+     "peakDegS": 114,
+     "finalBankDeg": 73
+    },
+    "102": {
+     "t60": 0.7,
+     "peakDegS": 114,
+     "finalBankDeg": 73
+    }
+   },
+   "turn": {
+    "51@1": {
+     "t360": 10.3,
+     "v0": 51,
+     "vEnd": 75,
+     "minV": 51
+    },
+    "51@0.5": {
+     "t360": 9.4,
+     "v0": 51,
+     "vEnd": 81,
+     "minV": 51
+    },
+    "79@1": {
+     "t360": 6.1,
+     "v0": 79,
+     "vEnd": 87,
+     "minV": 79
+    },
+    "79@0.5": {
+     "t360": 8.516666666666667,
+     "v0": 79,
+     "vEnd": 94,
+     "minV": 79
+    }
+   },
+   "pitch": {
+    "51": {
+     "peakDegS": 35.4,
+     "finalDeg": 33.2,
+     "t90": 1.2
+    },
+    "79": {
+     "peakDegS": 35.4,
+     "finalDeg": 33.2,
+     "t90": 1.2
+    }
+   },
+   "idle": {
+    "57": 2.3,
+    "85": 2.19
+   },
+   "eq50": 84,
+   "eq100": 113,
+   "loop": {
+    "62": {
+     "t": 8.5,
+     "done": true,
+     "travelDeg": 361,
+     "minV": 53,
+     "endV": 84,
+     "dAlt": -14,
+     "climb": 163,
+     "sink": 14,
+     "camFrontFrames": 105,
+     "frames": 510,
+     "maxFrontDot": 1,
+     "alive": true
+    },
+    "90": {
+     "t": 8.616666666666667,
+     "done": true,
+     "travelDeg": 360,
+     "minV": 74,
+     "endV": 105,
+     "dAlt": -44,
+     "climb": 213,
+     "sink": 44,
+     "camFrontFrames": 80,
+     "frames": 517,
+     "maxFrontDot": 1,
+     "alive": true
+    }
+   }
+  },
+  "me262": {
+   "vmax": 242,
+   "stall": 49,
+   "roll": {
+    "109": {
+     "t60": 0.5166666666666667,
+     "peakDegS": 150.5,
+     "finalBankDeg": 77
+    },
+    "169": {
+     "t60": 0.5166666666666667,
+     "peakDegS": 150.5,
+     "finalBankDeg": 77
+    },
+    "218": {
+     "t60": 0.5333333333333333,
+     "peakDegS": 145.3,
+     "finalBankDeg": 77
+    }
+   },
+   "turn": {
+    "109@1": {
+     "t360": 7.4,
+     "v0": 109,
+     "vEnd": 130,
+     "minV": 109
+    },
+    "109@0.5": {
+     "t360": 12.2,
+     "v0": 109,
+     "vEnd": 147,
+     "minV": 109
+    },
+    "169@1": {
+     "t360": 10.75,
+     "v0": 169,
+     "vEnd": 185,
+     "minV": 169
+    },
+    "169@0.5": {
+     "t360": 17.4,
+     "v0": 169,
+     "vEnd": 198,
+     "minV": 169
+    }
+   },
+   "pitch": {
+    "109": {
+     "peakDegS": 34.5,
+     "finalDeg": 30.3,
+     "t90": 1.1166666666666667
+    },
+    "169": {
+     "peakDegS": 34.5,
+     "finalDeg": 30.3,
+     "t90": 1.1166666666666667
+    }
+   },
+   "idle": {
+    "121": 1.13,
+    "182": 2.49
+   },
+   "eq50": 169,
+   "eq100": 238,
+   "loop": {
+    "133": {
+     "t": 13.683333333333334,
+     "done": true,
+     "travelDeg": 360,
+     "minV": 115,
+     "endV": 184,
+     "dAlt": -222,
+     "climb": 492,
+     "sink": 222,
+     "camFrontFrames": 98,
+     "frames": 821,
+     "maxFrontDot": 1,
+     "alive": true
+    },
+    "194": {
+     "t": 18.65,
+     "done": true,
+     "travelDeg": 360,
+     "minV": 158,
+     "endV": 235,
+     "dAlt": -275,
+     "climb": 978,
+     "sink": 275,
+     "camFrontFrames": 104,
+     "frames": 1119,
+     "maxFrontDot": 1,
+     "alive": true
+    }
+   }
+  },
+  "me163": {
+   "vmax": 238,
+   "stall": 51,
+   "roll": {
+    "107": {
+     "t60": 0.5333333333333333,
+     "peakDegS": 152.2,
+     "finalBankDeg": 75
+    },
+    "167": {
+     "t60": 0.5333333333333333,
+     "peakDegS": 152.2,
+     "finalBankDeg": 75
+    },
+    "214": {
+     "t60": 0.5666666666666667,
+     "peakDegS": 143.6,
+     "finalBankDeg": 75
+    }
+   },
+   "turn": {
+    "107@1": {
+     "t360": 7.816666666666666,
+     "v0": 107,
+     "vEnd": 182,
+     "minV": 107
+    },
+    "107@0.5": {
+     "t360": 12.216666666666667,
+     "v0": 107,
+     "vEnd": 207,
+     "minV": 107
+    },
+    "167@1": {
+     "t360": 10.1,
+     "v0": 167,
+     "vEnd": 216,
+     "minV": 167
+    },
+    "167@0.5": {
+     "t360": 15.616666666666667,
+     "v0": 167,
+     "vEnd": 228,
+     "minV": 167
+    }
+   },
+   "pitch": {
+    "107": {
+     "peakDegS": 32.8,
+     "finalDeg": 27.1,
+     "t90": 1.15
+    },
+    "167": {
+     "peakDegS": 32.8,
+     "finalDeg": 27.1,
+     "t90": 1.15
+    }
+   },
+   "idle": {
+    "119": 2,
+    "179": 2.47
+   },
+   "eq50": 168,
+   "eq100": 238,
+   "loop": {
+    "131": {
+     "t": 16.416666666666668,
+     "done": true,
+     "travelDeg": 360,
+     "minV": 131,
+     "endV": 248,
+     "dAlt": -673,
+     "climb": 636,
+     "sink": 673,
+     "camFrontFrames": 95,
+     "frames": 985,
+     "maxFrontDot": 1,
+     "alive": true
+    },
+    "190": {
+     "t": 19.333333333333332,
+     "done": true,
+     "travelDeg": 360,
+     "minV": 184,
+     "endV": 259,
+     "dAlt": -534,
+     "climb": 1049,
+     "sink": 534,
+     "camFrontFrames": 89,
+     "frames": 1160,
+     "maxFrontDot": 1,
+     "alive": true
+    }
+   }
+  }
+ },
+ "after": {
+  "avenger": {
+   "vmax": 121,
+   "stall": 31,
+   "roll": {
+    "54": {
+     "t60": 1.1833333333333333,
+     "peakDegS": 76.9,
+     "finalBankDeg": 63
+    },
+    "85": {
+     "t60": 0.95,
+     "peakDegS": 96.2,
+     "finalBankDeg": 63
+    },
+    "109": {
+     "t60": 1.1166666666666667,
+     "peakDegS": 81.9,
+     "finalBankDeg": 63
+    }
+   },
+   "turn": {
+    "54@1": {
+     "t360": 8.333333333333334,
+     "v0": 54,
+     "vEnd": 75,
+     "minV": 54
+    },
+    "54@0.5": {
+     "t360": 10.55,
+     "v0": 54,
+     "vEnd": 83,
+     "minV": 54
+    },
+    "85@1": {
+     "t360": 6.266666666666667,
+     "v0": 85,
+     "vEnd": 85,
+     "minV": 85
+    },
+    "85@0.5": {
+     "t360": 8.883333333333333,
+     "v0": 85,
+     "vEnd": 94,
+     "minV": 85
+    }
+   },
+   "pitch": {
+    "54": {
+     "peakDegS": 21.8,
+     "finalDeg": 20.1,
+     "t90": 1.05
+    },
+    "85": {
+     "peakDegS": 28.7,
+     "finalDeg": 20.1,
+     "t90": 0.9
+    }
+   },
+   "idle": {
+    "61": 2.46,
+    "91": 2.62
+   },
+   "eq50": 90,
+   "eq100": 121,
+   "loop": {
+    "63": {
+     "t": 8.683333333333334,
+     "done": true,
+     "travelDeg": 360,
+     "minV": 52,
+     "endV": 83,
+     "dAlt": -24,
+     "climb": 161,
+     "sink": 24,
+     "camFrontFrames": 0,
+     "frames": 521,
+     "maxFrontDot": -0.93,
+     "alive": true
+    },
+    "67": {
+     "t": 8.483333333333333,
+     "done": true,
+     "travelDeg": 360,
+     "minV": 55,
+     "endV": 86,
+     "dAlt": -28,
+     "climb": 163,
+     "sink": 28,
+     "camFrontFrames": 0,
+     "frames": 509,
+     "maxFrontDot": -0.93,
+     "alive": true
+    },
+    "97": {
+     "t": 8.316666666666666,
+     "done": true,
+     "travelDeg": 361,
+     "minV": 77,
+     "endV": 104,
+     "dAlt": -18,
+     "climb": 227,
+     "sink": 18,
+     "camFrontFrames": 0,
+     "frames": 499,
+     "maxFrontDot": -0.94,
+     "alive": true
+    }
+   }
+  },
+  "sbd": {
+   "vmax": 113,
+   "stall": 31,
+   "roll": {
+    "51": {
+     "t60": 0.85,
+     "peakDegS": 93.2,
+     "finalBankDeg": 74
+    },
+    "79": {
+     "t60": 0.6833333333333333,
+     "peakDegS": 116.1,
+     "finalBankDeg": 74
+    },
+    "102": {
+     "t60": 0.7333333333333333,
+     "peakDegS": 106.5,
+     "finalBankDeg": 74
+    }
+   },
+   "turn": {
+    "51@1": {
+     "t360": 8.566666666666666,
+     "v0": 51,
+     "vEnd": 79,
+     "minV": 51
+    },
+    "51@0.5": {
+     "t360": 10.133333333333333,
+     "v0": 51,
+     "vEnd": 84,
+     "minV": 51
+    },
+    "79@1": {
+     "t360": 6.683333333333334,
+     "v0": 79,
+     "vEnd": 86,
+     "minV": 79
+    },
+    "79@0.5": {
+     "t360": 8.266666666666667,
+     "v0": 79,
+     "vEnd": 91,
+     "minV": 79
+    }
+   },
+   "pitch": {
+    "51": {
+     "peakDegS": 18.4,
+     "finalDeg": 20.1,
+     "t90": 1.1833333333333333
+    },
+    "79": {
+     "peakDegS": 36.1,
+     "finalDeg": 20.1,
+     "t90": 0.7166666666666667
+    }
+   },
+   "idle": {
+    "57": 2.26,
+    "85": 2.7
+   },
+   "eq50": 86,
+   "eq100": 113,
+   "loop": {
+    "62": {
+     "t": 7.75,
+     "done": true,
+     "travelDeg": 361,
+     "minV": 55,
+     "endV": 81,
+     "dAlt": 2,
+     "climb": 154,
+     "sink": 0,
+     "camFrontFrames": 0,
+     "frames": 465,
+     "maxFrontDot": -0.92,
+     "alive": true
+    },
+    "64": {
+     "t": 7.583333333333333,
+     "done": true,
+     "travelDeg": 361,
+     "minV": 56,
+     "endV": 82,
+     "dAlt": 1,
+     "climb": 153,
+     "sink": 0,
+     "camFrontFrames": 0,
+     "frames": 455,
+     "maxFrontDot": -0.92,
+     "alive": true
+    },
+    "90": {
+     "t": 6.633333333333334,
+     "done": true,
+     "travelDeg": 360,
+     "minV": 75,
+     "endV": 97,
+     "dAlt": -12,
+     "climb": 172,
+     "sink": 12,
+     "camFrontFrames": 0,
+     "frames": 398,
+     "maxFrontDot": -0.92,
+     "alive": true
+    }
+   }
+  },
+  "corsair": {
+   "vmax": 172,
+   "stall": 31,
+   "roll": {
+    "77": {
+     "t60": 0.7,
+     "peakDegS": 116.4,
+     "finalBankDeg": 70
+    },
+    "120": {
+     "t60": 0.5666666666666667,
+     "peakDegS": 146.2,
+     "finalBankDeg": 70
+    },
+    "155": {
+     "t60": 0.5833333333333334,
+     "peakDegS": 138.7,
+     "finalBankDeg": 70
+    }
+   },
+   "turn": {
+    "77@1": {
+     "t360": 7.8,
+     "v0": 77,
+     "vEnd": 96,
+     "minV": 77
+    },
+    "77@0.5": {
+     "t360": 9.566666666666666,
+     "v0": 77,
+     "vEnd": 106,
+     "minV": 77
+    },
+    "120@1": {
+     "t360": 5.966666666666667,
+     "v0": 120,
+     "vEnd": 108,
+     "minV": 108
+    },
+    "120@0.5": {
+     "t360": 7.65,
+     "v0": 120,
+     "vEnd": 119,
+     "minV": 119
+    }
+   },
+   "pitch": {
+    "77": {
+     "peakDegS": 32.9,
+     "finalDeg": 20.1,
+     "t90": 0.75
+    },
+    "120": {
+     "peakDegS": 36.3,
+     "finalDeg": 20.1,
+     "t90": 0.7166666666666667
+    }
+   },
+   "idle": {
+    "86": 2.72,
+    "129": 3.74
+   },
+   "eq50": 130,
+   "eq100": 172,
+   "loop": {
+    "71": {
+     "t": 7.833333333333333,
+     "done": true,
+     "travelDeg": 360,
+     "minV": 67,
+     "endV": 95,
+     "dAlt": 4,
+     "climb": 187,
+     "sink": 0,
+     "camFrontFrames": 0,
+     "frames": 470,
+     "maxFrontDot": -0.92,
+     "alive": true
+    },
+    "95": {
+     "t": 6.733333333333333,
+     "done": true,
+     "travelDeg": 360,
+     "minV": 83,
+     "endV": 106,
+     "dAlt": -13,
+     "climb": 190,
+     "sink": 13,
+     "camFrontFrames": 0,
+     "frames": 404,
+     "maxFrontDot": -0.92,
+     "alive": true
+    },
+    "138": {
+     "t": 6.6,
+     "done": true,
+     "travelDeg": 361,
+     "minV": 117,
+     "endV": 135,
+     "dAlt": -4,
+     "climb": 263,
+     "sink": 4,
+     "camFrontFrames": 0,
+     "frames": 396,
+     "maxFrontDot": -0.93,
+     "alive": true
+    }
+   }
+  },
+  "zero": {
+   "vmax": 147,
+   "stall": 31,
+   "roll": {
+    "66": {
+     "t60": 0.5333333333333333,
+     "peakDegS": 146.9,
+     "finalBankDeg": 75
+    },
+    "103": {
+     "t60": 0.5666666666666667,
+     "peakDegS": 137.3,
+     "finalBankDeg": 75
+    },
+    "132": {
+     "t60": 0.7333333333333333,
+     "peakDegS": 107.8,
+     "finalBankDeg": 75
+    }
+   },
+   "turn": {
+    "66@1": {
+     "t360": 5,
+     "v0": 66,
+     "vEnd": 83,
+     "minV": 66
+    },
+    "66@0.5": {
+     "t360": 6.166666666666667,
+     "v0": 66,
+     "vEnd": 89,
+     "minV": 66
+    },
+    "103@1": {
+     "t360": 5.466666666666667,
+     "v0": 103,
+     "vEnd": 109,
+     "minV": 103
+    },
+    "103@0.5": {
+     "t360": 7.25,
+     "v0": 103,
+     "vEnd": 115,
+     "minV": 103
+    }
+   },
+   "pitch": {
+    "66": {
+     "peakDegS": 41.8,
+     "finalDeg": 20.1,
+     "t90": 0.6166666666666667
+    },
+    "103": {
+     "peakDegS": 41.8,
+     "finalDeg": 20.1,
+     "t90": 0.6166666666666667
+    }
+   },
+   "idle": {
+    "74": 2.01,
+    "110": 3.11
+   },
+   "eq50": 114,
+   "eq100": 147,
+   "loop": {
+    "53": {
+     "t": 6.183333333333334,
+     "done": true,
+     "travelDeg": 361,
+     "minV": 53,
+     "endV": 79,
+     "dAlt": -14,
+     "climb": 111,
+     "sink": 14,
+     "camFrontFrames": 0,
+     "frames": 371,
+     "maxFrontDot": -0.9,
+     "alive": true
+    },
+    "81": {
+     "t": 5.75,
+     "done": true,
+     "travelDeg": 361,
+     "minV": 74,
+     "endV": 96,
+     "dAlt": -16,
+     "climb": 141,
+     "sink": 16,
+     "camFrontFrames": 0,
+     "frames": 345,
+     "maxFrontDot": -0.91,
+     "alive": true
+    },
+    "118": {
+     "t": 5.883333333333334,
+     "done": true,
+     "travelDeg": 360,
+     "minV": 104,
+     "endV": 124,
+     "dAlt": -11,
+     "climb": 205,
+     "sink": 11,
+     "camFrontFrames": 0,
+     "frames": 353,
+     "maxFrontDot": -0.92,
+     "alive": true
+    }
+   }
+  },
+  "p47": {
+   "vmax": 194,
+   "stall": 51.85664,
+   "roll": {
+    "87": {
+     "t60": 0.65,
+     "peakDegS": 119.4,
+     "finalBankDeg": 77
+    },
+    "136": {
+     "t60": 0.55,
+     "peakDegS": 143.4,
+     "finalBankDeg": 77
+    },
+    "175": {
+     "t60": 0.6166666666666667,
+     "peakDegS": 125.7,
+     "finalBankDeg": 77
+    }
+   },
+   "turn": {
+    "87@1": {
+     "t360": 9.35,
+     "v0": 87,
+     "vEnd": 94,
+     "minV": 87
+    },
+    "87@0.5": {
+     "t360": 11.05,
+     "v0": 87,
+     "vEnd": 99,
+     "minV": 87
+    },
+    "136@1": {
+     "t360": 6,
+     "v0": 136,
+     "vEnd": 138,
+     "minV": 136
+    },
+    "136@0.5": {
+     "t360": 7.65,
+     "v0": 136,
+     "vEnd": 139,
+     "minV": 136
+    }
+   },
+   "pitch": {
+    "87": {
+     "peakDegS": 30.9,
+     "finalDeg": 30.3,
+     "t90": 1.1333333333333333
+    },
+    "136": {
+     "peakDegS": 36.8,
+     "finalDeg": 30.3,
+     "t90": 1.05
+    }
+   },
+   "idle": {
+    "97": 1.5,
+    "146": 2.69
+   },
+   "eq50": 143,
+   "eq100": 167,
+   "loop": {
+    "78": {
+     "t": 11.383333333333333,
+     "done": true,
+     "travelDeg": 360,
+     "minV": 57,
+     "endV": 87,
+     "dAlt": 15,
+     "climb": 246,
+     "sink": 0,
+     "camFrontFrames": 0,
+     "frames": 683,
+     "maxFrontDot": -0.92,
+     "alive": true
+    },
+    "107": {
+     "t": 7.2,
+     "done": true,
+     "travelDeg": 360,
+     "minV": 89,
+     "endV": 108,
+     "dAlt": -1,
+     "climb": 221,
+     "sink": 1,
+     "camFrontFrames": 0,
+     "frames": 432,
+     "maxFrontDot": -0.91,
+     "alive": true
+    },
+    "155": {
+     "t": 6.766666666666667,
+     "done": true,
+     "travelDeg": 360,
+     "minV": 134,
+     "endV": 149,
+     "dAlt": 6,
+     "climb": 311,
+     "sink": 0,
+     "camFrontFrames": 0,
+     "frames": 406,
+     "maxFrontDot": -0.92,
+     "alive": true
+    }
+   }
+  },
+  "bf109": {
+   "vmax": 176,
+   "stall": 34.5,
+   "roll": {
+    "79": {
+     "t60": 0.5666666666666667,
+     "peakDegS": 139.1,
+     "finalBankDeg": 72
+    },
+    "123": {
+     "t60": 0.7,
+     "peakDegS": 113.3,
+     "finalBankDeg": 72
+    },
+    "158": {
+     "t60": 0.9333333333333333,
+     "peakDegS": 86,
+     "finalBankDeg": 72
+    }
+   },
+   "turn": {
+    "79@1": {
+     "t360": 6.7,
+     "v0": 79,
+     "vEnd": 102,
+     "minV": 79
+    },
+    "79@0.5": {
+     "t360": 8.233333333333333,
+     "v0": 79,
+     "vEnd": 111,
+     "minV": 79
+    },
+    "123@1": {
+     "t360": 5.883333333333334,
+     "v0": 123,
+     "vEnd": 124,
+     "minV": 123
+    },
+    "123@0.5": {
+     "t360": 8.1,
+     "v0": 123,
+     "vEnd": 134,
+     "minV": 123
+    }
+   },
+   "pitch": {
+    "79": {
+     "peakDegS": 39.1,
+     "finalDeg": 31.1,
+     "t90": 1.0166666666666666
+    },
+    "123": {
+     "peakDegS": 39.1,
+     "finalDeg": 31.1,
+     "t90": 1.0166666666666666
+    }
+   },
+   "idle": {
+    "88": 2.27,
+    "132": 3.7
+   },
+   "eq50": 136,
+   "eq100": 176,
+   "loop": {
+    "68": {
+     "t": 7.3,
+     "done": true,
+     "travelDeg": 361,
+     "minV": 68,
+     "endV": 98,
+     "dAlt": -5,
+     "climb": 174,
+     "sink": 5,
+     "camFrontFrames": 0,
+     "frames": 438,
+     "maxFrontDot": -0.9,
+     "alive": true
+    },
+    "97": {
+     "t": 6.533333333333333,
+     "done": true,
+     "travelDeg": 361,
+     "minV": 89,
+     "endV": 114,
+     "dAlt": -22,
+     "climb": 192,
+     "sink": 22,
+     "camFrontFrames": 0,
+     "frames": 392,
+     "maxFrontDot": -0.9,
+     "alive": true
+    },
+    "141": {
+     "t": 6.666666666666667,
+     "done": true,
+     "travelDeg": 361,
+     "minV": 124,
+     "endV": 145,
+     "dAlt": -12,
+     "climb": 276,
+     "sink": 12,
+     "camFrontFrames": 0,
+     "frames": 400,
+     "maxFrontDot": -0.91,
+     "alive": true
+    }
+   }
+  },
+  "fw190": {
+   "vmax": 194,
+   "stall": 39,
+   "roll": {
+    "87": {
+     "t60": 0.4666666666666667,
+     "peakDegS": 172.7,
+     "finalBankDeg": 77
+    },
+    "136": {
+     "t60": 0.43333333333333335,
+     "peakDegS": 187.5,
+     "finalBankDeg": 77
+    },
+    "175": {
+     "t60": 0.4666666666666667,
+     "peakDegS": 171.1,
+     "finalBankDeg": 77
+    }
+   },
+   "turn": {
+    "87@1": {
+     "t360": 8.566666666666666,
+     "v0": 87,
+     "vEnd": 102,
+     "minV": 87
+    },
+    "87@0.5": {
+     "t360": 10.65,
+     "v0": 87,
+     "vEnd": 114,
+     "minV": 87
+    },
+    "136@1": {
+     "t360": 6.483333333333333,
+     "v0": 136,
+     "vEnd": 117,
+     "minV": 117
+    },
+    "136@0.5": {
+     "t360": 8.666666666666666,
+     "v0": 136,
+     "vEnd": 131,
+     "minV": 131
+    }
+   },
+   "pitch": {
+    "87": {
+     "peakDegS": 29.7,
+     "finalDeg": 27.9,
+     "t90": 1.3166666666666667
+    },
+    "136": {
+     "peakDegS": 29.7,
+     "finalDeg": 27.9,
+     "t90": 1.3166666666666667
+    }
+   },
+   "idle": {
+    "97": 2.47,
+    "146": 3.64
+   },
+   "eq50": 147,
+   "eq100": 193,
+   "loop": {
+    "78": {
+     "t": 8.866666666666667,
+     "done": true,
+     "travelDeg": 360,
+     "minV": 73,
+     "endV": 101,
+     "dAlt": 21,
+     "climb": 233,
+     "sink": 0,
+     "camFrontFrames": 0,
+     "frames": 532,
+     "maxFrontDot": -0.91,
+     "alive": true
+    },
+    "107": {
+     "t": 7.383333333333334,
+     "done": true,
+     "travelDeg": 361,
+     "minV": 92,
+     "endV": 115,
+     "dAlt": -4,
+     "climb": 229,
+     "sink": 4,
+     "camFrontFrames": 0,
+     "frames": 443,
+     "maxFrontDot": -0.91,
+     "alive": true
+    },
+    "155": {
+     "t": 7.2,
+     "done": true,
+     "travelDeg": 360,
+     "minV": 130,
+     "endV": 148,
+     "dAlt": 5,
+     "climb": 317,
+     "sink": 0,
+     "camFrontFrames": 0,
+     "frames": 432,
+     "maxFrontDot": -0.92,
+     "alive": true
+    }
+   }
+  },
+  "ju87": {
+   "vmax": 113,
+   "stall": 37,
+   "roll": {
+    "51": {
+     "t60": 0.9,
+     "peakDegS": 88,
+     "finalBankDeg": 73
+    },
+    "79": {
+     "t60": 0.8333333333333334,
+     "peakDegS": 94.4,
+     "finalBankDeg": 73
+    },
+    "102": {
+     "t60": 0.9833333333333333,
+     "peakDegS": 80.1,
+     "finalBankDeg": 73
+    }
+   },
+   "turn": {
+    "51@1": {
+     "t360": 7.333333333333333,
+     "v0": 51,
+     "vEnd": 71,
+     "minV": 51
+    },
+    "51@0.5": {
+     "t360": 8.766666666666667,
+     "v0": 51,
+     "vEnd": 76,
+     "minV": 51
+    },
+    "79@1": {
+     "t360": 5.616666666666666,
+     "v0": 79,
+     "vEnd": 80,
+     "minV": 79
+    },
+    "79@0.5": {
+     "t360": 7.033333333333333,
+     "v0": 79,
+     "vEnd": 85,
+     "minV": 79
+    }
+   },
+   "pitch": {
+    "51": {
+     "peakDegS": 27.8,
+     "finalDeg": 33.2,
+     "t90": 1.3333333333333333
+    },
+    "79": {
+     "peakDegS": 38.2,
+     "finalDeg": 33.2,
+     "t90": 1.1
+    }
+   },
+   "idle": {
+    "57": 2.55,
+    "85": 2.67
+   },
+   "eq50": 84,
+   "eq100": 113,
+   "loop": {
+    "57": {
+     "t": 7.7,
+     "done": true,
+     "travelDeg": 360,
+     "minV": 48,
+     "endV": 75,
+     "dAlt": -9,
+     "climb": 133,
+     "sink": 9,
+     "camFrontFrames": 0,
+     "frames": 462,
+     "maxFrontDot": -0.9,
+     "alive": true
+    },
+    "62": {
+     "t": 7.316666666666666,
+     "done": true,
+     "travelDeg": 361,
+     "minV": 52,
+     "endV": 79,
+     "dAlt": -19,
+     "climb": 133,
+     "sink": 19,
+     "camFrontFrames": 0,
+     "frames": 439,
+     "maxFrontDot": -0.9,
+     "alive": true
+    },
+    "90": {
+     "t": 7.133333333333334,
+     "done": true,
+     "travelDeg": 361,
+     "minV": 73,
+     "endV": 96,
+     "dAlt": -13,
+     "climb": 183,
+     "sink": 13,
+     "camFrontFrames": 0,
+     "frames": 428,
+     "maxFrontDot": -0.91,
+     "alive": true
+    }
+   }
+  },
+  "me262": {
+   "vmax": 242,
+   "stall": 49,
+   "roll": {
+    "109": {
+     "t60": 0.6166666666666667,
+     "peakDegS": 125.2,
+     "finalBankDeg": 77
+    },
+    "169": {
+     "t60": 0.85,
+     "peakDegS": 91.2,
+     "finalBankDeg": 77
+    },
+    "218": {
+     "t60": 1.1,
+     "peakDegS": 70,
+     "finalBankDeg": 77
+    }
+   },
+   "turn": {
+    "109@1": {
+     "t360": 8.583333333333334,
+     "v0": 109,
+     "vEnd": 134,
+     "minV": 109
+    },
+    "109@0.5": {
+     "t360": 10.433333333333334,
+     "v0": 109,
+     "vEnd": 142,
+     "minV": 109
+    },
+    "169@1": {
+     "t360": 9.866666666666667,
+     "v0": 169,
+     "vEnd": 184,
+     "minV": 169
+    },
+    "169@0.5": {
+     "t360": 12.766666666666667,
+     "v0": 169,
+     "vEnd": 192,
+     "minV": 169
+    }
+   },
+   "pitch": {
+    "109": {
+     "peakDegS": 30.2,
+     "finalDeg": 30.3,
+     "t90": 1.2833333333333334
+    },
+    "169": {
+     "peakDegS": 30.2,
+     "finalDeg": 30.3,
+     "t90": 1.2833333333333334
+    }
+   },
+   "idle": {
+    "121": 1.13,
+    "182": 2.49
+   },
+   "eq50": 169,
+   "eq100": 238,
+   "loop": {
+    "88": {
+     "t": 9.833333333333334,
+     "done": true,
+     "travelDeg": 360,
+     "minV": 77,
+     "endV": 122,
+     "dAlt": 13,
+     "climb": 286,
+     "sink": 0,
+     "camFrontFrames": 0,
+     "frames": 590,
+     "maxFrontDot": -0.92,
+     "alive": true
+    },
+    "133": {
+     "t": 8.266666666666667,
+     "done": true,
+     "travelDeg": 360,
+     "minV": 121,
+     "endV": 160,
+     "dAlt": -38,
+     "climb": 333,
+     "sink": 38,
+     "camFrontFrames": 0,
+     "frames": 496,
+     "maxFrontDot": -0.93,
+     "alive": true
+    },
+    "194": {
+     "t": 9.15,
+     "done": true,
+     "travelDeg": 360,
+     "minV": 175,
+     "endV": 212,
+     "dAlt": -46,
+     "climb": 517,
+     "sink": 46,
+     "camFrontFrames": 0,
+     "frames": 549,
+     "maxFrontDot": -0.94,
+     "alive": true
+    }
+   }
+  },
+  "me163": {
+   "vmax": 238,
+   "stall": 51,
+   "roll": {
+    "107": {
+     "t60": 0.5666666666666667,
+     "peakDegS": 144.8,
+     "finalBankDeg": 75
+    },
+    "167": {
+     "t60": 0.7,
+     "peakDegS": 116.5,
+     "finalBankDeg": 75
+    },
+    "214": {
+     "t60": 0.85,
+     "peakDegS": 96.2,
+     "finalBankDeg": 75
+    }
+   },
+   "turn": {
+    "107@1": {
+     "t360": 7.933333333333334,
+     "v0": 107,
+     "vEnd": 183,
+     "minV": 107
+    },
+    "107@0.5": {
+     "t360": 12.066666666666666,
+     "v0": 107,
+     "vEnd": 207,
+     "minV": 107
+    },
+    "167@1": {
+     "t360": 9.866666666666667,
+     "v0": 167,
+     "vEnd": 215,
+     "minV": 167
+    },
+    "167@0.5": {
+     "t360": 14.633333333333333,
+     "v0": 167,
+     "vEnd": 227,
+     "minV": 167
+    }
+   },
+   "pitch": {
+    "107": {
+     "peakDegS": 29.6,
+     "finalDeg": 27.1,
+     "t90": 1.2833333333333334
+    },
+    "167": {
+     "peakDegS": 29.6,
+     "finalDeg": 27.1,
+     "t90": 1.2833333333333334
+    }
+   },
+   "idle": {
+    "119": 2,
+    "179": 2.47
+   },
+   "eq50": 168,
+   "eq100": 238,
+   "loop": {
+    "83": {
+     "t": 8.083333333333334,
+     "done": true,
+     "travelDeg": 360,
+     "minV": 83,
+     "endV": 176,
+     "dAlt": -54,
+     "climb": 276,
+     "sink": 54,
+     "camFrontFrames": 0,
+     "frames": 485,
+     "maxFrontDot": -0.91,
+     "alive": true
+    },
+    "131": {
+     "t": 7.45,
+     "done": true,
+     "travelDeg": 360,
+     "minV": 131,
+     "endV": 201,
+     "dAlt": -106,
+     "climb": 311,
+     "sink": 106,
+     "camFrontFrames": 0,
+     "frames": 447,
+     "maxFrontDot": -0.92,
+     "alive": true
+    },
+    "190": {
+     "t": 8.633333333333333,
+     "done": true,
+     "travelDeg": 360,
+     "minV": 188,
+     "endV": 231,
+     "dAlt": -73,
+     "climb": 500,
+     "sink": 74,
+     "camFrontFrames": 0,
+     "frames": 518,
+     "maxFrontDot": -0.93,
+     "alive": true
+    }
+   }
+  }
+ }
+}
