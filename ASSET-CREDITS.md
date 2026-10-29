@@ -1,3 +1,20 @@
+## Build 215 — cleaner loaded voices (29 October 2026)
+
+P-47, Fw 190 and Avenger use the prepared 25-second loaded recordings with
+persistent cabin tones and hiss reduced and circular envelope leveling. The same
+adapted source families now supply the SBD and Zero power layers, with quicker
+playback at high power. These remain declared substitutes, not authenticated
+R-1820/Sakae recordings or measured engine RPM. Accepted idle recordings and
+processing, Bf 109, Ju 87, Corsair and jet/rocket audio are unchanged.
+
+Output rises across idle, 25%, 50%, 75% and full power. Actual Web Audio rendering
+checks sixty-second sustain, short level dips, clipping headroom, throttle return,
+stop silence, cache isolation and missing-file reporting. Source cuts, processing,
+output SHA-256 and measured sample statistics are in `detail-provenance.json`.
+Reproduce with `scripts/engine-audio/refine-loaded-radials.py --source-dir <external-source-dir>`
+after acquiring the same verified sources as Build 214. Existing source licenses
+and attribution below apply. Raw WAV sources remain outside the checkout.
+
 # Squadron asset credits
 
 ## Build 214 — loaded radial sound (28 October 2026)

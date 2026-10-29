@@ -28,4 +28,4 @@ const at=k=>rows.find(r=>r.kind===k&&r.fps===60).t90;
 assert(at('zero')<at('p47')&&at('bf109')<at('p47')*1.05,'light fighters answer the stick sooner than the heavy Jug');
 assert(at('avenger')>at('zero'),'the torpedo bomber answers more slowly than the Zero');
 console.log('Measured pitch response:',JSON.stringify(rows));
-fs.mkdirSync(path.join(root,'test-visuals'),{recursive:true});fs.writeFileSync(path.join(root,'test-visuals/build215-pitch.json'),JSON.stringify(rows,null,2));
+fs.mkdirSync(path.join(root,'test-visuals'),{recursive:true});fs.writeFileSync(path.join(root,'test-visuals/build219-pitch.json'),JSON.stringify(rows,null,2));

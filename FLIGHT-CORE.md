@@ -120,10 +120,10 @@ Masse im Spiel: 5 775 kg × Beladungsfaktor aus `SortieFeatures.Handling.sample`
 
 | | Verstärkung 2,2 | reine Physik |
 |---|---|---|
-| Vollkreis ab 72 m/s (45 % Vmax) | 15,3 s | 37,8 s |
-| Vollkreis ab 113 m/s (70 % Vmax) | 8,3 s | 20,0 s |
-| Looping ab 140 m/s | 7,4 s, min. 108 m/s | 18,9 s, min. 73 m/s |
-| AERO-Freigabe (Loop ohne Unterschreiten der 1-g-Stallfahrt, +8 %) | 93,2 m/s | 131,8 m/s |
+| Vollkreis ab 72 m/s (45 % Vmax) | 15,3 s | 37,9 s |
+| Vollkreis ab 113 m/s (70 % Vmax) | 8,5 s | 21,1 s |
+| Looping ab 140 m/s | 7,1 s, min. 107 m/s | 18,0 s, min. 72 m/s |
+| AERO-Freigabe (Loop ohne Unterschreiten der 1-g-Stallfahrt, +8 %) | 93,9 m/s | 132,8 m/s |
 | Leerlauf-Verzögerung bei 80 / 121 m/s | 1,24 / 2,13 m/s² | gleich |
 | Beschleunigung Vollgas bei 80 / 121 m/s | 1,97 / 0,96 m/s² | gleich |
 

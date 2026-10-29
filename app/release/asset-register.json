@@ -1,19 +1,19 @@
 {
   "schema": 1,
   "reviewedOn": "2026-10-23",
-  "build": 215,
+  "build": 219,
   "status": "OPEN — source declarations checked; no external rights authorization obtained",
   "payload": {
-    "bytes": 268390308,
-    "fileCount": 342,
+    "bytes": 271908397,
+    "fileCount": 353,
     "modelCount": 36,
-    "manifestSha256": "17cd23886255f7feb2b7ddad02f2623a98c31abc5983ff42fcecbdb7958b3fe9"
+    "manifestSha256": "5c3cac74d6a663047b004419af05ab66d481196f16ea8b8b7f673263d44dc9ec"
   },
   "files": [
     {
       "path": "ASSET-CREDITS.md",
-      "bytes": 32079,
-      "sha256": "37ef4667d6b7158dc0a6176c2590cb2e17dfbb0e3f6eefc1f37471708aaabe6d",
+      "bytes": 33180,
+      "sha256": "7e372508d4c492cbf7ac8b4c378c0b761a59da4a05d9d361d65268600108eb77",
       "kind": "code-or-notice"
     },
     {
@@ -408,14 +408,74 @@
     },
     {
       "path": "audio/aircraft-engine.js",
-      "bytes": 6993,
-      "sha256": "b86f90aa25bb9dd82b2c33f385c7537ca994efb36448206bd8e91878a8e990ea",
+      "bytes": 10969,
+      "sha256": "f469978879cdf1061e909aef5e90d048d22932b3610008a12a1812b639a6a360",
       "kind": "code-or-notice"
     },
     {
       "path": "audio/engines/CREDITS.md",
-      "bytes": 5920,
-      "sha256": "d499af2e4a7aa6bfefaaa0368d069eb49f717a0bfe1c48363a38943939288f83",
+      "bytes": 11386,
+      "sha256": "0db11ac57352884e026b5f814e2b3332e351009df0cca9f63d7b8fdeb4b5aa58",
+      "kind": "code-or-notice"
+    },
+    {
+      "path": "audio/engines/approved/avenger-c-power.wav",
+      "bytes": 940844,
+      "sha256": "061f0a95ed190b87ea6346934a93e6b00b4aac8583307997b4b725799a005982",
+      "kind": "code-or-notice"
+    },
+    {
+      "path": "audio/engines/approved/bf109-power.wav",
+      "bytes": 940844,
+      "sha256": "366d0557e2ac11e2361c9e102e06c00fc59c43350b00cb8cebadcd7ab156c6c3",
+      "kind": "code-or-notice"
+    },
+    {
+      "path": "audio/engines/approved/bmw801-idle.wav",
+      "bytes": 247244,
+      "sha256": "d23e878a7df8dc4a3f34b0f22b2bd70edf0557cec4f1faaa6ba16ec0ade3482e",
+      "kind": "code-or-notice"
+    },
+    {
+      "path": "audio/engines/approved/db601-idle.wav",
+      "bytes": 340844,
+      "sha256": "e3ab79763eb1c4c9537b1acbe5e42a10817f1307c7246c52203bba61ab76d3d0",
+      "kind": "code-or-notice"
+    },
+    {
+      "path": "audio/engines/approved/fw190-power.wav",
+      "bytes": 940844,
+      "sha256": "214fb000ac95a9e728e40d47c2ebd71a91d2ff48f43e99f57f4bbac8a0008553",
+      "kind": "code-or-notice"
+    },
+    {
+      "path": "audio/engines/approved/p47-a-power.wav",
+      "bytes": 940844,
+      "sha256": "6bd6b14ba2e007a26c4689d55d509b658cdb482c054d5e622a3760fc0c206750",
+      "kind": "code-or-notice"
+    },
+    {
+      "path": "audio/engines/approved/provenance.json",
+      "bytes": 8236,
+      "sha256": "b5a8a4018962456f83d805a82b2ee6af4d6f1b9aba7a00d46197a7ea9fca6a31",
+      "kind": "code-or-notice"
+    },
+    {
+      "path": "audio/engines/approved/r2800-idle.wav",
+      "bytes": 434444,
+      "sha256": "432946307faf04c3aac3b12da2ae8acdf1e3dcde85e8bac0defb7aa2c300d5bf",
+      "kind": "code-or-notice"
+    },
+    {
+      "path": "audio/engines/approved/sbd-b-power.wav",
+      "bytes": 940844,
+      "sha256": "40309ef34d8909589ee084723cb2bd78afe8e7fb5f783709e4b68d8a0f58809f",
+      "kind": "code-or-notice"
+    },
+    {
+      "path": "audio/engines/approved/zero-power.wav",
+      "bytes": 940844,
+      "sha256": "d16084952c11baa12fc193f1140b7c511f319bbf2d1d14a3e8e788ffa12f0ac8",
       "kind": "code-or-notice"
     },
     {
@@ -440,6 +500,12 @@
       "path": "audio/engines/db601-power.wav",
       "bytes": 408044,
       "sha256": "cea578f61a2e82040086c2bd120aea9e7f8e7cb9fc08e90d6a952f53720ff311",
+      "kind": "code-or-notice"
+    },
+    {
+      "path": "audio/engines/detail-provenance.json",
+      "bytes": 3630,
+      "sha256": "759c32d7c3765f7a4620d9e6a5b0594fb74d15ab526536307f83fc78debd4b90",
       "kind": "code-or-notice"
     },
     {
@@ -473,21 +539,9 @@
       "kind": "code-or-notice"
     },
     {
-      "path": "audio/engines/r2800-loaded-power.wav",
-      "bytes": 1600044,
-      "sha256": "24edb86554e38e2c13e0518409e99e7706427de0956091e130ec31ecdfb21db7",
-      "kind": "code-or-notice"
-    },
-    {
       "path": "audio/engines/r2800-power.wav",
       "bytes": 696044,
       "sha256": "7cce0ae3af6724d3bacbbc5890513ed866462bf478e54660b34128ead313cd4c",
-      "kind": "code-or-notice"
-    },
-    {
-      "path": "audio/engines/radial14-loaded-power.wav",
-      "bytes": 1600044,
-      "sha256": "e62643298310c3b5ec60a8c08e5823591317dd7df654822348a5e0cef7f057aa",
       "kind": "code-or-notice"
     },
     {
@@ -498,8 +552,14 @@
     },
     {
       "path": "audio/jet-engine.js",
-      "bytes": 3164,
-      "sha256": "da51cae254e0287fa36c08c263099bb730ea8a5b42c82f83f96a3d3f342f1a53",
+      "bytes": 4637,
+      "sha256": "9a191b0b66652082eb43e03c3ed2f478605eddf37e908614de2f1863294c0672",
+      "kind": "code-or-notice"
+    },
+    {
+      "path": "audio/throttle-response.js",
+      "bytes": 886,
+      "sha256": "7be2edb8e29f6d00da57074fc9adbdba5c966fa0415d389dc12ce8560f332afb",
       "kind": "code-or-notice"
     },
     {
@@ -599,6 +659,12 @@
       "kind": "code-or-notice"
     },
     {
+      "path": "flight-core.js",
+      "bytes": 16594,
+      "sha256": "739f4ad2ffa6802adca24da76a949a54479896656d5ee0d4ad0bddc6c222e617",
+      "kind": "code-or-notice"
+    },
+    {
       "path": "flight-dynamics.js",
       "bytes": 5638,
       "sha256": "cd9a4e81ced52ee464e728642013f4252855e45c6f9953fa9631bba8b98b1e51",
@@ -661,7 +727,7 @@
     {
       "path": "index.html",
       "bytes": 7260,
-      "sha256": "3047bf10fa23b3b7e7f7879fb1144c4ed30caf306751819a8c641d694e35fd28",
+      "sha256": "aea0c5e964accffad99529ccd2ac54683a1a92fca0f507aebff2025fb2a1b2a0",
       "kind": "code-or-notice"
     },
     {
@@ -792,8 +858,8 @@
     },
     {
       "path": "remagen-mission.html",
-      "bytes": 366709,
-      "sha256": "94b453f3b56376dc53e43dba42dca19731d98a2b1f28ed9ebc5d43f0a3933167",
+      "bytes": 375872,
+      "sha256": "91a26093f13a83bb2029d3971c23b63b52def9808a3b8471f17fa769f18a993b",
       "kind": "code-or-notice"
     },
     {
@@ -1986,8 +2052,8 @@
     },
     {
       "path": "torpedo-carrier.html",
-      "bytes": 431158,
-      "sha256": "2779607e0aec322b1bf15db4c60d1434ca9ca105ac8dd34018c07bbc02188dcc",
+      "bytes": 431214,
+      "sha256": "477304cd43e7c34d5756a10041f1e49232d506122f1ab676db5a8104d3edc57f",
       "kind": "code-or-notice"
     },
     {
@@ -3130,7 +3196,7 @@
         "audio/*.js",
         "audio/engines/**"
       ],
-      "status": "Recorded piston loops: Fight2FlyPhoto CC BY 3.0, craigsmith CC0, and Pole Position free SONNISS GDC Bundle License v2.0 recordings incorporated in this game. Build 214 loaded P47 source and composite Fw190/Avenger voices are explicit; legacy substitutions remain documented. Sources, hashes, cuts and limits in provenance.json, loaded-provenance.json and CREDITS.md. Raw source files excluded from checkout and offline payload. Jet/rocket/effects remain procedural."
+      "status": "Recorded piston loops: Fight2FlyPhoto CC BY 3.0, craigsmith CC0, and Pole Position free SONNISS GDC Bundle License v2.0 recordings incorporated in this game. Build 218 retains the six approved voices and adds linear throttle mapping with peak protection across the fleet; declared P47/BMW substitutions remain; legacy substitutions remain documented. Sources, hashes, cuts and limits in provenance.json, loaded-provenance.json, detail-provenance.json, approved/provenance.json and CREDITS.md. Raw source files excluded from checkout and offline payload. Jet/rocket/effects remain procedural."
     },
     {
       "paths": [

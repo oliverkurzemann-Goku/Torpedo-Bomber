@@ -1,0 +1,93 @@
+{
+  "schema": 1,
+  "build": 215,
+  "acquiredOn": "2026-10-28",
+  "publisher": "Pole Position Production / Sonniss",
+  "collection": "GameAudioGDC 2017",
+  "collectionUrl": "https://sonniss.com/gameaudiogdc/",
+  "tracklistUrl": "https://docs.google.com/spreadsheets/d/1aCBw_dNba_ajYziogKdi1nL7JmdggBwbZXBFSoNCAvY/edit",
+  "licenseUrl": "https://sonniss.com/gdc-bundle-license/",
+  "licenseVersion": "2.0, effective 2026-08-27; downloaded 2026-10-28",
+  "distribution": "Derived audio incorporated in this game/interactive project. Raw/source sounds are not redistributed as a sound library. No AI training.",
+  "sources": {
+    "bearcat": {
+      "file": "Bearcat_t5_onbrd_flybys_cockpit.wav",
+      "sha256": "9c84c4682b34208e2ee6f26a77f17877e52ed26585a444eb7cca0eea165a6003",
+      "archivePath": "Sonniss.com - GDC 2017 - Game Audio Bundle Part 6of9/Pole Position - Grumman F8F Bearcat/Bearcat_t5_onbrd_flybys_cockpit.wav",
+      "sourceUrl": "https://sonniss.com/sound-effects/grumman-f8f-bearcat/",
+      "description": "Pole Position: onboard flying cockpit; R-2800-30W family; actual source RPM unmeasured",
+      "cut": [
+        215,
+        241
+      ],
+      "acquisition": {
+        "offset": 498241339,
+        "compressed": 218806016,
+        "size": 226522926,
+        "crc": 1766862215
+      }
+    },
+    "b25": {
+      "file": "B-25_t1_ext_startup_idle_below_plane.wav",
+      "sha256": "f189a9b26f7515f2f911d48db38af7a0a0332088989a3154cda34affc769ec04",
+      "archivePath": "Sonniss.com - GDC 2017 - Game Audio Bundle Part 6of9/Pole Position - North American B-25 Mitchell/B-25_t1_ext_startup_idle_below_plane.wav",
+      "sourceUrl": "https://pole.se/product/north-american-b-25-mitchell/",
+      "description": "Pole Position: exterior startup/idle below plane; R-2600 family; used only for low-band radial/prop texture, not presented as a full-power recording",
+      "cut": [
+        35,
+        61
+      ],
+      "acquisition": {
+        "offset": 976331934,
+        "compressed": 43351871,
+        "size": 45938490,
+        "crc": 3572946683
+      }
+    }
+  },
+  "archiveUrl": "https://ftpmirror.your.org/pub/misc/sonniss2017/Sonniss.com%20-%20GDC%202017%20-%20Game%20Audio%20Bundle%20Part%206of9.zip",
+  "parentBuild": 214,
+  "loops": [
+    {
+      "path": "audio/engines/r2800-detail-power.wav",
+      "seconds": 25.0,
+      "sampleRate": 32000,
+      "sourceCuts": {
+        "bearcat": [
+          215,
+          241
+        ]
+      },
+      "crossfadeSeconds": 1,
+      "rms": 0.20490178127692743,
+      "peak": 0.7551735573836618,
+      "quarterSecondRangeDb": 0.49289081847662686,
+      "peakLimitedFraction": 0.00167,
+      "above4kFraction": 0.0037871685932859872,
+      "sha256": "84eb7844f3ac1cd09eeb20ee2264dd5569f74e6ff98be194e9d63d4a1511541e"
+    },
+    {
+      "path": "audio/engines/radial14-detail-power.wav",
+      "seconds": 25.0,
+      "sampleRate": 32000,
+      "sourceCuts": {
+        "bearcat": [
+          215,
+          241
+        ],
+        "b25": [
+          35,
+          61
+        ]
+      },
+      "crossfadeSeconds": 1,
+      "rms": 0.20491703788559337,
+      "peak": 0.7511807177813513,
+      "quarterSecondRangeDb": 0.5772614661731397,
+      "peakLimitedFraction": 0.00167875,
+      "above4kFraction": 3.661508417320858e-06,
+      "sha256": "5384781cdeef289b60e1fcd09f6649f92743ef9b3031ae7992cb070b559088e5"
+    }
+  ],
+  "processing": "Measured onboard tones 80/138/216Hz reduced; upper-band hiss reduced, recorded exhaust mid-band retained. Circular envelope leveling after a one-second equal-power seam. No periodic modulation. Sources retain prior adaptation limits."
+}

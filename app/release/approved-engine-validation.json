@@ -1,0 +1,59 @@
+{
+  "build": 217,
+  "status": "PASS",
+  "browser": "Managed Chromium, real native Web Audio via local preview",
+  "sampleRates": [
+    24000,
+    48000
+  ],
+  "checks": [
+    "Six exact approved choices",
+    "Progressive throttle levels at 24/48 kHz",
+    "Native full-power waveform matches approved buffer",
+    "Six 90-second loop sustains",
+    "Pause/resume and return to idle",
+    "Distinct files/cache isolation",
+    "Missing-file reporting",
+    "Delayed selection race",
+    "Actual soundcheck UI: start, P47-to-Zero switch while running, stop"
+  ],
+  "maxRenderedPeak": 0.9198481440544128,
+  "minimumApprovedBufferCorrelation": 0.9999999999999164,
+  "sustainSecondsPerApprovedVoice": 90,
+  "quarterSecondSustainRangeDb": {
+    "p47": 0.9965607010200185,
+    "avenger": 0.9025636020295222,
+    "sbd": 1.0681358802636023,
+    "fw190": 0.9037174821633077,
+    "zero": 0.867973453372365,
+    "bf109": 0.657176534221952
+  },
+  "pausedRms": {
+    "p47": 0,
+    "avenger": 0,
+    "sbd": 0,
+    "fw190": 0,
+    "zero": 0,
+    "bf109": 0
+  },
+  "approvedMapping": {
+    "p47": "P47 A",
+    "avenger": "P47 C",
+    "sbd": "P47 B",
+    "fw190": "Fw190 Kerniger Sternmotor",
+    "zero": "Zero Leicht und lebhaft",
+    "bf109": "Me109 Trockenes V12 Knurren"
+  },
+  "engineSourceSha256": "7ff50e85e510523b7d069da679f571f45d2030d9240ffa7854596aeb7343219e",
+  "loopProvenanceSha256": "b5a8a4018962456f83d805a82b2ee6af4d6f1b9aba7a00d46197a7ea9fca6a31",
+  "offlinePayload": {
+    "build": 217,
+    "sampleReferencesChecked": 12,
+    "campaigns": [
+      "torpedo-carrier.html",
+      "remagen-mission.html"
+    ],
+    "nativeBridge": "Verified unchanged bundle reused; all static files rebuilt."
+  },
+  "limits": "Audio-specific native-browser checks. Physical iPad/Safari listening and broader gameplay tests were not rerun. Validation completed before publication; deployment status is tracked by GitHub Actions."
+}

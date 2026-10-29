@@ -1,0 +1,89 @@
+{
+  "build": 218,
+  "status": "PASS",
+  "browser": "Managed Chromium native Web Audio",
+  "sampleRates": [
+    24000,
+    48000
+  ],
+  "throttleSteps": [
+    0,
+    0.1,
+    0.25,
+    0.5,
+    0.75,
+    0.9,
+    1
+  ],
+  "models": {
+    "p47": {
+      "idleRms": 0.07795951147376519,
+      "halfRms": 0.17847703059834602,
+      "fullRms": 0.2765353433558569
+    },
+    "corsair": {
+      "idleRms": 0.08447714097380829,
+      "halfRms": 0.19251263627782356,
+      "fullRms": 0.29366440134495786
+    },
+    "fw190": {
+      "idleRms": 0.07762342140861508,
+      "halfRms": 0.17546124715144037,
+      "fullRms": 0.2668089484091654
+    },
+    "bf109": {
+      "idleRms": 0.07770594943780328,
+      "halfRms": 0.17619971744239424,
+      "fullRms": 0.2739190274063452
+    },
+    "ju87": {
+      "idleRms": 0.08476548898217298,
+      "halfRms": 0.19388338057160165,
+      "fullRms": 0.30143192385383943
+    },
+    "avenger": {
+      "idleRms": 0.07795951147376519,
+      "halfRms": 0.17590412469847247,
+      "fullRms": 0.2692110461144262
+    },
+    "sbd": {
+      "idleRms": 0.07795951147376519,
+      "halfRms": 0.1773111708294604,
+      "fullRms": 0.26865220681155494
+    },
+    "zero": {
+      "idleRms": 0.0776019732756271,
+      "halfRms": 0.1760623079090957,
+      "fullRms": 0.2714264644481678
+    },
+    "me262": {
+      "idleRms": 0.07108883356057116,
+      "halfRms": 0.16606899354754978,
+      "fullRms": 0.26131547140887607
+    },
+    "me163": {
+      "idleRms": 0,
+      "halfRms": 0.1407420057061663,
+      "fullRms": 0.28133542427256514
+    }
+  },
+  "maximumNormalizedCurveDeviation": 0.029097160551278756,
+  "maximumRenderedPeak": 0.9596506357192993,
+  "maximumOneSecondSustainRangeDb": 0.7603589410834161,
+  "sustainSecondsPerModel": 60,
+  "allTenPauseOutputsSilent": true,
+  "checks": [
+    "Ten aircraft including Corsair/Stuka/jet/rocket",
+    "Seven throttle levels at 24 and 48 kHz",
+    "Half throttle near audible midpoint",
+    "Stronger full-power output",
+    "Native output peak headroom",
+    "Ten one-minute sustain/pause renders"
+  ],
+  "sourceSha256": {
+    "audio/throttle-response.js": "7be2edb8e29f6d00da57074fc9adbdba5c966fa0415d389dc12ce8560f332afb",
+    "audio/aircraft-engine.js": "f469978879cdf1061e909aef5e90d048d22932b3610008a12a1812b639a6a360",
+    "audio/jet-engine.js": "9a191b0b66652082eb43e03c3ed2f478605eddf37e908614de2f1863294c0672"
+  },
+  "limits": "Audio integration checks; physical iPad/Safari listening and unrelated gameplay tests not rerun."
+}

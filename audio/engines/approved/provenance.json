@@ -1,0 +1,303 @@
+{
+  "build": 217,
+  "sampleRate": 24000,
+  "sourceCredits": "../CREDITS.md and ../provenance.json; original recorded sources by Fight2FlyPhoto, CC BY 3.0. Original procedural accents.",
+  "limits": "Creative game voicings adapted from the approved audition settings. Avenger/SBD share the accepted P47 source family. Zero uses a BMW substitute. No calibrated engine RPM or authentic installation claim.",
+  "profiles": [
+    {
+      "kind": "p47",
+      "choice": "P47 A",
+      "source": "r2800",
+      "idleRate": 1,
+      "cylinders": 18,
+      "inline": false,
+      "speed": 1.37,
+      "prop": 82,
+      "bank": 178,
+      "rough": 0.22,
+      "accent": 0.19,
+      "body": 145,
+      "top": 1050,
+      "drive": 1.6,
+      "record": 0.57,
+      "pulse": 0.33,
+      "bark": 0.1,
+      "resonances": [
+        1,
+        1.87,
+        3.4
+      ],
+      "seed": 65,
+      "propSeed": 535,
+      "fireSeed": 1005,
+      "file": "p47-a-power.wav"
+    },
+    {
+      "kind": "avenger",
+      "choice": "P47 C",
+      "source": "r2800",
+      "idleRate": 1,
+      "cylinders": 18,
+      "inline": false,
+      "speed": 1.62,
+      "prop": 96,
+      "bank": 214,
+      "rough": 0.31,
+      "accent": 0.33,
+      "body": 205,
+      "top": 1800,
+      "drive": 2.5,
+      "record": 0.44,
+      "pulse": 0.35,
+      "bark": 0.21,
+      "resonances": [
+        1,
+        1.87,
+        3.4
+      ],
+      "seed": 67,
+      "propSeed": 537,
+      "fireSeed": 1007,
+      "file": "avenger-c-power.wav"
+    },
+    {
+      "kind": "sbd",
+      "choice": "P47 B",
+      "source": "r2800",
+      "idleRate": 1,
+      "cylinders": 18,
+      "inline": false,
+      "speed": 1.48,
+      "prop": 90,
+      "bank": 195,
+      "rough": 0.47,
+      "accent": 0.41,
+      "body": 175,
+      "top": 1350,
+      "drive": 2.2,
+      "record": 0.4,
+      "pulse": 0.45,
+      "bark": 0.15,
+      "resonances": [
+        1,
+        1.87,
+        3.4
+      ],
+      "seed": 66,
+      "propSeed": 536,
+      "fireSeed": 1006,
+      "file": "sbd-b-power.wav"
+    },
+    {
+      "kind": "fw190",
+      "choice": "Fw190 Kerniger Sternmotor",
+      "source": "bmw801",
+      "idleRate": 1,
+      "cylinders": 14,
+      "inline": false,
+      "speed": 1.46,
+      "prop": 73,
+      "bank": 158,
+      "rough": 0.34,
+      "accent": 0.34,
+      "body": 178,
+      "top": 1450,
+      "drive": 2.1,
+      "record": 0.46,
+      "pulse": 0.39,
+      "bark": 0.15,
+      "resonances": [
+        1,
+        1.87,
+        3.4
+      ],
+      "seed": 190,
+      "propSeed": 660,
+      "fireSeed": 1130,
+      "file": "fw190-power.wav"
+    },
+    {
+      "kind": "zero",
+      "choice": "Zero Leicht und lebhaft",
+      "source": "bmw801",
+      "idleRate": 1.075,
+      "cylinders": 14,
+      "inline": false,
+      "speed": 1.64,
+      "prop": 95,
+      "bank": 181,
+      "rough": 0.26,
+      "accent": 0.24,
+      "body": 235,
+      "top": 1650,
+      "drive": 1.85,
+      "record": 0.49,
+      "pulse": 0.34,
+      "bark": 0.17,
+      "resonances": [
+        1,
+        1.94,
+        3.55
+      ],
+      "seed": 21,
+      "propSeed": 491,
+      "fireSeed": 961,
+      "file": "zero-power.wav"
+    },
+    {
+      "kind": "bf109",
+      "choice": "Me109 Trockenes V12 Knurren",
+      "source": "db601",
+      "idleRate": 1,
+      "cylinders": 12,
+      "inline": true,
+      "speed": 1.3,
+      "prop": 77,
+      "bank": 130,
+      "rough": 0.12,
+      "accent": 0.11,
+      "body": 238,
+      "top": 1900,
+      "drive": 1.7,
+      "record": 0.61,
+      "pulse": 0.26,
+      "bark": 0.13,
+      "resonances": [
+        1,
+        2.02,
+        3.82
+      ],
+      "seed": 109,
+      "propSeed": 579,
+      "fireSeed": 1049,
+      "file": "bf109-power.wav"
+    }
+  ],
+  "sources": [
+    {
+      "path": "audio/engines/bmw801-idle.wav",
+      "sha256": "75177d650a481622c95fe5c3f10f7eba9df9f7f2c1cb8e3f4c4511aa0d822a2b"
+    },
+    {
+      "path": "audio/engines/bmw801-power.wav",
+      "sha256": "4c39044bd3c2c92c7867bd1d9386b7b8d0d32f01b3461331be0bc749728ea9ec"
+    },
+    {
+      "path": "audio/engines/db601-idle.wav",
+      "sha256": "275c350b0eaa15d63eb5d3d4a6bdd31be1744dcb8457cba6391a6f60b1948919"
+    },
+    {
+      "path": "audio/engines/db601-power.wav",
+      "sha256": "cea578f61a2e82040086c2bd120aea9e7f8e7cb9fc08e90d6a952f53720ff311"
+    },
+    {
+      "path": "audio/engines/r2800-idle.wav",
+      "sha256": "19de18c3aab3beb37ded0f8547bc721d0040eb88576a8e829eb8b09e895f7edf"
+    },
+    {
+      "path": "audio/engines/r2800-power.wav",
+      "sha256": "7cce0ae3af6724d3bacbbc5890513ed866462bf478e54660b34128ead313cd4c"
+    }
+  ],
+  "loops": [
+    {
+      "path": "audio/engines/approved/r2800-idle.wav",
+      "seconds": 9.05,
+      "rms": 0.1999881790491696,
+      "peak": 0.7688616115326087,
+      "seamStep": 0.020429843338236248,
+      "stepP99": 0.08229337166155914,
+      "quarterRangeDb": 1.3811675306096176,
+      "centroid": 346.6412152339481,
+      "sha256": "432946307faf04c3aac3b12da2ae8acdf1e3dcde85e8bac0defb7aa2c300d5bf"
+    },
+    {
+      "path": "audio/engines/approved/bmw801-idle.wav",
+      "seconds": 5.15,
+      "rms": 0.19995843964089238,
+      "peak": 0.7772778067870957,
+      "seamStep": 0.03424275867385285,
+      "stepP99": 0.14441613324028568,
+      "quarterRangeDb": 0.848219547552195,
+      "centroid": 639.6345544773731,
+      "sha256": "d23e878a7df8dc4a3f34b0f22b2bd70edf0557cec4f1faaa6ba16ec0ade3482e"
+    },
+    {
+      "path": "audio/engines/approved/db601-idle.wav",
+      "seconds": 7.1,
+      "rms": 0.19999748759487543,
+      "peak": 0.7545709745788052,
+      "seamStep": 0.01619065855668847,
+      "stepP99": 0.10049292382851986,
+      "quarterRangeDb": 0.7763954537390603,
+      "centroid": 397.18382101079294,
+      "sha256": "e3ab79763eb1c4c9537b1acbe5e42a10817f1307c7246c52203bba61ab76d3d0"
+    },
+    {
+      "path": "audio/engines/approved/p47-a-power.wav",
+      "seconds": 19.6,
+      "rms": 0.19913179054391122,
+      "peak": 0.7799743593137753,
+      "seamStep": 0.023644957902140662,
+      "stepP99": 0.08057159225875253,
+      "quarterRangeDb": 1.1531386737605211,
+      "centroid": 359.90102212003114,
+      "sha256": "6bd6b14ba2e007a26c4689d55d509b658cdb482c054d5e622a3760fc0c206750"
+    },
+    {
+      "path": "audio/engines/approved/avenger-c-power.wav",
+      "seconds": 19.6,
+      "rms": 0.19629070030667323,
+      "peak": 0.7799996779792706,
+      "seamStep": 0.09607851223085503,
+      "stepP99": 0.1319261091807974,
+      "quarterRangeDb": 1.0943524601558912,
+      "centroid": 499.7698409824696,
+      "sha256": "061f0a95ed190b87ea6346934a93e6b00b4aac8583307997b4b725799a005982"
+    },
+    {
+      "path": "audio/engines/approved/sbd-b-power.wav",
+      "seconds": 19.6,
+      "rms": 0.19560278365938788,
+      "peak": 0.7799992240548465,
+      "seamStep": 0.001705487904631653,
+      "stepP99": 0.12212164034169398,
+      "quarterRangeDb": 1.120591404854298,
+      "centroid": 448.5879626240185,
+      "sha256": "40309ef34d8909589ee084723cb2bd78afe8e7fb5f783709e4b68d8a0f58809f"
+    },
+    {
+      "path": "audio/engines/approved/fw190-power.wav",
+      "seconds": 19.6,
+      "rms": 0.19468319622267324,
+      "peak": 0.7799989088038577,
+      "seamStep": 0.004274769889126229,
+      "stepP99": 0.13318903282541902,
+      "quarterRangeDb": 1.3270944895284065,
+      "centroid": 524.5725690509555,
+      "sha256": "214fb000ac95a9e728e40d47c2ebd71a91d2ff48f43e99f57f4bbac8a0008553"
+    },
+    {
+      "path": "audio/engines/approved/zero-power.wav",
+      "seconds": 19.6,
+      "rms": 0.19678350611654355,
+      "peak": 0.7799968539372956,
+      "seamStep": 0.005577836551408782,
+      "stepP99": 0.14722047035788705,
+      "quarterRangeDb": 1.0649881845688525,
+      "centroid": 609.901385948799,
+      "sha256": "d16084952c11baa12fc193f1140b7c511f319bbf2d1d14a3e8e788ffa12f0ac8"
+    },
+    {
+      "path": "audio/engines/approved/bf109-power.wav",
+      "seconds": 19.6,
+      "rms": 0.19870074143235134,
+      "peak": 0.7799634960454649,
+      "seamStep": 0.03813607382548012,
+      "stepP99": 0.16686739454929148,
+      "quarterRangeDb": 0.8467818729610049,
+      "centroid": 713.3469967213202,
+      "sha256": "366d0557e2ac11e2361c9e102e06c00fc59c43350b00cb8cebadcd7ab156c6c3"
+    }
+  ]
+}

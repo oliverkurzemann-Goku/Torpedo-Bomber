@@ -66,7 +66,7 @@ const server=http.createServer((req,res)=>{
    else {if(!p47Core)assert(at('fw190').roll/(Math.pow(.5,1.18)*1.56)>at('p47').roll/(.5*1.56)*1.06,'Fw 190 reaches its commanded bank sooner');assert(at('bf109').pitch>at('p47').pitch*1.03,'Bf 109 answers the stick a little sooner than the Jug (Build 215: wing-loading graded, no longer 25 % apart)');assert(at('p47').coast>at('bf109').coast+2);assert(at('me163').acceleration>at('me262').acceleration+30);assert(at('bf109').turn>at('me262').turn*1.25);}
    for(const kind of new Set(rows.map(r=>r.kind))){const samples=rows.filter(r=>r.kind===kind);for(const key of ['acceleration','coast','turnSpeed'])assert(Math.max(...samples.map(r=>r[key]))-Math.min(...samples.map(r=>r[key]))<1.5,kind+' FPS '+key);}
 
-   fs.mkdirSync(path.join(root,'test-visuals'),{recursive:true});fs.writeFileSync(path.join(root,'test-visuals/build215-'+(pacific?'pacific':'rhine')+'-flight.json'),JSON.stringify(rows,null,2));
+   fs.mkdirSync(path.join(root,'test-visuals'),{recursive:true});fs.writeFileSync(path.join(root,'test-visuals/build219-'+(pacific?'pacific':'rhine')+'-flight.json'),JSON.stringify(rows,null,2));
   }
   assert.deepEqual(errors,[]);
  }finally{await browser.close();await new Promise(r=>server.close(r));}
