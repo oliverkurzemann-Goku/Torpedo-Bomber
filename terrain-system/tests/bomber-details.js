@@ -76,7 +76,9 @@ function fixedBladeFaces(group,p){
     const P={pos:new THREE.Vector3(20000,1300,20000),spd:120,alive:true};
     const tracers=[],scene=new THREE.Scene();scene.add(aircraft);
     const code=html.slice(html.indexOf('const bomberRoundGeo='),html.indexOf('function damagePlayer(',html.indexOf('const bomberRoundGeo=')));
-    const ctx=vm.createContext({GameRuntime,THREE,P,scene,tracers,groundY:()=>0,RTILE:10000,RGRID_W:4,RGRID_H:4,
+    // Build 220: the bomber flies the computed core as its own type.
+    const FlightCore=require('../../flight-core.js'),FlightControl=require('../../flight-control.js');
+    const ctx=vm.createContext({GameRuntime,THREE,P,scene,tracers,groundY:()=>0,RTILE:10000,RGRID_W:4,RGRID_H:4,FlightCore,FlightControl,coreOn:k=>FlightCore.has(k),
       D:()=>({id:'rookie',aim:1,dmg:.5}),noseDir:()=>new THREE.Vector3(0,0,1),spawnSmoke(){}});
     vm.runInContext(html.slice(html.indexOf('function flightAltitudeLimit('),html.indexOf('function spawnEnemyAir('))+code,ctx);
     const spin=rotors[0].rotation[axis];

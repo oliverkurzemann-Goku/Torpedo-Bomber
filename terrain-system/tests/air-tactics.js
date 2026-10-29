@@ -39,7 +39,8 @@ assert.equal(act.mode,'return','fighter turns inward before crossing the operati
 assert(act.aim.x<0,'east-edge fighter aims back toward the playable area');
 
 const pacific=fs.readFileSync(path.join(root,'torpedo-carrier.html'),'utf8');
-const start=pacific.indexOf('function updateZeros(dt){'),end=pacific.indexOf('    const desiredVel=aim.multiplyScalar(desiredSpeed);',start);
+// The decision ends where the aim is handed to the flight law (Build 220: the computed core, or the legacy law).
+const start=pacific.indexOf('function updateZeros(dt){'),end=pacific.indexOf('    if(Core.on){',start);
 assert(start>0&&end>start);
 const zero={alive:true,spotted:true,pos:new THREE.Vector3(0,400,0),vel:new THREE.Vector3(0,0,90),
   heading:0,spd:90,reengage:0,breakSide:1,retarget:2};

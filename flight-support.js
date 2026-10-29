@@ -69,7 +69,21 @@ function aeroChase(rig,nose,up,dt,rate=6){
  rig.up.normalize();
  return rig;
 }
-function guideWingman(w,desiredVelocity,dt,forming){
+function guideWingman(w,desiredVelocity,dt,forming,wind=null){
+ // Computed core: the wingman is the player's own type flown through the same forces (FlightControl.ai).
+ // The calm-formation limits below (bank, yaw rate, pitch rate, roll rate) stay as the pilot's choices.
+ // desiredVelocity is over the ground; the aircraft flies through the air and drifts with the wind.
+ if(root.FlightCoreEnabled&&root.FlightControl&&w.kind&&root.FlightCore?.has(w.kind)&&dt>0){
+  const wx=wind?.x||0,wz=wind?.z||0,air={x:desiredVelocity.x-wx,y:desiredVelocity.y,z:desiredVelocity.z-wz};
+  w.spd=w.spd??w.vel.length();
+  // Bank: what the yaw-rate limit needs at the formation's slow speeds (with the manoeuvre gain), no more.
+  root.FlightControl.ai(w,dt,air,Math.hypot(air.x,air.y,air.z),{maxBank:forming?.8:.9,maxYaw:Math.min(.25,25/Math.max(28,w.spd)),
+   // Station keeping needs a tighter throttle than free flight: the slot correction asks for speed changes
+   // faster than the default pilot's loose speed hold follows, which left the escort surging in and out.
+   maxPitchRate:forming?.135:.21,maxRollRate:forming?.32:.5,turnGain:1.5,kp:forming?.5:.09,ki:forming?.03:.05});
+  w.vel.x+=wx;w.vel.z+=wz;w.pos.x+=wx*dt;w.pos.z+=wz*dt;
+  return;
+ }
  // Steer the flight path itself, then render the same attitude. Previously
  // velocity turned independently of the rate-limited mesh, so close escorts
  // slid sideways even when their displayed bank/yaw looked smooth.

@@ -1,20 +1,25 @@
-/* Run with NODE_PATH pointing to three@0.128.0. Exercise the shipped wingman AI. */
+/* Run with NODE_PATH pointing to three@0.128.0. Exercise the shipped wingman AI.
+ * Build 220: the wingmen fly the computed core (FlightControl.ai through FlightCore) as Avengers, so the
+ * slow formation case is 80 kt - a lightly loaded Avenger's landing-flap stall is 65 kt, the old figure. */
 const fs=require('node:fs'),path=require('node:path'),vm=require('node:vm'),assert=require('node:assert/strict');
 const THREE=require('three');
 require('../../game-runtime.js');require('../../flight-support.js');const {GameRuntime,FlightSupport}=global;
+global.FlightCoreEnabled=true;require('../../flight-core.js');require('../../flight-control.js');
 const CarrierRecovery=require('../../carrier-recovery.js');
 const html=fs.readFileSync(path.resolve(__dirname,'../../torpedo-carrier.html'),'utf8');
 function source(name,next){const a=html.indexOf('function '+name+'('),b=html.indexOf('\nfunction '+next+'(',a+1);
  assert.ok(a>0&&b>a);return html.slice(a,b);}
 const P={pos:new THREE.Vector3(0,180,0),heading:0,pitch:0,spd:80};
-const w={alive:true,mode:'form',cool:999,pos:new THREE.Vector3(-26,177,-30),
+const w={alive:true,kind:'avenger',mode:'form',cool:999,pos:new THREE.Vector3(-26,177,-30),
  slotPos:new THREE.Vector3(-26,177,-30),heading:Math.PI/2,pitch:0,roll:0,
  vel:new THREE.Vector3(80,0,0),mesh:new THREE.Group(),disc:null,side:-1};
 const ctx=vm.createContext({GameRuntime,FlightSupport,THREE,Math,P,ships:[],wingmen:[w],PROP_STEP:.3,isDefend:()=>false});
 vm.runInContext(source('playerLateral','spawnWingman')+'\n'+source('updateWingmen','updateWingShots')+
  '\n'+source('noseDir','loadPlaneModel'),ctx);
 let moved=0;
-for(let i=0;i<1200;i++){
+// The leader reverses 90 degrees in three seconds; the wingman, at its own physical turn and roll rates
+// and about 0.7 m/s^2 of spare acceleration at full power, needs about 30 s to close up again.
+for(let i=0;i<1800;i++){
  if(i>=90)P.heading=Math.min(Math.PI/2,(i-90)*Math.PI/360);
  const before=w.pos.clone(),old=w.heading,oldRate=w.yawRate||0;
  ctx.updateWingmen(1/60);
@@ -31,11 +36,12 @@ console.log('Formation: aligned launch, bounded bank/yaw, and continuous travel 
 
 // Close formation is particularly sensitive to speed floors, lateral sliding
 // and frame-rate-dependent corrections. Run the shipped controller, not a copy.
-function simulation(fps,speed=65/1.94384,headwind=0){
+const SLOW=80/1.94384;
+function simulation(fps,speed=SLOW,headwind=0){
  const leader={pos:new THREE.Vector3(0,300,0),heading:0,pitch:0,spd:speed,vSpeed:0};
- const escorts=[-1,1].map(side=>({alive:true,mode:'form',cool:999,side,
+ const escorts=[-1,1].map(side=>({alive:true,kind:'avenger',mode:'form',cool:999,side,
   pos:new THREE.Vector3(-32-(side>0?8:0),298,side*34),
-  heading:Math.PI/2,pitch:0,roll:0,spd:speed,vel:new THREE.Vector3(speed,0,0),mesh:new THREE.Group()}));
+  heading:Math.PI/2,pitch:0,roll:0,spd:speed,vel:new THREE.Vector3(speed+CarrierRecovery.wind(headwind).x,0,0),mesh:new THREE.Group()})); // ground velocity: airspeed plus the wind
  const c=vm.createContext({GameRuntime,FlightSupport,CarrierRecovery,THREE,Math,P:leader,ships:[],wingmen:escorts,PROP_STEP:.3,isDefend:()=>false,
   DROP_MAX_SPD:62,DROP_MAX_ALT:55,windHead:headwind,windZ:0,windGust:0,radioSay:()=>{},NavalAssets:{label:()=> 'FREIGHTER'}});
  vm.runInContext(source('playerLateral','spawnWingman')+'\n'+source('updateWingmen','updateWingShots')+'\n'+source('noseDir','loadPlaneModel'),c);
@@ -47,11 +53,12 @@ function simulation(fps,speed=65/1.94384,headwind=0){
   escorts.forEach((e,i)=>{
    const b=before[i],yaw=Math.abs(Math.atan2(Math.sin(e.heading-b.heading),Math.cos(e.heading-b.heading)))/dt;
    const bank=Math.abs(e.roll-b.roll)/dt,pitch=Math.abs(e.pitch-b.pitch)/dt,acceleration=e.vel.distanceTo(b.vel)/dt;
-   assert(yaw<=.25001&&bank<=.50001&&pitch<=.22001,'no attitude snap');
+   assert(yaw<=.25001&&bank<=.50001&&pitch<=.22001,'no attitude snap '+JSON.stringify({fps,yaw,bank,pitch,mode:e.mode,spd:e.spd}));
    assert(acceleration<26,'bounded actual flight-path acceleration');
    assert(e.pos.distanceTo(b.pos)<115*dt,'no position jump');
-   const forward=new THREE.Vector3(0,0,1).applyQuaternion(e.mesh.quaternion);
-   assert(forward.dot(e.vel.clone().normalize())>1-1e-10,'rendered nose matches actual travel, including climb');
+   // The nose points along the flight path through the air; the wind adds the drift over the ground.
+   const forward=new THREE.Vector3(0,0,1).applyQuaternion(e.mesh.quaternion),air=e.vel.clone().sub(new THREE.Vector3(CarrierRecovery.wind(headwind).x,0,0));
+   assert(forward.dot(air.normalize())>1-1e-10,'rendered nose matches actual travel through the air, including climb');
    stats.yaw=Math.max(stats.yaw,yaw);stats.bank=Math.max(stats.bank,bank);stats.pitch=Math.max(stats.pitch,pitch);
    stats.acceleration=Math.max(stats.acceleration,acceleration);
    stats.minClearance=Math.min(stats.minClearance,e.pos.distanceTo(leader.pos));stats.maxGap=Math.max(stats.maxGap,e.pos.distanceTo(leader.pos));
@@ -63,8 +70,8 @@ const outcomes=[];
 for(const fps of [20,60,120]){
  const s=simulation(fps);
  for(let i=0;i<fps*30;i++)s.step();
- assert(s.stats.maxGap<55&&s.stats.minClearance>40,'65kt escorts hold their slots without passing the leader');
- for(const e of s.escorts)assert(Math.abs(e.spd-s.leader.spd)<.02,'matches 65kt instead of forcing 82kt');
+ assert(s.stats.maxGap<55&&s.stats.minClearance>40,'80kt escorts hold their slots without passing the leader '+JSON.stringify({fps,...s.stats,spd:s.escorts.map(e=>e.spd),lead:s.leader.spd}));
+ for(const e of s.escorts)assert(Math.abs(e.spd-s.leader.spd)<1,'matches the slow leader instead of forcing a higher floor speed');
  // Gentle course reversals, climb and descent while remaining near the leader.
  for(let i=0;i<fps*60;i++){
   const t=i/fps;s.leader.heading=t<10?t*.1:t<20?1-(t-10)*.12:-.2;
@@ -87,10 +94,10 @@ for(const fps of [20,60,120]){
  assert(attack.escorts[0].mode==='form','attack returns to formation');
 }
 for(let i=1;i<outcomes.length;i++)for(let j=0;j<2;j++)
- assert(outcomes[i].positions[j].distanceTo(outcomes[0].positions[j])<1,'close formation agrees within one metre at 20/60/120 FPS');
-console.log('Close formation, 65kt, reversals/climb/descent, safe separation and real attack/egress/rejoin at 20/60/120 FPS:',outcomes);
+ assert(outcomes[i].positions[j].distanceTo(outcomes[0].positions[j])<1,'close formation agrees within one metre at 20/60/120 FPS '+JSON.stringify(outcomes.map(o=>o.positions.map(p=>p.toArray().map(v=>+v.toFixed(2))))));
+console.log('Close formation, 80kt, reversals/climb/descent, safe separation and real attack/egress/rejoin at 20/60/120 FPS:',outcomes);
 for(const fps of [20,60,120])for(const wind of [2,6,12]){
- const s=simulation(fps,65/1.94384,wind);
+ const s=simulation(fps,SLOW,wind);
  s.escorts[0].pos.copy(s.leader.pos).add(new THREE.Vector3(-12,-2,-22));
  for(let i=0;i<fps*60;i++){
   const t=i/fps;s.leader.heading=t<10?0:t<18?-.025*(t-10):t<26?-.2+.025*(t-18):0;
@@ -99,4 +106,4 @@ for(const fps of [20,60,120])for(const wind of [2,6,12]){
  assert(s.stats.minClearance>20&&s.stats.maxGap<100,'headwind escorts remain close and separated: '+JSON.stringify({fps,wind,...s.stats}));
  assert(s.escorts.every(e=>e.pos.distanceTo(s.leader.pos)<70),'headwind escorts settle near their formation slots');
 }
-console.log('65kt headwind formation at 2/6/12 m/s and 20/60/120 FPS remains close and safe');
+console.log('80kt headwind formation at 2/6/12 m/s and 20/60/120 FPS remains close and safe');

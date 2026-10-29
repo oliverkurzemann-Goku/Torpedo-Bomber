@@ -13,7 +13,10 @@ const helpers=html.slice(html.indexOf('function flightAltitudeLimit('),html.inde
  const P={ac:'me262',pos:new THREE.Vector3(23600,400,25725),spd:160,pitch:.3,roll:0,heading:0,alive:false};
  const randomMath=Object.create(Math);let seed=155;
  randomMath.random=()=>{seed=(seed*1664525+1013904223)>>>0;return seed/4294967296;};
+ // Build 220: fighters and bombers fly the computed core (FlightCore/FlightControl) as their own types.
+ const FlightCore=require('../../flight-core.js'),FlightControl=require('../../flight-control.js');
  const ctx=vm.createContext({THREE,GameRuntime,P47Performance:global.P47Performance,Math:randomMath,P,RTILE:4000,RGRID_W:7,RGRID_H:8,AF_X:23600,AF_Z:25725,
+  FlightCore,FlightControl,coreOn:k=>FlightCore.has(k),
   europeOps:null,enemyAir:[],scene:new THREE.Scene(),modelTpl:{},APP_SPD:56,AI_G:9.81,windZ:0,
   M:()=>({id:'jetboxes'}),groundY:(x,z)=>dem.getHeight(x,z),D:()=>({id:'rookie'}),
   noseDir:()=>new THREE.Vector3(0,0,1),radioSay(){},spawnSmoke(){},

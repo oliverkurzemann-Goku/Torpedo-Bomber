@@ -91,6 +91,17 @@ const Handling={
 };
 function flyRaider(r,goal,dt){
  const dx=goal.x-r.pos.x,dz=goal.z-r.pos.z,d=Math.hypot(dx,dz);
+ // Computed core: the raider flies as its own type (A6M or TBF) with its torpedo or bomb aboard until
+ // released; same run-in speeds, bank and turn-rate limits as before, now inside what the wing gives.
+ const kind=r.kind||r.def?.type;
+ if(root.FlightCoreEnabled&&root.FlightControl&&root.FlightCore?.has(kind)&&dt>0){
+  r.kind=kind;const torpedo=kind==='avenger';
+  r.loadout={fuel:70,torps:!r.dropped&&torpedo?1:0,torpedo,bombs:!r.dropped&&!torpedo?1:0};
+  const h=Math.atan2(dx,dz),p=clamp(Math.atan2(goal.y-r.pos.y,Math.max(180,d)),-.20,.16);
+  root.FlightControl.ai(r,dt,{x:Math.sin(h)*Math.cos(p),y:Math.sin(p),z:Math.cos(h)*Math.cos(p)},r.dropped?82:r.runIn?76:72,{maxBank:.78,maxYaw:.2});
+  if(r.pos.y<32){r.pos.y=32;r.pitch=Math.max(.03,r.pitch);r.vel.y=Math.max(2,r.vel.y);}
+  return;
+ }
  const bank=clamp(angle(Math.atan2(dx,dz)-r.heading)*1.6,-.78,.78);
  r.roll+=(bank-r.roll)*(1-Math.exp(-2.1*dt));
  r.spd+=((r.dropped?82:r.runIn?76:72)-r.spd)*(1-Math.exp(-.35*dt));
