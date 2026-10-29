@@ -130,6 +130,33 @@ Masse im Spiel: 5 775 kg × Beladungsfaktor aus `SortieFeatures.Handling.sample`
 Energieerhaltung (ohne Schub und Widerstand, 60 s Manöver): Drift 0,005 %.
 20 / 60 / 120 FPS: identisches Ergebnis.
 
+## Im echten Spiel gemessen (`p47-core-browser.cjs`, alter Stand mit `?p47core=off`)
+
+| | neu (Kern) | alt (Build 215) |
+|---|---|---|
+| Abheben (Mission 1, beladen) | 15,4 s / 540 m | gleich (Startlauf unverändert) |
+| 60 s nach dem Start | 409 m über Grund, 72,6 m/s, steigt 11,1 m/s | 606 m, 75,1 m/s, 16,2 m/s |
+| Vollkreis voller Ausschlag ab 90 m/s, 2 000 m | 11,6 s, Ende 90 m/s, −3 m | 9,0 s, 97 m/s, ±0 |
+| Vollkreis ab 130 m/s | 8,4 s, Ende 111 m/s (Fahrt kostet), −8 m | 6,2 s, 133 m/s (keine Fahrt verloren) |
+| AERO-Loop ab 150 m/s | 7,3 s, min. 115 m/s | 6,8 s, min. 130 m/s |
+| Leerlauf ab 120 m/s, erste Sekunde | −2,0 m/s | −2,17 m/s |
+| 8-s-Steigkurve, 20 vs. 120 FPS | Fahrt ±0,07 m/s, Höhe ±0,4 m | ±0,01 m/s, ±1,9 m |
+
+Die P-47 ist damit spürbar ehrlicher und schwerer: Sie steigt nach dem Start langsamer, und eine harte
+Kurve kostet Fahrt. Die anderen neun Typen laufen noch auf dem alten Gesetz, dessen Schub laut
+Build 211 etwa 2,3–3,5 × real ist — im direkten Vergleich wirkt die P-47 deshalb vorerst schwächer
+als Bf 109 / Fw 190 (Beschleunigung von 85 m/s in 10 s: P-47 auf 101 m/s, beide anderen auf 130).
+
+## Bestandstests
+
+Grün mit dem Kern: `handling-quality-browser`, `fleet-flight-browser`, `flight-envelope-browser`,
+`p47-integration-browser`, `pitch-response`, Landungsteil von `field-landing-browser` für die P-47
+(Endanflug mit Vollklappen 2,3 m/s Sinken, Aufsetzen und Ausrollen bei 20/60/120 FPS), Terrain- und
+Okinawa-Knotentests. Rot bleibt in `field-landing-browser` der Touch-and-go-Fall — laut Build 215 schon
+auf Build 214 identisch rot, im unveränderten Bodencode. Angepasst (mit Begründung im Test):
+Vergleiche mit Sollwerten des alten Kurven-/Roll-Gesetzes gelten nicht für einen Typ auf dem Kern;
+dessen Werte prüfen `p47-core-browser` und `derive-p47`.
+
 ## Nicht behauptet
 
 - Kein iPad-Test, kein Hörtest, kein Spielgefühl-Nachweis — das entscheidet nur der Flug auf dem Gerät.
