@@ -796,6 +796,14 @@ const AF_CLEAR_X0=-560, AF_CLEAR_X1=500, AF_CLEAR_Z0=-350, AF_CLEAR_Z1=180;
 // tree instance (trunk+canopy pair, same index in both InstancedMeshes — see
 // OSMManager._scatterForest()) that falls inside AF_CLEAR_*, rather than touching OSMManager's
 // own buffer layout — the same "hide, don't rebuild" approach killTarget() already uses.
+// Cleared approach and departure lanes off both runway ends (1 200 m, widening 15 % from 60 m half-width,
+// the usual obstacle-free funnel). On the computed core a fully loaded Fw 190 or Me 262 leaves the
+// ground with only 150-250 m of strip left and crosses the end at about 20 m - below the 20-26 m trees.
+const AF_LANE_LENGTH=1200,AF_LANE_HALF=60,AF_LANE_SPLAY=.15;
+function inDepartureLane(dx,dz){
+  const beyond=Math.abs(dx)-RWY_LEN/2;
+  return beyond>0&&beyond<AF_LANE_LENGTH&&Math.abs(dz)<AF_LANE_HALF+AF_LANE_SPLAY*beyond;
+}
 function clearTreesNearAirfield(){
   const m=new THREE.Matrix4(), v=new THREE.Vector3(), zero=new THREE.Matrix4().makeScale(0,0,0);
   let cleared=0;
@@ -809,8 +817,8 @@ function clearTreesNearAirfield(){
       for(let i=0;i<mesh.count;i++){
         mesh.getMatrixAt(i,m); v.setFromMatrixPosition(m);
         if([[ALLIED_AF_X,ALLIED_AF_Z],[GERMAN_AF_X,GERMAN_AF_Z]].some(([fx,fz])=>
-          v.x-fx>AF_CLEAR_X0-5&&v.x-fx<AF_CLEAR_X1+5&&
-          v.z-fz>AF_CLEAR_Z0-5&&v.z-fz<AF_CLEAR_Z1+5)){
+          (v.x-fx>AF_CLEAR_X0-5&&v.x-fx<AF_CLEAR_X1+5&&
+          v.z-fz>AF_CLEAR_Z0-5&&v.z-fz<AF_CLEAR_Z1+5)||inDepartureLane(v.x-fx,v.z-fz))){
           mesh.setMatrixAt(i,zero); cleared++; touched=true;
         }
       }
@@ -4233,7 +4241,7 @@ function updateCore(dt,d,controls,departure,configuration){
   const r=FlightControl.player(P,dt,coreEnv(controls,departure,configuration));
   // Warn on the wing's own state: buffet near CLmax, the stall itself, or flying below the stall speed.
   if(r.out.stall>.3||P.spd<r.stall){if(!P.stallWarnT||P.stallWarnT<=0){P.stallWarnT=1.6;flash('STALL',600);sfxAlarm();}}
-  if(r.out.buffet>.35)shake(.18*r.out.buffet);
+  if(r.out.buffet>.35)shake(.12*r.out.buffet);
   if(r.out.overspeed>0||r.out.tuck>0){P.overspeedT=(P.overspeedT||0)-dt;
     if(P.overspeedT<=0){P.overspeedT=2.2;flash(r.out.tuck>0?'COMPRESSIBILITY — THROTTLE BACK':'OVERSPEED — EASE OFF',900);}shake(.25*Math.max(r.out.overspeed,r.out.tuck));}
   if(P.stallWarnT>0)P.stallWarnT-=dt;
@@ -4286,7 +4294,7 @@ function updateFlight(dt){
     // Core: rotate at 1.1 x the live stall (mass, flaps, damage), the usual 1.1 Vs rule.
     const vr=coreOn()?speeds.stall*1.1:(P.ac==='p47'?speeds.stall:d.stall*load.speed+controls.stallPenalty)*1.12;
     let ground=null;
-    if(coreOn())ground=coreGround(dt,{vr,brake:P.throttle<.05?1:0,rotated:(P.takeoffRotation||0)/.07});
+    if(coreOn())ground=coreGround(dt,{vr,brake:P.throttle<.05?1:0,rotated:Math.min(1,(P.takeoffRotation||0)/.063)});
     else GroundRun.step(P,dt,{jet:P.ac==='me262',power:SortieFeatures.Damage.power(P),massRatio:load.ratio,acceleration:FlightDynamics.profile(P.ac).ground});
     if(typeof fieldServicePending!=="undefined"&&fieldServicePending&&P.spd<1){beginFieldService();return;}
     // steer with the stick's roll axis, tailwheel style — same sense as in the air
@@ -4701,14 +4709,15 @@ function relaunch(){
   // against the loaded tile data), so AF_Y+2.0 alone could leave the plane sitting well above
   // or below the actual ground at this particular spawn point. See buildAirfield()'s own
   // comment for the fuller story ("Flugzeug steht vor der Landebahn").
-  // The Me 262 lines up at the threshold with take-off flap (C): a loaded jet needs most of the strip.
-  const jet=P.ac==='me262'&&coreOn(),spawnX=AF_X-RWY_LEN/2+(jet?40:140);
+  // On the computed core every type lines up at the threshold with take-off flap (C; the manuals use
+  // 10-20 deg): fully loaded, a P-47, Fw 190 or Me 262 needs 550-800 m of this 900 m strip.
+  const core=coreOn()&&P.ac!=='me163',spawnX=AF_X-RWY_LEN/2+(core?40:140);
   P.pos.set(spawnX, terrain.getHeight(spawnX,AF_Z)+2.0, AF_Z);
   P.heading=Math.PI/2; P.pitch=0; P.roll=0; P.spd=0; P.vSpeed=0;
   P.pitchVel=0; P.rollVel=0; P.nLoad=1; P.pitchRef=null; P.coreStall=0; P.coreDrop=0; P.core=null;
   P.onGround=true; P.groundPower=0; P.touchResolved=true; P.throttle=0.0; setThrottleUI(0);
   P.gear=1; P.gearTgt=1; P.flap=0; P.flapTgt=0; P.rato=FlightCore.SOURCES[P.ac]?.rato&&coreOn()?null:undefined;
-  if(jet){P.flap=P.flapTgt=.5;}
+  if(core){P.flap=P.flapTgt=.5;}
   if(P.ac==='me163'){
     // Trolley already released. Both Komet sorties depart southwest toward
     // the interior interception sector, rather than the eastern map boundary.

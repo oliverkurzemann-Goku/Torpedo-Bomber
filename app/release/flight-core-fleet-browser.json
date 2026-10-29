@@ -1,0 +1,530 @@
+{
+ "p47": {
+  "mission": "Sortie 1",
+  "core": true,
+  "takeoff": {
+   "massKg": 7080,
+   "bombs": 2,
+   "alive": true,
+   "death": null,
+   "liftoff": 19.4,
+   "groundRun": 624,
+   "stripLeft": 236,
+   "rato": null,
+   "after40s": {
+    "spd": 67,
+    "agl": 355,
+    "climb": 9.6
+   }
+  },
+  "takeoffAllBombs": {
+   "massKg": 7080,
+   "bombs": 2,
+   "alive": true,
+   "death": null,
+   "liftoff": 19.4,
+   "groundRun": 624,
+   "stripLeft": 236,
+   "rato": null,
+   "after40s": {
+    "spd": 67,
+    "agl": 372,
+    "climb": 9.6
+   }
+  },
+  "vmax2000": 594.6,
+  "turn": {
+   "0.45": {
+    "startKmh": 268,
+    "seconds": 12.6,
+    "endKmh": 310,
+    "altChange": -15,
+    "bankDeg": 67,
+    "n": 2.52,
+    "alive": true
+   },
+   "0.7": {
+    "startKmh": 416,
+    "seconds": 8.7,
+    "endKmh": 378,
+    "altChange": -18,
+    "bankDeg": 74,
+    "n": 3.73,
+    "alive": true
+   }
+  },
+  "loop": {
+   "entryKmh": 372,
+   "seconds": 10.2,
+   "minKmh": 258,
+   "altChange": 1,
+   "alive": true
+  },
+  "stall": {
+   "entryKmh": 247,
+   "onset": 4.4,
+   "peak": 0.99,
+   "buffeted": true,
+   "dropBankDeg": 11,
+   "recoveredAfter": 4.3,
+   "endStall": 0,
+   "alive": true,
+   "heightLostInRecovery": 74
+  },
+  "idleDecel1s": 2.28,
+  "fps": {
+   "20": {
+    "spd": 76.69,
+    "heading": 4.88,
+    "alt": 1709.3
+   },
+   "60": {
+    "spd": 76.72,
+    "heading": 4.872,
+    "alt": 1709.1
+   },
+   "120": {
+    "spd": 76.74,
+    "heading": 4.871,
+    "alt": 1709
+   }
+  }
+ },
+ "bf109": {
+  "mission": "Sortie 7",
+  "core": true,
+  "takeoff": {
+   "massKg": 3285,
+   "bombs": 1,
+   "alive": true,
+   "death": null,
+   "liftoff": 16.7,
+   "groundRun": 498,
+   "stripLeft": 362,
+   "rato": null,
+   "after40s": {
+    "spd": 70.7,
+    "agl": 351,
+    "climb": 11.5
+   }
+  },
+  "takeoffAllBombs": {
+   "massKg": 3285,
+   "bombs": 1,
+   "alive": true,
+   "death": null,
+   "liftoff": 16.7,
+   "groundRun": 498,
+   "stripLeft": 362,
+   "rato": null,
+   "after40s": {
+    "spd": 70.7,
+    "agl": 351,
+    "climb": 11.5
+   }
+  },
+  "vmax2000": 568.4,
+  "turn": {
+   "0.45": {
+    "startKmh": 256,
+    "seconds": 10.5,
+    "endKmh": 289,
+    "altChange": -14,
+    "bankDeg": 68,
+    "n": 2.71,
+    "alive": true
+   },
+   "0.7": {
+    "startKmh": 398,
+    "seconds": 7.4,
+    "endKmh": 357,
+    "altChange": -14,
+    "bankDeg": 76,
+    "n": 4.12,
+    "alive": true
+   }
+  },
+  "loop": {
+   "entryKmh": 320,
+   "seconds": 9.4,
+   "minKmh": 222,
+   "altChange": 2,
+   "alive": true
+  },
+  "stall": {
+   "entryKmh": 222,
+   "onset": 4,
+   "peak": 0.99,
+   "buffeted": true,
+   "dropBankDeg": 9,
+   "recoveredAfter": 3.9,
+   "endStall": 0,
+   "alive": true,
+   "heightLostInRecovery": 63
+  },
+  "idleDecel1s": 2.31,
+  "fps": {
+   "20": {
+    "spd": 71.41,
+    "heading": 5.898,
+    "alt": 1690.5
+   },
+   "60": {
+    "spd": 71.46,
+    "heading": 5.888,
+    "alt": 1690.3
+   },
+   "120": {
+    "spd": 71.47,
+    "heading": 5.886,
+    "alt": 1690.2
+   }
+  }
+ },
+ "fw190": {
+  "mission": "Sortie 10",
+  "core": true,
+  "takeoff": {
+   "massKg": 4887,
+   "bombs": 1,
+   "alive": true,
+   "death": null,
+   "liftoff": 20.6,
+   "groundRun": 698,
+   "stripLeft": 162,
+   "rato": null,
+   "after40s": {
+    "spd": 72.7,
+    "agl": 331,
+    "climb": 9.4
+   }
+  },
+  "takeoffAllBombs": {
+   "massKg": 4887,
+   "bombs": 1,
+   "alive": true,
+   "death": null,
+   "liftoff": 20.6,
+   "groundRun": 698,
+   "stripLeft": 162,
+   "rato": null,
+   "after40s": {
+    "spd": 72.7,
+    "agl": 328,
+    "climb": 9.4
+   }
+  },
+  "vmax2000": 597.1,
+  "turn": {
+   "0.45": {
+    "startKmh": 269,
+    "seconds": 13.9,
+    "endKmh": 315,
+    "altChange": -28,
+    "bankDeg": 65,
+    "n": 2.32,
+    "alive": true
+   },
+   "0.7": {
+    "startKmh": 418,
+    "seconds": 9.5,
+    "endKmh": 379,
+    "altChange": -20,
+    "bankDeg": 73,
+    "n": 3.35,
+    "alive": true
+   }
+  },
+  "loop": {
+   "entryKmh": 394,
+   "seconds": 10.9,
+   "minKmh": 267,
+   "altChange": 0,
+   "alive": true
+  },
+  "stall": {
+   "entryKmh": 262,
+   "onset": 4.7,
+   "peak": 0.99,
+   "buffeted": true,
+   "dropBankDeg": 33,
+   "recoveredAfter": 4.2,
+   "endStall": 0,
+   "alive": true,
+   "heightLostInRecovery": 98
+  },
+  "idleDecel1s": 2.05,
+  "fps": {
+   "20": {
+    "spd": 78.96,
+    "heading": 4.111,
+    "alt": 1697.5
+   },
+   "60": {
+    "spd": 79,
+    "heading": 4.104,
+    "alt": 1697.3
+   },
+   "120": {
+    "spd": 79.01,
+    "heading": 4.103,
+    "alt": 1697.2
+   }
+  }
+ },
+ "ju87": {
+  "mission": "Bonus Sortie",
+  "core": true,
+  "takeoff": {
+   "massKg": 4250,
+   "bombs": 4,
+   "alive": true,
+   "death": null,
+   "liftoff": 18.2,
+   "groundRun": 408,
+   "stripLeft": 452,
+   "rato": null,
+   "after40s": {
+    "spd": 43.8,
+    "agl": 202,
+    "climb": 4.4
+   }
+  },
+  "takeoffAllBombs": {
+   "massKg": 4250,
+   "bombs": 4,
+   "alive": true,
+   "death": null,
+   "liftoff": 18.2,
+   "groundRun": 408,
+   "stripLeft": 452,
+   "rato": null,
+   "after40s": {
+    "spd": 43.8,
+    "agl": 202,
+    "climb": 4.4
+   }
+  },
+  "vmax2000": 357,
+  "turn": {
+   "0.45": {
+    "startKmh": 161,
+    "seconds": 12.9,
+    "endKmh": 198,
+    "altChange": -4,
+    "bankDeg": 58,
+    "n": 1.87,
+    "alive": true
+   },
+   "0.7": {
+    "startKmh": 250,
+    "seconds": 8.3,
+    "endKmh": 234,
+    "altChange": -12,
+    "bankDeg": 68,
+    "n": 2.64,
+    "alive": true
+   }
+  },
+  "loop": {
+   "entryKmh": 305,
+   "seconds": 6.9,
+   "minKmh": 211,
+   "altChange": -1,
+   "alive": true
+  },
+  "stall": {
+   "entryKmh": 182,
+   "onset": 3.4,
+   "peak": 0.99,
+   "buffeted": true,
+   "dropBankDeg": 7,
+   "recoveredAfter": 3.6,
+   "endStall": 0,
+   "alive": true,
+   "heightLostInRecovery": 61
+  },
+  "idleDecel1s": 1.39,
+  "fps": {
+   "20": {
+    "spd": 42.49,
+    "heading": 4.203,
+    "alt": 1616
+   },
+   "60": {
+    "spd": 42.5,
+    "heading": 4.198,
+    "alt": 1615.9
+   },
+   "120": {
+    "spd": 42.5,
+    "heading": 4.197,
+    "alt": 1615.9
+   }
+  }
+ },
+ "me262": {
+  "mission": "Sortie 11",
+  "core": true,
+  "takeoff": {
+   "massKg": 6155,
+   "bombs": 0,
+   "alive": true,
+   "death": null,
+   "liftoff": 24.7,
+   "groundRun": 609,
+   "stripLeft": 251,
+   "rato": 6,
+   "after40s": {
+    "spd": 86.5,
+    "agl": 406,
+    "climb": 14.6
+   }
+  },
+  "takeoffAllBombs": {
+   "massKg": 6655,
+   "bombs": 2,
+   "alive": true,
+   "death": null,
+   "liftoff": 27.9,
+   "groundRun": 723,
+   "stripLeft": 137,
+   "rato": 6,
+   "after40s": {
+    "spd": 81.7,
+    "agl": 331,
+    "climb": 9.6
+   }
+  },
+  "vmax2000": 813.1,
+  "turn": {
+   "0.45": {
+    "startKmh": 366,
+    "seconds": 11.6,
+    "endKmh": 384,
+    "altChange": -22,
+    "bankDeg": 71,
+    "n": 3.1,
+    "alive": true
+   },
+   "0.7": {
+    "startKmh": 569,
+    "seconds": 9.4,
+    "endKmh": 531,
+    "altChange": -16,
+    "bankDeg": 79,
+    "n": 5.33,
+    "alive": true
+   }
+  },
+  "loop": {
+   "entryKmh": 432,
+   "seconds": 10.8,
+   "minKmh": 311,
+   "altChange": 1,
+   "alive": true
+  },
+  "stall": {
+   "entryKmh": 276,
+   "onset": 5.2,
+   "peak": 0.99,
+   "buffeted": true,
+   "dropBankDeg": 13,
+   "recoveredAfter": 5.2,
+   "endStall": 0,
+   "alive": true,
+   "heightLostInRecovery": 128
+  },
+  "idleDecel1s": 1.68,
+  "fps": {
+   "20": {
+    "spd": 109.73,
+    "heading": 5.671,
+    "alt": 1737.4
+   },
+   "60": {
+    "spd": 109.78,
+    "heading": 5.661,
+    "alt": 1737.1
+   },
+   "120": {
+    "spd": 109.8,
+    "heading": 5.659,
+    "alt": 1737
+   }
+  }
+ },
+ "me163": {
+  "mission": "Sortie 15",
+  "core": true,
+  "takeoff": {
+   "airborneStart": true,
+   "alive": true,
+   "spd": 155,
+   "agl": 760
+  },
+  "takeoffAllBombs": {
+   "airborneStart": true,
+   "alive": true,
+   "spd": 155,
+   "agl": 760
+  },
+  "vmax2000": 958.5,
+  "turn": {
+   "0.45": {
+    "startKmh": 431,
+    "seconds": 7.9,
+    "endKmh": 450,
+    "altChange": -8,
+    "bankDeg": 79,
+    "n": 5.2,
+    "alive": true
+   },
+   "0.7": {
+    "startKmh": 671,
+    "seconds": 10.8,
+    "endKmh": 721,
+    "altChange": -15,
+    "bankDeg": 80,
+    "n": 5.82,
+    "alive": true
+   }
+  },
+  "loop": {
+   "entryKmh": 388,
+   "seconds": 9.1,
+   "minKmh": 314,
+   "altChange": 8,
+   "alive": true
+  },
+  "stall": {
+   "entryKmh": 252,
+   "onset": 4.7,
+   "peak": 0.99,
+   "buffeted": true,
+   "dropBankDeg": 0,
+   "recoveredAfter": 3.9,
+   "endStall": 0,
+   "alive": true,
+   "heightLostInRecovery": 36
+  },
+  "idleDecel1s": 2.15,
+  "fps": {
+   "20": {
+    "spd": 145.88,
+    "heading": 6.387,
+    "alt": 1777.5
+   },
+   "60": {
+    "spd": 145.96,
+    "heading": 6.372,
+    "alt": 1777.6
+   },
+   "120": {
+    "spd": 145.98,
+    "heading": 6.368,
+    "alt": 1777.5
+   }
+  }
+ }
+}
