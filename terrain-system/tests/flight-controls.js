@@ -2,7 +2,8 @@
 'use strict';
 const fs=require('node:fs'),path=require('node:path'),vm=require('node:vm'),assert=require('node:assert/strict');
 const root=path.resolve(__dirname,'../..');require('../../game-runtime.js');const {GameRuntime}=global;
-require('../../sortie-features.js');const {SortieFeatures}=global;const FlightDynamics=require('../../flight-dynamics');
+require('../../sortie-features.js');const {SortieFeatures}=global;require('../../p47-performance');require('../../me262-performance');
+require('../../flight-envelope');const {FlightEnvelope}=global;const FlightDynamics=require('../../flight-dynamics');
 const read=file=>fs.readFileSync(path.join(root,file),'utf8');
 const eu=read('remagen-mission.html'),pac=read('torpedo-carrier.html');
 const rect={left:20,top:300,width:140,height:140};
@@ -32,13 +33,12 @@ for(const {c,listeners} of handlers){
  }
 }
 const defs=vm.runInNewContext(eu.slice(eu.indexOf('const AC={'),eu.indexOf('function acDef('))+'\nAC');
-const turnStart=eu.indexOf('const TURN_K='),turnEnd=eu.indexOf('\n}',eu.indexOf('function bankTurnRate(',turnStart));
-const bankTurnRate=vm.runInNewContext(eu.slice(turnStart,turnEnd+2)+'\nbankTurnRate');
+const handling=Object.fromEntries(['zero','corsair','sbd','avenger'].map(kind=>{const h=FlightEnvelope.handling(kind,{rollLim:kind==='zero'?1.52:1.42});return [kind,{roll:h.rollAuth,pitch:h.pitchAuth,name:kind}];}));
 function flightParts(html,pacific,kind,aeroMode=false){
  const flight=html.indexOf('function updateFlight(dt)');
  const a=html.indexOf(pacific?'  const dmgF = P.hull<60':'  const dmgF = (P.hull < d.hull',flight);
  const b=html.indexOf(pacific?'  // speed toward throttle target':'  // vertical speed:',a);
- const globals={SortieFeatures,FlightDynamics,P47Performance:require('../../p47-performance'),STALL_SPD:40,MISSIONS:[{corsair:kind==='corsair'}],mission:0,isDefend:()=>kind==='zero',isSBD:()=>kind==='sbd',bankTurnRate,windZ:0};
+ const globals={SortieFeatures,FlightDynamics,P47Performance:require('../../p47-performance'),STALL_SPD:40,MISSIONS:[{corsair:kind==='corsair'}],mission:0,isDefend:()=>kind==='zero',isSBD:()=>kind==='sbd',FlightEnvelope,PAC_HANDLING:handling,windZ:0};
  const attitude=vm.runInNewContext('(function(P,inputRoll,inputPitch,dt,d,stallSpd){const load=SortieFeatures.Handling.sample(P),controls=SortieFeatures.Damage.controls(P),configuration=SortieFeatures.Handling.configuration(P,stallSpd),departure=SortieFeatures.Handling.departure(P,dt,stallSpd),aeroMode='+aeroMode+',steerSign=1;'+html.slice(a,b)+'})',globals);
  const i=html.indexOf('  // integrate\n',flight),j=html.indexOf('  // fuel\n',i);
  const integration=pacific?null:vm.runInNewContext('(function(P,dt,windZ){const vs=0;'+html.slice(i,j)+'})',
@@ -130,7 +130,7 @@ for(const speed of [79.99,80,80.01,139.99,140,140.01]){
 // Begin level in strong wind: the turn routine itself must never yaw the nose.
 const a=eu.indexOf('  // bank-to-turn:',eu.indexOf('function updateFlight(dt)')),b=eu.indexOf('  // vertical speed:',a);
 for(const windZ of [-12,0,12]){
- const turn=vm.runInNewContext('(function(P,dt){const load=SortieFeatures.Handling.sample(P),aeroMode=false,d=AC.p47,stallSpd=d.stall,configuration=SortieFeatures.Handling.configuration(P,stallSpd),feel=FlightDynamics.authority(P.ac,P.spd,stallSpd);'+eu.slice(a,b)+'})',{SortieFeatures,FlightDynamics,bankTurnRate,windZ,AC:defs});
+ const turn=vm.runInNewContext('(function(P,dt){const load=SortieFeatures.Handling.sample(P),controls=SortieFeatures.Damage.controls(P),aeroMode=false,d=AC.p47,stallSpd=d.stall,configuration=SortieFeatures.Handling.configuration(P,stallSpd),feel=FlightDynamics.authority(P.ac,P.spd,stallSpd),liftCtx={loadSpeed:load.speed,stallPenalty:controls.stallPenalty,gFactor:configuration.gFactor,flaps:controls.flaps.mean};'+eu.slice(a,b)+'})',{SortieFeatures,FlightDynamics,FlightEnvelope,windZ,AC:defs});
  const p={ac:'p47',roll:0,spd:150,heading:1.2};for(let i=0;i<1200;i++)turn(p,.05);
  assert.equal(p.heading,1.2,'wind must not turn a wings-level aircraft');
 }

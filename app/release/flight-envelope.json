@@ -1,0 +1,725 @@
+{
+ "arcade": {
+  "turn": 2.2,
+  "pitch": 2.6,
+  "pitchFloor": 0.25,
+  "rollRef": 100,
+  "rollGain": 1.5,
+  "rollGamma": 0.75,
+  "bankSat": 0.9599310885968813,
+  "windmill": 0.07,
+  "inducedBleed": 0.3
+ },
+ "aircraft": {
+  "p47": {
+   "name": "P-47D-28 Thunderbolt",
+   "sheet": {
+    "name": "P-47D-28 Thunderbolt",
+    "m": 5775,
+    "S": 27.87,
+    "b": 12.42,
+    "kW": 1939,
+    "propD": 3.99,
+    "vs": 51.86,
+    "nLimit": 7,
+    "roll": {
+     "peak": 85,
+     "at": 125,
+     "fall": 0.8
+    },
+    "pitchClass": 1,
+    "tag": {
+     "m": "A",
+     "S": "A",
+     "kW": "A",
+     "vs": "A",
+     "nLimit": "C",
+     "roll": "B"
+    }
+   },
+   "wingLoading": 207,
+   "aspectRatio": 5.53,
+   "clmax": 1.23,
+   "stall": 51.9,
+   "corner": 137,
+   "loopEntry": 75,
+   "atSpeed": {
+    "60": {
+     "n": 1.34,
+     "turn360Real": 43.2,
+     "turn360Game": 19.6,
+     "rollRealDegS": 41,
+     "rollGameDegS": 77,
+     "pitchCapDegS": 14,
+     "idleWindmill": 0.33
+    },
+    "90": {
+     "n": 3.01,
+     "turn360Real": 20.3,
+     "turn360Game": 9.2,
+     "rollRealDegS": 61,
+     "rollGameDegS": 104,
+     "pitchCapDegS": 33,
+     "idleWindmill": 0.75
+    },
+    "120": {
+     "n": 5.35,
+     "turn360Real": 14.6,
+     "turn360Game": 6.6,
+     "rollRealDegS": 82,
+     "rollGameDegS": 129,
+     "pitchCapDegS": 53,
+     "idleWindmill": 1.34
+    },
+    "150": {
+     "n": 7,
+     "turn360Real": 13.9,
+     "turn360Game": 6.3,
+     "rollRealDegS": 73,
+     "rollGameDegS": 119,
+     "pitchCapDegS": 58,
+     "idleWindmill": 2.09
+    }
+   }
+  },
+  "bf109": {
+   "name": "Bf 109F-2",
+   "sheet": {
+    "name": "Bf 109F-2",
+    "m": 2890,
+    "S": 16.1,
+    "b": 9.92,
+    "kW": 750,
+    "propD": 3,
+    "vs": 45,
+    "nLimit": 6.5,
+    "roll": {
+     "peak": 100,
+     "at": 95,
+     "fall": 1.7
+    },
+    "pitchClass": 1,
+    "tag": {
+     "m": "A",
+     "S": "A",
+     "kW": "A",
+     "vs": "B",
+     "nLimit": "C",
+     "roll": "B"
+    }
+   },
+   "wingLoading": 180,
+   "aspectRatio": 6.11,
+   "clmax": 1.42,
+   "stall": 45,
+   "corner": 115,
+   "loopEntry": 51,
+   "atSpeed": {
+    "60": {
+     "n": 1.78,
+     "turn360Real": 26.1,
+     "turn360Game": 11.9,
+     "rollRealDegS": 63,
+     "rollGameDegS": 106,
+     "pitchCapDegS": 19,
+     "idleWindmill": 0.38
+    },
+    "90": {
+     "n": 4,
+     "turn360Real": 14.9,
+     "turn360Game": 6.8,
+     "rollRealDegS": 95,
+     "rollGameDegS": 144,
+     "pitchCapDegS": 49,
+     "idleWindmill": 0.85
+    },
+    "120": {
+     "n": 6.5,
+     "turn360Real": 12,
+     "turn360Game": 5.4,
+     "rollRealDegS": 67,
+     "rollGameDegS": 111,
+     "pitchCapDegS": 67,
+     "idleWindmill": 1.51
+    },
+    "150": {
+     "n": 6.5,
+     "turn360Real": 15,
+     "turn360Game": 6.8,
+     "rollRealDegS": 46,
+     "rollGameDegS": 84,
+     "pitchCapDegS": 54,
+     "idleWindmill": 2.36
+    }
+   }
+  },
+  "fw190": {
+   "name": "Fw 190A-8",
+   "sheet": {
+    "name": "Fw 190A-8",
+    "m": 4270,
+    "S": 18.3,
+    "b": 10.5,
+    "kW": 1273,
+    "propD": 3.3,
+    "clmax": 1.4,
+    "nLimit": 6.5,
+    "roll": {
+     "peak": 150,
+     "at": 115,
+     "fall": 0.55
+    },
+    "pitchClass": 0.95,
+    "tag": {
+     "m": "A",
+     "S": "A",
+     "kW": "A",
+     "vs": "C",
+     "nLimit": "C",
+     "roll": "B"
+    }
+   },
+   "wingLoading": 233,
+   "aspectRatio": 6.02,
+   "clmax": 1.4,
+   "stall": 51.7,
+   "corner": 132,
+   "loopEntry": 59,
+   "atSpeed": {
+    "60": {
+     "n": 1.35,
+     "turn360Real": 42.5,
+     "turn360Game": 19.3,
+     "rollRealDegS": 78,
+     "rollGameDegS": 125,
+     "pitchCapDegS": 14,
+     "idleWindmill": 0.31
+    },
+    "90": {
+     "n": 3.03,
+     "turn360Real": 20.1,
+     "turn360Game": 9.1,
+     "rollRealDegS": 117,
+     "rollGameDegS": 169,
+     "pitchCapDegS": 33,
+     "idleWindmill": 0.7
+    },
+    "120": {
+     "n": 5.39,
+     "turn360Real": 14.5,
+     "turn360Game": 6.6,
+     "rollRealDegS": 147,
+     "rollGameDegS": 200,
+     "pitchCapDegS": 54,
+     "idleWindmill": 1.24
+    },
+    "150": {
+     "n": 6.5,
+     "turn360Real": 15,
+     "turn360Game": 6.8,
+     "rollRealDegS": 130,
+     "rollGameDegS": 182,
+     "pitchCapDegS": 54,
+     "idleWindmill": 1.93
+    }
+   }
+  },
+  "ju87": {
+   "name": "Ju 87B-2 Stuka",
+   "sheet": {
+    "name": "Ju 87B-2 Stuka",
+    "m": 4250,
+    "S": 31.9,
+    "b": 13.8,
+    "kW": 883,
+    "propD": 3.3,
+    "clmax": 1.5,
+    "nLimit": 6,
+    "roll": {
+     "peak": 55,
+     "at": 70,
+     "fall": 1
+    },
+    "pitchClass": 0.85,
+    "tag": {
+     "m": "A",
+     "S": "A",
+     "kW": "A",
+     "vs": "C",
+     "nLimit": "C",
+     "roll": "C"
+    }
+   },
+   "wingLoading": 133,
+   "aspectRatio": 5.97,
+   "clmax": 1.5,
+   "stall": 37.7,
+   "corner": 92,
+   "loopEntry": 50,
+   "atSpeed": {
+    "60": {
+     "n": 2.53,
+     "turn360Real": 16.5,
+     "turn360Game": 7.5,
+     "rollRealDegS": 47,
+     "rollGameDegS": 85,
+     "pitchCapDegS": 37,
+     "idleWindmill": 0.31
+    },
+    "90": {
+     "n": 5.69,
+     "turn360Real": 10.3,
+     "turn360Game": 4.7,
+     "rollRealDegS": 43,
+     "rollGameDegS": 79,
+     "pitchCapDegS": 76,
+     "idleWindmill": 0.7
+    },
+    "120": {
+     "n": 6,
+     "turn360Real": 13,
+     "turn360Game": 5.9,
+     "rollRealDegS": 32,
+     "rollGameDegS": 64,
+     "pitchCapDegS": 61,
+     "idleWindmill": 1.24
+    },
+    "150": {
+     "n": 6,
+     "turn360Real": 16.2,
+     "turn360Game": 7.4,
+     "rollRealDegS": 26,
+     "rollGameDegS": 54,
+     "pitchCapDegS": 49,
+     "idleWindmill": 1.94
+    }
+   }
+  },
+  "me262": {
+   "name": "Me 262A-1a",
+   "sheet": {
+    "name": "Me 262A-1a",
+    "m": 6473,
+    "S": 21.7,
+    "b": 12.65,
+    "kW": 0,
+    "propD": 0,
+    "clmax": 1.4,
+    "nLimit": 5.5,
+    "roll": {
+     "peak": 80,
+     "at": 120,
+     "fall": 1.6
+    },
+    "pitchClass": 0.9,
+    "tag": {
+     "m": "A",
+     "S": "A",
+     "kW": "A",
+     "vs": "C",
+     "nLimit": "C",
+     "roll": "C"
+    }
+   },
+   "wingLoading": 298,
+   "aspectRatio": 7.37,
+   "clmax": 1.4,
+   "stall": 58.4,
+   "corner": 137,
+   "loopEntry": 76,
+   "atSpeed": {
+    "60": {
+     "n": 1.05,
+     "turn360Real": 114.4,
+     "turn360Game": 52,
+     "rollRealDegS": 40,
+     "rollGameDegS": 75,
+     "pitchCapDegS": 14,
+     "idleWindmill": 0
+    },
+    "90": {
+     "n": 2.37,
+     "turn360Real": 26.8,
+     "turn360Game": 12.2,
+     "rollRealDegS": 60,
+     "rollGameDegS": 102,
+     "pitchCapDegS": 22,
+     "idleWindmill": 0
+    },
+    "120": {
+     "n": 4.22,
+     "turn360Real": 18.7,
+     "turn360Game": 8.5,
+     "rollRealDegS": 80,
+     "rollGameDegS": 127,
+     "pitchCapDegS": 39,
+     "idleWindmill": 0
+    },
+    "150": {
+     "n": 5.5,
+     "turn360Real": 17.8,
+     "turn360Game": 8.1,
+     "rollRealDegS": 56,
+     "rollGameDegS": 97,
+     "pitchCapDegS": 44,
+     "idleWindmill": 0
+    }
+   }
+  },
+  "me163": {
+   "name": "Me 163B Komet",
+   "sheet": {
+    "name": "Me 163B Komet",
+    "m": 4110,
+    "S": 19.6,
+    "b": 9.3,
+    "kW": 0,
+    "propD": 0,
+    "clmax": 1.1,
+    "nLimit": 6,
+    "roll": {
+     "peak": 100,
+     "at": 120,
+     "fall": 1.2
+    },
+    "pitchClass": 1,
+    "tag": {
+     "m": "B",
+     "S": "B",
+     "kW": "B",
+     "vs": "C",
+     "nLimit": "C",
+     "roll": "C"
+    }
+   },
+   "wingLoading": 210,
+   "aspectRatio": 4.41,
+   "clmax": 1.1,
+   "stall": 55.3,
+   "corner": 135,
+   "loopEntry": 63,
+   "atSpeed": {
+    "60": {
+     "n": 1.18,
+     "turn360Real": 61.5,
+     "turn360Game": 28,
+     "rollRealDegS": 50,
+     "rollGameDegS": 89,
+     "pitchCapDegS": 14,
+     "idleWindmill": 0
+    },
+    "90": {
+     "n": 2.65,
+     "turn360Real": 23.5,
+     "turn360Game": 10.7,
+     "rollRealDegS": 75,
+     "rollGameDegS": 121,
+     "pitchCapDegS": 27,
+     "idleWindmill": 0
+    },
+    "120": {
+     "n": 4.72,
+     "turn360Real": 16.7,
+     "turn360Game": 7.6,
+     "rollRealDegS": 100,
+     "rollGameDegS": 150,
+     "pitchCapDegS": 45,
+     "idleWindmill": 0
+    },
+    "150": {
+     "n": 6,
+     "turn360Real": 16.2,
+     "turn360Game": 7.4,
+     "rollRealDegS": 77,
+     "rollGameDegS": 123,
+     "pitchCapDegS": 49,
+     "idleWindmill": 0
+    }
+   }
+  },
+  "avenger": {
+   "name": "TBM-3 Avenger",
+   "sheet": {
+    "name": "TBM-3 Avenger",
+    "m": 6800,
+    "S": 45.52,
+    "b": 16.51,
+    "kW": 1417,
+    "propD": 4.01,
+    "clmax": 1.4,
+    "nLimit": 4.5,
+    "roll": {
+     "peak": 50,
+     "at": 85,
+     "fall": 1
+    },
+    "pitchClass": 0.75,
+    "tag": {
+     "m": "A",
+     "S": "A",
+     "kW": "A",
+     "vs": "C",
+     "nLimit": "C",
+     "roll": "C"
+    }
+   },
+   "wingLoading": 149,
+   "aspectRatio": 5.99,
+   "clmax": 1.4,
+   "stall": 41.3,
+   "corner": 88,
+   "loopEntry": 54,
+   "atSpeed": {
+    "60": {
+     "n": 2.11,
+     "turn360Real": 20.7,
+     "turn360Game": 9.4,
+     "rollRealDegS": 35,
+     "rollGameDegS": 69,
+     "pitchCapDegS": 27,
+     "idleWindmill": 0.29
+    },
+    "90": {
+     "n": 4.5,
+     "turn360Real": 13.1,
+     "turn360Game": 6,
+     "rollRealDegS": 47,
+     "rollGameDegS": 85,
+     "pitchCapDegS": 57,
+     "idleWindmill": 0.64
+    },
+    "120": {
+     "n": 4.5,
+     "turn360Real": 17.5,
+     "turn360Game": 8,
+     "rollRealDegS": 35,
+     "rollGameDegS": 69,
+     "pitchCapDegS": 43,
+     "idleWindmill": 1.15
+    },
+    "150": {
+     "n": 4.5,
+     "turn360Real": 21.9,
+     "turn360Game": 10,
+     "rollRealDegS": 28,
+     "rollGameDegS": 58,
+     "pitchCapDegS": 34,
+     "idleWindmill": 1.79
+    }
+   }
+  },
+  "sbd": {
+   "name": "SBD-3 Dauntless",
+   "sheet": {
+    "name": "SBD-3 Dauntless",
+    "m": 4717,
+    "S": 30.19,
+    "b": 12.66,
+    "kW": 746,
+    "propD": 3.5,
+    "clmax": 1.4,
+    "nLimit": 5.5,
+    "roll": {
+     "peak": 70,
+     "at": 85,
+     "fall": 1
+    },
+    "pitchClass": 0.95,
+    "tag": {
+     "m": "A",
+     "S": "A",
+     "kW": "A",
+     "vs": "C",
+     "nLimit": "C",
+     "roll": "C"
+    }
+   },
+   "wingLoading": 156,
+   "aspectRatio": 5.31,
+   "clmax": 1.4,
+   "stall": 42.3,
+   "corner": 99,
+   "loopEntry": 49,
+   "atSpeed": {
+    "60": {
+     "n": 2.01,
+     "turn360Real": 22,
+     "turn360Game": 10,
+     "rollRealDegS": 49,
+     "rollGameDegS": 88,
+     "pitchCapDegS": 25,
+     "idleWindmill": 0.31
+    },
+    "90": {
+     "n": 4.53,
+     "turn360Real": 13,
+     "turn360Game": 5.9,
+     "rollRealDegS": 66,
+     "rollGameDegS": 110,
+     "pitchCapDegS": 57,
+     "idleWindmill": 0.71
+    },
+    "120": {
+     "n": 5.5,
+     "turn360Real": 14.2,
+     "turn360Game": 6.5,
+     "rollRealDegS": 50,
+     "rollGameDegS": 89,
+     "pitchCapDegS": 55,
+     "idleWindmill": 1.26
+    },
+    "150": {
+     "n": 5.5,
+     "turn360Real": 17.8,
+     "turn360Game": 8.1,
+     "rollRealDegS": 40,
+     "rollGameDegS": 75,
+     "pitchCapDegS": 44,
+     "idleWindmill": 1.97
+    }
+   }
+  },
+  "corsair": {
+   "name": "F4U-1D Corsair",
+   "sheet": {
+    "name": "F4U-1D Corsair",
+    "m": 5461,
+    "S": 29.17,
+    "b": 12.5,
+    "kW": 1491,
+    "propD": 4.06,
+    "clmax": 1.35,
+    "nLimit": 7,
+    "roll": {
+     "peak": 100,
+     "at": 130,
+     "fall": 0.8
+    },
+    "pitchClass": 1,
+    "tag": {
+     "m": "A",
+     "S": "A",
+     "kW": "A",
+     "vs": "C",
+     "nLimit": "C",
+     "roll": "B"
+    }
+   },
+   "wingLoading": 187,
+   "aspectRatio": 5.36,
+   "clmax": 1.35,
+   "stall": 47.1,
+   "corner": 125,
+   "loopEntry": 53,
+   "atSpeed": {
+    "60": {
+     "n": 1.62,
+     "turn360Real": 30.1,
+     "turn360Game": 13.7,
+     "rollRealDegS": 46,
+     "rollGameDegS": 84,
+     "pitchCapDegS": 15,
+     "idleWindmill": 0.37
+    },
+    "90": {
+     "n": 3.65,
+     "turn360Real": 16.4,
+     "turn360Game": 7.5,
+     "rollRealDegS": 69,
+     "rollGameDegS": 114,
+     "pitchCapDegS": 43,
+     "idleWindmill": 0.82
+    },
+    "120": {
+     "n": 6.48,
+     "turn360Real": 12,
+     "turn360Game": 5.5,
+     "rollRealDegS": 92,
+     "rollGameDegS": 141,
+     "pitchCapDegS": 67,
+     "idleWindmill": 1.46
+    },
+    "150": {
+     "n": 7,
+     "turn360Real": 13.9,
+     "turn360Game": 6.3,
+     "rollRealDegS": 89,
+     "rollGameDegS": 138,
+     "pitchCapDegS": 58,
+     "idleWindmill": 2.29
+    }
+   }
+  },
+  "zero": {
+   "name": "A6M2 Zero",
+   "sheet": {
+    "name": "A6M2 Zero",
+    "m": 2410,
+    "S": 22.44,
+    "b": 12,
+    "kW": 700,
+    "propD": 2.9,
+    "clmax": 1.4,
+    "nLimit": 6,
+    "roll": {
+     "peak": 115,
+     "at": 85,
+     "fall": 1.5
+    },
+    "pitchClass": 1,
+    "tag": {
+     "m": "A",
+     "S": "A",
+     "kW": "A",
+     "vs": "C",
+     "nLimit": "C",
+     "roll": "B"
+    }
+   },
+   "wingLoading": 107,
+   "aspectRatio": 6.42,
+   "clmax": 1.4,
+   "stall": 35.1,
+   "corner": 86,
+   "loopEntry": 40,
+   "atSpeed": {
+    "60": {
+     "n": 2.93,
+     "turn360Real": 14,
+     "turn360Game": 6.3,
+     "rollRealDegS": 81,
+     "rollGameDegS": 128,
+     "pitchCapDegS": 47,
+     "idleWindmill": 0.42
+    },
+    "90": {
+     "n": 6,
+     "turn360Real": 9.7,
+     "turn360Game": 4.4,
+     "rollRealDegS": 106,
+     "rollGameDegS": 156,
+     "pitchCapDegS": 81,
+     "idleWindmill": 0.95
+    },
+    "120": {
+     "n": 6,
+     "turn360Real": 13,
+     "turn360Game": 5.9,
+     "rollRealDegS": 69,
+     "rollGameDegS": 113,
+     "pitchCapDegS": 61,
+     "idleWindmill": 1.69
+    },
+    "150": {
+     "n": 6,
+     "turn360Real": 16.2,
+     "turn360Game": 7.4,
+     "rollRealDegS": 49,
+     "rollGameDegS": 88,
+     "pitchCapDegS": 49,
+     "idleWindmill": 2.64
+    }
+   }
+  }
+ }
+}

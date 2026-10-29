@@ -1,4 +1,17 @@
-# Fleet handling and engine audio — Build 213
+# Fleet handling and engine audio — Build 215
+
+## Build 215 — analytic flight envelope (29 October 2026)
+
+Roll, pitch, turn, closed-throttle braking and the AERO loop are no longer hand-typed per aircraft.
+They are derived from a data sheet of real figures (mass, wing area, power, propeller size, clean
+stall, load limit, published roll rates) and scaled by a few fleet-wide arcade gains. Derivation,
+sources, confidence tags and measurements: [`FLIGHT-ENVELOPE.md`](FLIGHT-ENVELOPE.md). The AERO chase
+camera now follows the aircraft's own nose and wing axis (it used to follow the heading and ended up in
+front of the nose over the top of a loop). Thrust, drag at full power, take-off and landing references
+are unchanged from Build 214.
+
+## Build 214 and earlier (kept for reference)
+
 
 ## Build 214 — loaded radial sound (28 October 2026)
 

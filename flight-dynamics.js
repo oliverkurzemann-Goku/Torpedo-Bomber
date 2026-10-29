@@ -21,12 +21,17 @@ function profile(kind){return profiles[kind]||profiles.p47;}
 function kind(p){return p.loadProfile?.kind||p.ac||'avenger';}
 function authority(type,speed,stall){
  const q=profile(type),slow=clamp((speed/Math.max(1,stall)-.65)/.65,.35,1);
- const fast=clamp((speed-q.stiff)/65,0,1),roll=1-fast*(1-q.floor);
- return {roll:slow*roll,pitch:slow*(1-fast*(1-q.floor)*.55),turn:1-fast*.13};
+ const fast=clamp((speed-q.stiff)/65,0,1),E=root.FlightEnvelope;
+ // Roll authority follows the published roll-rate curve of each type (rise with aileron power,
+ // fall with stick force); the turn rate itself comes from the load-factor law in FlightEnvelope.
+ const roll=E&&E.derived[type]?clamp(E.rollRate(type,speed)/E.rollPeak(type),.12,1):1-fast*(1-q.floor);
+ return {roll:slow*roll,pitch:slow*(1-fast*(1-q.floor)*.55),turn:1};
 }
 function acceleration(type,p,o={}){
  const q=profile(type),v=Math.max(32,p.spd||0),mass=clamp(o.loadRatio??1,.8,1.5),power=(p.fuel??100)<=0?0:clamp(o.power??1,0,1);
- const bank=clamp(Math.abs(Math.sin(o.bank??p.roll??0)),0,1);
+ const bank=clamp(Math.abs(Math.sin(o.bank??p.roll??0)),0,1),E=root.FlightEnvelope;
+ // The load factor really flown (turn or pull) replaces the bank-angle proxy when the caller knows it.
+ const induce=o.n!=null&&E?E.inducedFactor(type,o.n):1+q.turnDrag*bank*bank;
  const gear=type==='ju87'?0:clamp(p.gear||0,0,1),flaps=clamp(o.flaps??p.flap??0,0,1);
  const config=gear*.65+flaps*1.10+(p.tankAttached?.3:0)+(o.drag||0)*.15+(p.diveBrake?(type==='ju87'?7.0:5.0):0);
  // Rocket-off flight keeps the previously verified Komet recovery envelope.
@@ -40,9 +45,10 @@ function acceleration(type,p,o={}){
   // meets the clean maximum without a target-speed spring or infinite idle thrust.
   const c=q.power/q.max-q.induced*(q.corner/q.max)**2;
   thrust=q.power*spool*power/Math.max(55,v);
-  drag=c*(v/q.max)**2+q.induced*(q.corner/v)**2*mass*mass*(1+q.turnDrag*bank*bank);
+  drag=c*(v/q.max)**2+q.induced*(q.corner/v)**2*mass*mass*induce;
  }
- return clamp((thrust-drag)/mass-9.81*Math.sin(p.pitch||0)-config,-18,type==='me163'?18:8);
+ const windmill=E?E.idleDrag(type,v,spool,mass):0;
+ return clamp((thrust-drag)/mass-9.81*Math.sin(p.pitch||0)-config-windmill,-18,type==='me163'?18:8);
 }
 function step(p,dt,o={}){
  const type=o.kind||kind(p),q=profile(type),duration=clamp(dt,0,.25);
@@ -53,7 +59,10 @@ function step(p,dt,o={}){
   p.groundPower=(p.groundPower??throttle)+(throttle-(p.groundPower??throttle))*(1-Math.exp(-h/q.spool));
   let a;
   if(type==='p47'&&root.P47Performance){
-   a=root.P47Performance.gameplayAcceleration({...p,throttle:p.groundPower},{...o,damage:(p.fuel??100)<=0?0:o.power??1});
+   const E=root.FlightEnvelope,bank=o.n!=null?Math.acos(1/Math.max(1,o.n)):o.bank;
+   a=root.P47Performance.gameplayAcceleration({...p,throttle:p.groundPower},{...o,bank,damage:(p.fuel??100)<=0?0:o.power??1});
+   // The historical envelope has no closed-throttle propeller drag; add the windmilling disc.
+   if(E)a-=E.idleDrag('p47',Math.max(32,p.spd||0),p.groundPower,o.loadRatio||1);
   }else a=acceleration(type,p,o);
   if(type!=='p47'&&a>0&&o.departure?.release<1)a=Math.min(a,o.departure.acceleration/(o.loadRatio||1)*(1+2*o.departure.release));
   p.spd=Math.max(6,(p.spd||0)+a*h);

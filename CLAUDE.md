@@ -1,5 +1,42 @@
 # Torpedo-Bomber — Übergabe an Claude Code
 
+**29.10.2026, Build 215: Flugverhalten aller zehn Typen analytisch aus realen Daten abgeleitet; AERO-Kamera repariert.**
+Nutzer: Bf 109 und Zero zu aggressiv, P-47 zu träge; im AERO-Modus bei manchen Typen kein Looping, man sieht
+das Flugzeug „praktisch von vorne“; beim Gaswegnehmen bremsen die Flugzeuge kaum. Verlangt: analytischer,
+fein abgestimmter Ansatz mit Abstufung nach realen Daten. Zuerst gemessen (echtes `updateFlight`/`updateCamera`
+im Browser, Skript wie `okinawa/tests/flight-envelope-browser.cjs`): Vollausschlag rollte JEDEN Typ mit
+94–195 °/s fast unabhängig von der Geschwindigkeit; Vollkreis bei 87 m/s: Fw 190 5,3 s, Bf 109 5,1 s, Zero 5,3 s
+(≈ 8–10 g!), P-47 aber 12,6 s. Ursache P-47: ihr Auftriebs-Stall ist der realistische (51,9 m/s), die übrigen
+nutzten künstliche 29–39 m/s → `nLift=(v/stall)²` verteilte g völlig ungleich. Leerlauf-Verzögerung P-47
+nur 0,7–1,0 m/s² (keine Propellerbremswirkung). Loop-Kamera: Blickrichtung aus Heading + gestauchtem Pitch →
+jenseits der Senkrechten stand die Kamera VOR der Nase (6–21 % aller Loop-Frames, Skalarprodukt Kamera/Nase = 1).
+Neu: `flight-envelope.js` (`FlightEnvelope`) + `FLIGHT-ENVELOPE.md`:
+- Datenblatt je Typ (Masse, Fläche, Spannweite, Leistung, Propellerdurchmesser, Reinstall, Lastvielfaches,
+  veröffentlichte Rollrate) mit Vertrauensstufen A/B/C und Quellen. Recherchiert (WebSearch; Wikipedia und
+  Flying Magazine waren aus der Umgebung nicht erreichbar): Roll-/Stall-/Lastgrenzen sind überwiegend
+  Sekundärquellen oder `assumed` (C) und nur als ±30 %-Ordnung zu lesen. Nichts davon ist Messung am Flugzeug.
+- Abgeleitet: CLmax/Stall/Eckgeschwindigkeit; Kurvenrate `ω=ARC.turn·g·√(n²−1)/V` mit `n=min(Struktur, (V/Vs)²)` und
+  Bankanteil `sin(bank)/sin 55°`; Rollrate `p(V)` (Anstieg ∝V^0,8, Abfall ∝V^−k nach Steuerkraft) → Feder des
+  Lageregelkreises so gelöst, dass ihre Spitzenrate die Rollrate trifft (`handling()`); Nickrate gedeckelt durch
+  `g(n−cosθ)/V`; Propeller-Leerlaufbremse `½ρV²·A_Disc·C/m`; Induktivwiderstand wächst mit dem real geflogenen n².
+- Globale Arcade-Gewichte (ein Ort, `ARC`): turn 2,2; pitch 2,6; rollGain 1,5; rollGamma 0,65; windmill 0,07;
+  inducedBleed 0,30. Nie pro Typ ändern, sondern das Datenblatt.
+- AERO: Zug = Lastvielfaches des Flügels, `aeroGate(kind)=max(1,5·Vs, simulierter Mindest-Einflugspeed·1,08)` statt
+  `1,7·stall`; Meldung nennt die nötige Geschwindigkeit. `FlightSupport.aeroChase` führt die Kamera an Nase und Flügelachse
+  (geglättet) – Kamera bleibt hinter dem Flugzeug, 0 % der Loop-Frames vor der Nase.
+- Eingebaut in `torpedo-carrier.html` und `remagen-mission.html`; `flight-dynamics.js` bekommt Leerlaufbremse, n-basierte
+  Induktivwiderstand-Skalierung und Rollautorität aus der Rollkurve. Schub-/Widerstandsgesetz (Vmax, Beschleunigung),
+  Start/Landung/Referenzen, Gegner-KI (`flyAI`) und Legacy-Europa bleiben unverändert (altes `bankTurnRate` im Rheinspiel entfernt).
+Messung vorher → nachher (Vollkreis, Vollausschlag): P-47 87 m/s 12,6 → 9,4 s, 136 m/s 7,8 → 6,0 s; Bf 109 79 m/s 5,1 → 6,7 s;
+Zero 5,3 → 5,0 s; Fw 190 5,3 → 8,6 s; Rolle Spitze P-47 159 → 103–128, Bf 109 169 → 133 (fällt auf 79 °/s bei 70 % Vmax), Zero 194 → 141
+(→ 102), Fw 190 195 → 168–194, Avenger 94 → 65–90. Leerlauf bei 50/75 % Vmax: P-47 0,7/1,0 → 1,5/2,7; Bf 109 1,6/2,3 → 2,3/3,7;
+Zero 1,5/2,0 → 2,0/3,1; Corsair 2,1/2,4 → 2,7/3,7. Loops aus dem Einstiegsspeed bei allen zehn Typen vollständig, Mindestgeschwindigkeit über
+Stall, Kamera nie vor der Nase. Ältere Absätze unten nennen `TURN_K`, `bankTurnRate`, `rollAuth/pitchAuth`: nur noch historisch.
+Neue/angepasste Tests: `flight-envelope.cjs`, `flight-envelope-browser.cjs`, `aero-camera.js` (schlägt gegen den alten Code fehl),
+`aerobatics.js`, `flight-controls.js`, `pitch-response.cjs`. Build-/Cache-Kennungen 215 (nur geänderte Module), App-Register neu.
+Offen: kein iPad-Test; ob Rollen/Kurven „richtig“ wirken, entscheidet allein Spielgefühl – die ARC-Gewichte sind dafür da. Thrust-Gesetz
+trägt weiter λ≈2,3–3,5× realen Schub (Build 211): echte Sustained-Turn-Grenzen entstehen dadurch noch nicht.
+
 **29.10.2026, Build 218: linearer Gasweg fuer alle zehn Flugzeugstimmen.**
 Die sechs freigegebenen 217-Sounddateien bleiben unveraendert. Der bisherige
 Lastklang-Schwellwert oberhalb50% entfaellt: sqrt(1-Gas)/sqrt(Gas) fuer einen

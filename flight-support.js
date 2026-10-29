@@ -52,6 +52,23 @@ function centerChase(camera,position,track){
  const side=(camera.position.x-position.x)*x+(camera.position.z-position.z)*z;
  camera.position.x-=x*side;camera.position.z-=z*side;
 }
+function createAeroRig(){return {dir:null,up:null};}
+// Build 215: chase direction and up-vector for AERO manoeuvres. The camera follows the aircraft's own
+// nose and wing axis (exponentially smoothed) instead of its heading, so over the top of a loop it
+// stays BEHIND the aircraft rather than ending up in front of the nose. Works on vector objects with
+// clone/lerp/normalize/dot/addScaledVector (THREE.Vector3); returns the same rig.
+function aeroChase(rig,nose,up,dt,rate=6){
+ // A smoothed follower lags a real manoeuvre by at most rate-limit/rate (about 25 degrees at 150 deg/s), so a
+ // larger gap means the aircraft was repositioned (mission start, respawn): snap instead of swinging round.
+ if(!rig.dir||rig.dir.dot(nose)<.5){rig.dir=nose.clone();rig.up=up.clone();}
+ const k=1-Math.exp(-Math.max(0,dt)*rate);
+ rig.dir.lerp(nose,k).normalize();
+ rig.up.lerp(up,k);
+ rig.up.addScaledVector(rig.dir,-rig.up.dot(rig.dir));
+ if(rig.up.lengthSq()<1e-8)rig.up.copy(up).addScaledVector(rig.dir,-up.dot(rig.dir));
+ rig.up.normalize();
+ return rig;
+}
 function guideWingman(w,desiredVelocity,dt,forming){
  // Steer the flight path itself, then render the same attitude. Previously
  // velocity turned independently of the rate-limited mesh, so close escorts
@@ -161,5 +178,5 @@ class Navigation{
   }
  }
 }
-root.FlightSupport={surfaceHit,skinHeight,canDitch,centerChase,guideWingman,TreeIndex,treeStrike,Navigation};
+root.FlightSupport={surfaceHit,skinHeight,canDitch,centerChase,createAeroRig,aeroChase,guideWingman,TreeIndex,treeStrike,Navigation};
 })(typeof window==='undefined'?globalThis:window);

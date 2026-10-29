@@ -510,7 +510,7 @@
 <script src="ship-damage.js?v=206"></script>
 <script src="torpedo-attack.js?v=206"></script>
 <script src="ship-contact.js?v=198"></script>
-<script src="flight-support.js?v=198"></script>
+<script src="flight-support.js?v=219"></script>
 <script src="ordnance.js?v=218"></script>
 <script src="crew-visuals.js?v=179"></script>
 <script src="deck-activity.js?v=198"></script>
@@ -524,7 +524,8 @@
 <script src="audio/weapon-sound.js?v=144"></script>
 <script src="audio/flight-atmosphere.js?v=175"></script>
 <script src="sortie-systems.js?v=198"></script>
-<script src="flight-dynamics.js?v=218"></script>
+<script src="flight-envelope.js?v=219"></script>
+<script src="flight-dynamics.js?v=219"></script>
 <script src="audio/throttle-response.js?v=218"></script><script src="audio/aircraft-engine.js?v=218"></script>
 <script src="sortie-features.js?v=218"></script>
 <script src="ground-run.js?v=198"></script>
@@ -2202,7 +2203,7 @@ function startMission(idx){
   P.ammo=m.corsair?2400:1200; P.fireT=0; firing=false;
   P.corsairLoadout=document.getElementById('corsairLoadout').value;P.rockets=m.corsair?corsairConfig().rockets:0;P.rocketCooldown=0;
   if(m.corsair)P.torps=corsairConfig().bombs;P.corsairWeapon=P.torps?'bombs':'rockets';
-  P.rollBias=0; P.bingo=false; P.tailCool=0; P.pitchVel=0; P.rollVel=0;
+  P.rollBias=0; P.bingo=false; P.tailCool=0; P.pitchVel=0; P.rollVel=0; P.nLoad=1;
   sortieTorpFired=0; sortieTorpHit=0;sortieBombFired=0;sortieBombHit=0; sortieShipsSunk=0; sortieZeros=0; hitsTaken=0; sortieWingmenLost=0;
   reinforcementsLaunched=false;
   radioEvadeCalled=false; radioQ=[]; radioT=0; P.ballCalled=false;
@@ -2532,7 +2533,7 @@ function launch(){
   launchTimer=0;
   P.pos.set(carrierX+STERN_X+26, DECK_Y+3.0, 0);
   P.spd=0; P.groundPower=0; P.throttle=0; setThrottleUI(0);
-  P.heading=0; P.pitch=0; P.roll=0; P.pitchVel=0; P.rollVel=0;
+  P.heading=0; P.pitch=0; P.roll=0; P.pitchVel=0; P.rollVel=0; P.nLoad=1;
   carrierIntro={time:0};document.body.classList.add('carrierPreview');
   [carrierModel,ijnCarrierModel].forEach(h=>{if(h){h.rotation.x=0;h.rotation.z=0;delete h.userData.contactDeckY;}});
   updatePlaneMesh(0);updateCarrierIntro(0);
@@ -3507,6 +3508,12 @@ function spawnFlakBurst(p){
 // ============================================================
 //  FLIGHT MODEL
 // ============================================================
+// Build 215: the player's attitude-spring numbers are derived from the aircraft data sheet
+// (flight-envelope.js): published roll-rate curve, wing loading, aircraft class. Nothing typed in per type.
+const PAC_HANDLING=Object.fromEntries(['zero','corsair','sbd','avenger'].map(kind=>{
+  const rollLim=kind==='zero'?1.52:kind==='sbd'?1.50:1.42,h=FlightEnvelope.handling(kind,{rollLim,rollFrac:kind==='avenger'?.78:.86});
+  return [kind,{roll:h.rollAuth,pitch:h.pitchAuth,name:kind}];
+}));
 function updateFlight(dt){
   const previousPosition=P.pos.clone();
   const previousQuaternion=pacificAircraftQuaternion();
@@ -3527,14 +3534,10 @@ function updateFlight(dt){
   const auth = (P.spd<stallSpd? 0.4 : 1.0)*dmgF;
   // Per-aircraft handling. The A6M was the most agile fighter of the early Pacific war;
   // the TBM Avenger is an 8-tonne torpedo bomber and must feel like one.
-  const AC = isDefend()
-    ? { roll:1.25, pitch:1.24, turn:1.30, gLim:7.0, name:'zero'   }   // Zero: light, quick, tight turns
-    : MISSIONS[mission]?.corsair
-    ? {roll:1.20,pitch:1.12,turn:1.05,gLim:7.0,name:'corsair'}
-    : isSBD()
-    ? { roll:0.96, pitch:1.00, turn:0.94, gLim:5.5, name:'sbd'    }   // Dauntless: nimble for a bomber
-    : { roll:0.72, pitch:0.75, turn:0.78, gLim:3.5, name:'avenger'};  // Avenger: heavy, slow to answer
+  const AC = PAC_HANDLING[isDefend()?'zero':MISSIONS[mission]?.corsair?'corsair':isSBD()?'sbd':'avenger'];
   const feel=FlightDynamics.authority(AC.name,P.spd,stallSpd);
+  // Build 219: lift / load-factor context shared by turn, pull and the energy model.
+  const liftCtx={loadSpeed:load.speed,stallPenalty:controls.stallPenalty,gFactor:configuration.gFactor,flaps:controls.flaps.mean};
   // Build 218: quicker assisted pitch response; target and energy envelope stay unchanged.
   const pitchRate=4.2*auth*AC.pitch*feel.pitch*controls.pitch*load.inertia*configuration.authority, rollRate=4.8*auth*AC.roll*feel.roll*controls.roll*load.inertia*configuration.authority;
   // ease pitch/roll toward input
@@ -3572,15 +3575,16 @@ function updateFlight(dt){
   // every type can now reach (or, Avenger, get close to) its own gLim; full 360 now 7-24s, gLim
   // alone tells them apart again, same fix as thunderbolt-europe.html's rollLim table.
   if(aeroMode){
-    const energy=Math.max(.35,Math.min(1,P.spd/(Math.max(1,STALL_SPD*load.speed+controls.stallPenalty)*1.8)));
-    const pull=Math.min(.95*AC.pitch*feel.pitch,1.6*9.81*(AC.gLim*configuration.gFactor-1)/Math.max(P.spd,50))*energy*controls.pitch*load.turn*configuration.authority;
+    // Build 215: pull is the load factor the wing can deliver at this speed (lift below the corner
+    // speed, structure above it), so a loop tightens at the top and cannot out-turn the airframe.
+    const pull=Math.min(.95*AC.pitch*feel.pitch,FlightEnvelope.pitchRateLimit(AC.name,P.spd,P.pitch,liftCtx))*controls.pitch*configuration.authority;
     P.pitchVel=inputPitch*pull;
-    const rollAuthority=2.1*AC.roll*feel.roll*energy*controls.roll*load.inertia*configuration.authority;
+    const rollAuthority=FlightEnvelope.rollPeak(AC.name)*feel.roll*controls.roll*load.inertia*configuration.authority;
     const bankErr=Math.atan2(Math.sin(P.roll-totalBias),Math.cos(P.roll-totalBias));
     // Neutral still self-levels, but the bank should last long enough to fly
     // through a turn instead of springing upright as soon as a thumb lifts.
     P.rollVel=(Math.abs(inputRoll)>0.075||Math.abs(inputPitch)>0.075)?inputRoll*steerSign*rollAuthority:
-      Math.max(-rollAuthority,Math.min(rollAuthority,-bankErr*.7*AC.roll*energy));
+      Math.max(-rollAuthority,Math.min(rollAuthority,-bankErr*.9*Math.max(.6,feel.roll)));
     // Pull is in the wing's lift direction, so banked pulls turn as well as climb.
     P.pitch=Math.atan2(Math.sin(P.pitch+P.pitchVel*Math.cos(P.roll)*dt),Math.cos(P.pitch+P.pitchVel*Math.cos(P.roll)*dt));
     P.heading-=P.pitchVel*Math.sin(P.roll)*dt;
@@ -3590,6 +3594,9 @@ function updateFlight(dt){
     const noseUpLimit=departure.release<1?Math.min(.70,initialLimit+(.70-initialLimit)*departure.release):.70;
     const pitchTarget=inputPitch>0?Math.min(inputPitch*.70,noseUpLimit):inputPitch*.70;
     P.pitchVel=(P.pitchVel||0)+(pitchRate*pitchRate*(pitchTarget-P.pitch) - 2*zeta*pitchRate*P.pitchVel)*dt;
+    // The wing cannot pitch faster than the load factor it can deliver at this speed allows.
+    const pitchCap=FlightEnvelope.pitchRateLimit(AC.name,P.spd,P.pitch,liftCtx)*controls.pitch;
+    P.pitchVel=Math.max(-pitchCap,Math.min(pitchCap,P.pitchVel));
     P.pitch += P.pitchVel*dt;
     const neutral=Math.abs(inputRoll)<.001;
     const levelRate=neutral?Math.max(3.5,rollRate*.7):rollRate;
@@ -3621,17 +3628,16 @@ function updateFlight(dt){
   // backwards), with the airframe's own gLim still capping it so the Avenger stays clearly the
   // worst turner. Verified over all six aircraft in both games. Same helper and constants as
   // thunderbolt-europe.html — see the long comment on bankTurnRate there.
-  const TURN_K=1.05, TURN_VREF=80, TURN_CEIL=1.8;
-  const nLift=Math.max(1.05, Math.pow(P.spd/Math.max(1,stallSpd),2)*0.85);
-  const gUse=Math.max(1.05, Math.min(AC.gLim*configuration.gFactor, nLift));
-  const vT=Math.max(TURN_VREF, P.spd);
-  const turnRate=Math.min(
-    TURN_K*Math.sin(Math.abs(P.roll))*(TURN_VREF/vT)*AC.turn*feel.turn*load.turn,
-    TURN_CEIL*9.81*Math.sqrt(Math.max(0,gUse*gUse-1))/vT);
-  P.heading -= (aeroMode?0.72*Math.sin(P.roll):Math.sign(P.roll))*turnRate*dt;
+  // Build 215: heading rate from the load factor the aircraft can really pull at this speed
+  // (lift-limited below its corner speed, structure-limited above), scaled by one fleet-wide arcade
+  // gain - see flight-envelope.js / FLIGHT-ENVELOPE.md. Replaces the hand-typed TURN_K/TURN_CEIL curve.
+  const law=FlightEnvelope.turn(AC.name,P.roll,P.spd,liftCtx);
+  P.heading -= (aeroMode?0.72*Math.sin(P.roll):Math.sign(P.roll))*law.rate*dt;
+  // The load factor really flown feeds the energy model next frame (turns and pull-ups cost speed).
+  P.nLoad=FlightEnvelope.flownLoad(AC.name,law.n,P.pitch,P.pitchVel,P.spd);
 
   // speed toward throttle target is replaced by finite power, drag and energy.
-  FlightDynamics.step(P,dt,{kind:AC.name,loadRatio:load.ratio,power:(P.hull<60?(.45+.55*P.hull/60):1)*SortieFeatures.Damage.power(P),flaps:controls.flaps.mean,drag:controls.drag,bank:P.roll,departure});
+  FlightDynamics.step(P,dt,{kind:AC.name,loadRatio:load.ratio,power:(P.hull<60?(.45+.55*P.hull/60):1)*SortieFeatures.Damage.power(P),flaps:controls.flaps.mean,drag:controls.drag,bank:P.roll,n:P.nLoad||1,departure});
 
   // vertical speed: climb from pitch (angle of attack) + speed-dependent lift.
   // Lift rises with airspeed². At the approach reference speed the wing holds
@@ -6359,17 +6365,21 @@ function updateCamera(dt){
             +' NEAR: '+(near.slice(0,3).join(' ')||'none');
     }
   }
-  // Follow the climb and bank while easing the camera past the vertical at the
-  // top of a loop, avoiding the abrupt sky/sea reversal in the old nose chase.
-  const viewPitch=Math.atan2(1.25*Math.sin(P.pitch),.42+Math.abs(Math.cos(P.pitch)));
-  const track=aeroMode?new THREE.Vector3(Math.cos(P.heading)*Math.cos(viewPitch),Math.sin(viewPitch),
-    Math.sin(P.heading)*Math.cos(viewPitch)):nd;
-  camera.up.set(0,1,0).applyAxisAngle(track,-(aeroMode ? .82*Math.sin(P.roll) : 0));
-  const want=P.pos.clone()
-    .addScaledVector(track,-24)
-    .add(new THREE.Vector3(0,chaseH,0));  // chase height (LOOK buttons)
-  camera.position.lerp(want, Math.min(1,5*dt));
-  FlightSupport.centerChase(camera,P.pos,track);
+  // Build 215: in AERO the camera follows the aircraft's own nose and up axis (smoothed), so it
+  // stays behind the aircraft through the top of a loop. Before, it followed the HEADING with a
+  // compressed pitch: past vertical the camera ended up in front of the nose.
+  let track=nd,camUp=null;
+  const rig=camera.userData.aeroRig||(camera.userData.aeroRig=FlightSupport.createAeroRig());
+  if(aeroMode){
+    FlightSupport.aeroChase(rig,nd,new THREE.Vector3(0,1,0).applyQuaternion(pacificAircraftQuaternion()),dt);
+    track=rig.dir;camUp=rig.up;
+  }else rig.dir=null;
+  if(camUp)camera.up.copy(camUp);else camera.up.set(0,1,0);
+  const want=P.pos.clone().addScaledVector(track,-24);
+  if(camUp)want.addScaledVector(camUp,chaseH);else want.y+=chaseH;  // chase height (LOOK buttons)
+  camera.position.lerp(want, Math.min(1,(aeroMode?10:5)*dt));
+  // Remove the sideways lag of the follow easing (crosswind); near the vertical the heading frame is undefined.
+  if(Math.hypot(track.x,track.z)>.6)FlightSupport.centerChase(camera,P.pos,track);
   camera.lookAt(P.pos.clone().addScaledVector(track,30));
   applyShake();
   // gunsight in chase view: shows exactly where the MGs will hit
@@ -6856,8 +6866,9 @@ function toggleAero(){
   if(state!==ST.FLIGHT||!P.alive)return;
   if(!isDefend()&&!isSBD()){flash('AERO: ZERO OR DAUNTLESS ONLY',1200);return;}
   const pitchLim=isSBD()?1.28:1.05,rollLim=isSBD()?1.50:1.52;
-  if(!aeroMode&&(P.gear>0.35||P.spd<STALL_SPD*1.7||P.pos.y<300)){
-    flash('AERO: CLIMB, GEAR UP, BUILD SPEED',1200);return;
+  const gate=Math.max(STALL_SPD*1.3,FlightEnvelope.aeroGate(isSBD()?'sbd':'zero'));
+  if(!aeroMode&&(P.gear>0.35||P.spd<gate||P.pos.y<300)){
+    flash('AERO: CLIMB, GEAR UP, BUILD SPEED'+(P.spd<gate?' · '+Math.ceil(gate*KT)+' KT':''),1200);return;
   }
   if(aeroMode&&(Math.abs(P.pitch)>pitchLim*.95||Math.abs(P.roll)>rollLim*.95)){
     flash('COMPLETE THE MANOEUVRE FIRST',1200);return;
