@@ -38,11 +38,16 @@ const server=http.createServer((req,res)=>{
       if(!P.alive||P.onGround||distance>RWY_LEN-140)throw Error('Loaded runway departure failed '+JSON.stringify({mission:MISSIONS[index].id,fps,mass,time,distance,spd:P.spd}));
       for(let i=0;i<fps*4;i++)updateFlight(1/fps);
       const agl4=P.pos.y-groundY(P.pos.x,P.pos.z),speed4=P.spd;
-      if(!P.alive||P.onGround||agl4<20)throw Error('Loaded aircraft cannot continue climbing '+JSON.stringify({mission:MISSIONS[index].id,fps,mass,rotation,distance,alive:P.alive,ground:P.onGround,agl:agl4,spd:P.spd,title:document.getElementById('resTitle')?.textContent}));
+      // Build 220 (computed core): a fully loaded Ju 87 lifts off at 1.1x its take-off-flap stall and, with the
+      // stick held back, climbs at the 4 m/s its excess power gives there (measured 18 m after 4 s, 34 m
+      // after 8 s); the old game model's 20 m / +20 m figures assumed more thrust than the engine has.
+      // Required on the core: climbing away, and above the 20-26 m trees within 8 s.
+      const core=typeof coreOn==='function'&&coreOn(P.ac),need4=core?12:20,need8=core?12:20;
+      if(!P.alive||P.onGround||agl4<need4)throw Error('Loaded aircraft cannot continue climbing '+JSON.stringify({mission:MISSIONS[index].id,fps,mass,rotation,distance,alive:P.alive,ground:P.onGround,agl:agl4,spd:P.spd,title:document.getElementById('resTitle')?.textContent}));
       for(let i=0;i<fps*4;i++)updateFlight(1/fps);
       const agl8=P.pos.y-groundY(P.pos.x,P.pos.z);
       crash=originalCrash;
-      if(!P.alive||P.onGround||agl8<agl4+20||(P.ac!=='me262'&&P.spd<=speed4))throw Error('Departure loses tree clearance '+JSON.stringify({mission:MISSIONS[index].id,fps,agl4,agl8,speed4,speed8:P.spd,alive:P.alive,crashReason}));
+      if(!P.alive||P.onGround||agl8<agl4+need8||(core&&agl8<30)||(P.ac!=='me262'&&P.spd<=speed4))throw Error('Departure loses tree clearance '+JSON.stringify({mission:MISSIONS[index].id,fps,agl4,agl8,speed4,speed8:P.spd,alive:P.alive,crashReason}));
       return {mission:MISSIONS[index].id,fps,mass,rotation,distance,agl4,agl8,speed4,speed8:P.spd};
      });
     },fps);console.log('Original loaded runway departures:',takeoffs);

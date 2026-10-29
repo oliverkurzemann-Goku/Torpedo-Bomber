@@ -171,8 +171,9 @@ const server=http.createServer((req,res)=>{
    await page.screenshot({path:path.join(out,'build187-'+kind+'-gear.png')});
   }
   for(const kind of ['fw190','ju87','me262','me163']){
-   const ref=await page.evaluate(kind=>{P.ac=kind;SortieFeatures.Handling.configure(P,kind);P.onGround=false;P.gear=1;P.flap=1;P.spd=AC[kind].app;state=ST.FLIGHT;updateHUD();return {visible:!document.getElementById('landingRef').hidden,text:document.getElementById('landingRef').textContent,expected:Math.round(SortieFeatures.Handling.speeds(P,AC[kind].stall,AC[kind].app).reference*KT)+' MPH'};},kind);
-   assert(ref.visible&&ref.text.includes(ref.expected));
+   const ref=await page.evaluate(kind=>{P.ac=kind;SortieFeatures.Handling.configure(P,kind);P.onGround=false;P.gear=1;P.flap=1;P.spd=AC[kind].app;state=ST.FLIGHT;updateHUD();return {visible:!document.getElementById('landingRef').hidden,text:document.getElementById('landingRef').textContent,expected:(sp=>Math.round((sp.referenceIAS??sp.reference)*KT))(SortieFeatures.Handling.speeds(P,AC[kind].stall,AC[kind].app))+' MPH'};},kind);
+   // The Rhine HUD reads indicated airspeed; on the core the reference is given as IAS too (referenceIAS).
+   assert(ref.visible&&ref.text.includes(ref.expected),kind+' landing reference '+JSON.stringify(ref));
   }
   assert.deepEqual(errors,[]);console.log('Build187 native powered bolters, progressive arrests, offset recoveries, real bomb/sight impacts and Europe model/speed checks passed.');
  }finally{await browser.close();server.close();}

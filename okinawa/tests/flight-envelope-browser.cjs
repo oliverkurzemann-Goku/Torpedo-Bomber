@@ -63,8 +63,11 @@ const server=http.createServer((req,res)=>{
      for(const f of [.5,.75]){const v=Math.round(vmax*f);setup(v,0);for(let i=0;i<60*6;i++)updateFlight(1/60);out.idle[f]=(v-P.spd)/6;}
      // AERO gate and loop from the gate speed, camera sampled every frame
      // The game's own gate (the computed P-47 core simulates its loop; other types use the envelope).
-     const gate=typeof aeroGateSpeed==='function'?aeroGateSpeed(kind):E.aeroGate(kind);out.gate=gate;
+     // Build 220: on the core both games use FlightControl.aeroGate (the Pacific page has no aeroGateSpeed).
      out.core=typeof coreOn==='function'&&coreOn(kind);
+     const gate=out.core?FlightControl.aeroGate(kind,Core.gain):typeof aeroGateSpeed==='function'?aeroGateSpeed(kind):E.aeroGate(kind);out.gate=gate;
+     // The stall to stay clear of: the core's live 1-g clean stall (TAS at this height and mass), not the envelope's.
+     const stallNow=()=>{if(!out.core)return E.derived[kind].vs;const m=FlightCore.model(kind);return FlightCore.stallSpeed(m,P.pos.y,FlightCore.loadout(m,SortieFeatures.Handling.coreLoadout(P)).ratio);};
      const loopFrom=(v,fps)=>{
       setup(v);aeroMode=true;for(let i=0;i<fps;i++){updateFlight(1/fps);updateCamera(1/fps);}setup(v);aeroMode=true;for(let i=0;i<fps;i++)updateCamera(1/fps);
       inputPitch=1;let travelled=0,last=P.pitch,t=null,minV=P.spd,front=0,frames=0,maxStep=0,lastCam=camera.position.clone(),lastPos=P.pos.clone();
@@ -75,7 +78,7 @@ const server=http.createServer((req,res)=>{
        maxStep=Math.max(maxStep,camera.position.clone().sub(lastCam).sub(P.pos.clone().sub(lastPos)).length());lastCam=camera.position.clone();lastPos=P.pos.clone();
        if(travelled>=2*Math.PI){t=(i+1)/fps;break;}
       }
-      return {t,minV,front,frames,maxStep,alive:P.alive,stall:E.derived[kind].vs};
+      return {t,minV,front,frames,maxStep,alive:P.alive,stall:stallNow()};
      };
      out.loop={};
      for(const fps of [20,60,120])out.loop[fps]=loopFrom(Math.ceil(gate)+1,fps);
