@@ -1,0 +1,181 @@
+# Aus dem Sitzungsprotokoll gezogene Shell/Python-Patches der Zero-Einbindung (Build 207, alter Stand).
+# Nur Referenz: sie passen auf den alten Dateistand, nicht auf Build 215. Reihenfolge = Protokollzeile.
+
+
+######## Protokollzeile 489 ########
+python3 - <<'EOF'
+p='torpedo-carrier.html'
+s=open(p).read()
+def rep(old,new,count=1):
+    global s
+    assert s.count(old)>=1,('missing',old[:80])
+    if count==1: assert s.count(old)==1,('ambiguous',s.count(old),old[:80])
+    s=s.replace(old,new)
+
+# 1. contract runtime before the articulation module
+rep('<script src="aircraft-articulation.js?v=206"></script>','<script src="aircraft-contract.js?v=206"></script>\n<script src="aircraft-articulation.js?v=206"></script>')
+
+# 2. model url + texture bound
+rep("PacificAssets.configure('assets/aircraft/sbd-dauntless.glb',()=>{}, {textureLimit:2048});",
+"PacificAssets.configure('assets/aircraft/sbd-dauntless.glb',()=>{}, {textureLimit:2048});\n// Own A6M2: albedo, normal and metal/roughness maps are 2048 px; iPad keeps 1024 (about 17 MB of GPU memory for the three).\nPacificAssets.configure('assets/aircraft/a6m2-own.glb',()=>{}, {textureLimit:(globalThis.navigator?.maxTouchPoints||0)>0?1024:2048});")
+rep("const ZERO_MODEL_URL='zero.glb?v=2';  // external A6M model (nose +Z)","const ZERO_MODEL_URL='assets/aircraft/a6m2-own.glb?v=206';  // own A6M2 Model 21, rig contract v1 (metres, nose +Z)")
+
+# 3. loader
+a=s.index("function loadZeroModel(){")
+b=s.index("function makeZeroGear(")
+new_loader='''function loadZeroModel(){
+  if(!ZERO_MODEL_URL || ZERO_MODEL_URL.indexOf('__')===0 || typeof THREE.GLTFLoader==='undefined') return;
+  let loader; try{ loader=PacificAssets.loader(); }catch(e){ return; }
+  return loader.load(ZERO_MODEL_URL, function(gltf){
+    try{
+      const model=gltf.scene||gltf.scenes[0]; if(!model) return;
+      if(!AircraftContract.isContract(model))throw Error('the Zero model is not a rig-contract aircraft');
+      // Contract frame: metres, nose +Z, the model names and hinges its own rotor, gear, flaps and controls.
+      // No centring, scaling, search or mesh cut. The Zero flies clean: the belly tank stays in the file only.
+      const tank=model.getObjectByName('DropTank');if(tank&&tank.parent)tank.parent.remove(tank);
+      model.traverse(function(o){ if(o.isMesh){ o.castShadow=true; o.frustumCulled=false; }});
+      const holder=new THREE.Group(); holder.add(model);
+      AircraftArticulation.install(holder,'zero');
+      zeroTemplate=holder;
+    }catch(e){ console.warn('zero model post-process failed',e); }
+  }, undefined, function(){ console.warn('zero model not loaded; using procedural fighters'); });
+}
+// The articulation frame of a Zero (own contract model); null for the procedural stand-in.
+function zeroFrame(aircraft){
+  let frame=null;aircraft?.traverse(o=>{if(!frame&&o.userData.articulation?.kind==='zero')frame=o;});return frame;
+}
+
+'''
+s=s[:a]+new_loader+s[b:]
+
+# setZeroGearVisible
+rep("""function setZeroGearVisible(aircraft,down){
+  const gear=aircraft?.getObjectByName('zeroGear');if(gear)gear.visible=!!down;
+}""","""function setZeroGearVisible(aircraft,down){
+  const frame=zeroFrame(aircraft);
+  if(frame){AircraftArticulation.pose(frame,down?1:0,{left:0,right:0});return;}   // the legs fold into the wing
+  const gear=aircraft?.getObjectByName('zeroGear');if(gear)gear.visible=!!down;
+}""")
+
+# 4. frame lookup for ground contact
+rep("const frame=isDefend()?playerZero?.getObjectByName('zeroGear')?.parent:isSBD()?","const frame=isDefend()?(zeroFrame(playerZero)||playerZero?.getObjectByName('zeroGear')?.parent):isSBD()?")
+
+# 5. spawnZero: real blades and folded gear
+rep("""  mesh.add(inner);
+  // spinning prop disc at the nose (forward = +Z)
+  const bb=new THREE.Box3().setFromObject(mesh);
+  const disk=new THREE.Mesh(new THREE.CircleGeometry(1.7,20),
+    new THREE.MeshBasicMaterial({color:0x111008,transparent:true,opacity:0.20,
+      side:THREE.DoubleSide,depthWrite:false}));
+  GameRuntime.own(disk);
+  disk.position.z=bb.max.z-0.15; mesh.add(disk);""","""  mesh.add(inner);
+  let disk;const frame=zeroFrame(inner);
+  if(frame){
+    // own A6M2: the real blades turn, the legs are folded into the wing
+    AircraftArticulation.pose(frame,0,{left:0,right:0});disk=frame.getObjectByName('prop');
+  }else{
+    // spinning prop disc at the nose (forward = +Z)
+    const bb=new THREE.Box3().setFromObject(mesh);
+    disk=new THREE.Mesh(new THREE.CircleGeometry(1.7,20),
+      new THREE.MeshBasicMaterial({color:0x111008,transparent:true,opacity:0.20,
+        side:THREE.DoubleSide,depthWrite:false}));
+    GameRuntime.own(disk);
+    disk.position.z=bb.max.z-0.15; mesh.add(disk);
+  }""")
+rep("z.mesh.position.copy(z.pos);z.mesh.rotation.set(0,z.heading,0);z.disk.rotation.z+=dt*35;continue;}","z.mesh.position.copy(z.pos);z.mesh.rotation.set(0,z.heading,0);z.disk.rotation.z+=GameRuntime.rotorStep(dt,.45);continue;}")
+rep("    if(z.disk) z.disk.rotation.z-=1.6;","    if(z.disk) z.disk.rotation.z-=zeroFrame(z.mesh)?GameRuntime.rotorStep(dt,PROP_STEP):1.6;")
+
+# 6. player rotor: the contract names it
+rep("""    if(isDefend() && playerZero){
+      if(!zeroRotor){""","""    if(isDefend() && playerZero){
+      if(!zeroRotor){const prop=zeroFrame(playerZero)?.getObjectByName('prop');if(prop){zeroRotor=prop;zeroRotorAxis='z';}}
+      if(!zeroRotor){""")
+rep("  if(playerZero)setZeroGearVisible(playerZero,isDefend()&&g>0.5);","  if(playerZero&&!zeroFrame(playerZero))setZeroGearVisible(playerZero,isDefend()&&g>0.5);")
+rep("  if(playerZero){const frame=playerZero.getObjectByName('zeroGear')?.parent;if(frame)AircraftArticulation.pose(frame,g,actualFlaps);}","  if(playerZero){const frame=zeroFrame(playerZero)||playerZero.getObjectByName('zeroGear')?.parent;if(frame)AircraftArticulation.pose(frame,g,actualFlaps);}")
+
+# 7. muzzles by name
+rep("""function pacificGunMuzzles(){
+  const native=typeof SBDRig!=='undefined'&&isSBD()?SBDRig.frontMuzzles(playerSBD,planeGroup):null;if(native)return native;""","""function pacificGunMuzzles(){
+  const native=typeof SBDRig!=='undefined'&&isSBD()?SBDRig.frontMuzzles(playerSBD,planeGroup):null;if(native)return native;
+  // Own A6M2: the 20 mm Type 99 ports are named nodes in the wing leading edge (the 7.7 mm cowl guns are not simulated, as before).
+  const zeroNative=isDefend()&&zeroFrame(playerZero);
+  if(zeroNative){const cannons=AircraftContract.muzzles(zeroNative,planeGroup).filter(p=>/^MuzzleCannon/.test(p.name));if(cannons.length)return cannons;}""")
+
+# 8. ship wing probes: the real span
+rep("['zero',11,-.1,-1]","['zero',12,-.2,-1.4]")
+open(p,'w').write(s)
+EOF
+node scripts/check-syntax.js 2>&1 | tail -3
+
+######## Protokollzeile 513 ########
+python3 - <<'EOF'
+p='okinawa/tests/carrier-fire.cjs'
+s=open(p).read()
+s=s.replace("require('../../sortie-features.js');require('../../aircraft-articulation.js');","require('../../sortie-features.js');require('../../aircraft-contract.js');require('../../aircraft-articulation.js');")
+s=s.replace("const poseCode=html.slice(html.indexOf('function pacificGunMuzzles('),html.indexOf('// ---------- FX: explosions'));","const poseCode=html.slice(html.indexOf('function zeroFrame('),html.indexOf('function makeZeroGear('))+'\\n'+html.slice(html.indexOf('function pacificGunMuzzles('),html.indexOf('// ---------- FX: explosions'));")
+s=s.replace("[['zero','zero.glb'],","[['zero','assets/aircraft/a6m2-own.glb'],")
+old="""  if(kind==='corsair'){"""
+new="""  if(kind==='zero'){/* own rig-contract A6M2: metres, nose +Z, used as delivered */}
+  else if(kind==='corsair'){"""
+assert old in s;s=s.replace(old,new,1)
+s=s.replace("const holder=new THREE.Group();holder.add(model);holder.rotation.y=kind==='avenger'?-Math.PI/2:Math.PI;","const holder=new THREE.Group();holder.add(model);holder.rotation.y=kind==='avenger'?-Math.PI/2:Math.PI;if(kind==='zero')AircraftArticulation.install(holder,'zero');")
+s=s.replace("const ctx=vm.createContext({THREE,SortieFeatures:global.SortieFeatures,AircraftArticulation:global.AircraftArticulation,","const ctx=vm.createContext({THREE,SortieFeatures:global.SortieFeatures,AircraftArticulation:global.AircraftArticulation,AircraftContract:global.AircraftContract,")
+s=s.replace("setSBDGearVisible(){},setZeroGearVisible(){},","setSBDGearVisible(){},")
+open(p,'w').write(s)
+q='okinawa/tests/carrier-prop.cjs'
+t=open(q).read()
+t=t.replace("vm.runInThisContext(html.slice(html.indexOf('function makeZeroGear('),html.indexOf('function buildZeroMesh(){')));","vm.runInThisContext(html.slice(html.indexOf('function zeroFrame('),html.indexOf('function makeZeroGear(')));// the procedural stand-in's gear keeps its test; the own contract Zero is covered by own-a6m2-pipeline\nvm.runInThisContext(html.slice(html.indexOf('function makeZeroGear('),html.indexOf('function buildZeroMesh(){')));")
+open(q,'w').write(t)
+EOF
+grep -n "zeroFrame\|setZeroGearVisible" okinawa/tests/carrier-fire.cjs | head; node okinawa/tests/carrier-prop.cjs 2>&1 | tail -4; node okinawa/tests/carrier-fire.cjs 2>&1 | tail -8
+
+######## Protokollzeile 531 ########
+python3 - <<'EOF'
+import re
+def patch(p,pairs):
+    s=open(p).read()
+    for a,b in pairs:
+        assert a in s,(p,a[:70]);s=s.replace(a,b)
+    open(p,'w').write(s)
+patch('okinawa/tests/carrier-start-browser.cjs',[
+("const gear=isDefend()?playerZero.getObjectByName('zeroGear'):","const gear=isDefend()?(playerZero.getObjectByName('zeroGear')||playerZero.getObjectByName('gear')):"),
+("isDefend()?!playerZero.getObjectByName('zeroGear').visible:","isDefend()?['GearLeft','GearRight','TailGear'].every(n=>{const g=playerZero.getObjectByName(n);return g.quaternion.angleTo(new THREE.Quaternion().fromArray(g.userData.rigRest))>.4;}):"),
+])
+patch('okinawa/tests/aircraft-systems-browser.cjs',[
+("frame=kind==='avenger'?model.getObjectByName('avengerArticulation'):model.getObjectByName(kind==='zero'?'zeroGear':'sbdGear').parent;","frame=kind==='avenger'?model.getObjectByName('avengerArticulation'):kind==='zero'?zeroFrame(model):model.getObjectByName('sbdGear').parent;"),
+])
+patch('okinawa/tests/browser-smoke.cjs',[
+("await page.waitForFunction(down=>playerZero.getObjectByName('zeroGear').visible===down,down);","await page.waitForFunction(down=>{const g=playerZero.getObjectByName('GearLeft');return (g.quaternion.angleTo(new THREE.Quaternion().fromArray(g.userData.rigRest))<.05)===down;},down);"),
+])
+EOF
+export GAME_TEST_CHROME=/opt/pw-browsers/chromium-1194/chrome-linux/chrome GAME_TEST_SINGLE_PROCESS=1; (time node okinawa/tests/carrier-start-browser.cjs 2>&1 | tail -15)
+
+######## Protokollzeile 544 ########
+mkdir -p /tmp/claude-0/-home-user-Torpedo-Bomber/c54d3162-c4fc-5959-b009-232d1bbf48ee/scratchpad/zlogs && cat > /tmp/claude-0/-home-user-Torpedo-Bomber/c54d3162-c4fc-5959-b009-232d1bbf48ee/scratchpad/run-zero-tests.sh <<'EOF'
+#!/bin/bash
+cd /home/user/Torpedo-Bomber
+export GAME_TEST_CHROME=/opt/pw-browsers/chromium-1194/chrome-linux/chrome GAME_TEST_SINGLE_PROCESS=1
+L=/tmp/claude-0/-home-user-Torpedo-Bomber/c54d3162-c4fc-5959-b009-232d1bbf48ee/scratchpad/zlogs
+for t in pacific-assets raider-defense aircraft-systems-browser ship-contact-browser feedback-browser carrier-recovery-browser mission-regressions-browser combat-sorties-browser water-ditching-browser ditch-formation-browser handling-quality-browser checkpoint-browser browser-smoke; do
+  echo "== $t" >> $L/summary.txt
+  timeout 1500 node okinawa/tests/$t.cjs > $L/$t.log 2>&1; echo "exit $? $t" >> $L/summary.txt
+done
+echo ALLDONE >> $L/summary.txt
+EOF
+chmod +x /tmp/claude-0/-home-user-Torpedo-Bomber/c54d3162-c4fc-5959-b009-232d1bbf48ee/scratchpad/run-zero-tests.sh; rm -f /tmp/claude-0/-home-user-Torpedo-Bomber/c54d3162-c4fc-5959-b009-232d1bbf48ee/scratchpad/zlogs/*; echo ready
+
+######## Protokollzeile 624 ########
+python3 - <<'EOF'
+p='scripts/build-app.mjs'
+s=open(p).read()
+s=s.replace("'grumman tbm avenger.glb','zero.glb','f4u-1c_corsair_war_thunder.glb'","'grumman tbm avenger.glb','f4u-1c_corsair_war_thunder.glb'")
+open(p,'w').write(s)
+p='okinawa/tests/app-payload.cjs'
+s=open(p).read()
+s=s.replace("'p47d_alt.glb','b17.glb','sbd dauntless.glb']","'p47d_alt.glb','b17.glb','sbd dauntless.glb','zero.glb']")
+s=s.replace("'assets/aircraft/bf109f2-own.glb','aircraft-contract.js']","'assets/aircraft/bf109f2-own.glb','assets/aircraft/a6m2-own.glb','aircraft-contract.js']")
+s=s.replace("assert(fs.readFileSync(path.join(out,'remagen-mission.html'),'utf8').includes(\"['assets/aircraft/bf109f2-own.glb','bf109new.glb',\"),'own Bf 109 F-2 is the first Rhine Bf 109 model');",
+"assert(fs.readFileSync(path.join(out,'remagen-mission.html'),'utf8').includes(\"['assets/aircraft/bf109f2-own.glb','bf109new.glb',\"),'own Bf 109 F-2 is the first Rhine Bf 109 model');\nassert(fs.readFileSync(path.join(out,'torpedo-carrier.html'),'utf8').includes(\"ZERO_MODEL_URL='assets/aircraft/a6m2-own.glb\"),'own A6M2 is the Pacific Zero (no legacy zero.glb in the app)');")
+open(p,'w').write(s)
+EOF
+git diff okinawa/tests/app-payload.cjs scripts/build-app.mjs | grep "^[+-]" | cut -c1-200

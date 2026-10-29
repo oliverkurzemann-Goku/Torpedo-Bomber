@@ -1,0 +1,66 @@
+--- a/scripts/own-aircraft/paint.cjs
++++ b/scripts/own-aircraft/paint.cjs
+@@ -5,7 +5,7 @@
+ const {createCanvas}=require('@napi-rs/canvas');
+ 
+ function bake(items,size,paint){
+-  const rgb=new Float32Array(size*size*3),height=new Float32Array(size*size),covered=new Uint8Array(size*size);
++  const rgb=new Float32Array(size*size*3),height=new Float32Array(size*size),rough=new Float32Array(size*size).fill(-1),metal=new Float32Array(size*size),covered=new Uint8Array(size*size);
+   for(const {surface:s,normals,tag} of items){
+     for(let k=0;k<s.i.length;k+=3){
+       const ids=[s.i[k],s.i[k+1],s.i[k+2]],U=ids.map(j=>[s.uv[j*2]*size,s.uv[j*2+1]*size]);
+@@ -17,25 +17,32 @@
+         if(w0<-.01||w1<-.01||w2<-.01)continue;
+         const p=[0,0,0],n=[0,0,0];for(let a=0;a<3;a++){const w=[w0,w1,w2][a],j=ids[a];for(let c=0;c<3;c++){p[c]+=w*s.p[j*3+c];n[c]+=w*normals[j*3+c];}}
+         const l=Math.hypot(n[0],n[1],n[2])||1;n[0]/=l;n[1]/=l;n[2]/=l;
+-        const out=paint(p,n,tag),i=y*size+x;rgb[i*3]=out.rgb[0];rgb[i*3+1]=out.rgb[1];rgb[i*3+2]=out.rgb[2];height[i]=out.h||0;covered[i]=1;
++        const out=paint(p,n,tag),i=y*size+x;rgb[i*3]=out.rgb[0];rgb[i*3+1]=out.rgb[1];rgb[i*3+2]=out.rgb[2];height[i]=out.h||0;rough[i]=out.rough===undefined?-1:out.rough;metal[i]=out.metal||0;covered[i]=1;
+       }
+     }
+   }
+-  dilate(rgb,height,covered,size,4);
+-  return {rgb,height,covered,size};
++  dilate(rgb,height,covered,size,4,rough,metal);
++  return {rgb,height,covered,size,rough,metal};
+ }
+ // Grow painted islands a few texels so mip-mapping never samples unpainted black at UV seams.
+-function dilate(rgb,height,covered,size,steps){
++function dilate(rgb,height,covered,size,steps,rough,metal){
+   for(let s=0;s<steps;s++){const add=[];
+     for(let y=0;y<size;y++)for(let x=0;x<size;x++){const i=y*size+x;if(covered[i])continue;
+       for(const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1]]){const X=x+dx,Y=y+dy;if(X<0||Y<0||X>=size||Y>=size)continue;const j=Y*size+X;if(covered[j]){add.push([i,j]);break;}}}
+-    for(const [i,j] of add){rgb[i*3]=rgb[j*3];rgb[i*3+1]=rgb[j*3+1];rgb[i*3+2]=rgb[j*3+2];height[i]=height[j];covered[i]=1;}}
++    for(const [i,j] of add){rgb[i*3]=rgb[j*3];rgb[i*3+1]=rgb[j*3+1];rgb[i*3+2]=rgb[j*3+2];height[i]=height[j];if(rough){rough[i]=rough[j];metal[i]=metal[j];}covered[i]=1;}}
+ }
+ function toPng({rgb,size}){
+   const c=createCanvas(size,size),ctx=c.getContext('2d'),img=ctx.createImageData(size,size);
+   for(let i=0;i<size*size;i++){img.data[i*4]=Math.max(0,Math.min(255,Math.round(rgb[i*3])));img.data[i*4+1]=Math.max(0,Math.min(255,Math.round(rgb[i*3+1])));img.data[i*4+2]=Math.max(0,Math.min(255,Math.round(rgb[i*3+2])));img.data[i*4+3]=255;}
+   ctx.putImageData(img,0,0);return c.toBuffer('image/png');
+ }
++// glTF metallicRoughness texture (G roughness, B metallic) from the baked roughness channel; texels the paint rule left
++// without a value get `fallback`.
++function roughnessPng({rough,metal,size},fallback=.75){
++  const c=createCanvas(size,size),ctx=c.getContext('2d'),img=ctx.createImageData(size,size);
++  for(let i=0;i<size*size;i++){const r=rough[i]<0?fallback:rough[i];img.data[i*4]=255;img.data[i*4+1]=Math.max(0,Math.min(255,Math.round(r*255)));img.data[i*4+2]=Math.round(Math.max(0,Math.min(1,metal[i]))*255);img.data[i*4+3]=255;}
++  ctx.putImageData(img,0,0);return c.toBuffer('image/png');
++}
+ // Height field -> tangent-space normal map (OpenGL/glTF convention, +Y green up in UV v).
+ function normalPng({height,size},strength=2.2,outSize=size/2){
+   const f=size/outSize,c=createCanvas(outSize,outSize),ctx=c.getContext('2d'),img=ctx.createImageData(outSize,outSize),H=(x,y)=>height[Math.min(size-1,Math.max(0,y))*size+Math.min(size-1,Math.max(0,x))];
+@@ -65,4 +72,4 @@
+ function cross(u,v,arm=.25,edge=.09){const a=Math.abs(u),b=Math.abs(v);if(a>1+edge||b>1+edge)return null;
+   const inCore=(a<=arm&&b<=1)||(b<=arm&&a<=1),inEdge=(a<=arm+edge&&b<=1+edge)||(b<=arm+edge&&a<=1+edge);return inCore?'core':inEdge?'edge':null;}
+ 
+-module.exports={bake,toPng,normalPng,noise,fbm,hash,glyph,cross};
++module.exports={bake,toPng,normalPng,roughnessPng,noise,fbm,hash,glyph,cross};
+--- a/scripts/own-aircraft/parts.cjs
++++ b/scripts/own-aircraft/parts.cjs
+@@ -106,7 +106,7 @@
+ 
+ // Three (or n) paddle blades in the plane z = 0 of the rotor node; radius stations {r, chord, t, pitch}.
+ function blades(name,spec){
+-  const S=new Surface(name),st=spec.stations,cs=chordSamples(12);
++  const S=new Surface(name),st=spec.stations,cs=chordSamples(spec.chordPoints||12);
+   for(let b=0;b<spec.blades;b++){
+     const rot=TAU*b/spec.blades,rad=[Math.sin(rot),Math.cos(rot),0],tan=[Math.cos(rot),-Math.sin(rot),0],U=[],D=[];
+     for(const s of st){const p=s.pitch*Math.PI/180,dChord=add(scale(tan,Math.cos(p)),[0,0,-Math.sin(p)]),dThick=norm(cross(dChord,rad));const u=[],d=[];
