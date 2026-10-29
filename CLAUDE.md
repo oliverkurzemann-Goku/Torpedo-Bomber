@@ -19,6 +19,12 @@ Verstärkung 1. Nur Luftphase der P-47 in `remagen-mission.html` (`updateP47Core
 KI, andere Typen, Pazifik und Legacy-Europa unverändert. Test `okinawa/tests/p47-core-browser.cjs`
 (echter Start, Kurve, Loop, Leerlauf, Bildraten). Kein iPad-Test. Auf main als Build 219
 vergeben (main hatte schon 215–218 Sound; auf dem Review-Branch hieß die Flughüllkurve Build 215).
+Übernahme auf main geprüft (Chromium/SwiftShader): Terrain-Suite 40/40; Okinawa-Unit-Läufe 86/87 – einzige rote Datei
+`app-payload.cjs` ist auf dem unveränderten main (Build 218) identisch rot (verlangt `r2800-detail-power.wav`, das
+`build-app.mjs` seit Build 217 absichtlich auslässt); Browser: p47-core, flight-envelope, fleet-flight, handling-quality,
+chase-heading, pitch-response grün, P-47-Messwerte auf der main-Basis identisch zum Review-Branch. Die komplette
+Okinawa-Browser-Suite (über eine Stunde) wurde auf main nicht vollständig gelaufen; aircraft-systems-browser und
+combat-sorties-browser sind schon auf Build 214 rot.
 Aufruf mit `?v=219`. Zum Vergleichen `?p47core=off` (altes Modell) und `?p47core=physics` (Verstärkung 1).
 Geänderte Module mit Cache 219: flight-core.js, flight-envelope.js, flight-dynamics.js, flight-support.js;
 Sound-Module behalten 218.
