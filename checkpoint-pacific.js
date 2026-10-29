@@ -33,6 +33,8 @@
   ({carrierX,CARRIER_SPD,score,scoreStart,loadout,DIFF,aeroMode,invertPitch,steerSign,weather,seaState,windZ,windHead,windGust,timeMode,menuTime,
    qualTraps,qualStep,carrierHP,sortieTorpFired,sortieTorpHit,sortieBombFired,sortieBombHit,sortieShipsSunk,sortieZeros,hitsTaken,sortieWingmenLost,
    reinforcementsLaunched,radioEvadeCalled,wingmenPending,wingmenPendingT,launchTimer,lastTorpDud}=g);
+  if(!isSBD()&&!isDefend()&&loadout==='torpedo')P.torps=Math.max(0,Math.min(1,P.torps||0));
+  P.avengerBayPending=false;P.avengerBayHold=0;
   for(const s of ships)GameRuntime.release(s.group);ships=[];
   for(const s of saved.ships){spawnShip(s.state.def);const ship=ships.at(-1);C.applyEntity(ship,s);shipDamage?.restoreCheckpoint(ship,s.damage);}
   for(const s of supportFleet)GameRuntime.release(s.group);supportFleet=[];

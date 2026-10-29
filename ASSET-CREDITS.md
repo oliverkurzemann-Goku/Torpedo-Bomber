@@ -1,3 +1,18 @@
+## Pacific aircraft details (Build 220)
+
+Runtime adaptations by this project, with the source model credits below retained:
+
+- `zero-canopy.js`: splits the A6M canopy's existing UV islands into clear glazing
+  and alpha-tested original painted frames; adds an original cockpit interior and
+  the project's seated IJN crew figure. `zero.glb` remains byte-for-byte intact.
+- `sbd-native.js`: removes the two disconnected static centre-flap islands that
+  appeared as a white strip under the HappySunpore Dauntless wing root (88 triangles).
+  Original articulated perforated brakes, bomb cradle and landing gear are retained.
+- `avenger-bay.js`: splits the existing helijah Avenger belly skin into two painted,
+  hinged bay doors, retaining source UVs/materials. Adds original internal bay walls
+  and the project's procedural torpedo, limited to one carried store. The original
+  GLB remains unchanged; release, reload and saved-flight counts use one torpedo.
+
 ## Build 215 — cleaner loaded voices (29 October 2026)
 
 P-47, Fw 190 and Avenger use the prepared 25-second loaded recordings with

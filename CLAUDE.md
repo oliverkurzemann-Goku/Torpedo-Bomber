@@ -1,5 +1,31 @@
 # Torpedo-Bomber — Übergabe an Claude Code
 
+**29.10.2026, Build 220: Zero-Haube, Dauntless-Streifen und interner Avenger-Torpedo.**
+Nutzer-Screenshot IMG_0732: heller, fest ausgefahrener Streifen zwischen innerer
+SBD-Sturzflugbremsenkante und Rumpf. Zwei getrennte statische Original-Flap-Inseln
+(je44 Dreiecke) per Connectivity entfernt; keine pauschale Volumenloeschung,
+bewegliche rote/perforierte Bremsen und Bombentraeger bleiben.
+Zero: 56 bestehende Haubendreiecke anhand beider Original-UV-Inseln getrennt;
+alpha-getestete originale Streben, transparentes Glas (Opacity .18, kein DepthWrite),
+kleines eigenes Cockpit mit sitzendem CrewVisuals-Piloten. Original-GLB unveraendert.
+Avenger: kein aussen angehaengter Torpedo mehr (auch prozeduraler Fallback entfernt).
+`avenger-bay.js` schneidet die gemessene Bauchhaut exakt an Ebenen, interpoliert UVs/
+Attribute und verwendet die originale bemalte Haut als zwei Klappen. Innenraum und
+1 prozeduraler Torpedo; automatische Oeffnung im tiefen Anflug oder bei Abwurftaste,
+Abwurf erst nach Oeffnung (~0.33s), danach Klappen zu. Keine zusaetzliche Taste.
+Alle TBM-Missionsladungen/Briefings, Deckservice und alte Checkpoints auf maximal1;
+SBD/Corsair-Bombenladungen bleiben. Begleiter/Raider ebenfalls nur1 Torpedo statt
+unendlichem Nachladen nach Egress; Begleiter werden beim Deck-Relaunch versorgt.
+Keine Aenderung an Flugphysik oder Sound. Build219-Flugkern bleibt erhalten.
+Nachweise/Pruefgrenzen: `app/release/pacific-model-details-validation.json`.
+Echte r128-GLB-Geometrie, Klon-/Haut-/Bremspruefungen und produktive Abwurf-/Service-
+Funktionen bei20/60/120FPS geprueft. Terrain40/40, Syntax11/11 und Offline-Payload
+355Dateien/Hashes/Closure bestanden. Veraltete Payload-Testpflicht fuer seit217
+absichtlich ausgeschlossene Detail-WAVs auf die aktiven freigegebenen Loops korrigiert.
+EGL/llvmpipe-Standbilder vor/nach angesehen;
+das ist keine komplette Browser-/iPad-Abnahme. Cloud-Chromium konnte in dieser
+Sitzung keinen WebGL-Kontext anlegen. Kein physischer iPad-Test.
+
 **29.10.2026, Build 219 (auf main): berechneter Flugkern, erster Typ P-47 im Rheinspiel.**
 Nutzer: „möchte, dass du ein Modell berechnest. Keine Schätzwerte und unzählige Tests“ (nach Konzept
 `FLIGHT-REBUILD.md`, dessen Empfehlungen in §12 er gut fand). Neu `flight-core.js` (`FlightCore`) +

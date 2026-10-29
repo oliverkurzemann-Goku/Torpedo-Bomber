@@ -11,7 +11,7 @@ vm.runInThisContext(fs.readFileSync('terrain-system/AircraftGround.js','utf8'));
  for(const clip of gl.animations){mixer.clipAction(clip).play();mixer.update(.25);gl.scene.traverse(o=>assert(o.quaternion.toArray().every(Number.isFinite)));mixer.stopAllAction();}
  const frame=new THREE.Group();frame.add(gl.scene);AircraftArticulation.install(frame,'sbd');assert(frame.userData.nativeSBD);
  const size=new THREE.Box3().setFromObject(frame).getSize(new THREE.Vector3());assert(Math.abs(size.x-12.66)<.002);assert(size.z>9.5&&size.z<9.53);
- let triangles=0;frame.traverse(o=>{if(o.isMesh)triangles+=(o.geometry.index?.count||o.geometry.attributes.position.count)/3;});assert.equal(triangles,73414);assert.equal(b.length,7229376);
+ let triangles=0;frame.traverse(o=>{if(o.isMesh)triangles+=(o.geometry.index?.count||o.geometry.attributes.position.count)/3;});assert.equal(triangles,73326);assert.equal(b.length,7229376);
  const rotor=frame.getObjectByName('sbdRotorBlade');let tip=null,radius=0;
  rotor.traverse(m=>{if(!m.isMesh)return;const a=m.geometry.attributes.position;for(let i=0;i<a.count;i++){const v=rotor.worldToLocal(m.localToWorld(new THREE.Vector3().fromBufferAttribute(a,i))),r=Math.hypot(v.x,v.y);if(r>radius){radius=r;tip={m,i};}}});
  assert(radius>1.6&&radius<1.9);const position=()=>tip.m.localToWorld(new THREE.Vector3().fromBufferAttribute(tip.m.geometry.attributes.position,tip.i));rotor.updateMatrixWorld(true);const at=position();rotor.rotation.z+=.3;rotor.updateMatrixWorld(true);assert(at.distanceTo(position())>.4);

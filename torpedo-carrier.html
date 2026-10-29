@@ -351,7 +351,7 @@
   <div id="flash"></div>
   <div id="ltn" style="position:fixed;inset:0;background:#e6ecff;opacity:0;pointer-events:none;z-index:40;"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 219</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 220</div>
 
   <!-- Optical landing aid -->
   <div id="lso">
@@ -397,7 +397,7 @@
 
 <!-- Menu -->
 <div class="overlay" id="menu" data-campaign="pacific">
-  <div class="menuTop"><a id="selBtn" href="index.html?v=219">&#9664; Change Game</a><span class="menuMeta">PACIFIC OPERATIONS<br>BUILD 219</span></div>
+  <div class="menuTop"><a id="selBtn" href="index.html?v=220">&#9664; Change Game</a><span class="menuMeta">PACIFIC OPERATIONS<br>BUILD 220</span></div>
   <div class="card menuCard">
     <aside class="menuOverview" aria-label="Campaign and pilot options">
     <div class="campaignArt" aria-hidden="true"></div>
@@ -499,7 +499,9 @@
 <script src="aircraft-articulation.js?v=218"></script>
 <script src="terrain-system/AircraftGround.js?v=198"></script>
 <script src="pacific-assets.js?v=201"></script>
-<script src="sbd-native.js?v=201"></script>
+<script src="sbd-native.js?v=220"></script>
+<script src="zero-canopy.js?v=220"></script>
+<script src="avenger-bay.js?v=220"></script>
 <script src="corsair-native.js?v=218"></script>
 <script src="avenger-finish.js?v=199"></script>
 <script src="naval-assets.js?v=198"></script>
@@ -602,7 +604,7 @@ const WX=Object.fromEntries(Object.entries(FlightOps.weather).map(([k,w])=>[k,{.
 let dbgOn=(GameRuntime.storage.getItem('dbgOn')==='1');   // off unless switched on in the menu
 let lastGrade='';   // LSO grade of the most recent trap
 let dbgT=0, zeroRotor=null, zeroRotorAxis=null, zeroProp=null, zeroGear=null, propPivot=null, propDiskG=null, propBladesG=null, gearPivotG=null, gearMesh=null, gearDoors=null, gearWellCovers=null, seaUniforms=null;
-let seatMeshG=null, cockpitLight=null, ordTorp=null, ordBombs=null;
+let seatMeshG=null, cockpitLight=null, ordBombs=null;
 let glassMeshes=[], headX=0, headY=0, headBob=0, pitHideMeshes=[];
 let debris=[];
 let zeros=[], flakPuffs=[], shakeT=0, shakeMag=0, windZ=0,windHead=0;
@@ -783,7 +785,7 @@ const MISSIONS = [
     body:"No enemy, no clock, no scoring. Fuel never runs out.<br><br>"
         +"Fly, dogfight the horizon, or just work the pattern until landings feel natural. "
         +"Catch a wire whenever you like — you will be relaunched straight back off the deck.",
-    torps:3, fuel:100, zeros:0,
+    torps:1, fuel:100, zeros:0,
     targets:[] },
 
   // Every naval aviator qualified on the deck before he ever saw combat. This is the way in:
@@ -800,31 +802,31 @@ const MISSIONS = [
     targets:[] },
 
   { title:"Sortie 1", sub:"Lone Merchant",
-    body:"A single unescorted freighter has been spotted to the north-east. No air cover, no flak. Sink it, then return and trap aboard. You carry <b>2 torpedoes</b>.",
-    torps:2, fuel:100,
+    body:"A single unescorted freighter has been spotted to the north-east. No air cover, no flak. Sink it, then return and trap aboard. You carry <b>one torpedo in the internal bay</b>.",
+    torps:1, fuel:100,
     targets:[ {type:"freighter", pos:[600,0,3400], hp:1} ] },
   { title:"Sortie 2", sub:"Escorted Convoy",
-    body:"The freighter sails with a <b>destroyer escort</b> throwing up flak, and a <b>Zero on patrol</b>. Stay low, line up on the beam, and don't loiter. Sink the freighter (the destroyer is optional). <b>2 torpedoes</b>.",
-    torps:2, fuel:100, zeros:1,
+    body:"The freighter sails with a <b>destroyer escort</b> throwing up flak, and a <b>Zero on patrol</b>. Stay low, line up on the beam, and don't loiter. Sink the freighter (the destroyer is optional). <b>One internal torpedo</b>. Return to the carrier to rearm if needed.",
+    torps:1, fuel:100, zeros:1,
     targets:[ {type:"freighter", pos:[ -200,0,3600], hp:1},
               {type:"destroyer", pos:[ 250,0,3200], hp:1, flak:true} ] },
   { title:"Sortie 3", sub:"Capital Ship",
-    body:"A Japanese <b>light carrier</b> with two destroyers and a <b>pair of Zeros</b> flying top cover. The carrier needs <b>two hits</b> to go down. Heavy flak. You carry <b>3 torpedoes</b> — spend them well, then bring yourself home.",
-    torps:3, fuel:100, zeros:2,
+    body:"A Japanese <b>light carrier</b> with two destroyers and a <b>pair of Zeros</b> flying top cover. The carrier needs <b>two hits</b> to go down. Heavy flak. You carry <b>one internal torpedo</b>. Coordinate with your wingmen; return to the carrier to rearm for another attack.",
+    torps:1, fuel:100, zeros:2,
     targets:[ {type:"cruiser",   pos:[ 0,0,4000], hp:2},
               {type:"destroyer", pos:[ -500,0,3500], hp:1, flak:true},
               {type:"destroyer", pos:[ 550,0,3700], hp:1, flak:true} ] },
   { title:"Sortie 4", sub:"Merchant Convoy",
-    body:"A running convoy: <b>two freighters</b> behind a destroyer screen, with a <b>Zero</b> overhead. Both merchants must go down. Pick your line, mind the flak. <b>3 torpedoes</b>.",
-    torps:3, fuel:100, zeros:1,
+    body:"A running convoy: <b>two freighters</b> behind a destroyer screen, with a <b>Zero</b> overhead. Both merchants must go down. Pick your line, mind the flak. <b>One internal torpedo per sortie</b>; recover aboard and rearm for another attack.",
+    torps:1, fuel:100, zeros:1,
     targets:[ {type:"freighter", pos:[-320,0,3500], hp:1},
 
               {type:"destroyer", pos:[ 0,0,3250], hp:1, flak:true},
               {type:"destroyer", pos:[ 640,0,3600], hp:1, flak:true} ],
     reinforcement:{targets:[{type:"freighter",pos:[2000,0,4600],hp:1}],zeros:1} },
   { title:"Sortie 5", sub:"Night Strike", time:'night', sea:1.8, weather:'haze',
-    body:"A <b>night torpedo attack</b> on a light carrier running dark, one destroyer in company. Low light, heavy flak — the meatball brings you home. The carrier needs <b>two hits</b>. <b>3 torpedoes</b>.",
-    torps:3, fuel:100, zeros:0,
+    body:"A <b>night torpedo attack</b> on a light carrier running dark, one destroyer in company. Low light, heavy flak — the meatball brings you home. The carrier needs <b>two hits</b>. <b>One internal torpedo per sortie</b>; recover aboard and rearm for another attack.",
+    torps:1, fuel:100, zeros:0,
     targets:[ {type:"cruiser",   pos:[ 0,0,4200], hp:2},
               {type:"destroyer", pos:[ -420,0,3600], hp:1, flak:true} ] },
   { title:"Sortie 6", sub:"Defend the Fleet", defend:true, raiders:2,
@@ -833,8 +835,8 @@ const MISSIONS = [
     targets:[] },
 
   { title:"Sortie 7", sub:"Dusk Convoy", time:'night', sea:1.6, weather:'rain',
-    body:"Last light. A <b>light carrier</b> and a heavy escort are slipping through the strait. Two <b>Zeros</b> are already up — your tail gunner earns his pay tonight. The carrier takes <b>two hits</b>. <b>3 torpedoes</b>, and the deck will be dark when you come home.",
-    torps:3, fuel:100, zeros:2,
+    body:"Last light. A <b>light carrier</b> and a heavy escort are slipping through the strait. Two <b>Zeros</b> are already up — your tail gunner earns his pay tonight. The carrier takes <b>two hits</b>. <b>One internal torpedo</b>; coordinate with your wingmen or recover and rearm. The deck will be dark when you come home.",
+    torps:1, fuel:100, zeros:2,
     targets:[ {type:"cruiser",   pos:[ 120,0,4400], hp:2},
               {type:"destroyer", pos:[-480,0,3700], hp:1, flak:true},
               {type:"destroyer", pos:[ 620,0,4000], hp:1, flak:true} ] },
@@ -877,9 +879,9 @@ const MISSIONS = [
   // recovery point; all targets below were sampled in the offshore side of the coastline.
   { title:"Sortie 11", sub:"Okinawa Recon", okinawa:true,
     body:"A supply ship is running north of Yomitan. After the first attack, expect a second "
-        +"convoy to emerge farther south under destroyer and fighter cover. Carry three torpedoes, "
-        +"plan a second approach along the coastline, then recover aboard. The escort is optional.",
-    torps:3, fuel:100, zeros:0,
+        +"convoy to emerge farther south under destroyer and fighter cover. Carry one internal torpedo, "
+        +"recover and rearm for the second attack along the coastline. The escort is optional.",
+    torps:1, fuel:100, zeros:0,
     targets:[{type:"freighter",pos:[3400,0,-2500],hp:1}],
     reinforcement:{targets:[{type:"freighter",pos:[3450,0,160],hp:1},
                             {type:"destroyer",pos:[2900,0,-50],hp:1,flak:true}],zeros:1} },
@@ -1042,7 +1044,7 @@ function init(){
   app.appendChild(renderer.domElement);
 
   scene=new THREE.Scene();
-  combatFX=CombatFX.create(scene);shipDamage=ShipDamage.create(THREE,scene,{fire:spawnFire,smoke:spawnSmoke});aircraftSmoke=AircraftSmoke.create(THREE,scene);flareSupport=FlareSupport.create(THREE,scene,shoreHeight);sortieService=SortieService.create({onLaunch:()=>{P.rtb=false;P.ballCalled=false;P.hook=P.hookTgt=0;P.flap=P.flapTgt=0;resetControlUI();flareSupport.rearm();launch();},onRepair:()=>{aircraftDamage?.forget(planeGroup);resetControlUI();}});aircraftDamage=AircraftDamage.create(THREE,scene,shoreHeight, {smoke:aircraftSmoke,srgbOutput:true,forward:-1});enemyBailouts=EnemyBailouts.create(THREE,scene,shoreHeight,{waterAt:(x,z)=>shoreHeight(x,z)<.6,srgbOutput:true});
+  combatFX=CombatFX.create(scene);shipDamage=ShipDamage.create(THREE,scene,{fire:spawnFire,smoke:spawnSmoke});aircraftSmoke=AircraftSmoke.create(THREE,scene);flareSupport=FlareSupport.create(THREE,scene,shoreHeight);sortieService=SortieService.create({onLaunch:()=>{for(const w of wingmen)if(!w.sbd&&w.alive){w.torpedoes=1;w.dropped=false;w.mode='form';w.cool=4;AvengerBay.pose(w.mesh,0,1);}P.rtb=false;P.ballCalled=false;P.hook=P.hookTgt=0;P.flap=P.flapTgt=0;resetControlUI();flareSupport.rearm();launch();},onRepair:()=>{aircraftDamage?.forget(planeGroup);resetControlUI();}});aircraftDamage=AircraftDamage.create(THREE,scene,shoreHeight, {smoke:aircraftSmoke,srgbOutput:true,forward:-1});enemyBailouts=EnemyBailouts.create(THREE,scene,shoreHeight,{waterAt:(x,z)=>shoreHeight(x,z)<.6,srgbOutput:true});
   scene.background=new THREE.Color(0xaecfe6);
   scene.fog=new THREE.Fog(0xaecfe6, 3200, 15000);   // deeper horizon now nothing fakes the far shore
 
@@ -2015,9 +2017,7 @@ function buildPlane(){
     new THREE.MeshStandardMaterial({color:0x121212})); tw.rotation.z=Math.PI/2;
   tw.position.set(0,-1.0,4.6); planeGear.add(tw);
 
-  // belly torpedo — hangs clearly below the fuselage (belly ~ -1.04), matte olive (no metallic sky glare)
-  const tube=Ordnance.create('torpedo');
-  tube.rotation.y=Math.PI; tube.position.set(0,-1.55,.2);tube.name='torp';body.add(tube);
+  // The Avenger carries its single torpedo inside the closed bomb bay.
   const bomb=Ordnance.create('bomb');bomb.rotation.y=Math.PI;
   bomb.position.set(0,-1.5,.2);bomb.name='bomb';bomb.visible=false;body.add(bomb);
 
@@ -2193,7 +2193,8 @@ function startMission(idx){
   // reset plane
   P.pos.set(carrierX+BOW_X+30, DECK_Y+4, 0);
   P.heading=0; P.pitch=0; P.roll=0; P.spd=APP_SPD; P.throttle=0.6;
-  P.groundPower=null;P.departureAge=null;
+  P.groundPower=null;P.departureAge=null;P.avengerBayPending=false;P.avengerBayHold=0;
+  if(gltfRoot)AvengerBay.pose(gltfRoot,0,0);
   P.vSpeed=0; P.fuel=m.fuel; P.hull=100; P.fuelRate=1/D().fuel; P.torps=m.torps; P.alive=true;
   SortieFeatures.Damage.reset(P);voiceRadio.cancel();soundscape.reset();
   clearArrestCable();P.arrestRun=null;
@@ -2683,12 +2684,16 @@ function dropTorpedo(){           // primary weapon button (torpedo OR bomb)
   if(alt>DROP_MAX_ALT){ flash("TOO HIGH — DROP LOWER",700); return; }
   if(P.spd>DROP_MAX_SPD){ flash("TOO FAST — REDUCE SPEED",700); return; }
   if(Math.abs(P.roll)>0.35){ flash("WINGS LEVEL TO DROP",700); return; }
-  P.torps--; sortieTorpFired++; updateHUD();
+  if(!AvengerBay.isOpen(gltfRoot)){P.avengerBayPending=true;return;}
+  P.avengerBayPending=false;P.avengerBayHold=.65;
+  P.torps=Math.max(0,Math.min(1,P.torps)-1);AvengerBay.pose(gltfRoot,1,0);sortieTorpFired++; updateHUD();
   const mesh=Ordnance.create('torpedo');
   GameRuntime.own(mesh);
   const dir=new THREE.Vector3(Math.cos(P.heading),0,Math.sin(P.heading)).normalize();
-  const startY=Math.max(2.2, P.pos.y-1.4);            // released from under the belly
-  mesh.position.set(P.pos.x, startY, P.pos.z);
+  const release=AvengerBay.releasePoint(gltfRoot);
+  mesh.scale.setScalar(.94);
+  mesh.position.copy(release||P.pos.clone().add(new THREE.Vector3(0,-1.4,0)));
+  mesh.position.y=Math.max(2.2,mesh.position.y);
   mesh.lookAt(mesh.position.clone().add(dir));  // lay it along travel
   scene.add(mesh);
   const fwd=Math.max(16, Math.min(42, P.spd*0.5));     // carries the plane's momentum
@@ -2697,6 +2702,17 @@ function dropTorpedo(){           // primary weapon button (torpedo OR bomb)
   torpedoes.push({mesh, dir, life:16, speed:23, dud:isDud, run:0, armed:false,
     phase:'air', vy:-1.5, fwd});
   sfxWhoosh(); flash("FISH AWAY",500);
+}
+
+function updateAvengerBay(dt){
+  if(gltfRoot&&!isSBD()&&!isDefend()){
+    const active=state===ST.FLIGHT&&P.alive&&loadout==='torpedo';
+    if(!active)P.avengerBayPending=false;
+    P.avengerBayHold=Math.max(0,(P.avengerBayHold||0)-(active?dt:0));
+    const approach=active&&!P.onDeck&&P.torps>0&&P.pos.y<=DROP_MAX_ALT+20;
+    const open=AvengerBay.update(gltfRoot,dt,{open:active&&(P.avengerBayPending||P.avengerBayHold>0||approach),stores:loadout==='torpedo'?P.torps:0});
+    if(active&&P.avengerBayPending&&open>.98){P.avengerBayPending=false;dropTorpedo();}
+  }
 }
 
 function corsairConfig(){return CorsairLoadouts[P.corsairLoadout]||CorsairLoadouts.bombs;}
@@ -3092,12 +3108,13 @@ function loadZeroModel(){
   return loader.load(ZERO_MODEL_URL, function(gltf){
     try{
       const model=gltf.scene||gltf.scenes[0]; if(!model) return;
+      ZeroCanopy.apply(model);
       const box=new THREE.Box3().setFromObject(model);
       const size=box.getSize(new THREE.Vector3()), c=box.getCenter(new THREE.Vector3());
       model.position.sub(c);
       const maxd=Math.max(size.x,size.y,size.z)||1;
       model.scale.setScalar(11/maxd);                 // wingspan ~11m (smaller than the Avenger)
-      model.traverse(function(o){ if(o.isMesh){ o.castShadow=true; o.frustumCulled=false;
+      model.traverse(function(o){ if(o.isMesh){ o.castShadow=!o.material?.transparent; o.frustumCulled=false;
         if(o.material) o.material.side=THREE.DoubleSide; }});
       const holder=new THREE.Group(); holder.add(model);
       holder.add(makeZeroGear());
@@ -4539,7 +4556,7 @@ function spawnWingman(i){
   pos.y=Math.max(70, P.pos.y-3);
   const startSpd=Math.max(P.spd,STALL_SPD);
   const w={ mesh, disc, sbd, alive:true, hp:3, side, mode:'form', cool:2+i*1.5, dropped:false,
-    target:null, egressT:0, pos, slotPos:pos.clone(), slotOffset:pos.clone().sub(P.pos),
+    target:null, torpedoes:sbd?0:1, egressT:0, pos, slotPos:pos.clone(), slotOffset:pos.clone().sub(P.pos),
     heading:Math.atan2(nose.x,nose.z), pitch:Math.atan2(P.vSpeed||0,Math.max(1,P.spd*Math.cos(P.pitch))), roll:0, spd:startSpd,
     vel:new THREE.Vector3() };
   const cp=Math.cos(w.pitch);w.vel.set(Math.sin(w.heading)*cp*startSpd,Math.sin(w.pitch)*startSpd,Math.cos(w.heading)*cp*startSpd);
@@ -4559,7 +4576,7 @@ function updateWingmen(dt){
     if(w.cool>0) w.cool-=dt;
 
     // --- pick a target: nearest live ship in reach, and only if no wingman is mid-run ---
-    if(w.mode==='form' && !someoneAttacking && w.cool<=0 && live.length){
+    if(w.mode==='form' && (w.sbd||(w.torpedoes??(w.dropped?0:1))>0) && !someoneAttacking && w.cool<=0 && live.length){
       let best=null,bd=1e9;
       for(const s of live){ const d=w.pos.distanceTo(s.group.position); if(d<1800 && d<bd){bd=d;best=s;} }
       if(best){ w.mode='attack'; w.target=best; w.dropped=false; w.attackT=0; someoneAttacking=true;
@@ -4666,6 +4683,7 @@ function updateWingmen(dt){
     if(w.disc) w.disc.rotation.z-=GameRuntime.rotorStep(dt,PROP_STEP);
     if(typeof CorsairRig!=='undefined'&&CorsairRig.isNative(w.mesh))CorsairRig.update(w.mesh,{gear:0,bombs:w.dropped?0:2,roll:w.roll||0,pitch:w.pitch||0});
     if(typeof SBDRig!=='undefined'&&SBDRig.isNative(w.mesh))SBDRig.update(w.mesh,{gear:0,dive:w.mode==='attack'?.65:0,bombs:w.dropped?0:1,roll:w.roll||0,pitch:w.pitch||0,dt});
+    if(!w.sbd){w.bayHold=Math.max(0,(w.bayHold||0)-dt);AvengerBay.update(w.mesh,dt,{open:w.mode==='attack'||w.bayHold>0,stores:w.torpedoes??(w.dropped?0:1)});}
   }
 }
 // Visible ordnance a wingman drops on its run-in: a torpedo runs along the surface, a bomb
@@ -4673,10 +4691,11 @@ function updateWingmen(dt){
 // what the player sees and never steals the camera.
 function spawnWingShot(w, tgt){
   const sbd=w.sbd;
+  if(!sbd){if((w.torpedoes??1)<=0)return;w.torpedoes=0;w.bayHold=.65;}
   const mesh=Ordnance.create(sbd?'bomb':'torpedo');
   GameRuntime.own(mesh);
   const start=w.pos.clone();
-  if(!sbd) start.y=Math.max(2.2, start.y-1.2);
+  if(!sbd){const release=AvengerBay.releasePoint(w.mesh);if(release)start.copy(release);else start.y-=1.2;start.y=Math.max(2.2,start.y);mesh.scale.setScalar(.94);}
   mesh.position.copy(start); scene.add(mesh);
   const nf=new THREE.Vector3(Math.sin(w.heading),0,Math.cos(w.heading));
   wingShots.push({mesh, tgt, kind:sbd?'bomb':'torp', life:sbd?9:16,
@@ -4913,7 +4932,7 @@ function updateRaiders(dt){
     }
     const dh2=Math.hypot(r.pos.x-carrierX, r.pos.z);
     r.egressT=Math.max(0,(r.egressT||0)-dt);
-    if(r.dropped && r.egressT<=0 && dh2>1900){ r.dropped=false; r.runIn=false; r.egressDir=null; }
+    // One internal torpedo per raider; egress does not magically reload it.
     if(!r.runIn && dh2<1750) r.runIn=true;
     const aimY = r.dropped ? 240 : (r.runIn ? 45 : 220);           // descend to wave height on the run-in
     if(!r.vel) r.vel=new THREE.Vector3(Math.sin(r.heading),0,Math.cos(r.heading)).multiplyScalar(r.spd);
@@ -4936,7 +4955,7 @@ function updateRaiders(dt){
     const toDeck=new THREE.Vector3(carrierX-r.pos.x,0,-r.pos.z).normalize();
     const forward=r.vel.clone().setY(0).normalize();
     if(!r.dropped && r.runIn && dh2<820 && dh2>300 && r.pos.y<95 && Math.abs(r.roll)<.35 && forward.dot(toDeck)>.96){
-      r.dropped=true;
+      r.dropped=true;r.bayHold=.65;
       r.egressDir=forward; r.egressT=14;
       // deflection shot: aim where the carrier WILL be, or the fish always runs astern
       let t=0, ax=carrierX;
@@ -4944,6 +4963,7 @@ function updateRaiders(dt){
       const lead=new THREE.Vector3(ax-r.pos.x, 0, -r.pos.z).normalize();
       spawnEnemyTorp(r.pos, lead);
     }
+    r.bayHold=Math.max(0,(r.bayHold||0)-dt);AvengerBay.update(r.mesh,dt,{open:(!r.dropped&&r.runIn)||r.bayHold>0,stores:r.dropped?0:1});
   }
 }
 function spawnEnemyTorp(pos,dir){
@@ -5421,7 +5441,7 @@ function loadPlaneModel(){
       }
       window.__eyeDbg='EYE '+COCKPIT_EYE.map(v=>v.toFixed(2)).join('/');
       const btEl=document.getElementById('buildTag');
-      if(btEl) btEl.textContent='BUILD 219 · '+window.__eyeDbg;
+      if(btEl) btEl.textContent='BUILD 220 · '+window.__eyeDbg;
       let seat=null;
       model.traverse(function(o){
         if(!o.isMesh||!o.material) return;
@@ -5431,9 +5451,8 @@ function loadPlaneModel(){
       cockpitLight=new THREE.PointLight(0xfff2dd,0.0,6,2);
       cockpitLight.position.set(0,1.0,-1.4);
       planeGroup.add(cockpitLight);
-      // external ordnance: torpedo slung under the belly, bombs under the wings
-      ordTorp=Ordnance.create('torpedo');ordTorp.rotation.y=Math.PI;
-      ordTorp.position.set(0,-1.55,-.2);planeGroup.add(ordTorp);ordTorp.visible=false;
+      // Bombs retain the optional game loadout; the torpedo is internal.
+      AvengerBay.install(gltfRoot,planeGroup);
       ordBombs=[];
       for(const sx of [-1,1]){
         const bg=Ordnance.create('bomb');bg.rotation.y=Math.PI;bg.scale.setScalar(.65);
@@ -5606,7 +5625,7 @@ function updatePlaneMesh(dt){
     if(gltfRoot) gltfRoot.visible=!isDefend();
     if(playerZero) playerZero.visible=isDefend();
     const dfd=isDefend();
-    if(ordTorp) ordTorp.visible=!dfd && (loadout==='torpedo' && P.torps>0);
+
     if(ordBombs) for(let i=0;i<ordBombs.length;i++)
       ordBombs[i].visible=!dfd && !isCorsair() && (loadout==='divebomb' && P.torps>i);
   }
@@ -5769,7 +5788,7 @@ function updatePlaneMesh(dt){
   document.querySelectorAll('.lookBtn').forEach(el=>{ el.style.display=(state===ST.FLIGHT)?'block':'none'; });
   if(!planeModelLoaded && planeBody) planeBody.visible=true;
   planeGroup.traverse(o=>{
-    if(o.name==='torp') o.visible=(loadout==='torpedo' && P.torps>0);
+    if(o.name==='torp') o.visible=false;
     if(o.name==='bomb') o.visible=(loadout==='divebomb' && P.torps>0);
     if(o.name==='glass'||o.name==='pilot') o.visible=true;
   });
@@ -5777,7 +5796,7 @@ function updatePlaneMesh(dt){
   // LAST WORD: in the Zero sortie nothing of the Avenger (or the procedural stand-in)
   // may remain visible — earlier lines above re-enable parts by name/state.
   if(isDefend()){
-    // The Avenger loader runs ASYNC and adds ordTorp/ordBombs/propPivot to planeGroup
+    // The Avenger loader runs ASYNC and adds ordBombs/propPivot to planeGroup
     // AFTER the mission started — a one-time stash at start could never catch those.
     // Enforce every frame, and REMOVE rather than hide (hiding kept getting overridden).
     for(let i=planeGroup.children.length-1;i>=0;i--){
@@ -5800,6 +5819,7 @@ function updatePlaneMesh(dt){
     if(playerZero) playerZero.visible=true;
     if(zeroProp)   zeroProp.visible=true;
   }
+  updateAvengerBay(dt);
   fitCarrierAircraft(P.deckRun||P.arrestRun?0:dt);
   updateRearArmament();
 }
@@ -6807,7 +6827,7 @@ function setupUIButtons(){
   if(dbgT2) dbgT2.onclick=()=>{
     dbgOn=!dbgOn; GameRuntime.storage.setItem('dbgOn',dbgOn?'1':'0');
     const db=document.getElementById('dbgBox'); if(db) db.textContent=dbgOn?'✓':'';
-    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 219'; }
+    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 220'; }
   };
   const lu=document.getElementById('lookUp'), ld=document.getElementById('lookDn');
   let _lookT=0;
@@ -6823,7 +6843,7 @@ function setupUIButtons(){
   if(pb) pb.addEventListener('pointerdown',e=>{ e.preventDefault(); togglePause(); });
   const rb=document.getElementById('resumeBtn'); if(rb) rb.onclick=resumeGame;
   const mb=document.getElementById('menuBtn'); if(mb) mb.onclick=exitToMenu;
-  document.getElementById('pauseMainMenu').onclick=async()=>{globalThis.sortieCheckpoint?.save();await globalThis.sortieCheckpoint?.flush();exitToMenu(true);window.location.href='index.html?v=219';};
+  document.getElementById('pauseMainMenu').onclick=async()=>{globalThis.sortieCheckpoint?.save();await globalThis.sortieCheckpoint?.flush();exitToMenu(true);window.location.href='index.html?v=220';};
   document.getElementById('resultBtn').onclick=()=>{
     // the logbook borrows this screen from the menu — send the player straight back
     if(logbookOpen){ logbookOpen=false; showOverlay('menu'); return; }
@@ -6883,7 +6903,7 @@ function toggleAero(){
 
 function applyLoadoutUI(){
   const div=loadout==='divebomb',corsair=isCorsair(),rocket=corsair&&P.corsairWeapon==='rockets';
-  const tl=document.getElementById('torpLbl');if(tl)tl.textContent=rocket?'ROCKETS':div?'BOMBS':'TORPEDOES';
+  const tl=document.getElementById('torpLbl');if(tl)tl.textContent=rocket?'ROCKETS':div?'BOMBS':'TORPEDO';
   const db=document.getElementById('dropBtn');if(db)db.innerHTML=rocket?'FIRE<br>ROCKET':div?'DROP<br>BOMB':'DROP<br>TORPEDO';
   const dv=document.getElementById('diveBtn');if(dv){dv.style.display=div?'flex':'none';dv.innerHTML=corsair?'GEAR<br>BRAKE':'DIVE<br>BRAKE';}
   const wb=document.getElementById('weaponBtn');if(wb){wb.style.display=corsair?'flex':'none';wb.innerHTML=rocket?'SELECT<br>BOMBS':'SELECT<br>ROCKETS';}
@@ -7072,7 +7092,7 @@ function animate(){
     notice.style.cssText='position:fixed;inset:0;z-index:999998;background:rgba(15,20,15,.95);color:#e8ddbc;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px;text-align:center;font:16px system-ui';
     const title=document.createElement('h2');title.textContent='Simulation interrupted';
     const detail=document.createElement('p');
-    detail.textContent='BUILD 219 · '+(MISSIONS[mission]?.sub||'Menu')+' · '+error.message;
+    detail.textContent='BUILD 220 · '+(MISSIONS[mission]?.sub||'Menu')+' · '+error.message;
     const reload=document.createElement('button');reload.textContent='Reload game';
     reload.style.cssText='padding:12px 24px;font:inherit';reload.onclick=()=>location.reload();
     notice.appendChild(title);notice.appendChild(detail);notice.appendChild(reload);document.body.appendChild(notice);
@@ -7236,6 +7256,6 @@ function animateFrame(){
 
 init();
 </script>
-<script src="checkpoint-pacific.js?v=218"></script>
+<script src="checkpoint-pacific.js?v=220"></script>
 </body>
 </html>

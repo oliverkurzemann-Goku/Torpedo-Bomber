@@ -1,19 +1,19 @@
 {
   "schema": 1,
   "reviewedOn": "2026-10-23",
-  "build": 219,
+  "build": 220,
   "status": "OPEN — source declarations checked; no external rights authorization obtained",
   "payload": {
-    "bytes": 271908397,
-    "fileCount": 353,
+    "bytes": 271922348,
+    "fileCount": 355,
     "modelCount": 36,
-    "manifestSha256": "5c3cac74d6a663047b004419af05ab66d481196f16ea8b8b7f673263d44dc9ec"
+    "manifestSha256": "71d0cc93cc93edf5f73117b865097efaa3310b6b1df0c51c198a1325a79e7066"
   },
   "files": [
     {
       "path": "ASSET-CREDITS.md",
-      "bytes": 33180,
-      "sha256": "7e372508d4c492cbf7ac8b4c378c0b761a59da4a05d9d361d65268600108eb77",
+      "bytes": 34139,
+      "sha256": "d96641e91b4248444fa1217c89510b2210d9971d0951b07f48d0d577d4ba9bfd",
       "kind": "code-or-notice"
     },
     {
@@ -569,6 +569,12 @@
       "kind": "code-or-notice"
     },
     {
+      "path": "avenger-bay.js",
+      "bytes": 6474,
+      "sha256": "005ffd66e9dc928c186c87639d23bec1daa6c33b32f79e7e75309aeadfa221e7",
+      "kind": "code-or-notice"
+    },
+    {
       "path": "avenger-finish.js",
       "bytes": 2927,
       "sha256": "5f9861e48895cd12577416f76807f38404c2a65df4e66bcdfcb83e4dbcb066fa",
@@ -606,8 +612,8 @@
     },
     {
       "path": "checkpoint-pacific.js",
-      "bytes": 6539,
-      "sha256": "ac7af3655436a92c8694c0941e1123785892262bdc56500e66ca2dae5981026e",
+      "bytes": 6679,
+      "sha256": "eb0622027ebad2adac278532091f1aa64f3b4c69a9207312cf52e8c8d6f6b038",
       "kind": "code-or-notice"
     },
     {
@@ -727,7 +733,7 @@
     {
       "path": "index.html",
       "bytes": 7260,
-      "sha256": "aea0c5e964accffad99529ccd2ac54683a1a92fca0f507aebff2025fb2a1b2a0",
+      "sha256": "d76b4760e8d30da6f5e9025d150709901b0a94ce7c1887ea488e31d1aa999aef",
       "kind": "code-or-notice"
     },
     {
@@ -859,7 +865,7 @@
     {
       "path": "remagen-mission.html",
       "bytes": 375872,
-      "sha256": "91a26093f13a83bb2029d3971c23b63b52def9808a3b8471f17fa769f18a993b",
+      "sha256": "3e59c22c487e526bd6592c08ed7853cc64d03070162a909e795ce8ac1bcd1d24",
       "kind": "code-or-notice"
     },
     {
@@ -870,8 +876,8 @@
     },
     {
       "path": "sbd-native.js",
-      "bytes": 4922,
-      "sha256": "554df174209da6d8d387cad61fdc837011bb94c477a53f0793ae963c194326f7",
+      "bytes": 6675,
+      "sha256": "c1ae94eb21ea97572c6a3dcca59bd3a36da0e50307aea944c7bc9feb1fabb341",
       "kind": "code-or-notice"
     },
     {
@@ -2052,8 +2058,8 @@
     },
     {
       "path": "torpedo-carrier.html",
-      "bytes": 431214,
-      "sha256": "477304cd43e7c34d5756a10041f1e49232d506122f1ab676db5a8104d3edc57f",
+      "bytes": 432848,
+      "sha256": "e7f8a0f24c2dea302b5c1888b5bedaebe65226c58fb0a0b5a0d6a70530182582",
       "kind": "code-or-notice"
     },
     {
@@ -2115,6 +2121,12 @@
       "bytes": 603445,
       "sha256": "9274bbcec8d96168626c732b5d31c775aa8cfb7eaa0599bec0c175908a2c1ce2",
       "kind": "vendor"
+    },
+    {
+      "path": "zero-canopy.js",
+      "bytes": 2991,
+      "sha256": "95d81cdd58ea914fbb0e4bd0b8901e435bf822404bfef5b7597de9149b567f3d",
+      "kind": "code-or-notice"
     },
     {
       "path": "zero.glb",
