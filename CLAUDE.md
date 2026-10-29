@@ -41,6 +41,7 @@ Schaden), aircraft-systems-browser (`attributes` undefined), ship-contact-browse
 Von mir mitgezogen: fleet-flight-browser (Bf-109-Nick-Annahme), chase-heading-browser (AERO-Rig springt bei Teleport statt zu schwenken).
 Offen: kein iPad-Test; ob Rollen/Kurven „richtig“ wirken, entscheidet allein Spielgefühl – die ARC-Gewichte sind dafür da. Thrust-Gesetz
 trägt weiter λ≈2,3–3,5× realen Schub (Build 211): echte Sustained-Turn-Grenzen entstehen dadurch noch nicht.
+Konzept für einen vollständigen Neuaufbau (gemeinsamer Flugkern, Boden/Träger, Gegner-KI als Piloten, Meilensteine M0–M7, Abnahmekennzahlen): `FLIGHT-REBUILD.md` — nur Konzept, nichts umgesetzt, Entscheidungen in Abschnitt 12 offen.
 
 **29.10.2026, Build 218: linearer Gasweg fuer alle zehn Flugzeugstimmen.**
 Die sechs freigegebenen 217-Sounddateien bleiben unveraendert. Der bisherige
