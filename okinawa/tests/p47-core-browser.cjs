@@ -63,7 +63,6 @@ async function run(browser,query){
  try{
   const core=await run(browser,''),old=process.env.P47_CORE_COMPARE?await run(browser,'&p47core=off'):null;
   const report={core,old};console.log(JSON.stringify(report,null,1));
-  fs.writeFileSync(path.join(root,'app/release/flight-core-p47-browser.json'),JSON.stringify(report,null,1)+'\n');
   assert.deepEqual(core.errors,[]);assert.ok(core.core,'core active for the P-47');
   assert.ok(core.takeoff.alive&&core.takeoff.liftoff>0,'take-off completes');
   assert.ok(core.takeoff.after60s.agl>150,'climbs away after take-off');
@@ -72,6 +71,8 @@ async function run(browser,query){
   // The core itself is exact at any frame rate (120 Hz substeps, see derive-p47.cjs); the per-frame roll
   // spring it shares with the old model leaves the same ~0.035 rad heading spread after 8 s at 20 vs 120 FPS.
   const f=core.fps;for(const k of ['spd','heading','alt'])assert.ok(Math.abs(f[20][k]-f[120][k])<=(k==='alt'?4:k==='heading'?.05:.3),'frame-rate independent '+k);
+  // The release record is only rewritten by a passing run.
+  fs.writeFileSync(path.join(root,'app/release/flight-core-p47-browser.json'),JSON.stringify(report,null,1)+'\n');
   console.log('P-47 core browser: OK');
  }finally{await browser.close();server.close();}
 })().catch(e=>{console.error(e);process.exit(1);});
