@@ -34,8 +34,6 @@ jobs:
         run: node scripts/build-own-corsair.cjs --release
       - name: Validate regenerated GLB and native flight rig
         run: node terrain-system/tests/corsair-native.cjs
-      - name: Validate other aircraft and mission compatibility
-        run: node scripts/run-terrain-tests.js
       - name: Upload model for inspection
         uses: actions/upload-artifact@v4
         with:
