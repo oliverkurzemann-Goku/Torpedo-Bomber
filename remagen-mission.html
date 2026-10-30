@@ -277,7 +277,7 @@
 
 .hangarLink{display:block;padding:12px 14px;margin:8px 0 12px;color:#f3ce83;border:1px solid #ba9d57;border-radius:5px;text-decoration:none;text-align:center;font:600 12px system-ui;letter-spacing:.8px;min-height:44px;}
 </style>
-<link rel="stylesheet" href="menu-layout.css?v=220">
+<link rel="stylesheet" href="menu-layout.css?v=222">
 </head>
 <body>
 <!-- ===== TEMP TEST-ONLY VERSION BANNER — asked for by Oliver: "kannst du irgendwo einbauen,
@@ -299,7 +299,7 @@
   <div style="width:100%;height:4px;background:repeating-linear-gradient(45deg,#ffd400,#ffd400 8px,#111 8px,#111 16px);"></div>
   <span id="testVersionBannerText" style="background:#111;color:#ffd400;font-family:monospace;font-weight:800;font-size:11px;letter-spacing:.5px;padding:3px 10px;border:1px solid #ffd400;border-top:none;border-radius:0 0 6px 6px;"></span>
 </div>
-<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 221';</script>
+<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 222';</script>
 <!-- ===== END TEMP TEST-ONLY VERSION BANNER ===== -->
 <div id="app"></div>
 <style>
@@ -340,7 +340,7 @@
   <div id="flash"></div>
   <div id="gunsight"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 221 · REAL RHINE</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 222 · REAL RHINE</div>
 
   <div id="apr">
     <div id="aprCall"></div>
@@ -392,7 +392,7 @@
 </div>
 
 <div class="overlay hidden" id="menu" data-campaign="europe">
-  <div class="menuTop"><a id="selBtn" href="index.html?v=221">&#9664; Change Game</a><span class="menuMeta">RHINE OPERATIONS<br>BUILD 221</span></div>
+  <div class="menuTop"><a id="selBtn" href="index.html?v=222">&#9664; Change Game</a><span class="menuMeta">RHINE OPERATIONS<br>BUILD 222</span></div>
   <div class="card menuCard">
     <aside class="menuOverview" aria-label="Campaign and pilot options">
     <div class="campaignArt" aria-hidden="true"></div>
@@ -522,7 +522,7 @@
 <script src="combat-fx.js?v=177"></script>
 <script src="aircraft-smoke.js?v=176"></script>
 <script src="aircraft-damage.js?v=177"></script>
-<script src="flight-support.js?v=220"></script>
+<script src="flight-support.js?v=222"></script>
 <script src="ordnance.js?v=157"></script>
 <script src="crew-visuals.js?v=179"></script>
 <script src="aircraft-finish.js?v=206"></script>
@@ -542,17 +542,17 @@
 <script src="me262-performance.js?v=206"></script>
 <script src="flight-envelope.js?v=219"></script>
 <script src="flight-dynamics.js?v=219"></script>
-<script src="flight-core.js?v=220"></script>
-<script src="flight-control.js?v=220"></script>
+<script src="flight-core.js?v=222"></script>
+<script src="flight-control.js?v=222"></script>
 <script src="audio/aircraft-engine.js?v=218"></script>
 <script src="p47-performance.js?v=204"></script>
-<script src="sortie-features.js?v=220"></script>
+<script src="sortie-features.js?v=222"></script>
 <script src="ground-run.js?v=204"></script>
 <script src="ground-dust.js?v=181"></script>
 <script src="flight-indicators.js?v=198"></script>
 <script src="sortie-fuel.js?v=206"></script>
 <script src="operation-plans.js?v=198"></script>
-<script src="custom-sortie.js?v=221"></script>
+<script src="custom-sortie.js?v=222"></script>
 <script>
 // ============================================================
 //  REMAGEN 1945 — REAL TERRAIN (forked from thunderbolt-europe.html)
@@ -901,7 +901,7 @@ async function loadRealWorld(){
 
   if(OSMManager.BUILD!==23||HistoricalObjectManager.BUILD!==21||LivingWorld.BUILD!==22||WorldVehicles.BUILD!==22) throw new Error('Terrain version mismatch. Reload Remagen.');
   document.getElementById('testVersionBannerText').textContent=
-    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 221 · MODULE 23';
+    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 222 · MODULE 23';
   heightProvider=new DEMHeightProvider(RTILE,'terrain-system/real/data/dem/');
   terrain=new TerrainManager(scene,RTILE,heightProvider);
   osmMgr=new OSMManager(scene,RTILE,terrain,'terrain-system/real/data/osm/');
@@ -4243,6 +4243,10 @@ const Core=(()=>{const q=new URLSearchParams(location.search),v=q.get('core')||q
   return {on:v!=='off',gain:v==='physics'?1:FlightCore.GAME.manoeuvreGain};})();
 globalThis.FlightCoreEnabled=Core.on;
 function coreOn(kind=P.ac){return Core.on&&FlightCore.has(kind);}
+// Hangar airborne start on the core: 1.5x the live clean 1-g stall at the start height (mass with the chosen
+// stores), never below the legacy figure - the old d.stall values are game numbers, not this wing's.
+function coreAirStart(height,legacy){if(!coreOn())return legacy;const m=FlightCore.model(P.ac);
+  return Math.max(legacy,1.5*FlightCore.stallSpeed(m,height,FlightCore.loadout(m,SortieFeatures.Handling.coreLoadout(P)).ratio,0));}
 function coreLoadout(){return {fuel:P.fuel,bombs:P.bombs,rockets:P.rockets,tankAttached:P.tankAttached,tankFuel:P.tankFuel,tankCapacity:P.tankCapacity};}
 function coreEnv(controls,departure,configuration){
   const d=acDef();
@@ -4812,7 +4816,7 @@ function startMission(i){
   updateHUD();
   radioSay(m.free?'FIELD IS YOURS — HAVE FUN':(isGermanMission(m)?'FORWARD STRIP':'BEAUFORT TOWER')+' — CLEARED FOR TAKE-OFF, RUNWAY ZERO NINE');
   if(!m.custom||!CustomSortie.launchState(m.custom,'europe',{P,finishIntro:()=>finishLaunchIntro(false),
-    departure:{x:P.pos.x,z:P.pos.z,height:groundY(P.pos.x,P.pos.z)+900,heading:P.heading,speed:P.ac==='me163'?155:Math.max(d.stall*1.7,d.app*1.4)},
+    departure:{x:P.pos.x,z:P.pos.z,height:groundY(P.pos.x,P.pos.z)+900,heading:P.heading,speed:P.ac==='me163'?155:coreAirStart(groundY(P.pos.x,P.pos.z)+900,Math.max(d.stall*1.7,d.app*1.4))},
     setThrottle:setThrottleUI,flight:()=>{state=ST.FLIGHT;posePlayerAircraft(0);updateCamera(0);resetCtlUI();updateHUD();}}))beginLaunchIntro();
 }
 // Sortie weather, operational events and cartography.
@@ -6025,7 +6029,7 @@ function init(){
   buildMenu();
   // menu wiring
   document.getElementById('startBtn').onclick=()=>showBrief(selectedMission);
-  document.getElementById('pauseMainMenu').onclick=async()=>{globalThis.sortieCheckpoint?.save();await globalThis.sortieCheckpoint?.flush();exitToMenuFromPause(true);window.location.href='index.html?v=221';};
+  document.getElementById('pauseMainMenu').onclick=async()=>{globalThis.sortieCheckpoint?.save();await globalThis.sortieCheckpoint?.flush();exitToMenuFromPause(true);window.location.href='index.html?v=222';};
   document.getElementById('logBtn').onclick=()=>{ show('menu',false); showLogbook(); };
   document.getElementById('skipLaunchPreview').onclick=()=>finishLaunchIntro();
   document.getElementById('brBack').onclick=()=>{ show('brief',false); show('menu',true);if(navigation){navigation.reset();navigation.button.style.display='none';} state=ST.MENU; };

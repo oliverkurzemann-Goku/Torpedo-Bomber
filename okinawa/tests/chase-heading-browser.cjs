@@ -1,4 +1,5 @@
-/* Real aircraft, real mission selection, real WebGL pixels from each gun.
+/* Build 220: on the computed core the Pacific cases fly at 125 kt - 80 kt is below the Avenger's clean stall, and a real stall swings the nose.
+ * Real aircraft, real mission selection, real WebGL pixels from each gun.
  * Local Chrome can be selected with GAME_TEST_CHROME; required in CI. */
 'use strict';
 const fs=require('node:fs'),path=require('node:path'),http=require('node:http'),assert=require('node:assert/strict');
@@ -38,7 +39,7 @@ const server=http.createServer((req,res)=>{
     const setup=(degrees,aero)=>{
      aeroMode=aero;P.alive=true;P.onGround=false;P.hull=pacific?100:AC[P.ac].hull;P.pos.set(pacific?-4500:AF_X,1200,pacific?0:AF_Z);
      P.heading=(pacific?90-degrees:degrees)*Math.PI/180;P.pitch=P.roll=P.rollBias=P.pitchVel=P.rollVel=0;
-     P.gear=P.gearTgt=P.flap=P.flapTgt=0;P.spd=pacific?80/KT:110;P.throttle=.6;inputPitch=inputRoll=0;windZ=6;
+     P.gear=P.gearTgt=P.flap=P.flapTgt=0;P.spd=pacific?(typeof coreOn==='function'&&coreOn()?125/KT:80/KT):110;P.throttle=.6;inputPitch=inputRoll=0;windZ=6;
      if(pacific)windGust=0;shakeT=0;camera.position.copy(P.pos).addScaledVector(noseDir(),-30).add(new THREE.Vector3(0,8,0));
      delete (pacific?document.querySelector('.pitReticle'):document.getElementById('gunsight'))._gunCue;
     };
@@ -74,7 +75,7 @@ const server=http.createServer((req,res)=>{
    assert(result.maxOffset<.05&&result.maxSight<3&&result.settledSight<.5&&result.paused,'aircraft remains centred and the briefly smoothed gunsight follows the muzzle centroid, including pause');
    for(const degrees of [120,289]){
     await page.evaluate(({pacific,degrees})=>{
-     aeroMode=false;P.pos.set(pacific?-4500:AF_X,pacific?170:groundY(AF_X,AF_Z)+600,pacific?0:AF_Z);P.heading=(pacific?90-degrees:degrees)*Math.PI/180;P.pitch=P.roll=P.rollBias=P.pitchVel=P.rollVel=0;P.spd=pacific?80/KT:110;
+     aeroMode=false;P.pos.set(pacific?-4500:AF_X,pacific?170:groundY(AF_X,AF_Z)+600,pacific?0:AF_Z);P.heading=(pacific?90-degrees:degrees)*Math.PI/180;P.pitch=P.roll=P.rollBias=P.pitchVel=P.rollVel=0;P.spd=pacific?(typeof coreOn==='function'&&coreOn()?125/KT:80/KT):110;
      for(let i=0;i<120;i++){updateFlight(1/60);updateCamera(1/60);}
      if(pacific){updatePlaneMesh(0);updateHUD();updateNav();updateMinimap();}
      else{refreshModels();planeGroup.position.copy(P.pos);planeGroup.rotation.set(-P.pitch,P.heading,-P.roll,'YXZ');updateHUD();drawMinimap();updateContentVisibility(camera.position.x,camera.position.z);}

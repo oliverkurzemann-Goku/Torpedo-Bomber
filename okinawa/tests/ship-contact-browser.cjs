@@ -81,7 +81,11 @@ const server=http.createServer((req,res)=>{
     startMission(index);finishCarrierIntro();state=ST.FLIGHT;hideOverlays();DIFF='ace';P.alive=true;P.rtb=true;
     ships=[];supportFleet=[];raiders=[];etorps=[];enemyBombs=[];shoreTargets=[];pacificOps=null;
     P.heading=0;P.pitch=-.04;P.roll=.018;P.pitchVel=P.rollVel=0;P.flap=P.flapTgt=P.gear=P.gearTgt=P.hook=P.hookTgt=1;
-    P.spd=40;P.throttle=.275;windHead=6;windGust=0;inputPitch=P.pitch/.70;inputRoll=0;
+    // Build 220: a returning aircraft (ordnance gone, 30 % fuel) on the computed core approaches at 1.12 x its
+    // live landing stall; the old fixed 40 m/s is below the Corsair's stall and she would not reach the deck.
+    P.torps=0;P.rockets=0;P.bombs=0;P.fuel=30;
+    P.spd=typeof coreOn==='function'&&coreOn()?Math.max(40,1.12*CarrierRecovery.envelope(P,STALL_SPD,APP_SPD).stall):40;
+    P.throttle=.275;windHead=6;windGust=0;inputPitch=P.pitch/.70;inputRoll=0;
     P.pos.set(carrierX-125,30,0);updatePlaneMesh(0);P.pos.y=carrierContactHeight()+.2;
     let minGap=Infinity,maxRise=0,minForward=Infinity,grounded=0,time=0,worst=null;
     for(let i=0;i<fps*6&&state===ST.FLIGHT&&P.alive;i++){

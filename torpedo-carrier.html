@@ -300,7 +300,7 @@
 
 .hangarLink{display:block;padding:12px 14px;margin:8px 0 12px;color:#f3ce83;border:1px solid #ba9d57;border-radius:5px;text-decoration:none;text-align:center;font:600 12px system-ui;letter-spacing:.8px;min-height:44px;}
 </style>
-<link rel="stylesheet" href="menu-layout.css?v=220">
+<link rel="stylesheet" href="menu-layout.css?v=222">
 </head>
 <body>
 <div id="app"></div>
@@ -353,7 +353,7 @@
   <div id="flash"></div>
   <div id="ltn" style="position:fixed;inset:0;background:#e6ecff;opacity:0;pointer-events:none;z-index:40;"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 221</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 222</div>
 
   <!-- Optical landing aid -->
   <div id="lso">
@@ -399,7 +399,7 @@
 
 <!-- Menu -->
 <div class="overlay" id="menu" data-campaign="pacific">
-  <div class="menuTop"><a id="selBtn" href="index.html?v=221">&#9664; Change Game</a><span class="menuMeta">PACIFIC OPERATIONS<br>BUILD 221</span></div>
+  <div class="menuTop"><a id="selBtn" href="index.html?v=222">&#9664; Change Game</a><span class="menuMeta">PACIFIC OPERATIONS<br>BUILD 222</span></div>
   <div class="card menuCard">
     <aside class="menuOverview" aria-label="Campaign and pilot options">
     <div class="campaignArt" aria-hidden="true"></div>
@@ -515,7 +515,7 @@
 <script src="ship-damage.js?v=206"></script>
 <script src="torpedo-attack.js?v=206"></script>
 <script src="ship-contact.js?v=198"></script>
-<script src="flight-support.js?v=220"></script>
+<script src="flight-support.js?v=222"></script>
 <script src="ordnance.js?v=218"></script>
 <script src="crew-visuals.js?v=179"></script>
 <script src="deck-activity.js?v=198"></script>
@@ -531,14 +531,14 @@
 <script src="sortie-systems.js?v=198"></script>
 <script src="flight-envelope.js?v=219"></script>
 <script src="flight-dynamics.js?v=219"></script>
-<script src="flight-core.js?v=220"></script>
-<script src="flight-control.js?v=220"></script>
+<script src="flight-core.js?v=222"></script>
+<script src="flight-control.js?v=222"></script>
 <script src="audio/throttle-response.js?v=218"></script><script src="audio/aircraft-engine.js?v=218"></script>
-<script src="sortie-features.js?v=220"></script>
+<script src="sortie-features.js?v=222"></script>
 <script src="ground-run.js?v=198"></script>
 <script src="flight-indicators.js?v=198"></script>
 <script src="operation-plans.js?v=198"></script>
-<script src="custom-sortie.js?v=221"></script>
+<script src="custom-sortie.js?v=222"></script>
 <script src="pacific-theater.js?v=206"></script>
 <script src="carrier-recovery.js?v=198"></script>
 <script src="maritime-weather.js?v=198"></script>
@@ -2552,7 +2552,7 @@ function launch(){
   [carrierModel,ijnCarrierModel].forEach(h=>{if(h){h.rotation.x=0;h.rotation.z=0;delete h.userData.contactDeckY;}});
   const c=MISSIONS[mission]?.custom,p=c&&FlightDynamics.profile(c.ac);
   if(c&&CustomSortie.launchState(c,'pacific',{P,finishIntro:finishCarrierIntro,
-    departure:{x:carrierX+BOW_X+1500,z:0,height:900,heading:0,speed:Math.max((p.stall||32)*1.7,(p.reference||40)*1.4)},
+    departure:{x:carrierX+BOW_X+1500,z:0,height:900,heading:0,speed:coreAirStart(900,Math.max((p.stall||32)*1.7,(p.reference||40)*1.4))},
     setThrottle:setThrottleUI,flight:()=>{state=ST.FLIGHT;updatePlaneMesh(0);updateCamera(0);resetControlUI();updateHUD();}}))return;
   updatePlaneMesh(0);updateCarrierIntro(0);
 }
@@ -3562,6 +3562,10 @@ const Core=(()=>{const v=new URLSearchParams(location.search).get('core');
 globalThis.FlightCoreEnabled=Core.on;
 function pacificKind(){return isDefend()?'zero':MISSIONS[mission]?.corsair?'corsair':isSBD()?'sbd':'avenger';}
 function coreOn(kind=pacificKind()){return Core.on&&FlightCore.has(kind);}
+// Hangar airborne start on the core: 1.5x the live clean 1-g stall at the start height (mass with the chosen
+// stores), never below the legacy figure.
+function coreAirStart(height,legacy){if(!coreOn())return legacy;const m=FlightCore.model(pacificKind());
+  return Math.max(legacy,1.5*FlightCore.stallSpeed(m,height,FlightCore.loadout(m,coreLoadout()).ratio,0));}
 function coreLoadout(){return SortieFeatures.Handling.coreLoadout(P);}
 const PAC_LIMITS={zero:{rollLim:1.52,pitchLim:1.05},sbd:{rollLim:1.50,pitchLim:1.28},corsair:{rollLim:1.42,pitchLim:.85},avenger:{rollLim:1.42,pitchLim:.85}};
 function coreEnv(AC,controls,departure,configuration){
@@ -4651,7 +4655,7 @@ function spawnWingman(i){
   const cp=Math.cos(w.pitch);w.vel.set(Math.sin(w.heading)*cp*startSpd,Math.sin(w.pitch)*startSpd,Math.cos(w.heading)*cp*startSpd);
   // Build 220: on the core the escort flies through the air mass and its velocity is over the ground, so it
   // starts with the wind already in it - otherwise the first guided frame jumped by the whole wind speed.
-  if(Core.on&&FlightCore.has(w.kind)&&typeof CarrierRecovery!=='undefined'){const wind=CarrierRecovery.wind(windHead,windGust);w.vel.x+=wind.x;w.vel.z+=wind.z;}
+  if(globalThis.FlightCoreEnabled&&typeof FlightCore!=='undefined'&&FlightCore.has(w.kind)&&typeof CarrierRecovery!=='undefined'){const wind=CarrierRecovery.wind(windHead,windGust);w.vel.x+=wind.x;w.vel.z+=wind.z;}
   mesh.position.copy(w.pos);mesh.rotation.set(-w.pitch,w.heading,0,'YXZ');scene.add(mesh);wingmen.push(w);
 }
 // Wingman AI. Three modes: FORM (hold a formation slot on the player), ATTACK (a staged
@@ -4928,7 +4932,7 @@ function updateAlliedDefense(dt){
 }
 function updatePatrolRecovery(dt){
  if(MISSIONS[mission].theater!=='fleet')return;
- if(!patrolRecovery&&pacificOps.elapsed>=35){spawnWingman(0);const w=wingmen.at(-1);w.patrolRecovery=true;w.kind='corsair';w.hp=1.5;w.pos.set(carrierX-1800,170,-100);w.heading=Math.PI/2;w.vel.set(60,0,0);if(Core.on){const wind=CarrierRecovery.wind(windHead,windGust);w.vel.x+=wind.x;w.vel.z+=wind.z;}patrolRecovery=w;radioSay('WOUNDED PATROL CORSAIR RETURNING — KEEP THE DECK APPROACH CLEAR');}
+ if(!patrolRecovery&&pacificOps.elapsed>=35){spawnWingman(0);const w=wingmen.at(-1);w.patrolRecovery=true;w.kind='corsair';w.hp=1.5;w.pos.set(carrierX-1800,170,-100);w.heading=Math.PI/2;w.vel.set(60,0,0);if(globalThis.FlightCoreEnabled){const wind=CarrierRecovery.wind(windHead,windGust);w.vel.x+=wind.x;w.vel.z+=wind.z;}patrolRecovery=w;radioSay('WOUNDED PATROL CORSAIR RETURNING — KEEP THE DECK APPROACH CLEAR');}
  const w=patrolRecovery;if(!w?.alive)return;
  const waiting=raiders.some(r=>r.alive&&Math.hypot(r.pos.x-carrierX,r.pos.z)<1800)||enemyBombs.length>0;
  const goal=waiting?new THREE.Vector3(carrierX-2200,170,-350):new THREE.Vector3(carrierX+AIM_X,DECK_Y+2,0),gap=goal.sub(w.pos);
@@ -5533,7 +5537,7 @@ function loadPlaneModel(){
       }
       window.__eyeDbg='EYE '+COCKPIT_EYE.map(v=>v.toFixed(2)).join('/');
       const btEl=document.getElementById('buildTag');
-      if(btEl) btEl.textContent='BUILD 221 · '+window.__eyeDbg;
+      if(btEl) btEl.textContent='BUILD 222 · '+window.__eyeDbg;
       let seat=null;
       model.traverse(function(o){
         if(!o.isMesh||!o.material) return;
@@ -6919,7 +6923,7 @@ function setupUIButtons(){
   if(dbgT2) dbgT2.onclick=()=>{
     dbgOn=!dbgOn; GameRuntime.storage.setItem('dbgOn',dbgOn?'1':'0');
     const db=document.getElementById('dbgBox'); if(db) db.textContent=dbgOn?'✓':'';
-    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 221'; }
+    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 222'; }
   };
   const lu=document.getElementById('lookUp'), ld=document.getElementById('lookDn');
   let _lookT=0;
@@ -6935,7 +6939,7 @@ function setupUIButtons(){
   if(pb) pb.addEventListener('pointerdown',e=>{ e.preventDefault(); togglePause(); });
   const rb=document.getElementById('resumeBtn'); if(rb) rb.onclick=resumeGame;
   const mb=document.getElementById('menuBtn'); if(mb) mb.onclick=exitToMenu;
-  document.getElementById('pauseMainMenu').onclick=async()=>{globalThis.sortieCheckpoint?.save();await globalThis.sortieCheckpoint?.flush();exitToMenu(true);window.location.href='index.html?v=221';};
+  document.getElementById('pauseMainMenu').onclick=async()=>{globalThis.sortieCheckpoint?.save();await globalThis.sortieCheckpoint?.flush();exitToMenu(true);window.location.href='index.html?v=222';};
   document.getElementById('resultBtn').onclick=()=>{
     // the logbook borrows this screen from the menu — send the player straight back
     if(logbookOpen){ logbookOpen=false; showOverlay('menu'); return; }
@@ -7195,7 +7199,7 @@ function animate(){
     notice.style.cssText='position:fixed;inset:0;z-index:999998;background:rgba(15,20,15,.95);color:#e8ddbc;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px;text-align:center;font:16px system-ui';
     const title=document.createElement('h2');title.textContent='Simulation interrupted';
     const detail=document.createElement('p');
-    detail.textContent='BUILD 221 · '+(MISSIONS[mission]?.sub||'Menu')+' · '+error.message;
+    detail.textContent='BUILD 222 · '+(MISSIONS[mission]?.sub||'Menu')+' · '+error.message;
     const reload=document.createElement('button');reload.textContent='Reload game';
     reload.style.cssText='padding:12px 24px;font:inherit';reload.onclick=()=>location.reload();
     notice.appendChild(title);notice.appendChild(detail);notice.appendChild(reload);document.body.appendChild(notice);

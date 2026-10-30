@@ -1,5 +1,37 @@
 # Torpedo-Bomber — Übergabe an Claude Code
 
+**30.10.2026, Build 222: alle zehn Typen und alle KI-Flugzeuge auf dem berechneten Flugkern.**
+Nutzer fand den berechneten P-47-Flugkern (Build 219) sehr gut und wollte alle Flugzeuge umgestellt haben.
+Auf Rueckfrage zuerst die Aenderungsliste vorgelegt; Nutzer: „1-7, danke“. Umgesetzt (Details, Quellen mit
+Kennung A/B/C, Messtabellen: `FLIGHT-CORE.md`): (1) milder echter Abriss (Zustand τ .25/.6 s, Auftrieb −30 %,
+Flügelkippen je Typ, Buffet ab 88 %), (2) Rollrate aus veroeffentlichten Werten (Spiel = min(220°/s, 1,53×real)),
+(3) Masse im Flug (Sprit, Bomben, Raketen, Torpedo, Zusatztank bis zur physischen `CAPACITY`),
+(4) Machtrimm/Ueberfahrt, (5) Kolben/Turbo/Strahl/Rakete (Me 163 wird beim Brennen leichter, dann Gleitflug),
+(6) Start und Landung auf Piste UND Traegerdeck mit denselben Kraeften (`FlightCore.groundAcceleration`),
+(7) KI, Rottenflieger, Angreifer und Bomber als Piloten (`FlightControl.ai`, 60 Hz Entscheidungsschritt).
+Neu: `flight-control.js` (Steuergesetze: `FlightControl.player` Normal/AERO, `FlightControl.ai`),
+`flight-core.js` fuer zwoelf Typen (zehn spielbar plus B-17/B-24), `scripts/flight/derive-fleet.cjs`,
+Browsermessungen `fleet-core-browser.cjs` (Rhein) und `pacific-core-browser.cjs` → `app/release/flight-core-*-browser.json`.
+Daten je Typ werden beim Laden aus den veroeffentlichten Werten GELOEST (kein eingetippter Beiwert); Me-262-Kontrolle:
+Startstrecke 1 005 m bei 7 130 kg (B5) gegen Modell 1 064 m (+6 %).
+Spielentscheidungen (Kennung C, in `GAME`/Doku): eine Manoever-Verstaerkung 2,2 nur auf die Bahndrehung; Startklappen 50 %
+(Corsair 40 %); Startpunkt 40 m hinter der Schwelle; Abflugschneisen 1 200 m / 60 m halbe Breite; Me 262 mit automatischer
+Starthilfe (2 × RI 502 a 600 kp, 6 s, bei 60 % der Rotationsfahrt); Traegerstart mit 15 m/s Wind ueber Deck;
+Reibung Piste .04 / Feld .08 / Kufe .35. `?core=off` altes Modell, `?core=physics` Verstaerkung 1.
+Beim Uebernehmen auf main (Hangar Build 221) angepasst: Hangar-Luftstart nutzt `coreAirStart` (1,5 × Abrissfahrt statt alter
+Spielzahlen); der innenliegende Avenger-Torpedo kostet Masse, aber keinen Widerstand; Rottenflieger starten mit dem Wind in
+der Bodengeschwindigkeit.
+Gemessen vorher → nachher im echten Spiel: Looping bei allen zehn Typen vollstaendig, ueber Abriss; Bf 109 kehrt bei 145 m/s
+in 6,4 s um (vorher 11–32 s); Rottenflieger halten bei 80 kt den Platz auf ±1 m (20/60/120 FPS); Abheben der beladenen Typen
+bei 6–25 s nach 70–700 m; Leerlauf-Verzoegerung P-47 1,4/2,6 m/s² bei 50/75 % Vmax.
+Browser-Tests, die Zahlen des alten Modells festschrieben, pruefen jetzt die physikalische Aussage (Begruendung im Test und in
+`FLIGHT-CORE.md`): Notwasserung bei 1,2 × Abriss statt 65 kt, Komet-Kufenlandung 52 m/s, Leerlaufbremse, Looping-Gate,
+HUD-Referenz IAS/TAS, Rueckkehrlast beim Durchstarten. Alte kuenstliche Flugwerte (`TURN_K`, `bankTurnRate`, `rollAuth`) gelten
+nur noch mit `?core=off`.
+Offen: kein iPad-Test, kein Spielgefuehl-Nachweis; Rollraten, Abriss-Heftigkeit, Mcrit/mlimit und Lastgrenzen sind ueberwiegend
+Sekundaerquellen oder C; Fw-190-Steigwerte ±14 % (Zweigang-Lader nicht modelliert); B-17 mit auffaelligem Propellerwirkungsgrad
+(nur KI). Build 220 des Arbeitszweigs entspricht main-Build 222 (main hatte 220/221 fuer Zero-Haube, Avenger-Schacht, Hangar).
+
 **29.10.2026, Build 221: gemeinsamer Hangar und frei konfigurierbare Solo-Einsaetze.**
 Nutzer: Flugzeug-/Bewaffnungswahl fuer verschiedene Missionen umsetzen, ohne Wingman-Befehle.
 `hangar.html` + `hangar.js`/CSS und validierter gemeinsamer Katalog `custom-sortie.js`.
