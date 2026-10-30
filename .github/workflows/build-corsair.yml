@@ -6,6 +6,7 @@ on:
       - 'scripts/own-aircraft/corsair/**'
       - 'scripts/own-aircraft/*.cjs'
       - 'terrain-system/tests/corsair-native.cjs'
+      - 'corsair-native.js'
       - '.github/workflows/build-corsair.yml'
   push:
     branches: [main]
@@ -14,6 +15,7 @@ on:
       - 'scripts/own-aircraft/corsair/**'
       - 'scripts/own-aircraft/*.cjs'
       - 'terrain-system/tests/corsair-native.cjs'
+      - 'corsair-native.js'
       - '.github/workflows/build-corsair.yml'
 permissions:
   contents: write
