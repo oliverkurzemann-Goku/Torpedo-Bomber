@@ -20,6 +20,11 @@ const server=http.createServer((req,res)=>{const file=path.resolve(root,'.'+deco
    }
   }
   // Rotation/zoom change the real rendered aircraft, then Reset returns its view.
+  const expected={p47:10,bf109:1,fw190:1,ju87:4,me262:2,me163:0,avenger:0,sbd:2,corsair:0,zero:0};
+  for(const [ac,count] of Object.entries(expected)){
+   const s=ac==='p47'?{bombs:2,rockets:8}:ac==='avenger'?{bombs:2}:ac==='sbd'?{bombs:3}:ac==='corsair'?{bombs:2,rockets:8}:ac==='ju87'?{bombs:4}:ac==='me262'?{bombs:2}:ac==='bf109'||ac==='fw190'?{bombs:1}:{};
+   assert.equal(await page.evaluate(({ac,s})=>SortiePreview.hardpoints(ac,s).length,{ac,s}),count,'Hardpoints '+ac);
+  }
   const initial=await page.locator('#aircraftPreview').screenshot(),box=await page.locator('#aircraftPreview').boundingBox();
   await page.mouse.move(box.x+box.width*.45,box.y+box.height*.5);await page.mouse.down();await page.mouse.move(box.x+box.width*.7,box.y+box.height*.6,{steps:10});await page.mouse.up();
   const rotated=await page.locator('#aircraftPreview').screenshot();assert(!initial.equals(rotated),'drag rotates the rendered Zero');
