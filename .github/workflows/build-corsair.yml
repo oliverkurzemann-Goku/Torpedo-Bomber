@@ -1,0 +1,56 @@
+name: Build original Corsair 3D model
+on:
+  pull_request:
+    paths:
+      - 'scripts/build-own-corsair.cjs'
+      - 'scripts/own-aircraft/corsair/**'
+      - 'scripts/own-aircraft/*.cjs'
+      - 'terrain-system/tests/corsair-native.cjs'
+      - '.github/workflows/build-corsair.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/build-own-corsair.cjs'
+      - 'scripts/own-aircraft/corsair/**'
+      - 'scripts/own-aircraft/*.cjs'
+      - 'terrain-system/tests/corsair-native.cjs'
+      - '.github/workflows/build-corsair.yml'
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Rebuild own Corsair mesh, canopy and original paint atlas
+        run: node scripts/build-own-corsair.cjs --release
+      - name: Validate regenerated GLB and native flight rig
+        run: node terrain-system/tests/corsair-native.cjs
+      - name: Validate other aircraft and mission compatibility
+        run: node scripts/run-terrain-tests.js
+      - name: Upload model for inspection
+        uses: actions/upload-artifact@v4
+        with:
+          name: corsair-own-refined
+          path: |
+            assets/aircraft/corsair-f4u1d-own.glb
+            build/corsair-own/albedo.png
+            build/corsair-own/normal.png
+      - name: Publish validated model into main
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add assets/aircraft/corsair-f4u1d-own.glb
+          if ! git diff --cached --quiet; then
+            git commit -m 'Rebuild refined F4U-1D Corsair original 3D asset'
+            git push origin HEAD:main
+          fi
