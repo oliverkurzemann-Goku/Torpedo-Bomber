@@ -1,5 +1,39 @@
 # Torpedo-Bomber — Übergabe an Claude Code
 
+**30.10.2026, Build 224: Feindjäger mit Gefechtsgehirn, weichere Rottenflieger.**
+Nutzer: Gegnerverhalten „viel zu vorhersehbar und langweilig“, Rottenflieger „zu ruckartig“. Zuerst gemessen (Skripte
+`scripts/flight/bench-wingman.cjs`, `bench-dogfight.cjs`, echte Module): Rottenflieger rollten bang-bang (Rollbeschleunigung bis
+3,2 rad/s², Rollrate sofort am Anschlag), pendelten 40–70 m um den Platz und die Fahrt um ±10 m/s (gleiche Verstärkung .45 längs
+und quer, obwohl die Fahrt mehrere Sekunden Verzögerung hat). Die Gegner folgten einem festen Kreislauf engage→extend→climb mit
+deterministischen Zeiten: nur 2–6 % verschiedene Dreierfolgen, Anflugwinkel immer gleich.
+Neu: `dogfight-ai.js` (`DogfightAI`): Gefechtsgehirn je Feindjäger (Rhein: Bf 109, Fw 190, P-47, Me 262, Me 163; Pazifik: Zero).
+Jeder Pilot ist jemand (Können, Angriffslust, Reaktionszeit, Rufzeichen), sieht das Ziel verzögert und mit Rauschen, wählt je
+Angriff eine Geometrie (Hochsechs, Quer, Frontal, Tiefsechs, Heckjagd) und nie dreimal dieselbe, fliegt Versatz-Verfolgung statt
+Direktkurs und die Pässe enden je nach Energie in Zoom, Yo-Yo, Scissors oder Absetzen. Bei einer Waffe im Heck wählt er unter
+Bruch (in den Angreifer), Fassrolle, Split-S, Sturz, Looping, Steigkurve und Jinking, gewichtet nach Typ (Zero: Looping/Steigkurve,
+Fw 190/P-47: Sturz/Split-S, Jets: Sturz) und Energie, Frontalpässe halten Mutige durch, Vorsichtige brechen früh. Mehrere
+Jäger teilen sich die Arbeit (einer greift an, die anderen fliegen Deckung/Flanke). Feuer in Feuerstößen. Schwierigkeit =
+Können (Rookie .4, Veteran .65, Ace .85): Reaktionszeit, Rauschen, Wiederangriffs-Pause.
+`FlightControl.ai` hat einen zweiten Pilotenstil `vector:true` (Jägerpilot: Auftriebsvektor auf den Zielpunkt rollen, dann nach
+Winkelrest ziehen; Looping, Split-S, Wingover, Push-over) und Handoptionen `rollAccel`, `bankTau`, `loadRate`, `powerRate`;
+`FlightControl.rollNow` liefert die nutzbare Rollrate. Bodenschutz im Gehirn: steilster erlaubter Sturz aus Ausfangweg
+(Radius `V²/(2,2·g·3)` plus Rollzeit bei der echten Rollrate), danach erst Notfall-Ausfangen; Kartenrand `inward` hat Vorrang.
+Rottenflieger (`FlightSupport.guideWingman`): kritisch gedämpfter Folger der Wunschgeschwindigkeit (ωn 4,5 bzw. 5,5 rad/s),
+Rollbeschleunigung 1,5 rad/s², Bank-Zeitkonstante .25 s, Zuglast-Rate 1,2 g/s, Leistungsrate .5/s; die Platzkorrektur läuft
+längs der Bahn mit Verstärkung .12 (max 9 m/s), quer mit .4 (`updateWingmen` in `torpedo-carrier.html`).
+Gemessen vorher → nachher (60 FPS, ruppiger Anführer): Rollbeschleunigung max 1,8 → 1,5 rad/s² (bei 20/120 FPS 3,2 → 1,5),
+Platzfehler längs p95 69 → 19–27 m, Fahrtstreuung ±10 → ±5 m/s; bei ruhigem Anführer 43–76 → 7–12 m. Gegner (Bench, 10 Läufe × 120 s,
+Bf 109/Zero): Feuergeometrie (Nase ≤15°, 85–680 m) .7–3 → 2–10 s/min je Können, Dreierfolgen 2–6 → 15–25 % verschieden,
+Anflugwinkel-Streuung 45–60° Azimut. Keine Abstürze (Me 262 vorher 2 von 12 bei Nachführ-Sturz), kein Abriss.
+`?ai=old` schaltet in beiden Spielen die Build-223-Modi zurück; die alten Tests (`air-tactics.js`, `enemy-turn.js`) prüfen sie
+weiter. Neue Tests: `okinawa/tests/dogfight.cjs` (Jägerpilot, Gehirn, Rottenflieger bei 20/60/120 FPS) und
+`dogfight-browser.cjs` (echte Spiele, echte Funktionen → `app/release/dogfight-browser.json`).
+Spielentscheidungen (C): Reaktionszeit `(.95−.8·können)·(.7…1,3)` s, Nerv für Frontalpässe `230+470·(1−Angriffslust)` m, Feuerstoß
+.5–1,4 s mit .5–1,6 s Pause, Deckung nach Rufzeichen. Offen: kein iPad-Test, kein Spielgefühl-Nachweis; die Letalität der
+Gegner ist im Bench 2–3× der alten Modi (Feuergeometrie), im Spiel dämpfen Feuerrate und Streuung — nach dem ersten echten Flug
+nachstellen (`enemySkill`, `zeroSkill`, `DogfightAI.create`). Rottenflieger-Angriff/Abflug (Moduswechsel) laufen jetzt durch
+denselben Folger, sind aber nicht einzeln neu vermessen.
+
 **30.10.2026, Build 223: alle zehn Typen und alle KI-Flugzeuge auf dem berechneten Flugkern.**
 Nutzer fand den berechneten P-47-Flugkern (Build 219) sehr gut und wollte alle Flugzeuge umgestellt haben.
 Auf Rueckfrage zuerst die Aenderungsliste vorgelegt; Nutzer: „1-7, danke“. Umgesetzt (Details, Quellen mit

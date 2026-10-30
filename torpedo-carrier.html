@@ -300,7 +300,7 @@
 
 .hangarLink{display:block;padding:12px 14px;margin:8px 0 12px;color:#f3ce83;border:1px solid #ba9d57;border-radius:5px;text-decoration:none;text-align:center;font:600 12px system-ui;letter-spacing:.8px;min-height:44px;}
 </style>
-<link rel="stylesheet" href="menu-layout.css?v=223">
+<link rel="stylesheet" href="menu-layout.css?v=224">
 </head>
 <body>
 <div id="app"></div>
@@ -353,7 +353,7 @@
   <div id="flash"></div>
   <div id="ltn" style="position:fixed;inset:0;background:#e6ecff;opacity:0;pointer-events:none;z-index:40;"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 223</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 224</div>
 
   <!-- Optical landing aid -->
   <div id="lso">
@@ -399,7 +399,7 @@
 
 <!-- Menu -->
 <div class="overlay" id="menu" data-campaign="pacific">
-  <div class="menuTop"><a id="selBtn" href="index.html?v=223">&#9664; Change Game</a><span class="menuMeta">PACIFIC OPERATIONS<br>BUILD 223</span></div>
+  <div class="menuTop"><a id="selBtn" href="index.html?v=224">&#9664; Change Game</a><span class="menuMeta">PACIFIC OPERATIONS<br>BUILD 224</span></div>
   <div class="card menuCard">
     <aside class="menuOverview" aria-label="Campaign and pilot options">
     <div class="campaignArt" aria-hidden="true"></div>
@@ -498,7 +498,7 @@
 <script src="okinawa/world.js?v=175"></script>
 <script src="campaign.js?v=1"></script>
 <script src="game-runtime.js?v=198"></script>
-<script src="sortie-checkpoint.js?v=223"></script>
+<script src="sortie-checkpoint.js?v=224"></script>
 <script src="aircraft-articulation.js?v=218"></script>
 <script src="terrain-system/AircraftGround.js?v=198"></script>
 <script src="pacific-assets.js?v=201"></script>
@@ -515,7 +515,7 @@
 <script src="ship-damage.js?v=206"></script>
 <script src="torpedo-attack.js?v=206"></script>
 <script src="ship-contact.js?v=198"></script>
-<script src="flight-support.js?v=223"></script>
+<script src="flight-support.js?v=224"></script>
 <script src="ordnance.js?v=218"></script>
 <script src="crew-visuals.js?v=179"></script>
 <script src="deck-activity.js?v=198"></script>
@@ -531,14 +531,15 @@
 <script src="sortie-systems.js?v=198"></script>
 <script src="flight-envelope.js?v=219"></script>
 <script src="flight-dynamics.js?v=219"></script>
-<script src="flight-core.js?v=223"></script>
-<script src="flight-control.js?v=223"></script>
+<script src="flight-core.js?v=224"></script>
+<script src="flight-control.js?v=224"></script>
+<script src="dogfight-ai.js?v=224"></script>
 <script src="audio/throttle-response.js?v=218"></script><script src="audio/aircraft-engine.js?v=218"></script>
-<script src="sortie-features.js?v=223"></script>
+<script src="sortie-features.js?v=224"></script>
 <script src="ground-run.js?v=198"></script>
 <script src="flight-indicators.js?v=198"></script>
 <script src="operation-plans.js?v=198"></script>
-<script src="custom-sortie.js?v=223"></script>
+<script src="custom-sortie.js?v=224"></script>
 <script src="pacific-theater.js?v=206"></script>
 <script src="carrier-recovery.js?v=198"></script>
 <script src="maritime-weather.js?v=198"></script>
@@ -3309,7 +3310,9 @@ function updateZeros(dt){
     const desiredSpeed=86+(dist>650?9:0)+(z.reengage>0?12:0);
     if(Core.on){
       // Computed core: an A6M2 with the player Zero's own forces, load limits and roll rate.
-      FlightControl.ai(z,dt,aim,desiredSpeed,{maxBank:1.3});
+      // Build 224: the fighter brain (dogfight-ai.js) chooses the manoeuvre; ?ai=old keeps the Build 223 attack runs.
+      if(zeroBrainOn(z))zeroBrainStep(z,dt,foePos,foeVel,foe);
+      else FlightControl.ai(z,dt,aim,desiredSpeed,{maxBank:1.3});
     }else{
     const desiredVel=aim.multiplyScalar(desiredSpeed);
     const dv=desiredVel.sub(z.vel), maxDv=24*dt;
@@ -3339,7 +3342,8 @@ function updateZeros(dt){
     const shootLead=foePos.clone().addScaledVector(foeVel,Math.min(0.9,dist/640));
     const shootDir=shootLead.sub(z.pos).normalize();
     const aligned=gunFwd.dot(shootDir)>0.987;
-    if(z.cool<=0 && dist<650 && dist>150 && aligned && z.reengage<=0){
+    const brainShot=typeof zeroBrainOn==='function'&&zeroBrainOn(z)&&!!z.tac;
+    if(z.cool<=0 && dist<650 && dist>(brainShot?110:150) && (brainShot?(z.brainFire&&gunFwd.dot(shootDir)>0.96):(aligned && z.reengage<=0))){
       z.cool=0.6+Math.random()*0.5;
       const lead=foePos.clone().addScaledVector(foeVel,Math.min(0.65,dist/640));
       for(let k=0;k<2;k++){
@@ -3353,6 +3357,26 @@ function updateZeros(dt){
       sfxGun();
     }
   }
+}
+// ---- Build 224: the fighter brain flies the Zeros ----
+const AI_OLD=typeof location!=='undefined'&&/[?&]ai=old\b/.test(location.search);
+function zeroBrainOn(z){return !AI_OLD&&typeof DogfightAI!=='undefined'&&Core.on&&FlightCore.has('zero');}
+// Difficulty is the pilot's skill (reaction time, gun-line discipline, how soon he comes back after a pass).
+function zeroSkill(){return Math.max(.3,Math.min(.95,.4+(D().zero-.55)));}
+function zeroSpec(alt){
+  const band=Math.round(Math.max(0,alt)/500)*500,cache=zeroSpec.cache||(zeroSpec.cache=new Map());
+  let spec=cache.get(band);
+  if(!spec){const m=FlightCore.model('zero'),mass=FlightCore.loadout(m,{fuel:70}).mass;
+    spec={stall:FlightCore.stallSpeed(m,band,mass/m.mass),max:FlightCore.levelMaxSpeed(m,band,mass*FlightCore.G),gLim:m.assumed.nLimit};cache.set(band,spec);}
+  return spec;
+}
+function zeroBrainStep(z,dt,foePos,foeVel,foe){
+  if(!z.tac)z.tac=DogfightAI.create({kind:'zero',skill:Math.max(.3,Math.min(.95,zeroSkill()+(Math.random()-.5)*.16)),rng:Math.random});
+  const ctx={target:{pos:foePos,vel:foeVel,spd:foeVel.length()},spec:zeroSpec(z.pos.y),agl:z.pos.y,ceiling:6500,
+    rollNow:FlightControl.rollNow(z),rearGun:!foe&&hasRearGunner(),friends:zeros.filter(o=>o!==z&&o.alive&&o.tac)};
+  const out=DogfightAI.think(z,z.tac,ctx,dt);
+  z.brainFire=out.fire;z.brainMode=out.mode;
+  FlightControl.ai(z,dt,out.aim,out.spd,out.opts);
 }
 function killZero(z){
   if(!z.alive)return;
@@ -4744,7 +4768,15 @@ function updateWingmen(dt){
       // the same instant before integrating the follower, including at 20 FPS.
       // Keep correction gentle enough for the bounded yaw controller to follow
       // instead of circling its slot at slow approach speed in a headwind.
-      const corr = desPos.clone().addScaledVector(leadVel,-dt).addScaledVector(slotVelocity,-dt).sub(w.pos).multiplyScalar(0.45);
+      // Build 224: the slot error is corrected at two different speeds. Across the track the aircraft answers
+      // within a couple of seconds (bank), along the track it answers through its speed, which has a lag of
+      // several seconds - the same gain on both made the escort surge 50 m back and forth. Along the track
+      // the pilot closes the gap slowly and smoothly, like a pilot easing up to a position.
+      const slotErr = desPos.clone().addScaledVector(leadVel,-dt).addScaledVector(slotVelocity,-dt).sub(w.pos);
+      const trackDir = leadVel.clone().setY(0); if(trackDir.lengthSq()>1e-6) trackDir.normalize(); else trackDir.copy(noseDir()).setY(0).normalize();
+      const alongErr = slotErr.dot(trackDir);
+      const corr = slotErr.clone().addScaledVector(trackDir,-alongErr).multiplyScalar(0.4);
+      corr.addScaledVector(trackDir,Math.max(-9,Math.min(9,alongErr*0.12)));
       if(corr.length()>18) corr.setLength(18);
       desVel = leadVel.clone().add(slotVelocity).add(corr);
     } else {
@@ -5537,7 +5569,7 @@ function loadPlaneModel(){
       }
       window.__eyeDbg='EYE '+COCKPIT_EYE.map(v=>v.toFixed(2)).join('/');
       const btEl=document.getElementById('buildTag');
-      if(btEl) btEl.textContent='BUILD 223 · '+window.__eyeDbg;
+      if(btEl) btEl.textContent='BUILD 224 · '+window.__eyeDbg;
       let seat=null;
       model.traverse(function(o){
         if(!o.isMesh||!o.material) return;
@@ -6923,7 +6955,7 @@ function setupUIButtons(){
   if(dbgT2) dbgT2.onclick=()=>{
     dbgOn=!dbgOn; GameRuntime.storage.setItem('dbgOn',dbgOn?'1':'0');
     const db=document.getElementById('dbgBox'); if(db) db.textContent=dbgOn?'✓':'';
-    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 223'; }
+    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 224'; }
   };
   const lu=document.getElementById('lookUp'), ld=document.getElementById('lookDn');
   let _lookT=0;
@@ -6939,7 +6971,7 @@ function setupUIButtons(){
   if(pb) pb.addEventListener('pointerdown',e=>{ e.preventDefault(); togglePause(); });
   const rb=document.getElementById('resumeBtn'); if(rb) rb.onclick=resumeGame;
   const mb=document.getElementById('menuBtn'); if(mb) mb.onclick=exitToMenu;
-  document.getElementById('pauseMainMenu').onclick=async()=>{globalThis.sortieCheckpoint?.save();await globalThis.sortieCheckpoint?.flush();exitToMenu(true);window.location.href='index.html?v=223';};
+  document.getElementById('pauseMainMenu').onclick=async()=>{globalThis.sortieCheckpoint?.save();await globalThis.sortieCheckpoint?.flush();exitToMenu(true);window.location.href='index.html?v=224';};
   document.getElementById('resultBtn').onclick=()=>{
     // the logbook borrows this screen from the menu — send the player straight back
     if(logbookOpen){ logbookOpen=false; showOverlay('menu'); return; }
@@ -7199,7 +7231,7 @@ function animate(){
     notice.style.cssText='position:fixed;inset:0;z-index:999998;background:rgba(15,20,15,.95);color:#e8ddbc;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px;text-align:center;font:16px system-ui';
     const title=document.createElement('h2');title.textContent='Simulation interrupted';
     const detail=document.createElement('p');
-    detail.textContent='BUILD 223 · '+(MISSIONS[mission]?.sub||'Menu')+' · '+error.message;
+    detail.textContent='BUILD 224 · '+(MISSIONS[mission]?.sub||'Menu')+' · '+error.message;
     const reload=document.createElement('button');reload.textContent='Reload game';
     reload.style.cssText='padding:12px 24px;font:inherit';reload.onclick=()=>location.reload();
     notice.appendChild(title);notice.appendChild(detail);notice.appendChild(reload);document.body.appendChild(notice);
@@ -7368,6 +7400,6 @@ init();
 if(hangarRequest.requested&&hangarRequest.config){selectedMission=0;launchCampaignMission(0);}
 if(hangarRequest.error)flash(hangarRequest.error,8000);
 </script>
-<script src="checkpoint-pacific.js?v=223"></script>
+<script src="checkpoint-pacific.js?v=224"></script>
 </body>
 </html>

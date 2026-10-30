@@ -1,4 +1,4 @@
-# Berechneter Flugkern — alle Flugzeuge (Build 223)
+# Berechneter Flugkern — alle Flugzeuge (Build 223, Pilotenverhalten Build 224)
 
 Stand 29.10.2026. Seit Build 223 (auf dem Arbeitszweig „Build 220“ genannt; main hatte 220–222 schon für
 Zero-Haube, Avenger-Bombenschacht, Hangar und Custom-Mission-Vorschau vergeben) fliegen **alle zehn spielbaren Typen** (Rhein: P-47, Bf 109, Fw 190,
@@ -153,6 +153,43 @@ Aussage (Fixture-Begründung jeweils im Test):
 - Fw-190-Steigwerte ±14 % (Zweigang-Lader nicht modelliert); B-17 mit auffälligem η_p (nur KI).
 - Rollraten, Abriss-Heftigkeit, Mcrit/mlimit, Lastgrenzen sind überwiegend Sekundärquellen oder C.
 - Formation langsamer als 80 kt geht mit einer Avenger physikalisch nicht mehr (Landeklappen-Stall 65 kt).
+
+## Build 224: wer fliegt wohin (Gegner und Rottenflieger)
+
+Die Flugzeuge selbst ändern sich nicht (Kräfte, Lastgrenzen, Rollrate aus Abschnitt „Build 223“). Neu ist nur, was die
+Piloten entscheiden und wie weich sie den Knüppel führen. Alles hier sind Spielentscheidungen (Kennung C), keine Flugzeugdaten.
+
+| Baustein | Datei | Aufgabe |
+|---|---|---|
+| Jägerpilot `FlightControl.ai(…,{vector:true})` | `flight-control.js` | Auftriebsvektor auf den Zielpunkt rollen (Rate ∝ Winkel, bei Zielwinkel < 4° ausgeblendet), dann ziehen `n = u_y + V·ω·cos φ⁺/(g·Gain)` mit `ω = min(ω_max, ε·Zugverstärkung)`; Ziel knapp unterm Bauch und nahe der Nase wird angedrückt statt gerollt. Looping, Split-S, Wingover. Abriss-Zustand des Kerns bleibt eingeschaltet. |
+| Handoptionen | `flight-control.js` | `rollAccel` (rad/s²), `bankTau` (s), `loadRate` (g/s), `powerRate` (1/s): ohne Angabe verhält sich `ai()` wie in Build 223. |
+| Gefechtsgehirn | `dogfight-ai.js` | Wahrnehmung mit Verzögerung und Rauschen, Angriffsgeometrie, Versatz-Verfolgung, Nachpass-Entscheidung, Verteidigung, Deckung, Bodenschutz. Liefert Zielrichtung, Wunschgeschwindigkeit, Pilotenoptionen und ein Feuersignal. |
+| Rottenflieger | `flight-support.js`, `torpedo-carrier.html` | Folger der Wunschgeschwindigkeit, Handbegrenzungen, Platzkorrektur längs langsam (.12) und quer schneller (.4). |
+
+**Wahrnehmung.** Der Pilot schaut alle `react = (.95 − .8·Können)·(.7…1,3)` s auf das Ziel (Rauschen `(1−Können)·1,4 m` je 100 m
+Abstand); dazwischen rechnet er mit der letzten Geschwindigkeit weiter. Deshalb sitzen Zielpunkt und Reaktion nie im Takt.
+
+**Angriff.** Fünf Geometrien mit typabhängigen Gewichten (`STYLE`: `boom` Fw 190/P-47, `mixed` Bf 109, `turn` Zero, `jet`
+Me 262/Me 163); die letzten beiden werden abgewertet. Zielpunkt = Abfangpunkt plus Versatz (hoch, seitlich, tief), der mit dem
+Abstand ausläuft (`fade = smooth(Abstand, 260, 1400)`, Betrag `.38·Abstand`) — die Bahn ist gekrümmt und endet auf dem Heck.
+Unter 900 m geht der Abfangpunkt in die Waffenlösung über (Geschossfahrt 700 m/s, das Geschoss erbt die Fahrt des Schützen
+nicht, wie im Spiel). Eine Schlepp-Verfolgung, die nicht aufschließt, endet nach 6–11 s in Zoom oder Flankenwechsel.
+
+**Nach dem Pass** (Abstand < 95 m oder Überflug): reichlich Energie und Höhe → Zoom (Steigflug seitlich vom Schussfeld weg);
+hohe Annäherung → High oder Low Yo-Yo; Ziel nah und langsam → Scissors (zum Ziel hineindrehen, bei jedem Seitenwechsel
+umkehren); sonst Absetzen mit zufälliger Peilung, wieder Anflug aus einer neuen Richtung.
+
+**Verteidigung.** Zielt die Nase des Ziels auf ihn: Bruch (zu 82 % in den Angreifer), Fassrolle (Helix um die Schusslinie),
+Split-S (nur mit `3·R + 300 m` Luft, `R = V²/(2,2·g·4)`), Sturz, Looping (nur mit Energie und 700 m), Steigkurve, Jinking.
+Gewichte je Typ, der zuletzt benutzte wird auf ×.3 gesetzt, ein schwacher Pilot wählt manchmal falsch. Frontalpässe: er bricht
+erst unter `230 + 470·(1−Angriffslust)·(1,1−.4·Können)` m.
+
+**Boden.** Steilster erlaubter Sturz so, dass der Ausfangweg (`R·(1−cos γ)` plus Zeit, die Flügel zu entrollen, bei der
+tatsächlichen Rollrate) mit 40 % Reserve in die Luft unter ihm passt. Reicht es trotzdem nicht, zieht er mit horizontaler
+Flügellage durch (`pullout`). Der Kartenrand (`inward`) schlägt jedes Manöver.
+
+**Wiederholbarkeit.** Zufall kommt aus `rng` (im Spiel `Math.random`, im Test ein festes Saatkorn): gleicher Pilot, gleicher Kampf.
+`?ai=old` stellt in beiden Spielen die Build-223-Modi wieder her, die alten Tests prüfen sie weiter.
 
 ## Erster Typ: P-47 (Build 219, unverändert gültig)
 

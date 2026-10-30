@@ -69,6 +69,17 @@ function aeroChase(rig,nose,up,dt,rate=6){
  rig.up.normalize();
  return rig;
 }
+// Critically damped follower (natural frequency wn, rad/s): the wingman's hands do not follow the leader's
+// every twitch. Stepped in sub-steps of at most 1/60 s so the result does not depend on the frame rate.
+function follow(w,key,target,dt,wn){
+ let st=w[key];if(!st)st=w[key]={x:target.x,y:target.y,z:target.z,vx:0,vy:0,vz:0};
+ const n=Math.max(1,Math.ceil(dt*60-1e-9)),h=dt/n;
+ for(let i=0;i<n;i++){
+  st.vx+=(wn*wn*(target.x-st.x)-2*wn*st.vx)*h;st.vy+=(wn*wn*(target.y-st.y)-2*wn*st.vy)*h;st.vz+=(wn*wn*(target.z-st.z)-2*wn*st.vz)*h;
+  st.x+=st.vx*h;st.y+=st.vy*h;st.z+=st.vz*h;
+ }
+ return st;
+}
 function guideWingman(w,desiredVelocity,dt,forming,wind=null){
  // Computed core: the wingman is the player's own type flown through the same forces (FlightControl.ai).
  // The calm-formation limits below (bank, yaw rate, pitch rate, roll rate) stay as the pilot's choices.
@@ -76,13 +87,19 @@ function guideWingman(w,desiredVelocity,dt,forming,wind=null){
  if(root.FlightCoreEnabled&&root.FlightControl&&w.kind&&root.FlightCore?.has(w.kind)&&dt>0){
   const wx=wind?.x||0,wz=wind?.z||0,air={x:desiredVelocity.x-wx,y:desiredVelocity.y,z:desiredVelocity.z-wz};
   w.spd=w.spd??w.vel.length();
+  // Build 224: smooth hands. The wanted velocity passes a critically damped follower (the pilot reads the
+  // leader with a lag of about half a second) and the stick/throttle may only change at human rates:
+  // roll acceleration, pull rate and throttle rate are limited, so there is no bang-bang roll and no surging.
+  const wn=forming?4.5:5.5,f=follow(w,'fv',air,dt,wn);
+  const aim={x:f.x,y:f.y,z:f.z},want=Math.hypot(f.x,f.y,f.z);
   // Bank: what the yaw-rate limit needs at the formation's slow speeds (with the manoeuvre gain), no more.
-  root.FlightControl.ai(w,dt,air,Math.hypot(air.x,air.y,air.z),{maxBank:forming?.8:.9,maxYaw:Math.min(.25,25/Math.max(28,w.spd)),
+  root.FlightControl.ai(w,dt,aim,want,{maxBank:forming?.8:.9,maxYaw:Math.min(.24,24/Math.max(28,w.spd)),
    // Station keeping needs a tighter throttle than free flight: the slot correction asks for speed changes
    // faster than the default pilot's loose speed hold follows, which left the escort surging in and out.
    // Rates commanded a few per cent inside the calm-formation limits (pitch .14/.22, roll .32 rad/s): the
    // core's attitude integration adds a little coupling on top of the commanded rate.
-   maxPitchRate:forming?.135:.21,maxRollRate:forming?.31:.5,turnGain:1.5,kp:forming?.5:.09,ki:forming?.03:.05});
+   maxPitchRate:forming?.135:.21,maxRollRate:forming?.45:.5,turnGain:1.5,kp:forming?.5:.09,ki:forming?.03:.05,
+   rollAccel:forming?1.5:1.8,bankTau:forming?.25:.2,loadRate:forming?1.2:1.6,powerRate:forming?.5:.7});
   w.vel.x+=wx;w.vel.z+=wz;w.pos.x+=wx*dt;w.pos.z+=wz*dt;
   return;
  }

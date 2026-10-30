@@ -136,12 +136,31 @@ function aeroGate(kind,gain){const m=F.model(kind);return Math.max(1.5*F.stallSp
  * e: {kind, pos, vel, spd, heading (x = sin h), pitch, roll, loadout?}  aim: direction to fly (any length)
  * wantSpd: true airspeed the pilot wants.  o: {maxBank, margin, turnGain, pitchGain, maxRollRate, maxYaw,
  *   maxPitchRate, flaps, gear, brakes, gain, substepHz, massKg, power} - all pilot (game) choices.
- * The aircraft itself is the player's: same FlightCore forces, load limits, roll rates and gain. */
+ * The aircraft itself is the player's: same FlightCore forces, load limits, roll rates and gain.
+ *
+ * Two pilot styles share this one law:
+ *  - o.vector falsy ("level pilot"): bank for the heading error, hold a path angle - wingmen, bombers, escorts.
+ *  - o.vector true ("fighter pilot", Build 224): roll the lift vector onto the aim point, then pull by the
+ *    angle still to go. That flies loops, split-S, wing-overs and rolling scissors, which a heading-and-
+ *    path-angle pilot cannot. Used by the dogfight brain (dogfight-ai.js).
+ * Smoothness options (pilot's hands, not aircraft data): rollAccel (rad/s^2) - how fast the roll rate may
+ *   change; bankTau (s) - lag of the bank the pilot asks for; loadRate (g/s) - how fast the pull may change;
+ *   powerRate (1/s) - how fast the throttle may move.  Unset = the old instantaneous behaviour. */
 function ai(e,dt,aim,wantSpd,o={}){
  // The pilot re-decides at least 60 times a second, so a slow frame rate flies the same path.
  const n=Math.max(1,Math.ceil(dt*60-1e-9));let out=null;
  for(let i=0;i<n;i++)out=aiStep(e,dt/n,aim,wantSpd,o);
  return out;
+}
+const dot3=(a,b)=>a[0]*b[0]+a[1]*b[1]+a[2]*b[2];
+// Where the aim lies relative to the aircraft: eps = angle between nose and aim, phi = roll that puts the
+// lift vector on it (+: roll positive, towards the side vector u x d).
+function aimGeometry(s,aim,al){
+ const ax=F.axes(s.pitch,s.heading,s.roll),d=ax.d,u=ax.u;
+ const a=[aim.x/al,aim.y/al,aim.z/al];
+ const side=[u[1]*d[2]-u[2]*d[1],u[2]*d[0]-u[0]*d[2],u[0]*d[1]-u[1]*d[0]];
+ const eps=Math.acos(clamp(dot3(a,d),-1,1)),phi=Math.atan2(dot3(a,side),dot3(a,u));
+ return {eps,phi,uy:u[1]};
 }
 function aiStep(e,dt,aim,wantSpd,o){
  const m=F.model(e.kind);if(!m||!(dt>0))return null;
@@ -153,39 +172,67 @@ function aiStep(e,dt,aim,wantSpd,o){
  // he sets them for the speed he is flying on average (8 s), not for every throttle correction.
  const vsClean=F.stallSpeed(m,e.pos.y,mass/m.mass,0);
  c.want=(c.want??wantSpd)+(wantSpd-(c.want??wantSpd))*(1-Math.exp(-dt/8));
- const flapsWanted=o.flaps??clamp((1.3*vsClean-c.want)/(.3*vsClean),0,1);
+ const flapsWanted=o.flaps??(o.vector?0:clamp((1.3*vsClean-c.want)/(.3*vsClean),0,1));
  c.flaps+=(flapsWanted-c.flaps)*Math.min(1,dt*.7);
  const cfg={flaps:c.flaps,gear:o.gear||0,brakes:o.brakes||0};
  const lim=F.loadLimits(m,V,atm.rho,W,cfg),margin=o.margin??.92;
  const al=Math.hypot(aim.x,aim.y,aim.z)||1,aimH=Math.atan2(aim.x,aim.z),aimP=Math.asin(clamp(aim.y/al,-1,1));
- const dh=wrap(aimH-e.heading);
- // Bank for the turn the heading error asks for, inside what the wing holds level with a margin.
- const nUse=Math.max(1.0001,lim.max*margin),bankMax=Math.min(o.maxBank??1.35,Math.acos(1/nUse));
- const yawMax=o.maxYaw??Infinity,turn=clamp(dh*(o.turnGain??1.6),-yawMax,yawMax);
- const wantBank=clamp(Math.atan(turn*V/(gain*F.G)),-bankMax,bankMax);
  const pMax=Math.min(o.maxRollRate??Infinity,F.rollRate(m,eas)*(o.rollShare??.8));
- const rollRate=clamp((wantBank-e.roll)*3,-pMax,pMax);
- e.roll=clamp(e.roll+rollRate*dt,-Math.PI*.95,Math.PI*.95);
- // Path angle error -> extra load, inside the wing (and inside a pitch-rate limit when flying formation).
- let pathRate=(aimP-e.pitch)*(o.pitchGain??1.2);
- if(o.maxPitchRate!=null)pathRate=clamp(pathRate,-o.maxPitchRate,o.maxPitchRate);
- const extra=clamp(V*pathRate/(F.G*gain),-1.5,1.5);
- const command=(s,Vs,l)=>clamp(F.holdLoad(s.pitch,s.roll,extra),l.min*margin,l.max*margin);
+ let rollCmd,command;
+ if(o.vector){
+  // Roll the lift vector onto the aim (rate proportional to the angle, fading out when the aim is on the
+  // nose), then pull for the angle still to go. A target below the belly and close to the nose is pushed
+  // over to instead of rolled onto.
+  const g0=aimGeometry(e,aim,al),push=Math.abs(g0.phi)>2.2&&g0.eps<(o.pushBelow??.3);
+  const authority=clamp(g0.eps/(o.rollDeadband??.07),0,1);
+  rollCmd=push?0:clamp(g0.phi*(o.rollGain??4)*authority,-pMax,pMax);
+  const pullGain=o.pullGain??2.4,wMax=o.maxTurnRate??Infinity;
+  command=(s,Vs,l)=>{
+   const g=aimGeometry(s,aim,al),w=Math.min(wMax,g.eps*pullGain);
+   const along=push?Math.cos(g.phi)*.6:Math.max(0,Math.cos(g.phi));
+   const n=g.uy+Vs*w*along/(F.G*gain);
+   return clamp(n,l.min*margin,l.max*margin);
+  };
+ }else{
+  const dh=wrap(aimH-e.heading);
+  // Bank for the turn the heading error asks for, inside what the wing holds level with a margin.
+  const nUse=Math.max(1.0001,lim.max*margin),bankMax=Math.min(o.maxBank??1.35,Math.acos(1/nUse));
+  const yawMax=o.maxYaw??Infinity,turn=clamp(dh*(o.turnGain??1.6),-yawMax,yawMax);
+  let wantBank=clamp(Math.atan(turn*V/(gain*F.G)),-bankMax,bankMax);
+  if(o.bankTau){c.bank=(c.bank??e.roll)+(wantBank-(c.bank??e.roll))*(1-Math.exp(-dt/o.bankTau));wantBank=c.bank;}
+  rollCmd=clamp((wantBank-e.roll)*3,-pMax,pMax);
+  // Path angle error -> extra load, inside the wing (and inside a pitch-rate limit when flying formation).
+  let pathRate=(aimP-e.pitch)*(o.pitchGain??1.2);
+  if(o.maxPitchRate!=null)pathRate=clamp(pathRate,-o.maxPitchRate,o.maxPitchRate);
+  let extra=clamp(V*pathRate/(F.G*gain),-1.5,1.5);
+  if(o.loadRate){c.extra=(c.extra??0)+clamp(extra-(c.extra??0),-o.loadRate*dt,o.loadRate*dt);extra=c.extra;}
+  command=(s,Vs,l)=>clamp(F.holdLoad(s.pitch,s.roll,extra),l.min*margin,l.max*margin);
+ }
+ // The roll rate itself changes smoothly when the pilot asks for that (hands, not a switch).
+ if(o.rollAccel){c.p=(c.p??0)+clamp(rollCmd-(c.p??0),-o.rollAccel*dt,o.rollAccel*dt);}else c.p=rollCmd;
+ e.roll=o.vector?wrap(e.roll+c.p*dt):clamp(e.roll+c.p*dt,-Math.PI*.95,Math.PI*.95);
  // Throttle: proportional-integral on airspeed, as a pilot flies a speed.
  const err=wantSpd-V;
  c.thr=clamp(c.thr+err*(o.ki??.05)*dt,0,1);
- const throttle=o.power??clamp(c.thr+err*(o.kp??.09),0,1);
- const s={spd:e.spd,pitch:e.pitch,heading:e.heading,roll:e.roll,nLoad:c.n,power:c.power,altitude:e.pos.y,stall:0,dropDir:0};
- const out=F.step(m,s,dt,{throttle,massKg:mass,gain,command,substepHz:o.substepHz||60,stallModel:false,...cfg});
+ let throttle=o.power??clamp(c.thr+err*(o.kp??.09),0,1);
+ if(o.powerRate&&o.power==null){c.lever=c.lever??throttle;c.lever+=clamp(throttle-c.lever,-o.powerRate*dt,o.powerRate*dt);throttle=c.lever;}
+ const s={spd:e.spd,pitch:e.pitch,heading:e.heading,roll:e.roll,nLoad:c.n,power:c.power,altitude:e.pos.y,stall:e.coreStall||0,dropDir:e.coreDrop||0};
+ const out=F.step(m,s,dt,{throttle,massKg:mass,gain,command,substepHz:o.substepHz||60,stallModel:o.vector?true:false,...cfg});
  e.spd=s.spd;e.pitch=s.pitch;e.heading=s.heading;e.roll=s.roll;c.power=s.power;c.n=s.nLoad;
+ if(o.vector){e.coreStall=s.stall;e.coreDrop=s.dropDir;}
  const cp=Math.cos(e.pitch);
  e.vel.set(Math.sin(e.heading)*cp*e.spd,Math.sin(e.pitch)*e.spd,Math.cos(e.heading)*cp*e.spd);
  e.pos.addScaledVector(e.vel,dt);
  return out;
 }
+// Roll rate (rad/s) an AI pilot of this aircraft can really use right now (what ai() clamps to).
+function rollNow(e,share=.8){
+ const m=F.model(e.kind);if(!m)return 1.5;
+ const eas=Math.max(10,e.spd)*Math.sqrt(F.atmosphere(e.pos.y).rho/1.225);return F.rollRate(m,eas)*share;
+}
 // The kind of AI an entity flies as: its own type if the core knows it.
 function aiKind(kind,fallback){return F&&F.has(kind)?kind:fallback;}
 
-const api={player,stickForBank,stallSpeed,aeroGate,ai,aiKind,bankFor,springPeak,toCore};
+const api={player,stickForBank,stallSpeed,aeroGate,ai,aiKind,rollNow,bankFor,springPeak,toCore};
 root.FlightControl=api;if(typeof module==='object'&&module.exports)module.exports=api;
 })(typeof window==='undefined'?globalThis:window);

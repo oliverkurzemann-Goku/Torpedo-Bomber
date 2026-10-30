@@ -277,7 +277,7 @@
 
 .hangarLink{display:block;padding:12px 14px;margin:8px 0 12px;color:#f3ce83;border:1px solid #ba9d57;border-radius:5px;text-decoration:none;text-align:center;font:600 12px system-ui;letter-spacing:.8px;min-height:44px;}
 </style>
-<link rel="stylesheet" href="menu-layout.css?v=223">
+<link rel="stylesheet" href="menu-layout.css?v=224">
 </head>
 <body>
 <!-- ===== TEMP TEST-ONLY VERSION BANNER — asked for by Oliver: "kannst du irgendwo einbauen,
@@ -299,7 +299,7 @@
   <div style="width:100%;height:4px;background:repeating-linear-gradient(45deg,#ffd400,#ffd400 8px,#111 8px,#111 16px);"></div>
   <span id="testVersionBannerText" style="background:#111;color:#ffd400;font-family:monospace;font-weight:800;font-size:11px;letter-spacing:.5px;padding:3px 10px;border:1px solid #ffd400;border-top:none;border-radius:0 0 6px 6px;"></span>
 </div>
-<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 223';</script>
+<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 224';</script>
 <!-- ===== END TEMP TEST-ONLY VERSION BANNER ===== -->
 <div id="app"></div>
 <style>
@@ -340,7 +340,7 @@
   <div id="flash"></div>
   <div id="gunsight"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 223 · REAL RHINE</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 224 · REAL RHINE</div>
 
   <div id="apr">
     <div id="aprCall"></div>
@@ -392,7 +392,7 @@
 </div>
 
 <div class="overlay hidden" id="menu" data-campaign="europe">
-  <div class="menuTop"><a id="selBtn" href="index.html?v=223">&#9664; Change Game</a><span class="menuMeta">RHINE OPERATIONS<br>BUILD 223</span></div>
+  <div class="menuTop"><a id="selBtn" href="index.html?v=224">&#9664; Change Game</a><span class="menuMeta">RHINE OPERATIONS<br>BUILD 224</span></div>
   <div class="card menuCard">
     <aside class="menuOverview" aria-label="Campaign and pilot options">
     <div class="campaignArt" aria-hidden="true"></div>
@@ -511,7 +511,7 @@
 <script src="terrain-system/LivingWorld.js?v=179"></script>
 <script src="campaign.js?v=1"></script>
 <script src="game-runtime.js?v=198"></script>
-<script src="sortie-checkpoint.js?v=223"></script>
+<script src="sortie-checkpoint.js?v=224"></script>
 <script src="ju87-native.js?v=218"></script>
 <script src="me262-native.js?v=206"></script>
 <script src="me163-native.js?v=218"></script>
@@ -522,7 +522,7 @@
 <script src="combat-fx.js?v=177"></script>
 <script src="aircraft-smoke.js?v=176"></script>
 <script src="aircraft-damage.js?v=177"></script>
-<script src="flight-support.js?v=223"></script>
+<script src="flight-support.js?v=224"></script>
 <script src="ordnance.js?v=157"></script>
 <script src="crew-visuals.js?v=179"></script>
 <script src="aircraft-finish.js?v=206"></script>
@@ -542,17 +542,18 @@
 <script src="me262-performance.js?v=206"></script>
 <script src="flight-envelope.js?v=219"></script>
 <script src="flight-dynamics.js?v=219"></script>
-<script src="flight-core.js?v=223"></script>
-<script src="flight-control.js?v=223"></script>
+<script src="flight-core.js?v=224"></script>
+<script src="flight-control.js?v=224"></script>
+<script src="dogfight-ai.js?v=224"></script>
 <script src="audio/aircraft-engine.js?v=218"></script>
 <script src="p47-performance.js?v=204"></script>
-<script src="sortie-features.js?v=223"></script>
+<script src="sortie-features.js?v=224"></script>
 <script src="ground-run.js?v=204"></script>
 <script src="ground-dust.js?v=181"></script>
 <script src="flight-indicators.js?v=198"></script>
 <script src="sortie-fuel.js?v=206"></script>
 <script src="operation-plans.js?v=198"></script>
-<script src="custom-sortie.js?v=223"></script>
+<script src="custom-sortie.js?v=224"></script>
 <script>
 // ============================================================
 //  REMAGEN 1945 — REAL TERRAIN (forked from thunderbolt-europe.html)
@@ -901,7 +902,7 @@ async function loadRealWorld(){
 
   if(OSMManager.BUILD!==23||HistoricalObjectManager.BUILD!==21||LivingWorld.BUILD!==22||WorldVehicles.BUILD!==22) throw new Error('Terrain version mismatch. Reload Remagen.');
   document.getElementById('testVersionBannerText').textContent=
-    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 223 · MODULE 23';
+    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 224 · MODULE 23';
   heightProvider=new DEMHeightProvider(RTILE,'terrain-system/real/data/dem/');
   terrain=new TerrainManager(scene,RTILE,heightProvider);
   osmMgr=new OSMManager(scene,RTILE,terrain,'terrain-system/real/data/osm/');
@@ -3892,6 +3893,7 @@ function updateEnemyAir(dt){
     const toP=P.pos.clone().sub(e.pos);
     const dist=toP.length();
     if(e.bomber){ updateBomber(e,dt,toP,dist); continue; }
+    if(typeof brainOn==='function'&&brainOn(e)){ enemyBrainFighter(e,dt,toP,dist); continue; }
 
     const S=aiSpec(e.kind,e.pos.y);
     const gnd=groundY(e.pos.x,e.pos.z);
@@ -3996,34 +3998,58 @@ function updateEnemyAir(dt){
     if(e.pos.y>flightAltitudeLimit()-700)aim.y=Math.min(aim.y,-.12);
 
     flyAI(e,dt,aim,thr);
-    interiorAirPosition(e.pos,ENEMY_EDGE_MARGIN-1200);
-    if(e.pos.y>flightAltitudeLimit()-450){e.pos.y=flightAltitudeLimit()-450;e.pitch=Math.min(0,e.pitch);e.vel.y=Math.min(0,e.vel.y);}
+    enemyFighterTail(e,dt,dist,ahead,gnd,null);
+  }
+}
 
-    // hard floor, so a bad decision does not end with them in the ground
-    if(e.pos.y<gnd+70){ e.pos.y=gnd+70; if(e.pitch<0) e.pitch=Math.max(e.pitch,0.05); }
+// ---- Build 224: the fighter brain (dogfight-ai.js) flies the computed core's aircraft ----
+// ?ai=old keeps the Build 223 modes above for comparison. The decision and the flying are separate: the brain
+// says where to point and how fast, FlightControl.ai (vector mode) rolls and pulls through the real forces.
+const AI_OLD=typeof location!=='undefined'&&/[?&]ai=old\b/.test(location.search);
+function brainOn(e){return !AI_OLD&&typeof DogfightAI!=='undefined'&&typeof FlightControl!=='undefined'&&coreOn(e.kind);}
+// Difficulty is the pilot's skill: how fast he reacts, how well he holds the gun line, how soon he comes back.
+function enemySkill(){return Math.max(.3,Math.min(.95,.4+.45*(D().aim-.55)/.85));}
+function enemyBrainFighter(e,dt,toP,dist){
+  if(!e.tac)e.tac=DogfightAI.create({kind:e.kind,skill:Math.max(.3,Math.min(.95,enemySkill()+(Math.random()-.5)*.16)),rng:Math.random});
+  const S=aiSpec(e.kind,e.pos.y),gnd=groundY(e.pos.x,e.pos.z);
+  const nose=new THREE.Vector3(Math.sin(e.heading)*Math.cos(e.pitch),Math.sin(e.pitch),Math.cos(e.heading)*Math.cos(e.pitch));
+  const ahead=(dist>1)?nose.dot(toP.clone().normalize()):1;
+  const ctx={target:{pos:P.pos,vel:noseDir().multiplyScalar(P.spd),spd:P.spd},spec:S,agl:e.pos.y-gnd,
+    ceiling:flightAltitudeLimit()-450,inward:enemyEdgeAvoidance(e),rollNow:FlightControl.rollNow(e),
+    friends:enemyAir.filter(o=>o!==e&&o.alive&&!o.bomber&&o.tac)};
+  const out=DogfightAI.think(e,e.tac,ctx,dt);
+  e.mode=out.mode;
+  FlightControl.ai(e,dt,out.aim,out.spd,out.opts);
+  enemyFighterTail(e,dt,dist,ahead,gnd,out.fire);
+}
+function enemyFighterTail(e,dt,dist,ahead,gnd,fireNow){
+  interiorAirPosition(e.pos,ENEMY_EDGE_MARGIN-1200);
+  if(e.pos.y>flightAltitudeLimit()-450){e.pos.y=flightAltitudeLimit()-450;e.pitch=Math.min(0,e.pitch);e.vel.y=Math.min(0,e.vel.y);}
 
-    if(typeof aircraftSmoke!=="undefined"&&aircraftSmoke){const maximum=e.kind==="p47"?7:e.kind==="fw190"?5:e.kind==="me163"?3:4;aircraftSmoke.trail(e,e.pos,e.vel.clone().normalize(),e.spd,e.hp<maximum?1-e.hp/maximum:0,dt,new THREE.Vector3(windZ,0,0));}
-    e.group.position.copy(e.pos);
-    e.group.rotation.set(0,0,0);
-    e.group.rotateY(e.heading); e.group.rotateX(-e.pitch); e.group.rotateZ(-e.roll);
-    if(e.prop) e.prop.rotation.z-=GameRuntime.rotorStep(dt,.30,e.kind==='p47'?4:3);
+  // hard floor, so a bad decision does not end with them in the ground
+  if(e.pos.y<gnd+70){ e.pos.y=gnd+70; if(e.pitch<0) e.pitch=Math.max(e.pitch,0.05); }
 
-    // ---- guns: only with the nose genuinely on him, and in range ----
-    e.cool-=dt;
-    // 15 degrees, not 9: with real turn rates a fighter rarely gets closer than that in a
-    // moving fight, and at 9 degrees they were harmless - four bursts in a whole minute.
-    if(e.cool<=0 && P.alive && e.mode!=='pullup' && dist<680 && dist>85 && ahead>0.965){
-      e.cool=0.42+Math.random()*0.35;
-      const tof=dist/700;
-      const lead=P.pos.clone().addScaledVector(noseDir(),P.spd*tof);
-      const err=(1.5-D().aim*0.6)*17;
-      lead.x+=(Math.random()-0.5)*err; lead.y+=(Math.random()-0.5)*err; lead.z+=(Math.random()-0.5)*err;
-      const dir=lead.sub(e.pos).normalize();
-      const m=CombatFX.round();
-      m.position.copy(e.pos).addScaledVector(dir,7); m.lookAt(m.position.clone().add(dir));
-      scene.add(m);
-      tracers.push({mesh:m,dir,speed:700,life:2.4});
-    }
+  if(typeof aircraftSmoke!=="undefined"&&aircraftSmoke){const maximum=e.kind==="p47"?7:e.kind==="fw190"?5:e.kind==="me163"?3:4;aircraftSmoke.trail(e,e.pos,e.vel.clone().normalize(),e.spd,e.hp<maximum?1-e.hp/maximum:0,dt,new THREE.Vector3(windZ,0,0));}
+  e.group.position.copy(e.pos);
+  e.group.rotation.set(0,0,0);
+  e.group.rotateY(e.heading); e.group.rotateX(-e.pitch); e.group.rotateZ(-e.roll);
+  if(e.prop) e.prop.rotation.z-=GameRuntime.rotorStep(dt,.30,e.kind==='p47'?4:3);
+
+  // ---- guns: only with the nose genuinely on him, and in range ----
+  e.cool-=dt;
+  // 15 degrees, not 9: with real turn rates a fighter rarely gets closer than that in a
+  // moving fight, and at 9 degrees they were harmless - four bursts in a whole minute.
+  if(e.cool<=0 && P.alive && e.mode!=='pullup' && dist<680 && dist>85 && (fireNow==null ? ahead>0.965 : (fireNow && ahead>0.9))){
+    e.cool=0.42+Math.random()*0.35;
+    const tof=dist/700;
+    const lead=P.pos.clone().addScaledVector(noseDir(),P.spd*tof);
+    const err=(1.5-D().aim*0.6)*17;
+    lead.x+=(Math.random()-0.5)*err; lead.y+=(Math.random()-0.5)*err; lead.z+=(Math.random()-0.5)*err;
+    const dir=lead.sub(e.pos).normalize();
+    const m=CombatFX.round();
+    m.position.copy(e.pos).addScaledVector(dir,7); m.lookAt(m.position.clone().add(dir));
+    scene.add(m);
+    tracers.push({mesh:m,dir,speed:700,life:2.4});
   }
 }
 
@@ -6029,7 +6055,7 @@ function init(){
   buildMenu();
   // menu wiring
   document.getElementById('startBtn').onclick=()=>showBrief(selectedMission);
-  document.getElementById('pauseMainMenu').onclick=async()=>{globalThis.sortieCheckpoint?.save();await globalThis.sortieCheckpoint?.flush();exitToMenuFromPause(true);window.location.href='index.html?v=223';};
+  document.getElementById('pauseMainMenu').onclick=async()=>{globalThis.sortieCheckpoint?.save();await globalThis.sortieCheckpoint?.flush();exitToMenuFromPause(true);window.location.href='index.html?v=224';};
   document.getElementById('logBtn').onclick=()=>{ show('menu',false); showLogbook(); };
   document.getElementById('skipLaunchPreview').onclick=()=>finishLaunchIntro();
   document.getElementById('brBack').onclick=()=>{ show('brief',false); show('menu',true);if(navigation){navigation.reset();navigation.button.style.display='none';} state=ST.MENU; };
@@ -6234,6 +6260,6 @@ function reportStartupError(err){
 const hangarRequest=CustomSortie.install('europe',MISSIONS,FlightPlans.europe,window.location.search);
 window.addEventListener('load',()=>{try{init();}catch(err){reportStartupError(err);}});
 </script>
-<script src="checkpoint-rhine.js?v=223"></script>
+<script src="checkpoint-rhine.js?v=224"></script>
 </body>
 </html>
