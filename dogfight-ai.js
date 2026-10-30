@@ -307,8 +307,8 @@ function think(e,tac,ctx,dt){
  }
 
  // ---- hands: a good pilot rolls quicker, a poor one pulls less hard ----
- o={vector:true,rollAccel:7+9*tac.skill,rollGain:3.6+1.6*tac.skill,pullGain:2.0+1.2*tac.skill,
-  powerRate:.9,pushBelow:.3,maxRollRate:undefined};
+ o={vector:true,rollAccel:4+5*tac.skill,rollGain:3.2+1.4*tac.skill,pullGain:2.0+1.2*tac.skill,rollDeadband:.12,
+  aimTau:.2-.1*tac.skill,powerRate:.9,pushBelow:.3};
  // a trace of aim wobble (fingers on the stick)
  tac.aimWobble=lerp(tac.aimWobble,V((r()-.5),(r()-.5)*.5,(r()-.5)),dt*2);
  aim=norm(add(aim,mul(tac.aimWobble,(1-tac.skill)*.09)));
@@ -317,8 +317,9 @@ function think(e,tac,ctx,dt){
  tac.burstT-=dt;
  const inEnv=range>85&&range<680&&lineErr<.1+.2*(1-tac.skill)&&['engage'].includes(tac.mode);
  if(tac.burstT<=0){
-  if(tac.bursting){tac.bursting=false;tac.burstT=.5+r()*1.1;}
-  else if(inEnv){tac.bursting=true;tac.burstT=.5+r()*.9;}
+  // a rookie fires shorter bursts and lets go for longer; an ace keeps the trigger down his full second
+  if(tac.bursting){tac.bursting=false;tac.burstT=(.5+r()*1.1)*(1+1.4*Math.max(0,.85-tac.skill));}
+  else if(inEnv){tac.bursting=true;tac.burstT=(.5+r()*.9)*(.55+.45*Math.min(1,tac.skill/.85));}
  }
  if(!inEnv)tac.bursting=false;
  return {aim,spd:wantSpd,opts:o,mode:tac.mode,gun:tac.gunOk,fire:tac.bursting&&inEnv,threat,geo};

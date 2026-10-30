@@ -1,13 +1,13 @@
 {
   "schema": 1,
   "reviewedOn": "2026-10-23",
-  "build": 223,
+  "build": 224,
   "status": "OPEN — source declarations checked; no external rights authorization obtained",
   "payload": {
-    "bytes": 272010801,
-    "fileCount": 361,
+    "bytes": 272044140,
+    "fileCount": 362,
     "modelCount": 36,
-    "manifestSha256": "cf52a863feb4afcee5a02d70c533f91b4dad8a30a97db6730db8f7f41e917230"
+    "manifestSha256": "32ec137efe89890807fe6ac581522eed84d32c48c67c0023effd0c08f98d1191"
   },
   "files": [
     {
@@ -643,13 +643,19 @@
     {
       "path": "custom-sortie.js",
       "bytes": 10227,
-      "sha256": "0ce746c93519e398d94d1ea6e800ade31ac2fc3d2ba6545d7c62f9f2191867d1",
+      "sha256": "a40667484382cac0a6db950f4331400784fde6ff48a3e5a37b49d7bd04141de7",
       "kind": "code-or-notice"
     },
     {
       "path": "deck-activity.js",
       "bytes": 9914,
       "sha256": "10d55bb6dd5611af650c4ece75a60db4d63ffe55b6cc93381d74baca02e635d4",
+      "kind": "code-or-notice"
+    },
+    {
+      "path": "dogfight-ai.js",
+      "bytes": 22016,
+      "sha256": "469b0b179a2ab52930ba2465cb52df2045165df0cb25d47760ccc975fb2fc0fa",
       "kind": "code-or-notice"
     },
     {
@@ -672,8 +678,8 @@
     },
     {
       "path": "flight-control.js",
-      "bytes": 12757,
-      "sha256": "5798ea298a30c8e074bcd4fac2fc6df6a4518443862b7688e5784f65a3ebcb0f",
+      "bytes": 16374,
+      "sha256": "451281e75c11c86c13e2a46d2afd5474f0baa979cb4f0ade1bd99d31d803f125",
       "kind": "code-or-notice"
     },
     {
@@ -702,8 +708,8 @@
     },
     {
       "path": "flight-support.js",
-      "bytes": 12382,
-      "sha256": "7650ab09f03d1494c275d588782bdd46f9af692fa9aab9f825b3f188183c3b03",
+      "bytes": 13500,
+      "sha256": "d3daf9a8709cf27524303ff4c38dc7d7bfeeb791b25b708bd6ddce6032adeb93",
       "kind": "code-or-notice"
     },
     {
@@ -745,7 +751,7 @@
     {
       "path": "hangar.html",
       "bytes": 4485,
-      "sha256": "5be1b301426ae73b0f3f181ec548de3a6b435493248703e06fe1f398ffeda1fe",
+      "sha256": "cf510cb2dfa038853d5dccdf35cc44628c73af019ecc9c7fcc667b51ea15ed20",
       "kind": "code-or-notice"
     },
     {
@@ -763,7 +769,7 @@
     {
       "path": "index.html",
       "bytes": 7545,
-      "sha256": "2c36e3e3c7ed137d66f6ffe3d59c1f02ae4314b463a6e157ed4c89fe5780885a",
+      "sha256": "7c65af871025e0f8307f4aeec3854816d2e5656828ed2e988a291a3f17a0be30",
       "kind": "code-or-notice"
     },
     {
@@ -894,8 +900,8 @@
     },
     {
       "path": "remagen-mission.html",
-      "bytes": 377910,
-      "sha256": "603150f4b7257717cb3cd87cfc46ca306cbba4884098a12b33d2cf9deede2df5",
+      "bytes": 379731,
+      "sha256": "7eb08f1bb40ac3ec908934921c645f0576b1330ee186355566f111da43ac1d31",
       "kind": "code-or-notice"
     },
     {
@@ -954,8 +960,8 @@
     },
     {
       "path": "sortie-preview.js",
-      "bytes": 11412,
-      "sha256": "6dfd8b1739b4af05b8d11e45aafa3ab0504fe04cacbefe43fe920bb5bbd76327",
+      "bytes": 13970,
+      "sha256": "d690191dd2e60c5d87ebfee8f6b47f4d088528d25a2f81b435ee7e7d5f36cbc2",
       "kind": "code-or-notice"
     },
     {
@@ -2094,8 +2100,8 @@
     },
     {
       "path": "torpedo-carrier.html",
-      "bytes": 442119,
-      "sha256": "255623f41a39a3f26ffd30d2d3c499af2bd68366139e08e9ae46e04460ed5920",
+      "bytes": 444672,
+      "sha256": "08fd5e58177151358ba0139103bb95ab19b9225f778c614a5a966e53eb4a5930",
       "kind": "code-or-notice"
     },
     {
@@ -2172,8 +2178,8 @@
     },
     {
       "path": "app-native.js",
-      "bytes": 27375,
-      "sha256": "27e5199ea188ecaa03bd9c8e16ab7caae1f7a21c3163ae3e7fddce0544b9e9c8",
+      "bytes": 27031,
+      "sha256": "a52b43eb6c9accbde530c1e3832548614838e605c05ed4869a6b9b9734ddaa24",
       "kind": "code-or-notice"
     }
   ],

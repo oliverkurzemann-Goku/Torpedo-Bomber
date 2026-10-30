@@ -162,7 +162,7 @@ Piloten entscheiden und wie weich sie den Knüppel führen. Alles hier sind Spie
 | Baustein | Datei | Aufgabe |
 |---|---|---|
 | Jägerpilot `FlightControl.ai(…,{vector:true})` | `flight-control.js` | Auftriebsvektor auf den Zielpunkt rollen (Rate ∝ Winkel, bei Zielwinkel < 4° ausgeblendet), dann ziehen `n = u_y + V·ω·cos φ⁺/(g·Gain)` mit `ω = min(ω_max, ε·Zugverstärkung)`; Ziel knapp unterm Bauch und nahe der Nase wird angedrückt statt gerollt. Looping, Split-S, Wingover. Abriss-Zustand des Kerns bleibt eingeschaltet. |
-| Handoptionen | `flight-control.js` | `rollAccel` (rad/s²), `bankTau` (s), `loadRate` (g/s), `powerRate` (1/s): ohne Angabe verhält sich `ai()` wie in Build 223. |
+| Handoptionen | `flight-control.js` | `rollAccel` (rad/s²), `bankTau` (s), `loadRate` (g/s), `powerRate` (1/s) und im Jägerstil `aimTau` (s, Glättung des Zielpunkts), `rollDeadband`, `rollGain`, `pullGain`, `maxTurnRate`: ohne Angabe verhält sich `ai()` wie in Build 223. |
 | Gefechtsgehirn | `dogfight-ai.js` | Wahrnehmung mit Verzögerung und Rauschen, Angriffsgeometrie, Versatz-Verfolgung, Nachpass-Entscheidung, Verteidigung, Deckung, Bodenschutz. Liefert Zielrichtung, Wunschgeschwindigkeit, Pilotenoptionen und ein Feuersignal. |
 | Rottenflieger | `flight-support.js`, `torpedo-carrier.html` | Folger der Wunschgeschwindigkeit, Handbegrenzungen, Platzkorrektur längs langsam (.12) und quer schneller (.4). |
 

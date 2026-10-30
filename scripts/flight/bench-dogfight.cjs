@@ -54,7 +54,8 @@ function run(seed,style,altStart,brainKind){CR=Math.min(120,.75*specFor(pKind,al
  const enSpec=specFor(eKind,altStart),plSpec=specFor(pKind,altStart);
  const SK=+process.env.SKILL||.85,tac=DF.create({kind:eKind,skill:SK,rng}),oldSt={},ptac=style==='mirror'?DF.create({kind:pKind,skill:.9,rng}):null;
  const target={pos:pl.pos,vel:pl.vel,spd:pl.spd};
- const stats={fireT:0,crashMode:null,gunT:0,passes:0,minAgl:1e9,stallT:0,crash:false,modeT:{},seq:[],tm:0,startBearings:[],playerShot:0};
+ const jerk={roll:[],pitch:[],yaw:[]};let prevAtt=null,prevRate=null;
+ const stats={jerk,fireFlagT:0,fireT:0,crashMode:null,gunT:0,passes:0,minAgl:1e9,stallT:0,crash:false,modeT:{},seq:[],tm:0,startBearings:[],playerShot:0};
  let weaverBank=0,weaverT=0,evadeT=0,evadeSide=1,prevMode='engage',gunRun=0;
  for(let i=0;i<seconds*60;i++){
   const t=i*dt;
@@ -75,6 +76,11 @@ function run(seed,style,altStart,brainKind){CR=Math.min(120,.75*specFor(pKind,al
   if(brainKind==='old'){out=oldBrain(en,pl,plSpec,enSpec,oldSt,rng,dt);FC.ai(en,dt,out.aim,out.spd,{maxBank:1.3});tac.mode=out.mode;out.gun=false;}
   else{const ctx={target:{pos:pl.pos,vel:pl.vel,spd:pl.spd},spec:enSpec,agl:en.pos.y,ceiling:7000,friends:[],rollNow:FC.rollNow(en)};
    out=DF.think(en,tac,ctx,dt);FC.ai(en,dt,out.aim,out.spd,out.opts);}
+  // ---- smoothness of what the eye sees: rate of change of the angular rates ----
+  {const att={r:en.roll,p:en.pitch,h:en.heading};
+   if(prevAtt){const w=a=>Math.atan2(Math.sin(a),Math.cos(a));const rate={r:w(att.r-prevAtt.r)/dt,p:w(att.p-prevAtt.p)/dt,h:w(att.h-prevAtt.h)/dt};
+    if(prevRate){jerk.roll.push(Math.abs(rate.r-prevRate.r)/dt);jerk.pitch.push(Math.abs(rate.p-prevRate.p)/dt);jerk.yaw.push(Math.abs(rate.h-prevRate.h)/dt);}prevRate=rate;}
+   prevAtt=att;}
   // ---- bookkeeping ----
   stats.minAgl=Math.min(stats.minAgl,en.pos.y);if(en.pos.y<20)stats.crash=true;
   if(en.coreStall>.4)stats.stallT+=dt;
@@ -82,6 +88,7 @@ function run(seed,style,altStart,brainKind){CR=Math.min(120,.75*specFor(pKind,al
   if(process.env.TRACE&&i%10===0){stats.ring=stats.ring||[];stats.ring.push(`${t.toFixed(1)} ${tac.mode} y ${en.pos.y.toFixed(0)} spd ${en.spd.toFixed(0)} pitch ${(en.pitch*57.3).toFixed(0)} roll ${(en.roll*57.3).toFixed(0)} n ${(en.core&&en.core.n||0).toFixed(1)} aimY ${out.aim.y.toFixed(2)} hz ${tac.hazardT}`);if(stats.ring.length>40)stats.ring.shift();}
   if(en.pos.y<60&&!stats.crashMode&&process.env.TRACE){console.log('--- crash trace (style '+style+', seed '+seed+', alt '+altStart+')\n'+stats.ring.join('\n'));}
   if(en.pos.y<60&&!stats.crashMode)stats.crashMode=tac.mode+' pitch '+(en.pitch*57.3|0)+' spd '+(en.spd|0);
+  if(out.fire)stats.fireFlagT+=dt;
   if(out.gun){stats.gunT+=dt;gunRun+=dt;}else{if(gunRun>.8)stats.playerShot++;gunRun=0;}
   stats.modeT[tac.mode]=(stats.modeT[tac.mode]||0)+dt;
   if(tac.mode!==prevMode){stats.seq.push(tac.mode);
@@ -96,17 +103,18 @@ function run(seed,style,altStart,brainKind){CR=Math.min(120,.75*specFor(pKind,al
 function entropy(arr){const c={};arr.forEach(x=>c[x]=(c[x]||0)+1);const n=arr.length||1;return -Object.values(c).reduce((a,v)=>a+v/n*Math.log2(v/n),0);}
 const BRAIN=process.env.BRAIN||'new';
 for(const style of ['straight','weaver','evader','mirror']){
- let agg={fireT:0,crashModes:[],gunT:0,passes:0,minAgl:1e9,stallT:0,crash:0,modeT:{},seq:[],bearings:[],shot:0};
+ let agg={fireFlagT:0,jerk:{roll:[],pitch:[],yaw:[]},fireT:0,crashModes:[],gunT:0,passes:0,minAgl:1e9,stallT:0,crash:0,modeT:{},seq:[],bearings:[],shot:0};
  for(let k=0;k<runs;k++){const s=run(k+1,style,k%2?1200:2600,BRAIN);
-  agg.gunT+=s.gunT;agg.fireT+=s.fireT;if(s.crashMode)agg.crashModes.push(s.crashMode);agg.passes+=s.passes;agg.minAgl=Math.min(agg.minAgl,s.minAgl);agg.stallT+=s.stallT;agg.crash+=s.crash?1:0;agg.shot+=s.playerShot;
-  agg.seq.push(...s.seq);agg.bearings.push(...s.startBearings);for(const m in s.modeT)agg.modeT[m]=(agg.modeT[m]||0)+s.modeT[m];}
+  agg.gunT+=s.gunT;agg.fireT+=s.fireT;agg.fireFlagT+=s.fireFlagT;if(s.crashMode)agg.crashModes.push(s.crashMode);agg.passes+=s.passes;agg.minAgl=Math.min(agg.minAgl,s.minAgl);agg.stallT+=s.stallT;agg.crash+=s.crash?1:0;agg.shot+=s.playerShot;
+  agg.seq.push(...s.seq);for(const k of ['roll','pitch','yaw'])agg.jerk[k].push(...s.jerk[k].filter((_,i)=>i%6===0));agg.bearings.push(...s.startBearings);for(const m in s.modeT)agg.modeT[m]=(agg.modeT[m]||0)+s.modeT[m];}
  const total=runs*seconds,mins=total/60;
  const grams=[];for(let i=0;i+2<agg.seq.length;i++)grams.push(agg.seq.slice(i,i+3).join('>'));
  const uniq=new Set(grams).size;
  const az=agg.bearings.map(b=>Math.abs(b[0])*57.3),el=agg.bearings.map(b=>b[1]*57.3);
  const sd=a=>{const m=a.reduce((x,y)=>x+y,0)/(a.length||1);return Math.sqrt(a.reduce((x,y)=>x+(y-m)**2,0)/(a.length||1));};
  console.log(`\n== [${BRAIN} brain] ${eKind} vs ${style} ${pKind}: ${runs} runs x ${seconds} s ==`);
- console.log(`game-style firing geometry (nose within 15 deg, 85-680 m) ${(agg.fireT/mins).toFixed(1)} s/min | tight gun solution ${(agg.gunT/mins).toFixed(1)} s/min | firing windows ${(agg.shot/mins).toFixed(2)}/min | passes ${(agg.passes/mins).toFixed(2)}/min | min height ${agg.minAgl.toFixed(0)} m | crashes ${agg.crash}/${runs}${agg.crashModes.length?' ['+agg.crashModes.join('; ')+']':''} | stalled ${(agg.stallT/mins).toFixed(1)} s/min`);
+ console.log(`game-style firing geometry (nose within 15 deg, 85-680 m) ${(agg.fireT/mins).toFixed(1)} s/min | trigger down (brain bursts) ${(agg.fireFlagT/mins).toFixed(1)} s/min | tight gun solution ${(agg.gunT/mins).toFixed(1)} s/min | firing windows ${(agg.shot/mins).toFixed(2)}/min | passes ${(agg.passes/mins).toFixed(2)}/min | min height ${agg.minAgl.toFixed(0)} m | crashes ${agg.crash}/${runs}${agg.crashModes.length?' ['+agg.crashModes.join('; ')+']':''} | stalled ${(agg.stallT/mins).toFixed(1)} s/min`);
  console.log(`mode share: ${Object.entries(agg.modeT).sort((a,b)=>b[1]-a[1]).map(([m,v])=>m+' '+(100*v/total).toFixed(0)+'%').join(', ')}`);
+ {const p=(a,q)=>{const b=a.slice().sort((x,y)=>x-y);return b[Math.floor(b.length*q)]||0;};console.log(`angular acceleration (rad/s2) p50/p95/p99.9: roll ${p(agg.jerk.roll,.5).toFixed(1)}/${p(agg.jerk.roll,.95).toFixed(1)}/${p(agg.jerk.roll,.999).toFixed(1)} | pitch ${p(agg.jerk.pitch,.5).toFixed(2)}/${p(agg.jerk.pitch,.95).toFixed(2)}/${p(agg.jerk.pitch,.999).toFixed(2)} | yaw ${p(agg.jerk.yaw,.5).toFixed(2)}/${p(agg.jerk.yaw,.95).toFixed(2)}/${p(agg.jerk.yaw,.999).toFixed(2)}`);}
  console.log(`variety: ${uniq} distinct 3-step sequences in ${grams.length} (${(100*uniq/Math.max(1,grams.length)).toFixed(0)}%), entropy of modes ${entropy(agg.seq).toFixed(2)} bit | attack bearing sd ${sd(az).toFixed(0)} deg, elevation sd ${sd(el).toFixed(0)} deg (n=${az.length})`);
 }

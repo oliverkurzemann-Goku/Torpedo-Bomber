@@ -176,14 +176,21 @@ function aiStep(e,dt,aim,wantSpd,o){
  c.flaps+=(flapsWanted-c.flaps)*Math.min(1,dt*.7);
  const cfg={flaps:c.flaps,gear:o.gear||0,brakes:o.brakes||0};
  const lim=F.loadLimits(m,V,atm.rho,W,cfg),margin=o.margin??.92;
- const al=Math.hypot(aim.x,aim.y,aim.z)||1,aimH=Math.atan2(aim.x,aim.z),aimP=Math.asin(clamp(aim.y/al,-1,1));
+ let al=Math.hypot(aim.x,aim.y,aim.z)||1;const aimH=Math.atan2(aim.x,aim.z),aimP=Math.asin(clamp(aim.y/al,-1,1));
  const pMax=Math.min(o.maxRollRate??Infinity,F.rollRate(m,eas)*(o.rollShare??.8));
  let rollCmd,command;
  if(o.vector){
   // Roll the lift vector onto the aim (rate proportional to the angle, fading out when the aim is on the
   // nose), then pull for the angle still to go. A target below the belly and close to the nose is pushed
   // over to instead of rolled onto.
-  const g0=aimGeometry(e,aim,al),push=Math.abs(g0.phi)>2.2&&g0.eps<(o.pushBelow??.3);
+  // The aim the pilot actually follows is the wanted aim eased in over aimTau seconds: a decision that jumps
+  // (a new look at the target, a new manoeuvre) becomes a smooth swing of the nose, not a twitch of the stick.
+  if(o.aimTau){
+   const k=1-Math.exp(-dt/o.aimTau),prev=c.aim||(c.aim={x:aim.x/al,y:aim.y/al,z:aim.z/al});
+   prev.x+=(aim.x/al-prev.x)*k;prev.y+=(aim.y/al-prev.y)*k;prev.z+=(aim.z/al-prev.z)*k;
+   const pl=Math.hypot(prev.x,prev.y,prev.z)||1;prev.x/=pl;prev.y/=pl;prev.z/=pl;aim=prev;
+  }
+  const g0=aimGeometry(e,aim,al=1),push=Math.abs(g0.phi)>2.2&&g0.eps<(o.pushBelow??.3);
   const authority=clamp(g0.eps/(o.rollDeadband??.07),0,1);
   rollCmd=push?0:clamp(g0.phi*(o.rollGain??4)*authority,-pMax,pMax);
   const pullGain=o.pullGain??2.4,wMax=o.maxTurnRate??Infinity;

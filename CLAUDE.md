@@ -24,14 +24,18 @@ längs der Bahn mit Verstärkung .12 (max 9 m/s), quer mit .4 (`updateWingmen` i
 Gemessen vorher → nachher (60 FPS, ruppiger Anführer): Rollbeschleunigung max 1,8 → 1,5 rad/s² (bei 20/120 FPS 3,2 → 1,5),
 Platzfehler längs p95 69 → 19–27 m, Fahrtstreuung ±10 → ±5 m/s; bei ruhigem Anführer 43–76 → 7–12 m. Gegner (Bench, 10 Läufe × 120 s,
 Bf 109/Zero): Feuergeometrie (Nase ≤15°, 85–680 m) .7–3 → 2–10 s/min je Können, Dreierfolgen 2–6 → 15–25 % verschieden,
-Anflugwinkel-Streuung 45–60° Azimut. Keine Abstürze (Me 262 vorher 2 von 12 bei Nachführ-Sturz), kein Abriss.
+Anflugwinkel-Streuung 45–60° Azimut. Ruck der Gegner (Winkelbeschleunigung, 99,9. Perzentil): Roll 90–127 → 8–28 rad/s²,
+Gieren 56–67 → 16–28 rad/s² (Pilot folgt dem Zielpunkt über `aimTau` .1–.2 s statt ihn zu springen). Abzug (Feuerstöße des
+Gehirns, Bf 109/Zero): Rookie 0,8–3, Veteran 0,9–3,3, Ace 1,5–5,5 s/min; die alten Modi lagen mit demselben Maß (Nase ≤15°,
+85–680 m) bei 0,7–3 s/min. Keine Abstürze (Me 262 vorher 2 von 12 bei Nachführ-Sturz), kein Abriss.
 `?ai=old` schaltet in beiden Spielen die Build-223-Modi zurück; die alten Tests (`air-tactics.js`, `enemy-turn.js`) prüfen sie
 weiter. Neue Tests: `okinawa/tests/dogfight.cjs` (Jägerpilot, Gehirn, Rottenflieger bei 20/60/120 FPS) und
 `dogfight-browser.cjs` (echte Spiele, echte Funktionen → `app/release/dogfight-browser.json`).
 Spielentscheidungen (C): Reaktionszeit `(.95−.8·können)·(.7…1,3)` s, Nerv für Frontalpässe `230+470·(1−Angriffslust)` m, Feuerstoß
-.5–1,4 s mit .5–1,6 s Pause, Deckung nach Rufzeichen. Offen: kein iPad-Test, kein Spielgefühl-Nachweis; die Letalität der
-Gegner ist im Bench 2–3× der alten Modi (Feuergeometrie), im Spiel dämpfen Feuerrate und Streuung — nach dem ersten echten Flug
-nachstellen (`enemySkill`, `zeroSkill`, `DogfightAI.create`). Rottenflieger-Angriff/Abflug (Moduswechsel) laufen jetzt durch
+.5–1,4 s mit .5–1,6 s Pause (Rookie kürzer und längere Pause), Deckung nach Rufzeichen, Roll-Beschleunigung der Hände
+`4+5·können` rad/s². Offen: kein iPad-Test, kein Spielgefühl-Nachweis; die Schwierigkeit hängt an `enemySkill`/`zeroSkill`,
+`DogfightAI.create` und der Spiel-Feuerrate — nach dem ersten echten Flug nachstellen. Das Maß im Bench ist eine
+Stand-in-Spielerin (gerade, Zickzack, Ausweicher, Spiegel-Gehirn), kein Mensch. Rottenflieger-Angriff/Abflug (Moduswechsel) laufen jetzt durch
 denselben Folger, sind aber nicht einzeln neu vermessen.
 
 **30.10.2026, Build 223: alle zehn Typen und alle KI-Flugzeuge auf dem berechneten Flugkern.**
