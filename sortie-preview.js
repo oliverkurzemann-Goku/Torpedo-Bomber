@@ -65,8 +65,17 @@
     for(const [px,pz] of stations){
      const key=px.toFixed(3)+':'+pz.toFixed(3);
      if(Object.prototype.hasOwnProperty.call(values,key))continue;
-     const hit=root.AircraftArticulation.probe(frame,probes,px,pz);
-     values[key]=hit?{y:hit.local.y,mesh:hit.object.name||'skin'}:null;
+     // Swept/tapered wings are not rectangular. If a station lies over an
+     // aileron gap or beyond the local trailing edge, move it fore/aft to
+     // the nearest actual wing skin instead of inventing a surface height.
+     let hit=null,contactZ=pz;
+     const offsets=[0,.20,-.20,.40,-.40,.60,-.60,.80,-.80,1,-1,1.20,-1.20,1.40,-1.40,1.60,-1.60];
+     for(const dz of offsets){
+      const z=pz+dz;
+      const candidate=root.AircraftArticulation.probe(frame,probes,px,z);
+      if(candidate){hit=candidate;contactZ=z;break;}
+     }
+     values[key]=hit?{y:hit.local.y,z:contactZ,mesh:hit.object.name||'skin'}:null;
     }
    }finally{
     const materials=new Set();
@@ -111,22 +120,22 @@
    const radius=(h.kind==='rocket'?.064:.40)*h.scale;
    const clearance=h.kind==='rocket'?.07:.09;
    const y=skin.y-radius-clearance;
-   store(h.kind,h.x,y,h.z,h.scale);
+   store(h.kind,h.x,y,skin.z??h.z,h.scale);
    // Rack joins the weapon's upper skin to the aircraft's lower skin.
    const pylon=new T.Mesh(new T.BoxGeometry(h.kind==='rocket'?.055:.10,clearance+.018,h.kind==='rocket'?.32:.30),
     new T.MeshStandardMaterial({color:0x59635e,roughness:.76,metalness:.12}));
-   pylon.name='previewPylon';pylon.position.set(h.x,skin.y-clearance/2,h.z);group.add(pylon);
-   report.push({kind:h.kind,x:h.x,z:h.z,skinY:skin.y,storeY:y,storeTop:y+radius,clearance,measured:skin.measured,mesh:skin.mesh});
+   pylon.name='previewPylon';pylon.position.set(h.x,skin.y-clearance/2,skin.z??h.z);group.add(pylon);
+   report.push({kind:h.kind,x:h.x,z:skin.z??h.z,requestedZ:h.z,skinY:skin.y,storeY:y,storeTop:y+radius,clearance,measured:skin.measured,mesh:skin.mesh});
   }
   if(s.tank){
    const fallback=ac==='p47'?-.53:ac==='bf109'?-.72:-.82;
    const skin=underside(frame,ac,0,.3,fallback),clearance=.09;
    const tank=new T.Mesh(new T.SphereGeometry(1,20,12),new T.MeshStandardMaterial({color:0xa3a49c,roughness:.55,metalness:.35}));
    tank.name='previewDropTank';tank.scale.set(.31,.29,1.25);
-   tank.position.set(0,skin.y-.29-clearance,.3);group.add(tank);
+   tank.position.set(0,skin.y-.29-clearance,skin.z??.3);group.add(tank);
    const pylon=new T.Mesh(new T.BoxGeometry(.12,clearance+.018,.42),new T.MeshStandardMaterial({color:0x737e78,roughness:.65}));
-   pylon.name='previewTankPylon';pylon.position.set(0,skin.y-clearance/2,.3);group.add(pylon);
-   report.push({kind:'tank',x:0,z:.3,skinY:skin.y,storeY:tank.position.y,storeTop:tank.position.y+.29,clearance,measured:skin.measured,mesh:skin.mesh});
+   pylon.name='previewTankPylon';pylon.position.set(0,skin.y-clearance/2,skin.z??.3);group.add(pylon);
+   report.push({kind:'tank',x:0,z:skin.z??.3,requestedZ:.3,skinY:skin.y,storeY:tank.position.y,storeTop:tank.position.y+.29,clearance,measured:skin.measured,mesh:skin.mesh});
   }
   display.userData.storeFit=report;
  }
