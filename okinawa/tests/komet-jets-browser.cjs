@@ -106,7 +106,8 @@ const server=http.createServer((req,res)=>{
    return samples;
   });
   console.log('Native Me262 slow/fast climb:',jets);
-  assert(jets.every(s=>s.alive&&(s.type==='departure'?s.rotation>12&&s.rotation<35&&s.pitch<19&&s.vs<19&&!s.ground:s.pitch>45&&s.vs>100&&s.speed>140)),'native Me262 clears the runway trees with controlled initial climb and regains fast climb');
+  // Build 228: arcade climb-out ~20 deg / 22 m/s after take-off (was 10 / 12), bounded at 27; the fast climb is the old one.
+  assert(jets.every(s=>s.alive&&(s.type==='departure'?s.rotation>12&&s.rotation<35&&s.pitch<27&&s.vs<27&&!s.ground:s.pitch>45&&s.vs>100&&s.speed>140)),'native Me262 clears the runway trees with controlled initial climb and regains fast climb');
   await page.evaluate(()=>{posePlayerAircraft(0);for(let i=0;i<120;i++)updateCamera(.05);setThrottleUI(P.throttle);resetCtlUI();updateHUD();drawMinimap();document.getElementById('flash').classList.remove('show');updateContentVisibility(P.pos.x,P.pos.z);scene.updateMatrixWorld(true);renderer.render(scene,camera);});
   await page.screenshot({path:path.join(out,'build184-me262-fast-climb.png')});
   assert.deepEqual(errors,[]);

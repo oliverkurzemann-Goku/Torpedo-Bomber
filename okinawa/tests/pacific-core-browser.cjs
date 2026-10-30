@@ -1,6 +1,6 @@
 /* The computed flight core for the four Pacific types inside the shipped torpedo-carrier.html: real deck
  * launch with the mission load (ship at launch wind, take-off flap, bow exit and climb-out), full-stick
- * turn, AERO loop (Zero/SBD), stall with recovery, idle deceleration and 20/60/120 FPS.
+ * turn, AERO loop (all four types since Build 228), stall with recovery, idle deceleration and 20/60/120 FPS.
  * Writes app/release/flight-core-pacific-browser.json on success. */
 'use strict';
 const fs=require('node:fs'),path=require('node:path'),http=require('node:http'),assert=require('node:assert/strict');
@@ -57,7 +57,7 @@ const KINDS={avenger:m=>!m.sbd&&!m.corsair&&!m.defend&&!m.free&&!m.qual&&m.torps
      for(const f of [.45,.7]){setup(f*vmax,1500);inputRoll=1;let travelled=0,last=P.heading,time=null;
       for(let i=0;i<60*90;i++){updateFlight(1/60);travelled+=Math.abs(unwrap(P.heading,last));last=P.heading;if(travelled>=2*Math.PI){time=(i+1)/60;break;}}
       res.turn[f]={startKmh:Math.round(f*vmax*3.6),seconds:time&&r1(time),endKmh:Math.round(P.spd*3.6),altChange:Math.round(P.pos.y-1500),bankDeg:Math.round(P.roll*57.3),alive:P.alive};}
-     if(kind==='zero'||kind==='sbd'){const gate=FlightControl.aeroGate(kind,Core.gain);setup(gate*1.1,2000);aeroMode=true;inputPitch=1;let turned=0,prev=P.pitch,minV=P.spd,time=null;
+     /* Build 228: REALISTIC for all four types (Avenger and Corsair too) */{const gate=FlightControl.aeroGate(kind,Core.gain);setup(gate*1.1,2000);aeroMode=true;inputPitch=1;let turned=0,prev=P.pitch,minV=P.spd,time=null;
       for(let i=0;i<60*40;i++){updateFlight(1/60);turned+=Math.abs(unwrap(P.pitch,prev));prev=P.pitch;minV=Math.min(minV,P.spd);if(turned>=2*Math.PI){time=(i+1)/60;break;}}
       res.loop={entryKmh:Math.round(gate*1.1*3.6),seconds:time&&r1(time),minKmh:Math.round(minV*3.6),altChange:Math.round(P.pos.y-2000),alive:P.alive};aeroMode=false;}
      const vs=FlightCore.stallSpeed(m,2000,FlightCore.loadout(m,{fuel:50}).ratio);setup(1.25*vs,2000,0);inputPitch=.6;let peak=0,bankMax=0,onset=null;

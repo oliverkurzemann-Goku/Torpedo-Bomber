@@ -80,7 +80,9 @@ const server=http.createServer((req,res)=>{
   console.log('Live Me262 takeoff, ten seconds held back-stick:',jet);
   // Build 193 raises low-speed climb enough to clear the actual runway-end trees.
   // Keep the same bounded pitch/VSI contract as the other native jet fixtures.
-  assert(jet.alive&&jet.rotation>12&&jet.rotation<35&&jet.lowSpeedPitchDegrees<20&&jet.lowSpeedVS<19&&jet.maxAccel<8&&jet.height>50,'actual Me262 full-stick takeoff clears obstacles with bounded low-speed climb/continuous thrust');
+  // Build 228: the arcade law climbs out of every take-off steeper (no departure envelope, more thrust at the slow end):
+  // the Me 262 holds ~20 deg / 22 m/s in these ten seconds (was 10 / 12) - still far from the 60 deg full-stick climb of Build 181.
+  assert(jet.alive&&jet.rotation>12&&jet.rotation<35&&jet.lowSpeedPitchDegrees<27&&jet.lowSpeedVS<27&&jet.maxAccel<8&&jet.height>50,'actual Me262 full-stick takeoff clears obstacles with bounded low-speed climb/continuous thrust');
   for(const ac of ['p47','me262']){
     const proof=await page.evaluate(async ac=>{
       await ensureModel(ac);startMission(MISSIONS.findIndex(m=>m.ac===ac&&!m.free&&!m.circuits));finishLaunchIntro(false);P.throttle=1;inputPitch=inputRoll=0;

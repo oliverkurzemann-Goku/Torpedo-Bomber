@@ -1,4 +1,4 @@
-# Berechneter Flugkern — alle Flugzeuge (Build 223, Pilotenverhalten Build 224, Normalgesetz Build 225, Arcade Build 227)
+# Berechneter Flugkern — alle Flugzeuge (Build 223, Pilotenverhalten Build 224, Normalgesetz Build 225, Arcade Build 227/228)
 
 Stand 29.10.2026. Seit Build 223 (auf dem Arbeitszweig „Build 220“ genannt; main hatte 220–222 schon für
 Zero-Haube, Avenger-Bombenschacht, Hangar und Custom-Mission-Vorschau vergeben) fliegen **alle zehn spielbaren Typen** (Rhein: P-47, Bf 109, Fw 190,
@@ -228,6 +228,20 @@ Alles Spielentscheidungen (Kennung C) in `FlightCore.GAME.arcade`; sie wirken **
 * **Steuerwirkung** fällt nahe der Abrissfahrt nicht mehr unter `controlFloor` (.8) ab (REALISTIC behält den echten Abfall).
 
 Zahlen und Messverfahren: `CLAUDE.md`, Build 227. Test: `okinawa/tests/pitch-response.cjs` (Build-226-Abschnitt, schreibt `test-visuals/build227-arcade.json`).
+
+## Build 228: Arcade-Steigflug nach dem Start, REALISTIC ab dem Start (alle vier Pazifik-Typen)
+
+Wieder nur Normalgesetz (`FlightControl.player`, Kennung C, `FlightCore.GAME.arcade`); REALISTIC, KI und `?arcade=off` fliegen wie zuvor.
+
+* **Keine `departure`-Hülle im Arcade.** Sie begrenzte die Nasenhöhe nach dem Abheben auf `asin(Rate/Fahrt)` (~10°) und öffnete erst mit Fahrt bis `climbSpeed`; der Fahrtschutz aus Build 227 hält den Steigflug ohnehin vom Abriss fern.
+  `climbMin` (.2 rad, damit der Landeabfang geht) blendet unter 1,1 × Abrissfahrt aus (`clamp((V/Vs − .92)/.18, 0, 1)`).
+* **Mehr Schub am langsamen Ende.** Bei der Abrissfahrt wird die Verstärkung des Schubüberschusses um `powerSlow` (.8) angehoben, der Deckel um `powerSlowCap` (1,4 m/s²), bis `slowTo` (1,7) × Abrissfahrt auf 0 abfallend:
+  `Verstärkung = power + powerSlow·f`, `f = clamp((slowTo − V/Vs)/(slowTo − 1), 0, 1)`. Höchstgeschwindigkeit (Überschuss 0) und schnelle Manöver bleiben unverändert.
+  In `FlightCore.step` als Optionen `surplusSlow`, `surplusSlowCap`, `surplusSlowTo`, `surplusRef` (Abrissfahrt des Spielers).
+* **REALISTIC-Knopf:** keine Sperre mehr (Höhe, Fahrt, Fahrwerk, Boden, Typ); alle vier Pazifik-Typen. Beim Einschalten nennt die Meldung nur das Looping-Tempo.
+
+Messung im echten Spiel (Start auf Piste/Deck, Knüppel voll zurück, Neigung/Steigen 3 s → 30 s nach dem Abheben): `CLAUDE.md`, Build 228. Tests: `okinawa/tests/pitch-response.cjs` (Abschnitt Build 228),
+`okinawa/tests/climb-out-browser.cjs`, `okinawa/tests/flight-envelope-browser.cjs`.
 
 ## Erster Typ: P-47 (Build 219, unverändert gültig)
 

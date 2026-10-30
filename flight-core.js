@@ -230,6 +230,10 @@ const GAME={
   // Thrust surplus (thrust - drag > 0) is multiplied by 1 + power, but never raised by more than powerCap m/s^2:
   // faster acceleration and climb everywhere, top speed (surplus 0) unchanged.
   power:.6,powerCap:1.8,
+  // Build 228: more of it at the slow end, where the climb-out and the stall recovery happen. At the stall speed the
+  // gain is raised by powerSlow (cap by powerSlowCap m/s^2), fading out at slowTo x the stall speed - so the top
+  // speed and the fast manoeuvres keep the Build 227 figures.
+  powerSlow:.8,powerSlowCap:1.4,slowTo:1.7,
   // Aileron / elevator effectiveness never drops below this share near the stall (Realistic keeps the real fade).
   controlFloor:.8,
   // Speed protection of the nose-up command: the climb angle the stick may ask for is the one the thrust surplus
@@ -526,7 +530,11 @@ function step(m,s,dt,o){
   const D=drag(m,V,atm.rho,atm.a,s.nLoad,W,{...o,stall:s.stall})+windmillDrag(m,V,atm.rho,s.power);
   const ax=axes(s.pitch,s.heading,s.roll),d=ax.d,u=ax.u;
   // o.surplusGain: arcade stick law only - a thrust surplus is multiplied (capped at o.surplusCap m/s^2 extra).
-  const net=(T-D)/mass,surplus=net>0&&o.surplusGain?Math.min(net*o.surplusGain,o.surplusCap??Infinity):0;
+  // o.surplusSlow / surplusSlowCap / surplusSlowTo / surplusRef: on top of that, up to this much more gain and cap
+  // at the stall speed o.surplusRef, fading out at surplusSlowTo x that speed (the climb-out and the slow end).
+  const fade=o.surplusRef?clamp((o.surplusSlowTo-V/o.surplusRef)/(o.surplusSlowTo-1),0,1):0;
+  const sg=(o.surplusGain||0)+(o.surplusSlow||0)*fade,sc=(o.surplusCap??Infinity)+(o.surplusSlowCap||0)*fade;
+  const net=(T-D)/mass,surplus=net>0&&sg?Math.min(net*sg,sc):0;
   const accel=net+surplus-G*d[1]-(o.extraDrag||0);
   s.spd=Math.max(2,s.spd+accel*h);
   // flight path: lift along the aircraft's up axis plus gravity across the path

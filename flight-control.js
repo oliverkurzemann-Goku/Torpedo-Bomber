@@ -45,7 +45,11 @@ function arcadeTurnGain(st,A){
  return clamp(Math.pow(Math.sqrt(nz*nz-1)/Math.sqrt(nx*nx-1),A.turnPull),1,A.turnGainMax);
 }
 // Thrust surplus after the arcade multiplication (m/s^2): mirrors what FlightCore.step adds.
-const arcadeSurplus=(a,A)=>a>0?a+Math.min(a*A.power,A.powerCap):a;
+const arcadeSurplus=(a,A,ratio)=>{
+ if(!(a>0))return a;
+ const f=clamp((A.slowTo-ratio)/(A.slowTo-1),0,1);
+ return a+Math.min(a*(A.power+A.powerSlow*f),A.powerCap+A.powerSlowCap*f);
+};
 
 // Everything the player law needs about the aircraft as loaded right now.
 function state(P,env){
@@ -116,20 +120,25 @@ function player(P,dt,env){
   // nose-up limit also leaves power for accelerating (from the computed forces, every type alike).
   const scale=env.pitchScale??d.pitchLim*.92,departure=env.departure||{release:1,rate:Infinity};
   let noseUp=scale;
-  if(departure.release<1){
+  // Arcade (Build 228): no departure envelope. It held every type to ~6-10 deg for the first half minute after
+  // take-off; the speed protection below already keeps the climb off the stall, so the stick may ask for what
+  // the thrust (and the speed in hand) can carry. REALISTIC and ?arcade=off keep the envelope.
+  if(departure.release<1&&!arcade){
    const initial=Math.asin(Math.min(.6,departure.rate/Math.max(1,P.spd)));
    noseUp=Math.min(noseUp,initial+(noseUp-initial)*departure.release);
    const level=F.levelAcceleration(m,P.spd,P.pos.y,{...o,power:o.throttle});
-   const sustainable=Math.asin(Math.max(.10,Math.min(.35,((arcade?arcadeSurplus(level,A):level)-.8)/F.G)));
+   const sustainable=Math.asin(Math.max(.10,Math.min(.35,((arcade?arcadeSurplus(level,A,P.spd/Math.max(1,st.stall)):level)-.8)/F.G)));
    noseUp=Math.min(noseUp,sustainable+(noseUp-sustainable)*departure.release);
   }
   if(arcade){
    // Speed protection: the nose-up angle the stick may ask for is what the thrust surplus sustains plus the speed
    // above climbFloor x stall converted to height over climbHorizon seconds. Held fully back, the aircraft settles
    // into the steepest climb it can keep instead of stalling, dropping the nose and pulling up again.
-   const surplus=arcadeSurplus(F.levelAcceleration(m,P.spd,P.pos.y,{...o,power:o.throttle}),A);
+   const surplus=arcadeSurplus(F.levelAcceleration(m,P.spd,P.pos.y,{...o,power:o.throttle}),A,P.spd/Math.max(1,st.stall));
    const share=clamp(surplus/F.G+(P.spd-A.climbFloor*st.stall)/(F.G*A.climbHorizon),0,1);
-   noseUp=Math.min(noseUp,Math.max(A.climbMin,Math.asin(share)));
+   // climbMin is the flare's minimum; it fades out below the stall speed so a slow aircraft can lower the nose.
+   const floor=A.climbMin*clamp((P.spd/Math.max(1,st.stall)-.92)/.18,0,1);
+   noseUp=Math.min(noseUp,Math.max(floor,Math.asin(share)));
   }
   const cmd=shaped(stickPitch),target=cmd>0?Math.min(cmd*scale,noseUp):cmd*scale;
   if(!Number.isFinite(P.pitchRef)||P.corePitch!==P.pitch){P.pitchRef=P.pitch;P.pitchRefVel=0;}
@@ -164,7 +173,8 @@ function player(P,dt,env){
  const pitch0=P.pitch,y0=P.pos.y;
  // Elevator damage already slows the Normal attitude law (pitchRate); in AERO it caps the pull.
  const out=F.step(m,s,dt,{...o,elevator:env.aero?o.elevator:1,command,gain,
-  surplusGain:arcade?A.power:0,surplusCap:A.powerCap});
+  surplusGain:arcade?A.power:0,surplusCap:A.powerCap,
+  surplusSlow:arcade?A.powerSlow:0,surplusSlowCap:A.powerSlowCap,surplusSlowTo:A.slowTo,surplusRef:arcade?st.stall:0});
  P.spd=s.spd;P.heading=P.heading+(conv==='pacific'?-(s.heading-h0):(s.heading-h0));P.roll=s.roll;P.nLoad=s.nLoad;P.groundPower=s.power;
  P.pitch=s.pitch;P.pitchVel=dt>0?wrap(P.pitch-pitch0)/dt:0;P.corePitch=P.pitch;
  P.coreStall=s.stall;P.coreDrop=s.dropDir;P.core=out;P.coreMass=st.lo.mass;

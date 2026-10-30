@@ -1,0 +1,677 @@
+{
+ "pac-avenger-arcade": {
+  "kind": "avenger",
+  "mode": "arcade",
+  "core": true,
+  "state0": 2,
+  "liftoffS": 13.8,
+  "alive": true,
+  "death": null,
+  "peakStall": 0,
+  "minRatio": 1.1,
+  "row": {
+   "3": {
+    "pitch": 11.6,
+    "climb": 9,
+    "kt": 88,
+    "agl": 42
+   },
+   "10": {
+    "pitch": 16,
+    "climb": 13.6,
+    "kt": 96,
+    "agl": 123
+   },
+   "20": {
+    "pitch": 17.6,
+    "climb": 15.6,
+    "kt": 101,
+    "agl": 272
+   },
+   "30": {
+    "pitch": 17.7,
+    "climb": 15.9,
+    "kt": 102,
+    "agl": 431
+   }
+  },
+  "aeroEnd": false
+ },
+ "pac-avenger-real": {
+  "kind": "avenger",
+  "mode": "real",
+  "core": true,
+  "state0": 2,
+  "btnVisible": true,
+  "aero": true,
+  "btn": "REALISTICON",
+  "liftoffS": 13.8,
+  "alive": false,
+  "death": "SPLASH: You flew into the sea.",
+  "peakStall": 1,
+  "minRatio": 0.9,
+  "row": {
+   "3": {
+    "pitch": 11.5,
+    "climb": 8.3,
+    "kt": 80,
+    "agl": 39
+   },
+   "10": {
+    "pitch": -16.6,
+    "climb": -14.1,
+    "kt": 96,
+    "agl": 40
+   }
+  },
+  "aeroEnd": true
+ },
+ "pac-sbd-arcade": {
+  "kind": "sbd",
+  "mode": "arcade",
+  "core": true,
+  "state0": 2,
+  "liftoffS": 13.4,
+  "alive": true,
+  "death": null,
+  "peakStall": 0,
+  "minRatio": 1.1,
+  "row": {
+   "3": {
+    "pitch": 11.5,
+    "climb": 8.3,
+    "kt": 81,
+    "agl": 42
+   },
+   "10": {
+    "pitch": 12.8,
+    "climb": 10.3,
+    "kt": 90,
+    "agl": 103
+   },
+   "20": {
+    "pitch": 15.1,
+    "climb": 12.8,
+    "kt": 95,
+    "agl": 221
+   },
+   "30": {
+    "pitch": 15.4,
+    "climb": 13.1,
+    "kt": 96,
+    "agl": 351
+   }
+  },
+  "aeroEnd": false
+ },
+ "pac-sbd-real": {
+  "kind": "sbd",
+  "mode": "real",
+  "core": true,
+  "state0": 2,
+  "btnVisible": true,
+  "aero": true,
+  "btn": "REALISTICON",
+  "liftoffS": 13.4,
+  "alive": false,
+  "death": "SPLASH: You flew into the sea.",
+  "peakStall": 0.7,
+  "minRatio": 1,
+  "row": {
+   "3": {
+    "pitch": 12,
+    "climb": 7.9,
+    "kt": 74,
+    "agl": 40
+   },
+   "10": {
+    "pitch": -5.5,
+    "climb": -4.2,
+    "kt": 85,
+    "agl": 46
+   }
+  },
+  "aeroEnd": true
+ },
+ "pac-corsair-arcade": {
+  "kind": "corsair",
+  "mode": "arcade",
+  "core": true,
+  "state0": 2,
+  "liftoffS": 11.9,
+  "alive": true,
+  "death": null,
+  "peakStall": 0,
+  "minRatio": 1.1,
+  "row": {
+   "3": {
+    "pitch": 22.5,
+    "climb": 20.3,
+    "kt": 103,
+    "agl": 64
+   },
+   "10": {
+    "pitch": 26.1,
+    "climb": 25.6,
+    "kt": 113,
+    "agl": 228
+   },
+   "20": {
+    "pitch": 26.8,
+    "climb": 27.1,
+    "kt": 117,
+    "agl": 494
+   },
+   "30": {
+    "pitch": 26.6,
+    "climb": 27.3,
+    "kt": 118,
+    "agl": 766
+   }
+  },
+  "aeroEnd": false
+ },
+ "pac-corsair-real": {
+  "kind": "corsair",
+  "mode": "real",
+  "core": true,
+  "state0": 2,
+  "btnVisible": true,
+  "aero": true,
+  "btn": "REALISTICON",
+  "liftoffS": 11.9,
+  "alive": true,
+  "death": null,
+  "peakStall": 0,
+  "minRatio": 1.2,
+  "row": {
+   "3": {
+    "pitch": 7.4,
+    "climb": 6.8,
+    "kt": 103,
+    "agl": 31
+   },
+   "10": {
+    "pitch": 7.4,
+    "climb": 7.4,
+    "kt": 112,
+    "agl": 80
+   },
+   "20": {
+    "pitch": 7.4,
+    "climb": 8.3,
+    "kt": 126,
+    "agl": 159
+   },
+   "30": {
+    "pitch": 7.4,
+    "climb": 9.1,
+    "kt": 137,
+    "agl": 247
+   }
+  },
+  "aeroEnd": true
+ },
+ "pac-zero-arcade": {
+  "kind": "zero",
+  "mode": "arcade",
+  "core": true,
+  "state0": 2,
+  "liftoffS": 6.4,
+  "alive": true,
+  "death": null,
+  "peakStall": 0,
+  "minRatio": 1.2,
+  "row": {
+   "3": {
+    "pitch": 37.9,
+    "climb": 24.9,
+    "kt": 79,
+    "agl": 76
+   },
+   "10": {
+    "pitch": 39,
+    "climb": 26.9,
+    "kt": 83,
+    "agl": 257
+   },
+   "20": {
+    "pitch": 39.5,
+    "climb": 27.7,
+    "kt": 85,
+    "agl": 532
+   },
+   "30": {
+    "pitch": 39.5,
+    "climb": 28,
+    "kt": 86,
+    "agl": 810
+   }
+  },
+  "aeroEnd": false
+ },
+ "pac-zero-real": {
+  "kind": "zero",
+  "mode": "real",
+  "core": true,
+  "state0": 2,
+  "btnVisible": true,
+  "aero": true,
+  "btn": "REALISTICON",
+  "liftoffS": 6.4,
+  "alive": true,
+  "death": null,
+  "peakStall": 0,
+  "minRatio": 1.1,
+  "row": {
+   "3": {
+    "pitch": 20.1,
+    "climb": 13.7,
+    "kt": 77,
+    "agl": 45
+   },
+   "10": {
+    "pitch": 20.1,
+    "climb": 13.9,
+    "kt": 78,
+    "agl": 141
+   },
+   "20": {
+    "pitch": 20.1,
+    "climb": 14.3,
+    "kt": 80,
+    "agl": 282
+   },
+   "30": {
+    "pitch": 20.1,
+    "climb": 14.6,
+    "kt": 82,
+    "agl": 426
+   }
+  },
+  "aeroEnd": true
+ },
+ "rhine-p47-arcade": {
+  "kind": "p47",
+  "mode": "arcade",
+  "core": true,
+  "state0": 3,
+  "liftoffS": 19.4,
+  "alive": true,
+  "death": null,
+  "peakStall": 0,
+  "minRatio": 1.1,
+  "row": {
+   "3": {
+    "pitch": 16.2,
+    "climb": 17,
+    "kt": 118,
+    "agl": 42
+   },
+   "10": {
+    "pitch": 19.6,
+    "climb": 22.5,
+    "kt": 130,
+    "agl": 201
+   },
+   "20": {
+    "pitch": 21.1,
+    "climb": 25.1,
+    "kt": 136,
+    "agl": 471
+   },
+   "30": {
+    "pitch": 20.8,
+    "climb": 25.2,
+    "kt": 138,
+    "agl": 728
+   }
+  },
+  "aeroEnd": false
+ },
+ "rhine-p47-real": {
+  "kind": "p47",
+  "mode": "real",
+  "core": true,
+  "state0": 3,
+  "btnVisible": true,
+  "aero": true,
+  "btn": "REALISTICON",
+  "liftoffS": 19.4,
+  "alive": true,
+  "death": null,
+  "peakStall": 0,
+  "minRatio": 1,
+  "row": {
+   "3": {
+    "pitch": 9.7,
+    "climb": 9.8,
+    "kt": 113,
+    "agl": 24
+   },
+   "10": {
+    "pitch": 9.7,
+    "climb": 9.9,
+    "kt": 114,
+    "agl": 111
+   },
+   "20": {
+    "pitch": 9.7,
+    "climb": 10.2,
+    "kt": 118,
+    "agl": 230
+   },
+   "30": {
+    "pitch": 9.7,
+    "climb": 10.4,
+    "kt": 120,
+    "agl": 363
+   }
+  },
+  "aeroEnd": true
+ },
+ "rhine-bf109-arcade": {
+  "kind": "bf109",
+  "mode": "arcade",
+  "core": true,
+  "state0": 3,
+  "liftoffS": 16.7,
+  "alive": true,
+  "death": null,
+  "peakStall": 0,
+  "minRatio": 1.2,
+  "row": {
+   "3": {
+    "pitch": 21.1,
+    "climb": 20.5,
+    "kt": 111,
+    "agl": 50
+   },
+   "10": {
+    "pitch": 26.9,
+    "climb": 27.1,
+    "kt": 116,
+    "agl": 227
+   },
+   "20": {
+    "pitch": 27,
+    "climb": 27.8,
+    "kt": 119,
+    "agl": 533
+   },
+   "30": {
+    "pitch": 26.6,
+    "climb": 27.8,
+    "kt": 121,
+    "agl": 814
+   }
+  },
+  "aeroEnd": false
+ },
+ "rhine-bf109-real": {
+  "kind": "bf109",
+  "mode": "real",
+  "core": true,
+  "state0": 3,
+  "btnVisible": true,
+  "aero": true,
+  "btn": "REALISTICON",
+  "liftoffS": 16.7,
+  "alive": true,
+  "death": null,
+  "peakStall": 0,
+  "minRatio": 1.1,
+  "row": {
+   "3": {
+    "pitch": 11,
+    "climb": 10.6,
+    "kt": 107,
+    "agl": 25
+   },
+   "10": {
+    "pitch": 11,
+    "climb": 10.7,
+    "kt": 109,
+    "agl": 99
+   },
+   "20": {
+    "pitch": 11,
+    "climb": 11.2,
+    "kt": 114,
+    "agl": 231
+   },
+   "30": {
+    "pitch": 11,
+    "climb": 11.6,
+    "kt": 117,
+    "agl": 362
+   }
+  },
+  "aeroEnd": true
+ },
+ "rhine-fw190-arcade": {
+  "kind": "fw190",
+  "mode": "arcade",
+  "core": true,
+  "state0": 3,
+  "liftoffS": 20.6,
+  "alive": true,
+  "death": null,
+  "peakStall": 0,
+  "minRatio": 1.1,
+  "row": {
+   "3": {
+    "pitch": 15.4,
+    "climb": 16.9,
+    "kt": 124,
+    "agl": 41
+   },
+   "10": {
+    "pitch": 21.1,
+    "climb": 24.3,
+    "kt": 132,
+    "agl": 201
+   },
+   "20": {
+    "pitch": 21.8,
+    "climb": 25.8,
+    "kt": 135,
+    "agl": 483
+   },
+   "30": {
+    "pitch": 21.5,
+    "climb": 25.9,
+    "kt": 137,
+    "agl": 730
+   }
+  },
+  "aeroEnd": false
+ },
+ "rhine-fw190-real": {
+  "kind": "fw190",
+  "mode": "real",
+  "core": true,
+  "state0": 3,
+  "btnVisible": true,
+  "aero": true,
+  "btn": "REALISTICON",
+  "liftoffS": 20.6,
+  "alive": true,
+  "death": null,
+  "peakStall": 0,
+  "minRatio": 1.1,
+  "row": {
+   "3": {
+    "pitch": 9.6,
+    "climb": 10.1,
+    "kt": 118,
+    "agl": 25
+   },
+   "10": {
+    "pitch": 9.6,
+    "climb": 10.1,
+    "kt": 119,
+    "agl": 104
+   },
+   "20": {
+    "pitch": 9.6,
+    "climb": 10.4,
+    "kt": 122,
+    "agl": 237
+   },
+   "30": {
+    "pitch": 9.6,
+    "climb": 10.7,
+    "kt": 125,
+    "agl": 334
+   }
+  },
+  "aeroEnd": true
+ },
+ "rhine-ju87-arcade": {
+  "kind": "ju87",
+  "mode": "arcade",
+  "core": true,
+  "state0": 3,
+  "liftoffS": 18.2,
+  "alive": true,
+  "death": null,
+  "peakStall": 0,
+  "minRatio": 1.1,
+  "row": {
+   "3": {
+    "pitch": 12,
+    "climb": 8.9,
+    "kt": 83,
+    "agl": 25
+   },
+   "10": {
+    "pitch": 13.2,
+    "climb": 10.4,
+    "kt": 88,
+    "agl": 91
+   },
+   "20": {
+    "pitch": 15,
+    "climb": 12.4,
+    "kt": 93,
+    "agl": 226
+   },
+   "30": {
+    "pitch": 15.1,
+    "climb": 12.7,
+    "kt": 94,
+    "agl": 373
+   }
+  },
+  "aeroEnd": false
+ },
+ "rhine-ju87-real": {
+  "kind": "ju87",
+  "mode": "real",
+  "core": true,
+  "state0": 3,
+  "btnVisible": true,
+  "aero": true,
+  "btn": "REALISTICON",
+  "liftoffS": 18.2,
+  "alive": false,
+  "death": "CRASHED: Hit the ground away from the strip.",
+  "peakStall": 1,
+  "minRatio": 0.9,
+  "row": {
+   "3": {
+    "pitch": 11.8,
+    "climb": 8.1,
+    "kt": 77,
+    "agl": 21
+   },
+   "10": {
+    "pitch": -14.1,
+    "climb": -9.3,
+    "kt": 74,
+    "agl": 55
+   }
+  },
+  "aeroEnd": true
+ },
+ "rhine-me262-arcade": {
+  "kind": "me262",
+  "mode": "arcade",
+  "core": true,
+  "state0": 3,
+  "liftoffS": 24.7,
+  "alive": true,
+  "death": null,
+  "peakStall": 0,
+  "minRatio": 1.1,
+  "row": {
+   "3": {
+    "pitch": 20.2,
+    "climb": 21.9,
+    "kt": 123,
+    "agl": 50
+   },
+   "10": {
+    "pitch": 24.8,
+    "climb": 28.8,
+    "kt": 134,
+    "agl": 232
+   },
+   "20": {
+    "pitch": 26.1,
+    "climb": 31.3,
+    "kt": 139,
+    "agl": 568
+   },
+   "30": {
+    "pitch": 25.6,
+    "climb": 31.3,
+    "kt": 141,
+    "agl": 877
+   }
+  },
+  "aeroEnd": false
+ },
+ "rhine-me262-real": {
+  "kind": "me262",
+  "mode": "real",
+  "core": true,
+  "state0": 3,
+  "btnVisible": true,
+  "aero": true,
+  "btn": "REALISTICON",
+  "liftoffS": 24.7,
+  "alive": true,
+  "death": null,
+  "peakStall": 0,
+  "minRatio": 1.1,
+  "row": {
+   "3": {
+    "pitch": 10,
+    "climb": 10.7,
+    "kt": 120,
+    "agl": 25
+   },
+   "10": {
+    "pitch": 10,
+    "climb": 10.9,
+    "kt": 121,
+    "agl": 104
+   },
+   "20": {
+    "pitch": 10,
+    "climb": 11.3,
+    "kt": 127,
+    "agl": 245
+   },
+   "30": {
+    "pitch": 10,
+    "climb": 11.8,
+    "kt": 132,
+    "agl": 358
+   }
+  },
+  "aeroEnd": true
+ }
+}

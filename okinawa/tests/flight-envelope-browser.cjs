@@ -83,12 +83,19 @@ const server=http.createServer((req,res)=>{
      out.loop={};
      for(const fps of [20,60,120])out.loop[fps]=loopFrom(Math.ceil(gate)+1,fps);
      out.loopFast=loopFrom(Math.round(vmax*.8),60);
-     // the toggle itself refuses to start below the gate and accepts the gate speed
+     // Build 228: the toggle has no gate any more - below the loop speed, with the gear down, on the strip or the deck and
+     // in the deck-launch state it switches REALISTIC on (it only says what a loop needs); every type has it, Avenger and
+     // Corsair included. Switching it off again works from level flight.
      state=ST.FLIGHT;
-     if(!pacific||kind==='zero'||kind==='sbd'){
-      setup(Math.floor(gate)-3);P.pos.y=2400;aeroMode=false;toggleAero();out.slowToggle=aeroMode;
+     {setup(Math.floor(gate)-3);P.pos.y=2400;aeroMode=false;toggleAero();out.slowToggle=aeroMode;toggleAero();out.offAgain=!aeroMode;
       setup(Math.ceil(gate)+2);P.pos.y=2400;aeroMode=false;toggleAero();out.gateToggle=aeroMode;aeroMode=false;
-     }
+      // gear down, low, slow
+      setup(Math.floor(gate)-3);P.gear=1;P.gearTgt=1;P.pos.y=(pacific?40:groundY(P.pos.x,P.pos.z)+40);aeroMode=false;toggleAero();out.lowToggle=aeroMode;aeroMode=false;
+      // standing: on the strip (Rhine) / in the deck-launch state (Pacific)
+      aeroMode=false;P.spd=0;
+      if(pacific){state=ST.LAUNCH;toggleAero();out.groundToggle=aeroMode;state=ST.FLIGHT;}
+      else{P.onGround=true;toggleAero();out.groundToggle=aeroMode;P.onGround=false;}
+      aeroMode=false;out.btn=document.getElementById('aeroBtn').textContent;}
      return out;
     },{kind,pacific});
     console.log(kind,JSON.stringify(all[kind]));
@@ -113,7 +120,9 @@ const server=http.createServer((req,res)=>{
     assert(l.maxStep<4,`${kind} camera does not jump relative to the aircraft at ${fps} FPS: ${l.maxStep.toFixed(2)} m`);
    }
    assert(r.loopFast.t!==null&&r.loopFast.front===0,`${kind} loop at 80% of top speed`);
-   if(r.slowToggle!==undefined){assert.equal(r.slowToggle,false,`${kind} AERO refuses below the gate`);assert.equal(r.gateToggle,true,`${kind} AERO accepted at the gate`);}
+   assert.equal(r.slowToggle,true,`${kind} REALISTIC can be switched on below the loop speed`);assert.equal(r.offAgain,true,`${kind} and off again`);
+   assert.equal(r.gateToggle,true,`${kind} REALISTIC accepted at the gate`);assert.equal(r.lowToggle,true,`${kind} REALISTIC with the gear down, low and slow`);
+   assert.equal(r.groundToggle,true,`${kind} REALISTIC can be chosen before the take-off (on the strip / deck)`);
    const times=Object.values(r.loop).map(l=>l.t);assert(Math.max(...times)-Math.min(...times)<1.2,`${kind} loop time consistent across frame rates: ${times}`);
   }
   // fleet grading in the real game

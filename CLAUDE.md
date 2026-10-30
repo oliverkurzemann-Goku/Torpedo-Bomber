@@ -1,5 +1,40 @@
 # Torpedo-Bomber — Übergabe an Claude Code
 
+**30.10.2026, Build 228: Arcade-Steigflug nach dem Start, REALISTIC schon am Boden/Deck wählbar, REALISTIC auch für Avenger und Corsair.**
+Nutzer (nach dem Test von Build 227): „Steigen nach dem Start im Arcade-Modus … viel zu langsam. Auch die Carrier-Flieger steigen kaum, Pitch ist auf ca. 10 Grad limitiert. Das passt für den
+realistischen Modus, aber nicht für Arcade." Dazu: REALISTIC solle man „schon vor dem Start oder beim Start auswählen können, nicht erst ab gewisser Höhe oder Speed", und „warum hat die Avenger keinen
+Realistic Mode? Bitte einbauen." Zuerst gemessen (`lab228.cjs` im Arbeitsordner, nicht im Repo: echter Start auf Piste und Trägerdeck in beiden Spielen, Knüppel ab dem Abheben voll zurück,
+Fahrwerk bei 40 m, Klappen bei 60 m eingefahren; Arcade gegen REALISTIC). Ursachen:
+- **Die `departure`-Hülle** (`SortieFeatures.Handling.departure`) begrenzt die Nasenhöhe nach dem Start auf `asin(Rate/Fahrt)` (Rate 8–17 m/s ⇒ ~10°) und öffnet erst mit Fahrt bis `climbSpeed` (Avenger 90 m/s, P-47 92 …),
+  dazu kam der Boden `.10` (5,74°) in `sustainable`. Gemessen mit Build 227, 3 s → 30 s nach dem Abheben: Avenger 5,7° → 8,2° (4,5 → 8,3 m/s), SBD 5,7 → 7,3°, Ju 87 5,8 → 7,9°, P-47 8,7 → 12,6° (9,3 → 15,3 m/s),
+  Fw 190 8,4 → 10,8°, Bf 109 11,3 → 12,6°, Me 262 10,5 → 13°, Corsair 12,3°, Zero 17 → 19°.
+- **Schub:** ohne diese Grenzen hielt die Last der Typen den Steigflug am Klappen-/Fahrwerkswiderstand bei 8–11 m/s (Avenger/SBD/Ju 87), der Schubüberschuss ×1,6 trug nicht mehr (Messung `climbcap.cjs`: Avenger sauber ~16 m/s möglich).
+- **REALISTIC-Sperre:** `toggleAero()` verlangte Höhe (>280 m Rhein / >300 m Pazifik), Fahrt über dem Looping-Tor, Fahrwerk oben, Rhein „nicht am Boden", Pazifik nur `ST.FLIGHT` und nur Zero oder Dauntless.
+  Avenger/Corsair waren nur durch diese Typprüfung ausgeschlossen: Datenblatt, Kern, `AERO`-Gesetz und Grenzen (`PAC_LIMITS`) gab es für beide längst, `FlightControl.aeroGate` und der Looping-Test laufen für alle vier.
+Umgesetzt (alles Arcade/Normalgesetz in `FlightControl.player`; REALISTIC, KI und `?arcade=off` = Build-225-Gesetz unverändert):
+1. **Keine Startfreigabe im Arcade.** Die `departure`-Hülle gilt nur noch für REALISTIC/`?arcade=off` (dort wirkt sie ohnehin nicht im AERO-Gesetz). Der Fahrtschutz (Build 227) hält den Steigflug vom Abriss fern;
+   `climbMin` (.2 rad, Landeabfang) blendet unter der Abrissfahrt aus (`clamp((V/Vs − .92)/.18)`), damit ein langsamer Typ die Nase senken kann (SBD kippte beim Klappen-Einfahren dicht über der Abrissfahrt).
+2. **Mehr Schub am langsamen Ende.** `GAME.arcade.powerSlow` .8 / `powerSlowCap` 1,4 m/s² / `slowTo` 1,7: bei der Abrissfahrt steigt die Überschuss-Verstärkung um .8 (Deckel um 1,4), bis 1,7 × Vs auf 0 abfallend
+   (`FlightCore.step`-Optionen `surplusSlow`/`surplusSlowCap`/`surplusSlowTo`/`surplusRef`). Höchstgeschwindigkeit und schnelle Manöver bleiben auf den Build-227-Werten (Test: Höchstfahrt < 1,2 %).
+   Beschleunigung 1,3 × Vs (m/s², REALISTIC → Arcade; Build 227 in Klammern): P-47 2,4 → 4,3 (3,4), Fw 190 2,0 → 3,6 (2,9), Bf 109 2,6 → 4,4 (3,7), Ju 87 1,4 → 2,6, Me 262 2,1 → 4,0 (3,2), Avenger 1,8 → 3,1 (2,5), SBD 1,5 → 2,7 (2,1), Corsair 2,5 → 4,4 (3,7), Zero 3,1 → 4,9 (4,4).
+3. **REALISTIC jederzeit nach dem Missionsstart wählbar** (`toggleAero`, beide Spiele): nach der Kamerafahrt (während der Fahrt sind alle Knöpfe ausgeblendet), auf Piste und Deck vor dem ersten Gas (Pazifik zusätzlich in `ST.LAUNCH` und `ST.SERVICE`),
+   in der Luft ohne Höhen-, Fahrt- oder Fahrwerkssperre. Nur die Information bleibt: „REALISTIC FLIGHT — STICK = LOAD · SMOOTH PULL · LOOP NEEDS n KT/MPH" (Pazifik nur in der Luft). Zurückschalten wie bisher nur ohne extreme Lage.
+4. **Avenger und Corsair haben REALISTIC** (alle vier Pazifik-Typen). Grenzen aus `PAC_LIMITS` statt zweier festcodierter Zahlen; Tooltip „Realistic flight: the stick is a load factor …" (Pazifik und Rhein).
+Gemessen im echten Spiel (Playwright, `okinawa/tests/climb-out-browser.cjs` schreibt `app/release/climb-out-browser.json`; Knüppel voll zurück ab dem Abheben, Neigung/Steigen 3 s → 30 s, Build 227 in Klammern):
+Avenger 11,6° / 9 → 17,7° / 15,9 m/s (5,7° / 4,5 → 8,2° / 8,3), SBD 11,5° / 8,3 → 15,4° / 13,1 (5,7° / 4,2 → 7,3° / 6,7), Corsair 22,5° / 20 → 26,6° / 27 (12°), Zero 38° / 25 → 40° / 28 (17° / 13 → 19° / 20; Nickgrenze .70 = 40°),
+P-47 16° / 17 → 21° / 25 (9° / 9 → 13° / 15), Fw 190 15° / 17 → 21,5° / 26, Bf 109 21° / 20 → 27° / 28, Ju 87 12° / 9 → 15° / 12,7, Me 262 20° / 22 → 26° / 31. Alle: Stall 0, Fahrt nie unter der Abrissfahrt.
+Das sind mit der Beladung des Einsatzes (Bomben/Torpedo/Zusatztank) gemessene Werte; ohne Last liegen sie höher (Unit-Test ohne Last: P-47 36°).
+REALISTIC am Boden gewählt (Knüppel .4 für 2,5 s nach dem Abheben, dann neutral): Zero, Corsair, P-47, Bf 109, Fw 190, Me 262 steigen stetig auf 7–20° weiter; Avenger, SBD und Ju 87 stallen mit dieser groben Steuerung nach dem Klappen-Einfahren
+dicht über der Abrissfahrt (die Klappen bei 60 m einzufahren ist hier ein Fehler des Piloten, kein Gesetz): REALISTIC bleibt unnachgiebig, das ist gewollt. Die Prüfung verlangt nur: Knopf sichtbar und wirksam, Abheben, Steigen in den ersten 3 s.
+Tests: `pitch-response.cjs` (neuer Abschnitt „Build 228": alle neun Typen, Startsteigflug mit der echten `departure`-Hülle, 20/60/120 FPS, kein Stall, Fahrt über der Abrissfahrt, REALISTIC bitgleich; schreibt `test-visuals/build228-climbout.json`),
+`climb-out-browser.cjs` (neu, echte Starts Piste und Deck, echter Knopf), `flight-envelope-browser.cjs` (Tor-Prüfung ersetzt: Schalter nimmt REALISTIC unter dem Looping-Tempo, mit Fahrwerk unten, am Boden und im Deck-Zustand an, alle zehn Typen),
+`pacific-core-browser.cjs` (Looping aus dem Tor für alle vier Pazifik-Typen). Zwei Schranken des gedrosselten Me-262-Steigflugs angehoben, weil der Arcade-Start jetzt absichtlich steiler ist (`water-ditching-browser`, `komet-jets-browser`: Nick/Steigen
+< 19/20 → < 27; vorher 10°/12 m/s, jetzt ~20°/22 m/s, immer noch weit unter den 60° von Build 181). Browser grün: flight-envelope, fleet-core, p47-core, fleet-flight, handling-quality, field-landing, p47-/me262-/ju87-integration,
+pacific-core, carrier-start, carrier-recovery, carrier-weather-gear, ditch-formation, water-ditching, sbd-native, ship-contact, dogfight, chase-heading, europe-start, feedback, komet-jets, fw190-komet, custom-sortie, climb-out;
+unverändert rot wie auf main: takeoff-briefing-browser (Menü-Layout), combat-sorties-/aircraft-systems-/checkpoint-/browser-smoke nicht neu gelaufen. Unit 97, Terrain 40, Syntax 12 Dateien ohne Fehler.
+**Offen:** kein iPad-Test; `powerSlow` .8 / `powerSlowCap` 1,4 / `slowTo` 1,7 sind Schätzungen (Kennung C) zum Nachstellen in `GAME.arcade`; der Zero steigt jetzt bis an die Nickgrenze (40°) — falls zu steil, `powerSlow` senken oder Pazifik-`pitchScale` (.70) in
+`coreEnv`. REALISTIC wird beim nächsten Einsatz weiter auf ARCADE zurückgesetzt (keine gespeicherte Wahl); vorher kann man es nach der Kamerafahrt vor dem ersten Gas einschalten. Die `departure`-Hülle im REALISTIC-Start ist unverändert.
+
 **30.10.2026, Build 227: Arcade-Modus — Zero als Kurvenreferenz, mehr Schub, Fahrtschutz beim Hochziehen, Drücken in der Kurve.**
 (Build 226 auf main ist die Corsair-GLB-Aktualisierung einer anderen Sitzung — nur Kennungen in Menü, Hangar und Vorschau; dieser Stand heißt deshalb 227.)
 Nutzer (nach dem Test von Build 225): Im Arcade-Modus reagieren die Flugzeuge bei langsamer Fahrt „viel zu langsam", besonders im Carrier-Spiel,
@@ -786,7 +821,7 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 227 · Thunderbolt Squadron BUILD 227 · Remagen-Kern 23 / Fahrzeuge 22**
+Stand bei Übergabe: **Torpedo Squadron BUILD 228 · Thunderbolt Squadron BUILD 228 · Remagen-Kern 23 / Fahrzeuge 22**
 
 **Build 198 (22.10.2026): P-47-Fotolackierung, Einsatzspuren und natives Fahrwerk; Terrain-Fix aus Build 197 erhalten.**
 `assets/aircraft/p47-weathered.glb` ist ein ausdrücklich gekennzeichnetes Derivat des

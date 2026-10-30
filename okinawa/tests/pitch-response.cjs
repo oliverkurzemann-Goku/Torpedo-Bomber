@@ -153,6 +153,51 @@ for(const kind of KINDS){
   const a=sim(kind,vs*1.8,60,true,5,inp,{aero:true}).p,b=sim(kind,vs*1.8,60,false,5,inp,{aero:true}).p;
   for(const k of ['pitch','roll','heading','spd'])assert.equal(a[k],b[k],kind+' REALISTIC unchanged ('+k+')');}
 }
+// ---- Build 228: the arcade climb-out after take-off ----
+// The departure envelope held every type to 6-10 deg for the first half minute, and the Build 227 thrust (surplus x1.6)
+// did not carry a heavy type steeper at the slow end. Arcade now ignores the envelope (the speed protection keeps the
+// climb off the stall) and has more thrust surplus at 1-1.7 x the stall speed (GAME.arcade.powerSlow); REALISTIC and
+// ?arcade=off are untouched. The flight starts at lift-off: gear down, take-off flaps, 1.1 x stall, 15 m, full power,
+// the stick fully back, wheels and flaps up at 60 m (a pilot would), the game's own departure envelope running.
+assert(A226.powerSlow>0&&A226.slowTo>1,'GAME.arcade has the slow-end thrust');
+const rows228=[];
+function climbOut(kind,arcade,secs,o={}){
+ const p=fresh(kind,100),fps=o.fps||60,dt=1/fps;p.gear=1;p.flap=.5;p.pos.y=15;p.throttle=p.groundPower=1;p.pitch=.12;
+ SortieFeatures.Handling.configure(p,kind,'bomb',!defs[kind]?'pacific':'europe');
+ const e0=env(kind,p,1,arcade);p.spd=FlightControl.stallSpeed(p,e0)*1.1;SortieFeatures.Handling.beginDeparture(p);
+ const log=[];let up=false;
+ for(let i=0;i<fps*secs;i++){
+  const e=env(kind,p,o.stick??1,arcade);if(o.aero)e.aero=true;
+  e.departure=SortieFeatures.Handling.departure(p,dt,FlightControl.stallSpeed(p,e));
+  const r=FlightControl.player(p,dt,e);p.pos.y+=r.climb*dt;
+  if(!up&&p.pos.y>60){up=true;p.gear=0;p.flap=0;}
+  log.push({t:(i+1)*dt,pitch:p.pitch,vs:r.climb,spd:p.spd,y:p.pos.y,stall:p.coreStall||0,stallSpd:r.stall});
+ }
+ return {p,log};
+}
+const at228=(log,t)=>log.find(r=>r.t>=t-1e-9);
+for(const kind of KINDS){
+ if(kind==='me163')continue;                    // rocket glider: it starts in the air and its climb is the rocket's
+ const a=climbOut(kind,true,30),b=climbOut(kind,false,30);
+ const peak=Math.max(...a.log.map(r=>r.stall)),r10=at228(a.log,10),r25=at228(a.log,25);
+ assert(peak<.05,kind+': a held back stick right after lift-off does not stall in arcade: '+peak);
+ for(const r of a.log.filter(r=>r.t>2))assert(r.spd>r.stallSpd*.98,kind+': the climb-out stays above the stall speed at t='+r.t.toFixed(1)+': '+(r.spd/r.stallSpd).toFixed(2));
+ assert(r10.pitch>=12*DEG,kind+': the arcade climb-out is steeper than ~10 deg after 10 s: '+(r10.pitch/DEG).toFixed(1));
+ assert(r25.pitch>=15*DEG,kind+': and steeper than 15 deg after 25 s: '+(r25.pitch/DEG).toFixed(1));
+ assert(r25.vs>=9,kind+': and it climbs at least 9 m/s: '+r25.vs.toFixed(1));
+ assert(Math.min(...a.log.filter(r=>r.t>5).map(r=>r.vs))>0,kind+': no porpoising in the climb-out');
+ const g=a.p.pos.y-15,g0=b.p.pos.y-15;
+ assert(g>=g0*1.3,kind+': arcade gains at least 30 % more height in 30 s than the Build 225 law: '+g.toFixed(0)+' vs '+g0.toFixed(0));
+ // REALISTIC does not use the envelope, the slow-end thrust or the speed protection: the switch has no effect on it
+ const ra=climbOut(kind,true,6,{aero:true,stick:.3}).p,rb=climbOut(kind,false,6,{aero:true,stick:.3}).p;
+ for(const k of ['pitch','roll','heading','spd'])assert.equal(ra[k],rb[k],kind+' REALISTIC unchanged after take-off ('+k+')');
+ // the same at the other frame rates
+ for(const fps of [20,120]){const c=climbOut(kind,true,12,{fps});assert(at228(c.log,10).pitch>=11*DEG&&Math.max(...c.log.map(r=>r.stall))<.05,kind+' @'+fps+' FPS: same climb-out, no stall: '+(at228(c.log,10).pitch/DEG).toFixed(1));}
+ rows228.push({kind,pitch10:+(r10.pitch/DEG).toFixed(1),climb10:+r10.vs.toFixed(1),pitch25:+(r25.pitch/DEG).toFixed(1),climb25:+r25.vs.toFixed(1),
+  gain30:Math.round(g),gain30Old:Math.round(g0),minV:+Math.min(...a.log.filter(r=>r.t>2).map(r=>r.spd/r.stallSpd)).toFixed(2)});
+}
+console.log('Arcade climb-out after take-off:',JSON.stringify(rows228));
+fs.writeFileSync(path.join(root,'test-visuals/build228-climbout.json'),JSON.stringify(rows228,null,2));
 console.log('Arcade turn vs Zero:',JSON.stringify(rows226.turn.filter(r=>r.f===1.3)));
 console.log('Arcade surplus:',JSON.stringify(rows226.surplus));
 console.log('Arcade push in a bank (deg/s, 20 FPS):',JSON.stringify(rows226.push));
