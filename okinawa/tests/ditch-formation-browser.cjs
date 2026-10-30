@@ -1,3 +1,5 @@
+/* Build 229: loaded with ?arcade=core. The default ARCADE flies the previous (pre-core) physics, whose Rookie
+ * ditching skip was already red on the unchanged Build 214 (CLAUDE.md, Build 219); this test is about the core ditching. */
 /* Real aircraft, real mission selection, service/departure camera and terrain.
  * Local Chrome can be selected with GAME_TEST_CHROME; required in CI. */
 'use strict';
@@ -27,7 +29,7 @@ const server=http.createServer((req,res)=>{
   const origin='http://127.0.0.1:'+server.address().port;
 
 
-  await page.goto(origin+'/torpedo-carrier.html?v=182');
+  await page.goto(origin+'/torpedo-carrier.html?v=182&arcade=core');
   await page.waitForFunction(()=>state===ST.MENU,null,{polling:100});
   await page.evaluate(async()=>{
     renderer.setPixelRatio(.65);renderer.shadowMap.enabled=false;clock.getDelta=()=>.05;
@@ -43,7 +45,7 @@ const server=http.createServer((req,res)=>{
       startMission(i);finishCarrierIntro();state=ST.FLIGHT;hideOverlays();
       P.alive=true;P.hull=sinkFpm===200?30:100;P.pos.set(-1500,2,0);P.spd=65/KT;
       P.gear=P.gearTgt=0;P.flap=P.flapTgt=1;P.hook=P.hookTgt=1;P.roll=P.rollBias=P.pitchVel=P.rollVel=0;
-      const mass=SortieFeatures.Handling.sample(P),sink=-sinkFpm*.3048/60,core=typeof coreOn==='function'&&coreOn(kind);
+      const mass=SortieFeatures.Handling.sample(P),sink=-sinkFpm*.3048/60,core=typeof coreOn==='function'&&coreOn();
       let targetKt=65,hold=()=>{};
       if(core){
         // Build 220: on the computed core 65 kt is the heavy Avenger's own full-flap stall, so a pilot cannot
@@ -78,7 +80,7 @@ const server=http.createServer((req,res)=>{
       DIFF='ace';startMission(MISSIONS.findIndex(m=>kind==='sbd'?m.sbd&&!m.corsair:!m.sbd&&!m.corsair&&!m.defend));
       finishCarrierIntro();state=ST.FLIGHT;hideOverlays();P.alive=true;P.hull=100;P.pos.set(-2200,300,0);P.heading=0;P.spd=65/KT;
       P.gear=P.gearTgt=P.hook=P.hookTgt=0;P.flap=P.flapTgt=1;P.roll=P.rollBias=P.pitchVel=P.rollVel=0;
-      const mass=SortieFeatures.Handling.sample(P),core=typeof coreOn==='function'&&coreOn(kind);let hold=()=>{};
+      const mass=SortieFeatures.Handling.sample(P),core=typeof coreOn==='function'&&coreOn();let hold=()=>{};
       if(core){
         // Build 220: slow flapped formation at 1.25x the live full-flap stall (65 kt is below the core's
         // Avenger stall); the throttle holds that speed, the stick a shallow -0.8 m/s glide as before.

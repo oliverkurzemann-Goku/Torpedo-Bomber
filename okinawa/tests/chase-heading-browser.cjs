@@ -68,10 +68,41 @@ const server=http.createServer((req,res)=>{
     setup(350,false);inputRoll=.08;
     for(let i=0;i<360;i++){if(i===180)inputRoll=0;updateFlight(1/60);updateCamera(1/60);}
     const from=camera.position.clone(),pos=P.pos.clone();clock.getDelta=()=>.05;togglePause();animate();const paused=from.equals(camera.position)&&pos.equals(P.pos);togglePause();
-    return {pacific,legacy,maxOffset,maxSight,settledSight,cases:cases.length,paused};
+    // Build 229: REALISTIC, banked hard pull through the 53-degree pitch line (the old rule switched the sideways
+    // correction on and off there: the picture popped sideways, worst in the fast-turning Zero). The camera may not
+    // turn faster than the aircraft does; the old rule is reproduced for comparison.
+    const popRun=old=>{
+     const keep=FlightSupport.centerChaseLag;
+     if(old)FlightSupport.centerChaseLag=(cam,want,track)=>{if(Math.hypot(track.x,track.z)>.6)FlightSupport.centerChase(cam,P.pos,track);};
+     let maxCam=0,maxPlane=0;
+     try{
+      for(const [pull,fps] of [[1,60],[-1,60],[1,120]]){
+       setup(120,true);P.pos.y=pacific?1500:groundY(AF_X,AF_Z)+1500;P.spd=pacific?125/KT:130;
+       for(let i=0;i<fps;i++){updateFlight(1/fps);updateCamera(1/fps);}   // settle the camera in level flight
+       camera.updateMatrixWorld(true);
+       let prevC=camera.quaternion.clone(),prevP=null;
+       const planeQ=()=>pacific?pacificAircraftQuaternion():new THREE.Quaternion().setFromEuler(new THREE.Euler(-P.pitch,P.heading,-P.roll,'YXZ'));
+       prevP=planeQ();
+       for(let i=0;i<fps*4;i++){
+        inputPitch=pull;inputRoll=.1;   // a thumb a little off the vertical axis
+        updateFlight(1/fps);updateCamera(1/fps);camera.updateMatrixWorld(true);
+        const c=camera.quaternion,q=planeQ();
+        maxCam=Math.max(maxCam,2*Math.acos(Math.min(1,Math.abs(prevC.dot(c))))*fps*180/Math.PI);
+        maxPlane=Math.max(maxPlane,2*Math.acos(Math.min(1,Math.abs(prevP.dot(q))))*fps*180/Math.PI);
+        prevC=c.clone();prevP=q.clone();
+       }
+       inputPitch=inputRoll=0;
+      }
+     }finally{FlightSupport.centerChaseLag=keep;}
+     return {maxCam:Math.round(maxCam),maxPlane:Math.round(maxPlane)};
+    };
+    const pop={fixed:popRun(false),old:popRun(true)};
+    return {pacific,legacy,maxOffset,maxSight,settledSight,cases:cases.length,paused,pop};
    },pacific);
    console.log('Actual flight/chase-camera regression:',result);
    assert(result.legacy>1,'legacy world-space easing reproduces a visible crosswind shift');
+   assert(result.pop.fixed.maxCam<=result.pop.fixed.maxPlane*1.6+15,'REALISTIC camera never turns much faster than the aircraft in a banked pull/push through 53 degrees of pitch '+JSON.stringify(result.pop));
+   assert(result.pop.old.maxCam>result.pop.fixed.maxCam*1.5,'the old on/off rule popped the picture there (comparison) '+JSON.stringify(result.pop));
    assert(result.maxOffset<.05&&result.maxSight<3&&result.settledSight<.5&&result.paused,'aircraft remains centred and the briefly smoothed gunsight follows the muzzle centroid, including pause');
    for(const degrees of [120,289]){
     await page.evaluate(({pacific,degrees})=>{

@@ -8,7 +8,7 @@ assert(a>0&&b>a,'real mission launch found');
 const P={pos:new THREE.Vector3(),ac:'me163',gear:1,gearTgt:1,flap:0,flapTgt:0};
 const FlightCore=require('../../flight-core.js');
 const ctx=vm.createContext({P,THREE,SortieFeatures:global.SortieFeatures,AF_X:23600,AF_Z:25725,RWY_LEN:900,RTILE:4000,RGRID_W:7,RGRID_H:8,ST:{FLIGHT:3},
- FlightCore,coreOn:()=>true,
+ FlightCore,coreOn:()=>true,coreAvail:()=>true,
  terrain:{getHeight:()=>180},groundY:()=>180,setThrottleUI:v=>{P.throttle=v;}});
 vm.runInContext(html.slice(a,b),ctx);ctx.relaunch();
 assert.equal(P.onGround,false,'Me 163 starts airborne after trolley release');

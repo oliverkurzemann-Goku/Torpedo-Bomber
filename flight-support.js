@@ -52,6 +52,20 @@ function centerChase(camera,position,track){
  const side=(camera.position.x-position.x)*x+(camera.position.z-position.z)*z;
  camera.position.x-=x*side;camera.position.z-=z*side;
 }
+// Build 229: the REALISTIC chase camera. Its target (want) already carries the bank-dependent offset along the
+// aircraft's own up axis, so only the SIDEWAYS LAG of the position easing is removed here, weighted by how well the
+// heading frame is defined: gone below 0.3 of the nose's horizontal part (nearly vertical), full above 0.7, smooth
+// in between. The old rule (centerChase on position - aircraft, switched at a horizontal part of 0.6) removed the
+// whole bank offset on one side of that line and none on the other: a sideways pop of the picture, metres wide,
+// every time a banked pull or push crossed ~53 degrees of pitch - worst in the fastest-turning type, the Zero.
+function centerChaseLag(camera,want,track){
+ const length=Math.hypot(track.x,track.z);
+ const t=Math.max(0,Math.min(1,(length-.3)/.4)),w=t*t*(3-2*t);
+ if(w<=0)return;
+ const x=-track.z/length,z=track.x/length;
+ const side=(camera.position.x-want.x)*x+(camera.position.z-want.z)*z;
+ camera.position.x-=x*side*w;camera.position.z-=z*side*w;
+}
 function createAeroRig(){return {dir:null,up:null};}
 // Build 215: chase direction and up-vector for AERO manoeuvres. The camera follows the aircraft's own
 // nose and wing axis (exponentially smoothed) instead of its heading, so over the top of a loop it
@@ -211,5 +225,5 @@ class Navigation{
   }
  }
 }
-root.FlightSupport={surfaceHit,skinHeight,canDitch,centerChase,createAeroRig,aeroChase,guideWingman,TreeIndex,treeStrike,Navigation};
+root.FlightSupport={surfaceHit,skinHeight,canDitch,centerChase,centerChaseLag,createAeroRig,aeroChase,guideWingman,TreeIndex,treeStrike,Navigation};
 })(typeof window==='undefined'?globalThis:window);

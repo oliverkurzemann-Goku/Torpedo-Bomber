@@ -1,5 +1,39 @@
 # Torpedo-Bomber — Übergabe an Claude Code
 
+**30.10.2026, Build 229: ARCADE fliegt wieder die alte Flugphysik (alle Typen, beide Spiele), REALISTIC bleibt der Flugkern; Kamera-Sprung in REALISTIC (Zero) behoben.**
+Nutzer (nach dem Test von Build 228): „Im realistic mode beginnt die zero zu wackeln bzw ruckelt das komplette bild, wenn man sehr stark zieht, oder sehr stark nach unten drückt … Ansonsten ist der realistic mode super.
+Nur arcade ist nicht gut, kannst du den ursprünglichen arcade mode wieder herstellen, bevor du gestern(?) die Flugphysik verändert hast." Dann: „Ich spreche von allen flugzeugen (arcade mode), deren ursprüngliche
+flugphysik von früher wieder hergestellt werden soll. Das ruckel problem ist nur die zero im realistic mode. Die anderen flugzeuge im spiel sollen exakt den jetzigen realistic mode beibehalten."
+Auslegung (aus dem Sitzungsprotokoll, nicht geraten): „gestern" + „Flugphysik" = der Neubau des Flugkerns vom 29.10. (Nutzer: „wie würdest du die komplette flugphysik neu aufbauen?", „ich möchte, dass du ein modell berechnest").
+„Ursprünglich" = das Modell davor. Es lief als `?core=off`-Zweig in beiden Spielen unverändert mit (FlightEnvelope/FlightDynamics, GroundRun, P47Performance, Me262Performance).
+Nur der Spieler im Arcade fliegt es jetzt wieder; Gegner, Rottenflieger, Räuber, Bomber bleiben auf dem Kern (das „Challenge"-Verhalten der Gegner bleibt).
+- **Schalter** (`torpedo-carrier.html`, `remagen-mission.html`): `Core.classic` (ohne `?arcade=` oder anderer Wert) · `coreAvail(Typ)` = Typ läuft überhaupt im Kern (Gegner, Tore, Knopf) ·
+  `coreOn()` OHNE Typ = der SPIELER ist gerade im Kern: `coreAvail && (aeroMode || !Core.classic)`. REALISTIC = Kern (Boden, Deckstart, Luft, Landung), Arcade = Altmodell. `PlayerFlightCore()` für `Handling.speeds`
+  (Abrissfahrt, Anflugreferenz, HUD), KI-Pfade lesen weiter `FlightCoreEnabled`. `?arcade=core` = Arcade auf dem Kern mit dem Gesetz von Build 227/228 (Zero-Kurvenreferenz, Schubüberschuss, Fahrtschutz,
+  Steigflug ohne `departure`), `?arcade=off` = Build-225-Gesetz auf dem Kern, `?core=off` alles im Altmodell. Das Kerngesetz von 227/228 ist unverändert da (Unit-Tests `pitch-response.cjs` prüfen es weiter).
+- **Umschalten** am Boden, im Deckstart und in der Luft über den REALISTIC-Knopf: `switchFlightModel()` löscht den Zustand des jeweils anderen Modells (`pitchRef`, `coreStall`, `coreDrop`, `core`), setzt am Boden/Deckstart die
+  Startklappen des Kerns (Pazifik 50 %, Corsair 40 %, Rhein 50 %). Rhein: Startpunkt nicht mehr vom Modus abhängig (40 m hinter der Schwelle außer Me 163), `P.rato` auch im Arcade gesetzt, damit REALISTIC auf der Piste möglich ist.
+- **Zero-Ruckeln — Ursache gemessen (`labz.cjs` 6 g Ziehen/Drücken, `labz2.cjs` 60 s zufälliger Voll-Knüppel-Pilot, echtes Spiel):** nicht Abriss, nicht Pitch/Roll-Gesetz. Flugzeug und Lage laufen glatt (Winkelgeschwindigkeit der Lage ≤ 96 °/s),
+  aber die Kamera sprang: `FlightSupport.centerChase` (Build 183) zieht die Kamera in der Kurslage seitlich zurück, solange der waagerechte Nasenanteil > 0,6 ist (≈ 53° Nicklage). In REALISTIC liegt das Kameraziel schon mit
+  der Querlage versetzt (`rig.up · chaseH`); die harte Schwelle schaltet diesen Versatz an/aus, die Bildmitte springt um mehrere Meter. Sichtbar schon bei kleiner Querlage (Daumen etwas neben der Achse, Knüppel 0,1),
+  am häufigsten und stärksten bei der Zero (6 g, 60–95 °/s Nickrate durch die 53°-Linie), aber nicht Zero-spezifisch: Corsair 352 °/s gemessen. Neu `FlightSupport.centerChaseLag(camera, want, track)`: entfernt nur den seitlichen RÜCKSTAND der
+  Positionsglättung (Kamera − Ziel) mit weicher Stufe 0,3…0,7 des waagerechten Nasenanteils; nur REALISTIC (Kamera mit `camUp`), Arcade-Kamera unverändert. Flugphysik und Lage in REALISTIC sind bitgleich zu Build 228
+  (gleiche Eingaben: Zero 0 Stalls, 171 kt, n −3…6; Corsair 2 Stalls, 93 kt, n −3…7 vorher wie nachher). Kamera-Winkelgeschwindigkeit Spitze Zero 470 → 94 °/s (Flugzeug 96), Corsair 352 → 69 °/s (Flugzeug 72);
+  Kamera-Winkelbeschleunigung Spitze Zero 22 843 → 2 286, Corsair 20 050 → 505 °/s². Langsamflug (93 kt, volles Ziehen/Drücken): Avenger und Corsair stallen, die Zero nicht — das Wackeln der Zero war also die Kamera.
+Gemessen im echten Spiel, Arcade = Altmodell, Knüppel voll zurück ab dem Abheben (`climb-out-browser.cjs` → `app/release/climb-out-browser.json`), Neigung/Steigen 3 s → 30 s: Avenger 19,9°/11 → 21,6°/13,6 m/s, SBD 22,5°/12,9 → 23,9°/15,4,
+Corsair 21,5°/16,1 → 31,3°/32,8, Zero 27°/20,8 → 33,3°/33,9; P-47 7,1°/6,3 → 15,4°/16,2, Bf 109 16,6°/10,4 → 37,2°/25,7, Fw 190 13,6°/9,6 → 31,9°/21,1, Ju 87 10,3°/6,9 → 19,7°/9,1, Me 262 14°/12,9 → 20,1°/28,8.
+**Das Altmodell steigt am Rhein (besonders P-47 und Ju 87) nach dem Start wieder zäher als Build 228** (Nutzer-Klage vor Build 228); `?arcade=core` gibt den steilen Steigflug zurück. Umschalten in der Luft hin und zurück: kein Absturz, Fahrt
+springt nicht (Faktor 1,2–1,3 nach 15 s Gas, Höhe ±3 m, Fw 190 +29 m).
+Tests: `chase-heading-browser.cjs` (neu: REALISTIC voll gezogen/gedrückt mit Knüppel 0,1 durch 53°; Kamera ≤ 1,6 × Flugzeug + 15 °/s — die alte Regel springt auf 660–720 °/s), `climb-out-browser.cjs` (Arcade Altmodell + Umschalten,
+`?arcade=core`, REALISTIC vom Start an). Tests, die das Normalgesetz des Kerns prüfen, laden jetzt mit `?arcade=core`: `flight-envelope-browser`, `fleet-core-browser`, `pacific-core-browser`; `field-landing-browser` und
+`ditch-formation-browser` ebenfalls (ihre Altmodell-Fehler — Durchstarten, Rookie-Abprall — waren schon im unveränderten Build 214 rot). `handling-quality-browser`/`ditch-formation-browser` fragen `coreOn()` ohne Typ statt `coreOn(Typ)`.
+Browser grün (Build 229): chase-heading, climb-out, custom-sortie, dogfight, flight-envelope, pacific-core, fleet-core, handling-quality, ship-contact, p47-core, fleet-flight, field-landing, carrier-start, carrier-recovery, carrier-weather-gear,
+ditch-formation, water-ditching, p47-/me262-/ju87-integration, sbd-native, europe-start, feedback, komet-jets, fw190-komet, bomb-cue, b17-native, europe-guns, mission-regressions, own-bf109, pacific-theater, crew-smoke, sortie-preview,
+woodland-edge, avenger-livery, fortifications, fleet-audio. Unverändert rot wie auf main ohne Flugkern (Build 214/221): torpedo-attack (Torpedo wartet auf den Avenger-Schacht), deck-night (bf109-Materialprüfung), corsair-loadouts (Menü-Layout);
+takeoff-briefing, aircraft-systems, combat-sorties, checkpoint, browser-smoke nicht neu gelaufen. Unit 97 Dateien, Terrain 40, Syntax 12 Dateien ohne Fehler; Messdateien `app/release/*browser.json` neu.
+**Offen:** kein iPad-Test; „ursprünglich" ist als Vor-Flugkern-Modell gedeutet — war Build 224/225 oder das P-47-Kernmodell von 219 gemeint, steht `?arcade=off` (Kern, Build-225-Gesetz) bereit; das Altmodell hat seine bekannten Schwächen zurück
+(zäherer Rhein-Start, Durchstart-/Notwasserungs-Verhalten aus Build 214); Kamera-Fix gilt in REALISTIC für alle Typen (Physik unverändert).
+
 **30.10.2026, Build 228: Arcade-Steigflug nach dem Start, REALISTIC schon am Boden/Deck wählbar, REALISTIC auch für Avenger und Corsair.**
 Nutzer (nach dem Test von Build 227): „Steigen nach dem Start im Arcade-Modus … viel zu langsam. Auch die Carrier-Flieger steigen kaum, Pitch ist auf ca. 10 Grad limitiert. Das passt für den
 realistischen Modus, aber nicht für Arcade." Dazu: REALISTIC solle man „schon vor dem Start oder beim Start auswählen können, nicht erst ab gewisser Höhe oder Speed", und „warum hat die Avenger keinen
@@ -821,7 +855,7 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 228 · Thunderbolt Squadron BUILD 228 · Remagen-Kern 23 / Fahrzeuge 22**
+Stand bei Übergabe: **Torpedo Squadron BUILD 229 · Thunderbolt Squadron BUILD 229 · Remagen-Kern 23 / Fahrzeuge 22**
 
 **Build 198 (22.10.2026): P-47-Fotolackierung, Einsatzspuren und natives Fahrwerk; Terrain-Fix aus Build 197 erhalten.**
 `assets/aircraft/p47-weathered.glb` ist ein ausdrücklich gekennzeichnetes Derivat des

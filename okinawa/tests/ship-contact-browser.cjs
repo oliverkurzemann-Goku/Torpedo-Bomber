@@ -1,3 +1,5 @@
+/* Build 229: loaded with ?arcade=core. The default ARCADE flies the previous (pre-core) physics, whose Corsair/Zero on a rolling
+ * carrier deck was already red on the unchanged Build 214 (CLAUDE.md, Build 219); the deck-contact mechanics are the same code. */
 /* Real selected models + actual game functions. No simplified substitute simulation. */
 'use strict';
 const fs=require('node:fs'),path=require('node:path'),http=require('node:http'),assert=require('node:assert/strict');
@@ -19,7 +21,7 @@ const server=http.createServer((req,res)=>{
   const page=await browser.newPage({viewport:{width:1100,height:680}}),errors=[];
   page.setDefaultTimeout(120000);page.on('pageerror',e=>errors.push(e.message));
   await page.addInitScript(()=>window.requestAnimationFrame=()=>0);
-  await page.goto('http://127.0.0.1:'+server.address().port+'/torpedo-carrier.html?v=195');
+  await page.goto('http://127.0.0.1:'+server.address().port+'/torpedo-carrier.html?v=195&arcade=core');
   await page.waitForFunction(()=>state===ST.MENU,null,{polling:200});
   await page.evaluate(async()=>{
    await prepareOkinawa();

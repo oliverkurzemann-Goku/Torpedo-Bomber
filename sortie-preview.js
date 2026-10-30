@@ -3,7 +3,7 @@
 (function(root){
  'use strict';
  const T=root.THREE;
- const assets={p47:'assets/aircraft/p47-independent.glb',bf109:'assets/aircraft/bf109f2-own.glb',fw190:'assets/aircraft/fw190a8-own.glb',ju87:'assets/aircraft/ju87b2-own.glb',me262:'assets/aircraft/me262-noel.glb',me163:'assets/aircraft/me163b-own.glb',avenger:'grumman tbm avenger.glb',sbd:'assets/aircraft/sbd-dauntless.glb',corsair:'assets/aircraft/corsair-f4u1d-own.glb?v=228.1',zero:'zero.glb'};
+ const assets={p47:'assets/aircraft/p47-independent.glb',bf109:'assets/aircraft/bf109f2-own.glb',fw190:'assets/aircraft/fw190a8-own.glb',ju87:'assets/aircraft/ju87b2-own.glb',me262:'assets/aircraft/me262-noel.glb',me163:'assets/aircraft/me163b-own.glb',avenger:'grumman tbm avenger.glb',sbd:'assets/aircraft/sbd-dauntless.glb',corsair:'assets/aircraft/corsair-f4u1d-own.glb?v=229.1',zero:'zero.glb'};
  function dispose(model){const geo=new Set(),mat=new Set(),textures=new Set();model?.traverse(o=>{if(o.geometry)geo.add(o.geometry);for(const m of [].concat(o.material||[])){mat.add(m);for(const v of Object.values(m))if(v?.isTexture)textures.add(v);}});geo.forEach(g=>g.dispose());mat.forEach(m=>m.dispose());textures.forEach(t=>t.dispose());}
  function prepare(model,ac){
   const frame=new T.Group();frame.name='previewAircraft';

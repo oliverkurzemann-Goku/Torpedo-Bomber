@@ -42,7 +42,7 @@ const server=http.createServer((req,res)=>{
       // stick held back, climbs at the 4 m/s its excess power gives there (measured 18 m after 4 s, 34 m
       // after 8 s); the old game model's 20 m / +20 m figures assumed more thrust than the engine has.
       // Required on the core: climbing away, and above the 20-26 m trees within 8 s.
-      const core=typeof coreOn==='function'&&coreOn(P.ac),need4=core?12:20,need8=core?12:20;
+      const core=typeof coreOn==='function'&&coreOn(),need4=core?12:20,need8=core?12:20;
       if(!P.alive||P.onGround||agl4<need4)throw Error('Loaded aircraft cannot continue climbing '+JSON.stringify({mission:MISSIONS[index].id,fps,mass,rotation,distance,alive:P.alive,ground:P.onGround,agl:agl4,spd:P.spd,title:document.getElementById('resTitle')?.textContent}));
       for(let i=0;i<fps*4;i++)updateFlight(1/fps);
       const agl8=P.pos.y-groundY(P.pos.x,P.pos.z);
@@ -79,7 +79,7 @@ const server=http.createServer((req,res)=>{
      // Europe types with progressive stick response invert their exponent.
      if(!pacific&&acDef().stickExponent)inputRoll=Math.sign(inputRoll)*Math.pow(Math.abs(inputRoll),1/acDef().stickExponent);
      // The computed core maps the stick to a level-turn bank (FLIGHT-CORE.md): use its inverse.
-     if(typeof coreOn==='function'&&coreOn(kind))inputRoll=coreStickForBank(-bias)/steerSign;
+     if(typeof coreOn==='function'&&coreOn())inputRoll=coreStickForBank(-bias)/steerSign;
      for(let i=0;i<fps*4;i++)updateFlight(1/fps);if(Math.abs(P.roll)>.003)throw Error('Existing stick cannot counter damage');
      let asymmetry=null;
      if(kind!=='me163'){

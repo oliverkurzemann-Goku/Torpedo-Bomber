@@ -72,7 +72,9 @@ const Handling={
   const load=this.sample(p),controls=Damage.controls(p),kind=p.loadProfile?.kind||p.ac;
   const field=p.loadProfile?.theatre==='europe'?this.fieldLanding[kind]:null;
   const carrier=p.loadProfile?.theatre==='pacific'&&root.FlightDynamics?.profiles[kind];
-  if(root.FlightCoreEnabled&&root.FlightCore?.has(kind))return this.coreSpeeds(p,kind,controls,field,carrier,reference);
+  // Build 229: the player's ARCADE mode flies the previous physics, so the game says whether the player is on the core right now.
+  const onCore=root.PlayerFlightCore?root.PlayerFlightCore():root.FlightCoreEnabled;
+  if(onCore&&root.FlightCore?.has(kind))return this.coreSpeeds(p,kind,controls,field,carrier,reference);
   if(carrier){stall=carrier.stall??stall;reference=carrier.reference??reference;}
   if(kind==='p47'&&root.P47Performance){const speeds=root.P47Performance.speeds(p,controls.flaps.mean,load.ratio,controls.stallPenalty);speeds.reference*=1+controls.flaps.asymmetry*.08;return speeds;}
   const limit=(stall+(p.gear||0)*gearGain-controls.flaps.mean*(field?.flapGain??flapGain))*load.speed+controls.stallPenalty;

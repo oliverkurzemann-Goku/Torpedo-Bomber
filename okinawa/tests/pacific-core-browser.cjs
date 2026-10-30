@@ -23,7 +23,7 @@ const KINDS={avenger:m=>!m.sbd&&!m.corsair&&!m.defend&&!m.free&&!m.qual&&m.torps
  try{
   const page=await browser.newPage({viewport:{width:1194,height:660},hasTouch:true,deviceScaleFactor:1}),errors=[];
   page.setDefaultTimeout(600000);page.on('pageerror',e=>errors.push(e.message));await page.addInitScript(()=>window.requestAnimationFrame=()=>0);
-  await page.goto('http://127.0.0.1:'+server.address().port+'/torpedo-carrier.html?campaign=1&v=220');
+  await page.goto('http://127.0.0.1:'+server.address().port+'/torpedo-carrier.html?campaign=1&v=220&arcade=core');
   await page.waitForFunction(()=>state===ST.MENU,null,{polling:250});
   await page.evaluate(()=>{renderer.setPixelRatio(.25);renderer.shadowMap.enabled=false;const orig=crash;window.__crash=null;crash=(t,m)=>{window.__crash=t+': '+m;orig(t,m);};});
   const report={};

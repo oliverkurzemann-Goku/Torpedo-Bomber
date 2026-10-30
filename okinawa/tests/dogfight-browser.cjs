@@ -29,7 +29,7 @@ const server=http.createServer((req,res)=>{
   if(!process.env.ONLY||process.env.ONLY==='rhine'){
    const page=await browser.newPage({viewport:{width:1194,height:660},hasTouch:true,deviceScaleFactor:1}),errors=[];
    page.setDefaultTimeout(600000);page.on('pageerror',e=>errors.push(e.message));await page.addInitScript(()=>window.requestAnimationFrame=()=>0);
-   await page.goto(base+'/remagen-mission.html?v=228');
+   await page.goto(base+'/remagen-mission.html?v=229');
    await page.waitForFunction(()=>state===ST.MENU&&realWorldReady,null,{polling:250});
    await page.evaluate(async()=>{for(const k of ['p47','bf109','fw190'])await ensureModel(k);renderer.setPixelRatio(.3);renderer.shadowMap.enabled=false;if(typeof flightQuality!=='undefined')flightQuality.enabled=false;});
    report.rhine={};
@@ -85,7 +85,7 @@ const server=http.createServer((req,res)=>{
    assert([...fam(60)].filter(m=>fam(20).has(m)||fam(120).has(m)).length>=2,'20/60/120 FPS fights share manoeuvres');
    // the legacy path is still reachable
    const old=await browser.newPage();await old.addInitScript(()=>window.requestAnimationFrame=()=>0);
-   await old.goto(base+'/remagen-mission.html?v=228&ai=old');
+   await old.goto(base+'/remagen-mission.html?v=229&ai=old');
    await old.waitForFunction(()=>state===ST.MENU&&realWorldReady,null,{polling:250});
    assert.equal(await old.evaluate(()=>AI_OLD&&!brainOn({kind:'bf109'})),true,'?ai=old selects the Build 223 modes');
    await old.close();await page.close();
@@ -94,7 +94,7 @@ const server=http.createServer((req,res)=>{
   if(!process.env.ONLY||process.env.ONLY==='pacific'){
    const page=await browser.newPage({viewport:{width:1194,height:660},hasTouch:true,deviceScaleFactor:1}),errors=[];
    page.setDefaultTimeout(600000);page.on('pageerror',e=>errors.push(e.message));await page.addInitScript(()=>window.requestAnimationFrame=()=>0);
-   await page.goto(base+'/torpedo-carrier.html?campaign=1&v=228');
+   await page.goto(base+'/torpedo-carrier.html?campaign=1&v=229');
    await page.waitForFunction(()=>state===ST.MENU,null,{polling:250});
    await page.evaluate(()=>{renderer.setPixelRatio(.25);renderer.shadowMap.enabled=false;});
    const index=await page.evaluate(()=>MISSIONS.findIndex(m=>!m.sbd&&!m.corsair&&!m.defend&&!m.free&&!m.qual&&m.torps>0&&m.zeros>=2));

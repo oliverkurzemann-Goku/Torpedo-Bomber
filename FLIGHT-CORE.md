@@ -243,6 +243,32 @@ Wieder nur Normalgesetz (`FlightControl.player`, Kennung C, `FlightCore.GAME.arc
 Messung im echten Spiel (Start auf Piste/Deck, Knüppel voll zurück, Neigung/Steigen 3 s → 30 s nach dem Abheben): `CLAUDE.md`, Build 228. Tests: `okinawa/tests/pitch-response.cjs` (Abschnitt Build 228),
 `okinawa/tests/climb-out-browser.cjs`, `okinawa/tests/flight-envelope-browser.cjs`.
 
+## Build 229: ARCADE fliegt wieder die alte Flugphysik, REALISTIC bleibt der Flugkern; Kamera-Sprung in REALISTIC behoben
+
+Nutzer (30.10.2026, nach dem Test von Build 228): Der Arcade-Modus sei „nicht gut", die ursprüngliche Flugphysik von vor dem Flugkern (29.10., „gestern") solle für **alle Flugzeuge** wieder hergestellt werden;
+REALISTIC bleibe so, wie es ist. Dazu: in REALISTIC beginne die Zero zu wackeln, das ganze Bild ruckele, wenn man sehr stark zieht oder sehr stark drückt.
+
+* **Schalter:** Die Spielerin / der Spieler fliegt im Arcade das Altmodell (`FlightEnvelope` + `FlightDynamics` + `GroundRun`, `P47Performance` / `Me262Performance`; Vor-Flugkern-Zweig, der mit `?core=off` ohnehin noch da war),
+  in REALISTIC (`aeroMode`) den Flugkern. In beiden Spielen ist `coreOn()` ohne Typ-Argument (= der Spieler) jetzt `coreAvail(Typ) && (aeroMode || !Core.classic)`;
+  `coreAvail(Typ)` (Typ läuft im Kern) gilt für Gegner, Rottenflieger, Räuber, Bomber, Tore und den Knopf. Der Start (Piste/Deck) und die Landung folgen demselben Schalter:
+  Arcade rollt mit dem alten Bodenlauf, REALISTIC (auch vor dem ersten Gas gewählt) mit den Kernkräften.
+* **URL:** ohne Parameter = Arcade Altmodell; `?arcade=core` = Arcade auf dem Kern mit dem Build-227/228-Gesetz (Zero-Kurvenreferenz, Schubüberschuss, Fahrtschutz, Steigflug ohne `departure`);
+  `?arcade=off` = Arcade auf dem Kern mit dem Build-225-Gesetz. `?core=off` wie bisher alles (auch KI) im Altmodell.
+* **Umschalten** (REALISTIC-Knopf am Boden, im Deck-Start, in der Luft): `switchFlightModel()` löscht den Zustand des anderen Modells (`pitchRef`, `coreStall`, `coreDrop`, `core`); am Boden / im Deckstart mit Kern
+  werden die Startklappen gesetzt (Pazifik 50 %, Corsair 40 %; Rhein 50 %). `sortie-features.js` `Handling.speeds` fragt `PlayerFlightCore()` (Spiel: `coreOn()`), nicht mehr nur den globalen Schalter, sodass Abrissfahrt,
+  Anflugreferenz und HUD zum Modell des Spielers passen; KI-Pfade lesen weiter `FlightCoreEnabled`.
+* **Startpunkt Rhein** hängt nicht mehr vom Modus ab (40 m hinter der Schwelle für alle Typen außer Me 163), damit REALISTIC auf der Piste gewählt werden kann (Me 262 mit RATO braucht den Platz); `P.rato` wird auch im Arcade gesetzt.
+* **Kamera in REALISTIC:** `FlightSupport.centerChase` (Build 183) zog die Kamera in der Kurslage seitlich zurück, aber nur solange der waagerechte Anteil der Nase > 0,6 war (≈ 53° Nicklage). In REALISTIC liegt das Kameraziel schon
+  mit der Querlage versetzt (`rig.up · chaseH`), die harte Schwelle schaltete diesen Versatz an und aus: bei jedem Ziehen/Drücken mit etwas Querlage durch ±53° sprang das Bild seitlich (Zero, 60–95 °/s Nickrate und 6 g am häufigsten und am stärksten).
+  Neu `FlightSupport.centerChaseLag(camera, want, track)`: entfernt nur den seitlichen **Rückstand** der Positionsglättung (Kamera − Ziel), gewichtet mit einer weichen Stufe zwischen 0,3 und 0,7 des waagerechten Nasenanteils.
+  Arcade (Kamera ohne `camUp`) bleibt beim alten `centerChase`; die Flugphysik wurde nicht angefasst.
+
+Messung (echtes Pazifikspiel, `scratchpad/labz2.cjs`, 60 s zufälliger Voll-Knüppel-Pilot im REALISTIC, gleiche Eingaben vorher/nachher): Winkelgeschwindigkeit der Kamera, Spitze / 99. Perzentil —
+Zero 470 → 94 °/s (Flugzeug 96 °/s), Corsair 352 → 69 °/s (Flugzeug 72); Winkelbeschleunigung der Kamera, Spitze: Zero 22 843 → 2 286, Corsair 20 050 → 505 °/s². Stalls, Mindestfahrt, Lastvielfaches und Lage des Flugzeugs sind bitgleich zu vorher
+(Zero 0 Stalls, 171 kt, n −3…6; Corsair 2 Stalls, 93 kt, n −3…7). Langsamflug (93 kt, volles Ziehen/Drücken): die Zero stallt nicht, Avenger und Corsair schon – das Wackeln der Zero war die Kamera, nicht der Abriss.
+Tests: `chase-heading-browser.cjs` (neuer Abschnitt: REALISTIC, voll gezogen / gedrückt mit kleiner Querlage durch 53° Nicklage; Kamera ≤ 1,6 × Flugzeug + 15 °/s, die alte Regel springt auf 660–720 °/s), `climb-out-browser.cjs`
+(Arcade = Altmodell, Umschalten in der Luft hin und zurück ohne Sprung, `?arcade=core` mit dem Build-228-Steigflug, REALISTIC vom Start an).
+
 ## Erster Typ: P-47 (Build 219, unverändert gültig)
 
 ### Quellen (Kennung A = Primärdokument, B = übereinstimmende Sekundärangaben)

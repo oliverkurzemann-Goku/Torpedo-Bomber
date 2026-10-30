@@ -1,3 +1,6 @@
+/* Build 229: loaded with ?arcade=core. The default ARCADE flies the previous (pre-core) physics, whose powered
+ * touch-and-go was already red on the unchanged Build 214 (CLAUDE.md, Build 219); this test is about the core landing
+ * and rollout, which REALISTIC flies as well. */
 /* Original Rhine aircraft, actual contact/rollout, live HUD and flight controller. */
 'use strict';
 const fs=require('node:fs'),path=require('node:path'),http=require('node:http'),assert=require('node:assert/strict');
@@ -18,7 +21,7 @@ const server=http.createServer((req,res)=>{
  try{
   const page=await browser.newPage({viewport:{width:1194,height:660},hasTouch:true}),errors=[];
   page.setDefaultTimeout(120000);page.on('pageerror',e=>errors.push(e.message));await page.addInitScript(()=>window.requestAnimationFrame=()=>0);
-  await page.goto('http://127.0.0.1:'+server.address().port+'/remagen-mission.html?v=193');
+  await page.goto('http://127.0.0.1:'+server.address().port+'/remagen-mission.html?v=193&arcade=core');
   await page.waitForFunction(()=>state===ST.MENU&&realWorldReady,null,{polling:200});
   await page.evaluate(async()=>{for(const kind of ['p47','bf109','fw190','ju87','me262','me163'])await ensureModel(kind);renderer.setPixelRatio(.5);renderer.shadowMap.enabled=false;});
   await page.evaluate(()=>{
@@ -85,7 +88,7 @@ const server=http.createServer((req,res)=>{
   }
   const goAround=await page.evaluate(()=>{
    setupFieldLanding('p47');P.throttle=1;inputPitch=.4;const before=P.pos.clone(),speed=P.spd;resolveGround(1/60);updateFlight(1/60);
-   if(P.onGround||P.landingRoll||missionOver||P.throttle!==1||P.spd-speed>.5||P.pos.distanceTo(before)>2)throw Error('Powered touch-and-go jumps or steals controls');
+   if(P.onGround||P.landingRoll||missionOver||P.throttle!==1||P.spd-speed>.5||P.pos.distanceTo(before)>2)throw Error('Powered touch-and-go jumps or steals controls '+JSON.stringify({onGround:P.onGround,landingRoll:!!P.landingRoll,missionOver,throttle:P.throttle,dv:P.spd-speed,move:P.pos.distanceTo(before)}));
    for(let i=0;i<120;i++)updateFlight(1/60);
    if(P.onGround||P.landingRoll||!P.alive||P.pos.y-groundY(P.pos.x,P.pos.z)<5)throw Error('Go-around re-catches the runway before leaving the ground');
    return {speed:P.spd,move:P.pos.distanceTo(before),departure:P.departureAge};

@@ -28,7 +28,7 @@
    "rato": null,
    "after40s": {
     "spd": 66.9,
-    "agl": 854,
+    "agl": 820,
     "climb": 20.9
    }
   },
@@ -210,7 +210,7 @@
    "rato": null,
    "after40s": {
     "spd": 74.5,
-    "agl": 753,
+    "agl": 756,
     "climb": 19.6
    }
   },
@@ -286,7 +286,7 @@
    "rato": null,
    "after40s": {
     "spd": 44.9,
-    "agl": 430,
+    "agl": 420,
     "climb": 10
    }
   },
@@ -301,7 +301,7 @@
    "rato": null,
    "after40s": {
     "spd": 44.9,
-    "agl": 430,
+    "agl": 420,
     "climb": 10
    }
   },
@@ -392,7 +392,7 @@
    "rato": 6,
    "after40s": {
     "spd": 73.2,
-    "agl": 868,
+    "agl": 865,
     "climb": 22.9
    }
   },

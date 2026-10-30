@@ -1,5 +1,6 @@
 /* The computed flight core (flight-core.js + flight-control.js) for all six Rhine types inside the shipped
- * remagen-mission.html: real take-off from the strip with the mission load (and the worst case of every bomb
+ * remagen-mission.html (loaded with ?arcade=core: since Build 229 the default ARCADE flies the previous physics,
+ * this test is about the player's core Normal law): real take-off from the strip with the mission load (and the worst case of every bomb
  * the type carries), full-stick turn, AERO loop, accelerated stall with recovery, idle deceleration and
  * 20/60/120 FPS. Writes app/release/flight-core-fleet-browser.json on success. */
 'use strict';
@@ -22,7 +23,7 @@ const KINDS=['p47','bf109','fw190','ju87','me262','me163'];
  try{
   const page=await browser.newPage({viewport:{width:1194,height:660},hasTouch:true,deviceScaleFactor:1}),errors=[];
   page.setDefaultTimeout(600000);page.on('pageerror',e=>errors.push(e.message));await page.addInitScript(()=>window.requestAnimationFrame=()=>0);
-  await page.goto('http://127.0.0.1:'+server.address().port+'/remagen-mission.html?v=220');
+  await page.goto('http://127.0.0.1:'+server.address().port+'/remagen-mission.html?v=220&arcade=core');
   await page.waitForFunction(()=>state===ST.MENU&&realWorldReady,null,{polling:250});
   await page.evaluate(async kinds=>{for(const k of kinds)await ensureModel(k);renderer.setPixelRatio(.3);renderer.shadowMap.enabled=false;if(typeof flightQuality!=='undefined')flightQuality.enabled=false;},KINDS);
   const report={};
