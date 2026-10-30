@@ -10,6 +10,14 @@ const bytes=fs.readFileSync(path.join(root,'assets/aircraft/corsair-f4u1d-own.gl
  const gl=await new Promise((yes,no)=>new THREE.GLTFLoader().parse(bytes.buffer.slice(bytes.byteOffset,bytes.byteOffset+bytes.byteLength),'',yes,no));
  const model=new THREE.Group();model.add(gl.scene);let before=0;model.traverse(o=>{if(o.isMesh)before+=o.geometry.index.count/3});
  const size=new THREE.Box3().setFromObject(model).getSize(new THREE.Vector3());assert(Math.abs(size.x-12.4968)<1e-4);assert(Math.abs(size.z-10.16)<.02);assert.equal(gl.animations.length,7);
+ const hood=model.getObjectByName('BubbleCanopyGlass'),service=model.getObjectByName('ServicePanels'),cooler=model.getObjectByName('CoolerIntakes');
+ assert(hood&&service&&cooler,'refined canopy and maintenance details exist');
+ const hoodSize=new THREE.Box3().setFromObject(hood).getSize(new THREE.Vector3());
+ assert(hoodSize.x>.62&&hoodSize.x<.78,'late Corsair bubble hood correctly narrow');
+ assert(hoodSize.y>.45&&hoodSize.y<.60,'late Corsair hood height proportion');
+ assert(hoodSize.z>1.2&&hoodSize.z<1.4,'late Corsair hood length');
+ assert(hood.material.transparent&&hood.material.opacity!==0,'clear cockpit glazing');
+
  const source=model.getObjectByName('CorsairF4U1D_Original');assert.deepEqual(source.userData.provenance.thirdPartyMeshes,[]);assert.deepEqual(source.userData.provenance.thirdPartyTextures,[]);
  AircraftArticulation.install(model,'corsair');assert(model.userData.nativeCorsair);AircraftArticulation.install(model,'corsair');assert(!model.getObjectByName('flightFlaps'));
  CorsairRig.update(model,{gear:0,dive:1,flaps:{left:1,right:.2},roll:.8,pitch:.5,bombs:2,rockets:8});
