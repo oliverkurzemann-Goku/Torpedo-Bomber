@@ -299,7 +299,7 @@
   <div style="width:100%;height:4px;background:repeating-linear-gradient(45deg,#ffd400,#ffd400 8px,#111 8px,#111 16px);"></div>
   <span id="testVersionBannerText" style="background:#111;color:#ffd400;font-family:monospace;font-weight:800;font-size:11px;letter-spacing:.5px;padding:3px 10px;border:1px solid #ffd400;border-top:none;border-radius:0 0 6px 6px;"></span>
 </div>
-<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 222';</script>
+<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 223';</script>
 <!-- ===== END TEMP TEST-ONLY VERSION BANNER ===== -->
 <div id="app"></div>
 <style>
@@ -340,7 +340,7 @@
   <div id="flash"></div>
   <div id="gunsight"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 222 · REAL RHINE</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 223 · REAL RHINE</div>
 
   <div id="apr">
     <div id="aprCall"></div>
@@ -392,7 +392,7 @@
 </div>
 
 <div class="overlay hidden" id="menu" data-campaign="europe">
-  <div class="menuTop"><a id="selBtn" href="index.html?v=222">&#9664; Change Game</a><span class="menuMeta">RHINE OPERATIONS<br>BUILD 222</span></div>
+  <div class="menuTop"><a id="selBtn" href="index.html?v=223">&#9664; Change Game</a><span class="menuMeta">RHINE OPERATIONS<br>BUILD 223</span></div>
   <div class="card menuCard">
     <aside class="menuOverview" aria-label="Campaign and pilot options">
     <div class="campaignArt" aria-hidden="true"></div>
@@ -511,7 +511,7 @@
 <script src="terrain-system/LivingWorld.js?v=179"></script>
 <script src="campaign.js?v=1"></script>
 <script src="game-runtime.js?v=198"></script>
-<script src="sortie-checkpoint.js?v=222"></script>
+<script src="sortie-checkpoint.js?v=223"></script>
 <script src="ju87-native.js?v=218"></script>
 <script src="me262-native.js?v=206"></script>
 <script src="me163-native.js?v=218"></script>
@@ -535,15 +535,15 @@
 <script src="sortie-service.js?v=206"></script>
 <script src="pilot-rescue.js?v=179"></script>
 <script src="radio-intercept.js?v=157"></script>
-<script src="audio/weapon-sound.js?v=144"></script>
+<script src="audio/weapon-sound.js?v=223"></script>
 <script src="audio/throttle-response.js?v=218"></script><script src="audio/jet-engine.js?v=218"></script>
 <script src="audio/flight-atmosphere.js?v=175"></script>
 <script src="sortie-systems.js?v=198"></script>
 <script src="me262-performance.js?v=206"></script>
 <script src="flight-envelope.js?v=219"></script>
-<script src="flight-dynamics.js?v=219"></script>
+<script src="flight-dynamics.js?v=223"></script>
 <script src="flight-core.js?v=219"></script>
-<script src="audio/aircraft-engine.js?v=218"></script>
+<script src="audio/aircraft-engine.js?v=223"></script>
 <script src="p47-performance.js?v=204"></script>
 <script src="sortie-features.js?v=218"></script>
 <script src="ground-run.js?v=204"></script>
@@ -551,7 +551,7 @@
 <script src="flight-indicators.js?v=198"></script>
 <script src="sortie-fuel.js?v=206"></script>
 <script src="operation-plans.js?v=198"></script>
-<script src="custom-sortie.js?v=222"></script>
+<script src="custom-sortie.js?v=223"></script>
 <script>
 // ============================================================
 //  REMAGEN 1945 — REAL TERRAIN (forked from thunderbolt-europe.html)
@@ -892,7 +892,7 @@ async function loadRealWorld(){
 
   if(OSMManager.BUILD!==23||HistoricalObjectManager.BUILD!==21||LivingWorld.BUILD!==22||WorldVehicles.BUILD!==22) throw new Error('Terrain version mismatch. Reload Remagen.');
   document.getElementById('testVersionBannerText').textContent=
-    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 222 · MODULE 23';
+    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 223 · MODULE 23';
   heightProvider=new DEMHeightProvider(RTILE,'terrain-system/real/data/dem/');
   terrain=new TerrainManager(scene,RTILE,heightProvider);
   osmMgr=new OSMManager(scene,RTILE,terrain,'terrain-system/real/data/osm/');
@@ -4387,13 +4387,14 @@ function updateFlight(dt){
   // Exact same change as torpedo-carrier.html's updateFlight; see its comment for the derivation.
   const dmgF = (P.hull < d.hull*0.6) ? (0.55+0.45*P.hull/(d.hull*0.6)) : 1.0;
   const auth = (P.spd<stallSpd ? 0.4 : 1.0)*dmgF;
-  const feel=FlightDynamics.authority(P.ac,P.spd,stallSpd);
+  const pilot=FlightDynamics.playerControls(P.ac,inputRoll,inputPitch),feel=FlightDynamics.authority(P.ac,P.spd,stallSpd);
+  if(!aeroMode){feel.roll*=pilot.response;feel.pitch*=pilot.response;}
   // Build 219: lift / load-factor context shared by turn, pull and the energy model.
   const liftCtx={loadSpeed:load.speed,stallPenalty:controls.stallPenalty,gFactor:configuration.gFactor,flaps:controls.flaps.mean};
   // Build 218: quicker assisted pitch response; target and energy envelope stay unchanged.
   const pitchRate=2.9*auth*d.pitchAuth*feel.pitch*controls.pitch*load.inertia*configuration.authority, rollRate=4.8*auth*d.rollAuth*feel.roll*controls.roll*load.inertia*configuration.authority;
-  const commandRoll=d.stickExponent?Math.sign(inputRoll)*Math.pow(Math.abs(inputRoll),d.stickExponent):inputRoll;
-  const commandPitch=d.stickExponent?Math.sign(inputPitch)*Math.pow(Math.abs(inputPitch),d.stickExponent):inputPitch;
+  const commandRoll=d.stickExponent?Math.sign(inputRoll)*Math.pow(Math.abs(inputRoll),d.stickExponent):pilot.roll;
+  const commandPitch=d.stickExponent?Math.sign(inputPitch)*Math.pow(Math.abs(inputPitch),d.stickExponent):pilot.pitch;
   const biasDecay = (P.gear>0.5)? 0.9 : 0.35;
   P.rollBias = Math.max(-0.16, Math.min(0.16, (P.rollBias||0)*(1-biasDecay*dt)));
   const totalBias=P.rollBias+controls.bias;
@@ -4475,7 +4476,7 @@ function updateFlight(dt){
     const law=FlightEnvelope.turn(P.ac,P.roll,P.spd,liftCtx);
     // Bank alone still turns in AERO, while pulling tightens the turn. The
     // old AERO path removed this entirely, making even 90° of bank feel inert.
-    P.heading+=(aeroMode?0.72*Math.sin(P.roll):Math.sign(P.roll))*law.rate*dt;
+    P.heading+=(aeroMode?0.72*Math.sin(P.roll):Math.sign(P.roll))*law.rate*pilot.turn*dt;
     // The load factor really flown feeds the energy model next frame (turns and pull-ups cost speed).
     P.nLoad=FlightEnvelope.flownLoad(P.ac,law.n,P.pitch,P.pitchVel,P.spd);
   }
@@ -5706,11 +5707,11 @@ function aeroGateSpeed(kind){
 function toggleAero(){
   if(state!==ST.FLIGHT||!P.alive)return;
   const d=acDef(),agl=P.pos.y-groundY(P.pos.x,P.pos.z);
-  const gate=Math.max(d.stall*1.3,aeroGateSpeed(P.ac));
-  if(!aeroMode&&(P.onGround||P.gear>0.35||P.spd<gate||agl<280)){
+  const gate=Math.max(d.stall*1.3,aeroGateSpeed(P.ac)),retractableGear=P.ac!=='ju87';
+  if(!aeroMode&&(P.onGround||(retractableGear&&P.gear>0.35)||P.spd<gate||agl<280)){
     // Show the speed the loop needs in the same (indicated) units as the speed readout.
     const need=Math.ceil((P.ac==='p47'?P47Performance.indicated(gate,P.pos.y):gate)*KT);
-    flash('AERO: CLIMB, GEAR UP, BUILD SPEED'+(P.spd<gate?' · '+need+' MPH':''),1200);return;
+    flash('AERO: CLIMB, '+(retractableGear?'GEAR UP, ':'')+'BUILD SPEED'+(P.spd<gate?' · '+need+' MPH':''),1200);return;
   }
   if(aeroMode&&(Math.abs(P.pitch)>d.pitchLim*.95||Math.abs(P.roll)>d.rollLim*.95)){
     flash('COMPLETE THE MANOEUVRE FIRST',1200);return;
@@ -6020,7 +6021,7 @@ function init(){
   buildMenu();
   // menu wiring
   document.getElementById('startBtn').onclick=()=>showBrief(selectedMission);
-  document.getElementById('pauseMainMenu').onclick=async()=>{globalThis.sortieCheckpoint?.save();await globalThis.sortieCheckpoint?.flush();exitToMenuFromPause(true);window.location.href='index.html?v=222';};
+  document.getElementById('pauseMainMenu').onclick=async()=>{globalThis.sortieCheckpoint?.save();await globalThis.sortieCheckpoint?.flush();exitToMenuFromPause(true);window.location.href='index.html?v=223';};
   document.getElementById('logBtn').onclick=()=>{ show('menu',false); showLogbook(); };
   document.getElementById('skipLaunchPreview').onclick=()=>finishLaunchIntro();
   document.getElementById('brBack').onclick=()=>{ show('brief',false); show('menu',true);if(navigation){navigation.reset();navigation.button.style.display='none';} state=ST.MENU; };
@@ -6225,6 +6226,6 @@ function reportStartupError(err){
 const hangarRequest=CustomSortie.install('europe',MISSIONS,FlightPlans.europe,window.location.search);
 window.addEventListener('load',()=>{try{init();}catch(err){reportStartupError(err);}});
 </script>
-<script src="checkpoint-rhine.js?v=222"></script>
+<script src="checkpoint-rhine.js?v=223"></script>
 </body>
 </html>

@@ -49,14 +49,14 @@ const server=http.createServer((req,res)=>{
      for(const v of [Math.round(vmax*.45),Math.round(vmax*.7)]){
       setup(v);inputRoll=1;let peak=0,prev=P.roll;
       for(let i=0;i<60*3;i++){updateFlight(1/60);peak=Math.max(peak,Math.abs(P.roll-prev)*60);prev=P.roll;}
-      out.roll[v]={measured:peak/DEG,expected:E.rollRate(kind,v)/DEG};
+      out.roll[v]={measured:peak/DEG,expected:E.rollRate(kind,v)*FlightDynamics.playerControls(kind,1,1).response/DEG};
      }
      // 360 degree turn, full stick, time and speed lost
      out.turn={};
      for(const v of [90]){
       setup(Math.min(v,Math.round(vmax*.85)));inputRoll=1;let travelled=0,last=P.heading,t=null;const v0=P.spd;
       for(let i=0;i<60*40;i++){updateFlight(1/60);travelled+=Math.abs(unwrap(P.heading,last));last=P.heading;if(travelled>=2*Math.PI){t=(i+1)/60;break;}}
-      out.turn[v]={t,v0:+v0.toFixed(0),vEnd:+P.spd.toFixed(0),predicted:2*Math.PI/E.turn(kind,P.roll,v0,{loadSpeed:1}).rate};
+      out.turn[v]={t,v0:+v0.toFixed(0),vEnd:+P.spd.toFixed(0),predicted:2*Math.PI/(E.turn(kind,P.roll,v0,{loadSpeed:1}).rate*FlightDynamics.playerControls(kind,1,1).turn)};
      }
      // closed throttle
      out.idle={};

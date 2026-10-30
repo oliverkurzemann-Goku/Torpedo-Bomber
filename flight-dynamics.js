@@ -27,6 +27,11 @@ function authority(type,speed,stall){
  const roll=E&&E.derived[type]?clamp(E.rollRate(type,speed)/E.rollPeak(type),.12,1):1-fast*(1-q.floor);
  return {roll:slow*roll,pitch:slow*(1-fast*(1-q.floor)*.55),turn:1};
 }
+// Player-only touch response. Aircraft data, energy model and AI remain independent.
+function playerControls(type,roll,pitch){
+ const calm=type==='zero'||type==='bf109',shape=x=>calm?Math.sign(x)*Math.pow(Math.abs(x),1.5):x;
+ return {roll:shape(roll),pitch:shape(pitch),response:calm?.80:1,turn:calm?.78:1};
+}
 function acceleration(type,p,o={}){
  const q=profile(type),v=Math.max(32,p.spd||0),mass=clamp(o.loadRatio??1,.8,1.5),power=(p.fuel??100)<=0?0:clamp(o.power??1,0,1);
  const bank=clamp(Math.abs(Math.sin(o.bank??p.roll??0)),0,1),E=root.FlightEnvelope;
@@ -69,6 +74,6 @@ function step(p,dt,o={}){
  }
  return p.spd;
 }
-root.FlightDynamics={profiles,profile,kind,authority,acceleration,step};
+root.FlightDynamics={profiles,profile,kind,authority,playerControls,acceleration,step};
 if(typeof module==='object'&&module.exports)module.exports=root.FlightDynamics;
 })(typeof window==='undefined'?globalThis:window);

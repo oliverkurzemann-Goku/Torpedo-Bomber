@@ -7,10 +7,10 @@ const script=typeof document!=='undefined'?document.currentScript:null;
 const base=script?new URL('engines/',script.src).href:'audio/engines/';
 const profiles={
  p47:{"engine":"R-2800 · 18-cylinder radial","bank":"r2800","revision":217,"approved":true,"approvedChoice":"P47 A","idleFile":"approved/r2800-idle.wav","powerFile":"approved/p47-a-power.wav","rate":1,"spool":0.3,"bass":0,"bright":10000,"source":"Fight2FlyPhoto ground recording + original game exhaust accents","match":"Approved deep, gritty P-47 audition A. Ground recording plus original exhaust accents."},
- corsair:{engine:'R-2800 · 18-cylinder radial',bank:'r2800',revision:216,growl:true,rate:1.035,spool:.9,bass:.5,bright:7100,source:'R-2800 recordings from a P-47D · Fight2FlyPhoto',match:'Same engine family; Corsair exhaust and three-blade propeller are an approximation.'},
+ corsair:{engine:'R-2800 · 18-cylinder radial',bank:'r2800',revision:223,approved:true,approvedChoice:'R-2800 · Corsair',idleFile:'approved/r2800-idle.wav',powerFile:'approved/p47-a-power.wav',rate:1.035,powerPitch:1.035,spool:.3,bass:0,bright:10000,source:'Fight2FlyPhoto R-2800 ground recording + original game exhaust accents',match:'Shared R-2800 family; approved rough power layer replaces the muted legacy growl blend.'},
  fw190:{"engine":"BMW 801 · 14-cylinder radial","bank":"bmw801","revision":217,"approved":true,"approvedChoice":"Fw190 Kerniger Sternmotor","idleFile":"approved/bmw801-idle.wav","powerFile":"approved/fw190-power.wav","rate":1,"spool":0.3,"bass":0,"bright":10000,"source":"Fight2FlyPhoto ground recording + original game exhaust accents","match":"Approved Fw 190 audition: BMW ground recording with original exhaust accents."},
  bf109:{"engine":"DB 601 · inverted V12","bank":"db601","revision":217,"approved":true,"approvedChoice":"Me109 Trockenes V12 Knurren","idleFile":"approved/db601-idle.wav","powerFile":"approved/bf109-power.wav","rate":1,"spool":0.3,"bass":0,"bright":10000,"source":"Fight2FlyPhoto ground recording + original game exhaust accents","match":"Approved dry V12 audition: DB 601 ground recording with original exhaust accents."},
- ju87:{engine:'Jumo 211 · inverted V12',bank:'jumo',rate:1,spool:.9,bass:1,bright:5800,source:'Stuka-labelled archival effect · craigsmith / USC',match:'Archival film sound effect; exact engine provenance is unverified.'},
+ ju87:{engine:'Jumo 211 · inverted V12',bank:'jumo',steadyPower:true,rate:1,spool:.9,bass:1,bright:5800,source:'Stuka-labelled archival effect · craigsmith / USC',match:'Archival film sound effect; exact engine provenance is unverified.'},
  avenger:{"engine":"R-2600 · 14-cylinder radial","bank":"r2800","revision":217,"approved":true,"approvedChoice":"P47 C","idleFile":"approved/r2800-idle.wav","powerFile":"approved/avenger-c-power.wav","rate":1,"spool":0.3,"bass":0,"bright":10000,"source":"Fight2FlyPhoto ground recording + original game exhaust accents","match":"Approved powerful audition C, adapted from the P-47 source family for Avenger."},
  sbd:{"engine":"R-1820 · 9-cylinder radial","bank":"r2800","revision":217,"approved":true,"approvedChoice":"P47 B","idleFile":"approved/r2800-idle.wav","powerFile":"approved/sbd-b-power.wav","rate":1,"spool":0.3,"bass":0,"bright":10000,"source":"Fight2FlyPhoto ground recording + original game exhaust accents","match":"Approved rough, uneven audition B, adapted from the P-47 source family for Dauntless."},
  zero:{"engine":"Sakae · 14-cylinder radial","bank":"bmw801","revision":217,"approved":true,"approvedChoice":"Zero Leicht und lebhaft","idleFile":"approved/bmw801-idle.wav","powerFile":"approved/zero-power.wav","rate":1.075,"spool":0.3,"bass":0,"bright":10000,"source":"Fight2FlyPhoto ground recording + original game exhaust accents","match":"Approved lively Zero audition. Adapted BMW source; not a Sakae recording."},
@@ -52,6 +52,17 @@ async function preparePower(ctx,buffer,p,kind){
  for(let i=0;i<length;i++){let x=rendered[i]*normalize,mag=Math.abs(x);samples[i]=mag>.64?Math.sign(x)*(.64+.12*(-Math.expm1(-(mag-.64)/.12))):x;}
  return out;
 }
+// Remove slow recording/loop pumping while retaining individual combustion pulses.
+function steadyPower(ctx,buffer){
+ const length=buffer.length,rate=buffer.sampleRate,samples=buffer.getChannelData(0),energy=new Float32Array(length);let mean=0;
+ for(const x of samples)mean+=x;mean/=length;
+ for(let i=0;i<length;i++)energy[i]=(samples[i]-mean)**2;
+ function circular(a,width){const out=new Float32Array(length),half=Math.floor(width/2);let sum=0;for(let j=-half;j<width-half;j++)sum+=a[(j+length)%length];for(let i=0;i<length;i++){out[i]=sum/width;sum+=a[(i+width-half)%length]-a[(i-half+length)%length];}return out;}
+ const envelope=circular(energy,Math.round(rate*.12)),gain=new Float32Array(length);
+ for(let i=0;i<length;i++)gain[i]=clamp(.20/Math.sqrt(envelope[i]+1e-12),.35,2.8);
+ const smooth=circular(gain,Math.round(rate*.035)),out=ctx.createBuffer(1,length,rate),dst=out.getChannelData(0);
+ for(let i=0;i<length;i++)dst[i]=(samples[i]-mean)*smooth[i];return out;
+}
 function create(ctx,destination){
  const bus=ctx.createGain(),hp=ctx.createBiquadFilter(),tone=ctx.createBiquadFilter(),body=ctx.createBiquadFilter();
  bus.gain.value=0;hp.type='highpass';hp.frequency.value=28;hp.Q.value=.5;
@@ -68,7 +79,7 @@ function create(ctx,destination){
     const url=base+file+(p.revision?'?v='+p.revision:''),res=await fetch(url);
     if(!res.ok)throw Error('Engine sample '+res.status+': '+url);
     const decoded=await ctx.decodeAudioData(await res.arrayBuffer());
-    return layer==='power'&&p.growl?preparePower(ctx,decoded,p,kind):decoded;
+    return layer==='power'&&p.steadyPower?steadyPower(ctx,decoded):layer==='power'&&p.growl?preparePower(ctx,decoded,p,kind):decoded;
    }));buffers.set(key,promise);
    promise.catch(()=>{if(buffers.get(key)===promise)buffers.delete(key);});
   }
@@ -104,7 +115,7 @@ function create(ctx,destination){
   current.layers[0].gain.gain.setTargetAtTime(Math.sqrt(1-mix),now,.08);
   current.layers[1].gain.gain.setTargetAtTime(Math.sqrt(mix),now,.08);
   rpm=p.rate*(.94+.18*load);
-  const powerRate=p.approved?.68+.44*load:p.rate*(.78+.34*load);
+  const powerRate=p.approved?(.68+.44*load)*(p.powerPitch||1):p.rate*(.78+.34*load);
   current.layers[0].source.playbackRate.setTargetAtTime(rpm,now,.08);
   current.layers[1].source.playbackRate.setTargetAtTime(powerRate,now,.08);
   hp.frequency.setTargetAtTime(p.lowCut||28,now,.12);

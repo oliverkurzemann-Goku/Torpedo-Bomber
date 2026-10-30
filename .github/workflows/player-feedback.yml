@@ -1,0 +1,36 @@
+name: Player sound and controls
+on:
+  push:
+    branches: [main, codex/player-feedback-223]
+    paths: ['audio/**', 'flight-dynamics.js', 'remagen-mission.html', 'torpedo-carrier.html', 'sortie-preview.js', 'okinawa/tests/player-feedback.cjs', '.github/workflows/player-feedback.yml']
+jobs:
+  sound:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: node audio/tests/player-feedback.cjs
+      - run: node audio/tests/linear-throttle.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: player-audio
+          path: test-visuals/*audio.json
+  flight:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: node okinawa/tests/player-feedback.cjs && node okinawa/tests/pitch-response.cjs
+      - run: node okinawa/tests/flight-envelope-browser.cjs
+      - run: node okinawa/tests/sortie-preview-browser.cjs

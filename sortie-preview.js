@@ -45,7 +45,7 @@
   function message(text,busy=false){status.textContent=text;host.setAttribute('aria-busy',String(busy));}
   function render(){frameRequest=0;if(!renderer||!model||document.hidden)return;const w=host.clientWidth,h=host.clientHeight;if(!w||!h)return;
    camera.aspect=w/h;camera.updateProjectionMatrix();renderer.setSize(w,h,false);
-   fit=9/Math.tan(camera.fov*Math.PI/360)/Math.min(1.4,camera.aspect);const d=fit*zoom;
+   fit=7/Math.tan(camera.fov*Math.PI/360)/Math.min(1.4,camera.aspect);const d=fit*zoom;
    camera.position.set(Math.sin(yaw)*Math.cos(pitch)*d,Math.sin(pitch)*d,Math.cos(yaw)*Math.cos(pitch)*d);camera.lookAt(0,0,0);renderer.render(scene,camera);
   }
   const draw=()=>{if(!frameRequest)frameRequest=requestAnimationFrame(render);};
