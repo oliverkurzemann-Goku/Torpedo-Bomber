@@ -66,7 +66,7 @@ const server=http.createServer((req,res)=>{
     result[kind].transition={idle:metrics(1,2),full:metrics(10,15),returned:metrics(24,26),muted:metrics(29,30)};
    }
    // Same-bank Corsair must still load its own ground power buffer after P47.
-   const originalFetch=window.fetch,urls=[];try{window.fetch=(url,...args)=>{urls.push(String(url));return originalFetch(url,...args);};const offline=new OfflineAudioContext(1,24000,24000),node=AircraftEngine.create(offline,offline.destination);await node.ready('p47');await node.ready('corsair');if(!urls.some(u=>/r2800-power\.wav/.test(u)))throw Error('P47 powered buffer leaked to Corsair');}finally{window.fetch=originalFetch;}
+   const originalFetch=window.fetch,urls=[];try{window.fetch=(url,...args)=>{urls.push(String(url));return originalFetch(url,...args);};const offline=new OfflineAudioContext(1,24000,24000),node=AircraftEngine.create(offline,offline.destination);await node.ready('p47');await node.ready('corsair');if(!urls.some(u=>/approved\/p47-a-power\.wav/.test(u)))throw Error('Approved shared R-2800 power buffer missing');}finally{window.fetch=originalFetch;}
    // Missing files surface an error; there is no silent synthesized fallback.
    const oldFetch=window.fetch;let failure;
    try{
