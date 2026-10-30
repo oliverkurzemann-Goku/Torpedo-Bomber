@@ -17,20 +17,26 @@ for(const q of items)if(q.pivot)q.surface.transform(p=>G.add(p,q.pivot));
 const number=Paint.glyph('27'),mix=(a,b,t)=>a.map((v,i)=>v+(b[i]-v)*t),dist=(v,p)=>Math.abs(v/p-Math.round(v/p))*p;
 const star=Array.from({length:10},(_,i)=>{const a=-Math.PI/2+i*Math.PI/5,r=i%2?.382:1;return [Math.cos(a)*r,Math.sin(a)*r];});
 function insignia(u,v){let inside=false;for(let i=0,j=9;i<10;j=i++)if((star[i][1]>v)!==(star[j][1]>v)&&u<(star[j][0]-star[i][0])*(v-star[i][1])/(star[j][1]-star[i][1])+star[i][0])inside=!inside;if(inside||Math.abs(v)<.25&&Math.abs(u)<1.60)return 'white';if(Math.hypot(u,v)<1.08||Math.abs(v)<.34&&Math.abs(u)<1.68)return 'blue';return null;}
-function paint(p,n,tag){const [x,y,z]=p,a=Math.abs(x);let rgb=[29,47,66],h=0;const fade=Math.max(0,n[1])*.35+Paint.fbm(x*3,y*3,z*3,27,3)*.13;rgb=mix(rgb,[70,88,105],fade);const grain=Paint.noise(x*90,y*90,z*90,73);rgb=rgb.map(v=>v+(grain-.5)*7);let seam=false,rivet=false;
+function paint(p,n,tag){const [x,y,z]=p,a=Math.abs(x);let rgb=[29,47,66],h=0;const fade=Math.max(0,n[1])*.22+Paint.fbm(x*3,y*3,z*3,27,3)*.075;rgb=mix(rgb,[70,88,105],fade);const grain=Paint.noise(x*90,y*90,z*90,73);rgb=rgb.map(v=>v+(grain-.5)*5);let seam=false,rivet=false;
  if(tag==='body'||tag==='cowl'){const theta=Math.atan2(x,y),ring=tag==='cowl'?dist(z-2.72,.53):dist(z-.05,.62);seam=ring<.007||dist(theta,.52)<.006;rivet=ring<.032&&dist(theta,.12)<.018||dist(theta,.52)<.028&&dist(z,.075)<.012;if(tag==='cowl'&&Math.abs(z-2.74)<.025)seam=true;
- if(z<2.65&&z>.35){const t=(2.65-z)/2.3,st=Math.exp(-(((y+.40+t*.1)/(.06+.17*t))**2))*Math.max(0,Math.abs(n[0])-.4);rgb=mix(rgb,[20,21,21],st*.8);}}
+ if(z<2.65&&z>.35){const t=(2.65-z)/2.3,st=Math.exp(-(((y+.40+t*.1)/(.06+.17*t))**2))*Math.max(0,Math.abs(n[0])-.4);rgb=mix(rgb,[20,21,21],st*.62);}}
  else{seam=dist(a,.56)<.006||dist(z+.1,.46)<.005;rivet=dist(a,.56)<.026&&dist(z,.085)<.012||dist(z+.1,.46)<.022&&dist(a,.085)<.013;if(tag==='wing'&&a>3.7&&z<.2)rgb=rgb.map(v=>v+Math.cos(a*28)*1.1);}
  if(seam){rgb=mix(rgb,[9,20,29],.26);h=-.27;}else if(rivet){rgb=mix(rgb,[10,19,26],.28);h=-.18;}
- if(tag==='wing'&&a<1.15&&z<.6&&z>-1.45&&n[1]>.5){rgb=[26,32,35];if(grain>.72)rgb=[61,68,70];}
+ if(tag==='wing'&&a<1.15&&z<.6&&z>-1.45&&n[1]>.5){rgb=mix(rgb,[26,32,35],.82);if(grain>.76)rgb=mix(rgb,[65,70,72],.43);}
+ // Restrained service wear: leading-edge paint abrasion and light access-panel scuffs,
+ // concentrated at the cowl and wing roots rather than random heavy scratching.
+ const leading=tag==='wing'&&n[2]>.5&&a>1.1&&a<5.6;
+ const scuff=Paint.noise(x*46,y*46,z*46,87);
+ if(leading&&scuff>.82)rgb=mix(rgb,[116,124,129],.23);
+ if(tag==='body'&&z>1.5&&z<2.7&&y<-.25&&grain>.72)rgb=mix(rgb,[59,48,42],.20);
  let mark=null;if(tag==='body'&&Math.abs(n[0])>.6){mark=insignia((z+2.55)/.53,(.04-y)/.53);const u=(x<0?z+.93:-z-.93)/(.52*number.aspect)+.5;if(number.sample(u,(.30-y)/.52)>.5)rgb=[228,232,225];}
  if(tag==='wing'&&((x<0&&n[1]>.4)||(x>0&&n[1]<-.4)))mark=insignia((a-4.72)/.61,(z+.18)/.61);
  if(tag==='fin'&&number.sample((z+4.98)/(.30*number.aspect),(1.76-y)/.30)>.5)rgb=[225,230,222];if(mark)rgb=mark==='white'?[228,232,224]:[13,26,45];
- const chip=Paint.noise(x*173,y*173,z*173,51),wear=(tag==='wing'&&a<2.5&&n[1]>.2)||(tag==='cowl');if(wear&&chip>.79&&(seam||grain>.68))rgb=mix(rgb,[151,160,164],.75);return {rgb,h};}
+ const chip=Paint.noise(x*173,y*173,z*173,51),wear=(tag==='wing'&&a<2.5&&n[1]>.2)||(tag==='cowl');if(wear&&chip>.85&&(seam||grain>.76))rgb=mix(rgb,[139,150,155],.43);return {rgb,h};}
 console.log('Baking original Corsair paint');const tex=Paint.bake(items.map(q=>({...q,normals:q.surface.normals()})),2048,paint),albedo=Paint.toPng(tex),normal=Paint.normalPng(tex,1.8,1024);
 const w=new GlbWriter({extras:{title:S.title,author:'Oliver Kurzemann / Torpedo-Bomber original model',license:'project-own; original authored geometry and textures',source:'scripts/build-own-corsair.cjs',provenance:S.provenance,reference:S.reference,assumptions:S.assumptions}}),alb=w.image(albedo),nrm=w.image(normal);
 const mat=(name,c,rough=.65,metal=0)=>w.material({name,pbrMetallicRoughness:{baseColorFactor:[...c,1],roughnessFactor:rough,metallicFactor:metal}});
-const M={paint:w.material({name:'Authored sea-blue paint, rivets and weathering',pbrMetallicRoughness:{baseColorTexture:{index:alb},roughnessFactor:.48,metallicFactor:.12},normalTexture:{index:nrm,scale:.20}}),navy:mat('Sea blue fittings',[.016,.032,.053],.5,.12),green:mat('Cockpit green',[.10,.15,.085]),black:mat('Rubber and propeller',[.009,.012,.015],.82),metal:mat('Aluminium',[.40,.44,.46],.32,.72),dark:mat('Engine shadow',[.015,.019,.022]),steel:mat('Engine steel',[.17,.19,.20],.4,.72),yellow:mat('Propeller yellow tips',[.83,.60,.07]),rust:mat('Exhaust metal',[.09,.065,.05],.7,.35),seat:mat('Seat leather',[.12,.075,.04]),khaki:mat('Pilot flight suit',[.30,.26,.16]),skin:mat('Pilot face',[.44,.29,.18]),white:mat('Instrument markings',[.76,.79,.72]),glass:w.material({name:'Clear bubble glazing',alphaMode:'BLEND',doubleSided:true,pbrMetallicRoughness:{baseColorFactor:[.33,.52,.59,.28],metallicFactor:.04,roughnessFactor:.08}})};
+const M={paint:w.material({name:'Authored sea-blue paint, rivets and weathering',pbrMetallicRoughness:{baseColorTexture:{index:alb},roughnessFactor:.59,metallicFactor:.09},normalTexture:{index:nrm,scale:.20}}),navy:mat('Sea blue fittings',[.016,.032,.053],.5,.12),green:mat('Cockpit green',[.10,.15,.085]),black:mat('Rubber and propeller',[.009,.012,.015],.82),metal:mat('Aluminium',[.40,.44,.46],.32,.72),dark:mat('Engine shadow',[.015,.019,.022]),steel:mat('Engine steel',[.17,.19,.20],.4,.72),yellow:mat('Propeller yellow tips',[.83,.60,.07]),rust:mat('Exhaust metal',[.09,.065,.05],.7,.35),seat:mat('Seat leather',[.12,.075,.04]),khaki:mat('Pilot flight suit',[.30,.26,.16]),skin:mat('Pilot face',[.44,.29,.18]),white:mat('Instrument markings',[.76,.79,.72]),glass:w.material({name:'Clear bubble glazing',alphaMode:'BLEND',doubleSided:true,pbrMetallicRoughness:{baseColorFactor:[.33,.52,.59,.28],metallicFactor:.04,roughnessFactor:.08}})};
 const top=w.node({name:'CorsairF4U1D_Original',extras:{nativeAircraft:'corsair-f4u1d-original-v1',kind:'corsair',dimensions:S.dimensions,provenance:S.provenance,reference:S.reference,assumptions:S.assumptions}});
 let triangles=0;const node=(name,s,m,parent=top,pivot=null,extras={})=>{s.clean();triangles+=s.triangles();if(pivot)s.transform(p=>G.sub(p,pivot));const n=s.normals();return w.node({name,translation:pivot||undefined,extras,mesh:w.mesh(name,{positions:s.p,normals:Array.from(n),uvs:m===M.paint?s.uv:undefined,tangents:m===M.paint?Array.from(s.tangents(n)):undefined,indices:s.i,material:m})},parent);};
 for(const [name,s]of [['Fuselage',body],['InvertedGullWing',wing.surface],['Tailplane',tail.surface],['VerticalFin',fin.surface],['Cowling',cowl]])node(name,s,M.paint);node('CowlingInnerLip',innerCowl,M.navy);
@@ -50,13 +56,38 @@ node('PilotSeat',P.bar('Seat back',[0,.35,-.98],[0,.86,-1.02],.38,.07,[0,0,1]),M
 node('PilotNeck',P.cylinder('Neck',[0,.79,-.73],[0,.95,-.73],.065,.065,16),M.skin);for(const side of [-1,1]){node('PilotArm'+side,P.cylinder('Sleeve',[side*.16,.72,-.72],[side*.20,.54,-.44],.075,.06,16),M.khaki);node('PilotHand'+side,P.blister('Glove',[side*.15,.51,-.40],.06,.09,.07,16,10),M.seat);}node('PilotGoggles',P.bar('Goggles',[-.085,1.04,-.61],[.085,1.04,-.61],.045,.025,[0,1,0]),M.black);
 node('InstrumentPanel',P.bar('Panel',[0,.47,.08],[0,.80,.08],.55,.05,[0,0,1]),M.dark);
 const dials=new G.Surface('DialNeedles');for(const [x,y]of [[-.16,.69],[0,.71],[.16,.69],[-.1,.53],[.1,.53]]){dark.append(P.cylinder('Gauge',[x,y,.043],[x,y,.025],.065,.065,24));metal.append(P.lathe('Gauge rim',[[.020,.066],[.025,.070],[.03,.066]],{origin:[x,y,0],ring:24}));dials.append(P.bar('Needle',[x,y,.015],[x+.025,y+.027,.015],.006,.003));}node('DialNeedles',dials,M.white);dark.append(P.cylinder('Control stick',[0,.35,-.50],[0,.62,-.43],.018,.025,10));
-const canopyStations=[{z:-1.40,base:.61,top:.78,half:.25},{z:-1.22,base:.58,top:1.02,half:.35},{z:-.90,base:.56,top:1.20,half:.40},{z:-.55,base:.56,top:1.24,half:.415},{z:-.12,base:.56,top:1.19,half:.395}],cf=G.table(canopyStations,'z',['base','top','half']),cz=P.samples(-1.4,-.12,.035,canopyStations.map(s=>s.z));
+// F4U-1D late sliding hood: narrower, lower, and more streamlined than v1.
+ // Transparent sliding hood starts aft of the fixed sloped windscreen.
+ const canopyStations=[{z:-1.52,base:.60,top:.72,half:.20},{z:-1.37,base:.58,top:.92,half:.29},{z:-1.08,base:.57,top:1.075,half:.345},{z:-.78,base:.56,top:1.13,half:.355},{z:-.46,base:.56,top:1.105,half:.345},{z:-.27,base:.56,top:1.035,half:.325}],cf=G.table(canopyStations,'z',['base','top','half']),cz=P.samples(-1.52,-.27,.035,canopyStations.map(s=>s.z));
 const curve=z=>Array.from({length:41},(_,i)=>{const t=Math.PI*i/40;return [cf.half(z)*Math.cos(t),cf.base(z)+(cf.top(z)-cf.base(z))*Math.sin(t),z];});
 const bubble=new G.Surface('BubbleCanopy');bubble.grid(cz.map(curve));bubble.orient(0,p=>[p[0],p[1]-.56,0]);node('BubbleCanopyGlass',bubble,M.glass);
-const frames=new G.Surface('CanopyFrame');for(const z of [-1.4,-.12]){const c=curve(z);for(let i=0;i<c.length-1;i++)frames.append(P.cylinder('Hood perimeter',c[i],c[i+1],.014,.014,8));}for(const side of [-1,1])for(let k=0;k<cz.length-1;k++)frames.append(P.cylinder('Lower sill',[side*cf.half(cz[k]),cf.base(cz[k]),cz[k]],[side*cf.half(cz[k+1]),cf.base(cz[k+1]),cz[k+1]],.022,.022,8));
-const back=curve(-.12),front=back.map((p,i)=>{const t=Math.PI*i/40;return [.28*Math.cos(t),.63+.21*Math.sin(t),.62-.14*Math.sin(t)];}),screen=new G.Surface('Windscreen');screen.grid([back,front]);screen.orient(0,p=>[p[0],p[1]-.56,1]);node('FixedWindscreen',screen,M.glass);
-for(let i=0;i<front.length-1;i++)frames.append(P.cylinder('Front seal',front[i],front[i+1],.016,.016,8));for(const i of [0,12,28,40])frames.append(P.cylinder('Windshield frame',back[i],front[i],.016,.016,8));node('CanopyFrames',frames,M.navy);
-const gear=w.node({name:'LandingGear',extras:{articulationPart:true}},top);
+const frames=new G.Surface('CanopyFrame');for(const z of [-1.52,-.27]){const c=curve(z);for(let i=0;i<c.length-1;i++)frames.append(P.cylinder('Hood perimeter',c[i],c[i+1],.014,.014,8));}for(const side of [-1,1])for(let k=0;k<cz.length-1;k++)frames.append(P.cylinder('Lower sill',[side*cf.half(cz[k]),cf.base(cz[k]),cz[k]],[side*cf.half(cz[k+1]),cf.base(cz[k+1]),cz[k+1]],.022,.022,8));
+const back=curve(-.27),front=back.map((p,i)=>{const t=Math.PI*i/40;return [.28*Math.cos(t),.63+.22*Math.sin(t),.66-.16*Math.sin(t)];}),screen=new G.Surface('Windscreen');screen.grid([back,front]);screen.orient(0,p=>[p[0],p[1]-.56,1]);node('FixedWindscreen',screen,M.glass);
+for(let i=0;i<front.length-1;i++)frames.append(P.cylinder('Front seal',front[i],front[i+1],.016,.016,8));for(const i of [0,12,28,40])frames.append(P.cylinder('Windshield frame',back[i],front[i],.016,.016,8));// Slender sliding hood rails, aft glazing seal and an opening handhold.
+ for(const side of [-1,1]){
+  frames.append(P.cylinder('Hood sliding track',[side*.35,.55,-1.49],[side*.35,.55,-.29],.012,.012,8));
+  frames.append(P.cylinder('Hood latch',[side*.35,.62,-1.25],[side*.35,.66,-1.18],.009,.009,8));
+ }
+ node('CanopyFrames',frames,M.navy);
+// Additional restrained exterior details: flush cowl fasteners, oil cooler ducts,
+ // pitot tube, gun ports and wing root maintenance access.
+ const panelDetails=new G.Surface('ServicePanels'),cooler=new G.Surface('CoolerIntakes');
+ for(let k=0;k<20;k++){
+  const a=k*2*Math.PI/20;
+  const p=[Math.sin(a)*.739,Math.cos(a)*.739,2.81];
+  panelDetails.append(P.cylinder('Cowling quick release',[p[0],p[1],2.802],[p[0]*1.006,p[1]*1.006,2.812],.011,.011,8));
+ }
+ for(const side of [-1,1]){
+  // Inboard inverted-gull wing cooler openings.
+  const x=side*1.50,y=-.86;
+  cooler.append(P.bar('Oil cooler opening',[x,y,1.19],[x+side*.38,y-.055,1.19],.17,.06,[0,0,1]));
+  panelDetails.append(P.cylinder('Cooler splitter',[x,y-.01,1.22],[x+side*.38,y-.055,1.22],.014,.014,8));
+  panelDetails.append(P.cylinder('Wing tie-down',[side*4.72,-.56,-1.06],[side*4.72,-.62,-1.06],.018,.018,10));
+ }
+ panelDetails.append(P.cylinder('Pitot tube',[-5.27,-.44,.10],[-5.27,-.44,.43],.012,.009,10));
+ node('ServicePanels',panelDetails,M.metal);
+ node('CoolerIntakes',cooler,M.dark);
+ const gear=w.node({name:'LandingGear',extras:{articulationPart:true}},top);
 for(const side of [-1,1]){const label=side<0?'Left':'Right',pivot=[side*2.1,-.99,.64],leg=w.node({name:'Gear'+label,translation:pivot,extras:{articulationPart:true}},gear),a=new G.Surface('GearStruts');a.append(P.cylinder('Oleo upper',[0,.03,0],[0,-.64,.04],.077,.069,20));a.append(P.cylinder('Fork',[0,-.75,.04],[0,-1.11,.06],.048,.055,18));a.append(P.cylinder('Drag brace',[side*.17,.04,-.38],[0,-.78,.04],.035,.03,14));a.append(P.cylinder('Torque link',[0,-.65,.09],[0,-.78,.19],.023,.023,12));a.append(P.cylinder('Torque link',[0,-.78,.19],[0,-.94,.09],.023,.023,12));node('GearStruts'+label,a,M.metal,leg);node('GearPiston'+label,P.cylinder('Chrome oleo',[0,-.45,.04],[0,-.91,.04],.040,.04,20),M.metal,leg);
  const door=P.body('Gear door',{stations:[{z:-.01,top:.01,bottom:-.015,half:.17,wide:0,nTop:2,nBot:2},{z:.72,top:.01,bottom:-.015,half:.15,wide:0,nTop:2,nBot:2},{z:.84,top:.008,bottom:-.01,half:.05,wide:0,nTop:2,nBot:2}]},[0,0,1,1],{ring:16,step:.08}).surface.transform(p=>[p[0]-side*.055,-p[2]-.02,p[1]+.13]);node('GearDoor'+label,door,M.navy,leg);
  const axle=w.node({name:'WheelAxle'+label,translation:[0,-1.11,.06]},leg);node('MainTyre'+label,P.lathe('Main tyre',[[-.105,.27],[-.10,.34],[-.07,.395],[0,.41],[.07,.395],[.10,.34],[.105,.27]],{axis:'x',ring:48}),M.black,axle,null,{groundWheel:true});const hub=new G.Surface('WheelHub');hub.append(P.cylinder('Hub',[-.106,0,0],[.106,0,0],.22,.22,32));for(let k=0;k<8;k++){const t=k*Math.PI/4;hub.append(P.cylinder('Hub bolt',[-.11,Math.cos(t)*.15,Math.sin(t)*.15],[-.12,Math.cos(t)*.15,Math.sin(t)*.15],.018,.018,8));}node('WheelHub'+label,hub,M.metal,axle);animations.push({id:leg,axis:[1,0,0],drive:'gear',angle:Math.PI/2},{id:axle,axis:[0,1,0],drive:'gear',angle:side*Math.PI/2});
