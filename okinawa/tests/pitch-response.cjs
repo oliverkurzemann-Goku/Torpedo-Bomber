@@ -1,8 +1,8 @@
 /* Measured assisted back-stick response of the shipped player law at three FPS.
- * Build 226 adds the arcade extras of the Normal law (Zero turn reference, thrust surplus, speed-protected nose-up,
+ * Build 227 adds the arcade extras of the Normal law (Zero turn reference, thrust surplus, speed-protected nose-up,
  * steadier push in a bank); the Build 220/225 checks below fly the law without them (env.arcade = false, which is
- * what ?arcade=off does in the games), the Build 226 checks fly it with them and prove REALISTIC is untouched.
- * Build 225 adds the low-speed pull-up assist (pullAssist; Build 226: both games) and a lower load cap for push-overs.
+ * what ?arcade=off does in the games), the Build 227 checks fly it with them and prove REALISTIC is untouched.
+ * Build 225 adds the low-speed pull-up assist (pullAssist; Build 227: both games) and a lower load cap for push-overs.
  * Build 220: every type flies the computed core, so this drives FlightControl.player() with exactly the
  * per-game constants the pages pass (Rhine: coreEnv in remagen-mission.html; Pacific: coreEnv in
  * torpedo-carrier.html) and measures how fast the flight path follows a 40 % back-stick step at 110 m/s. */
@@ -83,7 +83,7 @@ for(const kind of [...Object.keys(defs),'avenger','sbd','corsair','zero'])for(co
   pushRows.push({kind,fps,roll,peak:+peak.toFixed(2)});}
 }
 
-// ---- Build 226: the arcade extras of the Normal law (GAME.arcade in flight-core.js) ----
+// ---- Build 227: the arcade extras of the Normal law (GAME.arcade in flight-core.js) ----
 const KINDS=[...Object.keys(defs),'avenger','sbd','corsair','zero'],DEG=Math.PI/180,wrapA=a=>Math.atan2(Math.sin(a),Math.cos(a));
 const shaped226=null;void shaped226;
 const A226=FlightCore.GAME.arcade;
@@ -156,7 +156,7 @@ for(const kind of KINDS){
 console.log('Arcade turn vs Zero:',JSON.stringify(rows226.turn.filter(r=>r.f===1.3)));
 console.log('Arcade surplus:',JSON.stringify(rows226.surplus));
 console.log('Arcade push in a bank (deg/s, 20 FPS):',JSON.stringify(rows226.push));
-fs.mkdirSync(path.join(root,'test-visuals'),{recursive:true});fs.writeFileSync(path.join(root,'test-visuals/build226-arcade.json'),JSON.stringify(rows226,null,2));
+fs.mkdirSync(path.join(root,'test-visuals'),{recursive:true});fs.writeFileSync(path.join(root,'test-visuals/build227-arcade.json'),JSON.stringify(rows226,null,2));
 
 console.log('Pull-up assist:',JSON.stringify(assistRows.filter(r=>r.fps===60)));
 console.log('Push-over stall (max over FPS):',JSON.stringify([...new Set(pushRows.map(r=>r.kind))].map(k=>[k,Math.max(...pushRows.filter(r=>r.kind===k).map(r=>r.peak))])));

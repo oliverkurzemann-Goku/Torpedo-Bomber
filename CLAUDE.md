@@ -1,6 +1,7 @@
 # Torpedo-Bomber — Übergabe an Claude Code
 
-**30.10.2026, Build 226: Arcade-Modus — Zero als Kurvenreferenz, mehr Schub, Fahrtschutz beim Hochziehen, Drücken in der Kurve.**
+**30.10.2026, Build 227: Arcade-Modus — Zero als Kurvenreferenz, mehr Schub, Fahrtschutz beim Hochziehen, Drücken in der Kurve.**
+(Build 226 auf main ist die Corsair-GLB-Aktualisierung einer anderen Sitzung — nur Kennungen in Menü, Hangar und Vorschau; dieser Stand heißt deshalb 227.)
 Nutzer (nach dem Test von Build 225): Im Arcade-Modus reagieren die Flugzeuge bei langsamer Fahrt „viel zu langsam", besonders im Carrier-Spiel,
 und sind „träger als im Realistik-Modus"; nur die Zero kurvt gut, ihre Steigleistung bei niedriger Fahrt sei „viel zu schlecht", sie sei „in der
 Längsachse sehr instabil"; die Kurvenrate der Zero soll die Referenz für alle anderen sein, Steigen und Beschleunigung überall höher, **alles nur im
@@ -26,7 +27,7 @@ Umgesetzt (alles in `FlightCore.GAME.arcade` / `FlightControl.player`, Kennung C
    Waagerecht bleibt der Drückflug mit negativem g.
 5. Steuerwirkung nahe der Abrissfahrt nie unter 80 %; **Pazifik bekommt `pullAssist` .6** wie der Rhein (Nick nach 1 s bei 1,25 × Vs: Avenger 12 → 19°, Corsair 11 → 24°, Zero 15 → 22°).
 Tests: `pitch-response.cjs` (alle zehn Typen, 20/60/120 FPS: Kurvenlücke zur Zero ≥ 30 % geschlossen und Zero bleibt vorn, +25 % Beschleunigung bei gleicher Höchstfahrt, kein Stall und kein Auf und Ab bei gehaltenem Zug,
-Abfang bleibt möglich, Kurve kehrt sich beim Drücken nicht um, REALISTIC bitgleich; schreibt `test-visuals/build226-arcade.json`). Die Build-220/225-Prüfungen laufen dort mit `arcade:false`. Zwei Schwellen angepasst, weil die Lücke
+Abfang bleibt möglich, Kurve kehrt sich beim Drücken nicht um, REALISTIC bitgleich; schreibt `test-visuals/build227-arcade.json`). Die Build-220/225-Prüfungen laufen dort mit `arcade:false`. Zwei Schwellen angepasst, weil die Lücke
 absichtlich kleiner wird: `fleet-flight-browser` (Zero/Avenger-Kurve 1,4 → 1,1×, Bf 109/Me 262 1,25 → 1,15×). Browser grün: p47-core, fleet-core, pacific-core, handling-quality, flight-envelope, fleet-flight, field-landing, carrier-recovery,
 carrier-start, chase-heading, ditch-formation, water-ditching, komet-jets, me262-/ju87-/p47-integration, fw190-komet, carrier-weather-gear, sbd-native, ship-contact, dogfight, custom-sortie, feedback, europe-start;
 unverändert rot wie auf main: combat-sorties-browser (Haut-/Feuerschaden), aircraft-systems-browser (`attributes`), checkpoint-browser/browser-smoke (Menü-Layout, nicht neu gelaufen).
@@ -785,7 +786,7 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 226 · Thunderbolt Squadron BUILD 226 · Remagen-Kern 23 / Fahrzeuge 22**
+Stand bei Übergabe: **Torpedo Squadron BUILD 227 · Thunderbolt Squadron BUILD 227 · Remagen-Kern 23 / Fahrzeuge 22**
 
 **Build 198 (22.10.2026): P-47-Fotolackierung, Einsatzspuren und natives Fahrwerk; Terrain-Fix aus Build 197 erhalten.**
 `assets/aircraft/p47-weathered.glb` ist ein ausdrücklich gekennzeichnetes Derivat des

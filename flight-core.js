@@ -219,7 +219,7 @@ const GAME={
  // Wing drop at the stall, deg/s at stall character 1 (a sharp stall); mild by design for touch control.
  stallRoll:65*DEG,
  substepHz:120,
- // Arcade ("Normal") stick law only (Build 226, game decisions C). REALISTIC flight and every AI pilot leave
+ // Arcade ("Normal") stick law only (Build 227, game decisions C). REALISTIC flight and every AI pilot leave
  // these alone. Forces, lift limits and top speed stay the computed ones; what changes is how quickly the
  // path answers the stick and how much of the thrust surplus becomes speed or height.
  arcade:{

@@ -2,7 +2,7 @@
 (function(g){
  'use strict';
  const T=g.THREE,cache=new WeakMap(),clamp=n=>Math.max(0,Math.min(1,Number(n)||0));
- function isNative(o){return o?.getObjectByName('CorsairF4U1D_Original')?.userData.nativeAircraft==='corsair-f4u1d-original-v1';}
+ function isNative(o){return o?.getObjectByName('CorsairF4U1D_Original')?.userData.nativeAircraft?.startsWith('corsair-f4u1d-original-v');}
  function data(o){if(!isNative(o))return null;const frame=o.getObjectByName('sbdGear')?.parent;if(!frame)return null;if(cache.has(frame))return cache.get(frame);const parts={};frame.traverse(n=>{if(n.name)parts[n.name]=n;});const d={frame,parts};cache.set(frame,d);return d;}
  function install(frame){
   if(!isNative(frame))return false;if(frame.userData.nativeCorsair)return true;

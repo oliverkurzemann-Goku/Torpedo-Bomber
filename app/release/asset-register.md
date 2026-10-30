@@ -1,6 +1,6 @@
-# Offline app asset register — Build 226
+# Offline app asset register — Build 227
 
-Checked 2026-10-23. 362 payload files, 36 model files, 259.2 MiB.
+Checked 2026-10-23. 362 payload files, 36 model files, 259.3 MiB.
 
 Generated from the actual dist-app payload by npm run app:assets. Hashes cover embedded textures too. This is an evidence inventory; no row is automatically approved for distribution. Acquisition dates remain unknown where not recorded.
 
@@ -8,7 +8,7 @@ Generated from the actual dist-app payload by npm run app:assets. Hashes cover e
 | --- | --- | --- | --- | --- |
 | assets/aircraft/b17-helijah.glb | [helijah](https://sketchfab.com/3d-models/boeing-b-17-flying-fortress-927f07f6ddcf470ab0387ce5829024d5) | CC-BY-4.0 (https://creativecommons.org/licenses/by/4.0/) | uploader-license-review-open | bcdf03e6bed86bd8b246a24cf1b8f86a259debe426dbbdd42986d8c278b778db |
 | assets/aircraft/bf109f2-own.glb | [Torpedo-Bomber project (code-built, scripts/build-own-bf109.cjs)](scripts/build-own-bf109.cjs) | project-own; geometry measured on a CC BY-SA 2.0 three-view (B. Huber), finish measured on a CC BY-SA 2.5 profile (H. Ringlstetter) | own-build-reference-review-open | efb76f22bf5057a1f24feab3f450787f1bc5decad8a76f79cbbac16698981f1f |
-| assets/aircraft/corsair-f4u1d-own.glb | [Oliver Kurzemann / Torpedo-Bomber](scripts/own-aircraft/corsair/shape.json) | project-own; original authored geometry and textures | own-build-reference-review-open | 1bf36051e2f92180897297bad2bf097ce688c83d5b0976200e49d3fdf00cad9c |
+| assets/aircraft/corsair-f4u1d-own.glb | [Oliver Kurzemann / Torpedo-Bomber](scripts/own-aircraft/corsair/shape.json) | project-own; original authored geometry and textures | own-build-reference-review-open | 4e839002af6428fd7ec4f5dba156e20f6686a764ad2647d7b0666a6889bfa44a |
 | assets/aircraft/fw190a8-own.glb | [Oliver Kurzemann / Torpedo-Bomber](scripts/build-own-fw190-komet.cjs) | project-own; reference-derived exterior geometry and original textures | own-build-reference-review-open | 319d846cdd684f63483c906cf1b93525a80d1516ee662582d5f116a4d6fd3edc |
 | assets/aircraft/ju87b2-own.glb | [Oliver Kurzemann / Torpedo-Bomber](scripts/own-aircraft/ju87b2/shape.json) | project-own; supplied historical manual used as dimensional reference | own-build-reference-review-open | d331b579ca37cb4ffcc9a71010b4dabe477b38384b371af9d456e06804b868e4 |
 | assets/aircraft/me163b-own.glb | [Oliver Kurzemann / Torpedo-Bomber](scripts/build-own-fw190-komet.cjs) | project-own; reference-derived exterior geometry and original textures | own-build-reference-review-open | ddc61b6fb3a222b9716c40ead59f17a77a55bfa295cbcb48c1a1d42f2a977739 |

@@ -27,7 +27,7 @@ function bankFor(stick,nMax,rollLim){
  return Math.sign(stick)*Math.min(rollLim*.95,bank);
 }
 
-/* ---- arcade (Normal) law helpers, Build 226 - GAME.arcade in flight-core.js ----
+/* ---- arcade (Normal) law helpers, Build 227 - GAME.arcade in flight-core.js ----
  * The Zero is the turn reference: its full-stick level-turn rate (load limit n, rate ~ sqrt(n^2 - 1) / V, the same
  * speed and height) is what the slower-turning types are pulled towards. Gain and 1/V cancel in the ratio. */
 let zeroRef;
@@ -69,7 +69,7 @@ function state(P,env){
 function player(P,dt,env){
  const st=state(P,env),{m,o,lim,hs}=st,d=env.d,controls=env.controls,config=env.configuration||{authority:1};
  const zeta=d.controlDamping||.80,inertia=Math.pow(1/st.lo.ratio,.35);
- // Arcade = the Normal law (Build 226): faster path, more thrust surplus, speed-protected nose-up, steadier
+ // Arcade = the Normal law (Build 227): faster path, more thrust surplus, speed-protected nose-up, steadier
  // push-over in a bank. REALISTIC (env.aero) and ?arcade=off fly the Build-225 law unchanged.
  const A=F.GAME.arcade,arcade=!env.aero&&env.arcade!==false;
  // Low-speed aileron/elevator effectiveness (the game's existing law; arcade keeps a floor) and the stall's own loss of aileron.
@@ -143,7 +143,7 @@ function player(P,dt,env){
   // instead), except the 1 g of wings-level flight: flown slower than that, the wing stalls all the same.
   // Pushing over is bounded the same way (Build 225): the nose-down rate of a fast forward stick asked for
   // far more negative load than the wing's inverted CLmax gives, so every push-over stalled at once.
-  // Arcade (Build 226): stick forward in a bank. The load for the nose-down rate is divided by cos(bank), so in a
+  // Arcade (Build 227): stick forward in a bank. The load for the nose-down rate is divided by cos(bank), so in a
   // steep turn even a light push asked for negative g and the turn reversed within half a second. Instead the push
   // unloads the wing like REALISTIC does - in proportion to the stick, to zero load at 1/unload of the stick, never
   // below - and the wings-level push-over (bank under pushBankLo) keeps the full negative load.

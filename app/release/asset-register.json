@@ -1,13 +1,13 @@
 {
   "schema": 1,
   "reviewedOn": "2026-10-23",
-  "build": 226,
+  "build": 227,
   "status": "OPEN — source declarations checked; no external rights authorization obtained",
   "payload": {
-    "bytes": 271829895,
+    "bytes": 271898307,
     "fileCount": 362,
     "modelCount": 36,
-    "manifestSha256": "86984ded0ef847d1833f7bd36092f0872ec245ae0eab47ee336e53f3af0b5639"
+    "manifestSha256": "fcd074a2fe797a9b1faad531ffcad9aa24ead03f9d2b49b9f1a0dcccb0da3bc8"
   },
   "files": [
     {
@@ -120,8 +120,8 @@
     },
     {
       "path": "assets/aircraft/corsair-f4u1d-own.glb",
-      "bytes": 5363408,
-      "sha256": "1bf36051e2f92180897297bad2bf097ce688c83d5b0976200e49d3fdf00cad9c",
+      "bytes": 5431808,
+      "sha256": "4e839002af6428fd7ec4f5dba156e20f6686a764ad2647d7b0666a6889bfa44a",
       "kind": "model"
     },
     {
@@ -630,8 +630,8 @@
     },
     {
       "path": "corsair-native.js",
-      "bytes": 4125,
-      "sha256": "ccab7be3c29b3a9e71e44a534f3eb1b343c1356625b683ab746eaa38ddfb972b",
+      "bytes": 4135,
+      "sha256": "28810556478509bb10a1ec11e09ba12e415e96c858367408ce384ecf07e38dd4",
       "kind": "code-or-notice"
     },
     {
@@ -679,13 +679,13 @@
     {
       "path": "flight-control.js",
       "bytes": 20317,
-      "sha256": "613f6b2640d9ca69343e60851344cee02b948cd1be34dceb3d3a43d17e5fbc69",
+      "sha256": "95539a03e67222bbb03109188df22a5ac4e03185365402ca9a0e578c75186d6a",
       "kind": "code-or-notice"
     },
     {
       "path": "flight-core.js",
       "bytes": 41471,
-      "sha256": "7af60e10156a876b141d171e62e296fc9190ffb7cc3ce36e16c33a817a07de18",
+      "sha256": "0fa9b6344632a8ff3e7a4d06fa51b271f69729714cc341ea5a43cd22dc0fde2d",
       "kind": "code-or-notice"
     },
     {
@@ -751,7 +751,7 @@
     {
       "path": "hangar.html",
       "bytes": 4485,
-      "sha256": "c30a939d55cdee261cdef4bc21fc825262d70041fcb27cd9e69994f76edf9b85",
+      "sha256": "8084a02cedb229b837ec599af614139814e1496571dc2e39d9e64d35e1762483",
       "kind": "code-or-notice"
     },
     {
@@ -769,7 +769,7 @@
     {
       "path": "index.html",
       "bytes": 7545,
-      "sha256": "3a708a9a9bf460d3ec4cd3b0fe8274a469798186185e7245429e5666366c2c74",
+      "sha256": "4616ddce27bf20a084e543bdd5300dd305ff8f954b9df5c8251674d351bd33d6",
       "kind": "code-or-notice"
     },
     {
@@ -901,7 +901,7 @@
     {
       "path": "remagen-mission.html",
       "bytes": 379956,
-      "sha256": "4e45d4d1b2ec867544852d8292b6a74c8564fb592111cc359c3d5b2f39587410",
+      "sha256": "d441dc78f9e79da7f997795d6f8b66b683bbe2e78f59dd065aeee59739885a65",
       "kind": "code-or-notice"
     },
     {
@@ -960,8 +960,8 @@
     },
     {
       "path": "sortie-preview.js",
-      "bytes": 13976,
-      "sha256": "dc1a7ff59f0a2c1881734a1fcd397c417e1c765166bcd17eb456837ebccfe717",
+      "bytes": 13978,
+      "sha256": "05723c3027d2c6f9ca6d8b8b835eff574c84a07a433970a523d403522d148349",
       "kind": "code-or-notice"
     },
     {
@@ -2101,7 +2101,7 @@
     {
       "path": "torpedo-carrier.html",
       "bytes": 444867,
-      "sha256": "3f9b693bbb3ccb5ecdfb9442f17c2b37c8103e4e7df54ec6f47b6077c218a284",
+      "sha256": "06933858fb8724db245c47ba5616e64af742853dcc91793303b49e25fb07b877",
       "kind": "code-or-notice"
     },
     {
@@ -2240,8 +2240,8 @@
     },
     {
       "path": "assets/aircraft/corsair-f4u1d-own.glb",
-      "bytes": 5363408,
-      "sha256": "1bf36051e2f92180897297bad2bf097ce688c83d5b0976200e49d3fdf00cad9c",
+      "bytes": 5431808,
+      "sha256": "4e839002af6428fd7ec4f5dba156e20f6686a764ad2647d7b0666a6889bfa44a",
       "title": "F4U-1D Corsair — original bubble canopy game model",
       "uploader": "Oliver Kurzemann / Torpedo-Bomber",
       "originalRightsholder": null,

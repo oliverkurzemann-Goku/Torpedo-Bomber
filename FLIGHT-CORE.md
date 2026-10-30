@@ -1,4 +1,4 @@
-# Berechneter Flugkern — alle Flugzeuge (Build 223, Pilotenverhalten Build 224, Normalgesetz Build 225, Arcade Build 226)
+# Berechneter Flugkern — alle Flugzeuge (Build 223, Pilotenverhalten Build 224, Normalgesetz Build 225, Arcade Build 227)
 
 Stand 29.10.2026. Seit Build 223 (auf dem Arbeitszweig „Build 220“ genannt; main hatte 220–222 schon für
 Zero-Haube, Avenger-Bombenschacht, Hangar und Custom-Mission-Vorschau vergeben) fliegen **alle zehn spielbaren Typen** (Rhein: P-47, Bf 109, Fw 190,
@@ -207,7 +207,7 @@ Beides sind Spielentscheidungen (Kennung C) im Normalgesetz von `FlightControl.p
 
 Gemessen im echten Spiel (Playwright, `updateFlight`, 1 500 m, Vollgas) siehe `CLAUDE.md`, Build 225. Test: `okinawa/tests/pitch-response.cjs`.
 
-## Build 226: Arcade (Normalgesetz) — Zero als Kurvenreferenz, Schubüberschuss, Fahrtschutz, Drücken in der Kurve
+## Build 227: Arcade (Normalgesetz) — Zero als Kurvenreferenz, Schubüberschuss, Fahrtschutz, Drücken in der Kurve
 
 Alles Spielentscheidungen (Kennung C) in `FlightCore.GAME.arcade`; sie wirken **nur im Normalgesetz** von `FlightControl.player`
 (Rhein und Pazifik, alle zehn Typen). REALISTIC (`env.aero`) und jede KI fliegen unverändert (Test: gleiche Eingaben, `arcade` an/aus → identische Lage und Fahrt);
@@ -227,7 +227,7 @@ Alles Spielentscheidungen (Kennung C) in `FlightCore.GAME.arcade`; sie wirken **
   Waagerecht bleibt der Drückflug (negatives g) wie bisher.
 * **Steuerwirkung** fällt nahe der Abrissfahrt nicht mehr unter `controlFloor` (.8) ab (REALISTIC behält den echten Abfall).
 
-Zahlen und Messverfahren: `CLAUDE.md`, Build 226. Test: `okinawa/tests/pitch-response.cjs` (Build-226-Abschnitt, schreibt `test-visuals/build226-arcade.json`).
+Zahlen und Messverfahren: `CLAUDE.md`, Build 227. Test: `okinawa/tests/pitch-response.cjs` (Build-226-Abschnitt, schreibt `test-visuals/build227-arcade.json`).
 
 ## Erster Typ: P-47 (Build 219, unverändert gültig)
 
