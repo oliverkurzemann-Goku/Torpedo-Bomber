@@ -66,7 +66,7 @@
   flareSupport?.restoreCheckpoint(saved.flares);clock.elapsedTime=saved.clock;killCam=null;shakeT=0;radioQ=[];radioT=0;
   C.restoreNavigation(ensureNavigation(),saved.navigation);
   hideOverlays();state=ST.FLIGHT;releaseHeldControls();setThrottleUI(P.throttle);applyLoadoutUI();resetControlUI();
-  const aero=document.getElementById('aeroBtn');aero.classList.toggle('on',aeroMode);aero.innerHTML='AERO<br>'+(aeroMode?'ON':'OFF');
+  const aero=document.getElementById('aeroBtn');aero.classList.toggle('on',aeroMode);aero.innerHTML='REALISTIC<br>'+(aeroMode?'ON':'OFF');
   updatePlaneMesh(0);updateCamera(0);updateHUD();bombCue.reset();clock.getDelta();
   togglePause('Saved flight restored — tap Resume Flight.');
  }

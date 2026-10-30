@@ -48,7 +48,7 @@
   C.restoreNavigation(ensureNavigation(),saved.navigation);
   show('brief',false);show('result',false);show('loading',false);show('menu',false);state=ST.FLIGHT;
   releaseHeldControls();setThrottleUI(P.throttle);applyWeaponUI();resetCtlUI();
-  const aero=document.getElementById('aeroBtn');aero.classList.toggle('on',aeroMode);aero.innerHTML='AERO<br>'+(aeroMode?'ON':'OFF');
+  const aero=document.getElementById('aeroBtn');aero.classList.toggle('on',aeroMode);aero.innerHTML='REALISTIC<br>'+(aeroMode?'ON':'OFF');
   refreshModels();posePlayerAircraft(0);updateCamera(0);updateHUD();bombCue.reset();clock.getDelta();
   togglePause('Saved flight restored — tap Resume Flight.');
  }

@@ -13,7 +13,7 @@
    "rato": null,
    "after40s": {
     "spd": 67,
-    "agl": 372,
+    "agl": 356,
     "climb": 9.6
    }
   },
@@ -28,7 +28,7 @@
    "rato": null,
    "after40s": {
     "spd": 67,
-    "agl": 372,
+    "agl": 373,
     "climb": 9.6
    }
   },
@@ -62,31 +62,31 @@
   },
   "stall": {
    "entryKmh": 247,
-   "onset": 4.4,
+   "onset": 4.1,
    "peak": 0.99,
    "buffeted": true,
    "dropBankDeg": 11,
    "recoveredAfter": 4.3,
    "endStall": 0,
    "alive": true,
-   "heightLostInRecovery": 74
+   "heightLostInRecovery": 95
   },
   "idleDecel1s": 2.28,
   "fps": {
    "20": {
-    "spd": 76.69,
-    "heading": 4.88,
-    "alt": 1709.3
+    "spd": 76.25,
+    "heading": 5.194,
+    "alt": 1714.3
    },
    "60": {
-    "spd": 76.72,
-    "heading": 4.872,
-    "alt": 1709.1
+    "spd": 76.28,
+    "heading": 5.187,
+    "alt": 1714.1
    },
    "120": {
-    "spd": 76.74,
-    "heading": 4.871,
-    "alt": 1709
+    "spd": 76.29,
+    "heading": 5.185,
+    "alt": 1714.1
    }
   }
  },
@@ -104,8 +104,8 @@
    "rato": null,
    "after40s": {
     "spd": 70.7,
-    "agl": 354,
-    "climb": 11.5
+    "agl": 351,
+    "climb": 11.4
    }
   },
   "takeoffAllBombs": {
@@ -119,8 +119,8 @@
    "rato": null,
    "after40s": {
     "spd": 70.7,
-    "agl": 351,
-    "climb": 11.5
+    "agl": 355,
+    "climb": 11.4
    }
   },
   "vmax2000": 568.4,
@@ -153,31 +153,31 @@
   },
   "stall": {
    "entryKmh": 222,
-   "onset": 4,
+   "onset": 3.7,
    "peak": 0.99,
    "buffeted": true,
    "dropBankDeg": 9,
-   "recoveredAfter": 3.9,
+   "recoveredAfter": 4,
    "endStall": 0,
    "alive": true,
-   "heightLostInRecovery": 63
+   "heightLostInRecovery": 81
   },
   "idleDecel1s": 2.31,
   "fps": {
    "20": {
-    "spd": 71.41,
-    "heading": 5.898,
-    "alt": 1690.5
+    "spd": 70.55,
+    "heading": 6.084,
+    "alt": 1699.4
    },
    "60": {
-    "spd": 71.46,
-    "heading": 5.888,
-    "alt": 1690.3
+    "spd": 70.58,
+    "heading": 6.075,
+    "alt": 1699.4
    },
    "120": {
-    "spd": 71.47,
-    "heading": 5.886,
-    "alt": 1690.2
+    "spd": 70.59,
+    "heading": 6.073,
+    "alt": 1699.3
    }
   }
  },
@@ -244,31 +244,31 @@
   },
   "stall": {
    "entryKmh": 262,
-   "onset": 4.7,
+   "onset": 4.3,
    "peak": 0.99,
    "buffeted": true,
    "dropBankDeg": 33,
-   "recoveredAfter": 4.2,
+   "recoveredAfter": 4.3,
    "endStall": 0,
    "alive": true,
-   "heightLostInRecovery": 98
+   "heightLostInRecovery": 120
   },
   "idleDecel1s": 2.05,
   "fps": {
    "20": {
-    "spd": 78.96,
-    "heading": 4.111,
-    "alt": 1697.5
+    "spd": 78.46,
+    "heading": 4.43,
+    "alt": 1703.3
    },
    "60": {
-    "spd": 79,
-    "heading": 4.104,
-    "alt": 1697.3
+    "spd": 78.5,
+    "heading": 4.423,
+    "alt": 1703.1
    },
    "120": {
-    "spd": 79.01,
-    "heading": 4.103,
-    "alt": 1697.2
+    "spd": 78.51,
+    "heading": 4.422,
+    "alt": 1703.1
    }
   }
  },
@@ -286,7 +286,7 @@
    "rato": null,
    "after40s": {
     "spd": 43.8,
-    "agl": 212,
+    "agl": 202,
     "climb": 4.4
    }
   },
@@ -301,7 +301,7 @@
    "rato": null,
    "after40s": {
     "spd": 43.8,
-    "agl": 212,
+    "agl": 202,
     "climb": 4.4
    }
   },
@@ -335,31 +335,31 @@
   },
   "stall": {
    "entryKmh": 182,
-   "onset": 3.4,
+   "onset": 3.1,
    "peak": 0.99,
    "buffeted": true,
    "dropBankDeg": 7,
-   "recoveredAfter": 3.6,
+   "recoveredAfter": 3.5,
    "endStall": 0,
    "alive": true,
-   "heightLostInRecovery": 61
+   "heightLostInRecovery": 74
   },
   "idleDecel1s": 1.39,
   "fps": {
    "20": {
-    "spd": 42.49,
-    "heading": 4.203,
-    "alt": 1616
+    "spd": 45.18,
+    "heading": 5.798,
+    "alt": 1602.2
    },
    "60": {
-    "spd": 42.5,
-    "heading": 4.198,
-    "alt": 1615.9
+    "spd": 45.2,
+    "heading": 5.791,
+    "alt": 1602.2
    },
    "120": {
-    "spd": 42.5,
-    "heading": 4.197,
-    "alt": 1615.9
+    "spd": 45.2,
+    "heading": 5.79,
+    "alt": 1602.2
    }
   }
  },
@@ -376,8 +376,8 @@
    "stripLeft": 251,
    "rato": 6,
    "after40s": {
-    "spd": 86.5,
-    "agl": 402,
+    "spd": 86.4,
+    "agl": 403,
     "climb": 14.6
    }
   },
@@ -391,8 +391,8 @@
    "stripLeft": 137,
    "rato": 6,
    "after40s": {
-    "spd": 81.7,
-    "agl": 331,
+    "spd": 81.5,
+    "agl": 327,
     "climb": 9.6
    }
   },
@@ -426,31 +426,31 @@
   },
   "stall": {
    "entryKmh": 276,
-   "onset": 5.2,
+   "onset": 4.8,
    "peak": 0.99,
    "buffeted": true,
    "dropBankDeg": 13,
-   "recoveredAfter": 5.2,
+   "recoveredAfter": 5.3,
    "endStall": 0,
    "alive": true,
-   "heightLostInRecovery": 128
+   "heightLostInRecovery": 156
   },
   "idleDecel1s": 1.68,
   "fps": {
    "20": {
-    "spd": 109.73,
-    "heading": 5.671,
-    "alt": 1737.4
+    "spd": 108.18,
+    "heading": 5.664,
+    "alt": 1757.8
    },
    "60": {
-    "spd": 109.78,
-    "heading": 5.661,
-    "alt": 1737.1
+    "spd": 108.22,
+    "heading": 5.654,
+    "alt": 1757.7
    },
    "120": {
-    "spd": 109.8,
-    "heading": 5.659,
-    "alt": 1737
+    "spd": 108.24,
+    "heading": 5.652,
+    "alt": 1757.6
    }
   }
  },
@@ -499,31 +499,31 @@
   },
   "stall": {
    "entryKmh": 252,
-   "onset": 4.7,
+   "onset": 4.3,
    "peak": 0.99,
    "buffeted": true,
    "dropBankDeg": 0,
-   "recoveredAfter": 3.9,
+   "recoveredAfter": 4.2,
    "endStall": 0,
    "alive": true,
-   "heightLostInRecovery": 36
+   "heightLostInRecovery": 60
   },
   "idleDecel1s": 2.15,
   "fps": {
    "20": {
-    "spd": 145.88,
-    "heading": 6.387,
-    "alt": 1777.5
+    "spd": 143.99,
+    "heading": 6.488,
+    "alt": 1796.3
    },
    "60": {
-    "spd": 145.96,
-    "heading": 6.372,
-    "alt": 1777.6
+    "spd": 144.04,
+    "heading": 6.474,
+    "alt": 1796.6
    },
    "120": {
-    "spd": 145.98,
-    "heading": 6.368,
-    "alt": 1777.5
+    "spd": 144.06,
+    "heading": 6.47,
+    "alt": 1796.6
    }
   }
  }

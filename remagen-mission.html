@@ -134,7 +134,7 @@
   #gearBtn{left:max(20px,env(safe-area-inset-left));top:30%;}
   #flapBtn{left:max(20px,env(safe-area-inset-left));top:calc(30% + 56px);}
   #armBtn{left:max(20px,env(safe-area-inset-left));top:calc(30% + 112px);}
-  #aeroBtn{left:max(20px,env(safe-area-inset-left));top:calc(30% + 168px);}
+  #aeroBtn{left:max(20px,env(safe-area-inset-left));top:calc(30% + 168px);font-size:9px;letter-spacing:0;}
   #tankBtn{left:max(86px,calc(env(safe-area-inset-left) + 86px));top:30%;display:none;}
   #diveBrakeBtn{left:max(20px,env(safe-area-inset-left));top:calc(30% + 224px);display:none;}
   #bailBtn{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 22px);
@@ -277,7 +277,7 @@
 
 .hangarLink{display:block;padding:12px 14px;margin:8px 0 12px;color:#f3ce83;border:1px solid #ba9d57;border-radius:5px;text-decoration:none;text-align:center;font:600 12px system-ui;letter-spacing:.8px;min-height:44px;}
 </style>
-<link rel="stylesheet" href="menu-layout.css?v=224">
+<link rel="stylesheet" href="menu-layout.css?v=225">
 </head>
 <body>
 <!-- ===== TEMP TEST-ONLY VERSION BANNER — asked for by Oliver: "kannst du irgendwo einbauen,
@@ -299,7 +299,7 @@
   <div style="width:100%;height:4px;background:repeating-linear-gradient(45deg,#ffd400,#ffd400 8px,#111 8px,#111 16px);"></div>
   <span id="testVersionBannerText" style="background:#111;color:#ffd400;font-family:monospace;font-weight:800;font-size:11px;letter-spacing:.5px;padding:3px 10px;border:1px solid #ffd400;border-top:none;border-radius:0 0 6px 6px;"></span>
 </div>
-<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 224';</script>
+<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 225';</script>
 <!-- ===== END TEMP TEST-ONLY VERSION BANNER ===== -->
 <div id="app"></div>
 <style>
@@ -340,7 +340,7 @@
   <div id="flash"></div>
   <div id="gunsight"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 224 · REAL RHINE</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 225 · REAL RHINE</div>
 
   <div id="apr">
     <div id="aprCall"></div>
@@ -365,7 +365,7 @@
 <div id="gearBtn" class="ctlBtn">GEAR<br>&#9660; DN</div>
 <div id="flapBtn" class="ctlBtn">FLAPS<br>UP</div>
 <div id="armBtn" class="ctlBtn">ARM<br>BOMB</div>
-<div id="aeroBtn" class="ctlBtn" title="Rate control for rolls and loops">AERO<br>OFF</div>
+<div id="aeroBtn" class="ctlBtn" title="Realistic flight: rate control for rolls and loops (off = arcade flight)">REALISTIC<br>OFF</div>
 <div id="diveBrakeBtn" class="ctlBtn" title="Stuka dive brakes (D)">DIVE<br>BRAKES</div>
 <button id="tankBtn" class="ctlBtn" type="button" title="Jettison external fuel tank (T)">DROP<br>TANK</button>
 <button id="flareBtn" class="ctlBtn" type="button" title="Parachute flare (L)" style="display:none;left:max(86px,calc(env(safe-area-inset-left) + 86px));top:calc(30% + 56px)">FLARE<br>4</button>
@@ -392,7 +392,7 @@
 </div>
 
 <div class="overlay hidden" id="menu" data-campaign="europe">
-  <div class="menuTop"><a id="selBtn" href="index.html?v=224">&#9664; Change Game</a><span class="menuMeta">RHINE OPERATIONS<br>BUILD 224</span></div>
+  <div class="menuTop"><a id="selBtn" href="index.html?v=225">&#9664; Change Game</a><span class="menuMeta">RHINE OPERATIONS<br>BUILD 225</span></div>
   <div class="card menuCard">
     <aside class="menuOverview" aria-label="Campaign and pilot options">
     <div class="campaignArt" aria-hidden="true"></div>
@@ -404,7 +404,7 @@
     <details class="quickGuide"><summary>Controls &amp; landing guide</summary>
       <div>Left stick: pitch / bank. Right bar: throttle. GEAR and FLAPS down for landing.
         The arrow points toward the next target; the compass shows heading and bearing.
-        AERO enables rolls and loops once airborne and fast enough.
+        REALISTIC switches from arcade flight to realistic flight: rolls and loops once airborne and fast enough.
         L / FLARE illuminates night targets. Press B or BAIL OUT to parachute from a damaged aircraft while high enough.
         <b id="menuLandingSpeed"></b> Keep the wings level and use the runway, not the surrounding fields.</div>
     </details>
@@ -511,7 +511,7 @@
 <script src="terrain-system/LivingWorld.js?v=179"></script>
 <script src="campaign.js?v=1"></script>
 <script src="game-runtime.js?v=198"></script>
-<script src="sortie-checkpoint.js?v=224"></script>
+<script src="sortie-checkpoint.js?v=225"></script>
 <script src="ju87-native.js?v=218"></script>
 <script src="me262-native.js?v=206"></script>
 <script src="me163-native.js?v=218"></script>
@@ -522,7 +522,7 @@
 <script src="combat-fx.js?v=177"></script>
 <script src="aircraft-smoke.js?v=176"></script>
 <script src="aircraft-damage.js?v=177"></script>
-<script src="flight-support.js?v=224"></script>
+<script src="flight-support.js?v=225"></script>
 <script src="ordnance.js?v=157"></script>
 <script src="crew-visuals.js?v=179"></script>
 <script src="aircraft-finish.js?v=206"></script>
@@ -542,18 +542,18 @@
 <script src="me262-performance.js?v=206"></script>
 <script src="flight-envelope.js?v=219"></script>
 <script src="flight-dynamics.js?v=219"></script>
-<script src="flight-core.js?v=224"></script>
-<script src="flight-control.js?v=224"></script>
-<script src="dogfight-ai.js?v=224"></script>
+<script src="flight-core.js?v=225"></script>
+<script src="flight-control.js?v=225"></script>
+<script src="dogfight-ai.js?v=225"></script>
 <script src="audio/aircraft-engine.js?v=218"></script>
 <script src="p47-performance.js?v=204"></script>
-<script src="sortie-features.js?v=224"></script>
+<script src="sortie-features.js?v=225"></script>
 <script src="ground-run.js?v=204"></script>
 <script src="ground-dust.js?v=181"></script>
 <script src="flight-indicators.js?v=198"></script>
 <script src="sortie-fuel.js?v=206"></script>
 <script src="operation-plans.js?v=198"></script>
-<script src="custom-sortie.js?v=224"></script>
+<script src="custom-sortie.js?v=225"></script>
 <script>
 // ============================================================
 //  REMAGEN 1945 — REAL TERRAIN (forked from thunderbolt-europe.html)
@@ -902,7 +902,7 @@ async function loadRealWorld(){
 
   if(OSMManager.BUILD!==23||HistoricalObjectManager.BUILD!==21||LivingWorld.BUILD!==22||WorldVehicles.BUILD!==22) throw new Error('Terrain version mismatch. Reload Remagen.');
   document.getElementById('testVersionBannerText').textContent=
-    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 224 · MODULE 23';
+    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 225 · MODULE 23';
   heightProvider=new DEMHeightProvider(RTILE,'terrain-system/real/data/dem/');
   terrain=new TerrainManager(scene,RTILE,heightProvider);
   osmMgr=new OSMManager(scene,RTILE,terrain,'terrain-system/real/data/osm/');
@@ -4278,7 +4278,7 @@ function coreEnv(controls,departure,configuration){
   const d=acDef();
   return {kind:P.ac,convention:'rhine',stickRoll:inputRoll*steerSign,stickPitch:inputPitch,aero:aeroMode,
     throttle:(P.fuel??100)<=0?0:P.throttle,damage:SortieFeatures.Damage.power(P),brakes:P.ac==='ju87'?P.diveBrakeVisual||0:0,
-    gain:Core.gain,controls,configuration,departure,loadout:coreLoadout(),d,rollFrac:.86,pitchBase:2.9,pitchScale:d.pitchLim*.92,
+    gain:Core.gain,controls,configuration,departure,loadout:coreLoadout(),d,rollFrac:.86,pitchBase:3.6,pullAssist:.6,pitchScale:d.pitchLim*.92,
     hullFactor:(P.hull<d.hull*0.6)?(0.55+0.45*P.hull/(d.hull*0.6)):1.0};
 }
 // Inverse for the current state (the stick that holds a given bank, e.g. against damage).
@@ -4799,7 +4799,7 @@ function startMission(i){
   firing=false;gunT=0;gunVolley=0;
   aeroMode=false;
   const aeroButton=document.getElementById('aeroBtn');
-  if(aeroButton){aeroButton.classList.remove('on');aeroButton.innerHTML='AERO<br>OFF';}
+  if(aeroButton){aeroButton.classList.remove('on');aeroButton.innerHTML='REALISTIC<br>OFF';}
   const stickHint=document.getElementById('stickHint');if(stickHint)stickHint.textContent='PITCH / ROLL';
   mission=i; const m=MISSIONS[i];
   if(m.custom)diffIdx=['rookie','vet','ace'].indexOf(m.custom.difficulty);
@@ -5746,17 +5746,17 @@ function toggleAero(){
   if(!aeroMode&&(P.onGround||P.gear>0.35||P.spd<gate||agl<280)){
     // Show the speed the loop needs in the same (indicated) units as the speed readout.
     const need=Math.ceil(indicatedSpeed(gate,P.pos.y)*KT);
-    flash('AERO: CLIMB, GEAR UP, BUILD SPEED'+(P.spd<gate?' · '+need+' MPH':''),1200);return;
+    flash('REALISTIC FLIGHT: CLIMB, GEAR UP, BUILD SPEED'+(P.spd<gate?' · '+need+' MPH':''),1200);return;
   }
   if(aeroMode&&(Math.abs(P.pitch)>d.pitchLim*.95||Math.abs(P.roll)>d.rollLim*.95)){
     flash('COMPLETE THE MANOEUVRE FIRST',1200);return;
   }
   aeroMode=!aeroMode;P.pitchVel=0;P.rollVel=0;
   const b=document.getElementById('aeroBtn');
-  if(b){b.classList.toggle('on',aeroMode);b.innerHTML=aeroMode?'AERO<br>ON':'AERO<br>OFF';}
+  if(b){b.classList.toggle('on',aeroMode);b.innerHTML=aeroMode?'REALISTIC<br>ON':'REALISTIC<br>OFF';}
   const hint=document.getElementById('stickHint');
   if(hint)hint.textContent=aeroMode?'HOLD FOR ROLL / LOOP':'PITCH / ROLL';
-  flash(aeroMode?'AERO — HOLD STICK FOR ROLL OR LOOP':'NORMAL FLIGHT',1100);
+  flash(aeroMode?'REALISTIC FLIGHT — HOLD STICK FOR ROLL OR LOOP':'ARCADE FLIGHT',1100);
 }
 function bindInput(){
   // ---- stick ----
@@ -6055,7 +6055,7 @@ function init(){
   buildMenu();
   // menu wiring
   document.getElementById('startBtn').onclick=()=>showBrief(selectedMission);
-  document.getElementById('pauseMainMenu').onclick=async()=>{globalThis.sortieCheckpoint?.save();await globalThis.sortieCheckpoint?.flush();exitToMenuFromPause(true);window.location.href='index.html?v=224';};
+  document.getElementById('pauseMainMenu').onclick=async()=>{globalThis.sortieCheckpoint?.save();await globalThis.sortieCheckpoint?.flush();exitToMenuFromPause(true);window.location.href='index.html?v=225';};
   document.getElementById('logBtn').onclick=()=>{ show('menu',false); showLogbook(); };
   document.getElementById('skipLaunchPreview').onclick=()=>finishLaunchIntro();
   document.getElementById('brBack').onclick=()=>{ show('brief',false); show('menu',true);if(navigation){navigation.reset();navigation.button.style.display='none';} state=ST.MENU; };
@@ -6260,6 +6260,6 @@ function reportStartupError(err){
 const hangarRequest=CustomSortie.install('europe',MISSIONS,FlightPlans.europe,window.location.search);
 window.addEventListener('load',()=>{try{init();}catch(err){reportStartupError(err);}});
 </script>
-<script src="checkpoint-rhine.js?v=224"></script>
+<script src="checkpoint-rhine.js?v=225"></script>
 </body>
 </html>

@@ -1,4 +1,4 @@
-# Berechneter Flugkern — alle Flugzeuge (Build 223, Pilotenverhalten Build 224)
+# Berechneter Flugkern — alle Flugzeuge (Build 223, Pilotenverhalten Build 224, Normalgesetz Build 225)
 
 Stand 29.10.2026. Seit Build 223 (auf dem Arbeitszweig „Build 220“ genannt; main hatte 220–222 schon für
 Zero-Haube, Avenger-Bombenschacht, Hangar und Custom-Mission-Vorschau vergeben) fliegen **alle zehn spielbaren Typen** (Rhein: P-47, Bf 109, Fw 190,
@@ -190,6 +190,22 @@ Flügellage durch (`pullout`). Der Kartenrand (`inward`) schlägt jedes Manöver
 
 **Wiederholbarkeit.** Zufall kommt aus `rng` (im Spiel `Math.random`, im Test ein festes Saatkorn): gleicher Pilot, gleicher Kampf.
 `?ai=old` stellt in beiden Spielen die Build-223-Modi wieder her, die alten Tests prüfen sie weiter.
+
+## Build 225: Normalgesetz — untere Lastgrenze und Zughilfe bei langsamer Fahrt
+
+Beides sind Spielentscheidungen (Kennung C) im Normalgesetz von `FlightControl.player`; die Flugzeugdaten ändern sich nicht.
+
+* **Untere Lastgrenze.** Das Gesetz deckelte die angeforderte Last nur nach oben (`.97·l.max`). Ein schneller Knüppel nach vorn ergab
+  aus der Bahnschleife `n = holdLoad(…, V·rate/(g·Gain))` weit mehr negatives g, als der Flügel verkehrt herum trägt
+  (`lim.min = −min(3,0, 0,6·CLmax·qS/W)` ≈ −1,5 g). `FlightCore.step` wertet das als Stall (Zustand `target = clamp((demand−1)/.10,0,1)`,
+  Buffet, Flügelkippen). Jetzt `Math.max(.97·l.min, Math.min(n, …))`. Wirkt auf alle zehn Typen im Normalmodus; AERO deckelt die Last schon im Kern.
+* **Zughilfe.** Nahe der Abrissfahrt liefert der Flügel kaum mehr als 1 g; die flügelbegrenzte Bahn ändert sich nur mit
+  `gain·(n_max − 1)·g/V`. Solange der Knüppel zurück ist, wächst `gain` um `1 + pullAssist·clamp(Knüppel/.4,0,1)·clamp((1,7 − V/Vs)/.7,0,1)`
+  (Rhein `pullAssist` .6; Pazifik 0). Kräfte, Auftriebsgrenze und Energie bleiben unverstärkt — wie schon `manoeuvreGain` wirkt die Hilfe nur auf die Bahndrehung.
+* **Rhein-`pitchBase`** 2,9 → 3,6 (Eigenfrequenz der Nick-Bezugsfeder +24 %).
+* Nicht geändert: `departure`-Hülle nach dem Start, AERO, Querlage/Kurvenrate, alle Pazifik-Werte außer der Lastgrenze.
+
+Gemessen im echten Spiel (Playwright, `updateFlight`, 1 500 m, Vollgas) siehe `CLAUDE.md`, Build 225. Test: `okinawa/tests/pitch-response.cjs`.
 
 ## Erster Typ: P-47 (Build 219, unverändert gültig)
 

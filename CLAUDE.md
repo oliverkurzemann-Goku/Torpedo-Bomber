@@ -1,5 +1,32 @@
 # Torpedo-Bomber — Übergabe an Claude Code
 
+**30.10.2026, Build 225: Steigen bei langsamer Fahrt, Sinkflug-Stall behoben, Knopf „REALISTIC“.**
+Nutzer (nach dem Test von Build 224): Steigverhalten von P-47, Fw 190 und Bf 109 im Normalmodus bei langsamer Fahrt „etwas zu wenig“,
+Pitch im Arcade-Modus „etwas aggressiver“; die Bf 109 „kommt bei starkem Sinkflug sofort in den Stall, auch bei 160+ Knoten“; AERO-Knopf
+umbenennen. Zuerst gemessen (echtes `remagen-mission.html`, `updateFlight`, Vollausschlag, 1 500 m / 3 500 m):
+- **Sinkflug-Stall = Stall bei NEGATIVEM g.** Das Normalgesetz (`FlightControl.player`) deckelte die Last nach oben (`.97·l.max`), nach unten
+  nicht: ein schneller Knüppel nach vorn verlangte weit mehr negatives g, als der Flügel verkehrt herum trägt (`lim.min` ≈ −1,5 g). Der
+  Kern wertet das als Stall (`coreStall` ≈ 1 binnen 1 s, HUD „STALL“, Flügelkippen bis 85–90° bei Querlage). Vorher: Push-over bei
+  140/160/200 kt, drei Knüppelfolgen, Bf 109 und P-47 (18 Fälle) → `peakStall` 1 und 131–286 von 840 Bildern mit Warnung, bei jeder Fahrt gleich
+  (also nicht an der Geschwindigkeit, sondern am Gesetz). Nachher: alle 27 Fälle (Bf 109, P-47, Fw 190 × 3 Fahrten × 3 Knüppelfolgen) `peakStall` 0, 0 Warnbilder,
+  Mindestabstand zur Abrissfahrt 20–98 kt, die Nase kommt mit Gegenzug wieder hoch. Fix: untere Lastgrenze `.97·l.min` im Normalgesetz (gilt auch im Pazifik; dort ebenfalls kein Stall mehr).
+- **Steigen langsam.** Nahe der Abrissfahrt ist die Bahn flügelbegrenzt (`gain·(n_max−1)·g/V`); P-47 110 kt, voller Zug: 3°/8°/14° nach
+  1/2/3 s. Neu `pullAssist` .6 (nur Rhein, Spielentscheidung C): solange der Knüppel zurück ist, wächst die Bahnverstärkung bis ×1,6 bei
+  Abrissfahrt und ist bei 1,7 × Abrissfahrt weg (`gain = o.gain·(1 + pullAssist·clamp(stick/.4,0,1)·clamp((1,7 − V/Vs)/.7,0,1))`);
+  Auftrieb, Kräfte und Energie bleiben unverändert, Kurven ohne Zug und AERO ebenfalls. Dazu Rhein-`pitchBase` 2,9 → 3,6.
+  Gemessen 1/2/3 s nach vollem Zug: P-47 110 kt 3/8/14° → 5/13/21°, 130 kt 11/22/34° → 15/31/48°; Bf 109 110 kt 9/20/31° → 13/29/45°;
+  Fw 190 130 kt 8/16/25° → 11/23/35° (110 kt nur 1/3/7° → 1/5/10°: die Fw 190 fliegt dort 2 kt über ihrer 1-g-Abrissfahrt von 108 kt, mehr
+  Auftrieb gibt der Flügel nicht). Bei 180 kt unverändert. Einheitentest (110 m/s, 40 % Zug): t90 P-47 .82 s, Bf 109 .78 s, Fw 190 1,02 s.
+  **Offen:** der Startsteigflug bleibt von der `departure`-Hülle begrenzt (öffnet nur mit Fahrt bis `climbSpeed`, P-47 92 / Bf 109 105 /
+  Fw 190 108 m/s) — nicht angefasst. Pazifik: nur die Lastgrenze nach unten, kein `pullAssist`.
+- **Knopf.** `AERO` heißt jetzt `REALISTIC` (Zustand `ON/OFF`, 9 px ohne Zeichenabstand, damit es in die 58 px passt); Meldungen
+  „REALISTIC FLIGHT — HOLD STICK FOR ROLL OR LOOP“ / „ARCADE FLIGHT“ statt „NORMAL FLIGHT“; Menühilfe, Checkpoint-Wiederherstellung
+  (`checkpoint-rhine.js`, `checkpoint-pacific.js`) und Tooltip angepasst. Variablen und Logik (`aeroMode`, `toggleAero`) unverändert.
+Tests: `okinawa/tests/pitch-response.cjs` prüft die neuen Konstanten, die Unterstützung (≥ +8 % bei 1,2 × Vs, ≤ +70 %, null bei 1,9 × Vs,
+null ohne Zug) und den Push-over für alle zehn Typen bei 20/60/120 FPS (mit und ohne Rollen, danach Gegenzug). Gegner „jetzt wirklich eine
+Challenge“: nichts geändert; Stellhebel `enemySkill`/`zeroSkill`, `DogfightAI.create` (Können Rookie .4/Veteran .65/Ace .85) und die
+Spiel-Feuerrate. Kein iPad-Test, kein Spielgefühl-Nachweis.
+
 **30.10.2026, Build 224: Feindjäger mit Gefechtsgehirn, weichere Rottenflieger.**
 Nutzer: Gegnerverhalten „viel zu vorhersehbar und langweilig“, Rottenflieger „zu ruckartig“. Zuerst gemessen (Skripte
 `scripts/flight/bench-wingman.cjs`, `bench-dogfight.cjs`, echte Module): Rottenflieger rollten bang-bang (Rollbeschleunigung bis

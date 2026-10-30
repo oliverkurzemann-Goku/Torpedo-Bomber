@@ -58,8 +58,13 @@ function player(P,dt,env){
  const rollRate=rollNow/(springPeak(zeta)*d.rollLim*(env.rollFrac||.86))*common;
  const pitchRate=(env.pitchBase||2.9)*(d.pitchAuth||1)*hs.authority*controls.pitch*common;
  const bias=(P.rollBias||0)+(controls.bias||0);
- const tau=F.pathLag(m,P.spd,P.pos.y,st.lo.ratio)/o.gain;
  const stickRoll=env.stickRoll||0,stickPitch=env.stickPitch||0;
+ // Normal-mode pull-up assist (game decision C, FLIGHT-CORE.md): while the stick is pulled back, the path is
+ // turned up to (1 + env.pullAssist) x faster the closer the speed is to the stall (full at the stall speed,
+ // gone at 1.7 x). The wing still gives no more lift than CLmax - only the arcade manoeuvre gain grows, so a
+ // slow aircraft answers the stick instead of mushing. Level turns (no back stick) are untouched.
+ const gain=env.aero?o.gain:o.gain*(1+(env.pullAssist||0)*clamp(stickPitch/.4,0,1)*clamp((1.7-P.spd/Math.max(1,st.stall))/.7,0,1));
+ const tau=F.pathLag(m,P.spd,P.pos.y,st.lo.ratio)/gain;
  const shaped=v=>d.stickExponent?Math.sign(v)*Math.pow(Math.abs(v),d.stickExponent):v;
  let command;
  if(env.aero){
@@ -104,17 +109,19 @@ function player(P,dt,env){
   const ref=P.pitchRef,refVel=P.pitchRefVel;
   // The assisted law never asks more of the wing than it has (a turn too steep for the speed sinks
   // instead), except the 1 g of wings-level flight: flown slower than that, the wing stalls all the same.
+  // Pushing over is bounded the same way (Build 225): the nose-down rate of a fast forward stick asked for
+  // far more negative load than the wing's inverted CLmax gives, so every push-over stalled at once.
   command=(s,V,l)=>{let rate=refVel+(ref-s.pitch)/tau;
    if(s.pitch>d.pitchLim)rate=Math.min(rate,0);if(s.pitch<-d.pitchLim)rate=Math.max(rate,0);
-   const n=F.holdLoad(s.pitch,s.roll,V*rate/(F.G*o.gain));
-   return Math.min(n,Math.max(.97*l.max,Math.cos(s.pitch)));};
+   const n=F.holdLoad(s.pitch,s.roll,V*rate/(F.G*gain));
+   return Math.max(.97*l.min,Math.min(n,Math.max(.97*l.max,Math.cos(s.pitch))));};
  }
  const conv=env.convention||'rhine',h0=toCore(P.heading,conv);
  const s={spd:P.spd,pitch:P.pitch,heading:h0,roll:P.roll,nLoad:P.nLoad||1,power:P.groundPower??P.throttle,altitude:P.pos.y,
   stall:P.coreStall||0,dropDir:P.coreDrop||0};
  const pitch0=P.pitch,y0=P.pos.y;
  // Elevator damage already slows the Normal attitude law (pitchRate); in AERO it caps the pull.
- const out=F.step(m,s,dt,{...o,elevator:env.aero?o.elevator:1,command});
+ const out=F.step(m,s,dt,{...o,elevator:env.aero?o.elevator:1,command,gain});
  P.spd=s.spd;P.heading=P.heading+(conv==='pacific'?-(s.heading-h0):(s.heading-h0));P.roll=s.roll;P.nLoad=s.nLoad;P.groundPower=s.power;
  P.pitch=s.pitch;P.pitchVel=dt>0?wrap(P.pitch-pitch0)/dt:0;P.corePitch=P.pitch;
  P.coreStall=s.stall;P.coreDrop=s.dropDir;P.core=out;P.coreMass=st.lo.mass;
