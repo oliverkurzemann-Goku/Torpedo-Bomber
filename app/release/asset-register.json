@@ -4,10 +4,10 @@
   "build": 223,
   "status": "OPEN — source declarations checked; no external rights authorization obtained",
   "payload": {
-    "bytes": 272008310,
+    "bytes": 272010801,
     "fileCount": 361,
     "modelCount": 36,
-    "manifestSha256": "eed31247ef63b1b0e6ea8ee504d6cf03d0ec7244deab3d7a4ee2d76b2798277d"
+    "manifestSha256": "cf52a863feb4afcee5a02d70c533f91b4dad8a30a97db6730db8f7f41e917230"
   },
   "files": [
     {
@@ -744,14 +744,14 @@
     },
     {
       "path": "hangar.html",
-      "bytes": 4481,
-      "sha256": "d1f7e05dbe1feaee4c40b9c0d000ed631f888ae513ddfa83a9a81cbb7a161eff",
+      "bytes": 4485,
+      "sha256": "5be1b301426ae73b0f3f181ec548de3a6b435493248703e06fe1f398ffeda1fe",
       "kind": "code-or-notice"
     },
     {
       "path": "hangar.js",
-      "bytes": 3944,
-      "sha256": "77395dfa7be78d9ed8cb17f41f9966a2818da87ec7e3f295ea9a3e58514d004f",
+      "bytes": 4038,
+      "sha256": "1f783c364f7546c899e6fc4f40456384a35b4ea0916d5f1b78cc645151853dd3",
       "kind": "code-or-notice"
     },
     {
@@ -762,8 +762,8 @@
     },
     {
       "path": "index.html",
-      "bytes": 7537,
-      "sha256": "daee29604b9b7de5f2ee9898b7143189afb25a91cd43f660f91e297dd422b686",
+      "bytes": 7545,
+      "sha256": "2c36e3e3c7ed137d66f6ffe3d59c1f02ae4314b463a6e157ed4c89fe5780885a",
       "kind": "code-or-notice"
     },
     {
@@ -954,8 +954,8 @@
     },
     {
       "path": "sortie-preview.js",
-      "bytes": 9027,
-      "sha256": "c2af1932489fc31b5650850d17f7c5d4165bbea5e2730365448d34dbcf606435",
+      "bytes": 11412,
+      "sha256": "6dfd8b1739b4af05b8d11e45aafa3ab0504fe04cacbefe43fe920bb5bbd76327",
       "kind": "code-or-notice"
     },
     {
