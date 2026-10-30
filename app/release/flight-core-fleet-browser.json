@@ -12,9 +12,9 @@
    "stripLeft": 236,
    "rato": null,
    "after40s": {
-    "spd": 67,
-    "agl": 356,
-    "climb": 9.6
+    "spd": 70.2,
+    "agl": 564,
+    "climb": 15.3
    }
   },
   "takeoffAllBombs": {
@@ -27,29 +27,29 @@
    "stripLeft": 236,
    "rato": null,
    "after40s": {
-    "spd": 67,
-    "agl": 373,
-    "climb": 9.6
+    "spd": 70.2,
+    "agl": 564,
+    "climb": 15.3
    }
   },
   "vmax2000": 594.6,
   "turn": {
    "0.45": {
     "startKmh": 268,
-    "seconds": 12.6,
-    "endKmh": 310,
-    "altChange": -15,
-    "bankDeg": 67,
-    "n": 2.52,
+    "seconds": 8,
+    "endKmh": 309,
+    "altChange": -5,
+    "bankDeg": 66,
+    "n": 2.49,
     "alive": true
    },
    "0.7": {
     "startKmh": 416,
-    "seconds": 8.7,
-    "endKmh": 378,
-    "altChange": -18,
-    "bankDeg": 74,
-    "n": 3.73,
+    "seconds": 7.2,
+    "endKmh": 384,
+    "altChange": -13,
+    "bankDeg": 75,
+    "n": 3.86,
     "alive": true
    }
   },
@@ -62,31 +62,31 @@
   },
   "stall": {
    "entryKmh": 247,
-   "onset": 4.1,
+   "onset": 5.3,
    "peak": 0.99,
    "buffeted": true,
-   "dropBankDeg": 11,
-   "recoveredAfter": 4.3,
+   "dropBankDeg": 10,
+   "recoveredAfter": 2.1,
    "endStall": 0,
    "alive": true,
-   "heightLostInRecovery": 95
+   "heightLostInRecovery": 55
   },
   "idleDecel1s": 2.28,
   "fps": {
    "20": {
-    "spd": 76.25,
-    "heading": 5.194,
-    "alt": 1714.3
+    "spd": 81.44,
+    "heading": 8.075,
+    "alt": 1677.3
    },
    "60": {
-    "spd": 76.28,
-    "heading": 5.187,
-    "alt": 1714.1
+    "spd": 81.46,
+    "heading": 8.066,
+    "alt": 1677.3
    },
    "120": {
-    "spd": 76.29,
-    "heading": 5.185,
-    "alt": 1714.1
+    "spd": 81.47,
+    "heading": 8.063,
+    "alt": 1677.3
    }
   }
  },
@@ -103,9 +103,9 @@
    "stripLeft": 362,
    "rato": null,
    "after40s": {
-    "spd": 70.7,
-    "agl": 351,
-    "climb": 11.4
+    "spd": 74.3,
+    "agl": 649,
+    "climb": 20.2
    }
   },
   "takeoffAllBombs": {
@@ -118,29 +118,29 @@
    "stripLeft": 362,
    "rato": null,
    "after40s": {
-    "spd": 70.7,
-    "agl": 355,
-    "climb": 11.4
+    "spd": 74.3,
+    "agl": 649,
+    "climb": 20.2
    }
   },
   "vmax2000": 568.4,
   "turn": {
    "0.45": {
     "startKmh": 256,
-    "seconds": 10.5,
-    "endKmh": 289,
-    "altChange": -14,
+    "seconds": 7.5,
+    "endKmh": 290,
+    "altChange": -7,
     "bankDeg": 68,
-    "n": 2.71,
+    "n": 2.72,
     "alive": true
    },
    "0.7": {
     "startKmh": 398,
-    "seconds": 7.4,
-    "endKmh": 357,
-    "altChange": -14,
+    "seconds": 6.4,
+    "endKmh": 362,
+    "altChange": -11,
     "bankDeg": 76,
-    "n": 4.12,
+    "n": 4.24,
     "alive": true
    }
   },
@@ -153,31 +153,31 @@
   },
   "stall": {
    "entryKmh": 222,
-   "onset": 3.7,
+   "onset": 4.8,
    "peak": 0.99,
    "buffeted": true,
-   "dropBankDeg": 9,
-   "recoveredAfter": 4,
+   "dropBankDeg": 8,
+   "recoveredAfter": 2.1,
    "endStall": 0,
    "alive": true,
-   "heightLostInRecovery": 81
+   "heightLostInRecovery": 47
   },
   "idleDecel1s": 2.31,
   "fps": {
    "20": {
-    "spd": 70.55,
-    "heading": 6.084,
-    "alt": 1699.4
+    "spd": 73.84,
+    "heading": 8.381,
+    "alt": 1680.7
    },
    "60": {
-    "spd": 70.58,
-    "heading": 6.075,
-    "alt": 1699.4
+    "spd": 73.87,
+    "heading": 8.369,
+    "alt": 1680.5
    },
    "120": {
-    "spd": 70.59,
-    "heading": 6.073,
-    "alt": 1699.3
+    "spd": 73.89,
+    "heading": 8.366,
+    "alt": 1680.4
    }
   }
  },
@@ -194,9 +194,9 @@
    "stripLeft": 162,
    "rato": null,
    "after40s": {
-    "spd": 72.7,
-    "agl": 328,
-    "climb": 9.4
+    "spd": 77.7,
+    "agl": 515,
+    "climb": 14.9
    }
   },
   "takeoffAllBombs": {
@@ -209,29 +209,29 @@
    "stripLeft": 162,
    "rato": null,
    "after40s": {
-    "spd": 72.7,
-    "agl": 331,
-    "climb": 9.4
+    "spd": 77.7,
+    "agl": 518,
+    "climb": 14.9
    }
   },
   "vmax2000": 597.1,
   "turn": {
    "0.45": {
     "startKmh": 269,
-    "seconds": 13.9,
-    "endKmh": 315,
-    "altChange": -28,
-    "bankDeg": 65,
-    "n": 2.32,
+    "seconds": 8.2,
+    "endKmh": 308,
+    "altChange": -10,
+    "bankDeg": 63,
+    "n": 2.22,
     "alive": true
    },
    "0.7": {
     "startKmh": 418,
-    "seconds": 9.5,
-    "endKmh": 379,
-    "altChange": -20,
+    "seconds": 7.2,
+    "endKmh": 386,
+    "altChange": -13,
     "bankDeg": 73,
-    "n": 3.35,
+    "n": 3.49,
     "alive": true
    }
   },
@@ -244,31 +244,31 @@
   },
   "stall": {
    "entryKmh": 262,
-   "onset": 4.3,
-   "peak": 0.99,
+   "onset": 5.6,
+   "peak": 0.98,
    "buffeted": true,
-   "dropBankDeg": 33,
-   "recoveredAfter": 4.3,
+   "dropBankDeg": 28,
+   "recoveredAfter": 1.9,
    "endStall": 0,
    "alive": true,
-   "heightLostInRecovery": 120
+   "heightLostInRecovery": 64
   },
   "idleDecel1s": 2.05,
   "fps": {
    "20": {
-    "spd": 78.46,
-    "heading": 4.43,
-    "alt": 1703.3
+    "spd": 78.13,
+    "heading": 7.96,
+    "alt": 1717.7
    },
    "60": {
-    "spd": 78.5,
-    "heading": 4.423,
-    "alt": 1703.1
+    "spd": 78.16,
+    "heading": 7.952,
+    "alt": 1717.5
    },
    "120": {
-    "spd": 78.51,
-    "heading": 4.422,
-    "alt": 1703.1
+    "spd": 78.17,
+    "heading": 7.95,
+    "alt": 1717.4
    }
   }
  },
@@ -285,9 +285,9 @@
    "stripLeft": 452,
    "rato": null,
    "after40s": {
-    "spd": 43.8,
-    "agl": 202,
-    "climb": 4.4
+    "spd": 50.7,
+    "agl": 284,
+    "climb": 7
    }
   },
   "takeoffAllBombs": {
@@ -300,29 +300,29 @@
    "stripLeft": 452,
    "rato": null,
    "after40s": {
-    "spd": 43.8,
-    "agl": 202,
-    "climb": 4.4
+    "spd": 50.7,
+    "agl": 265,
+    "climb": 7
    }
   },
   "vmax2000": 357,
   "turn": {
    "0.45": {
     "startKmh": 161,
-    "seconds": 12.9,
-    "endKmh": 198,
-    "altChange": -4,
-    "bankDeg": 58,
-    "n": 1.87,
+    "seconds": 11.2,
+    "endKmh": 202,
+    "altChange": -3,
+    "bankDeg": 60,
+    "n": 1.97,
     "alive": true
    },
    "0.7": {
     "startKmh": 250,
-    "seconds": 8.3,
-    "endKmh": 234,
-    "altChange": -12,
+    "seconds": 7.6,
+    "endKmh": 236,
+    "altChange": -10,
     "bankDeg": 68,
-    "n": 2.64,
+    "n": 2.68,
     "alive": true
    }
   },
@@ -335,31 +335,31 @@
   },
   "stall": {
    "entryKmh": 182,
-   "onset": 3.1,
+   "onset": 4.1,
    "peak": 0.99,
    "buffeted": true,
-   "dropBankDeg": 7,
-   "recoveredAfter": 3.5,
+   "dropBankDeg": 6,
+   "recoveredAfter": 1.9,
    "endStall": 0,
    "alive": true,
-   "heightLostInRecovery": 74
+   "heightLostInRecovery": 42
   },
   "idleDecel1s": 1.39,
   "fps": {
    "20": {
-    "spd": 45.18,
-    "heading": 5.798,
-    "alt": 1602.2
+    "spd": 47.7,
+    "heading": 6.605,
+    "alt": 1602
    },
    "60": {
-    "spd": 45.2,
-    "heading": 5.791,
-    "alt": 1602.2
+    "spd": 47.72,
+    "heading": 6.596,
+    "alt": 1601.9
    },
    "120": {
-    "spd": 45.2,
-    "heading": 5.79,
-    "alt": 1602.2
+    "spd": 47.73,
+    "heading": 6.594,
+    "alt": 1601.8
    }
   }
  },
@@ -376,9 +376,9 @@
    "stripLeft": 251,
    "rato": 6,
    "after40s": {
-    "spd": 86.4,
-    "agl": 403,
-    "climb": 14.6
+    "spd": 91.1,
+    "agl": 756,
+    "climb": 25.6
    }
   },
   "takeoffAllBombs": {
@@ -391,26 +391,26 @@
    "stripLeft": 137,
    "rato": 6,
    "after40s": {
-    "spd": 81.5,
-    "agl": 327,
-    "climb": 9.6
+    "spd": 91.3,
+    "agl": 631,
+    "climb": 22.4
    }
   },
   "vmax2000": 813.1,
   "turn": {
    "0.45": {
     "startKmh": 366,
-    "seconds": 11.6,
+    "seconds": 7.8,
     "endKmh": 384,
-    "altChange": -22,
+    "altChange": -12,
     "bankDeg": 71,
-    "n": 3.1,
+    "n": 3.09,
     "alive": true
    },
    "0.7": {
     "startKmh": 569,
-    "seconds": 9.4,
-    "endKmh": 531,
+    "seconds": 9,
+    "endKmh": 536,
     "altChange": -16,
     "bankDeg": 79,
     "n": 5.33,
@@ -426,31 +426,31 @@
   },
   "stall": {
    "entryKmh": 276,
-   "onset": 4.8,
-   "peak": 0.99,
+   "onset": 6.6,
+   "peak": 0.98,
    "buffeted": true,
-   "dropBankDeg": 13,
-   "recoveredAfter": 5.3,
+   "dropBankDeg": 11,
+   "recoveredAfter": 1.9,
    "endStall": 0,
    "alive": true,
-   "heightLostInRecovery": 156
+   "heightLostInRecovery": 70
   },
   "idleDecel1s": 1.68,
   "fps": {
    "20": {
-    "spd": 108.18,
-    "heading": 5.664,
-    "alt": 1757.8
+    "spd": 109.96,
+    "heading": 7.003,
+    "alt": 1736.6
    },
    "60": {
-    "spd": 108.22,
-    "heading": 5.654,
-    "alt": 1757.7
+    "spd": 110.02,
+    "heading": 6.992,
+    "alt": 1736.5
    },
    "120": {
-    "spd": 108.24,
-    "heading": 5.652,
-    "alt": 1757.6
+    "spd": 110.04,
+    "heading": 6.989,
+    "alt": 1736.4
    }
   }
  },
@@ -473,18 +473,18 @@
   "turn": {
    "0.45": {
     "startKmh": 431,
-    "seconds": 7.9,
-    "endKmh": 450,
-    "altChange": -8,
+    "seconds": 7.3,
+    "endKmh": 454,
+    "altChange": -7,
     "bankDeg": 79,
-    "n": 5.2,
+    "n": 5.28,
     "alive": true
    },
    "0.7": {
     "startKmh": 671,
-    "seconds": 10.8,
-    "endKmh": 721,
-    "altChange": -15,
+    "seconds": 11,
+    "endKmh": 750,
+    "altChange": -16,
     "bankDeg": 80,
     "n": 5.82,
     "alive": true
@@ -499,31 +499,31 @@
   },
   "stall": {
    "entryKmh": 252,
-   "onset": 4.3,
+   "onset": 5.9,
    "peak": 0.99,
    "buffeted": true,
    "dropBankDeg": 0,
-   "recoveredAfter": 4.2,
+   "recoveredAfter": 2,
    "endStall": 0,
    "alive": true,
-   "heightLostInRecovery": 60
+   "heightLostInRecovery": 41
   },
   "idleDecel1s": 2.15,
   "fps": {
    "20": {
-    "spd": 143.99,
-    "heading": 6.488,
-    "alt": 1796.3
+    "spd": 146.55,
+    "heading": 6.424,
+    "alt": 1799.1
    },
    "60": {
-    "spd": 144.04,
-    "heading": 6.474,
-    "alt": 1796.6
+    "spd": 146.63,
+    "heading": 6.409,
+    "alt": 1799.5
    },
    "120": {
-    "spd": 144.06,
-    "heading": 6.47,
-    "alt": 1796.6
+    "spd": 146.67,
+    "heading": 6.404,
+    "alt": 1799.5
    }
   }
  }

@@ -27,6 +27,26 @@ function bankFor(stick,nMax,rollLim){
  return Math.sign(stick)*Math.min(rollLim*.95,bank);
 }
 
+/* ---- arcade (Normal) law helpers, Build 226 - GAME.arcade in flight-core.js ----
+ * The Zero is the turn reference: its full-stick level-turn rate (load limit n, rate ~ sqrt(n^2 - 1) / V, the same
+ * speed and height) is what the slower-turning types are pulled towards. Gain and 1/V cancel in the ratio. */
+let zeroRef;
+function zeroReference(){
+ if(zeroRef!==undefined)return zeroRef;
+ const m=F.has('zero')?F.model('zero'):null;
+ return zeroRef=m?{m,W:F.loadout(m,{fuel:50}).mass*F.G}:null;
+}
+// Factor on the path-rotation gain (>= 1): how much faster than the physics this type's path may swing for the
+// same load so that its turn reaches (reference / own)^turnPull of the way to the Zero's. Load, drag and stall
+// are not touched. st: state(); returns 1 where the type already out-turns the Zero.
+function arcadeTurnGain(st,A){
+ const z=zeroReference();if(!z)return 1;
+ const nz=Math.max(A.refLoadFloor,F.loadLimits(z.m,st.V,st.atm.rho,z.W,{}).max),nx=Math.max(A.ownLoadFloor,st.lim.max);
+ return clamp(Math.pow(Math.sqrt(nz*nz-1)/Math.sqrt(nx*nx-1),A.turnPull),1,A.turnGainMax);
+}
+// Thrust surplus after the arcade multiplication (m/s^2): mirrors what FlightCore.step adds.
+const arcadeSurplus=(a,A)=>a>0?a+Math.min(a*A.power,A.powerCap):a;
+
 // Everything the player law needs about the aircraft as loaded right now.
 function state(P,env){
  const m=F.model(env.kind),lo=F.loadout(m,env.loadout||{}),controls=env.controls;
@@ -49,8 +69,11 @@ function state(P,env){
 function player(P,dt,env){
  const st=state(P,env),{m,o,lim,hs}=st,d=env.d,controls=env.controls,config=env.configuration||{authority:1};
  const zeta=d.controlDamping||.80,inertia=Math.pow(1/st.lo.ratio,.35);
- // Low-speed aileron/elevator effectiveness (the game's existing law) and the stall's own loss of aileron.
- const slow=clamp((P.spd/Math.max(1,st.stall)-.65)/.65,.35,1),stalled=P.coreStall||0;
+ // Arcade = the Normal law (Build 226): faster path, more thrust surplus, speed-protected nose-up, steadier
+ // push-over in a bank. REALISTIC (env.aero) and ?arcade=off fly the Build-225 law unchanged.
+ const A=F.GAME.arcade,arcade=!env.aero&&env.arcade!==false;
+ // Low-speed aileron/elevator effectiveness (the game's existing law; arcade keeps a floor) and the stall's own loss of aileron.
+ const slowReal=clamp((P.spd/Math.max(1,st.stall)-.65)/.65,.35,1),slow=arcade?Math.max(slowReal,A.controlFloor):slowReal,stalled=P.coreStall||0;
  const common=slow*(env.hullFactor??1)*inertia*(config.authority??1);
  // Roll: the published roll-rate curve sets both the AERO roll rate and the Normal spring's frequency
  // (its full-stick step peaks at that rate; amplitude = the game's full-stick bank, rollLim x rollFrac).
@@ -63,7 +86,8 @@ function player(P,dt,env){
  // turned up to (1 + env.pullAssist) x faster the closer the speed is to the stall (full at the stall speed,
  // gone at 1.7 x). The wing still gives no more lift than CLmax - only the arcade manoeuvre gain grows, so a
  // slow aircraft answers the stick instead of mushing. Level turns (no back stick) are untouched.
- const gain=env.aero?o.gain:o.gain*(1+(env.pullAssist||0)*clamp(stickPitch/.4,0,1)*clamp((1.7-P.spd/Math.max(1,st.stall))/.7,0,1));
+ let gain=env.aero?o.gain:o.gain*(1+(env.pullAssist||0)*clamp(stickPitch/.4,0,1)*clamp((1.7-P.spd/Math.max(1,st.stall))/.7,0,1));
+ if(arcade)gain*=arcadeTurnGain(st,A);
  const tau=F.pathLag(m,P.spd,P.pos.y,st.lo.ratio)/gain;
  const shaped=v=>d.stickExponent?Math.sign(v)*Math.pow(Math.abs(v),d.stickExponent):v;
  let command;
@@ -96,8 +120,16 @@ function player(P,dt,env){
    const initial=Math.asin(Math.min(.6,departure.rate/Math.max(1,P.spd)));
    noseUp=Math.min(noseUp,initial+(noseUp-initial)*departure.release);
    const level=F.levelAcceleration(m,P.spd,P.pos.y,{...o,power:o.throttle});
-   const sustainable=Math.asin(Math.max(.10,Math.min(.35,(level-.8)/F.G)));
+   const sustainable=Math.asin(Math.max(.10,Math.min(.35,((arcade?arcadeSurplus(level,A):level)-.8)/F.G)));
    noseUp=Math.min(noseUp,sustainable+(noseUp-sustainable)*departure.release);
+  }
+  if(arcade){
+   // Speed protection: the nose-up angle the stick may ask for is what the thrust surplus sustains plus the speed
+   // above climbFloor x stall converted to height over climbHorizon seconds. Held fully back, the aircraft settles
+   // into the steepest climb it can keep instead of stalling, dropping the nose and pulling up again.
+   const surplus=arcadeSurplus(F.levelAcceleration(m,P.spd,P.pos.y,{...o,power:o.throttle}),A);
+   const share=clamp(surplus/F.G+(P.spd-A.climbFloor*st.stall)/(F.G*A.climbHorizon),0,1);
+   noseUp=Math.min(noseUp,Math.max(A.climbMin,Math.asin(share)));
   }
   const cmd=shaped(stickPitch),target=cmd>0?Math.min(cmd*scale,noseUp):cmd*scale;
   if(!Number.isFinite(P.pitchRef)||P.corePitch!==P.pitch){P.pitchRef=P.pitch;P.pitchRefVel=0;}
@@ -111,9 +143,19 @@ function player(P,dt,env){
   // instead), except the 1 g of wings-level flight: flown slower than that, the wing stalls all the same.
   // Pushing over is bounded the same way (Build 225): the nose-down rate of a fast forward stick asked for
   // far more negative load than the wing's inverted CLmax gives, so every push-over stalled at once.
+  // Arcade (Build 226): stick forward in a bank. The load for the nose-down rate is divided by cos(bank), so in a
+  // steep turn even a light push asked for negative g and the turn reversed within half a second. Instead the push
+  // unloads the wing like REALISTIC does - in proportion to the stick, to zero load at 1/unload of the stick, never
+  // below - and the wings-level push-over (bank under pushBankLo) keeps the full negative load.
+  const unloadStick=arcade?clamp(-stickPitch,0,1):0;
   command=(s,V,l)=>{let rate=refVel+(ref-s.pitch)/tau;
    if(s.pitch>d.pitchLim)rate=Math.min(rate,0);if(s.pitch<-d.pitchLim)rate=Math.max(rate,0);
-   const n=F.holdLoad(s.pitch,s.roll,V*rate/(F.G*gain));
+   let n=F.holdLoad(s.pitch,s.roll,V*rate/(F.G*gain));
+   if(unloadStick>0){
+    const c=Math.cos(s.roll),weight=clamp((Math.abs(s.roll)-A.pushBankLo)/(A.pushBankHi-A.pushBankLo),0,1)*clamp(c/.12,0,1);
+    if(weight>0){const hold=F.holdLoad(s.pitch,s.roll,0),floor=Math.min(Math.max(0,hold*(1-A.unload*unloadStick)),.97*l.max);
+     n=Math.max(n,l.min+(floor-l.min)*weight);}
+   }
    return Math.max(.97*l.min,Math.min(n,Math.max(.97*l.max,Math.cos(s.pitch))));};
  }
  const conv=env.convention||'rhine',h0=toCore(P.heading,conv);
@@ -121,7 +163,8 @@ function player(P,dt,env){
   stall:P.coreStall||0,dropDir:P.coreDrop||0};
  const pitch0=P.pitch,y0=P.pos.y;
  // Elevator damage already slows the Normal attitude law (pitchRate); in AERO it caps the pull.
- const out=F.step(m,s,dt,{...o,elevator:env.aero?o.elevator:1,command,gain});
+ const out=F.step(m,s,dt,{...o,elevator:env.aero?o.elevator:1,command,gain,
+  surplusGain:arcade?A.power:0,surplusCap:A.powerCap});
  P.spd=s.spd;P.heading=P.heading+(conv==='pacific'?-(s.heading-h0):(s.heading-h0));P.roll=s.roll;P.nLoad=s.nLoad;P.groundPower=s.power;
  P.pitch=s.pitch;P.pitchVel=dt>0?wrap(P.pitch-pitch0)/dt:0;P.corePitch=P.pitch;
  P.coreStall=s.stall;P.coreDrop=s.dropDir;P.core=out;P.coreMass=st.lo.mass;

@@ -1,4 +1,4 @@
-# Berechneter Flugkern — alle Flugzeuge (Build 223, Pilotenverhalten Build 224, Normalgesetz Build 225)
+# Berechneter Flugkern — alle Flugzeuge (Build 223, Pilotenverhalten Build 224, Normalgesetz Build 225, Arcade Build 226)
 
 Stand 29.10.2026. Seit Build 223 (auf dem Arbeitszweig „Build 220“ genannt; main hatte 220–222 schon für
 Zero-Haube, Avenger-Bombenschacht, Hangar und Custom-Mission-Vorschau vergeben) fliegen **alle zehn spielbaren Typen** (Rhein: P-47, Bf 109, Fw 190,
@@ -206,6 +206,28 @@ Beides sind Spielentscheidungen (Kennung C) im Normalgesetz von `FlightControl.p
 * Nicht geändert: `departure`-Hülle nach dem Start, AERO, Querlage/Kurvenrate, alle Pazifik-Werte außer der Lastgrenze.
 
 Gemessen im echten Spiel (Playwright, `updateFlight`, 1 500 m, Vollgas) siehe `CLAUDE.md`, Build 225. Test: `okinawa/tests/pitch-response.cjs`.
+
+## Build 226: Arcade (Normalgesetz) — Zero als Kurvenreferenz, Schubüberschuss, Fahrtschutz, Drücken in der Kurve
+
+Alles Spielentscheidungen (Kennung C) in `FlightCore.GAME.arcade`; sie wirken **nur im Normalgesetz** von `FlightControl.player`
+(Rhein und Pazifik, alle zehn Typen). REALISTIC (`env.aero`) und jede KI fliegen unverändert (Test: gleiche Eingaben, `arcade` an/aus → identische Lage und Fahrt);
+`?arcade=off` stellt in beiden Spielen das Build-225-Normalgesetz wieder her. Flugzeugdaten, Auftriebsgrenze, Widerstand und Höchstgeschwindigkeit ändern sich nicht.
+
+* **Kurvenrate mit der Zero als Referenz.** Die Volllast-Kurve eines Typs ist `ω = Gain·g·√(n² − 1)/V` mit `n = lim.max`. Bei gleicher Fahrt und Höhe
+  hat die Zero (geringste Flächenbelastung) das größte `n`. Die Bahngain eines langsamer drehenden Typs wird um `κ = clamp((√(nZ² − 1)/√(nX² − 1))^turnPull, 1, turnGainMax)` angehoben
+  (`turnPull` .6, `turnGainMax` 2,2; `n` nach unten auf 1,6 (Zero) bzw. 1,2 (eigen) begrenzt, damit der Quotient dicht über der Abrissfahrt nicht ausartet). `κ` multipliziert nur die Bahndrehung
+  (Kurve, Nicken) und verkürzt die Bahnverzögerung; die geforderte Last und damit Auftrieb, Widerstand, Stall bleiben. Typen, die schon schneller drehen als die Zero (hohe Fahrt), bekommen 1,0.
+* **Schubüberschuss.** Wo Schub − Widerstand > 0 ist, wird der Überschuss um `power` (.6) erhöht, höchstens um `powerCap` (1,8 m/s²): schnelleres Beschleunigen und Steigen.
+  Wo der Überschuss 0 ist (Höchstgeschwindigkeit) und im Verzögern bleibt alles wie berechnet. In `FlightCore.step` als Option `surplusGain`/`surplusCap`.
+* **Fahrtschutz beim Hochziehen.** Der Knüppel darf höchstens die Bahn verlangen, die der Schubüberschuss hält, plus die Fahrt über `climbFloor × Abrissfahrt` (1,2), in `climbHorizon` (5 s) in Höhe umgesetzt:
+  `sin γ_max = Überschuss/g + (V − 1,2·Vs)/(g·5)`, nie unter `climbMin` (.2 rad, damit der Abfang bleibt). Vorher stieg ein voll gezogener Knüppel auf den Nickgrenzwinkel (40° Pazifik, 61° Rhein),
+  verlor die Fahrt, riss ab (Stall 1,0), die Nase fiel auf −30…−50°, danach wieder hoch — alle ~8 s.
+* **Drücken in der Kurve.** `holdLoad` teilt durch cos(Querlage): schon ein leichter Druck verlangte in einer Steilkurve negatives g, die Kurve kehrte sich binnen 0,5 s um. Jetzt entlastet der Knüppel den Flügel
+  wie REALISTIC in Stufen: ab Querlage `pushBankLo` (10°) bis `pushBankHi` (34°) steigt eine untere Lastgrenze `hold·(1 − unload·Druck)` ein (`unload` 1,6: ab 62 % Druck Last 0, ballistisch), nie darunter.
+  Waagerecht bleibt der Drückflug (negatives g) wie bisher.
+* **Steuerwirkung** fällt nahe der Abrissfahrt nicht mehr unter `controlFloor` (.8) ab (REALISTIC behält den echten Abfall).
+
+Zahlen und Messverfahren: `CLAUDE.md`, Build 226. Test: `okinawa/tests/pitch-response.cjs` (Build-226-Abschnitt, schreibt `test-visuals/build226-arcade.json`).
 
 ## Erster Typ: P-47 (Build 219, unverändert gültig)
 

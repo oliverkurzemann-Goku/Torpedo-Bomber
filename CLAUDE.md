@@ -1,5 +1,38 @@
 # Torpedo-Bomber — Übergabe an Claude Code
 
+**30.10.2026, Build 226: Arcade-Modus — Zero als Kurvenreferenz, mehr Schub, Fahrtschutz beim Hochziehen, Drücken in der Kurve.**
+Nutzer (nach dem Test von Build 225): Im Arcade-Modus reagieren die Flugzeuge bei langsamer Fahrt „viel zu langsam", besonders im Carrier-Spiel,
+und sind „träger als im Realistik-Modus"; nur die Zero kurvt gut, ihre Steigleistung bei niedriger Fahrt sei „viel zu schlecht", sie sei „in der
+Längsachse sehr instabil"; die Kurvenrate der Zero soll die Referenz für alle anderen sein, Steigen und Beschleunigung überall höher, **alles nur im
+Arcade-Modus**, pauschal für alle Flugzeuge, Realistic (P-47/Fw 190) als ungefährer Ausgangswert; Knüppel nach vorn in einer steilen Kurve:
+Kurvenrate steht sofort, das Flugzeug fliegt in die andere Richtung (Realistic löst das besser). Zuerst gemessen (`lab226.cjs` im Arbeitsordner, nicht im
+Repo: echtes `updateFlight` beider Spiele, 2 400 m, Vollgas, alle zehn Typen, Arcade gegen Realistic), Ursachen:
+- **Kurvenrate.** Volle Kurve im Normalgesetz = Kurve, die der Flügel waagerecht hält (`ω = Gain·g·√(n²−1)/V`). Dicht über der Abrissfahrt trägt der Flügel kaum mehr als 1 g: P-47 bei
+  1,25 × Vs nur 26 °/s, Fw 190 24, Me 262 23, Avenger 33, Zero 44 (Realistic dort gleich, es sinkt dafür). Schwere Typen sind nicht „träge programmiert", sondern flügelbegrenzt.
+- **Steigen / Zero „instabil".** Voll gezogener Knüppel stieg in allen zehn Typen auf den Nickgrenzwinkel (Pazifik 40°, Rhein 61°), verlor Fahrt bis 60 kt, riss ab
+  (`coreStall` 1,0, über 500 Warnbilder in 20 s), die Nase fiel auf −30…−50°, danach wieder hoch: alle ~8 s ein Auf und Ab. Bei der Zero fällt das am stärksten auf (leicht, Fahrt weg in Sekunden).
+  Ein Pendeln mit neutralem Knüppel, nach Rollschritten (0,1/0,25/0,5) oder mit zufälligem Knüppel fand die Messung bei der Zero nicht (Roll- und Nickbeschleunigung der Zero lagen im Feld der anderen, nicht darüber);
+  gemeint ist vermutlich dieses Nicken. Falls die Zero danach immer noch wackelt: Situation erfragen (Geradeaus, Kurve, Zug).
+- **Drücken in der Kurve.** `holdLoad` teilt durch cos(Querlage): bei 76° Querlage ergab schon 30 % Knüppel nach vorn negatives g (P-47: Kurvenrate +35 → −25 °/s in 0,5 s; Zero, Bf 109, Ju 87, Corsair ähnlich, Avenger/SBD ~0).
+Umgesetzt (alles in `FlightCore.GAME.arcade` / `FlightControl.player`, Kennung C; REALISTIC und alle KI-Piloten unverändert; `?arcade=off` = Normalgesetz von Build 225):
+1. **Zero als Kurvenreferenz.** Bahngain × `κ = clamp((√(nZ²−1)/√(nX²−1))^.6, 1, 2,2)` (n = Lastgrenze bei gleicher Fahrt/Höhe, Zero ≥ 1,6, eigenes ≥ 1,2). Last, Auftrieb, Widerstand, Stall bleiben.
+   Volle Kurve bei 1,25/1,6 × Vs (°/s, vorher → nachher): P-47 26,5/33,7 → 46,7/54,7; Fw 190 23,9/31 → 45,1/52,9; Bf 109 30,6/38,1 → 47/54,2; Me 262 22,7/30,5 → 46,3/49,9; Me 163 31,2/38,6 → 53,4/54,2;
+   Corsair 30,2/37,7 → 45,8/53; Avenger 32,8/41,9 → 41,7/49,9; SBD 32/41,2 → 38,4/47; Ju 87 33,5/43,2 → 38,8/47,4; Zero 44,4/52,6 → 48,6/54,3 (bleibt der beste Kurvenflieger; hohe Fahrt, wo ein Typ schon über der Zero liegt, unverändert).
+2. **Schubüberschuss ×1,6**, höchstens +1,8 m/s² (`surplusGain` in `FlightCore.step`): Beschleunigung 1,3 × Vs: Zero 2,9 → 4,4, P-47 2,2 → 3,4, Fw 190 1,9 → 2,9, Bf 109 2,4 → 3,7, Avenger 1,7 → 2,5, SBD 1,4 → 2,1, Corsair 2,4 → 3,7, Me 262 2,0 → 3,2 m/s²;
+   Höchstgeschwindigkeit identisch (Test: <1,2 % bei allen zehn).
+3. **Fahrtschutz beim Hochziehen.** Der Knüppel darf höchstens die Bahn verlangen, die der Überschuss hält plus die Fahrt über 1,2 × Vs in 5 s in Höhe umgesetzt (`sin γ ≤ Überschuss/g + (V − 1,2 Vs)/(5 g)`, nie unter 11,5°, damit der Abfang geht).
+   Voll gezogener Knüppel 20 s: Stall 1,0 → 0 bei allen, Mindestfahrt 60 → 91…144 kt, Höhengewinn +27…+83 % (P-47 bei 1,25 × Vs 332 → 557 m), danach stetiger Steigflug (Zero 25 m/s bei 91 kt, P-47 27 m/s bei 131 kt, Fw 190 24, Avenger 16).
+4. **Drücken in der Kurve.** Ab 10° bis 34° Querlage steigt eine untere Lastgrenze `hold·(1 − 1,6·Druck)` ein: 30 % Druck bei ~2 × Vs: kleinste Kurvenrate vorher −34…−11 → nachher +18…+26 °/s, voller Druck −71…−32 → 0 (ballistisch statt Umkehr).
+   Waagerecht bleibt der Drückflug mit negativem g.
+5. Steuerwirkung nahe der Abrissfahrt nie unter 80 %; **Pazifik bekommt `pullAssist` .6** wie der Rhein (Nick nach 1 s bei 1,25 × Vs: Avenger 12 → 19°, Corsair 11 → 24°, Zero 15 → 22°).
+Tests: `pitch-response.cjs` (alle zehn Typen, 20/60/120 FPS: Kurvenlücke zur Zero ≥ 30 % geschlossen und Zero bleibt vorn, +25 % Beschleunigung bei gleicher Höchstfahrt, kein Stall und kein Auf und Ab bei gehaltenem Zug,
+Abfang bleibt möglich, Kurve kehrt sich beim Drücken nicht um, REALISTIC bitgleich; schreibt `test-visuals/build226-arcade.json`). Die Build-220/225-Prüfungen laufen dort mit `arcade:false`. Zwei Schwellen angepasst, weil die Lücke
+absichtlich kleiner wird: `fleet-flight-browser` (Zero/Avenger-Kurve 1,4 → 1,1×, Bf 109/Me 262 1,25 → 1,15×). Browser grün: p47-core, fleet-core, pacific-core, handling-quality, flight-envelope, fleet-flight, field-landing, carrier-recovery,
+carrier-start, chase-heading, ditch-formation, water-ditching, komet-jets, me262-/ju87-/p47-integration, fw190-komet, carrier-weather-gear, sbd-native, ship-contact, dogfight, custom-sortie, feedback, europe-start;
+unverändert rot wie auf main: combat-sorties-browser (Haut-/Feuerschaden), aircraft-systems-browser (`attributes`), checkpoint-browser/browser-smoke (Menü-Layout, nicht neu gelaufen).
+**Offen:** kein iPad-Test, alle Stärken (`turnPull` .6, `power` .6, `unload` 1,6, Fahrtschutz 1,2 × Vs / 5 s) sind Schätzungen zum Nachstellen in `GAME.arcade`; die `departure`-Hülle nach dem Start ist weiter nicht angefasst (der neue Fahrtschutz greift zusätzlich);
+Gegner und Rottenflieger fliegen mit dem alten Gesetz, der Spieler kurvt im Arcade-Modus jetzt relativ besser als sie (Schwierigkeit bei Bedarf über `enemySkill`/`zeroSkill`/`DogfightAI.create`).
+
 **30.10.2026, Build 225: Steigen bei langsamer Fahrt, Sinkflug-Stall behoben, Knopf „REALISTIC“.**
 Nutzer (nach dem Test von Build 224): Steigverhalten von P-47, Fw 190 und Bf 109 im Normalmodus bei langsamer Fahrt „etwas zu wenig“,
 Pitch im Arcade-Modus „etwas aggressiver“; die Bf 109 „kommt bei starkem Sinkflug sofort in den Stall, auch bei 160+ Knoten“; AERO-Knopf
@@ -752,7 +785,7 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 205 · Thunderbolt Squadron BUILD 205 · Remagen-Kern 23 / Fahrzeuge 22**
+Stand bei Übergabe: **Torpedo Squadron BUILD 226 · Thunderbolt Squadron BUILD 226 · Remagen-Kern 23 / Fahrzeuge 22**
 
 **Build 198 (22.10.2026): P-47-Fotolackierung, Einsatzspuren und natives Fahrwerk; Terrain-Fix aus Build 197 erhalten.**
 `assets/aircraft/p47-weathered.glb` ist ein ausdrücklich gekennzeichnetes Derivat des

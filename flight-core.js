@@ -218,7 +218,30 @@ const GAME={
  rollGain:145.4/95,rollCeiling:220*DEG,
  // Wing drop at the stall, deg/s at stall character 1 (a sharp stall); mild by design for touch control.
  stallRoll:65*DEG,
- substepHz:120
+ substepHz:120,
+ // Arcade ("Normal") stick law only (Build 226, game decisions C). REALISTIC flight and every AI pilot leave
+ // these alone. Forces, lift limits and top speed stay the computed ones; what changes is how quickly the
+ // path answers the stick and how much of the thrust surplus becomes speed or height.
+ arcade:{
+  // Turn reference: the Zero's full-stick level-turn rate at the same speed and height. The path-rotation gain
+  // of a slower-turning type is raised by (reference / own rate)^turnPull, at most turnGainMax: the load, drag
+  // and stall of the wing are unchanged, only the path swings faster for the same load.
+  turnPull:.6,turnGainMax:2.2,refLoadFloor:1.6,ownLoadFloor:1.2,
+  // Thrust surplus (thrust - drag > 0) is multiplied by 1 + power, but never raised by more than powerCap m/s^2:
+  // faster acceleration and climb everywhere, top speed (surplus 0) unchanged.
+  power:.6,powerCap:1.8,
+  // Aileron / elevator effectiveness never drops below this share near the stall (Realistic keeps the real fade).
+  controlFloor:.8,
+  // Speed protection of the nose-up command: the climb angle the stick may ask for is the one the thrust surplus
+  // sustains plus the speed above climbFloor x stall speed converted to height over climbHorizon seconds
+  // (never below climbMin rad, so a flare still works). Without it a held back stick climbs at the pitch limit,
+  // bleeds off the speed, stalls, drops the nose and pulls up again every ~8 s.
+  climbFloor:1.2,climbHorizon:5,climbMin:.2,
+  // Stick forward in a bank: the load follows the stick like Realistic instead of snapping through zero.
+  // Full unload (n = 0, ballistic) is reached at 1/unload of the stick; banks below pushBankLo / above pushBankHi
+  // are free / fully protected.
+  unload:1.6,pushBankLo:.17,pushBankHi:.6
+ }
 };
 
 /* ---- atmosphere (ISA) ---- */
@@ -502,7 +525,9 @@ function step(m,s,dt,o){
   const T=thrust(m,V,atm.rho,s.power*clamp(o.damage??1,0,1),s.altitude,o.mode);
   const D=drag(m,V,atm.rho,atm.a,s.nLoad,W,{...o,stall:s.stall})+windmillDrag(m,V,atm.rho,s.power);
   const ax=axes(s.pitch,s.heading,s.roll),d=ax.d,u=ax.u;
-  const accel=(T-D)/mass-G*d[1]-(o.extraDrag||0);
+  // o.surplusGain: arcade stick law only - a thrust surplus is multiplied (capped at o.surplusCap m/s^2 extra).
+  const net=(T-D)/mass,surplus=net>0&&o.surplusGain?Math.min(net*o.surplusGain,o.surplusCap??Infinity):0;
+  const accel=net+surplus-G*d[1]-(o.extraDrag||0);
   s.spd=Math.max(2,s.spd+accel*h);
   // flight path: lift along the aircraft's up axis plus gravity across the path
   const Vr=Math.max(10,V),gperp=[G*d[1]*d[0],-G+G*d[1]*d[1],G*d[1]*d[2]];

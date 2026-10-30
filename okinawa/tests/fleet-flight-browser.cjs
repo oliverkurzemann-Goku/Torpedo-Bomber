@@ -65,12 +65,13 @@ const server=http.createServer((req,res)=>{
    // Build 220: on the core the gain from 85 m/s in 10 s is the real excess power over the real mass (no
    // thrust multiplier any more): the Corsair gains about twice what the Avenger does, not a fixed +12 m/s.
    const pacCore=pacific&&await page.evaluate(()=>typeof coreOn==='function'&&coreOn('corsair'));
-   if(pacific){assert(at('zero').turn>at('avenger').turn*1.4);if(pacCore)assert(at('corsair').acceleration-85>(at('avenger').acceleration-85)*1.6,'Corsair out-accelerates the Avenger');else assert(at('corsair').acceleration>at('avenger').acceleration+12);assert(at('sbd').roll>at('avenger').roll*1.1);}
+   // Build 226: the arcade law pulls the slower turners towards the Zero (GAME.arcade.turnPull), so the gap narrows from >1.4x to about 1.2x; the Zero stays the best turner.
+   if(pacific){assert(at('zero').turn>at('avenger').turn*1.1);if(pacCore)assert(at('corsair').acceleration-85>(at('avenger').acceleration-85)*1.6,'Corsair out-accelerates the Avenger');else assert(at('corsair').acceleration>at('avenger').acceleration+12);assert(at('sbd').roll>at('avenger').roll*1.1);}
    else {if(!p47Core)assert(at('fw190').roll/(Math.pow(.5,1.18)*1.56)>at('p47').roll/(.5*1.56)*1.06,'Fw 190 reaches its commanded bank sooner');assert(at('bf109').pitch>at('p47').pitch*1.03,'Bf 109 answers the stick a little sooner than the Jug (Build 215: wing-loading graded, no longer 25 % apart)');if(p47Core){
      // Build 220 (computed core): the heavy Jug still coasts farther than the Bf 109 from 140 m/s (measured
      // +2.0 m/s after 10 s), and the rocket gains about twice what the spooling jets gain from 85 m/s.
      assert(at('p47').coast>at('bf109').coast+1,'P-47 coasts farther');assert(at('me163').acceleration-85>(at('me262').acceleration-85)*1.6,'Komet out-accelerates the Me 262');
-    }else{assert(at('p47').coast>at('bf109').coast+2);assert(at('me163').acceleration>at('me262').acceleration+30);}assert(at('bf109').turn>at('me262').turn*1.25);}
+    }else{assert(at('p47').coast>at('bf109').coast+2);assert(at('me163').acceleration>at('me262').acceleration+30);}assert(at('bf109').turn>at('me262').turn*1.15,'Build 226: the arcade law narrows the Bf 109 / Me 262 turn gap (was >1.25x), the Bf 109 still turns better');}
    for(const kind of new Set(rows.map(r=>r.kind))){const samples=rows.filter(r=>r.kind===kind);for(const key of ['acceleration','coast','turnSpeed'])assert(Math.max(...samples.map(r=>r[key]))-Math.min(...samples.map(r=>r[key]))<1.5,kind+' FPS '+key);}
 
    fs.mkdirSync(path.join(root,'test-visuals'),{recursive:true});fs.writeFileSync(path.join(root,'test-visuals/build219-'+(pacific?'pacific':'rhine')+'-flight.json'),JSON.stringify(rows,null,2));
