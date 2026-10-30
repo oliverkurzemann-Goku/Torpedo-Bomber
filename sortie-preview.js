@@ -53,6 +53,40 @@
    put('rocket',side*(3.05+i*.46),-.83,.68,.88,-.55);
   return out;
  }
+ // Fit racks to the actual airframe surface, never to a guessed model height.
+ // The shared articulation probe decodes quantized GLB vertices and ignores gear,
+ // flaps and propellers. Build its CPU proxies once per aircraft, then free them.
+ function underside(frame,ac,x,z,fallback){
+  if(!frame.userData.previewUndersides){
+   const stations=hardpoints(ac,{bombs:4,rockets:8}).map(h=>[h.x,h.z]);
+   stations.push([0,.3]);
+   const probes=root.AircraftArticulation.meshes(frame,frame),values={};
+   try{
+    for(const [px,pz] of stations){
+     const key=px.toFixed(3)+':'+pz.toFixed(3);
+     if(Object.prototype.hasOwnProperty.call(values,key))continue;
+     // Swept/tapered wings are not rectangular. If a station lies over an
+     // aileron gap or beyond the local trailing edge, move it fore/aft to
+     // the nearest actual wing skin instead of inventing a surface height.
+     let hit=null,contactZ=pz;
+     const offsets=[0,.20,-.20,.40,-.40,.60,-.60,.80,-.80,1,-1,1.20,-1.20,1.40,-1.40,1.60,-1.60];
+     for(const dz of offsets){
+      const z=pz+dz;
+      const candidate=root.AircraftArticulation.probe(frame,probes,px,z);
+      if(candidate){hit=candidate;contactZ=z;break;}
+     }
+     values[key]=hit?{y:hit.local.y,z:contactZ,mesh:hit.object.name||'skin'}:null;
+    }
+   }finally{
+    const materials=new Set();
+    for(const proxy of probes){proxy.geometry.dispose();for(const mat of [].concat(proxy.material||[]))materials.add(mat);}
+    materials.forEach(m=>m.dispose());
+   }
+   frame.userData.previewUndersides=values;
+  }
+  const found=frame.userData.previewUndersides[x.toFixed(3)+':'+z.toFixed(3)];
+  return found?{...found,measured:true}:{y:fallback,mesh:'fallback',measured:false};
+ }
  function loadout(display,c){
   const frame=display.userData.frame,group=display.userData.stores,s=root.CustomSortie.stores(c),ac=c.ac;
   for(const child of [...group.children]){group.remove(child);dispose(child);}
@@ -80,24 +114,30 @@
    root.AvengerBay.pose(holder,(s.bombs||s.torpedoes)?.72:0,s.torpedoes);
    return;
   }
+  const report=[];
   for(const h of hardpoints(ac,s)){
-   store(h.kind,h.x,h.y,h.z,h.scale);
-   const top=h.y+(h.kind==='rocket'?.064:.40)*h.scale;
-   const gap=h.roofY-top;
-   if(gap>.045){
-    const pylon=new T.Mesh(new T.BoxGeometry(h.kind==='rocket'?.055:.10,gap,.27),
-     new T.MeshStandardMaterial({color:0x59635e,roughness:.76,metalness:.12}));
-    pylon.name='previewPylon';pylon.position.set(h.x,top+gap/2,h.z);group.add(pylon);
-   }
+   const skin=underside(frame,ac,h.x,h.z,h.roofY);
+   const radius=(h.kind==='rocket'?.064:.40)*h.scale;
+   const clearance=h.kind==='rocket'?.07:.09;
+   const y=skin.y-radius-clearance;
+   store(h.kind,h.x,y,skin.z??h.z,h.scale);
+   // Rack joins the weapon's upper skin to the aircraft's lower skin.
+   const pylon=new T.Mesh(new T.BoxGeometry(h.kind==='rocket'?.055:.10,clearance+.018,h.kind==='rocket'?.32:.30),
+    new T.MeshStandardMaterial({color:0x59635e,roughness:.76,metalness:.12}));
+   pylon.name='previewPylon';pylon.position.set(h.x,skin.y-clearance/2,skin.z??h.z);group.add(pylon);
+   report.push({kind:h.kind,x:h.x,z:skin.z??h.z,requestedZ:h.z,skinY:skin.y,storeY:y,storeTop:y+radius,clearance,measured:skin.measured,mesh:skin.mesh});
   }
   if(s.tank){
+   const fallback=ac==='p47'?-.53:ac==='bf109'?-.72:-.82;
+   const skin=underside(frame,ac,0,.3,fallback),clearance=.09;
    const tank=new T.Mesh(new T.SphereGeometry(1,20,12),new T.MeshStandardMaterial({color:0xa3a49c,roughness:.55,metalness:.35}));
    tank.name='previewDropTank';tank.scale.set(.31,.29,1.25);
-   const roofY=ac==='p47'?-.53:ac==='bf109'?-.72:-.82;
-   tank.position.set(0,roofY-.52,.3);group.add(tank);
-   const pylon=new T.Mesh(new T.BoxGeometry(.12,.25,.42),new T.MeshStandardMaterial({color:0x737e78,roughness:.65}));
-   pylon.name='previewTankPylon';pylon.position.set(0,roofY-.125,.3);group.add(pylon);
+   tank.position.set(0,skin.y-.29-clearance,skin.z??.3);group.add(tank);
+   const pylon=new T.Mesh(new T.BoxGeometry(.12,clearance+.018,.42),new T.MeshStandardMaterial({color:0x737e78,roughness:.65}));
+   pylon.name='previewTankPylon';pylon.position.set(0,skin.y-clearance/2,skin.z??.3);group.add(pylon);
+   report.push({kind:'tank',x:0,z:skin.z??.3,requestedZ:.3,skinY:skin.y,storeY:tank.position.y,storeTop:tank.position.y+.29,clearance,measured:skin.measured,mesh:skin.mesh});
   }
+  display.userData.storeFit=report;
  }
  function create({host,status,reset,closer,further,retry}){
   let renderer,scene,camera,model,current=null,pending=0,frameRequest=0,failed=false,yaw=.7,pitch=.28,zoom=1,fit=20;const pointers=new Map();let pinch=0;
@@ -115,12 +155,12 @@
    renderer.domElement.addEventListener('webglcontextlost',e=>{e.preventDefault();failed=true;renderer.domElement.hidden=true;message('3D preview unavailable. Your mission can still launch.');retry.hidden=false;});return true;
   }catch(e){failed=true;message('3D preview unavailable. Your mission can still launch.');return false;}}
   async function update(input,force=false){const c=root.CustomSortie.normalize(input),old=current;current=c;
-   if(!force&&old?.ac===c.ac&&model?.userData.ac===c.ac&&model.visible){loadout(model,c);draw();return;}
+   if(!force&&old?.ac===c.ac&&model?.userData.ac===c.ac&&model.visible){loadout(model,c);host.dataset.mountReport=JSON.stringify(model.userData.storeFit||[]);draw();return;}
    const token=++pending;model&&(model.visible=false);message('Loading '+root.CustomSortie.planes[c.ac].name+'…',true);retry.hidden=true;
    if(failed&&!force||!init()){message('3D preview unavailable. Your mission can still launch.');retry.hidden=false;return;}
    if(force&&failed){renderer.dispose();renderer.domElement.remove();renderer=null;failed=false;if(!init())return;}
    try{const gl=await new Promise((ok,no)=>new T.GLTFLoader().load(assets[c.ac],ok,undefined,no));
-    if(token!==pending){dispose(gl.scene);return;}const next=prepare(gl.scene,c.ac);loadout(next,current);if(model){scene.remove(model);dispose(model);}model=next;model.visible=true;scene.add(model);yaw=.7;pitch=.28;zoom=1;
+    if(token!==pending){dispose(gl.scene);return;}const next=prepare(gl.scene,c.ac);loadout(next,current);host.dataset.mountReport=JSON.stringify(next.userData.storeFit||[]);if(model){scene.remove(model);dispose(model);}model=next;model.visible=true;scene.add(model);yaw=.7;pitch=.28;zoom=1;
     host.dataset.aircraft=c.ac;host.dataset.source=assets[c.ac];message(root.CustomSortie.planes[c.ac].name);draw();
    }catch(e){if(token!==pending)return;message('Preview could not load. Your mission can still launch.');retry.hidden=false;console.warn('Aircraft preview:',e);}
   }

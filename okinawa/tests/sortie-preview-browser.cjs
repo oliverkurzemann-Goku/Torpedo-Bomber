@@ -15,7 +15,28 @@ const server=http.createServer((req,res)=>{const file=path.resolve(root,'.'+deco
    await page.locator('[data-theatre="'+theatre+'"]').click();
    for(const ac of planes){console.log('Preview:',ac);await page.locator('button[data-aircraft="'+ac+'"]').click();await ready(ac);
     const kits=await page.locator('#kit option').evaluateAll(o=>o.map(n=>n.value));await page.locator('#kit').selectOption(kits.includes('mixed')?'mixed':kits.includes('bombs')?'bombs':'guns');
-    await page.locator('#previewReset').click();const picture=await page.locator('#aircraftPreview').screenshot();shots.push({ac,picture});
+    await page.locator('#previewReset').click();
+    const fit=JSON.parse(await page.locator('#aircraftPreview').getAttribute('data-mount-report')||'[]');
+    if(['p47','bf109','fw190','ju87','me262','sbd'].includes(ac)){
+     assert(fit.length>0,ac+' stores displayed');
+     for(const mount of fit){
+      assert(mount.measured,ac+' must fit '+mount.kind+' to actual airframe: '+JSON.stringify(mount));
+      assert(Math.abs(mount.skinY-mount.storeTop-mount.clearance)<.001,ac+' store/rack continuous contact');
+      assert(mount.storeTop<mount.skinY,ac+' store below actual skin');
+     }
+     console.log('Fitted stores',ac,JSON.stringify(fit));
+    }
+    if(ac==='bf109'||ac==='fw190'){
+     await page.locator('#kit').selectOption('range');
+     const tanks=JSON.parse(await page.locator('#aircraftPreview').getAttribute('data-mount-report')||'[]');
+     assert.equal(tanks.length,1,ac+' one drop tank');
+     assert.equal(tanks[0].kind,'tank');
+     assert(tanks[0].measured,ac+' tank connected to actual fuselage: '+JSON.stringify(tanks[0]));
+     assert(Math.abs(tanks[0].skinY-tanks[0].storeTop-tanks[0].clearance)<.001,ac+' tank rack continuous');
+     console.log('Fitted drop tank',ac,JSON.stringify(tanks[0]));
+     await page.locator('#kit').selectOption('bombs');
+    }
+    const picture=await page.locator('#aircraftPreview').screenshot();shots.push({ac,picture});
     assert(await page.locator('#go').isEnabled());
    }
   }
