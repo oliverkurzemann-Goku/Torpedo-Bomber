@@ -4623,7 +4623,7 @@ function spawnWingman(i){
   const cp=Math.cos(w.pitch);w.vel.set(Math.sin(w.heading)*cp*startSpd,Math.sin(w.pitch)*startSpd,Math.cos(w.heading)*cp*startSpd);
   // Build 220: on the core the escort flies through the air mass and its velocity is over the ground, so it
   // starts with the wind already in it - otherwise the first guided frame jumped by the whole wind speed.
-  if(Core.on&&FlightCore.has(w.kind)&&typeof CarrierRecovery!=='undefined'){const wind=CarrierRecovery.wind(windHead,windGust);w.vel.x+=wind.x;w.vel.z+=wind.z;}
+  if(globalThis.FlightCoreEnabled&&typeof FlightCore!=='undefined'&&FlightCore.has(w.kind)&&typeof CarrierRecovery!=='undefined'){const wind=CarrierRecovery.wind(windHead,windGust);w.vel.x+=wind.x;w.vel.z+=wind.z;}
   mesh.position.copy(w.pos);mesh.rotation.set(-w.pitch,w.heading,0,'YXZ');scene.add(mesh);wingmen.push(w);
 }
 // Wingman AI. Three modes: FORM (hold a formation slot on the player), ATTACK (a staged
@@ -4898,7 +4898,7 @@ function updateAlliedDefense(dt){
 }
 function updatePatrolRecovery(dt){
  if(MISSIONS[mission].theater!=='fleet')return;
- if(!patrolRecovery&&pacificOps.elapsed>=35){spawnWingman(0);const w=wingmen.at(-1);w.patrolRecovery=true;w.kind='corsair';w.hp=1.5;w.pos.set(carrierX-1800,170,-100);w.heading=Math.PI/2;w.vel.set(60,0,0);if(Core.on){const wind=CarrierRecovery.wind(windHead,windGust);w.vel.x+=wind.x;w.vel.z+=wind.z;}patrolRecovery=w;radioSay('WOUNDED PATROL CORSAIR RETURNING — KEEP THE DECK APPROACH CLEAR');}
+ if(!patrolRecovery&&pacificOps.elapsed>=35){spawnWingman(0);const w=wingmen.at(-1);w.patrolRecovery=true;w.kind='corsair';w.hp=1.5;w.pos.set(carrierX-1800,170,-100);w.heading=Math.PI/2;w.vel.set(60,0,0);if(globalThis.FlightCoreEnabled){const wind=CarrierRecovery.wind(windHead,windGust);w.vel.x+=wind.x;w.vel.z+=wind.z;}patrolRecovery=w;radioSay('WOUNDED PATROL CORSAIR RETURNING — KEEP THE DECK APPROACH CLEAR');}
  const w=patrolRecovery;if(!w?.alive)return;
  const waiting=raiders.some(r=>r.alive&&Math.hypot(r.pos.x-carrierX,r.pos.z)<1800)||enemyBombs.length>0;
  const goal=waiting?new THREE.Vector3(carrierX-2200,170,-350):new THREE.Vector3(carrierX+AIM_X,DECK_Y+2,0),gap=goal.sub(w.pos);
