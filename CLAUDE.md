@@ -31,7 +31,7 @@ nur noch mit `?core=off`.
 Offen: kein iPad-Test, kein Spielgefuehl-Nachweis; Rollraten, Abriss-Heftigkeit, Mcrit/mlimit und Lastgrenzen sind ueberwiegend
 Sekundaerquellen oder C; Fw-190-Steigwerte ±14 % (Zweigang-Lader nicht modelliert); B-17 mit auffaelligem Propellerwirkungsgrad
 (nur KI). Build 220 des Arbeitszweigs entspricht main-Build 223 (main hatte 220–222 fuer Zero-Haube, Avenger-Schacht, Hangar, Custom-Mission-Vorschau).
-Unveraendert rot auf main OHNE den Flugkern (Build 222 verglichen): checkpoint-browser, corsair-loadouts-browser, takeoff-briefing-browser und
+Unveraendert rot auf main OHNE den Flugkern (gegen Build 221 verglichen): checkpoint-browser, corsair-loadouts-browser, takeoff-briefing-browser und
 browser-smoke (Menue-Layout seit dem Hangar-Link), aircraft-systems-browser (`attributes` undefined), combat-sorties-browser (Haut-/Feuerschaden),
 deck-night-browser (bf109-Materialpruefung), torpedo-attack-browser (Torpedo wartet auf den Avenger-Schacht, der 600-m-Querschuss trifft nicht).
 
