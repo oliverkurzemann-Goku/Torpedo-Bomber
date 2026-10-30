@@ -1,5 +1,5 @@
 {
-  "title": "F4U-1D Corsair, late bubble canopy, original game model",
+  "title": "F4U-1D Corsair, rebuilt late canopy and corrected inverted-gull dihedral",
   "dimensions": {
     "span": 12.4968,
     "length": 10.16,
@@ -26,7 +26,8 @@
     "Game-scale approximation, not engineering geometry.",
     "Cross sections, cockpit details and kinematics are authored approximations.",
     "Fictional number 27 and wear pattern; no copied profile or nose art.",
-    "Existing game performance retained."
+    "Existing game performance retained.",
+    "Second original airframe redesign: outer wing positive dihedral and elongated hood; preserve wingspan, animations and stores."
   ],
   "fuselage": [
     {
@@ -48,7 +49,7 @@
       "nBot": 2
     },
     {
-      "z": -5.0,
+      "z": -5,
       "top": 0.34,
       "bottom": -0.12,
       "half": 0.2,
@@ -75,7 +76,7 @@
       "nBot": 2
     },
     {
-      "z": -3.0,
+      "z": -3,
       "top": 0.56,
       "bottom": -0.49,
       "half": 0.47,
@@ -218,31 +219,31 @@
       "s": 3.2,
       "le": 1.06,
       "te": -1.51,
-      "y": -0.85,
+      "y": -0.7777,
       "t": 0.125,
       "twist": -0.5
     },
     {
       "s": 4.3,
-      "le": 0.72,
-      "te": -1.42,
-      "y": -0.66,
+      "le": 0.7915,
+      "te": -1.376,
+      "y": -0.4532,
       "t": 0.105,
       "twist": -1
     },
     {
       "s": 5.45,
-      "le": 0.35,
-      "te": -1.27,
-      "y": -0.46,
+      "le": 0.4962,
+      "te": -1.18,
+      "y": -0.114,
       "t": 0.09,
       "twist": -1.5
     },
     {
       "s": 5.85,
-      "le": 0.16,
-      "te": -1.13,
-      "y": -0.39,
+      "le": 0.3322,
+      "te": -1.024,
+      "y": 0.004,
       "t": 0.085,
       "twist": -2
     },
@@ -250,7 +251,7 @@
       "s": 6.1,
       "le": -0.08,
       "te": -0.96,
-      "y": -0.35,
+      "y": 0.0777,
       "t": 0.075,
       "twist": -2
     },
@@ -258,7 +259,7 @@
       "s": 6.22,
       "le": -0.35,
       "te": -0.73,
-      "y": -0.33,
+      "y": 0.1131,
       "t": 0.055,
       "twist": -2
     },
@@ -266,7 +267,7 @@
       "s": 6.2484,
       "le": -0.51,
       "te": -0.55,
-      "y": -0.325,
+      "y": 0.1215,
       "t": 0.03,
       "twist": -2
     }
