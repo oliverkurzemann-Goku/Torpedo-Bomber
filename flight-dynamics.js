@@ -27,6 +27,14 @@ function authority(type,speed,stall){
  const roll=E&&E.derived[type]?clamp(E.rollRate(type,speed)/E.rollPeak(type),.12,1):1-fast*(1-q.floor);
  return {roll:slow*roll,pitch:slow*(1-fast*(1-q.floor)*.55),turn:1};
 }
+// Arcade touch input only: the Zero and Bf 109 no longer snap to extreme bank/pitch.
+ // FlightEnvelope, energy, AI and AERO aerobatics remain unmodified.
+function playerControls(type,roll,pitch){
+ const calm=type==='zero'||type==='bf109';
+ if(!calm)return {roll,pitch,response:1};
+ const shape=x=>Math.sign(x)*Math.pow(Math.abs(x),1.12);
+ return {roll:shape(roll)*.83,pitch:shape(pitch)*.88,response:.85};
+}
 function acceleration(type,p,o={}){
  const q=profile(type),v=Math.max(32,p.spd||0),mass=clamp(o.loadRatio??1,.8,1.5),power=(p.fuel??100)<=0?0:clamp(o.power??1,0,1);
  const bank=clamp(Math.abs(Math.sin(o.bank??p.roll??0)),0,1),E=root.FlightEnvelope;
@@ -69,6 +77,6 @@ function step(p,dt,o={}){
  }
  return p.spd;
 }
-root.FlightDynamics={profiles,profile,kind,authority,acceleration,step};
+root.FlightDynamics={profiles,profile,kind,authority,playerControls,acceleration,step};
 if(typeof module==='object'&&module.exports)module.exports=root.FlightDynamics;
 })(typeof window==='undefined'?globalThis:window);

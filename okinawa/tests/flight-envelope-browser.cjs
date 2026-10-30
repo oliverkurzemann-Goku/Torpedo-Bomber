@@ -49,7 +49,7 @@ const server=http.createServer((req,res)=>{
      for(const v of [Math.round(vmax*.45),Math.round(vmax*.7)]){
       setup(v);inputRoll=1;let peak=0,prev=P.roll;
       for(let i=0;i<60*3;i++){updateFlight(1/60);peak=Math.max(peak,Math.abs(P.roll-prev)*60);prev=P.roll;}
-      out.roll[v]={measured:peak/DEG,expected:E.rollRate(kind,v)/DEG};
+      const pilot=FlightDynamics.playerControls(kind,1,1);out.roll[v]={measured:peak/DEG,expected:E.rollRate(kind,v)*pilot.roll*pilot.response/DEG};
      }
      // 360 degree turn, full stick, time and speed lost
      out.turn={};

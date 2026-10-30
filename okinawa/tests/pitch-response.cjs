@@ -15,7 +15,8 @@ for(const kind of [...Object.keys(defs),'avenger','sbd','corsair','zero'])for(co
  const run=vm.runInNewContext('(function(P,inputPitch,dt){const inputRoll=0,load=SortieFeatures.Handling.sample(P),controls=SortieFeatures.Damage.controls(P),stallSpd=d?.stall||35,configuration=SortieFeatures.Handling.configuration(P,stallSpd),departure=SortieFeatures.Handling.departure(P,dt,stallSpd),aeroMode=false,steerSign=1;'+html.slice(a,b)+'})',
   {SortieFeatures,FlightDynamics,FlightEnvelope,PAC_HANDLING:handling,d,P47Performance:require('../../p47-performance'),MISSIONS:[{corsair:kind==='corsair'}],mission:0,isDefend:()=>kind==='zero',isSBD:()=>kind==='sbd'});
  const p={ac:kind,hull:d?.hull||130,spd:110,gear:0,fuel:50,bombs:0,torps:0,rockets:0,rollBias:0,pitch:0,roll:0,pitchVel:0,rollVel:0,heading:0,departureAge:null};
- const target=.4*(pacific?.70:d.pitchLim*.92)*(d?.stickExponent?Math.pow(.4,d.stickExponent)/.4:1);
+ const touch=FlightDynamics.playerControls(kind,0,.4).pitch;
+ const target=touch*(pacific?.70:d.pitchLim*.92)*(d?.stickExponent?Math.pow(Math.abs(touch),d.stickExponent)/Math.abs(touch):1);
  let t90=null,peak=0,peakRate=0,last=0;
  for(let i=0;i<fps*5;i++){run(p,.4,1/fps);peak=Math.max(peak,p.pitch);peakRate=Math.max(peakRate,(p.pitch-last)*fps);last=p.pitch;if(t90===null&&p.pitch>=target*.9)t90=(i+1)/fps;}
  assert(Math.abs(p.pitch-target)<.002,kind+' reaches the commanded attitude');assert(peak<target*1.04,kind+' no excessive overshoot');
@@ -25,7 +26,7 @@ for(const kind of [...Object.keys(defs),'avenger','sbd','corsair','zero'])for(co
 }
 for(const kind of new Set(rows.map(r=>r.kind))){const a=rows.filter(r=>r.kind===kind).map(r=>r.t90);assert(Math.max(...a)-Math.min(...a)<.13,kind+' consistent FPS');}
 const at=k=>rows.find(r=>r.kind===k&&r.fps===60).t90;
-assert(at('zero')<at('p47')&&at('bf109')<at('p47')*1.05,'light fighters answer the stick sooner than the heavy Jug');
+assert(at('zero')<at('p47')*1.2&&at('bf109')<at('p47')*1.2,'calmed fighters retain a manageable touch response');
 assert(at('avenger')>at('zero'),'the torpedo bomber answers more slowly than the Zero');
 console.log('Measured pitch response:',JSON.stringify(rows));
 fs.mkdirSync(path.join(root,'test-visuals'),{recursive:true});fs.writeFileSync(path.join(root,'test-visuals/build219-pitch.json'),JSON.stringify(rows,null,2));

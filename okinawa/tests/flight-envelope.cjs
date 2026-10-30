@@ -6,6 +6,8 @@ const E=require('../../flight-envelope');const F=require('../../flight-dynamics'
 const kinds=Object.keys(E.SHEETS),G=9.81,DEG=Math.PI/180;
 assert.deepEqual(kinds.sort(),['avenger','bf109','corsair','fw190','ju87','me163','me262','p47','sbd','zero'].sort(),'sheet covers the ten playable aircraft');
 for(const kind of kinds)assert(F.profiles[kind],kind+' has an energy profile');
+for(const kind of ['zero','bf109']){const p=F.playerControls(kind,1,.5);assert(p.roll<.9&&p.pitch<.45&&p.response<.9,kind+' calmer assisted controls');}
+assert.equal(F.playerControls('p47',1,.5).roll,1,'P-47 controls unchanged');
 
 // ---- the data sheet reproduces the documented anchors --------------------------------------
 const d=E.derived;
