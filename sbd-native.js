@@ -6,8 +6,30 @@
  function source(o){return o?.getObjectByName('SBD_HappySunpore_v1');}
  function isNative(o){return source(o)?.userData.nativeAircraft==='sbd-201';}
  function frameOf(o){return o?.getObjectByName('sbdGear')?.parent;}
+ function removeFixedCenterFlaps(frame){
+  // Two disconnected, permanently drooped centre panels in the imported static mesh.
+  // Their light underside made the white strip behind the wing root. The articulated
+  // perforated brakes are separate objects and are deliberately left intact.
+  const mesh=frame.getObjectByName('Static_1942_Blue_Gray_over_Light_Gray');if(!mesh||mesh.userData.centerStripRemoved)return;
+  const g=mesh.geometry,p=g.attributes.position,ix=g.index,keep=[],parents=[],keys=new Map(),vertex=[];
+  const find=i=>{while(parents[i]!==i){parents[i]=parents[parents[i]];i=parents[i];}return i;};
+  for(let i=0;i<p.count;i++){
+   const key=[p.getX(i),p.getY(i),p.getZ(i)].map(v=>v.toFixed(5)).join(',');
+   if(!keys.has(key)){const j=parents.length;keys.set(key,j);parents.push(j);}vertex[i]=keys.get(key);
+  }
+  for(let i=0;i<ix.count;i+=3){const a=find(vertex[ix.getX(i)]);for(let j=1;j<3;j++)parents[find(vertex[ix.getX(i+j)])]=a;}
+  const groups=new Map();
+  for(let i=0;i<ix.count;i+=3){const id=find(vertex[ix.getX(i)]);if(!groups.has(id))groups.set(id,[]);groups.get(id).push(i);}
+  const inside=i=>Math.abs(p.getX(i))<1.60&&p.getY(i)<-1.03&&p.getY(i)>-1.50&&p.getZ(i)>.17&&p.getZ(i)<.46;
+  const removedFaces=new Set();for(const faces of groups.values())if(faces.length===44&&faces.every(i=>[0,1,2].every(j=>inside(ix.getX(i+j)))))for(const i of faces)removedFaces.add(i);
+  let removed=removedFaces.size;
+  for(let i=0;i<ix.count;i+=3)if(!removedFaces.has(i))keep.push(ix.getX(i),ix.getX(i+1),ix.getX(i+2));
+  if(removed!==88)throw Error('Dauntless centre-panel layout changed: '+removed);
+  mesh.geometry=g.clone();mesh.geometry.setIndex(keep);mesh.userData.centerStripRemoved=removed;
+ }
  function install(frame){
   if(!isNative(frame))return false;if(frame.userData.nativeSBD)return true;
+  removeFixedCenterFlaps(frame);
   const gear=frame.getObjectByName('sbdGear');frame.updateMatrixWorld(true);frame.attach(gear);
   const flaps=new T.Group();flaps.name='flightFlaps';flaps.userData.articulationPart=true;frame.add(flaps);frame.updateMatrixWorld(true);
   for(const name of ['BrakeLowerLeft','BrakeLowerRight'])flaps.attach(frame.getObjectByName(name));

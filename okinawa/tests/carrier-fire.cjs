@@ -7,7 +7,7 @@ class ImageStub{constructor(){this.listeners={};this.width=2;this.height=2;}addE
 global.document={createElementNS:()=>new ImageStub()};
 vm.runInThisContext(fs.readFileSync(require.resolve('three/examples/js/loaders/GLTFLoader.js'),'utf8'));
 require('../../flight-support.js');require('../../game-runtime.js');require('../../combat-fx.js');require('../../aircraft-rotors.js');
-require('../../corsair-native.js');require('../../sortie-features.js');require('../../aircraft-articulation.js');
+require('../../avenger-bay.js');require('../../corsair-native.js');require('../../sortie-features.js');require('../../aircraft-articulation.js');
 const {GameRuntime,CombatFX}=global,root=path.resolve(__dirname,'../..'),html=fs.readFileSync(path.join(root,'torpedo-carrier.html'),'utf8');
 const extract=(from,to)=>html.slice(html.indexOf('function '+from+'('),html.indexOf('\nfunction '+to+'(',html.indexOf('function '+from+'(')+1));
 const gunCode=html.slice(html.indexOf('function updateGuns('),html.indexOf('function updateMinimap('));
@@ -28,7 +28,7 @@ async function glb(file){const b=fs.readFileSync(path.join(root,file));return ne
   // check. Existing real-model prop tests independently check its geometry.
   const rotor=kind==='corsair'?aircraft.getObjectByName('sbdRotorBlade'):new THREE.Group();if(kind!=='corsair'){rotor.name='sbdRotorBlade';aircraft.add(rotor);}
   const combatFX=CombatFX.create(scene),P={alive:true,pos:new THREE.Vector3(0,300,0),heading:0,pitch:0,roll:0,throttle:1,gear:0,flap:0,hook:0,torps:2,ammo:5000};
-  const ctx=vm.createContext({THREE,CorsairRig:global.CorsairRig,corsairConfig:()=>({bombScale:1}),inputRoll:0,inputPitch:0,SortieFeatures:global.SortieFeatures,AircraftArticulation:global.AircraftArticulation,FlightSupport:global.FlightSupport,seaUniforms:null,seaHeightAt:()=>0,updateRearArmament(){},GameRuntime,CombatFX,Math,console,P,scene,planeGroup,combatFX,
+  const ctx=vm.createContext({THREE,AvengerBay:global.AvengerBay,CorsairRig:global.CorsairRig,corsairConfig:()=>({bombScale:1}),inputRoll:0,inputPitch:0,SortieFeatures:global.SortieFeatures,AircraftArticulation:global.AircraftArticulation,FlightSupport:global.FlightSupport,seaUniforms:null,seaHeightAt:()=>0,updateRearArmament(){},GameRuntime,CombatFX,Math,console,P,scene,planeGroup,combatFX,
    state:3,ST:{FLIGHT:3},MISSIONS:[{corsair:kind==='corsair'}],mission:0,firing:true,gunCool:0,bullets:[],ships:[],zeros:[],raiders:[],etorps:[],shoreTargets:[],
    isDefend:()=>kind==='zero',isSBD:()=>kind==='sbd'||kind==='corsair',loadout:'divebomb',
    zeroTemplate:null,fitCarrierAircraft(){},playerZero:kind==='zero'?aircraft:null,playerSBD:kind==='sbd'||kind==='corsair'?aircraft:null,
@@ -40,7 +40,7 @@ async function glb(file){const b=fs.readFileSync(path.join(root,file));return ne
    document:{querySelectorAll:()=>[]},shoreHeight:()=>0,sfxGun(){},updateHUD(){},radioSay(){},
    setSBDGearVisible(){},setZeroGearVisible(){},spawnSparks(){},spawnSmoke(){},addScore(){},spawnSplash(){}
   });ctx.window={__avStash:[]};
-  vm.runInContext(extract('isCorsair','isSBD')+'\n'+extract('noseDir','loadPlaneModel')+'\n'+gunCode+'\n'+poseCode,ctx);
+  vm.runInContext(extract('updateAvengerBay','corsairConfig')+'\n'+extract('isCorsair','isSBD')+'\n'+extract('noseDir','loadPlaneModel')+'\n'+gunCode+'\n'+poseCode,ctx);
   planeGroup.updateMatrixWorld(true);
   const ports=ctx.pacificGunMuzzles(),nearest=ports.map(()=>Infinity),tri=new THREE.Triangle(),point=new THREE.Vector3();
   function vert(attr,i){const v=new THREE.Vector3().fromBufferAttribute(attr,i);if(attr.normalized){const d=attr.array instanceof Int16Array?32767:attr.array instanceof Uint16Array?65535:1;v.multiplyScalar(1/d);}return v;}

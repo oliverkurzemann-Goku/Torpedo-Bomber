@@ -2,7 +2,7 @@
  * Build 220: the wingmen fly the computed core (FlightControl.ai through FlightCore) as Avengers, so the
  * slow formation case is 80 kt - a lightly loaded Avenger's landing-flap stall is 65 kt, the old figure. */
 const fs=require('node:fs'),path=require('node:path'),vm=require('node:vm'),assert=require('node:assert/strict');
-const THREE=require('three');
+const THREE=require('three');global.THREE=THREE;const AvengerBay=require('../../avenger-bay.js');
 require('../../game-runtime.js');require('../../flight-support.js');const {GameRuntime,FlightSupport}=global;
 global.FlightCoreEnabled=true;require('../../flight-core.js');require('../../flight-control.js');
 const CarrierRecovery=require('../../carrier-recovery.js');
@@ -13,7 +13,7 @@ const P={pos:new THREE.Vector3(0,180,0),heading:0,pitch:0,spd:80};
 const w={alive:true,kind:'avenger',mode:'form',cool:999,pos:new THREE.Vector3(-26,177,-30),
  slotPos:new THREE.Vector3(-26,177,-30),heading:Math.PI/2,pitch:0,roll:0,
  vel:new THREE.Vector3(80,0,0),mesh:new THREE.Group(),disc:null,side:-1};
-const ctx=vm.createContext({GameRuntime,FlightSupport,THREE,Math,P,ships:[],wingmen:[w],PROP_STEP:.3,isDefend:()=>false});
+const ctx=vm.createContext({AvengerBay,GameRuntime,FlightSupport,THREE,Math,P,ships:[],wingmen:[w],PROP_STEP:.3,isDefend:()=>false});
 vm.runInContext(source('playerLateral','spawnWingman')+'\n'+source('updateWingmen','updateWingShots')+
  '\n'+source('noseDir','loadPlaneModel'),ctx);
 let moved=0;
@@ -42,7 +42,7 @@ function simulation(fps,speed=SLOW,headwind=0){
  const escorts=[-1,1].map(side=>({alive:true,kind:'avenger',mode:'form',cool:999,side,
   pos:new THREE.Vector3(-32-(side>0?8:0),298,side*34),
   heading:Math.PI/2,pitch:0,roll:0,spd:speed,vel:new THREE.Vector3(speed+CarrierRecovery.wind(headwind).x,0,0),mesh:new THREE.Group()})); // ground velocity: airspeed plus the wind
- const c=vm.createContext({GameRuntime,FlightSupport,CarrierRecovery,THREE,Math,P:leader,ships:[],wingmen:escorts,PROP_STEP:.3,isDefend:()=>false,
+ const c=vm.createContext({AvengerBay,GameRuntime,FlightSupport,CarrierRecovery,THREE,Math,P:leader,ships:[],wingmen:escorts,PROP_STEP:.3,isDefend:()=>false,
   DROP_MAX_SPD:62,DROP_MAX_ALT:55,windHead:headwind,windZ:0,windGust:0,radioSay:()=>{},NavalAssets:{label:()=> 'FREIGHTER'}});
  vm.runInContext(source('playerLateral','spawnWingman')+'\n'+source('updateWingmen','updateWingShots')+'\n'+source('noseDir','loadPlaneModel'),c);
  const dt=1/fps,stats={yaw:0,bank:0,pitch:0,acceleration:0,minClearance:Infinity,maxGap:0};

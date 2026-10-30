@@ -1,0 +1,28 @@
+name: Aircraft selection preview
+on:
+  push:
+    branches: [main, codex/sortie-preview-222]
+    paths: ['hangar*', 'sortie-preview.js', 'okinawa/tests/sortie-preview-browser.cjs', 'okinawa/tests/sortie-hardpoints.cjs', '.github/workflows/sortie-preview.yml']
+  pull_request:
+    paths: ['hangar*', 'sortie-preview.js', 'okinawa/tests/sortie-preview-browser.cjs', 'okinawa/tests/sortie-hardpoints.cjs', '.github/workflows/sortie-preview.yml']
+jobs:
+  preview:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: node okinawa/tests/sortie-hardpoints.cjs
+      - run: node okinawa/tests/sortie-preview-browser.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: aircraft-preview
+          path: |
+            test-visuals/build222-*.png
+            test-visuals/sortie-preview.json
+          if-no-files-found: ignore

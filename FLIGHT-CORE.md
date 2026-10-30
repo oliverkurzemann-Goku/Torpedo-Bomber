@@ -1,6 +1,7 @@
-# Berechneter Flugkern — alle Flugzeuge (Build 220)
+# Berechneter Flugkern — alle Flugzeuge (Build 223)
 
-Stand 29.10.2026. Seit Build 220 fliegen **alle zehn spielbaren Typen** (Rhein: P-47, Bf 109, Fw 190,
+Stand 29.10.2026. Seit Build 223 (auf dem Arbeitszweig „Build 220“ genannt; main hatte 220–222 schon für
+Zero-Haube, Avenger-Bombenschacht, Hangar und Custom-Mission-Vorschau vergeben) fliegen **alle zehn spielbaren Typen** (Rhein: P-47, Bf 109, Fw 190,
 Ju 87, Me 262, Me 163; Pazifik: Avenger, SBD, Corsair, Zero) **und alle KI-Flugzeuge** (Jäger, Rottenflieger,
 Begleiter, Angreifer, B-17/B-24-Pulks) auf demselben berechneten Modell — in der Luft, beim Start, auf dem
 Trägerdeck und beim Ausrollen. Die P-47 (Build 219) war der erste Typ; ihr Abschnitt steht unten.
@@ -22,7 +23,7 @@ beschrieben; Widerstand, Propellerwirkungsgrad und Leistungsabfall mit der Höhe
 (Kennung C), die Entscheidungen des Spiels (wie der Knüppel in eine Last übersetzt wird, eine
 Manöver-Verstärkung) getrennt in `GAME`. Es gibt keine Werte pro Typ zum Nachstellen.
 
-## Build 220: Was neu berechnet wird (die Punkte 1–7)
+## Build 223: Was neu berechnet wird (die Punkte 1–7)
 
 1. **Strömungsabriss, mild:** Der Flügel reißt ab, wenn verlangt wird, was er nicht hat. Zustand steigt mit
    0,25 s, fällt mit 0,6 s; Auftrieb bis −30 %, Widerstand +0,12·Abriss; ein Flügel kippt mit
@@ -87,7 +88,7 @@ Bf 109 und B-24 haben überzählige Werte, und die Me 262 die unabhängige Start
 | Startwind Träger | Schiff dampft beim Start auf 15 m/s Wind über Deck | mit 5 m/s kommt eine beladene Avenger auf 214 m Deck nicht hoch |
 | Reibung | Piste 0,04, Feld 0,08, Kufe/Bauch 0,35; Radbremse 0,30 | keine Messung |
 | Abriss-Schwellen | Abriss ab 100 % des Flügelmaximums, voll bei 110 %; Buffet ab 88 % | keine Messung |
-| KI-Formation | Querlage ≤ 0,8 rad, Gierrate ≤ 0,25 rad/s, Rollrate ≤ 0,32 rad/s, Gasregler kp 0,5 / ki 0,03 | ruhige Rottenflieger (Build 182), stabil auf dem Kern |
+| KI-Formation | Querlage ≤ 0,8 rad, Gierrate ≤ 0,25 rad/s, Roll-/Nickrate kommandiert 0,31/0,135 rad/s (Grenze 0,32/0,14), Gasregler kp 0,5 / ki 0,03 | ruhige Rottenflieger (Build 182), stabil auf dem Kern; die Lage-Integration koppelt ~1 % auf |
 | Bomber | 72 m/s, Querlage ≤ 0,48 rad, Kurs ≤ 0,09 rad/s | Pulk wie bisher |
 
 ### Im echten Spiel gemessen (Chromium/SwiftShader, `fleet-core-browser`, `pacific-core-browser`)
@@ -115,6 +116,36 @@ Pazifik, Trägerstart mit der Missionslast (Pilot zieht bei Abhebefahrt):
 Alle Typen: 8-s-Steigkurve bei 20 und 120 FPS innerhalb 0,4 m/s Fahrt, 0,06 rad Kurs, 6 m Höhe.
 KI: Bf 109 kehrt bei 145 m/s in 6,4 s um (vorher 11–32 s, langsamer als der Spieler), hält dabei die Höhe;
 Rottenflieger halten bei 80 kt den Platz auf ±1 m (20/60/120 FPS innerhalb 0,1 m).
+
+### Hangar (Build 221) und Bombenschacht (Build 220 auf main)
+
+- Luftstart aus dem Hangar: Anfangsfahrt `max(alter Wert, 1,5 × Abreißfahrt clean bei 1 g)` für die gewählte
+  Last in Starthöhe (`coreAirStart` in beiden Spielen) — die alten `d.stall`-Werte sind Spielzahlen.
+- Avenger-Torpedo und -Bomben liegen im geschlossenen Schacht: Masse ja, Zusatzwiderstand nein
+  (`stores.bombArea:0`, Torpedo ohne Fläche). SBD-„3 Bomben“ des Hangars zählen physisch als eine
+  1 000-lb-Bombe (`CAPACITY`).
+- Rottenflieger starten mit dem Wind in der Bodengeschwindigkeit (vorher sprang die Fahrt im ersten Bild um
+  die Windgeschwindigkeit, gemessen 118 m/s² in einem Bild).
+
+### Was die Tests jetzt anders prüfen (und warum)
+
+Wo alte Browsertests Zahlen des alten Spielmodells festschrieben, prüfen sie auf dem Kern die physikalische
+Aussage (Fixture-Begründung jeweils im Test):
+
+- Notwasserung: statt 65 kt (= Landeklappen-Abriss der Avenger auf dem Kern) 1,2 × aktueller Abriss, Gas regelt
+  die Fahrt, Knüppel den Gleitpfad; Kontakt ±2 kt / ±20 ft/min, alle 16 Fälle gerettet.
+- Komet-Kufenlandung mit 52 m/s (1,3 × Abriss) statt 68 m/s — mit 68 m/s rutscht sie, halb vom Flügel
+  entlastet, über das 900-m-Feld hinaus.
+- Leerlaufbremse: Avenger/SBD/Ju 87 verzögern bei halber (niedriger) Vmax 1,0–1,1 m/s² (Widerstand +
+  Propeller über die echte Masse); Grenze 0,9 bzw. 1,35 m/s² und Anstieg mit der Fahrt.
+- Beschleunigung/Ausrollen: Corsair gewinnt doppelt so viel wie die Avenger, Komet 1,6 × die Me 262, P-47
+  rollt weiter als die Bf 109 — Verhältnisse statt fester Spielabstände.
+- Beladener Steigflug: Ju 87 mit vier Bomben steigt nach dem Abheben 4 m/s (18 m nach 4 s, 34 m nach 8 s);
+  verlangt: > 12 m, weiter steigend, nach 8 s über den 20–26-m-Bäumen.
+- Durchstarten nach verpasstem Seil und Trägerrückkehr mit Rückkehrlast (Torpedo weg, 30 % Sprit): eine volle
+  7,2-t-Avenger, unter ihre 37-m/s-Klappenabrissfahrt gebremst, braucht fast das ganze Deck.
+- Looping-Test: Pazifik mit dem berechneten AERO-Gate (`FlightControl.aeroGate`) und der aktuellen 1-g-Abrissfahrt.
+- HUD-Referenz: Rhein in IAS (`referenceIAS`), Pazifik in TAS (wie die Fahrtanzeige dort).
 
 ### Ehrlich offen
 

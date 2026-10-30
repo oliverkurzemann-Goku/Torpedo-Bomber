@@ -2,10 +2,10 @@
 'use strict';
 (function(){
  const C=SortieCheckpoint;
- const identity=i=>MISSIONS[i]?MISSIONS[i].title+'|'+MISSIONS[i].sub:null;
+ const identity=(i,saved)=>CustomSortie.checkpointIdentity('pacific',MISSIONS,i,saved);
  function airborne(){return (state===ST.FLIGHT||state===ST.PAUSED&&prePauseState===ST.FLIGHT)&&P.alive&&!P.onDeck&&!P.deckRun&&!P.arrestRun&&!carrierIntro&&!bailout&&!ditching;}
  function snapshot(){
-  return {mission,identity:identity(mission),label:MISSIONS[mission].sub,
+  return {mission,custom:MISSIONS[mission].custom||null,identity:identity(mission),label:MISSIONS[mission].sub,
    player:C.capture(P,['_keys','_stickActive','_keyboardFlightActive']),operation:C.capture(pacificOps),plan:C.capture(pacificPlan),
    globals:C.capture({carrierX,CARRIER_SPD,score,scoreStart,loadout,DIFF,aeroMode,invertPitch,steerSign,weather,seaState,windZ,windHead,windGust,timeMode,menuTime,
     qualTraps,qualStep,carrierHP,sortieTorpFired,sortieTorpHit,sortieBombFired,sortieBombHit,sortieShipsSunk,sortieZeros,hitsTaken,sortieWingmenLost,
@@ -19,6 +19,7 @@
    flares:flareSupport?.checkpoint()};
  }
  async function load(saved){
+  CustomSortie.restoreSaved('pacific',saved,MISSIONS,FlightPlans.pacific);selectedMission=saved.mission;
   if(!saved.operation?.config||!saved.plan?.config)throw Error('Missing operation in checkpoint');
   await prepareOkinawa();
   await preparePacificModels(MISSIONS[saved.mission]);
@@ -33,6 +34,8 @@
   ({carrierX,CARRIER_SPD,score,scoreStart,loadout,DIFF,aeroMode,invertPitch,steerSign,weather,seaState,windZ,windHead,windGust,timeMode,menuTime,
    qualTraps,qualStep,carrierHP,sortieTorpFired,sortieTorpHit,sortieBombFired,sortieBombHit,sortieShipsSunk,sortieZeros,hitsTaken,sortieWingmenLost,
    reinforcementsLaunched,radioEvadeCalled,wingmenPending,wingmenPendingT,launchTimer,lastTorpDud}=g);
+  if(!isSBD()&&!isDefend()&&loadout==='torpedo')P.torps=Math.max(0,Math.min(1,P.torps||0));
+  P.avengerBayPending=false;P.avengerBayHold=0;
   for(const s of ships)GameRuntime.release(s.group);ships=[];
   for(const s of saved.ships){spawnShip(s.state.def);const ship=ships.at(-1);C.applyEntity(ship,s);shipDamage?.restoreCheckpoint(ship,s.damage);}
   for(const s of supportFleet)GameRuntime.release(s.group);supportFleet=[];

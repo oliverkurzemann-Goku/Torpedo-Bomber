@@ -1,0 +1,69 @@
+{
+  "build": 220,
+  "checkedOn": "2026-10-29",
+  "runtime": "Node, Three.js r128, real GLTFLoader and shipped GLBs",
+  "results": {
+    "zero": {
+      "canopyTriangles": 56,
+      "opacity": 0.18,
+      "originalFrames": true,
+      "seatedPilot": true
+    },
+    "sbd": {
+      "removedFixedTriangles": 88,
+      "brakesPreserved": true,
+      "cloneSafe": true
+    },
+    "avenger": {
+      "skinSplit": 336,
+      "doorTriangles": 156,
+      "concealedWhenClosed": true,
+      "cloneSafe": true,
+      "release": [
+        {
+          "fps": 20,
+          "releaseAfter": 0.35,
+          "count": 1,
+          "reload": 1
+        },
+        {
+          "fps": 60,
+          "releaseAfter": 0.3333333333333333,
+          "count": 1,
+          "reload": 1
+        },
+        {
+          "fps": 120,
+          "releaseAfter": 0.3333333333333333,
+          "count": 1,
+          "reload": 1
+        }
+      ]
+    }
+  },
+  "checks": {
+    "syntax": "11 files / 11 inline scripts / 0 errors",
+    "payload": "355 files; hashes and dependency closure passed",
+    "related": [
+      "sbd-native.cjs",
+      "aircraft-systems.cjs",
+      "avenger-finish.cjs",
+      "torpedo-attack.cjs",
+      "checkpoint.cjs"
+    ],
+    "visual": "Before/after geometry rendered with EGL/llvmpipe; Zero canopy, Dauntless wing root, Avenger open and closed bay inspected",
+    "terrain": "40 test files, 0 failures"
+  },
+  "limits": [
+    "Cloud Chromium could not create a WebGL context; full production browser rendering unverified in this session.",
+    "No physical iPad/Safari test.",
+    "Other flight/audio behavior is retained from Build 219."
+  ],
+  "sourceSha256": {
+    "torpedo-carrier.html": "7583a694cbb6797af1e519ef9e13eae705684e82c400163501dac036fadd3def",
+    "zero-canopy.js": "95d81cdd58ea914fbb0e4bd0b8901e435bf822404bfef5b7597de9149b567f3d",
+    "avenger-bay.js": "005ffd66e9dc928c186c87639d23bec1daa6c33b32f79e7e75309aeadfa221e7",
+    "sbd-native.js": "c1ae94eb21ea97572c6a3dcca59bd3a36da0e50307aea944c7bc9feb1fabb341",
+    "checkpoint-pacific.js": "eb0622027ebad2adac278532091f1aa64f3b4c69a9207312cf52e8c8d6f6b038"
+  }
+}

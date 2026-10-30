@@ -26,7 +26,7 @@ const server=http.createServer((req,res)=>{const file=path.resolve(root,'.'+deco
    }
    let triangles=0;model.traverse(o=>{if(o.isMesh)triangles+=(o.geometry.index?.count||o.geometry.attributes.position.count)/3;});
    return {rotors:propGroup.rotors.length,span:new THREE.Box3().setFromObject(model).getSize(new THREE.Vector3()).x,triangles};
-  });assert.equal(preview.rotors,1);assert(Math.abs(preview.span-12.66)<.002);assert.equal(preview.triangles,73414);
+  });assert.equal(preview.rotors,1);assert(Math.abs(preview.span-12.66)<.002);assert.equal(preview.triangles,73326);
   await page.goto(base+'/torpedo-carrier.html?v=201');await page.waitForFunction(()=>state===ST.MENU,null,{polling:100});
   await page.evaluate(async()=>{renderer.setPixelRatio(.4);renderer.shadowMap.enabled=false;await prepareOkinawa();const i=MISSIONS.findIndex(m=>m.sbd&&!m.corsair);await preparePacificModels(MISSIONS[i]);startMission(i);finishCarrierIntro();hideOverlays();state=ST.FLIGHT;});
   await page.waitForFunction(()=>SBDRig.isNative(playerSBD),null,{polling:100});

@@ -1,0 +1,26 @@
+name: Hangar integration
+on:
+  push:
+    branches: [main, codex/hangar-221]
+    paths: ['custom-sortie.js', 'hangar*', 'torpedo-carrier.html', 'remagen-mission.html', 'checkpoint-*.js', 'okinawa/tests/custom-sortie*', '.github/workflows/hangar-check.yml']
+  pull_request:
+    paths: ['custom-sortie.js', 'hangar*', 'torpedo-carrier.html', 'remagen-mission.html', 'checkpoint-*.js', 'okinawa/tests/custom-sortie*']
+jobs:
+  configured-flight:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: node okinawa/tests/custom-sortie.cjs
+      - run: node okinawa/tests/custom-sortie-browser.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: hangar-validation
+          path: test-visuals/hangar-gameplay.json
+          if-no-files-found: ignore
