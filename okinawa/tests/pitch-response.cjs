@@ -207,3 +207,27 @@ console.log('Pull-up assist:',JSON.stringify(assistRows.filter(r=>r.fps===60)));
 console.log('Push-over stall (max over FPS):',JSON.stringify([...new Set(pushRows.map(r=>r.kind))].map(k=>[k,Math.max(...pushRows.filter(r=>r.kind===k).map(r=>r.peak))])));
 console.log('Measured pitch response:',JSON.stringify(rows));
 fs.mkdirSync(path.join(root,'test-visuals'),{recursive:true});fs.writeFileSync(path.join(root,'test-visuals/build220-pitch.json'),JSON.stringify(rows,null,2));
+
+// ---- Build 229: REALISTIC - the automatic path hold in a bank does not stall the wing above the stall speed ----
+// Heavy (full fuel), take-off flap, 1.15 x the stall speed, roll stick held: the hold asks 1/cos(bank) g; the wing may have
+// less than that (Fw 190 with bomb and drop tank: 1.3 g at 125 kt). It sinks and tightens the turn instead of stalling
+// (before: coreStall .6-.8 within 2 s, wing drop, roll away). Below the stall speed the wing still stalls, as before.
+const rows229=[];
+for(const kind of [...Object.keys(defs),'avenger','sbd','corsair','zero'])for(const fps of [20,60,120]){
+ const run=(factor,stickRoll,secs)=>{
+  const p=fresh(kind,100);p.fuel=100;p.flap=.5;if(defs[kind]){p.bombs=defs[kind].bombs?1:0;}
+  const vs=FlightControl.stallSpeed(p,{...env(kind,p,0),aero:true});p.spd=factor*vs;
+  let peak=0;
+  for(let i=0;i<fps*secs;i++){
+   const e={...env(kind,p,0),aero:true,stickRoll,throttle:.9};
+   const r=FlightControl.player(p,1/fps,e);p.pos.y+=r.climb*dt229(fps);peak=Math.max(peak,p.coreStall||0);
+  }
+  return {peak:+peak.toFixed(2),bank:Math.round(Math.abs(p.roll)*180/Math.PI),vs:Math.round(vs*1.94384)};
+ };
+ const dt229=fps=>1/fps;
+ const banked=run(1.15,.6,2.5),slow=run(.92,0,2);
+ assert(banked.peak<.05,kind+' REALISTIC: rolling at 1.15 x the stall speed with take-off flap does not stall by itself '+JSON.stringify(banked));
+ assert(slow.peak>.5,kind+' REALISTIC: below the stall speed the wing still stalls '+JSON.stringify(slow));
+ rows229.push({kind,fps,banked,slow});
+}
+console.log('REALISTIC banked at 1.15 x stall / level at 0.92 x stall (peak stall):',JSON.stringify(rows229.filter(r=>r.fps===60).map(r=>[r.kind,r.banked.peak,r.slow.peak])));

@@ -277,7 +277,7 @@
 
 .hangarLink{display:block;padding:12px 14px;margin:8px 0 12px;color:#f3ce83;border:1px solid #ba9d57;border-radius:5px;text-decoration:none;text-align:center;font:600 12px system-ui;letter-spacing:.8px;min-height:44px;}
 </style>
-<link rel="stylesheet" href="menu-layout.css?v=229">
+<link rel="stylesheet" href="menu-layout.css?v=230">
 </head>
 <body>
 <!-- ===== TEMP TEST-ONLY VERSION BANNER — asked for by Oliver: "kannst du irgendwo einbauen,
@@ -299,7 +299,7 @@
   <div style="width:100%;height:4px;background:repeating-linear-gradient(45deg,#ffd400,#ffd400 8px,#111 8px,#111 16px);"></div>
   <span id="testVersionBannerText" style="background:#111;color:#ffd400;font-family:monospace;font-weight:800;font-size:11px;letter-spacing:.5px;padding:3px 10px;border:1px solid #ffd400;border-top:none;border-radius:0 0 6px 6px;"></span>
 </div>
-<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 229';</script>
+<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 230';</script>
 <!-- ===== END TEMP TEST-ONLY VERSION BANNER ===== -->
 <div id="app"></div>
 <style>
@@ -340,7 +340,7 @@
   <div id="flash"></div>
   <div id="gunsight"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 229 · REAL RHINE</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 230 · REAL RHINE</div>
 
   <div id="apr">
     <div id="aprCall"></div>
@@ -392,7 +392,7 @@
 </div>
 
 <div class="overlay hidden" id="menu" data-campaign="europe">
-  <div class="menuTop"><a id="selBtn" href="index.html?v=229">&#9664; Change Game</a><span class="menuMeta">RHINE OPERATIONS<br>BUILD 229</span></div>
+  <div class="menuTop"><a id="selBtn" href="index.html?v=230">&#9664; Change Game</a><span class="menuMeta">RHINE OPERATIONS<br>BUILD 230</span></div>
   <div class="card menuCard">
     <aside class="menuOverview" aria-label="Campaign and pilot options">
     <div class="campaignArt" aria-hidden="true"></div>
@@ -511,7 +511,7 @@
 <script src="terrain-system/LivingWorld.js?v=179"></script>
 <script src="campaign.js?v=1"></script>
 <script src="game-runtime.js?v=198"></script>
-<script src="sortie-checkpoint.js?v=229"></script>
+<script src="sortie-checkpoint.js?v=230"></script>
 <script src="ju87-native.js?v=218"></script>
 <script src="me262-native.js?v=206"></script>
 <script src="me163-native.js?v=218"></script>
@@ -522,7 +522,7 @@
 <script src="combat-fx.js?v=177"></script>
 <script src="aircraft-smoke.js?v=176"></script>
 <script src="aircraft-damage.js?v=177"></script>
-<script src="flight-support.js?v=229"></script>
+<script src="flight-support.js?v=230"></script>
 <script src="ordnance.js?v=157"></script>
 <script src="crew-visuals.js?v=179"></script>
 <script src="aircraft-finish.js?v=206"></script>
@@ -542,18 +542,18 @@
 <script src="me262-performance.js?v=206"></script>
 <script src="flight-envelope.js?v=219"></script>
 <script src="flight-dynamics.js?v=219"></script>
-<script src="flight-core.js?v=229"></script>
-<script src="flight-control.js?v=229"></script>
-<script src="dogfight-ai.js?v=229"></script>
+<script src="flight-core.js?v=230"></script>
+<script src="flight-control.js?v=230"></script>
+<script src="dogfight-ai.js?v=230"></script>
 <script src="audio/aircraft-engine.js?v=218"></script>
 <script src="p47-performance.js?v=204"></script>
-<script src="sortie-features.js?v=229"></script>
+<script src="sortie-features.js?v=230"></script>
 <script src="ground-run.js?v=204"></script>
 <script src="ground-dust.js?v=181"></script>
 <script src="flight-indicators.js?v=198"></script>
 <script src="sortie-fuel.js?v=206"></script>
 <script src="operation-plans.js?v=198"></script>
-<script src="custom-sortie.js?v=229"></script>
+<script src="custom-sortie.js?v=230"></script>
 <script>
 // ============================================================
 //  REMAGEN 1945 — REAL TERRAIN (forked from thunderbolt-europe.html)
@@ -902,7 +902,7 @@ async function loadRealWorld(){
 
   if(OSMManager.BUILD!==23||HistoricalObjectManager.BUILD!==21||LivingWorld.BUILD!==22||WorldVehicles.BUILD!==22) throw new Error('Terrain version mismatch. Reload Remagen.');
   document.getElementById('testVersionBannerText').textContent=
-    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 229 · MODULE 23';
+    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 230 · MODULE 23';
   heightProvider=new DEMHeightProvider(RTILE,'terrain-system/real/data/dem/');
   terrain=new TerrainManager(scene,RTILE,heightProvider);
   osmMgr=new OSMManager(scene,RTILE,terrain,'terrain-system/real/data/osm/');
@@ -5099,7 +5099,10 @@ function updateCamera(dt){
     FlightSupport.aeroChase(rig,nose,up,dt);
     track=rig.dir;camUp=rig.up;
   }else rig.dir=null;
-  const back=track.clone().multiplyScalar(-(28+fast*5));
+  // Build 229: the follow easing trails the aircraft by speed/rate metres. REALISTIC eases faster (10/s, so the camera
+  // keeps up through loops) and would sit closer than ARCADE (7/s) - the aircraft looked zoomed in. The difference is
+  // added to the distance, so the picture is the same in both modes while REALISTIC still follows quicker.
+  const back=track.clone().multiplyScalar(-(28+fast*5+(aeroMode?P.spd*(1/7-1/10):0)));
   const lift=8.5+chaseUp*8+fast*1.5;
   const want=P.pos.clone().add(back);
   if(camUp)want.addScaledVector(camUp,lift);else want.y+=lift;
@@ -6071,7 +6074,7 @@ function init(){
   buildMenu();
   // menu wiring
   document.getElementById('startBtn').onclick=()=>showBrief(selectedMission);
-  document.getElementById('pauseMainMenu').onclick=async()=>{globalThis.sortieCheckpoint?.save();await globalThis.sortieCheckpoint?.flush();exitToMenuFromPause(true);window.location.href='index.html?v=229';};
+  document.getElementById('pauseMainMenu').onclick=async()=>{globalThis.sortieCheckpoint?.save();await globalThis.sortieCheckpoint?.flush();exitToMenuFromPause(true);window.location.href='index.html?v=230';};
   document.getElementById('logBtn').onclick=()=>{ show('menu',false); showLogbook(); };
   document.getElementById('skipLaunchPreview').onclick=()=>finishLaunchIntro();
   document.getElementById('brBack').onclick=()=>{ show('brief',false); show('menu',true);if(navigation){navigation.reset();navigation.button.style.display='none';} state=ST.MENU; };
@@ -6276,6 +6279,6 @@ function reportStartupError(err){
 const hangarRequest=CustomSortie.install('europe',MISSIONS,FlightPlans.europe,window.location.search);
 window.addEventListener('load',()=>{try{init();}catch(err){reportStartupError(err);}});
 </script>
-<script src="checkpoint-rhine.js?v=229"></script>
+<script src="checkpoint-rhine.js?v=230"></script>
 </body>
 </html>

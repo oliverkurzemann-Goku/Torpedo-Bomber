@@ -1,5 +1,23 @@
 # Torpedo-Bomber — Übergabe an Claude Code
 
+**30.10.2026, Build 230: REALISTIC — kein Stall mehr allein durch Querlage; REALISTIC-Kamera im selben Abstand wie ARCADE.**
+Nutzer (nach Build 229): „Die flugzeuge kommen im realistic mode viel zu schnell in einen stall. Fw190 z.b. bei 125kts mit take off flaps. Das kann nicht sein… Und bitte schau, dass im realistic mode dieselbe kameraposition wie in
+arcade ist. Bei realistic wird das flugzeug derzeit etwas herangezoomt."
+- **Stall — Ursache gemessen (`labstall.cjs`, echtes Spiel, Fw 190 Jabo mit Bombe und Zusatztank, 4 866 kg, Startklappen 50 %, 125 kt, Fahrwerk unten):** Abrissfahrt des Modells 108,6 kt (veröffentlichte Werte × √Masse), `n_max` bei 125 kt nur 1,32 g.
+  Geradeaus und Ziehen stallen nicht. Aber: Rollknüppel 0,3 → nach 1,7 s `coreStall` 0,77, Flügelkippen, Querlage bis 180° (Vorher-Messung). Grund: das automatische Bahnhalten des REALISTIC-Gesetzes (`holdLoad`, Knüppel neutral = Bahn halten)
+  verlangt in der Querlage `cos(Nick)/cos(Quer)` g (bei 41° schon 1,32 g, bei 60° 2 g). Hat der Flügel weniger (schwer, Startklappen, 125 kt ≈ 1,15 × Abrissfahrt), war der „Anspruch" > 1 und der Flügel stallte, ohne dass jemand gezogen hätte.
+  Ein echtes Flugzeug mit losgelassenem Knüppel sinkt dann und zieht die Kurve enger.
+  Neu in `FlightControl.player` (nur REALISTIC-Zweig): `hold = raw > l.max ? max(l.max, min(raw, cos(Nick))) : raw` — das Bahnhalten verlangt nie mehr, als der Flügel gibt, **mindestens aber das eine g entlang der Bahn**; unter der Abrissfahrt
+  (selbst 1 g zu viel) stallt der Flügel wie bisher. Nach der Änderung dieselben Eingaben bei 125 kt: Rollen 0,3 / 0,6 / 1,0, Ziehen+Rollen: `coreStall` 0 (Flugzeug sinkt, wird schneller, Last erholt sich); bei 100 kt (unter 108,6) stallt es weiter (0,97).
+  Alle zehn Typen, 20/60/120 FPS (`pitch-response.cjs`, neu: bei 1,15 × Abrissfahrt mit Startklappen und vollem Sprit Rollknüppel 0,6 für 2,5 s → Stall < 0,05; bei 0,92 × Abrissfahrt geradeaus → Stall > 0,5). Gegen den alten Code getestet: schlägt fehl (P-47 Stall 0,84).
+  Nicht geändert: Abrissfahrten, Lastgrenzen, Flügelkippen, Ziehen/Drücken (voller Zug = `l.max`), alle anderen REALISTIC-Zustände. Die Abrissfahrt der schwer beladenen Fw 190 bleibt hoch (113 kt sauber, 108,6 kt mit Startklappen): sie folgt den veröffentlichten
+  Werten und der Beladung (Bombe, Zusatztank, volle Tanks) — wer sie für zu hoch hält, ändert `stall` in `flight-core.js` `SOURCES.fw190` (Kennung B), nicht das Gesetz.
+- **Kamera:** `camera.position.lerp(want, λ·dt)` hinkt dem Flugzeug im Beharrungszustand `v/λ` Meter hinterher. ARCADE glättet mit λ = 5/s (Pazifik) bzw. 7/s (Rhein), REALISTIC seit Build 215 mit 10/s (damit die Kamera im Looping dranbleibt) →
+  im Geradeausflug saß die REALISTIC-Kamera 4–9 m näher (gemessen `labcam.cjs`: Zero 40,4 → 31,2 m, Flügelspannweite im Bild 170 → 221 px; P-47 40,2 → 36,7 m). Neu: in REALISTIC wird der Abstand um `v·(1/λ_arcade − 1/λ_realistic)` vergrößert
+  (Pazifik 24 + v·0,1, Rhein 28 + 5·fast + v·0,0429), die schnellere Nachführung bleibt. Nachher: Zero 40,3 / 39,4 m, P-47 40,7 / 40,4 m, Bildgröße gleich (±3 %). Test `chase-heading-browser.cjs`: Abstand Arcade/Realistic bei gleicher Fahrt und Höhe < 1,5 m
+  (Pazifik 37,5 / 37,9, Rhein 39,0 / 38,8).
+**Offen:** kein iPad-Test; die Kamera ist nur für die Geradeausfahrt abgeglichen (in Kurven und im Steigflug folgt REALISTIC absichtlich schneller); die Abrissfahrten selbst nicht angefasst.
+
 **30.10.2026, Build 229: ARCADE fliegt wieder die alte Flugphysik (alle Typen, beide Spiele), REALISTIC bleibt der Flugkern; Kamera-Sprung in REALISTIC (Zero) behoben.**
 Nutzer (nach dem Test von Build 228): „Im realistic mode beginnt die zero zu wackeln bzw ruckelt das komplette bild, wenn man sehr stark zieht, oder sehr stark nach unten drückt … Ansonsten ist der realistic mode super.
 Nur arcade ist nicht gut, kannst du den ursprünglichen arcade mode wieder herstellen, bevor du gestern(?) die Flugphysik verändert hast." Dann: „Ich spreche von allen flugzeugen (arcade mode), deren ursprüngliche
@@ -855,7 +873,7 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 229 · Thunderbolt Squadron BUILD 229 · Remagen-Kern 23 / Fahrzeuge 22**
+Stand bei Übergabe: **Torpedo Squadron BUILD 230 · Thunderbolt Squadron BUILD 230 · Remagen-Kern 23 / Fahrzeuge 22**
 
 **Build 198 (22.10.2026): P-47-Fotolackierung, Einsatzspuren und natives Fahrwerk; Terrain-Fix aus Build 197 erhalten.**
 `assets/aircraft/p47-weathered.glb` ist ein ausdrücklich gekennzeichnetes Derivat des

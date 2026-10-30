@@ -97,10 +97,19 @@ const server=http.createServer((req,res)=>{
      return {maxCam:Math.round(maxCam),maxPlane:Math.round(maxPlane)};
     };
     const pop={fixed:popRun(false),old:popRun(true)};
-    return {pacific,legacy,maxOffset,maxSight,settledSight,cases:cases.length,paused,pop};
+    // Build 229: the same chase distance in both modes (REALISTIC eases the camera faster and used to sit 4-9 m closer: the
+    // aircraft looked zoomed in). Speed and height are held, so only the camera law differs.
+    const distRun=aero=>{
+     setup(120,aero);P.pos.y=pacific?1500:groundY(AF_X,AF_Z)+1500;const y0=P.pos.y,v0=pacific?75:70;P.spd=v0;
+     for(let i=0;i<300;i++){updateFlight(1/60);P.spd=v0;P.pos.y=y0;P.pitch=P.roll=0;updateCamera(1/60);}
+     return camera.position.distanceTo(P.pos);
+    };
+    const chaseDist={arcade:distRun(false),realistic:distRun(true)};
+    return {pacific,legacy,maxOffset,maxSight,settledSight,cases:cases.length,paused,pop,chaseDist};
    },pacific);
    console.log('Actual flight/chase-camera regression:',result);
    assert(result.legacy>1,'legacy world-space easing reproduces a visible crosswind shift');
+   assert(Math.abs(result.chaseDist.arcade-result.chaseDist.realistic)<1.5,'REALISTIC chase camera sits at the ARCADE distance (no zoom-in) '+JSON.stringify(result.chaseDist));
    assert(result.pop.fixed.maxCam<=result.pop.fixed.maxPlane*1.6+15,'REALISTIC camera never turns much faster than the aircraft in a banked pull/push through 53 degrees of pitch '+JSON.stringify(result.pop));
    assert(result.pop.old.maxCam>result.pop.fixed.maxCam*1.5,'the old on/off rule popped the picture there (comparison) '+JSON.stringify(result.pop));
    assert(result.maxOffset<.05&&result.maxSight<3&&result.settledSight<.5&&result.paused,'aircraft remains centred and the briefly smoothed gunsight follows the muzzle centroid, including pause');

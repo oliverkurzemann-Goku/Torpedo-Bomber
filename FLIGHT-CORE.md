@@ -243,6 +243,14 @@ Wieder nur Normalgesetz (`FlightControl.player`, Kennung C, `FlightCore.GAME.arc
 Messung im echten Spiel (Start auf Piste/Deck, Knüppel voll zurück, Neigung/Steigen 3 s → 30 s nach dem Abheben): `CLAUDE.md`, Build 228. Tests: `okinawa/tests/pitch-response.cjs` (Abschnitt Build 228),
 `okinawa/tests/climb-out-browser.cjs`, `okinawa/tests/flight-envelope-browser.cjs`.
 
+## Build 230: REALISTIC — Bahnhalten in der Querlage stallt den Flügel nicht mehr; Kameraabstand wie im Arcade
+
+* **Bahnhalten:** Im REALISTIC-Gesetz hält ein neutraler Knüppel die Bahn (`holdLoad`: `cos(Nick)·cos(Quer)/max(cos²(Quer), 0,5²)` g). In der Querlage sind das 1/cos(Quer) g; hat der Flügel weniger (schwer, Startklappen, ~1,15 × Abrissfahrt),
+  war `Anspruch/n_max > 1` und der Flügel stallte allein durch das Rollen. Jetzt: `hold = raw > n_max ? max(n_max, min(raw, cos Nick)) : raw` — nie mehr als der Flügel gibt, aber mindestens das eine g entlang der Bahn; unter der Abrissfahrt stallt der Flügel wie bisher.
+  Messung Fw 190 Jabo (4 866 kg, Startklappen, 125 kt, Abrissfahrt 108,6 kt): Rollknüppel 0,3 vorher Stall 0,77 nach 1,7 s und Querlage bis 180°, nachher 0 (Flugzeug sinkt und wird schneller); bei 100 kt weiter Stall.
+* **Kamera:** Abstand in REALISTIC um `v·(1/λ_Arcade − 1/λ_Realistic)` vergrößert (λ: Pazifik 5 / 10, Rhein 7 / 10), damit das Bild im Geradeausflug dem Arcade gleicht; die schnellere Nachführung für den Looping bleibt.
+Tests: `pitch-response.cjs` (Abschnitt Build 229), `chase-heading-browser.cjs` (Abstand).
+
 ## Build 229: ARCADE fliegt wieder die alte Flugphysik, REALISTIC bleibt der Flugkern; Kamera-Sprung in REALISTIC behoben
 
 Nutzer (30.10.2026, nach dem Test von Build 228): Der Arcade-Modus sei „nicht gut", die ursprüngliche Flugphysik von vor dem Flugkern (29.10., „gestern") solle für **alle Flugzeuge** wieder hergestellt werden;

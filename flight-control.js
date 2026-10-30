@@ -104,7 +104,13 @@ function player(P,dt,env){
   // (the buffet boundary, so a loop is flown on the edge of the stall). The wing stalls when the path
   // alone asks more than it has - too slow - and stays stalled until speed returns.
   const pull=stickPitch;P.pitchRef=null;
-  command=(s,V,l)=>{const hold=Math.max(l.min,F.holdLoad(s.pitch,s.roll,0,.5));
+  command=(s,V,l)=>{
+   // Build 229: the automatic path hold asks 1/cos(bank) g in a bank. When the wing has less than that (heavy, take-off
+   // flap, 125 kt) it must not stall the wing by itself: a real aircraft with the stick left alone sinks and tightens
+   // the turn. So the hold is limited to what the wing gives, but never below the one g along the path - below the
+   // stall speed even that is too much and the wing still stalls, as before.
+   const raw=Math.max(l.min,F.holdLoad(s.pitch,s.roll,0,.5));
+   const hold=raw>l.max?Math.max(l.max,Math.min(raw,Math.cos(s.pitch))):raw;
    return pull>=0?Math.max(hold,hold+pull*(l.max-hold)):hold+pull*(hold-l.min);};
  }else{
   const rollTarget=bankFor(stickRoll,lim.max,d.rollLim)+bias,neutral=Math.abs(stickRoll)<.001;
