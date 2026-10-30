@@ -1,6 +1,6 @@
 # Torpedo-Bomber — Übergabe an Claude Code
 
-**30.10.2026, Build 222: alle zehn Typen und alle KI-Flugzeuge auf dem berechneten Flugkern.**
+**30.10.2026, Build 223: alle zehn Typen und alle KI-Flugzeuge auf dem berechneten Flugkern.**
 Nutzer fand den berechneten P-47-Flugkern (Build 219) sehr gut und wollte alle Flugzeuge umgestellt haben.
 Auf Rueckfrage zuerst die Aenderungsliste vorgelegt; Nutzer: „1-7, danke“. Umgesetzt (Details, Quellen mit
 Kennung A/B/C, Messtabellen: `FLIGHT-CORE.md`): (1) milder echter Abriss (Zustand τ .25/.6 s, Auftrieb −30 %,
@@ -30,7 +30,10 @@ HUD-Referenz IAS/TAS, Rueckkehrlast beim Durchstarten. Alte kuenstliche Flugwert
 nur noch mit `?core=off`.
 Offen: kein iPad-Test, kein Spielgefuehl-Nachweis; Rollraten, Abriss-Heftigkeit, Mcrit/mlimit und Lastgrenzen sind ueberwiegend
 Sekundaerquellen oder C; Fw-190-Steigwerte ±14 % (Zweigang-Lader nicht modelliert); B-17 mit auffaelligem Propellerwirkungsgrad
-(nur KI). Build 220 des Arbeitszweigs entspricht main-Build 222 (main hatte 220/221 fuer Zero-Haube, Avenger-Schacht, Hangar).
+(nur KI). Build 220 des Arbeitszweigs entspricht main-Build 223 (main hatte 220–222 fuer Zero-Haube, Avenger-Schacht, Hangar, Custom-Mission-Vorschau).
+Unveraendert rot auf main OHNE den Flugkern (Build 222 verglichen): checkpoint-browser, corsair-loadouts-browser, takeoff-briefing-browser und
+browser-smoke (Menue-Layout seit dem Hangar-Link), aircraft-systems-browser (`attributes` undefined), combat-sorties-browser (Haut-/Feuerschaden),
+deck-night-browser (bf109-Materialpruefung), torpedo-attack-browser (Torpedo wartet auf den Avenger-Schacht, der 600-m-Querschuss trifft nicht).
 
 **29.10.2026, Build 221: gemeinsamer Hangar und frei konfigurierbare Solo-Einsaetze.**
 Nutzer: Flugzeug-/Bewaffnungswahl fuer verschiedene Missionen umsetzen, ohne Wingman-Befehle.

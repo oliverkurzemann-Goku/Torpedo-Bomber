@@ -1,7 +1,7 @@
-# Berechneter Flugkern — alle Flugzeuge (Build 222)
+# Berechneter Flugkern — alle Flugzeuge (Build 223)
 
-Stand 29.10.2026. Seit Build 222 (auf dem Arbeitszweig „Build 220“ genannt; main hatte 220/221 schon für
-Zero-Haube, Avenger-Bombenschacht und Hangar vergeben) fliegen **alle zehn spielbaren Typen** (Rhein: P-47, Bf 109, Fw 190,
+Stand 29.10.2026. Seit Build 223 (auf dem Arbeitszweig „Build 220“ genannt; main hatte 220–222 schon für
+Zero-Haube, Avenger-Bombenschacht, Hangar und Custom-Mission-Vorschau vergeben) fliegen **alle zehn spielbaren Typen** (Rhein: P-47, Bf 109, Fw 190,
 Ju 87, Me 262, Me 163; Pazifik: Avenger, SBD, Corsair, Zero) **und alle KI-Flugzeuge** (Jäger, Rottenflieger,
 Begleiter, Angreifer, B-17/B-24-Pulks) auf demselben berechneten Modell — in der Luft, beim Start, auf dem
 Trägerdeck und beim Ausrollen. Die P-47 (Build 219) war der erste Typ; ihr Abschnitt steht unten.
@@ -23,7 +23,7 @@ beschrieben; Widerstand, Propellerwirkungsgrad und Leistungsabfall mit der Höhe
 (Kennung C), die Entscheidungen des Spiels (wie der Knüppel in eine Last übersetzt wird, eine
 Manöver-Verstärkung) getrennt in `GAME`. Es gibt keine Werte pro Typ zum Nachstellen.
 
-## Build 222: Was neu berechnet wird (die Punkte 1–7)
+## Build 223: Was neu berechnet wird (die Punkte 1–7)
 
 1. **Strömungsabriss, mild:** Der Flügel reißt ab, wenn verlangt wird, was er nicht hat. Zustand steigt mit
    0,25 s, fällt mit 0,6 s; Auftrieb bis −30 %, Widerstand +0,12·Abriss; ein Flügel kippt mit

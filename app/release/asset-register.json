@@ -4,10 +4,10 @@
   "build": 222,
   "status": "OPEN — source declarations checked; no external rights authorization obtained",
   "payload": {
-    "bytes": 271995526,
+    "bytes": 271960600,
     "fileCount": 360,
     "modelCount": 36,
-    "manifestSha256": "a381bf164a4f1e73c44b073868f7d98bc500b2ec6b189de30e01aa32aba4a28c"
+    "manifestSha256": "4dee670665e9ca57d36ba16a4e5a936926703af53dcf1aa359e1f28a441f165c"
   },
   "files": [
     {
@@ -671,15 +671,9 @@
       "kind": "code-or-notice"
     },
     {
-      "path": "flight-control.js",
-      "bytes": 12757,
-      "sha256": "5798ea298a30c8e074bcd4fac2fc6df6a4518443862b7688e5784f65a3ebcb0f",
-      "kind": "code-or-notice"
-    },
-    {
       "path": "flight-core.js",
-      "bytes": 39447,
-      "sha256": "880504ad2744768023bd9db73a617e711b95592718db8810987e696c9013c9b4",
+      "bytes": 16594,
+      "sha256": "739f4ad2ffa6802adca24da76a949a54479896656d5ee0d4ad0bddc6c222e617",
       "kind": "code-or-notice"
     },
     {
@@ -702,8 +696,8 @@
     },
     {
       "path": "flight-support.js",
-      "bytes": 12382,
-      "sha256": "7650ab09f03d1494c275d588782bdd46f9af692fa9aab9f825b3f188183c3b03",
+      "bytes": 10998,
+      "sha256": "d38026baf134751a5f494fc8789939b9dcf1db31e66431c636e0af6e6039a811",
       "kind": "code-or-notice"
     },
     {
@@ -738,20 +732,20 @@
     },
     {
       "path": "hangar.css",
-      "bytes": 4443,
-      "sha256": "99a7554a0f7ce515bf1e3b6d2483fdd11707089f72f0ebfbc77e99319d89461a",
+      "bytes": 6595,
+      "sha256": "f3f2ea873507097914450224a71b372576c5f7b823f49a9400de792d8b31d5be",
       "kind": "code-or-notice"
     },
     {
       "path": "hangar.html",
-      "bytes": 3142,
-      "sha256": "cfbcdb610c8cb70ed88e9f9c39e94c37e7c9c5824d7d5e7a41497f138b0f7969",
+      "bytes": 4481,
+      "sha256": "fcd42354892220177b7c19b6cf6f107faf55dc78764c39a6ebe1cbbaf13d0109",
       "kind": "code-or-notice"
     },
     {
       "path": "hangar.js",
-      "bytes": 3737,
-      "sha256": "a570926a6690c50a4c14f18cda9e611cf067c361b42482ff4fe1671a4642a52b",
+      "bytes": 3944,
+      "sha256": "77395dfa7be78d9ed8cb17f41f9966a2818da87ec7e3f295ea9a3e58514d004f",
       "kind": "code-or-notice"
     },
     {
@@ -762,8 +756,8 @@
     },
     {
       "path": "index.html",
-      "bytes": 7522,
-      "sha256": "7b0b25fe9202809ff6b32c0dc27586919a23c855b3d5c64d788231be66e8c40b",
+      "bytes": 7537,
+      "sha256": "5255056cc31f42a941ab695b3d29ca77a3368e419beea1ea1615dd9909cc40d9",
       "kind": "code-or-notice"
     },
     {
@@ -894,8 +888,8 @@
     },
     {
       "path": "remagen-mission.html",
-      "bytes": 377888,
-      "sha256": "49da7c7adebe6999bd7cdafa51f8dde17af2068db591dfe0fe13d3800bffa7d0",
+      "bytes": 377556,
+      "sha256": "fddaea6479ca4c3eef04c4ee102dc3ecf3ba10a5a2e74b32ab10a8eb05dbba22",
       "kind": "code-or-notice"
     },
     {
@@ -942,14 +936,20 @@
     },
     {
       "path": "sortie-features.js",
-      "bytes": 12356,
-      "sha256": "d96107ac7ba1417171bb35e1294baf77464defd94c7411485841f6fb9baae807",
+      "bytes": 9910,
+      "sha256": "53c6a53bfc536afdbd4a70dbe80e06c3012627f3993d6eeb384024d442d3a55a",
       "kind": "code-or-notice"
     },
     {
       "path": "sortie-fuel.js",
       "bytes": 1174,
       "sha256": "1b82b71ab01ebb9325307ace2ff3a9cc29df00a5341da0070536d2eb98db67fa",
+      "kind": "code-or-notice"
+    },
+    {
+      "path": "sortie-preview.js",
+      "bytes": 9027,
+      "sha256": "c2af1932489fc31b5650850d17f7c5d4165bbea5e2730365448d34dbcf606435",
       "kind": "code-or-notice"
     },
     {
@@ -2088,8 +2088,8 @@
     },
     {
       "path": "torpedo-carrier.html",
-      "bytes": 442097,
-      "sha256": "4e3c6f771d5ebfdb102f35281964eb3443184bebe8456b2d8d7f001363447362",
+      "bytes": 434547,
+      "sha256": "253a90ae3acb94b8cf61f8009134d270f2703361a24cd087c84fba2c2aea27a1",
       "kind": "code-or-notice"
     },
     {
@@ -2166,8 +2166,8 @@
     },
     {
       "path": "app-native.js",
-      "bytes": 27375,
-      "sha256": "27e5199ea188ecaa03bd9c8e16ab7caae1f7a21c3163ae3e7fddce0544b9e9c8",
+      "bytes": 27031,
+      "sha256": "a52b43eb6c9accbde530c1e3832548614838e605c05ed4869a6b9b9734ddaa24",
       "kind": "code-or-notice"
     }
   ],
