@@ -1,13 +1,13 @@
 {
   "schema": 1,
   "reviewedOn": "2026-10-23",
-  "build": 224,
+  "build": 225,
   "status": "OPEN — source declarations checked; no external rights authorization obtained",
   "payload": {
-    "bytes": 272044140,
+    "bytes": 271824602,
     "fileCount": 362,
     "modelCount": 36,
-    "manifestSha256": "32ec137efe89890807fe6ac581522eed84d32c48c67c0023effd0c08f98d1191"
+    "manifestSha256": "05dc0283b1fc4e1d8974b017a8d05d2c1e539ed7c95b0529274ee4e078abdf15"
   },
   "files": [
     {
@@ -120,8 +120,8 @@
     },
     {
       "path": "assets/aircraft/corsair-f4u1d-own.glb",
-      "bytes": 5584056,
-      "sha256": "5e037186b8c8dc2b21c3d6ed65b0494f17b307f8266fc9f3b4f6d47609af2b9c",
+      "bytes": 5363408,
+      "sha256": "1bf36051e2f92180897297bad2bf097ce688c83d5b0976200e49d3fdf00cad9c",
       "kind": "model"
     },
     {
@@ -612,14 +612,14 @@
     },
     {
       "path": "checkpoint-pacific.js",
-      "bytes": 6835,
-      "sha256": "060981935083371b0dcd6b6452a34e30b97c8ddcef8094ae6091c714db454bfd",
+      "bytes": 6840,
+      "sha256": "bb4f9bc222f0d26b093ce89579a285f446c32194218bcc1c120d6aec77d500d1",
       "kind": "code-or-notice"
     },
     {
       "path": "checkpoint-rhine.js",
-      "bytes": 4972,
-      "sha256": "d561492de6d2fe61abc3c837752fdc316d39f0185be06b58631e2bcd30d088d9",
+      "bytes": 4977,
+      "sha256": "afa76421f741c3db120fda0b2390b24aea7fa5d3ff5def8fda34df0907aec850",
       "kind": "code-or-notice"
     },
     {
@@ -643,7 +643,7 @@
     {
       "path": "custom-sortie.js",
       "bytes": 10227,
-      "sha256": "a40667484382cac0a6db950f4331400784fde6ff48a3e5a37b49d7bd04141de7",
+      "sha256": "f219b6612577219a1c17fb63fc64e0e3cd057cae2e04e9ded1576e3ccd308a85",
       "kind": "code-or-notice"
     },
     {
@@ -678,8 +678,8 @@
     },
     {
       "path": "flight-control.js",
-      "bytes": 16374,
-      "sha256": "451281e75c11c86c13e2a46d2afd5474f0baa979cb4f0ade1bd99d31d803f125",
+      "bytes": 17166,
+      "sha256": "0031c7c85d908b266218d4ed61fd45f74fb32476a50112c3a4cf61e961ca1cc4",
       "kind": "code-or-notice"
     },
     {
@@ -751,7 +751,7 @@
     {
       "path": "hangar.html",
       "bytes": 4485,
-      "sha256": "cf510cb2dfa038853d5dccdf35cc44628c73af019ecc9c7fcc667b51ea15ed20",
+      "sha256": "05a7de95c69cc474220405a8581dd0ff6a9cc164ed3c48564c8d984fc0da8cca",
       "kind": "code-or-notice"
     },
     {
@@ -769,7 +769,7 @@
     {
       "path": "index.html",
       "bytes": 7545,
-      "sha256": "7c65af871025e0f8307f4aeec3854816d2e5656828ed2e988a291a3f17a0be30",
+      "sha256": "e405b284d649535610ed53258dd20982b47170e656fd01a358aa93c0f2429852",
       "kind": "code-or-notice"
     },
     {
@@ -900,8 +900,8 @@
     },
     {
       "path": "remagen-mission.html",
-      "bytes": 379731,
-      "sha256": "7eb08f1bb40ac3ec908934921c645f0576b1330ee186355566f111da43ac1d31",
+      "bytes": 379906,
+      "sha256": "b7c1470e47219854a2fdae0bd14e7b729cb057b881c25d1f0d7dc9d77a921629",
       "kind": "code-or-notice"
     },
     {
@@ -960,8 +960,8 @@
     },
     {
       "path": "sortie-preview.js",
-      "bytes": 13970,
-      "sha256": "d690191dd2e60c5d87ebfee8f6b47f4d088528d25a2f81b435ee7e7d5f36cbc2",
+      "bytes": 13976,
+      "sha256": "590c8b7398ffa2df01d2e670bb4e1ed6c80d25ef6c7094559409289501dec156",
       "kind": "code-or-notice"
     },
     {
@@ -2100,8 +2100,8 @@
     },
     {
       "path": "torpedo-carrier.html",
-      "bytes": 444672,
-      "sha256": "08fd5e58177151358ba0139103bb95ab19b9225f778c614a5a966e53eb4a5930",
+      "bytes": 444799,
+      "sha256": "b92ee8d15765b43163c0886cbbdd4c352259b9d39ef5f02ac005ed4ceb883103",
       "kind": "code-or-notice"
     },
     {
@@ -2240,8 +2240,8 @@
     },
     {
       "path": "assets/aircraft/corsair-f4u1d-own.glb",
-      "bytes": 5584056,
-      "sha256": "5e037186b8c8dc2b21c3d6ed65b0494f17b307f8266fc9f3b4f6d47609af2b9c",
+      "bytes": 5363408,
+      "sha256": "1bf36051e2f92180897297bad2bf097ce688c83d5b0976200e49d3fdf00cad9c",
       "title": "F4U-1D Corsair — original bubble canopy game model",
       "uploader": "Oliver Kurzemann / Torpedo-Bomber",
       "originalRightsholder": null,
