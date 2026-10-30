@@ -2991,7 +2991,7 @@ function setSBDGearVisible(aircraft,down){
   if(gear)gear.visible=!!down;
 }
 async function loadCorsairModel(){
- return PacificAssets.loader().load('assets/aircraft/corsair-f4u1d-own.glb?v=218',gltf=>{
+ return PacificAssets.loader().load('assets/aircraft/corsair-f4u1d-own.glb?v=224',gltf=>{
   const holder=new THREE.Group();holder.add(gltf.scene);
   if(!CorsairRig.isNative(holder))throw Error('Expected original F4U-1D model');
   AircraftArticulation.install(holder,'corsair',{gearName:'sbdGear'});corsairTemplate=holder;
