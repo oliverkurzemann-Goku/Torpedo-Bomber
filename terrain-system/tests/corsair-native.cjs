@@ -15,7 +15,10 @@ const bytes=fs.readFileSync(path.join(root,'assets/aircraft/corsair-f4u1d-own.gl
  const hoodSize=new THREE.Box3().setFromObject(hood).getSize(new THREE.Vector3());
  assert(hoodSize.x>.62&&hoodSize.x<.78,'late Corsair bubble hood correctly narrow');
  assert(hoodSize.y>.45&&hoodSize.y<.60,'late Corsair hood height proportion');
- assert(hoodSize.z>1.2&&hoodSize.z<1.4,'late Corsair hood length');
+ assert(hoodSize.z>1.48&&hoodSize.z<1.58,'late Corsair hood length');
+ assert(model.getObjectByName('InvertedGullWing'),'original wing mesh');
+ const wingMesh=model.getObjectByName('InvertedGullWing');
+ const wp=wingMesh.geometry.attributes.position;let root=0,tip=0,rc=0,tc=0;for(let i=0;i<wp.count;i++){const x=Math.abs(wp.getX(i)),y=wp.getY(i);if(x>2.25&&x<2.45){root+=y;rc++}if(x>5.75&&x<5.95){tip+=y;tc++}}assert(rc&&tc&&tip/tc>root/rc+.65,'outboard inverted-gull wing rises after low knuckle');
  assert(hood.material.transparent&&hood.material.opacity!==0,'clear cockpit glazing');
 
  const source=model.getObjectByName('CorsairF4U1D_Original');assert.deepEqual(source.userData.provenance.thirdPartyMeshes,[]);assert.deepEqual(source.userData.provenance.thirdPartyTextures,[]);
