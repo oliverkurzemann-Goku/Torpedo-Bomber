@@ -27,18 +27,77 @@
   frame.updateMatrixWorld(true);const b=new T.Box3().setFromObject(frame),center=b.getCenter(new T.Vector3());
   const display=new T.Group();display.add(frame);frame.position.sub(center);display.userData.frame=frame;display.userData.ac=ac;display.userData.center=center;display.userData.stores=new T.Group();frame.add(display.userData.stores);return display;
  }
+ // Model-space hardpoints, in metres: X span, Y up, +Z forward.
+ // These are NOT a shared grid: each installation follows its own wing/belly.
+ // The Corsair and Dauntless centre bomb use their authored GLB mount points.
+ function hardpoints(ac,s){
+  const out=[];
+  const put=(kind,x,y,z,scale,roofY)=>out.push({kind,x,y,z,scale,roofY});
+  const pair=(kind,x,y,z,scale,roofY)=>{put(kind,-x,y,z,scale,roofY);put(kind,x,y,z,scale,roofY);};
+  if(s.bombs){
+   if(ac==='p47')pair('bomb',2.35,-1.13,1.05,.78,-.53);
+   else if(ac==='bf109')put('bomb',0,-1.20,.45,.68,-.72);
+   else if(ac==='fw190')put('bomb',0,-1.27,.55,.73,-.82);
+   else if(ac==='ju87'){
+    // Four small SC 50 wing bombs, not four full-size centreline bombs.
+    pair('bomb',2.32,-.90,.72,.34,-.50);
+    pair('bomb',3.14,-1.02,.72,.34,-.60);
+   }else if(ac==='me262')pair('bomb',.88,-.16,1.16,.75,.17);
+   else if(ac==='sbd'&&s.bombs>1){
+    // The large centreline bomb is already part of the native SBD rig.
+    pair('bomb',2.48,-1.53,.70,.36,-1.16);
+   }
+   // TBM: both bombs stay INSIDE the internal bomb bay.
+  }
+  if(ac==='p47'&&s.rockets)for(const side of [-1,1])for(let i=0;i<4;i++)
+   put('rocket',side*(3.05+i*.46),-.83,.68,.88,-.55);
+  return out;
+ }
  function loadout(display,c){
   const frame=display.userData.frame,group=display.userData.stores,s=root.CustomSortie.stores(c),ac=c.ac;
   for(const child of [...group.children]){group.remove(child);dispose(child);}
   if(ac==='corsair'){root.CorsairRig.update(frame,{gear:1,...s});return;}
   if(ac==='sbd')root.SBDRig.update(frame,{gear:1,bombs:s.bombs});
-  if(ac==='avenger')root.AvengerBay.pose(frame.userData.bay,0,s.torpedoes);
-  function store(kind,x,y,z,scale){const o=root.Ordnance.create(kind);o.traverse(n=>{if(n.geometry)n.geometry=n.geometry.clone();if(n.material)n.material=n.material.clone();});o.rotation.y=ac==='avenger'?Math.PI:0;o.position.set(x,y,z);o.scale.setScalar(scale);o.userData.previewStore=kind;group.add(o);}
-  // Game loadout visualisation. The Avenger's one torpedo stays inside its closed bay.
-  if(s.bombs){const count=ac==='sbd'?s.bombs-1:s.bombs;
-   for(let i=0;i<count;i++){const single=count===1,x=single?0:(i%2?-1:1)*(ac==='avenger'?2.3:ac==='sbd'?2.15:2.2+Math.floor(i/2)*.8);store('bomb',x,ac==='sbd'?-.9:-1,0,ac==='avenger'?.65:.8);}}
-  for(let i=0;i<s.rockets;i++)store('rocket',(i%2?-1:1)*(2.3+Math.floor(i/2)*.38),-.75,.3,.7);
-  if(s.tank){const tank=new T.Mesh(new T.SphereGeometry(1,20,12),new T.MeshStandardMaterial({color:0xa3a49c,roughness:.55,metalness:.35}));tank.name='previewDropTank';tank.scale.set(.31,.29,1.25);tank.position.set(0,-1.05,0);group.add(tank);}
+  function store(kind,x,y,z,scale,parent=group){
+   const o=root.Ordnance.create(kind);
+   // Shared Ordnance templates must not be disposed when changing aircraft.
+   o.traverse(n=>{if(n.geometry)n.geometry=n.geometry.clone();if(n.material)n.material=n.material.clone();});
+   o.position.set(x,y,z);o.scale.setScalar(scale);o.userData.previewStore=kind;parent.add(o);
+   return o;
+  }
+  if(ac==='avenger'){
+   const holder=frame.userData.bay,bay=holder.getObjectByName('avengerBombBay');
+   if(!bay)throw Error('Avenger internal bay missing');
+   const old=bay.getObjectByName('previewInternalBombs');
+   if(old){bay.remove(old);dispose(old);}
+   if(s.bombs){
+    const rack=new T.Group();rack.name='previewInternalBombs';bay.add(rack);
+    // The TBM bay is 0.96 m wide, so these are compact, paired internal bombs.
+    for(const x of [-.225,.225]){const bomb=store('bomb',x,-.66,-.78,.52,rack);bomb.rotation.y=Math.PI;}
+   }
+   // Open only in the selection viewer to inspect the internal payload.
+   // In flight, AvengerBay controls the doors and normally keeps them closed.
+   root.AvengerBay.pose(holder,(s.bombs||s.torpedoes)?.72:0,s.torpedoes);
+   return;
+  }
+  for(const h of hardpoints(ac,s)){
+   store(h.kind,h.x,h.y,h.z,h.scale);
+   const top=h.y+(h.kind==='rocket'?.064:.40)*h.scale;
+   const gap=h.roofY-top;
+   if(gap>.045){
+    const pylon=new T.Mesh(new T.BoxGeometry(h.kind==='rocket'?.055:.10,gap,.27),
+     new T.MeshStandardMaterial({color:0x59635e,roughness:.76,metalness:.12}));
+    pylon.name='previewPylon';pylon.position.set(h.x,top+gap/2,h.z);group.add(pylon);
+   }
+  }
+  if(s.tank){
+   const tank=new T.Mesh(new T.SphereGeometry(1,20,12),new T.MeshStandardMaterial({color:0xa3a49c,roughness:.55,metalness:.35}));
+   tank.name='previewDropTank';tank.scale.set(.31,.29,1.25);
+   const roofY=ac==='p47'?-.53:ac==='bf109'?-.72:-.82;
+   tank.position.set(0,roofY-.52,.3);group.add(tank);
+   const pylon=new T.Mesh(new T.BoxGeometry(.12,.25,.42),new T.MeshStandardMaterial({color:0x737e78,roughness:.65}));
+   pylon.name='previewTankPylon';pylon.position.set(0,roofY-.125,.3);group.add(pylon);
+  }
  }
  function create({host,status,reset,closer,further,retry}){
   let renderer,scene,camera,model,current=null,pending=0,frameRequest=0,failed=false,yaw=.7,pitch=.28,zoom=1,fit=20;const pointers=new Map();let pinch=0;
@@ -77,5 +136,6 @@
   const resize=new ResizeObserver(draw);resize.observe(host);document.addEventListener('visibilitychange',()=>{pointers.clear();if(!document.hidden)draw();});
   return {update};
  }
- root.SortiePreview={assets,prepare,loadout,dispose,create};
+ root.SortiePreview={assets,prepare,hardpoints,loadout,dispose,create};
+ if(typeof module==='object'&&module.exports)module.exports=root.SortiePreview;
 })(typeof window==='undefined'?globalThis:window);
