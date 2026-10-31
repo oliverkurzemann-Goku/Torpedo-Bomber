@@ -1,0 +1,193 @@
+{
+ "rookie": {
+  "level": "rookie",
+  "have": true,
+  "mission": "Sortie 1",
+  "f1": true,
+  "q0": {
+   "qship": true,
+   "flak": false,
+   "ease": 2.08
+  },
+  "q1": {
+   "revealed": false
+  },
+  "q2": {
+   "revealed": true,
+   "flak": true
+  },
+  "qTracers": 6,
+  "f2": true,
+  "dd": {
+   "type": "destroyer",
+   "optional": true,
+   "flak": true,
+   "sea": true,
+   "ease": 2.08,
+   "dist": 2090
+  },
+  "objectiveUnchanged": true,
+  "f3": true,
+  "zero": {
+   "n": 1,
+   "engaged": true,
+   "behind": true,
+   "high": true
+  },
+  "zeroOk": true,
+  "magazine": {
+   "fired": true,
+   "tries": 10,
+   "hullLost": 5
+  },
+  "scheduled": {
+   "seed": 3453696029,
+   "level": "rookie",
+   "fired": [
+    {
+     "id": "zeroBounce",
+     "t": 124
+    }
+   ],
+   "time": 840
+  },
+  "cleanup": {
+   "surpriseShips": 0,
+   "surpriseZeros": 0,
+   "qship": 0,
+   "time": 0,
+   "fired": 0
+  }
+ },
+ "veteran": {
+  "level": "veteran",
+  "have": true,
+  "mission": "Sortie 1",
+  "f1": true,
+  "q0": {
+   "qship": true,
+   "flak": false,
+   "ease": 1.25
+  },
+  "q1": {
+   "revealed": false
+  },
+  "q2": {
+   "revealed": true,
+   "flak": true
+  },
+  "qTracers": 15,
+  "f2": true,
+  "dd": {
+   "type": "destroyer",
+   "optional": true,
+   "flak": true,
+   "sea": true,
+   "ease": 1.25,
+   "dist": 2495
+  },
+  "objectiveUnchanged": true,
+  "f3": true,
+  "zero": {
+   "n": 2,
+   "engaged": true,
+   "behind": true,
+   "high": true
+  },
+  "zeroOk": true,
+  "magazine": {
+   "fired": true,
+   "tries": 1,
+   "hullLost": 8
+  },
+  "scheduled": {
+   "seed": 3811306328,
+   "level": "vet",
+   "fired": [
+    {
+     "id": "zeroBounce",
+     "t": 97
+    },
+    {
+     "id": "qship",
+     "t": 203
+    }
+   ],
+   "time": 840
+  },
+  "cleanup": {
+   "surpriseShips": 0,
+   "surpriseZeros": 0,
+   "qship": 0,
+   "time": 0,
+   "fired": 0
+  }
+ },
+ "ace": {
+  "level": "ace",
+  "have": true,
+  "mission": "Sortie 1",
+  "f1": true,
+  "q0": {
+   "qship": true,
+   "flak": false,
+   "ease": 1
+  },
+  "q1": {
+   "revealed": false
+  },
+  "q2": {
+   "revealed": true,
+   "flak": true
+  },
+  "qTracers": 18,
+  "f2": true,
+  "dd": {
+   "type": "destroyer",
+   "optional": true,
+   "flak": true,
+   "sea": true,
+   "ease": 1,
+   "dist": 2091
+  },
+  "objectiveUnchanged": true,
+  "f3": true,
+  "zero": {
+   "n": 2,
+   "engaged": true,
+   "behind": true,
+   "high": true
+  },
+  "zeroOk": true,
+  "magazine": {
+   "fired": true,
+   "tries": 1,
+   "hullLost": 10
+  },
+  "scheduled": {
+   "seed": 825770588,
+   "level": "ace",
+   "fired": [
+    {
+     "id": "zeroBounce",
+     "t": 67
+    },
+    {
+     "id": "qship",
+     "t": 116
+    }
+   ],
+   "time": 840
+  },
+  "cleanup": {
+   "surpriseShips": 0,
+   "surpriseZeros": 0,
+   "qship": 0,
+   "time": 0,
+   "fired": 0
+  }
+ },
+ "off": {
+  "surprises": null
+ }
+}

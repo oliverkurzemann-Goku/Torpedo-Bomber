@@ -1,13 +1,13 @@
 {
   "schema": 1,
   "reviewedOn": "2026-10-23",
-  "build": 230,
+  "build": 231,
   "status": "OPEN — source declarations checked; no external rights authorization obtained",
   "payload": {
-    "bytes": 271905467,
-    "fileCount": 362,
+    "bytes": 271931140,
+    "fileCount": 363,
     "modelCount": 36,
-    "manifestSha256": "68a04d0f1bdc63b211a8c70f57cd9c3110d8e030df41caec21b07e45339cf490"
+    "manifestSha256": "23992aaf4c5ae803baa2ccd0e5ee6adb079da0a4847f0e098086663e101e5aaa"
   },
   "files": [
     {
@@ -618,8 +618,8 @@
     },
     {
       "path": "checkpoint-rhine.js",
-      "bytes": 4977,
-      "sha256": "afa76421f741c3db120fda0b2390b24aea7fa5d3ff5def8fda34df0907aec850",
+      "bytes": 5000,
+      "sha256": "52ff73a18062fc2583257b9dbb5f311fdb75ad864f3eef7d352447ee0cee21ae",
       "kind": "code-or-notice"
     },
     {
@@ -751,7 +751,7 @@
     {
       "path": "hangar.html",
       "bytes": 4485,
-      "sha256": "5347040cc9b9a2f3620a4c6c9cda65769d67bf5baaf8eedd39668abd4a22c269",
+      "sha256": "a84f000cf13b3c4f5b607d1261e289e6c649a6cb4bf066d2df63cc7c373ba8f9",
       "kind": "code-or-notice"
     },
     {
@@ -769,7 +769,7 @@
     {
       "path": "index.html",
       "bytes": 7545,
-      "sha256": "0aa8795b32f0148208ba7bfe9ac7910c87cdcac0c471e2de1f285ce09858c6f6",
+      "sha256": "816747de0816125797f29eb11918e6a37aaf00401adbf1f8b3bacee1d26beeaf",
       "kind": "code-or-notice"
     },
     {
@@ -900,8 +900,8 @@
     },
     {
       "path": "remagen-mission.html",
-      "bytes": 381962,
-      "sha256": "d21a3d23eeefb463bd32cd72897871dde89cc29d07a719157b804b53cf29f6aa",
+      "bytes": 394203,
+      "sha256": "30cc07627d1100d3ddd4de5e2e872e876fdb8322b422686f8bb9e8b172f0ee3f",
       "kind": "code-or-notice"
     },
     {
@@ -961,7 +961,7 @@
     {
       "path": "sortie-preview.js",
       "bytes": 13978,
-      "sha256": "1a007c720b03d88edcd8bdf9cc36467ece109ce364ec3ff89e9605e9bc4de8aa",
+      "sha256": "01ac26f01d8164e6b56b73fc9fd3cc301fa62135deae65ae29ff17310dd33119",
       "kind": "code-or-notice"
     },
     {
@@ -974,6 +974,12 @@
       "path": "sortie-systems.js",
       "bytes": 10374,
       "sha256": "412bd1ba0be21fe95bee054d5ac5411c8d811cc1b2dce4ce14dcff5280ebc9d1",
+      "kind": "code-or-notice"
+    },
+    {
+      "path": "surprises.js",
+      "bytes": 6077,
+      "sha256": "2f5f5b81fa2d933efb7a3c498ba754babe80453a42eb5d4cc681ddd27067319d",
       "kind": "code-or-notice"
     },
     {
@@ -2100,8 +2106,8 @@
     },
     {
       "path": "torpedo-carrier.html",
-      "bytes": 446736,
-      "sha256": "cf4fa30512fb5d8d85b5b9e6ebe1fa22b5457b0cc717c2c1b45b8ca6a90a6b5e",
+      "bytes": 454068,
+      "sha256": "f2a476cc4de773c3d7bfad2bdac9d7e26a9745d0a0e1a1823469c483f6d29091",
       "kind": "code-or-notice"
     },
     {

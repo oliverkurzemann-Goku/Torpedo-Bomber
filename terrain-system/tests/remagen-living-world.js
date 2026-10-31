@@ -95,7 +95,7 @@ global.fetch=async url=>{const b=fs.readFileSync(path.join(root,url.split('?')[0
     if(['bridge','jabo','jetjabo','jetstrike','jetboxes','komet','boxes','libs'].includes(run.id))
       assert.equal(guns.length,0,'German battery must not attack a Luftwaffe aircraft');
   }
-  assert(html.includes('const range=light?1350:3900'));assert(html.includes('groundFire=[];'));
+  assert(html.includes('const range=f.range||(light?1350:3900)'));   // Build 231: surprise units may override the range; the defaults stay 1350 m light / 3900 m heavyassert(html.includes('groundFire=[];'));
   const h=JSON.parse(fs.readFileSync(path.join(root,'terrain-system/real/data/historical/3_3.json'))),b=h.bridges[0];
   const bridge=[12000+(b.x1+b.x2)/2,12000+(b.z1+b.z2)/2];
   const f=JSON.parse(fs.readFileSync(path.join(root,'terrain-system/real/data/historical/3_5.json'))).factories[0];

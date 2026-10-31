@@ -1,5 +1,30 @@
 # Torpedo-Bomber — Übergabe an Claude Code
 
+**31.10.2026, Build 231: Klappen mit Raststufen und Startklappen für alle Typen; Überraschungen in den Missionen (beide Spiele).**
+Nutzer (nach Build 230): „Warum haben p47 und me262 derzeit keine startklappen mehr? Ich hätte gerne bei allen flugzeugen zumindest im real modus, klappen zum starten. Und bei der f4 auch etwas um die flaps nach dem start einzufahren
+und nicht auf 20/30/50 und dann flaps up. … wäre es noch gut, wenn du überraschungen in die Missionen einarbeiten würdest. Ein verstecktes fahrzeug das schiesst, oder bodentruppen etc… Es ist derzeit noch zu eintönig … etwas das die
+spannung erhöht und das spiel unberechenbarer macht. Überlege dir verschiedene dinge und setze es um…."
+- **Warum P-47/Me 262 keine Startklappen hatten — Ursache im Code gefunden:** Seit Build 229 ist ARCADE (Standard) das Altmodell; die Startklappen setzte nur `relaunch()` bei `coreOn()` (= REALISTIC schon beim Missionsstart oder `?arcade=core`). Wer REALISTIC erst auf
+  der Piste wählte, bekam sie nur, wenn die Fahrt unter 1 m/s lag. Der Klappenknopf kannte außerdem nur UP ↔ DN (Rhein) bzw. 0 → 10° → … → 50° → UP im Kreis (Corsair), T/O ließ sich nach dem Einfahren nie wieder wählen und aus 40° ging es nur über 50° zurück auf UP.
+- **Neu — Klappenhebel mit Raststufen (beide Spiele):** zwei Knöpfe nebeneinander: `FLAPS ▼` fährt eine Raststufe aus, das kleine `FLAPS ▲` eine ein; beide bleiben an den Enden stehen (kein Umlaufen). Rhein und Avenger/SBD/Zero: UP · T/O (0,5) · DN. Corsair: sechs Segmente
+  in 10°-Schritten (0–50°), Start 20° (0,4): nach dem Start 20 → 10 → UP, zum Landen in 10°-Schritten wieder aus. Rhein `flapStep()`/`syncFlapBtn()` (`remagen-mission.html`), Pazifik `flapStep()`/`flapDetents()`/`flapLabel()`/`resetControlUI()` (`torpedo-carrier.html`).
+  Der Leuchtkugel-Knopf (nur nachts) wanderte in die Zeile darunter, weil `FLAPS ▲` seinen Platz bekam.
+- **Startklappen in REALISTIC für alle Typen** (außer dem Komet, der keine hat): beim Missionsstart, beim Umschalten auf REALISTIC auf Piste/Deck und jetzt auch bei bereits rollendem Flugzeug (die Bedingung „Fahrt < 1 m/s" ist weg). ARCADE (Altmodell) startet wie bisher mit eingefahrenen
+  Klappen, ist aber über den Knopf jederzeit auf T/O zu stellen.
+- **Überraschungen** — neues Modul `surprises.js` (`Surprises`, nur Planung, kein THREE/DOM) + je Spiel die Ereignisse. Der Plan entscheidet WANN, das Spiel WAS: ein Zufallsstrom pro Einsatz (Seed `Math.random()`, gleicher Seed = gleicher Einsatz), nur in Flugzeit
+  gezählt (Boden, Startkamerafahrt, Pause, Menü = keine Zeit), Prüftakt 1 s (bildratenunabhängig, 20/60/120 FPS gleiche Folge), Budget je Einsatz, Mindestabstand, höchstens N gleichzeitig aktive Ereignisse, keine Ereignisse bei schwer beschädigtem Flugzeug oder auf dem Heimweg zur Landung.
+  Schwierigkeit: Rookie höchstens 2 Ereignisse, erstes frühestens nach 85–125 s, Abstand ≥ 75 s, sofortige Vorwarnung, Waffen um den Faktor 0,6 schwächer; Veteran 3 / 55–95 s / 50 s / Warnung nach 2,5 s; Ace 4 / 40–70 s / 36 s / keine Warnung, Faktor 1,25.
+  Ereignisse zählen **nie** für ein Missionsziel (eigene Typen `ambush`/`troops`, extra Zerstörer `optional`, Jäger `escapeThreat`), verstecken sich bis zum ersten Schuss (nicht in `targets`/`flakUnits`, also weder Minikarte noch Navigationsliste noch Treffer), werden bei `clearWorld()`/Neustart entfernt und
+  stehen nicht im Checkpoint (`checkpoint-rhine.js` filtert `t.surprise`; nach dem Fortsetzen beginnt der Plan neu). `?surprises=off` schaltet alles ab (für Tests mit langen Flügen). Nicht in Freiflug, Platzrunden, Qualifikation, Flottenabwehr (dort kommen die Wellen ohnehin) und Komet.
+  - **Rhein:** `hiddenFlak` (Tarnflak 1,7–2,6 km voraus der Route, unsichtbar bis du näher als 1,15 km (Rookie 0,95 km) und unter 1 100 m bist, dann Funk „LIGHT FLAK — n O'CLOCK" und Feuer), `trap` (1–2 Tarnflaks 120–300 m um das Ziel, sobald du dich ihm auf 3,3 km näherst),
+    `infantry` (6 Schützen mit Sandsäcken, schwache Spur 1,6 Schaden, bekämpfbar), `bounce` (1–2 Jäger 2,3 km hinter und 550 m über dir, zählen nicht für das Ziel), `ammoBlast` (nach einem Lkw-/Zugtreffer im Tiefflug explodiert die Ladung 0,7 s später: nah = Schaden, sicher = +75).
+  - **Pazifik:** `qship` („unbewaffneter" Frachter eröffnet das Feuer erst unter 1,7 km), `reinforce` (ein im Briefing nicht gezeigter Zerstörer läuft 2–3 km neben dem Konvoi ein, optional), `zeroBounce` (1–2 Zeros aus 2,2 km hinten und 350 m über dir), `magazine` (versenktes Schiff, Magazinexplosion unter dem tiefen Bomber).
+  Alles Spielentscheidungen (Kennung C): Reichweiten, Gewichte, Abstände, Schadenswerte in `startSurprises()` beider Spiele bzw. `LEVELS` in `surprises.js`.
+- Tests: `okinawa/tests/surprises.cjs` (Plan: Determinismus, Budget, Abstände, Schwierigkeit, 20/60/120 FPS, Boden/Pause, aktive Grenze, Fehlplatzierung, freie Ereignisse), `surprises-browser.cjs` (Rhein, alle drei Schwierigkeiten im echten Spiel),
+  `surprises-pacific-browser.cjs` (Pazifik), `flaps-browser.cjs` (neun Typen, echte Knöpfe, Corsair-Stufen, Start-Voreinstellung). Messdateien `app/release/surprises-browser.json`, `surprises-pacific-browser.json`, `flaps-browser.json`.
+**Offen:** kein iPad-Test, kein Spielgefühl-Nachweis; Stärke und Häufigkeit der Überraschungen sind Schätzungen zum Nachstellen (`LEVELS` in `surprises.js`, Ereignisparameter in `startSurprises()`); ARCADE startet weiter mit Klappen oben (nur REALISTIC stellt T/O); nach einem Checkpoint-Fortsetzen
+beginnt der Überraschungsplan neu; Flottenabwehr (Zero-Spieler) und Komet haben bewusst keine neuen Ereignisse.
+
 **30.10.2026, Build 230: REALISTIC — kein Stall mehr allein durch Querlage; REALISTIC-Kamera im selben Abstand wie ARCADE.**
 Nutzer (nach Build 229): „Die flugzeuge kommen im realistic mode viel zu schnell in einen stall. Fw190 z.b. bei 125kts mit take off flaps. Das kann nicht sein… Und bitte schau, dass im realistic mode dieselbe kameraposition wie in
 arcade ist. Bei realistic wird das flugzeug derzeit etwas herangezoomt."
@@ -873,7 +898,7 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 230 · Thunderbolt Squadron BUILD 230 · Remagen-Kern 23 / Fahrzeuge 22**
+Stand bei Übergabe: **Torpedo Squadron BUILD 231 · Thunderbolt Squadron BUILD 231 · Remagen-Kern 23 / Fahrzeuge 22**
 
 **Build 198 (22.10.2026): P-47-Fotolackierung, Einsatzspuren und natives Fahrwerk; Terrain-Fix aus Build 197 erhalten.**
 `assets/aircraft/p47-weathered.glb` ist ein ausdrücklich gekennzeichnetes Derivat des

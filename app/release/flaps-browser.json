@@ -1,0 +1,404 @@
+{
+ "pac-avenger": {
+  "kind": "avenger",
+  "aero0": false,
+  "flap0": 0,
+  "state": "2",
+  "down": [
+   0.5,
+   1,
+   1,
+   1,
+   1,
+   1,
+   1
+  ],
+  "labelsDown": [
+   "FLAPS▼ DN",
+   "FLAPS▲ T/O"
+  ],
+  "up": [
+   0.5,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0
+  ],
+  "labelsUp": [
+   "FLAPS▼ UP",
+   "FLAPS▲ UP"
+  ],
+  "aero": true,
+  "coreOn": true,
+  "afterAero": 0.5,
+  "btnLabels": [
+   "FLAPS▼ T/O",
+   "FLAPS▲ UP"
+  ],
+  "flapAfterRun": 0.5,
+  "retract": [
+   0
+  ],
+  "aeroOff": false
+ },
+ "pac-sbd": {
+  "kind": "sbd",
+  "aero0": false,
+  "flap0": 0,
+  "state": "2",
+  "down": [
+   0.5,
+   1,
+   1,
+   1,
+   1,
+   1,
+   1
+  ],
+  "labelsDown": [
+   "FLAPS▼ DN",
+   "FLAPS▲ T/O"
+  ],
+  "up": [
+   0.5,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0
+  ],
+  "labelsUp": [
+   "FLAPS▼ UP",
+   "FLAPS▲ UP"
+  ],
+  "aero": true,
+  "coreOn": true,
+  "afterAero": 0.5,
+  "btnLabels": [
+   "FLAPS▼ T/O",
+   "FLAPS▲ UP"
+  ],
+  "flapAfterRun": 0.5,
+  "retract": [
+   0
+  ],
+  "aeroOff": false
+ },
+ "pac-corsair": {
+  "kind": "corsair",
+  "aero0": false,
+  "flap0": 0,
+  "state": "2",
+  "down": [
+   0.2,
+   0.4,
+   0.6,
+   0.8,
+   1,
+   1,
+   1
+  ],
+  "labelsDown": [
+   "FLAPS▼ 50°",
+   "FLAPS▲ 40°"
+  ],
+  "up": [
+   0.8,
+   0.6,
+   0.4,
+   0.2,
+   0,
+   0,
+   0
+  ],
+  "labelsUp": [
+   "FLAPS▼ UP",
+   "FLAPS▲ UP"
+  ],
+  "aero": true,
+  "coreOn": true,
+  "afterAero": 0.4,
+  "btnLabels": [
+   "FLAPS▼ 20°",
+   "FLAPS▲ 10°"
+  ],
+  "flapAfterRun": 0.4,
+  "retract": [
+   0.2,
+   0
+  ],
+  "aeroOff": false
+ },
+ "pac-zero": {
+  "kind": "zero",
+  "aero0": false,
+  "flap0": 0,
+  "state": "2",
+  "down": [
+   0.5,
+   1,
+   1,
+   1,
+   1,
+   1,
+   1
+  ],
+  "labelsDown": [
+   "FLAPS▼ DN",
+   "FLAPS▲ T/O"
+  ],
+  "up": [
+   0.5,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0
+  ],
+  "labelsUp": [
+   "FLAPS▼ UP",
+   "FLAPS▲ UP"
+  ],
+  "aero": true,
+  "coreOn": true,
+  "afterAero": 0.5,
+  "btnLabels": [
+   "FLAPS▼ T/O",
+   "FLAPS▲ UP"
+  ],
+  "flapAfterRun": 0.5,
+  "retract": [
+   0
+  ],
+  "aeroOff": false
+ },
+ "rhine-p47": {
+  "kind": "p47",
+  "aero0": false,
+  "flap0": 0,
+  "onGround": true,
+  "state": "3",
+  "down": [
+   0.5,
+   1,
+   1,
+   1,
+   1,
+   1,
+   1
+  ],
+  "labelsDown": [
+   "FLAPS▼ DN",
+   "FLAPS▲ T/O"
+  ],
+  "up": [
+   0.5,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0
+  ],
+  "labelsUp": [
+   "FLAPS▼ UP",
+   "FLAPS▲ UP"
+  ],
+  "aero": true,
+  "coreOn": true,
+  "afterAero": 0.5,
+  "btnLabels": [
+   "FLAPS▼ T/O",
+   "FLAPS▲ UP"
+  ],
+  "flapAfterRun": 0.5,
+  "retract": [
+   0
+  ],
+  "aeroOff": false
+ },
+ "rhine-bf109": {
+  "kind": "bf109",
+  "aero0": false,
+  "flap0": 0,
+  "onGround": true,
+  "state": "3",
+  "down": [
+   0.5,
+   1,
+   1,
+   1,
+   1,
+   1,
+   1
+  ],
+  "labelsDown": [
+   "FLAPS▼ DN",
+   "FLAPS▲ T/O"
+  ],
+  "up": [
+   0.5,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0
+  ],
+  "labelsUp": [
+   "FLAPS▼ UP",
+   "FLAPS▲ UP"
+  ],
+  "aero": true,
+  "coreOn": true,
+  "afterAero": 0.5,
+  "btnLabels": [
+   "FLAPS▼ T/O",
+   "FLAPS▲ UP"
+  ],
+  "flapAfterRun": 0.5,
+  "retract": [
+   0
+  ],
+  "aeroOff": false
+ },
+ "rhine-fw190": {
+  "kind": "fw190",
+  "aero0": false,
+  "flap0": 0,
+  "onGround": true,
+  "state": "3",
+  "down": [
+   0.5,
+   1,
+   1,
+   1,
+   1,
+   1,
+   1
+  ],
+  "labelsDown": [
+   "FLAPS▼ DN",
+   "FLAPS▲ T/O"
+  ],
+  "up": [
+   0.5,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0
+  ],
+  "labelsUp": [
+   "FLAPS▼ UP",
+   "FLAPS▲ UP"
+  ],
+  "aero": true,
+  "coreOn": true,
+  "afterAero": 0.5,
+  "btnLabels": [
+   "FLAPS▼ T/O",
+   "FLAPS▲ UP"
+  ],
+  "flapAfterRun": 0.5,
+  "retract": [
+   0
+  ],
+  "aeroOff": false
+ },
+ "rhine-ju87": {
+  "kind": "ju87",
+  "aero0": false,
+  "flap0": 0,
+  "onGround": true,
+  "state": "3",
+  "down": [
+   0.5,
+   1,
+   1,
+   1,
+   1,
+   1,
+   1
+  ],
+  "labelsDown": [
+   "FLAPS▼ DN",
+   "FLAPS▲ T/O"
+  ],
+  "up": [
+   0.5,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0
+  ],
+  "labelsUp": [
+   "FLAPS▼ UP",
+   "FLAPS▲ UP"
+  ],
+  "aero": true,
+  "coreOn": true,
+  "afterAero": 0.5,
+  "btnLabels": [
+   "FLAPS▼ T/O",
+   "FLAPS▲ UP"
+  ],
+  "flapAfterRun": 0.5,
+  "retract": [
+   0
+  ],
+  "aeroOff": false
+ },
+ "rhine-me262": {
+  "kind": "me262",
+  "aero0": false,
+  "flap0": 0,
+  "onGround": true,
+  "state": "3",
+  "down": [
+   0.5,
+   1,
+   1,
+   1,
+   1,
+   1,
+   1
+  ],
+  "labelsDown": [
+   "FLAPS▼ DN",
+   "FLAPS▲ T/O"
+  ],
+  "up": [
+   0.5,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0
+  ],
+  "labelsUp": [
+   "FLAPS▼ UP",
+   "FLAPS▲ UP"
+  ],
+  "aero": true,
+  "coreOn": true,
+  "afterAero": 0.5,
+  "btnLabels": [
+   "FLAPS▼ T/O",
+   "FLAPS▲ UP"
+  ],
+  "flapAfterRun": 0.5,
+  "retract": [
+   0
+  ],
+  "aeroOff": false
+ }
+}

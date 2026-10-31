@@ -141,6 +141,7 @@
   .ctlBtn.on{border-color:var(--amber);color:var(--amber);}
   #gearBtn{left:max(20px,env(safe-area-inset-left));top:var(--flightControlsTop);}
   #flapBtn{left:max(20px,env(safe-area-inset-left));top:calc(var(--flightControlsTop) + 56px);}
+  #flapUpBtn{left:max(86px,calc(env(safe-area-inset-left) + 86px));top:calc(var(--flightControlsTop) + 56px);}
   #diveBtn{left:max(20px,env(safe-area-inset-left));top:calc(var(--flightControlsTop) + 112px);display:none;}
   #hookBtn{left:max(20px,env(safe-area-inset-left));top:calc(var(--flightControlsTop) + 168px);}
   #aeroBtn{left:max(20px,env(safe-area-inset-left));top:calc(var(--flightControlsTop) + 224px);font-size:9px;letter-spacing:0;}
@@ -300,7 +301,7 @@
 
 .hangarLink{display:block;padding:12px 14px;margin:8px 0 12px;color:#f3ce83;border:1px solid #ba9d57;border-radius:5px;text-decoration:none;text-align:center;font:600 12px system-ui;letter-spacing:.8px;min-height:44px;}
 </style>
-<link rel="stylesheet" href="menu-layout.css?v=230">
+<link rel="stylesheet" href="menu-layout.css?v=231">
 </head>
 <body>
 <div id="app"></div>
@@ -353,7 +354,7 @@
   <div id="flash"></div>
   <div id="ltn" style="position:fixed;inset:0;background:#e6ecff;opacity:0;pointer-events:none;z-index:40;"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 230</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 231</div>
 
   <!-- Optical landing aid -->
   <div id="lso">
@@ -384,11 +385,12 @@
 <div id="steerBtn">STEER<br>L/R</div>
 <div id="gearBtn" class="ctlBtn on">GEAR<br>▼ DN</div>
 <div id="flapBtn" class="ctlBtn">FLAPS<br>UP</div>
+<div id="flapUpBtn" class="ctlBtn">FLAPS<br>▲ UP</div>
 <div id="diveBtn" class="ctlBtn">DIVE<br>BRAKE</div>
 <button id="weaponBtn" class="ctlBtn" type="button" title="Select bombs / rockets (X)" style="display:none;left:max(86px,calc(env(safe-area-inset-left) + 86px));top:var(--flightControlsTop)">BOMBS</button>
 <div id="hookBtn" class="ctlBtn">HOOK<br>▲ UP</div>
 <div id="aeroBtn" class="ctlBtn" title="Realistic flight: the stick is a load factor - rolls, loops and real stalls, from the take-off on (off = arcade flight)">REALISTIC<br>OFF</div>
-<button id="flareBtn" class="ctlBtn" type="button" title="Parachute flare (L)" style="display:none;left:max(86px,calc(env(safe-area-inset-left) + 86px));top:calc(30% + 56px)">FLARE<br>4</button>
+<button id="flareBtn" class="ctlBtn" type="button" title="Parachute flare (L)" style="display:none;left:max(86px,calc(env(safe-area-inset-left) + 86px));top:calc(var(--flightControlsTop) + 112px)">FLARE<br>4</button>
 <button id="bailBtn" type="button" title="Emergency parachute (B)">BAIL OUT</button>
 <div id="fireBtn">GUNS</div>
 <div id="opsStatus"></div>
@@ -399,7 +401,7 @@
 
 <!-- Menu -->
 <div class="overlay" id="menu" data-campaign="pacific">
-  <div class="menuTop"><a id="selBtn" href="index.html?v=230">&#9664; Change Game</a><span class="menuMeta">PACIFIC OPERATIONS<br>BUILD 230</span></div>
+  <div class="menuTop"><a id="selBtn" href="index.html?v=231">&#9664; Change Game</a><span class="menuMeta">PACIFIC OPERATIONS<br>BUILD 231</span></div>
   <div class="card menuCard">
     <aside class="menuOverview" aria-label="Campaign and pilot options">
     <div class="campaignArt" aria-hidden="true"></div>
@@ -498,7 +500,7 @@
 <script src="okinawa/world.js?v=175"></script>
 <script src="campaign.js?v=1"></script>
 <script src="game-runtime.js?v=198"></script>
-<script src="sortie-checkpoint.js?v=230"></script>
+<script src="sortie-checkpoint.js?v=231"></script>
 <script src="aircraft-articulation.js?v=218"></script>
 <script src="terrain-system/AircraftGround.js?v=198"></script>
 <script src="pacific-assets.js?v=201"></script>
@@ -515,7 +517,7 @@
 <script src="ship-damage.js?v=206"></script>
 <script src="torpedo-attack.js?v=206"></script>
 <script src="ship-contact.js?v=198"></script>
-<script src="flight-support.js?v=230"></script>
+<script src="flight-support.js?v=231"></script>
 <script src="ordnance.js?v=218"></script>
 <script src="crew-visuals.js?v=179"></script>
 <script src="deck-activity.js?v=198"></script>
@@ -526,20 +528,21 @@
 <script src="sortie-service.js?v=206"></script>
 <script src="pilot-rescue.js?v=179"></script>
 <script src="radio-intercept.js?v=157"></script>
+<script src="surprises.js?v=231"></script>
 <script src="audio/weapon-sound.js?v=144"></script>
 <script src="audio/flight-atmosphere.js?v=175"></script>
 <script src="sortie-systems.js?v=198"></script>
 <script src="flight-envelope.js?v=219"></script>
 <script src="flight-dynamics.js?v=219"></script>
-<script src="flight-core.js?v=230"></script>
-<script src="flight-control.js?v=230"></script>
-<script src="dogfight-ai.js?v=230"></script>
+<script src="flight-core.js?v=231"></script>
+<script src="flight-control.js?v=231"></script>
+<script src="dogfight-ai.js?v=231"></script>
 <script src="audio/throttle-response.js?v=218"></script><script src="audio/aircraft-engine.js?v=218"></script>
-<script src="sortie-features.js?v=230"></script>
+<script src="sortie-features.js?v=231"></script>
 <script src="ground-run.js?v=198"></script>
 <script src="flight-indicators.js?v=198"></script>
 <script src="operation-plans.js?v=198"></script>
-<script src="custom-sortie.js?v=230"></script>
+<script src="custom-sortie.js?v=231"></script>
 <script src="pacific-theater.js?v=206"></script>
 <script src="carrier-recovery.js?v=198"></script>
 <script src="maritime-weather.js?v=198"></script>
@@ -2256,6 +2259,7 @@ function startMission(idx){
   // spawn enemy fighters
   const nz=m.zeros||0;
   for(let i=0;i<nz;i++) spawnZero(i,nz);
+  startSurprises();
 
   // ---- fleet defence: clear old raiders/torps, then set the sortie up ----
   raiders.forEach(r=>{ if(r.mesh) GameRuntime.release(r.mesh); }); raiders=[];
@@ -2909,6 +2913,7 @@ function hitShip(s, quietCam,point=null,weapon="torpedo",attack=null){
       target:s.group.position.clone(), slow:0.45-0.18*heft};
     sfxBoom(1.4);
     flash("SHIP SINKING  +"+pts+attackTag,1300);
+    surprises?.trigger('magazine',{ship:s,dist:P.pos.distanceTo(s.group.position),agl:P.pos.y});
   } else {
     spawnExplosion(impactPoint.x,Math.max(3,impactPoint.y),impactPoint.z,1.15);
     spawnDebris(impactPoint.x,Math.max(4,impactPoint.y+2),impactPoint.z,6);
@@ -2991,7 +2996,7 @@ function setSBDGearVisible(aircraft,down){
   if(gear)gear.visible=!!down;
 }
 async function loadCorsairModel(){
- return PacificAssets.loader().load('assets/aircraft/corsair-f4u1d-own.glb?v=230',gltf=>{
+ return PacificAssets.loader().load('assets/aircraft/corsair-f4u1d-own.glb?v=231',gltf=>{
   const holder=new THREE.Group();holder.add(gltf.scene);
   if(!CorsairRig.isNative(holder))throw Error('Expected original F4U-1D model');
   AircraftArticulation.install(holder,'corsair',{gearName:'sbdGear'});corsairTemplate=holder;
@@ -3459,6 +3464,103 @@ function updateTailGun(dt){
 }
 
 function typeOfRearGunHeavy(){return !isSBD();}
+// ============================================================
+//  SURPRISES (Build 231) - surprises.js decides WHEN (seeded, budgeted, scaled by difficulty); these are the events:
+//  an "unarmed" freighter that opens fire at 1.7 km, a destroyer racing in that the briefing never showed, Zeros out of
+//  the sun and a magazine that blows up under a low bomber. None of it counts for an objective (the extra destroyer is
+//  optional, the Zeros are not part of any kill count); ?surprises=off disables everything.
+// ============================================================
+const SURPRISES_OFF=typeof location!=='undefined'&&/[?&]surprises=off\b/.test(location.search);
+let surprises=null;
+function horizontalNose(){const n=noseDir();const l=Math.hypot(n.x,n.z)||1;return {x:n.x/l,z:n.z/l};}
+function clockOf(x,z){
+  const f=horizontalNose(),a=Math.atan2(x-P.pos.x,z-P.pos.z)-Math.atan2(f.x,f.z),h=Math.round((((a*180/Math.PI)%360)+360)%360/30)%12;
+  return h===0?12:h;
+}
+function surprisePrimaries(){return ships.filter(s=>s.alive&&!s.def.optional&&(s.def.type==='freighter'||s.def.type==='cruiser'));}
+function surpriseSea(x,z){
+  const lx=x-OKINAWA_OFFSET_X;
+  return !(okinawaWorld&&Math.abs(lx)<7980&&Math.abs(z)<7980&&okinawaWorld.shoreDistance(lx,z)<=300);
+}
+function surpriseContext(extra){
+  const m=MISSIONS[mission],prim=surprisePrimaries();
+  let near=null,nd=Infinity,qShip=null,qd=Infinity;
+  for(const s of prim){
+    const d=Math.hypot(P.pos.x-s.group.position.x,P.pos.z-s.group.position.z);
+    if(d<nd){nd=d;near=s;}
+    if(!s.flak&&!s.qship&&d>1800&&d<9000&&d<qd){qd=d;qShip=s;}
+  }
+  const near2=Math.hypot(P.pos.x-carrierX,P.pos.z)<3500&&P.pos.y<250;
+  return Object.assign({
+    flying:state===ST.FLIGHT&&P.alive&&!carrierIntro&&!isFree()&&!isQual()&&!hasRaiders()&&(!!m.targets?.length||!!m.shoreStrike),
+    hull:P.hull/((P.systemDamage?.maxHull)||100),
+    // all targets sunk and on the way home, or lined up on the carrier: leave the player alone
+    suppress:pacificTargetsClear()||near2,
+    agl:P.pos.y,strike:prim.length>0||shoreTargets.some(t=>t.alive&&!t.def.optional),
+    nearShip:near,nearDist:nd,qShip,kills:sortieShipsSunk,
+    destroyerReady:!!destroyerTemplate&&!ships.some(s=>s.alive&&s.def.surprise),
+    zeroOk:zeros.filter(z=>z.alive).length<3&&!zeros.some(z=>z.alive&&z.surprise)&&P.pos.y<3500},extra||{});
+}
+function startSurprises(){
+  if(SURPRISES_OFF||typeof Surprises==='undefined'){surprises=null;return;}
+  const events=[
+    {id:'qship',weight:3,max:1,ready:c=>c.qShip&&c.agl<900?1:0,fire:(c,api)=>{
+      const s=c.qShip;s.qship=true;s.flakEase=1.25/api.power;   // Rookie: slower, Ace: the full rate of a proper flak ship
+      if(api.warnDelay()===0)api.say('INTEL — ONE OF THE MERCHANTS MAY BE CARRYING GUNS. DO NOT FLY STRAIGHT AT IT.',0);
+      return {alive:()=>s.alive&&!s.qRevealed};}},
+    {id:'reinforce',weight:2,max:1,minTime:45,ready:c=>c.nearShip&&c.destroyerReady&&c.nearDist<9000&&c.agl<2500?1:0,fire:(c,api)=>{
+      const pp=c.nearShip.group.position,dx=pp.x-P.pos.x,dz=pp.z-P.pos.z,L=Math.hypot(dx,dz)||1,ux=dx/L,uz=dz/L,side=api.rand()<.5?-1:1;
+      for(let i=0;i<10;i++){
+        const dist=2000+api.rand()*900,x=pp.x-uz*side*dist+ux*api.rand()*700,z=pp.z+ux*side*dist+uz*api.rand()*700;
+        if(!surpriseSea(x,z))continue;
+        spawnShip({type:'destroyer',pos:[x,0,z],hp:1,flak:true,optional:true,surprise:true,heading:Math.atan2(P.pos.x-x,P.pos.z-z)});
+        const s=ships[ships.length-1];s.flakEase=1.25/api.power;
+        api.say("ENEMY DESTROYER RACING IN — "+clockOf(x,z)+" O'CLOCK. WATCH HER GUNS.",api.warnDelay());
+        return {alive:()=>s.alive};
+      }
+      return false;}},
+    {id:'zeroBounce',weight:2,max:1,minTime:55,ready:c=>c.zeroOk&&(c.kills>0||c.nearDist<7000||surprises.time>110)?1:0,fire:(c,api)=>{
+      const n=api.level.max<=2?1:2,first=zeros.length,f=horizontalNose(),l={x:f.z,z:-f.x};
+      for(let i=0;i<n;i++)spawnZero(i,n);
+      zeros.slice(first).forEach((z,i)=>{
+        z.surprise=true;z.engaged=true;z.patrol=null;
+        const off=(i-(n-1)/2)*260;
+        z.pos.set(P.pos.x-f.x*2200+l.x*off,Math.max(300,P.pos.y+350+api.rand()*200),P.pos.z-f.z*2200+l.z*off);
+        z.heading=Math.atan2(P.pos.x-z.pos.x,P.pos.z-z.pos.z);z.vel.set(Math.sin(z.heading)*88,0,Math.cos(z.heading)*88);
+        z.mesh.position.copy(z.pos);z.mesh.rotation.set(0,z.heading,0);z.cool=2.5;});
+      api.say("ZEROS — SIX O'CLOCK HIGH! BREAK!",api.warnDelay());
+      return {alive:()=>zeros.slice(first).some(z=>z.alive)};}},
+    {id:'magazine',free:true,max:2,ready:c=>c.ship&&c.dist<450&&c.agl<220?1:0,fire:(c,api)=>{
+      if(api.rand()>=.45*api.power)return false;
+      const p=c.ship.group.position.clone();
+      api.after(.9,()=>{
+        spawnExplosion(p.x,12,p.z,3.2);spawnExplosion(p.x+14,8,p.z-10,1.8);spawnDebris(p.x,12,p.z,24);sfxBoom(1.6);shake(2.2);
+        const d=P.pos.distanceTo(new THREE.Vector3(p.x,12,p.z));
+        if(P.alive&&d<170){
+          P.hull=Math.max(0,P.hull-(1-d/170)*16*D().dmg);P.rollBias=(P.rollBias||0)+(api.rand()<.5?-.05:.05)*D().dmg;registerHit();updateHUD();
+          radioSay('MAGAZINE EXPLOSION — PULL UP!');
+          if(P.hull<=0)crash('BLOWN APART','The magazine went up under you.');
+        }else{addScore(100);radioSay('MAGAZINE GONE — CLEAN HIT. BONUS 100');}
+      });
+      return true;}}
+  ];
+  surprises=Surprises.create({events,level:DIFF,say:radioSay});
+  surprises.reset(undefined,DIFF);
+}
+function updateSurprises(dt){
+  if(!surprises)return;
+  surprises.update(dt,surpriseContext());
+  // the "unarmed" freighter shows its teeth once the attack is on top of it
+  for(const s of ships){
+    if(!s.qship||s.qRevealed||!s.alive)continue;
+    if(Math.hypot(P.pos.x-s.group.position.x,P.pos.z-s.group.position.z)<1700&&P.pos.y<500){
+      s.qRevealed=true;s.flak=true;s.flakTimer=.2;
+      const c=clockOf(s.group.position.x,s.group.position.z);
+      if(surprises.lvl.warn!==null)radioSay('THE FREIGHTER IS ARMED — FLAK AT '+c+" O'CLOCK!");
+      flash('ARMED MERCHANT!',900);shake(.4);sfxPop();
+    }
+  }
+}
 function updateFlak(dt){
   if(hasRaiders())updateCarrierDefense(dt);
   for(const s of ships){
@@ -3466,7 +3568,7 @@ function updateFlak(dt){
     const d=Math.hypot(P.pos.x-s.group.position.x, P.pos.z-s.group.position.z);
     s.flakTimer-=dt;
     if(s.flakTimer<=0 && d<2200){
-      s.flakTimer=(0.30+Math.random()*0.35)*(s.fleetAlertT>0?.85:1)/Math.max(.25,shipDamage?.performance(s).aa??1);
+      s.flakTimer=(0.30+Math.random()*0.35)*(s.fleetAlertT>0?.85:1)*(s.flakEase||1)/Math.max(.25,shipDamage?.performance(s).aa??1);
       // 3-round tracer burst, aimed with lead + spread
       const from=new THREE.Vector3(s.group.position.x,10,s.group.position.z);
       const lead=P.pos.clone().addScaledVector(noseDir(),P.spd*1.1);
@@ -3485,7 +3587,7 @@ function updateFlak(dt){
     // heavy AA airbursts around the aircraft
     if(P.pos.y>45 && d<2000){
       s.burstT=(s.burstT||Math.random())-dt;
-      if(s.burstT<=0){ s.burstT=0.5+Math.random()*0.6;
+      if(s.burstT<=0){ s.burstT=(0.5+Math.random()*0.6)*(s.flakEase||1);
         const bp=P.pos.clone().add(new THREE.Vector3((Math.random()-0.5)*160,
           (Math.random()-0.5)*90,(Math.random()-0.5)*160));
         spawnFlakBurst(bp);
@@ -5576,7 +5678,7 @@ function loadPlaneModel(){
       }
       window.__eyeDbg='EYE '+COCKPIT_EYE.map(v=>v.toFixed(2)).join('/');
       const btEl=document.getElementById('buildTag');
-      if(btEl) btEl.textContent='BUILD 230 · '+window.__eyeDbg;
+      if(btEl) btEl.textContent='BUILD 231 · '+window.__eyeDbg;
       let seat=null;
       model.traverse(function(o){
         if(!o.isMesh||!o.material) return;
@@ -6881,10 +6983,8 @@ function setupUIButtons(){
     P.gearTgt = P.gearTgt>0.5?0:1; const b=document.getElementById('gearBtn');
     b.classList.toggle('on',P.gearTgt>0.5); b.innerHTML=P.gearTgt>0.5?'GEAR<br>▼ DN':'GEAR<br>▲ UP';
     flash(P.gearTgt>0.5?'GEAR DOWN':'GEAR UP',700); sfxGearMotor(); });
-  document.getElementById('flapBtn').addEventListener('pointerdown',e=>{ e.preventDefault();
-    P.flapTgt=isCorsair()?((Math.round(P.flapTgt*5)+1)%6)/5:P.flapTgt>0?0:1;const b=document.getElementById('flapBtn'),label=flapLabel();
-    b.classList.toggle('on',P.flapTgt>0);b.innerHTML='FLAPS<br>'+label;
-    flash('FLAPS '+label,700); sfxFlapMotor(); });
+  document.getElementById('flapBtn').addEventListener('pointerdown',e=>{ e.preventDefault();flapStep(1); });
+  document.getElementById('flapUpBtn').addEventListener('pointerdown',e=>{ e.preventDefault();flapStep(-1); });
   document.getElementById('diveBtn').addEventListener('pointerdown',e=>{ e.preventDefault();
     if(!hasDiveBrakes())return;
     P.diveBrake=!P.diveBrake; document.getElementById('diveBtn').classList.toggle('on',P.diveBrake);
@@ -6966,7 +7066,7 @@ function setupUIButtons(){
   if(dbgT2) dbgT2.onclick=()=>{
     dbgOn=!dbgOn; GameRuntime.storage.setItem('dbgOn',dbgOn?'1':'0');
     const db=document.getElementById('dbgBox'); if(db) db.textContent=dbgOn?'✓':'';
-    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 230'; }
+    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 231'; }
   };
   const lu=document.getElementById('lookUp'), ld=document.getElementById('lookDn');
   let _lookT=0;
@@ -6982,7 +7082,7 @@ function setupUIButtons(){
   if(pb) pb.addEventListener('pointerdown',e=>{ e.preventDefault(); togglePause(); });
   const rb=document.getElementById('resumeBtn'); if(rb) rb.onclick=resumeGame;
   const mb=document.getElementById('menuBtn'); if(mb) mb.onclick=exitToMenu;
-  document.getElementById('pauseMainMenu').onclick=async()=>{globalThis.sortieCheckpoint?.save();await globalThis.sortieCheckpoint?.flush();exitToMenu(true);window.location.href='index.html?v=230';};
+  document.getElementById('pauseMainMenu').onclick=async()=>{globalThis.sortieCheckpoint?.save();await globalThis.sortieCheckpoint?.flush();exitToMenu(true);window.location.href='index.html?v=231';};
   document.getElementById('resultBtn').onclick=()=>{
     // the logbook borrows this screen from the menu — send the player straight back
     if(logbookOpen){ logbookOpen=false; showOverlay('menu'); return; }
@@ -7059,11 +7159,24 @@ function applyLoadoutUI(){
   const dv=document.getElementById('diveBtn');if(dv){dv.style.display=div?'flex':'none';dv.innerHTML=corsair?'GEAR<br>BRAKE':'DIVE<br>BRAKE';}
   const wb=document.getElementById('weaponBtn');if(wb){wb.style.display=corsair?'flex':'none';wb.innerHTML=rocket?'SELECT<br>BOMBS':'SELECT<br>ROCKETS';}
 }
-// Avenger, SBD and Zero launch with take-off flap (T/O); one press retracts any lowered setting.
+// Build 231: the flap lever has detents and two buttons - FLAPS lowers one detent, the small FLAPS UP button raises one.
+// Avenger, SBD and Zero: UP / T/O / DN. Corsair: six segments in 10 deg steps (0-50), so the flaps can be taken in
+// gradually after take-off (it used to cycle 0-10-...-50 and then jump back to UP, with no way to step down).
+// The core launches every type with take-off flap (Corsair 20 deg = 0.4).
+function flapDetents(){return isCorsair()?[0,.2,.4,.6,.8,1]:[0,.5,1];}
+function flapStep(dir){
+  const d=flapDetents(),i=d.reduce((best,v,k)=>Math.abs(v-P.flapTgt)<Math.abs(d[best]-P.flapTgt)?k:best,0);
+  const j=Math.max(0,Math.min(d.length-1,i+dir));
+  if(j===i)return;
+  P.flapTgt=d[j];resetControlUI();
+  flash('FLAPS '+flapLabel(),700);sfxFlapMotor();
+}
 function flapLabel(){return P.flapTgt>0?(isCorsair()?Math.round(P.flapTgt*50)+'°':P.flapTgt>=1?'DN':'T/O'):'UP';}
 function resetControlUI(){
   const g=document.getElementById('gearBtn'); if(g){g.classList.toggle('on',P.gearTgt>.5);g.innerHTML=P.gearTgt>.5?'GEAR<br>▼ DN':'GEAR<br>▲ UP';}
-  const f=document.getElementById('flapBtn'); if(f){f.classList.toggle('on',P.flapTgt>0);f.innerHTML='FLAPS<br>'+flapLabel();}
+  const f=document.getElementById('flapBtn'); if(f){f.classList.toggle('on',P.flapTgt>0);f.innerHTML='FLAPS<br>▼ '+flapLabel();}
+  const u=document.getElementById('flapUpBtn'); if(u){const d=flapDetents(),i=d.reduce((best,v,k)=>Math.abs(v-P.flapTgt)<Math.abs(d[best]-P.flapTgt)?k:best,0);
+    u.classList.toggle('on',P.flapTgt>0);u.innerHTML='FLAPS<br>▲ '+(i<=1?'UP':isCorsair()?Math.round(d[i-1]*50)+'°':'T/O');}
   const d=document.getElementById('diveBtn'); if(d)d.classList.toggle('on',!!P.diveBrake);
   const h=document.getElementById('hookBtn'); if(h){h.classList.toggle('on',P.hookTgt>.5); h.innerHTML=P.hookTgt>.5?'HOOK<br>▼ DN':'HOOK<br>▲ UP';}
 }
@@ -7251,7 +7364,7 @@ function animate(){
     notice.style.cssText='position:fixed;inset:0;z-index:999998;background:rgba(15,20,15,.95);color:#e8ddbc;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px;text-align:center;font:16px system-ui';
     const title=document.createElement('h2');title.textContent='Simulation interrupted';
     const detail=document.createElement('p');
-    detail.textContent='BUILD 230 · '+(MISSIONS[mission]?.sub||'Menu')+' · '+error.message;
+    detail.textContent='BUILD 231 · '+(MISSIONS[mission]?.sub||'Menu')+' · '+error.message;
     const reload=document.createElement('button');reload.textContent='Reload game';
     reload.style.cssText='padding:12px 24px;font:inherit';reload.onclick=()=>location.reload();
     notice.appendChild(title);notice.appendChild(detail);notice.appendChild(reload);document.body.appendChild(notice);
@@ -7329,7 +7442,7 @@ function animateFrame(){
     updateTorpedoes(dt);
     updateBombs(dt);
     updateGuns(dt);
-    updateFlak(dt);
+    updateFlak(dt);updateSurprises(dt);
     updateZeros(dt);
     updateTailGun(dt);
     updateNav();
@@ -7420,6 +7533,6 @@ init();
 if(hangarRequest.requested&&hangarRequest.config){selectedMission=0;launchCampaignMission(0);}
 if(hangarRequest.error)flash(hangarRequest.error,8000);
 </script>
-<script src="checkpoint-pacific.js?v=230"></script>
+<script src="checkpoint-pacific.js?v=231"></script>
 </body>
 </html>

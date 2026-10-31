@@ -87,28 +87,28 @@
   "minRatio": 1.7,
   "row": {
    "3": {
-    "pitch": 22.3,
-    "climb": 12.7,
+    "pitch": 22.5,
+    "climb": 12.9,
     "kt": 114,
-    "agl": 49
+    "agl": 50
    },
    "10": {
-    "pitch": 23.4,
+    "pitch": 23.5,
     "climb": 14.8,
     "kt": 117,
-    "agl": 148
+    "agl": 149
    },
    "20": {
-    "pitch": 23.8,
+    "pitch": 23.9,
     "climb": 15.2,
     "kt": 118,
-    "agl": 299
+    "agl": 300
    },
    "30": {
     "pitch": 23.9,
     "climb": 15.3,
     "kt": 118,
-    "agl": 452
+    "agl": 453
    }
   },
   "aeroEnd": false,
@@ -169,28 +169,28 @@
   "minRatio": 1.8,
   "row": {
    "3": {
-    "pitch": 21.5,
-    "climb": 16.1,
+    "pitch": 21.3,
+    "climb": 15.9,
     "kt": 132,
     "agl": 54
    },
    "10": {
-    "pitch": 28.2,
-    "climb": 26.4,
-    "kt": 155,
-    "agl": 208
+    "pitch": 28.1,
+    "climb": 26.3,
+    "kt": 154,
+    "agl": 207
    },
    "20": {
     "pitch": 30.8,
     "climb": 31.5,
     "kt": 163,
-    "agl": 504
+    "agl": 503
    },
    "30": {
     "pitch": 31.3,
     "climb": 32.8,
     "kt": 164,
-    "agl": 827
+    "agl": 825
    }
   },
   "aeroEnd": false,
@@ -354,19 +354,19 @@
     "pitch": 13.1,
     "climb": 13.7,
     "kt": 139,
-    "agl": 102
+    "agl": 98
    },
    "20": {
     "pitch": 15.2,
     "climb": 16.1,
     "kt": 144,
-    "agl": 286
+    "agl": 279
    },
    "30": {
     "pitch": 15.4,
     "climb": 16.2,
     "kt": 145,
-    "agl": 434
+    "agl": 458
    }
   },
   "aeroEnd": false,
@@ -403,19 +403,19 @@
     "pitch": 9.7,
     "climb": 9.9,
     "kt": 114,
-    "agl": 111
+    "agl": 113
    },
    "20": {
     "pitch": 9.7,
     "climb": 10.2,
     "kt": 118,
-    "agl": 230
+    "agl": 236
    },
    "30": {
     "pitch": 9.7,
     "climb": 10.4,
     "kt": 120,
-    "agl": 363
+    "agl": 375
    }
   },
   "aeroEnd": true,
@@ -497,13 +497,13 @@
     "pitch": 11,
     "climb": 11.2,
     "kt": 114,
-    "agl": 231
+    "agl": 241
    },
    "30": {
     "pitch": 11,
     "climb": 11.6,
     "kt": 117,
-    "agl": 362
+    "agl": 354
    }
   },
   "aeroEnd": true,
@@ -577,21 +577,21 @@
    },
    "10": {
     "pitch": 9.6,
-    "climb": 10.2,
+    "climb": 10.1,
     "kt": 119,
-    "agl": 110
+    "agl": 104
    },
    "20": {
     "pitch": 9.6,
-    "climb": 10.5,
+    "climb": 10.4,
     "kt": 122,
-    "agl": 238
+    "agl": 237
    },
    "30": {
     "pitch": 9.6,
     "climb": 10.7,
     "kt": 125,
-    "agl": 323
+    "agl": 334
    }
   },
   "aeroEnd": true,
@@ -624,13 +624,13 @@
     "pitch": 19.7,
     "climb": 9.1,
     "kt": 110,
-    "agl": 193
+    "agl": 178
    },
    "30": {
     "pitch": 19.7,
     "climb": 9.1,
     "kt": 110,
-    "agl": 292
+    "agl": 293
    }
   },
   "aeroEnd": false,
@@ -743,19 +743,19 @@
     "pitch": 10,
     "climb": 10.9,
     "kt": 121,
-    "agl": 110
+    "agl": 104
    },
    "20": {
     "pitch": 10,
     "climb": 11.3,
     "kt": 127,
-    "agl": 250
+    "agl": 245
    },
    "30": {
     "pitch": 10,
     "climb": 11.8,
     "kt": 132,
-    "agl": 346
+    "agl": 358
    }
   },
   "aeroEnd": true,
@@ -1016,19 +1016,19 @@
     "pitch": 21.1,
     "climb": 24.3,
     "kt": 132,
-    "agl": 201
+    "agl": 206
    },
    "20": {
     "pitch": 21.8,
     "climb": 25.8,
     "kt": 135,
-    "agl": 483
+    "agl": 484
    },
    "30": {
     "pitch": 21.5,
     "climb": 25.9,
     "kt": 137,
-    "agl": 730
+    "agl": 719
    }
   },
   "aeroEnd": false,
