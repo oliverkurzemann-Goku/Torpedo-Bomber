@@ -38,7 +38,7 @@ function flightParts(html,pacific,kind,aeroMode=false){
  const flight=html.indexOf('function updateFlight(dt)');
  const a=html.indexOf(pacific?'  const dmgF = P.hull<60':'  const dmgF = (P.hull < d.hull',flight);
  const b=html.indexOf(pacific?'  // speed toward throttle target':'  // vertical speed:',a);
- const globals={SortieFeatures,FlightDynamics,P47Performance:require('../../p47-performance'),STALL_SPD:40,MISSIONS:[{corsair:kind==='corsair'}],mission:0,isDefend:()=>kind==='zero',isSBD:()=>kind==='sbd',FlightEnvelope,PAC_HANDLING:handling,windZ:0};
+ const globals={SortieFeatures,FlightDynamics,P47Performance:require('../../p47-performance'),Me262Performance:require('../../me262-performance'),STALL_SPD:40,MISSIONS:[{corsair:kind==='corsair'}],mission:0,isDefend:()=>kind==='zero',isSBD:()=>kind==='sbd',FlightEnvelope,PAC_HANDLING:handling,windZ:0};
  const attitude=vm.runInNewContext('(function(P,inputRoll,inputPitch,dt,d,stallSpd){const load=SortieFeatures.Handling.sample(P),controls=SortieFeatures.Damage.controls(P),configuration=SortieFeatures.Handling.configuration(P,stallSpd),departure=SortieFeatures.Handling.departure(P,dt,stallSpd),aeroMode='+aeroMode+',steerSign=1;'+html.slice(a,b)+'})',globals);
  const i=html.indexOf('  // integrate\n',flight),j=html.indexOf('  // fuel\n',i);
  const integration=pacific?null:vm.runInNewContext('(function(P,dt,windZ){const vs=0;'+html.slice(i,j)+'})',
@@ -99,34 +99,66 @@ for(const fps of [20,60,120])for(const kind of [...Object.keys(defs),'avenger','
   assert(Math.abs(p.pos.x-stillAir.pos.x-7*60)<.001,kind+' crosswind translates the ground track');
  }
 }
-// Normal Me262 back-stick has a speed-dependent climb envelope, while AERO
-// remains available for a loop. Execute the shipped attitude function at three rates.
-for(const fps of [20,60,120])for(const speed of [55,75,80,100,120,140,200]){
- const d=defs.me262,p={ac:'me262',hull:d.hull,spd:speed,gear:0,rollBias:0,pitch:.10,roll:0,pitchVel:0,rollVel:0,heading:0};
+// Build 232: the ARCADE Me 262 back-stick is bounded by its ENERGY ceiling (me262-performance.js pitchCeiling: thrust surplus in the
+// current configuration + the speed above 1.2 x stall spent over 10 s), not by the fixed 20-degree cap and 80-140 m/s hand-over of
+// Build 181/184. AERO (REALISTIC) remains available for a loop. Execute the shipped attitude function at three rates.
+const jetCeiling=(p,d,stall)=>global.Me262Performance.pitchCeiling(p,{loadRatio:SortieFeatures.Handling.sample(p).ratio,power:SortieFeatures.Damage.power(p),bank:p.roll,
+ flaps:SortieFeatures.Damage.controls(p).flaps.mean,drag:SortieFeatures.Damage.controls(p).drag,stall,limit:d.pitchLim*.92});
+const steady={};
+for(const fps of [20,60,120])for(const speed of [55,65,75,80,90,100,120,140,200]){
+ const d=defs.me262,p={ac:'me262',hull:d.hull,spd:speed,gear:0,rollBias:0,pitch:.10,roll:0,pitchVel:0,rollVel:0,heading:0,groundPower:1,throttle:1};
  const normal=flightParts(eu,false,'me262').attitude;let max=0;
  for(let i=0;i<8*fps;i++){normal(p,0,1,1/fps,d,d.stall);max=Math.max(max,p.pitch);}
+ const ceiling=jetCeiling(p,d,d.stall);
+ assert(p.pitch<=ceiling+.003,'the nose never goes above the energy ceiling at '+speed+' m/s ('+p.pitch+' > '+ceiling+')');
+ assert(p.pitch>=ceiling-.02,'and a held stick reaches it within 8 s at '+speed+' m/s, '+fps+' FPS ('+p.pitch+' vs '+ceiling+')');
  if(speed<=80){
-  assert(max<.35,'low-speed jet attitude stays below twenty degrees while clearing departure obstacles');
-  assert(speed*Math.sin(p.pitch)<19,'low-speed climb retains a bounded takeoff envelope');
+  assert(p.pitch>.40,'low-speed jet climbs at 23+ degrees now (it was held under 20 before): '+speed+' m/s -> '+(p.pitch*180/Math.PI).toFixed(1));
+  assert(speed*Math.sin(p.pitch)>19,'and the climb rate is no longer capped at 19 m/s at '+speed+' m/s');
+  assert(p.pitch<d.pitchLim*.92,'but still short of the full pitch command: the jet has to keep its speed');
  }else if(speed>=140){
-  assert(p.pitch>1,'fast normal flight restores the original full pitch command');
-  assert(speed*Math.sin(p.pitch)>100,'fast jet can climb strongly again');
- }else assert(p.pitch>.15&&p.pitch<1.06,'airspeed smoothly releases the rotation limit');
+  assert(p.pitch>1,'fast normal flight keeps the original full pitch command');
+  assert(speed*Math.sin(p.pitch)>100,'fast jet can climb strongly');
+ }
+ if(fps===60)steady[speed]=p.pitch;
  const aero=flightParts(eu,false,'me262',true).attitude;
  for(let i=0;i<4*fps;i++)aero(p,0,1,1/fps,d,d.stall);
  assert(Math.abs(p.pitch)>.7,'AERO retains high-pitch manoeuvres');
 }
-// Crossing either handover boundary must not introduce a pitch jump.
+{const v=Object.keys(steady).map(Number).sort((x,y)=>x-y);for(let i=1;i<v.length;i++)assert(steady[v[i]]>=steady[v[i-1]]-.002,'more speed to spend never lowers the ceiling ('+v[i-1]+' -> '+v[i]+' m/s)');}
+// An idle engine still gets the old landing-flare / pull-up angle (>= the old 14.8 degrees at 60 m/s) and not more than its energy allows.
+for(const fps of [20,60,120]){
+ const d=defs.me262,p={ac:'me262',hull:d.hull,spd:62,gear:1,flap:.5,rollBias:0,pitch:0,roll:0,pitchVel:0,rollVel:0,heading:0,groundPower:0,throttle:0};
+ const normal=flightParts(eu,false,'me262').attitude;for(let i=0;i<6*fps;i++)normal(p,0,1,1/fps,d,d.stall);
+ assert(p.pitch>=.255&&p.pitch<=jetCeiling(p,d,d.stall)+.003,'idle, gear down: the flare angle is kept, '+fps+' FPS ('+(p.pitch*180/Math.PI).toFixed(1)+')');
+}
+// The slow nose is quicker: 15 degrees from level at 65 m/s well inside two seconds (it took 20 s in the formerly capped ARCADE jet).
+for(const fps of [20,60,120]){
+ const d=defs.me262,p={ac:'me262',hull:d.hull,spd:65,gear:0,rollBias:0,pitch:0,roll:0,pitchVel:0,rollVel:0,heading:0,groundPower:1,throttle:1};
+ const normal=flightParts(eu,false,'me262').attitude;let t=0;
+ for(;t<6&&p.pitch<15*Math.PI/180;t+=1/fps)normal(p,0,1,1/fps,d,d.stall);
+ assert(t<1.9,'15 degrees at 65 m/s in under 1.9 s at '+fps+' FPS ('+t.toFixed(2)+' s)');
+}
+// The ceiling is continuous in speed: no pitch jump where the old limiter handed over (80 and 140 m/s).
 let lastSpeed=0,lastPitch=0;
 for(const speed of [79.99,80,80.01,139.99,140,140.01]){
- const d=defs.me262,p={ac:'me262',hull:d.hull,spd:speed,gear:0,rollBias:0,pitch:0,roll:0,pitchVel:0,rollVel:0,heading:0};
+ const d=defs.me262,p={ac:'me262',hull:d.hull,spd:speed,gear:0,rollBias:0,pitch:0,roll:0,pitchVel:0,rollVel:0,heading:0,groundPower:1,throttle:1};
  const normal=flightParts(eu,false,'me262').attitude;
  for(let i=0;i<480;i++)normal(p,0,1,1/60,d,d.stall);
- if(speed-lastSpeed<.02)assert(Math.abs(p.pitch-lastPitch)<.001,'normal pitch stays continuous at the speed handover');
+ if(speed-lastSpeed<.02)assert(Math.abs(p.pitch-lastPitch)<.001,'normal pitch stays continuous in speed around '+speed);
  lastSpeed=speed;lastPitch=p.pitch;
  for(let i=0;i<480;i++)normal(p,0,-.5,1/60,d,d.stall);
  assert(Math.abs(p.pitch+d.pitchLim*.92*.5)<.001,'dive commands retain their original authority');
 }
+// Right after lift-off the departure envelope is still closed (it opens with airspeed). The Me 262 climbs on its energy ceiling anyway;
+// the Bf 109, Fw 190 and P-47 still obey the departure rate - nothing else changed.
+for(const fps of [20,60,120]){
+ const run=(kind,spd)=>{const d=defs[kind],p={ac:kind,hull:d.hull,spd,gear:0,rollBias:0,pitch:.07,roll:0,pitchVel:0,rollVel:0,heading:0,groundPower:1,throttle:1,departureAge:0};
+  const att=flightParts(eu,false,kind).attitude;let max=0;for(let i=0;i<6*fps;i++){att(p,0,1,1/fps,d,d.stall);max=Math.max(max,p.pitch);}return max;};
+ const jet=run('me262',62);assert(jet>.38,'Me 262 just after lift-off climbs on its ceiling, '+fps+' FPS ('+(jet*180/Math.PI).toFixed(1)+' deg)');
+ for(const kind of ['bf109','fw190','p47']){const m=run(kind,defs[kind].stall*1.15);assert(m<.34,kind+' is still held by the departure envelope just after lift-off, '+fps+' FPS ('+(m*180/Math.PI).toFixed(1)+' deg)');}
+}
+
 // Begin level in strong wind: the turn routine itself must never yaw the nose.
 const a=eu.indexOf('  // bank-to-turn:',eu.indexOf('function updateFlight(dt)')),b=eu.indexOf('  // vertical speed:',a);
 for(const windZ of [-12,0,12]){

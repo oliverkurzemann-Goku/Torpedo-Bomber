@@ -685,28 +685,28 @@
   "minRatio": 1.2,
   "row": {
    "3": {
-    "pitch": 14,
-    "climb": 12.9,
-    "kt": 124,
-    "agl": 30
+    "pitch": 21.4,
+    "climb": 19.7,
+    "kt": 119,
+    "agl": 42
    },
    "10": {
-    "pitch": 12.8,
-    "climb": 16.2,
-    "kt": 147,
-    "agl": 138
+    "pitch": 26.5,
+    "climb": 26.5,
+    "kt": 119,
+    "agl": 220
    },
    "20": {
-    "pitch": 13.7,
-    "climb": 20.5,
-    "kt": 184,
-    "agl": 351
+    "pitch": 26.2,
+    "climb": 25.9,
+    "kt": 118,
+    "agl": 510
    },
    "30": {
-    "pitch": 20.1,
-    "climb": 28.8,
-    "kt": 200,
-    "agl": 578
+    "pitch": 26,
+    "climb": 25.7,
+    "kt": 117,
+    "agl": 773
    }
   },
   "aeroEnd": false,
@@ -715,8 +715,8 @@
    "offCore": false,
    "alive": true,
    "finite": true,
-   "speedKept": 1.2,
-   "heightKept": -1.8
+   "speedKept": 1.4,
+   "heightKept": 2.1
   }
  },
  "classic-rhine-me262-real": {

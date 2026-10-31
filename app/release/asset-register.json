@@ -1,13 +1,13 @@
 {
   "schema": 1,
   "reviewedOn": "2026-10-23",
-  "build": 231,
+  "build": 232,
   "status": "OPEN — source declarations checked; no external rights authorization obtained",
   "payload": {
-    "bytes": 271931140,
+    "bytes": 271934585,
     "fileCount": 363,
     "modelCount": 36,
-    "manifestSha256": "23992aaf4c5ae803baa2ccd0e5ee6adb079da0a4847f0e098086663e101e5aaa"
+    "manifestSha256": "99421509c255e37f14674d38a42848f100c1ec90115d98ac36c5d7cadc96cc31"
   },
   "files": [
     {
@@ -751,7 +751,7 @@
     {
       "path": "hangar.html",
       "bytes": 4485,
-      "sha256": "a84f000cf13b3c4f5b607d1261e289e6c649a6cb4bf066d2df63cc7c373ba8f9",
+      "sha256": "b08bb0762bda9d79ee80aeeeb2a3199b3fd6b77b2500f54923966349ca9c6fb9",
       "kind": "code-or-notice"
     },
     {
@@ -769,7 +769,7 @@
     {
       "path": "index.html",
       "bytes": 7545,
-      "sha256": "816747de0816125797f29eb11918e6a37aaf00401adbf1f8b3bacee1d26beeaf",
+      "sha256": "4a1c9c9c2fddb9cc93a545fea30f61862f41c6bcb1802ea9a3a5858d62470f10",
       "kind": "code-or-notice"
     },
     {
@@ -810,8 +810,8 @@
     },
     {
       "path": "me262-performance.js",
-      "bytes": 948,
-      "sha256": "817036320df2f46017ab65a07b3b9735d87637760ba44970532ab97d575ee0c5",
+      "bytes": 3525,
+      "sha256": "9083b5e78c08faa4e68007d698fc60f619018cbbb52149fa9322d4994d563085",
       "kind": "code-or-notice"
     },
     {
@@ -900,8 +900,8 @@
     },
     {
       "path": "remagen-mission.html",
-      "bytes": 394203,
-      "sha256": "30cc07627d1100d3ddd4de5e2e872e876fdb8322b422686f8bb9e8b172f0ee3f",
+      "bytes": 395071,
+      "sha256": "854500c06fd77f9ebf7197d69bc5b6049ffd571a125571a78889162fcb0015e0",
       "kind": "code-or-notice"
     },
     {
@@ -961,7 +961,7 @@
     {
       "path": "sortie-preview.js",
       "bytes": 13978,
-      "sha256": "01ac26f01d8164e6b56b73fc9fd3cc301fa62135deae65ae29ff17310dd33119",
+      "sha256": "f17ee5e2a6f208024ebe9f3ae46b8d160a2591cd0ea051ac990656380b86aa20",
       "kind": "code-or-notice"
     },
     {
@@ -2107,7 +2107,7 @@
     {
       "path": "torpedo-carrier.html",
       "bytes": 454068,
-      "sha256": "f2a476cc4de773c3d7bfad2bdac9d7e26a9745d0a0e1a1823469c483f6d29091",
+      "sha256": "4af370da27809045daebcf9ad45cf74e97e675c9a6310718fb9e3dce14a6a396",
       "kind": "code-or-notice"
     },
     {

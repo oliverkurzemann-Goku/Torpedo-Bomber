@@ -76,6 +76,14 @@ The existing P-47 historical envelope and declared arcade acceleration assistanc
 retained in `p47-performance.js`; the Me 262 retains `me262-performance.js`. The fleet
 wrapper gives the P-47 progressive power and reserves acceleration during loaded departure
 by limiting the initial nose-up command to available power. It does not add free energy.
+Build 232 (ARCADE, previous physics only): the Me 262's nose-up limit is no longer a fixed
+slow-speed cap (14.8 deg at 60 m/s falling to 8.8 deg at 140) plus the departure envelope.
+`Me262Performance.pitchCeiling()` derives it from the same energy model that `step()` integrates:
+`sin(ceiling) = (thrust surplus in the current configuration + (speed - 1.2 x stall) / 10 s) / g`,
+never below 15 deg (flare, idle), never above the type's pitch limit. A held stick therefore
+settles at the steepest angle the engines sustain at 1.2 x stall (about 26 deg), and a zoom climb is
+possible while there is speed to spend. `pitchRateCap()` lifts the type's pitch-rate floor from
+14 to 23 deg/s above 1.15 x stall. The constants (`Me262Performance.climb`) are gameplay decisions.
 The Komet retains its verified rocket-off glide/recovery model, with gradual flap drag.
 Coefficients and transient response for the other types are gameplay estimates. No
 claims are made about reproducing a complete historical performance chart.

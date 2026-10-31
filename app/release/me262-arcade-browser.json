@@ -1,0 +1,446 @@
+{
+ "classic-me262-takeoff": {
+  "coreOn": false,
+  "alive": true,
+  "liftoffS": 14.7,
+  "peak": 26.8,
+  "minRatio": 1.2,
+  "row": {
+   "1": {
+    "pitch": 11.9,
+    "climb": 10.9,
+    "ms": 60.5,
+    "agl": 8
+   },
+   "3": {
+    "pitch": 21.4,
+    "climb": 19.7,
+    "ms": 61.4,
+    "agl": 42
+   },
+   "5": {
+    "pitch": 24.9,
+    "climb": 25.3,
+    "ms": 61.8,
+    "agl": 87
+   },
+   "10": {
+    "pitch": 26.5,
+    "climb": 26.5,
+    "ms": 61.2,
+    "agl": 220
+   },
+   "20": {
+    "pitch": 26.2,
+    "climb": 25.9,
+    "ms": 60.5,
+    "agl": 510
+   },
+   "30": {
+    "pitch": 26,
+    "climb": 25.7,
+    "ms": 60.3,
+    "agl": 773
+   }
+  }
+ },
+ "classic-me262-air-v65-20fps": {
+  "stall": 50.2,
+  "alive": true,
+  "peak": 30.3,
+  "minRatio": 1.2,
+  "stalled": 0,
+  "t15": 0.7,
+  "row": {
+   "1": {
+    "pitch": 21.8,
+    "climb": 24.3,
+    "ms": 67.6
+   },
+   "3": {
+    "pitch": 30.1,
+    "climb": 32.3,
+    "ms": 66.6
+   },
+   "8": {
+    "pitch": 28.3,
+    "climb": 29.3,
+    "ms": 64
+   }
+  }
+ },
+ "classic-me262-air-v65-60fps": {
+  "stall": 50.2,
+  "alive": true,
+  "peak": 30.5,
+  "minRatio": 1.2,
+  "stalled": 0,
+  "t15": 0.7,
+  "row": {
+   "1": {
+    "pitch": 20.8,
+    "climb": 23.3,
+    "ms": 67.6
+   },
+   "3": {
+    "pitch": 30.2,
+    "climb": 32.4,
+    "ms": 66.7
+   },
+   "8": {
+    "pitch": 28.3,
+    "climb": 29.4,
+    "ms": 64
+   }
+  }
+ },
+ "classic-me262-air-v65-120fps": {
+  "stall": 50.2,
+  "alive": true,
+  "peak": 30.5,
+  "minRatio": 1.2,
+  "stalled": 0,
+  "t15": 0.7,
+  "row": {
+   "1": {
+    "pitch": 20.7,
+    "climb": 23.2,
+    "ms": 67.6
+   },
+   "3": {
+    "pitch": 30.2,
+    "climb": 32.5,
+    "ms": 66.7
+   },
+   "8": {
+    "pitch": 28.3,
+    "climb": 29.4,
+    "ms": 64
+   }
+  }
+ },
+ "classic-me262-air-v80-20fps": {
+  "stall": 50.2,
+  "alive": true,
+  "peak": 38.8,
+  "minRatio": 1.3,
+  "stalled": 0,
+  "t15": 0.7,
+  "row": {
+   "1": {
+    "pitch": 23.2,
+    "climb": 31.4,
+    "ms": 82.3
+   },
+   "3": {
+    "pitch": 38.4,
+    "climb": 47.5,
+    "ms": 79.1
+   },
+   "8": {
+    "pitch": 33,
+    "climb": 37.6,
+    "ms": 71.3
+   }
+  }
+ },
+ "classic-me262-air-v80-60fps": {
+  "stall": 50.2,
+  "alive": true,
+  "peak": 39,
+  "minRatio": 1.3,
+  "stalled": 0,
+  "t15": 0.7,
+  "row": {
+   "1": {
+    "pitch": 22,
+    "climb": 29.8,
+    "ms": 82.3
+   },
+   "3": {
+    "pitch": 38.6,
+    "climb": 47.8,
+    "ms": 79.2
+   },
+   "8": {
+    "pitch": 33,
+    "climb": 37.7,
+    "ms": 71.3
+   }
+  }
+ },
+ "classic-me262-air-v80-120fps": {
+  "stall": 50.2,
+  "alive": true,
+  "peak": 39,
+  "minRatio": 1.3,
+  "stalled": 0,
+  "t15": 0.7,
+  "row": {
+   "1": {
+    "pitch": 21.9,
+    "climb": 29.7,
+    "ms": 82.3
+   },
+   "3": {
+    "pitch": 38.7,
+    "climb": 47.9,
+    "ms": 79.2
+   },
+   "8": {
+    "pitch": 33.1,
+    "climb": 37.7,
+    "ms": 71.3
+   }
+  }
+ },
+ "classic-me262-air-v100-20fps": {
+  "stall": 50.2,
+  "alive": true,
+  "peak": 51.3,
+  "minRatio": 1.5,
+  "stalled": 0,
+  "t15": 0.5,
+  "row": {
+   "1": {
+    "pitch": 28.1,
+    "climb": 46.3,
+    "ms": 101.7
+   },
+   "3": {
+    "pitch": 50.4,
+    "climb": 71,
+    "ms": 95.1
+   },
+   "8": {
+    "pitch": 39.4,
+    "climb": 49.6,
+    "ms": 80.7
+   }
+  }
+ },
+ "classic-me262-air-v100-60fps": {
+  "stall": 50.2,
+  "alive": true,
+  "peak": 51.6,
+  "minRatio": 1.5,
+  "stalled": 0,
+  "t15": 0.6,
+  "row": {
+   "1": {
+    "pitch": 26.6,
+    "climb": 44.1,
+    "ms": 101.7
+   },
+   "3": {
+    "pitch": 50.8,
+    "climb": 71.6,
+    "ms": 95.3
+   },
+   "8": {
+    "pitch": 39.5,
+    "climb": 49.8,
+    "ms": 80.8
+   }
+  }
+ },
+ "classic-me262-air-v100-120fps": {
+  "stall": 50.2,
+  "alive": true,
+  "peak": 51.6,
+  "minRatio": 1.5,
+  "stalled": 0,
+  "t15": 0.6,
+  "row": {
+   "1": {
+    "pitch": 26.5,
+    "climb": 43.9,
+    "ms": 101.7
+   },
+   "3": {
+    "pitch": 51,
+    "climb": 71.8,
+    "ms": 95.4
+   },
+   "8": {
+    "pitch": 39.5,
+    "climb": 49.9,
+    "ms": 80.9
+   }
+  }
+ },
+ "classic-me262-half-stick": {
+  "stall": 50.2,
+  "alive": true,
+  "peak": 30.7,
+  "minRatio": 1.8,
+  "stalled": 0,
+  "t15": 0.7,
+  "row": {
+   "1": {
+    "pitch": 22.9,
+    "climb": 38.4,
+    "ms": 102
+   },
+   "3": {
+    "pitch": 30.5,
+    "climb": 49,
+    "ms": 99.8
+   },
+   "8": {
+    "pitch": 30.3,
+    "climb": 46,
+    "ms": 94.1
+   }
+  }
+ },
+ "classic-me262-idle-dirty": {
+  "stall": 49.7,
+  "alive": true,
+  "peak": 15.3,
+  "minRatio": 0.8,
+  "stalled": 504,
+  "t15": 2.6,
+  "row": {
+   "1": {
+    "pitch": 8.6,
+    "climb": 7,
+    "ms": 59.7
+   },
+   "3": {
+    "pitch": 15.2,
+    "climb": 9.3,
+    "ms": 52
+   },
+   "8": {
+    "pitch": -15.1,
+    "climb": -19.7,
+    "ms": 40.8
+   }
+  }
+ },
+ "classic-me262-fast": {
+  "stall": 50.2,
+  "alive": true,
+  "peak": 61.2,
+  "minRatio": 2,
+  "stalled": 0,
+  "t15": 0.4,
+  "row": {
+   "1": {
+    "pitch": 39.2,
+    "climb": 97.6,
+    "ms": 159.5
+   },
+   "3": {
+    "pitch": 61,
+    "climb": 125.7,
+    "ms": 148.4
+   },
+   "8": {
+    "pitch": 60.6,
+    "climb": 102.2,
+    "ms": 121.1
+   }
+  }
+ },
+ "classic-p47-takeoff": {
+  "coreOn": false,
+  "alive": true,
+  "liftoffS": 15.4,
+  "peak": 7.4,
+  "minRatio": 9,
+  "row": {
+   "1": {
+    "pitch": 5.8,
+    "climb": 5,
+    "ms": 65.2,
+    "agl": 5
+   },
+   "3": {
+    "pitch": 7.1,
+    "climb": 6.3,
+    "ms": 66.8,
+    "agl": 17
+   },
+   "5": {
+    "pitch": 7.2,
+    "climb": 6.5,
+    "ms": 68.3,
+    "agl": 32
+   }
+  }
+ },
+ "classic-bf109-takeoff": {
+  "coreOn": false,
+  "alive": true,
+  "liftoffS": 13,
+  "peak": 25.2,
+  "minRatio": 9,
+  "row": {
+   "1": {
+    "pitch": 10.5,
+    "climb": 6.8,
+    "ms": 48.6,
+    "agl": 6
+   },
+   "3": {
+    "pitch": 16.6,
+    "climb": 10.4,
+    "ms": 55.2,
+    "agl": 25
+   },
+   "5": {
+    "pitch": 21.2,
+    "climb": 12.9,
+    "ms": 62.2,
+    "agl": 47
+   }
+  }
+ },
+ "core-me262-takeoff": {
+  "coreOn": true,
+  "alive": true,
+  "liftoffS": 24.7,
+  "peak": 26.1,
+  "minRatio": 1.2,
+  "row": {
+   "1": {
+    "pitch": 13.3,
+    "climb": 14.4,
+    "ms": 62.6,
+    "agl": 10
+   },
+   "3": {
+    "pitch": 20.2,
+    "climb": 21.9,
+    "ms": 63.5,
+    "agl": 50
+   },
+   "5": {
+    "pitch": 20.9,
+    "climb": 23.2,
+    "ms": 65.1,
+    "agl": 96
+   },
+   "10": {
+    "pitch": 24.8,
+    "climb": 28.8,
+    "ms": 68.8,
+    "agl": 232
+   },
+   "20": {
+    "pitch": 26.1,
+    "climb": 31.3,
+    "ms": 71.3,
+    "agl": 568
+   },
+   "30": {
+    "pitch": 25.6,
+    "climb": 31.3,
+    "ms": 72.5,
+    "agl": 877
+   }
+  }
+ }
+}
