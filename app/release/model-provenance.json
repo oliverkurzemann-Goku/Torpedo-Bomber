@@ -72,12 +72,14 @@
       "changes": "Independent visual reconstruction of the exterior; separate VS5 rotor, six flaps, ailerons, elevators, rudder and dive brakes; fixed gear. No geometry or texture from the uploaded War Thunder model."
     },
     "assets/aircraft/corsair-f4u1d-own.glb": {
-      "title": "F4U-1D Corsair \u2014 original bubble canopy game model",
-      "author": "Oliver Kurzemann / Torpedo-Bomber",
-      "license": "project-own; original authored geometry and textures",
-      "source": "scripts/own-aircraft/corsair/shape.json",
-      "evidence": "Deterministic independent generator in scripts/build-own-corsair.cjs; historical manual used for dimensions and general arrangement only. No imported mesh, texture or reference raster.",
-      "changes": "Six flaps, ailerons, elevators, rudder, rotating propeller, retractable gear and hook; main-only dive brake, two bombs and eight rockets. Fictional number 27. Game-scale approximation, not certified engineering geometry."
+      "title": "F4U-1D Corsair (v3) \u2014 supplied review model",
+      "author": "unknown \u2014 supplied by the project owner (produced in a separate ChatGPT session; generator not in this repository)",
+      "license": "supplied by project owner; authorship and rights not independently verified (rights review stays open)",
+      "source": "assets/aircraft/source/corsair-f4u1d-v3/Corsair_F4U1D_Review.glb",
+      "originalFile": "assets/aircraft/source/corsair-f4u1d-v3/Corsair_F4U1D_Review.glb",
+      "originalSha256": "105feec11948106d1bf49e273b3b91bf0f0bbe929de69f4ce7e4c77e458ee4bc",
+      "evidence": "Unmodified supplied file kept in assets/aircraft/source/corsair-f4u1d-v3/. The file's own root-node extras claim 'new mathematical surfaces and original hand-drawn textures, 2026-10-30'; this is the supplier's statement, not verified here. No third-party mesh or texture is declared. Replaces the generated Build 208 model (scripts/build-own-corsair.cjs, kept as history).",
+      "changes": "scripts/finalize-corsair-v3.cjs only adds TEXCOORD_0 to three textured primitives that had none (glTF validator errors), tags the three tyre meshes userData.groundWheel and renumbers Rocket0..7 so they alternate port/starboard. Geometry, textures, materials and the nine clips are untouched."
     }
   }
 }

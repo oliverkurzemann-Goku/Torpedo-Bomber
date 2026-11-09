@@ -414,10 +414,18 @@ Six preview clips are embedded; the runtime drives the same named parts directly
 The previous `ju87.glb` remains only as a historical test fixture and is excluded from the
 offline app payload. Preview: `ju87-preview.html`.
 
-## Original F4U-1D Corsair — Build 208
+## Original F4U-1D Corsair — Build 208 (superseded by Build 233, see below)
 
 `assets/aircraft/corsair-f4u1d-own.glb` is generated from independently authored station tables and code in `scripts/build-own-corsair.cjs`. Geometry, UVs, paint and weathering are original project work. No War Thunder geometry, textures or raster artwork are used. The supplied AN 01-45HA-1 manual provides general dimensions and configuration only; its SHA-256 and relevant pages are recorded in `scripts/own-aircraft/corsair/shape.json`. Number 27 and wear are fictional. This is an approximate visual game model. The old F4U-1C file is excluded from the runtime and offline app payload. Other existing assets retain their individual provenance statuses.
 
+
+## F4U-1D Corsair (v3) — Build 233
+
+`assets/aircraft/corsair-f4u1d-own.glb` is now the Corsair model supplied by the project owner (`Corsair_F4U1D_Review.glb`, root node `nativeAircraft: corsair-f4u1d-original-v3`). It was produced in a separate ChatGPT session; the generator is **not** in this repository, so authorship and rights are **not independently verified**. The file's own metadata claims "new mathematical surfaces and original hand-drawn textures, 2026-10-30"; that is the supplier's statement only. No third-party mesh or texture is declared. The rights review stays open in `app/release/asset-register.*`; the entry is deliberately **not** labelled `project-own`.
+
+The unmodified file is kept in `assets/aircraft/source/corsair-f4u1d-v3/` (SHA-256 `105feec11948106d1bf49e273b3b91bf0f0bbe929de69f4ce7e4c77e458ee4bc`, excluded from the app payload). `node scripts/finalize-corsair-v3.cjs` derives the shipped file from it, byte-for-byte reproducibly (checked in `.github/workflows/build-corsair.yml`). It changes three things only: `TEXCOORD_0` for three textured primitives that had none (glTF validator errors: sliding hood rim, both main gear doors), `userData.groundWheel` on the three tyre meshes, and `Rocket0..7` renumbered to alternate port/starboard. Geometry, textures, materials and the nine clips are untouched. 111,725 triangles, 97 meshes, seven textures of at most 2048 x 1024, glTF validator 0 errors / 0 warnings. About 1 % of the triangles have zero area (present in the supplied file, harmless for rendering).
+
+The earlier generated Build 208-226 model (`scripts/build-own-corsair.cjs`, `scripts/own-aircraft/corsair/`) remains in the repository as history and no longer produces the shipped asset.
 
 ## Build 212 aircraft engine sound
 

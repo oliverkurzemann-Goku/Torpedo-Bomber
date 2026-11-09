@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 'use strict';
+/* HISTORIC since Build 233: this generator made the Build 208-226 Corsair. The shipped assets/aircraft/corsair-f4u1d-own.glb is now the supplied
+ * model finished by scripts/finalize-corsair-v3.cjs; running this script with --release would overwrite it with the old model. */
 /* Original F4U-1D. Inputs: authored tables and procedural geometry/paint only.
  * No imported aircraft geometry, texture, reference raster or rejected prototype. */
 const fs=require('fs'),path=require('path'),G=require('./own-aircraft/geometry.cjs'),P=require('./own-aircraft/parts.cjs'),Paint=require('./own-aircraft/paint.cjs'),{GlbWriter}=require('./lib/glb-writer.cjs');

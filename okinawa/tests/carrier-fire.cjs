@@ -47,7 +47,8 @@ async function glb(file){const b=fs.readFileSync(path.join(root,file));return ne
   model.traverse(o=>{if(!o.isMesh)return;const p=o.geometry.attributes.position,idx=o.geometry.index;
    for(let i=0;i<(idx?.count||p.count);i+=3){
     tri.set(...[0,1,2].map(j=>vert(p,idx?idx.getX(i+j):i+j).applyMatrix4(o.matrixWorld)));
-    ports.forEach((p,j)=>{tri.closestPointToPoint(p,point);nearest[j]=Math.min(nearest[j],point.distanceTo(p));});
+    // zero-area triangles (the supplied Corsair has ~1 %) give NaN here; they carry no surface, so they are skipped
+    ports.forEach((p,j)=>{tri.closestPointToPoint(p,point);const d=point.distanceTo(p);if(d<nearest[j])nearest[j]=d;});
    }
   });
   assert(nearest.every(d=>d<.13),'gun ports sit on original airframe surface: '+nearest);

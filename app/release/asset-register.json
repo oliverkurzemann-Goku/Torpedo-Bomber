@@ -1,19 +1,19 @@
 {
   "schema": 1,
   "reviewedOn": "2026-10-23",
-  "build": 232,
+  "build": 233,
   "status": "OPEN — source declarations checked; no external rights authorization obtained",
   "payload": {
-    "bytes": 271934585,
+    "bytes": 272827632,
     "fileCount": 363,
     "modelCount": 36,
-    "manifestSha256": "99421509c255e37f14674d38a42848f100c1ec90115d98ac36c5d7cadc96cc31"
+    "manifestSha256": "91cf80661dd16f42eed3031db26c0fdf81548915e6bdffe60067ac17bf08d8a5"
   },
   "files": [
     {
       "path": "ASSET-CREDITS.md",
-      "bytes": 34139,
-      "sha256": "d96641e91b4248444fa1217c89510b2210d9971d0951b07f48d0d577d4ba9bfd",
+      "bytes": 35910,
+      "sha256": "dd849104899e37bfe7772b392ddf72b206ca480a00b337c89f63a6a0f0ac26e6",
       "kind": "code-or-notice"
     },
     {
@@ -120,8 +120,8 @@
     },
     {
       "path": "assets/aircraft/corsair-f4u1d-own.glb",
-      "bytes": 5431808,
-      "sha256": "4e839002af6428fd7ec4f5dba156e20f6686a764ad2647d7b0666a6889bfa44a",
+      "bytes": 6323084,
+      "sha256": "23f6f2fa2e24687c9eede33d077aafacc4f83e89a8339b599fa53da02a135c66",
       "kind": "model"
     },
     {
@@ -751,7 +751,7 @@
     {
       "path": "hangar.html",
       "bytes": 4485,
-      "sha256": "b08bb0762bda9d79ee80aeeeb2a3199b3fd6b77b2500f54923966349ca9c6fb9",
+      "sha256": "6ffddf2facac7498cc0325633e0cb928ea690306856289609ae635038a4114c6",
       "kind": "code-or-notice"
     },
     {
@@ -769,7 +769,7 @@
     {
       "path": "index.html",
       "bytes": 7545,
-      "sha256": "4a1c9c9c2fddb9cc93a545fea30f61862f41c6bcb1802ea9a3a5858d62470f10",
+      "sha256": "2bf56afeb341232a61706d622639fe498527c74755a8e5e7501ba814cd968357",
       "kind": "code-or-notice"
     },
     {
@@ -901,7 +901,7 @@
     {
       "path": "remagen-mission.html",
       "bytes": 395071,
-      "sha256": "854500c06fd77f9ebf7197d69bc5b6049ffd571a125571a78889162fcb0015e0",
+      "sha256": "7512bd78527582c60a2229f14641f4c468c6a87bb661478df247ac9c49cab202",
       "kind": "code-or-notice"
     },
     {
@@ -961,7 +961,7 @@
     {
       "path": "sortie-preview.js",
       "bytes": 13978,
-      "sha256": "f17ee5e2a6f208024ebe9f3ae46b8d160a2591cd0ea051ac990656380b86aa20",
+      "sha256": "01e0e1d4b670370386db965bc1fe7942c61de38f617ef1ac75c441d9c6ebac57",
       "kind": "code-or-notice"
     },
     {
@@ -2107,7 +2107,7 @@
     {
       "path": "torpedo-carrier.html",
       "bytes": 454068,
-      "sha256": "4af370da27809045daebcf9ad45cf74e97e675c9a6310718fb9e3dce14a6a396",
+      "sha256": "6c1f10b617bc1b65b1528d3b960ea6279440eaab3d5ca3bf3af8f81087cf65cc",
       "kind": "code-or-notice"
     },
     {
@@ -2246,27 +2246,27 @@
     },
     {
       "path": "assets/aircraft/corsair-f4u1d-own.glb",
-      "bytes": 5431808,
-      "sha256": "4e839002af6428fd7ec4f5dba156e20f6686a764ad2647d7b0666a6889bfa44a",
-      "title": "F4U-1D Corsair — original bubble canopy game model",
-      "uploader": "Oliver Kurzemann / Torpedo-Bomber",
+      "bytes": 6323084,
+      "sha256": "23f6f2fa2e24687c9eede33d077aafacc4f83e89a8339b599fa53da02a135c66",
+      "title": "F4U-1D Corsair (v3) — supplied review model",
+      "uploader": "unknown — supplied by the project owner (produced in a separate ChatGPT session; generator not in this repository)",
       "originalRightsholder": null,
-      "sourceUrl": "scripts/own-aircraft/corsair/shape.json",
+      "sourceUrl": "assets/aircraft/source/corsair-f4u1d-v3/Corsair_F4U1D_Review.glb",
       "acquiredOn": null,
-      "declaredLicense": "project-own; original authored geometry and textures",
+      "declaredLicense": "supplied by project owner; authorship and rights not independently verified (rights review stays open)",
       "licenseUrl": null,
-      "licenseEvidence": "Deterministic independent generator in scripts/build-own-corsair.cjs; historical manual used for dimensions and general arrangement only. No imported mesh, texture or reference raster.",
+      "licenseEvidence": "Unmodified supplied file kept in assets/aircraft/source/corsair-f4u1d-v3/. The file's own root-node extras claim 'new mathematical surfaces and original hand-drawn textures, 2026-10-30'; this is the supplier's statement, not verified here. No third-party mesh or texture is declared. Replaces the generated Build 208 model (scripts/build-own-corsair.cjs, kept as history).",
       "sourceCheck": null,
-      "embeddedImageCount": 2,
+      "embeddedImageCount": 7,
       "externalImages": [],
-      "originalFile": null,
-      "originalSha256": null,
-      "changes": "Six flaps, ailerons, elevators, rudder, rotating propeller, retractable gear and hook; main-only dive brake, two bombs and eight rockets. Fictional number 27. Game-scale approximation, not certified engineering geometry.",
-      "issue": "own-build-reference-review-open",
+      "originalFile": "assets/aircraft/source/corsair-f4u1d-v3/Corsair_F4U1D_Review.glb",
+      "originalSha256": "105feec11948106d1bf49e273b3b91bf0f0bbe929de69f4ce7e4c77e458ee4bc",
+      "changes": "scripts/finalize-corsair-v3.cjs only adds TEXCOORD_0 to three textured primitives that had none (glTF validator errors), tags the three tyre meshes userData.groundWheel and renumbers Rocket0..7 so they alternate port/starboard. Geometry, textures, materials and the nine clips are untouched.",
+      "issue": "uploader-license-review-open",
       "commercialPermissionDocument": null,
       "bundleRedistributionGrant": null,
       "releaseApproved": false,
-      "nextAction": "Own mesh and paint; review the recorded reference source and any applicable attribution/share-alike obligations; credits kept in ASSET-CREDITS.md."
+      "nextAction": "Retain license/attribution/change notices, validate mesh/texture provenance and app-store redistribution conditions."
     },
     {
       "path": "assets/aircraft/fw190a8-own.glb",
