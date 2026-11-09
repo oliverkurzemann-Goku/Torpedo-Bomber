@@ -83,20 +83,49 @@ function create(THREE){
    }
   }return false;
  }
+ // Nearest hit of a short vertical segment with the deck surface (Build 234). Same tree and bit-for-bit the same
+ // height as the previous "visit every leaf" search (okinawa/tests/ship-contact-height.cjs compares both), but
+ // without per-call allocations and with nearest-first traversal: subtrees that start behind an already found hit
+ // are skipped. The carrier deck is queried ~30 times per frame (crew feet, arrest wires, tyre contacts) against a
+ // 290,000-triangle tree; measured about 2x faster (18-25 us instead of 35-50 us per query).
+ const nearStart=new THREE.Vector3(),nearEnd=new THREE.Vector3(),nearPoint=new THREE.Vector3(),nearStack=new Array(128),nearEntry=new Float64Array(128);
+ function boxEntry(n,x,y,z,dx,dy,dz){
+  let low=0,high=1;
+  for(let axis=0;axis<3;axis++){
+   const position=axis===0?x:axis===1?y:z,delta=axis===0?dx:axis===1?dy:dz;
+   if(Math.abs(delta)<1e-10){if(position<n.lo[axis]||position>n.hi[axis])return Infinity;continue;}
+   const t0=(n.lo[axis]-position)/delta,t1=(n.hi[axis]-position)/delta,near=t0<t1?t0:t1,far=t0<t1?t1:t0;
+   if(near>low)low=near;if(far<high)high=far;if(low>high)return Infinity;
+  }return low;
+ }
+ function segmentTriangle(t,id,x,y,z,dx,dy,dz){   // parameter of the hit along the segment, or -1
+  const i=id*9,ax=t[i],ay=t[i+1],az=t[i+2],e1x=t[i+3]-ax,e1y=t[i+4]-ay,e1z=t[i+5]-az,e2x=t[i+6]-ax,e2y=t[i+7]-ay,e2z=t[i+8]-az;
+  const px=dy*e2z-dz*e2y,py=dz*e2x-dx*e2z,pz=dx*e2y-dy*e2x,det=e1x*px+e1y*py+e1z*pz;
+  if(Math.abs(det)<1e-10)return -1;
+  const inv=1/det,tx=x-ax,ty=y-ay,tz=z-az,u=(tx*px+ty*py+tz*pz)*inv;
+  if(u<0||u>1)return -1;
+  const qx=ty*e1z-tz*e1y,qy=tz*e1x-tx*e1z,qz=tx*e1y-ty*e1x,w=(dx*qx+dy*qy+dz*qz)*inv;
+  if(w<0||u+w>1)return -1;
+  const hit=(e2x*qx+e2y*qy+e2z*qz)*inv;return hit<0||hit>1?-1:hit;
+ }
  function surfaceHeight(model,x,z,reference,range=1.25,fallback=reference){
   const profile=prepare(model);if(!profile.tree)return fallback;
   model.updateWorldMatrix(true,false);inverse.copy(model.matrixWorld).invert();
-  const start=new THREE.Vector3(x,reference+range,z).applyMatrix4(inverse);
-  const end=new THREE.Vector3(x,reference-range,z).applyMatrix4(inverse);
-  const delta=end.sub(start);let nearest=Infinity,point=null;
-  const visit=n=>{
-   if(!boxHit(n,start.x,start.y,start.z,delta.x,delta.y,delta.z))return;
-   if(n.ids){for(const id of n.ids)if(triangleHit(profile.triangles,id,start.x,start.y,start.z,delta.x,delta.y,delta.z,null)){
-    const hit=stats.lastHit.point,dist=(hit[0]-start.x)**2+(hit[1]-start.y)**2+(hit[2]-start.z)**2;
-    if(dist<nearest){nearest=dist;point=hit;}
-   }}else{visit(n.left);visit(n.right);}
-  };visit(profile.tree);
-  return point?new THREE.Vector3().fromArray(point).applyMatrix4(model.matrixWorld).y:fallback;
+  nearStart.set(x,reference+range,z).applyMatrix4(inverse);nearEnd.set(x,reference-range,z).applyMatrix4(inverse);
+  const sx=nearStart.x,sy=nearStart.y,sz=nearStart.z,dx=nearEnd.x-sx,dy=nearEnd.y-sy,dz=nearEnd.z-sz,triangles=profile.triangles;
+  let best=Infinity,top=0,tests=0;
+  const first=boxEntry(profile.tree,sx,sy,sz,dx,dy,dz);
+  if(first!==Infinity){nearStack[0]=profile.tree;nearEntry[0]=first;top=1;}
+  while(top){
+   const n=nearStack[--top];if(nearEntry[top]>best+1e-9)continue;
+   if(n.ids){for(const id of n.ids){tests++;const t=segmentTriangle(triangles,id,sx,sy,sz,dx,dy,dz);if(t>=0&&t<best)best=t;}continue;}
+   const l=boxEntry(n.left,sx,sy,sz,dx,dy,dz),r=boxEntry(n.right,sx,sy,sz,dx,dy,dz);
+   // push the farther child first so the nearer one is visited next
+   if(l<=r){if(r!==Infinity){nearStack[top]=n.right;nearEntry[top++]=r;}if(l!==Infinity){nearStack[top]=n.left;nearEntry[top++]=l;}}
+   else{if(l!==Infinity){nearStack[top]=n.left;nearEntry[top++]=l;}if(r!==Infinity){nearStack[top]=n.right;nearEntry[top++]=r;}}
+  }
+  stats.triangleTests+=tests;
+  return best===Infinity?fallback:nearPoint.set(sx+dx*best,sy+dy*best,sz+dz*best).applyMatrix4(model.matrixWorld).y;
  }
 function probesFor(model,frame,fallback){
   if(!model)return fallback;

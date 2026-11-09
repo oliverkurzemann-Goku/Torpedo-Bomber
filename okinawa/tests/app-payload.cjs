@@ -1,6 +1,9 @@
 'use strict';
 const fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict'),crypto=require('node:crypto'),{execFileSync}=require('node:child_process');
 const root=path.resolve(__dirname,'../..'),outputName='dist-app-test-'+process.pid,out=path.join(root,outputName);
+// Build 234: the 261 MB test payload is removed on EVERY exit (failed assertion, aborted build, timeout kill). Before, only a fully
+// green run reached the rmSync at the end; five red/aborted runs of 29.10. left 1.3 GB of dist-app-test-<pid> folders in the checkout.
+const cleanup=()=>fs.rmSync(out,{recursive:true,force:true});process.on('exit',cleanup);for(const sig of ['SIGTERM','SIGINT'])process.on(sig,()=>process.exit(1));
 execFileSync(process.execPath,['scripts/build-app.mjs','--output='+outputName],{cwd:root,stdio:'inherit'});
 const manifest=JSON.parse(fs.readFileSync(path.join(out,'app-payload.json'),'utf8'));
 for(const record of manifest.files){const bytes=fs.readFileSync(path.join(out,record.path));
@@ -27,4 +30,3 @@ const config=JSON.parse(fs.readFileSync(path.join(root,'capacitor.config.json'),
 const plist=fs.readFileSync(path.join(root,'ios/App/App/Info.plist'),'utf8');assert(!plist.includes('UIInterfaceOrientationPortrait'));
 assert(fs.readFileSync(path.join(root,'ios/App/App/PrivacyInfo.xcprivacy'),'utf8').includes('CA92.1'));
 console.log('Offline payload hashes, immutable models, local dependency closure, excluded tools/archives, landscape and native privacy configuration passed.');
-fs.rmSync(out,{recursive:true,force:true});
