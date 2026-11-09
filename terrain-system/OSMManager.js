@@ -320,13 +320,28 @@ class OSMManager {
     // on every morph frame (measured up to 28ms per neighbour).
     const movedTriangles=OSM_MOVED_TRIANGLES;movedTriangles.length=0;
     let moved=false;
-    for(let i=0;i<p.count;i++){
-      const a=base[i],b=a+n,d=a+1,c=b+1,u=uv[i*2],v=uv[i*2+1];
-      const y=(u+v<=1 ? heights[a*3+1]*(1-u-v)+heights[d*3+1]*u+heights[b*3+1]*v
-        : heights[c*3+1]*(u+v-1)+heights[b*3+1]*(1-u)+heights[d*3+1]*(1-v))+src.offset;
-      if(Math.abs(p.array[i*3+1]-y)>.0001){
-        p.array[i*3+1]=y;moved=true;
-        const t=(i/3)|0;if(movedTriangles[movedTriangles.length-1]!==t)movedTriangles.push(t);
+    // Build 235: same arithmetic, hoisted. A morphing tile re-shades everything when it settles, so it needs no list of
+    // moved triangles; the loop reads the typed arrays through locals (the property loads were most of its cost).
+    const arr=p.array,offset=src.offset,track=!tile.morphing,n3=n*3;
+    // A settled tile whose revision alone changed (same mesh, same morph state) got new heights only along its shared
+    // edges (stitchEdges): only the cells on the outer ring of the height grid can have moved. Everything else is skipped.
+    const edgeOnly=!tile.morphing&&!mesh.userData.surfaceWasMorphing&&mesh.userData.surfaceGeometry===tile.mesh.geometry&&mesh.userData.surfaceMorph===tile.morphT;
+    let ring=null;
+    if(edgeOnly){
+      ring=mesh.userData.surfaceRing;
+      if(!ring||ring.n!==n||ring.count!==p.count){const list=[];for(let i=0;i<p.count;i++){const a=base[i],ix=a%n,iz=(a-ix)/n;if(ix===0||iz===0||ix===n-2||iz===n-2)list.push(i);}
+        ring=mesh.userData.surfaceRing={n,count:p.count,list:Int32Array.from(list)};}
+    }
+    const list=ring&&ring.list,count=list?list.length:p.count;
+    let last=-1;
+    for(let k=0;k<count;k++){
+      const i=list?list[k]:k;
+      const a3=base[i]*3+1,b3=a3+n3,d3=a3+3,c3=b3+3,u=uv[i*2],v=uv[i*2+1];
+      const y=(u+v<=1 ? heights[a3]*(1-u-v)+heights[d3]*u+heights[b3]*v
+        : heights[c3]*(u+v-1)+heights[b3]*(1-u)+heights[d3]*(1-v))+offset;
+      if(Math.abs(arr[i*3+1]-y)>.0001){
+        arr[i*3+1]=y;moved=true;
+        if(track){const t=(i/3)|0;if(t!==last){movedTriangles.push(t);last=t;}}
       }
     }
     if(moved)p.needsUpdate=true;
@@ -344,6 +359,39 @@ class OSMManager {
   syncTerrainSurfaces(){
     for(const t of this.tiles.values())if(t)for(const mesh of t.group.children)
       if(mesh.isMesh&&mesh.userData.waterSource)this.syncSurface(mesh);
+  }
+
+  // Build 235: the same work as syncTerrainSurfaces(), spread over frames. While a tile morphs (0.6 s) its own ground layers and
+  // those of its neighbours (their shared edge follows it) were re-fitted completely every frame, and a resolution change
+  // rebuilt whole meshes: 10-25 ms frames, 22 % of all Rhine flight frames above 8 ms. Now: whatever is stale is queued, the
+  // tiles nearest to the focus point go first, work stops when the budget is spent (at least one mesh per frame), and nothing
+  // waits longer than maxAge frames. A layer that has to wait keeps the shape it had one frame ago; the final state is exactly
+  // the one syncTerrainSurfaces() produces (every step is the same syncSurface()), only later and mostly for distant tiles.
+  surfaceStale(mesh){
+    const src=mesh.userData.waterSource,tile=src&&this.terrain.tiles.get(this._key(src.ox/this.tileSize,src.oz/this.tileSize));
+    if(!tile)return null;
+    if(mesh.userData.surfaceSegments!==tile._renderSeg)return tile;
+    return mesh.userData.surfaceGeometry===tile.mesh.geometry&&mesh.userData.surfaceMorph===tile.morphT&&mesh.userData.surfaceRevision===tile.surfaceRevision?null:tile;
+  }
+  syncTerrainSurfacesBudgeted(focusX,focusZ,budgetMs=3.5,maxAge=8,maxLate=2){
+    const frame=this._surfaceFrame=(this._surfaceFrame||0)+1,queue=this._surfaceQueue||(this._surfaceQueue=[]);queue.length=0;
+    for(const t of this.tiles.values())if(t)for(const mesh of t.group.children){
+      if(!mesh.isMesh||!mesh.userData.waterSource)continue;
+      const tile=this.surfaceStale(mesh);
+      if(!tile){mesh.userData.surfaceStaleSince=undefined;continue;}
+      if(mesh.userData.surfaceStaleSince===undefined)mesh.userData.surfaceStaleSince=frame;
+      queue.push({mesh,age:frame-mesh.userData.surfaceStaleSince,d:tile.distanceToBounds(focusX,focusZ)});
+    }
+    if(!queue.length)return 0;
+    // Overdue layers first (oldest first), then nearest first.
+    queue.sort((a,b)=>(b.age>=maxAge)-(a.age>=maxAge)||(a.age>=maxAge?b.age-a.age:a.d-b.d));
+    const end=performance.now()+budgetMs;let done=0,late=0;
+    for(const item of queue){
+      const overdue=item.age>=maxAge;
+      if(done>0&&performance.now()>=end){if(!overdue||late>=maxLate)break;late++;}
+      this.syncSurface(item.mesh);item.mesh.userData.surfaceStaleSince=undefined;done++;
+    }
+    return queue.length-done;   // layers still waiting
   }
 
   _surfaceHeight(src,x,z){

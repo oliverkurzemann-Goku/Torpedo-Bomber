@@ -54,21 +54,21 @@
   const t=new THREE.DataTexture(p,n,n,THREE.RGBAFormat);t.needsUpdate=true;return t;
  }
  function create(scene){
-  const cloud=texture(false),flash=texture(true),ember=new THREE.Color(0xa13c14),live=[],pools=[[],[],[]];let allocated=0,shots=0;
+  const cloud=texture(false),flash=texture(true),ember=new THREE.Color(0xa13c14),live=[],pools=[[],[],[]],CAP=300,TRAIL_CAP=240;let allocated=0,shots=0;   // Build 235: CAP 220 -> 300; rocket smoke trails stop at TRAIL_CAP so they never starve a blast
   const flameGeo=new THREE.ConeGeometry(1,1,9);flameGeo.translate(0,.5,0);flameGeo.rotateX(Math.PI/2);
   function emit(pos,size,color,life,velocity,hot=false,parent=scene,growth=1,gravity=0){
-   if(live.length>=220)return;
-   let m=pools[hot?1:0].pop();if(!m){if(allocated>=220)return;allocated++;m=new THREE.Sprite(new THREE.SpriteMaterial({map:hot?flash:cloud,blending:hot?THREE.AdditiveBlending:THREE.NormalBlending,transparent:true,depthWrite:false}));}
+   if(live.length>=CAP)return;
+   let m=pools[hot?1:0].pop();if(!m){if(allocated>=CAP)return;allocated++;m=new THREE.Sprite(new THREE.SpriteMaterial({map:hot?flash:cloud,blending:hot?THREE.AdditiveBlending:THREE.NormalBlending,transparent:true,depthWrite:false}));}
    m.material.color.setHex(color);m.material.opacity=hot?1:.72;
    m.material.rotation=Math.random()*6.28;m.visible=true;m.position.copy(pos);m.scale.set(size,size,1);m.material.fog=false;m.material.toneMapped=false;parent.add(m);
    live.push({m,t:0,life,size,velocity,growth,gravity,hot});
   }
   function recycle(i){const e=live[i];if(e.m.parent)e.m.parent.remove(e.m);e.m.visible=false;pools[e.flame?2:e.hot?1:0].push(e.m);live.splice(i,1);}
   function muzzleFlame(parent,p,direction,heavy){
-   if(live.length>=220)return;
+   if(live.length>=CAP)return;
    let m=pools[2].pop();
    if(!m){
-    if(allocated>=220)return;allocated++;m=new THREE.Group();
+    if(allocated>=CAP)return;allocated++;m=new THREE.Group();
     for(const color of [0xffa43b,0xffefd2])m.add(new THREE.Mesh(flameGeo,new THREE.MeshBasicMaterial({color,transparent:true,opacity:.85,depthWrite:false,blending:THREE.AdditiveBlending,fog:false,toneMapped:false})));
    }
    const radius=heavy?.19:.12,length=(heavy?.85:.55)*(.85+Math.random()*.3);
@@ -85,6 +85,13 @@
      if(shots%3===0)emit(parent.localToWorld(p.clone()),heavy?.40:.26,0x97958e,.55,new THREE.Vector3(0,.6,0),false,scene,2.2);
     }
    },
+   // Build 235: smoke left behind a rocket. Lowest priority: dropped as soon as the shared pool is busy.
+   trail(pos,size=3,life=.95,color=0xd6d1c8){if(live.length>=TRAIL_CAP)return;emit(pos,size,color,life,null,false,scene,2.2);},
+   // Build 235: rocket leaving its rail: white-hot flash plus a puff of smoke thrown backwards.
+   launch(pos,direction){
+    emit(pos.clone(),5.5,0xfff0cf,.14,null,true,scene,1.6);
+    for(let i=0;i<3;i++)emit(pos.clone().addScaledVector(direction,-1.5-i*2),1.5+i*.6,0xcfcac0,.8+i*.2,direction.clone().multiplyScalar(-6),false,scene,2.4);
+   },
    impact(x,y,z,water=false){
     const at=new THREE.Vector3(x,y+.8,z);
     emit(at,water?4.2:3.5,water?0xd7f5ff:0xa9946e,water?.75:1.05,new THREE.Vector3(0,water?5:2,0),false,scene,1.4);
@@ -98,6 +105,9 @@
      emit(at.clone().add(new THREE.Vector3(Math.cos(a)*r,Math.random()*4*s,Math.sin(a)*r)),(6+Math.random()*4)*s,i%2?0xf78426:0xffcd62,.45+Math.random()*.4,new THREE.Vector3(Math.cos(a)*3,5+Math.random()*5,Math.sin(a)*3),true,scene,2.3);
      emit(at.clone().add(new THREE.Vector3(Math.cos(a)*r,2*s,Math.sin(a)*r)),5*s,i%2?0x48443f:0x696158,2.5+Math.random()*2,new THREE.Vector3(Math.cos(a)*2,4+Math.random()*5,Math.sin(a)*2),false,scene,3);
     }
+    // Build 235: a ground blast has to read from 400-600 m: a tall dark smoke column and thrown embers on top of the fireball.
+    for(let i=0;i<6;i++)emit(at.clone().add(new THREE.Vector3((Math.random()-.5)*s,(1+i*2.4)*s,(Math.random()-.5)*s)),(5+i*1.8)*s,i<3?0x37342f:0x56524b,2.8+i*.45+Math.random()*.6,new THREE.Vector3((Math.random()-.5)*3,9+i*3.2,(Math.random()-.5)*3),false,scene,2.4);
+    for(let i=0;i<8;i++){const a=Math.random()*6.283,v=8+Math.random()*14;emit(at.clone(),.9*s,0xffbd5a,.7+Math.random()*.5,new THREE.Vector3(Math.cos(a)*v,10+Math.random()*16,Math.sin(a)*v),true,scene,.15,22);}
     if(Number.isFinite(ground)&&Math.abs(y-ground)<25*s){
      for(let i=0;i<12;i++){const a=i*Math.PI/6,v=7+Math.random()*10;
       emit(new THREE.Vector3(x,Math.max(y,ground+1),z),3*s,0x928574,1.4+Math.random(),new THREE.Vector3(Math.cos(a)*v,1.5,Math.sin(a)*v),false,scene,3.8);

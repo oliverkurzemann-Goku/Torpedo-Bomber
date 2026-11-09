@@ -196,7 +196,10 @@ const ASSUMED={
  p47:A_({nLimit:7.0,mcrit:.72,mlimit:.75,vne:500*MPH,tankArea:.05,severity:.3,
   stores:{bomb:227,bombArea:.02,rocket:64,rocketArea:.005,tankFuel:108*GAL*AVGAS,tankShell:45,fuel:370*GAL*AVGAS}}),
  bf109:A_({nLimit:6.5,mlimit:.78,severity:.25,stores:{bomb:250,bombArea:.02,tankFuel:300*AVGAS,tankShell:30}}),
- fw190:A_({nLimit:6.5,mlimit:.78,vne:850*KMH,stores:{bomb:250,bombArea:.02,tankFuel:300*AVGAS,tankShell:30}}),
+ // Build 235: the Fw 190 rolled up to 206 deg/s (peak 229 before the fleet ceiling), 1.2-3.9x the Bf 109 and well above every other type;
+ // "a bit too agile". Published ordering kept (Fw 190 rolls faster than the Bf 109 at every speed, 1.23-3.9x), its game ceiling is
+ // 172 deg/s (C, a game decision; the Bf 109 peaks at 140). Turn rate and climb were already in the published order (Bf 109 better).
+ fw190:A_({nLimit:6.5,mlimit:.78,vne:850*KMH,rollCeiling:172*DEG,stores:{bomb:250,bombArea:.02,tankFuel:300*AVGAS,tankShell:30}}),
  ju87:A_({nLimit:6.0,mlimit:.70,gearCD:0,severity:.2,stores:{bomb:125,bombArea:.012}}),  // fixed gear: in the measured drag
  me262:A_({nLimit:5.5,mcrit:.74,vne:950*KMH,spool:2.6,windmill:0,severity:.35,stores:{bomb:250,bombArea:.02}}),
  me163:A_({nLimit:6.0,clClean:1.1,clLandingRatio:1.15,spool:.3,windmill:0,gearCD:0,severity:.05,isp:2000}),
@@ -319,7 +322,7 @@ function rollRateReal(m,V){
  const r=m.roll,f=V<r.at?V/r.at:Math.pow(r.at/V,r.fall);
  return Math.max(.15,f)*r.peak*DEG;
 }
-function rollRate(m,V){return Math.min(GAME.rollCeiling,GAME.rollGain*rollRateReal(m,V));}
+function rollRate(m,V){return Math.min(m.assumed.rollCeiling??GAME.rollCeiling,GAME.rollGain*rollRateReal(m,V));}
 function rollPeak(m){return rollRate(m,m.roll.at);}
 
 /* ---- steady performance (used by the solver and the report) ---- */

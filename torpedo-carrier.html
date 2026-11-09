@@ -301,7 +301,7 @@
 
 .hangarLink{display:block;padding:12px 14px;margin:8px 0 12px;color:#f3ce83;border:1px solid #ba9d57;border-radius:5px;text-decoration:none;text-align:center;font:600 12px system-ui;letter-spacing:.8px;min-height:44px;}
 </style>
-<link rel="stylesheet" href="menu-layout.css?v=234">
+<link rel="stylesheet" href="menu-layout.css?v=235">
 </head>
 <body>
 <div id="app"></div>
@@ -354,7 +354,7 @@
   <div id="flash"></div>
   <div id="ltn" style="position:fixed;inset:0;background:#e6ecff;opacity:0;pointer-events:none;z-index:40;"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 234</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 235</div>
 
   <!-- Optical landing aid -->
   <div id="lso">
@@ -401,7 +401,7 @@
 
 <!-- Menu -->
 <div class="overlay" id="menu" data-campaign="pacific">
-  <div class="menuTop"><a id="selBtn" href="index.html?v=234">&#9664; Change Game</a><span class="menuMeta">PACIFIC OPERATIONS<br>BUILD 234</span></div>
+  <div class="menuTop"><a id="selBtn" href="index.html?v=235">&#9664; Change Game</a><span class="menuMeta">PACIFIC OPERATIONS<br>BUILD 235</span></div>
   <div class="card menuCard">
     <aside class="menuOverview" aria-label="Campaign and pilot options">
     <div class="campaignArt" aria-hidden="true"></div>
@@ -500,7 +500,7 @@
 <script src="okinawa/world.js?v=175"></script>
 <script src="campaign.js?v=1"></script>
 <script src="game-runtime.js?v=198"></script>
-<script src="sortie-checkpoint.js?v=234"></script>
+<script src="sortie-checkpoint.js?v=235"></script>
 <script src="aircraft-articulation.js?v=218"></script>
 <script src="terrain-system/AircraftGround.js?v=198"></script>
 <script src="pacific-assets.js?v=201"></script>
@@ -511,14 +511,14 @@
 <script src="avenger-finish.js?v=199"></script>
 <script src="naval-assets.js?v=198"></script>
 <script src="aircraft-rotors.js?v=172"></script>
-<script src="combat-fx.js?v=177"></script>
+<script src="combat-fx.js?v=235"></script>
 <script src="aircraft-smoke.js?v=176"></script>
 <script src="aircraft-damage.js?v=177"></script>
 <script src="ship-damage.js?v=206"></script>
 <script src="torpedo-attack.js?v=206"></script>
-<script src="ship-contact.js?v=234"></script>
-<script src="flight-support.js?v=234"></script>
-<script src="ordnance.js?v=218"></script>
+<script src="ship-contact.js?v=235"></script>
+<script src="flight-support.js?v=235"></script>
+<script src="ordnance.js?v=235"></script>
 <script src="crew-visuals.js?v=179"></script>
 <script src="deck-activity.js?v=198"></script>
 <script src="ship-wakes.js?v=179"></script>
@@ -528,21 +528,21 @@
 <script src="sortie-service.js?v=206"></script>
 <script src="pilot-rescue.js?v=179"></script>
 <script src="radio-intercept.js?v=157"></script>
-<script src="surprises.js?v=234"></script>
+<script src="surprises.js?v=235"></script>
 <script src="audio/weapon-sound.js?v=144"></script>
 <script src="audio/flight-atmosphere.js?v=175"></script>
 <script src="sortie-systems.js?v=198"></script>
 <script src="flight-envelope.js?v=219"></script>
 <script src="flight-dynamics.js?v=219"></script>
-<script src="flight-core.js?v=234"></script>
-<script src="flight-control.js?v=234"></script>
-<script src="dogfight-ai.js?v=234"></script>
+<script src="flight-core.js?v=235"></script>
+<script src="flight-control.js?v=235"></script>
+<script src="dogfight-ai.js?v=235"></script>
 <script src="audio/throttle-response.js?v=218"></script><script src="audio/aircraft-engine.js?v=218"></script>
-<script src="sortie-features.js?v=234"></script>
+<script src="sortie-features.js?v=235"></script>
 <script src="ground-run.js?v=198"></script>
 <script src="flight-indicators.js?v=198"></script>
 <script src="operation-plans.js?v=198"></script>
-<script src="custom-sortie.js?v=234"></script>
+<script src="custom-sortie.js?v=235"></script>
 <script src="pacific-theater.js?v=206"></script>
 <script src="carrier-recovery.js?v=198"></script>
 <script src="maritime-weather.js?v=198"></script>
@@ -2748,7 +2748,9 @@ function releaseCorsairRocket(){
  const start=CorsairRig.position(playerSBD,'Rocket'+(P.rockets-1));if(!start)return;
  const mesh=Ordnance.create('rocket'),nd=noseDir();GameRuntime.own(mesh);mesh.position.copy(start);mesh.lookAt(start.clone().add(nd));scene.add(mesh);
  // Arcade projectile values; not a real-world ballistic simulation.
- bombs.push({mesh,vel:nd.multiplyScalar(P.spd+260),life:6,rocket:true});
+ bombs.push({mesh,vel:nd.multiplyScalar(P.spd+260),life:6,rocket:true,travel:0,puffAt:0});
+ // Build 235: a rocket leaving the rail must be seen: white-hot flash and a puff of smoke behind it
+ if(combatFX&&GameRuntime.allowEffect(renderer,'smoke'))combatFX.launch(start,noseDir());
  P.rockets--;P.rocketCooldown=.18;sortieBombFired++;CorsairRig.stores(playerSBD,P.torps,P.rockets,corsairConfig().bombScale);updateHUD();sfxWhoosh();
 }
 function releaseBomb(){
@@ -2803,13 +2805,21 @@ function updateOrdnanceStep(dt){
     b.vel.y-=(b.rocket?2:18)*dt;                               // gravity
     b.mesh.position.addScaledVector(b.vel,dt);
     b.mesh.lookAt(b.mesh.position.clone().add(b.vel));
+    if(b.rocket){
+      // Build 235: motor flame flickers and a smoke trail marks the path (one puff per 13 m flown, first 2.6 s of flight;
+      // the trail has its own lower pool limit in CombatFX so it can never push a blast out)
+      const flame=b.mesh.userData.flame;if(flame)flame.scale.set(1,1,.78+Math.random()*.5);
+      b.travel=(b.travel||0)+b.vel.length()*dt;   // rockets restored from a checkpoint carry no counters
+      if(combatFX&&b.life>3.4&&b.travel-(b.puffAt||0)>=13&&GameRuntime.allowEffect(renderer,'smoke')){b.puffAt=b.travel;combatFX.trail(b.mesh.position.clone().addScaledVector(b.vel,-1.5/Math.max(1,b.vel.length())));}
+    }
     let done=false;
     const gy=shoreHeight(b.mesh.position.x,b.mesh.position.z);
     if(gy>0&&b.mesh.position.y<=gy+1){
       let struck=false;
       for(const t of shoreTargets)if(t.alive&&Math.hypot(t.def.x-b.mesh.position.x,t.def.z-b.mesh.position.z)<(b.rocket?18:85)){hitShoreTarget(t,b.rocket?12:30);struck=true;}
       if(struck)sortieBombHit++;
-      spawnExplosion(b.mesh.position.x,gy+2,b.mesh.position.z,1.2);sfxBoom(.8);done=true;
+      // Build 235: was 1.2 for both: from 400 m a 14 m flash. Rocket 2.6, bomb 3.4 (a 1 000 lb bomb is the bigger blast; CombatFX clamps at 3.5)
+      spawnExplosion(b.mesh.position.x,gy+2,b.mesh.position.z,b.rocket?2.6:3.4);sfxBoom(b.rocket?.9:1);done=true;
     }
     for(const s of ships){
       if(done||!s.alive) continue;
@@ -5678,7 +5688,7 @@ function loadPlaneModel(){
       }
       window.__eyeDbg='EYE '+COCKPIT_EYE.map(v=>v.toFixed(2)).join('/');
       const btEl=document.getElementById('buildTag');
-      if(btEl) btEl.textContent='BUILD 234 · '+window.__eyeDbg;
+      if(btEl) btEl.textContent='BUILD 235 · '+window.__eyeDbg;
       let seat=null;
       model.traverse(function(o){
         if(!o.isMesh||!o.material) return;
@@ -7066,7 +7076,7 @@ function setupUIButtons(){
   if(dbgT2) dbgT2.onclick=()=>{
     dbgOn=!dbgOn; GameRuntime.storage.setItem('dbgOn',dbgOn?'1':'0');
     const db=document.getElementById('dbgBox'); if(db) db.textContent=dbgOn?'✓':'';
-    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 234'; }
+    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 235'; }
   };
   const lu=document.getElementById('lookUp'), ld=document.getElementById('lookDn');
   let _lookT=0;
@@ -7082,7 +7092,7 @@ function setupUIButtons(){
   if(pb) pb.addEventListener('pointerdown',e=>{ e.preventDefault(); togglePause(); });
   const rb=document.getElementById('resumeBtn'); if(rb) rb.onclick=resumeGame;
   const mb=document.getElementById('menuBtn'); if(mb) mb.onclick=exitToMenu;
-  document.getElementById('pauseMainMenu').onclick=async()=>{globalThis.sortieCheckpoint?.save();await globalThis.sortieCheckpoint?.flush();exitToMenu(true);window.location.href='index.html?v=234';};
+  document.getElementById('pauseMainMenu').onclick=async()=>{globalThis.sortieCheckpoint?.save();await globalThis.sortieCheckpoint?.flush();exitToMenu(true);window.location.href='index.html?v=235';};
   document.getElementById('resultBtn').onclick=()=>{
     // the logbook borrows this screen from the menu — send the player straight back
     if(logbookOpen){ logbookOpen=false; showOverlay('menu'); return; }
@@ -7364,7 +7374,7 @@ function animate(){
     notice.style.cssText='position:fixed;inset:0;z-index:999998;background:rgba(15,20,15,.95);color:#e8ddbc;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px;text-align:center;font:16px system-ui';
     const title=document.createElement('h2');title.textContent='Simulation interrupted';
     const detail=document.createElement('p');
-    detail.textContent='BUILD 234 · '+(MISSIONS[mission]?.sub||'Menu')+' · '+error.message;
+    detail.textContent='BUILD 235 · '+(MISSIONS[mission]?.sub||'Menu')+' · '+error.message;
     const reload=document.createElement('button');reload.textContent='Reload game';
     reload.style.cssText='padding:12px 24px;font:inherit';reload.onclick=()=>location.reload();
     notice.appendChild(title);notice.appendChild(detail);notice.appendChild(reload);document.body.appendChild(notice);
@@ -7533,6 +7543,6 @@ init();
 if(hangarRequest.requested&&hangarRequest.config){selectedMission=0;launchCampaignMission(0);}
 if(hangarRequest.error)flash(hangarRequest.error,8000);
 </script>
-<script src="checkpoint-pacific.js?v=234"></script>
+<script src="checkpoint-pacific.js?v=235"></script>
 </body>
 </html>
