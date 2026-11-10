@@ -34,7 +34,7 @@
    "altChange": 1,
    "alive": true
   },
-  "idleDecel1s": 2.17,
+  "idleDecel1s": 3.81,
   "fps": {
    "20": {
     "spd": 96.97,
