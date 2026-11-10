@@ -6,7 +6,7 @@
  function snapshot(){return {mission,custom:MISSIONS[mission].custom||null,identity:identity(mission),label:MISSIONS[mission].sub,
   player:C.capture(P,['_keys','_stickActive','_keyboardFlightActive']),operation:C.capture(europeOps),
   globals:C.capture({score,scoreStart,sortieKills,hitsTaken,circuitsDone,weather,baseWind,windZ,wxTime,diffIdx,weapon,aeroMode,invertPitch,steerSign,convoyAlertCalled}),
-  targets:targets.filter(t=>!t.surprise).map(t=>C.entity(t,t.sub)),air:enemyAir.map(e=>C.entity(e)),wingmen:wingmen.map(w=>C.entity(w)),
+  targets:targets.filter(t=>!t.surprise).map(t=>C.entity(t,t.sub)),air:enemyAir.map(e=>C.entity(e)),wingmen:wingmen.map(w=>C.entity(w)),squad:squad.map(w=>C.entity(w)),squadStats:{...squadStats},
   traffic:(livingWorld?.entities||[]).map(e=>({alive:e.alive,phase:e.phase,last:C.capture(e.last),alertT:e.alertT,transform:C.transform(e.model)})),
   weapons:{bullets:C.projectiles(bullets),tracers:C.projectiles(tracers),bombs:C.projectiles(bombs),rockets:C.projectiles(rockets),groundFire:C.projectiles(groundFire)},
   navigation:C.navigationState(navigation),clock:clock.elapsedTime,flares:flareSupport?.checkpoint()};}
@@ -40,6 +40,15 @@
   for(const s of saved.air){(s.state.bomber?spawnBombers:spawnEnemyAir)(1,s.state.kind);C.applyEntity(enemyAir.at(-1),s);}
   for(const w of wingmen)GameRuntime.release(w.group);wingmen=[];
   for(const s of saved.wingmen){const group=buildAircraft(s.state.kind);scene.add(group);const w=C.applyEntity({group},s);wingmen.push(w);}
+  // Build 236: the squad (old checkpoints have none). A dead wingman stays dead; a brain is built again.
+  clearSquad();
+  for(const s of saved.squad||[]){
+   if(!s.state.alive)continue;
+   const group=buildAircraft(s.state.kind);scene.add(group);
+   squad.push(C.applyEntity({group,prop:group.getObjectByName('prop'),squad:true,run:Squad.newRun()},s));
+  }
+  Object.assign(squadStats,saved.squadStats||{});
+  for(const e of enemyAir){if(e.tac&&typeof e.tac.rng!=='function')e.tac=null;e.tgt=null;}
   const w=saved.weapons;
   bullets=C.restoreProjectiles(w.bullets,'round',scene);tracers=C.restoreProjectiles(w.tracers,'aa',scene);
   bombs=C.restoreProjectiles(w.bombs,'bomb',scene);rockets=C.restoreProjectiles(w.rockets,'rocket',scene);groundFire=C.restoreProjectiles(w.groundFire,()=>new THREE.Mesh(flakShellGeo,flakShellMat),scene);

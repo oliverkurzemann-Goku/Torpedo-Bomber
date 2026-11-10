@@ -53,9 +53,9 @@ assert.equal(pilot.rtb,true,'second kill unlocks carrier recovery');assert.equal
 const script=html('remagen-mission.html');
 const start=script.indexOf('const MISSIONS=['),end=script.indexOf('\nfunction M()',start);
 const missions=vm.runInNewContext(script.slice(start,end)+'\nMISSIONS',{});
-assert.equal(missions.length,21,'training plus nineteen real-terrain combat sorties');
+assert.equal(missions.length,22,'training plus twenty real-terrain combat sorties (the two-ship bonus is appended last)');
 assert.deepEqual([...new Set(missions.map(m=>m.ac))].sort(),['bf109','fw190','ju87','me163','me262','p47']);
-assert.equal(missions.filter(m=>m.kills||m.enemyAir||m.bombers).length,19);
+assert.equal(missions.filter(m=>m.kills||m.enemyAir||m.bombers).length,20);
 assert.equal(missions.filter(m=>m.ac==='me262').length,4,'four jet sorties');
 assert.equal(missions[16].ac,'me163','original Komet interception retains its index');
 assert.equal(missions[17].ac,'ju87','Ju 87 bonus retains its index');
@@ -63,6 +63,7 @@ assert.equal(missions[17].traffic,'convoy','Stuka bonus targets real moving vehi
 assert.equal(missions[18].id,'jetambush');assert.equal(missions[19].id,'kometdash');
 assert.equal(missions[20].id,'nightworks','night sortie appends without shifting saved mission indices');
 assert.equal(missions[20].night,true);assert.equal(missions[20].ac,'p47');
+assert.equal(missions[21].id,'rotte','the two-ship bonus appends without shifting saved mission indices');assert.equal(missions[21].squad.n,1);assert.equal(missions[21].bonus,true);
 const plans=vm.runInNewContext(html('operation-plans.js')+'\nwindow.FlightPlans',{window:{}});
 assert.equal(plans.europe.length,missions.length,'every Rhine sortie gets its own weather/operation plan');
 assert.equal(plans.europe[16].fuel,65,'original rocket sortie has limited powered flight');
@@ -70,4 +71,4 @@ for(const i of [16,19]){assert.equal(plans.europe[i].events[0].glide,true,'both 
 for(const m of missions){if(m.kills?.truck)assert.equal(m.traffic||m.id,'convoy');
  if(m.kills?.ferry)assert.equal(m.traffic||m.id,'ferry');
  if(m.kills?.train)assert.equal(m.traffic||m.id,'train');}
-console.log('Two playable modes, nineteen real-Rhine sorties, appended night operation, original saved indices and fresh progression verified');
+console.log('Two playable modes, twenty real-Rhine sorties, appended night operation and two-ship bonus, original saved indices and fresh progression verified');

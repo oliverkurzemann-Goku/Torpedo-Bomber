@@ -15,7 +15,7 @@ for(const [id,index,n] of [['komet',16,2],['kometdash',19,1]])for(const fps of [
   loadLog:()=>log,logSortie:r=>{log.landings++;log.sorties++;if(r.medal)log.medals[r.medal]++;return log;},
   rankName:()=> 'Flight Officer',rankFor:()=>0,pilotName:()=> 'Test Pilot',airfieldName:()=> 'Forward Strip',
   bestScore:()=>0,isGermanMission:()=>true,showResult:(...r)=>results.push(r),SortieFeatures:{Damage:{hullPercent:()=>100}},
-  spawnEnemyAir:n=>{for(let i=0;i<n;i++)enemyAir.push({alive:true});},spawnBombers(){},
+  spawnEnemyAir:n=>{for(let i=0;i<n;i++)enemyAir.push({alive:true});},spawnBombers(){},squad:[],Squad:{flightBonus:()=>0},
   window:{SquadronCampaign:{record:(...r)=>recorded.push(r)}}});
  c.SquadronCampaign=c.window.SquadronCampaign;
  vm.runInContext('let fieldServicePending=false;'+[func('blockingEnemyAir','objectiveText'),func('checkObjective','shake'),func('updateEuropeOperation','buildRhineChart'),func('landed','relaunch')].join('\n'),c);
@@ -41,7 +41,7 @@ for(const ac of ['me163','p47']){
   setThrottleUI(){},flash(){},addScore(){},saveBest(){},hitsTaken:0,sortieKills:{},score:0,
   loadLog:()=>({landings:0}),logSortie:()=>({landings:1,medals:{gold:0,silver:0,bronze:1}}),rankName:()=>'',rankFor:()=>0,
   pilotName:()=>'',isGermanMission:()=>true,SortieFeatures:{Damage:{hullPercent:()=>100}},bestScore:()=>0,
-  showResult:done=>result=done});
+  squad:[],Squad:{flightBonus:()=>0},showResult:done=>result=done});
  vm.runInContext('let fieldServicePending=false;'+func('landed','relaunch'),c);c.landed(true);
  assert.equal(vm.runInContext('fieldServicePending',c),ac!=='me163');
  if(ac==='me163')assert.equal(result,false,'missing bomber never awards success');

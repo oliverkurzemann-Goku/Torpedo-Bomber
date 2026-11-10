@@ -113,7 +113,7 @@ function guideWingman(w,desiredVelocity,dt,forming,wind=null){
    // Rates commanded a few per cent inside the calm-formation limits (pitch .14/.22, roll .32 rad/s): the
    // core's attitude integration adds a little coupling on top of the commanded rate.
    maxPitchRate:forming?.135:.21,maxRollRate:forming?.45:.5,turnGain:1.5,kp:forming?.5:.09,ki:forming?.03:.05,
-   rollAccel:forming?1.5:1.8,bankTau:forming?.25:.2,loadRate:forming?1.2:1.6,powerRate:forming?.5:.7});
+   rollAccel:forming?1.5:1.8,bankTau:forming?.25:.2,loadRate:forming?1.2:1.6,powerRate:forming?.5:.7,assist:w.assist||0});
   w.vel.x+=wx;w.vel.z+=wz;w.pos.x+=wx*dt;w.pos.z+=wz*dt;
   return;
  }

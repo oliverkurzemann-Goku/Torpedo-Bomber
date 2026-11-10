@@ -1,6 +1,6 @@
-# Offline app asset register — Build 235
+# Offline app asset register — Build 236
 
-Checked 2026-10-23. 363 payload files, 36 model files, 260.2 MiB.
+Checked 2026-10-23. 364 payload files, 36 model files, 260.2 MiB.
 
 Generated from the actual dist-app payload by npm run app:assets. Hashes cover embedded textures too. This is an evidence inventory; no row is automatically approved for distribution. Acquisition dates remain unknown where not recorded.
 

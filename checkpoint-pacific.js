@@ -48,7 +48,7 @@
    if(!t.alive&&t.def.kind==='fuel'&&operationalScenery)t.group.traverse(o=>{if(o.isMesh)o.material=operationalScenery.charred;});
   });
   for(const z of zeros)GameRuntime.release(z.mesh);zeros=[];
-  saved.zeros.forEach((s,i)=>{spawnZero(i,saved.zeros.length);C.applyEntity(zeros.at(-1),s);});
+  saved.zeros.forEach((s,i)=>{spawnZero(i,saved.zeros.length);const z=C.applyEntity(zeros.at(-1),s);if(z.tac&&typeof z.tac.rng!=='function')z.tac=null;});   // the brain's random source is a function and is not saved: build it again
   for(const r of raiders)GameRuntime.release(r.mesh);raiders=[];
   saved.raiders.forEach((s,i)=>{(s.state.japanese?spawnJapaneseRaider:spawnRaider)(i,saved.raiders.length);const r=raiders.at(-1);C.applyEntity(r,s);if(r.bombRack)r.bombRack.visible=!r.dropped;});
   for(const w of wingmen)GameRuntime.release(w.mesh);wingmen=[];

@@ -298,7 +298,11 @@ function aiStep(e,dt,aim,wantSpd,o){
  let throttle=o.power??clamp(c.thr+err*(o.kp??.09),0,1);
  if(o.powerRate&&o.power==null){c.lever=c.lever??throttle;c.lever+=clamp(throttle-c.lever,-o.powerRate*dt,o.powerRate*dt);throttle=c.lever;}
  const s={spd:e.spd,pitch:e.pitch,heading:e.heading,roll:e.roll,nLoad:c.n,power:c.power,altitude:e.pos.y,stall:e.coreStall||0,dropDir:e.coreDrop||0};
- const out=F.step(m,s,dt,{throttle,massKg:mass,gain,command,substepHz:o.substepHz||60,stallModel:o.vector?true:false,...cfg});
+ // o.assist (Build 236): the same thrust-surplus help the Normal stick law gives the player in ARCADE, scaled by
+ // this factor - a wingman of an ARCADE leader keeps up with him; 0/absent = the plain core (every other pilot).
+ const A=F.GAME.arcade,help=o.assist?{surplusGain:A.power*o.assist,surplusCap:A.powerCap*o.assist,
+  surplusSlow:A.powerSlow*o.assist,surplusSlowCap:A.powerSlowCap*o.assist,surplusSlowTo:A.slowTo,surplusRef:F.stallSpeed(m,e.pos.y,mass/m.mass,c.flaps)}:null;
+ const out=F.step(m,s,dt,{throttle,massKg:mass,gain,command,substepHz:o.substepHz||60,stallModel:o.vector?true:false,...cfg,...help});
  e.spd=s.spd;e.pitch=s.pitch;e.heading=s.heading;e.roll=s.roll;c.power=s.power;c.n=s.nLoad;
  if(o.vector){e.coreStall=s.stall;e.coreDrop=s.dropDir;}
  const cp=Math.cos(e.pitch);
