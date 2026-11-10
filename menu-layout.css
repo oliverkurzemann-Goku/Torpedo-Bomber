@@ -94,6 +94,8 @@
 }
 @media (orientation:landscape) and (min-width:900px) and (max-height:560px){
   #menu .missionBlurb{display:none;}   /* no room left on a very short viewport: the board and Begin stay reachable */
+  #menu .missionPanel>.secLbl{display:none;}   /* so is the heading above the board (28 px) */
+  #menu #missionSel{gap:4px;}
 }
 /* Smaller phones and portrait iPads retain a scrollable, readable layout. */
 @media (orientation:landscape) and (min-width:900px) and (max-height:640px){
