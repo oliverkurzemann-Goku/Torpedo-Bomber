@@ -3,18 +3,18 @@
  'use strict';
  function create(THREE,scene,options={}){
   const maxShips=24,maxPoints=80,life=38,tracks=new Map(),height=options.height||(()=>.12);
-  const capacity=maxShips*(maxPoints*18+12),positions=new Float32Array(capacity*3),uvs=new Float32Array(capacity*2),alphas=new Float32Array(capacity);
+  const capacity=maxShips*(maxPoints*18+18),positions=new Float32Array(capacity*3),uvs=new Float32Array(capacity*2),alphas=new Float32Array(capacity);
   const geo=new THREE.BufferGeometry();geo.setAttribute('position',new THREE.BufferAttribute(positions,3).setUsage(THREE.DynamicDrawUsage));geo.setAttribute('uv',new THREE.BufferAttribute(uvs,2).setUsage(THREE.DynamicDrawUsage));geo.setAttribute('opacity',new THREE.BufferAttribute(alphas,1).setUsage(THREE.DynamicDrawUsage));geo.setDrawRange(0,0);
   const material=new THREE.ShaderMaterial({transparent:true,depthWrite:false,side:THREE.DoubleSide,fog:true,uniforms:THREE.UniformsUtils.merge([THREE.UniformsLib.fog,{time:{value:0}}]),
    vertexShader:'attribute float opacity; varying float fade; varying vec2 waterUv; #include <fog_pars_vertex>\nvoid main(){fade=opacity;waterUv=uv;vec4 mvPosition=modelViewMatrix*vec4(position,1.);gl_Position=projectionMatrix*mvPosition; #include <fog_vertex>\n}',
-   fragmentShader:'varying float fade; varying vec2 waterUv; uniform float time; #include <fog_pars_fragment>\nvoid main(){float edge=pow(max(0.,1.-abs(waterUv.x*2.-1.)),.65);float foam=.55+.20*sin(waterUv.y*2.1+waterUv.x*21.)+.15*sin(waterUv.y*4.7-waterUv.x*39.+time*.8);gl_FragColor=vec4(.70,.83,.82,fade*edge*foam); #include <fog_fragment>\n#include <encodings_fragment>\n}'});
+   fragmentShader:'varying float fade; varying vec2 waterUv; uniform float time; #include <fog_pars_fragment>\nvoid main(){float edge=pow(max(0.,1.-abs(waterUv.x*2.-1.)),.65);float foam=.55+.20*sin(waterUv.y*2.1+waterUv.x*21.)+.15*sin(waterUv.y*4.7-waterUv.x*39.+time*.8);float wash=step(waterUv.y,-.01);float churn=.74+.20*sin(waterUv.y*20.+waterUv.x*19.+time*12.)+.06*sin(waterUv.x*47.-time*9.);gl_FragColor=vec4(mix(vec3(.70,.83,.82),vec3(.90,.96,.95),wash),fade*edge*mix(foam,churn,wash)); #include <fog_fragment>\n#include <encodings_fragment>\n}'});
   // Shader directives must start on their own lines in WebGL 1 as well.
   material.vertexShader=material.vertexShader.replace(/ #include/g,'\n#include');material.fragmentShader=material.fragmentShader.replace(/ #include/g,'\n#include');
   const mesh=new THREE.Mesh(geo,material);mesh.name='fleetWakes';mesh.frustumCulled=false;mesh.renderOrder=1;scene.add(mesh);let time=0,vertices=0,drawClock=.1;
-  function track(key,position,forward,length,beam,speed,dt){
+  function track(key,position,forward,length,beam,speed,dt,propellers=0){
    if(!key||!position||!forward)return;
    let t=tracks.get(key);if(!t){if(tracks.size>=maxShips)return;t={points:[],seen:time,timer:0};tracks.set(key,t);}
-   t.seen=time;t.position={x:position.x,z:position.z};const norm=Math.hypot(forward.x,forward.z)||1;t.f={x:forward.x/norm,z:forward.z/norm};t.length=length;t.beam=beam;t.moving=speed>.35;
+   t.seen=time;t.position={x:position.x,z:position.z};const norm=Math.hypot(forward.x,forward.z)||1;t.f={x:forward.x/norm,z:forward.z/norm};t.length=length;t.beam=beam;t.speed=speed;t.propellers=propellers===2?2:propellers===1?1:0;t.moving=speed>.35;
    if(!t.moving)return;t.timer+=Math.max(0,dt);
    const p={x:position.x-t.f.x*length*.48,z:position.z-t.f.z*length*.48,fx:t.f.x,fz:t.f.z,age:0,beam:Math.max(1.2,beam),speed};
    const last=t.points[t.points.length-1],distance=last?Math.hypot(p.x-last.x,p.z-last.z):Infinity;
@@ -44,6 +44,16 @@
     if(t.moving&&time-t.seen<.25){
      const f=t.f,c={x:t.position.x+f.x*t.length*.42,z:t.position.z+f.z*t.length*.42,fx:f.x,fz:f.z,age:0,beam:t.beam};
      const b={...c,x:c.x-f.x*t.beam*.7,z:c.z-f.z*t.beam*.7,age:1};ribbon(c,b,t.beam*.08,t.beam*.62,.58,.10);
+     // The short, brighter prop wash is attached to the stern. It feeds into
+     // the longer world-space trail without adding meshes or particles.
+     const power=Math.min(1,(t.speed-.35)/3.0);
+     for(let i=0;i<t.propellers;i++){
+      const lateral=t.propellers===2?(i===0?-1:1)*t.beam*.14:0;
+      const start=t.length*.51, end=start+Math.max(5,t.beam*.72+t.speed*1.2);
+      const a={x:t.position.x-f.x*start+f.z*lateral,z:t.position.z-f.z*start-f.x*lateral,fx:f.x,fz:f.z,age:-.02};
+      const b={...a,x:t.position.x-f.x*end+f.z*lateral,z:t.position.z-f.z*end-f.x*lateral,age:-1.0};
+      ribbon(a,b,Math.max(.35,t.beam*.12),Math.max(.70,t.beam*.21),power*.96,power*.10);
+     }
     }
    }
    geo.setDrawRange(0,vertices);for(const key of ['position','uv','opacity'])geo.attributes[key].needsUpdate=true;

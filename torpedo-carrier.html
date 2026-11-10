@@ -354,7 +354,7 @@
   <div id="flash"></div>
   <div id="ltn" style="position:fixed;inset:0;background:#e6ecff;opacity:0;pointer-events:none;z-index:40;"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 238</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 239</div>
 
   <!-- Optical landing aid -->
   <div id="lso">
@@ -401,7 +401,7 @@
 
 <!-- Menu -->
 <div class="overlay" id="menu" data-campaign="pacific">
-  <div class="menuTop"><a id="selBtn" href="index.html?v=238">&#9664; Change Game</a><span class="menuMeta">PACIFIC OPERATIONS<br>BUILD 238</span></div>
+  <div class="menuTop"><a id="selBtn" href="index.html?v=239">&#9664; Change Game</a><span class="menuMeta">PACIFIC OPERATIONS<br>BUILD 239</span></div>
   <div class="card menuCard">
     <aside class="menuOverview" aria-label="Campaign and pilot options">
     <div class="campaignArt" aria-hidden="true"></div>
@@ -510,19 +510,19 @@
 <script src="avenger-bay.js?v=220"></script>
 <script src="corsair-native.js?v=218"></script>
 <script src="avenger-finish.js?v=199"></script>
-<script src="naval-assets.js?v=own-fleet-3"></script>
+<script src="naval-assets.js?v=own-fleet-4"></script>
 <script src="aircraft-rotors.js?v=172"></script>
 <script src="combat-fx.js?v=238"></script>
 <script src="aircraft-smoke.js?v=176"></script>
 <script src="aircraft-damage.js?v=177"></script>
 <script src="ship-damage.js?v=206"></script>
 <script src="torpedo-attack.js?v=206"></script>
-<script src="ship-contact.js?v=own-fleet-3"></script>
+<script src="ship-contact.js?v=own-fleet-4"></script>
 <script src="flight-support.js?v=238"></script>
 <script src="ordnance.js?v=238"></script>
 <script src="crew-visuals.js?v=179"></script>
 <script src="deck-activity.js?v=198"></script>
-<script src="ship-wakes.js?v=179"></script>
+<script src="ship-wakes.js?v=239"></script>
 <script src="pilot-bailout.js?v=181"></script>
 <script src="enemy-bailouts.js?v=177"></script>
 <script src="flare-support.js?v=177"></script>
@@ -682,8 +682,8 @@ const WIRE_X1     = -45;         // arrest zone fwd edge
 const AIM_X       = -75;         // ideal touchdown point
 
 // Original carrier meshes retain the deck anchors used by the launch/recovery code.
-const CARRIER_MODEL_URL   = 'uss_midway.glb?v=own-fleet-3';
-const IJN_CARRIER_URL     = 'ijn%20carrier.glb?v=own-fleet-3';
+const CARRIER_MODEL_URL   = 'uss_midway.glb?v=own-fleet-4';
+const IJN_CARRIER_URL     = 'ijn%20carrier.glb?v=own-fleet-4';
 const IJN_SCALE           = 1.744;
 const IJN_DECK_Y_MODEL    = 8.01;
 let ijnCarrierModel       = null, ijnAssetPromise=null;
@@ -695,10 +695,10 @@ let CARRIER_DX = 0, CARRIER_DZ = 0;
 let carrierModel = null, carrierModelLoaded = false;
 
 /* Distinct original supply ship and Japanese destroyer. */
-const DESTROYER_MODEL_URL = 'assets/ships/samidare.glb?v=own-fleet-3';
+const DESTROYER_MODEL_URL = 'assets/ships/samidare.glb?v=own-fleet-4';
 const DEST_TARGET_LEN = 110;
 let destroyerTemplate = null;
-const FREIGHTER_MODEL_URL = 'assets/ships/japanese-cargo.glb?v=own-fleet-3';
+const FREIGHTER_MODEL_URL = 'assets/ships/japanese-cargo.glb?v=own-fleet-4';
 const FRT_TARGET_LEN = 132;
 let freighterTemplate = null;
 let supportFleet = [];
@@ -726,7 +726,7 @@ let torpedoes=[], ships=[], tracers=[], splashes=[], wakeParts=[], torpedoReport
 let sun, sunSprite, planeShadow, propSpinner, smokeTex;
 let clouds=[], smokes=[], explosions=[];
 let smokePool=[], wakePool=[], wakeGeo=null;   // particle pools (declared before first use)
-let actx=null, eng=null, carrierSmokeT=0;
+let actx=null, eng=null;
 let planeGear, flapL, flapR, diveFlapL, diveFlapR, bigSea, cockpitInterior;
 // SBD's own flap/dive-brake clones live in separate variables, not reassigned into flapL/
 // flapR/diveFlapL/diveFlapR directly — the player can fly an Avenger sortie again after an
@@ -1750,6 +1750,8 @@ function buildCarrier(){
   const island=boxMesh(34,18,9,0x5a6168); island.position.set(20,DECK_Y+9,DECK_HALF_W-3); carrier.add(island);
   const bridge=boxMesh(14,8,7,0x4b5158); bridge.position.set(24,DECK_Y+22,DECK_HALF_W-3); carrier.add(bridge);
   const funnel=boxMesh(8,16,7,0x363b40); funnel.position.set(8,DECK_Y+16,DECK_HALF_W-3); carrier.add(funnel);
+  const outlet=new THREE.Object3D();outlet.position.y=8.15;
+  outlet.userData.shipExhaust={radius:2,direction:[0,1,0]};funnel.add(outlet);
   const mast=boxMesh(0.8,22,0.8,0x24282c); mast.position.set(24,DECK_Y+40,DECK_HALF_W-3); carrier.add(mast);
   // radar
   const radar=new THREE.Mesh(new THREE.BoxGeometry(0.4,3,5),new THREE.MeshStandardMaterial({color:0x303539}));
@@ -2235,7 +2237,7 @@ function startMission(idx){
     group.position.set(def.pos[0],0,def.pos[2]);group.rotation.y=def.heading??0;scene.add(group);
     supportFleet.push(PacificTheater.initializeConvoy({def,group,length:template.userData.naval.length,wakeT:0}));
   }
-  if(m.theater==='fleet'&&PacificTheater.effects().reinforced){const template=NavalAssets.get('fletcher'),group=new THREE.Group();group.add(template.clone(true));group.position.set(carrierX-350,0,-450);scene.add(group);supportFleet.push(PacificTheater.initializeConvoy({def:{model:'fletcher',speed:0},group,length:115,wakeT:0}));}
+  if(m.theater==='fleet'&&PacificTheater.effects().reinforced){const template=NavalAssets.get('fletcher'),group=new THREE.Group();group.add(template.clone(true));group.position.set(carrierX-350,0,-450);group.rotation.y=Math.PI/2;scene.add(group);supportFleet.push(PacificTheater.initializeConvoy({def:{model:'fletcher',speed:0},group,length:115,wakeT:0}));}
   resetShoreTargets(!!m.shoreStrike);
   // spawn enemy fighters
   const nz=m.zeros||0;
@@ -5680,7 +5682,7 @@ function loadPlaneModel(){
       }
       window.__eyeDbg='EYE '+COCKPIT_EYE.map(v=>v.toFixed(2)).join('/');
       const btEl=document.getElementById('buildTag');
-      if(btEl) btEl.textContent='BUILD 238 · '+window.__eyeDbg;
+      if(btEl) btEl.textContent='BUILD 239 · '+window.__eyeDbg;
       let seat=null;
       model.traverse(function(o){
         if(!o.isMesh||!o.material) return;
@@ -6250,9 +6252,9 @@ function updateWakes(dt){
 }
 // Pooled particles: reusing sprites/meshes avoids allocating a new material (and a new
 // shader binding) for every puff — that was the main per-frame cost on iPad.
-function spawnSmoke(x,y,z,color,op,critical=false){
+function spawnSmoke(x,y,z,color,op,critical=false,plume=null){
   if(!smokeTex||smokes.length>140) return;
-  const sc=7+Math.random()*7,vy=5+Math.random()*4;
+  const sc=plume?.size??(7+Math.random()*7),vy=plume?.rise??(5+Math.random()*4);
   if(!GameRuntime.allowEffect(renderer,'smoke',critical))return;
   let s=smokePool.pop();
   if(!s){
@@ -6264,7 +6266,8 @@ function spawnSmoke(x,y,z,color,op,critical=false){
   s.material.opacity=op||0.5;
   s.position.set(x,y,z);
   s.scale.set(sc,sc,1);
-  smokes.push({mesh:s,life:2.6,max:2.6,vy,grow:9});
+  const life=plume?4.2:2.6;
+  smokes.push({mesh:s,life,max:life,vy,grow:plume?2.7:9,plume});
 }
 function spawnScreenSmoke(x,y,z,color){
  const before=smokes.length;spawnSmoke(x,y,z,color,.7,true);
@@ -6273,7 +6276,11 @@ function spawnScreenSmoke(x,y,z,color){
 function updateSmoke(dt){
   for(let i=smokes.length-1;i>=0;i--){
     const sm=smokes[i]; sm.life-=dt; sm.mesh.position.y+=sm.vy*dt;
-    const k=sm.life/sm.max; sm.mesh.material.opacity=Math.max(0,k*0.55);
+    const k=sm.life/sm.max;
+    if(sm.plume){
+      sm.mesh.position.x+=sm.plume.vx*dt;sm.mesh.position.z+=sm.plume.vz*dt;
+    }
+    sm.mesh.material.opacity=Math.max(0,k*(sm.plume?.opacity??.55));
     const sc=sm.mesh.scale.x+sm.grow*dt; sm.mesh.scale.set(sc,sc,1);
     if(sm.life<=0){
       if(sm.mesh.userData.runtimeOwned)GameRuntime.release(sm.mesh);
@@ -7064,7 +7071,7 @@ function setupUIButtons(){
   if(dbgT2) dbgT2.onclick=()=>{
     dbgOn=!dbgOn; GameRuntime.storage.setItem('dbgOn',dbgOn?'1':'0');
     const db=document.getElementById('dbgBox'); if(db) db.textContent=dbgOn?'✓':'';
-    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 238'; }
+    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 239'; }
   };
   const lu=document.getElementById('lookUp'), ld=document.getElementById('lookDn');
   let _lookT=0;
@@ -7080,7 +7087,7 @@ function setupUIButtons(){
   if(pb) pb.addEventListener('pointerdown',e=>{ e.preventDefault(); togglePause(); });
   const rb=document.getElementById('resumeBtn'); if(rb) rb.onclick=resumeGame;
   const mb=document.getElementById('menuBtn'); if(mb) mb.onclick=exitToMenu;
-  document.getElementById('pauseMainMenu').onclick=async()=>{globalThis.sortieCheckpoint?.save();await globalThis.sortieCheckpoint?.flush();exitToMenu(true);window.location.href='index.html?v=238';};
+  document.getElementById('pauseMainMenu').onclick=async()=>{globalThis.sortieCheckpoint?.save();await globalThis.sortieCheckpoint?.flush();exitToMenu(true);window.location.href='index.html?v=239';};
   document.getElementById('resultBtn').onclick=()=>{
     // the logbook borrows this screen from the menu — send the player straight back
     if(logbookOpen){ logbookOpen=false; showOverlay('menu'); return; }
@@ -7228,8 +7235,35 @@ function updatePacificAtmosphere(dt){
     if(event==='engine'&&baseRange<900&&!soundscape.fieldCalled){soundscape.fieldCalled=true;radioSay('DECK CREW — NEXT AIRCRAFT WARMING UP');}
   }
 }
-function trackShipWake(group,forward,length,beam,speed,dt){
-  if(state!==ST.MENU&&state!==ST.BRIEF&&state!==ST.RESULT)shipWakes?.track(group,group.position,forward,length,beam,speed,dt);
+const exhaustSources=new WeakMap();
+const exhaustPosition=new THREE.Vector3(),exhaustDirection=new THREE.Vector3();
+function emitShipExhaust(model,forward,speed,dt){
+  if(!model?.visible||smokes.length>=36||dt<=0)return;
+  if(Math.hypot(P.pos.x-model.position.x,P.pos.z-model.position.z)>4500)return;
+  let source=exhaustSources.get(model);
+  if(!source){
+    const outlets=[];model.traverse(node=>{if(node.userData.shipExhaust)outlets.push(node);});
+    source={outlets,wait:0};exhaustSources.set(model,source);
+  }
+  if(!source.outlets.length)return;
+  source.wait-=dt;
+  if(source.wait>0)return;
+  source.wait=.63+Math.random()*.16;
+  const opacity=.35+Math.min(speed,9)*.013;
+  for(const outlet of source.outlets){
+    const {radius,direction}=outlet.userData.shipExhaust;
+    outlet.getWorldPosition(exhaustPosition);
+    exhaustDirection.fromArray(direction).transformDirection(outlet.matrixWorld);
+    const size=Math.max(1.4,radius*outlet.matrixWorld.getMaxScaleOnAxis()*2.55);
+    spawnSmoke(exhaustPosition.x,exhaustPosition.y,exhaustPosition.z,0x444641,opacity,false,{
+      size,opacity,rise:1.9+exhaustDirection.y*2.2,
+      vx:exhaustDirection.x*4-forward.x*speed*.50,
+      vz:exhaustDirection.z*4-forward.z*speed*.50+windZ*.28
+    });
+  }
+}
+function trackShipWake(group,forward,length,beam,speed,dt,propellers){
+  if(state!==ST.MENU&&state!==ST.BRIEF&&state!==ST.RESULT)shipWakes?.track(group,group.position,forward,length,beam,speed,dt,propellers);
 }
 function announceComb(ship){
   if(radioEvadeCalled||state!==ST.FLIGHT)return;radioEvadeCalled=true;
@@ -7247,7 +7281,11 @@ function updateShips(dt){
     if(!s.def.destination){s.group.position.x+=Math.sin(heading)*speed*dt;s.group.position.z+=Math.cos(heading)*speed*dt;}
     if(MISSIONS[mission].theater==='fleet')s.group.position.x=carrierX-350;
     s.group.position.y=seaHeightAt(s.group.position.x,s.group.position.z,seaUniforms.uTime.value);
-    trackShipWake(s.group,new THREE.Vector3(Math.sin(heading),0,Math.cos(heading)),s.length,s.group.children[0]?.userData.naval?.beam||18,speed,dt);
+    const forward=new THREE.Vector3(Math.sin(heading),0,Math.cos(heading));
+    const spec=s.group.children[0]?.userData.naval;
+    const driveSpeed=MISSIONS[mission].theater==='fleet'?CARRIER_SPD:speed;
+    trackShipWake(s.group,forward,s.length,spec?.beam||18,driveSpeed,dt,spec?.propellers);
+    if(driveSpeed>.35)emitShipExhaust(s.group,forward,driveSpeed,dt);
   }
   for(const s of ships){
     if(!s.alive){
@@ -7338,17 +7376,15 @@ function updateShips(dt){
       s.group.position.y=seaHeightAt(s.group.position.x,s.group.position.z,seaUniforms.uTime.value)
         +Math.sin(performance.now()*.0008+s.group.position.x*.012)*.13*seaState;
       if(typeof shipDamage!=="undefined"&&shipDamage)shipDamage.update(s,dt,s.group.position.y);
-      // funnel haze, drifting off the stern
-      if(s.smokeT===undefined) s.smokeT=Math.random();
-      s.smokeT-=dt;
-      if(s.smokeT<=0 && s.def.model!=='submarine'){ s.smokeT=0.4+Math.random()*0.3;
-        spawnSmoke(s.group.position.x-wf.x*3,13,s.group.position.z-wf.z*3,0x53534e,0.35); }
       const spec=s.group.children[0]?.userData.naval;
-      trackShipWake(s.group,wf,spec?.length||s.radius*2,spec?.beam||s.radius*.25,driveSpeed,dt);
+      const propellers=spec?.propellers??(s.def.type==='cruiser'?2:0);
+      trackShipWake(s.group,wf,spec?.length||s.radius*2,spec?.beam||s.radius*.25,driveSpeed,dt,propellers);
+      if(driveSpeed>.35&&!s.def.moored)emitShipExhaust(s.group,wf,driveSpeed,dt);
     }
   }
 }
 
+const carrierForward=new THREE.Vector3(1,0,0);
 let runtimeFault=null,pacificHudT=0,pacificMapT=0;
 function animate(){
   requestAnimationFrame(animate);
@@ -7362,7 +7398,7 @@ function animate(){
     notice.style.cssText='position:fixed;inset:0;z-index:999998;background:rgba(15,20,15,.95);color:#e8ddbc;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px;text-align:center;font:16px system-ui';
     const title=document.createElement('h2');title.textContent='Simulation interrupted';
     const detail=document.createElement('p');
-    detail.textContent='BUILD 238 · '+(MISSIONS[mission]?.sub||'Menu')+' · '+error.message;
+    detail.textContent='BUILD 239 · '+(MISSIONS[mission]?.sub||'Menu')+' · '+error.message;
     const reload=document.createElement('button');reload.textContent='Reload game';
     reload.style.cssText='padding:12px 24px;font:inherit';reload.onclick=()=>location.reload();
     notice.appendChild(title);notice.appendChild(detail);notice.appendChild(reload);document.body.appendChild(notice);
@@ -7385,7 +7421,8 @@ function animateFrame(){
     deckActivity?.update(rawDt,{launching:true});
     if(deckActivity)deckActivity.group.position.x=carrierX;
     updatePlaneMesh(rawDt);updateDeckArrestWires();updateCarrierIntro(rawDt);updateAudio(rawDt);updateSea(t);
-    updateRain(rawDt);GameRuntime.render(renderer,scene,camera);GameRuntime.frames.end();return;
+    emitShipExhaust((isDefend()?ijnCarrierModel:carrierModel)||carrier,carrierForward,0,rawDt);
+    updateSmoke(rawDt);updateRain(rawDt);GameRuntime.render(renderer,scene,camera);GameRuntime.frames.end();return;
   }
 
   // steam the task group forward (bow-first, +X) whenever the sortie is live
@@ -7404,7 +7441,8 @@ function animateFrame(){
     const pitchA=Math.sin(pT*0.35)*0.010*seaState, rollA=Math.sin(pT*0.23+1.4)*0.018*seaState;
     [carrierModel,ijnCarrierModel].forEach(cm=>{ if(!cm) return;
       cm.rotation.x=pitchA; cm.rotation.z=rollA; });
-    shipWakes?.track(carrier,new THREE.Vector3(carrierX,0,0),new THREE.Vector3(1,0,0),240,32,CARRIER_SPD,dt);
+    shipWakes?.track(carrier,carrier.position,carrierForward,240,32,CARRIER_SPD,dt,2);
+    emitShipExhaust((isDefend()?ijnCarrierModel:carrierModel)||carrier,carrierForward,CARRIER_SPD,dt);
   }
 
   updateDeckArrestWires();
@@ -7489,13 +7527,10 @@ function animateFrame(){
     sun.position.set(P.pos.x+sunOffset.x,P.pos.y+sunOffset.y,P.pos.z+sunOffset.z);
     sunTarget.position.copy(P.pos);
   }
-  // sun stays pinned in the sky; radar sweeps; carrier funnel haze
+  // sun stays pinned in the sky; radar sweeps
   if(sunSprite){ const sd=sun.position.clone().normalize();
     sunSprite.position.copy(camera.position).addScaledVector(sd,9000); }
   const rad=carrier&&carrier.getObjectByName('radar'); if(rad) rad.rotation.y+=0.6*dt;
-  carrierSmokeT-=dt;
-  if(carrierSmokeT<=0){ carrierSmokeT=0.3;
-    spawnSmoke(carrierX+8+(Math.random()-0.5)*2, DECK_Y+26, DECK_HALF_W-3, 0x55554f, 0.32); }
   volcanoT-=dt;
   if(volcanoT<=0){ volcanoT=0.55;
     if(!okinawaWorld || !okinawaWorld.root.visible)

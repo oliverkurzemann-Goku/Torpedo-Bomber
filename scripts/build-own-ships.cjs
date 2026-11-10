@@ -48,6 +48,7 @@ class Ship {
     this.yaw = yaw;
     this.transform = transform;
     this.parts = new Map();
+    this.exhausts = [];
     this.detailOnly = false;
   }
 
@@ -106,6 +107,10 @@ class Ship {
     this.panel(paint, high);
   }
 
+  exhaust(point, radius, direction = [0,1,0]) {
+    this.exhausts.push({point,radius,direction});
+  }
+
   save(relative) {
     const glb = new GlbWriter({ generator: 'Torpedo-Bomber original naval mesh generator', extras: {
       title: this.title, author: AUTHOR, license: 'project-own (original mesh and paint)',
@@ -139,6 +144,14 @@ class Ship {
       glb.node({name: key, mesh: glb.mesh(key, {...mesh, material, uvs}),
         extras: visualOnly ? {shipVisualOnly: true} : undefined}, root);
     }
+    this.exhausts.forEach(({point,radius,direction},i) => {
+      const [x,y,z] = rotate(...point);
+      glb.node({
+        name: 'funnel-exhaust-' + (i+1),
+        translation: [x*factor,y*factor+height,z*factor],
+        extras: {shipExhaust: {radius:radius*factor,direction:rotate(...direction)}}
+      },root);
+    });
     const bytes = glb.glb();
     fs.writeFileSync(path.join(ROOT, relative), bytes);
     console.log(relative, bytes.length, 'bytes');
@@ -240,6 +253,7 @@ function stack(ship, x, y, z, radius, height, paint = 'steel') {
   ship.tube(paint,base,neck,radius*1.09,radius,12,1.4);
   ship.tube('dark',neck,lip,radius,radius*1.01,12,1.4);
   ship.tube('ink',lip,add(lip,[0,.08,0]),radius*.81,radius*.81,12,1.4);
+  ship.exhaust(add(lip,[0,.17,0]),radius);
 }
 
 function mast(ship, x, y, z, height, broad = false) {
@@ -694,6 +708,7 @@ function zuihoBridge(ship) {
     ship.tube('greenDark',[8.9,13.0,-3.4],[12.5,11.65,-5.1],1.42,1.56,12,1.38);
     ship.tube('greenDark',[12.5,11.65,-5.1],outlet,1.56,1.45,12,1.38);
     ship.tube('ink',outlet,add(outlet,[.33,-.12,-.12]),1.46,1.42,12,1.38);
+    ship.exhaust(add(outlet,[.49,-.11,-.16]),1.45,[1,.12,-.22]);
     for (const z of [-41,37]) {
       ship.tube('shade',[16.9,12.85,z],[19.25,13.07,z],.14,.08,7);
       mast(ship,18.4,13.0,z,6.6);

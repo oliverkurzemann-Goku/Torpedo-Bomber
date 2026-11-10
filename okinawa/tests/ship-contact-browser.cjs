@@ -32,6 +32,30 @@ const server=http.createServer((req,res)=>{
    for(const name of Object.keys(NavalAssets.specs))await NavalAssets.load(name);
    renderer.setPixelRatio(.4);renderer.shadowMap.enabled=false;
   });
+  const exhaust=await page.evaluate(()=>{
+   const models={midway:carrierModel,zuiho:ijnCarrierModel};
+   for(const key of Object.keys(NavalAssets.specs))models[key]=NavalAssets.get(key);
+   const expected={midway:1,zuiho:1,cargo:1,samidare:2,liberty:1,landing:2,fletcher:2,submarine:0};
+   const sampled={};
+   const previous=P.pos.clone();P.pos.set(1200,15,900);
+   for(const [name,source] of Object.entries(models)){
+    const ship=new THREE.Group();const copy=source.clone(true);
+    copy.visible=true;copy.position.set(0,0,0);
+    ship.add(copy);ship.position.set(1200,1,900);ship.rotation.y=.61;ship.rotation.x=.035;
+    const positions=[];ship.traverse(n=>{if(n.userData.shipExhaust)positions.push(n.getWorldPosition(new THREE.Vector3()));});
+    const start=smokes.length;
+    emitShipExhaust(ship,new THREE.Vector3(0,0,1),6,.02);
+    const puffs=smokes.slice(start);
+    if(puffs.length!==expected[name])throw Error('Wrong number of working funnels for '+name);
+    for(const [i,puff] of puffs.entries()){
+     if(puff.mesh.position.distanceTo(positions[i])>.01)throw Error('Unanchored exhaust for '+name);
+     if(name==='zuiho'&&Math.hypot(puff.plume.vx,puff.plume.vz+3)<2)throw Error('Side exhaust should first flow outboard');
+    }
+    sampled[name]=puffs.length;
+   }
+   P.pos.copy(previous);
+   return sampled;
+  });console.log('Smoke from the actual GLB funnel outlets:',exhaust);
   const collisions=await page.evaluate(()=>{
    const samples=[],quaternion=new THREE.Quaternion(),point=new THREE.Vector3();
    for(const name of Object.keys(NavalAssets.specs)){
