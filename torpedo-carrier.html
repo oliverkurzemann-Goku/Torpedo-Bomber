@@ -510,14 +510,14 @@
 <script src="avenger-bay.js?v=220"></script>
 <script src="corsair-native.js?v=218"></script>
 <script src="avenger-finish.js?v=199"></script>
-<script src="naval-assets.js?v=own-fleet-1"></script>
+<script src="naval-assets.js?v=own-fleet-2"></script>
 <script src="aircraft-rotors.js?v=172"></script>
 <script src="combat-fx.js?v=238"></script>
 <script src="aircraft-smoke.js?v=176"></script>
 <script src="aircraft-damage.js?v=177"></script>
 <script src="ship-damage.js?v=206"></script>
 <script src="torpedo-attack.js?v=206"></script>
-<script src="ship-contact.js?v=own-fleet-1"></script>
+<script src="ship-contact.js?v=own-fleet-2"></script>
 <script src="flight-support.js?v=238"></script>
 <script src="ordnance.js?v=238"></script>
 <script src="crew-visuals.js?v=179"></script>
@@ -682,8 +682,8 @@ const WIRE_X1     = -45;         // arrest zone fwd edge
 const AIM_X       = -75;         // ideal touchdown point
 
 // Original carrier meshes retain the deck anchors used by the launch/recovery code.
-const CARRIER_MODEL_URL   = 'uss_midway.glb?v=own-fleet-1';
-const IJN_CARRIER_URL     = 'ijn%20carrier.glb?v=own-fleet-1';
+const CARRIER_MODEL_URL   = 'uss_midway.glb?v=own-fleet-2';
+const IJN_CARRIER_URL     = 'ijn%20carrier.glb?v=own-fleet-2';
 const IJN_SCALE           = 1.744;
 const IJN_DECK_Y_MODEL    = 8.01;
 let ijnCarrierModel       = null, ijnAssetPromise=null;
@@ -695,10 +695,10 @@ let CARRIER_DX = 0, CARRIER_DZ = 0;
 let carrierModel = null, carrierModelLoaded = false;
 
 /* Distinct original supply ship and Japanese destroyer. */
-const DESTROYER_MODEL_URL = 'assets/ships/samidare.glb?v=own-fleet-1';
+const DESTROYER_MODEL_URL = 'assets/ships/samidare.glb?v=own-fleet-2';
 const DEST_TARGET_LEN = 110;
 let destroyerTemplate = null;
-const FREIGHTER_MODEL_URL = 'assets/ships/japanese-cargo.glb?v=own-fleet-1';
+const FREIGHTER_MODEL_URL = 'assets/ships/japanese-cargo.glb?v=own-fleet-2';
 const FRT_TARGET_LEN = 132;
 let freighterTemplate = null;
 let supportFleet = [];
