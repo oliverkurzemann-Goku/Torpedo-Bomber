@@ -49,9 +49,12 @@ THREE.FBXLoader.prototype.load=function(file,yes,progress,no){
   assert.equal(living.entities.filter(e=>e.kind==='truck'&&e.visual.userData.sourceModel==='jagdpanther').length,1);
   assert.deepEqual(modelStats(living.entities.find(e=>e.kind==='truck'&&e.meta.vehicleModel==='tiger')),{meshes:13,triangles:910});
   assert(modelStats(living.entities.find(e=>e.meta.vehicleModel==='jagdpanther')).triangles>5000);
-  const ferryStats=modelStats(living.entities.find(e=>e.kind==='ferry'));
-  assert.equal(ferryStats.triangles,14605,'uploaded cargo hull replaces the retired merchant');
-  assert(ferryStats.meshes<=30,'river cargo stays within the imported model draw budget');
+  const ferry=living.entities.find(e=>e.kind==='ferry');
+  const cargoNode=THREE.PropertyBinding.sanitizeNodeName('Japanese wartime cargo transport');
+  assert(ferry.visual.getObjectByName(cargoNode),'river ferry uses the original Pacific cargo model');
+  const ferryStats=modelStats(ferry);
+  assert(ferryStats.triangles>0&&ferryStats.triangles<=4000,'river cargo stays within the geometry budget');
+  assert(ferryStats.meshes<=30,'river cargo stays within the draw budget');
   const carStats=modelStats(living.entities.find(e=>e.kind==='civil'));
   const trainStats=modelStats(living.entities.find(e=>e.kind==='train'));
   const wagonStats=modelStats(living.entities.find(e=>e.kind==='wagon'));
