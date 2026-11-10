@@ -4,16 +4,16 @@
   "build": 238,
   "status": "OPEN — source declarations checked; no external rights authorization obtained",
   "payload": {
-    "bytes": 209390304,
+    "bytes": 209704739,
     "fileCount": 367,
     "modelCount": 36,
-    "manifestSha256": "3fda1a8f706c7a3808cde5140544a5a41597185add0c1b85060643be29566ba1"
+    "manifestSha256": "0b60f4080425647595d535cd069cc8bd28e5e4d5d6bacc3119d3667a47b3b5dc"
   },
   "files": [
     {
       "path": "ASSET-CREDITS.md",
-      "bytes": 37214,
-      "sha256": "ea92d53157a54892ddeabbd5133b31615029d1beb66b937a312f5963e0f63294",
+      "bytes": 37565,
+      "sha256": "ff0c8a5ff6fc11bb9534ea00166ad50982a4f8545b2a73b50cb5eebe44a60377",
       "kind": "code-or-notice"
     },
     {
@@ -372,14 +372,14 @@
     },
     {
       "path": "assets/ships/fletcher.glb",
-      "bytes": 227128,
-      "sha256": "f0fc20f09ddeae2a41431303dee98fc858023280390735e0b92881e2895c2cf0",
+      "bytes": 247956,
+      "sha256": "13cfa573a5516fcfe69de1c5660dc6023a91a1d8c334c8b860d2feff9b62d70d",
       "kind": "model"
     },
     {
       "path": "assets/ships/japanese-cargo.glb",
-      "bytes": 311012,
-      "sha256": "553846840e4279b2c2928a8b087af37eee2396cb9c76fd0b2302685d82c6e62a",
+      "bytes": 250992,
+      "sha256": "5ae147c268e3dbe787eb0eb00a826735030da241d864040cd58c985028f7cca9",
       "kind": "model"
     },
     {
@@ -402,8 +402,8 @@
     },
     {
       "path": "assets/ships/samidare.glb",
-      "bytes": 217940,
-      "sha256": "f0cb091d9d0b48e188b1656036d1e57a666a2d1d8781d028823ffb5a4eb59f04",
+      "bytes": 223240,
+      "sha256": "f5413a70962770c0626c40b25e556299000406db0ec7b9dc710dc408fbec55f3",
       "kind": "model"
     },
     {
@@ -780,8 +780,8 @@
     },
     {
       "path": "ijn carrier.glb",
-      "bytes": 869220,
-      "sha256": "3777dc8c952c9d72e5caac88611fd66c8193e92fc24a6c901506f2209d9ac9b5",
+      "bytes": 1035008,
+      "sha256": "ac2b37222674d7bba5fc32f318b7b0f65b3bdc1b39c14fd2fa7efca5e1b925af",
       "kind": "model"
     },
     {
@@ -841,7 +841,7 @@
     {
       "path": "naval-assets.js",
       "bytes": 2590,
-      "sha256": "269c35b65f578b93f61d9c63e21782af0787dfc8b07af0c02747e8ffba63c921",
+      "sha256": "a8dd7877f202b44474b0dc337318d01eeeec077efce830c3462cd161a89bf063",
       "kind": "code-or-notice"
     },
     {
@@ -2131,7 +2131,7 @@
     {
       "path": "torpedo-carrier.html",
       "bytes": 454290,
-      "sha256": "0d479aeae5ff0e97cb67da8b88bf3fa707bfed02d86dc47fa82e72444ac88227",
+      "sha256": "1e8cc8db834279383f09961fdd8f995cf7c3f96e946ecd8cdacd82beb72a4e1b",
       "kind": "code-or-notice"
     },
     {
@@ -2142,8 +2142,8 @@
     },
     {
       "path": "uss_midway.glb",
-      "bytes": 986084,
-      "sha256": "982ec7479243d940f098652af6a4804e5824b847804e6c8fd7fbe5931d0698e1",
+      "bytes": 1168272,
+      "sha256": "e5c91a702e6adad7a471e8fabdb9f0ac49d5b619df410f6173d1fca9c87b7bfd",
       "kind": "model"
     },
     {
@@ -2708,8 +2708,8 @@
     },
     {
       "path": "assets/ships/fletcher.glb",
-      "bytes": 227128,
-      "sha256": "f0fc20f09ddeae2a41431303dee98fc858023280390735e0b92881e2895c2cf0",
+      "bytes": 247956,
+      "sha256": "13cfa573a5516fcfe69de1c5660dc6023a91a1d8c334c8b860d2feff9b62d70d",
       "title": "Fletcher class escort",
       "uploader": "Torpedo-Bomber project",
       "originalRightsholder": null,
@@ -2732,8 +2732,8 @@
     },
     {
       "path": "assets/ships/japanese-cargo.glb",
-      "bytes": 311012,
-      "sha256": "553846840e4279b2c2928a8b087af37eee2396cb9c76fd0b2302685d82c6e62a",
+      "bytes": 250992,
+      "sha256": "5ae147c268e3dbe787eb0eb00a826735030da241d864040cd58c985028f7cca9",
       "title": "Japanese wartime cargo transport",
       "uploader": "Torpedo-Bomber project",
       "originalRightsholder": null,
@@ -2828,8 +2828,8 @@
     },
     {
       "path": "assets/ships/samidare.glb",
-      "bytes": 217940,
-      "sha256": "f0cb091d9d0b48e188b1656036d1e57a666a2d1d8781d028823ffb5a4eb59f04",
+      "bytes": 223240,
+      "sha256": "f5413a70962770c0626c40b25e556299000406db0ec7b9dc710dc408fbec55f3",
       "title": "Samidare, Shiratsuyu class destroyer",
       "uploader": "Torpedo-Bomber project",
       "originalRightsholder": null,
@@ -2972,8 +2972,8 @@
     },
     {
       "path": "ijn carrier.glb",
-      "bytes": 869220,
-      "sha256": "3777dc8c952c9d72e5caac88611fd66c8193e92fc24a6c901506f2209d9ac9b5",
+      "bytes": 1035008,
+      "sha256": "ac2b37222674d7bba5fc32f318b7b0f65b3bdc1b39c14fd2fa7efca5e1b925af",
       "title": "Zuihō light carrier",
       "uploader": "Torpedo-Bomber project",
       "originalRightsholder": null,
@@ -3146,8 +3146,8 @@
     },
     {
       "path": "uss_midway.glb",
-      "bytes": 986084,
-      "sha256": "982ec7479243d940f098652af6a4804e5824b847804e6c8fd7fbe5931d0698e1",
+      "bytes": 1168272,
+      "sha256": "e5c91a702e6adad7a471e8fabdb9f0ac49d5b619df410f6173d1fca9c87b7bfd",
       "title": "USS Midway straight-deck carrier",
       "uploader": "Torpedo-Bomber project",
       "originalRightsholder": null,

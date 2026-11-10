@@ -345,6 +345,12 @@ deck and Zuihō's camouflage were informed by the NHHC reference photographs
 NH 49829 and NH 95471. The palettes are interpretive and the usable flight
 decks follow the existing game layout.
 
+The third fleet pass gives the four escorts and transports separate hull
+profiles and deck arrangements. The Japanese transport is a composite
+wartime cargo ship, with the bridge aft and goalpost cargo booms. The two
+carriers have distinct deck outlines, markings and service areas. Small
+permanent service fixtures stay outside the runway corridor.
+
 These models replace the previous Japanese supply ship, Liberty transport,
 landing ship, Fletcher escort, Samidare destroyer, Kō-hyōteki, Midway and Zuihō
 in the current runtime and offline payload. Previous source disclosures below

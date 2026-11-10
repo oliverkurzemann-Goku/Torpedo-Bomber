@@ -146,17 +146,27 @@ class Ship {
 }
 
 // Station coordinates are normalized half-length, beam factor, and local deck sheer.
-const MERCHANT = [[-1,.035,1.24],[-.96,.33,.83],[-.88,.64,.42],[-.74,.88,.12],
+const LIBERTY = [[-1,.035,1.24],[-.96,.33,.83],[-.88,.64,.42],[-.74,.88,.12],
   [-.53,.98,0],[-.27,1,0],[0,1,0],[.25,1,0],[.51,.96,.06],[.70,.83,.28],
   [.83,.62,.62],[.92,.36,1.12],[.98,.13,1.52],[1,.025,1.7]];
-const ESCORT = [[-1,.07,.30],[-.96,.38,.13],[-.86,.70,0],[-.68,.88,0],
+const FLETCHER = [[-1,.07,.30],[-.96,.38,.13],[-.86,.70,0],[-.68,.88,0],
   [-.45,.97,0],[-.21,1,0],[.02,.98,0],[.24,.92,.05],[.43,.83,.25],
   [.62,.67,.75],[.78,.51,1.36],[.89,.33,1.76],[.96,.16,2.1],[1,.015,2.42]];
+const JAPANESE_CARGO = [[-1,.28,.52],[-.96,.65,.40],[-.86,.91,.29],[-.69,1,.16],
+  [-.46,1,.04],[-.20,1,0],[.08,.98,0],[.32,.94,.09],[.55,.85,.22],
+  [.67,.74,.42],[.70,.70,1.78],[.83,.52,2.10],[.92,.30,2.38],[1,.025,2.68]];
+const SHIRATSUYU = [[-1,.026,.06],[-.95,.32,.09],[-.84,.59,.13],[-.66,.79,.04],
+  [-.44,.93,0],[-.20,1,0],[.06,.99,0],[.29,.91,.12],[.42,.84,.14],[.45,.81,1.64],
+  [.62,.64,1.91],[.78,.47,2.16],[.90,.29,2.69],[.97,.11,3.08],[1,.012,3.3]];
 const LANDING = [[-1,.67,.1],[-.95,.88,0],[-.82,1,0],[-.4,1,0],[0,1,0],
   [.42,1,0],[.72,.96,0],[.87,.86,.12],[.96,.72,.29],[1,.56,.46]];
 const CARRIER = [[-1,.07,.30],[-.95,.34,.10],[-.86,.70,0],[-.72,.91,0],
   [-.50,.99,0],[-.25,1,0],[0,1,0],[.25,1,0],[.53,.95,0],[.70,.85,0],
   [.83,.67,.28],[.92,.43,.62],[.97,.20,.90],[1,.025,1.3]];
+
+const ZUIHO = [[-1,.21,.34],[-.96,.55,.17],[-.85,.78,0],[-.69,.94,0],
+  [-.42,1,0],[-.12,1,0],[.16,.97,0],[.39,.88,.05],[.60,.75,.27],
+  [.77,.56,.59],[.91,.32,.97],[.97,.15,1.40],[1,.018,1.82]];
 
 function hull(ship, stations, {length, beam, draft, freeboard, color, deck = 'deck', theme}) {
   ship.paintProfile = {
@@ -284,25 +294,22 @@ function mount(ship, x, y, z, w, stern = false, twin = false) {
   }
 }
 
-function merchant(liberty) {
-  const ship = new Ship(liberty?'Liberty cargo transport':'Japanese wartime cargo transport',
-    liberty?REFS.liberty:REFS.cargo, liberty?0:-Math.PI/2);
-  const l=liberty?135:132, deck=liberty?5.4:5.15;
-  const hullPaint=liberty?'shade':'cargoDark';
-  hull(ship,MERCHANT,{length:l,beam:liberty?17.4:17.9,draft:liberty?5.8:3.5,
-    freeboard:deck,color:hullPaint,deck:liberty?'wood':'hatch',theme:liberty?'liberty':'cargo'});
-  const house=liberty?-4:-10;
-  ship.block(liberty?'steel':'cargo',0,deck,house,12.4,2.3,22);
+function libertyShip() {
+  const ship = new Ship('Liberty cargo transport',REFS.liberty);
+  const deck=5.4, house=-4;
+  hull(ship,LIBERTY,{length:135,beam:17.4,draft:5.8,freeboard:deck,
+    color:'shade',deck:'wood',theme:'liberty'});
+  ship.block('steel',0,deck,house,12.4,2.3,22);
   ship.block('shade',0,deck+2.3,house,12.8,.16,22.2);
-  cabin(ship,0,deck+2.46,house+2.6,9.8,2.32,10.4,liberty?'light':'cargo');
-  cabin(ship,0,deck+4.95,house+5,7.6,1.72,4.8,liberty?'light':'cargo');
-  stack(ship,0,deck+2.5,house-4.6,liberty?1.47:1.59,liberty?7.9:9.1,liberty?'steel':'maroon');
+  cabin(ship,0,deck+2.46,house+2.6,9.8,2.32,10.4,'light');
+  cabin(ship,0,deck+4.95,house+5,7.6,1.72,4.8,'light');
+  stack(ship,0,deck+2.5,house-4.6,1.47,7.9);
   mast(ship,0,deck+6.9,house+4.6,6.1);
-  const hatches=liberty?[-44,-28,15,32,48]:[-42,-28,12,29,46];
+  const hatches=[-44,-28,15,32,48];
   for (const [index,z] of hatches.entries()) {
     const width=index===0?7.1:8.6;
     ship.block('dark',0,deck+.10,z,width+.5,.73,10.6);
-    ship.block(liberty?'hatch':'canvas',0,deck+.83,z,width,.17,10);
+    ship.block('hatch',0,deck+.83,z,width,.17,10);
     for (let i=-2;i<=2;i++) ship.block('shade',0,deck+1.001,z+i*1.8,width,.065,.085);
   }
   for (const [index,z] of [-36,21,39].entries()) {
@@ -330,33 +337,96 @@ function merchant(liberty) {
   return ship;
 }
 
-function destroyer(us) {
-  const ship = new Ship(us?'Fletcher class escort':'Samidare, Shiratsuyu class destroyer',
-    us?REFS.fletcher:REFS.samidare,Math.PI/2);
-  const d=us?3.15:2.85;
-  hull(ship,ESCORT,{length:us?115:110,beam:us?12.05:10.15,draft:us?3.5:3.3,
-    freeboard:d,color:us?'blue':'steel',theme:us?'fletcher':'samidare'});
-  const w=us?7.2:6.45;
-  ship.block(us?'blue':'shade',0,d,-3,w,1.8,53);
-  ship.block('deck',0,d+1.8,-3,w+.19,.14,53.2);
-  ship.block('steel',0,d+1.94,15, w-1.1,2,13);
-  cabin(ship,0,d+3.94,18,w-.8,1.8,7.9,us?'blue':'steel');
-  ship.block('light',0,d+5.92,18,w-1.2,.39,4.3);
+function japaneseCargo() {
+  const ship = new Ship('Japanese wartime cargo transport',REFS.cargo,-Math.PI/2);
+  const deck=4.85;
+  hull(ship,JAPANESE_CARGO,{length:132,beam:17.9,draft:3.5,freeboard:deck,
+    color:'cargoDark',deck:'deck',theme:'cargo'});
+  // The compact machinery and bridge are aft, leaving a long working deck.
+  ship.block('cargo',0,deck,-39,12.8,2.44,24);
+  cabin(ship,0,deck+2.43,-34,9.9,2.1,9.5,'green');
+  cabin(ship,0,deck+4.68,-35,6.15,1.46,5.4,'cargo');
+  stack(ship,0,deck+2.43,-45,1.88,6.65,'maroon');
+  for (const [z,w,l] of [[-17,8.6,12],[7,10.2,17],[31,9.5,16]]) {
+    ship.block('dark',0,deck+.08,z,w+.55,.75,l+.45);
+    ship.block('canvas',0,deck+.82,z,w,.18,l);
+    for (let offset=-l*.38;offset<l*.41;offset+=1.9) ship.block('rope',0,deck+1,z+offset,w,.085,.12);
+  }
+  for (const [z,h] of [[-4,12.4],[20,13.5],[42,9.5]]) {
+    const y=deck+.34;
+    for (const side of [-1,1]) {
+      const x=side*4.5;
+      ship.tube('shade',[x,y,z],[x,y+h,z-1.0],.29,.19,8);
+      const end=[side*3.4,y+h*.69,z+(side>0?9:-8)];
+      ship.tube('greenDark',[x,y+1.1,z],end,.16,.10,7);
+      ship.tube('rope',end,[x,y+h,z-1.0],.045,.045,5);
+      ship.block('shade',x,y,z+1.9,1.45,.59,1.36);
+    }
+    ship.tube('steel',[-4.5,y+h,z-1],[4.5,y+h,z-1],.17,.17,7);
+  }
+  for (const side of [-1,1]) {
+    boat(ship,side*5.05,deck+2.48,-35,5.6);
+    rail(ship,side*8.12,deck,-26,39,13,side*7.0);
+  }
+  mast(ship,0,deck+6.27,-34.6,6.8);
+  bollards(ship,1.85,deck+2.25,56);
+  return ship;
+}
+
+function fletcher() {
+  const ship = new Ship('Fletcher class escort',REFS.fletcher,Math.PI/2);
+  const d=3.15;
+  hull(ship,FLETCHER,{length:115,beam:12.05,draft:3.5,freeboard:d,color:'blue',theme:'fletcher'});
+  ship.block('blue',0,d,-3,7.2,1.8,53);
+  ship.block('deck',0,d+1.8,-3,7.39,.14,53.2);
+  ship.block('steel',0,d+1.94,15,6.1,2,13);
+  cabin(ship,0,d+3.94,18,6.4,1.8,7.9,'blue');
+  ship.block('light',0,d+5.92,18,6,.39,4.3);
   mast(ship,0,d+5.05,11.7,10.4,true);
-  stack(ship,0,d+1.94,5.6,us?1.47:1.33,us?7.1:7.8,us?'blue':'steel');
-  stack(ship,0,d+1.94,-9.5,us?1.30:1.02,us?6.5:6,us?'blue':'steel');
+  latticeRadar(ship,0,d+15.1,11,false);
+  stack(ship,0,d+1.94,5.6,1.47,7.1,'blue');
+  stack(ship,0,d+1.94,-9.5,1.30,6.5,'blue');
   mast(ship,0,d+1.94,-17.3,7.6);
   for (const side of [-1,1]) {
-    boat(ship,side*(w/2-.08),d+1.94,-1.2,4.8);
-    rail(ship,side*(us?5.68:4.77),d,-29,25,15,side*(us?5:4.25));
-    rail(ship,side*(us?5.45:4.65),d,-29,-46,5,side*3.2);
+    boat(ship,side*3.52,d+1.94,-1.2,4.8);
+    rail(ship,side*5.68,d,-29,25,15,side*5);
+    rail(ship,side*5.45,d,-29,-46,5,side*3.2);
   }
-  mount(ship,0,d+1.02,35.4,2.5,false,!us);
-  if (us) mount(ship,0,d+3.15,28.4,2.34);
-  mount(ship,0,d+1.94,-24.4,2.38,true,!us);
-  if (us) mount(ship,0,d+.30,-34.6,2.42,true);
+  mount(ship,0,d+1.02,35.4,2.5);
+  mount(ship,0,d+3.15,28.4,2.34);
+  mount(ship,0,d+1.94,-24.4,2.38,true);
+  mount(ship,0,d+.30,-34.6,2.42,true);
   mount(ship,0,d+.22,-43.8,2.38,true);
   bollards(ship,1.15,d+1.89,49);
+  return ship;
+}
+
+function samidare() {
+  const ship = new Ship('Samidare, Shiratsuyu class destroyer',REFS.samidare,Math.PI/2);
+  const d=2.78;
+  hull(ship,SHIRATSUYU,{length:110,beam:10.15,draft:3.3,freeboard:d,
+    color:'steel',deck:'wood',theme:'samidare'});
+  // Tall forward tower on the raised forecastle, with separated machinery
+  // housings and a lower, largely open stern.
+  ship.block('shade',0,d+.18,18.5,6.15,2.65,11.5);
+  cabin(ship,0,d+2.83,20.7,5.8,2.35,7.9);
+  cabin(ship,0,d+5.34,22,4.55,1.94,5.8,'shade');
+  mast(ship,0,d+7.45,20.1,9.8,true);
+  ship.block('shade',0,d+.08,3.1,6.45,1.35,9.2);
+  stack(ship,0,d+1.41,4.0,1.32,8.15);
+  ship.block('shade',0,d+.05,-12,5.8,1.05,8.6);
+  stack(ship,0,d+1.10,-12.0,.98,5.2,'shade');
+  ship.block('steel',0,d+.12,-26,4.8,1.68,7.9);
+  mast(ship,0,d+1.78,-25,7.4);
+  for (const side of [-1,1]) {
+    boat(ship,side*3.88,d+.49,-6.5,5.25);
+    rail(ship,side*4.68,d,-28,16,13,side*4.38);
+    rail(ship,side*4.55,d,-28,-45,5,side*2.95);
+  }
+  mount(ship,0,d+1.93,35.4,2.67,false,true);
+  mount(ship,0,d+1.78,-32.1,2.45,true);
+  mount(ship,0,d+.20,-43.3,2.53,true,true);
+  bollards(ship,1.03,d+2.79,48);
   return ship;
 }
 
@@ -412,7 +482,10 @@ function submarine() {
 const DECK_Y = 16.85;
 
 function flightDeck(ship, japanese) {
-  const sections=[[-125,12.5],[-122.5,16.4],[-117,17.2],[-104,17.35],[-67,17.35],
+  const sections=japanese
+    ? [[-125,13.7],[-122,16.6],[-109,17.1],[-77,17.55],[-28,17.4],[34,17.2],
+       [77,16.85],[113,16.85],[122,16.7],[125,9.2]]
+    : [[-125,12.5],[-122.5,16.4],[-117,17.2],[-104,17.35],[-67,17.35],
     [-28,17.75],[15,17.75],[58,17.3],[98,17.3],[117,17.1],[122.5,16.4],[125,12.4]];
   for (let i=0; i<sections.length-1; i++) {
     const [a,w]=sections[i], [b,v]=sections[i+1], h=DECK_Y-.66;
@@ -437,7 +510,11 @@ function flightDeck(ship, japanese) {
     }
   }
   for(const z of [-115,115]){
-    for(let i=-4;i<=4;i++) mark('pale',i*2.38,DECK_Y+.009,z,.42,.012,4.0);
+    if (japanese) {
+      for (const dz of [-2,0,2]) mark('pale',0,DECK_Y+.013,z+dz,25.4,.011,.47);
+    } else {
+      for(let i=-4;i<=4;i++) mark('pale',i*2.38,DECK_Y+.009,z,.42,.012,4.0);
+    }
   }
   // Lift seams and tiedown holes are visual geometry on the common solid deck.
   for (const z of (japanese?[-53,47]:[-55,48])) {
@@ -625,12 +702,84 @@ function zuihoBridge(ship) {
   });
 }
 
+function deckCart(ship, x, z, body, long) {
+  const y=DECK_Y;
+  ship.block('shade',x,y+.31,z,1.45,.25,long);
+  ship.block(body,x,y+.56,z-.24,1.32,.51,long*.56);
+  ship.block('dark',x,y+.59,z+long*.32,1.24,.30,long*.32);
+  for (const shift of [-long*.32,long*.32]) {
+    for (const side of [-1,1]) {
+      const center=x+side*.68;
+      ship.tube('ink',[center-side*.13,y+.31,z+shift],[center+side*.18,y+.31,z+shift],.31,.31,10);
+    }
+  }
+}
+
+function carrierDeckService(ship, japanese) {
+  const trim=japanese?'greenDark':'blue';
+  ship.decoration(() => {
+    // Permanent furniture stays outside the start and landing corridor.
+    const platforms=japanese
+      ? [[1,-53,16],[-1,53,16],[1,76,11],[-1,-88,12]]
+      : [[-1,-15,19],[1,-46,17],[-1,54,15],[1,52,12]];
+    for (const [side,z,length] of platforms) {
+      const x=side*19.3;
+      ship.block(trim,x,DECK_Y-.74,z,4.9,.73,length);
+      ship.block('deckPaint',x,DECK_Y-.012,z,4.82,.019,length-.13);
+      rail(ship,side*21.60,DECK_Y,z-length*.47,z+length*.47,5);
+      for (const dz of [-length*.40,length*.40]) {
+        ship.tube('shade',[side*12.2,DECK_Y-3.9,z+dz],[side*20.4,DECK_Y-.75,z+dz],.21,.18,7);
+      }
+      for(let dz=-length*.40;dz<length*.40;dz+=.85){
+        ship.block(japanese?'pale':'cream',side*21.0,DECK_Y+.014,z+dz,.30,.015,.33);
+      }
+      ship.block(trim,side*20.28,DECK_Y+.05,z+length*.32,1.52,.90,1.74);
+      ship.block('rope',side*20.28,DECK_Y+.96,z+length*.32,1.57,.11,1.78);
+      ladder(ship,side*21.5,DECK_Y-2.95,z-length*.36,2.95,.70);
+    }
+    if (japanese) {
+      deckCart(ship,19.5,-52,'cargo',2.08);
+      for (const z of [49.2,50.25,51.3]){
+        ship.tube('canvas',[-19.6,DECK_Y,z],[-19.6,DECK_Y+.84,z],.43,.42,10);
+        ship.tube('shade',[-19.6,DECK_Y+.84,z],[-19.6,DECK_Y+.91,z],.44,.44,10);
+      }
+      gallery(ship,1,8.1,11.15,-94,14.5,trim);
+      gallery(ship,-1,8.1,11.15,-94,14.5,trim);
+      for(const side of [-1,1]){
+        const x=side*12.3;
+        ship.tube(trim,[x,13.05,-91],[x+side*3.0,15.72,-94],.13,.11,7);
+        ship.tube('rope',[x+side*3.0,15.72,-94],[x+side*3.0,12.1,-94],.048,.048,6);
+        ship.block('shade',side*7.25,11.17,-97,2.5,.95,3.7);
+      }
+    } else {
+      // Large service lift at the edge of the flight deck and tow carts.
+      ship.block('shade',-19.25,DECK_Y-.55,-15,4.75,.50,17.2);
+      deckCart(ship,19.15,-47,'cream',2.6);
+      deckCart(ship,-19.30,53,'blue',2.36);
+      for (const z of [-53,-50.2,52,55.6]) {
+        const x=z<0?20.45:20.14;
+        ship.block('canvas',x,DECK_Y+.06,z,1.34,.58,1.62);
+        ship.block('rope',x,DECK_Y+.64,z,1.39,.055,.26);
+      }
+      // Island exterior doors, vents and an elevated signal platform.
+      for (const z of [7.1,13.2,20.1,31.6]) {
+        ship.block('shade',22.96,DECK_Y+.30,z,.13,1.68,.92);
+        ship.block('light',23.035,DECK_Y+1.08,z+.32,.055,.11,.11);
+      }
+      for (let z=8;z<=16;z+=.66){
+        ship.block('ink',22.99,DECK_Y+1.94,z,.12,.11,.41);
+      }
+      gallery(ship,1,23.45,DECK_Y+7.24,25.4,9.4,trim);
+    }
+  });
+}
+
 function carrier(japanese) {
   const factor = japanese ? 1.744 : 1.35;
   const rawDeck = japanese ? 8.01 : 10.45;
   const ship=new Ship(japanese?'Zuihō light carrier':'USS Midway straight-deck carrier',
     japanese?REFS.zuiho:REFS.midway,0,{scale:1/factor,y:rawDeck-DECK_Y/factor});
-  hull(ship,CARRIER,{length:japanese?232:246,beam:japanese?22.0:31.8,
+  hull(ship,japanese?ZUIHO:CARRIER,{length:japanese?232:246,beam:japanese?22.0:31.8,
     draft:japanese?6.4:8,freeboard:japanese?7.6:9,color:japanese?'green':'blue',
     deck:japanese?'tan':'flightBlue',theme:japanese?'zuiho':'midway'});
   Object.assign(ship.paintProfile,{length:250, deckBeam:35.5});
@@ -638,14 +787,15 @@ function carrier(japanese) {
   if (japanese) zuihoBridge(ship);
   else midwayIsland(ship);
   flightDeck(ship,japanese);
+  carrierDeckService(ship,japanese);
   return ship;
 }
 
 fs.mkdirSync(path.join(ROOT,'assets/ships'),{recursive:true});
-merchant(false).save('assets/ships/japanese-cargo.glb');
-merchant(true).save('assets/ships/liberty.glb');
-destroyer(false).save('assets/ships/samidare.glb');
-destroyer(true).save('assets/ships/fletcher.glb');
+japaneseCargo().save('assets/ships/japanese-cargo.glb');
+libertyShip().save('assets/ships/liberty.glb');
+samidare().save('assets/ships/samidare.glb');
+fletcher().save('assets/ships/fletcher.glb');
 landing().save('assets/ships/landing-ship.glb');
 submarine().save('assets/ships/ko-hyoteki.glb');
 carrier(false).save('uss_midway.glb');
