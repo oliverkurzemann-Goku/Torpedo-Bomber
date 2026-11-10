@@ -84,7 +84,7 @@ const server=http.createServer((req,res)=>{
    const fam=fps=>new Set(Object.keys(report.rhine[fps].modes));
    assert([...fam(60)].filter(m=>fam(20).has(m)||fam(120).has(m)).length>=2,'20/60/120 FPS fights share manoeuvres');
    // the legacy path is still reachable
-   const old=await browser.newPage();await old.addInitScript(()=>window.requestAnimationFrame=()=>0);
+   const old=await browser.newPage();old.setDefaultTimeout(600000);await old.addInitScript(()=>window.requestAnimationFrame=()=>0);   // Build 237: the real world needs 38-45 s to load on a busy machine, the 30 s default was too short
    await old.goto(base+'/remagen-mission.html?v=237&ai=old');
    await old.waitForFunction(()=>state===ST.MENU&&realWorldReady,null,{polling:250});
    assert.equal(await old.evaluate(()=>AI_OLD&&!brainOn({kind:'bf109'})),true,'?ai=old selects the Build 223 modes');
