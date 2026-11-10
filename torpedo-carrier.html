@@ -510,14 +510,14 @@
 <script src="avenger-bay.js?v=220"></script>
 <script src="corsair-native.js?v=218"></script>
 <script src="avenger-finish.js?v=199"></script>
-<script src="naval-assets.js?v=198"></script>
+<script src="naval-assets.js?v=own-fleet-1"></script>
 <script src="aircraft-rotors.js?v=172"></script>
 <script src="combat-fx.js?v=238"></script>
 <script src="aircraft-smoke.js?v=176"></script>
 <script src="aircraft-damage.js?v=177"></script>
 <script src="ship-damage.js?v=206"></script>
 <script src="torpedo-attack.js?v=206"></script>
-<script src="ship-contact.js?v=238"></script>
+<script src="ship-contact.js?v=own-fleet-1"></script>
 <script src="flight-support.js?v=238"></script>
 <script src="ordnance.js?v=238"></script>
 <script src="crew-visuals.js?v=179"></script>
@@ -2429,7 +2429,7 @@ function carrierDeckPlane(){
   const nominal=isDefend()?IJN_DECK_Y_MODEL:CARRIER_DECK_Y_MODEL;
   if(hull.userData.contactDeckY==null){
     const centre=new THREE.Vector3(0,nominal,0).applyMatrix4(hull.matrixWorld);
-    const measured=AircraftGround.surfaceHeight(hull,centre.x,centre.z,centre.y);
+    const measured=shipContact.surfaceHeight(hull,centre.x,centre.z,centre.y);
     hull.userData.contactDeckY=hull.worldToLocal(new THREE.Vector3(centre.x,measured,centre.z)).y;
   }
   const centre=new THREE.Vector3(0,hull.userData.contactDeckY,0).applyMatrix4(hull.matrixWorld);
@@ -2439,8 +2439,7 @@ function carrierDeckPlane(){
 function carrierDeckHeight(x,z){
   const plane=carrierDeckPlane(),reference=plane.y+plane.sx*(x-plane.x)+plane.sz*(z-plane.z)-.02;
   const hull=isDefend()?ijnCarrierModel:carrierModel;
-  // The original aft IJN deck is gently stepped/cambered. A single centre
-  // datum cannot describe it. Use the existing shared BVH, not a mesh scan.
+  // Query the actual solid deck, including when the ship rolls or pitches.
   return hull?shipContact.surfaceHeight(hull,x,z,reference)+.02:reference+.02;
 }
 function carrierAircraftReady(){

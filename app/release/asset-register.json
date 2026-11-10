@@ -4,10 +4,10 @@
   "build": 238,
   "status": "OPEN — source declarations checked; no external rights authorization obtained",
   "payload": {
-    "bytes": 207825465,
+    "bytes": 207830256,
     "fileCount": 367,
     "modelCount": 36,
-    "manifestSha256": "151b50234b4c9e4f1eb6be88927cfb569ff722dca8a17e80c7f7ffbe10c7994b"
+    "manifestSha256": "178e0679dddfe7af150ad38fa89e89f992a0df805e531d42695fe566d266b7b4"
   },
   "files": [
     {
@@ -780,8 +780,8 @@
     },
     {
       "path": "ijn carrier.glb",
-      "bytes": 324196,
-      "sha256": "d68f565473e07b9bb0d3d372661af65c44eb17a5af325a029b7356e5ff01e60e",
+      "bytes": 326236,
+      "sha256": "a4118ba0d13a07cddd064041acf7209d1d00285d10cc4ea39e084adb2ff1a85c",
       "kind": "model"
     },
     {
@@ -942,8 +942,8 @@
     },
     {
       "path": "ship-contact.js",
-      "bytes": 10603,
-      "sha256": "2bab7435e40d62de2c34269a2d5973ffbd44303891bdd3d4461f590db34dd8f4",
+      "bytes": 10633,
+      "sha256": "e188c8f128387e4ae05a657c478bf541841c1dd65961b61aa97ccd6959f687c9",
       "kind": "code-or-notice"
     },
     {
@@ -2130,8 +2130,8 @@
     },
     {
       "path": "torpedo-carrier.html",
-      "bytes": 454353,
-      "sha256": "102eb3f7c72fcb9cc26879727732d9a540a815173271e60a77fcdaf1183315be",
+      "bytes": 454290,
+      "sha256": "f9c480b9b1a29ab83367a9d77b7c741d7a89ad82ef726fdd454d89c762df01f0",
       "kind": "code-or-notice"
     },
     {
@@ -2142,8 +2142,8 @@
     },
     {
       "path": "uss_midway.glb",
-      "bytes": 345272,
-      "sha256": "21f95ff9076373427e7c02173a6163a1a25c82f69aabccdb7f423a40b90c5300",
+      "bytes": 348056,
+      "sha256": "1a208a148a153148bf8d9870df4a8d9d80bcb01f5961bd1077c170a5233ea3bc",
       "kind": "model"
     },
     {
@@ -2972,8 +2972,8 @@
     },
     {
       "path": "ijn carrier.glb",
-      "bytes": 324196,
-      "sha256": "d68f565473e07b9bb0d3d372661af65c44eb17a5af325a029b7356e5ff01e60e",
+      "bytes": 326236,
+      "sha256": "a4118ba0d13a07cddd064041acf7209d1d00285d10cc4ea39e084adb2ff1a85c",
       "title": "Zuihō light carrier",
       "uploader": "Torpedo-Bomber project",
       "originalRightsholder": null,
@@ -3146,8 +3146,8 @@
     },
     {
       "path": "uss_midway.glb",
-      "bytes": 345272,
-      "sha256": "21f95ff9076373427e7c02173a6163a1a25c82f69aabccdb7f423a40b90c5300",
+      "bytes": 348056,
+      "sha256": "1a208a148a153148bf8d9870df4a8d9d80bcb01f5961bd1077c170a5233ea3bc",
       "title": "USS Midway straight-deck carrier",
       "uploader": "Torpedo-Bomber project",
       "originalRightsholder": null,

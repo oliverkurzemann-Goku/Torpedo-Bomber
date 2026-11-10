@@ -47,15 +47,18 @@ class Ship {
     this.parts = new Map();
   }
 
-  batch(paint) {
-    if (!this.parts.has(paint)) this.parts.set(paint, { positions: [], normals: [], indices: [] });
-    return this.parts.get(paint);
+  batch(paint, visualOnly) {
+    const key = visualOnly ? 'deck-marking-' + paint : paint;
+    if (!this.parts.has(key)) {
+      this.parts.set(key, { paint, visualOnly, positions: [], normals: [], indices: [] });
+    }
+    return this.parts.get(key);
   }
 
-  panel(paint, points) {
+  panel(paint, points, visualOnly = false) {
     const normal = cross(sub(points[1], points[0]), sub(points[2], points[0]));
     if (Math.hypot(...normal) < 1e-8) return;
-    const mesh = this.batch(paint);
+    const mesh = this.batch(paint, visualOnly);
     const base = mesh.positions.length / 3;
     const n = unit(normal);
     for (const point of points) {
@@ -65,8 +68,8 @@ class Ship {
     for (let i = 1; i < points.length - 1; i++) mesh.indices.push(base, base + i, base + i + 1);
   }
 
-  block(paint, x, base, z, width, height, length) {
-    const mesh = this.batch(paint);
+  block(paint, x, base, z, width, height, length, visualOnly = false) {
+    const mesh = this.batch(paint, visualOnly);
     const b = box([x, base + height/2, z], [width, height, length]);
     const offset = mesh.positions.length / 3;
     mesh.positions.push(...b.positions);
@@ -101,7 +104,8 @@ class Ship {
     const cosine = Math.cos(this.yaw), sine = Math.sin(this.yaw);
     const rotate = (x, y, z) => [x*cosine + z*sine, y, z*cosine - x*sine];
     const { scale: factor, y: height } = this.transform;
-    for (const [paint, mesh] of this.parts) {
+    for (const [key, mesh] of this.parts) {
+      const {paint, visualOnly} = mesh;
       for (let i = 0; i < mesh.positions.length; i += 3) {
         const p = rotate(...mesh.positions.slice(i,i+3));
         const n = rotate(...mesh.normals.slice(i,i+3));
@@ -115,7 +119,8 @@ class Ship {
       const material = glb.material({name: paint, pbrMetallicRoughness: {
         baseColorFactor: [...rgb(PAINT[paint]), 1], roughnessFactor: .87, metallicFactor: .04
       }});
-      glb.node({name: paint, mesh: glb.mesh(paint, {...mesh, material})}, root);
+      glb.node({name: key, mesh: glb.mesh(key, {...mesh, material}),
+        extras: visualOnly ? {shipVisualOnly: true} : undefined}, root);
     }
     const bytes = glb.glb();
     fs.writeFileSync(path.join(ROOT, relative), bytes);
@@ -387,37 +392,41 @@ function flightDeck(ship, japanese) {
     const face=[[-w,DECK_Y-.66,z],[w,DECK_Y-.66,z],[w,DECK_Y,z],[-w,DECK_Y,z]];
     ship.panel('shade',dir===1?face:face.reverse());
   }
+  // Paint sits slightly above the mesh to avoid z-fighting. Its visual nodes
+  // are excluded from ShipContact so tyres meet the continuous deck surface.
+  const mark = (paint, x, y, z, width, height, length) =>
+    ship.block(paint,x,y,z,width,height,length,true);
   for (let z=-112;z<=114;z+=2.12) {
-    ship.block(japanese?'wood':'deck',0,DECK_Y+.001,z,32.9,.007,.055);
+    mark(japanese?'wood':'deck',0,DECK_Y+.001,z,32.9,.007,.055);
   }
-  for (let z=-116;z<115;z+=8.3) ship.block('pale',0,DECK_Y+.009,z,.19,.012,4.3);
+  for (let z=-116;z<115;z+=8.3) mark('pale',0,DECK_Y+.009,z,.19,.012,4.3);
   for (const side of [-1,1]) {
-    ship.block('pale',side*15.69,DECK_Y+.009,0,.16,.012,237.2);
+    mark('pale',side*15.69,DECK_Y+.009,0,.16,.012,237.2);
     for (let z=-112;z<119;z+=8.8) {
-      ship.block('shade',side*16.28,DECK_Y+.005,z,.46,.012,3.5);
+      mark('shade',side*16.28,DECK_Y+.005,z,.46,.012,3.5);
     }
   }
   for(const z of [-115,115]){
-    for(let i=-4;i<=4;i++) ship.block('pale',i*2.38,DECK_Y+.009,z,.42,.012,4.0);
+    for(let i=-4;i<=4;i++) mark('pale',i*2.38,DECK_Y+.009,z,.42,.012,4.0);
   }
   for (const z of [-53,44]) {
-    for (const side of [-1,1]) ship.block('deck',side*5.65,DECK_Y+.014,z,.105,.012,14.0);
-    for (const end of [-1,1]) ship.block('deck',0,DECK_Y+.014,z+end*7,11.4,.012,.105);
+    for (const side of [-1,1]) mark('deck',side*5.65,DECK_Y+.014,z,.105,.012,14.0);
+    for (const end of [-1,1]) mark('deck',0,DECK_Y+.014,z+end*7,11.4,.012,.105);
   }
   if (japanese) {
     const z=88,r=5.0;
     for(let i=0;i<40;i++){
       const a=i*Math.PI/20,b=(i+1)*Math.PI/20;
       ship.panel('maroon',[[0,DECK_Y+.032,z],[r*Math.cos(a),DECK_Y+.032,z+r*Math.sin(a)],
-        [r*Math.cos(b),DECK_Y+.032,z+r*Math.sin(b)]].reverse());
+        [r*Math.cos(b),DECK_Y+.032,z+r*Math.sin(b)]].reverse(),true);
     }
   } else {
     for (const z of [-103.4,99]) {
-      ship.block('pale',-7.9,DECK_Y+.020,z,.34,.012,5.1);
-      ship.block('pale',-9.95,DECK_Y+.020,z+1.2,.34,.012,2.68);
-      ship.block('pale',-8.85,DECK_Y+.020,z-.02,2.2,.012,.32);
-      ship.block('pale',-6.35,DECK_Y+.020,z,.36,.012,5.1);
-      ship.block('pale',-6.67,DECK_Y+.020,z+2.4,.98,.012,.30);
+      mark('pale',-7.9,DECK_Y+.020,z,.34,.012,5.1);
+      mark('pale',-9.95,DECK_Y+.020,z+1.2,.34,.012,2.68);
+      mark('pale',-8.85,DECK_Y+.020,z-.02,2.2,.012,.32);
+      mark('pale',-6.35,DECK_Y+.020,z,.36,.012,5.1);
+      mark('pale',-6.67,DECK_Y+.020,z+2.4,.98,.012,.30);
     }
   }
 }

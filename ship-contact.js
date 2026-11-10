@@ -10,7 +10,7 @@ function create(THREE){
   const key=model.userData.shipContactKey;if(key&&profiles.has(key))return profiles.get(key);
   model.updateWorldMatrix(true,true);inverse.copy(model.matrixWorld).invert();const values=[];
   model.traverse(mesh=>{
-   if(!mesh.isMesh||!mesh.geometry||!mesh.visible)return;
+   if(!mesh.isMesh||!mesh.geometry||!mesh.visible||mesh.userData.shipVisualOnly)return;
    const p=mesh.geometry.attributes.position,indices=mesh.geometry.index;if(!p)return;
    relative.multiplyMatrices(inverse,mesh.matrixWorld);
    const array=p.isInterleavedBufferAttribute?p.data.array:p.array;
