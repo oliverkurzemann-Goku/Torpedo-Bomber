@@ -1,13 +1,13 @@
 {
   "schema": 1,
   "reviewedOn": "2026-10-23",
-  "build": 237,
+  "build": 238,
   "status": "OPEN — source declarations checked; no external rights authorization obtained",
   "payload": {
-    "bytes": 272896387,
-    "fileCount": 364,
+    "bytes": 272950586,
+    "fileCount": 367,
     "modelCount": 36,
-    "manifestSha256": "228900e0770ea39765426b44fe7eb406e0c99595a54756500ef45ffb57f12cdd"
+    "manifestSha256": "906a6ba87ff049799c56d72e21552a7176843f59629dc85cf787ea5851944f35"
   },
   "files": [
     {
@@ -618,8 +618,8 @@
     },
     {
       "path": "checkpoint-rhine.js",
-      "bytes": 5709,
-      "sha256": "0f383eaef87a5150aa5926bd74dd68f5727d46d6e4592a8414650b819e8be4be",
+      "bytes": 5778,
+      "sha256": "7aa1190b4fd3bbb0a706860ddc22f7a3ace367232a91c48cd77f448b122d5d74",
       "kind": "code-or-notice"
     },
     {
@@ -656,6 +656,24 @@
       "path": "dogfight-ai.js",
       "bytes": 22016,
       "sha256": "469b0b179a2ab52930ba2465cb52df2045165df0cb25d47760ccc975fb2fc0fa",
+      "kind": "code-or-notice"
+    },
+    {
+      "path": "duel-net.js",
+      "bytes": 8962,
+      "sha256": "fad580fd66e205d031dc8b80c91a0df9e64fb5d62b34165b8e9ddd16f86b8cdf",
+      "kind": "code-or-notice"
+    },
+    {
+      "path": "duel.css",
+      "bytes": 3738,
+      "sha256": "7084c2ec76fc52dad74420f063708f3e8adabee8e189adbc60782e89038436d1",
+      "kind": "code-or-notice"
+    },
+    {
+      "path": "duel.js",
+      "bytes": 10664,
+      "sha256": "c84dca2384d3bdacd61b1ac23948e05314d505906b59fc4dc4ff357cd05c13c9",
       "kind": "code-or-notice"
     },
     {
@@ -751,7 +769,7 @@
     {
       "path": "hangar.html",
       "bytes": 4485,
-      "sha256": "ceae2633a780322ef39e54e71aaccc643423b27879578a7020e4deac7b3bbc9a",
+      "sha256": "dea9f51c2555df9fb0c63805df338a0033a3d39229a42d44c4dcac4a292b17bb",
       "kind": "code-or-notice"
     },
     {
@@ -769,7 +787,7 @@
     {
       "path": "index.html",
       "bytes": 7543,
-      "sha256": "2040672ace37ec039183603c0009d07382b748dee26234354b19c81285dffa04",
+      "sha256": "b710281383d486756c4df54a0fcf44cfe13c6a288c1fea6c06e9705dd5ae4a9f",
       "kind": "code-or-notice"
     },
     {
@@ -816,8 +834,8 @@
     },
     {
       "path": "menu-layout.css",
-      "bytes": 12455,
-      "sha256": "1f5ff4f5b61e50c21198a3c6f9099dc13dc7e410289c342d6aed721f0fbf9e12",
+      "bytes": 12778,
+      "sha256": "c107fe2f153cf5f6e74aee834b31db8be7db87c44ab9d5fb422b9122178971fa",
       "kind": "code-or-notice"
     },
     {
@@ -900,8 +918,8 @@
     },
     {
       "path": "remagen-mission.html",
-      "bytes": 429652,
-      "sha256": "ad3eb7e537993e848a831409fdab625b1e8a2c03a13aa62197e58939afd28406",
+      "bytes": 460095,
+      "sha256": "1c41f2fb858f40528e5840cfeb1ba46cd0c167fe1f0a9a30edd3166fd32eb07c",
       "kind": "code-or-notice"
     },
     {
@@ -2113,7 +2131,7 @@
     {
       "path": "torpedo-carrier.html",
       "bytes": 456203,
-      "sha256": "98577391ddca971de0edf6ecd2278a532bb60a266d65a001c4f533d0096c1ec7",
+      "sha256": "c0de618eb5fc0ac1e0c68babd5400954f654da9f3daf5e739e1ee31a995eff07",
       "kind": "code-or-notice"
     },
     {

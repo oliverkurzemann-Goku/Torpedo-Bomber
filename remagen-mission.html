@@ -279,7 +279,8 @@
 
 .hangarLink{display:block;padding:12px 14px;margin:8px 0 12px;color:#f3ce83;border:1px solid #ba9d57;border-radius:5px;text-decoration:none;text-align:center;font:600 12px system-ui;letter-spacing:.8px;min-height:44px;}
 </style>
-<link rel="stylesheet" href="menu-layout.css?v=237">
+<link rel="stylesheet" href="menu-layout.css?v=238">
+<link rel="stylesheet" href="duel.css?v=238">
 </head>
 <body>
 <!-- ===== TEMP TEST-ONLY VERSION BANNER — asked for by Oliver: "kannst du irgendwo einbauen,
@@ -301,7 +302,7 @@
   <div style="width:100%;height:4px;background:repeating-linear-gradient(45deg,#ffd400,#ffd400 8px,#111 8px,#111 16px);"></div>
   <span id="testVersionBannerText" style="background:#111;color:#ffd400;font-family:monospace;font-weight:800;font-size:11px;letter-spacing:.5px;padding:3px 10px;border:1px solid #ffd400;border-top:none;border-radius:0 0 6px 6px;"></span>
 </div>
-<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 237';</script>
+<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 238';</script>
 <!-- ===== END TEMP TEST-ONLY VERSION BANNER ===== -->
 <div id="app"></div>
 <style>
@@ -342,7 +343,7 @@
   <div id="flash"></div>
   <div id="gunsight"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 237 · REAL RHINE</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 238 · REAL RHINE</div>
 
   <div id="apr">
     <div id="aprCall"></div>
@@ -396,7 +397,7 @@
 </div>
 
 <div class="overlay hidden" id="menu" data-campaign="europe">
-  <div class="menuTop"><a id="selBtn" href="index.html?v=237">&#9664; Change Game</a><span class="menuMeta">RHINE OPERATIONS<br>BUILD 237</span></div>
+  <div class="menuTop"><a id="selBtn" href="index.html?v=238">&#9664; Change Game</a><span class="menuMeta">RHINE OPERATIONS<br>BUILD 238</span></div>
   <div class="card menuCard">
     <aside class="menuOverview" aria-label="Campaign and pilot options">
     <div class="campaignArt" aria-hidden="true"></div>
@@ -404,7 +405,7 @@
     <div class="sub">The Rhine Campaign &middot; Real Terrain &middot; 1945</div>
     <p class="menuIntro">Start with Circuits to practise take-off and landing before combat.</p>
     <div id="bestLine">BEST SCORE <b id="bestVal">0</b></div>
-    <button class="btn ghost" id="logBtn">Pilot's Logbook</button>
+    <div class="menuRow"><button class="btn ghost" id="logBtn">Pilot's Logbook</button><button class="btn ghost" id="duelBtn" title="Fly against a friend: two iPads, no server">2-Player Duel</button></div>
     <details class="quickGuide"><summary>Controls &amp; landing guide</summary>
       <div>Left stick: pitch / bank. Right bar: throttle. GEAR and FLAPS down for landing.
         The arrow points toward the next target; the compass shows heading and bearing.
@@ -490,6 +491,63 @@
   </div>
 </div>
 
+
+<!-- ---------------- 2-PLAYER DUEL LOBBY (Build 238) ---------------- -->
+<div class="overlay hidden" id="duelLobby">
+  <div class="card menuCard duelCard">
+    <h1 class="stencil">2-Player Duel</h1>
+    <div class="sub" id="dlSub">Head to head over the Rhine &middot; no server, you swap two short codes</div>
+    <div class="duelCols">
+      <section aria-label="Your pilot">
+        <div class="secLbl">Callsign</div>
+        <input type="text" id="dlName" maxlength="12" placeholder="PILOT" autocomplete="off" autocapitalize="characters" spellcheck="false">
+        <div class="secLbl">Aircraft</div>
+        <div id="dlAc" role="group" aria-label="Aircraft"></div>
+        <div class="secLbl">Rules <span id="dlRulesNote">(the host decides)</span></div>
+        <div class="dlRules">
+          <label>First to<select id="dlTarget"><option value="3">3 kills</option><option value="5" selected>5 kills</option><option value="10">10 kills</option></select></label>
+          <label>Time<select id="dlMinutes"><option value="5">5 min</option><option value="10" selected>10 min</option><option value="15">15 min</option><option value="0">No limit</option></select></label>
+        </div>
+        <label class="toggle"><input type="checkbox" id="dlStun" checked><span>Play over the internet (asks a public STUN server for your address). Off = same Wi-Fi only.</span></label>
+      </section>
+      <section aria-label="Connection">
+        <div id="dlStepChoose">
+          <div class="secLbl">Connect</div>
+          <div class="row"><button class="btn" id="dlHost">Host a duel</button><button class="btn ghost" id="dlJoin">Join a duel</button></div>
+          <div class="dlNote">The host creates an invitation code and sends it by message. The guest pastes it, gets an answer code and sends that back. After that the two devices talk directly.</div>
+        </div>
+        <div id="dlStepHost" hidden>
+          <div class="secLbl">1 &middot; Send this invitation to your opponent</div>
+          <textarea id="dlInvite" readonly placeholder="Creating invitation&hellip;"></textarea>
+          <div class="row"><button class="btn ghost" id="dlCopyInvite">Copy</button><button class="btn ghost" id="dlShareInvite">Share</button></div>
+          <div class="secLbl">2 &middot; Paste their answer here</div>
+          <textarea id="dlAnswerIn" placeholder="Paste the answer code"></textarea>
+          <button class="btn" id="dlConnect">Connect</button>
+        </div>
+        <div id="dlStepGuest" hidden>
+          <div class="secLbl">1 &middot; Paste the host's invitation</div>
+          <textarea id="dlInviteIn" placeholder="Paste the invitation code"></textarea>
+          <button class="btn" id="dlAccept">Create answer</button>
+          <div class="secLbl">2 &middot; Send this answer back to the host</div>
+          <textarea id="dlAnswer" readonly></textarea>
+          <div class="row"><button class="btn ghost" id="dlCopyAnswer">Copy</button><button class="btn ghost" id="dlShareAnswer">Share</button></div>
+        </div>
+        <div id="dlConnected" hidden>
+          <div class="secLbl">Connected</div>
+          <div class="dlConn" id="dlConn"></div>
+          <button class="btn" id="dlStart">Start duel</button>
+          <div class="dlNote" id="dlWait"></div>
+        </div>
+      </section>
+    </div>
+    <div id="dlStatus" role="status"></div>
+    <div class="menuActions"><button class="btn ghost" id="dlBack">Back</button></div>
+  </div>
+</div>
+
+<div id="duelMark" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2 22 12 12 22 2 12Z"/></svg><span id="duelMarkTxt"></span></div>
+<div id="duelPing" hidden></div>
+
 <script src="vendor/three-r128.min.js?v=128"></script>
 <script src="vendor/GLTFLoader-r128.js?v=147"></script>
 <script src="fortification-assets.js?v=175"></script>
@@ -506,7 +564,7 @@
 <script src="terrain-system/HeightProvider.js?v=remagen-21"></script>
 <script src="terrain-system/TerrainTile.js?v=198"></script>
 <script src="terrain-system/TerrainManager.js?v=198"></script>
-<script src="terrain-system/OSMManager.js?v=237"></script>
+<script src="terrain-system/OSMManager.js?v=238"></script>
 <script src="terrain-system/PeriodBuildings.js?v=175"></script>
 <script src="terrain-system/HistoricalObjectManager.js?v=173"></script>
 <script src="terrain-system/AirfieldDetails.js?v=169"></script>
@@ -516,7 +574,7 @@
 <script src="terrain-system/LivingWorld.js?v=179"></script>
 <script src="campaign.js?v=1"></script>
 <script src="game-runtime.js?v=198"></script>
-<script src="sortie-checkpoint.js?v=237"></script>
+<script src="sortie-checkpoint.js?v=238"></script>
 <script src="ju87-native.js?v=218"></script>
 <script src="me262-native.js?v=206"></script>
 <script src="me163-native.js?v=218"></script>
@@ -524,43 +582,45 @@
 <script src="aircraft-articulation.js?v=218"></script>
 <script src="aircraft-rotors.js?v=172"></script>
 <script src="b17-native.js?v=201"></script>
-<script src="combat-fx.js?v=237"></script>
+<script src="combat-fx.js?v=238"></script>
 <script src="aircraft-smoke.js?v=176"></script>
 <script src="aircraft-damage.js?v=177"></script>
-<script src="flight-support.js?v=237"></script>
+<script src="flight-support.js?v=238"></script>
 <script src="ordnance.js?v=157"></script>
 <script src="crew-visuals.js?v=179"></script>
 <script src="aircraft-finish.js?v=206"></script>
 <script src="runway-lights.js?v=179"></script>
 <script src="ship-wakes.js?v=179"></script>
-<script src="ship-contact.js?v=237"></script>
+<script src="ship-contact.js?v=238"></script>
 <script src="pilot-bailout.js?v=181"></script>
 <script src="enemy-bailouts.js?v=177"></script>
 <script src="flare-support.js?v=177"></script>
 <script src="sortie-service.js?v=206"></script>
 <script src="pilot-rescue.js?v=179"></script>
 <script src="radio-intercept.js?v=157"></script>
-<script src="surprises.js?v=237"></script>
+<script src="surprises.js?v=238"></script>
 <script src="audio/weapon-sound.js?v=144"></script>
 <script src="audio/throttle-response.js?v=218"></script><script src="audio/jet-engine.js?v=218"></script>
 <script src="audio/flight-atmosphere.js?v=175"></script>
 <script src="sortie-systems.js?v=198"></script>
-<script src="me262-performance.js?v=237"></script>
+<script src="me262-performance.js?v=238"></script>
 <script src="flight-envelope.js?v=219"></script>
 <script src="flight-dynamics.js?v=219"></script>
-<script src="flight-core.js?v=237"></script>
-<script src="flight-control.js?v=237"></script>
-<script src="dogfight-ai.js?v=237"></script>
-<script src="squad.js?v=237"></script>
+<script src="flight-core.js?v=238"></script>
+<script src="flight-control.js?v=238"></script>
+<script src="dogfight-ai.js?v=238"></script>
+<script src="squad.js?v=238"></script>
+<script src="duel-net.js?v=238"></script>
+<script src="duel.js?v=238"></script>
 <script src="audio/aircraft-engine.js?v=218"></script>
 <script src="p47-performance.js?v=204"></script>
-<script src="sortie-features.js?v=237"></script>
+<script src="sortie-features.js?v=238"></script>
 <script src="ground-run.js?v=204"></script>
 <script src="ground-dust.js?v=181"></script>
 <script src="flight-indicators.js?v=198"></script>
 <script src="sortie-fuel.js?v=206"></script>
-<script src="operation-plans.js?v=237"></script>
-<script src="custom-sortie.js?v=237"></script>
+<script src="operation-plans.js?v=238"></script>
+<script src="custom-sortie.js?v=238"></script>
 <script>
 // ============================================================
 //  REMAGEN 1945 — REAL TERRAIN (forked from thunderbolt-europe.html)
@@ -909,7 +969,7 @@ async function loadRealWorld(){
 
   if(OSMManager.BUILD!==23||HistoricalObjectManager.BUILD!==21||LivingWorld.BUILD!==22||WorldVehicles.BUILD!==22) throw new Error('Terrain version mismatch. Reload Remagen.');
   document.getElementById('testVersionBannerText').textContent=
-    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 237 · MODULE 23';
+    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 238 · MODULE 23';
   heightProvider=new DEMHeightProvider(RTILE,'terrain-system/real/data/dem/');
   terrain=new TerrainManager(scene,RTILE,heightProvider);
   osmMgr=new OSMManager(scene,RTILE,terrain,'terrain-system/real/data/osm/');
@@ -3083,6 +3143,7 @@ function isFree(){ return !!M().free; }
 function isCircuits(){ return !!M().circuits; }
 
 function missionLoadout(m,d=AC[m.ac||'p47']){
+  if(m.duel)return {bombs:0,rockets:0};
   if(m.custom)return CustomSortie.stores(m.custom);
   const strike=m.free||Object.entries(m.kills||{}).some(([kind,n])=>n>0&&kind!=='air'&&kind!=='bomber');
   return {bombs:strike?d.bombs:0,rockets:strike?d.rockets:0};
@@ -3141,6 +3202,7 @@ function objectiveLeft(){
 function bombersLeft(){ return enemyAir.filter(e=>e.alive&&e.bomber).length; }
 function blockingEnemyAir(){return enemyAir.filter(e=>e.alive&&!e.escapeThreat&&!e.optional);}
 function objectiveText(){
+  if(typeof duelSession!=='undefined'&&duelSession&&duelSession.match)return duelScoreText();
   const m=M();
   if(europeOps&&europeOps.failed)return 'WINDOW MISSED — RETURN TO BASE';
   if(europeOps&&!europeOps.reconDone)return 'RECON — BLUE CIRCLE ON THE MAP';
@@ -3440,7 +3502,8 @@ function updateBullets(dt){
     let done=false;
     const surface=FlightSupport.surfaceHit(new THREE.Vector3(ax,ay,az),p,groundY,.2);
     if(surface){groundGunImpact(surface.x,surface.z);done=true;}
-    if(!done) for(const t of targets){
+    if(!done&&b.visual){/* the other pilot's tracer: cosmetic, the shooter decides about hits */}
+    else if(!done) for(const t of targets){
       if(!t.alive) continue;
       const tp=t.group.position;
       const top=(t.kind==='bridge')?26:9;
@@ -3450,10 +3513,11 @@ function updateBullets(dt){
         break;
       }
     }
-    if(!done) for(const e of enemyAir){
+    if(!done&&!b.visual) for(const e of enemyAir){
       if(!e.alive) continue;
       if(segDist(ax,ay,az,p.x,p.y,p.z,e.pos)<9){ damageEnemyAir(e,b.dmg); done=true; if(b.by&&!e.alive)squadClaim(b.by,e.bomber?'BOMBER':'BANDIT'); break; }
     }
+    if(!done&&!b.visual&&!b.by&&typeof duelSession!=='undefined'&&duelSession&&duelSession.match&&duelAvatarBullet(b,ax,ay,az,p))done=true;
     if(done||b.life<=0){ GameRuntime.release(b.mesh); bullets.splice(i,1); }
   }
 }
@@ -4755,6 +4819,428 @@ function enemyTargetState(e,dt){
 }
 
 // ============================================================
+//  DUEL — two pilots, one sky (Build 238)
+//  duel-net.js carries the bytes (WebRTC between the two devices, no server), duel.js holds the rules and maths; this block
+//  flies it. Every client is the only authority over its OWN aeroplane. The other pilot is an avatar drawn from the 20 Hz
+//  state packets (shown ~100 ms in the past, interpolated). Hits are decided by the shooter: a bullet that reaches the avatar
+//  adds to `hitAcc`, which goes to the victim as a 'hit' event (percent of structure; Duel.hitPct normalises the types' gun
+//  figures). Deaths are announced by the victim, so both scoreboards count the same events.
+//  The duel flies as a free-flight mission in slot 0 (installed for the match, restored afterwards): no AI, no targets.
+// ============================================================
+const DUEL_ACS=['p47','bf109','fw190','me262'];
+let duelLink=null,duelSession=null,duelSavedMission=null;
+const dEl=id=>document.getElementById(id);
+const duelNow=()=>performance.now();
+function duelMatchOn(){return !!(duelSession&&duelSession.match&&duelSession.phase==='fight');}
+function duelMissionDef(ac){
+  return {id:'duel',title:'2-Player Duel',sub:'Head to head',ac,free:true,solo:true,duel:true,weather:'clear',
+    text:'A duel between two pilots over the Rhine.',body:'A duel between two pilots over the Rhine.'};
+}
+function duelInstallMission(ac){if(!duelSavedMission)duelSavedMission=MISSIONS[0];MISSIONS[0]=duelMissionDef(ac);}
+function duelRestoreMission(){if(duelSavedMission){MISSIONS[0]=duelSavedMission;duelSavedMission=null;}}
+const duelDpsCache={};
+function duelDps(){const k=P.ac;if(!duelDpsCache[k])duelDpsCache[k]=Duel.gunDps(acDef(),k,gunMuzzles().length,JET_KINDS.includes(k));return duelDpsCache[k];}
+function duelStored(key,fallback){try{return localStorage.getItem(key)||fallback;}catch(e){return fallback;}}
+function duelStore(key,value){try{localStorage.setItem(key,value);}catch(e){}}
+function duelNewSession(){
+  return {role:null,name:Duel.cleanName(duelStored('re_duelName',''))||'PILOT',ac:DUEL_ACS.includes(duelStored('re_duelAc','p47'))?duelStored('re_duelAc','p47'):'p47',
+    opp:null,match:null,phase:'lobby',track:new Duel.Track(),avatar:null,seq:0,sendT:0,epoch:0,respawnT:0,protectT:0,hurtAt:-99,hitAcc:0,hitT:0,
+    oppAway:false,oppDownEpoch:-1,readySelf:false,readyOpp:false,starting:false,finished:false,rules:{target:5,minutes:10},seed:0,arena:null,
+    lastSample:null,lostAt:0,warnT:0,away:false};
+}
+
+// ---- lobby ----
+function duelStatus(text,bad){const e=dEl('dlStatus');if(!e)return;e.textContent=text||'';e.classList.toggle('bad',!!bad);}
+function duelAudioUnlock(){try{initAudio();soundscape.attach(actx,eng?.master);voiceRadio.unlock();}catch(err){console.warn('Audio start:',err);}}
+function duelStep(name){for(const id of ['dlStepChoose','dlStepHost','dlStepGuest','dlConnected']){const e=dEl(id);if(e)e.hidden=id!==name;}}
+function duelRefreshLobby(){
+  const s=duelSession;if(!s)return;
+  for(const b of dEl('dlAc').children)b.setAttribute('aria-pressed',String(b.dataset.ac===s.ac));
+  const connected=!!(duelLink&&duelLink.status==='open'),guest=s.role==='guest';
+  dEl('dlTarget').disabled=dEl('dlMinutes').disabled=guest;
+  dEl('dlRulesNote').textContent=guest?'(set by the host)':'(the host decides)';
+  if(connected){
+    dEl('dlConn').innerHTML=s.opp?'<b>'+esc237(s.opp.name)+'</b> &middot; '+esc237(AC[s.opp.ac]?.name||s.opp.ac)+(duelLink.rtt!=null?' &middot; ping '+Math.round(duelLink.rtt)+' ms':''):'Waiting for the other pilot’s details…';
+    const host=s.role==='host';
+    dEl('dlStart').hidden=!host;dEl('dlStart').disabled=!s.opp;
+    dEl('dlWait').textContent=host?'Both pilots pick their aircraft, then press Start.':'Waiting for the host to start the duel…';
+  }
+}
+function duelOpenLobby(){
+  duelAudioUnlock();
+  if(!duelSession)duelSession=duelNewSession();
+  const s=duelSession;
+  show('menu',false);show('result',false);show('brief',false);show('duelLobby',true);state=ST.MENU;
+  dEl('dlName').value=s.name;
+  if(!dEl('dlAc').children.length)for(const k of DUEL_ACS){
+    const b=document.createElement('button');b.type='button';b.className='dlChip';b.dataset.ac=k;b.textContent=ACSHORT[k]||k;
+    b.onclick=()=>{s.ac=k;duelStore('re_duelAc',k);duelSendHello();duelRefreshLobby();};
+    dEl('dlAc').appendChild(b);
+  }
+  const open=!!(duelLink&&duelLink.status==='open');
+  duelStep(open?'dlConnected':s.role==='host'&&duelLink?'dlStepHost':s.role==='guest'&&duelLink?'dlStepGuest':'dlStepChoose');
+  duelStatus(open?'Connected.':'');
+  duelRefreshLobby();
+}
+function duelCloseLobby(){show('duelLobby',false);}
+function duelMakeLink(){
+  // Events of a link that has been replaced (or closed by us) are ignored.
+  const link=DuelNet.create({stun:dEl('dlStun').checked,onError:e=>console.warn('Duel link:',e)}),old=duelLink;
+  link.on('status',(a,b)=>{if(link===duelLink)duelOnStatus(a,b);}).on('state',a=>{if(link===duelLink)duelOnState(a);}).on('event',a=>{if(link===duelLink)duelOnEvent(a);});
+  duelLink=link;
+  if(old){try{old.close();}catch(e){}}
+  return link;
+}
+async function duelHost(){
+  duelAudioUnlock();duelSession.role='host';duelStep('dlStepHost');dEl('dlInvite').value='';dEl('dlAnswerIn').value='';
+  duelStatus('Creating the invitation…');duelRefreshLobby();
+  try{const code=await duelMakeLink().createInvite();dEl('dlInvite').value=code;duelStatus('Send the invitation to your opponent, then paste their answer below.');}
+  catch(err){duelStatus(err.message,true);duelStep('dlStepChoose');}
+}
+function duelJoin(){
+  duelAudioUnlock();duelSession.role='guest';duelStep('dlStepGuest');dEl('dlInviteIn').value='';dEl('dlAnswer').value='';
+  duelStatus('Paste the host’s invitation, then tap Create answer.');duelRefreshLobby();
+}
+async function duelAccept(){
+  duelAudioUnlock();duelStatus('Creating the answer…');
+  try{const ans=await duelMakeLink().acceptInvite(dEl('dlInviteIn').value);dEl('dlAnswer').value=ans;duelStatus('Send this answer back to the host. The duel connects when they paste it.');}
+  catch(err){duelStatus(err.message,true);}
+}
+async function duelConnect(){
+  duelAudioUnlock();
+  try{await duelLink.acceptAnswer(dEl('dlAnswerIn').value);duelStatus('Connecting…');}catch(err){duelStatus(err.message,true);}
+}
+async function duelShare(id,label){
+  const text=dEl(id).value;if(!text)return;
+  try{if(navigator.share){await navigator.share({title:'Thunderbolt Squadron duel',text});return;}}catch(e){if(e&&e.name==='AbortError')return;}
+  await duelCopy(id);
+}
+async function duelCopy(id){
+  const e=dEl(id);if(!e.value)return;
+  try{await navigator.clipboard.writeText(e.value);duelStatus('Copied. Paste it into a message to your opponent.');}
+  catch(err){e.focus();e.select();e.setSelectionRange(0,e.value.length);duelStatus('Selected. Long-press and choose Copy.');}
+}
+function duelSendHello(){
+  const s=duelSession;if(!s||!duelLink||duelLink.status!=='open')return;
+  s.name=Duel.cleanName(dEl('dlName').value)||s.name;
+  duelLink.sendEvent(Duel.hello({name:s.name,ac:s.ac,build:238}));
+}
+function duelOnStatus(status,info){
+  const s=duelSession;if(!s)return;
+  if(status==='open'){
+    duelSendHello();
+    if(s.phase==='lobby'){duelStep('dlConnected');duelStatus('Connected.');duelRefreshLobby();}
+    else if(s.lostAt){s.lostAt=0;flash('CONNECTION RESTORED',1200);}
+  }else if(status==='lost'){
+    if(s.phase==='fight'){s.lostAt=s.lostAt||duelNow();flash('CONNECTION WEAK…',1600);}
+    else duelStatus(info||'Connection lost.',true);
+  }else if(status==='closed'||status==='failed'){
+    if(s.phase==='fight'||s.phase==='countdown')duelConnectionLost(info||'The other pilot left.',status==='closed');
+    else{
+      s.opp=null;s.readyOpp=false;s.starting=false;duelLink=null;s.role=null;      // a dead link is forgotten: the lobby starts over
+      if(!dEl('duelLobby').classList.contains('hidden')){duelStep('dlStepChoose');duelStatus(info||'Disconnected.',true);duelRefreshLobby();}
+    }
+  }
+}
+async function duelStart(){
+  const s=duelSession;if(!s||s.role!=='host'||!s.opp||!duelLink||duelLink.status!=='open'||s.starting)return;
+  duelAudioUnlock();
+  const rules={target:+dEl('dlTarget').value||5,minutes:+dEl('dlMinutes').value||0},seed=(Math.random()*2147483647)|0;
+  duelLink.sendEvent({t:'start',seed,rules});
+  duelPrepare(seed,rules);
+}
+async function duelPrepare(seed,rules){
+  const s=duelSession;if(!s||s.starting||!s.opp)return;
+  s.starting=true;s.readySelf=false;s.seed=seed;s.rules=rules;s.phase='countdown';
+  duelStore('re_duelName',s.name);
+  show('duelLobby',false);show('loading',true);dEl('loadingText').textContent='Preparing the duel…';
+  try{await Promise.all([ensureModel(s.ac),ensureModel(s.opp.ac)]);}catch(err){console.warn('Duel models:',err);}
+  if(!duelSession||duelSession!==s||s.phase!=='countdown')return;
+  s.readySelf=true;duelLink?.sendEvent({t:'ready'});
+  if(s.readyOpp)duelGo();else dEl('loadingText').textContent='Waiting for the other pilot…';
+}
+function duelGo(){
+  const s=duelSession;if(!s||s.phase!=='countdown'||!s.readySelf)return;
+  show('loading',false);
+  s.phase='fight';
+  // The guest's own clock runs a little longer: the host's verdict ('end') normally arrives first.
+  s.match=Duel.createMatch({...s.rules,minutes:s.rules.minutes?s.rules.minutes+(s.role==='guest'?.25:0):0});
+  s.arena=Duel.arena(RTILE*RGRID_W,RTILE*RGRID_H);
+  s.track.reset();s.epoch=0;s.seq=0;s.hitAcc=0;s.hurtAt=-99;s.oppAway=false;s.oppDownEpoch=-1;s.lostAt=0;s.finished=false;s.respawnT=0;s.lastSample=null;
+  duelDisposeAvatar();
+  document.body.classList.add('duel');
+  dEl('duelPing').hidden=false;
+  duelInstallMission(s.ac);selectedMission=0;briefPlan=null;
+  startMission(0);                       // ends in duelLaunchAir()
+  s.protectT=Duel.PROTECT;
+}
+function duelLaunchAir(){
+  const s=duelSession;if(!s||!s.match)return false;
+  finishLaunchIntro(false);
+  const sp=Duel.startSpawn(s.role,s.arena,s.seed);
+  duelPlaceAir(sp.x,sp.z,sp.heading);
+  state=ST.FLIGHT;posePlayerAircraft(0);updateCamera(0);resetCtlUI();updateHUD();
+  return true;
+}
+function duelPlaceAir(x,z,heading){
+  const d=acDef(),h=groundY(x,z)+900;
+  P.pos.set(x,h,z);P.heading=heading;P.pitch=P.roll=P.pitchVel=P.rollVel=P.vSpeed=0;
+  P.spd=coreAirStart(h,Math.max(d.stall*1.7,d.app*1.4));P.throttle=.75;setThrottleUI(.75);
+  P.gear=P.gearTgt=P.flap=P.flapTgt=0;P.departureAge=null;P.groundPower=null;P.touchResolved=false;P.onGround=false;P.onDeck=false;
+  P.deckRun=P.arrestRun=P.deckQuaternion=P.landingSample=null;P.landingRoll=null;
+  P.pitchRef=null;P.coreStall=0;P.coreDrop=0;P.core=null;P.nLoad=1;P.groundPose=null;P.takeoffRotation=0;
+}
+function duelOnState(arr){
+  const s=duelSession;if(!s||!s.match)return;
+  const u=Duel.unpackState(arr);if(u)s.track.push(u,duelNow());
+}
+function duelOnEvent(msg){
+  const s=duelSession;if(!s||!msg)return;
+  switch(msg.t){
+    case 'hello':
+      if(!Duel.compatible(msg,{v:Duel.PROTOCOL})){duelStatus('The other game version is not compatible. Reload both pages.',true);break;}
+      s.opp={name:Duel.cleanName(msg.name)||'PILOT',ac:DUEL_ACS.includes(msg.ac)?msg.ac:'p47',build:msg.build|0};
+      if(s.phase==='lobby')duelRefreshLobby();
+      break;
+    case 'start':if(s.role==='guest'&&s.opp)duelPrepare(msg.seed|0,{target:Math.max(1,msg.rules?.target|0)||5,minutes:Math.max(0,msg.rules?.minutes|0)});break;
+    case 'ready':s.readyOpp=true;if(s.readySelf)duelGo();break;
+    case 'hit':duelReceiveHit(+msg.pct||0);break;
+    case 'dead':duelOppDown(msg);break;
+    case 'away':s.oppAway=!!msg.on;if(msg.on)flash('OPPONENT PAUSED',1400);break;
+    case 'end':if(s.role==='guest'&&s.match&&!s.finished){s.match.applyFinal(msg.f,true);duelFinish();}break;
+    case 'bye':if(s.phase==='fight')duelConnectionLost('The other pilot left the duel.',true);else{s.opp=null;duelStatus('The other pilot left.',true);}break;
+  }
+}
+
+// ---- hits, deaths, respawn ----
+function duelReceiveHit(pct){
+  const s=duelSession;if(!s||!duelMatchOn()||s.match.over)return;
+  if(state!==ST.FLIGHT||!P.alive||s.protectT>0||pct<=0)return;
+  s.hurtAt=s.match.t;
+  damagePlayer(Duel.victimPct(Math.min(pct,60),P.ac)/100*acDef().hull,'duel');
+  shake(.45);
+}
+// Called from crash(): a duel death is not the end of the sortie. Returns true when it handled the event.
+function duelLocalDown(title,msg){
+  const s=duelSession;if(!s||!duelMatchOn())return false;
+  if(!P.alive)return true;
+  P.alive=false;state=ST.DEAD;firing=false;releaseHeldControls();
+  spawnExplosion(P.pos.x,Math.max(groundY(P.pos.x,P.pos.z)+1,P.pos.y),P.pos.z,1.8);spawnDebris(P.pos.x,P.pos.y,P.pos.z,20);sfxCrash();
+  planeGroup.visible=false;
+  const m=s.match,shot=m.t-s.hurtAt<10,cause=shot?'shot':'crash';
+  if(!m.over)m.localDeath(cause);
+  duelLink?.sendEvent({t:'dead',cause,e:s.epoch});
+  s.respawnT=Duel.RESPAWN;
+  flash(shot?'SHOT DOWN':'YOU CRASHED',2400);radioSay(shot?'YOU ARE DOWN — '+s.opp.name+' GOT YOU':'YOU WENT DOWN');
+  return true;
+}
+function duelOppDown(msg){
+  const s=duelSession;if(!s||!duelMatchOn()||s.match.over)return;
+  const av=s.avatar,cause=msg.cause==='shot'?'shot':'crash';
+  s.oppDownEpoch=msg.e|0;
+  if(av&&av.shown){spawnExplosion(av.pos.x,av.pos.y,av.pos.z,1.4);spawnDebris(av.pos.x,av.pos.y,av.pos.z,14);sfxBoom(.9);shake(.6);}
+  if(av){av.group.visible=false;av.shown=false;av.alive=false;aircraftDamage?.forget(av.group);}
+  s.match.remoteDeath(cause);
+  flash(cause==='shot'?'SPLASH ONE':'BANDIT WENT DOWN',2200);
+  radioSay(cause==='shot'?'SPLASH ONE — GOOD SHOOTING':s.opp.name+' CRASHED');
+}
+function duelRespawn(){
+  const s=duelSession;if(!s||!duelMatchOn()||s.match.over)return;
+  const sp=Duel.respawnPoint(s.arena,s.lastSample?s.lastSample.pos:null);
+  const d=acDef();
+  P.hull=d.hull;armGuns(d);SortieFeatures.Damage.reset(P,d.hull);P.fuel=100;P.rollBias=0;P.dmgT=0;P.stallWarnT=0;P.edgeWarned=false;P.alive=true;P.rtb=false;
+  aircraftDamage?.forget(planeGroup);
+  planeGroup.visible=true;firing=false;
+  const v=dEl('dmgVig');if(v)v.style.opacity='0';const o=dEl('oilCanopy');if(o)o.style.opacity='0';
+  duelPlaceAir(sp.x,sp.z,sp.heading);
+  s.epoch++;s.protectT=Duel.PROTECT;s.hurtAt=-99;
+  state=ST.FLIGHT;posePlayerAircraft(0);updateCamera(0);updateGunUI();updateHUD();
+  flash('NEW AIRCRAFT — PROTECTED FOR '+Duel.PROTECT+' S',1800);
+}
+function duelAway(on){
+  const s=duelSession;if(!s||!duelMatchOn())return;
+  s.away=!!on;duelLink?.sendEvent({t:'away',on:on?1:0});
+}
+
+// ---- the other pilot ----
+function duelEnsureAvatar(){
+  const s=duelSession;if(s.avatar||!s.opp)return s.avatar;
+  const g=buildAircraft(s.opp.ac),gr=g.getObjectByName('gear');if(gr)gr.visible=false;
+  g.visible=false;scene.add(g);
+  s.avatar={group:g,prop:g.getObjectByName('prop'),kind:s.opp.ac,pos:new THREE.Vector3(),alive:false,shown:false,paused:false,protect:false,gunT:0,volley:0,hullShown:100,spd:0};
+  return s.avatar;
+}
+function duelDisposeAvatar(){
+  const s=duelSession;if(!s||!s.avatar)return;
+  aircraftDamage?.forget(s.avatar.group);GameRuntime.release(s.avatar.group);s.avatar=null;
+}
+function duelAvatarFire(av,dt){
+  const ports=squadMuzzles({group:av.group,kind:av.kind}),jet=JET_KINDS.includes(av.kind),q=av.group.quaternion;
+  const nose=new THREE.Vector3(0,0,1).applyQuaternion(q);
+  av.gunT-=dt;
+  for(let guard=0;guard<3&&av.gunT<=0;guard++){
+    av.gunT+=.07;
+    const n=Math.min(3,ports.length),vol=av.volley++;
+    for(let k=0;k<n;k++){
+      const dir=nose.clone().add(new THREE.Vector3((Math.random()-.5)*.008,(Math.random()-.5)*.008,(Math.random()-.5)*.008)).normalize();
+      const m=CombatFX.round(jet?'cannon':'rifle',vol);m.userData.roundBarrel=k;
+      m.position.copy(ports[(vol*n+k)%ports.length]).applyQuaternion(q).add(av.pos);
+      m.lookAt(m.position.clone().add(dir));scene.add(m);
+      bullets.push({mesh:m,dir,speed:jet?540:760,life:1.8,dmg:0,visual:true});
+    }
+    if(combatFX&&vol%3===0)combatFX.muzzle(av.group,ports.slice(0,n),jet);
+    if(vol%4===0&&actx&&av.pos.distanceTo(P.pos)<1500){try{WeaponSound.fire(actx,out(),av.kind);}catch(e){}}
+  }
+}
+// Called from updateBullets for each of my own rounds: true when it hit the other pilot's aeroplane.
+function duelAvatarBullet(b,ax,ay,az,p){
+  const s=duelSession,av=s&&s.avatar;
+  if(!av||!av.shown||!av.alive||av.paused||av.protect||s.match.over)return false;
+  if(segDist(ax,ay,az,p.x,p.y,p.z,av.pos)>=Duel.HIT_RADIUS)return false;
+  s.hitAcc+=Duel.hitPct(b.dmg,duelDps());spawnSparks(av.pos,3);
+  return true;
+}
+function duelSendState(){
+  const s=duelSession,q=planeGroup.quaternion,F=Duel.FLAG;
+  const flags=(P.gear>.5?F.GEAR:0)|(firing&&P.alive&&state===ST.FLIGHT&&P.ammo>0?F.FIRING:0)|(P.onGround?F.GROUND:0)|(P.alive?F.ALIVE:0)|(s.protectT>0?F.PROTECT:0);
+  duelLink.sendState(Duel.packState(++s.seq,duelNow(),{pos:[P.pos.x,P.pos.y,P.pos.z],q:[q.x,q.y,q.z,q.w],spd:P.spd,thr:P.throttle,
+    hull:Math.max(0,SortieFeatures.Damage.hullPercent(P)),flags,flap:P.flap,epoch:s.epoch,volley:gunVolley}));
+}
+function duelUpdateAvatar(dt,now){
+  const s=duelSession,smp=s.track.sample(now);
+  if(!smp||!s.opp)return;
+  const av=duelEnsureAvatar(),F=Duel.FLAG;s.lastSample=smp;
+  const alive=!!(smp.flags&F.ALIVE)&&smp.epoch>s.oppDownEpoch,gone=smp.stale&&smp.age>2.5;
+  av.alive=alive;av.paused=s.oppAway;av.protect=!!(smp.flags&F.PROTECT);
+  av.pos.set(smp.pos[0],smp.pos[1],smp.pos[2]);av.spd=smp.spd;
+  const show=alive&&!gone;
+  av.group.visible=show;av.shown=show;
+  if(show){
+    av.group.position.copy(av.pos);av.group.quaternion.set(smp.q[0],smp.q[1],smp.q[2],smp.q[3]);
+    if(av.prop)av.prop.rotation.z-=GameRuntime.rotorStep(dt,.30,av.kind==='p47'?4:3);
+    if(av.kind==='me262')updateJetExhaust(av.group,Math.min(1,smp.thr),dt);
+    if(Math.abs(smp.hull-av.hullShown)>4||smp.hull>av.hullShown+1){
+      if(smp.hull>av.hullShown+1)aircraftDamage?.forget(av.group);
+      av.hullShown=smp.hull;if(smp.hull<99)aircraftDamage?.damage(av.group,Math.max(0,smp.hull/100),1,null,1,av.kind);
+    }
+    if(aircraftSmoke&&smp.hull<50)aircraftSmoke.damage('duelAvatar',{hull:smp.hull,pos:av.pos,spd:smp.spd,systemDamage:null},new THREE.Vector3(0,0,1).applyQuaternion(av.group.quaternion),dt,new THREE.Vector3(windZ,0,0));
+    if((smp.flags&F.FIRING)&&!av.paused)duelAvatarFire(av,dt);
+  }
+  duelUpdateMarker(av,smp);
+}
+function duelUpdateMarker(av,smp){
+  const mark=dEl('duelMark');
+  if(!duelMatchOn()||!av.shown||!P.alive||state!==ST.FLIGHT){mark.hidden=true;return;}
+  const v=av.pos.clone().project(camera),W=window.innerWidth,H=window.innerHeight,behind=v.z>1;
+  let x=(v.x*.5+.5)*W,y=(1-(v.y*.5+.5))*H;
+  if(behind){x=W-x;y=H-y;}
+  const mx=48,my=48,onScreen=!behind&&x>mx&&x<W-mx&&y>my&&y<H-my;
+  x=Math.max(mx,Math.min(W-mx,x));y=Math.max(my,Math.min(H-my,y));
+  if(!onScreen&&!behind&&Math.abs(v.x)<.05&&Math.abs(v.y)<.05){x=W/2;y=H/2;}
+  const d=av.pos.distanceTo(P.pos),dy=av.pos.y-P.pos.y;
+  mark.hidden=false;mark.style.left=x+'px';mark.style.top=y+'px';
+  mark.classList.toggle('prot',av.protect);
+  dEl('duelMarkTxt').textContent=(d>=1000?(d/1609.34).toFixed(1)+' mi':Math.round(d*3.281/10)*10+' ft')+(dy>120?' ▲':dy<-120?' ▼':'')+(av.protect?' · PROT':'');
+}
+function duelUpdate(dt){
+  const s=duelSession;if(!s||!s.match)return;
+  const now=duelNow();
+  if(s.phase!=='fight'){return;}
+  const m=s.match;
+  m.tick(dt);
+  if(s.protectT>0)s.protectT=Math.max(0,s.protectT-dt);
+  if(duelLink&&duelLink.status==='open'){
+    s.sendT-=dt;
+    if(s.sendT<=0){s.sendT=Math.max(0,s.sendT+1/Duel.STATE_HZ);duelSendState();}
+    s.hitT-=dt;
+    if(s.hitT<=0){s.hitT=.1;if(s.hitAcc>.01){duelLink.sendEvent({t:'hit',pct:Math.round(s.hitAcc*100)/100});s.hitAcc=0;}}
+    dEl('duelPing').textContent=(duelLink.rtt!=null?Math.round(duelLink.rtt)+' ms':'—')+' · '+s.opp.name;
+  }
+  if(s.lostAt&&now-s.lostAt>9000){duelConnectionLost('The connection to the other pilot was lost.',false);return;}
+  if(state===ST.DEAD&&!P.alive&&s.respawnT>0&&!m.over){
+    s.respawnT-=dt;
+    if(s.respawnT<=0)duelRespawn();
+  }
+  // Empty guns are refilled after a while: a duel does not end in a stand-off where nobody can shoot.
+  if(state===ST.FLIGHT&&P.alive&&P.ammo<=0){s.dryT=(s.dryT||0)+dt;if(s.dryT>Duel.RELOAD){s.dryT=0;armGuns(acDef());updateGunUI();flash('GUNS RELOADED',1500);}}else s.dryT=0;
+  // No landings in a duel: the ground is a crash, as it is for the pilot who tries to hide in the grass.
+  if(state===ST.FLIGHT&&P.alive&&P.pos.y-groundY(P.pos.x,P.pos.z)<3&&s.protectT<=0)damagePlayer(1e4,'ground');
+  if(state===ST.FLIGHT&&P.alive){
+    const ap=Duel.arenaPenalty(s.arena,P.pos.x,P.pos.z);
+    s.warnT-=dt;
+    if(ap.out){damagePlayer(ap.dps*dt/100*acDef().hull,'arena');if(s.warnT<=0){s.warnT=2;flash('RETURN TO THE ARENA — STRUCTURE FAILING',1800);}}
+    else if(ap.warn&&s.warnT<=0){s.warnT=4;flash('LEAVING THE ARENA — TURN BACK',1800);}
+  }
+  duelUpdateAvatar(dt,now);
+  if(m.over&&!s.finished){
+    // time ran out: the host's clock decides (the guest waits for 'end' unless its own, longer clock also expired)
+    if(m.reason!=='time'||s.role==='host'||m.t>=m.rules.minutes*60)duelFinish();
+  }
+}
+function duelScoreText(){
+  const s=duelSession;if(!s||!s.match)return 'DUEL';
+  return Duel.scoreText(s.match,s.opp?s.opp.name:'THEM');
+}
+function duelFinish(){
+  const s=duelSession,m=s&&s.match;if(!m||s.finished)return;
+  s.finished=true;s.phase='over';
+  if(!m.over)m.finish(m.me.kills>m.them.kills?'me':m.me.kills<m.them.kills?'them':'draw','time');
+  if(s.role==='host')duelLink?.sendEvent({t:'end',f:m.final()});
+  duelEndScreen(m.winner==='me'?'VICTORY':m.winner==='draw'?'DRAW':'DEFEAT',m.winner==='me',m.reason==='time'?'Time is up':m.reason==='forfeit'?'The other pilot left':'First to '+m.rules.target);
+}
+function duelConnectionLost(info,left){
+  const s=duelSession,m=s&&s.match;
+  if(s&&!m&&s.phase==='countdown'){     // lost while the aircraft were still loading
+    show('loading',false);s.phase='lobby';s.starting=false;s.opp=null;s.readySelf=s.readyOpp=false;
+    duelOpenLobby();duelStatus(info||'The other pilot left.',true);return;
+  }
+  if(!m||s.finished)return;
+  s.finished=true;s.phase='over';
+  if(left&&!m.over)m.finish('me','forfeit');
+  duelEndScreen(left?'OPPONENT LEFT':'CONNECTION LOST',!!left,info||'');
+}
+function duelEndScreen(title,good,sub){
+  const s=duelSession,m=s.match;
+  firing=false;P.alive=false;state=ST.DEAD;planeGroup.visible=false;releaseHeldControls();
+  dEl('duelMark').hidden=true;
+  const row=(n,k,d)=>'<tr><td>'+n+'</td><td>'+k+'</td><td>'+d+'</td></tr>';
+  showResult(good,title,sub,'<table style="margin:6px auto;border-collapse:collapse;text-align:center"><tr><th></th><th>KILLS</th><th>DEATHS</th></tr>'
+    +row('YOU',m.me.kills,m.me.deaths)+row(esc237(s.opp?s.opp.name:'THEM'),m.them.kills,m.them.deaths)+'</table><div>'+duelScoreText()+'</div>','Rematch');
+  dEl('rsGo').onclick=()=>{voiceRadio.cancel();soundscape.stop();show('result',false);duelBackToLobby();};
+}
+function duelBackToLobby(){
+  const s=duelSession;if(!s)return;
+  s.match=null;s.phase='lobby';s.starting=false;s.finished=false;s.readySelf=s.readyOpp=false;s.protectT=0;s.respawnT=0;
+  duelDisposeAvatar();duelRestoreMission();clearWorld();
+  document.body.classList.remove('duel');dEl('duelMark').hidden=true;dEl('duelPing').hidden=true;
+  dEl('flash').classList.remove('show');dEl('radio').classList.remove('show');radioQ=[];radioT=0;flashT=0;
+  planeGroup.visible=true;
+  if(eng)eng.master.gain.setTargetAtTime(0.0001,actx.currentTime,0.05);
+  duelOpenLobby();
+}
+// Leaves the duel completely (menu, abort): the link closes, the other pilot is told.
+function duelLeave(){
+  const s=duelSession;if(!s)return;
+  const link=duelLink;
+  duelDisposeAvatar();duelRestoreMission();
+  document.body.classList.remove('duel');dEl('duelMark').hidden=true;dEl('duelPing').hidden=true;
+  duelLink=null;duelSession=null;
+  if(link){try{link.close();}catch(e){}}      // after the nulls: the closing event must not look like a lost match
+}
+function duelInit(){
+  dEl('duelBtn').onclick=duelOpenLobby;
+  dEl('dlBack').onclick=()=>{duelLeave();duelCloseLobby();show('menu',true);state=ST.MENU;};
+  dEl('dlHost').onclick=duelHost;dEl('dlJoin').onclick=duelJoin;
+  dEl('dlAccept').onclick=duelAccept;dEl('dlConnect').onclick=duelConnect;
+  dEl('dlCopyInvite').onclick=()=>duelCopy('dlInvite');dEl('dlShareInvite').onclick=()=>duelShare('dlInvite');
+  dEl('dlCopyAnswer').onclick=()=>duelCopy('dlAnswer');dEl('dlShareAnswer').onclick=()=>duelShare('dlAnswer');
+  dEl('dlStart').onclick=duelStart;
+  dEl('dlName').addEventListener('input',()=>{const s=duelSession;if(!s)return;s.name=Duel.cleanName(dEl('dlName').value)||'PILOT';duelStore('re_duelName',s.name);});
+  dEl('dlName').addEventListener('change',duelSendHello);
+  setInterval(()=>{if(duelSession&&duelSession.phase==='lobby'&&!dEl('duelLobby').classList.contains('hidden'))duelRefreshLobby();},1000);
+}
+
+// ============================================================
 //  PLAYER DAMAGE
 // ============================================================
 function damagePlayer(amount,cause){
@@ -4772,6 +5258,7 @@ function damagePlayer(amount,cause){
   if(P.hull<=0) crash('SHOT DOWN','They finally got the range. '+(cause||''));
 }
 function crash(title,msg){
+  if(typeof duelSession!=='undefined'&&duelSession&&duelSession.match&&duelLocalDown(title,msg))return;   // Build 238: a duel death is not the end of the sortie
   globalThis.sortieCheckpoint?.clear();
   if(!P.alive) return;
   P.alive=false; state=ST.DEAD;
@@ -4786,6 +5273,7 @@ let bailout=null,bailRescue=null,bailPlaneCrashed=false,bailDone=false,bailChute
 function steeringParachute(){return !!bailout&&!bailDone&&state===ST.DEAD;}
 function beginBailout(){
   if(state!==ST.FLIGHT||!P.alive)return;
+  if(typeof duelSession!=='undefined'&&duelSession&&duelSession.match)return;   // no parachutes in a duel
   const agl=P.pos.y-groundY(P.pos.x,P.pos.z);
   if(P.onGround||agl<85){flash('TOO LOW TO BAIL OUT',1400);return;}
   globalThis.sortieCheckpoint?.clear();
@@ -5487,7 +5975,8 @@ function startMission(i){
   const o=document.getElementById('oilCanopy'); if(o) o.style.opacity='0';
   applyWeaponUI(); resetCtlUI();
   updateHUD();
-  radioSay(m.free?'FIELD IS YOURS — HAVE FUN':(isGermanMission(m)?'FORWARD STRIP':'BEAUFORT TOWER')+' — CLEARED FOR TAKE-OFF, RUNWAY ZERO NINE');
+  radioSay(m.duel?'DUEL — BANDIT IN THE ARENA':m.free?'FIELD IS YOURS — HAVE FUN':(isGermanMission(m)?'FORWARD STRIP':'BEAUFORT TOWER')+' — CLEARED FOR TAKE-OFF, RUNWAY ZERO NINE');
+  if(m.duel&&duelLaunchAir())return;
   if(!m.custom||!CustomSortie.launchState(m.custom,'europe',{P,finishIntro:()=>finishLaunchIntro(false),
     departure:{x:P.pos.x,z:P.pos.z,height:groundY(P.pos.x,P.pos.z)+900,heading:P.heading,speed:P.ac==='me163'?155:coreAirStart(groundY(P.pos.x,P.pos.z)+900,Math.max(d.stall*1.7,d.app*1.4))},
     setThrottle:setThrottleUI,flight:()=>{state=ST.FLIGHT;posePlayerAircraft(0);updateCamera(0);resetCtlUI();updateHUD();}}))beginLaunchIntro();
@@ -5502,6 +5991,7 @@ function updateInterceptRadio(dt){
  if(message)radioSay(message);
 }
 function chooseEuropePlan(i){
+ if(MISSIONS[i].duel)return {config:FlightOps.withPhases(MISSIONS[i],{weather:['clear'],practice:true,fuel:100,events:[],notes:''}),weather:'clear',wind:0};
  if(MISSIONS[i].custom){const c=MISSIONS[i].custom;return {config:FlightOps.withPhases(MISSIONS[i],CustomSortie.operation(c)),weather:c.weather,wind:2};}
  const cfg={...(FlightPlans.europe[i]||{}),practice:!!(MISSIONS[i].free||MISSIONS[i].circuits)},names=MISSIONS[i].free?[document.getElementById('practiceWx').value||'clear']:cfg.weather||[MISSIONS[i].weather||'clear'];
  if(!cfg.practice&&['me262','me163'].includes(MISSIONS[i].ac)){
@@ -5905,6 +6395,7 @@ function drawMinimap(){
     g.arc(p[0],p[1],e.bomber?4:3,0,6.283); g.fill(); }
   for(const w of squad){ if(!w.alive||w.phase==='parked') continue;
     p=put(w.pos.x,w.pos.z); g.fillStyle='#6ab7ff'; g.beginPath(); g.arc(p[0],p[1],3,0,6.283); g.fill(); }
+  if(typeof duelSession!=='undefined'&&duelSession&&duelSession.avatar&&duelSession.avatar.shown){const a=duelSession.avatar.pos;p=put(a.x,a.z);g.fillStyle='#ff6a4a';g.beginPath();g.arc(p[0],p[1],3.5,0,6.283);g.fill();}
   g.restore();
   // anything past the edge gets a tick on the rim so you always know which way to turn
   g.save(); g.beginPath(); g.arc(R,R,R-1,0,6.283); g.clip();
@@ -5918,6 +6409,7 @@ function drawMinimap(){
   };
   for(const t of targets) if(t.alive) rim(t.group.position.x,t.group.position.z,t.primary?'#e8b84b':'#b1442b');
   for(const e of enemyAir) if(e.alive) rim(e.pos.x,e.pos.z,'#ff6a4a');
+  if(typeof duelSession!=='undefined'&&duelSession&&duelSession.avatar&&duelSession.avatar.shown)rim(duelSession.avatar.pos.x,duelSession.avatar.pos.z,'#ff6a4a');
   if(livingWorld)for(const e of livingWorld.entities)
     if(e.alive&&(e.kind==='civil'||e.kind==='wagon'))rim(e.model.position.x,e.model.position.z,'#b9d6cf');
   rim(AF_X,AF_Z,'#7fae5a');
@@ -6580,6 +7072,7 @@ function togglePause(reason='Sortie held'){
     if(runtimeSession?.graphicsLost)return;
     releaseHeldControls();
     state=prevState;
+    if(typeof duelAway==='function')duelAway(false);
     show('pauseMenu',false);
     if(eng) eng.master.gain.setTargetAtTime(0.85,actx.currentTime,0.05);
     clock.getDelta();            // swallow the paused interval so dt doesn't jump
@@ -6587,6 +7080,7 @@ function togglePause(reason='Sortie held'){
   else if(state===ST.FLIGHT||steeringParachute()){
     releaseHeldControls();
     prevState=state; state=ST.PAUSED;
+    if(typeof duelAway==='function')duelAway(true);
     document.getElementById('pauseReason').textContent=reason;
     const faults=SortieFeatures.Damage.status(P);
     const recovery=SortieFeatures.Damage.needsBelly(P)?'Emergency belly landing at '+airfieldName(M())+' — wings level, low sink rate.':'Recovery: '+airfieldName(M())+'.';
@@ -6596,6 +7090,7 @@ function togglePause(reason='Sortie held'){
   }
 }
 function exitToMenuFromPause(keepCheckpoint=false){
+  if(typeof duelLeave==='function'&&typeof duelSession!=='undefined'&&duelSession)duelLeave();   // aborting a duel tells the other pilot
   if(globalThis.sortieCheckpoint&&keepCheckpoint!==true&&!globalThis.sortieCheckpoint.restoring)globalThis.sortieCheckpoint.clear();
   finishLaunchIntro(false);
   voiceRadio.cancel();soundscape.stop();
@@ -6744,7 +7239,8 @@ function init(){
   buildMenu();
   // menu wiring
   document.getElementById('startBtn').onclick=()=>showBrief(selectedMission);
-  document.getElementById('pauseMainMenu').onclick=async()=>{globalThis.sortieCheckpoint?.save();await globalThis.sortieCheckpoint?.flush();exitToMenuFromPause(true);window.location.href='index.html?v=237';};
+  duelInit();
+  document.getElementById('pauseMainMenu').onclick=async()=>{globalThis.sortieCheckpoint?.save();await globalThis.sortieCheckpoint?.flush();exitToMenuFromPause(true);window.location.href='index.html?v=238';};
   document.getElementById('logBtn').onclick=()=>{ show('menu',false); showLogbook(); };
   document.getElementById('skipLaunchPreview').onclick=()=>finishLaunchIntro();
   document.getElementById('brBack').onclick=()=>{ show('brief',false); show('menu',true);if(navigation){navigation.reset();navigation.button.style.display='none';} state=ST.MENU; };
@@ -6771,7 +7267,7 @@ function init(){
       console.error('Mission start stopped:',err);
     }finally{button.disabled=false;}
   };
-  document.getElementById('rsMenu').onclick=()=>{ voiceRadio.cancel();soundscape.stop();show('result',false); show('menu',true);if(navigation){navigation.reset();navigation.button.style.display='none';}
+  document.getElementById('rsMenu').onclick=()=>{ if(duelSession)duelLeave();voiceRadio.cancel();soundscape.stop();show('result',false); show('menu',true);if(navigation){navigation.reset();navigation.button.style.display='none';}
     buildMenu(); state=ST.MENU; };
   document.getElementById('pmResume').onclick=()=>{ if(state===ST.PAUSED) togglePause(); };
   document.getElementById('pmMenu').onclick=exitToMenuFromPause;
@@ -6883,7 +7379,8 @@ function animate(){
     }
     GameRuntime.frames.mark('flight');
     advanceBailout(raw);
-    document.getElementById('bailBtn').style.display=state===ST.FLIGHT&&!P.onGround&&P.alive?'block':'none';
+    duelUpdate(raw);
+    document.getElementById('bailBtn').style.display=state===ST.FLIGHT&&!P.onGround&&P.alive&&!document.body.classList.contains('duel')?'block':'none';
     refreshModels();
     updateTargets(dt); updateEnemyAir(dt);
     updateBullets(dt); updateTracers(dt); updateOrdnance(dt);
@@ -6950,6 +7447,6 @@ function reportStartupError(err){
 const hangarRequest=CustomSortie.install('europe',MISSIONS,FlightPlans.europe,window.location.search);
 window.addEventListener('load',()=>{try{init();}catch(err){reportStartupError(err);}});
 </script>
-<script src="checkpoint-rhine.js?v=237"></script>
+<script src="checkpoint-rhine.js?v=238"></script>
 </body>
 </html>

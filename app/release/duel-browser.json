@@ -1,0 +1,229 @@
+{
+ "lobby": [
+  {
+   "build": true,
+   "btn": true,
+   "menuRow": "flex",
+   "shown": true,
+   "menuHidden": true,
+   "chips": 4,
+   "stunBox": true,
+   "duelNet": "object",
+   "duel": "object"
+  },
+  {
+   "build": true,
+   "btn": true,
+   "menuRow": "flex",
+   "shown": true,
+   "menuHidden": true,
+   "chips": 4,
+   "stunBox": true,
+   "duelNet": "object",
+   "duel": "object"
+  }
+ ],
+ "inviteLength": 569,
+ "answerLength": 576,
+ "opp": [
+  {
+   "name": "BRAVO",
+   "ac": "bf109",
+   "build": 238
+  },
+  {
+   "name": "ALPHA",
+   "ac": "p47",
+   "build": 238
+  }
+ ],
+ "ui": [
+  {
+   "conn": true,
+   "start": false,
+   "startDisabled": false,
+   "text": "BRAVO · Bf 109F-2"
+  },
+  {
+   "conn": true,
+   "start": true,
+   "startDisabled": false,
+   "text": "ALPHA · P-47D Thunderbolt"
+  }
+ ],
+ "start": {
+  "a": {
+   "mission": "duel",
+   "duel": true,
+   "ac": "p47",
+   "state": 3,
+   "alive": true,
+   "pos": [
+    14272.203629399148,
+    1067.2764155675327,
+    17337.917471562636
+   ],
+   "agl": 909.6155976322295,
+   "hdg": -2.940922116479307,
+   "pitch": 0.00018464629117252533,
+   "spd": 91.37256385365696,
+   "onGround": false,
+   "hull": 100,
+   "squad": 0,
+   "enemy": 0,
+   "targets": 0,
+   "bodyDuel": true,
+   "obj": "YOU 0 — 0 BRAVO  ·  FIRST TO 2",
+   "sent": 39,
+   "recv": 38,
+   "rtt": 1.2099999999999997,
+   "count": 30,
+   "protect": 1.5000000000000053,
+   "epoch": 0,
+   "hidden": false,
+   "bail": "none",
+   "avatar": {
+    "shown": true,
+    "kind": "bf109",
+    "visible": true,
+    "pos": [
+     13720.876296296301,
+     1025.3,
+     14627.393333333359
+    ],
+    "prot": true
+   },
+   "marker": false,
+   "markerText": "1.7 mi · PROT",
+   "ckpt": null
+  },
+  "b": {
+   "mission": "duel",
+   "duel": true,
+   "ac": "bf109",
+   "state": 3,
+   "alive": true,
+   "pos": [
+    13722.124274432976,
+    1025.2626234109368,
+    14633.605165411356
+   ],
+   "agl": 908.5905555596028,
+   "hdg": 0.2006705371104863,
+   "pitch": 0.00017356711334279076,
+   "spd": 74.51603514104991,
+   "onGround": false,
+   "hull": 100,
+   "squad": 0,
+   "enemy": 0,
+   "targets": 0,
+   "bodyDuel": true,
+   "obj": "YOU 0 — 0 ALPHA  ·  FIRST TO 2",
+   "sent": 38,
+   "recv": 39,
+   "rtt": 3.149999999999999,
+   "count": 30,
+   "protect": 1.5000000000000053,
+   "epoch": 0,
+   "hidden": false,
+   "bail": "none",
+   "avatar": {
+    "shown": true,
+    "kind": "p47",
+    "visible": true,
+    "pos": [
+     14273.603333333336,
+     1067.3,
+     17344.916666666682
+    ],
+    "prot": true
+   },
+   "marker": false,
+   "markerText": "1.7 mi · PROT",
+   "ckpt": null
+  }
+ },
+ "avatarError": {
+  "a": 6.33606377842461,
+  "b": 7.1378189549291715
+ },
+ "spawnGap": 2760.0104174971207,
+ "remoteTracers": 78,
+ "burst": {
+  "frames": 197,
+  "sentPct": 28.389999999999993,
+  "hullAfter": 68,
+  "ammoLeft": 3000
+ },
+ "score1": [
+  "YOU 1 — 0 BRAVO  ·  FIRST TO 2",
+  "YOU 0 — 1 ALPHA  ·  FIRST TO 2"
+ ],
+ "respawn": {
+  "protect": 3,
+  "hull": 100,
+  "agl": 900
+ },
+ "secondKillFrames": 417,
+ "result": [
+  {
+   "title": "VICTORY",
+   "shown": true,
+   "go": "Rematch",
+   "me": {
+    "kills": 2,
+    "deaths": 0
+   },
+   "them": {
+    "kills": 0,
+    "deaths": 2
+   },
+   "winner": "me",
+   "text": "KILLSDEATHSYOU20BRAVO02YOU 2 — 0 BRAVO  ·  FIRST TO 2"
+  },
+  {
+   "title": "DEFEAT",
+   "shown": true,
+   "go": "Rematch",
+   "me": {
+    "kills": 0,
+    "deaths": 2
+   },
+   "them": {
+    "kills": 2,
+    "deaths": 0
+   },
+   "winner": "them",
+   "text": "KILLSDEATHSYOU02ALPHA20YOU 0 — 2 ALPHA  ·  FIRST TO 2"
+  }
+ ],
+ "back": [
+  {
+   "lobby": true,
+   "status": "open",
+   "slot0": "free",
+   "phase": "lobby",
+   "bodyDuel": false,
+   "connected": true,
+   "opp": "BRAVO"
+  },
+  {
+   "lobby": true,
+   "status": "open",
+   "slot0": "free",
+   "phase": "lobby",
+   "bodyDuel": false,
+   "connected": true,
+   "opp": "ALPHA"
+  }
+ ],
+ "forfeit": {
+  "title": "OPPONENT LEFT",
+  "winner": "me",
+  "reason": "forfeit"
+ },
+ "packets": [
+  0,
+  0
+ ]
+}
