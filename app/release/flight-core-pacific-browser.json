@@ -48,14 +48,14 @@
   },
   "stall": {
    "entryKmh": 189,
-   "onset": 4.7,
-   "peak": 0.94,
+   "onset": 4.4,
+   "peak": 0.96,
    "dropBankDeg": 7,
    "recoveredAfter": 1.6,
    "alive": true,
-   "heightLostInRecovery": 37
+   "heightLostInRecovery": 39
   },
-  "idleDecel1s": 1.51,
+  "idleDecel1s": 2.28,
   "fps": {
    "20": {
     "spd": 57.45,
@@ -123,14 +123,14 @@
   },
   "stall": {
    "entryKmh": 183,
-   "onset": 4.3,
-   "peak": 0.94,
+   "onset": 4.1,
+   "peak": 0.95,
    "dropBankDeg": 5,
-   "recoveredAfter": 1.5,
+   "recoveredAfter": 1.6,
    "alive": true,
-   "heightLostInRecovery": 37
+   "heightLostInRecovery": 39
   },
-  "idleDecel1s": 1.44,
+  "idleDecel1s": 2.05,
   "fps": {
    "20": {
     "spd": 49.65,
@@ -160,13 +160,13 @@
    "deckRun": 214,
    "airKmh": 181,
    "stallKmh": 163,
-   "y": 19.4,
+   "y": 19.1,
    "wodMs": 15,
    "alive": true,
    "death": null,
    "after25s": {
     "kmh": 270,
-    "y": 360,
+    "y": 359,
     "climb": 15.6
    }
   },
@@ -198,14 +198,14 @@
   },
   "stall": {
    "entryKmh": 215,
-   "onset": 5.1,
-   "peak": 0.95,
+   "onset": 4.7,
+   "peak": 0.97,
    "dropBankDeg": 20,
-   "recoveredAfter": 1.6,
+   "recoveredAfter": 1.7,
    "alive": true,
-   "heightLostInRecovery": 41
+   "heightLostInRecovery": 45
   },
-  "idleDecel1s": 2.37,
+  "idleDecel1s": 4.16,
   "fps": {
    "20": {
     "spd": 75.94,
@@ -273,14 +273,14 @@
   },
   "stall": {
    "entryKmh": 167,
-   "onset": 4.3,
-   "peak": 0.9,
+   "onset": 4,
+   "peak": 0.93,
    "dropBankDeg": 4,
-   "recoveredAfter": 1.4,
+   "recoveredAfter": 1.5,
    "alive": true,
-   "heightLostInRecovery": 26
+   "heightLostInRecovery": 29
   },
-  "idleDecel1s": 2.2,
+  "idleDecel1s": 3.62,
   "fps": {
    "20": {
     "spd": 61.91,
