@@ -1,4 +1,4 @@
-/* Uploaded ships, baked to static meshes with bounded embedded textures.
+/* Original static ship models with paint baked into a small set of materials.
  * Templates share geometry and materials; no skeleton copies or per-frame decode. */
 (function(g){
  'use strict';
@@ -27,7 +27,7 @@
  function load(name){
   if(tasks.has(name))return tasks.get(name);
   const spec=specs[name];if(!spec)return Promise.reject(Error('Unknown ship model: '+name));
-  const task=PacificAssets.loader().load('assets/ships/'+spec.file+'.glb?v=172',gltf=>{
+  const task=PacificAssets.loader().load('assets/ships/'+spec.file+'.glb?v=own-fleet-1',gltf=>{
    const template=normalize(gltf.scene,spec);templates.set(name,template);return template;
   }).then(()=>templates.get(name));
   tasks.set(name,task.catch(e=>{tasks.delete(name);throw e;}));return tasks.get(name);

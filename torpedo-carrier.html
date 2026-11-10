@@ -681,24 +681,9 @@ const WIRE_X0     = -100;        // arrest zone aft edge
 const WIRE_X1     = -45;         // arrest zone fwd edge
 const AIM_X       = -75;         // ideal touchdown point
 
-/* ---- USS Midway flight-deck model ------------------------------------------
-   3D model: "USS Midway" by shangus930 (https://sketchfab.com/3d-models/uss-midway-6925890e1e8b43e6a0f2816becba0d00)
-   licensed CC-BY-4.0. Drop uss_midway.glb next to this HTML; it replaces the
-   built-in blocky carrier while ALL gameplay (launch, arrest wires, landing box)
-   keeps running off the constants above.
-   Tuning (only nudge if the deck looks off):
-   - CARRIER_SCALE      : uniform size. Flight-deck run ~= 192.5*scale game units
-                          and must cover STERN_X..BOW_X (-120..+120).
-   - CARRIER_YAW        : bow heading. +PI/2 points the bow toward +X;
-                          add Math.PI to spin it 180 if it loads stern-first.
-   - CARRIER_DECK_Y_MODEL: flight-deck height in raw model units (measured 10.45).
-   - CARRIER_TARGET_DECK_Y: where the deck sits in-game (matches the plane's rest height).
-   - CARRIER_DX / CARRIER_DZ: fine horizontal nudge.
-   If the .glb is missing/unreachable the built-in carrier stays visible.       */
-const CARRIER_MODEL_URL   = 'uss_midway.glb?v=2';
-// Japanese carrier, flown against in the defence sortie. Constants measured from the
-// model: hull 137.6 long, flight deck at raw Y=8.01 -> scale 240/137.6 for the same deck run.
-const IJN_CARRIER_URL     = 'ijn%20carrier.glb?v=3';
+// Original carrier meshes retain the deck anchors used by the launch/recovery code.
+const CARRIER_MODEL_URL   = 'uss_midway.glb?v=own-fleet-1';
+const IJN_CARRIER_URL     = 'ijn%20carrier.glb?v=own-fleet-1';
 const IJN_SCALE           = 1.744;
 const IJN_DECK_Y_MODEL    = 8.01;
 let ijnCarrierModel       = null, ijnAssetPromise=null;
@@ -709,24 +694,19 @@ let CARRIER_TARGET_DECK_Y = DECK_Y + 0.85;   // 16.85 — the surface the plane 
 let CARRIER_DX = 0, CARRIER_DZ = 0;
 let carrierModel = null, carrierModelLoaded = false;
 
-/* Distinct uploaded supply ship and Japanese destroyer. */
-const DESTROYER_MODEL_URL = 'assets/ships/samidare.glb?v=172';
+/* Distinct original supply ship and Japanese destroyer. */
+const DESTROYER_MODEL_URL = 'assets/ships/samidare.glb?v=own-fleet-1';
 const DEST_TARGET_LEN = 110;
 let destroyerTemplate = null;
-const FREIGHTER_MODEL_URL = 'assets/ships/japanese-cargo.glb?v=172';
+const FREIGHTER_MODEL_URL = 'assets/ships/japanese-cargo.glb?v=own-fleet-1';
 const FRT_TARGET_LEN = 132;
 let freighterTemplate = null;
 let supportFleet = [];
 
-/* ---- Capital ship model (IJN Zuihō light carrier) : replaces the "cruiser" type
-   Uses the same canonical licensed carrier asset as the defence sortie. It appears as
-   the capital-ship target in Sorties 3 & 5; hit radius, flak and sinking stay unchanged.
-   Tuning: CRU_TARGET_LEN, CRU_WATERLINE_Y (draft), CRU_YAW (Math.PI flips).       */
-// The old "ijn cruiser.glb" was byte-for-byte identical to this carrier (10.8 MB twice).
-// Point both uses at one canonical asset so the browser cache and the repository carry it once.
+// The capital-ship target shares the Zuihō model with the defence sortie.
 const CRUISER_MODEL_URL = IJN_CARRIER_URL;
 let CRU_TARGET_LEN  = 105;
-let CRU_WATERLINE_Y = -1.5;
+const CRU_WATERLINE_Y = IJN_DECK_Y_MODEL - CARRIER_TARGET_DECK_Y / IJN_SCALE;
 let CRU_YAW = 0;
 let cruiserTemplate = null;
 const GLIDE_DEG   = 3.6;         // target glideslope
@@ -5750,8 +5730,6 @@ function loadCarrierModel(){
       model.traverse(function(o){
         if(o.isMesh){
           o.castShadow=true; o.receiveShadow=true; o.frustumCulled=false;
-          // Sketchfab exports are often single-sided; make thin deck/hull plates
-          // visible from both faces so we never see through the ship.
           if(o.material){ o.material.side=THREE.DoubleSide; }
         }
       });
@@ -5767,7 +5745,7 @@ function loadCarrierModel(){
 
 // Both the defence carrier and the so-called cruiser target use the same source model. Keep one
 // in-flight load/parse promise and clone its scene, otherwise two loaders can fetch and decode
-// the same 10.8 MB GLB at startup before the browser cache has a chance to settle.
+// the same GLB at startup before the browser cache has a chance to settle.
 function getIJNShipAsset(){
   if(ijnAssetPromise) return ijnAssetPromise;
   ijnAssetPromise=new Promise((resolve,reject)=>{
@@ -5785,8 +5763,6 @@ function loadIJNCarrierModel(){
   return getIJNShipAsset().then(function(source){
     try{
       const model=source.clone(true);
-      // Measured from the model: hull 137.6 long on Z, flight deck at raw Y=8.01.
-      // Scale so the deck runs the same 240 units as the game's BOW_X..STERN_X.
       const root=new THREE.Group();
       root.add(model);
       root.rotation.y=CARRIER_YAW;                 // bow -> +X, same as the Midway

@@ -327,6 +327,21 @@ throttle changes the spectrum and level with gradual spool response. The old
 airshow recording is no longer loaded by the game.
 
 
+## Original Pacific fleet
+
+The eight ship meshes and their paint were authored for this project. Generate
+the exact runtime GLBs with `node scripts/build-own-ships.cjs`. Historical
+silhouettes informed the exterior shapes; the source URLs are recorded per
+model in the generator and GLB metadata. Geometry, paint, deck markings and
+wear are original; no third-party model, scan or texture is included in these
+eight files. The carrier decks are adapted to the game's common runway and
+are visual interpretations rather than replicas of the original deck layouts.
+
+These models replace the previous Japanese supply ship, Liberty transport,
+landing ship, Fletcher escort, Samidare destroyer, Kō-hyōteki, Midway and Zuihō
+in the current runtime and offline payload. Previous source disclosures below
+describe older builds.
+
 ## Build 172 — uploaded fleet, Corsair and period buildings
 
 The previous `merchant_ship.glb` is retired. Ship exports preserve original geometry and textures, isolate collection members, bake static world transforms and cap embedded texture size at 1024px. Aircraft preserve the original exterior and animate the original rotor. Optional buildings use 512px textures, shared geometry and bounded nearby detail.
