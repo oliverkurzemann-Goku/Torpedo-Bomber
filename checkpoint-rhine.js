@@ -6,7 +6,7 @@
  function snapshot(){return {mission,custom:MISSIONS[mission].custom||null,identity:identity(mission),label:MISSIONS[mission].sub,
   player:C.capture(P,['_keys','_stickActive','_keyboardFlightActive']),operation:C.capture(europeOps),
   globals:C.capture({score,scoreStart,sortieKills,hitsTaken,circuitsDone,weather,baseWind,windZ,wxTime,diffIdx,weapon,aeroMode,invertPitch,steerSign,convoyAlertCalled}),
-  targets:targets.filter(t=>!t.surprise).map(t=>C.entity(t,t.sub)),air:enemyAir.map(e=>C.entity(e)),wingmen:wingmen.map(w=>C.entity(w)),squad:squad.map(w=>C.entity(w)),squadStats:{...squadStats},
+  targets:targets.filter(t=>!t.surprise).map(t=>C.entity(t,t.sub)),air:enemyAir.map(e=>C.entity(e)),wingmen:wingmen.map(w=>C.entity(w)),squad:squad.map(w=>C.entity(w)),squadStats:{...squadStats},squadOrder,bomberAlarm,
   traffic:(livingWorld?.entities||[]).map(e=>({alive:e.alive,phase:e.phase,last:C.capture(e.last),alertT:e.alertT,transform:C.transform(e.model)})),
   weapons:{bullets:C.projectiles(bullets),tracers:C.projectiles(tracers),bombs:C.projectiles(bombs),rockets:C.projectiles(rockets),groundFire:C.projectiles(groundFire)},
   navigation:C.navigationState(navigation),clock:clock.elapsedTime,flares:flareSupport?.checkpoint()};}
@@ -48,6 +48,8 @@
    squad.push(C.applyEntity({group,prop:group.getObjectByName('prop'),squad:true,run:Squad.newRun()},s));
   }
   Object.assign(squadStats,saved.squadStats||{});
+  squadOrder=Squad.ORDERS.includes(saved.squadOrder)?saved.squadOrder:'free';syncWingBtn();
+  bomberAlarm=!!saved.bomberAlarm;
   for(const e of enemyAir){if(e.tac&&typeof e.tac.rng!=='function')e.tac=null;e.tgt=null;}
   const w=saved.weapons;
   bullets=C.restoreProjectiles(w.bullets,'round',scene);tracers=C.restoreProjectiles(w.tracers,'aa',scene);

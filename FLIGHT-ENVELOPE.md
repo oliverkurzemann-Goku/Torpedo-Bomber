@@ -92,7 +92,7 @@ Notation: `V` true airspeed, `Vs` clean power-off stall, `n` load factor, `WL = 
 5. **Pitch.** Spring frequency scales `pitchClass·(190/WL)^¼` (short-period frequency falls with wing loading
    and length). A cap `q ≤ G_pitch·g·(n − cos θ)/V` (never below 0.25 rad/s so take-off and trap keep their
    assisted authority) keeps the wing from out-pitching its lift. AERO pull uses the same cap.
-6. **Closed-throttle braking.** `a = ½ρV²·A_disc·C_wm/m` (windmilling propeller, `C_wm = 0.07`), fading to zero by
+6. **Closed-throttle braking.** `a = ½ρV²·A_disc·C_wm/m` (windmilling propeller, `C_wm = 0.16` (Build 237; was 0.07 — the idle brakes ~1.6x harder)), fading to zero by
    30 % power; jets none. Full-throttle speed is untouched.
 7. **Energy.** The load factor actually flown (turn or pull, with the pitch gain removed) feeds the induced
    drag term as `1 + 0.30·(WL/190)·(n²−1)` instead of the old bank proxy.
@@ -102,7 +102,7 @@ Notation: `V` true airspeed, `Vs` clean power-off stall, `n` load factor, `WL = 
 ## Arcade gains (the only knobs)
 
 `ARC` in `flight-envelope.js`: `turn 2.2`, `pitch 2.6`, `pitchFloor 0.25 rad/s`, `rollGain 1.5`, `rollGamma 0.65`
-(1 = realistic spread, 0 = every aircraft rolls alike), `bankSat 55°`, `windmill 0.07`, `inducedBleed 0.30`.
+(1 = realistic spread, 0 = every aircraft rolls alike), `bankSat 55°`, `windmill 0.16` (Build 237; was 0.07), `inducedBleed 0.30`.
 Per-type numbers are never edited — change the data sheet if a figure turns out wrong.
 
 ## Verification

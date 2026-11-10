@@ -182,7 +182,7 @@ const CLASS=Object.freeze({
  clMinRatio:.6,     // C inverted CLmax as a share of upright CLmax (cambered section)
  gearCD:.020,       // C gear-down zero-lift drag increment (wing-area basis)
  flapCD:.050,       // C full-flap zero-lift drag increment
- windmill:.07,      // C closed-throttle windmilling propeller drag, disc-area basis (FLIGHT-ENVELOPE.md)
+ windmill:.16,      // C closed-throttle windmilling propeller drag, disc-area basis (FLIGHT-ENVELOPE.md); Build 237: .07 -> .16
  spool:1.25,        // C piston power build-up time constant (s), kept from flight-dynamics.js
  clClean:1.4,       // C clean CLmax where no stall figure exists (FLIGHT-ENVELOPE.md class value)
  clLandingRatio:1.35,// C landing / clean CLmax where only one of them is published (split / slotted flaps)

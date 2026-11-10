@@ -131,6 +131,45 @@ const server=http.createServer((req,res)=>{
   assert.ok(report.ground.hurt,'the column was hit');assert.ok(report.ground.minAgl>35,'never below the safe height '+report.ground.minAgl);assert.ok(!report.ground.nan);
   assert.ok(report.ground.formMax===null||report.ground.formMax<900,'he held the wing before the attack '+report.ground.formMax);
 
+  // ---- 3b. orders (Build 237): the WING button / O key, and what the wingman does under each order ----
+  report.orders=await page.evaluate(async()=>{
+   diffIdx=1;const index=MISSIONS.findIndex(m=>m.id==='convoy');selectedMission=index;briefPlan=chooseEuropePlan(index);
+   startMission(index);finishLaunchIntro(false);show('menu',false);show('brief',false);state=ST.FLIGHT;
+   for(const e of enemyAir)e.alive=false;
+   const fps=60,dt=1/fps;clock.getDelta=()=>dt;const render=GameRuntime.render;GameRuntime.render=()=>true;
+   const prim=targets.find(t=>t.primary)||targets[0],tx=prim.group.position.x,tz=prim.group.position.z,w=squad[0],out={};
+   const btn=document.getElementById('wingBtn');
+   const setup=()=>{P.onGround=false;P.gear=P.gearTgt=0;P.flap=P.flapTgt=0;P.spd=125;P.throttle=.8;setThrottleUI(.8);P.heading=Math.PI/2;P.pitch=0;P.roll=0;P.pos.set(tx-6600,groundY(tx-6600,tz)+260,tz);
+    w.phase='fly';w.task='form';w.target=null;w.run=Squad.newRun();w.cool=0;w.gear=0;w.flap=0;w.pos.set(P.pos.x-30,P.pos.y-4,P.pos.z+34);w.heading=P.heading;w.pitch=0;w.roll=0;w.spd=125;w.vel.set(125,0,0);w.core=null;w.slotOffset=null;w.decideT=.2;};
+   const run=(order,secs)=>{setup();setSquadOrder(order,true);const seen={ground:false,cover:false,form:false};
+    for(let i=0;i<fps*secs;i++){inputPitch=inputRoll=0;const a=P.pos.y-groundY(P.pos.x,P.pos.z);if(a<200)inputPitch=.2;else if(a>300)inputPitch=-.2;P.fuel=100;P.hull=130;animate();if(w.alive)seen[w.task]=true;}
+    return {...seen,task:w.task,btn:btn.innerText.replace(/\s+/g,' '),shown:getComputedStyle(btn).display,status:squadStatusText(),ops:document.getElementById('opsStatus').textContent.split('\n').pop()};};
+   P.onGround=false;P.fuel=100;animate();   // one frame: updateSquad runs and shows the button
+   out.start={btn:btn.innerText.replace(/\s+/g,' '),shown:getComputedStyle(btn).display,order:squadOrder};
+   out.free=run('free',8);out.form=run('form',30);out.cover=run('cover',10);out.attack=run('attack',12);
+   // the key cycles free -> attack -> cover -> form -> free, with a radio acknowledgement
+   const heard=[],origSay=radioSay;radioSay=t=>{heard.push(String(t));return origSay(t);};
+   setSquadOrder('free',true);const cycle=[];for(let i=0;i<5;i++){window.dispatchEvent(new KeyboardEvent('keydown',{key:'o'}));window.dispatchEvent(new KeyboardEvent('keyup',{key:'o'}));cycle.push(squadOrder);}
+   out.cycle=cycle;radioSay=origSay;out.radio=heard.join(' | ');
+   // the order is saved and restored with the checkpoint state fields
+   setSquadOrder('cover',true);out.saved=squadOrder;clearSquad();out.afterClear={order:squadOrder,shown:getComputedStyle(btn).display};
+   GameRuntime.render=render;
+   // a solo sortie has no button at all
+   const solo=MISSIONS.findIndex(m=>m.id==='factory');selectedMission=solo;briefPlan=chooseEuropePlan(solo);startMission(solo);finishLaunchIntro(false);show('menu',false);show('brief',false);state=ST.FLIGHT;
+   animate();out.solo={n:squad.length,shown:getComputedStyle(btn).display};
+   return out;
+  });
+  {const o=report.orders;
+   assert.ok(o.start.shown==='flex'&&o.start.btn==='WING FREE'&&o.start.order==='free','the WING button shows with a squad '+JSON.stringify(o.start));
+   assert.ok(!o.free.ground,'FREE: a column 6.6 km away is not attacked yet '+JSON.stringify(o.free));
+   assert.ok(!o.form.ground&&o.form.task==='form'&&o.form.btn==='WING FORM'&&/HOLDING ON YOU/.test(o.form.status)&&/\[ORDER FORM\]/.test(o.form.status),'FORM: he stays on the leader '+JSON.stringify(o.form));
+   assert.ok(o.cover.cover&&/HIGH COVER/.test(o.cover.status),'COVER: high cover '+JSON.stringify(o.cover));
+   assert.ok(o.attack.ground&&/ATTACKING/.test(o.attack.status)||o.attack.task==='ground','ATTACK: he goes for the column from far out '+JSON.stringify(o.attack));
+   assert.deepEqual(o.cycle,['attack','cover','form','free','attack'],'the O key cycles the orders');
+   assert.ok(/WILCO|ROGER/.test(o.radio),'the wingman acknowledges: '+o.radio);
+   assert.ok(o.afterClear.order==='free'&&o.afterClear.shown==='none','clearing the squad resets the order and hides the button');
+   assert.ok(o.solo.n===0&&o.solo.shown==='none','a solo sortie has no WING button');}
+
   // ---- 4. an air fight, the enemy answers him, he can be hit ----
   report.air=await page.evaluate(async()=>{
    diffIdx=1;const index=MISSIONS.findIndex(m=>m.id==='libs');selectedMission=index;briefPlan=chooseEuropePlan(index);
@@ -240,6 +279,7 @@ const server=http.createServer((req,res)=>{
    squad.forEach((w,i)=>{w.phase='fly';w.task='form';w.gear=0;w.flap=0;w.pos.set(P.pos.x-30+i*60,P.pos.y-4,P.pos.z-30);w.heading=P.heading;w.pitch=0;w.roll=0;w.spd=140;w.vel.set(Math.sin(P.heading)*140,0,Math.cos(P.heading)*140);w.core=null;w.slotOffset=null;});
    for(let i=0;i<fps*25;i++){inputPitch=0;inputRoll=0;P.fuel=100;P.hull=130;P.pos.y=Math.max(P.pos.y,groundY(P.pos.x,P.pos.z)+300);animate();}
    GameRuntime.render=render;
+   setSquadOrder('attack',true);
    const brains=enemyAir.filter(e=>e.alive&&e.tac).length;
    const ok=window.sortieCheckpoint.save();if(!ok.ok)throw Error('Checkpoint save failed '+JSON.stringify(ok));
    const data=window.sortieCheckpoint.read().data;
@@ -253,8 +293,9 @@ const server=http.createServer((req,res)=>{
   await page.waitForFunction(()=>state===ST.PAUSED&&!window.sortieCheckpoint.restoring,null,{polling:200});
   report.restored=await page.evaluate(()=>({n:squad.length,alive:squad.filter(w=>w.alive).length,inScene:squad.filter(w=>w.group.parent===scene).length,
    positions:squad.map(w=>({pos:w.pos.toArray(),hp:w.hp,phase:w.phase,ammo:w.ammo})),kills:{...squadStats},
-   brainsKept:enemyAir.filter(e=>e.tac&&typeof e.tac.rng!=='function').length,run:squad.every(w=>w.run&&typeof w.run==='object')}));
+   order:squadOrder,btn:document.getElementById('wingBtn').innerText.replace(/\s+/g,' '),brainsKept:enemyAir.filter(e=>e.tac&&typeof e.tac.rng!=='function').length,run:squad.every(w=>w.run&&typeof w.run==='object')}));
   assert.equal(report.restored.alive,saved.alive,'the living wingmen come back');assert.equal(report.restored.inScene,report.restored.n,'drawn');
+  assert.equal(report.restored.order,'attack','the order is restored with the squad');assert.equal(report.restored.btn,'WING ATTACK');
   assert.equal(report.restored.brainsKept,0,'no half-restored brain without its random function');assert.ok(report.restored.run);
   for(let i=0;i<report.restored.positions.length;i++){
    const a=report.restored.positions[i],b=saved.positions[i];

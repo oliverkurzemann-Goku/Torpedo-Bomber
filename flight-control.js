@@ -70,8 +70,11 @@ function state(P,env){
  *       stickExponent}, rollFrac, pitchBase, pitchScale}
  * Updates P (spd, heading, pitch, roll, nLoad, groundPower, rollVel, pitchVel, core*) and returns
  * {climb, out, stall, m}. */
-// REALISTIC stick-free bank (Build 235): trimmed out below `end`, held between `end` and `protect`, eased back above `protect`.
-const HOLD={full:4*Math.PI/180,end:9*Math.PI/180,protect:62*Math.PI/180};
+// REALISTIC stick-free bank (Build 237): the bank returns toward level SLOWLY (Build 235 held it for ever, before that it
+// levelled with a 1.1 s time constant). Time constant tau grows with the bank: tauNear s close to level (so the wings do
+// settle level), tauFar s from `far` on (so a turn can be flown for a few seconds with the thumb off the stick); a steep
+// bank is eased back harder from `protect` on so a released stick never sits in a tightening spiral.
+const HOLD={near:4*Math.PI/180,far:40*Math.PI/180,tauNear:2.5,tauFar:8,protect:62*Math.PI/180};
 function player(P,dt,env){
  const st=state(P,env),{m,o,lim,hs}=st,d=env.d,controls=env.controls,config=env.configuration||{authority:1};
  const zeta=d.controlDamping||.80,inertia=Math.pow(1/st.lo.ratio,.35);
@@ -99,13 +102,12 @@ function player(P,dt,env){
  let command;
  if(env.aero){
   const bankErr=wrap(P.roll-bias),authority=rollNow*inertia*(env.hullFactor??1)*slow;
-  // Build 235: a released stick HOLDS the bank (a real fighter has neutral spiral stability), so a steady turn can be flown
-  // with the thumb off the stick. Before, the stick-free aircraft rolled level with a 1.1 s time constant (45 deg -> 18 deg
-  // after 1 s, 3 deg after 3 s, level after 5 s) and no turn could be held. Two aids stay (game decision, Kennung C):
-  // a small residual bank is trimmed out (full below HOLD.full, none above HOLD.end), and a steep bank is eased back so a
-  // released stick cannot sit in a tightening spiral (from HOLD.protect on, toward that angle).
-  const e=Math.abs(bankErr),sign=bankErr<0?-1:1,gainLevel=.9*Math.max(.6,slow);
-  const neutralRate=e>=HOLD.protect?-sign*gainLevel*(e-HOLD.protect):e<HOLD.end?-bankErr*gainLevel*(e<=HOLD.full?1:(HOLD.end-e)/(HOLD.end-HOLD.full)):0;
+  // Build 237: a released stick eases the bank back toward level, slowly (HOLD): tau 2.5 s near level, 8 s from 40 deg
+  // (Build 235 held the bank for ever, Build 234 levelled with tau 1.1 s). A steep bank (from HOLD.protect) is eased back
+  // harder so a released stick cannot sit in a tightening spiral. Game decision (Kennung C).
+  const e=Math.abs(bankErr),sign=bankErr<0?-1:1,slowK=Math.max(.6,slow);
+  const u=clamp((e-HOLD.near)/(HOLD.far-HOLD.near),0,1),holdTau=HOLD.tauNear+(HOLD.tauFar-HOLD.tauNear)*u*u*(3-2*u);
+  const neutralRate=-sign*Math.max(e*slowK/holdTau,e>=HOLD.protect?.9*slowK*(e-HOLD.protect):0);
   P.rollVel=(Math.abs(stickRoll)>.075||Math.abs(stickPitch)>.075)?stickRoll*authority:clamp(neutralRate,-authority,authority);
   P.roll=wrap(P.roll+P.rollVel*dt);
   // Pull is a load factor: neutral holds the path, full stick is the most the wing gives at this speed

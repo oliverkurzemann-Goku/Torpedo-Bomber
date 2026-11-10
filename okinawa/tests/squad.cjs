@@ -88,6 +88,40 @@ const G=9.81;
  assert.equal(Squad.chooseTask({leader:L,me:me({aggression:.9}),targets:[flak,truck(3600,0,{primary:false})],foes:[]}).ref,'F88');
 }
 
+/* ---- 2b. the player's orders (Build 237): FREE / ATTACK / COVER / FORM ---- */
+{
+ const L={pos:{x:0,y:900,z:0},vel:{x:0,y:0,z:130},spd:130,engaged:false};
+ const me=(o={})=>({pos:{x:-40,y:900,z:-30},hp:8,maxhp:8,ammo:3000,bombs:2,rockets:8,role:'strike',aggression:.7,skill:.6,cool:0,...o});
+ const truck=(x,z,o={})=>({ref:'t'+x,kind:'truck',pos:{x,y:100,z},alive:true,heavy:false,primary:true,claimed:false,...o});
+ const foe=(x,z,o={})=>({ref:'f'+x,pos:{x,y:950,z},bomber:false,alive:true,claimed:false,threatLeader:false,...o});
+ const T=(o,order)=>Squad.chooseTask({leader:L,order,...o});
+ assert.deepEqual(Squad.ORDERS,['free','attack','cover','form']);
+ // FREE (and an unknown order) is exactly the old behaviour
+ for(const order of [undefined,'free','nonsense'])assert.equal(T({me:me(),targets:[truck(3000,0)],foes:[]},order).task,'ground');
+ // FORM: stays on the leader, no attack on a free target, but a bandit that is on top of him is fought, and a six is still the job
+ assert.deepEqual([T({me:me(),targets:[truck(3000,0)],foes:[]},'form').task,T({me:me(),targets:[truck(3000,0)],foes:[]},'form').why],['form','ordered']);
+ assert.equal(T({me:me(),targets:[],foes:[foe(300,200)]},'form').task,'air','a bandit within 700 m is fought even in FORM');
+ assert.equal(T({me:me(),targets:[],foes:[foe(1200,1200)]},'form').task,'form','a bandit further out is not chased in FORM');
+ assert.equal(T({me:me(),targets:[],foes:[foe(-400,-900,{threatLeader:true})]},'form').why,'six');
+ // COVER: a striker flies high cover instead of attacking, and fights what comes near the leader
+ assert.equal(T({me:me(),targets:[truck(3000,0)],foes:[]},'cover').task,'cover');
+ assert.equal(T({me:me(),targets:[truck(3000,0)],foes:[foe(300,900)]},'cover').task,'air');
+ // ATTACK: from further out (the leader is not even engaged, the truck is 7 km away), and a hunter takes ground targets too
+ assert.equal(T({me:me(),targets:[truck(7000,0)],foes:[]},'free').task,'form','a far truck is not attacked on FREE');
+ assert.equal(T({me:me(),targets:[truck(7000,0)],foes:[]},'attack').task,'ground','but on ATTACK');
+ assert.equal(T({me:me({role:'hunter'}),targets:[truck(3000,0)],foes:[foe(9000,9000)]},'attack').task,'ground','a hunter attacks the near truck rather than a far bandit');
+ assert.equal(T({me:me({role:'strike'}),targets:[truck(6000,0)],foes:[foe(1500,1000)]},'attack').task,'air','a strike pilot goes for the near bandit');
+ assert.equal(T({me:me(),targets:[],foes:[foe(4000,4000)]},'attack').why,'fighter','ATTACK reaches a bandit that FREE would leave alone');
+ // safety stays: hurt or empty goes home, a leash brings him back, whatever the order
+ for(const order of Squad.ORDERS){
+  assert.equal(T({me:me({hp:2}),targets:[truck(3000,0)],foes:[]},order).task,'rtb',order+' hurt -> home');
+  assert.equal(T({me:me({ammo:10,bombs:0,rockets:0}),targets:[truck(3000,0)],foes:[]},order).task,'rtb',order+' empty -> home');
+  assert.equal(T({me:me({far:true}),targets:[truck(3000,0)],foes:[foe(300,200)]},order).why,'rejoin',order+' too far -> rejoin');
+ }
+ // the acknowledgement lines carry the callsign
+ for(const e of ['ordFree','ordAttack','ordCover','ordForm','rejoin','form'])assert.match(Squad.callout(e,{callsign:'THREE'},1),/^THREE — [A-Z]/,e);
+}
+
 /* ---- 3. a ground pass through the real pilot ---- */
 const rough=(x,z)=>100+55*Math.sin(x/650)*Math.cos(z/820)+Math.max(0,28*Math.sin(x/260+1.3));
 const gentle=(x,z)=>100+12*Math.sin(x/900);

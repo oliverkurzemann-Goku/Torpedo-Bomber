@@ -301,7 +301,7 @@
 
 .hangarLink{display:block;padding:12px 14px;margin:8px 0 12px;color:#f3ce83;border:1px solid #ba9d57;border-radius:5px;text-decoration:none;text-align:center;font:600 12px system-ui;letter-spacing:.8px;min-height:44px;}
 </style>
-<link rel="stylesheet" href="menu-layout.css?v=236">
+<link rel="stylesheet" href="menu-layout.css?v=237">
 </head>
 <body>
 <div id="app"></div>
@@ -354,7 +354,7 @@
   <div id="flash"></div>
   <div id="ltn" style="position:fixed;inset:0;background:#e6ecff;opacity:0;pointer-events:none;z-index:40;"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 236</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 237</div>
 
   <!-- Optical landing aid -->
   <div id="lso">
@@ -401,7 +401,7 @@
 
 <!-- Menu -->
 <div class="overlay" id="menu" data-campaign="pacific">
-  <div class="menuTop"><a id="selBtn" href="index.html?v=236">&#9664; Change Game</a><span class="menuMeta">PACIFIC OPERATIONS<br>BUILD 236</span></div>
+  <div class="menuTop"><a id="selBtn" href="index.html?v=237">&#9664; Change Game</a><span class="menuMeta">PACIFIC OPERATIONS<br>BUILD 237</span></div>
   <div class="card menuCard">
     <aside class="menuOverview" aria-label="Campaign and pilot options">
     <div class="campaignArt" aria-hidden="true"></div>
@@ -434,6 +434,7 @@
       <div class="secLbl">Choose your sortie · Pacific operations</div>
       <a class="hangarLink" href="hangar.html?theatre=pacific">CUSTOM MISSION · CHOOSE AIRCRAFT &amp; LOADOUT →</a>
 <div id="missionSel" role="group" aria-label="Pacific missions"></div>
+      <div id="missionBlurb" class="missionBlurb" aria-live="polite"></div>
       <div class="menuConfig">
         <label id="corsairLoadoutRow" hidden>F4U-1D stores <select id="corsairLoadout" style="min-height:44px"><option value="bombs">2 × 1,000 lb bombs</option><option value="rockets">8 × HVAR rockets</option><option value="mixed">2 × 500 lb bombs + 8 × HVAR</option></select></label>
         <div class="difficulty"><div class="secLbl" id="diffRow">Difficulty</div><div id="diffPick" role="group" aria-label="Difficulty"></div></div>
@@ -500,7 +501,7 @@
 <script src="okinawa/world.js?v=175"></script>
 <script src="campaign.js?v=1"></script>
 <script src="game-runtime.js?v=198"></script>
-<script src="sortie-checkpoint.js?v=236"></script>
+<script src="sortie-checkpoint.js?v=237"></script>
 <script src="aircraft-articulation.js?v=218"></script>
 <script src="terrain-system/AircraftGround.js?v=198"></script>
 <script src="pacific-assets.js?v=201"></script>
@@ -511,14 +512,14 @@
 <script src="avenger-finish.js?v=199"></script>
 <script src="naval-assets.js?v=198"></script>
 <script src="aircraft-rotors.js?v=172"></script>
-<script src="combat-fx.js?v=236"></script>
+<script src="combat-fx.js?v=237"></script>
 <script src="aircraft-smoke.js?v=176"></script>
 <script src="aircraft-damage.js?v=177"></script>
 <script src="ship-damage.js?v=206"></script>
 <script src="torpedo-attack.js?v=206"></script>
-<script src="ship-contact.js?v=236"></script>
-<script src="flight-support.js?v=236"></script>
-<script src="ordnance.js?v=236"></script>
+<script src="ship-contact.js?v=237"></script>
+<script src="flight-support.js?v=237"></script>
+<script src="ordnance.js?v=237"></script>
 <script src="crew-visuals.js?v=179"></script>
 <script src="deck-activity.js?v=198"></script>
 <script src="ship-wakes.js?v=179"></script>
@@ -528,21 +529,21 @@
 <script src="sortie-service.js?v=206"></script>
 <script src="pilot-rescue.js?v=179"></script>
 <script src="radio-intercept.js?v=157"></script>
-<script src="surprises.js?v=236"></script>
+<script src="surprises.js?v=237"></script>
 <script src="audio/weapon-sound.js?v=144"></script>
 <script src="audio/flight-atmosphere.js?v=175"></script>
 <script src="sortie-systems.js?v=198"></script>
 <script src="flight-envelope.js?v=219"></script>
 <script src="flight-dynamics.js?v=219"></script>
-<script src="flight-core.js?v=236"></script>
-<script src="flight-control.js?v=236"></script>
-<script src="dogfight-ai.js?v=236"></script>
+<script src="flight-core.js?v=237"></script>
+<script src="flight-control.js?v=237"></script>
+<script src="dogfight-ai.js?v=237"></script>
 <script src="audio/throttle-response.js?v=218"></script><script src="audio/aircraft-engine.js?v=218"></script>
-<script src="sortie-features.js?v=236"></script>
+<script src="sortie-features.js?v=237"></script>
 <script src="ground-run.js?v=198"></script>
 <script src="flight-indicators.js?v=198"></script>
-<script src="operation-plans.js?v=236"></script>
-<script src="custom-sortie.js?v=236"></script>
+<script src="operation-plans.js?v=237"></script>
+<script src="custom-sortie.js?v=237"></script>
 <script src="pacific-theater.js?v=206"></script>
 <script src="carrier-recovery.js?v=198"></script>
 <script src="maritime-weather.js?v=198"></script>
@@ -4291,6 +4292,18 @@ function hasRearGunner(){return !isCorsair()&&!isDefend();}
 function isSBD(){ const m=MISSIONS[mission]; return !!(m&&m.sbd); }
 // Short badge for a mission that matches its real title (not the array index, which counts
 // Free Flight + Qual and so ran two ahead of the "Sortie N" the briefing shows).
+// Build 237: short description of the selected mission, shown on the selection screen (first sentences of the briefing).
+function missionBlurbText(m,max=190){
+  let t=String(m&&(m.body||m.text)||'').replace(/<[^>]+>/g,' ').replace(/&middot;/g,'·').replace(/&[a-z]+;/g,' ').replace(/\s+/g,' ').trim();
+  if(t.length>max){const cut=t.slice(0,max),dot=Math.max(cut.lastIndexOf('. '),cut.lastIndexOf('! '),cut.lastIndexOf('? '));t=dot>70?cut.slice(0,dot+1):cut.replace(/\s+\S*$/,'')+'…';}
+  return t;
+}
+function esc237(v){return String(v).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+function updateMissionBlurb(i){
+  const el=document.getElementById('missionBlurb'),m=MISSIONS[i];if(!el||!m)return;
+  const ac=m.defend?'A6M ZERO':m.corsair?'F4U-1D':m.sbd?'SBD':'TBM';
+  el.innerHTML='<div class="mbText"><b>'+esc237(m.title+' · '+m.sub)+'</b>'+'<span class="mbAc">'+esc237(ac)+'</span>'+' '+esc237(missionBlurbText(m))+'</div>';
+}
 function missionTag(m){
   if(m.custom)return 'CUSTOM';
   if(m.okinawa) return 'OK';
@@ -5688,7 +5701,7 @@ function loadPlaneModel(){
       }
       window.__eyeDbg='EYE '+COCKPIT_EYE.map(v=>v.toFixed(2)).join('/');
       const btEl=document.getElementById('buildTag');
-      if(btEl) btEl.textContent='BUILD 236 · '+window.__eyeDbg;
+      if(btEl) btEl.textContent='BUILD 237 · '+window.__eyeDbg;
       let seat=null;
       model.traverse(function(o){
         if(!o.isMesh||!o.material) return;
@@ -6980,12 +6993,12 @@ function setupUIButtons(){
       c.innerHTML='<div class="cn">'+missionTag(m)+'</div><div class="cs">'+m.sub+'</div><div class="ca">'+(m.defend?'A6M ZERO':m.corsair?'F4U-1D':m.sbd?'SBD':'TBM')+'</div>';
       c.onclick=()=>{ selectedMission=i;
         sel.querySelectorAll('.chip').forEach((e,j)=>{e.classList.toggle('sel',j===i);e.setAttribute('aria-pressed',String(j===i));});
-        document.getElementById('startBtn').textContent='Begin '+m.title;document.getElementById('corsairLoadoutRow').hidden=!m.corsair; };
+        document.getElementById('startBtn').textContent='Begin '+m.title;document.getElementById('corsairLoadoutRow').hidden=!m.corsair;updateMissionBlurb(i); };
       sel.appendChild(c);
     });
   }
   { const im=MISSIONS[selectedMission]; const sb=document.getElementById('startBtn');
-    if(im && sb) sb.textContent='Begin '+im.title;document.getElementById('corsairLoadoutRow').hidden=!im?.corsair; }
+    if(im && sb) sb.textContent='Begin '+im.title;document.getElementById('corsairLoadoutRow').hidden=!im?.corsair;updateMissionBlurb(selectedMission); }
   const bv=document.getElementById('bestVal'); if(bv) bv.textContent=bestScore();
   document.getElementById('startBtn').onclick=beginGame;
   document.getElementById('gearBtn').addEventListener('pointerdown',e=>{ e.preventDefault();
@@ -7076,7 +7089,7 @@ function setupUIButtons(){
   if(dbgT2) dbgT2.onclick=()=>{
     dbgOn=!dbgOn; GameRuntime.storage.setItem('dbgOn',dbgOn?'1':'0');
     const db=document.getElementById('dbgBox'); if(db) db.textContent=dbgOn?'✓':'';
-    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 236'; }
+    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 237'; }
   };
   const lu=document.getElementById('lookUp'), ld=document.getElementById('lookDn');
   let _lookT=0;
@@ -7092,7 +7105,7 @@ function setupUIButtons(){
   if(pb) pb.addEventListener('pointerdown',e=>{ e.preventDefault(); togglePause(); });
   const rb=document.getElementById('resumeBtn'); if(rb) rb.onclick=resumeGame;
   const mb=document.getElementById('menuBtn'); if(mb) mb.onclick=exitToMenu;
-  document.getElementById('pauseMainMenu').onclick=async()=>{globalThis.sortieCheckpoint?.save();await globalThis.sortieCheckpoint?.flush();exitToMenu(true);window.location.href='index.html?v=236';};
+  document.getElementById('pauseMainMenu').onclick=async()=>{globalThis.sortieCheckpoint?.save();await globalThis.sortieCheckpoint?.flush();exitToMenu(true);window.location.href='index.html?v=237';};
   document.getElementById('resultBtn').onclick=()=>{
     // the logbook borrows this screen from the menu — send the player straight back
     if(logbookOpen){ logbookOpen=false; showOverlay('menu'); return; }
@@ -7374,7 +7387,7 @@ function animate(){
     notice.style.cssText='position:fixed;inset:0;z-index:999998;background:rgba(15,20,15,.95);color:#e8ddbc;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px;text-align:center;font:16px system-ui';
     const title=document.createElement('h2');title.textContent='Simulation interrupted';
     const detail=document.createElement('p');
-    detail.textContent='BUILD 236 · '+(MISSIONS[mission]?.sub||'Menu')+' · '+error.message;
+    detail.textContent='BUILD 237 · '+(MISSIONS[mission]?.sub||'Menu')+' · '+error.message;
     const reload=document.createElement('button');reload.textContent='Reload game';
     reload.style.cssText='padding:12px 24px;font:inherit';reload.onclick=()=>location.reload();
     notice.appendChild(title);notice.appendChild(detail);notice.appendChild(reload);document.body.appendChild(notice);
@@ -7543,6 +7556,6 @@ init();
 if(hangarRequest.requested&&hangarRequest.config){selectedMission=0;launchCampaignMission(0);}
 if(hangarRequest.error)flash(hangarRequest.error,8000);
 </script>
-<script src="checkpoint-pacific.js?v=236"></script>
+<script src="checkpoint-pacific.js?v=237"></script>
 </body>
 </html>

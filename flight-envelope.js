@@ -52,7 +52,7 @@ const ARC={
  rollGain:1.5,    // overall roll gain
  rollGamma:.65,   // 1 = realistic spread of roll rates, 0 = every aircraft rolls the same
  bankSat:55*DEG,  // bank at which the stick commands the full available turn rate
- windmill:.07,    // windmilling propeller drag coefficient, disc-area basis (typical 0.05 - 0.2)
+ windmill:.16,    // windmilling propeller drag coefficient, disc-area basis (typical 0.05 - 0.2); Build 237: .07 -> .16 (idle brakes ~1.6x harder)
  inducedBleed:.30 // induced-drag growth with load factor (n^2) that reaches the energy model, per 190 kg/m2 wing loading
 };
 

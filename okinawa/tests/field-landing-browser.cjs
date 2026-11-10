@@ -65,7 +65,7 @@ const server=http.createServer((req,res)=>{
      let elapsed=0,maximumDrop=0,maximumHeightStep=0,minimumGap=Infinity,png;
      while(!missionOver&&P.alive&&elapsed<60){
       const speed=P.spd,y=P.pos.y;updateFlight(1/fps);posePlayerAircraft(1/fps);elapsed+=1/fps;
-      maximumDrop=Math.max(maximumDrop,speed-P.spd);maximumHeightStep=Math.max(maximumHeightStep,Math.abs(P.pos.y-y));
+      if(speed>1)maximumDrop=Math.max(maximumDrop,speed-P.spd);   // Build 237: the final snap to a standstill (<1 m/s) is not a roll-out jumpmaximumHeightStep=Math.max(maximumHeightStep,Math.abs(P.pos.y-y));
       if(elapsed<3&&missionOver)throw Error('Debrief appears before rollout');
       if(P.throttle!==0)throw Error('Rollout moves the gas lever');
       if(fps===60&&!png&&elapsed>3){
@@ -98,6 +98,22 @@ const server=http.createServer((req,res)=>{
    if(P.alive||missionOver||state!==ST.DEAD)throw Error('Late landing receives false recovery credit');return {alive:P.alive,state};
   });
   await page.waitForFunction(()=>document.getElementById('rsTitle').textContent==='RUNWAY OVERRUN',null,{polling:100});console.log('Late touchdown:',overrun);
-  assert.deepEqual(errors,[]);console.log('All six original Rhine types: live flap references/descent, tyre contact, continuous rollout, final debrief, go-around and overrun passed.');
+  // Build 237: a SLOW roll beyond the end of the strip carries on over the grass (the old limit was 12 m/s and wrecked a
+  // 15-20 m/s roll-out); a FAST one is still wrecked. Every type, 20/60/120 FPS, from just inside the 40 m margin.
+  for(const kind of ['p47','bf109','fw190','ju87','me262'])for(const fps of [20,60,120]){
+   const slow=await page.evaluate(({kind,fps})=>{
+    setupFieldLanding(kind);resolveGround(1/fps);if(!P.landingRoll)throw Error('no roll-out '+kind);
+    P.pos.x=AF_X+RWY_LEN/2+30;P.spd=20;P.throttle=0;let t=0,minSpeed=20,flashed=false;
+    while(P.alive&&!missionOver&&!fieldServicePending&&t<90){updateFlight(1/fps);t+=1/fps;if(P.landingRoll&&P.landingRoll.rolledOff)flashed=true;}
+    return {kind,fps,alive:P.alive,state,over:P.pos.x-(AF_X+RWY_LEN/2),t:+t.toFixed(1),rolledOff:flashed,speed:P.spd,ended:missionOver||fieldServicePending,title:document.getElementById('rsTitle').textContent};
+   },{kind,fps});
+   if(fps===60)console.log('Slow roll beyond the strip:',JSON.stringify(slow));
+   assert.ok(slow.alive&&slow.state!==undefined&&slow.rolledOff&&slow.ended&&slow.title!=='RUNWAY OVERRUN'&&slow.over>30&&slow.over<420,'Slow roll beyond the strip is survived '+JSON.stringify(slow));
+  }
+  for(const kind of ['p47','fw190']){
+   const fast=await page.evaluate(({kind})=>{setupFieldLanding(kind);resolveGround(1/60);P.pos.x=AF_X+RWY_LEN/2+30;P.spd=40;for(let i=0;i<30&&P.alive;i++)updateFlight(1/60);return {alive:P.alive,state};},{kind});
+   assert.ok(!fast.alive,'A fast roll beyond the strip is still wrecked '+kind);
+  }
+  assert.deepEqual(errors,[]);console.log('All six original Rhine types: live flap references/descent, tyre contact, continuous rollout, final debrief, go-around and overrun (fast: wrecked, slow: rolls out on the grass) passed.');
  }finally{await browser.close();server.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;server.close();});

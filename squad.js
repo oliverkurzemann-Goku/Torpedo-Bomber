@@ -7,7 +7,8 @@
  *   plan(mission,{difficulty,seed,side})   -> [{slot,callsign,name,role,skill,aggression,hpMul,help,startDelay}]
  *   gridSlot(slot,wing)                    -> where a pilot lines up on the strip beside the leader
  *   formationOffset(role,slot,wing,t)      -> where he holds in the air, in the leader's frame
- *   chooseTask(ctx)                        -> {task:'form'|'ground'|'air'|'cover'|'rtb', ref, why}
+ *   chooseTask(ctx)                        -> {task:'form'|'ground'|'air'|'cover'|'rtb', ref, why}   (ctx.order: the player's order,
+ *                                             ORDERS = free (the pilots decide) | attack (engage at will, wider reach) | cover | form)
  *   newRun() / groundPass(run,me,tgt,env,dt) -> one staged strafing / rocket / bomb pass on a ground target
  *   bombRelease(me,tgt)                    -> true when a bomb dropped now lands on the target
  *   takeoffRoll(w,dt,o)                    -> the ground run on the same forces as the player's
@@ -71,6 +72,7 @@ function formationOffset(role,slot,wing=12,t=0){
 // ctx: {leader:{pos,vel,spd,engaged},me:{pos,hp,maxhp,ammo,bombs,rockets,role,aggression,skill,cool},
 //       targets:[{ref,kind,pos,alive,heavy,primary,claimed}], foes:[{ref,pos,bomber,alive,claimed,threatLeader}],
 //       engageRange?}
+const ORDERS=['free','attack','cover','form'];        // the player's orders to the flight (Build 237)
 const LEASH=4200;                                     // metres from the leader inside which a wingman picks a fight
 const d3=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y,a.z-b.z),d2=(a,b)=>Math.hypot(a.x-b.x,a.z-b.z);
 function usable(me,t){
@@ -85,25 +87,34 @@ function usable(me,t){
 function chooseTask(c){
  const me=c.me,L=c.leader,tgts=(c.targets||[]).filter(t=>t.alive);
  let foes=(c.foes||[]).filter(f=>f.alive);
+ const order=ORDERS.includes(c.order)?c.order:'free',role=order==='cover'?'cover':me.role;
  const hp=me.hp/Math.max(1,me.maxhp),armed=me.ammo>40||me.bombs>0||me.rockets>0;
  if(hp<=.34)return {task:'rtb',why:'damaged'};
  if(!armed)return {task:'rtb',why:'winchester'};
- // 1. somebody on the leader's tail: that is the job, whatever the role
+ // 1. somebody on the leader's tail: that is the job, whatever the role or the order
  const six=foes.filter(f=>!f.bomber&&f.threatLeader).sort((a,b)=>d3(a.pos,L.pos)-d3(b.pos,L.pos))[0];
  if(six)return {task:'air',ref:six.ref,why:'six'};
  // a leash: he fights where the leader is, and comes back when the fight has dragged him far away
  if(me.far)return {task:'form',why:'rejoin'};
- foes=foes.filter(f=>d3(f.pos,L.pos)<LEASH);
+ foes=foes.filter(f=>d3(f.pos,L.pos)<(order==='attack'?LEASH*1.6:LEASH));
  const near=foes.filter(f=>d3(f.pos,me.pos)<1500&&!f.bomber).sort((a,b)=>d3(a.pos,me.pos)-d3(b.pos,me.pos))[0];
- if(me.role==='cover'){
+ // order FORM: stay on the leader, fight only what is on top of him
+ if(order==='form')return near&&d3(near.pos,me.pos)<700?{task:'air',ref:near.ref,why:'defend'}:{task:'form',why:'ordered'};
+ // order ATTACK: whatever is nearest, a bandit or a ground target, from further out
+ if(order==='attack'){
+  const a=pickAir(me,foes),g=groundChoice({...c,engageRange:9000},tgts);
+  const gt=g&&tgts.find(t=>t.ref===g.ref),da=a?d3(a.pos,me.pos):Infinity,dg=gt?d2(gt.pos,me.pos):Infinity;
+  if(a&&da<=dg+(a.bomber?0:1200))return {task:'air',ref:a.ref,why:a.bomber?'bomber':'fighter'};
+  if(g)return g;
+  return a?{task:'air',ref:a.ref,why:a.bomber?'bomber':'fighter'}:{task:'form',why:'no target'};
+ }
+ if(role==='cover'){
   const f=foes.filter(f=>d3(f.pos,L.pos)<1900).sort((a,b)=>d3(a.pos,L.pos)-d3(b.pos,L.pos))[0];
   return f?{task:'air',ref:f.ref,why:'cover'}:{task:'cover',why:'cover'};
  }
- if(me.role==='hunter'){
+ if(role==='hunter'){
   // fighters first when they are close, otherwise the bomber nearest to him; a hunter with no foe left may help on the ground
-  const pool=foes.filter(f=>!f.claimed||d3(f.pos,me.pos)<900);
-  const score=f=>d3(f.pos,me.pos)-(f.bomber?0:900);
-  const f=pool.sort((a,b)=>score(a)-score(b))[0]||foes.sort((a,b)=>score(a)-score(b))[0];
+  const f=pickAir(me,foes);
   if(f&&d3(f.pos,me.pos)<9000)return {task:'air',ref:f.ref,why:f.bomber?'bomber':'fighter'};
   if(!foes.length)return groundChoice(c,tgts)||{task:'form',why:'no contact'};
   return {task:'form',why:'no contact'};
@@ -111,6 +122,12 @@ function chooseTask(c){
  // strike: a bandit that is on top of him is dealt with, otherwise the ground target the leader is not on
  if(near&&d3(near.pos,me.pos)<900)return {task:'air',ref:near.ref,why:'defend'};
  return groundChoice(c,tgts)||{task:'form',why:'no target'};
+}
+// The foe a pilot goes for: fighters first when they are close (900 m better than a bomber), foes nobody else has claimed.
+function pickAir(me,foes){
+ const pool=foes.filter(f=>!f.claimed||d3(f.pos,me.pos)<900);
+ const score=f=>d3(f.pos,me.pos)-(f.bomber?0:900);
+ return pool.sort((a,b)=>score(a)-score(b))[0]||foes.slice().sort((a,b)=>score(a)-score(b))[0]||null;
 }
 function groundChoice(c,tgts){
  const me=c.me,L=c.leader;if(me.cool>0)return null;
@@ -255,7 +272,13 @@ const LINES={
  bingo:['BINGO — HEADING HOME','OUT OF AMMUNITION — HEADING HOME','TOO MANY HITS — HEADING HOME'],
  lost:['GOING DOWN — GOOD LUCK','MAYDAY — I AM OUT'],
  landed:['DOWN SAFELY','ON THE GROUND — THANKS FOR THE COVER'],
- cover:['HIGH COVER — WATCHING YOUR SIX','ABOVE AND BEHIND YOU']
+ cover:['HIGH COVER — WATCHING YOUR SIX','ABOVE AND BEHIND YOU'],
+ rejoin:['OFF THE TARGET — REJOINING YOU','CLEAR OF THE TARGET — FORMING UP'],
+ form:['FORMING UP ON YOU','NO TARGET IN SIGHT — STAYING WITH YOU'],
+ ordFree:['WILCO — I WILL PICK MY OWN TARGETS','ROGER — FREE TO ENGAGE'],
+ ordAttack:['WILCO — ENGAGING AT WILL','ROGER — GOING AFTER THEM'],
+ ordCover:['WILCO — HIGH COVER','ROGER — I HAVE YOUR SIX'],
+ ordForm:['WILCO — TIGHT ON YOU','ROGER — HOLDING FORMATION']
 };
 function callout(event,w,n=0){
  const list=LINES[event]||[event.toUpperCase()],line=list[Math.abs(n|0)%list.length];
@@ -265,6 +288,6 @@ function callout(event,w,n=0){
 // Debrief bonus: +150 for every wingman who is still flying when you land (only on a successful sortie).
 function flightBonus(alive,success){return success?150*Math.max(0,alive|0):0;}
 
-const api={TOUGH,LEVELS,NAMES,ROLE_TEXT,HP,plan,describe,maxHp,gridSlot,formationOffset,chooseTask,usable,newRun,groundPass,bombRelease,takeoffRoll,landingPath,gunScatter,ROCKET_DROOP,flakRisk,callout,flightBonus,rngFrom,autoRole};
+const api={ORDERS,TOUGH,LEVELS,NAMES,ROLE_TEXT,HP,plan,describe,maxHp,gridSlot,formationOffset,chooseTask,usable,newRun,groundPass,bombRelease,takeoffRoll,landingPath,gunScatter,ROCKET_DROOP,flakRisk,callout,flightBonus,rngFrom,autoRole};
 root.Squad=api;if(typeof module==='object'&&module.exports)module.exports=api;
 })(typeof globalThis!=='undefined'?globalThis:this);

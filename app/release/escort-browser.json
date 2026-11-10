@@ -1,0 +1,129 @@
+{
+ "counts": {
+  "boxes/rookie": {
+   "bombers": 3,
+   "fighters": 1,
+   "escorts": 1,
+   "optional": 1,
+   "blockingFighters": 0,
+   "modes": "escort"
+  },
+  "boxes/vet": {
+   "bombers": 3,
+   "fighters": 2,
+   "escorts": 2,
+   "optional": 2,
+   "blockingFighters": 0,
+   "modes": "escort"
+  },
+  "boxes/ace": {
+   "bombers": 3,
+   "fighters": 2,
+   "escorts": 2,
+   "optional": 2,
+   "blockingFighters": 0,
+   "modes": "escort"
+  },
+  "komet/rookie": {
+   "bombers": 2,
+   "fighters": 0,
+   "escorts": 0,
+   "optional": 0,
+   "blockingFighters": 0,
+   "modes": ""
+  },
+  "komet/vet": {
+   "bombers": 2,
+   "fighters": 1,
+   "escorts": 1,
+   "optional": 1,
+   "blockingFighters": 0,
+   "modes": "escort"
+  },
+  "libs/vet": {
+   "bombers": 4,
+   "fighters": 2,
+   "escorts": 2,
+   "optional": 0,
+   "blockingFighters": 2,
+   "modes": "escort"
+  },
+  "jetstrike/vet": {
+   "bombers": 4,
+   "fighters": 2,
+   "escorts": 2,
+   "optional": 0,
+   "blockingFighters": 2,
+   "modes": "escort"
+  },
+  "jetboxes/vet": {
+   "bombers": 3,
+   "fighters": 1,
+   "escorts": 1,
+   "optional": 0,
+   "blockingFighters": 1,
+   "modes": "escort"
+  },
+  "jetambush/vet": {
+   "bombers": 2,
+   "fighters": 1,
+   "escorts": 1,
+   "optional": 0,
+   "blockingFighters": 1,
+   "modes": "escort"
+  },
+  "fighter/vet": {
+   "bombers": 0,
+   "fighters": 2,
+   "escorts": 0,
+   "optional": 0,
+   "blockingFighters": 2,
+   "modes": "engage"
+  },
+  "free/vet": {
+   "bombers": 0,
+   "fighters": 0,
+   "escorts": 0,
+   "optional": 0,
+   "blockingFighters": 0,
+   "modes": ""
+  }
+ },
+ "orbit": {
+  "n": 2,
+  "released": 0,
+  "maxDist": 951,
+  "minRel": 210,
+  "maxRel": 451,
+  "minAgl": 1121,
+  "nan": false,
+  "modes": "escort",
+  "bombersAlive": 3,
+  "speeds": [
+   100,
+   102
+  ]
+ },
+ "breakaway": {
+  "farStill": true,
+  "nearReleasedAfter": 30,
+  "nearRadio": true,
+  "nearDist": 2774,
+  "nearModes": "engage",
+  "fight": true,
+  "quiet": true,
+  "alarmReleased": true,
+  "alarmFlag": true,
+  "closeReleased": true
+ },
+ "wave": {
+  "rookie": {
+   "added": 2,
+   "escorts": 0
+  },
+  "vet": {
+   "added": 3,
+   "escorts": 1
+  }
+ }
+}

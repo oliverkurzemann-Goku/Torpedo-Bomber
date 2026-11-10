@@ -111,7 +111,8 @@ const server=http.createServer((req,res)=>{
    // Build 220: on the computed core the closed-throttle deceleration is drag + windmilling propeller over
    // the real mass, so the slow heavy Avenger/SBD/Ju 87 shed less speed at half their (low) top speed than a
    // fighter. Required: a clear brake at half speed and a stronger one at 75 % (drag grows with V^2).
-   for(const f of ['0.5','0.75']){const jet=kind==='me262'||kind==='me163';const floor=r.core?(f==='0.5'?.9:1.35):(f==='0.5'?1.3:2.2);if(!jet)assert(r.idle[f]>floor,`${kind} closed throttle at ${f} vmax brakes ${r.idle[f].toFixed(2)} m/s2`);}
+   // Build 237: windmilling disc .07 -> .16, idle brakes ~1.6x harder (Stuka / Avenger / SBD: low top speed or heavy and draggy, the least idle braking)
+   for(const f of ['0.5','0.75']){const jet=kind==='me262'||kind==='me163';const stuka=['ju87','avenger','sbd'].includes(kind),floor=r.core?(f==='0.5'?(stuka?1.1:1.7):(stuka?1.7:3.2)):(f==='0.5'?(stuka?1.5:1.9):(stuka?2.4:3.4));if(!jet)assert(r.idle[f]>floor,`${kind} closed throttle at ${f} vmax brakes ${r.idle[f].toFixed(2)} m/s2`);}
    if(r.core)assert(r.idle['0.75']>r.idle['0.5']*1.25,`${kind} idle deceleration grows with speed`);
    for(const [fps,l] of Object.entries(r.loop)){
     assert(l.alive&&l.t!==null&&l.t<20,`${kind} completes a loop from the AERO gate at ${fps} FPS (${l.t})`);

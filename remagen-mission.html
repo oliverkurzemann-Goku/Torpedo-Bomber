@@ -136,6 +136,7 @@
   #flapUpBtn{left:max(86px,calc(env(safe-area-inset-left) + 86px));top:calc(30% + 56px);}
   #armBtn{left:max(20px,env(safe-area-inset-left));top:calc(30% + 112px);}
   #aeroBtn{left:max(20px,env(safe-area-inset-left));top:calc(30% + 168px);font-size:9px;letter-spacing:0;}
+  #wingBtn{left:max(86px,calc(env(safe-area-inset-left) + 86px));top:calc(30% + 168px);}
   #tankBtn{left:max(86px,calc(env(safe-area-inset-left) + 86px));top:30%;display:none;}
   #diveBrakeBtn{left:max(20px,env(safe-area-inset-left));top:calc(30% + 224px);display:none;}
   #bailBtn{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 22px);
@@ -271,14 +272,14 @@
   #brief .card{max-width:760px;}
   .opsMap{display:block;width:100%;height:auto;margin-top:14px;border:1px solid #778168;border-radius:5px;}
   .opsLegend{font:11px/1.5 monospace;color:#d7c797;text-align:left;margin-top:5px;}
-  #opsStatus{position:fixed;top:calc(env(safe-area-inset-top) + 76px);left:50%;transform:translateX(-50%);color:#edcc80;background:rgba(14,20,18,.78);padding:5px 9px;font:10px monospace;pointer-events:none;z-index:9;max-width:58vw;text-align:center;}
+  #opsStatus{position:fixed;top:calc(env(safe-area-inset-top) + 76px);left:50%;transform:translateX(-50%);color:#edcc80;background:rgba(14,20,18,.78);padding:5px 9px;font:10px monospace;pointer-events:none;z-index:9;max-width:58vw;text-align:center;white-space:pre-line;}
   #systemsStatus{position:fixed;top:calc(env(safe-area-inset-top) + 116px);left:50%;transform:translateX(-50%);color:#ffbf96;background:#251810db;padding:5px 9px;font:10px monospace;pointer-events:none;z-index:9;max-width:60vw;text-align:center;}#systemsStatus:empty{display:none;}
   .warningLamps{display:flex!important;gap:10px;padding:5px 9px!important;background:#141813dd!important;border:1px solid #535744;border-radius:4px;white-space:nowrap;}
   .warningLamp{color:#646c5c;font:9px monospace;letter-spacing:.35px;} .warningLamp[data-level="1"]{color:#ffd088;text-shadow:0 0 6px #e0a432a0;} .warningLamp[data-level="2"]{color:#ff8c70;text-shadow:0 0 7px #ff6638b0;}
 
 .hangarLink{display:block;padding:12px 14px;margin:8px 0 12px;color:#f3ce83;border:1px solid #ba9d57;border-radius:5px;text-decoration:none;text-align:center;font:600 12px system-ui;letter-spacing:.8px;min-height:44px;}
 </style>
-<link rel="stylesheet" href="menu-layout.css?v=236">
+<link rel="stylesheet" href="menu-layout.css?v=237">
 </head>
 <body>
 <!-- ===== TEMP TEST-ONLY VERSION BANNER — asked for by Oliver: "kannst du irgendwo einbauen,
@@ -300,7 +301,7 @@
   <div style="width:100%;height:4px;background:repeating-linear-gradient(45deg,#ffd400,#ffd400 8px,#111 8px,#111 16px);"></div>
   <span id="testVersionBannerText" style="background:#111;color:#ffd400;font-family:monospace;font-weight:800;font-size:11px;letter-spacing:.5px;padding:3px 10px;border:1px solid #ffd400;border-top:none;border-radius:0 0 6px 6px;"></span>
 </div>
-<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 236';</script>
+<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 237';</script>
 <!-- ===== END TEMP TEST-ONLY VERSION BANNER ===== -->
 <div id="app"></div>
 <style>
@@ -341,7 +342,7 @@
   <div id="flash"></div>
   <div id="gunsight"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 236 · REAL RHINE</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 237 · REAL RHINE</div>
 
   <div id="apr">
     <div id="aprCall"></div>
@@ -367,6 +368,7 @@
 <div id="flapBtn" class="ctlBtn">FLAPS<br>UP</div>
 <div id="flapUpBtn" class="ctlBtn">FLAPS<br>&#9650; UP</div>
 <div id="armBtn" class="ctlBtn">ARM<br>BOMB</div>
+<div id="wingBtn" class="ctlBtn" role="button" title="Order to your wingmen: FREE / ATTACK / COVER / FORM (O)" style="display:none">WING<br>FREE</div>
 <div id="aeroBtn" class="ctlBtn" title="Realistic flight: the stick is a load factor - rolls, loops and real stalls, from the take-off on (off = arcade flight)">REALISTIC<br>OFF</div>
 <div id="diveBrakeBtn" class="ctlBtn" title="Stuka dive brakes (D)">DIVE<br>BRAKES</div>
 <button id="tankBtn" class="ctlBtn" type="button" title="Jettison external fuel tank (T)">DROP<br>TANK</button>
@@ -394,7 +396,7 @@
 </div>
 
 <div class="overlay hidden" id="menu" data-campaign="europe">
-  <div class="menuTop"><a id="selBtn" href="index.html?v=236">&#9664; Change Game</a><span class="menuMeta">RHINE OPERATIONS<br>BUILD 236</span></div>
+  <div class="menuTop"><a id="selBtn" href="index.html?v=237">&#9664; Change Game</a><span class="menuMeta">RHINE OPERATIONS<br>BUILD 237</span></div>
   <div class="card menuCard">
     <aside class="menuOverview" aria-label="Campaign and pilot options">
     <div class="campaignArt" aria-hidden="true"></div>
@@ -428,6 +430,7 @@
       <div class="secLbl">Choose your sortie · 15 missions + 4 bonus &amp; training</div>
       <a class="hangarLink" href="hangar.html?theatre=europe">CUSTOM MISSION · CHOOSE AIRCRAFT &amp; LOADOUT →</a>
 <div id="missionSel" role="group" aria-label="European missions"></div>
+      <div id="missionBlurb" class="missionBlurb" aria-live="polite"></div>
       <div class="menuConfig">
         <div class="difficulty"><div class="secLbl">Difficulty</div><div id="diffSel" role="group" aria-label="Difficulty"></div></div>
         <label class="toggle" id="invToggle"><span class="box" id="invBox">&#10003;</span> Invert pitch</label>
@@ -503,7 +506,7 @@
 <script src="terrain-system/HeightProvider.js?v=remagen-21"></script>
 <script src="terrain-system/TerrainTile.js?v=198"></script>
 <script src="terrain-system/TerrainManager.js?v=198"></script>
-<script src="terrain-system/OSMManager.js?v=236"></script>
+<script src="terrain-system/OSMManager.js?v=237"></script>
 <script src="terrain-system/PeriodBuildings.js?v=175"></script>
 <script src="terrain-system/HistoricalObjectManager.js?v=173"></script>
 <script src="terrain-system/AirfieldDetails.js?v=169"></script>
@@ -513,7 +516,7 @@
 <script src="terrain-system/LivingWorld.js?v=179"></script>
 <script src="campaign.js?v=1"></script>
 <script src="game-runtime.js?v=198"></script>
-<script src="sortie-checkpoint.js?v=236"></script>
+<script src="sortie-checkpoint.js?v=237"></script>
 <script src="ju87-native.js?v=218"></script>
 <script src="me262-native.js?v=206"></script>
 <script src="me163-native.js?v=218"></script>
@@ -521,43 +524,43 @@
 <script src="aircraft-articulation.js?v=218"></script>
 <script src="aircraft-rotors.js?v=172"></script>
 <script src="b17-native.js?v=201"></script>
-<script src="combat-fx.js?v=236"></script>
+<script src="combat-fx.js?v=237"></script>
 <script src="aircraft-smoke.js?v=176"></script>
 <script src="aircraft-damage.js?v=177"></script>
-<script src="flight-support.js?v=236"></script>
+<script src="flight-support.js?v=237"></script>
 <script src="ordnance.js?v=157"></script>
 <script src="crew-visuals.js?v=179"></script>
 <script src="aircraft-finish.js?v=206"></script>
 <script src="runway-lights.js?v=179"></script>
 <script src="ship-wakes.js?v=179"></script>
-<script src="ship-contact.js?v=236"></script>
+<script src="ship-contact.js?v=237"></script>
 <script src="pilot-bailout.js?v=181"></script>
 <script src="enemy-bailouts.js?v=177"></script>
 <script src="flare-support.js?v=177"></script>
 <script src="sortie-service.js?v=206"></script>
 <script src="pilot-rescue.js?v=179"></script>
 <script src="radio-intercept.js?v=157"></script>
-<script src="surprises.js?v=236"></script>
+<script src="surprises.js?v=237"></script>
 <script src="audio/weapon-sound.js?v=144"></script>
 <script src="audio/throttle-response.js?v=218"></script><script src="audio/jet-engine.js?v=218"></script>
 <script src="audio/flight-atmosphere.js?v=175"></script>
 <script src="sortie-systems.js?v=198"></script>
-<script src="me262-performance.js?v=236"></script>
+<script src="me262-performance.js?v=237"></script>
 <script src="flight-envelope.js?v=219"></script>
 <script src="flight-dynamics.js?v=219"></script>
-<script src="flight-core.js?v=236"></script>
-<script src="flight-control.js?v=236"></script>
-<script src="dogfight-ai.js?v=236"></script>
-<script src="squad.js?v=236"></script>
+<script src="flight-core.js?v=237"></script>
+<script src="flight-control.js?v=237"></script>
+<script src="dogfight-ai.js?v=237"></script>
+<script src="squad.js?v=237"></script>
 <script src="audio/aircraft-engine.js?v=218"></script>
 <script src="p47-performance.js?v=204"></script>
-<script src="sortie-features.js?v=236"></script>
+<script src="sortie-features.js?v=237"></script>
 <script src="ground-run.js?v=204"></script>
 <script src="ground-dust.js?v=181"></script>
 <script src="flight-indicators.js?v=198"></script>
 <script src="sortie-fuel.js?v=206"></script>
-<script src="operation-plans.js?v=236"></script>
-<script src="custom-sortie.js?v=236"></script>
+<script src="operation-plans.js?v=237"></script>
+<script src="custom-sortie.js?v=237"></script>
 <script>
 // ============================================================
 //  REMAGEN 1945 — REAL TERRAIN (forked from thunderbolt-europe.html)
@@ -906,7 +909,7 @@ async function loadRealWorld(){
 
   if(OSMManager.BUILD!==23||HistoricalObjectManager.BUILD!==21||LivingWorld.BUILD!==22||WorldVehicles.BUILD!==22) throw new Error('Terrain version mismatch. Reload Remagen.');
   document.getElementById('testVersionBannerText').textContent=
-    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 236 · MODULE 23';
+    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 237 · MODULE 23';
   heightProvider=new DEMHeightProvider(RTILE,'terrain-system/real/data/dem/');
   terrain=new TerrainManager(scene,RTILE,heightProvider);
   osmMgr=new OSMManager(scene,RTILE,terrain,'terrain-system/real/data/osm/');
@@ -3136,7 +3139,7 @@ function objectiveLeft(){
   return left;
 }
 function bombersLeft(){ return enemyAir.filter(e=>e.alive&&e.bomber).length; }
-function blockingEnemyAir(){return enemyAir.filter(e=>e.alive&&!e.escapeThreat);}
+function blockingEnemyAir(){return enemyAir.filter(e=>e.alive&&!e.escapeThreat&&!e.optional);}
 function objectiveText(){
   const m=M();
   if(europeOps&&europeOps.failed)return 'WINDOW MISSED — RETURN TO BASE';
@@ -3810,7 +3813,8 @@ function enemyEdgeAvoidance(e){
   if(e.edgeReturning&&margin>ENEMY_EDGE_MARGIN+1500&&facing>.65)e.edgeReturning=false;
   return e.edgeReturning?inward:null;
 }
-function spawnEnemyAir(n,forceKind){
+function spawnEnemyAir(n,forceKind,opts={}){
+  const bombers=opts.escort?enemyAir.filter(o=>o.bomber&&o.alive):[];
   for(let i=0;i<n;i++){
     // Flying the Jug you meet Messerschmitts and Focke-Wulfs; flying German you meet Jugs.
     let kind=forceKind;
@@ -3832,8 +3836,55 @@ function spawnEnemyAir(n,forceKind){
       heading:Math.atan2(toP.x,toP.z), pitch:0, roll:0,
       spd:kind==='me163'?195:((kind==='p47')?150:145), cool:1.4+i*0.8,
       mode:'engage', modeT:2+i*0.8, builtFrom:null});
+    if(bombers.length)placeEscort(enemyAir[enemyAir.length-1],bombers,i,n);
+    if(opts.optional)enemyAir[enemyAir.length-1].optional=true;
   }
 }
+// ---- Build 237: escort fighters. They fly with the bomber box (an orbit around it, a little above) and only break away when
+// the box is threatened: you come within ESCORT.box of it (ESCORT.alarm once a bomber has been hit), or within ESCORT.self of them.
+const ESCORT={box:2800,alarm:6500,self:1500,hands:{vector:true,rollAccel:6,rollGain:3.4,pullGain:2.4,rollDeadband:.12,aimTau:.25,powerRate:.9,pushBelow:.3}};
+let bomberAlarm=false,escortCalled=false;
+function bomberBox(from){
+  const bombers=enemyAir.filter(o=>o.bomber&&o.alive);if(!bombers.length)return null;
+  let lead=bombers[0],bd=Infinity;for(const b of bombers){const d=b.pos.distanceTo(from);if(d<bd){bd=d;lead=b;}}
+  const box=bombers.filter(b=>b.pos.distanceTo(lead.pos)<1600),c=new THREE.Vector3();
+  for(const b of box)c.add(b.pos);c.multiplyScalar(1/box.length);
+  return {lead,box,c};
+}
+function placeEscort(e,bombers,i,n){
+  const bx=bomberBox(bombers[0].pos);if(!bx)return;
+  const h=bx.lead.heading,fwd=new THREE.Vector3(Math.sin(h),0,Math.cos(h)),lat=new THREE.Vector3(Math.cos(h),0,-Math.sin(h)),side=i%2?1:-1;
+  e.pos.copy(bx.c).addScaledVector(lat,side*(380+i*110)).addScaledVector(fwd,-120-i*80);
+  e.pos.y=bx.c.y+210+i*55;e.heading=h;e.pitch=0;e.roll=0;e.spd=112;e.vel.copy(fwd).multiplyScalar(112);
+  e.escort=true;e.escortSlot=i;e.mode='escort';e.modeT=99;e.cool=2;
+}
+// returns true while the fighter is still flying escort this frame
+function escortFighter(e,dt,dist){
+  const bx=bomberBox(e.pos);
+  if(!bx){e.escort=false;e.mode='engage';e.modeT=1;return false;}
+  const pd=P.pos.distanceTo(bx.c),wingNear=squad.some(w=>w.alive&&['fly','climb'].includes(w.phase)&&w.pos.distanceTo(bx.c)<ESCORT.box);
+  if(P.alive&&(pd<(bomberAlarm?ESCORT.alarm:ESCORT.box)||dist<ESCORT.self)||wingNear||bomberAlarm&&e.pos.distanceTo(bx.c)<ESCORT.box+800&&pd<ESCORT.alarm*1.6){
+    e.escort=false;e.mode='engage';e.modeT=1.5+(e.escortSlot||0)*.6;e.tac=null;
+    if(!escortCalled){escortCalled=true;radioSay('ESCORT FIGHTERS BREAKING AWAY — BANDITS COMING UP FOR YOU');}
+    return false;
+  }
+  const S=aiSpec(e.kind,e.pos.y),slot=e.escortSlot||0,dir=slot%2?-1:1,v0=Math.max(S.stall*1.5,bx.lead.spd*1.45,95),R=620+slot*170;
+  const away=Math.hypot(e.pos.x-bx.c.x,e.pos.z-bx.c.z);
+  let aim;
+  if(away>3200)aim=bx.c.clone().sub(e.pos);   // join the box first
+  else{
+    const th=Math.atan2(e.pos.z-bx.c.z,e.pos.x-bx.c.x)+dir*.6;   // a point on the orbit a little ahead of him
+    aim=new THREE.Vector3(bx.c.x+Math.cos(th)*R,bx.c.y+210+slot*55,bx.c.z+Math.sin(th)*R).sub(e.pos);
+  }
+  const inward=enemyEdgeAvoidance(e);if(inward){aim=inward;aim.y=.08;}
+  const gnd=groundY(e.pos.x,e.pos.z);if(e.pos.y-gnd<260&&aim.y<.05)aim.y=.05;
+  e.mode='escort';
+  if(brainOn(e))FlightControl.ai(e,dt,aim,v0,ESCORT.hands);else flyAI(e,dt,aim.normalize(),v0);
+  enemyFighterTail(e,dt,dist,0,gnd,false);
+  return true;
+}
+// how many escorts a bomber group with no authored escort gets (Build 237): fewer on Rookie
+function escortCount(bomberN){const base=Math.max(1,Math.round(bomberN/2));return D().id==='rookie'?Math.max(0,base-1):base;}
 // A bomber stream: heavy, straight and level, and it shoots back from every angle. Killing
 // one takes real gunnery - the fun is in surviving the crossfire on the way in.
 function bomberRotors(group){
@@ -3890,6 +3941,7 @@ function spawnBombers(n,kind){
 }
 function damageEnemyAir(e,amount){
   if(!e.alive) return;
+  if(e.bomber)bomberAlarm=true;   // the escorts break away as soon as a bomber is hit
   e.hp-=amount;
   if(typeof aircraftDamage!=="undefined"&&aircraftDamage)aircraftDamage.damage(e.group,Math.max(0,e.hp/e.maxhp),1,null,1,e.kind);
   spawnSparks(e.pos,4);
@@ -4064,6 +4116,7 @@ function updateEnemyAir(dt){
     const toP=P.pos.clone().sub(e.pos);
     const dist=toP.length();
     if(e.bomber){ updateBomber(e,dt,toP,dist); continue; }
+    if(e.escort&&escortFighter(e,dt,dist))continue;
     if(typeof brainOn==='function'&&brainOn(e)){ enemyBrainFighter(e,dt,toP,dist); continue; }
 
     const S=aiSpec(e.kind,e.pos.y);
@@ -4332,9 +4385,10 @@ function updateBomber(e,dt,toP,dist){
 //  the strip and take off on the same ground forces as the player, hold a slot, strafe / rocket / bomb the ground
 //  targets, fight the bandits with the enemy fighters' own brain (DogfightAI), can be shot down, and land after the job.
 //  Their rounds, rockets and bombs go into the player's own lists, so what they hit counts for the sortie.
-//  Solo sorties have no squad at all (mission.squad). No orders: the pilots decide for themselves (squad.js).
+//  Solo sorties have no squad at all (mission.squad). The pilots decide for themselves (FREE) unless the player gives an
+//  order with the WING button / O key: ATTACK (engage at will), COVER, FORM (stay on you). Build 237.
 // ============================================================
-let squad=[],squadStats={kills:0,lost:0},squadSayT=0;
+let squad=[],squadStats={kills:0,lost:0},squadSayT=0,squadOrder='free';   // squadOrder: the player's order to the flight (Build 237)
 const squadBrains=new WeakMap(),squadMuzzleCache=new WeakMap();
 const sqClamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 function squadSay(w,event,n=0,urgent=false){
@@ -4369,7 +4423,7 @@ function spawnSquad(descs){
     poseSquadGround(w,0);
   }
 }
-function clearSquad(){for(const w of squad)GameRuntime.release(w.group);squad=[];squadStats={kills:0,lost:0};squadSayT=0;}
+function clearSquad(){for(const w of squad)GameRuntime.release(w.group);squad=[];squadStats={kills:0,lost:0};squadSayT=0;squadOrder='free';syncWingBtn();}
 function squadGear(w){
   const g=w.group;
   if(w.kind==='p47')poseP47Gear(g,w.gear);
@@ -4466,6 +4520,25 @@ function squadThreatens(e){
   const en=new THREE.Vector3(Math.sin(e.heading)*Math.cos(e.pitch),Math.sin(e.pitch),Math.cos(e.heading)*Math.cos(e.pitch));
   return en.dot(rel.negate())>.88;                                          // and pointing at him
 }
+// ---- orders (Build 237): one button commands the whole flight ----
+const ORDER_LABEL={free:'FREE',attack:'ATTACK',cover:'COVER',form:'FORM'};
+function syncWingBtn(){
+  const b=document.getElementById('wingBtn');if(!b)return;
+  const show=squad.some(w=>w.alive)&&(state===ST.FLIGHT||state===ST.ROLL||state===ST.PAUSED);
+  const key=(show?'1':'0')+squadOrder;if(b.dataset.k===key)return;b.dataset.k=key;
+  b.style.display=show?'flex':'none';b.innerHTML='WING<br>'+ORDER_LABEL[squadOrder];b.classList.toggle('on',squadOrder!=='free');
+  b.setAttribute('aria-label','Order to the flight: '+ORDER_LABEL[squadOrder]);
+}
+function setSquadOrder(order,quiet){
+  if(!Squad.ORDERS.includes(order)||!squad.some(w=>w.alive))return;
+  squadOrder=order;
+  for(const w of squad)if(w.alive){w.decideT=0;w.force=true;}   // the new order interrupts a pass or a fight at once
+  syncWingBtn();
+  if(quiet)return;
+  flash('WING — '+ORDER_LABEL[order]+({free:' · PICK OWN TARGETS',attack:' · ENGAGE AT WILL',cover:' · HIGH COVER',form:' · STAY ON ME'}[order]),1500);
+  const first=squad.find(w=>w.alive);if(first)radioSay(Squad.callout('ord'+order[0].toUpperCase()+order.slice(1),first.desc,first.desc.slot));
+}
+function cycleSquadOrder(){const i=Squad.ORDERS.indexOf(squadOrder);setSquadOrder(Squad.ORDERS[(i+1)%Squad.ORDERS.length]);}
 function squadDecide(w){
   const claimed=ref=>squad.some(o=>o!==w&&o.alive&&o.target===ref);
   const leader={pos:P.pos,vel:noseDir().multiplyScalar(P.spd),spd:P.spd,engaged:firing||Object.values(sortieKills).some(v=>v>0)};
@@ -4474,22 +4547,24 @@ function squadDecide(w){
   let d;
   if(P.rtb&&Math.hypot(P.pos.x-AF_X,P.pos.z-AF_Z)<7000&&w.task!=='ground')d={task:'rtb',why:'home'};
   else d=Squad.chooseTask({leader,me:{pos:w.pos,hp:w.hp,maxhp:w.maxhp,ammo:w.ammo,bombs:w.bombs,rockets:w.rockets,role:w.desc.role,
-    aggression:w.desc.aggression,skill:w.desc.skill,cool:w.cool,far:w.pos.distanceTo(P.pos)>4800},targets:list,foes});
-  const urgent=d.why==='six';
+    aggression:w.desc.aggression,skill:w.desc.skill,cool:w.cool,far:w.pos.distanceTo(P.pos)>(squadOrder==='attack'?7000:squadOrder==='form'?1800:4800)},targets:list,foes,order:squadOrder});
+  const urgent=d.why==='six',forced=!!w.force;w.force=false;
   // a pass is flown to the end; a fight is re-thought every few seconds; a bandit on the leader's tail wins over both
-  if(!urgent&&w.task==='ground'&&w.target&&w.target.alive)return;
-  if(!urgent&&w.task==='air'&&w.target&&w.target.alive&&w.taskT<7&&d.task==='air')return;
+  if(!urgent&&!forced&&w.task==='ground'&&w.target&&w.target.alive)return;
+  if(!urgent&&!forced&&w.task==='air'&&w.target&&w.target.alive&&w.taskT<7&&d.task==='air')return;
   if(d.task===w.task&&(d.ref||null)===(w.target||null))return;
   w.task=d.task;w.target=d.ref||null;w.taskT=0;w.slotOffset=null;w.run=Squad.newRun();w.tgtMem=null;
   if(d.task==='ground')radioSay(w.callsign+' — IN ON THE '+(w.target.name||'TARGET'));
   else if(d.task==='air')squadSay(w,urgent?'six':'air',w.desc.slot,urgent);
   else if(d.task==='cover')squadSay(w,'cover',w.desc.slot);
+  else if(d.task==='form'&&d.why==='rejoin')squadSay(w,'rejoin',w.desc.slot);
   else if(d.task==='rtb'){w.phase='land';w.path=0;w.target=null;if(d.why!=='home')squadSay(w,'bingo',w.passes,true);}
 }
 function squadEndTask(w){
   if(w.task==='ground'){
     w.passes++;w.cool=Math.max(w.cool,12+Math.random()*10);
     if(w.target&&!w.target.alive)squadSay(w,'groundHit',w.passes);
+    else squadSay(w,'rejoin',w.passes);
   }
   w.task='form';w.target=null;w.slotOffset=null;w.taskT=0;w.run=Squad.newRun();w.tgtMem=null;w.decideT=.4;
 }
@@ -4627,7 +4702,7 @@ function squadLand(w,dt){
   w.spd=0;poseSquadGround(w,dt);
 }
 function updateSquad(dt){
-  squadSayT=Math.max(0,squadSayT-dt);
+  squadSayT=Math.max(0,squadSayT-dt);syncWingBtn();
   for(const w of squad){
     if(!w.alive)continue;
     w.assist=aeroMode?0:1;   // an ARCADE leader flies on the generous thrust law: the wingman gets the same help, REALISTIC none
@@ -4649,8 +4724,16 @@ function updateSquad(dt){
 function squadIdleFrame(dt){for(const w of squad)if(w.alive&&w.phase==='grid')poseSquadGround(w,dt);}
 function squadStatusText(){
   if(!squad.length)return '';
-  const part=w=>w.callsign+(w.alive?' '+({grid:'GRID',roll:'ROLL',climb:'CLIMB',land:'LANDING',rollout:'LANDING',parked:'DOWN'}[w.phase]||({ground:'ATTACK',air:'FIGHT',cover:'COVER',rtb:'HOME'}[w.task]||'FORM')):' LOST');
-  return squad.map(part).join(' · ');
+  const what=w=>{
+    if(!w.alive)return 'LOST';
+    const ph={grid:'ON THE GRID',roll:'TAKING OFF',climb:'CLIMBING OUT',land:'LANDING',rollout:'LANDING',parked:'DOWN SAFE'}[w.phase];if(ph)return ph;
+    if(w.task==='ground')return 'ATTACKING '+((w.target&&w.target.name)||'GROUND TARGET').toUpperCase();
+    if(w.task==='air')return w.target&&w.target.bomber?'ATTACKING BOMBER':'ENGAGING BANDIT';
+    if(w.task==='cover')return 'HIGH COVER';
+    if(w.task==='rtb')return 'HEADING HOME';
+    return squadOrder==='form'?'HOLDING ON YOU':'IN FORMATION';
+  };
+  return squad.map(w=>w.callsign+' '+what(w)).join(' · ')+(squadOrder!=='free'?'  [ORDER '+ORDER_LABEL[squadOrder]+']':'');
 }
 
 // ---- who the enemy fighters and bomber gunners shoot at: you, or one of your wingmen ----
@@ -5177,6 +5260,7 @@ function beginLandingRoll(onStrip,gap){
   const reference=SortieFeatures.Handling.speeds(P,acDef().stall,acDef().app).reference;
   flash(P.ac==='me163'?'SKID DOWN — KEEP STRAIGHT':P.spd>reference+12?'FAST TOUCHDOWN — IDLE TO BRAKE':'TOUCHDOWN — IDLE TO BRAKE, KEEP STRAIGHT',2200);
 }
+const OVERRUN_SPEED=26;   // m/s (~50 kt): faster than this past the end of the strip wrecks the aircraft (Build 237; was 12 m/s)
 function updateLandingRoll(dt,load=SortieFeatures.Handling.sample(P)){
   const run=P.landingRoll;if(!run)return;
   let step;
@@ -5184,11 +5268,11 @@ function updateLandingRoll(dt,load=SortieFeatures.Handling.sample(P)){
     // Core: the same ground forces; the wheel brakes come on gently with idle power (0.7 s), a skid or
     // a belly slides on its own friction and cannot brake.
     run.elapsed+=dt;const v0=P.spd,skid=P.ac==='me163'||run.belly;
-    coreGround(dt,{belly:run.belly,mu:skid?GROUND_MU.skid:run.onStrip?GROUND_MU.strip:GROUND_MU.rough,
+    coreGround(dt,{belly:run.belly,mu:skid?GROUND_MU.skid:run.onStrip&&!run.rolledOff?GROUND_MU.strip:GROUND_MU.rough,
       brake:!skid&&P.throttle<.15?1-Math.exp(-run.elapsed/.7):0});
     const travel=(v0+P.spd)*.5*dt;run.travel+=travel;
     step={travel,stopped:P.spd<.65&&run.elapsed>=3};
-  }else step=GroundRun.landing(P,dt,{jet:P.ac==='me262',skid:P.ac==='me163',offField:!run.onStrip,
+  }else step=GroundRun.landing(P,dt,{jet:P.ac==='me262',skid:P.ac==='me163',offField:!run.onStrip||!!run.rolledOff,
     power:SortieFeatures.Damage.power(P),massRatio:load.ratio,acceleration:FlightDynamics.profile(P.ac).ground});
   P.heading+=inputRoll*steerSign*Math.min(.25,P.spd*.012)*dt;
   P.pos.x+=Math.sin(P.heading)*step.travel;P.pos.z+=Math.cos(P.heading)*step.travel;
@@ -5202,8 +5286,11 @@ function updateLandingRoll(dt,load=SortieFeatures.Handling.sample(P)){
       P.pitch=Math.asin(Math.max(-1,Math.min(1,new THREE.Vector3(0,0,1).applyQuaternion(fit.quaternion).y)));
     }
   }else{P.pitch*=Math.exp(-dt*3);P.pos.y=groundY(P.pos.x,P.pos.z)+1.0;}
-  if(run.onStrip&&(Math.abs(P.pos.x-AF_X)>RWY_LEN/2+40||Math.abs(P.pos.z-AF_Z)>RWY_W/2+8)&&P.spd>12){
-    P.landingRoll=null;crash('RUNWAY OVERRUN','Ran off the landing strip before stopping.');return;
+  // Build 237: running past the end (or off the side) of the strip is only fatal while still FAST (OVERRUN_SPEED). A slow
+  // roll-out beyond the strip carries on over the grass: its friction takes over (rolledOff), the gas lever stays yours.
+  if(run.onStrip&&(Math.abs(P.pos.x-AF_X)>RWY_LEN/2+40||Math.abs(P.pos.z-AF_Z)>RWY_W/2+8)){
+    if(P.spd>OVERRUN_SPEED){P.landingRoll=null;crash('RUNWAY OVERRUN','Ran off the landing strip before stopping.');return;}
+    if(!run.rolledOff){run.rolledOff=true;flash('PAST THE STRIP — BRAKE ON THE GRASS',2200);radioSay('YOU ARE OFF THE END — STAY STRAIGHT AND BRAKE');}
   }
   if(P.ac!=='me163'&&!run.belly&&P.throttle>.82&&inputPitch>.15&&P.spd>vr){
     P.landingRoll=null;P.onGround=false;P.touchResolved=true;P.groundPose=null;
@@ -5390,8 +5477,12 @@ function startMission(i){
   populate();
   startSurprises();
   spawnSquad(plan.squad||Squad.plan(m,{difficulty:D().id,seed:(Math.random()*2147483647)|0,side:isGermanMission(m)?'axis':'allied'}));
-  if(m.enemyAir) spawnEnemyAir(m.enemyAir);
+  bomberAlarm=false;escortCalled=false;
   if(m.bombers) spawnBombers(m.bombers.n, m.bombers.type);
+  // Build 237: bombers fly with an escort. Authored fighters (enemyAir) become the escort of the box; a box without any gets
+  // one of its own (optional: it does not have to be shot down for the sortie to count).
+  if(m.enemyAir) spawnEnemyAir(m.enemyAir,undefined,{escort:!!m.bombers});
+  else if(m.bombers&&m.escort!==0){const n=m.escort!=null?m.escort:escortCount(m.bombers.n);if(n>0)spawnEnemyAir(n,undefined,{escort:true,optional:true});}
   const v=document.getElementById('dmgVig'); if(v) v.style.opacity='0';
   const o=document.getElementById('oilCanopy'); if(o) o.style.opacity='0';
   applyWeaponUI(); resetCtlUI();
@@ -5455,14 +5546,14 @@ function updateEuropeOperation(dt){
     // throttle slider is moved again: this encounter is an actual glide.
     P.fuel=0;P.throttle=0;setThrottleUI(0);
   }
-  if(e.bombers)spawnBombers(e.bombers,e.type);
+  if(e.bombers){spawnBombers(e.bombers,e.type);const n=e.escort!=null?e.escort:(D().id==='rookie'?0:Math.max(1,Math.round(e.bombers/2)));if(n>0)spawnEnemyAir(n,undefined,{escort:true,optional:true});}
   if(e.recon)addScore(250);
   if(e.failed)P.rtb=true;
   if(e.message){radioSay(e.message);flash(e.message,2200);}
  }
  checkObjective();
  const el=document.getElementById('opsStatus');
- if(el){const text=FlightOps.wx(weather).label.toUpperCase()+' · '+(P.rtb&&!europeOps.failed?'RECOVERY'+(wingmen.some(w=>w.alive&&!w.landed)?' · ESCORT TWO (OPTIONAL)':''):europeOps.status())+(squad.length?' · '+squadStatusText():'');if(el.textContent!==text)el.textContent=text;}
+ if(el){const text=FlightOps.wx(weather).label.toUpperCase()+' · '+(P.rtb&&!europeOps.failed?'RECOVERY'+(wingmen.some(w=>w.alive&&!w.landed)?' · ESCORT TWO (OPTIONAL)':''):europeOps.status())+(squad.length?'\n'+squadStatusText():'');if(el.textContent!==text)el.textContent=text;}
 }
 function buildRhineChart(){
  if(rhineChart||!terrain)return;
@@ -6225,6 +6316,7 @@ function showBrief(i){
     +'<br><b>HANDLING</b> '+FlightDynamics.profile(m.ac||'p47').character
     +'<br><b>ARMAMENT</b> Guns'+(loadout.bombs?' · '+loadout.bombs+' bombs':'')
     +(loadout.rockets?' · '+loadout.rockets+' rockets':'')
+    +(m.bombers?'<br><b>ESCORT</b> Fighters fly with the bombers. They break away when you come near the box, when a bomber is hit, or when you come close to them.':'')
     +((m.ac==='me262'||m.ac==='me163')?'<br><b>INTERCEPTION</b> Climb above the clouds; the flight limit is 8,000 m. Contacts patrol inland, not along the map edge.':'')
     +(SortieFuel.supports(m.ac)&&!m.free&&!m.circuits&&(!m.custom||CustomSortie.stores(m.custom).tank>0)?'<br><b>FUEL</b> Internal '+(briefPlan.config.fuel??100)+'% + '+SortieFuel.external(m.ac)+' external. External fuel is used first. Drop Tank / T sheds remaining fuel and drag before combat.':'')
     +FlightOps.briefText(briefPlan.weather,briefPlan.config,briefPlan.wind);
@@ -6256,6 +6348,18 @@ function showResult(good,title,sub,html,btn){
 const ACSHORT={p47:'P-47',bf109:'BF 109',fw190:'FW 190',ju87:'JU 87',me262:'ME 262',me163:'ME 163'};
 function acHex(kind){ return '#'+(AC[kind]&&AC[kind].col!==undefined?AC[kind].col:0x888888).toString(16).padStart(6,'0'); }
 function landingSpeedNote(m){return 'FINAL APPROACH: ~'+Math.round(AC[m.ac||'p47'].app*KT)+' MPH WITH FULL FLAPS · '+AC[m.ac||'p47'].name+(m.ac==='me163'?' · SKID DOWN.':m.ac==='ju87'?' · GEAR FIXED.':'.')+' Live REF follows fuel, stores and actual flaps. Flare, then idle and keep straight until stopped.';}
+// Build 237: short description of the selected mission, shown on the selection screen (first sentences of the briefing).
+function missionBlurbText(m,max=190){
+  let t=String(m&&(m.body||m.text)||'').replace(/<[^>]+>/g,' ').replace(/&middot;/g,'·').replace(/&[a-z]+;/g,' ').replace(/\s+/g,' ').trim();
+  if(t.length>max){const cut=t.slice(0,max),dot=Math.max(cut.lastIndexOf('. '),cut.lastIndexOf('! '),cut.lastIndexOf('? '));t=dot>70?cut.slice(0,dot+1):cut.replace(/\s+\S*$/,'')+'…';}
+  return t;
+}
+function esc237(v){return String(v).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+function updateMissionBlurb(i){
+  const el=document.getElementById('missionBlurb'),m=MISSIONS[i];if(!el||!m)return;
+  const flight=m.squad&&m.squad.n?' · flight: you + '+m.squad.n+(m.squad.n>1?' wingmen':' wingman'):(m.free||m.circuits||m.custom?'':' · solo');
+  el.innerHTML='<div class="mbText"><b>'+esc237(m.title+' · '+m.sub)+'</b>'+'<span class="mbAc" style="background:'+acHex(m.ac)+'">'+esc237(ACSHORT[m.ac]||m.ac||'')+'</span>'+' '+esc237(missionBlurbText(m)+flight)+'</div>';
+}
 function buildMenu(){
   const sel=document.getElementById('missionSel');
   if(sel && !sel.childElementCount){
@@ -6269,7 +6373,7 @@ function buildMenu(){
       c.onclick=()=>{ selectedMission=i;
         sel.querySelectorAll('.chip').forEach((e,j)=>{e.classList.toggle('sel',j===i);e.setAttribute('aria-pressed',String(j===i));});
         document.getElementById('startBtn').textContent='Begin '+m.title;
-        document.getElementById('menuLandingSpeed').textContent=landingSpeedNote(m); };
+        document.getElementById('menuLandingSpeed').textContent=landingSpeedNote(m);updateMissionBlurb(i); };
       sel.appendChild(c);
     });
   }
@@ -6287,6 +6391,7 @@ function buildMenu(){
   const im=MISSIONS[selectedMission]; const sb=document.getElementById('startBtn');
   if(im&&sb) sb.textContent='Begin '+im.title;
   if(im) document.getElementById('menuLandingSpeed').textContent=landingSpeedNote(im);
+  updateMissionBlurb(selectedMission);
   const bv=document.getElementById('bestVal'); if(bv) bv.textContent=bestScore();
 }
 function showLogbook(){
@@ -6391,6 +6496,7 @@ function bindInput(){
     weapon=(weapon==='rocket')?'bomb':'rocket'; applyWeaponUI();
     flash(weapon==='rocket'?'ROCKETS ARMED':'BOMBS ARMED',700); });
   document.getElementById('aeroBtn').addEventListener('pointerdown',e=>{ e.preventDefault();toggleAero(); });
+  document.getElementById('wingBtn').addEventListener('pointerdown',e=>{ e.preventDefault();cycleSquadOrder(); });
   document.getElementById('diveBrakeBtn').addEventListener('pointerdown',e=>{e.preventDefault();toggleDiveBrakes();});
   document.getElementById('flareBtn').addEventListener('pointerdown',e=>{e.preventDefault();dropFlare();});
   document.getElementById('bailBtn').addEventListener('pointerdown',e=>{e.preventDefault();beginBailout();});
@@ -6446,6 +6552,7 @@ function bindInput(){
     if((e.key==='d'||e.key==='D')&&!e.repeat) toggleDiveBrakes();
     if((e.key==='t'||e.key==='T')&&!e.repeat) jettisonDropTank();
     if((e.key==='b'||e.key==='B')&&!e.repeat) beginBailout();
+    if((e.key==='o'||e.key==='O')&&!e.repeat) cycleSquadOrder();
   });
   window.addEventListener('keyup',e=>{keys[e.key]=false;if(e.key==='f'||e.key==='F')firing=false;
     if(state===ST.FLIGHT||steeringParachute())applyKeyboardFlight();});
@@ -6637,7 +6744,7 @@ function init(){
   buildMenu();
   // menu wiring
   document.getElementById('startBtn').onclick=()=>showBrief(selectedMission);
-  document.getElementById('pauseMainMenu').onclick=async()=>{globalThis.sortieCheckpoint?.save();await globalThis.sortieCheckpoint?.flush();exitToMenuFromPause(true);window.location.href='index.html?v=236';};
+  document.getElementById('pauseMainMenu').onclick=async()=>{globalThis.sortieCheckpoint?.save();await globalThis.sortieCheckpoint?.flush();exitToMenuFromPause(true);window.location.href='index.html?v=237';};
   document.getElementById('logBtn').onclick=()=>{ show('menu',false); showLogbook(); };
   document.getElementById('skipLaunchPreview').onclick=()=>finishLaunchIntro();
   document.getElementById('brBack').onclick=()=>{ show('brief',false); show('menu',true);if(navigation){navigation.reset();navigation.button.style.display='none';} state=ST.MENU; };
@@ -6843,6 +6950,6 @@ function reportStartupError(err){
 const hangarRequest=CustomSortie.install('europe',MISSIONS,FlightPlans.europe,window.location.search);
 window.addEventListener('load',()=>{try{init();}catch(err){reportStartupError(err);}});
 </script>
-<script src="checkpoint-rhine.js?v=236"></script>
+<script src="checkpoint-rhine.js?v=237"></script>
 </body>
 </html>
