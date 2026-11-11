@@ -989,6 +989,7 @@ async function preparePacificModels(m,progress=()=>{}){
   const needed=[['carrier',m.defend?loadIJNCarrierModel:loadCarrierModel,
     ()=>m.defend?ijnCarrierModel:carrierModel]];
   if(!m.defend&&!m.free&&!m.qual&&typeof loadPbyModel==='function')needed.push(['pby',loadPbyModel,()=>pbyTemplate]);   // Build 246: the rescue Catalina (typeof guard: sliced test functions run without it)
+  if((m.betty||(m.operation?.events||[]).some(e=>e.betty))&&typeof loadBettyModel==='function')needed.push(['betty',loadBettyModel,()=>bettyTemplate]);   // Build 247 (typeof guard: sliced test functions run without it)
   if(m.corsair)needed.push(['corsair',loadCorsairModel,()=>corsairTemplate]);
   else if(m.sbd)needed.push(['sbd',loadSBDModel,()=>sbdTemplate]);
   if(!m.sbd||m.defend)needed.push(['avenger',loadPlaneModel,()=>gltfRoot&&propPivot]);
@@ -2126,7 +2127,7 @@ function updatePacificOperation(dt){
  for(const e of pacificOps.tick(dt,{pos:P.pos,kills,clear,located,complete:P.rtb||clear&&pacificOps.ready()})){
   if(e.weather){weather=e.weather;applyWeather();}
   for(let i=0;i<(e.fighters||0);i++)spawnZero(i,e.fighters);
-  for(let i=0;i<(e.raiders||0);i++)isUSDefense()?spawnJapaneseRaider(i,e.raiders):spawnRaider(i,e.raiders);
+  for(let i=0;i<(e.raiders||0);i++)isUSDefense()?((e.betty||MISSIONS[mission].betty)&&MISSIONS[mission].theater==='fleet'?spawnBettyRaider(i,e.raiders):spawnJapaneseRaider(i,e.raiders)):spawnRaider(i,e.raiders);
   if(e.recon)addScore(250);
   if(e.failed)P.rtb=true;
   if(e.message){flash(e.message,2200);radioSay(e.message);}
@@ -2261,7 +2262,7 @@ function startMission(idx){
   startSurprises();
 
   // ---- fleet defence: clear old raiders/torps, then set the sortie up ----
-  raiders.forEach(r=>{ if(r.mesh) GameRuntime.release(r.mesh); }); raiders=[];
+  raiders.forEach(r=>{ if(r.mesh) GameRuntime.release(r.mesh); }); raiders=[];bettyWaveSeq=0;
   etorps.forEach(t=>GameRuntime.release(t.mesh)); etorps=[];
   enemyBombs.forEach(t=>GameRuntime.release(t.mesh));enemyBombs=[];patrolRecovery=null;
   carrierHP=100; qualTraps=0; qualStep=0;
@@ -2351,7 +2352,7 @@ function startMission(idx){
     if(planeBody) planeBody.visible=!planeModelLoaded;
     if(propPivot) propPivot.visible=true;
   }
-  if(m.theater==='fleet')for(let i=0;i<m.raiders;i++)spawnJapaneseRaider(i,m.raiders);
+  if(m.theater==='fleet')for(let i=0;i<m.raiders;i++)m.betty?spawnBettyRaider(i,m.raiders):spawnJapaneseRaider(i,m.raiders);
 
   // briefing
   document.getElementById('briefTitle').textContent=m.title;
@@ -3637,7 +3638,7 @@ function updateFlak(dt){
     t.mesh.position.addScaledVector(t.dir,t.speed*dt);
     if(t.fleet){
       for(const r of raiders){
-        if(r.alive&&SortieFeatures.segmentDistance(previous,t.mesh.position,r.pos)<8){
+        if(r.alive&&SortieFeatures.segmentDistance(previous,t.mesh.position,r.pos)<(r.hitR||8)){
           r.hp-=.22;t.life=0;spawnSparks(r.pos,4);
           if(typeof aircraftDamage!=="undefined"&&aircraftDamage)aircraftDamage.damage(r.mesh,Math.max(0,r.hp/4));
           if(r.hp<=0)killRaider(r,true);
@@ -5095,6 +5096,102 @@ function updateJapaneseRaider(r,dt){
   radioSay('BOMB AWAY — CLEAR THE APPROACH');
  }
 }
+// ---- Build 247: Betty torpedo raid ----
+// A G4M1 flies the same scripted raider kinematics as the other raiders (SortieFeatures.flyRaider; "betty" is not a FlightCore type), at 30 m on the run-in
+// with one torpedo. The flight leader carries bright yellow caps (fin, wingtips): when he goes down, the followers who have not dropped yet drop from too far
+// out (their fish run out of range). A Betty with two hits is burning, burns down, and a Betty that blows up damages every raider within BETTY.blastR
+// (and the player in the fireball). After the drop she withdraws. Values are game decisions (category C).
+const BETTY={hp:5,hitR:11,dropAt:620,dropStep:18,dropEarly:2700,runIn:2400,runInEarly:3300,burnBelow:2,burnRate:.55,blastR:150,blastDmg:2,playerR:90,playerDmg:10,leaderBonus:300,withdrawAt:3300};
+let bettyWaveSeq=0;
+function bettyMarks(mesh,inner){
+  const marks=new THREE.Group();marks.name='bettyLeaderMarks';marks.visible=false;
+  mesh.updateMatrixWorld(true);
+  const mat=new THREE.MeshLambertMaterial({color:0xffc400,emissive:0x5a4300});
+  // the caps hug the real geometry: the box of the model's vertices that lie in the outer part of the wing / the top of the fin (mesh-local frame)
+  const inv=mesh.matrixWorld.clone().invert(),tmp=new THREE.Vector3();
+  const hug=(root,keep)=>{const b=new THREE.Box3();root.traverse(o=>{if(!o.isMesh||!o.geometry?.attributes?.position)return;const a=o.geometry.attributes.position,m=o.matrixWorld.clone().premultiply(inv);
+    for(let k=0;k<a.count;k++){tmp.set(a.getX(k),a.getY(k),a.getZ(k)).applyMatrix4(m);if(keep(tmp))b.expandByPoint(tmp);}});return b;};
+  const cap=(b,pad)=>{if(b.isEmpty())return;const sz=b.getSize(new THREE.Vector3()),c=b.getCenter(new THREE.Vector3());
+    const m=new THREE.Mesh(new THREE.BoxGeometry(sz.x+pad,sz.y+pad,sz.z+pad),mat);m.position.copy(c);marks.add(m);};
+  const fin=inner.getObjectByName('VerticalStabilizer'),wing=inner.getObjectByName('MainWing');
+  if(fin){const all=hug(fin,()=>true);cap(hug(fin,p=>p.y>all.max.y-(all.max.y-all.min.y)*.26),.1);}
+  if(wing){const all=hug(wing,()=>true);for(const side of [-1,1])cap(hug(wing,p=>side*p.x>all.max.x-1.3),.1);}
+  mesh.add(marks);return marks;
+}
+function bettyApplyLook(r){const v=r.visual;if(!v)return;if(v.marks)v.marks.visible=!!r.leader&&r.alive;if(v.torpedo)v.torpedo.visible=!r.dropped;}
+function spawnBettyRaider(i,n){
+  if(!bettyTemplate){spawnJapaneseRaider(i,n);return;}   // the Betty is still loading: the A6M raid keeps the sortie going
+  const mesh=new THREE.Group(),inner=bettyTemplate.clone(true);
+  inner.traverse(o=>{o.visible=true;if(o.userData&&/^Propeller/.test(o.name))o.userData.bomberRotor=true;});
+  const g=n=>inner.getObjectByName(n);
+  for(const n of ['GearLeft','GearRight'])if(g(n))g(n).rotation.x=1.42;if(g('TailGear'))g('TailGear').rotation.x=-.8;   // wheels up (rig ranges from the model README)
+  const box=new THREE.Box3().setFromObject(inner);inner.position.y=-(box.min.y+box.max.y)/2;   // the fuselage centre sits at the raider's position (hit tests and smoke use it)
+  mesh.add(inner);
+  const marks=bettyMarks(mesh,inner);
+  if(i===0)bettyWaveSeq++;
+  const west=pacificOps?.elapsed>60,base=new THREE.Vector3(carrierX,0,0),side=west?-1:1;
+  const r={mesh,group:mesh,disc:null,fromModel:true,def:{type:'betty'},japanese:true,betty:true,leader:i===0,wave:bettyWaveSeq,slot:i,bomber:true,hp:BETTY.hp,hp0:BETTY.hp,hitR:BETTY.hitR,alive:true,dropped:false,runIn:false,rattled:false,
+    rotors:[g('PropellerLeft'),g('PropellerRight')].filter(Boolean),visual:{torpedo:g('Torpedo'),marks},
+    pos:new THREE.Vector3(base.x+side*(4100+i*260),170+i*10,base.z+side*2100+(i-(n-1)/2)*320),heading:0,pitch:0,roll:0,spd:72};
+  r.heading=Math.atan2(base.x-r.pos.x,base.z-r.pos.z);
+  r.vel=new THREE.Vector3(Math.sin(r.heading),0,Math.cos(r.heading)).multiplyScalar(r.spd);
+  mesh.position.copy(r.pos);mesh.rotation.set(0,r.heading,0);scene.add(mesh);raiders.push(r);
+  bettyApplyLook(r);
+  if(i===0)radioSay('BETTY FLIGHT INBOUND — THE LEADER HAS BRIGHT YELLOW CAPS ON FIN AND WINGTIPS, TAKE HIM FIRST');
+  return r;
+}
+function updateBettyRaider(r,dt){
+  const target=japaneseAim(r);if(!target)return;
+  const d=Math.hypot(r.pos.x-target.pos.x,r.pos.z-target.pos.z);r.egressT=Math.max(0,(r.egressT||0)-dt);
+  if(!r.dropped)r.runIn=d<(r.rattled?BETTY.runInEarly:BETTY.runIn);
+  // the run-in aims BELOW the 32 m floor of SortieFeatures.flyRaider: a straight glide to a 30 m aim point at the carrier would still be at 60 m 600 m out, aiming low
+  // puts her on the floor for the last ~900 m (= flying at 30 m)
+  const altitude=r.dropped?240:r.runIn?-40:160;
+  const eta=Math.min(9,d/Math.max(45,r.spd)),h=target.heading;
+  const lead=target.pos.clone().add(new THREE.Vector3(Math.sin(h),0,Math.cos(h)).multiplyScalar(target.speed*eta));
+  if(r.dropped&&!r.egressDir)r.egressDir=r.vel.clone().setY(0).normalize();
+  const goal=r.dropped?r.pos.clone().addScaledVector(r.egressDir,700):lead;goal.y=altitude;
+  SortieFeatures.flyRaider(r,goal,dt);r.mesh.position.copy(r.pos);r.mesh.rotation.set(-r.pitch,r.heading,-r.roll,'YXZ');
+  if(r.rotors){const step=GameRuntime.rotorStep(dt,PROP_STEP);r.rotors.forEach((p,k)=>{p.rotation.z-=step*(k?1.07:1);});}
+  // two hits and the wing tanks are burning: she burns down by herself
+  if(r.hp<=BETTY.burnBelow){r.hp-=BETTY.burnRate*dt;if(r.hp<=0){killRaider(r);return;}if(typeof aircraftDamage!=="undefined"&&aircraftDamage)aircraftDamage.damage(r.mesh,Math.max(0,r.hp/r.hp0),.5);}
+  aircraftSmoke?.trail(r,r.pos,r.vel.clone().normalize(),r.spd,r.hp<r.hp0?1-r.hp/r.hp0:0,dt,windZ);
+  const toDeck=new THREE.Vector3(target.pos.x-r.pos.x,0,target.pos.z-r.pos.z).normalize(),forward=r.vel.clone().setY(0).normalize();
+  const limit=r.rattled?BETTY.dropEarly:BETTY.dropAt-r.slot*BETTY.dropStep;
+  if(!r.dropped&&r.runIn&&d<limit&&d>260&&r.pos.y<(r.rattled?85:70)&&Math.abs(r.roll)<.35&&forward.dot(toDeck)>.95){
+    r.dropped=true;r.egressDir=forward;r.egressT=20;if(r.visual?.torpedo)r.visual.torpedo.visible=false;
+    // deflection shot as for the Avenger raiders: where the carrier will be when the fish arrives
+    let t=0,ax=target.pos.x;for(let k=0;k<5;k++){ax=target.pos.x+target.speed*t;t=Math.hypot(ax-r.pos.x,target.pos.z-r.pos.z)/22;}
+    const aim=new THREE.Vector3(ax-r.pos.x,0,target.pos.z-r.pos.z).normalize();
+    spawnEnemyTorp(r.pos,aim,r.rattled?{life:11,text:'BETTY DROPPED TOO EARLY — THE FISH WILL RUN SHORT'}:{text:'TORPEDO IN THE WATER — BETTY, KEEP SHOOTING THE FISH'});
+  }
+  // after the drop she is gone: out of range she withdraws (no kill, nothing left to chase)
+  if(r.dropped&&r.egressT<=0&&d>BETTY.withdrawAt){
+    r.alive=false;r.withdrawn=true;GameRuntime.release(r.mesh);radioSay('A BETTY GOT AWAY — OUT OF RANGE');checkObjectiveCleared();
+  }
+}
+// the leader down: followers that have not dropped yet break formation and drop early; the burning Betty blows up
+function bettyDown(r){
+  const p=r.pos;
+  spawnExplosion(p.x,p.y,p.z,2.4);spawnExplosion(p.x+5,p.y-1,p.z+4,1.5);spawnDebris(p.x,p.y,p.z,22);sfxBoom(1.1);
+  let hurt=0;
+  for(const o of raiders.slice()){
+    if(o===r||!o.alive||!o.betty)continue;
+    if(o.pos.distanceTo(p)>BETTY.blastR)continue;
+    o.hp-=BETTY.blastDmg;hurt++;spawnSparks(o.pos,6);
+    if(typeof aircraftDamage!=="undefined"&&aircraftDamage)aircraftDamage.damage(o.mesh,Math.max(0,o.hp/o.hp0),o.hp<=BETTY.burnBelow?.5:1);
+    if(o.hp<=0)killRaider(o);
+  }
+  const dp=P.pos.distanceTo(p);
+  if(P.alive&&dp<BETTY.playerR){
+    P.hull=Math.max(0,P.hull-(1-dp/BETTY.playerR)*BETTY.playerDmg*D().dmg);shake(1.6);registerHit();updateHUD();radioSay('BETTY BLEW UP — FIREBALL ON YOUR WING, KEEP YOUR DISTANCE');
+    if(P.hull<=0)crash('SHOT DOWN','Caught in the fireball of a Betty.');
+  }else if(hurt)radioSay('THE BETTY TOOK '+hurt+' OF HER FLIGHT WITH HER');
+  if(r.leader){
+    const pending=raiders.filter(o=>o.alive&&o.betty&&o.wave===r.wave&&!o.dropped);
+    if(pending.length){for(const o of pending)o.rattled=true;addScore(BETTY.leaderBonus);flash('LEADER DOWN +'+BETTY.leaderBonus,1800);radioSay('LEAD BETTY DOWN — THE FORMATION BREAKS, THE REST DROP EARLY');}
+  }
+}
 function updateEnemyBombs(dt){
  for(let i=enemyBombs.length-1;i>=0;i--){const b=enemyBombs[i],before=b.mesh.position.clone();b.life-=dt;b.vel.y-=18*dt;b.mesh.position.addScaledVector(b.vel,dt);b.mesh.lookAt(b.mesh.position.clone().add(b.vel));
   const hit=FlightSupport.surfaceHit(before,b.mesh.position,()=>.6,0);
@@ -5173,8 +5270,9 @@ function spawnRaider(i,n){
 }
 function killRaider(r,byFleet=false){
   if(!r.alive)return;
-  if(typeof enemyBailouts!=="undefined"&&enemyBailouts)enemyBailouts.spawn(r,r.japanese?"zero":"avenger",r.japanese?"ijn":"usnavy");
-  r.alive=false; if(!byFleet)addScore(400);
+  if(typeof enemyBailouts!=="undefined"&&enemyBailouts)enemyBailouts.spawn(r,r.betty?"betty":r.japanese?"zero":"avenger",r.japanese?"ijn":"usnavy");
+  r.alive=false; if(!byFleet)addScore(r.betty?500:400);
+  if(r.betty)bettyDown(r);
   if(typeof aircraftDamage!=="undefined"&&aircraftDamage)aircraftDamage.wreck(r.mesh,r, (x,y,z)=>{spawnExplosion(x,y,z,1.4);spawnDebris(x,y,z,12);sfxBoom(.8);});
   else {
   spawnExplosion(r.pos.x,r.pos.y,r.pos.z,1.3); sfxBoom(0.7);
@@ -5191,6 +5289,7 @@ function killRaider(r,byFleet=false){
 function updateRaiders(dt){
   for(let i=raiders.length-1;i>=0;i--){
     const r=raiders[i]; if(!r.alive) continue;
+    if(r.betty){updateBettyRaider(r,dt);continue;}
     if(r.japanese){updateJapaneseRaider(r,dt);continue;}
     // If the sortie started before the 15 MB Avenger finished loading, the raider was built
     // from the white procedural stand-in. Swap in the real model the moment it is ready.
@@ -5249,15 +5348,15 @@ function updateRaiders(dt){
     r.bayHold=Math.max(0,(r.bayHold||0)-dt);AvengerBay.update(r.mesh,dt,{open:(!r.dropped&&r.runIn)||r.bayHold>0,stores:r.dropped?0:1});
   }
 }
-function spawnEnemyTorp(pos,dir){
+function spawnEnemyTorp(pos,dir,opts={}){
   const m=Ordnance.create('torpedo');
   GameRuntime.own(m);
   m.position.set(pos.x,0.6,pos.z);
   m.lookAt(m.position.clone().add(dir));
   scene.add(m);
-  etorps.push({mesh:m, dir:dir.clone(), life:30, speed:22, wk:0});
+  etorps.push({mesh:m, dir:dir.clone(), life:opts.life||30, speed:22, wk:0});
   spawnSplash(pos.x,pos.z,true);
-  radioSay("TORPEDO IN THE WATER — GET THAT AVENGER");
+  radioSay(opts.text||"TORPEDO IN THE WATER — GET THAT AVENGER");
 }
 function updateEnemyTorps(dt){
   for(let i=etorps.length-1;i>=0;i--){
@@ -5310,6 +5409,9 @@ let bailout=null,bailRescue=null,bailPlaneCrashed=false,bailDone=false,bailChute
 // Build 246: a PBY-5A Catalina (pby-rescue.js) picks up survivors who ditched far from the carrier; nearer ones still get the motor launch
 let pbyTemplate=null,crewPby=null,PBY_MIN_DISTANCE=2200;   // a ditching farther than this from the carrier is flown out by the PBY (tests of the motor-launch path raise it)
 function loadPbyModel(){return PacificAssets.loader().load('assets/aircraft/pby5a-own.glb?v=246',gltf=>{pbyTemplate=gltf.scene;pbyTemplate.traverse(o=>{if(o.isMesh){o.castShadow=true;o.frustumCulled=true;}});return pbyTemplate;});}
+// Build 247: the G4M1 Betty (assets/aircraft/g4m1-own.glb) flies the torpedo raids of Sortie 22 and the second wave of Sortie 19
+let bettyTemplate=null;
+function loadBettyModel(){return PacificAssets.loader().load('assets/aircraft/g4m1-own.glb?v=247',gltf=>{bettyTemplate=gltf.scene;bettyTemplate.traverse(o=>{if(o.isMesh){o.castShadow=true;o.frustumCulled=true;}});return bettyTemplate;});}
 function aircraftCrewCount(){return isDefend()||isCorsair()?1:isSBD()?2:3;}
 function clearCrewBailouts(){for(const c of crewBailouts){c.chute.dispose();c.rescue?.dispose();}crewBailouts=[];crewWaterRescue?.dispose();crewWaterRescue=null;crewPby?.dispose();crewPby=null;}
 function rescueCrewMember(position,water){
@@ -6628,9 +6730,9 @@ function updateGuns(dt){
       }
     }
     if(!hit) for(const r of raiders){ if(!r.alive) continue;
-      if(GameRuntime.segmentDistance(back,b.mesh.position,r.pos)<7.5){
+      if(GameRuntime.segmentDistance(back,b.mesh.position,r.pos)<(r.hitR||7.5)){
         r.hp--; spawnSparks(b.mesh.position,4); addScore(30);
-        if(typeof aircraftDamage!=="undefined"&&aircraftDamage)aircraftDamage.damage(r.mesh,Math.max(0,r.hp/4));
+        if(typeof aircraftDamage!=="undefined"&&aircraftDamage)aircraftDamage.damage(r.mesh,Math.max(0,r.hp/(r.hp0||4)),r.betty?(r.hp<=2?.5:1):1);
         if(r.hp<=0) killRaider(r);
         hit=true; break;
       }
@@ -6878,7 +6980,7 @@ function pacificContacts(){
  const c=[];
  for(const s of ships)if(s.alive)c.push({ref:s,pos:s.group.position,kind:'SHIP',label:NavalAssets.label(s.def).toUpperCase()+' #'+(ships.indexOf(s)+1)+(s.def.neutral?' · NEUTRAL':'')+(shipDamage?.status(s)?' · '+shipDamage.status(s):'')});
  for(const t of shoreTargets)if(t.alive)c.push({ref:t,pos:t.group.position,kind:'TARGET',label:t.def.label.toUpperCase()});
- for(const r of raiders)if(r.alive)c.push({ref:r,pos:r.group.position,kind:'BOMBER',label:r.japanese?'A6M BOMB CARRIER':'INBOUND BOMBER'});
+ for(const r of raiders)if(r.alive)c.push({ref:r,pos:r.group.position,kind:'BOMBER',label:r.betty?(r.leader?'LEAD BETTY':'G4M1 BETTY'):r.japanese?'A6M BOMB CARRIER':'INBOUND BOMBER'});
  if(MISSIONS[mission].theater==='escort')for(const s of supportFleet)if(s.alive&&s.def.transport)c.push({ref:s,pos:s.group.position,kind:'ALLY',label:NavalAssets.label(s.def).toUpperCase()+' '+s.hp+'%'+(s.arrived?' — ARRIVED':' — PROTECT')});
  if(patrolRecovery?.alive)c.push({ref:patrolRecovery,pos:patrolRecovery.pos,kind:'ALLY',label:'WOUNDED CORSAIR — KEEP APPROACH CLEAR (OPTIONAL)'});
  for(const z of zeros)if(z.alive)c.push({ref:z,pos:z.pos,kind:'BANDIT',label:'BANDIT — A6M ZERO'});

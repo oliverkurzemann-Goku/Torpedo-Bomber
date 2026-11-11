@@ -7,7 +7,7 @@
   function spawn(aircraft,kind,service){
    if(seen.has(aircraft))return 0;seen.add(aircraft);
    if(aircraft.pos.y-groundAt(aircraft.pos.x,aircraft.pos.z)<85)return 0;
-   const number=kind==='b17'||kind==='b24'?10:kind==='avenger'?3:kind==='sbd'?2:1;
+   const number=kind==='b17'||kind==='b24'?10:kind==='betty'?4:kind==='avenger'?3:kind==='sbd'?2:1;
    let created=0;
    for(let i=0;i<number&&crews.length<limit;i++){
     const start=aircraft.pos.clone().add(new THREE.Vector3((i%3-1)*2.7,-Math.floor(i/3)*2.2,Math.floor(i/3)*-3));
