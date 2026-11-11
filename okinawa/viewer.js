@@ -13,7 +13,7 @@ try{
  const sun=new THREE.DirectionalLight(0xfff3d7,2.05);sun.position.set(-4800,7200,4600);scene.add(sun);
  const world=await new OkinawaWorld(window.OKINAWA_DATA,{airfieldActivity:true,vegetationDensity:.38}).build((p,msg)=>{el('loadBar').style.width=Math.round(p*100)+'%';el('loadText').textContent=msg;});scene.add(world.root);
  const state={yaw:0,pitch:0,fly:false,t:0,view:'coast',keys:{},ui:true,frames:0,seconds:0,fps:0};
- const presets={coast:{pos:[-6290,340,-1960],aim:[-3800,30,-4250]},cape:{pos:[-6010,225,-6820],aim:[-4450,20,-5440]},inland:{pos:[-3390,200,-2090],aim:[-1900,55,-2990]},airfield:{pos:[-3099,98,-1100],aim:[-3150,74,-1150]}};
+ const presets={coast:{pos:[-6290,340,-1960],aim:[-3800,30,-4250]},cape:{pos:[-6010,225,-6820],aim:[-4450,20,-5440]},inland:{pos:[-1250,1130,-1500],aim:[1500,125,-3960]},airfield:{pos:[-3099,98,-1100],aim:[-3150,74,-1150]}};
  presets.towns={pos:[-5030,720,-350],aim:[-3630,35,-245]};
  const detail=world.coastalScenery?.preview;
  if(detail)presets.details={pos:[detail.x-175,57,detail.z+110],aim:[detail.x+45,11,detail.z]};

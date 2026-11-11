@@ -354,7 +354,7 @@
   <div id="flash"></div>
   <div id="ltn" style="position:fixed;inset:0;background:#e6ecff;opacity:0;pointer-events:none;z-index:40;"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 246</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 247</div>
 
   <!-- Optical landing aid -->
   <div id="lso">
@@ -401,7 +401,7 @@
 
 <!-- Menu -->
 <div class="overlay" id="menu" data-campaign="pacific">
-  <div class="menuTop"><a id="selBtn" href="index.html?v=246">&#9664; Change Game</a><span class="menuMeta">PACIFIC OPERATIONS<br>BUILD 246</span></div>
+  <div class="menuTop"><a id="selBtn" href="index.html?v=247">&#9664; Change Game</a><span class="menuMeta">PACIFIC OPERATIONS<br>BUILD 247</span></div>
   <div class="card menuCard">
     <aside class="menuOverview" aria-label="Campaign and pilot options">
     <div class="campaignArt" aria-hidden="true"></div>
@@ -502,7 +502,7 @@
 <script src="terrain-system/AirfieldActivity.js?v=242"></script>
 <script src="okinawa/coastal-templates.js?v=1"></script>
 <script src="okinawa/coastal-scenery.js?v=1"></script>
-<script src="okinawa/world.js?v=245"></script>
+<script src="okinawa/world.js?v=247"></script>
 <script src="campaign.js?v=1"></script>
 <script src="game-runtime.js?v=198"></script>
 <script src="sortie-checkpoint.js?v=238"></script>
@@ -1302,7 +1302,7 @@ function updateShadow(){
   if(!onDeck && okinawaWorld && okinawaWorld.root.visible){
     const lx=P.pos.x-OKINAWA_OFFSET_X,z=P.pos.z;
     if(Math.abs(lx)<7980 && Math.abs(z)<7980 && okinawaWorld.shoreDistance(lx,z)>1)
-      baseY=(terrainY=okinawaWorld.getHeight(lx,z))+0.12;
+      baseY=(terrainY=okinawaWorld.getSurfaceHeight(lx,z))+0.12;
   }
   if(!onDeck&&MISSIONS[mission]?.theater==='escort'){const h=PacificTheater.islandHeight(P.pos.x,P.pos.z);if(h>1)baseY=(terrainY=h)+.12;}
   const alt=Math.max(0,P.pos.y-(onDeck?DECK_Y:(terrainY===null?0:terrainY)));
@@ -2055,7 +2055,7 @@ function shoreHeight(x,z){
  const authored=MISSIONS[mission]?.theater==='escort'?PacificTheater.islandHeight(x,z):0;
  if(!okinawaWorld)return authored;const lx=x-OKINAWA_OFFSET_X;
  if(Math.abs(lx)>7990||Math.abs(z)>7990||okinawaWorld.shoreDistance(lx,z)<=0)return authored;
- return Math.max(authored,okinawaWorld.getHeight(lx,z));
+ return Math.max(authored,okinawaWorld.getSurfaceHeight(lx,z));
 }
 function resetShoreTargets(enabled){
  shoreTargets.forEach(t=>GameRuntime.release(t.group));shoreTargets=[];
@@ -3987,7 +3987,7 @@ function resolveGroundAndDeck(dt,previousPosition=null,previousQuaternion=null){
   // island terrain
   if(okinawaWorld && okinawaWorld.root.visible){
     const localX=x-OKINAWA_OFFSET_X;
-    if(Math.abs(localX)<7980 && Math.abs(z)<7980 && okinawaWorld.shoreDistance(localX,z)>1 && y<okinawaWorld.getHeight(localX,z)+2){
+    if(Math.abs(localX)<7980 && Math.abs(z)<7980 && okinawaWorld.shoreDistance(localX,z)>1 && y<okinawaWorld.getSurfaceHeight(localX,z)+2){
       crash("TERRAIN","You flew into the Okinawa coastline."); return;
     }
   }else{
@@ -5730,7 +5730,7 @@ function loadPlaneModel(){
       }
       window.__eyeDbg='EYE '+COCKPIT_EYE.map(v=>v.toFixed(2)).join('/');
       const btEl=document.getElementById('buildTag');
-      if(btEl) btEl.textContent='BUILD 246 · '+window.__eyeDbg;
+      if(btEl) btEl.textContent='BUILD 247 · '+window.__eyeDbg;
       let seat=null;
       model.traverse(function(o){
         if(!o.isMesh||!o.material) return;
@@ -7120,7 +7120,7 @@ function setupUIButtons(){
   if(dbgT2) dbgT2.onclick=()=>{
     dbgOn=!dbgOn; GameRuntime.storage.setItem('dbgOn',dbgOn?'1':'0');
     const db=document.getElementById('dbgBox'); if(db) db.textContent=dbgOn?'✓':'';
-    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 246'; }
+    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 247'; }
   };
   const lu=document.getElementById('lookUp'), ld=document.getElementById('lookDn');
   let _lookT=0;
@@ -7447,7 +7447,7 @@ function animate(){
     notice.style.cssText='position:fixed;inset:0;z-index:999998;background:rgba(15,20,15,.95);color:#e8ddbc;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px;text-align:center;font:16px system-ui';
     const title=document.createElement('h2');title.textContent='Simulation interrupted';
     const detail=document.createElement('p');
-    detail.textContent='BUILD 246 · '+(MISSIONS[mission]?.sub||'Menu')+' · '+error.message;
+    detail.textContent='BUILD 247 · '+(MISSIONS[mission]?.sub||'Menu')+' · '+error.message;
     const reload=document.createElement('button');reload.textContent='Reload game';
     reload.style.cssText='padding:12px 24px;font:inherit';reload.onclick=()=>location.reload();
     notice.appendChild(title);notice.appendChild(detail);notice.appendChild(reload);document.body.appendChild(notice);
