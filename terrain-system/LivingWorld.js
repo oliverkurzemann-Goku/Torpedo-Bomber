@@ -245,10 +245,12 @@ class LivingWorld {
   installVehicleModels(templates){
     this._vehicleTemplates=templates;
     let replaced=0;
-    for(const e of this.entities){
-      const source=e.kind==='truck'?e.meta.vehicleModel:(e.kind==='ferry'?'merchant':
+    for(const [index,e] of this.entities.entries()){
+      const base=e.kind==='truck'?e.meta.vehicleModel:(e.kind==='ferry'?'merchant':
         (e.kind==='train'?'train':(e.kind==='civil'?'civilCar':(e.kind==='wagon'?'horse':null))));
-      const template=source&&templates&&templates.get(source);
+      const alternate=index%2===0&&({tiger:'tigerGrey',civilCar:'civilCarCream'})[base];
+      const source=alternate&&templates?.has(alternate)?alternate:base;
+      const template=source&&templates?.get(source);
       if(!template||e.visual.userData.sourceModel===source)continue;
       let visual;
       if(source==='horse'){

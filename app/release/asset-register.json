@@ -1,19 +1,25 @@
 {
   "schema": 1,
   "reviewedOn": "2026-10-23",
-  "build": 240,
+  "build": 241,
   "status": "OPEN — source declarations checked; no external rights authorization obtained",
   "payload": {
-    "bytes": 220716566,
-    "fileCount": 367,
-    "modelCount": 36,
-    "manifestSha256": "56d9ef51703cd105a87ac678da472cd478433c69171af84a62b3aa99901dbed9"
+    "bytes": 151320038,
+    "fileCount": 350,
+    "modelCount": 38,
+    "manifestSha256": "509944c41b3a2172653e3127933e4a36a9932d92032498bcd1c34d40f645d340"
   },
   "files": [
     {
       "path": "ASSET-CREDITS.md",
-      "bytes": 38405,
-      "sha256": "8c724da2b266ee9efea7ff4ff6d8fe6bb81d69c3294cdd585d5420fd2d425699",
+      "bytes": 39042,
+      "sha256": "000098ba2fd4aab6671f2e044bcff1e3e9449b95803281294c03e79079c92876",
+      "kind": "code-or-notice"
+    },
+    {
+      "path": "GROUND-MODELS.md",
+      "bytes": 3745,
+      "sha256": "ead2e84e1b93a6294393f5e821ffba93f5ebdf701cedeb9d7d2306939f112dfc",
       "kind": "code-or-notice"
     },
     {
@@ -174,38 +180,38 @@
     },
     {
       "path": "assets/buildings/bunker.glb",
-      "bytes": 5085168,
-      "sha256": "c9b54e30b99302ddaa0ab486c79318c7bd46c881b9fd11b3f77c60758efaa253",
+      "bytes": 49292,
+      "sha256": "b29d183765f8afd5f6182c1a149bc44449e652c2537e6a5810cc2bc72ffea116",
       "kind": "model"
     },
     {
       "path": "assets/buildings/farm-ruin.glb",
-      "bytes": 131708,
-      "sha256": "f0978da9e2642f1eb3f92fe461340b911962e0929aa2892077c9c0f9d9822115",
+      "bytes": 293944,
+      "sha256": "f2bfb1c697455f249a6aed74c26107d4a0a2a721b139fc2f701f55294f8d1c8f",
       "kind": "model"
     },
     {
       "path": "assets/buildings/hangar.glb",
-      "bytes": 242552,
-      "sha256": "af53aa083ffef0eeefcfe115ad82b4088643cfd7c9bbbfcf807311f059e81c60",
+      "bytes": 118956,
+      "sha256": "5f199f3296e579515fcd629f2a635bc13dc356cd261ba1d92b2c5b14b01f354c",
       "kind": "model"
     },
     {
       "path": "assets/buildings/house.glb",
-      "bytes": 1527124,
-      "sha256": "f7acf459193c5469244285599c2ed81e148e7d3e7dbc821f6066305c65a17475",
+      "bytes": 222776,
+      "sha256": "11b061f23c938ae056599ddf3309c79b837f568039f07fb0cde4c1e5e5181533",
       "kind": "model"
     },
     {
       "path": "assets/buildings/observation-post.glb",
-      "bytes": 372332,
-      "sha256": "39b7a3f1b2eb1fa352ad42185730d08b427e3b7516e0de4cc28e332278fdc921",
+      "bytes": 53980,
+      "sha256": "5d61d3a346b4599ec3c14bf0d5c690225beb85bf0bcc086307d014ba2df29f24",
       "kind": "model"
     },
     {
       "path": "assets/buildings/town-ruin.glb",
-      "bytes": 214212,
-      "sha256": "9a9c3b1617a6d1c0b046ca3882ebfa965f49c1dd942e84a2bad5a362aa4a7862",
+      "bytes": 401760,
+      "sha256": "ccae1f103b26cfad98bf2e3b0a4b971e06f25f1d7f54fa29e25974b48c9ef30a",
       "kind": "model"
     },
     {
@@ -221,6 +227,60 @@
       "kind": "image"
     },
     {
+      "path": "assets/ground-vehicles/drb-01-10.glb",
+      "bytes": 527340,
+      "sha256": "69f0b9912ac38a0536c58b5cfa5dee6852b01898a8e9cce0adf7f0dcce16e31c",
+      "kind": "model"
+    },
+    {
+      "path": "assets/ground-vehicles/flak37-halftrack.glb",
+      "bytes": 353520,
+      "sha256": "e0669f942f8525e26259d1ff7de14de0c81d9fce06b4f20bb746846b55618903",
+      "kind": "model"
+    },
+    {
+      "path": "assets/ground-vehicles/ford-v8-cream.glb",
+      "bytes": 125348,
+      "sha256": "2da03aee01ba8c65ce5ad225137588da1b2b281f6e4d6cd9240ad344935f0013",
+      "kind": "model"
+    },
+    {
+      "path": "assets/ground-vehicles/ford-v8.glb",
+      "bytes": 123632,
+      "sha256": "3f64b63446a2bfa56642f2146fe72d079d3446a701a3548a2000584ec3398f01",
+      "kind": "model"
+    },
+    {
+      "path": "assets/ground-vehicles/jagdpanther.glb",
+      "bytes": 374096,
+      "sha256": "f76bf0cb501cbe0186c7bb6889cd170da36912a60be12f3f04f929b7bcf4d94d",
+      "kind": "model"
+    },
+    {
+      "path": "assets/ground-vehicles/m16-mgmc.glb",
+      "bytes": 308612,
+      "sha256": "c0baa4051312985ab81ffc2def7069cef40d9d1feb67a95381bc4759875274d2",
+      "kind": "model"
+    },
+    {
+      "path": "assets/ground-vehicles/sherman-m4a1.glb",
+      "bytes": 414012,
+      "sha256": "98e7d4b0dccdbdffceb1ef2d5c0632c13dbceae808e0148d4522005ecc4f6176",
+      "kind": "model"
+    },
+    {
+      "path": "assets/ground-vehicles/tiger-i-field-grey.glb",
+      "bytes": 396980,
+      "sha256": "9fbd5232fdfe24006135697512087eefbedefb43e3bc082c5042b5143efee104",
+      "kind": "model"
+    },
+    {
+      "path": "assets/ground-vehicles/tiger-i.glb",
+      "bytes": 399240,
+      "sha256": "3a227ad8da7b4861dabae8eddd0545a28bdefa16039f3e0274617e6dec7c1dc2",
+      "kind": "model"
+    },
+    {
       "path": "assets/pacific-campaign.svg",
       "bytes": 1725,
       "sha256": "ab5f71f7ddc41926fcd6bb5cfe419c559b755fc3a0407e710719f3bc519fe5ef",
@@ -230,138 +290,6 @@
       "path": "assets/pacific-campaign.webp",
       "bytes": 143966,
       "sha256": "e8896b2da91178c67380958b2605410207c7887e47d2d9dfc328766601dc328e",
-      "kind": "image"
-    },
-    {
-      "path": "assets/remagen/drb0110/drb0110.glb",
-      "bytes": 797032,
-      "sha256": "5a100410a8d2d9bdfb592c4ef0ffadf72ab51f90a74cb5eea9ab6602e4ba93fd",
-      "kind": "model"
-    },
-    {
-      "path": "assets/remagen/ford1940/1940_ford_v8.fbx",
-      "bytes": 2239376,
-      "sha256": "9182f095ca9845f68a479e21f69a9d727849c06d3e1019f5cc0b2e677d3e6a25",
-      "kind": "model"
-    },
-    {
-      "path": "assets/remagen/ford1940/3dcc58e0.png",
-      "bytes": 48299,
-      "sha256": "d227e6d8963c390cf4e56e216b2ab776d4019ed4f5cfe3ffe0609154b4814dc1",
-      "kind": "image"
-    },
-    {
-      "path": "assets/remagen/ford1940/3dcc6220.png",
-      "bytes": 11994,
-      "sha256": "ce65236d9fd1cd31ebf552129ff9c2b7e7c47aa1705878cd5b4a2db9394e54ee",
-      "kind": "image"
-    },
-    {
-      "path": "assets/remagen/ford1940/3dcc6b60.png",
-      "bytes": 57468,
-      "sha256": "c5bc1aff2269c01d4dbe0d6a29ee544da906ef6fee21b0ca629d94243eb36fb2",
-      "kind": "image"
-    },
-    {
-      "path": "assets/remagen/ford1940/3dcc6ee0.png",
-      "bytes": 40055,
-      "sha256": "1584cc40926150c0890c8bfa305dae98d8ed690017c12366b0d2c58af813f54f",
-      "kind": "image"
-    },
-    {
-      "path": "assets/remagen/ford1940/3dcc7120.png",
-      "bytes": 583542,
-      "sha256": "1e333186d599500dbc569c0a8f477bd5d7804a6a0ba821d42191786f05713dd6",
-      "kind": "image"
-    },
-    {
-      "path": "assets/remagen/ford1940/3dddf0e0.png",
-      "bytes": 40035,
-      "sha256": "4a24b29d4d372de3718fd0afd25ab879e843a759d2522e087183d52906e53510",
-      "kind": "image"
-    },
-    {
-      "path": "assets/remagen/ford1940/3dddf460.png",
-      "bytes": 35986,
-      "sha256": "1ff7131073153e5701243c919c7aeb8f843a6b79d608a9adbabf84d597418873",
-      "kind": "image"
-    },
-    {
-      "path": "assets/remagen/ford1940/3dddfda0.png",
-      "bytes": 31046,
-      "sha256": "a052809ed45cc042cd3305683200e313201b7337946eeafe79ad3812757f4299",
-      "kind": "image"
-    },
-    {
-      "path": "assets/remagen/ford1940/3dde0240.png",
-      "bytes": 33553,
-      "sha256": "67e58c318f70e6b93d878ca46839e191b0c738ea6e4486f066a3401c923087a1",
-      "kind": "image"
-    },
-    {
-      "path": "assets/remagen/ford1940/3dde0480.png",
-      "bytes": 17776,
-      "sha256": "b3d5ac03f8a92463cdfaaebcc6f6b2382bbc62d3bbaf5da0cbcee1c93792b226",
-      "kind": "image"
-    },
-    {
-      "path": "assets/remagen/ford1940/3dde1700.png",
-      "bytes": 109048,
-      "sha256": "f5401726c398bc762fe9c2ede22726f83e1e23c9e1a233fa57cb4957d33a03bf",
-      "kind": "image"
-    },
-    {
-      "path": "assets/remagen/ford1940/3dde1ba0.png",
-      "bytes": 8392,
-      "sha256": "7517d5ae0266668f05ae3ace0a25e9703310e5d94ced5c29ce81cd58013aeea4",
-      "kind": "image"
-    },
-    {
-      "path": "assets/remagen/ford1940/3de46900.png",
-      "bytes": 947,
-      "sha256": "948b02ab8590df357b8c0fe00c0399197466e0dc8b175d58588ff545e815e8ee",
-      "kind": "image"
-    },
-    {
-      "path": "assets/remagen/ford1940/3de46a40.png",
-      "bytes": 3190,
-      "sha256": "41418c95c0a3354caaa4df223ab9bd3b05106146a8e403999a4d9507e7acc544",
-      "kind": "image"
-    },
-    {
-      "path": "assets/remagen/ford1940/3df7f900.png",
-      "bytes": 25116,
-      "sha256": "834b32501f0d824f70155b368a21e28aa742ba1c6c0a5cbe4e7725376e6675cf",
-      "kind": "image"
-    },
-    {
-      "path": "assets/remagen/ford1940/3df81960.png",
-      "bytes": 35687,
-      "sha256": "d64612e19177cd8f41c1bf36476b4544ae33474d657ad87e0372a9497c899625",
-      "kind": "image"
-    },
-    {
-      "path": "assets/remagen/ford1940/3df82740.png",
-      "bytes": 16161,
-      "sha256": "912fdcbece97af60023f559dce7036fcc5a81aa3dd7a181af990546015810d3b",
-      "kind": "image"
-    },
-    {
-      "path": "assets/remagen/ford1940/3df82980.png",
-      "bytes": 198,
-      "sha256": "21958d3df289117c59d421b5f3182aecad0d5036005a43a01bf7bb726d8a8716",
-      "kind": "image"
-    },
-    {
-      "path": "assets/remagen/ford1940/3dfca020.png",
-      "bytes": 2497,
-      "sha256": "0707d3983960758d2446dcd48a906e62993849b34dec9ec75c413d2caff6f949",
-      "kind": "image"
-    },
-    {
-      "path": "assets/remagen/ford1940/internal_ground_ao_texture.jpeg",
-      "bytes": 18397,
-      "sha256": "2288235d362c837f49905f28cb17cc6463e0064e66a60f30daf9380b6623b64c",
       "kind": "image"
     },
     {
@@ -695,12 +623,6 @@
       "kind": "code-or-notice"
     },
     {
-      "path": "flak88_sfl.glb",
-      "bytes": 14888828,
-      "sha256": "4095ba76835dbc07d494c6d324837daa3b6c84e09ef21299e94554fb06ae6b7a",
-      "kind": "model"
-    },
-    {
       "path": "flare-support.js",
       "bytes": 3439,
       "sha256": "4e9e15105400590c81cb4d59e1c9aebf62402adad36d3ddeab6a1a60114bdf24",
@@ -744,8 +666,8 @@
     },
     {
       "path": "fortification-assets.js",
-      "bytes": 2289,
-      "sha256": "c13e478bbee86be4605872d6d0c67305f8297dc26b2966777b6f0b0a91947d85",
+      "bytes": 2194,
+      "sha256": "4e04e38f4cbd8d6cb75d19feaf3757babe83cfba9a3ddff3f5ee603671915f03",
       "kind": "code-or-notice"
     },
     {
@@ -781,7 +703,7 @@
     {
       "path": "hangar.html",
       "bytes": 4485,
-      "sha256": "49c60f7c66a8204e4b883120133b742569aaa0780991496a30e4f31fcd6e632e",
+      "sha256": "722b77fb39db4f3cac7a88ef73dc0e91108f15cb9ae1de90b5b8c9b7ffc963f9",
       "kind": "code-or-notice"
     },
     {
@@ -793,26 +715,14 @@
     {
       "path": "index.html",
       "bytes": 7543,
-      "sha256": "c2e9b354bbd609b0cdec92c88ed8fed8e56071be8690fc8d6e0dcbb3c62a18c9",
+      "sha256": "321da6a44ec807d8aa593422cd7d9055320d76ead620db786054c7077dec305c",
       "kind": "code-or-notice"
-    },
-    {
-      "path": "jagdpanther.glb",
-      "bytes": 12763168,
-      "sha256": "4324d874f5ab4717336cc420f2d26810d2cc3ea19338064e7e5abed6c6d25b0b",
-      "kind": "model"
     },
     {
       "path": "ju87-native.js",
       "bytes": 1994,
       "sha256": "380e75bc31f6f08bb979856bfa291d84142094bfc833342bdd927ac364093c2e",
       "kind": "code-or-notice"
-    },
-    {
-      "path": "m16_mgmc.glb",
-      "bytes": 13651260,
-      "sha256": "eb836c5d64ad2b04bb6f7e0dca5dcd121dbfc2983805b084d44fb60c0be9b463",
-      "kind": "model"
     },
     {
       "path": "maritime-weather.js",
@@ -924,8 +834,8 @@
     },
     {
       "path": "remagen-mission.html",
-      "bytes": 460095,
-      "sha256": "cd216dae5e0e8c7e8ef9b9f6dedbc1fd6b125bb4d021b363879be4111dae595f",
+      "bytes": 460040,
+      "sha256": "7454fdefaf90da81cd7253db96be4e829a3a265620a835c885f2a517e3278235",
       "kind": "code-or-notice"
     },
     {
@@ -939,12 +849,6 @@
       "bytes": 6675,
       "sha256": "c1ae94eb21ea97572c6a3dcca59bd3a36da0e50307aea944c7bc9feb1fabb341",
       "kind": "code-or-notice"
-    },
-    {
-      "path": "sherman_m4a1.glb",
-      "bytes": 18796228,
-      "sha256": "fd1c8651befd8dc5f8cce22449e4d42f8c18337861f22e28c544c93fe50f889b",
-      "kind": "model"
     },
     {
       "path": "ship-contact.js",
@@ -1044,8 +948,8 @@
     },
     {
       "path": "terrain-system/LivingWorld.js",
-      "bytes": 29635,
-      "sha256": "a800b3ffea1eea0eabc516fa28d6f3e2fb22cc189790bc0fedb3419fd7b93bfe",
+      "bytes": 29802,
+      "sha256": "014ffc7e54ccb62822d317486d3a4202e0988c650837b741aa4f6f7b83401351",
       "kind": "code-or-notice"
     },
     {
@@ -1056,8 +960,8 @@
     },
     {
       "path": "terrain-system/PeriodBuildings.js",
-      "bytes": 9340,
-      "sha256": "1f86b27332bc2b913186d624bd456b2e7ab7b29ef38ab4f6411d1b9485f0fe1a",
+      "bytes": 9321,
+      "sha256": "62f7a9f28039a23124ef64c4386682a02f0301a62f80e60f7875f175602ec728",
       "kind": "code-or-notice"
     },
     {
@@ -1092,8 +996,8 @@
     },
     {
       "path": "terrain-system/WorldVehicles.js",
-      "bytes": 9355,
-      "sha256": "1dcc274acb9399b6be1e33b7ed658e8e0cc6dc6fe8c634da83e66ac28eb4111f",
+      "bytes": 8481,
+      "sha256": "f5d9c8559261a32e13a9ce42791a245b406e1699437cd72203c4dc206877afd8",
       "kind": "code-or-notice"
     },
     {
@@ -2123,12 +2027,6 @@
       "kind": "geographic-data"
     },
     {
-      "path": "tiger.glb",
-      "bytes": 1735368,
-      "sha256": "12da29fd4c83ab47ceb6866b2f1d6300294b592b6181da941e34010fb85ea965",
-      "kind": "model"
-    },
-    {
       "path": "torpedo-attack.js",
       "bytes": 7341,
       "sha256": "536a50aea0171aedb681a388103e9912b53c1f9940a02b0bcfe3c20ba2a31ed9",
@@ -2136,8 +2034,8 @@
     },
     {
       "path": "torpedo-carrier.html",
-      "bytes": 456896,
-      "sha256": "48885e591d0ee72d30ad3a7da5c4bc541d10128a7fa9966ec58bf483bf66e72e",
+      "bytes": 456925,
+      "sha256": "09561225443d5947398af2f7c7c8048a83956011f2400ed377ab6989854ff187",
       "kind": "code-or-notice"
     },
     {
@@ -2208,8 +2106,8 @@
     },
     {
       "path": "app-native.js",
-      "bytes": 27031,
-      "sha256": "a52b43eb6c9accbde530c1e3832548614838e605c05ed4869a6b9b9734ddaa24",
+      "bytes": 27223,
+      "sha256": "f499b608441e545ae41dc1aad7d9dcf410c165ff087c94cbaa2abb743a4c148d",
       "kind": "code-or-notice"
     }
   ],
@@ -2444,243 +2342,363 @@
     },
     {
       "path": "assets/buildings/bunker.glb",
-      "bytes": 5085168,
-      "sha256": "c9b54e30b99302ddaa0ab486c79318c7bd46c881b9fd11b3f77c60758efaa253",
-      "title": "Bunker O3/23/A-160 Z",
-      "uploader": "matousekfoto (https://sketchfab.com/matousekfoto)",
+      "bytes": 49292,
+      "sha256": "b29d183765f8afd5f6182c1a149bc44449e652c2537e6a5810cc2bc72ffea116",
+      "title": "Betonbunker",
+      "uploader": "Torpedo Carrier project",
       "originalRightsholder": null,
-      "sourceUrl": "https://sketchfab.com/3d-models/bunker-o323a-160-z-11ae7599f3b640569f7ed4692acabf38",
+      "sourceUrl": "GROUND-MODELS.md",
       "acquiredOn": null,
-      "declaredLicense": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
-      "licenseUrl": "http://creativecommons.org/licenses/by/4.0/",
-      "licenseEvidence": "Exact repository original GLB asset.extras, matched to derivative sourceSha256",
-      "sourceCheck": {
-        "status": "verified-public-api",
-        "checkedOn": "2026-10-14",
-        "apiUrl": "https://api.sketchfab.com/v3/models/11ae7599f3b640569f7ed4692acabf38",
-        "licenseMatch": true,
-        "descriptionSignals": []
-      },
-      "embeddedImageCount": 2,
+      "declaredLicense": "project-own",
+      "licenseUrl": null,
+      "licenseEvidence": "Exact runtime GLB asset.extras",
+      "sourceCheck": null,
+      "embeddedImageCount": 1,
       "externalImages": [],
-      "originalFile": "bunker_o323a-160_z.glb",
-      "originalSha256": "4d04e27f25c15f65fe657107a59c825b8876462c63d6ef6e7090cbe22ae5a379",
-      "changes": "Texture-aware mesh simplification, locked boundaries and 512px textures; see original derivative asset.extras.",
-      "issue": "uploader-license-review-open",
+      "originalFile": null,
+      "originalSha256": null,
+      "changes": "Original geometry and procedural paint atlas, built without imported meshes or textures.",
+      "issue": "own-build-reference-review-open",
       "commercialPermissionDocument": null,
       "bundleRedistributionGrant": null,
       "releaseApproved": false,
-      "nextAction": "Retain license/attribution/change notices, validate mesh/texture provenance and app-store redistribution conditions."
+      "nextAction": "Own mesh and paint; review the recorded reference source and any applicable attribution/share-alike obligations; credits kept in ASSET-CREDITS.md."
     },
     {
       "path": "assets/buildings/farm-ruin.glb",
-      "bytes": 131708,
-      "sha256": "f0978da9e2642f1eb3f92fe461340b911962e0929aa2892077c9c0f9d9822115",
-      "title": "bombed_farm_buildings from FPS creator classic",
-      "uploader": "Garbage Raccoon (https://sketchfab.com/GarbageRaccoon)",
+      "bytes": 293944,
+      "sha256": "f2bfb1c697455f249a6aed74c26107d4a0a2a721b139fc2f701f55294f8d1c8f",
+      "title": "Hofruine",
+      "uploader": "Torpedo Carrier project",
       "originalRightsholder": null,
-      "sourceUrl": "https://sketchfab.com/3d-models/bombed-farm-buildings-from-fps-creator-classic-2cf04644ad0944e5b5b845680262d269",
+      "sourceUrl": "GROUND-MODELS.md",
       "acquiredOn": null,
-      "declaredLicense": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
-      "licenseUrl": "http://creativecommons.org/licenses/by/4.0/",
+      "declaredLicense": "project-own",
+      "licenseUrl": null,
       "licenseEvidence": "Exact runtime GLB asset.extras",
-      "sourceCheck": {
-        "status": "verified-public-api",
-        "checkedOn": "2026-10-14",
-        "apiUrl": "https://api.sketchfab.com/v3/models/2cf04644ad0944e5b5b845680262d269",
-        "licenseMatch": true,
-        "descriptionSignals": []
-      },
+      "sourceCheck": null,
       "embeddedImageCount": 1,
       "externalImages": [],
       "originalFile": null,
       "originalSha256": null,
-      "changes": "Original geometry preserved; bounded embedded textures for the game.",
-      "issue": "upstream-game-rights-open",
+      "changes": "Original geometry and procedural paint atlas, built without imported meshes or textures.",
+      "issue": "own-build-reference-review-open",
       "commercialPermissionDocument": null,
       "bundleRedistributionGrant": null,
       "releaseApproved": false,
-      "nextAction": "Establish original mesh/texture ownership; obtain an app redistribution grant or independently authored replacement."
+      "nextAction": "Own mesh and paint; review the recorded reference source and any applicable attribution/share-alike obligations; credits kept in ASSET-CREDITS.md."
     },
     {
       "path": "assets/buildings/hangar.glb",
-      "bytes": 242552,
-      "sha256": "af53aa083ffef0eeefcfe115ad82b4088643cfd7c9bbbfcf807311f059e81c60",
-      "title": "t2 hangar",
-      "uploader": "ElectricLeo (https://sketchfab.com/ElectricLeo)",
+      "bytes": 118956,
+      "sha256": "5f199f3296e579515fcd629f2a635bc13dc356cd261ba1d92b2c5b14b01f354c",
+      "title": "Stahlhangar",
+      "uploader": "Torpedo Carrier project",
       "originalRightsholder": null,
-      "sourceUrl": "https://sketchfab.com/3d-models/t2-hangar-a059de1574c84b0a8a2a00930782006f",
+      "sourceUrl": "GROUND-MODELS.md",
       "acquiredOn": null,
-      "declaredLicense": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
-      "licenseUrl": "http://creativecommons.org/licenses/by/4.0/",
+      "declaredLicense": "project-own",
+      "licenseUrl": null,
       "licenseEvidence": "Exact runtime GLB asset.extras",
-      "sourceCheck": {
-        "status": "verified-public-api",
-        "checkedOn": "2026-10-14",
-        "apiUrl": "https://api.sketchfab.com/v3/models/a059de1574c84b0a8a2a00930782006f",
-        "licenseMatch": true,
-        "descriptionSignals": []
-      },
-      "embeddedImageCount": 3,
+      "sourceCheck": null,
+      "embeddedImageCount": 1,
       "externalImages": [],
       "originalFile": null,
       "originalSha256": null,
-      "changes": "Original geometry preserved; bounded embedded textures for the game.",
-      "issue": "uploader-license-review-open",
+      "changes": "Original geometry and procedural paint atlas, built without imported meshes or textures.",
+      "issue": "own-build-reference-review-open",
       "commercialPermissionDocument": null,
       "bundleRedistributionGrant": null,
       "releaseApproved": false,
-      "nextAction": "Retain license/attribution/change notices, validate mesh/texture provenance and app-store redistribution conditions."
+      "nextAction": "Own mesh and paint; review the recorded reference source and any applicable attribution/share-alike obligations; credits kept in ASSET-CREDITS.md."
     },
     {
       "path": "assets/buildings/house.glb",
-      "bytes": 1527124,
-      "sha256": "f7acf459193c5469244285599c2ed81e148e7d3e7dbc821f6066305c65a17475",
-      "title": "World War II House 1 - Low Poly",
-      "uploader": "BedoyaCamilo (https://sketchfab.com/BedoyaCamilo)",
+      "bytes": 222776,
+      "sha256": "11b061f23c938ae056599ddf3309c79b837f568039f07fb0cde4c1e5e5181533",
+      "title": "Rheinhaus",
+      "uploader": "Torpedo Carrier project",
       "originalRightsholder": null,
-      "sourceUrl": "https://sketchfab.com/3d-models/world-war-ii-house-1-low-poly-4b9b73b30c424857b4cf4a72701de115",
+      "sourceUrl": "GROUND-MODELS.md",
       "acquiredOn": null,
-      "declaredLicense": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
-      "licenseUrl": "http://creativecommons.org/licenses/by/4.0/",
+      "declaredLicense": "project-own",
+      "licenseUrl": null,
       "licenseEvidence": "Exact runtime GLB asset.extras",
-      "sourceCheck": {
-        "status": "verified-public-api",
-        "checkedOn": "2026-10-14",
-        "apiUrl": "https://api.sketchfab.com/v3/models/4b9b73b30c424857b4cf4a72701de115",
-        "licenseMatch": true,
-        "descriptionSignals": []
-      },
+      "sourceCheck": null,
       "embeddedImageCount": 1,
       "externalImages": [],
       "originalFile": null,
       "originalSha256": null,
-      "changes": "Original geometry preserved; bounded embedded textures for the game.",
-      "issue": "uploader-license-review-open",
+      "changes": "Original geometry and procedural paint atlas, built without imported meshes or textures.",
+      "issue": "own-build-reference-review-open",
       "commercialPermissionDocument": null,
       "bundleRedistributionGrant": null,
       "releaseApproved": false,
-      "nextAction": "Retain license/attribution/change notices, validate mesh/texture provenance and app-store redistribution conditions."
+      "nextAction": "Own mesh and paint; review the recorded reference source and any applicable attribution/share-alike obligations; credits kept in ASSET-CREDITS.md."
     },
     {
       "path": "assets/buildings/observation-post.glb",
-      "bytes": 372332,
-      "sha256": "39b7a3f1b2eb1fa352ad42185730d08b427e3b7516e0de4cc28e332278fdc921",
-      "title": "Putsborough  WWII Observation Post",
-      "uploader": "davidetheridge (https://sketchfab.com/davidetheridge)",
+      "bytes": 53980,
+      "sha256": "5d61d3a346b4599ec3c14bf0d5c690225beb85bf0bcc086307d014ba2df29f24",
+      "title": "Küstenbeobachtungsposten",
+      "uploader": "Torpedo Carrier project",
       "originalRightsholder": null,
-      "sourceUrl": "https://sketchfab.com/3d-models/putsborough-wwii-observation-post-05255e1e580140e6ab6742c399c8affb",
+      "sourceUrl": "GROUND-MODELS.md",
       "acquiredOn": null,
-      "declaredLicense": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
-      "licenseUrl": "http://creativecommons.org/licenses/by/4.0/",
-      "licenseEvidence": "Exact repository original GLB asset.extras, matched to derivative sourceSha256",
-      "sourceCheck": {
-        "status": "verified-public-api",
-        "checkedOn": "2026-10-14",
-        "apiUrl": "https://api.sketchfab.com/v3/models/05255e1e580140e6ab6742c399c8affb",
-        "licenseMatch": true,
-        "descriptionSignals": []
-      },
+      "declaredLicense": "project-own",
+      "licenseUrl": null,
+      "licenseEvidence": "Exact runtime GLB asset.extras",
+      "sourceCheck": null,
       "embeddedImageCount": 1,
       "externalImages": [],
-      "originalFile": "putsborough__wwii_observation_post.glb",
-      "originalSha256": "666482f67d0b06712c41308bdfb03a6ae83150d29a37e4fcf290d4b96db79207",
-      "changes": "Texture-aware mesh simplification, locked boundaries and 512px textures; see original derivative asset.extras.",
-      "issue": "uploader-license-review-open",
+      "originalFile": null,
+      "originalSha256": null,
+      "changes": "Original geometry and procedural paint atlas, built without imported meshes or textures.",
+      "issue": "own-build-reference-review-open",
       "commercialPermissionDocument": null,
       "bundleRedistributionGrant": null,
       "releaseApproved": false,
-      "nextAction": "Retain license/attribution/change notices, validate mesh/texture provenance and app-store redistribution conditions."
+      "nextAction": "Own mesh and paint; review the recorded reference source and any applicable attribution/share-alike obligations; credits kept in ASSET-CREDITS.md."
     },
     {
       "path": "assets/buildings/town-ruin.glb",
-      "bytes": 214212,
-      "sha256": "9a9c3b1617a6d1c0b046ca3882ebfa965f49c1dd942e84a2bad5a362aa4a7862",
-      "title": "BUILDING DESTROYED",
-      "uploader": "danieljorge435 (https://sketchfab.com/danieljorge435)",
+      "bytes": 401760,
+      "sha256": "ccae1f103b26cfad98bf2e3b0a4b971e06f25f1d7f54fa29e25974b48c9ef30a",
+      "title": "Stadtruine",
+      "uploader": "Torpedo Carrier project",
       "originalRightsholder": null,
-      "sourceUrl": "https://sketchfab.com/3d-models/building-destroyed-ca13adc8bba0480a8bdde834889c5444",
+      "sourceUrl": "GROUND-MODELS.md",
       "acquiredOn": null,
-      "declaredLicense": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
-      "licenseUrl": "http://creativecommons.org/licenses/by/4.0/",
+      "declaredLicense": "project-own",
+      "licenseUrl": null,
       "licenseEvidence": "Exact runtime GLB asset.extras",
-      "sourceCheck": {
-        "status": "verified-public-api",
-        "checkedOn": "2026-10-14",
-        "apiUrl": "https://api.sketchfab.com/v3/models/ca13adc8bba0480a8bdde834889c5444",
-        "licenseMatch": true,
-        "descriptionSignals": []
-      },
-      "embeddedImageCount": 3,
+      "sourceCheck": null,
+      "embeddedImageCount": 1,
       "externalImages": [],
       "originalFile": null,
       "originalSha256": null,
-      "changes": "Original geometry preserved; bounded embedded textures for the game.",
-      "issue": "uploader-license-review-open",
+      "changes": "Original geometry and procedural paint atlas, built without imported meshes or textures.",
+      "issue": "own-build-reference-review-open",
       "commercialPermissionDocument": null,
       "bundleRedistributionGrant": null,
       "releaseApproved": false,
-      "nextAction": "Retain license/attribution/change notices, validate mesh/texture provenance and app-store redistribution conditions."
+      "nextAction": "Own mesh and paint; review the recorded reference source and any applicable attribution/share-alike obligations; credits kept in ASSET-CREDITS.md."
     },
     {
-      "path": "assets/remagen/drb0110/drb0110.glb",
-      "bytes": 797032,
-      "sha256": "5a100410a8d2d9bdfb592c4ef0ffadf72ab51f90a74cb5eea9ab6602e4ba93fd",
-      "title": "DRB 01.10 Steam Locomotive (low poly)",
-      "uploader": "Götz von Berlichingen (https://sketchfab.com/vonBerlichingen)",
+      "path": "assets/ground-vehicles/drb-01-10.glb",
+      "bytes": 527340,
+      "sha256": "69f0b9912ac38a0536c58b5cfa5dee6852b01898a8e9cce0adf7f0dcce16e31c",
+      "title": "DRB Baureihe 01.10",
+      "uploader": "Torpedo Carrier project",
       "originalRightsholder": null,
-      "sourceUrl": "https://sketchfab.com/3d-models/drb-0110-steam-locomotive-low-poly-b4e4252632f44492b6c018627a6b4a60",
+      "sourceUrl": "GROUND-MODELS.md",
       "acquiredOn": null,
-      "declaredLicense": "CC-BY-4.0 (https://creativecommons.org/licenses/by/4.0/)",
-      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-      "licenseEvidence": "ASSET-CREDITS.md; acquisition date not recorded",
-      "sourceCheck": {
-        "status": "verified-public-api",
-        "checkedOn": "2026-10-14",
-        "apiUrl": "https://api.sketchfab.com/v3/models/b4e4252632f44492b6c018627a6b4a60",
-        "licenseMatch": true,
-        "descriptionSignals": []
-      },
-      "embeddedImageCount": 2,
+      "declaredLicense": "project-own",
+      "licenseUrl": null,
+      "licenseEvidence": "Exact runtime GLB asset.extras",
+      "sourceCheck": null,
+      "embeddedImageCount": 1,
       "externalImages": [],
       "originalFile": null,
       "originalSha256": null,
-      "changes": "Collada/textures converted to embedded GLB; runtime normalization/material conversion.",
-      "issue": "uploader-license-review-open",
+      "changes": "Original geometry and procedural paint atlas, built without imported meshes or textures.",
+      "issue": "own-build-reference-review-open",
       "commercialPermissionDocument": null,
       "bundleRedistributionGrant": null,
       "releaseApproved": false,
-      "nextAction": "Retain license/attribution/change notices, validate mesh/texture provenance and app-store redistribution conditions."
+      "nextAction": "Own mesh and paint; review the recorded reference source and any applicable attribution/share-alike obligations; credits kept in ASSET-CREDITS.md."
     },
     {
-      "path": "assets/remagen/ford1940/1940_ford_v8.fbx",
-      "bytes": 2239376,
-      "sha256": "9182f095ca9845f68a479e21f69a9d727849c06d3e1019f5cc0b2e677d3e6a25",
-      "title": "1940 Ford V8",
-      "uploader": "Saurav Maity (https://sketchfab.com/saurav.maity)",
+      "path": "assets/ground-vehicles/flak37-halftrack.glb",
+      "bytes": 353520,
+      "sha256": "e0669f942f8525e26259d1ff7de14de0c81d9fce06b4f20bb746846b55618903",
+      "title": "Sd.Kfz. 9 | Flak 37",
+      "uploader": "Torpedo Carrier project",
       "originalRightsholder": null,
-      "sourceUrl": "https://sketchfab.com/3d-models/1940-ford-v8-d9e2efb283534eebae96cf0963820d35",
+      "sourceUrl": "GROUND-MODELS.md",
       "acquiredOn": null,
-      "declaredLicense": "CC-BY-4.0 (https://creativecommons.org/licenses/by/4.0/)",
-      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-      "licenseEvidence": "ASSET-CREDITS.md; original archive acquisition date not recorded",
-      "sourceCheck": {
-        "status": "verified-public-api",
-        "checkedOn": "2026-10-14",
-        "apiUrl": "https://api.sketchfab.com/v3/models/d9e2efb283534eebae96cf0963820d35",
-        "licenseMatch": true,
-        "descriptionSignals": []
-      },
-      "embeddedImageCount": null,
+      "declaredLicense": "project-own",
+      "licenseUrl": null,
+      "licenseEvidence": "Exact runtime GLB asset.extras",
+      "sourceCheck": null,
+      "embeddedImageCount": 1,
       "externalImages": [],
       "originalFile": null,
       "originalSha256": null,
-      "changes": "External DDS suffixes mapped to supplied PNG files; runtime normalization/material batching.",
-      "issue": "uploader-license-review-open",
+      "changes": "Original geometry and procedural paint atlas, built without imported meshes or textures.",
+      "issue": "own-build-reference-review-open",
       "commercialPermissionDocument": null,
       "bundleRedistributionGrant": null,
       "releaseApproved": false,
-      "nextAction": "Retain license/attribution/change notices, validate mesh/texture provenance and app-store redistribution conditions."
+      "nextAction": "Own mesh and paint; review the recorded reference source and any applicable attribution/share-alike obligations; credits kept in ASSET-CREDITS.md."
+    },
+    {
+      "path": "assets/ground-vehicles/ford-v8-cream.glb",
+      "bytes": 125348,
+      "sha256": "2da03aee01ba8c65ce5ad225137588da1b2b281f6e4d6cd9240ad344935f0013",
+      "title": "Ford V8 | Elfenbein",
+      "uploader": "Torpedo Carrier project",
+      "originalRightsholder": null,
+      "sourceUrl": "GROUND-MODELS.md",
+      "acquiredOn": null,
+      "declaredLicense": "project-own",
+      "licenseUrl": null,
+      "licenseEvidence": "Exact runtime GLB asset.extras",
+      "sourceCheck": null,
+      "embeddedImageCount": 1,
+      "externalImages": [],
+      "originalFile": null,
+      "originalSha256": null,
+      "changes": "Original geometry and procedural paint atlas, built without imported meshes or textures.",
+      "issue": "own-build-reference-review-open",
+      "commercialPermissionDocument": null,
+      "bundleRedistributionGrant": null,
+      "releaseApproved": false,
+      "nextAction": "Own mesh and paint; review the recorded reference source and any applicable attribution/share-alike obligations; credits kept in ASSET-CREDITS.md."
+    },
+    {
+      "path": "assets/ground-vehicles/ford-v8.glb",
+      "bytes": 123632,
+      "sha256": "3f64b63446a2bfa56642f2146fe72d079d3446a701a3548a2000584ec3398f01",
+      "title": "Ford V8 | Weinrot",
+      "uploader": "Torpedo Carrier project",
+      "originalRightsholder": null,
+      "sourceUrl": "GROUND-MODELS.md",
+      "acquiredOn": null,
+      "declaredLicense": "project-own",
+      "licenseUrl": null,
+      "licenseEvidence": "Exact runtime GLB asset.extras",
+      "sourceCheck": null,
+      "embeddedImageCount": 1,
+      "externalImages": [],
+      "originalFile": null,
+      "originalSha256": null,
+      "changes": "Original geometry and procedural paint atlas, built without imported meshes or textures.",
+      "issue": "own-build-reference-review-open",
+      "commercialPermissionDocument": null,
+      "bundleRedistributionGrant": null,
+      "releaseApproved": false,
+      "nextAction": "Own mesh and paint; review the recorded reference source and any applicable attribution/share-alike obligations; credits kept in ASSET-CREDITS.md."
+    },
+    {
+      "path": "assets/ground-vehicles/jagdpanther.glb",
+      "bytes": 374096,
+      "sha256": "f76bf0cb501cbe0186c7bb6889cd170da36912a60be12f3f04f929b7bcf4d94d",
+      "title": "Jagdpanther",
+      "uploader": "Torpedo Carrier project",
+      "originalRightsholder": null,
+      "sourceUrl": "GROUND-MODELS.md",
+      "acquiredOn": null,
+      "declaredLicense": "project-own",
+      "licenseUrl": null,
+      "licenseEvidence": "Exact runtime GLB asset.extras",
+      "sourceCheck": null,
+      "embeddedImageCount": 1,
+      "externalImages": [],
+      "originalFile": null,
+      "originalSha256": null,
+      "changes": "Original geometry and procedural paint atlas, built without imported meshes or textures.",
+      "issue": "own-build-reference-review-open",
+      "commercialPermissionDocument": null,
+      "bundleRedistributionGrant": null,
+      "releaseApproved": false,
+      "nextAction": "Own mesh and paint; review the recorded reference source and any applicable attribution/share-alike obligations; credits kept in ASSET-CREDITS.md."
+    },
+    {
+      "path": "assets/ground-vehicles/m16-mgmc.glb",
+      "bytes": 308612,
+      "sha256": "c0baa4051312985ab81ffc2def7069cef40d9d1feb67a95381bc4759875274d2",
+      "title": "M16 MGMC",
+      "uploader": "Torpedo Carrier project",
+      "originalRightsholder": null,
+      "sourceUrl": "GROUND-MODELS.md",
+      "acquiredOn": null,
+      "declaredLicense": "project-own",
+      "licenseUrl": null,
+      "licenseEvidence": "Exact runtime GLB asset.extras",
+      "sourceCheck": null,
+      "embeddedImageCount": 1,
+      "externalImages": [],
+      "originalFile": null,
+      "originalSha256": null,
+      "changes": "Original geometry and procedural paint atlas, built without imported meshes or textures.",
+      "issue": "own-build-reference-review-open",
+      "commercialPermissionDocument": null,
+      "bundleRedistributionGrant": null,
+      "releaseApproved": false,
+      "nextAction": "Own mesh and paint; review the recorded reference source and any applicable attribution/share-alike obligations; credits kept in ASSET-CREDITS.md."
+    },
+    {
+      "path": "assets/ground-vehicles/sherman-m4a1.glb",
+      "bytes": 414012,
+      "sha256": "98e7d4b0dccdbdffceb1ef2d5c0632c13dbceae808e0148d4522005ecc4f6176",
+      "title": "M4A1 (76) W Sherman",
+      "uploader": "Torpedo Carrier project",
+      "originalRightsholder": null,
+      "sourceUrl": "GROUND-MODELS.md",
+      "acquiredOn": null,
+      "declaredLicense": "project-own",
+      "licenseUrl": null,
+      "licenseEvidence": "Exact runtime GLB asset.extras",
+      "sourceCheck": null,
+      "embeddedImageCount": 1,
+      "externalImages": [],
+      "originalFile": null,
+      "originalSha256": null,
+      "changes": "Original geometry and procedural paint atlas, built without imported meshes or textures.",
+      "issue": "own-build-reference-review-open",
+      "commercialPermissionDocument": null,
+      "bundleRedistributionGrant": null,
+      "releaseApproved": false,
+      "nextAction": "Own mesh and paint; review the recorded reference source and any applicable attribution/share-alike obligations; credits kept in ASSET-CREDITS.md."
+    },
+    {
+      "path": "assets/ground-vehicles/tiger-i-field-grey.glb",
+      "bytes": 396980,
+      "sha256": "9fbd5232fdfe24006135697512087eefbedefb43e3bc082c5042b5143efee104",
+      "title": "Tiger I | Feldgrau",
+      "uploader": "Torpedo Carrier project",
+      "originalRightsholder": null,
+      "sourceUrl": "GROUND-MODELS.md",
+      "acquiredOn": null,
+      "declaredLicense": "project-own",
+      "licenseUrl": null,
+      "licenseEvidence": "Exact runtime GLB asset.extras",
+      "sourceCheck": null,
+      "embeddedImageCount": 1,
+      "externalImages": [],
+      "originalFile": null,
+      "originalSha256": null,
+      "changes": "Original geometry and procedural paint atlas, built without imported meshes or textures.",
+      "issue": "own-build-reference-review-open",
+      "commercialPermissionDocument": null,
+      "bundleRedistributionGrant": null,
+      "releaseApproved": false,
+      "nextAction": "Own mesh and paint; review the recorded reference source and any applicable attribution/share-alike obligations; credits kept in ASSET-CREDITS.md."
+    },
+    {
+      "path": "assets/ground-vehicles/tiger-i.glb",
+      "bytes": 399240,
+      "sha256": "3a227ad8da7b4861dabae8eddd0545a28bdefa16039f3e0274617e6dec7c1dc2",
+      "title": "Tiger I",
+      "uploader": "Torpedo Carrier project",
+      "originalRightsholder": null,
+      "sourceUrl": "GROUND-MODELS.md",
+      "acquiredOn": null,
+      "declaredLicense": "project-own",
+      "licenseUrl": null,
+      "licenseEvidence": "Exact runtime GLB asset.extras",
+      "sourceCheck": null,
+      "embeddedImageCount": 1,
+      "externalImages": [],
+      "originalFile": null,
+      "originalSha256": null,
+      "changes": "Original geometry and procedural paint atlas, built without imported meshes or textures.",
+      "issue": "own-build-reference-review-open",
+      "commercialPermissionDocument": null,
+      "bundleRedistributionGrant": null,
+      "releaseApproved": false,
+      "nextAction": "Own mesh and paint; review the recorded reference source and any applicable attribution/share-alike obligations; credits kept in ASSET-CREDITS.md."
     },
     {
       "path": "assets/remagen/horse/quaternius_horse.glb",
@@ -2959,36 +2977,6 @@
       "nextAction": "Establish original mesh/texture ownership; obtain an app redistribution grant or independently authored replacement."
     },
     {
-      "path": "flak88_sfl.glb",
-      "bytes": 14888828,
-      "sha256": "4095ba76835dbc07d494c6d324837daa3b6c84e09ef21299e94554fb06ae6b7a",
-      "title": "8,8 cm Flak 37 Sfl. (War Thunder)",
-      "uploader": "KojfDiscord (https://sketchfab.com/KojfDiscord)",
-      "originalRightsholder": null,
-      "sourceUrl": "https://sketchfab.com/3d-models/88-cm-flak-37-sfl-war-thunder-7a9b4abbc2884ef6bbf5dbffbe8adf2b",
-      "acquiredOn": null,
-      "declaredLicense": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
-      "licenseUrl": "http://creativecommons.org/licenses/by/4.0/",
-      "licenseEvidence": "Exact runtime GLB asset.extras",
-      "sourceCheck": {
-        "status": "verified-public-api",
-        "checkedOn": "2026-10-14",
-        "apiUrl": "https://api.sketchfab.com/v3/models/7a9b4abbc2884ef6bbf5dbffbe8adf2b",
-        "licenseMatch": true,
-        "descriptionSignals": []
-      },
-      "embeddedImageCount": 22,
-      "externalImages": [],
-      "originalFile": null,
-      "originalSha256": null,
-      "changes": "Original runtime binary preserved; runtime scaling, materials, rigging and placement are described in ASSET-CREDITS.md / CLAUDE.md.",
-      "issue": "original-game-rights-open",
-      "commercialPermissionDocument": null,
-      "bundleRedistributionGrant": null,
-      "releaseApproved": false,
-      "nextAction": "Establish original mesh/texture ownership; obtain an app redistribution grant or independently authored replacement."
-    },
-    {
       "path": "grumman tbm avenger.glb",
       "bytes": 15080808,
       "sha256": "9065b7e65419b2efd4618bcb138ce199d16ac3151801d2d90afb7ae92ebb10a6",
@@ -3008,126 +2996,6 @@
         "descriptionSignals": []
       },
       "embeddedImageCount": 27,
-      "externalImages": [],
-      "originalFile": null,
-      "originalSha256": null,
-      "changes": "Original runtime binary preserved; runtime scaling, materials, rigging and placement are described in ASSET-CREDITS.md / CLAUDE.md.",
-      "issue": "uploader-license-review-open",
-      "commercialPermissionDocument": null,
-      "bundleRedistributionGrant": null,
-      "releaseApproved": false,
-      "nextAction": "Retain license/attribution/change notices, validate mesh/texture provenance and app-store redistribution conditions."
-    },
-    {
-      "path": "jagdpanther.glb",
-      "bytes": 12763168,
-      "sha256": "4324d874f5ab4717336cc420f2d26810d2cc3ea19338064e7e5abed6c6d25b0b",
-      "title": "Jadgpanther (War Thunder)",
-      "uploader": "PolyDucky (https://sketchfab.com/salphytheunemployed)",
-      "originalRightsholder": null,
-      "sourceUrl": "https://sketchfab.com/3d-models/jadgpanther-war-thunder-813e100326194334b52887a17416e0b8",
-      "acquiredOn": null,
-      "declaredLicense": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
-      "licenseUrl": "http://creativecommons.org/licenses/by/4.0/",
-      "licenseEvidence": "Exact runtime GLB asset.extras",
-      "sourceCheck": {
-        "status": "verified-public-api",
-        "checkedOn": "2026-10-14",
-        "apiUrl": "https://api.sketchfab.com/v3/models/813e100326194334b52887a17416e0b8",
-        "licenseMatch": true,
-        "descriptionSignals": []
-      },
-      "embeddedImageCount": 9,
-      "externalImages": [],
-      "originalFile": null,
-      "originalSha256": null,
-      "changes": "Original runtime binary preserved; runtime scaling, materials, rigging and placement are described in ASSET-CREDITS.md / CLAUDE.md.",
-      "issue": "original-game-rights-open",
-      "commercialPermissionDocument": null,
-      "bundleRedistributionGrant": null,
-      "releaseApproved": false,
-      "nextAction": "Establish original mesh/texture ownership; obtain an app redistribution grant or independently authored replacement."
-    },
-    {
-      "path": "m16_mgmc.glb",
-      "bytes": 13651260,
-      "sha256": "eb836c5d64ad2b04bb6f7e0dca5dcd121dbfc2983805b084d44fb60c0be9b463",
-      "title": "M16 MGMC (War Thunder)",
-      "uploader": "KojfDiscord (https://sketchfab.com/KojfDiscord)",
-      "originalRightsholder": null,
-      "sourceUrl": "https://sketchfab.com/3d-models/m16-mgmc-war-thunder-fbdb51b1f92f45eebe791a16d805acd4",
-      "acquiredOn": null,
-      "declaredLicense": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
-      "licenseUrl": "http://creativecommons.org/licenses/by/4.0/",
-      "licenseEvidence": "Exact runtime GLB asset.extras",
-      "sourceCheck": {
-        "status": "verified-public-api",
-        "checkedOn": "2026-10-14",
-        "apiUrl": "https://api.sketchfab.com/v3/models/fbdb51b1f92f45eebe791a16d805acd4",
-        "licenseMatch": true,
-        "descriptionSignals": []
-      },
-      "embeddedImageCount": 21,
-      "externalImages": [],
-      "originalFile": null,
-      "originalSha256": null,
-      "changes": "Original runtime binary preserved; runtime scaling, materials, rigging and placement are described in ASSET-CREDITS.md / CLAUDE.md.",
-      "issue": "original-game-rights-open",
-      "commercialPermissionDocument": null,
-      "bundleRedistributionGrant": null,
-      "releaseApproved": false,
-      "nextAction": "Establish original mesh/texture ownership; obtain an app redistribution grant or independently authored replacement."
-    },
-    {
-      "path": "sherman_m4a1.glb",
-      "bytes": 18796228,
-      "sha256": "fd1c8651befd8dc5f8cce22449e4d42f8c18337861f22e28c544c93fe50f889b",
-      "title": "M4A1 (76) W (War Thunder)",
-      "uploader": "KojfDiscord (https://sketchfab.com/KojfDiscord)",
-      "originalRightsholder": null,
-      "sourceUrl": "https://sketchfab.com/3d-models/m4a1-76-w-war-thunder-8492cfd6dec94c90ae7d210acf7e58ed",
-      "acquiredOn": null,
-      "declaredLicense": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
-      "licenseUrl": "http://creativecommons.org/licenses/by/4.0/",
-      "licenseEvidence": "Exact runtime GLB asset.extras",
-      "sourceCheck": {
-        "status": "verified-public-api",
-        "checkedOn": "2026-10-14",
-        "apiUrl": "https://api.sketchfab.com/v3/models/8492cfd6dec94c90ae7d210acf7e58ed",
-        "licenseMatch": true,
-        "descriptionSignals": []
-      },
-      "embeddedImageCount": 40,
-      "externalImages": [],
-      "originalFile": null,
-      "originalSha256": null,
-      "changes": "Original runtime binary preserved; runtime scaling, materials, rigging and placement are described in ASSET-CREDITS.md / CLAUDE.md.",
-      "issue": "original-game-rights-open",
-      "commercialPermissionDocument": null,
-      "bundleRedistributionGrant": null,
-      "releaseApproved": false,
-      "nextAction": "Establish original mesh/texture ownership; obtain an app redistribution grant or independently authored replacement."
-    },
-    {
-      "path": "tiger.glb",
-      "bytes": 1735368,
-      "sha256": "12da29fd4c83ab47ceb6866b2f1d6300294b592b6181da941e34010fb85ea965",
-      "title": "Free Tiger And Crew Kit",
-      "uploader": "adrielcz (https://sketchfab.com/adrielcz)",
-      "originalRightsholder": null,
-      "sourceUrl": "https://sketchfab.com/3d-models/free-tiger-and-crew-kit-6290669ab2cb49599f1606507626af39",
-      "acquiredOn": null,
-      "declaredLicense": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
-      "licenseUrl": "http://creativecommons.org/licenses/by/4.0/",
-      "licenseEvidence": "Exact runtime GLB asset.extras",
-      "sourceCheck": {
-        "status": "verified-public-api",
-        "checkedOn": "2026-10-14",
-        "apiUrl": "https://api.sketchfab.com/v3/models/6290669ab2cb49599f1606507626af39",
-        "licenseMatch": true,
-        "descriptionSignals": []
-      },
-      "embeddedImageCount": 32,
       "externalImages": [],
       "originalFile": null,
       "originalSha256": null,
@@ -3200,13 +3068,6 @@
     }
   ],
   "otherGroups": [
-    {
-      "paths": [
-        "assets/remagen/ford1940/*.png",
-        "assets/remagen/ford1940/*.jpeg"
-      ],
-      "status": "Included under the Ford source review; separate provenance per texture not yet demonstrated."
-    },
     {
       "paths": [
         "terrain-system/real/data/**",

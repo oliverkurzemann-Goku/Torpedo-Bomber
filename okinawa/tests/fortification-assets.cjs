@@ -1,4 +1,4 @@
-/* Actual GLTFLoader, decoded photographic textures, terrain placement and reuse. */
+/* Actual GLTFLoader, decoded original textures, terrain placement and reuse. */
 'use strict';
 const fs=require('node:fs'),path=require('node:path'),vm=require('node:vm'),assert=require('node:assert/strict');
 const THREE=require('three'),{Image,createCanvas}=require('@napi-rs/canvas');
@@ -23,7 +23,7 @@ require('../../fortification-assets.js');require('../data.js');require('../world
   const size=bounds.getSize(new THREE.Vector3()),centre=bounds.getCenter(new THREE.Vector3());
   assert(Math.abs(bounds.min.y)<.001&&Math.abs(centre.x)<.001&&Math.abs(centre.z)<.001,'exporter offsets removed from actual vertices');
   assert(Math.abs(Math.max(size.x,size.z)-spec.length)<.001);assert(size.y>1&&size.y<8,'upright, plausible height');
-  assert(tris<=(kind==='bunker'?104000:9000));assert(textures>0,'original photographic material retained');
+  assert(tris>0&&tris<1500);assert.equal(textures,1,'one embedded texture and mesh');
   const cloned=model.clone(true);let originalMesh,cloneMesh;model.traverse(o=>{if(o.isMesh&&!originalMesh)originalMesh=o;});cloned.traverse(o=>{if(o.isMesh&&!cloneMesh)cloneMesh=o;});assert.equal(originalMesh.geometry,cloneMesh.geometry);assert.equal(originalMesh.material,cloneMesh.material);
   console.log(kind,{metres:size.toArray(),triangles:tris,textureMeshes:textures});
  }

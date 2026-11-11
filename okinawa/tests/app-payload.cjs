@@ -26,6 +26,16 @@ for(const required of ['sortie-preview.js','hangar.js','hangar.css','custom-sort
 for(const required of ['assets/aircraft/b17-helijah.glb','assets/aircraft/B17-CREDITS.txt','b17-native.js','corsair-native.js','assets/aircraft/corsair-f4u1d-own.glb','sbd-native.js','assets/aircraft/sbd-dauntless.glb','assets/aircraft/SBD-CREDITS.txt','assets/aircraft/bf109f2-own.glb','aircraft-contract.js'])assert(fs.existsSync(path.join(out,required)),'Missing native aircraft payload '+required);
 assert(fs.readFileSync(path.join(out,'remagen-mission.html'),'utf8').includes("b17:   ['assets/aircraft/b17-helijah.glb']"));
 assert(fs.readFileSync(path.join(out,'remagen-mission.html'),'utf8').includes("['assets/aircraft/bf109f2-own.glb','bf109new.glb',"),'own Bf 109 F-2 is the first Rhine Bf 109 model');
+for(const name of ['tiger-i','tiger-i-field-grey','jagdpanther','sherman-m4a1','m16-mgmc','flak37-halftrack','ford-v8','ford-v8-cream','drb-01-10']){
+ assert(fs.existsSync(path.join(out,'assets/ground-vehicles',name+'.glb')),'Missing new ground vehicle '+name);
+}
+for(const name of ['bunker','observation-post','house','farm-ruin','town-ruin','hangar']){
+ const glb=fs.readFileSync(path.join(out,'assets/buildings',name+'.glb'));
+ assert.equal(JSON.parse(glb.subarray(20,20+glb.readUInt32LE(12))).asset.extras.license,'project-own');
+}
+for(const file of ['tiger.glb','m16_mgmc.glb','flak88_sfl.glb','jagdpanther.glb','sherman_m4a1.glb','maus.glb','assets/remagen/ford1940','assets/remagen/drb0110','assets/ground-vehicles/source','assets/buildings/source']){
+ assert(!fs.existsSync(path.join(out,file)),'Retired or reserve model shipped: '+file);
+}
 const config=JSON.parse(fs.readFileSync(path.join(root,'capacitor.config.json'),'utf8'));assert.equal(config.webDir,'dist-app');assert(!config.server?.url);
 const plist=fs.readFileSync(path.join(root,'ios/App/App/Info.plist'),'utf8');assert(!plist.includes('UIInterfaceOrientationPortrait'));
 assert(fs.readFileSync(path.join(root,'ios/App/App/PrivacyInfo.xcprivacy'),'utf8').includes('CA92.1'));

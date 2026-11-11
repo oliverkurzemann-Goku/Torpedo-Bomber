@@ -1,7 +1,7 @@
-// Shared, licensed period-vehicle templates plus two static scenic vehicles.
-// Real r128 GLTF/FBX loader validation is in tests/remagen-vehicles.js; credits below.
+// Shared period-vehicle templates plus two static scenic vehicles.
+// The models and their provenance are documented in GROUND-MODELS.md.
 class WorldVehicles {
-  static get BUILD(){ return 22; }
+  static get BUILD(){ return 23; }
   constructor(scene,terrain,osm){
     this.scene=scene;this.terrain=terrain;this.osm=osm;this.entries=[];this.failures=[];
     this.templates=new Map();this.onTemplate=null;
@@ -41,14 +41,9 @@ class WorldVehicles {
   }
   static prepare(source,kind){
     source.updateMatrixWorld(true);
-    let root=new THREE.Group();
-    if(kind==='tiger'){
-      // The export is a kit: spare heads, weapons and a posed crewman lie beside
-      // the tank. Keep only TIGER_H1, preserving all ancestor transforms.
-      const tank=source.getObjectByName('TIGER_H1');
-      if(!tank)throw new Error('Tiger vehicle node missing');
-      const copy=tank.clone(true);tank.matrixWorld.decompose(copy.position,copy.quaternion,copy.scale);root.add(copy);
-    }else{root.add(source);if(kind==='merchant')root.rotation.y=Math.PI/2;}
+    const root=new THREE.Group();
+    root.add(source);
+    if(kind==='merchant')root.rotation.y=Math.PI/2;
     const materials=new Map();
     root.traverse(o=>{
       if(!o.isMesh)return;
@@ -64,15 +59,14 @@ class WorldVehicles {
       };
       o.material=Array.isArray(o.material)?o.material.map(convert):convert(o.material);
     });
-    if(kind==='civilCar')root=WorldVehicles.mergeStaticByMaterial(root);
     root.updateMatrixWorld(true);
     const b=new THREE.Box3().setFromObject(root),size=b.getSize(new THREE.Vector3());
     if(![size.x,size.y,size.z].every(v=>Number.isFinite(v)&&v>0))throw new Error('Invalid vehicle bounds');
     // Real-world target lengths keep imports from three different authoring
     // unit systems consistent. The merchant remains a compact Rhine workboat
     // silhouette, not a claim about the exact 1945 ferry type.
-    const targetLength={m16:6.62,tiger:8.45,jagdpanther:9.8,merchant:30,flak88:8.808,
-      civilCar:4.75,horse:2.5,train:24.1}[kind]||8;
+    const targetLength={m16:6.62,tiger:8.45,tigerGrey:8.45,jagdpanther:9.8,sherman:7.58,
+      merchant:30,flak88:8.808,civilCar:4.75,civilCarCream:4.75,horse:2.5,train:24.1}[kind]||8;
     const scale=targetLength/Math.max(size.x,size.z);
     const model=new THREE.Group();model.add(root);root.scale.setScalar(scale);
     root.position.set(-(b.min.x+b.max.x)*scale/2,-b.min.y*scale,-(b.min.z+b.max.z)*scale/2);
@@ -103,14 +97,8 @@ class WorldVehicles {
   }
   async load(){
     const gltf=new THREE.GLTFLoader();
-    const loadSource=async spec=>{
-      if(spec.loader==='fbx'){
-        const scene=await new Promise((resolve,reject)=>new THREE.FBXLoader().load(spec.url,resolve,undefined,reject));
-        return {scene,animations:scene.animations||[]};
-      }
-      const data=await new Promise((resolve,reject)=>gltf.load(spec.url,resolve,undefined,reject));
-      return {scene:data.scene,animations:data.animations||[]};
-    };
+    const loadSource=url=>new Promise((resolve,reject)=>gltf.load(url,resolve,undefined,reject));
+    const vehicle=file=>'assets/ground-vehicles/'+file+'.glb?v=241';
     const publish=(kind,model,animations=[])=>{
       if(animations.length)model.animations=animations;
       this.templates.set(kind,model);
@@ -119,13 +107,11 @@ class WorldVehicles {
     // Sequential downloads after the menu opens; a vehicle failure cannot hide
     // the player's aircraft or block starting a sortie. Models share resources.
     const specs=[
-      // Load the light 910-triangle Tiger subtree first so LivingWorld can
-      // replace its temporary convoy silhouettes almost immediately.
-      {kind:'tiger',url:'tiger.glb',x:14350,z:15870,yaw:-Math.PI/2},
-      {kind:'m16',url:'m16_mgmc.glb',x:1047,z:17987.6,yaw:Math.PI/2}
+      {kind:'tiger',url:vehicle('tiger-i'),x:14350,z:15870,yaw:-Math.PI/2},
+      {kind:'m16',url:vehicle('m16-mgmc'),x:1047,z:17987.6,yaw:Math.PI/2}
     ];
     for(const spec of specs)try{
-      const asset=await loadSource(spec);
+      const asset=await loadSource(spec.url);
       const model=WorldVehicles.prepare(asset.scene,spec.kind),size=model.userData.size;
       publish(spec.kind,model.clone(true),asset.animations);
       // Search a small local area, rejecting water, steep slopes and mapped
@@ -149,17 +135,18 @@ class WorldVehicles {
     // Real imported traffic replaces the temporary silhouettes as each asset
     // becomes ready; a failed optional model leaves its procedural fallback.
     const templateSpecs=[
-      {kind:'flak88',url:'flak88_sfl.glb'},
-      // One existing, low-polygon vehicle replaces a Tiger silhouette in the
-      // moving road column. Loaded after the menu appears, with fallback intact.
-      {kind:'jagdpanther',url:'jagdpanther.glb'},
-      {kind:'civilCar',url:'assets/remagen/ford1940/1940_ford_v8.fbx',loader:'fbx'},
+      {kind:'flak88',url:vehicle('flak37-halftrack')},
+      {kind:'jagdpanther',url:vehicle('jagdpanther')},
+      {kind:'sherman',url:vehicle('sherman-m4a1')},
+      {kind:'tigerGrey',url:vehicle('tiger-i-field-grey')},
+      {kind:'civilCar',url:vehicle('ford-v8')},
+      {kind:'civilCarCream',url:vehicle('ford-v8-cream')},
       {kind:'horse',url:'assets/remagen/horse/quaternius_horse.glb'},
-      {kind:'train',url:'assets/remagen/drb0110/drb0110.glb'},
+      {kind:'train',url:vehicle('drb-01-10')},
       {kind:'merchant',url:'assets/ships/japanese-cargo.glb'}
     ];
     for(const spec of templateSpecs)try{
-      const asset=await loadSource(spec),model=WorldVehicles.prepare(asset.scene,spec.kind);
+      const asset=await loadSource(spec.url),model=WorldVehicles.prepare(asset.scene,spec.kind);
       publish(spec.kind,model,asset.animations);
     }catch(e){this.failures.push({kind:spec.kind,message:e.message});console.warn(spec.kind+' template unavailable:',e);}
   }

@@ -192,7 +192,18 @@ AI-generated campaign illustrations made with built-in ImageGen. They are not
 historical photographs or documented reconstructions. Full prompts and asset
 paths are recorded in [Campaign artwork](assets/CAMPAIGN-ART.md).
 
-## Vehicle models
+## Build 241 — original ground scenery
+
+The vehicles in `assets/ground-vehicles/` and the six active `assets/buildings/`
+models use original code-authored geometry, UVs and paint by the project. The
+generator, model roles and historical references are documented in
+[GROUND-MODELS.md](GROUND-MODELS.md). No source mesh, scan or texture is
+embedded. Original GLBs carry the `project-own` provenance designation.
+The third-party ground vehicle and building binaries described in the
+historical credits below were retired from the current game and app payload.
+The existing CC0 horse is still used with its original credit.
+
+## Vehicle models (historical)
 
 Build 14 uses existing repository models as static scenery. Build 19 also reuses the
 selected Tiger as the moving tracked-target visual. Build 21 adds licensed period traffic.

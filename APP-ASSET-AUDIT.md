@@ -74,6 +74,15 @@ Historical Build 196 payload contained **302 files / 266.5 MiB**, including
 [asset-register.json](app/release/asset-register.json); embedded GLB textures are covered by
 their binary's hash. [Readable model table](app/release/asset-register.md).
 
+## Build 241 ground scenery
+
+The active ground vehicles and six imported building models are now replaced
+by independent geometry and textures. The original source files and their
+embedded images were removed from the current tree. The four reserve GLBs
+are excluded from the native payload. The CC0 horse remains in use.
+The historical sections below retain their dated observations.
+[Ground model provenance and references](GROUND-MODELS.md).
+
 ## Build 211 fleet handling and engine audio
 
 The 325-file payload adds original procedural piston-engine audio and shared arcade

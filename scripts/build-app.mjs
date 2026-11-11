@@ -14,8 +14,7 @@ const directories=['assets','audio','vendor','okinawa','terrain-system'];
 const extensions=new Set(['.js','.css','.glb','.fbx','.bin','.json','.png','.jpg','.jpeg','.webp','.svg','.txt','.wav','.md']);
 const excluded=new Set(['tests','node_modules','__pycache__','real-tools','tools','source']);
 const rootModels=['b24.glb','bf109new.glb',
- 'grumman tbm avenger.glb','zero.glb',
- 'tiger.glb','m16_mgmc.glb','flak88_sfl.glb','jagdpanther.glb','sherman_m4a1.glb','treepack.glb'];
+ 'grumman tbm avenger.glb','zero.glb','treepack.glb'];
 const files=[];
 async function collect(relative){
  if(relative==='assets/aircraft/p47-weathered.glb')return;
@@ -32,7 +31,7 @@ async function collect(relative){
 for(const file of (await fs.readdir(root)).sort())if(/\.(js|css)$/.test(file))files.push(file);
 files.push(...rootModels);
 for(const directory of directories)await collect(directory);
-files.push(...entries,'ASSET-CREDITS.md');
+files.push(...entries,'ASSET-CREDITS.md','GROUND-MODELS.md');
 // Remove only a validated, disposable build output, never a checkout root.
 if(path.dirname(output)!==root||path.basename(output)!==outputName)throw Error('Unsafe output directory');
 await fs.rm(output,{recursive:true,force:true});await fs.mkdir(output,{recursive:true});
@@ -52,5 +51,5 @@ await build({entryPoints:[path.join(root,'app/native-bridge.mjs')],bundle:true,f
 const bridge=await fs.readFile(path.join(output,'app-native.js'));
 manifest.push({path:'app-native.js',bytes:bridge.length,sha256:createHash('sha256').update(bridge).digest('hex')});
 const bytes=manifest.reduce((n,f)=>n+f.bytes,0);
-await fs.writeFile(path.join(output,'app-payload.json'),JSON.stringify({schema:1,build:240,bytes,files:manifest},null,2));
+await fs.writeFile(path.join(output,'app-payload.json'),JSON.stringify({schema:1,build:241,bytes,files:manifest},null,2));
 console.log('Offline app:',manifest.length,'files,',(bytes/1024/1024).toFixed(1),'MiB; original assets preserved.');

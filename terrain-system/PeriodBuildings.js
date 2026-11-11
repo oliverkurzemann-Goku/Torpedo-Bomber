@@ -1,9 +1,9 @@
-/* A bounded set of uploaded landmarks, with cheap distant silhouettes. */
+/* A bounded set of period landmarks, with cheap distant silhouettes. */
 class PeriodBuildings {
  constructor(scene,terrain,osm){this.scene=scene;this.terrain=terrain;this.osm=osm;this.templates=new Map();this.reserved=new Map();this.entries=[];this.exclusions=[];}
  async load(anchors){
   for(const kind of ['house','farm-ruin','town-ruin','hangar']){
-   try{const model=await new Promise((yes,no)=>new THREE.GLTFLoader().load('assets/buildings/'+kind+'.glb?v=172',g=>yes(g.scene),undefined,no));
+   try{const model=await new Promise((yes,no)=>new THREE.GLTFLoader().load('assets/buildings/'+kind+'.glb?v=241',g=>yes(g.scene),undefined,no));
     model.traverse(o=>{if(o.isMesh){o.castShadow=false;o.receiveShadow=true;}});this.templates.set(kind,model);
    }catch(e){console.warn('Optional building:',kind,e.message);}
   }
@@ -101,7 +101,7 @@ class PeriodBuildings {
   if(post&&this.templates.has('observation-post'))this.place('observation-post',...post,7.5,7.5);
  }
  bunker(x,z){
-  // The uploaded observation posts inspire thick walls and a real narrow opening.
+  // Low-detail fallback while the original model is unavailable.
   const g=new THREE.Group(),mat=new THREE.MeshLambertMaterial({color:0x8c8a78});
   const box=(w,h,d,px,py,pz)=>{const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat);m.position.set(px,py,pz);g.add(m);};
   box(7,1.5,5,0,.75,0);box(7,.6,5,0,2.5,0);box(7,.4,5.4,0,2.95,0);

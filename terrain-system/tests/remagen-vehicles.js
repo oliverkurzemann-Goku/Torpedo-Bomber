@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// THREE_R128=... GLTF_LOADER_R128=... FBX_LOADER_R128=... FFLATE_R128=...
+// THREE_R128=... GLTF_LOADER_R128=...
 // SKELETON_UTILS_R128=... node terrain-system/tests/remagen-vehicles.js
 // Actual GLTFLoader hierarchy/matrices, with an image event stub (no GPU test).
 const fs=require('fs'),path=require('path'),vm=require('vm'),assert=require('assert/strict');
@@ -7,23 +7,14 @@ const root=path.resolve(__dirname,'../..');global.THREE=require(process.env.THRE
 assert.equal(THREE.REVISION,'128');global.window={URL};global.self=global;
 global.document={createElementNS(){return {addEventListener(k,fn){this[k]=fn;},removeEventListener(){},set src(v){this.width=this.height=1024;queueMicrotask(()=>this.load());}};}};
 vm.runInThisContext(fs.readFileSync(process.env.GLTF_LOADER_R128,'utf8'));
-global.fflate=require(process.env.FFLATE_R128);
-vm.runInThisContext(fs.readFileSync(process.env.FBX_LOADER_R128,'utf8'));
 vm.runInThisContext(fs.readFileSync(process.env.SKELETON_UTILS_R128,'utf8'));
 for(const name of ['HeightProvider','TerrainTile','TerrainManager','OSMManager','HistoricalObjectManager','WorldVehicles','LivingWorld'])
   vm.runInThisContext(fs.readFileSync(path.join(root,'terrain-system',name+'.js'),'utf8'));
 global.fetch=async url=>{const b=fs.readFileSync(path.join(root,url.split('?')[0]));return {ok:true,json:async()=>JSON.parse(b),arrayBuffer:async()=>b.buffer.slice(b.byteOffset,b.byteOffset+b.byteLength)};};
 THREE.GLTFLoader.prototype.load=function(file,yes,progress,no){
-  const b=fs.readFileSync(path.join(root,file));this.parse(b.buffer.slice(b.byteOffset,b.byteOffset+b.byteLength),'',yes,no);
-};
-THREE.FBXLoader.prototype.load=function(file,yes,progress,no){
-  try{const b=fs.readFileSync(path.join(root,file));yes(this.parse(b.buffer.slice(b.byteOffset,b.byteOffset+b.byteLength),path.dirname(file)+'/'));}catch(e){no(e);}
+  const b=fs.readFileSync(path.join(root,file.split('?')[0]));this.parse(b.buffer.slice(b.byteOffset,b.byteOffset+b.byteLength),'',yes,no);
 };
 (async()=>{
-  const fbxText=fs.readFileSync(path.join(root,'assets/remagen/ford1940/1940_ford_v8.fbx')).toString('latin1');
-  const fordTextureNames=[...new Set(fbxText.match(/[A-Za-z0-9_]+\.png/g)||[])];
-  assert(fordTextureNames.length>=14,'Ford FBX lost its external texture references');
-  for(const file of fordTextureNames)assert(fs.existsSync(path.join(root,'assets/remagen/ford1940',file)),file+' missing');
   const coords=fs.readdirSync(path.join(root,'terrain-system/real/data/osm')).filter(f=>f.endsWith('.json')).map(f=>f.slice(0,-5).split('_').map(Number));
   const scene=new THREE.Scene(),dem=new DEMHeightProvider(4000,'terrain-system/real/data/dem/');
   await Promise.all(coords.map(([x,z])=>dem.loadTile(x,z)));
@@ -35,8 +26,8 @@ THREE.FBXLoader.prototype.load=function(file,yes,progress,no){
   await osm.loadTile(3,3);
   global.document=imageDocument;
   const vehicles=new WorldVehicles(scene,terrain,osm);await vehicles.load();
-  assert.equal(WorldVehicles.BUILD,22);assert.deepEqual(vehicles.failures,[]);assert.equal(vehicles.entries.length,2);
-  assert.deepEqual([...vehicles.templates.keys()].sort(),['civilCar','flak88','horse','jagdpanther','m16','merchant','tiger','train']);
+  assert.equal(WorldVehicles.BUILD,23);assert.deepEqual(vehicles.failures,[]);assert.equal(vehicles.entries.length,2);
+  assert.deepEqual([...vehicles.templates.keys()].sort(),['civilCar','civilCarCream','flak88','horse','jagdpanther','m16','merchant','sherman','tiger','tigerGrey','train']);
   const jagd=vehicles.templates.get('jagdpanther');jagd.updateMatrixWorld(true);
   const jagdSize=new THREE.Box3().setFromObject(jagd).getSize(new THREE.Vector3());
   assert(Math.abs(Math.max(jagdSize.x,jagdSize.z)-9.8)<.01,'Jagdpanther scaled to metres');
@@ -47,8 +38,13 @@ THREE.FBXLoader.prototype.load=function(file,yes,progress,no){
   assert.equal(living.installVehicleModels(vehicles.templates),39);
   const modelStats=e=>{let meshes=0,triangles=0;e.visual.traverse(m=>{if(!m.isMesh)return;meshes++;triangles+=(m.geometry.index?m.geometry.index.count:m.geometry.attributes.position.count)/3;});return {meshes,triangles};};
   assert.equal(living.entities.filter(e=>e.kind==='truck'&&e.visual.userData.sourceModel==='jagdpanther').length,1);
-  assert.deepEqual(modelStats(living.entities.find(e=>e.kind==='truck'&&e.meta.vehicleModel==='tiger')),{meshes:13,triangles:910});
-  assert(modelStats(living.entities.find(e=>e.meta.vehicleModel==='jagdpanther')).triangles>5000);
+  const detailed=(stats,cap)=>{assert.equal(stats.meshes,1);assert(stats.triangles>1000&&stats.triangles<=cap);};
+  for(const kind of ['tiger','tigerGrey','jagdpanther','sherman','m16','flak88','civilCar','civilCarCream','train']){
+    detailed(modelStats({visual:vehicles.templates.get(kind)}),10000);
+  }
+  const variants=kind=>new Set(living.entities.filter(e=>e.kind===kind).map(e=>e.visual.userData.sourceModel));
+  assert(variants('truck').has('tiger')&&variants('truck').has('tigerGrey'));
+  assert.deepEqual([...variants('civil')].sort(),['civilCar','civilCarCream']);
   const ferry=living.entities.find(e=>e.kind==='ferry');
   const cargoNode=THREE.PropertyBinding.sanitizeNodeName('Japanese wartime cargo transport');
   assert(ferry.visual.getObjectByName(cargoNode),'river ferry uses the original Pacific cargo model');
@@ -58,12 +54,12 @@ THREE.FBXLoader.prototype.load=function(file,yes,progress,no){
   const carStats=modelStats(living.entities.find(e=>e.kind==='civil'));
   const trainStats=modelStats(living.entities.find(e=>e.kind==='train'));
   const wagonStats=modelStats(living.entities.find(e=>e.kind==='wagon'));
-  assert.equal(carStats.triangles,22608);assert(carStats.meshes<=23);
-  assert.deepEqual(trainStats,{meshes:2,triangles:6940});
+  detailed(carStats,2500);
+  detailed(trainStats,10000);
   assert(wagonStats.triangles>2182&&wagonStats.meshes<=12);
   assert(living.entities.filter(e=>e.kind==='wagon').every(e=>e.mixer));
   const dimensions=(kind)=>{const m=vehicles.templates.get(kind);m.updateMatrixWorld(true);return new THREE.Box3().setFromObject(m).getSize(new THREE.Vector3());};
-  for(const [kind,length] of [['civilCar',4.75],['horse',2.5],['train',24.1]]){
+  for(const [kind,length] of [['civilCar',4.75],['civilCarCream',4.75],['sherman',7.58],['horse',2.5],['train',24.1]]){
     const size=dimensions(kind);assert(Math.abs(Math.max(size.x,size.z)-length)<.01,kind+' scale');
   }
   const historical=new HistoricalObjectManager(scene,4000,terrain,'terrain-system/real/data/historical/');
@@ -73,7 +69,7 @@ THREE.FBXLoader.prototype.load=function(file,yes,progress,no){
   assert.equal(HistoricalObjectManager.BUILD,21);assert.equal(historical.installFlakModel(vehicles.templates.get('flak88')),2);
   const flak=[];for(const g of historical.tiles.values())if(g)for(const o of g.userData.objects||[])if(o.userData.kind==='flak')flak.push(o);
   assert.equal(flak.length,2);assert(flak.every(o=>o.userData.sourceModel==='flak88'));
-  assert.deepEqual(modelStats({visual:flak[0]}),{meshes:22,triangles:149028});
+  detailed(modelStats({visual:flak[0]}),7000);
   let wreckMesh=null;flak[0].traverse(o=>{if(!wreckMesh&&o.isMesh)wreckMesh=o;});
   const wreckMat=Array.isArray(wreckMesh.material)?wreckMesh.material[0]:wreckMesh.material;
   const originalMat=Array.isArray(wreckMesh.userData.origMat)?wreckMesh.userData.origMat[0]:wreckMesh.userData.origMat;
