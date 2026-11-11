@@ -354,7 +354,7 @@
   <div id="flash"></div>
   <div id="ltn" style="position:fixed;inset:0;background:#e6ecff;opacity:0;pointer-events:none;z-index:40;"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 239</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 240</div>
 
   <!-- Optical landing aid -->
   <div id="lso">
@@ -401,7 +401,7 @@
 
 <!-- Menu -->
 <div class="overlay" id="menu" data-campaign="pacific">
-  <div class="menuTop"><a id="selBtn" href="index.html?v=239">&#9664; Change Game</a><span class="menuMeta">PACIFIC OPERATIONS<br>BUILD 239</span></div>
+  <div class="menuTop"><a id="selBtn" href="index.html?v=240">&#9664; Change Game</a><span class="menuMeta">PACIFIC OPERATIONS<br>BUILD 240</span></div>
   <div class="card menuCard">
     <aside class="menuOverview" aria-label="Campaign and pilot options">
     <div class="campaignArt" aria-hidden="true"></div>
@@ -510,7 +510,7 @@
 <script src="avenger-bay.js?v=220"></script>
 <script src="corsair-native.js?v=218"></script>
 <script src="avenger-finish.js?v=199"></script>
-<script src="naval-assets.js?v=own-fleet-4"></script>
+<script src="naval-assets.js?v=240"></script>
 <script src="aircraft-rotors.js?v=172"></script>
 <script src="combat-fx.js?v=238"></script>
 <script src="aircraft-smoke.js?v=176"></script>
@@ -521,8 +521,8 @@
 <script src="flight-support.js?v=238"></script>
 <script src="ordnance.js?v=238"></script>
 <script src="crew-visuals.js?v=179"></script>
-<script src="deck-activity.js?v=198"></script>
-<script src="ship-wakes.js?v=239"></script>
+<script src="deck-activity.js?v=240"></script>
+<script src="ship-wakes.js?v=240"></script>
 <script src="pilot-bailout.js?v=181"></script>
 <script src="enemy-bailouts.js?v=177"></script>
 <script src="flare-support.js?v=177"></script>
@@ -681,15 +681,19 @@ const WIRE_X0     = -100;        // arrest zone aft edge
 const WIRE_X1     = -45;         // arrest zone fwd edge
 const AIM_X       = -75;         // ideal touchdown point
 
-// Original carrier meshes retain the deck anchors used by the launch/recovery code.
-const CARRIER_MODEL_URL   = 'uss_midway.glb?v=own-fleet-4';
-const IJN_CARRIER_URL     = 'ijn%20carrier.glb?v=own-fleet-4';
-const IJN_SCALE           = 1.744;
-const IJN_DECK_Y_MODEL    = 8.01;
+// Build 240: USS Enterprise (CV-6) and IJN Kaga, June 1942, modelled in metres with the flight deck at the
+// game's deck height (Enterprise 16.85 m above her waterline; Kaga 21.2 m, so she rides 4.35 m deeper here).
+// Both keep +Z = bow, -X = starboard and the deck markers/exhaust outlets used by the launch/recovery code.
+const CARRIER_MODEL_URL   = 'assets/ships/enterprise-cv6-1942.glb?v=240';
+const IJN_CARRIER_URL     = 'assets/ships/kaga-1942.glb?v=240';
+const IJN_SCALE           = 1;
+const IJN_DECK_Y_MODEL    = 21.2;
+const CARRIER_DECK_BEAM   = 26.2128;   // real flight-deck widths: the landing strip is narrower than the old 35 m decks
+const IJN_DECK_BEAM       = 30.48;
 let ijnCarrierModel       = null, ijnAssetPromise=null;
-let CARRIER_SCALE         = 1.35;
+let CARRIER_SCALE         = 1;
 let CARRIER_YAW           = Math.PI/2;
-let CARRIER_DECK_Y_MODEL  = 10.45;
+let CARRIER_DECK_Y_MODEL  = 16.85;
 let CARRIER_TARGET_DECK_Y = DECK_Y + 0.85;   // 16.85 — the surface the plane rests on
 let CARRIER_DX = 0, CARRIER_DZ = 0;
 let carrierModel = null, carrierModelLoaded = false;
@@ -703,10 +707,10 @@ const FRT_TARGET_LEN = 132;
 let freighterTemplate = null;
 let supportFleet = [];
 
-// The capital-ship target shares the Zuihō model with the defence sortie.
+// The capital-ship target shares the Kaga model with the defence sortie, at her real size (hull plus fittings ~250 m).
 const CRUISER_MODEL_URL = IJN_CARRIER_URL;
-let CRU_TARGET_LEN  = 105;
-const CRU_WATERLINE_Y = IJN_DECK_Y_MODEL - CARRIER_TARGET_DECK_Y / IJN_SCALE;
+let CRU_TARGET_LEN  = 250;
+const CRU_WATERLINE_Y = 0;             // the model's own waterline is y=0, so the target floats at her real draught
 let CRU_YAW = 0;
 let cruiserTemplate = null;
 const GLIDE_DEG   = 3.6;         // target glideslope
@@ -802,7 +806,7 @@ const MISSIONS = [
     targets:[ {type:"freighter", pos:[ -200,0,3600], hp:1},
               {type:"destroyer", pos:[ 250,0,3200], hp:1, flak:true} ] },
   { title:"Sortie 3", sub:"Capital Ship",
-    body:"A Japanese <b>light carrier</b> with two destroyers and a <b>pair of Zeros</b> flying top cover. The carrier needs <b>two hits</b> to go down. Heavy flak. You carry <b>one internal torpedo</b>. Coordinate with your wingmen; return to the carrier to rearm for another attack.",
+    body:"A Japanese <b>fleet carrier</b> (Kaga) with two destroyers and a <b>pair of Zeros</b> flying top cover. The carrier needs <b>two hits</b> to go down. Heavy flak. You carry <b>one internal torpedo</b>. Coordinate with your wingmen; return to the carrier to rearm for another attack.",
     torps:1, fuel:100, zeros:2,
     targets:[ {type:"cruiser",   pos:[ 0,0,4000], hp:2},
               {type:"destroyer", pos:[ -500,0,3500], hp:1, flak:true},
@@ -816,7 +820,7 @@ const MISSIONS = [
               {type:"destroyer", pos:[ 640,0,3600], hp:1, flak:true} ],
     reinforcement:{targets:[{type:"freighter",pos:[2000,0,4600],hp:1}],zeros:1} },
   { title:"Sortie 5", sub:"Night Strike", time:'night', sea:1.8, weather:'haze',
-    body:"A <b>night torpedo attack</b> on a light carrier running dark, one destroyer in company. Low light, heavy flak — the meatball brings you home. The carrier needs <b>two hits</b>. <b>One internal torpedo per sortie</b>; recover aboard and rearm for another attack.",
+    body:"A <b>night torpedo attack</b> on a fleet carrier running dark, one destroyer in company. Low light, heavy flak — the meatball brings you home. The carrier needs <b>two hits</b>. <b>One internal torpedo per sortie</b>; recover aboard and rearm for another attack.",
     torps:1, fuel:100, zeros:0,
     targets:[ {type:"cruiser",   pos:[ 0,0,4200], hp:2},
               {type:"destroyer", pos:[ -420,0,3600], hp:1, flak:true} ] },
@@ -826,7 +830,7 @@ const MISSIONS = [
     targets:[] },
 
   { title:"Sortie 7", sub:"Dusk Convoy", time:'night', sea:1.6, weather:'rain',
-    body:"Last light. A <b>light carrier</b> and a heavy escort are slipping through the strait. Two <b>Zeros</b> are already up — your tail gunner earns his pay tonight. The carrier takes <b>two hits</b>. <b>One internal torpedo</b>; coordinate with your wingmen or recover and rearm. The deck will be dark when you come home.",
+    body:"Last light. A <b>fleet carrier</b> and a heavy escort are slipping through the strait. Two <b>Zeros</b> are already up — your tail gunner earns his pay tonight. The carrier takes <b>two hits</b>. <b>One internal torpedo</b>; coordinate with your wingmen or recover and rearm. The deck will be dark when you come home.",
     torps:1, fuel:100, zeros:2,
     targets:[ {type:"cruiser",   pos:[ 120,0,4400], hp:2},
               {type:"destroyer", pos:[-480,0,3700], hp:1, flak:true},
@@ -854,7 +858,7 @@ const MISSIONS = [
               {type:"destroyer", pos:[  40,0,3300], hp:1, flak:true} ] },
 
   { title:"Sortie 9", sub:"Break Their Back", sbd:true, loadout:'divebomb',
-    body:"The one that matters. A <b>light carrier</b> under two destroyers of cover, and a pair of <b>Zeros</b> on patrol. "
+    body:"The one that matters. A <b>fleet carrier</b> under two destroyers of cover, and a pair of <b>Zeros</b> on patrol. "
         +"The carrier needs <b>two hits</b> — that means two clean dives through the flak, with your rear gunner "
         +"earning every cent. <b>3 bombs</b>. This is what Dauntless crews did at Midway.",
     torps:3, fuel:100, zeros:2,
@@ -1061,7 +1065,7 @@ function init(){
   buildIslands();
   buildCarrier();
   shipWakes=ShipWakes.create(THREE,scene,{height:(x,z)=>seaHeightAt(x,z,seaUniforms.uTime.value)});
-  deckActivity=DeckActivity.create(THREE,scene,{deckY:DECK_Y,heightAt:carrierDeckHeight,srgbOutput:true});
+  deckActivity=DeckActivity.create(THREE,scene,{deckY:DECK_Y,heightAt:carrierDeckHeight,deckHalfWidth:carrierDeckHalfBeam(),srgbOutput:true});
   carrier.traverse(function(o){ if(o.isMesh){ o.castShadow=true; o.receiveShadow=true; } });
   buildPlane();
   planeGroup.traverse(function(o){ if(o.isMesh) o.castShadow=true; });
@@ -1774,7 +1778,7 @@ function buildCarrier(){
   // parked aircraft (starboard, clear of the centreline)
   for(let i=0;i<3;i++){ const p=parkedPlane(); p.position.set(55+i*22, DECK_Y+1.6, 9.5);
     p.rotation.y=-0.5; carrier.add(p); }
-  carrier.visible=false; // wait for the repository's USS Midway GLB
+  carrier.visible=false; // wait for the repository's USS Enterprise GLB
   scene.add(carrier);
 }
 
@@ -2183,7 +2187,7 @@ function startMission(idx){
   document.getElementById('opsStatus').textContent='';
   applyTimeOfDay(m.time || menuTime);
   const service=m.defend?'ijn':'usnavy';
-  if(deckActivity?.group.userData.service!==service){deckActivity?.dispose();deckActivity=DeckActivity.create(THREE,scene,{service,deckY:DECK_Y,heightAt:carrierDeckHeight,srgbOutput:true});deckActivity.group.userData.service=service;}
+  if(deckActivity?.group.userData.service!==service){deckActivity?.dispose();deckActivity=DeckActivity.create(THREE,scene,{service,deckY:DECK_Y,heightAt:carrierDeckHeight,deckHalfWidth:carrierDeckHalfBeam(),srgbOutput:true});deckActivity.group.userData.service=service;}
   deckActivity?.reset();
   // reset plane
   P.pos.set(carrierX+BOW_X+30, DECK_Y+4, 0);
@@ -2424,6 +2428,8 @@ function upgradeShipsToTemplate(type, template){
 }
 
 let carrierIntro=null;
+// Half the real flight-deck width of the carrier in use (Enterprise 13.1 m, Kaga 15.2 m).
+function carrierDeckHalfBeam(){return (isDefend()?IJN_DECK_BEAM:CARRIER_DECK_BEAM)/2;}
 function carrierDeckPlane(){
   const hull=isDefend()?ijnCarrierModel:carrierModel;
   if(!hull)return {x:carrierX,y:CARRIER_TARGET_DECK_Y+.02,z:0,sx:0,sz:0};
@@ -5682,7 +5688,7 @@ function loadPlaneModel(){
       }
       window.__eyeDbg='EYE '+COCKPIT_EYE.map(v=>v.toFixed(2)).join('/');
       const btEl=document.getElementById('buildTag');
-      if(btEl) btEl.textContent='BUILD 239 · '+window.__eyeDbg;
+      if(btEl) btEl.textContent='BUILD 240 · '+window.__eyeDbg;
       let seat=null;
       model.traverse(function(o){
         if(!o.isMesh||!o.material) return;
@@ -5730,7 +5736,7 @@ function loadCarrierModel(){
                         CARRIER_DZ);
       model.traverse(function(o){
         if(o.isMesh){
-          o.castShadow=true; o.receiveShadow=true; o.frustumCulled=false;
+          o.castShadow=true; o.receiveShadow=true; o.frustumCulled=true;   // real bounding spheres: the 110k-triangle hull is skipped when off screen
           if(o.material){ o.material.side=THREE.DoubleSide; }
         }
       });
@@ -5766,13 +5772,13 @@ function loadIJNCarrierModel(){
       const model=source.clone(true);
       const root=new THREE.Group();
       root.add(model);
-      root.rotation.y=CARRIER_YAW;                 // bow -> +X, same as the Midway
+      root.rotation.y=CARRIER_YAW;                 // bow -> +X, same as the Enterprise
       root.scale.setScalar(IJN_SCALE);
       root.position.set(CARRIER_DX,
                         CARRIER_TARGET_DECK_Y - IJN_DECK_Y_MODEL*IJN_SCALE,
                         CARRIER_DZ);
       model.traverse(function(o){
-        if(o.isMesh){ o.castShadow=true; o.receiveShadow=true; o.frustumCulled=false;
+        if(o.isMesh){ o.castShadow=true; o.receiveShadow=true; o.frustumCulled=true;
           if(o.material) o.material.side=THREE.DoubleSide; }
       });
       root.visible=false;                          // only shown in the defence sortie
@@ -5800,7 +5806,7 @@ function loadCruiserModel(){
       const lenH=Math.max(size.x,size.z)||1;
       const scale=CRU_TARGET_LEN/lenH;
       model.position.set(-ctr.x, -CRU_WATERLINE_Y, -ctr.z);
-      model.traverse(function(o){ if(o.isMesh){ o.castShadow=true; o.receiveShadow=true; o.frustumCulled=false; } });
+      model.traverse(function(o){ if(o.isMesh){ o.castShadow=true; o.receiveShadow=true; o.frustumCulled=true; } });
       const tmpl=new THREE.Group();
       tmpl.add(model);
       tmpl.scale.setScalar(scale);
@@ -5808,7 +5814,7 @@ function loadCruiserModel(){
       shipContact.prepare(tmpl);
       cruiserTemplate=tmpl;
       upgradeShipsToTemplate('cruiser', tmpl);
-      console.log('Cruiser (Zuihō) model loaded:', CRUISER_MODEL_URL);
+      console.log('Capital ship (Kaga) model loaded:', CRUISER_MODEL_URL);
     }catch(e){ console.warn('Capital ship GLB post-process failed', e); }
   }).catch(function(){ console.warn('No cruiser model at "'+CRUISER_MODEL_URL+'" — repository ship remains invisible.'); });
 }
@@ -7071,7 +7077,7 @@ function setupUIButtons(){
   if(dbgT2) dbgT2.onclick=()=>{
     dbgOn=!dbgOn; GameRuntime.storage.setItem('dbgOn',dbgOn?'1':'0');
     const db=document.getElementById('dbgBox'); if(db) db.textContent=dbgOn?'✓':'';
-    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 239'; }
+    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 240'; }
   };
   const lu=document.getElementById('lookUp'), ld=document.getElementById('lookDn');
   let _lookT=0;
@@ -7087,7 +7093,7 @@ function setupUIButtons(){
   if(pb) pb.addEventListener('pointerdown',e=>{ e.preventDefault(); togglePause(); });
   const rb=document.getElementById('resumeBtn'); if(rb) rb.onclick=resumeGame;
   const mb=document.getElementById('menuBtn'); if(mb) mb.onclick=exitToMenu;
-  document.getElementById('pauseMainMenu').onclick=async()=>{globalThis.sortieCheckpoint?.save();await globalThis.sortieCheckpoint?.flush();exitToMenu(true);window.location.href='index.html?v=239';};
+  document.getElementById('pauseMainMenu').onclick=async()=>{globalThis.sortieCheckpoint?.save();await globalThis.sortieCheckpoint?.flush();exitToMenu(true);window.location.href='index.html?v=240';};
   document.getElementById('resultBtn').onclick=()=>{
     // the logbook borrows this screen from the menu — send the player straight back
     if(logbookOpen){ logbookOpen=false; showOverlay('menu'); return; }
@@ -7398,7 +7404,7 @@ function animate(){
     notice.style.cssText='position:fixed;inset:0;z-index:999998;background:rgba(15,20,15,.95);color:#e8ddbc;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px;text-align:center;font:16px system-ui';
     const title=document.createElement('h2');title.textContent='Simulation interrupted';
     const detail=document.createElement('p');
-    detail.textContent='BUILD 239 · '+(MISSIONS[mission]?.sub||'Menu')+' · '+error.message;
+    detail.textContent='BUILD 240 · '+(MISSIONS[mission]?.sub||'Menu')+' · '+error.message;
     const reload=document.createElement('button');reload.textContent='Reload game';
     reload.style.cssText='padding:12px 24px;font:inherit';reload.onclick=()=>location.reload();
     notice.appendChild(title);notice.appendChild(detail);notice.appendChild(reload);document.body.appendChild(notice);

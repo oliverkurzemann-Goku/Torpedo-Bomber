@@ -44,7 +44,9 @@
    }buckets.push(set);geometries.forEach(g=>g.dispose());materials.forEach(m=>m.dispose());
   }
   // Keep people and their complete routes outside the aircraft's Z=0 lane.
-  const stations=[[-81,-12,'carry'],[-35,-12,'walk'],[14,-12,'repair'],[66,-12,'repair'],[-66,12,'walk'],[-9,12,'carry'],[42,12,'repair'],[-70,-10,'signal']];
+  // The crew keeps to the deck edge strips; a narrow real deck (options.deckHalfWidth) pulls them in, the old 35 m decks keep 12 m.
+  const lane=Math.min(12,(options.deckHalfWidth??16)-2.6);
+  const stations=[[-81,-lane,'carry'],[-35,-lane,'walk'],[14,-lane,'repair'],[66,-lane,'repair'],[-66,lane,'walk'],[-9,lane,'carry'],[42,lane,'repair'],[-70,-(lane-2),'signal']];
   stations.forEach(([x,z,job],i)=>crew.push({x,z,job,type:i===7?1:0,index:i===7?0:i,phase:i*.83,speed:.68+(i%3)*.04,feet:[{},{}]}));
   function place(mesh,i,x,y,z,rx,ry,rz,sx=1){pos.set(x,y,z);euler.set(rx,ry,rz);q.setFromEuler(euler);scale.set(sx,1,1);matrix.compose(pos,q,scale);mesh.setMatrixAt(i,matrix);}
   function height(x,z){return options.heightAt?options.heightAt(group.position.x+x,z):options.deckY??14;}

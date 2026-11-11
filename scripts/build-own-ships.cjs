@@ -111,12 +111,13 @@ class Ship {
     this.exhausts.push({point,radius,direction});
   }
 
-  save(relative) {
+  save(relative, {paintFactory = createShipPaint, uvMapper = paintUV, extras = {}} = {}) {
     const glb = new GlbWriter({ generator: 'Torpedo-Bomber original naval mesh generator', extras: {
       title: this.title, author: AUTHOR, license: 'project-own (original mesh and paint)',
-      source: this.source, changes: 'Original geometry and procedural weathered paint. Historical photography informs the design; no photograph is embedded.'
+      source: this.source, changes: 'Original geometry and procedural weathered paint. Historical photography informs the design; no photograph is embedded.',
+      ...extras
     }});
-    const atlas = glb.image(createShipPaint(this.paintProfile, PAINT), 'image/jpeg');
+    const atlas = glb.image(paintFactory(this.paintProfile, PAINT), 'image/jpeg');
     const root = glb.node({name: this.title});
     const cosine = Math.cos(this.yaw), sine = Math.sin(this.yaw);
     const rotate = (x, y, z) => [x*cosine + z*sine, y, z*cosine - x*sine];
@@ -127,7 +128,7 @@ class Ship {
       const uvs = textured ? [] : undefined;
       for (let i = 0; i < mesh.positions.length; i += 3) {
         const point = mesh.positions.slice(i,i+3);
-        if (textured) uvs.push(...paintUV(this.paintProfile, paint, ...point, mesh.normals[i]));
+        if (textured) uvs.push(...uvMapper(this.paintProfile, paint, ...point, mesh.normals[i]));
         const p = rotate(...point);
         const n = rotate(...mesh.normals.slice(i,i+3));
         mesh.positions[i] = p[0] * factor;
@@ -806,12 +807,16 @@ function carrier(japanese) {
   return ship;
 }
 
-fs.mkdirSync(path.join(ROOT,'assets/ships'),{recursive:true});
-japaneseCargo().save('assets/ships/japanese-cargo.glb');
-libertyShip().save('assets/ships/liberty.glb');
-samidare().save('assets/ships/samidare.glb');
-fletcher().save('assets/ships/fletcher.glb');
-landing().save('assets/ships/landing-ship.glb');
-submarine().save('assets/ships/ko-hyoteki.glb');
-carrier(false).save('uss_midway.glb');
-carrier(true).save('ijn carrier.glb');
+if (require.main === module) {
+  fs.mkdirSync(path.join(ROOT,'assets/ships'),{recursive:true});
+  japaneseCargo().save('assets/ships/japanese-cargo.glb');
+  libertyShip().save('assets/ships/liberty.glb');
+  samidare().save('assets/ships/samidare.glb');
+  fletcher().save('assets/ships/fletcher.glb');
+  landing().save('assets/ships/landing-ship.glb');
+  submarine().save('assets/ships/ko-hyoteki.glb');
+  carrier(false).save('uss_midway.glb');
+  carrier(true).save('ijn carrier.glb');
+}
+
+module.exports = {Ship, PAINT, add, sub, scale, cross, unit, lerp};

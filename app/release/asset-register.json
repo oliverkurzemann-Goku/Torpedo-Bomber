@@ -1,19 +1,19 @@
 {
   "schema": 1,
   "reviewedOn": "2026-10-23",
-  "build": 239,
+  "build": 240,
   "status": "OPEN — source declarations checked; no external rights authorization obtained",
   "payload": {
-    "bytes": 209709127,
+    "bytes": 220716566,
     "fileCount": 367,
     "modelCount": 36,
-    "manifestSha256": "d7026c2a4c297209bda6d3f9378cce6cfba83ad7afccef0dcc601fc12511f2e6"
+    "manifestSha256": "56d9ef51703cd105a87ac678da472cd478433c69171af84a62b3aa99901dbed9"
   },
   "files": [
     {
       "path": "ASSET-CREDITS.md",
-      "bytes": 37565,
-      "sha256": "ff0c8a5ff6fc11bb9534ea00166ad50982a4f8545b2a73b50cb5eebe44a60377",
+      "bytes": 38405,
+      "sha256": "8c724da2b266ee9efea7ff4ff6d8fe6bb81d69c3294cdd585d5420fd2d425699",
       "kind": "code-or-notice"
     },
     {
@@ -371,6 +371,12 @@
       "kind": "model"
     },
     {
+      "path": "assets/ships/enterprise-cv6-1942.glb",
+      "bytes": 6677032,
+      "sha256": "9079bc14b74716668e0c31c1100414e17fb1c0d67d1a80dc9155ea08b3488772",
+      "kind": "model"
+    },
+    {
       "path": "assets/ships/fletcher.glb",
       "bytes": 248252,
       "sha256": "e561a87c0521accc8292ad7ec62fdb6028e8676b8ae51e914a3da7fb99fca00b",
@@ -380,6 +386,12 @@
       "path": "assets/ships/japanese-cargo.glb",
       "bytes": 251132,
       "sha256": "861cab22f44686e836bb152e7e693114b3aa74206d02207ff2cc13228eb24fb3",
+      "kind": "model"
+    },
+    {
+      "path": "assets/ships/kaga-1942.glb",
+      "bytes": 6532172,
+      "sha256": "5f2b2dede05cb97464113cb8c0f0b0b8fe09fa523bad83172f468e7b7cf58c2a",
       "kind": "model"
     },
     {
@@ -643,13 +655,13 @@
     {
       "path": "custom-sortie.js",
       "bytes": 10255,
-      "sha256": "1146a612fd651f4f4470b133b2467dfe574c1400b6b17fe609cdce8790622423",
+      "sha256": "cc7b074728a12103bd98c2686555bad9dc320b068b618c9303082bf06326833a",
       "kind": "code-or-notice"
     },
     {
       "path": "deck-activity.js",
-      "bytes": 9914,
-      "sha256": "10d55bb6dd5611af650c4ece75a60db4d63ffe55b6cc93381d74baca02e635d4",
+      "bytes": 10126,
+      "sha256": "1ecef27511a523abeaf5414adbbec000f3ba9a8ac60d4b263e090bab27aee321",
       "kind": "code-or-notice"
     },
     {
@@ -769,7 +781,7 @@
     {
       "path": "hangar.html",
       "bytes": 4485,
-      "sha256": "6ccc6a804cfe0a6e6ad6f053b4feb71770df1ced2faf7ce31c9f9186c41e412a",
+      "sha256": "49c60f7c66a8204e4b883120133b742569aaa0780991496a30e4f31fcd6e632e",
       "kind": "code-or-notice"
     },
     {
@@ -779,15 +791,9 @@
       "kind": "code-or-notice"
     },
     {
-      "path": "ijn carrier.glb",
-      "bytes": 1035192,
-      "sha256": "897d42bde610fa73da4cb113faa9b79d025d14c8c5a2e858645dfc7667ac8383",
-      "kind": "model"
-    },
-    {
       "path": "index.html",
       "bytes": 7543,
-      "sha256": "537bb81fdb2a5d1c50ea704e213a6ec4dae7fce06d7a0ee33a9c7552eb542a86",
+      "sha256": "c2e9b354bbd609b0cdec92c88ed8fed8e56071be8690fc8d6e0dcbb3c62a18c9",
       "kind": "code-or-notice"
     },
     {
@@ -840,8 +846,8 @@
     },
     {
       "path": "naval-assets.js",
-      "bytes": 2695,
-      "sha256": "bc93600bc03df5296ec3fbcab19df9fe82f4814241d24f90f8db209e0441ebe4",
+      "bytes": 2694,
+      "sha256": "6951e6128449f088ddaafea85557225850fae93e47e6ed7f2173c229ba95ebe5",
       "kind": "code-or-notice"
     },
     {
@@ -919,7 +925,7 @@
     {
       "path": "remagen-mission.html",
       "bytes": 460095,
-      "sha256": "a1d77c6e85ccfd167e0ea2edaf9ef5a5fa3d26ff399550b3217778486bb575aa",
+      "sha256": "cd216dae5e0e8c7e8ef9b9f6dedbc1fd6b125bb4d021b363879be4111dae595f",
       "kind": "code-or-notice"
     },
     {
@@ -2130,20 +2136,14 @@
     },
     {
       "path": "torpedo-carrier.html",
-      "bytes": 456072,
-      "sha256": "f6b6390954d14dd7dac064dd7aede0eb73115673d6b57124bc0ce2f8332aa818",
+      "bytes": 456896,
+      "sha256": "48885e591d0ee72d30ad3a7da5c4bc541d10128a7fa9966ec58bf483bf66e72e",
       "kind": "code-or-notice"
     },
     {
       "path": "treepack.glb",
       "bytes": 10258136,
       "sha256": "a7aabc44265f961037684ae9a47c93396167a6d35f15cb743cfedd3bb08df411",
-      "kind": "model"
-    },
-    {
-      "path": "uss_midway.glb",
-      "bytes": 1168448,
-      "sha256": "19a2f12cb486e06c5c1aa13a1b299f3b264932dcf2316ab347fe98a2a167bad3",
       "kind": "model"
     },
     {
@@ -2707,6 +2707,30 @@
       "nextAction": "Retain license/attribution/change notices, validate mesh/texture provenance and app-store redistribution conditions."
     },
     {
+      "path": "assets/ships/enterprise-cv6-1942.glb",
+      "bytes": 6677032,
+      "sha256": "9079bc14b74716668e0c31c1100414e17fb1c0d67d1a80dc9155ea08b3488772",
+      "title": "USS Enterprise CV-6, June 1942",
+      "uploader": "Torpedo-Bomber project",
+      "originalRightsholder": null,
+      "sourceUrl": "https://www.navsource.net/archives/02/06.htm",
+      "acquiredOn": null,
+      "declaredLicense": "project-own (original mesh and paint)",
+      "licenseUrl": null,
+      "licenseEvidence": "Exact runtime GLB asset.extras",
+      "sourceCheck": null,
+      "embeddedImageCount": 1,
+      "externalImages": [],
+      "originalFile": null,
+      "originalSha256": null,
+      "changes": "Original geometry and procedural weathered paint. Historical photography informs the design; no photograph is embedded.",
+      "issue": "own-build-reference-review-open",
+      "commercialPermissionDocument": null,
+      "bundleRedistributionGrant": null,
+      "releaseApproved": false,
+      "nextAction": "Own mesh and paint; review the recorded reference source and any applicable attribution/share-alike obligations; credits kept in ASSET-CREDITS.md."
+    },
+    {
       "path": "assets/ships/fletcher.glb",
       "bytes": 248252,
       "sha256": "e561a87c0521accc8292ad7ec62fdb6028e8676b8ae51e914a3da7fb99fca00b",
@@ -2738,6 +2762,30 @@
       "uploader": "Torpedo-Bomber project",
       "originalRightsholder": null,
       "sourceUrl": "https://www.history.navy.mil/our-collections/photography/numerical-list-of-images/nhhc-series/nh-series/NH-86000/NH-86280.html",
+      "acquiredOn": null,
+      "declaredLicense": "project-own (original mesh and paint)",
+      "licenseUrl": null,
+      "licenseEvidence": "Exact runtime GLB asset.extras",
+      "sourceCheck": null,
+      "embeddedImageCount": 1,
+      "externalImages": [],
+      "originalFile": null,
+      "originalSha256": null,
+      "changes": "Original geometry and procedural weathered paint. Historical photography informs the design; no photograph is embedded.",
+      "issue": "own-build-reference-review-open",
+      "commercialPermissionDocument": null,
+      "bundleRedistributionGrant": null,
+      "releaseApproved": false,
+      "nextAction": "Own mesh and paint; review the recorded reference source and any applicable attribution/share-alike obligations; credits kept in ASSET-CREDITS.md."
+    },
+    {
+      "path": "assets/ships/kaga-1942.glb",
+      "bytes": 6532172,
+      "sha256": "5f2b2dede05cb97464113cb8c0f0b0b8fe09fa523bad83172f468e7b7cf58c2a",
+      "title": "IJN Kaga, June 1942",
+      "uploader": "Torpedo-Bomber project",
+      "originalRightsholder": null,
+      "sourceUrl": "https://www.navypedia.org/ships/japan/jap_cv_kaga.htm",
       "acquiredOn": null,
       "declaredLicense": "project-own (original mesh and paint)",
       "licenseUrl": null,
@@ -2971,30 +3019,6 @@
       "nextAction": "Retain license/attribution/change notices, validate mesh/texture provenance and app-store redistribution conditions."
     },
     {
-      "path": "ijn carrier.glb",
-      "bytes": 1035192,
-      "sha256": "897d42bde610fa73da4cb113faa9b79d025d14c8c5a2e858645dfc7667ac8383",
-      "title": "Zuihō light carrier",
-      "uploader": "Torpedo-Bomber project",
-      "originalRightsholder": null,
-      "sourceUrl": "https://www.history.navy.mil/content/history/nhhc/our-collections/photography/numerical-list-of-images/nhhc-series/nh-series/NH-95000/NH-95471.html",
-      "acquiredOn": null,
-      "declaredLicense": "project-own (original mesh and paint)",
-      "licenseUrl": null,
-      "licenseEvidence": "Exact runtime GLB asset.extras",
-      "sourceCheck": null,
-      "embeddedImageCount": 1,
-      "externalImages": [],
-      "originalFile": null,
-      "originalSha256": null,
-      "changes": "Original geometry and procedural weathered paint. Historical photography informs the design; no photograph is embedded.",
-      "issue": "own-build-reference-review-open",
-      "commercialPermissionDocument": null,
-      "bundleRedistributionGrant": null,
-      "releaseApproved": false,
-      "nextAction": "Own mesh and paint; review the recorded reference source and any applicable attribution/share-alike obligations; credits kept in ASSET-CREDITS.md."
-    },
-    {
       "path": "jagdpanther.glb",
       "bytes": 12763168,
       "sha256": "4324d874f5ab4717336cc420f2d26810d2cc3ea19338064e7e5abed6c6d25b0b",
@@ -3143,30 +3167,6 @@
       "bundleRedistributionGrant": null,
       "releaseApproved": false,
       "nextAction": "Retain license/attribution/change notices, validate mesh/texture provenance and app-store redistribution conditions."
-    },
-    {
-      "path": "uss_midway.glb",
-      "bytes": 1168448,
-      "sha256": "19a2f12cb486e06c5c1aa13a1b299f3b264932dcf2316ab347fe98a2a167bad3",
-      "title": "USS Midway straight-deck carrier",
-      "uploader": "Torpedo-Bomber project",
-      "originalRightsholder": null,
-      "sourceUrl": "https://www.history.navy.mil/our-collections/photography/numerical-list-of-images/nhhc-series/nh-series/NH-49000/NH-49829.html",
-      "acquiredOn": null,
-      "declaredLicense": "project-own (original mesh and paint)",
-      "licenseUrl": null,
-      "licenseEvidence": "Exact runtime GLB asset.extras",
-      "sourceCheck": null,
-      "embeddedImageCount": 1,
-      "externalImages": [],
-      "originalFile": null,
-      "originalSha256": null,
-      "changes": "Original geometry and procedural weathered paint. Historical photography informs the design; no photograph is embedded.",
-      "issue": "own-build-reference-review-open",
-      "commercialPermissionDocument": null,
-      "bundleRedistributionGrant": null,
-      "releaseApproved": false,
-      "nextAction": "Own mesh and paint; review the recorded reference source and any applicable attribution/share-alike obligations; credits kept in ASSET-CREDITS.md."
     },
     {
       "path": "zero.glb",

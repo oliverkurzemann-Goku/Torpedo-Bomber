@@ -33,9 +33,9 @@ const server=http.createServer((req,res)=>{
    renderer.setPixelRatio(.4);renderer.shadowMap.enabled=false;
   });
   const exhaust=await page.evaluate(()=>{
-   const models={midway:carrierModel,zuiho:ijnCarrierModel};
+   const models={enterprise:carrierModel,kaga:ijnCarrierModel};
    for(const key of Object.keys(NavalAssets.specs))models[key]=NavalAssets.get(key);
-   const expected={midway:1,zuiho:1,cargo:1,samidare:2,liberty:1,landing:2,fletcher:2,submarine:0};
+   const expected={enterprise:6,kaga:1,cargo:1,samidare:2,liberty:1,landing:2,fletcher:2,submarine:0};
    const sampled={};
    const previous=P.pos.clone();P.pos.set(1200,15,900);
    for(const [name,source] of Object.entries(models)){
@@ -49,7 +49,8 @@ const server=http.createServer((req,res)=>{
     if(puffs.length!==expected[name])throw Error('Wrong number of working funnels for '+name);
     for(const [i,puff] of puffs.entries()){
      if(puff.mesh.position.distanceTo(positions[i])>.01)throw Error('Unanchored exhaust for '+name);
-     if(name==='zuiho'&&Math.hypot(puff.plume.vx,puff.plume.vz+3)<2)throw Error('Side exhaust should first flow outboard');
+     // Kaga's downturned funnel points 25 degrees outboard (direction -0.42,-0.86,-0.05), so about 1.7 m/s of outboard drift.
+     if(name==='kaga'&&Math.hypot(puff.plume.vx,puff.plume.vz+3)<1.5)throw Error('Side exhaust should first flow outboard');
     }
     sampled[name]=puffs.length;
    }

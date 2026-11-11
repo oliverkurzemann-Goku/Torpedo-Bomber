@@ -335,7 +335,7 @@ const cdn={
      await page.waitForFunction(()=>{const b=SBDRig.isNative(playerSBD)?playerSBD.getObjectByName('BrakeUpperLeft'):null;return b?b.visible&&b.quaternion.angleTo(new THREE.Quaternion().fromArray(b.userData.restQuaternion))>.2:sbdDiveFlapL?.visible&&sbdDiveFlapL.getObjectByName('sbdDiveUpper').rotation.x>.2;});
      assert(!modelRequests.some(p=>p.includes('avenger')),'SBD sortie must not load unused Avenger');
     }else if(scenario.kind==='defend'){
-     assert(!modelRequests.some(p=>p.includes('dauntless')||p.includes('midway')||p.includes('merchant')),'Zero defence loads no unused US deck, SBD or merchant');
+     assert(!modelRequests.some(p=>p.includes('dauntless')||p.includes('midway')||p.includes('enterprise')||p.includes('merchant')),'Zero defence loads no unused US deck, SBD or merchant');
     }
     const expectedShips=await page.evaluate(()=>{
      const m=MISSIONS[mission],defs=[...(m.targets||[]),...(m.reinforcement?.targets||[]),...(m.support||[])];
@@ -343,7 +343,10 @@ const cdn={
     });
     assert(!modelRequests.some(p=>p.includes('merchant')),'removed merchant placeholder must never load');
     for(const ship of expectedShips)assert.equal(modelRequests.filter(p=>p===ship).length,1,'each selected original ship decodes once: '+ship);
-    assert.deepEqual([...new Set(modelRequests.filter(p=>p.startsWith('/assets/ships/')))].sort(),expectedShips.sort(),'only ships used by the selected mission load');
+    // Build 240: the two carriers live in assets/ships too; the deck ship of the sortie (Enterprise, or Kaga in the defence sorties) is not a target ship.
+    const deckShip=scenario.kind==='defend'?'/assets/ships/kaga-1942.glb':'/assets/ships/enterprise-cv6-1942.glb';
+    assert(modelRequests.includes(deckShip),'the sortie loads its own carrier: '+deckShip);
+    assert.deepEqual([...new Set(modelRequests.filter(p=>p.startsWith('/assets/ships/')&&!/\/(enterprise-cv6|kaga)-1942\.glb$/.test(p)))].sort(),expectedShips.sort(),'only ships used by the selected mission load');
     if(scenario.ordinal===0){
      const shots=await page.evaluate(()=>{
       if(!isDefend()&&!isSBD()){const oldHull=P.hull,before=tracers.length;for(let i=0;i<600;i++)updateCarrierDefense(1/60);
