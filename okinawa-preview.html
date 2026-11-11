@@ -12,7 +12,7 @@
 </head>
 <body>
 <div class="top"><div class="eyebrow">Pacific environment · 01</div><h1>OKINAWA</h1><div class="subtitle">Yomitan coast · Ryukyu Islands</div></div>
-<nav class="views" aria-label="Viewpoints"><button data-view="coast" aria-pressed="true">Coast</button><button data-view="cape" aria-pressed="false">Cape Zanpa</button><button data-view="airfield" aria-pressed="false">Airfield</button><button data-view="inland" aria-pressed="false">Inland</button></nav>
+<nav class="views" aria-label="Viewpoints"><button data-view="coast" aria-pressed="true">Coast</button><button data-view="cape" aria-pressed="false">Cape Zanpa</button><button data-view="airfield" aria-pressed="false">Airfield</button><button data-view="details" aria-pressed="false">Coastal details</button><button data-view="inland" aria-pressed="false">Inland</button></nav>
 <canvas id="map" width="280" height="280" aria-label="Location overview"></canvas>
 <div class="vertical"><button id="up" aria-label="Move higher">＋</button><button id="down" aria-label="Move lower">−</button></div>
 <div class="bottom"><div class="controls"><button id="fly" aria-pressed="false">Start flyover</button><select id="light" aria-label="Time of day"><option value="day">Daylight</option><option value="warm">Late afternoon</option></select><button id="clean">Hide interface</button><button id="info" aria-expanded="false">About</button></div><div class="hint">Drag to look · Pinch to travel<br>WASD / arrows to move<br><span class="stat" id="stats">OKINAWA BUILD 1</span></div></div>
@@ -25,7 +25,9 @@
 <script src="okinawa/data.js?v=1"></script>
 <script src="terrain-system/WorldVehicles.js?v=241"></script>
 <script src="terrain-system/AirfieldActivity.js?v=242"></script>
-<script src="okinawa/world.js?v=242"></script>
-<script src="okinawa/viewer.js?v=242"></script>
+<script src="okinawa/coastal-templates.js?v=1"></script>
+<script src="okinawa/coastal-scenery.js?v=1"></script>
+<script src="okinawa/world.js?v=244"></script>
+<script src="okinawa/viewer.js?v=244"></script>
 </body>
 </html>

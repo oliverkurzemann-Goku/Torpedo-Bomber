@@ -1,6 +1,6 @@
 # Okinawa coastal study — build 1
 
-Open `../okinawa-preview.html` for the full-density scenery viewer. Torpedo Squadron BUILD 125 includes two **Okinawa coastal combat sorties** after the carrier sorties and **Okinawa Coast · Free Flight** as an optional practice mission. The game builds the same environment for these missions, with 45% of the viewer's decorative vegetation for a lower iPad rendering cost. Thunderbolt Squadron and Remagen form the second campaign with a chapter transition.
+Open `../okinawa-preview.html` for the scenery viewer, using the carrier game’s vegetation density. Torpedo Squadron BUILD 125 includes two **Okinawa coastal combat sorties** after the carrier sorties and **Okinawa Coast · Free Flight** as an optional practice mission. The game builds the same environment for these missions, with 45% of the viewer's decorative vegetation for a lower iPad rendering cost. Thunderbolt Squadron and Remagen form the second campaign with a chapter transition.
 
 ## Scope and provenance
 
@@ -59,3 +59,20 @@ Zwei Isuzu-Varianten, Materialwagen und Bodenpersonal sind im Nahbereich aktiv.
 Die eigene Okinawa-Vorschau hat dafür den Blickpunkt **Airfield**.
 Die Detailstufe der roten Ziegeldächer ergänzt eine niedrige Sichtwand nach
 Ryūkyū-Vorbild. Modelle und Referenzen stehen in [GROUND-MODELS.md](../GROUND-MODELS.md).
+
+## Build 244 — coastal details
+
+The carrier game and the Okinawa viewer share 20 original scenery templates.
+Six coastal zones contain limestone stacks, reef breakers, fishing landings,
+groves, farms and small landmarks. Terns, egrets and dolphins use instanced
+animation. The viewer’s **Coastal details** viewpoint starts at a fishing jetty.
+
+- Regenerate the offline runtime bundle with `node scripts/build-okinawa-scenery.cjs`.
+  The same deterministic geometry generator exports the standalone GLBs.
+- The additions use one shared 512 × 512 atlas and one Lambert material in
+  the game. Each zone displays either its close batch or its distant batch.
+  At most four zone batches and seven wildlife batches can be visible.
+- Placement uses the rendered terrain and shoreline. The 30,000-instance
+  budget from the Okinawa integration test applies to the carrier setup.
+  Terrain height, runway clearance and decorative disposal are covered by
+  `node okinawa/tests/coastal-scenery.cjs`.

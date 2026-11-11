@@ -46,7 +46,7 @@ function frondGeometry(){
 class OkinawaWorld{
  constructor(data, options={}){
   this.data=data;this.root=new THREE.Group();this.root.name='OkinawaEnvironment';this.terrain=new THREE.Group();this.terrain.name='GeographicTerrain';this.root.add(this.terrain);
-  this.tiles=new Map();this.size=16000;this.half=8000;this.mapSize=1024;this.objectCount=0;this.vegetationDensity=options.vegetationDensity===undefined?1:clamp(options.vegetationDensity,.1,1);this.time={value:0};this.warm={value:0};this.sun=new THREE.Vector3(-.48,.72,.46).normalize();this.materials=[];this.decorations=[];this.houseGrid=new Map();this.houseSites=[];this.nearBuildings=[];this.detailTemplates=[];this.fortifications=[];this.serviceArea=Boolean(options.airfieldActivity);
+  this.tiles=new Map();this.size=16000;this.half=8000;this.mapSize=1024;this.objectCount=0;this.vegetationDensity=options.vegetationDensity===undefined?1:clamp(options.vegetationDensity,.1,1);this.time={value:0};this.warm={value:0};this.sun=new THREE.Vector3(-.48,.72,.46).normalize();this.materials=[];this.decorations=[];this.houseGrid=new Map();this.houseSites=[];this.nearBuildings=[];this.detailTemplates=[];this.fortifications=[];this.serviceArea=Boolean(options.airfieldActivity);this.coastalOptions=options.coastal;
   for(const t of data.tiles){const bytes=Uint8Array.from(atob(t.dem),c=>c.charCodeAt(0)),d=new DataView(bytes.buffer);if(String.fromCharCode(...bytes.slice(0,4))!=='DEM1'||d.getUint16(4,true)!==65||bytes.length!==16916)throw Error('Invalid DEM tile '+t.x+','+t.z);const h=new Float32Array(4225);for(let i=0;i<h.length;i++){h[i]=d.getFloat32(16+i*4,true);if(!Number.isFinite(h[i]))throw Error('Non-finite DEM sample');}this.tiles.set(t.x+','+t.z,h);}
  }
  rawHeight(x,z){
@@ -202,6 +202,10 @@ class OkinawaWorld{
     g.computeVertexNormals();g.computeBoundingSphere();const m=new THREE.Mesh(g,material);m.name='Terrain_'+col+'_'+row;m.receiveShadow=true;this.terrain.add(m);
   }
   onProgress(.58,'Growing the coastal landscape…');await pause();this.buildSettlements();await this.loadFortifications();this.buildVillageDetails();this.buildRoads();this.buildVegetation();
+  if(this.coastalOptions!==false&&scope.OkinawaCoastalScenery){
+   this.coastalScenery=scope.OkinawaCoastalScenery.load(this,this.coastalOptions);
+   if(this.coastalScenery)this.root.add(this.coastalScenery.root);
+  }
   onProgress(.8,'Lighting the sea…');await pause();this.buildWater();this.buildSky();
   if(this.serviceArea){
    const terrain={tiles:this.tiles,getRenderedHeight:(x,z)=>this.getSurfaceHeight(x,z)};
@@ -523,13 +527,15 @@ class OkinawaWorld{
  update(dt,x=0,z=0,y=0){
   this.time.value+=Math.min(dt,.1);this.detailTimer=(this.detailTimer||0)-dt;
   if(this.detailTimer<=0){this.detailTimer=.35;this.updateVillageDetails(x,z);this.updateFortifications(x,z);}
+  this.coastalScenery?.update(dt,x,z,y);
   if(this.airfieldActivity){
    if(y>450)this.airfieldActivity.group.visible=false;
    else this.airfieldActivity.update(dt,x,z,{launching:this.airfieldActivity.time%22<5});
   }
  }
  setLight(warm){this.warm.value=warm?1:0;}
- dispose(){this.airfieldActivity?.dispose();for(const e of this.fortifications){e.group.remove(e.model);}
+ dispose(){
+  this.coastalScenery?.dispose();this.airfieldActivity?.dispose();for(const e of this.fortifications){e.group.remove(e.model);}
   const gs=new Set(),ms=new Set(),ts=new Set();[this.root,...this.detailTemplates].forEach(root=>root.traverse(o=>{if(o.geometry)gs.add(o.geometry);if(o.material){for(const m of [].concat(o.material)){ms.add(m);if(m.map)ts.add(m.map);}}}));gs.forEach(g=>g.dispose());ms.forEach(m=>m.dispose());ts.add(this.coastTexture);ts.forEach(t=>t.dispose());if(this.root.parent)this.root.parent.remove(this.root);}
 }
 scope.OkinawaWorld=OkinawaWorld;
