@@ -12,6 +12,10 @@ function noise(x,z){const a=Math.floor(x),b=Math.floor(z);let u=x-a,v=z-b;u=u*u*
 function rng(seed){return()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296;};}
 function canvas(n){const c=document.createElement('canvas');c.width=c.height=n;return c;}
 const pause=()=>new Promise(r=>setTimeout(r,0));
+const airfieldSite={x:-2860,z:-1074};
+function inServiceArea(x,z){
+  return x>airfieldSite.x-380&&x<airfieldSite.x+254&&z>airfieldSite.z-126&&z<airfieldSite.z-20;
+}
 function merge(geometries){const p=[],n=[],uv=[];for(let g of geometries){if(g.index)g=g.toNonIndexed();p.push(...g.attributes.position.array);n.push(...g.attributes.normal.array);if(g.attributes.uv)uv.push(...g.attributes.uv.array);else for(let i=0;i<g.attributes.position.count;i++)uv.push(0,0);}const out=new THREE.BufferGeometry();out.setAttribute('position',new THREE.Float32BufferAttribute(p,3));out.setAttribute('normal',new THREE.Float32BufferAttribute(n,3));out.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));return out;}
 function roofGeometry(){
   // Hipped roof with an actual ridge; asymmetric highlights remain visible from flight altitude.
@@ -42,7 +46,7 @@ function frondGeometry(){
 class OkinawaWorld{
  constructor(data, options={}){
   this.data=data;this.root=new THREE.Group();this.root.name='OkinawaEnvironment';this.terrain=new THREE.Group();this.terrain.name='GeographicTerrain';this.root.add(this.terrain);
-  this.tiles=new Map();this.size=16000;this.half=8000;this.mapSize=1024;this.objectCount=0;this.vegetationDensity=options.vegetationDensity===undefined?1:clamp(options.vegetationDensity,.1,1);this.time={value:0};this.warm={value:0};this.sun=new THREE.Vector3(-.48,.72,.46).normalize();this.materials=[];this.decorations=[];this.houseGrid=new Map();this.houseSites=[];this.nearBuildings=[];this.detailTemplates=[];this.fortifications=[];
+  this.tiles=new Map();this.size=16000;this.half=8000;this.mapSize=1024;this.objectCount=0;this.vegetationDensity=options.vegetationDensity===undefined?1:clamp(options.vegetationDensity,.1,1);this.time={value:0};this.warm={value:0};this.sun=new THREE.Vector3(-.48,.72,.46).normalize();this.materials=[];this.decorations=[];this.houseGrid=new Map();this.houseSites=[];this.nearBuildings=[];this.detailTemplates=[];this.fortifications=[];this.serviceArea=Boolean(options.airfieldActivity);
   for(const t of data.tiles){const bytes=Uint8Array.from(atob(t.dem),c=>c.charCodeAt(0)),d=new DataView(bytes.buffer);if(String.fromCharCode(...bytes.slice(0,4))!=='DEM1'||d.getUint16(4,true)!==65||bytes.length!==16916)throw Error('Invalid DEM tile '+t.x+','+t.z);const h=new Float32Array(4225);for(let i=0;i<h.length;i++){h[i]=d.getFloat32(16+i*4,true);if(!Number.isFinite(h[i]))throw Error('Non-finite DEM sample');}this.tiles.set(t.x+','+t.z,h);}
  }
  rawHeight(x,z){
@@ -97,20 +101,60 @@ class OkinawaWorld{
   });
   this.roadRoutes=routes;this.roadGrid=new Map();const buckets={road:[],track:[]};
   const clip=(poly,a,b)=>{const side=p=>(b[0]-a[0])*(p[1]-a[1])-(b[1]-a[1])*(p[0]-a[0]),out=[];for(let i=0;i<poly.length;i++){const p=poly[i],q=poly[(i+1)%poly.length],sp=side(p),sq=side(q);if(sp>=-1e-7)out.push(p);if((sp>=0)!==(sq>=0)){const f=sp/(sp-sq);out.push([p[0]+(q[0]-p[0])*f,p[1]+(q[1]-p[1])*f]);}}return out;};
-  const strip=(a,b,width,vertices)=>{
+  const strip=(a,b,width,vertices,offset=.14)=>{
    const dx=b[0]-a[0],dz=b[1]-a[1],L=Math.hypot(dx,dz);if(L<.1)return;const nx=-dz/L*width/2,nz=dx/L*width/2,quad=[[a[0]+nx,a[1]+nz],[a[0]-nx,a[1]-nz],[b[0]-nx,b[1]-nz],[b[0]+nx,b[1]+nz]];
    const x0=Math.floor((Math.min(...quad.map(p=>p[0]))+8000)/31.25),x1=Math.floor((Math.max(...quad.map(p=>p[0]))+8000)/31.25),z0=Math.floor((Math.min(...quad.map(p=>p[1]))+8000)/31.25),z1=Math.floor((Math.max(...quad.map(p=>p[1]))+8000)/31.25);
    for(let ix=x0;ix<=x1;ix++)for(let iz=z0;iz<=z1;iz++){const x=ix*31.25-8000,z=iz*31.25-8000;for(const tri of [[[x,z],[x+31.25,z],[x,z+31.25]],[[x+31.25,z+31.25],[x,z+31.25],[x+31.25,z]]]){
     let poly=quad;for(let j=0;j<3&&poly.length;j++)poly=clip(poly,tri[j],tri[(j+1)%3]);
-    for(let j=1;j<poly.length-1;j++)for(const p of [poly[0],poly[j+1],poly[j]])vertices.push(p[0],this.getSurfaceHeight(...p)+.14,p[1]);
+    for(let j=1;j<poly.length-1;j++)for(const p of [poly[0],poly[j+1],poly[j]])vertices.push(p[0],this.getSurfaceHeight(...p)+offset,p[1]);
    }}
   };
   for(const r of routes)for(let i=1;i<r.path.length;i++){
    const a=r.path[i-1],b=r.path[i];strip(a,b,r.width,buckets[r.kind]);
    const L=Math.hypot(b[0]-a[0],b[1]-a[1]);for(let f=0;f<=L;f+=8){const x=mix(a[0],b[0],f/L),z=mix(a[1],b[1],f/L),k=Math.floor(x/64)+','+Math.floor(z/64);if(!this.roadGrid.has(k))this.roadGrid.set(k,[]);this.roadGrid.get(k).push({x,z,r:r.width/2+5});}
   }
+  if(this.serviceArea){
+   const gravel=[],ruts=[],length=AirfieldActivity.routeLength;
+   for(let d=0;d<length;d+=4){
+    const start=AirfieldActivity.routeAt(d),end=AirfieldActivity.routeAt(Math.min(length,d+4));
+    const point=(p,offset=0)=>[airfieldSite.x+p.x+Math.cos(p.yaw)*offset,airfieldSite.z+p.z-Math.sin(p.yaw)*offset];
+    strip(point(start),point(end),6.8,gravel,.045);
+    for(const side of [-1,1])strip(point(start,side*.85),point(end,side*.85),.29,ruts,.052);
+   }
+   for(const [a,b,z,width] of [[-374,-298,-84,22],[-299,-224,-67,10],[-288,-271,-96,15]]){
+    strip([airfieldSite.x+a,airfieldSite.z+z],[airfieldSite.x+b,airfieldSite.z+z],width,gravel,.045);
+   }
+   buckets.gravel=gravel;buckets.ruts=ruts;
+  }
   const tex=canvas(64),ctx=tex.getContext('2d'),rand=rng(1153);ctx.fillStyle='#b0a17d';ctx.fillRect(0,0,64,64);for(let i=0;i<1100;i++){ctx.fillStyle=rand()<.5?'#988968':'#c1b18a';ctx.fillRect(rand()*64,rand()*64,1+rand()*2,1+rand()*2);}const map=new THREE.CanvasTexture(tex);map.wrapS=map.wrapT=THREE.RepeatWrapping;
-  for(const kind of ['road','track']){const vertices=buckets[kind];if(!vertices.length)continue;const geo=new THREE.BufferGeometry();geo.setAttribute('position',new THREE.Float32BufferAttribute(vertices,3));const uv=[];for(let i=0;i<vertices.length;i+=3)uv.push(vertices[i]/5,vertices[i+2]/5);geo.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));geo.computeVertexNormals();const mesh=new THREE.Mesh(geo,new THREE.MeshStandardMaterial({map,color:kind==='road'?0x9c8d70:0x897654,roughness:1,side:THREE.DoubleSide,polygonOffset:true,polygonOffsetFactor:-1}));mesh.name=kind==='road'?'Hamlet earth roads':'Farm tracks';mesh.receiveShadow=true;this.root.add(mesh);this.decorations.push(mesh);}
+  const roadFinishes={
+   road:{name:'Hamlet earth roads',color:0x9c8d70,map},
+   track:{name:'Farm tracks',color:0x897654,map},
+  };
+  if(this.serviceArea){
+   const gravelImage=canvas(128),grain=gravelImage.getContext('2d'),random=rng(68023);
+   grain.fillStyle='#a59f89';grain.fillRect(0,0,128,128);
+   const pebbles=['#d9d1b6','#bdb49b','#888574','#6f6b5f'];
+   for(let i=0;i<5400;i++){
+    grain.fillStyle=pebbles[i%pebbles.length];
+    grain.fillRect(random()*128,random()*128,.6+random()*2.3,.5+random()*1.6);
+   }
+   const coral=new THREE.CanvasTexture(gravelImage);
+   coral.encoding=THREE.sRGBEncoding;coral.wrapS=coral.wrapT=THREE.RepeatWrapping;
+   roadFinishes.gravel={name:'Airfield coral gravel',color:0xbab098,map:coral,repeat:2.5};
+   roadFinishes.ruts={name:'Airfield tyre tracks',color:0x7c7262,map:coral,repeat:2.5};
+  }
+  for(const [kind,finish] of Object.entries(roadFinishes)){
+   const vertices=buckets[kind];if(!vertices.length)continue;
+   const geo=new THREE.BufferGeometry();
+   geo.setAttribute('position',new THREE.Float32BufferAttribute(vertices,3));
+   const uv=[],repeat=finish.repeat||5;
+   for(let i=0;i<vertices.length;i+=3)uv.push(vertices[i]/repeat,vertices[i+2]/repeat);
+   geo.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));geo.computeVertexNormals();
+   const mesh=new THREE.Mesh(geo,new THREE.MeshStandardMaterial({map:finish.map,color:finish.color,roughness:1,
+    side:THREE.DoubleSide,polygonOffset:true,polygonOffsetFactor:-1}));
+   mesh.name=finish.name;mesh.receiveShadow=true;this.root.add(mesh);this.decorations.push(mesh);
+  }
  }
  nearRoad(x,z){
   if(!this.roadGrid)return false;const gx=Math.floor(x/64),gz=Math.floor(z/64);for(let dx=-1;dx<=1;dx++)for(let dz=-1;dz<=1;dz++)for(const p of this.roadGrid.get((gx+dx)+','+(gz+dz))||[])if(Math.hypot(x-p.x,z-p.z)<p.r)return true;return false;
@@ -158,10 +202,19 @@ class OkinawaWorld{
     g.computeVertexNormals();g.computeBoundingSphere();const m=new THREE.Mesh(g,material);m.name='Terrain_'+col+'_'+row;m.receiveShadow=true;this.terrain.add(m);
   }
   onProgress(.58,'Growing the coastal landscape…');await pause();this.buildSettlements();await this.loadFortifications();this.buildVillageDetails();this.buildRoads();this.buildVegetation();
-  onProgress(.8,'Lighting the sea…');await pause();this.buildWater();this.buildSky();onProgress(1,'Ready');return this;
+  onProgress(.8,'Lighting the sea…');await pause();this.buildWater();this.buildSky();
+  if(this.serviceArea){
+   const terrain={tiles:this.tiles,getRenderedHeight:(x,z)=>this.getSurfaceHeight(x,z)};
+   this.airfieldActivity=new AirfieldActivity(terrain,airfieldSite.x,airfieldSite.z,{service:'ijn',maxRange:1700});
+   this.root.add(this.airfieldActivity.group);
+   this.airfieldActivity.update(0,0,0);
+   this.airfieldReady=this.airfieldActivity.loadVehicleModels();
+  }
+  onProgress(1,'Ready');return this;
  }
  batch(geo,mat,placements,name){if(!placements.length)return;const m=new THREE.InstancedMesh(geo,mat,placements.length),dummy=new THREE.Object3D();m.name=name;for(let i=0;i<placements.length;i++){const p=placements[i];dummy.position.set(p.x,p.y,p.z);dummy.rotation.set(0,p.r||0,0);dummy.scale.set(p.sx||p.s||1,p.sy||p.s||1,p.sz||p.s||1);dummy.updateMatrix();m.setMatrixAt(i,dummy.matrix);}m.instanceMatrix.needsUpdate=true;m.frustumCulled=false;m.castShadow=false;m.receiveShadow=true;this.root.add(m);this.objectCount+=placements.length;this.decorations.push(m);return m;}
  nearHouse(x,z){
+  if(this.serviceArea&&inServiceArea(x,z))return true;
   if(this.fortifications.some(e=>Math.hypot(x-e.x,z-e.z)<Math.hypot(e.w,e.d)/2+12))return true;
   const gx=Math.floor(x/64),gz=Math.floor(z/64);
   for(let dx=-1;dx<=1;dx++)for(let dz=-1;dz<=1;dz++)
@@ -260,7 +313,7 @@ class OkinawaWorld{
   for(const c of hamletCenters){
    for(let i=0;i<46;i++){
     const angle=rand()*6.28,r=40+Math.sqrt(rand())*330,x=c[0]+Math.cos(angle)*r,z=c[1]+Math.sin(angle)*r;
-    const y=this.getHeight(x,z),d=this.shoreDistance(x,z);if(d<100||this.biome(x,z)[0]>.3)continue;
+    const y=this.getHeight(x,z),d=this.shoreDistance(x,z);if(d<100||this.biome(x,z)[0]>.3||(this.serviceArea&&inServiceArea(x,z)))continue;
     const style=Math.min(4,Math.floor(rand()*5));
     const w=(style===1||style===4?11:7.5)+rand()*(style===1||style===4?7:6);
     const depth=(style===1||style===4?9:6)+rand()*5,rot=(rand()-.5)*.9;
@@ -273,7 +326,7 @@ class OkinawaWorld{
    // courtyards. Sample every strip against the actual terrain and coast.
    for(const angle of [rand()*6.28,rand()*6.28])for(let j=0;j<32;j++){
     const x=c[0]+Math.sin(angle)*j*6,z=c[1]+Math.cos(angle)*j*6;
-    if(Math.abs(x)>7850||Math.abs(z)>7850||this.shoreDistance(x,z)<35)break;
+    if(Math.abs(x)>7850||Math.abs(z)>7850||this.shoreDistance(x,z)<35||(this.serviceArea&&inServiceArea(x,z)))break;
     const h=this.getHeight(x,z),h2=this.getHeight(x+Math.sin(angle)*4,z+Math.cos(angle)*4);
     if(Math.abs(h-h2)>.8)continue;
     tracks.push({x,z,y:h+.08,sx:3.3,sy:.10,sz:6.3,r:angle});
@@ -284,7 +337,7 @@ class OkinawaWorld{
   for(let row=0;row<5;row++)for(let col=0;col<7;col++){
    const x=-4840+col*29+(rand()-.5)*18,z=-2610+row*34+(rand()-.5)*22;
    const y=this.getHeight(x,z),d=this.shoreDistance(x,z),w=7+rand()*7,depth=6+rand()*6,rot=(rand()-.5)*.55;
-   if(d<40||this.biome(x,z)[0]>.3||Math.max(Math.abs(this.getHeight(x+w,z)-y),Math.abs(this.getHeight(x,z+depth)-y))>2.5)continue;
+   if(d<40||this.biome(x,z)[0]>.3||(this.serviceArea&&inServiceArea(x,z))||Math.max(Math.abs(this.getHeight(x+w,z)-y),Math.abs(this.getHeight(x,z+depth)-y))>2.5)continue;
    if(locations.some(p=>Math.hypot(p.x-x,p.z-z)<20))continue;locations.push({x,z});
    addHouse(x,z,w,depth,rot,y,Math.min(4,Math.floor(rand()*5)),rand()>.8);
   }
@@ -297,7 +350,14 @@ class OkinawaWorld{
    yardPalms.push({x,z,y,s:.8+rand()*.38,r:rand()*6.28});
    yardCisterns.push({x:x-4,z:z-3,y:this.getHeight(x-4,z-3)+.85,s:.7+rand()*.4,r:rand()*6.28});
   }
-  const roofTex=canvas(128),c=roofTex.getContext('2d');c.fillStyle='#875040';c.fillRect(0,0,128,128);for(let i=0;i<128;i+=8){c.fillStyle=i%16?'#a46951':'#955d49';c.fillRect(i,0,3,128);c.fillStyle='#c3a08a';for(let j=0;j<128;j+=20)c.fillRect(i,j,7,1);}
+  const roofTex=canvas(128),c=roofTex.getContext('2d');
+  c.fillStyle='#804936';c.fillRect(0,0,128,128);
+  const roofColors=['#955744','#a9694e','#a05c43','#884d3d'];
+  for(let i=0;i<128;i+=8)for(let j=0;j<128;j+=16){
+   c.fillStyle=roofColors[Math.floor(hash(i,j)*roofColors.length)];c.fillRect(i+1,j,7,15);
+   c.fillStyle='#bf876a';c.fillRect(i+1,j,2,15);
+   c.fillStyle='#cfb195';c.fillRect(i,j+15,8,1);
+  }
   const tex=new THREE.CanvasTexture(roofTex);tex.encoding=THREE.sRGBEncoding;tex.wrapS=tex.wrapT=THREE.RepeatWrapping;tex.repeat.set(2,2);
   // ACES and the Pacific sun wash pale walls almost white; muted pigments keep
   // the doors, different roof types and shadows legible from low flying height.
@@ -363,6 +423,14 @@ class OkinawaWorld{
     for(const x of [-4,-1.4,1.4,4])add(0,x,1.55,5.4,.16,2.5,.16);
     add(1,0,.18,5.65,2.4,.36,1.0);add(1,0,.08,6.1,2.8,.16,.65);
    }else{add(1,0,.18,4.45,2.0,.36,.7);}
+   if(style===0){
+    for(let row=0;row<4;row++)for(let i=0;i<7;i++){
+     const x=(i-3)*.57+(row%2)*.12;
+     const variance=hash(i+24,row+75);
+     add(1,x,.14+row*.245,7.4+(variance-.5)*.11,.56,.245,.48+variance*.11);
+    }
+    add(1,.06,1.06,7.4,4.21,.13,.62);
+   }
    const template=new THREE.Group();template.name='Village facade '+style;
    for(let i=0;i<groups.length;i++){
     const mesh=new THREE.Mesh(merge(groups[i]),[wood,stone,tile,new THREE.MeshStandardMaterial({color:0x252a23,roughness:.7})][i]);groups[i].forEach(g=>g.dispose());mesh.receiveShadow=true;template.add(mesh);
@@ -452,9 +520,16 @@ class OkinawaWorld{
    }`});
   this.sky=new THREE.Mesh(new THREE.SphereGeometry(1,24,12),mat);this.sky.frustumCulled=false;this.sky.renderOrder=-10;this.root.add(this.sky);
  }
- update(dt,x=0,z=0){this.time.value+=Math.min(dt,.1);this.detailTimer=(this.detailTimer||0)-dt;if(this.detailTimer<=0){this.detailTimer=.35;this.updateVillageDetails(x,z);this.updateFortifications(x,z);}}
+ update(dt,x=0,z=0,y=0){
+  this.time.value+=Math.min(dt,.1);this.detailTimer=(this.detailTimer||0)-dt;
+  if(this.detailTimer<=0){this.detailTimer=.35;this.updateVillageDetails(x,z);this.updateFortifications(x,z);}
+  if(this.airfieldActivity){
+   if(y>450)this.airfieldActivity.group.visible=false;
+   else this.airfieldActivity.update(dt,x,z,{launching:this.airfieldActivity.time%22<5});
+  }
+ }
  setLight(warm){this.warm.value=warm?1:0;}
- dispose(){for(const e of this.fortifications){e.group.remove(e.model);}
+ dispose(){this.airfieldActivity?.dispose();for(const e of this.fortifications){e.group.remove(e.model);}
   const gs=new Set(),ms=new Set(),ts=new Set();[this.root,...this.detailTemplates].forEach(root=>root.traverse(o=>{if(o.geometry)gs.add(o.geometry);if(o.material){for(const m of [].concat(o.material)){ms.add(m);if(m.map)ts.add(m.map);}}}));gs.forEach(g=>g.dispose());ms.forEach(m=>m.dispose());ts.add(this.coastTexture);ts.forEach(t=>t.dispose());if(this.root.parent)this.root.parent.remove(this.root);}
 }
 scope.OkinawaWorld=OkinawaWorld;

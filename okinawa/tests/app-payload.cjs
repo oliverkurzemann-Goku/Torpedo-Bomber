@@ -29,6 +29,10 @@ assert(fs.readFileSync(path.join(out,'remagen-mission.html'),'utf8').includes("[
 for(const name of ['tiger-i','tiger-i-field-grey','jagdpanther','sherman-m4a1','m16-mgmc','flak37-halftrack','ford-v8','ford-v8-cream','drb-01-10']){
  assert(fs.existsSync(path.join(out,'assets/ground-vehicles',name+'.glb')),'Missing new ground vehicle '+name);
 }
+for(const name of ['isuzu-type94-cargo','isuzu-type94-fuel','opel-blitz-cargo','opel-blitz-tanker','gmc-cckw-cargo','gmc-cckw-tanker']){
+ const glb=fs.readFileSync(path.join(out,'assets/ground-vehicles',name+'.glb'));
+ assert.equal(JSON.parse(glb.subarray(20,20+glb.readUInt32LE(12))).asset.extras.license,'project-own');
+}
 for(const name of ['bunker','observation-post','house','farm-ruin','town-ruin','hangar']){
  const glb=fs.readFileSync(path.join(out,'assets/buildings',name+'.glb'));
  assert.equal(JSON.parse(glb.subarray(20,20+glb.readUInt32LE(12))).asset.extras.license,'project-own');

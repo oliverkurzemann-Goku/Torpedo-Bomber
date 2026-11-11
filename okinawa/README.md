@@ -52,3 +52,10 @@ The organisations in charge of the Copernicus programme by law or by delegation 
 Procedural scenery meshes, materials and viewer code were created for this project. The two fortification models are user-supplied scans: `putsborough__wwii_observation_post.glb` and `bunker_o323a-160_z.glb`. Their original photographic materials and shapes are retained in optimized `assets/buildings/observation-post.glb` and `bunker.glb`; source hashes and processing statistics are embedded in each GLB. These representative coastal placements do not identify actual Okinawan fortifications.
 
 Reproduce optimization with `node scripts/prepare-fortifications.mjs <original-post.glb> <original-bunker.glb>`. Runtime assets use ordinary glTF 2.0, with textures capped at 512px. Only one bunker and two observation posts draw full geometry near the camera. Cached models share resources and survive individual world disposal.
+
+Build 242 ergänzt eine gestaltete Servicefläche im Gelände neben den
+Luftfeldzielen. Korallenschotter und Reifenspuren folgen dem vorhandenen Mesh.
+Zwei Isuzu-Varianten, Materialwagen und Bodenpersonal sind im Nahbereich aktiv.
+Die eigene Okinawa-Vorschau hat dafür den Blickpunkt **Airfield**.
+Die Detailstufe der roten Ziegeldächer ergänzt eine niedrige Sichtwand nach
+Ryūkyū-Vorbild. Modelle und Referenzen stehen in [GROUND-MODELS.md](../GROUND-MODELS.md).

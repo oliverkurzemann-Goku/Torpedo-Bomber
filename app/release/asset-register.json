@@ -1,13 +1,13 @@
 {
   "schema": 1,
   "reviewedOn": "2026-10-23",
-  "build": 241,
+  "build": 242,
   "status": "OPEN — source declarations checked; no external rights authorization obtained",
   "payload": {
-    "bytes": 151320038,
-    "fileCount": 350,
-    "modelCount": 38,
-    "manifestSha256": "509944c41b3a2172653e3127933e4a36a9932d92032498bcd1c34d40f645d340"
+    "bytes": 152840990,
+    "fileCount": 356,
+    "modelCount": 44,
+    "manifestSha256": "a44bb591dceaba07d579e0b4c4a42e68175e4e5da141847433cc457002d27097"
   },
   "files": [
     {
@@ -18,8 +18,8 @@
     },
     {
       "path": "GROUND-MODELS.md",
-      "bytes": 3745,
-      "sha256": "ead2e84e1b93a6294393f5e821ffba93f5ebdf701cedeb9d7d2306939f112dfc",
+      "bytes": 5023,
+      "sha256": "fce83978b89b3d50807b4978dcb294e4ef1a7cabe4bc6d118d3dc828846f94a7",
       "kind": "code-or-notice"
     },
     {
@@ -251,6 +251,30 @@
       "kind": "model"
     },
     {
+      "path": "assets/ground-vehicles/gmc-cckw-cargo.glb",
+      "bytes": 266356,
+      "sha256": "76199f440b980713ac83072ae3388749f77bc6e9305670c86ca63bdea7fc2805",
+      "kind": "model"
+    },
+    {
+      "path": "assets/ground-vehicles/gmc-cckw-tanker.glb",
+      "bytes": 265384,
+      "sha256": "8ce1ca14b75c4f3be429a97706295da844248ef681fa0522bf9a903406c7ecd1",
+      "kind": "model"
+    },
+    {
+      "path": "assets/ground-vehicles/isuzu-type94-cargo.glb",
+      "bytes": 253796,
+      "sha256": "bff44eac90edd2bc42577c7576b55ef8c4e205ed0a3a98d8b77762d4e747888c",
+      "kind": "model"
+    },
+    {
+      "path": "assets/ground-vehicles/isuzu-type94-fuel.glb",
+      "bytes": 285024,
+      "sha256": "38fe0bd06057b5e9b85258d04eba720c197be76523a9b3c32730328f20b72ba6",
+      "kind": "model"
+    },
+    {
       "path": "assets/ground-vehicles/jagdpanther.glb",
       "bytes": 374096,
       "sha256": "f76bf0cb501cbe0186c7bb6889cd170da36912a60be12f3f04f929b7bcf4d94d",
@@ -260,6 +284,18 @@
       "path": "assets/ground-vehicles/m16-mgmc.glb",
       "bytes": 308612,
       "sha256": "c0baa4051312985ab81ffc2def7069cef40d9d1feb67a95381bc4759875274d2",
+      "kind": "model"
+    },
+    {
+      "path": "assets/ground-vehicles/opel-blitz-cargo.glb",
+      "bytes": 221552,
+      "sha256": "e286769a687c477449b5414988abc17b80db02b0e74906c31f6c3db6a4e75af8",
+      "kind": "model"
+    },
+    {
+      "path": "assets/ground-vehicles/opel-blitz-tanker.glb",
+      "bytes": 220664,
+      "sha256": "7c690d4323767bde406fa182c8d03f753acf3b093c53633c4d372f171b2f3827",
       "kind": "model"
     },
     {
@@ -703,7 +739,7 @@
     {
       "path": "hangar.html",
       "bytes": 4485,
-      "sha256": "722b77fb39db4f3cac7a88ef73dc0e91108f15cb9ae1de90b5b8c9b7ffc963f9",
+      "sha256": "b6b93c814687a4528e170853d825e33cfccb1252fd3acaf7010a1cba02a1d485",
       "kind": "code-or-notice"
     },
     {
@@ -715,7 +751,7 @@
     {
       "path": "index.html",
       "bytes": 7543,
-      "sha256": "321da6a44ec807d8aa593422cd7d9055320d76ead620db786054c7077dec305c",
+      "sha256": "d3b9e6f31305693dfd64318148425f3909c6929291050e6e72cdb3c0f85e89ee",
       "kind": "code-or-notice"
     },
     {
@@ -762,8 +798,8 @@
     },
     {
       "path": "okinawa/README.md",
-      "bytes": 6469,
-      "sha256": "d53d24d6a4e8e09bc94c3090068cb64e9b39c05e3e9266f30227f7123d660337",
+      "bytes": 6939,
+      "sha256": "a91b0bea868caf280ce0ed11dbe1f9a8ef658e3eb6a27883d7d8888832bf5431",
       "kind": "code-or-notice"
     },
     {
@@ -774,14 +810,14 @@
     },
     {
       "path": "okinawa/viewer.js",
-      "bytes": 12005,
-      "sha256": "a634be40c132e1c8ed4ec348113d8714455c1ddee5172b78773512b832db84bd",
+      "bytes": 12100,
+      "sha256": "faba369ca5acc73f17d33603500075cf7570eff39903023eb8d86d99aaed79dd",
       "kind": "code-or-notice"
     },
     {
       "path": "okinawa/world.js",
-      "bytes": 42330,
-      "sha256": "d007c431b875fb1ce2add118045241547bfca7b855dfca530083d97b2432f194",
+      "bytes": 45394,
+      "sha256": "2a137b48eb71be8a9b3807e94dae79281902a4c7b335cd4c8841b0c691342c13",
       "kind": "code-or-notice"
     },
     {
@@ -834,8 +870,8 @@
     },
     {
       "path": "remagen-mission.html",
-      "bytes": 460040,
-      "sha256": "7454fdefaf90da81cd7253db96be4e829a3a265620a835c885f2a517e3278235",
+      "bytes": 460116,
+      "sha256": "b8a82a3ccfce8c032085cbfe4ced6f0150c6ced5a599d17f9a830e02cef07332",
       "kind": "code-or-notice"
     },
     {
@@ -924,8 +960,8 @@
     },
     {
       "path": "terrain-system/AirfieldActivity.js",
-      "bytes": 18257,
-      "sha256": "9c236ab4eff9f6ba394c8e786e98f6343ce2544c22da3ee1d54e17e6af0ec95d",
+      "bytes": 21335,
+      "sha256": "d3634fc5b4a3f1a216b95e592a1797b884dd2bdfef395a3ff921f88757417bc8",
       "kind": "code-or-notice"
     },
     {
@@ -2034,8 +2070,8 @@
     },
     {
       "path": "torpedo-carrier.html",
-      "bytes": 456925,
-      "sha256": "09561225443d5947398af2f7c7c8048a83956011f2400ed377ab6989854ff187",
+      "bytes": 457232,
+      "sha256": "3c6d87d0ce0cc2435f07e3b5e575e278831e11393f8837a4f6095f317df82e31",
       "kind": "code-or-notice"
     },
     {
@@ -2106,8 +2142,8 @@
     },
     {
       "path": "app-native.js",
-      "bytes": 27223,
-      "sha256": "f499b608441e545ae41dc1aad7d9dcf410c165ff087c94cbaa2abb743a4c148d",
+      "bytes": 27031,
+      "sha256": "a52b43eb6c9accbde530c1e3832548614838e605c05ed4869a6b9b9734ddaa24",
       "kind": "code-or-notice"
     }
   ],
@@ -2581,6 +2617,102 @@
       "nextAction": "Own mesh and paint; review the recorded reference source and any applicable attribution/share-alike obligations; credits kept in ASSET-CREDITS.md."
     },
     {
+      "path": "assets/ground-vehicles/gmc-cckw-cargo.glb",
+      "bytes": 266356,
+      "sha256": "76199f440b980713ac83072ae3388749f77bc6e9305670c86ca63bdea7fc2805",
+      "title": "GMC CCKW | Planenwagen",
+      "uploader": "Torpedo Carrier project",
+      "originalRightsholder": null,
+      "sourceUrl": "GROUND-MODELS.md",
+      "acquiredOn": null,
+      "declaredLicense": "project-own",
+      "licenseUrl": null,
+      "licenseEvidence": "Exact runtime GLB asset.extras",
+      "sourceCheck": null,
+      "embeddedImageCount": 1,
+      "externalImages": [],
+      "originalFile": null,
+      "originalSha256": null,
+      "changes": "Original geometry and procedural paint atlas, built without imported meshes or textures.",
+      "issue": "own-build-reference-review-open",
+      "commercialPermissionDocument": null,
+      "bundleRedistributionGrant": null,
+      "releaseApproved": false,
+      "nextAction": "Own mesh and paint; review the recorded reference source and any applicable attribution/share-alike obligations; credits kept in ASSET-CREDITS.md."
+    },
+    {
+      "path": "assets/ground-vehicles/gmc-cckw-tanker.glb",
+      "bytes": 265384,
+      "sha256": "8ce1ca14b75c4f3be429a97706295da844248ef681fa0522bf9a903406c7ecd1",
+      "title": "GMC CCKW | Tankwagen",
+      "uploader": "Torpedo Carrier project",
+      "originalRightsholder": null,
+      "sourceUrl": "GROUND-MODELS.md",
+      "acquiredOn": null,
+      "declaredLicense": "project-own",
+      "licenseUrl": null,
+      "licenseEvidence": "Exact runtime GLB asset.extras",
+      "sourceCheck": null,
+      "embeddedImageCount": 1,
+      "externalImages": [],
+      "originalFile": null,
+      "originalSha256": null,
+      "changes": "Original geometry and procedural paint atlas, built without imported meshes or textures.",
+      "issue": "own-build-reference-review-open",
+      "commercialPermissionDocument": null,
+      "bundleRedistributionGrant": null,
+      "releaseApproved": false,
+      "nextAction": "Own mesh and paint; review the recorded reference source and any applicable attribution/share-alike obligations; credits kept in ASSET-CREDITS.md."
+    },
+    {
+      "path": "assets/ground-vehicles/isuzu-type94-cargo.glb",
+      "bytes": 253796,
+      "sha256": "bff44eac90edd2bc42577c7576b55ef8c4e205ed0a3a98d8b77762d4e747888c",
+      "title": "Isuzu Type 94 | Planenwagen",
+      "uploader": "Torpedo Carrier project",
+      "originalRightsholder": null,
+      "sourceUrl": "GROUND-MODELS.md",
+      "acquiredOn": null,
+      "declaredLicense": "project-own",
+      "licenseUrl": null,
+      "licenseEvidence": "Exact runtime GLB asset.extras",
+      "sourceCheck": null,
+      "embeddedImageCount": 1,
+      "externalImages": [],
+      "originalFile": null,
+      "originalSha256": null,
+      "changes": "Original geometry and procedural paint atlas, built without imported meshes or textures.",
+      "issue": "own-build-reference-review-open",
+      "commercialPermissionDocument": null,
+      "bundleRedistributionGrant": null,
+      "releaseApproved": false,
+      "nextAction": "Own mesh and paint; review the recorded reference source and any applicable attribution/share-alike obligations; credits kept in ASSET-CREDITS.md."
+    },
+    {
+      "path": "assets/ground-vehicles/isuzu-type94-fuel.glb",
+      "bytes": 285024,
+      "sha256": "38fe0bd06057b5e9b85258d04eba720c197be76523a9b3c32730328f20b72ba6",
+      "title": "Isuzu Type 94 | Fasswagen",
+      "uploader": "Torpedo Carrier project",
+      "originalRightsholder": null,
+      "sourceUrl": "GROUND-MODELS.md",
+      "acquiredOn": null,
+      "declaredLicense": "project-own",
+      "licenseUrl": null,
+      "licenseEvidence": "Exact runtime GLB asset.extras",
+      "sourceCheck": null,
+      "embeddedImageCount": 1,
+      "externalImages": [],
+      "originalFile": null,
+      "originalSha256": null,
+      "changes": "Original geometry and procedural paint atlas, built without imported meshes or textures.",
+      "issue": "own-build-reference-review-open",
+      "commercialPermissionDocument": null,
+      "bundleRedistributionGrant": null,
+      "releaseApproved": false,
+      "nextAction": "Own mesh and paint; review the recorded reference source and any applicable attribution/share-alike obligations; credits kept in ASSET-CREDITS.md."
+    },
+    {
       "path": "assets/ground-vehicles/jagdpanther.glb",
       "bytes": 374096,
       "sha256": "f76bf0cb501cbe0186c7bb6889cd170da36912a60be12f3f04f929b7bcf4d94d",
@@ -2609,6 +2741,54 @@
       "bytes": 308612,
       "sha256": "c0baa4051312985ab81ffc2def7069cef40d9d1feb67a95381bc4759875274d2",
       "title": "M16 MGMC",
+      "uploader": "Torpedo Carrier project",
+      "originalRightsholder": null,
+      "sourceUrl": "GROUND-MODELS.md",
+      "acquiredOn": null,
+      "declaredLicense": "project-own",
+      "licenseUrl": null,
+      "licenseEvidence": "Exact runtime GLB asset.extras",
+      "sourceCheck": null,
+      "embeddedImageCount": 1,
+      "externalImages": [],
+      "originalFile": null,
+      "originalSha256": null,
+      "changes": "Original geometry and procedural paint atlas, built without imported meshes or textures.",
+      "issue": "own-build-reference-review-open",
+      "commercialPermissionDocument": null,
+      "bundleRedistributionGrant": null,
+      "releaseApproved": false,
+      "nextAction": "Own mesh and paint; review the recorded reference source and any applicable attribution/share-alike obligations; credits kept in ASSET-CREDITS.md."
+    },
+    {
+      "path": "assets/ground-vehicles/opel-blitz-cargo.glb",
+      "bytes": 221552,
+      "sha256": "e286769a687c477449b5414988abc17b80db02b0e74906c31f6c3db6a4e75af8",
+      "title": "Opel Blitz | Planenwagen",
+      "uploader": "Torpedo Carrier project",
+      "originalRightsholder": null,
+      "sourceUrl": "GROUND-MODELS.md",
+      "acquiredOn": null,
+      "declaredLicense": "project-own",
+      "licenseUrl": null,
+      "licenseEvidence": "Exact runtime GLB asset.extras",
+      "sourceCheck": null,
+      "embeddedImageCount": 1,
+      "externalImages": [],
+      "originalFile": null,
+      "originalSha256": null,
+      "changes": "Original geometry and procedural paint atlas, built without imported meshes or textures.",
+      "issue": "own-build-reference-review-open",
+      "commercialPermissionDocument": null,
+      "bundleRedistributionGrant": null,
+      "releaseApproved": false,
+      "nextAction": "Own mesh and paint; review the recorded reference source and any applicable attribution/share-alike obligations; credits kept in ASSET-CREDITS.md."
+    },
+    {
+      "path": "assets/ground-vehicles/opel-blitz-tanker.glb",
+      "bytes": 220664,
+      "sha256": "7c690d4323767bde406fa182c8d03f753acf3b093c53633c4d372f171b2f3827",
+      "title": "Opel Blitz | Tankwagen",
       "uploader": "Torpedo Carrier project",
       "originalRightsholder": null,
       "sourceUrl": "GROUND-MODELS.md",

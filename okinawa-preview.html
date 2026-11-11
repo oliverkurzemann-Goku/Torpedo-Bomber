@@ -12,18 +12,20 @@
 </head>
 <body>
 <div class="top"><div class="eyebrow">Pacific environment · 01</div><h1>OKINAWA</h1><div class="subtitle">Yomitan coast · Ryukyu Islands</div></div>
-<nav class="views" aria-label="Viewpoints"><button data-view="coast" aria-pressed="true">Coast</button><button data-view="cape" aria-pressed="false">Cape Zanpa</button><button data-view="inland" aria-pressed="false">Inland</button></nav>
+<nav class="views" aria-label="Viewpoints"><button data-view="coast" aria-pressed="true">Coast</button><button data-view="cape" aria-pressed="false">Cape Zanpa</button><button data-view="airfield" aria-pressed="false">Airfield</button><button data-view="inland" aria-pressed="false">Inland</button></nav>
 <canvas id="map" width="280" height="280" aria-label="Location overview"></canvas>
 <div class="vertical"><button id="up" aria-label="Move higher">＋</button><button id="down" aria-label="Move lower">−</button></div>
 <div class="bottom"><div class="controls"><button id="fly" aria-pressed="false">Start flyover</button><select id="light" aria-label="Time of day"><option value="day">Daylight</option><option value="warm">Late afternoon</option></select><button id="clean">Hide interface</button><button id="info" aria-expanded="false">About</button></div><div class="hint">Drag to look · Pinch to travel<br>WASD / arrows to move<br><span class="stat" id="stats">OKINAWA BUILD 1</span></div></div>
 <button id="showUI">Show interface</button>
 <section id="about" class="panel" hidden><h2>A coast to explore</h2><p>A separate 16 × 16 km environment study, prepared for Torpedo Squadron. The terrain and coastline use geographic data; vegetation, reef depth and small settlements are artistic reconstructions.</p><p>This is a visual prototype, not a surveyed reconstruction of Okinawa in 1945. No missions or saved games are changed.</p><p><a href="okinawa/README.md">Model notes &amp; credits</a> · <a href="index.html">Back to the games</a></p><button id="export">Download terrain model</button><p id="exportStatus" role="status"></p></section>
 <div class="loading" id="loading"><div class="eyebrow">RYUKYU ISLANDS</div><h1>OKINAWA</h1><p id="loadText">Preparing the coast…</p><div class="bar"><i id="loadBar"></i></div></div>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="vendor/three-r128.min.js?v=128"></script>
 <script src="vendor/GLTFLoader-r128.js?v=147"></script>
-<script src="fortification-assets.js?v=175"></script>
+<script src="fortification-assets.js?v=241"></script>
 <script src="okinawa/data.js?v=1"></script>
-<script src="okinawa/world.js?v=175"></script>
-<script src="okinawa/viewer.js?v=173"></script>
+<script src="terrain-system/WorldVehicles.js?v=241"></script>
+<script src="terrain-system/AirfieldActivity.js?v=242"></script>
+<script src="okinawa/world.js?v=242"></script>
+<script src="okinawa/viewer.js?v=242"></script>
 </body>
 </html>

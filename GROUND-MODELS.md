@@ -40,3 +40,22 @@ Die Vorschau rendert jeweils den wieder importierten GLB. Der Generator braucht 
 - [DRB 01 1104, Eisenbahn-Museumsfahrzeuge](https://www.eisenbahn-museumsfahrzeuge.de/index.php/deutschland/staatsbahnfahrzeuge/dampflokomotiven/baureihe-0110/01-1104)
 - [Küstenbunker Putsborough, Historic England](https://historicengland.org.uk/listing/the-list/list-entry/1465822)
 - [T2-Hangar, Historic England](https://historicengland.org.uk/images-books/photos/item/KAP01/01/36/111)
+
+## Flugplatzszenerie ab Build 242
+
+| Gebiet | Neue Modelle und Oberflächen |
+| --- | --- |
+| Okinawa | Isuzu Typ 94 als Planenwagen und mit sichtbaren Treibstofffässern. Heller Korallenschotter, dunklere Reifenspuren, rote Dachziegel mit hellen Fugen und niedrige Kalkstein-Sichtwände. |
+| Remagen | GMC CCKW und Opel Blitz jeweils mit Plane oder Tankaufbau. Getrennte Lackierungen pro Fahrzeugtyp und Aufbau. |
+
+Die sechs GLBs sind Eigenbauten für die Kulisse. Die Aufbauvarianten und das
+Vorfeld in Okinawa sind für das Spiel gestaltet. Zwei Fahrzeuge fahren auf
+einer geschlossenen Vorfeldrunde. In Okinawa erscheinen die beweglichen
+Elemente in Flugplatznähe. Der Materialwagen, die Mechaniker und der
+Einweiser verwenden die Figurenanimationen aus Remagen.
+
+Historische Formreferenzen sind das [Motorcar Museum of Japan](https://www.motorcar-museum.jp/2019/05/03/2486/),
+das [Technik Museum Sinsheim](https://stories.technik-museum.de/en/discover/exhibits/opel-blitz-lkw-mit-holzvergaser/),
+das [Military Aviation Museum](https://www.militaryaviationmuseum.org/fuel-truck-project-begins/)
+und die [Dokumentation traditioneller Häuser in Okinawa](https://www.okinawastory.jp/feature/kominka/kominka_jiten).
+Die Referenzen sind nicht Teil der GLBs oder der Texturen.

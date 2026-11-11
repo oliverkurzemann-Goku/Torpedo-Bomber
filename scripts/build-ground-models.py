@@ -370,6 +370,119 @@ def halftrack(m16):
             box(.30,.82,.28,x,mount_y+.75,deck+.18,"trim","Platform bracing")
 
 
+def service_truck(chassis, load):
+    """Period-inspired lorries with separate bodywork, running gear and loads."""
+    length,width,axles,cab,bonnet,deck={
+        "isuzu":(5.45,1.91,(-1.76,1.20,2.02),-.65,1.20,2.90),
+        "opel":(6.04,2.18,(-1.91,1.64),-.78,1.24,3.28),
+        "gmc":(6.60,2.24,(-2.17,1.40,2.44),-.98,1.35,3.59),
+    }[chassis]
+    rear=length/2
+    deck_y=rear-deck/2-.08
+    nose=-rear+.23
+    hood_end=cab-.65
+    hood_width=bonnet*.83
+    rad=.43 if chassis=="isuzu" else .49
+    for x in (-width*.25,width*.25):
+        box(.11,length-.24,.21,x,0,.61,"iron","Chassis rail")
+    for y in axles:
+        tube((-width*.46,y,rad),(width*.46,y,rad),.062,"iron",sides=8,name="Axle")
+        for side in (-1,1):
+            x=side*width*.41
+            wheel(x,y,rad,rad,.22 if chassis=="isuzu" else .26)
+            if y>0 and chassis!="isuzu":
+                wheel(x-side*.23,y,rad,rad,.19,hub=False)
+            for j in range(12):
+                angle=j*math.tau/12
+                mark=box(.225,.064,.025,0,0,0,"trim","Tread bar")
+                mark.location=(x,y+math.sin(angle)*(rad-.013),rad+math.cos(angle)*(rad-.013))
+                mark.rotation_euler.x=-angle
+    bevel(hood_width,hood_end-nose,.67,0,(hood_end+nose)/2,1.14,.09,"body","Long pressed-steel bonnet")
+    box(hood_width*.86,.07,.56,0,nose-.015,1.10,"black","Radiator inset")
+    for i in range(11):
+        x=(i-5)*hood_width*.071
+        box(.019,.052,.49,x,nose-.061,1.10,"iron","Radiator slat")
+    box(width*.98,.17,.125,0,nose-.15,.62,"iron","Front bumper")
+    for side in (-1,1):
+        x=side*width*.425
+        bevel(.45,1.35,.19,x,axles[0],1.025,.075,"body","Front mudguard")
+        bevel(.44,.78,.14,x,cab+.13,.65,.055,"iron","Cab running board")
+        for i in range(7):
+            box(.028,.024,.24,side*(hood_width/2+.008),hood_end-.15-i*.072,1.19,"trim","Bonnet louvre")
+        tube((x,nose+.28,1.31),(x,nose+.16,1.31),.115,"body",sides=12,name="Headlamp housing")
+        tube((x,nose+.156,1.31),(x,nose+.143,1.31),.086,"lamp",sides=12,name="Headlamp lens")
+        for y in axles[1:]:
+            box(.29,.95,.10,x,y,1.08,"body","Rear mudguard")
+    cab_width=width*.86
+    bevel(cab_width,1.28,.72,0,cab,1.18,.071,"body","Pressed cab doors")
+    bevel(cab_width,1.30,.19,0,cab,2.17,.071,"canvas" if chassis=="gmc" else "body","Cab roof")
+    box(cab_width,.12,.71,0,cab+.58,1.79,"body","Cab back")
+    for side in (-1,1):
+        x=side*cab_width/2
+        box(.093,1.21,.12,x,cab,1.58,"body","Side window sill")
+        for y in (cab-.58,cab+.49):
+            box(.10,.095,.55,x,y,1.85,"body","Cab pillar")
+        box(.021,.97,.42,x,cab-.04,1.84,"glass","Side glazing")
+        box(.055,.20,.05,x,cab+.23,1.46,"iron","Door handle")
+        tube((x,cab-.52,1.72),(x+side*.24,cab-.57,1.84),.019,"iron",sides=6,name="Mirror stalk")
+        box(.13,.055,.12,x+side*.24,cab-.57,1.84,"iron","Mirror")
+        box(cab_width*.43,.026,.44,side*cab_width*.24,cab-.62,1.85,"glass","Split windscreen")
+    box(.062,.092,.54,0,cab-.65,1.85,"body","Windscreen divider")
+    box(cab_width,.095,.086,0,cab-.65,1.62,"body","Windscreen bottom frame")
+    box(cab_width,.095,.086,0,cab-.65,2.09,"body","Windscreen top frame")
+    box(width,deck,.15,0,deck_y,1.05,"wood","Deck boards")
+    box(width,.15,.16,0,rear-.055,.75,"iron","Rear crossmember")
+    for side in (-1,1):
+        box(.16,.12,.11,side*width*.41,rear-.008,.77,"rust","Tail lamp")
+    if load=="tanker":
+        radius=width*.38
+        z=1.19+radius
+        a,b=deck_y-deck*.41,deck_y+deck*.41
+        tube((0,a,z),(0,b,z),radius,"body",sides=22,name="Horizontal tank")
+        tube((0,a-.16,z),(0,a,z),radius*.80,"body",radius,sides=22,name="Tank front head")
+        tube((0,b,z),(0,b+.16,z),radius,"body",radius*.80,sides=22,name="Tank rear head")
+        for y in (a+.48,b-.48):
+            tube((0,y-.04,z),(0,y+.04,z),radius+.021,"trim",sides=22,name="Tank saddle strap")
+        for y in (deck_y-.63,deck_y+.50):
+            tube((0,y,z+radius),(0,y,z+radius+.12),.17,"iron",sides=12,name="Hatch cap")
+        box(.47,.43,.55,width*.31,b-.04,1.33,"trim","Service cabinet")
+        for x in (-.27,.27):
+            tube((x,b+.15,1.10),(x,b+.15,z+radius*.68),.027,"iron",sides=8,name="Rear ladder stile")
+        for i in range(5):
+            box(.56,.06,.04,0,b+.15,1.18+i*.25,"iron","Rear ladder rung")
+    else:
+        for x in (-width*.47,width*.47):
+            box(.085,deck,.58,x,deck_y,1.42,"body","Cargo sideboards")
+            for i in range(4):
+                box(.115,.09,.62,x,deck_y+(i-1.5)*deck*.25,1.44,"trim","Sideboard stakes")
+            for z in (1.32,1.51):
+                box(.096,deck,.027,x,deck_y,z,"wood","Sideboard seams")
+        box(width,.07,.55,0,rear-.08,1.39,"body","Tailgate")
+        if load=="canvas":
+            half=width*.49
+            roof=[(-half,1.68),(-half,2.17),(-half*.81,2.40),(-half*.42,2.54),(0,2.59),
+                  (half*.42,2.54),(half*.81,2.40),(half,2.17),(half,1.68)]
+            ys=[deck_y-deck/2+i*deck/8 for i in range(9)]
+            n=len(roof)
+            vertices=[(x*(1 if i%2==0 else .978),y,z-(.027 if i%2 and z>2.16 else 0))
+                      for i,y in enumerate(ys) for x,z in roof]
+            shape(vertices,[(i*n+j,i*n+j+1,(i+1)*n+j+1,(i+1)*n+j)
+                            for i in range(8) for j in range(n-1)],"canvas","Canvas and bows")
+            box(width*.87,.08,.49,0,ys[-1]-.08,1.93,"black","Dark cargo opening")
+            box(width*.92,.11,.25,0,ys[-1]-.02,2.42,"canvas","Rolled end curtain")
+            for side in (-1,1):
+                for y in ys[::2]:
+                    box(.033,.04,.26,side*half,y,1.72,"wood","Cover tie")
+        else:
+            for row in range(3):
+                for side in (-1,1):
+                    x,y=side*.43,deck_y+(row-1)*.68
+                    tube((x,y,1.13),(x,y,1.96),.29,"trim",sides=14,name="Fuel drum")
+                    for z in (1.27,1.80):
+                        tube((x,y,z),(x,y,z+.045),.306,"iron",sides=14,name="Drum bead")
+            box(width*.89,.10,.17,0,deck_y,1.82,"wood","Drum bracing")
+
+
 def ford():
     for x in (-.80,.80):
         for y in (-1.42,1.39):
@@ -847,6 +960,12 @@ MODELS=[
     Model(VEHICLE+"ford-v8.glb","Ford V8 | Weinrot",ford,"65303b",31,{"trim":"77726d","mark":"b6b3a7"}),
     Model(VEHICLE+"ford-v8-cream.glb","Ford V8 | Elfenbein",ford,"afaa8c",32,{"trim":"858078","mark":"c8c8bc","rubber":"333332"}),
     Model(VEHICLE+"drb-01-10.glb","DRB Baureihe 01.10",train,"333533",33,{"rust":"934335","iron":"474442","trim":"4b4943"}),
+    Model(VEHICLE+"isuzu-type94-cargo.glb","Isuzu Type 94 | Planenwagen",lambda:service_truck("isuzu","canvas"),"806344",61,{"canvas":"a69871","trim":"66553b","earth":"79614b"}),
+    Model(VEHICLE+"isuzu-type94-fuel.glb","Isuzu Type 94 | Fasswagen",lambda:service_truck("isuzu","drums"),"6d6b4b",62,{"trim":"8b6549","wood":"634d3b"}),
+    Model(VEHICLE+"opel-blitz-cargo.glb","Opel Blitz | Planenwagen",lambda:service_truck("opel","canvas"),"777464",63,{"canvas":"827c69","trim":"534f48"}),
+    Model(VEHICLE+"opel-blitz-tanker.glb","Opel Blitz | Tankwagen",lambda:service_truck("opel","tanker"),"8b7b56",64,{"trim":"5f5647"}),
+    Model(VEHICLE+"gmc-cckw-cargo.glb","GMC CCKW | Planenwagen",lambda:service_truck("gmc","canvas"),"515f49",65,{"canvas":"6c7352","trim":"4e5146"}),
+    Model(VEHICLE+"gmc-cckw-tanker.glb","GMC CCKW | Tankwagen",lambda:service_truck("gmc","tanker"),"515849",66,{"trim":"4c5245"}),
     Model(BUILDING+"house.glb","Rheinhaus",house,"b9a889",41,{"roof":"845443","trim":"54654f","stone":"807569"}),
     Model(BUILDING+"farm-ruin.glb","Hofruine",farm_ruin,"93816d",42,{"stone":"9c8a71","roof":"69473b","wood":"5b4534"}),
     Model(BUILDING+"town-ruin.glb","Stadtruine",town_ruin,"9e7a64",43,{"plaster":"b19a7c","brick":"a75c4c","stone":"777266"}),

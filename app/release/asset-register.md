@@ -1,6 +1,6 @@
-# Offline app asset register — Build 241
+# Offline app asset register — Build 242
 
-Checked 2026-10-23. 350 payload files, 38 model files, 144.3 MiB.
+Checked 2026-10-23. 356 payload files, 44 model files, 145.8 MiB.
 
 Generated from the actual dist-app payload by npm run app:assets. Hashes cover embedded textures too. This is an evidence inventory; no row is automatically approved for distribution. Acquisition dates remain unknown where not recorded.
 
@@ -25,8 +25,14 @@ Generated from the actual dist-app payload by npm run app:assets. Hashes cover e
 | assets/ground-vehicles/flak37-halftrack.glb | [Torpedo Carrier project](GROUND-MODELS.md) | project-own | own-build-reference-review-open | e0669f942f8525e26259d1ff7de14de0c81d9fce06b4f20bb746846b55618903 |
 | assets/ground-vehicles/ford-v8-cream.glb | [Torpedo Carrier project](GROUND-MODELS.md) | project-own | own-build-reference-review-open | 2da03aee01ba8c65ce5ad225137588da1b2b281f6e4d6cd9240ad344935f0013 |
 | assets/ground-vehicles/ford-v8.glb | [Torpedo Carrier project](GROUND-MODELS.md) | project-own | own-build-reference-review-open | 3f64b63446a2bfa56642f2146fe72d079d3446a701a3548a2000584ec3398f01 |
+| assets/ground-vehicles/gmc-cckw-cargo.glb | [Torpedo Carrier project](GROUND-MODELS.md) | project-own | own-build-reference-review-open | 76199f440b980713ac83072ae3388749f77bc6e9305670c86ca63bdea7fc2805 |
+| assets/ground-vehicles/gmc-cckw-tanker.glb | [Torpedo Carrier project](GROUND-MODELS.md) | project-own | own-build-reference-review-open | 8ce1ca14b75c4f3be429a97706295da844248ef681fa0522bf9a903406c7ecd1 |
+| assets/ground-vehicles/isuzu-type94-cargo.glb | [Torpedo Carrier project](GROUND-MODELS.md) | project-own | own-build-reference-review-open | bff44eac90edd2bc42577c7576b55ef8c4e205ed0a3a98d8b77762d4e747888c |
+| assets/ground-vehicles/isuzu-type94-fuel.glb | [Torpedo Carrier project](GROUND-MODELS.md) | project-own | own-build-reference-review-open | 38fe0bd06057b5e9b85258d04eba720c197be76523a9b3c32730328f20b72ba6 |
 | assets/ground-vehicles/jagdpanther.glb | [Torpedo Carrier project](GROUND-MODELS.md) | project-own | own-build-reference-review-open | f76bf0cb501cbe0186c7bb6889cd170da36912a60be12f3f04f929b7bcf4d94d |
 | assets/ground-vehicles/m16-mgmc.glb | [Torpedo Carrier project](GROUND-MODELS.md) | project-own | own-build-reference-review-open | c0baa4051312985ab81ffc2def7069cef40d9d1feb67a95381bc4759875274d2 |
+| assets/ground-vehicles/opel-blitz-cargo.glb | [Torpedo Carrier project](GROUND-MODELS.md) | project-own | own-build-reference-review-open | e286769a687c477449b5414988abc17b80db02b0e74906c31f6c3db6a4e75af8 |
+| assets/ground-vehicles/opel-blitz-tanker.glb | [Torpedo Carrier project](GROUND-MODELS.md) | project-own | own-build-reference-review-open | 7c690d4323767bde406fa182c8d03f753acf3b093c53633c4d372f171b2f3827 |
 | assets/ground-vehicles/sherman-m4a1.glb | [Torpedo Carrier project](GROUND-MODELS.md) | project-own | own-build-reference-review-open | 98e7d4b0dccdbdffceb1ef2d5c0632c13dbceae808e0148d4522005ecc4f6176 |
 | assets/ground-vehicles/tiger-i-field-grey.glb | [Torpedo Carrier project](GROUND-MODELS.md) | project-own | own-build-reference-review-open | 9fbd5232fdfe24006135697512087eefbedefb43e3bc082c5042b5143efee104 |
 | assets/ground-vehicles/tiger-i.glb | [Torpedo Carrier project](GROUND-MODELS.md) | project-own | own-build-reference-review-open | 3a227ad8da7b4861dabae8eddd0545a28bdefa16039f3e0274617e6dec7c1dc2 |

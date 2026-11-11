@@ -1,8 +1,52 @@
-// Visible, period-inspired service activity beside the runway. No extra model
-// downloads: parked aircraft reuse the selected sortie's existing GLB template.
+// Period-inspired service activity beside the runway. Parked aircraft reuse
+// existing sortie templates, and each service shares its two truck models.
 class AirfieldActivity {
+  static get routeLength(){return 896+14*Math.PI;}
+  static routeAt(distance){
+    const lap=this.routeLength,d=((distance%lap)+lap)%lap,radius=7,straight=448;
+    if(d<straight)return {x:224-d,z:-48,yaw:-Math.PI/2};
+    if(d<straight+Math.PI*radius){
+      const a=(d-straight)/radius;
+      return {x:-224-radius*Math.sin(a),z:-55+radius*Math.cos(a),yaw:-Math.PI/2-a};
+    }
+    const back=d-straight-Math.PI*radius;
+    if(back<straight)return {x:-224+back,z:-62,yaw:Math.PI/2};
+    const a=(back-straight)/radius;
+    return {x:224+radius*Math.sin(a),z:-55-radius*Math.cos(a),yaw:Math.PI/2-a};
+  }
+  static vehicleModels={
+    usaaf:['gmc-cckw-tanker','gmc-cckw-cargo'],
+    luftwaffe:['opel-blitz-tanker','opel-blitz-cargo'],
+    ijn:['isuzu-type94-fuel','isuzu-type94-cargo'],
+  };
+  static vehicleTemplates=new Map();
+  static vehicleTemplate(name){
+    const cache=this.vehicleTemplates;
+    if(!cache.has(name)){
+      const path='assets/ground-vehicles/'+name+'.glb?v=242';
+      const pending=new Promise((resolve,reject)=>new THREE.GLTFLoader().load(path,g=>resolve(g.scene),undefined,reject));
+      cache.set(name,pending.catch(error=>{cache.delete(name);throw error;}));
+    }
+    return cache.get(name);
+  }
+  async loadVehicleModels(){
+    const files=AirfieldActivity.vehicleModels[this.service]||AirfieldActivity.vehicleModels.usaaf;
+    const templates=await Promise.allSettled(files.map(file=>AirfieldActivity.vehicleTemplate(file)));
+    if(this.disposed)return;
+    for(const [i,result] of templates.entries()){
+      const holder=this.trucks[i].model;
+      if(result.status!=='fulfilled'||holder.userData.sharedVehicle)continue;
+      const fallback=holder.children[0];
+      holder.remove(fallback);
+      fallback.traverse(o=>o.geometry?.dispose());
+      holder.add(result.value.clone(true));
+      holder.userData.sharedVehicle=true;
+    }
+  }
   constructor(terrain,x,z,options={}){
     this.service=options.service||'usaaf';
+    this.maxRange=options.maxRange||6500;
+    this.practiceLoading=this.service!=='ijn';
     this.terrain=terrain;this.x=x;this.z=z;this.time=0;this.aircraftKind='';
     this.group=new THREE.Group();this.group.name='airfieldActivity';
     this.group.position.set(x,0,z);this.parts=[];this.crew=[];this.parked=[];this.trucks=[];
@@ -34,7 +78,11 @@ class AirfieldActivity {
     this.box(payload,.62,.08,.48,this.mat.olive,0,0,-.75);
     this.box(payload,.08,.62,.48,this.mat.olive,0,0,-.75);
     this.box(payload,.12,.3,.12,this.mat.dark,0,.36,.25);
-    this.payload=this.merge(payload);this.payload.name='serviceBomb';this.group.add(this.payload);
+    if(!this.practiceLoading){
+      payload.clear();bomb.geometry.dispose();
+      this.box(payload,.72,.48,.55,this.mat.wood,0,-.22,0);
+    }
+    this.payload=this.merge(payload);this.payload.name=this.practiceLoading?'serviceBomb':'serviceCrate';this.group.add(this.payload);
     this.box(props,3,.16,1.4,this.mat.wood,-333,this.ground(-333,-63)+.95,-63,'maintenanceBench');
     for(const dx of [-1.2,1.2])this.box(props,.15,.95,1.2,this.mat.dark,-333+dx,this.ground(-333,-63)+.47,-63);
     this.props=this.merge(props);this.props.name='airfieldSupplies';this.group.add(this.props);
@@ -59,7 +107,8 @@ class AirfieldActivity {
       [-127,-57,'walk'],[87,-60,'walk'],[-354,-88,'repair'],[-257,-96,'carry']].entries())
       this.crew.push({x:px,z:pz,job,phase:i*.73});
     this.people={};
-    const german=this.service==='luftwaffe',coat=german?0x616963:0x62664b,pants=german?0x697176:0x8b8869;
+    const german=this.service==='luftwaffe',pacific=this.service==='ijn';
+    const coat=german?0x616963:pacific?0x857351:0x62664b,pants=german?0x697176:pacific?0x98896e:0x8b8869;
     const body=this.crewGeometry('body',coat),head=this.crewGeometry('head',coat),limb=this.crewGeometry('limb',0xffffff),boot=this.crewGeometry('boot',0xffffff),hand=this.crewGeometry('hand',coat);
     const detailMat=()=>new THREE.MeshLambertMaterial({color:0xffffff,vertexColors:true});
     for(const [name,geo,material,count] of [['bodies',body,detailMat(),12],['heads',head,detailMat(),12],
@@ -79,8 +128,9 @@ class AirfieldActivity {
         const wheel=new THREE.Mesh(new THREE.CylinderGeometry(.46,.46,.25,10),this.mat.rubber);
         wheel.rotation.z=Math.PI/2;wheel.position.set(wx,.46,wz);truck.add(wheel);
       }
-      const merged=this.merge(truck);merged.name=i?'airfieldSupplyTruck':'airfieldFuelTruck';this.group.add(merged);
-      this.trucks.push({model:merged,phase:i*43});
+      const holder=new THREE.Group();holder.name=i?'airfieldSupplyTruck':'airfieldFuelTruck';
+      holder.add(this.merge(truck));this.group.add(holder);
+      this.trucks.push({model:holder,phase:i*AirfieldActivity.routeLength/2});
     }
     this.loading={x:-300,z:-64,mounted:false,progress:0,unloading:false};
     this.update(0,x,z);
@@ -130,18 +180,18 @@ class AirfieldActivity {
     this.aircraftKind=kind;
     // Other aircraft receive ammunition crates at the service stand. Do not
     // fit an external bomb to a Komet or a fighter without that loadout.
-    this.payload.visible=['p47','fw190','ju87'].includes(kind);
+    this.payload.visible=!this.practiceLoading||['p47','fw190','ju87'].includes(kind);
     this.time=0;
     for(const pad of this.parked){
       const old=pad.children[0];pad.remove(old);
       if(old.userData.serviceFallback)old.traverse(o=>o.geometry?.dispose());
-      const model=template.clone(true),gear=model.getObjectByName('gear');if(gear)gear.visible=true;
+      const model=template.clone(true),gear=model.getObjectByName(kind==='zero'?'zeroGear':'gear');if(gear)gear.visible=true;
       // The shared template owns its materials/geometries. Never dispose them.
       model.updateMatrixWorld(true);const box=new THREE.Box3().setFromObject(model);
       pad.userData.crewBounds=box;pad.userData.crewBox=new THREE.Box3();
       pad.add(model);this.groundAircraft(pad);
       pad.userData.mountHeight=pad.position.y+box.min.y+1.8;
-      if(pad===this.parked[0]&&this.payload.visible){
+      if(pad===this.parked[0]&&this.practiceLoading&&this.payload.visible){
         pad.updateMatrixWorld(true);const mount=this.mountPoint(pad),floor=this.ground(mount.x,mount.z);
         const ray=new THREE.Raycaster(new THREE.Vector3(this.x+mount.x,floor+.25,this.z+mount.z),new THREE.Vector3(0,1,0),0,5);
         const underside=ray.intersectObject(model,true).find(hit=>hit.point.y>floor+1.1);
@@ -208,6 +258,11 @@ class AirfieldActivity {
     const y=this.ground(x,z);
     this.trolley.position.set(x,y,z);
     this.trolley.rotation.y=yaw;
+    if(!this.practiceLoading){
+      this.payload.position.set(x,y+.98,z);this.payload.rotation.y=yaw;this.jack.visible=false;
+      Object.assign(this.loading,{x,z,walking:t>6&&t<24||t>42&&t<60,servicing:t>=24&&t<=42});
+      return;
+    }
     const transfer=Math.max(0,Math.min(1,(t-24)/10));
     const mounted=unloading?1-transfer:transfer;
     const baseY=this.ground(endX,endZ)+.98;
@@ -226,7 +281,7 @@ class AirfieldActivity {
     this._matrix.compose(this._position,this._rotation,this._scale);mesh.setMatrixAt(index,this._matrix);
   }
   update(dt,focusX,focusZ,options={}){
-    this.group.visible=Math.hypot(focusX-this.x,focusZ-this.z)<6500;
+    this.group.visible=Math.hypot(focusX-this.x,focusZ-this.z)<this.maxRange;
     if(!this.group.visible)return;this.time+=dt;
     for(const pad of this.parked)if(!pad.children[0]?.userData.serviceFallback)this.groundAircraft(pad);
     const time=this.time;
@@ -249,8 +304,12 @@ class AirfieldActivity {
       this.pose(this.people.heads,i,x,y+1.61,z,1,1,1,yaw);
       for(const side of [-1,1]){
         const signal=p.job==='signal'&&options.launching&&side===1;
-        const j=i*4+(side===-1?0:2),arm=signal?2.1+Math.sin(time*3)*.2:loader?-.5+(this.loading.servicing?Math.sin(a*2)*.22:0):p.job==='carry'?-.7:stride*side;
-        const armRotation=signal?-arm:loader||p.job==='carry'?arm:stride*side;
+        const j=i*4+(side===-1?0:2);
+        let armRotation=stride*side;
+        if(signal)armRotation=-2.1-Math.sin(time*3)*.2;
+        else if(loader)armRotation=-.5+(this.loading.servicing?Math.sin(a*2)*.22:0);
+        else if(p.job==='carry')armRotation=-.7;
+        else if(p.job==='repair'&&side===1)armRotation=-.54+Math.sin(a*2.4)*.26;
         // Shoulder pivot, then an exact wrist endpoint; hands cannot hover over heads.
         const reach=-.295*Math.sin(armRotation);
         this.pose(this.people.limbs,j,x+side*.29+Math.sin(yaw)*reach,y+1.435-.295*Math.cos(armRotation),z+Math.cos(yaw)*reach,.14,.59,.15,yaw,armRotation);
@@ -266,10 +325,18 @@ class AirfieldActivity {
     }
     for(const mesh of Object.values(this.people))mesh.instanceMatrix.needsUpdate=true;
     for(const e of this.trucks){
-      const t=(time+e.phase)%150,travel=Math.min(1,Math.max(0,(t-12)/55));
-      const returning=t>87,back=Math.min(1,Math.max(0,(t-87)/55));
-      const x=returning?-245+back*475:230-travel*475,z=returning?-54:-49;
-      e.model.position.set(x,this.ground(x,z),z);e.model.rotation.y=returning?Math.PI/2:-Math.PI/2;
+      const {x,z,yaw}=AirfieldActivity.routeAt(time*4.2+e.phase);
+      e.model.position.set(x,this.ground(x,z),z);e.model.rotation.y=yaw;
     }
+  }
+  dispose(){
+    if(this.disposed)return;
+    this.disposed=true;
+    this.group.parent?.remove(this.group);
+    for(const pad of this.parked)if(!pad.children[0]?.userData.serviceFallback)pad.clear();
+    for(const e of this.trucks)if(e.model.userData.sharedVehicle)e.model.clear();
+    const geometry=new Set([this._cube]),materials=new Set(Object.values(this.mat));
+    this.group.traverse(o=>{if(o.geometry)geometry.add(o.geometry);if(o.material)materials.add(o.material);});
+    geometry.forEach(g=>g.dispose());materials.forEach(m=>m.dispose());
   }
 }
