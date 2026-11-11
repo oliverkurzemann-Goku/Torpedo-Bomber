@@ -76,3 +76,18 @@ animation. The viewer’s **Coastal details** viewpoint starts at a fishing jett
   budget from the Okinawa integration test applies to the carrier setup.
   Terrain height, runway clearance and decorative disposal are covered by
   `node okinawa/tests/coastal-scenery.cjs`.
+
+## Build 245 — farmland, villages and groves
+
+The existing ground atlas now carries larger crop parcels, limestone shore
+tones and a relief cue calculated from the elevation samples. The fields,
+roads and two coastal villages are illustrative scenery. Hagushi and the
+southern village each have a square, red tile roofs and a street that joins
+the island road network. The landscape overview starts at
+[`okinawa-preview.html?view=towns`](../okinawa-preview.html?view=towns).
+
+Trees grow in small stands within larger woodland patches, with gaps for
+fields, roads and courtyards. The terrain uses the existing 2048² atlas,
+terrain vertices and shoreline distance map. The village streets and squares
+are painted into that atlas. The coastal scenery regression checks farm
+coverage, road connections, tree spacing and the instance budget.

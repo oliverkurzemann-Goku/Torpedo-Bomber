@@ -35,6 +35,34 @@ const specs=require('../../scripts/lib/okinawa-scenery/specs.cjs');
  const added=coast.placements.length;
  assert.equal(start+added,world.objectCount);assert(world.objectCount<=api.limits.instances);
  assert.deepEqual(groundSamples.map(p=>world.getSurfaceHeight(...p)),heights);
+ const terrainMap=world.terrain.children[0].material.map;
+ assert.equal(terrainMap.image.width,2048);assert.equal(terrainMap.image.height,2048);
+ assert(world.terrain.children.every(m=>m.material.map===terrainMap));
+ const farmland=world.land.reduce((sum,land,i)=>sum+(land&&world.biomes[i*4+1]>153&&world.biomes[i*4+2]<20?1:0),0);
+ assert(farmland*(16000/world.mapSize)**2>4e6,'Visible farm belts cover more than four square kilometres');
+ assert.equal(world.coastalTowns.length,2);
+ for(const town of world.coastalTowns){
+  assert(town.houses.length>=60&&town.houses.filter(h=>h.style===0).length>town.houses.length/2);
+  assert(town.houses.every(h=>world.shoreDistance(h.x,h.z)>28&&!world.nearRoad(h.x,h.z)));
+  assert(town.square.every(p=>world.shoreDistance(...p)>28));
+  assert(town.link&&town.exits.includes(town.link.path[0]));
+  const [x,z]=town.link.path[1];
+  assert(world.roadRoutes.some(r=>!r.paintOnly&&r.kind==='road'&&r.path.slice(1).some(([bx,bz],i)=>{
+   const [ax,az]=r.path[i],dx=bx-ax,dz=bz-az,t=((x-ax)*dx+(z-az)*dz)/(dx*dx+dz*dz);
+   return t>=0&&t<=1&&Math.hypot(x-(ax+t*dx),z-(az+t*dz))<.001;
+  })),'Town street joins an existing road');
+ }
+ const trees=[],treeCells=new Map(),treeMatrix=new THREE.Matrix4(),treePoint=new THREE.Vector3();
+ const cell=(x,z)=>Math.floor(x/25)+','+Math.floor(z/25);
+ for(const m of world.decorations.filter(m=>m.name.startsWith('Broadleaf canopy')))for(let i=0;i<m.count;i++){
+  m.getMatrixAt(i,treeMatrix);treePoint.setFromMatrixPosition(treeMatrix);
+  const {x,z}=treePoint,k=cell(x,z),tree={x,z};
+  assert(world.biome(x,z)[1]<=.2&&!world.nearRoad(x,z));
+  trees.push(tree);if(!treeCells.has(k))treeCells.set(k,[]);treeCells.get(k).push(tree);
+ }
+ const grouped=trees.filter(p=>[-25,0,25].some(dx=>[-25,0,25].some(dz=>
+  (treeCells.get(cell(p.x+dx,p.z+dz))||[]).some(q=>q!==p&&Math.hypot(q.x-p.x,q.z-p.z)<25))));
+ assert(trees.length>5000&&trees.length<9531&&grouped.length/trees.length>.75,'Most trees have a neighbouring crown within 25 m');
  const kinds=new Set([...coast.placements.map(p=>p.kind),...coast.active.filter(e=>e.sites.length).map(e=>e.kind)]);
  assert.deepEqual(kinds,new Set(specs.map(s=>s.shape)));
  for(const p of coast.placements){
@@ -74,5 +102,5 @@ const specs=require('../../scripts/lib/okinawa-scenery/specs.cjs');
  assert.equal(disposed,1);assert.equal(world.root.parent,null);
  const payload=fs.statSync(require.resolve('../coastal-templates.js')).size+fs.statSync(require.resolve('../coastal-scenery.js')).size;
  assert(payload<100*1024,'total runtime additions exceed 100 KiB');
- console.log(JSON.stringify({types:kinds.size,staticPlacements:added,terrainInstances:world.objectCount,peak,payload}));
+ console.log(JSON.stringify({types:kinds.size,staticPlacements:added,terrainInstances:world.objectCount,groupedTrees:grouped.length,trees:trees.length,peak,payload}));
 })().catch(e=>{console.error(e);process.exitCode=1;});

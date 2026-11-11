@@ -14,6 +14,7 @@ try{
  const world=await new OkinawaWorld(window.OKINAWA_DATA,{airfieldActivity:true,vegetationDensity:.38}).build((p,msg)=>{el('loadBar').style.width=Math.round(p*100)+'%';el('loadText').textContent=msg;});scene.add(world.root);
  const state={yaw:0,pitch:0,fly:false,t:0,view:'coast',keys:{},ui:true,frames:0,seconds:0,fps:0};
  const presets={coast:{pos:[-6290,340,-1960],aim:[-3800,30,-4250]},cape:{pos:[-6010,225,-6820],aim:[-4450,20,-5440]},inland:{pos:[-3390,200,-2090],aim:[-1900,55,-2990]},airfield:{pos:[-3099,98,-1100],aim:[-3150,74,-1150]}};
+ presets.towns={pos:[-5030,720,-350],aim:[-3630,35,-245]};
  const detail=world.coastalScenery?.preview;
  if(detail)presets.details={pos:[detail.x-175,57,detail.z+110],aim:[detail.x+45,11,detail.z]};
  else presets.details=presets.coast;
@@ -42,7 +43,8 @@ try{
  viewport.addEventListener('webglcontextlost',e=>{e.preventDefault();el('loading').classList.remove('done');el('loadText').textContent='Graphics paused by the device. Reload to resume.';running=false;});
  addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);});
  el('export').onclick=async()=>{el('export').disabled=true;el('exportStatus').textContent='Preparing the terrain model…';try{await new Promise(r=>setTimeout(r,30));const blob=exportTerrain(world),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='Okinawa-Yomitan-terrain.glb';a.click();setTimeout(()=>URL.revokeObjectURL(url),60000);el('exportStatus').textContent='Terrain exported. Vegetation and animated water remain in the reusable scene module.';}catch(e){el('exportStatus').textContent=e.message;}finally{el('export').disabled=false;}};
- setView('coast');el('loading').classList.add('done');
+ const initialView=new URLSearchParams(location.search).get('view');
+ setView(Object.prototype.hasOwnProperty.call(presets,initialView)?initialView:'coast');el('loading').classList.add('done');
  const map=el('map'),mc=map.getContext('2d');
  function drawMap(){mc.clearRect(0,0,280,280);mc.save();mc.beginPath();mc.arc(140,140,140,0,Math.PI*2);mc.clip();mc.fillStyle='#175363';mc.fillRect(0,0,280,280);for(let j=0;j<140;j++)for(let i=0;i<140;i++){const x=i/139*16000-8000,z=j/139*16000-8000;if(world.shoreDistance(x,z)>0){mc.fillStyle='#788368';mc.fillRect(i*2,j*2,2,2);}}mc.strokeStyle='#f6edd0';mc.lineWidth=2;const x=(camera.position.x+8000)/16000*280,y=(camera.position.z+8000)/16000*280;mc.translate(x,y);mc.rotate(-state.yaw);mc.beginPath();mc.moveTo(0,-9);mc.lineTo(5,7);mc.lineTo(0,4);mc.lineTo(-5,7);mc.closePath();mc.fillStyle='#fff1bc';mc.fill();mc.restore();mc.fillStyle='#f4f1e6';mc.font='16px system-ui';mc.fillText('N',134,23);}
  let last=performance.now(),running=true,mapTimer=0;const routeLen=route.getLength(),lookCam=new THREE.PerspectiveCamera();
