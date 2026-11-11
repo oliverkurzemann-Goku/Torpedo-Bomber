@@ -113,7 +113,7 @@
  "ramp": {
   "index": 22,
   "rotte": 21,
-  "count": 23,
+  "count": 24,
   "plan": "Fictional V-1 interception: find the ramp, destroy it and shoot down the flying ",
   "primary": true,
   "secondary": false,
@@ -250,6 +250,114 @@
    "ramp": 1
   }
  },
+ "depot": {
+  "index": 23,
+  "count": 24,
+  "kinds": {
+   "depotTank": 2,
+   "depotDrums": 3,
+   "depotCrates": 3,
+   "depotNet": 1,
+   "depotHut": 2,
+   "depotBerm": 2
+  },
+  "n": 13,
+  "exp": 8,
+  "primary": [
+   "depotCrates",
+   "depotCrates",
+   "depotCrates",
+   "depotDrums",
+   "depotDrums",
+   "depotDrums",
+   "depotTank",
+   "depotTank"
+  ],
+  "optional": 5,
+  "fallback": false,
+  "left": {
+   "depot": 6
+  },
+  "text": "STORES 6",
+  "checkpointTargets": 8,
+  "minGap": 5.830951894842826,
+  "spread": 22.308222805365254,
+  "airfieldGap": 3554.3329214435325,
+  "dry": true,
+  "ground": 0,
+  "wrecksHidden": true,
+  "tops": {
+   "depotTank": 4.2,
+   "depotDrums": 1.3,
+   "depotCrates": 1.6,
+   "depotNet": 3.2,
+   "depotHut": 3.2,
+   "depotBerm": 1.7
+  },
+  "plan": true,
+  "marker": true
+ },
+ "chain": {
+  "bermAfterGun": true,
+  "queued": 10,
+  "tAfter0": 12,
+  "log": [
+   4,
+   2,
+   2,
+   2,
+   2,
+   2
+  ],
+  "tankBAlive": false,
+  "tankBhp": -2.5,
+  "kills": 8,
+  "left": {},
+  "bermsAlive": true,
+  "wreckShown": true,
+  "others": [
+   [
+    "depotNet",
+    false
+   ],
+   [
+    "depotHut",
+    false
+   ],
+   [
+    "depotHut",
+    false
+   ]
+  ],
+  "score": 3100,
+  "radio": "DUMP IS BURNING — SECONDARY EXPLOSIONS ALL OVER",
+  "hull": 100
+ },
+ "dumpLow": {
+  "hull": 92.78737819482906,
+  "radio": "AMMUNITION DUMP — FIREBALL, PULL UP!"
+ },
+ "depotEnd": {
+  "rtb": true,
+  "left": {},
+  "kills": 8,
+  "alive": [
+   "depotTank:false",
+   "depotTank:false",
+   "depotDrums:false",
+   "depotDrums:false",
+   "depotDrums:false",
+   "depotCrates:false",
+   "depotCrates:false",
+   "depotCrates:false",
+   "depotNet:false",
+   "depotHut:false",
+   "depotHut:false",
+   "depotBerm:true",
+   "depotBerm:true"
+  ],
+  "q": 0
+ },
  "again": {
   "same": true,
   "after": 0,
@@ -318,5 +426,198 @@
    },
    "launched": 0
   }
- ]
+ ],
+ "depotCheckpoint": {
+  "before": {
+   "state": [
+    [
+     "depotTank",
+     false,
+     -95,
+     25779.317,
+     22911.092
+    ],
+    [
+     "depotTank",
+     true,
+     4,
+     25791.305,
+     22910.547
+    ],
+    [
+     "depotDrums",
+     true,
+     1.5,
+     25776.003,
+     22926.259
+    ],
+    [
+     "depotDrums",
+     true,
+     0.7,
+     25781.135,
+     22929.028
+    ],
+    [
+     "depotDrums",
+     true,
+     1.5,
+     25785.993,
+     22925.804
+    ],
+    [
+     "depotCrates",
+     true,
+     1.5,
+     25792.032,
+     22926.53
+    ],
+    [
+     "depotCrates",
+     true,
+     1.5,
+     25796.845,
+     22922.307
+    ],
+    [
+     "depotCrates",
+     true,
+     1.5,
+     25797.164,
+     22929.3
+    ]
+   ],
+   "score": 600,
+   "kills": {
+    "flak": 0,
+    "bridge": 0,
+    "factory": 0,
+    "truck": 0,
+    "train": 0,
+    "ferry": 0,
+    "air": 0,
+    "bomber": 0,
+    "depot": 1
+   },
+   "n": 13
+  },
+  "after": {
+   "state": [
+    [
+     "depotTank",
+     false,
+     -95,
+     25779.317,
+     22911.092
+    ],
+    [
+     "depotTank",
+     true,
+     4,
+     25791.305,
+     22910.547
+    ],
+    [
+     "depotDrums",
+     true,
+     1.5,
+     25776.003,
+     22926.259
+    ],
+    [
+     "depotDrums",
+     true,
+     0.7,
+     25781.135,
+     22929.028
+    ],
+    [
+     "depotDrums",
+     true,
+     1.5,
+     25785.993,
+     22925.804
+    ],
+    [
+     "depotCrates",
+     true,
+     1.5,
+     25792.032,
+     22926.53
+    ],
+    [
+     "depotCrates",
+     true,
+     1.5,
+     25796.845,
+     22922.307
+    ],
+    [
+     "depotCrates",
+     true,
+     1.5,
+     25797.164,
+     22929.3
+    ]
+   ],
+   "score": 600,
+   "kills": {
+    "flak": 0,
+    "bridge": 0,
+    "factory": 0,
+    "truck": 0,
+    "train": 0,
+    "ferry": 0,
+    "air": 0,
+    "bomber": 0,
+    "depot": 1
+   },
+   "n": 13,
+   "targets": 8,
+   "wrecks": [
+    [
+     false,
+     1,
+     false
+    ],
+    [
+     true,
+     0,
+     true
+    ],
+    [
+     true,
+     0,
+     true
+    ],
+    [
+     true,
+     0,
+     true
+    ],
+    [
+     true,
+     0,
+     true
+    ],
+    [
+     true,
+     0,
+     true
+    ],
+    [
+     true,
+     0,
+     true
+    ],
+    [
+     true,
+     0,
+     true
+    ]
+   ],
+   "fallback": false,
+   "queue": 0
+  }
+ }
 }

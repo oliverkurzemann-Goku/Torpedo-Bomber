@@ -16,7 +16,7 @@
    "revealed": true,
    "flak": true
   },
-  "qTracers": 6,
+  "qTracers": 9,
   "f2": true,
   "dd": {
    "type": "destroyer",
@@ -24,7 +24,7 @@
    "flak": true,
    "sea": true,
    "ease": 2.08,
-   "dist": 2090
+   "dist": 2549
   },
   "objectiveUnchanged": true,
   "f3": true,
@@ -37,16 +37,16 @@
   "zeroOk": true,
   "magazine": {
    "fired": true,
-   "tries": 10,
+   "tries": 4,
    "hullLost": 5
   },
   "scheduled": {
-   "seed": 3453696029,
+   "seed": 2957651533,
    "level": "rookie",
    "fired": [
     {
-     "id": "zeroBounce",
-     "t": 124
+     "id": "reinforce",
+     "t": 91
     }
    ],
    "time": 840
@@ -76,7 +76,7 @@
    "revealed": true,
    "flak": true
   },
-  "qTracers": 15,
+  "qTracers": 12,
   "f2": true,
   "dd": {
    "type": "destroyer",
@@ -84,7 +84,7 @@
    "flak": true,
    "sea": true,
    "ease": 1.25,
-   "dist": 2495
+   "dist": 2718
   },
   "objectiveUnchanged": true,
   "f3": true,
@@ -101,16 +101,16 @@
    "hullLost": 8
   },
   "scheduled": {
-   "seed": 3811306328,
+   "seed": 3635420603,
    "level": "vet",
    "fired": [
     {
      "id": "zeroBounce",
-     "t": 97
+     "t": 72
     },
     {
-     "id": "qship",
-     "t": 203
+     "id": "reinforce",
+     "t": 178
     }
    ],
    "time": 840
@@ -148,7 +148,7 @@
    "flak": true,
    "sea": true,
    "ease": 1,
-   "dist": 2091
+   "dist": 2363
   },
   "objectiveUnchanged": true,
   "f3": true,
@@ -165,16 +165,16 @@
    "hullLost": 10
   },
   "scheduled": {
-   "seed": 825770588,
+   "seed": 1414227836,
    "level": "ace",
    "fired": [
     {
-     "id": "zeroBounce",
-     "t": 67
+     "id": "qship",
+     "t": 58
     },
     {
-     "id": "qship",
-     "t": 116
+     "id": "zeroBounce",
+     "t": 98
     }
    ],
    "time": 840

@@ -28,6 +28,7 @@ const server=http.createServer((req,res)=>{
    const pacific=game.startsWith('torpedo');await page.goto('http://127.0.0.1:'+server.address().port+'/'+game+'?v=178');
    await page.waitForFunction(p=>state===ST.MENU&&(p||realWorldReady),pacific,{polling:200});
    await page.evaluate(()=>{renderer.setPixelRatio(1);renderer.shadowMap.enabled=false;});
+   if(pacific)await page.evaluate(()=>{PBY_MIN_DISTANCE=1e9;});   /* the motor-launch path under test: the PBY (own test: pby-rescue-browser) only takes survivors farther than PBY_MIN_DISTANCE from the carrier */
    if(pacific){await page.evaluate(async()=>{await prepareOkinawa();await preparePacificModels(MISSIONS[0]);});await page.waitForFunction(()=>planeModelLoaded,null,{polling:200});}
    await page.evaluate(()=>{startMission(0);state=ST.FLIGHT;if(typeof launchIntro!=='undefined')launchIntro=null;if(typeof carrierIntro!=='undefined')carrierIntro=null;document.querySelectorAll(".overlay").forEach(o=>o.classList.add("hidden"));clock.getDelta=()=>1/60;P.pos.set(typeof ALLIED_AF_X==='number'?ALLIED_AF_X:-1000,900,typeof ALLIED_AF_Z==='number'?ALLIED_AF_Z:0);P.spd=105;P.onGround=false;P.gear=0;P.gearTgt=0;P.pitch=0;P.roll=0;P.hull=35;P.systemDamage.engine=.65;});
    // Execute the shipped frame loop, not a duplicated call to trail(). Suppress

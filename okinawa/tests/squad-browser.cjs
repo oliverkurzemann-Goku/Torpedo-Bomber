@@ -48,7 +48,7 @@ const server=http.createServer((req,res)=>{
   for(const id of ['convoy','flak','ferry','fighter','boxes','libs','jabo','jetstrike','final','jetboxes','rotte'])assert.ok(report.plans.out[id],'section on '+id);
   assert.equal(report.plans.out.libs,'hunter+cover');assert.equal(report.plans.out.final,'strike+cover');
   assert.equal(report.plans.rotte,1,'the two-ship bonus sortie flies with one wingman');assert.equal(report.plans.libs,2,'a flight of three over the bombers');
-  assert.equal(report.plans.count,23,'new sorties are appended: indices stay');
+  assert.equal(report.plans.count,24,'new sorties are appended: indices stay');
   assert.ok(report.plans.brief,'the briefing names the flight');
 
   // ---- 2. take-off on the strip at 20 / 60 / 120 FPS ----

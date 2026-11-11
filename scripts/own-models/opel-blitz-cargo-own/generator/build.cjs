@@ -1,0 +1,1 @@
+require('./opel.cjs')(false);

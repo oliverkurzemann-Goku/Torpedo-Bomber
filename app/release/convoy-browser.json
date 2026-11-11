@@ -1,0 +1,213 @@
+{
+ "column": {
+  "names": [
+   "PANZER IV",
+   "SD.KFZ. 251",
+   "FUEL TRUCK",
+   "OPEL BLITZ"
+  ],
+  "models": [
+   "panzer4",
+   "halftrack",
+   "blitzTanker",
+   "blitz"
+  ],
+  "hp": [
+   4,
+   2,
+   2,
+   2
+  ],
+  "pts": [
+   400,
+   220,
+   220,
+   220
+  ],
+  "vis": [
+   {
+    "intact": true,
+    "wreck": true,
+    "meshes": 1
+   },
+   {
+    "intact": true,
+    "wreck": true,
+    "meshes": 1
+   },
+   {
+    "intact": true,
+    "wreck": true,
+    "meshes": 1
+   },
+   {
+    "intact": true,
+    "wreck": true,
+    "meshes": 1
+   }
+  ],
+  "primary": true,
+  "left": {
+   "truck": 4
+  },
+  "text": "TRUCKS 4",
+  "spacing": [
+   30.995265958264735,
+   30.975649593060787,
+   30.976799150483675
+  ]
+ },
+ "blast": {
+  "tankAlive": false,
+  "halfAlive": false,
+  "cargoAlive": false,
+  "panAlive": true,
+  "panHp": 4,
+  "wreckShown": true,
+  "rot": -0.04053199737710736,
+  "kills": 3,
+  "left": {
+   "truck": 1
+  },
+  "score": 860,
+  "expect": 860,
+  "radio": "COLUMN ALERTED — VEHICLES HALTING, THEN DISPERSING ALONG THE ROAD|FUEL TRUCK — THE COLUMN GOES UP WITH IT. BONUS 200",
+  "hull": 100,
+  "wreckLive": [
+   [
+    true,
+    false
+   ],
+   [
+    false,
+    true
+   ],
+   [
+    false,
+    true
+   ],
+   [
+    false,
+    true
+   ]
+  ]
+ },
+ "low": {
+  "hull": 93.05225735275569,
+  "radio": "COLUMN ALERTED — VEHICLES HALTING, THEN DISPERSING ALONG THE ROAD|FUEL TRUCK — THE COLUMN GOES UP WITH IT. BONUS 200|FUEL TRUCK — FIREBALL ON YOUR WING, PULL UP!"
+ },
+ "train": {
+  "model": "flakwagen",
+  "intact": true,
+  "coupled": true,
+  "gap": 19.100000000000776,
+  "target": true,
+  "primary": false,
+  "secondary": true,
+  "heavy": false,
+  "inFlak": true,
+  "left": {
+   "train": 1
+  },
+  "name": "FLAK WAGON",
+  "hp": 5,
+  "kinds": [
+   "flak",
+   "train",
+   "flakcar"
+  ]
+ },
+ "fire": {
+  "near": 32,
+  "far": 0,
+  "low": 0,
+  "moved": 85.00691240731291
+ },
+ "kill": {
+  "alive": false,
+  "score": 800,
+  "expect": 800,
+  "inFlak": false,
+  "wreck": true,
+  "left": {
+   "train": 1
+  },
+  "radio": "OPTIONAL SECONDARY TARGET DESTROYED — BONUS 300"
+ },
+ "stop": {
+  "train": true,
+  "same": true,
+  "left": {}
+ },
+ "ground": {
+  "before": {
+   "4": 44,
+   "16": 6,
+   "64": 6
+  },
+  "after": {
+   "4": 40,
+   "16": 12,
+   "64": 4
+  },
+  "veh": [
+   {
+    "kind": "truck",
+    "model": "panzer4",
+    "off": 0.03
+   },
+   {
+    "kind": "truck",
+    "model": "halftrack",
+    "off": 0.06
+   },
+   {
+    "kind": "truck",
+    "model": "blitzTanker",
+    "off": 0.03
+   },
+   {
+    "kind": "truck",
+    "model": "blitz",
+    "off": 0.03
+   },
+   {
+    "kind": "civil",
+    "model": "civilCar",
+    "off": 0.07
+   },
+   {
+    "kind": "wagon",
+    "model": "horse",
+    "off": 0.21
+   },
+   {
+    "kind": "wagon",
+    "model": "horse",
+    "off": 0.1
+   },
+   {
+    "kind": "civil",
+    "model": "civilCarCream",
+    "off": 0.03
+   },
+   {
+    "kind": "wagon",
+    "model": "horse",
+    "off": 0.03
+   },
+   {
+    "kind": "wagon",
+    "model": "horse",
+    "off": 0.07
+   }
+  ],
+  "poles": {
+   "n": 180,
+   "min": -1.4,
+   "max": 0,
+   "floating": 0,
+   "sunk": 0
+  }
+ }
+}

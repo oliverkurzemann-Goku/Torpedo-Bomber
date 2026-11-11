@@ -31,6 +31,7 @@ const server=http.createServer((req,res)=>{
 
   await page.goto(origin+'/torpedo-carrier.html?v=182&arcade=core');
   await page.waitForFunction(()=>state===ST.MENU,null,{polling:100});
+  await page.evaluate(()=>{PBY_MIN_DISTANCE=1e9;});   /* the motor-launch path under test: the PBY (own test: pby-rescue-browser) only takes survivors farther than PBY_MIN_DISTANCE from the carrier */
   await page.evaluate(async()=>{
     renderer.setPixelRatio(.65);renderer.shadowMap.enabled=false;clock.getDelta=()=>.05;
     await prepareOkinawa();

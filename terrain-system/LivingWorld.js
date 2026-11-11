@@ -9,6 +9,18 @@
 
 class LivingWorld {
   static get BUILD(){ return 22; }
+  // Build 246: German column compositions (vehicle template keys). Column 0 is the road recce target of the Rhine game.
+  static get GERMAN_CONVOYS(){ return [
+    ['panzer4','halftrack','blitzTanker','blitz'],
+    ['jagdpanther','blitz','tiger','halftrack'],
+    ['blitzTanker','tiger','panzer4','blitz']
+  ]; }
+  // centre-to-centre distance from the locomotive+tender (24.1 m) to the Flakvierling wagon (12 m) behind it, with a 1 m coupling gap
+  static get FLAKCAR_OFFSET(){ return 19.1; }
+  // Build 246: OSMManager draws road ribbons 1.4 m and rail ribbons 1.2 m above the terrain mesh (OSMManager.loadTile -> _buildRibbons). Vehicles ride
+  // ON that surface; before they stood at terrain +0.18 m and sank 1.2 m into the road. Keep these two in step with OSMManager.
+  static get ROAD_LIFT(){ return 1.4; }
+  static get RAIL_LIFT(){ return 1.2; }
 
   constructor(scene,terrain,osm,landmarks={}){
     this.scene=scene;this.terrain=terrain;this.osm=osm;this.landmarks=landmarks;
@@ -16,12 +28,14 @@ class LivingWorld {
     this.details=new THREE.Group();this.details.name='livingWorldRuralDetails';this.group.add(this.details);
     this.entities=[];this.routes={road:[],rail:[],water:[],ambient:[]};this.smokeSources=[];
     this._smokeClock=0;this._mission='';
+    this._groundGroups=[];this._groundClock=0;this._groundSig=null;this._wires=null;
     this._makeMaterials();
     this._buildRoutes();
     this._buildTraffic();
     this._buildRuralDetails();
     this._buildVillageDetails();
     this._buildAtmosphere();
+    this._groundSig=this._terrainSignature();
   }
 
   _makeMaterials(){
@@ -182,6 +196,14 @@ class LivingWorld {
     for(const z of [-1.25,1.25]){const axle=this._cyl(g,.4,1.86,this.mat.tyre,0,.43,z,10);axle.rotation.z=Math.PI/2;}
     this._rememberMaterials(g);return g;
   }
+  _makeFlakCar(){
+    // stand-in while the model loads: flat wagon with an armoured wall and a gun in the middle
+    const g=new THREE.Group();this._box(g,2.8,.5,11.4,this.mat.rust,0,1.0,0);
+    this._box(g,.2,1.2,11.2,this.mat.olive,-1.35,1.85,0);this._box(g,.2,1.2,11.2,this.mat.olive,1.35,1.85,0);
+    this._box(g,1.0,.9,1.4,this.mat.dark,0,2.0,0);
+    for(const x of [-.25,.25])for(const y of [2.2,2.55]){const barrel=this._cyl(g,.05,1.6,this.mat.dark,x,y,.9,6);barrel.rotation.x=Math.PI/2;}
+    this._rememberMaterials(g);return g;
+  }
   _makeTrain(){
     const g=new THREE.Group();
     const boiler=this._cyl(g,1.25,6.2,this.mat.dark,0,2.05,4.2,12);boiler.rotation.x=Math.PI/2;
@@ -219,17 +241,22 @@ class LivingWorld {
       const discarded=new Set();source.traverse(o=>{if(o.geometry)discarded.add(o.geometry);});
       for(const geo of discarded)geo.dispose();this._rememberMaterials(visual);
     }
-    const model=new THREE.Group();model.name='living-'+kind;visual.name='living-'+kind+'-fallback';model.add(visual);this.group.add(model);
-    const radius=kind==='train'?4800:((kind==='civil'||kind==='wagon')?5200:3600);
+    const model=new THREE.Group();model.name='living-'+kind;model.rotation.order='YXZ';visual.name='living-'+kind+'-fallback';model.add(visual);this.group.add(model);
+    const radius=(kind==='train'||kind==='flakcar')?4800:((kind==='civil'||kind==='wagon')?5200:3600);
     const e={kind,model,visual,fallbackVisual:visual,route,speed,phase,initialPhase:phase,alive:true,meta,last:{x:0,z:0},visibleRadius:radius};
-    e.last=this._sampleEntity(e);model.position.set(e.last.x,this._groundEntity(e,e.last),e.last.z);model.rotation.y=e.last.yaw;
+    e.last=this._sampleEntity(e);this._placeEntity(e,e.last);
     model.userData.livingEntity=e;this.entities.push(e);return e;
   }
   _buildTraffic(){
     for(let r=0;r<Math.min(3,this.routes.road.length);r++)for(let i=0;i<4;i++)
       this._addEntity('truck',this._makeTruck(),this.routes.road[r],8.2+r*.7,140+i*31+r*173,
-        {convoy:r,vehicleModel:r===0&&i===0?'jagdpanther':'tiger'});
-    if(this.routes.rail[0])this._addEntity('train',this._makeTrain(),this.routes.rail[0],17,260,{train:0});
+        {convoy:r,vehicleModel:LivingWorld.GERMAN_CONVOYS[r][i]});
+    if(this.routes.rail[0]){
+      const train=this._addEntity('train',this._makeTrain(),this.routes.rail[0],17,260,{train:0});
+      // the Flakvierling wagon is its own entity, coupled to the train: same route and speed, kept FLAKCAR_OFFSET behind it
+      const car=this._addEntity('flakcar',this._makeFlakCar(),this.routes.rail[0],17,260-LivingWorld.FLAKCAR_OFFSET,{train:0,coupled:true});
+      car.coupledTo=train;
+    }
     if(this.routes.water[0])for(let i=0;i<2;i++)this._addEntity('ferry',this._makeFerry(),this.routes.water[0],5.2,220+i*this.routes.water[0].length*.48,{ferry:i});
     for(let r=0;r<this.routes.ambient.length;r++)for(let i=0;i<3;i++){
       const route=this.routes.ambient[r],car=i===0,model=car?this._makeCivilCar():this._makeWagon();
@@ -247,7 +274,7 @@ class LivingWorld {
     let replaced=0;
     for(const [index,e] of this.entities.entries()){
       const base=e.kind==='truck'?e.meta.vehicleModel:(e.kind==='ferry'?'merchant':
-        (e.kind==='train'?'train':(e.kind==='civil'?'civilCar':(e.kind==='wagon'?'horse':null))));
+        (e.kind==='train'?'train':(e.kind==='flakcar'?'flakwagen':(e.kind==='civil'?'civilCar':(e.kind==='wagon'?'horse':null)))));
       const alternate=index%2===0&&({tiger:'tigerGrey',civilCar:'civilCarCream'})[base];
       const source=alternate&&templates?.has(alternate)?alternate:base;
       const template=source&&templates?.get(source);
@@ -283,6 +310,61 @@ class LivingWorld {
     const water=e.kind==='ferry';
     return this.terrain.getRenderedHeight(p.x,p.z)+(water?1.15:.18);
   }
+  // Build 246: the wheel base of an entity in model space (visible meshes only: the delivered vehicles' hidden wreck must not widen it).
+  _footprint(e){
+    if(e.footFor===e.visual&&e.foot)return e.foot;
+    const m=e.model;m.updateMatrixWorld(true);
+    const inv=new THREE.Matrix4().copy(m.matrixWorld).invert(),box=new THREE.Box3(),c=new THREE.Vector3();
+    e.visual.traverse(o=>{
+      if(!o.isMesh||!o.geometry)return;
+      for(let a=o;a&&a!==m;a=a.parent)if(!a.visible||a.scale.x===0)return;
+      if(!o.geometry.boundingBox)o.geometry.computeBoundingBox();
+      const b=o.geometry.boundingBox;
+      for(const x of [b.min.x,b.max.x])for(const y of [b.min.y,b.max.y])for(const z of [b.min.z,b.max.z])box.expandByPoint(c.set(x,y,z).applyMatrix4(o.matrixWorld).applyMatrix4(inv));
+    });
+    const L=box.isEmpty()?3:box.max.z-box.min.z,W=box.isEmpty()?1.8:box.max.x-box.min.x;
+    e.foot={hl:Math.max(1,L*.4),hw:Math.max(.6,W*.4),cz:box.isEmpty()?0:(box.max.z+box.min.z)/2};e.footFor=e.visual;
+    return e.foot;
+  }
+  // Build 246: put an entity ON the surface it drives on (road / rail ribbon above the terrain mesh) and lean it with the slope under its four
+  // wheel positions, so neither end digs into a hillside. Ferries keep their water level. `dt` smooths the lean (triangle edges of the terrain
+  // mesh would otherwise snap it); without `dt` the pose is set exactly.
+  _placeEntity(e,p,dt){
+    const m=e.model;
+    if(e.kind==='ferry'){m.position.set(p.x,this._groundEntity(e,p),p.z);m.rotation.y=p.yaw;return;}
+    const f=this._footprint(e),lift=(e.kind==='train'||e.kind==='flakcar')?LivingWorld.RAIL_LIFT:LivingWorld.ROAD_LIFT;
+    const fx=Math.sin(p.yaw),fz=Math.cos(p.yaw),rx=Math.cos(p.yaw),rz=-Math.sin(p.yaw);   // forward and right (+X) in the world plane
+    const cx=p.x+fx*f.cz,cz=p.z+fz*f.cz,h=(x,z)=>this.terrain.getRenderedHeight(x,z)+lift;
+    const hF=h(cx+fx*f.hl,cz+fz*f.hl),hR=h(cx-fx*f.hl,cz-fz*f.hl),hP=h(cx+rx*f.hw,cz+rz*f.hw),hN=h(cx-rx*f.hw,cz-rz*f.hw);
+    const slopeZ=(hF-hR)/(2*f.hl),slopeX=(hP-hN)/(2*f.hw);
+    const y=(hF+hR+hP+hN)/4-slopeZ*f.cz+.03;
+    const pitch=-Math.atan(slopeZ),roll=Math.atan(slopeX);
+    if(dt&&e.pitch!==undefined){const k=Math.min(1,dt*8);e.pitch+=(pitch-e.pitch)*k;e.roll+=(roll-e.roll)*k;}else{e.pitch=pitch;e.roll=roll;}
+    m.position.set(p.x,y,p.z);m.rotation.set(e.pitch,p.yaw,e.roll);
+  }
+  // Build 246: the static rural details (poles, wires, hedges, orchards, haystacks, cattle, farm yards) were placed once at the terrain level of
+  // the moment (a far tile starts coarse); when the tile refined later, poles stood up to 55 m above or below the ground. They now follow the
+  // rendered terrain whenever any tile changed (checked twice a second).
+  _terrainSignature(){
+    const tiles=this.terrain&&this.terrain.tiles;if(!tiles||typeof tiles.values!=='function')return 0;
+    let sig=0;for(const t of tiles.values())sig+=(t.surfaceRevision||0)*7+(t._renderSeg||0)+(t.morphing?1e6:0);
+    return sig;
+  }
+  _groundOf(o){
+    const gh=(x,z)=>this.terrain.getRenderedHeight(x,z);
+    if(o.yard)return Math.max(...[[-4,-4],[4,-4],[4,4],[-4,4]].map(([dx,dz])=>gh(o.yx+dx,o.yz+dz)));
+    return gh(o.x,o.z);
+  }
+  _regroundDetails(){
+    const done=new Set();
+    for(const g of this._groundGroups){
+      const m=new THREE.Matrix4(),q=new THREE.Quaternion(),p=new THREE.Vector3(),s=new THREE.Vector3();
+      g.items.forEach((o,i)=>{if(!done.has(o)){o.y=this._groundOf(o);done.add(o);}g.transform(o,p,q,s);m.compose(p,q,s);g.mesh.setMatrixAt(i,m);});
+      g.mesh.instanceMatrix.needsUpdate=true;
+    }
+    if(this._wires){const pos=this._wires.mesh.geometry.attributes.position,arr=this._wireSegments(this._wires.poles);
+      if(arr.length===pos.array.length){pos.array.set(arr);pos.needsUpdate=true;}}
+  }
   update(dt,focusX,focusZ,emitSmoke=null){
     // Wider coverage without drawing all cloned cars/horses at once.
     const nearby=this.entities.filter(e=>e.meta.ambient)
@@ -290,14 +372,21 @@ class LivingWorld {
     const visibleAmbient=new Set(nearby.slice(0,12));
     for(const e of this.entities){
       e.alertT=Math.max(0,(e.alertT||0)-dt);
+      // the Flakvierling wagon follows its locomotive: same phase minus the coupling offset; a stopped (destroyed) train holds it too
+      if(e.coupledTo&&e.alive)e.phase=e.coupledTo.phase-LivingWorld.FLAKCAR_OFFSET;
       // Threatened columns stop, then disperse ALONG their mapped road.
       const multiplier=e.alertT>5?0:e.alertT>0?(e.meta.vehicleModel==='m16'?.45:1.55):1;
-      if(e.alive)e.phase+=dt*e.speed*multiplier;
+      if(e.alive&&!e.coupledTo)e.phase+=dt*e.speed*multiplier;
       if(e.alive||!Number.isFinite(e.last.x))e.last=this._sampleEntity(e);
       const p=e.last,near=Math.hypot(p.x-focusX,p.z-focusZ)<e.visibleRadius&&(!e.meta.ambient||visibleAmbient.has(e));
       e.model.visible=near;
       if(e.kind==='ferry'&&e.alive&&near)this.landmarks.wakes?.track(e,e.last,{x:Math.sin(p.yaw),z:Math.cos(p.yaw)},35,7,e.speed*multiplier,dt);
-      if(near&&e.alive){e.model.position.set(p.x,this._groundEntity(e,p),p.z);e.model.rotation.y=p.yaw;if(e.mixer)e.mixer.update(dt);}
+      if(near&&e.alive){this._placeEntity(e,p,dt);if(e.mixer)e.mixer.update(dt);}
+    }
+    this._groundClock-=dt;
+    if(this._groundClock<=0){
+      this._groundClock=.5;const sig=this._terrainSignature();
+      if(sig!==this._groundSig){this._groundSig=sig;this._regroundDetails();}
     }
     this._smokeClock-=dt;
     if(emitSmoke&&this._smokeClock<=0){
@@ -319,15 +408,16 @@ class LivingWorld {
       if(e.kind==='truck'&&e.meta.convoy===0){
         const allied=['stuka','jabo','jetambush','jetjabo','jetstrike','jetboxes'].includes(id);
         const index=convoyIndex++;
-        e.meta.vehicleModel=allied?(index<2?'sherman':'m16'):(index===0?'jagdpanther':'tiger');
+        e.meta.vehicleModel=allied?(index<2?'sherman':'m16'):LivingWorld.GERMAN_CONVOYS[0][index];
         if(e.visual.userData.sourceModel!==e.meta.vehicleModel){
           const visual=allied?(e.meta.vehicleModel==='sherman'?(e.alliedSherman??=this._makeSherman()):
             (e.alliedM16??=this._makeM16())):e.fallbackVisual;
           e.model.remove(e.visual);e.visual=visual;e.model.add(visual);
         }
       }
-      e.alive=true;e.alertT=0;e.phase=e.initialPhase;e.last=this._sampleEntity(e);e.model.rotation.z=0;
-      e.model.position.set(e.last.x,this._groundEntity(e,e.last),e.last.z);e.model.rotation.y=e.last.yaw;
+      e.alive=true;e.alertT=0;e.phase=e.coupledTo?e.coupledTo.initialPhase-LivingWorld.FLAKCAR_OFFSET:e.initialPhase;e.last=this._sampleEntity(e);e.model.rotation.z=0;
+      LivingWorld.showIntact(e.visual);
+      e.pitch=e.roll=0;this._placeEntity(e,e.last);
       e.model.traverse(o=>{if(o.isMesh&&o.userData.baseMaterial)o.material=o.userData.baseMaterial;});
     }
     if(this._vehicleTemplates)this.installVehicleModels(this._vehicleTemplates);
@@ -338,8 +428,19 @@ class LivingWorld {
     if(id==='ferry')return this.entities.filter(e=>e.kind==='ferry').slice(0,1);
     return [];
   }
+  static showWreck(visual){
+    const intact=visual.getObjectByName('IntactMerged'),wreck=visual.getObjectByName('Wreck');
+    if(!intact||!wreck)return false;
+    intact.visible=false;wreck.visible=true;return true;
+  }
+  static showIntact(visual){
+    const intact=visual.getObjectByName('IntactMerged'),wreck=visual.getObjectByName('Wreck');
+    if(intact&&wreck){intact.visible=true;wreck.visible=false;}
+  }
   destroyEntity(e){
     if(!e||!e.alive)return;e.alive=false;
+    // delivered vehicles carry their own wreck: swap it in (no darkening, no tilt)
+    if(LivingWorld.showWreck(e.visual))return;
     e.model.traverse(o=>{if(o.isMesh){
       const darken=m=>{const copy=m.clone();copy.color.multiplyScalar(.28);return copy;};
       o.material=Array.isArray(o.material)?o.material.map(darken):darken(o.material);
@@ -427,7 +528,23 @@ class LivingWorld {
     mesh.frustumCulled=false;
     const m=new THREE.Matrix4(),q=new THREE.Quaternion(),p=new THREE.Vector3(),s=new THREE.Vector3();
     items.forEach((item,i)=>{transform(item,p,q,s);m.compose(p,q,s);mesh.setMatrixAt(i,m);});
-    mesh.instanceMatrix.needsUpdate=true;this.details.add(mesh);return mesh;
+    mesh.instanceMatrix.needsUpdate=true;this.details.add(mesh);
+    this._groundGroups.push({mesh,items,transform});   // re-grounded when the terrain under them changes (_regroundDetails)
+    return mesh;
+  }
+  // the suspended wire links between neighbouring poles of one route (same layout as the first build; used again when the ground moves)
+  _wireSegments(poles){
+    const wirePoints=[],byRoute=new Map();for(const o of poles){if(!byRoute.has(o.routeId))byRoute.set(o.routeId,[]);byRoute.get(o.routeId).push(o);}
+    for(const list of byRoute.values())for(let i=1;i<list.length;i++){
+      const a=list[i-1],b=list[i];if(Math.hypot(a.x-b.x,a.z-b.z)>155)continue;
+      for(const offset of [-2.35,0,2.35]){
+        const ax=a.x+Math.cos(a.rot)*offset*a.scale,az=a.z-Math.sin(a.rot)*offset*a.scale,ay=a.y+11.28*a.scale;
+        const bx=b.x+Math.cos(b.rot)*offset*b.scale,bz=b.z-Math.sin(b.rot)*offset*b.scale,by=b.y+11.28*b.scale;
+        const mx=(ax+bx)/2,mz=(az+bz)/2,my=(ay+by)/2-1.05;
+        wirePoints.push(ax,ay,az,mx,my,mz,mx,my,mz,bx,by,bz);
+      }
+    }
+    return wirePoints;
   }
   _buildRuralDetails(){
     const fields=this._fieldPlacements(230),hedges=this._hedgePlacements(420),poles=this._polePlacements(180);
@@ -444,20 +561,13 @@ class LivingWorld {
       p.set(o.x+Math.cos(o.rot)*o.offset*o.scale,o.y+11.05*o.scale,o.z-Math.sin(o.rot)*o.offset*o.scale);
       q.setFromAxisAngle(up,o.rot);s.set(o.scale,o.scale,o.scale);
     });
-    const wirePoints=[],byRoute=new Map();for(const o of poles){if(!byRoute.has(o.routeId))byRoute.set(o.routeId,[]);byRoute.get(o.routeId).push(o);}
-    for(const list of byRoute.values())for(let i=1;i<list.length;i++){
-      const a=list[i-1],b=list[i];if(Math.hypot(a.x-b.x,a.z-b.z)>155)continue;
-      for(const offset of [-2.35,0,2.35]){
-        const ax=a.x+Math.cos(a.rot)*offset*a.scale,az=a.z-Math.sin(a.rot)*offset*a.scale,ay=a.y+11.28*a.scale;
-        const bx=b.x+Math.cos(b.rot)*offset*b.scale,bz=b.z-Math.sin(b.rot)*offset*b.scale,by=b.y+11.28*b.scale;
-        const mx=(ax+bx)/2,mz=(az+bz)/2,my=(ay+by)/2-1.05;
-        wirePoints.push(ax,ay,az,mx,my,mz,mx,my,mz,bx,by,bz);
+    if(poles.length){
+      const arr=this._wireSegments(poles);
+      if(arr.length){
+        const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(arr,3));
+        const wires=new THREE.LineSegments(g,new THREE.LineBasicMaterial({color:0x33352f,transparent:true,opacity:.78,depthWrite:false}));
+        wires.name='telegraphWires';wires.frustumCulled=false;this.details.add(wires);this._wires={mesh:wires,poles};
       }
-    }
-    if(wirePoints.length){
-      const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(wirePoints,3));
-      const wires=new THREE.LineSegments(g,new THREE.LineBasicMaterial({color:0x33352f,transparent:true,opacity:.78,depthWrite:false}));
-      wires.name='telegraphWires';wires.frustumCulled=false;this.details.add(wires);
     }
     this._instances('cattleBodies',new THREE.DodecahedronGeometry(1,0),this.mat.cow,cows,(o,p,q,s)=>{p.set(o.x,o.y+1.25,o.z);q.setFromAxisAngle(up,o.rot);s.set(1.5*o.scale,.75*o.scale,.68*o.scale);});
     this._instances('cattleHeads',new THREE.BoxGeometry(1,1,1),this.mat.dark,cows,(o,p,q,s)=>{p.set(o.x+Math.sin(o.rot)*1.35,o.y+1.35,o.z+Math.cos(o.rot)*1.35);q.setFromAxisAngle(up,o.rot);s.set(.62*o.scale,.58*o.scale,.62*o.scale);});
@@ -478,7 +588,7 @@ class LivingWorld {
         if((data.forests||[]).some(ring=>pointInPolygon(x-ox,z-oz,ring)))continue;
         const heights=[[-4,-4],[4,-4],[4,4],[-4,4]].map(([dx,dz])=>this.terrain.getRenderedHeight(x+dx,z+dz));
         if(Math.max(...heights)-Math.min(...heights)>1.8)continue;
-        yards.push({x,z,y:Math.max(...heights),rot:b.rotY,scale:1});tileCount++;
+        yards.push({x,z,y:Math.max(...heights),rot:b.rotY,scale:1,yard:true,yx:x,yz:z});tileCount++;
       }
     }
     const up=new THREE.Vector3(0,1,0),fences=[],posts=[],crates=[],rubble=[],wells=[];

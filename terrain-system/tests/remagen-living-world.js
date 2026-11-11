@@ -151,10 +151,12 @@ global.fetch=async url=>{const b=fs.readFileSync(path.join(root,url.split('?')[0
   const tigerTemplate=new THREE.Group();tigerTemplate.add(new THREE.Mesh(new THREE.BoxGeometry(2,2,5),new THREE.MeshLambertMaterial()));
   const merchantTemplate=new THREE.Group();merchantTemplate.add(new THREE.Mesh(new THREE.BoxGeometry(5,3,20),new THREE.MeshLambertMaterial()));
   const replaced=world.installVehicleModels(new Map([['tiger',tigerTemplate],['merchant',merchantTemplate]]));
-  assert.equal(replaced,13);assert.equal(world.missionTargets('convoy')[0].model,targetWrapper);
-  assert.equal(world.entities.filter(e=>e.kind==='truck'&&e.visual.userData.sourceModel==='tiger').length,11);
-  assert.equal(world.installVehicleModels(new Map([['jagdpanther',tigerTemplate]])),1);
-  assert.equal(world.missionTargets('convoy')[0].visual.userData.sourceModel,'jagdpanther');
+  // Build 246: the German columns are mixed (see LivingWorld.GERMAN_CONVOYS): two Tigers remain, plus the two river ferries
+  assert.equal(replaced,4);assert.equal(world.missionTargets('convoy')[0].model,targetWrapper);
+  assert.equal(world.entities.filter(e=>e.kind==='truck'&&e.visual.userData.sourceModel==='tiger').length,2);
+  assert.deepEqual(world.entities.filter(e=>e.kind==='truck').map(e=>e.meta.vehicleModel),[].concat(...LivingWorld.GERMAN_CONVOYS),'every German column vehicle takes its composition entry');
+  assert.equal(world.installVehicleModels(new Map([['panzer4',tigerTemplate]])),2);
+  assert.equal(world.missionTargets('convoy')[0].visual.userData.sourceModel,'panzer4');
   assert(world.entities.filter(e=>e.kind==='ferry').every(e=>e.visual.userData.sourceModel==='merchant'));
 
   const truck=world.missionTargets('convoy')[0],before=truck.phase;
@@ -173,15 +175,33 @@ global.fetch=async url=>{const b=fs.readFileSync(path.join(root,url.split('?')[0
   world.resetForMission('stuka');
   assert.deepEqual(world.missionTargets('convoy').map(e=>e.meta.vehicleModel),
     ['sherman','sherman','m16','m16'],'Luftwaffe Stuka attacks Allied armour and AA');
-  assert(world.missionTargets('convoy').every(e=>e.visual.userData.sourceModel!=='jagdpanther'
-    &&e.visual.userData.sourceModel!=='tiger'),'no German visual remains on the Stuka target road');
+  assert(world.missionTargets('convoy').every(e=>!['jagdpanther','tiger','panzer4','halftrack','blitz','blitzTanker'].includes(e.visual.userData.sourceModel)),'no German visual remains on the Stuka target road');
   world.resetForMission('jabo');
   assert.deepEqual(world.missionTargets('convoy').map(e=>e.meta.vehicleModel),
     ['sherman','sherman','m16','m16'],'Fw 190 also attacks Allied armour and AA');
   world.resetForMission('jetambush');assert.deepEqual(world.missionTargets('convoy').map(e=>e.meta.vehicleModel),['sherman','sherman','m16','m16'],'optional Jet gun target is Allied, not a friendly German gun');
   world.resetForMission('convoy');
   assert.deepEqual(world.missionTargets('convoy').map(e=>e.meta.vehicleModel),
-    ['jagdpanther','tiger','tiger','tiger'],'German convoy restores for American strike sorties');
+    ['panzer4','halftrack','blitzTanker','blitz'],'German convoy restores for American strike sorties');
+  // Build 246: the Flakvierling wagon is coupled to the locomotive (same route, a fixed distance behind) and stands still with a stopped train
+  const loco=world.entities.find(e=>e.kind==='train'),car=world.entities.find(e=>e.kind==='flakcar');
+  assert(loco&&car&&car.coupledTo===loco&&car.route===loco.route,'the flak wagon rides the locomotive route');
+  world.update(7,car.model.position.x,car.model.position.z);
+  assert(Math.abs(loco.phase-car.phase-LivingWorld.FLAKCAR_OFFSET)<1e-9,'coupling distance stays constant while driving');
+  const gap=Math.hypot(loco.last.x-car.last.x,loco.last.z-car.last.z);assert(gap>LivingWorld.FLAKCAR_OFFSET*.8&&gap<=LivingWorld.FLAKCAR_OFFSET+1e-6,'the wagon trails the locomotive on the track: '+gap);
+  world.destroyEntity(loco);const carPhase=car.phase;world.update(5,car.model.position.x,car.model.position.z);assert.equal(car.phase,carPhase,'a destroyed train holds its wagon');
+  world.resetForMission('train');assert(loco.alive&&car.alive&&Math.abs(loco.phase-car.phase-LivingWorld.FLAKCAR_OFFSET)<1e-9);
+  // delivered vehicles bring a wreck of their own: the merged intact part is swapped for it, a reset swaps back
+  const wreckTemplate=new THREE.Group();
+  const intactM=new THREE.Group();intactM.name='IntactMerged';intactM.add(new THREE.Mesh(new THREE.BoxGeometry(2,2,5),new THREE.MeshLambertMaterial()));
+  const wreckM=new THREE.Mesh(new THREE.BoxGeometry(2,1,5),new THREE.MeshLambertMaterial());wreckM.name='Wreck';wreckM.visible=false;
+  wreckTemplate.add(intactM);wreckTemplate.add(wreckM);
+  world.installVehicleModels(new Map([['halftrack',wreckTemplate]]));
+  const half=world.missionTargets('convoy')[1];assert.equal(half.visual.userData.sourceModel,'halftrack');
+  const keepY=half.model.position.y,keepRoll=half.model.rotation.z,keepPitch=half.model.rotation.x;world.destroyEntity(half);
+  const hi=half.visual.getObjectByName('IntactMerged'),hw=half.visual.getObjectByName('Wreck');
+  assert(!hi.visible&&hw.visible&&half.model.rotation.z===keepRoll&&half.model.rotation.x===keepPitch&&half.model.position.y===keepY,'wreck swapped in, no tilt or sinking beyond the lean the ground gave it');
+  world.resetForMission('convoy');assert(hi.visible&&!hw.visible,'reset restores the intact vehicle');
   world.update(.1,27000,31000);assert(world.entities.every(e=>!e.model.visible));
 
   const smoke=[];for(let i=0;i<20;i++)world.update(.5,factory[0],factory[1],p=>smoke.push(p));

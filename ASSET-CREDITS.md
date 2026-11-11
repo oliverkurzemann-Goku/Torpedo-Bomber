@@ -384,6 +384,15 @@ The previous `uss_midway.glb` and `ijn carrier.glb` remain only for the archived
 `scripts/own-models/`). No third-party model, scan or texture is included; reference images were used only to compare proportions. Published
 dimensions, reconstructed details, no established tolerance. License status: `project-own`. Details and what is wired in: `RHINE-MODELS.md`.
 
+## Build 246 — eight delivered period models
+
+`assets/ground-vehicles/opel-blitz-cargo-own.glb`, `opel-blitz-tanker-own.glb`, `panzer4h-own.glb`, `sdkfz251d-own.glb`, `flakwagen-own.glb`,
+`assets/remagen/sites/depot-kit-own.glb`, `assets/ships/hospital-ship-own.glb` and `assets/aircraft/pby5a-own.glb` were delivered as
+`Torpedo_Bomber_8_Modelle.zip` (generated for the project from numeric geometry and procedural paint; generators in `scripts/own-models/`).
+No third-party model, scan or texture is included; reference photographs, drawings and museum pages were used only to compare proportions and
+appearance (listed in each model's README). Published dimensions, reconstructed details, no established tolerance. License status:
+`project-own`. Details and what is wired in: `PERIOD-MODELS.md`.
+
 ## Build 172 — uploaded fleet, Corsair and period buildings
 
 The previous `merchant_ship.glb` is retired. Ship exports preserve original geometry and textures, isolate collection members, bake static world transforms and cap embedded texture size at 1024px. Aircraft preserve the original exterior and animate the original rotor. Optional buildings use 512px textures, shared geometry and bounded nearby detail.

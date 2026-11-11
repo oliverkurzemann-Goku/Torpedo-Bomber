@@ -98,6 +98,7 @@ const server=http.createServer((req,res)=>{
     assert(proof.onGround&&proof.pixels>(ac==='p47'?15000:6000)&&proof.draws===1&&proof.live<=proof.limit,'stronger actual runway dust remains bounded');console.log('Stronger native takeoff dust:',{ac,...proof});
   }
   await page.goto(origin+'/torpedo-carrier.html?v=181');await page.waitForFunction(()=>state===ST.MENU,null,{polling:100});
+  await page.evaluate(()=>{PBY_MIN_DISTANCE=1e9;});   /* the motor-launch path under test: the PBY (own test: pby-rescue-browser) only takes survivors farther than PBY_MIN_DISTANCE from the carrier */
   await page.evaluate(async()=>{renderer.setPixelRatio(.65);renderer.shadowMap.enabled=false;clock.getDelta=()=>.05;await prepareOkinawa();for(const m of MISSIONS)await preparePacificModels(m);});
   for(const kind of ['avenger','sbd','corsair','zero']){
     const result=await page.evaluate(kind=>{

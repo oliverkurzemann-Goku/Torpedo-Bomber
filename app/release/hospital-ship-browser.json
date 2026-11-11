@@ -1,0 +1,119 @@
+{
+ "Sortie 2": {
+  "found": true,
+  "fallback": false,
+  "hp": 4,
+  "type": "hospital",
+  "optional": true,
+  "radius": 90,
+  "length": 163,
+  "draft": 9.23,
+  "outlets": 1,
+  "meshes": 22,
+  "others": [
+   "freighter",
+   "destroyer"
+  ],
+  "hud": "",
+  "clear": false,
+  "neutralFlak": false,
+  "label": "Hospital ship",
+  "nav": [
+   "HOSPITAL SHIP #3 · NEUTRAL"
+  ],
+  "primary": 1,
+  "briefHtml": true
+ },
+ "Sortie 4": {
+  "found": true,
+  "fallback": false,
+  "hp": 4,
+  "type": "hospital",
+  "optional": true,
+  "radius": 90,
+  "length": 163,
+  "draft": 9.23,
+  "outlets": 1,
+  "meshes": 22,
+  "others": [
+   "freighter",
+   "destroyer",
+   "destroyer"
+  ],
+  "hud": "",
+  "clear": false,
+  "neutralFlak": false,
+  "label": "Hospital ship",
+  "nav": [
+   "HOSPITAL SHIP #4 · NEUTRAL"
+  ],
+  "primary": 1,
+  "briefHtml": true
+ },
+ "paths": {
+  "gun": {
+   "score": -3,
+   "said": "CEASE FIRE — THAT IS A HOSPITAL SHIP, RED CROSSES ON THE HULL",
+   "hp": 4,
+   "strafe": 1
+  },
+  "bomb": {
+   "score": -600,
+   "hp": 3,
+   "said": "CEASE FIRE — THAT IS A HOSPITAL SHIP, RED CROSSES ON THE HULL",
+   "alive": true,
+   "flashText": "HOSPITAL SHIP HIT  −600",
+   "bombs": 0
+  },
+  "torp": {
+   "score": -600,
+   "hp": 2,
+   "said": "CEASE FIRE — THAT IS A HOSPITAL SHIP, RED CROSSES ON THE HULL",
+   "alive": true
+  },
+  "torpEnemy": {
+   "sunk": false,
+   "kills": 0,
+   "neutralHits": 2
+  },
+  "third": {
+   "hp": 1,
+   "alive": true
+  },
+  "sunk": {
+   "score": -2500,
+   "hp": 0,
+   "alive": false,
+   "said": "YOU SUNK A HOSPITAL SHIP — THAT WILL BE REPORTED",
+   "sinkT": 0.0001,
+   "kills": 0,
+   "flash": "HOSPITAL SHIP SUNK  −2500"
+  },
+  "afterSink": {
+   "groupY": -9.76,
+   "objectiveClear": false,
+   "realAlive": true,
+   "neutralHits": 4
+  },
+  "done": {
+   "clear": true,
+   "kills": 2,
+   "rtb": false
+  }
+ },
+ "checkpoint": {
+  "saved": {
+   "x": -1750,
+   "z": 2900,
+   "hp": 2
+  },
+  "restored": {
+   "hp": 2,
+   "x": -1750,
+   "z": 2900,
+   "fallback": false,
+   "optional": true,
+   "neutral": true
+  }
+ }
+}

@@ -30,7 +30,7 @@ const server=http.createServer((req,res)=>{
   await page.addInitScript(()=>window.requestAnimationFrame=()=>0);
   await page.goto('http://127.0.0.1:'+server.address().port+'/remagen-mission.html?v=sites&surprises=off');
   await page.waitForFunction(()=>state===ST.MENU&&realWorldReady,null,{polling:200});
-  await page.evaluate(async()=>{await Promise.all(['p47','bf109'].map(ensureModel));await loadMissionSites({radar:true,searchlights:3,ramp:true});
+  await page.evaluate(async()=>{await Promise.all(['p47','bf109'].map(ensureModel));await loadMissionSites({radar:true,searchlights:3,ramp:true,depot:true});
    renderer.setPixelRatio(.25);renderer.shadowMap.enabled=false;if(typeof flightQuality!=='undefined')flightQuality.enabled=false;});
 
   const start=(id)=>page.evaluate((id)=>{diffIdx=1;const index=MISSIONS.findIndex(m=>m.id===id);selectedMission=index;briefPlan=chooseEuropePlan(index);
@@ -136,7 +136,7 @@ const server=http.createServer((req,res)=>{
     distAllied:Math.hypot(p.x-ALLIED_AF_X,p.z-ALLIED_AF_Z),top:targetTop(t),text:objectiveText()};
   });
   const Rp=report.ramp;
-  assert.equal(Rp.rotte,21,'old mission indices are unchanged');assert.equal(Rp.index,22,'the V-1 sortie appends at the end');assert.equal(Rp.count,23);assert.ok(/V-1/.test(Rp.plan));
+  assert.equal(Rp.rotte,21,'old mission indices are unchanged');assert.equal(Rp.index,22,'the V-1 sortie appends at the end');assert.equal(Rp.count,24,'the depot sortie follows the V-1 sortie');assert.ok(/V-1/.test(Rp.plan));
   assert.ok(Rp.primary&&!Rp.secondary&&!Rp.fallback&&Rp.inTargets&&Rp.kills.ramp===1,'the ramp is the primary target with the real model');
   assert.equal(Rp.allTargets,Rp.checkpointTargets,'the primary ramp is part of a checkpoint');
   assert.ok(Rp.yawErr<1e-6,'the rail points at the Allied strip');assert.ok(Rp.clear,'clear of water and buildings along the rail');assert.ok(Rp.slope<=6,'level enough along the rail: '+Rp.slope);
@@ -189,6 +189,60 @@ const server=http.createServer((req,res)=>{
   assert.ok(En.wreck.every(v=>v===1)&&!En.intact,'the wreck replaces the ramp');assert.deepEqual(En.left,{},'the objective is complete');assert.equal(En.kills.ramp,1);
   assert.ok(En.rtb,'return to base is called: '+JSON.stringify(En.dbg));
 
+  // ---- 4b. the depot sortie: the eight stores burn in chains ----
+  const dIdx=await start('depot');
+  report.depot=await page.evaluate(()=>{
+   const parts=siteRecs.filter(t=>t.part),kinds={};for(const t of parts)kinds[t.kind]=(kinds[t.kind]||0)+1;
+   const exp=parts.filter(t=>t.chain);
+   const minGap=Math.min(...parts.flatMap((a,i)=>parts.slice(i+1).map(b=>Math.hypot(a.group.position.x-b.group.position.x,a.group.position.z-b.group.position.z))));
+   const c=parts.reduce((o,t)=>({x:o.x+t.group.position.x/parts.length,z:o.z+t.group.position.z/parts.length}),{x:0,z:0});
+   const spread=Math.max(...parts.map(t=>Math.hypot(t.group.position.x-c.x,t.group.position.z-c.z)));
+   return {index:MISSIONS.findIndex(m=>m.id==='depot'),count:MISSIONS.length,kinds,n:parts.length,exp:exp.length,primary:parts.filter(t=>t.primary).map(t=>t.kind).sort(),optional:parts.filter(t=>t.optionalSite).length,
+    fallback:parts.some(t=>t.usedFallback),left:objectiveLeft(),text:objectiveText(),checkpointTargets:targets.filter(t=>!t.optionalSite).length,minGap,spread,
+    airfieldGap:Math.min(Math.hypot(c.x-GERMAN_AF_X,c.z-GERMAN_AF_Z),Math.hypot(c.x-ALLIED_AF_X,c.z-ALLIED_AF_Z)),
+    dry:parts.every(t=>!livingWorld._pointOnWater(t.group.position.x,t.group.position.z)),
+    ground:Math.max(...parts.map(t=>Math.abs(t.group.position.y-terrain.getRenderedHeight(t.group.position.x,t.group.position.z)))),
+    wrecksHidden:parts.every(t=>{const w=t.group.getObjectByName(t.part+'_Wreck'),i=t.group.getObjectByName(t.part+'_Intact');return w&&i&&i.visible&&w.scale.x===0;}),
+    tops:Object.fromEntries(parts.map(t=>[t.kind,targetTop(t)])),plan:(()=>{const p=sitePlan(M());return !!p.depot;})(),
+    marker:europeBriefTargets(M()).some(o=>/dump/.test(o.label))};
+  });
+  const Dp=report.depot;
+  assert.equal(Dp.index,23);assert.equal(Dp.count,24,'the depot sortie appends after the V-1 sortie');assert.ok(Dp.plan,'a spot was found for the dump');
+  assert.deepEqual(Dp.kinds,{depotTank:2,depotDrums:3,depotCrates:3,depotNet:1,depotHut:2,depotBerm:2});
+  assert.equal(Dp.exp,8);assert.deepEqual(Dp.primary,['depotCrates','depotCrates','depotCrates','depotDrums','depotDrums','depotDrums','depotTank','depotTank']);assert.equal(Dp.optional,5);
+  assert.ok(!Dp.fallback,'real models');assert.deepEqual(Dp.left,{depot:6});assert.ok(/STORES 6/.test(Dp.text),Dp.text);assert.equal(Dp.checkpointTargets,8,'the eight stores are part of a checkpoint');
+  assert.ok(Dp.minGap>2.5,'parts do not overlap: '+Dp.minGap);assert.ok(Dp.spread<30,'one compact dump: '+Dp.spread);assert.ok(Dp.airfieldGap>2500);assert.ok(Dp.dry);assert.ok(Dp.ground<.5,'ground-fitted: '+Dp.ground);
+  assert.ok(Dp.wrecksHidden,'each part has its own hidden wreck');assert.ok(Dp.marker,'the dump is marked on the briefing map');assert.equal(Dp.tops.depotTank,4.2);
+  // chain reaction: one tank, then the clock runs
+  report.chain=await page.evaluate(()=>{
+   const parts=siteRecs.filter(t=>t.part),tanks=parts.filter(t=>t.kind==='depotTank'),tankA=tanks[0],tankB=tanks[1],berms=parts.filter(t=>t.kind==='depotBerm');
+   const p=tankA.group.position;P.alive=true;P.hull=100;state=ST.FLIGHT;P.pos.set(p.x+900,groundY(p.x+900,p.z)+700,p.z);radioQ.length=0;
+   const s0=score;damageTarget(berms[0],99,true);const bermAfterGun=berms[0].alive;
+   damageTarget(tankA,99,false);
+   const queued=siteChainQ.length,tAfter0=parts.filter(t=>t.alive).length;
+   const log=[];for(let i=0;i<120;i++){updateSites(.05);if(i%20===19)log.push(parts.filter(t=>t.alive).length);}
+   const wreckShown=parts.filter(t=>!t.alive).every(t=>{const w=t.group.getObjectByName(t.part+'_Wreck'),i=t.group.getObjectByName(t.part+'_Intact');return w.scale.x===1&&!i.visible;});
+   return {bermAfterGun,queued,tAfter0,log,tankBAlive:tankB.alive,tankBhp:tankB.hp,kills:sortieKills.depot||0,left:objectiveLeft(),bermsAlive:berms.every(t=>t.alive),wreckShown,
+    others:parts.filter(t=>!t.chain&&t.kind!=='depotBerm').map(t=>[t.kind,t.alive]),score:score-s0,radio:radioQ.join('|'),hull:P.hull};
+  });
+  const Ch=report.chain;
+  assert.ok(Ch.bermAfterGun,'an earth berm shrugs off gun fire');assert.ok(Ch.queued>=5,'the dump is set off in a chain: '+Ch.queued);assert.equal(Ch.tAfter0,12,'nothing else goes up in the same instant');
+  assert.ok(Ch.log[Ch.log.length-1]<Ch.log[0]&&Ch.log[0]<12||Ch.log[0]<=12,'it burns down over a few seconds: '+Ch.log);
+  assert.ok(Ch.kills>=6&&Object.keys(Ch.left).length===0,'six or more stores gone from one hit: '+Ch.kills);assert.ok(Ch.tankBhp<4,'the second tank is hit by the blast too: '+Ch.tankBhp);
+  assert.ok(Ch.bermsAlive,'berms are not chained');assert.ok(Ch.others.every(([,alive])=>!alive),'nets and huts around the blast are gone: '+JSON.stringify(Ch.others));
+  assert.ok(Ch.wreckShown,'every destroyed part shows its own wreck');assert.ok(/DUMP IS BURNING/.test(Ch.radio),Ch.radio);assert.equal(Ch.hull,100,'a high aeroplane is not hurt');
+  // a low aeroplane directly over a tank is hurt by the fireball; one far above is not
+  await start('depot');
+  report.dumpLow=await page.evaluate(()=>{
+   const tankB=siteRecs.find(t=>t.kind==='depotTank'&&t.alive),p=tankB.group.position;
+   P.alive=true;P.onGround=false;P.hull=100;P.pos.set(p.x+10,groundY(p.x+10,p.z)+40,p.z);radioQ.length=0;damageTarget(tankB,99,false);
+   return {hull:P.hull,radio:radioQ.join('|')};
+  });
+  assert.ok(report.dumpLow.hull<100&&/FIREBALL/.test(report.dumpLow.radio),'low over the dump: '+JSON.stringify(report.dumpLow));
+  // the sortie completes: objective met, return to base
+  report.depotEnd=await page.evaluate(()=>{for(let i=0;i<60;i++){updateSites(.1);updateEuropeOperation(.1);}checkObjective();return {rtb:P.rtb,left:objectiveLeft(),kills:sortieKills.depot||0,alive:siteRecs.filter(t=>t.part).map(t=>t.kind+':'+t.alive),q:siteChainQ.length};});
+  assert.ok(report.depotEnd.rtb&&Object.keys(report.depotEnd.left).length===0,'objective met: return to base is called');
+
   // ---- 3. the plan is deterministic, missions clean up, restored checkpoints find the same sites ----
   report.again=await page.evaluate(()=>{
    const m=M(),a=JSON.stringify(sitePlan(m));delete sitePlanCache[m.id];const b=JSON.stringify(sitePlan(m));
@@ -232,6 +286,37 @@ const server=http.createServer((req,res)=>{
    if(kill)assert.equal(run.launched,0,'a destroyed ramp launches nothing after the restore');else assert.ok(run.launched>=3,'an intact ramp keeps launching after the restore: '+run.launched);
    report.checkpoint.push({kill,before,after:{hp:after.hp,alive:after.alive,wreck:after.wreck},launched:run.launched});
   }
+
+  // ---- 6. a saved depot sortie: the eight stores come back with their hp / wrecks (the chain in flight and the optional parts are not saved) ----
+  await page.goto('http://127.0.0.1:'+server.address().port+'/remagen-mission.html?v=sites&surprises=off');
+  await page.waitForFunction(()=>state===ST.MENU&&realWorldReady&&window.sortieCheckpoint?.ready,null,{polling:200});
+  const dBefore=await page.evaluate(async()=>{
+   renderer.setPixelRatio(.25);renderer.shadowMap.enabled=false;await ensureModel('p47');await ensureModel('bf109');await loadMissionSites({depot:true});
+   const index=MISSIONS.findIndex(m=>m.id==='depot');diffIdx=1;selectedMission=index;briefPlan=chooseEuropePlan(index);startMission(index);finishLaunchIntro(false);show('menu',false);show('brief',false);
+   state=ST.FLIGHT;P.alive=true;P.onGround=false;
+   const parts=siteRecs.filter(t=>t.part&&t.primary),tanks=parts.filter(t=>t.kind==='depotTank'),drums=parts.filter(t=>t.kind==='depotDrums'),p=tanks[0].group.position;
+   P.pos.set(p.x-3000,groundY(p.x-3000,p.z)+700,p.z);P.spd=85;P.throttle=.6;P.heading=0;P.fuel=80;
+   damageTarget(tanks[0],99,false);drums[1].hp=.7;
+   const saved=window.sortieCheckpoint.save();if(!saved.ok)throw Error('save failed '+JSON.stringify(saved));
+   return {state:parts.map(t=>[t.kind,t.alive,+t.hp.toFixed(3),+t.group.position.x.toFixed(3),+t.group.position.z.toFixed(3)]),score,kills:{...sortieKills},n:siteRecs.length};
+  });
+  await page.reload();
+  await page.waitForFunction(()=>state===ST.MENU&&realWorldReady&&window.sortieCheckpoint?.ready,null,{polling:200});
+  await page.locator('#continueFlight').click();
+  await page.waitForFunction(()=>state===ST.PAUSED&&!window.sortieCheckpoint.restoring,null,{polling:200});
+  const dAfter=await page.evaluate(()=>{
+   const parts=siteRecs.filter(t=>t.part&&t.primary);
+   return {state:parts.map(t=>[t.kind,t.alive,+t.hp.toFixed(3),+t.group.position.x.toFixed(3),+t.group.position.z.toFixed(3)]),score,kills:{...sortieKills},n:siteRecs.length,targets:targets.filter(t=>!t.optionalSite).length,
+    wrecks:parts.map(t=>{const w=t.group.getObjectByName(t.part+'_Wreck'),i=t.group.getObjectByName(t.part+'_Intact');return [t.alive,w.scale.x,i.visible];}),fallback:siteRecs.some(t=>t.usedFallback),queue:siteChainQ.length};
+  });
+  assert.deepEqual(dAfter.state,dBefore.state,'the eight stores stand where they stood, with the same hp');
+  assert.equal(dAfter.score,dBefore.score,'no award is replayed');assert.deepEqual(dAfter.kills,dBefore.kills);assert.equal(dAfter.targets,8,'only the stores are restored from the checkpoint');
+  assert.equal(dAfter.n,13,'the optional net, huts and berms are rebuilt after Continue');assert.ok(!dAfter.fallback,'real models after the restore');assert.equal(dAfter.queue,0);
+  assert.ok(dAfter.wrecks.every(([alive,ws,iv])=>alive?(ws===0&&iv):(ws===1&&!iv)),'a destroyed store is shown as its own wreck, the others are intact: '+JSON.stringify(dAfter.wrecks));
+  await page.locator('#pmResume').click();
+  const dRun=await page.evaluate(()=>{for(let i=0;i<200;i++)updateSites(.05);return {alive:siteRecs.filter(t=>t.part&&t.primary&&t.alive).length};});
+  assert.equal(dRun.alive,7,'nothing else burns by itself after the restore');
+  report.depotCheckpoint={before:dBefore,after:dAfter};
 
   assert.deepEqual(errors,[]);
   fs.mkdirSync(path.join(root,'app/release'),{recursive:true});fs.writeFileSync(path.join(root,'app/release/sites-browser.json'),JSON.stringify(report,null,1));

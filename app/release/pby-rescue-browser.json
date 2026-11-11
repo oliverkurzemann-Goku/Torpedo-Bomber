@@ -1,0 +1,310 @@
+{
+ "fps20": {
+  "water": true,
+  "pby": [
+   true,
+   true,
+   false
+  ],
+  "hasModel": true,
+  "said0": [
+   "CATALINA INBOUND — SURVIVORS IN THE WATER, HOLD ON"
+  ],
+  "phases": [
+   [
+    "inbound",
+    0.1
+   ],
+   [
+    "roll",
+    14.4
+   ],
+   [
+    "board",
+    24
+   ],
+   [
+    "taxi",
+    27.2
+   ],
+   [
+    "board",
+    46.7
+   ],
+   [
+    "takeoff",
+    49.9
+   ],
+   [
+    "gone",
+    79.9
+   ]
+  ],
+  "rig": {
+   "gear": 1.47,
+   "nose": -1.37,
+   "floatL0": 0,
+   "floatFlight": -1.5708
+  },
+  "plan": {
+   "u": [
+    -0.7288480720939872,
+    -0.6846754616640486
+   ]
+  },
+  "towardCarrier": 1,
+  "start": {
+   "d": 947.5999999999996,
+   "y": 72.84994366127283,
+   "visible": true
+  },
+  "touch": {
+   "t": 14.40000000000007,
+   "hullMinOverSea": -0.97,
+   "float": 0,
+   "dist": 258.79999999995243
+  },
+  "stop": {
+   "t": 23.950000000000205,
+   "dist": 29.998608695605558,
+   "hullMinOverSea": -0.25,
+   "speedless": true
+  },
+  "pick": {
+   "t": 27.20000000000025,
+   "pickDist": 29.998608695605558
+  },
+  "nearPick": {
+   "t": 49.9499999999993,
+   "dist": 0
+  },
+  "nearDone": {
+   "t": 52.499999999999154
+  },
+  "done": {
+   "t": 29.700000000000287
+  },
+  "lift": {
+   "t": 62.499999999998586
+  },
+  "gone": {
+   "t": 79.9499999999976,
+   "visible": false
+  },
+  "propSpin": 1983.3,
+  "floatEnd": -1.5708,
+  "remoteIsBoat": true,
+  "remoteDone": {
+   "done": true,
+   "pickup": true
+  },
+  "removed": true
+ },
+ "fps60": {
+  "water": true,
+  "pby": [
+   true,
+   true,
+   false
+  ],
+  "hasModel": true,
+  "said0": [
+   "CATALINA INBOUND — SURVIVORS IN THE WATER, HOLD ON"
+  ],
+  "phases": [
+   [
+    "inbound",
+    0
+   ],
+   [
+    "roll",
+    14.4
+   ],
+   [
+    "board",
+    23.9
+   ],
+   [
+    "taxi",
+    27.1
+   ],
+   [
+    "board",
+    46.6
+   ],
+   [
+    "takeoff",
+    49.8
+   ],
+   [
+    "gone",
+    79.8
+   ]
+  ],
+  "rig": {
+   "gear": 1.47,
+   "nose": -1.37,
+   "floatL0": 0,
+   "floatFlight": -1.5708
+  },
+  "plan": {
+   "u": [
+    -0.7288480720939872,
+    -0.6846754616640486
+   ]
+  },
+  "towardCarrier": 1,
+  "start": {
+   "d": 949.1999999999994,
+   "y": 73.29592264497914,
+   "visible": true
+  },
+  "touch": {
+   "t": 14.383333333333628,
+   "hullMinOverSea": -0.97,
+   "float": 0,
+   "dist": 259.5999999997618
+  },
+  "stop": {
+   "t": 23.933333333333255,
+   "dist": 30.00139130410641,
+   "hullMinOverSea": -0.25,
+   "speedless": true
+  },
+  "pick": {
+   "t": 27.14999999999974,
+   "pickDist": 30.00139130410641
+  },
+  "nearPick": {
+   "t": 49.81666666666512,
+   "dist": 0
+  },
+  "nearDone": {
+   "t": 52.333333333331645
+  },
+  "done": {
+   "t": 29.666666666666263
+  },
+  "lift": {
+   "t": 62.36666666666441
+  },
+  "gone": {
+   "t": 79.83333333333009,
+   "visible": false
+  },
+  "propSpin": 1982.8,
+  "floatEnd": -1.5708,
+  "remoteIsBoat": true,
+  "remoteDone": {
+   "done": true,
+   "pickup": true
+  },
+  "removed": true
+ },
+ "fps120": {
+  "water": true,
+  "pby": [
+   true,
+   true,
+   false
+  ],
+  "hasModel": true,
+  "said0": [
+   "CATALINA INBOUND — SURVIVORS IN THE WATER, HOLD ON"
+  ],
+  "phases": [
+   [
+    "inbound",
+    0
+   ],
+   [
+    "roll",
+    14.4
+   ],
+   [
+    "board",
+    23.9
+   ],
+   [
+    "taxi",
+    27.1
+   ],
+   [
+    "board",
+    46.6
+   ],
+   [
+    "takeoff",
+    49.8
+   ],
+   [
+    "gone",
+    79.8
+   ]
+  ],
+  "rig": {
+   "gear": 1.47,
+   "nose": -1.37,
+   "floatL0": 0,
+   "floatFlight": -1.5708
+  },
+  "plan": {
+   "u": [
+    -0.7288480720939872,
+    -0.6846754616640486
+   ]
+  },
+  "towardCarrier": 1,
+  "start": {
+   "d": 949.5999999999996,
+   "y": 73.34340392634117,
+   "visible": true
+  },
+  "touch": {
+   "t": 14.374999999999824,
+   "hullMinOverSea": -0.97,
+   "float": 0,
+   "dist": 259.99999999976194
+  },
+  "stop": {
+   "t": 23.924999999999283,
+   "dist": 30.202086956287097,
+   "hullMinOverSea": -0.25,
+   "speedless": true
+  },
+  "pick": {
+   "t": 27.133333333332434,
+   "pickDist": 30.202086956287097
+  },
+  "nearPick": {
+   "t": 49.80833333333115,
+   "dist": 0
+  },
+  "nearDone": {
+   "t": 52.31666666666434
+  },
+  "done": {
+   "t": 29.641666666665625
+  },
+  "lift": {
+   "t": 62.36666666666377
+  },
+  "gone": {
+   "t": 79.81666666667626,
+   "visible": false
+  },
+  "propSpin": 1982.6,
+  "floatEnd": -1.5708,
+  "remoteIsBoat": true,
+  "remoteDone": {
+   "done": true,
+   "pickup": true
+  },
+  "removed": true
+ },
+ "others": {
+  "nearCarrierPby": false,
+  "defendPby": false,
+  "defend": true
+ }
+}

@@ -1,19 +1,19 @@
 {
   "schema": 1,
   "reviewedOn": "2026-10-23",
-  "build": 243,
+  "build": 246,
   "status": "OPEN — source declarations checked; no external rights authorization obtained",
   "payload": {
-    "bytes": 153839199,
-    "fileCount": 360,
-    "modelCount": 48,
-    "manifestSha256": "ece3d809b3ca0e0287a98859177131223f16e767d9eec133d938b7d2f083166c"
+    "bytes": 157858998,
+    "fileCount": 371,
+    "modelCount": 56,
+    "manifestSha256": "e277e0e829f7dfe041ada120e9685011ae22f349812c633cd7ea374296691198"
   },
   "files": [
     {
       "path": "ASSET-CREDITS.md",
-      "bytes": 39720,
-      "sha256": "cba8acdf3c0172efa792bc602675738386a7d3ba3d80dfa4aeb5de04ebb2db6b",
+      "bytes": 40522,
+      "sha256": "77c1167d9299a95762433ec60426683f20bc808d88b403e68f9e2bfe460903d5",
       "kind": "code-or-notice"
     },
     {
@@ -167,6 +167,12 @@
       "kind": "model"
     },
     {
+      "path": "assets/aircraft/pby5a-own.glb",
+      "bytes": 936380,
+      "sha256": "b949aef9d16eb180db7e69744e2186b944bc4ff67ef542663c289865c1630fda",
+      "kind": "model"
+    },
+    {
       "path": "assets/aircraft/sbd-1942-livery.jpg",
       "bytes": 452589,
       "sha256": "f8018bdd3c4b6e5991167445fac058460283a09ae9ba38629c208b39036b8f9e",
@@ -245,6 +251,12 @@
       "kind": "model"
     },
     {
+      "path": "assets/ground-vehicles/flakwagen-own.glb",
+      "bytes": 449364,
+      "sha256": "6409c725b28156a2a197accbfc698a723133d0935ebe7b822a1b5affdc328c09",
+      "kind": "model"
+    },
+    {
       "path": "assets/ground-vehicles/ford-v8-cream.glb",
       "bytes": 125348,
       "sha256": "2da03aee01ba8c65ce5ad225137588da1b2b281f6e4d6cd9240ad344935f0013",
@@ -293,15 +305,39 @@
       "kind": "model"
     },
     {
+      "path": "assets/ground-vehicles/opel-blitz-cargo-own.glb",
+      "bytes": 266632,
+      "sha256": "fd55c6dea4202de75c8ece1ae868ad93a2fc2f61306caa6fc9c670db34a3268e",
+      "kind": "model"
+    },
+    {
       "path": "assets/ground-vehicles/opel-blitz-cargo.glb",
       "bytes": 221552,
       "sha256": "e286769a687c477449b5414988abc17b80db02b0e74906c31f6c3db6a4e75af8",
       "kind": "model"
     },
     {
+      "path": "assets/ground-vehicles/opel-blitz-tanker-own.glb",
+      "bytes": 300564,
+      "sha256": "2221d9024d54c086c45c15f005fbc85a26a8921e0694873aaaf8a70638cbc09e",
+      "kind": "model"
+    },
+    {
       "path": "assets/ground-vehicles/opel-blitz-tanker.glb",
       "bytes": 220664,
       "sha256": "7c690d4323767bde406fa182c8d03f753acf3b093c53633c4d372f171b2f3827",
+      "kind": "model"
+    },
+    {
+      "path": "assets/ground-vehicles/panzer4h-own.glb",
+      "bytes": 578608,
+      "sha256": "43b40c9e2c10ab657ab608f08d5bee33d915cd0ec4f6493235f1c3a319ebf6fc",
+      "kind": "model"
+    },
+    {
+      "path": "assets/ground-vehicles/sdkfz251d-own.glb",
+      "bytes": 399156,
+      "sha256": "915df1445ef9aa54c88d1af5630f0eb32a81f059e0e278f7192ff130725ab0fc",
       "kind": "model"
     },
     {
@@ -341,6 +377,12 @@
       "kind": "model"
     },
     {
+      "path": "assets/remagen/sites/depot-kit-own.glb",
+      "bytes": 254544,
+      "sha256": "e1404e173b88b8a51f216c5dc7f082bcb5e11c90a8703c692c2040a633191ba3",
+      "kind": "model"
+    },
+    {
       "path": "assets/remagen/sites/fi103-ramp-own.glb",
       "bytes": 212384,
       "sha256": "77f08ee13cc6571d3d49836682b560f1388b2bac9d724344b35d15d0b6ad8c1c",
@@ -368,6 +410,12 @@
       "path": "assets/ships/fletcher.glb",
       "bytes": 248252,
       "sha256": "e561a87c0521accc8292ad7ec62fdb6028e8676b8ae51e914a3da7fb99fca00b",
+      "kind": "model"
+    },
+    {
+      "path": "assets/ships/hospital-ship-own.glb",
+      "bytes": 696404,
+      "sha256": "f708d2d1aceda0bc206249651fdf7566bc021cdacbbe73bb5643825ed0443a4b",
       "kind": "model"
     },
     {
@@ -763,7 +811,7 @@
     {
       "path": "hangar.html",
       "bytes": 4485,
-      "sha256": "12575b97815539fbf9f485edc8fa1a3a1818b24cdea30fa36ab411eb20153beb",
+      "sha256": "28d10071c9e20bbf02c1d4a48a2f2a78de10d56a66e4e7a838867c872bb2a1d0",
       "kind": "code-or-notice"
     },
     {
@@ -775,7 +823,7 @@
     {
       "path": "index.html",
       "bytes": 7543,
-      "sha256": "bab5580100ddeafe72e358346688eb621001a2b9780b0364547eada7f3b8c69a",
+      "sha256": "90fa66e12dd43cd787480758bae77262a86b989067c74014bf3e3e5adbd8be88",
       "kind": "code-or-notice"
     },
     {
@@ -816,14 +864,26 @@
     },
     {
       "path": "naval-assets.js",
-      "bytes": 2694,
-      "sha256": "6951e6128449f088ddaafea85557225850fae93e47e6ed7f2173c229ba95ebe5",
+      "bytes": 2923,
+      "sha256": "f0ae94055add46869d13e1ed7700d0db8c247ce71cf358f824b808ca77d06623",
       "kind": "code-or-notice"
     },
     {
       "path": "okinawa/README.md",
-      "bytes": 6939,
-      "sha256": "a91b0bea868caf280ce0ed11dbe1f9a8ef658e3eb6a27883d7d8888832bf5431",
+      "bytes": 8810,
+      "sha256": "27c691481201ddcb23a072276e26ecff9b771ca1140e9dc73319237a2252711b",
+      "kind": "code-or-notice"
+    },
+    {
+      "path": "okinawa/coastal-scenery.js",
+      "bytes": 10892,
+      "sha256": "7bfbd9a0ef48f7101a550668c4bdb149eac62f91fe86040351af86b3d99a499b",
+      "kind": "code-or-notice"
+    },
+    {
+      "path": "okinawa/coastal-templates.js",
+      "bytes": 86911,
+      "sha256": "be718f9308115aa412845ac0671057d9bd68dd9f17fca20d9c7437dadb3d0235",
       "kind": "code-or-notice"
     },
     {
@@ -834,20 +894,20 @@
     },
     {
       "path": "okinawa/viewer.js",
-      "bytes": 12100,
-      "sha256": "faba369ca5acc73f17d33603500075cf7570eff39903023eb8d86d99aaed79dd",
+      "bytes": 12497,
+      "sha256": "a0cffbc5b368e2128c872876b7362ec26bd1d9fe5848a86d64c4c11875ff86e5",
       "kind": "code-or-notice"
     },
     {
       "path": "okinawa/world.js",
-      "bytes": 45394,
-      "sha256": "2a137b48eb71be8a9b3807e94dae79281902a4c7b335cd4c8841b0c691342c13",
+      "bytes": 53004,
+      "sha256": "03c1ddaaa6d57c850a9f78cb352f4d9601383c1795f434c486ea11775cf3183e",
       "kind": "code-or-notice"
     },
     {
       "path": "operation-plans.js",
-      "bytes": 8601,
-      "sha256": "e5499e6718b9ddf4614aad8e17ee690c845b1f559722f208cd8ea310ea1c688f",
+      "bytes": 8775,
+      "sha256": "3e3c26c2b2ff518c4b552b397b583d295297583f5263204e7fd829195d63ba0d",
       "kind": "code-or-notice"
     },
     {
@@ -875,6 +935,12 @@
       "kind": "code-or-notice"
     },
     {
+      "path": "pby-rescue.js",
+      "bytes": 8726,
+      "sha256": "1bd9967bb16957e1dbf507d3ffb6c6ed579cd06111c3856f9565e4f19101529c",
+      "kind": "code-or-notice"
+    },
+    {
       "path": "pilot-bailout.js",
       "bytes": 5025,
       "sha256": "9a6aba5709d7c727ba3583d1b2794c697ac3c40ca96a2366a5498cf8021fb842",
@@ -894,8 +960,8 @@
     },
     {
       "path": "remagen-mission.html",
-      "bytes": 478930,
-      "sha256": "2080b4c4ac97b446652435da07b8ef4af1221dbc52c6524b255b5db0bc444a4a",
+      "bytes": 486861,
+      "sha256": "99a57c379fab55f405cca85711fa07a17f0835f204c7f15feea73ac461c87b21",
       "kind": "code-or-notice"
     },
     {
@@ -1008,8 +1074,8 @@
     },
     {
       "path": "terrain-system/LivingWorld.js",
-      "bytes": 29802,
-      "sha256": "014ffc7e54ccb62822d317486d3a4202e0988c650837b741aa4f6f7b83401351",
+      "bytes": 36880,
+      "sha256": "3d82a62d1068bb82ba9977b406ed42e151c06ffa16d7a91666ddc41b2e6a07d6",
       "kind": "code-or-notice"
     },
     {
@@ -1056,8 +1122,8 @@
     },
     {
       "path": "terrain-system/WorldVehicles.js",
-      "bytes": 8481,
-      "sha256": "f5d9c8559261a32e13a9ce42791a245b406e1699437cd72203c4dc206877afd8",
+      "bytes": 10032,
+      "sha256": "db989f6eadd912c12604010938bf208bddede6e9253d65ccbcd7532991b25f93",
       "kind": "code-or-notice"
     },
     {
@@ -2094,8 +2160,8 @@
     },
     {
       "path": "torpedo-carrier.html",
-      "bytes": 457232,
-      "sha256": "3c6d87d0ce0cc2435f07e3b5e575e278831e11393f8837a4f6095f317df82e31",
+      "bytes": 461207,
+      "sha256": "4b59da0fc9cd3bcd512d466bee658811f2b12726ec08fdbde5f1bdc51ce77a98",
       "kind": "code-or-notice"
     },
     {
@@ -2395,6 +2461,30 @@
       "nextAction": "Retain license/attribution/change notices, validate mesh/texture provenance and app-store redistribution conditions."
     },
     {
+      "path": "assets/aircraft/pby5a-own.glb",
+      "bytes": 936380,
+      "sha256": "b949aef9d16eb180db7e69744e2186b944bc4ff67ef542663c289865c1630fda",
+      "title": "Consolidated PBY-5A Catalina (1942)",
+      "uploader": "Torpedo-Bomber project",
+      "originalRightsholder": null,
+      "sourceUrl": "https://pimaair.org/museum-aircraft/consolidated-pby-5a/",
+      "acquiredOn": null,
+      "declaredLicense": "project-own (original mesh and paint)",
+      "licenseUrl": null,
+      "licenseEvidence": "Exact runtime GLB asset.extras",
+      "sourceCheck": null,
+      "embeddedImageCount": 1,
+      "externalImages": [],
+      "originalFile": null,
+      "originalSha256": null,
+      "changes": "New procedural exterior game mesh and original baked albedo. References used only to compare proportions and appearance.",
+      "issue": "own-build-reference-review-open",
+      "commercialPermissionDocument": null,
+      "bundleRedistributionGrant": null,
+      "releaseApproved": false,
+      "nextAction": "Own mesh and paint; review the recorded reference source and any applicable attribution/share-alike obligations; credits kept in ASSET-CREDITS.md."
+    },
+    {
       "path": "assets/aircraft/sbd-dauntless.glb",
       "bytes": 7229376,
       "sha256": "80b06926d6c4d3168e9a52a61379b1a00a1841a8130afcca71f842870d8336e1",
@@ -2617,6 +2707,30 @@
       "nextAction": "Own mesh and paint; review the recorded reference source and any applicable attribution/share-alike obligations; credits kept in ASSET-CREDITS.md."
     },
     {
+      "path": "assets/ground-vehicles/flakwagen-own.glb",
+      "bytes": 449364,
+      "sha256": "6409c725b28156a2a197accbfc698a723133d0935ebe7b822a1b5affdc328c09",
+      "title": "Flakvierling platform wagon",
+      "uploader": "Torpedo-Bomber project",
+      "originalRightsholder": null,
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Bundesarchiv_Bild_101I-621-2944-26A,_Vierlingsflak_auf_Eisenbahn.jpg",
+      "acquiredOn": null,
+      "declaredLicense": "project-own (original mesh and paint)",
+      "licenseUrl": null,
+      "licenseEvidence": "Exact runtime GLB asset.extras",
+      "sourceCheck": null,
+      "embeddedImageCount": 1,
+      "externalImages": [],
+      "originalFile": null,
+      "originalSha256": null,
+      "changes": "New procedural exterior game mesh and original baked albedo. References used only to compare proportions and appearance.",
+      "issue": "own-build-reference-review-open",
+      "commercialPermissionDocument": null,
+      "bundleRedistributionGrant": null,
+      "releaseApproved": false,
+      "nextAction": "Own mesh and paint; review the recorded reference source and any applicable attribution/share-alike obligations; credits kept in ASSET-CREDITS.md."
+    },
+    {
       "path": "assets/ground-vehicles/ford-v8-cream.glb",
       "bytes": 125348,
       "sha256": "2da03aee01ba8c65ce5ad225137588da1b2b281f6e4d6cd9240ad344935f0013",
@@ -2809,6 +2923,30 @@
       "nextAction": "Own mesh and paint; review the recorded reference source and any applicable attribution/share-alike obligations; credits kept in ASSET-CREDITS.md."
     },
     {
+      "path": "assets/ground-vehicles/opel-blitz-cargo-own.glb",
+      "bytes": 266632,
+      "sha256": "fd55c6dea4202de75c8ece1ae868ad93a2fc2f61306caa6fc9c670db34a3268e",
+      "title": "Opel Blitz 3 t — Pritsche mit Plane",
+      "uploader": "Torpedo-Bomber project",
+      "originalRightsholder": null,
+      "sourceUrl": "https://www.disg-ev.de/fahrzeugsammlung/opel-blitz",
+      "acquiredOn": null,
+      "declaredLicense": "project-own (original mesh and paint)",
+      "licenseUrl": null,
+      "licenseEvidence": "Exact runtime GLB asset.extras",
+      "sourceCheck": null,
+      "embeddedImageCount": 1,
+      "externalImages": [],
+      "originalFile": null,
+      "originalSha256": null,
+      "changes": "New procedural exterior game mesh and original baked albedo. References used only to compare proportions and appearance.",
+      "issue": "own-build-reference-review-open",
+      "commercialPermissionDocument": null,
+      "bundleRedistributionGrant": null,
+      "releaseApproved": false,
+      "nextAction": "Own mesh and paint; review the recorded reference source and any applicable attribution/share-alike obligations; credits kept in ASSET-CREDITS.md."
+    },
+    {
       "path": "assets/ground-vehicles/opel-blitz-cargo.glb",
       "bytes": 221552,
       "sha256": "e286769a687c477449b5414988abc17b80db02b0e74906c31f6c3db6a4e75af8",
@@ -2833,6 +2971,30 @@
       "nextAction": "Own mesh and paint; review the recorded reference source and any applicable attribution/share-alike obligations; credits kept in ASSET-CREDITS.md."
     },
     {
+      "path": "assets/ground-vehicles/opel-blitz-tanker-own.glb",
+      "bytes": 300564,
+      "sha256": "2221d9024d54c086c45c15f005fbc85a26a8921e0694873aaaf8a70638cbc09e",
+      "title": "Opel Blitz 3 t — Tankwagen",
+      "uploader": "Torpedo-Bomber project",
+      "originalRightsholder": null,
+      "sourceUrl": "https://www.disg-ev.de/fahrzeugsammlung/opel-blitz",
+      "acquiredOn": null,
+      "declaredLicense": "project-own (original mesh and paint)",
+      "licenseUrl": null,
+      "licenseEvidence": "Exact runtime GLB asset.extras",
+      "sourceCheck": null,
+      "embeddedImageCount": 1,
+      "externalImages": [],
+      "originalFile": null,
+      "originalSha256": null,
+      "changes": "New procedural exterior game mesh and original baked albedo. References used only to compare proportions and appearance.",
+      "issue": "own-build-reference-review-open",
+      "commercialPermissionDocument": null,
+      "bundleRedistributionGrant": null,
+      "releaseApproved": false,
+      "nextAction": "Own mesh and paint; review the recorded reference source and any applicable attribution/share-alike obligations; credits kept in ASSET-CREDITS.md."
+    },
+    {
       "path": "assets/ground-vehicles/opel-blitz-tanker.glb",
       "bytes": 220664,
       "sha256": "7c690d4323767bde406fa182c8d03f753acf3b093c53633c4d372f171b2f3827",
@@ -2850,6 +3012,54 @@
       "originalFile": null,
       "originalSha256": null,
       "changes": "Original geometry and procedural paint atlas, built without imported meshes or textures.",
+      "issue": "own-build-reference-review-open",
+      "commercialPermissionDocument": null,
+      "bundleRedistributionGrant": null,
+      "releaseApproved": false,
+      "nextAction": "Own mesh and paint; review the recorded reference source and any applicable attribution/share-alike obligations; credits kept in ASSET-CREDITS.md."
+    },
+    {
+      "path": "assets/ground-vehicles/panzer4h-own.glb",
+      "bytes": 578608,
+      "sha256": "43b40c9e2c10ab657ab608f08d5bee33d915cd0ec4f6493235f1c3a319ebf6fc",
+      "title": "Panzerkampfwagen IV Ausf. H",
+      "uploader": "Torpedo-Bomber project",
+      "originalRightsholder": null,
+      "sourceUrl": "https://www.wardrawings.be/WW2/Files/1-Vehicles/Axis/1-Germany/02-mPanzers/PzKpfw4/Data/PzKpfw-4H.htm",
+      "acquiredOn": null,
+      "declaredLicense": "project-own (original mesh and paint)",
+      "licenseUrl": null,
+      "licenseEvidence": "Exact runtime GLB asset.extras",
+      "sourceCheck": null,
+      "embeddedImageCount": 1,
+      "externalImages": [],
+      "originalFile": null,
+      "originalSha256": null,
+      "changes": "New procedural exterior game mesh and original baked albedo. References used only to compare proportions and appearance.",
+      "issue": "own-build-reference-review-open",
+      "commercialPermissionDocument": null,
+      "bundleRedistributionGrant": null,
+      "releaseApproved": false,
+      "nextAction": "Own mesh and paint; review the recorded reference source and any applicable attribution/share-alike obligations; credits kept in ASSET-CREDITS.md."
+    },
+    {
+      "path": "assets/ground-vehicles/sdkfz251d-own.glb",
+      "bytes": 399156,
+      "sha256": "915df1445ef9aa54c88d1af5630f0eb32a81f059e0e278f7192ff130725ab0fc",
+      "title": "Sd.Kfz. 251/1 Ausf. D",
+      "uploader": "Torpedo-Bomber project",
+      "originalRightsholder": null,
+      "sourceUrl": "https://www.quartermastersection.com/german/afvs/525/SdKfz2511AusfD",
+      "acquiredOn": null,
+      "declaredLicense": "project-own (original mesh and paint)",
+      "licenseUrl": null,
+      "licenseEvidence": "Exact runtime GLB asset.extras",
+      "sourceCheck": null,
+      "embeddedImageCount": 1,
+      "externalImages": [],
+      "originalFile": null,
+      "originalSha256": null,
+      "changes": "New procedural exterior game mesh and original baked albedo. References used only to compare proportions and appearance.",
       "issue": "own-build-reference-review-open",
       "commercialPermissionDocument": null,
       "bundleRedistributionGrant": null,
@@ -2951,6 +3161,30 @@
       "bundleRedistributionGrant": null,
       "releaseApproved": false,
       "nextAction": "Retain license/attribution/change notices, validate mesh/texture provenance and app-store redistribution conditions."
+    },
+    {
+      "path": "assets/remagen/sites/depot-kit-own.glb",
+      "bytes": 254544,
+      "sha256": "e1404e173b88b8a51f216c5dc7f082bcb5e11c90a8703c692c2040a633191ba3",
+      "title": "Fuel and Ammunition Depot Scenery Kit",
+      "uploader": "Torpedo-Bomber project",
+      "originalRightsholder": null,
+      "sourceUrl": "https://lekatrading.com/at/product/fasser/200-liter-stahlfass-mit-deckel-schwarz-vs007/",
+      "acquiredOn": null,
+      "declaredLicense": "project-own (original mesh and paint)",
+      "licenseUrl": null,
+      "licenseEvidence": "Exact runtime GLB asset.extras",
+      "sourceCheck": null,
+      "embeddedImageCount": 1,
+      "externalImages": [],
+      "originalFile": null,
+      "originalSha256": null,
+      "changes": "New procedural exterior game mesh and original baked albedo. References used only to compare proportions and appearance.",
+      "issue": "own-build-reference-review-open",
+      "commercialPermissionDocument": null,
+      "bundleRedistributionGrant": null,
+      "releaseApproved": false,
+      "nextAction": "Own mesh and paint; review the recorded reference source and any applicable attribution/share-alike obligations; credits kept in ASSET-CREDITS.md."
     },
     {
       "path": "assets/remagen/sites/fi103-ramp-own.glb",
@@ -3066,6 +3300,30 @@
       "originalFile": null,
       "originalSha256": null,
       "changes": "Original geometry and procedural weathered paint. Historical photography informs the design; no photograph is embedded.",
+      "issue": "own-build-reference-review-open",
+      "commercialPermissionDocument": null,
+      "bundleRedistributionGrant": null,
+      "releaseApproved": false,
+      "nextAction": "Own mesh and paint; review the recorded reference source and any applicable attribution/share-alike obligations; credits kept in ASSET-CREDITS.md."
+    },
+    {
+      "path": "assets/ships/hospital-ship-own.glb",
+      "bytes": 696404,
+      "sha256": "f708d2d1aceda0bc206249651fdf7566bc021cdacbbe73bb5643825ed0443a4b",
+      "title": "Pacific Hospital Ship (1942)",
+      "uploader": "Torpedo-Bomber project",
+      "originalRightsholder": null,
+      "sourceUrl": "https://hikawamaru.nyk.com/en/history.html",
+      "acquiredOn": null,
+      "declaredLicense": "project-own (original mesh and paint)",
+      "licenseUrl": null,
+      "licenseEvidence": "Exact runtime GLB asset.extras",
+      "sourceCheck": null,
+      "embeddedImageCount": 1,
+      "externalImages": [],
+      "originalFile": null,
+      "originalSha256": null,
+      "changes": "New procedural exterior game mesh and original baked albedo. References used only to compare proportions and appearance.",
       "issue": "own-build-reference-review-open",
       "commercialPermissionDocument": null,
       "bundleRedistributionGrant": null,

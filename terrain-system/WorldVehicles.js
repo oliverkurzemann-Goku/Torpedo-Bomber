@@ -1,7 +1,10 @@
 // Shared period-vehicle templates plus two static scenic vehicles.
 // The models and their provenance are documented in GROUND-MODELS.md.
 class WorldVehicles {
-  static get BUILD(){ return 23; }
+  static get BUILD(){ return 24; }
+  // Build 246: models with a hidden wreck of their own (Intact / Wreck nodes): the intact part is merged into one mesh per material, the
+  // wreck stays a separate hidden mesh that LivingWorld swaps in when the vehicle is destroyed.
+  static get STRUCTURED(){ return new Set(['blitz','blitzTanker','panzer4','halftrack','flakwagen']); }
   constructor(scene,terrain,osm){
     this.scene=scene;this.terrain=terrain;this.osm=osm;this.entries=[];this.failures=[];
     this.templates=new Map();this.onTemplate=null;
@@ -60,17 +63,30 @@ class WorldVehicles {
       o.material=Array.isArray(o.material)?o.material.map(convert):convert(o.material);
     });
     root.updateMatrixWorld(true);
+    let wreck=null;
+    if(WorldVehicles.STRUCTURED.has(kind)){
+      const intact=root.getObjectByName('Intact');wreck=root.getObjectByName('Wreck');
+      if(!intact||!wreck)throw new Error('Vehicle model lacks Intact / Wreck nodes');
+      const merged=WorldVehicles.mergeStaticByMaterial(intact);merged.name='IntactMerged';
+      const discarded=new Set();intact.traverse(o=>{if(o.geometry)discarded.add(o.geometry);});
+      intact.parent.add(merged);intact.parent.remove(intact);
+      for(const geo of discarded)geo.dispose();
+      root.updateMatrixWorld(true);
+    }
     const b=new THREE.Box3().setFromObject(root),size=b.getSize(new THREE.Vector3());
     if(![size.x,size.y,size.z].every(v=>Number.isFinite(v)&&v>0))throw new Error('Invalid vehicle bounds');
     // Real-world target lengths keep imports from three different authoring
     // unit systems consistent. The merchant remains a compact Rhine workboat
     // silhouette, not a claim about the exact 1945 ferry type.
     const targetLength={m16:6.62,tiger:8.45,tigerGrey:8.45,jagdpanther:9.8,sherman:7.58,
-      merchant:30,flak88:8.808,civilCar:4.75,civilCarCream:4.75,horse:2.5,train:24.1}[kind]||8;
+      merchant:30,flak88:8.808,civilCar:4.75,civilCarCream:4.75,horse:2.5,train:24.1,
+      panzer4:7.02,halftrack:5.98,blitz:6,blitzTanker:6,flakwagen:12}[kind]||8;
     const scale=targetLength/Math.max(size.x,size.z);
     const model=new THREE.Group();model.add(root);root.scale.setScalar(scale);
     root.position.set(-(b.min.x+b.max.x)*scale/2,-b.min.y*scale,-(b.min.z+b.max.z)*scale/2);
     model.userData.size=new THREE.Vector3(size.x*scale,size.y*scale,size.z*scale);
+    // the bounds above were taken with the wreck still at its stored zero scale, so it cannot widen the vehicle
+    if(wreck){wreck.scale.set(1,1,1);wreck.visible=false;}
     return model;
   }
   safeSpot(x,z,yaw,size){
@@ -143,6 +159,12 @@ class WorldVehicles {
       {kind:'civilCarCream',url:vehicle('ford-v8-cream')},
       {kind:'horse',url:'assets/remagen/horse/quaternius_horse.glb'},
       {kind:'train',url:vehicle('drb-01-10')},
+      // Build 246: delivered column vehicles with their own wrecks (see RHINE-MODELS.md / GROUND-MODELS.md)
+      {kind:'panzer4',url:vehicle('panzer4h-own')},
+      {kind:'halftrack',url:vehicle('sdkfz251d-own')},
+      {kind:'blitz',url:vehicle('opel-blitz-cargo-own')},
+      {kind:'blitzTanker',url:vehicle('opel-blitz-tanker-own')},
+      {kind:'flakwagen',url:vehicle('flakwagen-own')},
       {kind:'merchant',url:'assets/ships/japanese-cargo.glb'}
     ];
     for(const spec of templateSpecs)try{

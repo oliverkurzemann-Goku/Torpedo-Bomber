@@ -302,7 +302,7 @@
   <div style="width:100%;height:4px;background:repeating-linear-gradient(45deg,#ffd400,#ffd400 8px,#111 8px,#111 16px);"></div>
   <span id="testVersionBannerText" style="background:#111;color:#ffd400;font-family:monospace;font-weight:800;font-size:11px;letter-spacing:.5px;padding:3px 10px;border:1px solid #ffd400;border-top:none;border-radius:0 0 6px 6px;"></span>
 </div>
-<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 245';</script>
+<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 246';</script>
 <!-- ===== END TEMP TEST-ONLY VERSION BANNER ===== -->
 <div id="app"></div>
 <style>
@@ -343,7 +343,7 @@
   <div id="flash"></div>
   <div id="gunsight"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 245 · REAL RHINE</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 246 · REAL RHINE</div>
 
   <div id="apr">
     <div id="aprCall"></div>
@@ -397,7 +397,7 @@
 </div>
 
 <div class="overlay hidden" id="menu" data-campaign="europe">
-  <div class="menuTop"><a id="selBtn" href="index.html?v=245">&#9664; Change Game</a><span class="menuMeta">RHINE OPERATIONS<br>BUILD 245</span></div>
+  <div class="menuTop"><a id="selBtn" href="index.html?v=246">&#9664; Change Game</a><span class="menuMeta">RHINE OPERATIONS<br>BUILD 246</span></div>
   <div class="card menuCard">
     <aside class="menuOverview" aria-label="Campaign and pilot options">
     <div class="campaignArt" aria-hidden="true"></div>
@@ -569,8 +569,8 @@
 <script src="terrain-system/AirfieldDetails.js?v=169"></script>
 <script src="terrain-system/AircraftGround.js?v=218"></script>
 <script src="terrain-system/AirfieldActivity.js?v=242"></script>
-<script src="terrain-system/WorldVehicles.js?v=241"></script>
-<script src="terrain-system/LivingWorld.js?v=241"></script>
+<script src="terrain-system/WorldVehicles.js?v=246"></script>
+<script src="terrain-system/LivingWorld.js?v=246"></script>
 <script src="campaign.js?v=1"></script>
 <script src="game-runtime.js?v=198"></script>
 <script src="sortie-checkpoint.js?v=238"></script>
@@ -618,7 +618,7 @@
 <script src="ground-dust.js?v=181"></script>
 <script src="flight-indicators.js?v=198"></script>
 <script src="sortie-fuel.js?v=206"></script>
-<script src="operation-plans.js?v=243"></script>
+<script src="operation-plans.js?v=246"></script>
 <script src="custom-sortie.js?v=238"></script>
 <script>
 // ============================================================
@@ -966,9 +966,9 @@ function clearRoadsOnRunways(){
 async function loadRealWorld(){
   const setLoadingText=(s)=>{ const el=document.getElementById('loadingText'); if(el) el.textContent=s; };
 
-  if(OSMManager.BUILD!==23||HistoricalObjectManager.BUILD!==21||LivingWorld.BUILD!==22||WorldVehicles.BUILD!==23) throw new Error('Terrain version mismatch. Reload Remagen.');
+  if(OSMManager.BUILD!==23||HistoricalObjectManager.BUILD!==21||LivingWorld.BUILD!==22||WorldVehicles.BUILD!==24) throw new Error('Terrain version mismatch. Reload Remagen.');
   document.getElementById('testVersionBannerText').textContent=
-    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 245 · MODULE 23';
+    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 246 · MODULE 23';
   heightProvider=new DEMHeightProvider(RTILE,'terrain-system/real/data/dem/');
   terrain=new TerrainManager(scene,RTILE,heightProvider);
   osmMgr=new OSMManager(scene,RTILE,terrain,'terrain-system/real/data/osm/');
@@ -2922,7 +2922,16 @@ const TDEF={
   // Build 243: scenery sites with real models (see the SITES block): radar and searchlights are optional, the V-1 ramp is its own sortie's target
   radar  :{hp:3,   r:9,  pts:600,  gun:.6,  name:'WUERZBURG RADAR'},
   searchlight:{hp:1.5,r:4.5,pts:150,gun:1,  name:'SEARCHLIGHT'},
-  ramp   :{hp:6,   r:27, pts:1200, gun:.25, name:'V-1 RAMP'}
+  ramp   :{hp:6,   r:27, pts:1200, gun:.25, name:'V-1 RAMP'},
+  // Build 246: the Flakvierling wagon coupled to the train (optional target, light flak)
+  flakcar:{hp:5,   r:9,  pts:500,  gun:.55, name:'FLAK WAGON'},
+  // Build 246: the parts of the fuel and ammunition dump (depot-kit-own.glb): tanks, drums and crates count for the objective and burn in chains
+  depotTank  :{hp:4,   r:7,  pts:600,  gun:.4,  name:'FUEL TANK'},
+  depotDrums :{hp:1.5, r:3.5,pts:250,  gun:.9,  name:'FUEL DRUMS'},
+  depotCrates:{hp:1.5, r:2.8,pts:250,  gun:.8,  name:'AMMUNITION'},
+  depotNet   :{hp:1,   r:4.5,pts:100,  gun:1,   name:'CAMOUFLAGE NET'},
+  depotBerm  :{hp:6,   r:6,  pts:100,  gun:0,   name:'EARTH BERM'},
+  depotHut   :{hp:2,   r:5,  pts:150,  gun:.6,  name:'STORE HUT'}
 };
 
 // A thin position/rotation handle standing in for a real object's own THREE.Group. Real
@@ -2959,13 +2968,14 @@ function spawnRealTarget(kind,sub,opt){
   if(kind==='flak') flakUnits.push(t);
   return t;
 }
+const VEHICLE_NAMES={sherman:'M4 SHERMAN',m16:'M16 AA',panzer4:'PANZER IV',halftrack:'SD.KFZ. 251',blitz:'OPEL BLITZ',blitzTanker:'FUEL TRUCK',jagdpanther:'JAGDPANTHER'};
 function spawnLivingTarget(entity,opt){
   opt=opt||{};const d=TDEF[entity.kind],vehicle=entity.meta?.vehicleModel;
-  const armoured=vehicle==='jagdpanther'||vehicle==='sherman';
+  const armoured=vehicle==='jagdpanther'||vehicle==='sherman'||vehicle==='panzer4';
   const t={kind:entity.kind,sub:entity.model,group:entity.model,entity,
     hp:d.hp*(opt.hpMul||1)*(armoured?2:1),maxhp:d.hp*(opt.hpMul||1)*(armoured?2:1),
     alive:true,radius:armoured?9:d.r,
-    pts:armoured?400:d.pts,name:vehicle==='sherman'?'M4 SHERMAN':vehicle==='m16'?'M16 AA':armoured?'JAGDPANTHER':d.name,
+    pts:armoured?400:d.pts,name:VEHICLE_NAMES[vehicle]||(armoured?'JAGDPANTHER':d.name),
     primary:opt.primary!==false,cool:0,burnT:0,smokeT:Math.random()};
   targets.push(t);
   if(vehicle==='m16'&&isGermanMission(M()))flakUnits.push(t);
@@ -3020,15 +3030,18 @@ function damageTarget(t,amount,byGun){
 function killTarget(t){
   t.alive=false; t.burnT=26;
   const p=t.group.position;
-  const big=(t.kind==='bridge'||t.kind==='factory'||t.kind==='train'||t.kind==='ferry'||t.kind==='ramp'||t.kind==='radar');
+  const tanker=!!(t.entity&&t.entity.meta&&t.entity.meta.vehicleModel==='blitzTanker');
+  const big=(t.kind==='bridge'||t.kind==='factory'||t.kind==='train'||t.kind==='ferry'||t.kind==='ramp'||t.kind==='radar'||t.kind==='depotTank'||tanker);
   spawnExplosion(p.x,p.y+3,p.z, big?2.2:1.0);
   spawnDebris(p.x,p.y+2,p.z, big?18:8);
   sfxBoom(big?1.2:0.6);
   addScore(t.pts);
-  const key={flak:'flak',bridge:'bridge',factory:'factory',truck:'truck',train:'train',ferry:'ferry',ramp:'ramp'}[t.kind];
+  const key={flak:'flak',bridge:'bridge',factory:'factory',truck:'truck',train:'train',ferry:'ferry',ramp:'ramp',depotTank:'depot',depotDrums:'depot',depotCrates:'depot'}[t.kind];
   if(key) sortieKills[key]=(sortieKills[key]||0)+1;
   if(t.secondary){addScore(300);radioSay('OPTIONAL SECONDARY TARGET DESTROYED — BONUS 300');}
-  if(!t.surprise&&(t.kind==='truck'||t.kind==='train'))surprises?.trigger('ammoBlast',{victim:t,dist:P.pos.distanceTo(p),agl:P.pos.y-groundY(P.pos.x,P.pos.z)});
+  if(t.chain&&typeof depotChain==='function')depotChain(t);
+  if(tanker&&typeof fuelBlast==='function')fuelBlast(t);
+  else if(!t.surprise&&(t.kind==='truck'||t.kind==='train'))surprises?.trigger('ammoBlast',{victim:t,dist:P.pos.distanceTo(p),agl:P.pos.y-groundY(P.pos.x,P.pos.z)});
   // Darken materials in place and sink the whole permanent sub-group straight down a few metres
   // for a "knocked out" read — deliberately NOT the old rotation-tilt wreck visual
   // (t.group.rotation.z=...), because these meshes' own positions are baked in WORLD coordinates
@@ -3070,15 +3083,17 @@ const MISSIONS=[
     text:"Three circuits of the strip. Wheels down, flaps out, cross the hedge at the displayed <b>REF speed (about 130 mph)</b> "
         +"and hold the centreline. Learn to put her down here and the rest of the war is easier." },
   { id:'convoy', title:'Sortie 1', sub:'Road Recce', ac:'p47', squad:{n:1,roles:['strike']}, weather:'clear',
-    kills:{truck:4}, flakDefense:1, text:"Four vehicles are moving along the mapped valley road. "
-        +"Stay below the ridge, make one fast gun pass and watch for flak near the crossing." },
+    kills:{truck:4}, flakDefense:1, text:"Four vehicles are moving along the mapped valley road: a Panzer IV, a half-track, "
+        +"an Opel fuel truck and an Opel cargo truck. Stay below the ridge, make one fast gun pass and watch for flak near the crossing. "
+        +"A burning fuel truck takes its neighbours with it, and the fireball reaches low aeroplanes: do not pull up over it." },
   { id:'flak', title:'Sortie 2', sub:'Flak Suppression', ac:'p47', squad:{n:1,roles:['strike']}, weather:'haze',
     kills:{flak:2}, flakDefense:2, text:"Two gun positions overlook the river crossing from the high ground on "
         +"either bank. Before anyone else comes through low over the bridge, they have to go. "
         +"Come in low and fast, one pass, no second circuit." },
   { id:'train', title:'Sortie 3', sub:'Rail Cut', ac:'p47', weather:'rain',
     kills:{train:1}, flakDefense:1, text:"A supply train is on the real valley railway. Find its locomotive "
-        +"through the rain, strike with rockets or bombs, and climb before the track bends uphill." },
+        +"through the rain, strike with rockets or bombs, and climb before the track bends uphill. "
+        +"A Flakvierling wagon is coupled behind the locomotive and shoots at anything above 15 m: silencing it is optional (bonus 300)." },
   { id:'factory', title:'Sortie 4', sub:'Factory Strike', ac:'p47', weather:'clear',
     kills:{factory:1,flak:1}, flakDefense:1, radar:true, text:"The industrial works up the valley are keeping the bridgehead "
         +"supplied. Bombs and rockets on the workshops and the stack — watch for heavy flak "
@@ -3146,7 +3161,10 @@ const MISSIONS=[
   {id:'rotte',title:'Bonus Two-Ship',sub:'Armed Recce Pair',ac:'p47',bonus:true,squad:{n:1,roles:['strike']},traffic:'convoy',weather:'broken',kills:{truck:4,flak:1},flakDefense:1,
     text:'Fictional two-ship armed reconnaissance: you and TWO line up on the strip and take off together, then work the valley as a pair. A column is moving on the mapped road and one gun position covers it. TWO attacks on his own account with guns and rockets, picks the target you are not on and calls bandits on your tail. Split the targets, keep your section together and bring both aircraft home for a bonus.'},
   {id:'buzz',title:'Bonus Buzz Bombs',sub:'Ramp and Flying Bombs',ac:'p47',bonus:true,weather:'clear',kills:{ramp:1},ramp:true,
-    text:'Fictional interception: a V-1 launch ramp stands on the German side of the valley and fires flying bombs at the Allied strip. Find the ramp (marked on the map) and destroy it with bombs and rockets. Every bomb you shoot down on the way is worth a bonus. They fly straight and level at about 340 knots: line up from behind and use the guns. Return to the field once the ramp is down.'}
+    text:'Fictional interception: a V-1 launch ramp stands on the German side of the valley and fires flying bombs at the Allied strip. Find the ramp (marked on the map) and destroy it with bombs and rockets. Every bomb you shoot down on the way is worth a bonus. They fly straight and level at about 340 knots: line up from behind and use the guns. Return to the field once the ramp is down.'},
+  {id:'depot',title:'Bonus Depot Raid',sub:'Fuel and Ammunition Dump',ac:'p47',bonus:true,weather:'clear',kills:{depot:6},depot:true,
+    text:'Fictional strike on a German fuel and ammunition dump behind the front, marked on the map: two fuel tanks, stacks of drums and ammunition crates under camouflage nets and earth berms. '
+      +'Six of the eight stores must go. They burn in chains: a hit tank sets off its neighbours, and the fireballs reach a low aeroplane over the dump. Rockets and bombs in one pass, then pull up early.'}
 ];
 function M(){ return MISSIONS[mission]; }
 function isFree(){ return !!M().free; }
@@ -3196,6 +3214,11 @@ function populate(){
   if(m.kills&&m.kills.factory && realFactory) spawnRealTarget('factory',realFactory,{primary:true});
   if(livingWorld&&m.kills&&(m.kills.truck||m.kills.train||m.kills.ferry))
     for(const e of livingWorld.missionTargets(m.traffic||m.id))spawnLivingTarget(e,{primary:true});
+  // Build 246: the Flakvierling wagon coupled to the train defends it: an optional target that shoots at low flyers
+  if(livingWorld&&m.kills&&m.kills.train){
+    const car=livingWorld.entities?.find(e=>e.kind==='flakcar');
+    if(car){const t=spawnLivingTarget(car,{primary:false});t.secondary=true;t.heavy=false;t.coolBase=.12;t.coolVar=.1;t.range=1500;flakUnits.push(t);}
+  }
   if(m.secondary&&livingWorld){
     const entity=livingWorld.entities.find(e=>e.kind==='truck'&&e.meta.convoy===0&&e.meta.vehicleModel==='m16');
     if(entity){const t=spawnLivingTarget(entity,{primary:false});t.secondary=true;t.name='OPTIONAL M16';}
@@ -3231,7 +3254,7 @@ function objectiveText(){
   if(blockingEnemyAir().length>0 && !ks.length)
     return 'BANDITS  '+blockingEnemyAir().length+' LEFT';
   if(!ks.length) return europeOps?.pending()?'NEXT CONTACT EXPECTED':'RTB — LAND AT '+airfieldName(m);
-  const nm={flak:'FLAK',bridge:'BRIDGE',factory:'FACTORY',truck:['jabo','stuka'].includes(M().id)?'VEHICLES':'TRUCKS',train:'TRAIN',ferry:'FERRY',ramp:'V-1 RAMP'};
+  const nm={flak:'FLAK',bridge:'BRIDGE',factory:'FACTORY',truck:['jabo','stuka'].includes(M().id)?'VEHICLES':'TRUCKS',train:'TRAIN',ferry:'FERRY',ramp:'V-1 RAMP',depot:'STORES'};
   return ks.map(k=>(nm[k]||k.toUpperCase())+' '+left[k]).join('  ')+(M().ramp?'   V-1 DOWN '+(sortieKills.v1||0):'');
 }
 function checkObjective(){
@@ -4940,7 +4963,7 @@ async function duelCopy(id){
 function duelSendHello(){
   const s=duelSession;if(!s||!duelLink||duelLink.status!=='open')return;
   s.name=Duel.cleanName(dEl('dlName').value)||s.name;
-  duelLink.sendEvent(Duel.hello({name:s.name,ac:s.ac,build:245}));
+  duelLink.sendEvent(Duel.hello({name:s.name,ac:s.ac,build:246}));
 }
 function duelOnStatus(status,info){
   const s=duelSession;if(!s)return;
@@ -5266,7 +5289,17 @@ function duelInit(){
 //  dies, a searchlight that holds you in its beam makes every gun on the map quicker and more accurate.
 // ============================================================
 const SITE_FILES={radar:'assets/remagen/sites/wuerzburg-riese-own.glb',searchlight:'assets/remagen/sites/flak-searchlight-own.glb',
-  ramp:'assets/remagen/sites/fi103-ramp-own.glb',v1:'assets/aircraft/fi103-own.glb'};
+  ramp:'assets/remagen/sites/fi103-ramp-own.glb',v1:'assets/aircraft/fi103-own.glb',depot:'assets/remagen/sites/depot-kit-own.glb'};
+// Build 246: the depot kit is one GLB with six independent roots; every part of the dump is its own target built from one root
+const DEPOT_NODE={depotTank:'FuelTank',depotDrums:'DrumStack',depotCrates:'CrateStack',depotNet:'CamoNet',depotBerm:'Berm',depotHut:'Hut'};
+// layout in the dump's own frame (x right, z ahead, metres) with each part's own turn: 2 tanks, 3 drum stacks, 3 crate stacks (the eight stores),
+// the net over the middle, two huts and two berms
+const DEPOT_LAYOUT=[['depotTank',-6,-9,0],['depotTank',6,-9,0],['depotDrums',-10,6,0],['depotDrums',-5,9,0],['depotDrums',0,6,0],
+  ['depotCrates',6,7,0],['depotCrates',11,3,.4],['depotCrates',11,10,-.3],['depotNet',-1,19,0],['depotHut',-17,-2,Math.PI/2],['depotHut',17,-4,Math.PI/2],
+  ['depotBerm',0,-20,Math.PI/2],['depotBerm',-14,14,.5]];
+// chain reaction: radius (m) in which the other parts take dmg after a short delay, and the fireball that reaches a low aeroplane
+const DEPOT_CHAIN={depotTank:{r:46,dmg:3.5,player:95,pdmg:16},depotCrates:{r:30,dmg:3,player:75,pdmg:11},depotDrums:{r:24,dmg:2.5,player:60,pdmg:9}};
+let siteChainQ=[],depotWarned=false;
 const SITE_BEAM={len:3400,spread:Math.tan(2.1*Math.PI/180),range:3600,trackRate:.55,sweepRate:.32};
 const siteTpl={},siteTasks={};
 let siteRecs=[],siteLit=0,siteLitWarned=false,siteBeamGeo=null;
@@ -5275,14 +5308,14 @@ function loadSite(kind){
   if(siteTpl[kind])return Promise.resolve(siteTpl[kind]);
   if(siteTasks[kind])return siteTasks[kind];
   if(typeof THREE.GLTFLoader!=='function')return Promise.reject(new Error('3D model loader unavailable'));
-  const task=new Promise((resolve,reject)=>new THREE.GLTFLoader().load(SITE_FILES[kind]+'?v=243',gltf=>{
+  const task=new Promise((resolve,reject)=>new THREE.GLTFLoader().load(SITE_FILES[kind]+'?v=246',gltf=>{
     gltf.scene.traverse(o=>{if(o.isMesh){o.frustumCulled=true;o.castShadow=false;}});
     siteTpl[kind]=gltf.scene;resolve(gltf.scene);if(typeof siteUpgrade==='function')siteUpgrade(kind);
   },undefined,reject));
   siteTasks[kind]=task;task.catch(()=>{delete siteTasks[kind];});
   return task;
 }
-function siteKindsFor(m){const k=[];if(m.radar)k.push('radar');if(m.searchlights)k.push('searchlight');if(m.ramp)k.push('ramp','v1');return k;}
+function siteKindsFor(m){const k=[];if(m.radar)k.push('radar');if(m.searchlights)k.push('searchlight');if(m.ramp)k.push('ramp','v1');if(m.depot)k.push('depot');return k;}
 function loadMissionSites(m){return Promise.all(siteKindsFor(m).map(k=>loadSite(k).catch(e=>{console.warn(k+' site model unavailable:',e);return null;})));}
 function siteSeed(text){let h=2166136261;for(let i=0;i<text.length;i++){h^=text.charCodeAt(i);h=Math.imul(h,16777619);}return h>>>0;}
 function siteRand(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
@@ -5342,16 +5375,30 @@ function sitePlan(m){
       plan.ramp={x:probe.x,z:probe.z,yaw};
     }
   }
+  if(m.depot){
+    // behind the German field, on level dry ground with room for the whole dump
+    for(let ring=0;ring<5&&!plan.depot;ring++){
+      const probe=siteSpot(GERMAN_AF_X,GERMAN_AF_Z,2700+ring*700,3900+ring*1000,rand,{r:24,slope:4});
+      if(probe)plan.depot={x:probe.x,z:probe.z,yaw:rand()*Math.PI*2};
+    }
+  }
   sitePlanCache[m.id]=plan;return plan;
 }
 function siteFallback(kind){
   const g=new THREE.Group(),mat=new THREE.MeshLambertMaterial({color:kind==='radar'?0x9c8f5c:0x6c705f}),box=(w,h,d,x,y,z)=>{const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat);m.position.set(x,y,z);g.add(m);return m;};
   if(kind==='radar'){box(6,2,6,0,1,0);const dish=new THREE.Mesh(new THREE.CylinderGeometry(3.75,3.75,.3,16),mat);dish.position.set(0,6,0);dish.rotation.x=Math.PI/2.4;g.add(dish);}
+  else if(DEPOT_NODE[kind]){const sz={depotTank:[3,3.4,12],depotDrums:[2.4,1,2],depotCrates:[2,1.4,1.5],depotNet:[6,3,8],depotBerm:[3,1.5,10],depotHut:[4,3,8]}[kind];box(sz[0],sz[1],sz[2],0,sz[1]/2,0);}
   else if(kind==='searchlight'){box(3.4,1,1.8,0,.6,0);const l=new THREE.Mesh(new THREE.CylinderGeometry(.75,.75,1.1,12),mat);l.position.set(0,1.8,0);l.rotation.x=-Math.PI/3;g.add(l);}
   else {box(4,1,48,0,.5,0);box(1.2,5,40,0,3,0).rotation.x=.1;}
   return g;
 }
 function buildSite(kind){
+  if(DEPOT_NODE[kind]){
+    const node=siteTpl.depot&&siteTpl.depot.getObjectByName(DEPOT_NODE[kind]);
+    if(!node)return {group:siteFallback(kind),fallback:true};
+    const g=node.clone(true);g.position.set(0,0,0);g.rotation.set(0,0,0);g.scale.set(1,1,1);   // the kit stores its parts side by side: place each at its own spot
+    return {group:g,fallback:false,part:DEPOT_NODE[kind]};
+  }
   const tpl=siteTpl[kind];
   if(!tpl)return {group:siteFallback(kind),fallback:true};
   return {group:tpl.clone(true),fallback:false};
@@ -5369,32 +5416,39 @@ function addSite(kind,spot,opt){
   opt=opt||{};const d=TDEF[kind],built=buildSite(kind),g=built.group,hpMul=opt.hpMul||1;
   g.position.set(spot.x,groundY(spot.x,spot.z),spot.z);g.rotation.y=spot.yaw||0;scene.add(g);
   const t={kind,sub:g,group:g,site:true,usedFallback:built.fallback,optionalSite:!opt.primary,hp:d.hp*hpMul,maxhp:d.hp*hpMul,alive:true,
-    radius:d.r,pts:d.pts,name:d.name,primary:!!opt.primary,secondary:!!opt.secondary,heavy:false,cool:0,burnT:0,smokeT:Math.random(),liftT:0};
+    radius:d.r,pts:d.pts,name:d.name,primary:!!opt.primary,secondary:!!opt.secondary,heavy:false,cool:0,burnT:0,smokeT:Math.random(),liftT:0,
+    part:built.part||null,chain:DEPOT_CHAIN[kind]||null};
   siteRig(t);targets.push(t);siteRecs.push(t);return t;
 }
 function spawnMissionSites(m){
   clearSites();
-  if(!(m.radar||m.searchlights||m.ramp))return;
+  if(!(m.radar||m.searchlights||m.ramp||m.depot))return;
   const plan=sitePlan(m);
   if(plan.radar)addSite('radar',plan.radar,{secondary:true});
   for(const s of plan.lights||[])addSite('searchlight',s);
   if(plan.ramp)addSite('ramp',plan.ramp,{primary:true});
+  if(plan.depot){
+    const c=Math.cos(plan.depot.yaw),sn=Math.sin(plan.depot.yaw);
+    // the eight stores (tanks, drums, crates) are objectives and part of a checkpoint; net, huts and berms are scenery targets for points
+    for(const [kind,dx,dz,rot] of DEPOT_LAYOUT)addSite(kind,{x:plan.depot.x+dx*c+dz*sn,z:plan.depot.z-dx*sn+dz*c,yaw:plan.depot.yaw+rot},{primary:!!DEPOT_CHAIN[kind]});
+  }
 }
 function clearSites(){
   for(const t of siteRecs){scene.remove(t.group);if(t.beam){scene.remove(t.beam);t.beam.material.dispose();}}
-  siteRecs=[];siteLit=0;siteLitWarned=false;
+  siteRecs=[];siteLit=0;siteLitWarned=false;siteChainQ=[];depotWarned=false;
   if(typeof buzzReset==='function')buzzReset();
 }
 // a model that finished loading after the sortie started replaces its stand-in
 function siteUpgrade(kind){
   for(const t of siteRecs){
-    if(!t.usedFallback||t.kind!==kind||!siteTpl[kind])continue;
-    const old=t.group,g=siteTpl[kind].clone(true);g.position.copy(old.position);g.rotation.copy(old.rotation);
-    scene.remove(old);scene.add(g);t.group=g;t.sub=g;t.usedFallback=false;t.beam=null;siteRig(t);if(!t.alive)siteWreck(t,true);
+    const tplKind=DEPOT_NODE[t.kind]?'depot':t.kind;
+    if(!t.usedFallback||tplKind!==kind||!siteTpl[kind])continue;
+    const old=t.group,built=buildSite(t.kind),g=built.group;g.position.copy(old.position);g.rotation.copy(old.rotation);
+    scene.remove(old);scene.add(g);t.group=g;t.sub=g;t.usedFallback=false;t.beam=null;t.part=built.part||null;siteRig(t);if(!t.alive)siteWreck(t,true);
   }
 }
 function siteWreck(t,quiet){
-  const intact=t.group.getObjectByName('Intact'),wreck=t.group.getObjectByName('Wreck');
+  const pre=t.part?t.part+'_':'',intact=t.group.getObjectByName(pre+'Intact'),wreck=t.group.getObjectByName(pre+'Wreck');
   if(intact&&wreck){intact.visible=false;wreck.scale.set(1,1,1);}
   else t.group.traverse(o=>{if(o.isMesh){o.material=o.material.clone();o.material.color.multiplyScalar(.32);}});
   if(t.beam)t.beam.visible=false;
@@ -5412,10 +5466,25 @@ function siteFlakBoost(f){
   if(f.heavy&&siteRecs.some(t=>t.kind==='radar'&&t.alive)){cool*=.8;err*=.85;}
   return {cool,err};
 }
-function targetTop(t){return t.kind==='bridge'?26:t.kind==='radar'?11:t.kind==='ramp'?8:9;}
+const TARGET_TOP={bridge:26,radar:11,ramp:8,depotTank:4.2,depotDrums:1.3,depotCrates:1.6,depotNet:3.2,depotBerm:1.7,depotHut:3.2};
+function targetTop(t){return TARGET_TOP[t.kind]??9;}
+// a destroyed tank, drum stack or crate stack sets off the other parts of the dump around it (not the earth berms), one after the other,
+// and its fireball hurts a low aeroplane above it
+function depotChain(t){
+  const c=t.chain,p=t.group.position;
+  for(const o of siteRecs){
+    if(o===t||!o.alive||o.kind==='depotBerm')continue;
+    const d=o.group.position.distanceTo(p);
+    if(d<=c.r)siteChainQ.push({t:.3+d/40,target:o,dmg:c.dmg});
+  }
+  const d=P.pos.distanceTo(p),agl=P.pos.y-groundY(P.pos.x,P.pos.z);
+  if(P.alive&&d<c.player&&agl<140){damagePlayer((1-d/c.player)*c.pdmg*D().dmg,'explosion');shake(1.4);radioSay('AMMUNITION DUMP — FIREBALL, PULL UP!');}
+  else if(!depotWarned){depotWarned=true;radioSay('DUMP IS BURNING — SECONDARY EXPLOSIONS ALL OVER');}
+}
 const siteV=new THREE.Vector3(),siteQ=new THREE.Quaternion(),siteUp=new THREE.Vector3(0,1,0);
 function updateSites(dt){
   if(typeof updateBuzz==='function')updateBuzz(dt);
+  for(let i=siteChainQ.length-1;i>=0;i--){const c=siteChainQ[i];c.t-=dt;if(c.t<=0){siteChainQ.splice(i,1);if(c.target.alive)damageTarget(c.target,c.dmg,false);}}
   if(!siteRecs.length)return;
   const flying=P.alive&&state===ST.FLIGHT;siteLit=Math.max(0,siteLit-dt);
   for(const t of siteRecs){
@@ -5517,6 +5586,32 @@ function updateBuzz(dt){
       radioSay('V-1 THROUGH TO THE ALLIED LINES — '+buzzThrough+' SO FAR');
     }
   }
+}
+
+// ============================================================
+//  COLUMN EXTRAS (Build 246) - the Opel Blitz fuel truck
+//  A destroyed fuel truck goes up with a bigger fireball than any other vehicle: every vehicle of the column within FUEL_BLAST.r
+//  takes FUEL_BLAST.dmg (soft vehicles die, armour is shaken, a second fuel truck goes off in turn), and a fast, low aeroplane
+//  directly overhead is hurt. Nothing here replaces the random ammunition-truck surprise, which stays for ordinary trucks.
+// ============================================================
+const FUEL_BLAST={r:36,dmg:3,playerR:95,playerAgl:140,playerDmg:15,bonus:100};
+function fuelBlast(t){
+  const p=t.group.position.clone();
+  spawnExplosion(p.x,p.y+3,p.z,3.0);spawnExplosion(p.x+6,p.y+2,p.z-5,1.8);spawnDebris(p.x,p.y+3,p.z,26);sfxBoom(1.4);shake(1.6);
+  let caught=0;
+  for(const o of targets.slice()){
+    if(o===t||!o.alive||!o.group)continue;
+    if(o.group.position.distanceTo(p)>FUEL_BLAST.r)continue;
+    if(!(o.kind==='truck'||o.kind==='flakcar'))continue;
+    const before=o.alive;damageTarget(o,FUEL_BLAST.dmg,false);
+    if(before&&!o.alive){caught++;addScore(FUEL_BLAST.bonus);}
+  }
+  const d=P.pos.distanceTo(p),agl=P.pos.y-groundY(P.pos.x,P.pos.z);
+  if(P.alive&&d<FUEL_BLAST.playerR&&agl<FUEL_BLAST.playerAgl){
+    damagePlayer((1-d/FUEL_BLAST.playerR)*FUEL_BLAST.playerDmg*D().dmg,'explosion');
+    radioSay('FUEL TRUCK — FIREBALL ON YOUR WING, PULL UP!');
+  }else if(caught)radioSay('FUEL TRUCK — THE COLUMN GOES UP WITH IT. BONUS '+(caught*FUEL_BLAST.bonus));
+  else radioSay('FUEL TRUCK — HUGE SECONDARY EXPLOSION');
 }
 
 // ============================================================
@@ -6345,7 +6440,8 @@ function europeBriefTargets(m){
  for(const [key,obj,label] of [['bridge',realBridge,'Ludendorff bridge'],['factory',realFactory,'Industrial works']])
   if(m.kills&&m.kills[key]&&obj)out.push({x:obj.userData.x,z:obj.userData.z,label});
  realFlak.slice(0,m.flakDefense||0).forEach((o,i)=>out.push({x:o.userData.x,z:o.userData.z,label:'Flak battery '+(i+1),optional:!(m.kills&&m.kills.flak)}));
- if(typeof sitePlan==='function'&&(m.radar||m.ramp)){const plan=sitePlan(m);
+ if(typeof sitePlan==='function'&&(m.radar||m.ramp||m.depot)){const plan=sitePlan(m);
+  if(plan.depot)out.push({x:plan.depot.x,z:plan.depot.z,label:'Fuel and ammunition dump'});
   if(plan.radar)out.push({x:plan.radar.x,z:plan.radar.z,label:'Wuerzburg radar',optional:true});
   if(plan.ramp)out.push({x:plan.ramp.x,z:plan.ramp.z,label:'V-1 ramp'});}
  let vehicleIndex=0;
@@ -7731,6 +7827,6 @@ function reportStartupError(err){
 const hangarRequest=CustomSortie.install('europe',MISSIONS,FlightPlans.europe,window.location.search);
 window.addEventListener('load',()=>{try{init();}catch(err){reportStartupError(err);}});
 </script>
-<script src="checkpoint-rhine.js?v=243"></script>
+<script src="checkpoint-rhine.js?v=246"></script>
 </body>
 </html>

@@ -26,8 +26,8 @@ THREE.GLTFLoader.prototype.load=function(file,yes,progress,no){
   await osm.loadTile(3,3);
   global.document=imageDocument;
   const vehicles=new WorldVehicles(scene,terrain,osm);await vehicles.load();
-  assert.equal(WorldVehicles.BUILD,23);assert.deepEqual(vehicles.failures,[]);assert.equal(vehicles.entries.length,2);
-  assert.deepEqual([...vehicles.templates.keys()].sort(),['civilCar','civilCarCream','flak88','horse','jagdpanther','m16','merchant','sherman','tiger','tigerGrey','train']);
+  assert.equal(WorldVehicles.BUILD,24);assert.deepEqual(vehicles.failures,[]);assert.equal(vehicles.entries.length,2);
+  assert.deepEqual([...vehicles.templates.keys()].sort(),['blitz','blitzTanker','civilCar','civilCarCream','flak88','flakwagen','halftrack','horse','jagdpanther','m16','merchant','panzer4','sherman','tiger','tigerGrey','train']);
   const jagd=vehicles.templates.get('jagdpanther');jagd.updateMatrixWorld(true);
   const jagdSize=new THREE.Box3().setFromObject(jagd).getSize(new THREE.Vector3());
   assert(Math.abs(Math.max(jagdSize.x,jagdSize.z)-9.8)<.01,'Jagdpanther scaled to metres');
@@ -35,9 +35,28 @@ THREE.GLTFLoader.prototype.load=function(file,yes,progress,no){
   const merchantSize=new THREE.Box3().setFromObject(merchant).getSize(new THREE.Vector3());
   assert(Math.abs(Math.max(merchantSize.x,merchantSize.z)-30)<.01);
   const living=new LivingWorld(scene,terrain,osm,{bridge:[13805.25,15769.95],bridgeSpan:[-101.5,-356.1],factory:[13200.6,20489.7],field:[787,18087.6]});
-  assert.equal(living.installVehicleModels(vehicles.templates),39);
+  assert.equal(living.installVehicleModels(vehicles.templates),40,'40 entities take a delivered model (the coupled Flakvierling wagon is one of them)');
   const modelStats=e=>{let meshes=0,triangles=0;e.visual.traverse(m=>{if(!m.isMesh)return;meshes++;triangles+=(m.geometry.index?m.geometry.index.count:m.geometry.attributes.position.count)/3;});return {meshes,triangles};};
   assert.equal(living.entities.filter(e=>e.kind==='truck'&&e.visual.userData.sourceModel==='jagdpanther').length,1);
+  // Build 246: the delivered column vehicles (own wrecks, one merged intact mesh each) and the Flakvierling wagon
+  const delivered={panzer4:[7.02,3.33,2.68],halftrack:[5.98,2.1,1.75],blitz:[6,2.2,2.9],blitzTanker:[6,2.2,2.5],flakwagen:[12,3,3.4]};
+  for(const [kind,[len,width,height]] of Object.entries(delivered)){
+    const t=vehicles.templates.get(kind);t.updateMatrixWorld(true);
+    const intact=t.getObjectByName('IntactMerged'),wreck=t.getObjectByName('Wreck');assert(intact&&wreck&&!wreck.visible,kind+' keeps a merged intact part and a hidden wreck');
+    assert.equal(intact.children.length,1,kind+' intact part is one draw call');
+    const size=new THREE.Box3().setFromObject(intact).getSize(new THREE.Vector3());
+    assert(Math.abs(Math.max(size.x,size.z)-len)<.02&&Math.abs(Math.min(size.x,size.z)-width)<.05&&Math.abs(size.y-height)<.02,kind+' metres '+size.toArray());
+    let tris=0;t.traverse(m=>{if(m.isMesh)tris+=(m.geometry.index?m.geometry.index.count:m.geometry.attributes.position.count)/3;});assert(tris>1500&&tris<=9000,kind+' triangles '+tris);
+    const wb=new THREE.Box3().setFromObject(wreck),ib=new THREE.Box3().setFromObject(intact);
+    assert(wb.min.y>=ib.min.y-.05&&wb.max.y<=ib.max.y+.05,kind+' wreck stays inside the vehicle height');
+  }
+  const col=i=>living.entities.filter(e=>e.kind==='truck'&&e.meta.convoy===i).map(e=>e.visual.userData.sourceModel.replace('tigerGrey','tiger'));
+  assert.deepEqual(col(0),['panzer4','halftrack','blitzTanker','blitz']);assert.deepEqual(col(1),['jagdpanther','blitz','tiger','halftrack']);
+  assert.equal(col(2).length,4);assert(col(2).includes('blitzTanker')&&col(2).includes('panzer4'));
+  const flakcar=living.entities.find(e=>e.kind==='flakcar');assert.equal(flakcar.visual.userData.sourceModel,'flakwagen');
+  const tanker=living.entities.find(e=>e.kind==='truck'&&e.meta.vehicleModel==='blitzTanker'),tankerWreck=tanker.visual.getObjectByName('Wreck');
+  const tankerRoll=tanker.model.rotation.z;living.destroyEntity(tanker);assert(!tanker.visual.getObjectByName('IntactMerged').visible&&tankerWreck.visible&&tanker.model.rotation.z===tankerRoll,'a destroyed delivered vehicle shows its own wreck');
+  living.resetForMission('convoy');assert(tanker.visual.getObjectByName('IntactMerged').visible&&!tankerWreck.visible);
   const detailed=(stats,cap)=>{assert.equal(stats.meshes,1);assert(stats.triangles>1000&&stats.triangles<=cap);};
   for(const kind of ['tiger','tigerGrey','jagdpanther','sherman','m16','flak88','civilCar','civilCarCream','train']){
     detailed(modelStats({visual:vehicles.templates.get(kind)}),10000);

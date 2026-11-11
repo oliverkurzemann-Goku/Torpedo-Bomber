@@ -8,7 +8,9 @@
   liberty:{propellers:1,file:'liberty',length:135,draft:5.8,yaw:0,name:'Liberty transport'},
   landing:{propellers:2,file:'landing-ship',length:100,draft:2.3,yaw:-Math.PI/2,name:'Landing ship'},
   fletcher:{propellers:2,file:'fletcher',length:115,draft:3.5,yaw:-Math.PI/2,name:'Fletcher escort'},
-  submarine:{propellers:1,file:'ko-hyoteki',length:24,draft:1.1,yaw:0,name:'Surfaced Ko-hyoteki'}
+  submarine:{propellers:1,file:'ko-hyoteki',length:24,draft:1.1,yaw:0,name:'Surfaced Ko-hyoteki'},
+  // Build 246: the neutral white hospital ship (hospital-ship-own.glb, 163.3 m, keel 9.23 m under the waterline, +Z forward)
+  hospital:{propellers:2,file:'hospital-ship-own',length:163.3,draft:9.23,yaw:0,name:'Hospital ship'}
  };
  const tasks=new Map(),templates=new Map();
  function key(def){return def.model||(def.type==='destroyer'?'samidare':'cargo');}

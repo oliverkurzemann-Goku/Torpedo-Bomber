@@ -354,7 +354,7 @@
   <div id="flash"></div>
   <div id="ltn" style="position:fixed;inset:0;background:#e6ecff;opacity:0;pointer-events:none;z-index:40;"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 245</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 246</div>
 
   <!-- Optical landing aid -->
   <div id="lso">
@@ -401,7 +401,7 @@
 
 <!-- Menu -->
 <div class="overlay" id="menu" data-campaign="pacific">
-  <div class="menuTop"><a id="selBtn" href="index.html?v=245">&#9664; Change Game</a><span class="menuMeta">PACIFIC OPERATIONS<br>BUILD 245</span></div>
+  <div class="menuTop"><a id="selBtn" href="index.html?v=246">&#9664; Change Game</a><span class="menuMeta">PACIFIC OPERATIONS<br>BUILD 246</span></div>
   <div class="card menuCard">
     <aside class="menuOverview" aria-label="Campaign and pilot options">
     <div class="campaignArt" aria-hidden="true"></div>
@@ -514,7 +514,7 @@
 <script src="avenger-bay.js?v=220"></script>
 <script src="corsair-native.js?v=218"></script>
 <script src="avenger-finish.js?v=199"></script>
-<script src="naval-assets.js?v=240"></script>
+<script src="naval-assets.js?v=246"></script>
 <script src="aircraft-rotors.js?v=172"></script>
 <script src="combat-fx.js?v=238"></script>
 <script src="aircraft-smoke.js?v=176"></script>
@@ -532,6 +532,7 @@
 <script src="flare-support.js?v=177"></script>
 <script src="sortie-service.js?v=206"></script>
 <script src="pilot-rescue.js?v=179"></script>
+<script src="pby-rescue.js?v=246"></script>
 <script src="radio-intercept.js?v=157"></script>
 <script src="surprises.js?v=238"></script>
 <script src="audio/weapon-sound.js?v=144"></script>
@@ -635,6 +636,7 @@ function registerHit(){ hitsTaken++;
 let bubbles=[], slicks=[], killCam=null, score=0, scoreStart=0, selectedMission=0;
 // ---- pilot's logbook (persisted like the best score) ----
 let sortieTorpFired=0, sortieTorpHit=0, sortieBombFired=0,sortieBombHit=0,sortieShipsSunk=0, sortieZeros=0, radioEvadeCalled=false;
+let sortieNeutralHits=0,neutralWarned=false;   // Build 246: shots at the neutral hospital ship
 let sortieWingmenLost=0, reinforcementsLaunched=false;
 const RANKS=['Ensign','Lieutenant j.g.','Lieutenant','Lt Commander','Commander'];
 function rankIndexForTraps(t){ return t>=25?4 : t>=15?3 : t>=8?2 : t>=3?1 : 0; }
@@ -805,10 +807,11 @@ const MISSIONS = [
     torps:1, fuel:100,
     targets:[ {type:"freighter", pos:[600,0,3400], hp:1} ] },
   { title:"Sortie 2", sub:"Escorted Convoy",
-    body:"The freighter sails with a <b>destroyer escort</b> throwing up flak, and a <b>Zero on patrol</b>. Stay low, line up on the beam, and don't loiter. Sink the freighter (the destroyer is optional). <b>One internal torpedo</b>. Return to the carrier to rearm if needed.",
+    body:"The freighter sails with a <b>destroyer escort</b> throwing up flak, and a <b>Zero on patrol</b>. Stay low, line up on the beam, and don't loiter. Sink the freighter (the destroyer is optional). A white <b>hospital ship</b> with red crosses steams to the west: <b>neutral, never fire on her</b>. <b>One internal torpedo</b>. Return to the carrier to rearm if needed.",
     torps:1, fuel:100, zeros:1,
     targets:[ {type:"freighter", pos:[ -200,0,3600], hp:1},
-              {type:"destroyer", pos:[ 250,0,3200], hp:1, flak:true} ] },
+              {type:"destroyer", pos:[ 250,0,3200], hp:1, flak:true},
+              {type:"hospital", model:'hospital', neutral:true, optional:true, pos:[-1500,0,3050], hp:4, speed:3.4, heading:.2} ] },
   { title:"Sortie 3", sub:"Capital Ship",
     body:"A Japanese <b>fleet carrier</b> (Kaga) with two destroyers and a <b>pair of Zeros</b> flying top cover. The carrier needs <b>two hits</b> to go down. Heavy flak. You carry <b>one internal torpedo</b>. Coordinate with your wingmen; return to the carrier to rearm for another attack.",
     torps:1, fuel:100, zeros:2,
@@ -816,12 +819,13 @@ const MISSIONS = [
               {type:"destroyer", pos:[ -500,0,3500], hp:1, flak:true},
               {type:"destroyer", pos:[ 550,0,3700], hp:1, flak:true} ] },
   { title:"Sortie 4", sub:"Merchant Convoy",
-    body:"A running convoy: <b>two freighters</b> behind a destroyer screen, with a <b>Zero</b> overhead. Both merchants must go down. Pick your line, mind the flak. <b>One internal torpedo per sortie</b>; recover aboard and rearm for another attack.",
+    body:"A running convoy: <b>two freighters</b> behind a destroyer screen, with a <b>Zero</b> overhead. Both merchants must go down. Pick your line, mind the flak. A <b>hospital ship</b> (white, red crosses) sails to the west: <b>neutral, never fire on her</b>. <b>One internal torpedo per sortie</b>; recover aboard and rearm for another attack.",
     torps:1, fuel:100, zeros:1,
     targets:[ {type:"freighter", pos:[-320,0,3500], hp:1},
 
               {type:"destroyer", pos:[ 0,0,3250], hp:1, flak:true},
-              {type:"destroyer", pos:[ 640,0,3600], hp:1, flak:true} ],
+              {type:"destroyer", pos:[ 640,0,3600], hp:1, flak:true},
+              {type:"hospital", model:'hospital', neutral:true, optional:true, pos:[-1750,0,2900], hp:4, speed:3.4, heading:.1} ],
     reinforcement:{targets:[{type:"freighter",pos:[2000,0,4600],hp:1}],zeros:1} },
   { title:"Sortie 5", sub:"Night Strike", time:'night', sea:1.8, weather:'haze',
     body:"A <b>night torpedo attack</b> on a fleet carrier running dark, one destroyer in company. Low light, heavy flak — the meatball brings you home. The carrier needs <b>two hits</b>. <b>One internal torpedo per sortie</b>; recover aboard and rearm for another attack.",
@@ -982,6 +986,7 @@ const pacificModelTasks=new Map();
 async function preparePacificModels(m,progress=()=>{}){
   const needed=[['carrier',m.defend?loadIJNCarrierModel:loadCarrierModel,
     ()=>m.defend?ijnCarrierModel:carrierModel]];
+  if(!m.defend&&!m.free&&!m.qual&&typeof loadPbyModel==='function')needed.push(['pby',loadPbyModel,()=>pbyTemplate]);   // Build 246: the rescue Catalina (typeof guard: sliced test functions run without it)
   if(m.corsair)needed.push(['corsair',loadCorsairModel,()=>corsairTemplate]);
   else if(m.sbd)needed.push(['sbd',loadSBDModel,()=>sbdTemplate]);
   if(!m.sbd||m.defend)needed.push(['avenger',loadPlaneModel,()=>gltfRoot&&propPivot]);
@@ -1014,7 +1019,7 @@ function pacificPauseOrders(){
   const m=MISSIONS[mission];
   const task=MISSIONS[mission].theater==='escort'?'TRANSPORTS ARRIVED '+convoyProof().arrived+'/2 · RAIDERS '+raiders.filter(r=>r.alive).length:hasRaiders()?'RAIDERS '+raiders.filter(r=>r.alive).length+' · CARRIER '+Math.round(carrierHP)+'%':
     m.qual?'CARRIER QUALIFICATION · TRAPS '+qualTraps+'/'+(m.quals||3):m.free?'FREE FLIGHT':
-    'SHIPS '+ships.filter(s=>s.alive&&s.def.type!=='destroyer').length+' · SHORE TARGETS '+shoreTargets.filter(t=>t.alive&&!t.def.optional).length;
+    'SHIPS '+ships.filter(s=>s.alive&&s.def.type!=='destroyer'&&!s.def.neutral).length+' · SHORE TARGETS '+shoreTargets.filter(t=>t.alive&&!t.def.optional).length;
   const faults=SortieFeatures.Damage.status(P);
   const recovery=SortieFeatures.Damage.needsBelly(P)?'Emergency belly recovery: flaps and hook down, wings level, low sink rate.':'Recovery: gear, flaps and hook down; follow the live REF speed (~'+Math.round(CarrierRecovery.envelope(P,STALL_SPD,APP_SPD).reference*KT)+' kt).';
   return task+' · '+Math.round(P.fuel)+'% FUEL · '+SortieFeatures.Damage.hullPercent(P)+'% HULL. '+
@@ -2115,7 +2120,7 @@ function updatePacificOperation(dt){
  if(MISSIONS[mission].theater==='escort'&&convoyProof().failed){pacificOps.failed=true;P.rtb=true;state=ST.RESULT;showResult(false,'CONVOY LOST',MISSIONS[mission].sub,'A required transport was sunk. Both transports must reach the anchorage.','Retry Sortie');return;}
  const clear=pacificTargetsClear();
  const kills=sortieShipsSunk+shoreTargets.filter(t=>!t.alive).length+raiders.filter(r=>!r.alive).length;
- const located=kills>0||(hasRaiders()?raiders.some(r=>r.alive&&P.pos.distanceTo(r.pos)<4500)||supportFleet.some(s=>P.pos.distanceTo(s.group.position)<1600):ships.some(s=>s.alive&&P.pos.distanceTo(s.group.position)<2300));
+ const located=kills>0||(hasRaiders()?raiders.some(r=>r.alive&&P.pos.distanceTo(r.pos)<4500)||supportFleet.some(s=>P.pos.distanceTo(s.group.position)<1600):ships.some(s=>s.alive&&!s.def.neutral&&P.pos.distanceTo(s.group.position)<2300));
  for(const e of pacificOps.tick(dt,{pos:P.pos,kills,clear,located,complete:P.rtb||clear&&pacificOps.ready()})){
   if(e.weather){weather=e.weather;applyWeather();}
   for(let i=0;i<(e.fighters||0);i++)spawnZero(i,e.fighters);
@@ -2129,7 +2134,7 @@ function updatePacificOperation(dt){
  if(el){const convoy=MISSIONS[mission].theater==='escort'?' · ARRIVED '+convoyProof().arrived+'/2':MISSIONS[mission].theater==='fleet'?' · DECK '+carrierHP+'%':'';const text=FlightOps.wx(weather).label.toUpperCase()+' · '+(P.rtb&&!pacificOps.failed?pacificRecoveryText():pacificOps.status())+convoy;if(el.textContent!==text)el.textContent=text;}
 }
 function drawPacificBrief(m){
- const targets=m.targets.map(s=>({x:s.pos[0],z:s.pos[2],label:NavalAssets.label(s),optional:s.type==='destroyer'||s.optional}));
+ const targets=m.targets.map(s=>({x:s.pos[0],z:s.pos[2],label:NavalAssets.label(s)+(s.neutral?' — do not attack':''),optional:s.type==='destroyer'||s.optional,friendly:!!s.neutral}));
  if(m.theater==='harbor')targets.push(...PacificTheater.harborTargets);
  if(m.theater==='escort'){for(const s of m.support.filter(s=>s.transport))targets.push({x:s.pos[0],z:s.pos[2],label:NavalAssets.label(s)+' — protect',friendly:true});targets.push({x:-1800,z:4400,label:'Anchorage — both transports',friendly:true});}
  if(m.theater==='fleet')targets.push({x:3200,z:2300,label:'Japanese bomb-carrier raid'});
@@ -2211,7 +2216,7 @@ function startMission(idx){
   P.bombKg=m.corsair&&corsairConfig().bombScale<1?227:undefined;   // the mixed Corsair load carries 500 lb bombs
   P.core=null;P.coreStall=0;P.coreDrop=0;P.pitchRef=null;
   P.rollBias=0; P.bingo=false; P.tailCool=0; P.pitchVel=0; P.rollVel=0; P.nLoad=1;
-  sortieTorpFired=0; sortieTorpHit=0;sortieBombFired=0;sortieBombHit=0; sortieShipsSunk=0; sortieZeros=0; hitsTaken=0; sortieWingmenLost=0;
+  sortieTorpFired=0; sortieTorpHit=0;sortieBombFired=0;sortieBombHit=0; sortieShipsSunk=0; sortieZeros=0; hitsTaken=0; sortieWingmenLost=0;sortieNeutralHits=0;neutralWarned=false;
   reinforcementsLaunched=false;
   radioEvadeCalled=false; radioQ=[]; radioT=0; P.ballCalled=false;
   // The carrier frame is bow-first into wind (+X): no lateral recovery wind.
@@ -2889,6 +2894,7 @@ function updateTorpedoes(dt){
 
 function hitShip(s, quietCam,point=null,weapon="torpedo",attack=null){
   if(!s.alive)return;
+  if(s.def.neutral){hitNeutralShip(s,point,weapon);return;}
   const impactPoint=point||s.group.position;
   s.hp--;
   if(!quietCam&&(weapon==='bomb'||weapon==='rocket'))sortieBombHit++;
@@ -2928,6 +2934,27 @@ function hitShip(s, quietCam,point=null,weapon="torpedo",attack=null){
       attack.part==='bow'?"HIT FORWARD — SHE'S DOWN BY THE BOW AND SLOWING":"HIT AMIDSHIPS — ENGINE ROOM FLOODING, SHE'S LISTING");
   }
   checkObjectiveCleared();
+}
+
+// Build 246: the white hospital ship (hospital-ship-own.glb) is neutral. It is not a target, not in the objective, not in any wingman's list;
+// every hit on it costs points, sinking it costs a lot, and the radio says so. Shells, bombs, rockets and torpedoes all arrive through hitShip().
+function hitNeutralShip(s,point,weapon){
+  if(!s.alive)return;
+  const p=point||s.group.position;
+  s.hp--;sortieNeutralHits++;
+  spawnSplash(p.x,p.z,true);
+  if(typeof shipDamage!=="undefined"&&shipDamage)shipDamage.hit(s,point,weapon);
+  const sunk=s.hp<=0,pen=sunk?2500:600;
+  addScore(-pen);
+  if(sunk){
+    s.alive=false;s.sinkT=0.0001;s.boomN=typeof shipDamage!=="undefined"&&shipDamage?0:4+Math.floor(Math.random()*3);s.boomT=0.3;s.burnT=0;
+    shipBlast(s,1.7,point);spawnSlick(s);shake(2.4);sfxBoom(1.4);
+    flash('HOSPITAL SHIP SUNK  −'+pen,2200);radioSay('YOU SUNK A HOSPITAL SHIP — THAT WILL BE REPORTED');
+  }else{
+    spawnExplosion(p.x,Math.max(3,p.y),p.z,1.0);sfxBoom(0.7);
+    flash('HOSPITAL SHIP HIT  −'+pen,1800);
+    if(!neutralWarned||weapon==='torpedo'||weapon==='bomb'){neutralWarned=true;radioSay('CEASE FIRE — THAT IS A HOSPITAL SHIP, RED CROSSES ON THE HULL');}
+  }
 }
 
 function checkObjectiveCleared(){
@@ -3240,7 +3267,7 @@ function spawnZero(i,n){
   disk.position.z=bb.max.z-0.15; mesh.add(disk);
   const a=Math.PI*(0.3+0.4*i/Math.max(1,n));
   const heading=Math.PI;
-  const anchor=ships.find(s=>s.alive&&s.def.type!=='destroyer')?.group.position||P.pos;
+  const anchor=ships.find(s=>s.alive&&s.def.type!=='destroyer'&&!s.def.neutral)?.group.position||P.pos;
   const z={ mesh, disk, kind:'zero', hp:3, alive:true, cool:1+Math.random()*2,
     pos:new THREE.Vector3(anchor.x+Math.cos(a)*900, 220+i*70, anchor.z+900+Math.sin(a)*300),
     patrol:anchor.clone(),engaged:false,
@@ -4140,6 +4167,7 @@ function trap(x,arrested=false){
     +(promoted?"<br><br><b>Promoted to "+rank+".</b>":"")
     +"<br><br>This sortie: "+sortieShipsSunk+" sunk · "+sortieZeros+" Zeros · "+sortieTorpHit+"/"+sortieTorpFired
       +" fish on target · hull "+SortieFeatures.Damage.hullPercent(P)+"% · "+hitsTaken+" hits taken"+lostLine
+    +(sortieNeutralHits?"<br>Hospital ship hit "+sortieNeutralHits+"× — penalty applied.":"")
     +campaignLine+qualityLine+"<br>Landing bonus +"+bonus+" · SCORE "+score+" · BEST "+Math.max(bestScore(),score)
     +"<br><br><b>LOGBOOK</b> — "+l.sorties+" sorties · "+(l.shipsSunk||0)+" sunk · "+lifeAcc+"% torpedo accuracy"
       +"<br>LSO grades: "+(Object.keys(l.grades||{}).length
@@ -5276,15 +5304,24 @@ function crash(title,sub){
     "Retry Sortie");
 }
 let bailout=null,bailRescue=null,bailPlaneCrashed=false,bailDone=false,bailChuteCalled=false,crewBailouts=[],crewWaterRescue=null,ditching=null;
+// Build 246: a PBY-5A Catalina (pby-rescue.js) picks up survivors who ditched far from the carrier; nearer ones still get the motor launch
+let pbyTemplate=null,crewPby=null,PBY_MIN_DISTANCE=2200;   // a ditching farther than this from the carrier is flown out by the PBY (tests of the motor-launch path raise it)
+function loadPbyModel(){return PacificAssets.loader().load('assets/aircraft/pby5a-own.glb?v=246',gltf=>{pbyTemplate=gltf.scene;pbyTemplate.traverse(o=>{if(o.isMesh){o.castShadow=true;o.frustumCulled=true;}});return pbyTemplate;});}
 function aircraftCrewCount(){return isDefend()||isCorsair()?1:isSBD()?2:3;}
-function clearCrewBailouts(){for(const c of crewBailouts){c.chute.dispose();c.rescue?.dispose();}crewBailouts=[];crewWaterRescue?.dispose();crewWaterRescue=null;}
+function clearCrewBailouts(){for(const c of crewBailouts){c.chute.dispose();c.rescue?.dispose();}crewBailouts=[];crewWaterRescue?.dispose();crewWaterRescue=null;crewPby?.dispose();crewPby=null;}
 function rescueCrewMember(position,water){
  const options={wakes:shipWakes,service:isDefend()?"ijn":"usnavy",srgbOutput:true,surfaceAt:(x,z)=>seaHeightAt(x,z,seaUniforms?.uTime.value||0)};
- if(water){if(!crewWaterRescue)crewWaterRescue=PilotRescue.createCrew(THREE,scene,shoreHeight,options);return crewWaterRescue.add(position);}
+ if(water){
+  // far from the carrier the launch would need minutes: the Catalina comes instead (the survivors' own side only; the Japanese side keeps its boat)
+  if(pbyTemplate&&!isDefend()&&typeof PbyRescue!=='undefined'&&Math.hypot(position.x-carrierX,position.z)>PBY_MIN_DISTANCE){
+   if(!crewPby)crewPby=PbyRescue.createCrew(THREE,scene,{template:pbyTemplate,waterAt:(x,z)=>shoreHeight(x,z)<=.6,surfaceAt:options.surfaceAt,origin:()=>new THREE.Vector3(carrierX,0,0),wakes:shipWakes,say:t=>radioSay(t)});
+   const ticket=crewPby?.add(position);if(ticket)return ticket;
+  }
+  if(!crewWaterRescue)crewWaterRescue=PilotRescue.createCrew(THREE,scene,shoreHeight,options);return crewWaterRescue.add(position);}
  return PilotRescue.create(THREE,scene,position,shoreHeight,{...options,water:false});
 }
 function updateCrewBailouts(dt){
- crewWaterRescue?.update(dt);
+ crewWaterRescue?.update(dt);crewPby?.update(dt);
  for(const c of crewBailouts){
   if(c.done)continue;
   if(c.rescue){if(c.rescue.water)c.chute.position.y=seaHeightAt(c.chute.position.x,c.chute.position.z,seaUniforms?.uTime.value||0)+.9;const status=c.rescue.update(dt);if(status.pickup)c.chute.group.visible=false;if(status.done){c.done=true;c.safe=status.pickup;}continue;}
@@ -5353,7 +5390,7 @@ function advanceBailout(dt){
       bailDone=true;releaseHeldControls();document.getElementById('stickHint').textContent='PITCH / ROLL';
       const recovered=(pickup.pickup?1:0)+crewBailouts.filter(c=>c.safe).length;
       showResult(false,recovered===aircraftCrewCount()&&recovered>1?'CREW SAFE':pickup.pickup?'PILOT SAFE':'RESCUE INCOMPLETE','Rescue complete',
-        (bailRescue.water?'One rescue boat collected the crew.':'The search party brought you back.')+
+        (bailRescue.pby?'A PBY Catalina landed and took the crew aboard.':bailRescue.water?'One rescue boat collected the crew.':'The search party brought you back.')+
         '<br>'+recovered+'/'+aircraftCrewCount()+' crew recovered.<br>The aircraft was lost.<br><br>SCORE '+score+' &middot; BEST '+Math.max(bestScore(),score),'Retry Sortie');
     }
     return;
@@ -5693,7 +5730,7 @@ function loadPlaneModel(){
       }
       window.__eyeDbg='EYE '+COCKPIT_EYE.map(v=>v.toFixed(2)).join('/');
       const btEl=document.getElementById('buildTag');
-      if(btEl) btEl.textContent='BUILD 245 · '+window.__eyeDbg;
+      if(btEl) btEl.textContent='BUILD 246 · '+window.__eyeDbg;
       let seat=null;
       model.traverse(function(o){
         if(!o.isMesh||!o.material) return;
@@ -6512,7 +6549,8 @@ function updateGuns(dt){
         sp.position.copy(b.mesh.position); scene.add(sp);
         explosions.push({mesh:sp,life:0.16,max:0.16,grow:2.2});
         spawnSparks(b.mesh.position,3);
-        addScore(2);
+        addScore(s.def.neutral?-3:2);
+        if(s.def.neutral&&!neutralWarned){neutralWarned=true;radioSay('CEASE FIRE — THAT IS A HOSPITAL SHIP, RED CROSSES ON THE HULL');}
         if(Math.random()<0.5)
           spawnSmoke(b.mesh.position.x,b.mesh.position.y+1,b.mesh.position.z,0x3d3d38,0.5);
         if(s.strafe>18 && Math.random()<0.22)
@@ -6591,7 +6629,7 @@ function updateMinimap(){
     if(Math.hypot(p[0]-c,p[1]-c)<R-1){ mmCtx.beginPath(); mmCtx.arc(p[0],p[1],Math.max(2,is.r*scale),0,7); mmCtx.fill(); } }
   let p=put(carrierX,0); if(Math.hypot(p[0]-c,p[1]-c)<R-1){ mmCtx.fillStyle='#7fae5a'; mmCtx.fillRect(p[0]-3,p[1]-3,6,6); }
   for(const s of ships){ if(!s.alive) continue; const q=put(s.group.position.x,s.group.position.z);
-    if(Math.hypot(q[0]-c,q[1]-c)<R-1){ mmCtx.fillStyle=s.def.type==='destroyer'?'#e0a050':'#c8412a';
+    if(Math.hypot(q[0]-c,q[1]-c)<R-1){ mmCtx.fillStyle=s.def.neutral?'#e8f0f4':s.def.type==='destroyer'?'#e0a050':'#c8412a';
       mmCtx.beginPath(); mmCtx.arc(q[0],q[1],3,0,7); mmCtx.fill(); } }
   for(const s of supportFleet){if(s.alive===false)continue;const q=put(s.group.position.x,s.group.position.z);if(Math.hypot(q[0]-c,q[1]-c)<R-1){mmCtx.fillStyle=s.arrived?'#a1d191':'#80c9df';mmCtx.fillRect(q[0]-3,q[1]-3,6,6);}}
   for(const t of shoreTargets){if(!t.alive)continue;const q=put(t.def.x,t.def.z);if(Math.hypot(q[0]-c,q[1]-c)<R-2){mmCtx.fillStyle=t.def.optional?'#dba774':'#f06a4b';mmCtx.fillRect(q[0]-3,q[1]-3,6,6);}}
@@ -6781,7 +6819,7 @@ function updateTorpRun(){
 let navigation=null;
 function pacificContacts(){
  const c=[];
- for(const s of ships)if(s.alive)c.push({ref:s,pos:s.group.position,kind:'SHIP',label:NavalAssets.label(s.def).toUpperCase()+' #'+(ships.indexOf(s)+1)+(shipDamage?.status(s)?' · '+shipDamage.status(s):'')});
+ for(const s of ships)if(s.alive)c.push({ref:s,pos:s.group.position,kind:'SHIP',label:NavalAssets.label(s.def).toUpperCase()+' #'+(ships.indexOf(s)+1)+(s.def.neutral?' · NEUTRAL':'')+(shipDamage?.status(s)?' · '+shipDamage.status(s):'')});
  for(const t of shoreTargets)if(t.alive)c.push({ref:t,pos:t.group.position,kind:'TARGET',label:t.def.label.toUpperCase()});
  for(const r of raiders)if(r.alive)c.push({ref:r,pos:r.group.position,kind:'BOMBER',label:r.japanese?'A6M BOMB CARRIER':'INBOUND BOMBER'});
  if(MISSIONS[mission].theater==='escort')for(const s of supportFleet)if(s.alive&&s.def.transport)c.push({ref:s,pos:s.group.position,kind:'ALLY',label:NavalAssets.label(s.def).toUpperCase()+' '+s.hp+'%'+(s.arrived?' — ARRIVED':' — PROTECT')});
@@ -7082,7 +7120,7 @@ function setupUIButtons(){
   if(dbgT2) dbgT2.onclick=()=>{
     dbgOn=!dbgOn; GameRuntime.storage.setItem('dbgOn',dbgOn?'1':'0');
     const db=document.getElementById('dbgBox'); if(db) db.textContent=dbgOn?'✓':'';
-    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 245'; }
+    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 246'; }
   };
   const lu=document.getElementById('lookUp'), ld=document.getElementById('lookDn');
   let _lookT=0;
@@ -7409,7 +7447,7 @@ function animate(){
     notice.style.cssText='position:fixed;inset:0;z-index:999998;background:rgba(15,20,15,.95);color:#e8ddbc;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px;text-align:center;font:16px system-ui';
     const title=document.createElement('h2');title.textContent='Simulation interrupted';
     const detail=document.createElement('p');
-    detail.textContent='BUILD 245 · '+(MISSIONS[mission]?.sub||'Menu')+' · '+error.message;
+    detail.textContent='BUILD 246 · '+(MISSIONS[mission]?.sub||'Menu')+' · '+error.message;
     const reload=document.createElement('button');reload.textContent='Reload game';
     reload.style.cssText='padding:12px 24px;font:inherit';reload.onclick=()=>location.reload();
     notice.appendChild(title);notice.appendChild(detail);notice.appendChild(reload);document.body.appendChild(notice);
