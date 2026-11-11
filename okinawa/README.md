@@ -92,7 +92,7 @@ terrain vertices and shoreline distance map. The village streets and squares
 are painted into that atlas. The coastal scenery regression checks farm
 coverage, road connections, tree spacing and the instance budget.
 
-## Forested ridges
+## Build 247 — forested ridges
 
 The Nago and Kushi reference photos guided the colour and relief of the
 existing Yomitan map. The source DEM and shoreline remain intact. An artistic
