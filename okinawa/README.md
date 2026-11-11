@@ -91,3 +91,16 @@ fields, roads and courtyards. The terrain uses the existing 2048² atlas,
 terrain vertices and shoreline distance map. The village streets and squares
 are painted into that atlas. The coastal scenery regression checks farm
 coverage, road connections, tree spacing and the instance budget.
+
+## Forested ridges
+
+The Nago and Kushi reference photos guided the colour and relief of the
+existing Yomitan map. The source DEM and shoreline remain intact. An artistic
+adjustment strengthens the existing inland ridges and ravines, tapering out at
+low elevations and around water and the airfield. The game samples the
+rendered triangles for terrain contact and aircraft shadows.
+
+Continuous, dark-green woodland and shaded gullies are baked into the same
+2048² colour atlas. The terrain retains 16 meshes and 524,288 triangles.
+The viewer’s [Inland viewpoint](../okinawa-preview.html?view=inland) overlooks
+the reshaped interior. The reference photos are used for comparison only.

@@ -38,6 +38,26 @@ const specs=require('../../scripts/lib/okinawa-scenery/specs.cjs');
  const terrainMap=world.terrain.children[0].material.map;
  assert.equal(terrainMap.image.width,2048);assert.equal(terrainMap.image.height,2048);
  assert(world.terrain.children.every(m=>m.material.map===terrainMap));
+ const offsets=world.highlandOffsets,step=31.25;
+ let raised=0,preserved=0;
+ for(let j=0;j<513;j++)for(let i=0;i<513;i++){
+  const x=i*step-8000,z=j*step-8000,offset=offsets[j*513+i];
+  if(offset>50)raised++;
+  if(world.shoreDistance(x,z)<=160||Math.hypot(x+2860,z+1074)<=770){
+   assert.equal(offset,0,'Relief leaves the shoreline, lakes and airfield unchanged');
+   preserved++;
+  }
+ }
+ assert(raised>1500&&preserved>90000);
+ const pixels=terrainMap.image.getContext('2d').getImageData(0,0,2048,2048).data;
+ let forestSamples=0,darkGreen=0;
+ for(let z=-5000;z<-2000;z+=50)for(let x=-1700;x<3700;x+=50){
+  if(world.rawHeight(x,z)<110||world.shoreDistance(x,z)<470||world.biome(x,z)[1]>.1)continue;
+  const texel=v=>Math.round((v+8000)*2047/16000),k=(texel(z)*2048+texel(x))*4;
+  forestSamples++;
+  if(pixels[k+1]<84&&pixels[k]<65&&pixels[k+1]>pixels[k])darkGreen++;
+ }
+ assert(forestSamples>800&&darkGreen/forestSamples>.9,'Dark green canopy dominates the inland ridges');
  const farmland=world.land.reduce((sum,land,i)=>sum+(land&&world.biomes[i*4+1]>153&&world.biomes[i*4+2]<20?1:0),0);
  assert(farmland*(16000/world.mapSize)**2>4e6,'Visible farm belts cover more than four square kilometres');
  assert.equal(world.coastalTowns.length,2);

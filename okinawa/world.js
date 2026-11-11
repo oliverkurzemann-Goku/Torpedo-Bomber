@@ -7,12 +7,14 @@
 'use strict';
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 const mix=(a,b,t)=>a+(b-a)*t;
+function smooth(a,b,v){const t=clamp((v-a)/(b-a),0,1);return t*t*(3-2*t);}
 function hash(x,z){let n=Math.imul(x,374761393)+Math.imul(z,668265263);n=Math.imul(n^(n>>>13),1274126177);return((n^(n>>>16))>>>0)/4294967295;}
 function noise(x,z){const a=Math.floor(x),b=Math.floor(z);let u=x-a,v=z-b;u=u*u*(3-2*u);v=v*v*(3-2*v);return mix(mix(hash(a,b),hash(a+1,b),u),mix(hash(a,b+1),hash(a+1,b+1),u),v);}
 function rng(seed){return()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296;};}
 function canvas(n){const c=document.createElement('canvas');c.width=c.height=n;return c;}
 const pause=()=>new Promise(r=>setTimeout(r,0));
 const airfieldSite={x:-2860,z:-1074};
+const terrainStep=31.25,terrainSamples=513;
 const townPlans=[
  {name:'Hagushi',x:-4080,z:-690,angle:.16,bend:16},
  {name:'Southern coastal village',x:-3125,z:255,angle:-.28,bend:-21}
@@ -75,15 +77,34 @@ class OkinawaWorld{
  }
  rasterSample(a,x,z,n=this.mapSize){const fx=clamp((x+8000)/16000*(n-1),0,n-1.001),fz=clamp((z+8000)/16000*(n-1),0,n-1.001),ix=Math.floor(fx),iz=Math.floor(fz);return mix(mix(a[iz*n+ix],a[iz*n+ix+1],fx-ix),mix(a[(iz+1)*n+ix],a[(iz+1)*n+ix+1],fx-ix),fz-iz);}
  shoreDistance(x,z){return this.rasterSample(this.distance,x,z);}
+ buildHighlandRelief(){
+  // The central-west map is lower than the northern reference. Emphasize its
+  // existing ridges and ravines while fading out toward water and coastal plains.
+  const offsets=new Float32Array(terrainSamples*terrainSamples);
+  for(let j=0;j<terrainSamples;j++)for(let i=0;i<terrainSamples;i++){
+   const x=i*terrainStep-8000,z=j*terrainStep-8000,d=this.shoreDistance(x,z);
+   if(d<=160)continue;
+   const h=this.rawHeight(x,z);
+   if(h<=48)continue;
+   const airfieldDistance=Math.hypot(x-airfieldSite.x,z-airfieldSite.z);
+   const weight=smooth(160,470,d)*smooth(48,125,h)*smooth(770,1170,airfieldDistance);
+   if(weight===0)continue;
+   const near=(this.rawHeight(x-125,z)+this.rawHeight(x+125,z)+this.rawHeight(x,z-125)+this.rawHeight(x,z+125))*.25;
+   const far=(this.rawHeight(x-280,z)+this.rawHeight(x+280,z)+this.rawHeight(x,z-280)+this.rawHeight(x,z+280))*.25;
+   const ridges=clamp((h-near)*1.15+(h-far)*.40,-65,70);
+   offsets[j*terrainSamples+i]=weight*(Math.min(155,(h-48)*.48)+ridges);
+  }
+  this.highlandOffsets=offsets;
+ }
  getHeight(x,z){
-  const d=this.shoreDistance(x,z),h=this.rawHeight(x,z);
+  const d=this.shoreDistance(x,z);
   if(d<0)return -Math.min(45,1.0+Math.pow(-d/95,1.25));
-  // Keep the measured relief. Only feather the final shoreline cell to meet sea level.
+  const h=this.rawHeight(x,z),upland=this.highlandOffsets?this.rasterSample(this.highlandOffsets,x,z,terrainSamples):0;
   const coast=clamp(d/26,0,1),micro=(noise(x*.028,z*.028)-.5)*1.5*clamp(d/40,0,1);
-  return Math.max(.15,h*coast+micro);
+  return Math.max(.15,h*coast+upland+micro);
  }
  getSurfaceHeight(x,z){
-  const step=31.25,gx=Math.floor((x+8000)/step)*step-8000,gz=Math.floor((z+8000)/step)*step-8000,u=(x-gx)/step,v=(z-gz)/step;
+  const step=terrainStep,gx=Math.floor((x+8000)/step)*step-8000,gz=Math.floor((z+8000)/step)*step-8000,u=(x-gx)/step,v=(z-gz)/step;
   const a=this.getHeight(gx,gz),b=this.getHeight(gx+step,gz),c=this.getHeight(gx,gz+step),d=this.getHeight(gx+step,gz+step);
   return u+v<=1?a+u*(b-a)+v*(c-a):d+(1-u)*(c-d)+(1-v)*(b-d);
  }
@@ -243,11 +264,15 @@ class OkinawaWorld{
  biome(x,z){const n=this.mapSize,i=clamp(Math.round((x+8000)/16000*(n-1)),0,n-1),j=clamp(Math.round((z+8000)/16000*(n-1)),0,n-1),k=(j*n+i)*4;return [this.biomes[k]/255,this.biomes[k+1]/255,this.biomes[k+2]/255];}
  buildGroundTexture(){
   const n=2048,c=canvas(n),ctx=c.getContext('2d'),im=ctx.createImageData(n,n);
-  const size=513,relief=new Float32Array(size*size),groves=new Float32Array(size*size);
+  const size=terrainSamples,relief=new Float32Array(size*size),groves=new Float32Array(size*size);
   for(let j=0;j<size;j++)for(let i=0;i<size;i++){
-   const x=i*31.25-8000,z=j*31.25-8000,k=j*size+i;
-   if(this.shoreDistance(x,z)<-24)continue;
-   relief[k]=clamp((this.rawHeight(x+31.25,z)-this.rawHeight(x,z+31.25))/35,-.30,.34);
+   const x=i*terrainStep-8000,z=j*terrainStep-8000,k=j*size+i,d=this.shoreDistance(x,z);
+   if(d<-24)continue;
+   const h=this.getHeight(x,z),east=this.getHeight(x+terrainStep,z),west=this.getHeight(x-terrainStep,z);
+   const south=this.getHeight(x,z+terrainStep),north=this.getHeight(x,z-terrainStep);
+   const slope=((east-west)-(south-north))/84;
+   const hollow=clamp(((east+west+south+north)*.25-h)/52,0,.18);
+   relief[k]=smooth(22,150,d)*clamp(slope-hollow,-.45,.24);
    groves[k]=grovePattern(x,z);
   }
   for(let j=0;j<n;j++)for(let i=0;i<n;i++){
@@ -256,9 +281,14 @@ class OkinawaWorld{
    const h=this.rawHeight(x,z),[forest,field,air]=this.biome(x,z);
    const broad=noise(x*.003,z*.003),grain=hash(i,j)-.5,patch=noise(x*.018,z*.018);
    const grove=this.rasterSample(groves,x,z,size),hill=this.rasterSample(relief,x,z,size);
-   const cover=clamp((grove-(forest>.3?.33:h>90?.43:.54))*4.5,0,1);
-   const open=[103+25*broad,116+27*broad,62+18*broad],woods=[47+20*broad,69+23*broad,36+16*broad];
-   const coast=clamp(1-d/70,0,1)*clamp(1-h/42,.18,1),shade=(patch-.5)*16+grain*12;
+   const upland=smooth(48,122,h)*smooth(80,410,d);
+   const glades=clamp((grove-.49)*4,0,1);
+   const continuous=Math.max(forest*.91,upland*.96);
+   const cover=mix(glades*.69,.85+.15*grove,continuous);
+   const open=[73+18*broad,97+22*broad,62+16*broad],woods=[22+18*broad,46+20*broad,36+15*broad];
+   const coast=clamp(1-d/70,0,1)*clamp(1-h/42,.18,1);
+   const crown=(noise(x*.065+23,z*.065-16)-.5)*13;
+   const shade=(patch-.5)*12+grain*8+cover*crown;
    const [crop,furrow]=field>.05?cropColor(x,z):[open,0];
    for(let q=0;q<3;q++){
     let value=mix(mix(open[q],woods[q],cover),crop[q]+furrow,field)*(1+hill);
@@ -288,13 +318,23 @@ class OkinawaWorld{
  }
  async build(onProgress=()=>{}){
   onProgress(.12,'Tracing the real coastline…');await pause();this.buildMasks();
-  onProgress(.28,'Shaping the land…');await pause();this.buildGroundTexture();
+  onProgress(.28,'Shaping the land…');await pause();this.buildHighlandRelief();this.buildGroundTexture();
   const material=new THREE.MeshStandardMaterial({map:this.groundTexture,roughness:1,color:0xffffff});this.materials.push(material);
   material.onBeforeCompile=s=>{s.uniforms.uTerrainTime=this.time;s.vertexShader=s.vertexShader.replace('#include <common>','#include <common>\nvarying vec3 vTerrainWorld;').replace('#include <worldpos_vertex>','#include <worldpos_vertex>\nvTerrainWorld=(modelMatrix*vec4(transformed,1.)).xyz;');s.fragmentShader=s.fragmentShader.replace('#include <common>','#include <common>\nuniform float uTerrainTime; varying vec3 vTerrainWorld;').replace('#include <map_fragment>','#include <map_fragment>\nfloat detail=sin(vTerrainWorld.x*.51+sin(vTerrainWorld.z*.41))*sin(vTerrainWorld.z*.73);\nfloat cloud=sin(vTerrainWorld.x*.0007+uTerrainTime*.004)*sin(vTerrainWorld.z*.0011);\ndiffuseColor.rgb*=.94+detail*.025+cloud*.06;');};
   for(let row=0;row<4;row++)for(let col=0;col<4;col++){
     const g=new THREE.PlaneGeometry(4000,4000,128,128);g.rotateX(-Math.PI/2);const p=g.attributes.position,uv=g.attributes.uv;
     for(let i=0;i<p.count;i++){const x=p.getX(i)-6000+col*4000,z=p.getZ(i)-6000+row*4000;p.setXYZ(i,x,this.getHeight(x,z),z);uv.setXY(i,(x+8000)/16000,1-(z+8000)/16000);}
-    g.computeVertexNormals();g.computeBoundingSphere();const m=new THREE.Mesh(g,material);m.name='Terrain_'+col+'_'+row;m.receiveShadow=true;this.terrain.add(m);
+    g.computeVertexNormals();
+    // Sample the same height gradient on both sides of every tile boundary.
+    const normals=g.attributes.normal,normal=new THREE.Vector3();
+    for(let i=0;i<p.count;i++){
+     if(i>=129&&i<p.count-129&&i%129!==0&&i%129!==128)continue;
+     const x=p.getX(i),z=p.getZ(i),step=terrainStep;
+     normal.set(this.getHeight(x-step,z)-this.getHeight(x+step,z),2*step,
+      this.getHeight(x,z-step)-this.getHeight(x,z+step)).normalize();
+     normals.setXYZ(i,normal.x,normal.y,normal.z);
+    }
+    g.computeBoundingSphere();const m=new THREE.Mesh(g,material);m.name='Terrain_'+col+'_'+row;m.receiveShadow=true;this.terrain.add(m);
   }
   onProgress(.58,'Growing the coastal landscape…');await pause();this.buildSettlements();await this.loadFortifications();this.buildVillageDetails();this.buildRoads();this.paintRoadTexture();this.buildVegetation();
   if(this.coastalOptions!==false&&scope.OkinawaCoastalScenery){
@@ -333,7 +373,7 @@ class OkinawaWorld{
    const ax=rand()*15400-7700,az=rand()*15400-7700,d=this.shoreDistance(ax,az);
    if(d<20||!clear(ax,az))continue;
    const h=this.getHeight(ax,az),[forest]=this.biome(ax,az);
-   const grove=grovePattern(ax,az),density=clamp((grove-(forest>.3?.31:h>90?.42:.55))*5,0,1);
+   const grove=grovePattern(ax,az),density=clamp((grove-(forest>.3?.31:this.rawHeight(ax,az)>90?.42:.55))*5,0,1);
    if(rand()>density)continue;
    const count=density>.7?3:2,heading=rand()*Math.PI*2;
    // Stagger nearby crowns inside each stand and keep every tree on dry, clear ground.
@@ -343,7 +383,7 @@ class OkinawaWorld{
     if(j&&(this.shoreDistance(x,z)<20||!clear(x,z)))continue;
     const y=j?this.getHeight(x,z):h;
     const slope=Math.hypot(this.getHeight(x+15,z)-y,this.getHeight(x,z+15)-y)/15;if(slope>.9)continue;
-    const s=5.2+rand()*7.6,p={x,z,y:y-.4,s,r:rand()*Math.PI*2};
+    const s=5.2+rand()*7.6,p={x,z,y:this.getSurfaceHeight(x,z)-.4,s,r:rand()*Math.PI*2};
     buckets[(i+j)%3].push(p);this.treeIndex?.add(x,z,p.y,s*1.19,s*.66,s*.065);
     trunks.push({...p,sx:s*.27,sy:s*.72,sz:s*.27});
    }
