@@ -192,7 +192,7 @@ AI-generated campaign illustrations made with built-in ImageGen. They are not
 historical photographs or documented reconstructions. Full prompts and asset
 paths are recorded in [Campaign artwork](assets/CAMPAIGN-ART.md).
 
-## Build 241 — original ground scenery
+## Build 243 — original ground scenery
 
 The vehicles in `assets/ground-vehicles/` and the six active `assets/buildings/`
 models use original code-authored geometry, UVs and paint by the project. The
@@ -375,6 +375,14 @@ texture is included. Principal dimensions are published figures (NavSource, NHHC
 above the loaded waterline, platforms and minor fittings are reconstructions from period photographs and published profiles, with no independently
 established tolerance. License status: `project-own` like the other generated ships. Details and sources: `HISTORICAL-CARRIERS.md`.
 The previous `uss_midway.glb` and `ijn carrier.glb` remain only for the archived `torpedo-carrier-open-sea.html`.
+
+## Rhine ground sites, V-1 and Ar 234 (Build 243)
+
+`assets/aircraft/ar234b2-own.glb`, `assets/aircraft/fi103-own.glb`, `assets/remagen/sites/fi103-ramp-own.glb`,
+`assets/remagen/sites/wuerzburg-riese-own.glb` and `assets/remagen/sites/flak-searchlight-own.glb` were delivered as
+`Torpedo_Bomber_5_Modelle.zip` (generated for the project from numeric geometry and procedural paint; generators in
+`scripts/own-models/`). No third-party model, scan or texture is included; reference images were used only to compare proportions. Published
+dimensions, reconstructed details, no established tolerance. License status: `project-own`. Details and what is wired in: `RHINE-MODELS.md`.
 
 ## Build 172 — uploaded fleet, Corsair and period buildings
 

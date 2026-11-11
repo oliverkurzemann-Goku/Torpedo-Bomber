@@ -18,6 +18,8 @@ const rootModels=['b24.glb','bf109new.glb',
 const files=[];
 async function collect(relative){
  if(relative==='assets/aircraft/p47-weathered.glb')return;
+ // Build 243: the Ar 234 model is delivered and checked but not flown yet (no rig class / flight model) — it stays in the repo, not on the iPad.
+ if(relative==='assets/aircraft/ar234b2-own.glb')return;
  // Build 213 retires the rejected TBF/B-17 drone loops from the runtime payload.
  if(/^audio\/engines\/(r2600|r1820)-(idle|power)\.wav$/.test(relative))return;
  if(/audio\/engines\/(r2800-loaded-power|radial14-loaded-power)\.wav$/.test(relative))return;
@@ -51,5 +53,5 @@ await build({entryPoints:[path.join(root,'app/native-bridge.mjs')],bundle:true,f
 const bridge=await fs.readFile(path.join(output,'app-native.js'));
 manifest.push({path:'app-native.js',bytes:bridge.length,sha256:createHash('sha256').update(bridge).digest('hex')});
 const bytes=manifest.reduce((n,f)=>n+f.bytes,0);
-await fs.writeFile(path.join(output,'app-payload.json'),JSON.stringify({schema:1,build:242,bytes,files:manifest},null,2));
+await fs.writeFile(path.join(output,'app-payload.json'),JSON.stringify({schema:1,build:243,bytes,files:manifest},null,2));
 console.log('Offline app:',manifest.length,'files,',(bytes/1024/1024).toFixed(1),'MiB; original assets preserved.');

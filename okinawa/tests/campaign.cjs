@@ -53,9 +53,9 @@ assert.equal(pilot.rtb,true,'second kill unlocks carrier recovery');assert.equal
 const script=html('remagen-mission.html');
 const start=script.indexOf('const MISSIONS=['),end=script.indexOf('\nfunction M()',start);
 const missions=vm.runInNewContext(script.slice(start,end)+'\nMISSIONS',{});
-assert.equal(missions.length,22,'training plus twenty real-terrain combat sorties (the two-ship bonus is appended last)');
+assert.equal(missions.length,23,'training plus twenty-one real-terrain combat sorties (the V-1 bonus is appended last)');
 assert.deepEqual([...new Set(missions.map(m=>m.ac))].sort(),['bf109','fw190','ju87','me163','me262','p47']);
-assert.equal(missions.filter(m=>m.kills||m.enemyAir||m.bombers).length,20);
+assert.equal(missions.filter(m=>m.kills||m.enemyAir||m.bombers).length,21);
 assert.equal(missions.filter(m=>m.ac==='me262').length,4,'four jet sorties');
 assert.equal(missions[16].ac,'me163','original Komet interception retains its index');
 assert.equal(missions[17].ac,'ju87','Ju 87 bonus retains its index');
@@ -64,6 +64,7 @@ assert.equal(missions[18].id,'jetambush');assert.equal(missions[19].id,'kometdas
 assert.equal(missions[20].id,'nightworks','night sortie appends without shifting saved mission indices');
 assert.equal(missions[20].night,true);assert.equal(missions[20].ac,'p47');
 assert.equal(missions[21].id,'rotte','the two-ship bonus appends without shifting saved mission indices');assert.equal(missions[21].squad.n,1);assert.equal(missions[21].bonus,true);
+assert.equal(missions[22].id,'buzz','the V-1 bonus appends without shifting saved mission indices');assert.equal(missions[22].bonus,true);assert.equal(missions[22].kills.ramp,1);assert.ok(missions[22].ramp&&!missions[22].squad,'a solo sortie against the ramp');
 const plans=vm.runInNewContext(html('operation-plans.js')+'\nwindow.FlightPlans',{window:{}});
 assert.equal(plans.europe.length,missions.length,'every Rhine sortie gets its own weather/operation plan');
 assert.equal(plans.europe[16].fuel,65,'original rocket sortie has limited powered flight');

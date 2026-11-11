@@ -6,7 +6,7 @@
  function snapshot(){return {mission,custom:MISSIONS[mission].custom||null,identity:identity(mission),label:MISSIONS[mission].sub,
   player:C.capture(P,['_keys','_stickActive','_keyboardFlightActive']),operation:C.capture(europeOps),
   globals:C.capture({score,scoreStart,sortieKills,hitsTaken,circuitsDone,weather,baseWind,windZ,wxTime,diffIdx,weapon,aeroMode,invertPitch,steerSign,convoyAlertCalled}),
-  targets:targets.filter(t=>!t.surprise).map(t=>C.entity(t,t.sub)),air:enemyAir.map(e=>C.entity(e)),wingmen:wingmen.map(w=>C.entity(w)),squad:squad.map(w=>C.entity(w)),squadStats:{...squadStats},squadOrder,bomberAlarm,
+  targets:targets.filter(t=>!t.surprise&&!t.optionalSite).map(t=>C.entity(t,t.sub)),air:enemyAir.map(e=>C.entity(e)),wingmen:wingmen.map(w=>C.entity(w)),squad:squad.map(w=>C.entity(w)),squadStats:{...squadStats},squadOrder,bomberAlarm,
   traffic:(livingWorld?.entities||[]).map(e=>({alive:e.alive,phase:e.phase,last:C.capture(e.last),alertT:e.alertT,transform:C.transform(e.model)})),
   weapons:{bullets:C.projectiles(bullets),tracers:C.projectiles(tracers),bombs:C.projectiles(bombs),rockets:C.projectiles(rockets),groundFire:C.projectiles(groundFire)},
   navigation:C.navigationState(navigation),clock:clock.elapsedTime,flares:flareSupport?.checkpoint()};}
@@ -17,16 +17,21 @@
   for(const kind of kinds)await ensureModel(kind);
   if(livingWorld&&(livingWorld.entities.length!==saved.traffic.length))throw Error('Traffic layout changed');
   briefPlan={config:saved.operation.config,weather:saved.globals.weather,wind:saved.globals.baseWind};
+  // Build 243: the real models of the mission's ground sites (V-1 ramp, radar, searchlights) are there before the sites are placed, so a destroyed one shows its wreck
+  if(typeof loadMissionSites==='function')await loadMissionSites(MISSIONS[saved.mission]);
   startMission(saved.mission);finishLaunchIntro(false);briefPlan=null;
   C.restore(P,saved.player);P.onGround=false;P.landingRoll=null;
   europeOps=new FlightOps.Operation(saved.operation.config);C.restore(europeOps,saved.operation);
   const g=C.restore({},saved.globals);
   ({score,scoreStart,sortieKills,hitsTaken,circuitsDone,weather,baseWind,windZ,wxTime,diffIdx,weapon,aeroMode,invertPitch,steerSign,convoyAlertCalled}=g);
   applyWeather();
-  if(targets.length!==saved.targets.length)throw Error('Target layout changed');
-  targets.forEach((t,i)=>{
+  // Build 243: optional sites (radar, searchlights) are placed again by populate() and are not part of a checkpoint
+  const core=targets.filter(t=>!t.optionalSite);
+  if(core.length!==saved.targets.length)throw Error('Target layout changed');
+  core.forEach((t,i)=>{
    const s=saved.targets[i];C.applyEntity(t,s,t.sub);
-   if(!t.alive&&!t.entity){t.sub.traverse(o=>{if(o.isMesh){o.material=o.material.clone();o.material.color.multiplyScalar(.32);}});
+   if(!t.alive&&!t.entity&&t.site&&typeof siteWreck==='function')siteWreck(t,true);
+   else if(!t.alive&&!t.entity){t.sub.traverse(o=>{if(o.isMesh){o.material=o.material.clone();o.material.color.multiplyScalar(.32);}});
     if(t.kind==='bridge'){t.sub.children[0].visible=false;if(t.sub.children[2])t.sub.children[2].visible=false;}
     t.sub.userData.wreckOffset=-(t.kind==='bridge'?2:1.2);
    }

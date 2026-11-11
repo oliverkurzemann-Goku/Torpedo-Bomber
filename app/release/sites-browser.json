@@ -1,0 +1,322 @@
+{
+ "radar": {
+  "count": 1,
+  "kinds": [
+   "radar"
+  ],
+  "alive": true,
+  "secondary": true,
+  "primary": false,
+  "optional": true,
+  "fallback": false,
+  "inTargets": true,
+  "inFlak": false,
+  "distFactory": 1661.8663782719511,
+  "water": false,
+  "yErr": 0,
+  "intactVisible": true,
+  "wreckScale": [
+   0,
+   0,
+   0
+  ],
+  "dish": true,
+  "model": 1,
+  "checkpointTargets": 2,
+  "allTargets": 3,
+  "boostHeavy": {
+   "cool": 0.8,
+   "err": 0.85
+  },
+  "boostLight": {
+   "cool": 1,
+   "err": 1
+  },
+  "top": 11
+ },
+ "dish": {
+  "turned": 0.6000000000000003
+ },
+ "kill": {
+  "bulletDamage": 0.7199999999999998,
+  "alive": false,
+  "score": 900,
+  "intactVisible": false,
+  "wreckScale": [
+   1,
+   1,
+   1
+  ],
+  "radio": "BEAUFORT TOWER — CLEARED FOR TAKE-OFF, RUNWAY ZERO NINE|ENEMY FIELD ALERTED — INTERCEPTOR SCRAMBLING|OPTIONAL SECONDARY TARGET DESTROYED — BONUS 300|RADAR DOWN — HEAVY FLAK FIRE CONTROL DEGRADED",
+  "boostHeavy": {
+   "cool": 1,
+   "err": 1
+  },
+  "kills": {
+   "flak": 0,
+   "bridge": 0,
+   "factory": 0,
+   "truck": 0,
+   "train": 0,
+   "ferry": 0,
+   "air": 0,
+   "bomber": 0
+  },
+  "bonus": true
+ },
+ "lights": {
+  "count": 3,
+  "radar": true,
+  "minApart": 1073.124849024189,
+  "fallback": false,
+  "dist": [
+   1117.7452991949406,
+   837.9960861988361,
+   466.4519328624011
+  ],
+  "water": false,
+  "beamHidden": true,
+  "night": true,
+  "nodes": true,
+  "hp": 1.5
+ },
+ "beam": {
+  "litAt": 0.30000000000000004,
+  "lit": 1.6,
+  "warned": true,
+  "radio": "SEARCHLIGHT HAS YOU — FLAK IS TRACKING!",
+  "angleDeg": 0.0005703450791623978,
+  "originErr": 0,
+  "visible": true,
+  "opacity": 0.26,
+  "boost": {
+   "cool": 0.72,
+   "err": 0.62
+  },
+  "boostHeavy": {
+   "cool": 0.576,
+   "err": 0.527
+  }
+ },
+ "sweep": {
+  "lit": 0,
+  "boost": {
+   "cool": 1,
+   "err": 1
+  }
+ },
+ "lampKill": {
+  "alive": false,
+  "beam": false,
+  "wreck": 1
+ },
+ "ramp": {
+  "index": 22,
+  "rotte": 21,
+  "count": 23,
+  "plan": "Fictional V-1 interception: find the ramp, destroy it and shoot down the flying ",
+  "primary": true,
+  "secondary": false,
+  "fallback": false,
+  "kills": {
+   "ramp": 1
+  },
+  "inTargets": true,
+  "checkpointTargets": 1,
+  "allTargets": 1,
+  "yawErr": 0,
+  "clear": true,
+  "slope": 0.4675073365116873,
+  "launchBehind": 23.39999999999837,
+  "launchAbove": 1.5257758890633681,
+  "distAllied": 14114.849472454604,
+  "top": 8,
+  "text": "V-1 RAMP 1   V-1 DOWN 0"
+ },
+ "launch": {
+  "first": 24.000000000000206,
+  "launched": 3,
+  "maxAir": 3,
+  "heading": -2.160738240427126,
+  "rampYaw": -2.160738240427126,
+  "radio": "V-1 LAUNCH — 12 O'CLOCK!|V-1 LAUNCH — 12 O'CLOCK!|V-1 LAUNCH — 12 O'CLOCK!|V-1 THROUGH TO THE ALLIED LINES — 1 SO FAR",
+  "log": [
+   [
+    0,
+    0,
+    0
+   ],
+   [
+    10,
+    0,
+    0
+   ],
+   [
+    20,
+    0,
+    0
+   ],
+   [
+    30,
+    1,
+    1
+   ],
+   [
+    40,
+    1,
+    1
+   ],
+   [
+    50,
+    1,
+    1
+   ],
+   [
+    60,
+    1,
+    1
+   ],
+   [
+    70,
+    2,
+    2
+   ],
+   [
+    80,
+    2,
+    2
+   ],
+   [
+    90,
+    2,
+    2
+   ],
+   [
+    100,
+    2,
+    2
+   ],
+   [
+    110,
+    3,
+    3
+   ]
+  ],
+  "ahead": 9436.269233346859,
+  "aglV": 535.7206275453731,
+  "climbed": 425.2999380541962,
+  "minimap": "function"
+ },
+ "shoot": {
+  "hit": 1.5,
+  "alive": false,
+  "score": 250,
+  "kills": 1,
+  "radio": "FLYING BOMB DOWN — 1 SO FAR",
+  "parent": false,
+  "text": "V-1 RAMP 1   V-1 DOWN 1",
+  "flying": 1
+ },
+ "end": {
+  "dbg": {
+   "missionOver": false,
+   "free": false,
+   "ready": true,
+   "air": 0,
+   "left": {}
+  },
+  "through": 3,
+  "launchedBefore": 6,
+  "launchedAfter": 6,
+  "wreck": [
+   1,
+   1,
+   1
+  ],
+  "intact": false,
+  "left": {},
+  "rtb": true,
+  "leftover": 0,
+  "kills": {
+   "flak": 0,
+   "bridge": 0,
+   "factory": 0,
+   "truck": 0,
+   "train": 0,
+   "ferry": 0,
+   "air": 0,
+   "bomber": 0,
+   "v1": 1,
+   "ramp": 1
+  }
+ },
+ "again": {
+  "same": true,
+  "after": 0,
+  "orphans": 0,
+  "beams": 0
+ },
+ "checkpoint": [
+  {
+   "kill": false,
+   "before": {
+    "x": 17729.05873571468,
+    "z": 23652.27080558275,
+    "hp": 3,
+    "alive": true,
+    "score": 0,
+    "kills": {
+     "flak": 0,
+     "bridge": 0,
+     "factory": 0,
+     "truck": 0,
+     "train": 0,
+     "ferry": 0,
+     "air": 0,
+     "bomber": 0
+    }
+   },
+   "after": {
+    "hp": 3,
+    "alive": true,
+    "wreck": [
+     0,
+     0,
+     0
+    ]
+   },
+   "launched": 3
+  },
+  {
+   "kill": true,
+   "before": {
+    "x": 17729.05873571468,
+    "z": 23652.27080558275,
+    "hp": -93,
+    "alive": false,
+    "score": 1200,
+    "kills": {
+     "flak": 0,
+     "bridge": 0,
+     "factory": 0,
+     "truck": 0,
+     "train": 0,
+     "ferry": 0,
+     "air": 0,
+     "bomber": 0,
+     "ramp": 1
+    }
+   },
+   "after": {
+    "hp": -93,
+    "alive": false,
+    "wreck": [
+     1,
+     1,
+     1
+    ]
+   },
+   "launched": 0
+  }
+ ]
+}

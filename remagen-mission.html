@@ -302,7 +302,7 @@
   <div style="width:100%;height:4px;background:repeating-linear-gradient(45deg,#ffd400,#ffd400 8px,#111 8px,#111 16px);"></div>
   <span id="testVersionBannerText" style="background:#111;color:#ffd400;font-family:monospace;font-weight:800;font-size:11px;letter-spacing:.5px;padding:3px 10px;border:1px solid #ffd400;border-top:none;border-radius:0 0 6px 6px;"></span>
 </div>
-<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 242';</script>
+<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 243';</script>
 <!-- ===== END TEMP TEST-ONLY VERSION BANNER ===== -->
 <div id="app"></div>
 <style>
@@ -343,7 +343,7 @@
   <div id="flash"></div>
   <div id="gunsight"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 242 · REAL RHINE</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 243 · REAL RHINE</div>
 
   <div id="apr">
     <div id="aprCall"></div>
@@ -397,7 +397,7 @@
 </div>
 
 <div class="overlay hidden" id="menu" data-campaign="europe">
-  <div class="menuTop"><a id="selBtn" href="index.html?v=242">&#9664; Change Game</a><span class="menuMeta">RHINE OPERATIONS<br>BUILD 242</span></div>
+  <div class="menuTop"><a id="selBtn" href="index.html?v=243">&#9664; Change Game</a><span class="menuMeta">RHINE OPERATIONS<br>BUILD 243</span></div>
   <div class="card menuCard">
     <aside class="menuOverview" aria-label="Campaign and pilot options">
     <div class="campaignArt" aria-hidden="true"></div>
@@ -618,7 +618,7 @@
 <script src="ground-dust.js?v=181"></script>
 <script src="flight-indicators.js?v=198"></script>
 <script src="sortie-fuel.js?v=206"></script>
-<script src="operation-plans.js?v=238"></script>
+<script src="operation-plans.js?v=243"></script>
 <script src="custom-sortie.js?v=238"></script>
 <script>
 // ============================================================
@@ -968,7 +968,7 @@ async function loadRealWorld(){
 
   if(OSMManager.BUILD!==23||HistoricalObjectManager.BUILD!==21||LivingWorld.BUILD!==22||WorldVehicles.BUILD!==23) throw new Error('Terrain version mismatch. Reload Remagen.');
   document.getElementById('testVersionBannerText').textContent=
-    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 242 · MODULE 23';
+    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 243 · MODULE 23';
   heightProvider=new DEMHeightProvider(RTILE,'terrain-system/real/data/dem/');
   terrain=new TerrainManager(scene,RTILE,heightProvider);
   osmMgr=new OSMManager(scene,RTILE,terrain,'terrain-system/real/data/osm/');
@@ -2674,9 +2674,9 @@ async function waitForMissionModels(m,maxWaitMs=7000){
   const kinds=initialMissionModelKinds(m);
   // A missing texture or a slow mobile decode must never trap Start Engine on
   // the loading screen. refreshModels() swaps late arrivals into the live sortie.
-  const loading=Promise.all(kinds.map(kind=>ensureModel(kind).catch(err=>{
+  const loading=Promise.all([...kinds.map(kind=>ensureModel(kind).catch(err=>{
     console.warn(kind+' real model unavailable:',err);return null;
-  })));
+  })),typeof loadMissionSites==='function'?loadMissionSites(m):null]);
   let timer;
   await Promise.race([loading,new Promise(resolve=>{timer=setTimeout(resolve,maxWaitMs);})]);
   clearTimeout(timer);
@@ -2918,7 +2918,11 @@ const TDEF={
   ferry  :{hp:7, r:20, pts:1100, gun:0.45,name:'RHINE FERRY'},
   // Build 231 surprises: units that are not part of the briefing (never counted for an objective)
   ambush :{hp:2, r:6,  pts:200,  gun:1.0, name:'HIDDEN AA'},
-  troops :{hp:1.2,r:10, pts:120,  gun:1.0, name:'INFANTRY'}
+  troops :{hp:1.2,r:10, pts:120,  gun:1.0, name:'INFANTRY'},
+  // Build 243: scenery sites with real models (see the SITES block): radar and searchlights are optional, the V-1 ramp is its own sortie's target
+  radar  :{hp:3,   r:9,  pts:600,  gun:.6,  name:'WUERZBURG RADAR'},
+  searchlight:{hp:1.5,r:4.5,pts:150,gun:1,  name:'SEARCHLIGHT'},
+  ramp   :{hp:6,   r:27, pts:1200, gun:.25, name:'V-1 RAMP'}
 };
 
 // A thin position/rotation handle standing in for a real object's own THREE.Group. Real
@@ -3016,12 +3020,12 @@ function damageTarget(t,amount,byGun){
 function killTarget(t){
   t.alive=false; t.burnT=26;
   const p=t.group.position;
-  const big=(t.kind==='bridge'||t.kind==='factory'||t.kind==='train'||t.kind==='ferry');
+  const big=(t.kind==='bridge'||t.kind==='factory'||t.kind==='train'||t.kind==='ferry'||t.kind==='ramp'||t.kind==='radar');
   spawnExplosion(p.x,p.y+3,p.z, big?2.2:1.0);
   spawnDebris(p.x,p.y+2,p.z, big?18:8);
   sfxBoom(big?1.2:0.6);
   addScore(t.pts);
-  const key={flak:'flak',bridge:'bridge',factory:'factory',truck:'truck',train:'train',ferry:'ferry'}[t.kind];
+  const key={flak:'flak',bridge:'bridge',factory:'factory',truck:'truck',train:'train',ferry:'ferry',ramp:'ramp'}[t.kind];
   if(key) sortieKills[key]=(sortieKills[key]||0)+1;
   if(t.secondary){addScore(300);radioSay('OPTIONAL SECONDARY TARGET DESTROYED — BONUS 300');}
   if(!t.surprise&&(t.kind==='truck'||t.kind==='train'))surprises?.trigger('ammoBlast',{victim:t,dist:P.pos.distanceTo(p),agl:P.pos.y-groundY(P.pos.x,P.pos.z)});
@@ -3033,6 +3037,7 @@ function killTarget(t){
   // itself. A uniform Y-translation has no pivot-point issue either way, so it is the one
   // transform that is safe to apply directly to the real group (see targetHandle()'s own comment).
   if(t.entity) livingWorld.destroyEntity(t.entity);
+  else if(t.site&&typeof siteWreck==='function') siteWreck(t);
   else if(t.surprise){
     t.sub.traverse(o=>{ if(o.isMesh){ o.material=o.material.clone(); o.material.color.multiplyScalar(0.32); } });
     t.sub.userData.wreckOffset=-.6; t.sub.position.y=(t.sub.userData.terrainLift||0)+t.sub.userData.wreckOffset;
@@ -3075,9 +3080,10 @@ const MISSIONS=[
     kills:{train:1}, flakDefense:1, text:"A supply train is on the real valley railway. Find its locomotive "
         +"through the rain, strike with rockets or bombs, and climb before the track bends uphill." },
   { id:'factory', title:'Sortie 4', sub:'Factory Strike', ac:'p47', weather:'clear',
-    kills:{factory:1,flak:1}, flakDefense:1, text:"The industrial works up the valley are keeping the bridgehead "
+    kills:{factory:1,flak:1}, flakDefense:1, radar:true, text:"The industrial works up the valley are keeping the bridgehead "
         +"supplied. Bombs and rockets on the workshops and the stack — watch for heavy flak "
-        +"over the valley." },
+        +"over the valley. A Wuerzburg radar on the high ground directs the guns: silence it for a bonus "
+        +"and weaker flak." },
   { id:'ferry', title:'Sortie 5', sub:'Rhine Ferry Hunt', ac:'p47', squad:{n:1,roles:['strike']}, weather:'haze',
     kills:{ferry:1}, flakDefense:2, text:"A vehicle ferry is moving along the Rhine inside the mapped river "
         +"channel. Find it near the Remagen crossing and stop it before it clears the sector. "
@@ -3104,9 +3110,10 @@ const MISSIONS=[
     text:"Intercept a Fortress box with the Me 262 over the Rhine. Preserve speed, "
         +"cross the formation instead of circling behind it, then return with fuel to spare." },
   { id:'final', title:'Sortie 12', sub:'The Whole Rhine', ac:'p47', squad:{n:2,roles:['strike','cover']}, weather:'storm',
-    kills:{factory:1,flak:2,ferry:1}, traffic:'ferry', flakDefense:2, enemyAir:2,
+    kills:{factory:1,flak:2,ferry:1}, traffic:'ferry', flakDefense:2, enemyAir:2, radar:true,
     text:"A storm over the Rhine: silence both flak positions, stop a ferry and hit the works "
-        +"before returning through hostile aircraft. Plan your attack order and watch the terrain." },
+        +"before returning through hostile aircraft. A Wuerzburg radar near the works feeds the guns; "
+        +"it is an optional bonus target. Plan your attack order and watch the terrain." },
   { id:'jetjabo', title:'Sortie 13', sub:'Jet Strike', ac:'me262', weather:'broken',
     kills:{bridge:1}, enemyAir:2,
     text:"The Me 262 returns for a fast strike on the Allied-held crossing. Bomb the bridge and evade "
@@ -3135,9 +3142,11 @@ const MISSIONS=[
   {id:'kometdash',title:'Bonus Komet',sub:'Rocket Dash & Glide',ac:'me163',bonus:true,
     bombers:{n:1,type:'b17'},weather:'broken',
     text:'Fictional rocket dash from the forward strip. One Fortress, a short rocket burn and no go-around after cutoff. Reach the approach gate above 4,900 ft MSL for an OPTIONAL high-entry bonus. After the bomber falls, automatic rocket cutoff begins the recovery. Evade the pursuer and glide back with the landing skid extended; landing ends the sortie.'},
-  {id:'nightworks',title:'Bonus Night',sub:'Moonlight Works',ac:'p47',bonus:true,night:true,weather:'clear',kills:{factory:1,flak:1},flakDefense:1,text:'Fictional night raid over the Rhine. Mark the works with parachute flares (L / FLARE), silence the battery and bomb the factory. Four flares are carried. Return to the field for fuel, ammunition and repairs if another attack is needed.'},
+  {id:'nightworks',title:'Bonus Night',sub:'Moonlight Works',ac:'p47',bonus:true,night:true,weather:'clear',kills:{factory:1,flak:1},flakDefense:1,radar:true,searchlights:3,text:'Fictional night raid over the Rhine. Mark the works with parachute flares (L / FLARE), silence the battery and bomb the factory. Three searchlights sweep the valley: caught in a beam you draw faster, closer flak, so stay low and out of their cones or shoot them out. An optional Wuerzburg radar directs the heavy guns. Four flares are carried. Return to the field for fuel, ammunition and repairs if another attack is needed.'},
   {id:'rotte',title:'Bonus Two-Ship',sub:'Armed Recce Pair',ac:'p47',bonus:true,squad:{n:1,roles:['strike']},traffic:'convoy',weather:'broken',kills:{truck:4,flak:1},flakDefense:1,
-    text:'Fictional two-ship armed reconnaissance: you and TWO line up on the strip and take off together, then work the valley as a pair. A column is moving on the mapped road and one gun position covers it. TWO attacks on his own account with guns and rockets, picks the target you are not on and calls bandits on your tail. Split the targets, keep your section together and bring both aircraft home for a bonus.'}
+    text:'Fictional two-ship armed reconnaissance: you and TWO line up on the strip and take off together, then work the valley as a pair. A column is moving on the mapped road and one gun position covers it. TWO attacks on his own account with guns and rockets, picks the target you are not on and calls bandits on your tail. Split the targets, keep your section together and bring both aircraft home for a bonus.'},
+  {id:'buzz',title:'Bonus Buzz Bombs',sub:'Ramp and Flying Bombs',ac:'p47',bonus:true,weather:'clear',kills:{ramp:1},ramp:true,
+    text:'Fictional interception: a V-1 launch ramp stands on the German side of the valley and fires flying bombs at the Allied strip. Find the ramp (marked on the map) and destroy it with bombs and rockets. Every bomb you shoot down on the way is worth a bonus. They fly straight and level at about 340 knots: line up from behind and use the guns. Return to the field once the ramp is down.'}
 ];
 function M(){ return MISSIONS[mission]; }
 function isFree(){ return !!M().free; }
@@ -3156,6 +3165,7 @@ function clearWorld(){
   // loadRealWorld() — never removed here, only reset (resetAllRealTargets(), called by the next
   // populate()), the same way the old synthetic game's own permanent worldBridge always was.
   clearSurprises();
+  if(typeof clearSites==='function')clearSites();
   targets=[]; flakUnits=[];
   if(gunMarks){gunMarks.count=0;gunMarkNext=0;}
   for(const e of enemyAir) GameRuntime.release(e.group); enemyAir=[];
@@ -3190,6 +3200,7 @@ function populate(){
     const entity=livingWorld.entities.find(e=>e.kind==='truck'&&e.meta.convoy===0&&e.meta.vehicleModel==='m16');
     if(entity){const t=spawnLivingTarget(entity,{primary:false});t.secondary=true;t.name='OPTIONAL M16';}
   }
+  if(typeof spawnMissionSites==='function')spawnMissionSites(m);   // Build 243: radar, searchlights, V-1 ramp
 }
 function objectiveLeft(){
   const need=M().kills||{};
@@ -3220,8 +3231,8 @@ function objectiveText(){
   if(blockingEnemyAir().length>0 && !ks.length)
     return 'BANDITS  '+blockingEnemyAir().length+' LEFT';
   if(!ks.length) return europeOps?.pending()?'NEXT CONTACT EXPECTED':'RTB — LAND AT '+airfieldName(m);
-  const nm={flak:'FLAK',bridge:'BRIDGE',factory:'FACTORY',truck:['jabo','stuka'].includes(M().id)?'VEHICLES':'TRUCKS',train:'TRAIN',ferry:'FERRY'};
-  return ks.map(k=>(nm[k]||k.toUpperCase())+' '+left[k]).join('  ');
+  const nm={flak:'FLAK',bridge:'BRIDGE',factory:'FACTORY',truck:['jabo','stuka'].includes(M().id)?'VEHICLES':'TRUCKS',train:'TRAIN',ferry:'FERRY',ramp:'V-1 RAMP'};
+  return ks.map(k=>(nm[k]||k.toUpperCase())+' '+left[k]).join('  ')+(M().ramp?'   V-1 DOWN '+(sortieKills.v1||0):'');
 }
 function checkObjective(){
   if(missionOver||isFree()||(europeOps&&!europeOps.ready())) return;
@@ -3507,7 +3518,7 @@ function updateBullets(dt){
     else if(!done) for(const t of targets){
       if(!t.alive) continue;
       const tp=t.group.position;
-      const top=(t.kind==='bridge')?26:9;
+      const top=typeof targetTop==='function'?targetTop(t):(t.kind==='bridge')?26:9;
       if(segDist(ax,ay,az,p.x,p.y,p.z,tp)<t.radius+2 && Math.min(ay,p.y)<tp.y+top){
         damageTarget(t,b.dmg,true); spawnSmoke(p.x,p.y,p.z,0xa08a5a,0.3); done=true;
         if(b.by&&!t.alive)squadClaim(b.by,t.name);
@@ -3517,6 +3528,9 @@ function updateBullets(dt){
     if(!done&&!b.visual) for(const e of enemyAir){
       if(!e.alive) continue;
       if(segDist(ax,ay,az,p.x,p.y,p.z,e.pos)<9){ damageEnemyAir(e,b.dmg); done=true; if(b.by&&!e.alive)squadClaim(b.by,e.bomber?'BOMBER':'BANDIT'); break; }
+    }
+    if(!done&&!b.visual&&typeof buzzBombs!=='undefined'&&buzzBombs.length)for(const v of buzzBombs){
+      if(v.alive&&segDist(ax,ay,az,p.x,p.y,p.z,v.pos)<BUZZ.hitR){damageBuzz(v,b.dmg);done=true;break;}
     }
     if(!done&&!b.visual&&!b.by&&typeof duelSession!=='undefined'&&duelSession&&duelSession.match&&duelAvatarBullet(b,ax,ay,az,p))done=true;
     if(done||b.life<=0){ GameRuntime.release(b.mesh); bullets.splice(i,1); }
@@ -3637,12 +3651,14 @@ function updateFlak(dt){
     f.cool-=dt;
     if(f.cool>0) continue;
     flakMuzzle(f);
+    // Build 243: a searchlight holding you and a living radar make the guns quicker and more accurate
+    const boost=typeof siteFlakBoost==='function'?siteFlakBoost(f):{cool:1,err:1};
     if(light){
-      f.cool=(f.coolBase??0.16)+Math.random()*(f.coolVar??0.12);
+      f.cool=((f.coolBase??0.16)+Math.random()*(f.coolVar??0.12))*boost.cool;
       // lead the aeroplane; accuracy scales with difficulty
       const tof=d/620;
       const lead=P.pos.clone().addScaledVector(noseDir(),P.spd*tof*(0.6+D().aim*0.5));
-      const err=(1.4-D().aim*0.5)*26*(f.spread||1);
+      const err=(1.4-D().aim*0.5)*26*(f.spread||1)*boost.err;
       lead.x+=(Math.random()-0.5)*err; lead.y+=(Math.random()-0.5)*err; lead.z+=(Math.random()-0.5)*err;
       const origin=p.clone().add(new THREE.Vector3(0,f.entity?2.4:5,0));
       const dir=lead.sub(origin).normalize();
@@ -3651,11 +3667,11 @@ function updateFlak(dt){
       scene.add(m);
       tracers.push({mesh:m,dir,speed:620,life:3.0,damage:f.damage});
     } else {
-      f.cool=(2.4+Math.random()*1.6)/Math.max(.7,D().flak);
+      f.cool=(2.4+Math.random()*1.6)/Math.max(.7,D().flak)*boost.cool;
       // Aim only when firing. A turn or change in height during the shell's
       // flight leaves the burst behind instead of tracking the aeroplane.
       const flight=Math.max(.9,d/780),aim=P.pos.clone().addScaledVector(noseDir(),P.spd*flight*(.89+D().aim*.035));
-      const err=(1.5-D().aim*.25)*(30+d*.012);
+      const err=(1.5-D().aim*.25)*(30+d*.012)*boost.err;
       aim.x+=(Math.random()-.5)*err;aim.y+=(Math.random()-.5)*err*.65;aim.z+=(Math.random()-.5)*err;
       const shell=new THREE.Mesh(flakShellGeo,flakShellMat);
       shell.position.copy(p);shell.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),aim.clone().sub(p).normalize());
@@ -4924,7 +4940,7 @@ async function duelCopy(id){
 function duelSendHello(){
   const s=duelSession;if(!s||!duelLink||duelLink.status!=='open')return;
   s.name=Duel.cleanName(dEl('dlName').value)||s.name;
-  duelLink.sendEvent(Duel.hello({name:s.name,ac:s.ac,build:238}));
+  duelLink.sendEvent(Duel.hello({name:s.name,ac:s.ac,build:243}));
 }
 function duelOnStatus(status,info){
   const s=duelSession;if(!s)return;
@@ -5239,6 +5255,268 @@ function duelInit(){
   dEl('dlName').addEventListener('input',()=>{const s=duelSession;if(!s)return;s.name=Duel.cleanName(dEl('dlName').value)||'PILOT';duelStore('re_duelName',s.name);});
   dEl('dlName').addEventListener('change',duelSendHello);
   setInterval(()=>{if(duelSession&&duelSession.phase==='lobby'&&!dEl('duelLobby').classList.contains('hidden'))duelRefreshLobby();},1000);
+}
+
+// ============================================================
+//  SITES (Build 243) - delivered ground models: Wuerzburg radar, flak searchlights, V-1 ramp.
+//  Each is a real, destroyable ground target (TDEF), placed on flat, dry, building-free ground around a real object of the
+//  map (deterministic per mission id, so a restored checkpoint finds the same spot), with the model's own hidden Wreck node
+//  swapped in when it is destroyed. Radar and searchlights are optional (never part of a briefing objective, not saved in a
+//  checkpoint); the ramp is a primary target of its own sortie. The radar degrades the heavy flak's fire control until it
+//  dies, a searchlight that holds you in its beam makes every gun on the map quicker and more accurate.
+// ============================================================
+const SITE_FILES={radar:'assets/remagen/sites/wuerzburg-riese-own.glb',searchlight:'assets/remagen/sites/flak-searchlight-own.glb',
+  ramp:'assets/remagen/sites/fi103-ramp-own.glb',v1:'assets/aircraft/fi103-own.glb'};
+const SITE_BEAM={len:3400,spread:Math.tan(2.1*Math.PI/180),range:3600,trackRate:.55,sweepRate:.32};
+const siteTpl={},siteTasks={};
+let siteRecs=[],siteLit=0,siteLitWarned=false,siteBeamGeo=null;
+const sitePlanCache={};
+function loadSite(kind){
+  if(siteTpl[kind])return Promise.resolve(siteTpl[kind]);
+  if(siteTasks[kind])return siteTasks[kind];
+  if(typeof THREE.GLTFLoader!=='function')return Promise.reject(new Error('3D model loader unavailable'));
+  const task=new Promise((resolve,reject)=>new THREE.GLTFLoader().load(SITE_FILES[kind]+'?v=243',gltf=>{
+    gltf.scene.traverse(o=>{if(o.isMesh){o.frustumCulled=true;o.castShadow=false;}});
+    siteTpl[kind]=gltf.scene;resolve(gltf.scene);if(typeof siteUpgrade==='function')siteUpgrade(kind);
+  },undefined,reject));
+  siteTasks[kind]=task;task.catch(()=>{delete siteTasks[kind];});
+  return task;
+}
+function siteKindsFor(m){const k=[];if(m.radar)k.push('radar');if(m.searchlights)k.push('searchlight');if(m.ramp)k.push('ramp','v1');return k;}
+function loadMissionSites(m){return Promise.all(siteKindsFor(m).map(k=>loadSite(k).catch(e=>{console.warn(k+' site model unavailable:',e);return null;})));}
+function siteSeed(text){let h=2166136261;for(let i=0;i<text.length;i++){h^=text.charCodeAt(i);h=Math.imul(h,16777619);}return h>>>0;}
+function siteRand(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+// not on water, no building footprint within r+6 m (this tile and its neighbours)
+function siteClear(x,z,r){
+  const wet=(px,pz)=>!!(livingWorld&&livingWorld._pointOnWater(px,pz));
+  for(const [dx,dz] of [[0,0],[r,0],[-r,0],[0,r],[0,-r],[r*.7,r*.7],[-r*.7,r*.7],[r*.7,-r*.7],[-r*.7,-r*.7]])if(wet(x+dx,z+dz))return false;
+  if(livingWorld&&osmMgr){
+    const tx=Math.floor(x/4000),tz=Math.floor(z/4000);
+    for(let ax=-1;ax<=1;ax++)for(let az=-1;az<=1;az++){
+      const data=osmMgr.sourceTiles.get((tx+ax)+','+(tz+az));
+      if(data&&!livingWorld._buildingClear(data,(tx+ax)*4000,(tz+az)*4000,x,z,r+6))return false;
+    }
+  }
+  return true;
+}
+// A flat, dry, clear spot on a ring around (cx,cz). opt: r footprint radius, slope max rise over the footprint (m),
+// high pick the highest of the candidates, apart [{x,z}] keep 300 m from these, along [dx,dz] also require flatness along an axis.
+function siteSpot(cx,cz,rmin,rmax,rand,opt){
+  opt=opt||{};const r=opt.r||8,maxX=RTILE*RGRID_W-1800,maxZ=RTILE*RGRID_H-1800;let best=null;
+  for(let i=0;i<90;i++){
+    const a=rand()*Math.PI*2,d=rmin+rand()*(rmax-rmin),x=cx+Math.cos(a)*d,z=cz+Math.sin(a)*d;
+    if(x<1800||z<1800||x>maxX||z>maxZ)continue;
+    if(Math.hypot(x-AF_X,z-AF_Z)<2500||Math.hypot(x-ALLIED_AF_X,z-ALLIED_AF_Z)<2500||Math.hypot(x-GERMAN_AF_X,z-GERMAN_AF_Z)<2500)continue;
+    if((opt.apart||[]).some(o=>Math.hypot(x-o.x,z-o.z)<300))continue;
+    if(!siteClear(x,z,r))continue;
+    const slope=Math.max(Math.abs(groundY(x+r,z)-groundY(x-r,z)),Math.abs(groundY(x,z+r)-groundY(x,z-r)));
+    if(slope>(opt.slope||4))continue;
+    if(opt.along){const [ax,az]=opt.along;if(Math.abs(groundY(x+ax,z+az)-groundY(x-ax,z-az))>(opt.alongSlope||5))continue;
+      if(!siteClear(x+ax*.5,z+az*.5,r)||!siteClear(x-ax*.5,z-az*.5,r))continue;}
+    const h=groundY(x,z);
+    if(!opt.high)return {x,z};
+    if(!best||h>best.h)best={x,z,h};
+  }
+  return best;
+}
+function sitePlan(m){
+  if(sitePlanCache[m.id])return sitePlanCache[m.id];
+  const rand=siteRand(siteSeed('sites:'+m.id)),plan={},fx=realFactory?realFactory.userData.x:13200,fz=realFactory?realFactory.userData.z:20490;
+  if(m.radar){const s=siteSpot(fx,fz,700,1800,rand,{r:9,slope:5,high:true});if(s)plan.radar={x:s.x,z:s.z,yaw:rand()*Math.PI*2};}
+  if(m.searchlights){
+    plan.lights=[];
+    for(let i=0;i<m.searchlights;i++){
+      const s=siteSpot(fx,fz,450,1300,rand,{r:4,slope:3,apart:plan.lights.concat(plan.radar?[plan.radar]:[])});
+      if(s)plan.lights.push({x:s.x,z:s.z,yaw:rand()*Math.PI*2});
+    }
+  }
+  if(m.ramp){
+    // between the works and the German field, the rail pointing at the Allied strip
+    const cx=(fx+GERMAN_AF_X)/2,cz=(fz+GERMAN_AF_Z)/2;
+    for(let ring=0;ring<4&&!plan.ramp;ring++){
+      const probe=siteSpot(cx,cz,600+ring*900,1800+ring*1400,rand,{r:6});
+      if(!probe)continue;
+      const yaw=Math.atan2(ALLIED_AF_X-probe.x,ALLIED_AF_Z-probe.z),ax=Math.sin(yaw)*24,az=Math.cos(yaw)*24;
+      if(!siteClear(probe.x+ax,probe.z+az,6)||!siteClear(probe.x-ax,probe.z-az,6))continue;
+      if(Math.abs(groundY(probe.x+ax,probe.z+az)-groundY(probe.x-ax,probe.z-az))>6)continue;
+      plan.ramp={x:probe.x,z:probe.z,yaw};
+    }
+  }
+  sitePlanCache[m.id]=plan;return plan;
+}
+function siteFallback(kind){
+  const g=new THREE.Group(),mat=new THREE.MeshLambertMaterial({color:kind==='radar'?0x9c8f5c:0x6c705f}),box=(w,h,d,x,y,z)=>{const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat);m.position.set(x,y,z);g.add(m);return m;};
+  if(kind==='radar'){box(6,2,6,0,1,0);const dish=new THREE.Mesh(new THREE.CylinderGeometry(3.75,3.75,.3,16),mat);dish.position.set(0,6,0);dish.rotation.x=Math.PI/2.4;g.add(dish);}
+  else if(kind==='searchlight'){box(3.4,1,1.8,0,.6,0);const l=new THREE.Mesh(new THREE.CylinderGeometry(.75,.75,1.1,12),mat);l.position.set(0,1.8,0);l.rotation.x=-Math.PI/3;g.add(l);}
+  else {box(4,1,48,0,.5,0);box(1.2,5,40,0,3,0).rotation.x=.1;}
+  return g;
+}
+function buildSite(kind){
+  const tpl=siteTpl[kind];
+  if(!tpl)return {group:siteFallback(kind),fallback:true};
+  return {group:tpl.clone(true),fallback:false};
+}
+function siteRig(t){
+  const g=t.group;t.dish=g.getObjectByName('Dish');t.mount=g.getObjectByName('Mount');t.proj=g.getObjectByName('Projector');
+  t.beamOrigin=g.getObjectByName('BeamOrigin');t.az=t.az||t.group.rotation.y;t.el=t.el??1.05;t.sweepDir=t.sweepDir||(Math.random()<.5?-1:1);
+  if(t.kind==='searchlight'&&t.proj&&!t.beam){
+    if(!siteBeamGeo){siteBeamGeo=new THREE.CylinderGeometry(SITE_BEAM.len*SITE_BEAM.spread,.4,SITE_BEAM.len,14,1,true);siteBeamGeo.translate(0,SITE_BEAM.len/2,0);}
+    const mat=new THREE.MeshBasicMaterial({color:0xcfe0ff,transparent:true,opacity:.11,depthWrite:false,blending:THREE.AdditiveBlending,side:THREE.DoubleSide,fog:false});
+    t.beam=new THREE.Mesh(siteBeamGeo,mat);t.beam.frustumCulled=false;t.beam.renderOrder=3;t.beam.visible=false;scene.add(t.beam);
+  }
+}
+function addSite(kind,spot,opt){
+  opt=opt||{};const d=TDEF[kind],built=buildSite(kind),g=built.group,hpMul=opt.hpMul||1;
+  g.position.set(spot.x,groundY(spot.x,spot.z),spot.z);g.rotation.y=spot.yaw||0;scene.add(g);
+  const t={kind,sub:g,group:g,site:true,usedFallback:built.fallback,optionalSite:!opt.primary,hp:d.hp*hpMul,maxhp:d.hp*hpMul,alive:true,
+    radius:d.r,pts:d.pts,name:d.name,primary:!!opt.primary,secondary:!!opt.secondary,heavy:false,cool:0,burnT:0,smokeT:Math.random(),liftT:0};
+  siteRig(t);targets.push(t);siteRecs.push(t);return t;
+}
+function spawnMissionSites(m){
+  clearSites();
+  if(!(m.radar||m.searchlights||m.ramp))return;
+  const plan=sitePlan(m);
+  if(plan.radar)addSite('radar',plan.radar,{secondary:true});
+  for(const s of plan.lights||[])addSite('searchlight',s);
+  if(plan.ramp)addSite('ramp',plan.ramp,{primary:true});
+}
+function clearSites(){
+  for(const t of siteRecs){scene.remove(t.group);if(t.beam){scene.remove(t.beam);t.beam.material.dispose();}}
+  siteRecs=[];siteLit=0;siteLitWarned=false;
+  if(typeof buzzReset==='function')buzzReset();
+}
+// a model that finished loading after the sortie started replaces its stand-in
+function siteUpgrade(kind){
+  for(const t of siteRecs){
+    if(!t.usedFallback||t.kind!==kind||!siteTpl[kind])continue;
+    const old=t.group,g=siteTpl[kind].clone(true);g.position.copy(old.position);g.rotation.copy(old.rotation);
+    scene.remove(old);scene.add(g);t.group=g;t.sub=g;t.usedFallback=false;t.beam=null;siteRig(t);if(!t.alive)siteWreck(t,true);
+  }
+}
+function siteWreck(t,quiet){
+  const intact=t.group.getObjectByName('Intact'),wreck=t.group.getObjectByName('Wreck');
+  if(intact&&wreck){intact.visible=false;wreck.scale.set(1,1,1);}
+  else t.group.traverse(o=>{if(o.isMesh){o.material=o.material.clone();o.material.color.multiplyScalar(.32);}});
+  if(t.beam)t.beam.visible=false;
+  if(t.kind==='radar'&&!quiet)radioSay('RADAR DOWN — HEAVY FLAK FIRE CONTROL DEGRADED');
+}
+function siteGroundY(t){
+  const p=t.group.position;
+  if(t.kind!=='ramp')return terrain.getRenderedHeight(p.x,p.z);
+  const ax=Math.sin(t.group.rotation.y)*22,az=Math.cos(t.group.rotation.y)*22;
+  return Math.min(terrain.getRenderedHeight(p.x,p.z),terrain.getRenderedHeight(p.x+ax,p.z+az),terrain.getRenderedHeight(p.x-ax,p.z-az))-.2;
+}
+function siteFlakBoost(f){
+  let cool=1,err=1;
+  if(siteLit>0){cool*=.72;err*=.62;}
+  if(f.heavy&&siteRecs.some(t=>t.kind==='radar'&&t.alive)){cool*=.8;err*=.85;}
+  return {cool,err};
+}
+function targetTop(t){return t.kind==='bridge'?26:t.kind==='radar'?11:t.kind==='ramp'?8:9;}
+const siteV=new THREE.Vector3(),siteQ=new THREE.Quaternion(),siteUp=new THREE.Vector3(0,1,0);
+function updateSites(dt){
+  if(typeof updateBuzz==='function')updateBuzz(dt);
+  if(!siteRecs.length)return;
+  const flying=P.alive&&state===ST.FLIGHT;siteLit=Math.max(0,siteLit-dt);
+  for(const t of siteRecs){
+    const g=t.group,p=g.position,near=flying&&Math.hypot(P.pos.x-p.x,P.pos.z-p.z)<6500;
+    t.liftT-=dt;
+    // the rendered ground changes under the model as terrain detail comes and goes
+    if(t.liftT<=0&&(near||t.liftT<-4)){t.liftT=.5;const y=siteGroundY(t);if(Number.isFinite(y)&&Math.abs(y-p.y)>.05)p.y=y;}
+    if(!t.alive||!near)continue;
+    if(t.kind==='radar'&&t.dish)t.dish.rotation.y+=dt*.6;
+    if(t.kind==='searchlight'&&t.mount&&t.proj){
+      const dx=P.pos.x-p.x,dz=P.pos.z-p.z,dy=P.pos.y-(p.y+2),dh=Math.hypot(dx,dz),d3=Math.hypot(dh,dy),agl=P.pos.y-groundY(P.pos.x,P.pos.z);
+      const see=d3<SITE_BEAM.range&&agl>25;
+      let wantAz,wantEl,rate;
+      if(see){wantAz=Math.atan2(dx,dz);wantEl=Math.max(.14,Math.min(1.45,Math.atan2(dy,dh)));rate=SITE_BEAM.trackRate;}
+      else{wantAz=t.az+t.sweepDir*.6;wantEl=.8+.28*Math.sin(wxTime*.35+p.x*.01);rate=SITE_BEAM.sweepRate;}
+      let da=wantAz-t.az;da=Math.atan2(Math.sin(da),Math.cos(da));
+      t.az+=Math.max(-rate*dt,Math.min(rate*dt,da));t.el+=Math.max(-rate*dt,Math.min(rate*dt,wantEl-t.el));
+      t.mount.rotation.y=t.az-g.rotation.y;t.proj.rotation.x=-t.el;
+      // the beam: from the lens along the lamp axis
+      const ce=Math.cos(t.el);siteV.set(Math.sin(t.az)*ce,Math.sin(t.el),Math.cos(t.az)*ce);
+      if(t.beam){
+        t.beam.visible=true;g.updateMatrixWorld(true);
+        if(t.beamOrigin)t.beamOrigin.getWorldPosition(t.beam.position);else t.beam.position.set(p.x,p.y+2,p.z);
+        t.beam.quaternion.copy(siteQ.setFromUnitVectors(siteUp,siteV));
+      }
+      // lit when the player sits inside the cone of the beam
+      if(see){
+        const ang=Math.acos(Math.max(-1,Math.min(1,(dx*siteV.x+dy*siteV.y+dz*siteV.z)/(d3||1))));
+        if(ang<.05){
+          siteLit=1.6;t.holding=true;
+          if(!siteLitWarned){siteLitWarned=true;radioSay('SEARCHLIGHT HAS YOU — FLAK IS TRACKING!');flash('ILLUMINATED',900);}
+        }else t.holding=false;
+      }
+      if(t.beam)t.beam.material.opacity=t.holding&&siteLit>0?.26:.11;
+    }
+  }
+}
+
+// ---- V-1 flying bombs: launched from the ramp while it stands (the first after a short grace period, then at a steady gap, at most
+// three in the air and ten per sortie), flown straight and level toward the Allied strip. They are shot down with the guns (hp 4);
+// each is worth a bonus. A bomb that is not stopped flies on until it leaves the operational area. Easier on Rookie, busier on Ace.
+const BUZZ={speed:175,climb:.105,alt:620,hp:4,pts:250,hitR:8,range:15500,max:10,live:3,first:[40,24,15],gap:[70,42,28]};
+let buzzBombs=[],buzzNext=30,buzzLaunched=0,buzzThrough=0,buzzClock=0;
+function buzzDiff(){return Math.max(0,Math.min(2,diffIdx|0));}
+function buzzReset(){
+  if(typeof buzzBombs!=='undefined')for(const v of buzzBombs)scene.remove(v.group);
+  buzzBombs=[];buzzLaunched=0;buzzThrough=0;buzzClock=0;buzzNext=BUZZ.first[buzzDiff()];
+}
+function buzzFallback(){
+  const g=new THREE.Group(),m=new THREE.MeshLambertMaterial({color:0x8e998a}),b=new THREE.Mesh(new THREE.CylinderGeometry(.41,.41,6,10),m);
+  b.rotation.x=Math.PI/2;g.add(b);g.add(new THREE.Mesh(new THREE.BoxGeometry(5.4,.12,1.2),m));return g;
+}
+function buzzLaunch(ramp){
+  const lp=ramp.group.getObjectByName('LaunchPoint'),pos=new THREE.Vector3();
+  if(lp){ramp.group.updateMatrixWorld(true);lp.getWorldPosition(pos);}else pos.copy(ramp.group.position).add(new THREE.Vector3(0,2,0));
+  const heading=ramp.group.rotation.y,g=siteTpl.v1?siteTpl.v1.clone(true):buzzFallback();
+  g.rotation.order='YXZ';g.position.copy(pos);g.rotation.y=heading;g.rotation.x=-BUZZ.climb;scene.add(g);
+  const v={group:g,prop:g.getObjectByName('Propeller'),pos,heading,pitch:BUZZ.climb,alive:true,hp:BUZZ.hp,t:0,trail:0,y0:pos.y,from:pos.clone()};
+  buzzBombs.push(v);buzzLaunched++;
+  spawnExplosion(pos.x,pos.y,pos.z,.6);sfxBoom(.35);
+  radioSay('V-1 LAUNCH — '+clockOf(pos.x,pos.z)+" O'CLOCK!");
+  return v;
+}
+function damageBuzz(v,amount){
+  if(!v.alive)return;
+  v.hp-=amount;spawnSmoke(v.pos.x,v.pos.y,v.pos.z,0x3a3733,.8);
+  if(v.hp>0)return;
+  v.alive=false;scene.remove(v.group);
+  spawnExplosion(v.pos.x,v.pos.y,v.pos.z,1.4);spawnDebris(v.pos.x,v.pos.y,v.pos.z,6);sfxBoom(.7);
+  addScore(BUZZ.pts);sortieKills.v1=(sortieKills.v1||0)+1;
+  flash('V-1 DESTROYED',700);radioSay('FLYING BOMB DOWN — '+sortieKills.v1+' SO FAR');
+}
+function updateBuzz(dt){
+  const m=M(),flying=P.alive&&state===ST.FLIGHT&&!P.onGround&&!launchIntro&&!missionOver;
+  if(m&&m.ramp&&flying){
+    buzzClock+=dt;
+    const ramp=siteRecs.find(s=>s.kind==='ramp'&&s.alive);
+    if(ramp&&buzzClock>=buzzNext&&buzzLaunched<BUZZ.max&&buzzBombs.filter(v=>v.alive).length<BUZZ.live){
+      buzzLaunch(ramp);buzzNext=buzzClock+BUZZ.gap[buzzDiff()];
+    }
+  }
+  const maxX=RTILE*RGRID_W-1500,maxZ=RTILE*RGRID_H-1500;
+  for(let i=buzzBombs.length-1;i>=0;i--){
+    const v=buzzBombs[i];
+    if(!v.alive){buzzBombs.splice(i,1);continue;}
+    if(state!==ST.FLIGHT)continue;
+    v.t+=dt;
+    const climbing=v.pos.y<v.y0+BUZZ.alt*.9&&v.t<14;
+    v.pitch+=((climbing?BUZZ.climb:0)-v.pitch)*Math.min(1,dt*1.5);
+    const c=Math.cos(v.pitch);
+    v.pos.x+=Math.sin(v.heading)*c*BUZZ.speed*dt;v.pos.z+=Math.cos(v.heading)*c*BUZZ.speed*dt;v.pos.y+=Math.sin(v.pitch)*BUZZ.speed*dt;
+    v.pos.y=Math.max(v.pos.y,groundY(v.pos.x,v.pos.z)+160);
+    v.group.position.copy(v.pos);v.group.rotation.x=-v.pitch;
+    if(v.prop)v.prop.rotation.z+=60*dt;
+    v.trail-=dt;if(v.trail<=0){v.trail=.2;spawnSmoke(v.pos.x-Math.sin(v.heading)*5,v.pos.y+.4,v.pos.z-Math.cos(v.heading)*5,0x6b665c,.5);}
+    if(v.pos.x<1500||v.pos.z<1500||v.pos.x>maxX||v.pos.z>maxZ||Math.hypot(v.pos.x-v.from.x,v.pos.z-v.from.z)>BUZZ.range){
+      v.alive=false;scene.remove(v.group);buzzThrough++;
+      if(P.pos.distanceTo(v.pos)<5000)spawnExplosion(v.pos.x,groundY(v.pos.x,v.pos.z),v.pos.z,1.2);
+      radioSay('V-1 THROUGH TO THE ALLIED LINES — '+buzzThrough+' SO FAR');
+    }
+  }
 }
 
 // ============================================================
@@ -6067,6 +6345,9 @@ function europeBriefTargets(m){
  for(const [key,obj,label] of [['bridge',realBridge,'Ludendorff bridge'],['factory',realFactory,'Industrial works']])
   if(m.kills&&m.kills[key]&&obj)out.push({x:obj.userData.x,z:obj.userData.z,label});
  realFlak.slice(0,m.flakDefense||0).forEach((o,i)=>out.push({x:o.userData.x,z:o.userData.z,label:'Flak battery '+(i+1),optional:!(m.kills&&m.kills.flak)}));
+ if(typeof sitePlan==='function'&&(m.radar||m.ramp)){const plan=sitePlan(m);
+  if(plan.radar)out.push({x:plan.radar.x,z:plan.radar.z,label:'Wuerzburg radar',optional:true});
+  if(plan.ramp)out.push({x:plan.ramp.x,z:plan.ramp.z,label:'V-1 ramp'});}
  let vehicleIndex=0;
  if(livingWorld&&m.kills)for(const e of livingWorld.missionTargets(m.traffic||m.id)){
   const p=livingWorld._sample(e.route,e.initialPhase);
@@ -6394,6 +6675,8 @@ function drawMinimap(){
   for(const e of enemyAir){ if(!e.alive) continue;
     p=put(e.pos.x,e.pos.z); g.fillStyle=e.bomber?'#e8b84b':'#ff6a4a'; g.beginPath();
     g.arc(p[0],p[1],e.bomber?4:3,0,6.283); g.fill(); }
+  if(typeof buzzBombs!=='undefined')for(const v of buzzBombs){ if(!v.alive) continue;
+    p=put(v.pos.x,v.pos.z); g.fillStyle='#ffd24a'; g.fillRect(p[0]-2,p[1]-2,4,4); }
   for(const w of squad){ if(!w.alive||w.phase==='parked') continue;
     p=put(w.pos.x,w.pos.z); g.fillStyle='#6ab7ff'; g.beginPath(); g.arc(p[0],p[1],3,0,6.283); g.fill(); }
   if(typeof duelSession!=='undefined'&&duelSession&&duelSession.avatar&&duelSession.avatar.shown){const a=duelSession.avatar.pos;p=put(a.x,a.z);g.fillStyle='#ff6a4a';g.beginPath();g.arc(p[0],p[1],3.5,0,6.283);g.fill();}
@@ -7241,7 +7524,7 @@ function init(){
   // menu wiring
   document.getElementById('startBtn').onclick=()=>showBrief(selectedMission);
   duelInit();
-  document.getElementById('pauseMainMenu').onclick=async()=>{globalThis.sortieCheckpoint?.save();await globalThis.sortieCheckpoint?.flush();exitToMenuFromPause(true);window.location.href='index.html?v=242';};
+  document.getElementById('pauseMainMenu').onclick=async()=>{globalThis.sortieCheckpoint?.save();await globalThis.sortieCheckpoint?.flush();exitToMenuFromPause(true);window.location.href='index.html?v=243';};
   document.getElementById('logBtn').onclick=()=>{ show('menu',false); showLogbook(); };
   document.getElementById('skipLaunchPreview').onclick=()=>finishLaunchIntro();
   document.getElementById('brBack').onclick=()=>{ show('brief',false); show('menu',true);if(navigation){navigation.reset();navigation.button.style.display='none';} state=ST.MENU; };
@@ -7375,7 +7658,7 @@ function animate(){
       updateInterceptRadio(raw);
       updateFlightHints(raw);
       if(firing) fireGuns(dt);
-      updateFlak(dt);updateSurprises(dt);
+      updateFlak(dt);updateSurprises(dt);if(typeof updateSites==='function')updateSites(dt);
       updateRecoveryEscort(dt);updateSquad(dt);updateSortieAtmosphere(raw);
     }
     GameRuntime.frames.mark('flight');
@@ -7448,6 +7731,6 @@ function reportStartupError(err){
 const hangarRequest=CustomSortie.install('europe',MISSIONS,FlightPlans.europe,window.location.search);
 window.addEventListener('load',()=>{try{init();}catch(err){reportStartupError(err);}});
 </script>
-<script src="checkpoint-rhine.js?v=238"></script>
+<script src="checkpoint-rhine.js?v=243"></script>
 </body>
 </html>

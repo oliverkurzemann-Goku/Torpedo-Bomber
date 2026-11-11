@@ -1,19 +1,19 @@
 {
   "schema": 1,
   "reviewedOn": "2026-10-23",
-  "build": 242,
+  "build": 243,
   "status": "OPEN — source declarations checked; no external rights authorization obtained",
   "payload": {
-    "bytes": 152840990,
-    "fileCount": 356,
-    "modelCount": 44,
-    "manifestSha256": "a44bb591dceaba07d579e0b4c4a42e68175e4e5da141847433cc457002d27097"
+    "bytes": 153839199,
+    "fileCount": 360,
+    "modelCount": 48,
+    "manifestSha256": "ece3d809b3ca0e0287a98859177131223f16e767d9eec133d938b7d2f083166c"
   },
   "files": [
     {
       "path": "ASSET-CREDITS.md",
-      "bytes": 39042,
-      "sha256": "000098ba2fd4aab6671f2e044bcff1e3e9449b95803281294c03e79079c92876",
+      "bytes": 39720,
+      "sha256": "cba8acdf3c0172efa792bc602675738386a7d3ba3d80dfa4aeb5de04ebb2db6b",
       "kind": "code-or-notice"
     },
     {
@@ -128,6 +128,12 @@
       "path": "assets/aircraft/corsair-f4u1d-own.glb",
       "bytes": 6323084,
       "sha256": "23f6f2fa2e24687c9eede33d077aafacc4f83e89a8339b599fa53da02a135c66",
+      "kind": "model"
+    },
+    {
+      "path": "assets/aircraft/fi103-own.glb",
+      "bytes": 185840,
+      "sha256": "0524d3b0ef969fa84b796bffe190b1061163f7aaf2de2dd30f1a9e6c44f2b6b5",
       "kind": "model"
     },
     {
@@ -332,6 +338,24 @@
       "path": "assets/remagen/horse/quaternius_horse.glb",
       "bytes": 1108124,
       "sha256": "fae7a7ec91e0d6a33554efb896fac9c4e8c632644183bcb8cc962f673d3ce609",
+      "kind": "model"
+    },
+    {
+      "path": "assets/remagen/sites/fi103-ramp-own.glb",
+      "bytes": 212384,
+      "sha256": "77f08ee13cc6571d3d49836682b560f1388b2bac9d724344b35d15d0b6ad8c1c",
+      "kind": "model"
+    },
+    {
+      "path": "assets/remagen/sites/flak-searchlight-own.glb",
+      "bytes": 268460,
+      "sha256": "b821132200c002bf163d066822b66c43ffc484cb737e1cb8d2ea3b1fe833e0d9",
+      "kind": "model"
+    },
+    {
+      "path": "assets/remagen/sites/wuerzburg-riese-own.glb",
+      "bytes": 311316,
+      "sha256": "8739b8194ac98051c7bbce74fd30a01fa28aff3d393bdde261d5a3cb24c5f0ed",
       "kind": "model"
     },
     {
@@ -594,8 +618,8 @@
     },
     {
       "path": "checkpoint-rhine.js",
-      "bytes": 5778,
-      "sha256": "7aa1190b4fd3bbb0a706860ddc22f7a3ace367232a91c48cd77f448b122d5d74",
+      "bytes": 6303,
+      "sha256": "198caf91625be4fc10a4cef4aca7a607ee39ccc9c2d75e57a74a258fcbf53fff",
       "kind": "code-or-notice"
     },
     {
@@ -739,7 +763,7 @@
     {
       "path": "hangar.html",
       "bytes": 4485,
-      "sha256": "b6b93c814687a4528e170853d825e33cfccb1252fd3acaf7010a1cba02a1d485",
+      "sha256": "12575b97815539fbf9f485edc8fa1a3a1818b24cdea30fa36ab411eb20153beb",
       "kind": "code-or-notice"
     },
     {
@@ -751,7 +775,7 @@
     {
       "path": "index.html",
       "bytes": 7543,
-      "sha256": "d3b9e6f31305693dfd64318148425f3909c6929291050e6e72cdb3c0f85e89ee",
+      "sha256": "bab5580100ddeafe72e358346688eb621001a2b9780b0364547eada7f3b8c69a",
       "kind": "code-or-notice"
     },
     {
@@ -822,8 +846,8 @@
     },
     {
       "path": "operation-plans.js",
-      "bytes": 8409,
-      "sha256": "8a0d9ab137143e56e290b5dedfbf86c63666a3ed0a1f22189601f5fea1ea1cb8",
+      "bytes": 8601,
+      "sha256": "e5499e6718b9ddf4614aad8e17ee690c845b1f559722f208cd8ea310ea1c688f",
       "kind": "code-or-notice"
     },
     {
@@ -870,8 +894,8 @@
     },
     {
       "path": "remagen-mission.html",
-      "bytes": 460116,
-      "sha256": "b8a82a3ccfce8c032085cbfe4ced6f0150c6ced5a599d17f9a830e02cef07332",
+      "bytes": 478930,
+      "sha256": "2080b4c4ac97b446652435da07b8ef4af1221dbc52c6524b255b5db0bc444a4a",
       "kind": "code-or-notice"
     },
     {
@@ -2227,6 +2251,30 @@
       "nextAction": "Retain license/attribution/change notices, validate mesh/texture provenance and app-store redistribution conditions."
     },
     {
+      "path": "assets/aircraft/fi103-own.glb",
+      "bytes": 185840,
+      "sha256": "0524d3b0ef969fa84b796bffe190b1061163f7aaf2de2dd30f1a9e6c44f2b6b5",
+      "title": "Fieseler Fi 103",
+      "uploader": "Torpedo-Bomber project",
+      "originalRightsholder": null,
+      "sourceUrl": "https://en.wikipedia.org/wiki/V-1_flying_bomb",
+      "acquiredOn": null,
+      "declaredLicense": "project-own (original mesh and paint)",
+      "licenseUrl": null,
+      "licenseEvidence": "Exact runtime GLB asset.extras",
+      "sourceCheck": null,
+      "embeddedImageCount": 1,
+      "externalImages": [],
+      "originalFile": null,
+      "originalSha256": null,
+      "changes": "New procedural exterior game mesh and original baked albedo. References used only to compare proportions and appearance.",
+      "issue": "own-build-reference-review-open",
+      "commercialPermissionDocument": null,
+      "bundleRedistributionGrant": null,
+      "releaseApproved": false,
+      "nextAction": "Own mesh and paint; review the recorded reference source and any applicable attribution/share-alike obligations; credits kept in ASSET-CREDITS.md."
+    },
+    {
       "path": "assets/aircraft/fw190a8-own.glb",
       "bytes": 5223156,
       "sha256": "319d846cdd684f63483c906cf1b93525a80d1516ee662582d5f116a4d6fd3edc",
@@ -2903,6 +2951,78 @@
       "bundleRedistributionGrant": null,
       "releaseApproved": false,
       "nextAction": "Retain license/attribution/change notices, validate mesh/texture provenance and app-store redistribution conditions."
+    },
+    {
+      "path": "assets/remagen/sites/fi103-ramp-own.glb",
+      "bytes": 212384,
+      "sha256": "77f08ee13cc6571d3d49836682b560f1388b2bac9d724344b35d15d0b6ad8c1c",
+      "title": "Fi 103 Ramp — scenery prop",
+      "uploader": "Torpedo-Bomber project",
+      "originalRightsholder": null,
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:V1_launch_ramp_IWM_duxford.JPG",
+      "acquiredOn": null,
+      "declaredLicense": "project-own (original mesh and paint)",
+      "licenseUrl": null,
+      "licenseEvidence": "Exact runtime GLB asset.extras",
+      "sourceCheck": null,
+      "embeddedImageCount": 1,
+      "externalImages": [],
+      "originalFile": null,
+      "originalSha256": null,
+      "changes": "New procedural exterior game mesh and original baked albedo. References used only to compare proportions and appearance.",
+      "issue": "own-build-reference-review-open",
+      "commercialPermissionDocument": null,
+      "bundleRedistributionGrant": null,
+      "releaseApproved": false,
+      "nextAction": "Own mesh and paint; review the recorded reference source and any applicable attribution/share-alike obligations; credits kept in ASSET-CREDITS.md."
+    },
+    {
+      "path": "assets/remagen/sites/flak-searchlight-own.glb",
+      "bytes": 268460,
+      "sha256": "b821132200c002bf163d066822b66c43ffc484cb737e1cb8d2ea3b1fe833e0d9",
+      "title": "150 cm Flakscheinwerfer",
+      "uploader": "Torpedo-Bomber project",
+      "originalRightsholder": null,
+      "sourceUrl": "https://www.artillerymuseum.com/wwii-flakscheinwerfer",
+      "acquiredOn": null,
+      "declaredLicense": "project-own (original mesh and paint)",
+      "licenseUrl": null,
+      "licenseEvidence": "Exact runtime GLB asset.extras",
+      "sourceCheck": null,
+      "embeddedImageCount": 1,
+      "externalImages": [],
+      "originalFile": null,
+      "originalSha256": null,
+      "changes": "New procedural exterior game mesh and original baked albedo. References used only to compare proportions and appearance.",
+      "issue": "own-build-reference-review-open",
+      "commercialPermissionDocument": null,
+      "bundleRedistributionGrant": null,
+      "releaseApproved": false,
+      "nextAction": "Own mesh and paint; review the recorded reference source and any applicable attribution/share-alike obligations; credits kept in ASSET-CREDITS.md."
+    },
+    {
+      "path": "assets/remagen/sites/wuerzburg-riese-own.glb",
+      "bytes": 311316,
+      "sha256": "8739b8194ac98051c7bbce74fd30a01fa28aff3d393bdde261d5a3cb24c5f0ed",
+      "title": "Würzburg-Riese FuMG 65",
+      "uploader": "Torpedo-Bomber project",
+      "originalRightsholder": null,
+      "sourceUrl": "https://www.caenlamer-tourisme.fr/affaires-patrimoine-culturel/station-radar-44-musee-franco-allemand/",
+      "acquiredOn": null,
+      "declaredLicense": "project-own (original mesh and paint)",
+      "licenseUrl": null,
+      "licenseEvidence": "Exact runtime GLB asset.extras",
+      "sourceCheck": null,
+      "embeddedImageCount": 1,
+      "externalImages": [],
+      "originalFile": null,
+      "originalSha256": null,
+      "changes": "New procedural exterior game mesh and original baked albedo. References used only to compare proportions and appearance.",
+      "issue": "own-build-reference-review-open",
+      "commercialPermissionDocument": null,
+      "bundleRedistributionGrant": null,
+      "releaseApproved": false,
+      "nextAction": "Own mesh and paint; review the recorded reference source and any applicable attribution/share-alike obligations; credits kept in ASSET-CREDITS.md."
     },
     {
       "path": "assets/ships/enterprise-cv6-1942.glb",

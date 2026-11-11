@@ -1,6 +1,6 @@
-# Offline app asset register — Build 242
+# Offline app asset register — Build 243
 
-Checked 2026-10-23. 356 payload files, 44 model files, 145.8 MiB.
+Checked 2026-10-23. 360 payload files, 48 model files, 146.7 MiB.
 
 Generated from the actual dist-app payload by npm run app:assets. Hashes cover embedded textures too. This is an evidence inventory; no row is automatically approved for distribution. Acquisition dates remain unknown where not recorded.
 
@@ -9,6 +9,7 @@ Generated from the actual dist-app payload by npm run app:assets. Hashes cover e
 | assets/aircraft/b17-helijah.glb | [helijah](https://sketchfab.com/3d-models/boeing-b-17-flying-fortress-927f07f6ddcf470ab0387ce5829024d5) | CC-BY-4.0 (https://creativecommons.org/licenses/by/4.0/) | uploader-license-review-open | bcdf03e6bed86bd8b246a24cf1b8f86a259debe426dbbdd42986d8c278b778db |
 | assets/aircraft/bf109f2-own.glb | [Torpedo-Bomber project (code-built, scripts/build-own-bf109.cjs)](scripts/build-own-bf109.cjs) | project-own; geometry measured on a CC BY-SA 2.0 three-view (B. Huber), finish measured on a CC BY-SA 2.5 profile (H. Ringlstetter) | own-build-reference-review-open | efb76f22bf5057a1f24feab3f450787f1bc5decad8a76f79cbbac16698981f1f |
 | assets/aircraft/corsair-f4u1d-own.glb | [unknown — supplied by the project owner (produced in a separate ChatGPT session; generator not in this repository)](assets/aircraft/source/corsair-f4u1d-v3/Corsair_F4U1D_Review.glb) | supplied by project owner; authorship and rights not independently verified (rights review stays open) | uploader-license-review-open | 23f6f2fa2e24687c9eede33d077aafacc4f83e89a8339b599fa53da02a135c66 |
+| assets/aircraft/fi103-own.glb | [Torpedo-Bomber project](https://en.wikipedia.org/wiki/V-1_flying_bomb) | project-own (original mesh and paint) | own-build-reference-review-open | 0524d3b0ef969fa84b796bffe190b1061163f7aaf2de2dd30f1a9e6c44f2b6b5 |
 | assets/aircraft/fw190a8-own.glb | [Oliver Kurzemann / Torpedo-Bomber](scripts/build-own-fw190-komet.cjs) | project-own; reference-derived exterior geometry and original textures | own-build-reference-review-open | 319d846cdd684f63483c906cf1b93525a80d1516ee662582d5f116a4d6fd3edc |
 | assets/aircraft/ju87b2-own.glb | [Oliver Kurzemann / Torpedo-Bomber](scripts/own-aircraft/ju87b2/shape.json) | project-own; supplied historical manual used as dimensional reference | own-build-reference-review-open | d331b579ca37cb4ffcc9a71010b4dabe477b38384b371af9d456e06804b868e4 |
 | assets/aircraft/me163b-own.glb | [Oliver Kurzemann / Torpedo-Bomber](scripts/build-own-fw190-komet.cjs) | project-own; reference-derived exterior geometry and original textures | own-build-reference-review-open | ddc61b6fb3a222b9716c40ead59f17a77a55bfa295cbcb48c1a1d42f2a977739 |
@@ -37,6 +38,9 @@ Generated from the actual dist-app payload by npm run app:assets. Hashes cover e
 | assets/ground-vehicles/tiger-i-field-grey.glb | [Torpedo Carrier project](GROUND-MODELS.md) | project-own | own-build-reference-review-open | 9fbd5232fdfe24006135697512087eefbedefb43e3bc082c5042b5143efee104 |
 | assets/ground-vehicles/tiger-i.glb | [Torpedo Carrier project](GROUND-MODELS.md) | project-own | own-build-reference-review-open | 3a227ad8da7b4861dabae8eddd0545a28bdefa16039f3e0274617e6dec7c1dc2 |
 | assets/remagen/horse/quaternius_horse.glb | [Quaternius (https://quaternius.com/)](https://poly.pizza/m/qvTrSG9pZF) | CC0-1.0 (https://creativecommons.org/publicdomain/zero/1.0/) | cc0-source-recorded | fae7a7ec91e0d6a33554efb896fac9c4e8c632644183bcb8cc962f673d3ce609 |
+| assets/remagen/sites/fi103-ramp-own.glb | [Torpedo-Bomber project](https://commons.wikimedia.org/wiki/File:V1_launch_ramp_IWM_duxford.JPG) | project-own (original mesh and paint) | own-build-reference-review-open | 77f08ee13cc6571d3d49836682b560f1388b2bac9d724344b35d15d0b6ad8c1c |
+| assets/remagen/sites/flak-searchlight-own.glb | [Torpedo-Bomber project](https://www.artillerymuseum.com/wwii-flakscheinwerfer) | project-own (original mesh and paint) | own-build-reference-review-open | b821132200c002bf163d066822b66c43ffc484cb737e1cb8d2ea3b1fe833e0d9 |
+| assets/remagen/sites/wuerzburg-riese-own.glb | [Torpedo-Bomber project](https://www.caenlamer-tourisme.fr/affaires-patrimoine-culturel/station-radar-44-musee-franco-allemand/) | project-own (original mesh and paint) | own-build-reference-review-open | 8739b8194ac98051c7bbce74fd30a01fa28aff3d393bdde261d5a3cb24c5f0ed |
 | assets/ships/enterprise-cv6-1942.glb | [Torpedo-Bomber project](https://www.navsource.net/archives/02/06.htm) | project-own (original mesh and paint) | own-build-reference-review-open | 9079bc14b74716668e0c31c1100414e17fb1c0d67d1a80dc9155ea08b3488772 |
 | assets/ships/fletcher.glb | [Torpedo-Bomber project](https://www.history.navy.mil/browse-by-topic/ships/modern-ships/uss-fletcher.html) | project-own (original mesh and paint) | own-build-reference-review-open | e561a87c0521accc8292ad7ec62fdb6028e8676b8ae51e914a3da7fb99fca00b |
 | assets/ships/japanese-cargo.glb | [Torpedo-Bomber project](https://www.history.navy.mil/our-collections/photography/numerical-list-of-images/nhhc-series/nh-series/NH-86000/NH-86280.html) | project-own (original mesh and paint) | own-build-reference-review-open | 861cab22f44686e836bb152e7e693114b3aa74206d02207ff2cc13228eb24fb3 |
