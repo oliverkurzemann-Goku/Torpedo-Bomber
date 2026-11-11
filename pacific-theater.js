@@ -45,7 +45,14 @@ const missions=[
  {title:'Sortie 20',sub:'Dauntless · Fuel Reserve',theater:'reserve',sbd:true,solo:true,loadout:'divebomb',torps:2,fuel:42,zeros:0,tactics:true,returnWeather:'rain',
   body:'<b>One aircraft, one supply ship, a demanding return.</b> Sink the merchant with your two bombs. The destroyer is optional: avoid spending your reserve on another attack. Fuel starts at <b>42%</b>; rain reaches the carrier after the strike. Return promptly, keep the aircraft clean until the landing pattern, and recover at <b>78 kt with flaps, gear and hook down</b>. Damage taken during the attack remains for the return. No extra raid or wingman commands.',
   targets:[{type:'freighter',pos:[-1300,0,3400],hp:1,speed:4.5,heading:0},{type:'destroyer',pos:[-1800,0,3700],hp:1,flak:true,speed:5,heading:0,optional:true}],
-  operation:{weather:['broken'],deadline:600,notes:'One required merchant. Aircraft fuel reserve and a rain-front return are the challenge; the escort is optional. The ship steams into wind for recovery.'}}
+  operation:{weather:['broken'],deadline:600,notes:'One required merchant. Aircraft fuel reserve and a rain-front return are the challenge; the escort is optional. The ship steams into wind for recovery.'}},
+ {title:'Sortie 21',sub:'Tanker Trap',theater:'tanker',tactics:true,weather:'broken',torps:1,fuel:100,zeros:1,
+  body:'<b>Two fleet oilers under a destroyer screen.</b> One <b>rides deep: she is loaded</b>, the other rides high: she is empty. Sink both; the destroyers are optional. A loaded oiler that goes down <b>spreads burning oil for about 40 seconds</b>: stay above it, flames reach 45 m. The same fire <b>blinds the escorts\' guns and slows them</b>, so a burning tanker is cover for your second run. The empty oiler only sinks. <b>One internal torpedo per sortie</b>; return to the carrier to rearm.',
+  targets:[{type:'freighter',model:'oiler',loaded:true,deepBy:1.6,pos:[-250,0,3650],hp:1,speed:4.2,heading:.1},
+   {type:'freighter',model:'oiler',pos:[380,0,3950],hp:1,speed:4.2,heading:.1},
+   {type:'destroyer',pos:[-720,0,3350],hp:1,flak:true,speed:5.2,heading:.1},
+   {type:'destroyer',pos:[820,0,3600],hp:1,flak:true,speed:5.2,heading:.1}],
+  operation:{weather:['broken','clear'],deadline:720,notes:'Two required oilers; the loaded one (deep draught) burns when sunk. The destroyers are optional. One internal torpedo per sortie: recover aboard to rearm.'}}
 ];
 function plan(m){const v=effects(),p={...(m.operation||{}),events:(m.operation?.events||[]).map(e=>({...e}))};
  if(v.fuelDenied&&(m.theater==='escort'||m.theater==='fleet')){const wave=p.events.filter(e=>e.raiders).at(-1);if(wave){wave.raiders=Math.max(1,wave.raiders-1);wave.message='FUEL SHORTAGE — SECOND RAID REDUCED TO ONE BOMB CARRIER';}}
@@ -76,7 +83,7 @@ function shipTactics(s,dt,player,fish,all,emit,performance={steering:1}){
  // While the captain combs a seen torpedo (TorpedoAttack.captain) the helm belongs to that manoeuvre.
  const target=s.baseHeading+(s.alertT>0?s.tacticSide*.55:0),turn=clamp(angle(target-s.group.rotation.y),-.045*dt*performance.steering,.045*dt*performance.steering);
  if(s.comb?.heading==null)s.group.rotation.y+=turn;
- const wounded=s.hp<s.def.hp;const speed=s.cruiseSpeed*(wounded?.45:1);s.speed+=clamp(speed-s.speed,-.5*dt,.25*dt);
+ const wounded=s.hp<s.def.hp;const speed=s.cruiseSpeed*(wounded?.45:1)*((s.slowT||0)>0?.6:1);s.speed+=clamp(speed-s.speed,-.5*dt,.25*dt);
  s.smokeScreenT=Math.max(0,(s.smokeScreenT||0)-dt);s.screenCool=(s.screenCool||0)-dt;
  if(s.flak&&s.smokeScreenT>0&&s.screenCool<=0){s.screenCool=.8;emit(p.x,8,p.z,0xb6b8b2,2.6);}
  return {spotted,torp,wounded};

@@ -10,7 +10,10 @@
   fletcher:{propellers:2,file:'fletcher',length:115,draft:3.5,yaw:-Math.PI/2,name:'Fletcher escort'},
   submarine:{propellers:1,file:'ko-hyoteki',length:24,draft:1.1,yaw:0,name:'Surfaced Ko-hyoteki'},
   // Build 246: the neutral white hospital ship (hospital-ship-own.glb, 163.3 m, keel 9.23 m under the waterline, +Z forward)
-  hospital:{propellers:2,file:'hospital-ship-own',length:163.3,draft:9.23,yaw:0,name:'Hospital ship'}
+  hospital:{propellers:2,file:'hospital-ship-own',length:163.3,draft:9.23,yaw:0,name:'Hospital ship'},
+  // Build 247: the fleet oiler Nagisa (143.5 m, keel 8.08 m) and the battleship Yamato, April 1945 (263 m, keel 10.4 m). Both +Z forward.
+  oiler:{propellers:2,file:'fleet-oiler-own',length:143.5,draft:8.08,yaw:0,name:'Fleet oiler'},
+  yamato:{propellers:4,file:'yamato-1945-own',length:263,draft:10.4,yaw:0,name:'Battleship Yamato'}
  };
  const tasks=new Map(),templates=new Map();
  function key(def){return def.model||(def.type==='destroyer'?'samidare':'cargo');}

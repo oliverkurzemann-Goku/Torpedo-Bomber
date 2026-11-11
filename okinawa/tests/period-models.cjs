@@ -1,7 +1,8 @@
 'use strict';
 
 // Build 246: the eight models of the second delivery (depot kit, Flakvierling wagon, Pacific hospital ship, Opel Blitz cargo and tanker,
-// Panzer IV H, PBY-5A Catalina, Sd.Kfz. 251/D). Everything is read from the exported bytes: pinned hashes, the Khronos validator, vertex
+// Panzer IV H, PBY-5A Catalina, Sd.Kfz. 251/D). Build 247 adds the five models of the third delivery (Bf 110 G-4, G4M1 Betty, Fi 156 C Storch,
+// fleet oiler Nagisa, battleship Yamato 1945); the sixth model of that package (D3A1 Val) is not used and not in the repository. Everything is read from the exported bytes: pinned hashes, the Khronos validator, vertex
 // bounds in model space, budgets, forbidden extensions and the named nodes the game addresses. The delivered check.cjs files are NOT run.
 const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto'),assert=require('node:assert/strict');
 const validator=require('gltf-validator');
@@ -24,7 +25,27 @@ const MODELS={
  'pby5a-own':{file:'assets/aircraft/pby5a-own.glb',sha:'b949aef9d16eb180db7e69744e2186b944bc4ff67ef542663c289865c1630fda',size:[31.699,6.147,19.456],tol:.02,
    budget:{tris:34000,nodes:40,mats:10,image:2048,bytes:6e6},kind:'aircraft',
    need:['PropellerLeft','PropellerRight','gear','GearLeft','GearRight','NoseGear','MainWheelLeft','MainWheelRight','NoseWheel','FloatLeft','FloatRight','AileronLeft','AileronRight','ElevatorLeft','ElevatorRight','Rudder','Muzzle1','MuzzleBlisterLeft','MuzzleBlisterRight'],
-   absent:['flightFlaps','FlapLeft','FlapRight']}
+   absent:['flightFlaps','FlapLeft','FlapRight']},
+ // ---- Build 247 ----
+ 'bf110g4-own':{file:'assets/aircraft/bf110g4-own.glb',sha:'0f1edf91ded8a11b8a95925285cd5f3967b12a71ebb3448813217b4337202396',size:[16.25,4.16,12.65],tol:.02,
+   budget:{tris:36000,nodes:44,mats:12,image:2048,bytes:6e6},kind:'warplane',cls:'twin-tailwheel-fighter',type:'bf110',blades:3,
+   need:['PropellerLeft','PropellerRight','gear','GearLeft','GearRight','TailGear','MainWheelLeft','MainWheelRight','TailWheel','AileronLeft','AileronRight','ElevatorLeft','ElevatorRight','RudderLeft','RudderRight','FlapLeft','FlapRight','Canopy','Muzzle1','Muzzle2','Muzzle3','Muzzle4','MuzzleUp1','MuzzleUp2','LichtensteinSN2AntennaArray']},
+ 'g4m1-own':{file:'assets/aircraft/g4m1-own.glb',sha:'0c2d0e1582c3b4296dfe6f38da7a684094371112edf96bae639b2806bba717c4',size:[24.89,4.9,19.97],tol:.02,
+   budget:{tris:38000,nodes:44,mats:12,image:2048,bytes:6e6},kind:'warplane',cls:'twin-bomber-tailwheel',type:'g4m',blades:3,
+   need:['PropellerLeft','PropellerRight','gear','GearLeft','GearRight','TailGear','MainWheelLeft','MainWheelRight','TailWheel','AileronLeft','AileronRight','ElevatorLeft','ElevatorRight','Rudder','FlapLeft','FlapRight','Canopy','MuzzleBeamLeft','MuzzleBeamRight','MuzzleTail','MuzzleDorsal','Torpedo']},
+ 'fi156c-own':{file:'assets/aircraft/fi156c-own.glb',sha:'db0c8c3566eb57c28f5220250119ff9556d9f6b39ae8039a57596914f255827b',size:[14.25,3.05,9.9],tol:.02,
+   budget:{tris:20000,nodes:32,mats:8,image:2048,bytes:4e6},kind:'warplane',cls:'tailwheel-light',type:'fi156',blades:2,single:true,
+   need:['Propeller','gear','GearLeft','GearRight','TailGear','MainWheelLeft','MainWheelRight','TailWheel','AileronLeft','AileronRight','ElevatorLeft','ElevatorRight','Rudder','FlapLeft','FlapRight','Canopy','RearGun','MuzzleRear','FixedLeadingEdgeSlats']},
+ 'fleet-oiler-own':{file:'assets/ships/fleet-oiler-own.glb',sha:'eccc70f7216eba815fe4dcc6f3fce0e1ba97d4fd774991d7c0760cd652f86f3c',size:[17.68,36.08,143.5],tol:.02,
+   budget:{tris:18000,nodes:24,mats:8,image:2048,bytes:4e6},kind:'warship',markers:{count:2,cal:{'25x2':2}},
+   need:['Hull','WeatherDeck','AmidshipsBridgeAndQuarters','PoopAndEngineHouse','Funnel','funnel-exhaust-1','TankDomes','TwinAAMounts'],
+   visual:['CatwalkRailings','CargoPipesAndValves','ForeAndAftCargoMasts','CargoDerricks','AntennaeAndDerrickRigging','AnchorsMooringsAndWinches','BoatsAndDavits','DeckEdgeRailings','ScrewsAndShafts'],
+   solid:['Hull','WeatherDeck','AmidshipsBridgeAndQuarters','PoopAndEngineHouse','Forecastle','Funnel'],exhaust:{radius:1.57,y:19.47},keel:8.08},
+ 'yamato-1945-own':{file:'assets/ships/yamato-1945-own.glb',sha:'e4fd0ba9040cbccf258eacf023734de253101b482771a8f8f97ba7f628c826cb',size:[38.8,59.56,263],tol:.02,
+   budget:{tris:55000,nodes:56,mats:12,image:2048,bytes:6e6},kind:'warship',markers:{count:62,cal:{'127x2':12,'25x3':50}},
+   need:['Hull','WeatherDeck','CitadelAndLowerSuperstructure','PagodaBridge','Funnel','funnel-exhaust-1','TurretA','GunsA','MuzzleA1','MuzzleA2','MuzzleA3','TurretB','GunsB','TurretC','GunsC','TurretSecondaryFore','TurretSecondaryAft','HeavyAAGalleries','LightAAClusters'],
+   visual:['RangefinderAndDirector','CanvasBlastCoversA','CatapultAndTrolleyRails','SternAircraftCrane','AftTripodMast','AntennaSpars','MastAndCraneRigging','AnchorChains','BoatsAndDavits','DeckEdgeRailings','ScrewsAndShafts'],
+   solid:['Hull','WeatherDeck','CitadelAndLowerSuperstructure','PagodaBridge','Funnel','TurretBarbettes'],exhaust:{radius:3,y:31.8},keel:10.4,turrets:['A','B','C','SecondaryFore','SecondaryAft']}
 };
 const FORBIDDEN=['KHR_materials_pbrSpecularGlossiness','KHR_mesh_quantization','KHR_draco_mesh_compression','EXT_meshopt_compression','KHR_texture_basisu','KHR_texture_transform'];
 
@@ -142,6 +163,48 @@ function triangles(json,nodeIndex,acc){
    for(const n of ['Hull','WeatherDeck','BridgeHouse','SingleFunnel'])assert(!visual.includes(n),id+' '+n+' belongs to the collision / deck geometry');
    // starboard is -X
    assert(json.nodes[names.get('LifeboatStarboard1')].translation[0]<0&&json.nodes[names.get('LifeboatPort1')].translation[0]>0,id+' starboard is -X');
+  }else if(spec.kind==='warplane'){
+   const rootNode=json.nodes[names.get(id)];assert.equal(rootNode.extras.rigContract,1);assert.equal(rootNode.extras.nativeAircraft,id);assert.equal(rootNode.extras.kind,spec.type);assert.equal(rootNode.extras.class,spec.cls);
+   for(const n of json.nodes)if(/Left$/.test(n.name)&&n.translation)assert(n.translation[0]<0,id+' '+n.name+' must sit on -X');
+   for(const n of json.nodes)if(/Right$/.test(n.name)&&n.translation)assert(n.translation[0]>0,id+' '+n.name+' must sit on +X');
+   const props=spec.single?['Propeller']:['PropellerLeft','PropellerRight'];
+   for(const n of props){const p=json.nodes[names.get(n)];assert.deepEqual(p.extras.rig,{drive:'prop',axis:[0,0,1],blades:spec.blades});assert(!p.rotation||Math.abs(p.rotation[3])>.99999,id+' '+n+' unrotated');assert(p.translation[2]>0,id+' '+n+' at the nose side');}
+   for(const n of ['MainWheelLeft','MainWheelRight','TailWheel'])assert.equal(json.nodes[names.get(n)].extras.groundWheel,true,id+' '+n+' marks the tyre');
+   assert(json.nodes[names.get('TailGear')].translation[2]<0&&json.nodes[names.get('GearLeft')].translation[2]>json.nodes[names.get('TailGear')].translation[2],id+' tail gear aft of the main gear');
+   assert.equal(json.nodes[names.get('GearLeft')].extras.rig.drive,'gear');
+   assert(b[1]>-1e-3&&b[1]<.2,id+' the tyres touch y=0 in the rest pose (gear extended)');
+   for(const n of json.nodes)if(/^Muzzle/.test(n.name)){const d=n.extras&&n.extras.direction;assert(d&&d.length===3&&Math.abs(Math.hypot(...d)-1)<1e-6,id+' '+n.name+' carries a unit direction');}
+   if(id==='bf110g4-own'){   // night-fighter: nose guns forward, two upward-firing guns (Schräge Musik) behind the cockpit
+    for(const n of ['Muzzle1','Muzzle2','Muzzle3','Muzzle4'])assert.deepEqual(json.nodes[names.get(n)].extras.direction,[0,0,1],id+' '+n);
+    for(const n of ['MuzzleUp1','MuzzleUp2']){const d=json.nodes[names.get(n)].extras.direction;assert(d[1]>.7&&d[2]>.6,id+' '+n+' fires up and forward');}
+   }
+   if(id==='g4m1-own'){
+    assert.deepEqual(json.nodes[names.get('MuzzleBeamLeft')].extras.direction,[-1,0,0]);assert.deepEqual(json.nodes[names.get('MuzzleBeamRight')].extras.direction,[1,0,0]);assert.deepEqual(json.nodes[names.get('MuzzleTail')].extras.direction,[0,0,-1]);
+    const t=json.nodes[names.get('Torpedo')];assert(Math.abs(t.translation[0])<1e-6&&t.translation[1]>0.5&&t.translation[1]<1.5,id+' torpedo hangs on the centreline under the fuselage');
+   }
+   if(id==='fi156c-own'){const rg=json.nodes[names.get('RearGun')];assert.deepEqual(rg.extras.rig,{drive:'yaw',axis:[0,1,0],gain:.49});assert(json.nodes[names.get('MuzzleRear')].extras.direction[2]<-.99,id+' rear gun fires aft');}
+  }else if(spec.kind==='warship'){
+   const rootNode=json.nodes[names.get(id)];assert.equal(rootNode.extras.class,'ship');
+   assert(Math.abs(b[1]+spec.keel)<.05,id+' keel '+b[1].toFixed(2)+' under the waterline (draft '+spec.keel+')');
+   const ex=json.nodes[names.get('funnel-exhaust-1')];assert.deepEqual(ex.extras.shipExhaust,{radius:spec.exhaust.radius,direction:[0,1,0]});assert(Math.abs(ex.translation[1]-spec.exhaust.y)<.05,id+' exhaust outlet height');
+   const visual=json.nodes.filter(n=>n.extras&&n.extras.shipVisualOnly).map(n=>n.name);
+   for(const n of spec.visual)assert(visual.includes(n),id+' '+n+' is visual only');
+   for(const n of spec.solid)assert(!visual.includes(n),id+' '+n+' belongs to the collision / deck geometry');
+   const markers=meta.markers;assert.equal(markers.length,spec.markers.count,id+' gun-mount markers');
+   const by={};for(const m of markers){assert.equal(m.name,'gun-mount');const k=m.properties.calibreMm+'x'+m.properties.barrels;by[k]=(by[k]||0)+1;assert(m.point.every(Number.isFinite)&&m.point[1]>0,id+' marker above the waterline');}
+   assert.deepEqual(by,spec.markers.cal,id+' mount mix');
+   assert.deepEqual(meta.dimensions.waterlineY,0);assert(Math.abs(meta.dimensions.length-spec.size[2])<.01&&Math.abs(meta.dimensions.width-spec.size[0])<.01,id+' published length and beam');
+   // starboard is -X, bow is +Z: the funnel sits abaft the middle of the hull
+   assert(ex.translation[2]<0,id+' funnel aft of the origin');
+   if(spec.turrets){
+    for(const t of spec.turrets){
+     const yaw=json.nodes[names.get('Turret'+t)],pitch=json.nodes[names.get('Guns'+t)];
+     assert.deepEqual(yaw.extras.rig,{drive:'yaw',axis:[0,1,0]},id+' Turret'+t+' yaw rig');assert.deepEqual(pitch.extras.rig,{drive:'pitch',axis:[1,0,0]},id+' Guns'+t+' pitch rig');
+     for(let i=1;i<=3;i++){const m=json.nodes[names.get('Muzzle'+t+i)];assert.deepEqual(m.extras.direction,[0,0,1],id+' Muzzle'+t+i);}
+    }
+    assert(json.nodes[names.get('TurretA')].translation[2]>0&&json.nodes[names.get('TurretB')].translation[2]>0&&json.nodes[names.get('TurretC')].translation[2]<0,id+' two turrets forward, one aft');
+    assert(json.nodes[names.get('TurretB')].translation[1]>json.nodes[names.get('TurretA')].translation[1],id+' B turret superfires over A');
+   }
   }else if(spec.kind==='aircraft'){
    const rootNode=json.nodes[names.get('pby5a-own')];assert.equal(rootNode.extras.rigContract,1);assert.equal(rootNode.extras.kind,'pby');assert.equal(rootNode.extras.class,'amphibian-twin');
    for(const n of json.nodes)if(/Left$/.test(n.name)&&n.translation)assert(n.translation[0]<0,id+' '+n.name+' must sit on -X');

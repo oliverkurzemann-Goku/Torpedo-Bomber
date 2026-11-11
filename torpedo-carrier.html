@@ -807,11 +807,12 @@ const MISSIONS = [
     torps:1, fuel:100,
     targets:[ {type:"freighter", pos:[600,0,3400], hp:1} ] },
   { title:"Sortie 2", sub:"Escorted Convoy",
-    body:"The freighter sails with a <b>destroyer escort</b> throwing up flak, and a <b>Zero on patrol</b>. Stay low, line up on the beam, and don't loiter. Sink the freighter (the destroyer is optional). A white <b>hospital ship</b> with red crosses steams to the west: <b>neutral, never fire on her</b>. <b>One internal torpedo</b>. Return to the carrier to rearm if needed.",
+    body:"The freighter sails with a <b>destroyer escort</b> throwing up flak, and a <b>Zero on patrol</b>. Stay low, line up on the beam, and don't loiter. Sink the freighter (the destroyer is optional). A white <b>hospital ship</b> with red crosses steams to the west: <b>neutral, never fire on her</b>. A <b>fleet oiler</b> lags to the east: optional, but if she is loaded she burns. <b>One internal torpedo</b>. Return to the carrier to rearm if needed.",
     torps:1, fuel:100, zeros:1,
     targets:[ {type:"freighter", pos:[ -200,0,3600], hp:1},
               {type:"destroyer", pos:[ 250,0,3200], hp:1, flak:true},
-              {type:"hospital", model:'hospital', neutral:true, optional:true, pos:[-1500,0,3050], hp:4, speed:3.4, heading:.2} ] },
+              {type:"hospital", model:'hospital', neutral:true, optional:true, pos:[-1500,0,3050], hp:4, speed:3.4, heading:.2},
+              {type:"freighter", model:'oiler', loaded:true, deepBy:1.6, optional:true, pos:[1350,0,3350], hp:1, speed:3.8, heading:.15} ] },
   { title:"Sortie 3", sub:"Capital Ship",
     body:"A Japanese <b>fleet carrier</b> (Kaga) with two destroyers and a <b>pair of Zeros</b> flying top cover. The carrier needs <b>two hits</b> to go down. Heavy flak. You carry <b>one internal torpedo</b>. Coordinate with your wingmen; return to the carrier to rearm for another attack.",
     torps:1, fuel:100, zeros:2,
@@ -819,13 +820,14 @@ const MISSIONS = [
               {type:"destroyer", pos:[ -500,0,3500], hp:1, flak:true},
               {type:"destroyer", pos:[ 550,0,3700], hp:1, flak:true} ] },
   { title:"Sortie 4", sub:"Merchant Convoy",
-    body:"A running convoy: <b>two freighters</b> behind a destroyer screen, with a <b>Zero</b> overhead. Both merchants must go down. Pick your line, mind the flak. A <b>hospital ship</b> (white, red crosses) sails to the west: <b>neutral, never fire on her</b>. <b>One internal torpedo per sortie</b>; recover aboard and rearm for another attack.",
+    body:"A running convoy: <b>two freighters</b> behind a destroyer screen, with a <b>Zero</b> overhead. Both merchants must go down. Pick your line, mind the flak. A <b>hospital ship</b> (white, red crosses) sails to the west: <b>neutral, never fire on her</b>. A <b>loaded fleet oiler</b> (rides deep) straggles to the east: optional, and she burns when sunk. <b>One internal torpedo per sortie</b>; recover aboard and rearm for another attack.",
     torps:1, fuel:100, zeros:1,
     targets:[ {type:"freighter", pos:[-320,0,3500], hp:1},
 
               {type:"destroyer", pos:[ 0,0,3250], hp:1, flak:true},
               {type:"destroyer", pos:[ 640,0,3600], hp:1, flak:true},
-              {type:"hospital", model:'hospital', neutral:true, optional:true, pos:[-1750,0,2900], hp:4, speed:3.4, heading:.1} ],
+              {type:"hospital", model:'hospital', neutral:true, optional:true, pos:[-1750,0,2900], hp:4, speed:3.4, heading:.1},
+              {type:"freighter", model:'oiler', loaded:true, deepBy:1.6, optional:true, pos:[1500,0,3050], hp:1, speed:3.8, heading:.1} ],
     reinforcement:{targets:[{type:"freighter",pos:[2000,0,4600],hp:1}],zeros:1} },
   { title:"Sortie 5", sub:"Night Strike", time:'night', sea:1.8, weather:'haze',
     body:"A <b>night torpedo attack</b> on a fleet carrier running dark, one destroyer in company. Low light, heavy flak — the meatball brings you home. The carrier needs <b>two hits</b>. <b>One internal torpedo per sortie</b>; recover aboard and rearm for another attack.",
@@ -1019,7 +1021,7 @@ function pacificPauseOrders(){
   const m=MISSIONS[mission];
   const task=MISSIONS[mission].theater==='escort'?'TRANSPORTS ARRIVED '+convoyProof().arrived+'/2 · RAIDERS '+raiders.filter(r=>r.alive).length:hasRaiders()?'RAIDERS '+raiders.filter(r=>r.alive).length+' · CARRIER '+Math.round(carrierHP)+'%':
     m.qual?'CARRIER QUALIFICATION · TRAPS '+qualTraps+'/'+(m.quals||3):m.free?'FREE FLIGHT':
-    'SHIPS '+ships.filter(s=>s.alive&&s.def.type!=='destroyer'&&!s.def.neutral).length+' · SHORE TARGETS '+shoreTargets.filter(t=>t.alive&&!t.def.optional).length;
+    'SHIPS '+ships.filter(s=>s.alive&&s.def.type!=='destroyer'&&!s.def.neutral&&!s.def.optional).length+' · SHORE TARGETS '+shoreTargets.filter(t=>t.alive&&!t.def.optional).length;
   const faults=SortieFeatures.Damage.status(P);
   const recovery=SortieFeatures.Damage.needsBelly(P)?'Emergency belly recovery: flaps and hook down, wings level, low sink rate.':'Recovery: gear, flaps and hook down; follow the live REF speed (~'+Math.round(CarrierRecovery.envelope(P,STALL_SPD,APP_SPD).reference*KT)+' kt).';
   return task+' · '+Math.round(P.fuel)+'% FUEL · '+SortieFeatures.Damage.hullPercent(P)+'% HULL. '+
@@ -2134,7 +2136,7 @@ function updatePacificOperation(dt){
  if(el){const convoy=MISSIONS[mission].theater==='escort'?' · ARRIVED '+convoyProof().arrived+'/2':MISSIONS[mission].theater==='fleet'?' · DECK '+carrierHP+'%':'';const text=FlightOps.wx(weather).label.toUpperCase()+' · '+(P.rtb&&!pacificOps.failed?pacificRecoveryText():pacificOps.status())+convoy;if(el.textContent!==text)el.textContent=text;}
 }
 function drawPacificBrief(m){
- const targets=m.targets.map(s=>({x:s.pos[0],z:s.pos[2],label:NavalAssets.label(s)+(s.neutral?' — do not attack':''),optional:s.type==='destroyer'||s.optional,friendly:!!s.neutral}));
+ const targets=m.targets.map(s=>({x:s.pos[0],z:s.pos[2],label:NavalAssets.label(s)+(s.neutral?' — do not attack':s.model==='oiler'?(s.loaded?' — loaded, rides deep':' — empty'):''),optional:s.type==='destroyer'||s.optional,friendly:!!s.neutral}));
  if(m.theater==='harbor')targets.push(...PacificTheater.harborTargets);
  if(m.theater==='escort'){for(const s of m.support.filter(s=>s.transport))targets.push({x:s.pos[0],z:s.pos[2],label:NavalAssets.label(s)+' — protect',friendly:true});targets.push({x:-1800,z:4400,label:'Anchorage — both transports',friendly:true});}
  if(m.theater==='fleet')targets.push({x:3200,z:2300,label:'Japanese bomb-carrier raid'});
@@ -2182,7 +2184,7 @@ function startMission(idx){
   addScore(0);
   killCam=null;
   bubbles.forEach(b=>GameRuntime.release(b.mesh)); bubbles=[];
-  slicks.forEach(s=>GameRuntime.release(s.group)); slicks=[];
+  slicks.forEach(s=>GameRuntime.release(s.group)); slicks=[];oilFires=[];
   debris.forEach(d=>GameRuntime.release(d.mesh)); debris=[];
   zeros.forEach(z=>GameRuntime.release(z.mesh)); zeros=[];
   shakeT=0; shakeMag=0;
@@ -2911,8 +2913,9 @@ function hitShip(s, quietCam,point=null,weapon="torpedo",attack=null){
   if(s.hp<=0){
     s.alive=false; s.sinkT=0.0001; sortieShipsSunk++;
     s.boomN=typeof shipDamage!=="undefined"&&shipDamage?0:4+Math.floor(Math.random()*3); s.boomT=0.3; s.burnT=0;
-    shipBlast(s,1.7,point);
+    shipBlast(s,s.def.loaded?2.4:1.7,point);
     spawnSlick(s);
+    if(s.def.loaded)igniteOil(s);   // Build 247: a loaded oiler spreads burning oil
     const pts=s.def.type==='cruiser'?2000:s.def.type==='destroyer'?1200:1000;
     addScore(pts);
     // heavier feedback for capital ships: bigger shake, longer slow-mo hold
@@ -3598,7 +3601,7 @@ function updateFlak(dt){
     const d=Math.hypot(P.pos.x-s.group.position.x, P.pos.z-s.group.position.z);
     s.flakTimer-=dt;
     if(s.flakTimer<=0 && d<2200){
-      s.flakTimer=(0.30+Math.random()*0.35)*(s.fleetAlertT>0?.85:1)*(s.flakEase||1)/Math.max(.25,shipDamage?.performance(s).aa??1);
+      s.flakTimer=(0.30+Math.random()*0.35)*(s.fleetAlertT>0?.85:1)*(s.flakEase||1)*(s.blindT>0?2.6:1)/Math.max(.25,shipDamage?.performance(s).aa??1);
       // 3-round tracer burst, aimed with lead + spread
       const from=new THREE.Vector3(s.group.position.x,10,s.group.position.z);
       const lead=P.pos.clone().addScaledVector(noseDir(),P.spd*1.1);
@@ -3617,7 +3620,7 @@ function updateFlak(dt){
     // heavy AA airbursts around the aircraft
     if(P.pos.y>45 && d<2000){
       s.burstT=(s.burstT||Math.random())-dt;
-      if(s.burstT<=0){ s.burstT=(0.5+Math.random()*0.6)*(s.flakEase||1);
+      if(s.burstT<=0){ s.burstT=(0.5+Math.random()*0.6)*(s.flakEase||1)*(s.blindT>0?2.6:1);
         const bp=P.pos.clone().add(new THREE.Vector3((Math.random()-0.5)*160,
           (Math.random()-0.5)*90,(Math.random()-0.5)*160));
         spawnFlakBurst(bp);
@@ -6249,6 +6252,60 @@ function updateSlicks(dt){
     if(sl.life<=0){ GameRuntime.release(sl.group); slicks.splice(i,1); }
   }
 }
+// Build 247: a LOADED fleet oiler (def.loaded) that goes down spreads burning oil for OIL_FIRE.life seconds. The fire grows to rMax, flames reach
+// `ceiling` metres: a low aeroplane inside takes damage over time. The smoke blinds the escorts' guns (blindT) and slows them (slowT).
+// Game-balance values (category C). Not saved in a checkpoint: after "Continue" a sunk oiler's fire is gone.
+const OIL_FIRE={life:40,rMin:35,rMax:125,grow:9,ceiling:45,dps:7,smokeRange:1800,blind:32,slow:32,flames:26};
+let oilFires=[];
+function igniteOil(s){
+  const p=s.group.position,fire={x:p.x,z:p.z,r:OIL_FIRE.rMin,t:0,life:OIL_FIRE.life,emitT:0,smokeT:0,screenT:0,warned:false,scorched:0,ship:s};
+  fire.flames=[];   // own flickering sprites (not counted in the shared 150-sprite smoke budget), removed when the fire dies
+  if(smokeTex)for(let k=0;k<OIL_FIRE.flames;k++){   // a flame = an orange tongue (normal blending, reads as fire against the sea) with a hot additive core
+    const mk=(color,blending)=>{const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:smokeTex,color,transparent:true,opacity:0,blending,depthWrite:false}));GameRuntime.own(sp,{geometry:false});sp.userData.oilFlame=true;scene.add(sp);return sp;};
+    fire.flames.push({sp:mk(0xe84a08,THREE.NormalBlending),core:mk(0xffc24a,THREE.AdditiveBlending),a:Math.random()*Math.PI*2,rr:Math.sqrt(Math.random()),ph:Math.random()*6.3,size:12+Math.random()*12});
+  }
+  oilFires.push(fire);
+  let blinded=0;
+  for(const e of ships)if(e!==s&&e.alive&&e.flak&&Math.hypot(e.group.position.x-p.x,e.group.position.z-p.z)<OIL_FIRE.smokeRange){e.blindT=OIL_FIRE.blind;e.slowT=OIL_FIRE.slow;blinded++;spawnScreenSmoke(e.group.position.x,8,e.group.position.z,0x2a2926);}
+  radioSay(blinded?'TANKER GONE UP — BURNING OIL ON THE WATER, THE ESCORTS ARE BLIND IN THE SMOKE':'TANKER GONE UP — BURNING OIL ON THE WATER, STAY HIGH');
+  return fire;
+}
+function updateOilFires(dt){
+  for(let i=oilFires.length-1;i>=0;i--){
+    const f=oilFires[i];f.t+=dt;
+    if(f.t>=f.life){for(const fl of f.flames||[]){for(const sp of [fl.sp,fl.core]){scene.remove(sp);GameRuntime.release(sp);}}oilFires.splice(i,1);continue;}
+    f.r=Math.min(OIL_FIRE.rMax,OIL_FIRE.rMin+f.t*OIL_FIRE.grow);
+    const fade=f.t>f.life-8?Math.max(.15,(f.life-f.t)/8):1;
+    const clock=performance.now()*.001,grown=Math.min(1,.35+f.r/OIL_FIRE.rMax*.8);
+    for(const fl of f.flames||[]){   // the flames flicker over the whole ring; the ring grows with the slick
+      const flick=.8+.3*Math.sin(clock*7+fl.ph),w=fl.size*flick*grown*(.5+.5*fade),h=w*1.9,op=Math.min(.9,f.t*.5)*fade;
+      const x=f.x+Math.cos(fl.a)*fl.rr*f.r*.92,z=f.z+Math.sin(fl.a)*fl.rr*f.r*.92;
+      fl.sp.position.set(x,h*.45+1,z);fl.sp.scale.set(w,h,1);fl.sp.material.opacity=op;
+      fl.core.position.set(x,h*.25+1,z);fl.core.scale.set(w*.55,h*.5,1);fl.core.material.opacity=op*.9;
+    }
+    f.emitT-=dt;
+    if(f.emitT<=0){f.emitT=.18;
+      for(let k=0;k<3;k++){const a=Math.random()*Math.PI*2,rr=Math.sqrt(Math.random())*f.r*.95;
+        if(Math.random()<fade)spawnFire(f.x+Math.cos(a)*rr,3+Math.random()*5,f.z+Math.sin(a)*rr,1.5);}
+    }
+    f.smokeT-=dt;
+    if(f.smokeT<=0){f.smokeT=.45;const a=Math.random()*Math.PI*2,rr=Math.random()*f.r*.6;spawnSmoke(f.x+Math.cos(a)*rr,12+Math.random()*6,f.z+Math.sin(a)*rr,0x15130f,.8);}
+    f.screenT-=dt;
+    if(f.screenT<=0){f.screenT=9;   // the cloud keeps drifting over whichever escorts are still near
+      for(const e of ships)if(e.alive&&e.flak&&e!==f.ship&&Math.hypot(e.group.position.x-f.x,e.group.position.z-f.z)<OIL_FIRE.smokeRange){e.blindT=Math.max(e.blindT||0,OIL_FIRE.blind*.5);spawnScreenSmoke(e.group.position.x,8,e.group.position.z,0x2a2926);}
+    }
+    if(state===ST.FLIGHT&&P.alive){
+      const d=Math.hypot(P.pos.x-f.x,P.pos.z-f.z),agl=P.pos.y;
+      if(d<f.r*.9&&agl<OIL_FIRE.ceiling){
+        if(!f.warned){f.warned=true;flash('FLYING THROUGH BURNING OIL — CLIMB',1600);radioSay('YOU ARE IN THE FLAMES — CLIMB, CLIMB');}
+        const dmg=OIL_FIRE.dps*(D().dmg||1)*dt*fade;
+        P.hull=Math.max(0,P.hull-dmg);f.scorched+=dmg;
+        if(Math.random()<dt*2.2){shake(.9);registerHit();}
+        if(P.hull<=0)crash('BURNED','Flew through burning oil.');
+      }
+    }
+  }
+}
 function shipBlast(s,sc,point=null){
   const p=point||s.group.position;
   if(typeof shipDamage!=="undefined"&&shipDamage){spawnExplosion(p.x,Math.max(3,p.y),p.z,sc);spawnDebris(p.x,Math.max(4,p.y+2),p.z,16);spawnWake(p.x,p.z,s.radius*1.5);return;}
@@ -7340,7 +7397,7 @@ function updateShips(dt){
     if(!s.alive){
       if(s.sinkT!==undefined){
         s.sinkT+=dt;
-        const modeled=typeof shipDamage!=="undefined"&&shipDamage&&shipDamage.update(s,dt,seaHeightAt(s.group.position.x,s.group.position.z,seaUniforms.uTime.value));
+        const modeled=typeof shipDamage!=="undefined"&&shipDamage&&shipDamage.update(s,dt,seaHeightAt(s.group.position.x,s.group.position.z,seaUniforms.uTime.value)-(s.def.deepBy||0));
         if(!modeled){s.group.position.y=-Math.min(26,s.sinkT*2.2);s.group.rotation.z=Math.min(0.85,s.sinkT*0.11);s.group.rotation.x=Math.min(0.3,s.sinkT*0.045);}
         if(s.boomN>0){
           s.boomT-=dt;
@@ -7418,12 +7475,13 @@ function updateShips(dt){
         }
       }
       wf.copy(s.fwd).applyQuaternion(s.group.quaternion);wf.y=0;wf.normalize();
-      s.driveMultiplier=(s.driveMultiplier??1)+(shipPerformance.speed-(s.driveMultiplier??1))*(1-Math.exp(-dt*.5));
+      s.blindT=Math.max(0,(s.blindT||0)-dt);s.slowT=Math.max(0,(s.slowT||0)-dt);   // Build 247: oil-fire smoke over the escorts
+      s.driveMultiplier=(s.driveMultiplier??1)+(shipPerformance.speed*(s.slowT>0?.6:1)-(s.driveMultiplier??1))*(1-Math.exp(-dt*.5));
       const driveSpeed=s.speed*s.driveMultiplier;
       s.group.position.x+=wf.x*driveSpeed*dt;
       s.group.position.z+=wf.z*driveSpeed*dt;
       s.group.position.y=seaHeightAt(s.group.position.x,s.group.position.z,seaUniforms.uTime.value)
-        +Math.sin(performance.now()*.0008+s.group.position.x*.012)*.13*seaState;
+        +Math.sin(performance.now()*.0008+s.group.position.x*.012)*.13*seaState-(s.def.deepBy||0);
       if(typeof shipDamage!=="undefined"&&shipDamage)shipDamage.update(s,dt,s.group.position.y);
       const spec=s.group.children[0]?.userData.naval;
       const propellers=spec?.propellers??(s.def.type==='cruiser'?2:0);
@@ -7554,7 +7612,7 @@ function animateFrame(){
   updateSplashes(dt);
   updateDebris(dt);
   updateBubbles(dt);
-  updateSlicks(dt);
+  updateSlicks(dt);updateOilFires(dt);
   updateExplosions(dt);
   updateSmoke(dt);
   updateClouds();
