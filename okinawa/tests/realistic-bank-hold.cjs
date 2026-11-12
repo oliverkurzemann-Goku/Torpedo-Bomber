@@ -44,7 +44,7 @@ for(const kind of kinds)for(const fps of [20,60,120]){
  // the turn in between is coordinated (omega = g tan(bank) / V), no stall, the path hold keeps the altitude
  const p=fresh2(kind,110);const vs=FlightControl.stallSpeed(p,env(kind,p,0,false,true));p.spd=Math.max(110,1.6*vs);
  let t=0;for(;t<6&&Math.abs(p.roll)<45*DEG;t+=1/fps)run(p,fps,1/fps,.6);
- assert(t<2,kind+' still rolls to 45 deg with the stick: '+t);
+ assert(t<(kind==='fi156'?4:2),kind+' still rolls to 45 deg with the stick: '+t);   // Build 249: the Storch is a slow-rolling STOL aircraft (about 3.2 s to 45 deg at 60 % stick); still a stick-driven roll, not a stuck one
  const bank=p.roll,h0=p.heading,y0=p.pos.y;let expectSum=0,peak=0;
  const at={};for(let i=1;i<=fps*20;i++){const v0=p.spd;peak=Math.max(peak,run(p,fps,1/fps,0));if(i<=fps*3)expectSum+=FlightCore.GAME.manoeuvreGain*G*Math.tan(Math.abs(p.roll))/((p.spd+v0)/2)/fps;
   for(const s of [1,3,8,20])if(i===s*fps)at[s]=p.roll;if(i===fps*3)at.heading=Math.abs(p.heading-h0);if(i===fps*3)at.dy=p.pos.y-y0;}
@@ -66,7 +66,7 @@ for(const kind of kinds)for(const fps of [20,60,120]){
  // 4) the trim target is the damage bias, not zero
  const biased=fresh2(kind,110);biased.spd=Math.max(110,1.6*vs);biased.rollBias=.08;run(biased,fps,12,0);assert(Math.abs(biased.roll-.08)<.01,kind+' @'+fps+' FPS: damage bias is the trim target '+biased.roll);
  // 5) rolling back with the stick still works (hold does not make the aircraft sticky)
- const back=fresh2(kind,110);back.spd=Math.max(110,1.6*vs);back.roll=45*DEG;let tb=0;for(;tb<4&&Math.abs(back.roll)>3*DEG;tb+=1/fps)run(back,fps,1/fps,-.6);assert(tb<2,kind+' rolls back to near level with opposite stick: '+tb);
+ const back=fresh2(kind,110);back.spd=Math.max(110,1.6*vs);back.roll=45*DEG;let tb=0;for(;tb<4&&Math.abs(back.roll)>3*DEG;tb+=1/fps)run(back,fps,1/fps,-.6);assert(tb<(kind==='fi156'?4:2),kind+' rolls back to near level with opposite stick: '+tb);
  rows.push({kind,fps,bank:+(bank/DEG).toFixed(1),after1:+(at[1]/DEG).toFixed(1),after3:+(at[3]/DEG).toFixed(1),after8:+(at[8]/DEG).toFixed(1),rate:+(rate/DEG).toFixed(1),ratio:rate/expect,expect:+(expect/DEG).toFixed(1),steep:+(steep.roll/DEG).toFixed(1)});
 }
 // the bank at release differs a little between frame rates (a fast roller overshoots 45 deg by one frame's roll), so compare the turn rate to the coordinated turn of ITS bank
