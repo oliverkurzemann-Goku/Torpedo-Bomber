@@ -24,7 +24,8 @@ g.FlightPlans={
   {weather:['broken','clear'],deadline:660,notes:'Two-ship armed reconnaissance: take off with TWO, split the column and the gun position between you. A fighter may join once the column is hit.',events:[{kills:3,fighters:1,required:true,message:'BANDIT OVER THE VALLEY — TWO HAS THE COLUMN, CLEAR YOUR SIX'}]},
   {weather:['clear','broken'],deadline:720,notes:'Fictional V-1 interception: find the ramp, destroy it and shoot down the flying bombs it launches. Attack the bombs from behind.',events:[]},
   {weather:['clear'],deadline:660,notes:'Fictional strike on a fuel and ammunition dump: destroy six of the eight stores. They burn in chains, so pull up early.',events:[]},
-  {weather:['clear','broken'],deadline:720,notes:'Fictional intercept: the staff Storch (red marker) flies the valley road at tree height; two liaison flights cross his path and must not be hit. He sets down on the road when he sees you; stop the aircraft or the truck that picks up the crew.',events:[]}
+  {weather:['clear','broken'],deadline:720,notes:'Fictional intercept: the staff Storch (red marker) flies the valley road at tree height; two liaison flights cross his path and must not be hit. He sets down on the road when he sees you; stop the aircraft or the truck that picks up the crew.',events:[]},
+  {weather:['clear'],deadline:780,notes:'Fictional night intercept: three Bf 110 night fighters hunt you with ground radar and attack from below. Stay under 400 ft AGL to vanish from the screen, throw WINDOW (J) to jam it for 15 s, and shoot all three down.',events:[]}
  ],
  pacific:[{}, {},
   {weather:['broken','haze'],deadline:480,notes:'Confirm the contact in the blue search area, then intercept the moving merchant.',recon:{x:600,z:2450,radius:850,min:60,max:650,seconds:5}},
