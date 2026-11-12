@@ -53,9 +53,9 @@ assert.equal(pilot.rtb,true,'second kill unlocks carrier recovery');assert.equal
 const script=html('remagen-mission.html');
 const start=script.indexOf('const MISSIONS=['),end=script.indexOf('\nfunction M()',start);
 const missions=vm.runInNewContext(script.slice(start,end)+'\nMISSIONS',{});
-assert.equal(missions.length,26,'training plus twenty-four real-terrain combat sorties (the night-hunt bonus is appended last)');
-assert.deepEqual([...new Set(missions.map(m=>m.ac))].sort(),['bf109','fw190','ju87','me163','me262','p47']);
-assert.equal(missions.filter(m=>m.kills||m.enemyAir||m.bombers).length,24);
+assert.equal(missions.length,29,'training plus twenty-seven real-terrain combat sorties (the three Storch bonuses are appended last)');
+assert.deepEqual([...new Set(missions.map(m=>m.ac))].sort(),['bf109','fi156','fw190','ju87','me163','me262','p47']);
+assert.equal(missions.filter(m=>m.kills||m.enemyAir||m.bombers).length,27);
 assert.equal(missions.filter(m=>m.ac==='me262').length,4,'four jet sorties');
 assert.equal(missions[16].ac,'me163','original Komet interception retains its index');
 assert.equal(missions[17].ac,'ju87','Ju 87 bonus retains its index');
@@ -68,6 +68,9 @@ assert.equal(missions[22].id,'buzz','the V-1 bonus appends without shifting save
 assert.equal(missions[23].id,'depot','the depot bonus appends without shifting saved mission indices');assert.equal(missions[23].bonus,true);assert.equal(missions[23].kills.depot,6);assert.ok(missions[23].depot);
 assert.equal(missions[24].id,'storch','the Storch bonus appends without shifting saved mission indices');assert.equal(missions[24].bonus,true);assert.equal(missions[24].kills.storch,1);assert.ok(missions[24].storch);
 assert.equal(missions[25].id,'schraege','the night-hunt bonus appends without shifting saved mission indices');assert.equal(missions[25].bonus,true);assert.equal(missions[25].night,true);assert.equal(missions[25].kills.nightfighter,3);assert.ok(missions[25].schraege&&missions[25].radar);
+assert.equal(missions[26].id,'rescue','the Storch rescue appends without shifting saved mission indices');assert.equal(missions[26].ac,'fi156');assert.equal(missions[26].kills.rescued,1);assert.ok(missions[26].rescue&&missions[26].bonus);
+assert.equal(missions[27].id,'spotter');assert.equal(missions[27].ac,'fi156');assert.equal(missions[27].kills.zone,3);assert.ok(missions[27].spotter);
+assert.equal(missions[28].id,'rats');assert.equal(missions[28].ac,'fi156');assert.ok(missions[28].rats&&missions[28].bonus);
 const plans=vm.runInNewContext(html('operation-plans.js')+'\nwindow.FlightPlans',{window:{}});
 assert.equal(plans.europe.length,missions.length,'every Rhine sortie gets its own weather/operation plan');
 assert.equal(plans.europe[16].fuel,65,'original rocket sortie has limited powered flight');

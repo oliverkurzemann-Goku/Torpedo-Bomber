@@ -1,4 +1,40 @@
-# Period models and their missions (Builds 246 and 247)
+# Period models and their missions (Builds 246 to 249)
+
+## Build 249: the Storch you fly — three sorties — and a night fighter that flies and can be seen
+
+**Player model.** `assets/aircraft/fi156c2-player.glb` (delivered as `Fieseler_Storch_C2_Torpedo_Bomber.zip`, SHA-256 pinned in `okinawa/tests/storch-c2-model.cjs`): Fi 156 C-2, 14 484 triangles,
+validator 0/0, rig contract class `tailwheel-light` (fixed legs, two-blade propeller read from the rig, no muzzle: the observer's gun is placed by the game). The delivered `check.cjs` /
+generator were **not** run (foreign code); they are kept under `scripts/own-models/fi156c2-player/`. The scripted Build 248 model (`fi156c-own.glb`) stays for the liaison flights.
+
+**Flown on the manual's numbers** (L.Dv.T. 2601/1 Annex 3, solved in `flight-core.js`): stall 62 km/h clean / 51 km/h full flap, 175 km/h at sea level, 4.6 m/s climb with 10 deg flap
+(reproduced exactly by the test). The Storch is `CORE_ONLY` (always on the flight core). Measured in the real game (`okinawa/tests/storch-flight-browser.cjs`, ARCADE law): off the grass
+after **6.5 s / 65 m**, 8 m/s climb at 72 km/h (the arcade law gives every type more climb than the data sheet), **174 km/h** level at full power (130 km/h at half power), idle glide
+65 km/h at 2.3 m/s sink, 45 deg bank = **14.4 deg/s** (radius ~110 m), stall below 56 km/h without dropping out of the sky. Hull 60 (a P-47 has 100), 450 rounds for the **automatic
+observer**: he fires by himself at hostile aircraft inside a rear cone (620 m, 24 deg), short bursts, wide scatter, light rounds - a deterrent, not a weapon (`updateStorchGunner`, `GUNNER`).
+
+**Three Rhine bonus sorties** (indices 26-28, appended; German side, solo; `STORCH SORTIES` block in `remagen-mission.html`; places are deterministic per sortie id, the bandits are
+`escapeThreat` and never hold up the return):
+- *Bonus Rescue Run*: land in the meadow behind the line (yellow smoke, dry, flat <= 3 %, trees taken out), stop within 150 m of the smoke; the pilot runs to the aircraft (6.5 m/s), boards
+  in 6 s while you hold still (+600), two fighters arrive after 5 s, take off again from the meadow (measured: touchdown 60 km/h, roll 48 m, aboard after 13-25 s, off after 55 m).
+- *Bonus Spotter*: three observation zones 4.7 / 7.5 / 10.8 km from the strip; hold 25-280 m AGL, below 42 m/s, inside the 520 m circle for 12 s; the barrage lands 9 s later (+300, damage
+  to a pilot still in the circle: measured -46 hull for one who stayed), fighters come after the second zone.
+- *Bonus Rat Flight*: airborne 13.5 km behind the line at 60 m AGL; three fighters hunt the slow aircraft from 22 s, a second pair waits near the strip. Measured with a simple bot
+  (75 m AGL, terrain look-ahead, 140 s): flying straight costs ~32 of 60 hull, turning into the bandits 0-14 - survivable, not trivial (strengths are estimates).
+Not built yet: courier under the cloud ceiling, rock landing, moonlight flight.
+
+**Night Hunt (Rhine index 25) reworked.** Measured before: the Bf 110 flew at a fixed heading rate and set the roll from the heading step - roll rate **241 deg/s** (-40 to +28 deg in 0.1 s),
+a 28 s attack cycle like a metronome; and you could not see them (minimap showed them within 2.6 km, the model is dark). Now: a **coordinated turn** (heading follows the roll, bank <= 63 deg,
+roll rate <= 66 deg/s, pitch rate <= 23 deg/s, speed as energy 46-172 m/s, terrain look-ahead), a **rear approach** (he flies for a point behind you, passes wide when head-on, turns round,
+comes up from behind), one fixed escape heading when he breaks away. What you see: **ground-control scope** on the minimap out to 9 km (diamonds with heading), a radio call with bearing, height and
+range every 13 s ("GROUND CONTROL - BANDIT 5 O'CLOCK LOW, 1.2 MI"), a **diamond mark** on the screen inside 2.4 mi, the **glow of their exhausts** from 4.3 mi. Task text: "shoot down all three".
+Test: `okinawa/tests/schraege-browser.cjs` (profile limits and the visibility rules).
+
+**Found on the way:** enemy fighters were spawned without `maxhp` (since Build 177), so `hp/maxhp` was NaN: the damage rig bent their wings to NaN vertices and the smoke of a damaged
+fighter never came. Fixed in `spawnEnemyAir` / `damageEnemyAir` (damaged fighters now smoke below 45 % hp).
+
+**Limits:** no iPad test, no GPU measurement; the Storch sorties' strengths (hunter count, barrage damage, zone times), the Night Hunt speeds / bank limit / ranges and the glow size are game
+decisions to be tuned; the observer is automatic (no aiming by the player); the flyable Catalina waits for its model; the Rhine board has 29 cards (eight columns at short landscape,
+the takeoff-briefing test covers all of them).
 
 ## Build 248: night fighter, Storch, Betty, oiler, Yamato — and five missions
 
