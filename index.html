@@ -46,6 +46,10 @@
     .chitBody{padding:15px 18px;}.name{font-size:24px;}.blurb{font-size:12px;margin:9px 0 10px;}
     .aircraft{font-size:10px;margin-bottom:12px;}.support{margin-top:12px;}footer{margin-top:10px;}
   }
+  /* Build 249: the board overflowed a 1024x600 tablet by 61 px since the hangar link was added (Build 221); a shorter art band and tighter card give it back */
+  @media (orientation:landscape) and (min-width:760px) and (max-height:620px){
+    .band{height:clamp(84px,15dvh,96px);}.chitBody{padding:11px 16px;}.blurb{margin:6px 0 8px;}.aircraft{margin-bottom:8px;}
+  }
   @media (max-width:650px){header{align-items:start;flex-direction:column;gap:10px;}.board{grid-template-columns:1fr;}
     .standfirst{max-width:none;}.supportContent{grid-template-columns:1fr;}}
   @media (prefers-reduced-motion:reduce){.chit{transition:none;}}
