@@ -1,7 +1,10 @@
 /* Build 248: "Bonus Night Hunt" (Rhine, index 25), real game and the real Bf 110 G-4 GLB. Three scripted night fighters orbit a station and hunt the player with ground
  * radar: invisible below 400 ft AGL, 3.2 km in the clutter band, 8 km above 2 000 ft, never on the ground; WINDOW (J) jams the radar 15 s; a destroyed Wuerzburg radar
  * blinds it 90 s; their own set finds you within 330 m. A hunter gets under the belly, warns ("BANDIT BELOW") and fires two upward guns as real tracers at the lead
- * point; a jink during the warning cancels the burst; afterwards he breaks away. Shot down = 600 points, three kill the sortie. Writes app/release/schraege-browser.json. */
+ * point; a jink during the warning cancels the burst; afterwards he breaks away. Shot down = 600 points, three kill the sortie.
+ * Build 249: the hunters fly a coordinated turn (the heading follows the roll, bank <= 63 deg, roll rate <= 66 deg/s, energy for the speed; the first version snapped
+ * 241 deg/s), come up from behind, and the player SEES them: ground control scope on the minimap (9 km), bearing calls on the radio, diamond marks inside 2.4 mi,
+ * the glow of the exhausts out to 4.3 mi. Writes app/release/schraege-browser.json. */
 'use strict';
 const fs=require('node:fs'),path=require('node:path'),http=require('node:http'),assert=require('node:assert/strict');
 const {chromium}=require('playwright'),root=path.resolve(__dirname,'../..');
@@ -47,7 +50,7 @@ const server=http.createServer((req,res)=>{
     agl:hs.map(h=>Math.round(h.t.group.position.y-groundY(h.t.group.position.x,h.t.group.position.z))),
     orbit:hs.map(h=>Math.round(Math.hypot(h.t.group.position.x-cx,h.t.group.position.z-cz))),props:hs.map(h=>!!h.spin&&!!h.spin2),muzzles:hs.map(h=>h.muzzles.length),
     windowLeft:run.windowLeft,btn:document.getElementById('windowBtn').style.display,btnText:document.getElementById('windowBtn').textContent,
-    revealed:hs.map(h=>h.t.revealed),kills:M().kills,text:objectiveText(),radar:!!radar&&radar.alive,checkpointCore:targets.filter(t=>!t.optionalSite).length,
+    scope:hs.map(h=>schraegeScope(h.t)),glow:hs.map(h=>(h.glow||[]).length),kills:M().kills,text:objectiveText(),radar:!!radar&&radar.alive,checkpointCore:targets.filter(t=>!t.optionalSite).length,
     plan:!!FlightPlans.europe[MISSIONS.findIndex(m=>m.id==='schraege')],briefLabels:europeBriefTargets(M()).map(t=>t.label),
     size:(()=>{const g=hs[0].t.group,r=g.rotation.clone();g.rotation.set(0,0,0);g.updateMatrixWorld(true);const b=new THREE.Box3().setFromObject(g).getSize(new THREE.Vector3());g.rotation.copy(r);g.updateMatrixWorld(true);return b.toArray().map(v=>+v.toFixed(1));})(),
     level:[0,1,2].map(i=>SCHRAEGE_LEVEL[i].warn)};
@@ -55,7 +58,7 @@ const server=http.createServer((req,res)=>{
   report.setup=A;
   assert.equal(A.idx,25,'appended: older indices unchanged');assert.equal(A.title,'Bonus Night Hunt');assert.equal(A.n,3);assert.ok(!A.fallback,'the real model is installed');assert.deepEqual(A.mode,['patrol','patrol','patrol']);
   assert.ok(A.agl.every(v=>v>1100&&v<1700),'they orbit at about 4 000 ft: '+A.agl);assert.ok(A.orbit.every(v=>Math.abs(v-1500)<260),'on the orbit: '+A.orbit);assert.deepEqual(A.props,[true,true,true]);assert.deepEqual(A.muzzles,[2,2,2],'MuzzleUp1/2 found');
-  assert.equal(A.windowLeft,3);assert.equal(A.btn,'flex');assert.ok(/WINDOW/.test(A.btnText)&&/3/.test(A.btnText));assert.deepEqual(A.revealed,[false,false,false],'hidden on the minimap');assert.deepEqual(A.kills,{nightfighter:3});assert.ok(/NIGHT FIGHTERS 3/.test(A.text),A.text);
+  assert.equal(A.windowLeft,3);assert.equal(A.btn,'flex');assert.ok(/WINDOW/.test(A.btnText)&&/3/.test(A.btnText));assert.deepEqual(A.scope,[true,true,true],'on the ground-control scope (9 km)');assert.deepEqual(A.glow,[2,2,2],'two exhaust glows each');assert.deepEqual(A.kills,{nightfighter:3});assert.ok(/NIGHT FIGHTERS 3/.test(A.text),A.text);
   assert.ok(A.radar,'the optional Wuerzburg radar stands');assert.equal(A.checkpointCore,0);assert.ok(A.plan,'FlightPlans.europe[25] exists');assert.ok(A.briefLabels.some(l=>/Night fighter station/.test(l)),A.briefLabels);
   assert.ok(Math.abs(A.size[0]-16.25)<.3&&Math.abs(A.size[2]-12.65)<.4,'the real Bf 110 size: '+A.size);assert.deepEqual(A.level,[2.6,2,1.4],'warning times by difficulty');
 
@@ -171,10 +174,67 @@ const server=http.createServer((req,res)=>{
   assert.ok(K.after.every(a=>!a.falling&&a.agl<3&&a.dark),'the wrecks lie on the ground, burnt dark: '+JSON.stringify(K.after));assert.deepEqual(K.left,{});assert.ok(K.rtb||/RTB/.test(K.text),K.text);
   assert.ok(/NIGHT FIGHTER DOWN — 2 STILL HUNTING/.test(K.said)&&/LAST NIGHT FIGHTER DOWN/.test(K.said),K.said);
 
+  // ---- 8b. the flight profile (Build 249): a coordinated turn, no snaps, no jumps, energy for the speed ----
+  const FP=await page.evaluate(()=>{
+   const i=MISSIONS.findIndex(m=>m.id==='schraege'),cx=ALLIED_AF_X+SCHRAEGE.stationDx,cz=ALLIED_AF_Z;
+   startMission(i);finishLaunchIntro(false);state=ST.FLIGHT;P.alive=true;diffIdx=1;P.pos.set(cx-4500,groundY(cx-4500,cz)+900,cz);P.heading=Math.PI/2;P.pitch=0;P.hull=100;
+   const dt=.05,G=9.81,snap=()=>nightRun.hunters.map(h=>{const p=h.t.group.position;return {x:p.x,y:p.y,z:p.z,hd:h.heading,pi:h.pitch,ro:h.roll,sp:h.spd,m:h.mode,g:groundY(p.x,p.z)};});
+   let prev=snap(),maxRoll=[0,0,0],maxHd=[0,0,0],maxPi=[0,0,0],maxRR=[0,0,0],minSp=[1e9,1e9,1e9],maxSp=[0,0,0],minAgl=[1e9,1e9,1e9],maxJump=[0,0,0],res=[0,0,0],flips=[0,0,0],modes=new Set();
+   for(let k=0;k<Math.round(150/dt);k++){
+    P.alive=true;state=ST.FLIGHT;P.onGround=false;P.spd=112;P.pos.addScaledVector(noseDir(),112*dt);P.pos.y=Math.max(P.pos.y,groundY(P.pos.x,P.pos.z)+30);P.hull=100;
+    updateSites(dt);updateTracers(dt);const cur=snap();
+    cur.forEach((c,j)=>{const q=prev[j];if(nightRun.hunters[j].falling||c.m==='dead')return;let dh=c.hd-q.hd;dh=Math.atan2(Math.sin(dh),Math.cos(dh));
+     maxHd[j]=Math.max(maxHd[j],Math.abs(dh/dt));maxPi[j]=Math.max(maxPi[j],Math.abs((c.pi-q.pi)/dt));maxRR[j]=Math.max(maxRR[j],Math.abs((c.ro-q.ro)/dt));maxRoll[j]=Math.max(maxRoll[j],Math.abs(c.ro));
+     minSp[j]=Math.min(minSp[j],c.sp);maxSp[j]=Math.max(maxSp[j],c.sp);minAgl[j]=Math.min(minAgl[j],c.y-c.g);maxJump[j]=Math.max(maxJump[j],Math.hypot(c.x-q.x,c.y-q.y,c.z-q.z)/(Math.max(46,c.sp)*dt));
+     res[j]=Math.max(res[j],Math.abs(dh/dt-G*Math.tan(c.ro)/Math.max(46,c.sp)));if(Math.sign(c.ro)!==Math.sign(q.ro)&&Math.abs(c.ro)>.25&&Math.abs(q.ro)>.25)flips[j]++;modes.add(c.m);});
+    prev=cur;
+   }
+   const d=a=>a.map(v=>+(v*57.2958).toFixed(1));
+   return {maxRollDeg:d(maxRoll),maxRollRateDeg:d(maxRR),maxHeadRateDeg:d(maxHd),maxPitchRateDeg:d(maxPi),turnResidualDeg:d(res),minSpd:minSp.map(Math.round),maxSpd:maxSp.map(Math.round),minAgl:minAgl.map(Math.round),maxJump:maxJump.map(v=>+v.toFixed(3)),flips,modes:[...modes]};
+  });
+  report.profile=FP;
+  assert.ok(FP.maxRollRateDeg.every(v=>v<=95),'the roll rate stays at what an aeroplane does (was 241 deg/s): '+FP.maxRollRateDeg);
+  assert.ok(FP.maxRollDeg.every(v=>v<=64),'bank <= 63 deg: '+FP.maxRollDeg);assert.ok(FP.maxPitchRateDeg.every(v=>v<=28),'pitch rate: '+FP.maxPitchRateDeg);
+  assert.ok(FP.maxHeadRateDeg.every(v=>v<=17),'the heading turns no faster than g*tan(bank)/v allows: '+FP.maxHeadRateDeg);assert.ok(FP.turnResidualDeg.every(v=>v<1.5),'the heading rate follows the roll (coordinated turn): '+FP.turnResidualDeg);
+  assert.ok(FP.minSpd.every(v=>v>=45)&&FP.maxSpd.every(v=>v<=173),'speed between stall and top speed: '+FP.minSpd+' / '+FP.maxSpd);assert.ok(FP.minAgl.every(v=>v>=60),'never into the ground: '+FP.minAgl);
+  assert.ok(FP.maxJump.every(v=>v<1.02),'no step longer than speed x dt (no jumping): '+FP.maxJump);assert.ok(FP.flips.every(v=>v<=3),'no roll flip-flopping: '+FP.flips);assert.ok(FP.modes.includes('vector')&&FP.modes.includes('stalk'),FP.modes.join());
+
+  // ---- 8c. what the player sees: scope, calls, marks, exhaust glow ----
+  const VS=await page.evaluate(()=>{
+   const i=MISSIONS.findIndex(m=>m.id==='schraege'),cx=ALLIED_AF_X+SCHRAEGE.stationDx,cz=ALLIED_AF_Z;
+   startMission(i);finishLaunchIntro(false);state=ST.FLIGHT;P.alive=true;diffIdx=1;P.pos.set(cx-3000,groundY(cx-3000,cz)+900,cz);P.heading=Math.PI/2;P.pitch=0;P.spd=112;P.hull=100;said.length=0;
+   const out={},run=nightRun,hs=run.hunters,pf=noseDir(),right=new THREE.Vector3(-pf.z,0,pf.x).normalize();
+   const st=n=>{for(let k=0;k<Math.round(n/.05);k++){P.alive=true;state=ST.FLIGHT;P.onGround=false;P.spd=112;updateSites(.05);}};
+   st(3);out.gci=said.some(s=>/GROUND CONTROL — THREE NIGHT FIGHTERS/.test(s));
+   // the bearing text: a hunter at 3 o'clock, low, 1 km away
+   hs[0].t.group.position.copy(P.pos).addScaledVector(right,1000).add(new THREE.Vector3(0,-300,0));out.call3=schraegeCallText(hs[0]);
+   hs[0].t.group.position.copy(P.pos).addScaledVector(pf,-1000).add(new THREE.Vector3(0,250,0));out.call6=schraegeCallText(hs[0]);
+   hs[0].t.group.position.copy(P.pos).addScaledVector(pf,1609);out.call12=schraegeCallText(hs[0]);
+   // marks and glow by distance
+   const put=(j,d)=>{hs[j].t.group.position.copy(P.pos).addScaledVector(pf,d);hs[j].mode='patrol';hs[j].cool=99;};
+   put(0,2500);put(1,5200);put(2,8000);planeGroup.position.copy(P.pos);for(let k=0;k<30;k++)updateCamera(.05);
+   updateSchraegeVisuals(run,true);
+   out.marks=run.marks.map(e=>({hidden:e.hidden,txt:e.textContent}));out.glow=hs.map(h=>h.glow.map(s=>s.visible));
+   out.scope=hs.map(h=>schraegeScope(h.t));
+   put(2,9500);updateSchraegeVisuals(run,true);out.glowFar=hs[2].glow.map(s=>s.visible);out.scopeFar=schraegeScope(hs[2].t);
+   // the radio call while one is coming for the player
+   hs[0].mode='vector';hs[0].lost=0;run.callT=0;said.length=0;put(0,2500);hs[0].mode='vector';st(.1);out.calls=said.filter(s=>/BANDIT \d+ O'CLOCK/.test(s));
+   // a dead one leaves no mark and no glow
+   shoot(hs[0].t,4,6);updateSchraegeVisuals(run,true);out.deadGlow=hs[0].glow.map(s=>s.visible);out.deadMark=run.marks[0].hidden;
+   out.text=objectiveText();
+   return out;
+  });
+  report.visible=VS;
+  assert.ok(VS.gci,'ground control briefs the pilot by radio');assert.ok(/BANDIT 3 O'CLOCK LOW, 0\.6 MI/.test(VS.call3),VS.call3);assert.ok(/BANDIT 6 O'CLOCK HIGH, 0\.6 MI/.test(VS.call6),VS.call6);assert.ok(/BANDIT 12 O'CLOCK LEVEL, 1\.0 MI/.test(VS.call12),VS.call12);
+  assert.deepEqual(VS.marks.map(m=>m.hidden),[false,true,true],'a diamond inside 2.4 mi only: '+JSON.stringify(VS.marks));assert.ok(/mi/.test(VS.marks[0].txt),VS.marks[0].txt);
+  assert.deepEqual(VS.glow.map(g=>g.every(Boolean)),[true,true,false],'the exhaust glow shows out to 7 km: '+JSON.stringify(VS.glow));assert.deepEqual(VS.glowFar,[false,false],'but not beyond');
+  assert.deepEqual(VS.scope,[true,true,true],'all three on the scope inside 9 km');assert.equal(VS.scopeFar,false,'and off it beyond 9 km');assert.ok(VS.calls.length>=1,'ground control calls the hunter that is coming: '+VS.calls);
+  assert.deepEqual(VS.deadGlow,[false,false],'a shot-down fighter stops glowing');assert.equal(VS.deadMark,true,'and loses its mark');assert.ok(/SHOOT THEM DOWN/.test(VS.text)||/NIGHT FIGHTERS/.test(VS.text),VS.text);
+
   // ---- 9. a mission change leaves nothing behind ----
   const Z=await page.evaluate(()=>{const i=MISSIONS.findIndex(m=>m.id==='convoy');selectedMission=i;briefPlan=chooseEuropePlan(i);startMission(i);finishLaunchIntro(false);state=ST.FLIGHT;updateWindowUI();
-   return {run:nightRun===null,sites:siteRecs.length,hunters:targets.filter(t=>t.hunter).length,btn:document.getElementById('windowBtn').style.display,clouds:scene.children.filter(o=>o.isPoints).length};});
-  assert.ok(Z.run&&Z.sites===0&&Z.hunters===0&&Z.btn==='none'&&Z.clouds===0,JSON.stringify(Z));
+   return {run:nightRun===null,sites:siteRecs.length,hunters:targets.filter(t=>t.hunter).length,btn:document.getElementById('windowBtn').style.display,clouds:scene.children.filter(o=>o.isPoints).length,marks:document.querySelectorAll('.nhMark').length};});
+  assert.ok(Z.run&&Z.sites===0&&Z.hunters===0&&Z.btn==='none'&&Z.clouds===0&&Z.marks===0,JSON.stringify(Z));
   assert.deepEqual(errors,[],errors.join('\n'));
   fs.mkdirSync(path.join(root,'app/release'),{recursive:true});fs.writeFileSync(path.join(root,'app/release/schraege-browser.json'),JSON.stringify(report,null,1));
   console.log('Schraege WebGL: OK',JSON.stringify({warn:C.warnAt,fire:C.fireAt,hull:C.hull,kills:K.out.map(o=>o.score)}));

@@ -32,15 +32,20 @@
   "windowLeft": 3,
   "btn": "flex",
   "btnText": "WINDOW3",
-  "revealed": [
-   false,
-   false,
-   false
+  "scope": [
+   true,
+   true,
+   true
+  ],
+  "glow": [
+   2,
+   2,
+   2
   ],
   "kills": {
    "nightfighter": 3
   },
-  "text": "NIGHT FIGHTERS 3 — STAY LOW OR THROW WINDOW (J)",
+  "text": "NIGHT FIGHTERS 3 — SHOOT THEM DOWN · LOW = HIDDEN, HIGH = HUNTED",
   "radar": true,
   "checkpointCore": 0,
   "plan": true,
@@ -124,7 +129,7 @@
   ],
   "cloudsAfter": 0,
   "left4": 0,
-  "said": "RADAR CONTACT ON YOU — NIGHT FIGHTERS ARE COMING. LOW AND FAST, OR THROW WINDOW (J)|WINDOW AWAY — THE GROUND RADAR IS SEEING SNOW|NIGHT FIGHTERS HAVE LOST YOU — STAY OFF THE RADAR|WINDOW AWAY — THE GROUND RADAR IS SEEING SNOW|WINDOW AWAY — THE GROUND RADAR IS SEEING SNOW",
+  "said": "GROUND CONTROL — THREE NIGHT FIGHTERS ORBITING EAST OF THE STRIP. THEY ARE ON YOUR SCOPE. BELOW 400 FT THEY CANNOT SEE YOU|RADAR CONTACT ON YOU — NIGHT FIGHTERS ARE COMING. LOW AND FAST, OR THROW WINDOW (J)|GROUND CONTROL — BANDIT 3 O'CLOCK LOW, 3.4 MI|WINDOW AWAY — THE GROUND RADAR IS SEEING SNOW|NIGHT FIGHTERS HAVE LOST YOU — STAY OFF THE RADAR|GROUND CONTROL — BANDIT 3 O'CLOCK LOW, 2.7 MI|WINDOW AWAY — THE GROUND RADAR IS SEEING SNOW|WINDOW AWAY — THE GROUND RADAR IS SEEING SNOW",
   "flash": "NO WINDOW LEFT"
  },
  "radar": {
@@ -151,25 +156,25 @@
   "onboard": "stalk"
  },
  "attack": {
-  "warnAt": 17,
-  "fireAt": 28.5,
+  "warnAt": 72,
+  "fireAt": 74.5,
   "tracers": 0,
   "firstRel": {
-   "up": 46.3,
-   "h": 111.8
+   "up": 55,
+   "h": 28.9
   },
   "hull0": 100,
   "mode": [],
-  "said": "RADAR CONTACT ON YOU — NIGHT FIGHTERS ARE COMING. LOW AND FAST, OR THROW WINDOW (J)|BANDIT BELOW — BREAK!|BANDIT BELOW — BREAK!|BANDIT BELOW — BREAK!|BANDIT BELOW — BREAK!|ENGINE HIT — POWER REDUCED|BANDIT BELOW — BREAK!",
+  "said": "GROUND CONTROL — THREE NIGHT FIGHTERS ORBITING EAST OF THE STRIP. THEY ARE ON YOUR SCOPE. BELOW 400 FT THEY CANNOT SEE YOU|RADAR CONTACT ON YOU — NIGHT FIGHTERS ARE COMING. LOW AND FAST, OR THROW WINDOW (J)|GROUND CONTROL — BANDIT 12 O'CLOCK HIGH, 1.6 MI|GROUND CONTROL — BANDIT 4 O'CLOCK LEVEL, 0.3 MI|GROUND CONTROL — BANDIT 7 O'CLOCK LEVEL, 0.5 MI|GROUND CONTROL — BANDIT 6 O'CLOCK LEVEL, 0.9 MI|GROUND CONTROL — BANDIT 6 O'CLOCK LEVEL, 0.5 MI|GROUND CONTROL — BANDIT 6 O'CLOCK LEVEL, 0.5 MI|BANDIT BELOW — BREAK!",
   "gap": 2,
-  "tAttack": 28.5,
+  "tAttack": 74.5,
   "lv": 2,
   "tracersNow": 2,
-  "hull": 64.8,
+  "hull": 84,
   "hunterModes": [
+   "break",
    "stalk",
-   "vector",
-   "break"
+   "stalk"
   ],
   "dir": []
  },
@@ -231,6 +236,117 @@
   "left": {},
   "rtb": false,
   "text": "RTB — LAND AT BEAUFORT",
-  "said": "NIGHT FIGHTER DOWN — 2 STILL HUNTING|NIGHT FIGHTER DOWN — 1 STILL HUNTING|LAST NIGHT FIGHTER DOWN — THE VALLEY IS YOURS"
+  "said": "NIGHT FIGHTER DOWN — 2 STILL HUNTING|NIGHT FIGHTER DOWN — 1 STILL HUNTING|LAST NIGHT FIGHTER DOWN — THE VALLEY IS YOURS|GROUND CONTROL — THREE NIGHT FIGHTERS ORBITING EAST OF THE STRIP. THEY ARE ON YOUR SCOPE. BELOW 400 FT THEY CANNOT SEE YOU"
+ },
+ "profile": {
+  "maxRollDeg": [
+   63,
+   63,
+   63
+  ],
+  "maxRollRateDeg": [
+   65.9,
+   65.9,
+   65.9
+  ],
+  "maxHeadRateDeg": [
+   15,
+   14.1,
+   14.8
+  ],
+  "maxPitchRateDeg": [
+   22.9,
+   22.9,
+   22.9
+  ],
+  "turnResidualDeg": [
+   0,
+   0,
+   0
+  ],
+  "minSpd": [
+   63,
+   63,
+   63
+  ],
+  "maxSpd": [
+   159,
+   159,
+   159
+  ],
+  "minAgl": [
+   473,
+   527,
+   519
+  ],
+  "maxJump": [
+   1,
+   1,
+   1
+  ],
+  "flips": [
+   0,
+   0,
+   0
+  ],
+  "modes": [
+   "patrol",
+   "vector",
+   "stalk",
+   "break"
+  ]
+ },
+ "visible": {
+  "gci": true,
+  "call3": "GROUND CONTROL — BANDIT 3 O'CLOCK LOW, 0.6 MI",
+  "call6": "GROUND CONTROL — BANDIT 6 O'CLOCK HIGH, 0.6 MI",
+  "call12": "GROUND CONTROL — BANDIT 12 O'CLOCK LEVEL, 1.0 MI",
+  "marks": [
+   {
+    "hidden": false,
+    "txt": "1.6 mi"
+   },
+   {
+    "hidden": true,
+    "txt": "1.2 mi ▲"
+   },
+   {
+    "hidden": true,
+    "txt": "2.1 mi ▲"
+   }
+  ],
+  "glow": [
+   [
+    true,
+    true
+   ],
+   [
+    true,
+    true
+   ],
+   [
+    false,
+    false
+   ]
+  ],
+  "scope": [
+   true,
+   true,
+   true
+  ],
+  "glowFar": [
+   false,
+   false
+  ],
+  "scopeFar": false,
+  "calls": [
+   "GROUND CONTROL — BANDIT 12 O'CLOCK LEVEL, 1.6 MI"
+  ],
+  "deadGlow": [
+   false,
+   false
+  ],
+  "deadMark": true,
+  "text": "NIGHT FIGHTERS 2 — SHOOT THEM DOWN · LOW = HIDDEN, HIGH = HUNTED"
  }
 }

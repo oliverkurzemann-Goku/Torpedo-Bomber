@@ -278,6 +278,9 @@
   .warningLamp{color:#646c5c;font:9px monospace;letter-spacing:.35px;} .warningLamp[data-level="1"]{color:#ffd088;text-shadow:0 0 6px #e0a432a0;} .warningLamp[data-level="2"]{color:#ff8c70;text-shadow:0 0 7px #ff6638b0;}
 
 .hangarLink{display:block;padding:12px 14px;margin:8px 0 12px;color:#f3ce83;border:1px solid #ba9d57;border-radius:5px;text-decoration:none;text-align:center;font:600 12px system-ui;letter-spacing:.8px;min-height:44px;}
+.nhMark{position:fixed;left:0;top:0;z-index:12;pointer-events:none;transform:translate(-50%,-50%);text-align:center;color:#ff7a52;font:700 10px "Arial Black",Arial,sans-serif;letter-spacing:.8px;text-shadow:0 0 3px #000,0 0 6px #000;}
+.nhMark svg{display:block;width:22px;height:22px;margin:0 auto;fill:none;stroke:#ff7a52;stroke-width:2.2;filter:drop-shadow(0 0 2px #000);}
+.nhMark[hidden]{display:none;}
 </style>
 <link rel="stylesheet" href="menu-layout.css?v=248">
 <link rel="stylesheet" href="duel.css?v=238">
@@ -3195,8 +3198,8 @@ const MISSIONS=[
       +'When the staff Storch sees you he lands on the road and his crew runs for a waiting Opel truck: stop the aircraft, or the truck once it drives off. '
       +'Shot down in the air: bonus 500. Gun passes only; mind the ridge.'},
   {id:'schraege',title:'Bonus Night Hunt',sub:'Schraege Musik',ac:'p47',bonus:true,night:true,weather:'clear',kills:{nightfighter:3},radar:true,schraege:true,
-    text:'Fictional night intercept. Three Bf 110 night fighters orbit east of the strip, guided by ground radar: you are off their screen below 400 ft AGL; above that they find you at 2 to 5 mi, their own set inside 1 000 ft. '
-      +'They attack from BELOW with upward guns (Schraege Musik): BANDIT BELOW on the radio comes before the burst, so jink. WINDOW (J, three bundles) jams the radar for 15 s; destroy the optional Wuerzburg radar and they search blind for 90 s. Four flares (L).'},
+    text:'Fictional night intercept. TASK: shoot down all three Bf 110 night fighters orbiting east of the strip. Ground control shows them on your scope and calls their bearing. '
+      +'Below 400 ft AGL their radar cannot see you; above it they find you at 2 to 5 mi and come up from behind and BELOW (Schraege Musik): BANDIT BELOW comes before the burst, so jink, then turn on him. WINDOW (J, three bundles) jams the radar 15 s; kill the optional Wuerzburg radar and they search blind for 90 s. Four flares (L).'},
   // Build 249: the Fieseler Fi 156 C-2 Storch as a player aircraft (German side, solo): see STORCH SORTIES
   {id:'rescue',title:'Bonus Rescue Run',sub:'Pilot Down Behind the Line',ac:'fi156',bonus:true,weather:'clear',kills:{rescued:1},rescue:true,doneText:'The pilot is home. ',
     text:'Fictional rescue: a Luftwaffe pilot is down in a meadow behind the line (yellow smoke, marked on the map). Land the Fi 156 near the smoke, hold still while he runs to the aircraft and climbs in, take off again and bring him home. '
@@ -5918,9 +5921,17 @@ function updateStorch(dt){
 //  speed: a jink or a speed change makes them miss. After the burst he dives away; a player who gets behind him inside 480 m makes him break off.
 //  Hunters are `optionalSite` (not saved in a checkpoint; after "Continue" the missing ones start again). Values are game decisions (category C).
 // ============================================================
-const SCHRAEGE={n:3,stationDx:6500,orbitR:1500,orbitAlt:1350,orbitSpeed:64,vector:145,stalk:152,minAgl:70,
+const SCHRAEGE={n:3,stationDx:6500,orbitR:1500,orbitAlt:1350,orbitSpeed:64,vector:158,stalk:160,minAgl:70,
   seeLow:120,seeHigh:600,rangeLow:3200,rangeHigh:8000,onboard:330,lose:9,under:55,warnDist:300,fireH:125,fireMinUp:14,fireMaxUp:100,
-  burst:1.0,shotGap:.085,breakT:7,coolMin:9,coolMax:14,windowN:3,windowT:15,windowDrift:4.5,blindT:90,turn:.95,pitchRate:.7,evadeDist:480,evadeCone:.42,reveal:2600};
+  burst:1.0,shotGap:.085,breakT:7,coolMin:9,coolMax:14,windowN:3,windowT:15,windowDrift:4.5,blindT:90,turn:.95,pitchRate:.7,evadeDist:480,evadeCone:.42,reveal:2600,
+  // Build 249: what the PLAYER gets to see of them. Ground control (the allied GCI scope) puts them on the minimap out to `gci`, calls their bearing every `call` seconds,
+  // a diamond marks them inside `mark`, and the glow of their exhausts shows from `glow` (flame dampers hide only part of it).
+  gci:9000,mark:3800,glow:7000,call:13};
+// Build 249: the flight of a Bf 110 G-4 night fighter (game decisions, category C, shaped on its real figures: ~550 km/h top, ~230 km/h loitering, stall ~165 km/h, 60-65 deg bank in a hard turn).
+// A coordinated turn: the heading follows the ROLL (omega = g*tan(roll)/v), the roll follows the wish with a limited rate, the pitch follows with a limited rate that grows with speed,
+// the speed is energy (a climb costs it, a dive gives it back, a hard turn bleeds it). The first version steered the heading at a fixed rate and the roll off the heading step,
+// which snapped the aeroplane from -40 to +28 degrees roll in a tenth of a second (measured: 241 deg/s) and flew a 28 s attack cycle like a metronome.
+const SCHRAEGE_FLY={bankMax:1.1,rollRate:1.15,rollAcc:4.2,rollGain:3.4,turnTau:1.05,pitchMax:.62,pitchRate:.40,pitchAcc:1.5,vStall:46,vMax:172,accel:7.5,decel:9,climbCost:.75,turnDrag:6,look:3.2};
 const SCHRAEGE_LEVEL=[{detect:.7,warn:2.6,shots:8,dmg:1.6},{detect:1,warn:2.0,shots:12,dmg:2.0},{detect:1.15,warn:1.4,shots:16,dmg:2.4}];
 let nightRun=null;
 function schraegeLevel(){return SCHRAEGE_LEVEL[diffIdx]||SCHRAEGE_LEVEL[1];}
@@ -5933,12 +5944,14 @@ function schraegeRange(agl){
 }
 function schraegeBriefPoint(m){return {x:ALLIED_AF_X+SCHRAEGE.stationDx,z:ALLIED_AF_Z};}
 function schraegeReset(){
-  if(nightRun){for(const c of nightRun.clouds){scene.remove(c.mesh);c.mesh.geometry.dispose();c.mesh.material.dispose();}}
+  if(nightRun){for(const c of nightRun.clouds){scene.remove(c.mesh);c.mesh.geometry.dispose();c.mesh.material.dispose();}
+    for(const e of nightRun.marks||[])e.remove();
+    for(const m of nightRun.glowMats||[])m.dispose();if(nightRun.glowTex)nightRun.glowTex.dispose();}
   nightRun=null;updateWindowUI();
 }
 function spawnSchraegeFlight(m){
   const left=SCHRAEGE.n-(sortieKills.nightfighter||0);
-  nightRun={hunters:[],windowLeft:SCHRAEGE.windowN,windowT:0,blindT:0,radarDown:false,clouds:[],clock:0,said:{},contact:false};
+  nightRun={hunters:[],windowLeft:SCHRAEGE.windowN,windowT:0,blindT:0,radarDown:false,clouds:[],clock:0,said:{},contact:false,callT:6,marks:null,glowTex:null,glowMats:[]};
   if(left<=0){updateWindowUI();return;}
   const cx=ALLIED_AF_X+SCHRAEGE.stationDx,cz=ALLIED_AF_Z;
   for(let i=0;i<left;i++){
@@ -5952,9 +5965,43 @@ function spawnSchraegeFlight(m){
     const h={t,mode:'patrol',ang,alt,heading:ang+Math.PI/2,pitch:0,roll:0,spd:SCHRAEGE.orbitSpeed,cool:3+i*2.2,warnT:0,fireT:0,shotT:0,breakT:0,lost:0,seen:false,jink:0,shots:0,warned:false,
       spin:t.group.getObjectByName('PropellerLeft'),spin2:t.group.getObjectByName('PropellerRight'),muzzles:[t.group.getObjectByName('MuzzleUp1'),t.group.getObjectByName('MuzzleUp2')].filter(Boolean),k:0};
     h.heading=Math.atan2(-Math.sin(ang),Math.cos(ang));
+    schraegeGlow(nightRun,h);
     nightRun.hunters.push(h);
   }
   updateWindowUI();
+}
+// ---- what the player gets to see (Build 249) ----
+// the glow of the exhausts: an additive spot at the rear of each nacelle, constant on screen (sizeAttenuation off), flickering; hidden in the daytime of a shot-down wreck
+function schraegeGlow(run,h){
+  const g=h.t.group;if(!run.glowTex)run.glowTex=makeSoftSprite();
+  g.updateMatrixWorld(true);h.glow=[];
+  for(const n of [h.spin,h.spin2]){
+    if(!n)continue;const w=n.getWorldPosition(new THREE.Vector3());g.worldToLocal(w);w.z-=2.7;w.y+=.2;
+    const mat=new THREE.SpriteMaterial({map:run.glowTex,color:0xff8a3c,transparent:true,blending:THREE.AdditiveBlending,depthWrite:false,fog:false,sizeAttenuation:false,opacity:.8});
+    const sp=new THREE.Sprite(mat);sp.position.copy(w);sp.scale.set(.02,.02,1);sp.visible=false;sp.renderOrder=7;g.add(sp);h.glow.push(sp);run.glowMats.push(mat);
+  }
+}
+function schraegeScope(t){return !!nightRun&&P.alive&&t.alive&&P.pos.distanceTo(t.group.position)<SCHRAEGE.gci;}
+function schraegeHeading(t){const h=nightRun&&nightRun.hunters.find(q=>q.t===t);return h?h.heading:0;}
+// "BANDIT 5 O'CLOCK LOW, 1.2 MI": the bearing off the player's nose, the height against his, the range
+function schraegeCallText(h){
+  const d=h.t.group.position.clone().sub(P.pos),f=noseDir(),fl=Math.hypot(f.x,f.z)||1,fx=f.x/fl,fz=f.z/fl;
+  const ang=Math.atan2(d.x*-fz+d.z*fx,d.x*fx+d.z*fz)*57.2958,clock=((Math.round(ang/30)+12)%12)||12,dy=d.y,alt=dy>120?'HIGH':dy<-120?'LOW':'LEVEL';
+  return 'GROUND CONTROL — BANDIT '+clock+" O'CLOCK "+alt+', '+(d.length()/1609.34).toFixed(1)+' MI';
+}
+function updateNightMarks(run,on){
+  if(!run.marks){run.marks=[];for(let i=0;i<SCHRAEGE.n;i++){const e=document.createElement('div');e.className='nhMark';e.hidden=true;GameRuntime.setHTML(e,'<svg viewBox="0 0 26 26"><path d="M13 2 L24 13 L13 24 L2 13 Z"/></svg><span></span>');document.body.appendChild(e);run.marks.push(e);}}
+  const W=window.innerWidth,H=window.innerHeight;
+  run.hunters.forEach((h,i)=>{
+    const e=run.marks[i];if(!e)return;
+    const p=h.t.group.position,d=p.distanceTo(P.pos);
+    if(!on||!h.t.alive||h.falling||d>SCHRAEGE.mark){if(!e.hidden)e.hidden=true;return;}
+    const v=p.clone().project(camera),behind=v.z>1;let x=(v.x*.5+.5)*W,y=(1-(v.y*.5+.5))*H;if(behind){x=W-x;y=H-y;}
+    const mx=44,my=60;x=Math.max(mx,Math.min(W-mx,x));y=Math.max(my,Math.min(H-my,y));
+    e.hidden=false;e.style.left=x+'px';e.style.top=y+'px';
+    const dy=p.y-P.pos.y,txt=(d>=1000?(d/1609.34).toFixed(1)+' mi':Math.round(d*3.281/10)*10+' ft')+(dy>120?' ▲':dy<-120?' ▼':'');
+    const sp=e.lastChild;if(sp.textContent!==txt)sp.textContent=txt;
+  });
 }
 function schraegeSay(key,text){const run=nightRun;if(!run||run.said[key])return;run.said[key]=true;radioSay(text);}
 function schraegeObjectiveText(){
@@ -5964,10 +6011,11 @@ function schraegeObjectiveText(){
   if(run.windowT>0)return 'NIGHT FIGHTERS '+left+' — WINDOW OUT, RADAR JAMMED '+Math.ceil(run.windowT)+' S';
   if(run.hunters.some(h=>h.t.alive&&['stalk','fire'].includes(h.mode)))return 'NIGHT FIGHTER ON YOUR TAIL — BELOW YOU';
   if(run.hunters.some(h=>h.t.alive&&h.mode==='vector'))return 'NIGHT FIGHTERS '+left+' — VECTORED TO YOU';
-  return 'NIGHT FIGHTERS '+left+' — STAY LOW OR THROW WINDOW (J)';
+  return 'NIGHT FIGHTERS '+left+' — SHOOT THEM DOWN · LOW = HIDDEN, HIGH = HUNTED';
 }
 function hunterKilled(t){
   const run=nightRun,h=run&&run.hunters.find(q=>q.t===t);
+  if(h&&h.glow)for(const sp of h.glow)sp.visible=false;
   if(h){const agl=t.group.position.y-(groundY(t.group.position.x,t.group.position.z)+1);if(agl>2){h.falling={vy:0,vx:h.spd*.5};h.mode='dead';}else{h.mode='dead';siteWreck(t,true);}}
   else siteWreck(t,true);
   const left=SCHRAEGE.n-(sortieKills.nightfighter||0);
@@ -5991,16 +6039,29 @@ function updateWindowUI(){
   if(nightRun)GameRuntime.setHTML(b,'WINDOW<br>'+nightRun.windowLeft);
 }
 function schraegeSteer(h,wantDir,wantSpd,dt){
-  const g=h.t.group;
-  const wh=Math.atan2(wantDir.x,wantDir.z),wp=Math.asin(Math.max(-1,Math.min(1,wantDir.y)));
+  const g=h.t.group,F=SCHRAEGE_FLY,G=9.81,p=g.position,cl=(v,a,b)=>Math.max(a,Math.min(b,v));
+  if(h.rollV===undefined)h.rollV=0;if(h.pitchV===undefined)h.pitchV=0;
+  const v=Math.max(F.vStall,h.spd),wh=Math.atan2(wantDir.x,wantDir.z);
+  let wp=Math.asin(cl(wantDir.y,-1,1));
+  { let e=wh-h.heading;e=Math.atan2(Math.sin(e),Math.cos(e));if(Math.abs(e)>1.0)wantSpd=Math.min(wantSpd,112); }   // a long turn is flown slower: a tighter circle
+  // terrain in front of him (about F.look seconds ahead): he climbs in time instead of being lifted off the ground
+  const ax=p.x+Math.sin(h.heading)*v*F.look,az=p.z+Math.cos(h.heading)*v*F.look,gAhead=Math.max(groundY(ax,az),groundY(p.x,p.z))+SCHRAEGE.minAgl+90;
+  if(gAhead>p.y)wp=Math.max(wp,Math.min(F.pitchMax,Math.asin(cl((gAhead-p.y)/(v*F.look),0,.95))));
+  // the roll: as much as the angle still to turn asks for, never past the bank limit; the heading follows the roll
   let dh=wh-h.heading;dh=Math.atan2(Math.sin(dh),Math.cos(dh));
-  const step=Math.max(-SCHRAEGE.turn*dt,Math.min(SCHRAEGE.turn*dt,dh));h.heading+=step;
-  h.pitch+=Math.max(-SCHRAEGE.pitchRate*dt,Math.min(SCHRAEGE.pitchRate*dt,Math.max(-.85,Math.min(.85,wp))-h.pitch));
-  h.roll+=(Math.max(-.7,Math.min(.7,step/Math.max(dt,1e-3)*.9))-h.roll)*Math.min(1,dt*3);
-  h.spd+=Math.max(-24*dt,Math.min(24*dt,wantSpd-h.spd));
-  const p=g.position,cp=Math.cos(h.pitch);
+  const omegaMax=G*Math.tan(F.bankMax)/v,omegaWant=cl(dh/F.turnTau,-omegaMax,omegaMax),rollWant=Math.atan(omegaWant*v/G);
+  const rv=cl((rollWant-h.roll)*F.rollGain,-F.rollRate,F.rollRate);
+  h.rollV+=cl(rv-h.rollV,-F.rollAcc*dt,F.rollAcc*dt);h.roll+=h.rollV*dt;
+  h.heading+=G*Math.tan(h.roll)/v*dt;
+  // the pitch: the elevator is weaker when he is slow
+  const pv=cl((cl(wp,-F.pitchMax,F.pitchMax)-h.pitch)*1.6,-F.pitchRate,F.pitchRate)*(.45+.55*Math.min(1,v/110));
+  h.pitchV+=cl(pv-h.pitchV,-F.pitchAcc*dt,F.pitchAcc*dt);h.pitch+=h.pitchV*dt;
+  // the energy: throttle (limited), gravity along the flight path, the drag of a hard turn
+  const thrust=cl((wantSpd-h.spd)*.9,-F.decel,F.accel),bleed=-G*Math.sin(h.pitch)*F.climbCost-F.turnDrag*Math.max(0,Math.abs(h.roll)-.5);
+  h.spd=cl(h.spd+(thrust+bleed)*dt,F.vStall,F.vMax);
+  const cp=Math.cos(h.pitch);
   p.x+=Math.sin(h.heading)*cp*h.spd*dt;p.z+=Math.cos(h.heading)*cp*h.spd*dt;p.y+=Math.sin(h.pitch)*h.spd*dt;
-  const floor=groundY(p.x,p.z)+SCHRAEGE.minAgl;if(p.y<floor){p.y=floor;h.pitch=Math.max(h.pitch,.05);}
+  const floor=groundY(p.x,p.z)+SCHRAEGE.minAgl;if(p.y<floor){p.y=floor;h.pitch=Math.max(h.pitch,.05);h.pitchV=Math.max(h.pitchV,0);}   // last resort only (the look-ahead above should have done it)
   g.rotation.set(-h.pitch,h.heading,-h.roll,'YXZ');
 }
 function schraegeFire(h,lv){
@@ -6029,7 +6090,7 @@ function updateSchraege(dt){
   }
   for(let i=run.clouds.length-1;i>=0;i--){const c=run.clouds[i];c.t+=dt;c.mesh.position.y-=SCHRAEGE.windowDrift*dt;c.mesh.material.opacity=Math.max(0,.85*(1-c.t/16));
     if(c.t>=16){scene.remove(c.mesh);c.mesh.geometry.dispose();c.mesh.material.dispose();run.clouds.splice(i,1);}}
-  if(!flying){updateWindowUI();return;}
+  if(!flying){updateSchraegeVisuals(run,false);updateWindowUI();return;}
   run.clock+=dt;run.windowT=Math.max(0,run.windowT-dt);run.blindT=Math.max(0,run.blindT-dt);
   const radar=siteRecs.find(t=>t.kind==='radar');
   if(radar&&!radar.alive&&!run.radarDown){run.radarDown=true;run.blindT=SCHRAEGE.blindT;radioSay('RADAR DOWN — THE NIGHT FIGHTERS ARE SEARCHING BLIND');}
@@ -6044,8 +6105,9 @@ function updateSchraege(dt){
     if(dist<SCHRAEGE.reveal)t.revealed=true;
     const fwd=new THREE.Vector3(Math.sin(h.heading)*Math.cos(h.pitch),Math.sin(h.pitch),Math.cos(h.heading)*Math.cos(h.pitch));
     if(h.mode==='patrol'){
-      h.ang+=SCHRAEGE.orbitSpeed/SCHRAEGE.orbitR*dt;
-      const want=new THREE.Vector3(cx+Math.cos(h.ang+.35)*SCHRAEGE.orbitR-p.x,groundY(p.x,p.z)+h.alt-p.y,cz+Math.sin(h.ang+.35)*SCHRAEGE.orbitR-p.z).normalize();
+      // the carrot sits a little ahead of where he is on the circle: he flows onto the orbit from wherever the chase left him
+      h.ang=Math.atan2(p.z-cz,p.x-cx);
+      const want=new THREE.Vector3(cx+Math.cos(h.ang+.38)*SCHRAEGE.orbitR-p.x,groundY(p.x,p.z)+h.alt-p.y,cz+Math.sin(h.ang+.38)*SCHRAEGE.orbitR-p.z).normalize();
       schraegeSteer(h,want,SCHRAEGE.orbitSpeed,dt);
       if(seen&&h.cool<=0){h.mode='vector';h.lost=0;schraegeSay('contact','RADAR CONTACT ON YOU — NIGHT FIGHTERS ARE COMING. LOW AND FAST, OR THROW WINDOW (J)');}
       h.cool-=dt;
@@ -6054,10 +6116,15 @@ function updateSchraege(dt){
       // the hunter's mind: an intercept point under the player's belly, a little behind
       const pf=noseDir();
       const aim=P.pos.clone().addScaledVector(pf,-28+Math.min(40,P.spd*.2)).add(new THREE.Vector3(0,-SCHRAEGE.under,0));
+      const behindHim=rel.dot(pf)>0;   // true when he is BEHIND the player (the player is ahead of him)
       if(h.mode==='vector'){
-        const lead=P.pos.clone().addScaledVector(pf,P.spd*Math.min(6,dist/SCHRAEGE.vector)).add(new THREE.Vector3(0,-SCHRAEGE.under*Math.min(1,dist/1500),0));
+        // ground control puts a night fighter onto the TAIL of the bomber: he flies for a point behind the player (the trail shrinks as he closes); coming head-on he passes wide
+        // on his own side (nobody flies through a wing), turns round and comes up from behind
+        const trail=Math.min(2200,dist*.55),lead=P.pos.clone().addScaledVector(pf,P.spd*Math.min(6,dist/SCHRAEGE.vector)-trail).add(new THREE.Vector3(0,-SCHRAEGE.under*Math.min(1,dist/1500),0));
+        if(!behindHim){const side=new THREE.Vector3(pf.z,0,-pf.x).normalize(),s=Math.sign(p.clone().sub(P.pos).dot(side))||1;lead.addScaledVector(side,s*Math.min(1100,-rel.dot(pf)*.45+300));}
         schraegeSteer(h,lead.sub(p).normalize(),SCHRAEGE.vector,dt);
-        if(dist<700)h.mode='stalk',h.warnT=0,h.fireT=0;
+        if(dist<700&&behindHim)h.mode='stalk',h.warnT=0,h.fireT=0;
+      }else if(!behindHim&&rel.dot(pf)<-220&&h.fireT<=0){h.mode='vector';h.warned=false;h.warnT=0;   // he overshot: round again
       }else{
         // closing in: the speed follows the along-track gap to the aim point (no overshoot), the heading blends from "toward it" to "parallel to the player"
         const toAim=aim.clone().sub(p),dAim=toAim.length(),along=toAim.dot(pf),k=Math.min(1,dAim/260);
@@ -6066,11 +6133,11 @@ function updateSchraege(dt){
         const below=rel.y>SCHRAEGE.fireMinUp&&rel.y<SCHRAEGE.fireMaxUp,fits=below&&dh<SCHRAEGE.fireH;
         // the player behind him inside 480 m and nose-on: he breaks off (jinking away, 6 s)
         const toHim=p.clone().sub(P.pos).normalize(),behind=toHim.dot(pf)>Math.cos(SCHRAEGE.evadeCone)&&dist<SCHRAEGE.evadeDist&&p.y>P.pos.y-12&&fwd.dot(pf)>.3;
-        if(behind&&h.fireT<=0){h.mode='break';h.breakT=SCHRAEGE.breakT*.7;h.jink=Math.random()<.5?-1:1;schraegeSay('turned'+Math.floor(run.clock/20),'HE SAW YOU COMING — THE NIGHT FIGHTER IS BREAKING AWAY');}
+        if(behind&&h.fireT<=0){h.mode='break';h.breakT=SCHRAEGE.breakT*.7;h.jink=Math.random()<.5?-1:1;h.breakHd=h.heading+h.jink*1.25;schraegeSay('turned'+Math.floor(run.clock/20),'HE SAW YOU COMING — THE NIGHT FIGHTER IS BREAKING AWAY');}
         else if(h.fireT>0){
           h.fireT-=dt;h.shotT-=dt;
           if(h.shotT<=0&&h.shots>0){h.shotT=2*SCHRAEGE.burst/lv.shots;h.shots-=2;schraegeFire(h,lv);}
-          if(h.fireT<=0||h.shots<=0){h.mode='break';h.breakT=SCHRAEGE.breakT;h.jink=Math.random()<.5?-1:1;h.fireT=0;}
+          if(h.fireT<=0||h.shots<=0){h.mode='break';h.breakT=SCHRAEGE.breakT;h.jink=Math.random()<.5?-1:1;h.breakHd=h.heading+h.jink*1.25;h.fireT=0;}
         }else if(fits&&dist<SCHRAEGE.warnDist){
           if(h.warnT<=0&&!h.warned){h.warned=true;h.warnT=lv.warn;h.warnedAt=run.clock;radioSay('BANDIT BELOW — BREAK!');flash('BANDIT BELOW — BREAK!',1400);}
           else if(h.warned){h.warnT-=dt;if(h.warnT<=0){h.fireT=SCHRAEGE.burst;h.shots=lv.shots;h.shotT=0;h.warned=false;h.firedAt=run.clock;}}
@@ -6078,13 +6145,31 @@ function updateSchraege(dt){
       }
     }else if(h.mode==='break'){
       h.breakT-=dt;
-      const away=new THREE.Vector3(Math.sin(h.heading+h.jink*.9),-.28,Math.cos(h.heading+h.jink*.9)).normalize();
+      const away=new THREE.Vector3(Math.sin(h.breakHd),-.2,Math.cos(h.breakHd)).normalize();
       schraegeSteer(h,away,SCHRAEGE.stalk+10,dt);
       if(h.breakT<=0){h.mode=seen?'vector':'patrol';h.cool=SCHRAEGE.coolMin+Math.random()*(SCHRAEGE.coolMax-SCHRAEGE.coolMin);h.alt=Math.max(h.alt,P.pos.y-groundY(p.x,p.z)+80);h.warned=false;}
     }
-    // a glowing exhaust makes the night fighter findable in the dark: a small ember trail
+    // a glowing exhaust makes the night fighter findable in the dark: a small ember trail and the glow itself (bigger and brighter the harder he is flown)
     if(Math.random()<dt*5&&dist<2200)spawnSmoke(p.x-Math.sin(h.heading)*7,p.y+.4,p.z-Math.cos(h.heading)*7,0x7a4a24,.35);
   }
+  // ground control talks the player onto them: the nearest hunter that is coming for him, every SCHRAEGE.call seconds
+  run.callT-=dt;
+  if(run.clock>2.5)schraegeSay('gci','GROUND CONTROL — THREE NIGHT FIGHTERS ORBITING EAST OF THE STRIP. THEY ARE ON YOUR SCOPE. BELOW 400 FT THEY CANNOT SEE YOU');
+  if(run.callT<=0){
+    let best=null,bd=1e9;for(const h of run.hunters){if(!h.t.alive||h.falling||!['vector','stalk'].includes(h.mode))continue;const d=h.t.group.position.distanceTo(P.pos);if(d>350&&d<bd){bd=d;best=h;}}
+    if(best){radioSay(schraegeCallText(best));run.callT=SCHRAEGE.call;}else run.callT=2;
+  }
+  updateSchraegeVisuals(run,true);
+}
+function updateSchraegeVisuals(run,on){
+  const k=run.clock*21;
+  run.hunters.forEach((h,i)=>{
+    if(!h.glow)return;const t=h.t,d=t.alive&&!h.falling&&h.mode!=='dead'?t.group.position.distanceTo(P.pos):1e9,show=on&&d<SCHRAEGE.glow;
+    const hot=h.mode==='vector'||h.mode==='stalk'||h.mode==='break'?1:.55,near=1-Math.min(1,d/SCHRAEGE.glow);
+    h.glow.forEach((sp,j)=>{if(sp.visible!==show)sp.visible=show;if(!show)return;
+      const fl=.78+.22*Math.sin(k+i*2.1+j*1.3)*Math.sin(k*.37+j);sp.material.opacity=Math.min(1,fl*(.55+.45*hot));const sc=(.013+.02*near)*(.8+.4*hot);sp.scale.set(sc,sc,1);});
+  });
+  updateNightMarks(run,on);
 }
 
 // ============================================================
@@ -7460,7 +7545,13 @@ function drawMinimap(){
   for(const t of targets){
     p=put(t.group.position.x,t.group.position.z);
     if(!t.alive){ g.fillStyle='rgba(120,110,95,.45)'; g.fillRect(p[0]-1,p[1]-1,2,2); continue; }
-    if(t.hunter&&!t.revealed)continue;   // night fighters show only once they are close
+    if(t.hunter){   // night fighters: the allied ground-control scope shows them out to SCHRAEGE.gci, as a hollow diamond with their heading
+      if(typeof schraegeScope==='function'&&schraegeScope(t)){
+        g.strokeStyle='#ff5a3a';g.lineWidth=1.6;g.beginPath();g.moveTo(p[0],p[1]-5);g.lineTo(p[0]+5,p[1]);g.lineTo(p[0],p[1]+5);g.lineTo(p[0]-5,p[1]);g.closePath();g.stroke();
+        const hd=schraegeHeading(t),q=put(t.group.position.x+Math.sin(hd)*500,t.group.position.z+Math.cos(hd)*500);g.beginPath();g.moveTo(p[0],p[1]);g.lineTo(q[0],q[1]);g.stroke();g.lineWidth=1;
+      }
+      continue;
+    }
     if(t.primary){
       g.fillStyle='#e8b84b';
       if(t.kind==='bridge'||t.kind==='factory'){
