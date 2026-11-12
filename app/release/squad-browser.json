@@ -26,11 +26,14 @@
    "buzz": "",
    "depot": "",
    "storch": "",
-   "schraege": ""
+   "schraege": "",
+   "rescue": "",
+   "spotter": "",
+   "rats": ""
   },
   "rotte": 1,
   "libs": 2,
-  "count": 26,
+  "count": 29,
   "brief": true
  },
  "takeoff": {
@@ -55,7 +58,7 @@
    "bad": false,
    "phase": "fly",
    "alive": true,
-   "gap": 365
+   "gap": 175
   },
   "60": {
    "n": 1,
@@ -67,10 +70,10 @@
    "gridAgl": 1.887021273494213,
    "liftSpeed": 53.77304145707936,
    "tMove": 1.8833333333333333,
-   "tRoll": 3.1,
+   "tRoll": 2.8333333333333335,
    "tLift": 15.416666666666666,
-   "tClimb": 18.8,
-   "tFly": 29.599999999999998,
+   "tClimb": 18.53333333333333,
+   "tFly": 29.333333333333332,
    "liftDist": 458.1830958630344,
    "restedBeforeMove": true,
    "gearAtFly": 0,
@@ -78,7 +81,7 @@
    "bad": false,
    "phase": "fly",
    "alive": true,
-   "gap": 365
+   "gap": 155
   },
   "120": {
    "n": 1,
@@ -90,10 +93,10 @@
    "gridAgl": 1.887021273494213,
    "liftSpeed": 53.75648989197149,
    "tMove": 1.9,
-   "tRoll": 3.1416666666666666,
+   "tRoll": 3.2416666666666667,
    "tLift": 15.424999999999999,
-   "tClimb": 18.841666666666665,
-   "tFly": 29.633333333333333,
+   "tClimb": 18.941666666666666,
+   "tFly": 29.733333333333334,
    "liftDist": 457.6547061107631,
    "restedBeforeMove": true,
    "gearAtFly": 0,
@@ -101,7 +104,7 @@
    "bad": false,
    "phase": "fly",
    "alive": true,
-   "gap": 367
+   "gap": 187
   }
  },
  "ground": {
@@ -112,14 +115,14 @@
   "bombsUsed": 0,
   "ammoUsed": 144,
   "hurt": true,
-  "kills": 1,
+  "kills": 2,
   "squadKills": 1,
-  "minAgl": 50,
+  "minAgl": 60,
   "alive": true,
   "pAlive": true,
   "formMax": 79,
   "nan": false,
-  "status": "TWO ATTACKING SD.KFZ. 251"
+  "status": "TWO IN FORMATION"
  },
  "orders": {
   "start": {
@@ -215,14 +218,14 @@
       "tk": "air",
       "ammo": 1200,
       "hp": 86,
-      "d": 91
+      "d": 117
      },
      {
       "ph": "fly",
-      "tk": "air",
+      "tk": "cover",
       "ammo": 1200,
       "hp": 86,
-      "d": 157
+      "d": 213
      }
     ],
     "foes": 6
@@ -233,16 +236,16 @@
      {
       "ph": "fly",
       "tk": "air",
-      "ammo": 1194,
+      "ammo": 1200,
       "hp": 86,
-      "d": 74
+      "d": 157
      },
      {
       "ph": "fly",
       "tk": "air",
       "ammo": 1200,
       "hp": 86,
-      "d": 234
+      "d": 503
      }
     ],
     "foes": 6
@@ -253,16 +256,16 @@
      {
       "ph": "fly",
       "tk": "air",
-      "ammo": 1116,
-      "hp": 67,
-      "d": 56
+      "ammo": 1200,
+      "hp": 86,
+      "d": 216
      },
      {
       "ph": "fly",
       "tk": "air",
-      "ammo": 1155,
+      "ammo": 1200,
       "hp": 86,
-      "d": 230
+      "d": 897
      }
     ],
     "foes": 6
@@ -273,16 +276,16 @@
      {
       "ph": "fly",
       "tk": "air",
-      "ammo": 1116,
-      "hp": 56,
-      "d": 415
+      "ammo": 1185,
+      "hp": 67,
+      "d": 869
      },
      {
       "ph": "fly",
       "tk": "air",
-      "ammo": 1098,
-      "hp": 66,
-      "d": 1111
+      "ammo": 1194,
+      "hp": 86,
+      "d": 1341
      }
     ],
     "foes": 6
@@ -293,16 +296,16 @@
      {
       "ph": "fly",
       "tk": "air",
-      "ammo": 1116,
-      "hp": 54,
-      "d": 871
+      "ammo": 1011,
+      "hp": 37,
+      "d": 1935
      },
      {
-      "ph": "land",
-      "tk": "rtb",
-      "ammo": 1032,
-      "hp": 27,
-      "d": 1716
+      "ph": "fly",
+      "tk": "air",
+      "ammo": 1062,
+      "hp": 86,
+      "d": 1931
      }
     ],
     "foes": 6
@@ -313,19 +316,19 @@
      {
       "ph": "fly",
       "tk": "air",
-      "ammo": 1116,
-      "hp": 54,
-      "d": 1366
+      "ammo": 996,
+      "hp": 34,
+      "d": 2594
      },
      {
-      "ph": "land",
-      "tk": "rtb",
-      "ammo": 1032,
-      "hp": 27,
-      "d": 1848
+      "ph": "fly",
+      "tk": "air",
+      "ammo": 1062,
+      "hp": 83,
+      "d": 2592
      }
     ],
-    "foes": 6
+    "foes": 5
    },
    {
     "t": 28,
@@ -333,99 +336,99 @@
      {
       "ph": "fly",
       "tk": "air",
-      "ammo": 1116,
-      "hp": 54,
-      "d": 2261
+      "ammo": 939,
+      "hp": 27,
+      "d": 3236
      },
      {
-      "ph": "land",
-      "tk": "rtb",
-      "ammo": 1032,
-      "hp": 27,
-      "d": 2193
+      "ph": "fly",
+      "tk": "cover",
+      "ammo": 1062,
+      "hp": 80,
+      "d": 3364
      }
     ],
-    "foes": 6
+    "foes": 5
    },
    {
     "t": 32,
     "w": [
      {
-      "ph": "fly",
-      "tk": "air",
-      "ammo": 1116,
-      "hp": 47,
-      "d": 3130
-     },
-     {
       "ph": "land",
       "tk": "rtb",
-      "ammo": 1032,
+      "ammo": 936,
       "hp": 27,
-      "d": 2790
+      "d": 4231
+     },
+     {
+      "ph": "fly",
+      "tk": "cover",
+      "ammo": 1062,
+      "hp": 80,
+      "d": 3859
      }
     ],
-    "foes": 6
+    "foes": 5
    },
    {
     "t": 36,
     "w": [
      {
-      "ph": "fly",
-      "tk": "air",
-      "ammo": 1116,
-      "hp": 44,
-      "d": 3877
-     },
-     {
       "ph": "land",
       "tk": "rtb",
-      "ammo": 1032,
+      "ammo": 936,
       "hp": 27,
-      "d": 3587
+      "d": 5238
+     },
+     {
+      "ph": "fly",
+      "tk": "cover",
+      "ammo": 1062,
+      "hp": 80,
+      "d": 4041
      }
     ],
-    "foes": 6
+    "foes": 5
    },
    {
     "t": 40,
     "w": [
      {
-      "ph": "fly",
-      "tk": "form",
-      "ammo": 1116,
-      "hp": 44,
-      "d": 4649
-     },
-     {
       "ph": "land",
       "tk": "rtb",
-      "ammo": 1032,
+      "ammo": 936,
       "hp": 27,
-      "d": 4467
+      "d": 6169
+     },
+     {
+      "ph": "fly",
+      "tk": "cover",
+      "ammo": 1062,
+      "hp": 80,
+      "d": 4091
      }
     ],
-    "foes": 6
+    "foes": 5
    },
    {
     "t": 44,
     "w": [
      {
-      "ph": "fly",
-      "tk": "form",
-      "ammo": 1116,
-      "hp": 34,
-      "d": 5335
-     },
-     {
       "ph": "land",
       "tk": "rtb",
-      "ammo": 1032,
+      "ammo": 936,
       "hp": 27,
-      "d": 5354
+      "d": 6986
+     },
+     {
+      "ph": "fly",
+      "tk": "cover",
+      "ammo": 1062,
+      "hp": 80,
+      "d": 4150
      }
     ],
-    "foes": 6
+    "foes": 5
    },
    {
     "t": 48,
@@ -433,19 +436,19 @@
      {
       "ph": "land",
       "tk": "rtb",
-      "ammo": 1116,
-      "hp": 24,
-      "d": 5743
+      "ammo": 936,
+      "hp": 27,
+      "d": 7809
      },
      {
-      "ph": "land",
-      "tk": "rtb",
-      "ammo": 1032,
-      "hp": 27,
-      "d": 6240
+      "ph": "fly",
+      "tk": "cover",
+      "ammo": 1062,
+      "hp": 80,
+      "d": 4213
      }
     ],
-    "foes": 6
+    "foes": 5
    },
    {
     "t": 52,
@@ -453,19 +456,19 @@
      {
       "ph": "land",
       "tk": "rtb",
-      "ammo": 1116,
-      "hp": 24,
-      "d": 6247
+      "ammo": 936,
+      "hp": 27,
+      "d": 8643
      },
      {
-      "ph": "land",
-      "tk": "rtb",
-      "ammo": 1032,
-      "hp": 27,
-      "d": 7132
+      "ph": "fly",
+      "tk": "cover",
+      "ammo": 1062,
+      "hp": 80,
+      "d": 4280
      }
     ],
-    "foes": 6
+    "foes": 5
    },
    {
     "t": 56,
@@ -473,19 +476,19 @@
      {
       "ph": "land",
       "tk": "rtb",
-      "ammo": 1116,
-      "hp": 24,
-      "d": 6945
+      "ammo": 936,
+      "hp": 27,
+      "d": 9485
      },
      {
-      "ph": "land",
-      "tk": "rtb",
-      "ammo": 1032,
-      "hp": 27,
-      "d": 8023
+      "ph": "fly",
+      "tk": "cover",
+      "ammo": 1062,
+      "hp": 80,
+      "d": 4352
      }
     ],
-    "foes": 6
+    "foes": 5
    },
    {
     "t": 60,
@@ -493,19 +496,19 @@
      {
       "ph": "land",
       "tk": "rtb",
-      "ammo": 1116,
-      "hp": 24,
-      "d": 7797
+      "ammo": 936,
+      "hp": 27,
+      "d": 10333
      },
      {
-      "ph": "land",
-      "tk": "rtb",
-      "ammo": 1032,
-      "hp": 27,
-      "d": 8917
+      "ph": "fly",
+      "tk": "cover",
+      "ammo": 1062,
+      "hp": 80,
+      "d": 4433
      }
     ],
-    "foes": 6
+    "foes": 5
    },
    {
     "t": 64,
@@ -513,19 +516,19 @@
      {
       "ph": "land",
       "tk": "rtb",
-      "ammo": 1116,
-      "hp": 24,
-      "d": 8749
+      "ammo": 936,
+      "hp": 27,
+      "d": 11188
      },
      {
-      "ph": "land",
-      "tk": "rtb",
-      "ammo": 1032,
-      "hp": 27,
-      "d": 9812
+      "ph": "fly",
+      "tk": "cover",
+      "ammo": 1062,
+      "hp": 80,
+      "d": 4520
      }
     ],
-    "foes": 6
+    "foes": 5
    },
    {
     "t": 68,
@@ -533,19 +536,19 @@
      {
       "ph": "land",
       "tk": "rtb",
-      "ammo": 1116,
-      "hp": 24,
-      "d": 9711
+      "ammo": 936,
+      "hp": 27,
+      "d": 12047
      },
      {
-      "ph": "land",
-      "tk": "rtb",
-      "ammo": 1032,
-      "hp": 27,
-      "d": 10707
+      "ph": "fly",
+      "tk": "cover",
+      "ammo": 1062,
+      "hp": 80,
+      "d": 4612
      }
     ],
-    "foes": 6
+    "foes": 5
    },
    {
     "t": 72,
@@ -553,19 +556,19 @@
      {
       "ph": "land",
       "tk": "rtb",
-      "ammo": 1116,
-      "hp": 24,
-      "d": 10666
+      "ammo": 936,
+      "hp": 27,
+      "d": 12907
      },
      {
-      "ph": "land",
-      "tk": "rtb",
-      "ammo": 1032,
-      "hp": 27,
-      "d": 11603
+      "ph": "fly",
+      "tk": "cover",
+      "ammo": 1062,
+      "hp": 80,
+      "d": 4705
      }
     ],
-    "foes": 6
+    "foes": 5
    },
    {
     "t": 76,
@@ -573,19 +576,19 @@
      {
       "ph": "land",
       "tk": "rtb",
-      "ammo": 1116,
-      "hp": 24,
-      "d": 11628
+      "ammo": 936,
+      "hp": 27,
+      "d": 13771
      },
      {
-      "ph": "land",
-      "tk": "rtb",
-      "ammo": 1032,
-      "hp": 27,
-      "d": 12500
+      "ph": "fly",
+      "tk": "cover",
+      "ammo": 1062,
+      "hp": 80,
+      "d": 4795
      }
     ],
-    "foes": 6
+    "foes": 5
    },
    {
     "t": 80,
@@ -593,19 +596,19 @@
      {
       "ph": "land",
       "tk": "rtb",
-      "ammo": 1116,
-      "hp": 24,
-      "d": 12587
+      "ammo": 936,
+      "hp": 27,
+      "d": 14629
      },
      {
-      "ph": "land",
-      "tk": "rtb",
-      "ammo": 1032,
-      "hp": 27,
-      "d": 13398
+      "ph": "fly",
+      "tk": "form",
+      "ammo": 1062,
+      "hp": 80,
+      "d": 4889
      }
     ],
-    "foes": 6
+    "foes": 5
    },
    {
     "t": 84,
@@ -613,19 +616,19 @@
      {
       "ph": "land",
       "tk": "rtb",
-      "ammo": 1116,
-      "hp": 24,
-      "d": 13548
+      "ammo": 936,
+      "hp": 27,
+      "d": 15246
      },
      {
-      "ph": "land",
-      "tk": "rtb",
-      "ammo": 1032,
-      "hp": 27,
-      "d": 14286
+      "ph": "fly",
+      "tk": "form",
+      "ammo": 1062,
+      "hp": 80,
+      "d": 4987
      }
     ],
-    "foes": 6
+    "foes": 5
    },
    {
     "t": 88,
@@ -633,19 +636,19 @@
      {
       "ph": "land",
       "tk": "rtb",
-      "ammo": 1116,
-      "hp": 24,
-      "d": 14508
+      "ammo": 936,
+      "hp": 27,
+      "d": 15865
      },
      {
-      "ph": "land",
-      "tk": "rtb",
-      "ammo": 1032,
-      "hp": 27,
-      "d": 15066
+      "ph": "fly",
+      "tk": "form",
+      "ammo": 1062,
+      "hp": 80,
+      "d": 5085
      }
     ],
-    "foes": 6
+    "foes": 5
    },
    {
     "t": 92,
@@ -653,19 +656,19 @@
      {
       "ph": "land",
       "tk": "rtb",
-      "ammo": 1116,
-      "hp": 24,
-      "d": 15470
+      "ammo": 936,
+      "hp": 27,
+      "d": 16488
      },
      {
-      "ph": "land",
-      "tk": "rtb",
-      "ammo": 1032,
-      "hp": 27,
-      "d": 15835
+      "ph": "fly",
+      "tk": "form",
+      "ammo": 1062,
+      "hp": 80,
+      "d": 5181
      }
     ],
-    "foes": 6
+    "foes": 5
    },
    {
     "t": 96,
@@ -673,19 +676,19 @@
      {
       "ph": "land",
       "tk": "rtb",
-      "ammo": 1116,
-      "hp": 24,
-      "d": 16369
+      "ammo": 936,
+      "hp": 27,
+      "d": 17112
      },
      {
-      "ph": "land",
-      "tk": "rtb",
-      "ammo": 1032,
-      "hp": 27,
-      "d": 16593
+      "ph": "fly",
+      "tk": "form",
+      "ammo": 1062,
+      "hp": 80,
+      "d": 5278
      }
     ],
-    "foes": 6
+    "foes": 5
    }
   ],
   "ammo0": [
@@ -694,33 +697,33 @@
   ],
   "hpDrop": true,
   "ammoUsed": true,
-  "airTask": 3317,
-  "pickedWingman": 105,
-  "pickedPlayer": 295,
-  "minAgl": 358,
+  "airTask": 2837,
+  "pickedWingman": 83,
+  "pickedPlayer": 158,
+  "minAgl": 378,
   "hit": true,
   "picks": 40,
-  "farPicks": 14,
+  "farPicks": 11,
   "hitWorks": true,
   "down": true,
   "lost": 1,
   "n0": 2,
   "minimap": true,
-  "status": "TWO LOST · THREE LANDING",
+  "status": "TWO LOST · THREE IN FORMATION",
   "stats": {
-   "kills": 0,
+   "kills": 1,
    "lost": 1
   }
  },
  "home": {
   "tLand": 0,
-  "tRoll": 115,
-  "tPark": 120.86666666666666,
+  "tRoll": 115.36666666666666,
+  "tPark": 121.23333333333333,
   "phase": "parked",
   "alive": true,
   "bad": false,
   "dz": 47.5,
-  "dx": -355,
+  "dx": -376,
   "spd": 0,
   "agl": 1.7,
   "seen": [
@@ -748,23 +751,23 @@
   "positions": [
    {
     "pos": [
-     19432.610928745846,
-     1340.7173674098397,
-     19291.23308986313
+     20242.151107545727,
+     1065.5529802942197,
+     22150.831494269038
     ],
-    "hp": 83.47999999999999,
-    "phase": "fly",
-    "ammo": 1200
+    "hp": 25.519999999999953,
+    "phase": "land",
+    "ammo": 1146
    },
    {
     "pos": [
-     19264.1462095101,
-     1376.3945715870955,
-     20346.110394803254
+     19624.793345568174,
+     1340.1324480214644,
+     22126.199618681436
     ],
-    "hp": 30.55999999999996,
+    "hp": 58.27999999999992,
     "phase": "fly",
-    "ammo": 1155
+    "ammo": 1125
    }
   ],
   "kills": {
