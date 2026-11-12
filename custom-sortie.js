@@ -2,6 +2,9 @@
  * campaign indices, unlocks and existing airborne saves do not shift. */
 (function(root){
  'use strict';
+ const secretKey='torpedo-carrier-secret-jet-v1';
+ function secretJetUnlocked(){try{return root.localStorage?.getItem(secretKey)==='1';}catch(_){return false;}}
+ function unlockSecretJet(){try{root.localStorage?.setItem(secretKey,'1');}catch(_){}return secretJetUnlocked();}
  const planes={
   p47:{name:'P-47D Thunderbolt',theatre:'europe',kits:['guns','bombs','rockets','mixed','range'],bombs:2,rockets:8,tank:60},
   bf109:{name:'Bf 109F-2',theatre:'europe',kits:['guns','bombs','range'],bombs:1,tank:75},
@@ -14,7 +17,8 @@
   avenger:{name:'TBM Avenger',theatre:'pacific',kits:['guns','torpedo','bombs'],bombs:2},
   sbd:{name:'SBD Dauntless',theatre:'pacific',kits:['guns','bombs'],bombs:3},
   corsair:{name:'F4U-1D Corsair',theatre:'pacific',kits:['guns','bombs','rockets','mixed'],bombs:2,rockets:8},
-  zero:{name:'A6M Zero',theatre:'pacific',kits:['guns']}
+  zero:{name:'A6M Zero',theatre:'pacific',kits:['guns']},
+  secretjet:{name:'Geheimer Jet',theatre:'pacific',kits:['turrets'],airOnly:true}
  };
  const tasks={
   europe:[{id:'free',name:'Free flight',note:'Explore the Rhine, practise manoeuvres and recover at your airfield.'},
@@ -28,11 +32,12 @@
    {id:'ships',name:'Ship strike',note:'Attack the merchant ships with your selected bombs or rockets, then recover aboard.'},
    {id:'defend',name:'Fleet defence',note:'Intercept the incoming Avenger raid and protect the Japanese carrier.'}]
  };
- const kitNames={rear:'Rear gunner (automatic)',guns:'Guns only',bombs:'Bombs',rockets:'Rockets',mixed:'Bombs + rockets',range:'Guns + drop tank',torpedo:'Internal torpedo'};
+ const kitNames={turrets:'Twin MG turrets',rear:'Rear gunner (automatic)',guns:'Guns only',bombs:'Bombs',rockets:'Rockets',mixed:'Bombs + rockets',range:'Guns + drop tank',torpedo:'Internal torpedo'};
  const weatherNames={clear:'Clear',haze:'Haze',broken:'Broken cloud',lowcloud:'Low cloud',rain:'Rain',storm:'Thunderstorm'};
  const clone=o=>JSON.parse(JSON.stringify(o));
  function aircraft(theatre,task){return Object.keys(planes).filter(ac=>{
   const p=planes[ac];if(p.theatre!==theatre)return false;
+  if(ac==='secretjet')return task==='free'&&secretJetUnlocked();
   if(theatre==='europe')return (task!=='intercept'||ac!=='p47')&&(!p.airOnly||['free','fighter','intercept'].includes(task))&&(!p.freeOnly||task==='free');
   return task==='torpedo'?ac==='avenger':task==='defend'?ac==='zero':task==='ships'?ac!=='zero':true;
  });}
@@ -58,9 +63,9 @@
  }
  function fingerprint(c){let h=2166136261;for(const n of JSON.stringify(normalize(c))){h^=n.charCodeAt(0);h=Math.imul(h,16777619);}return (h>>>0).toString(16);}
  function summary(input){const c=normalize(input),p=planes[c.ac],s=stores(c),task=tasks[c.theatre].find(t=>t.id===c.task);
-  const armament=[c.kit==='rear'?'Rear gunner':'Guns',s.bombs?s.bombs+' bombs':'',s.rockets?s.rockets+' rockets':'',s.torpedoes?'1 internal torpedo':'',s.tank?'Drop tank +'+s.tank+'%':''].filter(Boolean).join(' · ');
+  const armament=[c.kit==='rear'?'Rear gunner':c.ac==='secretjet'?'Upper and lower MG turrets · 2,100 rounds':'Guns',s.bombs?s.bombs+' bombs':'',s.rockets?s.rockets+' rockets':'',s.torpedoes?'1 internal torpedo':'',s.tank?'Drop tank +'+s.tank+'%':''].filter(Boolean).join(' · ');
   return {title:task.name,aircraft:p.name,armament,conditions:weatherNames[c.weather]+' · '+(c.time==='night'?'Night':'Day')+' · '+(c.start==='air'?'Airborne start':c.theatre==='pacific'?'Carrier start':'Airfield start'),
-   notes:task.note+(c.ac==='me163'?' Rocket interceptor: airborne after trolley release; recovery is an unpowered skid landing.':'')+(c.task==='free'?' Practice fuel is unlimited.':' Fuel: '+c.fuel+'% internal.')};
+   notes:c.ac==='secretjet'?'Airborne test flight. Cycle the crew stations with T, aim with the stick and fire with GUNS or F. Afterburner with J.':task.note+(c.ac==='me163'?' Rocket interceptor: airborne after trolley release; recovery is an unpowered skid landing.':'')+(c.task==='free'?' Practice fuel is unlimited.':' Fuel: '+c.fuel+'% internal.')};
  }
  function mission(input){const c=normalize(input),s=stores(c),brief=summary(c),common={custom:c,customId:fingerprint(c),title:'Custom Sortie',sub:brief.title,weather:c.weather,free:c.task==='free',solo:true,
    text:brief.notes+'<br><br>'+brief.armament+'<br>'+brief.conditions,night:c.time==='night'};
@@ -72,6 +77,7 @@
    return m;
   }
   const m={...common,body:common.text,time:c.time,fuel:c.fuel,torps:s.torpedoes||s.bombs,zeros:0,targets:[],loadout:c.kit==='torpedo'?'torpedo':'divebomb',defend:c.ac==='zero',sbd:['sbd','corsair'].includes(c.ac),corsair:c.ac==='corsair',raiders:c.task==='defend'?c.enemies:0};
+  if(c.ac==='secretjet'){m.secretJet=true;m.loadout='guns';}
   if(['ships','torpedo'].includes(c.task)){m.zeros=c.enemies;m.targets=[{type:'freighter',pos:[-350,0,3500],hp:1},{type:'freighter',pos:[450,0,4200],hp:1}];}
   return m;
  }
@@ -87,7 +93,7 @@
    return {config,requested:fromURL,error:null};
   }catch(e){return {config:null,requested:fromURL,error:'Custom sortie could not load: '+e.message};}
  }
- function url(input){const c=normalize(input),params=new URLSearchParams({sortie:JSON.stringify(c),v:c.theatre==='pacific'?'240':'225'});return (c.theatre==='pacific'?'torpedo-carrier.html':'remagen-mission.html')+'?'+params;}
+ function url(input){const c=normalize(input),params=new URLSearchParams({sortie:JSON.stringify(c),v:c.theatre==='pacific'?'252':'225'});return (c.theatre==='pacific'?'torpedo-carrier.html':'remagen-mission.html')+'?'+params;}
  function install(theatre,missions,plans,search,storage){if(!originals.has(missions))originals.set(missions,{mission:missions[0],plan:plans[0]});const request=read(theatre,search,storage);if(request.config){missions[0]=mission(request.config);plans[0]=operation(request.config);}return request;}
  function checkpointIdentity(theatre,missions,i,saved){
   let m=saved&&!saved.custom&&i===0?(originals.get(missions)?.mission||missions[i]):missions[i];
@@ -108,6 +114,6 @@
   p.gear=p.gearTgt=p.flap=p.flapTgt=0;p.departureAge=null;p.groundPower=null;p.touchResolved=false;p.onGround=false;p.onDeck=false;p.deckRun=p.arrestRun=p.deckQuaternion=p.landingSample=null;
   ctx.setThrottle?.(.75);ctx.flight?.();return true;
  }
- const API={planes,tasks,kitNames,weatherNames,defaults,normalize,aircraft,loadouts,stores,summary,mission,operation,fingerprint,read,url,install,checkpointIdentity,restoreSaved,launchState};
+ const API={secretJetUnlocked,unlockSecretJet,planes,tasks,kitNames,weatherNames,defaults,normalize,aircraft,loadouts,stores,summary,mission,operation,fingerprint,read,url,install,checkpointIdentity,restoreSaved,launchState};
  root.CustomSortie=API;if(typeof module==='object'&&module.exports)module.exports=API;
 })(typeof window==='undefined'?globalThis:window);
