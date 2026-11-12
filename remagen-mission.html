@@ -2684,7 +2684,7 @@ function initialMissionModelKinds(m){
     if(m.ac==='p47')kinds.push('bf109',...(m.id==='fighter'?['me163']:[]));
     else kinds.push('p47');
   }
-  if(stsKind(m))kinds.push('p47');   // Build 249: the Storch sorties are hunted by Allied P-47s
+  if(typeof stsKind==='function'&&stsKind(m))kinds.push('p47');   // Build 249: the Storch sorties are hunted by Allied P-47s
   return [...new Set(kinds)];
 }
 async function waitForMissionModels(m,maxWaitMs=7000){
@@ -5541,7 +5541,7 @@ function addSite(kind,spot,opt){
 }
 function spawnMissionSites(m){
   clearSites();
-  if(stsKind(m)){stsStart(m);return;}   // Build 249: the Storch sorties (no site models, no site plan)
+  if(typeof stsKind==='function'&&stsKind(m)){stsStart(m);return;}   // Build 249: the Storch sorties (no site models, no site plan)
   if(!(m.radar||m.searchlights||m.ramp||m.depot||m.storch||m.schraege))return;
   const plan=sitePlan(m);
   if(plan.radar)addSite('radar',plan.radar,{secondary:true});
