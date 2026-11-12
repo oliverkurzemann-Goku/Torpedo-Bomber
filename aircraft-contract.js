@@ -22,6 +22,23 @@
    tyres:{GearLeft:1,GearRight:1,TailGear:1},
    muzzles:1,
    budget:{triangles:75000,meshes:48,materials:16,images:8,imageSize:2048,bytes:12*1024*1024}
+  },
+  // Build 249: light liaison aircraft (Fieseler Fi 156 Storch). Same hinged parts as the fighter class, but the legs are fixed
+  // (their gear range is [0,0]), and the model may carry a flexible rear gun that the game aims (an optional yaw drive).
+  'tailwheel-light':{
+   parts:{
+    Propeller:{drive:'prop'},
+    gear:{group:true},
+    GearLeft:{drive:'gear',parent:'gear'},GearRight:{drive:'gear',parent:'gear'},TailGear:{drive:'gear',parent:'gear'},
+    flightFlaps:{group:true},
+    FlapLeft:{drive:'flapLeft',parent:'flightFlaps'},FlapRight:{drive:'flapRight',parent:'flightFlaps'},
+    AileronLeft:{drive:'roll'},AileronRight:{drive:'roll'},
+    ElevatorLeft:{drive:'pitch'},ElevatorRight:{drive:'pitch'},Rudder:{drive:'yaw'}
+   },
+   optional:{Canopy:'canopy',RearGun:'yaw'},
+   tyres:{GearLeft:1,GearRight:1,TailGear:1},
+   muzzles:1,
+   budget:{triangles:25000,meshes:40,materials:10,images:4,imageSize:2048,bytes:5*1024*1024}
   }
  };
  const MOVING=['GearLeft','GearRight','TailGear','FlapLeft','FlapRight','AileronLeft','AileronRight','ElevatorLeft','ElevatorRight','Rudder','Canopy','GearDoorLeft','GearDoorRight','RadiatorFlapLeft','RadiatorFlapRight'];

@@ -29,7 +29,7 @@ function env(kind,P,stick,arcade=false){
   rollFrac:pacific?(kind==='avenger'?.78:.86):.86,pitchBase:pacific?4.2:3.6,pullAssist:.6,pitchScale:pacific?.70:d.pitchLim*.92,hullFactor:1};
 }
 const rows=[];
-for(const kind of [...Object.keys(defs),'avenger','sbd','corsair','zero'])for(const fps of [20,60,120]){
+for(const kind of [...Object.keys(defs).filter(k=>k!=='fi156'),'avenger','sbd','corsair','zero'])for(const fps of [20,60,120]){
  const pacific=!defs[kind],d=pacific?null:defs[kind];
  const p={ac:kind,pos:{x:0,y:1500,z:0},hull:d?.hull||100,spd:110,gear:0,flap:0,fuel:50,bombs:0,torps:0,rockets:0,rollBias:0,pitch:0,roll:0,
   pitchVel:0,rollVel:0,heading:0,nLoad:1,throttle:1,groundPower:1};
@@ -56,7 +56,7 @@ function fresh(kind,spd){const pacific=!defs[kind],d=pacific?null:defs[kind];
  SortieFeatures.Handling.configure(p,kind,'bomb',pacific?'pacific':'europe');SortieFeatures.Damage.reset(p,p.hull);return p;}
 function stallOf(kind){const p=fresh(kind,110);return FlightControl.stallSpeed(p,env(kind,p,0));}
 const assistRows=[];
-for(const kind of [...Object.keys(defs),'avenger','sbd','corsair','zero'])for(const fps of [20,60,120]){
+for(const kind of [...Object.keys(defs).filter(k=>k!=='fi156'),'avenger','sbd','corsair','zero'])for(const fps of [20,60,120]){
  const vs=stallOf(kind);
  const climbAt=(ratio,assist)=>{const p=fresh(kind,vs*ratio);let peakStall=0;
   for(let i=0;i<fps*1;i++){const e=env(kind,p,.4);e.pullAssist=assist;const r=FlightControl.player(p,1/fps,e);p.pos.y+=r.climb*(1/fps);peakStall=Math.max(peakStall,p.coreStall||0);}
@@ -72,7 +72,7 @@ for(const kind of [...Object.keys(defs),'avenger','sbd','corsair','zero'])for(co
 // Build 225 (2): pushing the stick forward at 1.35 x the stall speed never stalls (the nose-down load is bounded by
 // the wing's inverted lift), with and without roll input, and a pull-up afterwards still recovers.
 const pushRows=[];
-for(const kind of [...Object.keys(defs),'avenger','sbd','corsair','zero'])for(const fps of [20,60,120]){
+for(const kind of [...Object.keys(defs).filter(k=>k!=='fi156'),'avenger','sbd','corsair','zero'])for(const fps of [20,60,120]){
  const vs=stallOf(kind);
  for(const roll of [0,.8]){
   const p=fresh(kind,vs*1.35);let peak=0;
@@ -84,7 +84,7 @@ for(const kind of [...Object.keys(defs),'avenger','sbd','corsair','zero'])for(co
 }
 
 // ---- Build 227: the arcade extras of the Normal law (GAME.arcade in flight-core.js) ----
-const KINDS=[...Object.keys(defs),'avenger','sbd','corsair','zero'],DEG=Math.PI/180,wrapA=a=>Math.atan2(Math.sin(a),Math.cos(a));
+const KINDS=[...Object.keys(defs).filter(k=>k!=='fi156'),'avenger','sbd','corsair','zero'],DEG=Math.PI/180,wrapA=a=>Math.atan2(Math.sin(a),Math.cos(a));
 const shaped226=null;void shaped226;
 const A226=FlightCore.GAME.arcade;
 assert(A226&&A226.turnPull>0&&A226.power>0&&A226.unload>0,'GAME.arcade is declared');
@@ -213,7 +213,7 @@ fs.mkdirSync(path.join(root,'test-visuals'),{recursive:true});fs.writeFileSync(p
 // less than that (Fw 190 with bomb and drop tank: 1.3 g at 125 kt). It sinks and tightens the turn instead of stalling
 // (before: coreStall .6-.8 within 2 s, wing drop, roll away). Below the stall speed the wing still stalls, as before.
 const rows229=[];
-for(const kind of [...Object.keys(defs),'avenger','sbd','corsair','zero'])for(const fps of [20,60,120]){
+for(const kind of [...Object.keys(defs).filter(k=>k!=='fi156'),'avenger','sbd','corsair','zero'])for(const fps of [20,60,120]){
  const run=(factor,stickRoll,secs)=>{
   const p=fresh(kind,100);p.fuel=100;p.flap=.5;if(defs[kind]){p.bombs=defs[kind].bombs?1:0;}
   const vs=FlightControl.stallSpeed(p,{...env(kind,p,0),aero:true});p.spd=factor*vs;

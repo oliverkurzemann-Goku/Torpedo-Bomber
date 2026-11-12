@@ -4,14 +4,32 @@
   "rollGain": 1.5305263157894737,
   "rollCeiling": 3.839724354387525,
   "stallRoll": 1.1344640137963142,
-  "substepHz": 120
+  "substepHz": 120,
+  "arcade": {
+   "turnPull": 0.6,
+   "turnGainMax": 2.2,
+   "refLoadFloor": 1.6,
+   "ownLoadFloor": 1.2,
+   "power": 0.6,
+   "powerCap": 1.8,
+   "powerSlow": 0.8,
+   "powerSlowCap": 1.4,
+   "slowTo": 1.7,
+   "controlFloor": 0.8,
+   "climbFloor": 1.2,
+   "climbHorizon": 5,
+   "climbMin": 0.2,
+   "unload": 1.6,
+   "pushBankLo": 0.17,
+   "pushBankHi": 0.6
+  }
  },
  "class": {
   "nNegative": 3,
   "clMinRatio": 0.6,
   "gearCD": 0.02,
   "flapCD": 0.05,
-  "windmill": 0.07,
+  "windmill": 0.16,
   "spool": 1.25,
   "clClean": 1.4,
   "clLandingRatio": 1.35,
@@ -110,7 +128,7 @@
      "minSpeed": 90.2
     },
     "aeroGate_ms": 93.9,
-    "idleDecel75pct": 2.13,
+    "idleDecel75pct": 3.71,
     "takeoff": {
      "seconds": 13.5,
      "groundRun": 385,
@@ -198,7 +216,7 @@
      "minSpeed": 78.1
     },
     "aeroGate_ms": 80.7,
-    "idleDecel75pct": 2.22,
+    "idleDecel75pct": 3.89,
     "takeoff": {
      "seconds": 11.8,
      "groundRun": 299,
@@ -281,8 +299,8 @@
     "bestClimbIAS_kmh": 264,
     "stallCleanIAS_kmh": 190,
     "stallLandingIAS_kmh": 176,
-    "rollPeak_degs": 220,
-    "rollAt70pct_degs": 220,
+    "rollPeak_degs": 172,
+    "rollAt70pct_degs": 172,
     "circle45pct": {
      "seconds": 17.27,
      "endSpeed": 89.8,
@@ -301,7 +319,7 @@
      "minSpeed": 95.1
     },
     "aeroGate_ms": 99.4,
-    "idleDecel75pct": 1.96,
+    "idleDecel75pct": 3.37,
     "takeoff": {
      "seconds": 16.3,
      "groundRun": 504,
@@ -320,7 +338,7 @@
     "aspect": 5.97,
     "CLmaxClean": 1.4,
     "CLmaxLanding": 1.89,
-    "diveBrakeCD": 0.0636,
+    "diveBrakeCD": 0.0379,
     "massPublished": 4250,
     "massEmptyNoFuel": 3404,
     "fuelKg": 346
@@ -367,12 +385,78 @@
      "minSpeed": 72.6
     },
     "aeroGate_ms": 77,
-    "idleDecel75pct": 1.26,
+    "idleDecel75pct": 1.81,
     "takeoff": {
      "seconds": 17.8,
      "groundRun": 398,
      "liftoffIAS": 150,
      "stallIAS": 136
+    }
+   }
+  },
+  "fi156": {
+   "name": "Fi 156 C Storch (Argus As 10C)",
+   "solved": {
+    "CD0": 0.06019,
+    "etaP": 0.73657,
+    "rms": "0 %",
+    "oswald": 0.816,
+    "aspect": 7.81,
+    "CLmaxClean": 2.727,
+    "CLmaxLanding": 3.682,
+    "diveBrakeCD": null,
+    "massPublished": 1320,
+    "massEmptyNoFuel": 1212,
+    "fuelKg": 108
+   },
+   "verification": [
+    {
+     "figure": "175 km/h @ SL",
+     "ref": "B1",
+     "published": "175 km/h",
+     "model": "175 km/h",
+     "errorPct": 0
+    },
+    {
+     "figure": "945 ft/min @ SL",
+     "ref": "B1",
+     "published": "4.8 m/s",
+     "model": "4.8 m/s",
+     "errorPct": 0
+    }
+   ],
+   "game": {
+    "vmax1000m_kmh": 173,
+    "climbSL_ms": 4.8,
+    "bestClimbIAS_kmh": 101,
+    "stallCleanIAS_kmh": 62,
+    "stallLandingIAS_kmh": 53,
+    "rollPeak_degs": 77,
+    "rollAt70pct_degs": 64,
+    "circle45pct": {
+     "seconds": 7.03,
+     "endSpeed": 26.9,
+     "altitudeChange": 0,
+     "bankDeg": 45.2
+    },
+    "circle70pct": {
+     "seconds": 3.65,
+     "endSpeed": 29.1,
+     "altitudeChange": -3.8,
+     "bankDeg": 73.1
+    },
+    "loop": {
+     "complete": true,
+     "seconds": 3,
+     "minSpeed": 30.9
+    },
+    "aeroGate_ms": 34.7,
+    "idleDecel75pct": 1.65,
+    "takeoff": {
+     "seconds": 6,
+     "groundRun": 54,
+     "liftoffIAS": 66,
+     "stallIAS": 60
     }
    }
   },
@@ -572,7 +656,7 @@
      "minSpeed": 78.6
     },
     "aeroGate_ms": 83.4,
-    "idleDecel75pct": 1.28,
+    "idleDecel75pct": 1.9,
     "takeoff": {
      "seconds": 18.3,
      "groundRun": 434,
@@ -591,7 +675,7 @@
     "aspect": 5.31,
     "CLmaxClean": 1.524,
     "CLmaxLanding": 2.057,
-    "diveBrakeCD": 0.1059,
+    "diveBrakeCD": 0.0804,
     "massPublished": 4717,
     "massEmptyNoFuel": 3555,
     "fuelKg": 709
@@ -638,7 +722,7 @@
      "minSpeed": 74.8
     },
     "aeroGate_ms": 81,
-    "idleDecel75pct": 1.29,
+    "idleDecel75pct": 1.8,
     "takeoff": {
      "seconds": 17.9,
      "groundRun": 405,
@@ -704,7 +788,7 @@
      "minSpeed": 78
     },
     "aeroGate_ms": 82.2,
-    "idleDecel75pct": 2.22,
+    "idleDecel75pct": 3.94,
     "takeoff": {
      "seconds": 11.2,
      "groundRun": 265,
@@ -770,7 +854,7 @@
      "minSpeed": 59.9
     },
     "aeroGate_ms": 60.9,
-    "idleDecel75pct": 2.03,
+    "idleDecel75pct": 3.37,
     "takeoff": {
      "seconds": 8.4,
      "groundRun": 150,
@@ -836,7 +920,7 @@
      "minSpeed": 82.6
     },
     "aeroGate_ms": 93.4,
-    "idleDecel75pct": 0.96,
+    "idleDecel75pct": 1.48,
     "takeoff": {
      "seconds": 38.2,
      "groundRun": 1113,
@@ -910,7 +994,7 @@
      "minSpeed": 95.8
     },
     "aeroGate_ms": 108.3,
-    "idleDecel75pct": 1.07,
+    "idleDecel75pct": 1.57,
     "takeoff": {
      "seconds": 38.8,
      "groundRun": 1348,

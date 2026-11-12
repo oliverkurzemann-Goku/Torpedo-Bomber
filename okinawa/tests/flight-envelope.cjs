@@ -3,7 +3,9 @@
 const assert=require('node:assert/strict');
 require('../../p47-performance');require('../../me262-performance');
 const E=require('../../flight-envelope');const F=require('../../flight-dynamics');
-const kinds=Object.keys(E.SHEETS),G=9.81,DEG=Math.PI/180;
+// Build 249: the Storch (stall 62 km/h, CLmax of a slatted wing) is outside the 40-190 m/s fighter envelope these fleet loops were written for;
+// it has its own checks at the end of the sheet block below.
+const kinds=Object.keys(E.SHEETS).filter(k=>k!=='fi156'),G=9.81,DEG=Math.PI/180;
 assert.deepEqual(kinds.sort(),['avenger','bf109','corsair','fw190','ju87','me163','me262','p47','sbd','zero'].sort(),'sheet covers the ten playable aircraft');
 for(const kind of kinds)assert(F.profiles[kind],kind+' has an energy profile');
 
@@ -21,6 +23,10 @@ for(const kind of kinds){
  assert(q.clmax>1&&q.clmax<1.6,kind+' CLmax plausible');
  assert(q.corner>q.vs&&Math.abs(q.corner-q.vs*Math.sqrt(q.nLimit))<1e-9,kind+' corner speed = Vs*sqrt(n)');
 }
+
+{const s=E.SHEETS.fi156,q=d.fi156;assert(s&&q,'Build 249: the Storch has a data sheet');
+ assert(q.vs>14&&q.vs<20,'Storch clean stall about 62 km/h (FlightCore.SOURCES.fi156): '+q.vs);assert(q.clmax>2.2&&q.clmax<3.2,'Storch CLmax of a slatted wing: '+q.clmax);
+ assert(Math.abs(q.wl-1320/26)<1,'Storch wing loading about 51 kg/m2');}
 
 // ---- load factor and turn ---------------------------------------------------------------------
 for(const kind of kinds){

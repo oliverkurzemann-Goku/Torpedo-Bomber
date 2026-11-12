@@ -38,7 +38,8 @@ for(const theatre of ['europe','pacific']){
  assert.equal(C.checkpointIdentity(theatre,missions,1,saved),null);
  assert.equal(C.checkpointIdentity(theatre,missions,0,{custom:{...cfg,kit:'invalid'}}),null);
 }
-assert.equal(aircraft.size,10);assert(count>100);
+assert.equal(aircraft.size,11);   // Build 249: the ten of before plus the Fi 156 Storch (free flight only)
+assert(count>100);
 for(const bad of [{task:'bridge',kit:'guns'},{ac:'me163',task:'bridge',kit:'bombs'},{theatre:'pacific',ac:'zero',task:'torpedo',kit:'torpedo'},{enemies:99},{weather:'<script>'},{fuel:-1}])assert.throws(()=>C.normalize({...C.defaults(),...bad}));
 assert(C.read('europe','?sortie=bad').error);assert(C.read('europe','?sortie='+encodeURIComponent('x'.repeat(1501))).error);assert(C.read('europe',new URL(C.url(C.defaults('pacific')),'https://test.invalid').search).error);
 const first=C.defaults(),second={...first,time:'night'};assert.notEqual(C.fingerprint(first),C.fingerprint(second));

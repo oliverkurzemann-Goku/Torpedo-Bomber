@@ -10,6 +10,8 @@ const loadProfiles={
  bf109:{fuel:.11,bomb:.085,rocket:.002,tank:.022,tankFuel:.0825}, // tankFuel: 300 l at the 400 l internal fraction
  fw190:{fuel:.12,bomb:.065,rocket:.0025,tank:.025,tankFuel:.06},
  ju87:{fuel:.12,bomb:.055,rocket:.002},me262:{fuel:.14,bomb:.055,rocket:.002},
+ fi156:{fuel:.08,bomb:0,rocket:0},   // Build 249: Storch, 108 kg of fuel on 1 320 kg
+
  me163:{fuel:.20,bomb:0,rocket:0},
  avenger:{fuel:.15,bomb:.040,torpedo:.095},sbd:{fuel:.12,bomb:.045},
  corsair:{fuel:.12,bomb:.040,rocket:.0025},zero:{fuel:.10,bomb:.045,torpedo:0}
@@ -18,10 +20,11 @@ const Handling={
  // Normal final approach (m/s), not touchdown speed; gameplay reference loading.
  fieldLanding:{p47:{reference:130*.44704,cleanAdd:5.4,flapGain:6},bf109:{reference:105.5*.44704,cleanAdd:6,flapGain:7}, // Bf 109 F: G-6 110 MPH x sqrt(180/195 kg/m2) from the PDF wing loadings
   fw190:{reference:125*.44704,cleanAdd:6,flapGain:7},ju87:{reference:150/3.6,cleanAdd:6.5,flapGain:7},
-  me262:{reference:230/3.6,cleanAdd:8,flapGain:5},me163:{reference:200/3.6,cleanAdd:9,flapGain:10}},
+  me262:{reference:230/3.6,cleanAdd:8,flapGain:5},me163:{reference:200/3.6,cleanAdd:9,flapGain:10},
+  fi156:{reference:70/3.6,cleanAdd:5,flapGain:4}},   // Build 249: Storch final approach about 70 km/h (about 1.3 x the landing stall)
  configure(p,kind,weapon='bomb',theatre='europe'){p.loadProfile={kind,weapon,theatre};},
  configuration(p,stall){
-  const kind=p.loadProfile?.kind||p.ac,gear=kind==='ju87'?0:clamp(p.gear||0,0,1),flap=Damage.controls(p).flaps.mean;
+  const kind=p.loadProfile?.kind||p.ac,gear=(kind==='ju87'||kind==='fi156')?0:clamp(p.gear||0,0,1),flap=Damage.controls(p).flaps.mean;
   const slow=clamp((1.95-p.spd/Math.max(1,stall))/.85,0,1);
   return {authority:1-(gear*.13+flap*.17)*(.45+.55*slow),bank:1-(gear*.10+flap*.12)*slow,
    gFactor:1-(gear*.12+flap*.14)*slow,climb:1-gear*.10-flap*.12};
@@ -31,13 +34,13 @@ const Handling={
   if(p.departureAge==null)return {release:1,rate:Infinity,acceleration:Infinity};
   p.departureAge+=dt;
   const kind=p.loadProfile?.kind||p.ac;
-  const initial={p47:17.5,bf109:12,fw190:11,ju87:7.5,me262:14,me163:24,avenger:8,sbd:8.5,corsair:12,zero:11}[kind]||9;
-  const climbSpeed={p47:92,bf109:105,fw190:108,ju87:78,me262:140,me163:200,avenger:90,sbd:86,corsair:110,zero:94}[kind]||100;
+  const initial={p47:17.5,bf109:12,fw190:11,ju87:7.5,me262:14,me163:24,avenger:8,sbd:8.5,corsair:12,zero:11,fi156:6}[kind]||9;
+  const climbSpeed={p47:92,bf109:105,fw190:108,ju87:78,me262:140,me163:200,avenger:90,sbd:86,corsair:110,zero:94,fi156:30}[kind]||100;
   // Only airspeed opens the envelope: waiting or gaining height cannot release it.
   const entry=stall*1.12,phase=clamp((p.spd-entry)/Math.max(15,climbSpeed-entry),0,1),release=phase*phase*(3-2*phase);
   const rate=(initial+Math.max(0,p.spd-entry)*.16)*(.35+.65*clamp(p.throttle||0,0,1))*Damage.power(p);
   if(release>=1)p.departureAge=null;
-  const acceleration={p47:4.5,bf109:3.8,fw190:3.5,ju87:2,me262:5,me163:8,avenger:2.2,sbd:2.4,corsair:3.8,zero:3.6}[kind]||3;
+  const acceleration={p47:4.5,bf109:3.8,fw190:3.5,ju87:2,me262:5,me163:8,avenger:2.2,sbd:2.4,corsair:3.8,zero:3.6,fi156:2.4}[kind]||3;
   return {release,rate,acceleration};
  },
  sample(p){
@@ -126,7 +129,7 @@ const Damage={
   s.taken+=Math.max(0,amount);
   if(s.taken<s.next||p.hull>s.maxHull*.8)return null;
   s.next=s.taken+26;
-  const roll=random(),fixed=p.ac==='ju87'||p.ac==='me163';
+  const roll=random(),fixed=p.ac==='ju87'||p.ac==='me163'||p.ac==='fi156';
   // Preserve the previous system failures; a bounded portion of serious hits
   // now damages a particular control surface instead of another generic fault.
   if(p.loadProfile&&roll>=.82&&roll<.94){

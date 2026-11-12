@@ -25,7 +25,7 @@ Exactly one node carries `extras.rigContract = 1` and is the parent of everythin
 
 | key | content |
 |---|---|
-| `class` | `tailwheel-fighter` (only class in v1) |
+| `class` | `tailwheel-fighter`, or `tailwheel-light` (Build 249, the Fi 156 Storch: the same hinged parts, fixed legs with gear range `[0,0]`, an optional `RearGun` pivot with a yaw drive, budget 25 000 triangles / 40 meshes / 10 materials / 5 MB) |
 | `nativeAircraft` | lowercase id, e.g. `bf109g6-own-1` |
 | `kind` | game type, e.g. `bf109` |
 | `title`, `author`, `license`, `source`, `provenance` | non-empty strings |

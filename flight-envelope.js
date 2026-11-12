@@ -29,6 +29,9 @@ const SHEETS={
   roll:{peak:150,at:115,fall:.55},pitchClass:1,tag:{m:'A',S:'A',kW:'A',vs:'C',nLimit:'C',roll:'B'}},
  ju87:{name:'Ju 87B-2 Stuka',m:4250,S:31.9,b:13.8,kW:883,propD:3.3,clmax:1.5,nLimit:6.0,
   roll:{peak:55,at:70,fall:1},pitchClass:.85,tag:{m:'A',S:'A',kW:'A',vs:'C',nLimit:'C',roll:'C'}},
+ // Build 249: Storch. vs = clean stall 62 km/h from the FlightCore solve (SOURCES.fi156); 240 PS = 176 kW; roll C.
+ fi156:{name:'Fi 156 C Storch',m:1320,S:26,b:14.25,kW:176,propD:2.6,vs:17.2,nLimit:4.0,
+  roll:{peak:50,at:28,fall:1},pitchClass:1,tag:{m:'B',S:'B',kW:'B',vs:'B',nLimit:'C',roll:'C'}},
  me262:{name:'Me 262A-1a',m:6473,S:21.7,b:12.65,kW:0,propD:0,clmax:1.4,nLimit:5.5,
   roll:{peak:80,at:120,fall:1.6},pitchClass:.9,tag:{m:'A',S:'A',kW:'A',vs:'C',nLimit:'C',roll:'C'}},
  me163:{name:'Me 163B Komet',m:4110,S:19.6,b:9.3,kW:0,propD:0,clmax:1.1,nLimit:6.0,

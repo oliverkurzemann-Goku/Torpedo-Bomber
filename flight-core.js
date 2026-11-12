@@ -94,6 +94,21 @@ const SOURCES={
   diveBrake:{speed:500*KMH,angle:80*DEG,ref:'B2',text:'about 500 km/h with brakes; 80 deg dive (C)'},
   limits:{vne:540*KMH,ref:'B1',text:'540 km/h (Betriebsanleitung, read as dive limit)'},
   roll:{peak:55,at:70,fall:1,ref:'C'}},
+ // Build 249: the Fieseler Fi 156 C Storch becomes a flyable type (Rhine game, rig class tailwheel-light). The sources disagree on several
+ // figures (empty mass 860-930 kg, climb 905-945 ft/min, one listing says 8 m/s) and mix the C-1, C-2 and C-3: the values below are the
+ // ones that most listings agree on; the stall is the published slow-flight claim (slats and flaps) and the weight it refers to is not stated.
+ fi156:{name:'Fi 156 C Storch (Argus As 10C)',
+  refs:{B1:'airvectors.net / historyofwar.org / globalair.com / airpages.ru / mat.uc.pt compilations: Argus As 10C 240 PS, 26 m2, 14.25 m span, about 1 320 kg gross, 175 km/h at sea level, climb 945 ft/min (905 in another listing), service ceiling 4 600 m',
+   B2:'williammaloney.com (USAF museum sheet): C-1 stall 32 mph = 51 km/h; another listing 50 km/h; take-off about 200 ft (61 m) and landing about 70 ft (21 m) in the right conditions',
+   A1:'Profile Publication 228 and the model README (scripts/own-models/fi156c-own): 2.60 m two-blade propeller, fixed slats, long fixed main gear'},
+  mass:1320,massRef:'B1',S:26,b:14.25,geomRef:'B1',propD:2.6,propRef:'A1',climbLo:14,
+  engine:{kind:'piston',power:240*PS,count:1,fth:0,ref:'B1',text:'Argus As 10C 240 PS (not supercharged: power falls from sea level, C)'},
+  // The 4 600 m service ceiling is NOT fitted (a ceiling figure mixes engine lapse with other conventions); the report lists what the model gives.
+  perf:[row('speed',0,175*KMH,'B1','175 km/h @ SL'),row('climb',0,945*FPM,'B1','945 ft/min @ SL')],
+  // the stall claim is the landing (slats + flaps) figure; the clean stall follows from the class ratio. Read at 1 200 kg (C).
+  stall:{mass:1200,landing:51*KMH,ref:'B2',text:'about 50-52 km/h with slats and flaps (weight not stated, read at 1 200 kg)'},
+  stores:{},fuel:{kg:150*AVGAS,ref:'C',text:'150 l (C)'},
+  roll:{peak:50,at:28,fall:1,ref:'C'}},
  me262:{name:'Me 262A-1a (2 x Jumo 004B)',
   refs:{B1:'Fliegerweb / flugrevue / flugzeuginfo.net: 6 400 kg normal take-off, 870 km/h @ 6 000 m, initial climb 20 m/s',
    B2:'Jumo 004B: 8.8 kN static thrust each (NASM, Wikipedia via search)',B3:'Approach 240 km/h, touch-down 160 km/h (flugzeug-lexikon); Wendel 230-250 km/h approach',
@@ -201,6 +216,8 @@ const ASSUMED={
  // 172 deg/s (C, a game decision; the Bf 109 peaks at 140). Turn rate and climb were already in the published order (Bf 109 better).
  fw190:A_({nLimit:6.5,mlimit:.78,vne:850*KMH,rollCeiling:172*DEG,stores:{bomb:250,bombArea:.02,tankFuel:300*AVGAS,tankShell:30}}),
  ju87:A_({nLimit:6.0,mlimit:.70,gearCD:0,severity:.2,stores:{bomb:125,bombArea:.012}}),  // fixed gear: in the measured drag
+ // Build 249: Storch. Light liaison structure (C): +4 g, -1.5 g; fixed gear sits in the measured drag; a mild stall behind the slats.
+ fi156:A_({nLimit:4.0,nNegative:1.5,mcrit:.72,mlimit:.78,vne:240*KMH,gearCD:0,severity:.1,spool:.7,stores:{}}),
  me262:A_({nLimit:5.5,mcrit:.74,vne:950*KMH,spool:2.6,windmill:0,severity:.35,stores:{bomb:250,bombArea:.02}}),
  me163:A_({nLimit:6.0,clClean:1.1,clLandingRatio:1.15,spool:.3,windmill:0,gearCD:0,severity:.05,isp:2000}),
  avenger:A_({nLimit:4.5,mcrit:.66,mlimit:.70,vne:320*KT,severity:.25,stores:{torpedo:2216*LB,bomb:227,bombArea:0}}), // internal bay
@@ -345,7 +362,8 @@ function climbAt(m,h,W,V,mode,constTAS){
  return V*s/(1+V*dVdh/G);
 }
 function bestClimb(m,h,W,mode,constTAS){
- let lo=40,hi=Math.max(60,levelMaxSpeed(m,h,W,mode));const gr=(Math.sqrt(5)-1)/2;
+ // Build 249: the search floor is a per-type figure (default 40 m/s, unchanged for every earlier type); the Storch climbs best near 20 m/s
+ let lo=m.climbLo??40,hi=Math.max(60,levelMaxSpeed(m,h,W,mode));const gr=(Math.sqrt(5)-1)/2;
  let x1=hi-gr*(hi-lo),x2=lo+gr*(hi-lo),f1=climbAt(m,h,W,x1,mode,constTAS),f2=climbAt(m,h,W,x2,mode,constTAS);
  for(let i=0;i<40;i++){
   if(f1<f2){lo=x1;x1=x2;f1=f2;x2=lo+gr*(hi-lo);f2=climbAt(m,h,W,x2,mode,constTAS);}
@@ -426,7 +444,7 @@ function build(kind){
   roll:{peak:src.roll.peak,at:src.roll.at,fall:src.roll.fall},
   severity:src.stallChar?.severity??assumed.severity,
   mlimit:src.limits?.mlimit??assumed.mlimit??(assumed.mcrit+.06),vne:src.limits?.vne??assumed.vne??null,
-  data:src.perf};
+  climbLo:src.climbLo,data:src.perf};
  const fit=solve(base),m={...fit.model};
  // Dive brakes: drag increment that holds the published terminal speed in the published dive, engine idle.
  if(src.diveBrake){

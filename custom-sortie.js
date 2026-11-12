@@ -8,6 +8,8 @@
   fw190:{name:'Fw 190A-8',theatre:'europe',kits:['guns','bombs','range'],bombs:1,tank:60},
   ju87:{name:'Ju 87B-2 Stuka',theatre:'europe',kits:['guns','bombs'],bombs:4},
   me262:{name:'Me 262A-1a/Jabo',theatre:'europe',kits:['guns','bombs'],bombs:2},
+  // Build 249: the Storch carries no forward guns; its rear gunner fires by himself. Free flight only (no strike or combat assignments).
+  fi156:{name:'Fi 156 C Storch',theatre:'europe',kits:['rear'],bombs:0,freeOnly:true},
   me163:{name:'Me 163B Komet',theatre:'europe',kits:['guns'],airOnly:true},
   avenger:{name:'TBM Avenger',theatre:'pacific',kits:['guns','torpedo','bombs'],bombs:2},
   sbd:{name:'SBD Dauntless',theatre:'pacific',kits:['guns','bombs'],bombs:3},
@@ -26,12 +28,12 @@
    {id:'ships',name:'Ship strike',note:'Attack the merchant ships with your selected bombs or rockets, then recover aboard.'},
    {id:'defend',name:'Fleet defence',note:'Intercept the incoming Avenger raid and protect the Japanese carrier.'}]
  };
- const kitNames={guns:'Guns only',bombs:'Bombs',rockets:'Rockets',mixed:'Bombs + rockets',range:'Guns + drop tank',torpedo:'Internal torpedo'};
+ const kitNames={rear:'Rear gunner (automatic)',guns:'Guns only',bombs:'Bombs',rockets:'Rockets',mixed:'Bombs + rockets',range:'Guns + drop tank',torpedo:'Internal torpedo'};
  const weatherNames={clear:'Clear',haze:'Haze',broken:'Broken cloud',lowcloud:'Low cloud',rain:'Rain',storm:'Thunderstorm'};
  const clone=o=>JSON.parse(JSON.stringify(o));
  function aircraft(theatre,task){return Object.keys(planes).filter(ac=>{
   const p=planes[ac];if(p.theatre!==theatre)return false;
-  if(theatre==='europe')return (task!=='intercept'||ac!=='p47')&&(!p.airOnly||['free','fighter','intercept'].includes(task));
+  if(theatre==='europe')return (task!=='intercept'||ac!=='p47')&&(!p.airOnly||['free','fighter','intercept'].includes(task))&&(!p.freeOnly||task==='free');
   return task==='torpedo'?ac==='avenger':task==='defend'?ac==='zero':task==='ships'?ac!=='zero':true;
  });}
  function loadouts(ac,task){const p=planes[ac];if(!p)return [];
@@ -56,7 +58,7 @@
  }
  function fingerprint(c){let h=2166136261;for(const n of JSON.stringify(normalize(c))){h^=n.charCodeAt(0);h=Math.imul(h,16777619);}return (h>>>0).toString(16);}
  function summary(input){const c=normalize(input),p=planes[c.ac],s=stores(c),task=tasks[c.theatre].find(t=>t.id===c.task);
-  const armament=['Guns',s.bombs?s.bombs+' bombs':'',s.rockets?s.rockets+' rockets':'',s.torpedoes?'1 internal torpedo':'',s.tank?'Drop tank +'+s.tank+'%':''].filter(Boolean).join(' · ');
+  const armament=[c.kit==='rear'?'Rear gunner':'Guns',s.bombs?s.bombs+' bombs':'',s.rockets?s.rockets+' rockets':'',s.torpedoes?'1 internal torpedo':'',s.tank?'Drop tank +'+s.tank+'%':''].filter(Boolean).join(' · ');
   return {title:task.name,aircraft:p.name,armament,conditions:weatherNames[c.weather]+' · '+(c.time==='night'?'Night':'Day')+' · '+(c.start==='air'?'Airborne start':c.theatre==='pacific'?'Carrier start':'Airfield start'),
    notes:task.note+(c.ac==='me163'?' Rocket interceptor: airborne after trolley release; recovery is an unpowered skid landing.':'')+(c.task==='free'?' Practice fuel is unlimited.':' Fuel: '+c.fuel+'% internal.')};
  }

@@ -7,7 +7,8 @@
  g.SortieFuel={
   supports,external,
   reset(p,fuel=100,combat=true){p.fuel=fuel;p.tankAttached=combat&&supports(p.ac);p.tankCapacity=external(p.ac);p.tankFuel=p.tankAttached?p.tankCapacity:0;p.tankEmptyWarned=false;},
-  rate(p){const t=Math.max(0,Math.min(1,p.throttle));return p.ac==='me163'?t*.46:p.ac==='me262'?.05+t*.025:p.ac==='ju87'?.045+t*.035:.06+t*.05;},
+  // Build 249: the Storch burns about a third of a fighter (150 l, 240 PS): 28 min at full throttle
+  rate(p){const t=Math.max(0,Math.min(1,p.throttle));return p.ac==='me163'?t*.46:p.ac==='me262'?.05+t*.025:p.ac==='ju87'?.045+t*.035:p.ac==='fi156'?.03+t*.03:.06+t*.05;},
   total(p){return p.fuel+(p.tankAttached?p.tankFuel:0);},
   consume(p,dt,difficulty=1){
    let used=this.rate(p)*Math.max(0,dt)*difficulty;
