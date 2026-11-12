@@ -305,7 +305,7 @@
   <div style="width:100%;height:4px;background:repeating-linear-gradient(45deg,#ffd400,#ffd400 8px,#111 8px,#111 16px);"></div>
   <span id="testVersionBannerText" style="background:#111;color:#ffd400;font-family:monospace;font-weight:800;font-size:11px;letter-spacing:.5px;padding:3px 10px;border:1px solid #ffd400;border-top:none;border-radius:0 0 6px 6px;"></span>
 </div>
-<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 252';</script>
+<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 253';</script>
 <!-- ===== END TEMP TEST-ONLY VERSION BANNER ===== -->
 <div id="app"></div>
 <style>
@@ -346,7 +346,7 @@
   <div id="flash"></div>
   <div id="gunsight"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 252 · REAL RHINE</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 253 · REAL RHINE</div>
 
   <div id="apr">
     <div id="aprCall"></div>
@@ -401,7 +401,7 @@
 </div>
 
 <div class="overlay hidden" id="menu" data-campaign="europe">
-  <div class="menuTop"><a id="selBtn" href="index.html?v=252">&#9664; Change Game</a><span class="menuMeta">RHINE OPERATIONS<br>BUILD 252</span></div>
+  <div class="menuTop"><a id="selBtn" href="index.html?v=253">&#9664; Change Game</a><span class="menuMeta">RHINE OPERATIONS<br>BUILD 253</span></div>
   <div class="card menuCard">
     <aside class="menuOverview" aria-label="Campaign and pilot options">
     <div class="campaignArt" aria-hidden="true"></div>
@@ -433,7 +433,7 @@
     </aside>
     <section class="missionPanel" aria-label="Mission selection">
       <div class="secLbl">Choose your sortie · 15 missions + 4 bonus &amp; training</div>
-      <a class="hangarLink" href="hangar.html?theatre=europe&amp;v=252">CUSTOM MISSION · CHOOSE AIRCRAFT &amp; LOADOUT →</a>
+      <a class="hangarLink" href="hangar.html?theatre=europe&amp;v=253">CUSTOM MISSION · CHOOSE AIRCRAFT &amp; LOADOUT →</a>
 <div id="missionSel" role="group" aria-label="European missions"></div>
       <div id="missionBlurb" class="missionBlurb" aria-live="polite"></div>
       <div class="menuConfig">
@@ -591,15 +591,16 @@
 <script src="flight-support.js?v=238"></script>
 <script src="ordnance.js?v=157"></script>
 <script src="crew-visuals.js?v=179"></script>
+<script src="crew-figures.js?v=253"></script>
 <script src="aircraft-finish.js?v=206"></script>
 <script src="runway-lights.js?v=179"></script>
 <script src="ship-wakes.js?v=179"></script>
 <script src="ship-contact.js?v=238"></script>
-<script src="pilot-bailout.js?v=181"></script>
+<script src="pilot-bailout.js?v=253"></script>
 <script src="enemy-bailouts.js?v=248"></script>
 <script src="flare-support.js?v=177"></script>
 <script src="sortie-service.js?v=206"></script>
-<script src="pilot-rescue.js?v=179"></script>
+<script src="pilot-rescue.js?v=253"></script>
 <script src="radio-intercept.js?v=157"></script>
 <script src="surprises.js?v=238"></script>
 <script src="audio/weapon-sound.js?v=144"></script>
@@ -623,7 +624,7 @@
 <script src="flight-indicators.js?v=198"></script>
 <script src="sortie-fuel.js?v=251"></script>
 <script src="operation-plans.js?v=251"></script>
-<script src="custom-sortie.js?v=252"></script>
+<script src="custom-sortie.js?v=253"></script>
 <script>
 // ============================================================
 //  REMAGEN 1945 — REAL TERRAIN (forked from thunderbolt-europe.html)
@@ -984,7 +985,7 @@ async function loadRealWorld(){
 
   if(OSMManager.BUILD!==23||HistoricalObjectManager.BUILD!==21||LivingWorld.BUILD!==22||WorldVehicles.BUILD!==24) throw new Error('Terrain version mismatch. Reload Remagen.');
   document.getElementById('testVersionBannerText').textContent=
-    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 252 · MODULE 23';
+    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 253 · MODULE 23';
   heightProvider=new DEMHeightProvider(RTILE,'terrain-system/real/data/dem/');
   terrain=new TerrainManager(scene,RTILE,heightProvider);
   osmMgr=new OSMManager(scene,RTILE,terrain,'terrain-system/real/data/osm/');
@@ -5088,7 +5089,7 @@ async function duelCopy(id){
 function duelSendHello(){
   const s=duelSession;if(!s||!duelLink||duelLink.status!=='open')return;
   s.name=Duel.cleanName(dEl('dlName').value)||s.name;
-  duelLink.sendEvent(Duel.hello({name:s.name,ac:s.ac,build:252}));
+  duelLink.sendEvent(Duel.hello({name:s.name,ac:s.ac,build:253}));
 }
 function duelOnStatus(status,info){
   const s=duelSession;if(!s)return;
@@ -6268,7 +6269,11 @@ function stsPlan(m){
 }
 function stsHuntCount(){return Math.max(1,2+(diffIdx===2?1:0)-(diffIdx===0?1:0));}
 function stsReset(){
-  if(sts){if(sts.fig)scene.remove(sts.fig);for(const l of sts.lamps||[])scene.remove(l);for(const o of sts.disposables||[])o.dispose();}
+  if(sts){
+    for(const figure of [sts.fig,sts.aidTeam])if(figure){scene.remove(figure);CrewFigures.dispose(figure);}
+    for(const l of sts.lamps||[])scene.remove(l);
+    for(const o of sts.disposables||[])o.dispose();
+  }
   sts=null;
 }
 function stsStart(m){
@@ -6279,14 +6284,20 @@ function stsStart(m){
     const lz=plan.lz;stsClearTrees(lz.x,lz.z,STS.lz.len+70,STS.lz.wid+10,kind==='rock'?STS.rock.disc:STS.lz.disc);   // Build 250: a disc as well - the approach may come from any side
     if(stsDone()>=1)sts.phase='home';
     else{
-      // the pilot: a small figure at the edge of the meadow
-      const body=new THREE.Mesh(new THREE.CylinderGeometry(.26,.3,1.2,6),new THREE.MeshLambertMaterial({color:0x6b6e5a})),
-        head=new THREE.Mesh(new THREE.SphereGeometry(.2,8,6),new THREE.MeshLambertMaterial({color:0xd0a37c}));
-      body.position.y=.6;head.position.y=1.42;sts.fig=new THREE.Group();sts.fig.add(body,head);scene.add(sts.fig);
-      sts.disposables=[body.geometry,head.geometry,body.material,head.material];
-      sts.figPos={x:lz.x+10,z:lz.z+34};sts.fig.position.set(sts.figPos.x,groundY(sts.figPos.x,sts.figPos.z),sts.figPos.z);
+      sts.figPos={x:lz.x+10,z:lz.z+34};
+      const {x,z}=sts.figPos,y=groundY(x,z),service='luftwaffe';
+      if(kind==='rescue'){
+        const team=PilotRescue.createGroundTeam(THREE,{service});
+        sts.fig=team.patient;sts.aidTeam=team.group;sts.waitLift=team.patientLift;
+        sts.aidTeam.remove(sts.fig);sts.aidTeam.position.set(x,y,z);scene.add(sts.aidTeam);
+      }else{
+        const role=kind==='moon'?'agent':kind==='rock'?'observer':'officer';
+        sts.fig=CrewFigures.create(THREE,{service,role,variant:kind==='moon'?3:kind==='rock'?1:2});
+        sts.waitLift=0;
+      }
+      sts.fig.position.set(x,y+sts.waitLift,z);scene.add(sts.fig);
       if(kind==='moon'){   // three lanterns in a row beside him (additive glow sprites, flickering)
-        const tex=makeSoftSprite();sts.lamps=[];sts.disposables.push(tex);
+        const tex=makeSoftSprite();sts.lamps=[];sts.disposables=[tex];
         for(let i=0;i<STS.moon.lamps;i++){const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,color:0xffd48a,blending:THREE.AdditiveBlending,transparent:true,depthWrite:false,opacity:.95}));
           const lx=lz.x-60+i*60,lzz=lz.z+40;sp.scale.setScalar(15);sp.position.set(lx,groundY(lx,lzz)+1.5,lzz);scene.add(sp);sts.lamps.push(sp);sts.disposables.push(sp.material);}
       }
@@ -6335,14 +6346,20 @@ function stsRescue(dt){
   if(s.lamps)s.lamps.forEach((l,i)=>{l.material.opacity=.78+.22*Math.sin(s.clock*7+i*2.1);});
   if(!s.said.near&&d<1900){s.said.near=1;radioSay(s.kind==='moon'?STS.moon.say:s.kind==='rock'?'THE RIDGE CLEARING — SHORT AND STEEP. LAND UPHILL, STOP NEAR THE SMOKE':s.kind==='courier'?'ORANGE SMOKE — THE COMMAND POST. SET DOWN NEAR IT, THE OFFICER WILL COME TO YOU':'THAT IS THE MEADOW — YELLOW SMOKE. SET DOWN NEAR IT, HE WILL COME TO YOU');}
   f.visible=true;
-  if(s.phase==='fly'){f.position.set(s.figPos.x,groundY(s.figPos.x,s.figPos.z)+Math.abs(Math.sin(s.clock*3.2))*.22,s.figPos.z);}
+  if(s.phase==='fly'){
+    CrewFigures.pose(f,s.aidTeam?'stretcher':'stand');
+    f.position.set(s.figPos.x,groundY(s.figPos.x,s.figPos.z)+s.waitLift,s.figPos.z);
+    f.rotation.y=s.aidTeam?0:Math.atan2(P.pos.x-f.position.x,P.pos.z-f.position.z);
+  }
   else if(s.phase==='run'){
     s.runT+=dt;const k=Math.min(1,s.runT/s.runDur),tx=P.pos.x-Math.cos(P.heading)*1.9,tz=P.pos.z+Math.sin(P.heading)*1.9;
     const px=s.runFrom.x+(tx-s.runFrom.x)*k,pz=s.runFrom.z+(tz-s.runFrom.z)*k;
-    f.position.set(px,groundY(px,pz)+Math.abs(Math.sin(s.runT*9))*.18,pz);
+    CrewFigures.pose(f,'run',s.runT);f.rotation.y=Math.atan2(tx-s.runFrom.x,tz-s.runFrom.z);
+    f.position.set(px,groundY(px,pz)+Math.abs(Math.sin(s.runT*10))*.09,pz);
     if(k>=1){s.phase='board';s.boardT=0;}
   }else if(s.phase==='board'){
     s.boardT+=dt;
+    CrewFigures.pose(f,'stand');f.rotation.y=Math.atan2(P.pos.x-f.position.x,P.pos.z-f.position.z);
     f.position.set(P.pos.x-Math.cos(P.heading)*1.9,groundY(P.pos.x,P.pos.z),P.pos.z+Math.sin(P.heading)*1.9);
     if(P.spd>2.5&&s.boardT<STS.board){s.boardT=0;if(!s.said.still){s.said.still=1;radioSay('HOLD STILL — HE IS NOT IN YET');}}
     if(s.boardT>=STS.board)stsAboard(s);
@@ -8056,7 +8073,7 @@ function showResult(good,title,sub,html,btn){
   document.getElementById('rsGo').onclick=()=>{
     voiceRadio.cancel();soundscape.stop();
     show('result',false);
-    if(MISSIONS[selectedMission]?.custom){window.location.href='hangar.html?theatre=europe&v=252';return;}
+    if(MISSIONS[selectedMission]?.custom){window.location.href='hangar.html?theatre=europe&v=253';return;}
     if(good && selectedMission===MISSIONS.length-1){
       show('menu',true);if(navigation){navigation.reset();navigation.button.style.display='none';}
     }
@@ -8472,7 +8489,7 @@ function init(){
   // menu wiring
   document.getElementById('startBtn').onclick=()=>showBrief(selectedMission);
   duelInit();
-  document.getElementById('pauseMainMenu').onclick=async()=>{globalThis.sortieCheckpoint?.save();await globalThis.sortieCheckpoint?.flush();exitToMenuFromPause(true);window.location.href='index.html?v=252';};
+  document.getElementById('pauseMainMenu').onclick=async()=>{globalThis.sortieCheckpoint?.save();await globalThis.sortieCheckpoint?.flush();exitToMenuFromPause(true);window.location.href='index.html?v=253';};
   document.getElementById('logBtn').onclick=()=>{ show('menu',false); showLogbook(); };
   document.getElementById('skipLaunchPreview').onclick=()=>finishLaunchIntro();
   document.getElementById('brBack').onclick=()=>{ show('brief',false); show('menu',true);if(navigation){navigation.reset();navigation.button.style.display='none';} state=ST.MENU; };

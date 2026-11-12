@@ -1,21 +1,45 @@
 /* Brief automatic pickup, entirely local geometry; no assets or timers to retain. */
 (function(root){
  'use strict';
+ function box(THREE,parent,size,pos,material){const m=new THREE.Mesh(new THREE.BoxGeometry(...size),material);m.position.set(...pos);parent.add(m);return m;}
+ const figures=()=>root.CrewFigures||(typeof require==='function'?require('./crew-figures.js'):null);
+ function createGroundTeam(THREE,options={}){
+  const visual=figures(),group=new THREE.Group();group.name='groundRescueTeam';
+  const make=(role,variant)=>visual.create(THREE,{...options,role,variant});
+  const medic=make('medic',1),bearer=make('bearer',2),patient=make('wounded',options.variant||0);
+  const stretcher=new THREE.Group();stretcher.name='canvasStretcher';
+  const cloth=new THREE.MeshStandardMaterial({color:0xa09572,roughness:1}),wood=new THREE.MeshStandardMaterial({color:0x5b4836,roughness:.92});
+  if(options.srgbOutput){cloth.color.convertSRGBToLinear();wood.color.convertSRGBToLinear();}
+  box(THREE,stretcher,[.59,.032,1.84],[0,.34,.11],cloth);
+  for(const side of [-1,1]){
+   box(THREE,stretcher,[.046,.047,2.28],[side*.313,.338,.11],wood);
+   for(const z of [-.57,.79])box(THREE,stretcher,[.045,.325,.04],[side*.305,.17,z],wood);
+  }
+  visual.pose(patient,'stretcher');visual.place(THREE,patient,0,.357,.02);
+  const patientLift=patient.position.y;
+  visual.pose(medic,'kneel');medic.rotation.y=Math.PI*.38;visual.place(THREE,medic,-.73,0,-.46);
+  const medicLift=medic.position.y;
+  visual.pose(bearer,'carry');bearer.rotation.y=-Math.PI*.36;visual.place(THREE,bearer,.63,0,.74);
+  const bearerLift=bearer.position.y;
+  group.add(stretcher,medic,bearer,patient);
+  return {group,patient,patientLift,update(arrived,time){
+   stretcher.visible=patient.visible=arrived;
+   visual.pose(medic,arrived?'kneel':'walk',time);
+   visual.pose(bearer,arrived?'carry':'walk',time+.23);
+   medic.position.y=arrived?medicLift:0;medic.rotation.y=arrived?Math.PI*.38:0;
+   bearer.position.y=arrived?bearerLift:0;bearer.rotation.y=arrived?-Math.PI*.36:0;
+  }};
+ }
  function create(THREE,scene,position,groundAt,options={}){
   const water=!!options.water,waterAt=options.waterAt||((x,z)=>groundAt(x,z)<=.6),surfaceAt=options.surfaceAt||groundAt,group=new THREE.Group();group.name=water?'rescueBoat':'rescueParty';
   const marker=new THREE.Group();marker.name='rescueBeacon';scene.add(group,marker);
-  const olive=new THREE.MeshStandardMaterial({color:0x53614b,roughness:.9});
-  const grey=new THREE.MeshStandardMaterial({color:0x727f83,roughness:.8});
-  const skin=new THREE.MeshStandardMaterial({color:0xba9679,roughness:1});
   const dark=new THREE.MeshStandardMaterial({color:0x282b28,roughness:1});
   const glow=new THREE.MeshBasicMaterial({color:0xec713e,transparent:true,opacity:.55,depthWrite:false});
   const smoke=new THREE.MeshBasicMaterial({color:0x99694f,transparent:true,opacity:.16,depthWrite:false});
-  function box(parent,size,pos,material){const m=new THREE.Mesh(new THREE.BoxGeometry(...size),material);m.position.set(...pos);parent.add(m);return m;}
+  const makeBox=(parent,size,pos,material)=>box(THREE,parent,size,pos,material);
   const visuals=root.CrewVisuals||(typeof require==='function'?require('./crew-visuals.js'):null);
-  function crew(x,z){
-   const g=visuals.create(THREE,{service:options.service||(water?'usnavy':'usaaf'),role:water?'sailor':'ground',srgbOutput:options.srgbOutput});
-   g.position.set(x,water?.85:0,z);group.add(g);return {g,legs:g.userData.legs,arms:g.userData.arms};
-  }
+  const visual=figures(),service=options.service||(water?'usnavy':'usaaf');
+  let landTeam=null;
   if(water){
    // A small naval motor launch, with shaped hull, dark waterline and timber deck.
    const hullMat=new THREE.MeshStandardMaterial({color:0x586b73,roughness:.8});
@@ -35,13 +59,13 @@
    sides(-.45,.20,waterline,.62).name='launchWaterline';sides(.20,.90,hullMat).name='launchHull';
    const deck=new THREE.Shape();contour.forEach(([x,z],i)=>i?deck.lineTo(x,-z):deck.moveTo(x,-z));deck.closePath();
    const deckMesh=new THREE.Mesh(new THREE.ShapeGeometry(deck),timber);deckMesh.rotation.x=-Math.PI/2;deckMesh.position.y=.84;group.add(deckMesh);
-   for(let i=0;i<9;i++)box(group,[.018,.012,5.9],[-1.15+i*.285,.85,-.45],waterline);
-   box(group,[2.15,1.10,2.15],[0,1.43,-1.0],hullMat);
-   for(const side of [-1,1]){box(group,[.83,.48,.035],[side*.5,1.61,.086],glass);box(group,[.035,.48,1.1],[side*1.085,1.62,-.8],glass);}
-   box(group,[.09,.66,.07],[0,1.6,.12],trim);
-   box(group,[2.40,.13,2.4],[0,2.02,-1],canvas);
-   box(group,[1.85,.14,.48],[0,1.02,2.1],timber);
-   box(group,[1.85,.14,.48],[0,1.02,-3],timber);
+   for(let i=0;i<9;i++)makeBox(group,[.018,.012,5.9],[-1.15+i*.285,.85,-.45],waterline);
+   makeBox(group,[2.15,1.10,2.15],[0,1.43,-1.0],hullMat);
+   for(const side of [-1,1]){makeBox(group,[.83,.48,.035],[side*.5,1.61,.086],glass);makeBox(group,[.035,.48,1.1],[side*1.085,1.62,-.8],glass);}
+   makeBox(group,[.09,.66,.07],[0,1.6,.12],trim);
+   makeBox(group,[2.40,.13,2.4],[0,2.02,-1],canvas);
+   makeBox(group,[1.85,.14,.48],[0,1.02,2.1],timber);
+   makeBox(group,[1.85,.14,.48],[0,1.02,-3],timber);
    function rod(a,b,r,material){const d=new THREE.Vector3(...b).sub(new THREE.Vector3(...a)),o=new THREE.Mesh(new THREE.CylinderGeometry(r,r,d.length(),7),material);o.position.set((a[0]+b[0])/2,(a[1]+b[1])/2,(a[2]+b[2])/2);o.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),d.normalize());group.add(o);}
    for(const side of [-1,1]){for(const z of [-3.3,-2.3,1.4,2.6])rod([side*1.36,.85,z],[side*1.36,1.35,z],.026,trim);
     rod([side*1.36,1.35,-3.3],[side*1.36,1.35,2.6],.025,trim);
@@ -50,13 +74,21 @@
    }
    rod([0,2.08,-1.5],[0,3.25,-1.5],.025,dark);
    const rope=new THREE.Mesh(new THREE.TorusGeometry(.32,.045,6,20),canvas);rope.rotation.x=Math.PI/2;rope.position.set(.65,.9,2.8);group.add(rope);
-   box(group,[.65,.34,.42],[-.68,1.08,-2.65],canvas);
+   makeBox(group,[.65,.34,.42],[-.68,1.08,-2.65],canvas);
    const wheel=new THREE.Mesh(new THREE.TorusGeometry(.19,.025,6,16),dark);wheel.position.set(.48,1.34,.35);wheel.rotation.x=.5;group.add(wheel);
-   const cleat=box(group,[.35,.075,.065],[0,.96,3.4],trim);cleat.name='bowCleat';
+   const cleat=makeBox(group,[.35,.075,.065],[0,.96,3.4],trim);cleat.name='bowCleat';
    if(options.srgbOutput)for(const material of [hullMat,waterline,timber,trim,glass,canvas,ringMat,dark])material.color.convertSRGBToLinear();
    visuals.batch(THREE,group);
+   const deckhand=visual.create(THREE,{service,role:'deckhand',variant:2,srgbOutput:options.srgbOutput});
+   visual.pose(deckhand,'line');deckhand.rotation.y=-1.15;visual.place(THREE,deckhand,-.62,.85,2.85);group.add(deckhand);
+   const grip=deckhand.userData.hands[0].getWorldPosition(new THREE.Vector3());
+   const lead=new THREE.CatmullRomCurve3([grip,new THREE.Vector3(-1.26,1.38,3.16),new THREE.Vector3(-1.51,.96,3.27),new THREE.Vector3(-1.65,.2,3.29)]);
+   const lifeline=new THREE.Mesh(new THREE.TubeGeometry(lead,10,.023,5,false),canvas);lifeline.name='rescueLifeline';group.add(lifeline);
+   const medic=visual.create(THREE,{service,role:'boatMedic',variant:1,srgbOutput:options.srgbOutput});
+   visual.pose(medic,'kneel');medic.rotation.y=Math.PI*.27;visual.place(THREE,medic,-.65,.85,1.35);group.add(medic);
+  }else{
+   landTeam=createGroundTeam(THREE,{...options,service});landTeam.update(false,0);group.add(landTeam.group);
   }
-  const people=water?[crew(-.6,1.35),crew(.5,2.65)]:[crew(-.8,0),crew(.8,-.6)];
   const flare=new THREE.Mesh(new THREE.SphereGeometry(.1,8,6),glow);flare.position.set(.8,.2,.5);marker.add(flare);
   const puffs=[];
   for(let i=0;i<6;i++){
@@ -100,6 +132,12 @@
    }
    return null;
   }
+  function boardPassenger(variant=passengers){
+   if(!water||passengers>=3)return;
+   const wounded=variant===0,p=visual.create(THREE,{service,role:wounded?'wounded':'survivor',variant,srgbOutput:options.srgbOutput});p.name='rescuedCrew';
+   visual.pose(p,wounded?'wounded':'float');p.rotation.y=passengers===2?0:Math.PI;
+   visual.place(THREE,p,passengers===2?0:passengers===0?-.10:.65,1.07,passengers===2?-3:2.1);group.add(p);passengers++;
+  }
   return {group,marker,water,get elapsed(){return elapsed;},get pickup(){return elapsed>=travelTime;},
    retarget(position){
     if(disposed||!water)return false;
@@ -109,12 +147,7 @@
     route=next;lengths=next.slice(1).map((p,i)=>p.distanceTo(next[i]));travelTime=Math.max(1,lengths.reduce((a,b)=>a+b,0)/7);elapsed=0;
     marker.position.copy(position);marker.position.y=surfaceAt(position.x,position.z)+.12;return true;
    },
-   boardPassenger(){
-    if(!water||passengers>=3)return;
-    const p=visuals.create(THREE,{service:options.service||'usnavy',role:'pilot',variant:passengers,srgbOutput:options.srgbOutput});p.name='rescuedCrew';
-    p.position.set(passengers===2?0:passengers===0?-.55:.55,.28,passengers===2?-3:2.1);p.rotation.y=passengers===2?0:Math.PI;
-    for(const leg of p.userData.legs)leg.rotation.x=-1.1;for(const arm of p.userData.arms)arm.rotation.x=-.45;group.add(p);passengers++;
-   },
+   boardPassenger,
    update(dt){
     if(disposed)return {done:true,pickup:true};
     elapsed=Math.min(travelTime+1.8,elapsed+Math.max(0,dt));const t=Math.min(1,elapsed/travelTime);
@@ -127,11 +160,10 @@
      options.wakes?.track(group,group.position,{x:Math.sin(group.rotation.y),z:Math.cos(group.rotation.y)},8.3,3,dt>0?distance/dt:0,dt);wakePosition.copy(group.position);
      marker.position.y=surfaceAt(marker.position.x,marker.position.z)+.12;
     }
-    if(water)group.rotation.z=Math.sin(elapsed*1.4)*.018;
-    else for(const p of people)for(let i=0;i<2;i++){
-     p.legs[i].rotation.x=t<1?Math.sin(elapsed*7+i*Math.PI)*.25:0;
-     p.arms[i].rotation.x=-p.legs[i].rotation.x;
-    }
+    if(water){
+     group.rotation.z=Math.sin(elapsed*1.4)*.018;
+     if(t===1&&!options.manualBoarding&&!passengers)boardPassenger(options.variant);
+    }else landTeam.update(t===1,elapsed);
     glow.opacity=.42+Math.sin(elapsed*4)*.12;
     for(let i=0;i<puffs.length;i++){
      const t=(elapsed*.22+i/6)%1,puff=puffs[i];
@@ -143,7 +175,7 @@
     if(disposed)return;disposed=true;options.wakes?.forget(group);
     const geometries=new Set(),materials=new Set();
     for(const object of [group,marker]){scene.remove(object);object.traverse(o=>{if(o.geometry)geometries.add(o.geometry);if(o.material)for(const m of [].concat(o.material))materials.add(m);});}
-    for(const g of geometries)g.dispose();for(const m of new Set([...materials,olive,grey,skin,dark,glow,smoke]))m.dispose();
+    for(const g of geometries)g.dispose();for(const m of new Set([...materials,dark,glow,smoke]))m.dispose();
    }
   };
  }
@@ -153,23 +185,23 @@
   let boat=null,active=null,disposed=false;const pending=[];
   function begin(ticket){
    if(boat&&!boat.retarget(ticket.position)){ticket.status={done:true,pickup:false};return false;}
-   if(!boat)boat=create(THREE,scene,ticket.position,groundAt,{...options,water:true});boat.marker.visible=true;active=ticket;return true;
+   if(!boat)boat=create(THREE,scene,ticket.position,groundAt,{...options,water:true,manualBoarding:true});boat.marker.visible=true;active=ticket;return true;
   }
   return {
-   add(position){
-    const ticket={position:position.clone(),status:{done:false,pickup:false},time:0,boarded:false};
+   add(position,variant){
+    const ticket={position:position.clone(),status:{done:false,pickup:false},time:0,boarded:false,variant};
     if(!boat&&!active)begin(ticket);else pending.push(ticket);
     return {water:true,get group(){return boat.group;},get marker(){return boat.marker;},get elapsed(){return ticket.time;},get pickup(){return ticket.status.pickup;},update(){return ticket.status;},dispose(){}};
    },
    update(dt){
     if(disposed)return;
-    if(active){active.status=boat.update(dt);active.time=boat.elapsed;if(active.status.pickup&&!active.boarded){boat.boardPassenger();boat.marker.visible=false;active.boarded=true;}if(active.status.done)active=null;}
+    if(active){active.status=boat.update(dt);active.time=boat.elapsed;if(active.status.pickup&&!active.boarded){boat.boardPassenger(active.variant);boat.marker.visible=false;active.boarded=true;}if(active.status.done)active=null;}
     while(!active&&pending.length){pending.sort((a,b)=>a.position.distanceToSquared(boat.group.position)-b.position.distanceToSquared(boat.group.position));begin(pending.shift());}
    },
    get group(){return boat?.group;},
    dispose(){if(disposed)return;disposed=true;boat?.dispose();pending.length=0;active=null;}
   };
  }
- root.PilotRescue={create,createCrew};
+ root.PilotRescue={create,createCrew,createGroundTeam};
  if(typeof module==='object'&&module.exports)module.exports=root.PilotRescue;
 })(typeof window!=='undefined'?window:globalThis);

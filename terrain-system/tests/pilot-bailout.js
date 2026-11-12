@@ -8,7 +8,17 @@ const aircrew=chute.group.getObjectByName('pilot');
 for(const part of ['face','helmet','goggles','flightJacket','parachutePack',
   'leftArm','rightArm','leftLeg','rightLeg','leftBoot','rightBoot'])
  assert(aircrew.getObjectByName(part),'bailout pilot has '+part);
-assert(aircrew.children.length>=11,'pilot has a human silhouette, not a lone cylinder');
+let meshCount=0;aircrew.traverse(node=>{if(node.isMesh)meshCount++;});
+assert(meshCount>=11,'articulated pilot has separate body and limb geometry');
+assert(aircrew.getObjectByName('rightElbow')&&aircrew.getObjectByName('rightKnee'));
+const flightColors=new Set();
+for(const service of ['usnavy','ijn','usaaf','luftwaffe']){
+ const example=PilotBailout.create(THREE,scene,new THREE.Vector3(0,210,0),0,0,groundAt,{service});
+ const pilot=example.group.getObjectByName('pilot'),color=pilot.getObjectByName('flightJacket').children[0].geometry.attributes.color;
+ assert.equal(pilot.userData.service,service);flightColors.add([color.getX(0),color.getY(0),color.getZ(0)].join(','));
+ example.dispose();
+}
+assert.equal(flightColors.size,4,'flight suits distinguish all four services');
 let opened=false,landed=false;
 for(let i=0;i<1800;i++){
  const state=chute.update(.05,4);

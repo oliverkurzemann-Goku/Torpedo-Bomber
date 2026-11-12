@@ -362,7 +362,7 @@ body.jetInterior .pitReticle,body.secretJetActive #dropBtn,body.secretJetActive 
   <div id="flash"></div>
   <div id="ltn" style="position:fixed;inset:0;background:#e6ecff;opacity:0;pointer-events:none;z-index:40;"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 252</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 253</div>
 
   <!-- Optical landing aid -->
   <div id="lso">
@@ -414,7 +414,7 @@ body.jetInterior .pitReticle,body.secretJetActive #dropBtn,body.secretJetActive 
 
 <!-- Menu -->
 <div class="overlay" id="menu" data-campaign="pacific">
-  <div class="menuTop"><a id="selBtn" href="index.html?v=252">&#9664; Change Game</a><span class="menuMeta">PACIFIC OPERATIONS<br>BUILD 252</span></div>
+  <div class="menuTop"><a id="selBtn" href="index.html?v=253">&#9664; Change Game</a><span class="menuMeta">PACIFIC OPERATIONS<br>BUILD 253</span></div>
   <div class="card menuCard">
     <aside class="menuOverview" aria-label="Campaign and pilot options">
     <div class="campaignArt" aria-hidden="true"></div>
@@ -445,7 +445,7 @@ body.jetInterior .pitReticle,body.secretJetActive #dropBtn,body.secretJetActive 
     </aside>
     <section class="missionPanel" aria-label="Mission selection">
       <div class="secLbl">Choose your sortie · Pacific operations</div>
-      <a class="hangarLink" href="hangar.html?theatre=pacific&amp;v=252">CUSTOM MISSION · CHOOSE AIRCRAFT &amp; LOADOUT →</a>
+      <a class="hangarLink" href="hangar.html?theatre=pacific&amp;v=253">CUSTOM MISSION · CHOOSE AIRCRAFT &amp; LOADOUT →</a>
 <div id="missionSel" role="group" aria-label="Pacific missions"></div>
       <div id="missionBlurb" class="missionBlurb" aria-live="polite"></div>
       <div class="menuConfig">
@@ -538,13 +538,14 @@ body.jetInterior .pitReticle,body.secretJetActive #dropBtn,body.secretJetActive 
 <script src="flight-support.js?v=238"></script>
 <script src="ordnance.js?v=238"></script>
 <script src="crew-visuals.js?v=179"></script>
+<script src="crew-figures.js?v=253"></script>
 <script src="deck-activity.js?v=240"></script>
 <script src="ship-wakes.js?v=240"></script>
-<script src="pilot-bailout.js?v=181"></script>
+<script src="pilot-bailout.js?v=253"></script>
 <script src="enemy-bailouts.js?v=248"></script>
 <script src="flare-support.js?v=177"></script>
 <script src="sortie-service.js?v=206"></script>
-<script src="pilot-rescue.js?v=179"></script>
+<script src="pilot-rescue.js?v=253"></script>
 <script src="pby-rescue.js?v=251"></script>
 <script src="yamato-aa.js?v=248"></script>
 <script src="radio-intercept.js?v=157"></script>
@@ -562,7 +563,7 @@ body.jetInterior .pitReticle,body.secretJetActive #dropBtn,body.secretJetActive 
 <script src="ground-run.js?v=198"></script>
 <script src="flight-indicators.js?v=198"></script>
 <script src="operation-plans.js?v=251"></script>
-<script src="custom-sortie.js?v=252"></script>
+<script src="custom-sortie.js?v=253"></script>
 <script src="secret-jet.js?v=1"></script>
 <script src="pacific-theater.js?v=248"></script>
 <script src="carrier-recovery.js?v=198"></script>
@@ -5554,15 +5555,15 @@ let bettyTemplate=null;
 function loadBettyModel(){return PacificAssets.loader().load('assets/aircraft/g4m1-own.glb?v=248',gltf=>{bettyTemplate=gltf.scene;bettyTemplate.traverse(o=>{if(o.isMesh){o.castShadow=true;o.frustumCulled=true;}});return bettyTemplate;});}
 function aircraftCrewCount(){return isDefend()||isCorsair()?1:isSBD()?2:3;}
 function clearCrewBailouts(){for(const c of crewBailouts){c.chute.dispose();c.rescue?.dispose();}crewBailouts=[];crewWaterRescue?.dispose();crewWaterRescue=null;crewPby?.dispose();crewPby=null;}
-function rescueCrewMember(position,water){
- const options={wakes:shipWakes,service:isDefend()?"ijn":"usnavy",srgbOutput:true,surfaceAt:(x,z)=>seaHeightAt(x,z,seaUniforms?.uTime.value||0)};
+function rescueCrewMember(position,water,variant=0){
+ const options={wakes:shipWakes,service:isDefend()?"ijn":"usnavy",variant,srgbOutput:true,surfaceAt:(x,z)=>seaHeightAt(x,z,seaUniforms?.uTime.value||0)};
  if(water){
   // far from the carrier the launch would need minutes: the Catalina comes instead (the survivors' own side only; the Japanese side keeps its boat)
   if(pbyTemplate&&!isDefend()&&typeof PbyRescue!=='undefined'&&Math.hypot(position.x-carrierX,position.z)>PBY_MIN_DISTANCE){
    if(!crewPby)crewPby=PbyRescue.createCrew(THREE,scene,{template:pbyTemplate,waterAt:(x,z)=>shoreHeight(x,z)<=.6,surfaceAt:options.surfaceAt,origin:()=>new THREE.Vector3(carrierX,0,0),wakes:shipWakes,say:t=>radioSay(t)});
    const ticket=crewPby?.add(position);if(ticket)return ticket;
   }
-  if(!crewWaterRescue)crewWaterRescue=PilotRescue.createCrew(THREE,scene,shoreHeight,options);return crewWaterRescue.add(position);}
+  if(!crewWaterRescue)crewWaterRescue=PilotRescue.createCrew(THREE,scene,shoreHeight,options);return crewWaterRescue.add(position,variant);}
  return PilotRescue.create(THREE,scene,position,shoreHeight,{...options,water:false});
 }
 function updateCrewBailouts(dt){
@@ -5571,7 +5572,7 @@ function updateCrewBailouts(dt){
   if(c.done)continue;
   if(c.rescue){if(c.rescue.water)c.chute.position.y=seaHeightAt(c.chute.position.x,c.chute.position.z,seaUniforms?.uTime.value||0)+.9;const status=c.rescue.update(dt);if(status.pickup)c.chute.group.visible=false;if(status.done){c.done=true;c.safe=status.pickup;}continue;}
   const landing=c.chute.update(dt*3,windZ,{turn:c.turn,forward:.1});
-  if(landing.landed){if(!landing.safe){c.done=true;c.safe=false;continue;}const p=c.chute.position,water=shoreHeight(p.x,p.z)<=.6;c.chute.settle(water);c.rescue=rescueCrewMember(p,water);}
+  if(landing.landed){if(!landing.safe){c.done=true;c.safe=false;continue;}const p=c.chute.position,water=shoreHeight(p.x,p.z)<=.6;c.chute.settle(water);c.rescue=rescueCrewMember(p,water,c.variant);}
  }
 }
 
@@ -5585,7 +5586,7 @@ function beginBailout(){
     Math.PI/2-P.heading,P.spd,shoreHeight,{service:isDefend()?"ijn":"usnavy",srgbOutput:true});
   clearCrewBailouts();const count=aircraftCrewCount(),right=new THREE.Vector3(-Math.sin(P.heading),0,Math.cos(P.heading));
   for(let i=1;i<count;i++){const side=i%2?1:-1,start=P.pos.clone().addScaledVector(right,side*8).addScaledVector(noseDir(),-5);start.y+=1;
-    crewBailouts.push({chute:PilotBailout.create(THREE,scene,start,Math.PI/2-P.heading+side*.35,P.spd,shoreHeight,{service:isDefend()?"ijn":"usnavy",srgbOutput:true,variant:i}),turn:side*.2,rescue:null,done:false,safe:null});}
+    crewBailouts.push({chute:PilotBailout.create(THREE,scene,start,Math.PI/2-P.heading+side*.35,P.spd,shoreHeight,{service:isDefend()?"ijn":"usnavy",srgbOutput:true,variant:i}),variant:i,turn:side*.2,rescue:null,done:false,safe:null});}
   bailPlaneCrashed=false;bailDone=false;bailChuteCalled=false;
   P.alive=false;state=ST.RESULT;firing=false;
   document.getElementById('bailBtn').style.display='none';
@@ -5605,7 +5606,7 @@ function beginDitching(){
     return PilotBailout.create(THREE,scene,p,Math.PI/2-P.heading,0,shoreHeight,{service,srgbOutput:true,variant:i,landed:true});
   };
   bailout=survivor(0);bailRescue=rescueCrewMember(bailout.position,true);
-  for(let i=1;i<aircraftCrewCount();i++){const chute=survivor(i);crewBailouts.push({chute,rescue:rescueCrewMember(chute.position,true),done:false,safe:null});}
+  for(let i=1;i<aircraftCrewCount();i++){const chute=survivor(i);crewBailouts.push({chute,rescue:rescueCrewMember(chute.position,true,i),done:false,safe:null});}
   ditching={time:0,speed:P.spd*.4};
   bailDone=false;bailPlaneCrashed=true;bailChuteCalled=true;
   P.alive=false;P.throttle=0;P.vSpeed=0;P.pitch=.04;P.roll=0;state=ST.RESULT;firing=false;
@@ -5975,7 +5976,7 @@ function loadPlaneModel(){
       }
       window.__eyeDbg='EYE '+COCKPIT_EYE.map(v=>v.toFixed(2)).join('/');
       const btEl=document.getElementById('buildTag');
-      if(btEl) btEl.textContent='BUILD 252 · '+window.__eyeDbg;
+      if(btEl) btEl.textContent='BUILD 253 · '+window.__eyeDbg;
       let seat=null;
       model.traverse(function(o){
         if(!o.isMesh||!o.material) return;
@@ -7438,7 +7439,7 @@ function setupUIButtons(){
   if(dbgT2) dbgT2.onclick=()=>{
     dbgOn=!dbgOn; GameRuntime.storage.setItem('dbgOn',dbgOn?'1':'0');
     const db=document.getElementById('dbgBox'); if(db) db.textContent=dbgOn?'✓':'';
-    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 252'; }
+    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 253'; }
   };
   const lu=document.getElementById('lookUp'), ld=document.getElementById('lookDn');
   let _lookT=0;
@@ -7454,13 +7455,13 @@ function setupUIButtons(){
   if(pb) pb.addEventListener('pointerdown',e=>{ e.preventDefault(); togglePause(); });
   const rb=document.getElementById('resumeBtn'); if(rb) rb.onclick=resumeGame;
   const mb=document.getElementById('menuBtn'); if(mb) mb.onclick=exitToMenu;
-  document.getElementById('pauseMainMenu').onclick=async()=>{globalThis.sortieCheckpoint?.save();await globalThis.sortieCheckpoint?.flush();exitToMenu(true);window.location.href='index.html?v=252';};
+  document.getElementById('pauseMainMenu').onclick=async()=>{globalThis.sortieCheckpoint?.save();await globalThis.sortieCheckpoint?.flush();exitToMenu(true);window.location.href='index.html?v=253';};
   document.getElementById('resultBtn').onclick=()=>{
     // the logbook borrows this screen from the menu — send the player straight back
     if(logbookOpen){ logbookOpen=false; showOverlay('menu'); return; }
     if(state!==ST.RESULT) return;
     const last=mission===MISSIONS.length-2;
-    if(MISSIONS[mission]?.custom){window.location.href='hangar.html?theatre=pacific&v=252';return;}
+    if(MISSIONS[mission]?.custom){window.location.href='hangar.html?theatre=pacific&v=253';return;}
     if(wasWin){
       if(MISSIONS[mission] && MISSIONS[mission].free){ startMission(mission); return; }  // stay in Free Flight
       if(MISSIONS[mission] && MISSIONS[mission].qual){ showOverlay('menu'); return; }  // qual -> ready room
@@ -7767,7 +7768,7 @@ function animate(){
     notice.style.cssText='position:fixed;inset:0;z-index:999998;background:rgba(15,20,15,.95);color:#e8ddbc;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px;text-align:center;font:16px system-ui';
     const title=document.createElement('h2');title.textContent='Simulation interrupted';
     const detail=document.createElement('p');
-    detail.textContent='BUILD 252 · '+(MISSIONS[mission]?.sub||'Menu')+' · '+error.message;
+    detail.textContent='BUILD 253 · '+(MISSIONS[mission]?.sub||'Menu')+' · '+error.message;
     const reload=document.createElement('button');reload.textContent='Reload game';
     reload.style.cssText='padding:12px 24px;font:inherit';reload.onclick=()=>location.reload();
     notice.appendChild(title);notice.appendChild(detail);notice.appendChild(reload);document.body.appendChild(notice);

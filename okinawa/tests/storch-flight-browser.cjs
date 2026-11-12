@@ -85,7 +85,8 @@ const server=http.createServer((req,res)=>{
   // ---- 2. Bonus Rescue Run: land at the yellow smoke, the pilot runs and boards (6 s), fighters come, take off again from the meadow ----
   const R=await page.evaluate(()=>{
    const dt=1/60,r1=v=>+(+v).toFixed(1),out={};begin('rescue');
-   out.start={onGround:P.onGround,text:objectiveText(),kind:sts&&sts.kind,fig:!!(sts&&sts.fig)};const lz=sts.plan.lz;
+   out.start={onGround:P.onGround,text:objectiveText(),kind:sts&&sts.kind,fig:!!(sts&&sts.fig),
+    roles:[sts.fig.userData.role,...sts.aidTeam.children.map(o=>o.userData.role).filter(Boolean)]};const lz=sts.plan.lz;
    const ys=[-190,-100,0,100,190].map(d=>groundY(lz.x+d,lz.z));out.slopePct=r1((Math.max(...ys)-Math.min(...ys))/380*100);
    P.onGround=false;P.landingRoll=null;P.departureAge=null;P.touchResolved=false;P.throttle=.3;P.gear=P.gearTgt=1;P.flap=P.flapTgt=1;P.heading=Math.PI/2;P.pitch=.02;P.roll=P.rollBias=P.pitchVel=P.rollVel=0;inputPitch=inputRoll=0;
    // a 3.5 degree path to a point 30 m short of the meadow's middle: the wind of the start (random) must not decide whether the test works
@@ -105,6 +106,7 @@ const server=http.createServer((req,res)=>{
   });
   report.rescue=R;
   assert.equal(R.start.kind,'rescue');assert.ok(R.start.fig&&/YELLOW SMOKE/.test(R.start.text),JSON.stringify(R.start));assert.ok(R.slopePct<4,'the meadow is flat enough to land and take off: '+R.slopePct+' %');
+  assert.deepEqual(R.start.roles,['wounded','medic','bearer']);
   assert.ok(R.touch&&Math.abs(R.touch.dx)<120&&Math.abs(R.touch.dz)<60&&R.touch.kmh<75,'touchdown at the smoke: '+JSON.stringify(R.touch));assert.ok(R.landed.phase==='run'&&!R.landed.over&&R.landed.alive&&!R.landed.crash,'the pickup begins instead of ending the sortie: '+JSON.stringify(R.landed));
   assert.ok(R.boarded.phase==='home'&&R.boarded.rescued===1&&R.boarded.t>6&&R.boarded.t<30&&R.boarded.score>=600&&!R.boarded.fig&&/PILOT ABOARD/.test(R.boarded.text),'the pilot is aboard: '+JSON.stringify(R.boarded));
   assert.ok(R.hunters.n===2&&R.hunters.escape&&/BANDITS 2/.test(R.hunters.text),'two bandits that never hold up the return: '+JSON.stringify(R.hunters));assert.ok(R.takeoff&&R.takeoff.run<190&&R.alive,'off the meadow again: '+JSON.stringify(R.takeoff));
@@ -130,15 +132,16 @@ const server=http.createServer((req,res)=>{
    begin('courier');out.courier.landed=land(40,.15);out.courier.boardT=board();out.courier.done={phase:sts.phase,courier:sortieKills.courier||0,rescued:sortieKills.rescued||0,score,text:objectiveText(),left:objectiveLeft()};
    // rock
    begin('rock');const rz=sts.plan.lz,ys=[-30,-15,0,15,30].map(d=>groundY(rz.x+d,rz.z)),yh=groundY(GERMAN_AF_X,GERMAN_AF_Z);
-   out.rock={text:objectiveText(),slope:r1((Math.max(...ys)-Math.min(...ys))/60*100),above:Math.round(groundY(rz.x,rz.z)-yh),dist:Math.round(Math.hypot(rz.x-GERMAN_AF_X,rz.z-GERMAN_AF_Z))};
+   out.rock={text:objectiveText(),slope:r1((Math.max(...ys)-Math.min(...ys))/60*100),above:Math.round(groundY(rz.x,rz.z)-yh),dist:Math.round(Math.hypot(rz.x-GERMAN_AF_X,rz.z-GERMAN_AF_Z)),observer:!!sts.fig.getObjectByName('observerFieldKit')};
    const sc0=score;out.rock.landed=land(20,.2);out.rock.bonus=score-sc0;out.rock.boardT=board();for(let t=0;t<11;t+=dt)updateSites(dt);out.rock.hunters=enemyAir.filter(e=>e.alive&&e.sortie).length;out.rock.done={phase:sts.phase,rescued:sortieKills.rescued||0};
    // moon
-   begin('moon');const mz=sts.plan.lz;out.moon={night:!!M().night,lamps:sts.lamps&&sts.lamps.length,lampsInScene:sts.lamps&&sts.lamps.every(l=>l.parent===scene),text:objectiveText()};
+   begin('moon');out.moon={night:!!M().night,lamps:sts.lamps&&sts.lamps.length,lampsInScene:sts.lamps&&sts.lamps.every(l=>l.parent===scene),text:objectiveText(),agent:!!sts.fig.getObjectByName('agentSatchel')};
    out.moon.landed=land(40,.15);out.moon.boardT=board();for(let t=0;t<8;t+=dt)updateSites(dt);out.moon.hunters=enemyAir.filter(e=>e.alive&&e.sortie).length;out.moon.done={phase:sts.phase,rescued:sortieKills.rescued||0,text:objectiveText()};
    begin('rescue');out.reset={lamps:!(sts.lamps&&sts.lamps.length),kind:sts.kind};
    return out;
   });
   report.pickups=K;
+  assert.equal(K.rock.observer,true);assert.equal(K.moon.agent,true);
   assert.ok(K.courier.weather==='lowcloud'&&K.courier.dist>8500&&/UNDER THE CLOUDS/.test(K.courier.text),'courier: low overcast, the command post far behind the line: '+JSON.stringify(K.courier));
   assert.ok(K.courier.lowOk.hunters===0&&K.courier.lowOk.high===0,'under the cloud base nobody sees you: '+JSON.stringify(K.courier.lowOk));
   assert.ok(K.courier.spotted.hunters>=1&&K.courier.spotted.escape&&K.courier.spotted.said>=1,'above the cloud base the fighters dive on you (and never hold up the return): '+JSON.stringify(K.courier.spotted));
