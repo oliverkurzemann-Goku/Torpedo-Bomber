@@ -2,7 +2,7 @@
 (function(root){
  'use strict';
  const URL='assets/aircraft/geheimer-jet.glb?v=1';
- const AMMO=2100,FUEL_SECONDS=1200;
+ const AMMO=2100,FUEL_SECONDS=1200,SPACE_ALTITUDE=20000*.3048;
  const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
  const ease=(a,b,r,dt)=>a+(b-a)*(1-Math.exp(-r*dt));
  const modes=['chase','cockpit','top','bottom'];
@@ -15,11 +15,25 @@
   const thrust=hasFuel?clamp(p.throttle,0,1):0;
   const ceiling=boost?1600/3.6:900/3.6;
   const target=hasFuel?53+(ceiling-53)*thrust:39;
-  p.spd=ease(p.spd,target,boost?.21:hasFuel?.16:.086,dt);
-  p.roll=ease(p.roll,hold?0:controls.roll*.93,hold?3.5:2.95,dt);
   const stall=clamp((65-p.spd)/32,0,1);
-  p.pitch=ease(p.pitch,(hold?0:controls.pitch*.59)-stall*.16,2.9,dt);
-  if(!hold)p.heading-=clamp(Math.tan(p.roll)*52/Math.max(82,p.spd),-.70,.70)*dt;
+  if(controls.realistic){
+   const power=boost?30:22,altitude=clamp(p.pos.y/SPACE_ALTITUDE,0,1);
+   const thrustForce=power*thrust*(1-.14*altitude);
+   const drag=power*(p.spd/ceiling)**2*(1-.22*altitude)+stall*1.5;
+   p.spd=clamp(p.spd+(thrustForce-drag-9.81*Math.sin(p.pitch))*dt,16,ceiling*1.10);
+   const authority=clamp(p.spd/125,.25,1);
+   if(hold){p.pitch=ease(p.pitch,0,2.5,dt);p.roll=ease(p.roll,0,3.5,dt);}
+   else{
+    p.pitch=clamp(p.pitch+(controls.pitch*authority*.86-stall*.25)*dt,-Math.PI/2,Math.PI/2);
+    p.roll+=controls.roll*authority*1.85*dt;p.roll=Math.atan2(Math.sin(p.roll),Math.cos(p.roll));
+    p.heading-=Math.sin(p.roll)*clamp(45/p.spd,0,.70)*Math.cos(p.pitch)*dt;
+   }
+  }else{
+   p.spd=ease(p.spd,target,boost?.21:hasFuel?.16:.086,dt);
+   p.roll=ease(p.roll,hold?0:controls.roll*.93,hold?3.5:2.95,dt);
+   p.pitch=ease(p.pitch,(hold?0:controls.pitch*.59)-stall*.16,2.9,dt);
+   if(!hold)p.heading-=clamp(Math.tan(p.roll)*52/Math.max(82,p.spd),-.70,.70)*dt;
+  }
   p.vSpeed=p.spd*Math.sin(p.pitch)-stall*12;
   p.nLoad=1/Math.max(.45,Math.cos(p.roll));
   const horiz=p.spd*Math.cos(p.pitch);
@@ -122,6 +136,6 @@
    },
   };
  }
- const api={URL,AMMO,FUEL_SECONDS,stepFlight,create};
+ const api={URL,AMMO,FUEL_SECONDS,SPACE_ALTITUDE,stepFlight,create};
  if(typeof module==='object'&&module.exports)module.exports=api;else root.SecretJet=api;
 })(typeof globalThis==='undefined'?window:globalThis);

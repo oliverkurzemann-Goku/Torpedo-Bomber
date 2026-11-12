@@ -22,7 +22,7 @@
   const art=$('theatreArt');art.src=c.theatre==='pacific'?'assets/pacific-campaign.webp':'assets/europe-campaign.webp';art.alt=c.theatre==='pacific'?'Pacific carrier operations':'Rhine valley operations';
   const strong=document.createElement('strong');strong.textContent=detail.title+' · '+detail.aircraft;const line=document.createElement('small');line.textContent=detail.conditions+' · '+(c.ac==='secretjet'?'20 min nominal fuel':c.task==='free'?'Unlimited practice fuel':c.fuel+'% fuel')+' · '+({rookie:'Rookie',vet:'Veteran',ace:'Ace'})[c.difficulty];$('summary').replaceChildren(strong,line);
   preview.update(c);
-  try{localStorage.setItem(draftKey,JSON.stringify(c));}catch(_){}
+  if(c.ac!=='secretjet')try{localStorage.setItem(draftKey,JSON.stringify(c));}catch(_){}
  }
  options($('weather'),Object.entries(C.weatherNames),'clear');
  document.querySelectorAll('[data-theatre]').forEach(b=>b.onclick=()=>{c=C.defaults(b.dataset.theatre);draw();});
@@ -34,7 +34,7 @@
   if(badgeTimer!==null)return;
   badgeTimer=setTimeout(()=>{
    badgeTimer=null;
-   if(!C.unlockSecretJet())return;
+   C.unlockSecretJet();
    c={...C.defaults('pacific'),ac:'secretjet',kit:'turrets',start:'air'};
    draw();
   },3000);

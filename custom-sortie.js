@@ -2,9 +2,10 @@
  * campaign indices, unlocks and existing airborne saves do not shift. */
 (function(root){
  'use strict';
- const secretKey='torpedo-carrier-secret-jet-v1';
- function secretJetUnlocked(){try{return root.localStorage?.getItem(secretKey)==='1';}catch(_){return false;}}
- function unlockSecretJet(){try{root.localStorage?.setItem(secretKey,'1');}catch(_){}return secretJetUnlocked();}
+ const secretLaunchKey='torpedo-carrier-jet-launch';
+ let secretUnlocked=false;
+ function secretJetUnlocked(){return secretUnlocked;}
+ function unlockSecretJet(){secretUnlocked=true;}
  const planes={
   p47:{name:'P-47D Thunderbolt',theatre:'europe',kits:['guns','bombs','rockets','mixed','range'],bombs:2,rockets:8,tank:60},
   bf109:{name:'Bf 109F-2',theatre:'europe',kits:['guns','bombs','range'],bombs:1,tank:75},
@@ -65,7 +66,7 @@
  function summary(input){const c=normalize(input),p=planes[c.ac],s=stores(c),task=tasks[c.theatre].find(t=>t.id===c.task);
   const armament=[c.kit==='rear'?'Rear gunner':c.ac==='secretjet'?'Upper and lower MG turrets · 2,100 rounds':'Guns',s.bombs?s.bombs+' bombs':'',s.rockets?s.rockets+' rockets':'',s.torpedoes?'1 internal torpedo':'',s.tank?'Drop tank +'+s.tank+'%':''].filter(Boolean).join(' · ');
   return {title:task.name,aircraft:p.name,armament,conditions:weatherNames[c.weather]+' · '+(c.time==='night'?'Night':'Day')+' · '+(c.start==='air'?'Airborne start':c.theatre==='pacific'?'Carrier start':'Airfield start'),
-   notes:c.ac==='secretjet'?'Airborne test flight. Cycle the crew stations with T, aim with the stick and fire with GUNS or F. Afterburner with J.':task.note+(c.ac==='me163'?' Rocket interceptor: airborne after trolley release; recovery is an unpowered skid landing.':'')+(c.task==='free'?' Practice fuel is unlimited.':' Fuel: '+c.fuel+'% internal.')};
+   notes:c.ac==='secretjet'?'Airborne test flight. A toggles Realistic, J engages afterburner. Cycle crew stations with T, aim with the stick and fire with GUNS or F.':task.note+(c.ac==='me163'?' Rocket interceptor: airborne after trolley release; recovery is an unpowered skid landing.':'')+(c.task==='free'?' Practice fuel is unlimited.':' Fuel: '+c.fuel+'% internal.')};
  }
  function mission(input){const c=normalize(input),s=stores(c),brief=summary(c),common={custom:c,customId:fingerprint(c),title:'Custom Sortie',sub:brief.title,weather:c.weather,free:c.task==='free',solo:true,
    text:brief.notes+'<br><br>'+brief.armament+'<br>'+brief.conditions,night:c.time==='night'};
@@ -88,20 +89,41 @@
   if(storage===undefined)try{storage=root.localStorage;}catch(_){storage=null;}
   const params=new URLSearchParams(search),fromURL=params.has('sortie');let raw;
   try{raw=fromURL?params.get('sortie'):storage?.getItem(key(theatre));if(!raw)return {config:null,requested:false,error:null};
-   if(raw.length>1500)throw Error('Sortie setup is too long.');const config=normalize(JSON.parse(raw));if(config.theatre!==theatre)throw Error('The sortie belongs to a different theatre.');
+   if(raw.length>1500)throw Error('Sortie setup is too long.');const input=JSON.parse(raw);
+   if(input?.ac==='secretjet'){
+    const hidden={config:null,requested:false,error:null};
+    if(!fromURL||theatre!=='pacific'||!params.has('launch'))return hidden;
+    const transfer=JSON.parse(root.sessionStorage?.getItem(secretLaunchKey)||'null');
+    if(transfer?.token!==params.get('launch')||transfer.raw!==raw||Date.now()>transfer.until)return hidden;
+    root.sessionStorage.removeItem(secretLaunchKey);
+    secretUnlocked=true;
+    try{return {config:normalize(input),requested:true,error:null,transient:true};}
+    catch(error){secretUnlocked=false;throw error;}
+   }
+   const config=normalize(input);if(config.theatre!==theatre)throw Error('The sortie belongs to a different theatre.');
    if(fromURL)try{storage?.setItem(key(theatre),JSON.stringify(config));}catch(_){}
    return {config,requested:fromURL,error:null};
   }catch(e){return {config:null,requested:fromURL,error:'Custom sortie could not load: '+e.message};}
  }
- function url(input){const c=normalize(input),params=new URLSearchParams({sortie:JSON.stringify(c),v:'254'});return (c.theatre==='pacific'?'torpedo-carrier.html':'remagen-mission.html')+'?'+params;}
+ function url(input){
+  const c=normalize(input),raw=JSON.stringify(c),params=new URLSearchParams({sortie:raw,v:'255'});
+  if(c.ac==='secretjet'){
+   const words=root.crypto.getRandomValues(new Uint32Array(4)),token=Array.from(words,n=>n.toString(16).padStart(8,'0')).join('');
+   root.sessionStorage.setItem(secretLaunchKey,JSON.stringify({token,raw,until:Date.now()+120000}));
+   params.set('launch',token);
+  }
+  return (c.theatre==='pacific'?'torpedo-carrier.html':'remagen-mission.html')+'?'+params;
+ }
  function install(theatre,missions,plans,search,storage){if(!originals.has(missions))originals.set(missions,{mission:missions[0],plan:plans[0]});const request=read(theatre,search,storage);if(request.config){missions[0]=mission(request.config);plans[0]=operation(request.config);}return request;}
  function checkpointIdentity(theatre,missions,i,saved){
+  if(saved?.custom?.ac==='secretjet'||!saved&&missions[i]?.secretJet)return null;
   let m=saved&&!saved.custom&&i===0?(originals.get(missions)?.mission||missions[i]):missions[i];
   if(saved?.custom){try{const c=normalize(saved.custom);if(i!==0||c.theatre!==theatre)return null;m=mission(c);}catch(_){return null;}}
   if(!m)return null;
   return (theatre==='europe'?m.id+'|'+m.ac:m.title+'|'+m.sub)+(m.customId?'|'+m.customId:'');
  }
  function restoreSaved(theatre,saved,missions,plans){
+  if(saved.custom?.ac==='secretjet')throw Error('This flight cannot be resumed.');
   if(!saved.custom){const old=originals.get(missions);if(saved.mission===0&&old){missions[0]=old.mission;plans[0]=old.plan;}return null;}
   const c=normalize(saved.custom);if(saved.mission!==0||c.theatre!==theatre)throw Error('Checkpoint sortie does not match this theatre.');
   missions[0]=mission(c);plans[0]=operation(c);return c;
