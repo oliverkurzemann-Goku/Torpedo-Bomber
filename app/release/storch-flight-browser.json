@@ -55,8 +55,8 @@
   },
   "slopePct": 1.4,
   "touch": {
-   "kmh": 61,
-   "dx": 77,
+   "kmh": 59,
+   "dx": -71,
    "dz": 0
   },
   "landed": {
@@ -67,7 +67,7 @@
    "crash": null
   },
   "boarded": {
-   "t": 24.6,
+   "t": 13.5,
    "phase": "home",
    "rescued": 1,
    "score": 600,
@@ -111,7 +111,7 @@
   },
   "careless": {
    "zone": 2,
-   "lost": 38.3,
+   "lost": 55.4,
    "alive": true
   },
   "hunters": 2,
@@ -138,7 +138,7 @@
    "alive": true
   },
   "gunner": {
-   "ammoUsed": 26,
+   "ammoUsed": 27,
    "hp": [
     7,
     -0.19999999999999735
