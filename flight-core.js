@@ -97,16 +97,16 @@ const SOURCES={
  // Build 249: the Fieseler Fi 156 C Storch becomes a flyable type (Rhine game, rig class tailwheel-light). The sources disagree on several
  // figures (empty mass 860-930 kg, climb 905-945 ft/min, one listing says 8 m/s) and mix the C-1, C-2 and C-3: the values below are the
  // ones that most listings agree on; the stall is the published slow-flight claim (slats and flaps) and the weight it refers to is not stated.
- fi156:{name:'Fi 156 C Storch (Argus As 10C)',
-  refs:{B1:'airvectors.net / historyofwar.org / globalair.com / airpages.ru / mat.uc.pt compilations: Argus As 10C 240 PS, 26 m2, 14.25 m span, about 1 320 kg gross, 175 km/h at sea level, climb 945 ft/min (905 in another listing), service ceiling 4 600 m',
-   B2:'williammaloney.com (USAF museum sheet): C-1 stall 32 mph = 51 km/h; another listing 50 km/h; take-off about 200 ft (61 m) and landing about 70 ft (21 m) in the right conditions',
-   A1:'Profile Publication 228 and the model README (scripts/own-models/fi156c-own): 2.60 m two-blade propeller, fixed slats, long fixed main gear'},
-  mass:1320,massRef:'B1',S:26,b:14.25,geomRef:'B1',propD:2.6,propRef:'A1',climbLo:14,
-  engine:{kind:'piston',power:240*PS,count:1,fth:0,ref:'B1',text:'Argus As 10C 240 PS (not supercharged: power falls from sea level, C)'},
-  // The 4 600 m service ceiling is NOT fitted (a ceiling figure mixes engine lapse with other conventions); the report lists what the model gives.
-  perf:[row('speed',0,175*KMH,'B1','175 km/h @ SL'),row('climb',0,945*FPM,'B1','945 ft/min @ SL')],
-  // the stall claim is the landing (slats + flaps) figure; the clean stall follows from the class ratio. Read at 1 200 kg (C).
-  stall:{mass:1200,landing:51*KMH,ref:'B2',text:'about 50-52 km/h with slats and flaps (weight not stated, read at 1 200 kg)'},
+ fi156:{name:'Fieseler Fi 156 C-2 Storch (Argus As 10C/3)',
+  refs:{A1:'L.Dv.T. 2601/1 Fi 156 Flugzeughandbuch (30 June 1940), Annex 3: 1260 kg, 26 m2, 14.25 m span, 2.60 m propeller, 240 PS (Annex 2/3 as quoted by the model package README)',
+   A2:'Annex 3: 175 km/h level at low altitude; 4.6 m/s maximum climb with 10 deg flap',
+   A3:'Annex 3: stall 62 km/h clean, 51 km/h full flap; 265 km/h maximum permissible clean'},
+  mass:1260,massRef:'A1',S:26,b:14.25,geomRef:'A1',propD:2.6,propRef:'A1',climbLo:14,
+  engine:{kind:'piston',power:240*PS,count:1,fth:0,ref:'A1',text:'Argus As 10C/3 240 PS at 2000 rpm, not supercharged (power falls from sea level, C)'},
+  // the 4 600 m service ceiling of the compilations is NOT fitted (it mixes engine lapse with other conventions); the report lists what the model gives.
+  perf:[row('speed',0,175*KMH,'A2','175 km/h @ SL'),{...row('climb',0,4.6,'A2','4.6 m/s @ SL with 10 deg flap'),flaps:.25}],
+  stall:{mass:1260,clean:62*KMH,landing:51*KMH,ref:'A3',text:'62 km/h clean, 51 km/h with full flap'},
+  limits:{vne:265*KMH,ref:'A3',text:'265 km/h clean'},
   stores:{},fuel:{kg:150*AVGAS,ref:'C',text:'150 l (C)'},
   roll:{peak:50,at:28,fall:1,ref:'C'}},
  me262:{name:'Me 262A-1a (2 x Jumo 004B)',
@@ -217,7 +217,7 @@ const ASSUMED={
  fw190:A_({nLimit:6.5,mlimit:.78,vne:850*KMH,rollCeiling:172*DEG,stores:{bomb:250,bombArea:.02,tankFuel:300*AVGAS,tankShell:30}}),
  ju87:A_({nLimit:6.0,mlimit:.70,gearCD:0,severity:.2,stores:{bomb:125,bombArea:.012}}),  // fixed gear: in the measured drag
  // Build 249: Storch. Light liaison structure (C): +4 g, -1.5 g; fixed gear sits in the measured drag; a mild stall behind the slats.
- fi156:A_({nLimit:4.0,nNegative:1.5,mcrit:.72,mlimit:.78,vne:240*KMH,gearCD:0,severity:.1,spool:.7,stores:{}}),
+ fi156:A_({nLimit:3.5,nNegative:1.5,mcrit:.72,mlimit:.78,vne:265*KMH,gearCD:0,flapCD:.10,severity:.12,spool:.7,stores:{}}),
  me262:A_({nLimit:5.5,mcrit:.74,vne:950*KMH,spool:2.6,windmill:0,severity:.35,stores:{bomb:250,bombArea:.02}}),
  me163:A_({nLimit:6.0,clClean:1.1,clLandingRatio:1.15,spool:.3,windmill:0,gearCD:0,severity:.05,isp:2000}),
  avenger:A_({nLimit:4.5,mcrit:.66,mlimit:.70,vne:320*KT,severity:.25,stores:{torpedo:2216*LB,bomb:227,bombArea:0}}), // internal bay
@@ -355,21 +355,21 @@ function levelMaxSpeed(m,h,W,mode){
 // Steady climb at V (lift = W cos gamma), corrected for the kinetic energy a constant-IAS climb
 // schedule adds per metre of height (true speed rises as density falls).
 // constTAS: climb at constant true speed (rocket); otherwise the usual constant-IAS schedule.
-function climbAt(m,h,W,V,mode,constTAS){
+function climbAt(m,h,W,V,mode,constTAS,flaps){
  const {rho,a,T}=atmosphere(h),T0=thrust(m,V,rho,1,h,mode);
- let s=0;for(let i=0;i<6;i++){const c=Math.sqrt(Math.max(0,1-s*s));s=clamp((T0-drag(m,V,rho,a,c,W))/W,-1,1);}
+ let s=0;for(let i=0;i<6;i++){const c=Math.sqrt(Math.max(0,1-s*s));s=clamp((T0-drag(m,V,rho,a,c,W,{flaps}))/W,-1,1);}
  const dVdh=h<=11000&&!constTAS?V*.5*5.255877*.0065/T:0;
  return V*s/(1+V*dVdh/G);
 }
-function bestClimb(m,h,W,mode,constTAS){
+function bestClimb(m,h,W,mode,constTAS,flaps){
  // Build 249: the search floor is a per-type figure (default 40 m/s, unchanged for every earlier type); the Storch climbs best near 20 m/s
  let lo=m.climbLo??40,hi=Math.max(60,levelMaxSpeed(m,h,W,mode));const gr=(Math.sqrt(5)-1)/2;
- let x1=hi-gr*(hi-lo),x2=lo+gr*(hi-lo),f1=climbAt(m,h,W,x1,mode,constTAS),f2=climbAt(m,h,W,x2,mode,constTAS);
+ let x1=hi-gr*(hi-lo),x2=lo+gr*(hi-lo),f1=climbAt(m,h,W,x1,mode,constTAS,flaps),f2=climbAt(m,h,W,x2,mode,constTAS,flaps);
  for(let i=0;i<40;i++){
-  if(f1<f2){lo=x1;x1=x2;f1=f2;x2=lo+gr*(hi-lo);f2=climbAt(m,h,W,x2,mode,constTAS);}
-  else{hi=x2;x2=x1;f2=f1;x1=hi-gr*(hi-lo);f1=climbAt(m,h,W,x1,mode,constTAS);}
+  if(f1<f2){lo=x1;x1=x2;f1=f2;x2=lo+gr*(hi-lo);f2=climbAt(m,h,W,x2,mode,constTAS,flaps);}
+  else{hi=x2;x2=x1;f2=f1;x1=hi-gr*(hi-lo);f1=climbAt(m,h,W,x1,mode,constTAS,flaps);}
  }
- const V=(lo+hi)/2;return {V,rate:climbAt(m,h,W,V,mode,constTAS)};
+ const V=(lo+hi)/2;return {V,rate:climbAt(m,h,W,V,mode,constTAS,flaps)};
 }
 // Time from h0 to h1 at the best climb speed; rockets lose propellant mass on the way (and climb at
 // constant true speed). burnBefore: seconds of full-thrust burn before h0 (a figure "from a standing start").
@@ -380,7 +380,7 @@ function timeToClimb(m,h0,h1,W,mode,burnBefore=0){
 }
 function evaluate(m,d,W){
  if(d.q==='speed')return levelMaxSpeed(m,d.h,W,d.mode);
- if(d.q==='climb')return bestClimb(m,d.h,W,d.mode).rate;
+ if(d.q==='climb')return bestClimb(m,d.h,W,d.mode,false,d.flaps).rate;
  return timeToClimb(m,d.h,d.h1,W,d.mode,d.burnBefore||0);
 }
 

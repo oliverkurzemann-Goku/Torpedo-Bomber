@@ -10,6 +10,7 @@ const profiles={
  corsair:{engine:'R-2800 · 18-cylinder radial',bank:'r2800',revision:216,growl:true,rate:1.035,spool:.9,bass:.5,bright:7100,source:'R-2800 recordings from a P-47D · Fight2FlyPhoto',match:'Same engine family; Corsair exhaust and three-blade propeller are an approximation.'},
  fw190:{"engine":"BMW 801 · 14-cylinder radial","bank":"bmw801","revision":217,"approved":true,"approvedChoice":"Fw190 Kerniger Sternmotor","idleFile":"approved/bmw801-idle.wav","powerFile":"approved/fw190-power.wav","rate":1,"spool":0.3,"bass":0,"bright":10000,"source":"Fight2FlyPhoto ground recording + original game exhaust accents","match":"Approved Fw 190 audition: BMW ground recording with original exhaust accents."},
  bf109:{"engine":"DB 601 · inverted V12","bank":"db601","revision":217,"approved":true,"approvedChoice":"Me109 Trockenes V12 Knurren","idleFile":"approved/db601-idle.wav","powerFile":"approved/bf109-power.wav","rate":1,"spool":0.3,"bass":0,"bright":10000,"source":"Fight2FlyPhoto ground recording + original game exhaust accents","match":"Approved dry V12 audition: DB 601 ground recording with original exhaust accents."},
+ fi156:{"engine":"Argus As 10 · inverted V8","bank":"db601","revision":217,"approved":true,"approvedChoice":"Me109 Trockenes V12 Knurren","idleFile":"approved/db601-idle.wav","powerFile":"approved/bf109-power.wav","rate":1.14,"powerScale":1.14,"spool":0.5,"bass":0,"bright":10000,"source":"Fight2FlyPhoto DB 601 ground recording + original game exhaust accents, pitched up for the smaller engine","match":"Build 249 adaptation of the approved DB 601 voice for the Fi 156 (Argus As 10 air-cooled V8). Not an Argus recording."},
  ju87:{engine:'Jumo 211 · inverted V12',bank:'jumo',rate:1,spool:.9,bass:1,bright:5800,source:'Stuka-labelled archival effect · craigsmith / USC',match:'Archival film sound effect; exact engine provenance is unverified.'},
  avenger:{"engine":"R-2600 · 14-cylinder radial","bank":"r2800","revision":217,"approved":true,"approvedChoice":"P47 C","idleFile":"approved/r2800-idle.wav","powerFile":"approved/avenger-c-power.wav","rate":1,"spool":0.3,"bass":0,"bright":10000,"source":"Fight2FlyPhoto ground recording + original game exhaust accents","match":"Approved powerful audition C, adapted from the P-47 source family for Avenger."},
  sbd:{"engine":"R-1820 · 9-cylinder radial","bank":"r2800","revision":217,"approved":true,"approvedChoice":"P47 B","idleFile":"approved/r2800-idle.wav","powerFile":"approved/sbd-b-power.wav","rate":1,"spool":0.3,"bass":0,"bright":10000,"source":"Fight2FlyPhoto ground recording + original game exhaust accents","match":"Approved rough, uneven audition B, adapted from the P-47 source family for Dauntless."},
@@ -104,7 +105,7 @@ function create(ctx,destination){
   current.layers[0].gain.gain.setTargetAtTime(Math.sqrt(1-mix),now,.08);
   current.layers[1].gain.gain.setTargetAtTime(Math.sqrt(mix),now,.08);
   rpm=p.rate*(.94+.18*load);
-  const powerRate=p.approved?.68+.44*load:p.rate*(.78+.34*load);
+  const powerRate=p.approved?(.68+.44*load)*(p.powerScale||1):p.rate*(.78+.34*load);
   current.layers[0].source.playbackRate.setTargetAtTime(rpm,now,.08);
   current.layers[1].source.playbackRate.setTargetAtTime(powerRate,now,.08);
   hp.frequency.setTargetAtTime(p.lowCut||28,now,.12);

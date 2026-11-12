@@ -37,7 +37,7 @@
    },
    optional:{Canopy:'canopy',RearGun:'yaw'},
    tyres:{GearLeft:1,GearRight:1,TailGear:1},
-   muzzles:1,
+   muzzles:0,   // unarmed airframe: the game places the rear gunner's muzzle itself (storchGunnerPoint)
    budget:{triangles:25000,meshes:40,materials:10,images:4,imageSize:2048,bytes:5*1024*1024}
   }
  };

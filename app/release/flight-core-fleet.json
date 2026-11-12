@@ -395,68 +395,68 @@
    }
   },
   "fi156": {
-   "name": "Fi 156 C Storch (Argus As 10C)",
+   "name": "Fieseler Fi 156 C-2 Storch (Argus As 10C/3)",
    "solved": {
-    "CD0": 0.06019,
-    "etaP": 0.73657,
+    "CD0": 0.0613,
+    "etaP": 0.74357,
     "rms": "0 %",
     "oswald": 0.816,
     "aspect": 7.81,
-    "CLmaxClean": 2.727,
-    "CLmaxLanding": 3.682,
+    "CLmaxClean": 2.616,
+    "CLmaxLanding": 3.866,
     "diveBrakeCD": null,
-    "massPublished": 1320,
-    "massEmptyNoFuel": 1212,
+    "massPublished": 1260,
+    "massEmptyNoFuel": 1152,
     "fuelKg": 108
    },
    "verification": [
     {
      "figure": "175 km/h @ SL",
-     "ref": "B1",
+     "ref": "A2",
      "published": "175 km/h",
      "model": "175 km/h",
      "errorPct": 0
     },
     {
-     "figure": "945 ft/min @ SL",
-     "ref": "B1",
-     "published": "4.8 m/s",
-     "model": "4.8 m/s",
+     "figure": "4.6 m/s @ SL with 10 deg flap",
+     "ref": "A2",
+     "published": "4.6 m/s",
+     "model": "4.6 m/s",
      "errorPct": 0
     }
    ],
    "game": {
     "vmax1000m_kmh": 173,
-    "climbSL_ms": 4.8,
-    "bestClimbIAS_kmh": 101,
+    "climbSL_ms": 5.2,
+    "bestClimbIAS_kmh": 100,
     "stallCleanIAS_kmh": 62,
-    "stallLandingIAS_kmh": 53,
+    "stallLandingIAS_kmh": 51,
     "rollPeak_degs": 77,
     "rollAt70pct_degs": 64,
     "circle45pct": {
-     "seconds": 7.03,
-     "endSpeed": 26.9,
+     "seconds": 7.15,
+     "endSpeed": 28.4,
      "altitudeChange": 0,
-     "bankDeg": 45.2
+     "bankDeg": 45.6
     },
     "circle70pct": {
-     "seconds": 3.65,
-     "endSpeed": 29.1,
-     "altitudeChange": -3.8,
-     "bankDeg": 73.1
+     "seconds": 3.57,
+     "endSpeed": 29.5,
+     "altitudeChange": -3.3,
+     "bankDeg": 73.2
     },
     "loop": {
      "complete": true,
-     "seconds": 3,
-     "minSpeed": 30.9
+     "seconds": 3.2,
+     "minSpeed": 30.3
     },
-    "aeroGate_ms": 34.7,
-    "idleDecel75pct": 1.65,
+    "aeroGate_ms": 34.2,
+    "idleDecel75pct": 1.72,
     "takeoff": {
-     "seconds": 6,
-     "groundRun": 54,
-     "liftoffIAS": 66,
-     "stallIAS": 60
+     "seconds": 5.6,
+     "groundRun": 50,
+     "liftoffIAS": 65,
+     "stallIAS": 59
     }
    }
   },

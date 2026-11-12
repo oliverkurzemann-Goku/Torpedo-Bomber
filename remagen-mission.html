@@ -1191,7 +1191,7 @@ const MODEL_URL={
   b17:   ['assets/aircraft/b17-helijah.glb'],
   b24:   ['b24.glb','b-24_liberator.glb','b-24.glb'],
   ju87:  ['assets/aircraft/ju87b2-own.glb'],
-  fi156: ['assets/aircraft/fi156c-own.glb'],
+  fi156: ['assets/aircraft/fi156c2-player.glb'],
   me163: ['assets/aircraft/me163b-own.glb'],
   me262: ['assets/aircraft/me262-noel.glb']
 };
@@ -1262,7 +1262,7 @@ const MODEL_FIX={
   // The former half-turn made both the player and enemy Komet fly tail-first.
   'me163.glb':                            {yaw:0},
   'assets/aircraft/ju87b2-own.glb': {yaw:0},
-  'assets/aircraft/fi156c-own.glb': {yaw:0},
+  'assets/aircraft/fi156c2-player.glb': {yaw:0},
   'ju87.glb':                             {yaw:0},
   'me_262_a1ajabo_war_thunder.glb':       {yaw:0},
   'me 262 a1ajabo war thunder.glb':       {yaw:0}
@@ -3562,8 +3562,12 @@ function updateStorchGunner(dt){
   if(g.burst<=0){g.pause=GUNNER.pause[0]+Math.random()*(GUNNER.pause[1]-GUNNER.pause[0]);return;}
   if(g.t>0)return;
   g.t=GUNNER.interval;
-  const ports=AircraftContract.muzzles(playerModel,planeGroup),port=ports.find(p=>p.name==='MuzzleRear')||ports[0];
-  if(!port)return;
+  const ports=AircraftContract.muzzles(playerModel,planeGroup);let port=ports.find(p=>p.name==='MuzzleRear')||ports[0];
+  if(!port){
+    // The Fi 156 C-2 airframe is unarmed (no Muzzle node): the observer's gun sits on the cabin roof behind the rear seat (model frame, metres).
+    const root=AircraftContract.source(playerModel)||playerModel;root.updateWorldMatrix(true,false);
+    port=planeGroup.worldToLocal(root.localToWorld(new THREE.Vector3(0,.95,-1.5)));port.name='MuzzleRear';
+  }
   const q=new THREE.Quaternion().setFromEuler(new THREE.Euler(-P.pitch,P.heading,-P.roll,'YXZ'));
   planeGroup.position.copy(P.pos);planeGroup.quaternion.copy(q);
   const origin=port.clone().applyQuaternion(q).add(P.pos);
@@ -7018,7 +7022,7 @@ function posePlayerAircraft(dt){
       }
       if(wheelContactShadows)wheelContactShadows.visible=P.ac==='p47'&&P.onGround&&P.gear>.9&&planeGroup.visible;
       const pr=playerModel.getObjectByName('prop');
-      if(pr) pr.rotation.z-=GameRuntime.rotorStep(dt,Math.min(0.30,0.10+P.throttle*0.28),P.ac==='p47'?4:3);
+      if(pr) pr.rotation.z-=GameRuntime.rotorStep(dt,Math.min(0.30,0.10+P.throttle*0.28),pr.userData.rig?.blades??(P.ac==='p47'?4:3));
     }
 }
 

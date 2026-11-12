@@ -8,7 +8,8 @@ function run(kind,{pitch=0,roll=0,throttle=1,fuel=100,seconds=10,gear=0,flaps=0,
  return p.spd;
 }
 const rows={};
-for(const kind of Object.keys(F.profiles)){
+// Build 249: the Storch is core-only (CORE_ONLY in remagen-mission.html): its classic energy profile is a stand-in that is never flown, FlightCore carries the load cost (flight-envelope.cjs, storch checks)
+for(const kind of Object.keys(F.profiles).filter(k=>k!=='fi156')){
  const straight=run(kind),turn=run(kind,{roll:1.1}),climb=run(kind,{pitch:.20}),dive=run(kind,{pitch:-.20}),idle=run(kind,{throttle:0});
  assert(run(kind,{fuel:0,throttle:1})<85,kind+' cannot generate thrust from an empty tank');
  assert(straight>turn&&straight>climb&&dive>straight&&idle<85,kind+' exchanges energy rather than snapping to target speed');

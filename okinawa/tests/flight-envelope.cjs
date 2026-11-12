@@ -26,7 +26,7 @@ for(const kind of kinds){
 
 {const s=E.SHEETS.fi156,q=d.fi156;assert(s&&q,'Build 249: the Storch has a data sheet');
  assert(q.vs>14&&q.vs<20,'Storch clean stall about 62 km/h (FlightCore.SOURCES.fi156): '+q.vs);assert(q.clmax>2.2&&q.clmax<3.2,'Storch CLmax of a slatted wing: '+q.clmax);
- assert(Math.abs(q.wl-1320/26)<1,'Storch wing loading about 51 kg/m2');}
+ assert(Math.abs(q.wl-1260/26)<1,'Storch wing loading about 48.5 kg/m2 (1 260 kg, 26 m2)');}
 
 // ---- load factor and turn ---------------------------------------------------------------------
 for(const kind of kinds){

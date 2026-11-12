@@ -10,7 +10,7 @@ const loadProfiles={
  bf109:{fuel:.11,bomb:.085,rocket:.002,tank:.022,tankFuel:.0825}, // tankFuel: 300 l at the 400 l internal fraction
  fw190:{fuel:.12,bomb:.065,rocket:.0025,tank:.025,tankFuel:.06},
  ju87:{fuel:.12,bomb:.055,rocket:.002},me262:{fuel:.14,bomb:.055,rocket:.002},
- fi156:{fuel:.08,bomb:0,rocket:0},   // Build 249: Storch, 108 kg of fuel on 1 320 kg
+ fi156:{fuel:.08,bomb:0,rocket:0},   // Build 249: Storch, 108 kg of fuel on 1 260 kg
 
  me163:{fuel:.20,bomb:0,rocket:0},
  avenger:{fuel:.15,bomb:.040,torpedo:.095},sbd:{fuel:.12,bomb:.045},
