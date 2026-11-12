@@ -161,7 +161,8 @@
   #menu .menuIntro{font-size:11px;line-height:1.35;margin-bottom:6px;}
   #menu #logBtn{margin:6px 0;}
   #menu .quickGuide,#menu .extraSettings{margin-top:5px;}
-  #menu[data-campaign="europe"] #missionSel .chip{min-height:48px;}
+  #menu[data-campaign="europe"] #missionSel .chip{min-height:48px;padding:3px 3px;gap:1px;}
+  #menu[data-campaign="europe"] #missionSel{gap:5px;}   /* Build 249: 29 Rhine cards = four rows of eight; a tighter card gives back the 22 px that pushed Begin off a 1024x600 screen */
   #menu[data-campaign="pacific"] #missionSel .chip{min-height:46px;}
   #menu .menuConfig,#menu .menuActions{margin-top:8px;}
   #brief .briefingCard{padding:12px;gap:10px 16px;}
