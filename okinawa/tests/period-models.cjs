@@ -22,8 +22,9 @@ const MODELS={
    budget:{tris:6000,nodes:20,mats:6,image:1024,bytes:1e6},kind:'depot'},
  'hospital-ship-own':{file:'assets/ships/hospital-ship-own.glb',sha:'f708d2d1aceda0bc206249651fdf7566bc021cdacbbe73bb5643825ed0443a4b',size:[20.12,45.653,163.3],tol:.02,
    budget:{tris:24000,nodes:30,mats:10,image:2048,bytes:5e6},kind:'ship',need:['Hull','SingleFunnel','funnel-exhaust-1','DeckRailings','LifeboatDavitsAndFalls']},
- 'pby5a-own':{file:'assets/aircraft/pby5a-own.glb',sha:'b949aef9d16eb180db7e69744e2186b944bc4ff67ef542663c289865c1630fda',size:[31.699,6.147,19.456],tol:.02,
-   budget:{tris:34000,nodes:40,mats:10,image:2048,bytes:6e6},kind:'aircraft',
+ // Build 251: the revised Catalina (14 666 triangles, waterline datum, hatches, markers); the Build 246 model is archived in assets/aircraft/source/pby5a-v1/ (not in the app)
+ 'pby5a-own':{file:'assets/aircraft/pby5a-own.glb',sha:'bf4f9c5cd29df90f92250237e8ff7add86ffeaa09ab140372c3e3a18a8fa9872',size:[31.699,6.147,19.456],tol:.02,
+   budget:{tris:34000,nodes:60,mats:10,image:2048,bytes:6e6},kind:'aircraft',
    need:['PropellerLeft','PropellerRight','gear','GearLeft','GearRight','NoseGear','MainWheelLeft','MainWheelRight','NoseWheel','FloatLeft','FloatRight','AileronLeft','AileronRight','ElevatorLeft','ElevatorRight','Rudder','Muzzle1','MuzzleBlisterLeft','MuzzleBlisterRight'],
    absent:['flightFlaps','FlapLeft','FlapRight']},
  // ---- Build 248 ----
@@ -110,7 +111,8 @@ function triangles(json,nodeIndex,acc){
   assert(meshNodes<=spec.budget.nodes,id+' mesh nodes '+meshNodes);
   assert(json.materials.length<=spec.budget.mats,id+' materials '+json.materials.length);
   // the only double-sided material is the cut-out camouflage net of the depot kit
-  json.materials.forEach(m=>{if(m.doubleSided)assert(id==='depot-kit-own'&&m.alphaMode==='MASK',id+' double-sided material '+m.name);});
+  // Build 251: and the Catalina's clear glazing (a blended, double-sided pane)
+  json.materials.forEach(m=>{if(m.doubleSided)assert((id==='depot-kit-own'&&m.alphaMode==='MASK')||(id==='pby5a-own'&&m.name==='Clear glazing'),id+' double-sided material '+m.name);});
   const info=checked.info;
   assert(info.totalTriangleCount<=spec.budget.tris,id+' triangles '+info.totalTriangleCount);
   assert(info.resources.filter(r=>r.image).every(r=>Math.max(r.image.width,r.image.height)<=spec.budget.image),id+' texture budget');
@@ -214,7 +216,7 @@ function triangles(json,nodeIndex,acc){
    for(const n of ['MainWheelLeft','MainWheelRight','NoseWheel'])assert.equal(json.nodes[names.get(n)].extras.groundWheel,true,id+' '+n+' marks the tyre');
    assert(json.nodes[names.get('NoseGear')].translation[2]>0&&json.nodes[names.get('Rudder')].translation[2]<0,id+' nose gear forward, rudder aft');
    assert.equal(json.nodes[names.get('GearLeft')].extras.rig.drive,'gear');
-   assert(b[1]>-1e-3&&b[1]<.2,id+' the tyres touch y=0 in the rest pose (gear extended)');
+   assert(b[1]>-1.62&&b[1]<-1.59,id+' Build 251: the water line is y=0, the tyres (gear extended) rest 1.607 m under it: '+b[1]);
   }
   report.push({model:id,bytes:bytes.length,triangles:info.totalTriangleCount,drawCalls:info.drawCallCount,materials:json.materials.length,size:size.map(v=>+v.toFixed(3)),glTF:{errors:0,warnings:0}});
  }

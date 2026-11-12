@@ -1,19 +1,19 @@
 {
   "schema": 1,
   "reviewedOn": "2026-10-23",
-  "build": 249,
+  "build": 251,
   "status": "OPEN — source declarations checked; no external rights authorization obtained",
   "payload": {
-    "bytes": 165553863,
-    "fileCount": 378,
-    "modelCount": 62,
-    "manifestSha256": "9a98a98b62a6949e69f63b05c3a4edf4690ab4f2a504d2825641a980509eb00c"
+    "bytes": 169662698,
+    "fileCount": 379,
+    "modelCount": 63,
+    "manifestSha256": "018055c6b39e8dd143b211a372bf77f5c102c1380a310ecdecfe843afc53cec0"
   },
   "files": [
     {
       "path": "ASSET-CREDITS.md",
-      "bytes": 42445,
-      "sha256": "49bac806b2442d6b1c3de0aa149600ad6b2f249815188e95742bb25ee8b37d4c",
+      "bytes": 43346,
+      "sha256": "81445e0c6198b3cbe3bec8577ac49d3a5f7e597e1c35050cdc4b7ed239ff52b6",
       "kind": "code-or-notice"
     },
     {
@@ -30,8 +30,8 @@
     },
     {
       "path": "aircraft-contract.js",
-      "bytes": 6292,
-      "sha256": "834486ef92acb3f44fa4057d035150045cc154b20507c8567e36345bd851ee1e",
+      "bytes": 8080,
+      "sha256": "80207f8134e9fe483b56da0d6b1e722be538374ac56c03f81561d15875d9e860",
       "kind": "code-or-notice"
     },
     {
@@ -191,9 +191,15 @@
       "kind": "model"
     },
     {
+      "path": "assets/aircraft/pby5a-blackcat-own.glb",
+      "bytes": 2454572,
+      "sha256": "223e42bfe27265d6cacbcd63896c807b2398432f97774f14e70d75d1c0c994bc",
+      "kind": "model"
+    },
+    {
       "path": "assets/aircraft/pby5a-own.glb",
-      "bytes": 936380,
-      "sha256": "b949aef9d16eb180db7e69744e2186b944bc4ff67ef542663c289865c1630fda",
+      "bytes": 2579412,
+      "sha256": "bf4f9c5cd29df90f92250237e8ff7add86ffeaa09ab140372c3e3a18a8fa9872",
       "kind": "model"
     },
     {
@@ -847,7 +853,7 @@
     {
       "path": "hangar.html",
       "bytes": 4485,
-      "sha256": "0667c65414c6c5785ed2b3b6650921806edf110896eba2bcdad6ed0611d3430e",
+      "sha256": "5a6654b1dfee4e5a8bcc075790534ec8e7041cefcca7d64365b085c1fd446f36",
       "kind": "code-or-notice"
     },
     {
@@ -859,7 +865,7 @@
     {
       "path": "index.html",
       "bytes": 7912,
-      "sha256": "5c905982f1aea57331a907e8e4f24a176ccfc3cd37f11870dfa83ab2c44ac17f",
+      "sha256": "cc54f9e291f1a51f7a8d8f25e0c9a05db16dee8592f39191bd01e961cda90b15",
       "kind": "code-or-notice"
     },
     {
@@ -942,8 +948,8 @@
     },
     {
       "path": "operation-plans.js",
-      "bytes": 10116,
-      "sha256": "fd2e98f005f813c94a04bb74bd9def07217cd0d3db45e294e1e5d1a2ddcf02c0",
+      "bytes": 10917,
+      "sha256": "8fdfc47905757c1a4fc7b7f64293110877125d1f6bd5c7b0fb7f1a227fa06f38",
       "kind": "code-or-notice"
     },
     {
@@ -972,8 +978,8 @@
     },
     {
       "path": "pby-rescue.js",
-      "bytes": 8726,
-      "sha256": "1bd9967bb16957e1dbf507d3ffb6c6ed579cd06111c3856f9565e4f19101529c",
+      "bytes": 9224,
+      "sha256": "59f49651ef6058fcf7fc14e9849855e4947082e3cbf31e9db4448aeb575fad1f",
       "kind": "code-or-notice"
     },
     {
@@ -996,8 +1002,8 @@
     },
     {
       "path": "remagen-mission.html",
-      "bytes": 550332,
-      "sha256": "e030a9dafe1548364e4ad1e2cc433b96dd716b55352746e111126884f64b5fa3",
+      "bytes": 557575,
+      "sha256": "e0c396cbd0faf7492e675bc2038c99e04706832c7c9dd16be4e889f1ebcff8e4",
       "kind": "code-or-notice"
     },
     {
@@ -2197,7 +2203,7 @@
     {
       "path": "torpedo-carrier.html",
       "bytes": 480513,
-      "sha256": "a6acd35684b09dce2294e33d98b752b5ef1cbcda82dc4f44a4fe40cd4d0265e9",
+      "sha256": "734dfa15477433a1ed4d2cddda12bfcacaaa5d74a1449de58fcb58321bd0c79d",
       "kind": "code-or-notice"
     },
     {
@@ -2599,13 +2605,13 @@
       "nextAction": "Retain license/attribution/change notices, validate mesh/texture provenance and app-store redistribution conditions."
     },
     {
-      "path": "assets/aircraft/pby5a-own.glb",
-      "bytes": 936380,
-      "sha256": "b949aef9d16eb180db7e69744e2186b944bc4ff67ef542663c289865c1630fda",
+      "path": "assets/aircraft/pby5a-blackcat-own.glb",
+      "bytes": 2454572,
+      "sha256": "223e42bfe27265d6cacbcd63896c807b2398432f97774f14e70d75d1c0c994bc",
       "title": "Consolidated PBY-5A Catalina (1942)",
       "uploader": "Torpedo-Bomber project",
       "originalRightsholder": null,
-      "sourceUrl": "https://pimaair.org/museum-aircraft/consolidated-pby-5a/",
+      "sourceUrl": "https://www.usaf-sig.org/index.php/references/downloads/4-technical-orders/38-type-specific/42-pby-catalina?download=163:an-01-5ma-2-pby-5-pby-5a",
       "acquiredOn": null,
       "declaredLicense": "project-own (original mesh and paint)",
       "licenseUrl": null,
@@ -2615,7 +2621,31 @@
       "externalImages": [],
       "originalFile": null,
       "originalSha256": null,
-      "changes": "New procedural exterior game mesh and original baked albedo. References used only to compare proportions and appearance.",
+      "changes": "Revised original hull, wing, tailplane, cockpit and blisters. No third-party mesh or texture.",
+      "issue": "own-build-reference-review-open",
+      "commercialPermissionDocument": null,
+      "bundleRedistributionGrant": null,
+      "releaseApproved": false,
+      "nextAction": "Own mesh and paint; review the recorded reference source and any applicable attribution/share-alike obligations; credits kept in ASSET-CREDITS.md."
+    },
+    {
+      "path": "assets/aircraft/pby5a-own.glb",
+      "bytes": 2579412,
+      "sha256": "bf4f9c5cd29df90f92250237e8ff7add86ffeaa09ab140372c3e3a18a8fa9872",
+      "title": "Consolidated PBY-5A Catalina (1942)",
+      "uploader": "Torpedo-Bomber project",
+      "originalRightsholder": null,
+      "sourceUrl": "https://www.usaf-sig.org/index.php/references/downloads/4-technical-orders/38-type-specific/42-pby-catalina?download=163:an-01-5ma-2-pby-5-pby-5a",
+      "acquiredOn": null,
+      "declaredLicense": "project-own (original mesh and paint)",
+      "licenseUrl": null,
+      "licenseEvidence": "Exact runtime GLB asset.extras",
+      "sourceCheck": null,
+      "embeddedImageCount": 1,
+      "externalImages": [],
+      "originalFile": null,
+      "originalSha256": null,
+      "changes": "Revised original hull, wing, tailplane, cockpit and blisters. No third-party mesh or texture.",
       "issue": "own-build-reference-review-open",
       "commercialPermissionDocument": null,
       "bundleRedistributionGrant": null,

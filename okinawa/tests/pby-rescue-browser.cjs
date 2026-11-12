@@ -74,8 +74,8 @@ const server=http.createServer((req,res)=>{
    assert.ok(Math.abs(R.rig.gear-1.47)<1e-6&&Math.abs(R.rig.nose+1.37)<1e-6,'wheels up for a water landing: '+JSON.stringify(R.rig));assert.ok(Math.abs(Math.abs(R.rig.floatFlight)-1.5708)<1e-3,'tip floats folded in flight: '+R.rig.floatFlight);
    assert.ok(R.start.visible&&R.start.d>930&&R.start.d<970&&R.start.y>40,'she starts 950 m out and high: '+JSON.stringify(R.start));
    assert.ok(R.touch&&R.touch.t>12&&R.touch.t<17,'touchdown after about 14 s: '+JSON.stringify(R.touch));assert.ok(Math.abs(R.touch.float)<1e-6,'tip floats deployed for the landing: '+R.touch.float);
-   assert.ok(R.touch.hullMinOverSea<-.1&&R.touch.hullMinOverSea>-1.3,'the hull meets the water (tail low in the flare): '+R.touch.hullMinOverSea);
-   assert.ok(R.stop&&R.stop.dist>20&&R.stop.dist<40,'she stops 30 m from the survivor: '+JSON.stringify(R.stop));assert.ok(Math.abs(R.stop.hullMinOverSea+.25)<.3,'hull on the water: '+R.stop.hullMinOverSea);
+   assert.ok(R.touch.hullMinOverSea<-.3&&R.touch.hullMinOverSea>-2,'the hull meets the water (tail low in the flare; Build 251: the design water line of the model puts the keel 0.88 m under): '+R.touch.hullMinOverSea);
+   assert.ok(R.stop&&R.stop.dist>20&&R.stop.dist<40,'she stops 30 m from the survivor: '+JSON.stringify(R.stop));assert.ok(Math.abs(R.stop.hullMinOverSea+.877)<.3,'hull on the water at the design water line (keel -0.877 m): '+R.stop.hullMinOverSea);
    assert.ok(R.pick&&R.pick.t-R.stop.t>3&&R.pick.t-R.stop.t<4.6,'the first survivor is aboard about 3.2 s after she stops: '+JSON.stringify([R.stop,R.pick]));
    assert.ok(R.done&&R.done.t-R.pick.t>2.2&&R.done.t-R.pick.t<3.2,'done about 2.5 s after the pickup: '+JSON.stringify([R.pick,R.done]));
    assert.ok(R.nearPick&&R.nearPick.t>R.pick.t+10&&R.nearPick.dist<40&&R.nearDone,'the second survivor is taxied to and taken aboard: '+JSON.stringify([R.nearPick,R.nearDone,R.phases,R.pick,R.stop]));

@@ -53,9 +53,9 @@ assert.equal(pilot.rtb,true,'second kill unlocks carrier recovery');assert.equal
 const script=html('remagen-mission.html');
 const start=script.indexOf('const MISSIONS=['),end=script.indexOf('\nfunction M()',start);
 const missions=vm.runInNewContext(script.slice(start,end)+'\nMISSIONS',{});
-assert.equal(missions.length,29,'training plus twenty-seven real-terrain combat sorties (the three Storch bonuses are appended last)');
+assert.equal(missions.length,32,'training plus thirty real-terrain combat sorties (the six Storch bonuses are appended last)');
 assert.deepEqual([...new Set(missions.map(m=>m.ac))].sort(),['bf109','fi156','fw190','ju87','me163','me262','p47']);
-assert.equal(missions.filter(m=>m.kills||m.enemyAir||m.bombers).length,27);
+assert.equal(missions.filter(m=>m.kills||m.enemyAir||m.bombers).length,30);
 assert.equal(missions.filter(m=>m.ac==='me262').length,4,'four jet sorties');
 assert.equal(missions[16].ac,'me163','original Komet interception retains its index');
 assert.equal(missions[17].ac,'ju87','Ju 87 bonus retains its index');
@@ -71,6 +71,9 @@ assert.equal(missions[25].id,'schraege','the night-hunt bonus appends without sh
 assert.equal(missions[26].id,'rescue','the Storch rescue appends without shifting saved mission indices');assert.equal(missions[26].ac,'fi156');assert.equal(missions[26].kills.rescued,1);assert.ok(missions[26].rescue&&missions[26].bonus);
 assert.equal(missions[27].id,'spotter');assert.equal(missions[27].ac,'fi156');assert.equal(missions[27].kills.zone,3);assert.ok(missions[27].spotter);
 assert.equal(missions[28].id,'rats');assert.equal(missions[28].ac,'fi156');assert.ok(missions[28].rats&&missions[28].bonus);
+assert.equal(missions[29].id,'courier','Build 251: the courier flight appends without shifting saved mission indices');assert.equal(missions[29].ac,'fi156');assert.equal(missions[29].weather,'lowcloud');assert.equal(missions[29].kills.courier,1);assert.ok(missions[29].courier&&missions[29].bonus);
+assert.equal(missions[30].id,'rock');assert.equal(missions[30].ac,'fi156');assert.equal(missions[30].kills.rescued,1);assert.ok(missions[30].rock&&missions[30].bonus);
+assert.equal(missions[31].id,'moon');assert.equal(missions[31].ac,'fi156');assert.equal(missions[31].night,true);assert.equal(missions[31].kills.rescued,1);assert.ok(missions[31].moon&&missions[31].bonus);
 const plans=vm.runInNewContext(html('operation-plans.js')+'\nwindow.FlightPlans',{window:{}});
 assert.equal(plans.europe.length,missions.length,'every Rhine sortie gets its own weather/operation plan');
 assert.equal(plans.europe[16].fuel,65,'original rocket sortie has limited powered flight');

@@ -529,3 +529,11 @@ recordings, with 14.5/12.5 s loops. Avenger/Zero use an adapted BMW 14-cylinder 
 SBD uses a single R-2800 substitute. These are explicit game approximations, not recordings
 of the named R-2600/Sakae/R-1820 engines. Details and exact intervals:
 [audio/engines/CREDITS.md](audio/engines/CREDITS.md). No new third-party source added.
+
+## Build 251 — revised Catalina (day and Black Cat paint)
+
+`assets/aircraft/pby5a-own.glb` and `assets/aircraft/pby5a-blackcat-own.glb` were delivered as `Catalina_PBY-5A_Torpedo_Carrier.zip` (generated for the project from numeric geometry and procedural
+paint; no third-party mesh or texture). Reference drawings, manuals and museum pages (AN 01-5MA-2 figures 1 and 2, Pima Air & Space Museum, Australian War Memorial NEA0344 for the Black Cat paint,
+NHHC aircraft markings, American Heritage Museum, AOPA, Canso Flight Operations Handbook) were used only to compare proportions and appearance; they are listed in the model's own extras and in
+`scripts/own-models/pby5a-catalina-v2/README.md`. Published dimensions, reconstructed details, no established tolerance. License status: `project-own`. The Build 246 model is archived in
+`assets/aircraft/source/pby5a-v1/`. Details: `PERIOD-MODELS.md`.

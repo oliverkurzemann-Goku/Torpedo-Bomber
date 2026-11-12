@@ -1,0 +1,226 @@
+{
+  "baseline": {
+    "repository": "oliverkurzemann-Goku/Torpedo-Bomber",
+    "commit": "73744194c63661ed6705b984d13fdf10e63f4601",
+    "glbSHA256": "b949aef9d16eb180db7e69744e2186b944bc4ff67ef542663c289865c1630fda"
+  },
+  "models": {
+    "pby5a-own.glb": {
+      "sha256": "bf4f9c5cd29df90f92250237e8ff7add86ffeaa09ab140372c3e3a18a8fa9872",
+      "bytes": 2579412,
+      "triangles": 14666,
+      "meshes": 37,
+      "materials": 2,
+      "nodes": 54,
+      "texture": {
+        "images": 1,
+        "width": 2048,
+        "height": 2048
+      },
+      "dimensionsMetres": {
+        "span": 31.699200439453126,
+        "length": 19.45639991760254,
+        "height": 6.146800107955933
+      },
+      "waterlineY": 0,
+      "keelMinimumY": -0.8771999809265136,
+      "wheelMinimumY": -1.6072000190734863,
+      "legacyNodesAtOriginalIndices": 35,
+      "validation": {
+        "version": "2.0.0-dev.3.10",
+        "errors": 0,
+        "warnings": 0,
+        "info": [
+          {
+            "code": "NODE_EMPTY",
+            "message": "Empty node encountered.",
+            "severity": 2,
+            "pointer": "/nodes/42"
+          },
+          {
+            "code": "NODE_EMPTY",
+            "message": "Empty node encountered.",
+            "severity": 2,
+            "pointer": "/nodes/43"
+          },
+          {
+            "code": "NODE_EMPTY",
+            "message": "Empty node encountered.",
+            "severity": 2,
+            "pointer": "/nodes/44"
+          },
+          {
+            "code": "NODE_EMPTY",
+            "message": "Empty node encountered.",
+            "severity": 2,
+            "pointer": "/nodes/45"
+          },
+          {
+            "code": "NODE_EMPTY",
+            "message": "Empty node encountered.",
+            "severity": 2,
+            "pointer": "/nodes/46"
+          },
+          {
+            "code": "NODE_EMPTY",
+            "message": "Empty node encountered.",
+            "severity": 2,
+            "pointer": "/nodes/47"
+          },
+          {
+            "code": "NODE_EMPTY",
+            "message": "Empty node encountered.",
+            "severity": 2,
+            "pointer": "/nodes/48"
+          },
+          {
+            "code": "NODE_EMPTY",
+            "message": "Empty node encountered.",
+            "severity": 2,
+            "pointer": "/nodes/50"
+          },
+          {
+            "code": "NODE_EMPTY",
+            "message": "Empty node encountered.",
+            "severity": 2,
+            "pointer": "/nodes/51"
+          },
+          {
+            "code": "NODE_EMPTY",
+            "message": "Empty node encountered.",
+            "severity": 2,
+            "pointer": "/nodes/52"
+          },
+          {
+            "code": "NODE_EMPTY",
+            "message": "Empty node encountered.",
+            "severity": 2,
+            "pointer": "/nodes/53"
+          }
+        ]
+      }
+    },
+    "pby5a-blackcat-own.glb": {
+      "sha256": "223e42bfe27265d6cacbcd63896c807b2398432f97774f14e70d75d1c0c994bc",
+      "bytes": 2454572,
+      "triangles": 14666,
+      "meshes": 37,
+      "materials": 2,
+      "nodes": 54,
+      "texture": {
+        "images": 1,
+        "width": 2048,
+        "height": 2048
+      },
+      "dimensionsMetres": {
+        "span": 31.699200439453126,
+        "length": 19.45639991760254,
+        "height": 6.146800107955933
+      },
+      "waterlineY": 0,
+      "keelMinimumY": -0.8771999809265136,
+      "wheelMinimumY": -1.6072000190734863,
+      "legacyNodesAtOriginalIndices": 35,
+      "validation": {
+        "version": "2.0.0-dev.3.10",
+        "errors": 0,
+        "warnings": 0,
+        "info": [
+          {
+            "code": "NODE_EMPTY",
+            "message": "Empty node encountered.",
+            "severity": 2,
+            "pointer": "/nodes/42"
+          },
+          {
+            "code": "NODE_EMPTY",
+            "message": "Empty node encountered.",
+            "severity": 2,
+            "pointer": "/nodes/43"
+          },
+          {
+            "code": "NODE_EMPTY",
+            "message": "Empty node encountered.",
+            "severity": 2,
+            "pointer": "/nodes/44"
+          },
+          {
+            "code": "NODE_EMPTY",
+            "message": "Empty node encountered.",
+            "severity": 2,
+            "pointer": "/nodes/45"
+          },
+          {
+            "code": "NODE_EMPTY",
+            "message": "Empty node encountered.",
+            "severity": 2,
+            "pointer": "/nodes/46"
+          },
+          {
+            "code": "NODE_EMPTY",
+            "message": "Empty node encountered.",
+            "severity": 2,
+            "pointer": "/nodes/47"
+          },
+          {
+            "code": "NODE_EMPTY",
+            "message": "Empty node encountered.",
+            "severity": 2,
+            "pointer": "/nodes/48"
+          },
+          {
+            "code": "NODE_EMPTY",
+            "message": "Empty node encountered.",
+            "severity": 2,
+            "pointer": "/nodes/50"
+          },
+          {
+            "code": "NODE_EMPTY",
+            "message": "Empty node encountered.",
+            "severity": 2,
+            "pointer": "/nodes/51"
+          },
+          {
+            "code": "NODE_EMPTY",
+            "message": "Empty node encountered.",
+            "severity": 2,
+            "pointer": "/nodes/52"
+          },
+          {
+            "code": "NODE_EMPTY",
+            "message": "Empty node encountered.",
+            "severity": 2,
+            "pointer": "/nodes/53"
+          }
+        ]
+      }
+    }
+  },
+  "simulator": {
+    "water": {
+      "takeoffMps": 38.8138408467971,
+      "landingMps": 52.403143722342875,
+      "groundY": 0
+    },
+    "land": {
+      "takeoffMps": 38.804516848442745,
+      "landingMps": 50.8175064839783,
+      "groundY": 5.6072
+    },
+    "incorrectGearRejected": true
+  },
+  "browser": {
+    "status": "not executed",
+    "reason": "Chromium process singleton socket denied; managed browser did not reach local HTTP server or allow local file navigation."
+  },
+  "rescue": {
+    "waterlineAtSurface": true,
+    "hatchOpened": true,
+    "pickupCompleted": true
+  },
+  "offline": {
+    "embeddedModelsIdentical": true,
+    "inlineScriptsParsed": 4,
+    "externalScripts": 0
+  }
+}

@@ -282,7 +282,7 @@
 .nhMark svg{display:block;width:22px;height:22px;margin:0 auto;fill:none;stroke:#ff7a52;stroke-width:2.2;filter:drop-shadow(0 0 2px #000);}
 .nhMark[hidden]{display:none;}
 </style>
-<link rel="stylesheet" href="menu-layout.css?v=250">
+<link rel="stylesheet" href="menu-layout.css?v=251">
 <link rel="stylesheet" href="duel.css?v=238">
 </head>
 <body>
@@ -305,7 +305,7 @@
   <div style="width:100%;height:4px;background:repeating-linear-gradient(45deg,#ffd400,#ffd400 8px,#111 8px,#111 16px);"></div>
   <span id="testVersionBannerText" style="background:#111;color:#ffd400;font-family:monospace;font-weight:800;font-size:11px;letter-spacing:.5px;padding:3px 10px;border:1px solid #ffd400;border-top:none;border-radius:0 0 6px 6px;"></span>
 </div>
-<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 250';</script>
+<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 251';</script>
 <!-- ===== END TEMP TEST-ONLY VERSION BANNER ===== -->
 <div id="app"></div>
 <style>
@@ -346,7 +346,7 @@
   <div id="flash"></div>
   <div id="gunsight"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 250 · REAL RHINE</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 251 · REAL RHINE</div>
 
   <div id="apr">
     <div id="aprCall"></div>
@@ -401,7 +401,7 @@
 </div>
 
 <div class="overlay hidden" id="menu" data-campaign="europe">
-  <div class="menuTop"><a id="selBtn" href="index.html?v=250">&#9664; Change Game</a><span class="menuMeta">RHINE OPERATIONS<br>BUILD 250</span></div>
+  <div class="menuTop"><a id="selBtn" href="index.html?v=251">&#9664; Change Game</a><span class="menuMeta">RHINE OPERATIONS<br>BUILD 251</span></div>
   <div class="card menuCard">
     <aside class="menuOverview" aria-label="Campaign and pilot options">
     <div class="campaignArt" aria-hidden="true"></div>
@@ -581,7 +581,7 @@
 <script src="ju87-native.js?v=218"></script>
 <script src="me262-native.js?v=206"></script>
 <script src="me163-native.js?v=218"></script>
-<script src="aircraft-contract.js?v=250"></script>
+<script src="aircraft-contract.js?v=251"></script>
 <script src="aircraft-articulation.js?v=218"></script>
 <script src="aircraft-rotors.js?v=172"></script>
 <script src="b17-native.js?v=201"></script>
@@ -607,23 +607,23 @@
 <script src="audio/flight-atmosphere.js?v=175"></script>
 <script src="sortie-systems.js?v=198"></script>
 <script src="me262-performance.js?v=238"></script>
-<script src="flight-envelope.js?v=250"></script>
-<script src="flight-dynamics.js?v=250"></script>
-<script src="flight-core.js?v=250"></script>
+<script src="flight-envelope.js?v=251"></script>
+<script src="flight-dynamics.js?v=251"></script>
+<script src="flight-core.js?v=251"></script>
 <script src="flight-control.js?v=238"></script>
 <script src="dogfight-ai.js?v=238"></script>
 <script src="squad.js?v=238"></script>
 <script src="duel-net.js?v=238"></script>
 <script src="duel.js?v=238"></script>
-<script src="audio/aircraft-engine.js?v=250"></script>
+<script src="audio/aircraft-engine.js?v=251"></script>
 <script src="p47-performance.js?v=204"></script>
-<script src="sortie-features.js?v=250"></script>
+<script src="sortie-features.js?v=251"></script>
 <script src="ground-run.js?v=204"></script>
 <script src="ground-dust.js?v=181"></script>
 <script src="flight-indicators.js?v=198"></script>
-<script src="sortie-fuel.js?v=250"></script>
-<script src="operation-plans.js?v=250"></script>
-<script src="custom-sortie.js?v=250"></script>
+<script src="sortie-fuel.js?v=251"></script>
+<script src="operation-plans.js?v=251"></script>
+<script src="custom-sortie.js?v=251"></script>
 <script>
 // ============================================================
 //  REMAGEN 1945 — REAL TERRAIN (forked from thunderbolt-europe.html)
@@ -984,7 +984,7 @@ async function loadRealWorld(){
 
   if(OSMManager.BUILD!==23||HistoricalObjectManager.BUILD!==21||LivingWorld.BUILD!==22||WorldVehicles.BUILD!==24) throw new Error('Terrain version mismatch. Reload Remagen.');
   document.getElementById('testVersionBannerText').textContent=
-    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 250 · MODULE 23';
+    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 251 · MODULE 23';
   heightProvider=new DEMHeightProvider(RTILE,'terrain-system/real/data/dem/');
   terrain=new TerrainManager(scene,RTILE,heightProvider);
   osmMgr=new OSMManager(scene,RTILE,terrain,'terrain-system/real/data/osm/');
@@ -3211,7 +3211,17 @@ const MISSIONS=[
       +'Fighters hunt you after the second zone. The observer\'s gun covers your tail.'},
   {id:'rats',title:'Bonus Rat Flight',sub:'Home at Treetop Height',ac:'fi156',bonus:true,weather:'haze',kills:{},rats:true,doneText:'You came home through the fighters. ',
     text:'Fictional escape: you start deep behind the line with a sealed dispatch and Allied fighters hunt a slow aircraft. Stay at tree height, turn into every attack, let the observer\'s gun work and land at the forward strip. '
-      +'No kills are required; a second pair waits near the strip.'}
+      +'No kills are required; a second pair waits near the strip.'},
+  // Build 251: three more Fi 156 sorties (indices 29-31): the pickup family (stsPickup) with their own twists
+  {id:'courier',title:'Bonus Courier',sub:'Dispatch Under the Overcast',ac:'fi156',bonus:true,weather:'lowcloud',kills:{courier:1},courier:true,doneText:'The answer is home. ',
+    text:'Fictional courier flight: a sealed dispatch for a command post 11 km behind the line (orange smoke, marked on the map) and an answer to bring home. Low overcast, the cloud base is about 850 ft: stay under it. '
+      +'Allied fighters wait above the cloud and dive on anything that climbs into view. Land near the smoke, hold still while the officer takes the case and hands you the reply, take off again and stay low.'},
+  {id:'rock',title:'Bonus Rock Landing',sub:'The Observer on the Ridge',ac:'fi156',bonus:true,weather:'clear',kills:{rescued:1},rock:true,doneText:'The observer is down from the ridge. ',
+    text:'Fictional pickup: an artillery observer waits on a short, sloping ridge clearing behind the line (yellow smoke, marked on the map). Only a Storch gets in and out of a strip like this: land uphill, stop within 90 m of him for the precision bonus (+300), '
+      +'let him board and take off downhill. A fighter pair arrives nine seconds after he is aboard.'},
+  {id:'moon',title:'Bonus Moonlight Pickup',sub:'Three Lanterns in the Dark',ac:'fi156',bonus:true,night:true,weather:'clear',kills:{rescued:1},moon:true,doneText:'The agent is home. ',
+    text:'Fictional night pickup: an agent waits in a dark meadow behind the line, marked by three lanterns in a row (map). No strip lights, moonlight only: find the lanterns, land beside them, hold still while he boards and take off again. '
+      +'Night intruders come once he is aboard. Four flares (L) light the way.'}
 ];
 function M(){ return MISSIONS[mission]; }
 function isFree(){ return !!M().free; }
@@ -3304,7 +3314,7 @@ function objectiveText(){
   if(blockingEnemyAir().length>0 && !ks.length)
     return 'BANDITS  '+blockingEnemyAir().length+' LEFT';
   if(!ks.length) return europeOps?.pending()?'NEXT CONTACT EXPECTED':'RTB — LAND AT '+airfieldName(m);
-  const nm={flak:'FLAK',bridge:'BRIDGE',factory:'FACTORY',truck:['jabo','stuka'].includes(M().id)?'VEHICLES':'TRUCKS',train:'TRAIN',ferry:'FERRY',ramp:'V-1 RAMP',depot:'STORES',storch:'STAFF TARGET',nightfighter:'NIGHT FIGHTERS',rescued:'PILOT',zone:'ZONES'};
+  const nm={flak:'FLAK',bridge:'BRIDGE',factory:'FACTORY',truck:['jabo','stuka'].includes(M().id)?'VEHICLES':'TRUCKS',train:'TRAIN',ferry:'FERRY',ramp:'V-1 RAMP',depot:'STORES',storch:'STAFF TARGET',nightfighter:'NIGHT FIGHTERS',rescued:'PILOT',zone:'ZONES',courier:'ANSWER'};
   return ks.map(k=>(nm[k]||k.toUpperCase())+' '+left[k]).join('  ')+(M().ramp?'   V-1 DOWN '+(sortieKills.v1||0):'');
 }
 function checkObjective(){
@@ -5078,7 +5088,7 @@ async function duelCopy(id){
 function duelSendHello(){
   const s=duelSession;if(!s||!duelLink||duelLink.status!=='open')return;
   s.name=Duel.cleanName(dEl('dlName').value)||s.name;
-  duelLink.sendEvent(Duel.hello({name:s.name,ac:s.ac,build:250}));
+  duelLink.sendEvent(Duel.hello({name:s.name,ac:s.ac,build:251}));
 }
 function duelOnStatus(status,info){
   const s=duelSession;if(!s)return;
@@ -6212,12 +6222,17 @@ function fuelBlast(t){
 //  Fictional and solo. The hunters are `escapeThreat` (they never block the return); the rear gunner is automatic (updateStorchGunner).
 //  Not stored in a checkpoint: after "Continue" the state is rebuilt from sortieKills (rescued / zone); the places are deterministic per id.
 // ============================================================
-const STS={lz:{r:62,slope:3,len:190,wid:46,disc:230},stop:280,board:6,runSpeed:7.5,runMax:26,rescuePts:600,
+const STS={lz:{r:62,slope:3,len:190,wid:46,disc:230},stop:280,board:6,runSpeed:9,runMax:20,rescuePts:600,
   zone:{r:520,agl:[25,280],maxSpeed:42,seconds:12,delay:9,shells:7,spread:120,hit:90,pts:300},
-  hunt:{delay:{rescue:5,spotter:8,rats:22},dist:3300,alt:420},rats:{back:12500,side:5200,agl:60}};
+  hunt:{delay:{rescue:5,rock:9,moon:6,spotter:8,rats:22},dist:3300,alt:420},rats:{back:12500,side:5200,agl:60},
+  courier:{dist:11000,side:1900,ceiling:{agl:260,seconds:7}},rock:{r:34,slope:6,along:50,alongSlope:4.5,disc:120,precise:90,bonus:300},moon:{lamps:3,say:'THREE LANTERNS — LAND BESIDE THEM, HE WILL COME TO YOU'}};
 let sts=null;
 const stsCache={};
-function stsKind(m){return m&&(m.rescue?'rescue':m.spotter?'spotter':m.rats?'rats':null);}
+function stsKind(m){return m&&(m.rescue?'rescue':m.courier?'courier':m.rock?'rock':m.moon?'moon':m.spotter?'spotter':m.rats?'rats':null);}
+// the pickup family: land near the marker, the figure runs to the aeroplane and boards, take off again (rescue, courier, rock, moon)
+function stsPickup(k){return k==='rescue'||k==='courier'||k==='rock'||k==='moon';}
+function stsDone(){return sts&&sts.kind==='courier'?(sortieKills.courier||0):(sortieKills.rescued||0);}
+const stsWho=k=>k==='courier'?'OFFICER':k==='moon'?'AGENT':k==='rock'?'OBSERVER':'PILOT';
 // trees are instanced: take the ones inside the meadow out (scale 0), like clearTreesNearAirfield does for the strips
 function stsClearTrees(x,z,halfL,halfW,disc=0){
   if(!osmMgr||!osmMgr.tiles)return 0;
@@ -6239,23 +6254,30 @@ function stsPlan(m){
   const kind=stsKind(m),rand=siteRand(siteSeed('storch-sortie:'+m.id)),hx=GERMAN_AF_X,hz=GERMAN_AF_Z,plan={kind};
   // a dry, clear, flat spot near the wanted point; the second try is wider and gentler about the slope; the last resort is the point itself
   const pick=(cx,cz,r0,r1,opt)=>siteSpot(cx,cz,r0,r1,rand,opt)||siteSpot(cx,cz,r1,r1*2.2,rand,{...opt,slope:(opt.slope||4)+2,alongSlope:(opt.alongSlope||5)+1.5})||{x:cx,z:cz};
-  if(kind==='rescue')plan.lz=pick(hx-7600,hz-2800,0,2200,{r:STS.lz.r,slope:STS.lz.slope,along:[STS.lz.r,0],alongSlope:2.5});
+  const meadow={r:STS.lz.r,slope:STS.lz.slope,along:[STS.lz.r,0],alongSlope:2.5};
+  if(kind==='rescue')plan.lz=pick(hx-7600,hz-2800,0,2200,meadow);
+  else if(kind==='courier')plan.lz=pick(hx-STS.courier.dist,hz+STS.courier.side,0,2200,meadow);
+  else if(kind==='moon')plan.lz=pick(hx-8300,hz+2300,0,2000,meadow);
+  else if(kind==='rock'){   // the highest dry, clear, gentle spot of six tries around the line: a ridge clearing
+    const ro={r:STS.rock.r,slope:STS.rock.slope,along:[STS.rock.along,0],alongSlope:STS.rock.alongSlope,high:true};let best=null;
+    for(const [d,o] of [[5200,-3200],[6800,2600],[8200,-1100],[9600,3200],[7400,-4200],[10300,-2400]]){const c=siteSpot(hx-d,hz-o,0,1500,rand,ro);if(c&&(!best||c.h>best.h))best=c;}
+    plan.lz=best||pick(hx-7000,hz,0,2500,{...ro,high:false,slope:ro.slope+1,alongSlope:ro.alongSlope+1});}
   else if(kind==='spotter')plan.zones=[[4300,1900],[7700,-1700],[10900,2300]].map(([d,o])=>pick(hx-d,hz-o,0,700,{r:30,slope:8}));
   else if(kind==='rats')plan.start={x:hx-STS.rats.back,z:hz-STS.rats.side};
   return stsCache[m.id]=plan;
 }
 function stsHuntCount(){return Math.max(1,2+(diffIdx===2?1:0)-(diffIdx===0?1:0));}
 function stsReset(){
-  if(sts){if(sts.fig)scene.remove(sts.fig);for(const o of sts.disposables||[])o.dispose();}
+  if(sts){if(sts.fig)scene.remove(sts.fig);for(const l of sts.lamps||[])scene.remove(l);for(const o of sts.disposables||[])o.dispose();}
   sts=null;
 }
 function stsStart(m){
   stsReset();const kind=stsKind(m);if(!kind)return;
   const plan=stsPlan(m);
-  sts={kind,plan,clock:0,said:{},phase:'fly',hunt:null,smokeT:0,fig:null,hold:0,zone:0,shell:null,blasts:[],runT:0,boardT:0};
-  if(kind==='rescue'){
-    const lz=plan.lz;stsClearTrees(lz.x,lz.z,STS.lz.len+70,STS.lz.wid+10,STS.lz.disc);   // Build 250: a disc as well - the approach may come from any side
-    if((sortieKills.rescued||0)>=1)sts.phase='home';
+  sts={kind,plan,clock:0,said:{},phase:'fly',hunt:null,smokeT:0,fig:null,hold:0,zone:0,shell:null,blasts:[],runT:0,boardT:0,high:0,waves:0,lamps:null};
+  if(stsPickup(kind)){
+    const lz=plan.lz;stsClearTrees(lz.x,lz.z,STS.lz.len+70,STS.lz.wid+10,kind==='rock'?STS.rock.disc:STS.lz.disc);   // Build 250: a disc as well - the approach may come from any side
+    if(stsDone()>=1)sts.phase='home';
     else{
       // the pilot: a small figure at the edge of the meadow
       const body=new THREE.Mesh(new THREE.CylinderGeometry(.26,.3,1.2,6),new THREE.MeshLambertMaterial({color:0x6b6e5a})),
@@ -6263,6 +6285,11 @@ function stsStart(m){
       body.position.y=.6;head.position.y=1.42;sts.fig=new THREE.Group();sts.fig.add(body,head);scene.add(sts.fig);
       sts.disposables=[body.geometry,head.geometry,body.material,head.material];
       sts.figPos={x:lz.x+10,z:lz.z+34};sts.fig.position.set(sts.figPos.x,groundY(sts.figPos.x,sts.figPos.z),sts.figPos.z);
+      if(kind==='moon'){   // three lanterns in a row beside him (additive glow sprites, flickering)
+        const tex=makeSoftSprite();sts.lamps=[];sts.disposables.push(tex);
+        for(let i=0;i<STS.moon.lamps;i++){const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,color:0xffd48a,blending:THREE.AdditiveBlending,transparent:true,depthWrite:false,opacity:.95}));
+          const lx=lz.x-60+i*60,lzz=lz.z+40;sp.scale.setScalar(15);sp.position.set(lx,groundY(lx,lzz)+1.5,lzz);scene.add(sp);sts.lamps.push(sp);sts.disposables.push(sp.material);}
+      }
     }
   }else if(kind==='spotter')sts.zone=Math.min(plan.zones.length,sortieKills.zone||0);
 }
@@ -6280,27 +6307,33 @@ function stsSpawnHunters(n){
 }
 function stsAboard(s){
   s.phase='home';if(s.fig)s.fig.visible=false;
-  sortieKills.rescued=1;addScore(STS.rescuePts);
-  radioSay('PILOT ABOARD — GET HIM HOME. FIGHTERS ARE COMING');flash('PILOT ABOARD — TAKE OFF AND STAY LOW',2600);
-  s.hunt={n:stsHuntCount(),t:STS.hunt.delay.rescue};
+  if(s.kind==='courier'){sortieKills.courier=1;addScore(STS.rescuePts);radioSay('ANSWER ABOARD — HOME UNDER THE CLOUDS, THEY ARE STILL UP THERE');flash('ANSWER ABOARD — TAKE OFF AND STAY LOW',2600);}
+  else{
+    sortieKills.rescued=1;addScore(STS.rescuePts);
+    radioSay(s.kind==='moon'?'AGENT ABOARD — GET HIM HOME. INTRUDERS ARE COMING':s.kind==='rock'?'OBSERVER ABOARD — DOWNHILL AND AWAY. FIGHTERS ARE COMING':'PILOT ABOARD — GET HIM HOME. FIGHTERS ARE COMING');
+    flash(stsWho(s.kind)+' ABOARD — TAKE OFF AND STAY LOW',2600);
+    s.hunt={n:stsHuntCount(),t:STS.hunt.delay[s.kind]||STS.hunt.delay.rescue};
+  }
   checkObjective();
 }
 // the landing roll ended: stopped near the smoke = the pickup begins (the sortie goes on); anywhere else the landing ends it as usual
 function stsGroundStop(){
-  const s=sts;if(!s||s.kind!=='rescue'||!s.fig||(sortieKills.rescued||0)>=1||!P.alive)return false;
-  const fp=s.fig.position;if(Math.hypot(P.pos.x-fp.x,P.pos.z-fp.z)>STS.stop)return false;   // Build 250: near the pilot, not near the meadow's middle
+  const s=sts;if(!s||!stsPickup(s.kind)||!s.fig||stsDone()>=1||!P.alive)return false;
+  const fp=s.fig.position,dd=Math.hypot(P.pos.x-fp.x,P.pos.z-fp.z);if(dd>STS.stop)return false;   // Build 250: near the pilot, not near the meadow's middle
   P.spd=0;P.landingRoll=null;P.throttle=0;setThrottleUI(0);P.groundPower=0;
   s.phase='run';s.runT=0;s.boardT=0;s.runFrom={x:s.fig.position.x,z:s.fig.position.z};
   s.runDur=Math.min(STS.runMax,Math.max(2.5,Math.hypot(P.pos.x-s.runFrom.x,P.pos.z-s.runFrom.z)/STS.runSpeed));
-  radioSay('PILOT RUNNING TO YOU — HOLD STILL');flash('DOWN IN THE MEADOW — THE PILOT IS COMING',2400);
+  if(s.kind==='rock'&&dd<=STS.rock.precise){addScore(STS.rock.bonus);radioSay('PRECISION LANDING — WELL DONE');}
+  radioSay(stsWho(s.kind)+' RUNNING TO YOU — HOLD STILL');flash(s.kind==='rock'?'DOWN ON THE RIDGE — THE OBSERVER IS COMING':s.kind==='courier'?'DOWN AT THE COMMAND POST — THE OFFICER IS COMING':'DOWN IN THE MEADOW — THE '+stsWho(s.kind)+' IS COMING',2400);
   return true;
 }
 function stsRescue(dt){
   const s=sts,lz=s.plan.lz,d=Math.hypot(P.pos.x-lz.x,P.pos.z-lz.z),gy=groundY(lz.x,lz.z),f=s.fig;
   if(s.phase==='home'||!f)return;
   s.smokeT-=dt;
-  if(s.smokeT<=0&&d<6500){s.smokeT=.3;spawnSmoke(lz.x+(Math.random()-.5)*3,gy+1.2,lz.z+34+(Math.random()-.5)*3,0xe3c23a,1.05);}
-  if(!s.said.near&&d<1900){s.said.near=1;radioSay('THAT IS THE MEADOW — YELLOW SMOKE. SET DOWN NEAR IT, HE WILL COME TO YOU');}
+  if(s.kind!=='moon'&&s.smokeT<=0&&d<6500){s.smokeT=.3;spawnSmoke(lz.x+(Math.random()-.5)*3,gy+1.2,lz.z+34+(Math.random()-.5)*3,s.kind==='courier'?0xe8862a:0xe3c23a,1.05);}
+  if(s.lamps)s.lamps.forEach((l,i)=>{l.material.opacity=.78+.22*Math.sin(s.clock*7+i*2.1);});
+  if(!s.said.near&&d<1900){s.said.near=1;radioSay(s.kind==='moon'?STS.moon.say:s.kind==='rock'?'THE RIDGE CLEARING — SHORT AND STEEP. LAND UPHILL, STOP NEAR THE SMOKE':s.kind==='courier'?'ORANGE SMOKE — THE COMMAND POST. SET DOWN NEAR IT, THE OFFICER WILL COME TO YOU':'THAT IS THE MEADOW — YELLOW SMOKE. SET DOWN NEAR IT, HE WILL COME TO YOU');}
   f.visible=true;
   if(s.phase==='fly'){f.position.set(s.figPos.x,groundY(s.figPos.x,s.figPos.z)+Math.abs(Math.sin(s.clock*3.2))*.22,s.figPos.z);}
   else if(s.phase==='run'){
@@ -6351,11 +6384,19 @@ function stsRats(dt){
   // a second pair waits near the strip for the aeroplane that thinks it has made it
   if(!s.said.late&&s.clock>50&&Math.hypot(P.pos.x-GERMAN_AF_X,P.pos.z-GERMAN_AF_Z)<4600&&!P.onGround){s.said.late=1;stsSpawnHunters(Math.max(1,stsHuntCount()-1));}
 }
+// the courier flight: Allied fighters wait above the cloud base; whoever climbs into view for STS.courier.ceiling.seconds is dived on (two waves at most)
+function stsCeiling(dt){
+  const s=sts,c=STS.courier.ceiling,agl=P.pos.y-groundY(P.pos.x,P.pos.z);
+  if(!P.onGround&&agl>c.agl)s.high=Math.min(c.seconds+1,s.high+dt);else{s.high=Math.max(0,s.high-dt*.6);if(s.high<.5)s.said.hi=0;}
+  if(s.high>2.5&&!s.said.hi){s.said.hi=1;radioSay('KEEP IT UNDER THE CLOUD BASE — THEY CAN SEE YOU UP THERE');}
+  if(s.high>=c.seconds&&!s.hunt&&s.waves<2){s.waves++;s.high=0;s.hunt={n:stsHuntCount(),t:2.5};radioSay('SPOTTED ABOVE THE CLOUD BASE — FIGHTERS DIVING. GET DOWN AND TURN INTO THEM');}
+}
 function updateStorchSorties(dt){
   const s=sts;if(!s||!P.alive||state!==ST.FLIGHT||launchIntro||missionOver)return;
   s.clock+=dt;
   if(s.hunt){s.hunt.t-=dt;if(s.hunt.t<=0){const n=s.hunt.n;s.hunt=null;stsSpawnHunters(n);}}
-  if(s.kind==='rescue')stsRescue(dt);else if(s.kind==='spotter')stsSpotter(dt);else if(s.kind==='rats')stsRats(dt);
+  if(stsPickup(s.kind))stsRescue(dt);else if(s.kind==='spotter')stsSpotter(dt);else if(s.kind==='rats')stsRats(dt);
+  if(s.kind==='courier')stsCeiling(dt);
 }
 function stsLaunchAir(){
   const m=M();if(!m.rats||!sts)return false;
@@ -6371,11 +6412,13 @@ function stsLaunchAir(){
 function stsObjectiveText(){
   const s=sts;if(!s)return null;
   const bandits=enemyAir.filter(e=>e.alive&&e.sortie).length,b=bandits?'   BANDITS '+bandits:'';
-  if(s.kind==='rescue'){
-    if(sortieKills.rescued)return 'PILOT ABOARD — LAND AT FORWARD STRIP'+b;
-    if(s.phase==='run')return 'PILOT RUNNING — HOLD STILL';
-    if(s.phase==='board')return 'PILOT BOARDING '+Math.max(0,Math.ceil(STS.board-s.boardT))+' s';
-    return 'LAND IN THE MEADOW — YELLOW SMOKE (MAP)';
+  if(stsPickup(s.kind)){
+    const who=stsWho(s.kind);
+    if(stsDone())return (s.kind==='courier'?'ANSWER':who)+' ABOARD — LAND AT FORWARD STRIP'+b;
+    if(s.phase==='run')return who+' RUNNING — HOLD STILL';
+    if(s.phase==='board')return (s.kind==='courier'?'HANDOVER ':who+' BOARDING ')+Math.max(0,Math.ceil(STS.board-s.boardT))+' s';
+    return s.kind==='courier'?'UNDER THE CLOUDS TO THE ORANGE SMOKE (MAP)'+(s.high>0?'   ABOVE CLOUD BASE '+Math.ceil(STS.courier.ceiling.seconds-s.high)+' s':'')
+      :s.kind==='rock'?'LAND ON THE RIDGE — SHORT AND SLOPING (MAP)':s.kind==='moon'?'LAND BESIDE THE THREE LANTERNS (MAP)':'LAND IN THE MEADOW — YELLOW SMOKE (MAP)';
   }
   if(s.kind==='spotter'){
     if(s.zone<s.plan.zones.length)return 'OBSERVE ZONE '+(s.zone+1)+'/'+s.plan.zones.length+' — LOW AND SLOW IN THE CIRCLE'+(s.hold>0?'  '+Math.ceil(STS.zone.seconds-s.hold)+' s':'');
@@ -6385,19 +6428,22 @@ function stsObjectiveText(){
 }
 function stsRtbText(m){
   return m.rescue?{radio:'RESCUE COMPLETE — LAND AT THE FORWARD STRIP',flash:'PILOT ABOARD — RTB'}
+    :m.courier?{radio:'THE ANSWER IS ABOARD — STAY UNDER THE CLOUDS, LAND AT THE FORWARD STRIP',flash:'ANSWER ABOARD — RTB'}
+    :m.rock?{radio:'OBSERVER ABOARD — HOME TO THE FORWARD STRIP',flash:'OBSERVER ABOARD — RTB'}
+    :m.moon?{radio:'AGENT ABOARD — HOME TO THE FORWARD STRIP, NO LIGHTS',flash:'AGENT ABOARD — RTB'}
     :m.spotter?{radio:'ALL THREE ZONES FIRED ON — HOME TO THE FORWARD STRIP',flash:'FIRE MISSION DONE — RTB'}
     :m.rats?{radio:'KEEP IT LOW — THE STRIP IS AHEAD',flash:'ESCAPE — RTB'}:null;
 }
 function stsBriefPoints(m){
   const p=stsPlan(m),out=[];
-  if(p.lz)out.push({x:p.lz.x,z:p.lz.z,label:'Meadow, yellow smoke — pilot waiting'});
+  if(p.lz)out.push({x:p.lz.x,z:p.lz.z,label:p.kind==='courier'?'Command post, orange smoke — officer waiting':p.kind==='rock'?'Ridge clearing, yellow smoke — observer waiting':p.kind==='moon'?'Dark meadow, three lanterns — agent waiting':'Meadow, yellow smoke — pilot waiting'});
   (p.zones||[]).forEach((z,i)=>out.push({x:z.x,z:z.z,label:'Observation zone '+(i+1)}));
   if(p.start)out.push({x:p.start.x,z:p.start.z,label:'Start: deep behind the line'});
   return out;
 }
 function stsMapMarks(){
   const s=sts;if(!s)return [];
-  if(s.kind==='rescue'&&s.phase!=='home')return [{x:s.plan.lz.x,z:s.plan.lz.z,r:90,color:'#e8c43a',label:'MEADOW — YELLOW SMOKE'}];
+  if(stsPickup(s.kind)&&s.phase!=='home')return [{x:s.plan.lz.x,z:s.plan.lz.z,r:90,color:s.kind==='courier'?'#e8862a':s.kind==='moon'?'#ffd48a':'#e8c43a',label:s.kind==='courier'?'COMMAND POST — ORANGE SMOKE':s.kind==='rock'?'RIDGE — YELLOW SMOKE':s.kind==='moon'?'THREE LANTERNS':'MEADOW — YELLOW SMOKE'}];
   if(s.kind==='spotter'&&s.zone<s.plan.zones.length){const z=s.plan.zones[s.zone];return [{x:z.x,z:z.z,r:STS.zone.r,color:'#80c9df',label:'ZONE '+(s.zone+1)+' — BLUE CIRCLE'}];}
   return [];
 }
@@ -8426,7 +8472,7 @@ function init(){
   // menu wiring
   document.getElementById('startBtn').onclick=()=>showBrief(selectedMission);
   duelInit();
-  document.getElementById('pauseMainMenu').onclick=async()=>{globalThis.sortieCheckpoint?.save();await globalThis.sortieCheckpoint?.flush();exitToMenuFromPause(true);window.location.href='index.html?v=250';};
+  document.getElementById('pauseMainMenu').onclick=async()=>{globalThis.sortieCheckpoint?.save();await globalThis.sortieCheckpoint?.flush();exitToMenuFromPause(true);window.location.href='index.html?v=251';};
   document.getElementById('logBtn').onclick=()=>{ show('menu',false); showLogbook(); };
   document.getElementById('skipLaunchPreview').onclick=()=>finishLaunchIntro();
   document.getElementById('brBack').onclick=()=>{ show('brief',false); show('menu',true);if(navigation){navigation.reset();navigation.button.style.display='none';} state=ST.MENU; };

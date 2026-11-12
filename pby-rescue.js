@@ -22,10 +22,13 @@
   const gear=[[part('GearLeft'),'z',TUNE.gearUp],[part('GearRight'),'z',-TUNE.gearUp],[part('NoseGear'),'x',TUNE.noseGearUp]].filter(g=>g[0]);
   const floats=[[part('FloatLeft'),-TUNE.floatFold],[part('FloatRight'),TUNE.floatFold]].filter(f=>f[0]);
   const props=[part('PropellerLeft'),part('PropellerRight')].filter(Boolean);
+  const hatch=part('BlisterHatchRight'),waterline=part('pby5a-own')?.userData.waterlineY;   // Build 251: the model carries its own design waterline (0) and a right blister hatch
+  let hatchOpen=0;
   for(const [node,axis,angle] of gear)node.rotation[axis]=angle;         // wheels up for a water landing
-  // the keel: how far the hull's lowest point sits below the model origin, so the hull (not the origin) meets the water
+  // The Build 251 asset has its own design waterline; the older model is placed by its keel (kept for a cached older GLB).
   group.updateMatrixWorld(true);
-  const hull=part('SteppedFlyingBoatHull'),keel=hull?new THREE.Box3().setFromObject(hull).min.y:0;
+  const hull=part('SteppedFlyingBoatHull');
+  const offset=Number.isFinite(waterline)?waterline:(hull?new THREE.Box3().setFromObject(hull).min.y:0)+TUNE.sink;
   let floatAngle=1,disposed=false;                                    // 1 = folded (flight), 0 = deployed (water)
   const tickets=[];let active=null,phase='idle',t=0,clock=0;
   const pos=new THREE.Vector3(),dir=new THREE.Vector3(0,0,1);             // dir: horizontal travel direction (unit)
@@ -53,10 +56,14 @@
   function apply(dt){
    group.position.set(pos.x,0,pos.z);
    const sea=surfaceAt(pos.x,pos.z),bob=height<.5?Math.sin(clock*1.7)*.06:0;
-   group.position.y=sea-keel-TUNE.sink+height+bob;
+   group.position.y=sea-offset+height+bob;
    group.rotation.y=Math.atan2(dir.x,dir.z);group.rotation.x=-pitch;group.rotation.z=phase==='board'||phase==='taxi'?Math.sin(clock*1.3)*.02:0;
    for(let i=0;i<props.length;i++)props[i].rotation.z+=spin*dt*(i?1.07:1);
    for(const [node,fold] of floats)node.rotation.z=fold*floatAngle;
+   if(hatch){   // the right blister opens while the survivors climb in
+    hatchOpen+=((phase==='board'?1:0)-hatchOpen)*(1-Math.exp(-3*dt));
+    const [closed,open]=hatch.userData.rig.range;hatch.rotation.z=closed+(open-closed)*hatchOpen;
+   }
   }
   function wake(dt,sp){
    if(!options.wakes||height>.6||sp<1)return;

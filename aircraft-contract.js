@@ -6,7 +6,7 @@
  'use strict';
  const VERSION=1;
  // 0..1 drives use rig.range [angle at 0, angle at 1]; -1..1 drives use rig.gain (angle at +1).
- const RANGE_DRIVES=['gear','flapLeft','flapRight','canopy','radiator'],GAIN_DRIVES=['roll','pitch','yaw'];
+ const RANGE_DRIVES=['gear','flapLeft','flapRight','canopy','radiator','floatLeft','floatRight'],GAIN_DRIVES=['roll','pitch','yaw'];
  const CLASSES={
   'tailwheel-fighter':{
    parts:{
@@ -39,9 +39,27 @@
    tyres:{GearLeft:1,GearRight:1,TailGear:1},
    muzzles:0,   // unarmed airframe: the game places the rear gunner's muzzle itself (storchGunnerPoint)
    budget:{triangles:25000,meshes:40,materials:10,images:4,imageSize:2048,bytes:5*1024*1024}
+  },
+  // Build 251: twin-engined amphibian flying boat (Consolidated PBY-5A Catalina). Two rotors (PropellerLeft/Right, each unrotated with its shaft on local Z),
+  // retractable main legs and nose wheel, wing-tip floats that fold up, blister hatches that open outwards. The gear and float rigs are stored
+  // "extended" at 0 (range [0, fold angle]): the game's amounts (1 = down/out) are inverted for the drives in `inverse`.
+  'amphibian-twin':{
+   parts:{
+    PropellerLeft:{drive:'prop'},PropellerRight:{drive:'prop'},
+    gear:{group:true},
+    GearLeft:{drive:'gear',parent:'gear'},GearRight:{drive:'gear',parent:'gear'},NoseGear:{drive:'gear',parent:'gear'},
+    AileronLeft:{drive:'roll'},AileronRight:{drive:'roll'},
+    ElevatorLeft:{drive:'pitch'},ElevatorRight:{drive:'pitch'},Rudder:{drive:'yaw'},
+    FloatLeft:{drive:'floatLeft'},FloatRight:{drive:'floatRight'}
+   },
+   optional:{BlisterHatchLeft:'canopy',BlisterHatchRight:'canopy'},
+   tyres:{GearLeft:1,GearRight:1,NoseGear:1},
+   inverse:['gear','floatLeft','floatRight'],
+   muzzles:1,
+   budget:{triangles:30000,meshes:48,materials:8,images:4,imageSize:2048,bytes:6*1024*1024}
   }
  };
- const MOVING=['GearLeft','GearRight','TailGear','FlapLeft','FlapRight','AileronLeft','AileronRight','ElevatorLeft','ElevatorRight','Rudder','Canopy','GearDoorLeft','GearDoorRight','RadiatorFlapLeft','RadiatorFlapRight'];
+ const MOVING=['GearLeft','GearRight','TailGear','NoseGear','FlapLeft','FlapRight','AileronLeft','AileronRight','ElevatorLeft','ElevatorRight','Rudder','Canopy','GearDoorLeft','GearDoorRight','RadiatorFlapLeft','RadiatorFlapRight','FloatLeft','FloatRight','BlisterHatchLeft','BlisterHatchRight'];
  const T=()=>global.THREE,cache=new WeakMap(),roots=new WeakMap(),clamp=(n,a=0,b=1)=>Math.max(a,Math.min(b,Number(n)||0));
  function source(o){
   if(!o?.traverse)return null;if(roots.has(o))return roots.get(o);
@@ -71,7 +89,8 @@
   const d=data(frame);if(!d)return false;
   // The game spins its rotor with prop.rotation.z; the contract requires the rotor node to be
   // unrotated with its axis on local Z, so that Euler channel is exactly the shaft.
-  d.parts.Propeller.name='prop';d.parts.Propeller.userData.articulationPart=true;
+  if(d.parts.Propeller){d.parts.Propeller.name='prop';d.parts.Propeller.userData.articulationPart=true;}
+  else for(const k of ['PropellerLeft','PropellerRight'])if(d.parts[k])d.parts[k].userData.articulationPart=true;   // the twin keeps its two named rotors
   d.parts.gear.userData.articulationPart=true;d.parts.flightFlaps.userData.articulationPart=true;
   frame.userData.nativeContract=true;pose(frame,1,{left:0,right:0});return true;
  }
@@ -79,7 +98,9 @@
   const d=data(o);if(!d)return;const g=clamp(gear);
   for(const name of MOVING){
    const node=d.parts[name],drive=node?.userData.rig?.drive;if(!node||GAIN_DRIVES.includes(drive))continue;
-   turn(d,node,drive==='gear'?g:drive==='flapLeft'?flaps.left:drive==='flapRight'?flaps.right:extra[drive]||0);
+   // extra: floatLeft / floatRight / hatchLeft / hatchRight (or canopy) as 0..1 "out/open" amounts; the drives in spec.inverse are stored extended at 0
+   const amount=drive==='gear'?g:drive==='flapLeft'?flaps.left:drive==='flapRight'?flaps.right:name==='BlisterHatchLeft'?(extra.hatchLeft??extra[drive]):name==='BlisterHatchRight'?(extra.hatchRight??extra[drive]):extra[drive];
+   turn(d,node,(d.spec.inverse||[]).includes(drive)?1-clamp(amount??1):clamp(amount||0));
   }
   d.parts.gear.visible=true;
   if(d.src.userData.contractGear!==g){for(let p=d.src;p;p=p.parent)delete p.userData.groundSupports;d.src.userData.contractGear=g;}

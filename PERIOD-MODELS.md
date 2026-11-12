@@ -1,4 +1,31 @@
-# Period models and their missions (Builds 246 to 249)
+# Period models and their missions (Builds 246 to 251)
+
+## Build 250/251: the Storch lands in a meadow without wrecking — three more Storch sorties — the revised Catalina
+
+**Meadow landing (Build 250).** Measured in the real game with human-style flares (24 approaches): the Storch bleeds speed fast with full flap, touches down *at* the stall speed (14.4 m/s) and the
+wing mushes: the path sags and the nose drops to −13…−27° at 3–7 m/s sink. `resolveGround` (field landing, every type) wanted sink < 4.5 m/s, |pitch| < 12.6° and speed < reference + 8 m/s:
+11 of 24 approaches were "CRASHED: Hit the ground away from the strip"; 7 more rolled past the 150 m pickup radius around the meadow's middle. Now `AC.fi156.field={sink:6.2,pitch:.46,speed:12}`
+(a rugged long-stroke type; every other type unchanged), the pickup zone sits around the waiting pilot (`STS.stop` 280 m), trees go on a 230 m disc, the pilot runs 9 m/s (at most 20 s).
+23 of 24 approaches now survive and start the pickup. Test: `storch-flight-browser.cjs` section 2a.
+
+**Sorties 4–6 (Build 251, Rhine indices 29–31, German side, solo, no checkpoint, deterministic places per sortie id).** They share the pickup machine of the Rescue Run (`stsPickup`):
+land near the marker, the figure runs to the aeroplane, boards, take off again. Each has its own twist:
+- *Bonus Courier* ("Dispatch Under the Overcast", `courier:true`): weather `lowcloud` (base about 850 ft), the command post is 11 km behind the line (orange smoke). Allied fighters sit **above the
+  cloud base**: more than 260 m AGL for 7 s and two P-47 dive on you (two waves at most, `escapeThreat`: they never hold up the return). Handover 6 s, +600.
+- *Bonus Rock Landing* ("The Observer on the Ridge", `rock:true`): `siteSpot(..., high:true)` over six tries, the highest dry gentle clearing (measured: 81 m above the strip, 1.5 % slope, 8.6 km out),
+  tree disc 120 m; stop within 90 m of the observer = **+300 precision bonus**; a fighter pair nine seconds after he is aboard.
+- *Bonus Moonlight Pickup* ("Three Lanterns in the Dark", `moon:true`, `night:true`): no smoke; three flickering additive lantern sprites beside the agent, moonlight only, four flares (L); night
+  intruders six seconds after he boards.
+Test: `storch-flight-browser.cjs` section 2b (wind-aware final approach: windZ blows along +x).
+
+**Catalina (Build 251).** `assets/aircraft/pby5a-own.glb` (day, blue-grey over light grey, number 27) and `pby5a-blackcat-own.glb` (matt black), delivered as `Catalina_PBY-5A_Torpedo_Carrier.zip`:
+14 666 triangles, 37 meshes, 2 materials, one 2048² atlas, 31.699 × 19.456 × 6.147 m, validator 0/0, rig contract class **`amphibian-twin`** (new in `aircraft-contract.js`: two rotors, retractable main
+legs and nose wheel, wing-tip floats that fold up, blister hatches; gear and floats are stored extended at 0 — `inverse` in the class spec). The model water line is Y=0 (`waterlineY`), the keel
+−0.877 m, the tyres −1.607 m; markers: `WaterContactBow/Step/Stern`, `SprayLeft/Right`, `StoreLeft/Right`, `SearchLight` (8° down), `RescueHatch`, `SeatPilot/Copilot/Observer`.
+Test `okinawa/tests/catalina-model.cjs` (pinned SHA-256 of both paints, same geometry, drives, markers). The Build 246 model is archived in `assets/aircraft/source/pby5a-v1/` (not in the app).
+The delivered `check.cjs`, generator and the stand-alone free flight (`catalina.html`, `catalina-flight*.js`: its own toy physics) were **not** run or taken over; README and test log are under
+`scripts/own-models/pby5a-catalina-v2/`. In the game the new model flies the AI rescue (`pby-rescue.js`: placed by the design water line, the right blister hatch opens while the crew boards).
+**Open:** the Catalina is not yet a player aircraft (water take-off/landing, data sheet, sorties).
 
 ## Build 249: the Storch you fly — three sorties — and a night fighter that flies and can be seen
 

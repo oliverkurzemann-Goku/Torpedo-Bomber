@@ -1,6 +1,6 @@
-# Offline app asset register — Build 249
+# Offline app asset register — Build 251
 
-Checked 2026-10-23. 378 payload files, 62 model files, 157.9 MiB.
+Checked 2026-10-23. 379 payload files, 63 model files, 161.8 MiB.
 
 Generated from the actual dist-app payload by npm run app:assets. Hashes cover embedded textures too. This is an evidence inventory; no row is automatically approved for distribution. Acquisition dates remain unknown where not recorded.
 
@@ -19,7 +19,8 @@ Generated from the actual dist-app payload by npm run app:assets. Hashes cover e
 | assets/aircraft/me163b-own.glb | [Oliver Kurzemann / Torpedo-Bomber](scripts/build-own-fw190-komet.cjs) | project-own; reference-derived exterior geometry and original textures | own-build-reference-review-open | ddc61b6fb3a222b9716c40ead59f17a77a55bfa295cbcb48c1a1d42f2a977739 |
 | assets/aircraft/me262-noel.glb | Source unknown | Base CC0-1.0 (https://creativecommons.org/publicdomain/zero/1.0/); original livery and detailing Oliver Kurzemann | source-or-license-missing | 6bfd4650965bd16e465037d3bdee08f2fe68eaf3e5ee99b273c435a00c256895 |
 | assets/aircraft/p47-independent.glb | [mgg8 / Aviation Gazetteer; original adaptation Oliver Kurzemann](https://sketchfab.com/3d-models/republic-p-47d-thunderbolt-raf-scheme-e831a70ab29c42d3a1dbd352d8bd4684) | Base model CC0-1.0 (https://creativecommons.org/publicdomain/zero/1.0/). New project work: Oliver Kurzemann, all reserved rights. | cc0-source-recorded | fc717521e5d80aefd6063d57bc561574fee3c4a99637c94a8b1a3c7ca889b851 |
-| assets/aircraft/pby5a-own.glb | [Torpedo-Bomber project](https://pimaair.org/museum-aircraft/consolidated-pby-5a/) | project-own (original mesh and paint) | own-build-reference-review-open | b949aef9d16eb180db7e69744e2186b944bc4ff67ef542663c289865c1630fda |
+| assets/aircraft/pby5a-blackcat-own.glb | [Torpedo-Bomber project](https://www.usaf-sig.org/index.php/references/downloads/4-technical-orders/38-type-specific/42-pby-catalina?download=163:an-01-5ma-2-pby-5-pby-5a) | project-own (original mesh and paint) | own-build-reference-review-open | 223e42bfe27265d6cacbcd63896c807b2398432f97774f14e70d75d1c0c994bc |
+| assets/aircraft/pby5a-own.glb | [Torpedo-Bomber project](https://www.usaf-sig.org/index.php/references/downloads/4-technical-orders/38-type-specific/42-pby-catalina?download=163:an-01-5ma-2-pby-5-pby-5a) | project-own (original mesh and paint) | own-build-reference-review-open | bf4f9c5cd29df90f92250237e8ff7add86ffeaa09ab140372c3e3a18a8fa9872 |
 | assets/aircraft/sbd-dauntless.glb | [HappySunpore (https://sketchfab.com/happysunpore)](https://sketchfab.com/3d-models/stb-dauntless-31e14fecfd9b4d51bdf0c4b27a0572f0) | CC-BY-4.0 (https://creativecommons.org/licenses/by/4.0/) | uploader-license-review-open | 80b06926d6c4d3168e9a52a61379b1a00a1841a8130afcca71f842870d8336e1 |
 | assets/buildings/bunker.glb | [Torpedo Carrier project](GROUND-MODELS.md) | project-own | own-build-reference-review-open | b29d183765f8afd5f6182c1a149bc44449e652c2537e6a5810cc2bc72ffea116 |
 | assets/buildings/farm-ruin.glb | [Torpedo Carrier project](GROUND-MODELS.md) | project-own | own-build-reference-review-open | f2bfb1c697455f249a6aed74c26107d4a0a2a721b139fc2f701f55294f8d1c8f |

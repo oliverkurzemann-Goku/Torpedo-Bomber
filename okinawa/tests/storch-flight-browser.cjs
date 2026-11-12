@@ -26,7 +26,7 @@ const server=http.createServer((req,res)=>{
   const page=await browser.newPage({viewport:{width:1194,height:660},hasTouch:true,deviceScaleFactor:1}),errors=[];
   page.setDefaultTimeout(900000);page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error'&&!/404/.test(m.text()))errors.push('console: '+m.text());});
   await page.addInitScript(()=>window.requestAnimationFrame=()=>0);
-  await page.goto('http://127.0.0.1:'+server.address().port+'/remagen-mission.html?v=250&surprises=off&sortie='+sortie);
+  await page.goto('http://127.0.0.1:'+server.address().port+'/remagen-mission.html?v=251&surprises=off&sortie='+sortie);
   // the hangar sortie opens the briefing at once: wait for the world, not for the menu
   await page.waitForFunction(()=>realWorldReady&&(state===ST.MENU||state===ST.BRIEF),null,{polling:200});
   await page.evaluate(async()=>{await Promise.all(['fi156','p47'].map(ensureModel));renderer.setPixelRatio(.25);renderer.shadowMap.enabled=false;if(typeof flightQuality!=='undefined')flightQuality.enabled=false;
@@ -108,6 +108,48 @@ const server=http.createServer((req,res)=>{
   assert.ok(R.touch&&Math.abs(R.touch.dx)<120&&Math.abs(R.touch.dz)<60&&R.touch.kmh<75,'touchdown at the smoke: '+JSON.stringify(R.touch));assert.ok(R.landed.phase==='run'&&!R.landed.over&&R.landed.alive&&!R.landed.crash,'the pickup begins instead of ending the sortie: '+JSON.stringify(R.landed));
   assert.ok(R.boarded.phase==='home'&&R.boarded.rescued===1&&R.boarded.t>6&&R.boarded.t<30&&R.boarded.score>=600&&!R.boarded.fig&&/PILOT ABOARD/.test(R.boarded.text),'the pilot is aboard: '+JSON.stringify(R.boarded));
   assert.ok(R.hunters.n===2&&R.hunters.escape&&/BANDITS 2/.test(R.hunters.text),'two bandits that never hold up the return: '+JSON.stringify(R.hunters));assert.ok(R.takeoff&&R.takeoff.run<190&&R.alive,'off the meadow again: '+JSON.stringify(R.takeoff));
+
+  // ---- 2b. Build 251: the other three pickups - courier (low overcast, fighters above the cloud base), ridge landing (short, high, precision bonus), moonlight (three lanterns) ----
+  const K=await page.evaluate(()=>{
+   const dt=1/60,r1=v=>+(+v).toFixed(1),out={};
+   const land=(shortBy,thr)=>{   // a close, low final: 14 m, reference speed, flare at 3 m
+    const lz=sts.plan.lz;P.onGround=false;P.landingRoll=null;P.departureAge=null;P.touchResolved=false;P.throttle=.3;P.gear=P.gearTgt=1;P.flap=P.flapTgt=1;const dir=windZ>0?-1:1;P.heading=dir>0?Math.PI/2:-Math.PI/2;P.pitch=.02;P.roll=P.rollBias=P.pitchVel=P.rollVel=0;inputPitch=inputRoll=0;   // into the wind: windZ blows along +x
+    const aim=lz.x-dir*shortBy,sp=SortieFeatures.Handling.speeds(P,acDef().stall,acDef().app);P.pos.set(aim-dir*260,groundY(aim-dir*260,lz.z)+16,lz.z);P.spd=sp.reference;P.vSpeed=-1.2;
+    for(let t=0;t<90&&P.alive&&!missionOver;t+=dt){const agl=P.pos.y-groundY(P.pos.x,P.pos.z);
+     if(!P.onGround){{const tvs=-Math.min(2.4,.35+agl*.13);inputPitch=Math.max(-.5,Math.min(.5,(tvs-P.vSpeed)*.18));P.throttle=agl>6?Math.max(0,Math.min(1,.3+(sp.reference-P.spd)*.12)):0;}}else{inputPitch=0;P.throttle=0;}
+     updateFlight(dt);updateSites(dt);if(sts.phase!=='fly')break;}
+    return {alive:P.alive,phase:sts.phase,crash:window.__crash,over:missionOver,gnd:P.onGround,spd:r1(P.spd),roll:!!P.landingRoll,fig:!!sts.fig,dFig:sts.figPos?Math.round(Math.hypot(P.pos.x-sts.figPos.x,P.pos.z-sts.figPos.z)):null,agl:r1(P.pos.y-groundY(P.pos.x,P.pos.z)),x:Math.round(P.pos.x-sts.plan.lz.x),text:objectiveText()};};
+   const board=()=>{let t=0;if(sts.phase==='fly'||!P.onGround)return -1;for(;t<60&&sts.phase!=='home'&&P.alive;t+=dt){P.spd=0;updateFlight(dt);updateSites(dt);}return r1(t);};
+   // courier
+   begin('courier');const cz=sts.plan.lz;out.courier={weather:weather,text:objectiveText(),dist:Math.round(Math.hypot(cz.x-GERMAN_AF_X,cz.z-GERMAN_AF_Z)),night:!!M().night};
+   P.onGround=false;P.spd=40;state=ST.FLIGHT;
+   for(let t=0;t<8;t+=dt){P.alive=true;P.pos.set(GERMAN_AF_X-3000,groundY(GERMAN_AF_X-3000,GERMAN_AF_Z)+120,GERMAN_AF_Z);updateSites(dt);}out.courier.lowOk={high:r1(sts.high),hunters:enemyAir.filter(e=>e.alive&&e.sortie).length};
+   for(let t=0;t<9;t+=dt){P.alive=true;P.pos.set(GERMAN_AF_X-3000,groundY(GERMAN_AF_X-3000,GERMAN_AF_Z)+420,GERMAN_AF_Z);updateSites(dt);}
+   for(let t=0;t<4;t+=dt)updateSites(dt);
+   out.courier.spotted={hunters:enemyAir.filter(e=>e.alive&&e.sortie).length,escape:enemyAir.filter(e=>e.sortie).every(e=>e.escapeThreat),said:said.filter(x=>/ABOVE THE CLOUD BASE/.test(x)).length,text:objectiveText()};
+   begin('courier');out.courier.landed=land(40,.15);out.courier.boardT=board();out.courier.done={phase:sts.phase,courier:sortieKills.courier||0,rescued:sortieKills.rescued||0,score,text:objectiveText(),left:objectiveLeft()};
+   // rock
+   begin('rock');const rz=sts.plan.lz,ys=[-30,-15,0,15,30].map(d=>groundY(rz.x+d,rz.z)),yh=groundY(GERMAN_AF_X,GERMAN_AF_Z);
+   out.rock={text:objectiveText(),slope:r1((Math.max(...ys)-Math.min(...ys))/60*100),above:Math.round(groundY(rz.x,rz.z)-yh),dist:Math.round(Math.hypot(rz.x-GERMAN_AF_X,rz.z-GERMAN_AF_Z))};
+   const sc0=score;out.rock.landed=land(20,.2);out.rock.bonus=score-sc0;out.rock.boardT=board();for(let t=0;t<11;t+=dt)updateSites(dt);out.rock.hunters=enemyAir.filter(e=>e.alive&&e.sortie).length;out.rock.done={phase:sts.phase,rescued:sortieKills.rescued||0};
+   // moon
+   begin('moon');const mz=sts.plan.lz;out.moon={night:!!M().night,lamps:sts.lamps&&sts.lamps.length,lampsInScene:sts.lamps&&sts.lamps.every(l=>l.parent===scene),text:objectiveText()};
+   out.moon.landed=land(40,.15);out.moon.boardT=board();for(let t=0;t<8;t+=dt)updateSites(dt);out.moon.hunters=enemyAir.filter(e=>e.alive&&e.sortie).length;out.moon.done={phase:sts.phase,rescued:sortieKills.rescued||0,text:objectiveText()};
+   begin('rescue');out.reset={lamps:!(sts.lamps&&sts.lamps.length),kind:sts.kind};
+   return out;
+  });
+  report.pickups=K;
+  assert.ok(K.courier.weather==='lowcloud'&&K.courier.dist>8500&&/UNDER THE CLOUDS/.test(K.courier.text),'courier: low overcast, the command post far behind the line: '+JSON.stringify(K.courier));
+  assert.ok(K.courier.lowOk.hunters===0&&K.courier.lowOk.high===0,'under the cloud base nobody sees you: '+JSON.stringify(K.courier.lowOk));
+  assert.ok(K.courier.spotted.hunters>=1&&K.courier.spotted.escape&&K.courier.spotted.said>=1,'above the cloud base the fighters dive on you (and never hold up the return): '+JSON.stringify(K.courier.spotted));
+  assert.ok(K.courier.landed.alive&&K.courier.landed.phase==='run'&&!K.courier.landed.over,'the courier lands at the smoke and the officer comes: '+JSON.stringify(K.courier.landed));
+  assert.ok(K.courier.done.phase==='home'&&K.courier.done.courier===1&&K.courier.done.rescued===0&&K.courier.done.score>=600&&Object.keys(K.courier.done.left).length===0&&/ANSWER ABOARD/.test(K.courier.done.text),'the handover: '+JSON.stringify(K.courier.done));
+  assert.ok(K.rock.slope<=14&&K.rock.above>-20,'the ridge clearing is a gentle, high spot: '+JSON.stringify(K.rock));
+  assert.ok(K.rock.landed.alive&&K.rock.landed.phase==='run'&&K.rock.done.phase==='home'&&K.rock.done.rescued===1,'the observer boards on the ridge: '+JSON.stringify(K.rock));
+  assert.ok(K.rock.hunters===1+(1)&&K.rock.bonus>=0,'a pair after nine seconds: '+JSON.stringify(K.rock.hunters));
+  assert.ok(K.moon.night&&K.moon.lamps===3&&K.moon.lampsInScene&&/LANTERNS/.test(K.moon.text),'three lanterns at night: '+JSON.stringify(K.moon));
+  assert.ok(K.moon.landed.alive&&K.moon.landed.phase==='run'&&K.moon.done.phase==='home'&&K.moon.done.rescued===1&&K.moon.hunters>=1,'the agent boards, the intruders follow: '+JSON.stringify(K.moon));
+  assert.ok(K.reset.lamps&&K.reset.kind==='rescue','the lanterns are taken away with the sortie: '+JSON.stringify(K.reset));
 
   // ---- 3. Bonus Spotter: low and slow in a circle for 12 s, then fire for effect; too fast / too high / outside counts for nothing ----
   const S=await page.evaluate(()=>{

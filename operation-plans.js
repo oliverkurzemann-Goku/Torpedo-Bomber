@@ -30,6 +30,10 @@ g.FlightPlans={
   {weather:['clear','broken'],deadline:1000,notes:'Fictional rescue: land in the marked meadow (yellow smoke), hold still while the pilot boards, take off again and fly him home. Allied fighters arrive once he is aboard: use the terrain.',events:[]},
   {weather:['clear','haze'],deadline:900,notes:'Fictional artillery spotting: three zones, low and slow inside the blue circle for twelve seconds each. The shells land nine seconds later. Fighters hunt you after the second zone.',events:[]},
   {weather:['haze','broken'],deadline:700,notes:'Fictional escape: you start deep behind the line. Tree height, turn into the attacks, land at the forward strip. A second fighter pair waits near the strip.',events:[]},
+  // Build 251: courier, rock landing, moonlight pickup (indices 29-31)
+  {weather:['lowcloud'],deadline:900,notes:'Fictional courier flight: low overcast, cloud base about 850 ft. Stay under it; fighters wait above. Land at the orange smoke 11 km behind the line, hold still for the handover, bring the answer home.',events:[]},
+  {weather:['clear','haze'],deadline:900,notes:'Fictional ridge pickup: land uphill on a short clearing, stop within 90 m of the observer for the bonus, take off downhill. A fighter pair arrives nine seconds after he boards.',events:[]},
+  {weather:['clear'],deadline:900,notes:'Fictional night pickup: three lanterns mark a dark meadow behind the line. Land beside them, hold still while the agent boards, take off. Night intruders follow; four flares (L).',events:[]},
  ],
  pacific:[{}, {},
   {weather:['broken','haze'],deadline:480,notes:'Confirm the contact in the blue search area, then intercept the moving merchant.',recon:{x:600,z:2450,radius:850,min:60,max:650,seconds:5}},
