@@ -25,7 +25,11 @@ g.FlightPlans={
   {weather:['clear','broken'],deadline:720,notes:'Fictional V-1 interception: find the ramp, destroy it and shoot down the flying bombs it launches. Attack the bombs from behind.',events:[]},
   {weather:['clear'],deadline:660,notes:'Fictional strike on a fuel and ammunition dump: destroy six of the eight stores. They burn in chains, so pull up early.',events:[]},
   {weather:['clear','broken'],deadline:720,notes:'Fictional intercept: the staff Storch (red marker) flies the valley road at tree height; two liaison flights cross his path and must not be hit. He sets down on the road when he sees you; stop the aircraft or the truck that picks up the crew.',events:[]},
-  {weather:['clear'],deadline:780,notes:'Fictional night intercept: three Bf 110 night fighters hunt you with ground radar and attack from below. Stay under 400 ft AGL to vanish from the screen, throw WINDOW (J) to jam it for 15 s, and shoot all three down.',events:[]}
+  {weather:['clear'],deadline:780,notes:'Fictional night intercept: three Bf 110 night fighters hunt you with ground radar and attack from below. Stay under 400 ft AGL to vanish from the screen, throw WINDOW (J) to jam it for 15 s, and shoot all three down.',events:[]},
+  // Build 249: the Fi 156 sorties (indices 26-28)
+  {weather:['clear','broken'],deadline:1000,notes:'Fictional rescue: land in the marked meadow (yellow smoke), hold still while the pilot boards, take off again and fly him home. Allied fighters arrive once he is aboard: use the terrain.',events:[]},
+  {weather:['clear','haze'],deadline:900,notes:'Fictional artillery spotting: three zones, low and slow inside the blue circle for twelve seconds each. The shells land nine seconds later. Fighters hunt you after the second zone.',events:[]},
+  {weather:['haze','broken'],deadline:700,notes:'Fictional escape: you start deep behind the line. Tree height, turn into the attacks, land at the forward strip. A second fighter pair waits near the strip.',events:[]},
  ],
  pacific:[{}, {},
   {weather:['broken','haze'],deadline:480,notes:'Confirm the contact in the blue search area, then intercept the moving merchant.',recon:{x:600,z:2450,radius:850,min:60,max:650,seconds:5}},

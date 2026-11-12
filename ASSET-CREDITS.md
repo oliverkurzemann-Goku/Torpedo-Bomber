@@ -384,6 +384,17 @@ The previous `uss_midway.glb` and `ijn carrier.glb` remain only for the archived
 `scripts/own-models/`). No third-party model, scan or texture is included; reference images were used only to compare proportions. Published
 dimensions, reconstructed details, no established tolerance. License status: `project-own`. Details and what is wired in: `RHINE-MODELS.md`.
 
+## Build 249 — Fieseler Fi 156 C-2 Storch (player model)
+
+`assets/aircraft/fi156c2-player.glb` was delivered as `Fieseler_Storch_C2_Torpedo_Bomber.zip` (an original procedural mesh and 2048 px paint
+atlas made for the project; generator, README and checker kept in `scripts/own-models/fi156c2-player/`, never run by the build or the tests). No scan,
+photograph, third-party geometry or texture is included. The C-2 type plate, the dimensions and the performance figures come from the Fi 156
+Flugzeughandbuch L.Dv.T. 2601/1 (30 June 1940, Annexes 2, 3 and 10: [scan](https://drive.google.com/file/d/1W0K-B4_2USPFG5wsZDeOR4NMF924dtz4/view),
+historical reference, rights not asserted); the paint family (RLM 70/71/65) is a secondary reference (HyperScale, Aero 2/1992, rights retained).
+Dimensions published, internal profiles and details reconstructed, no established tolerance. License status: `project-own`.
+The flyable Storch uses the existing Bf 109 audio voice (pitched up) as a placeholder for the Argus As 10C/3; the Build 248 Storch model of the
+Bonus Stork mission is a different model (`fi156c-own.glb`). See `PERIOD-MODELS.md`.
+
 ## Build 248 — five delivered period models
 
 `assets/aircraft/bf110g4-own.glb`, `assets/aircraft/fi156c-own.glb`, `assets/aircraft/g4m1-own.glb`, `assets/ships/fleet-oiler-own.glb` and

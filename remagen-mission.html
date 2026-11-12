@@ -2681,6 +2681,7 @@ function initialMissionModelKinds(m){
     if(m.ac==='p47')kinds.push('bf109',...(m.id==='fighter'?['me163']:[]));
     else kinds.push('p47');
   }
+  if(stsKind(m))kinds.push('p47');   // Build 249: the Storch sorties are hunted by Allied P-47s
   return [...new Set(kinds)];
 }
 async function waitForMissionModels(m,maxWaitMs=7000){
@@ -3195,7 +3196,17 @@ const MISSIONS=[
       +'Shot down in the air: bonus 500. Gun passes only; mind the ridge.'},
   {id:'schraege',title:'Bonus Night Hunt',sub:'Schraege Musik',ac:'p47',bonus:true,night:true,weather:'clear',kills:{nightfighter:3},radar:true,schraege:true,
     text:'Fictional night intercept. Three Bf 110 night fighters orbit east of the strip, guided by ground radar: you are off their screen below 400 ft AGL; above that they find you at 2 to 5 mi, their own set inside 1 000 ft. '
-      +'They attack from BELOW with upward guns (Schraege Musik): BANDIT BELOW on the radio comes before the burst, so jink. WINDOW (J, three bundles) jams the radar for 15 s; destroy the optional Wuerzburg radar and they search blind for 90 s. Four flares (L).'}
+      +'They attack from BELOW with upward guns (Schraege Musik): BANDIT BELOW on the radio comes before the burst, so jink. WINDOW (J, three bundles) jams the radar for 15 s; destroy the optional Wuerzburg radar and they search blind for 90 s. Four flares (L).'},
+  // Build 249: the Fieseler Fi 156 C-2 Storch as a player aircraft (German side, solo): see STORCH SORTIES
+  {id:'rescue',title:'Bonus Rescue Run',sub:'Pilot Down Behind the Line',ac:'fi156',bonus:true,weather:'clear',kills:{rescued:1},rescue:true,doneText:'The pilot is home. ',
+    text:'Fictional rescue: a Luftwaffe pilot is down in a meadow behind the line (yellow smoke, marked on the map). Land the Fi 156 near the smoke, hold still while he runs to the aircraft and climbs in, take off again and bring him home. '
+      +'Allied fighters come as soon as he is aboard: stay low, turn into them, the observer\'s gun covers your tail.'},
+  {id:'spotter',title:'Bonus Spotter',sub:'Eyes for the Artillery',ac:'fi156',bonus:true,weather:'clear',kills:{zone:3},spotter:true,doneText:'The guns have their zones. ',
+    text:'Fictional artillery spotting: three zones, one after the other (blue circle on the map). Hold the Fi 156 low and slow inside the circle for twelve seconds and the guns fire for effect nine seconds later: leave the circle. '
+      +'Fighters hunt you after the second zone. The observer\'s gun covers your tail.'},
+  {id:'rats',title:'Bonus Rat Flight',sub:'Home at Treetop Height',ac:'fi156',bonus:true,weather:'haze',kills:{},rats:true,doneText:'You came home through the fighters. ',
+    text:'Fictional escape: you start deep behind the line with a sealed dispatch and Allied fighters hunt a slow aircraft. Stay at tree height, turn into every attack, let the observer\'s gun work and land at the forward strip. '
+      +'No kills are required; a second pair waits near the strip.'}
 ];
 function M(){ return MISSIONS[mission]; }
 function isFree(){ return !!M().free; }
@@ -3275,6 +3286,7 @@ function objectiveText(){
   if(m.free) return 'FREE FLIGHT';
   if(m.circuits) return 'CIRCUITS  '+circuitsDone+'/'+m.circuits;
   if(m.storch&&typeof storchObjectiveText==='function'){const text=storchObjectiveText();if(text)return text;}
+  if(sts&&typeof stsObjectiveText==='function'){const text=stsObjectiveText();if(text)return text;}
   if(m.schraege&&typeof schraegeObjectiveText==='function'){const text=schraegeObjectiveText();if(text)return text;}
   if(m.bombers){
     const b=bombersLeft(), f=blockingEnemyAir().filter(e=>!e.bomber).length;
@@ -3287,7 +3299,7 @@ function objectiveText(){
   if(blockingEnemyAir().length>0 && !ks.length)
     return 'BANDITS  '+blockingEnemyAir().length+' LEFT';
   if(!ks.length) return europeOps?.pending()?'NEXT CONTACT EXPECTED':'RTB — LAND AT '+airfieldName(m);
-  const nm={flak:'FLAK',bridge:'BRIDGE',factory:'FACTORY',truck:['jabo','stuka'].includes(M().id)?'VEHICLES':'TRUCKS',train:'TRAIN',ferry:'FERRY',ramp:'V-1 RAMP',depot:'STORES',storch:'STAFF TARGET',nightfighter:'NIGHT FIGHTERS'};
+  const nm={flak:'FLAK',bridge:'BRIDGE',factory:'FACTORY',truck:['jabo','stuka'].includes(M().id)?'VEHICLES':'TRUCKS',train:'TRAIN',ferry:'FERRY',ramp:'V-1 RAMP',depot:'STORES',storch:'STAFF TARGET',nightfighter:'NIGHT FIGHTERS',rescued:'PILOT',zone:'ZONES'};
   return ks.map(k=>(nm[k]||k.toUpperCase())+' '+left[k]).join('  ')+(M().ramp?'   V-1 DOWN '+(sortieKills.v1||0):'');
 }
 function checkObjective(){
@@ -3297,8 +3309,9 @@ function checkObjective(){
   if(!Object.keys(left).length && airLeft===0 && !M().circuits){
     if(!P.rtb){ P.rtb=true;
       const pursuer=M().ac==='me163'&&enemyAir.some(e=>e.alive&&e.escapeThreat);
-      radioSay(pursuer?'BOMBERS DOWN — EVADE THE PURSUER AND LAND':M().id==='stuka'?'ALLIED COLUMN HIT — RETURN TO THE FORWARD STRIP':'TARGETS DESTROYED — RETURN TO '+airfieldName(M())+' AND PANCAKE');
-      flash(pursuer?'GLIDE HOME — PURSUER ON YOUR SIX':'OBJECTIVE COMPLETE — RTB',2200);
+      const own=typeof stsRtbText==='function'?stsRtbText(M()):null;   // Build 249: the Storch sorties have their own words
+      radioSay(own?own.radio:pursuer?'BOMBERS DOWN — EVADE THE PURSUER AND LAND':M().id==='stuka'?'ALLIED COLUMN HIT — RETURN TO THE FORWARD STRIP':'TARGETS DESTROYED — RETURN TO '+airfieldName(M())+' AND PANCAKE');
+      flash(own?own.flash:pursuer?'GLIDE HOME — PURSUER ON YOUR SIX':'OBJECTIVE COMPLETE — RTB',2200);
       if(['factory','final'].includes(M().id)&&!squad.some(w=>w.alive))spawnRecoveryEscort(); }
   }
 }
@@ -3893,7 +3906,7 @@ function surpriseContext(extra){
   for(const t of targets)if(t.alive&&t.primary&&!t.surprise){const d=Math.hypot(P.pos.x-t.group.position.x,P.pos.z-t.group.position.z);if(d<pd){pd=d;primary=t;}}
   const strike=!!m.kills&&Object.keys(m.kills).some(k=>k!=='air'&&k!=='bomber');
   return Object.assign({
-    flying:state===ST.FLIGHT&&P.alive&&!P.onGround&&!launchIntro&&!bailout&&!isFree()&&!isCircuits()&&P.ac!=='me163'&&!missionOver,
+    flying:state===ST.FLIGHT&&P.alive&&!P.onGround&&!launchIntro&&!bailout&&!isFree()&&!isCircuits()&&P.ac!=='me163'&&P.ac!=='fi156'&&!missionOver,
     hull:P.hull/((P.systemDamage?.maxHull)||100),
     // on the way home to land: leave the player alone
     suppress:(P.rtb&&home<6500)||(!!europeOps&&europeOps.failed),
@@ -5523,6 +5536,7 @@ function addSite(kind,spot,opt){
 }
 function spawnMissionSites(m){
   clearSites();
+  if(stsKind(m)){stsStart(m);return;}   // Build 249: the Storch sorties (no site models, no site plan)
   if(!(m.radar||m.searchlights||m.ramp||m.depot||m.storch||m.schraege))return;
   const plan=sitePlan(m);
   if(plan.radar)addSite('radar',plan.radar,{secondary:true});
@@ -5542,6 +5556,7 @@ function clearSites(){
   if(typeof buzzReset==='function')buzzReset();
   if(typeof storchReset==='function')storchReset();
   if(typeof schraegeReset==='function')schraegeReset();
+  if(typeof stsReset==='function')stsReset();
 }
 // a model that finished loading after the sortie started replaces its stand-in
 function siteUpgrade(kind){
@@ -5591,6 +5606,7 @@ function updateSites(dt){
   if(typeof updateBuzz==='function')updateBuzz(dt);
   if(typeof updateStorch==='function')updateStorch(dt);
   if(typeof updateSchraege==='function')updateSchraege(dt);
+  if(typeof updateStorchSorties==='function')updateStorchSorties(dt);
   for(let i=siteChainQ.length-1;i>=0;i--){const c=siteChainQ[i];c.t-=dt;if(c.t<=0){siteChainQ.splice(i,1);if(c.target.alive)damageTarget(c.target,c.dmg,false);}}
   if(!siteRecs.length)return;
   const flying=P.alive&&state===ST.FLIGHT;siteLit=Math.max(0,siteLit-dt);
@@ -6095,6 +6111,206 @@ function fuelBlast(t){
     radioSay('FUEL TRUCK — FIREBALL ON YOUR WING, PULL UP!');
   }else if(caught)radioSay('FUEL TRUCK — THE COLUMN GOES UP WITH IT. BONUS '+(caught*FUEL_BLAST.bonus));
   else radioSay('FUEL TRUCK — HUGE SECONDARY EXPLOSION');
+}
+
+// ============================================================
+//  STORCH SORTIES (Build 249) - the Fi 156 C-2 flown by the player, German side (home strip GERMAN_AF)
+//  "Bonus Rescue Run" (m.rescue): land in a meadow behind the line (yellow smoke), the downed pilot runs to the aircraft,
+//     take off again from the meadow and bring him home. Allied fighters arrive as soon as he is aboard.
+//  "Bonus Spotter" (m.spotter): hold the aircraft low and slow inside three observation zones, one after the other; each one
+//     calls a barrage that lands STS.zone.delay seconds later (close to it and low: damage).
+//  "Bonus Rat Flight" (m.rats): start airborne deep behind the line; Allied fighters hunt a slow aircraft: tree height, turn into them.
+//  Fictional and solo. The hunters are `escapeThreat` (they never block the return); the rear gunner is automatic (updateStorchGunner).
+//  Not stored in a checkpoint: after "Continue" the state is rebuilt from sortieKills (rescued / zone); the places are deterministic per id.
+// ============================================================
+const STS={lz:{r:62,slope:3,len:190,wid:46},stop:150,board:6,runSpeed:6.5,rescuePts:600,
+  zone:{r:520,agl:[25,280],maxSpeed:42,seconds:12,delay:9,shells:7,spread:120,hit:90,pts:300},
+  hunt:{delay:{rescue:5,spotter:8,rats:22},dist:3300,alt:420},rats:{back:12500,side:5200,agl:60}};
+let sts=null;
+const stsCache={};
+function stsKind(m){return m&&(m.rescue?'rescue':m.spotter?'spotter':m.rats?'rats':null);}
+// trees are instanced: take the ones inside the meadow out (scale 0), like clearTreesNearAirfield does for the strips
+function stsClearTrees(x,z,halfL,halfW){
+  if(!osmMgr||!osmMgr.tiles)return 0;
+  const m=new THREE.Matrix4(),v=new THREE.Vector3(),zero=new THREE.Matrix4().makeScale(0,0,0);let n=0;
+  for(const t of osmMgr.tiles.values()){
+    if(!t||!t.farGroup)continue;
+    for(const mesh of t.farGroup.children){
+      if(!mesh.isInstancedMesh||!mesh.name.startsWith('osmForest'))continue;
+      let touched=false;
+      for(let i=0;i<mesh.count;i++){mesh.getMatrixAt(i,m);v.setFromMatrixPosition(m);
+        if(Math.abs(v.x-x)<halfL&&Math.abs(v.z-z)<halfW){mesh.setMatrixAt(i,zero);n++;touched=true;}}
+      if(touched)mesh.instanceMatrix.needsUpdate=true;
+    }
+  }
+  return n;
+}
+function stsPlan(m){
+  if(stsCache[m.id])return stsCache[m.id];
+  const kind=stsKind(m),rand=siteRand(siteSeed('storch-sortie:'+m.id)),hx=GERMAN_AF_X,hz=GERMAN_AF_Z,plan={kind};
+  // a dry, clear, flat spot near the wanted point; the second try is wider and gentler about the slope; the last resort is the point itself
+  const pick=(cx,cz,r0,r1,opt)=>siteSpot(cx,cz,r0,r1,rand,opt)||siteSpot(cx,cz,r1,r1*2.2,rand,{...opt,slope:(opt.slope||4)+2,alongSlope:(opt.alongSlope||5)+1.5})||{x:cx,z:cz};
+  if(kind==='rescue')plan.lz=pick(hx-7600,hz-2800,0,2200,{r:STS.lz.r,slope:STS.lz.slope,along:[STS.lz.r,0],alongSlope:2.5});
+  else if(kind==='spotter')plan.zones=[[4300,1900],[7700,-1700],[10900,2300]].map(([d,o])=>pick(hx-d,hz-o,0,700,{r:30,slope:8}));
+  else if(kind==='rats')plan.start={x:hx-STS.rats.back,z:hz-STS.rats.side};
+  return stsCache[m.id]=plan;
+}
+function stsHuntCount(){return Math.max(1,2+(diffIdx===2?1:0)-(diffIdx===0?1:0));}
+function stsReset(){
+  if(sts){if(sts.fig)scene.remove(sts.fig);for(const o of sts.disposables||[])o.dispose();}
+  sts=null;
+}
+function stsStart(m){
+  stsReset();const kind=stsKind(m);if(!kind)return;
+  const plan=stsPlan(m);
+  sts={kind,plan,clock:0,said:{},phase:'fly',hunt:null,smokeT:0,fig:null,hold:0,zone:0,shell:null,blasts:[],runT:0,boardT:0};
+  if(kind==='rescue'){
+    const lz=plan.lz;stsClearTrees(lz.x,lz.z,STS.lz.len+70,STS.lz.wid+10);
+    if((sortieKills.rescued||0)>=1)sts.phase='home';
+    else{
+      // the pilot: a small figure at the edge of the meadow
+      const body=new THREE.Mesh(new THREE.CylinderGeometry(.26,.3,1.2,6),new THREE.MeshLambertMaterial({color:0x6b6e5a})),
+        head=new THREE.Mesh(new THREE.SphereGeometry(.2,8,6),new THREE.MeshLambertMaterial({color:0xd0a37c}));
+      body.position.y=.6;head.position.y=1.42;sts.fig=new THREE.Group();sts.fig.add(body,head);scene.add(sts.fig);
+      sts.disposables=[body.geometry,head.geometry,body.material,head.material];
+      sts.figPos={x:lz.x+10,z:lz.z+34};sts.fig.position.set(sts.figPos.x,groundY(sts.figPos.x,sts.figPos.z),sts.figPos.z);
+    }
+  }else if(kind==='spotter')sts.zone=Math.min(plan.zones.length,sortieKills.zone||0);
+}
+function stsSpawnHunters(n){
+  const first=enemyAir.length;spawnEnemyAir(n,'p47');
+  // they come from the enemy side: behind the aeroplane, seen from the strip
+  const hx=GERMAN_AF_X-P.pos.x,hz=GERMAN_AF_Z-P.pos.z,hl=Math.hypot(hx,hz)||1,fx=hx/hl,fz=hz/hl;
+  enemyAir.slice(first).forEach((e,i)=>{
+    e.surprise=true;e.escapeThreat=true;e.sortie=true;   // not part of the objective: they do not hold up the return
+    const off=(i-(n-1)/2)*320,back=STS.hunt.dist+i*150;
+    e.pos.set(P.pos.x-fx*back-fz*off,0,P.pos.z-fz*back+fx*off);interiorAirPosition(e.pos,1500);
+    e.pos.y=Math.max(groundY(e.pos.x,e.pos.z)+380,Math.min(flightAltitudeLimit()-450,P.pos.y+STS.hunt.alt));
+    e.heading=Math.atan2(P.pos.x-e.pos.x,P.pos.z-e.pos.z);e.vel.set(Math.sin(e.heading)*e.spd,0,Math.cos(e.heading)*e.spd);e.mode='engage';e.modeT=3;e.cool=2.5;});
+  radioSay('BANDITS — FIGHTERS ON YOUR TAIL. GET LOW AND TURN INTO THEM');
+}
+function stsAboard(s){
+  s.phase='home';if(s.fig)s.fig.visible=false;
+  sortieKills.rescued=1;addScore(STS.rescuePts);
+  radioSay('PILOT ABOARD — GET HIM HOME. FIGHTERS ARE COMING');flash('PILOT ABOARD — TAKE OFF AND STAY LOW',2600);
+  s.hunt={n:stsHuntCount(),t:STS.hunt.delay.rescue};
+  checkObjective();
+}
+// the landing roll ended: stopped near the smoke = the pickup begins (the sortie goes on); anywhere else the landing ends it as usual
+function stsGroundStop(){
+  const s=sts;if(!s||s.kind!=='rescue'||!s.fig||(sortieKills.rescued||0)>=1||!P.alive)return false;
+  const lz=s.plan.lz;if(Math.hypot(P.pos.x-lz.x,P.pos.z-lz.z)>STS.stop)return false;
+  P.spd=0;P.landingRoll=null;P.throttle=0;setThrottleUI(0);P.groundPower=0;
+  s.phase='run';s.runT=0;s.boardT=0;s.runFrom={x:s.fig.position.x,z:s.fig.position.z};
+  s.runDur=Math.max(2.5,Math.hypot(P.pos.x-s.runFrom.x,P.pos.z-s.runFrom.z)/STS.runSpeed);
+  radioSay('PILOT RUNNING TO YOU — HOLD STILL');flash('DOWN IN THE MEADOW — THE PILOT IS COMING',2400);
+  return true;
+}
+function stsRescue(dt){
+  const s=sts,lz=s.plan.lz,d=Math.hypot(P.pos.x-lz.x,P.pos.z-lz.z),gy=groundY(lz.x,lz.z),f=s.fig;
+  if(s.phase==='home'||!f)return;
+  s.smokeT-=dt;
+  if(s.smokeT<=0&&d<6500){s.smokeT=.3;spawnSmoke(lz.x+(Math.random()-.5)*3,gy+1.2,lz.z+34+(Math.random()-.5)*3,0xe3c23a,1.05);}
+  if(!s.said.near&&d<1900){s.said.near=1;radioSay('THAT IS THE MEADOW — YELLOW SMOKE. SET DOWN NEAR IT, HE WILL COME TO YOU');}
+  f.visible=true;
+  if(s.phase==='fly'){f.position.set(s.figPos.x,groundY(s.figPos.x,s.figPos.z)+Math.abs(Math.sin(s.clock*3.2))*.22,s.figPos.z);}
+  else if(s.phase==='run'){
+    s.runT+=dt;const k=Math.min(1,s.runT/s.runDur),tx=P.pos.x-Math.cos(P.heading)*1.9,tz=P.pos.z+Math.sin(P.heading)*1.9;
+    const px=s.runFrom.x+(tx-s.runFrom.x)*k,pz=s.runFrom.z+(tz-s.runFrom.z)*k;
+    f.position.set(px,groundY(px,pz)+Math.abs(Math.sin(s.runT*9))*.18,pz);
+    if(k>=1){s.phase='board';s.boardT=0;}
+  }else if(s.phase==='board'){
+    s.boardT+=dt;
+    f.position.set(P.pos.x-Math.cos(P.heading)*1.9,groundY(P.pos.x,P.pos.z),P.pos.z+Math.sin(P.heading)*1.9);
+    if(P.spd>2.5&&s.boardT<STS.board){s.boardT=0;if(!s.said.still){s.said.still=1;radioSay('HOLD STILL — HE IS NOT IN YET');}}
+    if(s.boardT>=STS.board)stsAboard(s);
+  }
+  // took off without him (or was driven off): the pilot waits at his place again
+  if((s.phase==='run'||s.phase==='board')&&!P.onGround&&d>260){s.phase='fly';s.runT=0;s.boardT=0;}
+}
+function stsBarrage(z){
+  for(let k=0;k<STS.zone.shells;k++){
+    const a=Math.random()*6.283,r=Math.random()*STS.zone.spread;
+    sts.blasts.push({t:k*.45+Math.random()*.3,x:z.x+Math.cos(a)*r,z:z.z+Math.sin(a)*r});
+  }
+}
+function stsSpotter(dt){
+  const s=sts,zs=s.plan.zones;
+  for(let i=s.blasts.length-1;i>=0;i--){
+    const b=s.blasts[i];b.t-=dt;if(b.t>0)continue;
+    s.blasts.splice(i,1);const y=groundY(b.x,b.z);
+    spawnExplosion(b.x,y+2,b.z,2.2);spawnDebris(b.x,y+2,b.z,10);sfxBoom(1.1);
+    const d=Math.hypot(P.pos.x-b.x,P.pos.z-b.z),agl=P.pos.y-groundY(P.pos.x,P.pos.z);
+    if(d<900)shake(d<250?1.6:.7);
+    if(P.alive&&d<STS.zone.hit&&agl<140){damagePlayer((1-d/STS.zone.hit)*14*D().dmg,'explosion');radioSay('SHELLS IN THE CIRCLE — GET OUT OF THERE');}
+  }
+  if(s.shell){s.shell.t-=dt;if(s.shell.t<=0){stsBarrage(zs[s.shell.i]);addScore(STS.zone.pts);s.shell=null;}}
+  if(s.zone>=zs.length)return;
+  const z=zs[s.zone],d=Math.hypot(P.pos.x-z.x,P.pos.z-z.z),agl=P.pos.y-groundY(P.pos.x,P.pos.z);
+  const ok=!P.onGround&&d<STS.zone.r&&agl>=STS.zone.agl[0]&&agl<=STS.zone.agl[1]&&P.spd<=STS.zone.maxSpeed;
+  if(d<STS.zone.r*1.6&&!s.said['z'+s.zone]){s.said['z'+s.zone]=1;radioSay(s.zone===0?'ARTILLERY — STAY LOW AND SLOW OVER THE CIRCLE, WE NEED TWELVE SECONDS':'NEXT ZONE — SAME PROCEDURE');}
+  if(ok)s.hold=Math.min(STS.zone.seconds,s.hold+dt);else s.hold=Math.max(0,s.hold-dt*.5);
+  if(s.hold>=STS.zone.seconds){
+    const i=s.zone;s.hold=0;s.zone++;sortieKills.zone=(sortieKills.zone||0)+1;s.shell={t:STS.zone.delay,i};
+    radioSay('TARGET RECEIVED — FIRE FOR EFFECT, SHELLS IN '+STS.zone.delay+' SECONDS. CLEAR THE AREA');flash('ZONE '+(i+1)+' MARKED — LEAVE THE CIRCLE',2400);
+    if(i===1)s.hunt={n:stsHuntCount(),t:STS.hunt.delay.spotter};
+    checkObjective();
+  }
+}
+function stsRats(dt){
+  const s=sts;
+  // a second pair waits near the strip for the aeroplane that thinks it has made it
+  if(!s.said.late&&s.clock>50&&Math.hypot(P.pos.x-GERMAN_AF_X,P.pos.z-GERMAN_AF_Z)<4600&&!P.onGround){s.said.late=1;stsSpawnHunters(Math.max(1,stsHuntCount()-1));}
+}
+function updateStorchSorties(dt){
+  const s=sts;if(!s||!P.alive||state!==ST.FLIGHT||launchIntro||missionOver)return;
+  s.clock+=dt;
+  if(s.hunt){s.hunt.t-=dt;if(s.hunt.t<=0){const n=s.hunt.n;s.hunt=null;stsSpawnHunters(n);}}
+  if(s.kind==='rescue')stsRescue(dt);else if(s.kind==='spotter')stsSpotter(dt);else if(s.kind==='rats')stsRats(dt);
+}
+function stsLaunchAir(){
+  const m=M();if(!m.rats||!sts)return false;
+  const p=sts.plan.start;finishLaunchIntro(false);
+  const h=groundY(p.x,p.z)+STS.rats.agl;
+  P.pos.set(p.x,h,p.z);P.heading=Math.atan2(GERMAN_AF_X-p.x,GERMAN_AF_Z-p.z);P.pitch=P.roll=P.pitchVel=P.rollVel=P.vSpeed=0;
+  P.spd=40;P.throttle=.8;setThrottleUI(.8);P.gear=P.gearTgt=1;P.flap=P.flapTgt=0;P.departureAge=null;P.groundPower=null;P.touchResolved=false;P.onGround=false;P.onDeck=false;
+  P.landingRoll=null;P.pitchRef=null;P.coreStall=0;P.coreDrop=0;P.core=null;P.nLoad=1;P.groundPose=null;P.takeoffRotation=0;
+  sts.hunt={n:stsHuntCount()+1,t:STS.hunt.delay.rats};
+  state=ST.FLIGHT;posePlayerAircraft(0);updateCamera(0);resetCtlUI();updateHUD();
+  return true;
+}
+function stsObjectiveText(){
+  const s=sts;if(!s)return null;
+  const bandits=enemyAir.filter(e=>e.alive&&e.sortie).length,b=bandits?'   BANDITS '+bandits:'';
+  if(s.kind==='rescue'){
+    if(sortieKills.rescued)return 'PILOT ABOARD — LAND AT FORWARD STRIP'+b;
+    if(s.phase==='run')return 'PILOT RUNNING — HOLD STILL';
+    if(s.phase==='board')return 'PILOT BOARDING '+Math.max(0,Math.ceil(STS.board-s.boardT))+' s';
+    return 'LAND IN THE MEADOW — YELLOW SMOKE (MAP)';
+  }
+  if(s.kind==='spotter'){
+    if(s.zone<s.plan.zones.length)return 'OBSERVE ZONE '+(s.zone+1)+'/'+s.plan.zones.length+' — LOW AND SLOW IN THE CIRCLE'+(s.hold>0?'  '+Math.ceil(STS.zone.seconds-s.hold)+' s':'');
+    return 'FIRE MISSION DONE — LAND AT FORWARD STRIP'+b;
+  }
+  return 'ESCAPE — LAND AT FORWARD STRIP'+(b||'   STAY LOW');
+}
+function stsRtbText(m){
+  return m.rescue?{radio:'RESCUE COMPLETE — LAND AT THE FORWARD STRIP',flash:'PILOT ABOARD — RTB'}
+    :m.spotter?{radio:'ALL THREE ZONES FIRED ON — HOME TO THE FORWARD STRIP',flash:'FIRE MISSION DONE — RTB'}
+    :m.rats?{radio:'KEEP IT LOW — THE STRIP IS AHEAD',flash:'ESCAPE — RTB'}:null;
+}
+function stsBriefPoints(m){
+  const p=stsPlan(m),out=[];
+  if(p.lz)out.push({x:p.lz.x,z:p.lz.z,label:'Meadow, yellow smoke — pilot waiting'});
+  (p.zones||[]).forEach((z,i)=>out.push({x:z.x,z:z.z,label:'Observation zone '+(i+1)}));
+  if(p.start)out.push({x:p.start.x,z:p.start.z,label:'Start: deep behind the line'});
+  return out;
+}
+function stsMapMarks(){
+  const s=sts;if(!s)return [];
+  if(s.kind==='rescue'&&s.phase!=='home')return [{x:s.plan.lz.x,z:s.plan.lz.z,r:90,color:'#e8c43a',label:'MEADOW — YELLOW SMOKE'}];
+  if(s.kind==='spotter'&&s.zone<s.plan.zones.length){const z=s.plan.zones[s.zone];return [{x:z.x,z:z.z,r:STS.zone.r,color:'#80c9df',label:'ZONE '+(s.zone+1)+' — BLUE CIRCLE'}];}
+  return [];
 }
 
 // ============================================================
@@ -6643,7 +6859,7 @@ function updateLandingRoll(dt,load=SortieFeatures.Handling.sample(P)){
     P.landingRoll=null;P.onGround=false;P.touchResolved=true;P.groundPose=null;
     SortieFeatures.Handling.beginDeparture(P);flash('GOING AROUND — BUILD SPEED',1300);return;
   }
-  if(step.stopped){P.spd=0;P.landingRoll=null;landed(run.onStrip);}
+  if(step.stopped){P.spd=0;P.landingRoll=null;if(!run.onStrip&&typeof stsGroundStop==='function'&&stsGroundStop())return;landed(run.onStrip);}
 }
 
 // ============================================================
@@ -6723,7 +6939,7 @@ function landed(onStrip){
   showResult(done,
     done?'MISSION ACCOMPLISHED':'RECOVERED — OBJECTIVE INCOMPLETE',
     (promoted?'PROMOTED — ':'')+rank+' '+pilotName()+'  &middot;  '+(onStrip?(isGermanMission(m)?'Landed at forward strip':'Landed at Beaufort'):'Force-landed')+'  &middot;  '+medalIcon,
-    (done?'Every target on the list is burning. ':'You are home, but the job is not finished. ')
+    (done?(m.doneText||'Every target on the list is burning. '):'You are home, but the job is not finished. ')
     +(promoted?'<br><br><b>Promoted to '+rank+'.</b>':'')
     +'<br><br>This sortie: '+(bag.length?bag.join(' &middot; '):'nothing claimed')
     +(squad.length?'<br>Flight: '+wingmenHome+' of '+squad.length+' wingmen flying'+(squadStats.kills?' &middot; '+squadStats.kills+' claimed by the section':'')+(flightBonus?' &middot; +'+flightBonus+' for bringing them home':''):'')
@@ -6834,8 +7050,9 @@ function startMission(i){
   const o=document.getElementById('oilCanopy'); if(o) o.style.opacity='0';
   applyWeaponUI(); resetCtlUI();
   updateHUD();
-  radioSay(m.duel?'DUEL — BANDIT IN THE ARENA':m.free?'FIELD IS YOURS — HAVE FUN':(isGermanMission(m)?'FORWARD STRIP':'BEAUFORT TOWER')+' — CLEARED FOR TAKE-OFF, RUNWAY ZERO NINE');
+  radioSay(m.duel?'DUEL — BANDIT IN THE ARENA':m.free?'FIELD IS YOURS — HAVE FUN':m.rats?'DISPATCH ABOARD — ENEMY TERRITORY. STAY LOW AND GET HOME':(isGermanMission(m)?'FORWARD STRIP':'BEAUFORT TOWER')+' — CLEARED FOR TAKE-OFF, RUNWAY ZERO NINE');
   if(m.duel&&duelLaunchAir())return;
+  if(m.rats&&typeof stsLaunchAir==='function'&&stsLaunchAir())return;   // Build 249: the Rat Flight starts in the air, deep behind the line
   if(!m.custom||!CustomSortie.launchState(m.custom,'europe',{P,finishIntro:()=>finishLaunchIntro(false),
     departure:{x:P.pos.x,z:P.pos.z,height:groundY(P.pos.x,P.pos.z)+900,heading:P.heading,speed:P.ac==='me163'?155:coreAirStart(groundY(P.pos.x,P.pos.z)+900,Math.max(d.stall*1.7,d.app*1.4))},
     setThrottle:setThrottleUI,flight:()=>{state=ST.FLIGHT;posePlayerAircraft(0);updateCamera(0);resetCtlUI();updateHUD();}}))beginLaunchIntro();
@@ -6931,6 +7148,7 @@ function europeBriefTargets(m){
   if(plan.ramp)out.push({x:plan.ramp.x,z:plan.ramp.z,label:'V-1 ramp'});}
  if(m.storch&&typeof storchBriefPoint==='function'){const q=storchBriefPoint(m);if(q)out.push({x:q.x,z:q.z,label:'Staff Storch — last seen here, heading along the road'});}
  if(m.schraege&&typeof schraegeBriefPoint==='function'){const q=schraegeBriefPoint(m);out.push({x:q.x,z:q.z,label:'Night fighter station — orbit, radar-vectored',optional:true});}
+ if(typeof stsKind==='function'&&stsKind(m))out.push(...stsBriefPoints(m));
  let vehicleIndex=0;
  if(livingWorld&&m.kills)for(const e of livingWorld.missionTargets(m.traffic||m.id)){
   const p=livingWorld._sample(e.route,e.initialPhase);
@@ -7132,6 +7350,7 @@ function europeContacts(){
  const contacts=targets.filter(t=>t.alive).map((t,i)=>({ref:t,pos:t.group.position,kind:t.kind.toUpperCase(),label:(t.primary?'OBJECTIVE: ':'')+(t.name||t.kind).toUpperCase()+' #'+(i+1)}));
  for(const e of enemyAir)if(e.alive)contacts.push({ref:e,pos:e.pos,kind:e.bomber?'BOMBER':'BANDIT',label:e.bomber?'BOMBER':'BANDIT'});
  const r=europeOps?.config.recon;if(r&&!europeOps.reconDone)contacts.push({ref:r,pos:r,kind:'RECON',label:'RECON — BLUE CIRCLE'});
+ if(typeof stsMapMarks==='function')for(const k of stsMapMarks())contacts.push({ref:k,pos:k,kind:'MARK',label:k.label});
  contacts.push({ref:'base',pos:{x:AF_X,z:AF_Z},kind:'BASE',label:'RETURN TO BASE'});return contacts.map(c=>({...c,range:(Math.hypot(c.pos.x-P.pos.x,c.pos.z-P.pos.z)/MI).toFixed(1)+' MI'}));
 }
 function ensureNavigation(){
@@ -7230,6 +7449,7 @@ function drawMinimap(){
     return [R - (dx*ch - dz*sh), R - (dx*sh + dz*ch)]; };
   if(rhineChart){const o=put(0,32000);g.save();g.transform(-100*ch*SC,-100*sh*SC,-100*sh*SC,100*ch*SC,o[0],o[1]);g.drawImage(rhineChart,0,0);g.restore();}
   if(europeOps?.config.recon&&!europeOps.reconDone){const r=europeOps.config.recon,q=put(r.x,r.z);g.strokeStyle='#80c9df';g.beginPath();g.arc(q[0],q[1],r.radius*SC,0,7);g.stroke();}
+  if(typeof stsMapMarks==='function')for(const k of stsMapMarks()){const q=put(k.x,k.z);g.strokeStyle=k.color;g.beginPath();g.arc(q[0],q[1],Math.max(4,k.r*SC),0,7);g.stroke();}
   // No river/road line here any more — the old map drew them from a simple parametric curve
   // (riverX(z)/roadZ(x)), which the real OSM-derived river and road meshes don't have; sampling
   // actual scene geometry for a minimap line was judged not worth it for this pass. Target dots
