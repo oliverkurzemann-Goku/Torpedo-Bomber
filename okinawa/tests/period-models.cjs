@@ -1,7 +1,7 @@
 'use strict';
 
 // Build 246: the eight models of the second delivery (depot kit, Flakvierling wagon, Pacific hospital ship, Opel Blitz cargo and tanker,
-// Panzer IV H, PBY-5A Catalina, Sd.Kfz. 251/D). Build 247 adds the five models of the third delivery (Bf 110 G-4, G4M1 Betty, Fi 156 C Storch,
+// Panzer IV H, PBY-5A Catalina, Sd.Kfz. 251/D). Build 248 adds the five models of the third delivery (Bf 110 G-4, G4M1 Betty, Fi 156 C Storch,
 // fleet oiler Nagisa, battleship Yamato 1945); the sixth model of that package (D3A1 Val) is not used and not in the repository. Everything is read from the exported bytes: pinned hashes, the Khronos validator, vertex
 // bounds in model space, budgets, forbidden extensions and the named nodes the game addresses. The delivered check.cjs files are NOT run.
 const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto'),assert=require('node:assert/strict');
@@ -26,7 +26,7 @@ const MODELS={
    budget:{tris:34000,nodes:40,mats:10,image:2048,bytes:6e6},kind:'aircraft',
    need:['PropellerLeft','PropellerRight','gear','GearLeft','GearRight','NoseGear','MainWheelLeft','MainWheelRight','NoseWheel','FloatLeft','FloatRight','AileronLeft','AileronRight','ElevatorLeft','ElevatorRight','Rudder','Muzzle1','MuzzleBlisterLeft','MuzzleBlisterRight'],
    absent:['flightFlaps','FlapLeft','FlapRight']},
- // ---- Build 247 ----
+ // ---- Build 248 ----
  'bf110g4-own':{file:'assets/aircraft/bf110g4-own.glb',sha:'0f1edf91ded8a11b8a95925285cd5f3967b12a71ebb3448813217b4337202396',size:[16.25,4.16,12.65],tol:.02,
    budget:{tris:36000,nodes:44,mats:12,image:2048,bytes:6e6},kind:'warplane',cls:'twin-tailwheel-fighter',type:'bf110',blades:3,
    need:['PropellerLeft','PropellerRight','gear','GearLeft','GearRight','TailGear','MainWheelLeft','MainWheelRight','TailWheel','AileronLeft','AileronRight','ElevatorLeft','ElevatorRight','RudderLeft','RudderRight','FlapLeft','FlapRight','Canopy','Muzzle1','Muzzle2','Muzzle3','Muzzle4','MuzzleUp1','MuzzleUp2','LichtensteinSN2AntennaArray']},

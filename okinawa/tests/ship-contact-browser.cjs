@@ -35,7 +35,7 @@ const server=http.createServer((req,res)=>{
   const exhaust=await page.evaluate(()=>{
    const models={enterprise:carrierModel,kaga:ijnCarrierModel};
    for(const key of Object.keys(NavalAssets.specs))models[key]=NavalAssets.get(key);
-   const expected={enterprise:6,kaga:1,cargo:1,samidare:2,liberty:1,landing:2,fletcher:2,submarine:0,hospital:1};
+   const expected={enterprise:6,kaga:1,cargo:1,samidare:2,liberty:1,landing:2,fletcher:2,submarine:0,hospital:1,oiler:1,yamato:1};
    const sampled={};
    const previous=P.pos.clone();P.pos.set(1200,15,900);
    for(const [name,source] of Object.entries(models)){

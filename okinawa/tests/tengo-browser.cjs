@@ -1,4 +1,4 @@
-/* Build 247, real Pacific game and the real Yamato GLB: Sortie 23 "Ten-Go". The 62 anti-aircraft stands (yamato-aa.js) are the model's own gun-mount markers and fire only into their own fields:
+/* Build 248, real Pacific game and the real Yamato GLB: Sortie 23 "Ten-Go". The 62 anti-aircraft stands (yamato-aa.js) are the model's own gun-mount markers and fire only into their own fields:
  * beams full, quarters thin, stern almost nothing, bow no light guns; inside 35 degrees of the bow the main battery fires scatter shells (Sanshiki) at the position reached by holding course.
  * A weave survives them, a straight run does not; a hit silences the stands around it on its flank. GAME_TEST_CHROME selects Chrome. */
 'use strict';
@@ -25,7 +25,7 @@ const server=http.createServer((req,res)=>{
   page.setDefaultTimeout(300000);page.on('pageerror',e=>errors.push(e.message));
   page.on('console',m=>{if(/Shader Error|VALIDATE_STATUS|not compiled/i.test(m.text()))errors.push(m.text());});
   await page.addInitScript(()=>{window.requestAnimationFrame=()=>0;});
-  await page.goto('http://127.0.0.1:'+server.address().port+'/torpedo-carrier.html?v=247');
+  await page.goto('http://127.0.0.1:'+server.address().port+'/torpedo-carrier.html?v=248');
   await page.waitForFunction(()=>state===ST.MENU,null,{polling:100});
   await page.evaluate(async()=>{
    renderer.setPixelRatio(1);await prepareOkinawa();
@@ -120,11 +120,11 @@ const server=http.createServer((req,res)=>{
     const dir=fwd.clone().multiplyScalar(Math.cos(b)).addScaledVector(right,Math.sin(b));P.pos.copy(y.group.position).addScaledVector(dir,1300);P.pos.y=alt;P.heading=0;
     for(let i=0;i<600;i++){updateFlak(1/30);P.pos.copy(y.group.position).addScaledVector(dir,1300);P.pos.y=alt;}
     return {v:y.aa.volleys||0,h:y.aa.bursts||0,s:y.aa.fired||0};};
-   return {starboard:stand(90,40),port:stand(-90,40),quarter:stand(150,40),stern:stand(180,40),bow:stand(0,40),highBeam:stand(90,300)};});
+   return {starboard:stand(90,30),port:stand(-90,30),quarter:stand(150,30),stern:stand(180,30),bow:stand(0,30),highBeam:stand(90,300)};});
   report.beam=B;
   assert.ok(B.starboard.v>60&&B.port.v>60,'the beams are loud: '+JSON.stringify(B));assert.ok(B.starboard.s===0&&B.port.s===0,'no scatter shell at the beam');
   assert.ok(B.quarter.v<B.starboard.v*.8,'the quarter is thinner: '+JSON.stringify(B));assert.ok(B.stern.v<B.starboard.v*.25,'the stern is nearly quiet: '+JSON.stringify(B));assert.equal(B.bow.v,0);assert.ok(B.bow.s>=5,'the bow has the shells instead');
-  assert.ok(B.highBeam.h>10&&B.starboard.h===0,'the 127 mm airbursts reach a high flyer only (above 40 m): '+JSON.stringify(B));
+  assert.ok(B.highBeam.h>10&&B.starboard.h===0,'the 127 mm airbursts reach a high flyer only (above 40 m; the others fly at 30 m): '+JSON.stringify(B));
   assert.ok(Math.abs(B.starboard.v-B.port.v)<B.starboard.v*.3,'port and starboard are alike');
 
   // ---- light-gun damage is real but small per hit ----

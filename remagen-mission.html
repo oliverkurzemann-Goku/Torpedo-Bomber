@@ -279,7 +279,7 @@
 
 .hangarLink{display:block;padding:12px 14px;margin:8px 0 12px;color:#f3ce83;border:1px solid #ba9d57;border-radius:5px;text-decoration:none;text-align:center;font:600 12px system-ui;letter-spacing:.8px;min-height:44px;}
 </style>
-<link rel="stylesheet" href="menu-layout.css?v=238">
+<link rel="stylesheet" href="menu-layout.css?v=248">
 <link rel="stylesheet" href="duel.css?v=238">
 </head>
 <body>
@@ -302,7 +302,7 @@
   <div style="width:100%;height:4px;background:repeating-linear-gradient(45deg,#ffd400,#ffd400 8px,#111 8px,#111 16px);"></div>
   <span id="testVersionBannerText" style="background:#111;color:#ffd400;font-family:monospace;font-weight:800;font-size:11px;letter-spacing:.5px;padding:3px 10px;border:1px solid #ffd400;border-top:none;border-radius:0 0 6px 6px;"></span>
 </div>
-<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 246';</script>
+<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 248';</script>
 <!-- ===== END TEMP TEST-ONLY VERSION BANNER ===== -->
 <div id="app"></div>
 <style>
@@ -343,7 +343,7 @@
   <div id="flash"></div>
   <div id="gunsight"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 246 · REAL RHINE</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 248 · REAL RHINE</div>
 
   <div id="apr">
     <div id="aprCall"></div>
@@ -398,7 +398,7 @@
 </div>
 
 <div class="overlay hidden" id="menu" data-campaign="europe">
-  <div class="menuTop"><a id="selBtn" href="index.html?v=246">&#9664; Change Game</a><span class="menuMeta">RHINE OPERATIONS<br>BUILD 246</span></div>
+  <div class="menuTop"><a id="selBtn" href="index.html?v=248">&#9664; Change Game</a><span class="menuMeta">RHINE OPERATIONS<br>BUILD 248</span></div>
   <div class="card menuCard">
     <aside class="menuOverview" aria-label="Campaign and pilot options">
     <div class="campaignArt" aria-hidden="true"></div>
@@ -570,8 +570,8 @@
 <script src="terrain-system/AirfieldDetails.js?v=169"></script>
 <script src="terrain-system/AircraftGround.js?v=218"></script>
 <script src="terrain-system/AirfieldActivity.js?v=242"></script>
-<script src="terrain-system/WorldVehicles.js?v=246"></script>
-<script src="terrain-system/LivingWorld.js?v=246"></script>
+<script src="terrain-system/WorldVehicles.js?v=248"></script>
+<script src="terrain-system/LivingWorld.js?v=248"></script>
 <script src="campaign.js?v=1"></script>
 <script src="game-runtime.js?v=198"></script>
 <script src="sortie-checkpoint.js?v=238"></script>
@@ -593,7 +593,7 @@
 <script src="ship-wakes.js?v=179"></script>
 <script src="ship-contact.js?v=238"></script>
 <script src="pilot-bailout.js?v=181"></script>
-<script src="enemy-bailouts.js?v=177"></script>
+<script src="enemy-bailouts.js?v=248"></script>
 <script src="flare-support.js?v=177"></script>
 <script src="sortie-service.js?v=206"></script>
 <script src="pilot-rescue.js?v=179"></script>
@@ -619,7 +619,7 @@
 <script src="ground-dust.js?v=181"></script>
 <script src="flight-indicators.js?v=198"></script>
 <script src="sortie-fuel.js?v=206"></script>
-<script src="operation-plans.js?v=246"></script>
+<script src="operation-plans.js?v=248"></script>
 <script src="custom-sortie.js?v=238"></script>
 <script>
 // ============================================================
@@ -969,7 +969,7 @@ async function loadRealWorld(){
 
   if(OSMManager.BUILD!==23||HistoricalObjectManager.BUILD!==21||LivingWorld.BUILD!==22||WorldVehicles.BUILD!==24) throw new Error('Terrain version mismatch. Reload Remagen.');
   document.getElementById('testVersionBannerText').textContent=
-    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 246 · MODULE 23';
+    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 248 · MODULE 23';
   heightProvider=new DEMHeightProvider(RTILE,'terrain-system/real/data/dem/');
   terrain=new TerrainManager(scene,RTILE,heightProvider);
   osmMgr=new OSMManager(scene,RTILE,terrain,'terrain-system/real/data/osm/');
@@ -2933,12 +2933,12 @@ const TDEF={
   depotNet   :{hp:1,   r:4.5,pts:100,  gun:1,   name:'CAMOUFLAGE NET'},
   depotBerm  :{hp:6,   r:6,  pts:100,  gun:0,   name:'EARTH BERM'},
   depotHut   :{hp:2,   r:5,  pts:150,  gun:.6,  name:'STORE HUT'},
-  // Build 247: the staff Storch, the two liaison flights (a hit costs points), the abandoned Storch and the staff officer's Opel truck
+  // Build 248: the staff Storch, the two liaison flights (a hit costs points), the abandoned Storch and the staff officer's Opel truck
   storch     :{hp:3,   r:9,  pts:1000, gun:1,   name:'STAFF STORCH'},
   liaison    :{hp:3,   r:9,  pts:-600, gun:1,   name:'LIAISON FLIGHT'},
   storchEmpty:{hp:3,   r:9,  pts:150,  gun:1,   name:'ABANDONED STORCH'},
   staffcar   :{hp:2,   r:7,  pts:800,  gun:1,   name:'STAFF CAR'},
-  // Build 247: a Bf 110 G-4 night fighter of the 'Bonus Night Hunt' (scripted flight, Schraege Musik)
+  // Build 248: a Bf 110 G-4 night fighter of the 'Bonus Night Hunt' (scripted flight, Schraege Musik)
   nightfighter:{hp:4,  r:10, pts:600,  gun:1,   name:'BF 110 NIGHT FIGHTER'}
 };
 
@@ -3177,13 +3177,13 @@ const MISSIONS=[
     text:'Fictional strike on a German fuel and ammunition dump behind the front, marked on the map: two fuel tanks, stacks of drums and ammunition crates under camouflage nets and earth berms. '
       +'Six of the eight stores must go. They burn in chains: a hit tank sets off its neighbours, and the fireballs reach a low aeroplane over the dump. Rockets and bombs in one pass, then pull up early.'},
   {id:'storch',title:'Bonus Stork',sub:'The Staff Liaison Plane',ac:'p47',bonus:true,weather:'clear',kills:{storch:1},storch:true,
-    text:'Fictional intercept: a staff officer is flying home in a Fieseler Storch at tree height along the mapped valley road (the red marker on the map). '
-      +'Two more Fi 156 liaison flights are in the air and cross his path: they are medevac and mail flights and hits on them cost points (150 each, 600 for a kill). '
-      +'When the staff Storch sees you he sets down on the road and his crew runs for a waiting Opel truck. Stop the aircraft, or the truck once it drives off. '
-      +'Shot down in the air: bonus 500. Gun passes only, he is slow and low, mind the ridge.'},
+    text:'Fictional intercept: a staff officer flies home in a Fieseler Storch at tree height along the valley road (red marker). '
+      +'Two more Fi 156 flights cross his path: medevac and mail, hits on them cost points (150 each, 600 for a kill). '
+      +'When the staff Storch sees you he lands on the road and his crew runs for a waiting Opel truck: stop the aircraft, or the truck once it drives off. '
+      +'Shot down in the air: bonus 500. Gun passes only; mind the ridge.'},
   {id:'schraege',title:'Bonus Night Hunt',sub:'Schraege Musik',ac:'p47',bonus:true,night:true,weather:'clear',kills:{nightfighter:3},radar:true,schraege:true,
-    text:'Fictional night intercept over the Rhine. Three Bf 110 night fighters orbit east of the strip and hunt you with ground radar. Below 400 ft AGL you are not on their screen, up to 2 000 ft they find you out to 2 mi, above that out to 5 mi, and their own set finds you inside 1 000 ft. '
-      +'They come in from BELOW with upward-firing guns (Schraege Musik): the radio calls BANDIT BELOW before the burst, so jink or change speed. WINDOW (J, three bundles) jams the radar for 15 s. An optional Wuerzburg radar vectors them: destroy it and they search blind for 90 s. Shoot all three down; four flares are carried (L / FLARE).'}
+    text:'Fictional night intercept. Three Bf 110 night fighters orbit east of the strip, guided by ground radar: you are off their screen below 400 ft AGL; above that they find you at 2 to 5 mi, their own set inside 1 000 ft. '
+      +'They attack from BELOW with upward guns (Schraege Musik): BANDIT BELOW on the radio comes before the burst, so jink. WINDOW (J, three bundles) jams the radar for 15 s; destroy the optional Wuerzburg radar and they search blind for 90 s. Four flares (L).'}
 ];
 function M(){ return MISSIONS[mission]; }
 function isFree(){ return !!M().free; }
@@ -4984,7 +4984,7 @@ async function duelCopy(id){
 function duelSendHello(){
   const s=duelSession;if(!s||!duelLink||duelLink.status!=='open')return;
   s.name=Duel.cleanName(dEl('dlName').value)||s.name;
-  duelLink.sendEvent(Duel.hello({name:s.name,ac:s.ac,build:246}));
+  duelLink.sendEvent(Duel.hello({name:s.name,ac:s.ac,build:248}));
 }
 function duelOnStatus(status,info){
   const s=duelSession;if(!s)return;
@@ -5312,7 +5312,7 @@ function duelInit(){
 const SITE_FILES={radar:'assets/remagen/sites/wuerzburg-riese-own.glb',searchlight:'assets/remagen/sites/flak-searchlight-own.glb',
   ramp:'assets/remagen/sites/fi103-ramp-own.glb',v1:'assets/aircraft/fi103-own.glb',depot:'assets/remagen/sites/depot-kit-own.glb',
   storch:'assets/aircraft/fi156c-own.glb',blitz:'assets/ground-vehicles/opel-blitz-cargo-own.glb',bf110:'assets/aircraft/bf110g4-own.glb'};
-// Build 247: several target kinds are built from one model
+// Build 248: several target kinds are built from one model
 const SITE_TPL={liaison:'storch',storchEmpty:'storch',staffcar:'blitz',nightfighter:'bf110'};
 // Build 246: the depot kit is one GLB with six independent roots; every part of the dump is its own target built from one root
 const DEPOT_NODE={depotTank:'FuelTank',depotDrums:'DrumStack',depotCrates:'CrateStack',depotNet:'CamoNet',depotBerm:'Berm',depotHut:'Hut'};
@@ -5332,7 +5332,7 @@ function loadSite(kind){
   if(siteTpl[kind])return Promise.resolve(siteTpl[kind]);
   if(siteTasks[kind])return siteTasks[kind];
   if(typeof THREE.GLTFLoader!=='function')return Promise.reject(new Error('3D model loader unavailable'));
-  const task=new Promise((resolve,reject)=>new THREE.GLTFLoader().load(SITE_FILES[kind]+'?v=247',gltf=>{
+  const task=new Promise((resolve,reject)=>new THREE.GLTFLoader().load(SITE_FILES[kind]+'?v=248',gltf=>{
     gltf.scene.traverse(o=>{if(o.isMesh){o.frustumCulled=true;o.castShadow=false;}});
     siteTpl[kind]=gltf.scene;resolve(gltf.scene);if(typeof siteUpgrade==='function')siteUpgrade(kind);
   },undefined,reject));
@@ -5459,7 +5459,7 @@ function spawnMissionSites(m){
     // the eight stores (tanks, drums, crates) are objectives and part of a checkpoint; net, huts and berms are scenery targets for points
     for(const [kind,dx,dz,rot] of DEPOT_LAYOUT)addSite(kind,{x:plan.depot.x+dx*c+dz*sn,z:plan.depot.z-dx*sn+dz*c,yaw:plan.depot.yaw+rot},{primary:!!DEPOT_CHAIN[kind]});
   }
-  if(m.storch&&typeof spawnStorchFlight==='function')spawnStorchFlight(m);   // Build 247
+  if(m.storch&&typeof spawnStorchFlight==='function')spawnStorchFlight(m);   // Build 248
   if(m.schraege&&typeof spawnSchraegeFlight==='function')spawnSchraegeFlight(m);
 }
 function clearSites(){
@@ -5622,7 +5622,7 @@ function updateBuzz(dt){
 }
 
 // ============================================================
-//  THE STORCH (Build 247) - "Bonus Stork"
+//  THE STORCH (Build 248) - "Bonus Stork"
 //  Three Fieseler Fi 156 (fi156c-own.glb, loaded like the other site models) fly the mapped valley road at tree height. ONE is the staff Storch
 //  (the red target on the map); TWO are liaison flights that only cross his path: a hit costs STORCH.decoyPenalty points (TDEF.liaison pts). When the
 //  staff Storch sees the player (or is hit, or reaches the landing point) he glides down onto the road, rolls out and stops; the crew runs for an Opel
@@ -5818,7 +5818,7 @@ function updateStorch(dt){
 }
 
 // ============================================================
-//  SCHRAEGE MUSIK (Build 247) - "Bonus Night Hunt"
+//  SCHRAEGE MUSIK (Build 248) - "Bonus Night Hunt"
 //  Three Bf 110 G-4 night fighters (bf110g4-own.glb, loaded like the other site models) orbit a station east of the Allied strip and hunt the player with ground
 //  radar. Scripted flights, no flight physics; each is an ordinary site target (siteRecs, targets), so bullets, rockets and bombs use the normal target paths.
 //  Radar rule (game decision): at or below 400 ft AGL (SCHRAEGE.seeLow) the player is not on the radar; between 400 and 2 000 ft it shows out to 3.2 km; above
@@ -8241,6 +8241,6 @@ function reportStartupError(err){
 const hangarRequest=CustomSortie.install('europe',MISSIONS,FlightPlans.europe,window.location.search);
 window.addEventListener('load',()=>{try{init();}catch(err){reportStartupError(err);}});
 </script>
-<script src="checkpoint-rhine.js?v=246"></script>
+<script src="checkpoint-rhine.js?v=248"></script>
 </body>
 </html>

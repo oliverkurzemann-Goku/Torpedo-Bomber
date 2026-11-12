@@ -1,19 +1,19 @@
 {
   "schema": 1,
   "reviewedOn": "2026-10-23",
-  "build": 246,
+  "build": 247,
   "status": "OPEN — source declarations checked; no external rights authorization obtained",
   "payload": {
-    "bytes": 157858998,
-    "fileCount": 371,
-    "modelCount": 56,
-    "manifestSha256": "e277e0e829f7dfe041ada120e9685011ae22f349812c633cd7ea374296691198"
+    "bytes": 164536728,
+    "fileCount": 377,
+    "modelCount": 61,
+    "manifestSha256": "761beaece03fe511ecf592e59c93dfb156a09dd7cf7f59c44057dbae8ac5321d"
   },
   "files": [
     {
       "path": "ASSET-CREDITS.md",
-      "bytes": 40522,
-      "sha256": "77c1167d9299a95762433ec60426683f20bc808d88b403e68f9e2bfe460903d5",
+      "bytes": 41305,
+      "sha256": "ca66566a94d16f2749def8a6c03ecbd000402c3c98f6a1da470390a133555aee",
       "kind": "code-or-notice"
     },
     {
@@ -125,6 +125,12 @@
       "kind": "model"
     },
     {
+      "path": "assets/aircraft/bf110g4-own.glb",
+      "bytes": 977400,
+      "sha256": "0f1edf91ded8a11b8a95925285cd5f3967b12a71ebb3448813217b4337202396",
+      "kind": "model"
+    },
+    {
       "path": "assets/aircraft/corsair-f4u1d-own.glb",
       "bytes": 6323084,
       "sha256": "23f6f2fa2e24687c9eede33d077aafacc4f83e89a8339b599fa53da02a135c66",
@@ -137,9 +143,21 @@
       "kind": "model"
     },
     {
+      "path": "assets/aircraft/fi156c-own.glb",
+      "bytes": 791852,
+      "sha256": "db0c8c3566eb57c28f5220250119ff9556d9f6b39ae8039a57596914f255827b",
+      "kind": "model"
+    },
+    {
       "path": "assets/aircraft/fw190a8-own.glb",
       "bytes": 5223156,
       "sha256": "319d846cdd684f63483c906cf1b93525a80d1516ee662582d5f116a4d6fd3edc",
+      "kind": "model"
+    },
+    {
+      "path": "assets/aircraft/g4m1-own.glb",
+      "bytes": 1201584,
+      "sha256": "0c2d0e1582c3b4296dfe6f38da7a684094371112edf96bae639b2806bba717c4",
       "kind": "model"
     },
     {
@@ -407,6 +425,12 @@
       "kind": "model"
     },
     {
+      "path": "assets/ships/fleet-oiler-own.glb",
+      "bytes": 1302024,
+      "sha256": "eccc70f7216eba815fe4dcc6f3fce0e1ba97d4fd774991d7c0760cd652f86f3c",
+      "kind": "model"
+    },
+    {
       "path": "assets/ships/fletcher.glb",
       "bytes": 248252,
       "sha256": "e561a87c0521accc8292ad7ec62fdb6028e8676b8ae51e914a3da7fb99fca00b",
@@ -452,6 +476,12 @@
       "path": "assets/ships/samidare.glb",
       "bytes": 223536,
       "sha256": "f4139be945e374e658acbfca868e23570e41ea0222b8334c27bb377f04ba12de",
+      "kind": "model"
+    },
+    {
+      "path": "assets/ships/yamato-1945-own.glb",
+      "bytes": 2339668,
+      "sha256": "e4fd0ba9040cbccf258eacf023734de253101b482771a8f8f97ba7f628c826cb",
       "kind": "model"
     },
     {
@@ -660,8 +690,8 @@
     },
     {
       "path": "checkpoint-pacific.js",
-      "bytes": 6977,
-      "sha256": "f005e369230befa737e477d9fc365f9d2496504fb8fd24e549421e8c212c617a",
+      "bytes": 7175,
+      "sha256": "7ea0e98536a1a0c81f3bb8f6f2843dd3a1bcda24d024dd58f39a3c85d8af7fbe",
       "kind": "code-or-notice"
     },
     {
@@ -726,8 +756,8 @@
     },
     {
       "path": "enemy-bailouts.js",
-      "bytes": 2718,
-      "sha256": "b994931bc345769767923756db5d2e5a84c7382f468acac224f0e2a034279e77",
+      "bytes": 2735,
+      "sha256": "c3404ddf2a90fee6afa4fd5c130c0b8e1ef14519c63996adb898777641a61c8a",
       "kind": "code-or-notice"
     },
     {
@@ -811,7 +841,7 @@
     {
       "path": "hangar.html",
       "bytes": 4485,
-      "sha256": "28d10071c9e20bbf02c1d4a48a2f2a78de10d56a66e4e7a838867c872bb2a1d0",
+      "sha256": "9a6c1808b046a7c4bf16f809f9c81b0445722073d749edb364f6599f04e20896",
       "kind": "code-or-notice"
     },
     {
@@ -823,7 +853,7 @@
     {
       "path": "index.html",
       "bytes": 7543,
-      "sha256": "90fa66e12dd43cd787480758bae77262a86b989067c74014bf3e3e5adbd8be88",
+      "sha256": "1a53eb0415b352f2985d7dd18ef2f9b0ed5b56a6722cdc237625d5a06536352b",
       "kind": "code-or-notice"
     },
     {
@@ -858,14 +888,14 @@
     },
     {
       "path": "menu-layout.css",
-      "bytes": 12778,
-      "sha256": "c107fe2f153cf5f6e74aee834b31db8be7db87c44ab9d5fb422b9122178971fa",
+      "bytes": 14367,
+      "sha256": "e4f11701fb018bf8d684141d0fa08fe4a0b7698346eb2388f332ea7247fc819a",
       "kind": "code-or-notice"
     },
     {
       "path": "naval-assets.js",
-      "bytes": 2923,
-      "sha256": "f0ae94055add46869d13e1ed7700d0db8c247ce71cf358f824b808ca77d06623",
+      "bytes": 3271,
+      "sha256": "6ca9c8ce15d0d1661b8d6ba4c64d7e30f576f2d0e20855d64a9f79b2e0c1ab74",
       "kind": "code-or-notice"
     },
     {
@@ -906,8 +936,8 @@
     },
     {
       "path": "operation-plans.js",
-      "bytes": 8775,
-      "sha256": "3e3c26c2b2ff518c4b552b397b583d295297583f5263204e7fd829195d63ba0d",
+      "bytes": 9352,
+      "sha256": "5e6748551dafdbdd60e14627edb87b7be4bb3dc560db8d7d643a248a2c5fd33a",
       "kind": "code-or-notice"
     },
     {
@@ -930,8 +960,8 @@
     },
     {
       "path": "pacific-theater.js",
-      "bytes": 17130,
-      "sha256": "8afa9f8cf51a5a195db534fe6c8a5307400bf908ad5239e60326fef7ac69bfe9",
+      "bytes": 21036,
+      "sha256": "d75c6505a3ff55c640e608138355cc4a9ef26f09c63e60d68ad5958f058a2b1f",
       "kind": "code-or-notice"
     },
     {
@@ -960,8 +990,8 @@
     },
     {
       "path": "remagen-mission.html",
-      "bytes": 486861,
-      "sha256": "99a57c379fab55f405cca85711fa07a17f0835f204c7f15feea73ac461c87b21",
+      "bytes": 519473,
+      "sha256": "4c4dd9b175b74a5eae9dee0d96ec8550c28264fb2bea45771cb75dfdc8389fc9",
       "kind": "code-or-notice"
     },
     {
@@ -2160,8 +2190,8 @@
     },
     {
       "path": "torpedo-carrier.html",
-      "bytes": 461207,
-      "sha256": "4b59da0fc9cd3bcd512d466bee658811f2b12726ec08fdbde5f1bdc51ce77a98",
+      "bytes": 480492,
+      "sha256": "6019b4f4a7d50d8b7f2c0d71fd50c455e211b2ec58e968366c47589c72338a4e",
       "kind": "code-or-notice"
     },
     {
@@ -2217,6 +2247,12 @@
       "bytes": 603445,
       "sha256": "9274bbcec8d96168626c732b5d31c775aa8cfb7eaa0599bec0c175908a2c1ce2",
       "kind": "vendor"
+    },
+    {
+      "path": "yamato-aa.js",
+      "bytes": 5887,
+      "sha256": "00d0d199e1b17edd0e3abadd1428bd10fa2a8232fc0d97c0e54aec69c042016f",
+      "kind": "code-or-notice"
     },
     {
       "path": "zero-canopy.js",
@@ -2293,6 +2329,30 @@
       "nextAction": "Own mesh and paint; review the recorded reference source and any applicable attribution/share-alike obligations; credits kept in ASSET-CREDITS.md."
     },
     {
+      "path": "assets/aircraft/bf110g4-own.glb",
+      "bytes": 977400,
+      "sha256": "0f1edf91ded8a11b8a95925285cd5f3967b12a71ebb3448813217b4337202396",
+      "title": "Messerschmitt Bf 110 G-4 (Lichtenstein SN-2)",
+      "uploader": "Torpedo-Bomber project",
+      "originalRightsholder": null,
+      "sourceUrl": "https://www.awm.gov.au/visit/exhibitions/striking/planes/german/bf110",
+      "acquiredOn": null,
+      "declaredLicense": "project-own (original mesh and paint)",
+      "licenseUrl": null,
+      "licenseEvidence": "Exact runtime GLB asset.extras",
+      "sourceCheck": null,
+      "embeddedImageCount": 1,
+      "externalImages": [],
+      "originalFile": null,
+      "originalSha256": null,
+      "changes": "New procedural exterior game mesh and original baked albedo. References used only to compare proportions and appearance.",
+      "issue": "own-build-reference-review-open",
+      "commercialPermissionDocument": null,
+      "bundleRedistributionGrant": null,
+      "releaseApproved": false,
+      "nextAction": "Own mesh and paint; review the recorded reference source and any applicable attribution/share-alike obligations; credits kept in ASSET-CREDITS.md."
+    },
+    {
       "path": "assets/aircraft/corsair-f4u1d-own.glb",
       "bytes": 6323084,
       "sha256": "23f6f2fa2e24687c9eede33d077aafacc4f83e89a8339b599fa53da02a135c66",
@@ -2341,6 +2401,30 @@
       "nextAction": "Own mesh and paint; review the recorded reference source and any applicable attribution/share-alike obligations; credits kept in ASSET-CREDITS.md."
     },
     {
+      "path": "assets/aircraft/fi156c-own.glb",
+      "bytes": 791852,
+      "sha256": "db0c8c3566eb57c28f5220250119ff9556d9f6b39ae8039a57596914f255827b",
+      "title": "Fieseler Fi 156 C Storch",
+      "uploader": "Torpedo-Bomber project",
+      "originalRightsholder": null,
+      "sourceUrl": "https://www.gruppofalchi.com/files/Profile-Publications-Aircraft-228---Fieseler-Fi-156-Storch.pdf",
+      "acquiredOn": null,
+      "declaredLicense": "project-own (original mesh and paint)",
+      "licenseUrl": null,
+      "licenseEvidence": "Exact runtime GLB asset.extras",
+      "sourceCheck": null,
+      "embeddedImageCount": 1,
+      "externalImages": [],
+      "originalFile": null,
+      "originalSha256": null,
+      "changes": "New procedural exterior game mesh and original baked albedo. References used only to compare proportions and appearance.",
+      "issue": "own-build-reference-review-open",
+      "commercialPermissionDocument": null,
+      "bundleRedistributionGrant": null,
+      "releaseApproved": false,
+      "nextAction": "Own mesh and paint; review the recorded reference source and any applicable attribution/share-alike obligations; credits kept in ASSET-CREDITS.md."
+    },
+    {
       "path": "assets/aircraft/fw190a8-own.glb",
       "bytes": 5223156,
       "sha256": "319d846cdd684f63483c906cf1b93525a80d1516ee662582d5f116a4d6fd3edc",
@@ -2358,6 +2442,30 @@
       "originalFile": null,
       "originalSha256": null,
       "changes": "Original runtime binary preserved; runtime scaling, materials, rigging and placement are described in ASSET-CREDITS.md / CLAUDE.md.",
+      "issue": "own-build-reference-review-open",
+      "commercialPermissionDocument": null,
+      "bundleRedistributionGrant": null,
+      "releaseApproved": false,
+      "nextAction": "Own mesh and paint; review the recorded reference source and any applicable attribution/share-alike obligations; credits kept in ASSET-CREDITS.md."
+    },
+    {
+      "path": "assets/aircraft/g4m1-own.glb",
+      "bytes": 1201584,
+      "sha256": "0c2d0e1582c3b4296dfe6f38da7a684094371112edf96bae639b2806bba717c4",
+      "title": "Mitsubishi G4M1 Model 11 Betty (1942)",
+      "uploader": "Torpedo-Bomber project",
+      "originalRightsholder": null,
+      "sourceUrl": "https://www.aircraftube.com/index.php?fichid=504&lang=en",
+      "acquiredOn": null,
+      "declaredLicense": "project-own (original mesh and paint)",
+      "licenseUrl": null,
+      "licenseEvidence": "Exact runtime GLB asset.extras",
+      "sourceCheck": null,
+      "embeddedImageCount": 1,
+      "externalImages": [],
+      "originalFile": null,
+      "originalSha256": null,
+      "changes": "New procedural exterior game mesh and original baked albedo. References used only to compare proportions and appearance.",
       "issue": "own-build-reference-review-open",
       "commercialPermissionDocument": null,
       "bundleRedistributionGrant": null,
@@ -3283,6 +3391,30 @@
       "nextAction": "Own mesh and paint; review the recorded reference source and any applicable attribution/share-alike obligations; credits kept in ASSET-CREDITS.md."
     },
     {
+      "path": "assets/ships/fleet-oiler-own.glb",
+      "bytes": 1302024,
+      "sha256": "eccc70f7216eba815fe4dcc6f3fce0e1ba97d4fd774991d7c0760cd652f86f3c",
+      "title": "Fleet Oiler Nagisa (1942)",
+      "uploader": "Torpedo-Bomber project",
+      "originalRightsholder": null,
+      "sourceUrl": "https://patcosta.com/wp-content/uploads/2024/07/FM-30-58-Military-Intelligence-Identification-of-Japanese-Naval-Vessels-Dec-1941.pdf",
+      "acquiredOn": null,
+      "declaredLicense": "project-own (original mesh and paint)",
+      "licenseUrl": null,
+      "licenseEvidence": "Exact runtime GLB asset.extras",
+      "sourceCheck": null,
+      "embeddedImageCount": 1,
+      "externalImages": [],
+      "originalFile": null,
+      "originalSha256": null,
+      "changes": "New procedural exterior game mesh and original baked albedo. References used only to compare proportions and appearance.",
+      "issue": "own-build-reference-review-open",
+      "commercialPermissionDocument": null,
+      "bundleRedistributionGrant": null,
+      "releaseApproved": false,
+      "nextAction": "Own mesh and paint; review the recorded reference source and any applicable attribution/share-alike obligations; credits kept in ASSET-CREDITS.md."
+    },
+    {
       "path": "assets/ships/fletcher.glb",
       "bytes": 248252,
       "sha256": "e561a87c0521accc8292ad7ec62fdb6028e8676b8ae51e914a3da7fb99fca00b",
@@ -3468,6 +3600,30 @@
       "originalFile": null,
       "originalSha256": null,
       "changes": "Original geometry and procedural weathered paint. Historical photography informs the design; no photograph is embedded.",
+      "issue": "own-build-reference-review-open",
+      "commercialPermissionDocument": null,
+      "bundleRedistributionGrant": null,
+      "releaseApproved": false,
+      "nextAction": "Own mesh and paint; review the recorded reference source and any applicable attribution/share-alike obligations; credits kept in ASSET-CREDITS.md."
+    },
+    {
+      "path": "assets/ships/yamato-1945-own.glb",
+      "bytes": 2339668,
+      "sha256": "e4fd0ba9040cbccf258eacf023734de253101b482771a8f8f97ba7f628c826cb",
+      "title": "Battleship Yamato — April 1945",
+      "uploader": "Torpedo-Bomber project",
+      "originalRightsholder": null,
+      "sourceUrl": "https://www.fischer-tropsch.org/primary_documents/gvt_reports/USNAVY/USNTMJ%20Reports/USNTMJ-200H-0745-0786%20Report%20S-06-2.pdf",
+      "acquiredOn": null,
+      "declaredLicense": "project-own (original mesh and paint)",
+      "licenseUrl": null,
+      "licenseEvidence": "Exact runtime GLB asset.extras",
+      "sourceCheck": null,
+      "embeddedImageCount": 1,
+      "externalImages": [],
+      "originalFile": null,
+      "originalSha256": null,
+      "changes": "New procedural exterior game mesh and original baked albedo. References used only to compare proportions and appearance.",
       "issue": "own-build-reference-review-open",
       "commercialPermissionDocument": null,
       "bundleRedistributionGrant": null,

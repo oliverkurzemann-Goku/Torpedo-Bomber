@@ -1,0 +1,283 @@
+{
+ "setup": {
+  "idx": 24,
+  "title": "Bonus Stork",
+  "pending": "pending",
+  "planes": 0,
+  "sites": 0,
+  "targets": 0,
+  "text": "FIND THE ROAD MARKED ON THE MAP — STAFF STORCH",
+  "dist": 7481.274142847103,
+  "L": 2600.998830214013,
+  "brief": {
+   "x": 1795.3655985677751,
+   "z": 21987.93280108352
+  },
+  "same": true,
+  "kills": {
+   "storch": 1
+  },
+  "plan": {
+   "weather": [
+    "clear",
+    "broken"
+   ],
+   "deadline": 720,
+   "notes": "Fictional intercept: the staff Storch (red marker) flies the valley road at tree height; two liaison flights cross his path and must not be hit. He sets down on the road when he sees you; stop the aircraft or the truck that picks up the crew.",
+   "events": []
+  },
+  "briefLabels": [
+   "Staff Storch — last seen here, heading along the road"
+  ],
+  "models": [
+   "object",
+   "object"
+  ],
+  "checkpointCore": 0
+ },
+ "launch": {
+  "farPhase": "pending",
+  "phase": "cruise",
+  "planes": [
+   {
+    "kind": "storch",
+    "primary": true,
+    "opt": true,
+    "fallback": false,
+    "free": true,
+    "agl": 34,
+    "prop": true,
+    "name": "STAFF STORCH",
+    "hp": 3,
+    "pts": 1000
+   },
+   {
+    "kind": "liaison",
+    "primary": false,
+    "opt": true,
+    "fallback": false,
+    "free": true,
+    "agl": 105,
+    "prop": true,
+    "name": "LIAISON FLIGHT",
+    "hp": 3,
+    "pts": -600
+   },
+   {
+    "kind": "liaison",
+    "primary": false,
+    "opt": true,
+    "fallback": false,
+    "free": true,
+    "agl": 130,
+    "prop": true,
+    "name": "LIAISON FLIGHT",
+    "hp": 3,
+    "pts": -600
+   }
+  ],
+  "targets": 3,
+  "said": "INTELLIGENCE — THE STAFF STORCH IS AIRBORNE ON THE ROAD MARKED ON YOUR MAP, TWO LIAISON FLIGHTS ARE ALSO UP",
+  "text": "STAFF STORCH — RED MARKER ON THE MAP",
+  "primaries": 1,
+  "checkpointCore": 0
+ },
+ "patrol": {
+  "L": 2600.998830214013,
+  "samples": [
+   36,
+   36,
+   36,
+   36,
+   36,
+   36,
+   36,
+   36,
+   36,
+   36,
+   36,
+   35.9,
+   35.7,
+   36,
+   35.9,
+   36
+  ],
+  "turned": true,
+  "minRoad": 263.60000000000036,
+  "maxRoad": 2600.197660428008,
+  "roadErr": 0,
+  "mode": "cruise",
+  "alive": true
+ },
+ "landing": {
+  "spawnDist": 34,
+  "afterSeen": {
+   "mode": "land",
+   "said": "THE STAFF STORCH HAS SEEN YOU — HE IS SETTING DOWN ON THE ROAD, GET HIM BEFORE THE CREW REACHES A TRUCK"
+  },
+  "mode": "stopped",
+  "phase": "drive",
+  "aglStopped": 1.4,
+  "roadLift": 1.4,
+  "log": [
+   [
+    "land",
+    "cruise",
+    33.9
+   ],
+   [
+    "land",
+    "cruise",
+    31.8
+   ],
+   [
+    "land",
+    "cruise",
+    25.6
+   ],
+   [
+    "land",
+    "cruise",
+    15.3
+   ],
+   [
+    "roll",
+    "cruise",
+    1.4
+   ],
+   [
+    "roll",
+    "cruise",
+    1.4
+   ],
+   [
+    "roll",
+    "cruise",
+    1.4
+   ],
+   [
+    "stopped",
+    "board",
+    1.4
+   ],
+   [
+    "stopped",
+    "board",
+    1.4
+   ],
+   [
+    "stopped",
+    "board",
+    1.4
+   ],
+   [
+    "stopped",
+    "board",
+    1.4
+   ],
+   [
+    "stopped",
+    "drive",
+    1.4
+   ],
+   [
+    "stopped",
+    "drive",
+    1.4
+   ],
+   [
+    "stopped",
+    "drive",
+    1.4
+   ]
+  ],
+  "car": {
+   "kind": "staffcar",
+   "primary": true,
+   "opt": true,
+   "fallback": false,
+   "dist": 103.6,
+   "intact": true,
+   "wreckScale": [
+    0,
+    0,
+    0
+   ]
+  },
+  "storchKind": "storchEmpty",
+  "storchPrimary": false,
+  "text": "STAFF CAR DRIVING OFF — STOP THE OPEL",
+  "said": "THE STAFF STORCH HAS SEEN YOU — HE IS SETTING DOWN ON THE ROAD, GET HIM BEFORE THE CREW REACHES A TRUCK|STORCH ON THE ROAD — THE CREW IS RUNNING FOR AN OPEL TRUCK|THEY ARE IN THE TRUCK — THE STAFF CAR IS DRIVING OFF ALONG THE ROAD",
+  "figs": [
+   false,
+   false
+  ]
+ },
+ "car": {
+  "moved": 100,
+  "y": 1.4,
+  "abandoned": {
+   "dead": true,
+   "kills": 0,
+   "score": 150
+  },
+  "carDead": true,
+  "kills": 1,
+  "score": 800,
+  "wreck": [
+   1,
+   1,
+   1
+  ],
+  "intact": false,
+  "left": {},
+  "text": "RTB — LAND AT BEAUFORT",
+  "rtb": false,
+  "said": "THE STAFF STORCH HAS SEEN YOU — HE IS SETTING DOWN ON THE ROAD, GET HIM BEFORE THE CREW REACHES A TRUCK|STORCH ON THE ROAD — THE CREW IS RUNNING FOR AN OPEL TRUCK|THEY ARE IN THE TRUCK — THE STAFF CAR IS DRIVING OFF ALONG THE ROAD"
+ },
+ "air": {
+  "afterShot": {
+   "alive": false,
+   "falling": true,
+   "kills": 1,
+   "score": 1500,
+   "said": "STAFF STORCH DOWN IN THE AIR — BONUS 500"
+  },
+  "landed": true,
+  "agl": 1.4,
+  "phase": "cruise",
+  "car": false,
+  "intactShown": true,
+  "left": {},
+  "text": "RTB — LAND AT BEAUFORT"
+ },
+ "decoy": {
+  "hit": {
+   "score": -150,
+   "alive": true,
+   "said": "CEASE FIRE — THAT IS A LIAISON FLIGHT, THE STAFF STORCH IS THE RED MARKER"
+  },
+  "kill": {
+   "score": -600,
+   "alive": false,
+   "kills": 0,
+   "said": "CEASE FIRE — THAT IS A LIAISON FLIGHT, THE STAFF STORCH IS THE RED MARKER|THAT WAS A LIAISON FLIGHT — PENALTY 600"
+  },
+  "left": {
+   "storch": 1
+  },
+  "flash": "LIAISON FLIGHT DESTROYED"
+ },
+ "escape": {
+  "landedAt": 150,
+  "drive": "drive",
+  "escaped": true,
+  "carT": 180,
+  "rtb": true,
+  "text": "STAFF CAR ESCAPED — RETURN TO BASE",
+  "carVisible": false,
+  "carAlive": false,
+  "kills": 0,
+  "said": "INTELLIGENCE — THE STAFF STORCH IS AIRBORNE ON THE ROAD MARKED ON YOUR MAP, TWO LIAISON FLIGHTS ARE ALSO UP|THE STAFF STORCH IS SETTING DOWN ON THE ROAD|STORCH ON THE ROAD — THE CREW IS RUNNING FOR AN OPEL TRUCK|THEY ARE IN THE TRUCK — THE STAFF CAR IS DRIVING OFF ALONG THE ROAD|THE STAFF CAR IS GONE — THE OFFICER GOT AWAY. RETURN TO BASE"
+ }
+}

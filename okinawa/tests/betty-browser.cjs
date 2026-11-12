@@ -1,4 +1,4 @@
-/* Build 247, real Pacific game and the real G4M1 Betty GLB: Sortie 22 "Betty Alarm" (and the second wave of Sortie 19) fly Betty torpedo raids at 30 m.
+/* Build 248, real Pacific game and the real G4M1 Betty GLB: Sortie 22 "Betty Alarm" (and the second wave of Sortie 19) fly Betty torpedo raids at 30 m.
  * The flight leader carries yellow caps; with him down the followers that have not dropped drop from far out (the fish run out of range); a Betty that blows
  * up hurts the raiders (and a pilot) near her; two hits and she burns down by herself; after the drop she withdraws; the state survives a checkpoint round trip.
  * GAME_TEST_CHROME selects Chrome. Writes app/release/betty-browser.json on success. */
@@ -26,7 +26,7 @@ const server=http.createServer((req,res)=>{
   page.setDefaultTimeout(300000);page.on('pageerror',e=>errors.push(e.message));
   page.on('console',m=>{if(/Shader Error|VALIDATE_STATUS|not compiled/i.test(m.text()))errors.push(m.text());});
   await page.addInitScript(()=>{window.requestAnimationFrame=()=>0;});
-  await page.goto('http://127.0.0.1:'+server.address().port+'/torpedo-carrier.html?v=247');
+  await page.goto('http://127.0.0.1:'+server.address().port+'/torpedo-carrier.html?v=248');
   await page.waitForFunction(()=>state===ST.MENU,null,{polling:100});
   await page.evaluate(async()=>{
    renderer.setPixelRatio(1);await prepareOkinawa();

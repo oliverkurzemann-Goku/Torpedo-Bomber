@@ -1,3 +1,65 @@
+# Period models and their missions (Builds 246 and 247)
+
+## Build 248: night fighter, Storch, Betty, oiler, Yamato — and five missions
+
+Five more generated GLBs (delivered as a package with the Bf 110 G-4, Fi 156 C, G4M1, fleet oiler and Yamato; same rules as below: generators in
+`scripts/own-models/<id>/`, the delivered `check.cjs` / generator scripts were **not** executed here, `okinawa/tests/period-models.cjs` pins their SHA-256
+and re-checks sizes, nodes and markers; license status `project-own`; physical iPad test pending).
+
+| Model | File | Triangles | Bytes | Size X × Y × Z (m) | Used in |
+| --- | --- | --- | --- | --- | --- |
+| Messerschmitt Bf 110 G-4 night fighter | `assets/aircraft/bf110g4-own.glb` | 9 766 | 977 400 | 16.25 × 4.16 × 12.65 | Rhine "Bonus Night Hunt" (scripted, not flyable) |
+| Fieseler Fi 156 C Storch | `assets/aircraft/fi156c-own.glb` | 6 968 | 791 852 | 14.25 × 3.05 × 9.9 | Rhine "Bonus Stork" (scripted, not flyable) |
+| Mitsubishi G4M1 Betty | `assets/aircraft/g4m1-own.glb` | 12 224 | 1 201 584 | 24.89 × 4.9 × 19.97 | Pacific Sortie 22 and the second wave of Sortie 19 (raiders) |
+| Fleet oiler | `assets/ships/fleet-oiler-own.glb` | 14 424 | 1 302 024 | 17.68 × 36.08 × 143.5 | Pacific Sortie 21; optional target in Sorties 2 and 4 |
+| Battleship Yamato, April 1945 | `assets/ships/yamato-1945-own.glb` | 27 294 | 2 339 668 | 38.8 × 59.56 × 263 | Pacific Sortie 23 "Ten-Go" |
+
+The aircraft are **not** flyable: `aircraft-contract.js` only knows the `tailwheel-fighter` class, and these are scripted NPC aircraft (no FlightCore
+data, no flight physics, no checkpoint of their flight state). All balance values below (ranges, strengths, timings) are category C: game decisions to tune.
+
+### Pacific Sortie 21 "Tanker Trap" (`pacific-theater.js`, `torpedo-carrier.html`, `okinawa/tests/tanker-trap-browser.cjs`)
+Two fleet oilers under two destroyers, all four required except the destroyers. One oiler rides **deep** (`loaded:true`, `deepBy:1.6`), the other high.
+A loaded oiler that sinks spreads burning oil (`OIL_FIRE`: 40 s, radius 35 → 125 m, flames to 45 m, 7 hull/s for a low flyer inside, **blinds the escorts'
+guns (×2.6 slower) and slows them for 32 s** inside 1 800 m). The empty one only sinks. One internal torpedo per sortie (Build 220 rule). Sorties 2 and 4 carry
+a loaded oiler as an **optional** target. The fire is not saved in a checkpoint.
+
+### Pacific Sortie 22 "Betty Alarm" (`betty:true`, `spawnBettyRaider`, `BETTY`)
+Corsair, guns only. Bettys come in at 30 m, one torpedo each (scripted kinematics, 32 m floor like the other raiders). The **flight leader** carries yellow
+caps on fin and wingtips: shoot him down and the rest **drop early** (2 700 m instead of 620 m, their fish run out of range). A Betty that blows up
+(5 hp, wing tanks burn below 2 hp) hurts everything within 150 m, the Bettys beside it and the player (10 hull). Three Bettys, then four from the
+opposite bearing; Sortie 19 swaps its second wave for two Bettys. Checkpoint: the entity state of a Betty is restored; the leader marks are rebuilt.
+
+### Pacific Sortie 23 "Ten-Go" (`yamato-aa.js`, `pacific-theater.js`, `updateYamatoAA` in `torpedo-carrier.html`, `okinawa/tests/tengo-browser.cjs`)
+The Yamato (263 m, 3 hits, 5 000 points, optional destroyer on each side, Avenger with one internal torpedo). Her 62 anti-aircraft stands are the model's own
+gun-mount markers (`asset.extras.markers`: 12 × 127 mm twin, 50 × 25 mm triple; the test compares the table with the file). Every stand sits on a flank, so
+its field of fire is derived from its position: abeam, leaning ahead at the bow end and astern at the stern end, ±58° (25 mm) / ±85° (127 mm); nothing fires
+across the ship. Result: the beams carry 25 light stands per side, the aft quarter ~13, the stern none, the **bow no light stand at all**. The bow belongs to
+the main battery: inside 35° of the bow, 900–3 500 m, 20–1 200 m above the sea, she fires **Type 3 "Sanshiki" scatter shells** every ~3.2 s at the point reached by
+holding course (flash and "MAIN BATTERY FIRING — BREAK" as the warning; burst after range / 700 m/s; radius 90 m; 10 hull at the centre; a weave or a turn after
+the flash escapes). Light stands fire a three-round volley each ~5 s per stand in the field (damage 2.6 per tracer hit, ×difficulty); the 127 mm stands fire
+airbursts only at a flyer above 40 m (as every other ship's heavy AA). **A hit silences the stands within 38 m of it on its own flank** (radio call), so a
+first hit on the quarter opens a lane. Captain combing uses the existing `cruiser` parameters (slowest turn rate). Measured in the real game (veteran,
+30 m, 3 000 m run at 65 m/s): straight along the bow axis −84/−87/−86 hull; a 52° weave −30/−46/−28. State (`s.aa`) is plain data. Not done: no
+hits by the model's own turrets, no ship-to-ship fire, no reaction of the destroyers to a silenced flank.
+
+### Rhine "Bonus Stork" (index 24, `storch:true`, `okinawa/tests/storch-browser.cjs`)
+A staff officer's Storch flies at tree height along the mapped road; two liaison flights (medevac / mail, 150 points per hit, 600 for a kill) cross his path.
+When he sees you (1 700 m, you below 450 m AGL) he lands on the road and the crew runs to a waiting Opel truck. Stop the aircraft or the truck. Shot down in the
+air: bonus 500. Gun passes only.
+
+### Rhine "Bonus Night Hunt" (index 25, `schraege:true`, `okinawa/tests/schraege-browser.cjs`)
+Night. Three scripted Bf 110 night fighters orbit east of the strip and hunt with ground radar: below 400 ft AGL you are off their screen, up to 2 000 ft they
+find you at ~2 mi, above that at ~5 mi, their own set inside 1 000 ft. They approach from **below** and fire upward guns (Schräge Musik): the radio calls
+BANDIT BELOW first (2.6 / 2.0 / 1.4 s on Rookie / Veteran / Ace), a jink or a speed change makes the burst miss. **WINDOW** (key J, button next to FLARE, three
+bundles) jams the radar for 15 s. An optional Würzburg radar vectors them: destroy it and they search blind for 90 s. Four flares as in "Moonlight Works".
+Not saved in a checkpoint: the hunters and their flights restart with the plan.
+
+### Open (Build 248)
+No iPad test and no GPU measurement; all strengths and timings above are estimates; scripted aircraft have no flight physics; Betty and Bf 110 are
+scripted raiders, not `FlightCore` types; the Yamato's AA plan has no field-of-fire masking by the pagoda or funnel beyond the flank rule; five new
+missions appended last (Rhine indices 24 and 25, Pacific Sorties 21–23; the Okinawa free flight moves again, saved mission indices of the Pacific
+campaign after it shift by one).
+
 # Convoys, depot, hospital ship and Catalina (Build 246)
 
 Eight generated GLBs delivered as `Torpedo_Bomber_8_Modelle.zip`. As with the earlier packages, all geometry and paint come from the generators

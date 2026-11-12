@@ -1,0 +1,268 @@
+{
+ "setup": {
+  "n": 3,
+  "betty": true,
+  "fromModel": true,
+  "template": true,
+  "leader": [
+   true,
+   false,
+   false
+  ],
+  "wave": [
+   1,
+   1,
+   1
+  ],
+  "hp": [
+   5,
+   5,
+   5
+  ],
+  "marks": [
+   true,
+   false,
+   false
+  ],
+  "marksCount": 3,
+  "torpedo": [
+   true,
+   true,
+   true
+  ],
+  "alt": [
+   170,
+   180,
+   190
+  ],
+  "dist": [
+   4470,
+   4839,
+   5215
+  ],
+  "toward": [
+   true,
+   true,
+   true
+  ],
+  "size": [
+   25,
+   5,
+   20
+  ],
+  "centreOffset": 0.03,
+  "props": 2,
+  "gearUp": 1.42,
+  "fire": true,
+  "label": null,
+  "said": "BETTY FLIGHT INBOUND — THE LEADER HAS BRIGHT YELLOW CAPS ON FIN AND WINGTIPS, TAKE HIM FIRST",
+  "mission": {
+   "betty": true,
+   "theater": "fleet",
+   "raiders": 3
+  },
+  "rotorsMarked": 2
+ },
+ "attack": {
+  "drops": [
+   {
+    "slot": 0,
+    "t": 49.4,
+    "dist": 608,
+    "alt": 32,
+    "rattled": false
+   },
+   {
+    "slot": 1,
+    "t": 54.5,
+    "dist": 591,
+    "alt": 32,
+    "rattled": false
+   },
+   {
+    "slot": 2,
+    "t": 59.7,
+    "dist": 574,
+    "alt": 32,
+    "rattled": false
+   }
+  ],
+  "carrierHP": 25,
+  "hp0": 100,
+  "withdrawn": [
+   true,
+   true,
+   true
+  ],
+  "alive": [
+   false,
+   false,
+   false
+  ],
+  "torpMax": 3,
+  "minAlt": 32,
+  "etorps": 0,
+  "clear": true,
+  "said": "TORPEDO IN THE WATER — BETTY, KEEP SHOOTING THE FISH|TORPEDO IN THE WATER — BETTY, KEEP SHOOTING THE FISH|TORPEDO IN THE WATER — BETTY, KEEP SHOOTING THE FISH|WE'RE HIT! FLIGHT DECK BURNING|WE'RE HIT! FLIGHT DECK BURNING|WE'RE HIT! FLIGHT DECK BURNING|A BETTY GOT AWAY — OUT OF RANGE|A BETTY GOT AWAY — OUT OF RANGE|A BETTY GOT AWAY — OUT OF RANGE",
+  "kills": 3
+ },
+ "leader": {
+  "leaderDead": true,
+  "hp": [
+   0,
+   5,
+   5
+  ],
+  "score": 950,
+  "rattled": [
+   false,
+   true,
+   true
+  ],
+  "said": "LEAD BETTY DOWN — THE FORMATION BREAKS, THE REST DROP EARLY|SPLASH ONE! 2 STILL COMING",
+  "flash": "SPLASH ONE — 2 TO GO",
+  "drops": [
+   {
+    "slot": 1,
+    "dist": 1646,
+    "alt": 84,
+    "rattled": true
+   },
+   {
+    "slot": 2,
+    "dist": 1801,
+    "alt": 85,
+    "rattled": true
+   }
+  ],
+  "carrierHP": 100,
+  "maxLife": 10.9,
+  "clear": true,
+  "said2": "LEAD BETTY DOWN — THE FORMATION BREAKS, THE REST DROP EARLY|SPLASH ONE! 2 STILL COMING|BETTY DROPPED TOO EARLY — THE FISH WILL RUN SHORT|BETTY DROPPED TOO EARLY — THE FISH WILL RUN SHORT|A BETTY GOT AWAY — OUT OF RANGE|A BETTY GOT AWAY — OUT OF RANGE",
+  "hull": 100
+ },
+ "follower": {
+  "dead": true,
+  "score": 650,
+  "rattled": [
+   false,
+   false,
+   false
+  ],
+  "said": "SPLASH ONE! 2 STILL COMING",
+  "drops": [
+   {
+    "slot": 0,
+    "dist": 608
+   },
+   {
+    "slot": 1,
+    "dist": 591
+   }
+  ],
+  "carrierHP": 50
+ },
+ "radius": {
+  "hp0": 5,
+  "miss": 5,
+  "hit": 2,
+  "hitR": 11
+ },
+ "blast": {
+  "neighbour": 3,
+  "far": 5,
+  "aliveFar": true,
+  "hull": 94.7,
+  "said": "BETTY BLEW UP — FIREBALL ON YOUR WING, KEEP YOUR DISTANCE|LEAD BETTY DOWN — THE FORMATION BREAKS, THE REST DROP EARLY|SPLASH ONE! 2 STILL COMING",
+  "rattled": [
+   true,
+   true
+  ]
+ },
+ "burn": {
+  "hp1": 2,
+  "t0": 2,
+  "dead": true,
+  "rig": {
+   "rigs": 1,
+   "wrecks": 1,
+   "holes": 27
+  },
+  "left": 2,
+  "said": "SPLASH ONE! 2 STILL COMING"
+ },
+ "sortie19": {
+  "first": [
+   {
+    "betty": false,
+    "japanese": true
+   },
+   {
+    "betty": false,
+    "japanese": true
+   }
+  ],
+  "secondN": 2,
+  "leaders": [
+   true,
+   false
+  ],
+  "wave": [
+   1,
+   1
+  ],
+  "elapsed": 85,
+  "said": "CONTROL — KEEP THE FLIGHT DECK CLEAR|BETTY FLIGHT INBOUND — THE LEADER HAS BRIGHT YELLOW CAPS ON FIN AND WINGTIPS, TAKE HIM FIRST|SECOND RAID — TWO BETTY TORPEDO BOMBERS, OPPOSITE BEARING",
+  "theater": "fleet",
+  "total": 4
+ },
+ "checkpoint": {
+  "bytes": 2072,
+  "alive": [
+   false,
+   true,
+   true
+  ],
+  "dropped": [
+   false,
+   true,
+   false
+  ],
+  "rattled": [
+   false,
+   true,
+   true
+  ],
+  "hp": [
+   0,
+   3,
+   5
+  ],
+  "torpedo": [
+   true,
+   false,
+   true
+  ],
+  "marks": [
+   false,
+   false,
+   false
+  ],
+  "wave": [
+   1,
+   1,
+   1
+  ],
+  "seq": 1,
+  "betty": [
+   true,
+   true,
+   true
+  ],
+  "pos": [
+   true,
+   true,
+   true
+  ]
+ }
+}

@@ -1,4 +1,4 @@
-/* Build 247: "Bonus Stork" (Rhine, index 24), real game and the real Fi 156 / Opel Blitz GLBs. Three Storches patrol a long stretch of the mapped road (one is the
+/* Build 248: "Bonus Stork" (Rhine, index 24), real game and the real Fi 156 / Opel Blitz GLBs. Three Storches patrol a long stretch of the mapped road (one is the
  * staff Storch, two are liaison flights that cost points); they launch when the player nears the road. The staff Storch sets down on the road when he sees the
  * player (or after 150 s), the crew runs for an Opel truck, the objective moves to the truck, which drives off; shot in the air = bonus; killing the truck or the
  * Storch completes the sortie, a liaison flight costs points, a truck that gets away is "no credit". Writes app/release/storch-browser.json on success. */
@@ -24,7 +24,7 @@ const server=http.createServer((req,res)=>{
   const page=await browser.newPage({viewport:{width:1194,height:660},hasTouch:true,deviceScaleFactor:1}),errors=[];
   page.setDefaultTimeout(900000);page.on('pageerror',e=>errors.push(e.message));
   await page.addInitScript(()=>window.requestAnimationFrame=()=>0);
-  await page.goto('http://127.0.0.1:'+server.address().port+'/remagen-mission.html?v=247&surprises=off');
+  await page.goto('http://127.0.0.1:'+server.address().port+'/remagen-mission.html?v=248&surprises=off');
   await page.waitForFunction(()=>state===ST.MENU&&realWorldReady,null,{polling:200});
   await page.evaluate(async()=>{await Promise.all(['p47','bf109'].map(ensureModel));await loadMissionSites({storch:true});
    renderer.setPixelRatio(.25);renderer.shadowMap.enabled=false;if(typeof flightQuality!=='undefined')flightQuality.enabled=false;});

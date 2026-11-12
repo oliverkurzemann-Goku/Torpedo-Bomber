@@ -12,7 +12,8 @@
   "meshes": 22,
   "others": [
    "freighter",
-   "destroyer"
+   "destroyer",
+   "freighter"
   ],
   "hud": "",
   "clear": false,
@@ -38,7 +39,8 @@
   "others": [
    "freighter",
    "destroyer",
-   "destroyer"
+   "destroyer",
+   "freighter"
   ],
   "hud": "",
   "clear": false,
@@ -97,7 +99,7 @@
   },
   "done": {
    "clear": true,
-   "kills": 2,
+   "kills": 3,
    "rtb": false
   }
  },

@@ -1,0 +1,192 @@
+{
+ "profile": {
+  "0": 0,
+  "20": 6,
+  "40": 16,
+  "60": 24,
+  "90": 25,
+  "120": 25,
+  "135": 20,
+  "150": 12,
+  "165": 5,
+  "180": 0
+ },
+ "setup": {
+  "n": 3,
+  "destroyers": 2,
+  "destroyersOptional": true,
+  "hp": 3,
+  "fallback": false,
+  "length": 263,
+  "draft": 10.4,
+  "outlets": 1,
+  "label": "Battleship Yamato",
+  "flak": true,
+  "primary": 1,
+  "clear": false,
+  "capital": false,
+  "points": 5000,
+  "theater": "tengo",
+  "torps": 1,
+  "body": 780,
+  "pause": "SHIPS 1 · SHORE TARGETS 0 · 100% FUEL · "
+ },
+ "straightBow": [
+  {
+   "alive": true,
+   "hull": 29.7,
+   "fired": 11,
+   "shellHits": 11,
+   "near": 0,
+   "volleys": 0,
+   "bursts": 0,
+   "t": 42,
+   "bearing": 0,
+   "sector": "bow",
+   "engaged": {
+    "light": 0,
+    "heavy": 0
+   }
+  },
+  {
+   "alive": true,
+   "hull": 26.9,
+   "fired": 11,
+   "shellHits": 11,
+   "near": 0,
+   "volleys": 0,
+   "bursts": 0,
+   "t": 42,
+   "bearing": 0,
+   "sector": "bow",
+   "engaged": {
+    "light": 0,
+    "heavy": 0
+   }
+  },
+  {
+   "alive": true,
+   "hull": 27.5,
+   "fired": 11,
+   "shellHits": 11,
+   "near": 0,
+   "volleys": 0,
+   "bursts": 0,
+   "t": 42,
+   "bearing": 0,
+   "sector": "bow",
+   "engaged": {
+    "light": 0,
+    "heavy": 0
+   }
+  }
+ ],
+ "weaveBow": [
+  {
+   "alive": true,
+   "hull": 66,
+   "fired": 14,
+   "shellHits": 6,
+   "near": 5,
+   "volleys": 2,
+   "bursts": 0,
+   "t": 51,
+   "bearing": -8,
+   "sector": "bow",
+   "engaged": {
+    "light": 1,
+    "heavy": 0
+   }
+  },
+  {
+   "alive": true,
+   "hull": 63,
+   "fired": 14,
+   "shellHits": 6,
+   "near": 6,
+   "volleys": 1,
+   "bursts": 0,
+   "t": 51,
+   "bearing": -8,
+   "sector": "bow",
+   "engaged": {
+    "light": 1,
+    "heavy": 0
+   }
+  },
+  {
+   "alive": true,
+   "hull": 66.1,
+   "fired": 14,
+   "shellHits": 6,
+   "near": 6,
+   "volleys": 2,
+   "bursts": 0,
+   "t": 51,
+   "bearing": -8,
+   "sector": "bow",
+   "engaged": {
+    "light": 1,
+    "heavy": 0
+   }
+  }
+ ],
+ "limits": {
+  "low": 0,
+  "far": 0,
+  "close": 0,
+  "high": 0
+ },
+ "beam": {
+  "starboard": {
+   "v": 91,
+   "h": 0,
+   "s": 0
+  },
+  "port": {
+   "v": 93,
+   "h": 0,
+   "s": 0
+  },
+  "quarter": {
+   "v": 47,
+   "h": 0,
+   "s": 0
+  },
+  "stern": {
+   "v": 0,
+   "h": 0,
+   "s": 0
+  },
+  "bow": {
+   "v": 0,
+   "h": 0,
+   "s": 6
+  },
+  "highBeam": {
+   "v": 90,
+   "h": 44,
+   "s": 0
+  }
+ },
+ "lightDamage": {
+  "hits": 53,
+  "lost": 114
+ },
+ "silence": {
+  "before": 0,
+  "stbd": 9,
+  "port": 0,
+  "hp": 2,
+  "msg": "HIT — 9 ANTI-AIRCRAFT STANDS SILENCED",
+  "quarterAfter": 12,
+  "portQuarter": 20
+ },
+ "sink": {
+  "alive": false,
+  "hp": 0,
+  "gained": 5400,
+  "clear": true,
+  "sunk": 1
+ }
+}

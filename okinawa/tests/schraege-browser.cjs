@@ -1,4 +1,4 @@
-/* Build 247: "Bonus Night Hunt" (Rhine, index 25), real game and the real Bf 110 G-4 GLB. Three scripted night fighters orbit a station and hunt the player with ground
+/* Build 248: "Bonus Night Hunt" (Rhine, index 25), real game and the real Bf 110 G-4 GLB. Three scripted night fighters orbit a station and hunt the player with ground
  * radar: invisible below 400 ft AGL, 3.2 km in the clutter band, 8 km above 2 000 ft, never on the ground; WINDOW (J) jams the radar 15 s; a destroyed Wuerzburg radar
  * blinds it 90 s; their own set finds you within 330 m. A hunter gets under the belly, warns ("BANDIT BELOW") and fires two upward guns as real tracers at the lead
  * point; a jink during the warning cancels the burst; afterwards he breaks away. Shot down = 600 points, three kill the sortie. Writes app/release/schraege-browser.json. */
@@ -24,7 +24,7 @@ const server=http.createServer((req,res)=>{
   const page=await browser.newPage({viewport:{width:1194,height:660},hasTouch:true,deviceScaleFactor:1}),errors=[];
   page.setDefaultTimeout(900000);page.on('pageerror',e=>errors.push(e.message));
   await page.addInitScript(()=>window.requestAnimationFrame=()=>0);
-  await page.goto('http://127.0.0.1:'+server.address().port+'/remagen-mission.html?v=247&surprises=off');
+  await page.goto('http://127.0.0.1:'+server.address().port+'/remagen-mission.html?v=248&surprises=off');
   await page.waitForFunction(()=>state===ST.MENU&&realWorldReady,null,{polling:200});
   await page.evaluate(async()=>{await Promise.all(['p47','bf109'].map(ensureModel));await loadMissionSites({schraege:true,radar:true});
    renderer.setPixelRatio(.25);renderer.shadowMap.enabled=false;if(typeof flightQuality!=='undefined')flightQuality.enabled=false;});

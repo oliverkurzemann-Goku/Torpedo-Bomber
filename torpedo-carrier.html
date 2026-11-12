@@ -301,7 +301,7 @@
 
 .hangarLink{display:block;padding:12px 14px;margin:8px 0 12px;color:#f3ce83;border:1px solid #ba9d57;border-radius:5px;text-decoration:none;text-align:center;font:600 12px system-ui;letter-spacing:.8px;min-height:44px;}
 </style>
-<link rel="stylesheet" href="menu-layout.css?v=238">
+<link rel="stylesheet" href="menu-layout.css?v=248">
 </head>
 <body>
 <div id="app"></div>
@@ -354,7 +354,7 @@
   <div id="flash"></div>
   <div id="ltn" style="position:fixed;inset:0;background:#e6ecff;opacity:0;pointer-events:none;z-index:40;"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 246</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 248</div>
 
   <!-- Optical landing aid -->
   <div id="lso">
@@ -401,7 +401,7 @@
 
 <!-- Menu -->
 <div class="overlay" id="menu" data-campaign="pacific">
-  <div class="menuTop"><a id="selBtn" href="index.html?v=246">&#9664; Change Game</a><span class="menuMeta">PACIFIC OPERATIONS<br>BUILD 246</span></div>
+  <div class="menuTop"><a id="selBtn" href="index.html?v=248">&#9664; Change Game</a><span class="menuMeta">PACIFIC OPERATIONS<br>BUILD 248</span></div>
   <div class="card menuCard">
     <aside class="menuOverview" aria-label="Campaign and pilot options">
     <div class="campaignArt" aria-hidden="true"></div>
@@ -514,7 +514,7 @@
 <script src="avenger-bay.js?v=220"></script>
 <script src="corsair-native.js?v=218"></script>
 <script src="avenger-finish.js?v=199"></script>
-<script src="naval-assets.js?v=246"></script>
+<script src="naval-assets.js?v=248"></script>
 <script src="aircraft-rotors.js?v=172"></script>
 <script src="combat-fx.js?v=238"></script>
 <script src="aircraft-smoke.js?v=176"></script>
@@ -528,12 +528,12 @@
 <script src="deck-activity.js?v=240"></script>
 <script src="ship-wakes.js?v=240"></script>
 <script src="pilot-bailout.js?v=181"></script>
-<script src="enemy-bailouts.js?v=177"></script>
+<script src="enemy-bailouts.js?v=248"></script>
 <script src="flare-support.js?v=177"></script>
 <script src="sortie-service.js?v=206"></script>
 <script src="pilot-rescue.js?v=179"></script>
-<script src="pby-rescue.js?v=246"></script>
-<script src="yamato-aa.js?v=247"></script>
+<script src="pby-rescue.js?v=248"></script>
+<script src="yamato-aa.js?v=248"></script>
 <script src="radio-intercept.js?v=157"></script>
 <script src="surprises.js?v=238"></script>
 <script src="audio/weapon-sound.js?v=144"></script>
@@ -548,9 +548,9 @@
 <script src="sortie-features.js?v=238"></script>
 <script src="ground-run.js?v=198"></script>
 <script src="flight-indicators.js?v=198"></script>
-<script src="operation-plans.js?v=238"></script>
+<script src="operation-plans.js?v=248"></script>
 <script src="custom-sortie.js?v=238"></script>
-<script src="pacific-theater.js?v=206"></script>
+<script src="pacific-theater.js?v=248"></script>
 <script src="carrier-recovery.js?v=198"></script>
 <script src="maritime-weather.js?v=198"></script>
 <script>
@@ -990,7 +990,7 @@ async function preparePacificModels(m,progress=()=>{}){
   const needed=[['carrier',m.defend?loadIJNCarrierModel:loadCarrierModel,
     ()=>m.defend?ijnCarrierModel:carrierModel]];
   if(!m.defend&&!m.free&&!m.qual&&typeof loadPbyModel==='function')needed.push(['pby',loadPbyModel,()=>pbyTemplate]);   // Build 246: the rescue Catalina (typeof guard: sliced test functions run without it)
-  if((m.betty||(m.operation?.events||[]).some(e=>e.betty))&&typeof loadBettyModel==='function')needed.push(['betty',loadBettyModel,()=>bettyTemplate]);   // Build 247 (typeof guard: sliced test functions run without it)
+  if((m.betty||(m.operation?.events||[]).some(e=>e.betty))&&typeof loadBettyModel==='function')needed.push(['betty',loadBettyModel,()=>bettyTemplate]);   // Build 248 (typeof guard: sliced test functions run without it)
   if(m.corsair)needed.push(['corsair',loadCorsairModel,()=>corsairTemplate]);
   else if(m.sbd)needed.push(['sbd',loadSBDModel,()=>sbdTemplate]);
   if(!m.sbd||m.defend)needed.push(['avenger',loadPlaneModel,()=>gltfRoot&&propPivot]);
@@ -2903,7 +2903,7 @@ function hitShip(s, quietCam,point=null,weapon="torpedo",attack=null){
   s.hp--;
   if(!quietCam&&(weapon==='bomb'||weapon==='rocket'))sortieBombHit++;
   if(typeof shipDamage!=="undefined"&&shipDamage)shipDamage.hit(s,point,weapon);
-  if(s.def.aa==='yamato'&&s.hp>0)yamatoSilence(s,impactPoint);   // Build 247: a hit silences the stands around it
+  if(s.def.aa==='yamato'&&s.hp>0)yamatoSilence(s,impactPoint);   // Build 248: a hit silences the stands around it
   if(attack)attack.part={rudder:'stern',engine:'midships',bow:'bow'}[shipDamage?.get(s)?.lastPart]||attack.part;
   spawnSplash(impactPoint.x,impactPoint.z,true);
   // Build 202: a square beam shot is rewarded, and the track angle is always reported.
@@ -2918,7 +2918,7 @@ function hitShip(s, quietCam,point=null,weapon="torpedo",attack=null){
     s.boomN=typeof shipDamage!=="undefined"&&shipDamage?0:4+Math.floor(Math.random()*3); s.boomT=0.3; s.burnT=0;
     shipBlast(s,s.def.loaded?2.4:1.7,point);
     spawnSlick(s);
-    if(s.def.loaded)igniteOil(s);   // Build 247: a loaded oiler spreads burning oil
+    if(s.def.loaded)igniteOil(s);   // Build 248: a loaded oiler spreads burning oil
     const pts=s.def.points||(s.def.type==='cruiser'?2000:s.def.type==='destroyer'?1200:1000);
     addScore(pts);
     // heavier feedback for capital ships: bigger shake, longer slow-mo hold
@@ -3597,7 +3597,7 @@ function updateSurprises(dt){
     }
   }
 }
-// Build 247: Sortie 23 "Ten-Go". The Yamato's 62 anti-aircraft stands (yamato-aa.js, the model's own gun-mount markers) fire only into their own fields; the bow is
+// Build 248: Sortie 23 "Ten-Go". The Yamato's 62 anti-aircraft stands (yamato-aa.js, the model's own gun-mount markers) fire only into their own fields; the bow is
 // the main battery's: inside 35 degrees of the bow it fires Type 3 scatter shells (Sanshiki) at the position the player reaches if he holds course.
 // State lives in plain data on the ship (s.aa) so a checkpoint keeps it. Strengths, ranges and timings are game-balance values (category C).
 const YAMATO_TRACER_CAP=110,YAMATO_SHELL_BURSTS=7;
@@ -3664,7 +3664,7 @@ function updateFlak(dt){
   if(hasRaiders())updateCarrierDefense(dt);
   for(const s of ships){
     if(!s.alive||!s.flak) continue;
-    if(s.def.aa==='yamato'){updateYamatoAA(s,dt);continue;}
+    if(s.def?.aa==='yamato'){updateYamatoAA(s,dt);continue;}
     const d=Math.hypot(P.pos.x-s.group.position.x, P.pos.z-s.group.position.z);
     s.flakTimer-=dt;
     if(s.flakTimer<=0 && d<2200){
@@ -5162,7 +5162,7 @@ function updateJapaneseRaider(r,dt){
   radioSay('BOMB AWAY — CLEAR THE APPROACH');
  }
 }
-// ---- Build 247: Betty torpedo raid ----
+// ---- Build 248: Betty torpedo raid ----
 // A G4M1 flies the same scripted raider kinematics as the other raiders (SortieFeatures.flyRaider; "betty" is not a FlightCore type), at 30 m on the run-in
 // with one torpedo. The flight leader carries bright yellow caps (fin, wingtips): when he goes down, the followers who have not dropped yet drop from too far
 // out (their fish run out of range). A Betty with two hits is burning, burns down, and a Betty that blows up damages every raider within BETTY.blastR
@@ -5474,10 +5474,10 @@ function crash(title,sub){
 let bailout=null,bailRescue=null,bailPlaneCrashed=false,bailDone=false,bailChuteCalled=false,crewBailouts=[],crewWaterRescue=null,ditching=null;
 // Build 246: a PBY-5A Catalina (pby-rescue.js) picks up survivors who ditched far from the carrier; nearer ones still get the motor launch
 let pbyTemplate=null,crewPby=null,PBY_MIN_DISTANCE=2200;   // a ditching farther than this from the carrier is flown out by the PBY (tests of the motor-launch path raise it)
-function loadPbyModel(){return PacificAssets.loader().load('assets/aircraft/pby5a-own.glb?v=246',gltf=>{pbyTemplate=gltf.scene;pbyTemplate.traverse(o=>{if(o.isMesh){o.castShadow=true;o.frustumCulled=true;}});return pbyTemplate;});}
-// Build 247: the G4M1 Betty (assets/aircraft/g4m1-own.glb) flies the torpedo raids of Sortie 22 and the second wave of Sortie 19
+function loadPbyModel(){return PacificAssets.loader().load('assets/aircraft/pby5a-own.glb?v=248',gltf=>{pbyTemplate=gltf.scene;pbyTemplate.traverse(o=>{if(o.isMesh){o.castShadow=true;o.frustumCulled=true;}});return pbyTemplate;});}
+// Build 248: the G4M1 Betty (assets/aircraft/g4m1-own.glb) flies the torpedo raids of Sortie 22 and the second wave of Sortie 19
 let bettyTemplate=null;
-function loadBettyModel(){return PacificAssets.loader().load('assets/aircraft/g4m1-own.glb?v=247',gltf=>{bettyTemplate=gltf.scene;bettyTemplate.traverse(o=>{if(o.isMesh){o.castShadow=true;o.frustumCulled=true;}});return bettyTemplate;});}
+function loadBettyModel(){return PacificAssets.loader().load('assets/aircraft/g4m1-own.glb?v=248',gltf=>{bettyTemplate=gltf.scene;bettyTemplate.traverse(o=>{if(o.isMesh){o.castShadow=true;o.frustumCulled=true;}});return bettyTemplate;});}
 function aircraftCrewCount(){return isDefend()||isCorsair()?1:isSBD()?2:3;}
 function clearCrewBailouts(){for(const c of crewBailouts){c.chute.dispose();c.rescue?.dispose();}crewBailouts=[];crewWaterRescue?.dispose();crewWaterRescue=null;crewPby?.dispose();crewPby=null;}
 function rescueCrewMember(position,water){
@@ -5901,7 +5901,7 @@ function loadPlaneModel(){
       }
       window.__eyeDbg='EYE '+COCKPIT_EYE.map(v=>v.toFixed(2)).join('/');
       const btEl=document.getElementById('buildTag');
-      if(btEl) btEl.textContent='BUILD 246 · '+window.__eyeDbg;
+      if(btEl) btEl.textContent='BUILD 248 · '+window.__eyeDbg;
       let seat=null;
       model.traverse(function(o){
         if(!o.isMesh||!o.material) return;
@@ -6420,7 +6420,7 @@ function updateSlicks(dt){
     if(sl.life<=0){ GameRuntime.release(sl.group); slicks.splice(i,1); }
   }
 }
-// Build 247: a LOADED fleet oiler (def.loaded) that goes down spreads burning oil for OIL_FIRE.life seconds. The fire grows to rMax, flames reach
+// Build 248: a LOADED fleet oiler (def.loaded) that goes down spreads burning oil for OIL_FIRE.life seconds. The fire grows to rMax, flames reach
 // `ceiling` metres: a low aeroplane inside takes damage over time. The smoke blinds the escorts' guns (blindT) and slows them (slowT).
 // Game-balance values (category C). Not saved in a checkpoint: after "Continue" a sunk oiler's fire is gone.
 const OIL_FIRE={life:40,rMin:35,rMax:125,grow:9,ceiling:45,dps:7,smokeRange:1800,blind:32,slow:32,flames:26};
@@ -7345,7 +7345,7 @@ function setupUIButtons(){
   if(dbgT2) dbgT2.onclick=()=>{
     dbgOn=!dbgOn; GameRuntime.storage.setItem('dbgOn',dbgOn?'1':'0');
     const db=document.getElementById('dbgBox'); if(db) db.textContent=dbgOn?'✓':'';
-    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 246'; }
+    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 248'; }
   };
   const lu=document.getElementById('lookUp'), ld=document.getElementById('lookDn');
   let _lookT=0;
@@ -7643,7 +7643,7 @@ function updateShips(dt){
         }
       }
       wf.copy(s.fwd).applyQuaternion(s.group.quaternion);wf.y=0;wf.normalize();
-      s.blindT=Math.max(0,(s.blindT||0)-dt);s.slowT=Math.max(0,(s.slowT||0)-dt);   // Build 247: oil-fire smoke over the escorts
+      s.blindT=Math.max(0,(s.blindT||0)-dt);s.slowT=Math.max(0,(s.slowT||0)-dt);   // Build 248: oil-fire smoke over the escorts
       s.driveMultiplier=(s.driveMultiplier??1)+(shipPerformance.speed*(s.slowT>0?.6:1)-(s.driveMultiplier??1))*(1-Math.exp(-dt*.5));
       const driveSpeed=s.speed*s.driveMultiplier;
       s.group.position.x+=wf.x*driveSpeed*dt;
@@ -7673,7 +7673,7 @@ function animate(){
     notice.style.cssText='position:fixed;inset:0;z-index:999998;background:rgba(15,20,15,.95);color:#e8ddbc;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px;text-align:center;font:16px system-ui';
     const title=document.createElement('h2');title.textContent='Simulation interrupted';
     const detail=document.createElement('p');
-    detail.textContent='BUILD 246 · '+(MISSIONS[mission]?.sub||'Menu')+' · '+error.message;
+    detail.textContent='BUILD 248 · '+(MISSIONS[mission]?.sub||'Menu')+' · '+error.message;
     const reload=document.createElement('button');reload.textContent='Reload game';
     reload.style.cssText='padding:12px 24px;font:inherit';reload.onclick=()=>location.reload();
     notice.appendChild(title);notice.appendChild(detail);notice.appendChild(reload);document.body.appendChild(notice);
@@ -7845,6 +7845,6 @@ init();
 if(hangarRequest.requested&&hangarRequest.config){selectedMission=0;launchCampaignMission(0);}
 if(hangarRequest.error)flash(hangarRequest.error,8000);
 </script>
-<script src="checkpoint-pacific.js?v=238"></script>
+<script src="checkpoint-pacific.js?v=248"></script>
 </body>
 </html>

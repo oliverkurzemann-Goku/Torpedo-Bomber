@@ -384,6 +384,14 @@ The previous `uss_midway.glb` and `ijn carrier.glb` remain only for the archived
 `scripts/own-models/`). No third-party model, scan or texture is included; reference images were used only to compare proportions. Published
 dimensions, reconstructed details, no established tolerance. License status: `project-own`. Details and what is wired in: `RHINE-MODELS.md`.
 
+## Build 248 — five delivered period models
+
+`assets/aircraft/bf110g4-own.glb`, `assets/aircraft/fi156c-own.glb`, `assets/aircraft/g4m1-own.glb`, `assets/ships/fleet-oiler-own.glb` and
+`assets/ships/yamato-1945-own.glb` were delivered as a model package (generated for the project from numeric geometry and procedural paint; generators in
+`scripts/own-models/`). No third-party model, scan or texture is included; reference photographs, drawings and museum / report pages (for the Yamato: the U.S.
+Naval Technical Mission report S-06-2 and the sources listed in its README) were used only to compare proportions and appearance. Published dimensions,
+reconstructed details, no established tolerance. License status: `project-own`. Details and what is wired in: `PERIOD-MODELS.md`.
+
 ## Build 246 — eight delivered period models
 
 `assets/ground-vehicles/opel-blitz-cargo-own.glb`, `opel-blitz-tanker-own.glb`, `panzer4h-own.glb`, `sdkfz251d-own.glb`, `flakwagen-own.glb`,

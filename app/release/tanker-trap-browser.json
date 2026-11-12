@@ -1,0 +1,111 @@
+{
+ "setup": {
+  "n": 4,
+  "oilers": 2,
+  "destroyers": 2,
+  "loaded": [
+   true,
+   false
+  ],
+  "fallback": false,
+  "deep": [
+   -1.47,
+   0.03
+  ],
+  "length": 144,
+  "draft": 8.08,
+  "outlets": 1,
+  "radius": [
+   79,
+   79
+  ],
+  "optional": [
+   false,
+   false
+  ],
+  "clear": false,
+  "label": "Fleet oiler",
+  "primary": 2,
+  "hud": "",
+  "pause": "SHIPS 2 · SHORE TARGETS 0 · 100% FUEL · "
+ },
+ "empty": {
+  "alive": false,
+  "fires": 0,
+  "blind": 0,
+  "slow": 0,
+  "kills": 1,
+  "said": "",
+  "clear": false
+ },
+ "loaded": {
+  "fires": 1,
+  "flames": 26,
+  "said": "TANKER GONE UP — BURNING OIL ON THE WATER, THE ESCORTS ARE BLIND IN THE SMOKE",
+  "blind": [
+   32,
+   0
+  ],
+  "slow": [
+   32,
+   0
+  ],
+  "slowMult": [
+   0.6,
+   1
+  ],
+  "blindAfter15": [
+   17,
+   0
+  ],
+  "r": 125,
+  "low": {
+   "lost": 11.2,
+   "warned": true,
+   "said": "YOU ARE IN THE FLAMES — CLIMB, CLIMB"
+  },
+  "high": 0,
+  "outside": 0,
+  "afterFlight": 0,
+  "flamesLeft": 0,
+  "slowAfter": [
+   0,
+   0
+  ],
+  "multAfter": [
+   0.97,
+   1
+  ],
+  "clear": true,
+  "kills": 2,
+  "dead": true
+ },
+ "flak": {
+  "clear": 13,
+  "blind": 5
+ },
+ "Sortie 2": {
+  "found": true,
+  "optional": true,
+  "loaded": true,
+  "fallback": false,
+  "primary": 1,
+  "contacts": 4,
+  "body": true,
+  "fire": 1,
+  "clearAfterOiler": false,
+  "pause": "SHIPS 1 · SHORE TARGETS 0 · 10"
+ },
+ "Sortie 4": {
+  "found": true,
+  "optional": true,
+  "loaded": true,
+  "fallback": false,
+  "primary": 1,
+  "contacts": 5,
+  "body": true,
+  "fire": 1,
+  "clearAfterOiler": false,
+  "pause": "SHIPS 1 · SHORE TARGETS 0 · 10"
+ }
+}

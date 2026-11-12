@@ -136,7 +136,7 @@ const server=http.createServer((req,res)=>{
     distAllied:Math.hypot(p.x-ALLIED_AF_X,p.z-ALLIED_AF_Z),top:targetTop(t),text:objectiveText()};
   });
   const Rp=report.ramp;
-  assert.equal(Rp.rotte,21,'old mission indices are unchanged');assert.equal(Rp.index,22,'the V-1 sortie appends at the end');assert.equal(Rp.count,24,'the depot sortie follows the V-1 sortie');assert.ok(/V-1/.test(Rp.plan));
+  assert.equal(Rp.rotte,21,'old mission indices are unchanged');assert.equal(Rp.index,22,'the V-1 sortie appends at the end');assert.equal(Rp.count,26,'the depot sortie follows the V-1 sortie; the Storch and Night Hunt sorties come after it');assert.ok(/V-1/.test(Rp.plan));
   assert.ok(Rp.primary&&!Rp.secondary&&!Rp.fallback&&Rp.inTargets&&Rp.kills.ramp===1,'the ramp is the primary target with the real model');
   assert.equal(Rp.allTargets,Rp.checkpointTargets,'the primary ramp is part of a checkpoint');
   assert.ok(Rp.yawErr<1e-6,'the rail points at the Allied strip');assert.ok(Rp.clear,'clear of water and buildings along the rail');assert.ok(Rp.slope<=6,'level enough along the rail: '+Rp.slope);
@@ -207,7 +207,7 @@ const server=http.createServer((req,res)=>{
     marker:europeBriefTargets(M()).some(o=>/dump/.test(o.label))};
   });
   const Dp=report.depot;
-  assert.equal(Dp.index,23);assert.equal(Dp.count,24,'the depot sortie appends after the V-1 sortie');assert.ok(Dp.plan,'a spot was found for the dump');
+  assert.equal(Dp.index,23);assert.equal(Dp.count,26,'the depot sortie appends after the V-1 sortie (the Storch and Night Hunt sorties follow it)');assert.ok(Dp.plan,'a spot was found for the dump');
   assert.deepEqual(Dp.kinds,{depotTank:2,depotDrums:3,depotCrates:3,depotNet:1,depotHut:2,depotBerm:2});
   assert.equal(Dp.exp,8);assert.deepEqual(Dp.primary,['depotCrates','depotCrates','depotCrates','depotDrums','depotDrums','depotDrums','depotTank','depotTank']);assert.equal(Dp.optional,5);
   assert.ok(!Dp.fallback,'real models');assert.deepEqual(Dp.left,{depot:6});assert.ok(/STORES 6/.test(Dp.text),Dp.text);assert.equal(Dp.checkpointTargets,8,'the eight stores are part of a checkpoint');

@@ -1,4 +1,4 @@
-/* Build 247: the anti-aircraft fit of the battleship Yamato for Sortie 23 "Ten-Go" (a game model, not a rebuild of the real arrangement).
+/* Build 248: the anti-aircraft fit of the battleship Yamato for Sortie 23 "Ten-Go" (a game model, not a rebuild of the real arrangement).
  * The 62 stands are the gun-mount markers of assets/ships/yamato-1945-own.glb (asset.extras.markers: 12 x 127 mm twin, 50 x 25 mm triple; the test compares
  * this table with the model). Starboard is -X, bow +Z, like the model; a bearing is measured from the bow, positive to starboard.
  * Every stand sits on a flank, so its field of fire is derived from its position: abeam, leaning ahead for the bow stands and astern for the stern stands (30 degrees at the ends),

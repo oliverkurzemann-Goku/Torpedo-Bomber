@@ -1,0 +1,236 @@
+{
+ "setup": {
+  "idx": 25,
+  "title": "Bonus Night Hunt",
+  "n": 3,
+  "fallback": false,
+  "mode": [
+   "patrol",
+   "patrol",
+   "patrol"
+  ],
+  "agl": [
+   1210,
+   1350,
+   1490
+  ],
+  "orbit": [
+   1500,
+   1500,
+   1500
+  ],
+  "props": [
+   true,
+   true,
+   true
+  ],
+  "muzzles": [
+   2,
+   2,
+   2
+  ],
+  "windowLeft": 3,
+  "btn": "flex",
+  "btnText": "WINDOW3",
+  "revealed": [
+   false,
+   false,
+   false
+  ],
+  "kills": {
+   "nightfighter": 3
+  },
+  "text": "NIGHT FIGHTERS 3 — STAY LOW OR THROW WINDOW (J)",
+  "radar": true,
+  "checkpointCore": 0,
+  "plan": true,
+  "briefLabels": [
+   "Wuerzburg radar",
+   "Night fighter station — orbit, radar-vectored"
+  ],
+  "size": [
+   16.3,
+   4.2,
+   12.6
+  ],
+  "level": [
+   2.6,
+   2,
+   1.4
+  ]
+ },
+ "range": [
+  0,
+  0,
+  0,
+  3200,
+  3200,
+  5600,
+  8000,
+  8000
+ ],
+ "detect": {
+  "low": [
+   "patrol",
+   "patrol",
+   "patrol"
+  ],
+  "band": [
+   "vector",
+   "patrol",
+   "vector"
+  ],
+  "bandFar": [
+   "patrol",
+   "patrol",
+   "patrol"
+  ],
+  "high": [
+   "vector",
+   "vector",
+   "vector"
+  ],
+  "highFar": [
+   "patrol",
+   "patrol",
+   "patrol"
+  ],
+  "ground": [
+   "patrol",
+   "patrol",
+   "patrol"
+  ]
+ },
+ "window": {
+  "windowT": 15,
+  "left": 2,
+  "clouds": 1,
+  "btn": "WINDOW2",
+  "text": "NIGHT FIGHTERS 3 — WINDOW OUT, RADAR JAMMED 15 S",
+  "during": [
+   "patrol",
+   "patrol",
+   "patrol"
+  ],
+  "after": [
+   "vector",
+   "vector",
+   "vector"
+  ],
+  "before": [
+   "vector",
+   "vector",
+   "vector"
+  ],
+  "cloudsAfter": 0,
+  "left4": 0,
+  "said": "RADAR CONTACT ON YOU — NIGHT FIGHTERS ARE COMING. LOW AND FAST, OR THROW WINDOW (J)|WINDOW AWAY — THE GROUND RADAR IS SEEING SNOW|NIGHT FIGHTERS HAVE LOST YOU — STAY OFF THE RADAR|WINDOW AWAY — THE GROUND RADAR IS SEEING SNOW|WINDOW AWAY — THE GROUND RADAR IS SEEING SNOW",
+  "flash": "NO WINDOW LEFT"
+ },
+ "radar": {
+  "down": true,
+  "blind": 89.9,
+  "flag": true,
+  "said": "OPTIONAL SECONDARY TARGET DESTROYED — BONUS 300|RADAR DOWN — HEAVY FLAK FIRE CONTROL DEGRADED|RADAR DOWN — THE NIGHT FIGHTERS ARE SEARCHING BLIND",
+  "text": "NIGHT FIGHTERS 3 — RADAR DOWN, THEY SEARCH BLIND",
+  "modesBlind": [
+   "patrol",
+   "patrol",
+   "patrol"
+  ],
+  "modesHalf6500": [
+   "patrol",
+   "patrol",
+   "patrol"
+  ],
+  "modesHalf3500": [
+   "patrol",
+   "vector",
+   "vector"
+  ],
+  "onboard": "stalk"
+ },
+ "attack": {
+  "warnAt": 17,
+  "fireAt": 28.5,
+  "tracers": 0,
+  "firstRel": {
+   "up": 46.3,
+   "h": 111.8
+  },
+  "hull0": 100,
+  "mode": [],
+  "said": "RADAR CONTACT ON YOU — NIGHT FIGHTERS ARE COMING. LOW AND FAST, OR THROW WINDOW (J)|BANDIT BELOW — BREAK!|BANDIT BELOW — BREAK!|BANDIT BELOW — BREAK!|BANDIT BELOW — BREAK!|FUEL LEAK — RETURN TO BASE|BANDIT BELOW — BREAK!",
+  "gap": 2,
+  "tAttack": 28.5,
+  "lv": 2,
+  "tracersNow": 2,
+  "hull": 64.8,
+  "hunterModes": [
+   "stalk",
+   "vector",
+   "break"
+  ],
+  "dir": []
+ },
+ "jink": {
+  "warned": true,
+  "hunterWarned": true,
+  "fired": false,
+  "hull": 100,
+  "stillWarned": false
+ },
+ "kills": {
+  "out": [
+   {
+    "dead": true,
+    "falling": true,
+    "mode": "dead",
+    "score": 600,
+    "kills": 1,
+    "said": "NIGHT FIGHTER DOWN — 2 STILL HUNTING"
+   },
+   {
+    "dead": true,
+    "falling": true,
+    "mode": "dead",
+    "score": 600,
+    "kills": 1,
+    "said": "NIGHT FIGHTER DOWN — 2 STILL HUNTING|NIGHT FIGHTER DOWN — 1 STILL HUNTING"
+   },
+   {
+    "dead": true,
+    "falling": true,
+    "mode": "dead",
+    "score": 600,
+    "kills": 1,
+    "said": "HUNTING|NIGHT FIGHTER DOWN — 1 STILL HUNTING|LAST NIGHT FIGHTER DOWN — THE VALLEY IS YOURS"
+   }
+  ],
+  "mid": {
+   "left": {},
+   "text": "RTB — LAND AT BEAUFORT"
+  },
+  "after": [
+   {
+    "falling": false,
+    "agl": 1,
+    "dark": true
+   },
+   {
+    "falling": false,
+    "agl": 1,
+    "dark": true
+   },
+   {
+    "falling": false,
+    "agl": 1,
+    "dark": true
+   }
+  ],
+  "left": {},
+  "rtb": false,
+  "text": "RTB — LAND AT BEAUFORT",
+  "said": "NIGHT FIGHTER DOWN — 2 STILL HUNTING|NIGHT FIGHTER DOWN — 1 STILL HUNTING|LAST NIGHT FIGHTER DOWN — THE VALLEY IS YOURS"
+ }
+}

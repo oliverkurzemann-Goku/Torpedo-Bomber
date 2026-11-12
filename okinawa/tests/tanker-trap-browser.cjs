@@ -1,4 +1,4 @@
-/* Build 247, real Pacific game and the real fleet-oiler GLB: Sortie 21 "Tanker Trap" has two required oilers, the LOADED one rides deeper and, once
+/* Build 248, real Pacific game and the real fleet-oiler GLB: Sortie 21 "Tanker Trap" has two required oilers, the LOADED one rides deeper and, once
  * sunk, spreads burning oil for 40 s that hurts a low aeroplane and blinds / slows the escorts; the EMPTY one only sinks. Sorties 2 and 4 carry a
  * loaded oiler as an optional target. GAME_TEST_CHROME selects Chrome. */
 'use strict';
@@ -25,7 +25,7 @@ const server=http.createServer((req,res)=>{
   page.setDefaultTimeout(300000);page.on('pageerror',e=>errors.push(e.message));
   page.on('console',m=>{if(/Shader Error|VALIDATE_STATUS|not compiled/i.test(m.text()))errors.push(m.text());});
   await page.addInitScript(()=>{window.requestAnimationFrame=()=>0;});
-  await page.goto('http://127.0.0.1:'+server.address().port+'/torpedo-carrier.html?v=247');
+  await page.goto('http://127.0.0.1:'+server.address().port+'/torpedo-carrier.html?v=248');
   await page.waitForFunction(()=>state===ST.MENU,null,{polling:100});
   await page.evaluate(async()=>{
    renderer.setPixelRatio(1);await prepareOkinawa();

@@ -25,7 +25,7 @@ const server=http.createServer((req,res)=>{
   page.setDefaultTimeout(300000);page.on('pageerror',e=>errors.push(e.message));
   page.on('console',m=>{if(/Shader Error|VALIDATE_STATUS|not compiled/i.test(m.text()))errors.push(m.text());});
   await page.addInitScript(()=>{window.requestAnimationFrame=()=>0;});
-  await page.goto('http://127.0.0.1:'+server.address().port+'/torpedo-carrier.html?v=246');
+  await page.goto('http://127.0.0.1:'+server.address().port+'/torpedo-carrier.html?v=248');
   await page.waitForFunction(()=>state===ST.MENU,null,{polling:100});
   await page.evaluate(async()=>{
    renderer.setPixelRatio(1);await prepareOkinawa();
@@ -87,7 +87,7 @@ const server=http.createServer((req,res)=>{
   assert.equal(B.torp.score,-600);assert.equal(B.torp.hp,2);assert.ok(B.torp.alive);assert.ok(!B.torpEnemy.sunk&&B.torpEnemy.kills===0,'no ship of the convoy counts: '+JSON.stringify(B.torpEnemy));assert.equal(B.torpEnemy.neutralHits,2,'the bomb and the torpedo count (a few shells never reach the hit threshold): '+JSON.stringify(B.torpEnemy));
   assert.ok(B.third.alive&&B.third.hp===1,'three hits leave her afloat: '+JSON.stringify(B.third));assert.equal(B.sunk.score,-2500,'sinking her costs 2500: '+JSON.stringify(B.sunk));assert.ok(!B.sunk.alive&&B.sunk.sinkT>0);assert.equal(B.sunk.kills,0,'a sunk hospital ship is not a kill');assert.ok(/YOU SUNK A HOSPITAL SHIP/.test(B.sunk.said)&&/HOSPITAL SHIP SUNK/.test(B.sunk.flash));
   assert.ok(B.afterSink.groupY<-.5,'she sinks: '+B.afterSink.groupY);assert.ok(!B.afterSink.objectiveClear&&B.afterSink.realAlive,'her loss does not complete or fail the real objective');
-  assert.ok(B.done.clear&&B.done.kills===2,'the real targets still complete the sortie: '+JSON.stringify(B.done));
+  assert.ok(B.done.clear&&B.done.kills===3,'the real targets still complete the sortie (freighter, destroyer and, since Build 248, the optional loaded oiler): '+JSON.stringify(B.done));
   // ---- a checkpoint keeps her neutral, her hp and her position ----
   await page.evaluate(async()=>{await begin('Sortie 4');const h=ships.find(s=>s.def.neutral);h.hp=2;P.pos.set(h.group.position.x+2500,150,h.group.position.z-1200);P.spd=60;P.fuel=80;
    const saved=window.sortieCheckpoint.save();if(!saved.ok)throw Error('save failed '+JSON.stringify(saved));window.__h={x:h.group.position.x,z:h.group.position.z,hp:h.hp};});
