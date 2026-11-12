@@ -46,6 +46,44 @@
    "crash": null
   }
  },
+ "flare": [
+  {
+   "thr": 0.15,
+   "pf": 0.24,
+   "fa": 5,
+   "alive": true,
+   "phase": "run",
+   "crash": null,
+   "over": false
+  },
+  {
+   "thr": 0.15,
+   "pf": 0.32,
+   "fa": 5,
+   "alive": true,
+   "phase": "run",
+   "crash": null,
+   "over": false
+  },
+  {
+   "thr": 0,
+   "pf": 0.08,
+   "fa": 5,
+   "alive": true,
+   "phase": "run",
+   "crash": null,
+   "over": false
+  },
+  {
+   "thr": 0.3,
+   "pf": 0.24,
+   "fa": 5,
+   "alive": true,
+   "phase": "run",
+   "crash": null,
+   "over": false
+  }
+ ],
  "rescue": {
   "start": {
    "onGround": true,
@@ -67,7 +105,7 @@
    "crash": null
   },
   "boarded": {
-   "t": 13.5,
+   "t": 12.5,
    "phase": "home",
    "rescued": 1,
    "score": 600,
@@ -111,7 +149,7 @@
   },
   "careless": {
    "zone": 2,
-   "lost": 55.4,
+   "lost": 43.2,
    "alive": true
   },
   "hunters": 2,
@@ -138,7 +176,7 @@
    "alive": true
   },
   "gunner": {
-   "ammoUsed": 27,
+   "ammoUsed": 26,
    "hp": [
     7,
     -0.19999999999999735

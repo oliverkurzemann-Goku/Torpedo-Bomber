@@ -26,7 +26,7 @@ const server=http.createServer((req,res)=>{
   const page=await browser.newPage({viewport:{width:1194,height:660},hasTouch:true,deviceScaleFactor:1}),errors=[];
   page.setDefaultTimeout(900000);page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error'&&!/404/.test(m.text()))errors.push('console: '+m.text());});
   await page.addInitScript(()=>window.requestAnimationFrame=()=>0);
-  await page.goto('http://127.0.0.1:'+server.address().port+'/remagen-mission.html?v=249&surprises=off&sortie='+sortie);
+  await page.goto('http://127.0.0.1:'+server.address().port+'/remagen-mission.html?v=250&surprises=off&sortie='+sortie);
   // the hangar sortie opens the briefing at once: wait for the world, not for the menu
   await page.waitForFunction(()=>realWorldReady&&(state===ST.MENU||state===ST.BRIEF),null,{polling:200});
   await page.evaluate(async()=>{await Promise.all(['fi156','p47'].map(ensureModel));renderer.setPixelRatio(.25);renderer.shadowMap.enabled=false;if(typeof flightQuality!=='undefined')flightQuality.enabled=false;
@@ -62,6 +62,25 @@ const server=http.createServer((req,res)=>{
   assert.ok(T.rows[5].climb>3&&T.rows[5].kmh>60&&T.rows[5].kmh<110,'it climbs: '+JSON.stringify(T.rows));
   assert.ok(T.levelFull>=160&&T.levelFull<=185,'175 km/h at full power: '+T.levelFull);assert.ok(T.levelHalf>110&&T.levelHalf<T.levelFull,'half power: '+T.levelHalf+' of '+T.levelFull);assert.ok(T.idle.kmh<85&&T.idle.sink>1.2&&T.idle.sink<4,'the idle glide: '+JSON.stringify(T.idle));
   assert.ok(T.turn.degPerS>10&&T.turn.degPerS<26&&T.turn.alive,'it turns tightly: '+JSON.stringify(T.turn));assert.ok(T.stall.minKmh<65&&T.stall.alive&&!T.stall.crash,'the wing stalls below 60 km/h and the aeroplane stays alive: '+JSON.stringify(T.stall));
+
+  // ---- 2a. Build 250: a human flare is not the scripted one - idle power, the nose pulled up at 5 m, the wing mushes at the stall speed and the nose drops (measured -17 degrees, 4 m/s) -
+  //      that used to be "CRASHED: hit the ground away from the strip"; the Storch is rugged (AC.fi156.field) and the pickup zone is the pilot's neighbourhood ----
+  const H=await page.evaluate(()=>{
+   const dt=1/60,res=[];
+   for(const [thr,pf,fa] of [[.15,.24,5],[.15,.32,5],[0,.08,5],[.3,.24,5]]){
+    begin('rescue');const lz=sts.plan.lz;
+    P.onGround=false;P.landingRoll=null;P.departureAge=null;P.touchResolved=false;P.throttle=.3;P.gear=P.gearTgt=1;P.flap=P.flapTgt=1;P.heading=Math.PI/2;P.pitch=.02;P.roll=P.rollBias=P.pitchVel=P.rollVel=0;inputPitch=inputRoll=0;
+    const aim=lz.x-60,slope=Math.tan(3.5*Math.PI/180);P.pos.set(aim-450,Math.max(groundY(aim,lz.z)+450*slope,groundY(aim-450,lz.z)+25),lz.z);const sp=SortieFeatures.Handling.speeds(P,acDef().stall,acDef().app);P.spd=sp.reference;P.vSpeed=-1.5;
+    for(let t=0;t<120&&P.alive&&!missionOver;t+=dt){const agl=P.pos.y-groundY(P.pos.x,P.pos.z),gy=groundY(aim,lz.z),pathAlt=Math.max(0,(aim-P.pos.x))*slope+gy,err=P.pos.y-pathAlt;
+     if(!P.onGround){if(agl>fa){const tvs=Math.max(-3,Math.min(-.3,-1.2-err*.25));inputPitch=Math.max(-.5,Math.min(.5,(tvs-P.vSpeed)*.18));P.throttle=Math.max(0,Math.min(1,.35+(sp.reference-P.spd)*.12));}
+      else{inputPitch=Math.max(-.6,Math.min(.6,(pf-P.pitch)*1.6+(-.5-P.vSpeed)*.05));P.throttle=thr;}}else{inputPitch=0;P.throttle=0;}
+     updateFlight(dt);updateSites(dt);if(sts.phase!=='fly')break;}
+    res.push({thr,pf,fa,alive:P.alive,phase:sts.phase,crash:window.__crash,over:missionOver});
+   }
+   return res;
+  });
+  report.flare=H;
+  for(const h of H)assert.ok(h.alive&&h.phase==='run'&&!h.crash&&!h.over,'a flare that stalls a metre or two above the grass is survivable and starts the pickup: '+JSON.stringify(h));
 
   // ---- 2. Bonus Rescue Run: land at the yellow smoke, the pilot runs and boards (6 s), fighters come, take off again from the meadow ----
   const R=await page.evaluate(()=>{
