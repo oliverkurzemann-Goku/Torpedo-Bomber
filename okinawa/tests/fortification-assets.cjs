@@ -3,6 +3,7 @@
 const fs=require('node:fs'),path=require('node:path'),vm=require('node:vm'),assert=require('node:assert/strict');
 const THREE=require('three'),{Image,createCanvas}=require('@napi-rs/canvas');
 global.THREE=THREE;global.window=global;global.self=global;global.createImageBitmap=undefined;
+require('../../crew-figures.js');
 global.document={createElement:()=>createCanvas(1,1),createElementNS(){
  const image=new Image(),listeners={};image.addEventListener=(n,f)=>listeners[n]=f;image.removeEventListener=()=>{};
  image.onload=()=>listeners.load?.call(image);image.onerror=e=>listeners.error?.call(image,e);

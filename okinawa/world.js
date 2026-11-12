@@ -344,7 +344,7 @@ class OkinawaWorld{
   onProgress(.8,'Lighting the sea…');await pause();this.buildWater();this.buildSky();
   if(this.serviceArea){
    const terrain={tiles:this.tiles,getRenderedHeight:(x,z)=>this.getSurfaceHeight(x,z)};
-   this.airfieldActivity=new AirfieldActivity(terrain,airfieldSite.x,airfieldSite.z,{service:'ijn',maxRange:1700});
+   this.airfieldActivity=new AirfieldActivity(terrain,airfieldSite.x,airfieldSite.z,{service:'ijn',maxRange:1700,srgbOutput:true});
    this.root.add(this.airfieldActivity.group);
    this.airfieldActivity.update(0,0,0);
    this.airfieldReady=this.airfieldActivity.loadVehicleModels();

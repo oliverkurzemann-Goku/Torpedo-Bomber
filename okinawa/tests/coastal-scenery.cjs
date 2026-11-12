@@ -4,6 +4,7 @@ const fs=require('node:fs');
 const {createCanvas,Image}=require('@napi-rs/canvas');
 const vm=require('node:vm');
 global.THREE=require('three');global.window=global;
+require('../../crew-figures.js');
 global.document={createElement:()=>createCanvas(1,1),createElementNS(){
  const image=new Image(),listeners={};
  image.addEventListener=(name,fn)=>listeners[name]=fn;image.removeEventListener=()=>{};

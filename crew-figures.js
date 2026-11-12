@@ -1,4 +1,4 @@
-/* Articulated, metre-scale rescue and flight crew for both campaigns. Local +Z is forward. */
+/* Articulated, metre-scale crew for both campaigns. Local +Z is forward. */
 (function(root){
  'use strict';
  const uniforms={
@@ -14,15 +14,19 @@
   luftwaffe:{deckhand:[0x4f5e65,0x444b53],boatMedic:[0x626657,0x53594f],medic:[0x576157,0x5d655b],bearer:[0x6a5946,0x5d655b],agent:[0x484b44,0x594c41],observer:[0x687165,0x595f51],officer:[0x56644f,0x55594c]}
  };
  const skinTones=[0xc29573,0xb68667,0xcd9f79,0xa87b60,0xb7886d];
+ const groundUniforms={usaaf:[0x626b4f,0x858364,0x697050],luftwaffe:[0x596259,0x6a7276,0x4d584e],ijn:[0x887552,0x978664,0x81714d]};
  function create(T,{service='usaaf',role='pilot',variant=0,srgbOutput=false}={}){
   service=Object.hasOwn(uniforms,service)?service:'usaaf';
   const u=uniforms[service],pilot=['pilot','wounded','survivor'].includes(role),sea=service==='usnavy'||service==='ijn';
-  const [coat,pants]=outfits[service][role]||outfits.luftwaffe[role]||[u.coat,u.pants];
+  const deckSignal=role==='deckSignal',deckCrew=role==='deckhand'||deckSignal;
+  const [coat,pants,cap=u.cap]=role==='groundCrew'?(groundUniforms[service]||groundUniforms.usaaf)
+   :deckSignal?[service==='ijn'?0xaa8c55:0xc5a448,outfits[service].deckhand[1]]
+   :outfits[service][role]||outfits.luftwaffe[role]||[u.coat,u.pants];
   const index=Math.abs(Math.trunc(variant))%skinTones.length;
   const skin=skinTones[(index+(service==='ijn'?1:0))%skinTones.length];
   const color=value=>{const c=new T.Color(value);if(srgbOutput)c.convertSRGBToLinear();return c;};
   const palette={coat:color(coat),pants:color(pants),leather:color(u.leather),skin:color(skin),web:color(u.web),
-   shirt:color(u.shirt),cap:color(u.cap),boot:color(0x322a24),iron:color(0x878579),glass:color(0x3a4b4d),
+   shirt:color(u.shirt),cap:color(cap),boot:color(0x322a24),iron:color(0x878579),glass:color(0x3a4b4d),
    vest:color(u.vest??0xbb9e5d),dressing:color(0xe2d8bf),pocket:color(coat).multiplyScalar(.90),
    pantsPocket:color(pants).multiplyScalar(.88),seam:color(coat).multiplyScalar(.73)};
   const material=new T.MeshStandardMaterial({vertexColors:true,roughness:.88});
@@ -125,9 +129,9 @@
    oval(helmet,[.114,.056,.110],[0,.095,-.009],'coat');
    oval(helmet,[.146,.012,.138],[0,.058,.009],'coat');
    box(helmet,[.197,.021,.155],[0,.064,0],'leather');
-  }else if(role==='deckhand'||role==='officer'||role==='boatMedic'||role==='observer'){
-   oval(helmet,[.124,.048,.111],[0,.104,-.005],role==='deckhand'?'cap':'coat');
-   oval(helmet,[.105,.012,.070],[0,.062,.055],role==='deckhand'&&service!=='ijn'?'cap':'boot');
+  }else if(deckCrew||role==='groundCrew'||role==='officer'||role==='boatMedic'||role==='observer'){
+   oval(helmet,[.124,.048,.111],[0,.104,-.005],deckCrew||role==='groundCrew'?'cap':'coat');
+   oval(helmet,[.105,.012,.070],[0,.062,.055],deckCrew&&service!=='ijn'?'cap':'boot');
   }else{
    oval(helmet,[.124,.078,.11],[0,.068,-.013],'cap');
    oval(helmet,[.133,.014,.126],[0,.040,-.012],'cap');
@@ -211,7 +215,32 @@
   const geometry=new Set(),materials=new Set();node.traverse(o=>{if(o.geometry)geometry.add(o.geometry);if(o.material)materials.add(o.material);});
   geometry.forEach(g=>g.dispose());materials.forEach(m=>m.dispose());
  }
+ // Bake a rig section into a single indexed, vertex-coloured instance mesh.
+ function bake(T,root,omit=[]){
+  root.updateWorldMatrix(true,true);
+  const inverse=root.matrixWorld.clone().invert(),matrix=new T.Matrix4(),normalMatrix=new T.Matrix3();
+  const point=new T.Vector3(),data={position:[],normal:[],color:[]},indices=[];
+  function collect(node){
+   if(omit.includes(node))return;
+   if(node.isMesh){
+    const {geometry}=node,{position,normal,color}=geometry.attributes;
+    const offset=data.position.length/3;
+    matrix.multiplyMatrices(inverse,node.matrixWorld);normalMatrix.getNormalMatrix(matrix);
+    for(let i=0;i<position.count;i++){
+     point.fromBufferAttribute(position,i).applyMatrix4(matrix);data.position.push(point.x,point.y,point.z);
+     point.fromBufferAttribute(normal,i).applyNormalMatrix(normalMatrix);data.normal.push(point.x,point.y,point.z);
+     data.color.push(color.getX(i),color.getY(i),color.getZ(i));
+    }
+    for(const index of geometry.index.array)indices.push(offset+index);
+   }
+   node.children.forEach(collect);
+  }
+  collect(root);
+  const geometry=new T.BufferGeometry();geometry.setIndex(indices);
+  for(const [name,values] of Object.entries(data))geometry.setAttribute(name,new T.Float32BufferAttribute(values,3));
+  geometry.computeBoundingSphere();return geometry;
+ }
  function canopyColors(service){return (uniforms[service]||uniforms.usaaf).canopy;}
- root.CrewFigures={create,pose,place,dispose,canopyColors};
+ root.CrewFigures={create,pose,place,dispose,bake,canopyColors};
  if(typeof module==='object'&&module.exports)module.exports=root.CrewFigures;
 })(typeof window==='undefined'?globalThis:window);
