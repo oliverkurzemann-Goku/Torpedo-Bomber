@@ -1,19 +1,19 @@
 {
   "schema": 1,
   "reviewedOn": "2026-10-23",
-  "build": 248,
+  "build": 249,
   "status": "OPEN — source declarations checked; no external rights authorization obtained",
   "payload": {
-    "bytes": 164539735,
-    "fileCount": 377,
-    "modelCount": 61,
-    "manifestSha256": "d6425da02520ba8ae12f51a88259d3f4c28f3d7d45dad41cb42cc994cc44bf09"
+    "bytes": 165553863,
+    "fileCount": 378,
+    "modelCount": 62,
+    "manifestSha256": "9a98a98b62a6949e69f63b05c3a4edf4690ab4f2a504d2825641a980509eb00c"
   },
   "files": [
     {
       "path": "ASSET-CREDITS.md",
-      "bytes": 41305,
-      "sha256": "43c7ccf68f0ec41a401dd427ff2927d9c096e98b01c5ebfd6e348cb1a4c70b6f",
+      "bytes": 42445,
+      "sha256": "49bac806b2442d6b1c3de0aa149600ad6b2f249815188e95742bb25ee8b37d4c",
       "kind": "code-or-notice"
     },
     {
@@ -30,8 +30,8 @@
     },
     {
       "path": "aircraft-contract.js",
-      "bytes": 5257,
-      "sha256": "0cfc95b0ea762def314cd3b9aac9449ab2cacde69ad288c54fe1c35bc14d724f",
+      "bytes": 6292,
+      "sha256": "834486ef92acb3f44fa4057d035150045cc154b20507c8567e36345bd851ee1e",
       "kind": "code-or-notice"
     },
     {
@@ -146,6 +146,12 @@
       "path": "assets/aircraft/fi156c-own.glb",
       "bytes": 791852,
       "sha256": "db0c8c3566eb57c28f5220250119ff9556d9f6b39ae8039a57596914f255827b",
+      "kind": "model"
+    },
+    {
+      "path": "assets/aircraft/fi156c2-player.glb",
+      "bytes": 974840,
+      "sha256": "fcf41581590a12ee5f0dd18d67e6d8d9320c56b8c2e6db4aaaffd958302d5a84",
       "kind": "model"
     },
     {
@@ -486,8 +492,8 @@
     },
     {
       "path": "audio/aircraft-engine.js",
-      "bytes": 10969,
-      "sha256": "f469978879cdf1061e909aef5e90d048d22932b3610008a12a1812b639a6a360",
+      "bytes": 11517,
+      "sha256": "28564d432075945ccee75c079f700900cccb68d17c08c7b370b00311f800f50a",
       "kind": "code-or-notice"
     },
     {
@@ -720,8 +726,8 @@
     },
     {
       "path": "custom-sortie.js",
-      "bytes": 10255,
-      "sha256": "cc7b074728a12103bd98c2686555bad9dc320b068b618c9303082bf06326833a",
+      "bytes": 10570,
+      "sha256": "7b8a61674fbe2bae55c9a57d3cc9f7414d644409be9215b6141a7b0455b292ed",
       "kind": "code-or-notice"
     },
     {
@@ -774,20 +780,20 @@
     },
     {
       "path": "flight-core.js",
-      "bytes": 42671,
-      "sha256": "6c18aafb2d5e3421b13d9002222782dfcc27a02b47bcf9b9685e119a266f4ce6",
+      "bytes": 44786,
+      "sha256": "d0ba2c8f6277433a5b4d236569935f4af06448cb5a4ca5b97a0f4037204a3489",
       "kind": "code-or-notice"
     },
     {
       "path": "flight-dynamics.js",
-      "bytes": 5638,
-      "sha256": "cd9a4e81ced52ee464e728642013f4252855e45c6f9953fa9631bba8b98b1e51",
+      "bytes": 5842,
+      "sha256": "2903b9310811c5507c638f71d6f59ed3d44156ca38fabef15a2f1becddda736a",
       "kind": "code-or-notice"
     },
     {
       "path": "flight-envelope.js",
-      "bytes": 10350,
-      "sha256": "8d63e063db603495b1935e680d5ea5d23072edb87ba7a219a4c0c6c8d61864da",
+      "bytes": 10645,
+      "sha256": "d871e3c1ec80790986c1c4ba6631f69902f45ce0077f927dc478e80224392c92",
       "kind": "code-or-notice"
     },
     {
@@ -841,7 +847,7 @@
     {
       "path": "hangar.html",
       "bytes": 4485,
-      "sha256": "42079818c0ed375447df2c77996136fabbed1b3309163d27ea75384c095ec3e6",
+      "sha256": "0667c65414c6c5785ed2b3b6650921806edf110896eba2bcdad6ed0611d3430e",
       "kind": "code-or-notice"
     },
     {
@@ -852,8 +858,8 @@
     },
     {
       "path": "index.html",
-      "bytes": 7543,
-      "sha256": "cd94bdf2f08030bb233c9238fe0ae747ab71ef4ec0ef2bc76b69981112fbee5a",
+      "bytes": 7912,
+      "sha256": "5c905982f1aea57331a907e8e4f24a176ccfc3cd37f11870dfa83ab2c44ac17f",
       "kind": "code-or-notice"
     },
     {
@@ -888,8 +894,8 @@
     },
     {
       "path": "menu-layout.css",
-      "bytes": 14367,
-      "sha256": "96e2ca95a22a8c89239b732d7755120d310b43bca89164a2d299af8e7935aa3e",
+      "bytes": 15560,
+      "sha256": "23f06acfb41ca8d40cc5eef45582df652bece71a3b6ce0c5d20075bfc5df18a9",
       "kind": "code-or-notice"
     },
     {
@@ -936,8 +942,8 @@
     },
     {
       "path": "operation-plans.js",
-      "bytes": 9352,
-      "sha256": "5e6748551dafdbdd60e14627edb87b7be4bb3dc560db8d7d643a248a2c5fd33a",
+      "bytes": 10116,
+      "sha256": "fd2e98f005f813c94a04bb74bd9def07217cd0d3db45e294e1e5d1a2ddcf02c0",
       "kind": "code-or-notice"
     },
     {
@@ -990,8 +996,8 @@
     },
     {
       "path": "remagen-mission.html",
-      "bytes": 519473,
-      "sha256": "92ac85277915a3c58025e231537e491ac8a52933f3475910690d9501cc6ba309",
+      "bytes": 550332,
+      "sha256": "e030a9dafe1548364e4ad1e2cc433b96dd716b55352746e111126884f64b5fa3",
       "kind": "code-or-notice"
     },
     {
@@ -1032,20 +1038,20 @@
     },
     {
       "path": "sortie-features.js",
-      "bytes": 12556,
-      "sha256": "86fd8d3ef660c244631fad2c20935b8fbd05822feaecdece36498c416e88fc50",
+      "bytes": 12838,
+      "sha256": "669d3c79b1370ed22939aa586ccf14ffee7460befc5ede8dbebf90b86deeaf55",
       "kind": "code-or-notice"
     },
     {
       "path": "sortie-fuel.js",
-      "bytes": 1174,
-      "sha256": "1b82b71ab01ebb9325307ace2ff3a9cc29df00a5341da0070536d2eb98db67fa",
+      "bytes": 1300,
+      "sha256": "91dbb87e496d4a7ebd8e62868de00af0bc7e65ca2c7f860c5075b1721c394b07",
       "kind": "code-or-notice"
     },
     {
       "path": "sortie-preview.js",
-      "bytes": 13978,
-      "sha256": "f28e42ba99c87738682359018be067cc0ffbb6c44a8086e5c6bf253878fcfe44",
+      "bytes": 14021,
+      "sha256": "c383ad498eb5d89c852cc4524ef3a16dae0c1f46762cac49dd06da58c707e3ec",
       "kind": "code-or-notice"
     },
     {
@@ -2191,7 +2197,7 @@
     {
       "path": "torpedo-carrier.html",
       "bytes": 480513,
-      "sha256": "abec0b5cf08f2cca4242a2491985c55f7bfbae90dcd45f8494d9273d613248f2",
+      "sha256": "a6acd35684b09dce2294e33d98b752b5ef1cbcda82dc4f44a4fe40cd4d0265e9",
       "kind": "code-or-notice"
     },
     {
@@ -2418,6 +2424,30 @@
       "originalFile": null,
       "originalSha256": null,
       "changes": "New procedural exterior game mesh and original baked albedo. References used only to compare proportions and appearance.",
+      "issue": "own-build-reference-review-open",
+      "commercialPermissionDocument": null,
+      "bundleRedistributionGrant": null,
+      "releaseApproved": false,
+      "nextAction": "Own mesh and paint; review the recorded reference source and any applicable attribution/share-alike obligations; credits kept in ASSET-CREDITS.md."
+    },
+    {
+      "path": "assets/aircraft/fi156c2-player.glb",
+      "bytes": 974840,
+      "sha256": "fcf41581590a12ee5f0dd18d67e6d8d9320c56b8c2e6db4aaaffd958302d5a84",
+      "title": "Fieseler Fi 156 C-2 Storch",
+      "uploader": "Torpedo-Bomber project",
+      "originalRightsholder": null,
+      "sourceUrl": "https://drive.google.com/file/d/1W0K-B4_2USPFG5wsZDeOR4NMF924dtz4/view",
+      "acquiredOn": null,
+      "declaredLicense": "project-own (original mesh and paint)",
+      "licenseUrl": null,
+      "licenseEvidence": "Exact runtime GLB asset.extras",
+      "sourceCheck": null,
+      "embeddedImageCount": 1,
+      "externalImages": [],
+      "originalFile": null,
+      "originalSha256": null,
+      "changes": "Original mesh derived from dimensioned stations; fictional markings and baked paint.",
       "issue": "own-build-reference-review-open",
       "commercialPermissionDocument": null,
       "bundleRedistributionGrant": null,

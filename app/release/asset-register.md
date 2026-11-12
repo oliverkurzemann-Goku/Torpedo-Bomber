@@ -1,6 +1,6 @@
-# Offline app asset register — Build 248
+# Offline app asset register — Build 249
 
-Checked 2026-10-23. 377 payload files, 61 model files, 156.9 MiB.
+Checked 2026-10-23. 378 payload files, 62 model files, 157.9 MiB.
 
 Generated from the actual dist-app payload by npm run app:assets. Hashes cover embedded textures too. This is an evidence inventory; no row is automatically approved for distribution. Acquisition dates remain unknown where not recorded.
 
@@ -12,6 +12,7 @@ Generated from the actual dist-app payload by npm run app:assets. Hashes cover e
 | assets/aircraft/corsair-f4u1d-own.glb | [unknown — supplied by the project owner (produced in a separate ChatGPT session; generator not in this repository)](assets/aircraft/source/corsair-f4u1d-v3/Corsair_F4U1D_Review.glb) | supplied by project owner; authorship and rights not independently verified (rights review stays open) | uploader-license-review-open | 23f6f2fa2e24687c9eede33d077aafacc4f83e89a8339b599fa53da02a135c66 |
 | assets/aircraft/fi103-own.glb | [Torpedo-Bomber project](https://en.wikipedia.org/wiki/V-1_flying_bomb) | project-own (original mesh and paint) | own-build-reference-review-open | 0524d3b0ef969fa84b796bffe190b1061163f7aaf2de2dd30f1a9e6c44f2b6b5 |
 | assets/aircraft/fi156c-own.glb | [Torpedo-Bomber project](https://www.gruppofalchi.com/files/Profile-Publications-Aircraft-228---Fieseler-Fi-156-Storch.pdf) | project-own (original mesh and paint) | own-build-reference-review-open | db0c8c3566eb57c28f5220250119ff9556d9f6b39ae8039a57596914f255827b |
+| assets/aircraft/fi156c2-player.glb | [Torpedo-Bomber project](https://drive.google.com/file/d/1W0K-B4_2USPFG5wsZDeOR4NMF924dtz4/view) | project-own (original mesh and paint) | own-build-reference-review-open | fcf41581590a12ee5f0dd18d67e6d8d9320c56b8c2e6db4aaaffd958302d5a84 |
 | assets/aircraft/fw190a8-own.glb | [Oliver Kurzemann / Torpedo-Bomber](scripts/build-own-fw190-komet.cjs) | project-own; reference-derived exterior geometry and original textures | own-build-reference-review-open | 319d846cdd684f63483c906cf1b93525a80d1516ee662582d5f116a4d6fd3edc |
 | assets/aircraft/g4m1-own.glb | [Torpedo-Bomber project](https://www.aircraftube.com/index.php?fichid=504&lang=en) | project-own (original mesh and paint) | own-build-reference-review-open | 0c2d0e1582c3b4296dfe6f38da7a684094371112edf96bae639b2806bba717c4 |
 | assets/aircraft/ju87b2-own.glb | [Oliver Kurzemann / Torpedo-Bomber](scripts/own-aircraft/ju87b2/shape.json) | project-own; supplied historical manual used as dimensional reference | own-build-reference-review-open | d331b579ca37cb4ffcc9a71010b4dabe477b38384b371af9d456e06804b868e4 |
