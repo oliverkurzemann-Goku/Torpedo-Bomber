@@ -4045,8 +4045,9 @@ function spawnEnemyAir(n,forceKind,opts={}){
     interiorAirPosition(pos,ENEMY_EDGE_MARGIN);
     pos.y=Math.min(flightAltitudeLimit()-450,Math.max(pos.y,groundY(pos.x,pos.z)+380));
     const toP=P.pos.clone().sub(pos);
+    const hp0=(kind==='p47')?7:(kind==='fw190'?5:(kind==='me163'?3:4));
     enemyAir.push({group:g, prop:g.getObjectByName('prop'), kind, alive:true,
-      hp:(kind==='p47')?7:(kind==='fw190'?5:(kind==='me163'?3:4)),
+      hp:hp0, maxhp:hp0,   // Build 249: maxhp was missing for fighters since Build 177 - hp/maxhp was NaN, the damage rig bent their wings to NaN vertices and the smoke of a damaged fighter never came
       pos, vel:new THREE.Vector3(0,0,140),
       heading:Math.atan2(toP.x,toP.z), pitch:0, roll:0,
       spd:kind==='me163'?195:((kind==='p47')?150:145), cool:1.4+i*0.8,
@@ -4157,6 +4158,7 @@ function spawnBombers(n,kind){
 function damageEnemyAir(e,amount){
   if(!e.alive) return;
   if(e.bomber)bomberAlarm=true;   // the escorts break away as soon as a bomber is hit
+  if(!(e.maxhp>0))e.maxhp=e.hp;   // any record that was built without it (older code paths): its first hit is measured against what it had
   e.hp-=amount;
   if(typeof aircraftDamage!=="undefined"&&aircraftDamage)aircraftDamage.damage(e.group,Math.max(0,e.hp/e.maxhp),1,null,1,e.kind);
   spawnSparks(e.pos,4);
