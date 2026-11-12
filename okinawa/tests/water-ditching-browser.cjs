@@ -108,7 +108,8 @@ const server=http.createServer((req,res)=>{
       updateFlight(.05);if(!ditching||!bailRescue)throw Error('Sea contact did not enter ditching '+kind+' '+JSON.stringify({speed:P.spd,sink:P.vSpeed,mass:SortieFeatures.Handling.sample(P).ratio}));
       const all=[bailout,...crewBailouts.map(c=>c.chute)];
       if(all.some(c=>c.deployed||c.group.children.some(o=>o.isMesh&&o.geometry.type==='SphereGeometry'&&o.position.y>3&&o.visible)))throw Error('Ditching deployed a parachute');
-      for(const c of all){const pilot=c.group.getObjectByName('pilot');if(pilot.userData.arms.some(a=>Math.abs(a.rotation.z)>.01))throw Error('Raft retains raised chute arms');}
+      for(const c of all){const {arms,hands}=c.group.getObjectByName('pilot').userData;
+        if(arms.some((arm,i)=>hands[i].getWorldPosition(new THREE.Vector3()).y>arm.getWorldPosition(new THREE.Vector3()).y-.25))throw Error('Raft retains raised chute hands');}
       for(let j=0;j<25;j++){advanceBailout(.05);combatFX?.update(.05);shipWakes?.update(.05);updateSplashes(.05);}updatePlaneMesh(.05);scene.updateMatrixWorld(true);
       camera.position.copy(P.pos).add(new THREE.Vector3(22,10,25));camera.lookAt(bailout.position);renderer.render(scene,camera);const png=renderer.domElement.toDataURL();
       const p=P.pos.clone(),t=ditching.time,boat=crewWaterRescue.group.position.clone();togglePause();animate();const paused=t===ditching.time&&p.equals(P.pos)&&boat.equals(crewWaterRescue.group.position);togglePause();
