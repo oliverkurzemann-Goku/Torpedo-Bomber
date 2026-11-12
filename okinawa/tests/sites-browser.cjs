@@ -207,7 +207,7 @@ const server=http.createServer((req,res)=>{
     marker:europeBriefTargets(M()).some(o=>/dump/.test(o.label))};
   });
   const Dp=report.depot;
-  assert.equal(Dp.index,23);assert.equal(Dp.count,26,'the depot sortie appends after the V-1 sortie (the Storch and Night Hunt sorties follow it)');assert.ok(Dp.plan,'a spot was found for the dump');
+  assert.equal(Dp.index,23);assert.equal(Dp.count,29,'the depot sortie appends after the V-1 sortie (the Storch, Night Hunt and Storch-sortie entries follow it: 29 in all)');assert.ok(Dp.plan,'a spot was found for the dump');
   assert.deepEqual(Dp.kinds,{depotTank:2,depotDrums:3,depotCrates:3,depotNet:1,depotHut:2,depotBerm:2});
   assert.equal(Dp.exp,8);assert.deepEqual(Dp.primary,['depotCrates','depotCrates','depotCrates','depotDrums','depotDrums','depotDrums','depotTank','depotTank']);assert.equal(Dp.optional,5);
   assert.ok(!Dp.fallback,'real models');assert.deepEqual(Dp.left,{depot:6});assert.ok(/STORES 6/.test(Dp.text),Dp.text);assert.equal(Dp.checkpointTargets,8,'the eight stores are part of a checkpoint');
