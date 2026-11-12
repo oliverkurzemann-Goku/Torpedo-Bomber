@@ -533,6 +533,7 @@
 <script src="sortie-service.js?v=206"></script>
 <script src="pilot-rescue.js?v=179"></script>
 <script src="pby-rescue.js?v=246"></script>
+<script src="yamato-aa.js?v=247"></script>
 <script src="radio-intercept.js?v=157"></script>
 <script src="surprises.js?v=238"></script>
 <script src="audio/weapon-sound.js?v=144"></script>
@@ -998,7 +999,7 @@ async function preparePacificModels(m,progress=()=>{}){
     needed.push(['zero',loadZeroModel,()=>zeroTemplate]);
   if(targets.some(t=>t.type==='destroyer'&&!t.model))needed.push(['escort',loadDestroyerModel,()=>destroyerTemplate]);
   if(targets.some(t=>t.type==='freighter'&&!t.model))needed.push(['freighter',loadFreighterModel,()=>freighterTemplate]);
-  if(targets.some(t=>t.type==='cruiser'))needed.push(['capital',loadCruiserModel,()=>cruiserTemplate]);
+  if(targets.some(t=>t.type==='cruiser'&&!t.model))needed.push(['capital',loadCruiserModel,()=>cruiserTemplate]);
   for(const name of new Set([...targets,...(m.support||[])].filter(t=>t.model).map(t=>t.model)))
     needed.push(['ship:'+name,()=>NavalAssets.load(name),()=>NavalAssets.get(name)]);
   if(m.theater==='fleet')needed.push(['ship:fletcher',()=>NavalAssets.load('fletcher'),()=>NavalAssets.get('fletcher')]);
@@ -2902,6 +2903,7 @@ function hitShip(s, quietCam,point=null,weapon="torpedo",attack=null){
   s.hp--;
   if(!quietCam&&(weapon==='bomb'||weapon==='rocket'))sortieBombHit++;
   if(typeof shipDamage!=="undefined"&&shipDamage)shipDamage.hit(s,point,weapon);
+  if(s.def.aa==='yamato'&&s.hp>0)yamatoSilence(s,impactPoint);   // Build 247: a hit silences the stands around it
   if(attack)attack.part={rudder:'stern',engine:'midships',bow:'bow'}[shipDamage?.get(s)?.lastPart]||attack.part;
   spawnSplash(impactPoint.x,impactPoint.z,true);
   // Build 202: a square beam shot is rewarded, and the track angle is always reported.
@@ -2917,7 +2919,7 @@ function hitShip(s, quietCam,point=null,weapon="torpedo",attack=null){
     shipBlast(s,s.def.loaded?2.4:1.7,point);
     spawnSlick(s);
     if(s.def.loaded)igniteOil(s);   // Build 247: a loaded oiler spreads burning oil
-    const pts=s.def.type==='cruiser'?2000:s.def.type==='destroyer'?1200:1000;
+    const pts=s.def.points||(s.def.type==='cruiser'?2000:s.def.type==='destroyer'?1200:1000);
     addScore(pts);
     // heavier feedback for capital ships: bigger shake, longer slow-mo hold
     const heft = s.def.type==='cruiser'?1 : s.def.type==='destroyer'?0.65 : 0.8;
@@ -3595,10 +3597,74 @@ function updateSurprises(dt){
     }
   }
 }
+// Build 247: Sortie 23 "Ten-Go". The Yamato's 62 anti-aircraft stands (yamato-aa.js, the model's own gun-mount markers) fire only into their own fields; the bow is
+// the main battery's: inside 35 degrees of the bow it fires Type 3 scatter shells (Sanshiki) at the position the player reaches if he holds course.
+// State lives in plain data on the ship (s.aa) so a checkpoint keeps it. Strengths, ranges and timings are game-balance values (category C).
+const YAMATO_TRACER_CAP=110,YAMATO_SHELL_BURSTS=7;
+function yamatoState(s){return s.aa||(s.aa={dead:{},shells:[],warned:false,silenced:0});}
+function yamatoLocal(s,point){s.group.updateMatrixWorld(true);return s.group.worldToLocal(point.clone());}
+function yamatoSilence(s,world){
+  const st=yamatoState(s),l=yamatoLocal(s,world),n=YamatoAA.silence(st,l.x,l.z,38);
+  if(n>0){st.silenced+=n;radioSay('HIT — '+n+' ANTI-AIRCRAFT STANDS SILENCED');}
+}
+function updateYamatoAA(s,dt){
+  const st=yamatoState(s),perf=Math.max(.25,shipDamage?.performance(s).aa??1),ease=(s.blindT>0?1/2.6:1)*perf;
+  // scatter shells in flight: they burst where the shell was aimed, whatever the aircraft did since
+  for(let i=st.shells.length-1;i>=0;i--){
+    const sh=st.shells[i];sh.t-=dt;if(sh.t>0)continue;
+    st.shells.splice(i,1);
+    const c=new THREE.Vector3(sh.x,sh.y,sh.z);
+    spawnExplosion(c.x,c.y,c.z,1.5);sfxBoom(.7);
+    for(let k=0;k<YAMATO_SHELL_BURSTS;k++)spawnFlakBurst(c.clone().add(new THREE.Vector3((Math.random()-.5)*70,(Math.random()-.5)*50,(Math.random()-.5)*70)));
+    const dist=P.alive?c.distanceTo(P.pos):1e9;
+    if(dist<YamatoAA.SANSHIKI.radius){
+      const dmg=YamatoAA.SANSHIKI.damage*D().dmg*(1-.5*dist/YamatoAA.SANSHIKI.radius);
+      P.hull=Math.max(0,P.hull-dmg);shake(1.8);sfxBoom(.9);P.rollBias=(P.rollBias||0)+(Math.random()<.5?-.06:.06)*D().dmg;registerHit();updateHUD();
+      flash('SCATTER SHELL  −'+Math.round(dmg)+' HULL',1100);st.hits=(st.hits||0)+1;
+      if(P.hull<=0)crash('SHOT DOWN','A Type 3 scatter shell burst in your path.');
+    }else if(dist<YamatoAA.SANSHIKI.radius*2.2)st.near=(st.near||0)+1;
+  }
+  if(!P.alive)return;
+  const lp=yamatoLocal(s,P.pos);
+  const out=YamatoAA.engage(st,dt*ease,{x:lp.x,y:Math.max(0,lp.y),z:lp.z},Math.random);
+  st.bearing=out.bearing;st.sector=out.sector;st.engaged=out.engaged;
+  // light stands: one volley of three rounds per decision, aimed with lead and a spread that grows with range
+  for(const id of out.light){
+    if(tracers.length>YAMATO_TRACER_CAP)break;
+    const m=YamatoAA.MOUNTS[id],from=s.group.localToWorld(new THREE.Vector3(m.x,m.y,m.z)),range=from.distanceTo(P.pos);
+    const lead=P.pos.clone().addScaledVector(noseDir(),P.spd*Math.min(3,range/560)),spread=16+range*.025;
+    for(let k=0;k<3;k++){
+      const to=lead.clone().add(new THREE.Vector3((Math.random()-.5)*spread*2,(Math.random()-.5)*spread*1.4,(Math.random()-.5)*spread*2));
+      const dir=to.sub(from).normalize(),mesh=CombatFX.round('aa');
+      mesh.position.copy(from).addScaledVector(dir,k*12);mesh.lookAt(mesh.position.clone().add(dir));scene.add(mesh);
+      tracers.push({mesh,dir,life:Math.min(3,range/560+.4),speed:560,foe:true,damage:2.6,msg:"The battleship's light guns found you."});
+    }
+    st.volleys=(st.volleys||0)+1;
+    if(range<1400&&Math.random()<.35)sfxPop();
+  }
+  // heavy 127 mm airbursts, as every other ship but only from the stands that bear
+  if(out.heavy){
+    const bp=P.pos.clone().add(new THREE.Vector3((Math.random()-.5)*150,(Math.random()-.5)*85,(Math.random()-.5)*150));
+    spawnFlakBurst(bp);st.bursts=(st.bursts||0)+1;
+    if(bp.distanceTo(P.pos)<55*D().flak+1e-6){P.hull=Math.max(0,P.hull-6*D().dmg);shake(1.4);sfxBoom(.5);P.rollBias=(P.rollBias||0)+(Math.random()<.5?-.05:.05)*D().dmg;registerHit();updateHUD();
+      if(P.hull<=0)crash('SHOT DOWN','A 127 mm burst tore off a wing.');}
+  }
+  // Sanshiki: the flash is the warning, the burst arrives after the flight time at the point reached by holding course
+  if(out.sanshiki){
+    const sp=YamatoAA.SANSHIKI,range=Math.hypot(P.pos.x-s.group.position.x,P.pos.z-s.group.position.z),flight=range/sp.speed;
+    const aim=P.pos.clone().addScaledVector(noseDir(),P.spd*flight);
+    aim.x+=(Math.random()-.5)*range*sp.scatter*2;aim.z+=(Math.random()-.5)*range*sp.scatter*2;aim.y=Math.max(sp.minAlt+5,aim.y);
+    st.shells.push({t:flight,x:aim.x,y:aim.y,z:aim.z});st.fired=(st.fired||0)+1;
+    const muzzle=s.group.localToWorld(new THREE.Vector3(0,12,62));spawnExplosion(muzzle.x,muzzle.y,muzzle.z,1.1);sfxBoom(.8);shake(.5);
+    flash('MAIN BATTERY FIRING — BREAK',900);
+    if(!st.warned){st.warned=true;radioSay('THE YAMATO IS FIRING HER MAIN BATTERY AHEAD — SCATTER SHELLS. HOLD NO COURSE INSIDE THE BOW CONE');}
+  }
+}
 function updateFlak(dt){
   if(hasRaiders())updateCarrierDefense(dt);
   for(const s of ships){
     if(!s.alive||!s.flak) continue;
+    if(s.def.aa==='yamato'){updateYamatoAA(s,dt);continue;}
     const d=Math.hypot(P.pos.x-s.group.position.x, P.pos.z-s.group.position.z);
     s.flakTimer-=dt;
     if(s.flakTimer<=0 && d<2200){
@@ -3647,9 +3713,9 @@ function updateFlak(dt){
       }
     }
     if(t.foe && P.alive && t.mesh.position.distanceTo(P.pos)<9){
-      P.hull=Math.max(0,P.hull-5*D().dmg); shake(0.9); t.life=0;
+      P.hull=Math.max(0,P.hull-(t.damage||5)*D().dmg); shake(0.9); t.life=0;
       P.rollBias=(P.rollBias||0)+(Math.random()<0.5?-0.04:0.04)*D().dmg; registerHit(); updateHUD();
-      if(P.hull<=0) crash("SHOT DOWN","A Zero got on your tail.");
+      if(P.hull<=0) crash("SHOT DOWN",t.msg||"A Zero got on your tail.");
     }
     if(t.foe && t.life>0 && wingmen.length){                 // a Zero's fire can down a wingman
       for(const w of wingmen){ if(!w.alive) continue;
