@@ -14,7 +14,10 @@ vm.runInThisContext(fs.readFileSync(path.join(dir,'world.js'),'utf8'));
  for(const m of world.terrain.children){const p=m.geometry.attributes.position,n=m.geometry.attributes.normal;for(let i=0;i<p.count;i++){
   const x=p.getX(i),y=p.getY(i),z=p.getZ(i);assert.ok(Number.isFinite(x+y+z));assert.ok(n.getY(i)>0,'Ground winding points downward');
   assert.ok(Math.abs(y-world.getHeight(x,z))<.0001,'Terrain and collision height disagree');
-  const key=x+','+z;if(seams.has(key))assert.ok(Math.abs(y-seams.get(key))<.00001,'Tile seam');else seams.set(key,y);vertices++;
+  const key=x+','+z,vertex=[y,n.getX(i),n.getY(i),n.getZ(i)];
+  if(seams.has(key))assert.deepEqual(vertex,seams.get(key),'Tile boundary shares elevation and lighting');
+  else seams.set(key,vertex);
+  vertices++;
  }}
  const mat=new THREE.Matrix4(),pos=new THREE.Vector3(),q=new THREE.Quaternion(),scale=new THREE.Vector3();
  for(const m of world.decorations){for(let i=0;i<m.count;i++){m.getMatrixAt(i,mat);assert.ok(mat.elements.every(Number.isFinite));mat.decompose(pos,q,scale);assert.ok(world.shoreDistance(pos.x,pos.z)>0,'Object in water: '+m.name);assert.ok(scale.x>0&&scale.y>0&&scale.z>0);instances++;}}

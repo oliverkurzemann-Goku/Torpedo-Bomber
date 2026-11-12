@@ -502,7 +502,7 @@
 <script src="terrain-system/AirfieldActivity.js?v=242"></script>
 <script src="okinawa/coastal-templates.js?v=1"></script>
 <script src="okinawa/coastal-scenery.js?v=1"></script>
-<script src="okinawa/world.js?v=245"></script>
+<script src="okinawa/world.js?v=247"></script>
 <script src="campaign.js?v=1"></script>
 <script src="game-runtime.js?v=198"></script>
 <script src="sortie-checkpoint.js?v=238"></script>
@@ -1306,7 +1306,7 @@ function updateShadow(){
   if(!onDeck && okinawaWorld && okinawaWorld.root.visible){
     const lx=P.pos.x-OKINAWA_OFFSET_X,z=P.pos.z;
     if(Math.abs(lx)<7980 && Math.abs(z)<7980 && okinawaWorld.shoreDistance(lx,z)>1)
-      baseY=(terrainY=okinawaWorld.getHeight(lx,z))+0.12;
+      baseY=(terrainY=okinawaWorld.getSurfaceHeight(lx,z))+0.12;
   }
   if(!onDeck&&MISSIONS[mission]?.theater==='escort'){const h=PacificTheater.islandHeight(P.pos.x,P.pos.z);if(h>1)baseY=(terrainY=h)+.12;}
   const alt=Math.max(0,P.pos.y-(onDeck?DECK_Y:(terrainY===null?0:terrainY)));
@@ -2059,7 +2059,7 @@ function shoreHeight(x,z){
  const authored=MISSIONS[mission]?.theater==='escort'?PacificTheater.islandHeight(x,z):0;
  if(!okinawaWorld)return authored;const lx=x-OKINAWA_OFFSET_X;
  if(Math.abs(lx)>7990||Math.abs(z)>7990||okinawaWorld.shoreDistance(lx,z)<=0)return authored;
- return Math.max(authored,okinawaWorld.getHeight(lx,z));
+ return Math.max(authored,okinawaWorld.getSurfaceHeight(lx,z));
 }
 function resetShoreTargets(enabled){
  shoreTargets.forEach(t=>GameRuntime.release(t.group));shoreTargets=[];
@@ -4057,7 +4057,7 @@ function resolveGroundAndDeck(dt,previousPosition=null,previousQuaternion=null){
   // island terrain
   if(okinawaWorld && okinawaWorld.root.visible){
     const localX=x-OKINAWA_OFFSET_X;
-    if(Math.abs(localX)<7980 && Math.abs(z)<7980 && okinawaWorld.shoreDistance(localX,z)>1 && y<okinawaWorld.getHeight(localX,z)+2){
+    if(Math.abs(localX)<7980 && Math.abs(z)<7980 && okinawaWorld.shoreDistance(localX,z)>1 && y<okinawaWorld.getSurfaceHeight(localX,z)+2){
       crash("TERRAIN","You flew into the Okinawa coastline."); return;
     }
   }else{
