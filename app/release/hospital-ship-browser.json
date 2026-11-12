@@ -92,7 +92,7 @@
    "flash": "HOSPITAL SHIP SUNK  −2500"
   },
   "afterSink": {
-   "groupY": -9.76,
+   "groupY": -9.77,
    "objectiveClear": false,
    "realAlive": true,
    "neutralHits": 4

@@ -34,7 +34,7 @@
  "straightBow": [
   {
    "alive": true,
-   "hull": 29.7,
+   "hull": 29.2,
    "fired": 11,
    "shellHits": 11,
    "near": 0,
@@ -50,7 +50,7 @@
   },
   {
    "alive": true,
-   "hull": 26.9,
+   "hull": 28,
    "fired": 11,
    "shellHits": 11,
    "near": 0,
@@ -66,7 +66,7 @@
   },
   {
    "alive": true,
-   "hull": 27.5,
+   "hull": 26.2,
    "fired": 11,
    "shellHits": 11,
    "near": 0,
@@ -84,10 +84,10 @@
  "weaveBow": [
   {
    "alive": true,
-   "hull": 66,
+   "hull": 66.8,
    "fired": 14,
-   "shellHits": 6,
-   "near": 5,
+   "shellHits": 5,
+   "near": 6,
    "volleys": 2,
    "bursts": 0,
    "t": 51,
@@ -100,11 +100,11 @@
   },
   {
    "alive": true,
-   "hull": 63,
+   "hull": 70.6,
    "fired": 14,
-   "shellHits": 6,
-   "near": 6,
-   "volleys": 1,
+   "shellHits": 5,
+   "near": 7,
+   "volleys": 2,
    "bursts": 0,
    "t": 51,
    "bearing": -8,
@@ -116,10 +116,10 @@
   },
   {
    "alive": true,
-   "hull": 66.1,
+   "hull": 67.1,
    "fired": 14,
    "shellHits": 6,
-   "near": 6,
+   "near": 5,
    "volleys": 2,
    "bursts": 0,
    "t": 51,
@@ -139,17 +139,17 @@
  },
  "beam": {
   "starboard": {
-   "v": 91,
+   "v": 90,
    "h": 0,
    "s": 0
   },
   "port": {
-   "v": 93,
+   "v": 90,
    "h": 0,
    "s": 0
   },
   "quarter": {
-   "v": 47,
+   "v": 46,
    "h": 0,
    "s": 0
   },
@@ -164,14 +164,14 @@
    "s": 6
   },
   "highBeam": {
-   "v": 90,
-   "h": 44,
+   "v": 91,
+   "h": 43,
    "s": 0
   }
  },
  "lightDamage": {
-  "hits": 53,
-  "lost": 114
+  "hits": 94,
+  "lost": 301
  },
  "silence": {
   "before": 0,

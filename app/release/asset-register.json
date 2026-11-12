@@ -1,19 +1,19 @@
 {
   "schema": 1,
   "reviewedOn": "2026-10-23",
-  "build": 247,
+  "build": 248,
   "status": "OPEN — source declarations checked; no external rights authorization obtained",
   "payload": {
-    "bytes": 164536728,
+    "bytes": 164539735,
     "fileCount": 377,
     "modelCount": 61,
-    "manifestSha256": "761beaece03fe511ecf592e59c93dfb156a09dd7cf7f59c44057dbae8ac5321d"
+    "manifestSha256": "d6425da02520ba8ae12f51a88259d3f4c28f3d7d45dad41cb42cc994cc44bf09"
   },
   "files": [
     {
       "path": "ASSET-CREDITS.md",
       "bytes": 41305,
-      "sha256": "ca66566a94d16f2749def8a6c03ecbd000402c3c98f6a1da470390a133555aee",
+      "sha256": "43c7ccf68f0ec41a401dd427ff2927d9c096e98b01c5ebfd6e348cb1a4c70b6f",
       "kind": "code-or-notice"
     },
     {
@@ -841,7 +841,7 @@
     {
       "path": "hangar.html",
       "bytes": 4485,
-      "sha256": "9a6c1808b046a7c4bf16f809f9c81b0445722073d749edb364f6599f04e20896",
+      "sha256": "42079818c0ed375447df2c77996136fabbed1b3309163d27ea75384c095ec3e6",
       "kind": "code-or-notice"
     },
     {
@@ -853,7 +853,7 @@
     {
       "path": "index.html",
       "bytes": 7543,
-      "sha256": "1a53eb0415b352f2985d7dd18ef2f9b0ed5b56a6722cdc237625d5a06536352b",
+      "sha256": "cd94bdf2f08030bb233c9238fe0ae747ab71ef4ec0ef2bc76b69981112fbee5a",
       "kind": "code-or-notice"
     },
     {
@@ -889,19 +889,19 @@
     {
       "path": "menu-layout.css",
       "bytes": 14367,
-      "sha256": "e4f11701fb018bf8d684141d0fa08fe4a0b7698346eb2388f332ea7247fc819a",
+      "sha256": "96e2ca95a22a8c89239b732d7755120d310b43bca89164a2d299af8e7935aa3e",
       "kind": "code-or-notice"
     },
     {
       "path": "naval-assets.js",
       "bytes": 3271,
-      "sha256": "6ca9c8ce15d0d1661b8d6ba4c64d7e30f576f2d0e20855d64a9f79b2e0c1ab74",
+      "sha256": "a853e2aad7bd3cc53fc19cfb719bb2fbafc3ec9b6171754f078a05b7e15db75c",
       "kind": "code-or-notice"
     },
     {
       "path": "okinawa/README.md",
-      "bytes": 8810,
-      "sha256": "27c691481201ddcb23a072276e26ecff9b771ca1140e9dc73319237a2252711b",
+      "bytes": 9511,
+      "sha256": "82436ce50c0cfc7e3cd1ecfc8b35fe7e18f4b6059c01f3ced5b4440c5c4debed",
       "kind": "code-or-notice"
     },
     {
@@ -924,14 +924,14 @@
     },
     {
       "path": "okinawa/viewer.js",
-      "bytes": 12497,
-      "sha256": "a0cffbc5b368e2128c872876b7362ec26bd1d9fe5848a86d64c4c11875ff86e5",
+      "bytes": 12498,
+      "sha256": "a431936b08b9a39f5b81e4be935d8af172dd56a962a3d10588a2f8a012b90456",
       "kind": "code-or-notice"
     },
     {
       "path": "okinawa/world.js",
-      "bytes": 53004,
-      "sha256": "03c1ddaaa6d57c850a9f78cb352f4d9601383c1795f434c486ea11775cf3183e",
+      "bytes": 55288,
+      "sha256": "a30a80cd67be83fc68bd12702612014f52b834b6119e85db3bb2841c56a228e2",
       "kind": "code-or-notice"
     },
     {
@@ -991,7 +991,7 @@
     {
       "path": "remagen-mission.html",
       "bytes": 519473,
-      "sha256": "4c4dd9b175b74a5eae9dee0d96ec8550c28264fb2bea45771cb75dfdc8389fc9",
+      "sha256": "92ac85277915a3c58025e231537e491ac8a52933f3475910690d9501cc6ba309",
       "kind": "code-or-notice"
     },
     {
@@ -2190,8 +2190,8 @@
     },
     {
       "path": "torpedo-carrier.html",
-      "bytes": 480492,
-      "sha256": "6019b4f4a7d50d8b7f2c0d71fd50c455e211b2ec58e968366c47589c72338a4e",
+      "bytes": 480513,
+      "sha256": "abec0b5cf08f2cca4242a2491985c55f7bfbae90dcd45f8494d9273d613248f2",
       "kind": "code-or-notice"
     },
     {
@@ -2251,7 +2251,7 @@
     {
       "path": "yamato-aa.js",
       "bytes": 5887,
-      "sha256": "00d0d199e1b17edd0e3abadd1428bd10fa2a8232fc0d97c0e54aec69c042016f",
+      "sha256": "457af008bdbc4249a9d6452172ca90e03376a5ce08b8ee6a071d66f108364049",
       "kind": "code-or-notice"
     },
     {
