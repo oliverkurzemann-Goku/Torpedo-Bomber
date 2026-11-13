@@ -1,0 +1,109 @@
+{
+ "dumbo": {
+  "start": {
+   "ac": "pby",
+   "onGround": true,
+   "gear": 1,
+   "kind": "dumbo",
+   "phase": "fly",
+   "fig": true,
+   "strip": 1475,
+   "bombs": 0,
+   "rockets": 0,
+   "text": "ALIGHT ON THE RIVER — WHEELS UP — YELLOW SMOKE (MAP)",
+   "key": "pby",
+   "dinghyOnWater": true,
+   "figY": 0,
+   "dist": 7702
+  },
+  "alight": {
+   "touch": {
+    "t": 8.7,
+    "spd": 33.4,
+    "wet": true
+   },
+   "alive": true,
+   "crash": null,
+   "over": false,
+   "onWater": true,
+   "phase": "run",
+   "dist": 28,
+   "text": "DINGHY ALONGSIDE — HOLD STILL"
+  },
+  "taxi": {
+   "t": 0,
+   "phase": "run",
+   "alive": true,
+   "crash": null,
+   "spd": 0,
+   "dist": 28,
+   "text": "DINGHY ALONGSIDE — HOLD STILL"
+  },
+  "boarded": {
+   "t": 10.8,
+   "phase": "home",
+   "rescued": 1,
+   "score": 600,
+   "fig": false,
+   "hatchMaxDeg": 64.2,
+   "text": "AIRMAN ABOARD — LAND AT BEAUFORT",
+   "flightLeft": 0,
+   "said": 1
+  },
+  "run": {
+   "l1": 700,
+   "l2": 775,
+   "dist": 618
+  },
+  "takeoff": {
+   "off": 30.1,
+   "alive": true,
+   "crash": null,
+   "climb": 6.3,
+   "hunters": 2,
+   "hunterAc": "bf109",
+   "huntLeft": null,
+   "floatsOut": null
+  },
+  "block": 0,
+  "home": {
+   "td": {
+    "t": 19.4,
+    "spd": 37.9,
+    "x": -98
+   },
+   "alive": true,
+   "crash": null,
+   "over": true,
+   "landing": false,
+   "onGround": true,
+   "result": "\n  \n    Flight Officer Bud Ferris  &middot;  Landed at Beaufort  &middot;  🥇 GOLD\n    MISSION ACCOMPLISHED\n    The airman is home. This sortie: 1 rescuedHull 8",
+   "score": 1000
+  }
+ },
+ "blackcat": {
+  "start": {
+   "ac": "pby",
+   "night": true,
+   "key": "pbyn",
+   "bombs": 2,
+   "gear": 1,
+   "ferry": true,
+   "primary": true,
+   "flares": true,
+   "text": "FERRY 1",
+   "flak": 2,
+   "hp0": 7
+  },
+  "dropped": 1,
+  "hit": {
+   "alive": false,
+   "hp": -1.516129032258064,
+   "ferry": 1,
+   "gain": 1100,
+   "left": 0,
+   "text": "RTB — LAND AT BEAUFORT",
+   "bombs": 1
+  }
+ }
+}

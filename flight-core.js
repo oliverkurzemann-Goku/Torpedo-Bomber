@@ -109,6 +109,21 @@ const SOURCES={
   limits:{vne:265*KMH,ref:'A3',text:'265 km/h clean'},
   stores:{},fuel:{kg:150*AVGAS,ref:'C',text:'150 l (C)'},
   roll:{peak:50,at:28,fall:1,ref:'C'}},
+ // Build 252: the Consolidated PBY-5A Catalina becomes a flyable type (Rhine game, rig class amphibian-twin, Allied side). Published figures as listed in the
+ // aircraft's reference sheet (AN 01-5MA-2, museum fact sheets): 179 mph at 7 000 ft, ceiling 15 800 ft (not fitted), climb about 610 ft/min at the operating weight,
+ // 2 x R-1830-92 of 1 200 hp. The stall refers to 27 000 lb (the usual operating weight); the PBY has no flaps, so the landing figure equals the clean one.
+ // The sheet's mass is the maximum take-off weight with the full 1 750 US gal; the game flies lighter with less fuel (and less than that with the stall weight of 27 000 lb).
+ pby:{name:'Consolidated PBY-5A Catalina (2 x R-1830-92)',
+  refs:{B1:'AN 01-5MA-2 / Pima Air & Space / American Heritage Museum fact sheets: 179 mph at 7 000 ft, 1 200 hp per engine, 130 m2 wing, 104 ft span, 11 ft 6 in propellers',
+   B2:'35 420 lb maximum take-off weight (empty 20 910 lb); about 610 ft/min climb at that weight (light-weight listings quote about 1 000 ft/min)',
+   B3:'Stall about 58 knots IAS at 27 000 lb, 63 knots with the floats and gear out'},
+  mass:35420*LB,massRef:'B2',S:130,b:31.7,geomRef:'B1',propD:3.51,propRef:'B1',climbLo:32,
+  engine:{kind:'piston',power:1200*HP,count:2,fth:7000*FT,ref:'B1',text:'2 x R-1830-92, 1 200 hp each (product with eta_p solved); full-throttle height 7 000 ft (C)'},
+  perf:[row('speed',7000*FT,179*MPH,'B1','179 mph @ 7 000 ft'),row('climb',0,610*FPM,'B2','610 ft/min @ SL at 35 420 lb')],
+  stall:{mass:27000*LB,clean:58*KT,landing:58*KT,ref:'B3',text:'58 kt IAS at 27 000 lb (no flaps: landing equals clean)'},
+  limits:{vne:175*KT,ref:'C',text:'175 kt (C)'},
+  stores:{},fuel:{kg:1750*GAL*AVGAS,ref:'B1',text:'1 750 US gal internal'},
+  roll:{peak:18,at:45,fall:1,ref:'C'}},
  me262:{name:'Me 262A-1a (2 x Jumo 004B)',
   refs:{B1:'Fliegerweb / flugrevue / flugzeuginfo.net: 6 400 kg normal take-off, 870 km/h @ 6 000 m, initial climb 20 m/s',
    B2:'Jumo 004B: 8.8 kN static thrust each (NASM, Wikipedia via search)',B3:'Approach 240 km/h, touch-down 160 km/h (flugzeug-lexikon); Wendel 230-250 km/h approach',
@@ -218,6 +233,8 @@ const ASSUMED={
  ju87:A_({nLimit:6.0,mlimit:.70,gearCD:0,severity:.2,stores:{bomb:125,bombArea:.012}}),  // fixed gear: in the measured drag
  // Build 249: Storch. Light liaison structure (C): +4 g, -1.5 g; fixed gear sits in the measured drag; a mild stall behind the slats.
  fi156:A_({nLimit:3.5,nNegative:1.5,mcrit:.72,mlimit:.78,vne:265*KMH,gearCD:0,flapCD:.10,severity:.12,spool:.7,stores:{}}),
+ // Build 252: Catalina. Heavy flying-boat structure (C): +3 g, -1 g; gear and floats count as gear drag, there are no flaps; a mild stall (thick wing).
+ pby:A_({nLimit:3.0,nNegative:1.0,mcrit:.60,mlimit:.66,vne:175*KT,gearCD:.030,flapCD:0,severity:.10,spool:.9,stores:{bomb:227,bombArea:.03}}),
  me262:A_({nLimit:5.5,mcrit:.74,vne:950*KMH,spool:2.6,windmill:0,severity:.35,stores:{bomb:250,bombArea:.02}}),
  me163:A_({nLimit:6.0,clClean:1.1,clLandingRatio:1.15,spool:.3,windmill:0,gearCD:0,severity:.05,isp:2000}),
  avenger:A_({nLimit:4.5,mcrit:.66,mlimit:.70,vne:320*KT,severity:.25,stores:{torpedo:2216*LB,bomb:227,bombArea:0}}), // internal bay
@@ -469,7 +486,7 @@ function has(kind){return !!SOURCES[kind];}
 // p: {fuel 0-100 (internal), tankAttached, tankFuel, tankCapacity, bombs, rockets, torps, bombKg, torpedo}
 // Store counts are capped at what the airframe physically carries (the games allow arcade reloads).
 const CAPACITY={p47:{bomb:2,rocket:10},bf109:{bomb:1},fw190:{bomb:1},ju87:{bomb:4},me262:{bomb:2},avenger:{bomb:4,torpedo:1},
- sbd:{bomb:1},corsair:{bomb:2,rocket:8},zero:{bomb:2}};
+ sbd:{bomb:1},corsair:{bomb:2,rocket:8},zero:{bomb:2},pby:{bomb:2}};
 function loadout(m,p={}){
  const st=m.stores||{},cap=CAPACITY[m.kind]||{},fuel=clamp((p.fuel??100)/100,0,1);
  let mass=m.empty+m.fuelKg*fuel,area=0;

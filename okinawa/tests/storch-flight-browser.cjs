@@ -26,7 +26,7 @@ const server=http.createServer((req,res)=>{
   const page=await browser.newPage({viewport:{width:1194,height:660},hasTouch:true,deviceScaleFactor:1}),errors=[];
   page.setDefaultTimeout(900000);page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error'&&!/404/.test(m.text()))errors.push('console: '+m.text());});
   await page.addInitScript(()=>window.requestAnimationFrame=()=>0);
-  await page.goto('http://127.0.0.1:'+server.address().port+'/remagen-mission.html?v=251&surprises=off&sortie='+sortie);
+  await page.goto('http://127.0.0.1:'+server.address().port+'/remagen-mission.html?v=253&surprises=off&sortie='+sortie);
   // the hangar sortie opens the briefing at once: wait for the world, not for the menu
   await page.waitForFunction(()=>realWorldReady&&(state===ST.MENU||state===ST.BRIEF),null,{polling:200});
   await page.evaluate(async()=>{await Promise.all(['fi156','p47'].map(ensureModel));renderer.setPixelRatio(.25);renderer.shadowMap.enabled=false;if(typeof flightQuality!=='undefined')flightQuality.enabled=false;
@@ -150,6 +150,37 @@ const server=http.createServer((req,res)=>{
   assert.ok(K.moon.night&&K.moon.lamps===3&&K.moon.lampsInScene&&/LANTERNS/.test(K.moon.text),'three lanterns at night: '+JSON.stringify(K.moon));
   assert.ok(K.moon.landed.alive&&K.moon.landed.phase==='run'&&K.moon.done.phase==='home'&&K.moon.done.rescued===1&&K.moon.hunters>=1,'the agent boards, the intruders follow: '+JSON.stringify(K.moon));
   assert.ok(K.reset.lamps&&K.reset.kind==='rescue','the lanterns are taken away with the sortie: '+JSON.stringify(K.reset));
+
+  // ---- 2c. Build 253: no yellow dot - a search area (briefing map with distance and course, ring on the minimap), arrow and distance lead to the area, a real person at the meadow,
+  // Rookie gets two hunters too, no red sight for an aeroplane without a forward gun ----
+  const N=await page.evaluate(()=>{
+   const out={},r1=v=>+(+v).toFixed(1);
+   begin('rescue',0);const plan=sts.plan,lz=plan.lz,sr=plan.search;
+   out.search={r:sr.r,off:Math.round(Math.hypot(sr.x-lz.x,sr.z-lz.z))};
+   out.marks=stsMapMarks().map(m=>({kind:m.kind,r:m.r,onLz:Math.hypot(m.x-lz.x,m.z-lz.z)<5}));
+   out.brief=stsBriefPoints(M()).map(b=>({r:b.radius,label:b.label,onLz:Math.hypot(b.x-lz.x,b.z-lz.z)<5}));
+   P.onGround=false;P.pos.set(sr.x-5000,groundY(sr.x-5000,sr.z)+300,sr.z);state=ST.FLIGHT;updateHUD();
+   out.nav={dist:parseFloat(document.getElementById('navDist').textContent),kind:document.getElementById('navKind').textContent,want:r1(5000/MI),base:r1(Math.hypot(P.pos.x-GERMAN_AF_X,P.pos.z-GERMAN_AF_Z)/MI)};
+   out.hunt=[0,1,2].map(d=>{diffIdx=d;return stsHuntCount();});diffIdx=0;
+   // the person: CrewVisuals (jacket, face, boots), waving while he waits, running legs while he runs
+   const person=sts.person,arms=person&&person.userData.arms,legs=person&&person.userData.legs;
+   out.person={meshes:(()=>{let n=0;sts.fig.traverse(o=>{if(o.isMesh)n++;});return n;})(),arms:arms&&arms.length,legs:legs&&legs.length};
+   sts.clock=.3;stsPose(sts);out.wave={arm:r1(arms[1].rotation.z),other:r1(arms[0].rotation.z)};
+   sts.phase='run';sts.runT=.13;stsPose(sts);out.run={leg0:r1(legs[0].rotation.x),leg1:r1(legs[1].rotation.x),arm0:r1(arms[0].rotation.x)};sts.phase='fly';
+   // the red sight: hidden for the Storch (the observer's gun is automatic), still there for a fighter
+   P.pos.set(lz.x-3000,groundY(lz.x-3000,lz.z)+300,lz.z);P.spd=45;P.onGround=false;state=ST.FLIGHT;animate();out.sightStorch=document.getElementById('gunsight').style.display;
+   return out;
+  });
+  report.search=N;
+  assert.ok(N.search.r>=1000&&N.search.off>=100&&N.search.off<=N.search.r,'the search circle is about a kilometre wide and the meadow lies inside it, not at its middle: '+JSON.stringify(N.search));
+  assert.ok(N.marks.length===1&&N.marks[0].kind==='SEARCH'&&N.marks[0].r>=1000&&!N.marks[0].onLz,'the minimap shows the circle, not the yellow point: '+JSON.stringify(N.marks));
+  assert.ok(N.brief.length===1&&N.brief[0].r>=1000&&!N.brief[0].onLz&&/Search area, about \d+ km [NESW]{1,2} of the strip, course \d{3} deg/.test(N.brief[0].label),'the briefing map shows the search area with distance and course: '+JSON.stringify(N.brief));
+  assert.ok(Math.abs(N.nav.dist-N.nav.want)<.3&&Math.abs(N.nav.dist-N.nav.base)>1&&/SEARCH|AREA/i.test(N.nav.kind),'the arrow and the distance lead to the search area, not to the base: '+JSON.stringify(N.nav));
+  assert.deepEqual(N.hunt,[2,2,3],'Rookie gets two hunters as well (one used to look as if nobody attacked): '+JSON.stringify(N.hunt));
+  assert.ok(N.person.meshes>=8&&N.person.meshes<=60&&N.person.arms===2&&N.person.legs===2,'a person, not a cylinder with a ball: '+JSON.stringify(N.person));
+  assert.ok(N.wave.arm>2&&Math.abs(N.wave.other)<.05,'he waves while he waits: '+JSON.stringify(N.wave));
+  assert.ok(Math.abs(N.run.leg0)>.5&&Math.abs(N.run.leg1)>.5&&N.run.leg0*N.run.leg1<0,'and his legs swing while he runs: '+JSON.stringify(N.run));
+  assert.equal(N.sightStorch,'none','no red sight for an aeroplane without a forward gun');
 
   // ---- 3. Bonus Spotter: low and slow in a circle for 12 s, then fire for effect; too fast / too high / outside counts for nothing ----
   const S=await page.evaluate(()=>{

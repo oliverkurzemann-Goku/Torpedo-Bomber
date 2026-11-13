@@ -14,6 +14,7 @@ const profiles={
  ju87:{engine:'Jumo 211 · inverted V12',bank:'jumo',rate:1,spool:.9,bass:1,bright:5800,source:'Stuka-labelled archival effect · craigsmith / USC',match:'Archival film sound effect; exact engine provenance is unverified.'},
  avenger:{"engine":"R-2600 · 14-cylinder radial","bank":"r2800","revision":217,"approved":true,"approvedChoice":"P47 C","idleFile":"approved/r2800-idle.wav","powerFile":"approved/avenger-c-power.wav","rate":1,"spool":0.3,"bass":0,"bright":10000,"source":"Fight2FlyPhoto ground recording + original game exhaust accents","match":"Approved powerful audition C, adapted from the P-47 source family for Avenger."},
  sbd:{"engine":"R-1820 · 9-cylinder radial","bank":"r2800","revision":217,"approved":true,"approvedChoice":"P47 B","idleFile":"approved/r2800-idle.wav","powerFile":"approved/sbd-b-power.wav","rate":1,"spool":0.3,"bass":0,"bright":10000,"source":"Fight2FlyPhoto ground recording + original game exhaust accents","match":"Approved rough, uneven audition B, adapted from the P-47 source family for Dauntless."},
+ pby:{"engine":"R-1830 · 14-cylinder radial (two engines)","bank":"r2800","revision":217,"approved":true,"approvedChoice":"P47 B","idleFile":"approved/r2800-idle.wav","powerFile":"approved/sbd-b-power.wav","rate":0.94,"powerScale":0.94,"spool":0.3,"bass":0,"bright":10000,"source":"Fight2FlyPhoto ground recording + original game exhaust accents","match":"Approved rough, uneven audition B, adapted from the P-47 source family for the Catalina (two R-1830, no recording of that engine; the pitch is lowered)."},
  zero:{"engine":"Sakae · 14-cylinder radial","bank":"bmw801","revision":217,"approved":true,"approvedChoice":"Zero Leicht und lebhaft","idleFile":"approved/bmw801-idle.wav","powerFile":"approved/zero-power.wav","rate":1.075,"spool":0.3,"bass":0,"bright":10000,"source":"Fight2FlyPhoto ground recording + original game exhaust accents","match":"Approved lively Zero audition. Adapted BMW source; not a Sakae recording."},
 };
 for(const p of Object.values(profiles))Object.freeze(p);Object.freeze(profiles);
@@ -59,7 +60,7 @@ function create(ctx,destination){
  tone.type='lowpass';tone.frequency.value=6500;tone.Q.value=.5;
  body.type='lowshelf';body.frequency.value=180;body.gain.value=0;
  hp.connect(body);body.connect(tone);tone.connect(bus);bus.connect(root.EngineThrottle.peakGuard(ctx,destination));
- const buffers=new Map();let current=null,selected=null,load=0,rpm=1,version=0,error=null;
+ const buffers=new Map(),attempts={};let current=null,selected=null,load=0,rpm=1,version=0,error=null,retryTimer=0;
  function ready(kind){
   const p=profiles[kind];if(!p)return Promise.resolve(null);
   const key=(p.idleFile||p.bank)+'|'+(p.powerFile||'')+(p.growl?'|growl216|'+kind:'');
@@ -88,11 +89,14 @@ function create(ctx,destination){
     gain.gain.value=i===0?1:0;source.connect(gain);gain.connect(fade);
     source.onended=()=>{source.disconnect();gain.disconnect();};source.start();return {source,gain};
    });
-   current={kind,fade,layers,sources:layers.map(l=>l.source)};
+   current={kind,fade,layers,sources:layers.map(l=>l.source)};attempts[kind]=0;
    // Both sources share one fade; disconnect it after the last one ends.
    let ended=0;for(const layer of layers){const cleanup=layer.source.onended;layer.source.onended=()=>{cleanup();if(++ended===2)fade.disconnect();};}
    fade.gain.setTargetAtTime(1,ctx.currentTime,.08);
-  }).catch(e=>{if(ticket===version){error=e.message;console.warn(error);}});
+  }).catch(e=>{if(ticket===version){error=e.message;console.warn(error);
+   // Build 253: a download that failed once (a weak mobile link while a duel is being set up) used to leave this aeroplane silent for the whole session, because the kind stayed 'selected':
+   // forget the selection after a short wait, the next update() chooses it again and fetches the layers afresh (four tries, 1.2 s apart more each time)
+   if((attempts[kind]=(attempts[kind]||0)+1)<=4){clearTimeout(retryTimer);retryTimer=setTimeout(()=>{if(ticket===version&&!current)selected=null;},1200*attempts[kind]);}}});
  }
  return {ready,select,update(dt,kind,throttle,active,options={}){
   select(kind);const p=profiles[kind],now=ctx.currentTime;

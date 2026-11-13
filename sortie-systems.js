@@ -134,13 +134,15 @@ function drawMap(canvas,opt){
  if(opt.recon){const p=put(opt.recon);g.strokeStyle='#80c9df';g.lineWidth=2;g.beginPath();g.arc(...p,Math.max(8,opt.recon.radius*scale),0,7);g.stroke();}
  if(opt.approach){const p=put(opt.approach);g.strokeStyle='#b9a5ed';g.lineWidth=2;g.beginPath();g.arc(...p,Math.max(8,opt.approach.radius*scale),0,7);g.stroke();g.fillStyle='#d5c4f3';g.font='11px monospace';g.fillText(opt.approach.label,p[0]+9,p[1]+17);}
  for(const [i,t] of opt.targets.entries()){
-  const p=put(t);g.fillStyle=t.friendly?'#80c9df':t.optional?'#dba774':'#f06a4b';g.beginPath();g.arc(...p,5,0,7);g.fill();
+  const p=put(t);
+  if(t.radius){g.strokeStyle='#e8c43a';g.lineWidth=2;g.setLineDash([6,4]);g.beginPath();g.arc(...p,Math.max(10,t.radius*scale),0,7);g.stroke();g.setLineDash([]);g.font='bold 13px monospace';g.fillStyle='#fff0cf';g.fillText(String(i+1),p[0]-4,p[1]+5);continue;}   // Build 253: a search area is a ring, not a spot
+  g.fillStyle=t.friendly?'#80c9df':t.optional?'#dba774':'#f06a4b';g.beginPath();g.arc(...p,5,0,7);g.fill();
   g.font='bold 13px monospace';g.fillStyle='#fff0cf';g.fillText(String(i+1),p[0]+8,p[1]-6);
  }
  const b=put(opt.base);g.fillStyle='#a1d191';g.fillRect(b[0]-5,b[1]-5,10,10);
  g.font='12px monospace';g.fillStyle='#f2e5c0';g.fillText('BASE',Math.max(20,b[0]-18),Math.min(bottom-2,b[1]+20));
  g.font='bold 14px monospace';g.fillStyle='#e6dbb8';g.fillText('OPERATIONS MAP  /  '+opt.title,20,22);
- g.fillText('N ↑',W-52,22);g.font='11px monospace';g.fillText('RED: TARGETS   AMBER: DEFENCES   BLUE: RECON',20,H-24);
+ g.fillText('N ↑',W-52,22);g.font='11px monospace';g.fillText('RED: TARGETS   AMBER: DEFENCES   BLUE: RECON'+(opt.targets.some(t=>t.radius)?'   YELLOW RING: SEARCH AREA':''),20,H-24);
  const km=1000*scale;g.strokeStyle='#eee0b5';g.beginPath();g.moveTo(W-30-km,H-12);g.lineTo(W-30,H-12);g.stroke();g.fillText('1 km',W-60,H-17);
  return (opt.approach?'APPROACH: '+opt.approach.label+' · ':'')+opt.targets.map((p,i)=>(i+1)+'. '+p.label+(p.optional?' (optional)':'')).join(' · ');
 }

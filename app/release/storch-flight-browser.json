@@ -12,19 +12,19 @@
   "runM": 65,
   "rows": {
    "2": {
-    "kmh": 71,
-    "climb": 7.8,
-    "pitch": 23.4
+    "kmh": 83,
+    "climb": 4.6,
+    "pitch": 11.5
    },
    "5": {
-    "kmh": 72,
-    "climb": 8,
-    "pitch": 23.3
+    "kmh": 88,
+    "climb": 6.6,
+    "pitch": 15.7
    },
    "10": {
-    "kmh": 73,
-    "climb": 8,
-    "pitch": 23.2
+    "kmh": 89,
+    "climb": 6.9,
+    "pitch": 16.3
    }
   },
   "alive": true,
@@ -32,16 +32,16 @@
   "levelHalf": 137,
   "idle": {
    "kmh": 65,
-   "sink": 2.3
+   "sink": 3
   },
   "turn": {
-   "rollDeg": 54,
-   "degPerS": 14.3,
+   "rollDeg": 55,
+   "degPerS": 13.1,
    "alive": true
   },
   "stall": {
    "minKmh": 53,
-   "coreStall": 0.86,
+   "coreStall": 0.89,
    "alive": true,
    "crash": null
   }
@@ -94,7 +94,7 @@
   "slopePct": 1.4,
   "touch": {
    "kmh": 59,
-   "dx": -71,
+   "dx": -1,
    "dz": 0
   },
   "landed": {
@@ -105,7 +105,7 @@
    "crash": null
   },
   "boarded": {
-   "t": 12.5,
+   "t": 11.6,
    "phase": "home",
    "rescued": 1,
    "score": 600,
@@ -148,12 +148,12 @@
     "spd": 0,
     "roll": false,
     "fig": true,
-    "dFig": 169,
+    "dFig": 94,
     "agl": 1.3,
-    "x": -156,
+    "x": 97,
     "text": "OFFICER RUNNING — HOLD STILL"
    },
-   "boardT": 28.6,
+   "boardT": 16.4,
    "done": {
     "phase": "home",
     "courier": 1,
@@ -177,13 +177,13 @@
     "spd": 0,
     "roll": false,
     "fig": true,
-    "dFig": 192,
+    "dFig": 145,
     "agl": 1.3,
-    "x": -179,
+    "x": 151,
     "text": "OBSERVER RUNNING — HOLD STILL"
    },
    "bonus": 0,
-   "boardT": 31.6,
+   "boardT": 22.1,
    "hunters": 2,
    "done": {
     "phase": "home",
@@ -204,12 +204,12 @@
     "spd": 0,
     "roll": false,
     "fig": true,
-    "dFig": 174,
+    "dFig": 38,
     "agl": 1.3,
-    "x": 180,
+    "x": -7,
     "text": "AGENT RUNNING — HOLD STILL"
    },
-   "boardT": 29.1,
+   "boardT": 10.2,
    "hunters": 2,
    "done": {
     "phase": "home",
@@ -221,6 +221,52 @@
    "lamps": true,
    "kind": "rescue"
   }
+ },
+ "search": {
+  "search": {
+   "r": 1150,
+   "off": 377
+  },
+  "marks": [
+   {
+    "kind": "SEARCH",
+    "r": 1150,
+    "onLz": false
+   }
+  ],
+  "brief": [
+   {
+    "r": 1150,
+    "label": "Search area, about 8 km SW of the strip, course 246 deg - find yellow smoke on a meadow",
+    "onLz": false
+   }
+  ],
+  "nav": {
+   "dist": 3.1,
+   "kind": "SEARCH",
+   "want": 3.1,
+   "base": 8.1
+  },
+  "hunt": [
+   2,
+   2,
+   3
+  ],
+  "person": {
+   "meshes": 31,
+   "arms": 2,
+   "legs": 2
+  },
+  "wave": {
+   "arm": 2.7,
+   "other": 0
+  },
+  "run": {
+   "leg0": 0.9,
+   "leg1": -0.9,
+   "arm0": -0.8
+  },
+  "sightStorch": "none"
  },
  "spotter": {
   "start": {
@@ -248,7 +294,7 @@
   },
   "careless": {
    "zone": 2,
-   "lost": 31.3,
+   "lost": 25.7,
    "alive": true
   },
   "hunters": 2,

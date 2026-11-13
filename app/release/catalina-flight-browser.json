@@ -1,0 +1,147 @@
+{
+ "flight": {
+  "ac": "pby",
+  "onGround": true,
+  "core": true,
+  "gear": "GEAR▼ DN",
+  "fire": "none",
+  "flapBtn": "none",
+  "ammo": 600,
+  "hull": 150,
+  "bombs": 0,
+  "key": "pby",
+  "tpl": true,
+  "parts": [],
+  "rest": {
+   "float": 0,
+   "gear": 0
+  },
+  "liftoffS": 26.9,
+  "runM": 577,
+  "rows": {
+   "3": {
+    "kmh": 135,
+    "climb": 7.3,
+    "pitch": 11.2,
+    "gear": 0
+   },
+   "8": {
+    "kmh": 134,
+    "climb": 6.4,
+    "pitch": 9.9,
+    "gear": 0
+   },
+   "15": {
+    "kmh": 134,
+    "climb": 6.2,
+    "pitch": 9.6,
+    "gear": 0
+   }
+  },
+  "alive": true,
+  "vr": 38.2,
+  "levelFull": 263,
+  "cruise": {
+   "float": 90,
+   "floatR": 90,
+   "gear": 84.2,
+   "nose": 78.5
+  },
+  "levelHalf": 236,
+  "idle": {
+   "kmh": 133,
+   "sink": 0
+  },
+  "turn": {
+   "rollDeg": 45,
+   "degPerS": 18,
+   "alive": true
+  },
+  "stall": {
+   "minKmh": 121,
+   "coreStall": 0.76,
+   "alive": true,
+   "crash": null
+  }
+ },
+ "water": {
+  "strip": {
+   "score": 1379.740379236231,
+   "x": 13701.867571974972,
+   "z": 15799.417330650213,
+   "heading": 4.990058005500778,
+   "len": 1475
+  },
+  "landing": {
+   "touch": {
+    "t": 8.500000000000002,
+    "spd": 33.4,
+    "pitch": -5.3,
+    "wet": true,
+    "x": 14023.498669171091,
+    "z": 15712.586697835082
+   },
+   "stop": {
+    "t": 14.2,
+    "dist": 247
+   },
+   "alive": true,
+   "crash": null,
+   "onWater": true,
+   "onGround": true,
+   "rideErr": 0,
+   "pitch": 1.7,
+   "over": false
+  },
+  "taxi": {
+   "turnDeg": 27.9,
+   "spd": 4.1,
+   "stopped": 0.3
+  },
+  "run": {
+   "t": 30.1,
+   "dist": 619,
+   "len": 1475
+  },
+  "takeoff": {
+   "off": 30.1,
+   "alive": true,
+   "crash": null,
+   "spd": 133,
+   "climb": 6.4,
+   "agl": 76.7
+  }
+ },
+ "failures": {
+  "wheelsDown": {
+   "alive": false,
+   "crash": "GEAR DOWN ON THE WATER: The wheels dug in and the boat went over on her nose. Wheels up for the water.",
+   "onGround": false
+  },
+  "tooFast": {
+   "alive": false,
+   "crash": "TOO FAST: Hit the water too fast — the hull broke up.",
+   "onGround": false
+  },
+  "noseFirst": {
+   "alive": false,
+   "crash": "NOSE FIRST: The bow dug in.",
+   "onGround": false
+  },
+  "hard": {
+   "alive": true,
+   "crash": null,
+   "onGround": true
+  },
+  "stove": {
+   "alive": false,
+   "crash": "HARD LANDING: Came down too fast — the hull was stove in.",
+   "onGround": false
+  },
+  "wing": {
+   "alive": false,
+   "crash": "FLOAT DUG IN: A wing-tip float caught the water and she cartwheeled.",
+   "onGround": false
+  }
+ }
+}

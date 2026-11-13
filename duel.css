@@ -34,9 +34,9 @@
   #duelLobby .dlNote{display:none;}
 }
 body.duel #navWrap{display:none;}
-#duelMark{position:fixed;left:0;top:0;z-index:12;pointer-events:none;transform:translate(-50%,-50%);text-align:center;color:#ff8a6a;font:700 11px "Arial Black",Arial,sans-serif;letter-spacing:1px;text-shadow:0 0 3px #000,0 0 6px #000;}
-#duelMark svg{display:block;width:26px;height:26px;margin:0 auto;fill:none;stroke:#ff8a6a;stroke-width:2.4;filter:drop-shadow(0 0 2px #000);}
-#duelMark.prot{color:#8fd0ff;}#duelMark.prot svg{stroke:#8fd0ff;}
+#duelMark{position:fixed;left:0;top:0;z-index:12;pointer-events:none;transform:translate(-50%,-50%);text-align:center;color:#ff8a6a;font:700 10px "Arial Black",Arial,sans-serif;letter-spacing:1px;text-shadow:0 0 3px #000,0 0 6px #000;}
+#duelMark svg{display:block;width:22px;height:22px;margin:0 auto;fill:rgba(255,138,106,.5);stroke:#ff8a6a;stroke-width:1.5;stroke-linejoin:round;opacity:.85;filter:drop-shadow(0 0 2px #000);}
+#duelMark.prot{color:#8fd0ff;}#duelMark.prot svg{stroke:#8fd0ff;fill:rgba(143,208,255,.45);}
 #duelMark[hidden]{display:none;}
 #duelPing{position:fixed;left:8px;top:max(8px,env(safe-area-inset-top));z-index:9;pointer-events:none;font:10px monospace;color:rgba(233,226,198,.7);}
 #duelPing[hidden]{display:none;}

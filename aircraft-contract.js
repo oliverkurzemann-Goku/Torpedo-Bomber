@@ -91,7 +91,7 @@
   // unrotated with its axis on local Z, so that Euler channel is exactly the shaft.
   if(d.parts.Propeller){d.parts.Propeller.name='prop';d.parts.Propeller.userData.articulationPart=true;}
   else for(const k of ['PropellerLeft','PropellerRight'])if(d.parts[k])d.parts[k].userData.articulationPart=true;   // the twin keeps its two named rotors
-  d.parts.gear.userData.articulationPart=true;d.parts.flightFlaps.userData.articulationPart=true;
+  d.parts.gear.userData.articulationPart=true;if(d.parts.flightFlaps)d.parts.flightFlaps.userData.articulationPart=true;   // the amphibian has no flaps
   frame.userData.nativeContract=true;pose(frame,1,{left:0,right:0});return true;
  }
  function pose(o,gear,flaps={left:0,right:0},extra={}){

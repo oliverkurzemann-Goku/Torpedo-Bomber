@@ -104,7 +104,7 @@ vm.runInContext('loadModels=()=>{};ensureModel=async()=>null;WorldVehicles.proto
   }
   const airOnly=['circ','fighter','boxes','libs','jetstrike','jetboxes','komet','jetambush','kometdash'].includes(l.id);
   if(airOnly){assert.equal(l.bombs,0,l.id);assert.equal(l.rockets,0,l.id);assert.equal(l.drop,'none');assert.equal(l.arm,'none');assert.match(l.brief,/ARMAMENT<\/b> Guns(?:<br|$)/);}
-  else if(['rescue','spotter','rats','courier','rock','moon'].includes(l.id)){assert.equal(l.bombs,0,l.id+': the Fi 156 carries no bombs');assert.equal(l.rockets,0,l.id);assert.equal(l.drop,'none');}   // Build 249: the Storch sorties fly the unarmed observer aircraft
+  else if(['rescue','spotter','rats','courier','rock','moon','dumbo'].includes(l.id)){assert.equal(l.bombs,0,l.id+': the unarmed liaison/rescue aircraft carry no bombs');assert.equal(l.rockets,0,l.id);assert.equal(l.drop,'none');}   // Build 249: the Storch sorties fly the unarmed observer aircraft
   else{assert(l.bombs>0,l.id+' ground attack/practice must retain bombs');assert.notEqual(l.drop,'none');}
   assert(l.ammo>0,l.id+' retains guns');
  }

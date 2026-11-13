@@ -5,7 +5,7 @@ require('../../p47-performance');require('../../me262-performance');
 const E=require('../../flight-envelope');const F=require('../../flight-dynamics');
 // Build 249: the Storch (stall 62 km/h, CLmax of a slatted wing) is outside the 40-190 m/s fighter envelope these fleet loops were written for;
 // it has its own checks at the end of the sheet block below.
-const kinds=Object.keys(E.SHEETS).filter(k=>k!=='fi156'),G=9.81,DEG=Math.PI/180;
+const kinds=Object.keys(E.SHEETS).filter(k=>k!=='fi156'&&k!=='pby'),G=9.81,DEG=Math.PI/180;
 assert.deepEqual(kinds.sort(),['avenger','bf109','corsair','fw190','ju87','me163','me262','p47','sbd','zero'].sort(),'sheet covers the ten playable aircraft');
 for(const kind of kinds)assert(F.profiles[kind],kind+' has an energy profile');
 

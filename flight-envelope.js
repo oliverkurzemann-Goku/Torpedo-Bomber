@@ -32,6 +32,9 @@ const SHEETS={
  // Build 249: Storch (L.Dv.T. 2601/1 Annex 3: 1 260 kg, clean stall 62 km/h, 240 PS = 176.5 kW); roll C.
  fi156:{name:'Fi 156 C Storch',m:1260,S:26,b:14.25,kW:176.5,propD:2.6,vs:62/3.6,nLimit:3.5,
   roll:{peak:50,at:28,fall:1},pitchClass:1,tag:{m:'B',S:'B',kW:'B',vs:'B',nLimit:'C',roll:'C'}},
+ // Build 252: Catalina. vs = 58 kt clean stall at 27 000 lb scaled to the 16 066 kg of the FlightCore sheet; 2 x 1 200 hp = 1 790 kW; roll C.
+ pby:{name:'PBY-5A Catalina',m:16066,S:130,b:31.7,kW:1790,propD:3.51,vs:34.2,nLimit:3.0,
+  roll:{peak:18,at:45,fall:1},pitchClass:.6,tag:{m:'B',S:'B',kW:'B',vs:'B',nLimit:'C',roll:'C'}},
  me262:{name:'Me 262A-1a',m:6473,S:21.7,b:12.65,kW:0,propD:0,clmax:1.4,nLimit:5.5,
   roll:{peak:80,at:120,fall:1.6},pitchClass:.9,tag:{m:'A',S:'A',kW:'A',vs:'C',nLimit:'C',roll:'C'}},
  me163:{name:'Me 163B Komet',m:4110,S:19.6,b:9.3,kW:0,propD:0,clmax:1.1,nLimit:6.0,

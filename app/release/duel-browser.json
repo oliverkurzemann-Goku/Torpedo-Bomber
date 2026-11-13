@@ -23,18 +23,18 @@
    "duel": "object"
   }
  ],
- "inviteLength": 577,
- "answerLength": 571,
+ "inviteLength": 572,
+ "answerLength": 575,
  "opp": [
   {
    "name": "BRAVO",
    "ac": "bf109",
-   "build": 250
+   "build": 252
   },
   {
    "name": "ALPHA",
    "ac": "p47",
-   "build": 250
+   "build": 252
   }
  ],
  "ui": [
@@ -59,14 +59,14 @@
    "state": 3,
    "alive": true,
    "pos": [
-    15105.187793229563,
-    977.5434767983616,
-    15198.26510220063
+    13071.687231704545,
+    1076.5962385775863,
+    14998.89623759391
    ],
-   "agl": 886.7573741542528,
-   "hdg": -0.9431813215735986,
+   "agl": 910.9505149773715,
+   "hdg": 0.7477214411878808,
    "pitch": 0.00018464629117252533,
-   "spd": 91.37216033553436,
+   "spd": 91.37260183262528,
    "onGround": false,
    "hull": 100,
    "squad": 0,
@@ -74,9 +74,9 @@
    "targets": 0,
    "bodyDuel": true,
    "obj": "YOU 0 — 0 BRAVO  ·  FIRST TO 2",
-   "sent": 39,
-   "recv": 38,
-   "rtt": 3.869999999999999,
+   "sent": 41,
+   "recv": 40,
+   "rtt": 240.84799999999998,
    "count": 30,
    "protect": 1.5000000000000053,
    "epoch": 0,
@@ -87,15 +87,38 @@
     "kind": "bf109",
     "visible": true,
     "pos": [
-     12865.958181818183,
-     975.3,
-     16822.724
+     14950.528888888888,
+     1096,
+     17024.904355555555
     ],
     "prot": true
    },
    "marker": false,
    "markerText": "1.7 mi · PROT",
-   "ckpt": null
+   "ckpt": null,
+   "audio": {
+    "ctx": "running",
+    "piston": {
+     "kind": "p47",
+     "loaded": true,
+     "loading": false,
+     "error": null,
+     "rpm": 1.0739254075804245,
+     "load": 0.7440300421134701,
+     "powerFile": "approved/p47-a-power.wav",
+     "approvedChoice": "P47 A",
+     "powerBlend": 0.7440300421134701,
+     "powerPlaybackRate": 1.0069139003753662
+    },
+    "jet": {
+     "load": 0.4240513436196919,
+     "spool": 0.5968359405337843,
+     "rocket": false
+    },
+    "master": 0.85,
+    "thr": 0.75,
+    "fuel": 100
+   }
   },
   "b": {
    "mission": "duel",
@@ -104,12 +127,12 @@
    "state": 3,
    "alive": true,
    "pos": [
-    12871.410357953051,
-    975.2875109196181,
-    16818.799565333662
+    14948.193488936991,
+    1095.9532333428253,
+    17022.412113726106
    ],
-   "agl": 908.1806613598472,
-   "hdg": 2.1984113320161947,
+   "agl": 901.7118789485917,
+   "hdg": -2.3938712124019124,
    "pitch": 0.00017356711334279076,
    "spd": 74.51603514104991,
    "onGround": false,
@@ -119,9 +142,9 @@
    "targets": 0,
    "bodyDuel": true,
    "obj": "YOU 0 — 0 ALPHA  ·  FIRST TO 2",
-   "sent": 38,
-   "recv": 39,
-   "rtt": 25.499999999999993,
+   "sent": 40,
+   "recv": 41,
+   "rtt": 267.356,
    "count": 30,
    "protect": 1.5000000000000053,
    "epoch": 0,
@@ -132,22 +155,45 @@
     "kind": "p47",
     "visible": true,
     "pos": [
-     15110.82,
-     977.5,
-     15194.16
+     13068.716499999999,
+     1076.6,
+     14995.731
     ],
     "prot": true
    },
    "marker": false,
    "markerText": "1.7 mi · PROT",
-   "ckpt": null
+   "ckpt": null,
+   "audio": {
+    "ctx": "running",
+    "piston": {
+     "kind": "bf109",
+     "loaded": true,
+     "loading": false,
+     "error": null,
+     "rpm": 1.0737305190555482,
+     "load": 0.7429473280863786,
+     "powerFile": "approved/bf109-power.wav",
+     "approvedChoice": "Me109 Trockenes V12 Knurren",
+     "powerBlend": 0.7429473280863786,
+     "powerPlaybackRate": 1.0063579082489014
+    },
+    "jet": {
+     "load": 0.4240513436196919,
+     "spool": 0.5968359405337843,
+     "rocket": false
+    },
+    "master": 0.85,
+    "thr": 0.75,
+    "fuel": 100
+   }
   }
  },
  "avatarError": {
-  "a": 6.717705563143817,
-  "b": 6.969613146694079
+  "a": 3.415779470632417,
+  "b": 4.340966486233274
  },
- "spawnGap": 2759.6917700957874,
+ "spawnGap": 2759.7584908172516,
  "remoteTracers": 78,
  "burst": {
   "frames": 197,

@@ -86,8 +86,8 @@
   #menu[data-campaign="pacific"] #missionSel .chip{min-height:58px;padding:4px 4px;gap:2px;}
   /* Build 248: 26 cards (Sorties 21-23 added): seven columns keep the board at four rows, so Begin stays inside the viewport */
   #menu[data-campaign="pacific"] #missionSel{grid-template-columns:repeat(7,minmax(0,1fr));}
-  /* Build 249: the Rhine board has 29 cards (three Fi 156 sorties): eight columns keep it at four rows */
-  #menu[data-campaign="europe"] #missionSel{grid-template-columns:repeat(8,minmax(0,1fr));}
+  /* Build 249: the Rhine board has 29 cards (three Fi 156 sorties): eight columns keep it at four rows. Build 252: 34 cards (the two Catalina sorties): nine columns, four rows */
+  #menu[data-campaign="europe"] #missionSel{grid-template-columns:repeat(9,minmax(0,1fr));}
   /* Build 249: eight narrow columns wrap the longest Rhine subtitles to three lines (one card then makes its whole row 80 px tall); two lines, the blurb below shows the full text */
   #menu[data-campaign="europe"] #missionSel .chip .cs,#menu[data-campaign="pacific"] #missionSel .chip .cs{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
 }

@@ -278,12 +278,12 @@
   .warningLamp{color:#646c5c;font:9px monospace;letter-spacing:.35px;} .warningLamp[data-level="1"]{color:#ffd088;text-shadow:0 0 6px #e0a432a0;} .warningLamp[data-level="2"]{color:#ff8c70;text-shadow:0 0 7px #ff6638b0;}
 
 .hangarLink{display:block;padding:12px 14px;margin:8px 0 12px;color:#f3ce83;border:1px solid #ba9d57;border-radius:5px;text-decoration:none;text-align:center;font:600 12px system-ui;letter-spacing:.8px;min-height:44px;}
-.nhMark{position:fixed;left:0;top:0;z-index:12;pointer-events:none;transform:translate(-50%,-50%);text-align:center;color:#ff7a52;font:700 10px "Arial Black",Arial,sans-serif;letter-spacing:.8px;text-shadow:0 0 3px #000,0 0 6px #000;}
-.nhMark svg{display:block;width:22px;height:22px;margin:0 auto;fill:none;stroke:#ff7a52;stroke-width:2.2;filter:drop-shadow(0 0 2px #000);}
+.nhMark{position:fixed;left:0;top:0;z-index:12;pointer-events:none;transform:translate(-50%,-50%);text-align:center;color:#ff7a52;opacity:.85;font:700 9px "Arial Black",Arial,sans-serif;letter-spacing:.8px;text-shadow:0 0 3px #000,0 0 6px #000;}
+.nhMark svg{display:block;width:20px;height:20px;margin:0 auto;fill:rgba(255,122,82,.5);stroke:#ff7a52;stroke-width:1.5;stroke-linejoin:round;opacity:.85;filter:drop-shadow(0 0 2px #000);}
 .nhMark[hidden]{display:none;}
 </style>
-<link rel="stylesheet" href="menu-layout.css?v=251">
-<link rel="stylesheet" href="duel.css?v=238">
+<link rel="stylesheet" href="menu-layout.css?v=253">
+<link rel="stylesheet" href="duel.css?v=253">
 </head>
 <body>
 <!-- ===== TEMP TEST-ONLY VERSION BANNER — asked for by Oliver: "kannst du irgendwo einbauen,
@@ -305,7 +305,7 @@
   <div style="width:100%;height:4px;background:repeating-linear-gradient(45deg,#ffd400,#ffd400 8px,#111 8px,#111 16px);"></div>
   <span id="testVersionBannerText" style="background:#111;color:#ffd400;font-family:monospace;font-weight:800;font-size:11px;letter-spacing:.5px;padding:3px 10px;border:1px solid #ffd400;border-top:none;border-radius:0 0 6px 6px;"></span>
 </div>
-<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 251';</script>
+<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 253';</script>
 <!-- ===== END TEMP TEST-ONLY VERSION BANNER ===== -->
 <div id="app"></div>
 <style>
@@ -346,7 +346,7 @@
   <div id="flash"></div>
   <div id="gunsight"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 251 · REAL RHINE</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 253 · REAL RHINE</div>
 
   <div id="apr">
     <div id="aprCall"></div>
@@ -401,7 +401,7 @@
 </div>
 
 <div class="overlay hidden" id="menu" data-campaign="europe">
-  <div class="menuTop"><a id="selBtn" href="index.html?v=251">&#9664; Change Game</a><span class="menuMeta">RHINE OPERATIONS<br>BUILD 251</span></div>
+  <div class="menuTop"><a id="selBtn" href="index.html?v=253">&#9664; Change Game</a><span class="menuMeta">RHINE OPERATIONS<br>BUILD 253</span></div>
   <div class="card menuCard">
     <aside class="menuOverview" aria-label="Campaign and pilot options">
     <div class="campaignArt" aria-hidden="true"></div>
@@ -549,7 +549,7 @@
   </div>
 </div>
 
-<div id="duelMark" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2 22 12 12 22 2 12Z"/></svg><span id="duelMarkTxt"></span></div>
+<div id="duelMark" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2 21 21 12 16.5 3 21Z"/></svg><span id="duelMarkTxt"></span></div>
 <div id="duelPing" hidden></div>
 
 <script src="vendor/three-r128.min.js?v=128"></script>
@@ -571,7 +571,7 @@
 <script src="terrain-system/PeriodBuildings.js?v=241"></script>
 <script src="terrain-system/HistoricalObjectManager.js?v=173"></script>
 <script src="terrain-system/AirfieldDetails.js?v=169"></script>
-<script src="terrain-system/AircraftGround.js?v=218"></script>
+<script src="terrain-system/AircraftGround.js?v=253"></script>
 <script src="terrain-system/AirfieldActivity.js?v=242"></script>
 <script src="terrain-system/WorldVehicles.js?v=248"></script>
 <script src="terrain-system/LivingWorld.js?v=248"></script>
@@ -581,8 +581,8 @@
 <script src="ju87-native.js?v=218"></script>
 <script src="me262-native.js?v=206"></script>
 <script src="me163-native.js?v=218"></script>
-<script src="aircraft-contract.js?v=251"></script>
-<script src="aircraft-articulation.js?v=218"></script>
+<script src="aircraft-contract.js?v=253"></script>
+<script src="aircraft-articulation.js?v=253"></script>
 <script src="aircraft-rotors.js?v=172"></script>
 <script src="b17-native.js?v=201"></script>
 <script src="combat-fx.js?v=238"></script>
@@ -605,25 +605,25 @@
 <script src="audio/weapon-sound.js?v=144"></script>
 <script src="audio/throttle-response.js?v=218"></script><script src="audio/jet-engine.js?v=218"></script>
 <script src="audio/flight-atmosphere.js?v=175"></script>
-<script src="sortie-systems.js?v=198"></script>
+<script src="sortie-systems.js?v=253"></script>
 <script src="me262-performance.js?v=238"></script>
-<script src="flight-envelope.js?v=251"></script>
-<script src="flight-dynamics.js?v=251"></script>
-<script src="flight-core.js?v=251"></script>
+<script src="flight-envelope.js?v=253"></script>
+<script src="flight-dynamics.js?v=253"></script>
+<script src="flight-core.js?v=253"></script>
 <script src="flight-control.js?v=238"></script>
 <script src="dogfight-ai.js?v=238"></script>
 <script src="squad.js?v=238"></script>
 <script src="duel-net.js?v=238"></script>
 <script src="duel.js?v=238"></script>
-<script src="audio/aircraft-engine.js?v=251"></script>
+<script src="audio/aircraft-engine.js?v=253"></script>
 <script src="p47-performance.js?v=204"></script>
-<script src="sortie-features.js?v=251"></script>
+<script src="sortie-features.js?v=253"></script>
 <script src="ground-run.js?v=204"></script>
 <script src="ground-dust.js?v=181"></script>
 <script src="flight-indicators.js?v=198"></script>
-<script src="sortie-fuel.js?v=251"></script>
-<script src="operation-plans.js?v=251"></script>
-<script src="custom-sortie.js?v=251"></script>
+<script src="sortie-fuel.js?v=253"></script>
+<script src="operation-plans.js?v=253"></script>
+<script src="custom-sortie.js?v=253"></script>
 <script>
 // ============================================================
 //  REMAGEN 1945 — REAL TERRAIN (forked from thunderbolt-europe.html)
@@ -702,6 +702,7 @@ let chaseUp=0, invertPitch=true, dbgOn=false;
 let firing=false, gunT=0, gunVolley=0, weapon='bomb';
 // Build 249: wheels that never retract (the GEAR button reads FIXED, the gear target stays down)
 const FIXED_GEAR=['ju87','fi156'];
+const NO_FLAPS=['pby'];   // Build 252: no wing flaps (AOPA / AN 01-5MA-2)
 let aeroMode=false;
 let inputPitch=0, inputRoll=0;
 let steerSign=1;                 // live left/right invert, same as the carrier game
@@ -777,11 +778,21 @@ const AC={
   // guns (noGuns): its flexible rear gun is fired by the gunner himself at bandits behind it (updateStorchGunner). Hull points are a game choice (C):
   // a light fabric-and-tube airframe that a few bursts will bring down.
   fi156:{ name:'Fi 156 C Storch', rollAuth:0.8, pitchAuth:1.0, turn:1.2, gLim:4.0,
-        rollLim:1.40, pitchLim:1.0, stall:17.2, app:70/3.6, max:48.6, thrMin:20,
+        rollLim:1.05, pitchLim:.85, stall:17.2, app:70/3.6, max:48.6, thrMin:20, windK:.3, pitchBase:2.8, pullAssist:.4,   // Build 253: bank up to 60 deg, pitch up to 45 deg, a gentler stick; 30% of the wind
         hull:60, ammo:450, bombs:0, rockets:0, gunDmg:.55, gunRate:.11, wing:14.25, noGuns:true,
         // Build 250: a field landing is the Storch's trade (long-stroke legs, slats): it survives a firmer, nose-lower touchdown than a fighter does
         field:{sink:6.2,pitch:.46,speed:12},
         col:0x7d8478, band:0x3d4636 },
+  // Build 252: Consolidated PBY-5A Catalina (rig class amphibian-twin, Allied side). Data sheet: SOURCES.pby in flight-core.js (35 420 lb maximum weight,
+  // 179 mph, 610 ft/min). It flies on the computed core only and takes off and alights on the Rhine (hull, floats out) or on a strip (wheels).
+  // No forward guns for the player: the bow gun and the two waist blisters are manned and fire by themselves (updateStorchGunner). Hull points are
+  // a game choice (C): a big, well-built boat that takes a few bursts.
+  pby:{ name:'PBY-5A Catalina', rollAuth:0.6, pitchAuth:0.6, turn:0.55, gLim:3.0,
+        rollLim:1.15, pitchLim:.75, stall:34.2, app:78*.514444, max:80, thrMin:30, windK:.6,
+        hull:150, ammo:600, bombs:2, rockets:0, gunDmg:.5, gunRate:.12, wing:31.7, noGuns:true,
+        // alighting on water is the flying boat's trade: it survives a much firmer touchdown than a wheeled aircraft would (see resolveWater)
+        field:{sink:5.5,pitch:.40,speed:14},
+        col:0x4d5a62, band:0x2e3a40 },
   ju87:{ name:'Ju 87B-2 Stuka', rollAuth:0.76, pitchAuth:0.86, turn:0.75, gLim:5.0,
         rollLim:1.48, pitchLim:1.26, stall:37, app:150/3.6, max:113, thrMin:27,
         hull:115, ammo:1100, bombs:4, rockets:0, gunDmg:1.1, gunRate:0.10, wing:13.8,
@@ -984,7 +995,7 @@ async function loadRealWorld(){
 
   if(OSMManager.BUILD!==23||HistoricalObjectManager.BUILD!==21||LivingWorld.BUILD!==22||WorldVehicles.BUILD!==24) throw new Error('Terrain version mismatch. Reload Remagen.');
   document.getElementById('testVersionBannerText').textContent=
-    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 251 · MODULE 23';
+    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 253 · MODULE 23';
   heightProvider=new DEMHeightProvider(RTILE,'terrain-system/real/data/dem/');
   terrain=new TerrainManager(scene,RTILE,heightProvider);
   osmMgr=new OSMManager(scene,RTILE,terrain,'terrain-system/real/data/osm/');
@@ -1197,10 +1208,13 @@ const MODEL_URL={
   b24:   ['b24.glb','b-24_liberator.glb','b-24.glb'],
   ju87:  ['assets/aircraft/ju87b2-own.glb'],
   fi156: ['assets/aircraft/fi156c2-player.glb'],
+  // Build 252: the Catalina in day paint (#27) and in Black Cat paint (night sorties; same geometry, key 'pbyn' - see modelKey)
+  pby:   ['assets/aircraft/pby5a-own.glb'],
+  pbyn:  ['assets/aircraft/pby5a-blackcat-own.glb'],
   me163: ['assets/aircraft/me163b-own.glb'],
   me262: ['assets/aircraft/me262-noel.glb']
 };
-const REAL_SPAN={ p47:12.42, bf109:9.92, fw190:10.51, ju87:13.8, fi156:14.25, b17:31.62, b24:33.53, me163:9.3, me262:12.51 };   // metres, tip to tip
+const REAL_SPAN={ p47:12.42, bf109:9.92, fw190:10.51, ju87:13.8, fi156:14.25, pby:31.7, pbyn:31.7, b17:31.62, b24:33.53, me163:9.3, me262:12.51 };   // metres, tip to tip
 // Jet/rocket types: no propeller exists, so rigModel() must not go looking for one (see its
 // own comment - the Me262's round nacelle intakes and tail cone measure enough like a
 // hub/blade annulus to fool the same disc heuristic that works for every propeller aircraft).
@@ -1268,6 +1282,8 @@ const MODEL_FIX={
   'me163.glb':                            {yaw:0},
   'assets/aircraft/ju87b2-own.glb': {yaw:0},
   'assets/aircraft/fi156c2-player.glb': {yaw:0},
+  'assets/aircraft/pby5a-own.glb': {yaw:0},
+  'assets/aircraft/pby5a-blackcat-own.glb': {yaw:0},
   'ju87.glb':                             {yaw:0},
   'me_262_a1ajabo_war_thunder.glb':       {yaw:0},
   'me 262 a1ajabo war thunder.glb':       {yaw:0}
@@ -1276,7 +1292,9 @@ function knownFix(url){
   const k=decodeURIComponent(url.split('?')[0]).toLowerCase();
   return MODEL_FIX[k]||null;
 }
-const AC_KINDS=['p47','bf109','fw190','ju87','fi156','b17','b24','me262','me163'];
+const AC_KINDS=['p47','bf109','fw190','ju87','fi156','pby','pbyn','b17','b24','me262','me163'];
+// Build 252: the Catalina's night paint is a second template; every model lookup goes through this key
+function modelKey(k){return k==='pby'&&typeof M==='function'&&M()?.night?'pbyn':k;}
 const modelTpl={}, modelRaw={}, modelBase={};
 let modelAdj={};                            // YOUR correction, in quarter turns, kept on the device
 AC_KINDS.forEach(k=>{ modelTpl[k]=null; modelRaw[k]=null;
@@ -1323,11 +1341,11 @@ function buildTemplate(k){
 const builtFrom={};
 function refreshModels(){
   if(state!==ST.FLIGHT && state!==ST.DEAD) return;
-  const k=P.ac;
+  const k=P.ac,tk=modelKey(k);
   const activity=AF_X===ALLIED_AF_X?alliedActivity:germanActivity;
-  if(activity)activity.setAircraft(modelTpl[k],k);
-  if(modelTpl[k] && builtFrom.player!==k+':'+(modelAdj[k]||0)){
-    builtFrom.player=k+':'+(modelAdj[k]||0);
+  if(activity)activity.setAircraft(modelTpl[tk],k);
+  if(modelTpl[tk] && builtFrom.player!==tk+':'+(modelAdj[tk]||0)){
+    builtFrom.player=tk+':'+(modelAdj[tk]||0);
     if(playerModel){aircraftDamage?.forget(planeGroup);planeGroup.remove(playerModel);}
     playerModel=buildAircraft(k); planeGroup.add(playerModel);
   }
@@ -2671,6 +2689,7 @@ function brightenFighterSkin(src,kind){
 }
 const modelTasks={};
 function ensureModel(k){
+  k=modelKey(k);
   if(modelTpl[k])return Promise.resolve(modelTpl[k]);
   if(modelTasks[k])return modelTasks[k];
   if(typeof THREE.GLTFLoader!=='function')return Promise.reject(new Error('3D model loader unavailable'));
@@ -2686,7 +2705,7 @@ function initialMissionModelKinds(m){
     if(m.ac==='p47')kinds.push('bf109',...(m.id==='fighter'?['me163']:[]));
     else kinds.push('p47');
   }
-  if(typeof stsKind==='function'&&stsKind(m))kinds.push('p47');   // Build 249: the Storch sorties are hunted by Allied P-47s
+  if(typeof stsKind==='function'&&stsKind(m))kinds.push(m.dumbo?'bf109':'p47');   // Build 249: the Storch sorties are hunted by Allied P-47s; Build 252: the Dumbo rescue by Messerschmitts
   return [...new Set(kinds)];
 }
 async function waitForMissionModels(m,maxWaitMs=7000){
@@ -2699,13 +2718,13 @@ async function waitForMissionModels(m,maxWaitMs=7000){
   let timer;
   await Promise.race([loading,new Promise(resolve=>{timer=setTimeout(resolve,maxWaitMs);})]);
   clearTimeout(timer);
-  return kinds.filter(kind=>!modelTpl[kind]);
+  return kinds.filter(kind=>!modelTpl[typeof modelKey==='function'?modelKey(kind):kind]);   // typeof guard: the test slices this function out of the page
 }
 function loadModels(){return ensureModel(MISSIONS[selectedMission].ac);}
 function tryLoad(L,k,i,onReady,onFailed,lastError){
   const list=MODEL_URL[k];
   if(i>=list.length){
-    const message=AC[k].name+' could not load ('+(lastError?.message||'file unavailable')+')';
+    const message=(AC[k]||AC.pby).name+' could not load ('+(lastError?.message||'file unavailable')+')';
     console.warn(message+'; tried: '+list.join(', '));
     onFailed(new Error(message));
     return;
@@ -2819,8 +2838,9 @@ function updateJetExhaust(aircraft,throttle,dt){
   fx.glow.opacity=(.13+.29*heat)*(1+.04*Math.sin(fx.shimmer.uniforms.time.value*11));
 }
 function buildAircraft(kind){
-  if(modelTpl[kind]){
-    const aircraft=modelTpl[kind].clone(true);
+  const tplKey=modelKey(kind);
+  if(modelTpl[tplKey]){
+    const aircraft=modelTpl[tplKey].clone(true);
     if(kind==='me262')attachJetExhaust(aircraft);
     return aircraft;
   }
@@ -3221,7 +3241,14 @@ const MISSIONS=[
       +'let him board and take off downhill. A fighter pair arrives nine seconds after he is aboard.'},
   {id:'moon',title:'Bonus Moonlight Pickup',sub:'Three Lanterns in the Dark',ac:'fi156',bonus:true,night:true,weather:'clear',kills:{rescued:1},moon:true,doneText:'The agent is home. ',
     text:'Fictional night pickup: an agent waits in a dark meadow behind the line, marked by three lanterns in a row (map). No strip lights, moonlight only: find the lanterns, land beside them, hold still while he boards and take off again. '
-      +'Night intruders come once he is aboard. Four flares (L) light the way.'}
+      +'Night intruders come once he is aboard. Four flares (L) light the way.'},
+  // Build 252: the Catalina (Allied side, solo). Dumbo: a dinghy on the Rhine behind the line, alight on the river (wheels UP), taxi to it, take off from the water.
+  // Black Cat: a night strike on the Rhine ferry with two 500 lb bombs (the ferry of the mapped river channel, as in "Rhine Ferry Hunt").
+  {id:'dumbo',title:'Bonus Dumbo',sub:'Airman in the Rhine',ac:'pby',bonus:true,weather:'clear',kills:{rescued:1},dumbo:true,doneText:'The airman is home. ',
+    text:'Fictional rescue ("Dumbo"): a downed airman drifts in a dinghy on the Rhine behind the line (yellow smoke, marked on the map). Fly the Catalina there with the wheels UP, alight on the river, taxi up to the dinghy and hold still while he is hauled aboard through the blister hatch; then take off from the water and bring him home to Beaufort. '
+      +'German fighters come ten seconds after he is aboard: the bow gun and the two waist gunners fire by themselves. The wing-tip floats ride out for the water by themselves.'},
+  {id:'blackcat',title:'Bonus Black Cat',sub:'Night Strike on the Ferry',ac:'pby',bonus:true,night:true,weather:'clear',kills:{ferry:1},traffic:'ferry',flakDefense:2,blackcat:true,doneText:'The ferry is burning. ',
+    text:'Fictional night strike ("Black Cat"): the Rhine ferry still runs after dark. Fly the Catalina low along the river, find it by its wake, drop the flares (L) and put the bombs on it: two 500 lb, release low and level. The ferry guns and the flak at the crossing shoot back; the paint is black, the engines are loud. Home to Beaufort, wheels down for the strip.'}
 ];
 function M(){ return MISSIONS[mission]; }
 function isFree(){ return !!M().free; }
@@ -3230,6 +3257,7 @@ function isCircuits(){ return !!M().circuits; }
 function missionLoadout(m,d=AC[m.ac||'p47']){
   if(m.duel)return {bombs:0,rockets:0};
   if(m.custom)return CustomSortie.stores(m.custom);
+  if(m.dumbo)return {bombs:0,rockets:0};   // Build 252: the rescue flight carries no bombs
   const strike=m.free||Object.entries(m.kills||{}).some(([kind,n])=>n>0&&kind!=='air'&&kind!=='bomber');
   return {bombs:strike?d.bombs:0,rockets:strike?d.rockets:0};
 }
@@ -3555,6 +3583,8 @@ function fireGunSet(dt,d){
 // is manned by the observer, who fires BY HIMSELF at the nearest hostile aircraft inside a rear cone: no input, the player flies. Short bursts
 // with pauses, wide scatter, light rounds - a deterrent that sometimes brings a fighter down, not a weapon. Rounds are P.ammo (AC.fi156.ammo).
 const GUNNER={range:620,cone:.42,interval:.11,burst:[.7,1.5],pause:[.5,1.3],spread:.022,speed:700,life:1.0,dmg:.3,aimLimit:.49};
+// Build 252: the Catalina's three gunners (bow gun, two waist blisters) cover a wide field: everything from straight ahead to abeam and behind, 520 m
+const GUNNER_PBY={range:520,front:.9,side:-.35,interval:.1,dmg:.3};
 function gunnerTargets(){
   const out=[];
   for(const e of enemyAir)if(e.alive&&e.pos)out.push({pos:e.pos,hit:dmg=>{damageEnemyAir(e,dmg);return !e.alive;},bomber:!!e.bomber});
@@ -3563,15 +3593,19 @@ function gunnerTargets(){
   return out;
 }
 function updateStorchGunner(dt){
-  if(P.ac!=='fi156'||!P.alive||state!==ST.FLIGHT||!playerModel||P.onGround)return;
+  if((P.ac!=='fi156'&&P.ac!=='pby')||!P.alive||state!==ST.FLIGHT||!playerModel||P.onGround)return;
   const g=P.gunner||(P.gunner={burst:0,pause:.6,t:0,target:null,sound:0});
   g.sound-=dt;
   const back=noseDir().multiplyScalar(-1);
   // nearest hostile aircraft in the rear cone (dot against the tail direction), inside the gun's range
-  let best=null,bestD=GUNNER.range;
+  let best=null,bestD=P.ac==='pby'?GUNNER_PBY.range:GUNNER.range;
+  const fwd=noseDir();
   for(const t of gunnerTargets()){
     const v=t.pos.clone().sub(P.pos),dist=v.length();if(dist>bestD||dist<20)continue;
-    if(v.normalize().dot(back)<1-GUNNER.cone*1.6)continue;
+    v.normalize();
+    // Storch: the rear cone. Catalina: the bow gun (ahead) or a blister (abeam and astern) - not the dead zone over the wing
+    if(P.ac==='pby'){if(v.dot(fwd)<GUNNER_PBY.front&&v.dot(back)<-GUNNER_PBY.side-.0)continue;}
+    else if(v.dot(back)<1-GUNNER.cone*1.6)continue;
     best=t;bestD=dist;
   }
   g.target=best;
@@ -3589,8 +3623,14 @@ function updateStorchGunner(dt){
   g.burst-=dt;g.t-=dt;
   if(g.burst<=0){g.pause=GUNNER.pause[0]+Math.random()*(GUNNER.pause[1]-GUNNER.pause[0]);return;}
   if(g.t>0)return;
-  g.t=GUNNER.interval;
+  g.t=P.ac==='pby'?GUNNER_PBY.interval:GUNNER.interval;
   const ports=AircraftContract.muzzles(playerModel,planeGroup);let port=ports.find(p=>p.name==='MuzzleRear')||ports[0];
+  if(P.ac==='pby'){
+    // bow gun when the target is ahead, otherwise the blister on that side
+    const ahead=best.pos.clone().sub(P.pos).normalize().dot(noseDir())>GUNNER_PBY.front;
+    const right=new THREE.Vector3(Math.cos(P.heading),0,-Math.sin(P.heading)),sideRight=best.pos.clone().sub(P.pos).dot(right)>0;
+    port=ports.find(p=>p.name===(ahead?'Muzzle1':sideRight?'MuzzleBlisterRight':'MuzzleBlisterLeft'))||ports[0];
+  }
   if(!port){
     // The Fi 156 C-2 airframe is unarmed (no Muzzle node): the observer's gun sits on the cabin roof behind the rear seat (model frame, metres).
     const root=AircraftContract.source(playerModel)||playerModel;root.updateWorldMatrix(true,false);
@@ -3643,7 +3683,7 @@ function updateGunUI(){
   const jet=JET_KINDS.includes(P.ac),button=document.getElementById('fireBtn');
   // Build 249: the Storch has no gun to fire; the gunner works by himself, the button is gone and the HUD shows his rounds
   button.style.display=acDef().noGuns?'none':'';
-  if(acDef().noGuns){document.getElementById('hAmmoLbl').textContent='REAR GUN';document.getElementById('hAmmo').textContent=String(Math.max(0,P.ammo));return;}
+  if(acDef().noGuns){document.getElementById('hAmmoLbl').textContent=P.ac==='pby'?'GUNNERS':'REAR GUN';document.getElementById('hAmmo').textContent=String(Math.max(0,P.ammo));return;}
   button.innerHTML=(jet?'CANNONS':'GUNS')+'<br>'+gunCount();
   button.classList.toggle('spent',P.ammo<=0);
   document.getElementById('hAmmoLbl').textContent=jet?'CANNON':acDef().guns?'MG/CANNON':'GUN';
@@ -3921,7 +3961,7 @@ function surpriseContext(extra){
   for(const t of targets)if(t.alive&&t.primary&&!t.surprise){const d=Math.hypot(P.pos.x-t.group.position.x,P.pos.z-t.group.position.z);if(d<pd){pd=d;primary=t;}}
   const strike=!!m.kills&&Object.keys(m.kills).some(k=>k!=='air'&&k!=='bomber');
   return Object.assign({
-    flying:state===ST.FLIGHT&&P.alive&&!P.onGround&&!launchIntro&&!bailout&&!isFree()&&!isCircuits()&&P.ac!=='me163'&&P.ac!=='fi156'&&!missionOver,
+    flying:state===ST.FLIGHT&&P.alive&&!P.onGround&&!launchIntro&&!bailout&&!isFree()&&!isCircuits()&&P.ac!=='me163'&&P.ac!=='fi156'&&P.ac!=='pby'&&!missionOver,
     hull:P.hull/((P.systemDamage?.maxHull)||100),
     // on the way home to land: leave the player alone
     suppress:(P.rtb&&home<6500)||(!!europeOps&&europeOps.failed),
@@ -5088,7 +5128,7 @@ async function duelCopy(id){
 function duelSendHello(){
   const s=duelSession;if(!s||!duelLink||duelLink.status!=='open')return;
   s.name=Duel.cleanName(dEl('dlName').value)||s.name;
-  duelLink.sendEvent(Duel.hello({name:s.name,ac:s.ac,build:251}));
+  duelLink.sendEvent(Duel.hello({name:s.name,ac:s.ac,build:253}));
 }
 function duelOnStatus(status,info){
   const s=duelSession;if(!s)return;
@@ -5120,6 +5160,7 @@ async function duelPrepare(seed,rules){
   duelStore('re_duelName',s.name);
   show('duelLobby',false);show('loading',true);dEl('loadingText').textContent='Preparing the duel…';
   try{await Promise.all([ensureModel(s.ac),ensureModel(s.opp.ac)]);}catch(err){console.warn('Duel models:',err);}
+  try{if(eng&&!JET_KINDS.includes(s.ac))eng.piston.select(s.ac);}catch(err){console.warn('Duel engine voice:',err);}   // Build 253: the own engine voice is fetched before the first frame, not in it
   if(!duelSession||duelSession!==s||s.phase!=='countdown')return;
   s.readySelf=true;duelLink?.sendEvent({t:'ready'});
   if(s.readyOpp)duelGo();else dEl('loadingText').textContent='Waiting for the other pilot…';
@@ -5293,17 +5334,21 @@ function duelUpdateAvatar(dt,now){
   }
   duelUpdateMarker(av,smp);
 }
+// Build 253: an opponent is marked by a small ARROW that points at him (the red diamonds were too present): on a ring round the crosshair while he is off to the
+// side or behind (pointing the way, flipped when he is behind), a small down arrow above him once he is inside the ring.
+function enemyArrowPlace(pos){
+  const v=pos.clone().project(camera),W=window.innerWidth,H=window.innerHeight,behind=v.z>1,cx=W/2,cy=H*.46,R=Math.min(W,H)*.30;
+  const x=(v.x*.5+.5)*W,y=(1-(v.y*.5+.5))*H;let dx=x-cx,dy=y-cy;if(behind){dx=-dx;dy=-dy;}
+  const len=Math.hypot(dx,dy);
+  if(!behind&&len<R)return {x,y:y-28,ang:180};
+  if(len<1)return {x:cx,y:cy+R,ang:180};
+  return {x:cx+dx/len*R,y:cy+dy/len*R,ang:Math.atan2(dx,-dy)*57.2958};
+}
 function duelUpdateMarker(av,smp){
   const mark=dEl('duelMark');
   if(!duelMatchOn()||!av.shown||!P.alive||state!==ST.FLIGHT){mark.hidden=true;return;}
-  const v=av.pos.clone().project(camera),W=window.innerWidth,H=window.innerHeight,behind=v.z>1;
-  let x=(v.x*.5+.5)*W,y=(1-(v.y*.5+.5))*H;
-  if(behind){x=W-x;y=H-y;}
-  const mx=48,my=48,onScreen=!behind&&x>mx&&x<W-mx&&y>my&&y<H-my;
-  x=Math.max(mx,Math.min(W-mx,x));y=Math.max(my,Math.min(H-my,y));
-  if(!onScreen&&!behind&&Math.abs(v.x)<.05&&Math.abs(v.y)<.05){x=W/2;y=H/2;}
-  const d=av.pos.distanceTo(P.pos),dy=av.pos.y-P.pos.y;
-  mark.hidden=false;mark.style.left=x+'px';mark.style.top=y+'px';
+  const a=enemyArrowPlace(av.pos),d=av.pos.distanceTo(P.pos),dy=av.pos.y-P.pos.y;
+  mark.hidden=false;mark.style.left=a.x+'px';mark.style.top=a.y+'px';mark.firstChild.style.transform='rotate('+a.ang.toFixed(1)+'deg)';
   mark.classList.toggle('prot',av.protect);
   dEl('duelMarkTxt').textContent=(d>=1000?(d/1609.34).toFixed(1)+' mi':Math.round(d*3.281/10)*10+' ft')+(dy>120?' ▲':dy<-120?' ▼':'')+(av.protect?' · PROT':'');
 }
@@ -6004,15 +6049,14 @@ function schraegeCallText(h){
   return 'GROUND CONTROL — BANDIT '+clock+" O'CLOCK "+alt+', '+(d.length()/1609.34).toFixed(1)+' MI';
 }
 function updateNightMarks(run,on){
-  if(!run.marks){run.marks=[];for(let i=0;i<SCHRAEGE.n;i++){const e=document.createElement('div');e.className='nhMark';e.hidden=true;GameRuntime.setHTML(e,'<svg viewBox="0 0 26 26"><path d="M13 2 L24 13 L13 24 L2 13 Z"/></svg><span></span>');document.body.appendChild(e);run.marks.push(e);}}
+  if(!run.marks){run.marks=[];for(let i=0;i<SCHRAEGE.n;i++){const e=document.createElement('div');e.className='nhMark';e.hidden=true;GameRuntime.setHTML(e,'<svg viewBox="0 0 24 24"><path d="M12 2 21 21 12 16.5 3 21Z"/></svg><span></span>');document.body.appendChild(e);run.marks.push(e);}}
   const W=window.innerWidth,H=window.innerHeight;
   run.hunters.forEach((h,i)=>{
     const e=run.marks[i];if(!e)return;
     const p=h.t.group.position,d=p.distanceTo(P.pos);
     if(!on||!h.t.alive||h.falling||d>SCHRAEGE.mark){if(!e.hidden)e.hidden=true;return;}
-    const v=p.clone().project(camera),behind=v.z>1;let x=(v.x*.5+.5)*W,y=(1-(v.y*.5+.5))*H;if(behind){x=W-x;y=H-y;}
-    const mx=44,my=60;x=Math.max(mx,Math.min(W-mx,x));y=Math.max(my,Math.min(H-my,y));
-    e.hidden=false;e.style.left=x+'px';e.style.top=y+'px';
+    const a=enemyArrowPlace(p);
+    e.hidden=false;e.style.left=a.x+'px';e.style.top=a.y+'px';e.firstChild.style.transform='rotate('+a.ang.toFixed(1)+'deg)';
     const dy=p.y-P.pos.y,txt=(d>=1000?(d/1609.34).toFixed(1)+' mi':Math.round(d*3.281/10)*10+' ft')+(dy>120?' ▲':dy<-120?' ▼':'');
     const sp=e.lastChild;if(sp.textContent!==txt)sp.textContent=txt;
   });
@@ -6224,15 +6268,20 @@ function fuelBlast(t){
 // ============================================================
 const STS={lz:{r:62,slope:3,len:190,wid:46,disc:230},stop:280,board:6,runSpeed:9,runMax:20,rescuePts:600,
   zone:{r:520,agl:[25,280],maxSpeed:42,seconds:12,delay:9,shells:7,spread:120,hit:90,pts:300},
-  hunt:{delay:{rescue:5,rock:9,moon:6,spotter:8,rats:22},dist:3300,alt:420},rats:{back:12500,side:5200,agl:60},
-  courier:{dist:11000,side:1900,ceiling:{agl:260,seconds:7}},rock:{r:34,slope:6,along:50,alongSlope:4.5,disc:120,precise:90,bonus:300},moon:{lamps:3,say:'THREE LANTERNS — LAND BESIDE THEM, HE WILL COME TO YOU'}};
+  hunt:{delay:{rescue:5,rock:9,moon:6,spotter:8,rats:22,dumbo:10},dist:3300,alt:420},rats:{back:12500,side:5200,agl:60},
+  courier:{dist:11000,side:1900,ceiling:{agl:260,seconds:7}},rock:{r:34,slope:6,along:50,alongSlope:4.5,disc:120,precise:90,bonus:300},moon:{lamps:3,say:'THREE LANTERNS — LAND BESIDE THEM, HE WILL COME TO YOU'},
+  // Build 252: Dumbo. The dinghy lies on the river; she must alight (wheels UP) and taxi to within `stop` metres, then it comes alongside the right blister hatch at `speed` m/s
+  dumbo:{stop:90,speed:6,runMax:40,near:[14200,15650,3200,1000]},
+  // Build 253: the map shows a SEARCH AREA (ring r metres, the real spot somewhere inside, deterministic per sortie), not the spot; the smoke shows from `smoke` metres
+  search:{r:1150,smoke:3200}};
 let sts=null;
 const stsCache={};
-function stsKind(m){return m&&(m.rescue?'rescue':m.courier?'courier':m.rock?'rock':m.moon?'moon':m.spotter?'spotter':m.rats?'rats':null);}
+function stsKind(m){return m&&(m.dumbo?'dumbo':m.rescue?'rescue':m.courier?'courier':m.rock?'rock':m.moon?'moon':m.spotter?'spotter':m.rats?'rats':null);}
 // the pickup family: land near the marker, the figure runs to the aeroplane and boards, take off again (rescue, courier, rock, moon)
-function stsPickup(k){return k==='rescue'||k==='courier'||k==='rock'||k==='moon';}
+function stsPickup(k){return k==='rescue'||k==='courier'||k==='rock'||k==='moon'||k==='dumbo';}
 function stsDone(){return sts&&sts.kind==='courier'?(sortieKills.courier||0):(sortieKills.rescued||0);}
-const stsWho=k=>k==='courier'?'OFFICER':k==='moon'?'AGENT':k==='rock'?'OBSERVER':'PILOT';
+const stsWho=k=>k==='dumbo'?'AIRMAN':k==='courier'?'OFFICER':k==='moon'?'AGENT':k==='rock'?'OBSERVER':'PILOT';
+const stsY=(x,z)=>sts&&sts.kind==='dumbo'?waterY(x,z):groundY(x,z);   // the dinghy rides on the draped river surface
 // trees are instanced: take the ones inside the meadow out (scale 0), like clearTreesNearAirfield does for the strips
 function stsClearTrees(x,z,halfL,halfW,disc=0){
   if(!osmMgr||!osmMgr.tiles)return 0;
@@ -6255,7 +6304,11 @@ function stsPlan(m){
   // a dry, clear, flat spot near the wanted point; the second try is wider and gentler about the slope; the last resort is the point itself
   const pick=(cx,cz,r0,r1,opt)=>siteSpot(cx,cz,r0,r1,rand,opt)||siteSpot(cx,cz,r1,r1*2.2,rand,{...opt,slope:(opt.slope||4)+2,alongSlope:(opt.alongSlope||5)+1.5})||{x:cx,z:cz};
   const meadow={r:STS.lz.r,slope:STS.lz.slope,along:[STS.lz.r,0],alongSlope:2.5};
-  if(kind==='rescue')plan.lz=pick(hx-7600,hz-2800,0,2200,meadow);
+  if(kind==='dumbo'){   // the best straight, flat stretch of the Rhine near the front; the dinghy lies at its middle
+    const w=STS.dumbo.near,strip=findWaterStrip(w[0],w[1],w[2],w[3])||findWaterStrip(w[0],w[1],w[2]*2,700,1200);
+    plan.lz=strip?{x:strip.x,z:strip.z}:{x:w[0],z:w[1]};plan.strip=strip;
+  }
+  else if(kind==='rescue')plan.lz=pick(hx-7600,hz-2800,0,2200,meadow);
   else if(kind==='courier')plan.lz=pick(hx-STS.courier.dist,hz+STS.courier.side,0,2200,meadow);
   else if(kind==='moon')plan.lz=pick(hx-8300,hz+2300,0,2000,meadow);
   else if(kind==='rock'){   // the highest dry, clear, gentle spot of six tries around the line: a ridge clearing
@@ -6264,27 +6317,48 @@ function stsPlan(m){
     plan.lz=best||pick(hx-7000,hz,0,2500,{...ro,high:false,slope:ro.slope+1,alongSlope:ro.alongSlope+1});}
   else if(kind==='spotter')plan.zones=[[4300,1900],[7700,-1700],[10900,2300]].map(([d,o])=>pick(hx-d,hz-o,0,700,{r:30,slope:8}));
   else if(kind==='rats')plan.start={x:hx-STS.rats.back,z:hz-STS.rats.side};
+  if(stsPickup(kind)&&plan.lz){const a=rand()*Math.PI*2,d=STS.search.r*(.2+.5*rand());plan.search={x:plan.lz.x+Math.cos(a)*d,z:plan.lz.z+Math.sin(a)*d,r:STS.search.r};}
   return stsCache[m.id]=plan;
 }
-function stsHuntCount(){return Math.max(1,2+(diffIdx===2?1:0)-(diffIdx===0?1:0));}
+function stsHuntCount(){return 2+(diffIdx===2?1:0);}   // Build 253: Rookie used to get one fighter (measured: 148 m closest approach, no hit in 150 s - it looked like no attack); its damage is halved by the difficulty anyway
 function stsReset(){
   if(sts){if(sts.fig)scene.remove(sts.fig);for(const l of sts.lamps||[])scene.remove(l);for(const o of sts.disposables||[])o.dispose();}
   sts=null;
+}
+// the figures of the pickup sorties: one shared CrewVisuals person (1.85 m, +Z is the face) in the clothes of the role; stsPose() animates it
+function stsMakeFigure(kind){
+  const allied=P.ac==='pby';
+  const look=kind==='dumbo'?{service:'usaaf',role:'pilot'}:kind==='rescue'?{service:allied?'usaaf':'luftwaffe',role:'pilot'}:
+    kind==='moon'?{service:'luftwaffe',role:'ground',jacketColor:0x34373a}:kind==='courier'?{service:'luftwaffe',role:'ground',jacketColor:0x5e6558}:{service:'luftwaffe',role:'ground'};
+  const person=CrewVisuals.create(THREE,{...look,variant:Math.floor(Math.random()*3)}),group=new THREE.Group(),disposables=[];
+  group.add(person);
+  person.traverse(o=>{if(!o.isMesh)return;disposables.push(o.geometry);for(const mm of Array.isArray(o.material)?o.material:[o.material])if(!disposables.includes(mm))disposables.push(mm);});
+  return {group,person,disposables};
+}
+// waiting: the right arm waves over the head; running: legs and arms swing; boarding: stands still; always faces the aeroplane (the person faces +Z)
+function stsPose(s){
+  const f=s.fig,person=s.person;if(!f||!person||!person.userData.arms)return;
+  const arms=person.userData.arms,legs=person.userData.legs,run=s.phase==='run',wave=s.phase==='fly',w=Math.sin(s.runT*12);
+  const dx=P.pos.x-f.position.x,dz=P.pos.z-f.position.z;if(dx*dx+dz*dz>1)person.rotation.y=Math.atan2(dx,dz);
+  legs[0].rotation.x=run?w*.95:0;legs[1].rotation.x=run?-w*.95:0;
+  arms[0].rotation.x=run?-w*.85:0;arms[0].rotation.z=0;
+  arms[1].rotation.x=run?w*.85:0;arms[1].rotation.z=wave?2.4+Math.sin(s.clock*5.5)*.32:0;
 }
 function stsStart(m){
   stsReset();const kind=stsKind(m);if(!kind)return;
   const plan=stsPlan(m);
   sts={kind,plan,clock:0,said:{},phase:'fly',hunt:null,smokeT:0,fig:null,hold:0,zone:0,shell:null,blasts:[],runT:0,boardT:0,high:0,waves:0,lamps:null};
   if(stsPickup(kind)){
-    const lz=plan.lz;stsClearTrees(lz.x,lz.z,STS.lz.len+70,STS.lz.wid+10,kind==='rock'?STS.rock.disc:STS.lz.disc);   // Build 250: a disc as well - the approach may come from any side
+    const lz=plan.lz;if(kind!=='dumbo')stsClearTrees(lz.x,lz.z,STS.lz.len+70,STS.lz.wid+10,kind==='rock'?STS.rock.disc:STS.lz.disc);   // Build 250: a disc as well - the approach may come from any side
     if(stsDone()>=1)sts.phase='home';
     else{
-      // the pilot: a small figure at the edge of the meadow
-      const body=new THREE.Mesh(new THREE.CylinderGeometry(.26,.3,1.2,6),new THREE.MeshLambertMaterial({color:0x6b6e5a})),
-        head=new THREE.Mesh(new THREE.SphereGeometry(.2,8,6),new THREE.MeshLambertMaterial({color:0xd0a37c}));
-      body.position.y=.6;head.position.y=1.42;sts.fig=new THREE.Group();sts.fig.add(body,head);scene.add(sts.fig);
-      sts.disposables=[body.geometry,head.geometry,body.material,head.material];
-      sts.figPos={x:lz.x+10,z:lz.z+34};sts.fig.position.set(sts.figPos.x,groundY(sts.figPos.x,sts.figPos.z),sts.figPos.z);
+      // the person waiting at the edge of the meadow (Build 253: a real figure of the shared CrewVisuals set - jacket, face, helmet or cap, boots - not a cylinder with a ball; it waves, runs and turns to the aeroplane)
+      const made=stsMakeFigure(kind);sts.fig=made.group;sts.person=made.person;sts.disposables=made.disposables;scene.add(sts.fig);
+      if(kind==='dumbo'){   // a yellow rubber dinghy under the airman
+        const ring=new THREE.Mesh(new THREE.CylinderGeometry(1.25,1.35,.34,14),new THREE.MeshLambertMaterial({color:0xe6c029}));ring.position.y=.12;sts.fig.add(ring);sts.disposables.push(ring.geometry,ring.material);
+        sts.person.position.y=.2;
+      }
+      sts.figPos=kind==='dumbo'?{x:lz.x,z:lz.z}:{x:lz.x+10,z:lz.z+34};sts.fig.position.set(sts.figPos.x,stsY(sts.figPos.x,sts.figPos.z),sts.figPos.z);
       if(kind==='moon'){   // three lanterns in a row beside him (additive glow sprites, flickering)
         const tex=makeSoftSprite();sts.lamps=[];sts.disposables.push(tex);
         for(let i=0;i<STS.moon.lamps;i++){const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,color:0xffd48a,blending:THREE.AdditiveBlending,transparent:true,depthWrite:false,opacity:.95}));
@@ -6294,11 +6368,12 @@ function stsStart(m){
   }else if(kind==='spotter')sts.zone=Math.min(plan.zones.length,sortieKills.zone||0);
 }
 function stsSpawnHunters(n){
-  const first=enemyAir.length;spawnEnemyAir(n,'p47');
-  // they come from the enemy side: behind the aeroplane, seen from the strip
-  const hx=GERMAN_AF_X-P.pos.x,hz=GERMAN_AF_Z-P.pos.z,hl=Math.hypot(hx,hz)||1,fx=hx/hl,fz=hz/hl;
+  const allied=P.ac==='pby',first=enemyAir.length;spawnEnemyAir(n,allied?'bf109':'p47');
+  // they come from the enemy side: behind the aeroplane, seen from its own strip (Build 252: the Catalina's is Beaufort, the hunters are Messerschmitts)
+  const hx=(allied?ALLIED_AF_X:GERMAN_AF_X)-P.pos.x,hz=(allied?ALLIED_AF_Z:GERMAN_AF_Z)-P.pos.z,hl=Math.hypot(hx,hz)||1,fx=hx/hl,fz=hz/hl;
   enemyAir.slice(first).forEach((e,i)=>{
     e.surprise=true;e.escapeThreat=true;e.sortie=true;   // not part of the objective: they do not hold up the return
+    if(typeof DogfightAI!=='undefined')e.tac=DogfightAI.create({kind:e.kind,skill:Math.max(.55,Math.min(.95,enemySkill()+(Math.random()-.5)*.12)),aggression:.85,rng:Math.random});   // Build 253: hunters press the attack on every difficulty
     const off=(i-(n-1)/2)*320,back=STS.hunt.dist+i*150;
     e.pos.set(P.pos.x-fx*back-fz*off,0,P.pos.z-fz*back+fx*off);interiorAirPosition(e.pos,1500);
     e.pos.y=Math.max(groundY(e.pos.x,e.pos.z)+380,Math.min(flightAltitudeLimit()-450,P.pos.y+STS.hunt.alt));
@@ -6310,7 +6385,7 @@ function stsAboard(s){
   if(s.kind==='courier'){sortieKills.courier=1;addScore(STS.rescuePts);radioSay('ANSWER ABOARD — HOME UNDER THE CLOUDS, THEY ARE STILL UP THERE');flash('ANSWER ABOARD — TAKE OFF AND STAY LOW',2600);}
   else{
     sortieKills.rescued=1;addScore(STS.rescuePts);
-    radioSay(s.kind==='moon'?'AGENT ABOARD — GET HIM HOME. INTRUDERS ARE COMING':s.kind==='rock'?'OBSERVER ABOARD — DOWNHILL AND AWAY. FIGHTERS ARE COMING':'PILOT ABOARD — GET HIM HOME. FIGHTERS ARE COMING');
+    radioSay(s.kind==='dumbo'?'AIRMAN ABOARD — HATCH CLOSED. GET HIM HOME. FIGHTERS ARE COMING':s.kind==='moon'?'AGENT ABOARD — GET HIM HOME. INTRUDERS ARE COMING':s.kind==='rock'?'OBSERVER ABOARD — DOWNHILL AND AWAY. FIGHTERS ARE COMING':'PILOT ABOARD — GET HIM HOME. FIGHTERS ARE COMING');
     flash(stsWho(s.kind)+' ABOARD — TAKE OFF AND STAY LOW',2600);
     s.hunt={n:stsHuntCount(),t:STS.hunt.delay[s.kind]||STS.hunt.delay.rescue};
   }
@@ -6319,36 +6394,50 @@ function stsAboard(s){
 // the landing roll ended: stopped near the smoke = the pickup begins (the sortie goes on); anywhere else the landing ends it as usual
 function stsGroundStop(){
   const s=sts;if(!s||!stsPickup(s.kind)||!s.fig||stsDone()>=1||!P.alive)return false;
-  const fp=s.fig.position,dd=Math.hypot(P.pos.x-fp.x,P.pos.z-fp.z);if(dd>STS.stop)return false;   // Build 250: near the pilot, not near the meadow's middle
+  const fp=s.fig.position,dd=Math.hypot(P.pos.x-fp.x,P.pos.z-fp.z);if(dd>STS.stop&&!(s.kind==='dumbo'&&P.onWater))return false;   // Build 250: near the pilot, not near the meadow's middle (Build 252: afloat on the Dumbo river she may lie anywhere and taxi up)
   P.spd=0;P.landingRoll=null;P.throttle=0;setThrottleUI(0);P.groundPower=0;
-  s.phase='run';s.runT=0;s.boardT=0;s.runFrom={x:s.fig.position.x,z:s.fig.position.z};
-  s.runDur=Math.min(STS.runMax,Math.max(2.5,Math.hypot(P.pos.x-s.runFrom.x,P.pos.z-s.runFrom.z)/STS.runSpeed));
-  if(s.kind==='rock'&&dd<=STS.rock.precise){addScore(STS.rock.bonus);radioSay('PRECISION LANDING — WELL DONE');}
-  radioSay(stsWho(s.kind)+' RUNNING TO YOU — HOLD STILL');flash(s.kind==='rock'?'DOWN ON THE RIDGE — THE OBSERVER IS COMING':s.kind==='courier'?'DOWN AT THE COMMAND POST — THE OFFICER IS COMING':'DOWN IN THE MEADOW — THE '+stsWho(s.kind)+' IS COMING',2400);
+  if(s.kind==='dumbo'&&dd>STS.dumbo.stop){flash('ON THE RIVER — TAXI UP TO THE DINGHY',2400);radioSay('YELLOW SMOKE — TAXI UP TO THE DINGHY, WITHIN '+STS.dumbo.stop+' METRES');return true;}
+  stsBeginPickup(s,dd);
   return true;
 }
+// the pickup begins: the figure (or the dinghy) comes alongside
+function stsBeginPickup(s,dd){
+  s.phase='run';s.runT=0;s.boardT=0;s.runFrom={x:s.fig.position.x,z:s.fig.position.z};
+  s.runDur=Math.min(s.kind==='dumbo'?STS.dumbo.runMax:STS.runMax,Math.max(2.5,Math.hypot(P.pos.x-s.runFrom.x,P.pos.z-s.runFrom.z)/(s.kind==='dumbo'?STS.dumbo.speed:STS.runSpeed)));
+  if(s.kind==='rock'&&dd<=STS.rock.precise){addScore(STS.rock.bonus);radioSay('PRECISION LANDING — WELL DONE');}
+  radioSay(s.kind==='dumbo'?'THE DINGHY IS COMING ALONGSIDE — HOLD STILL':stsWho(s.kind)+' RUNNING TO YOU — HOLD STILL');flash(s.kind==='dumbo'?'DINGHY ALONGSIDE — HOLD STILL, THE HATCH IS OPEN':s.kind==='rock'?'DOWN ON THE RIDGE — THE OBSERVER IS COMING':s.kind==='courier'?'DOWN AT THE COMMAND POST — THE OFFICER IS COMING':'DOWN IN THE MEADOW — THE '+stsWho(s.kind)+' IS COMING',2400);
+  return true;
+}
+// where the figure waits beside the aeroplane: the Storch's door side, or the Catalina's right waist hatch (the dinghy comes alongside, 4.5 m out and 3.6 m aft of the origin)
+function stsSide(){
+  if(sts&&sts.kind==='dumbo')return {x:Math.cos(P.heading)*4.5-Math.sin(P.heading)*3.6,z:-Math.sin(P.heading)*4.5-Math.cos(P.heading)*3.6};
+  return {x:-Math.cos(P.heading)*1.9,z:Math.sin(P.heading)*1.9};
+}
 function stsRescue(dt){
-  const s=sts,lz=s.plan.lz,d=Math.hypot(P.pos.x-lz.x,P.pos.z-lz.z),gy=groundY(lz.x,lz.z),f=s.fig;
+  const s=sts,lz=s.plan.lz,d=Math.hypot(P.pos.x-lz.x,P.pos.z-lz.z),gy=stsY(lz.x,lz.z),f=s.fig,dumbo=s.kind==='dumbo';
   if(s.phase==='home'||!f)return;
   s.smokeT-=dt;
-  if(s.kind!=='moon'&&s.smokeT<=0&&d<6500){s.smokeT=.3;spawnSmoke(lz.x+(Math.random()-.5)*3,gy+1.2,lz.z+34+(Math.random()-.5)*3,s.kind==='courier'?0xe8862a:0xe3c23a,1.05);}
+  if(s.kind!=='moon'&&s.smokeT<=0&&d<STS.search.smoke){s.smokeT=.3;spawnSmoke(lz.x+(Math.random()-.5)*3,gy+1.2,lz.z+(dumbo?0:34)+(Math.random()-.5)*3,s.kind==='courier'?0xe8862a:0xe3c23a,1.05);}
+  // Dumbo: stopped on the water and close enough to the dinghy = the pickup begins (taxiing is free; the landing roll's end only started it when she stopped near)
+  if(dumbo&&s.phase==='fly'&&P.onGround&&P.onWater&&!P.landingRoll&&P.spd<1.2){const fp=f.position,dd=Math.hypot(P.pos.x-fp.x,P.pos.z-fp.z);if(dd<=STS.dumbo.stop)stsBeginPickup(s,dd);}
   if(s.lamps)s.lamps.forEach((l,i)=>{l.material.opacity=.78+.22*Math.sin(s.clock*7+i*2.1);});
-  if(!s.said.near&&d<1900){s.said.near=1;radioSay(s.kind==='moon'?STS.moon.say:s.kind==='rock'?'THE RIDGE CLEARING — SHORT AND STEEP. LAND UPHILL, STOP NEAR THE SMOKE':s.kind==='courier'?'ORANGE SMOKE — THE COMMAND POST. SET DOWN NEAR IT, THE OFFICER WILL COME TO YOU':'THAT IS THE MEADOW — YELLOW SMOKE. SET DOWN NEAR IT, HE WILL COME TO YOU');}
+  if(!s.said.near&&d<1900){s.said.near=1;radioSay(s.kind==='dumbo'?'YELLOW SMOKE ON THE RIVER — THAT IS THE DINGHY. WHEELS UP, ALIGHT ALONG THE STREAM, THEN TAXI UP TO IT':s.kind==='moon'?STS.moon.say:s.kind==='rock'?'THE RIDGE CLEARING — SHORT AND STEEP. LAND UPHILL, STOP NEAR THE SMOKE':s.kind==='courier'?'ORANGE SMOKE — THE COMMAND POST. SET DOWN NEAR IT, THE OFFICER WILL COME TO YOU':'THAT IS THE MEADOW — YELLOW SMOKE. SET DOWN NEAR IT, HE WILL COME TO YOU');}
   f.visible=true;
-  if(s.phase==='fly'){f.position.set(s.figPos.x,groundY(s.figPos.x,s.figPos.z)+Math.abs(Math.sin(s.clock*3.2))*.22,s.figPos.z);}
+  if(s.phase==='fly'){f.position.set(s.figPos.x,stsY(s.figPos.x,s.figPos.z)+(dumbo?Math.sin(s.clock*1.3)*.12:0),s.figPos.z);}
   else if(s.phase==='run'){
-    s.runT+=dt;const k=Math.min(1,s.runT/s.runDur),tx=P.pos.x-Math.cos(P.heading)*1.9,tz=P.pos.z+Math.sin(P.heading)*1.9;
+    s.runT+=dt;const k=Math.min(1,s.runT/s.runDur),side=stsSide(),tx=P.pos.x+side.x,tz=P.pos.z+side.z;
     const px=s.runFrom.x+(tx-s.runFrom.x)*k,pz=s.runFrom.z+(tz-s.runFrom.z)*k;
-    f.position.set(px,groundY(px,pz)+Math.abs(Math.sin(s.runT*9))*.18,pz);
+    f.position.set(px,stsY(px,pz)+(dumbo?Math.sin(s.runT*2.4)*.1:Math.abs(Math.sin(s.runT*12))*.06),pz);
     if(k>=1){s.phase='board';s.boardT=0;}
   }else if(s.phase==='board'){
     s.boardT+=dt;
-    f.position.set(P.pos.x-Math.cos(P.heading)*1.9,groundY(P.pos.x,P.pos.z),P.pos.z+Math.sin(P.heading)*1.9);
+    {const side=stsSide();f.position.set(P.pos.x+side.x,stsY(P.pos.x+side.x,P.pos.z+side.z),P.pos.z+side.z);}
     if(P.spd>2.5&&s.boardT<STS.board){s.boardT=0;if(!s.said.still){s.said.still=1;radioSay('HOLD STILL — HE IS NOT IN YET');}}
     if(s.boardT>=STS.board)stsAboard(s);
   }
   // took off without him (or was driven off): the pilot waits at his place again
   if((s.phase==='run'||s.phase==='board')&&!P.onGround&&d>260){s.phase='fly';s.runT=0;s.boardT=0;}
+  stsPose(s);
 }
 function stsBarrage(z){
   for(let k=0;k<STS.zone.shells;k++){
@@ -6414,10 +6503,11 @@ function stsObjectiveText(){
   const bandits=enemyAir.filter(e=>e.alive&&e.sortie).length,b=bandits?'   BANDITS '+bandits:'';
   if(stsPickup(s.kind)){
     const who=stsWho(s.kind);
-    if(stsDone())return (s.kind==='courier'?'ANSWER':who)+' ABOARD — LAND AT FORWARD STRIP'+b;
-    if(s.phase==='run')return who+' RUNNING — HOLD STILL';
+    if(stsDone())return (s.kind==='courier'?'ANSWER':who)+' ABOARD — LAND AT '+(s.kind==='dumbo'?'BEAUFORT':'FORWARD STRIP')+b;
+    if(s.phase==='run')return s.kind==='dumbo'?'DINGHY ALONGSIDE — HOLD STILL':who+' RUNNING — HOLD STILL';
     if(s.phase==='board')return (s.kind==='courier'?'HANDOVER ':who+' BOARDING ')+Math.max(0,Math.ceil(STS.board-s.boardT))+' s';
     return s.kind==='courier'?'UNDER THE CLOUDS TO THE ORANGE SMOKE (MAP)'+(s.high>0?'   ABOVE CLOUD BASE '+Math.ceil(STS.courier.ceiling.seconds-s.high)+' s':'')
+      :s.kind==='dumbo'?(P.onWater&&P.onGround?'TAXI UP TO THE DINGHY — WITHIN '+STS.dumbo.stop+' m (MAP)':'ALIGHT ON THE RIVER — WHEELS UP — YELLOW SMOKE (MAP)')
       :s.kind==='rock'?'LAND ON THE RIDGE — SHORT AND SLOPING (MAP)':s.kind==='moon'?'LAND BESIDE THE THREE LANTERNS (MAP)':'LAND IN THE MEADOW — YELLOW SMOKE (MAP)';
   }
   if(s.kind==='spotter'){
@@ -6427,23 +6517,29 @@ function stsObjectiveText(){
   return 'ESCAPE — LAND AT FORWARD STRIP'+(b||'   STAY LOW');
 }
 function stsRtbText(m){
-  return m.rescue?{radio:'RESCUE COMPLETE — LAND AT THE FORWARD STRIP',flash:'PILOT ABOARD — RTB'}
+  return m.dumbo?{radio:'THE AIRMAN IS ABOARD — HOME TO BEAUFORT. WHEELS DOWN FOR THE STRIP',flash:'AIRMAN ABOARD — RTB'}
+    :m.rescue?{radio:'RESCUE COMPLETE — LAND AT THE FORWARD STRIP',flash:'PILOT ABOARD — RTB'}
     :m.courier?{radio:'THE ANSWER IS ABOARD — STAY UNDER THE CLOUDS, LAND AT THE FORWARD STRIP',flash:'ANSWER ABOARD — RTB'}
     :m.rock?{radio:'OBSERVER ABOARD — HOME TO THE FORWARD STRIP',flash:'OBSERVER ABOARD — RTB'}
     :m.moon?{radio:'AGENT ABOARD — HOME TO THE FORWARD STRIP, NO LIGHTS',flash:'AGENT ABOARD — RTB'}
     :m.spotter?{radio:'ALL THREE ZONES FIRED ON — HOME TO THE FORWARD STRIP',flash:'FIRE MISSION DONE — RTB'}
     :m.rats?{radio:'KEEP IT LOW — THE STRIP IS AHEAD',flash:'ESCAPE — RTB'}:null;
 }
+const stsCue=k=>k==='dumbo'?'a yellow smoke marker on the river, a dinghy':k==='courier'?'orange smoke at the command post':k==='rock'?'yellow smoke on a ridge clearing':k==='moon'?'three lanterns in a dark meadow':'yellow smoke on a meadow';
+const stsCardinal=a=>['N','NE','E','SE','S','SW','W','NW'][Math.round((((a*R2D)%360)+360)%360/45)%8];
 function stsBriefPoints(m){
   const p=stsPlan(m),out=[];
-  if(p.lz)out.push({x:p.lz.x,z:p.lz.z,label:p.kind==='courier'?'Command post, orange smoke — officer waiting':p.kind==='rock'?'Ridge clearing, yellow smoke — observer waiting':p.kind==='moon'?'Dark meadow, three lanterns — agent waiting':'Meadow, yellow smoke — pilot waiting'});
+  if(p.search){
+    const b=isGermanMission(m)?{x:GERMAN_AF_X,z:GERMAN_AF_Z}:{x:ALLIED_AF_X,z:ALLIED_AF_Z},dx=p.search.x-b.x,dz=p.search.z-b.z,brg=Math.atan2(dx,dz);
+    out.push({x:p.search.x,z:p.search.z,radius:p.search.r,label:'Search area, about '+(Math.hypot(dx,dz)/1000).toFixed(0)+' km '+stsCardinal(brg)+' of the strip, course '+String(Math.round((((brg*R2D)%360)+360)%360)).padStart(3,'0')+' deg - find '+stsCue(p.kind)});
+  }
   (p.zones||[]).forEach((z,i)=>out.push({x:z.x,z:z.z,label:'Observation zone '+(i+1)}));
   if(p.start)out.push({x:p.start.x,z:p.start.z,label:'Start: deep behind the line'});
   return out;
 }
 function stsMapMarks(){
   const s=sts;if(!s)return [];
-  if(stsPickup(s.kind)&&s.phase!=='home')return [{x:s.plan.lz.x,z:s.plan.lz.z,r:90,color:s.kind==='courier'?'#e8862a':s.kind==='moon'?'#ffd48a':'#e8c43a',label:s.kind==='courier'?'COMMAND POST — ORANGE SMOKE':s.kind==='rock'?'RIDGE — YELLOW SMOKE':s.kind==='moon'?'THREE LANTERNS':'MEADOW — YELLOW SMOKE'}];
+  if(stsPickup(s.kind)&&s.phase==='fly'&&s.plan.search)return [{x:s.plan.search.x,z:s.plan.search.z,r:s.plan.search.r,color:s.kind==='courier'?'#e8862a':s.kind==='moon'?'#ffd48a':'#e8c43a',kind:'SEARCH',label:'SEARCH AREA — LOOK FOR '+(s.kind==='moon'?'THE LANTERNS':s.kind==='dumbo'?'THE YELLOW SMOKE':'THE '+(s.kind==='courier'?'ORANGE':'YELLOW')+' SMOKE')}];
   if(s.kind==='spotter'&&s.zone<s.plan.zones.length){const z=s.plan.zones[s.zone];return [{x:z.x,z:z.z,r:STS.zone.r,color:'#80c9df',label:'ZONE '+(s.zone+1)+' — BLUE CIRCLE'}];}
   return [];
 }
@@ -6592,7 +6688,7 @@ globalThis.FlightCoreEnabled=Core.on;
 // Called without: is the PLAYER on the core right now - REALISTIC always, ARCADE only with ?arcade=core / ?arcade=off.
 function coreAvail(kind){return Core.on&&FlightCore.has(kind);}
 // Build 249: the Storch is core-only (the classic arcade model floors its speed at 32 m/s and was never built for a 14-50 m/s aircraft)
-const CORE_ONLY=['fi156'];
+const CORE_ONLY=['fi156','pby'];
 function coreOn(kind){return kind===undefined?coreAvail(P.ac)&&(aeroMode||!Core.classic||CORE_ONLY.includes(P.ac)):coreAvail(kind);}
 globalThis.PlayerFlightCore=()=>coreOn();
 // Hangar airborne start on the core: 1.5x the live clean 1-g stall at the start height (mass with the chosen
@@ -6600,11 +6696,17 @@ globalThis.PlayerFlightCore=()=>coreOn();
 function coreAirStart(height,legacy){if(!coreOn())return legacy;const m=FlightCore.model(P.ac);
   return Math.max(legacy,1.5*FlightCore.stallSpeed(m,height,FlightCore.loadout(m,SortieFeatures.Handling.coreLoadout(P)).ratio,0));}
 function coreLoadout(){return {fuel:P.fuel,bombs:P.bombs,rockets:P.rockets,tankAttached:P.tankAttached,tankFuel:P.tankFuel,tankCapacity:P.tankCapacity};}
+// Build 253: a light STOL type (the Storch) must not leap into the air: after the lift-off the nose-up command is held to 14 deg and opens with the speed
+// (the departure envelope's release: 0 at 1.12 x stall, 1 at 30 m/s), so the climb-out is a climb, not a jump. Everything else: the type's own limit.
+function stolPitchScale(d,departure){
+  const full=d.pitchLim*.92;if(P.ac!=='fi156')return full;
+  const r=Math.max(0,Math.min(1,departure?.release??1));return .25+(full-.25)*r*r*(3-2*r);
+}
 function coreEnv(controls,departure,configuration){
   const d=acDef();
   return {kind:P.ac,convention:'rhine',stickRoll:inputRoll*steerSign,stickPitch:inputPitch,aero:aeroMode,
     throttle:(P.fuel??100)<=0?0:P.throttle,damage:SortieFeatures.Damage.power(P),brakes:P.ac==='ju87'?P.diveBrakeVisual||0:0,
-    gain:Core.gain,arcade:Core.arcade,controls,configuration,departure,loadout:coreLoadout(),d,rollFrac:.86,pitchBase:3.6,pullAssist:.6,pitchScale:d.pitchLim*.92,
+    gain:Core.gain,arcade:Core.arcade,controls,configuration,departure,loadout:coreLoadout(),d,rollFrac:.86,pitchBase:d.pitchBase??3.6,pullAssist:d.pullAssist??.6,pitchScale:stolPitchScale(d,departure),
     hullFactor:(P.hull<d.hull*0.6)?(0.55+0.45*P.hull/(d.hull*0.6)):1.0};
 }
 // Inverse for the current state (the stick that holds a given bank, e.g. against damage).
@@ -6658,6 +6760,7 @@ function updateFlight(dt){
   P.diveBrakeVisual+=(Number(P.ac==='ju87'&&P.diveBrake)-P.diveBrakeVisual)*Math.min(1,dt*5);
   if(FIXED_GEAR.includes(P.ac))P.gearTgt=1; // the Stuka's and the Storch's wheels stay down
   P.gear+=Math.sign(P.gearTgt-P.gear)*Math.min(Math.abs(P.gearTgt-P.gear),dt*0.55);
+  if(NO_FLAPS.includes(P.ac))P.flapTgt=0;
   P.flap+=Math.sign(P.flapTgt-P.flap)*Math.min(Math.abs(P.flapTgt-P.flap),dt*0.7);
   const load=SortieFeatures.Handling.sample(P),controls=SortieFeatures.Damage.controls(P);
   const speeds=SortieFeatures.Handling.speeds(P,d.stall,d.app);
@@ -6671,11 +6774,19 @@ function updateFlight(dt){
     // Core: rotate at 1.1 x the live stall (mass, flaps, damage), the usual 1.1 Vs rule.
     const vr=coreOn()?speeds.stall*1.1:(P.ac==='p47'?speeds.stall:d.stall*load.speed+controls.stallPenalty)*1.12;
     let ground=null;
-    if(coreOn())ground=coreGround(dt,{vr,brake:P.throttle<.05?1:0,rotated:Math.min(1,(P.takeoffRotation||0)/.063)});
+    // Build 252: the Catalina on the river runs on the hull (see WATER): wheels up, hydrodynamic resistance, no wheel brakes
+    const wet=P.ac==='pby'&&waterAt(P.pos.x,P.pos.z);
+    if(wet!==!!P.onWater){
+      if(!wet&&P.gear<.6){crash('BEACHED','Ran up the bank on the hull. Wheels down for the land.');return;}
+      P.onWater=wet;
+    }
+    if(wet&&P.gear>.35){crash('GEAR DOWN ON THE WATER','The wheels dug in and the boat went over on her nose. Wheels up for the water.');return;}
+    if(wet)ground=coreGround(dt,{vr,belly:true,mu:waterMu(P.spd/vr),brake:0,rotated:Math.min(1,(P.takeoffRotation||0)/.063)});
+    else if(coreOn())ground=coreGround(dt,{vr,brake:P.throttle<.05?1:0,rotated:Math.min(1,(P.takeoffRotation||0)/.063)});
     else GroundRun.step(P,dt,{jet:P.ac==='me262',power:SortieFeatures.Damage.power(P),massRatio:load.ratio,acceleration:FlightDynamics.profile(P.ac).ground});
     if(typeof fieldServicePending!=="undefined"&&fieldServicePending&&P.spd<1){beginFieldService();return;}
     // steer with the stick's roll axis, tailwheel style — same sense as in the air
-    P.heading += inputRoll*steerSign*Math.min(1,P.spd/40)*0.9*dt;
+    P.heading += inputRoll*steerSign*(wet?Math.min(1,.28+P.spd/14)*.5:Math.min(1,P.spd/40)*0.9)*dt;   // on the water the rudders and the engines turn her at a crawl too
     P.roll*=Math.max(0,1-3*dt); P.pitch*=Math.max(0,1-3*dt);
     P.rollVel=0; P.pitchVel=0; P.nLoad=1; P.pitchRef=null;   // wheels down: no airborne rotational inertia carries over
     P.coreStall=0; P.coreDrop=0;                             // nor a stalled wing
@@ -6688,14 +6799,15 @@ function updateFlight(dt){
     P.pos.z+=Math.cos(P.heading)*P.spd*dt;
     clampToWorldBounds();
     P.groundPose=null;
-    if(typeof playerModel!=='undefined'&&playerModel&&typeof AircraftGround!=='undefined'){
+    if(wet){P.pos.y=waterRideY(P.pos.x,P.pos.z,P.spd/vr);P.pitch=.03+(P.takeoffRotation||0);}
+    else if(typeof playerModel!=='undefined'&&playerModel&&typeof AircraftGround!=='undefined'){
       P.groundPose=AircraftGround.departureFit(playerModel,P.ac,P.pos.x,P.pos.z,P.heading,
         (x,z)=>AircraftGround.height(terrain,x,z),P.spd/vr,P.takeoffRotation);
       if(P.groundPose)P.pos.y=P.groundPose.y;
     }
     // Core: she leaves the ground when the rotated wing actually carries her weight.
-    if((ground?ground.liftoff:P.spd>vr)&&inputPitch>.15&&P.takeoffRotation>.045&&P.gear>.5){
-      P.onGround=false;
+    if((ground?ground.liftoff:P.spd>vr)&&inputPitch>.15&&P.takeoffRotation>.045&&(wet?P.gear<.5:P.gear>.5)){
+      P.onGround=false;P.onWater=false;
       P.pitch=P.groundPose?Math.asin(Math.max(-1,Math.min(1,new THREE.Vector3(0,0,1).applyQuaternion(P.groundPose.quaternion).y))):.07;
       P.vSpeed=0;SortieFeatures.Handling.beginDeparture(P);
       P.groundPose=null;
@@ -6703,7 +6815,7 @@ function updateFlight(dt){
     }
     // running off the strip at speed wrecks the undercarriage
     const offRwy=Math.abs(P.pos.x-AF_X)>RWY_LEN/2 || Math.abs(P.pos.z-AF_Z)>RWY_W/2;
-    if(offRwy && P.spd>46){ crash('GROUND LOOP','Ran off the strip and dug a wingtip in.'); }
+    if(offRwy && P.spd>46 && !wet){ crash('GROUND LOOP','Ran off the strip and dug a wingtip in.'); }
     return;
   }
   // ---- airborne ----
@@ -6841,7 +6953,7 @@ function updateFlight(dt){
   // integrate
   const cp=Math.cos(P.pitch);
   // Crosswind changes the ground track, not the direction of the aircraft's nose.
-  P.pos.x += (Math.sin(P.heading)*cp*P.spd+windZ)*dt;
+  P.pos.x += (Math.sin(P.heading)*cp*P.spd+windZ*(d.windK??1))*dt;   // Build 253: light and slow types feel only part of the wind (the Storch crabbed 20 degrees across the valley)
   P.pos.z += Math.cos(P.heading)*cp*P.spd*dt;
   P.pos.y += vs*dt;
   // Aircraft limit is independent of cloud base/top. Jets can get above the stream.
@@ -6907,7 +7019,66 @@ function buildEuropeTreeIndex(){
  // Only the player's current tile is indexed; the full region contains 650k tree stems.
  europeTrees.focus(AF_X,AF_Z);
 }
+// ============================================================
+//  Build 252: the Catalina on water. The Rhine (the OSM water polygons, livingWorld._pointOnWater) is a landing and take-off run for the boat:
+//  hull on the design waterline, wheels UP, wing-tip floats out. The wheels are for the strips. Water takes the place of the ground in the
+//  touch-down check (resolveWater), the landing roll (updateLandingRoll, run.water) and the take-off (updateFlight): the same core forces with a
+//  hydrodynamic resistance, a hump near half the take-off speed (C: base .032 W, hump +.09 W), water rudders and engines that steer at a crawl.
+// ============================================================
+const WATER={lift:.9,keel:.84,mu:{base:.032,hump:.09,at:.5,width:.2},sink:{ok:4.5,hard:6.5},over:14,pitch:{min:-.14,max:.40}};   // the core's attitude IS the flight path (a 3 degree glide reads -.05): nose-first only beyond about 8 degrees down
+const waterAt=(x,z)=>typeof livingWorld!=='undefined'&&!!livingWorld&&livingWorld._pointOnWater(x,z);
+function waterY(x,z){return groundY(x,z)+WATER.lift;}
+// usable water run from (x0,z0) along hdg: wet at the centre and abeam (+-half), a gently sloping draped surface (the Rhine DEM climbs about 10 m per km here:
+// at most 1.5 m between two 25 m steps and 20 m in all); metres in 25 m steps
+function waterRun(x0,z0,hdg,len,half=40){
+  const sx=Math.sin(hdg),sz=Math.cos(hdg),rx=Math.cos(hdg),rz=-Math.sin(hdg),y0=waterY(x0,z0);let n=0,prev=y0;
+  for(let d=0;d<=len;d+=25){const x=x0+sx*d,z=z0+sz*d,y=waterY(x,z);
+    if(!waterAt(x,z)||!waterAt(x+rx*half,z+rz*half)||!waterAt(x-rx*half,z-rz*half)||Math.abs(y-prev)>1.5||Math.abs(y-y0)>20)break;n=d;prev=y;}
+  return n;
+}
+// the best straight water strip near (cx,cz) along the traced Rhine: {x,z,heading,len} with (x,z) the centre; null when none reaches minLen
+function findWaterStrip(cx,cz,radius,minLen,run=1800){
+  const route=livingWorld&&livingWorld.routes.water&&livingWorld.routes.water[0];if(!route)return null;
+  let best=null;
+  const pts=route.points;
+  for(let i=0;i<pts.length-1;i++){
+    const [px,pz]=pts[i];if(Math.hypot(px-cx,pz-cz)>radius)continue;
+    const [qx,qz]=pts[i+1],base=Math.atan2(qx-px,qz-pz);
+    for(const h of [base,base+Math.PI]){
+      const len=waterRun(px,pz,h,run);if(len<minLen)continue;
+      const score=len-Math.hypot(px-cx,pz-cz)*.15;
+      if(!best||score>best.score)best={score,x:px+Math.sin(h)*len/2,z:pz+Math.cos(h)*len/2,heading:h,len};
+    }
+  }
+  return best;
+}
+function waterMu(ratio){return WATER.mu.base+WATER.mu.hump*Math.exp(-(((ratio-WATER.mu.at)/WATER.mu.width)**2));}
+let waterlineCache=null;
+function waterlineOffset(){   // the model's design waterline in the aircraft frame (the origin is the model's bounding-box centre)
+  if(waterlineCache&&waterlineCache.model===playerModel)return waterlineCache.y;
+  let y=-1.4;
+  if(playerModel){let node=null;playerModel.traverse(n=>{if(!node&&n.userData.waterlineY!==undefined)node=n;});
+    if(node){planeGroup.updateWorldMatrix(true,true);const v=new THREE.Vector3().setFromMatrixPosition(node.matrixWorld);planeGroup.worldToLocal(v);y=v.y;}}
+  waterlineCache={model:playerModel,y};return y;
+}
+// where the aircraft origin sits while she floats or runs on the water (planing lifts the hull a little)
+function waterRideY(x,z,speedRatio){const lift=.30*THREE.MathUtils.smoothstep(speedRatio,.3,.9);return waterY(x,z)-waterlineOffset()+lift;}
+function resolveWater(dt){
+  const wy=waterY(P.pos.x,P.pos.z),keel=P.pos.y+waterlineOffset()-WATER.keel,agl=keel-wy;
+  if(agl>.05){P.touchResolved=false;return;}
+  if(P.touchResolved)return;P.touchResolved=true;
+  const sink=-P.vSpeed,ref=SortieFeatures.Handling.speeds(P,acDef().stall,acDef().app).reference;
+  if(P.gear>.35){crash('GEAR DOWN ON THE WATER','The wheels dug in and the boat went over on her nose. Wheels up for the water.');return;}
+  if(P.spd>ref+WATER.over){crash('TOO FAST','Hit the water too fast — the hull broke up.');return;}
+  if(P.pitch<WATER.pitch.min){crash('NOSE FIRST','The bow dug in.');return;}
+  if(P.pitch>WATER.pitch.max){crash('TAIL FIRST','Stalled onto the water tail first.');return;}
+  if(Math.abs(P.roll)>.3){crash('FLOAT DUG IN','A wing-tip float caught the water and she cartwheeled.');return;}
+  if(sink>WATER.sink.hard){crash('HARD LANDING','Came down too fast — the hull was stove in.');return;}
+  if(sink>WATER.sink.ok){damagePlayer(Math.round(20+(sink-WATER.sink.ok)*14),'impact');flash('HARD LANDING — HULL DAMAGED',2200);radioSay('THAT WAS FIRM — CHECK THE BILGES');}
+  beginLandingRoll(false,0);
+}
 function resolveGround(dt){
+  if(P.ac==='pby'&&waterAt(P.pos.x,P.pos.z)){resolveWater(dt);return;}   // Build 252
   const APP_SPD=SortieFeatures.Handling.speeds(P,acDef().stall,acDef().app).reference;
   const gy=groundY(P.pos.x,P.pos.z);
   const agl=P.pos.y-gy;
@@ -6953,10 +7124,12 @@ function resolveGround(dt){
   beginLandingRoll(true,gap);
 }
 function beginLandingRoll(onStrip,gap){
-  P.landingRoll={onStrip,elapsed:0,travel:0,contactPitch:P.pitch,touchSpeed:P.spd,belly:P.gear<.6};
-  P.onGround=true;P.vSpeed=0;P.pitchVel=P.rollVel=0;P.departureAge=null;
+  const water=P.ac==='pby'&&waterAt(P.pos.x,P.pos.z);   // Build 252
+  P.landingRoll={onStrip,elapsed:0,travel:0,contactPitch:P.pitch,touchSpeed:P.spd,belly:!water&&P.gear<.6,water};
+  P.onGround=true;P.onWater=water;P.vSpeed=0;P.pitchVel=P.rollVel=0;P.departureAge=null;
   P.pos.y-=Math.min(0,gap);P.groundPower=P.throttle;firing=false;
   const reference=SortieFeatures.Handling.speeds(P,acDef().stall,acDef().app).reference;
+  if(water){flash('ALIGHTED — IDLE TO SLOW THE BOAT, KEEP HER STRAIGHT',2200);return;}
   flash(P.ac==='me163'?'SKID DOWN — KEEP STRAIGHT':P.spd>reference+12?'FAST TOUCHDOWN — IDLE TO BRAKE':'TOUCHDOWN — IDLE TO BRAKE, KEEP STRAIGHT',2200);
 }
 const OVERRUN_SPEED=26;   // m/s (~50 kt): faster than this past the end of the strip wrecks the aircraft (Build 237; was 12 m/s)
@@ -6967,18 +7140,24 @@ function updateLandingRoll(dt,load=SortieFeatures.Handling.sample(P)){
     // Core: the same ground forces; the wheel brakes come on gently with idle power (0.7 s), a skid or
     // a belly slides on its own friction and cannot brake.
     run.elapsed+=dt;const v0=P.spd,skid=P.ac==='me163'||run.belly;
-    coreGround(dt,{belly:run.belly,mu:skid?GROUND_MU.skid:run.onStrip&&!run.rolledOff?GROUND_MU.strip:GROUND_MU.rough,
-      brake:!skid&&P.throttle<.15?1-Math.exp(-run.elapsed/.7):0});
+    const vrWater=run.water?SortieFeatures.Handling.speeds(P,acDef().stall,acDef().app).stall*1.1:1;
+    coreGround(dt,{belly:run.belly||run.water,mu:run.water?waterMu(P.spd/vrWater):skid?GROUND_MU.skid:run.onStrip&&!run.rolledOff?GROUND_MU.strip:GROUND_MU.rough,
+      brake:run.water?(P.throttle<.15?.6*(1-Math.exp(-run.elapsed/.7)):0):!skid&&P.throttle<.15?1-Math.exp(-run.elapsed/.7):0});
     const travel=(v0+P.spd)*.5*dt;run.travel+=travel;
     step={travel,stopped:P.spd<.65&&run.elapsed>=3};
   }else step=GroundRun.landing(P,dt,{jet:P.ac==='me262',skid:P.ac==='me163',offField:!run.onStrip||!!run.rolledOff,
     power:SortieFeatures.Damage.power(P),massRatio:load.ratio,acceleration:FlightDynamics.profile(P.ac).ground});
-  P.heading+=inputRoll*steerSign*Math.min(.25,P.spd*.012)*dt;
+  P.heading+=inputRoll*steerSign*(run.water?.35:Math.min(.25,P.spd*.012))*dt;   // Build 252: water rudders and engines turn her even at a crawl
   P.pos.x+=Math.sin(P.heading)*step.travel;P.pos.z+=Math.cos(P.heading)*step.travel;
   P.roll*=Math.exp(-dt*5);P.groundPose=null;
   const vr=coreOn()?SortieFeatures.Handling.speeds(P,acDef().stall,acDef().app).stall*1.1:
     (acDef().stall*load.speed+SortieFeatures.Damage.controls(P).stallPenalty)*1.12;
-  if(P.gear>.6&&playerModel){
+  if(run.water){
+    // hull on the water: she settles from the touchdown attitude to the floating trim; leaving the river by the bank is a grounding
+    P.pitch+=(.03-P.pitch)*Math.min(1,dt*1.6);P.groundPose=null;
+    if(!waterAt(P.pos.x,P.pos.z)){P.landingRoll=null;crash('BEACHED','Ran up the bank on the hull.');return;}
+    P.pos.y=waterRideY(P.pos.x,P.pos.z,P.spd/vr);
+  }else if(P.gear>.6&&playerModel){
     const fit=AircraftGround.landingFit(playerModel,P.ac,P.pos.x,P.pos.z,P.heading,
       (x,z)=>AircraftGround.height(terrain,x,z),P.spd/vr,run.contactPitch,run.elapsed);
     if(fit){P.groundPose=fit;P.pos.y=fit.y;
@@ -6995,7 +7174,10 @@ function updateLandingRoll(dt,load=SortieFeatures.Handling.sample(P)){
     P.landingRoll=null;P.onGround=false;P.touchResolved=true;P.groundPose=null;
     SortieFeatures.Handling.beginDeparture(P);flash('GOING AROUND — BUILD SPEED',1300);return;
   }
-  if(step.stopped){P.spd=0;P.landingRoll=null;if(!run.onStrip&&typeof stsGroundStop==='function'&&stsGroundStop())return;landed(run.onStrip);}
+  if(step.stopped){P.spd=0;P.landingRoll=null;
+    // Build 252: afloat in free flight she just lies on the river - taxi, then take off from the water again (no ground service on the Rhine)
+    if(run.water&&isFree()){flash('AFLOAT — TAXI AND TAKE OFF FROM THE RIVER',2400);return;}
+    if(!run.onStrip&&typeof stsGroundStop==='function'&&stsGroundStop())return;landed(run.onStrip);}
 }
 
 // ============================================================
@@ -7212,7 +7394,7 @@ function chooseEuropePlan(i){
     {x:ridge?18100:18400,z:ridge?26000:19400,radius:1300,label:ridge?'RIDGE GAP':'SOUTH VALLEY'};
   cfg.notes=(cfg.notes||'')+' Approach gate: '+cfg.approach.label+'. Optional route bonus +150; a direct intercept is allowed.';
  }
- return {config:FlightOps.withPhases(MISSIONS[i],cfg),weather:names[Math.floor(Math.random()*names.length)],wind:(Math.random()<.5?-1:1)*(2+i*.3),
+ return {config:FlightOps.withPhases(MISSIONS[i],cfg),weather:names[Math.floor(Math.random()*names.length)],wind:(Math.random()<.5?-1:1)*Math.min(2+i*.3,7),
   squad:Squad.plan(MISSIONS[i],{difficulty:D().id,seed:(Math.random()*2147483647)|0,side:isGermanMission(MISSIONS[i])?'axis':'allied'})};
 }
 function updateEuropeOperation(dt){
@@ -7355,12 +7537,17 @@ function posePlayerAircraft(dt){
       }
       const gr=playerModel.getObjectByName('gear');
       if(P.ac==='p47')poseP47Gear(playerModel,P.gear);
-      AircraftArticulation.pose(playerModel,P.gear,SortieFeatures.Damage.controls(P).flaps);
+      if(P.ac==='pby'){
+        // wing-tip floats ride out for the water and the slow end of the flight, fold up in cruise; the right blister hatch opens while she lies stopped on the water
+        const floatsOut=P.onGround||P.spd<46?1:0,hatchOpen=P.onGround&&P.onWater&&P.spd<3?1:0;
+        P.floatAmt=(P.floatAmt??1)+(floatsOut-(P.floatAmt??1))*Math.min(1,dt*1.2);P.hatchAmt=(P.hatchAmt??0)+(hatchOpen-(P.hatchAmt??0))*Math.min(1,dt*1.5);
+        AircraftArticulation.pose(playerModel,P.gear,{left:0,right:0},{floatLeft:P.floatAmt,floatRight:P.floatAmt,hatchLeft:0,hatchRight:P.hatchAmt});
+      }else AircraftArticulation.pose(playerModel,P.gear,SortieFeatures.Damage.controls(P).flaps);
       AircraftArticulation.controls?.(playerModel,inputRoll,inputPitch);
       if(gr&&!playerModel.userData.nativeMe163) gr.visible=P.gear>0.05;
       if(playerModel.userData.nativeMe163)Me163Rig.generator(playerModel,dt,P.spd);
       if(playerModel.userData.nativeMe262){AircraftArticulation.pose(playerModel,P.gear,{left:P.flap,right:P.flap});AircraftArticulation.controls(playerModel,inputRoll,inputPitch);}
-      if(P.onGround&&P.gear>0.5){
+      if(P.onGround&&P.gear>0.5&&!P.onWater){
         const fit=P.groundPose||AircraftGround.fit(playerModel,P.ac,P.pos.x,P.pos.z,P.heading,(x,z)=>AircraftGround.height(terrain,x,z));
         if(fit){planeGroup.position.y=fit.y;planeGroup.quaternion.copy(fit.quaternion);
           if(P.ac==='p47'){
@@ -7377,6 +7564,7 @@ function posePlayerAircraft(dt){
       if(wheelContactShadows)wheelContactShadows.visible=P.ac==='p47'&&P.onGround&&P.gear>.9&&planeGroup.visible;
       const pr=playerModel.getObjectByName('prop');
       if(pr) pr.rotation.z-=GameRuntime.rotorStep(dt,Math.min(0.30,0.10+P.throttle*0.28),pr.userData.rig?.blades??(P.ac==='p47'?4:3));
+      else if(P.ac==='pby')for(const side of ['Left','Right']){const rotor=playerModel.getObjectByName('Propeller'+side);if(rotor)rotor.rotation.z-=GameRuntime.rotorStep(dt,Math.min(0.30,0.10+P.throttle*0.28),rotor.userData.rig?.blades??3)*(side==='Left'?1:.93);}   // Build 252: two rotors
     }
 }
 
@@ -7486,7 +7674,7 @@ function europeContacts(){
  const contacts=targets.filter(t=>t.alive).map((t,i)=>({ref:t,pos:t.group.position,kind:t.kind.toUpperCase(),label:(t.primary?'OBJECTIVE: ':'')+(t.name||t.kind).toUpperCase()+' #'+(i+1)}));
  for(const e of enemyAir)if(e.alive)contacts.push({ref:e,pos:e.pos,kind:e.bomber?'BOMBER':'BANDIT',label:e.bomber?'BOMBER':'BANDIT'});
  const r=europeOps?.config.recon;if(r&&!europeOps.reconDone)contacts.push({ref:r,pos:r,kind:'RECON',label:'RECON — BLUE CIRCLE'});
- if(typeof stsMapMarks==='function')for(const k of stsMapMarks())contacts.push({ref:k,pos:k,kind:'MARK',label:k.label});
+ if(typeof stsMapMarks==='function')for(const k of stsMapMarks())contacts.push({ref:k,pos:k,kind:k.kind||'MARK',label:k.label});
  contacts.push({ref:'base',pos:{x:AF_X,z:AF_Z},kind:'BASE',label:'RETURN TO BASE'});return contacts.map(c=>({...c,range:(Math.hypot(c.pos.x-P.pos.x,c.pos.z-P.pos.z)/MI).toFixed(1)+' MI'}));
 }
 function ensureNavigation(){
@@ -7528,6 +7716,7 @@ function updateHUD(){
   if(!candidates.length)candidates=contacts.filter(c=>c.kind==='BANDIT'||c.kind==='BOMBER');
   let chosen=candidates.sort((a,b)=>Math.hypot(a.pos.x-P.pos.x,a.pos.z-P.pos.z)-Math.hypot(b.pos.x-P.pos.x,b.pos.z-P.pos.z))[0]||base;
   if(europeOps&&!europeOps.reconDone)chosen=contacts.find(c=>c.kind==='RECON')||chosen;
+  {const area=contacts.find(c=>c.kind==='SEARCH'||c.kind==='MARK');if(area&&!P.rtb)chosen=area;}   // Build 253: the Storch/Catalina pickups and the observation zones: the arrow and the distance lead to the search area, not to the base
   const gate=europeOps?.config.approach;
   if(gate&&!europeOps.approachDone&&!P.rtb)chosen={pos:gate,kind:gate.label};
   if(P.rtb||europeOps?.failed)chosen=base;
@@ -7699,8 +7888,17 @@ function initAudio(){
 
 }
 function out(){ return eng?eng.master:(actx?actx.destination:null); }
+// Build 253: an audio context that is not 'running' (iOS also reports 'interrupted' after a system dialog such as the local-network question of the duel, a call or a banner) stays silent until it is resumed:
+// try again about every 1.5 s, and on every touch (a touch is the gesture iOS asks for)
+let audioNudgeAt=0;
+function audioNudge(){
+  if(!actx||actx.state==='running'||actx.state==='closed')return;
+  const now=performance.now();if(now-audioNudgeAt<1500)return;audioNudgeAt=now;
+  try{const r=actx.resume();if(r&&r.catch)r.catch(()=>{});}catch(e){}
+}
 function updateAudio(dt){
   if(!actx||!eng)return;
+  audioNudge();
   const flying=state===ST.FLIGHT&&P.alive,kind=P.ac;
   const damage=Math.max(0,(55-P.hull)/55);
   jetGunDuck=Math.max(0,jetGunDuck-dt);
@@ -8000,6 +8198,7 @@ function flapStep(dir){
 }
 function syncFlapBtn(){
   const f=document.getElementById('flapBtn'),u=document.getElementById('flapUpBtn');if(!f)return;f.style.display='';
+  if(NO_FLAPS.includes(P.ac)){f.style.display='none';if(u)u.style.display='none';return;}   // Build 252: the Catalina has no wing flaps
   const label=P.flapTgt>=1?'DN':P.flapTgt>0?'T/O':'UP';
   f.classList.toggle('on',P.flapTgt>0);f.innerHTML='FLAPS<br>&#9660; '+label;
   if(u){u.style.display='';u.classList.toggle('on',P.flapTgt>0);u.innerHTML='FLAPS<br>&#9650; '+(P.flapTgt>.5?'T/O':'UP');}
@@ -8287,7 +8486,7 @@ function bindInput(){
     if(keys.w||keys.W) setThrottleUI(P.throttle+0.02);
     if(keys.s||keys.S) setThrottleUI(P.throttle-0.02);
   },33);
-  window.addEventListener('pointerdown',()=>{ if(actx&&actx.state==='suspended') actx.resume(); });
+  window.addEventListener('pointerdown',()=>{ audioNudgeAt=0;audioNudge(); });
 }
 function togglePause(reason='Sortie held'){
   if(globalThis.sortieCheckpoint&&!globalThis.sortieCheckpoint.restoring)globalThis.sortieCheckpoint.save();
@@ -8472,7 +8671,7 @@ function init(){
   // menu wiring
   document.getElementById('startBtn').onclick=()=>showBrief(selectedMission);
   duelInit();
-  document.getElementById('pauseMainMenu').onclick=async()=>{globalThis.sortieCheckpoint?.save();await globalThis.sortieCheckpoint?.flush();exitToMenuFromPause(true);window.location.href='index.html?v=251';};
+  document.getElementById('pauseMainMenu').onclick=async()=>{globalThis.sortieCheckpoint?.save();await globalThis.sortieCheckpoint?.flush();exitToMenuFromPause(true);window.location.href='index.html?v=253';};
   document.getElementById('logBtn').onclick=()=>{ show('menu',false); showLogbook(); };
   document.getElementById('skipLaunchPreview').onclick=()=>finishLaunchIntro();
   document.getElementById('brBack').onclick=()=>{ show('brief',false); show('menu',true);if(navigation){navigation.reset();navigation.button.style.display='none';} state=ST.MENU; };
@@ -8606,7 +8805,7 @@ function animate(){
       updateInterceptRadio(raw);
       updateFlightHints(raw);
       if(firing) fireGuns(dt);
-      if(P.ac==='fi156')updateStorchGunner(dt);
+      if(P.ac==='fi156'||P.ac==='pby')updateStorchGunner(dt);
       updateFlak(dt);updateSurprises(dt);if(typeof updateSites==='function')updateSites(dt);
       updateRecoveryEscort(dt);updateSquad(dt);updateSortieAtmosphere(raw);
     }
@@ -8659,7 +8858,7 @@ function animate(){
   const aim=state===ST.FLIGHT&&P.alive&&!P.onGround?GameRuntime.gunAim(camera,P.pos,
     new THREE.Quaternion().setFromEuler(new THREE.Euler(-P.pitch,P.heading,-P.roll,'YXZ')),
     gunMuzzles(),noseDir(),P.spd,JET_KINDS.includes(P.ac)?540:760):null;
-  GameRuntime.showGunAim(sight,aim,raw);
+  GameRuntime.showGunAim(sight,acDef().noGuns?null:aim,raw);   // Build 253: no forward gun (Storch, Catalina): no red sight
   updateBombSight(raw);
   // Menu/briefing transitions also fade the engine; pause uses the master gain above.
   updateAudio(raw);

@@ -34,6 +34,10 @@ g.FlightPlans={
   {weather:['lowcloud'],deadline:900,notes:'Fictional courier flight: low overcast, cloud base about 850 ft. Stay under it; fighters wait above. Land at the orange smoke 11 km behind the line, hold still for the handover, bring the answer home.',events:[]},
   {weather:['clear','haze'],deadline:900,notes:'Fictional ridge pickup: land uphill on a short clearing, stop within 90 m of the observer for the bonus, take off downhill. A fighter pair arrives nine seconds after he boards.',events:[]},
   {weather:['clear'],deadline:900,notes:'Fictional night pickup: three lanterns mark a dark meadow behind the line. Land beside them, hold still while the agent boards, take off. Night intruders follow; four flares (L).',events:[]},
+
+  // Build 252: the Catalina sorties (indices 32-33)
+  {weather:['clear','haze'],deadline:1200,notes:'Fictional Dumbo rescue: a dinghy drifts on the Rhine behind the line. Wheels UP, alight on the river, taxi to the dinghy, hold still while the airman is hauled aboard, take off from the water. Fighters arrive ten seconds after he is aboard.',events:[]},
+  {weather:['clear'],deadline:1100,notes:'Fictional Black Cat strike: night, two 500 lb bombs, the Rhine ferry. Find it by its wake, drop the flares (L) and bomb from low level; the ferry guns and the flak at the crossing shoot back.',events:[]},
  ],
  pacific:[{}, {},
   {weather:['broken','haze'],deadline:480,notes:'Confirm the contact in the blue search area, then intercept the moving merchant.',recon:{x:600,z:2450,radius:850,min:60,max:650,seconds:5}},

@@ -47,7 +47,7 @@ const Duel_victim=(pct,kind)=>pct/({p47:1.15,fw190:1.0,bf109:.9,me262:.9,me163:.
 
   // ---- 1. lobby: invitation / answer / connect ----
   const lobby=await Promise.all([A,B].map(p=>p.evaluate(()=>{
-   const before={build:document.getElementById('buildTag').textContent.includes('BUILD 251'),btn:!!document.getElementById('duelBtn'),menuRow:getComputedStyle(document.querySelector('#menu .menuRow')).display};
+   const before={build:document.getElementById('buildTag').textContent.includes('BUILD 253'),btn:!!document.getElementById('duelBtn'),menuRow:getComputedStyle(document.querySelector('#menu .menuRow')).display};
    document.getElementById('duelBtn').click();
    const l=document.getElementById('duelLobby');
    return {...before,shown:!l.classList.contains('hidden'),menuHidden:document.getElementById('menu').classList.contains('hidden'),chips:document.querySelectorAll('#dlAc .dlChip').length,
@@ -85,9 +85,10 @@ const Duel_victim=(pct,kind)=>pct/({p47:1.15,fw190:1.0,bf109:.9,me262:.9,me163:.
    obj:document.getElementById('objText').textContent,sent:duelLink.sent,recv:duelLink.received,rtt:duelLink.rtt,count:duelSession.track.count,protect:duelSession.protectT,epoch:duelSession.epoch,
    hidden:document.hidden,bail:getComputedStyle(document.getElementById('bailBtn')).display,
    avatar:duelSession.avatar?{shown:duelSession.avatar.shown,kind:duelSession.avatar.kind,visible:duelSession.avatar.group.visible,pos:[duelSession.avatar.pos.x,duelSession.avatar.pos.y,duelSession.avatar.pos.z],prot:duelSession.avatar.protect}:null,
-   marker:document.getElementById('duelMark').hidden,markerText:document.getElementById('duelMarkTxt').textContent,ckpt:typeof sortieCheckpoint==='object'?null:'none'}));
+   marker:document.getElementById('duelMark').hidden,markerText:document.getElementById('duelMarkTxt').textContent,ckpt:typeof sortieCheckpoint==='object'?null:'none',
+   audio:{ctx:actx?actx.state:null,piston:eng?eng.piston.state:null,jet:typeof jetEngine!=='undefined'&&jetEngine?jetEngine.state:null,master:eng?+eng.master.gain.value.toFixed(3):null,thr:P.throttle,fuel:P.fuel}}));
   const [a0,b0]=await Promise.all([snap(A),snap(B)]);
-  report.start={a:a0,b:b0};
+  report.start={a:a0,b:b0};console.log('AUDIO',JSON.stringify({a:a0.audio,b:b0.audio}));
   for(const [n,s,ac] of [['A',a0,'p47'],['B',b0,'bf109']]){
    assert.ok(s.duel&&s.mission==='duel',n+': the duel mission is installed');assert.equal(s.ac,ac,n+': own aircraft');assert.equal(s.state,ST_FLIGHT,n+': flying');assert.ok(s.alive&&!s.onGround,n+': airborne from the first frame');
    assert.ok(s.agl>500,n+': starts high above the ground ('+Math.round(s.agl)+' m)');assert.equal(s.squad+s.enemy+s.targets,0,n+': no wingmen, AI or targets');

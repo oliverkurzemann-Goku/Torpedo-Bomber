@@ -9,6 +9,7 @@ const profiles={
  fw190:{max:194,power:690,induced:.85,turnDrag:3.1,corner:100,spool:.95,stiff:175,floor:.78,ground:6.0,character:'Quick roll · fast passes, hard turns cost speed'},
  ju87:{max:113,power:390,induced:.85,turnDrag:2.0,corner:70,spool:1.05,stiff:110,floor:.70,ground:5.5,character:'Steady dive bomber · deliberate turns and modest climb'},
  fi156:{max:48,power:150,induced:.45,turnDrag:1.6,corner:34,spool:.7,stiff:60,floor:.80,ground:4.0,character:'Light liaison aircraft · slow, short take-off and landing, easy to turn'},
+ pby:{max:80,power:330,induced:.95,turnDrag:2.6,corner:52,spool:.9,stiff:70,floor:.80,ground:4.5,character:'Amphibian flying boat · heavy and slow to turn, lands on water or the strip'},
  me262:{max:242,power:0,induced:0,turnDrag:1,corner:130,spool:2.6,stiff:210,floor:.72,ground:6.8,character:'Slow spool-up · fast flight, wide turns'},
  me163:{max:238,power:17,induced:.65,turnDrag:2.3,corner:110,spool:.30,stiff:200,floor:.75,ground:8,character:'Rocket surge · conserve energy during the unpowered glide'},
  avenger:{max:121,power:395,induced:.90,turnDrag:3.0,corner:72,spool:1.45,stiff:120,floor:.66,ground:9.0,stall:31,reference:40,character:'Heavy torpedo bomber · slow response, stable approach'},

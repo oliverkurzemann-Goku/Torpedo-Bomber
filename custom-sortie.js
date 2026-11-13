@@ -10,6 +10,8 @@
   me262:{name:'Me 262A-1a/Jabo',theatre:'europe',kits:['guns','bombs'],bombs:2},
   // Build 249: the Storch carries no forward guns; its rear gunner fires by himself. Free flight only (no strike or combat assignments).
   fi156:{name:'Fi 156 C Storch',theatre:'europe',kits:['rear'],bombs:0,freeOnly:true},
+  // Build 252: the Catalina is an amphibian flying boat: it takes off from the Rhine or from the strip. Free flight only; bow gun fired by the player, the two blister guns fire by themselves.
+  pby:{name:'PBY-5A Catalina',theatre:'europe',kits:['guns','bombs'],bombs:2,freeOnly:true},
   me163:{name:'Me 163B Komet',theatre:'europe',kits:['guns'],airOnly:true},
   avenger:{name:'TBM Avenger',theatre:'pacific',kits:['guns','torpedo','bombs'],bombs:2},
   sbd:{name:'SBD Dauntless',theatre:'pacific',kits:['guns','bombs'],bombs:3},

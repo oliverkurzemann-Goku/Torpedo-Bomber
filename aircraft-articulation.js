@@ -189,9 +189,9 @@
   const materials=new Set();for(const proxy of list){proxy.geometry.dispose();for(const m of [].concat(proxy.material))materials.add(m);}for(const m of materials)m.dispose();
   frame.userData.articulation={kind,gearName};pose(frame,1,{left:0,right:0});return frame;
  }
- function pose(frame,deployment,flaps={left:0,right:0}){
+ function pose(frame,deployment,flaps={left:0,right:0},extra){
   const info=frame?.userData.articulation;if(!info)return;
-  if(info.nativeContract){global.AircraftContract.pose(frame,deployment,flaps);return;}
+  if(info.nativeContract){global.AircraftContract.pose(frame,deployment,flaps,extra);return;}   // Build 252: floats and blister hatches of the amphibian ride in `extra`
   if(info.nativeJu87){global.Ju87Rig.pose(frame,deployment,flaps);return;}
   if(info.nativeMe262){global.Me262Rig.pose(frame,deployment,flaps);return;}
   if(info.nativeMe163){global.Me163Rig.pose(frame,deployment,flaps);return;}

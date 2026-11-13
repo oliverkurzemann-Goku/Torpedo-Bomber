@@ -460,6 +460,72 @@
     }
    }
   },
+  "pby": {
+   "name": "Consolidated PBY-5A Catalina (2 x R-1830-92)",
+   "solved": {
+    "CD0": 0.02869,
+    "etaP": 0.70331,
+    "rms": "0 %",
+    "oswald": 0.818,
+    "aspect": 7.73,
+    "CLmaxClean": 1.694,
+    "CLmaxLanding": 1.694,
+    "diveBrakeCD": null,
+    "massPublished": 16066,
+    "massEmptyNoFuel": 11297,
+    "fuelKg": 4770
+   },
+   "verification": [
+    {
+     "figure": "179 mph @ 7 000 ft",
+     "ref": "B1",
+     "published": "288.1 km/h",
+     "model": "288.1 km/h",
+     "errorPct": 0
+    },
+    {
+     "figure": "610 ft/min @ SL at 35 420 lb",
+     "ref": "B2",
+     "published": "3.1 m/s",
+     "model": "3.1 m/s",
+     "errorPct": 0
+    }
+   ],
+   "game": {
+    "vmax1000m_kmh": 279,
+    "climbSL_ms": 3.1,
+    "bestClimbIAS_kmh": 168,
+    "stallCleanIAS_kmh": 123,
+    "stallLandingIAS_kmh": 123,
+    "rollPeak_degs": 37,
+    "rollAt70pct_degs": 32,
+    "circle45pct": {
+     "seconds": 120.02,
+     "endSpeed": 82.2,
+     "altitudeChange": -161.9,
+     "bankDeg": 0
+    },
+    "circle70pct": {
+     "seconds": 8.73,
+     "endSpeed": 50.9,
+     "altitudeChange": -11.7,
+     "bankDeg": 64.1
+    },
+    "loop": {
+     "complete": true,
+     "seconds": 7.5,
+     "minSpeed": 60
+    },
+    "aeroGate_ms": 68.9,
+    "idleDecel75pct": 1.12,
+    "takeoff": {
+     "seconds": 26.2,
+     "groundRun": 554,
+     "liftoffIAS": 135,
+     "stallIAS": 123
+    }
+   }
+  },
   "me262": {
    "name": "Me 262A-1a (2 x Jumo 004B)",
    "solved": {
