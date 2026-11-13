@@ -49,6 +49,32 @@ context.isSecretJet=()=>false;context.updateAudio(.016);assert.equal(piston[3],t
 function seeded(seed){return ()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/2**32;};}
 const template=new THREE.Group(),shared=new THREE.BoxGeometry(1,1,1);template.add(new THREE.Mesh(shared,new THREE.MeshBasicMaterial()));
 let disposedShared=false;shared.addEventListener('dispose',()=>{disposedShared=true;});
+assert.equal(Space.ascent(5334,6096),0);assert.equal(Space.ascent(5715,6096),.5);assert.equal(Space.ascent(6096,6096),1);
+const motion=Space.create(THREE,template,{random:seeded(20)}),ship=motion.scene.getObjectByName('SpaceJet');
+const originalView=motion.view(4/3),originalCamera=motion.camera.position.clone();
+motion.update(1/60,{roll:1,pitch:1});assert(ship.position.x>0&&ship.position.x<.25&&ship.position.y>0);
+for(let i=0;i<23;i++)motion.update(1/60,{roll:1});
+const released=ship.position.x;
+for(let i=0;i<30;i++)motion.update(1/60);
+assert(ship.position.x>released&&ship.position.x-released<4);
+const settled=ship.position.x;motion.update(1/60);assert.equal(ship.position.x,settled);
+const aimed=motion.view(4/3);assert(aimed.x>originalView.x&&motion.camera.position.distanceTo(originalCamera)<2);
+motion.update(1/60,{fire:true});
+const expectedAim=motion.view(4/3),bolts=motion.scene.children.filter(o=>o.name==='PlayerBolt');
+assert.equal(bolts.length,2);
+for(const bolt of bolts){
+ const dir=new THREE.Vector3(0,0,1).applyQuaternion(bolt.quaternion);
+ const point=bolt.position.clone().addScaledVector(dir,(-200-bolt.position.z)/dir.z).project(motion.camera);
+ assert(Math.abs((1+point.x)/2-expectedAim.x)<1e-6&&Math.abs((1-point.y)/2-expectedAim.y)<1e-6);
+}
+assert(motion.requestBoost()&&motion.boosting);assert(!motion.requestBoost());
+const boosted=ship.position.x;
+for(let i=0;i<12;i++)motion.update(1/60,{roll:-1});
+assert(boosted-ship.position.x>12);
+for(let i=0;i<31;i++)motion.update(1/60);
+assert(!motion.boosting&&motion.boostRemaining>0&&motion.entryVeil===0);
+for(let i=0;i<160;i++)motion.update(1/60);
+assert.equal(motion.boostRemaining,0);assert(motion.requestBoost());motion.dispose();
 const events=[],space=Space.create(THREE,template,{random:seeded(42),onEvent:e=>events.push(e)});
 const seen=new Set(),previous=new WeakMap(),player=space.scene.getObjectByName('SpaceJet').position,dt=1/60;
 for(let i=0;i<60*80&&space.status==='flying';i++){
@@ -71,4 +97,4 @@ space.dispose();space.dispose();assert.equal(space.scene.children.length,0);asse
 const noInput=Space.create(THREE,template,{random:()=>.5});
 for(let i=0;i<60*40&&noInput.status==='flying';i++)noInput.update(dt);
 assert.equal(noInput.status,'lost');assert.equal(noInput.hull,0);noInput.dispose();
-console.log('Secret Jet: one-use launch and clean reload; vertical 20,000 ft climb, turbine routing, arcade obstacles, win/loss and teardown.');
+console.log('Secret Jet: one-use launch and clean reload; vertical 20,000 ft climb, turbine routing, ascent fade, arcade steering, convergence, boost, obstacles, win/loss and teardown.');
