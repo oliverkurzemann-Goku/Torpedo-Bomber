@@ -11,10 +11,12 @@ for(const sinkFpm of [100,150,200])for(const hook of [0,1])for(const throttle of
 for(const water of [false,true]){
  const scene=new THREE.Scene(),chute=Bailout.create(THREE,scene,new THREE.Vector3(0,100,0),0,60,()=>0);
  const pilot=chute.group.getObjectByName('pilot');
- assert(pilot.userData.arms.every(a=>a.rotation.z===0),'free fall starts with neutral arms');
+ const {arms,hands}=pilot.userData;
+ const gripHeight=i=>hands[i].getWorldPosition(new THREE.Vector3()).y-arms[i].getWorldPosition(new THREE.Vector3()).y;
+ assert(arms.every((_,i)=>gripHeight(i)<-.25),'free fall starts with lowered hands');
  for(let i=0;i<60;i++)chute.update(1/60);assert(chute.deployed);
- assert(pilot.userData.arms.every(a=>Math.abs(a.rotation.z)>2),'hanging pilot holds the risers');
- chute.settle(water);assert(pilot.userData.arms.every(a=>a.rotation.z===0),'landed pilot lowers arms');
+ assert(arms.every((_,i)=>gripHeight(i)>.10),'hanging pilot raises both hands to the risers');
+ chute.settle(water);assert(arms.every((_,i)=>gripHeight(i)<-.25),'landed pilot lowers both hands');
  if(water)assert(pilot.userData.legs.every(a=>a.rotation.x<-.9),'survivor sits in dinghy');
  chute.settle(water);assert.equal(chute.group.children.filter(o=>o.name==='pilotDinghy').length,water?1:0,'settle is idempotent');
  chute.dispose();assert.equal(scene.children.length,0);

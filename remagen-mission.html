@@ -282,8 +282,8 @@
 .nhMark svg{display:block;width:20px;height:20px;margin:0 auto;fill:rgba(255,122,82,.5);stroke:#ff7a52;stroke-width:1.5;stroke-linejoin:round;opacity:.85;filter:drop-shadow(0 0 2px #000);}
 .nhMark[hidden]{display:none;}
 </style>
-<link rel="stylesheet" href="menu-layout.css?v=253">
-<link rel="stylesheet" href="duel.css?v=253">
+<link rel="stylesheet" href="menu-layout.css?v=256">
+<link rel="stylesheet" href="duel.css?v=256">
 </head>
 <body>
 <!-- ===== TEMP TEST-ONLY VERSION BANNER — asked for by Oliver: "kannst du irgendwo einbauen,
@@ -305,7 +305,7 @@
   <div style="width:100%;height:4px;background:repeating-linear-gradient(45deg,#ffd400,#ffd400 8px,#111 8px,#111 16px);"></div>
   <span id="testVersionBannerText" style="background:#111;color:#ffd400;font-family:monospace;font-weight:800;font-size:11px;letter-spacing:.5px;padding:3px 10px;border:1px solid #ffd400;border-top:none;border-radius:0 0 6px 6px;"></span>
 </div>
-<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 253';</script>
+<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 256';</script>
 <!-- ===== END TEMP TEST-ONLY VERSION BANNER ===== -->
 <div id="app"></div>
 <style>
@@ -346,7 +346,7 @@
   <div id="flash"></div>
   <div id="gunsight"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 253 · REAL RHINE</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 256 · REAL RHINE</div>
 
   <div id="apr">
     <div id="aprCall"></div>
@@ -401,7 +401,7 @@
 </div>
 
 <div class="overlay hidden" id="menu" data-campaign="europe">
-  <div class="menuTop"><a id="selBtn" href="index.html?v=253">&#9664; Change Game</a><span class="menuMeta">RHINE OPERATIONS<br>BUILD 253</span></div>
+  <div class="menuTop"><a id="selBtn" href="index.html?v=256">&#9664; Change Game</a><span class="menuMeta">RHINE OPERATIONS<br>BUILD 256</span></div>
   <div class="card menuCard">
     <aside class="menuOverview" aria-label="Campaign and pilot options">
     <div class="campaignArt" aria-hidden="true"></div>
@@ -433,7 +433,7 @@
     </aside>
     <section class="missionPanel" aria-label="Mission selection">
       <div class="secLbl">Choose your sortie · 15 missions + 4 bonus &amp; training</div>
-      <a class="hangarLink" href="hangar.html?theatre=europe">CUSTOM MISSION · CHOOSE AIRCRAFT &amp; LOADOUT →</a>
+      <a class="hangarLink" href="hangar.html?theatre=europe&amp;v=256">CUSTOM MISSION · CHOOSE AIRCRAFT &amp; LOADOUT →</a>
 <div id="missionSel" role="group" aria-label="European missions"></div>
       <div id="missionBlurb" class="missionBlurb" aria-live="polite"></div>
       <div class="menuConfig">
@@ -571,8 +571,9 @@
 <script src="terrain-system/PeriodBuildings.js?v=241"></script>
 <script src="terrain-system/HistoricalObjectManager.js?v=173"></script>
 <script src="terrain-system/AirfieldDetails.js?v=169"></script>
-<script src="terrain-system/AircraftGround.js?v=253"></script>
-<script src="terrain-system/AirfieldActivity.js?v=242"></script>
+<script src="terrain-system/AircraftGround.js?v=256"></script>
+<script src="crew-figures.js?v=254"></script>
+<script src="terrain-system/AirfieldActivity.js?v=254"></script>
 <script src="terrain-system/WorldVehicles.js?v=248"></script>
 <script src="terrain-system/LivingWorld.js?v=248"></script>
 <script src="campaign.js?v=1"></script>
@@ -581,8 +582,8 @@
 <script src="ju87-native.js?v=218"></script>
 <script src="me262-native.js?v=206"></script>
 <script src="me163-native.js?v=218"></script>
-<script src="aircraft-contract.js?v=253"></script>
-<script src="aircraft-articulation.js?v=253"></script>
+<script src="aircraft-contract.js?v=256"></script>
+<script src="aircraft-articulation.js?v=256"></script>
 <script src="aircraft-rotors.js?v=172"></script>
 <script src="b17-native.js?v=201"></script>
 <script src="combat-fx.js?v=238"></script>
@@ -595,35 +596,35 @@
 <script src="runway-lights.js?v=179"></script>
 <script src="ship-wakes.js?v=179"></script>
 <script src="ship-contact.js?v=238"></script>
-<script src="pilot-bailout.js?v=181"></script>
+<script src="pilot-bailout.js?v=253"></script>
 <script src="enemy-bailouts.js?v=248"></script>
 <script src="flare-support.js?v=177"></script>
 <script src="sortie-service.js?v=206"></script>
-<script src="pilot-rescue.js?v=179"></script>
+<script src="pilot-rescue.js?v=253"></script>
 <script src="radio-intercept.js?v=157"></script>
 <script src="surprises.js?v=238"></script>
 <script src="audio/weapon-sound.js?v=144"></script>
 <script src="audio/throttle-response.js?v=218"></script><script src="audio/jet-engine.js?v=218"></script>
 <script src="audio/flight-atmosphere.js?v=175"></script>
-<script src="sortie-systems.js?v=253"></script>
+<script src="sortie-systems.js?v=256"></script>
 <script src="me262-performance.js?v=238"></script>
-<script src="flight-envelope.js?v=253"></script>
-<script src="flight-dynamics.js?v=253"></script>
-<script src="flight-core.js?v=253"></script>
+<script src="flight-envelope.js?v=256"></script>
+<script src="flight-dynamics.js?v=256"></script>
+<script src="flight-core.js?v=256"></script>
 <script src="flight-control.js?v=238"></script>
 <script src="dogfight-ai.js?v=238"></script>
 <script src="squad.js?v=238"></script>
 <script src="duel-net.js?v=238"></script>
 <script src="duel.js?v=238"></script>
-<script src="audio/aircraft-engine.js?v=253"></script>
+<script src="audio/aircraft-engine.js?v=256"></script>
 <script src="p47-performance.js?v=204"></script>
-<script src="sortie-features.js?v=253"></script>
+<script src="sortie-features.js?v=256"></script>
 <script src="ground-run.js?v=204"></script>
 <script src="ground-dust.js?v=181"></script>
 <script src="flight-indicators.js?v=198"></script>
-<script src="sortie-fuel.js?v=253"></script>
-<script src="operation-plans.js?v=253"></script>
-<script src="custom-sortie.js?v=253"></script>
+<script src="sortie-fuel.js?v=256"></script>
+<script src="operation-plans.js?v=256"></script>
+<script src="custom-sortie.js?v=256"></script>
 <script>
 // ============================================================
 //  REMAGEN 1945 — REAL TERRAIN (forked from thunderbolt-europe.html)
@@ -995,7 +996,7 @@ async function loadRealWorld(){
 
   if(OSMManager.BUILD!==23||HistoricalObjectManager.BUILD!==21||LivingWorld.BUILD!==22||WorldVehicles.BUILD!==24) throw new Error('Terrain version mismatch. Reload Remagen.');
   document.getElementById('testVersionBannerText').textContent=
-    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 253 · MODULE 23';
+    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 256 · MODULE 23';
   heightProvider=new DEMHeightProvider(RTILE,'terrain-system/real/data/dem/');
   terrain=new TerrainManager(scene,RTILE,heightProvider);
   osmMgr=new OSMManager(scene,RTILE,terrain,'terrain-system/real/data/osm/');
@@ -5128,7 +5129,7 @@ async function duelCopy(id){
 function duelSendHello(){
   const s=duelSession;if(!s||!duelLink||duelLink.status!=='open')return;
   s.name=Duel.cleanName(dEl('dlName').value)||s.name;
-  duelLink.sendEvent(Duel.hello({name:s.name,ac:s.ac,build:253}));
+  duelLink.sendEvent(Duel.hello({name:s.name,ac:s.ac,build:256}));
 }
 function duelOnStatus(status,info){
   const s=duelSession;if(!s)return;
@@ -6322,27 +6323,12 @@ function stsPlan(m){
 }
 function stsHuntCount(){return 2+(diffIdx===2?1:0);}   // Build 253: Rookie used to get one fighter (measured: 148 m closest approach, no hit in 150 s - it looked like no attack); its damage is halved by the difficulty anyway
 function stsReset(){
-  if(sts){if(sts.fig)scene.remove(sts.fig);for(const l of sts.lamps||[])scene.remove(l);for(const o of sts.disposables||[])o.dispose();}
+  if(sts){
+    for(const figure of [sts.fig,sts.aidTeam])if(figure){scene.remove(figure);CrewFigures.dispose(figure);}
+    for(const l of sts.lamps||[])scene.remove(l);
+    for(const o of sts.disposables||[])o.dispose();
+  }
   sts=null;
-}
-// the figures of the pickup sorties: one shared CrewVisuals person (1.85 m, +Z is the face) in the clothes of the role; stsPose() animates it
-function stsMakeFigure(kind){
-  const allied=P.ac==='pby';
-  const look=kind==='dumbo'?{service:'usaaf',role:'pilot'}:kind==='rescue'?{service:allied?'usaaf':'luftwaffe',role:'pilot'}:
-    kind==='moon'?{service:'luftwaffe',role:'ground',jacketColor:0x34373a}:kind==='courier'?{service:'luftwaffe',role:'ground',jacketColor:0x5e6558}:{service:'luftwaffe',role:'ground'};
-  const person=CrewVisuals.create(THREE,{...look,variant:Math.floor(Math.random()*3)}),group=new THREE.Group(),disposables=[];
-  group.add(person);
-  person.traverse(o=>{if(!o.isMesh)return;disposables.push(o.geometry);for(const mm of Array.isArray(o.material)?o.material:[o.material])if(!disposables.includes(mm))disposables.push(mm);});
-  return {group,person,disposables};
-}
-// waiting: the right arm waves over the head; running: legs and arms swing; boarding: stands still; always faces the aeroplane (the person faces +Z)
-function stsPose(s){
-  const f=s.fig,person=s.person;if(!f||!person||!person.userData.arms)return;
-  const arms=person.userData.arms,legs=person.userData.legs,run=s.phase==='run',wave=s.phase==='fly',w=Math.sin(s.runT*12);
-  const dx=P.pos.x-f.position.x,dz=P.pos.z-f.position.z;if(dx*dx+dz*dz>1)person.rotation.y=Math.atan2(dx,dz);
-  legs[0].rotation.x=run?w*.95:0;legs[1].rotation.x=run?-w*.95:0;
-  arms[0].rotation.x=run?-w*.85:0;arms[0].rotation.z=0;
-  arms[1].rotation.x=run?w*.85:0;arms[1].rotation.z=wave?2.4+Math.sin(s.clock*5.5)*.32:0;
 }
 function stsStart(m){
   stsReset();const kind=stsKind(m);if(!kind)return;
@@ -6352,15 +6338,24 @@ function stsStart(m){
     const lz=plan.lz;if(kind!=='dumbo')stsClearTrees(lz.x,lz.z,STS.lz.len+70,STS.lz.wid+10,kind==='rock'?STS.rock.disc:STS.lz.disc);   // Build 250: a disc as well - the approach may come from any side
     if(stsDone()>=1)sts.phase='home';
     else{
-      // the person waiting at the edge of the meadow (Build 253: a real figure of the shared CrewVisuals set - jacket, face, helmet or cap, boots - not a cylinder with a ball; it waves, runs and turns to the aeroplane)
-      const made=stsMakeFigure(kind);sts.fig=made.group;sts.person=made.person;sts.disposables=made.disposables;scene.add(sts.fig);
-      if(kind==='dumbo'){   // a yellow rubber dinghy under the airman
-        const ring=new THREE.Mesh(new THREE.CylinderGeometry(1.25,1.35,.34,14),new THREE.MeshLambertMaterial({color:0xe6c029}));ring.position.y=.12;sts.fig.add(ring);sts.disposables.push(ring.geometry,ring.material);
-        sts.person.position.y=.2;
+      sts.figPos=kind==='dumbo'?{x:lz.x,z:lz.z}:{x:lz.x+10,z:lz.z+34};
+      const {x,z}=sts.figPos,y=stsY(x,z),service='luftwaffe';
+      if(kind==='rescue'){
+        const team=PilotRescue.createGroundTeam(THREE,{service});
+        sts.fig=team.patient;sts.aidTeam=team.group;sts.waitLift=team.patientLift;
+        sts.aidTeam.remove(sts.fig);sts.aidTeam.position.set(x,y,z);scene.add(sts.aidTeam);
+      }else if(kind==='dumbo'){   // Build 252: the airman in a yellow rubber dinghy on the river (a CrewFigures survivor, the dinghy is the ring under him)
+        sts.fig=new THREE.Group();const person=CrewFigures.create(THREE,{service:'usaaf',role:'survivor',variant:1});person.position.y=.2;sts.fig.add(person);
+        const ring=new THREE.Mesh(new THREE.CylinderGeometry(1.25,1.35,.34,14),new THREE.MeshLambertMaterial({color:0xe6c029}));ring.position.y=.12;sts.fig.add(ring);
+        sts.person=person;sts.dinghy=ring;sts.waitLift=0;
+      }else{
+        const role=kind==='moon'?'agent':kind==='rock'?'observer':'officer';
+        sts.fig=CrewFigures.create(THREE,{service,role,variant:kind==='moon'?3:kind==='rock'?1:2});
+        sts.waitLift=0;
       }
-      sts.figPos=kind==='dumbo'?{x:lz.x,z:lz.z}:{x:lz.x+10,z:lz.z+34};sts.fig.position.set(sts.figPos.x,stsY(sts.figPos.x,sts.figPos.z),sts.figPos.z);
+      sts.fig.position.set(x,y+sts.waitLift,z);scene.add(sts.fig);
       if(kind==='moon'){   // three lanterns in a row beside him (additive glow sprites, flickering)
-        const tex=makeSoftSprite();sts.lamps=[];sts.disposables.push(tex);
+        const tex=makeSoftSprite();sts.lamps=[];sts.disposables=[tex];
         for(let i=0;i<STS.moon.lamps;i++){const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,color:0xffd48a,blending:THREE.AdditiveBlending,transparent:true,depthWrite:false,opacity:.95}));
           const lx=lz.x-60+i*60,lzz=lz.z+40;sp.scale.setScalar(15);sp.position.set(lx,groundY(lx,lzz)+1.5,lzz);scene.add(sp);sts.lamps.push(sp);sts.disposables.push(sp.material);}
       }
@@ -6423,21 +6418,26 @@ function stsRescue(dt){
   if(s.lamps)s.lamps.forEach((l,i)=>{l.material.opacity=.78+.22*Math.sin(s.clock*7+i*2.1);});
   if(!s.said.near&&d<1900){s.said.near=1;radioSay(s.kind==='dumbo'?'YELLOW SMOKE ON THE RIVER — THAT IS THE DINGHY. WHEELS UP, ALIGHT ALONG THE STREAM, THEN TAXI UP TO IT':s.kind==='moon'?STS.moon.say:s.kind==='rock'?'THE RIDGE CLEARING — SHORT AND STEEP. LAND UPHILL, STOP NEAR THE SMOKE':s.kind==='courier'?'ORANGE SMOKE — THE COMMAND POST. SET DOWN NEAR IT, THE OFFICER WILL COME TO YOU':'THAT IS THE MEADOW — YELLOW SMOKE. SET DOWN NEAR IT, HE WILL COME TO YOU');}
   f.visible=true;
-  if(s.phase==='fly'){f.position.set(s.figPos.x,stsY(s.figPos.x,s.figPos.z)+(dumbo?Math.sin(s.clock*1.3)*.12:0),s.figPos.z);}
+  if(s.phase==='fly'){
+    CrewFigures.pose(s.person||f,s.aidTeam?'stretcher':dumbo?'float':'stand');
+    f.position.set(s.figPos.x,stsY(s.figPos.x,s.figPos.z)+s.waitLift+(dumbo?Math.sin(s.clock*1.3)*.12:0),s.figPos.z);
+    f.rotation.y=s.aidTeam?0:Math.atan2(P.pos.x-f.position.x,P.pos.z-f.position.z);
+  }
   else if(s.phase==='run'){
     s.runT+=dt;const k=Math.min(1,s.runT/s.runDur),side=stsSide(),tx=P.pos.x+side.x,tz=P.pos.z+side.z;
     const px=s.runFrom.x+(tx-s.runFrom.x)*k,pz=s.runFrom.z+(tz-s.runFrom.z)*k;
-    f.position.set(px,stsY(px,pz)+(dumbo?Math.sin(s.runT*2.4)*.1:Math.abs(Math.sin(s.runT*12))*.06),pz);
+    CrewFigures.pose(s.person||f,dumbo?'float':'run',s.runT);f.rotation.y=Math.atan2(tx-s.runFrom.x,tz-s.runFrom.z);
+    f.position.set(px,stsY(px,pz)+(dumbo?Math.sin(s.runT*2.4)*.1:Math.abs(Math.sin(s.runT*10))*.09),pz);
     if(k>=1){s.phase='board';s.boardT=0;}
   }else if(s.phase==='board'){
     s.boardT+=dt;
+    CrewFigures.pose(s.person||f,dumbo?'float':'stand');f.rotation.y=Math.atan2(P.pos.x-f.position.x,P.pos.z-f.position.z);
     {const side=stsSide();f.position.set(P.pos.x+side.x,stsY(P.pos.x+side.x,P.pos.z+side.z),P.pos.z+side.z);}
     if(P.spd>2.5&&s.boardT<STS.board){s.boardT=0;if(!s.said.still){s.said.still=1;radioSay('HOLD STILL — HE IS NOT IN YET');}}
     if(s.boardT>=STS.board)stsAboard(s);
   }
   // took off without him (or was driven off): the pilot waits at his place again
   if((s.phase==='run'||s.phase==='board')&&!P.onGround&&d>260){s.phase='fly';s.runT=0;s.boardT=0;}
-  stsPose(s);
 }
 function stsBarrage(z){
   for(let k=0;k<STS.zone.shells;k++){
@@ -8255,7 +8255,7 @@ function showResult(good,title,sub,html,btn){
   document.getElementById('rsGo').onclick=()=>{
     voiceRadio.cancel();soundscape.stop();
     show('result',false);
-    if(MISSIONS[selectedMission]?.custom){window.location.href='hangar.html?theatre=europe';return;}
+    if(MISSIONS[selectedMission]?.custom){window.location.href='hangar.html?theatre=europe&v=256';return;}
     if(good && selectedMission===MISSIONS.length-1){
       show('menu',true);if(navigation){navigation.reset();navigation.button.style.display='none';}
     }
@@ -8671,7 +8671,7 @@ function init(){
   // menu wiring
   document.getElementById('startBtn').onclick=()=>showBrief(selectedMission);
   duelInit();
-  document.getElementById('pauseMainMenu').onclick=async()=>{globalThis.sortieCheckpoint?.save();await globalThis.sortieCheckpoint?.flush();exitToMenuFromPause(true);window.location.href='index.html?v=253';};
+  document.getElementById('pauseMainMenu').onclick=async()=>{globalThis.sortieCheckpoint?.save();await globalThis.sortieCheckpoint?.flush();exitToMenuFromPause(true);window.location.href='index.html?v=256';};
   document.getElementById('logBtn').onclick=()=>{ show('menu',false); showLogbook(); };
   document.getElementById('skipLaunchPreview').onclick=()=>finishLaunchIntro();
   document.getElementById('brBack').onclick=()=>{ show('brief',false); show('menu',true);if(navigation){navigation.reset();navigation.button.style.display='none';} state=ST.MENU; };

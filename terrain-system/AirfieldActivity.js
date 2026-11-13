@@ -52,11 +52,11 @@ class AirfieldActivity {
     this.group.position.set(x,0,z);this.parts=[];this.crew=[];this.parked=[];this.trucks=[];
     const mat=c=>new THREE.MeshLambertMaterial({color:c});
     this.mat={olive:mat(0x535942),canvas:mat(0x8a8064),wood:mat(0x69523c),
-      dark:mat(0x272c29),rubber:mat(0x171a19),skin:mat(0xb89771),metal:mat(0x7b8074)};
+      dark:mat(0x272c29),rubber:mat(0x171a19),metal:mat(0x7b8074)};
     this._cube=new THREE.BoxGeometry(1,1,1);this._matrix=new THREE.Matrix4();
-    this._position=new THREE.Vector3();this._rotation=new THREE.Quaternion();this._scale=new THREE.Vector3();this._handMatrix=new THREE.Matrix4();this._handPosition=new THREE.Vector3();
+    this._position=new THREE.Vector3();this._rotation=new THREE.Quaternion();this._scale=new THREE.Vector3();this._bodyMatrix=new THREE.Matrix4();this._jointPosition=new THREE.Vector3();this._ankle=new THREE.Vector3();this._legDirection=new THREE.Vector3();this._yaw=new THREE.Quaternion();
     this._euler=new THREE.Euler();
-    this._up=new THREE.Vector3(0,1,0);
+    this._up=new THREE.Vector3(0,1,0);this._down=new THREE.Vector3(0,-1,0);
     const props=new THREE.Group();
     for(let i=0;i<18;i++){
       const px=-242+(i%6)*1.35,pz=-92-Math.floor(i/6)*1.4,y=this.ground(px,pz);
@@ -107,17 +107,23 @@ class AirfieldActivity {
       [-127,-57,'walk'],[87,-60,'walk'],[-354,-88,'repair'],[-257,-96,'carry']].entries())
       this.crew.push({x:px,z:pz,job,phase:i*.73});
     this.people={};
-    const german=this.service==='luftwaffe',pacific=this.service==='ijn';
-    const coat=german?0x616963:pacific?0x857351:0x62664b,pants=german?0x697176:pacific?0x98896e:0x8b8869;
-    const body=this.crewGeometry('body',coat),head=this.crewGeometry('head',coat),limb=this.crewGeometry('limb',0xffffff),boot=this.crewGeometry('boot',0xffffff),hand=this.crewGeometry('hand',coat);
-    const detailMat=()=>new THREE.MeshLambertMaterial({color:0xffffff,vertexColors:true});
-    for(const [name,geo,material,count] of [['bodies',body,detailMat(),12],['heads',head,detailMat(),12],
-      ['limbs',limb,detailMat(),48],['boots',boot,detailMat(),24],['hands',hand,detailMat(),24],['cargo',this._cube,this.mat.wood,2]]){
-      const mesh=new THREE.InstancedMesh(geo,material,count);mesh.name='airfieldCrew-'+name;
+    const figure=CrewFigures.create(THREE,{service:this.service,role:'groundCrew',variant:this.service==='ijn'?1:this.service==='luftwaffe'?2:0,srgbOutput:options.srgbOutput});
+    const {arms,legs,head,hands,shins}=figure.userData,arm=arms[0],hand=hands[0],leg=legs[0],shin=shins[0],boot=shin.getObjectByName('leftBoot');
+    const hipHeight=leg.parent.position.y,headOffset=head.position.clone();
+    const wrist=arm.worldToLocal(hand.getWorldPosition(new THREE.Vector3()));
+    const bake=(node,omit)=>CrewFigures.bake(THREE,node,omit);
+    const bootGeometry=bake(boot);bootGeometry.computeBoundingBox();
+    this.crewRig={hipHeight,headOffset,wrist,shoulder:arm.position.clone(),hipOffset:Math.abs(leg.position.x),
+      legLength:-shin.position.y-boot.position.y,soleOffset:-bootGeometry.boundingBox.min.y};
+    const cloth=new THREE.MeshLambertMaterial({vertexColors:true,side:THREE.DoubleSide});
+    const body=bake(figure,[...arms,...legs,head]).translate(0,-hipHeight,0);
+    const sections=[['bodies',body,cloth,12],['heads',bake(head),cloth,12],['arms',bake(arm,[hand]),cloth,24],
+      ['legs',bake(leg,[boot]),cloth,24],['boots',bootGeometry,cloth,24],['hands',bake(hand),cloth,24],['cargo',this._cube,this.mat.wood,2]];
+    for(const [name,geometry,material,count] of sections){
+      const mesh=new THREE.InstancedMesh(geometry,material,count);mesh.name='airfieldCrew-'+name;
       mesh.frustumCulled=false;mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);this.people[name]=mesh;this.group.add(mesh);
     }
-    for(let i=0;i<48;i++)this.people.limbs.setColorAt(i,new THREE.Color(i%2?pants:coat));
-    for(let i=0;i<24;i++)this.people.boots.setColorAt(i,new THREE.Color(0x3b342c));
+    CrewFigures.dispose(figure);
     for(let i=0;i<2;i++){
       const truck=new THREE.Group();
       this.box(truck,2.05,.42,5.3,this.mat.dark,0,.64,0);
@@ -134,33 +140,6 @@ class AirfieldActivity {
     }
     this.loading={x:-300,z:-64,mounted:false,progress:0,unloading:false};
     this.update(0,x,z);
-  }
-  crewGeometry(kind,coat){
-    // Bake face, uniform pockets, cap, cuffs and boot seams into four existing
-    // instanced buckets. Added detail does not add any crew draw calls.
-    const parts=[],matrix=new THREE.Matrix4(),col=new THREE.Color();
-    const add=(geo,scale,pos,color)=>{if(geo.index){const original=geo;geo=geo.toNonIndexed();original.dispose();}matrix.makeScale(...scale);matrix.setPosition(...pos);geo.applyMatrix4(matrix);col.setHex(color);const c=[];for(let i=0;i<geo.attributes.position.count;i++)c.push(col.r,col.g,col.b);geo.setAttribute('color',new THREE.Float32BufferAttribute(c,3));parts.push(geo);};
-    const box=(scale,pos,color)=>add(new THREE.BoxGeometry(1,1,1),scale,pos,color);
-    const ball=(scale,pos,color)=>add(new THREE.SphereGeometry(1,10,7),scale,pos,color);
-    if(kind==='body'){
-      ball([.5,.5,.5],[0,0,0],coat);box([.76,.28,.8],[0,-.34,0],coat);
-      box([.82,.07,1.03],[0,-.40,0],0x4a4030);box([.15,.10,.07],[0,-.40,.54],0x979689);
-      box([.035,.68,.035],[0,.05,.505],0xada98a);
-      for(const side of [-1,1]){box([.25,.22,.055],[side*.27,.08,.45],coat);box([.28,.05,.055],[side*.27,.20,.48],0x85866e);box([.21,.15,.05],[side*.19,.42,.35],0xb7ad90);}
-    }else if(kind==='head'){
-      ball([.062,.095,.062],[0,-.18,0],0xbc9878);ball([.13,.17,.12],[0,0,0],0xbc9878);ball([.03,.04,.04],[0,-.01,.128],0xb78d6c);
-      for(const side of [-1,1]){ball([.025,.045,.025],[side*.13,0,0],0xbc9878);box([.018,.012,.016],[side*.045,.035,.12],0x302c26);}
-      box([.043,.009,.01],[0,-.065,.12],0x705143);ball([.144,.063,.132],[0,.13,0],coat);box([.24,.025,.19],[0,.11,.06],coat);
-    }else if(kind==='limb'){
-      add(new THREE.CylinderGeometry(.42,.48,1,8),[1,1,1],[0,0,0],0xffffff);box([.88,.065,.88],[0,-.36,0],0xb8b4a8);
-    }else if(kind==='hand'){
-      ball([.055,.085,.046],[0,0,0],0xbc9878);ball([.023,.043,.026],[.047,.01,.025],0xb78d6c);
-    }else{
-      box([1,.9,1],[0,0,0],0xffffff);box([1.04,.12,1.03],[0,-.43,0],0x77756f);
-      for(let i=0;i<3;i++)box([.48,.045,.04],[0,.23-i*.16,.51],0xc8c0a3);
-    }
-    const out=new THREE.BufferGeometry();for(const name of ['position','normal','color']){const values=[];for(const g of parts)values.push(...g.attributes[name].array);out.setAttribute(name,new THREE.Float32BufferAttribute(values,3));}
-    for(const g of parts)g.dispose();out.computeBoundingSphere();return out;
   }
   ground(x,z){return this.terrain.getRenderedHeight(this.x+x,this.z+z)+.08;}
   box(g,w,h,d,mat,x,y,z,name){
@@ -276,8 +255,8 @@ class AirfieldActivity {
     Object.assign(this.loading,{x,z,mounted:mounted>.999,progress:mounted,unloading,
       walking:t>6&&t<24||t>42&&t<60,servicing:t>=24&&t<=42});
   }
-  pose(mesh,index,x,y,z,w,h,d,yaw=0,roll=0){
-    this._position.set(x,y,z);this._rotation.setFromEuler(this._euler.set(0,yaw,roll));this._scale.set(w,h,d);
+  pose(mesh,index,x,y,z,w,h,d,yaw=0,pitch=0){
+    this._position.set(x,y,z);this._rotation.setFromEuler(this._euler.set(pitch,yaw,0,'YXZ'));this._scale.set(w,h,d);
     this._matrix.compose(this._position,this._rotation,this._scale);mesh.setMatrixAt(index,this._matrix);
   }
   update(dt,focusX,focusZ,options={}){
@@ -300,23 +279,36 @@ class AirfieldActivity {
       const yaw=loader?(this.parked[0].userData.heading??this.parked[0].rotation.y):walking?(Math.cos(a*.18)>0?Math.PI/2:-Math.PI/2):Math.PI;
       p.drawX=x;p.drawZ=z;
       const stride=walking?Math.sin(time*5+p.phase)*.35:0;
-      this.pose(this.people.bodies,i,x,y+1.12,z,.43,.62,.27,yaw,p.job==='repair'?.16:0);
-      this.pose(this.people.heads,i,x,y+1.61,z,1,1,1,yaw);
+      const {hipHeight,headOffset,wrist,shoulder,hipOffset,soleOffset,legLength}=this.crewRig;
+      const pitch=p.job==='repair'?.14:0;
+      this.pose(this.people.bodies,i,x,y+hipHeight,z,1,1,1,yaw,pitch);
+      this._bodyMatrix.copy(this._matrix);
+      const joint=this._jointPosition.copy(headOffset).applyMatrix4(this._bodyMatrix);
+      this.pose(this.people.heads,i,joint.x,joint.y,joint.z,1,1,1,yaw,pitch);
+      this._yaw.setFromAxisAngle(this._up,yaw);
       for(const side of [-1,1]){
         const signal=p.job==='signal'&&options.launching&&side===1;
-        const j=i*4+(side===-1?0:2);
+        const j=i*2+(side===-1?0:1),mirror=-side;
         let armRotation=stride*side;
         if(signal)armRotation=-2.1-Math.sin(time*3)*.2;
         else if(loader)armRotation=-.5+(this.loading.servicing?Math.sin(a*2)*.22:0);
         else if(p.job==='carry')armRotation=-.7;
         else if(p.job==='repair'&&side===1)armRotation=-.54+Math.sin(a*2.4)*.26;
-        // Shoulder pivot, then an exact wrist endpoint; hands cannot hover over heads.
-        const reach=-.295*Math.sin(armRotation);
-        this.pose(this.people.limbs,j,x+side*.29+Math.sin(yaw)*reach,y+1.435-.295*Math.cos(armRotation),z+Math.cos(yaw)*reach,.14,.59,.15,yaw,armRotation);
-        this.people.limbs.getMatrixAt(j,this._handMatrix);this._handPosition.set(0,-.5,0).applyMatrix4(this._handMatrix);
-        this.pose(this.people.hands,i*2+(side===-1?0:1),this._handPosition.x,this._handPosition.y,this._handPosition.z,1,1,1,yaw,armRotation);
-        this.pose(this.people.limbs,j+1,x+side*.13,y+.48,z+stride*side*.2,.16,.75,.18,yaw,stride*side);
-        this.pose(this.people.boots,i*2+(side===-1?0:1),x+side*.13,y+.11,z+stride*side*.2+.08,.18,.2,.32,yaw);
+        joint.set(side*Math.abs(shoulder.x),shoulder.y,shoulder.z).applyMatrix4(this._bodyMatrix);
+        this.pose(this.people.arms,j,joint.x,joint.y,joint.z,mirror,1,1,yaw,pitch+armRotation);
+        joint.copy(wrist).applyMatrix4(this._matrix);
+        this.pose(this.people.hands,j,joint.x,joint.y,joint.z,mirror,1,1,yaw,pitch+armRotation);
+        // Point each trouser leg at its actual boot, including on uneven ground.
+        const step=stride*side,forward=step*.40;
+        joint.set(side*hipOffset,0,0).applyQuaternion(this._yaw);
+        const footX=x+joint.x+Math.sin(yaw)*forward,footZ=z+joint.z+Math.cos(yaw)*forward;
+        const ankle=this._ankle.set(footX,this.ground(footX,footZ)+soleOffset+Math.max(0,step)*.15,footZ);
+        this.pose(this.people.boots,j,ankle.x,ankle.y,ankle.z,mirror,1,1,yaw);
+        const hip=this._position.set(x+joint.x,y+hipHeight,z+joint.z),direction=this._legDirection.copy(ankle).sub(hip);
+        this._scale.set(mirror,direction.length()/legLength,1);
+        direction.applyAxisAngle(this._up,-yaw).normalize();
+        this._rotation.setFromUnitVectors(this._down,direction).premultiply(this._yaw);
+        this._matrix.compose(hip,this._rotation,this._scale);this.people.legs.setMatrixAt(j,this._matrix);
       }
     });
     for(let i=0;i<2;i++){

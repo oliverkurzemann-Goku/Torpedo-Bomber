@@ -18,15 +18,32 @@
   $('start').disabled=!!C.planes[c.ac].airOnly;$('enemies').disabled=$('fuel').disabled=c.task==='free';
   $('enemyLabel').textContent=c.task==='intercept'?'Enemy bombers':c.task==='defend'?'Incoming Avengers':['ships','torpedo','convoy','bridge','factory'].includes(c.task)?'Fighter cover':'Enemy fighters';
   $('enemies').querySelector('option[value="0"]').disabled=['fighter','intercept','defend'].includes(c.task);
-  $('stores').textContent=detail.armament;$('aircraftNote').textContent=c.ac==='me163'?'The Komet starts airborne after trolley release. Plan an unpowered skid landing.':c.kit==='range'?'External fuel is consumed first. Jettison the drop tank before combat.':c.kit==='torpedo'?'One torpedo in the internal bay. Land aboard to rearm for another attack.':c.ac==='avenger'&&c.kit==='bombs'?'Two bombs inside the Avenger bomb bay; no external racks.':'Gun installation stays specific to the selected aircraft.';
+  $('stores').textContent=detail.armament;$('aircraftNote').textContent=c.ac==='secretjet'?'Airborne start. Switch between pilot and both gun turrets in flight.':c.ac==='me163'?'The Komet starts airborne after trolley release. Plan an unpowered skid landing.':c.kit==='range'?'External fuel is consumed first. Jettison the drop tank before combat.':c.kit==='torpedo'?'One torpedo in the internal bay. Land aboard to rearm for another attack.':c.ac==='avenger'&&c.kit==='bombs'?'Two bombs inside the Avenger bomb bay; no external racks.':'Gun installation stays specific to the selected aircraft.';
   const art=$('theatreArt');art.src=c.theatre==='pacific'?'assets/pacific-campaign.webp':'assets/europe-campaign.webp';art.alt=c.theatre==='pacific'?'Pacific carrier operations':'Rhine valley operations';
-  const strong=document.createElement('strong');strong.textContent=detail.title+' · '+detail.aircraft;const line=document.createElement('small');line.textContent=detail.conditions+' · '+(c.task==='free'?'Unlimited practice fuel':c.fuel+'% fuel')+' · '+({rookie:'Rookie',vet:'Veteran',ace:'Ace'})[c.difficulty];$('summary').replaceChildren(strong,line);
+  const strong=document.createElement('strong');strong.textContent=detail.title+' · '+detail.aircraft;const line=document.createElement('small');line.textContent=detail.conditions+' · '+(c.ac==='secretjet'?'20 min nominal fuel':c.task==='free'?'Unlimited practice fuel':c.fuel+'% fuel')+' · '+({rookie:'Rookie',vet:'Veteran',ace:'Ace'})[c.difficulty];$('summary').replaceChildren(strong,line);
   preview.update(c);
-  try{localStorage.setItem(draftKey,JSON.stringify(c));}catch(_){}
+  if(c.ac!=='secretjet')try{localStorage.setItem(draftKey,JSON.stringify(c));}catch(_){}
  }
  options($('weather'),Object.entries(C.weatherNames),'clear');
  document.querySelectorAll('[data-theatre]').forEach(b=>b.onclick=()=>{c=C.defaults(b.dataset.theatre);draw();});
  for(const key of ['task','kit','weather','time','start','difficulty','enemies','fuel'])$(key).addEventListener('change',()=>{c[key]=['enemies','fuel'].includes(key)?Number($(key).value):$(key).value;draw();});
  $('setup').addEventListener('submit',e=>{e.preventDefault();try{const valid=C.normalize(c);location.href=C.url(valid);}catch(error){$('error').hidden=false;$('error').textContent=error.message;}});
+ const badge=$('hangarBadge');let badgeTimer=null;
+ function cancelBadge(){clearTimeout(badgeTimer);badgeTimer=null;}
+ function holdBadge(){
+  if(badgeTimer!==null)return;
+  badgeTimer=setTimeout(()=>{
+   badgeTimer=null;
+   C.unlockSecretJet();
+   c={...C.defaults('pacific'),ac:'secretjet',kit:'turrets',start:'air'};
+   draw();
+  },3000);
+ }
+ badge.addEventListener('pointerdown',e=>{if(e.button===0){e.preventDefault();holdBadge();}});
+ for(const event of ['pointerup','pointerleave','pointercancel','lostpointercapture','blur'])badge.addEventListener(event,cancelBadge);
+ badge.addEventListener('contextmenu',e=>e.preventDefault());
+ badge.addEventListener('keydown',e=>{if(e.code==='Space'||e.code==='Enter'){e.preventDefault();if(!e.repeat)holdBadge();}});
+ badge.addEventListener('keyup',cancelBadge);
+ window.addEventListener('blur',cancelBadge);
  draw();
 })();

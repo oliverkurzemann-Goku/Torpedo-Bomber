@@ -26,7 +26,7 @@ const server=http.createServer((req,res)=>{
   const page=await browser.newPage({viewport:{width:1194,height:660},hasTouch:true,deviceScaleFactor:1}),errors=[];
   page.setDefaultTimeout(900000);page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error'&&!/404/.test(m.text()))errors.push('console: '+m.text());});
   await page.addInitScript(()=>window.requestAnimationFrame=()=>0);
-  await page.goto('http://127.0.0.1:'+server.address().port+'/remagen-mission.html?v=253&surprises=off&sortie='+sortie);
+  await page.goto('http://127.0.0.1:'+server.address().port+'/remagen-mission.html?v=256&surprises=off&sortie='+sortie);
   // the hangar sortie opens the briefing at once: wait for the world, not for the menu
   await page.waitForFunction(()=>realWorldReady&&(state===ST.MENU||state===ST.BRIEF),null,{polling:200});
   await page.evaluate(async()=>{await Promise.all(['fi156','p47'].map(ensureModel));renderer.setPixelRatio(.25);renderer.shadowMap.enabled=false;if(typeof flightQuality!=='undefined')flightQuality.enabled=false;
@@ -85,7 +85,8 @@ const server=http.createServer((req,res)=>{
   // ---- 2. Bonus Rescue Run: land at the yellow smoke, the pilot runs and boards (6 s), fighters come, take off again from the meadow ----
   const R=await page.evaluate(()=>{
    const dt=1/60,r1=v=>+(+v).toFixed(1),out={};begin('rescue');
-   out.start={onGround:P.onGround,text:objectiveText(),kind:sts&&sts.kind,fig:!!(sts&&sts.fig)};const lz=sts.plan.lz;
+   out.start={onGround:P.onGround,text:objectiveText(),kind:sts&&sts.kind,fig:!!(sts&&sts.fig),
+    roles:[sts.fig.userData.role,...sts.aidTeam.children.map(o=>o.userData.role).filter(Boolean)]};const lz=sts.plan.lz;
    const ys=[-190,-100,0,100,190].map(d=>groundY(lz.x+d,lz.z));out.slopePct=r1((Math.max(...ys)-Math.min(...ys))/380*100);
    P.onGround=false;P.landingRoll=null;P.departureAge=null;P.touchResolved=false;P.throttle=.3;P.gear=P.gearTgt=1;P.flap=P.flapTgt=1;P.heading=Math.PI/2;P.pitch=.02;P.roll=P.rollBias=P.pitchVel=P.rollVel=0;inputPitch=inputRoll=0;
    // a 3.5 degree path to a point 30 m short of the meadow's middle: the wind of the start (random) must not decide whether the test works
@@ -105,6 +106,7 @@ const server=http.createServer((req,res)=>{
   });
   report.rescue=R;
   assert.equal(R.start.kind,'rescue');assert.ok(R.start.fig&&/YELLOW SMOKE/.test(R.start.text),JSON.stringify(R.start));assert.ok(R.slopePct<4,'the meadow is flat enough to land and take off: '+R.slopePct+' %');
+  assert.deepEqual(R.start.roles,['wounded','medic','bearer']);
   assert.ok(R.touch&&Math.abs(R.touch.dx)<120&&Math.abs(R.touch.dz)<60&&R.touch.kmh<75,'touchdown at the smoke: '+JSON.stringify(R.touch));assert.ok(R.landed.phase==='run'&&!R.landed.over&&R.landed.alive&&!R.landed.crash,'the pickup begins instead of ending the sortie: '+JSON.stringify(R.landed));
   assert.ok(R.boarded.phase==='home'&&R.boarded.rescued===1&&R.boarded.t>6&&R.boarded.t<30&&R.boarded.score>=600&&!R.boarded.fig&&/PILOT ABOARD/.test(R.boarded.text),'the pilot is aboard: '+JSON.stringify(R.boarded));
   assert.ok(R.hunters.n===2&&R.hunters.escape&&/BANDITS 2/.test(R.hunters.text),'two bandits that never hold up the return: '+JSON.stringify(R.hunters));assert.ok(R.takeoff&&R.takeoff.run<190&&R.alive,'off the meadow again: '+JSON.stringify(R.takeoff));
@@ -130,15 +132,16 @@ const server=http.createServer((req,res)=>{
    begin('courier');out.courier.landed=land(40,.15);out.courier.boardT=board();out.courier.done={phase:sts.phase,courier:sortieKills.courier||0,rescued:sortieKills.rescued||0,score,text:objectiveText(),left:objectiveLeft()};
    // rock
    begin('rock');const rz=sts.plan.lz,ys=[-30,-15,0,15,30].map(d=>groundY(rz.x+d,rz.z)),yh=groundY(GERMAN_AF_X,GERMAN_AF_Z);
-   out.rock={text:objectiveText(),slope:r1((Math.max(...ys)-Math.min(...ys))/60*100),above:Math.round(groundY(rz.x,rz.z)-yh),dist:Math.round(Math.hypot(rz.x-GERMAN_AF_X,rz.z-GERMAN_AF_Z))};
+   out.rock={text:objectiveText(),slope:r1((Math.max(...ys)-Math.min(...ys))/60*100),above:Math.round(groundY(rz.x,rz.z)-yh),dist:Math.round(Math.hypot(rz.x-GERMAN_AF_X,rz.z-GERMAN_AF_Z)),observer:!!sts.fig.getObjectByName('observerFieldKit')};
    const sc0=score;out.rock.landed=land(20,.2);out.rock.bonus=score-sc0;out.rock.boardT=board();for(let t=0;t<11;t+=dt)updateSites(dt);out.rock.hunters=enemyAir.filter(e=>e.alive&&e.sortie).length;out.rock.done={phase:sts.phase,rescued:sortieKills.rescued||0};
    // moon
-   begin('moon');const mz=sts.plan.lz;out.moon={night:!!M().night,lamps:sts.lamps&&sts.lamps.length,lampsInScene:sts.lamps&&sts.lamps.every(l=>l.parent===scene),text:objectiveText()};
+   begin('moon');out.moon={night:!!M().night,lamps:sts.lamps&&sts.lamps.length,lampsInScene:sts.lamps&&sts.lamps.every(l=>l.parent===scene),text:objectiveText(),agent:!!sts.fig.getObjectByName('agentSatchel')};
    out.moon.landed=land(40,.15);out.moon.boardT=board();for(let t=0;t<8;t+=dt)updateSites(dt);out.moon.hunters=enemyAir.filter(e=>e.alive&&e.sortie).length;out.moon.done={phase:sts.phase,rescued:sortieKills.rescued||0,text:objectiveText()};
    begin('rescue');out.reset={lamps:!(sts.lamps&&sts.lamps.length),kind:sts.kind};
    return out;
   });
   report.pickups=K;
+  assert.equal(K.rock.observer,true);assert.equal(K.moon.agent,true);
   assert.ok(K.courier.weather==='lowcloud'&&K.courier.dist>8500&&/UNDER THE CLOUDS/.test(K.courier.text),'courier: low overcast, the command post far behind the line: '+JSON.stringify(K.courier));
   assert.ok(K.courier.lowOk.hunters===0&&K.courier.lowOk.high===0,'under the cloud base nobody sees you: '+JSON.stringify(K.courier.lowOk));
   assert.ok(K.courier.spotted.hunters>=1&&K.courier.spotted.escape&&K.courier.spotted.said>=1,'above the cloud base the fighters dive on you (and never hold up the return): '+JSON.stringify(K.courier.spotted));
@@ -162,11 +165,8 @@ const server=http.createServer((req,res)=>{
    P.onGround=false;P.pos.set(sr.x-5000,groundY(sr.x-5000,sr.z)+300,sr.z);state=ST.FLIGHT;updateHUD();
    out.nav={dist:parseFloat(document.getElementById('navDist').textContent),kind:document.getElementById('navKind').textContent,want:r1(5000/MI),base:r1(Math.hypot(P.pos.x-GERMAN_AF_X,P.pos.z-GERMAN_AF_Z)/MI)};
    out.hunt=[0,1,2].map(d=>{diffIdx=d;return stsHuntCount();});diffIdx=0;
-   // the person: CrewVisuals (jacket, face, boots), waving while he waits, running legs while he runs
-   const person=sts.person,arms=person&&person.userData.arms,legs=person&&person.userData.legs;
-   out.person={meshes:(()=>{let n=0;sts.fig.traverse(o=>{if(o.isMesh)n++;});return n;})(),arms:arms&&arms.length,legs:legs&&legs.length};
-   sts.clock=.3;stsPose(sts);out.wave={arm:r1(arms[1].rotation.z),other:r1(arms[0].rotation.z)};
-   sts.phase='run';sts.runT=.13;stsPose(sts);out.run={leg0:r1(legs[0].rotation.x),leg1:r1(legs[1].rotation.x),arm0:r1(arms[0].rotation.x)};sts.phase='fly';
+   // the people at the pickup are the articulated CrewFigures of the shared set (patient with a stretcher team for the rescue run), not a cylinder with a ball
+   const fig=sts.fig;out.person={team:!!sts.aidTeam,arms:fig&&fig.userData&&fig.userData.arms&&fig.userData.arms.length,legs:fig&&fig.userData&&fig.userData.legs&&fig.userData.legs.length,crewFigures:typeof CrewFigures};
    // the red sight: hidden for the Storch (the observer's gun is automatic), still there for a fighter
    P.pos.set(lz.x-3000,groundY(lz.x-3000,lz.z)+300,lz.z);P.spd=45;P.onGround=false;state=ST.FLIGHT;animate();out.sightStorch=document.getElementById('gunsight').style.display;
    return out;
@@ -177,9 +177,7 @@ const server=http.createServer((req,res)=>{
   assert.ok(N.brief.length===1&&N.brief[0].r>=1000&&!N.brief[0].onLz&&/Search area, about \d+ km [NESW]{1,2} of the strip, course \d{3} deg/.test(N.brief[0].label),'the briefing map shows the search area with distance and course: '+JSON.stringify(N.brief));
   assert.ok(Math.abs(N.nav.dist-N.nav.want)<.3&&Math.abs(N.nav.dist-N.nav.base)>1&&/SEARCH|AREA/i.test(N.nav.kind),'the arrow and the distance lead to the search area, not to the base: '+JSON.stringify(N.nav));
   assert.deepEqual(N.hunt,[2,2,3],'Rookie gets two hunters as well (one used to look as if nobody attacked): '+JSON.stringify(N.hunt));
-  assert.ok(N.person.meshes>=8&&N.person.meshes<=60&&N.person.arms===2&&N.person.legs===2,'a person, not a cylinder with a ball: '+JSON.stringify(N.person));
-  assert.ok(N.wave.arm>2&&Math.abs(N.wave.other)<.05,'he waves while he waits: '+JSON.stringify(N.wave));
-  assert.ok(Math.abs(N.run.leg0)>.5&&Math.abs(N.run.leg1)>.5&&N.run.leg0*N.run.leg1<0,'and his legs swing while he runs: '+JSON.stringify(N.run));
+  assert.ok(N.person.crewFigures==='object'&&N.person.team&&N.person.arms===2&&N.person.legs===2,'articulated people with an aid team, not a cylinder with a ball: '+JSON.stringify(N.person));
   assert.equal(N.sightStorch,'none','no red sight for an aeroplane without a forward gun');
 
   // ---- 3. Bonus Spotter: low and slow in a circle for 12 s, then fire for effect; too fast / too high / outside counts for nothing ----

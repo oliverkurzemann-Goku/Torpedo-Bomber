@@ -1,7 +1,7 @@
 /* Inspect the actual rendered instance transforms, including both turnarounds. */
 'use strict';
 const assert=require('node:assert/strict'),THREE=require('three');
-require('../../crew-visuals.js');const Deck=require('../../deck-activity.js');
+const Deck=require('../../deck-activity.js');
 const results=[];
 for(const fps of [20,60,120]){
  const scene=new THREE.Scene(),deck=Deck.create(THREE,scene,{deckY:14,service:fps===60?'ijn':'usnavy'});
@@ -34,4 +34,4 @@ for(const fps of [20,60,120]){
  assert(deck.group.children.every((m,i)=>paused[i].every((v,k)=>v===m.instanceMatrix.array[k])),'zero elapsed time freezes the pose');
  results.push({fps,slide,minSole,maxStep,maxBoneError,lift,planted});deck.dispose();assert.equal(scene.children.length,0);
 }
-console.log('Original crew geometry: planted soles, raised swing feet, connected knees and continuous turnarounds:',results);
+console.log('Detailed crew geometry: planted soles, raised swing feet, connected knees and continuous turnarounds:',results);

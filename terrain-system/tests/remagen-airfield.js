@@ -3,6 +3,7 @@
 const fs=require('fs'),path=require('path'),vm=require('vm'),assert=require('assert/strict');
 const root=path.resolve(__dirname,'../..');
 global.THREE=require(process.env.THREE_R128||'three');
+require('../../crew-figures.js');
 assert.equal(THREE.REVISION,'128');
 for(const name of ['HeightProvider','TerrainTile','TerrainManager','OSMManager','WorldVehicles','AirfieldDetails','AircraftGround','AirfieldActivity'])
   vm.runInThisContext(fs.readFileSync(path.join(root,'terrain-system',name+'.js'),'utf8'));
@@ -109,13 +110,13 @@ global.fetch=async url=>{
     assert.deepEqual(Array.from(selection.select(ac)),[23600,25725,terrain.getHeight(23600,25725)],`${ac} starts from the German base`);
   const activity=vm.runInContext('alliedActivity',context);
   assert.equal(activity.crew.length,12);assert.equal(activity.parked.length,2);assert.equal(activity.trucks.length,2);
-  const pose=activity.people.limbs.instanceMatrix.array.slice();
+  const pose=activity.people.arms.instanceMatrix.array.slice();
   activity.update(1,6000,15800);
-  assert.notDeepEqual(activity.people.limbs.instanceMatrix.array,pose,'crew must actually animate');
+  assert.notDeepEqual(activity.people.arms.instanceMatrix.array,pose,'crew must actually animate');
   const signalIndex=activity.crew.findIndex(p=>p.job==='signal'),signal=activity.crew[signalIndex],handMatrix=new THREE.Matrix4(),handPosition=new THREE.Vector3();
   for(const side of [0,1]){
-    const armMatrix=new THREE.Matrix4(),wrist=new THREE.Vector3();activity.people.limbs.getMatrixAt(signalIndex*4+side*2,armMatrix);
-    wrist.set(0,-.5,0).applyMatrix4(armMatrix);activity.people.hands.getMatrixAt(signalIndex*2+side,handMatrix);handPosition.setFromMatrixPosition(handMatrix);
+    const armMatrix=new THREE.Matrix4(),wrist=new THREE.Vector3();activity.people.arms.getMatrixAt(signalIndex*2+side,armMatrix);
+    wrist.copy(activity.crewRig.wrist).applyMatrix4(armMatrix);activity.people.hands.getMatrixAt(signalIndex*2+side,handMatrix);handPosition.setFromMatrixPosition(handMatrix);
     assert(wrist.distanceTo(handPosition)<.00003,'hands follow actual wrists');
     assert(handPosition.y<activity.ground(signal.drawX,signal.drawZ)+1.2,'idle marshaller keeps hands down');
   }

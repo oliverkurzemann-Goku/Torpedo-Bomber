@@ -13,6 +13,9 @@ for(const water of [false,true]){
  let gd=0,md=0;for(const g of geometries)g.addEventListener('dispose',()=>gd++);for(const m of materials)m.addEventListener('dispose',()=>md++);
  const before=rescue.group.position.clone();rescue.update(3);assert(rescue.group.position.distanceTo(chute.position)<before.distanceTo(chute.position));
  assert.equal(rescue.update(3).pickup,false);assert.equal(rescue.update(.3).pickup,true);
+ const figures=(water?rescue.group:rescue.group.getObjectByName('groundRescueTeam')).children.filter(o=>o.userData.role);
+ assert.deepEqual(figures.map(o=>o.userData.role),water?['deckhand','boatMedic','wounded']:['medic','bearer','wounded']);
+ assert(figures.every(o=>o.visible));
  assert.equal(rescue.update(1).done,false);assert.equal(rescue.update(1).done,true,'eight-second sequence ends deterministically');
  rescue.dispose();rescue.dispose();assert.equal(gd,geometries.size);assert.equal(md,materials.size,'shared rescue materials are disposed exactly once');
  chute.dispose();assert.equal(scene.children.length,0,'retry leaves no rescue scene behind');
@@ -41,6 +44,7 @@ assert(tickets.every(t=>t.pickup));assert.equal(boarded,2);
 tickets.push(crew.add(new THREE.Vector3(-50,1,35)));assert.equal(tickets[2].group,boat,'late survivor uses the existing boat');
 for(let i=0;i<1000&&!tickets[2].update().done;i++)crew.update(.05);
 assert(tickets[2].pickup);assert.equal(boat.children.filter(o=>o.name==='rescuedCrew').length,3);
+assert.equal(boat.children.filter(o=>o.userData.role==='wounded').length,1);
 const sharedGeometry=new Set(),sharedMaterials=new Set();for(const g of [boat,tickets[0].marker])g.traverse(o=>{if(o.geometry)sharedGeometry.add(o.geometry);if(o.material)for(const m of [].concat(o.material))sharedMaterials.add(m);});
 let disposedGeometry=0,disposedMaterials=0;for(const g of sharedGeometry)g.addEventListener('dispose',()=>disposedGeometry++);for(const m of sharedMaterials)m.addEventListener('dispose',()=>disposedMaterials++);
 crew.dispose();crew.dispose();assert.equal(disposedGeometry,sharedGeometry.size);assert.equal(disposedMaterials,sharedMaterials.size);assert.equal(scene.children.length,0);

@@ -1,6 +1,6 @@
-# Period models and their missions (Builds 246 to 253)
+# Period models and their missions (Builds 246 to 256)
 
-## Build 252/253: the flyable Catalina — Storch feedback — people
+## Build 256: the flyable Catalina — Storch feedback — people
 
 **Catalina (Build 252).** The revised PBY-5A (rig class `amphibian-twin`) is a player aircraft in the Rhine game: Allied side, take-off from the Beaufort strip or from the Rhine (hull, floats out), data sheet
 `SOURCES.pby` (35 420 lb, 179 mph, 610 ft/min), core only, hull 150, no forward guns (bow gun and two waist blisters fire by themselves), no flaps. Water handling (`WATER` in `remagen-mission.html`) is a
@@ -8,13 +8,11 @@ set of estimates (C): hydrodynamic drag with a hump, floats out below 46 m/s, wh
 lift-off from the strip after 26.9 s / 577 m, from the water after 30.1 s / 619 m, 6.4 m/s climb at 133 km/h. Two sorties (Rhine indices 32–33): Bonus Dumbo (alight on the river, taxi to the dinghy, hatch, +600) and
 Bonus Black Cat (night strike on the ferry, two bombs, flares, +1 100). Hangar and free flight know the type (`custom-sortie.js`, Rhine only, kits `guns`/`bombs`; Black Cat paint = second template `pbyn`).
 
-**Storch feedback (Build 253).** The pickup sorties no longer show the landing place: the map shows a search area of 1 150 m radius (briefing: distance and course) and the arrow leads to its middle.
+**Storch feedback.** The pickup sorties no longer show the landing place: the map shows a search area of 1 150 m radius (briefing: distance and course) and the arrow leads to its middle.
 Wind drift is a fraction of the weather's wind (`windK` .3 Storch, .6 Catalina; the cap is 7 m/s). Take-off pitch is limited by airspeed above the stall speed. Rookie gets two hunters. No red sight for
-aircraft without a fixed gun. The persons at the pickup are the shared `CrewVisuals` figure for now.
+aircraft without a fixed gun.
 
-**People pack (ordered from ChatGPT, not delivered yet).** One GLB `crew-pack-own.glb`: rigid, named joints with the pivots of `CrewVisuals` (shoulder ±0.235/1.39, hip ±0.11/0.82), eight persons (agent, observer
-standing and seated at a MG 15, pilot seated and standing, courier officer, airman in a dinghy, airman standing), plus `SeatPilot`/`SeatObserver` nodes in the Storch. Budget 3 500 triangles per person,
-one 2048² texture, validator 0/0. The game side only needs the file name and the joint names to swap it in for the `stsMakeFigure` figure and to seat the crew in the Storch.
+**People.** The persons at the pickups are ChatGPT's articulated `CrewFigures` (`crew-figures.js`, Builds 253–254); the Catalina's airman in the dinghy is a `CrewFigures` survivor in pose `float`.
 
 ## Build 250/251: the Storch lands in a meadow without wrecking — three more Storch sorties — the revised Catalina
 

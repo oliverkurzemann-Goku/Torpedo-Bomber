@@ -41,8 +41,8 @@ const server=http.createServer((req,res)=>{
    if(!pacific){
     await proof('ground-crew',()=>{alliedActivity.update(0,ALLIED_AF_X,ALLIED_AF_Z);const c=alliedActivity.crew.find(c=>c.job==='signal'),x=ALLIED_AF_X+c.drawX,z=ALLIED_AF_Z+c.drawZ,y=terrain.getRenderedHeight(x,z);updateContentVisibility(x,z);camera.position.set(x-.5,y+2.3,z-3.2);camera.lookAt(x,y+1.1,z);});
    }else{
-    const rescue=await page.evaluate(()=>{for(let i=0;i<6000&&!bailDone&&!bailRescue;i++)advanceBailout(.05);if(!bailRescue?.water)throw Error('Water pickup did not start');advanceBailout(3);return {crew:bailRescue.group.children.filter(o=>o.name==='pilot').length,pickup:bailRescue.pickup};});
-    assert.equal(rescue.crew,2);assert.equal(rescue.pickup,false);
+    const rescue=await page.evaluate(()=>{for(let i=0;i<6000&&!bailDone&&!bailRescue;i++)advanceBailout(.05);if(!bailRescue?.water)throw Error('Water pickup did not start');advanceBailout(3);return {crew:bailRescue.group.children.filter(o=>o.userData.role).map(o=>o.userData.role),pickup:bailRescue.pickup};});
+    assert.deepEqual(rescue.crew,['deckhand','boatMedic']);assert.equal(rescue.pickup,false);
     await proof('rescue-boat',()=>{const p=bailRescue.group.position;camera.position.copy(p).add(new THREE.Vector3(9,6,10));camera.lookAt(p.clone().add(new THREE.Vector3(0,1.2,0)));});
     const avenger=await page.evaluate(()=>{let boats=0;for(let i=0;i<12000&&!bailDone;i++){advanceBailout(.05);boats=Math.max(boats,scene.children.filter(o=>o.name==='rescueBoat').length);}return {boats,done:bailDone,recovered:crewBailouts.filter(c=>c.safe).length+Number(bailRescue.pickup),aboard:bailRescue.group.children.filter(o=>o.name==='rescuedCrew').length};});
     assert.deepEqual(avenger,{boats:1,done:true,recovered:3,aboard:3});

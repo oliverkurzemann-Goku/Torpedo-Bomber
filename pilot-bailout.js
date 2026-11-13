@@ -3,27 +3,33 @@
  'use strict';
  function create(THREE,scene,start,heading,speed,groundAt,options={}){
   const group=new THREE.Group();group.name='pilotParachute';
+  const figures=root.CrewFigures||(typeof require==='function'?require('./crew-figures.js'):null);
+  const pilot=figures.create(THREE,{service:options.service,variant:options.variant,srgbOutput:options.srgbOutput});
   const cloth=new THREE.MeshStandardMaterial({color:0xffffff,roughness:1,side:THREE.DoubleSide,vertexColors:true});
   const line=new THREE.MeshBasicMaterial({color:0xddd3b3});
   const canopyGeo=new THREE.SphereGeometry(3.1,32,12,0,Math.PI*2,0,Math.PI/2),fabric=[];
+  const colors=figures.canopyColors(options.service).map(value=>new THREE.Color(value));
+  if(options.srgbOutput)for(const color of colors)color.convertSRGBToLinear();
+  const tint=new THREE.Color();
   for(let i=0;i<canopyGeo.attributes.uv.count;i++){
    const u=canopyGeo.attributes.uv.getX(i),v=canopyGeo.attributes.uv.getY(i),panel=Math.floor(u*16)%2;
-   const c=new THREE.Color(panel?0xdedbd1:0xf0eee4);c.multiplyScalar(.94+v*.06);fabric.push(c.r,c.g,c.b);
+   tint.copy(colors[panel]).multiplyScalar(.93+v*.07);fabric.push(tint.r,tint.g,tint.b);
   }
   canopyGeo.setAttribute('color',new THREE.Float32BufferAttribute(fabric,3));
   const canopy=new THREE.Mesh(canopyGeo,cloth);
   canopy.position.y=4.4;canopy.visible=false;group.add(canopy);
-  for(let i=0;i<8;i++){
-   const a=i*Math.PI/4,p=new THREE.Vector3(Math.cos(a)*3.05,4.4,Math.sin(a)*3.05);
-   const dir=p.clone().sub(new THREE.Vector3(0,.5,0));
-   const cord=new THREE.Mesh(new THREE.CylinderGeometry(.014,.014,dir.length(),3),line);
-   cord.position.copy(p).add(new THREE.Vector3(0,.5,0)).multiplyScalar(.5);
+  pilot.position.y=-.9;group.add(pilot);
+  figures.pose(pilot,'chute');
+  const grips=pilot.userData.hands.map(hand=>hand.getWorldPosition(new THREE.Vector3()));
+  figures.pose(pilot,'stand');
+  for(let i=0;i<12;i++){
+   const a=(i+.5)*Math.PI/6,p=new THREE.Vector3(Math.cos(a)*3.1,4.4,Math.sin(a)*3.1);
+   const grip=grips[p.x<0?0:1],dir=p.clone().sub(grip);
+   const cord=new THREE.Mesh(new THREE.CylinderGeometry(.012,.012,dir.length(),3),line);
+   cord.position.copy(p).add(grip).multiplyScalar(.5);
    cord.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),dir.normalize());
    cord.visible=false;group.add(cord);
   }
-  const visuals=root.CrewVisuals||(typeof require==='function'?require('./crew-visuals.js'):null);
-  const pilot=visuals.create(THREE,{service:options.service||'usaaf',variant:options.variant||0,pose:'ground',srgbOutput:options.srgbOutput});
-  pilot.position.y=-.9;group.add(pilot);
   group.rotation.y=heading;
   group.position.copy(start);scene.add(group);
   const velocity=new THREE.Vector3(Math.sin(heading)*Math.min(speed,190)*.18,0,
@@ -34,8 +40,7 @@
    group, get position(){return group.position;},get deployed(){return deployed;},get heading(){return yaw;},
    settle(water=false){
     if(settled)return;settled=true;
-    for(const arm of pilot.userData.arms)arm.rotation.set(water?-.55:0,0,0);
-    for(const leg of pilot.userData.legs)leg.rotation.set(water?-1.1:0,0,0);
+    figures.pose(pilot,water?'float':'stand');
     for(const child of group.children)if(child.material===line)child.visible=false;
     canopy.scale.set(.5,.07,.34);canopy.position.set(2.2,-.65,-1.4);group.rotation.set(0,yaw,0);
     if(water){
@@ -50,7 +55,7 @@
     const ground=groundAt(group.position.x,group.position.z);
     if(!deployed&&elapsed>.8&&group.position.y-ground>38){
      deployed=true;canopy.visible=true;
-     pilot.userData.arms.forEach((arm,i)=>arm.rotation.z=(i?1:-1)*2.45);
+     figures.pose(pilot,'chute');
      for(const child of group.children)if(child.material===line)child.visible=true;
     }
     if(deployed)fall+=(5.5-fall)*Math.min(1,dt*1.8);

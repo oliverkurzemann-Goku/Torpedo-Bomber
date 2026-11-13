@@ -226,8 +226,8 @@ const cdn={
      const activity=alliedActivity;activity.setAircraft(modelTpl.p47,'p47');
      activity.time=15;activity.update(0,ALLIED_AF_X,ALLIED_AF_Z);
      const cartBefore=activity.trolley.position.clone(),payloadBefore=activity.payload.position.clone();
-     const before=activity.people.limbs.instanceMatrix.array.slice();activity.update(2,ALLIED_AF_X,ALLIED_AF_Z);
-     const animated=before.some((v,i)=>v!==activity.people.limbs.instanceMatrix.array[i]);
+     const before=activity.people.arms.instanceMatrix.array.slice();activity.update(2,ALLIED_AF_X,ALLIED_AF_Z);
+     const animated=before.some((v,i)=>v!==activity.people.arms.instanceMatrix.array[i]);
      const studio=new THREE.Scene();studio.background=new THREE.Color(0xb8c8cf);
      for(const light of scene.children.filter(o=>o.isLight))studio.add(light.clone());
      if(scene.fog)studio.fog=scene.fog.clone();
