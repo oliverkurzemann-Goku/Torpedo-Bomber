@@ -34,3 +34,16 @@ jobs:
           name: build-196-visual-checks
           path: test-visuals/*.png
           if-no-files-found: ignore
+
+  space-coop:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: node okinawa/tests/space-coop.cjs
+      - run: node okinawa/tests/space-coop-browser.cjs
