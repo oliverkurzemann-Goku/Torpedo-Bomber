@@ -18,7 +18,7 @@
   },
   "alight": {
    "touch": {
-    "t": 8.7,
+    "t": 8.5,
     "spd": 33.4,
     "wet": true
    },
@@ -27,7 +27,7 @@
    "over": false,
    "onWater": true,
    "phase": "run",
-   "dist": 28,
+   "dist": 76,
    "text": "DINGHY ALONGSIDE — HOLD STILL"
   },
   "taxi": {
@@ -36,11 +36,11 @@
    "alive": true,
    "crash": null,
    "spd": 0,
-   "dist": 28,
+   "dist": 76,
    "text": "DINGHY ALONGSIDE — HOLD STILL"
   },
   "boarded": {
-   "t": 10.8,
+   "t": 18.7,
    "phase": "home",
    "rescued": 1,
    "score": 600,
@@ -51,12 +51,12 @@
    "said": 1
   },
   "run": {
-   "l1": 700,
-   "l2": 775,
-   "dist": 618
+   "l1": 800,
+   "l2": 675,
+   "dist": 617
   },
   "takeoff": {
-   "off": 30.1,
+   "off": 30,
    "alive": true,
    "crash": null,
    "climb": 6.3,
@@ -68,16 +68,16 @@
   "block": 0,
   "home": {
    "td": {
-    "t": 19.4,
-    "spd": 37.9,
-    "x": -98
+    "t": 16.7,
+    "spd": 39.4,
+    "x": -54
    },
    "alive": true,
    "crash": null,
    "over": true,
    "landing": false,
    "onGround": true,
-   "result": "\n  \n    Flight Officer Bud Ferris  &middot;  Landed at Beaufort  &middot;  🥇 GOLD\n    MISSION ACCOMPLISHED\n    The airman is home. This sortie: 1 rescuedHull 8",
+   "result": "\n  \n    Flight Officer Frank Zabrinski  &middot;  Landed at Beaufort  &middot;  🥇 GOLD\n    MISSION ACCOMPLISHED\n    The airman is home. This sortie: 1 rescuedH",
    "score": 1000
   }
  },
