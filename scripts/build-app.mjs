@@ -9,7 +9,7 @@ const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 const outputName=process.argv.find(a=>a.startsWith('--output='))?.slice(9)||'dist-app';
 if(!/^dist-app(?:-test-\d+)?$/.test(outputName))throw Error('Unsafe output name');
 const output=path.join(root,outputName);
-const entries=['index.html','torpedo-carrier.html','remagen-mission.html','hangar.html'];
+const entries=['index.html','torpedo-carrier.html','remagen-mission.html','hangar.html','space-coop.html'];
 const directories=['assets','audio','vendor','okinawa','terrain-system'];
 const extensions=new Set(['.js','.css','.glb','.fbx','.bin','.json','.png','.jpg','.jpeg','.webp','.svg','.txt','.wav','.md']);
 const excluded=new Set(['tests','node_modules','__pycache__','real-tools','tools','source']);

@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Rettung im Asteroidengürtel</title>
+<link rel="stylesheet" href="space-coop.css?v=263">
+</head>
+<body>
+<main id="lobby">
+ <a class="back" href="hangar.html?theatre=pacific&amp;v=263">‹ Zum Hangar</a>
+ <h1>Rettung im<br>Asteroidengürtel</h1>
+ <p class="intro">Ein Frachter sendet ein Notsignal. Fliegt zu zweit los und bringt ihn in Sicherheit.</p>
+ <div class="actions">
+  <button id="host" type="button">Spiel eröffnen</button>
+  <button id="join" type="button">Spiel beitreten</button>
+ </div>
+ <label id="internetRow"><input id="internet" type="checkbox"> Über das Internet verbinden</label>
+ <section id="exchange" hidden aria-label="Einladung austauschen">
+  <div id="outRow" hidden>
+   <label id="outLabel" for="outCode"></label>
+   <textarea id="outCode" rows="2" readonly spellcheck="false"></textarea>
+   <button id="share" type="button">Link kopieren / teilen</button>
+  </div>
+  <div id="inRow" hidden>
+   <label id="inLabel" for="inCode"></label>
+   <textarea id="inCode" rows="2" spellcheck="false" autocapitalize="off" autocomplete="off"></textarea>
+   <button id="confirm" type="button"></button>
+  </div>
+ </section>
+ <p id="status" role="status" aria-live="polite">Für zwei Geräte. Im selben WLAN reicht die direkte Verbindung.</p>
+ <button id="start" type="button" hidden disabled>Gemeinsam starten</button>
+</main>
+<section id="flight" aria-label="3D-Weltraumflug" hidden>
+ <div id="viewport"></div>
+ <div class="instruments">
+  <span id="meters"></span>
+  <strong id="objective"></strong>
+  <span id="distance"></span>
+ </div>
+ <button id="leave" type="button">Verlassen</button>
+ <canvas id="radar" width="132" height="132" aria-label="Radar"></canvas>
+ <div id="reticle" aria-hidden="true"></div>
+ <div id="target" class="marker" aria-hidden="true">◆</div>
+ <div id="wingman" class="marker" aria-hidden="true">▲</div>
+ <p id="hint">Stick zum Lenken · ↻ zum Rollen · Zum gelben Ziel fliegen</p>
+ <div id="stick" aria-label="Steuerstick"><span></span></div>
+ <div class="controls">
+  <label class="throttle">SCHUB <input id="throttle" type="range" min="0" max="100" value="45"></label>
+  <div class="actions">
+   <button id="roll" type="button" aria-label="Nach rechts rollen">↻</button>
+   <button id="boost" type="button">BOOST</button>
+   <button id="fire" type="button">FEUER</button>
+  </div>
+ </div>
+ <div id="notice" hidden role="status"><strong id="noticeTitle"></strong><p id="noticeBody"></p><button id="dismiss" type="button">Zum Verbindungsmenü</button></div>
+</section>
+<script src="duel-net.js?v=263"></script>
+<script src="space-coop.js?v=263"></script>
+</body>
+</html>

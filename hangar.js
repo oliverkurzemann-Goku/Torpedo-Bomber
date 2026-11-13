@@ -35,6 +35,7 @@
   badgeTimer=setTimeout(()=>{
    badgeTimer=null;
    C.unlockSecretJet();
+   $('spaceCoopEntry').hidden=false;
    c={...C.defaults('pacific'),ac:'secretjet',kit:'turrets',start:'air'};
    draw();
   },3000);
