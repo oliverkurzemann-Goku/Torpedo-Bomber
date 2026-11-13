@@ -25,7 +25,7 @@ const functionSource=(text,name,next)=>text.slice(text.indexOf('function '+name+
  function fromBelow(){plane.updateMatrixWorld(true);return new THREE.Raycaster(new THREE.Vector3(.08,-3,-.775),new THREE.Vector3(0,1,0)).intersectObject(root,true).filter(h=>visible(h.object))[0];}
  assert.equal(fromBelow().object.name,'avengerBayDoorSkin','closed bay conceals its internal store');AvengerBay.pose(root,1,1);assert.equal(fromBelow().object.parent.name,'avengerInternalTorpedo','open bay exposes the torpedo');
  const clone=root.clone(true);AvengerBay.pose(clone,0,0);assert.equal(bay.userData.avengerBay.open,1);assert(torpedo.visible);assert(!clone.getObjectByName('avengerInternalTorpedo').visible);
- const html=fs.readFileSync('torpedo-carrier.html','utf8'),mStart=html.indexOf('const MISSIONS ='),mEnd=html.indexOf('async function prepareOkinawa',mStart),mc={PacificTheater:{missions:[]}};vm.runInNewContext(html.slice(mStart,mEnd)+';globalThis.missions=MISSIONS;',mc);
+ const html=fs.readFileSync('torpedo-carrier.html','utf8'),mStart=html.indexOf('const MISSIONS ='),mEnd=html.indexOf('async function prepareOkinawa',mStart),mc={PacificTheater:{missions:[]},PbyPatrol:{missions:[]}};vm.runInNewContext(html.slice(mStart,mEnd)+';globalThis.missions=MISSIONS;',mc);
  assert(mc.missions.filter(m=>!m.sbd&&!m.defend).every(m=>m.torps<=1));assert(mc.missions.find(m=>m.sbd&&!m.corsair).torps>=3,'Dauntless bomb load unaffected');
  const releaseSource=functionSource(html,'dropTorpedo','updateAvengerBay')+functionSource(html,'updateAvengerBay','corsairConfig');const runs=[];
  for(const fps of [20,60,120]){

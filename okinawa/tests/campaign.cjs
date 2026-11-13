@@ -34,7 +34,7 @@ const carrier=html('torpedo-carrier.html');
 const waveStart=carrier.indexOf('function checkObjectiveCleared(){');
 const waveEnd=carrier.indexOf('\nfunction ',waveStart+10);
 const theater=vm.runInNewContext(html('pacific-theater.js')+'\nwindow.PacificTheater',{window:{}});
-const carrierMissions=vm.runInNewContext(carrier.slice(carrier.indexOf('const MISSIONS = ['),carrier.indexOf('\nasync function prepareOkinawa'))+'\nMISSIONS',{PacificTheater:theater});
+const carrierMissions=vm.runInNewContext(carrier.slice(carrier.indexOf('const MISSIONS = ['),carrier.indexOf('\nasync function prepareOkinawa'))+'\nMISSIONS',{PacificTheater:theater,PbyPatrol:require('../../pby-patrol.js')});   // Build 258: the Catalina sorties (24-27) come from pby-patrol.js
 const sortie=carrierMissions[12];
 assert.equal(sortie.reinforcement.targets.length,2,'Okinawa reconnaissance has a second convoy');
 const spawned=[],jets=[],pilot={rtb:false};let points=0;

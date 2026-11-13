@@ -301,7 +301,7 @@
 
 .hangarLink{display:block;padding:12px 14px;margin:8px 0 12px;color:#f3ce83;border:1px solid #ba9d57;border-radius:5px;text-decoration:none;text-align:center;font:600 12px system-ui;letter-spacing:.8px;min-height:44px;}
 </style>
-<link rel="stylesheet" href="menu-layout.css?v=257">
+<link rel="stylesheet" href="menu-layout.css?v=258">
 <style>
 #jetCrewControls{position:fixed;z-index:12;top:max(68px,calc(env(safe-area-inset-top) + 68px));left:50%;transform:translateX(-50%);gap:6px;display:flex;align-items:center}
 #jetCrewControls[hidden],#jetReticle[hidden]{display:none}
@@ -368,7 +368,7 @@ body.secretSpaceActive #fireBtn{border-color:#73d9fc;color:#d6f9ff}
   <div id="flash"></div>
   <div id="ltn" style="position:fixed;inset:0;background:#e6ecff;opacity:0;pointer-events:none;z-index:40;"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 257</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 258</div>
 
   <!-- Optical landing aid -->
   <div id="lso">
@@ -422,7 +422,7 @@ body.secretSpaceActive #fireBtn{border-color:#73d9fc;color:#d6f9ff}
 
 <!-- Menu -->
 <div class="overlay" id="menu" data-campaign="pacific">
-  <div class="menuTop"><a id="selBtn" href="index.html?v=257">&#9664; Change Game</a><span class="menuMeta">PACIFIC OPERATIONS<br>BUILD 257</span></div>
+  <div class="menuTop"><a id="selBtn" href="index.html?v=258">&#9664; Change Game</a><span class="menuMeta">PACIFIC OPERATIONS<br>BUILD 258</span></div>
   <div class="card menuCard">
     <aside class="menuOverview" aria-label="Campaign and pilot options">
     <div class="campaignArt" aria-hidden="true"></div>
@@ -453,7 +453,7 @@ body.secretSpaceActive #fireBtn{border-color:#73d9fc;color:#d6f9ff}
     </aside>
     <section class="missionPanel" aria-label="Mission selection">
       <div class="secLbl">Choose your sortie · Pacific operations</div>
-      <a class="hangarLink" href="hangar.html?theatre=pacific&amp;v=257">CUSTOM MISSION · CHOOSE AIRCRAFT &amp; LOADOUT →</a>
+      <a class="hangarLink" href="hangar.html?theatre=pacific&amp;v=258">CUSTOM MISSION · CHOOSE AIRCRAFT &amp; LOADOUT →</a>
 <div id="missionSel" role="group" aria-label="Pacific missions"></div>
       <div id="missionBlurb" class="missionBlurb" aria-live="polite"></div>
       <div class="menuConfig">
@@ -528,8 +528,9 @@ body.secretSpaceActive #fireBtn{border-color:#73d9fc;color:#d6f9ff}
 <script src="campaign.js?v=1"></script>
 <script src="game-runtime.js?v=198"></script>
 <script src="sortie-checkpoint.js?v=238"></script>
-<script src="aircraft-articulation.js?v=257"></script>
-<script src="terrain-system/AircraftGround.js?v=257"></script>
+<script src="aircraft-contract.js?v=258"></script>
+<script src="aircraft-articulation.js?v=258"></script>
+<script src="terrain-system/AircraftGround.js?v=258"></script>
 <script src="pacific-assets.js?v=201"></script>
 <script src="sbd-native.js?v=220"></script>
 <script src="zero-canopy.js?v=220"></script>
@@ -554,28 +555,29 @@ body.secretSpaceActive #fireBtn{border-color:#73d9fc;color:#d6f9ff}
 <script src="flare-support.js?v=177"></script>
 <script src="sortie-service.js?v=206"></script>
 <script src="pilot-rescue.js?v=253"></script>
-<script src="pby-rescue.js?v=257"></script>
+<script src="pby-rescue.js?v=258"></script>
 <script src="yamato-aa.js?v=248"></script>
 <script src="radio-intercept.js?v=157"></script>
 <script src="surprises.js?v=238"></script>
 <script src="audio/weapon-sound.js?v=144"></script>
 <script src="audio/flight-atmosphere.js?v=175"></script>
-<script src="sortie-systems.js?v=257"></script>
-<script src="flight-envelope.js?v=257"></script>
-<script src="flight-dynamics.js?v=257"></script>
-<script src="flight-core.js?v=257"></script>
+<script src="sortie-systems.js?v=258"></script>
+<script src="flight-envelope.js?v=258"></script>
+<script src="flight-dynamics.js?v=258"></script>
+<script src="flight-core.js?v=258"></script>
 <script src="flight-control.js?v=238"></script>
 <script src="dogfight-ai.js?v=238"></script>
-<script src="audio/throttle-response.js?v=218"></script><script src="audio/aircraft-engine.js?v=257"></script>
+<script src="audio/throttle-response.js?v=218"></script><script src="audio/aircraft-engine.js?v=258"></script>
 <script src="audio/jet-engine.js?v=218"></script>
-<script src="sortie-features.js?v=257"></script>
+<script src="sortie-features.js?v=258"></script>
 <script src="ground-run.js?v=198"></script>
 <script src="flight-indicators.js?v=198"></script>
-<script src="operation-plans.js?v=257"></script>
-<script src="custom-sortie.js?v=257"></script>
+<script src="operation-plans.js?v=258"></script>
+<script src="custom-sortie.js?v=258"></script>
 <script src="secret-jet.js?v=255"></script>
 <script src="secret-space.js?v=255"></script>
 <script src="pacific-theater.js?v=248"></script>
+<script src="pby-patrol.js?v=258"></script>
 <script src="carrier-recovery.js?v=198"></script>
 <script src="maritime-weather.js?v=198"></script>
 <script>
@@ -950,6 +952,7 @@ const MISSIONS = [
     body:"<b>F4U-1D Corsair — sea to shore.</b> Strike the airfield installations with machine guns, bombs or rockets, sink the offshore supply ship, and defeat the intercepting Zero patrol. Select your stores before departure; return to the carrier after all primary targets are destroyed.",
     torps:4,fuel:100,zeros:1,targets:[{type:'freighter',pos:[3450,0,160],hp:1},{type:'destroyer',pos:[2900,0,-50],hp:1,flak:true}] },
   ...PacificTheater.missions,
+  ...PbyPatrol.missions,
   { title:"Okinawa", sub:"Okinawa Coast · Free Flight", free:true, okinawa:true,
     body:"Fly the Avenger from the carrier toward the Yomitan coast. The 16 × 16 km landscape uses geographic elevation and shoreline data. Houses, reefs and vegetation are illustrative. No enemy, timer or score; land aboard to fly again.<br><br>Head east from the bow to reach the coast. The mapped area ends inland; this is a scenery flight, not a historical mission.",
     torps:0, fuel:100, zeros:0, targets:[] },
@@ -1098,6 +1101,10 @@ async function preparePacificModels(m,progress=()=>{}){
   if(m.secretJet)needed.push(['secret jet',loadSecretJetModel,()=>secretJetTemplate]);
   if(m.corsair)needed.push(['corsair',loadCorsairModel,()=>corsairTemplate]);
   else if(m.sbd)needed.push(['sbd',loadSBDModel,()=>sbdTemplate]);
+  if(m.pby){const k=m.pby.kind;   // Build 258: the Catalina patrol sorties
+    if(k==='shadow'||k==='blackcat')needed.push(['escort',loadDestroyerModel,()=>destroyerTemplate],['freighter',loadFreighterModel,()=>freighterTemplate]);
+    if(k==='sub')needed.push(['ship:submarine',()=>NavalAssets.load('submarine'),()=>NavalAssets.get('submarine')]);
+    if(k==='blackcat')needed.push(['black cat',loadPbyNightModel,()=>pbyNightTemplate]);}
   if((!m.sbd||m.defend)&&!m.secretJet)needed.push(['avenger',loadPlaneModel,()=>gltfRoot&&propPivot]);
   const targets=[...(m.targets||[]),...(m.reinforcement?.targets||[])];
   if(m.defend||m.zeros||m.shoreStrike||!m.free&&!m.qual)
@@ -2228,7 +2235,7 @@ function choosePacificPlan(i){
  return {config:config.phases?config:FlightOps.withPhases(MISSIONS[i],config),weather:names[Math.floor(Math.random()*names.length)],wind:(Math.random()<.5?-1:1)*Math.min(6,2+i*.28)};
 }
 function updatePacificOperation(dt){
- if(!pacificOps||isFree()||isQual())return;
+ if(!pacificOps||isFree()||isQual()||(typeof isPby==='function'&&isPby()))return;
  if(MISSIONS[mission].theater==='escort'&&convoyProof().failed){pacificOps.failed=true;P.rtb=true;state=ST.RESULT;showResult(false,'CONVOY LOST',MISSIONS[mission].sub,'A required transport was sunk. Both transports must reach the anchorage.','Retry Sortie');return;}
  const clear=pacificTargetsClear();
  const kills=sortieShipsSunk+shoreTargets.filter(t=>!t.alive).length+raiders.filter(r=>!r.alive).length;
@@ -2253,9 +2260,10 @@ function drawPacificBrief(m){
  if(m.reinforcement)for(const s of m.reinforcement.targets)targets.push({x:s.pos[0],z:s.pos[2],label:'Second contact: '+NavalAssets.label(s),optional:s.type==='destroyer'});
  if(m.shoreStrike)targets.push(...COASTAL_STRIKE);
  if(m.defend)targets.push({x:2200,z:2400,label:'Raider approach sector'});
+ if(m.pby&&pbyOps)targets.push({x:pbyOps.ring.x,z:pbyOps.ring.z,radius:pbyOps.ring.r,label:'Search area — '+pbyOps.text});   // Build 258: a ring, never a position
  const wxCells=MaritimeWeather.cellsFor(pacificPlan.weather,carrierX,targets).filter(c=>c.cb);
  const labels=FlightOps.drawMap(document.getElementById('opsMap'),{title:m.theater==='escort'?'ISLAND CHANNEL':m.theater==='harbor'?'COASTAL HARBOR':'OKINAWA COAST',northSign:-1,base:{x:carrierX,z:0},targets,recon:pacificPlan.config.recon,
-  extraPoints:wxCells.flatMap(c=>[{x:c.x-c.radius,z:c.z-c.radius},{x:c.x+c.radius,z:c.z+c.radius}]),
+  extraPoints:wxCells.flatMap(c=>[{x:c.x-c.radius,z:c.z-c.radius},{x:c.x+c.radius,z:c.z+c.radius}]).concat(m.pby&&pbyOps?[{x:pbyOps.ring.x-pbyOps.ring.r,z:pbyOps.ring.z-pbyOps.ring.r},{x:pbyOps.ring.x+pbyOps.ring.r,z:pbyOps.ring.z+pbyOps.ring.r}]:[]),
   lines:(g,put)=>{g.save();g.strokeStyle='#f3bc66';g.fillStyle='rgba(205,143,51,.18)';g.setLineDash([4,4]);for(const c of wxCells){const p=put(c),edge=put({x:c.x+c.radius,z:c.z});g.beginPath();g.arc(...p,Math.abs(edge[0]-p[0]),0,7);g.fill();g.stroke();g.font='bold 11px monospace';g.fillStyle='#f3bc66';g.fillText('CB',p[0]-8,p[1]+4);}g.restore();},
   approach:m.theater==='harbor'?{x:3600,z:-4200,radius:500,label:'Open bay'}:null,
   sample:(x,z)=>{if(m.theater==='escort'&&PacificTheater.islandHeight(x,z)>1)return '#637653';const lx=x-OKINAWA_OFFSET_X;if(!okinawaWorld||Math.abs(lx)>7990||Math.abs(z)>7990||okinawaWorld.shoreDistance(lx,z)<0)return '#24434c';
@@ -2343,7 +2351,7 @@ function startMission(idx){
   // looked right because the one before had already flipped the flag. Missions without a
   // loadout keep the player's menu choice.
   if(m.loadout) loadout=m.loadout;
-  SortieFeatures.Handling.configure(P,isDefend()?'zero':m.corsair?'corsair':isSBD()?'sbd':'avenger',loadout,'pacific');
+  SortieFeatures.Handling.configure(P,m.pby?'pby':isDefend()?'zero':m.corsair?'corsair':isSBD()?'sbd':'avenger',loadout,m.pby?'europe':'pacific');   // Build 258: the Catalina uses the field-landing reference (78 kt) of the Rhine game
   applyLoadoutUI(); resetControlUI();
 
   // clear dynamic objects
@@ -2370,7 +2378,7 @@ function startMission(idx){
   // spawn enemy fighters
   const nz=m.zeros||0;
   for(let i=0;i<nz;i++) spawnZero(i,nz);
-  startSurprises();
+  startSurprises();if(m.pby)surprises=null;   // Build 258: the Catalina sorties have their own turns
 
   // ---- fleet defence: clear old raiders/torps, then set the sortie up ----
   raiders.forEach(r=>{ if(r.mesh) GameRuntime.release(r.mesh); }); raiders=[];bettyWaveSeq=0;
@@ -2396,6 +2404,7 @@ function startMission(idx){
   // DETACH the Avenger rig for the Zero sortie. Hiding by .visible kept losing to other
   // code that re-enables parts; a detached object simply cannot render.
   if(!window.__avStash) window.__avStash=[];
+  if(!m.pby&&typeof playerPBY!=='undefined'&&playerPBY){planeGroup.remove(playerPBY);playerPBY=null;}
   if(m.defend){
     if(!window.__avStash.length){
       planeGroup.children.slice().forEach(o=>{
@@ -2403,7 +2412,7 @@ function startMission(idx){
         window.__avStash.push(o); planeGroup.remove(o);
       });
     }
-  } else if(!m.sbd && window.__avStash.length){
+  } else if(!m.sbd && !m.pby && window.__avStash.length){
     window.__avStash.forEach(o=>planeGroup.add(o));
     window.__avStash.length=0;
     if(zeroProp){ planeGroup.remove(zeroProp); zeroProp=null; }
@@ -2437,6 +2446,12 @@ function startMission(idx){
     }
     if(playerSBD){ playerSBD.visible=true; playerSBD.traverse(o=>{ o.visible=true; }); }
   } else if(playerSBD){ playerSBD.visible=false; }
+  // Build 258: the Catalina patrol sorties - the Avenger rig is stashed, the flying boat takes the plane group
+  if(m.pby){
+    for(const o of planeGroup.children.slice()){if(o===cockpitLight||o===playerPBY)continue;if(window.__avStash.indexOf(o)<0)window.__avStash.push(o);planeGroup.remove(o);}
+    if(playerZero)playerZero.visible=false;
+    pbyAttach();pbyBegin(m);
+  }else if(typeof pbyClear==='function')pbyClear();
 
   if(m.defend){
     // the player flies a Zero: hide the Avenger, show a Zero on the plane group
@@ -2468,8 +2483,8 @@ function startMission(idx){
   // briefing
   document.getElementById('briefTitle').textContent=m.title;
   document.getElementById('briefSub').textContent=m.sub;
-  document.getElementById('briefBody').innerHTML=m.body+'<br><br><b>HANDLING</b> '+(m.secretJet?'Test flight · 900 km/h dry, 1,600 km/h with afterburner. The pilot levels out and holds heading while you man a turret.':FlightDynamics.profile(m.defend?'zero':m.corsair?'corsair':m.sbd?'sbd':'avenger').character)+PacificTheater.effectText(m)+FlightOps.briefText(weather,pacificPlan.config,{headwind:Math.abs(pacificPlan.wind)});
-  document.getElementById('briefLandingSpeed').textContent=m.secretJet?'CREW: T CYCLES VIEWS · 1 COCKPIT · 2 UPPER · 3 LOWER · C EXTERIOR.':'LANDING: LIVE REF / GREEN BAND · GEAR / FLAPS / HOOK DOWN.';
+  document.getElementById('briefBody').innerHTML=m.body+'<br><br><b>HANDLING</b> '+(m.secretJet?'Test flight · 900 km/h dry, 1,600 km/h with afterburner. The pilot levels out and holds heading while you man a turret.':FlightDynamics.profile(m.pby?'pby':m.defend?'zero':m.corsair?'corsair':m.sbd?'sbd':'avenger').character)+PacificTheater.effectText(m)+FlightOps.briefText(weather,pacificPlan.config,{headwind:Math.abs(pacificPlan.wind)});
+  document.getElementById('briefLandingSpeed').textContent=m.secretJet?'CREW: T CYCLES VIEWS · 1 COCKPIT · 2 UPPER · 3 LOWER · C EXTERIOR.':m.pby?'WATER: WHEELS UP · ALIGHT BESIDE THE FLEET · THE GUNNERS FIRE BY THEMSELVES.':'LANDING: LIVE REF / GREEN BAND · GEAR / FLAPS / HOOK DOWN.';
   drawPacificBrief(m);
   showOverlay('brief');
   state=ST.BRIEF;
@@ -2650,6 +2665,7 @@ function updateCarrierIntro(dt){
   if(intro.time>=8)finishCarrierIntro();
 }
 function launch(){
+  if((typeof isPby==='function'&&isPby()))return pbyLaunch();   // Build 258: the Catalina starts from the water, not the deck
   P.departureAge=null;
   P.takeoffRotation=0;
   hideOverlays();
@@ -2822,6 +2838,7 @@ function pollKeys(dt){
 // ============================================================
 function dropTorpedo(){           // primary weapon button (torpedo OR bomb)
   if(isSecretJet())return;
+  if(typeof isPby==='function'&&(typeof isPby==='function'&&isPby()))return pbyDrop();   // Build 258: depth charges and bombs
   if(state!==ST.FLIGHT || !P.alive || P.onDeck) return;
   if(isCorsair()&&P.corsairWeapon==='rockets')return releaseCorsairRocket();
   if(loadout==='divebomb') return releaseBomb();
@@ -2951,7 +2968,8 @@ function updateOrdnanceStep(dt){
       if(d<s.radius && b.mesh.position.y<26){ hitShip(s,false,b.mesh.position,b.rocket?'rocket':'bomb'); done=true; break; }
     }
     if(!done && b.mesh.position.y<=0.4){          // splash, miss
-      spawnSplash(b.mesh.position.x,b.mesh.position.z,false); sfxBoom(0.4); done=true;
+      if(b.depth&&typeof pbyDepthBurst==='function')pbyDepthBurst(b.mesh.position.x,b.mesh.position.z);   // Build 258: a depth charge goes off in the sea
+      else spawnSplash(b.mesh.position.x,b.mesh.position.z,false); sfxBoom(0.4); done=true;
     }
     if(done||b.life<=0){ GameRuntime.release(b.mesh); bombs.splice(i,1); }
   }
@@ -3893,12 +3911,423 @@ function spawnFlakBurst(p){
 }
 
 // ============================================================
+//  PBY PATROL (Build 258) — the Catalina in the Pacific game.
+//  pby-patrol.js holds the pure parts (water rules, search ring, sight ranges, the submarine's dive, the four sorties 24-27). This block is the game side:
+//  the flying boat on the plane group, the run on the sea, the alighting, the search sorties, the hidden things and the radio. Nothing here shows the exact
+//  position of what is hunted: the map and the navigation arrow lead to a RING; the raft / the submarine / the convoy is found by sight (PbyPatrol.sees).
+//  Game decisions (category C): every figure in pby-patrol.js and the few here (PBY_HOME, PBY_DROP, boarding times).
+// ============================================================
+let pbyOps=null,playerPBY=null,pbyNightTemplate=null;
+const PBY_HOME=900;                        // alight within this distance of the carrier to finish the sortie (m)
+const PBY_DROP={alt:170,speed:85};         // depth charges and bombs: below this height (m) and slower than this (m/s)
+function isPby(){return !!MISSIONS[mission]?.pby;}
+const pbyWet=(x,z)=>shoreHeight(x,z)<=.6;
+const pbySea=(x,z)=>seaHeightAt(x,z,seaUniforms?.uTime.value||0);
+function loadPbyNightModel(){return PacificAssets.loader().load('assets/aircraft/pby5a-blackcat-own.glb?v=258',gltf=>{pbyNightTemplate=gltf.scene;pbyNightTemplate.traverse(o=>{if(o.isMesh){o.castShadow=true;o.frustumCulled=true;}});return pbyNightTemplate;});}
+const pbyRules=()=>PbyPatrol.rules(aeroMode);
+function pbyWeatherKey(){return ({clear:'clear',broken:'broken',haze:'haze',lowcloud:'broken',fog:'rain',rain:'rain',squall:'storm',storm:'storm'})[weather]||'clear';}
+function pbyTimeKey(){return timeMode==='night'?'night':timeMode==='dusk'?'dusk':timeMode==='dawn'?'dawn':'day';}
+function pbySight(){return {weather:pbyWeatherKey(),time:pbyTimeKey(),diff:DIFF,altitude:P.pos.y,radarRange:pbyOps?.cfg.radar};}
+const pbyDist=(a,b)=>Math.hypot(a.x-b.x,a.z-b.z);
+const pbyFlat=()=>({x:P.pos.x,z:P.pos.z});
+// "2 o'clock", "9 o'clock": where a point lies relative to the nose (the hint that goes with a sighting - never a position)
+const pbyClock=p=>PbyPatrol.clock({x:P.pos.x,z:P.pos.z},P.heading,p)+" O'CLOCK";
+function pbyCarrierRange(){return Math.hypot(P.pos.x-carrierX,P.pos.z);}
+
+// ---- the Catalina on the plane group ----
+function pbyAttach(){
+  const tpl=MISSIONS[mission]?.pby?.kind==='blackcat'&&pbyNightTemplate?pbyNightTemplate:pbyTemplate;
+  if(!tpl)return false;
+  if(playerPBY&&playerPBY.userData.src!==tpl){planeGroup.remove(playerPBY);playerPBY=null;}
+  if(!playerPBY){
+    playerPBY=new THREE.Group();const inner=tpl.clone(true);inner.rotation.y+=Math.PI;   // the template noses +Z; the plane group flies -Z
+    inner.traverse(o=>{if(o.isMesh)o.frustumCulled=false;});
+    AircraftArticulation.install(inner,'pby');
+    playerPBY.add(inner);playerPBY.userData.src=tpl;playerPBY.userData.inner=inner;
+    playerPBY.userData.rotors=['PropellerLeft','PropellerRight'].map(n=>inner.getObjectByName(n)).filter(Boolean);
+    planeGroup.add(playerPBY);
+  }
+  playerPBY.visible=true;return true;
+}
+function pbyPoseModel(dt){
+  if(!playerPBY)return;const inner=playerPBY.userData.inner;
+  const out=P.onWater||P.spd<46?1:0,hatch=P.onWater&&P.spd<3?1:0;
+  P.floatAmt=(P.floatAmt??1)+(out-(P.floatAmt??1))*Math.min(1,dt*1.2);P.hatchAmt=(P.hatchAmt??0)+(hatch-(P.hatchAmt??0))*Math.min(1,dt*1.5);
+  AircraftArticulation.pose(inner,P.gear,{left:0,right:0},{floatLeft:P.floatAmt,floatRight:P.floatAmt,hatchLeft:0,hatchRight:P.hatchAmt});
+  AircraftArticulation.controls?.(inner,inputRoll*steerSign,inputPitch);
+  const spin=(.12+P.throttle*.32)*(P.alive?1:.1);
+  for(const r of playerPBY.userData.rotors)r.rotation.z-=GameRuntime.rotorStep(dt,spin);
+}
+
+// ---- the sortie set-up (called from startMission, after the ships and zeros were cleared) ----
+function pbyClear(){
+  if(pbyOps){for(const f of pbyOps.disposers){try{f();}catch(e){console.warn('pby dispose',e);}}pbyOps=null;}
+}
+function pbyBegin(m){
+  pbyClear();
+  const cfg=m.pby,kind=cfg.kind;
+  P.onWater=true;P.gear=0;P.gearTgt=0;P.flap=0;P.flapTgt=0;P.hook=0;P.hookTgt=0;P.floatAmt=1;P.hatchAmt=0;P.takeoffRotation=0;P.touchResolved=true;
+  const spot=PbyPatrol.place({random:Math.random,origin:{x:carrierX,z:0},dist:cfg.dist,bearing:cfg.bearing,radius:cfg.radius,water:pbyWet,clear:(kind==='shadow'||kind==='blackcat')?1500:700})
+    ||{ring:{x:carrierX-12000,z:0,r:cfg.radius},point:{x:carrierX-12000+cfg.radius*.3,z:cfg.radius*.2},bearing:Math.PI,distance:12000};
+  const group=new THREE.Group();scene.add(group);
+  const ops=pbyOps={kind,cfg,m,ring:spot.ring,point:spot.point,group,disposers:[()=>{scene.remove(group);GameRuntime.release(group);}],
+    t:0,found:false,phase:'search',failed:false,gunCool:0,msgT:0,flareT:2,hold:0,watchT:0,boardT:0,aboard:0,boarded:false,homeT:0,zerosOut:false,reportT:30,
+    sub:null,men:[],trail:[],trailT:0,dye:null,convoy:[],text:''};
+  ops.text=PbyPatrol.describe({x:carrierX,z:0},ops.ring);
+  if(kind==='dumbo')pbySpawnRaft(ops);
+  else if(kind==='sub')pbySpawnSub(ops);
+  else pbySpawnConvoy(ops);
+  P.pos.set(carrierX+40,pbySea(carrierX+40,-210)+.3,-210);P.heading=Math.PI;P.pitch=.03;P.roll=0;P.spd=0;P.throttle=0;setThrottleUI(0);
+  P.fuel=m.fuel;P.torps=m.torps;
+  return ops;
+}
+function pbySpawnRaft(ops){
+  const dye=new THREE.Mesh(new THREE.CircleGeometry(1,40),new THREE.MeshBasicMaterial({color:0xb4e600,transparent:true,opacity:.72,depthWrite:false}));
+  GameRuntime.own(dye);dye.rotation.x=-Math.PI/2;dye.scale.setScalar(22);dye.position.set(ops.point.x,.8,ops.point.z);ops.group.add(dye);ops.dye=dye;
+  for(let i=0;i<ops.cfg.survivors;i++){
+    const p=new THREE.Vector3(ops.point.x+(i?4.5:-4.5),pbySea(ops.point.x,ops.point.z)+.9,ops.point.z+(i?2:-1));
+    let man=null;try{man=PilotBailout.create(THREE,scene,p,Math.PI/2,0,shoreHeight,{service:'usnavy',srgbOutput:true,variant:i,landed:true});}catch(e){console.warn('survivor',e);}
+    if(man){ops.men.push(man);ops.disposers.push(()=>man.dispose());}
+  }
+}
+function pbySpawnSub(ops){
+  const tpl=typeof NavalAssets!=='undefined'?NavalAssets.get('submarine'):null;
+  const g=new THREE.Group();if(tpl)g.add(tpl.clone(true));g.rotation.order='YXZ';scene.add(g);
+  const heading=Math.random()*Math.PI*2;
+  ops.sub={state:'surfaced',t:0,dives:0,dive:0,x:ops.point.x,z:ops.point.z,heading,group:g,wakeT:0};
+  ops.disposers.push(()=>{scene.remove(g);GameRuntime.release(g);});
+}
+function pbySpawnConvoy(ops){
+  const h=ops.convoyHeading=.5+Math.random()*1.4,fx=Math.sin(h),fz=Math.cos(h),rx=-fz,rz=fx;
+  for(const f of PbyPatrol.FORMATION[ops.kind]){
+    const x=ops.point.x+fx*f.ahead+rx*f.side,z=ops.point.z+fz*f.ahead+rz*f.side;
+    spawnShip({type:f.type,pos:[x,0,z],heading:h,speed:f.type==='freighter'?5.2:7.2,hp:f.type==='freighter'?1:2,flak:!!f.flak,optional:!!f.optional});
+  }
+}
+// the Zeros that come for the Catalina: out of the sky 3.5 km off, already engaged
+function pbySpawnZeros(n){
+  for(let i=0;i<n;i++){
+    spawnZero(i,n);const z=zeros[zeros.length-1];if(!z)continue;
+    const a=Math.random()*Math.PI*2;
+    z.pos.set(P.pos.x+Math.cos(a)*3600,Math.max(260,P.pos.y+180+i*60),P.pos.z+Math.sin(a)*3600);z.engaged=true;z.patrol=null;
+    z.heading=Math.atan2(P.pos.x-z.pos.x,P.pos.z-z.pos.z);z.vel.set(Math.sin(z.heading)*88,0,Math.cos(z.heading)*88);
+  }
+}
+
+// ---- wheels, the run on the sea, take-off ----
+// the crew raises the wheels for the water in ARCADE; REALISTIC only warns. True when the wheels are still in the way
+function pbyWheelsDown(){
+  if(P.gear<=.35&&P.gearTgt<.5)return false;
+  if(pbyRules().strict)return P.gear>.35;
+  P.gearTgt=0;return false;
+}
+function pbyHurt(percent,text){P.hull=Math.max(0,P.hull-percent);registerHit();flash(text,2200);if(P.hull<=0)crash('HULL BROKEN','The flying boat broke up.');}
+function pbyFuel(dt,rate=.2){if(!isFree())P.fuel=Math.max(0,P.fuel-(.11+P.throttle*P.throttle*.42)*dt/D().fuel*rate);if(P.fuel<=0&&P.throttle>0){P.throttle=Math.max(0,P.throttle-.5*dt);setThrottleUI(P.throttle);}}
+function pbyWaterStep(dt){
+  const m=FlightCore.model('pby'),lo=FlightCore.loadout(m,coreLoadout());
+  const speeds=SortieFeatures.Handling.speeds(P,STALL_SPD,APP_SPD),vr=speeds.stall*1.1;
+  P.gear+=Math.sign(P.gearTgt-P.gear)*Math.min(Math.abs(P.gearTgt-P.gear),dt*.42);
+  P.flap+=Math.sign(P.flapTgt-P.flap)*Math.min(Math.abs(P.flapTgt-P.flap),dt*.50);
+  if(pbyWheelsDown()){crash('GEAR DOWN ON THE WATER','The wheels dug in and the boat went over on her nose. Wheels up for the water.');return;}
+  const thr=P.fuel<=0?0:P.throttle;
+  P.groundPower=(P.groundPower??0)+(thr-(P.groundPower??0))*(1-Math.exp(-dt/m.assumed.spool));
+  const g=FlightCore.groundAcceleration(m,P.spd,{power:P.groundPower,damage:SortieFeatures.Damage.power(P),massKg:lo.mass,
+    flaps:SortieFeatures.Damage.controls(P).flaps.mean,gear:0,storeArea:lo.storeArea,tank:lo.tank,brake:P.throttle<.15?.6:0,
+    rotated:Math.min(1,(P.takeoffRotation||0)/.063),mu:PbyPatrol.mu(P.spd/vr),altitude:P.pos.y});
+  P.spd=Math.max(0,P.spd+g.accel*dt);
+  P.heading-=inputRoll*steerSign*Math.min(1,.28+P.spd/14)*.5*dt;   // water rudders and engines turn her at a crawl too (Pacific sign: a positive stick roll turns the heading down)
+  P.roll*=Math.max(0,1-3*dt);P.rollVel=0;P.pitchVel=0;P.nLoad=1;P.pitchRef=null;P.coreStall=0;P.coreDrop=0;
+  const rotationTarget=P.spd>vr*.85&&inputPitch>.15?.07:0;
+  P.takeoffRotation=(P.takeoffRotation||0)+(rotationTarget-(P.takeoffRotation||0))*(1-Math.exp(-dt/1.1));
+  P.pos.x+=Math.cos(P.heading)*P.spd*dt;P.pos.z+=Math.sin(P.heading)*P.spd*dt;
+  const ratio=P.spd/vr,lift=.30*THREE.MathUtils.smoothstep(ratio,.3,.9);
+  P.pos.y=pbySea(P.pos.x,P.pos.z)+lift;P.pitch=.03+(P.takeoffRotation||0);P.vSpeed=0;
+  pbyFuel(dt,.12);
+  if(!pbyWet(P.pos.x,P.pos.z)){crash('BEACHED','Ran up the shore on the hull.');return;}
+  if(g.liftoff&&inputPitch>.15&&P.takeoffRotation>.045&&P.gear<.5){
+    P.onWater=false;P.touchResolved=true;P.pbyLiftT=1.6;P.vSpeed=0;SortieFeatures.Handling.beginDeparture(P);
+    flash('AIRBORNE',900);radioSay('AIRBORNE — BUILD SPEED, FLOATS WILL FOLD');
+  }
+}
+// the airborne step: the hull's contact with the sea is resolved here, not in resolveGroundAndDeck
+function pbyResolve(dt,previousPosition,previousQuaternion){
+  if(previousPosition&&resolveShipContact(previousPosition,P.pos,previousQuaternion||pacificAircraftQuaternion(),pacificAircraftQuaternion(),dt))return;
+  const x=P.pos.x,z=P.pos.z;
+  if(okinawaWorld&&okinawaWorld.root.visible){
+    const lx=x-OKINAWA_OFFSET_X;
+    if(Math.abs(lx)<7980&&Math.abs(z)<7980&&okinawaWorld.shoreDistance(lx,z)>1&&P.pos.y<okinawaWorld.getSurfaceHeight(lx,z)+2){crash('TERRAIN','You flew into the Okinawa coastline.');return;}
+  }
+  if(P.pbyLiftT>0){P.pbyLiftT-=dt;P.touchResolved=true;return;}   // just off the water: she has to climb away first
+  const keel=P.pos.y-PbyPatrol.WATER.keel,agl=keel-pbySea(x,z);
+  if(agl>.05){P.touchResolved=false;return;}
+  if(P.touchResolved)return;
+  P.touchResolved=true;
+  if(!pbyWet(x,z)){crash('TERRAIN','You came down on land.');return;}
+  const rules=pbyRules(),sink=-P.vSpeed,ref=SortieFeatures.Handling.speeds(P,STALL_SPD,APP_SPD).reference;
+  if(pbyWheelsDown()){crash('GEAR DOWN ON THE WATER','The wheels dug in and the boat went over on her nose. Wheels up for the water.');return;}
+  if(!rules.strict&&P.gear>.35)pbyHurt(17,'WHEELS STILL DOWN — HULL DAMAGED');
+  if(!P.alive)return;
+  const v=PbyPatrol.touchdown({speed:P.spd,reference:ref,pitch:P.pitch,roll:P.roll,sink,gear:0},rules);
+  if(v&&v.crash){crash(v.crash,v.text);return;}
+  if(v&&v.damage){pbyHurt(v.damage,v.text);radioSay('THAT WAS FIRM — CHECK THE BILGES');}
+  if(!P.alive)return;
+  P.onWater=true;P.vSpeed=0;P.pitchVel=P.rollVel=0;P.departureAge=null;P.groundPower=P.throttle;firing=false;
+  P.pos.y=pbySea(x,z)+.2;
+  flash('ALIGHTED — IDLE TO SLOW THE BOAT, KEEP HER STRAIGHT',2200);
+  if(pbyOps)pbyOps.alightings=(pbyOps.alightings||0)+1;
+}
+// the approach cues over the sea: wheels, sink rate, speed (once every 2.5 s)
+function pbyApproach(dt){
+  if(!isPby()||P.onWater||!P.alive)return;
+  const keel=P.pos.y-PbyPatrol.WATER.keel-pbySea(P.pos.x,P.pos.z);
+  if(keel>45||P.vSpeed>-.4&&keel>15)return;
+  const rules=pbyRules(),ref=SortieFeatures.Handling.speeds(P,STALL_SPD,APP_SPD).reference;
+  if(!rules.strict&&(P.gearTgt>.5||P.gear>.35)&&keel<30){P.gearTgt=0;P.waterCueT=Math.min(P.waterCueT||0,0);}
+  P.waterCueT=(P.waterCueT||0)-dt;if(P.waterCueT>0)return;
+  const sink=-P.vSpeed;
+  if(P.gear>.35||P.gearTgt>.5){P.waterCueT=2.5;flash(rules.strict?'WHEELS UP FOR THE WATER!':'CREW: WHEELS UP FOR THE WATER',1400);if(!rules.strict)radioSay('WHEELS COMING UP — WE ARE ALIGHTING ON THE SEA');return;}
+  if(sink>rules.ok&&keel<35){P.waterCueT=2.5;flash('SINKING '+sink.toFixed(0)+' M/S — EASE THE NOSE UP',1100);return;}
+  if(P.spd>ref+rules.over*.7&&keel<35){P.waterCueT=2.5;flash('TOO FAST FOR THE WATER — IDLE',1100);}
+}
+
+// ---- weapons: depth charges / bombs and the gunners ----
+function pbyDrop(){
+  if(state!==ST.FLIGHT||!P.alive||P.onWater)return;
+  if(P.torps<=0){flash(pbyOps?.kind==='blackcat'?'NO BOMBS':'NO DEPTH CHARGES',600);return;}
+  if(P.pos.y>PBY_DROP.alt){flash('TOO HIGH — DROP BELOW '+Math.round(PBY_DROP.alt*FT/10)*10+' FT',800);return;}
+  if(P.spd>PBY_DROP.speed){flash('TOO FAST — REDUCE SPEED',800);return;}
+  P.torps--;sortieBombFired++;updateHUD();
+  const mesh=Ordnance.create('bomb');GameRuntime.own(mesh);mesh.scale.setScalar(.95);
+  mesh.position.set(P.pos.x,P.pos.y-2,P.pos.z);
+  const vel=noseDir().multiplyScalar(P.spd);vel.y=Math.min(vel.y,0);
+  mesh.lookAt(mesh.position.clone().add(vel));scene.add(mesh);
+  bombs.push({mesh,vel,life:10,depth:pbyOps?.kind!=='blackcat'});
+  sfxWhoosh();flash(pbyOps?.kind==='blackcat'?'BOMB GONE':'DEPTH CHARGE AWAY',600);
+}
+// a depth charge that reached the sea at (x,z): the submarine is hit when she lies inside the lethal radius of her present state
+function pbyDepthBurst(x,z){
+  spawnSplash(x,z,true);spawnSplash(x+4,z-3,true);sfxBoom(.9);
+  const s=pbyOps?.sub;if(!s)return;
+  if(PbyPatrol.inReach(s,x,z)){
+    s.state='sunk';s.t=0;pbySubSunk(x,z);
+  }else if(s.state!=='sunk'&&Math.hypot(x-s.x,z-s.z)<80)radioSay('NEAR MISS — SHE IS STILL DOWN THERE');
+}
+function pbySubSunk(x,z){
+  const ops=pbyOps;ops.subSunk=true;
+  spawnSlick({group:{position:new THREE.Vector3(x,0,z)},radius:26});
+  for(let i=0;i<4;i++)spawnSplash(x+(Math.random()-.5)*20,z+(Math.random()-.5)*20,true);
+  addScore(800);sortieShipsSunk++;shake(1.2);flash('SUBMARINE SUNK  +800',2200);
+  radioSay('OIL AND AIR — SHE IS GONE. WELL DONE, CATALINA. RETURN AND ALIGHT BESIDE THE FLEET');
+  P.rtb=true;
+}
+// the waist, bow and tunnel gunners fire by themselves at a Zero within 900 m (the Catalina has no forward guns for the pilot)
+function updatePbyGunners(dt){
+  if(!pbyOps||!P.alive||state!==ST.FLIGHT)return;
+  pbyOps.gunCool-=dt;if(pbyOps.gunCool>0)return;
+  let tgt=null,best=900;
+  for(const z of zeros){if(!z.alive)continue;const d=z.pos.distanceTo(P.pos);if(d<best&&d>35){best=d;tgt=z;}}
+  if(!tgt)return;
+  pbyOps.gunCool=.24;
+  const nd=noseDir(),to=tgt.pos.clone().sub(P.pos).normalize(),rel=nd.dot(to);
+  const right=new THREE.Vector3(-Math.sin(P.heading),0,Math.cos(P.heading));
+  const side=right.dot(to)>=0?1:-1;
+  const muzzle=P.pos.clone().addScaledVector(rel>.55?nd:rel<-.35?nd.clone().multiplyScalar(-1):right.clone().multiplyScalar(side),rel>.55?7:rel<-.35?8:3.4).add(new THREE.Vector3(0,rel>.55?1.2:1.6,0));
+  const lead=tgt.pos.clone().addScaledVector(new THREE.Vector3(Math.sin(tgt.heading),Math.sin(tgt.pitch||0),Math.cos(tgt.heading)),(tgt.spd||0)*best/620);
+  const dir=lead.sub(muzzle).normalize();
+  for(let k=0;k<2;k++){
+    const d2=dir.clone().add(new THREE.Vector3((Math.random()-.5)*.06,(Math.random()-.5)*.06,(Math.random()-.5)*.06)).normalize();
+    const mesh=CombatFX.round();mesh.position.copy(muzzle);mesh.lookAt(muzzle.clone().add(d2));scene.add(mesh);
+    bullets.push({mesh,dir:d2,life:1.5,speed:620,tail:true});
+  }
+  sfxGun();
+}
+
+// ---- the search: what is found, how, and what the sortie asks ----
+function pbyMsg(text,ms=2400){flash(text,ms);radioSay(text);}
+function updatePbyPatrol(dt){
+  const ops=pbyOps;if(!ops||state!==ST.FLIGHT)return;
+  ops.t+=dt;pbyApproach(dt);updatePbyGunners(dt);
+  const sight=pbySight();
+  if(ops.kind==='dumbo')pbyDumbo(dt,ops,sight);
+  else if(ops.kind==='sub')pbySubStep(dt,ops,sight);
+  else pbyConvoyStep(dt,ops,sight);
+  // the way home: alight beside the fleet and lie there
+  if(ops.phase==='home'||P.rtb){
+    ops.phase='home';
+    if(P.onWater&&pbyCarrierRange()<PBY_HOME&&P.spd<3){ops.homeT+=dt;if(ops.homeT>2)pbyFinish(!ops.failed);}else ops.homeT=0;
+  }
+  const el=document.getElementById('opsStatus');
+  if(el){const w=FlightOps.wx(weather).label.toUpperCase();const t=pbyStatusLine(ops);if(el.textContent!==w+' · '+t)el.textContent=w+' · '+t;}
+}
+function pbyStatusLine(ops){
+  if(ops.phase==='home')return (ops.failed?'MISSION FAILED · ':'')+'RETURN TO THE FLEET AND ALIGHT'+(P.onWater?'':' · WHEELS UP');
+  if(ops.kind==='dumbo')return ops.boarded?'AIRMEN ABOARD '+ops.aboard+'/'+ops.cfg.survivors:ops.found?'RAFT FOUND · ALIGHT BESIDE IT ('+ops.aboard+'/'+ops.cfg.survivors+' ABOARD)':'SEARCH AREA · '+ops.text;
+  if(ops.kind==='sub')return ops.found?(ops.sub.state==='surfaced'?'SUBMARINE ON THE SURFACE':ops.sub.state==='diving'?'SHE IS DIVING — DROP NOW':ops.sub.state==='submerged'?'SHE IS DOWN · LOOK FOR THE BUBBLE TRAIL':'SUNK')+' · '+P.torps+' CHARGES':'SEARCH AREA · '+ops.text;
+  if(ops.kind==='shadow')return ops.found?'KEEP CONTACT '+Math.round(ops.hold)+'/'+ops.cfg.hold+' S · '+(ops.inBand?'IN THE BAND':'3 TO 8.5 KM FROM HER'):'SEARCH AREA · '+ops.text;
+  return ops.found?'CONVOY LOCATED · '+ships.filter(s=>s.alive&&s.def.type==='freighter').length+' FREIGHTER(S) AFLOAT · '+P.torps+' BOMBS':'SEARCH AREA · '+ops.text+' · RADAR 8 NM';
+}
+function pbyDumbo(dt,ops,sight){
+  const d=pbyDist(pbyFlat(),ops.point);
+  if(ops.dye){const r=Math.min(70,22+ops.t*.16);ops.dye.scale.setScalar(r);ops.dye.position.y=pbySea(ops.point.x,ops.point.z)+.35;}
+  for(const man of ops.men)man.group.position.y=pbySea(man.group.position.x,man.group.position.z)+.9;
+  if(!ops.found){
+    if(PbyPatrol.sees('dye',d,sight)||PbyPatrol.sees('raft',d,sight)){
+      ops.found=true;pbyMsg('YELLOW DYE PATCH — '+pbyClock(ops.point)+'. THAT IS THEM. ALIGHT BESIDE THE RAFT');addScore(150);
+    }else if(PbyPatrol.sees('flare',d,sight)){
+      ops.flareT-=dt;
+      if(ops.flareT<=0){
+        ops.flareT=40;pbyMsg('RED FLARE — '+pbyClock(ops.point)+'. SOMEBODY IS SIGNALLING');
+        for(let i=0;i<9;i++)spawnSmoke(ops.point.x+(Math.random()-.5)*6,30+i*20,ops.point.z+(Math.random()-.5)*6,0xcc3322,.8,true);
+      }
+    }
+    return;
+  }
+  if(ops.zeroAt&&!ops.zerosOut&&ops.t>=ops.zeroAt){ops.zerosOut=true;pbySpawnZeros(ops.cfg.zeros||2);}
+  if(ops.boarded||ops.phase==='home')return;
+  // taxi alongside: on the water, inside 150 m and slower than 6 m/s the airmen swim to the hatch, one in 4 seconds
+  if(P.onWater&&d<150&&P.spd<6){
+    ops.boardT+=dt;
+    if(ops.boardT>=4&&ops.aboard<ops.cfg.survivors){
+      ops.boardT=0;ops.aboard++;const man=ops.men[ops.aboard-1];if(man){man.group.visible=false;}
+      addScore(300);flash('AIRMAN ABOARD '+ops.aboard+'/'+ops.cfg.survivors+'  +300',1600);
+      if(ops.aboard>=ops.cfg.survivors){
+        ops.boarded=true;ops.phase='home';P.rtb=true;
+        pbyMsg('ALL ABOARD — TAKE OFF NOW. ZEROS IN THE AREA, WE ARE GOING HOME');
+        ops.zeroAt=ops.t+6;   // the Zeros arrive 6 s after the last man is aboard
+      }
+    }
+  }else if(P.onWater&&d<500&&ops.t-(ops.cueT||0)>6){ops.cueT=ops.t;flash('TAXI ALONGSIDE — WITHIN 150 M AND UNDER 12 KT',1500);}
+}
+function pbySubStep(dt,ops,sight){
+  const s=ops.sub;if(!s)return;
+  const d=Math.hypot(s.x-P.pos.x,s.z-P.pos.z),surfaced=s.state==='surfaced'||s.state==='diving';
+  if(s.state!=='sunk'){
+    const spot=s.state==='surfaced'&&P.pos.y<1500&&d<PbyPatrol.sightRange('sub',sight)*.72;
+    PbyPatrol.stepSub(s,dt,{spotted:spot});
+    if(s.state==='diving'&&s.t<.1&&!s.warned){s.warned=true;if(ops.found)pbyMsg('SHE SAW US — SHE IS CRASH-DIVING');}
+    if(s.state!=='diving')s.warned=false;
+  }else{s.t+=dt;}
+  // model: surfaced she rides the sea, diving she sinks, submerged she is hidden (bubble trail instead), sunk she goes down
+  const g=s.group,visible=s.state==='surfaced'||s.state==='diving'||(s.state==='sunk'&&s.t<14);
+  g.visible=visible;
+  const depth=s.state==='sunk'?Math.min(14,s.t*1.2):s.dive*7;
+  g.position.set(s.x,pbySea(s.x,s.z)-depth,s.z);g.rotation.y=Math.PI/2-s.heading;g.rotation.x=s.state==='diving'?s.dive*.12:0;
+  if(surfaced){s.wakeT-=dt;if(s.wakeT<=0){s.wakeT=1.1;spawnWake(s.x,s.z,7);}}
+  // the bubble trail of a submerged boat: foam patches that last PbyPatrol.SUB.trailSeconds
+  if(s.state==='submerged'||s.state==='diving'){
+    ops.trailT-=dt;
+    if(ops.trailT<=0){ops.trailT=1.6;pbyTrailMark(ops,s.x,s.z);}
+  }
+  for(let i=ops.trail.length-1;i>=0;i--){
+    const k=ops.trail[i];k.t+=dt;const f=1-k.t/PbyPatrol.SUB.trailSeconds;
+    k.mesh.material.opacity=.55*Math.max(0,f);k.mesh.scale.setScalar(3+k.t*.05);
+    if(f<=0){ops.group.remove(k.mesh);GameRuntime.release(k.mesh);ops.trail.splice(i,1);}
+  }
+  if(s.state==='sunk')return;
+  if(!ops.found){
+    const near=ops.trail.reduce((b,k)=>Math.min(b,Math.hypot(k.x-P.pos.x,k.z-P.pos.z)),1e9);
+    if(surfaced&&PbyPatrol.sees('sub',d,sight)||near<1e9&&PbyPatrol.sees('wake',near,sight)){
+      ops.found=true;pbyMsg('SUBMARINE — '+pbyClock({x:s.x,z:s.z})+'. DROP BELOW '+Math.round(PBY_DROP.alt*FT/10)*10+' FT, UNDER '+Math.round(PBY_DROP.speed*KT)+' KT');addScore(150);
+    }
+  }
+  if(ops.phase!=='home'&&P.torps<=0&&!bombs.some(b=>b.depth)){
+    ops.failed=true;ops.phase='home';P.rtb=true;pbyMsg('OUT OF DEPTH CHARGES — SHE GOT AWAY. RETURN TO THE FLEET AND ALIGHT');
+  }
+}
+function pbyTrailMark(ops,x,z){
+  if(ops.trail.length>70)return;
+  const m=new THREE.Mesh(new THREE.CircleGeometry(1,16),new THREE.MeshBasicMaterial({color:0xdff3ec,transparent:true,opacity:.55,depthWrite:false}));
+  GameRuntime.own(m);m.rotation.x=-Math.PI/2;m.scale.setScalar(3);m.position.set(x,pbySea(x,z)+.5,z);ops.group.add(m);ops.trail.push({mesh:m,t:0,x,z});
+}
+function pbyConvoyStep(dt,ops,sight){
+  const live=ships.filter(s=>s.alive);
+  let nearest=null,nd=1e9;for(const s of live){const d=pbyDist(pbyFlat(),s.group.position);if(d<nd){nd=d;nearest=s;}}
+  const radar=ops.cfg.radar&&nearest&&nd<=PbyPatrol.sightRange('radar',sight);
+  if(!ops.found&&nearest&&(PbyPatrol.sees('convoy',nd,sight)||radar)){
+    ops.found=true;pbyMsg(radar&&!PbyPatrol.sees('convoy',nd,sight)?'RADAR CONTACT — '+pbyClock(nearest.group.position)+', '+(nd/NM).toFixed(0)+' MILES. SHIPS, SEVERAL':'SMOKE ON THE HORIZON — '+pbyClock(nearest.group.position)+'. A CONVOY');addScore(150);
+  }
+  if(!ops.found)return;
+  if(ops.kind==='shadow'){
+    // keep contact: close enough to see her, outside her guns (3 000 to 8 500 m); the report goes out every 30 s of it
+    const band=nearest&&nd>=ops.cfg.minRange&&nd<=ops.cfg.maxRange;ops.inBand=!!band;
+    if(band&&ops.phase!=='home'){
+      ops.hold+=dt;ops.watchT+=dt;ops.reportT-=dt;
+      if(ops.reportT<=0){ops.reportT=30;const lead=live[0];pbyMsg('CONTACT REPORT SENT — '+live.length+' SHIPS, COURSE '+String(Math.round(((90-Math.atan2(Math.cos(ops.convoyHeading),Math.sin(ops.convoyHeading))*R2D)%360+360)%360/5)*5%360).padStart(3,'0')+', '+Math.round((lead?.speed||5)*1.944)+' KT');}
+      if(!ops.zerosOut&&ops.watchT>60){ops.zerosOut=true;pbyMsg('ZEROS SCRAMBLING FROM THE CONVOY — GUNNERS, STAY SHARP');pbySpawnZeros(ops.cfg.zeros||2);}
+      if(ops.hold>=ops.cfg.hold){ops.phase='home';P.rtb=true;addScore(1000);pbyMsg('CONTACT HELD FOUR MINUTES — REPORT COMPLETE +1000. RETURN TO THE FLEET AND ALIGHT');}
+    }else if(ops.phase!=='home'&&ops.t-(ops.cueT||0)>8){ops.cueT=ops.t;if(nearest)flash(nd<ops.cfg.minRange?'TOO CLOSE TO THE ESCORTS — OPEN OUT':'TOO FAR TO SEE HER — CLOSE IN',1500);}
+  }else{
+    // Black Cat: both freighters down = P.rtb (checkObjectiveCleared); say it once
+    if(P.rtb&&ops.phase!=='home'){ops.phase='home';pbyMsg('BOTH FREIGHTERS GONE — RETURN TO THE FLEET AND ALIGHT');}
+    if(ops.phase!=='home'&&P.torps<=0&&!bombs.length&&ships.some(s=>s.alive&&s.def.type==='freighter')){
+      ops.failed=true;ops.phase='home';P.rtb=true;pbyMsg('OUT OF BOMBS — FREIGHTER STILL AFLOAT. RETURN TO THE FLEET AND ALIGHT');
+    }
+  }
+}
+// ---- the navigation arrow and the map: a ring until something is found, then what was found ----
+function pbyContacts(){
+  const ops=pbyOps,list=[];if(!ops)return list;
+  if(ops.phase==='home'||P.rtb)return list;
+  if(!ops.found)list.push({ref:'pbyRing',pos:{x:ops.ring.x,z:ops.ring.z},kind:'SEARCH',label:'SEARCH AREA — '+ops.text.toUpperCase()});
+  else if(ops.kind==='dumbo'&&!ops.boarded)list.push({ref:'pbyRaft',pos:ops.point,kind:'TARGET',label:'RAFT — AIRMEN IN THE WATER'});
+  else if(ops.kind==='sub'&&ops.sub){const s=ops.sub;if(s.state!=='sunk')list.push({ref:'pbySub',pos:{x:s.x,z:s.z},kind:'TARGET',label:s.state==='submerged'?'SUBMERGED — BUBBLE TRAIL':'SUBMARINE'});}
+  return list;
+}
+function pbyKnowShip(s){return !pbyOps||pbyOps.found;}
+function pbyNavTarget(){
+  const ops=pbyOps,list=pbyContacts();if(list[0])return list[0];
+  if(ops&&ops.found&&ops.phase!=='home'&&!P.rtb&&(ops.kind==='shadow'||ops.kind==='blackcat')){   // a convoy that was sighted: the nearest of her ships
+    let best=null,bd=1e9;for(const s of ships){if(!s.alive)continue;const d=pbyDist(pbyFlat(),s.group.position);if(d<bd){bd=d;best=s;}}
+    if(best)return {ref:best};
+  }
+  return null;
+}
+function pbyDrawMinimap(mmCtx,put,scale){
+  const ops=pbyOps;if(!ops||ops.found||ops.phase==='home')return;
+  const q=put(ops.ring.x,ops.ring.z);
+  mmCtx.save();mmCtx.strokeStyle='#e8c43a';mmCtx.lineWidth=1.5;mmCtx.setLineDash([4,3]);mmCtx.beginPath();mmCtx.arc(q[0],q[1],Math.max(4,ops.ring.r*scale),0,7);mmCtx.stroke();mmCtx.restore();
+}
+// ---- the end of a sortie ----
+function pbyFinish(win){
+  if(state===ST.RESULT)return;
+  const ops=pbyOps,m=MISSIONS[mission];state=ST.RESULT;releaseHeldControls();
+  const last=mission===MISSIONS.length-2;
+  let medal='bronze';
+  if(win){addScore(500);medal=P.hull>=70&&hitsTaken<=4?'gold':P.hull>=45?'silver':'bronze';}
+  saveBest(score);
+  if(win&&!m.custom&&window.SquadronCampaign)SquadronCampaign.record('pacific',mission);
+  const l=logSortie({torpFired:0,torpHit:0,shipsSunk:sortieShipsSunk,zeros:sortieZeros,trapped:win,wire:0,medal:win?medal:undefined,wingmenLost:0,cleanLanding:win&&P.hull>=70,bombsFired:sortieBombFired,bombsHit:sortieBombHit});
+  const medalIcon={gold:'🥇 GOLD',silver:'🥈 SILVER',bronze:'🥉 BRONZE'}[medal];
+  const body={dumbo:win?'Both airmen are aboard and the Catalina lies alongside the fleet. The search ring was only a circle on a chart: you found them by flying low and watching the sea.':'The search ended without the airmen aboard.',
+    sub:win?'The submarine is on the bottom. You found her inside the ring by eye alone, and put the depth charges across her as she went down.':'She dived and was gone. The charges were spent.',
+    shadow:win?'Contact was held and reported for four minutes between the convoy\'s guns and the horizon. Command has what it needs.':'Contact was lost.',
+    blackcat:win?'Radar found the convoy, your bombs sank it. The Black Cats earned their name tonight.':'The convoy got away.'}[ops?.kind]||'';
+  showResult(win,win?(last?'WAR CRUISE COMPLETE':'ALIGHTED — SORTIE COMPLETE'):'SORTIE FAILED',(win?medalIcon+' · ':'')+m.sub,
+    body+'<br><br>This sortie: '+sortieShipsSunk+' sunk · '+sortieZeros+' Zeros · hull '+SortieFeatures.Damage.hullPercent(P)+'% · '+hitsTaken+' hits taken'
+    +'<br>Landing bonus '+(win?'+500':'—')+' · SCORE '+score+' · BEST '+Math.max(bestScore(),score)
+    +'<br><br><b>LOGBOOK</b> — '+l.sorties+' sorties · medals 🥇'+(l.medals.gold||0)+'  🥈'+(l.medals.silver||0)+'  🥉'+(l.medals.bronze||0),
+    win?(last?'Campaign Complete':'Next Sortie'):'Try Again');
+}
+
+function pbyLaunch(){
+  P.departureAge=null;P.takeoffRotation=0;
+  hideOverlays();initAudio();soundscape.attach(actx,eng?.master);voiceRadio.unlock();
+  clearArrestCable();P.arrestRun=null;P.onDeck=false;P.deckRun=null;P.deckQuaternion=null;P.landingSample=null;launchTimer=0;
+  pbyAttach();finishCarrierIntro();
+  P.onWater=true;P.core=null;P.coreStall=0;P.coreDrop=0;P.pitchRef=null;P.pitchVel=P.rollVel=0;P.nLoad=1;
+  P.flap=P.flapTgt=0;P.groundPower=0;P.spd=0;P.throttle=0;setThrottleUI(0);
+  state=ST.FLIGHT;updatePlaneMesh(0);updatePlayerCamera(0);resetControlUI();updateHUD();
+  flash('ON THE WATER BESIDE THE FLEET — FULL POWER, WHEELS UP, STICK BACK AT SPEED',3400);
+  radioSay('PBY ON THE WATER — THE SEARCH AREA IS ON THE MAP. FIND THEM');
+}
+
+// ============================================================
 //  FLIGHT MODEL
 // ============================================================
 // Build 215: the player's attitude-spring numbers are derived from the aircraft data sheet
 // (flight-envelope.js): published roll-rate curve, wing loading, aircraft class. Nothing typed in per type.
-const PAC_HANDLING=Object.fromEntries(['zero','corsair','sbd','avenger'].map(kind=>{
-  const rollLim=kind==='zero'?1.52:kind==='sbd'?1.50:1.42,h=FlightEnvelope.handling(kind,{rollLim,rollFrac:kind==='avenger'?.78:.86});
+const PAC_HANDLING=Object.fromEntries(['zero','corsair','sbd','avenger','pby'].map(kind=>{
+  const rollLim=kind==='zero'?1.52:kind==='sbd'?1.50:kind==='pby'?1.15:1.42,h=FlightEnvelope.handling(kind,{rollLim,rollFrac:kind==='avenger'?.78:.86});
   return [kind,{roll:h.rollAuth,pitch:h.pitchAuth,name:kind}];
 }));
 // ---- computed flight core (flight-core.js, flight-control.js, FLIGHT-CORE.md) for all four types ----
@@ -3911,18 +4340,18 @@ const PAC_HANDLING=Object.fromEntries(['zero','corsair','sbd','avenger'].map(kin
 const Core=(()=>{const q=new URLSearchParams(location.search),v=q.get('core'),a=q.get('arcade');
   return {on:v!=='off',gain:v==='physics'?1:FlightCore.GAME.manoeuvreGain,arcade:a!=='off',classic:a!=='core'&&a!=='off'};})();
 globalThis.FlightCoreEnabled=Core.on;
-function pacificKind(){return isDefend()?'zero':MISSIONS[mission]?.corsair?'corsair':isSBD()?'sbd':'avenger';}
+function pacificKind(){return (typeof isPby==='function'&&isPby())?'pby':isDefend()?'zero':MISSIONS[mission]?.corsair?'corsair':isSBD()?'sbd':'avenger';}
 // Can this type fly on the core at all (AI, gates, the REALISTIC button)?
 function coreAvail(kind=pacificKind()){return Core.on&&FlightCore.has(kind);}
 // Is the PLAYER on the core right now? REALISTIC always, ARCADE only with ?arcade=core / ?arcade=off.
-function coreOn(kind=pacificKind()){return !isSecretJet()&&coreAvail(kind)&&(aeroMode||!Core.classic);}
+function coreOn(kind=pacificKind()){return !isSecretJet()&&coreAvail(kind)&&(aeroMode||!Core.classic||kind==='pby');}   // Build 258: the Catalina flies on the core only
 globalThis.PlayerFlightCore=()=>coreOn();
 // Hangar airborne start on the core: 1.5x the live clean 1-g stall at the start height (mass with the chosen
 // stores), never below the legacy figure.
 function coreAirStart(height,legacy){if(!coreOn())return legacy;const m=FlightCore.model(pacificKind());
   return Math.max(legacy,1.5*FlightCore.stallSpeed(m,height,FlightCore.loadout(m,coreLoadout()).ratio,0));}
 function coreLoadout(){return SortieFeatures.Handling.coreLoadout(P);}
-const PAC_LIMITS={zero:{rollLim:1.52,pitchLim:1.05},sbd:{rollLim:1.50,pitchLim:1.28},corsair:{rollLim:1.42,pitchLim:.85},avenger:{rollLim:1.42,pitchLim:.85}};
+const PAC_LIMITS={pby:{rollLim:1.15,pitchLim:.75},zero:{rollLim:1.52,pitchLim:1.05},sbd:{rollLim:1.50,pitchLim:1.28},corsair:{rollLim:1.42,pitchLim:.85},avenger:{rollLim:1.42,pitchLim:.85}};
 function coreEnv(AC,controls,departure,configuration){
   const kind=AC.name,lim=PAC_LIMITS[kind];
   return {kind,convention:'pacific',stickRoll:inputRoll*steerSign,stickPitch:inputPitch,aero:aeroMode,
@@ -3961,6 +4390,11 @@ function updateFlight(dt){
     if(resolveShipContact(previousPosition,P.pos,previousQuaternion,pacificAircraftQuaternion(),dt))return;
     const impact=FlightSupport.surfaceHit(previousPosition,P.pos,(x,z)=>Math.max(shoreHeight(x,z),seaHeightAt(x,z,seaUniforms?.uTime.value||0)),.75);
     if(impact)crash('SURFACE IMPACT','The test aircraft struck the surface.');
+    return;
+  }
+  if((typeof isPby==='function'&&isPby())&&P.onWater){   // Build 258: the Catalina floats, taxis and runs up on the sea
+    pbyWaterStep(dt);
+    if(P.alive&&state===ST.FLIGHT)resolveShipContact(previousPosition,P.pos,previousQuaternion,pacificAircraftQuaternion(),dt);
     return;
   }
   if(P.arrestRun){updateArrestRun(dt);return;}
@@ -4116,7 +4550,7 @@ function updateFlight(dt){
 
   // fuel burn — idle sip + throttle burn + extra when climbing hard on full power
   const climbBurn = (P.pitch>0.12 && P.throttle>0.85) ? 0.14 : 0;
-  if(!isFree()) P.fuel=Math.max(0, P.fuel - (0.11 + P.throttle*P.throttle*0.42 + climbBurn)*dt/D().fuel*((isQual()||isDefend())?1:.4));
+  if(!isFree()) P.fuel=Math.max(0, P.fuel - (0.11 + P.throttle*P.throttle*0.42 + climbBurn)*dt/D().fuel*((isQual()||isDefend())?1:(typeof isPby==='function'&&isPby())?.2:.4));
   // BINGO FUEL warning once, then a steady low-fuel nag
   if(!isFree() && P.fuel<=30 && !P.bingo){ P.bingo=true; flash("BINGO FUEL — RTB",1600); sfxAlarm&&sfxAlarm(); }
   if(P.fuel<=15){ P.lowFuelT=(P.lowFuelT||0)-dt;
@@ -4134,12 +4568,12 @@ function updateFlight(dt){
     fb.position.copy(fp); scene.add(fb); explosions.push({mesh:fb,life:0.22,max:0.22,grow:0.4}); } }
 
   // lower-gear reminder near the ship on recovery
-  if(P.rtb && P.gear<0.6 && !SortieFeatures.Damage.needsBelly(P)){
+  if(P.rtb && P.gear<0.6 && !(typeof isPby==='function'&&isPby()) && !SortieFeatures.Damage.needsBelly(P)){
     const dC=Math.hypot((carrierX+AIM_X)-P.pos.x,P.pos.z);
     if(dC<1100){ P.gearWarnT=(P.gearWarnT||0)-dt;
       if(P.gearWarnT<=0){ P.gearWarnT=2.2; flash("LOWER GEAR",900); } }
   }
-  if(P.rtb && P.hook<0.6){
+  if(P.rtb && P.hook<0.6 && !(typeof isPby==='function'&&isPby())){
     const dC=Math.hypot((carrierX+AIM_X)-P.pos.x,P.pos.z);
     if(dC<1100){ P.hookWarnT=(P.hookWarnT||0)-dt;
       if(P.hookWarnT<=0){ P.hookWarnT=2.2; flash("LOWER HOOK",900); } }
@@ -4179,11 +4613,13 @@ function resolveShipContact(from,to,q0,q1,dt){
 function pacificShipProbes(){
   if(MISSIONS[mission]?.secretJet)return shipContact.probesFor(secretJetCrew?.model,planeGroup,
     [[0,0,0],[0,-.96,1],[0,1,-2.63],[0,0,-8.28],[0,0,8.42],[-4.23,.06,3.08],[4.23,.06,3.08]]);
+  if((typeof isPby==='function'&&isPby())&&playerPBY)return shipContact.probesFor(playerPBY.userData.inner,planeGroup,[[0,0,0],[0,-.8,2],[-15.8,3.5,0],[15.8,3.5,0],[0,2.5,-9.7],[0,3,9.5]]);
   const model=isDefend()?playerZero:isSBD()?playerSBD:gltfRoot;
   const kind=isDefend()?'zero':isCorsair()?'corsair':isSBD()?'sbd':'avenger';
   return shipContact.probesFor(model,planeGroup,shipWingProbes[kind]);
 }
 function resolveGroundAndDeck(dt,previousPosition=null,previousQuaternion=null){
+  if((typeof isPby==='function'&&isPby())){pbyResolve(dt,previousPosition,previousQuaternion);return;}   // Build 258
   const x=P.pos.x, z=P.pos.z, y=P.pos.y;
   if(previousPosition&&resolveShipContact(previousPosition,P.pos,previousQuaternion||pacificAircraftQuaternion(),pacificAircraftQuaternion(),dt))return;
   if(MISSIONS[mission]?.theater==='escort'){
@@ -4514,7 +4950,7 @@ function isQual(){ const m=MISSIONS[mission]; return !!(m&&m.qual); }
 function isFree(){ const m=MISSIONS[mission]; return !!(m&&m.free); }
 function isCorsair(){return !!MISSIONS[mission]?.corsair;}
 function hasDiveBrakes(){return isSBD();}
-function hasRearGunner(){return !MISSIONS[mission]?.secretJet&&!isCorsair()&&!isDefend();}
+function hasRearGunner(){return !MISSIONS[mission]?.secretJet&&!isCorsair()&&!isDefend()&&!(typeof isPby==='function'&&isPby());}
 function isSBD(){ const m=MISSIONS[mission]; return !!(m&&m.sbd); }
 // Short badge for a mission that matches its real title (not the array index, which counts
 // Free Flight + Qual and so ran two ahead of the "Sortie N" the briefing shows).
@@ -6037,7 +6473,7 @@ function loadPlaneModel(){
       }
       window.__eyeDbg='EYE '+COCKPIT_EYE.map(v=>v.toFixed(2)).join('/');
       const btEl=document.getElementById('buildTag');
-      if(btEl) btEl.textContent='BUILD 257 · '+window.__eyeDbg;
+      if(btEl) btEl.textContent='BUILD 258 · '+window.__eyeDbg;
       let seat=null;
       model.traverse(function(o){
         if(!o.isMesh||!o.material) return;
@@ -6202,6 +6638,9 @@ function updatePlaneMesh(dt){
   }
   planeGroup.quaternion.copy(pacificAircraftQuaternion());
   planeGroup.position.copy(P.pos);
+  if((typeof isPby==='function'&&isPby())&&pbyTemplate){   // Build 258: the Catalina (rig-contract aircraft) on the plane group
+    pbyAttach();pbyPoseModel(dt);planeGroup.updateMatrixWorld(true);return;
+  }
   if(MISSIONS[mission]?.secretJet&&secretJetTemplate){
     if(!secretJetCrew)secretJetCrew=SecretJet.create(THREE,secretJetTemplate);
     secretJetCrew.attach(planeGroup);
@@ -7002,12 +7441,13 @@ function updateMinimap(){
   if(!okinawaWorld || !okinawaWorld.root.visible)for(const is of islands){ const p=put(is.x,is.z);
     if(Math.hypot(p[0]-c,p[1]-c)<R-1){ mmCtx.beginPath(); mmCtx.arc(p[0],p[1],Math.max(2,is.r*scale),0,7); mmCtx.fill(); } }
   let p=put(carrierX,0); if(Math.hypot(p[0]-c,p[1]-c)<R-1){ mmCtx.fillStyle='#7fae5a'; mmCtx.fillRect(p[0]-3,p[1]-3,6,6); }
-  for(const s of ships){ if(!s.alive) continue; const q=put(s.group.position.x,s.group.position.z);
+  for(const s of ships){ if(!s.alive||typeof pbyKnowShip==='function'&&!pbyKnowShip(s)) continue; const q=put(s.group.position.x,s.group.position.z);
     if(Math.hypot(q[0]-c,q[1]-c)<R-1){ mmCtx.fillStyle=s.def.neutral?'#e8f0f4':s.def.type==='destroyer'?'#e0a050':'#c8412a';
       mmCtx.beginPath(); mmCtx.arc(q[0],q[1],3,0,7); mmCtx.fill(); } }
   for(const s of supportFleet){if(s.alive===false)continue;const q=put(s.group.position.x,s.group.position.z);if(Math.hypot(q[0]-c,q[1]-c)<R-1){mmCtx.fillStyle=s.arrived?'#a1d191':'#80c9df';mmCtx.fillRect(q[0]-3,q[1]-3,6,6);}}
   for(const t of shoreTargets){if(!t.alive)continue;const q=put(t.def.x,t.def.z);if(Math.hypot(q[0]-c,q[1]-c)<R-2){mmCtx.fillStyle=t.def.optional?'#dba774':'#f06a4b';mmCtx.fillRect(q[0]-3,q[1]-3,6,6);}}
   if(pacificOps?.config.recon&&!pacificOps.reconDone){const r=pacificOps.config.recon,q=put(r.x,r.z);mmCtx.strokeStyle='#80c9df';mmCtx.beginPath();mmCtx.arc(q[0],q[1],r.radius*scale,0,7);mmCtx.stroke();}
+  if((typeof isPby==='function'&&isPby()))pbyDrawMinimap(mmCtx,put,scale);
   ensureNavigation().paint(mmCtx,put,c,R-7);
   mmCtx.fillStyle='#e8b84b'; mmCtx.beginPath();
   mmCtx.moveTo(c,c-6); mmCtx.lineTo(c-4,c+5); mmCtx.lineTo(c+4,c+5); mmCtx.closePath(); mmCtx.fill();
@@ -7071,8 +7511,8 @@ function updateCamera(dt){
   // Build 229: the follow easing trails the aircraft by speed/rate metres. REALISTIC eases faster (10/s, so the camera
   // keeps up through loops) and would sit closer than ARCADE (5/s) - the aircraft looked zoomed in. The difference is
   // added to the distance, so the picture is the same in both modes while REALISTIC still follows quicker.
-  const want=P.pos.clone().addScaledVector(track,-(24+(aeroMode?P.spd*(1/5-1/10):0)));
-  if(camUp)want.addScaledVector(camUp,chaseH);else want.y+=chaseH;  // chase height (LOOK buttons)
+  const want=P.pos.clone().addScaledVector(track,-(((typeof isPby==='function'&&isPby())?46:24)+(aeroMode?P.spd*(1/5-1/10):0)));
+  if(camUp)want.addScaledVector(camUp,chaseH);else want.y+=chaseH+((typeof isPby==='function'&&isPby())?5:0);  // chase height (LOOK buttons)
   camera.position.lerp(want, Math.min(1,(aeroMode?10:5)*dt));
   // Remove the sideways lag of the follow easing (crosswind); near the vertical the heading frame is undefined.
   if(camUp)FlightSupport.centerChaseLag(camera,want,track);       // REALISTIC: smooth, keeps the bank offset (Build 229)
@@ -7201,13 +7641,14 @@ function updateTorpRun(){
 let navigation=null;
 function pacificContacts(){
  const c=[];
- for(const s of ships)if(s.alive)c.push({ref:s,pos:s.group.position,kind:'SHIP',label:NavalAssets.label(s.def).toUpperCase()+' #'+(ships.indexOf(s)+1)+(s.def.neutral?' · NEUTRAL':'')+(shipDamage?.status(s)?' · '+shipDamage.status(s):'')});
+ for(const s of ships)if(s.alive&&(typeof pbyKnowShip!=='function'||pbyKnowShip(s)))c.push({ref:s,pos:s.group.position,kind:'SHIP',label:NavalAssets.label(s.def).toUpperCase()+' #'+(ships.indexOf(s)+1)+(s.def.neutral?' · NEUTRAL':'')+(shipDamage?.status(s)?' · '+shipDamage.status(s):'')});
  for(const t of shoreTargets)if(t.alive)c.push({ref:t,pos:t.group.position,kind:'TARGET',label:t.def.label.toUpperCase()});
  for(const r of raiders)if(r.alive)c.push({ref:r,pos:r.group.position,kind:'BOMBER',label:r.betty?(r.leader?'LEAD BETTY':'G4M1 BETTY'):r.japanese?'A6M BOMB CARRIER':'INBOUND BOMBER'});
  if(MISSIONS[mission].theater==='escort')for(const s of supportFleet)if(s.alive&&s.def.transport)c.push({ref:s,pos:s.group.position,kind:'ALLY',label:NavalAssets.label(s.def).toUpperCase()+' '+s.hp+'%'+(s.arrived?' — ARRIVED':' — PROTECT')});
  if(patrolRecovery?.alive)c.push({ref:patrolRecovery,pos:patrolRecovery.pos,kind:'ALLY',label:'WOUNDED CORSAIR — KEEP APPROACH CLEAR (OPTIONAL)'});
  for(const z of zeros)if(z.alive)c.push({ref:z,pos:z.pos,kind:'BANDIT',label:'BANDIT — A6M ZERO'});
  const r=pacificOps?.config.recon;if(r&&!pacificOps.reconDone)c.push({ref:r,pos:r,kind:'RECON',label:'RECON — BLUE CIRCLE'});
+ if(typeof pbyContacts==='function')c.push(...pbyContacts());
  c.push({ref:'base',pos:{x:carrierX+AIM_X,z:0},kind:'BASE',label:'RETURN TO BASE'});return c.map(contact=>({...contact,range:(Math.hypot(contact.pos.x-P.pos.x,contact.pos.z-P.pos.z)/NM).toFixed(1)+' NM'}));
 }
 function ensureNavigation(){
@@ -7222,8 +7663,9 @@ function updateNav(){
   let chosen=list.sort((a,b)=>Math.hypot(a.pos.x-P.pos.x,a.pos.z-P.pos.z)-Math.hypot(b.pos.x-P.pos.x,b.pos.z-P.pos.z))[0]||base;
   if(pacificOps&&!pacificOps.reconDone)chosen=contacts.find(c=>c.kind==='RECON')||chosen;
   if(P.rtb||pacificOps?.failed)chosen=base;
+  if((typeof isPby==='function'&&isPby())){const pn=pbyNavTarget();chosen=(pn&&contacts.find(c=>c.ref===pn.ref))||base;}   // Build 258: a ring until something is found
   chosen=nav.resolve(chosen);
-  const target=chosen.pos,kind=chosen.kind,label=kind==='BASE'?'RECOVER ABOARD CARRIER':kind==='RECON'?pacificOps.status():'TRACK: '+chosen.label;
+  const target=chosen.pos,kind=chosen.kind,label=kind==='BASE'?((typeof isPby==='function'&&isPby())?'ALIGHT BESIDE THE FLEET':'RECOVER ABOARD CARRIER'):kind==='RECON'?pacificOps.status():'TRACK: '+chosen.label;
   const objText=document.getElementById('objText'); objText.textContent=label;
   // arrow relative to heading
   const bearing=Math.atan2(target.z-P.pos.z, target.x-P.pos.x);
@@ -7248,6 +7690,7 @@ function updateNav(){
 // Optical landing aid
 function updateLSO(){
   const lso=document.getElementById('lso');
+  if((typeof isPby==='function'&&isPby())){lso.classList.remove('show');return;}   // Build 258: a flying boat has no deck to call
   const live=isDefend()? raiders.filter(r=>r.alive) : ships.filter(s=>s.alive && (s.def.type==="freighter"||s.def.type==="cruiser"));
   const recovering = live.length===0||navigation?.mode==='BASE';
   const aimX=carrierX+AIM_X;
@@ -7405,7 +7848,7 @@ function setupUIButtons(){
     MISSIONS.forEach((m,i)=>{
       const c=document.createElement('button'); c.type='button';c.className='chip'+(i===selectedMission?' sel':'');
       c.setAttribute('aria-pressed',String(i===selectedMission));
-      c.innerHTML='<div class="cn">'+missionTag(m)+'</div><div class="cs">'+m.sub+'</div><div class="ca">'+(m.defend?'A6M ZERO':m.corsair?'F4U-1D':m.sbd?'SBD':'TBM')+'</div>';
+      c.innerHTML='<div class="cn">'+missionTag(m)+'</div><div class="cs">'+m.sub+'</div><div class="ca">'+(m.defend?'A6M ZERO':m.pby?'PBY-5A':m.corsair?'F4U-1D':m.sbd?'SBD':'TBM')+'</div>';
       c.onclick=()=>{ selectedMission=i;
         sel.querySelectorAll('.chip').forEach((e,j)=>{e.classList.toggle('sel',j===i);e.setAttribute('aria-pressed',String(j===i));});
         document.getElementById('startBtn').textContent='Begin '+m.title;document.getElementById('corsairLoadoutRow').hidden=!m.corsair;updateMissionBlurb(i); };
@@ -7504,7 +7947,7 @@ function setupUIButtons(){
   if(dbgT2) dbgT2.onclick=()=>{
     dbgOn=!dbgOn; GameRuntime.storage.setItem('dbgOn',dbgOn?'1':'0');
     const db=document.getElementById('dbgBox'); if(db) db.textContent=dbgOn?'✓':'';
-    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 257'; }
+    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 258'; }
   };
   const lu=document.getElementById('lookUp'), ld=document.getElementById('lookDn');
   let _lookT=0;
@@ -7520,7 +7963,7 @@ function setupUIButtons(){
   if(pb) pb.addEventListener('pointerdown',e=>{ e.preventDefault(); togglePause(); });
   const rb=document.getElementById('resumeBtn'); if(rb) rb.onclick=resumeGame;
   const mb=document.getElementById('menuBtn'); if(mb) mb.onclick=exitToMenu;
-  document.getElementById('pauseMainMenu').onclick=async()=>{globalThis.sortieCheckpoint?.save();await globalThis.sortieCheckpoint?.flush();exitToMenu(true);window.location.href='index.html?v=257';};
+  document.getElementById('pauseMainMenu').onclick=async()=>{globalThis.sortieCheckpoint?.save();await globalThis.sortieCheckpoint?.flush();exitToMenu(true);window.location.href='index.html?v=258';};
   document.getElementById('resultBtn').onclick=()=>{
     // the logbook borrows this screen from the menu — send the player straight back
     if(logbookOpen){ logbookOpen=false; showOverlay('menu'); return; }
@@ -7529,7 +7972,7 @@ function setupUIButtons(){
       clearSecretSpace();hideOverlays();P.alive=true;state=ST.FLIGHT;enterSecretSpace();clock.getDelta();return;
     }
     const last=mission===MISSIONS.length-2;
-    if(MISSIONS[mission]?.custom){window.location.href='hangar.html?theatre=pacific&v=257';return;}
+    if(MISSIONS[mission]?.custom){window.location.href='hangar.html?theatre=pacific&v=258';return;}
     if(wasWin){
       if(MISSIONS[mission] && MISSIONS[mission].free){ startMission(mission); return; }  // stay in Free Flight
       if(MISSIONS[mission] && MISSIONS[mission].qual){ showOverlay('menu'); return; }  // qual -> ready room
@@ -7602,8 +8045,13 @@ function applyLoadoutUI(){
   const c=MISSIONS[mission]?.custom,unarmed=c&&c.kit==='guns';
   document.getElementById('dropBtn').style.display=unarmed?'none':'';
   const div=loadout==='divebomb',corsair=isCorsair(),rocket=corsair&&P.corsairWeapon==='rockets';
-  const tl=document.getElementById('torpLbl');if(tl)tl.textContent=rocket?'ROCKETS':div?'BOMBS':'TORPEDO';
-  const db=document.getElementById('dropBtn');if(db)db.innerHTML=rocket?'FIRE<br>ROCKET':div?'DROP<br>BOMB':'DROP<br>TORPEDO';
+  const pk=MISSIONS[mission]?.pby?.kind,pbyLabel=pk?(pk==='blackcat'?'BOMBS':'DEPTH CHG'):null;
+  const tl=document.getElementById('torpLbl');if(tl)tl.textContent=pbyLabel||(rocket?'ROCKETS':div?'BOMBS':'TORPEDO');
+  const db=document.getElementById('dropBtn');if(db)db.innerHTML=pk?(pk==='blackcat'?'DROP<br>BOMB':'DROP<br>CHARGE'):rocket?'FIRE<br>ROCKET':div?'DROP<br>BOMB':'DROP<br>TORPEDO';
+  if(pk==='dumbo'||pk==='shadow')document.getElementById('dropBtn').style.display='none';
+  const hb=document.getElementById('hookBtn');if(hb)hb.style.display=pk?'none':'';
+  const fb=document.getElementById('fireBtn');if(fb)fb.style.display=pk?'none':'';
+  const am=document.getElementById('hAmmo');if(am?.parentElement)am.parentElement.style.display=pk?'none':'';
   const dv=document.getElementById('diveBtn');if(dv){dv.style.display=div?'flex':'none';dv.innerHTML=corsair?'GEAR<br>BRAKE':'DIVE<br>BRAKE';}
   const wb=document.getElementById('weaponBtn');if(wb){wb.style.display=corsair?'flex':'none';wb.innerHTML=rocket?'SELECT<br>BOMBS':'SELECT<br>ROCKETS';}
 }
@@ -7842,7 +8290,7 @@ function animate(){
     notice.style.cssText='position:fixed;inset:0;z-index:999998;background:rgba(15,20,15,.95);color:#e8ddbc;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px;text-align:center;font:16px system-ui';
     const title=document.createElement('h2');title.textContent='Simulation interrupted';
     const detail=document.createElement('p');
-    detail.textContent='BUILD 257 · '+(MISSIONS[mission]?.sub||'Menu')+' · '+error.message;
+    detail.textContent='BUILD 258 · '+(MISSIONS[mission]?.sub||'Menu')+' · '+error.message;
     const reload=document.createElement('button');reload.textContent='Reload game';
     reload.style.cssText='padding:12px 24px;font:inherit';reload.onclick=()=>location.reload();
     notice.appendChild(title);notice.appendChild(detail);notice.appendChild(reload);document.body.appendChild(notice);
@@ -7876,6 +8324,7 @@ function animateFrame(){
     CARRIER_SPD=Math.max(0,Math.min(5,(1800-carrierX)*.02)); // offshore holding station on long sorties
     // On the core the ship steams up to launch wind while an aircraft is launched (recovery stays slow).
     if(coreOn()&&state===ST.LAUNCH)CARRIER_SPD=Math.max(CARRIER_SPD,LAUNCH_WOD+CarrierRecovery.wind(windHead,windGust).x);
+    if(typeof isPby==='function'&&(typeof isPby==='function'&&isPby()))CARRIER_SPD=0;   // Build 258: the fleet lies to while the flying boat searches and alights
     carrierX += CARRIER_SPD*dt;
     carrier.position.x=carrierX;                              // gameplay reference (blocky/hidden)
     if(carrierModel) carrierModel.position.x=CARRIER_DX+carrierX; // the VISIBLE ship
@@ -7926,6 +8375,7 @@ function animateFrame(){
     updateGuns(dt);
     updateFlak(dt);updateSurprises(dt);
     updateZeros(dt);
+    updatePbyPatrol(dt);
     updateTailGun(dt);
     updateNav();
     updateTorpRun();
@@ -8020,6 +8470,6 @@ init();
 if(hangarRequest.requested&&hangarRequest.config){selectedMission=0;launchCampaignMission(0);}
 if(hangarRequest.error)flash(hangarRequest.error,8000);
 </script>
-<script src="checkpoint-pacific.js?v=255"></script>
+<script src="checkpoint-pacific.js?v=258"></script>
 </body>
 </html>

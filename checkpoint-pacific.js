@@ -3,7 +3,7 @@
 (function(){
  const C=SortieCheckpoint;
  const identity=(i,saved)=>CustomSortie.checkpointIdentity('pacific',MISSIONS,i,saved);
- function airborne(){return !MISSIONS[mission]?.secretJet&&(state===ST.FLIGHT||state===ST.PAUSED&&prePauseState===ST.FLIGHT)&&P.alive&&!P.onDeck&&!P.deckRun&&!P.arrestRun&&!carrierIntro&&!bailout&&!ditching;}
+ function airborne(){return !MISSIONS[mission]?.secretJet&&!MISSIONS[mission]?.pby&&(state===ST.FLIGHT||state===ST.PAUSED&&prePauseState===ST.FLIGHT)&&P.alive&&!P.onDeck&&!P.deckRun&&!P.arrestRun&&!carrierIntro&&!bailout&&!ditching;}
  function snapshot(){
   return {mission,custom:MISSIONS[mission].custom||null,identity:identity(mission),label:MISSIONS[mission].sub,
    player:C.capture(P,['_keys','_stickActive','_keyboardFlightActive']),operation:C.capture(pacificOps),plan:C.capture(pacificPlan),
