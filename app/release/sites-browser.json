@@ -113,7 +113,7 @@
  "ramp": {
   "index": 22,
   "rotte": 21,
-  "count": 32,
+  "count": 34,
   "plan": "Fictional V-1 interception: find the ramp, destroy it and shoot down the flying ",
   "primary": true,
   "secondary": false,
@@ -252,7 +252,7 @@
  },
  "depot": {
   "index": 23,
-  "count": 32,
+  "count": 34,
   "kinds": {
    "depotTank": 2,
    "depotDrums": 3,
