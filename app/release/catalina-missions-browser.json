@@ -26,21 +26,21 @@
    "crash": null,
    "over": false,
    "onWater": true,
-   "phase": "run",
-   "dist": 76,
-   "text": "DINGHY ALONGSIDE — HOLD STILL"
+   "phase": "fly",
+   "dist": 144,
+   "text": "TAXI UP TO THE DINGHY — WITHIN 90 m (MAP)"
   },
   "taxi": {
-   "t": 0,
+   "t": 25.3,
    "phase": "run",
    "alive": true,
    "crash": null,
-   "spd": 0,
-   "dist": 76,
+   "spd": 1.2,
+   "dist": 59,
    "text": "DINGHY ALONGSIDE — HOLD STILL"
   },
   "boarded": {
-   "t": 18.7,
+   "t": 15.8,
    "phase": "home",
    "rescued": 1,
    "score": 600,
@@ -52,7 +52,7 @@
   },
   "run": {
    "l1": 800,
-   "l2": 675,
+   "l2": 650,
    "dist": 617
   },
   "takeoff": {
@@ -68,16 +68,16 @@
   "block": 0,
   "home": {
    "td": {
-    "t": 16.7,
-    "spd": 39.4,
-    "x": -54
+    "t": 14.3,
+    "spd": 41.1,
+    "x": -20
    },
    "alive": true,
    "crash": null,
    "over": true,
    "landing": false,
    "onGround": true,
-   "result": "\n  \n    Flight Officer Frank Zabrinski  &middot;  Landed at Beaufort  &middot;  🥇 GOLD\n    MISSION ACCOMPLISHED\n    The airman is home. This sortie: 1 rescuedH",
+   "result": "\n  \n    Flight Officer Hank Dobbs  &middot;  Landed at Beaufort  &middot;  🥇 GOLD\n    MISSION ACCOMPLISHED\n    The airman is home. This sortie: 1 rescuedHull 1",
    "score": 1000
   }
  },

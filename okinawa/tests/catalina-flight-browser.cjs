@@ -23,14 +23,14 @@ const server=http.createServer((req,res)=>{
   const page=await browser.newPage({viewport:{width:1194,height:660},hasTouch:true,deviceScaleFactor:1}),errors=[];
   page.setDefaultTimeout(900000);page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error'&&!/404/.test(m.text()))errors.push('console: '+m.text());});
   await page.addInitScript(()=>window.requestAnimationFrame=()=>0);
-  await page.goto('http://127.0.0.1:'+server.address().port+'/remagen-mission.html?v=256&surprises=off&sortie='+sortie);
+  await page.goto('http://127.0.0.1:'+server.address().port+'/remagen-mission.html?v=257&surprises=off&sortie='+sortie);
   // the hangar sortie opens the briefing at once: wait for the world, not for the menu
   await page.waitForFunction(()=>realWorldReady&&(state===ST.MENU||state===ST.BRIEF),null,{polling:200});
   await page.evaluate(async()=>{await Promise.all(['pby','p47'].map(ensureModel));renderer.setPixelRatio(.25);renderer.shadowMap.enabled=false;if(typeof flightQuality!=='undefined')flightQuality.enabled=false;
    const orig=crash;window.__crash=null;crash=(t,m)=>{window.__crash=t+': '+m;orig(t,m);};window.said=[];const say=radioSay;radioSay=t=>{said.push(t);say(t);};
    window.frame=dt=>{SortieFeatures.Damage.tick(P,dt);updateFlight(dt);updateStorchGunner(dt);updateFlak(dt);updateSites(dt);updateTargets(dt);updateEnemyAir(dt);updateBullets(dt);updateTracers(dt);updateOrdnance(dt);updateExplosions(dt);updateSmoke(dt);updateDebris(dt);};
    window.begin=(id,diff=1)=>{diffIdx=diff;const i=id?MISSIONS.findIndex(m=>m.id===id):0;selectedMission=i;briefPlan=chooseEuropePlan(i);startMission(i);if(launchIntro)finishLaunchIntro(false);show('menu',false);show('brief',false);show('result',false);state=ST.FLIGHT;P.alive=true;inputRoll=inputPitch=0;window.__crash=null;said.length=0;return i;};
-   window.takeoffTo=agl=>{const dt=1/60;let t=0;P.throttle=1;for(;t<80&&P.alive;t+=dt){const vr=SortieFeatures.Handling.speeds(P,acDef().stall,acDef().app).stall*1.1;if(P.onGround&&P.spd>.95*vr)inputPitch=.5;else if(!P.onGround)inputPitch=.6;updateFlight(dt);if(!P.onGround&&P.pos.y-groundY(P.pos.x,P.pos.z)>agl)break;}return t;};
+   window.takeoffTo=agl=>{const dt=1/60;let t=0;P.throttle=1;P.flap=P.flapTgt=0;for(;t<80&&P.alive;t+=dt){const vr=SortieFeatures.Handling.speeds(P,acDef().stall,acDef().app).stall*1.1;if(P.onGround&&P.spd>.95*vr)inputPitch=.5;else if(!P.onGround)inputPitch=.6;updateFlight(dt);if(!P.onGround&&P.pos.y-groundY(P.pos.x,P.pos.z)>agl)break;}P.flap=P.flapTgt=0;return t;};   // the pilot raises the take-off flap on the way up
    window.holdLevel=(sec,thr)=>{const dt=1/60;P.throttle=thr;for(let t=0;t<sec&&P.alive;t+=dt){inputPitch=Math.max(-.6,Math.min(.6,-P.vSpeed*.06-P.pitch*.8));updateFlight(dt);}};
   });
 
@@ -39,6 +39,7 @@ const server=http.createServer((req,res)=>{
    const dt=1/60,deg=v=>v*180/Math.PI,r1=v=>+(+v).toFixed(1),fold=n=>{const q=new THREE.Quaternion().fromArray(n.userData.rigRest);return q.angleTo(n.quaternion);};
    begin(null);
    const res={ac:P.ac,onGround:P.onGround,core:coreOn(),gear:document.getElementById('gearBtn').textContent,fire:getComputedStyle(document.getElementById('fireBtn')).display,flapBtn:getComputedStyle(document.getElementById('flapBtn')).display,ammo:P.ammo,hull:P.hull,bombs:P.bombs,key:modelKey('pby'),tpl:!!modelTpl.pby};
+   {const f0=P.flap;P.flap=0;const c=SortieFeatures.Handling.speeds(P,acDef().stall,acDef().app).stall;P.flap=1;const f=SortieFeatures.Handling.speeds(P,acDef().stall,acDef().app).stall;P.flap=f0;res.stallClean=r1(c);res.stallFlap=r1(f);}
    res.parts=['PropellerLeft','PropellerRight','FloatLeft','FloatRight','GearLeft','NoseGear','BlisterHatchRight'].filter(n=>!playerModel.getObjectByName(n));
    posePlayerAircraft(dt);for(let k=0;k<30;k++)posePlayerAircraft(dt);
    res.rest={float:r1(deg(fold(playerModel.getObjectByName('FloatLeft')))),gear:r1(deg(fold(playerModel.getObjectByName('GearLeft'))))};
@@ -47,6 +48,10 @@ const server=http.createServer((req,res)=>{
     if(!P.onGround&&off==null){off=t;run=Math.hypot(P.pos.x-x0,P.pos.z-z0);inputPitch=.5;P.gearTgt=0;}
     if(off!=null){const since=t-off;for(const s of [3,8,15])if(since>=s&&!(s in rows))rows[s]={kmh:Math.round(P.spd*3.6),climb:r1(P.vSpeed),pitch:r1(deg(P.pitch)),gear:r1(P.gear)};if(since>15)break;}}
    res.liftoffS=r1(off);res.runM=Math.round(run);res.rows=rows;res.alive=P.alive;res.vr=r1(SortieFeatures.Handling.speeds(P,acDef().stall,acDef().app).stall*1.1);
+   // the same take-off without the take-off flap setting (the sortie starts with it)
+   begin(null);P.flap=P.flapTgt=0;{const x1=P.pos.x,z1=P.pos.z;let off2=null;inputRoll=inputPitch=0;P.throttle=1;
+    for(let t2=0;t2<90&&P.alive;t2+=dt){const vr=SortieFeatures.Handling.speeds(P,acDef().stall,acDef().app).stall*1.1;if(P.onGround&&P.spd>.95*vr)inputPitch=.5;updateFlight(dt);if(!P.onGround){off2=t2;break;}}
+    res.liftoffClean=r1(off2==null?999:off2);res.runClean=Math.round(Math.hypot(P.pos.x-x1,P.pos.z-z1));}
    // level flight, half power, idle glide, floats fold in cruise
    begin(null);takeoffTo(300);P.gearTgt=0;holdLevel(60,1);res.levelFull=Math.round(P.spd*3.6);for(let k=0;k<420;k++)posePlayerAircraft(dt);
    res.cruise={float:r1(deg(fold(playerModel.getObjectByName('FloatLeft')))),floatR:r1(deg(fold(playerModel.getObjectByName('FloatRight')))),gear:r1(deg(fold(playerModel.getObjectByName('GearLeft')))),nose:r1(deg(fold(playerModel.getObjectByName('NoseGear'))))};
@@ -60,7 +65,7 @@ const server=http.createServer((req,res)=>{
    return res;
   });
   report.flight=T;console.log(JSON.stringify(T));
-  assert.equal(T.ac,'pby');assert.equal(T.core,true,'the Catalina flies on the flight core');assert.equal(T.parts.length,0,'the contract parts exist: '+T.parts);assert.equal(T.fire,'none','no player gun: the gunners shoot by themselves');assert.equal(T.flapBtn,'none','no wing flaps');
+  assert.equal(T.ac,'pby');assert.equal(T.core,true,'the Catalina flies on the flight core');assert.equal(T.parts.length,0,'the contract parts exist: '+T.parts);assert.equal(T.fire,'none','no player gun: the gunners shoot by themselves');assert.notEqual(T.flapBtn,'none','Build 257: the Catalina has the flap lever');assert.ok(T.stallFlap<T.stallClean*.93&&T.stallFlap>T.stallClean*.85,'full flap lowers the stall by about 10 %: '+T.stallClean+' / '+T.stallFlap);assert.ok(T.liftoffS<=T.liftoffClean+.5,'the take-off flap setting does not lengthen the run: '+T.liftoffS+' s with, '+T.liftoffClean+' s without');
   assert.equal(T.ammo,600);assert.equal(T.hull,150);assert.ok(T.rest.float<1&&T.rest.gear<1,'floats out and wheels down on the strip: '+JSON.stringify(T.rest));
   assert.ok(T.liftoffS>12&&T.liftoffS<45&&T.runM>250&&T.runM<900,'the Catalina is off the strip: '+T.liftoffS+' s / '+T.runM+' m');
   assert.ok(T.rows[8].climb>.5&&T.rows[8].kmh>110,'she climbs: '+JSON.stringify(T.rows));
@@ -110,24 +115,45 @@ const server=http.createServer((req,res)=>{
   assert.ok(W.taxi.turnDeg>8&&W.taxi.spd<14,'the engines and the rudders turn her on the water: '+JSON.stringify(W.taxi));
   assert.ok(W.run&&W.takeoff.alive&&!W.takeoff.crash&&W.run.dist<W.run.len&&W.takeoff.climb>-1,'she takes off from the water inside the stretch: '+JSON.stringify([W.run,W.takeoff]));
 
-  // ---- 3. the water bites: wheels down, too fast, nose first ----
+  // ---- 3. the water bites: REALISTIC is the strict boat (wheels down, too fast, nose first ...), ARCADE (Build 257) forgives a firm alighting and the wheels ----
   const F=await page.evaluate(()=>{
    const dt=1/60,out={};begin(null);
    const strip=findWaterStrip(13800,15770,3500,1100),hdg=strip.heading,sx=Math.sin(hdg),sz=Math.cos(hdg),ref=SortieFeatures.Handling.speeds(P,acDef().stall,acDef().app).reference;
-   const attempt=(name,{gear=0,spd=ref,pitch=.05,vs=-2,roll=0})=>{
-    begin(null);window.__crash=null;P.onGround=false;P.onWater=false;P.landingRoll=null;P.touchResolved=false;P.gear=P.gearTgt=gear;P.heading=hdg;P.pitch=pitch;P.roll=roll;P.pitchVel=P.rollVel=0;P.throttle=.2;
-    P.pos.set(strip.x-sx*300,waterY(strip.x-sx*300,strip.z-sz*300)+3,strip.z-sz*300);P.spd=spd;P.vSpeed=vs;P.alive=true;inputPitch=inputRoll=0;
+   const attempt=(name,{aero=false,gear=0,spd=ref,pitch=.05,vs=-2,roll=0,h=3})=>{
+    begin(null);if(aero){aeroMode=true;switchFlightModel();}window.__crash=null;P.onGround=false;P.onWater=false;P.landingRoll=null;P.touchResolved=false;P.gear=P.gearTgt=gear;P.heading=hdg;P.pitch=pitch;P.roll=roll;P.pitchVel=P.rollVel=0;P.throttle=.2;
+    P.pos.set(strip.x-sx*300,waterY(strip.x-sx*300,strip.z-sz*300)+h,strip.z-sz*300);P.spd=spd;P.vSpeed=vs;P.alive=true;inputPitch=inputRoll=0;const hull0=P.hull;
     const rg=resolveGround;resolveGround=d=>{P.vSpeed=Math.min(P.vSpeed,vs);rg(d);};   // updateFlight resolves the touch-down itself; the core re-derives the climb rate from the attitude, so hold the sink for the check
     for(let k=0;k<4/dt&&P.alive&&!P.onGround;k++)updateFlight(dt);
     resolveGround=rg;
-    out[name]={alive:P.alive,crash:window.__crash,onGround:P.onGround};};
-   attempt('wheelsDown',{gear:1});attempt('tooFast',{spd:ref+30});attempt('noseFirst',{pitch:-.25});attempt('hard',{vs:-5.5});attempt('stove',{vs:-8});attempt('wing',{roll:.5});
+    out[name]={alive:P.alive,crash:window.__crash,onGround:P.onGround,lost:Math.round(hull0-P.hull),gearTgt:P.gearTgt};};
+   // REALISTIC: strict
+   attempt('wheelsDown',{aero:true,gear:1});attempt('tooFast',{aero:true,spd:ref+30});attempt('noseFirst',{aero:true,pitch:-.25});attempt('hard',{aero:true,vs:-5.5});attempt('stove',{aero:true,vs:-8});attempt('wing',{aero:true,roll:.5});
+   // ARCADE: forgiving
+   const f0=flash;const said=[];flash=(t,ms)=>{said.push(t);f0(t,ms);};attempt('aWheels',{gear:1,h:20,pitch:-.05,vs:-2});out.cue=[...new Set(said)];attempt('rWheels',{aero:true,gear:1,h:20,pitch:-.05,vs:-2});out.rcue=[...new Set(said)].filter(t=>/WHEELS/.test(t));flash=f0;
+   begin(null);toggleAero();out.toggle=document.getElementById('flash')?.textContent;toggleAero();out.toggleOff=document.getElementById('flash')?.textContent;
+   attempt('aWheelsLate',{gear:1});attempt('aFast',{spd:ref+16});attempt('aSteep',{pitch:-.16,vs:-4});attempt('aFirm',{vs:-7});attempt('aWing',{roll:.4});attempt('aWreck',{vs:-10.5});attempt('aWrongWay',{spd:ref+40});
+   // leaving the river in the water run: a slow bank is a belly landing in ARCADE, a wreck in REALISTIC, and a wreck at speed in both
+   const bank=(name,aero,spd)=>{begin(null);if(aero){aeroMode=true;switchFlightModel();}window.__crash=null;const wa=livingWorld._pointOnWater;
+    P.onGround=false;P.touchResolved=false;P.gear=P.gearTgt=0;P.heading=hdg;P.pitch=.03;P.roll=0;P.vSpeed=-1;P.throttle=0;P.spd=spd;P.alive=true;P.pos.set(strip.x,waterY(strip.x,strip.z)+2.4,strip.z);
+    for(let k=0;k<3/dt&&!P.onGround&&P.alive;k++)updateFlight(dt);
+    const hull0=P.hull;livingWorld._pointOnWater=()=>false;for(let k=0;k<3/dt&&P.alive;k++)updateFlight(dt);livingWorld._pointOnWater=wa;
+    out[name]={alive:P.alive,crash:window.__crash,lost:Math.round(hull0-P.hull),water:P.landingRoll?.water};};
+   bank('bankSlowArcade',false,14);bank('bankSlowReal',true,14);bank('bankFastArcade',false,34);
    return out;
   });
   report.failures=F;console.log(JSON.stringify(F));
-  assert.ok(!F.wheelsDown.alive&&/GEAR DOWN ON THE WATER/.test(F.wheelsDown.crash),'wheels down on the water: '+JSON.stringify(F.wheelsDown));
+  assert.ok(!F.wheelsDown.alive&&/GEAR DOWN ON THE WATER/.test(F.wheelsDown.crash),'REALISTIC: wheels down on the water: '+JSON.stringify(F.wheelsDown));
   assert.ok(!F.tooFast.alive&&/TOO FAST/.test(F.tooFast.crash),JSON.stringify(F.tooFast));assert.ok(!F.noseFirst.alive&&/NOSE FIRST/.test(F.noseFirst.crash),JSON.stringify(F.noseFirst));
   assert.ok(F.hard.alive&&F.hard.onGround,'a firm alighting damages but survives: '+JSON.stringify(F.hard));assert.ok(!F.stove.alive&&/HARD LANDING/.test(F.stove.crash),JSON.stringify(F.stove));assert.ok(!F.wing.alive&&/FLOAT DUG IN/.test(F.wing.crash),JSON.stringify(F.wing));
+  assert.ok(F.aWheels.alive&&F.aWheels.gearTgt===0&&F.aWheels.lost===0&&F.cue.some(t=>/CREW: WHEELS UP/.test(t)),'ARCADE: with 20 m to spare the crew raises the wheels in time and says so: '+JSON.stringify([F.aWheels,F.cue]));
+  assert.ok(F.aWheelsLate.alive&&F.aWheelsLate.onGround&&F.aWheelsLate.gearTgt===0&&F.aWheelsLate.lost>0,'ARCADE: late wheels cost hull but not the boat: '+JSON.stringify(F.aWheelsLate));
+  assert.ok(F.rWheels.gearTgt===1&&F.rcue.some(t=>/WHEELS UP FOR THE WATER!/.test(t)),'REALISTIC only warns about the wheels - nobody raises them for you: '+JSON.stringify([F.rWheels,F.rcue]));
+  assert.ok(/STRICT WATER RULES/.test(F.toggle)&&/CREW HELPS/.test(F.toggleOff),'the REALISTIC toggle names the water rules: '+JSON.stringify([F.toggle,F.toggleOff]));
+  assert.ok(F.aFast.alive&&F.aSteep.alive&&F.aWing.alive,'ARCADE forgives a fast, a steep and a wing-low alighting: '+JSON.stringify([F.aFast,F.aSteep,F.aWing]));
+  assert.ok(F.aFirm.alive&&F.aFirm.lost>20&&F.aFirm.onGround,'ARCADE: sink 7 m/s is a firm alighting with hull damage: '+JSON.stringify(F.aFirm));
+  assert.ok(!F.aWreck.alive&&/HARD LANDING/.test(F.aWreck.crash),'ARCADE still breaks the hull at 10 m/s: '+JSON.stringify(F.aWreck));assert.ok(!F.aWrongWay.alive,'a hopeless arrival is still a wreck: '+JSON.stringify(F.aWrongWay));
+  assert.ok(F.bankSlowArcade.alive&&F.bankSlowArcade.lost>0&&F.bankSlowArcade.water===false,'ARCADE: a slow bank is a belly landing with hull damage: '+JSON.stringify(F.bankSlowArcade));
+  assert.ok(!F.bankSlowReal.alive&&/BEACHED/.test(F.bankSlowReal.crash),'REALISTIC: the bank grounds her: '+JSON.stringify(F.bankSlowReal));assert.ok(!F.bankFastArcade.alive&&/BEACHED/.test(F.bankFastArcade.crash),'ARCADE: a fast bank is a wreck: '+JSON.stringify(F.bankFastArcade));
   assert.deepEqual(errors,[],'no page error: '+errors.join(' | '));
   fs.mkdirSync(path.join(root,'app/release'),{recursive:true});fs.writeFileSync(path.join(root,'app/release/catalina-flight-browser.json'),JSON.stringify(report,null,1)+'\n');
   console.log('Catalina flight WebGL: strip take-off, flight, river alighting, water run, water take-off and the water failures passed.');

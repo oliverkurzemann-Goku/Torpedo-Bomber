@@ -22,7 +22,7 @@ const server=http.createServer((req,res)=>{
   const page=await browser.newPage({viewport:{width:1194,height:660},hasTouch:true,deviceScaleFactor:1}),errors=[];
   page.setDefaultTimeout(900000);page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error'&&!/404/.test(m.text()))errors.push('console: '+m.text());});
   await page.addInitScript(()=>window.requestAnimationFrame=()=>0);
-  await page.goto('http://127.0.0.1:'+server.address().port+'/remagen-mission.html?v=256&surprises=off&sortie='+sortie);
+  await page.goto('http://127.0.0.1:'+server.address().port+'/remagen-mission.html?v=257&surprises=off&sortie='+sortie);
   await page.waitForFunction(()=>realWorldReady&&(state===ST.MENU||state===ST.BRIEF),null,{polling:200});
   await page.evaluate(async()=>{await Promise.all(['pby','pbyn','bf109','p47'].map(ensureModel));renderer.setPixelRatio(.25);renderer.shadowMap.enabled=false;if(typeof flightQuality!=='undefined')flightQuality.enabled=false;
    const orig=crash;window.__crash=null;crash=(t,m)=>{window.__crash=t+': '+m;orig(t,m);};window.said=[];const say=radioSay;radioSay=t=>{said.push(t);say(t);};
@@ -55,7 +55,7 @@ const server=http.createServer((req,res)=>{
    let t1=0;
    for(;t1<150&&P.alive&&sts.phase==='fly';t1+=dt){
     const fx=sts.fig.position.x-P.pos.x,fz=sts.fig.position.z-P.pos.z,dd=Math.hypot(fx,fz),want=Math.atan2(fx,fz);let da=want-P.heading;da=Math.atan2(Math.sin(da),Math.cos(da));
-    inputRoll=Math.max(-1,Math.min(1,-da*steerSign*2.5));
+    inputRoll=Math.max(-1,Math.min(1,da*steerSign*2.5));   // on the water the stick turns the heading the same way (heading += stick); the sign was wrong and only a dinghy already alongside passed (the stop point varies with the random wind)
     P.throttle=dd>100&&Math.abs(da)<.5&&P.spd<5?.3:0;   // a taxiing boat turns first (the water rudders work at a crawl), then creeps - she must not charge across the river into the bank
     updateFlight(dt);updateSites(dt);updateEuropeOperation(dt);
    }

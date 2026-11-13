@@ -1,4 +1,20 @@
-# Period models and their missions (Builds 246 to 256)
+# Period models and their missions (Builds 246 to 257)
+
+## Build 257: the Catalina on the river forgives in ARCADE and stays strict in REALISTIC; flaps
+
+Measured in the real game (about 50 approaches into the 1 475 m river strip): flared landings were always fine; deadly were the **wheels still down** (the sortie starts with them down), an **unflared steep arrival**
+(8 degree glide, +10 m/s: sink 6.9 m/s over the 6.5 m/s limit) and the **bank** (the boat's centre leaving the water polygon was `BEACHED` at any speed). `waterRules()` now follows the flight model:
+ARCADE accepts arrivals up to reference +24 m/s, nose −18…+29 degrees, 0.5 rad of bank, sink 5.5 m/s fine and a hull break from 9 m/s (damage 20 + 10 per m/s above 5.5); the crew raises the wheels once she sinks
+under 30 m of keel height over the river (late wheels cost 25 hull), a slow bank (up to 26 m/s) is a belly landing on the meadow (8 + 1.6 per m/s hull) and a slow taxi onto the bank lowers the wheels. REALISTIC keeps
+the strict Build 252 numbers (reference +14 m/s, −8…+23 degrees, 0.3 rad, 4.5/6.5 m/s, the bank wrecks her). Cues in the approach every 2.5 s (wheels, sink, speed). The REALISTIC button was there all along (measured in
+all three Catalina sorties at four iPad viewports); the difference ARCADE/REALISTIC is the stick law (a released 45 degree bank stays: 33 to 2 degrees over 10 s against 0 in 2 s; roll 11 against 17 deg/s) and now the
+water rules, which the toggle message names.
+
+**Flaps (C, on request).** The real PBY-5A had none (AN 01-5MA-2); the game's Catalina has the lever UP / T/O / DN: landing stall 52 kt against 58 kt clean (`flight-core.js` `SOURCES.pby`), `flapCD .05`. Measured: full flap
+31 against 34.5 m/s stall speed, take-off run 529 m / 25.9 s with the take-off flap (the sortie's default) against 577 m / 26.9 s clean. The model has **no flap geometry** (class `amphibian-twin` has no `FlapLeft/Right`),
+so nothing moves visibly. An order to ChatGPT for optional `FlapLeft/FlapRight` parts in the GLB would close that.
+
+**Open:** no iPad test; all water numbers are estimates (`waterRules` in `remagen-mission.html`); whether the Catalina belongs in the Pacific game (historically yes; the Pacific core has no player water take-off/landing).
 
 ## Build 256: the flyable Catalina — Storch feedback — people
 

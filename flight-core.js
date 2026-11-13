@@ -111,7 +111,8 @@ const SOURCES={
   roll:{peak:50,at:28,fall:1,ref:'C'}},
  // Build 252: the Consolidated PBY-5A Catalina becomes a flyable type (Rhine game, rig class amphibian-twin, Allied side). Published figures as listed in the
  // aircraft's reference sheet (AN 01-5MA-2, museum fact sheets): 179 mph at 7 000 ft, ceiling 15 800 ft (not fitted), climb about 610 ft/min at the operating weight,
- // 2 x R-1830-92 of 1 200 hp. The stall refers to 27 000 lb (the usual operating weight); the PBY has no flaps, so the landing figure equals the clean one.
+ // 2 x R-1830-92 of 1 200 hp. The stall refers to 27 000 lb (the usual operating weight). The real PBY-5A had NO wing flaps (AN 01-5MA-2), so the published figure is the clean one; Build 257
+ // gives the game's Catalina a flap lever on request (Oliver: "die Catalina braucht noch flaps"): a game decision (C), a plain-flap landing figure 10 % under the clean stall (52 kt) and flapCD .05.
  // The sheet's mass is the maximum take-off weight with the full 1 750 US gal; the game flies lighter with less fuel (and less than that with the stall weight of 27 000 lb).
  pby:{name:'Consolidated PBY-5A Catalina (2 x R-1830-92)',
   refs:{B1:'AN 01-5MA-2 / Pima Air & Space / American Heritage Museum fact sheets: 179 mph at 7 000 ft, 1 200 hp per engine, 130 m2 wing, 104 ft span, 11 ft 6 in propellers',
@@ -120,7 +121,7 @@ const SOURCES={
   mass:35420*LB,massRef:'B2',S:130,b:31.7,geomRef:'B1',propD:3.51,propRef:'B1',climbLo:32,
   engine:{kind:'piston',power:1200*HP,count:2,fth:7000*FT,ref:'B1',text:'2 x R-1830-92, 1 200 hp each (product with eta_p solved); full-throttle height 7 000 ft (C)'},
   perf:[row('speed',7000*FT,179*MPH,'B1','179 mph @ 7 000 ft'),row('climb',0,610*FPM,'B2','610 ft/min @ SL at 35 420 lb')],
-  stall:{mass:27000*LB,clean:58*KT,landing:58*KT,ref:'B3',text:'58 kt IAS at 27 000 lb (no flaps: landing equals clean)'},
+  stall:{mass:27000*LB,clean:58*KT,landing:52*KT,ref:'B3',text:'58 kt IAS at 27 000 lb clean (published; the real boat had no flaps); 52 kt with the game flaps (C, Build 257)'},
   limits:{vne:175*KT,ref:'C',text:'175 kt (C)'},
   stores:{},fuel:{kg:1750*GAL*AVGAS,ref:'B1',text:'1 750 US gal internal'},
   roll:{peak:18,at:45,fall:1,ref:'C'}},
@@ -234,7 +235,7 @@ const ASSUMED={
  // Build 249: Storch. Light liaison structure (C): +4 g, -1.5 g; fixed gear sits in the measured drag; a mild stall behind the slats.
  fi156:A_({nLimit:3.5,nNegative:1.5,mcrit:.72,mlimit:.78,vne:265*KMH,gearCD:0,flapCD:.10,severity:.12,spool:.7,stores:{}}),
  // Build 252: Catalina. Heavy flying-boat structure (C): +3 g, -1 g; gear and floats count as gear drag, there are no flaps; a mild stall (thick wing).
- pby:A_({nLimit:3.0,nNegative:1.0,mcrit:.60,mlimit:.66,vne:175*KT,gearCD:.030,flapCD:0,severity:.10,spool:.9,stores:{bomb:227,bombArea:.03}}),
+ pby:A_({nLimit:3.0,nNegative:1.0,mcrit:.60,mlimit:.66,vne:175*KT,gearCD:.030,flapCD:.05,severity:.10,spool:.9,stores:{bomb:227,bombArea:.03}}),
  me262:A_({nLimit:5.5,mcrit:.74,vne:950*KMH,spool:2.6,windmill:0,severity:.35,stores:{bomb:250,bombArea:.02}}),
  me163:A_({nLimit:6.0,clClean:1.1,clLandingRatio:1.15,spool:.3,windmill:0,gearCD:0,severity:.05,isp:2000}),
  avenger:A_({nLimit:4.5,mcrit:.66,mlimit:.70,vne:320*KT,severity:.25,stores:{torpedo:2216*LB,bomb:227,bombArea:0}}), // internal bay

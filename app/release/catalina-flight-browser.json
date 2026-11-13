@@ -5,41 +5,45 @@
   "core": true,
   "gear": "GEAR▼ DN",
   "fire": "none",
-  "flapBtn": "none",
+  "flapBtn": "flex",
   "ammo": 600,
   "hull": 150,
   "bombs": 0,
   "key": "pby",
   "tpl": true,
+  "stallClean": 34.5,
+  "stallFlap": 31,
   "parts": [],
   "rest": {
    "float": 0,
    "gear": 0
   },
-  "liftoffS": 26.9,
-  "runM": 577,
+  "liftoffS": 25.9,
+  "runM": 529,
   "rows": {
    "3": {
-    "kmh": 135,
-    "climb": 7.3,
-    "pitch": 11.2,
+    "kmh": 125,
+    "climb": 6.1,
+    "pitch": 10.1,
     "gear": 0
    },
    "8": {
-    "kmh": 134,
-    "climb": 6.4,
-    "pitch": 9.9,
+    "kmh": 122,
+    "climb": 4.5,
+    "pitch": 7.6,
     "gear": 0
    },
    "15": {
-    "kmh": 134,
-    "climb": 6.2,
-    "pitch": 9.6,
+    "kmh": 122,
+    "climb": 4.3,
+    "pitch": 7.3,
     "gear": 0
    }
   },
   "alive": true,
-  "vr": 38.2,
+  "vr": 36,
+  "liftoffClean": 26.9,
+  "runClean": 577,
   "levelFull": 263,
   "cruise": {
    "float": 90,
@@ -74,16 +78,16 @@
   },
   "landing": {
    "touch": {
-    "t": 8.500000000000002,
-    "spd": 33.4,
-    "pitch": -5.3,
+    "t": 8.800000000000017,
+    "spd": 31.5,
+    "pitch": -5.7,
     "wet": true,
-    "x": 14016.698669171083,
-    "z": 15712.586697835082
+    "x": 14014.713476614415,
+    "z": 15713.2550866839
    },
    "stop": {
-    "t": 14.2,
-    "dist": 247
+    "t": 13.2,
+    "dist": 213
    },
    "alive": true,
    "crash": null,
@@ -99,49 +103,149 @@
    "stopped": 0.3
   },
   "run": {
-   "t": 30.1,
-   "dist": 619,
+   "t": 29.1,
+   "dist": 569,
    "len": 1475
   },
   "takeoff": {
-   "off": 30.1,
+   "off": 29.1,
    "alive": true,
    "crash": null,
-   "spd": 133,
-   "climb": 6.4,
-   "agl": 76.8
+   "spd": 121,
+   "climb": 4.5,
+   "agl": 61.4
   }
  },
  "failures": {
   "wheelsDown": {
    "alive": false,
    "crash": "GEAR DOWN ON THE WATER: The wheels dug in and the boat went over on her nose. Wheels up for the water.",
-   "onGround": false
+   "onGround": false,
+   "lost": 0,
+   "gearTgt": 1
   },
   "tooFast": {
    "alive": false,
    "crash": "TOO FAST: Hit the water too fast — the hull broke up.",
-   "onGround": false
+   "onGround": false,
+   "lost": 0,
+   "gearTgt": 0
   },
   "noseFirst": {
    "alive": false,
    "crash": "NOSE FIRST: The bow dug in.",
-   "onGround": false
+   "onGround": false,
+   "lost": 0,
+   "gearTgt": 0
   },
   "hard": {
    "alive": true,
    "crash": null,
-   "onGround": true
+   "onGround": true,
+   "lost": 34,
+   "gearTgt": 0
   },
   "stove": {
    "alive": false,
    "crash": "HARD LANDING: Came down too fast — the hull was stove in.",
-   "onGround": false
+   "onGround": false,
+   "lost": 0,
+   "gearTgt": 0
   },
   "wing": {
    "alive": false,
    "crash": "FLOAT DUG IN: A wing-tip float caught the water and she cartwheeled.",
-   "onGround": false
+   "onGround": false,
+   "lost": 0,
+   "gearTgt": 0
+  },
+  "aWheels": {
+   "alive": true,
+   "crash": null,
+   "onGround": false,
+   "lost": 0,
+   "gearTgt": 0
+  },
+  "cue": [
+   "CREW: WHEELS UP FOR THE WATER"
+  ],
+  "rWheels": {
+   "alive": true,
+   "crash": null,
+   "onGround": false,
+   "lost": 0,
+   "gearTgt": 1
+  },
+  "rcue": [
+   "CREW: WHEELS UP FOR THE WATER",
+   "WHEELS UP FOR THE WATER!"
+  ],
+  "toggle": "REALISTIC FLIGHT — STRICT WATER RULES: WHEELS UP, NOSE LEVEL, SINK UNDER 4 M/S",
+  "toggleOff": "ARCADE FLIGHT — THE CREW HELPS WITH THE WHEELS, A FIRM ALIGHTING IS FORGIVEN",
+  "aWheelsLate": {
+   "alive": true,
+   "crash": null,
+   "onGround": true,
+   "lost": 25,
+   "gearTgt": 0
+  },
+  "aFast": {
+   "alive": true,
+   "crash": null,
+   "onGround": true,
+   "lost": 0,
+   "gearTgt": 0
+  },
+  "aSteep": {
+   "alive": true,
+   "crash": null,
+   "onGround": true,
+   "lost": 32,
+   "gearTgt": 0
+  },
+  "aFirm": {
+   "alive": true,
+   "crash": null,
+   "onGround": true,
+   "lost": 35,
+   "gearTgt": 0
+  },
+  "aWing": {
+   "alive": true,
+   "crash": null,
+   "onGround": true,
+   "lost": 0,
+   "gearTgt": 0
+  },
+  "aWreck": {
+   "alive": false,
+   "crash": "HARD LANDING: Came down too fast — the hull was stove in.",
+   "onGround": false,
+   "lost": 0,
+   "gearTgt": 0
+  },
+  "aWrongWay": {
+   "alive": false,
+   "crash": "TOO FAST: Hit the water too fast — the hull broke up.",
+   "onGround": false,
+   "lost": 0,
+   "gearTgt": 0
+  },
+  "bankSlowArcade": {
+   "alive": true,
+   "crash": null,
+   "lost": 30,
+   "water": false
+  },
+  "bankSlowReal": {
+   "alive": false,
+   "crash": "BEACHED: Ran up the bank on the hull.",
+   "lost": 0
+  },
+  "bankFastArcade": {
+   "alive": false,
+   "crash": "BEACHED: Ran up the bank on the hull.",
+   "lost": 0
   }
  }
 }
