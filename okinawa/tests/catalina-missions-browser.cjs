@@ -56,7 +56,7 @@ const server=http.createServer((req,res)=>{
    for(;t1<150&&P.alive&&sts.phase==='fly';t1+=dt){
     const fx=sts.fig.position.x-P.pos.x,fz=sts.fig.position.z-P.pos.z,dd=Math.hypot(fx,fz),want=Math.atan2(fx,fz);let da=want-P.heading;da=Math.atan2(Math.sin(da),Math.cos(da));
     inputRoll=Math.max(-1,Math.min(1,-da*steerSign*2.5));
-    P.throttle=dd>140?.35:dd>110?.12:0;
+    P.throttle=dd>100&&Math.abs(da)<.5&&P.spd<5?.3:0;   // a taxiing boat turns first (the water rudders work at a crawl), then creeps - she must not charge across the river into the bank
     updateFlight(dt);updateSites(dt);updateEuropeOperation(dt);
    }
    inputRoll=0;
