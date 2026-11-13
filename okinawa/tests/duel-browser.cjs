@@ -47,7 +47,7 @@ const Duel_victim=(pct,kind)=>pct/({p47:1.15,fw190:1.0,bf109:.9,me262:.9,me163:.
 
   // ---- 1. lobby: invitation / answer / connect ----
   const lobby=await Promise.all([A,B].map(p=>p.evaluate(()=>{
-   const before={build:document.getElementById('buildTag').textContent.includes('BUILD 264'),btn:!!document.getElementById('duelBtn'),menuRow:getComputedStyle(document.querySelector('#menu .menuRow')).display};
+   const before={build:document.getElementById('buildTag').textContent.includes('BUILD 265'),btn:!!document.getElementById('duelBtn'),menuRow:getComputedStyle(document.querySelector('#menu .menuRow')).display};
    document.getElementById('duelBtn').click();
    const l=document.getElementById('duelLobby');
    return {...before,shown:!l.classList.contains('hidden'),menuHidden:document.getElementById('menu').classList.contains('hidden'),chips:document.querySelectorAll('#dlAc .dlChip').length,

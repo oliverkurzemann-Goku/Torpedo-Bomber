@@ -24,7 +24,7 @@ const report={};
   page.setDefaultTimeout(300000);page.on('pageerror',e=>errors.push(e.message));
   page.on('console',m=>{if(/Shader Error|VALIDATE_STATUS|not compiled/i.test(m.text())||m.type()==='error')errors.push(m.text());});
   await page.addInitScript(()=>{window.requestAnimationFrame=()=>0;});
-  await page.goto('http://127.0.0.1:'+server.address().port+'/torpedo-carrier.html?v=264');
+  await page.goto('http://127.0.0.1:'+server.address().port+'/torpedo-carrier.html?v=265');
   await page.waitForFunction(()=>state===ST.MENU,null,{polling:100});
   await page.evaluate(async()=>{
    renderer.setPixelRatio(1);await prepareOkinawa();

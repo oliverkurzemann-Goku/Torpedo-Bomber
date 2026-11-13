@@ -24,7 +24,7 @@ const report={};
   page.setDefaultTimeout(300000);page.on('pageerror',e=>errors.push(e.message));
   page.on('console',m=>{if(/Shader Error|VALIDATE_STATUS|not compiled/i.test(m.text())||(m.type()==='error'&&!/404/.test(m.text())))errors.push(m.text());});
   await page.addInitScript(()=>{window.requestAnimationFrame=()=>0;window.__wxRoll=true;});
-  await page.goto('http://127.0.0.1:'+server.address().port+'/torpedo-carrier.html?v=264');
+  await page.goto('http://127.0.0.1:'+server.address().port+'/torpedo-carrier.html?v=265');
   await page.waitForFunction(()=>state===ST.MENU,null,{polling:100});
   await page.evaluate(async()=>{renderer.setPixelRatio(1);await prepareOkinawa();window.said=[];window.allSaid=[];const say=radioSay;radioSay=t=>{said.push(t);allSaid.push(t);say(t);};
    window.begin=async(title,diff='veteran')=>{const i=MISSIONS.findIndex(m=>m.title===title);DIFF=diff;await preparePacificModels(MISSIONS[i]);startMission(i);launch();said.length=0;return i;};});

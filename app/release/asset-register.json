@@ -1,13 +1,13 @@
 {
   "schema": 1,
   "reviewedOn": "2026-10-23",
-  "build": 264,
+  "build": 265,
   "status": "OPEN — source declarations checked; no external rights authorization obtained",
   "payload": {
-    "bytes": 170284670,
+    "bytes": 170284882,
     "fileCount": 389,
     "modelCount": 64,
-    "manifestSha256": "733e6a305eaa187d6a5f2ec13ce8acc274e43c1fd3091146b8c1909f059567ed"
+    "manifestSha256": "e815e3bf19c070526f37b2a12375297958203ff9657c51f563790ee1b39164fd"
   },
   "files": [
     {
@@ -865,7 +865,7 @@
     {
       "path": "hangar.html",
       "bytes": 4919,
-      "sha256": "416fbf4ecbb4a00033fc2080063bfc2d0f7e1d228f07d538448e5c21fb7cd374",
+      "sha256": "557d3c3a237f2558075db858d75e9e463387aed486ace8f301e3a7c7f4b0ce7c",
       "kind": "code-or-notice"
     },
     {
@@ -877,7 +877,7 @@
     {
       "path": "index.html",
       "bytes": 7912,
-      "sha256": "636652adc7a15adab38084c67af2d8959be4a144e65be9cb34c51caa24a08924",
+      "sha256": "b3b0789e3ed175f3140ac9f6e6619442c493ddc23372ff3ecc14f8153a74aea6",
       "kind": "code-or-notice"
     },
     {
@@ -1021,7 +1021,7 @@
     {
       "path": "remagen-mission.html",
       "bytes": 593779,
-      "sha256": "00e37768976abffd4d78f230b25fdbf759ab9294c94e77235f4caf0c11ce6073",
+      "sha256": "cc4121ddf31c240cfe997ae177f78dcd4fdb7f3c93d12799b5e45057f43418c8",
       "kind": "code-or-notice"
     },
     {
@@ -2262,8 +2262,8 @@
     },
     {
       "path": "torpedo-carrier.html",
-      "bytes": 545671,
-      "sha256": "2fd268f7d5fef872cb97749370ebe8595e71beb21d4547be8054a2695e16045f",
+      "bytes": 545883,
+      "sha256": "092419f2a8f5335204d6ad1391e8f098779b0feae57a0359ce7aa4e54f30403e",
       "kind": "code-or-notice"
     },
     {

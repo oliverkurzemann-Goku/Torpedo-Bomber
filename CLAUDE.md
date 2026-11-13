@@ -1,5 +1,12 @@
 # Torpedo-Bomber — Übergabe an Claude Code
 
+**14.11.2026, Build 265: Die Navigation hielt das Spiel an, sobald das Floß oder das U-Boot gefunden war (iPad-Meldung bei der U-Boot-Jagd) – behoben.**
+Nutzer (iPad-Foto, Build 264, Sortie 25 „Submarine Hunt"): „ein Target gemeldet, dann die Meldung es sei ein Fischerboot … dann wurde die Simulation unterbrochen." Auf dem Schirm: „Simulation interrupted – BUILD 264 · Submarine Hunt · undefined is not an object (evaluating 'c.ref.def.optional')".
+- **Ursache (im echten Spiel nachgestellt, nicht geraten):** `updateNav` (`torpedo-carrier.html`) filtert die Navigationsliste mit `c.kind==='TARGET'&&!c.ref.def.optional`. Die Catalina-Kontakte `pbyContacts()` für Floß (`ref:'pbyRaft'`) und U-Boot (`ref:'pbySub'`) tragen aber einen **Text** als `ref` und kein Schiff-/Landziel mit `def` – sobald `ops.found` wahr wird, wirft die Zeile in jedem Bild. Der Fehler steckt seit **Build 258** im Spiel; die Einsätze 24 und 25 brachen also bei jeder Sichtung ab, Geleitzug und Black Cat (Ziele sind Schiffe mit `def`) nicht. Die Falschkontakte aus Build 264 lösen den Fehler nicht aus (sie setzen `ops.found` nie); die Meldung „Fischerboot" kam vermutlich kurz vor der echten Sichtung des U-Boots – die Reihenfolge auf dem iPad ist aus dem Foto nicht belegt.
+- **Warum die Tests ihn nicht sahen:** `pby-pacific-browser` prüfte nach dem Fund nur `pbyNavTarget()`, rief aber `updateNav()` nicht in der laufenden Schleife auf. Neu: Block „Build 265" im Test – je Sortie 24–27 auf das Gesuchte zufliegen, dann 6 s mit Pfeil, HUD und Minikarte weiterlaufen lassen, Fund und Pfeiltext („TRACK: …") prüfen. Gegen den alten Code rot (Sortie 24 und 25 mit genau der iPad-Meldung), gegen den neuen grün.
+- **Fix:** `c.ref?.def?.optional` für die `TARGET`-Kontakte (eine Zeile). Kennung 265 (Seiten, Board, Hangar, Xcode, `build-app.mjs`, `?v=265`, Tests), Register per `npm run app:assets`.
+**Offen:** kein iPad-Test; der Rest des Pazifik-Navigationspfads wurde nicht auf weitere Text-`ref`-Kontakte durchsucht außer den dort gefundenen (`grep '\.ref\.'` fand nur die zwei Zeilen).
+
 **13.11.2026, Build 264: Die Catalina-Einsätze bekommen Wetter, Seegang, Falschkontakte, wandernde Ziele, Peilungen, Dämmerung/Nacht, Ausdauer – und man sieht, dass sie aufsetzt (Pazifik und Rhein).**
 Nutzer (Auswahl aus der Vorschlagsliste): Seegang + Schlechtwetter am Floß, Falschkontakte + wandernde Ziele (Peilung aus zwei Standpunkten), Nacht + Ausdauer; danach: „Auch ein sichtbarer Touchdown auf dem Wasser wäre gut, sonst merkt man gar nicht, dass man gelandet ist." Reine Rechenteile in `pby-patrol.js`, Spielteil im Block „PBY PATROL" von `torpedo-carrier.html` (neuer Abschnitt „Build 264" vor `updatePbyPatrol`). Alles Spielentscheidung (C).
 - **Seegang (`PbyPatrol.rules(strict,sea)`, `pbyRules()` liest `seaState`):** bei `seaState` 1 exakt die bisherigen Wasserregeln; je Einheit Seegang über 1: Sinken „ok" −12 %, „Bruch" −10 %, Heck-Grenze −.03 rad, Querlage −.04 rad, Ankunftsüberschuss −1,5 m/s. ARCADE im Sturm (Seegang 2,14, gemessen im echten Spiel): ok 5,5 → 4,75, Bruch 9 → 7,97, Überschuss 24 → 22,3, Querlage .50 → .45. Hinweis im Anflug bei Seegang > 1,35 („SWELL RUNNING…" / ab 1,8 „HEAVY SEA — ALIGHT INTO THE SWELL").
@@ -1176,7 +1183,7 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 264 · Thunderbolt Squadron BUILD 264 · Remagen-Kern 23 / Fahrzeuge 24**
+Stand bei Übergabe: **Torpedo Squadron BUILD 265 · Thunderbolt Squadron BUILD 265 · Remagen-Kern 23 / Fahrzeuge 24**
 
 **Build 198 (22.10.2026): P-47-Fotolackierung, Einsatzspuren und natives Fahrwerk; Terrain-Fix aus Build 197 erhalten.**
 `assets/aircraft/p47-weathered.glb` ist ein ausdrücklich gekennzeichnetes Derivat des
