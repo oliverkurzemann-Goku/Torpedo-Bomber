@@ -1,0 +1,117 @@
+{
+ "weather": {
+  "dist": {
+   "rookie": {
+    "counts": {
+     "haze": 1093,
+     "rain": 158,
+     "broken": 803,
+     "lowcloud": 580,
+     "fog": 366
+    },
+    "fair": 0.63
+   },
+   "veteran": {
+    "counts": {
+     "broken": 448,
+     "haze": 785,
+     "fog": 632,
+     "rain": 347,
+     "lowcloud": 788
+    },
+    "fair": 0.41
+   },
+   "ace": {
+    "counts": {
+     "broken": 307,
+     "lowcloud": 815,
+     "haze": 616,
+     "rain": 518,
+     "fog": 744
+    },
+    "fair": 0.31
+   }
+  },
+  "untouched": {
+   "free": true,
+   "qual": true,
+   "pby": true,
+   "storm": true
+  },
+  "rookieStorm": true,
+  "sea": {
+   "clear": {
+    "sea": 1,
+    "shallowG": 0.353,
+    "deepG": 0.125,
+    "fogFar": 11000,
+    "sun": 1.32,
+    "rain": false
+   },
+   "broken": {
+    "sea": 1.08,
+    "shallowG": 0.334,
+    "deepG": 0.121,
+    "fogFar": 6800,
+    "sun": 0.77,
+    "rain": false
+   },
+   "haze": {
+    "sea": 1.1,
+    "shallowG": 0.34,
+    "deepG": 0.122,
+    "fogFar": 4000,
+    "sun": 0.66,
+    "rain": false
+   },
+   "lowcloud": {
+    "sea": 1.37,
+    "shallowG": 0.313,
+    "deepG": 0.116,
+    "fogFar": 3300,
+    "sun": 0.5,
+    "rain": true
+   },
+   "fog": {
+    "sea": 1,
+    "shallowG": 0.325,
+    "deepG": 0.119,
+    "fogFar": 1500,
+    "sun": 0.63,
+    "rain": false
+   },
+   "rain": {
+    "sea": 1.55,
+    "shallowG": 0.317,
+    "deepG": 0.117,
+    "fogFar": 2700,
+    "sun": 0.42,
+    "rain": true
+   },
+   "squall": {
+    "sea": 1.93,
+    "shallowG": 0.313,
+    "deepG": 0.116,
+    "fogFar": 2100,
+    "sun": 0.42,
+    "rain": true
+   },
+   "storm": {
+    "sea": 2.14,
+    "shallowG": 0.313,
+    "deepG": 0.116,
+    "fogFar": 1600,
+    "sun": 0.36,
+    "rain": true
+   }
+  },
+  "met": {
+   "weather": "fog",
+   "planned": "fog",
+   "said": [
+    "MET REPORT — VALLEY / SEA FOG, VISIBILITY 1.5 KM."
+   ]
+  },
+  "freeMet": 0
+ }
+}

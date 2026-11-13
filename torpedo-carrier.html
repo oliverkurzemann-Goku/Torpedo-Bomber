@@ -301,7 +301,7 @@
 
 .hangarLink{display:block;padding:12px 14px;margin:8px 0 12px;color:#f3ce83;border:1px solid #ba9d57;border-radius:5px;text-decoration:none;text-align:center;font:600 12px system-ui;letter-spacing:.8px;min-height:44px;}
 </style>
-<link rel="stylesheet" href="menu-layout.css?v=261">
+<link rel="stylesheet" href="menu-layout.css?v=262">
 <style>
 #jetCrewControls{position:fixed;z-index:12;top:max(68px,calc(env(safe-area-inset-top) + 68px));left:50%;transform:translateX(-50%);gap:6px;display:flex;align-items:center}
 #jetCrewControls[hidden],#jetReticle[hidden]{display:none}
@@ -376,7 +376,7 @@ body.secretSpaceActive #fireBtn{border-color:#73d9fc;color:#d6f9ff}
   <div id="flash"></div>
   <div id="ltn" style="position:fixed;inset:0;background:#e6ecff;opacity:0;pointer-events:none;z-index:40;"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 261</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 262</div>
 
   <!-- Optical landing aid -->
   <div id="lso">
@@ -432,7 +432,7 @@ body.secretSpaceActive #fireBtn{border-color:#73d9fc;color:#d6f9ff}
 
 <!-- Menu -->
 <div class="overlay" id="menu" data-campaign="pacific">
-  <div class="menuTop"><a id="selBtn" href="index.html?v=261">&#9664; Change Game</a><span class="menuMeta">PACIFIC OPERATIONS<br>BUILD 261</span></div>
+  <div class="menuTop"><a id="selBtn" href="index.html?v=262">&#9664; Change Game</a><span class="menuMeta">PACIFIC OPERATIONS<br>BUILD 262</span></div>
   <div class="card menuCard">
     <aside class="menuOverview" aria-label="Campaign and pilot options">
     <div class="campaignArt" aria-hidden="true"></div>
@@ -463,7 +463,7 @@ body.secretSpaceActive #fireBtn{border-color:#73d9fc;color:#d6f9ff}
     </aside>
     <section class="missionPanel" aria-label="Mission selection">
       <div class="secLbl">Choose your sortie · Pacific operations</div>
-      <a class="hangarLink" href="hangar.html?theatre=pacific&amp;v=261">CUSTOM MISSION · CHOOSE AIRCRAFT &amp; LOADOUT →</a>
+      <a class="hangarLink" href="hangar.html?theatre=pacific&amp;v=262">CUSTOM MISSION · CHOOSE AIRCRAFT &amp; LOADOUT →</a>
 <div id="missionSel" role="group" aria-label="Pacific missions"></div>
       <div id="missionBlurb" class="missionBlurb" aria-live="polite"></div>
       <div class="menuConfig">
@@ -538,7 +538,7 @@ body.secretSpaceActive #fireBtn{border-color:#73d9fc;color:#d6f9ff}
 <script src="campaign.js?v=1"></script>
 <script src="game-runtime.js?v=198"></script>
 <script src="sortie-checkpoint.js?v=238"></script>
-<script src="aircraft-contract.js?v=261"></script>
+<script src="aircraft-contract.js?v=262"></script>
 <script src="aircraft-articulation.js?v=258"></script>
 <script src="terrain-system/AircraftGround.js?v=258"></script>
 <script src="pacific-assets.js?v=201"></script>
@@ -575,15 +575,15 @@ body.secretSpaceActive #fireBtn{border-color:#73d9fc;color:#d6f9ff}
 <script src="flight-envelope.js?v=258"></script>
 <script src="flight-dynamics.js?v=258"></script>
 <script src="flight-core.js?v=258"></script>
-<script src="flight-control.js?v=261"></script>
+<script src="flight-control.js?v=262"></script>
 <script src="dogfight-ai.js?v=238"></script>
 <script src="audio/throttle-response.js?v=218"></script><script src="audio/aircraft-engine.js?v=258"></script>
 <script src="audio/jet-engine.js?v=218"></script>
 <script src="sortie-features.js?v=258"></script>
 <script src="ground-run.js?v=198"></script>
 <script src="flight-indicators.js?v=198"></script>
-<script src="operation-plans.js?v=261"></script>
-<script src="custom-sortie.js?v=261"></script>
+<script src="operation-plans.js?v=262"></script>
+<script src="custom-sortie.js?v=262"></script>
 <script src="secret-jet.js?v=255"></script>
 <script src="secret-space.js?v=257"></script>
 <script src="pacific-theater.js?v=248"></script>
@@ -654,6 +654,13 @@ const DIFFS = {
 function D(){ return DIFFS[DIFF]||DIFFS.veteran; }
 let seaState=1.0;   // 1=calm, up to ~2.5=rough — set per sortie, drives waves + deck motion
 let weather='clear'; // 'clear' | 'haze' | 'rain' | 'storm' — set per sortie
+// Build 262: the Pacific was nearly always fair ("the weather is mostly too nice"): the milder lanes of the shared table are greyer, lower and wetter here (this page loads its own copy,
+// the Rhine game keeps the original values), and every weather carries a `swell` that lifts the sea (seaState = 1 + rain * .55 + swell: waves, whitecaps, deck motion)
+Object.assign(FlightOps.weather.broken,{near:1000,far:6800,cover:.74,sun:.58,color:0xa3b1b8,clouds:34,gust:.17,swell:.08});
+Object.assign(FlightOps.weather.haze,{near:520,far:4000,cover:.66,sun:.5,color:0xa9afa9,gust:.15,swell:.1});
+Object.assign(FlightOps.weather.lowcloud,{near:380,far:3300,base:340,cover:1,sun:.38,color:0x8c989e,gust:.28,swell:.3});
+Object.assign(FlightOps.weather.rain,{far:2700,cover:.95,sun:.32,color:0x7a8790,gust:.4,swell:0});
+Object.assign(FlightOps.weather.squall,{swell:.1});Object.assign(FlightOps.weather.storm,{swell:.15});
 const WX=Object.fromEntries(Object.entries(FlightOps.weather).map(([k,w])=>[k,{...w,fogNear:w.near,fogFar:w.far}]));
 let dbgOn=(GameRuntime.storage.getItem('dbgOn')==='1');   // off unless switched on in the menu
 let lastGrade='';   // LSO grade of the most recent trap
@@ -2267,11 +2274,23 @@ function updateShoreTargets(dt){
   }
  }
 }
+// Build 262: each sortie draws its weather from the plan's list and then, by difficulty, steps it toward worse (clear > broken > haze > low cloud / fog > rain > heavy showers > storm); the cap keeps a Rookie out of the worst
+const WX_STEP={clear:['broken','haze'],broken:['haze','lowcloud'],haze:['lowcloud','fog'],lowcloud:['rain','fog'],fog:['rain'],rain:['squall'],squall:['storm'],storm:[]};
+const WX_RANK={clear:0,broken:1,haze:2,lowcloud:3,fog:3,rain:4,squall:5,storm:6};
+const WX_ODDS={rookie:[.55,.35],veteran:[.3,.45],ace:[.2,.45]},WX_CAP={rookie:4,veteran:5,ace:6};   // chance of 0 steps, of 1 step (the rest: 2 steps)
+function rollPacificWeather(names,m){
+  let w=names[Math.floor(Math.random()*names.length)];
+  if(!m||m.free||m.qual||m.pby||m.custom)return w;   // practice and hangar sorties keep what was chosen; the Catalina has its own turns
+  if(navigator.webdriver&&!window.__wxRoll)return w;   // automation keeps the plan's own list so the existing browser tests stay deterministic (pacific-weather-browser.cjs switches the roll on)
+  const odds=WX_ODDS[DIFF]||WX_ODDS.veteran,cap=WX_CAP[DIFF]||5,r=Math.random();let steps=r<odds[0]?0:r<odds[0]+odds[1]?1:2;
+  while(steps-->0){const choices=(WX_STEP[w]||[]).filter(n=>WX_RANK[n]<=cap);if(!choices.length)break;w=choices[Math.floor(Math.random()*choices.length)];}
+  return w;
+}
 function choosePacificPlan(i){
  if(MISSIONS[i].custom){const c=MISSIONS[i].custom;return {config:FlightOps.withPhases(MISSIONS[i],CustomSortie.operation(c)),weather:c.weather,wind:2};}
  const config={...(MISSIONS[i].operation?PacificTheater.plan(MISSIONS[i]):FlightPlans.pacific[i]||{}),practice:!!(MISSIONS[i].free||MISSIONS[i].qual)},names=MISSIONS[i].free?[document.getElementById('practiceWx').value||'clear']:config.weather||[MISSIONS[i].weather||'clear'];
  if(!config.practice&&!MISSIONS[i].defend&&config.deadline)config.deadline+=180;
- return {config:config.phases?config:FlightOps.withPhases(MISSIONS[i],config),weather:names[Math.floor(Math.random()*names.length)],wind:(Math.random()<.5?-1:1)*Math.min(6,2+i*.28)};
+ return {config:config.phases?config:FlightOps.withPhases(MISSIONS[i],config),weather:rollPacificWeather(names,MISSIONS[i]),wind:(Math.random()<.5?-1:1)*Math.min(6,2+i*.28)};
 }
 function updatePacificOperation(dt){
  if(!pacificOps||isFree()||isQual()||(typeof isPby==='function'&&isPby()))return;
@@ -2428,6 +2447,7 @@ function startMission(idx){
   if(seaUniforms) seaUniforms.uSeaState.value=seaState;
   weather=pacificPlan.weather;
   applyWeather();
+  if(!m.free&&!m.qual&&weather!=='clear'&&WX[weather])radioSay('MET REPORT — '+WX[weather].label.toUpperCase()+', VISIBILITY '+(WX[weather].fogFar/1000).toFixed(1)+' KM'+(seaState>1.45?', HEAVY SEA — EXPECT A LIVELY DECK':seaState>1.2?', MODERATE SWELL':'')+'.');   // Build 262
   wingmen.forEach(w=>GameRuntime.release(w.mesh)); wingmen=[];
   if(typeof wingShots!=='undefined'){ wingShots.forEach(s=>GameRuntime.release(s.mesh)); wingShots=[]; }
   // two wingmen fly the strike/dive-bomb sorties with you — not the qual, free flight, or
@@ -5034,8 +5054,11 @@ function applyWeather(){
     if(timeMode==='night'){skyMat.uniforms.top.value.multiplyScalar(.17);skyMat.uniforms.bot.value.multiplyScalar(.22);}
     if(seaUniforms){seaUniforms.uZenith.value.copy(skyMat.uniforms.top.value);seaUniforms.uHorizon.value.copy(skyMat.uniforms.bot.value);}}
   if(sunSprite)sunSprite.visible=w.cover<.8;
-  seaState=Math.max(MISSIONS[mission].sea||1,1+w.rain*.55);
+  seaState=Math.max(MISSIONS[mission].sea||1,1+w.rain*.55+(w.swell||0));
   if(seaUniforms)seaUniforms.uSeaState.value=seaState;
+  if(seaUniforms&&w.cover>.5){   // Build 262: grey-green water under cloud instead of the turquoise of a clear day (applyTimeOfDay has just set the day's colours)
+    const g=Math.min(1,(w.cover-.5)*1.6);seaUniforms.uDeep.value.lerp(new THREE.Color(0x0c1a20),g*.5);seaUniforms.uShallow.value.lerp(new THREE.Color(0x35484d),g*.7);
+  }
   if(seaUniforms)seaUniforms.uFogColor.value.copy(scene.fog.color);
   if(!rainMesh) buildRain();
   if(rainMesh)rainMesh.visible=w.rain>0;
@@ -6512,7 +6535,7 @@ function loadPlaneModel(){
       }
       window.__eyeDbg='EYE '+COCKPIT_EYE.map(v=>v.toFixed(2)).join('/');
       const btEl=document.getElementById('buildTag');
-      if(btEl) btEl.textContent='BUILD 261 · '+window.__eyeDbg;
+      if(btEl) btEl.textContent='BUILD 262 · '+window.__eyeDbg;
       let seat=null;
       model.traverse(function(o){
         if(!o.isMesh||!o.material) return;
@@ -7988,7 +8011,7 @@ function setupUIButtons(){
   if(dbgT2) dbgT2.onclick=()=>{
     dbgOn=!dbgOn; GameRuntime.storage.setItem('dbgOn',dbgOn?'1':'0');
     const db=document.getElementById('dbgBox'); if(db) db.textContent=dbgOn?'✓':'';
-    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 261'; }
+    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 262'; }
   };
   const lu=document.getElementById('lookUp'), ld=document.getElementById('lookDn');
   let _lookT=0;
@@ -8004,7 +8027,7 @@ function setupUIButtons(){
   if(pb) pb.addEventListener('pointerdown',e=>{ e.preventDefault(); togglePause(); });
   const rb=document.getElementById('resumeBtn'); if(rb) rb.onclick=resumeGame;
   const mb=document.getElementById('menuBtn'); if(mb) mb.onclick=exitToMenu;
-  document.getElementById('pauseMainMenu').onclick=async()=>{globalThis.sortieCheckpoint?.save();await globalThis.sortieCheckpoint?.flush();exitToMenu(true);window.location.href='index.html?v=261';};
+  document.getElementById('pauseMainMenu').onclick=async()=>{globalThis.sortieCheckpoint?.save();await globalThis.sortieCheckpoint?.flush();exitToMenu(true);window.location.href='index.html?v=262';};
   document.getElementById('resultBtn').onclick=()=>{
     // the logbook borrows this screen from the menu — send the player straight back
     if(logbookOpen){ logbookOpen=false; showOverlay('menu'); return; }
@@ -8013,7 +8036,7 @@ function setupUIButtons(){
       clearSecretSpace();hideOverlays();P.alive=true;state=ST.FLIGHT;enterSecretSpace(true);clock.getDelta();return;
     }
     const last=mission===MISSIONS.length-2;
-    if(MISSIONS[mission]?.custom){window.location.href='hangar.html?theatre=pacific&v=261';return;}
+    if(MISSIONS[mission]?.custom){window.location.href='hangar.html?theatre=pacific&v=262';return;}
     if(wasWin){
       if(MISSIONS[mission] && MISSIONS[mission].free){ startMission(mission); return; }  // stay in Free Flight
       if(MISSIONS[mission] && MISSIONS[mission].qual){ showOverlay('menu'); return; }  // qual -> ready room
@@ -8331,7 +8354,7 @@ function animate(){
     notice.style.cssText='position:fixed;inset:0;z-index:999998;background:rgba(15,20,15,.95);color:#e8ddbc;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px;text-align:center;font:16px system-ui';
     const title=document.createElement('h2');title.textContent='Simulation interrupted';
     const detail=document.createElement('p');
-    detail.textContent='BUILD 261 · '+(MISSIONS[mission]?.sub||'Menu')+' · '+error.message;
+    detail.textContent='BUILD 262 · '+(MISSIONS[mission]?.sub||'Menu')+' · '+error.message;
     const reload=document.createElement('button');reload.textContent='Reload game';
     reload.style.cssText='padding:12px 24px;font:inherit';reload.onclick=()=>location.reload();
     notice.appendChild(title);notice.appendChild(detail);notice.appendChild(reload);document.body.appendChild(notice);
