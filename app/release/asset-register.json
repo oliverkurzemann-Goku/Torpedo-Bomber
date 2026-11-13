@@ -1,13 +1,13 @@
 {
   "schema": 1,
   "reviewedOn": "2026-10-23",
-  "build": 263,
+  "build": 264,
   "status": "OPEN — source declarations checked; no external rights authorization obtained",
   "payload": {
-    "bytes": 170240485,
-    "fileCount": 384,
+    "bytes": 170284670,
+    "fileCount": 389,
     "modelCount": 64,
-    "manifestSha256": "676de91c7ef9278f28b929a2df4b74dcde6eb75767d256ec49c2a3e67cddfdbb"
+    "manifestSha256": "733e6a305eaa187d6a5f2ec13ce8acc274e43c1fd3091146b8c1909f059567ed"
   },
   "files": [
     {
@@ -864,20 +864,20 @@
     },
     {
       "path": "hangar.html",
-      "bytes": 4761,
-      "sha256": "be2ed76cbecc06845babd493424f44918132281abd359a02848d4b746b009ad6",
+      "bytes": 4919,
+      "sha256": "416fbf4ecbb4a00033fc2080063bfc2d0f7e1d228f07d538448e5c21fb7cd374",
       "kind": "code-or-notice"
     },
     {
       "path": "hangar.js",
-      "bytes": 5047,
-      "sha256": "ab0701e983bf078fda52c348446e8985637dfe22346f60d716b452f03f6d5811",
+      "bytes": 5084,
+      "sha256": "2980d80d6c3f8cbd04aaa83b1eb48a284aaeeadce487abb002980800856ca5c8",
       "kind": "code-or-notice"
     },
     {
       "path": "index.html",
       "bytes": 7912,
-      "sha256": "6d45c89b0245240410876c6f93ae5e0a64a92ba5c52161d9624986dc8aa49749",
+      "sha256": "636652adc7a15adab38084c67af2d8959be4a144e65be9cb34c51caa24a08924",
       "kind": "code-or-notice"
     },
     {
@@ -991,7 +991,7 @@
     {
       "path": "pby-patrol.js",
       "bytes": 16719,
-      "sha256": "876f71fe14202368393be249344e935832cd0681cae26bf305ac0ab9488ac3cd",
+      "sha256": "5d16063e66bd87ebf8771e658b0730e7c5b29848ba8d18f9ce1d72df9f5c55db",
       "kind": "code-or-notice"
     },
     {
@@ -1021,7 +1021,7 @@
     {
       "path": "remagen-mission.html",
       "bytes": 593779,
-      "sha256": "d2cd048b4b2a7351774cf1603c0a7ee43f6789fa5f06ae892e14eff225236869",
+      "sha256": "00e37768976abffd4d78f230b25fdbf759ab9294c94e77235f4caf0c11ce6073",
       "kind": "code-or-notice"
     },
     {
@@ -1100,6 +1100,36 @@
       "path": "sortie-systems.js",
       "bytes": 10755,
       "sha256": "0e63c088113f1bb652785994311bb240737875878598ccc6f72dbf96c0424018",
+      "kind": "code-or-notice"
+    },
+    {
+      "path": "space-coop-flight.js",
+      "bytes": 8482,
+      "sha256": "88d19506c706177477feef27fe4532ed3436749468bda1e50511020cec630df2",
+      "kind": "code-or-notice"
+    },
+    {
+      "path": "space-coop-view.js",
+      "bytes": 11136,
+      "sha256": "b93be7963b9182bde659b812ab13d5bfc2f3564066910e2ec9de9b7ae5896b9e",
+      "kind": "code-or-notice"
+    },
+    {
+      "path": "space-coop.css",
+      "bytes": 4172,
+      "sha256": "56fbaf0c761bc11e2c2ad5c2082e38811775a7686a2205585dba11d8eb0bcc32",
+      "kind": "code-or-notice"
+    },
+    {
+      "path": "space-coop.html",
+      "bytes": 2819,
+      "sha256": "0af81b798585b13f38a976ee1cd241bb08f3b4573ce4999f90ecbe6d74766928",
+      "kind": "code-or-notice"
+    },
+    {
+      "path": "space-coop.js",
+      "bytes": 17381,
+      "sha256": "8f540e91758e94010d2ba146a794696109b339e9daec742412a6db8db80d91e0",
       "kind": "code-or-notice"
     },
     {
@@ -2233,7 +2263,7 @@
     {
       "path": "torpedo-carrier.html",
       "bytes": 545671,
-      "sha256": "2aedda21a5e81f905a3066bab578d04325ba09671105decb1165776d7cf737cb",
+      "sha256": "2fd268f7d5fef872cb97749370ebe8595e71beb21d4547be8054a2695e16045f",
       "kind": "code-or-notice"
     },
     {
