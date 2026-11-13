@@ -27,20 +27,20 @@
    "over": false,
    "onWater": true,
    "phase": "fly",
-   "dist": 106,
+   "dist": 177,
    "text": "TAXI UP TO THE DINGHY — WITHIN 90 m (MAP)"
   },
   "taxi": {
-   "t": 14.6,
+   "t": 31.8,
    "phase": "run",
    "alive": true,
    "crash": null,
    "spd": 1.2,
-   "dist": 73,
+   "dist": 58,
    "text": "DINGHY ALONGSIDE — HOLD STILL"
   },
   "boarded": {
-   "t": 18.3,
+   "t": 15.8,
    "phase": "home",
    "rescued": 1,
    "score": 600,
@@ -68,16 +68,16 @@
   "block": 0,
   "home": {
    "td": {
-    "t": 17,
-    "spd": 37.5,
-    "x": -58
+    "t": 14.5,
+    "spd": 39.5,
+    "x": -22
    },
    "alive": true,
    "crash": null,
    "over": true,
    "landing": false,
    "onGround": true,
-   "result": "\n  \n    Flight Officer Hank Dobbs  &middot;  Landed at Beaufort  &middot;  🥇 GOLD\n    MISSION ACCOMPLISHED\n    The airman is home. This sortie: 1 rescuedHull 1",
+   "result": "\n  \n    Flight Officer Red McAllister  &middot;  Landed at Beaufort  &middot;  🥇 GOLD\n    MISSION ACCOMPLISHED\n    The airman is home. This sortie: 1 rescuedHu",
    "score": 1000
   }
  },

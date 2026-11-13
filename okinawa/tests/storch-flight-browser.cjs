@@ -26,13 +26,13 @@ const server=http.createServer((req,res)=>{
   const page=await browser.newPage({viewport:{width:1194,height:660},hasTouch:true,deviceScaleFactor:1}),errors=[];
   page.setDefaultTimeout(900000);page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error'&&!/404/.test(m.text()))errors.push('console: '+m.text());});
   await page.addInitScript(()=>window.requestAnimationFrame=()=>0);
-  await page.goto('http://127.0.0.1:'+server.address().port+'/remagen-mission.html?v=260&surprises=off&sortie='+sortie);
+  await page.goto('http://127.0.0.1:'+server.address().port+'/remagen-mission.html?v=261&surprises=off&sortie='+sortie);
   // the hangar sortie opens the briefing at once: wait for the world, not for the menu
   await page.waitForFunction(()=>realWorldReady&&(state===ST.MENU||state===ST.BRIEF),null,{polling:200});
   await page.evaluate(async()=>{await Promise.all(['fi156','p47'].map(ensureModel));renderer.setPixelRatio(.25);renderer.shadowMap.enabled=false;if(typeof flightQuality!=='undefined')flightQuality.enabled=false;
    const orig=crash;window.__crash=null;crash=(t,m)=>{window.__crash=t+': '+m;orig(t,m);};window.said=[];const say=radioSay;radioSay=t=>{said.push(t);say(t);};
    window.frame=dt=>{SortieFeatures.Damage.tick(P,dt);updateFlight(dt);updateStorchGunner(dt);updateFlak(dt);updateSites(dt);updateTargets(dt);updateEnemyAir(dt);updateBullets(dt);updateTracers(dt);updateOrdnance(dt);updateExplosions(dt);updateSmoke(dt);updateDebris(dt);};
-   window.begin=(id,diff=1)=>{diffIdx=diff;const i=id?MISSIONS.findIndex(m=>m.id===id):0;selectedMission=i;briefPlan=chooseEuropePlan(i);startMission(i);if(launchIntro)finishLaunchIntro(false);show('menu',false);show('brief',false);show('result',false);state=ST.FLIGHT;P.alive=true;inputRoll=inputPitch=0;window.__crash=null;said.length=0;return i;};
+   window.begin=(id,diff=1,wx='clear')=>{diffIdx=diff;const i=id?MISSIONS.findIndex(m=>m.id===id):0;selectedMission=i;briefPlan=chooseEuropePlan(i);briefPlan.weather=wx;startMission(i);if(launchIntro)finishLaunchIntro(false);show('menu',false);show('brief',false);show('result',false);state=ST.FLIGHT;P.alive=true;inputRoll=inputPitch=0;window.__crash=null;said.length=0;return i;};
    window.takeoffTo=agl=>{const dt=1/60;let t=0;P.throttle=1;for(;t<80&&P.alive;t+=dt){const vr=SortieFeatures.Handling.speeds(P,acDef().stall,acDef().app).stall*1.1;if(P.onGround&&P.spd>.95*vr)inputPitch=.5;else if(!P.onGround)inputPitch=.6;updateFlight(dt);if(!P.onGround&&P.pos.y-groundY(P.pos.x,P.pos.z)>agl)break;}return t;};
    window.holdLevel=(sec,thr)=>{const dt=1/60;P.throttle=thr;for(let t=0;t<sec&&P.alive;t+=dt){inputPitch=Math.max(-.6,Math.min(.6,-P.vSpeed*.06-P.pitch*.8));updateFlight(dt);}};
   });
@@ -126,6 +126,65 @@ const server=http.createServer((req,res)=>{
   assert.ok(R.boarded.phase==='home'&&R.boarded.rescued===1&&R.boarded.t>6&&R.boarded.t<30&&R.boarded.score>=600&&!R.boarded.fig&&/PILOT ABOARD/.test(R.boarded.text),'the pilot is aboard: '+JSON.stringify(R.boarded));
   assert.ok(R.hunters.n===2&&R.hunters.escape&&/BANDITS 2/.test(R.hunters.text),'two bandits that never hold up the return: '+JSON.stringify(R.hunters));assert.ok(R.takeoff&&R.takeoff.run<190&&R.alive,'off the meadow again: '+JSON.stringify(R.takeoff));
 
+  // ---- 2d. Build 261: the pickups get teeth - infantry that run at the standing aeroplane, nests along the way, decoy smokes with an ambush, a power line across the approach ----
+  const TH=await page.evaluate(()=>{
+   const dt=1/60,r1=v=>+(+v).toFixed(1),out={};
+   // plan: nests, decoys, white parachute, wire (Veteran)
+   begin('rescue',1);const lz=sts.plan.lz;
+   out.plan={nests:sts.units.filter(u=>!u.decoy&&!u.mobile).length,decoys:(sts.decoys||[]).length,chute:!!sts.chute,wire:!!sts.wire,hidden:sts.units.every(u=>!u.revealed),
+    decoyDist:(sts.decoys||[]).map(u=>Math.round(Math.hypot(u.x-lz.x,u.z-lz.z))),nestDist:sts.units.filter(u=>!u.decoy).map(u=>Math.round(Math.hypot(u.x-GERMAN_AF_X,u.z-GERMAN_AF_Z))),weather:weather,radio:null};
+   // difficulty counts
+   out.counts=[0,1,2].map(d=>{begin('rescue',d);return {nests:sts.units.filter(u=>!u.decoy).length,decoys:(sts.decoys||[]).length};});
+   // a nest shows itself when the aeroplane comes near and low, a decoy is an ambush
+   begin('rescue',1);said.length=0;{const nest=sts.units.find(u=>!u.decoy&&!u.mobile),dec=sts.decoys[0];
+    P.onGround=false;P.pos.set(nest.x+500,groundY(nest.x+500,nest.z)+60,nest.z);P.heading=-Math.PI/2;P.spd=40;P.pitch=0;updateSites(dt);
+    out.nestSeen={revealed:nest.revealed,inFlak:flakUnits.includes(nest.t),radio:said.some(t=>/SMALL ARMS FIRE FROM A NEST/.test(t))};
+    said.length=0;P.pos.set(dec.x+380,groundY(dec.x+380,dec.z)+60,dec.z);updateSites(dt);
+    out.decoySeen={revealed:dec.revealed,radio:said.some(t=>/DECOY SMOKE, AN AMBUSH/.test(t))};}
+   // landed at a decoy: not the end of the sortie, an ambush (stsGroundStop is what the end of the landing roll calls)
+   begin('rescue',1);said.length=0;{const dec=sts.decoys[0];P.onGround=true;P.pos.set(dec.x+40,groundY(dec.x+40,dec.z)+2,dec.z);P.spd=0;
+    const handled=stsGroundStop();out.decoyLanded={handled,revealed:dec.revealed,phase:sts.phase,over:missionOver,radio:said.some(t=>/NO PILOT HERE/.test(t))};}
+   // the infantry: they come once the aeroplane stands and the pickup has begun, they run at it and fire; measured standing still for 70 s (the board timer is held by P.spd 3)
+   out.troops=[0,1,2].map(d=>{
+    begin('rescue',d);const l=sts.plan.lz;P.onGround=true;P.landingRoll=null;P.pos.set(l.x+10,groundY(l.x+10,l.z+34)+1.5,l.z+34);P.heading=Math.PI/2;P.spd=0;P.throttle=0;
+    stsBeginPickup(sts,0);const hull0=P.hull;let first=null,spawnT=null,minD=1e9,tr=0;
+    for(let t=0;t<70&&P.alive;t+=dt){P.spd=3;updateSites(dt);updateFlak(dt);const before=tracers.length;updateTracers(dt);
+     if(spawnT==null&&sts.troops.on)spawnT=r1(t);
+     for(const u of sts.units)if(u.mobile&&u.revealed)minD=Math.min(minD,Math.hypot(u.x-P.pos.x,u.z-P.pos.z));
+     if(first==null&&P.hull<hull0)first=r1(t);}
+    const mob=sts.units.filter(u=>u.mobile);
+    return {d,squads:mob.length,spawnT,minD:Math.round(minD),firstHit:first,loss:r1(hull0-P.hull),alive:P.alive,tracers:tracers.length};});
+   // the power line: struck on a flat low approach, cleared forty feet above it, announced from afar
+   begin('rescue',1);said.length=0;{const w=sts.wire,mid=w.pts[0][6],hull0=P.hull;P.onGround=false;P.heading=0;P.spd=40;
+    P.pos.set(w.cx,groundY(w.cx,w.cz)+40,w.cz);updateSites(dt);out.wireWarn=said.some(t=>/POWER LINE ACROSS THE APPROACH/.test(t));
+    P.pos.set(mid.x,mid.y+25,mid.z);updateSites(dt);out.wireAbove={broken:w.broken,loss:r1(hull0-P.hull)};
+    P.pos.set(mid.x,mid.y,mid.z);const hull1=P.hull;updateSites(dt);out.wireStruck={broken:w.broken,loss:r1(hull1-P.hull),radio:said.some(t=>/WIRE STRIKE/.test(t)),hidden:w.group.children.filter(o=>o.isLine).every(o=>!o.visible)};}
+   // which pickups carry what
+   out.kinds={};for(const id of ['rescue','courier','rock','moon','spotter','rats']){begin(id,1);out.kinds[id]={units:sts.units.length,wire:!!sts.wire,decoys:(sts.decoys||[]).length};}
+   // the weather of the Storch sorties: fog, rain, low overcast and haze instead of clear skies (the plan's list; each start draws one)
+   out.wx={};for(const id of ['rescue','spotter','rats','courier','rock','moon']){const i=MISSIONS.findIndex(m=>m.id===id),pl=FlightPlans.europe[i];out.wx[id]={list:pl.weather,events:(pl.events||[]).filter(e=>e.weather).map(e=>e.weather)};}
+   // reset leaves nothing behind
+   begin('rescue',1);const grp=sts.wire.group,ch=sts.chute,us=sts.units.map(u=>u.group);begin(null);out.reset={wire:!!grp.parent,chute:!!ch.parent,units:us.some(g=>!!g.parent)};
+   return out;
+  });
+  report.threats=TH;
+  assert.deepEqual(TH.counts,[{nests:1,decoys:1},{nests:2,decoys:1},{nests:2,decoys:2}],'nests and decoys by difficulty (Rookie, Veteran, Ace): '+JSON.stringify(TH.counts));
+  assert.ok(TH.plan.nests===2&&TH.plan.decoys===1&&TH.plan.chute&&TH.plan.wire&&TH.plan.hidden,'a Veteran rescue run: two nests, one decoy, the pilot\'s white parachute, a power line, everything hidden: '+JSON.stringify(TH.plan));
+  assert.ok(TH.plan.decoyDist.every(d=>d>=600&&d<=1500),'decoys 650-1450 m from the real meadow: '+JSON.stringify(TH.plan.decoyDist));
+  assert.ok(TH.nestSeen.revealed&&TH.nestSeen.inFlak&&TH.nestSeen.radio,'a nest shows itself and fires: '+JSON.stringify(TH.nestSeen));
+  assert.ok(TH.decoySeen.revealed&&TH.decoySeen.radio,'the decoy is an ambush: '+JSON.stringify(TH.decoySeen));
+  assert.ok(TH.decoyLanded.handled&&TH.decoyLanded.revealed&&TH.decoyLanded.radio&&!TH.decoyLanded.over,'down at a decoy is not the end of the sortie: '+JSON.stringify(TH.decoyLanded));
+  assert.deepEqual(TH.troops.map(t=>t.squads),[1,1,2],'one squad on Rookie and Veteran, two on Ace: '+JSON.stringify(TH.troops));
+  assert.ok(TH.troops.every(t=>t.spawnT>=2&&t.spawnT<=8&&((t.minD<=190&&t.minD>=140)||!t.alive)),'the infantry come a few seconds after the aeroplane stands and stop 170 m from it: '+JSON.stringify(TH.troops));
+  assert.ok(TH.troops[1].firstHit!=null&&TH.troops[1].loss>2,'a Veteran who dawdles is hit: '+JSON.stringify(TH.troops[1]));
+  assert.ok(!TH.troops[2].alive||TH.troops[2].loss>TH.troops[0].loss,'the Ace infantry hurt more than the Rookie squad: '+JSON.stringify(TH.troops));
+  assert.ok(!TH.wireAbove.broken&&TH.wireAbove.loss===0&&TH.wireWarn,'forty feet above the line is clear, and it is announced: '+JSON.stringify(TH.wireAbove));
+  assert.ok(TH.wireStruck.broken&&TH.wireStruck.loss>8&&TH.wireStruck.radio&&TH.wireStruck.hidden,'a flat low approach takes the line: '+JSON.stringify(TH.wireStruck));
+  assert.deepEqual([TH.kinds.rescue.wire,TH.kinds.courier.wire,TH.kinds.rock.wire,TH.kinds.moon.wire,TH.kinds.spotter.wire,TH.kinds.rats.wire],[true,true,false,false,false,false],'wires on rescue and courier only: '+JSON.stringify(TH.kinds));
+  assert.ok(TH.kinds.rescue.units>=3&&TH.kinds.courier.units>=2&&TH.kinds.rock.units>=2&&TH.kinds.moon.units>=2&&TH.kinds.spotter.units>=1&&TH.kinds.rats.units>=2&&TH.kinds.rescue.decoys===1&&TH.kinds.courier.decoys===0,'nests on every Storch sortie, decoys on the rescue run only: '+JSON.stringify(TH.kinds));
+  assert.ok(TH.wx.rescue.list.includes('fog')&&TH.wx.rescue.events.includes('fog')&&TH.wx.spotter.events.includes('rain')&&TH.wx.rats.list.includes('lowcloud')&&TH.wx.rock.list.includes('rain')&&TH.wx.courier.events.includes('rain')&&!TH.wx.rescue.list.includes('clear'),'weather instead of clear skies: '+JSON.stringify(TH.wx));
+  assert.ok(!TH.reset.wire&&!TH.reset.chute&&!TH.reset.units,'a new sortie leaves no wire, parachute or squad behind: '+JSON.stringify(TH.reset));
+
   // ---- 2b. Build 251: the other three pickups - courier (low overcast, fighters above the cloud base), ridge landing (short, high, precision bonus), moonlight (three lanterns) ----
   const K=await page.evaluate(()=>{
    const dt=1/60,r1=v=>+(+v).toFixed(1),out={};
@@ -138,7 +197,7 @@ const server=http.createServer((req,res)=>{
     return {alive:P.alive,phase:sts.phase,crash:window.__crash,over:missionOver,gnd:P.onGround,spd:r1(P.spd),roll:!!P.landingRoll,fig:!!sts.fig,dFig:sts.figPos?Math.round(Math.hypot(P.pos.x-sts.figPos.x,P.pos.z-sts.figPos.z)):null,agl:r1(P.pos.y-groundY(P.pos.x,P.pos.z)),x:Math.round(P.pos.x-sts.plan.lz.x),text:objectiveText()};};
    const board=()=>{let t=0;if(sts.phase==='fly'||!P.onGround)return -1;for(;t<60&&sts.phase!=='home'&&P.alive;t+=dt){P.spd=0;updateFlight(dt);updateSites(dt);}return r1(t);};
    // courier
-   begin('courier');const cz=sts.plan.lz;out.courier={weather:weather,text:objectiveText(),dist:Math.round(Math.hypot(cz.x-GERMAN_AF_X,cz.z-GERMAN_AF_Z)),night:!!M().night};
+   begin('courier',1,'lowcloud');const cz=sts.plan.lz;out.courier={weather:weather,text:objectiveText(),dist:Math.round(Math.hypot(cz.x-GERMAN_AF_X,cz.z-GERMAN_AF_Z)),night:!!M().night};
    P.onGround=false;P.spd=40;state=ST.FLIGHT;
    for(let t=0;t<8;t+=dt){P.alive=true;P.pos.set(GERMAN_AF_X-3000,groundY(GERMAN_AF_X-3000,GERMAN_AF_Z)+120,GERMAN_AF_Z);updateSites(dt);}out.courier.lowOk={high:r1(sts.high),hunters:enemyAir.filter(e=>e.alive&&e.sortie).length};
    for(let t=0;t<9;t+=dt){P.alive=true;P.pos.set(GERMAN_AF_X-3000,groundY(GERMAN_AF_X-3000,GERMAN_AF_Z)+420,GERMAN_AF_Z);updateSites(dt);}

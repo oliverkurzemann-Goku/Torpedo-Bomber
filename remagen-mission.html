@@ -282,8 +282,8 @@
 .nhMark svg{display:block;width:20px;height:20px;margin:0 auto;fill:rgba(255,122,82,.5);stroke:#ff7a52;stroke-width:1.5;stroke-linejoin:round;opacity:.85;filter:drop-shadow(0 0 2px #000);}
 .nhMark[hidden]{display:none;}
 </style>
-<link rel="stylesheet" href="menu-layout.css?v=260">
-<link rel="stylesheet" href="duel.css?v=260">
+<link rel="stylesheet" href="menu-layout.css?v=261">
+<link rel="stylesheet" href="duel.css?v=261">
 </head>
 <body>
 <!-- ===== TEMP TEST-ONLY VERSION BANNER — asked for by Oliver: "kannst du irgendwo einbauen,
@@ -305,7 +305,7 @@
   <div style="width:100%;height:4px;background:repeating-linear-gradient(45deg,#ffd400,#ffd400 8px,#111 8px,#111 16px);"></div>
   <span id="testVersionBannerText" style="background:#111;color:#ffd400;font-family:monospace;font-weight:800;font-size:11px;letter-spacing:.5px;padding:3px 10px;border:1px solid #ffd400;border-top:none;border-radius:0 0 6px 6px;"></span>
 </div>
-<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 260';</script>
+<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 261';</script>
 <!-- ===== END TEMP TEST-ONLY VERSION BANNER ===== -->
 <div id="app"></div>
 <style>
@@ -346,7 +346,7 @@
   <div id="flash"></div>
   <div id="gunsight"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 260 · REAL RHINE</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 261 · REAL RHINE</div>
 
   <div id="apr">
     <div id="aprCall"></div>
@@ -401,7 +401,7 @@
 </div>
 
 <div class="overlay hidden" id="menu" data-campaign="europe">
-  <div class="menuTop"><a id="selBtn" href="index.html?v=260">&#9664; Change Game</a><span class="menuMeta">RHINE OPERATIONS<br>BUILD 260</span></div>
+  <div class="menuTop"><a id="selBtn" href="index.html?v=261">&#9664; Change Game</a><span class="menuMeta">RHINE OPERATIONS<br>BUILD 261</span></div>
   <div class="card menuCard">
     <aside class="menuOverview" aria-label="Campaign and pilot options">
     <div class="campaignArt" aria-hidden="true"></div>
@@ -433,7 +433,7 @@
     </aside>
     <section class="missionPanel" aria-label="Mission selection">
       <div class="secLbl">Choose your sortie · 15 missions + 4 bonus &amp; training</div>
-      <a class="hangarLink" href="hangar.html?theatre=europe&amp;v=260">CUSTOM MISSION · CHOOSE AIRCRAFT &amp; LOADOUT →</a>
+      <a class="hangarLink" href="hangar.html?theatre=europe&amp;v=261">CUSTOM MISSION · CHOOSE AIRCRAFT &amp; LOADOUT →</a>
 <div id="missionSel" role="group" aria-label="European missions"></div>
       <div id="missionBlurb" class="missionBlurb" aria-live="polite"></div>
       <div class="menuConfig">
@@ -582,7 +582,7 @@
 <script src="ju87-native.js?v=218"></script>
 <script src="me262-native.js?v=206"></script>
 <script src="me163-native.js?v=218"></script>
-<script src="aircraft-contract.js?v=260"></script>
+<script src="aircraft-contract.js?v=261"></script>
 <script src="aircraft-articulation.js?v=258"></script>
 <script src="aircraft-rotors.js?v=172"></script>
 <script src="b17-native.js?v=201"></script>
@@ -611,7 +611,7 @@
 <script src="flight-envelope.js?v=258"></script>
 <script src="flight-dynamics.js?v=258"></script>
 <script src="flight-core.js?v=258"></script>
-<script src="flight-control.js?v=260"></script>
+<script src="flight-control.js?v=261"></script>
 <script src="dogfight-ai.js?v=238"></script>
 <script src="squad.js?v=238"></script>
 <script src="duel-net.js?v=238"></script>
@@ -623,8 +623,8 @@
 <script src="ground-dust.js?v=181"></script>
 <script src="flight-indicators.js?v=198"></script>
 <script src="sortie-fuel.js?v=258"></script>
-<script src="operation-plans.js?v=258"></script>
-<script src="custom-sortie.js?v=260"></script>
+<script src="operation-plans.js?v=261"></script>
+<script src="custom-sortie.js?v=261"></script>
 <script>
 // ============================================================
 //  REMAGEN 1945 — REAL TERRAIN (forked from thunderbolt-europe.html)
@@ -996,7 +996,7 @@ async function loadRealWorld(){
 
   if(OSMManager.BUILD!==23||HistoricalObjectManager.BUILD!==21||LivingWorld.BUILD!==22||WorldVehicles.BUILD!==24) throw new Error('Terrain version mismatch. Reload Remagen.');
   document.getElementById('testVersionBannerText').textContent=
-    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 260 · MODULE 23';
+    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 261 · MODULE 23';
   heightProvider=new DEMHeightProvider(RTILE,'terrain-system/real/data/dem/');
   terrain=new TerrainManager(scene,RTILE,heightProvider);
   osmMgr=new OSMManager(scene,RTILE,terrain,'terrain-system/real/data/osm/');
@@ -6274,7 +6274,15 @@ const STS={lz:{r:62,slope:3,len:190,wid:46,disc:230},stop:280,board:6,runSpeed:9
   // Build 252: Dumbo. The dinghy lies on the river; she must alight (wheels UP) and taxi to within `stop` metres, then it comes alongside the right blister hatch at `speed` m/s
   dumbo:{stop:90,speed:6,runMax:40,near:[14200,15650,3200,1000]},
   // Build 253: the map shows a SEARCH AREA (ring r metres, the real spot somewhere inside, deterministic per sortie), not the spot; the smoke shows from `smoke` metres
-  search:{r:1150,smoke:3200}};
+  search:{r:1150,smoke:3200},
+  // Build 261: the pickups get teeth. Arrays are indexed by difficulty (Rookie, Veteran, Ace).
+  // Infantry come out of the trees `delay` s after the aeroplane has stopped, run at it (`speed` m/s) and fire from `range` m; machine-gun nests wait along the route
+  // (they show themselves at `trigger` m below `maxAgl`); decoy smokes (rescue) hide an ambush; a power line spans the approach side (rescue, courier). Category C: tune after playing.
+  threat:{power:[.6,1,1.25],
+    troops:{n:[1,1,2],delay:[7,5,4],dist:[450,560],speed:8,stop:170,range:[330,380,400],spread:[.75,.65,.9]},
+    nests:{pickup:[1,2,2],rats:[1,2,2],spotter:[0,1,2],trigger:[700,820,900],maxAgl:300,range:900,spread:1.6},
+    decoy:{n:[1,1,2],min:650,max:1450,trigger:520,maxAgl:260,range:700},
+    wire:{dist:250,len:230,top:11,sag:2.2,gap:1.3,hit:3.6,dmg:14,warn:1300}}};
 let sts=null;
 const stsCache={};
 function stsKind(m){return m&&(m.dumbo?'dumbo':m.rescue?'rescue':m.courier?'courier':m.rock?'rock':m.moon?'moon':m.spotter?'spotter':m.rats?'rats':null);}
@@ -6327,13 +6335,16 @@ function stsReset(){
     for(const figure of [sts.fig,sts.aidTeam])if(figure){scene.remove(figure);CrewFigures.dispose(figure);}
     for(const l of sts.lamps||[])scene.remove(l);
     for(const o of sts.disposables||[])o.dispose();
+    for(const a of sts.units||[]){a.t.alive=false;scene.remove(a.group);}   // Build 261
+    if(sts.wire){scene.remove(sts.wire.group);for(const o of sts.wire.dispose)o.dispose();}
+    if(sts.chute){scene.remove(sts.chute);sts.chute.geometry.dispose();sts.chute.material.dispose();}
   }
   sts=null;
 }
 function stsStart(m){
   stsReset();const kind=stsKind(m);if(!kind)return;
   const plan=stsPlan(m);
-  sts={kind,plan,clock:0,said:{},phase:'fly',hunt:null,smokeT:0,fig:null,hold:0,zone:0,shell:null,blasts:[],runT:0,boardT:0,high:0,waves:0,lamps:null};
+  sts={kind,plan,clock:0,said:{},phase:'fly',hunt:null,smokeT:0,fig:null,hold:0,zone:0,shell:null,blasts:[],runT:0,boardT:0,high:0,waves:0,lamps:null,units:[],decoys:null,troops:null,wire:null,chute:null,salt:0,smokeD:0};
   if(stsPickup(kind)){
     const lz=plan.lz;if(kind!=='dumbo')stsClearTrees(lz.x,lz.z,STS.lz.len+70,STS.lz.wid+10,kind==='rock'?STS.rock.disc:STS.lz.disc);   // Build 250: a disc as well - the approach may come from any side
     if(stsDone()>=1)sts.phase='home';
@@ -6361,6 +6372,7 @@ function stsStart(m){
       }
     }
   }else if(kind==='spotter')sts.zone=Math.min(plan.zones.length,sortieKills.zone||0);
+  if(sts.phase!=='home'&&kind!=='dumbo')stsThreatStart(m);   // Build 261
 }
 function stsSpawnHunters(n){
   const allied=P.ac==='pby',first=enemyAir.length;spawnEnemyAir(n,allied?'bf109':'p47');
@@ -6389,7 +6401,10 @@ function stsAboard(s){
 // the landing roll ended: stopped near the smoke = the pickup begins (the sortie goes on); anywhere else the landing ends it as usual
 function stsGroundStop(){
   const s=sts;if(!s||!stsPickup(s.kind)||!s.fig||stsDone()>=1||!P.alive)return false;
-  const fp=s.fig.position,dd=Math.hypot(P.pos.x-fp.x,P.pos.z-fp.z);if(dd>STS.stop&&!(s.kind==='dumbo'&&P.onWater))return false;   // Build 250: near the pilot, not near the meadow's middle (Build 252: afloat on the Dumbo river she may lie anywhere and taxi up)
+  const fp=s.fig.position,dd=Math.hypot(P.pos.x-fp.x,P.pos.z-fp.z);
+  if(dd>STS.stop){const dec=(s.decoys||[]).find(u=>u.t.alive&&Math.hypot(P.pos.x-u.x,P.pos.z-u.z)<STS.stop*1.4);   // Build 261: down at a decoy - not the end of the sortie, an ambush
+    if(dec){stsReveal(dec,"NO PILOT HERE — DECOY SMOKE! AMBUSH %c O'CLOCK — TAKE OFF NOW!");P.spd=0;P.landingRoll=null;P.throttle=0;setThrottleUI(0);P.groundPower=0;return true;}}
+  if(dd>STS.stop&&!(s.kind==='dumbo'&&P.onWater))return false;   // Build 250: near the pilot, not near the meadow's middle (Build 252: afloat on the Dumbo river she may lie anywhere and taxi up)
   P.spd=0;P.landingRoll=null;P.throttle=0;setThrottleUI(0);P.groundPower=0;
   if(s.kind==='dumbo'&&dd>STS.dumbo.stop){flash('ON THE RIVER — TAXI UP TO THE DINGHY',2400);radioSay('YELLOW SMOKE — TAXI UP TO THE DINGHY, WITHIN '+STS.dumbo.stop+' METRES');return true;}
   stsBeginPickup(s,dd);
@@ -6398,6 +6413,7 @@ function stsGroundStop(){
 // the pickup begins: the figure (or the dinghy) comes alongside
 function stsBeginPickup(s,dd){
   s.phase='run';s.runT=0;s.boardT=0;s.runFrom={x:s.fig.position.x,z:s.fig.position.z};
+  if(stsLand(s.kind)&&!s.troops)s.troops={t:STS.threat.troops.delay[diffIdx],on:false};   // Build 261: the infantry are on their way
   s.runDur=Math.min(s.kind==='dumbo'?STS.dumbo.runMax:STS.runMax,Math.max(2.5,Math.hypot(P.pos.x-s.runFrom.x,P.pos.z-s.runFrom.z)/(s.kind==='dumbo'?STS.dumbo.speed:STS.runSpeed)));
   if(s.kind==='rock'&&dd<=STS.rock.precise){addScore(STS.rock.bonus);radioSay('PRECISION LANDING — WELL DONE');}
   radioSay(s.kind==='dumbo'?'THE DINGHY IS COMING ALONGSIDE — HOLD STILL':stsWho(s.kind)+' RUNNING TO YOU — HOLD STILL');flash(s.kind==='dumbo'?'DINGHY ALONGSIDE — HOLD STILL, THE HATCH IS OPEN':s.kind==='rock'?'DOWN ON THE RIDGE — THE OBSERVER IS COMING':s.kind==='courier'?'DOWN AT THE COMMAND POST — THE OFFICER IS COMING':'DOWN IN THE MEADOW — THE '+stsWho(s.kind)+' IS COMING',2400);
@@ -6480,12 +6496,122 @@ function stsCeiling(dt){
   if(s.high>2.5&&!s.said.hi){s.said.hi=1;radioSay('KEEP IT UNDER THE CLOUD BASE — THEY CAN SEE YOU UP THERE');}
   if(s.high>=c.seconds&&!s.hunt&&s.waves<2){s.waves++;s.high=0;s.hunt={n:stsHuntCount(),t:2.5};radioSay('SPOTTED ABOVE THE CLOUD BASE — FIGHTERS DIVING. GET DOWN AND TURN INTO THEM');}
 }
+// ---- Build 261: infantry that run at a standing aeroplane, machine-gun nests along the way, decoy smokes with an ambush and a power line across the approach ----
+const stsLand=k=>k==='rescue'||k==='courier'||k==='rock'||k==='moon';   // pickups on dry land (the Dumbo river has none of this)
+function stsOpen(x,z){   // dry, gentle and inside the map
+  const maxX=RTILE*RGRID_W-1800,maxZ=RTILE*RGRID_H-1800;if(x<1800||z<1800||x>maxX||z>maxZ)return false;
+  if(livingWorld&&[[0,0],[20,0],[-20,0],[0,20],[0,-20]].some(([dx,dz])=>livingWorld._pointOnWater(x+dx,z+dz)))return false;
+  return Math.abs(groundY(x+25,z)-groundY(x-25,z))+Math.abs(groundY(x,z+25)-groundY(x,z-25))<24;
+}
+// a squad as a flak-unit-like target (small arms, no heavy gun); managed here, not by the Surprises loop (that one is off in some runs and words things differently)
+function stsUnit(x,z,rand,o){
+  const T=STS.threat,a=addAmbush('troops',x,z,rand,T.power[diffIdx]),k=ambushes.indexOf(a);if(k>=0)ambushes.splice(k,1);
+  a.t.minAgl=0;a.t.range=o.range||a.t.range;a.t.spread=o.spread||a.t.spread;a.trigger=o.trigger!=null?o.trigger:a.trigger;a.maxAgl=o.maxAgl!=null?o.maxAgl:a.maxAgl;
+  a.decoy=!!o.decoy;a.mobile=!!o.mobile;a.sts=true;sts.units.push(a);return a;
+}
+function stsReveal(a,msg){
+  if(a.revealed)return;a.revealed=true;a.group.visible=true;
+  const y=terrain.getRenderedHeight(a.x,a.z);a.group.position.y=y;a.group.userData.terrainLift=y;
+  targets.push(a.t);flakUnits.push(a.t);a.t.cool=.8+a.rand()*.7;
+  shake(.3);sfxFlak();radioSay(msg.replace('%c',clockOf(a.x,a.z)));flash(a.decoy?'AMBUSH!':a.mobile?'INFANTRY!':'GROUND TROOPS!',1100);
+}
+function stsThreatStart(m){
+  const s=sts,p=s.plan,ix=diffIdx,T=STS.threat,k=s.kind,rand=siteRand(siteSeed('sts-threat:'+m.id+':'+(s.salt=(Math.random()*2147483647)|0)));
+  // machine-gun nests: along the way to the pickup, along the escape route, overlooking the later observation zones
+  const cnt=stsLand(k)?T.nests.pickup[ix]:k==='rats'?T.nests.rats[ix]:k==='spotter'?T.nests.spotter[ix]:0;
+  for(let i=0;i<cnt;i++){
+    let cx,cz;
+    if(stsLand(k)){const f=[.4,.72][i%2],lz=p.lz;cx=GERMAN_AF_X+(lz.x-GERMAN_AF_X)*f;cz=GERMAN_AF_Z+(lz.z-GERMAN_AF_Z)*f;}
+    else if(k==='rats'){const f=[.35,.6,.8][i%3];cx=p.start.x+(GERMAN_AF_X-p.start.x)*f;cz=p.start.z+(GERMAN_AF_Z-p.start.z)*f;}
+    else{const z=p.zones[Math.min(p.zones.length-1,i+1)],a=rand()*Math.PI*2,d=700+rand()*200;cx=z.x+Math.cos(a)*d;cz=z.z+Math.sin(a)*d;}
+    const sp=siteSpot(cx,cz,0,k==='spotter'?250:650,rand,{r:18,slope:9});if(!sp)continue;
+    stsUnit(sp.x,sp.z,rand,{trigger:T.nests.trigger[ix],maxAgl:T.nests.maxAgl,range:T.nests.range,spread:T.nests.spread});
+  }
+  if(k==='rescue'){   // decoy smokes: the same yellow column, but no pilot, no white parachute - and an ambush
+    const lz=p.lz,apart=[lz];s.decoys=[];
+    for(let i=0;i<T.decoy.n[ix];i++){
+      const sp=siteSpot(lz.x,lz.z,T.decoy.min,T.decoy.max,rand,{r:40,slope:5,apart});if(!sp)continue;apart.push(sp);
+      s.decoys.push(stsUnit(sp.x,sp.z,rand,{decoy:true,trigger:T.decoy.trigger,maxAgl:T.decoy.maxAgl,range:T.decoy.range}));
+    }
+    if(s.figPos){const geo=new THREE.CircleGeometry(4.6,14),mesh=new THREE.Mesh(geo,new THREE.MeshLambertMaterial({color:0xf3f0e4,side:THREE.DoubleSide}));
+      mesh.rotation.x=-Math.PI/2;mesh.position.set(s.figPos.x-9,groundY(s.figPos.x-9,s.figPos.z+4)+.16,s.figPos.z+4);scene.add(mesh);s.chute=mesh;}
+  }
+  if(k==='rescue'||k==='courier')stsWireStart();
+}
+// a power line across the approach side of the meadow: two poles, two conductors; clearing it is easy on a normal glide path, a flat low approach takes it
+function stsWireStart(){
+  const s=sts,W=STS.threat.wire,lz=s.plan.lz,hx=GERMAN_AF_X-lz.x,hz=GERMAN_AF_Z-lz.z,hl=Math.hypot(hx,hz)||1,ux=hx/hl,uz=hz/hl,px=-uz,pz=ux,cx=lz.x+ux*W.dist,cz=lz.z+uz*W.dist;
+  const A={x:cx-px*W.len/2,z:cz-pz*W.len/2},B={x:cx+px*W.len/2,z:cz+pz*W.len/2};
+  if(!stsOpen(A.x,A.z)||!stsOpen(B.x,B.z))return;
+  let top=-1e9;for(let i=0;i<=12;i++){const t=i/12;top=Math.max(top,groundY(A.x+(B.x-A.x)*t,A.z+(B.z-A.z)*t));}top+=W.top;
+  const grp=new THREE.Group(),mat=new THREE.MeshLambertMaterial({color:0x4a4036}),lineMat=new THREE.LineBasicMaterial({color:0x1c1b19}),dispose=[mat,lineMat],pts=[];
+  for(const P0 of [A,B]){
+    const g0=groundY(P0.x,P0.z),h=top-g0+.6,pole=new THREE.CylinderGeometry(.22,.34,h,6),arm=new THREE.BoxGeometry(W.gap*2+1,.18,.18);dispose.push(pole,arm);
+    const pm=new THREE.Mesh(pole,mat);pm.position.set(P0.x,g0+h/2-.3,P0.z);grp.add(pm);
+    const am=new THREE.Mesh(arm,mat);am.position.set(P0.x,top-.5,P0.z);am.rotation.y=Math.atan2(-uz,ux);grp.add(am);
+  }
+  for(const c of [-1,1]){
+    const line=[],v=[];
+    for(let i=0;i<=12;i++){const t=i/12,x=A.x+(B.x-A.x)*t+ux*W.gap*c,z=A.z+(B.z-A.z)*t+uz*W.gap*c,y=top-.7-W.sag*(1-(2*t-1)*(2*t-1));line.push({x,y,z});v.push(x,y,z);}
+    const geo=new THREE.BufferGeometry();geo.setAttribute('position',new THREE.Float32BufferAttribute(v,3));dispose.push(geo);
+    const l=new THREE.Line(geo,lineMat);l.frustumCulled=false;grp.add(l);pts.push(line);
+  }
+  scene.add(grp);s.wire={group:grp,pts,broken:false,warned:false,cx,cz,dispose};
+}
+function stsMoveTroops(s,a,dt){
+  const T=STS.threat.troops,dx=P.pos.x-a.x,dz=P.pos.z-a.z,d=Math.hypot(dx,dz)||1,run=d>T.stop+1;
+  if(run){const st=Math.min(d-T.stop,T.speed*dt);a.x+=dx/d*st;a.z+=dz/d*st;}
+  const y=groundY(a.x,a.z);a.group.position.set(a.x,y,a.z);a.group.userData.terrainLift=y;a.group.rotation.y=Math.atan2(dx,dz);
+  a.group.children.forEach((f,i)=>{if(f.userData.figure)f.position.y=run?Math.abs(Math.sin(s.clock*9+i*1.7))*.14:0;});
+}
+function stsSpawnTroops(s){
+  const T=STS.threat,ix=diffIdx,lz=s.plan.lz,rand=siteRand(siteSeed('sts-troops:'+M().id+':'+s.salt));let made=0;
+  s.troops.on=true;
+  for(let k=0;k<T.troops.n[ix];k++){
+    let sp=null;
+    for(let tr=0;tr<16&&!sp;tr++){const ang=rand()*Math.PI*2,d=T.troops.dist[0]+rand()*(T.troops.dist[1]-T.troops.dist[0]),x=lz.x+Math.cos(ang)*d,z=lz.z+Math.sin(ang)*d;if(stsOpen(x,z))sp={x,z};}
+    if(!sp)continue;
+    const a=stsUnit(sp.x,sp.z,rand,{mobile:true,range:T.troops.range[ix],spread:T.troops.spread[ix]});
+    stsReveal(a,"ENEMY INFANTRY — %c O'CLOCK, OUT OF THE TREELINE AND RUNNING AT YOU. GET HIM IN AND TAKE OFF!");made++;
+  }
+  s.troops.n=made;
+}
+function stsThreats(dt){
+  const s=sts,T=STS.threat,agl=P.pos.y-groundY(P.pos.x,P.pos.z);
+  if(s.troops&&!s.troops.on&&(s.phase==='run'||s.phase==='board')){s.troops.t-=dt;if(s.troops.t<=0)stsSpawnTroops(s);}
+  for(const a of s.units){
+    if(!a.t.alive)continue;
+    if(!a.revealed){
+      if(Math.hypot(P.pos.x-a.x,P.pos.z-a.z)<a.trigger&&agl<a.maxAgl)stsReveal(a,a.decoy?"NO PILOT HERE — DECOY SMOKE, AN AMBUSH! GET OUT OF THERE — %c O'CLOCK!":"SMALL ARMS FIRE FROM A NEST — %c O'CLOCK!");
+      continue;
+    }
+    if(a.mobile)stsMoveTroops(s,a,dt);
+  }
+  if(s.decoys&&s.decoys.length){
+    if(!s.said.chute&&s.clock>5){s.said.chute=1;radioSay('INTEL — THE ENEMY LIGHTS DECOY SMOKES. YOUR PILOT HAS HIS WHITE PARACHUTE SPREAD OUT ON THE GRASS: NO CHUTE, NO PILOT.');}
+    s.smokeD-=dt;
+    if(s.smokeD<=0&&stsDone()<1){s.smokeD=.3;for(const u of s.decoys)if(u.t.alive&&Math.hypot(P.pos.x-u.x,P.pos.z-u.z)<STS.search.smoke)spawnSmoke(u.x+(Math.random()-.5)*3,groundY(u.x,u.z)+1.2,u.z+34+(Math.random()-.5)*3,0xe3c23a,1.05);}
+  }
+  const w=s.wire;
+  if(w&&!w.broken&&P.alive){
+    if(!w.warned&&agl<90&&Math.hypot(P.pos.x-w.cx,P.pos.z-w.cz)<T.wire.warn){w.warned=true;radioSay('POWER LINE ACROSS THE APPROACH, ABOUT FORTY FEET — CLEAR IT OR GO AROUND');}
+    if(!P.onGround&&Math.hypot(P.pos.x-w.cx,P.pos.z-w.cz)<T.wire.len){
+      let hit=false;for(const line of w.pts)for(let i=0;i<line.length-1&&!hit;i++)hit=segDist(line[i].x,line[i].y,line[i].z,line[i+1].x,line[i+1].y,line[i+1].z,P.pos)<T.wire.hit;
+      if(hit){
+        w.broken=true;for(const o of w.group.children)if(o.isLine)o.visible=false;
+        spawnExplosion(P.pos.x,P.pos.y,P.pos.z,.9);sfxBoom(.6);shake(1.6);P.rollBias=(P.rollBias||0)+(Math.random()<.5?-.07:.07);P.pitchVel-=.35;
+        damagePlayer(T.wire.dmg*D().dmg,'power line');radioSay('WIRE STRIKE — HIGH TENSION LINE! KEEP HER FLYING');flash('WIRE STRIKE!',1500);
+      }
+    }
+  }
+}
 function updateStorchSorties(dt){
   const s=sts;if(!s||!P.alive||state!==ST.FLIGHT||launchIntro||missionOver)return;
   s.clock+=dt;
   if(s.hunt){s.hunt.t-=dt;if(s.hunt.t<=0){const n=s.hunt.n;s.hunt=null;stsSpawnHunters(n);}}
   if(stsPickup(s.kind))stsRescue(dt);else if(s.kind==='spotter')stsSpotter(dt);else if(s.kind==='rats')stsRats(dt);
   if(s.kind==='courier')stsCeiling(dt);
+  stsThreats(dt);   // Build 261
 }
 function stsLaunchAir(){
   const m=M();if(!m.rats||!sts)return false;
@@ -8293,7 +8419,7 @@ function showResult(good,title,sub,html,btn){
   document.getElementById('rsGo').onclick=()=>{
     voiceRadio.cancel();soundscape.stop();
     show('result',false);
-    if(MISSIONS[selectedMission]?.custom){window.location.href='hangar.html?theatre=europe&v=260';return;}
+    if(MISSIONS[selectedMission]?.custom){window.location.href='hangar.html?theatre=europe&v=261';return;}
     if(good && selectedMission===MISSIONS.length-1){
       show('menu',true);if(navigation){navigation.reset();navigation.button.style.display='none';}
     }
@@ -8712,7 +8838,7 @@ function init(){
   // menu wiring
   document.getElementById('startBtn').onclick=()=>showBrief(selectedMission);
   duelInit();
-  document.getElementById('pauseMainMenu').onclick=async()=>{globalThis.sortieCheckpoint?.save();await globalThis.sortieCheckpoint?.flush();exitToMenuFromPause(true);window.location.href='index.html?v=260';};
+  document.getElementById('pauseMainMenu').onclick=async()=>{globalThis.sortieCheckpoint?.save();await globalThis.sortieCheckpoint?.flush();exitToMenuFromPause(true);window.location.href='index.html?v=261';};
   document.getElementById('logBtn').onclick=()=>{ show('menu',false); showLogbook(); };
   document.getElementById('skipLaunchPreview').onclick=()=>finishLaunchIntro();
   document.getElementById('brBack').onclick=()=>{ show('brief',false); show('menu',true);if(navigation){navigation.reset();navigation.button.style.display='none';} state=ST.MENU; };
