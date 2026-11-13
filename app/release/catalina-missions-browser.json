@@ -18,8 +18,8 @@
   },
   "alight": {
    "touch": {
-    "t": 8.5,
-    "spd": 33.4,
+    "t": 8.8,
+    "spd": 31.5,
     "wet": true
    },
    "alive": true,
@@ -27,20 +27,20 @@
    "over": false,
    "onWater": true,
    "phase": "fly",
-   "dist": 144,
+   "dist": 106,
    "text": "TAXI UP TO THE DINGHY — WITHIN 90 m (MAP)"
   },
   "taxi": {
-   "t": 25.3,
+   "t": 14.6,
    "phase": "run",
    "alive": true,
    "crash": null,
    "spd": 1.2,
-   "dist": 59,
+   "dist": 73,
    "text": "DINGHY ALONGSIDE — HOLD STILL"
   },
   "boarded": {
-   "t": 15.8,
+   "t": 18.3,
    "phase": "home",
    "rescued": 1,
    "score": 600,
@@ -52,14 +52,14 @@
   },
   "run": {
    "l1": 800,
-   "l2": 650,
-   "dist": 617
+   "l2": 675,
+   "dist": 568
   },
   "takeoff": {
-   "off": 30,
+   "off": 29,
    "alive": true,
    "crash": null,
-   "climb": 6.3,
+   "climb": 4.6,
    "hunters": 2,
    "hunterAc": "bf109",
    "huntLeft": null,
@@ -68,16 +68,16 @@
   "block": 0,
   "home": {
    "td": {
-    "t": 14.3,
-    "spd": 41.1,
-    "x": -20
+    "t": 17,
+    "spd": 37.5,
+    "x": -58
    },
    "alive": true,
    "crash": null,
    "over": true,
    "landing": false,
    "onGround": true,
-   "result": "\n  \n    Flight Officer Hank Dobbs  &middot;  Landed at Beaufort  &middot;  🥇 GOLD\n    MISSION ACCOMPLISHED\n    The airman is home. This sortie: 1 rescuedHull 1",
+   "result": "\n  \n    Flight Officer Tex Calloway  &middot;  Landed at Beaufort  &middot;  🥇 GOLD\n    MISSION ACCOMPLISHED\n    The airman is home. This sortie: 1 rescuedHull",
    "score": 1000
   }
  },

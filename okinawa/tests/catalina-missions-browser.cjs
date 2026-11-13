@@ -73,7 +73,7 @@ const server=http.createServer((req,res)=>{
     if(!P.onGround&&off==null){off=t3;out.run.dist=Math.round(Math.hypot(P.pos.x-x0,P.pos.z-z0));inputPitch=.4;}
     // after lift-off a pilot follows the river (a straight line leaves it at the next bend, into the wooded bank): look for the longest water ahead every half second and bank towards it
     if(off!=null){if(Math.round((t3-off)*60)%30===0){let best=P.heading,bl=-1;for(const dh of [-.6,-.4,-.2,0,.2,.4,.6]){const l=run(P.heading+dh);if(l>bl+30){bl=l;best=P.heading+dh;}}P.__want=best;}
-     if(P.__want!=null){let da=P.__want-P.heading;da=Math.atan2(Math.sin(da),Math.cos(da));inputRoll=Math.max(-.5,Math.min(.5,-da*steerSign*2));}}
+     if(P.__want!=null){let da=P.__want-P.heading;da=Math.atan2(Math.sin(da),Math.cos(da));inputRoll=Math.max(-.5,Math.min(.5,da*steerSign*2));}}   // positive stick = larger heading (measured: +0.4 stick turns +64 deg in 5 s); the old sign steered away from the river and hit the trees
     if(off!=null&&t3-off>14)break;}
    const hunters=enemyAir.filter(e=>e.alive&&e.sortie);
    out.takeoff={off:off==null?null:r1(off),alive:P.alive,crash:window.__crash,climb:r1(P.vSpeed),hunters:hunters.length,hunterAc:hunters[0]&&hunters[0].kind,huntLeft:sts.hunt&&sts.hunt.t,floatsOut:null};
