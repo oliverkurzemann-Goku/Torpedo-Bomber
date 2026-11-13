@@ -1,6 +1,6 @@
-# Offline app asset register — Build 251
+# Offline app asset register — Build 256
 
-Checked 2026-10-23. 379 payload files, 63 model files, 161.8 MiB.
+Checked 2026-10-23. 383 payload files, 64 model files, 162.3 MiB.
 
 Generated from the actual dist-app payload by npm run app:assets. Hashes cover embedded textures too. This is an evidence inventory; no row is automatically approved for distribution. Acquisition dates remain unknown where not recorded.
 
@@ -15,6 +15,7 @@ Generated from the actual dist-app payload by npm run app:assets. Hashes cover e
 | assets/aircraft/fi156c2-player.glb | [Torpedo-Bomber project](https://drive.google.com/file/d/1W0K-B4_2USPFG5wsZDeOR4NMF924dtz4/view) | project-own (original mesh and paint) | own-build-reference-review-open | fcf41581590a12ee5f0dd18d67e6d8d9320c56b8c2e6db4aaaffd958302d5a84 |
 | assets/aircraft/fw190a8-own.glb | [Oliver Kurzemann / Torpedo-Bomber](scripts/build-own-fw190-komet.cjs) | project-own; reference-derived exterior geometry and original textures | own-build-reference-review-open | 319d846cdd684f63483c906cf1b93525a80d1516ee662582d5f116a4d6fd3edc |
 | assets/aircraft/g4m1-own.glb | [Torpedo-Bomber project](https://www.aircraftube.com/index.php?fichid=504&lang=en) | project-own (original mesh and paint) | own-build-reference-review-open | 0c2d0e1582c3b4296dfe6f38da7a684094371112edf96bae639b2806bba717c4 |
+| assets/aircraft/geheimer-jet.glb | Source unknown | — | source-or-license-missing | 32bbf3e223ff4248239f9090d83928b144b88d3bae5335a68e63282bbf747def |
 | assets/aircraft/ju87b2-own.glb | [Oliver Kurzemann / Torpedo-Bomber](scripts/own-aircraft/ju87b2/shape.json) | project-own; supplied historical manual used as dimensional reference | own-build-reference-review-open | d331b579ca37cb4ffcc9a71010b4dabe477b38384b371af9d456e06804b868e4 |
 | assets/aircraft/me163b-own.glb | [Oliver Kurzemann / Torpedo-Bomber](scripts/build-own-fw190-komet.cjs) | project-own; reference-derived exterior geometry and original textures | own-build-reference-review-open | ddc61b6fb3a222b9716c40ead59f17a77a55bfa295cbcb48c1a1d42f2a977739 |
 | assets/aircraft/me262-noel.glb | Source unknown | Base CC0-1.0 (https://creativecommons.org/publicdomain/zero/1.0/); original livery and detailing Oliver Kurzemann | source-or-license-missing | 6bfd4650965bd16e465037d3bdee08f2fe68eaf3e5ee99b273c435a00c256895 |

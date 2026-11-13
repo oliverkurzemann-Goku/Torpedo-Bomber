@@ -1,13 +1,13 @@
 {
   "schema": 1,
   "reviewedOn": "2026-10-23",
-  "build": 251,
+  "build": 256,
   "status": "OPEN — source declarations checked; no external rights authorization obtained",
   "payload": {
-    "bytes": 169662698,
-    "fileCount": 379,
-    "modelCount": 63,
-    "manifestSha256": "018055c6b39e8dd143b211a372bf77f5c102c1380a310ecdecfe843afc53cec0"
+    "bytes": 170135896,
+    "fileCount": 383,
+    "modelCount": 64,
+    "manifestSha256": "a268fb3cd226dfa7d6251d277c06c528767616829489f4cdb965ab5dff62e8ff"
   },
   "files": [
     {
@@ -24,14 +24,14 @@
     },
     {
       "path": "aircraft-articulation.js",
-      "bytes": 18140,
-      "sha256": "f9f9e52b623f947f89ce3820aed525b571583b13f3e1d59eb94be29bb66ccc59",
+      "bytes": 18228,
+      "sha256": "fca2ab73fd92862cb6e63c324e5fbdb7f1dc4a3c930e36df1188ee1bbabb92a4",
       "kind": "code-or-notice"
     },
     {
       "path": "aircraft-contract.js",
-      "bytes": 8080,
-      "sha256": "80207f8134e9fe483b56da0d6b1e722be538374ac56c03f81561d15875d9e860",
+      "bytes": 8135,
+      "sha256": "62fb55487b2cd7692c911a62d38f4dd9616e7cc8991c4ef2ed73c877a8bc1955",
       "kind": "code-or-notice"
     },
     {
@@ -164,6 +164,12 @@
       "path": "assets/aircraft/g4m1-own.glb",
       "bytes": 1201584,
       "sha256": "0c2d0e1582c3b4296dfe6f38da7a684094371112edf96bae639b2806bba717c4",
+      "kind": "model"
+    },
+    {
+      "path": "assets/aircraft/geheimer-jet.glb",
+      "bytes": 401392,
+      "sha256": "32bbf3e223ff4248239f9090d83928b144b88d3bae5335a68e63282bbf747def",
       "kind": "model"
     },
     {
@@ -498,8 +504,8 @@
     },
     {
       "path": "audio/aircraft-engine.js",
-      "bytes": 11517,
-      "sha256": "28564d432075945ccee75c079f700900cccb68d17c08c7b370b00311f800f50a",
+      "bytes": 12585,
+      "sha256": "2748f9fd019500ce1d200587fe49beee03e4ee1c0bbee06e7ab745030e2da1a9",
       "kind": "code-or-notice"
     },
     {
@@ -702,8 +708,8 @@
     },
     {
       "path": "checkpoint-pacific.js",
-      "bytes": 7175,
-      "sha256": "7ea0e98536a1a0c81f3bb8f6f2843dd3a1bcda24d024dd58f39a3c85d8af7fbe",
+      "bytes": 7206,
+      "sha256": "f2d7501183ebc3bbc50e64e69d1ed4acfed65d80afa968238cd217b2d25bac67",
       "kind": "code-or-notice"
     },
     {
@@ -725,6 +731,12 @@
       "kind": "code-or-notice"
     },
     {
+      "path": "crew-figures.js",
+      "bytes": 14759,
+      "sha256": "7011cf9ce10bed842e8f6d2600e04daebe6e0e92c603b22483493112c6b53e09",
+      "kind": "code-or-notice"
+    },
+    {
       "path": "crew-visuals.js",
       "bytes": 6308,
       "sha256": "76a1d601e41fa485bf0a984724ab73616e017b5ef99b68a258d25f73752b450f",
@@ -732,14 +744,14 @@
     },
     {
       "path": "custom-sortie.js",
-      "bytes": 10570,
-      "sha256": "7b8a61674fbe2bae55c9a57d3cc9f7414d644409be9215b6141a7b0455b292ed",
+      "bytes": 12579,
+      "sha256": "132d5316fa58422c254376cbc94d2878f70ffc31557a1603cf5ce23d88563011",
       "kind": "code-or-notice"
     },
     {
       "path": "deck-activity.js",
-      "bytes": 10126,
-      "sha256": "1ecef27511a523abeaf5414adbbec000f3ba9a8ac60d4b263e090bab27aee321",
+      "bytes": 8623,
+      "sha256": "a192ef5f874fd738eea658021fdd0dc821300d00dc805baa17f08e0fc39de32b",
       "kind": "code-or-notice"
     },
     {
@@ -756,8 +768,8 @@
     },
     {
       "path": "duel.css",
-      "bytes": 3738,
-      "sha256": "7084c2ec76fc52dad74420f063708f3e8adabee8e189adbc60782e89038436d1",
+      "bytes": 3815,
+      "sha256": "379edd769d07ab67ea918625f76d7ab3d690171b67d3667f36d93038dc1a2782",
       "kind": "code-or-notice"
     },
     {
@@ -786,20 +798,20 @@
     },
     {
       "path": "flight-core.js",
-      "bytes": 44786,
-      "sha256": "d0ba2c8f6277433a5b4d236569935f4af06448cb5a4ca5b97a0f4037204a3489",
+      "bytes": 46894,
+      "sha256": "5847c7f6ce73365e55a960140729d5e9adbabcdda7adf69d9f886c9880ec4d0d",
       "kind": "code-or-notice"
     },
     {
       "path": "flight-dynamics.js",
-      "bytes": 5842,
-      "sha256": "2903b9310811c5507c638f71d6f59ed3d44156ca38fabef15a2f1becddda736a",
+      "bytes": 6030,
+      "sha256": "4d9db192ad0393cb83532fed473865a36b668fe74cf04bfc7af091d12e73abe1",
       "kind": "code-or-notice"
     },
     {
       "path": "flight-envelope.js",
-      "bytes": 10645,
-      "sha256": "d871e3c1ec80790986c1c4ba6631f69902f45ce0077f927dc478e80224392c92",
+      "bytes": 10975,
+      "sha256": "98f1424c3e49a40d833da4ea523c8b55685da4e5a7f87e472a57476d30377565",
       "kind": "code-or-notice"
     },
     {
@@ -852,20 +864,20 @@
     },
     {
       "path": "hangar.html",
-      "bytes": 4485,
-      "sha256": "5a6654b1dfee4e5a8bcc075790534ec8e7041cefcca7d64365b085c1fd446f36",
+      "bytes": 4761,
+      "sha256": "380cb7b43c3e1941fe0af01727622c8ffb091dcd05eb5b35cdf08f26f96ad66d",
       "kind": "code-or-notice"
     },
     {
       "path": "hangar.js",
-      "bytes": 4038,
-      "sha256": "1f783c364f7546c899e6fc4f40456384a35b4ea0916d5f1b78cc645151853dd3",
+      "bytes": 5047,
+      "sha256": "ab0701e983bf078fda52c348446e8985637dfe22346f60d716b452f03f6d5811",
       "kind": "code-or-notice"
     },
     {
       "path": "index.html",
       "bytes": 7912,
-      "sha256": "cc54f9e291f1a51f7a8d8f25e0c9a05db16dee8592f39191bd01e961cda90b15",
+      "sha256": "1f1e5c7f8b37e6fc5b372288a6ae58223ade6c547a86567a74f40e58463626d7",
       "kind": "code-or-notice"
     },
     {
@@ -900,8 +912,8 @@
     },
     {
       "path": "menu-layout.css",
-      "bytes": 15560,
-      "sha256": "23f06acfb41ca8d40cc5eef45582df652bece71a3b6ce0c5d20075bfc5df18a9",
+      "bytes": 15633,
+      "sha256": "14225209e77ca6c964e632a490eb381ae24d104ebbcacec312ba8825be574d13",
       "kind": "code-or-notice"
     },
     {
@@ -942,14 +954,14 @@
     },
     {
       "path": "okinawa/world.js",
-      "bytes": 55288,
-      "sha256": "a30a80cd67be83fc68bd12702612014f52b834b6119e85db3bb2841c56a228e2",
+      "bytes": 55304,
+      "sha256": "e4deed9d008763d135a80309285b322fbc76b12a192e98c22ed66eda03501f79",
       "kind": "code-or-notice"
     },
     {
       "path": "operation-plans.js",
-      "bytes": 10917,
-      "sha256": "8fdfc47905757c1a4fc7b7f64293110877125d1f6bd5c7b0fb7f1a227fa06f38",
+      "bytes": 11521,
+      "sha256": "28fcb0bf9624e3fe51e29242eb3175ce721333a7143eaef3a93331de5fa1441b",
       "kind": "code-or-notice"
     },
     {
@@ -984,14 +996,14 @@
     },
     {
       "path": "pilot-bailout.js",
-      "bytes": 5025,
-      "sha256": "9a6aba5709d7c727ba3583d1b2794c697ac3c40ca96a2366a5498cf8021fb842",
+      "bytes": 5172,
+      "sha256": "97f196e91a0bc3327d502904ec585dc324b84e39724f46bb61a82677f87dc89e",
       "kind": "code-or-notice"
     },
     {
       "path": "pilot-rescue.js",
-      "bytes": 13027,
-      "sha256": "24e3c2aa4c0c2c492a5bb64aa3fca74c55326ad4e5cc4e2474dbdfc86dfb67be",
+      "bytes": 15374,
+      "sha256": "2f0a4dda03e30603ebbd6adfde6e2eaec1492d6f1e2e0897c431196192b30cbc",
       "kind": "code-or-notice"
     },
     {
@@ -1002,8 +1014,8 @@
     },
     {
       "path": "remagen-mission.html",
-      "bytes": 557575,
-      "sha256": "e0c396cbd0faf7492e675bc2038c99e04706832c7c9dd16be4e889f1ebcff8e4",
+      "bytes": 577620,
+      "sha256": "4873e8880f5b6a632ea5d58d0a7975d5be593236de3ea5fd86d142f9335ee736",
       "kind": "code-or-notice"
     },
     {
@@ -1016,6 +1028,18 @@
       "path": "sbd-native.js",
       "bytes": 6675,
       "sha256": "c1ae94eb21ea97572c6a3dcca59bd3a36da0e50307aea944c7bc9feb1fabb341",
+      "kind": "code-or-notice"
+    },
+    {
+      "path": "secret-jet.js",
+      "bytes": 6261,
+      "sha256": "4e466c9396df29598eac4d0393efd73cbebcfd2a94e0f24ab091cfb84c5b9f1d",
+      "kind": "code-or-notice"
+    },
+    {
+      "path": "secret-space.js",
+      "bytes": 10633,
+      "sha256": "096bc31d3b34bdacc3ee16f3bd6e371f9b51d27ad50f037a7dc646aa8e9f6886",
       "kind": "code-or-notice"
     },
     {
@@ -1044,20 +1068,20 @@
     },
     {
       "path": "sortie-features.js",
-      "bytes": 12838,
-      "sha256": "669d3c79b1370ed22939aa586ccf14ffee7460befc5ede8dbebf90b86deeaf55",
+      "bytes": 13090,
+      "sha256": "30585c5fcc8ececaafefdc926b4fbbc0a82eebb3622d1d6dd59c1135f506f3c2",
       "kind": "code-or-notice"
     },
     {
       "path": "sortie-fuel.js",
-      "bytes": 1300,
-      "sha256": "91dbb87e496d4a7ebd8e62868de00af0bc7e65ca2c7f860c5075b1721c394b07",
+      "bytes": 1325,
+      "sha256": "391e42bb8c339d0f72d49d8400eaf084c0e09ebaf664aa7426be839451253b17",
       "kind": "code-or-notice"
     },
     {
       "path": "sortie-preview.js",
-      "bytes": 14021,
-      "sha256": "c383ad498eb5d89c852cc4524ef3a16dae0c1f46762cac49dd06da58c707e3ec",
+      "bytes": 14132,
+      "sha256": "d766d476d9bad36df062df2ead9de9ffa4db613f1289fbff161153949c91a66d",
       "kind": "code-or-notice"
     },
     {
@@ -1068,8 +1092,8 @@
     },
     {
       "path": "sortie-systems.js",
-      "bytes": 10374,
-      "sha256": "412bd1ba0be21fe95bee054d5ac5411c8d811cc1b2dce4ce14dcff5280ebc9d1",
+      "bytes": 10755,
+      "sha256": "0e63c088113f1bb652785994311bb240737875878598ccc6f72dbf96c0424018",
       "kind": "code-or-notice"
     },
     {
@@ -1086,14 +1110,14 @@
     },
     {
       "path": "terrain-system/AircraftGround.js",
-      "bytes": 8535,
-      "sha256": "b49c461125342b332a0af26e6a5bfcf205bafa2a9ff12b18031462df0aa54b48",
+      "bytes": 8549,
+      "sha256": "5d7258fc0c6d822f977d78bf7e47d792fbbbe7b5fe782df04c5b3b746449e50b",
       "kind": "code-or-notice"
     },
     {
       "path": "terrain-system/AirfieldActivity.js",
-      "bytes": 21335,
-      "sha256": "d3634fc5b4a3f1a216b95e592a1797b884dd2bdfef395a3ff921f88757417bc8",
+      "bytes": 20348,
+      "sha256": "8845095ff0ed20899a445462573b77688c288b81bd3e85903e1e12afb9a8f0ec",
       "kind": "code-or-notice"
     },
     {
@@ -2202,8 +2226,8 @@
     },
     {
       "path": "torpedo-carrier.html",
-      "bytes": 480513,
-      "sha256": "734dfa15477433a1ed4d2cddda12bfcacaaa5d74a1449de58fcb58321bd0c79d",
+      "bytes": 491902,
+      "sha256": "7372101affb49042e401a231957691ba2d8ec81dfe123f4755987185f40aae66",
       "kind": "code-or-notice"
     },
     {
@@ -2507,6 +2531,30 @@
       "bundleRedistributionGrant": null,
       "releaseApproved": false,
       "nextAction": "Own mesh and paint; review the recorded reference source and any applicable attribution/share-alike obligations; credits kept in ASSET-CREDITS.md."
+    },
+    {
+      "path": "assets/aircraft/geheimer-jet.glb",
+      "bytes": 401392,
+      "sha256": "32bbf3e223ff4248239f9090d83928b144b88d3bae5335a68e63282bbf747def",
+      "title": "assets/aircraft/geheimer-jet.glb",
+      "uploader": null,
+      "originalRightsholder": null,
+      "sourceUrl": null,
+      "acquiredOn": null,
+      "declaredLicense": null,
+      "licenseUrl": null,
+      "licenseEvidence": "Exact runtime GLB asset.extras",
+      "sourceCheck": null,
+      "embeddedImageCount": 0,
+      "externalImages": [],
+      "originalFile": null,
+      "originalSha256": null,
+      "changes": "Original runtime binary preserved; runtime scaling, materials, rigging and placement are described in ASSET-CREDITS.md / CLAUDE.md.",
+      "issue": "source-or-license-missing",
+      "commercialPermissionDocument": null,
+      "bundleRedistributionGrant": null,
+      "releaseApproved": false,
+      "nextAction": "Identify the exact author/source/version and license before distribution."
     },
     {
       "path": "assets/aircraft/ju87b2-own.glb",

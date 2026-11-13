@@ -13,14 +13,14 @@
    "spread": 1.55,
    "trigger": 950
   },
-  "ahead": 2451.515731297313,
+  "ahead": 2309.6987363902053,
   "dry": true,
   "revealed": {
    "visible": true,
    "inTargets": true,
    "inFlak": true
   },
-  "shots": 3,
+  "shots": 4,
   "killed": {
    "alive": false,
    "inFlak": false,
@@ -64,15 +64,15 @@
   "blast": {
    "fired": true,
    "tries": 3,
-   "hullLost": 2.6
+   "hullLost": 2.7
   },
   "scheduled": {
-   "seed": 3712701421,
+   "seed": 3249065242,
    "level": "rookie",
    "fired": [
     {
-     "id": "bounce",
-     "t": 102
+     "id": "trap",
+     "t": 111
     }
    ],
    "time": 840
@@ -101,101 +101,7 @@
    "spread": 1.2,
    "trigger": 1150
   },
-  "ahead": 2349.159767476557,
-  "dry": true,
-  "revealed": {
-   "visible": true,
-   "inTargets": true,
-   "inFlak": true
-  },
-  "shots": 5,
-  "killed": {
-   "alive": false,
-   "inFlak": false,
-   "kills": true,
-   "left": true,
-   "score": true
-  },
-  "trapReady": 2400,
-  "f2": true,
-  "trap": {
-   "n": 2,
-   "near": true,
-   "hidden": true
-  },
-  "f3": true,
-  "squad": {
-   "kind": "troops",
-   "figures": 6,
-   "hidden": true
-  },
-  "squadFire": {
-   "revealed": true,
-   "tracers": 24,
-   "damages": [
-    1.6,
-    1.6,
-    1.6,
-    1.6,
-    1.6
-   ]
-  },
-  "squadKilled": {
-   "alive": false,
-   "figuresHidden": true
-  },
-  "f4": true,
-  "bounce": {
-   "n": 2,
-   "nonBlocking": true,
-   "behind": true,
-   "high": true
-  },
-  "blast": {
-   "fired": true,
-   "tries": 1,
-   "hullLost": 4.2
-  },
-  "scheduled": {
-   "seed": 3700963234,
-   "level": "vet",
-   "fired": [
-    {
-     "id": "hiddenFlak",
-     "t": 101
-    },
-    {
-     "id": "trap",
-     "t": 182
-    }
-   ],
-   "time": 840
-  },
-  "layout": 5,
-  "cleanup": {
-   "ambushes": 0,
-   "inScene": 0,
-   "surpriseTargets": 0,
-   "flak": 0,
-   "time": 0,
-   "fired": 0
-  }
- },
- "diff2": {
-  "level": "ace",
-  "have": true,
-  "f1": true,
-  "hidden": {
-   "n": 1,
-   "visible": false,
-   "inTargets": false,
-   "inFlak": false,
-   "kind": "ambush",
-   "coolBase": 0.16,
-   "spread": 1.07,
-   "trigger": 1150
-  },
-  "ahead": 1865.7763909891414,
+  "ahead": 2160.957857944878,
   "dry": true,
   "revealed": {
    "visible": true,
@@ -225,8 +131,102 @@
   },
   "squadFire": {
    "revealed": true,
-   "tracers": 4,
+   "tracers": 12,
    "damages": [
+    1.6,
+    1.6,
+    1.6,
+    1.6
+   ]
+  },
+  "squadKilled": {
+   "alive": false,
+   "figuresHidden": true
+  },
+  "f4": true,
+  "bounce": {
+   "n": 2,
+   "nonBlocking": true,
+   "behind": true,
+   "high": true
+  },
+  "blast": {
+   "fired": true,
+   "tries": 9,
+   "hullLost": 4.3
+  },
+  "scheduled": {
+   "seed": 3597094781,
+   "level": "vet",
+   "fired": [
+    {
+     "id": "infantry",
+     "t": 62
+    },
+    {
+     "id": "hiddenFlak",
+     "t": 119
+    }
+   ],
+   "time": 840
+  },
+  "layout": 5,
+  "cleanup": {
+   "ambushes": 0,
+   "inScene": 0,
+   "surpriseTargets": 0,
+   "flak": 0,
+   "time": 0,
+   "fired": 0
+  }
+ },
+ "diff2": {
+  "level": "ace",
+  "have": true,
+  "f1": true,
+  "hidden": {
+   "n": 1,
+   "visible": false,
+   "inTargets": false,
+   "inFlak": false,
+   "kind": "ambush",
+   "coolBase": 0.16,
+   "spread": 1.07,
+   "trigger": 1150
+  },
+  "ahead": 2552.0788339281485,
+  "dry": true,
+  "revealed": {
+   "visible": true,
+   "inTargets": true,
+   "inFlak": true
+  },
+  "shots": 6,
+  "killed": {
+   "alive": false,
+   "inFlak": false,
+   "kills": true,
+   "left": true,
+   "score": true
+  },
+  "trapReady": 2400,
+  "f2": true,
+  "trap": {
+   "n": 2,
+   "near": true,
+   "hidden": true
+  },
+  "f3": true,
+  "squad": {
+   "kind": "troops",
+   "figures": 6,
+   "hidden": true
+  },
+  "squadFire": {
+   "revealed": true,
+   "tracers": 26,
+   "damages": [
+    1.6,
     1.6,
     1.6,
     1.6,
@@ -250,16 +250,16 @@
    "hullLost": 5.3
   },
   "scheduled": {
-   "seed": 2477450571,
+   "seed": 4023526845,
    "level": "ace",
    "fired": [
     {
-     "id": "bounce",
-     "t": 74
+     "id": "trap",
+     "t": 84
     },
     {
-     "id": "infantry",
-     "t": 128
+     "id": "bounce",
+     "t": 143
     }
    ],
    "time": 840
