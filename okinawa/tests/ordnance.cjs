@@ -21,7 +21,7 @@ for(const kind of ['bomb','torpedo','rocket']){
 const html=fs.readFileSync(require.resolve('../../torpedo-carrier.html'),'utf8');
 const start=html.indexOf('function dropTorpedo('),end=html.indexOf('function updateTorpedoes(');
 const scene=new THREE.Scene(),P={alive:true,torps:1,pos:new THREE.Vector3(0,50,0),pitch:-.5,heading:.3,roll:0,spd:70};
-const ctx=vm.createContext({THREE,AvengerBay,gltfRoot:null,Ordnance,GameRuntime,P,scene,state:3,ST:{FLIGHT:3},loadout:'torpedo',isCorsair:()=>false,
+const ctx=vm.createContext({THREE,AvengerBay,gltfRoot:null,Ordnance,GameRuntime,P,scene,isSecretJet:()=>false,state:3,ST:{FLIGHT:3},loadout:'torpedo',isCorsair:()=>false,
  DROP_MAX_ALT:80,DROP_MAX_SPD:90,torpedoes:[],bombs:[],sortieTorpFired:0,sortieBombFired:0,sortieBombHit:0,lastTorpDud:false,D:()=>({dud:0}),updateHUD(){},sfxWhoosh(){},flash(){},
  noseDir:()=>new THREE.Vector3(Math.cos(P.pitch)*Math.cos(P.heading),Math.sin(P.pitch),Math.cos(P.pitch)*Math.sin(P.heading)),
  shoreHeight:()=>0,shoreTargets:[],ships:[],spawnSplash(){},sfxBoom(){}});

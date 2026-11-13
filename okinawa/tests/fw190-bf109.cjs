@@ -23,7 +23,7 @@ const limits=vm.runInNewContext(pac.slice(pac.indexOf('const PAC_LIMITS='),pac.i
 const pacPitch=kind=>FlightEnvelope.handling(kind,{rollLim:limits[kind].rollLim,rollFrac:kind==='avenger'?.78:.86}).pitchAuth;
 // The two games' constants, read from the shipped coreEnv source so a change there shows up here.
 for(const [html,name] of [[eu,'Rhine'],[pac,'Pacific']]){const env=html.slice(html.indexOf('function coreEnv('),html.indexOf('function',html.indexOf('function coreEnv(')+10));
- assert.match(env,name==='Rhine'?/pitchBase:3\.6,pullAssist:\.6,pitchScale:d\.pitchLim\*\.92/:/pitchBase:4\.2,pullAssist:\.6,pitchScale:\.70/,name+' coreEnv constants');}
+ assert.match(env,name==='Rhine'?/pitchBase:d\.pitchBase\?\?3\.6,pullAssist:d\.pullAssist\?\?\.6,pitchScale:stolPitchScale\(d,departure\)/:/pitchBase:4\.2,pullAssist:\.6,pitchScale:\.70/,name+' coreEnv constants');}
 function env(kind,P,stick,arcade=false,aero=false,stickRoll=0){
  const pacific=!defs[kind],controls=SortieFeatures.Damage.controls(P),configuration=SortieFeatures.Handling.configuration(P,40);
  const d=pacific?{rollLim:limits[kind].rollLim,pitchLim:limits[kind].pitchLim,pitchAuth:pacPitch(kind),controlDamping:.80}:defs[kind];

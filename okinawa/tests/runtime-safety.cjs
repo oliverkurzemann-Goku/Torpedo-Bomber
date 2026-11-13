@@ -28,7 +28,7 @@ for(const fps of [20,30,60,120])for(const kind of ['zero','raider','torpedo']){
  const ctx=vm.createContext({THREE,FlightSupport:global.FlightSupport,seaUniforms:null,seaHeightAt:()=>0,combatFX:{impact(){}},GameRuntime,Math,scene,gunCool:1,firing:false,
   P:{alive:true},ST:{FLIGHT:3},state:3,ships:[],zeros:kind==='zero'?[foe]:[],raiders:kind==='raider'?[foe]:[],
   etorps:kind==='torpedo'?[torp]:[],shoreTargets:[],bullets:[{mesh,dir:new THREE.Vector3(1,0,0),speed:650,life:.7}],
-  spawnSparks(){},spawnSmoke(){},addScore(){},killZero(){},killRaider(){},spawnSplash(){},spawnExplosion(){},flash(){},shoreHeight:()=>0});
+  spawnSparks(){},spawnSmoke(){},addScore(){},killZero(){},killRaider(){},spawnSplash(){},spawnExplosion(){},flash(){},shoreHeight:()=>0,MISSIONS:[{}],mission:0,isSecretJet:()=>false,secretJetSpace:false});
  vm.runInContext(routine(pac,'updateGuns','updateMinimap'),ctx);
  for(let i=0;i<10;i++)ctx.updateGuns(1/fps);
  assert.equal(ctx.bullets.length,0,kind+' bullet is consumed at '+fps+' FPS');
@@ -79,7 +79,7 @@ assert.throws(()=>GameRuntime.render(renderer,{},{}),/real shader bug/,'unrelate
 // Actual Pacific keyboard handlers must neutralise immediately on keyup,
 // including when no animation frame can run. Touch-owned commands stay intact.
 const handlers={},keyboard=vm.createContext({P:{_stickActive:false},ST:{FLIGHT:3,RESULT:4,PAUSED:5},state:3,inputPitch:0,inputRoll:0,
- bailout:null,bailDone:false,firing:false,invertPitch:false,window:{addEventListener:(name,fn)=>handlers[name]=fn}});
+ bailout:null,bailDone:false,firing:false,invertPitch:false,MISSIONS:[{}],mission:0,isSecretJet:()=>false,secretJetSpace:null,window:{addEventListener:(name,fn)=>handlers[name]=fn}});
 vm.runInContext(routine(pac,'steeringParachute','beginBailout'),keyboard);
 vm.runInContext(routine(pac,'setupKeyboard','pollKeys'),keyboard);keyboard.setupKeyboard();
 const key=code=>({code,preventDefault(){}});

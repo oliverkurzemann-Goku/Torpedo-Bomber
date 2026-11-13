@@ -41,7 +41,7 @@ function flightParts(html,pacific,kind,aeroMode=false){
  const globals={SortieFeatures,FlightDynamics,P47Performance:require('../../p47-performance'),Me262Performance:require('../../me262-performance'),STALL_SPD:40,MISSIONS:[{corsair:kind==='corsair'}],mission:0,isDefend:()=>kind==='zero',isSBD:()=>kind==='sbd',FlightEnvelope,PAC_HANDLING:handling,windZ:0};
  const attitude=vm.runInNewContext('(function(P,inputRoll,inputPitch,dt,d,stallSpd){const load=SortieFeatures.Handling.sample(P),controls=SortieFeatures.Damage.controls(P),configuration=SortieFeatures.Handling.configuration(P,stallSpd),departure=SortieFeatures.Handling.departure(P,dt,stallSpd),aeroMode='+aeroMode+',steerSign=1;'+html.slice(a,b)+'})',globals);
  const i=html.indexOf('  // integrate\n',flight),j=html.indexOf('  // fuel\n',i);
- const integration=pacific?null:vm.runInNewContext('(function(P,dt,windZ){const vs=0;'+html.slice(i,j)+'})',
+ const integration=pacific?null:vm.runInNewContext('(function(P,dt,windZ){const vs=0,d={};'+html.slice(i,j)+'})',
   {flightAltitudeLimit:()=>8000,clampToWorldBounds(){}});
  return {attitude,integration};
 }

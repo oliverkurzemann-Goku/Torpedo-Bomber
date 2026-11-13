@@ -36,7 +36,7 @@ const helpers=html.slice(html.indexOf('function flightAltitudeLimit('),html.inde
  const integrationStart=html.indexOf('  // integrate\n',html.indexOf('function updateFlight(dt)'));
  const integrationEnd=html.indexOf('  // fuel\n',integrationStart);
  assert(integrationStart>0&&integrationEnd>integrationStart);
- ctx.ceilingY=800;ctx.dt=.05;ctx.vs=100;ctx.clampToWorldBounds=()=>{};P.pos.y=850;
+ ctx.ceilingY=800;ctx.dt=.05;ctx.vs=100;ctx.d={};ctx.clampToWorldBounds=()=>{};P.pos.y=850;
  vm.runInContext(html.slice(integrationStart,integrationEnd),ctx);
  assert.equal(P.pos.y,855,'player can climb through low overcast, not hit an invisible wall');
  for(const ac of ['me262','me163']){P.ac=ac;assert.equal(ctx.flightAltitudeLimit(),8000);}
