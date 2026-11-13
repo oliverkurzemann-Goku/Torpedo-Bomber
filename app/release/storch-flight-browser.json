@@ -89,12 +89,17 @@
    "onGround": true,
    "text": "LAND IN THE MEADOW — YELLOW SMOKE (MAP)",
    "kind": "rescue",
-   "fig": true
+   "fig": true,
+   "roles": [
+    "wounded",
+    "medic",
+    "bearer"
+   ]
   },
   "slopePct": 1.4,
   "touch": {
-   "kmh": 59,
-   "dx": -1,
+   "kmh": 60,
+   "dx": 31,
    "dz": 0
   },
   "landed": {
@@ -105,7 +110,7 @@
    "crash": null
   },
   "boarded": {
-   "t": 11.6,
+   "t": 14.5,
    "phase": "home",
    "rescued": 1,
    "score": 600,
@@ -168,6 +173,7 @@
    "slope": 1.5,
    "above": 81,
    "dist": 8565,
+   "observer": true,
    "landed": {
     "alive": true,
     "phase": "run",
@@ -195,6 +201,7 @@
    "lamps": 3,
    "lampsInScene": true,
    "text": "LAND BESIDE THE THREE LANTERNS (MAP)",
+   "agent": true,
    "landed": {
     "alive": true,
     "phase": "run",
@@ -204,12 +211,12 @@
     "spd": 0,
     "roll": false,
     "fig": true,
-    "dFig": 38,
+    "dFig": 65,
     "agl": 1.3,
-    "x": -7,
+    "x": 65,
     "text": "AGENT RUNNING — HOLD STILL"
    },
-   "boardT": 10.2,
+   "boardT": 13.2,
    "hunters": 2,
    "done": {
     "phase": "home",
@@ -253,18 +260,10 @@
    3
   ],
   "person": {
-   "meshes": 31,
+   "team": true,
    "arms": 2,
-   "legs": 2
-  },
-  "wave": {
-   "arm": 2.7,
-   "other": 0
-  },
-  "run": {
-   "leg0": 0.9,
-   "leg1": -0.9,
-   "arm0": -0.8
+   "legs": 2,
+   "crewFigures": "object"
   },
   "sightStorch": "none"
  },
@@ -294,7 +293,7 @@
   },
   "careless": {
    "zone": 2,
-   "lost": 25.7,
+   "lost": 23.3,
    "alive": true
   },
   "hunters": 2,
@@ -321,7 +320,7 @@
    "alive": true
   },
   "gunner": {
-   "ammoUsed": 27,
+   "ammoUsed": 24,
    "hp": [
     7,
     -0.19999999999999735
