@@ -32,11 +32,13 @@
    "rats": "",
    "courier": "",
    "rock": "",
-   "moon": ""
+   "moon": "",
+   "dumbo": "",
+   "blackcat": ""
   },
   "rotte": 1,
   "libs": 2,
-  "count": 32,
+  "count": 34,
   "brief": true
  },
  "takeoff": {
@@ -50,10 +52,10 @@
    "gridAgl": 1.887021273494213,
    "liftSpeed": 53.83962042540352,
    "tMove": 1.85,
-   "tRoll": 2.85,
+   "tRoll": 3.1500000000000004,
    "tLift": 15.350000000000001,
-   "tClimb": 18.55,
-   "tFly": 29.400000000000002,
+   "tClimb": 18.85,
+   "tFly": 29.700000000000003,
    "liftDist": 460.3085370285489,
    "restedBeforeMove": true,
    "gearAtFly": 0,
@@ -61,7 +63,7 @@
    "bad": false,
    "phase": "fly",
    "alive": true,
-   "gap": 353
+   "gap": 201
   },
   "60": {
    "n": 1,
@@ -73,10 +75,10 @@
    "gridAgl": 1.887021273494213,
    "liftSpeed": 53.77304145707936,
    "tMove": 1.8833333333333333,
-   "tRoll": 3.0166666666666666,
+   "tRoll": 3.2,
    "tLift": 15.416666666666666,
-   "tClimb": 18.716666666666665,
-   "tFly": 29.516666666666666,
+   "tClimb": 18.9,
+   "tFly": 29.7,
    "liftDist": 458.1830958630344,
    "restedBeforeMove": true,
    "gearAtFly": 0,
@@ -84,7 +86,7 @@
    "bad": false,
    "phase": "fly",
    "alive": true,
-   "gap": 169
+   "gap": 202
   },
   "120": {
    "n": 1,
@@ -96,10 +98,10 @@
    "gridAgl": 1.887021273494213,
    "liftSpeed": 53.75648989197149,
    "tMove": 1.9,
-   "tRoll": 2.85,
+   "tRoll": 2.8916666666666666,
    "tLift": 15.424999999999999,
-   "tClimb": 18.55,
-   "tFly": 29.341666666666665,
+   "tClimb": 18.591666666666665,
+   "tFly": 29.383333333333333,
    "liftDist": 457.6547061107631,
    "restedBeforeMove": true,
    "gearAtFly": 0,
@@ -107,25 +109,25 @@
    "bad": false,
    "phase": "fly",
    "alive": true,
-   "gap": 156
+   "gap": 350
   }
  },
  "ground": {
   "sawGround": true,
   "volleys": 45,
-  "rocketShots": 4,
-  "rocketsUsed": 4,
+  "rocketShots": 8,
+  "rocketsUsed": 8,
   "bombsUsed": 0,
   "ammoUsed": 120,
   "hurt": true,
-  "kills": 1,
-  "squadKills": 0,
-  "minAgl": 67,
+  "kills": 2,
+  "squadKills": 2,
+  "minAgl": 66,
   "alive": true,
   "pAlive": true,
-  "formMax": null,
+  "formMax": 79,
   "nan": false,
-  "status": "TWO ATTACKING SD.KFZ. 251"
+  "status": "TWO IN FORMATION"
  },
  "orders": {
   "start": {
@@ -221,14 +223,14 @@
       "tk": "air",
       "ammo": 1200,
       "hp": 86,
-      "d": 338
+      "d": 359
      },
      {
       "ph": "fly",
-      "tk": "air",
+      "tk": "cover",
       "ammo": 1200,
       "hp": 86,
-      "d": 244
+      "d": 168
      }
     ],
     "foes": 6
@@ -241,14 +243,14 @@
       "tk": "air",
       "ammo": 1200,
       "hp": 86,
-      "d": 791
+      "d": 830
      },
      {
       "ph": "fly",
       "tk": "air",
       "ammo": 1200,
       "hp": 86,
-      "d": 528
+      "d": 405
      }
     ],
     "foes": 6
@@ -259,16 +261,16 @@
      {
       "ph": "fly",
       "tk": "air",
-      "ammo": 1179,
+      "ammo": 1200,
       "hp": 86,
-      "d": 794
+      "d": 1001
      },
      {
       "ph": "fly",
       "tk": "air",
-      "ammo": 1200,
+      "ammo": 1194,
       "hp": 86,
-      "d": 1421
+      "d": 386
      }
     ],
     "foes": 6
@@ -279,16 +281,16 @@
      {
       "ph": "fly",
       "tk": "air",
-      "ammo": 1116,
-      "hp": 75,
-      "d": 1100
+      "ammo": 1200,
+      "hp": 86,
+      "d": 1303
      },
      {
       "ph": "fly",
       "tk": "air",
-      "ammo": 1200,
-      "hp": 86,
-      "d": 2209
+      "ammo": 1134,
+      "hp": 83,
+      "d": 616
      }
     ],
     "foes": 6
@@ -297,18 +299,18 @@
     "t": 20,
     "w": [
      {
-      "ph": "land",
-      "tk": "rtb",
-      "ammo": 999,
-      "hp": 27,
-      "d": 2265
+      "ph": "fly",
+      "tk": "air",
+      "ammo": 1173,
+      "hp": 78,
+      "d": 1440
      },
      {
       "ph": "fly",
       "tk": "air",
-      "ammo": 1200,
-      "hp": 86,
-      "d": 2532
+      "ammo": 1134,
+      "hp": 83,
+      "d": 1458
      }
     ],
     "foes": 6
@@ -317,18 +319,18 @@
     "t": 24,
     "w": [
      {
-      "ph": "land",
-      "tk": "rtb",
-      "ammo": 999,
-      "hp": 27,
-      "d": 3388
+      "ph": "fly",
+      "tk": "air",
+      "ammo": 1173,
+      "hp": 66,
+      "d": 1669
      },
      {
       "ph": "fly",
       "tk": "air",
-      "ammo": 1200,
-      "hp": 86,
-      "d": 2725
+      "ammo": 1134,
+      "hp": 83,
+      "d": 1505
      }
     ],
     "foes": 6
@@ -337,18 +339,18 @@
     "t": 28,
     "w": [
      {
-      "ph": "land",
-      "tk": "rtb",
-      "ammo": 999,
-      "hp": 27,
-      "d": 4381
+      "ph": "fly",
+      "tk": "air",
+      "ammo": 1173,
+      "hp": 66,
+      "d": 2072
      },
      {
       "ph": "fly",
       "tk": "air",
-      "ammo": 1200,
-      "hp": 86,
-      "d": 2816
+      "ammo": 1134,
+      "hp": 83,
+      "d": 1671
      }
     ],
     "foes": 6
@@ -357,18 +359,18 @@
     "t": 32,
     "w": [
      {
-      "ph": "land",
-      "tk": "rtb",
-      "ammo": 999,
-      "hp": 27,
-      "d": 5216
+      "ph": "fly",
+      "tk": "air",
+      "ammo": 1173,
+      "hp": 66,
+      "d": 2943
      },
      {
       "ph": "fly",
       "tk": "air",
-      "ammo": 1200,
-      "hp": 86,
-      "d": 3040
+      "ammo": 1134,
+      "hp": 83,
+      "d": 1745
      }
     ],
     "foes": 6
@@ -377,18 +379,18 @@
     "t": 36,
     "w": [
      {
-      "ph": "land",
-      "tk": "rtb",
-      "ammo": 999,
-      "hp": 27,
-      "d": 5879
+      "ph": "fly",
+      "tk": "air",
+      "ammo": 1173,
+      "hp": 66,
+      "d": 3646
      },
      {
       "ph": "fly",
       "tk": "air",
-      "ammo": 1200,
-      "hp": 86,
-      "d": 3496
+      "ammo": 1134,
+      "hp": 83,
+      "d": 1965
      }
     ],
     "foes": 6
@@ -397,18 +399,18 @@
     "t": 40,
     "w": [
      {
-      "ph": "land",
-      "tk": "rtb",
-      "ammo": 999,
-      "hp": 27,
-      "d": 6369
+      "ph": "fly",
+      "tk": "air",
+      "ammo": 1173,
+      "hp": 66,
+      "d": 4295
      },
      {
       "ph": "fly",
-      "tk": "air",
-      "ammo": 1200,
-      "hp": 86,
-      "d": 3634
+      "tk": "cover",
+      "ammo": 1134,
+      "hp": 83,
+      "d": 2731
      }
     ],
     "foes": 6
@@ -417,18 +419,18 @@
     "t": 44,
     "w": [
      {
-      "ph": "land",
-      "tk": "rtb",
-      "ammo": 999,
-      "hp": 27,
-      "d": 6724
+      "ph": "fly",
+      "tk": "form",
+      "ammo": 1173,
+      "hp": 66,
+      "d": 5324
      },
      {
       "ph": "fly",
-      "tk": "air",
-      "ammo": 1200,
-      "hp": 86,
-      "d": 3703
+      "tk": "cover",
+      "ammo": 1134,
+      "hp": 83,
+      "d": 3690
      }
     ],
     "foes": 6
@@ -437,18 +439,18 @@
     "t": 48,
     "w": [
      {
-      "ph": "land",
-      "tk": "rtb",
-      "ammo": 999,
-      "hp": 27,
-      "d": 7076
+      "ph": "fly",
+      "tk": "form",
+      "ammo": 1173,
+      "hp": 66,
+      "d": 6481
      },
      {
       "ph": "fly",
-      "tk": "air",
-      "ammo": 1200,
-      "hp": 86,
-      "d": 3905
+      "tk": "cover",
+      "ammo": 1134,
+      "hp": 83,
+      "d": 4606
      }
     ],
     "foes": 6
@@ -457,18 +459,18 @@
     "t": 52,
     "w": [
      {
-      "ph": "land",
-      "tk": "rtb",
-      "ammo": 999,
-      "hp": 27,
-      "d": 7429
+      "ph": "fly",
+      "tk": "form",
+      "ammo": 1173,
+      "hp": 66,
+      "d": 7620
      },
      {
       "ph": "fly",
-      "tk": "air",
-      "ammo": 1200,
-      "hp": 86,
-      "d": 4045
+      "tk": "form",
+      "ammo": 1134,
+      "hp": 83,
+      "d": 5244
      }
     ],
     "foes": 6
@@ -477,18 +479,18 @@
     "t": 56,
     "w": [
      {
-      "ph": "land",
-      "tk": "rtb",
-      "ammo": 999,
-      "hp": 27,
-      "d": 7786
+      "ph": "fly",
+      "tk": "form",
+      "ammo": 1173,
+      "hp": 66,
+      "d": 8523
      },
      {
       "ph": "fly",
-      "tk": "cover",
-      "ammo": 1200,
-      "hp": 86,
-      "d": 4310
+      "tk": "form",
+      "ammo": 1134,
+      "hp": 83,
+      "d": 5554
      }
     ],
     "foes": 6
@@ -497,18 +499,18 @@
     "t": 60,
     "w": [
      {
-      "ph": "land",
-      "tk": "rtb",
-      "ammo": 999,
-      "hp": 27,
-      "d": 8144
+      "ph": "fly",
+      "tk": "form",
+      "ammo": 1173,
+      "hp": 66,
+      "d": 9098
      },
      {
       "ph": "fly",
-      "tk": "cover",
-      "ammo": 1200,
-      "hp": 86,
-      "d": 4534
+      "tk": "form",
+      "ammo": 1134,
+      "hp": 83,
+      "d": 5651
      }
     ],
     "foes": 6
@@ -517,18 +519,18 @@
     "t": 64,
     "w": [
      {
-      "ph": "land",
-      "tk": "rtb",
-      "ammo": 999,
-      "hp": 27,
-      "d": 8505
+      "ph": "fly",
+      "tk": "form",
+      "ammo": 1173,
+      "hp": 66,
+      "d": 9363
      },
      {
       "ph": "fly",
-      "tk": "cover",
-      "ammo": 1200,
-      "hp": 86,
-      "d": 4745
+      "tk": "form",
+      "ammo": 1134,
+      "hp": 83,
+      "d": 5735
      }
     ],
     "foes": 6
@@ -537,18 +539,18 @@
     "t": 68,
     "w": [
      {
-      "ph": "land",
-      "tk": "rtb",
-      "ammo": 999,
-      "hp": 27,
-      "d": 8867
+      "ph": "fly",
+      "tk": "form",
+      "ammo": 1173,
+      "hp": 66,
+      "d": 9463
      },
      {
       "ph": "fly",
       "tk": "form",
-      "ammo": 1200,
-      "hp": 86,
-      "d": 4887
+      "ammo": 1134,
+      "hp": 83,
+      "d": 5830
      }
     ],
     "foes": 6
@@ -557,18 +559,18 @@
     "t": 72,
     "w": [
      {
-      "ph": "land",
-      "tk": "rtb",
-      "ammo": 999,
-      "hp": 27,
-      "d": 9230
+      "ph": "fly",
+      "tk": "form",
+      "ammo": 1173,
+      "hp": 66,
+      "d": 9547
      },
      {
       "ph": "fly",
       "tk": "form",
-      "ammo": 1200,
-      "hp": 81,
-      "d": 5016
+      "ammo": 1134,
+      "hp": 83,
+      "d": 5931
      }
     ],
     "foes": 6
@@ -577,18 +579,18 @@
     "t": 76,
     "w": [
      {
-      "ph": "land",
-      "tk": "rtb",
-      "ammo": 999,
-      "hp": 27,
-      "d": 9595
+      "ph": "fly",
+      "tk": "form",
+      "ammo": 1173,
+      "hp": 66,
+      "d": 9629
      },
      {
       "ph": "fly",
       "tk": "form",
-      "ammo": 1200,
-      "hp": 81,
-      "d": 5134
+      "ammo": 1134,
+      "hp": 83,
+      "d": 6037
      }
     ],
     "foes": 6
@@ -597,18 +599,18 @@
     "t": 80,
     "w": [
      {
-      "ph": "land",
-      "tk": "rtb",
-      "ammo": 999,
-      "hp": 27,
-      "d": 9961
+      "ph": "fly",
+      "tk": "form",
+      "ammo": 1173,
+      "hp": 66,
+      "d": 9708
      },
      {
       "ph": "fly",
       "tk": "form",
-      "ammo": 1200,
-      "hp": 81,
-      "d": 5241
+      "ammo": 1134,
+      "hp": 83,
+      "d": 6144
      }
     ],
     "foes": 6
@@ -617,18 +619,18 @@
     "t": 84,
     "w": [
      {
-      "ph": "land",
-      "tk": "rtb",
-      "ammo": 999,
-      "hp": 27,
-      "d": 10211
+      "ph": "fly",
+      "tk": "form",
+      "ammo": 1173,
+      "hp": 66,
+      "d": 9786
      },
      {
       "ph": "fly",
       "tk": "form",
-      "ammo": 1200,
-      "hp": 81,
-      "d": 5220
+      "ammo": 1134,
+      "hp": 83,
+      "d": 6249
      }
     ],
     "foes": 6
@@ -637,18 +639,18 @@
     "t": 88,
     "w": [
      {
-      "ph": "land",
-      "tk": "rtb",
-      "ammo": 999,
-      "hp": 27,
-      "d": 9964
+      "ph": "fly",
+      "tk": "form",
+      "ammo": 1173,
+      "hp": 66,
+      "d": 9861
      },
      {
       "ph": "fly",
-      "tk": "cover",
-      "ammo": 1200,
-      "hp": 81,
-      "d": 4687
+      "tk": "form",
+      "ammo": 1134,
+      "hp": 83,
+      "d": 6354
      }
     ],
     "foes": 6
@@ -657,18 +659,18 @@
     "t": 92,
     "w": [
      {
-      "ph": "land",
-      "tk": "rtb",
-      "ammo": 999,
-      "hp": 27,
-      "d": 9724
+      "ph": "fly",
+      "tk": "form",
+      "ammo": 1173,
+      "hp": 66,
+      "d": 9934
      },
      {
       "ph": "fly",
-      "tk": "cover",
-      "ammo": 1200,
-      "hp": 81,
-      "d": 4148
+      "tk": "form",
+      "ammo": 1134,
+      "hp": 83,
+      "d": 6456
      }
     ],
     "foes": 6
@@ -677,18 +679,18 @@
     "t": 96,
     "w": [
      {
-      "ph": "land",
-      "tk": "rtb",
-      "ammo": 999,
-      "hp": 27,
-      "d": 9492
+      "ph": "fly",
+      "tk": "form",
+      "ammo": 1173,
+      "hp": 66,
+      "d": 10007
      },
      {
       "ph": "fly",
-      "tk": "cover",
-      "ammo": 1200,
-      "hp": 81,
-      "d": 3603
+      "tk": "form",
+      "ammo": 1134,
+      "hp": 83,
+      "d": 6555
      }
     ],
     "foes": 6
@@ -700,19 +702,19 @@
   ],
   "hpDrop": true,
   "ammoUsed": true,
-  "airTask": 4309,
-  "pickedWingman": 244,
-  "pickedPlayer": 156,
-  "minAgl": 504,
+  "airTask": 4619,
+  "pickedWingman": 268,
+  "pickedPlayer": 132,
+  "minAgl": 287,
   "hit": true,
   "picks": 40,
-  "farPicks": 10,
+  "farPicks": 15,
   "hitWorks": true,
   "down": true,
   "lost": 1,
   "n0": 2,
   "minimap": true,
-  "status": "TWO LOST · THREE HIGH COVER",
+  "status": "TWO LOST · THREE IN FORMATION",
   "stats": {
    "kills": 0,
    "lost": 1
@@ -720,13 +722,13 @@
  },
  "home": {
   "tLand": 0,
-  "tRoll": 115,
-  "tPark": 120.86666666666666,
+  "tRoll": 115.36666666666666,
+  "tPark": 121.23333333333333,
   "phase": "parked",
   "alive": true,
   "bad": false,
   "dz": 47.5,
-  "dx": -355,
+  "dx": -376,
   "spd": 0,
   "agl": 1.7,
   "seen": [
@@ -754,23 +756,23 @@
   "positions": [
    {
     "pos": [
-     17168.69601514824,
-     1168.691841724569,
-     20165.242618447013
+     17024.209028250134,
+     1212.028047617454,
+     20956.458975841357
     ],
-    "hp": 57.019999999999925,
-    "phase": "fly",
-    "ammo": 1188
+    "hp": 22.99999999999995,
+    "phase": "land",
+    "ammo": 1050
    },
    {
     "pos": [
-     18916.491629625518,
-     1472.415824449295,
-     20004.04449099692
+     18970.974194150742,
+     964.4666492335903,
+     23134.836626726228
     ],
-    "hp": 44.419999999999945,
+    "hp": 86,
     "phase": "fly",
-    "ammo": 1158
+    "ammo": 1188
    }
   ],
   "kills": {
@@ -785,7 +787,7 @@
  "flownAfterContinue": {
   "alive": 2,
   "nan": false,
-  "tac": 1,
+  "tac": 2,
   "pAlive": true
  }
 }
