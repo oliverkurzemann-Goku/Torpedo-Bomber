@@ -1,4 +1,16 @@
-# Period models and their missions (Builds 246 to 257)
+# Period models and their missions (Builds 246 to 260)
+
+## Build 260: the Storch's wing is continuous over the cabin — the Storch answers the stick about half as hard
+
+`assets/aircraft/fi156c2-player.glb` is unchanged (SHA pinned). Its two wing halves (mesh `Wings`) end at x = +-0.54 and only the fuselage roof lies between them, so from above the wing looked cut
+in two. The rig class `tailwheel-light` (`aircraft-contract.js`, `centerSection`, `buildCenterSection`) generates a centre section when it installs the rig: a strip lofted between the two root
+sections of the wing, with the airfoil ring rebuilt from the root points (leading edge, upper skin, trailing edge, lower skin), outward normals and the wing's own UVs per skin so the paint continues.
+Neither the wing nor the roof mesh is touched (test: same vertex counts), a second `install` and clones add nothing (`okinawa/tests/storch-wing.cjs`). A model with a real continuous wing would make it
+redundant — the code builds nothing when there is no gap. The strip is a plain surface: no spar, no ribs, no filler cap at the roots.
+
+The Storch's pitch response is a game decision (C), `AC.fi156` in `remagen-mission.html`: `pitchLim` .75, `pitchBase` 2.0, `stickExponent` 1.7 and, in the REALISTIC law, `pullExponent` 2.1.
+Measured in the real game with half stick for 2.5 s (ARCADE): peak pitch 22.7 to 12.3 degrees, climb 14.85 to 8.4 m/s, sink 20.45 to 9.8 m/s; REALISTIC half pull: pitch after 1 s 45 to 19.7 degrees.
+Full stick still reaches about 24 degrees because only the speed-protection envelope limits it there.
 
 ## Build 258: the Catalina in the Pacific game — four search sorties without a target position
 

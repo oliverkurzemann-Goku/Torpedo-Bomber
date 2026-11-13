@@ -36,6 +36,9 @@
     ElevatorLeft:{drive:'pitch'},ElevatorRight:{drive:'pitch'},Rudder:{drive:'yaw'}
    },
    optional:{Canopy:'canopy',RearGun:'yaw'},
+   // Build 259: the Storch's two wing halves end at the cabin (x = +-0.54), the roof between them is the fuselage's own: from above the wing looked cut in two.
+   // The game closes the gap with a strip lofted between the two root sections of the wing mesh itself (same airfoil, same paint, nothing of the model is changed).
+   centerSection:{wing:'Wings'},
    tyres:{GearLeft:1,GearRight:1,TailGear:1},
    muzzles:0,   // unarmed airframe: the game places the rear gunner's muzzle itself (storchGunnerPoint)
    budget:{triangles:25000,meshes:40,materials:10,images:4,imageSize:2048,bytes:5*1024*1024}
@@ -101,6 +104,42 @@
   quad(A[0],A[1],A[2],A[3],true);quad(B[0],B[1],B[2],B[3]);quad(A[0],A[1],B[1],B[0]);quad(A[3],A[2],B[2],B[3]);quad(A[0],A[3],B[3],B[0]);quad(A[1],A[2],B[2],B[1]);
   const g=new (T().BufferGeometry)();g.setAttribute('position',new (T().Float32BufferAttribute)(pos,3));g.setAttribute('normal',new (T().Float32BufferAttribute)(nor,3));g.setAttribute('uv',new (T().Float32BufferAttribute)(uv,2));return g;
  }
+ // Build 259: bridge the gap between the two root sections of a wing mesh. The root section = the vertices at the smallest |x|; the strip joins that airfoil ring to
+ // its mirror image, so the profile and the paint of the wing continue across the cabin without a seam. The ring is rebuilt from the positions (the vertices at the
+ // leading and trailing edge are duplicated with the normals and UVs of both skins, so the skin of a point is chosen by its normal, not by its place in the list).
+ function buildCenterSection(d){
+  const spec=d.spec.centerSection;if(!spec||d.src.getObjectByName('wingCenterSection'))return false;
+  const wing=d.src.getObjectByName(spec.wing),geo=wing?.geometry,pos=geo?.attributes.position,nor=geo?.attributes.normal,uv=geo?.attributes.uv;if(!pos||!nor||!uv)return false;
+  const Tj=T(),v=new Tj.Vector3();wing.updateWorldMatrix(true,false);d.src.updateWorldMatrix(true,false);
+  const local=new Tj.Matrix4().multiplyMatrices(new Tj.Matrix4().copy(d.src.matrixWorld).invert(),wing.matrixWorld);
+  let root=Infinity;for(let i=0;i<pos.count;i++){v.fromBufferAttribute(pos,i).applyMatrix4(local);if(v.x>0&&v.x<root)root=v.x;}
+  if(!(root<2))return false;   // no gap to close
+  const points=[];
+  for(let i=0;i<pos.count;i++){v.fromBufferAttribute(pos,i).applyMatrix4(local);if(Math.abs(v.x-root)>.004)continue;
+   let p=points.find(q=>Math.abs(q.z-v.z)<.004&&Math.abs(q.y-v.y)<.004);if(!p)points.push(p={z:v.z,y:v.y,recs:[]});p.recs.push({u:uv.getX(i),v:uv.getY(i),ny:nor.getY(i)});}
+  if(points.length<8)return false;
+  const LE=points.reduce((a,b)=>b.z>a.z?b:a),TE=points.reduce((a,b)=>b.z<a.z?b:a),line=z=>TE.y+(LE.y-TE.y)*(z-TE.z)/(LE.z-TE.z||1);
+  const upper=points.filter(p=>p!==LE&&p!==TE&&p.y>line(p.z)).sort((a,b)=>b.z-a.z),lower=points.filter(p=>p!==LE&&p!==TE&&p.y<=line(p.z)).sort((a,b)=>a.z-b.z);
+  if(upper.length<3||lower.length<3)return false;
+  const loop=[LE,...upper,TE,...lower],n=loop.length,centre={z:loop.reduce((s,p)=>s+p.z,0)/n,y:loop.reduce((s,p)=>s+p.y,0)/n};
+  // outward normal of every segment (in the z/y plane, away from the middle of the section) and smooth normals at the ring points
+  const seg=[];for(let i=0;i<n;i++){const a=loop[i],b=loop[(i+1)%n];let nz=-(b.y-a.y),ny=b.z-a.z;const len=Math.hypot(nz,ny)||1;nz/=len;ny/=len;
+   if(nz*((a.z+b.z)/2-centre.z)+ny*((a.y+b.y)/2-centre.y)<0){nz=-nz;ny=-ny;}seg.push({nz,ny,up:i<=upper.length});}
+  const vn=loop.map((p,i)=>{const a=seg[(i+n-1)%n],b=seg[i];let nz=a.nz+b.nz,ny=a.ny+b.ny;const len=Math.hypot(nz,ny)||1;return {nz:nz/len,ny:ny/len};});
+  const pick=(p,up)=>p.recs.find(r=>up?r.ny>=0:r.ny<0)||p.recs[0];
+  const pos2=[],nor2=[],uv2=[],A=new Tj.Vector3(),B=new Tj.Vector3(),C=new Tj.Vector3();
+  const tri=(c,want)=>{   // c = [[x,index,up],...]; wound so that the face normal points out of the section (want = the segment's normal)
+   A.set(c[0][0],loop[c[0][1]].y,loop[c[0][1]].z);B.set(c[1][0],loop[c[1][1]].y,loop[c[1][1]].z);C.set(c[2][0],loop[c[2][1]].y,loop[c[2][1]].z);
+   const f=new Tj.Vector3().crossVectors(B.clone().sub(A),C.clone().sub(A)),list=f.dot(want)>=0?c:[c[0],c[2],c[1]];
+   for(const [x,k,up] of list){const p=loop[k],r=pick(p,up);pos2.push(x,p.y,p.z);nor2.push(0,vn[k].ny,vn[k].nz);uv2.push(r.u,r.v);}
+  };
+  for(let i=0;i<n;i++){const j=(i+1)%n,up=seg[i].up,want=new Tj.Vector3(0,seg[i].ny,seg[i].nz);
+   tri([[-root,i,up],[root,i,up],[root,j,up]],want);tri([[-root,i,up],[root,j,up],[-root,j,up]],want);}
+  const g=new Tj.BufferGeometry();g.setAttribute('position',new Tj.Float32BufferAttribute(pos2,3));g.setAttribute('normal',new Tj.Float32BufferAttribute(nor2,3));g.setAttribute('uv',new Tj.Float32BufferAttribute(uv2,2));
+  const material=wing.material.clone();material.name='Wing centre section (wing paint)';material.polygonOffset=true;material.polygonOffsetFactor=-2;material.polygonOffsetUnits=-2;
+  const mesh=new Tj.Mesh(g,material);mesh.name='wingCenterSection';mesh.castShadow=true;mesh.receiveShadow=true;
+  d.src.add(mesh);return true;
+ }
  function buildFlaps(d){
   const spec=d.spec.flapPanels;if(!spec||d.parts.FlapLeft||d.src.getObjectByName('flightFlaps'))return false;
   const wing=d.src.getObjectByName(spec.wing),base=wing?.material;if(!base)return false;
@@ -130,6 +169,7 @@
   else for(const k of ['PropellerLeft','PropellerRight'])if(d.parts[k])d.parts[k].userData.articulationPart=true;   // the twin keeps its two named rotors
   d.parts.gear.userData.articulationPart=true;if(d.parts.flightFlaps)d.parts.flightFlaps.userData.articulationPart=true;
   buildFlaps(d);   // Build 259: the amphibian's GLB has no flaps; its class spec generates the hinged panels
+  buildCenterSection(d);   // Build 259: the Storch's wing centre section
   frame.userData.nativeContract=true;pose(frame,1,{left:0,right:0});return true;
  }
  function pose(o,gear,flaps={left:0,right:0},extra={}){

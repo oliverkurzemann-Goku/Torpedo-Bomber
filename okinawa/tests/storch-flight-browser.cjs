@@ -26,7 +26,7 @@ const server=http.createServer((req,res)=>{
   const page=await browser.newPage({viewport:{width:1194,height:660},hasTouch:true,deviceScaleFactor:1}),errors=[];
   page.setDefaultTimeout(900000);page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error'&&!/404/.test(m.text()))errors.push('console: '+m.text());});
   await page.addInitScript(()=>window.requestAnimationFrame=()=>0);
-  await page.goto('http://127.0.0.1:'+server.address().port+'/remagen-mission.html?v=259&surprises=off&sortie='+sortie);
+  await page.goto('http://127.0.0.1:'+server.address().port+'/remagen-mission.html?v=260&surprises=off&sortie='+sortie);
   // the hangar sortie opens the briefing at once: wait for the world, not for the menu
   await page.waitForFunction(()=>realWorldReady&&(state===ST.MENU||state===ST.BRIEF),null,{polling:200});
   await page.evaluate(async()=>{await Promise.all(['fi156','p47'].map(ensureModel));renderer.setPixelRatio(.25);renderer.shadowMap.enabled=false;if(typeof flightQuality!=='undefined')flightQuality.enabled=false;
@@ -63,6 +63,21 @@ const server=http.createServer((req,res)=>{
   assert.ok(T.levelFull>=160&&T.levelFull<=185,'175 km/h at full power: '+T.levelFull);assert.ok(T.levelHalf>110&&T.levelHalf<T.levelFull,'half power: '+T.levelHalf+' of '+T.levelFull);assert.ok(T.idle.kmh<85&&T.idle.sink>1.2&&T.idle.sink<4,'the idle glide: '+JSON.stringify(T.idle));
   assert.ok(T.turn.degPerS>10&&T.turn.degPerS<26&&T.turn.alive,'it turns tightly: '+JSON.stringify(T.turn));assert.ok(T.stall.minKmh<65&&T.stall.alive&&!T.stall.crash,'the wing stalls below 60 km/h and the aeroplane stays alive: '+JSON.stringify(T.stall));
 
+  // ---- 1b. Build 259: the stick's middle is soft. Half stick pulls / pushes the nose about half as far and the climb / sink rate about half as fast as in Build 256
+  //      (measured then: ARCADE half back 22.7 deg, 14.9 m/s climb, half forward 20.5 m/s sink; REALISTIC half pull 45 deg after 1 s); full stick still gets the type's limit ----
+  const PS=await page.evaluate(()=>{
+   const dt=1/60,deg=v=>v*180/Math.PI,r1=v=>+(+v).toFixed(1),out={};
+   const run=(label,aero,stick,sec)=>{begin(null);if(aero!==aeroMode){aeroMode=aero;if(typeof switchFlightModel==='function')switchFlightModel();}
+    takeoffTo(300);P.flapTgt=0;P.flap=0;holdLevel(40,.7);const p0=P.pitch;let peakPitch=0,peakV=0,p1=null;P.throttle=.7;
+    for(let t=0;t<sec;t+=dt){inputPitch=stick;updateFlight(dt);peakPitch=Math.max(peakPitch,Math.abs(deg(P.pitch-p0)));peakV=Math.max(peakV,Math.abs(P.vSpeed));if(p1==null&&t>=1)p1=deg(P.pitch-p0);}
+    out[label]={peakPitch:r1(peakPitch),peakV:r1(peakV),pitch1s:r1(p1)};inputPitch=0;};
+   run('arcadeUp',false,.5,3);run('arcadeDown',false,-.5,3);run('arcadeFull',false,1,3);run('realUp',true,.5,1.5);aeroMode=false;return out;
+  });
+  report.pitchResponse=PS;console.log('storch pitch response',JSON.stringify(PS));
+  assert.ok(PS.arcadeUp.peakPitch<=15&&PS.arcadeUp.peakV<=10,'half back in ARCADE: nose '+PS.arcadeUp.peakPitch+' deg, climb '+PS.arcadeUp.peakV+' m/s (Build 256: 22.7 deg / 14.9 m/s)');
+  assert.ok(PS.arcadeDown.peakV<=12.5,'half forward in ARCADE: sink '+PS.arcadeDown.peakV+' m/s (Build 256: 20.5 m/s)');
+  assert.ok(PS.arcadeFull.peakPitch>=18,'full stick still gives the type its steep climb: '+PS.arcadeFull.peakPitch+' deg');
+  assert.ok(PS.realUp.pitch1s<=26,'half pull in REALISTIC: nose '+PS.realUp.pitch1s+' deg after 1 s (Build 256: 45 deg)');
   // ---- 2a. Build 250: a human flare is not the scripted one - idle power, the nose pulled up at 5 m, the wing mushes at the stall speed and the nose drops (measured -17 degrees, 4 m/s) -
   //      that used to be "CRASHED: hit the ground away from the strip"; the Storch is rugged (AC.fi156.field) and the pickup zone is the pilot's neighbourhood ----
   const H=await page.evaluate(()=>{
@@ -72,7 +87,7 @@ const server=http.createServer((req,res)=>{
     P.onGround=false;P.landingRoll=null;P.departureAge=null;P.touchResolved=false;P.throttle=.3;P.gear=P.gearTgt=1;P.flap=P.flapTgt=1;P.heading=Math.PI/2;P.pitch=.02;P.roll=P.rollBias=P.pitchVel=P.rollVel=0;inputPitch=inputRoll=0;
     const aim=lz.x-60,slope=Math.tan(3.5*Math.PI/180);P.pos.set(aim-450,Math.max(groundY(aim,lz.z)+450*slope,groundY(aim-450,lz.z)+25),lz.z);const sp=SortieFeatures.Handling.speeds(P,acDef().stall,acDef().app);P.spd=sp.reference;P.vSpeed=-1.5;
     for(let t=0;t<120&&P.alive&&!missionOver;t+=dt){const agl=P.pos.y-groundY(P.pos.x,P.pos.z),gy=groundY(aim,lz.z),pathAlt=Math.max(0,(aim-P.pos.x))*slope+gy,err=P.pos.y-pathAlt;
-     if(!P.onGround){if(agl>fa){const tvs=Math.max(-3,Math.min(-.3,-1.2-err*.25));inputPitch=Math.max(-.5,Math.min(.5,(tvs-P.vSpeed)*.18));P.throttle=Math.max(0,Math.min(1,.35+(sp.reference-P.spd)*.12));}
+     if(!P.onGround){if(agl>fa){const tvs=Math.max(-3,Math.min(-.3,-1.2-err*.25));inputPitch=Math.max(-.9,Math.min(.9,(tvs-P.vSpeed)*.36));P.throttle=Math.max(0,Math.min(1,.35+(sp.reference-P.spd)*.12));}
       else{inputPitch=Math.max(-.6,Math.min(.6,(pf-P.pitch)*1.6+(-.5-P.vSpeed)*.05));P.throttle=thr;}}else{inputPitch=0;P.throttle=0;}
      updateFlight(dt);updateSites(dt);if(sts.phase!=='fly')break;}
     res.push({thr,pf,fa,alive:P.alive,phase:sts.phase,crash:window.__crash,over:missionOver});
@@ -93,7 +108,7 @@ const server=http.createServer((req,res)=>{
    const aim=lz.x-30,slope=Math.tan(3.5*Math.PI/180);P.pos.set(aim-450,Math.max(groundY(aim,lz.z)+450*slope,groundY(aim-450,lz.z)+25),lz.z);const sp=SortieFeatures.Handling.speeds(P,acDef().stall,acDef().app);P.spd=sp.reference;P.vSpeed=-1.5;
    let touch=null;for(let t=0;t<120&&P.alive&&!missionOver;t+=dt){const agl=P.pos.y-groundY(P.pos.x,P.pos.z),gy=groundY(aim,lz.z),pathAlt=Math.max(0,(aim-P.pos.x))*slope+gy,err=P.pos.y-pathAlt;
     const tvs=agl<4?-.4:Math.max(-3,Math.min(-.3,-1.2-err*.25)),tspd=sp.reference*(agl>4?1:.85);
-    if(!P.onGround){inputPitch=Math.max(-.5,Math.min(.5,(tvs-P.vSpeed)*.18));P.throttle=agl<2?0:Math.max(0,Math.min(1,.35+(tspd-P.spd)*.12));}else{if(touch==null)touch={kmh:Math.round(P.spd*3.6),dx:Math.round(P.pos.x-lz.x),dz:Math.round(P.pos.z-lz.z)};inputPitch=0;P.throttle=0;}
+    if(!P.onGround){inputPitch=Math.max(-.9,Math.min(.9,(tvs-P.vSpeed)*.36));P.throttle=agl<2?0:Math.max(0,Math.min(1,.35+(tspd-P.spd)*.12));}else{if(touch==null)touch={kmh:Math.round(P.spd*3.6),dx:Math.round(P.pos.x-lz.x),dz:Math.round(P.pos.z-lz.z)};inputPitch=0;P.throttle=0;}
     updateFlight(dt);updateSites(dt);if(sts.phase!=='fly')break;}
    out.touch=touch;out.landed={phase:sts.phase,over:missionOver,text:objectiveText(),alive:P.alive,crash:window.__crash};
    let t2=0;for(;t2<40&&sts.phase!=='home';t2+=dt){P.spd=0;updateFlight(dt);updateSites(dt);}
@@ -118,7 +133,7 @@ const server=http.createServer((req,res)=>{
     const lz=sts.plan.lz;P.onGround=false;P.landingRoll=null;P.departureAge=null;P.touchResolved=false;P.throttle=.3;P.gear=P.gearTgt=1;P.flap=P.flapTgt=1;const dir=windZ>0?-1:1;P.heading=dir>0?Math.PI/2:-Math.PI/2;P.pitch=.02;P.roll=P.rollBias=P.pitchVel=P.rollVel=0;inputPitch=inputRoll=0;   // into the wind: windZ blows along +x
     const aim=lz.x-dir*shortBy,sp=SortieFeatures.Handling.speeds(P,acDef().stall,acDef().app);P.pos.set(aim-dir*260,groundY(aim-dir*260,lz.z)+16,lz.z);P.spd=sp.reference;P.vSpeed=-1.2;
     for(let t=0;t<90&&P.alive&&!missionOver;t+=dt){const agl=P.pos.y-groundY(P.pos.x,P.pos.z);
-     if(!P.onGround){{const tvs=-Math.min(2.4,.35+agl*.13);inputPitch=Math.max(-.5,Math.min(.5,(tvs-P.vSpeed)*.18));P.throttle=agl>6?Math.max(0,Math.min(1,.3+(sp.reference-P.spd)*.12)):0;}}else{inputPitch=0;P.throttle=0;}
+     if(!P.onGround){{const tvs=-Math.min(2.4,.35+agl*.13);inputPitch=Math.max(-.9,Math.min(.9,(tvs-P.vSpeed)*.36));P.throttle=agl>6?Math.max(0,Math.min(1,.3+(sp.reference-P.spd)*.12)):0;}}else{inputPitch=0;P.throttle=0;}
      updateFlight(dt);updateSites(dt);if(sts.phase!=='fly')break;}
     return {alive:P.alive,phase:sts.phase,crash:window.__crash,over:missionOver,gnd:P.onGround,spd:r1(P.spd),roll:!!P.landingRoll,fig:!!sts.fig,dFig:sts.figPos?Math.round(Math.hypot(P.pos.x-sts.figPos.x,P.pos.z-sts.figPos.z)):null,agl:r1(P.pos.y-groundY(P.pos.x,P.pos.z)),x:Math.round(P.pos.x-sts.plan.lz.x),text:objectiveText()};};
    const board=()=>{let t=0;if(sts.phase==='fly'||!P.onGround)return -1;for(;t<60&&sts.phase!=='home'&&P.alive;t+=dt){P.spd=0;updateFlight(dt);updateSites(dt);}return r1(t);};

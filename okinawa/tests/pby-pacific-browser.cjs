@@ -24,7 +24,7 @@ const report={};
   page.setDefaultTimeout(300000);page.on('pageerror',e=>errors.push(e.message));
   page.on('console',m=>{if(/Shader Error|VALIDATE_STATUS|not compiled/i.test(m.text())||m.type()==='error')errors.push(m.text());});
   await page.addInitScript(()=>{window.requestAnimationFrame=()=>0;});
-  await page.goto('http://127.0.0.1:'+server.address().port+'/torpedo-carrier.html?v=259');
+  await page.goto('http://127.0.0.1:'+server.address().port+'/torpedo-carrier.html?v=260');
   await page.waitForFunction(()=>state===ST.MENU,null,{polling:100});
   await page.evaluate(async()=>{
    renderer.setPixelRatio(1);await prepareOkinawa();
@@ -183,6 +183,13 @@ const report={};
    const st=a=>{P.flap=P.flapTgt=a;pbyPoseModel(1/60);return {vis:hs.filter(h=>h.visible).length,rot:+hs[0].rotation.x.toFixed(3)};};return {n:hs.length,up:st(0),to:st(.5),dn:st(1)};});
   report.flaps=FL;console.log('flap panels',JSON.stringify(FL));
   assert.deepEqual([FL.n,FL.up.vis,FL.to.vis,FL.dn.vis],[4,0,4,4],'four generated flap panels: hidden at UP, out at T/O and DN: '+JSON.stringify(FL));assert.ok(FL.to.rot<0&&FL.dn.rot<FL.to.rot-.1,'the panels hang further down with the lever');
+  // ---- Build 259: the chase camera sits at the same height and distance in ARCADE and REALISTIC (the Catalina's extra 5 m applied to ARCADE only: user photos) ----
+  const CAM=await page.evaluate(async()=>{await begin('Sortie 25');const out={};
+   for(const [k,aero] of [['arcade',false],['real',true]]){aeroMode=aero;camera.userData.aeroRig=null;camera.position.copy(P.pos).add(new THREE.Vector3(0,40,60));for(let i=0;i<240;i++)updateCamera(1/60);
+    out[k]={up:+(camera.position.y-P.pos.y).toFixed(2),back:+Math.hypot(camera.position.x-P.pos.x,camera.position.z-P.pos.z).toFixed(2)};}
+   aeroMode=false;camera.userData.aeroRig=null;return out;});
+  report.camera=CAM;console.log('chase camera',JSON.stringify(CAM));
+  assert.ok(Math.abs(CAM.arcade.up-CAM.real.up)<.6&&Math.abs(CAM.arcade.back-CAM.real.back)<1,'ARCADE and REALISTIC chase camera agree (height '+CAM.arcade.up+' / '+CAM.real.up+' m, distance '+CAM.arcade.back+' / '+CAM.real.back+' m)');
   // ---- the flying: a scripted pilot takes off from the water, climbs and alights again (ARCADE forgiving, REALISTIC strict) ----
   const F={};
   F.arcade=await page.evaluate(async()=>{await begin('Sortie 25');aeroMode=false;return fly({alt:120,speed:46,sink:3.5});});

@@ -12,19 +12,19 @@
   "runM": 65,
   "rows": {
    "2": {
-    "kmh": 83,
-    "climb": 4.6,
-    "pitch": 11.5
+    "kmh": 86,
+    "climb": 3.4,
+    "pitch": 8.2
    },
    "5": {
-    "kmh": 88,
-    "climb": 6.6,
-    "pitch": 15.7
+    "kmh": 93,
+    "climb": 5.6,
+    "pitch": 12.4
    },
    "10": {
-    "kmh": 89,
-    "climb": 6.9,
-    "pitch": 16.3
+    "kmh": 95,
+    "climb": 6.1,
+    "pitch": 13.3
    }
   },
   "alive": true,
@@ -40,10 +40,32 @@
    "alive": true
   },
   "stall": {
-   "minKmh": 53,
-   "coreStall": 0.89,
+   "minKmh": 54,
+   "coreStall": 0.85,
    "alive": true,
    "crash": null
+  }
+ },
+ "pitchResponse": {
+  "arcadeUp": {
+   "peakPitch": 12.3,
+   "peakV": 8.4,
+   "pitch1s": 10.8
+  },
+  "arcadeDown": {
+   "peakPitch": 12.3,
+   "peakV": 9.8,
+   "pitch1s": -10.8
+  },
+  "arcadeFull": {
+   "peakPitch": 23.8,
+   "peakV": 15.3,
+   "pitch1s": 21.7
+  },
+  "realUp": {
+   "peakPitch": 30.2,
+   "peakV": 16.9,
+   "pitch1s": 19.7
   }
  },
  "flare": [
@@ -98,7 +120,7 @@
   },
   "slopePct": 1.4,
   "touch": {
-   "kmh": 60,
+   "kmh": 58,
    "dx": 31,
    "dz": 0
   },
@@ -110,7 +132,7 @@
    "crash": null
   },
   "boarded": {
-   "t": 14.5,
+   "t": 14.3,
    "phase": "home",
    "rescued": 1,
    "score": 600,
@@ -153,12 +175,12 @@
     "spd": 0,
     "roll": false,
     "fig": true,
-    "dFig": 94,
+    "dFig": 85,
     "agl": 1.3,
-    "x": 97,
+    "x": 88,
     "text": "OFFICER RUNNING — HOLD STILL"
    },
-   "boardT": 16.4,
+   "boardT": 15.5,
    "done": {
     "phase": "home",
     "courier": 1,
@@ -183,13 +205,13 @@
     "spd": 0,
     "roll": false,
     "fig": true,
-    "dFig": 145,
+    "dFig": 157,
     "agl": 1.3,
-    "x": 151,
+    "x": -143,
     "text": "OBSERVER RUNNING — HOLD STILL"
    },
    "bonus": 0,
-   "boardT": 22.1,
+   "boardT": 23.4,
    "hunters": 2,
    "done": {
     "phase": "home",
@@ -211,12 +233,12 @@
     "spd": 0,
     "roll": false,
     "fig": true,
-    "dFig": 38,
+    "dFig": 51,
     "agl": 1.3,
-    "x": -7,
+    "x": 48,
     "text": "AGENT RUNNING — HOLD STILL"
    },
-   "boardT": 10.2,
+   "boardT": 11.7,
    "hunters": 2,
    "done": {
     "phase": "home",
@@ -293,7 +315,7 @@
   },
   "careless": {
    "zone": 2,
-   "lost": 26,
+   "lost": 14.3,
    "alive": true
   },
   "hunters": 2,
@@ -320,7 +342,7 @@
    "alive": true
   },
   "gunner": {
-   "ammoUsed": 26,
+   "ammoUsed": 27,
    "hp": [
     7,
     -0.19999999999999735
