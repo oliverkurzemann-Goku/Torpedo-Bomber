@@ -121,7 +121,7 @@
   "slopePct": 1.4,
   "touch": {
    "kmh": 58,
-   "dx": 31,
+   "dx": 62,
    "dz": 0
   },
   "landed": {
@@ -132,7 +132,7 @@
    "crash": null
   },
   "boarded": {
-   "t": 14.3,
+   "t": 17.6,
    "phase": "home",
    "rescued": 1,
    "score": 600,
@@ -158,11 +158,11 @@
    "wire": true,
    "hidden": true,
    "decoyDist": [
-    829
+    877
    ],
    "nestDist": [
-    3181,
-    6180
+    3672,
+    5583
    ],
    "weather": "clear",
    "radio": null
@@ -203,8 +203,8 @@
     "squads": 1,
     "spawnT": 7,
     "minD": 171,
-    "firstHit": 24.5,
-    "loss": 4,
+    "firstHit": 32.7,
+    "loss": 5.6,
     "alive": true,
     "tracers": 1
    },
@@ -213,8 +213,8 @@
     "squads": 1,
     "spawnT": 5,
     "minD": 171,
-    "firstHit": 24.3,
-    "loss": 41,
+    "firstHit": 22.5,
+    "loss": 49.9,
     "alive": true,
     "tracers": 0
    },
@@ -222,8 +222,8 @@
     "d": 2,
     "squads": 2,
     "spawnT": 4,
-    "minD": 171,
-    "firstHit": 14.9,
+    "minD": 185,
+    "firstHit": 12.5,
     "loss": 60,
     "alive": false,
     "tracers": 0
@@ -493,7 +493,7 @@
   },
   "careless": {
    "zone": 2,
-   "lost": 26.6,
+   "lost": 18.1,
    "alive": true
   },
   "hunters": 2,

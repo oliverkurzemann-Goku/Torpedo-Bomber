@@ -23,7 +23,7 @@ const server=http.createServer((req,res)=>{
   const page=await browser.newPage({viewport:{width:1194,height:660},hasTouch:true,deviceScaleFactor:1}),errors=[];
   page.setDefaultTimeout(900000);page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error'&&!/404/.test(m.text()))errors.push('console: '+m.text());});
   await page.addInitScript(()=>window.requestAnimationFrame=()=>0);
-  await page.goto('http://127.0.0.1:'+server.address().port+'/remagen-mission.html?v=262&surprises=off&sortie='+sortie);
+  await page.goto('http://127.0.0.1:'+server.address().port+'/remagen-mission.html?v=264&surprises=off&sortie='+sortie);
   // the hangar sortie opens the briefing at once: wait for the world, not for the menu
   await page.waitForFunction(()=>realWorldReady&&(state===ST.MENU||state===ST.BRIEF),null,{polling:200});
   await page.evaluate(async()=>{await Promise.all(['pby','p47'].map(ensureModel));renderer.setPixelRatio(.25);renderer.shadowMap.enabled=false;if(typeof flightQuality!=='undefined')flightQuality.enabled=false;
@@ -86,7 +86,7 @@ const server=http.createServer((req,res)=>{
    const ap=(dist)=>{P.onGround=false;P.onWater=false;P.landingRoll=null;P.departureAge=null;P.touchResolved=false;P.throttle=.4;P.gear=P.gearTgt=0;P.heading=hdg;P.pitch=.02;P.roll=P.rollBias=P.pitchVel=P.rollVel=0;inputPitch=inputRoll=0;P.pitchRef=null;P.coreStall=0;P.coreDrop=0;P.core=null;P.nLoad=1;P.groundPose=null;P.takeoffRotation=0;
     const x=startX-sx*dist,z=startZ-sz*dist,slope=Math.tan(3*Math.PI/180);P.pos.set(x,waterY(x,z)+(dist<0?5.3:dist*slope+8),z);P.spd=ref;P.vSpeed=-1.5;};   // the valley walls rise steeply beside the river: the test starts inside the stretch, a metre above the water at the end of the flare
    // flown approach: 3 degree glide to the near end, flare at 7 m of keel height to a nose-up attitude, idle
-   const fly=(opt={})=>{ap(opt.dist??-100);const log={t0:0};let t=0,touch=null,stop=null;P.gear=P.gearTgt=opt.gear??0;if(opt.fast)P.spd=ref+opt.fast;
+   const fly=(opt={})=>{ap(opt.dist??-100);const log={t0:0},b0=P.sprayBursts||0,p0=P.sprayPuffs||0;let t=0,touch=null,stop=null;P.gear=P.gearTgt=opt.gear??0;if(opt.fast)P.spd=ref+opt.fast;
     for(;t<150&&P.alive&&!missionOver;t+=dt){
      const wy=waterY(P.pos.x,P.pos.z),agl=P.pos.y+waterlineOffset()-.84-wy;
      if(!P.onGround){if(agl>7){const tvs=-1.8;inputPitch=Math.max(-.5,Math.min(.5,(tvs-P.vSpeed)*.18+(opt.nose||0)));P.throttle=Math.max(0,Math.min(1,.4+(ref-P.spd)*.1));}
@@ -95,18 +95,18 @@ const server=http.createServer((req,res)=>{
      updateFlight(dt);posePlayerAircraft(dt);resolveGround(dt);
      if(P.onGround&&P.spd<.7&&P.landingRoll==null&&touch){stop={t:r1(t-touch.t),dist:Math.round(Math.hypot(P.pos.x-touch.x,P.pos.z-touch.z))};break;}
      if(!P.alive)break;}
-    return {touch,stop,alive:P.alive,crash:window.__crash,onWater:P.onWater,onGround:P.onGround,rideErr:r1(P.pos.y+waterlineOffset()-waterY(P.pos.x,P.pos.z)),pitch:r1(deg(P.pitch)),over:missionOver};};
+    return {touch,stop,alive:P.alive,crash:window.__crash,onWater:P.onWater,onGround:P.onGround,rideErr:r1(P.pos.y+waterlineOffset()-waterY(P.pos.x,P.pos.z)),pitch:r1(deg(P.pitch)),over:missionOver,spray:{bursts:(P.sprayBursts||0)-b0,puffs:(P.sprayPuffs||0)-p0}};};
    res.landing=fly();
    // taxi: the engines turn her at a crawl, then the take-off run on the hull
    if(P.alive&&P.onWater){
     res.taxi={};P.throttle=.5;inputRoll=.6;const h1=P.heading;for(let k=0;k<4/dt;k++){updateFlight(dt);}res.taxi.turnDeg=r1(deg(Math.abs(Math.atan2(Math.sin(P.heading-h1),Math.cos(P.heading-h1)))));res.taxi.spd=r1(P.spd);inputRoll=0;
     P.throttle=0;for(let k=0;k<25/dt&&P.spd>.3;k++)updateFlight(dt);res.taxi.stopped=r1(P.spd);
     // point her along the strip again and take off
-    P.heading=hdg;P.pos.x=startX;P.pos.z=startZ;P.spd=0;P.takeoffRotation=0;P.gear=P.gearTgt=0;const x0=P.pos.x,z0=P.pos.z;let off=null,t=0,maxHump=0;
+    P.heading=hdg;P.pos.x=startX;P.pos.z=startZ;P.spd=0;P.takeoffRotation=0;P.gear=P.gearTgt=0;const x0=P.pos.x,z0=P.pos.z,tb0=P.sprayBursts||0,tp0=P.sprayPuffs||0;let off=null,t=0,maxHump=0;
     P.throttle=1;for(;t<120&&P.alive;t+=dt){const vr=SortieFeatures.Handling.speeds(P,acDef().stall,acDef().app).stall*1.1;if(P.onGround&&P.spd>.95*vr)inputPitch=.5;updateFlight(dt);posePlayerAircraft(dt);
      if(!P.onGround&&off==null){off=t;res.run={t:r1(t),dist:Math.round(Math.hypot(P.pos.x-x0,P.pos.z-z0)),len:strip.len};inputPitch=.4;}
      if(off!=null&&t-off>10)break;}
-    res.takeoff={off:r1(off),alive:P.alive,crash:window.__crash,spd:Math.round(P.spd*3.6),climb:r1(P.vSpeed),agl:r1(P.pos.y-groundY(P.pos.x,P.pos.z))};
+    res.takeoff={bursts:(P.sprayBursts||0)-tb0,puffs:(P.sprayPuffs||0)-tp0,off:r1(off),alive:P.alive,crash:window.__crash,spd:Math.round(P.spd*3.6),climb:r1(P.vSpeed),agl:r1(P.pos.y-groundY(P.pos.x,P.pos.z))};
    }
    return res;
   });
@@ -115,6 +115,8 @@ const server=http.createServer((req,res)=>{
   assert.ok(W.landing.alive&&W.landing.touch&&W.landing.touch.wet&&!W.landing.crash,'a gentle alighting on the river is survived: '+JSON.stringify(W.landing));
   assert.ok(W.landing.onWater&&W.landing.stop&&W.landing.stop.dist<700&&W.landing.stop.t<40,'the water run stops the boat inside the stretch: '+JSON.stringify(W.landing.stop));
   assert.ok(Math.abs(W.landing.rideErr)<.5,'she floats on the design waterline: '+W.landing.rideErr);
+  assert.ok(W.landing.spray.bursts===1&&W.landing.spray.puffs>20,'Build 264: the alighting throws a plume of spray and the run on the river a bow wave: '+JSON.stringify(W.landing.spray));
+  assert.ok(W.takeoff.bursts>=1&&W.takeoff.puffs>20,'Build 264: the take-off run throws a bow wave and the spray of coming off the step: '+JSON.stringify([W.takeoff.bursts,W.takeoff.puffs]));
   assert.ok(W.taxi.turnDeg>8&&W.taxi.spd<14,'the engines and the rudders turn her on the water: '+JSON.stringify(W.taxi));
   assert.ok(W.run&&W.takeoff.alive&&!W.takeoff.crash&&W.run.dist<W.run.len&&W.takeoff.climb>-1,'she takes off from the water inside the stretch: '+JSON.stringify([W.run,W.takeoff]));
 

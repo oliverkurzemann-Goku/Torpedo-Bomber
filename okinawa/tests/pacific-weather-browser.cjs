@@ -24,7 +24,7 @@ const report={};
   page.setDefaultTimeout(300000);page.on('pageerror',e=>errors.push(e.message));
   page.on('console',m=>{if(/Shader Error|VALIDATE_STATUS|not compiled/i.test(m.text())||(m.type()==='error'&&!/404/.test(m.text())))errors.push(m.text());});
   await page.addInitScript(()=>{window.requestAnimationFrame=()=>0;window.__wxRoll=true;});
-  await page.goto('http://127.0.0.1:'+server.address().port+'/torpedo-carrier.html?v=262');
+  await page.goto('http://127.0.0.1:'+server.address().port+'/torpedo-carrier.html?v=264');
   await page.waitForFunction(()=>state===ST.MENU,null,{polling:100});
   await page.evaluate(async()=>{renderer.setPixelRatio(1);await prepareOkinawa();window.said=[];window.allSaid=[];const say=radioSay;radioSay=t=>{said.push(t);allSaid.push(t);say(t);};
    window.begin=async(title,diff='veteran')=>{const i=MISSIONS.findIndex(m=>m.title===title);DIFF=diff;await preparePacificModels(MISSIONS[i]);startMission(i);launch();said.length=0;return i;};});
@@ -34,7 +34,8 @@ const report={};
    const out={},idx=await begin('Sortie 3','veteran'),m=MISSIONS[idx],fair=new Set(['clear','broken','haze']);
    // the roll: Sortie 3's list stepped toward worse by difficulty; the Rookie never sees heavy showers or a storm
    out.dist={};for(const diff of ['rookie','veteran','ace']){DIFF=diff;const c={},n=3000;let f=0;for(let k=0;k<n;k++){const w=rollPacificWeather(['broken','haze'],m);c[w]=(c[w]||0)+1;if(fair.has(w))f++;}out.dist[diff]={counts:c,fair:+(f/n).toFixed(2)};}
-   DIFF='ace';out.untouched={free:Array.from({length:60},()=>rollPacificWeather(['clear'],MISSIONS.find(x=>x.free))).every(w=>w==='clear'),qual:Array.from({length:60},()=>rollPacificWeather(['clear'],MISSIONS.find(x=>x.qual))).every(w=>w==='clear'),pby:Array.from({length:60},()=>rollPacificWeather(['clear'],MISSIONS.find(x=>x.pby))).every(w=>w==='clear'),
+   DIFF='ace';out.untouched={free:Array.from({length:60},()=>rollPacificWeather(['clear'],MISSIONS.find(x=>x.free))).every(w=>w==='clear'),qual:Array.from({length:60},()=>rollPacificWeather(['clear'],MISSIONS.find(x=>x.qual))).every(w=>w==='clear'),pby:Array.from({length:400},()=>rollPacificWeather(['clear'],MISSIONS.find(x=>x.pby))).every(w=>WX_RANK[w]<=5)&&Array.from({length:400},()=>rollPacificWeather(['storm'],MISSIONS.find(x=>x.pby))).every(w=>w==='storm'),   // Build 264: the Catalina is rolled too, but a roll never takes it past a heavy shower (a plan that already lists a storm keeps it)
+   
     storm:Array.from({length:60},()=>rollPacificWeather(['storm'],m)).every(w=>w==='storm')};
    DIFF='rookie';out.rookieStorm=Array.from({length:60},()=>rollPacificWeather(['storm'],m)).every(w=>w==='storm');
    // the sea and its colours follow the weather
@@ -49,7 +50,7 @@ const report={};
   console.log(JSON.stringify(R.dist),JSON.stringify(R.sea),JSON.stringify(R.met));
   assert.ok(!R.dist.rookie.counts.squall&&!R.dist.rookie.counts.storm,'the Rookie never rolls heavy showers or a storm: '+JSON.stringify(R.dist.rookie));
   assert.ok(R.dist.rookie.fair>=.55&&R.dist.rookie.fair<=.78&&R.dist.veteran.fair>=.33&&R.dist.veteran.fair<=.52&&R.dist.ace.fair>=.2&&R.dist.ace.fair<=.4&&R.dist.rookie.fair>R.dist.veteran.fair&&R.dist.veteran.fair>R.dist.ace.fair,'fair weather by difficulty (Rookie > Veteran > Ace, about 64 / 41 / 31 %): '+JSON.stringify(R.dist));
-  assert.ok(R.untouched.free&&R.untouched.qual&&R.untouched.pby&&R.untouched.storm&&R.rookieStorm,'practice, qualification and the Catalina keep their weather, a storm stays a storm: '+JSON.stringify(R.untouched));
+  assert.ok(R.untouched.free&&R.untouched.qual&&R.untouched.pby&&R.untouched.storm&&R.rookieStorm,'practice and qualification keep their weather, the Catalina is rolled but never past a heavy shower, a storm stays a storm: '+JSON.stringify(R.untouched));
   const S=R.sea,order=['clear','broken','haze','lowcloud','rain','squall','storm'];
   assert.ok(Math.abs(S.clear.sea-1)<.01&&Math.abs(S.broken.sea-1.08)<.02&&Math.abs(S.lowcloud.sea-1.36)<.02&&Math.abs(S.rain.sea-1.55)<.02&&S.squall.sea>1.85&&S.storm.sea>2.0&&S.fog.sea<1.05,'the swell per weather: '+JSON.stringify(Object.fromEntries(Object.entries(S).map(([k,v])=>[k,v.sea]))));
   assert.ok(order.every((w,k)=>k===0||S[w].sea>=S[order[k-1]].sea-1e-9),'the sea never gets calmer with worse weather: '+order.map(w=>S[w].sea).join(' '));

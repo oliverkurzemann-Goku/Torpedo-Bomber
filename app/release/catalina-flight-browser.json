@@ -112,7 +112,11 @@
    "onGround": true,
    "rideErr": 0,
    "pitch": 1.7,
-   "over": false
+   "over": false,
+   "spray": {
+    "bursts": 1,
+    "puffs": 108
+   }
   },
   "taxi": {
    "turnDeg": 27.9,
@@ -125,6 +129,8 @@
    "len": 1475
   },
   "takeoff": {
+   "bursts": 1,
+   "puffs": 272,
    "off": 29.1,
    "alive": true,
    "crash": null,

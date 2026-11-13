@@ -1,0 +1,275 @@
+{
+ "rough": {
+  "calm": {
+   "sea": 1,
+   "rules": {
+    "strict": false,
+    "over": 24,
+    "pitchMin": -0.32,
+    "pitchMax": 0.5,
+    "roll": 0.5,
+    "ok": 5.5,
+    "hard": 9,
+    "factor": 10
+   },
+   "real": {
+    "strict": false,
+    "over": 24,
+    "pitchMin": -0.32,
+    "pitchMax": 0.5,
+    "roll": 0.5,
+    "ok": 5.5,
+    "hard": 9,
+    "factor": 10
+   }
+  },
+  "storm": {
+   "sea": 2.14,
+   "rules": {
+    "strict": false,
+    "over": 22.29,
+    "pitchMin": -0.32,
+    "pitchMax": 0.4658,
+    "roll": 0.45439999999999997,
+    "ok": 4.7476,
+    "hard": 7.974,
+    "factor": 10
+   },
+   "key": "storm",
+   "sight": 486.40000000000003
+  },
+  "back": {
+   "sea": 1,
+   "sight": 1520
+  },
+  "cue": true
+ },
+ "roll": {
+  "off": true,
+  "ace": {
+   "lowcloud": 489,
+   "fog": 279,
+   "haze": 345,
+   "rain": 120,
+   "broken": 267
+  },
+  "rookie": {
+   "lowcloud": 311,
+   "broken": 811,
+   "haze": 272,
+   "fog": 74,
+   "rain": 32
+  },
+  "vet": {
+   "rain": 292,
+   "lowcloud": 335,
+   "fog": 426,
+   "haze": 447
+  },
+  "dumboAce": {
+   "day": 785,
+   "night": 358,
+   "dusk": 357
+  },
+  "dumboRookie": {
+   "day": 1253,
+   "dusk": 247
+  },
+  "sub": {
+   "day": 918,
+   "dawn": 225,
+   "dusk": 357
+  },
+  "shadow": {
+   "day": 1500
+  },
+  "cat": {
+   "day": 1500
+  },
+  "menu": null
+ },
+ "drift": {
+  "drift": {
+   "x": 0.6,
+   "z": 0,
+   "speed": 0.6,
+   "bearing": 1.5707963267948966
+  },
+  "drift0": {
+   "x": -0.1556348463853864,
+   "z": -0.6275058431372186,
+   "speed": 0.6465182043691843,
+   "bearing": 3.3847081926995495
+  },
+  "secs": 1200,
+  "p0": {
+   "x": -14899.767354170977,
+   "z": -7201.603249214563
+  },
+  "p1": {
+   "x": -14179.767354172724,
+   "z": -7201.603249214563
+  },
+  "ring0": {
+   "x": -16076.210111629125,
+   "z": -7625.0568507475855
+  },
+  "ring1": {
+   "x": -15500.360111630522,
+   "z": -7625.0568507475855
+  },
+  "text0": "about 11 km SW of the fleet, course 225",
+  "text1": "about 11 km SW of the fleet, course 225",
+  "dye0": {
+   "x": -14899.767354170977,
+   "z": -7201.603249214563
+  },
+  "dye1": {
+   "x": -14179.767354172724,
+   "z": -7201.603249214563
+  },
+  "man0": [
+   {
+    "x": -14904.267354170977,
+    "z": -7202.603249214563
+   },
+   {
+    "x": -14895.267354170977,
+    "z": -7199.603249214563
+   }
+  ],
+  "man1": [
+   {
+    "x": -14184.267354172724,
+    "z": -7202.603249214563
+   },
+   {
+    "x": -14175.267354172724,
+    "z": -7199.603249214563
+   }
+  ],
+  "datums": 2,
+  "said": [
+   "DATUM UPDATE — SEARCH AREA HAS MOVED 0.3 KM E (SET AND DRIFT): NOW ABOUT 11 KM SW OF THE FLEET, COURSE 225",
+   "DATUM UPDATE — SEARCH AREA HAS MOVED 0.3 KM E (SET AND DRIFT): NOW ABOUT 11 KM SW OF THE FLEET, COURSE 225"
+  ],
+  "offset0": 1250.3321615582868,
+  "offset1": 1386.8230542146603,
+  "r": 4200,
+  "found": false
+ },
+ "decoys": {
+  "rookie": {
+   "n": 2,
+   "want": 2
+  },
+  "veteran": {
+   "n": 3,
+   "want": 3
+  },
+  "ace": {
+   "n": 3,
+   "want": 3
+  },
+  "kinds": [
+   "whale",
+   "whale",
+   "raft"
+  ],
+  "ringOk": true,
+  "meshes": true,
+  "far": {
+   "seen": true,
+   "checked": false,
+   "said": 1,
+   "found": false
+  },
+  "near": {
+   "checked": true,
+   "count": 1,
+   "said": 1,
+   "found": false
+  },
+  "once": 1,
+  "sampanMoved": 180.00000000029104,
+  "nightDark": false,
+  "flare": {
+   "dropped": true,
+   "lit": true,
+   "seen": true,
+   "said": 1
+  },
+  "spout": 1,
+  "subKinds": [
+   "whale",
+   "sampan",
+   "whale"
+  ]
+ },
+ "df": {
+  "firstAt": 14.099999999999966,
+  "msg": [
+   "SURVIVORS' SET — BEARING 262, 6 O'CLOCK. A SECOND BEARING FROM ELSEWHERE WILL CROSS IT"
+  ],
+  "line": {
+   "x": -11692.802917662673,
+   "z": -3325.72981350997,
+   "bearing": 262.28199558197423,
+   "t": 14.099999999999966
+  },
+  "truth": 276.32235003809654,
+  "count": 11,
+  "kept": 4,
+  "drawn": 4,
+  "drawnFound": 0,
+  "quiet": {
+   "added": 0,
+   "said": 1
+  },
+  "interval": {
+   "rookie": 20,
+   "veteran": 25,
+   "ace": 40
+  }
+ },
+ "fuel": {
+  "reserve": 20.68939393939394,
+  "text": "CLEAR · SEARCH AREA · about 12 km WNW of the fleet, course 300 · FUEL 100% · BINGO 22:54",
+  "noCall": true,
+  "bingo": 1,
+  "textBingo": "CLEAR · SEARCH AREA · about 12 km WNW of the fleet, course 300 · FUEL 20% · BINGO — GO HOME",
+  "once": 1,
+  "critical": 1,
+  "reserveNear": 8.09848484848485,
+  "stranded": true,
+  "state": true,
+  "failed": true
+ },
+ "spray": {
+  "rest": {
+   "puffs": 0,
+   "smokes": 0
+  },
+  "run": {
+   "onWater": false,
+   "spd": 37,
+   "puffs": 274,
+   "maxSmoke": 36,
+   "maxWake": 25,
+   "bursts": 1
+  },
+  "land": {
+   "onWater": true,
+   "alive": true,
+   "bursts": 1,
+   "smokes": 14,
+   "wakes": 6,
+   "splashes": 0,
+   "shake": 0.6009,
+   "white": true,
+   "spread": 33.330280926169955
+  },
+  "soft": 12,
+  "firm": 16
+ }
+}
