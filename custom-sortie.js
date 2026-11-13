@@ -108,7 +108,7 @@
   }catch(e){return {config:null,requested:fromURL,error:'Custom sortie could not load: '+e.message};}
  }
  function url(input){
-  const c=normalize(input),raw=JSON.stringify(c),params=new URLSearchParams({sortie:raw,v:'255'});
+  const c=normalize(input),raw=JSON.stringify(c),params=new URLSearchParams({sortie:raw,v:'257'});
   if(c.ac==='secretjet'){
    const words=root.crypto.getRandomValues(new Uint32Array(4)),token=Array.from(words,n=>n.toString(16).padStart(8,'0')).join('');
    root.sessionStorage.setItem(secretLaunchKey,JSON.stringify({token,raw,until:Date.now()+120000}));

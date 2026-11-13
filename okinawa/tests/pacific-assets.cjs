@@ -42,6 +42,7 @@ function geometryStats(group){const stats=[];group.traverse(o=>{if(o.isMesh)stat
  assert.equal(meshes[0].geometry,meshes[1].geometry);assert.equal(meshes[0].material.map,meshes[1].material.map,'clones share texture objects');
  // Exercise the actual mission dependency/orchestration code (not a mirror).
  const loads=[],ctx=vm.createContext({Promise,Map,Error,
+  GameRuntime:{storage:{getItem:()=>null}}, // Build 257 (Secret Jet) reads its stored Y-invert flag at top level inside the sliced block
   loadIJNCarrierModel:async()=>{loads.push('ijn');ctx.ijnCarrierModel={};},
   loadCarrierModel:async()=>{loads.push('us');ctx.carrierModel={};},
   loadSBDModel:async()=>{loads.push('sbd');ctx.sbdTemplate={};},

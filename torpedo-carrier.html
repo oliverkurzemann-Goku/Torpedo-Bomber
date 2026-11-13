@@ -309,10 +309,18 @@
 #jetCrewControls button[aria-pressed="true"]{background:#854629;border-color:#ffc090}
 #jetReticle{position:fixed;left:50%;top:50%;z-index:9;transform:translate(-50%,-50%);width:30px;height:30px;border:1px solid #ffe09a;border-radius:50%;color:#ffe09a;text-align:center;line-height:26px;font:700 21px/27px monospace;pointer-events:none;text-shadow:0 1px 3px #101414}
 body.jetInterior .pitReticle,body.secretJetActive #dropBtn,body.secretJetActive #gearBtn,body.secretJetActive #flapBtn,body.secretJetActive #flapUpBtn,body.secretJetActive #hookBtn,body.secretJetActive #landingRef,body.secretJetActive #approachSpeed,body.secretJetActive #lso{display:none!important}
+#spaceAscent{position:fixed;inset:0;z-index:7;pointer-events:none;opacity:0;background:linear-gradient(180deg,#02050e 0%,#02050e 38%,#030918 62%,#122843 91%,#274763 100%)}
+body.secretSpaceActive #spaceAscent{background:#02050e}
+body.secretSpaceActive #jetCrewControls button{border-color:#6c9aac;background:#101d30eb;color:#d9f2ff}
+body.secretSpaceActive #jetCrewControls button[aria-pressed="true"]{border-color:#b8f0ff;background:#25556f}
+body.secretSpaceActive #jetBoostBtn{min-width:116px;font-variant-numeric:tabular-nums}
+body.secretSpaceActive #jetBoostBtn:disabled{opacity:.66}
 #spacePanel{position:fixed;top:max(18px,env(safe-area-inset-top));left:50%;transform:translateX(-50%);z-index:11;pointer-events:none;text-align:center;color:#d9ecff;text-shadow:0 0 12px #4276ca;font:600 11px system-ui,sans-serif;letter-spacing:.10em;white-space:nowrap}
 #spacePanel strong{display:block;font-size:18px;letter-spacing:.18em;margin-bottom:4px}
 #spacePanel small{display:block;margin-top:4px;color:#a4d7ef;font-size:10px;letter-spacing:.03em}
 #spaceAim{position:fixed;z-index:9;width:23px;height:23px;transform:translate(-50%,-50%);border:1px solid #9cf0ff99;border-radius:50%;pointer-events:none;box-shadow:0 0 8px #539cce55}
+#spaceAim::before,#spaceAim::after{content:"";position:absolute;inset:50% auto auto 50%;transform:translate(-50%,-50%);background:#b7f1ff99}
+#spaceAim::before{width:9px;height:1px}#spaceAim::after{width:1px;height:9px}
 body.secretSpaceActive #hud .panel,body.secretSpaceActive .pitReticle,body.secretSpaceActive .lookBtn,body.secretSpaceActive #mmap,body.secretSpaceActive .navSelect,body.secretSpaceActive .navChoices,body.secretSpaceActive #aeroBtn,body.secretSpaceActive #bailBtn,body.secretSpaceActive #opsStatus,body.secretSpaceActive #systemsStatus,body.secretSpaceActive #wxHazard,body.secretSpaceActive #torpRun,body.secretSpaceActive #radio,body.secretSpaceActive #ltn,body.secretSpaceActive #jetCrewBtn{display:none!important}
 body.secretSpaceActive #fireBtn{border-color:#73d9fc;color:#d6f9ff}
 </style>
@@ -410,9 +418,11 @@ body.secretSpaceActive #fireBtn{border-color:#73d9fc;color:#d6f9ff}
 <div id="jetCrewControls" hidden>
  <button type="button" id="jetCrewBtn" aria-label="Cycle crew station">PILOT · EXTERIOR</button>
  <button type="button" id="jetBoostBtn" aria-pressed="false">AFTERBURNER</button>
+ <button type="button" id="spaceInvertBtn" aria-label="Invert arcade Y axis" aria-pressed="false" hidden>INVERT Y</button>
 </div>
 <div id="jetReticle" hidden aria-hidden="true">+</div>
-<div id="spacePanel" hidden><strong>DEEP SPACE</strong><span id="spaceReadout"></span><small id="spaceHint">ARCADE · DODGE WITH STICK OR ARROWS · GUNS / F</small></div>
+<div id="spaceAscent" hidden aria-hidden="true"></div>
+<div id="spacePanel" hidden><strong>ASTEROID BELT</strong><span id="spaceReadout"></span><small id="spaceHint">STICK / ARROWS · GUNS / F · BOOST / J</small></div>
 <div id="spaceAim" hidden aria-hidden="true"></div>
 <div id="opsStatus"></div>
 <div id="systemsStatus" role="status" style="position:fixed;top:calc(env(safe-area-inset-top) + 116px);left:50%;transform:translateX(-50%);color:#ffbf96;background:#251810db;font:10px monospace;pointer-events:none;z-index:9;max-width:60vw;text-align:center"></div>
@@ -575,7 +585,7 @@ body.secretSpaceActive #fireBtn{border-color:#73d9fc;color:#d6f9ff}
 <script src="operation-plans.js?v=258"></script>
 <script src="custom-sortie.js?v=258"></script>
 <script src="secret-jet.js?v=255"></script>
-<script src="secret-space.js?v=255"></script>
+<script src="secret-space.js?v=257"></script>
 <script src="pacific-theater.js?v=248"></script>
 <script src="pby-patrol.js?v=258"></script>
 <script src="carrier-recovery.js?v=198"></script>
@@ -1015,6 +1025,22 @@ let runtimeSession=null,releaseHeldControls=()=>{};
 let flightCoach=new GameRuntime.HintCoach();
 const pacificModelTasks=new Map();
 let secretJetTemplate=null,secretJetCrew=null,secretJetSpace=null;
+let spaceInvertY=GameRuntime.storage.getItem('tc_space_invert_y')==='1';
+let spaceBoostLabel='',spaceAscentOpacity=0;
+function paintSpaceAscent(opacity){
+  if(opacity===spaceAscentOpacity)return;
+  const veil=document.getElementById('spaceAscent');
+  spaceAscentOpacity=opacity;veil.hidden=opacity<=0;veil.style.opacity=opacity;
+}
+function updateSpaceBoost(){
+  const button=document.getElementById('jetBoostBtn'),space=secretJetSpace;
+  const active=space?space.boosting:!!P.jetBoost;
+  const cooldown=space?.boostRemaining||0;
+  const label=space?(active?'BOOST ACTIVE':cooldown>0?'BOOST · '+cooldown.toFixed(1)+'s':'BOOST READY'):'AFTERBURNER';
+  if(spaceBoostLabel===label)return;
+  spaceBoostLabel=label;button.textContent=label;button.disabled=!!cooldown;
+  button.setAttribute('aria-pressed',String(active));
+}
 function isSecretJet(){return !!MISSIONS[mission]?.secretJet;}
 function loadSecretJetModel(){
   return PacificAssets.loader().load(SecretJet.URL,gltf=>{
@@ -1032,9 +1058,12 @@ function secretJetUI(){
   document.body.classList.toggle('jetInterior',interior);
   document.getElementById('jetCrewControls').hidden=!active;
   document.getElementById('jetReticle').hidden=!interior;
+  const spaceInvert=document.getElementById('spaceInvertBtn');
+  spaceInvert.hidden=!active||!secretJetSpace;
+  spaceInvert.setAttribute('aria-pressed',String(spaceInvertY));
   if(active){
     GameRuntime.setHTML(document.getElementById('jetCrewBtn'),secretJetCrew.label);
-    document.getElementById('jetBoostBtn').setAttribute('aria-pressed',String(!!P.jetBoost));
+    updateSpaceBoost();
   }
 }
 function selectJetStation(mode){
@@ -1046,20 +1075,21 @@ function selectJetStation(mode){
 }
 function toggleJetBoost(){
   if(!isSecretJet()||state!==ST.FLIGHT||!P.alive||(!secretJetSpace&&P.fuel<=0))return;
-  P.jetBoost=!P.jetBoost;
-  secretJetUI();
+  if(secretJetSpace)secretJetSpace.requestBoost();else P.jetBoost=!P.jetBoost;
+  updateSpaceBoost();
 }
 function spaceSound(event){
   if(!actx||!eng)return;
   const now=actx.currentTime,voice=actx.createOscillator(),gain=actx.createGain();
-  const [from,to,duration,volume]=event==='fire'?[1050,360,.11,.055]:event==='kill'?[240,62,.32,.12]:event==='entry'?[85,580,.65,.13]:[165,43,.26,.14];
+  const [from,to,duration,volume]=event==='fire'?[1050,360,.11,.055]:event==='kill'?[240,62,.32,.12]:event==='entry'?[85,580,.65,.13]:event==='boost'?[82,240,.40,.09]:[165,43,.26,.14];
   voice.type=event==='fire'?'triangle':'sine';voice.frequency.setValueAtTime(from,now);voice.frequency.exponentialRampToValueAtTime(to,now+duration);
   gain.gain.setValueAtTime(volume,now);gain.gain.exponentialRampToValueAtTime(.001,now+duration);
   voice.connect(gain);gain.connect(eng.master);voice.start();voice.stop(now+duration);
 }
-function enterSecretSpace(){
-  secretJetSpace=SecretSpace.create(THREE,secretJetTemplate,{onEvent:spaceSound});
-  aeroMode=false;P.pitchVel=P.rollVel=0;releaseHeldControls();
+function enterSecretSpace(retry=false){
+  secretJetSpace=SecretSpace.create(THREE,secretJetTemplate,{onEvent:spaceSound,retry});
+  paintSpaceAscent(retry?0:1);
+  aeroMode=false;P.jetBoost=false;P.pitchVel=P.rollVel=0;releaseHeldControls();
   voiceRadio.cancel();soundscape.stop();radioQ=[];radioT=0;flashTimer=0;
   document.getElementById('flash').classList.remove('show');
   document.body.classList.add('secretSpaceActive');
@@ -1069,17 +1099,21 @@ function enterSecretSpace(){
   secretJetUI();spaceSound('entry');
 }
 function clearSecretSpace(){
+  paintSpaceAscent(0);
   if(!secretJetSpace)return;
   secretJetSpace.dispose();secretJetSpace=null;
   document.body.classList.remove('secretSpaceActive');
   document.getElementById('spacePanel').hidden=true;
   document.getElementById('spaceAim').hidden=true;
+  updateSpaceBoost();
 }
 function renderSecretSpace(dt){
   const space=secretJetSpace;
   if(state===ST.FLIGHT){
     pollKeys(dt);
-    space.update(dt,{roll:-inputRoll*steerSign,pitch:inputPitch,throttle:P.throttle,boost:P.jetBoost,fire:firing});
+    space.update(dt,{roll:-inputRoll,pitch:inputPitch,throttle:P.throttle,fire:firing});
+    paintSpaceAscent(space.entryVeil);
+    updateSpaceBoost();
     if(space.status!=='flying'){
       const won=space.status==='won';
       releaseHeldControls();P.alive=false;state=ST.RESULT;
@@ -1207,6 +1241,11 @@ function init(){
   setupControls();
   document.getElementById('jetCrewBtn').addEventListener('click',()=>selectJetStation());
   document.getElementById('jetBoostBtn').addEventListener('click',toggleJetBoost);
+  document.getElementById('spaceInvertBtn').addEventListener('click',()=>{
+    if(!secretJetSpace||state!==ST.FLIGHT)return;
+    spaceInvertY=!spaceInvertY;GameRuntime.storage.setItem('tc_space_invert_y',spaceInvertY?'1':'0');
+    releaseHeldControls();secretJetUI();
+  });
   setupKeyboard();
   setupUIButtons();
   runtimeSession=GameRuntime.attachLifecycle({canvas:renderer.domElement,resetControls:()=>releaseHeldControls(),
@@ -2716,7 +2755,7 @@ function setupControls(){
   const knob=document.getElementById('stickKnob');
   let sid=null;
   function set(e){
-    const command=GameRuntime.stickInput(stick.getBoundingClientRect(),e.clientX,e.clientY,invertPitch);
+    const command=GameRuntime.stickInput(stick.getBoundingClientRect(),e.clientX,e.clientY,secretJetSpace?spaceInvertY:invertPitch);
     knob.style.transform=`translate(calc(-50% + ${command.knobX}px),calc(-50% + ${command.knobY}px))`;
     inputRoll=command.roll;inputPitch=command.pitch;
   }
@@ -2814,7 +2853,7 @@ function applyKeyboardFlight(){
   const k=P._keys||{};
   let ip=0, ir=0;
   if(k['ArrowUp']) ip+=1; if(k['ArrowDown']) ip-=1;
-  if(invertPitch) ip*=-1;
+  if(secretJetSpace?spaceInvertY:invertPitch) ip*=-1;
   if(k['ArrowLeft']) ir+=1; if(k['ArrowRight']) ir-=1;
   const arrows=!!(ip||ir);
   if(arrows && !P._stickActive){
@@ -7167,7 +7206,7 @@ function updateAudio(dt){
   const damage=Math.max(0,(55-P.hull)/55);
   eng.piston.update(dt,kind,P.throttle,flying&&!jet,{fuel:P.fuel>0,speed:P.spd,damage});
   if(jet&&flying&&!eng.jet)eng.jet=JetEngine.create(actx,eng.master);
-  const jetThrottle=P.jetBoost?.22+.78*P.throttle:.86*P.throttle;
+  const jetThrottle=(secretJetSpace?secretJetSpace.boosting:P.jetBoost)?.22+.78*P.throttle:.86*P.throttle;
   eng.jet?.update(dt,jetThrottle,jet&&flying&&(!!secretJetSpace||P.fuel>0),damage,firing?.55:0);
   if(flying&&!jet&&AircraftEngine.profiles[kind]&&P.fuel>0&&damage>0&&Math.random()<damage*dt*1.2)sfxSputter();
 }
@@ -7969,7 +8008,7 @@ function setupUIButtons(){
     if(logbookOpen){ logbookOpen=false; showOverlay('menu'); return; }
     if(state!==ST.RESULT) return;
     if(secretJetSpace?.status==='lost'){
-      clearSecretSpace();hideOverlays();P.alive=true;state=ST.FLIGHT;enterSecretSpace();clock.getDelta();return;
+      clearSecretSpace();hideOverlays();P.alive=true;state=ST.FLIGHT;enterSecretSpace(true);clock.getDelta();return;
     }
     const last=mission===MISSIONS.length-2;
     if(MISSIONS[mission]?.custom){window.location.href='hangar.html?theatre=pacific&v=258';return;}
@@ -8302,6 +8341,9 @@ function animateFrame(){
   const frameInterval=clock.getDelta(),rawDt=Math.min(0.05,frameInterval);
   GameRuntime.frames.begin(frameInterval);
   if(secretJetSpace){renderSecretSpace(rawDt);return;}
+  if(state===ST.FLIGHT&&P.alive&&isSecretJet()){
+    paintSpaceAscent(SecretSpace.ascent(P.pos.y,SecretJet.SPACE_ALTITUDE));
+  }else if(spaceAscentOpacity)paintSpaceAscent(0);
   let dt=rawDt;
   if(killCam){
     killCam.t-=rawDt; killCam.ang+=rawDt*0.55;
