@@ -47,38 +47,38 @@
  "roll": {
   "off": true,
   "ace": {
-   "lowcloud": 489,
-   "fog": 279,
-   "haze": 345,
-   "rain": 120,
-   "broken": 267
+   "haze": 327,
+   "lowcloud": 468,
+   "broken": 304,
+   "fog": 255,
+   "rain": 146
   },
   "rookie": {
-   "lowcloud": 311,
-   "broken": 811,
-   "haze": 272,
+   "broken": 854,
+   "lowcloud": 272,
    "fog": 74,
-   "rain": 32
+   "haze": 269,
+   "rain": 31
   },
   "vet": {
-   "rain": 292,
-   "lowcloud": 335,
-   "fog": 426,
-   "haze": 447
+   "fog": 425,
+   "lowcloud": 344,
+   "haze": 448,
+   "rain": 283
   },
   "dumboAce": {
-   "day": 785,
-   "night": 358,
-   "dusk": 357
+   "night": 382,
+   "day": 747,
+   "dusk": 371
   },
   "dumboRookie": {
-   "day": 1253,
-   "dusk": 247
+   "day": 1261,
+   "dusk": 239
   },
   "sub": {
-   "day": 918,
-   "dawn": 225,
-   "dusk": 357
+   "dusk": 343,
+   "day": 932,
+   "dawn": 225
   },
   "shadow": {
    "day": 1500
@@ -96,65 +96,65 @@
    "bearing": 1.5707963267948966
   },
   "drift0": {
-   "x": -0.1556348463853864,
-   "z": -0.6275058431372186,
-   "speed": 0.6465182043691843,
-   "bearing": 3.3847081926995495
+   "x": 0.33385892117963023,
+   "z": -0.3782694533554659,
+   "speed": 0.5045290463323886,
+   "bearing": 2.418476930511351
   },
   "secs": 1200,
   "p0": {
-   "x": -14899.767354170977,
-   "z": -7201.603249214563
+   "x": -20026.75388964185,
+   "z": 714.4397708839228
   },
   "p1": {
-   "x": -14179.767354172724,
-   "z": -7201.603249214563
+   "x": -19306.753889634863,
+   "z": 714.4397708839228
   },
   "ring0": {
-   "x": -16076.210111629125,
-   "z": -7625.0568507475855
+   "x": -21292.81122201918,
+   "z": 231.6661313123961
   },
   "ring1": {
-   "x": -15500.360111630522,
-   "z": -7625.0568507475855
+   "x": -20716.961222013593,
+   "z": 231.6661313123961
   },
-  "text0": "about 11 km SW of the fleet, course 225",
-  "text1": "about 11 km SW of the fleet, course 225",
+  "text0": "about 13 km W of the fleet, course 270",
+  "text1": "about 13 km W of the fleet, course 270",
   "dye0": {
-   "x": -14899.767354170977,
-   "z": -7201.603249214563
+   "x": -20026.75388964185,
+   "z": 714.4397708839228
   },
   "dye1": {
-   "x": -14179.767354172724,
-   "z": -7201.603249214563
+   "x": -19306.753889634863,
+   "z": 714.4397708839228
   },
   "man0": [
    {
-    "x": -14904.267354170977,
-    "z": -7202.603249214563
+    "x": -20031.25388964185,
+    "z": 713.4397708839228
    },
    {
-    "x": -14895.267354170977,
-    "z": -7199.603249214563
+    "x": -20022.25388964185,
+    "z": 716.4397708839228
    }
   ],
   "man1": [
    {
-    "x": -14184.267354172724,
-    "z": -7202.603249214563
+    "x": -19311.253889634863,
+    "z": 713.4397708839228
    },
    {
-    "x": -14175.267354172724,
-    "z": -7199.603249214563
+    "x": -19302.253889634863,
+    "z": 716.4397708839228
    }
   ],
   "datums": 2,
   "said": [
-   "DATUM UPDATE — SEARCH AREA HAS MOVED 0.3 KM E (SET AND DRIFT): NOW ABOUT 11 KM SW OF THE FLEET, COURSE 225",
-   "DATUM UPDATE — SEARCH AREA HAS MOVED 0.3 KM E (SET AND DRIFT): NOW ABOUT 11 KM SW OF THE FLEET, COURSE 225"
+   "DATUM UPDATE — SEARCH AREA HAS MOVED 0.3 KM E (SET AND DRIFT): NOW ABOUT 13 KM W OF THE FLEET, COURSE 270",
+   "DATUM UPDATE — SEARCH AREA HAS MOVED 0.3 KM E (SET AND DRIFT): NOW ABOUT 13 KM W OF THE FLEET, COURSE 270"
   ],
-  "offset0": 1250.3321615582868,
-  "offset1": 1386.8230542146603,
+  "offset0": 1354.9802787980136,
+  "offset1": 1490.5553016778251,
   "r": 4200,
   "found": false
  },
@@ -172,9 +172,9 @@
    "want": 3
   },
   "kinds": [
-   "whale",
-   "whale",
-   "raft"
+   "wreck",
+   "wreck",
+   "wreck"
   ],
   "ringOk": true,
   "meshes": true,
@@ -191,7 +191,7 @@
    "found": false
   },
   "once": 1,
-  "sampanMoved": 180.00000000029104,
+  "sampanMoved": 179.99999999992724,
   "nightDark": false,
   "flare": {
    "dropped": true,
@@ -203,21 +203,21 @@
   "subKinds": [
    "whale",
    "sampan",
-   "whale"
+   "sampan"
   ]
  },
  "df": {
   "firstAt": 14.099999999999966,
   "msg": [
-   "SURVIVORS' SET — BEARING 262, 6 O'CLOCK. A SECOND BEARING FROM ELSEWHERE WILL CROSS IT"
+   "SURVIVORS' SET — BEARING 276, 6 O'CLOCK. A SECOND BEARING FROM ELSEWHERE WILL CROSS IT"
   ],
   "line": {
-   "x": -11692.802917662673,
-   "z": -3325.72981350997,
-   "bearing": 262.28199558197423,
+   "x": -9636.060752726826,
+   "z": -6182.245105244625,
+   "bearing": 275.63515855728724,
    "t": 14.099999999999966
   },
-  "truth": 276.32235003809654,
+  "truth": 276.3324469426222,
   "count": 11,
   "kept": 4,
   "drawn": 4,
@@ -234,10 +234,10 @@
  },
  "fuel": {
   "reserve": 20.68939393939394,
-  "text": "CLEAR · SEARCH AREA · about 12 km WNW of the fleet, course 300 · FUEL 100% · BINGO 22:54",
+  "text": "CLEAR · SEARCH AREA · about 12 km SSW of the fleet, course 210 · FUEL 100% · BINGO 22:54",
   "noCall": true,
   "bingo": 1,
-  "textBingo": "CLEAR · SEARCH AREA · about 12 km WNW of the fleet, course 300 · FUEL 20% · BINGO — GO HOME",
+  "textBingo": "CLEAR · SEARCH AREA · about 12 km SSW of the fleet, course 210 · FUEL 20% · BINGO — GO HOME",
   "once": 1,
   "critical": 1,
   "reserveNear": 8.09848484848485,
@@ -267,7 +267,7 @@
    "splashes": 0,
    "shake": 0.6009,
    "white": true,
-   "spread": 33.330280926169955
+   "spread": 33.438278373022335
   },
   "soft": 12,
   "firm": 16
