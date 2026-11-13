@@ -193,7 +193,7 @@ const report={};
    assert.ok(f.stopSpeed<2.5,k+': she runs out and stops ('+f.stopSpeed+' m/s after '+f.stopT+' s)');assert.ok(f.hull>=90,k+': a clean alighting costs almost nothing ('+f.hull+')');}
   assert.ok(F.arcadeSteep.alive&&F.arcadeSteep.hull<F.arcade.hull,'ARCADE forgives an unflared 7 m/s alighting with hull damage (hull '+F.arcadeSteep.hull+')');
   assert.ok(F.realSteep.dead||!F.realSteep.alive,'REALISTIC breaks the boat at 7 m/s sink: '+F.realSteep.result);assert.match(F.realSteep.result||'',/HARD LANDING|TOO FAST/,'an unflared 7 m/s alighting at speed is a wreck in REALISTIC (the same flight is only a dent in ARCADE)');
-  assert.ok(F.arcadeWheels.alive&&F.arcadeWheels.hull>=80,'in ARCADE the crew raises the wheels in time ('+F.arcadeWheels.hull+')');assert.ok(F.arcadeWheels.said.some(t=>/WHEELS COMING UP/.test(t)),'and says so');
+  assert.ok(F.arcadeWheels.alive&&F.arcadeWheels.touch.gear<.1,'in ARCADE the crew raises the wheels in time: gear '+F.arcadeWheels.touch.gear+' at touch-down (the hull loss of '+(100-F.arcadeWheels.hull)+' % is the firm alighting at '+F.arcadeWheels.touch.sink+' m/s, not the wheels)');assert.ok(F.arcadeWheels.said.some(t=>/WHEELS COMING UP/.test(t)),'and says so');
   assert.ok(F.realWheels.dead&&/GEAR DOWN ON THE WATER/.test(F.realWheels.result||''),'in REALISTIC wheels down on the water are fatal: '+F.realWheels.result);
   // the briefing, the contact list and the minimap never show a hidden thing
   const H=await page.evaluate(async()=>{await begin('Sortie 24');const ops=pbyOps,out={};
