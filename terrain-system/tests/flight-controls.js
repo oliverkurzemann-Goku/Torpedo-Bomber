@@ -10,7 +10,7 @@ const rect={left:20,top:300,width:140,height:140};
 function inputHandler(html,pacific){
  const listeners={},knob={style:{}},stick={getBoundingClientRect:()=>rect,setPointerCapture(){},
   addEventListener:(event,fn)=>listeners[event]=fn};
- const c=vm.createContext({GameRuntime,P:{},inputRoll:0,inputPitch:0,invertPitch:false,
+ const c=vm.createContext({GameRuntime,P:{},inputRoll:0,inputPitch:0,invertPitch:false,secretJetSpace:null,spaceInvertY:false,
   beginBailout(){},document:{getElementById:id=>id==='stick'?stick:id==='stickKnob'?knob:{addEventListener(){}}}});
  const a=html.indexOf(pacific?'function setupControls()':'function bindInput()'),b=html.indexOf(pacific?'  // throttle':'  // ---- throttle ----',a);
  assert(a>0&&b>a);vm.runInContext(html.slice(a,b)+'}\n'+(pacific?'setupControls()':'bindInput()'),c);
@@ -24,6 +24,18 @@ for(const invert of [false,true])for(const [x,y] of [[0,0],[4,2],[35,0],[-35,20]
  if(Math.hypot(x,y)<5)assert.deepEqual(commands[0],[0,0],'small centre jitter must return canonical neutral values');
  if(x===35)assert(Math.abs(commands[0][0])>.2&&Math.abs(commands[0][0])<.4,'half travel must give a gentle partial command');
  assert(Math.hypot(...commands[0])<=1.000001,'diagonal travel stays within full deflection');
+}
+{
+ const {c,listeners}=handlers[0];
+ c.invertPitch=true;c.secretJetSpace={};
+ for(const spaceInvertY of [false,true]){
+  c.spaceInvertY=spaceInvertY;
+  listeners.pointerdown(event(35,-35));
+  assert(c.inputRoll<0&&(spaceInvertY?c.inputPitch<0:c.inputPitch>0));
+  listeners.pointerup(event(0,0));
+ }
+ c.secretJetSpace=null;
+ listeners.pointerdown(event(35,-35));assert(c.inputPitch<0);listeners.pointerup(event(0,0));
 }
 for(const {c,listeners} of handlers){
  for(const release of ['pointerup','pointercancel','lostpointercapture']){
