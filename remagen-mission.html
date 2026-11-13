@@ -282,8 +282,8 @@
 .nhMark svg{display:block;width:20px;height:20px;margin:0 auto;fill:rgba(255,122,82,.5);stroke:#ff7a52;stroke-width:1.5;stroke-linejoin:round;opacity:.85;filter:drop-shadow(0 0 2px #000);}
 .nhMark[hidden]{display:none;}
 </style>
-<link rel="stylesheet" href="menu-layout.css?v=258">
-<link rel="stylesheet" href="duel.css?v=258">
+<link rel="stylesheet" href="menu-layout.css?v=259">
+<link rel="stylesheet" href="duel.css?v=259">
 </head>
 <body>
 <!-- ===== TEMP TEST-ONLY VERSION BANNER — asked for by Oliver: "kannst du irgendwo einbauen,
@@ -305,7 +305,7 @@
   <div style="width:100%;height:4px;background:repeating-linear-gradient(45deg,#ffd400,#ffd400 8px,#111 8px,#111 16px);"></div>
   <span id="testVersionBannerText" style="background:#111;color:#ffd400;font-family:monospace;font-weight:800;font-size:11px;letter-spacing:.5px;padding:3px 10px;border:1px solid #ffd400;border-top:none;border-radius:0 0 6px 6px;"></span>
 </div>
-<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 258';</script>
+<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 259';</script>
 <!-- ===== END TEMP TEST-ONLY VERSION BANNER ===== -->
 <div id="app"></div>
 <style>
@@ -346,7 +346,7 @@
   <div id="flash"></div>
   <div id="gunsight"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 258 · REAL RHINE</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 259 · REAL RHINE</div>
 
   <div id="apr">
     <div id="aprCall"></div>
@@ -401,7 +401,7 @@
 </div>
 
 <div class="overlay hidden" id="menu" data-campaign="europe">
-  <div class="menuTop"><a id="selBtn" href="index.html?v=258">&#9664; Change Game</a><span class="menuMeta">RHINE OPERATIONS<br>BUILD 258</span></div>
+  <div class="menuTop"><a id="selBtn" href="index.html?v=259">&#9664; Change Game</a><span class="menuMeta">RHINE OPERATIONS<br>BUILD 259</span></div>
   <div class="card menuCard">
     <aside class="menuOverview" aria-label="Campaign and pilot options">
     <div class="campaignArt" aria-hidden="true"></div>
@@ -433,7 +433,7 @@
     </aside>
     <section class="missionPanel" aria-label="Mission selection">
       <div class="secLbl">Choose your sortie · 15 missions + 4 bonus &amp; training</div>
-      <a class="hangarLink" href="hangar.html?theatre=europe&amp;v=258">CUSTOM MISSION · CHOOSE AIRCRAFT &amp; LOADOUT →</a>
+      <a class="hangarLink" href="hangar.html?theatre=europe&amp;v=259">CUSTOM MISSION · CHOOSE AIRCRAFT &amp; LOADOUT →</a>
 <div id="missionSel" role="group" aria-label="European missions"></div>
       <div id="missionBlurb" class="missionBlurb" aria-live="polite"></div>
       <div class="menuConfig">
@@ -582,7 +582,7 @@
 <script src="ju87-native.js?v=218"></script>
 <script src="me262-native.js?v=206"></script>
 <script src="me163-native.js?v=218"></script>
-<script src="aircraft-contract.js?v=258"></script>
+<script src="aircraft-contract.js?v=259"></script>
 <script src="aircraft-articulation.js?v=258"></script>
 <script src="aircraft-rotors.js?v=172"></script>
 <script src="b17-native.js?v=201"></script>
@@ -624,7 +624,7 @@
 <script src="flight-indicators.js?v=198"></script>
 <script src="sortie-fuel.js?v=258"></script>
 <script src="operation-plans.js?v=258"></script>
-<script src="custom-sortie.js?v=258"></script>
+<script src="custom-sortie.js?v=259"></script>
 <script>
 // ============================================================
 //  REMAGEN 1945 — REAL TERRAIN (forked from thunderbolt-europe.html)
@@ -996,7 +996,7 @@ async function loadRealWorld(){
 
   if(OSMManager.BUILD!==23||HistoricalObjectManager.BUILD!==21||LivingWorld.BUILD!==22||WorldVehicles.BUILD!==24) throw new Error('Terrain version mismatch. Reload Remagen.');
   document.getElementById('testVersionBannerText').textContent=
-    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 258 · MODULE 23';
+    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 259 · MODULE 23';
   heightProvider=new DEMHeightProvider(RTILE,'terrain-system/real/data/dem/');
   terrain=new TerrainManager(scene,RTILE,heightProvider);
   osmMgr=new OSMManager(scene,RTILE,terrain,'terrain-system/real/data/osm/');
@@ -5129,7 +5129,7 @@ async function duelCopy(id){
 function duelSendHello(){
   const s=duelSession;if(!s||!duelLink||duelLink.status!=='open')return;
   s.name=Duel.cleanName(dEl('dlName').value)||s.name;
-  duelLink.sendEvent(Duel.hello({name:s.name,ac:s.ac,build:258}));
+  duelLink.sendEvent(Duel.hello({name:s.name,ac:s.ac,build:259}));
 }
 function duelOnStatus(status,info){
   const s=duelSession;if(!s)return;
@@ -7579,7 +7579,7 @@ function posePlayerAircraft(dt){
         // wing-tip floats ride out for the water and the slow end of the flight, fold up in cruise; the right blister hatch opens while she lies stopped on the water
         const floatsOut=P.onGround||P.spd<46?1:0,hatchOpen=P.onGround&&P.onWater&&P.spd<3?1:0;
         P.floatAmt=(P.floatAmt??1)+(floatsOut-(P.floatAmt??1))*Math.min(1,dt*1.2);P.hatchAmt=(P.hatchAmt??0)+(hatchOpen-(P.hatchAmt??0))*Math.min(1,dt*1.5);
-        AircraftArticulation.pose(playerModel,P.gear,{left:0,right:0},{floatLeft:P.floatAmt,floatRight:P.floatAmt,hatchLeft:0,hatchRight:P.hatchAmt});
+        AircraftArticulation.pose(playerModel,P.gear,SortieFeatures.Damage.controls(P).flaps,{floatLeft:P.floatAmt,floatRight:P.floatAmt,hatchLeft:0,hatchRight:P.hatchAmt});   // Build 259: the generated flap panels follow the lever
       }else AircraftArticulation.pose(playerModel,P.gear,SortieFeatures.Damage.controls(P).flaps);
       AircraftArticulation.controls?.(playerModel,inputRoll,inputPitch);
       if(gr&&!playerModel.userData.nativeMe163) gr.visible=P.gear>0.05;
@@ -8293,7 +8293,7 @@ function showResult(good,title,sub,html,btn){
   document.getElementById('rsGo').onclick=()=>{
     voiceRadio.cancel();soundscape.stop();
     show('result',false);
-    if(MISSIONS[selectedMission]?.custom){window.location.href='hangar.html?theatre=europe&v=258';return;}
+    if(MISSIONS[selectedMission]?.custom){window.location.href='hangar.html?theatre=europe&v=259';return;}
     if(good && selectedMission===MISSIONS.length-1){
       show('menu',true);if(navigation){navigation.reset();navigation.button.style.display='none';}
     }
@@ -8712,7 +8712,7 @@ function init(){
   // menu wiring
   document.getElementById('startBtn').onclick=()=>showBrief(selectedMission);
   duelInit();
-  document.getElementById('pauseMainMenu').onclick=async()=>{globalThis.sortieCheckpoint?.save();await globalThis.sortieCheckpoint?.flush();exitToMenuFromPause(true);window.location.href='index.html?v=258';};
+  document.getElementById('pauseMainMenu').onclick=async()=>{globalThis.sortieCheckpoint?.save();await globalThis.sortieCheckpoint?.flush();exitToMenuFromPause(true);window.location.href='index.html?v=259';};
   document.getElementById('logBtn').onclick=()=>{ show('menu',false); showLogbook(); };
   document.getElementById('skipLaunchPreview').onclick=()=>finishLaunchIntro();
   document.getElementById('brBack').onclick=()=>{ show('brief',false); show('menu',true);if(navigation){navigation.reset();navigation.button.style.display='none';} state=ST.MENU; };

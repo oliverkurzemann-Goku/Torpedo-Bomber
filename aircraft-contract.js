@@ -55,6 +55,13 @@
    optional:{BlisterHatchLeft:'canopy',BlisterHatchRight:'canopy'},
    tyres:{GearLeft:1,GearRight:1,NoseGear:1},
    inverse:['gear','floatLeft','floatRight'],
+   // Build 259: the GLB carries no flap parts (the real PBY-5A had none; the game's lever is a decision, Build 257). The game builds two hinged split-flap panels per wing
+   // under the trailing edge from these figures, measured on assets/aircraft/pby5a-own.glb (scene frame, water line y=0; both paints share the geometry): the wing is
+   // 4.57 m deep (z -1.74..2.83) up to the ailerons at |x| 9.75, its trailing edge runs straight to |x| 6.4 and then sweeps forward to z -1.40; the lower skin is at
+   // y 2.90 (z -0.95, |x| <= 6.4) rising to 3.02 at the aileron; its paint is mapped planar (u .410 + .0252 |x|, v .486 + .0262 (-.45 - z); the upper skin uses the same u and v - .125, a blue-grey top over the light-grey underside). Panel hinge z -0.95, the
+   // trailing edge of the panel is the wing's. `rest` = the panel's own slope when stowed (hinge to trailing edge along the lower skin), `angle` = deflection at 1.
+   flapPanels:{wing:'ParasolWing',hingeZ:-.95,rest:.165,angle:.70,thickness:.035,lift:.02,uv:{u0:.410,du:.0252,v0:.486,dv:.0262,z0:-.45,top:-.125},
+    segments:[{x0:2.6,x1:6.4,y0:2.900,y1:2.908,te:[-1.74,-1.74]},{x0:6.4,x1:9.55,y0:2.908,y1:3.013,te:[-1.74,-1.42]}]},
    muzzles:1,
    budget:{triangles:30000,meshes:48,materials:8,images:4,imageSize:2048,bytes:6*1024*1024}
   }
@@ -78,7 +85,37 @@
    if(node.userData.rig&&!node.userData.rigRest)node.userData.rigRest=node.quaternion.toArray();
   }
   const muzzles=[];src.traverse(n=>{if(/^Muzzle/.test(n.name))muzzles.push(n);});
-  const d={src,spec,parts,muzzles,q:new (T().Quaternion)(),r:new (T().Quaternion)(),axis};cache.set(src,d);return d;
+  const d={src,spec,parts,muzzles,flaps:[],q:new (T().Quaternion)(),r:new (T().Quaternion)(),axis};collectFlaps(d);cache.set(src,d);return d;
+ }
+ // Build 259: generated flap panels (see the class spec). Every hinge carries its own numbers in userData, so clones of an installed template need no second install.
+ function collectFlaps(d){d.flaps=[];d.src.traverse(n=>{if(n.userData?.flapHinge)d.flaps.push(n);});}
+ function panelGeometry(side,len,c0,c1,thick,uvOf){
+  const V=T().Vector3,x=side*len,A=[new V(0,0,0),new V(x,0,0),new V(x,0,-c1),new V(0,0,-c0)],B=A.map(a=>new V(a.x,-thick,a.z)),centre=new V();
+  for(const p of [...A,...B])centre.add(p);centre.multiplyScalar(1/8);
+  const pos=[],nor=[],uv=[];
+  const quad=(a,b,c,d,upper)=>{   // outward normal: flip the order when it points to the middle of the slab
+   const n=new V().crossVectors(new V().subVectors(b,a),new V().subVectors(c,a)).normalize();
+   if(n.dot(new V().add(a).add(b).add(c).add(d).multiplyScalar(.25).sub(centre))<0){[b,d]=[d,b];n.negate();}
+   for(const p of [a,b,c,a,c,d]){pos.push(p.x,p.y,p.z);nor.push(n.x,n.y,n.z);const t=uvOf(p,upper);uv.push(t[0],t[1]);}
+  };
+  quad(A[0],A[1],A[2],A[3],true);quad(B[0],B[1],B[2],B[3]);quad(A[0],A[1],B[1],B[0]);quad(A[3],A[2],B[2],B[3]);quad(A[0],A[3],B[3],B[0]);quad(A[1],A[2],B[2],B[1]);
+  const g=new (T().BufferGeometry)();g.setAttribute('position',new (T().Float32BufferAttribute)(pos,3));g.setAttribute('normal',new (T().Float32BufferAttribute)(nor,3));g.setAttribute('uv',new (T().Float32BufferAttribute)(uv,2));return g;
+ }
+ function buildFlaps(d){
+  const spec=d.spec.flapPanels;if(!spec||d.parts.FlapLeft||d.src.getObjectByName('flightFlaps'))return false;
+  const wing=d.src.getObjectByName(spec.wing),base=wing?.material;if(!base)return false;
+  const Tj=T(),group=new Tj.Group(),lift=-d.src.position.y,u=spec.uv;group.name='flightFlaps';group.userData.articulationPart=true;
+  const material=base.clone();material.name='Flap panel (wing paint)';
+  for(const side of [-1,1])for(const seg of spec.segments){
+   const len=seg.x1-seg.x0,c0=spec.hingeZ-seg.te[0],c1=spec.hingeZ-seg.te[1],tilt=Math.atan2(seg.y1-seg.y0,len);
+   const tiltGroup=new Tj.Group(),hinge=new Tj.Group();tiltGroup.position.set(side*seg.x0,seg.y0-spec.lift+lift,spec.hingeZ);tiltGroup.rotation.z=side*tilt;
+   hinge.userData={flapHinge:true,flapSide:side,flapRest:spec.rest,flapAngle:spec.angle};hinge.rotation.x=spec.rest;hinge.visible=false;
+   // paint: the wing's own planar mapping continued over the panel (scene x/z of every corner): the top face takes the upper skin's paint, the rest the underside's
+   const mesh=new Tj.Mesh(panelGeometry(side,len,c0,c1,spec.thickness,(p,upper)=>[u.u0+u.du*(seg.x0+Math.abs(p.x)),u.v0+u.dv*(u.z0-(spec.hingeZ+p.z))+(upper?u.top:0)]),material);
+   mesh.name='flapPanel'+(side<0?'Left':'Right');mesh.castShadow=true;mesh.userData.articulationPart=true;
+   hinge.add(mesh);tiltGroup.add(hinge);group.add(tiltGroup);
+  }
+  d.src.add(group);collectFlaps(d);return true;
  }
  function turn(d,node,amount){
   const rig=node.userData.rig;if(!rig)return;
@@ -91,7 +128,8 @@
   // unrotated with its axis on local Z, so that Euler channel is exactly the shaft.
   if(d.parts.Propeller){d.parts.Propeller.name='prop';d.parts.Propeller.userData.articulationPart=true;}
   else for(const k of ['PropellerLeft','PropellerRight'])if(d.parts[k])d.parts[k].userData.articulationPart=true;   // the twin keeps its two named rotors
-  d.parts.gear.userData.articulationPart=true;if(d.parts.flightFlaps)d.parts.flightFlaps.userData.articulationPart=true;   // the amphibian has no flaps
+  d.parts.gear.userData.articulationPart=true;if(d.parts.flightFlaps)d.parts.flightFlaps.userData.articulationPart=true;
+  buildFlaps(d);   // Build 259: the amphibian's GLB has no flaps; its class spec generates the hinged panels
   frame.userData.nativeContract=true;pose(frame,1,{left:0,right:0});return true;
  }
  function pose(o,gear,flaps={left:0,right:0},extra={}){
@@ -101,6 +139,9 @@
    // extra: floatLeft / floatRight / hatchLeft / hatchRight (or canopy) as 0..1 "out/open" amounts; the drives in spec.inverse are stored extended at 0
    const amount=drive==='gear'?g:drive==='flapLeft'?flaps.left:drive==='flapRight'?flaps.right:name==='BlisterHatchLeft'?(extra.hatchLeft??extra[drive]):name==='BlisterHatchRight'?(extra.hatchRight??extra[drive]):extra[drive];
    turn(d,node,(d.spec.inverse||[]).includes(drive)?1-clamp(amount??1):clamp(amount||0));
+  }
+  for(const h of d.flaps){   // generated flap panels: hidden until the lever moves, then rest slope - angle x amount (positive x turn lifts the trailing edge: nose is +Z)
+   const amount=clamp(h.userData.flapSide<0?flaps.left:flaps.right);h.rotation.x=h.userData.flapRest-h.userData.flapAngle*amount;h.visible=amount>.012;
   }
   d.parts.gear.visible=true;
   if(d.src.userData.contractGear!==g){for(let p=d.src;p;p=p.parent)delete p.userData.groundSupports;d.src.userData.contractGear=g;}

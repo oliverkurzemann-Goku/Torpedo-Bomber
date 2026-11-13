@@ -24,7 +24,7 @@ const report={};
   page.setDefaultTimeout(300000);page.on('pageerror',e=>errors.push(e.message));
   page.on('console',m=>{if(/Shader Error|VALIDATE_STATUS|not compiled/i.test(m.text())||m.type()==='error')errors.push(m.text());});
   await page.addInitScript(()=>{window.requestAnimationFrame=()=>0;});
-  await page.goto('http://127.0.0.1:'+server.address().port+'/torpedo-carrier.html?v=258');
+  await page.goto('http://127.0.0.1:'+server.address().port+'/torpedo-carrier.html?v=259');
   await page.waitForFunction(()=>state===ST.MENU,null,{polling:100});
   await page.evaluate(async()=>{
    renderer.setPixelRatio(1);await prepareOkinawa();
@@ -178,6 +178,11 @@ const report={};
   assert.equal(K.night,'night');assert.ok(K.flares);assert.equal(K.ships,3);assert.ok(K.foundAt<=16000&&K.foundAt>=10000,'the radar shows the convoy at about 8 miles, measured to the leader ('+K.foundAt+' m)');
   assert.match(K.said.join(' '),/RADAR CONTACT/);assert.ok(K.sunk1&&!K.rtb1,'one freighter is not enough');assert.ok(K.sunk2&&K.rtb2&&K.phase==='home','both freighters end the task');assert.equal(K.bombsLeft,2);
   assert.ok(K.finished&&/WAR CRUISE COMPLETE/.test(K.title),'the last combat sortie closes the cruise: '+K.title);
+  // ---- Build 259: the flap panels of the Catalina follow the lever in the Pacific game too ----
+  const FL=await page.evaluate(async()=>{await begin('Sortie 25');const hs=[];playerPBY.userData.inner.traverse(n=>{if(n.userData.flapHinge)hs.push(n);});
+   const st=a=>{P.flap=P.flapTgt=a;pbyPoseModel(1/60);return {vis:hs.filter(h=>h.visible).length,rot:+hs[0].rotation.x.toFixed(3)};};return {n:hs.length,up:st(0),to:st(.5),dn:st(1)};});
+  report.flaps=FL;console.log('flap panels',JSON.stringify(FL));
+  assert.deepEqual([FL.n,FL.up.vis,FL.to.vis,FL.dn.vis],[4,0,4,4],'four generated flap panels: hidden at UP, out at T/O and DN: '+JSON.stringify(FL));assert.ok(FL.to.rot<0&&FL.dn.rot<FL.to.rot-.1,'the panels hang further down with the lever');
   // ---- the flying: a scripted pilot takes off from the water, climbs and alights again (ARCADE forgiving, REALISTIC strict) ----
   const F={};
   F.arcade=await page.evaluate(async()=>{await begin('Sortie 25');aeroMode=false;return fly({alt:120,speed:46,sink:3.5});});

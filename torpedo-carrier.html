@@ -301,7 +301,7 @@
 
 .hangarLink{display:block;padding:12px 14px;margin:8px 0 12px;color:#f3ce83;border:1px solid #ba9d57;border-radius:5px;text-decoration:none;text-align:center;font:600 12px system-ui;letter-spacing:.8px;min-height:44px;}
 </style>
-<link rel="stylesheet" href="menu-layout.css?v=258">
+<link rel="stylesheet" href="menu-layout.css?v=259">
 <style>
 #jetCrewControls{position:fixed;z-index:12;top:max(68px,calc(env(safe-area-inset-top) + 68px));left:50%;transform:translateX(-50%);gap:6px;display:flex;align-items:center}
 #jetCrewControls[hidden],#jetReticle[hidden]{display:none}
@@ -376,7 +376,7 @@ body.secretSpaceActive #fireBtn{border-color:#73d9fc;color:#d6f9ff}
   <div id="flash"></div>
   <div id="ltn" style="position:fixed;inset:0;background:#e6ecff;opacity:0;pointer-events:none;z-index:40;"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 258</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 259</div>
 
   <!-- Optical landing aid -->
   <div id="lso">
@@ -432,7 +432,7 @@ body.secretSpaceActive #fireBtn{border-color:#73d9fc;color:#d6f9ff}
 
 <!-- Menu -->
 <div class="overlay" id="menu" data-campaign="pacific">
-  <div class="menuTop"><a id="selBtn" href="index.html?v=258">&#9664; Change Game</a><span class="menuMeta">PACIFIC OPERATIONS<br>BUILD 258</span></div>
+  <div class="menuTop"><a id="selBtn" href="index.html?v=259">&#9664; Change Game</a><span class="menuMeta">PACIFIC OPERATIONS<br>BUILD 259</span></div>
   <div class="card menuCard">
     <aside class="menuOverview" aria-label="Campaign and pilot options">
     <div class="campaignArt" aria-hidden="true"></div>
@@ -463,7 +463,7 @@ body.secretSpaceActive #fireBtn{border-color:#73d9fc;color:#d6f9ff}
     </aside>
     <section class="missionPanel" aria-label="Mission selection">
       <div class="secLbl">Choose your sortie · Pacific operations</div>
-      <a class="hangarLink" href="hangar.html?theatre=pacific&amp;v=258">CUSTOM MISSION · CHOOSE AIRCRAFT &amp; LOADOUT →</a>
+      <a class="hangarLink" href="hangar.html?theatre=pacific&amp;v=259">CUSTOM MISSION · CHOOSE AIRCRAFT &amp; LOADOUT →</a>
 <div id="missionSel" role="group" aria-label="Pacific missions"></div>
       <div id="missionBlurb" class="missionBlurb" aria-live="polite"></div>
       <div class="menuConfig">
@@ -538,7 +538,7 @@ body.secretSpaceActive #fireBtn{border-color:#73d9fc;color:#d6f9ff}
 <script src="campaign.js?v=1"></script>
 <script src="game-runtime.js?v=198"></script>
 <script src="sortie-checkpoint.js?v=238"></script>
-<script src="aircraft-contract.js?v=258"></script>
+<script src="aircraft-contract.js?v=259"></script>
 <script src="aircraft-articulation.js?v=258"></script>
 <script src="terrain-system/AircraftGround.js?v=258"></script>
 <script src="pacific-assets.js?v=201"></script>
@@ -583,7 +583,7 @@ body.secretSpaceActive #fireBtn{border-color:#73d9fc;color:#d6f9ff}
 <script src="ground-run.js?v=198"></script>
 <script src="flight-indicators.js?v=198"></script>
 <script src="operation-plans.js?v=258"></script>
-<script src="custom-sortie.js?v=258"></script>
+<script src="custom-sortie.js?v=259"></script>
 <script src="secret-jet.js?v=255"></script>
 <script src="secret-space.js?v=257"></script>
 <script src="pacific-theater.js?v=248"></script>
@@ -3992,7 +3992,7 @@ function pbyPoseModel(dt){
   if(!playerPBY)return;const inner=playerPBY.userData.inner;
   const out=P.onWater||P.spd<46?1:0,hatch=P.onWater&&P.spd<3?1:0;
   P.floatAmt=(P.floatAmt??1)+(out-(P.floatAmt??1))*Math.min(1,dt*1.2);P.hatchAmt=(P.hatchAmt??0)+(hatch-(P.hatchAmt??0))*Math.min(1,dt*1.5);
-  AircraftArticulation.pose(inner,P.gear,{left:0,right:0},{floatLeft:P.floatAmt,floatRight:P.floatAmt,hatchLeft:0,hatchRight:P.hatchAmt});
+  AircraftArticulation.pose(inner,P.gear,SortieFeatures.Damage.controls(P).flaps,{floatLeft:P.floatAmt,floatRight:P.floatAmt,hatchLeft:0,hatchRight:P.hatchAmt});   // Build 259: the generated flap panels follow the lever
   AircraftArticulation.controls?.(inner,inputRoll*steerSign,inputPitch);
   const spin=(.12+P.throttle*.32)*(P.alive?1:.1);
   for(const r of playerPBY.userData.rotors)r.rotation.z-=GameRuntime.rotorStep(dt,spin);
@@ -6512,7 +6512,7 @@ function loadPlaneModel(){
       }
       window.__eyeDbg='EYE '+COCKPIT_EYE.map(v=>v.toFixed(2)).join('/');
       const btEl=document.getElementById('buildTag');
-      if(btEl) btEl.textContent='BUILD 258 · '+window.__eyeDbg;
+      if(btEl) btEl.textContent='BUILD 259 · '+window.__eyeDbg;
       let seat=null;
       model.traverse(function(o){
         if(!o.isMesh||!o.material) return;
@@ -7986,7 +7986,7 @@ function setupUIButtons(){
   if(dbgT2) dbgT2.onclick=()=>{
     dbgOn=!dbgOn; GameRuntime.storage.setItem('dbgOn',dbgOn?'1':'0');
     const db=document.getElementById('dbgBox'); if(db) db.textContent=dbgOn?'✓':'';
-    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 258'; }
+    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 259'; }
   };
   const lu=document.getElementById('lookUp'), ld=document.getElementById('lookDn');
   let _lookT=0;
@@ -8002,7 +8002,7 @@ function setupUIButtons(){
   if(pb) pb.addEventListener('pointerdown',e=>{ e.preventDefault(); togglePause(); });
   const rb=document.getElementById('resumeBtn'); if(rb) rb.onclick=resumeGame;
   const mb=document.getElementById('menuBtn'); if(mb) mb.onclick=exitToMenu;
-  document.getElementById('pauseMainMenu').onclick=async()=>{globalThis.sortieCheckpoint?.save();await globalThis.sortieCheckpoint?.flush();exitToMenu(true);window.location.href='index.html?v=258';};
+  document.getElementById('pauseMainMenu').onclick=async()=>{globalThis.sortieCheckpoint?.save();await globalThis.sortieCheckpoint?.flush();exitToMenu(true);window.location.href='index.html?v=259';};
   document.getElementById('resultBtn').onclick=()=>{
     // the logbook borrows this screen from the menu — send the player straight back
     if(logbookOpen){ logbookOpen=false; showOverlay('menu'); return; }
@@ -8011,7 +8011,7 @@ function setupUIButtons(){
       clearSecretSpace();hideOverlays();P.alive=true;state=ST.FLIGHT;enterSecretSpace(true);clock.getDelta();return;
     }
     const last=mission===MISSIONS.length-2;
-    if(MISSIONS[mission]?.custom){window.location.href='hangar.html?theatre=pacific&v=258';return;}
+    if(MISSIONS[mission]?.custom){window.location.href='hangar.html?theatre=pacific&v=259';return;}
     if(wasWin){
       if(MISSIONS[mission] && MISSIONS[mission].free){ startMission(mission); return; }  // stay in Free Flight
       if(MISSIONS[mission] && MISSIONS[mission].qual){ showOverlay('menu'); return; }  // qual -> ready room
@@ -8329,7 +8329,7 @@ function animate(){
     notice.style.cssText='position:fixed;inset:0;z-index:999998;background:rgba(15,20,15,.95);color:#e8ddbc;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px;text-align:center;font:16px system-ui';
     const title=document.createElement('h2');title.textContent='Simulation interrupted';
     const detail=document.createElement('p');
-    detail.textContent='BUILD 258 · '+(MISSIONS[mission]?.sub||'Menu')+' · '+error.message;
+    detail.textContent='BUILD 259 · '+(MISSIONS[mission]?.sub||'Menu')+' · '+error.message;
     const reload=document.createElement('button');reload.textContent='Reload game';
     reload.style.cssText='padding:12px 24px;font:inherit';reload.onclick=()=>location.reload();
     notice.appendChild(title);notice.appendChild(detail);notice.appendChild(reload);document.body.appendChild(notice);

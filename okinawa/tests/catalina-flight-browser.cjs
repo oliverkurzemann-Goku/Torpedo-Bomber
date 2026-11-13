@@ -23,7 +23,7 @@ const server=http.createServer((req,res)=>{
   const page=await browser.newPage({viewport:{width:1194,height:660},hasTouch:true,deviceScaleFactor:1}),errors=[];
   page.setDefaultTimeout(900000);page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error'&&!/404/.test(m.text()))errors.push('console: '+m.text());});
   await page.addInitScript(()=>window.requestAnimationFrame=()=>0);
-  await page.goto('http://127.0.0.1:'+server.address().port+'/remagen-mission.html?v=258&surprises=off&sortie='+sortie);
+  await page.goto('http://127.0.0.1:'+server.address().port+'/remagen-mission.html?v=259&surprises=off&sortie='+sortie);
   // the hangar sortie opens the briefing at once: wait for the world, not for the menu
   await page.waitForFunction(()=>realWorldReady&&(state===ST.MENU||state===ST.BRIEF),null,{polling:200});
   await page.evaluate(async()=>{await Promise.all(['pby','p47'].map(ensureModel));renderer.setPixelRatio(.25);renderer.shadowMap.enabled=false;if(typeof flightQuality!=='undefined')flightQuality.enabled=false;
@@ -43,6 +43,8 @@ const server=http.createServer((req,res)=>{
    res.parts=['PropellerLeft','PropellerRight','FloatLeft','FloatRight','GearLeft','NoseGear','BlisterHatchRight'].filter(n=>!playerModel.getObjectByName(n));
    posePlayerAircraft(dt);for(let k=0;k<30;k++)posePlayerAircraft(dt);
    res.rest={float:r1(deg(fold(playerModel.getObjectByName('FloatLeft')))),gear:r1(deg(fold(playerModel.getObjectByName('GearLeft'))))};
+   // Build 259: the flap panels follow the lever (the GLB has none: the rig class generates four hinged panels)
+   res.flaps=(()=>{const hs=[];playerModel.traverse(n=>{if(n.userData.flapHinge)hs.push(n);});const f0=P.flap,st=a=>{P.flap=a;posePlayerAircraft(dt);return {n:hs.length,vis:hs.filter(h=>h.visible).length,rot:hs.length?+hs[0].rotation.x.toFixed(3):null};};const o={up:st(0),to:st(.5),dn:st(1)};P.flap=f0;posePlayerAircraft(dt);return o;})();
    inputRoll=inputPitch=0;P.throttle=1;const x0=P.pos.x,z0=P.pos.z;let t=0,off=null,run=null,rows={};
    for(;t<90&&P.alive;t+=dt){const vr=SortieFeatures.Handling.speeds(P,acDef().stall,acDef().app).stall*1.1;if(P.onGround&&P.spd>.95*vr)inputPitch=.5;updateFlight(dt);
     if(!P.onGround&&off==null){off=t;run=Math.hypot(P.pos.x-x0,P.pos.z-z0);inputPitch=.5;P.gearTgt=0;}
@@ -66,6 +68,7 @@ const server=http.createServer((req,res)=>{
   });
   report.flight=T;console.log(JSON.stringify(T));
   assert.equal(T.ac,'pby');assert.equal(T.core,true,'the Catalina flies on the flight core');assert.equal(T.parts.length,0,'the contract parts exist: '+T.parts);assert.equal(T.fire,'none','no player gun: the gunners shoot by themselves');assert.notEqual(T.flapBtn,'none','Build 257: the Catalina has the flap lever');assert.ok(T.stallFlap<T.stallClean*.93&&T.stallFlap>T.stallClean*.85,'full flap lowers the stall by about 10 %: '+T.stallClean+' / '+T.stallFlap);assert.ok(T.liftoffS<=T.liftoffClean+.5,'the take-off flap setting does not lengthen the run: '+T.liftoffS+' s with, '+T.liftoffClean+' s without');
+  assert.deepEqual([T.flaps.up.n,T.flaps.up.vis,T.flaps.to.vis,T.flaps.dn.vis],[4,0,4,4],'Build 259: four generated flap panels, hidden at UP, out at T/O and DN: '+JSON.stringify(T.flaps));assert.ok(T.flaps.to.rot<0&&T.flaps.dn.rot<T.flaps.to.rot-.1,'the panels hang further down with the lever: '+JSON.stringify(T.flaps));
   assert.equal(T.ammo,600);assert.equal(T.hull,150);assert.ok(T.rest.float<1&&T.rest.gear<1,'floats out and wheels down on the strip: '+JSON.stringify(T.rest));
   assert.ok(T.liftoffS>12&&T.liftoffS<45&&T.runM>250&&T.runM<900,'the Catalina is off the strip: '+T.liftoffS+' s / '+T.runM+' m');
   assert.ok(T.rows[8].climb>.5&&T.rows[8].kmh>110,'she climbs: '+JSON.stringify(T.rows));

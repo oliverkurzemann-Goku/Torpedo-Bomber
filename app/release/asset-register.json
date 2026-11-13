@@ -1,13 +1,13 @@
 {
   "schema": 1,
   "reviewedOn": "2026-10-23",
-  "build": 258,
+  "build": 259,
   "status": "OPEN — source declarations checked; no external rights authorization obtained",
   "payload": {
-    "bytes": 170197195,
+    "bytes": 170201856,
     "fileCount": 384,
     "modelCount": 64,
-    "manifestSha256": "deb589ce8fd7480b83381e11d1bc4442c0175035dff6e19f60a0cd4d25ae55cc"
+    "manifestSha256": "2dab1e8602412a46b9adde1decd613785f701606b9801cf95d7ec3220c58a1f0"
   },
   "files": [
     {
@@ -30,8 +30,8 @@
     },
     {
       "path": "aircraft-contract.js",
-      "bytes": 8135,
-      "sha256": "62fb55487b2cd7692c911a62d38f4dd9616e7cc8991c4ef2ed73c877a8bc1955",
+      "bytes": 12632,
+      "sha256": "4265bbdd67205c2393acbfdb62318b2b78e570433138063acc189db12458e6ec",
       "kind": "code-or-notice"
     },
     {
@@ -865,7 +865,7 @@
     {
       "path": "hangar.html",
       "bytes": 4761,
-      "sha256": "3bf37d3fbbe9405d76cb0f074f0680eb06b8b6aef7323c5749cd6bed4abe3961",
+      "sha256": "dec6baf30ee2c93b4e3db7c8ea02d621211996ddda2b1b3fce0a92ed65e9ec6f",
       "kind": "code-or-notice"
     },
     {
@@ -877,7 +877,7 @@
     {
       "path": "index.html",
       "bytes": 7912,
-      "sha256": "734ca518a81fd521a9f7a7a625917d35f3cc587af659ca865f82f81042a81272",
+      "sha256": "b1bbe381d00a286a893639c682a744e61c6ab591899365fd67261652bc8c9346",
       "kind": "code-or-notice"
     },
     {
@@ -1020,8 +1020,8 @@
     },
     {
       "path": "remagen-mission.html",
-      "bytes": 581163,
-      "sha256": "3802114cdc37d6326107e49c564e5be135db642d22334d2dc4a19f7978261c65",
+      "bytes": 581245,
+      "sha256": "f2a2be11c6989e7834a8e314529967857bef22f592f0e79921e7b06057dd01cf",
       "kind": "code-or-notice"
     },
     {
@@ -2232,8 +2232,8 @@
     },
     {
       "path": "torpedo-carrier.html",
-      "bytes": 528289,
-      "sha256": "aca8cbbeb8ff9dd8c74702169dec6cec5d3bcd235ebf4520891813c8dc77bc14",
+      "bytes": 528371,
+      "sha256": "bedbc1e030206d3f68abe938f8228bb2654eec0087015992c4fccb02b8e0e38e",
       "kind": "code-or-notice"
     },
     {

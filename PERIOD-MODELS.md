@@ -17,8 +17,12 @@ all three Catalina sorties at four iPad viewports); the difference ARCADE/REALIS
 water rules, which the toggle message names.
 
 **Flaps (C, on request).** The real PBY-5A had none (AN 01-5MA-2); the game's Catalina has the lever UP / T/O / DN: landing stall 52 kt against 58 kt clean (`flight-core.js` `SOURCES.pby`), `flapCD .05`. Measured: full flap
-31 against 34.5 m/s stall speed, take-off run 529 m / 25.9 s with the take-off flap (the sortie's default) against 577 m / 26.9 s clean. The model has **no flap geometry** (class `amphibian-twin` has no `FlapLeft/Right`),
-so nothing moves visibly. An order to ChatGPT for optional `FlapLeft/FlapRight` parts in the GLB would close that.
+31 against 34.5 m/s stall speed, take-off run 529 m / 25.9 s with the take-off flap (the sortie's default) against 577 m / 26.9 s clean. The GLB has **no flap geometry** (class `amphibian-twin` has no `FlapLeft/Right`) and is pinned by SHA, so since **Build 259** the rig class generates the flaps itself
+(`aircraft-contract.js`, `flapPanels`): two hinged split-flap panels per wing under the trailing edge (|x| 2.6-6.4 and 6.4-9.55 m, hinge z -0.95, 0.79 to 0.47 m deep,
+3.5 cm thick, 40 deg at DN, 20 deg at T/O), painted by continuing the wing's own planar UV mapping (blue-grey top, light-grey underside). The numbers were measured on the real
+wing (`okinawa/tests/catalina-flaps.cjs` checks hinge height, trailing edge and paint mapping against it, and that the panels never touch hull, struts, nacelles or tail).
+Nothing is cut: the wing underneath is untouched and the panels are hidden at UP. A GLB that ships its own `FlapLeft/FlapRight` would replace the generated panels
+(`buildFlaps` builds nothing when `FlapLeft` exists).
 
 **Open:** no iPad test; all water numbers are estimates (`waterRules` in `remagen-mission.html`); whether the Catalina belongs in the Pacific game (historically yes; the Pacific core has no player water take-off/landing).
 
