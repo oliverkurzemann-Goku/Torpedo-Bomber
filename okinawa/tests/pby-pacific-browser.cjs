@@ -38,7 +38,7 @@ const report={};
    // a scripted pilot: take off, climb, come back round and alight (the glide rate and the flare are the stick's job)
    window.fly=(opts)=>{
     const out={log:[],said:[]};const dt=1/60;P.throttle=1;setThrottleUI(1);
-    let phase='run',t=0,td=null,alive0=true;
+    let phase='run',t=0,td=null,alive0=true,pv=0,pg=1;
     for(let k=0;k<60*600;k++){
      t=k*dt;
      const keel=P.pos.y-.84-pbySea(P.pos.x,P.pos.z);
@@ -51,10 +51,11 @@ const report={};
       inputPitch=Math.max(-.6,Math.min(.6,(tgt-P.vSpeed)*.14));
       P.throttle=keel>40?.25:.1;
       if(opts.noflare&&keel<8)inputPitch=Math.max(-.6,Math.min(.6,(-opts.sink-P.vSpeed)*.14));
-      if(P.onWater){phase='down';td=t;out.touch={t:+t.toFixed(1),speed:+P.spd.toFixed(1),pitch:+(P.pitch*57.3).toFixed(1),roll:+(P.roll*57.3).toFixed(1)};}
+      if(P.onWater){phase='down';td=t;out.touch={t:+t.toFixed(1),speed:+P.spd.toFixed(1),pitch:+(P.pitch*57.3).toFixed(1),roll:+(P.roll*57.3).toFixed(1),sink:+(-pv).toFixed(1),gear:+pg.toFixed(2)};}
      }
      else if(phase==='down'){P.throttle=0;inputPitch=0;if(P.spd<2||t-td>60){out.stopT=+(t-td).toFixed(1);out.stopSpeed=+P.spd.toFixed(1);break;}}
      setThrottleUI(P.throttle);
+     pv=P.vSpeed;pg=P.gear;
      step(dt);
      if(k%300===0)out.log.push([+t.toFixed(0),phase,+P.spd.toFixed(1),+keel.toFixed(0),+(P.pitch*57.3).toFixed(1),+P.vSpeed.toFixed(1)]);
      if(!P.alive||state!==ST.FLIGHT){out.dead=true;break;}

@@ -1,0 +1,1660 @@
+{
+ "dumbo": {
+  "ringKnown": true,
+  "hiddenInsideRing": true,
+  "offCentre": 0.42505959925162295,
+  "navBefore": "SEARCH",
+  "briefText": "about 13 km NW of the fleet, course 310",
+  "flareAt": 3672,
+  "dyeAt": 2880,
+  "found": true,
+  "navAfter": "TARGET",
+  "said": [
+   "RED FLARE — 12 O'CLOCK. SOMEBODY IS SIGNALLING",
+   "YELLOW DYE PATCH — 12 O'CLOCK. THAT IS THEM. ALIGHT BESIDE THE RAFT"
+  ],
+  "aboard": 2,
+  "boarded": true,
+  "phase": "home",
+  "rtb": true,
+  "zeros": 2,
+  "state": true,
+  "title": "ALIGHTED — SORTIE COMPLETE",
+  "sub": "🥇 GOLD · Dumbo · Airmen Down"
+ },
+ "sub": {
+  "charges": 4,
+  "state0": "surfaced",
+  "foundAt": 2068,
+  "diveAt": 1489,
+  "state1": "diving",
+  "said": [
+   "SUBMARINE — 12 O'CLOCK. DROP BELOW 560 FT, UNDER 165 KT",
+   "SHE SAW US — SHE IS CRASH-DIVING"
+  ],
+  "dropped": 4,
+  "afterMiss": "diving",
+  "sunkAfterMiss": false,
+  "missSaid": 1,
+  "state2": "submerged",
+  "trailMarks": 27,
+  "sunk40": false,
+  "sunk12": true,
+  "rtb": true,
+  "chargesLeft": 1,
+  "score": 950,
+  "subState": "sunk"
+ },
+ "shadow": {
+  "ships": 5,
+  "freighters": 3,
+  "destroyers": 2,
+  "foundAt": 6693,
+  "navKind": "ship",
+  "zerosAt": 60,
+  "doneAt": 240,
+  "hold": 240,
+  "rtb": true,
+  "score": 1150,
+  "reports": 8,
+  "escortsFired": 0
+ },
+ "blackcat": {
+  "night": "night",
+  "flares": true,
+  "ships": 3,
+  "foundAt": 15453,
+  "said": [
+   "RADAR CONTACT — 12 O'CLOCK, 8 MILES. SHIPS, SEVERAL"
+  ],
+  "sunk1": true,
+  "rtb1": false,
+  "sunk2": true,
+  "rtb2": true,
+  "phase": "home",
+  "bombsLeft": 2,
+  "finished": true,
+  "title": "WAR CRUISE COMPLETE"
+ },
+ "flying": {
+  "arcade": {
+   "log": [
+    [
+     0,
+     "run",
+     0,
+     -1,
+     1.7,
+     0
+    ],
+    [
+     5,
+     "run",
+     8.8,
+     -1,
+     1.7,
+     0
+    ],
+    [
+     10,
+     "run",
+     15.9,
+     -1,
+     1.7,
+     0
+    ],
+    [
+     15,
+     "run",
+     20.3,
+     -1,
+     1.7,
+     0
+    ],
+    [
+     20,
+     "run",
+     24.8,
+     -1,
+     1.7,
+     0
+    ],
+    [
+     25,
+     "run",
+     30.7,
+     -1,
+     1.7,
+     0
+    ],
+    [
+     30,
+     "run",
+     36.6,
+     -1,
+     5.5,
+     0
+    ],
+    [
+     35,
+     "climb",
+     38.7,
+     19,
+     7.4,
+     5
+    ],
+    [
+     40,
+     "climb",
+     40.1,
+     44,
+     7.1,
+     5
+    ],
+    [
+     45,
+     "climb",
+     41.6,
+     70,
+     6.8,
+     4.9
+    ],
+    [
+     50,
+     "climb",
+     43,
+     95,
+     6.6,
+     4.9
+    ],
+    [
+     55,
+     "climb",
+     44.4,
+     120,
+     6.3,
+     4.9
+    ],
+    [
+     60,
+     "descend",
+     47.7,
+     112,
+     -3.5,
+     -2.9
+    ],
+    [
+     65,
+     "descend",
+     48.7,
+     99,
+     -3.4,
+     -2.9
+    ],
+    [
+     70,
+     "descend",
+     49.6,
+     84,
+     -3.4,
+     -2.9
+    ],
+    [
+     75,
+     "descend",
+     50.4,
+     69,
+     -3.3,
+     -2.9
+    ],
+    [
+     80,
+     "descend",
+     51.2,
+     54,
+     -3.3,
+     -2.9
+    ],
+    [
+     85,
+     "descend",
+     51.9,
+     40,
+     -3.2,
+     -2.9
+    ],
+    [
+     90,
+     "descend",
+     49.9,
+     32,
+     -2,
+     -1.7
+    ],
+    [
+     95,
+     "descend",
+     47.6,
+     22,
+     -2.1,
+     -1.7
+    ],
+    [
+     100,
+     "descend",
+     45.5,
+     14,
+     -2.2,
+     -1.7
+    ],
+    [
+     105,
+     "descend",
+     43.1,
+     8,
+     -0.8,
+     -0.6
+    ],
+    [
+     110,
+     "descend",
+     39.9,
+     4,
+     -0.9,
+     -0.6
+    ],
+    [
+     115,
+     "descend",
+     36.6,
+     0,
+     -1,
+     -0.6
+    ],
+    [
+     120,
+     "down",
+     28.4,
+     -1,
+     1.8,
+     0
+    ],
+    [
+     125,
+     "down",
+     15.1,
+     -1,
+     1.7,
+     0
+    ],
+    [
+     130,
+     "down",
+     3.6,
+     -1,
+     1.7,
+     0
+    ]
+   ],
+   "said": [
+    "AIRBORNE — BUILD SPEED, FLOATS WILL FOLD"
+   ],
+   "climbT": 55.1,
+   "touch": {
+    "t": 115.5,
+    "speed": 36.3,
+    "pitch": -1,
+    "roll": 0
+   },
+   "stopT": 15.3,
+   "stopSpeed": 2,
+   "phase": "down",
+   "alive": true,
+   "hull": 100,
+   "result": "WAR CRUISE COMPLETE",
+   "state": 3
+  },
+  "arcadeSteep": {
+   "log": [
+    [
+     0,
+     "run",
+     0,
+     -1,
+     1.7,
+     0
+    ],
+    [
+     5,
+     "run",
+     8.8,
+     -1,
+     1.7,
+     0
+    ],
+    [
+     10,
+     "run",
+     15.9,
+     -1,
+     1.7,
+     0
+    ],
+    [
+     15,
+     "run",
+     20.3,
+     -1,
+     1.7,
+     0
+    ],
+    [
+     20,
+     "run",
+     24.8,
+     -1,
+     1.7,
+     0
+    ],
+    [
+     25,
+     "run",
+     30.7,
+     -1,
+     1.7,
+     0
+    ],
+    [
+     30,
+     "run",
+     36.6,
+     -1,
+     5.5,
+     0
+    ],
+    [
+     35,
+     "climb",
+     38.7,
+     19,
+     7.4,
+     5
+    ],
+    [
+     40,
+     "climb",
+     40.1,
+     44,
+     7.1,
+     5
+    ],
+    [
+     45,
+     "climb",
+     41.6,
+     69,
+     6.8,
+     4.9
+    ],
+    [
+     50,
+     "climb",
+     43,
+     95,
+     6.6,
+     4.9
+    ],
+    [
+     55,
+     "climb",
+     44.4,
+     119,
+     6.5,
+     5
+    ],
+    [
+     60,
+     "descend",
+     49.6,
+     103,
+     -6.7,
+     -5.8
+    ],
+    [
+     65,
+     "descend",
+     53.2,
+     75,
+     -6.3,
+     -5.9
+    ],
+    [
+     70,
+     "descend",
+     56.3,
+     46,
+     -6,
+     -5.9
+    ],
+    [
+     75,
+     "descend",
+     56,
+     24,
+     -3.6,
+     -3.6
+    ],
+    [
+     80,
+     "descend",
+     54.9,
+     7,
+     -6.6,
+     -6.3
+    ],
+    [
+     85,
+     "down",
+     49.5,
+     -1,
+     1.8,
+     0
+    ],
+    [
+     90,
+     "down",
+     39.1,
+     -1,
+     1.7,
+     0
+    ],
+    [
+     95,
+     "down",
+     28.5,
+     -1,
+     1.7,
+     0
+    ],
+    [
+     100,
+     "down",
+     15.2,
+     -1,
+     1.7,
+     0
+    ],
+    [
+     105,
+     "down",
+     3.6,
+     -1,
+     1.7,
+     0
+    ]
+   ],
+   "said": [
+    "AIRBORNE — BUILD SPEED, FLOATS WILL FOLD",
+    "THAT WAS FIRM — CHECK THE BILGES"
+   ],
+   "climbT": 55.1,
+   "touch": {
+    "t": 81.2,
+    "speed": 55.1,
+    "pitch": -6.3,
+    "roll": 0
+   },
+   "stopT": 24.6,
+   "stopSpeed": 2,
+   "phase": "down",
+   "alive": true,
+   "hull": 83,
+   "result": "WAR CRUISE COMPLETE",
+   "state": 3
+  },
+  "arcadeWheels": {
+   "log": [
+    [
+     0,
+     "run",
+     0,
+     -1,
+     1.7,
+     0
+    ],
+    [
+     5,
+     "run",
+     8.8,
+     -1,
+     1.7,
+     0
+    ],
+    [
+     10,
+     "run",
+     15.9,
+     -1,
+     1.7,
+     0
+    ],
+    [
+     15,
+     "run",
+     20.3,
+     -1,
+     1.7,
+     0
+    ],
+    [
+     20,
+     "run",
+     24.8,
+     -1,
+     1.7,
+     0
+    ],
+    [
+     25,
+     "run",
+     30.7,
+     -1,
+     1.7,
+     0
+    ],
+    [
+     30,
+     "run",
+     36.6,
+     -1,
+     5.5,
+     0
+    ],
+    [
+     35,
+     "climb",
+     38.7,
+     19,
+     7.4,
+     5
+    ],
+    [
+     40,
+     "climb",
+     40.1,
+     44,
+     7.1,
+     5
+    ],
+    [
+     45,
+     "climb",
+     41.6,
+     69,
+     6.8,
+     4.9
+    ],
+    [
+     50,
+     "climb",
+     43,
+     95,
+     6.6,
+     4.9
+    ],
+    [
+     55,
+     "climb",
+     44.4,
+     119,
+     6.5,
+     5
+    ],
+    [
+     60,
+     "descend",
+     46.6,
+     112,
+     -3.5,
+     -2.9
+    ],
+    [
+     65,
+     "descend",
+     46.1,
+     99,
+     -3.6,
+     -2.9
+    ],
+    [
+     70,
+     "descend",
+     45.7,
+     85,
+     -3.6,
+     -2.9
+    ],
+    [
+     75,
+     "descend",
+     45.3,
+     71,
+     -3.6,
+     -2.9
+    ],
+    [
+     80,
+     "descend",
+     45,
+     55,
+     -3.6,
+     -2.9
+    ],
+    [
+     85,
+     "descend",
+     44.7,
+     42,
+     -3.7,
+     -2.8
+    ],
+    [
+     90,
+     "descend",
+     42,
+     33,
+     -2.3,
+     -1.7
+    ],
+    [
+     95,
+     "descend",
+     39.3,
+     24,
+     -2.4,
+     -1.7
+    ],
+    [
+     100,
+     "descend",
+     37.3,
+     15,
+     -2.5,
+     -1.6
+    ],
+    [
+     105,
+     "descend",
+     35.2,
+     7,
+     -1.5,
+     -1
+    ],
+    [
+     110,
+     "down",
+     32,
+     -1,
+     2.5,
+     0
+    ],
+    [
+     115,
+     "down",
+     20.2,
+     -1,
+     1.7,
+     0
+    ],
+    [
+     120,
+     "down",
+     7.4,
+     -1,
+     1.7,
+     0
+    ]
+   ],
+   "said": [
+    "AIRBORNE — BUILD SPEED, FLOATS WILL FOLD",
+    "WHEELS COMING UP — WE ARE ALIGHTING ON THE SEA",
+    "WHEELS COMING UP — WE ARE ALIGHTING ON THE SEA",
+    "WHEELS COMING UP — WE ARE ALIGHTING ON THE SEA",
+    "WHEELS COMING UP — WE ARE ALIGHTING ON THE SEA",
+    "WHEELS COMING UP — WE ARE ALIGHTING ON THE SEA",
+    "WHEELS COMING UP — WE ARE ALIGHTING ON THE SEA",
+    "WHEELS COMING UP — WE ARE ALIGHTING ON THE SEA",
+    "WHEELS COMING UP — WE ARE ALIGHTING ON THE SEA",
+    "WHEELS COMING UP — WE ARE ALIGHTING ON THE SEA",
+    "WHEELS COMING UP — WE ARE ALIGHTING ON THE SEA",
+    "WHEELS COMING UP — WE ARE ALIGHTING ON THE SEA",
+    "WHEELS COMING UP — WE ARE ALIGHTING ON THE SEA",
+    "WHEELS COMING UP — WE ARE ALIGHTING ON THE SEA",
+    "WHEELS COMING UP — WE ARE ALIGHTING ON THE SEA",
+    "WHEELS COMING UP — WE ARE ALIGHTING ON THE SEA",
+    "WHEELS COMING UP — WE ARE ALIGHTING ON THE SEA",
+    "WHEELS COMING UP — WE ARE ALIGHTING ON THE SEA",
+    "WHEELS COMING UP — WE ARE ALIGHTING ON THE SEA",
+    "WHEELS COMING UP — WE ARE ALIGHTING ON THE SEA",
+    "WHEELS COMING UP — WE ARE ALIGHTING ON THE SEA",
+    "WHEELS COMING UP — WE ARE ALIGHTING ON THE SEA",
+    "WHEELS COMING UP — WE ARE ALIGHTING ON THE SEA",
+    "WHEELS COMING UP — WE ARE ALIGHTING ON THE SEA",
+    "WHEELS COMING UP — WE ARE ALIGHTING ON THE SEA",
+    "WHEELS COMING UP — WE ARE ALIGHTING ON THE SEA",
+    "WHEELS COMING UP — WE ARE ALIGHTING ON THE SEA",
+    "WHEELS COMING UP — WE ARE ALIGHTING ON THE SEA",
+    "WHEELS COMING UP — WE ARE ALIGHTING ON THE SEA",
+    "WHEELS COMING UP — WE ARE ALIGHTING ON THE SEA",
+    "WHEELS COMING UP — WE ARE ALIGHTING ON THE SEA",
+    "WHEELS COMING UP — WE ARE ALIGHTING ON THE SEA",
+    "WHEELS COMING UP — WE ARE ALIGHTING ON THE SEA",
+    "WHEELS COMING UP — WE ARE ALIGHTING ON THE SEA",
+    "WHEELS COMING UP — WE ARE ALIGHTING ON THE SEA",
+    "WHEELS COMING UP — WE ARE ALIGHTING ON THE SEA",
+    "WHEELS COMING UP — WE ARE ALIGHTING ON THE SEA",
+    "WHEELS COMING UP — WE ARE ALIGHTING ON THE SEA",
+    "WHEELS COMING UP — WE ARE ALIGHTING ON THE SEA",
+    "WHEELS COMING UP — WE ARE ALIGHTING ON THE SEA",
+    "WHEELS COMING UP — WE ARE ALIGHTING ON THE SEA",
+    "WHEELS COMING UP — WE ARE ALIGHTING ON THE SEA",
+    "WHEELS COMING UP — WE ARE ALIGHTING ON THE SEA",
+    "WHEELS COMING UP — WE ARE ALIGHTING ON THE SEA",
+    "WHEELS COMING UP — WE ARE ALIGHTING ON THE SEA",
+    "WHEELS COMING UP — WE ARE ALIGHTING ON THE SEA",
+    "WHEELS COMING UP — WE ARE ALIGHTING ON THE SEA",
+    "WHEELS COMING UP — WE ARE ALIGHTING ON THE SEA",
+    "WHEELS COMING UP — WE ARE ALIGHTING ON THE SEA",
+    "WHEELS COMING UP — WE ARE ALIGHTING ON THE SEA",
+    "WHEELS COMING UP — WE ARE ALIGHTING ON THE SEA",
+    "WHEELS COMING UP — WE ARE ALIGHTING ON THE SEA",
+    "WHEELS COMING UP — WE ARE ALIGHTING ON THE SEA",
+    "WHEELS COMING UP — WE ARE ALIGHTING ON THE SEA",
+    "WHEELS COMING UP — WE ARE ALIGHTING ON THE SEA",
+    "WHEELS COMING UP — WE ARE ALIGHTING ON THE SEA",
+    "WHEELS COMING UP — WE ARE ALIGHTING ON THE SEA",
+    "WHEELS COMING UP — WE ARE ALIGHTING ON THE SEA",
+    "WHEELS COMING UP — WE ARE ALIGHTING ON THE SEA",
+    "WHEELS COMING UP — WE ARE ALIGHTING ON THE SEA",
+    "WHEELS COMING UP — WE ARE ALIGHTING ON THE SEA",
+    "WHEELS COMING UP — WE ARE ALIGHTING ON THE SEA",
+    "WHEELS COMING UP — WE ARE ALIGHTING ON THE SEA",
+    "WHEELS COMING UP — WE ARE ALIGHTING ON THE SEA",
+    "WHEELS COMING UP — WE ARE ALIGHTING ON THE SEA",
+    "WHEELS COMING UP — WE ARE ALIGHTING ON THE SEA",
+    "WHEELS COMING UP — WE ARE ALIGHTING ON THE SEA",
+    "WHEELS COMING UP — WE ARE ALIGHTING ON THE SEA",
+    "WHEELS COMING UP — WE ARE ALIGHTING ON THE SEA",
+    "WHEELS COMING UP — WE ARE ALIGHTING ON THE SEA",
+    "WHEELS COMING UP — WE ARE ALIGHTING ON THE SEA",
+    "WHEELS COMING UP — WE ARE ALIGHTING ON THE SEA",
+    "WHEELS COMING UP — WE ARE ALIGHTING ON THE SEA",
+    "WHEELS COMING UP — WE ARE ALIGHTING ON THE SEA",
+    "WHEELS COMING UP — WE ARE ALIGHTING ON THE SEA",
+    "WHEELS COMING UP — WE ARE ALIGHTING ON THE SEA",
+    "WHEELS COMING UP — WE ARE ALIGHTING ON THE SEA",
+    "WHEELS COMING UP — WE ARE ALIGHTING ON THE SEA",
+    "WHEELS COMING UP — WE ARE ALIGHTING ON THE SEA",
+    "WHEELS COMING UP — WE ARE ALIGHTING ON THE SEA",
+    "WHEELS COMING UP — WE ARE ALIGHTING ON THE SEA",
+    "WHEELS COMING UP — WE ARE ALIGHTING ON THE SEA",
+    "WHEELS COMING UP — WE ARE ALIGHTING ON THE SEA",
+    "WHEELS COMING UP — WE ARE ALIGHTING ON THE SEA",
+    "WHEELS COMING UP — WE ARE ALIGHTING ON THE SEA",
+    "WHEELS COMING UP — WE ARE ALIGHTING ON THE SEA",
+    "WHEELS COMING UP — WE ARE ALIGHTING ON THE SEA",
+    "WHEELS COMING UP — WE ARE ALIGHTING ON THE SEA",
+    "WHEELS COMING UP — WE ARE ALIGHTING ON THE SEA",
+    "WHEELS COMING UP — WE ARE ALIGHTING ON THE SEA",
+    "WHEELS COMING UP — WE ARE ALIGHTING ON THE SEA",
+    "WHEELS COMING UP — WE ARE ALIGHTING ON THE SEA",
+    "WHEELS COMING UP — WE ARE ALIGHTING ON THE SEA",
+    "WHEELS COMING UP — WE ARE ALIGHTING ON THE SEA",
+    "WHEELS COMING UP — WE ARE ALIGHTING ON THE SEA",
+    "WHEELS COMING UP — WE ARE ALIGHTING ON THE SEA",
+    "WHEELS COMING UP — WE ARE ALIGHTING ON THE SEA",
+    "WHEELS COMING UP — WE ARE ALIGHTING ON THE SEA",
+    "THAT WAS FIRM — CHECK THE BILGES"
+   ],
+   "climbT": 55.2,
+   "touch": {
+    "t": 108.3,
+    "speed": 34.3,
+    "pitch": -10.6,
+    "roll": 0
+   },
+   "stopT": 14.3,
+   "stopSpeed": 2,
+   "phase": "down",
+   "alive": true,
+   "hull": 81,
+   "result": "WAR CRUISE COMPLETE",
+   "state": 3
+  },
+  "real": {
+   "log": [
+    [
+     0,
+     "run",
+     0,
+     -1,
+     1.7,
+     0
+    ],
+    [
+     5,
+     "run",
+     8.8,
+     -1,
+     1.7,
+     0
+    ],
+    [
+     10,
+     "run",
+     15.9,
+     -1,
+     1.7,
+     0
+    ],
+    [
+     15,
+     "run",
+     20.3,
+     -1,
+     1.7,
+     0
+    ],
+    [
+     20,
+     "run",
+     24.8,
+     -1,
+     1.7,
+     0
+    ],
+    [
+     25,
+     "run",
+     30.7,
+     -1,
+     1.7,
+     0
+    ],
+    [
+     30,
+     "run",
+     36.6,
+     -1,
+     5.5,
+     0
+    ],
+    [
+     35,
+     "climb",
+     34.7,
+     19,
+     8.3,
+     5
+    ],
+    [
+     40,
+     "climb",
+     37.1,
+     20,
+     -3.2,
+     -2.1
+    ],
+    [
+     45,
+     "climb",
+     37.2,
+     31,
+     7.7,
+     5
+    ],
+    [
+     50,
+     "climb",
+     33.7,
+     55,
+     5.9,
+     3.5
+    ],
+    [
+     55,
+     "climb",
+     38.4,
+     48,
+     0,
+     0
+    ],
+    [
+     60,
+     "climb",
+     36.5,
+     68,
+     7.9,
+     5
+    ],
+    [
+     65,
+     "climb",
+     34,
+     89,
+     -1.5,
+     -0.9
+    ],
+    [
+     70,
+     "climb",
+     38.7,
+     81,
+     3.2,
+     2.2
+    ],
+    [
+     75,
+     "climb",
+     35.8,
+     104,
+     8,
+     5
+    ],
+    [
+     80,
+     "climb",
+     35.1,
+     117,
+     -4.9,
+     -3
+    ],
+    [
+     85,
+     "climb",
+     38.5,
+     115,
+     5.9,
+     4
+    ],
+    [
+     90,
+     "level",
+     37.5,
+     130,
+     1.3,
+     0.9
+    ],
+    [
+     95,
+     "level",
+     39.2,
+     131,
+     0.1,
+     0.1
+    ],
+    [
+     100,
+     "level",
+     41.3,
+     131,
+     0,
+     0
+    ],
+    [
+     105,
+     "level",
+     43.4,
+     132,
+     0,
+     0
+    ],
+    [
+     110,
+     "level",
+     45.4,
+     131,
+     0,
+     0
+    ],
+    [
+     115,
+     "descend",
+     48,
+     120,
+     -4.2,
+     -3.5
+    ],
+    [
+     120,
+     "descend",
+     49.5,
+     102,
+     -4.1,
+     -3.5
+    ],
+    [
+     125,
+     "descend",
+     51,
+     84,
+     -3.9,
+     -3.5
+    ],
+    [
+     130,
+     "descend",
+     52.2,
+     67,
+     -3.8,
+     -3.5
+    ],
+    [
+     135,
+     "descend",
+     53.4,
+     49,
+     -3.8,
+     -3.5
+    ],
+    [
+     140,
+     "descend",
+     53.3,
+     35,
+     -2.3,
+     -2.1
+    ],
+    [
+     145,
+     "descend",
+     51.1,
+     24,
+     -2.4,
+     -2.1
+    ],
+    [
+     150,
+     "descend",
+     49,
+     14,
+     -2.5,
+     -2.1
+    ],
+    [
+     155,
+     "descend",
+     46.6,
+     6,
+     -1,
+     -0.8
+    ],
+    [
+     160,
+     "descend",
+     43.6,
+     1,
+     -1,
+     -0.8
+    ],
+    [
+     165,
+     "down",
+     38.3,
+     -1,
+     2,
+     0
+    ],
+    [
+     170,
+     "down",
+     27.8,
+     -1,
+     1.7,
+     0
+    ],
+    [
+     175,
+     "down",
+     14.4,
+     -1,
+     1.7,
+     0
+    ],
+    [
+     180,
+     "down",
+     3,
+     -1,
+     1.7,
+     0
+    ]
+   ],
+   "said": [
+    "AIRBORNE — BUILD SPEED, FLOATS WILL FOLD"
+   ],
+   "climbT": 86.1,
+   "touch": {
+    "t": 162.1,
+    "speed": 42.3,
+    "pitch": -1.1,
+    "roll": 0
+   },
+   "stopT": 18.4,
+   "stopSpeed": 2,
+   "phase": "down",
+   "alive": true,
+   "hull": 100,
+   "result": "WAR CRUISE COMPLETE",
+   "state": 3
+  },
+  "realSteep": {
+   "log": [
+    [
+     0,
+     "run",
+     0,
+     -1,
+     1.7,
+     0
+    ],
+    [
+     5,
+     "run",
+     8.8,
+     -1,
+     1.7,
+     0
+    ],
+    [
+     10,
+     "run",
+     15.9,
+     -1,
+     1.7,
+     0
+    ],
+    [
+     15,
+     "run",
+     20.3,
+     -1,
+     1.7,
+     0
+    ],
+    [
+     20,
+     "run",
+     24.8,
+     -1,
+     1.7,
+     0
+    ],
+    [
+     25,
+     "run",
+     30.7,
+     -1,
+     1.7,
+     0
+    ],
+    [
+     30,
+     "run",
+     36.6,
+     -1,
+     5.5,
+     0
+    ],
+    [
+     35,
+     "climb",
+     34.7,
+     18,
+     8.3,
+     5
+    ],
+    [
+     40,
+     "climb",
+     37.1,
+     20,
+     -3.2,
+     -2.1
+    ],
+    [
+     45,
+     "climb",
+     37.2,
+     30,
+     7.7,
+     5
+    ],
+    [
+     50,
+     "climb",
+     33.7,
+     55,
+     5.9,
+     3.5
+    ],
+    [
+     55,
+     "climb",
+     38.4,
+     49,
+     0,
+     0
+    ],
+    [
+     60,
+     "climb",
+     36.5,
+     68,
+     7.9,
+     5
+    ],
+    [
+     65,
+     "climb",
+     34,
+     89,
+     -1.5,
+     -0.9
+    ],
+    [
+     70,
+     "climb",
+     38.7,
+     81,
+     3.2,
+     2.2
+    ],
+    [
+     75,
+     "climb",
+     35.8,
+     104,
+     8,
+     5
+    ],
+    [
+     80,
+     "climb",
+     35.1,
+     116,
+     -4.9,
+     -3
+    ],
+    [
+     85,
+     "climb",
+     38.5,
+     114,
+     5.9,
+     4
+    ],
+    [
+     90,
+     "level",
+     37.4,
+     129,
+     1.4,
+     0.9
+    ],
+    [
+     95,
+     "level",
+     39,
+     132,
+     0.1,
+     0.1
+    ],
+    [
+     100,
+     "level",
+     41.1,
+     131,
+     0,
+     0
+    ],
+    [
+     105,
+     "level",
+     43.2,
+     132,
+     0,
+     0
+    ],
+    [
+     110,
+     "level",
+     45.3,
+     132,
+     0,
+     0
+    ],
+    [
+     115,
+     "descend",
+     50,
+     110,
+     -8.1,
+     -7
+    ],
+    [
+     120,
+     "descend",
+     54.5,
+     76,
+     -7.4,
+     -7
+    ],
+    [
+     125,
+     "descend",
+     58.3,
+     40,
+     -6.9,
+     -7
+    ],
+    [
+     130,
+     "descend",
+     57.7,
+     19,
+     -4.2,
+     -4.2
+    ]
+   ],
+   "said": [
+    "AIRBORNE — BUILD SPEED, FLOATS WILL FOLD"
+   ],
+   "climbT": 86.2,
+   "dead": true,
+   "phase": "descend",
+   "alive": false,
+   "hull": 100,
+   "result": "TOO FAST",
+   "state": 4
+  },
+  "realWheels": {
+   "log": [
+    [
+     0,
+     "run",
+     0,
+     -1,
+     1.7,
+     0
+    ],
+    [
+     5,
+     "run",
+     8.8,
+     -1,
+     1.7,
+     0
+    ],
+    [
+     10,
+     "run",
+     15.9,
+     -1,
+     1.7,
+     0
+    ],
+    [
+     15,
+     "run",
+     20.3,
+     -1,
+     1.7,
+     0
+    ],
+    [
+     20,
+     "run",
+     24.8,
+     -1,
+     1.7,
+     0
+    ],
+    [
+     25,
+     "run",
+     30.7,
+     -1,
+     1.7,
+     0
+    ],
+    [
+     30,
+     "run",
+     36.6,
+     -1,
+     5.5,
+     0
+    ],
+    [
+     35,
+     "climb",
+     34.7,
+     18,
+     8.3,
+     5
+    ],
+    [
+     40,
+     "climb",
+     37.1,
+     20,
+     -3.2,
+     -2.1
+    ],
+    [
+     45,
+     "climb",
+     37.2,
+     30,
+     7.7,
+     5
+    ],
+    [
+     50,
+     "climb",
+     33.7,
+     55,
+     5.9,
+     3.5
+    ],
+    [
+     55,
+     "climb",
+     38.4,
+     49,
+     0,
+     0
+    ],
+    [
+     60,
+     "climb",
+     36.5,
+     68,
+     7.9,
+     5
+    ],
+    [
+     65,
+     "climb",
+     34,
+     89,
+     -1.5,
+     -0.9
+    ],
+    [
+     70,
+     "climb",
+     38.7,
+     81,
+     3.2,
+     2.2
+    ],
+    [
+     75,
+     "climb",
+     35.8,
+     104,
+     8,
+     5
+    ],
+    [
+     80,
+     "climb",
+     35.1,
+     116,
+     -4.9,
+     -3
+    ],
+    [
+     85,
+     "climb",
+     38.5,
+     114,
+     5.9,
+     4
+    ],
+    [
+     90,
+     "level",
+     37.4,
+     129,
+     1.4,
+     0.9
+    ],
+    [
+     95,
+     "level",
+     39,
+     132,
+     0.2,
+     0.1
+    ],
+    [
+     100,
+     "level",
+     41.1,
+     131,
+     0,
+     0
+    ],
+    [
+     105,
+     "level",
+     43.2,
+     132,
+     0,
+     0
+    ],
+    [
+     110,
+     "level",
+     45.2,
+     132,
+     0,
+     0
+    ],
+    [
+     115,
+     "descend",
+     46.8,
+     121,
+     -4.3,
+     -3.5
+    ],
+    [
+     120,
+     "descend",
+     47,
+     104,
+     -4.3,
+     -3.5
+    ],
+    [
+     125,
+     "descend",
+     47.1,
+     87,
+     -4.3,
+     -3.5
+    ],
+    [
+     130,
+     "descend",
+     47.2,
+     68,
+     -4.3,
+     -3.5
+    ],
+    [
+     135,
+     "descend",
+     47.2,
+     52,
+     -4.3,
+     -3.5
+    ],
+    [
+     140,
+     "descend",
+     46.5,
+     35,
+     -2.6,
+     -2.1
+    ],
+    [
+     145,
+     "descend",
+     43.4,
+     26,
+     -2.8,
+     -2.1
+    ],
+    [
+     150,
+     "descend",
+     40.6,
+     15,
+     -3,
+     -2.1
+    ],
+    [
+     155,
+     "descend",
+     37.8,
+     5,
+     -1.6,
+     -1.1
+    ],
+    [
+     160,
+     "descend",
+     33.7,
+     2,
+     -1.9,
+     -1.1
+    ]
+   ],
+   "said": [
+    "AIRBORNE — BUILD SPEED, FLOATS WILL FOLD"
+   ],
+   "climbT": 86.2,
+   "dead": true,
+   "phase": "descend",
+   "alive": false,
+   "hull": 100,
+   "result": "GEAR DOWN ON THE WATER",
+   "state": 4
+  }
+ }
+}
