@@ -7902,7 +7902,8 @@ function ensureNavigation(){
 }
 function updateNav(){
   const nav=ensureNavigation(),contacts=pacificContacts(),base=contacts.find(c=>c.kind==='BASE');
-  let list=contacts.filter(c=>c.kind==='TARGET'&&!c.ref.def.optional||c.kind==='SHIP'&&!c.ref.def.optional&&['freighter','cruiser'].includes(c.ref.def.type)||hasRaiders()&&c.kind==='BOMBER');
+  // Build 265: the Catalina's TARGET contacts (raft, submarine) carry a plain string as ref, not a ship or shore target - they have no def; reading c.ref.def.optional stopped the game the moment one was found
+  let list=contacts.filter(c=>c.kind==='TARGET'&&!c.ref?.def?.optional||c.kind==='SHIP'&&!c.ref.def.optional&&['freighter','cruiser'].includes(c.ref.def.type)||hasRaiders()&&c.kind==='BOMBER');
   if(!list.length&&MISSIONS[mission].theater==='escort'&&!P.rtb)list=contacts.filter(c=>c.kind==='ALLY'&&!c.ref.arrived);
   if(!list.length)list=contacts.filter(c=>c.kind==='BANDIT'||c.kind==='BOMBER');
   let chosen=list.sort((a,b)=>Math.hypot(a.pos.x-P.pos.x,a.pos.z-P.pos.z)-Math.hypot(b.pos.x-P.pos.x,b.pos.z-P.pos.z))[0]||base;

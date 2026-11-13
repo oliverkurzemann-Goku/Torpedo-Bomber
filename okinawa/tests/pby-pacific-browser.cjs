@@ -213,6 +213,26 @@ const report={};
    return out;});
   assert.equal(H.targets,0,'no target and no ship exists for the rescue search');assert.ok(H.ringOnly,'only the ring until the raft is seen');
   assert.ok(!H.contactKinds.some(k=>/raft|dye|survivor|sub|convoy/i.test(String(k))),'the contact list does not give the hidden thing away: '+JSON.stringify(H.contactKinds));
+  // ---- Build 265: the moment something is found the whole game loop must go on (the navigation list once read ref.def.optional of the string-ref raft/submarine contact and stopped the simulation on the iPad) ----
+  const N=await page.evaluate(async()=>{
+   const out={};
+   for(const title of ['Sortie 24','Sortie 25','Sortie 26','Sortie 27']){
+    const r={ok:true,err:null};out[title]=r;
+    try{
+     await begin(title);const ops=pbyOps;
+     const near=ops.kind==='shadow'||ops.kind==='blackcat'?ships[0].group.position:(ops.kind==='dumbo'?ops.point:{x:ops.sub.x,z:ops.sub.z});
+     P.onWater=false;P.gear=0;P.gearTgt=0;P.spd=60;P.pitch=0;P.vSpeed=0;state=ST.FLIGHT;
+     P.pos.set(near.x-400,120,near.z);P.heading=0;
+     for(let k=0;k<30*20;k++){P.pos.y=120;P.spd=60;step(1/30);updateHUD();updateMinimap();if(ops.found)break;}   // fly onto it until she sees it
+     r.found=!!ops.found;
+     for(let k=0;k<30*6;k++){P.pos.y=120;P.spd=60;step(1/30);updateHUD();updateMinimap();}   // and go on for six seconds with the arrow and the map on it
+     const nav=pacificContacts().filter(c=>c.kind==='TARGET'||c.kind==='SHIP');r.contacts=nav.map(c=>c.kind+':'+(typeof c.ref==='string'?c.ref:'obj'));
+     r.label=document.getElementById('objText')?.textContent;
+    }catch(e){r.ok=false;r.err=String(e&&e.message||e);}
+   }
+   return out;});
+  report.nav=N;
+  for(const [t,r] of Object.entries(N)){assert.ok(r.ok,t+': the game goes on after the find ('+r.err+')');assert.ok(r.found,t+': it was found');assert.match(r.label||'',/TRACK:/,t+': the arrow points at what was found ('+r.label+')');}
   const bad=missing.filter(u=>!/favicon|\.mp3|\.wav/.test(u));
   fs.mkdirSync(path.join(root,'app/release'),{recursive:true});fs.writeFileSync(path.join(root,'app/release/pby-pacific-browser.json'),JSON.stringify(report,null,1));
   console.log('missing',JSON.stringify(missing));
