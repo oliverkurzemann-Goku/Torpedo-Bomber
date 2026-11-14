@@ -113,7 +113,8 @@ function player(P,dt,env){
   // Pull is a load factor: neutral holds the path, full stick is the most the wing gives at this speed
   // (the buffet boundary, so a loop is flown on the edge of the stall). The wing stalls when the path
   // alone asks more than it has - too slow - and stays stalled until speed returns.
-  const pull=d.pullExponent?Math.sign(stickPitch)*Math.pow(Math.abs(stickPitch),d.pullExponent):stickPitch;P.pitchRef=null;   // Build 259: a type may soften the middle of the pull (the Storch: d.pullExponent)
+  // Build 266: d.pullMax caps a full back stick at that share of the wing's spare load (the Storch: .5) - full pull stalled it right after lift-off and looped it at cruise
+  const pull=(d.pullExponent?Math.sign(stickPitch)*Math.pow(Math.abs(stickPitch),d.pullExponent):stickPitch)*(stickPitch>0?(d.pullMax??1):1);P.pitchRef=null;   // Build 259: a type may soften the middle of the pull (the Storch: d.pullExponent)
   command=(s,V,l)=>{
    // Build 229: the automatic path hold asks 1/cos(bank) g in a bank. When the wing has less than that (heavy, take-off
    // flap, 125 kt) it must not stall the wing by itself: a real aircraft with the stick left alone sinks and tightens

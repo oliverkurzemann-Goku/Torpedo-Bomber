@@ -24,7 +24,7 @@ const report={};
   page.setDefaultTimeout(300000);page.on('pageerror',e=>errors.push(e.message));
   page.on('console',m=>{if(/Shader Error|VALIDATE_STATUS|not compiled/i.test(m.text())||m.type()==='error')errors.push(m.text());});
   await page.addInitScript(()=>{window.requestAnimationFrame=()=>0;});
-  await page.goto('http://127.0.0.1:'+server.address().port+'/torpedo-carrier.html?v=265');
+  await page.goto('http://127.0.0.1:'+server.address().port+'/torpedo-carrier.html?v=266');
   await page.waitForFunction(()=>state===ST.MENU,null,{polling:100});
   await page.evaluate(async()=>{
    renderer.setPixelRatio(1);await prepareOkinawa();
@@ -233,6 +233,49 @@ const report={};
    return out;});
   report.nav=N;
   for(const [t,r] of Object.entries(N)){assert.ok(r.ok,t+': the game goes on after the find ('+r.err+')');assert.ok(r.found,t+': it was found');assert.match(r.label||'',/TRACK:/,t+': the arrow points at what was found ('+r.label+')');}
+  // ---- Build 266: no red gun sight for the Catalina (she has no fixed gun); a drop sight for depth charges and bombs instead ----
+  const V=await page.evaluate(async()=>{
+   const out={};const el=document.getElementById('bombSight'),cret=document.querySelector('.pitReticle');
+   const hold=(x,y,z,spd,pitch=0)=>{P.onWater=false;P.onDeck=false;P.gear=0;P.gearTgt=0;P.heading=0;P.pitch=pitch;P.vSpeed=0;P.spd=spd;state=ST.FLIGHT;P.alive=true;P.pos.set(x,y,z);};
+   const settle=()=>{for(let i=0;i<40;i++)updateCamera(.1);for(let i=0;i<60;i++)updateBombSight(1/30);
+    return {hidden:el.hidden,opacity:+el.style.opacity,label:el.lastElementChild.textContent,green:el.classList.contains('onTarget'),reticle:cret.style.display};};
+   // submarine hunt: inside the limits over open water -> green RELEASE; too high / too fast say why
+   await begin('Sortie 25');const ops=pbyOps,sub=ops.sub;out.charges=P.torps;
+   hold(sub.x-3000,60,sub.z,55);out.ok=settle();
+   hold(sub.x-3000,200,sub.z,60);out.high=settle();
+   hold(sub.x-3000,60,sub.z,100);out.fast=settle();
+   // the predicted point is where a real charge goes down (same release point, velocity, gravity, lifetime)
+   hold(sub.x-3000,80,sub.z,55,-.05);const pred=pbyImpactPrediction(),burst=[],orig=pbyDepthBurst;pbyDepthBurst=(x,z)=>{burst.push({x,z});orig(x,z);};
+   pbyDrop();for(let i=0;i<60*8&&!burst.length;i++)updateBombs(1/60);pbyDepthBurst=orig;
+   out.burst=burst.length;out.err=burst.length?Math.hypot(pred.point.x-burst[0].x,pred.point.z-burst[0].z):null;out.left=P.torps;
+   // green never marks the hidden boat: the prediction does not read her position
+   hold(sub.x-3000,60,sub.z,55);const p1=pbyImpactPrediction(),sx=sub.x,sz=sub.z;sub.x=p1.point.x;sub.z=p1.point.z;const p2=pbyImpactPrediction();sub.x=sx;sub.z=sz;
+   out.noLeak=p1.onTarget===true&&p2.onTarget===true&&p1.point.distanceTo(p2.point)<1e-6;
+   // a point on land is no valid drop point
+   let landX=null;for(let x=carrierX;x<carrierX+60000&&landX===null;x+=50)if(shoreHeight(x,0)>.6)landX=x;
+   out.landFound=landX!==null;if(landX!==null){hold(landX-90,60,0,55);const pl=pbyImpactPrediction();out.land=pl?{onTarget:pl.onTarget,y:+pl.point.y.toFixed(1)}:null;}
+   // Black Cat: green only on a ship
+   await begin('Sortie 27');const fr=ships.filter(s=>s.def.type==='freighter'),sp=fr[0].group.position,lead=60*Math.sqrt(2*58/18)+5*2.6;
+   hold(sp.x-lead,60,sp.z,60);out.bcOn=pbyImpactPrediction()?.onTarget;hold(sp.x-lead,60,sp.z+700,60);out.bcOff=pbyImpactPrediction()?.onTarget;
+   hold(sp.x-lead-600,60,sp.z,60);out.bcIdle=settle();
+   // no stores (Dumbo carries none): no sight at all
+   await begin('Sortie 24');out.dumboStores=P.torps;hold(carrierX+6000,60,0,55);out.dumbo=settle();
+   // the other aircraft keep their red gun sight (and the dive bomber its bomb cue)
+   await begin('Sortie 1');hold(carrierX-3000,200,0,60);out.avenger=settle();
+   return out;
+  });
+  report.sight=V;console.log('drop sight',JSON.stringify(V));
+  assert.equal(V.charges,4);
+  assert.equal(V.ok.reticle,'none','no red gun sight for the Catalina');assert.ok(!V.ok.hidden&&V.ok.opacity>.9,'the drop sight is on ('+V.ok.opacity+')');
+  assert.ok(V.ok.green&&V.ok.label==='RELEASE','inside 170 m and 85 m/s over open water: green RELEASE ('+V.ok.label+')');
+  assert.ok(!V.high.green&&V.high.label==='TOO HIGH','above the limit it says TOO HIGH ('+V.high.label+')');
+  assert.ok(!V.fast.green&&V.fast.label==='TOO FAST','above 85 m/s it says TOO FAST ('+V.fast.label+')');
+  assert.equal(V.burst,1);assert.ok(V.err<5,'the predicted point is where the charge goes down ('+V.err+' m)');assert.equal(V.left,3);
+  assert.ok(V.noLeak,'the sight never reads the hidden submarine');
+  assert.ok(V.landFound&&V.land&&V.land.onTarget===false,'a point on land is no valid drop point: '+JSON.stringify(V.land));
+  assert.ok(V.bcOn===true&&V.bcOff===false,'Black Cat: green only on a ship ('+V.bcOn+'/'+V.bcOff+')');assert.equal(V.bcIdle.reticle,'none');assert.ok(!V.bcIdle.green&&V.bcIdle.label==='BOMB','Black Cat idle label BOMB ('+V.bcIdle.label+')');
+  assert.equal(V.dumboStores,0);assert.ok(V.dumbo.hidden,'a Catalina without stores has no sight');assert.equal(V.dumbo.reticle,'none');
+  assert.equal(V.avenger.reticle,'block','the other aircraft keep their red gun sight');
   const bad=missing.filter(u=>!/favicon|\.mp3|\.wav/.test(u));
   fs.mkdirSync(path.join(root,'app/release'),{recursive:true});fs.writeFileSync(path.join(root,'app/release/pby-pacific-browser.json'),JSON.stringify(report,null,1));
   console.log('missing',JSON.stringify(missing));

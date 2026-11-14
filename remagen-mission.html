@@ -577,7 +577,7 @@
 <script src="terrain-system/WorldVehicles.js?v=248"></script>
 <script src="terrain-system/LivingWorld.js?v=248"></script>
 <script src="campaign.js?v=1"></script>
-<script src="game-runtime.js?v=198"></script>
+<script src="game-runtime.js?v=266"></script>
 <script src="sortie-checkpoint.js?v=238"></script>
 <script src="ju87-native.js?v=218"></script>
 <script src="me262-native.js?v=206"></script>
@@ -611,7 +611,7 @@
 <script src="flight-envelope.js?v=258"></script>
 <script src="flight-dynamics.js?v=258"></script>
 <script src="flight-core.js?v=258"></script>
-<script src="flight-control.js?v=265"></script>
+<script src="flight-control.js?v=266"></script>
 <script src="dogfight-ai.js?v=238"></script>
 <script src="squad.js?v=238"></script>
 <script src="duel-net.js?v=238"></script>
@@ -779,7 +779,8 @@ const AC={
   // guns (noGuns): its flexible rear gun is fired by the gunner himself at bandits behind it (updateStorchGunner). Hull points are a game choice (C):
   // a light fabric-and-tube airframe that a few bursts will bring down.
   fi156:{ name:'Fi 156 C Storch', rollAuth:0.8, pitchAuth:1.0, turn:1.2, gLim:4.0,
-        rollLim:1.05, pitchLim:.75, stall:17.2, app:70/3.6, max:48.6, thrMin:20, windK:.3, pitchBase:2.0, pullAssist:.4, stickExponent:1.7, pullExponent:2.1,   // Build 253: bank up to 60 deg, pitch up to 45 deg, a gentler stick; 30% of the wind
+        rollLim:1.05, pitchLim:.75, stall:17.2, app:70/3.6, max:48.6, thrMin:20, windK:.3, pitchBase:1.7, pullAssist:.4, stickExponent:1.7, pullExponent:2.1,   // Build 253: bank up to 60 deg, pitch up to 45 deg, a gentler stick; 30% of the wind
+        pitchStick:.33, pitchStickLow:.17, pullMax:.5,   // Build 266: full stick = 19 deg nose (11 deg just after lift-off); REALISTIC full pull = half of the wing's spare load; pitchBase 2.0 -> 1.7
         hull:60, ammo:450, bombs:0, rockets:0, gunDmg:.55, gunRate:.11, wing:14.25, noGuns:true,
         // Build 250: a field landing is the Storch's trade (long-stroke legs, slats): it survives a firmer, nose-lower touchdown than a fighter does
         field:{sink:6.2,pitch:.46,speed:12},
@@ -6856,8 +6857,10 @@ function coreLoadout(){return {fuel:P.fuel,bombs:P.bombs,rockets:P.rockets,tankA
 // Build 253: a light STOL type (the Storch) must not leap into the air: after the lift-off the nose-up command is held to 14 deg and opens with the speed
 // (the departure envelope's release: 0 at 1.12 x stall, 1 at 30 m/s), so the climb-out is a climb, not a jump. Everything else: the type's own limit.
 function stolPitchScale(d,departure){
-  const full=d.pitchLim*.92;if(P.ac!=='fi156')return full;
-  const r=Math.max(0,Math.min(1,departure?.release??1));return .25+(full-.25)*r*r*(3-2*r);
+  // Build 266: measured (full stick right after lift-off, ARCADE): 13 deg after 1 s, 18 deg at 82 km/h, rate 13 deg/s; at cruise 33 deg and 23 m/s climb - a real Storch
+  // climbs at 4.6 m/s. The type now carries its own full-stick nose angle (pitchStick) and the one just after lift-off (pitchStickLow) instead of 14 -> 39 deg.
+  const full=d.pitchStick??d.pitchLim*.92;if(P.ac!=='fi156')return full;
+  const lo=d.pitchStickLow??.25,r=Math.max(0,Math.min(1,departure?.release??1));return lo+(full-lo)*r*r*(3-2*r);
 }
 function coreEnv(controls,departure,configuration){
   const d=acDef();

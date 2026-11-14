@@ -12,24 +12,24 @@
   "runM": 65,
   "rows": {
    "2": {
-    "kmh": 86,
-    "climb": 3.4,
-    "pitch": 8.2
+    "kmh": 88,
+    "climb": 2.1,
+    "pitch": 5
    },
    "5": {
-    "kmh": 93,
-    "climb": 5.6,
-    "pitch": 12.4
+    "kmh": 101,
+    "climb": 3.5,
+    "pitch": 7.2
    },
    "10": {
-    "kmh": 95,
-    "climb": 6.1,
-    "pitch": 13.3
+    "kmh": 109,
+    "climb": 4.2,
+    "pitch": 7.9
    }
   },
   "alive": true,
   "levelFull": 174,
-  "levelHalf": 137,
+  "levelHalf": 138,
   "idle": {
    "kmh": 65,
    "sink": 3
@@ -41,31 +41,51 @@
   },
   "stall": {
    "minKmh": 54,
-   "coreStall": 0.85,
+   "coreStall": 0.8,
    "alive": true,
    "crash": null
   }
  },
  "pitchResponse": {
   "arcadeUp": {
-   "peakPitch": 12.3,
-   "peakV": 8.4,
-   "pitch1s": 10.8
+   "peakPitch": 5.9,
+   "peakV": 4.2,
+   "pitch1s": 4.7
   },
   "arcadeDown": {
-   "peakPitch": 12.3,
-   "peakV": 9.8,
-   "pitch1s": -10.8
+   "peakPitch": 5.9,
+   "peakV": 4.5,
+   "pitch1s": -4.7
   },
   "arcadeFull": {
-   "peakPitch": 23.8,
-   "peakV": 15.3,
-   "pitch1s": 21.7
+   "peakPitch": 19.2,
+   "peakV": 12.4,
+   "pitch1s": 15.2
   },
   "realUp": {
-   "peakPitch": 30.2,
-   "peakV": 16.9,
-   "pitch1s": 19.7
+   "peakPitch": 13.6,
+   "peakV": 9.3,
+   "pitch1s": 9
+  }
+ },
+ "fullStick": {
+  "arcade": {
+   "peak": 13.3,
+   "rate": 6.9,
+   "pitch1s": 8.2,
+   "pitch4s": 13.3,
+   "vs4s": 5.7,
+   "stall": 0,
+   "alive": true
+  },
+  "real": {
+   "peak": 33.9,
+   "rate": 17.7,
+   "pitch1s": 20.3,
+   "pitch4s": -17.8,
+   "vs4s": -4.6,
+   "stall": 0.92,
+   "alive": true
   }
  },
  "flare": [
@@ -120,8 +140,8 @@
   },
   "slopePct": 1.4,
   "touch": {
-   "kmh": 58,
-   "dx": 62,
+   "kmh": 57,
+   "dx": 58,
    "dz": 0
   },
   "landed": {
@@ -132,7 +152,7 @@
    "crash": null
   },
   "boarded": {
-   "t": 17.6,
+   "t": 17.1,
    "phase": "home",
    "rescued": 1,
    "score": 600,
@@ -158,11 +178,11 @@
    "wire": true,
    "hidden": true,
    "decoyDist": [
-    877
+    896
    ],
    "nestDist": [
-    3672,
-    5583
+    3279,
+    5726
    ],
    "weather": "clear",
    "radio": null
@@ -203,8 +223,8 @@
     "squads": 1,
     "spawnT": 7,
     "minD": 171,
-    "firstHit": 32.7,
-    "loss": 5.6,
+    "firstHit": 33.8,
+    "loss": 12,
     "alive": true,
     "tracers": 1
    },
@@ -213,20 +233,20 @@
     "squads": 1,
     "spawnT": 5,
     "minD": 171,
-    "firstHit": 22.5,
-    "loss": 49.9,
+    "firstHit": 28.7,
+    "loss": 35.8,
     "alive": true,
-    "tracers": 0
+    "tracers": 1
    },
    {
     "d": 2,
     "squads": 2,
     "spawnT": 4,
-    "minD": 185,
-    "firstHit": 12.5,
+    "minD": 171,
+    "firstHit": 17.5,
     "loss": 60,
     "alive": false,
-    "tracers": 0
+    "tracers": 1
    }
   ],
   "wireWarn": true,
@@ -353,12 +373,12 @@
     "spd": 0,
     "roll": false,
     "fig": true,
-    "dFig": 93,
+    "dFig": 59,
     "agl": 1.3,
-    "x": 90,
+    "x": 66,
     "text": "OFFICER RUNNING — HOLD STILL"
    },
-   "boardT": 16.3,
+   "boardT": 12.6,
    "done": {
     "phase": "home",
     "courier": 1,
@@ -383,13 +403,13 @@
     "spd": 0,
     "roll": false,
     "fig": true,
-    "dFig": 144,
+    "dFig": 138,
     "agl": 1.3,
-    "x": 150,
+    "x": 144,
     "text": "OBSERVER RUNNING — HOLD STILL"
    },
    "bonus": 0,
-   "boardT": 22,
+   "boardT": 21.4,
    "hunters": 2,
    "done": {
     "phase": "home",
@@ -411,12 +431,12 @@
     "spd": 0,
     "roll": false,
     "fig": true,
-    "dFig": 39,
+    "dFig": 80,
     "agl": 1.3,
-    "x": 30,
+    "x": 82,
     "text": "AGENT RUNNING — HOLD STILL"
    },
-   "boardT": 10.4,
+   "boardT": 14.9,
    "hunters": 2,
    "done": {
     "phase": "home",
@@ -493,7 +513,7 @@
   },
   "careless": {
    "zone": 2,
-   "lost": 18.1,
+   "lost": 21.3,
    "alive": true
   },
   "hunters": 2,

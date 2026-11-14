@@ -26,7 +26,7 @@ const server=http.createServer((req,res)=>{
   const page=await browser.newPage({viewport:{width:1194,height:660},hasTouch:true,deviceScaleFactor:1}),errors=[];
   page.setDefaultTimeout(900000);page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error'&&!/404/.test(m.text()))errors.push('console: '+m.text());});
   await page.addInitScript(()=>window.requestAnimationFrame=()=>0);
-  await page.goto('http://127.0.0.1:'+server.address().port+'/remagen-mission.html?v=265&surprises=off&sortie='+sortie);
+  await page.goto('http://127.0.0.1:'+server.address().port+'/remagen-mission.html?v=266&surprises=off&sortie='+sortie);
   // the hangar sortie opens the briefing at once: wait for the world, not for the menu
   await page.waitForFunction(()=>realWorldReady&&(state===ST.MENU||state===ST.BRIEF),null,{polling:200});
   await page.evaluate(async()=>{await Promise.all(['fi156','p47'].map(ensureModel));renderer.setPixelRatio(.25);renderer.shadowMap.enabled=false;if(typeof flightQuality!=='undefined')flightQuality.enabled=false;
@@ -76,8 +76,29 @@ const server=http.createServer((req,res)=>{
   report.pitchResponse=PS;console.log('storch pitch response',JSON.stringify(PS));
   assert.ok(PS.arcadeUp.peakPitch<=15&&PS.arcadeUp.peakV<=10,'half back in ARCADE: nose '+PS.arcadeUp.peakPitch+' deg, climb '+PS.arcadeUp.peakV+' m/s (Build 256: 22.7 deg / 14.9 m/s)');
   assert.ok(PS.arcadeDown.peakV<=12.5,'half forward in ARCADE: sink '+PS.arcadeDown.peakV+' m/s (Build 256: 20.5 m/s)');
-  assert.ok(PS.arcadeFull.peakPitch>=18,'full stick still gives the type its steep climb: '+PS.arcadeFull.peakPitch+' deg');
+  // Build 266: full stick used to give 33 deg and 23 m/s climb at cruise (a real Storch climbs 4.6 m/s): now a 19 degree nose
+  assert.ok(PS.arcadeFull.peakPitch>=15&&PS.arcadeFull.peakPitch<=22&&PS.arcadeFull.peakV<=17,'full stick at cruise: a climb, not a leap: '+PS.arcadeFull.peakPitch+' deg, '+PS.arcadeFull.peakV+' m/s (Build 265: 32.6 deg / 23.2 m/s)');
   assert.ok(PS.realUp.pitch1s<=26,'half pull in REALISTIC: nose '+PS.realUp.pitch1s+' deg after 1 s (Build 256: 45 deg)');
+  // ---- 1c. Build 266: FULL back stick right after lift-off (user: "pulls up far too hard, far too agile in pitch"). Measured in Build 265 (ARCADE): 13 deg after 1 s, 18.3 deg after 4 s,
+  //      13.3 deg/s; REALISTIC 34 deg after 1 s, 34 deg/s and a stall. A real Storch leaves the grass in a climb of 10-12 deg. ----
+  const FS=await page.evaluate(()=>{
+   const dt=1/60,deg=v=>v*180/Math.PI,r1=v=>+(+v).toFixed(1),out={};
+   const run=(label,aero)=>{begin(null);if(aero!==aeroMode){aeroMode=aero;if(typeof switchFlightModel==='function')switchFlightModel();}
+    P.throttle=1;let off=null,last=null,peak=0,rate=0,p1=null,p4=null,vs4=null;
+    for(let t=0;t<60&&P.alive;t+=dt){const vr=SortieFeatures.Handling.speeds(P,acDef().stall,acDef().app).stall*1.1;
+     if(P.onGround)inputPitch=P.spd>.95*vr?.5:0;
+     updateFlight(dt);
+     if(!P.onGround&&off==null){off=t;last=P.pitch;}
+     if(off!=null){const s=t-off;inputPitch=1;rate=Math.max(rate,deg((P.pitch-last)/dt));last=P.pitch;peak=Math.max(peak,deg(P.pitch));if(p1==null&&s>=1)p1=deg(P.pitch);if(s>=4){p4=deg(P.pitch);vs4=P.vSpeed;break;}}}
+    out[label]={peak:r1(peak),rate:r1(rate),pitch1s:r1(p1),pitch4s:r1(p4),vs4s:r1(vs4),stall:+(P.coreStall||0).toFixed(2),alive:P.alive};inputPitch=0;};
+   run('arcade',false);run('real',true);aeroMode=false;
+   return out;
+  });
+  report.fullStick=FS;console.log('storch full stick after lift-off',JSON.stringify(FS));
+  assert.ok(FS.arcade.alive&&FS.arcade.stall<.05,'ARCADE full stick right after lift-off does not stall');
+  assert.ok(FS.arcade.pitch1s<=10&&FS.arcade.peak<=15&&FS.arcade.rate<=9,'ARCADE: full stick after lift-off is a climb: '+FS.arcade.pitch1s+' deg after 1 s, peak '+FS.arcade.peak+' deg, '+FS.arcade.rate+' deg/s (Build 265: 13 / 18.3 / 13.3)');
+  assert.ok(FS.arcade.pitch4s>=8,'but the stick still answers: '+FS.arcade.pitch4s+' deg after 4 s');
+  assert.ok(FS.real.pitch1s<=24&&FS.real.rate<=20,'REALISTIC: full pull after lift-off: '+FS.real.pitch1s+' deg after 1 s, '+FS.real.rate+' deg/s (Build 265: 34 / 34.3)');
   // ---- 2a. Build 250: a human flare is not the scripted one - idle power, the nose pulled up at 5 m, the wing mushes at the stall speed and the nose drops (measured -17 degrees, 4 m/s) -
   //      that used to be "CRASHED: hit the ground away from the strip"; the Storch is rugged (AC.fi156.field) and the pickup zone is the pilot's neighbourhood ----
   const H=await page.evaluate(()=>{

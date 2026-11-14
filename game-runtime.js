@@ -100,7 +100,9 @@
    this.x=this.y=null;this.opacity=0;this.width=this.height=0;
    this.element.hidden=true;this.element.style.opacity='0';this.element.classList.remove('onTarget');
   }
-  update(dt,{enabled,position,camera,predict,attack=false,releaseAllowed=false}){
+  // Build 266: idleLabel is the text while the release is not allowed or the pipper is not settled (default 'BOMB', unchanged);
+  // the Catalina's depth-charge sight uses it to say WHY ('TOO HIGH', 'TOO FAST') instead of a silent grey pipper
+  update(dt,{enabled,position,camera,predict,attack=false,releaseAllowed=false,idleLabel='BOMB'}){
    if(!enabled){this.reset();return;}
    const width=global.innerWidth,height=global.innerHeight,step=Math.max(0,Math.min(.05,dt||0));
    if(width!==this.width||height!==this.height){this.reset();this.width=width;this.height=height;}
@@ -139,7 +141,7 @@
    this.element.hidden=this.opacity<.015;
    this.element.style.opacity=this.opacity.toFixed(3);
    this.element.classList.toggle('onTarget',ready);
-   this.label.textContent=ready?'RELEASE':'BOMB';
+   this.label.textContent=ready?'RELEASE':idleLabel;
    if(this.x!==null)this.element.style.transform='translate3d('+this.x.toFixed(2)+'px,'+this.y.toFixed(2)+'px,0) translate(-50%,-50%)';
    if(this.element.hidden&&targetOpacity===0)this.x=this.y=null;
   }

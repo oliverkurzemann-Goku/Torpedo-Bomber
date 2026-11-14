@@ -2,19 +2,18 @@
  "dumbo": {
   "ringKnown": true,
   "hiddenInsideRing": true,
-  "offCentre": 0.48134827921141016,
+  "offCentre": 0.4964602718977089,
   "navBefore": "SEARCH",
-  "briefText": "about 12 km WSW of the fleet, course 245",
-  "flareAt": 4091,
-  "dyeAt": 3198,
+  "briefText": "about 14 km WSW of the fleet, course 250",
+  "flareAt": 3671,
+  "dyeAt": 2879,
   "found": true,
   "navAfter": "TARGET",
   "said": [
-   "SURVIVORS' SET — BEARING 098, 12 O'CLOCK. A SECOND BEARING FROM ELSEWHERE WILL CROSS IT",
+   "SURVIVORS' SET — BEARING 082, 12 O'CLOCK. A SECOND BEARING FROM ELSEWHERE WILL CROSS IT",
+   "CONTACT — 11 O'CLOCK, SOMETHING ON THE WATER. CLOSE IN AND LOOK",
+   "SURVIVORS' SET — BEARING 095, 12 O'CLOCK",
    "RED FLARE — 12 O'CLOCK. SOMEBODY IS SIGNALLING",
-   "SURVIVORS' SET — BEARING 098, 12 O'CLOCK",
-   "CONTACT — 12 O'CLOCK, SOMETHING ON THE WATER. CLOSE IN AND LOOK",
-   "CONTACT — 1 O'CLOCK, SOMETHING ON THE WATER. CLOSE IN AND LOOK",
    "YELLOW DYE PATCH — 12 O'CLOCK. THAT IS THEM. ALIGHT BESIDE THE RAFT"
   ],
   "aboard": 2,
@@ -33,6 +32,8 @@
   "diveAt": 992,
   "state1": "diving",
   "said": [
+   "CONTACT — 12 O'CLOCK, SOMETHING ON THE WATER. CLOSE IN AND LOOK",
+   "A FISHING SAMPAN — LOCAL FISHERMEN. KEEP LOOKING",
    "SUBMARINE — 12 O'CLOCK. DROP BELOW 560 FT, UNDER 165 KT",
    "SHE SAW US — SHE IS CRASH-DIVING"
   ],
@@ -53,7 +54,7 @@
   "ships": 5,
   "freighters": 3,
   "destroyers": 2,
-  "foundAt": 6687,
+  "foundAt": 7024,
   "navKind": "ship",
   "zerosAt": 60,
   "doneAt": 240,
@@ -67,7 +68,7 @@
   "night": "night",
   "flares": true,
   "ships": 3,
-  "foundAt": 15474,
+  "foundAt": 15487,
   "said": [
    "RADAR CONTACT — 12 O'CLOCK, 8 MILES. SHIPS, SEVERAL"
   ],
@@ -167,48 +168,48 @@
     [
      35,
      "climb",
-     38.7,
+     38.6,
      19,
-     7.4,
+     7.5,
      5
     ],
     [
      40,
      "climb",
      40.1,
-     44,
-     7.1,
+     43,
+     7.2,
      5
     ],
     [
      45,
      "climb",
      41.6,
-     69,
+     67,
      6.8,
-     4.9
+     5
     ],
     [
      50,
      "climb",
      43,
-     95,
-     6.6,
-     4.9
+     94,
+     6.7,
+     5
     ],
     [
      55,
      "climb",
      44.4,
-     120,
-     6.5,
+     118,
+     6.4,
      5
     ],
     [
      60,
      "descend",
-     47.8,
-     112,
+     47.7,
+     113,
      -3.5,
      -2.9
     ],
@@ -224,7 +225,7 @@
      70,
      "descend",
      49.6,
-     84,
+     85,
      -3.4,
      -2.9
     ],
@@ -232,7 +233,7 @@
      75,
      "descend",
      50.4,
-     69,
+     71,
      -3.3,
      -2.9
     ],
@@ -248,14 +249,14 @@
      85,
      "descend",
      51.9,
-     40,
-     -3.1,
-     -2.8
+     41,
+     -3.2,
+     -2.9
     ],
     [
      90,
      "descend",
-     49.8,
+     49.9,
      32,
      -2,
      -1.7
@@ -263,7 +264,7 @@
     [
      95,
      "descend",
-     47.5,
+     47.7,
      22,
      -2.1,
      -1.7
@@ -271,7 +272,7 @@
     [
      100,
      "descend",
-     45.4,
+     45.5,
      13,
      -2.2,
      -1.7
@@ -279,31 +280,31 @@
     [
      105,
      "descend",
-     43,
-     8,
-     -0.7,
-     -0.5
+     43.1,
+     7,
+     -0.8,
+     -0.6
     ],
     [
      110,
      "descend",
-     39.8,
-     4,
+     39.9,
+     5,
      -0.9,
      -0.6
     ],
     [
      115,
      "descend",
-     36.5,
-     0,
+     36.6,
+     1,
      -1,
      -0.6
     ],
     [
      120,
      "down",
-     28,
+     29,
      -1,
      1.8,
      0
@@ -311,7 +312,7 @@
     [
      125,
      "down",
-     14.5,
+     15.8,
      -1,
      1.7,
      0
@@ -319,7 +320,7 @@
     [
      130,
      "down",
-     3.2,
+     4.2,
      -1,
      1.7,
      0
@@ -328,16 +329,16 @@
    "said": [
     "AIRBORNE — BUILD SPEED, FLOATS WILL FOLD"
    ],
-   "climbT": 55.1,
+   "climbT": 55.3,
    "touch": {
-    "t": 115.3,
-    "speed": 36.3,
+    "t": 115.9,
+    "speed": 36,
     "pitch": -1,
     "roll": 0,
     "sink": 0.6,
     "gear": 0
    },
-   "stopT": 15.3,
+   "stopT": 15.1,
    "stopSpeed": 2,
    "phase": "down",
    "alive": true,
@@ -406,87 +407,87 @@
     [
      35,
      "climb",
-     38.7,
+     38.6,
      19,
-     7.4,
+     7.5,
      5
     ],
     [
      40,
      "climb",
      40.1,
-     44,
-     7.1,
+     43,
+     7.2,
      5
     ],
     [
      45,
      "climb",
      41.6,
-     69,
+     67,
      6.8,
-     4.9
+     5
     ],
     [
      50,
      "climb",
      43,
-     95,
-     6.6,
-     4.9
+     94,
+     6.7,
+     5
     ],
     [
      55,
      "climb",
      44.4,
      119,
-     6.5,
+     6.4,
      5
     ],
     [
      60,
      "descend",
-     49.6,
-     103,
+     49.5,
+     104,
      -6.7,
      -5.8
     ],
     [
      65,
      "descend",
-     53.2,
-     75,
-     -6.3,
+     53.1,
+     74,
+     -6.4,
      -5.9
     ],
     [
      70,
      "descend",
-     56.3,
+     56.2,
      46,
-     -6,
+     -6.1,
      -5.9
     ],
     [
      75,
      "descend",
      56,
-     24,
+     26,
      -3.6,
      -3.6
     ],
     [
      80,
      "descend",
-     54.9,
-     7,
-     -6.8,
-     -6.5
+     55,
+     6,
+     -7,
+     -6.7
     ],
     [
      85,
      "down",
-     49.4,
+     49.1,
      -1,
      1.8,
      0
@@ -494,7 +495,7 @@
     [
      90,
      "down",
-     39.1,
+     38.8,
      -1,
      1.7,
      0
@@ -502,7 +503,7 @@
     [
      95,
      "down",
-     28.5,
+     28.1,
      -1,
      1.7,
      0
@@ -510,7 +511,7 @@
     [
      100,
      "down",
-     15.1,
+     14.7,
      -1,
      1.7,
      0
@@ -518,7 +519,7 @@
     [
      105,
      "down",
-     3.6,
+     3.3,
      -1,
      1.7,
      0
@@ -528,11 +529,11 @@
     "AIRBORNE — BUILD SPEED, FLOATS WILL FOLD",
     "THAT WAS FIRM — CHECK THE BILGES"
    ],
-   "climbT": 55.1,
+   "climbT": 55.3,
    "touch": {
-    "t": 81.2,
+    "t": 81,
     "speed": 55.1,
-    "pitch": -6.2,
+    "pitch": -6.3,
     "roll": 0,
     "sink": 6,
     "gear": 0
@@ -606,48 +607,48 @@
     [
      35,
      "climb",
-     38.7,
+     38.6,
      19,
-     7.4,
+     7.5,
      5
     ],
     [
      40,
      "climb",
      40.1,
-     44,
-     7.1,
+     43,
+     7.2,
      5
     ],
     [
      45,
      "climb",
      41.6,
-     69,
+     68,
      6.8,
-     4.9
+     5
     ],
     [
      50,
      "climb",
      43,
-     95,
-     6.6,
-     4.9
+     94,
+     6.7,
+     5
     ],
     [
      55,
      "climb",
      44.4,
      119,
-     6.5,
+     6.4,
      5
     ],
     [
      60,
      "descend",
      46.6,
-     112,
+     113,
      -3.5,
      -2.9
     ],
@@ -655,7 +656,7 @@
      65,
      "descend",
      46.1,
-     99,
+     97,
      -3.6,
      -2.9
     ],
@@ -663,7 +664,7 @@
      70,
      "descend",
      45.7,
-     85,
+     84,
      -3.6,
      -2.9
     ],
@@ -671,7 +672,7 @@
      75,
      "descend",
      45.3,
-     71,
+     70,
      -3.6,
      -2.9
     ],
@@ -687,54 +688,54 @@
      85,
      "descend",
      44.7,
-     42,
+     40,
      -3.7,
      -2.8
     ],
     [
      90,
      "descend",
-     42,
-     33,
+     41.7,
+     32,
      -2.3,
      -1.7
     ],
     [
      95,
      "descend",
-     39.3,
-     24,
+     39.2,
+     25,
      -2.4,
      -1.7
     ],
     [
      100,
      "descend",
-     37.4,
-     15,
+     37.2,
+     16,
      -2.5,
      -1.6
     ],
     [
      105,
      "descend",
-     35.2,
+     35.1,
      7,
-     -1.5,
-     -0.9
+     -2,
+     -1.2
     ],
     [
      110,
      "down",
-     32,
+     31.7,
      -1,
-     2.5,
+     2.4,
      0
     ],
     [
      115,
      "down",
-     20.2,
+     19.7,
      -1,
      1.7,
      0
@@ -742,7 +743,7 @@
     [
      120,
      "down",
-     7.4,
+     7,
      -1,
      1.7,
      0
@@ -851,18 +852,18 @@
    ],
    "climbT": 55.2,
    "touch": {
-    "t": 108.3,
+    "t": 108.1,
     "speed": 34.3,
-    "pitch": -10.6,
+    "pitch": -9.5,
     "roll": 0,
-    "sink": 6.3,
+    "sink": 5.6,
     "gear": 0
    },
    "stopT": 14.3,
    "stopSpeed": 2,
    "phase": "down",
    "alive": true,
-   "hull": 81,
+   "hull": 85,
    "result": "WAR CRUISE COMPLETE",
    "state": 3
   },
@@ -928,7 +929,7 @@
      35,
      "climb",
      34.7,
-     19,
+     20,
      8.3,
      5
     ],
@@ -936,7 +937,7 @@
      40,
      "climb",
      37.1,
-     20,
+     21,
      -3.2,
      -2.1
     ],
@@ -968,7 +969,7 @@
      60,
      "climb",
      36.5,
-     68,
+     69,
      7.9,
      5
     ],
@@ -998,168 +999,112 @@
     ],
     [
      80,
-     "climb",
-     35.1,
-     116,
+     "level",
+     35,
+     118,
      -4.9,
      -3
     ],
     [
      85,
-     "climb",
-     38.5,
-     114,
-     5.9,
-     4
+     "level",
+     40.9,
+     103,
+     -3.8,
+     -2.7
     ],
     [
      90,
      "level",
-     37.4,
-     129,
-     1.4,
-     0.9
+     45.3,
+     93,
+     -1.8,
+     -1.4
     ],
     [
      95,
-     "level",
-     39,
-     132,
-     0.1,
-     0.1
-    ],
-    [
-     100,
-     "level",
-     41.1,
-     131,
-     0,
-     0
-    ],
-    [
-     105,
-     "level",
-     43.2,
-     132,
-     0,
-     0
-    ],
-    [
-     110,
-     "level",
-     45.3,
-     132,
-     0,
-     0
-    ],
-    [
-     115,
      "descend",
-     47.8,
-     120,
+     48.1,
+     78,
      -4.2,
      -3.5
     ],
     [
-     120,
+     100,
      "descend",
-     49.4,
-     104,
+     49.6,
+     61,
      -4.1,
      -3.5
     ],
     [
-     125,
+     105,
      "descend",
-     50.9,
-     86,
-     -4,
-     -3.5
-    ],
-    [
-     130,
-     "descend",
-     52.1,
-     68,
+     51,
+     43,
      -3.9,
      -3.5
     ],
     [
-     135,
+     110,
      "descend",
-     53.3,
-     51,
-     -3.8,
-     -3.5
-    ],
-    [
-     140,
-     "descend",
-     53.3,
-     36,
-     -2.3,
-     -2.1
-    ],
-    [
-     145,
-     "descend",
-     51.1,
-     26,
+     49.9,
+     30,
      -2.4,
      -2.1
     ],
     [
-     150,
+     115,
      "descend",
-     49.1,
-     15,
+     48,
+     20,
      -2.5,
      -2.1
     ],
     [
-     155,
+     120,
      "descend",
-     46.9,
-     6,
+     46.3,
+     10,
+     -2.6,
+     -2.1
+    ],
+    [
+     125,
+     "descend",
+     43.6,
+     4,
      -1,
      -0.8
     ],
     [
-     160,
+     130,
      "descend",
-     43.8,
-     2,
-     -1,
+     40.6,
+     1,
+     -1.1,
      -0.8
     ],
     [
-     165,
+     135,
      "down",
-     38.5,
+     33.2,
      -1,
-     2,
+     1.8,
      0
     ],
     [
-     170,
+     140,
      "down",
-     28,
+     21.4,
      -1,
      1.7,
      0
     ],
     [
-     175,
+     145,
      "down",
-     14.6,
-     -1,
-     1.7,
-     0
-    ],
-    [
-     180,
-     "down",
-     3.2,
+     8.3,
      -1,
      1.7,
      0
@@ -1168,16 +1113,16 @@
    "said": [
     "AIRBORNE — BUILD SPEED, FLOATS WILL FOLD"
    ],
-   "climbT": 86.2,
+   "climbT": 78.7,
    "touch": {
-    "t": 162.1,
-    "speed": 42.6,
+    "t": 130.6,
+    "speed": 40.3,
     "pitch": -1.1,
     "roll": 0,
     "sink": 0.8,
     "gear": 0
    },
-   "stopT": 18.6,
+   "stopT": 17.4,
    "stopSpeed": 2,
    "phase": "down",
    "alive": true,
@@ -1247,7 +1192,7 @@
      35,
      "climb",
      34.7,
-     18,
+     20,
      8.3,
      5
     ],
@@ -1255,7 +1200,7 @@
      40,
      "climb",
      37.1,
-     20,
+     21,
      -3.2,
      -2.1
     ],
@@ -1263,7 +1208,7 @@
      45,
      "climb",
      37.2,
-     30,
+     31,
      7.7,
      5
     ],
@@ -1271,7 +1216,7 @@
      50,
      "climb",
      33.7,
-     55,
+     56,
      5.9,
      3.5
     ],
@@ -1279,7 +1224,7 @@
      55,
      "climb",
      38.4,
-     49,
+     50,
      0,
      0
     ],
@@ -1287,7 +1232,7 @@
      60,
      "climb",
      36.5,
-     68,
+     69,
      7.9,
      5
     ],
@@ -1317,102 +1262,62 @@
     ],
     [
      80,
-     "climb",
-     35.1,
-     116,
-     -4.9,
-     -3
+     "level",
+     34.8,
+     119,
+     -4.5,
+     -2.7
     ],
     [
      85,
-     "climb",
-     38.5,
-     114,
-     5.9,
-     4
+     "level",
+     40.4,
+     105,
+     -3.7,
+     -2.6
     ],
     [
      90,
      "level",
-     37.3,
-     129,
-     1.5,
-     1
+     44.8,
+     95,
+     -1.8,
+     -1.4
     ],
     [
      95,
-     "level",
-     39,
-     132,
-     0.2,
-     0.1
-    ],
-    [
-     100,
-     "level",
-     41,
-     131,
-     0,
-     0
-    ],
-    [
-     105,
-     "level",
-     43.1,
-     132,
-     0,
-     0
-    ],
-    [
-     110,
-     "level",
-     45.2,
-     132,
-     0,
-     0
-    ],
-    [
-     115,
      "descend",
-     49.8,
-     111,
+     49.9,
+     72,
      -8.1,
      -7
     ],
     [
-     120,
+     100,
      "descend",
-     54.4,
-     77,
-     -7.4,
-     -7
+     54.3,
+     38,
+     -5,
+     -4.7
     ],
     [
-     125,
+     105,
      "descend",
-     58.2,
-     42,
-     -6.9,
-     -7
-    ],
-    [
-     130,
-     "descend",
-     57.7,
-     20,
-     -4.2,
+     54,
+     17,
+     -4.5,
      -4.2
     ]
    ],
    "said": [
     "AIRBORNE — BUILD SPEED, FLOATS WILL FOLD"
    ],
-   "climbT": 86.3,
+   "climbT": 78.3,
    "dead": true,
    "phase": "descend",
    "alive": false,
    "hull": 100,
-   "result": "TOO FAST",
+   "result": "HARD LANDING",
    "state": 4
   },
   "realWheels": {
@@ -1477,7 +1382,7 @@
      35,
      "climb",
      34.7,
-     18,
+     21,
      8.3,
      5
     ],
@@ -1485,207 +1390,151 @@
      40,
      "climb",
      37.1,
-     20,
-     -3.2,
+     22,
+     -3.3,
      -2.1
     ],
     [
      45,
      "climb",
      37.2,
-     30,
+     32,
      7.7,
      5
     ],
     [
      50,
      "climb",
-     33.7,
-     55,
-     5.9,
-     3.5
+     33.8,
+     56,
+     6.1,
+     3.6
     ],
     [
      55,
      "climb",
      38.4,
-     49,
-     0,
-     0
+     51,
+     -0.1,
+     -0.1
     ],
     [
      60,
      "climb",
      36.5,
-     68,
+     69,
      7.9,
      5
     ],
     [
      65,
      "climb",
-     34,
-     88,
-     -1.5,
-     -0.9
+     33.9,
+     89,
+     -1.3,
+     -0.7
     ],
     [
      70,
      "climb",
      38.7,
-     81,
-     3.2,
-     2.2
+     82,
+     3.1,
+     2.1
     ],
     [
      75,
      "climb",
      35.8,
-     104,
+     105,
      8,
      5
     ],
     [
      80,
-     "climb",
-     35.1,
-     116,
-     -4.9,
-     -3
+     "level",
+     34.3,
+     121,
+     -3.6,
+     -2.2
     ],
     [
      85,
-     "climb",
-     38.5,
-     114,
-     5.9,
-     4
+     "level",
+     40.1,
+     107,
+     -3.9,
+     -2.7
     ],
     [
      90,
      "level",
-     37.3,
-     129,
-     1.5,
-     1
+     44.6,
+     96,
+     -2,
+     -1.5
     ],
     [
      95,
-     "level",
-     39,
-     132,
-     0.2,
-     0.1
+     "descend",
+     46.8,
+     83,
+     -4.3,
+     -3.5
     ],
     [
      100,
-     "level",
-     41.1,
-     131,
-     0,
-     0
+     "descend",
+     47,
+     66,
+     -4.3,
+     -3.5
     ],
     [
      105,
-     "level",
-     43.2,
-     132,
-     0,
-     0
+     "descend",
+     47.1,
+     48,
+     -4.3,
+     -3.5
     ],
     [
      110,
-     "level",
-     45.2,
-     132,
-     0,
-     0
-    ],
-    [
-     115,
      "descend",
-     46.8,
-     121,
-     -4.3,
-     -3.5
-    ],
-    [
-     120,
-     "descend",
-     47,
-     104,
-     -4.3,
-     -3.5
-    ],
-    [
-     125,
-     "descend",
-     47.1,
-     87,
-     -4.3,
-     -3.5
-    ],
-    [
-     130,
-     "descend",
-     47.2,
-     69,
-     -4.3,
-     -3.5
-    ],
-    [
-     135,
-     "descend",
-     47.2,
-     53,
-     -4.3,
-     -3.5
-    ],
-    [
-     140,
-     "descend",
-     46.5,
-     35,
+     45.7,
+     34,
      -2.6,
      -2.1
     ],
     [
-     145,
+     115,
      "descend",
-     43.4,
-     26,
+     42.7,
+     24,
      -2.8,
      -2.1
     ],
     [
-     150,
+     120,
      "descend",
-     40.7,
-     15,
+     40,
+     13,
      -3,
      -2.1
     ],
     [
-     155,
+     125,
      "descend",
-     37.8,
+     37,
      5,
-     -1.7,
-     -1.1
-    ],
-    [
-     160,
-     "descend",
-     33.8,
-     2,
-     -1.7,
+     -1.6,
      -1
     ]
    ],
    "said": [
     "AIRBORNE — BUILD SPEED, FLOATS WILL FOLD"
    ],
-   "climbT": 86.2,
+   "climbT": 78.1,
    "dead": true,
    "phase": "descend",
    "alive": false,
@@ -1736,6 +1585,63 @@
     "SHIP:obj"
    ],
    "label": "TRACK: JAPANESE SUPPLY SHIP #1"
+  }
+ },
+ "sight": {
+  "charges": 4,
+  "ok": {
+   "hidden": false,
+   "opacity": 1,
+   "label": "RELEASE",
+   "green": true,
+   "reticle": "none"
+  },
+  "high": {
+   "hidden": false,
+   "opacity": 0.164,
+   "label": "TOO HIGH",
+   "green": false,
+   "reticle": "none"
+  },
+  "fast": {
+   "hidden": false,
+   "opacity": 0.92,
+   "label": "TOO FAST",
+   "green": false,
+   "reticle": "none"
+  },
+  "burst": 1,
+  "err": 0,
+  "left": 3,
+  "noLeak": true,
+  "landFound": true,
+  "land": {
+   "onTarget": false,
+   "y": 9.9
+  },
+  "bcOn": true,
+  "bcOff": false,
+  "bcIdle": {
+   "hidden": false,
+   "opacity": 0.92,
+   "label": "BOMB",
+   "green": false,
+   "reticle": "none"
+  },
+  "dumboStores": 0,
+  "dumbo": {
+   "hidden": true,
+   "opacity": 0,
+   "label": "BOMB",
+   "green": false,
+   "reticle": "none"
+  },
+  "avenger": {
+   "hidden": true,
+   "opacity": 0,
+   "label": "BOMB",
+   "green": false,
+   "reticle": "block"
   }
  }
 }
