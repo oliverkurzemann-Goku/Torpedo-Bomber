@@ -57,7 +57,7 @@ class OSMManager {
           shader.vertexShader="attribute vec2 facadeVariant;\n"+shader.vertexShader;
           shader.vertexShader=shader.vertexShader.replace("#include <uv_vertex>","#include <uv_vertex>\n#ifdef USE_UV\nvUv = vUv * 0.5 + facadeVariant;\n#endif");
         };
-        mat.customProgramCacheKey=()=>"period-facade-atlas-166";
+        mat.customProgramCacheKey=()=>"period-facade-atlas-266";
       });
     this.roofMat.map = this.roofSlateMat.map = this.roofBrownMat.map = this.roofTexture;
 
@@ -1201,7 +1201,9 @@ function makeOSMWallGeometry(){
     // Canvas top half: window-only side/rear. Bottom half: entrance facade.
     // BoxGeometry face order: +X,-X,+Y,-Y,+Z,-Z.
     const front=Math.floor(i/4)===4;
-    uv.setY(i,uv.getY(i)*0.5+(front?0:0.5));
+    // Keep mip-filtered samples away from neighbouring atlas panels.
+    uv.setX(i,(3+uv.getX(i)*506)/512);
+    uv.setY(i,(3+uv.getY(i)*250)/512+(front?0:0.5));
   }
   return geo;
 }
@@ -1230,8 +1232,11 @@ function makeOSMFacadePanel(variant=0,style=0){
     c.fillStyle='#a69c84'; c.fillRect(x-5,wy-5,w+10,h+10);
     c.fillStyle=variant%2?'#596044':'#685244';
     if(style!==3){c.fillRect(x-17,wy,10,h);if((x+variant)%3)c.fillRect(x+w+7,wy,10,h);}
-    c.fillStyle='#263633'; c.fillRect(x,wy,w,h);
-    c.fillStyle='#66766e'; c.fillRect(x+3,wy+3,Math.max(8,w*.38),Math.max(10,h*.4));
+    const glass=c.createLinearGradient(x,wy,x+w,wy+h);
+    glass.addColorStop(0,'#819291');glass.addColorStop(.48,'#485b59');glass.addColorStop(1,'#243632');
+    c.fillStyle='rgba(53,41,30,.22)';c.fillRect(x-4,wy+4,w+12,h+6);
+    c.fillStyle=glass;c.fillRect(x,wy,w,h);
+    c.fillStyle='rgba(205,219,210,.23)';c.fillRect(x+3,wy+3,w*.37,h*.42);
     c.fillStyle='#b7b3a0'; c.fillRect(x+w/2-1.5,wy,3,h); c.fillRect(x,wy+h/2-1.5,w,3);
     c.fillStyle='#ece5d3'; c.fillRect(x-6,wy+h+1,w+12,4);
   };
@@ -1239,6 +1244,34 @@ function makeOSMFacadePanel(variant=0,style=0){
     const y=panel*256;
     c.fillStyle=[['#ede5d3','#e0d0b5','#e9d5bb','#ccbfa8'],['#d8d7cc','#c2c9c7','#d9d5c7','#b2b8b4'],
       ['#e4ce9e','#d3b27d','#e1c9a3','#bfa684'],['#c39a84','#b78f7a','#ceae99','#a88c79']][variant%4][style]; c.fillRect(0,y,512,256);
+    const weather=c.createLinearGradient(0,y,0,y+256);
+    weather.addColorStop(0,'rgba(66,46,36,.23)');
+    weather.addColorStop(.2,'rgba(255,247,226,.09)');
+    weather.addColorStop(.69,'rgba(255,247,226,0)');
+    weather.addColorStop(1,'rgba(71,64,44,.28)');
+    c.fillStyle=weather;c.fillRect(0,y,512,256);
+    // Plaster repair patches and rain marks use broad shapes so they survive mipmapping.
+    for(let i=0;i<22;i++){
+      const x=osmHash(i,variant,308+style)*512;
+      const py=y+osmHash(i,panel,309+style)*205;
+      const width=18+osmHash(i,variant,310)*52,height=8+osmHash(i,panel,311)*23;
+      const patch=c.createRadialGradient(x,py,0,x,py,width);
+      patch.addColorStop(0,i%2?'rgba(91,69,46,.17)':'rgba(255,245,223,.26)');
+      patch.addColorStop(1,'rgba(147,126,95,0)');
+      c.save();c.translate(x,py);c.scale(1,height/width);c.translate(-x,-py);
+      c.fillStyle=patch;c.fillRect(x-width,py-width,width*2,width*2);c.restore();
+    }
+    if(variant===3&&style!==1){
+      for(let row=0;row<12;row++){
+        const py=y+row*19;
+        c.fillStyle='rgba(233,214,188,.31)';c.fillRect(0,py,512,2);
+        for(let x=-(row%2)*18;x<512;x+=36){
+          c.fillStyle='rgba(233,214,188,.30)';c.fillRect(x,py,2,19);
+          c.fillStyle=osmHash(x,row,318)>.5?'rgba(103,53,37,.14)':'rgba(231,182,147,.17)';
+          c.fillRect(x+2,py+2,34,17);
+        }
+      }
+    }
     if(style===1){
       c.strokeStyle='#756048';c.lineWidth=8;
       for(const x of [5,127,255,383,507]){c.beginPath();c.moveTo(x,y);c.lineTo(x,y+224);c.stroke();}
@@ -1252,7 +1285,8 @@ function makeOSMFacadePanel(variant=0,style=0){
       c.fillRect(osmHash(i,panel,81)*512,y+osmHash(i,panel,82)*256,2+osmHash(i,panel,83)*9,2);
     }
     c.fillStyle='#a39b89'; c.fillRect(0,y+222,512,34);
-    c.strokeStyle='#888270'; c.lineWidth=1;
+    c.fillStyle='rgba(61,47,37,.23)';c.fillRect(0,y+222,512,2);
+    c.strokeStyle='#777364'; c.lineWidth=1;
     for(let row=0;row<2;row++) for(let col=0;col<14;col++){
       c.strokeRect(col*40+(row%2)*20,y+223+row*16,40,16);
     }
@@ -1289,14 +1323,20 @@ function makeOSMRoofTexture(){
   if(typeof document==='undefined') return null;
   const canvas=document.createElement('canvas'); canvas.width=canvas.height=256;
   const c=canvas.getContext('2d');
-  c.fillStyle='#b9b2a7'; c.fillRect(0,0,256,256);
-  for(let row=0;row<16;row++) for(let col=-1;col<16;col++){
-    const light=Math.floor(150+osmHash(row,col,90)*60);
-    c.fillStyle=`rgb(${light},${light},${light})`;
-    const x=col*20+(row%2)*10,y=row*16;
-    c.fillRect(x+1,y+1,18,14);
-    c.fillStyle='rgba(25,21,16,0.28)'; c.fillRect(x,y+14,20,2);
+  c.fillStyle='#827d75';c.fillRect(0,0,256,256);
+  for(let row=0;row<16;row++)for(let col=-1;col<16;col++){
+    const light=Math.floor(157+osmHash(row,col,90)*60);
+    const x=col*16+(row%2)*8,y=row*16;
+    const glaze=c.createLinearGradient(x,y,x+6,y+16);
+    glaze.addColorStop(0,`rgb(${light},${light},${light})`);
+    glaze.addColorStop(.65,`rgb(${light-14},${light-14},${light-14})`);
+    glaze.addColorStop(1,`rgb(${light-40},${light-40},${light-40})`);
+    c.fillStyle=glaze;c.fillRect(x+1,y,15,15);
+    c.fillStyle='rgba(248,244,231,.21)';c.fillRect(x+2,y+1,11,2);
   }
+  const patina=c.createRadialGradient(156,67,2,156,67,110);
+  patina.addColorStop(0,'rgba(134,121,98,.42)');patina.addColorStop(1,'rgba(134,121,98,0)');
+  c.fillStyle=patina;c.fillRect(0,0,256,256);
   return osmCanvasTexture(canvas);
 }
 
@@ -1484,12 +1524,34 @@ function makeOSMForestCrown(kind){
 function makeOSMForestTexture(){
  if(typeof document==='undefined')return null;
  const n=256,c=document.createElement('canvas');c.width=c.height=n;const ctx=c.getContext('2d'),img=ctx.createImageData(n,n);
+ // Bake crown clusters and their lighting into the existing single texture.
+ // Wrapping lattice coordinates keeps the repeated texture seamless.
+ const periodic=(cells,salt)=>{
+  const samples=Float32Array.from({length:cells*cells},(_,i)=>osmHash(i%cells,Math.floor(i/cells),salt));
+  return (x,y)=>{
+   const gx=x*cells/n,gy=y*cells/n,ix=Math.floor(gx),iy=Math.floor(gy);
+   const dx=osmSmooth(gx-ix),dy=osmSmooth(gy-iy);
+   const left=(ix%cells+cells)%cells,top=(iy%cells+cells)%cells;
+   const right=(left+1)%cells,bottom=(top+1)%cells;
+   return (samples[top*cells+left]*(1-dx)+samples[top*cells+right]*dx)*(1-dy)
+        +(samples[bottom*cells+left]*(1-dx)+samples[bottom*cells+right]*dx)*dy;
+  };
+ };
+ const warpNoise=periodic(4,280),leafNoise=periodic(12,281);
+ const shadeNoise=periodic(5,282),grainNoise=periodic(52,284);
+ const cluster=(x,y)=>{
+  const warp=(warpNoise(x,y)-.5)*32;
+  return leafNoise(x+warp,y-warp);
+ };
  for(let y=0;y<n;y++)for(let x=0;x<n;x++){
-  const warp=osmValueNoise(x/45,y/45,280)*13;
-  const leaf=osmValueNoise((x+warp)/5,(y-warp)/5,281)-.5;
-  const shade=osmValueNoise((x-warp)/17,(y+warp)/17,282)-.5,grain=osmHash(x,y,284)-.5;
-  const value=Math.round(190+leaf*30+shade*20+grain*15),i=(y*n+x)*4;
-  img.data[i]=img.data[i+1]=img.data[i+2]=value;img.data[i+3]=255;
+  const leaves=cluster(x,y),relief=leaves-cluster(x+3,y+4);
+  const shade=shadeNoise(x,y)-.5,grain=grainNoise(x,y)-.5;
+  const value=188+(leaves-.5)*44+relief*87+shade*26+grain*17;
+  const i=(y*n+x)*4;
+  img.data[i]=value+shade*17;
+  img.data[i+1]=value+5;
+  img.data[i+2]=value-7-shade*19;
+  img.data[i+3]=255;
  }
  ctx.putImageData(img,0,0);const tex=new THREE.CanvasTexture(c);tex.wrapS=tex.wrapT=THREE.RepeatWrapping;
  tex.anisotropy=4;return tex;
@@ -1500,14 +1562,14 @@ function osmCanopyTerrain(material){
   previous(shader);shader.vertexShader='attribute vec4 canopyGround;\nattribute vec2 forestPart;\nvarying float forestStem;\nvarying float forestShade;\n'+shader.vertexShader;
   shader.fragmentShader='varying float forestStem;\nvarying float forestShade;\n'+shader.fragmentShader;
   shader.vertexShader=shader.vertexShader.replace('#include <uv_vertex>',
-   '#include <uv_vertex>\n#ifdef USE_UV\n#ifdef USE_INSTANCING\nvec3 leafWorld = (instanceMatrix * vec4(position, 1.0)).xyz;\nvUv = (leafWorld.xz + leafWorld.y * vec2(0.37,0.21)) / 48.0;\n#else\nvUv = (modelMatrix * vec4(position, 1.0)).xz / 48.0;\n#endif\n#endif');
+   '#include <uv_vertex>\n#ifdef USE_UV\n#ifdef USE_INSTANCING\nvec3 leafWorld = (instanceMatrix * vec4(position, 1.0)).xyz;\nvUv = (leafWorld.xz + leafWorld.y * vec2(0.37,0.21)) / 31.0;\n#else\nvUv = (modelMatrix * vec4(position, 1.0)).xz / 31.0;\n#endif\n#endif');
   shader.vertexShader=shader.vertexShader.replace('#include <begin_vertex>',
    '#include <begin_vertex>\nforestStem = forestPart.y;\nforestShade = 1.0;\n#ifdef USE_INSTANCING\nforestShade = 0.88 + 0.22 * fract(sin(dot(instanceMatrix[3].xz + vec2(forestPart.x * 17.0), vec2(0.013,0.019))) * 43758.5453);\n#endif\n'+
    'transformed.y += forestPart.x < 0.5 ? canopyGround.x : forestPart.x < 1.5 ? canopyGround.y : canopyGround.z;');
   shader.fragmentShader=shader.fragmentShader.replace('#include <color_fragment>',
    '#include <color_fragment>\ndiffuseColor.rgb = mix(diffuseColor.rgb * forestShade, vec3(0.25,0.19,0.12), forestStem);');
  };
- material.customProgramCacheKey=()=> 'rooted-tree-groups-166';
+ material.customProgramCacheKey=()=> 'rooted-tree-groups-266';
 }
 function makeOSMTreeCrown(kind){
  const positions=[];
