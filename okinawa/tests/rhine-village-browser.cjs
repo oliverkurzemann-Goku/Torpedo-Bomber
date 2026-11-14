@@ -17,7 +17,7 @@ const server=http.createServer((req,res)=>{
  let browser;
  try{
   browser=await chromium.launch({executablePath:executable,headless:true,args:[
-   '--no-sandbox','--disable-dev-shm-usage','--use-angle=swiftshader','--enable-unsafe-swiftshader','--single-process','--no-zygote','--in-process-gpu'
+   '--no-sandbox','--disable-dev-shm-usage','--use-angle=swiftshader','--enable-unsafe-swiftshader'
   ]});
   const page=await browser.newPage({viewport:{width:1024,height:768},hasTouch:true}),errors=[];
   page.setDefaultTimeout(150000);
