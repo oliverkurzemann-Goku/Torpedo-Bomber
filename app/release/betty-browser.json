@@ -55,7 +55,7 @@
   "gearUp": 1.42,
   "fire": true,
   "label": null,
-  "said": "BETTY FLIGHT INBOUND — THE LEADER HAS BRIGHT YELLOW CAPS ON FIN AND WINGTIPS, TAKE HIM FIRST",
+  "said": "MET REPORT — BROKEN CLOUD, VISIBILITY 6.8 KM.|BETTY FLIGHT INBOUND — THE LEADER HAS BRIGHT YELLOW CAPS ON FIN AND WINGTIPS, TAKE HIM FIRST",
   "mission": {
    "betty": true,
    "theater": "fleet",

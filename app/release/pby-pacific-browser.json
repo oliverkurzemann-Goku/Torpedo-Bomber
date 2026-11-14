@@ -2,17 +2,16 @@
  "dumbo": {
   "ringKnown": true,
   "hiddenInsideRing": true,
-  "offCentre": 0.4964602718977089,
+  "offCentre": 0.19605296568339786,
   "navBefore": "SEARCH",
-  "briefText": "about 14 km WSW of the fleet, course 250",
-  "flareAt": 3671,
-  "dyeAt": 2879,
+  "briefText": "about 12 km W of the fleet, course 265",
+  "flareAt": 3672,
+  "dyeAt": 2878,
   "found": true,
   "navAfter": "TARGET",
   "said": [
-   "SURVIVORS' SET — BEARING 082, 12 O'CLOCK. A SECOND BEARING FROM ELSEWHERE WILL CROSS IT",
-   "CONTACT — 11 O'CLOCK, SOMETHING ON THE WATER. CLOSE IN AND LOOK",
-   "SURVIVORS' SET — BEARING 095, 12 O'CLOCK",
+   "SURVIVORS' SET — BEARING 095, 12 O'CLOCK. A SECOND BEARING FROM ELSEWHERE WILL CROSS IT",
+   "SURVIVORS' SET — BEARING 089, 12 O'CLOCK",
    "RED FLARE — 12 O'CLOCK. SOMEBODY IS SIGNALLING",
    "YELLOW DYE PATCH — 12 O'CLOCK. THAT IS THEM. ALIGHT BESIDE THE RAFT"
   ],
@@ -28,12 +27,11 @@
  "sub": {
   "charges": 4,
   "state0": "surfaced",
-  "foundAt": 1380,
-  "diveAt": 992,
+  "foundAt": 2299,
+  "diveAt": 1655,
   "state1": "diving",
   "said": [
-   "CONTACT — 12 O'CLOCK, SOMETHING ON THE WATER. CLOSE IN AND LOOK",
-   "A FISHING SAMPAN — LOCAL FISHERMEN. KEEP LOOKING",
+   "CONTACT — 11 O'CLOCK, SOMETHING ON THE WATER. CLOSE IN AND LOOK",
    "SUBMARINE — 12 O'CLOCK. DROP BELOW 560 FT, UNDER 165 KT",
    "SHE SAW US — SHE IS CRASH-DIVING"
   ],
@@ -54,7 +52,7 @@
   "ships": 5,
   "freighters": 3,
   "destroyers": 2,
-  "foundAt": 7024,
+  "foundAt": 7017,
   "navKind": "ship",
   "zerosAt": 60,
   "doneAt": 240,
@@ -68,7 +66,7 @@
   "night": "night",
   "flares": true,
   "ships": 3,
-  "foundAt": 15487,
+  "foundAt": 15408,
   "said": [
    "RADAR CONTACT — 12 O'CLOCK, 8 MILES. SHIPS, SEVERAL"
   ],
@@ -304,7 +302,7 @@
     [
      120,
      "down",
-     29,
+     29.1,
      -1,
      1.8,
      0
@@ -312,7 +310,7 @@
     [
      125,
      "down",
-     15.8,
+     16,
      -1,
      1.7,
      0
@@ -331,8 +329,8 @@
    ],
    "climbT": 55.3,
    "touch": {
-    "t": 115.9,
-    "speed": 36,
+    "t": 116,
+    "speed": 35.9,
     "pitch": -1,
     "roll": 0,
     "sink": 0.6,
@@ -347,206 +345,6 @@
    "state": 3
   },
   "arcadeSteep": {
-   "log": [
-    [
-     0,
-     "run",
-     0,
-     -1,
-     1.7,
-     0
-    ],
-    [
-     5,
-     "run",
-     8.8,
-     -1,
-     1.7,
-     0
-    ],
-    [
-     10,
-     "run",
-     15.9,
-     -1,
-     1.7,
-     0
-    ],
-    [
-     15,
-     "run",
-     20.3,
-     -1,
-     1.7,
-     0
-    ],
-    [
-     20,
-     "run",
-     24.8,
-     -1,
-     1.7,
-     0
-    ],
-    [
-     25,
-     "run",
-     30.7,
-     -1,
-     1.7,
-     0
-    ],
-    [
-     30,
-     "run",
-     36.6,
-     -1,
-     5.5,
-     0
-    ],
-    [
-     35,
-     "climb",
-     38.6,
-     19,
-     7.5,
-     5
-    ],
-    [
-     40,
-     "climb",
-     40.1,
-     43,
-     7.2,
-     5
-    ],
-    [
-     45,
-     "climb",
-     41.6,
-     67,
-     6.8,
-     5
-    ],
-    [
-     50,
-     "climb",
-     43,
-     94,
-     6.7,
-     5
-    ],
-    [
-     55,
-     "climb",
-     44.4,
-     119,
-     6.4,
-     5
-    ],
-    [
-     60,
-     "descend",
-     49.5,
-     104,
-     -6.7,
-     -5.8
-    ],
-    [
-     65,
-     "descend",
-     53.1,
-     74,
-     -6.4,
-     -5.9
-    ],
-    [
-     70,
-     "descend",
-     56.2,
-     46,
-     -6.1,
-     -5.9
-    ],
-    [
-     75,
-     "descend",
-     56,
-     26,
-     -3.6,
-     -3.6
-    ],
-    [
-     80,
-     "descend",
-     55,
-     6,
-     -7,
-     -6.7
-    ],
-    [
-     85,
-     "down",
-     49.1,
-     -1,
-     1.8,
-     0
-    ],
-    [
-     90,
-     "down",
-     38.8,
-     -1,
-     1.7,
-     0
-    ],
-    [
-     95,
-     "down",
-     28.1,
-     -1,
-     1.7,
-     0
-    ],
-    [
-     100,
-     "down",
-     14.7,
-     -1,
-     1.7,
-     0
-    ],
-    [
-     105,
-     "down",
-     3.3,
-     -1,
-     1.7,
-     0
-    ]
-   ],
-   "said": [
-    "AIRBORNE — BUILD SPEED, FLOATS WILL FOLD",
-    "THAT WAS FIRM — CHECK THE BILGES"
-   ],
-   "climbT": 55.3,
-   "touch": {
-    "t": 81,
-    "speed": 55.1,
-    "pitch": -6.3,
-    "roll": 0,
-    "sink": 6,
-    "gear": 0
-   },
-   "stopT": 24.6,
-   "stopSpeed": 2,
-   "phase": "down",
-   "alive": true,
-   "hull": 83,
-   "result": "WAR CRUISE COMPLETE",
-   "state": 3
-  },
-  "arcadeWheels": {
    "log": [
     [
      0,
@@ -647,6 +445,206 @@
     [
      60,
      "descend",
+     49.6,
+     103,
+     -6.7,
+     -5.8
+    ],
+    [
+     65,
+     "descend",
+     53.2,
+     73,
+     -6.3,
+     -5.9
+    ],
+    [
+     70,
+     "descend",
+     56.3,
+     45,
+     -6,
+     -5.9
+    ],
+    [
+     75,
+     "descend",
+     55.9,
+     25,
+     -3.6,
+     -3.5
+    ],
+    [
+     80,
+     "descend",
+     54.9,
+     5,
+     -6.8,
+     -6.5
+    ],
+    [
+     85,
+     "down",
+     48.7,
+     -1,
+     1.8,
+     0
+    ],
+    [
+     90,
+     "down",
+     38.3,
+     -1,
+     1.7,
+     0
+    ],
+    [
+     95,
+     "down",
+     27.6,
+     -1,
+     1.7,
+     0
+    ],
+    [
+     100,
+     "down",
+     14.1,
+     -1,
+     1.7,
+     0
+    ],
+    [
+     105,
+     "down",
+     2.8,
+     -1,
+     1.7,
+     0
+    ]
+   ],
+   "said": [
+    "AIRBORNE — BUILD SPEED, FLOATS WILL FOLD",
+    "THAT WAS FIRM — CHECK THE BILGES"
+   ],
+   "climbT": 55.2,
+   "touch": {
+    "t": 80.8,
+    "speed": 55,
+    "pitch": -6.3,
+    "roll": 0,
+    "sink": 6,
+    "gear": 0
+   },
+   "stopT": 24.6,
+   "stopSpeed": 2,
+   "phase": "down",
+   "alive": true,
+   "hull": 83,
+   "result": "WAR CRUISE COMPLETE",
+   "state": 3
+  },
+  "arcadeWheels": {
+   "log": [
+    [
+     0,
+     "run",
+     0,
+     -1,
+     1.7,
+     0
+    ],
+    [
+     5,
+     "run",
+     8.8,
+     -1,
+     1.7,
+     0
+    ],
+    [
+     10,
+     "run",
+     15.9,
+     -1,
+     1.7,
+     0
+    ],
+    [
+     15,
+     "run",
+     20.3,
+     -1,
+     1.7,
+     0
+    ],
+    [
+     20,
+     "run",
+     24.8,
+     -1,
+     1.7,
+     0
+    ],
+    [
+     25,
+     "run",
+     30.7,
+     -1,
+     1.7,
+     0
+    ],
+    [
+     30,
+     "run",
+     36.6,
+     -1,
+     5.5,
+     0
+    ],
+    [
+     35,
+     "climb",
+     38.6,
+     20,
+     7.5,
+     5
+    ],
+    [
+     40,
+     "climb",
+     40.1,
+     44,
+     7.2,
+     5
+    ],
+    [
+     45,
+     "climb",
+     41.6,
+     68,
+     6.8,
+     5
+    ],
+    [
+     50,
+     "climb",
+     43,
+     94,
+     6.7,
+     5
+    ],
+    [
+     55,
+     "climb",
+     44.4,
+     120,
+     6.4,
+     5
+    ],
+    [
+     60,
+     "descend",
      46.6,
      113,
      -3.5,
@@ -703,7 +701,7 @@
     [
      95,
      "descend",
-     39.2,
+     39.1,
      25,
      -2.4,
      -1.7
@@ -850,11 +848,11 @@
     "WHEELS COMING UP — WE ARE ALIGHTING ON THE SEA",
     "THAT WAS FIRM — CHECK THE BILGES"
    ],
-   "climbT": 55.2,
+   "climbT": 55.1,
    "touch": {
     "t": 108.1,
     "speed": 34.3,
-    "pitch": -9.5,
+    "pitch": -9.4,
     "roll": 0,
     "sink": 5.6,
     "gear": 0
@@ -863,274 +861,11 @@
    "stopSpeed": 2,
    "phase": "down",
    "alive": true,
-   "hull": 85,
+   "hull": 86,
    "result": "WAR CRUISE COMPLETE",
    "state": 3
   },
   "real": {
-   "log": [
-    [
-     0,
-     "run",
-     0,
-     -1,
-     1.7,
-     0
-    ],
-    [
-     5,
-     "run",
-     8.8,
-     -1,
-     1.7,
-     0
-    ],
-    [
-     10,
-     "run",
-     15.9,
-     -1,
-     1.7,
-     0
-    ],
-    [
-     15,
-     "run",
-     20.3,
-     -1,
-     1.7,
-     0
-    ],
-    [
-     20,
-     "run",
-     24.8,
-     -1,
-     1.7,
-     0
-    ],
-    [
-     25,
-     "run",
-     30.7,
-     -1,
-     1.7,
-     0
-    ],
-    [
-     30,
-     "run",
-     36.6,
-     -1,
-     5.5,
-     0
-    ],
-    [
-     35,
-     "climb",
-     34.7,
-     20,
-     8.3,
-     5
-    ],
-    [
-     40,
-     "climb",
-     37.1,
-     21,
-     -3.2,
-     -2.1
-    ],
-    [
-     45,
-     "climb",
-     37.2,
-     30,
-     7.7,
-     5
-    ],
-    [
-     50,
-     "climb",
-     33.7,
-     55,
-     5.9,
-     3.5
-    ],
-    [
-     55,
-     "climb",
-     38.4,
-     49,
-     0,
-     0
-    ],
-    [
-     60,
-     "climb",
-     36.5,
-     69,
-     7.9,
-     5
-    ],
-    [
-     65,
-     "climb",
-     34,
-     89,
-     -1.5,
-     -0.9
-    ],
-    [
-     70,
-     "climb",
-     38.7,
-     81,
-     3.2,
-     2.2
-    ],
-    [
-     75,
-     "climb",
-     35.8,
-     104,
-     8,
-     5
-    ],
-    [
-     80,
-     "level",
-     35,
-     118,
-     -4.9,
-     -3
-    ],
-    [
-     85,
-     "level",
-     40.9,
-     103,
-     -3.8,
-     -2.7
-    ],
-    [
-     90,
-     "level",
-     45.3,
-     93,
-     -1.8,
-     -1.4
-    ],
-    [
-     95,
-     "descend",
-     48.1,
-     78,
-     -4.2,
-     -3.5
-    ],
-    [
-     100,
-     "descend",
-     49.6,
-     61,
-     -4.1,
-     -3.5
-    ],
-    [
-     105,
-     "descend",
-     51,
-     43,
-     -3.9,
-     -3.5
-    ],
-    [
-     110,
-     "descend",
-     49.9,
-     30,
-     -2.4,
-     -2.1
-    ],
-    [
-     115,
-     "descend",
-     48,
-     20,
-     -2.5,
-     -2.1
-    ],
-    [
-     120,
-     "descend",
-     46.3,
-     10,
-     -2.6,
-     -2.1
-    ],
-    [
-     125,
-     "descend",
-     43.6,
-     4,
-     -1,
-     -0.8
-    ],
-    [
-     130,
-     "descend",
-     40.6,
-     1,
-     -1.1,
-     -0.8
-    ],
-    [
-     135,
-     "down",
-     33.2,
-     -1,
-     1.8,
-     0
-    ],
-    [
-     140,
-     "down",
-     21.4,
-     -1,
-     1.7,
-     0
-    ],
-    [
-     145,
-     "down",
-     8.3,
-     -1,
-     1.7,
-     0
-    ]
-   ],
-   "said": [
-    "AIRBORNE — BUILD SPEED, FLOATS WILL FOLD"
-   ],
-   "climbT": 78.7,
-   "touch": {
-    "t": 130.6,
-    "speed": 40.3,
-    "pitch": -1.1,
-    "roll": 0,
-    "sink": 0.8,
-    "gear": 0
-   },
-   "stopT": 17.4,
-   "stopSpeed": 2,
-   "phase": "down",
-   "alive": true,
-   "hull": 100,
-   "result": "WAR CRUISE COMPLETE",
-   "state": 3
-  },
-  "realSteep": {
    "log": [
     [
      0,
@@ -1248,7 +983,7 @@
      70,
      "climb",
      38.7,
-     81,
+     82,
      3.2,
      2.2
     ],
@@ -1263,15 +998,15 @@
     [
      80,
      "level",
-     34.8,
-     119,
-     -4.5,
-     -2.7
+     34.7,
+     120,
+     -4.3,
+     -2.6
     ],
     [
      85,
      "level",
-     40.4,
+     40.3,
      105,
      -3.7,
      -2.6
@@ -1279,7 +1014,7 @@
     [
      90,
      "level",
-     44.8,
+     44.7,
      95,
      -1.8,
      -1.4
@@ -1287,15 +1022,278 @@
     [
      95,
      "descend",
+     47.8,
+     83,
+     -4.2,
+     -3.5
+    ],
+    [
+     100,
+     "descend",
+     49.4,
+     66,
+     -4.1,
+     -3.5
+    ],
+    [
+     105,
+     "descend",
+     50.8,
+     48,
+     -4,
+     -3.5
+    ],
+    [
+     110,
+     "descend",
+     50.7,
+     34,
+     -2.4,
+     -2.1
+    ],
+    [
+     115,
+     "descend",
+     48.7,
+     24,
+     -2.5,
+     -2.1
+    ],
+    [
+     120,
+     "descend",
+     46.9,
+     13,
+     -2.6,
+     -2.1
+    ],
+    [
+     125,
+     "descend",
+     44.5,
+     5,
+     -1,
+     -0.8
+    ],
+    [
+     130,
+     "descend",
+     41.5,
+     1,
+     -1.1,
+     -0.8
+    ],
+    [
+     135,
+     "down",
+     35,
+     -1,
+     1.8,
+     0
+    ],
+    [
+     140,
+     "down",
+     23.8,
+     -1,
+     1.7,
+     0
+    ],
+    [
+     145,
+     "down",
+     10.3,
+     -1,
+     1.7,
+     0
+    ]
+   ],
+   "said": [
+    "AIRBORNE — BUILD SPEED, FLOATS WILL FOLD"
+   ],
+   "climbT": 78.3,
+   "touch": {
+    "t": 131.3,
+    "speed": 40.8,
+    "pitch": -1.1,
+    "roll": 0,
+    "sink": 0.8,
+    "gear": 0
+   },
+   "stopT": 17.6,
+   "stopSpeed": 2,
+   "phase": "down",
+   "alive": true,
+   "hull": 100,
+   "result": "WAR CRUISE COMPLETE",
+   "state": 3
+  },
+  "realSteep": {
+   "log": [
+    [
+     0,
+     "run",
+     0,
+     -1,
+     1.7,
+     0
+    ],
+    [
+     5,
+     "run",
+     8.8,
+     -1,
+     1.7,
+     0
+    ],
+    [
+     10,
+     "run",
+     15.9,
+     -1,
+     1.7,
+     0
+    ],
+    [
+     15,
+     "run",
+     20.3,
+     -1,
+     1.7,
+     0
+    ],
+    [
+     20,
+     "run",
+     24.8,
+     -1,
+     1.7,
+     0
+    ],
+    [
+     25,
+     "run",
+     30.7,
+     -1,
+     1.7,
+     0
+    ],
+    [
+     30,
+     "run",
+     36.6,
+     -1,
+     5.5,
+     0
+    ],
+    [
+     35,
+     "climb",
+     34.7,
+     21,
+     8.3,
+     5
+    ],
+    [
+     40,
+     "climb",
+     37.1,
+     22,
+     -3.3,
+     -2.1
+    ],
+    [
+     45,
+     "climb",
+     37.2,
+     32,
+     7.7,
+     5
+    ],
+    [
+     50,
+     "climb",
+     33.8,
+     56,
+     6.1,
+     3.6
+    ],
+    [
+     55,
+     "climb",
+     38.4,
+     51,
+     -0.1,
+     -0.1
+    ],
+    [
+     60,
+     "climb",
+     36.5,
+     69,
+     7.9,
+     5
+    ],
+    [
+     65,
+     "climb",
+     33.9,
+     89,
+     -1.3,
+     -0.7
+    ],
+    [
+     70,
+     "climb",
+     38.7,
+     82,
+     3.1,
+     2.1
+    ],
+    [
+     75,
+     "climb",
+     35.8,
+     105,
+     8,
+     5
+    ],
+    [
+     80,
+     "level",
+     34.3,
+     122,
+     -3.6,
+     -2.1
+    ],
+    [
+     85,
+     "level",
+     40.1,
+     107,
+     -4,
+     -2.8
+    ],
+    [
+     90,
+     "level",
+     44.7,
+     96,
+     -2,
+     -1.6
+    ],
+    [
+     95,
+     "descend",
      49.9,
-     72,
+     73,
      -8.1,
      -7
     ],
     [
      100,
      "descend",
-     54.3,
+     54.2,
      38,
      -5,
      -4.7
@@ -1312,7 +1310,7 @@
    "said": [
     "AIRBORNE — BUILD SPEED, FLOATS WILL FOLD"
    ],
-   "climbT": 78.3,
+   "climbT": 78,
    "dead": true,
    "phase": "descend",
    "alive": false,
@@ -1453,32 +1451,32 @@
     [
      80,
      "level",
-     34.3,
-     121,
-     -3.6,
-     -2.2
+     34.2,
+     122,
+     -3.5,
+     -2.1
     ],
     [
      85,
      "level",
-     40.1,
-     107,
-     -3.9,
-     -2.7
+     40.2,
+     106,
+     -4.1,
+     -2.9
     ],
     [
      90,
      "level",
-     44.6,
+     44.8,
      96,
-     -2,
-     -1.5
+     -2.1,
+     -1.6
     ],
     [
      95,
      "descend",
-     46.8,
-     83,
+     46.9,
+     82,
      -4.3,
      -3.5
     ],
@@ -1486,7 +1484,7 @@
      100,
      "descend",
      47,
-     66,
+     64,
      -4.3,
      -3.5
     ],
@@ -1494,22 +1492,22 @@
      105,
      "descend",
      47.1,
-     48,
+     46,
      -4.3,
      -3.5
     ],
     [
      110,
      "descend",
-     45.7,
-     34,
+     45.5,
+     33,
      -2.6,
      -2.1
     ],
     [
      115,
      "descend",
-     42.7,
+     42.5,
      24,
      -2.8,
      -2.1
@@ -1517,7 +1515,7 @@
     [
      120,
      "descend",
-     40,
+     39.8,
      13,
      -3,
      -2.1
@@ -1525,8 +1523,8 @@
     [
      125,
      "descend",
-     37,
-     5,
+     36.8,
+     4,
      -1.6,
      -1
     ]
@@ -1534,7 +1532,7 @@
    "said": [
     "AIRBORNE — BUILD SPEED, FLOATS WILL FOLD"
    ],
-   "climbT": 78.1,
+   "climbT": 78,
    "dead": true,
    "phase": "descend",
    "alive": false,

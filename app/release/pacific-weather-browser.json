@@ -3,33 +3,33 @@
   "dist": {
    "rookie": {
     "counts": {
-     "lowcloud": 573,
-     "rain": 146,
-     "haze": 1106,
-     "fog": 382,
-     "broken": 793
+     "lowcloud": 620,
+     "broken": 876,
+     "haze": 1023,
+     "fog": 321,
+     "rain": 160
     },
     "fair": 0.63
    },
    "veteran": {
     "counts": {
-     "haze": 775,
-     "lowcloud": 782,
-     "broken": 438,
-     "rain": 375,
-     "fog": 630
+     "haze": 812,
+     "lowcloud": 739,
+     "broken": 430,
+     "fog": 654,
+     "rain": 365
     },
-    "fair": 0.4
+    "fair": 0.41
    },
    "ace": {
     "counts": {
-     "lowcloud": 805,
-     "fog": 743,
-     "haze": 620,
-     "rain": 531,
-     "broken": 301
+     "haze": 675,
+     "fog": 696,
+     "lowcloud": 791,
+     "rain": 526,
+     "broken": 312
     },
-    "fair": 0.31
+    "fair": 0.33
    }
   },
   "untouched": {
