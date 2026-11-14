@@ -12,7 +12,13 @@ class PeriodBuildings {
   }));
   if(!this.templates.size)return;
   const candidates=[];
+  const station=anchors.at(-1);
+  const rails=[];
   for(const [key,data] of this.osm.sourceTiles){const [tx,tz]=key.split(',').map(Number);
+   if(station)for(const line of data.rails||[])for(let i=1;i<line.length;i++){
+    const a=line[i-1],b=line[i],ax=tx*this.osm.tileSize+a[0],az=tz*this.osm.tileSize+a[1];
+    if(Math.hypot(ax-station[0],az-station[1])<2300)rails.push([ax,az,tx*this.osm.tileSize+b[0],tz*this.osm.tileSize+b[1]]);
+   }
    for(const b of data.buildings||[]){const x=tx*this.osm.tileSize+b.x,z=tz*this.osm.tileSize+b.z;
     if(!anchors.some(([ax,az])=>Math.hypot(x-ax,z-az)<2800))continue;
     if(b.w<7||b.d<6||b.w>38||b.d>35||this.osm.churchKeys.has(osmBuildingKey(x,z)))continue;
@@ -23,7 +29,22 @@ class PeriodBuildings {
    }
   }
   const used=[];
-  for(const [ax,az] of anchors)for(let n=0;n<4;n++){
+  // Put a recognisable shell beside the railway at Remagen. It replaces its
+  // mapped building footprint before OSMManager emits the intact wall/roof.
+  let usedRailway=false;
+  if(station&&this.templates.has('town-ruin')){
+   const railway=candidates.filter(c=>Math.hypot(c.x-station[0],c.z-station[1])<1150&&c.b.w*c.b.d>90)
+    .map(c=>({c,d:rails.reduce((d,r)=>Math.min(d,pointSegmentDistanceSq(c.x,c.z,...r)),Infinity)}))
+    .filter(({c,d})=>d>Math.max(c.b.w,c.b.d)**2*.35&&d<75**2)
+    .sort((a,b)=>Math.hypot(a.c.x-station[0],a.c.z-station[1])-Math.hypot(b.c.x-station[0],b.c.z-station[1]));
+   if(railway.length){
+    const c=railway[0].c;usedRailway=true;
+    used.push(c);this.reserved.set(osmBuildingKey(c.x,c.z),true);
+    this.place('town-ruin',c.x,c.z,c.b.w*.94,c.b.d*.94,c.b.rotY).group.name='remagen-rail-ruin';
+   }
+  }
+  for(const anchor of anchors)for(let n=0;n<(anchor===station&&usedRailway?3:4);n++){
+   const [ax,az]=anchor;
    const sorted=candidates.filter(c=>used.every(p=>Math.hypot(c.x-p.x,c.z-p.z)>100))
     .sort((a,b)=>Math.hypot(a.x-ax,a.z-az)-Math.hypot(b.x-ax,b.z-az));
    const c=sorted[0];if(!c||Math.hypot(c.x-ax,c.z-az)>2800)break;
@@ -40,7 +61,22 @@ class PeriodBuildings {
   model.position.sub(new THREE.Vector3(c.x,b?b.min.y:0,c.z));offset.add(model);offset.scale.setScalar(scale);group.add(offset);group.rotation.y=yaw;group.position.set(x,0,z);
   const detailHeight=s.y*scale;
   const proxy=new THREE.Group(),wallMat=new THREE.MeshLambertMaterial({color:kind.includes('ruin')?0x807867:0xb3a78f});
-  const wallHeight=detailHeight*(dimensions?1:.7),wall=new THREE.Mesh(new THREE.BoxGeometry(s.x*scale,wallHeight,s.z*scale),wallMat);wall.position.y=wallHeight/2;proxy.add(wall);
+  const wallHeight=detailHeight*(dimensions?1:.7);
+  if(kind.includes('ruin')){
+   const w=s.x*scale,d=s.z*scale,parts=[];
+   for(const [pw,ph,pd,x,z] of [[w,.85,.32,0,-d/2],[.32,.68,d,-w/2,0],[w*.55,.45,.32,-w*.225,d/2],[.32,.34,d*.48,w/2,-d*.26]]){
+    const box=new THREE.BoxGeometry(pw,wallHeight*ph,pd),wall=box.toNonIndexed();box.dispose();
+    wall.translate(x,wallHeight*ph/2,z);parts.push(wall);
+   }
+   const positions=parts.flatMap(geo=>Array.from(geo.attributes.position.array));
+   const shell=new THREE.BufferGeometry();
+   shell.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));shell.computeVertexNormals();
+   for(const geo of parts)geo.dispose();
+   proxy.add(new THREE.Mesh(shell,wallMat));
+  }else{
+   const wall=new THREE.Mesh(new THREE.BoxGeometry(s.x*scale,wallHeight,s.z*scale),wallMat);
+   wall.position.y=wallHeight/2;proxy.add(wall);
+  }
   if(kind==='house'){const roof=new THREE.Mesh(makeGableRoofGeometry(),new THREE.MeshLambertMaterial({color:0x625144}));roof.scale.set(s.x*scale,detailHeight*.3,s.z*scale);roof.position.y=detailHeight*.7;proxy.add(roof);}
   group.add(proxy);this.scene.add(group);
   const entry={group,model:offset,proxy,x,z,w:s.x*scale,d:s.z*scale,yaw,kind,revision:-1};this.entries.push(entry);this.refresh(entry);

@@ -35,6 +35,10 @@ class LivingWorld {
     this._buildRuralDetails();
     this._buildVillageDetails();
     this._buildAtmosphere();
+    if(typeof RhineVillage!=='undefined'){
+      this.rhineVillage=new RhineVillage(this.group,terrain,osm,landmarks,this.routes.water[0]);
+      this._buildDockTraffic();
+    }
     this._groundSig=this._terrainSignature();
   }
 
@@ -266,6 +270,37 @@ class LivingWorld {
     }
   }
 
+  _buildDockTraffic(){
+    const river=this.routes.water[0],ferry=this.entities.find(e=>e.kind==='ferry');
+    if(!river||!ferry)return;
+    const candidates=[];
+    for(const route of this._collectLines('roads',45)){
+      if(!this._trafficRouteSafe(route))continue;
+      for(const d of route.cumulative){
+        if(d<18||d>route.length-16)continue;
+        const p=this._sample(route,d);
+        const shore=river.points.findIndex(([x,z])=>Math.hypot(p.x-x,p.z-z)<82);
+        if(shore<0||this._pointOnWater(p.x,p.z))continue;
+        const [x,z]=river.points[shore],distance=Math.hypot(p.x-x,p.z-z);
+        if(distance<32)continue;
+        if([-13,-5,5,13].some(offset=>{
+          const check=this._sample(route,d+offset);
+          return this._pointOnWater(check.x,check.z);
+        }))continue;
+        const ahead=this._sample(route,d+10),behind=this._sample(route,d-10);
+        const toward=Math.hypot(ahead.x-x,ahead.z-z)<Math.hypot(behind.x-x,behind.z-z);
+        candidates.push({route,d,toward,score:Math.abs(distance-47)+Math.abs(river.cumulative[shore]-river.length*.52)*.05});
+      }
+    }
+    candidates.sort((a,b)=>a.score-b.score);
+    const landing=candidates[0];
+    if(!landing)return;
+    const {route,d,toward}=landing;
+    const start=toward?d-11:2*route.length-d-11;
+    const queue=this._addEntity('dockTruck',this._makeTruck(),route,2.8,start,{dock:true});
+    queue.visibleRadius=680;
+  }
+
   // Replace temporary low-poly silhouettes without replacing the stable entity
   // wrapper referenced by mission targets, the HUD and the minimap. Repository
   // GLBs share geometry/material resources across all clones.
@@ -273,7 +308,7 @@ class LivingWorld {
     this._vehicleTemplates=templates;
     let replaced=0;
     for(const [index,e] of this.entities.entries()){
-      const base=e.kind==='truck'?e.meta.vehicleModel:(e.kind==='ferry'?'merchant':
+      const base=e.kind==='dockTruck'?'blitz':e.kind==='truck'?e.meta.vehicleModel:(e.kind==='ferry'?'merchant':
         (e.kind==='train'?'train':(e.kind==='flakcar'?'flakwagen':(e.kind==='civil'?'civilCar':(e.kind==='wagon'?'horse':null)))));
       const alternate=index%2===0&&({tiger:'tigerGrey',civilCar:'civilCarCream'})[base];
       const source=alternate&&templates?.has(alternate)?alternate:base;
@@ -365,7 +400,8 @@ class LivingWorld {
     if(this._wires){const pos=this._wires.mesh.geometry.attributes.position,arr=this._wireSegments(this._wires.poles);
       if(arr.length===pos.array.length){pos.array.set(arr);pos.needsUpdate=true;}}
   }
-  update(dt,focusX,focusZ,emitSmoke=null){
+  update(dt,focusX,focusZ,emitSmoke=null,altitude=null){
+    this.rhineVillage?.update(dt,focusX,focusZ,altitude);
     // Wider coverage without drawing all cloned cars/horses at once.
     const nearby=this.entities.filter(e=>e.meta.ambient)
       .sort((a,b)=>Math.hypot(a.last.x-focusX,a.last.z-focusZ)-Math.hypot(b.last.x-focusX,b.last.z-focusZ));
@@ -376,7 +412,14 @@ class LivingWorld {
       if(e.coupledTo&&e.alive)e.phase=e.coupledTo.phase-LivingWorld.FLAKCAR_OFFSET;
       // Threatened columns stop, then disperse ALONG their mapped road.
       const multiplier=e.alertT>5?0:e.alertT>0?(e.meta.vehicleModel==='m16'?.45:1.55):1;
-      if(e.alive&&!e.coupledTo)e.phase+=dt*e.speed*multiplier;
+      if(e.alive&&!e.coupledTo){
+        if(e.meta.dock)e.phase=Math.min(e.initialPhase+11,e.phase+dt*e.speed);
+        else if(e.kind==='train'&&this.trainStart>0){
+          if(Math.hypot(e.last.x-focusX,e.last.z-focusZ)<1150)this.trainStart=Math.max(0,this.trainStart-dt);
+          const traction=Math.max(0,1-this.trainStart/6);
+          e.phase+=dt*e.speed*traction;
+        }else e.phase+=dt*e.speed*multiplier;
+      }
       if(e.alive||!Number.isFinite(e.last.x))e.last=this._sampleEntity(e);
       const p=e.last,near=Math.hypot(p.x-focusX,p.z-focusZ)<e.visibleRadius&&(!e.meta.ambient||visibleAmbient.has(e));
       e.model.visible=near;
@@ -403,6 +446,8 @@ class LivingWorld {
 
   resetForMission(id){
     this._mission=id;
+    this.trainStart=(id==='free'||id==='circ')&&this.rhineVillage?10:0;
+    this.rhineVillage?.reset();
     let convoyIndex=0;
     for(const e of this.entities){
       if(e.kind==='truck'&&e.meta.convoy===0){

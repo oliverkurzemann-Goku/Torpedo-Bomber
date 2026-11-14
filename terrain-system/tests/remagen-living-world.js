@@ -3,7 +3,7 @@
 const fs=require('fs'),path=require('path'),vm=require('vm'),assert=require('assert/strict');
 const root=path.resolve(__dirname,'../..');global.THREE=require(process.env.THREE_R128||'three');
 assert.equal(THREE.REVISION,'128');
-for(const name of ['HeightProvider','TerrainTile','TerrainManager','OSMManager','WorldVehicles','LivingWorld'])
+for(const name of ['HeightProvider','TerrainTile','TerrainManager','OSMManager','WorldVehicles','RhineVillage','LivingWorld'])
   vm.runInThisContext(fs.readFileSync(path.join(root,'terrain-system',name+'.js'),'utf8'));
 global.fetch=async url=>{const b=fs.readFileSync(path.join(root,url.split('?')[0]));return {ok:true,json:async()=>JSON.parse(b),arrayBuffer:async()=>b.buffer.slice(b.byteOffset,b.byteOffset+b.byteLength)};};
 
@@ -112,6 +112,47 @@ global.fetch=async url=>{const b=fs.readFileSync(path.join(root,url.split('?')[0
 
   assert(world.villageCounts.yards>20&&world.villageCounts.yards<=80,'bounded village courtyards exist on real data');
   assert(world.villageCounts.buckets<=5,'village details retain a bounded draw budget');
+  const village=world.rhineVillage;
+  assert.deepEqual(village.sites.map(s=>s.name),['remagen-village','rural-farm']);
+  const [town,farm]=village.sites;
+  assert(town.plots.length>=5&&town.plots.length<=8,'town plots: '+town.plots.length);
+  assert.equal(farm.plots.length,1);
+  for(const site of village.sites){
+    assert.equal(site.group.children.length,1);
+    const vertices=site.mesh.geometry.attributes.position;
+    for(let i=0;i<vertices.count;i++){
+      const [x,y,z]=[vertices.getX(i),vertices.getY(i),vertices.getZ(i)];
+      assert(Math.abs(y-terrain.getRenderedHeight(x,z)-site.offsets[i])<.1);
+      assert(!world._pointOnWater(x,z),'yard detail on dry land');
+    }
+    assert(site.mesh.geometry.index.count/3<1800,'each site fits its triangle budget');
+  }
+  const [crows,waterfowl]=village.flocks;
+  assert.equal(crows.count+waterfowl.count,21);
+  const above=(p,agl)=>terrain.getRenderedHeight(p.x,p.z)+agl;
+  village.update(.25,farm.x,farm.z,above(farm,600));
+  assert(!crows.mesh.visible&&farm.group.visible&&!town.group.visible);
+  village.update(.25,farm.x,farm.z,above(farm,75));
+  assert(crows.mesh.visible);
+  const initialWing=crows.mesh.geometry.attributes.position.array.slice();
+  village.update(.1,farm.x,farm.z,above(farm,75));
+  assert.notDeepEqual(crows.mesh.geometry.attributes.position.array,initialWing);
+  village.update(.25,waterfowl.point.x,waterfowl.point.z,above(waterfowl.point,70));
+  assert(!crows.mesh.visible&&waterfowl.mesh.visible);
+  village.reset();assert(village.flocks.every(f=>!f.mesh.visible));
+  const waiting=world.entities.find(e=>e.meta.dock);
+  assert(waiting,'a dry mapped road approaches the ferry');
+  world.resetForMission('free');
+  const train=world.entities.find(e=>e.kind==='train'),departurePhase=train.phase;
+  world.update(2,waiting.last.x,waiting.last.z);
+  assert.equal(train.phase,departurePhase,'free flight train waits before departing');
+  for(let i=0;i<12;i++)world.update(1,train.last.x,train.last.z);
+  assert(train.phase>departurePhase,'free flight train has departed');
+  assert.equal(waiting.phase,waiting.initialPhase+11);
+  assert(!world._pointOnWater(waiting.last.x,waiting.last.z));
+  world.resetForMission('convoy');
+  console.log('Rhine sites:',village.sites.map(site=>({name:site.name,x:Math.round(site.x),z:Math.round(site.z),plots:site.plots.length,triangles:site.mesh.geometry.index.count/3})),
+    'dock:',[Math.round(waiting.last.x),Math.round(waiting.last.z)]);
   assert(world.smokeSources.length>2&&world.smokeSources.length<=26,'real chimney smoke sources are bounded');
   const count=kind=>world.entities.filter(e=>e.kind===kind).length;
   assert.equal(count('truck'),12);assert.equal(count('train'),1);assert.equal(count('ferry'),2);
