@@ -26,7 +26,7 @@ const server=http.createServer((req,res)=>{
   const page=await browser.newPage({viewport:{width:1194,height:660},hasTouch:true,deviceScaleFactor:1}),errors=[];
   page.setDefaultTimeout(900000);page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error'&&!/404/.test(m.text()))errors.push('console: '+m.text());});
   await page.addInitScript(()=>window.requestAnimationFrame=()=>0);
-  await page.goto('http://127.0.0.1:'+server.address().port+'/remagen-mission.html?v=266&surprises=off&sortie='+sortie);
+  await page.goto('http://127.0.0.1:'+server.address().port+'/remagen-mission.html?v=267&surprises=off&sortie='+sortie);
   // the hangar sortie opens the briefing at once: wait for the world, not for the menu
   await page.waitForFunction(()=>realWorldReady&&(state===ST.MENU||state===ST.BRIEF),null,{polling:200});
   await page.evaluate(async()=>{await Promise.all(['fi156','p47'].map(ensureModel));renderer.setPixelRatio(.25);renderer.shadowMap.enabled=false;if(typeof flightQuality!=='undefined')flightQuality.enabled=false;
@@ -76,10 +76,10 @@ const server=http.createServer((req,res)=>{
   report.pitchResponse=PS;console.log('storch pitch response',JSON.stringify(PS));
   assert.ok(PS.arcadeUp.peakPitch<=15&&PS.arcadeUp.peakV<=10,'half back in ARCADE: nose '+PS.arcadeUp.peakPitch+' deg, climb '+PS.arcadeUp.peakV+' m/s (Build 256: 22.7 deg / 14.9 m/s)');
   assert.ok(PS.arcadeDown.peakV<=12.5,'half forward in ARCADE: sink '+PS.arcadeDown.peakV+' m/s (Build 256: 20.5 m/s)');
-  // Build 266: full stick used to give 33 deg and 23 m/s climb at cruise (a real Storch climbs 4.6 m/s): now a 19 degree nose
+  // Build 267: full stick used to give 33 deg and 23 m/s climb at cruise (a real Storch climbs 4.6 m/s): now a 19 degree nose
   assert.ok(PS.arcadeFull.peakPitch>=15&&PS.arcadeFull.peakPitch<=22&&PS.arcadeFull.peakV<=17,'full stick at cruise: a climb, not a leap: '+PS.arcadeFull.peakPitch+' deg, '+PS.arcadeFull.peakV+' m/s (Build 265: 32.6 deg / 23.2 m/s)');
   assert.ok(PS.realUp.pitch1s<=26,'half pull in REALISTIC: nose '+PS.realUp.pitch1s+' deg after 1 s (Build 256: 45 deg)');
-  // ---- 1c. Build 266: FULL back stick right after lift-off (user: "pulls up far too hard, far too agile in pitch"). Measured in Build 265 (ARCADE): 13 deg after 1 s, 18.3 deg after 4 s,
+  // ---- 1c. Build 267: FULL back stick right after lift-off (user: "pulls up far too hard, far too agile in pitch"). Measured in Build 265 (ARCADE): 13 deg after 1 s, 18.3 deg after 4 s,
   //      13.3 deg/s; REALISTIC 34 deg after 1 s, 34 deg/s and a stall. A real Storch leaves the grass in a climb of 10-12 deg. ----
   const FS=await page.evaluate(()=>{
    const dt=1/60,deg=v=>v*180/Math.PI,r1=v=>+(+v).toFixed(1),out={};

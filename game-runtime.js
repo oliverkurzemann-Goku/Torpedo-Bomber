@@ -100,7 +100,7 @@
    this.x=this.y=null;this.opacity=0;this.width=this.height=0;
    this.element.hidden=true;this.element.style.opacity='0';this.element.classList.remove('onTarget');
   }
-  // Build 266: idleLabel is the text while the release is not allowed or the pipper is not settled (default 'BOMB', unchanged);
+  // Build 267: idleLabel is the text while the release is not allowed or the pipper is not settled (default 'BOMB', unchanged);
   // the Catalina's depth-charge sight uses it to say WHY ('TOO HIGH', 'TOO FAST') instead of a silent grey pipper
   update(dt,{enabled,position,camera,predict,attack=false,releaseAllowed=false,idleLabel='BOMB'}){
    if(!enabled){this.reset();return;}

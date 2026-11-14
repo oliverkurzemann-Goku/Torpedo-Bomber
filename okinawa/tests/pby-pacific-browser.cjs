@@ -24,7 +24,7 @@ const report={};
   page.setDefaultTimeout(300000);page.on('pageerror',e=>errors.push(e.message));
   page.on('console',m=>{if(/Shader Error|VALIDATE_STATUS|not compiled/i.test(m.text())||m.type()==='error')errors.push(m.text());});
   await page.addInitScript(()=>{window.requestAnimationFrame=()=>0;});
-  await page.goto('http://127.0.0.1:'+server.address().port+'/torpedo-carrier.html?v=266');
+  await page.goto('http://127.0.0.1:'+server.address().port+'/torpedo-carrier.html?v=267');
   await page.waitForFunction(()=>state===ST.MENU,null,{polling:100});
   await page.evaluate(async()=>{
    renderer.setPixelRatio(1);await prepareOkinawa();
@@ -233,7 +233,7 @@ const report={};
    return out;});
   report.nav=N;
   for(const [t,r] of Object.entries(N)){assert.ok(r.ok,t+': the game goes on after the find ('+r.err+')');assert.ok(r.found,t+': it was found');assert.match(r.label||'',/TRACK:/,t+': the arrow points at what was found ('+r.label+')');}
-  // ---- Build 266: no red gun sight for the Catalina (she has no fixed gun); a drop sight for depth charges and bombs instead ----
+  // ---- Build 267: no red gun sight for the Catalina (she has no fixed gun); a drop sight for depth charges and bombs instead ----
   const V=await page.evaluate(async()=>{
    const out={};const el=document.getElementById('bombSight'),cret=document.querySelector('.pitReticle');
    const hold=(x,y,z,spd,pitch=0)=>{P.onWater=false;P.onDeck=false;P.gear=0;P.gearTgt=0;P.heading=0;P.pitch=pitch;P.vSpeed=0;P.spd=spd;state=ST.FLIGHT;P.alive=true;P.pos.set(x,y,z);};

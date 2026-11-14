@@ -282,8 +282,8 @@
 .nhMark svg{display:block;width:20px;height:20px;margin:0 auto;fill:rgba(255,122,82,.5);stroke:#ff7a52;stroke-width:1.5;stroke-linejoin:round;opacity:.85;filter:drop-shadow(0 0 2px #000);}
 .nhMark[hidden]{display:none;}
 </style>
-<link rel="stylesheet" href="menu-layout.css?v=266">
-<link rel="stylesheet" href="duel.css?v=266">
+<link rel="stylesheet" href="menu-layout.css?v=267">
+<link rel="stylesheet" href="duel.css?v=267">
 </head>
 <body>
 <!-- ===== TEMP TEST-ONLY VERSION BANNER — asked for by Oliver: "kannst du irgendwo einbauen,
@@ -305,7 +305,7 @@
   <div style="width:100%;height:4px;background:repeating-linear-gradient(45deg,#ffd400,#ffd400 8px,#111 8px,#111 16px);"></div>
   <span id="testVersionBannerText" style="background:#111;color:#ffd400;font-family:monospace;font-weight:800;font-size:11px;letter-spacing:.5px;padding:3px 10px;border:1px solid #ffd400;border-top:none;border-radius:0 0 6px 6px;"></span>
 </div>
-<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 266';</script>
+<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 267';</script>
 <!-- ===== END TEMP TEST-ONLY VERSION BANNER ===== -->
 <div id="app"></div>
 <style>
@@ -346,7 +346,7 @@
   <div id="flash"></div>
   <div id="gunsight"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 266 · REAL RHINE</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 267 · REAL RHINE</div>
 
   <div id="apr">
     <div id="aprCall"></div>
@@ -401,7 +401,7 @@
 </div>
 
 <div class="overlay hidden" id="menu" data-campaign="europe">
-  <div class="menuTop"><a id="selBtn" href="index.html?v=266">&#9664; Change Game</a><span class="menuMeta">RHINE OPERATIONS<br>BUILD 266</span></div>
+  <div class="menuTop"><a id="selBtn" href="index.html?v=267">&#9664; Change Game</a><span class="menuMeta">RHINE OPERATIONS<br>BUILD 267</span></div>
   <div class="card menuCard">
     <aside class="menuOverview" aria-label="Campaign and pilot options">
     <div class="campaignArt" aria-hidden="true"></div>
@@ -433,7 +433,7 @@
     </aside>
     <section class="missionPanel" aria-label="Mission selection">
       <div class="secLbl">Choose your sortie · 15 missions + 4 bonus &amp; training</div>
-      <a class="hangarLink" href="hangar.html?theatre=europe&amp;v=266">CUSTOM MISSION · CHOOSE AIRCRAFT &amp; LOADOUT →</a>
+      <a class="hangarLink" href="hangar.html?theatre=europe&amp;v=267">CUSTOM MISSION · CHOOSE AIRCRAFT &amp; LOADOUT →</a>
 <div id="missionSel" role="group" aria-label="European missions"></div>
       <div id="missionBlurb" class="missionBlurb" aria-live="polite"></div>
       <div class="menuConfig">
@@ -567,7 +567,7 @@
 <script src="terrain-system/HeightProvider.js?v=remagen-21"></script>
 <script src="terrain-system/TerrainTile.js?v=198"></script>
 <script src="terrain-system/TerrainManager.js?v=198"></script>
-<script src="terrain-system/OSMManager.js?v=266"></script>
+<script src="terrain-system/OSMManager.js?v=267"></script>
 <script src="terrain-system/PeriodBuildings.js?v=241"></script>
 <script src="terrain-system/HistoricalObjectManager.js?v=173"></script>
 <script src="terrain-system/AirfieldDetails.js?v=169"></script>
@@ -577,12 +577,12 @@
 <script src="terrain-system/WorldVehicles.js?v=248"></script>
 <script src="terrain-system/LivingWorld.js?v=248"></script>
 <script src="campaign.js?v=1"></script>
-<script src="game-runtime.js?v=266"></script>
+<script src="game-runtime.js?v=267"></script>
 <script src="sortie-checkpoint.js?v=238"></script>
 <script src="ju87-native.js?v=218"></script>
 <script src="me262-native.js?v=206"></script>
 <script src="me163-native.js?v=218"></script>
-<script src="aircraft-contract.js?v=266"></script>
+<script src="aircraft-contract.js?v=267"></script>
 <script src="aircraft-articulation.js?v=258"></script>
 <script src="aircraft-rotors.js?v=172"></script>
 <script src="b17-native.js?v=201"></script>
@@ -611,7 +611,7 @@
 <script src="flight-envelope.js?v=258"></script>
 <script src="flight-dynamics.js?v=258"></script>
 <script src="flight-core.js?v=258"></script>
-<script src="flight-control.js?v=266"></script>
+<script src="flight-control.js?v=267"></script>
 <script src="dogfight-ai.js?v=238"></script>
 <script src="squad.js?v=238"></script>
 <script src="duel-net.js?v=238"></script>
@@ -623,8 +623,8 @@
 <script src="ground-dust.js?v=181"></script>
 <script src="flight-indicators.js?v=198"></script>
 <script src="sortie-fuel.js?v=258"></script>
-<script src="operation-plans.js?v=266"></script>
-<script src="custom-sortie.js?v=266"></script>
+<script src="operation-plans.js?v=267"></script>
+<script src="custom-sortie.js?v=267"></script>
 <script>
 // ============================================================
 //  REMAGEN 1945 — REAL TERRAIN (forked from thunderbolt-europe.html)
@@ -780,7 +780,7 @@ const AC={
   // a light fabric-and-tube airframe that a few bursts will bring down.
   fi156:{ name:'Fi 156 C Storch', rollAuth:0.8, pitchAuth:1.0, turn:1.2, gLim:4.0,
         rollLim:1.05, pitchLim:.75, stall:17.2, app:70/3.6, max:48.6, thrMin:20, windK:.3, pitchBase:1.7, pullAssist:.4, stickExponent:1.7, pullExponent:2.1,   // Build 253: bank up to 60 deg, pitch up to 45 deg, a gentler stick; 30% of the wind
-        pitchStick:.33, pitchStickLow:.17, pullMax:.5,   // Build 266: full stick = 19 deg nose (11 deg just after lift-off); REALISTIC full pull = half of the wing's spare load; pitchBase 2.0 -> 1.7
+        pitchStick:.33, pitchStickLow:.17, pullMax:.5,   // Build 267: full stick = 19 deg nose (11 deg just after lift-off); REALISTIC full pull = half of the wing's spare load; pitchBase 2.0 -> 1.7
         hull:60, ammo:450, bombs:0, rockets:0, gunDmg:.55, gunRate:.11, wing:14.25, noGuns:true,
         // Build 250: a field landing is the Storch's trade (long-stroke legs, slats): it survives a firmer, nose-lower touchdown than a fighter does
         field:{sink:6.2,pitch:.46,speed:12},
@@ -997,7 +997,7 @@ async function loadRealWorld(){
 
   if(OSMManager.BUILD!==23||HistoricalObjectManager.BUILD!==21||LivingWorld.BUILD!==22||WorldVehicles.BUILD!==24) throw new Error('Terrain version mismatch. Reload Remagen.');
   document.getElementById('testVersionBannerText').textContent=
-    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 266 · MODULE 23';
+    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 267 · MODULE 23';
   heightProvider=new DEMHeightProvider(RTILE,'terrain-system/real/data/dem/');
   terrain=new TerrainManager(scene,RTILE,heightProvider);
   osmMgr=new OSMManager(scene,RTILE,terrain,'terrain-system/real/data/osm/');
@@ -6857,7 +6857,7 @@ function coreLoadout(){return {fuel:P.fuel,bombs:P.bombs,rockets:P.rockets,tankA
 // Build 253: a light STOL type (the Storch) must not leap into the air: after the lift-off the nose-up command is held to 14 deg and opens with the speed
 // (the departure envelope's release: 0 at 1.12 x stall, 1 at 30 m/s), so the climb-out is a climb, not a jump. Everything else: the type's own limit.
 function stolPitchScale(d,departure){
-  // Build 266: measured (full stick right after lift-off, ARCADE): 13 deg after 1 s, 18 deg at 82 km/h, rate 13 deg/s; at cruise 33 deg and 23 m/s climb - a real Storch
+  // Build 267: measured (full stick right after lift-off, ARCADE): 13 deg after 1 s, 18 deg at 82 km/h, rate 13 deg/s; at cruise 33 deg and 23 m/s climb - a real Storch
   // climbs at 4.6 m/s. The type now carries its own full-stick nose angle (pitchStick) and the one just after lift-off (pitchStickLow) instead of 14 -> 39 deg.
   const full=d.pitchStick??d.pitchLim*.92;if(P.ac!=='fi156')return full;
   const lo=d.pitchStickLow??.25,r=Math.max(0,Math.min(1,departure?.release??1));return lo+(full-lo)*r*r*(3-2*r);
@@ -8456,7 +8456,7 @@ function showResult(good,title,sub,html,btn){
   document.getElementById('rsGo').onclick=()=>{
     voiceRadio.cancel();soundscape.stop();
     show('result',false);
-    if(MISSIONS[selectedMission]?.custom){window.location.href='hangar.html?theatre=europe&v=266';return;}
+    if(MISSIONS[selectedMission]?.custom){window.location.href='hangar.html?theatre=europe&v=267';return;}
     if(good && selectedMission===MISSIONS.length-1){
       show('menu',true);if(navigation){navigation.reset();navigation.button.style.display='none';}
     }
@@ -8875,7 +8875,7 @@ function init(){
   // menu wiring
   document.getElementById('startBtn').onclick=()=>showBrief(selectedMission);
   duelInit();
-  document.getElementById('pauseMainMenu').onclick=async()=>{globalThis.sortieCheckpoint?.save();await globalThis.sortieCheckpoint?.flush();exitToMenuFromPause(true);window.location.href='index.html?v=266';};
+  document.getElementById('pauseMainMenu').onclick=async()=>{globalThis.sortieCheckpoint?.save();await globalThis.sortieCheckpoint?.flush();exitToMenuFromPause(true);window.location.href='index.html?v=267';};
   document.getElementById('logBtn').onclick=()=>{ show('menu',false); showLogbook(); };
   document.getElementById('skipLaunchPreview').onclick=()=>finishLaunchIntro();
   document.getElementById('brBack').onclick=()=>{ show('brief',false); show('menu',true);if(navigation){navigation.reset();navigation.button.style.display='none';} state=ST.MENU; };
