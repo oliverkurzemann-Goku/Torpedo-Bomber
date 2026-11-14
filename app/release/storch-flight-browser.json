@@ -178,11 +178,11 @@
    "wire": true,
    "hidden": true,
    "decoyDist": [
-    896
+    857
    ],
    "nestDist": [
-    3279,
-    5726
+    2762,
+    5368
    ],
    "weather": "clear",
    "radio": null
@@ -223,27 +223,27 @@
     "squads": 1,
     "spawnT": 7,
     "minD": 171,
-    "firstHit": 33.8,
-    "loss": 12,
+    "firstHit": 46,
+    "loss": 5.6,
     "alive": true,
-    "tracers": 1
+    "tracers": 2
    },
    {
     "d": 1,
     "squads": 1,
     "spawnT": 5,
     "minD": 171,
-    "firstHit": 28.7,
-    "loss": 35.8,
+    "firstHit": 32.8,
+    "loss": 26.9,
     "alive": true,
-    "tracers": 1
+    "tracers": 0
    },
    {
     "d": 2,
     "squads": 2,
     "spawnT": 4,
-    "minD": 171,
-    "firstHit": 17.5,
+    "minD": 191,
+    "firstHit": 14.7,
     "loss": 60,
     "alive": false,
     "tracers": 1
@@ -373,12 +373,12 @@
     "spd": 0,
     "roll": false,
     "fig": true,
-    "dFig": 59,
+    "dFig": 77,
     "agl": 1.3,
-    "x": 66,
+    "x": 69,
     "text": "OFFICER RUNNING — HOLD STILL"
    },
-   "boardT": 12.6,
+   "boardT": 14.5,
    "done": {
     "phase": "home",
     "courier": 1,
@@ -403,13 +403,13 @@
     "spd": 0,
     "roll": false,
     "fig": true,
-    "dFig": 138,
+    "dFig": 151,
     "agl": 1.3,
-    "x": 144,
+    "x": -137,
     "text": "OBSERVER RUNNING — HOLD STILL"
    },
    "bonus": 0,
-   "boardT": 21.4,
+   "boardT": 22.7,
    "hunters": 2,
    "done": {
     "phase": "home",
@@ -431,12 +431,12 @@
     "spd": 0,
     "roll": false,
     "fig": true,
-    "dFig": 80,
+    "dFig": 34,
     "agl": 1.3,
-    "x": 82,
+    "x": 9,
     "text": "AGENT RUNNING — HOLD STILL"
    },
-   "boardT": 14.9,
+   "boardT": 9.8,
    "hunters": 2,
    "done": {
     "phase": "home",
@@ -513,7 +513,7 @@
   },
   "careless": {
    "zone": 2,
-   "lost": 21.3,
+   "lost": 44,
    "alive": true
   },
   "hunters": 2,

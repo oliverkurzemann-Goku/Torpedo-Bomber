@@ -47,38 +47,38 @@
  "roll": {
   "off": true,
   "ace": {
-   "rain": 141,
-   "haze": 310,
-   "lowcloud": 492,
-   "fog": 270,
-   "broken": 287
+   "haze": 341,
+   "broken": 294,
+   "rain": 129,
+   "fog": 263,
+   "lowcloud": 473
   },
   "rookie": {
-   "haze": 255,
-   "rain": 37,
-   "broken": 826,
-   "fog": 77,
-   "lowcloud": 305
+   "broken": 850,
+   "haze": 267,
+   "lowcloud": 289,
+   "fog": 62,
+   "rain": 32
   },
   "vet": {
-   "fog": 424,
-   "rain": 289,
-   "haze": 468,
-   "lowcloud": 319
+   "haze": 469,
+   "rain": 252,
+   "fog": 438,
+   "lowcloud": 341
   },
   "dumboAce": {
-   "dusk": 367,
-   "night": 386,
-   "day": 747
+   "day": 758,
+   "dusk": 369,
+   "night": 373
   },
   "dumboRookie": {
-   "day": 1271,
-   "dusk": 229
+   "day": 1282,
+   "dusk": 218
   },
   "sub": {
-   "dawn": 230,
-   "day": 907,
-   "dusk": 363
+   "day": 911,
+   "dusk": 388,
+   "dawn": 201
   },
   "shadow": {
    "day": 1500
@@ -96,65 +96,65 @@
    "bearing": 1.5707963267948966
   },
   "drift0": {
-   "x": -0.3183705568932873,
-   "z": -0.3348996717130179,
-   "speed": 0.4620796485564248,
-   "bearing": 3.9016941049143345
+   "x": 0.1698586041370497,
+   "z": -0.48542810702146777,
+   "speed": 0.5142882387201096,
+   "bearing": 2.8049935085257274
   },
   "secs": 1200,
   "p0": {
-   "x": -21622.35510300124,
-   "z": -4771.440187248305
+   "x": -19833.60078564708,
+   "z": 10081.373845388593
   },
   "p1": {
-   "x": -20902.355102994254,
-   "z": -4771.440187248305
+   "x": -19113.600785640094,
+   "z": 10081.373845388593
   },
   "ring0": {
-   "x": -20687.113920020114,
-   "z": -4764.5392895045725
+   "x": -18776.662337816426,
+   "z": 9321.168590749709
   },
   "ring1": {
-   "x": -20111.263920014528,
-   "z": -4764.5392895045725
+   "x": -18200.81233781084,
+   "z": 9321.168590749709
   },
-  "text0": "about 14 km WSW of the fleet, course 250",
-  "text1": "about 13 km WSW of the fleet, course 250",
+  "text0": "about 14 km NW of the fleet, course 310",
+  "text1": "about 14 km NW of the fleet, course 310",
   "dye0": {
-   "x": -21622.35510300124,
-   "z": -4771.440187248305
+   "x": -19833.60078564708,
+   "z": 10081.373845388593
   },
   "dye1": {
-   "x": -20902.355102994254,
-   "z": -4771.440187248305
+   "x": -19113.600785640094,
+   "z": 10081.373845388593
   },
   "man0": [
    {
-    "x": -21626.85510300124,
-    "z": -4772.440187248305
+    "x": -19838.10078564708,
+    "z": 10080.373845388593
    },
    {
-    "x": -21617.85510300124,
-    "z": -4769.440187248305
+    "x": -19829.10078564708,
+    "z": 10083.373845388593
    }
   ],
   "man1": [
    {
-    "x": -20906.855102994254,
-    "z": -4772.440187248305
+    "x": -19118.100785640094,
+    "z": 10080.373845388593
    },
    {
-    "x": -20897.855102994254,
-    "z": -4769.440187248305
+    "x": -19109.100785640094,
+    "z": 10083.373845388593
    }
   ],
   "datums": 2,
   "said": [
-   "DATUM UPDATE — SEARCH AREA HAS MOVED 0.3 KM E (SET AND DRIFT): NOW ABOUT 13 KM WSW OF THE FLEET, COURSE 250",
-   "DATUM UPDATE — SEARCH AREA HAS MOVED 0.3 KM E (SET AND DRIFT): NOW ABOUT 13 KM WSW OF THE FLEET, COURSE 250"
+   "DATUM UPDATE — SEARCH AREA HAS MOVED 0.3 KM E (SET AND DRIFT): NOW ABOUT 14 KM NW OF THE FLEET, COURSE 310",
+   "DATUM UPDATE — SEARCH AREA HAS MOVED 0.3 KM E (SET AND DRIFT): NOW ABOUT 14 KM NW OF THE FLEET, COURSE 310"
   ],
-  "offset0": 935.2666425857401,
-  "offset1": 791.1212815857831,
+  "offset0": 1301.9335281354574,
+  "offset1": 1187.8951046582818,
   "r": 4200,
   "found": false
  },
@@ -172,9 +172,9 @@
    "want": 3
   },
   "kinds": [
-   "wreck",
-   "sampan",
-   "whale"
+   "raft",
+   "raft",
+   "raft"
   ],
   "ringOk": true,
   "meshes": true,
@@ -202,22 +202,22 @@
   "spout": 1,
   "subKinds": [
    "whale",
-   "whale",
-   "whale"
+   "wreck",
+   "sampan"
   ]
  },
  "df": {
   "firstAt": 14.099999999999966,
   "msg": [
-   "SURVIVORS' SET — BEARING 269, 6 O'CLOCK. A SECOND BEARING FROM ELSEWHERE WILL CROSS IT"
+   "SURVIVORS' SET — BEARING 274, 6 O'CLOCK. A SECOND BEARING FROM ELSEWHERE WILL CROSS IT"
   ],
   "line": {
-   "x": -7352.464373509589,
-   "z": -10091.106334761549,
-   "bearing": 268.65679268335293,
+   "x": -10908.120055900148,
+   "z": 5069.448701487029,
+   "bearing": 273.8438457362322,
    "t": 14.099999999999966
   },
-  "truth": 276.29222048474895,
+  "truth": 276.3559712856665,
   "count": 11,
   "kept": 4,
   "drawn": 4,
@@ -267,7 +267,7 @@
    "splashes": 0,
    "shake": 0.6009,
    "white": true,
-   "spread": 33.519331313779574
+   "spread": 33.34321117900971
   },
   "soft": 12,
   "firm": 16
