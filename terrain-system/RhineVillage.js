@@ -23,7 +23,9 @@ class RhineVillage {
     this.reset();
   }
 
-  _plots(anchor,range,limit,airfields,farm=false,{claimed=null,indices=new Map(),compact=false}={}){
+  _plots(anchor,range,limit,airfields,farm=false,{claimed=null,indices=new Map(),compact=false,
+      accept=null,plotDepth=farm?15:compact?8:10,maxWidth=12,buildingInset=5,
+      roadClearance=null,maxHeightChange=farm?2.8:2.3,sideYards=false}={}){
     const candidates=[],size=this.osm.tileSize;
     for(const [key,data] of this.osm.sourceTiles){
       const [tx,tz]=key.split(',').map(Number),ox=tx*size,oz=tz*size;
@@ -42,10 +44,13 @@ class RhineVillage {
       if(plots.some(p=>Math.hypot(x-p.houseX,z-p.houseZ)<18))continue;
       if(!indices.has(key))indices.set(key,this.osm._buildForestExclusion(data,ox,oz));
       const index=indices.get(key);
-      for(const direction of [b.rotY,b.rotY+Math.PI]){
+      const bearings=sideYards?[0,2,1,3]:[0,2];
+      for(const side of bearings){
+        const direction=b.rotY+side*Math.PI/2;
         const c=Math.cos(direction),s=Math.sin(direction);
-        const depth=farm?15:compact?8:10,width=farm?15:Math.max(8,Math.min(b.w,12));
-        const point=(u,v)=>[x+u*c+(b.d/2+1.4+v)*s,z-u*s+(b.d/2+1.4+v)*c];
+        const across=side%2?b.d:b.w,along=side%2?b.w:b.d;
+        const depth=plotDepth,width=farm?15:Math.max(sideYards?6:8,Math.min(across,maxWidth));
+        const point=(u,v)=>[x+u*c+(along/2+1.4+v)*s,z-u*s+(along/2+1.4+v)*c];
         const probes=[];
         for(const u of [-width/2-1,0,width/2+1]){
           for(const v of [-.7,depth/2,depth+1.2])probes.push(point(u,v));
@@ -53,11 +58,11 @@ class RhineVillage {
         if(probes.some(([px,pz])=>px<ox+2||px>ox+size-2||pz<oz+2||pz>oz+size-2||
           osmWaterOverlaps([[px,pz]],2,index.water)||
           (data.forests||[]).some(ring=>pointInPolygon(px-ox,pz-oz,ring))||
-          this._blocked(px,pz,index,x,z)))continue;
+          this._blocked(px,pz,index,x,z,buildingInset,roadClearance)))continue;
         const heights=probes.map(([px,pz])=>this.terrain.getRenderedHeight(px,pz));
-        if(Math.max(...heights)-Math.min(...heights)>(farm?2.8:2.3))continue;
+        if(Math.max(...heights)-Math.min(...heights)>maxHeightChange)continue;
         const [px,pz]=point(0,depth/2);
-        if(plots.some(p=>Math.hypot(px-p.x,pz-p.z)<17))continue;
+        if(plots.some(p=>Math.hypot(px-p.x,pz-p.z)<17)||accept&&!accept(px,pz))continue;
         plots.push({x:px,z:pz,houseX:x,houseZ:z,depth,width,point,farm,direction});
         break;
       }
@@ -65,14 +70,17 @@ class RhineVillage {
     }
     return plots;
   }
-  _blocked(x,z,index,houseX,houseZ){
+  _blocked(x,z,index,houseX,houseZ,buildingInset=5,roadClearance=null){
     const cell=index.cells.get(Math.floor(x/index.cellSize)+','+Math.floor(z/index.cellSize))||[];
     for(const f of cell){
-      if(f.kind==='segment'&&pointSegmentDistanceSq(x,z,f.ax,f.az,f.bx,f.bz)<=f.r2)return true;
+      if(f.kind==='segment'){
+        const clearance=f.source==='road'&&roadClearance!==null?roadClearance**2:f.r2;
+        if(pointSegmentDistanceSq(x,z,f.ax,f.az,f.bx,f.bz)<=clearance)return true;
+      }
       if(f.kind==='polygon'&&pointInPolygon(x,z,f.ring))return true;
       if(f.kind==='building'&&(f.x!==houseX||f.z!==houseZ)){
         const dx=x-f.x,dz=z-f.z;
-        if(Math.abs(dx*f.c-dz*f.s)<f.hw-5&&Math.abs(dx*f.s+dz*f.c)<f.hd-5)return true;
+        if(Math.abs(dx*f.c-dz*f.s)<f.hw-buildingInset&&Math.abs(dx*f.s+dz*f.c)<f.hd-buildingInset)return true;
       }
     }
     return false;

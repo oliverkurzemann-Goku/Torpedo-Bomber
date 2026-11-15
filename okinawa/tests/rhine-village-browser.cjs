@@ -24,7 +24,7 @@ const server=http.createServer((req,res)=>{
   page.on('pageerror',e=>errors.push(e.message));
   page.on('console',m=>{if(/Shader Error|VALIDATE_STATUS|not compiled/.test(m.text()))errors.push(m.text());});
   await page.addInitScript(()=>{window.requestAnimationFrame=()=>0;});
-  const url='http://127.0.0.1:'+server.address().port+'/remagen-mission.html?v=272';
+  const url='http://127.0.0.1:'+server.address().port+'/remagen-mission.html?v=273';
   await page.goto(url+'&scenery=ultra&perf=1');
   await page.waitForFunction(()=>typeof livingWorld!=='undefined'&&livingWorld?.rhineVillage&&state===ST.MENU,null,{polling:200});
   const proof=await page.evaluate(()=>{
@@ -148,7 +148,9 @@ const server=http.createServer((req,res)=>{
       GameRuntime.storage.getItem('re_rhine_scenery')!=='detailed')throw Error('Detailed reactivation failed');
   });
   const levelViews=await page.evaluate(()=>{
-   const pairs=[['river',13890,16260,13630,15040,'clear'],['woodland',15120,14250,16160,13920,'broken']];
+   const pairs=[['river',13890,16260,13630,15040,'clear'],
+    ['woodland',15120,14250,16160,13920,'broken'],
+    ['settlement',22680,24630,22865,24116,'clear']];
    const lens=new THREE.PerspectiveCamera(58,1024/768,1,13500);
    const views=[];
    for(const [name,x,z,tx,tz,wx] of pairs){
@@ -167,13 +169,24 @@ const server=http.createServer((req,res)=>{
      renderer.render(scene,lens);
      const gl=renderer.getContext(),w=renderer.domElement.width,h=renderer.domElement.height;
      const pixels=new Uint8Array(w*h*4);gl.readPixels(0,0,w,h,gl.RGBA,gl.UNSIGNED_BYTE,pixels);
-     let difference=0;
+     let difference=0,lotPixels=0;
      if(mode==='detailed')detailedPixels=pixels;
      if(mode==='ultra'){
       for(let i=0;i<pixels.length;i+=4)if([0,1,2].some(c=>Math.abs(detailedPixels[i+c]-pixels[i+c])>12))difference++;
      }
-     views.push({name,mode,png:renderer.domElement.toDataURL(),triangles:renderer.info.render.triangles,calls:renderer.info.render.calls,
-      changed:+(100*difference/(w*h)).toFixed(2),masks:rhineUltra?[...rhineUltra.maps.values()].filter(r=>r.texture).length:0});
+     const lots=rhineScenery.sites.filter(s=>s.ultra&&s.mesh?.visible);
+     const view={name,mode,png:renderer.domElement.toDataURL(),triangles:renderer.info.render.triangles,calls:renderer.info.render.calls,
+      changed:+(100*difference/(w*h)).toFixed(2),masks:rhineUltra?[...rhineUltra.maps.values()].filter(r=>r.texture).length:0,
+      lots:lots.reduce((count,site)=>count+site.plots.length,0)};
+     if(name==='settlement'&&mode==='ultra'){
+      for(const lot of lots)lot.mesh.visible=false;
+      renderer.render(scene,lens);
+      const bare=new Uint8Array(w*h*4);
+      gl.readPixels(0,0,w,h,gl.RGBA,gl.UNSIGNED_BYTE,bare);
+      for(let i=0;i<pixels.length;i+=4)if([0,1,2].some(c=>Math.abs(bare[i+c]-pixels[i+c])>10))lotPixels++;
+      for(const lot of lots)lot.mesh.visible=true;
+     }
+     views.push({...view,lotPixels});
     }
    }
    return views;
@@ -189,6 +202,9 @@ const server=http.createServer((req,res)=>{
    assert(detailed.triangles-classic.triangles<18000);
    assert(ultra.changed>=20,'Ultra must be visible at flight height: '+JSON.stringify(ultra));
    assert(ultra.masks>0&&ultra.masks<=18);
+   assert.equal(detailed.lots,0,'Detailed must exclude Ultra properties');
+   assert(ultra.lots>0,'Ultra properties must cover this route: '+JSON.stringify(ultra));
+   if(ultra.name==='settlement')assert(ultra.lots>=15&&ultra.lotPixels>=100,JSON.stringify(ultra));
    assert(ultra.calls-detailed.calls<40&&ultra.triangles-detailed.triangles<90000);
   }
   console.log('Rhine level camera:',JSON.stringify(levelViews));

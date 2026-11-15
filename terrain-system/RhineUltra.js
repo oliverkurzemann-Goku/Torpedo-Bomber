@@ -63,9 +63,15 @@ class RhineUltra {
       this.extend(tile.materialOverride,'terrain',shader=>this.styleTerrain(shader,mask,blend));
     }
     for(const material of [osm.riverMat,osm.lakeMat])this.extend(material,'water',shader=>this.styleWater(shader));
-    for(const material of [osm.roadMat,osm.railMat,osm.forestFloorMat,osm.coniferMat,osm.deciduousMat,
-      osm.poplarMat,osm.willowMat,osm.shrubMat,osm.trunkMat,osm.buildingWarmMat,osm.buildingCoolMat,
-      osm.buildingOchreMat,osm.buildingBrickMat,osm.roofMat,osm.roofSlateMat,osm.roofBrownMat,
+    for(const material of [osm.coniferMat,osm.deciduousMat,osm.poplarMat,osm.willowMat]){
+      this.extend(material,'canopy',shader=>this.styleScenery(shader,'canopy'));
+    }
+    for(const material of [osm.roofMat,osm.roofSlateMat,osm.roofBrownMat]){
+      this.extend(material,'roof',shader=>this.styleScenery(shader,'roof'));
+    }
+    for(const material of [osm.roadMat,osm.railMat,osm.forestFloorMat,
+      osm.shrubMat,osm.trunkMat,osm.buildingWarmMat,osm.buildingCoolMat,
+      osm.buildingOchreMat,osm.buildingBrickMat,
       osm.flatRoofMat,osm.chimneyMat])this.extend(material,'landscape',shader=>this.styleScenery(shader));
   }
 
@@ -150,25 +156,35 @@ class RhineUltra {
   }
 
   makeLandMask(tx,tz) {
-    // R: mapped agricultural cover, G: object shadows, B: woods. Canvas
-    // alpha is always opaque so filtering never interpolates encoded IDs.
+    // R encodes each parcel's row orientation, G carries projected shadows,
+    // and B carries the crop mix, with the top of its range reserved for woods.
     const size=this.terrain.tileSize,n=512;
     const canvas=document.createElement('canvas');canvas.width=canvas.height=n;
     const ctx=canvas.getContext('2d');
     ctx.fillStyle='#000';ctx.fillRect(0,0,n,n);
     ctx.scale(n/size,n/size);
-    ctx.globalCompositeOperation='lighter';
     const data=this.osm.sourceTiles.get(tx+','+tz);
-    for(const [rings,colour] of [[data?.farmland,'#f00000'],[data?.forests,'#0000e0']]){
-      ctx.fillStyle=colour;
+    for(const [rings,woods] of [[data?.farmland,false],[data?.forests,true]]){
       for(const ring of rings||[]){
         if(ring.length<3)continue;
-        ctx.beginPath();ctx.moveTo(...ring[0]);
-        for(let i=1;i<ring.length;i++)ctx.lineTo(...ring[i]);
+        let bearing=0,longest=0;
+        ctx.beginPath();
+        ctx.moveTo(...ring[0]);
+        for(let i=0;i<ring.length;i++){
+          const [x,z]=ring[i],[nx,nz]=ring[(i+1)%ring.length];
+          const dx=nx-x,dz=nz-z,length=dx*dx+dz*dz;
+          if(length>longest){longest=length;bearing=Math.atan2(dz,dx);}
+          ctx.lineTo(nx,nz);
+        }
+        const heading=((bearing/Math.PI)%1+1)%1;
+        const red=Math.round(57+186*heading);
+        const blue=Math.round(18+124*osmHash(tx*size+ring[0][0],tz*size+ring[0][1],1668));
+        ctx.fillStyle=woods?'#0000f4':'rgb('+red+',0,'+blue+')';
         ctx.closePath();ctx.fill();
       }
     }
 
+    ctx.globalCompositeOperation='lighter';
     const sun=this.uniforms.ultraSun.value,ox=tx*size,oz=tz*size;
     const angle=Math.atan2(-sun.z,-sun.x),shadowStretch=Math.hypot(sun.x,sun.z)/sun.y;
     // Include nearby casters in neighbouring tiles so their shadows cross seams.
@@ -213,24 +229,33 @@ class RhineUltra {
     shader.fragmentShader=shader.fragmentShader.replace('#include <roughnessmap_fragment>', /* glsl */`
       #include <roughnessmap_fragment>
       float maskFade=1.0-smoothstep(3000.0,4250.0,length(rhineGround-ultraFocus));
-      vec3 landMask=texture2D(ultraLandMask,landCoverUv).rgb*maskFade*ultraMaskBlend;
-      vec2 broad=texture2D(ultraNoise,rhineGround*.00083).rg;
+      float nearLand=maskFade*ultraMaskBlend;
+      vec3 landMask=texture2D(ultraLandMask,landCoverUv).rgb;
+      vec2 broad=texture2D(ultraNoise,rhineGround*.00113).rg;
       float textureGrain=texture2D(ultraNoise,rhineGround*.014).g;
-      float field=landMask.r*(1.0-landMask.b);
-      float fieldVariation=smoothstep(.33,.64,broad.y);
-      float tilt=mix(.43,1.03,smoothstep(.30,.71,broad.x));
-      float phase=dot(rhineGround,vec2(.67,.89))*.28 + tilt*sin(rhineGround.y*.019)+2.2*broad.y;
-      // Swaths and headland texture fade before they become subpixel.
-      float swathStrength=.15/(1.0+fwidth(phase)*fwidth(phase));
-      float swaths=sin(phase)*swathStrength;
-      vec3 pasture=mix(vec3(.77,.86,.78),vec3(1.07,1.02,.78),broad.r);
-      vec3 crop=mix(vec3(1.12,.91,.66),vec3(.77,.97,.71),fieldVariation)*(1.0+swaths);
-      vec3 forest=mix(vec3(.67,.73,.67),vec3(.94,.96,.80),broad.y);
-      vec3 groundTint=mix(mix(pasture,crop,field),forest,landMask.b*.90);
-      diffuseColor.rgb *= groundTint * (.79+textureGrain*.40);
+      float woods=smoothstep(.61,.90,landMask.b);
+      float field=smoothstep(.055,.20,landMask.r)*(1.0-woods)*nearLand;
+      float bearing=clamp((landMask.r-.224)*1.37,0.0,1.0)*3.141593;
+      vec2 acrossRows=vec2(-sin(bearing),cos(bearing));
+      float cropMix=clamp((landMask.b-.07)*2.05,0.0,1.0);
+      float rowAxis=dot(rhineGround,acrossRows);
+      float phase=rowAxis*mix(.33,.71,cropMix)+1.10*broad.y;
+      // Sample the spatial derivatives against the same bearing. At field
+      // borders the bearing itself changes, so there the lines fade instead.
+      float footprint=length(fwidth(rhineGround));
+      float rowContrast=.15*(1.0-smoothstep(1.8,8.0,footprint));
+      rowContrast*=1.0-smoothstep(.008,.067,fwidth(landMask.r));
+      float swaths=sin(phase)*rowContrast+(sin(phase*.21)-.4)*rowContrast*.30;
+      vec3 pasture=mix(vec3(.83,.94,.80),vec3(1.03,1.04,.87),broad.r);
+      vec3 crop=mix(vec3(1.19,.88,.59),vec3(.79,1.03,.65),smoothstep(.02,.65,cropMix));
+      crop=mix(crop,vec3(.74,.90,.79),smoothstep(.68,1.0,cropMix))*(1.0+swaths);
+      crop*=mix(.84,1.13,broad.r);
+      vec3 forest=mix(vec3(.53,.66,.59),vec3(.81,.87,.73),broad.y);
+      vec3 groundTint=mix(mix(pasture,crop,field),forest,woods*nearLand*.94);
+      diffuseColor.rgb *= groundTint * (.91+textureGrain*.18);
     `);
     shader.fragmentShader=shader.fragmentShader.replace('#include <output_fragment>', /* glsl */`
-      outgoingLight *= rhineCloudShadow(rhineGround,0.0)*(1.0-ultraDaylight*.61*landMask.g);
+      outgoingLight *= rhineCloudShadow(rhineGround,0.0)*(1.0-ultraDaylight*.61*landMask.g*nearLand);
       #include <output_fragment>
     `);
   }
@@ -254,20 +279,55 @@ class RhineUltra {
     `);
   }
 
-  styleScenery(shader) {
+  styleScenery(shader,kind='landscape') {
+    const canopy=kind==='canopy',roof=kind==='roof';
+    const roofVaryings=roof?'varying vec4 ultraRoof;\n':'';
     shader.vertexShader='varying vec3 ultraPosition;\n'+shader.vertexShader;
+    shader.vertexShader=roofVaryings+shader.vertexShader;
+    const crownShape=canopy?/* glsl */`
+      #ifdef USE_INSTANCING
+        float lobe=forestRoot.z-.5;
+        transformed.xz += (transformed.xz-forestRoot.xy)*lobe*.28*(1.0-forestStem);
+        transformed.y += lobe*5.6*(1.0-forestStem);
+      #endif`:'';
     shader.vertexShader=shader.vertexShader.replace('#include <project_vertex>', /* glsl */`
+      ${crownShape}
       #include <project_vertex>
       vec4 ultraVertex=vec4(transformed,1.0);
       #ifdef USE_INSTANCING
         ultraVertex=instanceMatrix*ultraVertex;
+        ${roof?'ultraRoof=vec4(position.xz,length(instanceMatrix[0].xyz)>6.5?instanceMatrix[3].xz:vec2(-10000.0));':''}
       #endif
+      ${roof?'#ifndef USE_INSTANCING\nultraRoof=vec4(position.xz,modelMatrix[3].xz);\n#endif':''}
       ultraPosition=(modelMatrix*ultraVertex).xyz;
     `);
-    shader.fragmentShader='varying vec3 ultraPosition;\n'+shader.fragmentShader;
+    shader.fragmentShader='varying vec3 ultraPosition;\n'+roofVaryings+shader.fragmentShader;
+    const foliage=canopy?/* glsl */`
+      vec2 leafUv=ultraPosition.xz*.063+ultraPosition.y*vec2(.037,-.023);
+      vec2 spray=texture2D(ultraNoise,leafUv).gb;
+      float leafDetail=1.0-smoothstep(.32,2.9,length(fwidth(ultraPosition)));
+      float edge=1.0-abs(dot(normal,normalize(vViewPosition)));
+      if(forestStem<.5 && edge*leafDetail>.64 && spray.x<.42) discard;
+      vec3 leafTone=mix(vec3(.64,.77,.63),vec3(1.30,1.30,.95),smoothstep(.30,.69,spray.x));
+      outgoingLight*=mix(vec3(1.0),leafTone,(1.0-forestStem)*leafDetail);
+    `:'';
+    // Keep these visual roof breaks within the bridge and railway districts.
+    // Small roof meshes sharing this material (dormers/spires) stay intact.
+    const roofWear=roof?/* glsl */`
+      float roofSeed=fract(sin(dot(floor(ultraRoof.zw*2.0),vec2(.0623,.1141)))*43758.54);
+      bool bridgeDistrict=length((ultraRoof.zw-vec2(13800.0,15150.0))*vec2(1.3,.85))<1200.0;
+      vec2 tear=ultraRoof.xy-vec2((roofSeed-.9)*2.0,.21);
+      float fracture=length(tear*vec2(1.03,1.6))+patina.y*.16;
+      if(bridgeDistrict && roofSeed>.87){
+        if(fracture<.16) discard;
+        outgoingLight*=mix(.45,1.0,smoothstep(.16,.35,fracture));
+      }
+    `:'';
     shader.fragmentShader=shader.fragmentShader.replace('#include <output_fragment>', /* glsl */`
       vec2 patina=texture2D(ultraNoise,ultraPosition.xz*.019+ultraPosition.y*vec2(.011,-.008)).gb;
       outgoingLight *= (.82+.28*patina.x+.12*patina.y)*rhineCloudShadow(ultraPosition.xz,ultraPosition.y);
+      ${foliage}
+      ${roofWear}
       #include <output_fragment>
     `);
   }
