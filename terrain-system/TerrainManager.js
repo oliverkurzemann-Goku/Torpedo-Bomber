@@ -271,6 +271,11 @@ class TerrainManager {
 
   get tileCount(){ return this.tiles.size; }
 
+  setRhineLandscape(enabled){
+    this.rhineLandscape ??= {value:false};
+    this.rhineLandscape.value=enabled;
+  }
+
   setLandcover(tx,tz,data,softEdge=true){
     const tile=this.tiles.get(this._key(tx,tz));
     if(!tile||typeof document==='undefined')return;
@@ -278,22 +283,53 @@ class TerrainManager {
     const texture=new THREE.CanvasTexture(canvas);
     texture.generateMipmaps=true;texture.minFilter=THREE.LinearMipmapLinearFilter;
     const material=this.material.clone();
+    this.rhineLandscape ??= {value:false};
+    const landscape=this.rhineLandscape;
     material.onBeforeCompile=shader=>{
+      shader.uniforms.rhineLandscape=landscape;
       shader.uniforms.landCoverMap={value:texture};
       shader.uniforms.surfaceDetails={value:this.surfaceDetailTexture};
-      shader.vertexShader='varying vec2 landCoverUv;\n'+shader.vertexShader;
+      shader.vertexShader='varying vec2 landCoverUv;\nvarying vec2 rhineGround;\n'+shader.vertexShader;
       shader.vertexShader=shader.vertexShader.replace('#include <uv_vertex>',
-        '#include <uv_vertex>\nlandCoverUv = uv;');
-      shader.fragmentShader='uniform sampler2D landCoverMap;\nuniform sampler2D surfaceDetails;\nvarying vec2 landCoverUv;\n'+shader.fragmentShader;
+        '#include <uv_vertex>\nlandCoverUv = uv;\nrhineGround = (modelMatrix * vec4(position, 1.0)).xz;');
+      shader.fragmentShader=`
+        uniform sampler2D landCoverMap;
+        uniform sampler2D surfaceDetails;
+        uniform bool rhineLandscape;
+        varying vec2 landCoverUv;
+        varying vec2 rhineGround;
+        vec3 rhineLandTint(vec3 cover, float surface){
+          // World-space bands stay aligned across tile seams. Mip-like fade
+          // removes fine rows as they become smaller than a screen pixel.
+          vec2 along=vec2(dot(rhineGround,vec2(.924,.383)),dot(rhineGround,vec2(-.383,.924)));
+          vec2 parcel=floor(along/vec2(243.0,164.0));
+          float tone=fract(dot(parcel,vec2(.381966,.618034)));
+          float alongRows=fract((along.y + along.x * (tone < .52 ? .18 : -.26)) / 21.0);
+          float stripe=smoothstep(.11,.28,alongRows)*(1.0-smoothstep(.67,.9,alongRows));
+          float rowFade=1.0-smoothstep(.6,6.0,length(fwidth(rhineGround)));
+          if(surface>6.5){
+            float canopy=1.0-smoothstep(.22,.84,cover.g);
+            return cover*mix(vec3(.79,.91,.97),vec3(.64,.83,.73),canopy);
+          }
+          if(surface>.5&&surface<3.5){
+            vec3 earth=vec3(.81,.64,.46),stubble=vec3(.83,.78,.55),crop=vec3(.52,.69,.43);
+            vec3 field=surface<1.5?earth:surface<2.5?crop:stubble;
+            field=mix(field,field*vec3(1.16,1.09,.88),tone);
+            return mix(cover,field,.70)*(1.0+rowFade*(stripe-.46)*.36);
+          }
+          return cover*mix(vec3(.94,1.05,.80),vec3(1.18,1.09,.83),tone*.7);
+        }
+      `+shader.fragmentShader;
       shader.fragmentShader=shader.fragmentShader.replace('#include <map_fragment>',
         'vec4 cover = texture2D(landCoverMap, landCoverUv);\n'+
         'float surface = clamp(floor(cover.a * 9.0 - 1.0 + 0.5), 0.0, 7.0);\n'+
         'vec2 cell = vec2(mod(surface, 4.0), floor(surface / 4.0));\n'+
         'vec2 detailUv = (cell + fract(vUv) * 0.984 + 0.008) / vec2(4.0, 2.0);\n'+
         'float grain = texture2D(surfaceDetails, detailUv).r;\n'+
+        'if (rhineLandscape) cover.rgb = rhineLandTint(cover.rgb, surface);\n'+
         'diffuseColor.rgb *= cover.rgb * (0.70 + grain * 0.60);');
     };
-    material.customProgramCacheKey=()=> 'terrain-landcover-165';
+    material.customProgramCacheKey=()=> 'terrain-landcover-270';
     if(tile.landcoverTexture)tile.landcoverTexture.dispose();
     if(tile.materialOverride)tile.materialOverride.dispose();
     tile.landcoverTexture=texture;tile.materialOverride=material;tile.mesh.material=material;

@@ -24,7 +24,7 @@ const server=http.createServer((req,res)=>{
   page.on('pageerror',e=>errors.push(e.message));
   page.on('console',m=>{if(/Shader Error|VALIDATE_STATUS|not compiled/.test(m.text()))errors.push(m.text());});
   await page.addInitScript(()=>{window.requestAnimationFrame=()=>0;});
-  await page.goto('http://127.0.0.1:'+server.address().port+'/remagen-mission.html?v=268');
+  await page.goto('http://127.0.0.1:'+server.address().port+'/remagen-mission.html?v=270&scenery=detailed');
   await page.waitForFunction(()=>typeof livingWorld!=='undefined'&&livingWorld?.rhineVillage&&state===ST.MENU,null,{polling:200});
   const proof=await page.evaluate(()=>{
    renderer.setPixelRatio(.60);renderer.shadowMap.enabled=false;
@@ -84,14 +84,21 @@ const server=http.createServer((req,res)=>{
    const cam=new THREE.PerspectiveCamera(51,1024/768,1,13000);
    const light=new THREE.HemisphereLight(0xe4edff,0x889078,1.9);
    const sceneSlice=new THREE.Scene();sceneSlice.background=new THREE.Color(0x9eb4c2);sceneSlice.add(light);
+   const classicRoof=0x653b31;
    for(const route of routes){
     const record=[];
-    for(const [x,z] of route){
-     const y=groundY(x,z)+90;
+    for(const [index,[x,z]] of route.entries()){
+     const agl=index%2===0?100:320;
+     const y=groundY(x,z)+agl;
      for(let i=0;i<26;i++)layer.update(.016,x,z,y,0);
      const tile=terrain.tiles.get(Math.floor(x/RTILE)+','+Math.floor(z/RTILE));
      const ground=new THREE.Mesh(tile.mesh.geometry,tile.mesh.material);
      ground.position.copy(tile.mesh.position);sceneSlice.add(ground);
+     const baseScenery=new THREE.Group();sceneSlice.add(baseScenery);
+     const tileScenery=osmMgr.tiles.get(Math.floor(x/RTILE)+','+Math.floor(z/RTILE));
+     for(const o of tileScenery.farGroup.children.filter(o=>o.name.startsWith('osmBuilding')||o.name.startsWith('osmForest'))){
+      baseScenery.add(o.clone());
+     }
      const detail=new THREE.Group();sceneSlice.add(detail);
      const nearby=layer.sites.filter(s=>s.mesh?.visible);
      for(const s of nearby)detail.add(s.mesh.clone());
@@ -102,7 +109,8 @@ const server=http.createServer((req,res)=>{
       cam.position.set(x-100,y,z+235);cam.lookAt(x+85,groundY(x,z),z-140);
      }
      const sample=enabled=>{
-      detail.visible=enabled;renderer.render(sceneSlice,cam);
+      detail.visible=enabled;terrain.setRhineLandscape(enabled);osmMgr.setRhineLandscape(enabled);
+      renderer.render(sceneSlice,cam);
       const pixels=new Uint8Array(w*h*4);gl.readPixels(0,0,w,h,gl.RGBA,gl.UNSIGNED_BYTE,pixels);
       return {pixels,calls:renderer.info.render.calls,triangles:renderer.info.render.triangles};
      };
@@ -113,23 +121,27 @@ const server=http.createServer((req,res)=>{
          Math.abs(classic.pixels[i+1]-advanced.pixels[i+1])>7||
          Math.abs(classic.pixels[i+2]-advanced.pixels[i+2])>7)pixels++;
      }
-     record.push({pixels,calls:advanced.calls-classic.calls,triangles:advanced.triangles-classic.triangles,nearby:nearby.length});
-     sceneSlice.remove(ground,detail);
+     record.push({agl,pixels,pct:+(100*pixels/(w*h)).toFixed(2),calls:advanced.calls-classic.calls,triangles:advanced.triangles-classic.triangles});
+     sceneSlice.remove(ground,detail,baseScenery);
     }
     measurements.push(record);
    }
+   terrain.setRhineLandscape(false);osmMgr.setRhineLandscape(false);
+   if(osmMgr.roofMat.color.getHex()!==classicRoof)throw Error('Classic roof tint mismatch');
+   terrain.setRhineLandscape(true);osmMgr.setRhineLandscape(true);
    return measurements;
   });
-  assert(coverage.every(samples=>samples.filter(s=>s.pixels>60).length>=2),JSON.stringify(coverage));
+  assert(coverage.every(samples=>samples.filter(s=>s.pct>=8).length>=3),JSON.stringify(coverage));
   assert(coverage.flat().every(s=>s.calls<=12&&s.triangles<18000),JSON.stringify(coverage));
   await page.evaluate(()=>{
    const select=document.getElementById('rhineSceneryPause');
    select.value='classic';select.dispatchEvent(new Event('change'));
-   if(rhineScenery.enabled||rhineScenery.group.visible||rhineScenery.atlas||rhineScenery.sites.some(s=>s.mesh)||
+   if(rhineScenery.enabled||terrain.rhineLandscape.value||osmMgr.roofMat.color.getHex()!==0x653b31||
+      rhineScenery.group.visible||rhineScenery.atlas||rhineScenery.sites.some(s=>s.mesh)||
       GameRuntime.storage.getItem('re_rhine_scenery')!=='classic'||
       document.getElementById('rhineSceneryMenu').value!=='classic')throw Error('Classic fallback failed');
    select.value='detailed';select.dispatchEvent(new Event('change'));
-   if(!rhineScenery.enabled||!rhineScenery.atlas||
+   if(!rhineScenery.enabled||!terrain.rhineLandscape.value||osmMgr.roofMat.color.getHex()!==0x93503b||!rhineScenery.atlas||
       GameRuntime.storage.getItem('re_rhine_scenery')!=='detailed')throw Error('Detailed reactivation failed');
   });
   console.log('Rhine Detailed route comparison:',JSON.stringify(coverage));

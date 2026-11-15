@@ -787,6 +787,21 @@ class OSMManager {
     return {minY,maxY};
   }
 
+  setRhineLandscape(enabled){
+    // Switch the shared materials in place, keeping batches and atlas sizes.
+    const palette=[
+      [this.roofMat,0x93503b],[this.roofSlateMat,0x3e5054],[this.roofBrownMat,0x735743],
+      [this.buildingWarmMat,0xddd0ad],[this.buildingOchreMat,0xd4aa65],[this.buildingBrickMat,0xb87962],
+      [this.deciduousMat,0x516c42],[this.coniferMat,0x304b3e],[this.poplarMat,0x657644],
+      [this.willowMat,0x758562],[this.forestFloorMat,0x233c28]
+    ];
+    this.classicLandscapeColors ??= palette.map(([mat])=>mat.color.clone());
+    palette.forEach(([mat,tint],i)=>{
+      if(enabled)mat.color.setHex(tint);
+      else mat.color.copy(this.classicLandscapeColors[i]);
+    });
+  }
+
   _buildBuildings(group, buildings, ox, oz, exclusion=null){
     if(!buildings || buildings.length === 0) return 0;
 
