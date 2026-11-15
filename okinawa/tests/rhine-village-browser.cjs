@@ -24,7 +24,7 @@ const server=http.createServer((req,res)=>{
   page.on('pageerror',e=>errors.push(e.message));
   page.on('console',m=>{if(/Shader Error|VALIDATE_STATUS|not compiled/.test(m.text()))errors.push(m.text());});
   await page.addInitScript(()=>{window.requestAnimationFrame=()=>0;});
-  const url='http://127.0.0.1:'+server.address().port+'/remagen-mission.html?v=274';
+  const url='http://127.0.0.1:'+server.address().port+'/remagen-mission.html?v=275';
   await page.goto(url+'&scenery=ultra&perf=1');
   await page.waitForFunction(()=>typeof livingWorld!=='undefined'&&livingWorld?.rhineVillage&&state===ST.MENU,null,{polling:200});
   const proof=await page.evaluate(()=>{
@@ -177,7 +177,7 @@ const server=http.createServer((req,res)=>{
      const lots=rhineScenery.sites.filter(s=>s.ultra&&s.mesh?.visible);
      const view={name,mode,png:renderer.domElement.toDataURL(),triangles:renderer.info.render.triangles,calls:renderer.info.render.calls,
       changed:+(100*difference/(w*h)).toFixed(2),masks:rhineUltra?[...rhineUltra.maps.values()].filter(r=>r.texture).length:0,
-      lots:lots.reduce((count,site)=>count+site.plots.length,0)};
+      lots:lots.reduce((count,site)=>count+site.plots.length,0),roofTrim:rhineUltra?.roofTrim.count||0};
      if(name==='settlement'&&mode==='ultra'){
       for(const lot of lots)lot.mesh.visible=false;
       renderer.render(scene,lens);
@@ -206,8 +206,45 @@ const server=http.createServer((req,res)=>{
    assert(ultra.lots>0,'Ultra properties must cover this route: '+JSON.stringify(ultra));
    if(ultra.name==='settlement')assert(ultra.lots>=15&&ultra.lotPixels>=100,JSON.stringify(ultra));
    assert(ultra.calls-detailed.calls<40&&ultra.triangles-detailed.triangles<90000);
+   assert(ultra.roofTrim>0&&ultra.roofTrim<=576&&detailed.roofTrim===0);
   }
   console.log('Rhine level camera:',JSON.stringify(levelViews));
+  const detail=await page.evaluate(()=>{
+   const x=22830,z=24295,level=groundY(x,z)+95;
+   const leadX=22865,leadZ=24015;
+   const lens=new THREE.PerspectiveCamera(59,1024/768,1,10000);
+   lens.position.set(x,level,z);lens.lookAt(leadX,groundY(leadX,leadZ)+20,leadZ);
+   updateContentVisibility(x,z);
+   const styles=new Set();
+   let roadVertices=0;
+   for(const mesh of osmMgr.surfaceMeshes){
+    if(mesh.material!==osmMgr.roadMat&&mesh.material!==osmMgr.railMat)continue;
+    const profile=mesh.geometry.attributes.roadProfile;
+    if(!profile||profile.count!==mesh.geometry.attributes.position.count||!profile.normalized)
+      throw Error('Draped road lost its surface attributes');
+    const array=profile.array;
+    for(let i=1;i<array.length;i+=2)styles.add(array[i]);
+    roadVertices+=profile.count;
+   }
+   const captures={};
+   for(const mode of ['detailed','ultra']){
+    configureRhineScenery(mode);
+    for(let i=0;i<85;i++){
+     rhineScenery.update(.04,x,z,level,0,mode==='ultra');
+     rhineUltra?.update(.04,x,z,level);
+    }
+    renderer.setPixelRatio(.80);
+    renderer.render(scene,lens);
+    captures[mode]=renderer.domElement.toDataURL();
+   }
+   return {captures,roadVertices,styles:[...styles],roofTrim:rhineUltra.roofTrim.count};
+  });
+  for(const [mode,png] of Object.entries(detail.captures))
+    fs.writeFileSync(path.join(out,'rhine-close-details-'+mode+'.png'),Buffer.from(png.split(',')[1],'base64'));
+  delete detail.captures;
+  assert([64,128,191,255].every(style=>detail.styles.includes(style)),JSON.stringify(detail));
+  assert(detail.roadVertices>5000&&detail.roofTrim>=24&&detail.roofTrim<=576,JSON.stringify(detail));
+  console.log('Rhine surface detail:',JSON.stringify(detail));
   const wildlife=await page.evaluate(()=>{
    configureRhineScenery('detailed');
    rhineScenery.clearUltraFlocks();
@@ -307,7 +344,7 @@ const server=http.createServer((req,res)=>{
    let disposed=false;oldMap.addEventListener('dispose',()=>{disposed=true;});
    renderer.domElement.dispatchEvent(new Event('webglcontextlost',{cancelable:true}));
    renderer.domElement.dispatchEvent(new Event('webglcontextrestored'));
-   if(rhineSceneryMode!=='detailed'||rhineUltra||oldSky.parent||riverLife.group.parent||
+   if(rhineSceneryMode!=='detailed'||rhineUltra||oldSky.parent||riverLife.group.parent||layer.roofTrim.parent||
       riverLife.boats.some(boat=>shipWakes.tracks.has(boat))||!disposed||osmMgr.riverMat.customProgramCacheKey!==oldKey||
       renderer.getPixelRatio()!==1.5||!flightQuality.enabled||!rhineScenery.enabled||state!==ST.PAUSED){
      throw Error('Graphics recovery did not restore Detailed and release Ultra resources');

@@ -237,6 +237,8 @@ class OSMManager {
   _buildRibbons(lines, ox, oz, width, mat, yOffset,riverData=null){
     if(!lines || lines.length === 0) return null;
     const positions = [], indices = [];
+    const road=mat===this.roadMat,rail=mat===this.railMat;
+    let profile=road||rail?[]:null;
     for(let lineIndex=0;lineIndex<lines.length;lineIndex++){
       const localPts=lines[lineIndex];
       if(!localPts || localPts.length < 2) continue;
@@ -245,8 +247,16 @@ class OSMManager {
         : osmRibbonPairs(localPts,ox,oz,width);
       const world = pairs; // index count below
       const base = positions.length/3;
-      for(const pair of pairs) for(const [x,z] of pair){
+      // The route data has no surface tags. Length and a stable local seed
+      // give a plausible period mix of field tracks, village roads and main roads.
+      let length=0;
+      if(road)for(let i=1;i<localPts.length;i++)
+        length+=Math.hypot(localPts[i][0]-localPts[i-1][0],localPts[i][1]-localPts[i-1][1]);
+      const seed=osmHash(ox+localPts[0][0],oz+localPts[0][1],1730);
+      const type=rail?1:length>850?.75:length>210||seed>.72?.5:.25;
+      for(const pair of pairs)for(const [edge,[x,z]] of pair.entries()){
         positions.push(x,this._safeRenderedHeight(x,z,ox,oz)+yOffset,z);
+        if(profile)profile.push(edge,type);
       }
       for(let i = 1; i < world.length; i++){
         const l0=base+(i-1)*2, r0=l0+1, l1=base+i*2, r1=l1+1;
@@ -255,9 +265,11 @@ class OSMManager {
       }
     }
     if(positions.length === 0) return null;
-    if(mat===this.roadMat||mat===this.railMat){
+    if(profile){
       const water=this.waterIndex||makeOSMWaterIndex([{tx:ox/this.tileSize,tz:oz/this.tileSize,data:riverData||{}}],this.tileSize);
-      const dry=osmSubtractWater(positions,indices,water);
+      const dryProfile=[];
+      const dry=osmSubtractWater(positions,indices,water,profile,dryProfile);
+      profile=dryProfile;
       positions.length=0;indices.length=0;
       for(const v of dry)positions.push(v);
       for(let i=0;i<positions.length/3;i++)indices.push(i);
@@ -265,12 +277,13 @@ class OSMManager {
     }
     const geo = new THREE.BufferGeometry();
     geo.setAttribute('position', new THREE.Float32BufferAttribute(positions,3));
+    if(profile)geo.setAttribute('roadProfile',new THREE.Uint8BufferAttribute(profile.map(value=>Math.round(value*255)),2,true));
     geo.setIndex(indices);
     geo.computeVertexNormals();
     geo.computeBoundingSphere();
     const mesh=new THREE.Mesh(geo, mat);
     mesh.userData.yOffsets=new Float32Array(positions.length/3).fill(yOffset);
-    this._prepareWaterSurface(mesh,ox,oz,yOffset);
+    this._prepareWaterSurface(mesh,ox,oz,yOffset,profile&&Float32Array.from(profile));
     return mesh;
   }
 
@@ -296,14 +309,16 @@ class OSMManager {
     geo.computeBoundingSphere();
     const mesh=new THREE.Mesh(geo, mat);
     mesh.userData.yOffsets=new Float32Array(positions.length/3).fill(yOffset);
-    this._prepareWaterSurface(mesh,ox,oz,yOffset);
+    const profile=mat===this.roadMat?new Float32Array(positions.length/3*2):null;
+    if(profile)geo.setAttribute('roadProfile',new THREE.Uint8BufferAttribute(new Uint8Array(profile.length),2,true));
+    this._prepareWaterSurface(mesh,ox,oz,yOffset,profile);
     return mesh;
   }
 
-  _prepareWaterSurface(mesh,ox,oz,offset){
+  _prepareWaterSurface(mesh,ox,oz,offset,profile){
     // Keep the small source triangulation to rebuild when LOD changes.
     this.surfaceMeshes.add(mesh);
-    mesh.userData.waterSource={positions:mesh.geometry.attributes.position.array.slice(),indices:Array.from(mesh.geometry.index.array),ox,oz,offset};
+    mesh.userData.waterSource={positions:mesh.geometry.attributes.position.array.slice(),indices:Array.from(mesh.geometry.index.array),ox,oz,offset,profile};
     if(!this.deferSurfaces)this.redrapeWater(mesh);
   }
 
@@ -435,9 +450,13 @@ class OSMManager {
   }
   *_surfaceLayout(mesh,seg){
     const src=mesh.userData.waterSource;
-    const step=this.tileSize/seg,positions=[];
+    const step=this.tileSize/seg,positions=[],profile=src.profile?[]:null;
     for(let i=0;i<src.indices.length;i+=3){
-      let tri=src.indices.slice(i,i+3).map(j=>[src.positions[j*3],src.positions[j*3+2]]);
+      let tri=src.indices.slice(i,i+3).map(j=>{
+        const p=[src.positions[j*3],src.positions[j*3+2]];
+        if(profile)p.push(src.profile[j*2],src.profile[j*2+1]);
+        return p;
+      });
       // Clip to the owning tile once, then to X strips before visiting Z cells.
       // Testing every cell in the triangle's full bounding rectangle wasted
       // most of a frame on empty cells for long, narrow river/road triangles.
@@ -464,7 +483,10 @@ class OSMManager {
               const a=part[0],b=part[j],c=part[j+1];
               const area=(b[0]-a[0])*(c[1]-a[1])-(b[1]-a[1])*(c[0]-a[0]);
               if(Math.abs(area)<1e-5)continue;
-              for(const [px,pz] of area<0?[a,b,c]:[a,c,b])positions.push(px,0,pz);
+              for(const [px,pz,edge,type] of area<0?[a,b,c]:[a,c,b]){
+                positions.push(px,0,pz);
+                if(profile)profile.push(Math.round(edge*255),Math.round(type*255));
+              }
             }
           }
         }
@@ -482,7 +504,7 @@ class OSMManager {
       uv[i*2]=x/260;uv[i*2+1]=z/260;
       if(i%2048===2047)yield;
     }
-    return {positions:positionsArray,base,weights,uv};
+    return {positions:positionsArray,base,weights,uv,profile:profile&&Uint8Array.from(profile)};
   }
   redrapeWater(mesh){
     const src=mesh.userData.waterSource;
@@ -500,6 +522,7 @@ class OSMManager {
     const geo=new THREE.BufferGeometry();
     geo.setAttribute('position',new THREE.BufferAttribute(layout.positions,3));
     geo.setAttribute('uv',new THREE.BufferAttribute(layout.uv,2));
+    if(layout.profile)geo.setAttribute('roadProfile',new THREE.BufferAttribute(layout.profile,2,true));
     mesh.geometry.dispose();mesh.geometry=geo;
     mesh.userData.yOffsets=new Float32Array(layout.positions.length/3).fill(src.offset);
     mesh.userData.surfaceSegments=seg;mesh.userData.surfaceBase=layout.base;mesh.userData.surfaceWeights=layout.weights;
@@ -1050,7 +1073,9 @@ function osmClipHalfPlane(ring,nx,nz,limit,greater){
     if(da>=0) out.push(a);
     if((da>=0)!==(db>=0)){
       const t=da/(da-db);
-      out.push([a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t]);
+      const point=[a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t];
+      if(a.length===4)point.push(a[2]+(b[2]-a[2])*t,a[3]+(b[3]-a[3])*t);
+      out.push(point);
     }
   }
   return out;
@@ -1682,10 +1707,14 @@ function pruneOSMRoadSpurs(records,tileSize){
 
 // Exact 2D polygon subtraction, before terrain draping. Terrain updates keep
 // these dry source triangles, so an LOD change cannot restore roads in water.
-function osmSubtractWater(positions,indices,index){
+function osmSubtractWater(positions,indices,index,profile=null,dryProfile=null){
   const output=[],cs=index.cellSize;
   for(let i=0;i<indices.length;i+=3){
-    const tri=indices.slice(i,i+3).map(j=>[positions[j*3],positions[j*3+2]]);
+    const tri=indices.slice(i,i+3).map(j=>{
+      const p=[positions[j*3],positions[j*3+2]];
+      if(profile)p.push(profile[j*2],profile[j*2+1]);
+      return p;
+    });
     const xs=tri.map(p=>p[0]),zs=tri.map(p=>p[1]),minX=Math.min(...xs),maxX=Math.max(...xs),minZ=Math.min(...zs),maxZ=Math.max(...zs),candidates=new Set();
     for(let x=Math.floor(minX/cs);x<=Math.floor(maxX/cs);x++)for(let z=Math.floor(minZ/cs);z<=Math.floor(maxZ/cs);z++)
       for(const f of index.cells.get(x+','+z)||[])if(f.maxX>=minX&&f.minX<=maxX&&f.maxZ>=minZ&&f.minZ<=maxZ)candidates.add(f);
@@ -1716,7 +1745,10 @@ function osmSubtractWater(positions,indices,index){
     for(const poly of pieces)for(let j=1;j<poly.length-1;j++){
       const a=poly[0],b=poly[j],c=poly[j+1],area=(b[0]-a[0])*(c[1]-a[1])-(b[1]-a[1])*(c[0]-a[0]);
       if(Math.abs(area)<1e-5)continue;
-      for(const [x,z] of area<0?[a,b,c]:[a,c,b])output.push(x,0,z);
+      for(const [x,z,edge,type] of area<0?[a,b,c]:[a,c,b]){
+        output.push(x,0,z);
+        if(dryProfile)dryProfile.push(edge,type);
+      }
     }
   }
   return output;
