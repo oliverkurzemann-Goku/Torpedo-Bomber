@@ -20,7 +20,11 @@ global.fetch=async url=>{
  const airfields=[[6000,15800],[23600,25725]];
  const layout=RhineScenery.plan(osm,terrain,airfields);
  if(layout.sites.length<20)throw Error('Incomplete Rhine scenery layout.');
+ layout.neighbourhoods=RhineScenery.planNeighbourhoods(osm,terrain,airfields,layout.sites);
+ const gardens=layout.neighbourhoods.reduce((n,s)=>n+s.plots.length,0);
+ if(gardens<600)throw Error('Incomplete Ultra neighbourhoods: '+gardens);
  fs.writeFileSync(path.join(data,'rhine-scenery.json'),JSON.stringify(layout)+'\n');
  console.log(layout.sites.map(s=>[s.name,s.plots.length,s.kind]));
  console.log(layout.sites.length+' districts, '+layout.sites.reduce((n,s)=>n+s.plots.length,0)+' properties');
+ console.log(layout.neighbourhoods.length+' Ultra neighbourhoods, '+gardens+' extra properties');
 })().catch(e=>{console.error(e);process.exitCode=1;});

@@ -17,7 +17,7 @@ The 0.24-m extended original tail assembly and native four-blade rotor, gear,
 flaps, ailerons, elevators and rudder are driven by aircraft-articulation.js.
 Original source files, paint/detail scripts and editable packed Blender file:
 assets/aircraft/source/p47-independent/ (excluded from the app payload).
-Build 272: livery, normal and wear textures shipped at 2048 px instead of 4096 px
+Build 276: livery, normal and wear textures shipped at 2048 px instead of 4096 px
 (scripts/reduce-p47-textures.cjs; box filter, lossless PNG; same authorship and rights).
 The unreduced Build 204 model is source/p47-independent/p47-independent-4096.glb.
 Performance sources and approximation boundaries: P47-PERFORMANCE.md.

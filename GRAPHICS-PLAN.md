@@ -1,11 +1,20 @@
 # Grafik- und Performance-Plan
 
-Stand: 15.11.2026, Build 272. Zielgerät des Nutzers: **iPad Pro mit M1**.
+Stand: 15.11.2026, Build 276. Zielgerät des Nutzers: **iPad Pro mit M1**.
 Auftrag: „Bestmögliche Grafik und bestmögliche Performance", als Plan – gebaut ist davon bisher nur
-die P-47-Texturreduktion (Build 272). Jede Phase unten wird erst nach Freigabe des Nutzers gebaut.
+die P-47-Texturreduktion (Build 276). Jede Phase unten wird erst nach Freigabe des Nutzers gebaut.
 
 Dieser Plan gilt für **alle Sitzungen** (auch andere KI-Sitzungen, die an der Rhein-Kulisse arbeiten):
 wer Grafik ändert, hält die Budgets in Abschnitt 3 ein und trägt Messwerte hier nach.
+
+**Abgleich mit `main` (Builds 272–275 einer anderen Sitzung, parallel zu diesem Plan entstanden):** Der Rhein hat
+jetzt eine wählbare Kulissenstufe **„Ultra High“** (`terrain-system/RhineUltra.js`, Menü „Rhine scenery“, Link
+`?scenery=ultra`). Sie bringt Pixelverhältnis 2 mit fester Qualität (keine automatische Absenkung), einen
+berechneten Himmel mit Wolkendecke, **Wolkenschatten**, **Luftperspektive** (Dunst nach Entfernung und Talhöhe),
+belebtes Ufer, Schiffsverkehr und Vögel sowie eine **Leistungsanzeige** (`?perf=1` oder Häkchen im Menü:
+Bilder/s, schlechteste 5 % Bildzeit, Dreiecke, Draw-Calls, Pixelverhältnis). Damit ist ein Teil von Phase 0
+und Phase 2 schon vorhanden; die Phasen unten sind darauf angepasst. Die Zählwerte in Abschnitt 1 sind vor
+Ultra gemessen (Stufe „Detailed“); Ultra ist in diesem Plan noch nicht vermessen.
 
 ---
 
@@ -18,7 +27,7 @@ deshalb nicht hier). Messskripte: Arbeitsordner der Sitzung, Muster in `CLAUDE.m
 |---|---|---|
 | Dreiecke pro Bild | 4,7–5,3 Mio. | 3,1–3,2 Mio. (mit Schattenpass) |
 | Draw-Calls | 470–580 | 290–590 |
-| Texturen im Grafikspeicher | 300 MB → **104 MB** (Build 272) | ≈ 90 MB |
+| Texturen im Grafikspeicher | 300 MB → **104 MB** (Build 276) | ≈ 90 MB |
 | Pixelverhältnis am iPad | 1,5 (Deckel) | 2,0 |
 | Schatten | keine | weich, 2048 px, ±240 m |
 | Tone-Mapping / sRGB-Ausgabe | nein / nein | ACES / ja |
@@ -102,26 +111,30 @@ Sitzung sie unbemerkt sprengt.
 Reihenfolge nach „sichtbarer Gewinn pro Risiko". Aufwand in Builds, nicht in Tagen.
 
 ### Phase 0 – Messen können (1 Build)
-- **Diagnose-Einblendung** (abschaltbar, im Menü unter „More Options"): Bilder/s (Mittel und schlechtestes 1 %),
-  Bildzeit, Dreiecke, Draw-Calls, Pixelverhältnis, Qualitätsstufe, Bildwiederholrate (60 oder 120 Hz).
-- **Budget-Test** für CI (Zählwerte aus Abschnitt 3).
+- **Diagnose-Einblendung:** im Rhein seit Build 272 (`main`) vorhanden – Bilder/s, schlechteste 5 %,
+  Dreiecke, Draw-Calls, Pixelverhältnis. Noch fehlend: dieselbe Anzeige im Pazifik, Texturspeicher,
+  Qualitätsstufe der Regelung, Bildwiederholrate (60 oder 120 Hz).
+- **Budget-Test** für CI (Zählwerte aus Abschnitt 3), für „Detailed“ und „Ultra High“.
 - Abnahme: der Nutzer liest auf dem M1 Zahlen für Rhein-Start, Tiefflug Remagen, Pazifik-Trägerstart ab.
   Diese Zahlen entscheiden, wie viel Phase 1 wirklich nötig ist und wie weit High gehen darf.
 
 ### Phase 1 – Geschenkte Qualität und freies Budget (3–4 Builds, kein Stilwechsel)
 | Maßnahme | Wirkung | Risiko |
 |---|---|---|
-| P-47-Texturen 4096 → 2048 | −192 MB, Datei 9,2 → 4,7 MB, Bild gleich | **erledigt, Build 272** |
+| P-47-Texturen 4096 → 2048 | −192 MB, Datei 9,2 → 4,7 MB, Bild gleich | **erledigt, Build 276** |
 | Anisotrope Filterung 8× für Flugzeuge, Gelände, Piste | schärfere Flächen bei flachem Blick | gering |
-| Pixelverhältnis 2,0 statt 1,5, wenn das Gerät Reserve hat | 78 % mehr Bildpunkte, sichtbar schärfer | gering, mit Regelung |
+| Pixelverhältnis 2,0 statt 1,5, wenn das Gerät Reserve hat | 78 % mehr Bildpunkte, sichtbar schärfer | gering, mit Regelung (in Ultra High schon fest 2,0) |
 | Bäume in 1-km-Zellen statt 4-km-Kacheln | −60 bis −75 % Baumdreiecke, Bild gleich | mittel (Draw-Calls steigen, geschätzt um 100–250) |
 | Baum-Detailstufen: nah voll, 1,5–3 km vereinfacht, weiter als 3 km Flächen | Rhein ≈ 1 Mio. Dreiecke | mittel (Übergänge dürfen nicht „ploppen") |
 | Vereinfachte Flugzeuge für geparkte und ferne Maschinen (P-47 hat 89 500 Dreiecke) | −0,2 bis −0,4 Mio. | gering |
 | Grafikmenü Auto / Low / Medium / High, Regelung erweitert (Baumweite, Schatten, Auflösung; Ziel 45 statt 38 FPS als Eingriffsschwelle) | Nutzer wählt Obergrenze | gering |
 
 ### Phase 2 – Licht und Atmosphäre (4–6 Builds, der größte sichtbare Sprung)
-Zuerst als **Probeszene**: Rhein, Flugplatz und Brücke von Remagen, Mittag, klares Wetter, umschaltbar
-„Grafik: Neu / Klassisch". Erst wenn der Nutzer diese Szene auf dem iPad gut findet, wird ausgerollt.
+Der Schalter dafür existiert schon: die Stufe **„Ultra High“** (Builds 272–275 auf `main`) hat Himmel,
+Wolkenschatten und Luftperspektive (Punkte 2, 3 und 4c unten sind dort in einer ersten Form gebaut). Phase 2
+baut deshalb **in Ultra High weiter** statt eine zweite Probeszene anzulegen; „Detailed“ und „Classic“ bleiben
+unverändert, bis der Nutzer Ultra auf dem iPad freigibt. Offen in Ultra: Farb-Pipeline (1), Schattenkarte (4a),
+gebackene Geländeschatten (4b), Gelände-Normalen (5).
 
 1. **Farb-Pipeline wie im Pazifik:** sRGB-Ausgabe und filmische Tonwertkurve (ACES). Helle Flächen brennen nicht
    mehr aus, Licht addiert sich richtig. Aufwendigster Schritt: alle Rhein-Farben sind für die alte Ausgabe
@@ -183,12 +196,12 @@ Budget: Schattenpass ≈ 0,3–0,5 Mio. Dreiecke – kommt aus Phase 1.
 | Himmel, Tonwertkurve, Luftperspektive | ja | ja | ja |
 | Bodendetail im Nahbereich | aus | an | an |
 | Glühen und Farbabstimmung | aus | aus | an |
-| Rhein-Kulisse | Classic | Detailed reduziert | Detailed |
+| Rhein-Kulisse | Classic | Detailed | Ultra High |
 
 **Auto** ist der Standard: startet auf Medium, hebt nach 15 s mit Reserve an, senkt bei Bildzeit über 22 ms,
 später zusätzlich bei Wärmewarnung aus der App. Die gewählte Stufe ist die Obergrenze.
 
-**Maßstab für Texturgrößen (gemessen, Build 272):** P-47 auf dem größten iPad bei Pixelverhältnis 2. Gegen 4096 px
+**Maßstab für Texturgrößen (gemessen, Build 276):** P-47 auf dem größten iPad bei Pixelverhältnis 2. Gegen 4096 px
 weicht 2048 px in keiner Spielkamera sichtbar ab (größte Abweichung 2–7 von 255 Stufen, kein Bildpunkt über 8);
 1024 px bleibt ohne anisotrope Filterung ebenfalls unauffällig (0,6 % der Bildpunkte über 4 Stufen), mit 8×
 anisotroper Filterung aber nicht mehr (bis 5,9 %). Erst eine Nahaufnahme aus 8 m, die das Spiel nicht hat, zeigt

@@ -19,7 +19,7 @@ previous independent preparation, never a War Thunder asset. `original-cc0.glb`
 is the creator-hosted compressed original, matched to SOURCE.json.
 
 `p47-independent-4096.glb` is the runtime model as shipped from Build 204 to 271,
-with the three 4096 px textures. Since Build 272 the game loads
+with the three 4096 px textures. Since Build 276 the game loads
 `assets/aircraft/p47-independent.glb` with those textures halved to 2048 px:
 
 ```

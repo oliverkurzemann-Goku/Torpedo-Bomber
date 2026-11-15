@@ -156,18 +156,94 @@ class RhineScenery {
     }
     return {version:1,sites};
   }
+
+  static planNeighbourhoods(osm,terrain,airfields,existing){
+    const finder=Object.assign(Object.create(RhineVillage.prototype),{osm,terrain});
+    const lots=new Map(),cells=new Map(),claimed=new Set(),indices=new Map();
+    const lotCell=(x,z)=>[Math.floor(x/24),Math.floor(z/24)];
+    const reserve=(x,z)=>{
+      const key=lotCell(x,z).join(',');
+      if(!lots.has(key))lots.set(key,[]);
+      lots.get(key).push([x,z]);
+    };
+    for(const site of existing)for(const [x,z,yaw,,depth] of site.plots){
+      reserve(x+Math.sin(yaw)*depth/2,z+Math.cos(yaw)*depth/2);
+    }
+    for(const plot of [...finder._plots([13805,15770],2050,8,airfields),
+      ...finder._plots([airfields[0][0]+1450,airfields[0][1]+650],3200,1,airfields,true)]){
+      reserve(plot.x,plot.z);
+      claimed.add(osmBuildingKey(plot.houseX,plot.houseZ));
+    }
+    const accept=(x,z)=>{
+      const [cx,cz]=lotCell(x,z);
+      for(let dx=-1;dx<=1;dx++)for(let dz=-1;dz<=1;dz++){
+        if(lots.get((cx+dx)+','+(cz+dz))?.some(([u,v])=>Math.hypot(u-x,v-z)<18))return false;
+      }
+      return true;
+    };
+    const size=osm.tileSize,spacing=480;
+    for(const [key,data] of osm.sourceTiles){
+      const [tx,tz]=key.split(',').map(Number);
+      for(const b of data.buildings||[]){
+        const x=tx*size+b.x,z=tz*size+b.z;
+        const key=Math.floor(x/spacing)+','+Math.floor(z/spacing);
+        if(!cells.has(key))cells.set(key,{x:0,z:0,count:0});
+        const cell=cells.get(key);
+        cell.x+=x;cell.z+=z;cell.count++;
+      }
+    }
+    const batches=new Map();
+    const options={claimed,indices,accept,plotDepth:13,maxWidth:15,buildingInset:5.5,
+      roadClearance:7,maxHeightChange:3.0};
+    for(const {x,z,count} of cells.values()){
+      if(count<4)continue;
+      const centre=[x/count,z/count];
+      const footprints=[options,{...options,plotDepth:8,maxWidth:11}];
+      if(Math.hypot(centre[0]-14000,centre[1]-15400)<2800){
+        footprints.push({...options,plotDepth:5,maxWidth:8,sideYards:true,maxHeightChange:4});
+      }
+      for(const settings of footprints){
+        const plots=finder._plots(centre,280,Math.min(14,Math.ceil(count*.7)),airfields,false,settings);
+        for(const plot of plots){
+          if(!accept(plot.x,plot.z))continue;
+          const key=[Math.floor(plot.x/size),Math.floor(plot.z/size),
+            Math.floor(plot.x/spacing),Math.floor(plot.z/spacing)].join(',');
+          if(!batches.has(key))batches.set(key,[]);
+          batches.get(key).push(plot);
+          claimed.add(osmBuildingKey(plot.houseX,plot.houseZ));
+          reserve(plot.x,plot.z);
+        }
+      }
+    }
+    return [...batches.values()].flatMap(plots=>{
+      const sites=[];
+      for(let start=0;start<plots.length;start+=20){
+        const group=plots.slice(start,start+20);
+        const x=Math.round(group.reduce((n,p)=>n+p.x,0)/group.length);
+        const z=Math.round(group.reduce((n,p)=>n+p.z,0)/group.length);
+        sites.push({name:'Rhine neighbourhood',kind:'neighbourhood',ultra:true,x,z,
+          plots:group.map(p=>[...p.point(0,0),p.direction,p.width,p.depth].map(v=>Math.round(v*1000)/1000))});
+      }
+      return sites;
+    });
+  }
+
   constructor(parent,terrain,layout,village,river){
-    this.terrain=terrain;this.village=village;this.sites=layout.sites;
+    this.terrain=terrain;this.village=village;
+    this.regionalSites=layout.sites;this.neighbourhoods=layout.neighbourhoods||[];
+    this.sites=[...this.regionalSites,...this.neighbourhoods];
     this.group=new THREE.Group();this.group.name='Rhine Detailed Scenery';parent.add(this.group);
     this.material=new THREE.MeshLambertMaterial({vertexColors:true,polygonOffset:true,polygonOffsetFactor:-.5});
     this.atlas=null;
     this.flockSites=this.sites.filter(s=>s.kind==='farm').map(s=>({x:s.x,z:s.z}));
+    this.ultraFlockSites=this.flockSites.concat(this.neighbourhoods.filter(site=>site.plots.length>=8));
     this.waterSites=[];
     if(river)for(let i=2;i<river.points.length-2;i+=5){
       const [x,z]=river.points[i],[nx,nz]=river.points[i+1];
       this.waterSites.push({x,z,heading:Math.atan2(nx-x,nz-z)});
     }
     this.flocks=village?[village._flock(this.group,{x:0,z:0},false),village._flock(this.group,{x:0,z:0},true)]:[];
+    this.ultraFlocks=[];
     this.enabled=false;this.setEnabled(true);
   }
 
@@ -181,22 +257,35 @@ class RhineScenery {
         this.group.remove(site.mesh);site.mesh.geometry.dispose();site.mesh=null;
       }
       if(this.atlas){this.atlas.dispose();this.atlas=null;this.material.map=null;this.material.needsUpdate=true;}
+      this.clearUltraFlocks();
     }
     for(const flock of this.flocks){flock.mesh.visible=false;flock.used=null;flock.cooldown=0;flock.age=0;}
   }
 
-  _choose(x,z,tier,altitude){
+  _choose(x,z,tier,altitude,ultra){
     this.pending=[];
-    const reduced=tier>=2,maxBatches=tier>=3?4:reduced?7:12,maxNear=tier===0?3:tier===1?2:0;
-    const range=tier>=3?1000:reduced?1900:3200;
+    const reduced=tier>=2,maxBatches=ultra?18:tier>=3?4:reduced?7:12;
+    const maxNear=ultra?5:tier===0?3:tier===1?2:0;
+    const range=ultra?5000:tier>=3?1000:reduced?1900:3200;
+    const detailRange=ultra?2200:1570;
     const agl=Number.isFinite(altitude)?altitude-this.terrain.getRenderedHeight(x,z):0;
-    const nearby=this.sites.map(s=>({s,d:Math.hypot(s.x-x,s.z-z)}))
-      .filter(e=>e.d<range).sort((a,b)=>a.d-b.d).slice(0,maxBatches);
+    const closest=(sites,radius,limit)=>sites.map(s=>({s,d:Math.hypot(s.x-x,s.z-z)}))
+      .filter(e=>e.d<radius).sort((a,b)=>a.d-b.d).slice(0,limit);
+    const nearby=closest(this.regionalSites,range,maxBatches);
+    if(ultra&&agl<1000){
+      nearby.push(...closest(this.neighbourhoods,2450,14));
+      nearby.sort((a,b)=>a.d-b.d);
+    }
     let near=0;
-    for(const site of this.sites)if(site.mesh)site.mesh.visible=false;
+    for(const site of this.sites)if(site.mesh){
+      if(site.ultra&&!ultra){
+        this.group.remove(site.mesh);site.mesh.geometry.dispose();site.mesh=null;
+      }else site.mesh.visible=false;
+    }
     for(const {s,d} of nearby){
-      const level=agl<250&&d<(s.level===2?790:680)&&near<maxNear?2:agl<650&&!reduced&&d<(s.level===1?1730:1570)?1:0;
-      if(level===2)near++;
+      const level=s.ultra?(agl<350&&d<950?2:1):agl<250&&d<(s.level===2?790:680)&&near<maxNear?2:
+        agl<650&&!reduced&&d<detailRange+(s.level===1?160:0)?1:0;
+      if(level===2&&!s.ultra)near++;
       if(s.mesh)s.mesh.visible=true;
       if(!s.mesh||s.level!==level||s.revision!==this._revision(s)){
         this.pending.push({s,level});
@@ -208,10 +297,10 @@ class RhineScenery {
     return this.terrain.tiles.get(Math.floor(site.x/4000)+','+Math.floor(site.z/4000))?.surfaceRevision??0;
   }
 
-  update(dt,x,z,altitude,tier){
+  update(dt,x,z,altitude,tier,ultra=false){
     if(!this.enabled)return;
-    if((this.clock-=dt)<=0||tier!==this.tier){
-      this.clock=.32;this.tier=tier;this._choose(x,z,tier,altitude);
+    if((this.clock-=dt)<=0||tier!==this.tier||ultra!==this.ultra){
+      this.clock=.32;this.tier=tier;this.ultra=ultra;this._choose(x,z,tier,altitude,ultra);
     }
     const next=this.pending.shift();
     if(next){
@@ -225,24 +314,42 @@ class RhineScenery {
         s.level=level;s.revision=this._revision(s);
       }
     }
-    if(this.group.children.length>30){
+    if(this.group.children.length>(ultra?40:30)){
       const hidden=this.sites.filter(s=>s.mesh&&!s.mesh.visible);
       hidden.sort((a,b)=>Math.hypot(b.x-x,b.z-z)-Math.hypot(a.x-x,a.z-z));
       const far=hidden[0];if(far){this.group.remove(far.mesh);far.mesh.geometry.dispose();far.mesh=null;}
     }
-    this._birds(dt,x,z,altitude,tier);
+    this._birds(dt,x,z,altitude,tier,ultra);
   }
 
-  _birds(dt,x,z,altitude,tier){
+  clearUltraFlocks(){
+    for(const flock of this.ultraFlocks){
+      this.group.remove(flock.mesh);
+      flock.mesh.geometry.dispose();
+      flock.mesh.material.dispose();
+    }
+    this.ultraFlocks=[];
+  }
+
+  _birds(dt,x,z,altitude,tier,ultra){
+    if(ultra&&this.village&&!this.ultraFlocks.length){
+      for(const flock of this.flocks)flock.mesh.visible=false;
+      this.ultraFlocks=[true,true,false].map(river=>this.village._flock(this.group,{x:0,z:0},river,true));
+    }else if(!ultra&&this.ultraFlocks.length)this.clearUltraFlocks();
+    const flocks=ultra?this.ultraFlocks:this.flocks;
     const agl=Number.isFinite(altitude)?altitude-this.terrain.getRenderedHeight(x,z):Infinity;
-    for(const flock of this.flocks){
+    for(const flock of flocks){
       flock.cooldown=Math.max(0,flock.cooldown-dt);
-      if(!(agl<(flock.river?290:155))||tier>=2){flock.mesh.visible=false;continue;}
+      const ceiling=ultra?(flock.river?470:330):(flock.river?290:155);
+      if(!(agl<ceiling)||tier>=2){flock.mesh.visible=false;continue;}
       if(!flock.mesh.visible&&flock.cooldown===0){
-        let nearest=null,distance=flock.river?550:420;
-        for(const point of flock.river?this.waterSites:this.flockSites){
+        let nearest=null,distance=ultra?(flock.river?1100:780):(flock.river?550:420);
+        for(const point of flock.river?this.waterSites:ultra?this.ultraFlockSites:this.flockSites){
           const d=Math.hypot(x-point.x,z-point.z);
-          if(point!==flock.used&&d<distance){nearest=point;distance=d;}
+          if(point===flock.used||d>=distance)continue;
+          if(ultra&&flocks.some(other=>other!==flock&&other.mesh.visible&&
+            Math.hypot(other.point.x-point.x,other.point.z-point.z)<340))continue;
+          nearest=point;distance=d;
         }
         if(!nearest)continue;
         flock.point=flock.used=nearest;flock.age=0;flock.mesh.visible=true;
@@ -250,8 +357,9 @@ class RhineScenery {
       }
       if(!flock.mesh.visible)continue;
       flock.age+=dt;
-      if(flock.age>(flock.river?21:13)||Math.hypot(x-flock.point.x,z-flock.point.z)>850){
-        flock.mesh.visible=false;flock.cooldown=6;continue;
+      const outOfRange=Math.hypot(x-flock.point.x,z-flock.point.z)>(ultra?1400:850);
+      if(flock.age>(ultra?25:flock.river?21:13)||outOfRange){
+        flock.mesh.visible=false;flock.cooldown=ultra&&outOfRange?0:6;continue;
       }
       this.village._poseFlock(flock);
     }
@@ -336,6 +444,51 @@ class RhineScenery {
       let width,depth;
       [x,z,angle,width,depth]=plot;c=Math.cos(angle);s=Math.sin(angle);rootKeys.clear();
       const w=width/2,seed=osmHash(x,z,1600);
+      if(site.kind==='neighbourhood'){
+        const type=Math.min(4,Math.floor(seed*5));
+        const cultivated=type===0||type===3;
+        const paved=type===2||type===4;
+        const broken=type===4;
+        const wallTint=[0xd1c1ab,0xb5a891,0xc2b39f][Math.floor(osmHash(x,z,1654)*3)];
+        for(let v=0;v<depth;v+=3.3){
+          const length=Math.min(3.3,depth-v);
+          if(paved)flat(-w+.15,v,width-.30,length,surface.kies,0xd6c1a4,.17);
+          if(cultivated&&v>2){
+            flat(-w+.7,v,w-.35,length,surface.soil,0xbca081,.21);
+            for(let row=0;row<3;row++)flat(-w+.7+row*(w-.55)/3,v+.04,(w-.55)*.22,length-.09,
+              surface.crops,row%2?0xa3ad79:0x839965,.26);
+          }
+        }
+        flat(-.69,0,1.38,depth-.48,surface.kies,0xe1c9a3,.27);
+        for(const side of [-1,1]){
+          const edge=side<0?-w:w-.46;
+          const hedge=type===1||type===3&&side<0;
+          for(let v=1;v<depth-.56;v+=3.3){
+            if(broken&&(side>0||v>5))continue;
+            const length=Math.min(3.3,depth-.56-v);
+            const height=hedge?1.25+.36*osmHash(x+v,z,1655):.96;
+            box(edge-(hedge&&side>0?.36:0),v,hedge?.82:.46,length,height,
+              hedge?surface.crops:surface.stone,hedge?0x7e975c:wallTint,-.08);
+            if(!hedge&&level===2)box(edge-.08,v,.62,length,height+.15,surface.stone,0xcbbea7,height);
+          }
+          if(!broken)box(side<0?-w:.90,depth-.58,w-.9,.46,.96,surface.stone,wallTint,-.1);
+          if(level===2&&!broken)box(side<0?-1.26:.90,depth-.73,.40,.53,1.42,surface.stone,wallTint);
+        }
+        if(type===1||type===3){
+          tree(w*.44,depth-2.15,type===1&&depth>10);
+          if(depth>10)tree(w*.53,4.2,type===1);
+          if(w>5.7&&level===2)tree(-w*.50,depth-2.7);
+        }
+        if(depth>=8&&(type===0||type===4||type===2&&seed<.50)){
+          const shedWidth=Math.min(w-.54,5.4),shedDepth=Math.min(4.7,depth-5);
+          house(w-shedWidth-.63,depth-shedDepth-.8,shedWidth,shedDepth,broken?3.1:2.5,
+            0xd7c4ae,type===0?0xa26a53:0x746764,broken?'ruin':'shed');
+        }
+        if(type===2&&level===2)for(let i=0;i<3;i++){
+          box(-w+.75+i*.9,depth-2.1,.65,.80,.61+i*.17,surface.wood,0xb8a082);
+        }
+        continue;
+      }
       if(site.kind==='field-lanes'){
         const strip=5.5,alternate=osmHash(x,z,1681)>.5;
         for(let u=-w;u<w;u+=strip){

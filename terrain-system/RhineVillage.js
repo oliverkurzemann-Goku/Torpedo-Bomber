@@ -23,7 +23,9 @@ class RhineVillage {
     this.reset();
   }
 
-  _plots(anchor,range,limit,airfields,farm=false,{claimed=null,indices=new Map(),compact=false}={}){
+  _plots(anchor,range,limit,airfields,farm=false,{claimed=null,indices=new Map(),compact=false,
+      accept=null,plotDepth=farm?15:compact?8:10,maxWidth=12,buildingInset=5,
+      roadClearance=null,maxHeightChange=farm?2.8:2.3,sideYards=false}={}){
     const candidates=[],size=this.osm.tileSize;
     for(const [key,data] of this.osm.sourceTiles){
       const [tx,tz]=key.split(',').map(Number),ox=tx*size,oz=tz*size;
@@ -42,10 +44,13 @@ class RhineVillage {
       if(plots.some(p=>Math.hypot(x-p.houseX,z-p.houseZ)<18))continue;
       if(!indices.has(key))indices.set(key,this.osm._buildForestExclusion(data,ox,oz));
       const index=indices.get(key);
-      for(const direction of [b.rotY,b.rotY+Math.PI]){
+      const bearings=sideYards?[0,2,1,3]:[0,2];
+      for(const side of bearings){
+        const direction=b.rotY+side*Math.PI/2;
         const c=Math.cos(direction),s=Math.sin(direction);
-        const depth=farm?15:compact?8:10,width=farm?15:Math.max(8,Math.min(b.w,12));
-        const point=(u,v)=>[x+u*c+(b.d/2+1.4+v)*s,z-u*s+(b.d/2+1.4+v)*c];
+        const across=side%2?b.d:b.w,along=side%2?b.w:b.d;
+        const depth=plotDepth,width=farm?15:Math.max(sideYards?6:8,Math.min(across,maxWidth));
+        const point=(u,v)=>[x+u*c+(along/2+1.4+v)*s,z-u*s+(along/2+1.4+v)*c];
         const probes=[];
         for(const u of [-width/2-1,0,width/2+1]){
           for(const v of [-.7,depth/2,depth+1.2])probes.push(point(u,v));
@@ -53,11 +58,11 @@ class RhineVillage {
         if(probes.some(([px,pz])=>px<ox+2||px>ox+size-2||pz<oz+2||pz>oz+size-2||
           osmWaterOverlaps([[px,pz]],2,index.water)||
           (data.forests||[]).some(ring=>pointInPolygon(px-ox,pz-oz,ring))||
-          this._blocked(px,pz,index,x,z)))continue;
+          this._blocked(px,pz,index,x,z,buildingInset,roadClearance)))continue;
         const heights=probes.map(([px,pz])=>this.terrain.getRenderedHeight(px,pz));
-        if(Math.max(...heights)-Math.min(...heights)>(farm?2.8:2.3))continue;
+        if(Math.max(...heights)-Math.min(...heights)>maxHeightChange)continue;
         const [px,pz]=point(0,depth/2);
-        if(plots.some(p=>Math.hypot(px-p.x,pz-p.z)<17))continue;
+        if(plots.some(p=>Math.hypot(px-p.x,pz-p.z)<17)||accept&&!accept(px,pz))continue;
         plots.push({x:px,z:pz,houseX:x,houseZ:z,depth,width,point,farm,direction});
         break;
       }
@@ -65,14 +70,17 @@ class RhineVillage {
     }
     return plots;
   }
-  _blocked(x,z,index,houseX,houseZ){
+  _blocked(x,z,index,houseX,houseZ,buildingInset=5,roadClearance=null){
     const cell=index.cells.get(Math.floor(x/index.cellSize)+','+Math.floor(z/index.cellSize))||[];
     for(const f of cell){
-      if(f.kind==='segment'&&pointSegmentDistanceSq(x,z,f.ax,f.az,f.bx,f.bz)<=f.r2)return true;
+      if(f.kind==='segment'){
+        const clearance=f.source==='road'&&roadClearance!==null?roadClearance**2:f.r2;
+        if(pointSegmentDistanceSq(x,z,f.ax,f.az,f.bx,f.bz)<=clearance)return true;
+      }
       if(f.kind==='polygon'&&pointInPolygon(x,z,f.ring))return true;
       if(f.kind==='building'&&(f.x!==houseX||f.z!==houseZ)){
         const dx=x-f.x,dz=z-f.z;
-        if(Math.abs(dx*f.c-dz*f.s)<f.hw-5&&Math.abs(dx*f.s+dz*f.c)<f.hd-5)return true;
+        if(Math.abs(dx*f.c-dz*f.s)<f.hw-buildingInset&&Math.abs(dx*f.s+dz*f.c)<f.hd-buildingInset)return true;
       }
     }
     return false;
@@ -164,13 +172,13 @@ class RhineVillage {
     p.needsUpdate=true;site.mesh.geometry.computeVertexNormals();site.mesh.geometry.computeBoundingSphere();
   }
 
-  _flock(scene,point,river){
-    const count=river?9:12,geometry=new THREE.BufferGeometry();
-    const position=new THREE.BufferAttribute(new Float32Array(count*18),3).setUsage(THREE.DynamicDrawUsage);
+  _flock(scene,point,river,ultra=false){
+    const count=ultra?(river?14:16):river?9:12,geometry=new THREE.BufferGeometry();
+    const position=new THREE.BufferAttribute(new Float32Array(count*(ultra?36:18)),3).setUsage(THREE.DynamicDrawUsage);
     geometry.setAttribute('position',position);
     const mesh=new THREE.Mesh(geometry,new THREE.MeshBasicMaterial({color:river?0xd9d8cd:0x292d2c,side:THREE.DoubleSide}));
     mesh.name=river?'Rhine waterfowl':'Field crows';mesh.frustumCulled=false;scene.add(mesh);
-    return {mesh,count,point,river,age:0,cooldown:0,heading:point.heading||0,
+    return {mesh,count,point,river,ultra,age:0,cooldown:0,heading:point.heading||0,
       seeds:Array.from({length:count},(_,i)=>osmHash(i,7,river?143:144))};
   }
   reset(){
@@ -205,7 +213,9 @@ class RhineVillage {
     const p=f.mesh.geometry.attributes.position,age=f.age;
     const heading=f.heading+(f.river?.15:.58)*Math.sin(age*.38),c=Math.cos(heading),s=Math.sin(heading);
     const d=age*(f.river?12:14),baseX=f.point.x+Math.sin(f.heading)*d,baseZ=f.point.z+Math.cos(f.heading)*d;
-    const height=this.terrain.getRenderedHeight(baseX,baseZ)+(f.river?22:3+Math.min(36,age*4.7));
+    const lift=f.ultra?(f.river?50+Math.min(21,age*2):8+Math.min(48,age*4.1))
+      :f.river?22:3+Math.min(36,age*4.7);
+    const height=this.terrain.getRenderedHeight(baseX,baseZ)+lift;
     for(let i=0;i<f.count;i++){
       const seed=f.seeds[i],side=i%2?1:-1,row=Math.floor(i/2)+1;
       const spread=side*(row*2.35+3*seed)+(f.river?0:Math.sin(age*.9+i)*3.4);
@@ -214,9 +224,15 @@ class RhineVillage {
       const y=height+seed*4+(f.river?1.4:2.4)*Math.sin(age+i*.7);
       const span=(f.river?1.22:.83)*(.82+seed*.3),flap=Math.sin(age*(f.river?13:20)+i*2.1)*span*.70;
       for(let k=0;k<2;k++){
-        const wing=k?span:-span,at=i*6+k*3;
+        const wing=k?span:-span,at=f.ultra?i*12+k*6:i*6+k*3;
         p.setXYZ(at,x+s*.45,y,z+c*.45);
-        p.setXYZ(at+1,x+c*wing-s*.33,y+flap,z-s*wing-c*.33);
+        if(f.ultra){
+          const elbow=wing*.47,ex=x+c*elbow,ez=z-s*elbow,ey=y+flap*.42;
+          p.setXYZ(at+1,ex+s*.06,ey,ez+c*.06);
+          p.setXYZ(at+3,ex+s*.06,ey,ez+c*.06);
+          p.setXYZ(at+4,x+c*wing-s*.17,y+flap,z-s*wing-c*.17);
+          p.setXYZ(at+5,x-s*.36,y,z-c*.36);
+        }else p.setXYZ(at+1,x+c*wing-s*.33,y+flap,z-s*wing-c*.33);
         p.setXYZ(at+2,x-s*.36,y,z-c*.36);
       }
     }

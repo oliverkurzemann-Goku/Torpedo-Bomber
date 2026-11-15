@@ -1,19 +1,19 @@
 {
   "schema": 1,
   "reviewedOn": "2026-10-23",
-  "build": 272,
+  "build": 276,
   "status": "OPEN — source declarations checked; no external rights authorization obtained",
   "payload": {
-    "bytes": 165929573,
-    "fileCount": 392,
+    "bytes": 166164580,
+    "fileCount": 394,
     "modelCount": 64,
-    "manifestSha256": "444659437941f12fea8bcb5f6946e1fb95c64ada0ad2bf0ced16b11e40e88565"
+    "manifestSha256": "92e644bf83aa48062f26aff74d08489241dc0e67057a6fb9b5f921f68ea93521"
   },
   "files": [
     {
       "path": "ASSET-CREDITS.md",
       "bytes": 43668,
-      "sha256": "2caa4d71a2d81216971ea219d40a383941fb7998c9b5a3e9eedee4ae1d2dc792",
+      "sha256": "28cdb009b4ee5ccefff5791f46ccfe86f3bec7b3a646e6a618c263353e67600a",
       "kind": "code-or-notice"
     },
     {
@@ -79,7 +79,7 @@
     {
       "path": "assets/aircraft/P47-CREDITS.txt",
       "bytes": 1598,
-      "sha256": "c4ec798113204a4e081d51b80977389c37a1b49662ddde5ff1fa26bdeb0305a1",
+      "sha256": "1d7de8c7a4e782813a5d1a1b72a8bb34652dd1a1db5e8ab46cd50d10752e83e4",
       "kind": "code-or-notice"
     },
     {
@@ -865,7 +865,7 @@
     {
       "path": "hangar.html",
       "bytes": 4919,
-      "sha256": "4aa8d440fb16c7a1fff79c384c518f830cf022dccc314aa4d522fb1b50ad6e83",
+      "sha256": "8dea318a87a4eb0cc9f094facbe73867bd01ce6b8e90e044f5783a1b4306269d",
       "kind": "code-or-notice"
     },
     {
@@ -877,7 +877,7 @@
     {
       "path": "index.html",
       "bytes": 7912,
-      "sha256": "321c03fc76d0231e805dcb1675a3c04f8ef174569cc5bcc14dae36c3ab0c16da",
+      "sha256": "17673df14ff3bbc53c8757922bee4472b415db022140cef79e406004c7bc278e",
       "kind": "code-or-notice"
     },
     {
@@ -1020,8 +1020,8 @@
     },
     {
       "path": "remagen-mission.html",
-      "bytes": 596962,
-      "sha256": "ba2a5471e13bc261881ed5b4b308776e36fe7d3aaa51833220a59a4a8de9bc68",
+      "bytes": 601851,
+      "sha256": "999d3a871fb6bd1cd0077fd4dd0c379793924d7af81e03b0d8b3c422f8049df4",
       "kind": "code-or-notice"
     },
     {
@@ -1087,7 +1087,7 @@
     {
       "path": "sortie-preview.js",
       "bytes": 14138,
-      "sha256": "9683695d8c0e90bd6dd218afaeeb3c38574933bbc635127152b17c35501b8858",
+      "sha256": "571662e8b0ab338a9b21fa2c630444cb6b410e89c0650aabead61a7cdfc2a0b0",
       "kind": "code-or-notice"
     },
     {
@@ -1182,8 +1182,8 @@
     },
     {
       "path": "terrain-system/OSMManager.js",
-      "bytes": 87306,
-      "sha256": "74967578af62e943dfb7ccbe1656fba63f7e1b1c094fded02def3faa0ef79fb4",
+      "bytes": 89058,
+      "sha256": "4651d957bdd825400d72053ccb1f21c656bc240e848fe4c7e998d3adc5d9aff9",
       "kind": "code-or-notice"
     },
     {
@@ -1193,15 +1193,27 @@
       "kind": "code-or-notice"
     },
     {
+      "path": "terrain-system/RhineRiverLife.js",
+      "bytes": 14025,
+      "sha256": "f6684ce9112d05b78494dd6d2316e533891a2cba0a3b909b9671c8a75199680e",
+      "kind": "code-or-notice"
+    },
+    {
       "path": "terrain-system/RhineScenery.js",
-      "bytes": 25096,
-      "sha256": "c4e04816f6f2028ebc9ce92d0e6785312da79998c117dec669383f26a035f30e",
+      "bytes": 32284,
+      "sha256": "49fba021add77c248e9c2bba30f69e8101a5fb4a10f0b5044532f158a4f659d9",
+      "kind": "code-or-notice"
+    },
+    {
+      "path": "terrain-system/RhineUltra.js",
+      "bytes": 29411,
+      "sha256": "3cdc55184564d9434bf2367720374b5b363988ba3de4a4a307c3baadd6a0ef88",
       "kind": "code-or-notice"
     },
     {
       "path": "terrain-system/RhineVillage.js",
-      "bytes": 10911,
-      "sha256": "f66d392010f6a958ba3b66ed456dc07de217eb179efd9ac5ba52fd298a469165",
+      "bytes": 11886,
+      "sha256": "2d3ff146263b249e040bcdca8b2e6742fcdf62504667de5e271efe46b6644b9c",
       "kind": "code-or-notice"
     },
     {
@@ -2262,8 +2274,8 @@
     },
     {
       "path": "terrain-system/real/data/rhine-scenery.json",
-      "bytes": 32618,
-      "sha256": "8c4daab996859cd2abe219aa13f6971b3d2a46aeb8813f92f9f52ae96ebb9c26",
+      "bytes": 209385,
+      "sha256": "2a7f98a46a8e8ce848d293f6264ef781df86459a392eaa856788cca85ae69907",
       "kind": "geographic-data"
     },
     {
@@ -2281,7 +2293,7 @@
     {
       "path": "torpedo-carrier.html",
       "bytes": 548037,
-      "sha256": "04a54d6a5e52a75d49c679d05e7e9c131a338e0182547901c823fdb96246a9f9",
+      "sha256": "59feade91ab639bf1fcf6e5d2e6792970a48adac755dbadfdf984e1a41d72c85",
       "kind": "code-or-notice"
     },
     {
@@ -2699,7 +2711,7 @@
       "externalImages": [],
       "originalFile": "assets/aircraft/source/p47-independent/original-cc0.glb",
       "originalSha256": "b46c80f2cd1839723843fa2bb99647a0257b54ab55772c6a208a9c83e1379bf4",
-      "changes": "Independent source geometry; own WZ-A/B checker livery, panel/rivet normal and wear maps, articulated original controls, 0.24 m extended tail strut. Original D-28 station fidelity not certified. Build 272: livery, normal and wear textures halved from 4096 to 2048 px with a box filter (scripts/reduce-p47-textures.cjs); geometry, UVs, materials and clips byte-identical to source/p47-independent/p47-independent-4096.glb.",
+      "changes": "Independent source geometry; own WZ-A/B checker livery, panel/rivet normal and wear maps, articulated original controls, 0.24 m extended tail strut. Original D-28 station fidelity not certified. Build 276: livery, normal and wear textures halved from 4096 to 2048 px with a box filter (scripts/reduce-p47-textures.cjs); geometry, UVs, materials and clips byte-identical to source/p47-independent/p47-independent-4096.glb.",
       "issue": "cc0-source-recorded",
       "commercialPermissionDocument": null,
       "bundleRedistributionGrant": null,
