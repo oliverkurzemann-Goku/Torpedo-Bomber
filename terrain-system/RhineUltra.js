@@ -50,6 +50,7 @@ class RhineUltra {
     this.maps=new Map();
     this.hooks=new Map();
     this.wait=0;
+    this.maskJob=null;
     this.emptyMask=new THREE.DataTexture(new Uint8Array([0,0,0,255]),1,1);
     this.emptyMask.needsUpdate=true;
     this.noise=RhineUltra.makeNoise();
@@ -148,21 +149,22 @@ class RhineUltra {
 
   update(dt,x,z,altitude,emitSteam) {
     this.riverLife?.update(dt,x,z,altitude,emitSteam);
-    if((this.roofClock-=dt)<=0){
+    const refreshTrim=(this.roofClock-=dt)<=0;
+    if(refreshTrim){
       this.roofClock=.58;
       this.updateRoofTrim(x,z);
     }
     this.uniforms.ultraWind.value.x-=dt*9;
     this.uniforms.ultraWind.value.y+=dt*4;
     this.uniforms.ultraFocus.value.set(x,z);
-    // One distant mask per interval. Keep just the tiles whose fields and
-    // shadows can be read from the aircraft, with hysteresis for eviction.
+    // Keep only masks within view, with hysteresis for eviction.
     this.wait-=dt;
     const size=this.terrain.tileSize;
     let next=null,best=4550;
     for(const [tile,record] of this.maps){
       const dx=(tile.tileX+.5)*size-x,dz=(tile.tileZ+.5)*size-z;
       const distance=Math.hypot(Math.max(0,Math.abs(dx)-size*.5),Math.max(0,Math.abs(dz)-size*.5));
+      if(distance>5000&&this.maskJob?.tile===tile)this.maskJob=null;
       if(record.texture){
         if(distance>5000){
           record.texture.dispose();record.texture=null;record.mask.value=this.emptyMask;record.blend.value=0;
@@ -171,11 +173,28 @@ class RhineUltra {
       const priority=distance+Math.hypot(dx,dz)*.02;
       if(!record.texture&&priority<best){next=tile;best=priority;}
     }
-    if(next&&this.wait<=0){
+    if(refreshTrim)return;
+    if(!this.maskJob&&next&&this.wait<=0){
       this.wait=.14;
-      const record=this.maps.get(next);
-      record.mask.value=record.texture=this.makeLandMask(next.tileX,next.tileZ);
+      this.maskJob={tile:next,steps:this.makeLandMask(next.tileX,next.tileZ)};
     }
+    this.advanceLandMask();
+  }
+
+  advanceLandMask() {
+    if(!this.maskJob)return;
+    const {tile,steps}=this.maskJob;
+    const deadline=performance.now()+1.5;
+    // Prepare a little each frame and publish only the finished texture.
+    do{
+      const step=steps.next();
+      if(step.done){
+        const record=this.maps.get(tile);
+        record.mask.value=record.texture=step.value;
+        this.maskJob=null;
+        return;
+      }
+    }while(performance.now()<deadline);
   }
 
   updateRoofTrim(x,z){
@@ -218,17 +237,18 @@ class RhineUltra {
     if(this.roofTrim.instanceColor)this.roofTrim.instanceColor.needsUpdate=true;
   }
 
-  makeLandMask(tx,tz) {
+  *makeLandMask(tx,tz) {
     // RGB holds field orientation, shadows and land cover. Alpha holds
     // the ground immediately around mapped roads and buildings.
     const size=this.terrain.tileSize,n=512;
     const canvas=document.createElement('canvas');canvas.width=canvas.height=n;
-    const ctx=canvas.getContext('2d');
+    const ctx=canvas.getContext('2d',{willReadFrequently:true});
     ctx.fillStyle='#000';ctx.fillRect(0,0,n,n);
     ctx.scale(n/size,n/size);
     const data=this.osm.sourceTiles.get(tx+','+tz);
     for(const [rings,woods] of [[data?.farmland,false],[data?.forests,true]]){
       for(const ring of rings||[]){
+        yield;
         if(ring.length<3)continue;
         let bearing=0,longest=0;
         ctx.beginPath();
@@ -265,6 +285,7 @@ class RhineUltra {
         const m=mesh.instanceMatrix.array;
         ctx.fillStyle=tree?'#003600':'#009000';
         for(let i=0;i<mesh.count*16;i+=16){
+          if(i%256===0)yield;
           const x=m[i+12]-ox,z=m[i+14]-oz;
           if(m[i+5]<=0||x< -75||z< -75||x>size+75||z>size+75)continue;
           const height=tree?Math.min(26,m[i+5]*17):Math.min(26,m[i+5]*.75);
@@ -286,17 +307,13 @@ class RhineUltra {
         }
       }
     }
-    const land=ctx.getImageData(0,0,n,n).data;
-    const ground=this.makeGroundDetail(ctx,n,size,tx,tz,pads);
     // Preserve the former CanvasTexture orientation with explicit row order.
     // Using RGBA bytes keeps the ground mask independent of colour and avoids
     // allocating a second GPU texture for each streamed tile.
-    const pixels=new Uint8Array(land.length);
-    for(let row=0;row<n;row++){
-      const source=row*n*4,dest=(n-1-row)*n*4;
-      pixels.set(land.subarray(source,source+n*4),dest);
-      for(let i=0;i<n*4;i+=4)pixels[dest+i+3]=ground[source+i];
-    }
+    const pixels=new Uint8Array(n*n*4);
+    yield* this.readLandMask(ctx,n,pixels,false);
+    yield* this.makeGroundDetail(ctx,size,tx,tz,pads);
+    yield* this.readLandMask(ctx,n,pixels,true);
     const texture=new THREE.DataTexture(pixels,n,n,THREE.RGBAFormat);
     texture.generateMipmaps=true;
     texture.minFilter=THREE.LinearMipmapLinearFilter;
@@ -306,7 +323,21 @@ class RhineUltra {
     return texture;
   }
 
-  makeGroundDetail(ctx,n,size,tx,tz,pads){
+  *readLandMask(ctx,n,pixels,ground){
+    const bandHeight=32,stride=n*4;
+    for(let y=0;y<n;y+=bandHeight){
+      yield;
+      const band=ctx.getImageData(0,y,n,bandHeight).data;
+      for(let row=0;row<bandHeight;row++){
+        const source=row*stride,dest=(n-1-y-row)*stride;
+        if(ground){
+          for(let i=0;i<stride;i+=4)pixels[dest+i+3]=band[source+i];
+        }else pixels.set(band.subarray(source,source+stride),dest);
+      }
+    }
+  }
+
+  *makeGroundDetail(ctx,size,tx,tz,pads){
     ctx.globalCompositeOperation='source-over';
     ctx.fillStyle='#000';
     ctx.fillRect(0,0,size,size);
@@ -316,14 +347,20 @@ class RhineUltra {
     // Draw neighbouring lines too so a verge continues across tile seams.
     for(let dz=-1;dz<=1;dz++)for(let dx=-1;dx<=1;dx++){
       const data=this.osm.sourceTiles.get((tx+dx)+','+(tz+dz));
-      for(const line of data?.roads||[]){
+      const roads=data?.roads||[];
+      for(let j=0;j<roads.length;j++){
+        if(j%32===0)yield;
+        const line=roads[j];
         if(line.length<2)continue;
         ctx.moveTo(line[0][0]+dx*size,line[0][1]+dz*size);
         for(let i=1;i<line.length;i++)ctx.lineTo(line[i][0]+dx*size,line[i][1]+dz*size);
       }
     }
+    yield;
     ctx.stroke();
-    for(const [m,i,x,z] of pads){
+    for(let j=0;j<pads.length;j++){
+      if(j%8===0)yield;
+      const [m,i,x,z]=pads[j];
       const seed=osmHash(x+tx*size,z+tz*size,1737);
       const offset=(seed-.5)*.37;
       ctx.save();ctx.transform(m[i],m[i+2],m[i+8],m[i+10],x,z);
@@ -333,7 +370,6 @@ class RhineUltra {
       halo.addColorStop(1,'rgba(156,0,0,0)');
       ctx.fillStyle=halo;ctx.fillRect(-1.46,-1.25,2.92,2.66);ctx.restore();
     }
-    return ctx.getImageData(0,0,n,n).data;
   }
 
   styleTerrain(shader,mask,blend) {
@@ -530,6 +566,7 @@ class RhineUltra {
   }
 
   dispose() {
+    this.maskJob=null;
     this.riverLife?.dispose();
     this.scene.remove(this.roofTrim);
     this.roofTrim.dispose();
@@ -598,7 +635,7 @@ class RhineFrameRate {
     this.elapsed+=dt;
     if(this.elapsed<1.5&&this.length<this.samples.length)return null;
     const sorted=this.samples.subarray(0,this.length).sort();
-    const report={fps:this.length/this.elapsed,p95:sorted[Math.ceil(this.length*.95)-1]};
+    const report={fps:this.length/this.elapsed,p95:sorted[Math.ceil(this.length*.95)-1],max:sorted[this.length-1]};
     this.reset();
     return report;
   }

@@ -24,7 +24,7 @@ const server=http.createServer((req,res)=>{
   page.on('pageerror',e=>errors.push(e.message));
   page.on('console',m=>{if(/Shader Error|VALIDATE_STATUS|not compiled/.test(m.text()))errors.push(m.text());});
   await page.addInitScript(()=>{window.requestAnimationFrame=()=>0;});
-  const url='http://127.0.0.1:'+server.address().port+'/remagen-mission.html?v=276';
+  const url='http://127.0.0.1:'+server.address().port+'/remagen-mission.html?v=277';
   await page.goto(url+'&scenery=ultra&perf=1');
   await page.waitForFunction(()=>typeof livingWorld!=='undefined'&&livingWorld?.rhineVillage&&state===ST.MENU,null,{polling:200});
   const proof=await page.evaluate(()=>{
@@ -165,6 +165,7 @@ const server=http.createServer((req,res)=>{
       rhineScenery.update(.04,x,z,y,mode==='ultra'?0:1,mode==='ultra');
       rhineUltra?.update(.04,x,z);
      }
+     while(rhineUltra?.maskJob)rhineUltra.advanceLandMask();
      renderer.setPixelRatio(.65); // Same render resolution isolates the visual differences.
      renderer.render(scene,lens);
      const gl=renderer.getContext(),w=renderer.domElement.width,h=renderer.domElement.height;
@@ -233,6 +234,7 @@ const server=http.createServer((req,res)=>{
      rhineScenery.update(.04,x,z,level,0,mode==='ultra');
      rhineUltra?.update(.04,x,z,level);
     }
+    while(rhineUltra?.maskJob)rhineUltra.advanceLandMask();
     renderer.setPixelRatio(.80);
     renderer.render(scene,lens);
     captures[mode]=renderer.domElement.toDataURL();
@@ -323,10 +325,23 @@ const server=http.createServer((req,res)=>{
   await page.evaluate(()=>{
    if(!rhineUltra||renderer.getPixelRatio()!==2||flightQuality.enabled)throw Error('Ultra resolution must be fixed');
    if(GameRuntime.storage.getItem('re_rhine_scenery')!=='detailed')throw Error('Ultra must be temporary');
+   const now=performance.now;
+   let elapsed=0;
+   try{
+    performance.now=()=>elapsed+=2;
+    rhineUltra.update(.016,13890,16260);
+    rhineUltra.update(.016,13890,16260);
+   }finally{performance.now=now;}
+   const job=rhineUltra.maskJob,record=job&&rhineUltra.maps.get(job.tile);
+   if(!record||record.texture||record.mask.value!==rhineUltra.emptyMask)throw Error('Partial mask reached the renderer');
+   while(rhineUltra.maskJob)rhineUltra.advanceLandMask();
+   if(record.mask.value!==record.texture||record.texture?.image.data.length!==512*512*4){
+    throw Error('Deferred Ultra mask did not finish');
+   }
    // A slower fixture frame still counts in FPS even when simulation dt is clamped.
    const rate=new RhineFrameRate();for(let i=0;i<29;i++)rate.sample(.03);
    const report=rate.sample(.65);
-   if(Math.abs(report.fps-30/1.52)>.01||Math.abs(report.p95-30)>.01)throw Error('Cadence and P95 sample window');
+   if(Math.abs(report.fps-30/1.52)>.01||Math.abs(report.p95-30)>.01||Math.abs(report.max-650)>.01)throw Error('Cadence and P95 sample window');
   });
   await page.locator('#pmResume').click();
   await page.evaluate(()=>{
@@ -335,7 +350,7 @@ const server=http.createServer((req,res)=>{
    try{clock.getDelta=()=>.78;animate();animate();}
    finally{clock.getDelta=getDelta;}
   });
-  assert.match(await page.locator('#rhinePerfHud').textContent(),/Ultra High · 1 FPS · P95 780\.0 ms\n.* M tris · .* draws · 0\.44×/);
+  assert.match(await page.locator('#rhinePerfHud').textContent(),/Ultra High · 1 FPS · P95 780\.0 ms · MAX 780\.0 ms\n.* M tris · .* draws · 0\.44×/);
   await page.locator('#pauseBtn').click();
   assert.equal(await page.locator('#rhinePerfHud').isHidden(),true);
   await page.evaluate(()=>{
