@@ -219,8 +219,8 @@ class RhineUltra {
   }
 
   makeLandMask(tx,tz) {
-    // R encodes each parcel's row orientation, G carries projected shadows,
-    // and B carries the crop mix, with the top of its range reserved for woods.
+    // RGB holds field orientation, shadows and land cover. Alpha holds
+    // the ground immediately around mapped roads and buildings.
     const size=this.terrain.tileSize,n=512;
     const canvas=document.createElement('canvas');canvas.width=canvas.height=n;
     const ctx=canvas.getContext('2d');
@@ -253,7 +253,7 @@ class RhineUltra {
     }
 
     ctx.globalCompositeOperation='lighter';
-    const sun=this.uniforms.ultraSun.value,ox=tx*size,oz=tz*size;
+    const sun=this.uniforms.ultraSun.value,ox=tx*size,oz=tz*size,pads=[];
     const angle=Math.atan2(-sun.z,-sun.x),shadowStretch=Math.hypot(sun.x,sun.z)/sun.y;
     // Include nearby casters in neighbouring tiles so their shadows cross seams.
     for(let nz=tz-1;nz<=tz+1;nz++)for(let nx=tx-1;nx<=tx+1;nx++){
@@ -274,6 +274,7 @@ class RhineUltra {
             ctx.beginPath();ctx.ellipse(x+dx*.75,z+dz*.75,Math.max(3,radius*.90+height*shadowStretch*.45),
               Math.max(2,radius*.63),angle,0,Math.PI*2);ctx.fill();
           }else{
+            pads.push([m,i,x,z]);
             // Use the same rotated wall footprint; offset along the sun ray.
             ctx.beginPath();
             ctx.moveTo(x-m[i]*.5-m[i+8]*.5+dx*.25,z-m[i+2]*.5-m[i+10]*.5+dz*.25);
@@ -285,9 +286,54 @@ class RhineUltra {
         }
       }
     }
-    const texture=new THREE.CanvasTexture(canvas);
+    const land=ctx.getImageData(0,0,n,n).data;
+    const ground=this.makeGroundDetail(ctx,n,size,tx,tz,pads);
+    // Preserve the former CanvasTexture orientation with explicit row order.
+    // Using RGBA bytes keeps the ground mask independent of colour and avoids
+    // allocating a second GPU texture for each streamed tile.
+    const pixels=new Uint8Array(land.length);
+    for(let row=0;row<n;row++){
+      const source=row*n*4,dest=(n-1-row)*n*4;
+      pixels.set(land.subarray(source,source+n*4),dest);
+      for(let i=0;i<n*4;i+=4)pixels[dest+i+3]=ground[source+i];
+    }
+    const texture=new THREE.DataTexture(pixels,n,n,THREE.RGBAFormat);
+    texture.generateMipmaps=true;
+    texture.minFilter=THREE.LinearMipmapLinearFilter;
+    texture.magFilter=THREE.LinearFilter;
     texture.anisotropy=4;
+    texture.needsUpdate=true;
     return texture;
+  }
+
+  makeGroundDetail(ctx,n,size,tx,tz,pads){
+    ctx.globalCompositeOperation='source-over';
+    ctx.fillStyle='#000';
+    ctx.fillRect(0,0,size,size);
+    ctx.lineWidth=18;ctx.lineCap='round';ctx.lineJoin='round';
+    ctx.strokeStyle='#440000';
+    ctx.beginPath();
+    // Draw neighbouring lines too so a verge continues across tile seams.
+    for(let dz=-1;dz<=1;dz++)for(let dx=-1;dx<=1;dx++){
+      const data=this.osm.sourceTiles.get((tx+dx)+','+(tz+dz));
+      for(const line of data?.roads||[]){
+        if(line.length<2)continue;
+        ctx.moveTo(line[0][0]+dx*size,line[0][1]+dz*size);
+        for(let i=1;i<line.length;i++)ctx.lineTo(line[i][0]+dx*size,line[i][1]+dz*size);
+      }
+    }
+    ctx.stroke();
+    for(const [m,i,x,z] of pads){
+      const seed=osmHash(x+tx*size,z+tz*size,1737);
+      const offset=(seed-.5)*.37;
+      ctx.save();ctx.transform(m[i],m[i+2],m[i+8],m[i+10],x,z);
+      const halo=ctx.createRadialGradient(offset,.08,.35,offset,.08,1.06+seed*.17);
+      halo.addColorStop(0,'rgba(244,0,0,.96)');
+      halo.addColorStop(.56,'rgba(221,0,0,.81)');
+      halo.addColorStop(1,'rgba(156,0,0,0)');
+      ctx.fillStyle=halo;ctx.fillRect(-1.46,-1.25,2.92,2.66);ctx.restore();
+    }
+    return ctx.getImageData(0,0,n,n).data;
   }
 
   styleTerrain(shader,mask,blend) {
@@ -301,7 +347,7 @@ class RhineUltra {
       #include <roughnessmap_fragment>
       float maskFade=1.0-smoothstep(3000.0,4250.0,length(rhineGround-ultraFocus));
       float nearLand=maskFade*ultraMaskBlend;
-      vec3 landMask=texture2D(ultraLandMask,landCoverUv).rgb;
+      vec4 landMask=texture2D(ultraLandMask,landCoverUv);
       vec2 broad=texture2D(ultraNoise,rhineGround*.00113).rg;
       float textureGrain=texture2D(ultraNoise,rhineGround*.014).g;
       float woods=smoothstep(.61,.90,landMask.b);
@@ -324,6 +370,11 @@ class RhineUltra {
       vec3 forest=mix(vec3(.53,.66,.59),vec3(.81,.87,.73),broad.y);
       vec3 groundTint=mix(mix(pasture,crop,field),forest,woods*nearLand*.94);
       diffuseColor.rgb *= groundTint * (.91+textureGrain*.18);
+      float village=smoothstep(.36,.83,landMask.a)*nearLand;
+      float verge=smoothstep(.075,.29,landMask.a)*(1.0-village)*nearLand;
+      vec3 packedGround=mix(vec3(.226,.206,.148),vec3(.37,.32,.238),.36*broad.y+.64*textureGrain);
+      diffuseColor.rgb=mix(diffuseColor.rgb,diffuseColor.rgb*vec3(.80,.78,.67),verge*.45);
+      diffuseColor.rgb=mix(diffuseColor.rgb,packedGround,village*.62);
     `);
     shader.fragmentShader=shader.fragmentShader.replace('#include <output_fragment>', /* glsl */`
       outgoingLight *= rhineCloudShadow(rhineGround,ultraGroundHeight)*(1.0-ultraDaylight*.61*landMask.g*nearLand);
