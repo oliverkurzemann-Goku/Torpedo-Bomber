@@ -23,7 +23,7 @@ class RhineVillage {
     this.reset();
   }
 
-  _plots(anchor,range,limit,airfields,farm=false){
+  _plots(anchor,range,limit,airfields,farm=false,{claimed=null,indices=new Map(),compact=false}={}){
     const candidates=[],size=this.osm.tileSize;
     for(const [key,data] of this.osm.sourceTiles){
       const [tx,tz]=key.split(',').map(Number),ox=tx*size,oz=tz*size;
@@ -32,19 +32,19 @@ class RhineVillage {
         if(b.w<7||b.d<6||b.w>23||b.d>20)continue;
         const x=ox+b.x,z=oz+b.z,dist=Math.hypot(x-anchor[0],z-anchor[1]);
         if(dist>range||airfields.some(([ax,az])=>Math.abs(x-ax)<680&&Math.abs(z-az)<410))continue;
-        if(this.osm.churchKeys.has(osmBuildingKey(x,z)))continue;
+        if(this.osm.churchKeys.has(osmBuildingKey(x,z))||claimed?.has(osmBuildingKey(x,z)))continue;
         candidates.push({x,z,ox,oz,b,data,key,dist});
       }
     }
     candidates.sort((a,b)=>a.dist-b.dist);
-    const plots=[],indices=new Map();
+    const plots=[];
     for(const {x,z,ox,oz,b,key,data} of candidates){
       if(plots.some(p=>Math.hypot(x-p.houseX,z-p.houseZ)<18))continue;
       if(!indices.has(key))indices.set(key,this.osm._buildForestExclusion(data,ox,oz));
       const index=indices.get(key);
       for(const direction of [b.rotY,b.rotY+Math.PI]){
         const c=Math.cos(direction),s=Math.sin(direction);
-        const depth=farm?15:10,width=farm?15:Math.max(8,Math.min(b.w,12));
+        const depth=farm?15:compact?8:10,width=farm?15:Math.max(8,Math.min(b.w,12));
         const point=(u,v)=>[x+u*c+(b.d/2+1.4+v)*s,z-u*s+(b.d/2+1.4+v)*c];
         const probes=[];
         for(const u of [-width/2-1,0,width/2+1]){
@@ -58,7 +58,7 @@ class RhineVillage {
         if(Math.max(...heights)-Math.min(...heights)>(farm?2.8:2.3))continue;
         const [px,pz]=point(0,depth/2);
         if(plots.some(p=>Math.hypot(px-p.x,pz-p.z)<17))continue;
-        plots.push({x:px,z:pz,houseX:x,houseZ:z,depth,width,point,farm});
+        plots.push({x:px,z:pz,houseX:x,houseZ:z,depth,width,point,farm,direction});
         break;
       }
       if(plots.length>=limit)break;

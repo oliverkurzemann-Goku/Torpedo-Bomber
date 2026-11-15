@@ -71,6 +71,63 @@ const server=http.createServer((req,res)=>{
    assert(site.shots.some(s=>s.changed>120),site.name+' details must be visible in the low pass '+JSON.stringify(site.shots));
    assert(site.shots.every(s=>s.extraCalls<=1&&s.extraTriangles<=1800),'site exceeds geometry budget');
   }
+  await page.waitForFunction(()=>rhineScenery?.enabled);
+  const coverage=await page.evaluate(()=>{
+   const layer=rhineScenery;
+   const routes=[
+    [[7450,15800],[8600,15780],[10400,15800],[13680,15420]],
+    [[14100,15020],[14470,15590],[14300,16000],[13400,17150]],
+    [[21800,25720],[22700,25720],[23500,25720],[24650,25720]]
+   ];
+   const gl=renderer.getContext(),w=renderer.domElement.width,h=renderer.domElement.height;
+   const measurements=[];
+   const cam=new THREE.PerspectiveCamera(51,1024/768,1,13000);
+   const light=new THREE.HemisphereLight(0xe4edff,0x889078,1.9);
+   const sceneSlice=new THREE.Scene();sceneSlice.background=new THREE.Color(0x9eb4c2);sceneSlice.add(light);
+   for(const route of routes){
+    const record=[];
+    for(const [x,z] of route){
+     const y=groundY(x,z)+90;
+     for(let i=0;i<26;i++)layer.update(.016,x,z,y,0);
+     const tile=terrain.tiles.get(Math.floor(x/RTILE)+','+Math.floor(z/RTILE));
+     const ground=new THREE.Mesh(tile.mesh.geometry,tile.mesh.material);
+     ground.position.copy(tile.mesh.position);sceneSlice.add(ground);
+     const detail=new THREE.Group();sceneSlice.add(detail);
+     const nearby=layer.sites.filter(s=>s.mesh?.visible);
+     for(const s of nearby)detail.add(s.mesh.clone());
+     cam.position.set(x-100,y,z+235);cam.lookAt(x+85,groundY(x,z),z-140);
+     const sample=enabled=>{
+      detail.visible=enabled;renderer.render(sceneSlice,cam);
+      const pixels=new Uint8Array(w*h*4);gl.readPixels(0,0,w,h,gl.RGBA,gl.UNSIGNED_BYTE,pixels);
+      return {pixels,calls:renderer.info.render.calls,triangles:renderer.info.render.triangles};
+     };
+     const classic=sample(false),advanced=sample(true);
+     let pixels=0;
+     for(let i=0;i<classic.pixels.length;i+=4){
+      if(Math.abs(classic.pixels[i]-advanced.pixels[i])>7||
+         Math.abs(classic.pixels[i+1]-advanced.pixels[i+1])>7||
+         Math.abs(classic.pixels[i+2]-advanced.pixels[i+2])>7)pixels++;
+     }
+     record.push({pixels,calls:advanced.calls-classic.calls,triangles:advanced.triangles-classic.triangles,nearby:nearby.length});
+     sceneSlice.remove(ground,detail);
+    }
+    measurements.push(record);
+   }
+   return measurements;
+  });
+  assert(coverage.every(samples=>samples.filter(s=>s.pixels>60).length>=2),JSON.stringify(coverage));
+  assert(coverage.flat().every(s=>s.calls<=12&&s.triangles<18000),JSON.stringify(coverage));
+  await page.evaluate(()=>{
+   const select=document.getElementById('rhineSceneryPause');
+   select.value='classic';select.dispatchEvent(new Event('change'));
+   if(rhineScenery.enabled||rhineScenery.group.visible||rhineScenery.atlas||rhineScenery.sites.some(s=>s.mesh)||
+      GameRuntime.storage.getItem('re_rhine_scenery')!=='classic'||
+      document.getElementById('rhineSceneryMenu').value!=='classic')throw Error('Classic fallback failed');
+   select.value='detailed';select.dispatchEvent(new Event('change'));
+   if(!rhineScenery.enabled||!rhineScenery.atlas||
+      GameRuntime.storage.getItem('re_rhine_scenery')!=='detailed')throw Error('Detailed reactivation failed');
+  });
+  console.log('Rhine Detailed route comparison:',JSON.stringify(coverage));
   assert.deepEqual(errors,[]);
   console.log('Rhine low pass:',JSON.stringify(proof));
  }finally{if(browser)await browser.close();server.close();}

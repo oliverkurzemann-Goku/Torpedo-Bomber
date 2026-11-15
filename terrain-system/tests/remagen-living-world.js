@@ -3,7 +3,7 @@
 const fs=require('fs'),path=require('path'),vm=require('vm'),assert=require('assert/strict');
 const root=path.resolve(__dirname,'../..');global.THREE=require(process.env.THREE_R128||'three');
 assert.equal(THREE.REVISION,'128');
-for(const name of ['HeightProvider','TerrainTile','TerrainManager','OSMManager','WorldVehicles','RhineVillage','LivingWorld'])
+for(const name of ['HeightProvider','TerrainTile','TerrainManager','OSMManager','WorldVehicles','RhineVillage','RhineScenery','LivingWorld'])
   vm.runInThisContext(fs.readFileSync(path.join(root,'terrain-system',name+'.js'),'utf8'));
 global.fetch=async url=>{const b=fs.readFileSync(path.join(root,url.split('?')[0]));return {ok:true,json:async()=>JSON.parse(b),arrayBuffer:async()=>b.buffer.slice(b.byteOffset,b.byteOffset+b.byteLength)};};
 
@@ -245,6 +245,46 @@ global.fetch=async url=>{const b=fs.readFileSync(path.join(root,url.split('?')[0
   world.resetForMission('convoy');assert(hi.visible&&!hw.visible,'reset restores the intact vehicle');
   world.update(.1,27000,31000);assert(world.entities.every(e=>!e.model.visible));
 
+  const detailedLayout=JSON.parse(fs.readFileSync(path.join(root,'terrain-system/real/data/rhine-scenery.json'),'utf8'));
+  const detailed=new RhineScenery(scene,terrain,detailedLayout,world.rhineVillage,world.routes.water[0]);
+  assert(detailed.sites.length>120,'regional coverage exceeds the pilot sites');
+  assert(detailed.sites.reduce((n,s)=>n+s.plots.length,0)>450);
+  for(const kind of ['railway-yard','river-bank','vineyard','farm','town']){
+    assert(detailed.sites.some(s=>s.kind===kind),kind+' present on real terrain');
+  }
+  assert(detailed.sites.some(s=>s.kind==='railway-yard'&&s.damaged));
+  let maxTriangles=0,maxCalls=0;
+  for(const anchor of [[7500,15900],[5990,15800],[14050,15140],[14511,15693],[22100,25725],[24500,26300]]){
+    const [x,z]=anchor,agl=terrain.getRenderedHeight(x,z)+70;
+    for(let i=0;i<30;i++)detailed.update(.016,x,z,agl,0);
+    const active=detailed.sites.filter(s=>s.mesh?.visible);
+    assert(active.length>=2&&active.length<=12,'detail distributed along the route '+anchor+' ('+active.length+')');
+    assert(active.some(s=>s.level>0),'visible scenery near route '+anchor);
+    assert(active.filter(s=>s.level===2).length<=3);
+    const triangles=active.reduce((n,s)=>n+s.mesh.geometry.index.count/3,0);
+    maxTriangles=Math.max(maxTriangles,triangles);maxCalls=Math.max(maxCalls,active.length);
+    assert(triangles<18000,'scenery triangle budget');
+    for(const site of active){
+      const p=site.mesh.geometry.attributes.position;
+      for(let i=0;i<p.count;i++){
+        assert(!world._pointOnWater(p.getX(i),p.getZ(i)),'scenery stays dry at '+site.name);
+        assert(fields.every(([fx,fz])=>Math.abs(p.getX(i)-fx)>490||Math.abs(p.getZ(i)-fz)>74),'scenery clear of either runway');
+      }
+    }
+    for(let i=0;i<23;i++)detailed.update(.016,x,z,agl,3);
+    assert(detailed.sites.filter(s=>s.mesh?.visible).every(s=>s.level===0),'auto reduction uses only the far detail');
+    assert(detailed.sites.filter(s=>s.mesh?.visible).length<=4);
+  }
+  const s=detailed.sites.find(s=>s.mesh);
+  let released=false;s.mesh.geometry.addEventListener('dispose',()=>{released=true;});
+  detailed.setEnabled(false);
+  assert(released&&!detailed.group.visible&&detailed.sites.every(s=>!s.mesh),'Classic immediately releases detailed geometry');
+  detailed.update(.05,14000,15000,400,0);
+  assert(detailed.sites.every(s=>!s.mesh));
+  detailed.setEnabled(true);
+  for(let i=0;i<20;i++)detailed.update(.016,14000,15000,terrain.getRenderedHeight(14000,15000)+70,0);
+  assert(detailed.sites.some(s=>s.mesh?.visible),'Detailed can be restored during a flight');
+  console.log('Rhine Detailed: '+JSON.stringify({batches:maxCalls,triangles:maxTriangles,sites:detailed.sites.length}));
   const smoke=[];for(let i=0;i<20;i++)world.update(.5,factory[0],factory[1],p=>smoke.push(p));
   assert(smoke.length>0&&smoke.every(p=>[p.x,p.y,p.z,p.scale].every(Number.isFinite)));
 

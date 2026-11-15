@@ -305,7 +305,7 @@
   <div style="width:100%;height:4px;background:repeating-linear-gradient(45deg,#ffd400,#ffd400 8px,#111 8px,#111 16px);"></div>
   <span id="testVersionBannerText" style="background:#111;color:#ffd400;font-family:monospace;font-weight:800;font-size:11px;letter-spacing:.5px;padding:3px 10px;border:1px solid #ffd400;border-top:none;border-radius:0 0 6px 6px;"></span>
 </div>
-<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 268';</script>
+<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 269';</script>
 <!-- ===== END TEMP TEST-ONLY VERSION BANNER ===== -->
 <div id="app"></div>
 <style>
@@ -346,7 +346,7 @@
   <div id="flash"></div>
   <div id="gunsight"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 268 · REAL RHINE</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 269 · REAL RHINE</div>
 
   <div id="apr">
     <div id="aprCall"></div>
@@ -401,7 +401,7 @@
 </div>
 
 <div class="overlay hidden" id="menu" data-campaign="europe">
-  <div class="menuTop"><a id="selBtn" href="index.html?v=268">&#9664; Change Game</a><span class="menuMeta">RHINE OPERATIONS<br>BUILD 268</span></div>
+  <div class="menuTop"><a id="selBtn" href="index.html?v=269">&#9664; Change Game</a><span class="menuMeta">RHINE OPERATIONS<br>BUILD 269</span></div>
   <div class="card menuCard">
     <aside class="menuOverview" aria-label="Campaign and pilot options">
     <div class="campaignArt" aria-hidden="true"></div>
@@ -420,6 +420,7 @@
     <details class="extraSettings"><summary>More options &amp; credits</summary><div class="settingsContent">
       <label class="toggle"><input id="spokenRadio" type="checkbox"> Spoken radio (local device voice)</label>
       <label class="weatherPick" for="approachRoute">Jet / Komet approach<select id="approachRoute"><option value="auto">Vary each sortie</option><option value="ridge">Northern ridge gap</option><option value="valley">Southern valley</option></select></label>
+      <label class="weatherPick" for="rhineSceneryMenu">Rhine scenery<select id="rhineSceneryMenu"><option value="detailed">Detailed (A)</option><option value="classic">Classic (original scenery)</option></select></label>
       <label class="toggle" id="dbgToggle"><span class="box" id="dbgBox"></span> Debug overlay</label>
       <label class="weatherPick" for="practiceWx">Free flight weather<select id="practiceWx"><option value="clear">Clear</option><option value="broken">Broken cloud</option><option value="lowcloud">Low overcast</option><option value="fog">Fog</option><option value="rain">Rain</option><option value="squall">Heavy showers</option><option value="storm">Thunderstorm</option></select></label>
     <div class="credit">
@@ -433,7 +434,7 @@
     </aside>
     <section class="missionPanel" aria-label="Mission selection">
       <div class="secLbl">Choose your sortie · 15 missions + 4 bonus &amp; training</div>
-      <a class="hangarLink" href="hangar.html?theatre=europe&amp;v=268">CUSTOM MISSION · CHOOSE AIRCRAFT &amp; LOADOUT →</a>
+      <a class="hangarLink" href="hangar.html?theatre=europe&amp;v=269">CUSTOM MISSION · CHOOSE AIRCRAFT &amp; LOADOUT →</a>
 <div id="missionSel" role="group" aria-label="European missions"></div>
       <div id="missionBlurb" class="missionBlurb" aria-live="polite"></div>
       <div class="menuConfig">
@@ -486,6 +487,7 @@
     <h1 class="stencil">Paused</h1>
     <div class="sub" id="pauseReason">Sortie held</div>
     <div class="brief" id="pauseOrders"></div>
+    <label class="weatherPick" for="rhineSceneryPause">Rhine scenery<select id="rhineSceneryPause"><option value="detailed">Detailed (A)</option><option value="classic">Classic (original scenery)</option></select></label>
     <div class="pauseActions">
       <button class="btn" id="pmResume">Resume Flight</button>
       <button class="btn abortBtn" id="pmMenu">Abort Mission</button>
@@ -575,7 +577,8 @@
 <script src="crew-figures.js?v=254"></script>
 <script src="terrain-system/AirfieldActivity.js?v=254"></script>
 <script src="terrain-system/WorldVehicles.js?v=248"></script>
-<script src="terrain-system/RhineVillage.js?v=268"></script>
+<script src="terrain-system/RhineVillage.js?v=269"></script>
+<script src="terrain-system/RhineScenery.js?v=269"></script>
 <script src="terrain-system/LivingWorld.js?v=268"></script>
 <script src="campaign.js?v=1"></script>
 <script src="game-runtime.js?v=267"></script>
@@ -998,7 +1001,7 @@ async function loadRealWorld(){
 
   if(OSMManager.BUILD!==23||HistoricalObjectManager.BUILD!==21||LivingWorld.BUILD!==22||WorldVehicles.BUILD!==24) throw new Error('Terrain version mismatch. Reload Remagen.');
   document.getElementById('testVersionBannerText').textContent=
-    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 268 · MODULE 23';
+    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 269 · MODULE 23';
   heightProvider=new DEMHeightProvider(RTILE,'terrain-system/real/data/dem/');
   terrain=new TerrainManager(scene,RTILE,heightProvider);
   osmMgr=new OSMManager(scene,RTILE,terrain,'terrain-system/real/data/osm/');
@@ -8457,7 +8460,7 @@ function showResult(good,title,sub,html,btn){
   document.getElementById('rsGo').onclick=()=>{
     voiceRadio.cancel();soundscape.stop();
     show('result',false);
-    if(MISSIONS[selectedMission]?.custom){window.location.href='hangar.html?theatre=europe&v=268';return;}
+    if(MISSIONS[selectedMission]?.custom){window.location.href='hangar.html?theatre=europe&v=269';return;}
     if(good && selectedMission===MISSIONS.length-1){
       show('menu',true);if(navigation){navigation.reset();navigation.button.style.display='none';}
     }
@@ -8792,6 +8795,31 @@ function updateFlareUI(){
   const display=state===ST.FLIGHT&&flareSupport.night&&!sortieService?.active?'flex':'none';if(button.style.display!==display)button.style.display=display;
   GameRuntime.setHTML(button,'FLARE<br>'+flareSupport.remaining);
 }
+let rhineScenery=null,rhineSceneryLoad=null;
+const sceneryKey='re_rhine_scenery';
+let rhineSceneryMode=new URLSearchParams(location.search).get('scenery')==='classic'||
+  GameRuntime.storage.getItem(sceneryKey)==='classic'?'classic':'detailed';
+function configureRhineScenery(mode,remember=false){
+  rhineSceneryMode=mode==='classic'?'classic':'detailed';
+  for(const id of ['rhineSceneryMenu','rhineSceneryPause'])document.getElementById(id).value=rhineSceneryMode;
+  if(remember)GameRuntime.storage.setItem(sceneryKey,rhineSceneryMode);
+  const enabled=rhineSceneryMode==='detailed';
+  if(rhineScenery){rhineScenery.setEnabled(enabled);return;}
+  if(!enabled||!livingWorld||rhineSceneryLoad)return;
+  rhineSceneryLoad=fetch('terrain-system/real/data/rhine-scenery.json?v=269').then(response=>{
+    if(!response.ok)throw Error('Rhine scenery data unavailable');
+    return response.json();
+  }).then(layout=>{
+    if(layout.version!==1||!Array.isArray(layout.sites))throw Error('Unrecognised Rhine scenery data');
+    if(rhineSceneryMode==='detailed'){
+      rhineScenery=new RhineScenery(scene,terrain,layout,livingWorld.rhineVillage,livingWorld.routes.water[0]);
+    }
+  }).catch(error=>{
+    console.warn(error);
+    configureRhineScenery('classic');
+  }).finally(()=>{rhineSceneryLoad=null;});
+}
+
 function init(){
   voiceRadio.bind(document.getElementById('spokenRadio'));
   const app=document.getElementById('app');
@@ -8842,6 +8870,7 @@ function init(){
       field:[ALLIED_AF_X,ALLIED_AF_Z],
       airfields:[[ALLIED_AF_X,ALLIED_AF_Z],[GERMAN_AF_X,GERMAN_AF_Z]]
     });
+    configureRhineScenery(rhineSceneryMode);
     show('loading',false); show('menu',true);if(navigation){navigation.reset();navigation.button.style.display='none';} state=ST.MENU;
     worldVehicles=new WorldVehicles(scene,terrain,osmMgr);
     worldVehicles.onTemplate=(kind,template)=>{
@@ -8859,6 +8888,10 @@ function init(){
     const iv=localStorage.getItem('re_inv'); if(iv!==null) invertPitch=(iv==='1');
   }catch(e){}
   bindInput();
+  for(const id of ['rhineSceneryMenu','rhineSceneryPause']){
+    document.getElementById(id).onchange=e=>configureRhineScenery(e.target.value,true);
+  }
+  configureRhineScenery(rhineSceneryMode);
   const hints=document.getElementById('flightHints');hints.checked=GameRuntime.storage.getItem('flightHints')!=='0';
   hints.onchange=()=>GameRuntime.storage.setItem('flightHints',hints.checked?'1':'0');
   runtimeSession=GameRuntime.attachLifecycle({canvas:renderer.domElement,resetControls:()=>releaseHeldControls(),
@@ -8876,7 +8909,7 @@ function init(){
   // menu wiring
   document.getElementById('startBtn').onclick=()=>showBrief(selectedMission);
   duelInit();
-  document.getElementById('pauseMainMenu').onclick=async()=>{globalThis.sortieCheckpoint?.save();await globalThis.sortieCheckpoint?.flush();exitToMenuFromPause(true);window.location.href='index.html?v=268';};
+  document.getElementById('pauseMainMenu').onclick=async()=>{globalThis.sortieCheckpoint?.save();await globalThis.sortieCheckpoint?.flush();exitToMenuFromPause(true);window.location.href='index.html?v=269';};
   document.getElementById('logBtn').onclick=()=>{ show('menu',false); showLogbook(); };
   document.getElementById('skipLaunchPreview').onclick=()=>finishLaunchIntro();
   document.getElementById('brBack').onclick=()=>{ show('brief',false); show('menu',true);if(navigation){navigation.reset();navigation.button.style.display='none';} state=ST.MENU; };
@@ -8982,8 +9015,11 @@ function animate(){
     if(germanAirfieldDetails)germanAirfieldDetails.refresh();
     if(alliedActivity)alliedActivity.update(raw,focusX,focusZ,{launching:state===ST.FLIGHT&&P.onGround&&P.spd>1&&P.spd<45});
     if(germanActivity)germanActivity.update(raw,focusX,focusZ,{launching:state===ST.FLIGHT&&P.onGround&&P.spd>1&&P.spd<45});
+    const sceneryAltitude=state===ST.FLIGHT&&!P.onGround&&P.alive?P.pos.y:null;
+    const detailedScenery=rhineScenery?.enabled;
     if(livingWorld)livingWorld.update(raw,focusX,focusZ,state===ST.FLIGHT?p=>
-      spawnSmoke(p.x,p.y,p.z,p.color,p.scale):null,state===ST.FLIGHT&&!P.onGround&&P.alive?P.pos.y:null);
+      spawnSmoke(p.x,p.y,p.z,p.color,p.scale):null,detailedScenery?null:sceneryAltitude);
+    if(detailedScenery)rhineScenery.update(raw,focusX,focusZ,sceneryAltitude,flightQuality.tier);
     contentVisT-=raw; if(contentVisT<=0){ contentVisT=0.5; updateContentVisibility(focusX,focusZ); }
   }
   if(flashT>0){ flashT-=raw; if(flashT<=0) document.getElementById('flash').classList.remove('show'); }
