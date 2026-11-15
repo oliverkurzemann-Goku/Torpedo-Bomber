@@ -1507,7 +1507,7 @@ function normaliseOSMForestCrown(geo){
   const root=geo.userData.forestRoots?.[part.getX(i)]||[0,0];
   perTree.set([root[0],root[1],osmHash(i,part.getX(i),542)],i*3);
  }
- geo.setAttribute('forestRoot',new THREE.BufferAttribute(perTree,3));
+ geo.setAttribute('forestRoot',new THREE.Float32BufferAttribute(perTree,3));
  geo.computeVertexNormals();geo.computeBoundingSphere();return geo;
 }
 function makeOSMForestCrown(kind){
