@@ -185,17 +185,20 @@ class RhineScenery {
     for(const flock of this.flocks){flock.mesh.visible=false;flock.used=null;flock.cooldown=0;flock.age=0;}
   }
 
-  _choose(x,z,tier,altitude){
+  _choose(x,z,tier,altitude,ultra){
     this.pending=[];
-    const reduced=tier>=2,maxBatches=tier>=3?4:reduced?7:12,maxNear=tier===0?3:tier===1?2:0;
-    const range=tier>=3?1000:reduced?1900:3200;
+    const reduced=tier>=2,maxBatches=ultra?18:tier>=3?4:reduced?7:12;
+    const maxNear=ultra?5:tier===0?3:tier===1?2:0;
+    const range=ultra?5000:tier>=3?1000:reduced?1900:3200;
+    const detailRange=ultra?2200:1570;
     const agl=Number.isFinite(altitude)?altitude-this.terrain.getRenderedHeight(x,z):0;
     const nearby=this.sites.map(s=>({s,d:Math.hypot(s.x-x,s.z-z)}))
       .filter(e=>e.d<range).sort((a,b)=>a.d-b.d).slice(0,maxBatches);
     let near=0;
     for(const site of this.sites)if(site.mesh)site.mesh.visible=false;
     for(const {s,d} of nearby){
-      const level=agl<250&&d<(s.level===2?790:680)&&near<maxNear?2:agl<650&&!reduced&&d<(s.level===1?1730:1570)?1:0;
+      const level=agl<250&&d<(s.level===2?790:680)&&near<maxNear?2:
+        agl<650&&!reduced&&d<detailRange+(s.level===1?160:0)?1:0;
       if(level===2)near++;
       if(s.mesh)s.mesh.visible=true;
       if(!s.mesh||s.level!==level||s.revision!==this._revision(s)){
@@ -208,10 +211,10 @@ class RhineScenery {
     return this.terrain.tiles.get(Math.floor(site.x/4000)+','+Math.floor(site.z/4000))?.surfaceRevision??0;
   }
 
-  update(dt,x,z,altitude,tier){
+  update(dt,x,z,altitude,tier,ultra=false){
     if(!this.enabled)return;
-    if((this.clock-=dt)<=0||tier!==this.tier){
-      this.clock=.32;this.tier=tier;this._choose(x,z,tier,altitude);
+    if((this.clock-=dt)<=0||tier!==this.tier||ultra!==this.ultra){
+      this.clock=.32;this.tier=tier;this.ultra=ultra;this._choose(x,z,tier,altitude,ultra);
     }
     const next=this.pending.shift();
     if(next){

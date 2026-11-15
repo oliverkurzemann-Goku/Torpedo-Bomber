@@ -19,14 +19,17 @@ const server=http.createServer((req,res)=>{
   browser=await chromium.launch({executablePath:executable,headless:true,args:[
    '--no-sandbox','--disable-dev-shm-usage','--use-angle=swiftshader','--enable-unsafe-swiftshader'
   ]});
-  const page=await browser.newPage({viewport:{width:1024,height:768},hasTouch:true}),errors=[];
+  const page=await browser.newPage({viewport:{width:1024,height:768},hasTouch:true,deviceScaleFactor:2}),errors=[];
   page.setDefaultTimeout(150000);
   page.on('pageerror',e=>errors.push(e.message));
   page.on('console',m=>{if(/Shader Error|VALIDATE_STATUS|not compiled/.test(m.text()))errors.push(m.text());});
   await page.addInitScript(()=>{window.requestAnimationFrame=()=>0;});
-  await page.goto('http://127.0.0.1:'+server.address().port+'/remagen-mission.html?v=271&scenery=detailed');
+  const url='http://127.0.0.1:'+server.address().port+'/remagen-mission.html?v=272';
+  await page.goto(url+'&scenery=ultra&perf=1');
   await page.waitForFunction(()=>typeof livingWorld!=='undefined'&&livingWorld?.rhineVillage&&state===ST.MENU,null,{polling:200});
   const proof=await page.evaluate(()=>{
+   if(!rhineUltra||renderer.getPixelRatio()!==2||!rhineMetricsEnabled)throw Error('Ultra test link failed');
+   configureRhineScenery('detailed');
    renderer.setPixelRatio(.60);renderer.shadowMap.enabled=false;
    const layer=livingWorld.rhineVillage;
    if(!periodBuildings.entries.some(e=>e.group.name==='remagen-rail-ruin'&&e.proxy.children[0].geometry.attributes.position.count===144)){
@@ -145,19 +148,32 @@ const server=http.createServer((req,res)=>{
       GameRuntime.storage.getItem('re_rhine_scenery')!=='detailed')throw Error('Detailed reactivation failed');
   });
   const levelViews=await page.evaluate(()=>{
-   const pairs=[['river',13890,16260,13630,15040],['woodland',15120,14250,16160,13920]];
+   const pairs=[['river',13890,16260,13630,15040,'clear'],['woodland',15120,14250,16160,13920,'broken']];
    const lens=new THREE.PerspectiveCamera(58,1024/768,1,13500);
-   renderer.setPixelRatio(.65);
    const views=[];
-   for(const [name,x,z,tx,tz] of pairs){
+   for(const [name,x,z,tx,tz,wx] of pairs){
+    weather=wx;applyWeather();
     updateContentVisibility(x,z);
     const y=groundY(x,z)+185;
     lens.position.set(x,y,z);lens.lookAt(tx,y-25,tz);
-    for(const mode of ['classic','detailed']){
+    let detailedPixels;
+    for(const mode of ['classic','detailed','ultra']){
      configureRhineScenery(mode);
-     if(mode==='detailed')for(let i=0;i<24;i++)rhineScenery.update(.016,x,z,y,1);
+     if(mode!=='classic')for(let i=0;i<85;i++){
+      rhineScenery.update(.04,x,z,y,mode==='ultra'?0:1,mode==='ultra');
+      rhineUltra?.update(.04,x,z);
+     }
+     renderer.setPixelRatio(.65); // Same render resolution isolates the visual differences.
      renderer.render(scene,lens);
-     views.push({name,mode,png:renderer.domElement.toDataURL(),triangles:renderer.info.render.triangles,calls:renderer.info.render.calls});
+     const gl=renderer.getContext(),w=renderer.domElement.width,h=renderer.domElement.height;
+     const pixels=new Uint8Array(w*h*4);gl.readPixels(0,0,w,h,gl.RGBA,gl.UNSIGNED_BYTE,pixels);
+     let difference=0;
+     if(mode==='detailed')detailedPixels=pixels;
+     if(mode==='ultra'){
+      for(let i=0;i<pixels.length;i+=4)if([0,1,2].some(c=>Math.abs(detailedPixels[i+c]-pixels[i+c])>12))difference++;
+     }
+     views.push({name,mode,png:renderer.domElement.toDataURL(),triangles:renderer.info.render.triangles,calls:renderer.info.render.calls,
+      changed:+(100*difference/(w*h)).toFixed(2),masks:rhineUltra?[...rhineUltra.maps.values()].filter(r=>r.texture).length:0});
     }
    }
    return views;
@@ -168,9 +184,51 @@ const server=http.createServer((req,res)=>{
    fs.writeFileSync(path.join(out,'rhine-'+view.name+'-'+view.mode+'.png'),Buffer.from(view.png.split(',')[1],'base64'));
    delete view.png;
   }
-  assert(levelViews[1].triangles-levelViews[0].triangles<18000);
-  assert(levelViews[3].triangles-levelViews[2].triangles<18000);
+  for(let i=0;i<levelViews.length;i+=3){
+   const [classic,detailed,ultra]=levelViews.slice(i,i+3);
+   assert(detailed.triangles-classic.triangles<18000);
+   assert(ultra.changed>=20,'Ultra must be visible at flight height: '+JSON.stringify(ultra));
+   assert(ultra.masks>0&&ultra.masks<=18);
+   assert(ultra.calls-detailed.calls<40&&ultra.triangles-detailed.triangles<90000);
+  }
   console.log('Rhine level camera:',JSON.stringify(levelViews));
+  await page.evaluate(()=>{
+   configureRhineScenery('detailed');
+   startMission(0);finishLaunchIntro(false);show('menu',false);
+   P.pos.set(13890,groundY(13890,16260)+185,16260);P.onGround=false;P.spd=130;
+  });
+  await page.locator('#pauseBtn').click();
+  await page.locator('#rhineSceneryPause').selectOption('ultra');
+  assert.equal(await page.locator('#rhinePerfPause').isChecked(),true);
+  await page.evaluate(()=>{
+   if(!rhineUltra||renderer.getPixelRatio()!==2||flightQuality.enabled)throw Error('Ultra resolution must be fixed');
+   if(GameRuntime.storage.getItem('re_rhine_scenery')!=='detailed')throw Error('Ultra must be temporary');
+   // A slower fixture frame still counts in FPS even when simulation dt is clamped.
+   const rate=new RhineFrameRate();for(let i=0;i<29;i++)rate.sample(.03);
+   const report=rate.sample(.65);
+   if(Math.abs(report.fps-30/1.52)>.01||Math.abs(report.p95-30)>.01)throw Error('Cadence and P95 sample window');
+  });
+  await page.locator('#pmResume').click();
+  await page.evaluate(()=>{
+   renderer.setPixelRatio(.44);
+   const getDelta=clock.getDelta;
+   try{clock.getDelta=()=>.78;animate();animate();}
+   finally{clock.getDelta=getDelta;}
+  });
+  assert.match(await page.locator('#rhinePerfHud').textContent(),/Ultra High · 1 FPS · P95 780\.0 ms\n.* M tris · .* draws · 0\.44×/);
+  await page.locator('#pauseBtn').click();
+  assert.equal(await page.locator('#rhinePerfHud').isHidden(),true);
+  await page.evaluate(()=>{
+   const layer=rhineUltra,oldSky=layer.sky,oldMap=layer.noise;
+   const oldKey=layer.hooks.get(osmMgr.riverMat).cacheKey;
+   let disposed=false;oldMap.addEventListener('dispose',()=>{disposed=true;});
+   renderer.domElement.dispatchEvent(new Event('webglcontextlost',{cancelable:true}));
+   renderer.domElement.dispatchEvent(new Event('webglcontextrestored'));
+   if(rhineSceneryMode!=='detailed'||rhineUltra||oldSky.parent||!disposed||osmMgr.riverMat.customProgramCacheKey!==oldKey||
+      renderer.getPixelRatio()!==1.5||!flightQuality.enabled||!rhineScenery.enabled||state!==ST.PAUSED){
+     throw Error('Graphics recovery did not restore Detailed and release Ultra resources');
+   }
+  });
   console.log('Rhine Detailed route comparison:',JSON.stringify(coverage));
   assert.deepEqual(errors,[]);
   console.log('Rhine low pass:',JSON.stringify(proof));
