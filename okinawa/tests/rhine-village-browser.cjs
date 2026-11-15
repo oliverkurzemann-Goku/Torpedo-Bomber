@@ -243,6 +243,17 @@ const server=http.createServer((req,res)=>{
    renderer.setPixelRatio(.65);
    renderer.render(scene,camera);
    const png=renderer.domElement.toDataURL();
+   // Aim a second camera directly across a mapped shore. A view centred on
+   // the tug can contain only open water on this wide stretch of the river.
+   const bank=[...life.reedSites.values()].flat()
+    .filter(site=>Math.hypot(site.x-x,site.z-z)<750)
+    .sort((a,b)=>Math.hypot(a.x-x,a.z-z)-Math.hypot(b.x-x,b.z-z))[0];
+   if(!bank)throw Error('No bank near the test stretch');
+   const bankY=groundY(bank.x,bank.z);
+   camera.position.set(bank.x-bank.nx*75,bankY+82,bank.z-bank.nz*75);
+   camera.lookAt(bank.x,bankY,bank.z);
+   renderer.render(scene,camera);
+   const shorePng=renderer.domElement.toDataURL();
    const gl=renderer.getContext(),w=renderer.domElement.width,h=renderer.domElement.height;
    const shore=new Uint8Array(w*h*4),without=new Uint8Array(w*h*4);
    gl.readPixels(0,0,w,h,gl.RGBA,gl.UNSIGNED_BYTE,shore);
@@ -254,13 +265,16 @@ const server=http.createServer((req,res)=>{
    let shorePixels=0;
    for(let i=0;i<shore.length;i+=4)if(Math.abs(shore[i]-without[i])>8)shorePixels++;
    return {moved,birdsMoved,reeds:life.reeds.count,visibleBoats:boats.filter(b=>b.mesh.visible).length,
-    steam:steam.length,wakePoints:wake?.points.length,wakeAboveWater,shoreMaps:shoreMaps.length,shorePixels,png};
+    steam:steam.length,wakePoints:wake?.points.length,wakeAboveWater,shoreMaps:shoreMaps.length,shorePixels,png,shorePng};
   });
+  fs.writeFileSync(path.join(out,'rhine-river-life-ultra.png'),Buffer.from(wildlife.png.split(',')[1],'base64'));
+  fs.writeFileSync(path.join(out,'rhine-shore-ultra.png'),Buffer.from(wildlife.shorePng.split(',')[1],'base64'));
+  delete wildlife.png;
+  delete wildlife.shorePng;
+  assert.deepEqual(errors,[]);
   assert(wildlife.moved>8&&wildlife.reeds>18&&wildlife.reeds<=144&&wildlife.visibleBoats>=2&&
     wildlife.steam>0&&wildlife.wakePoints>2&&wildlife.wakeAboveWater&&wildlife.birdsMoved&&wildlife.shorePixels>80,
-    JSON.stringify({...wildlife,png:undefined}));
-  fs.writeFileSync(path.join(out,'rhine-river-life-ultra.png'),Buffer.from(wildlife.png.split(',')[1],'base64'));
-  delete wildlife.png;
+    JSON.stringify(wildlife));
   console.log('Rhine river life:',JSON.stringify(wildlife));
   await page.evaluate(()=>{
    configureRhineScenery('detailed');
