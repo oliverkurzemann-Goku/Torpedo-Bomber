@@ -219,7 +219,7 @@ class RhineUltra {
       float field=landMask.r*(1.0-landMask.b);
       float fieldVariation=smoothstep(.33,.64,broad.y);
       float tilt=mix(.43,1.03,smoothstep(.30,.71,broad.x));
-      float phase=dot(rhineGround,vec2(.67,.89))*.28 + tilt*sin(rhineGround.z*.019)+2.2*broad.y;
+      float phase=dot(rhineGround,vec2(.67,.89))*.28 + tilt*sin(rhineGround.y*.019)+2.2*broad.y;
       // Swaths and headland texture fade before they become subpixel.
       float swathStrength=.15/(1.0+fwidth(phase)*fwidth(phase));
       float swaths=sin(phase)*swathStrength;
