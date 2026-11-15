@@ -298,26 +298,23 @@ class TerrainManager {
         uniform bool rhineLandscape;
         varying vec2 landCoverUv;
         varying vec2 rhineGround;
-        vec3 rhineLandTint(vec3 cover, float surface){
-          // World-space bands stay aligned across tile seams. Mip-like fade
-          // removes fine rows as they become smaller than a screen pixel.
-          vec2 along=vec2(dot(rhineGround,vec2(.924,.383)),dot(rhineGround,vec2(-.383,.924)));
-          vec2 parcel=floor(along/vec2(243.0,164.0));
-          float tone=fract(dot(parcel,vec2(.381966,.618034)));
-          float alongRows=fract((along.y + along.x * (tone < .52 ? .18 : -.26)) / 21.0);
-          float stripe=smoothstep(.11,.28,alongRows)*(1.0-smoothstep(.67,.9,alongRows));
-          float rowFade=1.0-smoothstep(.6,6.0,length(fwidth(rhineGround)));
-          if(surface>6.5){
-            float canopy=1.0-smoothstep(.22,.84,cover.g);
-            return cover*mix(vec3(.79,.91,.97),vec3(.64,.83,.73),canopy);
-          }
-          if(surface>.5&&surface<3.5){
-            vec3 earth=vec3(.81,.64,.46),stubble=vec3(.83,.78,.55),crop=vec3(.52,.69,.43);
-            vec3 field=surface<1.5?earth:surface<2.5?crop:stubble;
-            field=mix(field,field*vec3(1.16,1.09,.88),tone);
-            return mix(cover,field,.70)*(1.0+rowFade*(stripe-.46)*.36);
-          }
-          return cover*mix(vec3(.94,1.05,.80),vec3(1.18,1.09,.83),tone*.7);
+        vec3 rhineLandTint(vec4 cover){
+          // Land-cover alpha is mip-filtered with the colour. A shoreline
+          // sample can land between any two surface IDs. Work from the
+          // continuous RGB colour so an intermediate ID cannot paint a field.
+          float earth=smoothstep(.01,.115,cover.r-cover.g);
+          float vegetation=smoothstep(.035,.18,cover.g-cover.b);
+          float charcoal=1.0-smoothstep(.24,.43,max(cover.r,cover.g));
+          vec3 tint=mix(vec3(.94,.96,.89),vec3(.78,.84,.87),earth);
+          tint=mix(tint,vec3(.91,.94,.81),vegetation*(1.0-earth)*.44);
+          vec3 colour=cover.rgb*mix(tint,vec3(.89,.94,.91),charcoal);
+          // Only warm ground receives fine rows. The phase is continuous
+          // across tiles and the entire pattern fades with pixel footprint.
+          float scale=length(fwidth(rhineGround));
+          float fine=1.0-smoothstep(1.1,6.0,scale);
+          float wave=dot(rhineGround,vec2(.061,.113));
+          float rows=.5+.5*sin(wave+.33*sin(dot(rhineGround,vec2(-.025,.012))));
+          return colour * (1.0-(.06+.065*rows)*earth*fine*(1.0-charcoal));
         }
       `+shader.fragmentShader;
       shader.fragmentShader=shader.fragmentShader.replace('#include <map_fragment>',
@@ -326,10 +323,16 @@ class TerrainManager {
         'vec2 cell = vec2(mod(surface, 4.0), floor(surface / 4.0));\n'+
         'vec2 detailUv = (cell + fract(vUv) * 0.984 + 0.008) / vec2(4.0, 2.0);\n'+
         'float grain = texture2D(surfaceDetails, detailUv).r;\n'+
-        'if (rhineLandscape) cover.rgb = rhineLandTint(cover.rgb, surface);\n'+
-        'diffuseColor.rgb *= cover.rgb * (0.70 + grain * 0.60);');
+        'vec3 surfaceTint = cover.rgb;\n'+
+        'float grainTone = .70 + grain * .60;\n'+
+        'if (rhineLandscape) {\n'+
+        '  surfaceTint = rhineLandTint(cover);\n'+
+        '  float typeBlend = smoothstep(.10,.46,abs(cover.a * 9.0 - 1.0 - surface));\n'+
+        '  grainTone = mix(.88 + grain * .24, 1.0, typeBlend);\n'+
+        '}\n'+
+        'diffuseColor.rgb *= surfaceTint * grainTone;');
     };
-    material.customProgramCacheKey=()=> 'terrain-landcover-270';
+    material.customProgramCacheKey=()=> 'terrain-landcover-271';
     if(tile.landcoverTexture)tile.landcoverTexture.dispose();
     if(tile.materialOverride)tile.materialOverride.dispose();
     tile.landcoverTexture=texture;tile.materialOverride=material;tile.mesh.material=material;

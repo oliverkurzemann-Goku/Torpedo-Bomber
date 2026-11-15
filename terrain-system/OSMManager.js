@@ -103,7 +103,8 @@ class OSMManager {
       this.roofMat,this.roofSlateMat,this.roofBrownMat,this.flatRoofMat,this.chimneyMat,
       this.trunkMat,this.coniferMat,this.deciduousMat,this.shrubMat,this.poplarMat,this.willowMat])
       osmFadeScenery(mat);
-    for(const mat of [this.coniferMat,this.deciduousMat,this.poplarMat,this.willowMat])osmCanopyTerrain(mat);
+    this.rhineForestStyle={value:false};
+    for(const mat of [this.coniferMat,this.deciduousMat,this.poplarMat,this.willowMat])osmCanopyTerrain(mat,this.rhineForestStyle);
   }
 
   _key(tx, tz){ return tx + ',' + tz; }
@@ -788,12 +789,13 @@ class OSMManager {
   }
 
   setRhineLandscape(enabled){
+    this.rhineForestStyle.value=enabled;
     // Switch the shared materials in place, keeping batches and atlas sizes.
     const palette=[
-      [this.roofMat,0x93503b],[this.roofSlateMat,0x3e5054],[this.roofBrownMat,0x735743],
+      [this.roofMat,0x805440],[this.roofSlateMat,0x434c48],[this.roofBrownMat,0x695444],
       [this.buildingWarmMat,0xddd0ad],[this.buildingOchreMat,0xd4aa65],[this.buildingBrickMat,0xb87962],
-      [this.deciduousMat,0x516c42],[this.coniferMat,0x304b3e],[this.poplarMat,0x657644],
-      [this.willowMat,0x758562],[this.forestFloorMat,0x233c28]
+      [this.deciduousMat,0x576644],[this.coniferMat,0x3e5037],[this.poplarMat,0x626b43],
+      [this.willowMat,0x71805d],[this.forestFloorMat,0x34452b]
     ];
     this.classicLandscapeColors ??= palette.map(([mat])=>mat.color.clone());
     palette.forEach(([mat,tint],i)=>{
@@ -1500,6 +1502,12 @@ function normaliseOSMForestCrown(geo){
  geo.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));
  if(!geo.attributes.forestPart)geo.setAttribute('forestPart',new THREE.Float32BufferAttribute(new Float32Array(a.length/3*2),2));
  if(geo.userData?.forestRoots)geo.userData.forestRoots=geo.userData.forestRoots.map(([x,z])=>[x/radius,z/radius]);
+ const part=geo.attributes.forestPart,perTree=new Float32Array(part.count*3);
+ for(let i=0;i<part.count;i++){
+  const root=geo.userData.forestRoots?.[part.getX(i)]||[0,0];
+  perTree.set([root[0],root[1],osmHash(i,part.getX(i),542)],i*3);
+ }
+ geo.setAttribute('forestRoot',new THREE.BufferAttribute(perTree,3));
  geo.computeVertexNormals();geo.computeBoundingSphere();return geo;
 }
 function makeOSMForestCrown(kind){
@@ -1571,20 +1579,58 @@ function makeOSMForestTexture(){
  ctx.putImageData(img,0,0);const tex=new THREE.CanvasTexture(c);tex.wrapS=tex.wrapT=THREE.RepeatWrapping;
  tex.anisotropy=4;return tex;
 }
-function osmCanopyTerrain(material){
+function osmCanopyTerrain(material,style){
  const previous=material.onBeforeCompile;
  material.onBeforeCompile=shader=>{
-  previous(shader);shader.vertexShader='attribute vec4 canopyGround;\nattribute vec2 forestPart;\nvarying float forestStem;\nvarying float forestShade;\n'+shader.vertexShader;
-  shader.fragmentShader='varying float forestStem;\nvarying float forestShade;\n'+shader.fragmentShader;
-  shader.vertexShader=shader.vertexShader.replace('#include <uv_vertex>',
-   '#include <uv_vertex>\n#ifdef USE_UV\n#ifdef USE_INSTANCING\nvec3 leafWorld = (instanceMatrix * vec4(position, 1.0)).xyz;\nvUv = (leafWorld.xz + leafWorld.y * vec2(0.37,0.21)) / 31.0;\n#else\nvUv = (modelMatrix * vec4(position, 1.0)).xz / 31.0;\n#endif\n#endif');
-  shader.vertexShader=shader.vertexShader.replace('#include <begin_vertex>',
-   '#include <begin_vertex>\nforestStem = forestPart.y;\nforestShade = 1.0;\n#ifdef USE_INSTANCING\nforestShade = 0.88 + 0.22 * fract(sin(dot(instanceMatrix[3].xz + vec2(forestPart.x * 17.0), vec2(0.013,0.019))) * 43758.5453);\n#endif\n'+
-   'transformed.y += forestPart.x < 0.5 ? canopyGround.x : forestPart.x < 1.5 ? canopyGround.y : canopyGround.z;');
-  shader.fragmentShader=shader.fragmentShader.replace('#include <color_fragment>',
-   '#include <color_fragment>\ndiffuseColor.rgb = mix(diffuseColor.rgb * forestShade, vec3(0.25,0.19,0.12), forestStem);');
+  previous(shader);
+  shader.uniforms.rhineForestDetail=style;
+  shader.vertexShader=`
+    attribute vec4 canopyGround;
+    attribute vec2 forestPart;
+    attribute vec3 forestRoot;
+    uniform bool rhineForestDetail;
+    varying float forestStem;
+    varying float forestShade;
+    varying float forestTint;
+  `+shader.vertexShader;
+  shader.fragmentShader='uniform bool rhineForestDetail;\nvarying float forestTint;\nvarying float forestStem;\nvarying float forestShade;\n'+shader.fragmentShader;
+  shader.vertexShader=shader.vertexShader.replace('#include <uv_vertex>',`
+    #include <uv_vertex>
+    #ifdef USE_UV
+    #ifdef USE_INSTANCING
+    vec3 leafWorld = (instanceMatrix * vec4(position, 1.0)).xyz;
+    vec2 foliageUv = leafWorld.xz + leafWorld.y * vec2(.37,.21);
+    vUv = foliageUv / (rhineForestDetail ? 17.0 : 31.0);
+    #else
+    vUv = (modelMatrix * vec4(position, 1.0)).xz / 31.0;
+    #endif
+    #endif`);
+  shader.vertexShader=shader.vertexShader.replace('#include <begin_vertex>',`
+    #include <begin_vertex>
+    forestStem = forestPart.y;
+    forestShade = 1.0;
+    forestTint = .5;
+    #ifdef USE_INSTANCING
+    float treeSeed = fract(sin(dot(instanceMatrix[3].xz + vec2(forestPart.x * 17.0), vec2(.013,.019))) * 43758.5453);
+    forestShade = .88 + .22 * treeSeed;
+    if(rhineForestDetail){
+      // Taper and offset crowns around their own root. The taper keeps each
+      // vertex inside the same validated woodland/road/water envelope.
+      transformed.xz = mix(forestRoot.xy, transformed.xz,
+        .78 + .22 * fract(treeSeed * 3.97 + forestRoot.z * (1.0-forestStem) * .40));
+      transformed.y *= .67 + treeSeed * .45;
+      forestTint = treeSeed;
+      forestShade *= .89 + .22 * smoothstep(1.0,24.0,position.y);
+    }
+    #endif
+    transformed.y += forestPart.x < .5 ? canopyGround.x : forestPart.x < 1.5 ? canopyGround.y : canopyGround.z;`);
+  shader.fragmentShader=shader.fragmentShader.replace('#include <color_fragment>',`
+    #include <color_fragment>
+    vec3 leaves = diffuseColor.rgb * forestShade;
+    if(rhineForestDetail) leaves *= mix(vec3(.88,1.04,1.02),vec3(1.14,.97,.78),forestTint);
+    diffuseColor.rgb = mix(leaves, vec3(.25,.19,.12), forestStem);`);
  };
- material.customProgramCacheKey=()=> 'rooted-tree-groups-266';
+ material.customProgramCacheKey=()=> 'rooted-tree-groups-271';
 }
 function makeOSMTreeCrown(kind){
  const positions=[];

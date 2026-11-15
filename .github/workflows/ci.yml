@@ -60,3 +60,9 @@ jobs:
           cache: npm
       - run: npm ci
       - run: node okinawa/tests/rhine-village-browser.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: rhine-level-camera
+          path: test-visuals/rhine-*.png
+          if-no-files-found: ignore

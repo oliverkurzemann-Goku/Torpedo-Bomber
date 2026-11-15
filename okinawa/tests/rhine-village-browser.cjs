@@ -24,7 +24,7 @@ const server=http.createServer((req,res)=>{
   page.on('pageerror',e=>errors.push(e.message));
   page.on('console',m=>{if(/Shader Error|VALIDATE_STATUS|not compiled/.test(m.text()))errors.push(m.text());});
   await page.addInitScript(()=>{window.requestAnimationFrame=()=>0;});
-  await page.goto('http://127.0.0.1:'+server.address().port+'/remagen-mission.html?v=270&scenery=detailed');
+  await page.goto('http://127.0.0.1:'+server.address().port+'/remagen-mission.html?v=271&scenery=detailed');
   await page.waitForFunction(()=>typeof livingWorld!=='undefined'&&livingWorld?.rhineVillage&&state===ST.MENU,null,{polling:200});
   const proof=await page.evaluate(()=>{
    renderer.setPixelRatio(.60);renderer.shadowMap.enabled=false;
@@ -141,9 +141,36 @@ const server=http.createServer((req,res)=>{
       GameRuntime.storage.getItem('re_rhine_scenery')!=='classic'||
       document.getElementById('rhineSceneryMenu').value!=='classic')throw Error('Classic fallback failed');
    select.value='detailed';select.dispatchEvent(new Event('change'));
-   if(!rhineScenery.enabled||!terrain.rhineLandscape.value||osmMgr.roofMat.color.getHex()!==0x93503b||!rhineScenery.atlas||
+   if(!rhineScenery.enabled||!terrain.rhineLandscape.value||osmMgr.roofMat.color.getHex()!==0x805440||!rhineScenery.atlas||
       GameRuntime.storage.getItem('re_rhine_scenery')!=='detailed')throw Error('Detailed reactivation failed');
   });
+  const levelViews=await page.evaluate(()=>{
+   const pairs=[['river',13890,16260,13630,15040],['woodland',15120,14250,16160,13920]];
+   const lens=new THREE.PerspectiveCamera(58,1024/768,1,13500);
+   renderer.setPixelRatio(.65);
+   const views=[];
+   for(const [name,x,z,tx,tz] of pairs){
+    updateContentVisibility(x,z);
+    const y=groundY(x,z)+185;
+    lens.position.set(x,y,z);lens.lookAt(tx,y-25,tz);
+    for(const mode of ['classic','detailed']){
+     configureRhineScenery(mode);
+     if(mode==='detailed')for(let i=0;i<24;i++)rhineScenery.update(.016,x,z,y,1);
+     renderer.render(scene,lens);
+     views.push({name,mode,png:renderer.domElement.toDataURL(),triangles:renderer.info.render.triangles,calls:renderer.info.render.calls});
+    }
+   }
+   return views;
+  });
+  const out=path.join(root,'test-visuals');fs.mkdirSync(out,{recursive:true});
+  for(const view of levelViews){
+   assert(view.png.length>10000);
+   fs.writeFileSync(path.join(out,'rhine-'+view.name+'-'+view.mode+'.png'),Buffer.from(view.png.split(',')[1],'base64'));
+   delete view.png;
+  }
+  assert(levelViews[1].triangles-levelViews[0].triangles<18000);
+  assert(levelViews[3].triangles-levelViews[2].triangles<18000);
+  console.log('Rhine level camera:',JSON.stringify(levelViews));
   console.log('Rhine Detailed route comparison:',JSON.stringify(coverage));
   assert.deepEqual(errors,[]);
   console.log('Rhine low pass:',JSON.stringify(proof));
