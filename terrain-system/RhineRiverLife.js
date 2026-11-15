@@ -111,11 +111,15 @@ class RhineRiverLife {
         #include <fog_pars_fragment>
         void main(){
           float variation=.57+.19*sin(dot(bankWorld,vec2(.095,.049)))+.16*sin(dot(bankWorld,vec2(.127,-.195)));
-          float taper=smoothstep(0.0,.16,bankUv.x)*(1.0-smoothstep(.82,1.0,bankUv.x));
-          float opacity=taper*(1.0-smoothstep(.09,1.0,bankUv.y))*(.33+.5*variation);
-          float ripple=max(0.0,sin(bankUv.y*35.0-bankTime*2.2+variation*8.0))*(1.0-bankUv.y);
-          vec3 tint=mix(vec3(.105,.141,.089),vec3(.34,.31,.18),variation);
-          tint+=vec3(.060,.064,.048)*ripple;
+          float along=bankUv.x*2.0-1.0;
+          float extent=1.07+.26*sin(dot(bankWorld,vec2(.073,.097)));
+          float radius=length(vec2(along+.12*sin(bankUv.y*4.0),bankUv.y*extent))+
+            .095*sin(dot(bankWorld,vec2(.24,.12)));
+          float ends=1.0-smoothstep(.66,1.0,abs(along));
+          float opacity=ends*(1.0-smoothstep(.23,.97,radius))*(.32+.43*variation);
+          float ripple=max(0.0,sin(bankUv.y*23.0-bankTime*1.65+variation*5.0))*(1.0-bankUv.y);
+          vec3 tint=mix(vec3(.144,.191,.124),vec3(.36,.31,.18),variation);
+          tint+=vec3(.049,.054,.035)*ripple;
           gl_FragColor=vec4(tint*(.16+.84*bankLight),opacity);
           #include <fog_fragment>
           #include <encodings_fragment>
