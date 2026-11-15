@@ -578,7 +578,7 @@
 <script src="terrain-system/AirfieldActivity.js?v=254"></script>
 <script src="terrain-system/WorldVehicles.js?v=248"></script>
 <script src="terrain-system/RhineVillage.js?v=269"></script>
-<script src="terrain-system/RhineScenery.js?v=269"></script>
+<script src="terrain-system/RhineScenery.js?v=269.1"></script>
 <script src="terrain-system/LivingWorld.js?v=268"></script>
 <script src="campaign.js?v=1"></script>
 <script src="game-runtime.js?v=267"></script>
@@ -8806,7 +8806,7 @@ function configureRhineScenery(mode,remember=false){
   const enabled=rhineSceneryMode==='detailed';
   if(rhineScenery){rhineScenery.setEnabled(enabled);return;}
   if(!enabled||!livingWorld||rhineSceneryLoad)return;
-  rhineSceneryLoad=fetch('terrain-system/real/data/rhine-scenery.json?v=269').then(response=>{
+  rhineSceneryLoad=fetch('terrain-system/real/data/rhine-scenery.json?v=269.1').then(response=>{
     if(!response.ok)throw Error('Rhine scenery data unavailable');
     return response.json();
   }).then(layout=>{

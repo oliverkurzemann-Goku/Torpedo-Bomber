@@ -127,6 +127,33 @@ class RhineScenery {
       if(hillside.length>=7)break;
     }
     sites.push(...hillside);
+    // Broad strips read from the cockpit before individual buildings do.
+    for(const [index,[ax,az]] of airfields.entries()){
+      const airfieldName=index?'Forward Strip':'Beaufort';
+      for(const end of [-1,1]){
+        const strips=[];
+        for(const distance of [710,925,1190,1460,1750,2030]){
+          if(strips.length>=4)break;
+          for(const offset of [-135,135,-205,205,-285,285]){
+            if(strips.length>=4)break;
+            const x=ax+end*distance,z=az+offset;
+            if(strips.some(p=>Math.hypot(x-p.x,z-p.z)<220))continue;
+            const tx=Math.floor(x/4000),tz=Math.floor(z/4000),ox=tx*4000,oz=tz*4000,cell=tx+','+tz;
+            const data=osm.sourceTiles.get(cell);if(!data)continue;
+            if(!indices.has(cell))indices.set(cell,osm._buildForestExclusion(data,ox,oz));
+            const exclusion=indices.get(cell),probes=[];
+            for(let dx=-37;dx<=37;dx+=18.5)for(let dz=-35;dz<=35;dz+=17.5)probes.push([x+dx,z+dz]);
+            if(probes.some(([px,pz])=>px<ox+2||px>ox+3998||pz<oz+2||pz>oz+3998||
+               finder._blocked(px,pz,exclusion,-1,-1)||osmWaterOverlaps([[px,pz]],3,exclusion.water)||
+               (data.forests||[]).some(ring=>pointInPolygon(px-ox,pz-oz,ring))))continue;
+            const heights=probes.map(([px,pz])=>terrain.getRenderedHeight(px,pz));
+            if(Math.max(...heights)-Math.min(...heights)>9)continue;
+            strips.push({name:airfieldName+' field lanes',kind:'field-lanes',x,z,plots:[[x,z-30,0,68,60]]});
+          }
+        }
+        sites.push(...strips);
+      }
+    }
     return {version:1,sites};
   }
   constructor(parent,terrain,layout,village,river){
@@ -309,6 +336,24 @@ class RhineScenery {
       let width,depth;
       [x,z,angle,width,depth]=plot;c=Math.cos(angle);s=Math.sin(angle);rootKeys.clear();
       const w=width/2,seed=osmHash(x,z,1600);
+      if(site.kind==='field-lanes'){
+        const strip=5.5,alternate=osmHash(x,z,1681)>.5;
+        for(let u=-w;u<w;u+=strip){
+          const span=Math.min(strip-1,width-(u+w)),odd=Math.round((u+w)/strip)%2;
+          for(let v=0;v<depth;v+=10){
+            flat(u,v,span+.8,Math.min(10,depth-v),surface.soil,0xbbab8a,.29);
+            if(odd||alternate)flat(u+.45,v+.05,Math.max(.2,span-.25),Math.min(9.9,depth-v-.1),surface.crops,
+              odd?0x9bac79:0xb1b687,.48);
+          }
+        }
+        const edge=alternate?-w:w-.85;
+        for(let v=0;v<depth;v+=6){
+          const length=Math.min(6,depth-v);
+          if(level>0)box(edge,v,.85,length,level===2?1.08:.67,surface.crops,0x7f966a);
+          else flat(edge,v,.85,length,surface.crops,0x7f966a,.42);
+        }
+        continue;
+      }
       if(site.kind==='vineyard'){
         const strips=level===0?6:10;
         for(let row=0;row<strips;row++){

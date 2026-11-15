@@ -95,7 +95,12 @@ const server=http.createServer((req,res)=>{
      const detail=new THREE.Group();sceneSlice.add(detail);
      const nearby=layer.sites.filter(s=>s.mesh?.visible);
      for(const s of nearby)detail.add(s.mesh.clone());
-     cam.position.set(x-100,y,z+235);cam.lookAt(x+85,groundY(x,z),z-140);
+     if(route===routes[2]){
+      const direction=x<23600?1:-1;
+      cam.position.set(x-direction*190,y,z);cam.lookAt(x+direction*235,groundY(x,z)+18,z);
+     }else{
+      cam.position.set(x-100,y,z+235);cam.lookAt(x+85,groundY(x,z),z-140);
+     }
      const sample=enabled=>{
       detail.visible=enabled;renderer.render(sceneSlice,cam);
       const pixels=new Uint8Array(w*h*4);gl.readPixels(0,0,w,h,gl.RGBA,gl.UNSIGNED_BYTE,pixels);
