@@ -230,8 +230,8 @@ const server=http.createServer((req,res)=>{
    for(let i=0;i<75;i++)tick();
    const moved=start.distanceTo(tug.mesh.position),wake=shipWakes.tracks.get(tug);
    const birdsMoved=flock.mesh.geometry.attributes.position.array.slice(0,3).some((value,i)=>value!==birdStart[i]);
-   const shoreMaps=[...rhineUltra.maps.values()].filter(entry=>entry.shore&&entry.shore.value!==rhineUltra.emptyMask);
-   if(!shoreMaps.length||!rhineUltra.shoreMaterials.size)throw Error('Rhine shore masks not streamed');
+   const shoreTriangles=life.shore.geometry.drawRange.count/3;
+   if(shoreTriangles<30||shoreTriangles>576)throw Error('Rhine shoals exceed the shoreline geometry budget');
    const camera=new THREE.PerspectiveCamera(58,1024/768,1,7500);
    camera.position.set(start.x-170,start.y+108,start.z+85);
    camera.lookAt(tug.mesh.position);
@@ -245,7 +245,7 @@ const server=http.createServer((req,res)=>{
    const png=renderer.domElement.toDataURL();
    // Aim a second camera directly across a mapped shore. A view centred on
    // the tug can contain only open water on this wide stretch of the river.
-   const bank=[...life.reedSites.values()].flat()
+   const bank=life.shoreSites
     .filter(site=>Math.hypot(site.x-x,site.z-z)<750)
     .sort((a,b)=>Math.hypot(a.x-x,a.z-z)-Math.hypot(b.x-x,b.z-z))[0];
    if(!bank)throw Error('No bank near the test stretch');
@@ -257,15 +257,14 @@ const server=http.createServer((req,res)=>{
    const gl=renderer.getContext(),w=renderer.domElement.width,h=renderer.domElement.height;
    const shore=new Uint8Array(w*h*4),without=new Uint8Array(w*h*4);
    gl.readPixels(0,0,w,h,gl.RGBA,gl.UNSIGNED_BYTE,shore);
-   const masks=shoreMaps.map(entry=>entry.shore.value);
-   for(const entry of shoreMaps)entry.shore.value=rhineUltra.emptyMask;
+   life.shore.visible=false;
    renderer.render(scene,camera);
    gl.readPixels(0,0,w,h,gl.RGBA,gl.UNSIGNED_BYTE,without);
-   shoreMaps.forEach((entry,i)=>{entry.shore.value=masks[i];});
+   life.shore.visible=true;
    let shorePixels=0;
    for(let i=0;i<shore.length;i+=4)if(Math.abs(shore[i]-without[i])>8)shorePixels++;
    return {moved,birdsMoved,reeds:life.reeds.count,visibleBoats:boats.filter(b=>b.mesh.visible).length,
-    steam:steam.length,wakePoints:wake?.points.length,wakeAboveWater,shoreMaps:shoreMaps.length,shorePixels,png,shorePng};
+    steam:steam.length,wakePoints:wake?.points.length,wakeAboveWater,shoreTriangles,shorePixels,png,shorePng};
   });
   fs.writeFileSync(path.join(out,'rhine-river-life-ultra.png'),Buffer.from(wildlife.png.split(',')[1],'base64'));
   fs.writeFileSync(path.join(out,'rhine-shore-ultra.png'),Buffer.from(wildlife.shorePng.split(',')[1],'base64'));

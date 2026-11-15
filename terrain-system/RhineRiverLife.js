@@ -19,6 +19,7 @@ class RhineRiverLife {
     }):[];
     this.reedSites=this.findReedSites();
     this.wind={value:0};
+    this.bankLight={value:1};
     const material=new THREE.MeshLambertMaterial({vertexColors:true,side:THREE.DoubleSide});
     material.onBeforeCompile=shader=>{
       shader.uniforms.reedWind=this.wind;
@@ -35,6 +36,9 @@ class RhineRiverLife {
     this.reeds.frustumCulled=false;
     this.reeds.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
     this.group.add(this.reeds);
+    this.shore=this.makeShore();
+    this.group.add(this.shore);
+    this.shoreSites=[];
     this.matrix=new THREE.Matrix4();this.rotation=new THREE.Quaternion();
     this.position=new THREE.Vector3();this.scale=new THREE.Vector3();this.up=new THREE.Vector3(0,1,0);
     this.reedClock=0;
@@ -59,7 +63,7 @@ class RhineRiverLife {
             const seed=osmHash(x,z,1844);
             if(seed<.35)continue;
             const cell=Math.floor(x/24)+','+Math.floor(z/24);
-            if(!cells.has(cell))cells.set(cell,{x,z,ux,uz,nx,nz,seed});
+            if(!cells.has(cell))cells.set(cell,{x,z,ux,uz,nx,nz,seed,halfLength:length/count*.49});
           }
         }
       }
@@ -83,7 +87,46 @@ class RhineRiverLife {
     }
   }
 
-  updateReeds(x,z){
+  makeShore(){
+    const geometry=new THREE.BufferGeometry(),capacity=48*3*2*6;
+    geometry.setAttribute('position',new THREE.BufferAttribute(new Float32Array(capacity*3),3).setUsage(THREE.DynamicDrawUsage));
+    geometry.setAttribute('uv',new THREE.BufferAttribute(new Float32Array(capacity*2),2).setUsage(THREE.DynamicDrawUsage));
+    geometry.setDrawRange(0,0);
+    const uniforms=THREE.UniformsUtils.clone(THREE.UniformsLib.fog);
+    uniforms.bankLight=this.bankLight;
+    uniforms.bankTime=this.wind;
+    const material=new THREE.ShaderMaterial({uniforms,fog:true,transparent:true,depthWrite:false,side:THREE.DoubleSide,
+      vertexShader:/* glsl */`
+        varying vec2 bankUv, bankWorld;
+        #include <fog_pars_vertex>
+        void main(){
+          bankUv=uv;bankWorld=position.xz;
+          vec4 mvPosition=modelViewMatrix*vec4(position,1.0);
+          gl_Position=projectionMatrix*mvPosition;
+          #include <fog_vertex>
+        }`,
+      fragmentShader:/* glsl */`
+        varying vec2 bankUv, bankWorld;
+        uniform float bankLight,bankTime;
+        #include <fog_pars_fragment>
+        void main(){
+          float variation=.57+.19*sin(dot(bankWorld,vec2(.095,.049)))+.16*sin(dot(bankWorld,vec2(.127,-.195)));
+          float taper=smoothstep(0.0,.16,bankUv.x)*(1.0-smoothstep(.82,1.0,bankUv.x));
+          float opacity=taper*(1.0-smoothstep(.09,1.0,bankUv.y))*(.33+.5*variation);
+          float ripple=max(0.0,sin(bankUv.y*35.0-bankTime*2.2+variation*8.0))*(1.0-bankUv.y);
+          vec3 tint=mix(vec3(.105,.141,.089),vec3(.34,.31,.18),variation);
+          tint+=vec3(.060,.064,.048)*ripple;
+          gl_FragColor=vec4(tint*(.16+.84*bankLight),opacity);
+          #include <fog_fragment>
+          #include <encodings_fragment>
+        }`});
+    const mesh=new THREE.Mesh(geometry,material);
+    mesh.name='Rhine animated shoals';
+    mesh.frustumCulled=false;
+    return mesh;
+  }
+
+  updateBanks(x,z){
     const size=this.world.osm.tileSize,tx=Math.floor(x/size),tz=Math.floor(z/size);
     const candidates=[];
     for(let nz=tz-1;nz<=tz+1;nz++)for(let nx=tx-1;nx<=tx+1;nx++){
@@ -93,7 +136,33 @@ class RhineRiverLife {
       }
     }
     const nearby=candidates.sort((a,b)=>a.distance-b.distance).slice(0,48);
-    let count=0;
+    const geometry=this.shore.geometry,positions=geometry.attributes.position,uv=geometry.attributes.uv;
+    let vertices=0,count=0;
+    this.shoreSites.length=0;
+    for(const {site} of nearby){
+      const width=13+site.seed*14,rows=[];
+      for(const depth of [.75,5,width*.63,width]){
+        const row=[];
+        for(const s of [-1,0,1]){
+          const px=site.x+site.ux*s*site.halfLength-site.nx*depth;
+          const pz=site.z+site.uz*s*site.halfLength-site.nz*depth;
+          if(!this.world._pointOnWater(px,pz))break;
+          row.push([px,this.terrain.getRenderedHeight(px,pz)+.99,pz,(s+1)/2,depth/width]);
+        }
+        if(row.length!==3)break;
+        rows.push(row);
+      }
+      if(rows.length<3)continue;
+      this.shoreSites.push(site);
+      for(let r=1;r<rows.length;r++)for(let s=1;s<3;s++){
+        const a=rows[r-1][s-1],b=rows[r-1][s],c=rows[r][s-1],d=rows[r][s];
+        for(const [px,py,pz,u,v] of [a,b,c,b,d,c]){
+          positions.setXYZ(vertices,px,py,pz);uv.setXY(vertices,u,v);vertices++;
+        }
+      }
+    }
+    geometry.setDrawRange(0,vertices);
+    positions.needsUpdate=true;uv.needsUpdate=true;
     for(const {site} of nearby)for(let i=0;i<3;i++){
       const along=(i-1)*(4+site.seed*6),inland=2.4+osmHash(site.x+i,site.z,1845)*4.4;
       const px=site.x+site.ux*along+site.nx*inland,pz=site.z+site.uz*along+site.nz*inland;
@@ -114,7 +183,7 @@ class RhineRiverLife {
     this.wind.value+=dt;
     if((this.reedClock-=dt)<=0){
       this.reedClock=.36;
-      this.updateReeds(x,z);
+      this.updateBanks(x,z);
     }
     const steam=(this.steamClock-=dt)<=0;
     if(steam)this.steamClock=.7;
@@ -158,6 +227,8 @@ class RhineRiverLife {
     this.boatMaterial.dispose();
     this.reeds.geometry.dispose();
     this.reeds.material.dispose();
+    this.shore.geometry.dispose();
+    this.shore.material.dispose();
   }
 
   static boatGeometry(type){

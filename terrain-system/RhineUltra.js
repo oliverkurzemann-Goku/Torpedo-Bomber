@@ -43,7 +43,6 @@ class RhineUltra {
     this.osm=osm;
     this.maps=new Map();
     this.hooks=new Map();
-    this.shoreMaterials=new Map();
     this.wait=0;
     this.emptyMask=new THREE.DataTexture(new Uint8Array([0,0,0,255]),1,1);
     this.emptyMask.needsUpdate=true;
@@ -61,23 +60,8 @@ class RhineUltra {
     for(const tile of terrain.tiles.values())if(tile.materialOverride){
       const mask={value:this.emptyMask};
       const blend={value:0};
-      this.maps.set(tile,{mask,blend,texture:null,shore:null});
+      this.maps.set(tile,{mask,blend,texture:null});
       this.extend(tile.materialOverride,'terrain',shader=>this.styleTerrain(shader,mask,blend));
-    }
-    for(const mesh of osm.surfaceMeshes){
-      if(mesh.material!==osm.lakeMat)continue;
-      const source=mesh.userData.waterSource;
-      const tile=terrain.tiles.get(source.ox/terrain.tileSize+','+source.oz/terrain.tileSize);
-      const record=this.maps.get(tile);
-      if(!record)continue;
-      record.shore={value:this.emptyMask};
-      const material=osm.lakeMat.clone();
-      osmWaterShading(material,osm.waterUniforms);
-      const origin={value:new THREE.Vector2(source.ox,source.oz)};
-      const scale={value:1/terrain.tileSize};
-      this.extend(material,'shore',shader=>this.styleWater(shader,{mask:record.shore,origin,scale,blend:record.blend}));
-      this.shoreMaterials.set(mesh,material);
-      mesh.material=material;
     }
     for(const material of [osm.riverMat,osm.lakeMat])this.extend(material,'water',shader=>this.styleWater(shader));
     for(const material of [osm.coniferMat,osm.deciduousMat,osm.poplarMat,osm.willowMat]){
@@ -143,6 +127,7 @@ class RhineUltra {
     u.ultraDeck.value=w.base+w.depth*.30;
     u.ultraCover.value=w.cover;
     u.ultraDaylight.value=light;
+    if(this.riverLife)this.riverLife.bankLight.value=light;
   }
 
   update(dt,x,z,altitude,emitSteam) {
@@ -161,7 +146,6 @@ class RhineUltra {
       if(record.texture){
         if(distance>5000){
           record.texture.dispose();record.texture=null;record.mask.value=this.emptyMask;record.blend.value=0;
-          if(record.shore){record.shore.value.dispose();record.shore.value=this.emptyMask;}
         }else record.blend.value=Math.min(1,record.blend.value+dt*3);
       }
       const priority=distance+Math.hypot(dx,dz)*.02;
@@ -171,32 +155,7 @@ class RhineUltra {
       this.wait=.14;
       const record=this.maps.get(next);
       record.mask.value=record.texture=this.makeLandMask(next.tileX,next.tileZ);
-      if(record.shore)record.shore.value=this.makeShoreMask(next.tileX,next.tileZ);
     }
-  }
-
-  makeShoreMask(tx,tz){
-    const size=this.terrain.tileSize,n=512;
-    const canvas=document.createElement('canvas');
-    canvas.width=canvas.height=n;
-    const ctx=canvas.getContext('2d');
-    ctx.fillStyle='#000';ctx.fillRect(0,0,n,n);
-    ctx.scale(n/size,n/size);
-    ctx.lineCap='round';ctx.lineJoin='round';
-    // Include the real banks just across the neighbouring tile boundary,
-    // allowing their colour to continue across a shore that crosses the seam.
-    ctx.beginPath();
-    for(let dz=-1;dz<=1;dz++)for(let dx=-1;dx<=1;dx++){
-      const data=this.osm.sourceTiles.get((tx+dx)+','+(tz+dz));
-      for(const ring of data?.lakes||[])for(const [a,b] of RhineRiverLife.bankEdges(ring,size)){
-        ctx.moveTo(a[0]+dx*size,a[1]+dz*size);
-        ctx.lineTo(b[0]+dx*size,b[1]+dz*size);
-      }
-    }
-    for(const [width,tint] of [[69,'#280000'],[37,'#760000'],[14,'#ed0000']]){
-      ctx.lineWidth=width;ctx.strokeStyle=tint;ctx.stroke();
-    }
-    return new THREE.CanvasTexture(canvas);
   }
 
   makeLandMask(tx,tz) {
@@ -304,26 +263,7 @@ class RhineUltra {
     `);
   }
 
-  styleWater(shader,bank) {
-    if(bank){
-      Object.assign(shader.uniforms,{ultraShoreMap:bank.mask,ultraShoreOrigin:bank.origin,
-        ultraShoreScale:bank.scale,ultraShoreBlend:bank.blend});
-      shader.fragmentShader='uniform sampler2D ultraShoreMap; uniform vec2 ultraShoreOrigin; uniform float ultraShoreScale,ultraShoreBlend;\n'+shader.fragmentShader;
-    }
-    const shore=bank?/* glsl */`
-      vec2 shoreUv=(waterWorld.xz-ultraShoreOrigin)*ultraShoreScale;
-      float bankDepth=texture2D(ultraShoreMap,vec2(shoreUv.x,1.0-shoreUv.y)).r;
-      float bankVariation=texture2D(ultraNoise,waterWorld.xz*.0086).g;
-      float shoal=smoothstep(.09,.90,bankDepth)*ultraShoreBlend;
-      float sand=smoothstep(.30,.70,bankVariation+rippleA.y*.48);
-      vec3 sediment=mix(vec3(.113,.149,.081),vec3(.245,.230,.117),sand);
-      riverColour=mix(riverColour,sediment*(.26+.74*ultraDaylight),shoal*.92);
-      // Interrupted reflections near reeds and gravel rather than a white outline.
-      waterFresnel*=1.0-shoal*.67;
-      float lapping=smoothstep(.48,.94,bankDepth)*ultraShoreBlend;
-      float ripple=sin(bankDepth*21.0-waterTime*1.55+rippleA.x*7.0);
-      riverColour+=vec3(.15,.17,.11)*lapping*max(0.0,ripple)*sand*ultraDaylight;
-    `:'';
+  styleWater(shader) {
     shader.fragmentShader=shader.fragmentShader.replace('#include <output_fragment>', /* glsl */`
       vec2 rippleUV=waterWorld.xz*.023;
       vec2 rippleA=texture2D(ultraNoise,rippleUV+vec2(.027,-.018)*waterTime).gb-.5;
@@ -335,7 +275,6 @@ class RhineUltra {
       float glint=pow(max(0.0,dot(mirror,ultraSun)),185.0);
       vec3 riverColour=vec3(.071,.159,.153)*(.94+rippleA.y*.22);
       if(ultraDaylight<.1)riverColour*=mix(.32,1.0,ultraDaylight/.1);
-      ${shore}
       outgoingLight=mix(riverColour,reflectedSky*.70,waterFresnel);
       outgoingLight+=vec3(.92,.77,.50)*glint*.56*ultraDaylight;
       outgoingLight*=rhineCloudShadow(waterWorld.xz,waterWorld.y);
@@ -403,15 +342,7 @@ class RhineUltra {
     for(const [material,{before,cacheKey}] of this.hooks){
       material.onBeforeCompile=before;material.customProgramCacheKey=cacheKey;material.needsUpdate=true;
     }
-    for(const [mesh,material] of this.shoreMaterials){
-      mesh.material=this.osm.lakeMat;
-      material.dispose();
-    }
-    this.shoreMaterials.clear();
-    for(const {texture,shore} of this.maps.values()){
-      texture?.dispose();
-      if(shore&&shore.value!==this.emptyMask)shore.value.dispose();
-    }
+    for(const {texture} of this.maps.values())texture?.dispose();
     this.emptyMask.dispose();this.noise.dispose();
     this.hooks.clear();this.maps.clear();
   }
