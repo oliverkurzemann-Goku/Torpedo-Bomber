@@ -2823,7 +2823,7 @@ function tryLoad(L,k,i){
     return;
   }
   const url=list[i];
-  L.load(url+((k==='p47'||k==='me262')?'?v=206':'?v=3'), gl=>{
+  L.load(url+(k==='p47'?'?v=272':k==='me262'?'?v=206':'?v=3'), gl=>{
     const src=gl.scene||gl.scenes[0]; if(!src){ tryLoad(L,k,i+1); return; }
     const fix=savedFix(url) || knownFix(url);
     let note;

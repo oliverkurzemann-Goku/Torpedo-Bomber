@@ -1,6 +1,6 @@
-# Offline app asset register — Build 267
+# Offline app asset register — Build 272
 
-Checked 2026-10-23. 389 payload files, 64 model files, 162.4 MiB.
+Checked 2026-10-23. 392 payload files, 64 model files, 158.2 MiB.
 
 Generated from the actual dist-app payload by npm run app:assets. Hashes cover embedded textures too. This is an evidence inventory; no row is automatically approved for distribution. Acquisition dates remain unknown where not recorded.
 
@@ -19,7 +19,7 @@ Generated from the actual dist-app payload by npm run app:assets. Hashes cover e
 | assets/aircraft/ju87b2-own.glb | [Oliver Kurzemann / Torpedo-Bomber](scripts/own-aircraft/ju87b2/shape.json) | project-own; supplied historical manual used as dimensional reference | own-build-reference-review-open | d331b579ca37cb4ffcc9a71010b4dabe477b38384b371af9d456e06804b868e4 |
 | assets/aircraft/me163b-own.glb | [Oliver Kurzemann / Torpedo-Bomber](scripts/build-own-fw190-komet.cjs) | project-own; reference-derived exterior geometry and original textures | own-build-reference-review-open | ddc61b6fb3a222b9716c40ead59f17a77a55bfa295cbcb48c1a1d42f2a977739 |
 | assets/aircraft/me262-noel.glb | Source unknown | Base CC0-1.0 (https://creativecommons.org/publicdomain/zero/1.0/); original livery and detailing Oliver Kurzemann | source-or-license-missing | 6bfd4650965bd16e465037d3bdee08f2fe68eaf3e5ee99b273c435a00c256895 |
-| assets/aircraft/p47-independent.glb | [mgg8 / Aviation Gazetteer; original adaptation Oliver Kurzemann](https://sketchfab.com/3d-models/republic-p-47d-thunderbolt-raf-scheme-e831a70ab29c42d3a1dbd352d8bd4684) | Base model CC0-1.0 (https://creativecommons.org/publicdomain/zero/1.0/). New project work: Oliver Kurzemann, all reserved rights. | cc0-source-recorded | fc717521e5d80aefd6063d57bc561574fee3c4a99637c94a8b1a3c7ca889b851 |
+| assets/aircraft/p47-independent.glb | [mgg8 / Aviation Gazetteer; original adaptation Oliver Kurzemann](https://sketchfab.com/3d-models/republic-p-47d-thunderbolt-raf-scheme-e831a70ab29c42d3a1dbd352d8bd4684) | Base model CC0-1.0 (https://creativecommons.org/publicdomain/zero/1.0/). New project work: Oliver Kurzemann, all reserved rights. | cc0-source-recorded | 719debac42774e479fff78883e02c763316d0cdcf5340a2b367efa1ef20efb86 |
 | assets/aircraft/pby5a-blackcat-own.glb | [Torpedo-Bomber project](https://www.usaf-sig.org/index.php/references/downloads/4-technical-orders/38-type-specific/42-pby-catalina?download=163:an-01-5ma-2-pby-5-pby-5a) | project-own (original mesh and paint) | own-build-reference-review-open | 223e42bfe27265d6cacbcd63896c807b2398432f97774f14e70d75d1c0c994bc |
 | assets/aircraft/pby5a-own.glb | [Torpedo-Bomber project](https://www.usaf-sig.org/index.php/references/downloads/4-technical-orders/38-type-specific/42-pby-catalina?download=163:an-01-5ma-2-pby-5-pby-5a) | project-own (original mesh and paint) | own-build-reference-review-open | bf4f9c5cd29df90f92250237e8ff7add86ffeaa09ab140372c3e3a18a8fa9872 |
 | assets/aircraft/sbd-dauntless.glb | [HappySunpore (https://sketchfab.com/happysunpore)](https://sketchfab.com/3d-models/stb-dauntless-31e14fecfd9b4d51bdf0c4b27a0572f0) | CC-BY-4.0 (https://creativecommons.org/licenses/by/4.0/) | uploader-license-review-open | 80b06926d6c4d3168e9a52a61379b1a00a1841a8130afcca71f842870d8336e1 |

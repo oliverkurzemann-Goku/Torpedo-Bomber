@@ -33,5 +33,15 @@ function bounds(frame){const box=new THREE.Box3(),v=new THREE.Vector3();frame.up
  const fit=AircraftGround.fit(frame,'p47',0,0,0,()=>0);let aftClearance=Infinity;frame.updateMatrixWorld(true);frame.traverse(o=>{if(!o.isMesh||/Gear/.test(o.name))return;const p=o.geometry.attributes.position;for(let i=0;i<p.count;i++){const v=new THREE.Vector3().fromBufferAttribute(p,i).applyMatrix4(o.matrixWorld);if(v.z<-4)aftClearance=Math.min(aftClearance,v.applyQuaternion(fit.quaternion).y+fit.y);}});assert(aftClearance>.4,'extended tailwheel keeps tail clear of ground');
  const clone=frame.clone(true),other=clone.getObjectByName('GearLeft');AircraftArticulation.pose(clone,.25,{left:1,right:0});assert.notEqual(other.rotation.z,left.rotation.z);assert.equal(left.rotation.z,0,'AI clone cannot retract player gear');
  let pbr=false;frame.traverse(o=>{if(o.isMesh&&o.material.map&&o.material.normalMap&&o.material.metalnessMap&&o.material.roughnessMap)pbr=true;});assert(pbr,'all original wear PBR layers decoded');assert.equal(g.animations.length,4);
- console.log(JSON.stringify({nativeP47:true,triangles:before,meshCount,span:size.x,length:size.z,roundTyres:tyres.length,originalRotorFaces:triangles(rotor),ground,aftClearance,cloneSafe:true,muzzles:points.length}));
+ // Build 272: scripts/reduce-p47-textures.cjs halves the three 4096 px textures; everything that is not an image must be byte-identical to the unreduced model
+ const glb=file=>{const b=fs.readFileSync(path.join(root,file)),n=b.readUInt32LE(12),json=JSON.parse(b.subarray(20,20+n).toString('utf8')),bin=b.subarray(20+n+8);
+  const view=i=>{const v=json.bufferViews[i];return bin.subarray(v.byteOffset||0,(v.byteOffset||0)+v.byteLength);};return {json,view};};
+ const small=glb('assets/aircraft/p47-independent.glb'),full=glb('assets/aircraft/source/p47-independent/p47-independent-4096.glb');
+ const imageViews=new Set(small.json.images.map(i=>i.bufferView)),sizes=small.json.images.map(i=>{const d=small.view(i.bufferView);assert.equal(i.mimeType,'image/png');return [d.readUInt32BE(16),d.readUInt32BE(20),d[25]];});
+ assert.deepEqual(sizes.slice(0,3),[[2048,2048,2],[2048,2048,2],[2048,2048,2]],'livery, normal and wear maps are 2048 px RGB');assert(sizes.every(s=>s[0]<=2048));
+ assert.equal(small.json.bufferViews.length,full.json.bufferViews.length);let sameViews=0;
+ for(let i=0;i<small.json.bufferViews.length;i++){if(imageViews.has(i))continue;assert(small.view(i).equals(full.view(i)),'bufferView '+i+' (geometry, UVs, animation) is untouched');sameViews++;}
+ for(const key of ['accessors','meshes','nodes','materials','textures','samplers','animations','scenes','skins'])assert.deepEqual(small.json[key],full.json[key],key+' unchanged');
+ assert.equal(small.json.asset.extras.textureReduction.maxSize,2048);assert.equal(small.json.asset.extras.textureReduction.sourceSha256,require('node:crypto').createHash('sha256').update(fs.readFileSync(path.join(root,'assets/aircraft/source/p47-independent/p47-independent-4096.glb'))).digest('hex'));
+ console.log(JSON.stringify({nativeP47:true,textures:sizes.map(s=>s[0]+'x'+s[1]),untouchedBufferViews:sameViews,triangles:before,meshCount,span:size.x,length:size.z,roundTyres:tyres.length,originalRotorFaces:triangles(rotor),ground,aftClearance,cloneSafe:true,muzzles:points.length}));
 })().catch(e=>{console.error(e);process.exitCode=1});

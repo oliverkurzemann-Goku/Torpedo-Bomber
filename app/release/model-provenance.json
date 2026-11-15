@@ -15,7 +15,7 @@
       "source": "https://sketchfab.com/3d-models/republic-p-47d-thunderbolt-raf-scheme-e831a70ab29c42d3a1dbd352d8bd4684",
       "license": "Base model CC0-1.0 (https://creativecommons.org/publicdomain/zero/1.0/). New project work: Oliver Kurzemann, all reserved rights.",
       "sourceSha256": "b46c80f2cd1839723843fa2bb99647a0257b54ab55772c6a208a9c83e1379bf4",
-      "changes": "Independent source geometry; own WZ-A/B checker livery, panel/rivet normal and wear maps, articulated original controls, 0.24 m extended tail strut. Original D-28 station fidelity not certified.",
+      "changes": "Independent source geometry; own WZ-A/B checker livery, panel/rivet normal and wear maps, articulated original controls, 0.24 m extended tail strut. Original D-28 station fidelity not certified. Build 272: livery, normal and wear textures halved from 4096 to 2048 px with a box filter (scripts/reduce-p47-textures.cjs); geometry, UVs, materials and clips byte-identical to source/p47-independent/p47-independent-4096.glb.",
       "evidence": "Creator-hosted CC0 original; SOURCE.json, exact original hash and editable source retained.",
       "originalFile": "assets/aircraft/source/p47-independent/original-cc0.glb",
       "originalSha256": "b46c80f2cd1839723843fa2bb99647a0257b54ab55772c6a208a9c83e1379bf4"

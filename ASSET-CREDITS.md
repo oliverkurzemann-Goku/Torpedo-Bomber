@@ -180,6 +180,11 @@ New original livery, panel/rivet/wear maps, fittings and extended tail gear are
 project work for Oliver Kurzemann, with all reserved rights. No former-game mesh
 or texture pixels were used. See `assets/aircraft/P47-CREDITS.txt`, documented
 sources and editable Blender in `assets/aircraft/source/p47-independent/`.
+
+Build 272: the three 4096 px textures (livery, normal, wear) are shipped at 2048 px
+(`scripts/reduce-p47-textures.cjs`, 2x2 box filter, lossless PNG). Geometry, UVs,
+materials and clips are byte-identical; the unreduced model is kept as
+`assets/aircraft/source/p47-independent/p47-independent-4096.glb` (not in the app).
 The legacy root `p47new.glb` is retained only for historical mesh-cut regression
 tests; it is excluded from the app payload and is not a runtime fallback.
 The obsolete derivative `p47-weathered.glb` was removed from the active assets.
