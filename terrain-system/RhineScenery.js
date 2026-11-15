@@ -357,8 +357,9 @@ class RhineScenery {
       }
       if(!flock.mesh.visible)continue;
       flock.age+=dt;
-      if(flock.age>(ultra?25:flock.river?21:13)||Math.hypot(x-flock.point.x,z-flock.point.z)>(ultra?1400:850)){
-        flock.mesh.visible=false;flock.cooldown=6;continue;
+      const outOfRange=Math.hypot(x-flock.point.x,z-flock.point.z)>(ultra?1400:850);
+      if(flock.age>(ultra?25:flock.river?21:13)||outOfRange){
+        flock.mesh.visible=false;flock.cooldown=ultra&&outOfRange?0:6;continue;
       }
       this.village._poseFlock(flock);
     }

@@ -209,6 +209,8 @@ const server=http.createServer((req,res)=>{
   }
   console.log('Rhine level camera:',JSON.stringify(levelViews));
   const wildlife=await page.evaluate(()=>{
+   configureRhineScenery('detailed');
+   rhineScenery.clearUltraFlocks();
    configureRhineScenery('ultra');
    const life=rhineUltra.riverLife,route=life.route;
    const focus=livingWorld._sample(route,route.length*.43),x=focus.x,z=focus.z,alt=groundY(x,z)+185;
