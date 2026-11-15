@@ -172,13 +172,13 @@ class RhineVillage {
     p.needsUpdate=true;site.mesh.geometry.computeVertexNormals();site.mesh.geometry.computeBoundingSphere();
   }
 
-  _flock(scene,point,river){
-    const count=river?9:12,geometry=new THREE.BufferGeometry();
-    const position=new THREE.BufferAttribute(new Float32Array(count*18),3).setUsage(THREE.DynamicDrawUsage);
+  _flock(scene,point,river,ultra=false){
+    const count=ultra?(river?14:16):river?9:12,geometry=new THREE.BufferGeometry();
+    const position=new THREE.BufferAttribute(new Float32Array(count*(ultra?36:18)),3).setUsage(THREE.DynamicDrawUsage);
     geometry.setAttribute('position',position);
     const mesh=new THREE.Mesh(geometry,new THREE.MeshBasicMaterial({color:river?0xd9d8cd:0x292d2c,side:THREE.DoubleSide}));
     mesh.name=river?'Rhine waterfowl':'Field crows';mesh.frustumCulled=false;scene.add(mesh);
-    return {mesh,count,point,river,age:0,cooldown:0,heading:point.heading||0,
+    return {mesh,count,point,river,ultra,age:0,cooldown:0,heading:point.heading||0,
       seeds:Array.from({length:count},(_,i)=>osmHash(i,7,river?143:144))};
   }
   reset(){
@@ -213,7 +213,9 @@ class RhineVillage {
     const p=f.mesh.geometry.attributes.position,age=f.age;
     const heading=f.heading+(f.river?.15:.58)*Math.sin(age*.38),c=Math.cos(heading),s=Math.sin(heading);
     const d=age*(f.river?12:14),baseX=f.point.x+Math.sin(f.heading)*d,baseZ=f.point.z+Math.cos(f.heading)*d;
-    const height=this.terrain.getRenderedHeight(baseX,baseZ)+(f.river?22:3+Math.min(36,age*4.7));
+    const lift=f.ultra?(f.river?50+Math.min(21,age*2):8+Math.min(48,age*4.1))
+      :f.river?22:3+Math.min(36,age*4.7);
+    const height=this.terrain.getRenderedHeight(baseX,baseZ)+lift;
     for(let i=0;i<f.count;i++){
       const seed=f.seeds[i],side=i%2?1:-1,row=Math.floor(i/2)+1;
       const spread=side*(row*2.35+3*seed)+(f.river?0:Math.sin(age*.9+i)*3.4);
@@ -222,9 +224,15 @@ class RhineVillage {
       const y=height+seed*4+(f.river?1.4:2.4)*Math.sin(age+i*.7);
       const span=(f.river?1.22:.83)*(.82+seed*.3),flap=Math.sin(age*(f.river?13:20)+i*2.1)*span*.70;
       for(let k=0;k<2;k++){
-        const wing=k?span:-span,at=i*6+k*3;
+        const wing=k?span:-span,at=f.ultra?i*12+k*6:i*6+k*3;
         p.setXYZ(at,x+s*.45,y,z+c*.45);
-        p.setXYZ(at+1,x+c*wing-s*.33,y+flap,z-s*wing-c*.33);
+        if(f.ultra){
+          const elbow=wing*.47,ex=x+c*elbow,ez=z-s*elbow,ey=y+flap*.42;
+          p.setXYZ(at+1,ex+s*.06,ey,ez+c*.06);
+          p.setXYZ(at+3,ex+s*.06,ey,ez+c*.06);
+          p.setXYZ(at+4,x+c*wing-s*.17,y+flap,z-s*wing-c*.17);
+          p.setXYZ(at+5,x-s*.36,y,z-c*.36);
+        }else p.setXYZ(at+1,x+c*wing-s*.33,y+flap,z-s*wing-c*.33);
         p.setXYZ(at+2,x-s*.36,y,z-c*.36);
       }
     }

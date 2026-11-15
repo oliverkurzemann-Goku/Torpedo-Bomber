@@ -313,7 +313,7 @@
   <div style="width:100%;height:4px;background:repeating-linear-gradient(45deg,#ffd400,#ffd400 8px,#111 8px,#111 16px);"></div>
   <span id="testVersionBannerText" style="background:#111;color:#ffd400;font-family:monospace;font-weight:800;font-size:11px;letter-spacing:.5px;padding:3px 10px;border:1px solid #ffd400;border-top:none;border-radius:0 0 6px 6px;"></span>
 </div>
-<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 273';</script>
+<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 274';</script>
 <!-- ===== END TEMP TEST-ONLY VERSION BANNER ===== -->
 <div id="app"></div>
 <style>
@@ -355,7 +355,7 @@
   <div id="gunsight"></div>
   <div id="radio"></div>
   <div id="rhinePerfHud" hidden></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 273 · REAL RHINE</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 274 · REAL RHINE</div>
 
   <div id="apr">
     <div id="aprCall"></div>
@@ -410,7 +410,7 @@
 </div>
 
 <div class="overlay hidden" id="menu" data-campaign="europe">
-  <div class="menuTop"><a id="selBtn" href="index.html?v=273">&#9664; Change Game</a><span class="menuMeta">RHINE OPERATIONS<br>BUILD 273</span></div>
+  <div class="menuTop"><a id="selBtn" href="index.html?v=274">&#9664; Change Game</a><span class="menuMeta">RHINE OPERATIONS<br>BUILD 274</span></div>
   <div class="card menuCard">
     <aside class="menuOverview" aria-label="Campaign and pilot options">
     <div class="campaignArt" aria-hidden="true"></div>
@@ -444,7 +444,7 @@
     </aside>
     <section class="missionPanel" aria-label="Mission selection">
       <div class="secLbl">Choose your sortie · 15 missions + 4 bonus &amp; training</div>
-      <a class="hangarLink" href="hangar.html?theatre=europe&amp;v=273">CUSTOM MISSION · CHOOSE AIRCRAFT &amp; LOADOUT →</a>
+      <a class="hangarLink" href="hangar.html?theatre=europe&amp;v=274">CUSTOM MISSION · CHOOSE AIRCRAFT &amp; LOADOUT →</a>
 <div id="missionSel" role="group" aria-label="European missions"></div>
       <div id="missionBlurb" class="missionBlurb" aria-live="polite"></div>
       <div class="menuConfig">
@@ -590,9 +590,10 @@
 <script src="crew-figures.js?v=254"></script>
 <script src="terrain-system/AirfieldActivity.js?v=254"></script>
 <script src="terrain-system/WorldVehicles.js?v=248"></script>
-<script src="terrain-system/RhineVillage.js?v=269"></script>
-<script src="terrain-system/RhineScenery.js?v=273"></script>
-<script src="terrain-system/RhineUltra.js?v=273"></script>
+<script src="terrain-system/RhineVillage.js?v=274"></script>
+<script src="terrain-system/RhineScenery.js?v=274"></script>
+<script src="terrain-system/RhineRiverLife.js?v=274"></script>
+<script src="terrain-system/RhineUltra.js?v=274"></script>
 <script src="terrain-system/LivingWorld.js?v=268"></script>
 <script src="campaign.js?v=1"></script>
 <script src="game-runtime.js?v=267"></script>
@@ -1015,7 +1016,7 @@ async function loadRealWorld(){
 
   if(OSMManager.BUILD!==23||HistoricalObjectManager.BUILD!==21||LivingWorld.BUILD!==22||WorldVehicles.BUILD!==24) throw new Error('Terrain version mismatch. Reload Remagen.');
   document.getElementById('testVersionBannerText').textContent=
-    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 273 · MODULE 23';
+    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 274 · MODULE 23';
   heightProvider=new DEMHeightProvider(RTILE,'terrain-system/real/data/dem/');
   terrain=new TerrainManager(scene,RTILE,heightProvider);
   osmMgr=new OSMManager(scene,RTILE,terrain,'terrain-system/real/data/osm/');
@@ -8475,7 +8476,7 @@ function showResult(good,title,sub,html,btn){
   document.getElementById('rsGo').onclick=()=>{
     voiceRadio.cancel();soundscape.stop();
     show('result',false);
-    if(MISSIONS[selectedMission]?.custom){window.location.href='hangar.html?theatre=europe&v=273';return;}
+    if(MISSIONS[selectedMission]?.custom){window.location.href='hangar.html?theatre=europe&v=274';return;}
     if(good && selectedMission===MISSIONS.length-1){
       show('menu',true);if(navigation){navigation.reset();navigation.button.style.display='none';}
     }
@@ -8840,7 +8841,7 @@ function applyRhineProfile(){
     rhineFixedQuality=ultra;
   }
   if(ultra&&livingWorld&&!rhineUltra){
-    rhineUltra=new RhineUltra(scene,terrain,osmMgr,sun);
+    rhineUltra=new RhineUltra(scene,terrain,osmMgr,sun,livingWorld);
     applyRhineSkyWeather();
   }else if(!ultra&&rhineUltra){
     rhineUltra.dispose();rhineUltra=null;
@@ -8918,7 +8919,7 @@ function init(){
   aircraftFinish=AircraftFinish.create(THREE,renderer);
   runwayLights=RunwayLights.create(THREE,scene,groundY,RWY_LEN,RWY_W);
   groundDust=GroundDust.create(THREE,scene,(x,z)=>terrain?AircraftGround.height(terrain,x,z):groundY(x,z));
-  shipWakes=ShipWakes.create(THREE,scene,{height:(x,z)=>terrain?groundY(x,z):.10,waterAt:(x,z)=>!livingWorld||livingWorld._pointOnWater(x,z)});
+  shipWakes=ShipWakes.create(THREE,scene,{height:(x,z)=>terrain?groundY(x,z)+.9:.10,waterAt:(x,z)=>!livingWorld||livingWorld._pointOnWater(x,z)});
   applyWeather();
   buildRain();
   buildClouds(); applyWeather();   // clouds need ceilingY (set above) to place, then re-tint them
@@ -8992,7 +8993,7 @@ function init(){
   // menu wiring
   document.getElementById('startBtn').onclick=()=>showBrief(selectedMission);
   duelInit();
-  document.getElementById('pauseMainMenu').onclick=async()=>{globalThis.sortieCheckpoint?.save();await globalThis.sortieCheckpoint?.flush();exitToMenuFromPause(true);window.location.href='index.html?v=273';};
+  document.getElementById('pauseMainMenu').onclick=async()=>{globalThis.sortieCheckpoint?.save();await globalThis.sortieCheckpoint?.flush();exitToMenuFromPause(true);window.location.href='index.html?v=274';};
   document.getElementById('logBtn').onclick=()=>{ show('menu',false); showLogbook(); };
   document.getElementById('skipLaunchPreview').onclick=()=>finishLaunchIntro();
   document.getElementById('brBack').onclick=()=>{ show('brief',false); show('menu',true);if(navigation){navigation.reset();navigation.button.style.display='none';} state=ST.MENU; };
@@ -9103,7 +9104,7 @@ function animate(){
     if(livingWorld)livingWorld.update(raw,focusX,focusZ,state===ST.FLIGHT?p=>
       spawnSmoke(p.x,p.y,p.z,p.color,p.scale):null,detailedScenery?null:sceneryAltitude);
     if(detailedScenery)rhineScenery.update(raw,focusX,focusZ,sceneryAltitude,flightQuality.tier,!!rhineUltra);
-    rhineUltra?.update(raw,focusX,focusZ);
+    rhineUltra?.update(raw,focusX,focusZ,sceneryAltitude,state===ST.FLIGHT?spawnSmoke:null);
     contentVisT-=raw; if(contentVisT<=0){ contentVisT=0.5; updateContentVisibility(focusX,focusZ); }
   }
   if(flashT>0){ flashT-=raw; if(flashT<=0) document.getElementById('flash').classList.remove('show'); }

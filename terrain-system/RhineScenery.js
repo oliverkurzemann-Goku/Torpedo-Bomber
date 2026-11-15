@@ -236,12 +236,14 @@ class RhineScenery {
     this.material=new THREE.MeshLambertMaterial({vertexColors:true,polygonOffset:true,polygonOffsetFactor:-.5});
     this.atlas=null;
     this.flockSites=this.sites.filter(s=>s.kind==='farm').map(s=>({x:s.x,z:s.z}));
+    this.ultraFlockSites=this.flockSites.concat(this.neighbourhoods.filter(site=>site.plots.length>=8));
     this.waterSites=[];
     if(river)for(let i=2;i<river.points.length-2;i+=5){
       const [x,z]=river.points[i],[nx,nz]=river.points[i+1];
       this.waterSites.push({x,z,heading:Math.atan2(nx-x,nz-z)});
     }
     this.flocks=village?[village._flock(this.group,{x:0,z:0},false),village._flock(this.group,{x:0,z:0},true)]:[];
+    this.ultraFlocks=[];
     this.enabled=false;this.setEnabled(true);
   }
 
@@ -255,6 +257,7 @@ class RhineScenery {
         this.group.remove(site.mesh);site.mesh.geometry.dispose();site.mesh=null;
       }
       if(this.atlas){this.atlas.dispose();this.atlas=null;this.material.map=null;this.material.needsUpdate=true;}
+      this.clearUltraFlocks();
     }
     for(const flock of this.flocks){flock.mesh.visible=false;flock.used=null;flock.cooldown=0;flock.age=0;}
   }
@@ -316,19 +319,37 @@ class RhineScenery {
       hidden.sort((a,b)=>Math.hypot(b.x-x,b.z-z)-Math.hypot(a.x-x,a.z-z));
       const far=hidden[0];if(far){this.group.remove(far.mesh);far.mesh.geometry.dispose();far.mesh=null;}
     }
-    this._birds(dt,x,z,altitude,tier);
+    this._birds(dt,x,z,altitude,tier,ultra);
   }
 
-  _birds(dt,x,z,altitude,tier){
+  clearUltraFlocks(){
+    for(const flock of this.ultraFlocks){
+      this.group.remove(flock.mesh);
+      flock.mesh.geometry.dispose();
+      flock.mesh.material.dispose();
+    }
+    this.ultraFlocks=[];
+  }
+
+  _birds(dt,x,z,altitude,tier,ultra){
+    if(ultra&&this.village&&!this.ultraFlocks.length){
+      for(const flock of this.flocks)flock.mesh.visible=false;
+      this.ultraFlocks=[true,true,false].map(river=>this.village._flock(this.group,{x:0,z:0},river,true));
+    }else if(!ultra&&this.ultraFlocks.length)this.clearUltraFlocks();
+    const flocks=ultra?this.ultraFlocks:this.flocks;
     const agl=Number.isFinite(altitude)?altitude-this.terrain.getRenderedHeight(x,z):Infinity;
-    for(const flock of this.flocks){
+    for(const flock of flocks){
       flock.cooldown=Math.max(0,flock.cooldown-dt);
-      if(!(agl<(flock.river?290:155))||tier>=2){flock.mesh.visible=false;continue;}
+      const ceiling=ultra?(flock.river?470:330):(flock.river?290:155);
+      if(!(agl<ceiling)||tier>=2){flock.mesh.visible=false;continue;}
       if(!flock.mesh.visible&&flock.cooldown===0){
-        let nearest=null,distance=flock.river?550:420;
-        for(const point of flock.river?this.waterSites:this.flockSites){
+        let nearest=null,distance=ultra?(flock.river?1100:780):(flock.river?550:420);
+        for(const point of flock.river?this.waterSites:ultra?this.ultraFlockSites:this.flockSites){
           const d=Math.hypot(x-point.x,z-point.z);
-          if(point!==flock.used&&d<distance){nearest=point;distance=d;}
+          if(point===flock.used||d>=distance)continue;
+          if(ultra&&flocks.some(other=>other!==flock&&other.mesh.visible&&
+            Math.hypot(other.point.x-point.x,other.point.z-point.z)<340))continue;
+          nearest=point;distance=d;
         }
         if(!nearest)continue;
         flock.point=flock.used=nearest;flock.age=0;flock.mesh.visible=true;
@@ -336,7 +357,7 @@ class RhineScenery {
       }
       if(!flock.mesh.visible)continue;
       flock.age+=dt;
-      if(flock.age>(flock.river?21:13)||Math.hypot(x-flock.point.x,z-flock.point.z)>850){
+      if(flock.age>(ultra?25:flock.river?21:13)||Math.hypot(x-flock.point.x,z-flock.point.z)>(ultra?1400:850)){
         flock.mesh.visible=false;flock.cooldown=6;continue;
       }
       this.village._poseFlock(flock);
