@@ -11,9 +11,9 @@
   const TIERS={
     low:{name:'Low',pixelRatio:1,shadows:false,shadowSize:0,shadowRange:0,treeRange:.7,bloom:false,grade:true,
       anisotropy:2,groundDetail:false,nearTrees:0,contrails:false,heatHaze:false,windowLight:true},
-    medium:{name:'Medium',pixelRatio:1.5,shadows:true,shadowSize:1024,shadowRange:130,treeRange:1,bloom:false,grade:true,
+    medium:{name:'Medium',pixelRatio:1.5,shadows:true,shadowSize:1024,shadowRange:200,treeRange:1,bloom:false,grade:true,
       anisotropy:4,groundDetail:true,nearTrees:.5,contrails:true,heatHaze:false,windowLight:true},
-    high:{name:'High',pixelRatio:2,shadows:true,shadowSize:2048,shadowRange:240,treeRange:1.25,bloom:true,grade:true,
+    high:{name:'High',pixelRatio:2,shadows:true,shadowSize:2048,shadowRange:360,treeRange:1.25,bloom:true,grade:true,
       anisotropy:8,groundDetail:true,nearTrees:1,contrails:true,heatHaze:true,windowLight:true}
   };
   const KEY='graphicsQuality';

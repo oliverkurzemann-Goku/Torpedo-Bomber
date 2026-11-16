@@ -1,9 +1,36 @@
 # Grafik- und Performance-Plan
 
-Stand: 16.11.2026, **Build 277: Phasen 0–6 umgesetzt, Build 278: Nachbesserungen nach iPad-Test (Abschnitt 0a)** (Freigabe des Nutzers: „setze deine Phasen um …
+Stand: 16.11.2026, **Build 277: Phasen 0–6 umgesetzt, Build 278/279: Nachbesserungen nach iPad-Test (Abschnitte 0a, 0b)** (Freigabe des Nutzers: „setze deine Phasen um …
 aber keine 120 fps"). Zielgerät des Nutzers: **iPad Pro mit M1**, Ziel **stetige 60 Bilder/s** (120 Hz ist
 ausdrücklich kein Ziel). Was gebaut ist, steht im neuen Abschnitt 0; die Abschnitte 1–8 sind der Plan von
 Build 276 (unverändert, mit Vermerken).
+
+## 0b. Nachbesserung Build 279: Schatten kamen spät und plötzlich (High)
+
+Nutzer nach Build 278: „Jetzt kommen die Schatten leider sehr spät und kurzfristig bei High und hoher Framerate."
+Gemessen im echten Rhein-Freiflug (P-47, 150 m/s, 60 und 300 m über Grund, Stufe High = Ultra):
+- Die Schattenkarte (2048², ±240 m) war auf das **Flugzeug** zentriert. Entlang der Flugbahn deckte sie
+  200 m nach vorn und 200 m nach hinten ab; die Verfolgerkamera (52 m hinter dem Flugzeug) sieht viel weiter.
+  Bäume bekamen ihren Schatten also erst 200 m vor dem Flugzeug und an einer harten Kante.
+- Welche Baumzellen (166 m Radius) und Gebäude Schatten werfen, wurde nur **alle 2 s** neu gewählt. Bei
+  150 m/s war in 60 m Höhe zeitweise **keine** Zelle vor dem Flugzeug mehr als Schattenwerfer markiert
+  (weiteste markierte Zelle 150 → 50 → 0 → −100 m, dann Sprung auf 800 m) – die Schatten direkt vor dem
+  Flugzeug fehlten bis zu ~1,5 s.
+
+Geändert (`graphics-extras.js`, `graphics-quality.js`):
+- Schattenbox auf dem **Boden vor der Kamera**: Mittelpunkt = Bodenpunkt unter dem Flugzeug + 0,55 × Reichweite
+  in Blickrichtung (Gelände über `getRenderedHeight`), weiterhin auf Texel eingerastet.
+- Reichweite High 240 → 360 m (0,35 m je Texel statt 0,23), Medium 130 → 200 m (0,39 m).
+- Schattenwerfer viermal je Sekunde neu gewählt (Zellen bis 1,6 × Reichweite um die Box-Mitte); kleine
+  Einzelobjekte und Flugzeuge weiter alle 2 s.
+- **Weicher Rand:** `ShaderChunk.shadowmap_pars_fragment` wird beim Anlegen einmal gepatcht – der Schatten
+  blendet in den äußeren 16 % der Box aus statt an einer Linie abzubrechen (nur die Rheinseite lädt das Modul).
+
+Gemessen danach (gleiche Strecke): Schatten bis **550 m** vor dem Flugzeug (vorher 200), 150 m dahinter;
+die weiteste markierte Zelle liegt durchgehend 950–1 500 m voraus (nie mehr hinter dem Flugzeug). Bild
+(Ultra/High) ohne Shaderfehler, 1,55 Mio. Dreiecke, 587 Draw-Calls (Budget 2,5 Mio./800). Test
+`okinawa/tests/graphics-shadows.cjs` (scheitert am alten Code). Grenze: Bäume weiter als ~0,6 km haben
+weiterhin keinen Echtzeitschatten (nur die gebackenen Geländeschatten); dafür bräuchte es Kaskaden.
 
 ## 0a. Nachbesserung Build 278 (iPad-Rückmeldung zu Build 277)
 

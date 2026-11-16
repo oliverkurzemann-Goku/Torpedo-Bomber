@@ -1,5 +1,12 @@
 # Torpedo-Bomber — Übergabe an Claude Code
 
+**16.11.2026, Build 279: Schatten auf High kamen spät und plötzlich – Schattenbox jetzt vor der Kamera, größer, mit weichem Rand; Schattenwerfer 4× je Sekunde.**
+Nutzer: „Jetzt kommen die Schatten leider sehr spät und kurzfristig bei High und hoher Framerate...." Einzelheiten: `GRAPHICS-PLAN.md` Abschnitt 0b.
+- **Gemessen (Rhein, P-47 150 m/s, 60/300 m über Grund):** Schattenkarte war aufs Flugzeug zentriert (±240 m) → entlang der Bahn nur 200 m voraus abgedeckt, harte Kante; Baumzellen-Schattenwerfer nur alle 2 s neu gewählt → zeitweise keine Zelle vor dem Flugzeug markiert (bis ~1,5 s ohne Schatten direkt voraus).
+- **Fix (`graphics-extras.js`, `graphics-quality.js`):** Box-Mitte = Boden unter dem Flugzeug + 0,55 × Reichweite in Blickrichtung; Reichweite High 240 → 360 m, Medium 130 → 200 m; Schattenwerfer alle 0,25 s (bis 1,6 × Reichweite); Schatten blendet in den äußeren 16 % der Box aus (einmaliger Patch von `ShaderChunk.shadowmap_pars_fragment`, nur Rheinseite lädt das Modul). Danach: Schatten bis 550 m voraus, weiteste markierte Zelle immer 950–1 500 m voraus, Bild ohne Shaderfehler, 1,55 Mio. Dreiecke / 587 Draws.
+- Neuer Test `okinawa/tests/graphics-shadows.cjs`. Kennungen 279 (Seiten, Board, Hangar, Xcode, `build-app.mjs`, Tests; `graphics-quality.js`/`graphics-extras.js?v=279`).
+**Offen:** kein iPad-Test; Schattentexel gröber (0,35 statt 0,23 m) – falls Schatten jetzt unscharf wirken, ist `shadowRange` der Regler; Bäume weiter als ~0,6 km haben keinen Echtzeitschatten (dafür bräuchte es Kaskaden).
+
 **16.11.2026, Build 278: drei iPad-Rückmeldungen zu Build 277 behoben – Auto-Grafik pendelte, junge Bäume schwebten nach dem Luftstart, braune Uferflecken poppten auf.**
 Nutzer (zwei iPad-Bilder, Build 277 Ultra/High 40 FPS, Build 276 zum Vergleich): „Bei der home at tree top mission fliegen bäume über dem rhein.... Weiters werden generell im spiel entlang des ufers immer braune stellen eingeblendet, kurz bevor man sie überfliegt... Bei auto fps hat das spiel hänger, bei high und ultra high scheint es besser zu sein...." Einzelheiten: `GRAPHICS-PLAN.md` Abschnitt 0a.
 - **Auto (`graphics-quality.js`, beide Spiele):** Auto senkte nach 2 s unter 45 FPS und hob nach 15 s flüssigem Flug wieder an → bei ~40 FPS auf Medium pendelte es alle ~25 s Medium↔Low. Jeder Wechsel schaltete die Schatten (alle Shader neu) und die anisotrope Filterung (alle Texturen neu hochgeladen). Gemessen (echtes Ultra, SwiftShader): erstes Bild nach einem Wechsel 0,2–184 s, 20 neue Programme. Jetzt: Auto ändert nur Auflösung/Baumreichweite/Glühen/Bodendetail, Schatten und Filterung bleiben auf der Startstufe (`settings` „pinned“); eine zu langsame Stufe wird in der Sitzung nicht wieder versucht (`failed`); senken nach 3 s, heben nach 20 s. Gemessen danach: Wechsel = ein Bild von 64 ms, 0 neue Programme, kein Zurückpendeln. Feste Stufen unverändert. Neuer Test `okinawa/tests/graphics-quality.cjs`.
@@ -1225,7 +1232,7 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 278 · Thunderbolt Squadron BUILD 278 · Remagen-Kern 23 / Fahrzeuge 24**
+Stand bei Übergabe: **Torpedo Squadron BUILD 279 · Thunderbolt Squadron BUILD 279 · Remagen-Kern 23 / Fahrzeuge 24**
 
 **Build 198 (22.10.2026): P-47-Fotolackierung, Einsatzspuren und natives Fahrwerk; Terrain-Fix aus Build 197 erhalten.**
 `assets/aircraft/p47-weathered.glb` ist ein ausdrücklich gekennzeichnetes Derivat des

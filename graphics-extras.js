@@ -10,11 +10,22 @@
   function create(THREE,scene,renderer,options={}){
     const sun=options.sun,direction=(options.direction||new THREE.Vector3(.5,.8,.3)).clone().normalize();
     const state={shadows:false,shadowSize:0,shadowRange:0,contrails:false,cloudLight:false,grass:false};
-    const castSeen=new WeakSet();let sweepT=0,trails=null,grass=null,grassT=0,lastFocus=null;
+    const castSeen=new WeakSet();let sweepT=0,castT=0,trails=null,grass=null,grassT=0,lastFocus=null;
     const get=v=>typeof v==='function'?v():v,osm=()=>get(options.osm),terrain=()=>get(options.terrain);
 
     // ---------------- shadows ----------------
-    const right=new THREE.Vector3(),up=new THREE.Vector3(),snapped=new THREE.Vector3();
+    const right=new THREE.Vector3(),up=new THREE.Vector3(),snapped=new THREE.Vector3(),shadowFocus=new THREE.Vector3(),look=new THREE.Vector3();
+    // Build 279: shadows fade out towards the edge of the shadow map instead of
+    // stopping at a hard line (they used to pop in just in front of the aircraft).
+    // Only this game loads the module; patched before the shadow map is first on,
+    // so every program that samples shadows is built with it.
+    const chunk=THREE.ShaderChunk.shadowmap_pars_fragment;
+    if(chunk&&!chunk.includes('shadowEdgeFade')){
+      const fade='float shadowEdgeFade(vec2 uv){vec2 e=min(uv,1.0-uv);return smoothstep(0.0,0.16,min(e.x,e.y));}\n';
+      const patched=chunk.replace('float getShadow(',fade+'\tfloat getShadow(')
+        .replace(/(#endif\s*\}\s*)return shadow;/,'$1return mix(1.0,shadow,shadowEdgeFade(shadowCoord.xy));');
+      if(patched.includes('shadowEdgeFade(shadowCoord.xy)'))THREE.ShaderChunk.shadowmap_pars_fragment=patched;
+    }
     right.crossVectors(new THREE.Vector3(0,1,0),direction).normalize();up.crossVectors(direction,right).normalize();
     function recompileAll(){scene.traverse(o=>{const m=o.material;if(!m)return;(Array.isArray(m)?m:[m]).forEach(x=>{x.needsUpdate=true;});});}
     function setShadows(on,size,range){
@@ -67,6 +78,9 @@
     // Instanced buildings and tree cells near the shadow focus cast; the rest stay out.
     function nearCasters(focus,range){
       const o=osm();if(!o?.tiles)return;
+      // The box is square in light space; its ground footprint reaches about the
+      // diagonal, a little longer along the sun's azimuth.
+      range*=1.6;
       const size=o.tileSize||4000,reach=range+400;
       for(const [key,tile] of o.tiles){
         if(!tile?.farGroup)continue;
@@ -77,6 +91,14 @@
       }
       for(const cell of o.treeCells||[]){
         const c=cell.sphere.center;cell.mesh.castShadow=Math.hypot(c.x-focus.x,c.z-focus.z)-cell.sphere.radius<range;
+      }
+    }
+    function shadowGround(focus,camera){
+      shadowFocus.copy(focus);
+      try{const g=terrain()?.getRenderedHeight?.(focus.x,focus.z);if(Number.isFinite(g))shadowFocus.y=Math.min(focus.y,g);}catch(e){}
+      if(camera){
+        camera.getWorldDirection(look);look.y=0;const l=look.length();
+        if(l>.2)shadowFocus.addScaledVector(look,state.shadowRange*.55/l);
       }
     }
     function placeShadow(focus){
@@ -207,8 +229,15 @@
       },
       update(dt,camera,focus,info={}){
         if(state.shadows&&focus){
-          placeShadow(focus);
-          sweepT-=dt;if(sweepT<=0){sweepT=2;sweepCasters(info.aircraft);nearCasters(focus,state.shadowRange);}
+          // Build 279: the shadow box sits on the ground ahead of the camera (it was
+          // centred on the aircraft, so ~200 m ahead nothing had a shadow yet), and
+          // the tree/building casters are re-picked four times a second (every 2 s
+          // at 150 m/s left the trees just ahead without a shadow for up to 1.5 s).
+          shadowGround(focus,camera);
+          placeShadow(shadowFocus);
+          sweepT-=dt;castT-=dt;
+          if(sweepT<=0){sweepT=2;sweepCasters(info.aircraft);}
+          if(castT<=0){castT=.25;nearCasters(shadowFocus,state.shadowRange);}
         }
         if(trails)updateTrails(dt,camera,info.aircraft);
         if(grass&&focus){grassT-=dt;if(grassT<=0){grassT=.5;lastFocus=focus.clone?focus.clone():focus;grassVisibility(lastFocus);}}
