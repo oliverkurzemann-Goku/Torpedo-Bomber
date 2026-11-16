@@ -61,7 +61,12 @@ const server=http.createServer((req,res)=>{
    await ensureModel('p47');await worldVehicles.load();livingWorld.installVehicleModels(worldVehicles.templates);
    startMission(MISSIONS.findIndex(m=>m.ac==='p47'&&m.free));finishLaunchIntro(false);state=ST.FLIGHT;show('menu',false);show('brief',false);
    const e=livingWorld.entities.find(e=>e.kind==='ferry');e.model.visible=e.visual.visible=true;e.alive=true;
-   const centre=e.model.position.clone();P.alive=true;P.onGround=false;P.gear=P.gearTgt=0;P.flap=P.flapTgt=0;P.heading=Math.PI/2;P.pitch=P.roll=0;P.spd=180;P.throttle=1;P.departureAge=null;P.pos.copy(centre).add(new THREE.Vector3(-25,2,0));
+   const centre=e.model.position.clone();
+   // Build 282: since Build 239 the Rhine workboat is the low japanese-cargo hull; the old fixed +2 m line passed
+   // over its deck. Find the heights at which a straight segment across the hull meets the real skin, fly through the middle one.
+   const meet=[];for(let h=.1;h<4;h+=.1){const o=new THREE.Vector3(centre.x-40,centre.y+h,centre.z),t=o.clone().setX(centre.x+40);
+    if(riverShipContact.sweep(e.visual,o,t,new THREE.Quaternion(),new THREE.Quaternion(),[[0,0,0]]))meet.push(h);}
+   if(!meet.length)throw Error('No hull skin across the Rhine vessel');const through=meet[meet.length>>1];P.alive=true;P.onGround=false;P.gear=P.gearTgt=0;P.flap=P.flapTgt=0;P.heading=Math.PI/2;P.pitch=P.roll=0;P.spd=180;P.throttle=1;P.departureAge=null;P.pos.copy(centre).add(new THREE.Vector3(-25,through,0));
    posePlayerAircraft(0);for(let i=0;i<50&&P.alive;i++)updateFlight(1/20);
    if(P.alive||riverShipContact.stats.triangleTests===0)throw Error('Actual Rhine flight ignores vessel skin');
    return {alive:P.alive,collision:riverShipContact.stats.lastHit};
