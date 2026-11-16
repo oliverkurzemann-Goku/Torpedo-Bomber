@@ -1,9 +1,28 @@
 # Grafik- und Performance-Plan
 
-Stand: 16.11.2026, **Build 277: Phasen 0–6 umgesetzt, Build 278–282: Nachbesserungen nach iPad-Test (Abschnitte 0a–0e)** (Freigabe des Nutzers: „setze deine Phasen um …
+Stand: 16.11.2026, **Build 277: Phasen 0–6 umgesetzt, Build 278–283: Nachbesserungen nach iPad-Test (Abschnitte 0a–0f)** (Freigabe des Nutzers: „setze deine Phasen um …
 aber keine 120 fps"). Zielgerät des Nutzers: **iPad Pro mit M1**, Ziel **stetige 60 Bilder/s** (120 Hz ist
 ausdrücklich kein Ziel). Was gebaut ist, steht im neuen Abschnitt 0; die Abschnitte 1–8 sind der Plan von
 Build 276 (unverändert, mit Vermerken).
+
+## 0f. Build 283: Pazifik „Ultra High“, Hitzeflimmern ohne Gelee-Triebwerke
+
+**Pazifik Ultra** (Menü „Pacific scenery“, `tc_pacific_scenery`, `?scenery=ultra`). Im Pazifik besteht der größte Teil des Bildes aus Meer
+und Himmel; dort setzt Ultra an (nicht Gelände wie am Rhein):
+- Meer (Fragment-Shader, `#ifdef ULTRA`): Wellen-Normalenkarte 256² (48 Sinuswellen, ganzzahlige Wellenzahlen → kachelbar, Kanal B =
+  geschärfte Kämme) in drei Maßstäben 23/7/2 m, windgetrieben; die kleinen Maßstäbe blenden zwischen 120 und 900 m aus (Rest erledigen
+  Mipmaps + anisotrope Filterung 8×). Subsurface-Licht durch Kämme, Glitzern mit entfernungsabhängiger Rauigkeit, Wolkenschatten aus
+  zwei Rauschwerten (720/260 m, Stärke nach Wetter), Schaumkronen nach Seegang, Brandungsbänder an Okinawa (aus der vorhandenen
+  Küstentextur). Netz 320 statt 170 Reihen. Höhe unverändert (`seaHeightAt`).
+- Himmel: Horizont-Dunstband, wärmer Richtung Sonne, engere Scheibe, breiter Hof.
+- Post-Pass immer an (MSAA 4×, 24-Bit-Tiefe); Glühen nur, wenn die Stufe es hat.
+- Kosten (nicht auf dem iPad gemessen): je Meer-Pixel drei Texturzugriffe + zwei Rauschwerte mehr; +147 000 Dreiecke Meer.
+- Nicht gebaut: Gelände-Relief/-Schatten für Okinawa, Wolkenschatten auf Insel und Schiffen, Schiffs-Bugwellen in Ultra.
+
+**Hitzeflimmern** (Me 262/Me 163, Rhein Ultra + High): der Post-Pass zeichnet die Silhouette des Spielerflugzeugs in eine Maske halber
+Auflösung (Ebene 6; die Szenenlichter liegen mit auf der Ebene, damit kein Material sein Programm neu wählt; die Schattenkarte wird für
+diesen Pass nicht gezeichnet) und verschiebt kein Pixel, das selbst oder dessen Quelle auf dem Flugzeug liegt. Gemessen: wackelnde
+Flugzeug-Pixel 377 → 1, die Luft dahinter flimmert weiter (`heat-haze-browser.cjs`).
 
 ## 0e. Build 282: Das Nadelöhr ist die CPU (WebGL-Aufrufe), nicht nur die Pixel
 

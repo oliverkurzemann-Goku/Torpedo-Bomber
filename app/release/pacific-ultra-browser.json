@@ -1,0 +1,31 @@
+{
+ "standard": {
+  "ultra": false,
+  "define": false,
+  "sky": false,
+  "rows": 170,
+  "post": true,
+  "shade": 0.55,
+  "waveTex": false,
+  "menu": "standard",
+  "gl": 0,
+  "errors": []
+ },
+ "ultra": {
+  "ultra": true,
+  "define": true,
+  "sky": true,
+  "rows": 320,
+  "post": true,
+  "shade": 0.55,
+  "waveTex": true,
+  "menu": "ultra",
+  "gl": 0,
+  "errors": []
+ },
+ "changed": {
+  "fleet": 0.497,
+  "sunward": 0.641,
+  "coast": 0.482
+ }
+}

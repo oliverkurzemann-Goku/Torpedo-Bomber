@@ -1934,7 +1934,7 @@ function buildSea(){
         float sss=pow(clamp(dot(V,-vec3(L.x,0.0,L.z)*0.85+vec3(0.0,0.2,0.0)),0.0,1.0),3.0)*smoothstep(-0.3,1.3,vH);
         col+=vec3(0.04,0.30,0.27)*sss*0.30*(1.0-shade)*max(L.y,0.0);
         float far=smoothstep(200.0,4500.0,dist);
-        col+=uSunCol*(1.0-shade)*(pow(rl,mix(1400.0,140.0,far))*mix(2.8,1.1,far)+pow(rl,40.0)*0.16);
+        col+=uSunCol*(1.0-shade)*(pow(rl,mix(1100.0,140.0,far))*mix(3.4,1.2,far)+pow(rl,140.0)*0.45+pow(rl,30.0)*0.12);
         float crest=t2.y*0.6+t3.y*0.4;
         float foam=smoothstep(1.05-0.22*(uSeaState-1.0),1.6,vH)*smoothstep(0.42,0.78,crest);
         foam+=smoothstep(1.6,3.2,uSeaState)*smoothstep(0.80,0.95,t1.y)*0.45*near;
