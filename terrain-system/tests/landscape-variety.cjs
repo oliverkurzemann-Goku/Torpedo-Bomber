@@ -34,7 +34,12 @@ assert(covered/samples>.65,'woodland crown envelopes form a connected mass: '+co
 osm.deciduousGeo.computeBoundingBox();
 assert(osm.deciduousGeo.boundingBox.max.y>23,'mature crowns have enough height to avoid flattened ground-level mounds');
 assert.equal(osm.deciduousGeo.index.count/3,84,'mature broadleaf tree group retains its triangle budget');
-osm._buildForests(group,[ring],0,0);assert(group.children.length<=7,'forest draw-call budget stays bounded');
+osm._buildForests(group,[ring],0,0);
+// Build 277: trees are split into 1-km cells that the frustum test can skip;
+// the bounded budget is now per cell (at most seven kinds), plus one forest floor.
+{const perCell=new Map();for(const m of group.children){const c=m.userData.treeCell?.cell||'tile';perCell.set(c,(perCell.get(c)||0)+1);}
+ assert([...perCell.values()].every(n=>n<=7),'forest draw-call budget stays bounded per cell: '+JSON.stringify([...perCell]));
+ assert(group.children.filter(m=>m.userData.treeCell).every(m=>m.frustumCulled&&m.geometry.boundingSphere),'tree cells carry a bounding sphere and are frustum-culled');}
 for(const mesh of group.children.filter(m=>m.geometry.attributes.canopyGround)){
  const ground=mesh.geometry.attributes.canopyGround;assert.equal(ground.count,mesh.count);
  assert([...ground.array].every(Number.isFinite),'canopy terrain correction has finite samples');

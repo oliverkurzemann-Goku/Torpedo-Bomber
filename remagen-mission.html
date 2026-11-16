@@ -313,7 +313,7 @@
   <div style="width:100%;height:4px;background:repeating-linear-gradient(45deg,#ffd400,#ffd400 8px,#111 8px,#111 16px);"></div>
   <span id="testVersionBannerText" style="background:#111;color:#ffd400;font-family:monospace;font-weight:800;font-size:11px;letter-spacing:.5px;padding:3px 10px;border:1px solid #ffd400;border-top:none;border-radius:0 0 6px 6px;"></span>
 </div>
-<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 276';</script>
+<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 277';</script>
 <!-- ===== END TEMP TEST-ONLY VERSION BANNER ===== -->
 <div id="app"></div>
 <style>
@@ -355,7 +355,7 @@
   <div id="gunsight"></div>
   <div id="radio"></div>
   <div id="rhinePerfHud" hidden></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 276 · REAL RHINE</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 277 · REAL RHINE</div>
 
   <div id="apr">
     <div id="aprCall"></div>
@@ -410,7 +410,7 @@
 </div>
 
 <div class="overlay hidden" id="menu" data-campaign="europe">
-  <div class="menuTop"><a id="selBtn" href="index.html?v=276">&#9664; Change Game</a><span class="menuMeta">RHINE OPERATIONS<br>BUILD 276</span></div>
+  <div class="menuTop"><a id="selBtn" href="index.html?v=277">&#9664; Change Game</a><span class="menuMeta">RHINE OPERATIONS<br>BUILD 277</span></div>
   <div class="card menuCard">
     <aside class="menuOverview" aria-label="Campaign and pilot options">
     <div class="campaignArt" aria-hidden="true"></div>
@@ -429,6 +429,7 @@
     <details class="extraSettings"><summary>More options &amp; credits</summary><div class="settingsContent">
       <label class="toggle"><input id="spokenRadio" type="checkbox"> Spoken radio (local device voice)</label>
       <label class="weatherPick" for="approachRoute">Jet / Komet approach<select id="approachRoute"><option value="auto">Vary each sortie</option><option value="ridge">Northern ridge gap</option><option value="valley">Southern valley</option></select></label>
+      <label class="weatherPick" for="graphicsMenu">Graphics<select id="graphicsMenu"><option value="auto">Auto (60 FPS)</option><option value="low">Low</option><option value="medium">Medium</option><option value="high">High</option></select></label>
       <label class="weatherPick" for="rhineSceneryMenu">Rhine scenery<select id="rhineSceneryMenu"><option value="detailed">Detailed (A)</option><option value="ultra">Ultra High (test)</option><option value="classic">Classic (original scenery)</option></select></label>
       <label class="toggle"><input id="rhinePerfMenu" type="checkbox"> Performance overlay</label>
       <label class="toggle" id="dbgToggle"><span class="box" id="dbgBox"></span> Debug overlay</label>
@@ -444,7 +445,7 @@
     </aside>
     <section class="missionPanel" aria-label="Mission selection">
       <div class="secLbl">Choose your sortie · 15 missions + 4 bonus &amp; training</div>
-      <a class="hangarLink" href="hangar.html?theatre=europe&amp;v=276">CUSTOM MISSION · CHOOSE AIRCRAFT &amp; LOADOUT →</a>
+      <a class="hangarLink" href="hangar.html?theatre=europe&amp;v=277">CUSTOM MISSION · CHOOSE AIRCRAFT &amp; LOADOUT →</a>
 <div id="missionSel" role="group" aria-label="European missions"></div>
       <div id="missionBlurb" class="missionBlurb" aria-live="polite"></div>
       <div class="menuConfig">
@@ -498,6 +499,7 @@
     <div class="sub" id="pauseReason">Sortie held</div>
     <div class="brief" id="pauseOrders"></div>
     <div class="rhinePauseSettings">
+      <label class="weatherPick" for="graphicsPause">Graphics<select id="graphicsPause"><option value="auto">Auto (60 FPS)</option><option value="low">Low</option><option value="medium">Medium</option><option value="high">High</option></select></label>
       <label class="weatherPick" for="rhineSceneryPause">Rhine scenery<select id="rhineSceneryPause"><option value="detailed">Detailed (A)</option><option value="ultra">Ultra High (test)</option><option value="classic">Classic (original scenery)</option></select></label>
       <label class="toggle"><input id="rhinePerfPause" type="checkbox"> Performance overlay</label>
     </div>
@@ -582,7 +584,7 @@
 <script src="terrain-system/HeightProvider.js?v=remagen-21"></script>
 <script src="terrain-system/TerrainTile.js?v=198"></script>
 <script src="terrain-system/TerrainManager.js?v=271"></script>
-<script src="terrain-system/OSMManager.js?v=275"></script>
+<script src="terrain-system/OSMManager.js?v=277"></script>
 <script src="terrain-system/PeriodBuildings.js?v=268"></script>
 <script src="terrain-system/HistoricalObjectManager.js?v=173"></script>
 <script src="terrain-system/AirfieldDetails.js?v=169"></script>
@@ -593,10 +595,13 @@
 <script src="terrain-system/RhineVillage.js?v=275"></script>
 <script src="terrain-system/RhineScenery.js?v=275"></script>
 <script src="terrain-system/RhineRiverLife.js?v=275"></script>
-<script src="terrain-system/RhineUltra.js?v=275"></script>
+<script src="terrain-system/RhineUltra.js?v=277"></script>
 <script src="terrain-system/LivingWorld.js?v=268"></script>
 <script src="campaign.js?v=1"></script>
 <script src="game-runtime.js?v=267"></script>
+<script src="graphics-quality.js?v=277"></script>
+<script src="graphics-post.js?v=277"></script>
+<script src="graphics-extras.js?v=277"></script>
 <script src="sortie-checkpoint.js?v=238"></script>
 <script src="ju87-native.js?v=218"></script>
 <script src="me262-native.js?v=206"></script>
@@ -611,7 +616,7 @@
 <script src="flight-support.js?v=238"></script>
 <script src="ordnance.js?v=157"></script>
 <script src="crew-visuals.js?v=179"></script>
-<script src="aircraft-finish.js?v=206"></script>
+<script src="aircraft-finish.js?v=277"></script>
 <script src="runway-lights.js?v=179"></script>
 <script src="ship-wakes.js?v=179"></script>
 <script src="ship-contact.js?v=238"></script>
@@ -1029,7 +1034,7 @@ async function loadRealWorld(){
 
   if(OSMManager.BUILD!==23||HistoricalObjectManager.BUILD!==21||LivingWorld.BUILD!==22||WorldVehicles.BUILD!==24) throw new Error('Terrain version mismatch. Reload Remagen.');
   document.getElementById('testVersionBannerText').textContent=
-    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 276 · MODULE 23';
+    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 277 · MODULE 23';
   heightProvider=new DEMHeightProvider(RTILE,'terrain-system/real/data/dem/');
   terrain=new TerrainManager(scene,RTILE,heightProvider);
   osmMgr=new OSMManager(scene,RTILE,terrain,'terrain-system/real/data/osm/');
@@ -2705,7 +2710,7 @@ function poseP47Gear(model,deployment){
 }
 function brightenFighterSkin(src,kind){
   // delivered PBR materials keep their authored colours and roughness; they only get the shared sky reflection
-  if(typeof AircraftContract!=='undefined'&&AircraftContract.isContract(src)){if(kind==='me262'||kind==='bf109'){aircraftFinish.decorate(src,kind,{authored:true});aircraftFinish.setNight(!!M()?.night);}return;}
+  if(typeof AircraftContract!=='undefined'&&AircraftContract.isContract(src)){if(kind==='me262'||kind==='bf109'){aircraftFinish.decorate(src,kind,{authored:true});}else if(typeof aircraftFinish!=='undefined'&&aircraftFinish){aircraftFinish.reflect(src);aircraftFinish.setNight(!!M()?.night);}return;}
   if(kind==='me262'||kind==='bf109'){aircraftFinish.decorate(src,kind);aircraftFinish.setNight(!!M()?.night);return;}
   src.traverse(o=>{if(!o.isMesh)return;
     const materials=(Array.isArray(o.material)?o.material:[o.material]).map(m=>{
@@ -2720,6 +2725,8 @@ function brightenFighterSkin(src,kind){
       return n;
     });o.material=Array.isArray(o.material)?materials:materials[0];
   });
+  // Build 277: older skins, once brightened, also get the shared sky reflection.
+  if(typeof aircraftFinish!=='undefined'){aircraftFinish?.reflect(src,{strength:.35});aircraftFinish?.setNight(!!M()?.night);}
 }
 const modelTasks={};
 function ensureModel(k){
@@ -7196,7 +7203,7 @@ function buildEuropeTreeIndex(){
   const index=new FlightSupport.TreeIndex(groundY),m=new THREE.Matrix4(),v=new THREE.Vector3(),scale=new THREE.Vector3();
   for(const mesh of tile.farGroup?.children||[]){
    if(!mesh.isInstancedMesh||!mesh.userData.canopyRadii)continue;
-   const geo=mesh.geometry,p=geo.attributes.position,parts=geo.attributes.forestPart,roots=geo.userData.forestRoots;if(!roots)continue;
+   const geo=mesh.userData.treeLOD?.near||mesh.geometry,p=geo.attributes.position,parts=geo.attributes.forestPart,roots=geo.userData.forestRoots;if(!roots)continue;
    let bounds=partBounds.get(geo);
    if(!bounds){bounds=roots.map(()=>({minY:Infinity,maxY:-Infinity,radius:0}));
     for(let j=0;j<p.count;j++){const k=Math.min(bounds.length-1,Math.round(parts.getX(j))),b=bounds[k];b.minY=Math.min(b.minY,p.getY(j));b.maxY=Math.max(b.maxY,p.getY(j));b.radius=Math.max(b.radius,Math.hypot(p.getX(j)-roots[k][0],p.getZ(j)-roots[k][1]));}partBounds.set(geo,bounds);}
@@ -7539,6 +7546,8 @@ function relaunch(){
   state=ST.FLIGHT;
 }
 function startMission(i){
+  // Build 277: textures of aircraft loaded for this sortie get the tier's filtering.
+  if(renderer)setTimeout(()=>GraphicsQuality.applyAnisotropy(scene,renderer,rhineUltra?graphicsSettings().anisotropy:4),0);
   if(globalThis.sortieCheckpoint&&!globalThis.sortieCheckpoint.restoring)globalThis.sortieCheckpoint.clear();
   // Solve the aircraft's core and its loop gate now (a few ms once), not on the first AERO tap in flight.
   if(coreOn(MISSIONS[i]?.ac||'p47'))aeroGateSpeed(MISSIONS[i]?.ac||'p47');
@@ -8489,7 +8498,7 @@ function showResult(good,title,sub,html,btn){
   document.getElementById('rsGo').onclick=()=>{
     voiceRadio.cancel();soundscape.stop();
     show('result',false);
-    if(MISSIONS[selectedMission]?.custom){window.location.href='hangar.html?theatre=europe&v=276';return;}
+    if(MISSIONS[selectedMission]?.custom){window.location.href='hangar.html?theatre=europe&v=277';return;}
     if(good && selectedMission===MISSIONS.length-1){
       show('menu',true);if(navigation){navigation.reset();navigation.button.style.display='none';}
     }
@@ -8838,19 +8847,52 @@ const rhineFrameRate=new RhineFrameRate();
 function applyRhineSkyWeather(){
   const w=FlightOps.wx(weather);
   rhineUltra?.setWeather(w,!!M()?.night);
+  if(rhineUltra)graphicsFx?.lightClouds(clouds);
   // Keep the existing local cloud volumes and visibility rules. Distant
   // shape comes from the Ultra sky rather than the overlapping sprites.
   const opacity=(.55+w.cover*.28)*(rhineUltra ? .34+.55*Math.min(1,w.rain) : 1);
   for(const cloud of clouds)for(const puff of cloud.children)puff.material.opacity=opacity;
 }
 
+// ---- GRAPHICS (Build 277, GRAPHICS-PLAN.md) ----
+// One setting (Auto/Low/Medium/High) caps resolution, shadows, glow, tree detail
+// and filtering. Phase 2-5 effects (shadows, tone curve, glow, relief light, ground
+// detail, lit windows, contrails, jet shimmer) belong to the Ultra High scenery;
+// Detailed and Classic keep their picture, only tree culling/LOD changes their cost.
+const graphicsQuality=GraphicsQuality.create();
+const graphicsSettings=()=>graphicsQuality.settings;
+let graphicsPost=null,graphicsFx=null,graphicsTier=null;
+const SUN_DIRECTION=new THREE.Vector3(-1800,2600,1400).normalize();
+function rhinePixelRatio(){
+  const touch=navigator.maxTouchPoints>0,ultra=rhineSceneryMode==='ultra';
+  return Math.min(window.devicePixelRatio||1,ultra||!touch?2:1.5,graphicsSettings().pixelRatio);
+}
+function applyGraphics(){
+  if(!renderer)return;
+  const g=graphicsSettings(),ultra=!!rhineUltra;
+  const ratio=rhinePixelRatio();
+  if(Math.abs(renderer.getPixelRatio()-ratio)>.01||graphicsTier===null){
+    renderer.setPixelRatio(ratio);renderer.setSize(window.innerWidth,window.innerHeight);
+    const touch=navigator.maxTouchPoints>0;
+    // The old pixel-ratio safety net stays for a fixed choice; Auto steps tiers itself.
+    window.flightQuality=GameRuntime.createQuality(renderer,{enabled:touch&&graphicsQuality.choice!=='auto'&&!ultra});
+  }
+  if(!graphicsPost)graphicsPost=GraphicsPost.create(THREE,renderer,{grade:true});
+  graphicsPost.enabled=ultra&&g.grade;graphicsPost.glow=g.bloom?.6:0;
+  if(!graphicsFx)graphicsFx=GraphicsExtras.create(THREE,scene,renderer,{sun,direction:SUN_DIRECTION,osm:()=>osmMgr,terrain:()=>terrain,grassSpots:rhineGrassSpots});
+  graphicsFx.configure({shadows:ultra&&g.shadows,shadowSize:g.shadowSize,shadowRange:g.shadowRange,
+    contrails:ultra&&g.contrails,cloudLight:ultra,grass:ultra&&g.groundDetail});
+  if(rhineUltra){rhineUltra.uniforms.ultraGroundDetail.value=g.groundDetail?1:0;}
+  GraphicsQuality.applyAnisotropy(scene,renderer,ultra?g.anisotropy:4);
+  graphicsTier=graphicsQuality.tier;
+  for(const id of ['graphicsMenu','graphicsPause']){const el=document.getElementById(id);if(el)el.value=graphicsQuality.choice;}
+}
+graphicsQuality.onChange(()=>{applyGraphics();resetRhineMetrics?.();});
+
 function applyRhineProfile(){
   const ultra=rhineSceneryMode==='ultra';
   if(renderer&&ultra!==rhineFixedQuality){
     if(ultra){flightQuality.setTier(0);flightQuality.weather(clouds,rainMesh);}
-    const touch=navigator.maxTouchPoints>0;
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio,ultra||!touch?2:1.5));
-    window.flightQuality=GameRuntime.createQuality(renderer,{enabled:touch&&!ultra});
     rhineFixedQuality=ultra;
   }
   if(ultra&&livingWorld&&!rhineUltra){
@@ -8858,8 +8900,10 @@ function applyRhineProfile(){
     applyRhineSkyWeather();
   }else if(!ultra&&rhineUltra){
     rhineUltra.dispose();rhineUltra=null;
+    FlightOps.clouds(clouds,weather);
     applyRhineSkyWeather();
   }
+  applyGraphics();
 }
 
 function configureRhineScenery(mode,remember=false){
@@ -8888,24 +8932,22 @@ function configureRhineScenery(mode,remember=false){
 }
 
 function resetRhineMetrics(){
-  rhineFrameRate.reset();
+  rhineFrameRate.reset();rhinePerfPanel?.reset();
   for(const id of ['rhinePerfMenu','rhinePerfPause'])document.getElementById(id).checked=rhineMetricsEnabled;
   const panel=document.getElementById('rhinePerfHud');
   panel.hidden=true;
   panel.textContent=sceneryLabels[rhineSceneryMode]+' · Measuring…';
 }
 
+let rhinePerfPanel=null;
 function measureRhineFrame(dt,rendered){
   const panel=document.getElementById('rhinePerfHud');
   const visible=rhineMetricsEnabled&&state===ST.FLIGHT&&P.alive&&rendered;
   if(!visible){if(!panel.hidden)resetRhineMetrics();return;}
   panel.hidden=false;
-  const report=rhineFrameRate.sample(dt);
-  if(report){
-    const {triangles,calls}=renderer.info.render;
-    panel.textContent=sceneryLabels[rhineSceneryMode]+' · '+Math.round(report.fps)+' FPS · P95 '+report.p95.toFixed(1)+' ms\n'+
-      (triangles/1e6).toFixed(2)+' M tris · '+calls+' draws · '+renderer.getPixelRatio().toFixed(2)+'×';
-  }
+  rhinePerfPanel??=GraphicsQuality.createPerfPanel(panel,renderer);
+  // Build 277: shared panel (also in the Pacific) - adds texture memory and tier.
+  rhinePerfPanel.sample(dt,scene,sceneryLabels[rhineSceneryMode]+' · '+graphicsQuality.label());
 }
 
 function init(){
@@ -8927,6 +8969,7 @@ function init(){
   // Stronger sky fill plus a soft bounce off the ground keeps it readable from every angle.
   hemi=new THREE.HemisphereLight(0xcfe2f2,0x5a6448,1.12); scene.add(hemi);
   sun=new THREE.DirectionalLight(0xfff0d0,1.05); sun.position.set(-1800,2600,1400); scene.add(sun);
+  sun.userData.direction=SUN_DIRECTION.clone();scene.add(sun.target);
   moonFill=new THREE.DirectionalLight(0xbfd4e6,0.42); moonFill.position.set(1500,900,-1600);
   scene.add(moonFill);
   aircraftFinish=AircraftFinish.create(THREE,renderer);
@@ -8982,6 +9025,7 @@ function init(){
   for(const id of ['rhinePerfMenu','rhinePerfPause']){
     document.getElementById(id).onchange=e=>{rhineMetricsEnabled=e.target.checked;resetRhineMetrics();};
   }
+  for(const id of ['graphicsMenu','graphicsPause'])graphicsQuality.bindSelect(document.getElementById(id));
   configureRhineScenery(rhineSceneryMode);
   const hints=document.getElementById('flightHints');hints.checked=GameRuntime.storage.getItem('flightHints')!=='0';
   hints.onchange=()=>GameRuntime.storage.setItem('flightHints',hints.checked?'1':'0');
@@ -9006,7 +9050,7 @@ function init(){
   // menu wiring
   document.getElementById('startBtn').onclick=()=>showBrief(selectedMission);
   duelInit();
-  document.getElementById('pauseMainMenu').onclick=async()=>{globalThis.sortieCheckpoint?.save();await globalThis.sortieCheckpoint?.flush();exitToMenuFromPause(true);window.location.href='index.html?v=276';};
+  document.getElementById('pauseMainMenu').onclick=async()=>{globalThis.sortieCheckpoint?.save();await globalThis.sortieCheckpoint?.flush();exitToMenuFromPause(true);window.location.href='index.html?v=277';};
   document.getElementById('logBtn').onclick=()=>{ show('menu',false); showLogbook(); };
   document.getElementById('skipLaunchPreview').onclick=()=>finishLaunchIntro();
   document.getElementById('brBack').onclick=()=>{ show('brief',false); show('menu',true);if(navigation){navigation.reset();navigation.button.style.display='none';} state=ST.MENU; };
@@ -9085,12 +9129,13 @@ function onResize(){
   const w=window.innerWidth,h=window.innerHeight;
   if(camera){ camera.aspect=w/h; camera.updateProjectionMatrix(); }
   if(renderer) renderer.setSize(w,h);
+  graphicsPost?.resize();
 }
 
 // ============================================================
 //  MAIN LOOP
 // ============================================================
-let hudT=0, mmT=0, contentVisT=0;
+let hudT=0, mmT=0, contentVisT=0, treeLodT=0;
 function animate(){
   requestAnimationFrame(animate);
   if(!renderer) return;
@@ -9119,6 +9164,9 @@ function animate(){
     if(detailedScenery)rhineScenery.update(raw,focusX,focusZ,sceneryAltitude,flightQuality.tier,!!rhineUltra);
     rhineUltra?.update(raw,focusX,focusZ,sceneryAltitude,state===ST.FLIGHT?spawnSmoke:null);
     contentVisT-=raw; if(contentVisT<=0){ contentVisT=0.5; updateContentVisibility(focusX,focusZ); }
+    treeLodT-=raw; if(treeLodT<=0&&osmMgr.updateTreeLOD){ treeLodT=0.2; osmMgr.updateTreeLOD(camera.position.x,camera.position.z,camera.position.y,graphicsSettings().treeRange); }
+    // Build 277 (phase 4): young trees near the aircraft in Ultra High, one cell per frame.
+    osmMgr.updateNearForest?.(focusX,focusZ,rhineUltra?graphicsSettings().nearTrees:0);
   }
   if(flashT>0){ flashT-=raw; if(flashT<=0) document.getElementById('flash').classList.remove('show'); }
   if(P.dmgT>0){ P.dmgT-=raw;
@@ -9131,7 +9179,8 @@ function animate(){
     posePlayerAircraft(raw);squadIdleFrame(raw);
     updateLaunchIntro(raw);updateWeatherFx(raw);updateClouds();updateAudio(raw);
     runwayLights?.update(camera);
-    GameRuntime.render(renderer,scene,camera);GameRuntime.frames.end();return;
+    if(graphicsFx)graphicsFx.update(raw,camera,graphicsFocus(),{aircraft:graphicsCasters(),altitude:P.pos.y,jet:false});
+    renderGraphics();GameRuntime.frames.end();return;
   }
   flightQuality.sample(frameInterval,state===ST.FLIGHT&&P.alive);flightQuality.weather(clouds,rainMesh);
   if(state===ST.FLIGHT||state===ST.DEAD){
@@ -9207,9 +9256,61 @@ function animate(){
   CombatFX.updateRounds(tracers,camera,renderer);
   GameRuntime.frames.mark('effects');
   runwayLights?.update(camera);
-  const rendered=GameRuntime.render(renderer,scene,camera);GameRuntime.frames.end();
+  if(graphicsFx)graphicsFx.update(raw,camera,graphicsFocus(),{aircraft:graphicsCasters(),altitude:P.pos.y,jet:JET_KINDS.includes(P.ac)&&state===ST.FLIGHT&&P.alive});
+  const rendered=renderGraphics();GameRuntime.frames.end();
+  if(state===ST.FLIGHT&&graphicsQuality.sample(frameInterval,P.alive&&!launchIntro))flash('GRAPHICS: '+graphicsQuality.label().toUpperCase(),900);
   if(rhineMetricsEnabled)measureRhineFrame(frameInterval,rendered);
   globalThis.sortieCheckpoint?.tick(raw);
+}
+// Build 277: shadow focus, shadow casters and jet shimmer for GraphicsExtras/GraphicsPost.
+function graphicsFocus(){
+  if((state===ST.FLIGHT||state===ST.DEAD)&&P?.pos)return P.pos;
+  return new THREE.Vector3(AF_X,AF_Y,AF_Z);
+}
+// Grass tufts in the open ground around both airfields (not on the strips,
+// taxi lanes or water), seeded so they never move between sorties.
+function rhineGrassSpots(){
+  const spots=[];let seed=27701;
+  const rnd=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296;};
+  for(const [fx,fz] of [[ALLIED_AF_X,ALLIED_AF_Z],[GERMAN_AF_X,GERMAN_AF_Z]]){
+    for(let i=0;i<5200;i++){
+      const a=rnd()*Math.PI*2,r=40+Math.sqrt(rnd())*760,x=fx+Math.cos(a)*r,z=fz+Math.sin(a)*r;
+      if(Math.abs(x-fx)<RWY_LEN/2+28&&Math.abs(z-fz)<RWY_W/2+14)continue;
+      if(typeof inDepartureLane==='function'&&inDepartureLane(x-fx,z-fz))continue;
+      if(livingWorld?._pointOnWater?.(x,z))continue;
+      let y;try{y=groundY(x,z);}catch(e){continue;}
+      if(!Number.isFinite(y))continue;
+      spots.push({x,y,z,rot:rnd()*Math.PI,size:.45+rnd()*.55});
+    }
+  }
+  return spots;
+}
+function graphicsCasters(){
+  const list=[planeGroup];
+  for(const e of enemyAir)if(e.alive&&e.group)list.push(e.group);
+  for(const w of squad)if(w.group)list.push(w.group);
+  for(const w of wingmen)if(w.group)list.push(w.group);
+  return list;
+}
+function renderGraphics(){
+  if(!graphicsPost?.enabled){renderer.__sceneInfo=null;return GameRuntime.render(renderer,scene,camera);}
+  const gl=renderer.getContext();if(gl.isContextLost())return false;
+  const jet=state===ST.FLIGHT&&P.alive&&JET_KINDS.includes(P.ac)&&graphicsSettings().heatHaze?jetHaze():[];
+  graphicsPost.haze=jet;
+  try{return graphicsPost.render(scene,camera,clock.elapsedTime,graphicsSettings().bloom);}
+  catch(error){if(gl.isContextLost())return false;throw error;}
+}
+// Two exhaust shimmer spots behind the jet, projected to the screen.
+const hazeProbe=new THREE.Vector3();
+function jetHaze(){
+  const out=[];const throttle=Math.max(.25,P.throttle||0);
+  for(const side of P.ac==='me163'?[0]:[-1,1]){
+    hazeProbe.set(side*2.6,-.6,-5.5).applyQuaternion(planeGroup.quaternion).add(planeGroup.position);
+    const d=camera.position.distanceTo(hazeProbe);hazeProbe.project(camera);
+    if(hazeProbe.z>1||Math.abs(hazeProbe.x)>1.2||Math.abs(hazeProbe.y)>1.2)continue;
+    out.push({x:hazeProbe.x*.5+.5,y:hazeProbe.y*.5+.5,r:Math.min(.12,3.2/Math.max(8,d)),s:.0022*throttle});
+  }
+  return out;
 }
 function reportStartupError(err){
   console.error('Thunderbolt startup failed:',err);

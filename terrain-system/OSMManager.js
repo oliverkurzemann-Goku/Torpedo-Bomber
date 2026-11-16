@@ -76,6 +76,20 @@ class OSMManager {
     this.poplarGeo=normaliseOSMForestCrown(makeOSMTreeCrown(3));
     this.willowGeo=normaliseOSMForestCrown(makeOSMTreeCrown(4));
     this.shrubGeo = new THREE.DodecahedronGeometry(2.3, 0);
+    // Build 277: trees are drawn per 1-km cell (each with its own bounds, so
+    // three.js skips cells outside the view) and far cells swap to a coarse
+    // crown with the same attributes, scale and silhouette envelope.
+    this.treeCellSize=1000;
+    this.treeLODDistance=1600;
+    this.treeTrunkDistance=1100;
+    this.farTreeGeos=new Map([
+      [this.coniferGeo,makeOSMForestCrown(0,this.coniferGeo.userData.forestRadius)],
+      [this.deciduousGeo,makeOSMForestCrown(1,this.deciduousGeo.userData.forestRadius)],
+      [this.poplarGeo,normaliseOSMForestCrown(makeOSMTreeCrown(3,true),this.poplarGeo.userData.forestRadius)],
+      [this.willowGeo,normaliseOSMForestCrown(makeOSMTreeCrown(4,true),this.willowGeo.userData.forestRadius)],
+      [this.shrubGeo,THREE.OctahedronGeometry?new THREE.OctahedronGeometry(2.3,0):this.shrubGeo]
+    ]);
+    this.treeCells=[];
     this.trunkMat = new THREE.MeshStandardMaterial({ color: 0x51402d, roughness: 1 });
     this.coniferMat = new THREE.MeshStandardMaterial({ color: 0x3a4c37, roughness: 1 });
     this.deciduousMat = new THREE.MeshStandardMaterial({ color: 0x4c6243, roughness: 1 });
@@ -97,7 +111,8 @@ class OSMManager {
 
     this.sharedGeometries = new Set([
       this.boxGeo, this.wallGeo, this.gableRoofGeo, this.hipRoofGeo, this.chimneyGeo, this.trunkGeo,
-      this.coniferGeo, this.deciduousGeo, this.shrubGeo, this.poplarGeo, this.willowGeo, this.spireGeo
+      this.coniferGeo, this.deciduousGeo, this.shrubGeo, this.poplarGeo, this.willowGeo, this.spireGeo,
+      ...this.farTreeGeos.values()
     ]);
     for(const mat of [this.buildingWarmMat,this.buildingCoolMat,this.buildingOchreMat,this.buildingBrickMat,
       this.roofMat,this.roofSlateMat,this.roofBrownMat,this.flatRoofMat,this.chimneyMat,
@@ -215,11 +230,81 @@ class OSMManager {
       this.scene.remove(t.group);
       t.group.traverse(o => {
         this.surfaceMeshes.delete(o);
-        if(o.geometry && !this.sharedGeometries.has(o.geometry)) o.geometry.dispose();
+        for(const g of o.userData?.treeLOD?[o.userData.treeLOD.near,o.userData.treeLOD.far]:[o.geometry])
+          if(g && !this.sharedGeometries.has(g)) g.dispose();
         if(o.isInstancedMesh && typeof o.dispose === 'function') o.dispose();
       });
+      this.treeCells=this.treeCells.filter(cell=>cell.tile!==key);
     }
     this.tiles.delete(key);
+  }
+
+  // Build 277: coarse crowns beyond treeLODDistance, no trunks beyond
+  // treeTrunkDistance (a 0.4-m trunk is sub-pixel there). Distances are to
+  // the cell's bounding sphere, so a cell next to the aircraft stays full.
+  updateTreeLOD(x, z, y=0, scale=1){
+    const lod=this.treeLODDistance*scale,trunk=this.treeTrunkDistance*scale;
+    for(const cell of this.treeCells){
+      const c=cell.sphere.center,d=Math.max(0,Math.hypot(c.x-x,c.z-z,(c.y-y)*.5)-cell.sphere.radius);
+      if(cell.trunk){cell.mesh.visible=d<trunk;continue;}
+      const far=d>lod;
+      if(far===cell.far)continue;
+      cell.far=far;
+      const g=cell.mesh.userData.treeLOD;
+      cell.mesh.geometry=far?g.far:g.near;
+    }
+  }
+
+  // Build 277 (phase 4): young trees in the woods near the aircraft. Each extra
+  // instance is three small crowns (the coarse crown geometry, scaled down),
+  // placed inside the disc already validated for that stand (clear of roads,
+  // buildings, runways and water), so no new placement checks are needed.
+  // Built one cell per call, released with hysteresis; density 0 removes all.
+  updateNearForest(x, z, density=1, radius=900){
+    this.nearForest ??= new Map();
+    const keep=radius*1.35;
+    for(const [cell,record] of this.nearForest){
+      const c=cell.sphere.center;
+      // A changed source (trees cleared for a site or meadow) rebuilds the cell.
+      if(density<=0||Math.hypot(c.x-x,c.z-z)-cell.sphere.radius>keep||!cell.mesh.parent||record.version!==cell.mesh.instanceMatrix.version||record.density!==density){
+        record.mesh.parent?.remove(record.mesh);record.mesh.geometry.dispose();record.mesh.dispose?.();this.nearForest.delete(cell);
+      }
+    }
+    if(density<=0)return;
+    let best=null,bestD=radius;
+    for(const cell of this.treeCells){
+      if(cell.trunk||this.nearForest.has(cell)||!cell.mesh.parent)continue;
+      const name=cell.mesh.name;if(name!=='osmForestConifers'&&name!=='osmForestDeciduous')continue;
+      const c=cell.sphere.center,d=Math.hypot(c.x-x,c.z-z)-cell.sphere.radius;
+      if(d<bestD){bestD=d;best=cell;}
+    }
+    if(!best)return;
+    const source=best.mesh,conifer=source.name==='osmForestConifers';
+    const per=Math.max(1,Math.round(2*density)),count=source.count*per;
+    const geometry=this.farTreeGeos.get(conifer?this.coniferGeo:this.deciduousGeo).clone();
+    geometry.setAttribute('canopyGround',new THREE.InstancedBufferAttribute(new Float32Array(count*4),4));
+    const mesh=new THREE.InstancedMesh(geometry,source.material,count);
+    mesh.name='nearForestYoungTrees';
+    const m=new THREE.Matrix4(),p=new THREE.Vector3(),q=new THREE.Quaternion(),sc=new THREE.Vector3(),pos=new THREE.Vector3();
+    let n=0;
+    for(let i=0;i<source.count;i++){
+      source.getMatrixAt(i,m);m.decompose(p,q,sc);
+      if(sc.x<.01)continue;   // cleared for an airfield, site or meadow
+      const r=sc.x;
+      for(let k=0;k<per;k++){
+        const a=osmHash(p.x+k*7.1,p.z,4401)*Math.PI*2,d=osmHash(p.x,p.z+k*3.3,4402)*.5*r;
+        pos.set(p.x+Math.cos(a)*d,0,p.z+Math.sin(a)*d);
+        try{pos.y=this.terrain.getRenderedHeight(pos.x,pos.z);}catch(e){continue;}
+        const young=.36+osmHash(pos.x,pos.z,4403)*.16;
+        q.setFromAxisAngle(OSM_UP,osmHash(pos.x,pos.z,4404)*Math.PI*2);
+        sc.set(r*young,Math.min(1.35,sc.y)*(.42+osmHash(pos.z,pos.x,4405)*.2),r*young);
+        m.compose(pos,q,sc);mesh.setMatrixAt(n++,m);
+      }
+    }
+    mesh.count=n;mesh.instanceMatrix.needsUpdate=true;
+    geometry.boundingSphere=best.sphere.clone();mesh.frustumCulled=true;
+    best.mesh.parent.add(mesh);
+    this.nearForest.set(best,{mesh,version:source.instanceMatrix.version,density});
   }
 
   _safeRenderedHeight(x, z, ox, oz){
@@ -741,11 +826,41 @@ class OSMManager {
     const pos = new THREE.Vector3();
     const scale = new THREE.Vector3();
 
-    if(trunked.length){
-      const trunks = new THREE.InstancedMesh(this.trunkGeo, this.trunkMat, trunked.length);
+    const cellSize=this.treeCellSize||Infinity,tileKey=this._key(Math.round(ox/this.tileSize),Math.round(oz/this.tileSize));
+    const byCell=items=>{
+      const cells=new Map();
+      for(const p of items){
+        const key=Number.isFinite(cellSize)?Math.floor((p.x-ox)/cellSize)+','+Math.floor((p.z-oz)/cellSize):'all';
+        if(!cells.has(key))cells.set(key,[]);
+        cells.get(key).push(p);
+      }
+      return cells.values();
+    };
+    // One sphere around all instances of a cell, so the built-in frustum test
+    // (off by default for InstancedMesh) can skip whole cells.
+    const bound=(mesh,items,lift,reach)=>{
+      let x=0,z=0,y=0;
+      for(const p of items){x+=p.x;z+=p.z;}
+      x/=items.length;z/=items.length;
+      let radius=0,minY=Infinity,maxY=-Infinity;
+      for(const p of items){
+        radius=Math.max(radius,Math.hypot(p.x-x,p.z-z)+reach(p));
+        const h=this._safeRenderedHeight(p.x,p.z,ox,oz);minY=Math.min(minY,h);maxY=Math.max(maxY,h+lift);
+      }
+      y=(minY+maxY)/2;radius=Math.hypot(radius,(maxY-minY)/2)+4;
+      const sphere=new THREE.Sphere(new THREE.Vector3(x,y,z),radius);
+      const cellKey=Number.isFinite(cellSize)?Math.floor((x-ox)/cellSize)+','+Math.floor((z-oz)/cellSize):'all';
+      mesh.userData.treeCell={sphere,tile:tileKey,cell:cellKey};
+      for(const g of mesh.userData.treeLOD?[mesh.userData.treeLOD.near,mesh.userData.treeLOD.far]:[mesh.geometry])g.boundingSphere=sphere.clone();
+      mesh.frustumCulled=true;
+      this.treeCells.push({mesh,sphere,tile:tileKey,far:false,trunk:!mesh.userData.treeLOD});
+    };
+
+    for(const cell of byCell(trunked)){
+      const trunks = new THREE.InstancedMesh(this.trunkGeo.clone?this.trunkGeo.clone():this.trunkGeo, this.trunkMat, cell.length);
       trunks.name='osmForestTrunks';
-      for(let i=0;i<trunked.length;i++){
-        const p=trunked[i], y=this._safeRenderedHeight(p.x,p.z,ox,oz);
+      for(let i=0;i<cell.length;i++){
+        const p=cell[i], y=this._safeRenderedHeight(p.x,p.z,ox,oz);
         q.setFromAxisAngle(OSM_UP,p.rot);
         // Embed trunk by 1.2m so small LOD height changes do not expose roots.
         pos.set(p.x,y+1.55*p.scale,p.z);
@@ -754,16 +869,24 @@ class OSMManager {
         trunks.setMatrixAt(i,m);
       }
       trunks.instanceMatrix.needsUpdate=true;
+      bound(trunks,cell,10,p=>p.scale*.5);
       group.add(trunks);
     }
 
-    const addCanopies = (items, geo, mat, yFactor, sx, sy, sz) => {
-      if(!items.length) return;
+    const addCanopies = (all, geo, mat, yFactor, sx, sy, sz) => {
+      if(!all.length) return;
+      for(const items of byCell(all)){
       // The extra instanced height attribute belongs to this tile's clone.
       const canopyGeo=geo.clone?geo.clone():geo;
+      const farGeo=this.farTreeGeos?.get(geo)?.clone();
       const ground=new Float32Array(items.length*4);
-      if(mat!==this.shrubMat)canopyGeo.setAttribute('canopyGround',new THREE.InstancedBufferAttribute(ground,4));
+      if(mat!==this.shrubMat){
+        const attribute=new THREE.InstancedBufferAttribute(ground,4);
+        canopyGeo.setAttribute('canopyGround',attribute);
+        farGeo?.setAttribute('canopyGround',attribute);
+      }
       const mesh = new THREE.InstancedMesh(canopyGeo, mat, items.length);
+      if(farGeo)mesh.userData.treeLOD={near:canopyGeo,far:farGeo};
       mesh.userData.canopyRadii=items.map(p=>p.radius);
       mesh.name = geo===this.coniferGeo?'osmForestConifers':geo===this.deciduousGeo?'osmForestDeciduous':geo===this.poplarGeo?'osmForestPoplars':geo===this.willowGeo?'osmForestWillows':'osmForestShrubs';
       for(let i=0;i<items.length;i++){
@@ -784,7 +907,9 @@ class OSMManager {
         mesh.setMatrixAt(i,m);
       }
       mesh.instanceMatrix.needsUpdate=true;
+      bound(mesh,items,mat===this.shrubMat?8:40,p=>mat===this.shrubMat?p.scale*4:p.radius);
       group.add(mesh);
+      }
     };
 
     addCanopies(conifers, this.coniferGeo, this.coniferMat, 0, 1.0, 1.0, 1.0);
@@ -1519,9 +1644,13 @@ function addUpwardTriOSM(indices, positions, a, b, c){
 
 // Small tree groups, each root sampled on the terrain after instance rotation.
 // All vertices fit the full disc validated against woodland and exclusions.
-function normaliseOSMForestCrown(geo){
+function normaliseOSMForestCrown(geo,fixedRadius){
  const a=geo.attributes.position.array;let radius=0;
  for(let i=0;i<a.length;i+=3)radius=Math.max(radius,Math.hypot(a[i],a[i+2]));
+ // A coarse level of detail uses the full crown's radius: same scale, and
+ // its vertices stay within the envelope validated against roads and water.
+ if(fixedRadius)radius=fixedRadius;
+ geo.userData=geo.userData||{};geo.userData.forestRadius=radius;
  for(let i=0;i<a.length;i+=3){a[i]/=radius;a[i+2]/=radius;}
  const uv=[];for(let i=0;i<a.length;i+=3)uv.push(a[i]*.5+.5,a[i+2]*.5+.5);
  geo.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));
@@ -1535,8 +1664,25 @@ function normaliseOSMForestCrown(geo){
  geo.setAttribute('forestRoot',new THREE.Float32BufferAttribute(perTree,3));
  geo.computeVertexNormals();geo.computeBoundingSphere();return geo;
 }
-function makeOSMForestCrown(kind){
+function makeOSMForestCrown(kind,farRadius=0){
  const positions=[],parts=[],indices=[],roots=[[.35,.03],[-.24,.39],[-.30,-.35]];
+ if(farRadius){
+  // Far crown: one 4-sided cone (conifer) or a pointed spheroid (broadleaf)
+  // per tree, inside the same footprint and height as the full crown.
+  for(let tree=0;tree<3;tree++){
+   const [cx,cz]=roots[tree],height=[20,26,23][tree],width=[.52,.45,.50][tree]*(kind===0?.92:.95);
+   const add=(x,y,z)=>{parts.push(tree,0);positions.push(x,y,z);return positions.length/3-1;};
+   const base=positions.length/3,y0=kind===0?height*.18:height*.30,y1=kind===0?height*.86:height*.60;
+   for(let i=0;i<4;i++){const a=i*Math.PI/2+.4;add(cx+Math.cos(a)*width,kind===0?y0:y1,cz+Math.sin(a)*width);}
+   const top=add(cx,kind===0?height*.92:height*.94,cz);
+   for(let i=0;i<4;i++)indices.push(base+i,top,base+(i+1)%4);
+   if(kind!==0){const bottom=add(cx,y0,cz);for(let i=0;i<4;i++)indices.push(base+(i+1)%4,bottom,base+i);}
+  }
+  const geo=new THREE.BufferGeometry();geo.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));geo.setIndex(indices);
+  geo.setAttribute('forestPart',new THREE.Float32BufferAttribute(parts,2));geo.userData={forestRoots:roots.map(([x,z])=>[x*farRadius,z*farRadius])};
+  // normalise divides the roots by the radius again
+  return normaliseOSMForestCrown(geo,farRadius);
+ }
  const add=(x,y,z,tree,stem=0)=>{parts.push(tree,stem);positions.push(x,y,z);return positions.length/3-1;};
  const phi=(1+Math.sqrt(5))/2;
  const ico=[[-1,phi,0],[1,phi,0],[-1,-phi,0],[1,-phi,0],[0,-1,phi],[0,1,phi],[0,-1,-phi],[0,1,-phi],[phi,0,-1],[phi,0,1],[-phi,0,-1],[-phi,0,1]];
@@ -1657,12 +1803,13 @@ function osmCanopyTerrain(material,style){
  };
  material.customProgramCacheKey=()=> 'rooted-tree-groups-271';
 }
-function makeOSMTreeCrown(kind){
+function makeOSMTreeCrown(kind,coarse=false){
  const positions=[];
  const tri=(a,b,c)=>positions.push(...a,...b,...c);
+ const rings=coarse?2:4,sectors=coarse?4:8;
  const lobe=(cx,cy,cz,rx,ry,rz)=>{
-  const point=(ring,sector)=>{const a=ring*Math.PI/4,b=sector*Math.PI/4;return [cx+rx*Math.sin(a)*Math.cos(b),cy+ry*Math.cos(a),cz+rz*Math.sin(a)*Math.sin(b)];};
-  for(let j=0;j<4;j++)for(let i=0;i<8;i++){const a=point(j,i),b=point(j+1,i),c=point(j+1,i+1),d=point(j,i+1);tri(a,d,b);tri(b,d,c);}
+  const point=(ring,sector)=>{const a=ring*Math.PI/rings,b=sector*Math.PI*2/sectors;return [cx+rx*Math.sin(a)*Math.cos(b),cy+ry*Math.cos(a),cz+rz*Math.sin(a)*Math.sin(b)];};
+  for(let j=0;j<rings;j++)for(let i=0;i<sectors;i++){const a=point(j,i),b=point(j+1,i),c=point(j+1,i+1),d=point(j,i+1);tri(a,d,b);tri(b,d,c);}
  };
  if(kind===0){
   for(let layer=0;layer<3;layer++){

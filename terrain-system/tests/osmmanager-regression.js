@@ -23,7 +23,9 @@ class Matrix4 {
     return this;
   }
 }
-class Geometry { dispose(){ this.disposed=true; } }
+class Geometry { dispose(){ this.disposed=true; } clone(){ const g=Object.create(Object.getPrototypeOf(this));Object.assign(g,this);g.attributes={...(this.attributes||{})};return g; } }
+class Sphere { constructor(center,radius){ this.center=center; this.radius=radius; } clone(){ return new Sphere(this.center,this.radius); } }
+class OctahedronGeometry extends Geometry {}
 class BoxGeometry extends Geometry {constructor(){super();this.attributes={};}setAttribute(n,v){this.attributes[n]=v;return this;}}
 class CylinderGeometry extends Geometry {}
 class ConeGeometry extends Geometry {}
@@ -65,7 +67,7 @@ class InstancedMesh extends Mesh {
 
 global.THREE={Color,
   Vector3,Quaternion,Matrix4,BoxGeometry,CylinderGeometry,ConeGeometry,
-  DodecahedronGeometry,BufferGeometry,Float32BufferAttribute,InstancedBufferAttribute:Float32BufferAttribute,
+  DodecahedronGeometry,OctahedronGeometry,Sphere,BufferGeometry,Float32BufferAttribute,InstancedBufferAttribute:Float32BufferAttribute,
   MeshStandardMaterial,Group,Mesh,InstancedMesh
 };
 
@@ -101,10 +103,13 @@ const forestA=[[100,100],[900,100],[900,900],[100,900],[100,100]];
 const forestB=[[500,500],[1300,500],[1300,1300],[500,1300],[500,500]];
 const treeCount=osm._buildForests(forestGroup,[forestA,forestB],0,0);
 assert(treeCount>0,'forest: no placements generated');
-assert(forestGroup.children.length<=7,`forest: expected <=7 bounded buckets, got ${forestGroup.children.length}`);
+// Build 277: buckets are per 1-km tree cell (each cell can be frustum-culled).
+{const perCell=new Map();for(const m of forestGroup.children){const c=m.userData?.treeCell?.cell||'tile';perCell.set(c,(perCell.get(c)||0)+1);}
+ const worst=Math.max(...perCell.values());
+ assert(worst<=7,`forest: expected <=7 bounded buckets per cell, got ${worst}`);}
 assert(forestGroup.children.every(x=>x.name!=='osmForestFloor'),
   'forest: land cover belongs on terrain, not a floating polygon sheet');
-assert(new Set(forestGroup.children.map(x=>x.name)).size===forestGroup.children.length,'forest: duplicate debug bucket names');
+assert(new Set(forestGroup.children.map(x=>(x.userData?.treeCell?.cell||'')+'/'+x.name)).size===forestGroup.children.length,'forest: duplicate debug bucket names within a cell');
 finiteMatrices(forestGroup,'forest');
 
 const exclusion=osm._buildForestExclusion({

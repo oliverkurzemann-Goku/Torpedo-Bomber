@@ -96,8 +96,11 @@ function validateBuffers(mesh){
   acceptedBuildings+=tile.buildingCount;
   const forests=tile.farGroup.children.filter(m=>m.name.startsWith('osmForest'));
   const roofs=tile.farGroup.children.filter(m=>m.name.startsWith('osmBuildingRoofs'));
-  forestBuckets=Math.max(forestBuckets,forests.length);
-  buildingBuckets=Math.max(buildingBuckets,tile.farGroup.children.length-forests.length);
+  // Build 277: forest meshes are per 1-km cell (frustum-culled); the bound is per cell.
+  const perCell=new Map();for(const m of forests){const c=m.userData.treeCell?.cell||'tile';perCell.set(c,(perCell.get(c)||0)+1);}
+  forestBuckets=Math.max(forestBuckets,...perCell.values(),0);
+  const young=tile.farGroup.children.filter(m=>m.name==='nearForestYoungTrees').length;
+  buildingBuckets=Math.max(buildingBuckets,tile.farGroup.children.length-forests.length-young);
   for(const mesh of tile.farGroup.children.filter(m=>m.name==='osmChurchSpires'))churches+=mesh.count;
   for(const mesh of roofs){
    validateBuffers(mesh);

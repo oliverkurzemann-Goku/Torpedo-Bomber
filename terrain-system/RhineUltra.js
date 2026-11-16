@@ -4,7 +4,7 @@ const RHINE_ULTRA_ATMOSPHERE = /* glsl */`
   uniform sampler2D ultraNoise;
   uniform vec3 ultraHorizon, ultraZenith, ultraSun;
   uniform vec2 ultraWind;
-  uniform float ultraDeck, ultraCover, ultraDaylight;
+  uniform float ultraDeck, ultraCover, ultraDaylight, ultraNight;
 
   vec2 rhineCloudUv(vec2 world) {
     return (world + ultraWind) * vec2(.000098,.000132);
@@ -42,6 +42,94 @@ const RHINE_ULTRA_ATMOSPHERE = /* glsl */`
   }
 `;
 
+// Draws one Ultra land mask (also inside a Worker, so it must stay
+// self-contained). RGB holds field orientation, shadows and land cover;
+// alpha holds the ground immediately around mapped roads and buildings.
+function rhineMaskDraw(ctx,job){
+  const n=job.n,size=job.size,tx=job.tx,tz=job.tz,sx=job.sun[0],sy=job.sun[1],sz=job.sun[2];
+  const hash=(x,z,salt)=>{const s=Math.sin(x*0.0913+z*0.1277+salt*7.13)*43758.5453;return s-Math.floor(s);};
+  ctx.setTransform(1,0,0,1,0,0);ctx.globalCompositeOperation='source-over';
+  ctx.fillStyle='#000';ctx.fillRect(0,0,n,n);
+  ctx.scale(n/size,n/size);
+  for(const field of job.fields){
+    const ring=field.ring,woods=field.woods;
+    let bearing=0,longest=0;
+    ctx.beginPath();
+    ctx.moveTo(ring[0][0],ring[0][1]);
+    for(let i=0;i<ring.length;i++){
+      const x=ring[i][0],z=ring[i][1],next=ring[(i+1)%ring.length];
+      const dx=next[0]-x,dz=next[1]-z,length=dx*dx+dz*dz;
+      if(length>longest){longest=length;bearing=Math.atan2(dz,dx);}
+      ctx.lineTo(next[0],next[1]);
+    }
+    const heading=((bearing/Math.PI)%1+1)%1;
+    const red=Math.round(57+186*heading);
+    const blue=Math.round(18+124*hash(tx*size+ring[0][0],tz*size+ring[0][1],1668));
+    ctx.fillStyle=woods?'#0000f4':'rgb('+red+',0,'+blue+')';
+    ctx.closePath();ctx.fill();
+    if(!woods){
+      // A grassy or worn headland follows the actual mapped field edge.
+      ctx.save();ctx.globalCompositeOperation='lighter';
+      ctx.strokeStyle='rgba(0,76,0,.47)';ctx.lineWidth=15;ctx.lineJoin='round';ctx.stroke();ctx.restore();
+    }
+  }
+  ctx.globalCompositeOperation='lighter';
+  const angle=Math.atan2(-sz,-sx),shadowStretch=Math.hypot(sx,sz)/sy;
+  const trees=job.trees,walls=job.walls;
+  ctx.fillStyle='#003600';
+  for(let i=0;i<trees.length;i+=4){
+    const x=trees[i],z=trees[i+1],height=trees[i+2],radius=trees[i+3];
+    const dx=-sx/sy*height,dz=-sz/sy*height;
+    ctx.beginPath();ctx.ellipse(x+dx*.75,z+dz*.75,Math.max(3,radius*.90+height*shadowStretch*.45),
+      Math.max(2,radius*.63),angle,0,Math.PI*2);ctx.fill();
+  }
+  ctx.fillStyle='#009000';
+  for(let i=0;i<walls.length;i+=7){
+    const a=walls[i],b=walls[i+1],c=walls[i+2],d=walls[i+3],x=walls[i+4],z=walls[i+5],height=walls[i+6];
+    const dx=-sx/sy*height,dz=-sz/sy*height;
+    // Use the same rotated wall footprint; offset along the sun ray.
+    ctx.beginPath();
+    ctx.moveTo(x-a*.5-c*.5+dx*.25,z-b*.5-d*.5+dz*.25);
+    ctx.lineTo(x+a*.5-c*.5+dx*.74,z+b*.5-d*.5+dz*.74);
+    ctx.lineTo(x+a*.5+c*.5+dx,z+b*.5+d*.5+dz);
+    ctx.lineTo(x-a*.5+c*.5+dx*.63,z-b*.5+d*.5+dz*.63);
+    ctx.closePath();ctx.fill();
+  }
+  const land=ctx.getImageData(0,0,n,n).data;
+  // Alpha: verges along roads and a soft pad around each house.
+  ctx.globalCompositeOperation='source-over';
+  ctx.fillStyle='#000';
+  ctx.fillRect(0,0,size,size);
+  ctx.lineWidth=18;ctx.lineCap='round';ctx.lineJoin='round';
+  ctx.strokeStyle='#440000';
+  ctx.beginPath();
+  for(const line of job.roads){
+    ctx.moveTo(line[0],line[1]);
+    for(let i=2;i<line.length;i+=2)ctx.lineTo(line[i],line[i+1]);
+  }
+  ctx.stroke();
+  for(let i=0;i<walls.length;i+=7){
+    const a=walls[i],b=walls[i+1],c=walls[i+2],d=walls[i+3],x=walls[i+4],z=walls[i+5];
+    const seed=hash(x+tx*size,z+tz*size,1737);
+    const offset=(seed-.5)*.37;
+    ctx.save();ctx.transform(a,b,c,d,x,z);
+    const halo=ctx.createRadialGradient(offset,.08,.35,offset,.08,1.06+seed*.17);
+    halo.addColorStop(0,'rgba(244,0,0,.96)');
+    halo.addColorStop(.56,'rgba(221,0,0,.81)');
+    halo.addColorStop(1,'rgba(156,0,0,0)');
+    ctx.fillStyle=halo;ctx.fillRect(-1.46,-1.25,2.92,2.66);ctx.restore();
+  }
+  const ground=ctx.getImageData(0,0,n,n).data;
+  // Preserve the former CanvasTexture orientation with explicit row order.
+  const pixels=new Uint8Array(land.length);
+  for(let row=0;row<n;row++){
+    const source=row*n*4,dest=(n-1-row)*n*4;
+    pixels.set(land.subarray(source,source+n*4),dest);
+    for(let i=0;i<n*4;i+=4)pixels[dest+i+3]=ground[source+i];
+  }
+  return pixels;
+}
+
 class RhineUltra {
   constructor(scene, terrain, osm, sun, world) {
     this.scene=scene;
@@ -49,13 +137,12 @@ class RhineUltra {
     this.osm=osm;
     this.maps=new Map();
     this.hooks=new Map();
-    this.wait=0;
     this.emptyMask=new THREE.DataTexture(new Uint8Array([0,0,0,255]),1,1);
     this.emptyMask.needsUpdate=true;
     this.noise=RhineUltra.makeNoise();
     this.uniforms={
       ultraNoise:{value:this.noise}, ultraHorizon:{value:new THREE.Color()}, ultraZenith:{value:new THREE.Color()},
-      ultraSun:{value:sun.position.clone().normalize()}, ultraWind:{value:new THREE.Vector2()},
+      ultraSun:{value:(sun.userData.direction||sun.position).clone().normalize()}, ultraWind:{value:new THREE.Vector2()},
       ultraFocus:{value:new THREE.Vector2()},
       ultraDeck:{value:1800}, ultraCover:{value:.4}, ultraDaylight:{value:1}
     };
@@ -71,11 +158,23 @@ class RhineUltra {
     this.roofTrim.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
     scene.add(this.roofTrim);
 
+    // Build 277 (phase 2): relief maps baked from the elevation model, one per
+    // tile, a few milliseconds per frame: per-pixel ground normals (coarse far
+    // tiles keep their relief, LOD changes are no longer visible in the light)
+    // and the sun's visibility over the hills (valley-side terrain shadow).
+    this.flatRelief=new THREE.DataTexture(new Uint8Array([128,128,255,255]),1,1);
+    this.flatRelief.needsUpdate=true;
+    this.relief=new Map();this.reliefJob=null;this.maskJob=null;this.maskSeq=0;this.maskWorkerState=null;
+    this.uniforms.ultraReliefOn={value:1};
+    this.uniforms.ultraGroundDetail={value:1};
+    this.uniforms.ultraNight={value:0};
     for(const tile of terrain.tiles.values())if(tile.materialOverride){
       const mask={value:this.emptyMask};
       const blend={value:0};
+      const relief={value:this.flatRelief};
       this.maps.set(tile,{mask,blend,texture:null});
-      this.extend(tile.materialOverride,'terrain',shader=>this.styleTerrain(shader,mask,blend));
+      this.relief.set(tile,{uniform:relief,texture:null});
+      this.extend(tile.materialOverride,'terrain',shader=>this.styleTerrain(shader,mask,blend,relief));
     }
     for(const material of [osm.riverMat,osm.lakeMat])this.extend(material,'water',shader=>this.styleWater(shader));
     for(const material of [osm.coniferMat,osm.deciduousMat,osm.poplarMat,osm.willowMat]){
@@ -143,6 +242,7 @@ class RhineUltra {
     u.ultraDeck.value=w.base+w.depth*.30;
     u.ultraCover.value=w.cover;
     u.ultraDaylight.value=light;
+    u.ultraNight.value=night?1:Math.max(0,1-light*2.2)*.6;
     if(this.riverLife)this.riverLife.bankLight.value=light;
   }
 
@@ -157,7 +257,6 @@ class RhineUltra {
     this.uniforms.ultraFocus.value.set(x,z);
     // One distant mask per interval. Keep just the tiles whose fields and
     // shadows can be read from the aircraft, with hysteresis for eviction.
-    this.wait-=dt;
     const size=this.terrain.tileSize;
     let next=null,best=4550;
     for(const [tile,record] of this.maps){
@@ -171,11 +270,100 @@ class RhineUltra {
       const priority=distance+Math.hypot(dx,dz)*.02;
       if(!record.texture&&priority<best){next=tile;best=priority;}
     }
-    if(next&&this.wait<=0){
-      this.wait=.14;
-      const record=this.maps.get(next);
-      record.mask.value=record.texture=this.makeLandMask(next.tileX,next.tileZ);
+    // Build 277: the masks are drawn in slices. A whole mask (fields, the tree
+    // and house shadows of nine tiles, two read-backs) used to land in one frame
+    // every .14 s while flying - the short hitches in Ultra. Now a frame spends at
+    // most ~2.4 ms on masks and relief together; masks (visible fields) go first.
+    const start=performance.now(),budget=2.4;
+    if(!this.maskJob&&next){
+      const record=this.maps.get(next),worker=this.maskWorker();
+      if(worker){
+        const job=this.landMaskJob(next.tileX,next.tileZ);job.id=++this.maskSeq;
+        this.maskJob={tile:next,record,id:job.id,n:job.n};
+        worker.postMessage(job);
+      }else this.maskJob={tile:next,record,steps:this.landMaskSteps(next.tileX,next.tileZ)};
     }
+    if(this.maskJob?.steps){
+      const job=this.maskJob;let result;
+      while(performance.now()-start<budget){
+        result=job.steps.next();
+        if(result.done){
+          this.maskJob=null;
+          if(this.maps.get(job.tile)===job.record&&!job.record.texture){job.record.mask.value=job.record.texture=result.value;}
+          else result.value?.dispose();
+          break;
+        }
+      }
+    }
+    const left=budget-(performance.now()-start);
+    if(!this.maskJob?.steps&&left>.3)this.bakeRelief(x,z,left);
+  }
+
+  // Relief bake, sliced so no frame spends more than `budget` milliseconds.
+  bakeRelief(x,z,budget){
+    const start=performance.now();
+    if(!this.reliefJob){
+      let best=null,bestD=Infinity;const size=this.terrain.tileSize;
+      for(const [tile,record] of this.relief){
+        if(record.texture)continue;
+        const d=Math.hypot((tile.tileX+.5)*size-x,(tile.tileZ+.5)*size-z);
+        if(d<bestD){bestD=d;best=tile;}
+      }
+      if(!best)return;
+      this.reliefJob=this.reliefSteps(best);
+    }
+    while(performance.now()-start<budget){
+      if(this.reliefJob.next().done){this.reliefJob=null;return;}
+    }
+  }
+
+  *reliefSteps(tile){
+    const N=128,M=24,G=N+2*M,size=this.terrain.tileSize,step=size/N;
+    const ox=tile.tileX*size,oz=tile.tileZ*size,heights=new Float32Array(G*G);
+    const maxX=this.terrain.worldWidth||Infinity,maxZ=this.terrain.worldDepth||Infinity;
+    const height=(x,z)=>{
+      try{return this.terrain.getHeight(Math.max(1,Math.min(maxX-1,x)),Math.max(1,Math.min(maxZ-1,z)));}
+      catch(e){return NaN;}
+    };
+    for(let j=0;j<G;j++){
+      for(let i=0;i<G;i++)heights[j*G+i]=height(ox+(i-M+.5)*step,oz+(j-M+.5)*step);
+      yield;
+    }
+    // Missing samples (map edge) take the nearest valid row/column value.
+    for(let k=0;k<heights.length;k++)if(!Number.isFinite(heights[k]))heights[k]=heights[(M+Math.min(N-1,Math.max(0,Math.floor(k/G)-M)))*G+M+Math.min(N-1,Math.max(0,k%G-M))];
+    const sun=this.uniforms.ultraSun.value,flat=Math.hypot(sun.x,sun.z)||1;
+    const sx=sun.x/flat,sz=sun.z/flat,rise=sun.y/flat;
+    const pixels=new Uint8Array(N*N*4);
+    for(let j=0;j<N;j++){
+      for(let i=0;i<N;i++){
+        const gi=i+M,gj=j+M,h=heights[gj*G+gi];
+        const dx=(heights[gj*G+gi+1]-heights[gj*G+gi-1])/(2*step);
+        const dz=(heights[(gj+1)*G+gi]-heights[(gj-1)*G+gi])/(2*step);
+        const len=Math.hypot(dx,1,dz),nx=-dx/len,ny=1/len,nz=-dz/len;
+        // March towards the sun; the deepest the ray passes below the ground
+        // sets a soft shadow (a few metres of penumbra, no hard pixel edge).
+        let lit=1;
+        for(let k=1;k<=M;k++){
+          const px=gi+sx*k,pz=gj+sz*k,ix=Math.floor(px),iz=Math.floor(pz);
+          if(ix<0||iz<0||ix>=G-1||iz>=G-1)break;
+          const fx=px-ix,fz=pz-iz,a=heights[iz*G+ix],b=heights[iz*G+ix+1],c=heights[(iz+1)*G+ix],d=heights[(iz+1)*G+ix+1];
+          const ground=(a*(1-fx)+b*fx)*(1-fz)+(c*(1-fx)+d*fx)*fz;
+          const ray=h+2+rise*k*step;
+          lit=Math.min(lit,Math.max(0,Math.min(1,(ray-ground)/9+.5)));
+          if(lit<=0)break;
+        }
+        // Row order matches the land-cover UVs: v=0 is the tile's far (max z) edge.
+        const o=((N-1-j)*N+i)*4;
+        pixels[o]=Math.round((nx*.5+.5)*255);pixels[o+1]=Math.round((nz*.5+.5)*255);
+        pixels[o+2]=Math.round(ny*255);pixels[o+3]=Math.round(lit*255);
+      }
+      if(j%8===7)yield;
+    }
+    const texture=new THREE.DataTexture(pixels,N,N,THREE.RGBAFormat);
+    texture.magFilter=THREE.LinearFilter;texture.minFilter=THREE.LinearMipmapLinearFilter;
+    texture.generateMipmaps=true;texture.wrapS=texture.wrapT=THREE.ClampToEdgeWrapping;texture.needsUpdate=true;
+    const record=this.relief.get(tile);
+    if(record){record.texture=texture;record.uniform.value=texture;}else texture.dispose();
   }
 
   updateRoofTrim(x,z){
@@ -219,42 +407,31 @@ class RhineUltra {
   }
 
   makeLandMask(tx,tz) {
-    // RGB holds field orientation, shadows and land cover. Alpha holds
-    // the ground immediately around mapped roads and buildings.
-    const size=this.terrain.tileSize,n=512;
-    const canvas=document.createElement('canvas');canvas.width=canvas.height=n;
-    const ctx=canvas.getContext('2d');
-    ctx.fillStyle='#000';ctx.fillRect(0,0,n,n);
-    ctx.scale(n/size,n/size);
-    const data=this.osm.sourceTiles.get(tx+','+tz);
-    for(const [rings,woods] of [[data?.farmland,false],[data?.forests,true]]){
-      for(const ring of rings||[]){
-        if(ring.length<3)continue;
-        let bearing=0,longest=0;
-        ctx.beginPath();
-        ctx.moveTo(...ring[0]);
-        for(let i=0;i<ring.length;i++){
-          const [x,z]=ring[i],[nx,nz]=ring[(i+1)%ring.length];
-          const dx=nx-x,dz=nz-z,length=dx*dx+dz*dz;
-          if(length>longest){longest=length;bearing=Math.atan2(dz,dx);}
-          ctx.lineTo(nx,nz);
-        }
-        const heading=((bearing/Math.PI)%1+1)%1;
-        const red=Math.round(57+186*heading);
-        const blue=Math.round(18+124*osmHash(tx*size+ring[0][0],tz*size+ring[0][1],1668));
-        ctx.fillStyle=woods?'#0000f4':'rgb('+red+',0,'+blue+')';
-        ctx.closePath();ctx.fill();
-        if(!woods){
-          // A grassy or worn headland follows the actual mapped field edge.
-          ctx.save();ctx.globalCompositeOperation='lighter';
-          ctx.strokeStyle='rgba(0,76,0,.47)';ctx.lineWidth=15;ctx.lineJoin='round';ctx.stroke();ctx.restore();
-        }
-      }
-    }
+    const steps=this.landMaskSteps(tx,tz);let r;
+    do r=steps.next();while(!r.done);
+    return r.value;
+  }
 
-    ctx.globalCompositeOperation='lighter';
-    const sun=this.uniforms.ultraSun.value,ox=tx*size,oz=tz*size,pads=[];
-    const angle=Math.atan2(-sun.z,-sun.x),shadowStretch=Math.hypot(sun.x,sun.z)/sun.y;
+  // Main-thread fallback (no Worker/OffscreenCanvas): the same drawing, in
+  // three steps. The drawing itself cannot be split: a 2D canvas queues its
+  // commands and does all the work at the read-back.
+  *landMaskSteps(tx,tz) {
+    const job=this.landMaskJob(tx,tz);
+    yield;
+    const canvas=document.createElement('canvas');canvas.width=canvas.height=job.n;
+    const pixels=rhineMaskDraw(canvas.getContext('2d'),job);
+    yield;
+    return this.maskTexture(pixels,job.n);
+  }
+
+  // Everything the mask needs, as plain numbers: field rings, the tree and
+  // house shadow casters of the nine surrounding tiles, the roads.
+  landMaskJob(tx,tz) {
+    const size=this.terrain.tileSize,n=512,ox=tx*size,oz=tz*size;
+    const sun=this.uniforms.ultraSun.value,data=this.osm.sourceTiles.get(tx+','+tz);
+    const fields=[],trees=[],walls=[],roads=[];
+    for(const [rings,woods] of [[data?.farmland,false],[data?.forests,true]])
+      for(const ring of rings||[])if(ring.length>=3)fields.push({ring,woods});
     // Include nearby casters in neighbouring tiles so their shadows cross seams.
     for(let nz=tz-1;nz<=tz+1;nz++)for(let nx=tx-1;nx<=tx+1;nx++){
       const group=this.osm.tiles.get(nx+','+nz)?.farGroup;
@@ -263,40 +440,30 @@ class RhineUltra {
         const wall=mesh.name.startsWith('osmBuildingWalls');
         if(!mesh.isInstancedMesh||(!tree&&!wall))continue;
         const m=mesh.instanceMatrix.array;
-        ctx.fillStyle=tree?'#003600':'#009000';
         for(let i=0;i<mesh.count*16;i+=16){
           const x=m[i+12]-ox,z=m[i+14]-oz;
           if(m[i+5]<=0||x< -75||z< -75||x>size+75||z>size+75)continue;
-          const height=tree?Math.min(26,m[i+5]*17):Math.min(26,m[i+5]*.75);
-          const dx=-sun.x/sun.y*height,dz=-sun.z/sun.y*height;
-          const radius=Math.hypot(m[i],m[i+2]);
-          if(tree){
-            ctx.beginPath();ctx.ellipse(x+dx*.75,z+dz*.75,Math.max(3,radius*.90+height*shadowStretch*.45),
-              Math.max(2,radius*.63),angle,0,Math.PI*2);ctx.fill();
-          }else{
-            pads.push([m,i,x,z]);
-            // Use the same rotated wall footprint; offset along the sun ray.
-            ctx.beginPath();
-            ctx.moveTo(x-m[i]*.5-m[i+8]*.5+dx*.25,z-m[i+2]*.5-m[i+10]*.5+dz*.25);
-            ctx.lineTo(x+m[i]*.5-m[i+8]*.5+dx*.74,z+m[i+2]*.5-m[i+10]*.5+dz*.74);
-            ctx.lineTo(x+m[i]*.5+m[i+8]*.5+dx,z+m[i+2]*.5+m[i+10]*.5+dz);
-            ctx.lineTo(x-m[i]*.5+m[i+8]*.5+dx*.63,z-m[i+2]*.5+m[i+10]*.5+dz*.63);
-            ctx.closePath();ctx.fill();
-          }
+          if(tree)trees.push(x,z,Math.min(26,m[i+5]*17),Math.hypot(m[i],m[i+2]));
+          else walls.push(m[i],m[i+2],m[i+8],m[i+10],x,z,Math.min(26,m[i+5]*.75));
         }
       }
     }
-    const land=ctx.getImageData(0,0,n,n).data;
-    const ground=this.makeGroundDetail(ctx,n,size,tx,tz,pads);
-    // Preserve the former CanvasTexture orientation with explicit row order.
-    // Using RGBA bytes keeps the ground mask independent of colour and avoids
-    // allocating a second GPU texture for each streamed tile.
-    const pixels=new Uint8Array(land.length);
-    for(let row=0;row<n;row++){
-      const source=row*n*4,dest=(n-1-row)*n*4;
-      pixels.set(land.subarray(source,source+n*4),dest);
-      for(let i=0;i<n*4;i+=4)pixels[dest+i+3]=ground[source+i];
+    // Draw neighbouring lines too so a verge continues across tile seams.
+    for(let dz=-1;dz<=1;dz++)for(let dx=-1;dx<=1;dx++){
+      const lines=this.osm.sourceTiles.get((tx+dx)+','+(tz+dz))?.roads;
+      for(const line of lines||[]){
+        if(line.length<2)continue;
+        const flat=new Float32Array(line.length*2);
+        for(let i=0;i<line.length;i++){flat[i*2]=line[i][0]+dx*size;flat[i*2+1]=line[i][1]+dz*size;}
+        roads.push(flat);
+      }
     }
+    return {n,size,tx,tz,sun:[sun.x,sun.y,sun.z],fields,trees:new Float32Array(trees),walls:new Float32Array(walls),roads};
+  }
+
+  maskTexture(pixels,n) {
+    // RGBA bytes keep the ground mask independent of colour and avoid a second
+    // GPU texture for each streamed tile.
     const texture=new THREE.DataTexture(pixels,n,n,THREE.RGBAFormat);
     texture.generateMipmaps=true;
     texture.minFilter=THREE.LinearMipmapLinearFilter;
@@ -306,43 +473,54 @@ class RhineUltra {
     return texture;
   }
 
-  makeGroundDetail(ctx,n,size,tx,tz,pads){
-    ctx.globalCompositeOperation='source-over';
-    ctx.fillStyle='#000';
-    ctx.fillRect(0,0,size,size);
-    ctx.lineWidth=18;ctx.lineCap='round';ctx.lineJoin='round';
-    ctx.strokeStyle='#440000';
-    ctx.beginPath();
-    // Draw neighbouring lines too so a verge continues across tile seams.
-    for(let dz=-1;dz<=1;dz++)for(let dx=-1;dx<=1;dx++){
-      const data=this.osm.sourceTiles.get((tx+dx)+','+(tz+dz));
-      for(const line of data?.roads||[]){
-        if(line.length<2)continue;
-        ctx.moveTo(line[0][0]+dx*size,line[0][1]+dz*size);
-        for(let i=1;i<line.length;i++)ctx.lineTo(line[i][0]+dx*size,line[i][1]+dz*size);
-      }
-    }
-    ctx.stroke();
-    for(const [m,i,x,z] of pads){
-      const seed=osmHash(x+tx*size,z+tz*size,1737);
-      const offset=(seed-.5)*.37;
-      ctx.save();ctx.transform(m[i],m[i+2],m[i+8],m[i+10],x,z);
-      const halo=ctx.createRadialGradient(offset,.08,.35,offset,.08,1.06+seed*.17);
-      halo.addColorStop(0,'rgba(244,0,0,.96)');
-      halo.addColorStop(.56,'rgba(221,0,0,.81)');
-      halo.addColorStop(1,'rgba(156,0,0,0)');
-      ctx.fillStyle=halo;ctx.fillRect(-1.46,-1.25,2.92,2.66);ctx.restore();
-    }
-    return ctx.getImageData(0,0,n,n).data;
+  // Build 277: masks are drawn off the main thread when the browser can
+  // (Worker + OffscreenCanvas: Safari 16.4+, so every iPad this app runs on).
+  maskWorker() {
+    if(this.maskWorkerState===false)return null;
+    if(this.maskWorkerState)return this.maskWorkerState;
+    try{
+      if(typeof Worker==='undefined'||typeof OffscreenCanvas==='undefined'||typeof Blob==='undefined')throw Error('unsupported');
+      const source='const draw='+rhineMaskDraw.toString()+';'+
+        'onmessage=e=>{const job=e.data;try{const canvas=new OffscreenCanvas(job.n,job.n);'+
+        'const pixels=draw(canvas.getContext("2d"),job);postMessage({id:job.id,pixels},[pixels.buffer]);}'+
+        'catch(err){postMessage({id:job.id,error:String(err)});}};';
+      const url=URL.createObjectURL(new Blob([source],{type:'application/javascript'}));
+      const worker=new Worker(url);URL.revokeObjectURL(url);
+      worker.onmessage=e=>this.maskDone(e.data);
+      worker.onerror=e=>{e.preventDefault?.();this.maskDone({id:this.maskJob?.id,error:'worker error'});};
+      return this.maskWorkerState=worker;
+    }catch(err){this.maskWorkerState=false;return null;}
   }
 
-  styleTerrain(shader,mask,blend) {
+  maskDone(message) {
+    const job=this.maskJob;
+    if(!job||job.id!==message.id)return;
+    this.maskJob=null;
+    if(message.error){
+      // Fall back to the main thread for good; the next frame restarts the tile.
+      console.warn('Rhine Ultra mask worker:',message.error);
+      this.maskWorkerState?.terminate?.();this.maskWorkerState=false;return;
+    }
+    if(this.disposed)return;
+    if(this.maps.get(job.tile)===job.record&&!job.record.texture)job.record.mask.value=job.record.texture=this.maskTexture(message.pixels,job.n);
+  }
+
+  styleTerrain(shader,mask,blend,relief) {
     shader.uniforms.ultraLandMask=mask;
     shader.uniforms.ultraMaskBlend=blend;
+    shader.uniforms.ultraRelief=relief;
     shader.vertexShader='varying float ultraGroundHeight;\n'+shader.vertexShader;
     shader.vertexShader=shader.vertexShader.replace('#include <project_vertex>',
       '#include <project_vertex>\nultraGroundHeight=(modelMatrix*vec4(transformed,1.0)).y;');
-    shader.fragmentShader='uniform sampler2D ultraLandMask; uniform vec2 ultraFocus; uniform float ultraMaskBlend; varying float ultraGroundHeight;\n'+shader.fragmentShader;
+    shader.fragmentShader='uniform sampler2D ultraLandMask,ultraRelief; uniform vec2 ultraFocus; uniform float ultraMaskBlend,ultraReliefOn,ultraGroundDetail; varying float ultraGroundHeight;\n'+shader.fragmentShader;
+    // Per-pixel ground normal from the baked relief (replaces the coarse mesh normal).
+    shader.fragmentShader=shader.fragmentShader.replace('#include <normal_fragment_maps>',`
+      #include <normal_fragment_maps>
+      vec4 ultraReliefSample=texture2D(ultraRelief,landCoverUv);
+      if(ultraReliefOn>.5){
+        vec3 reliefNormal=normalize(vec3(ultraReliefSample.r*2.0-1.0,ultraReliefSample.b,ultraReliefSample.g*2.0-1.0));
+        normal=normalize((viewMatrix*vec4(reliefNormal,0.0)).xyz);
+      }`);
     shader.fragmentShader=shader.fragmentShader.replace('#include <roughnessmap_fragment>', /* glsl */`
       #include <roughnessmap_fragment>
       float maskFade=1.0-smoothstep(3000.0,4250.0,length(rhineGround-ultraFocus));
@@ -375,9 +553,23 @@ class RhineUltra {
       vec3 packedGround=mix(vec3(.226,.206,.148),vec3(.37,.32,.238),.36*broad.y+.64*textureGrain);
       diffuseColor.rgb=mix(diffuseColor.rgb,diffuseColor.rgb*vec3(.80,.78,.67),verge*.45);
       diffuseColor.rgb=mix(diffuseColor.rgb,packedGround,village*.62);
+      // Build 277 (phase 3): close-range ground detail - grass tufts, soil and
+      // furrow grain at metre scale, faded out with the pixel footprint so it
+      // never shimmers at distance.
+      if(ultraGroundDetail>.5){
+        float closeUp=1.0-smoothstep(.35,2.4,footprint);
+        float tufts=texture2D(ultraNoise,rhineGround*.47).b;
+        float fine=texture2D(ultraNoise,rhineGround*1.9+vec2(.31,.17)).g;
+        float clumps=texture2D(ultraNoise,rhineGround*.12).r;
+        vec3 detail=mix(vec3(.82,.86,.74),vec3(1.12,1.10,.95),tufts*.65+fine*.35);
+        detail*=mix(.90,1.06,clumps);
+        detail=mix(detail,vec3(1.0)+(fine-.5)*.22,woods*.6);
+        diffuseColor.rgb*=mix(vec3(1.0),detail,closeUp*.85);
+      }
     `);
     shader.fragmentShader=shader.fragmentShader.replace('#include <output_fragment>', /* glsl */`
       outgoingLight *= rhineCloudShadow(rhineGround,ultraGroundHeight)*(1.0-ultraDaylight*.61*landMask.g*nearLand);
+      outgoingLight *= mix(1.0,mix(.52,1.0,ultraReliefSample.a),ultraReliefOn*ultraDaylight);
       outgoingLight=rhineDistanceLight(outgoingLight,vec3(rhineGround.x,ultraGroundHeight,rhineGround.y));
       #include <output_fragment>
     `);
@@ -517,6 +709,18 @@ class RhineUltra {
       outgoingLight*=plaster;
       outgoingLight=mix(outgoingLight,outgoingLight*vec3(.75,.77,.73),baseStone*.83);
       outgoingLight+=outgoingLight*vec3(.17,.14,.095)*corner*(1.0-.72*mortar);
+      // Build 277 (phase 3): lit windows at dusk and night. A window grid in
+      // the wall's own box coordinates; roughly a third of the rooms are lit.
+      if(ultraNight>.01){
+        vec2 facade=vec2(abs(ultraBuilding.x)>abs(ultraBuilding.z)?ultraBuilding.z:ultraBuilding.x,ultraBuilding.y);
+        vec2 cellPos=vec2(facade.x*5.0,facade.y*3.2+.15);
+        vec2 cellId=floor(cellPos),inCell=fract(cellPos);
+        float pane=step(.28,inCell.x)*step(inCell.x,.72)*step(.30,inCell.y)*step(inCell.y,.78);
+        float room=fract(sin(dot(cellId+ultraBuilding.w*37.0,vec2(12.9898,78.233)))*43758.5453);
+        float flicker=.85+.15*sin(ultraWind.x*.7+room*30.0);
+        float upper=step(-.38,ultraBuilding.y);
+        outgoingLight+=vec3(1.0,.70,.34)*pane*step(.66,room)*upper*ultraNight*.85*flicker;
+      }
     `:'';
     shader.fragmentShader=shader.fragmentShader.replace('#include <output_fragment>', /* glsl */`
       vec2 patina=texture2D(ultraNoise,ultraPosition.xz*.019+ultraPosition.y*vec2(.011,-.008)).gb;
@@ -541,6 +745,9 @@ class RhineUltra {
       material.onBeforeCompile=before;material.customProgramCacheKey=cacheKey;material.needsUpdate=true;
     }
     for(const {texture} of this.maps.values())texture?.dispose();
+    for(const {texture} of this.relief.values())texture?.dispose();
+    this.flatRelief.dispose();this.relief.clear();this.reliefJob=null;this.maskJob=null;
+    this.disposed=true;this.maskWorkerState?.terminate?.();this.maskWorkerState=false;
     this.emptyMask.dispose();this.noise.dispose();
     this.hooks.clear();this.maps.clear();
   }

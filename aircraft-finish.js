@@ -38,7 +38,22 @@
     n.userData.aircraftFinish=kind;n.needsUpdate=true;materials.add(n);clones.set(m,n);return n;
    });o.material=array?mats:mats[0];});
   }
-  return {decorate,setNight(night){for(const m of materials)m.envMapIntensity=night?.075:(m.userData.dayEnvMap??(m.transparent?.72:.75));},get materials(){return materials;},dispose(){target?.dispose();materials.clear();}};
+  // Build 277 (phase 3): every other aircraft gets the same baked sky
+  // reflection on its own unchanged colours (paint reflects a little, the
+  // canopy glass clearly). Materials without lighting (Basic) are left alone.
+  function reflect(src,{strength=.5}={}){
+   const env=environment(),clones=new Map();
+   src.traverse(o=>{if(!o.isMesh)return;const array=Array.isArray(o.material),mats=(array?o.material:[o.material]).map(m=>{
+    if(!m||!(m.isMeshStandardMaterial||m.isMeshPhysicalMaterial)||m.envMap||m.userData.aircraftFinish)return m;
+    if(clones.has(m))return clones.get(m);
+    const glass=m.transparent&&m.opacity<.9,n=m.clone();
+    n.envMap=env;n.envMapIntensity=glass?.9:strength*(.6+.6*(n.metalness||0));
+    if(glass)n.roughness=Math.min(n.roughness??.2,.12);
+    n.userData.dayEnvMap=n.envMapIntensity;n.userData.aircraftFinish='reflect';n.needsUpdate=true;
+    materials.add(n);clones.set(m,n);return n;
+   });o.material=array?mats:mats[0];});
+  }
+  return {decorate,reflect,setNight(night){for(const m of materials)m.envMapIntensity=night?.075:(m.userData.dayEnvMap??(m.transparent?.72:.75));},get materials(){return materials;},dispose(){target?.dispose();materials.clear();}};
  }
  root.AircraftFinish={create};if(typeof module==='object'&&module.exports)module.exports=root.AircraftFinish;
 })(typeof window==='undefined'?globalThis:window);

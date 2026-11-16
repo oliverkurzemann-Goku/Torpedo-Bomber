@@ -300,6 +300,9 @@
   .warningLamp{color:#646c5c;font:9px monospace;letter-spacing:.35px;} .warningLamp[data-level="1"]{color:#ffd088;text-shadow:0 0 6px #e0a432a0;} .warningLamp[data-level="2"]{color:#ff8c70;text-shadow:0 0 7px #ff6638b0;}
 
 .hangarLink{display:block;padding:12px 14px;margin:8px 0 12px;color:#f3ce83;border:1px solid #ba9d57;border-radius:5px;text-decoration:none;text-align:center;font:600 12px system-ui;letter-spacing:.8px;min-height:44px;}
+#perfHud{position:absolute;left:50%;transform:translateX(-50%);bottom:calc(75px + env(safe-area-inset-bottom));
+  padding:4px 10px;border-radius:8px;background:rgba(10,18,26,.66);color:#e8f0e0;font:600 11px/1.35 ui-monospace,Menlo,monospace;
+  white-space:pre;text-align:center;pointer-events:none;z-index:30}
 </style>
 <link rel="stylesheet" href="menu-layout.css?v=267">
 <style>
@@ -374,9 +377,10 @@ body.secretSpaceActive #fireBtn{border-color:#73d9fc;color:#d6f9ff}
   <style>#hSpd.lowSpeed{color:#ff574c;}#landingRef.lowSpeed{color:#ff574c;}</style>
   <div id="pauseBtn" title="Pause">❚❚</div>
   <div id="flash"></div>
+  <div id="perfHud" hidden></div>
   <div id="ltn" style="position:fixed;inset:0;background:#e6ecff;opacity:0;pointer-events:none;z-index:40;"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 276</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 277</div>
 
   <!-- Optical landing aid -->
   <div id="lso">
@@ -432,7 +436,7 @@ body.secretSpaceActive #fireBtn{border-color:#73d9fc;color:#d6f9ff}
 
 <!-- Menu -->
 <div class="overlay" id="menu" data-campaign="pacific">
-  <div class="menuTop"><a id="selBtn" href="index.html?v=276">&#9664; Change Game</a><span class="menuMeta">PACIFIC OPERATIONS<br>BUILD 276</span></div>
+  <div class="menuTop"><a id="selBtn" href="index.html?v=277">&#9664; Change Game</a><span class="menuMeta">PACIFIC OPERATIONS<br>BUILD 277</span></div>
   <div class="card menuCard">
     <aside class="menuOverview" aria-label="Campaign and pilot options">
     <div class="campaignArt" aria-hidden="true"></div>
@@ -454,6 +458,8 @@ body.secretSpaceActive #fireBtn{border-color:#73d9fc;color:#d6f9ff}
       <label class="toggle" id="loadToggle"><span class="box" id="loadBox"></span> Dive-bomb loadout (SBD)</label>
       <label class="toggle" id="dbgToggle"><span class="box" id="dbgBox"></span> Debug overlay</label>
       <label class="toggle" id="timeToggle"><span class="box" id="timeBox">☀</span> <span id="timeName">Day</span></label>
+      <label class="weatherPick" for="graphicsMenu">Graphics<select id="graphicsMenu"><option value="auto">Auto (60 FPS)</option><option value="low">Low</option><option value="medium">Medium</option><option value="high">High</option></select></label>
+      <label class="toggle"><input id="perfMenu" type="checkbox"> Performance overlay</label>
       <label class="weatherPick" for="practiceWx">Free flight weather<select id="practiceWx"><option value="clear">Clear</option><option value="broken">Broken cloud</option><option value="lowcloud">Low overcast</option><option value="fog">Fog</option><option value="rain">Rain</option><option value="squall">Heavy showers</option><option value="storm">Thunderstorm</option></select></label>
       <button type="button" id="resetPacificEffects" style="min-height:44px">Reset harbor / convoy campaign effects</button>
     <div class="credit">
@@ -463,7 +469,7 @@ body.secretSpaceActive #fireBtn{border-color:#73d9fc;color:#d6f9ff}
     </aside>
     <section class="missionPanel" aria-label="Mission selection">
       <div class="secLbl">Choose your sortie · Pacific operations</div>
-      <a class="hangarLink" href="hangar.html?theatre=pacific&amp;v=276">CUSTOM MISSION · CHOOSE AIRCRAFT &amp; LOADOUT →</a>
+      <a class="hangarLink" href="hangar.html?theatre=pacific&amp;v=277">CUSTOM MISSION · CHOOSE AIRCRAFT &amp; LOADOUT →</a>
 <div id="missionSel" role="group" aria-label="Pacific missions"></div>
       <div id="missionBlurb" class="missionBlurb" aria-live="polite"></div>
       <div class="menuConfig">
@@ -534,9 +540,12 @@ body.secretSpaceActive #fireBtn{border-color:#73d9fc;color:#d6f9ff}
 <script src="terrain-system/AirfieldActivity.js?v=254"></script>
 <script src="okinawa/coastal-templates.js?v=1"></script>
 <script src="okinawa/coastal-scenery.js?v=1"></script>
-<script src="okinawa/world.js?v=254"></script>
+<script src="okinawa/world.js?v=277"></script>
 <script src="campaign.js?v=1"></script>
 <script src="game-runtime.js?v=267"></script>
+<script src="graphics-quality.js?v=277"></script>
+<script src="graphics-post.js?v=277"></script>
+<script src="aircraft-finish.js?v=277"></script>
 <script src="sortie-checkpoint.js?v=238"></script>
 <script src="aircraft-contract.js?v=267"></script>
 <script src="aircraft-articulation.js?v=258"></script>
@@ -632,8 +641,13 @@ const PLANE_MODEL_URL = 'grumman%20tbm%20avenger.glb?v=2';
 // Swap the bright tri-colour atlas (cut to 512 px on touch devices) for the full-size 1942
 // livery once per decoded model; wingmen and raiders clone the finished source.
 if(globalThis.PacificAssets?.configure&&globalThis.AvengerFinish)PacificAssets.configure('grumman%20tbm%20avenger.glb',root=>AvengerFinish.apply(THREE,root,{anisotropy:8}));
-PacificAssets.configure('assets/aircraft/sbd-dauntless.glb',()=>{}, {textureLimit:2048});
-PacificAssets.configure('assets/aircraft/corsair-f4u1d-own.glb',()=>{}, {textureLimit:2048});
+// Build 277 (phase 3): the shared sky reflection for every carrier aircraft (paint a
+// little, canopy glass clearly), applied once to the decoded source model.
+let pacificFinish=null;
+const pacificReflect=root=>{if(!renderer)return;pacificFinish??=AircraftFinish.create(THREE,renderer);pacificFinish.reflect(root);};
+PacificAssets.configure('assets/aircraft/sbd-dauntless.glb',pacificReflect, {textureLimit:2048});
+PacificAssets.configure('assets/aircraft/corsair-f4u1d-own.glb',pacificReflect, {textureLimit:2048});
+PacificAssets.configure('zero.glb',pacificReflect);
 let MODEL_YAW = -Math.PI/2;
 let MODEL_SCALE = 1;
 let COCKPIT_EYE = [0, 0.70, -1.5];
@@ -1196,8 +1210,8 @@ function init(){
   voiceRadio.bind(document.getElementById('spokenRadio'));
   const app=document.getElementById('app');
   renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:"high-performance"});
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
-  window.flightQuality=GameRuntime.createQuality(renderer);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2,graphicsQuality.settings.pixelRatio));
+  window.flightQuality=GameRuntime.createQuality(renderer,{enabled:navigator.maxTouchPoints>0&&graphicsQuality.choice!=='auto'});
   renderer.setSize(window.innerWidth,window.innerHeight);
   renderer.outputEncoding=THREE.sRGBEncoding;
   renderer.toneMapping=THREE.ACESFilmicToneMapping;
@@ -1225,6 +1239,10 @@ function init(){
   sun.shadow.camera.top=240; sun.shadow.camera.bottom=-240;
   sun.shadow.bias=-0.0006;
   sunTarget=new THREE.Object3D(); scene.add(sunTarget); sun.target=sunTarget;
+  graphicsPost=GraphicsPost.create(THREE,renderer,{grade:false});
+  applyPacificGraphics();
+  graphicsQuality.bindSelect(document.getElementById('graphicsMenu'));
+  const perfBox=document.getElementById('perfMenu');if(perfBox){perfBox.checked=pacificPerfOn;perfBox.onchange=()=>{pacificPerfOn=perfBox.checked;pacificPerf?.reset();};}
 
   buildSky();
   buildSun();
@@ -6742,7 +6760,7 @@ function loadPlaneModel(){
       }
       window.__eyeDbg='EYE '+COCKPIT_EYE.map(v=>v.toFixed(2)).join('/');
       const btEl=document.getElementById('buildTag');
-      if(btEl) btEl.textContent='BUILD 276 · '+window.__eyeDbg;
+      if(btEl) btEl.textContent='BUILD 277 · '+window.__eyeDbg;
       let seat=null;
       model.traverse(function(o){
         if(!o.isMesh||!o.material) return;
@@ -8220,7 +8238,7 @@ function setupUIButtons(){
   if(dbgT2) dbgT2.onclick=()=>{
     dbgOn=!dbgOn; GameRuntime.storage.setItem('dbgOn',dbgOn?'1':'0');
     const db=document.getElementById('dbgBox'); if(db) db.textContent=dbgOn?'✓':'';
-    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 276'; }
+    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 277'; }
   };
   const lu=document.getElementById('lookUp'), ld=document.getElementById('lookDn');
   let _lookT=0;
@@ -8236,7 +8254,7 @@ function setupUIButtons(){
   if(pb) pb.addEventListener('pointerdown',e=>{ e.preventDefault(); togglePause(); });
   const rb=document.getElementById('resumeBtn'); if(rb) rb.onclick=resumeGame;
   const mb=document.getElementById('menuBtn'); if(mb) mb.onclick=exitToMenu;
-  document.getElementById('pauseMainMenu').onclick=async()=>{globalThis.sortieCheckpoint?.save();await globalThis.sortieCheckpoint?.flush();exitToMenu(true);window.location.href='index.html?v=276';};
+  document.getElementById('pauseMainMenu').onclick=async()=>{globalThis.sortieCheckpoint?.save();await globalThis.sortieCheckpoint?.flush();exitToMenu(true);window.location.href='index.html?v=277';};
   document.getElementById('resultBtn').onclick=()=>{
     // the logbook borrows this screen from the menu — send the player straight back
     if(logbookOpen){ logbookOpen=false; showOverlay('menu'); return; }
@@ -8245,7 +8263,7 @@ function setupUIButtons(){
       clearSecretSpace();hideOverlays();P.alive=true;state=ST.FLIGHT;enterSecretSpace(true);clock.getDelta();return;
     }
     const last=mission===MISSIONS.length-2;
-    if(MISSIONS[mission]?.custom){window.location.href='hangar.html?theatre=pacific&v=276';return;}
+    if(MISSIONS[mission]?.custom){window.location.href='hangar.html?theatre=pacific&v=277';return;}
     if(wasWin){
       if(MISSIONS[mission] && MISSIONS[mission].free){ startMission(mission); return; }  // stay in Free Flight
       if(MISSIONS[mission] && MISSIONS[mission].qual){ showOverlay('menu'); return; }  // qual -> ready room
@@ -8357,6 +8375,7 @@ function onResize(){
   const w=window.innerWidth, h=window.innerHeight;
   if(camera){ camera.aspect=w/h; camera.updateProjectionMatrix(); }
   if(renderer) renderer.setSize(w,h);
+  graphicsPost?.resize();
 }
 window.addEventListener('orientationchange', ()=>{ setTimeout(onResize,150); setTimeout(onResize,450); });
 if(window.visualViewport){ window.visualViewport.addEventListener('resize', onResize); }
@@ -8563,7 +8582,7 @@ function animate(){
     notice.style.cssText='position:fixed;inset:0;z-index:999998;background:rgba(15,20,15,.95);color:#e8ddbc;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px;text-align:center;font:16px system-ui';
     const title=document.createElement('h2');title.textContent='Simulation interrupted';
     const detail=document.createElement('p');
-    detail.textContent='BUILD 276 · '+(MISSIONS[mission]?.sub||'Menu')+' · '+error.message;
+    detail.textContent='BUILD 277 · '+(MISSIONS[mission]?.sub||'Menu')+' · '+error.message;
     const reload=document.createElement('button');reload.textContent='Reload game';
     reload.style.cssText='padding:12px 24px;font:inherit';reload.onclick=()=>location.reload();
     notice.appendChild(title);notice.appendChild(detail);notice.appendChild(reload);document.body.appendChild(notice);
@@ -8572,7 +8591,7 @@ function animate(){
 }
 function animateFrame(){
   if(state===ST.PAUSED||document.hidden||runtimeSession?.graphicsLost||renderer.getContext().isContextLost())return;
-  const frameInterval=clock.getDelta(),rawDt=Math.min(0.05,frameInterval);
+  const frameInterval=clock.getDelta(),rawDt=Math.min(0.05,frameInterval);frameIntervalForGraphics=frameInterval;
   GameRuntime.frames.begin(frameInterval);
   if(secretJetSpace){renderSecretSpace(rawDt);return;}
   if(state===ST.FLIGHT&&P.alive&&isSecretJet()){
@@ -8591,7 +8610,7 @@ function animateFrame(){
     if(deckActivity)deckActivity.group.position.x=carrierX;
     updatePlaneMesh(rawDt);updateDeckArrestWires();updateCarrierIntro(rawDt);updateAudio(rawDt);updateSea(t);
     emitShipExhaust((isDefend()?ijnCarrierModel:carrierModel)||carrier,carrierForward,0,rawDt);
-    updateSmoke(rawDt);updateRain(rawDt);GameRuntime.render(renderer,scene,camera);GameRuntime.frames.end();return;
+    updateSmoke(rawDt);updateRain(rawDt);renderPacific();GameRuntime.frames.end();return;
   }
 
   // steam the task group forward (bow-first, +X) whenever the sortie is live
@@ -8687,7 +8706,7 @@ function animateFrame(){
   if(combatFX)combatFX.update(dt);if(flareSupport)flareSupport.update(rawDt,windZ);updateFlareUI();if(enemyBailouts)enemyBailouts.update(rawDt,camera,windZ);if(aircraftDamage)aircraftDamage.update(dt);if(aircraftSmoke)aircraftSmoke.update(dt);
   updateSea(t);
   if(okinawaWorld && okinawaWorld.root.visible){
-    okinawaWorld.update(dt,P.pos.x-OKINAWA_OFFSET_X,P.pos.z,P.pos.y);
+    okinawaWorld.treeRange=(typeof graphicsQuality!=='undefined'&&graphicsQuality.settings?.treeRange)||1;okinawaWorld.update(dt,P.pos.x-OKINAWA_OFFSET_X,P.pos.z,P.pos.y);
     const apron=okinawaWorld.airfieldActivity;
     if(apron?.group.visible&&zeroTemplate)apron.setAircraft(zeroTemplate,'zero');
   }
@@ -8734,7 +8753,46 @@ function animateFrame(){
   CombatFX.updateRounds(bullets,camera,renderer);
   CombatFX.updateRounds(tracers,camera,renderer);
   GameRuntime.frames.mark('effects');
-  GameRuntime.render(renderer,scene,camera);GameRuntime.frames.end();
+  const rendered=renderPacific();GameRuntime.frames.end();
+  measurePacificFrame(frameIntervalForGraphics,rendered);
+}
+
+// ---- GRAPHICS (Build 277, GRAPHICS-PLAN.md) ----
+// The Pacific already has the colour pipeline (sRGB, ACES) and a sun shadow map.
+// The shared setting picks resolution and shadow detail; High adds glow (bloom).
+const graphicsQuality=GraphicsQuality.create();
+let graphicsPost=null,pacificPerf=null,pacificPerfOn=new URLSearchParams(location.search).get('perf')==='1',frameIntervalForGraphics=0;
+function applyPacificGraphics(){
+  if(!renderer)return;
+  const g=graphicsQuality.settings,ratio=Math.min(window.devicePixelRatio||1,2,g.pixelRatio);
+  if(Math.abs(renderer.getPixelRatio()-ratio)>.01){renderer.setPixelRatio(ratio);renderer.setSize(window.innerWidth,window.innerHeight);
+    window.flightQuality=GameRuntime.createQuality(renderer,{enabled:navigator.maxTouchPoints>0&&graphicsQuality.choice!=='auto'});}
+  const shadows=g.shadows;
+  if(sun){
+    const size=shadows?g.shadowSize:512;
+    if(sun.shadow.mapSize.x!==size){sun.shadow.mapSize.set(size,size);sun.shadow.map?.dispose();sun.shadow.map=null;}
+    if(renderer.shadowMap.enabled!==shadows){renderer.shadowMap.enabled=shadows;sun.castShadow=shadows;
+      scene.traverse(o=>{const m=o.material;if(m)(Array.isArray(m)?m:[m]).forEach(x=>{x.needsUpdate=true;});});}
+  }
+  if(graphicsPost){graphicsPost.enabled=g.bloom;graphicsPost.glow=.55;graphicsPost.threshold=.9;}
+  GraphicsQuality.applyAnisotropy(scene,renderer,g.anisotropy);
+  const el=document.getElementById('graphicsMenu');if(el)el.value=graphicsQuality.choice;
+  pacificPerf?.reset();
+}
+graphicsQuality.onChange(applyPacificGraphics);
+function renderPacific(){
+  if(!graphicsPost?.enabled){renderer.__sceneInfo=null;return GameRuntime.render(renderer,scene,camera);}
+  const gl=renderer.getContext();if(gl.isContextLost())return false;
+  try{return graphicsPost.render(scene,camera,clock?clock.elapsedTime:0,true);}
+  catch(error){if(gl.isContextLost())return false;throw error;}
+}
+function measurePacificFrame(dt,rendered){
+  if(state===ST.FLIGHT&&rendered&&graphicsQuality.sample(dt,true))flash('GRAPHICS: '+graphicsQuality.label().toUpperCase(),900);
+  const panel=document.getElementById('perfHud');if(!panel)return;
+  const visible=pacificPerfOn&&state===ST.FLIGHT&&rendered;
+  if(!visible){if(!panel.hidden){panel.hidden=true;pacificPerf?.reset();}return;}
+  panel.hidden=false;pacificPerf??=GraphicsQuality.createPerfPanel(panel,renderer);
+  pacificPerf.sample(dt,scene,'Pacific · '+graphicsQuality.label());
 }
 
 const hangarRequest=CustomSortie.install('pacific',MISSIONS,FlightPlans.pacific,window.location.search);

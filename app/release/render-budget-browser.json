@@ -1,0 +1,158 @@
+{
+ "budget": {
+  "triangles": 2500000,
+  "calls": 800,
+  "textureMB": 350
+ },
+ "rhine": {
+  "views": [
+   {
+    "heading": 0,
+    "triangles": 1369652,
+    "calls": 422
+   },
+   {
+    "heading": 45,
+    "triangles": 1335465,
+    "calls": 520
+   },
+   {
+    "heading": 90,
+    "triangles": 1289884,
+    "calls": 543
+   },
+   {
+    "heading": 135,
+    "triangles": 1343784,
+    "calls": 497
+   },
+   {
+    "heading": 180,
+    "triangles": 1419062,
+    "calls": 515
+   },
+   {
+    "heading": 225,
+    "triangles": 1284089,
+    "calls": 520
+   },
+   {
+    "heading": 270,
+    "triangles": 1128133,
+    "calls": 499
+   },
+   {
+    "heading": 315,
+    "triangles": 1280425,
+    "calls": 462
+   }
+  ],
+  "textureMB": 105.76302083333317,
+  "shadows": true,
+  "post": true,
+  "cells": 4392
+ },
+ "pacific": {
+  "views": [
+   {
+    "where": "fleet",
+    "heading": 0,
+    "triangles": 402371,
+    "calls": 375
+   },
+   {
+    "where": "fleet",
+    "heading": 45,
+    "triangles": 290725,
+    "calls": 311
+   },
+   {
+    "where": "fleet",
+    "heading": 90,
+    "triangles": 289447,
+    "calls": 258
+   },
+   {
+    "where": "fleet",
+    "heading": 135,
+    "triangles": 289479,
+    "calls": 271
+   },
+   {
+    "where": "fleet",
+    "heading": 180,
+    "triangles": 401139,
+    "calls": 324
+   },
+   {
+    "where": "fleet",
+    "heading": 225,
+    "triangles": 289511,
+    "calls": 269
+   },
+   {
+    "where": "fleet",
+    "heading": 270,
+    "triangles": 289533,
+    "calls": 274
+   },
+   {
+    "where": "fleet",
+    "heading": 315,
+    "triangles": 672012,
+    "calls": 393
+   },
+   {
+    "where": "island",
+    "heading": 0,
+    "triangles": 1321630,
+    "calls": 655
+   },
+   {
+    "where": "island",
+    "heading": 45,
+    "triangles": 1054045,
+    "calls": 456
+   },
+   {
+    "where": "island",
+    "heading": 90,
+    "triangles": 785867,
+    "calls": 383
+   },
+   {
+    "where": "island",
+    "heading": 135,
+    "triangles": 784039,
+    "calls": 502
+   },
+   {
+    "where": "island",
+    "heading": 180,
+    "triangles": 815289,
+    "calls": 602
+   },
+   {
+    "where": "island",
+    "heading": 225,
+    "triangles": 700857,
+    "calls": 401
+   },
+   {
+    "where": "island",
+    "heading": 270,
+    "triangles": 730964,
+    "calls": 486
+   },
+   {
+    "where": "island",
+    "heading": 315,
+    "triangles": 1004922,
+    "calls": 504
+   }
+  ],
+  "textureMB": 95.24348958333326,
+  "shadows": true,
+  "tier": "high"
+ }
+}

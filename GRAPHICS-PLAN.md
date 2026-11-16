@@ -1,8 +1,58 @@
 # Grafik- und Performance-Plan
 
-Stand: 15.11.2026, Build 276. Zielgerät des Nutzers: **iPad Pro mit M1**.
-Auftrag: „Bestmögliche Grafik und bestmögliche Performance", als Plan – gebaut ist davon bisher nur
-die P-47-Texturreduktion (Build 276). Jede Phase unten wird erst nach Freigabe des Nutzers gebaut.
+Stand: 16.11.2026, **Build 277: Phasen 0–6 umgesetzt** (Freigabe des Nutzers: „setze deine Phasen um …
+aber keine 120 fps"). Zielgerät des Nutzers: **iPad Pro mit M1**, Ziel **stetige 60 Bilder/s** (120 Hz ist
+ausdrücklich kein Ziel). Was gebaut ist, steht im neuen Abschnitt 0; die Abschnitte 1–8 sind der Plan von
+Build 276 (unverändert, mit Vermerken).
+
+## 0. Umsetzungsstand Build 277
+
+Neue Module (beide Spiele): `graphics-quality.js` (Grafikstufen, Auto-Regelung, Messanzeige, anisotrope
+Filterung), `graphics-post.js` (Nachbearbeitung: Tonwertkurve, Glühen, Hitzeflimmern), `graphics-extras.js`
+(Schattenkarte ums Flugzeug, Kondensstreifen, Gras am Flugplatz, Wolkenlicht). iOS: `GraphicsHealth.swift`.
+
+| Phase | Gebaut | Wo |
+|---|---|---|
+| 0 Messen | Messanzeige jetzt auch im Pazifik (`?perf=1` / Häkchen „Performance panel"), mit Texturspeicher und Grafikstufe; Budget-Test `okinawa/tests/render-budget-browser.cjs` (Rhein Ultra/High + Pazifik/High, 8 Blickrichtungen) | beide |
+| 1 Budget | Menü **Graphics: Auto (60 FPS) / Low / Medium / High** (Pause und Startmenü, gespeichert); Bäume in **1-km-Zellen** mit eigenem Frustum-Test (vorher wurde jede Baum-Kachel immer gezeichnet: r128 schaltet den Test für InstancedMesh ab); **Baum-Detailstufen** (nah volle Krone, ab 1,6 km × Stufe 4-/8-flächige Fernkrone, Stämme nur bis 1,1 km); anisotrope Filterung 2/4/8× je Stufe; **Okinawa (Pazifik)**: dieselbe Lösung für die ~8 800 Laubbäume (2-km-Zellen, Fernkrone 20 statt 224 Dreiecke ab 1,6 km × Stufe, Stämme bis 1,1 km) – vorher gingen dort in **jedem** Bild 2,0 Mio. Baum-Dreiecke an die Grafikkarte, auch hinter der Kamera | Bäume beide, Rest beide |
+| 2 Licht | in **Ultra High**: Tonwertkurve ACES in der Nachbearbeitung (Rhein; Pazifik hatte sie schon); **Schattenkarte ums Flugzeug** (1024/2048 px, 130/240 m, Flugzeuge, Häuser, nahe Bäume, Flugplatz); **gebackene Geländeschatten + Gelände-Normalen** pro Kachel (128², in 2,4-ms-Scheiben gebacken); Wolken mit Sonnen-/Schattenseite | Rhein Ultra |
+| 3 Oberflächen | Bodendetail im Nahbereich (Ultra, Medium/High); Fensterlicht in Dämmerung/Nacht; Himmels-Spiegelung für **alle** Flugzeugtypen (bisher nur Me 262/Bf 109) | Rhein Ultra; Spiegelung beide |
+| 4 Vegetation | **junge Bäume um das Flugzeug** (Medium: halbe, High: volle Dichte, innerhalb 900 m, je Zelle eine Instanzgruppe); **Gras am Flugplatz** (Grasbüschel neben Piste und Rollwegen) | Rhein Ultra |
+| 5 Effekte | **Glühen** (High), Kondensstreifen ab 3,4 km Höhe, **Hitzeflimmern** hinter der Me 262 (High) | Glühen beide; Rest Rhein Ultra |
+| 6 App | `GraphicsHealth.swift`: Temperaturstufe (`ProcessInfo.thermalState`) und Speicherwarnung → Ereignis `graphicsdevicehealth` → höchste erlaubte Stufe sinkt (ernst → Medium, kritisch/Speicher → Low); **komprimierte Texturen bewusst nicht** (siehe unten) | App |
+
+**Ultra-Hänger (Ursache gemessen, behoben):** Die Kulissenstufe Ultra zeichnete alle 0,14 s eine 512²-Landmaske
+(Felder, Schatten aller Bäume und Häuser von neun Kacheln, zweimal Zurücklesen) **in einem einzigen Frame**.
+Gemessen im echten Spiel (Chromium/SwiftShader): 1,7–2,4 s pro Maske in einem Stück. Das Zerteilen der
+Zeichenbefehle half nicht (ein 2D-Canvas sammelt die Befehle und arbeitet alles beim Zurücklesen ab: größtes
+Stück danach immer noch 0,9–1,2 s). Jetzt: Daten im Hauptthread sammeln (4–14 ms), **Zeichnen und Zurücklesen
+in einem Worker mit OffscreenCanvas** (Safari ab 16.4); Ergebnis bitgleich zur Hauptthread-Fassung und bis auf
+4 von 262 144 Pixeln (Kantenglättung, ≤ 14 Stufen im Grünkanal) gleich dem alten Bild. Ohne Worker fällt sie
+auf die alte Zeichnung im Hauptthread zurück. Ein weiterer, nicht behobener Posten: `terrain.updateLOD` bis
+45 ms in einzelnen Frames (Kachelwechsel; Basis- und neuer Stand gleich) – das ist der vermutete
+„Geländekachel-Aufbau" und bleibt offen (siehe Abschnitt 8).
+
+**Budget-Test (Build 277, `okinawa/tests/render-budget-browser.cjs`, Stufe High, je 8 Blickrichtungen, Schattenpass
+mitgezählt; Zählwerte gelten für jedes Gerät, Zeiten sind hier nicht gemessen):**
+
+| Ort | Dreiecke je Bild | Draw-Calls | Texturen |
+|---|---|---|---|
+| Rhein Ultra, Freiflug 350 m | 1,13–1,42 Mio. | 422–543 | 106 MB |
+| Pazifik, Flotte (3 km vom Träger, 320 m) | 0,29–0,67 Mio. (Build 276: bis 2,56 Mio.) | 258–393 | 95 MB |
+| Pazifik, über Okinawa (450 m, Blick über die Insel) | 0,70–1,32 Mio. (Build 276: 2,72–3,03 Mio.) | 383–655 | 95 MB |
+
+Budget High: ≤ 2,5 Mio. Dreiecke, ≤ 800 Draw-Calls, ≤ 350 MB – alle Orte darunter. Der erste Lauf fiel im Pazifik
+durch (2,56 Mio.): die Okinawa-Laubbäume (3 Instanzgruppen, 2,0 Mio. Dreiecke) wurden immer ganz gezeichnet;
+jetzt Zellen + Fernkrone wie im Rhein (Bild vorher/nachher im Arbeitsordner verglichen, gleich).
+
+**Komprimierte Texturen – Entscheidung, nicht gebaut:** Texturspeicher gemessen (Budget-Test oben: 95–106 MB) liegt deutlich unter dem Budget von 350 MB; r128 hat in der Nicht-Modul-Fassung keinen `KTX2Loader`,
+nur `BasisTextureLoader` mit eigenem Transcoder (WASM). Ein Umbau aller GLB-Texturen brächte heute keinen
+sichtbaren Gewinn. Erst nötig, wenn 4096er-Flugzeugtexturen zurückkommen sollen.
+
+**Was „Auto" tut:** startet auf Touch-Geräten auf Medium, sonst High; senkt nach 2 s unter 45 Bildern/s, hebt
+nach 15 s über 57 Bildern/s; eine Temperatur- oder Speicherwarnung der App begrenzt die Obergrenze. Die
+alte Regelung (`AdaptiveQuality`: Auflösung, Rauch, Regen) läuft im Rhein nur noch, wenn eine feste Stufe
+gewählt ist – sonst würden zwei Regler gegeneinander arbeiten. Auch Ultra High folgt jetzt der Stufe (Pixelverhältnis Low 1 · Medium 1,5 · High 2; vorher fest 2) – auf dem iPad beginnt Ultra also mit 1,5 und steigt auf 2, wenn die Bilder es erlauben.
 
 Dieser Plan gilt für **alle Sitzungen** (auch andere KI-Sitzungen, die an der Rhein-Kulisse arbeiten):
 wer Grafik ändert, hält die Budgets in Abschnitt 3 ein und trägt Messwerte hier nach.
@@ -218,6 +268,12 @@ bei 2048 px Unterschiede (4,8 %).
 - Nicht erreichbar mit diesem Unterbau: die Detailfülle großer nativer PC-/Konsolen-Flugsimulatoren.
 
 ## 8. Offen / nicht gemessen
+- **Stand Build 277:** Alles aus Abschnitt 0 ist nur in Chromium/SwiftShader (Software-GPU) geprüft. Auf dem
+  M1 noch nicht gesehen: wie Schatten, Glühen, junge Bäume und Gras aussehen und was sie kosten; ob Auto auf
+  dem iPad zuverlässig auf High steigt; ob die Temperaturmeldung der App ankommt (`GraphicsHealth.swift`
+  ist nur im Mac-Build der CI kompiliert, nicht auf dem Gerät gelaufen).
+- `terrain.updateLOD` bis 45 ms in einzelnen Frames beim Kachelwechsel (Basis und Build 277 gleich) – der
+  zweite Kandidat für kurze Hänger; nicht angefasst.
 - Bildzeiten, Wärmeverhalten und Speichergrenze auf dem iPad Pro M1 (Phase 0 und 6).
 - Ob auf dem M1 die Dreiecke oder die Bildpunkte zuerst begrenzen.
 - Kosten der Schatten und des Glühens auf dem Gerät (Probeszene).

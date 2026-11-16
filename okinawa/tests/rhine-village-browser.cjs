@@ -24,8 +24,9 @@ const server=http.createServer((req,res)=>{
   page.on('pageerror',e=>errors.push(e.message));
   page.on('console',m=>{if(/Shader Error|VALIDATE_STATUS|not compiled/.test(m.text()))errors.push(m.text());});
   await page.addInitScript(()=>{window.requestAnimationFrame=()=>0;});
-  const url='http://127.0.0.1:'+server.address().port+'/remagen-mission.html?v=276';
-  await page.goto(url+'&scenery=ultra&perf=1');
+  const url='http://127.0.0.1:'+server.address().port+'/remagen-mission.html?v=277';
+  // Build 277: Ultra's pixel ratio follows the graphics level (Auto on touch starts at Medium = 1.5).
+  await page.goto(url+'&scenery=ultra&perf=1&graphics=high');
   await page.waitForFunction(()=>typeof livingWorld!=='undefined'&&livingWorld?.rhineVillage&&state===ST.MENU,null,{polling:200});
   const proof=await page.evaluate(()=>{
    if(!rhineUltra||renderer.getPixelRatio()!==2||!rhineMetricsEnabled)throw Error('Ultra test link failed');
@@ -147,7 +148,11 @@ const server=http.createServer((req,res)=>{
    if(!rhineScenery.enabled||!terrain.rhineLandscape.value||osmMgr.roofMat.color.getHex()!==0x805440||!rhineScenery.atlas||
       GameRuntime.storage.getItem('re_rhine_scenery')!=='detailed')throw Error('Detailed reactivation failed');
   });
-  const levelViews=await page.evaluate(()=>{
+  const levelViews=await page.evaluate(async()=>{
+   // Build 277: the Ultra loop below waits for worker masks; optional vehicle models
+   // must not finish loading during that wait, or they count as Ultra's cost.
+   const fallback=()=>{let n=0;scene.traverse(o=>{if(/-fallback$/.test(o.name)&&o.visible)n++;});return n;};
+   for(let t=0;fallback()&&t<900;t++)await new Promise(r=>setTimeout(r,100));
    const pairs=[['river',13890,16260,13630,15040,'clear'],
     ['woodland',15120,14250,16160,13920,'broken'],
     ['settlement',22680,24630,22865,24116,'clear']];
@@ -161,9 +166,15 @@ const server=http.createServer((req,res)=>{
     let detailedPixels;
     for(const mode of ['classic','detailed','ultra']){
      configureRhineScenery(mode);
+     // Build 277: High turns the shadow pass on with Ultra; render-budget-browser counts it.
+     // This comparison measures the Ultra scenery itself, so the shadow pass stays off.
+     renderer.shadowMap.enabled=false;
      if(mode!=='classic')for(let i=0;i<85;i++){
       rhineScenery.update(.04,x,z,y,mode==='ultra'?0:1,mode==='ultra');
       rhineUltra?.update(.04,x,z);
+      // Build 277: Ultra draws its land masks in a worker; let the answer arrive
+      // as it would between real frames (at most 20 s per mask here).
+      for(let t=0;rhineUltra?.maskJob&&!rhineUltra.maskJob.steps&&t<1000;t++)await new Promise(r=>setTimeout(r,20));
      }
      renderer.setPixelRatio(.65); // Same render resolution isolates the visual differences.
      renderer.render(scene,lens);
@@ -177,7 +188,7 @@ const server=http.createServer((req,res)=>{
      const lots=rhineScenery.sites.filter(s=>s.ultra&&s.mesh?.visible);
      const view={name,mode,png:renderer.domElement.toDataURL(),triangles:renderer.info.render.triangles,calls:renderer.info.render.calls,
       changed:+(100*difference/(w*h)).toFixed(2),masks:rhineUltra?[...rhineUltra.maps.values()].filter(r=>r.texture).length:0,
-      lots:lots.reduce((count,site)=>count+site.plots.length,0),roofTrim:rhineUltra?.roofTrim.count||0};
+      lots:lots.reduce((count,site)=>count+site.plots.length,0),sh:renderer.shadowMap.enabled,names:(()=>{lens.updateMatrixWorld();const fr=new THREE.Frustum().setFromProjectionMatrix(new THREE.Matrix4().multiplyMatrices(lens.projectionMatrix,lens.matrixWorldInverse)),m={};const vis=o=>{let p=o;while(p){if(!p.visible)return false;p=p.parent;}return true;};scene.traverse(o=>{if(!(o.isMesh||o.isPoints||o.isLine)||!vis(o))return;if(o.frustumCulled){if(!o.geometry.boundingSphere)o.geometry.computeBoundingSphere();if(!fr.intersectsSphere(o.geometry.boundingSphere.clone().applyMatrix4(o.matrixWorld)))return;}const k=o.name||o.parent?.name||o.type;m[k]=(m[k]||0)+(Array.isArray(o.material)?o.material.length:1);});return m;})(),young:(()=>{let n=0;scene.traverse(o=>{if(o.name==='nearForestYoungTrees'&&o.visible&&o.parent?.visible)n++;});return n;})(),roofTrim:rhineUltra?.roofTrim.count||0};
      if(name==='settlement'&&mode==='ultra'){
       for(const lot of lots)lot.mesh.visible=false;
       renderer.render(scene,lens);
@@ -205,7 +216,7 @@ const server=http.createServer((req,res)=>{
    assert.equal(detailed.lots,0,'Detailed must exclude Ultra properties');
    assert(ultra.lots>0,'Ultra properties must cover this route: '+JSON.stringify(ultra));
    if(ultra.name==='settlement')assert(ultra.lots>=15&&ultra.lotPixels>=100,JSON.stringify(ultra));
-   assert(ultra.calls-detailed.calls<40&&ultra.triangles-detailed.triangles<90000);
+   assert(ultra.calls-detailed.calls<40&&ultra.triangles-detailed.triangles<90000,JSON.stringify(Object.entries(ultra.names).map(([k,v])=>[k,v-(detailed.names[k]||0)]).filter(e=>e[1]).concat(Object.keys(detailed.names).filter(k=>!(k in ultra.names)).map(k=>[k,-detailed.names[k]]))));
    assert(ultra.roofTrim>0&&ultra.roofTrim<=576&&detailed.roofTrim===0);
   }
   console.log('Rhine level camera:',JSON.stringify(levelViews));
@@ -335,7 +346,7 @@ const server=http.createServer((req,res)=>{
    try{clock.getDelta=()=>.78;animate();animate();}
    finally{clock.getDelta=getDelta;}
   });
-  assert.match(await page.locator('#rhinePerfHud').textContent(),/Ultra High · 1 FPS · P95 780\.0 ms\n.* M tris · .* draws · 0\.44×/);
+  assert.match(await page.locator('#rhinePerfHud').textContent(),/Ultra High · High · 1 FPS · P95 780\.0 ms\n.* M tris · .* draws · \d+ MB tex · 0\.44×/);
   await page.locator('#pauseBtn').click();
   assert.equal(await page.locator('#rhinePerfHud').isHidden(),true);
   await page.evaluate(()=>{

@@ -3,13 +3,20 @@ import Capacitor
 
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     var window: UIWindow?
+    private var graphicsHealth: GraphicsHealth?
 
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
         guard let windowScene = scene as? UIWindowScene else { return }
 
         window = UIWindow(windowScene: windowScene)
-        window?.rootViewController = CAPBridgeViewController()
+        let bridge = CAPBridgeViewController()
+        window?.rootViewController = bridge
         window?.makeKeyAndVisible()
+        // Phase 6 of GRAPHICS-PLAN.md: thermal state and memory warnings -> game.
+        bridge.loadViewIfNeeded()
+        if let webView = bridge.webView {
+            graphicsHealth = GraphicsHealth(webView: webView)
+        }
 
         SceneDelegateProxy.shared.scene(scene, willConnectTo: session, options: connectionOptions)
     }

@@ -351,6 +351,26 @@ class OkinawaWorld{
   }
   onProgress(1,'Ready');return this;
  }
+ // Build 277: trees in 2-km cells. r128 InstancedMesh draws every instance when
+ // frustumCulled is off (the default), so one mesh per variant sent all ~8 800
+ // trees (2.0 M triangles) to the GPU in every frame, behind the camera too.
+ // Each cell gets its own geometry copy with a sphere around its instances and is
+ // frustum-culled as a whole. reach(p) is how far an instance extends from its root.
+ batchCells(geo,mat,placements,name,reach,lift,size=2000,far=null,trunk=false){
+  if(!placements.length)return[];const cells=new Map();
+  for(const p of placements){const k=Math.floor(p.x/size)+','+Math.floor(p.z/size);if(!cells.has(k))cells.set(k,[]);cells.get(k).push(p);}
+  const out=[];
+  for(const [key,items] of cells){
+   const m=this.batch(geo.clone(),mat,items,name);let x=0,z=0;for(const p of items){x+=p.x;z+=p.z;}x/=items.length;z/=items.length;
+   let r=0,lo=Infinity,hi=-Infinity;for(const p of items){r=Math.max(r,Math.hypot(p.x-x,p.z-z)+reach(p));lo=Math.min(lo,p.y);hi=Math.max(hi,p.y+lift(p));}
+   m.geometry.boundingSphere=new THREE.Sphere(new THREE.Vector3(x,(lo+hi)/2,z),Math.hypot(r,(hi-lo)/2)+2);
+   m.frustumCulled=true;m.userData.cell=key;out.push(m);
+   const lod={mesh:m,sphere:m.geometry.boundingSphere,near:m.geometry,far:null,isFar:false,trunk};
+   if(far){lod.far=far.clone();lod.far.boundingSphere=lod.sphere.clone();}
+   if(far||trunk)(this.treeLOD??=[]).push(lod);
+  }
+  geo.dispose();far?.dispose();return out;
+ }
  batch(geo,mat,placements,name){if(!placements.length)return;const m=new THREE.InstancedMesh(geo,mat,placements.length),dummy=new THREE.Object3D();m.name=name;for(let i=0;i<placements.length;i++){const p=placements[i];dummy.position.set(p.x,p.y,p.z);dummy.rotation.set(0,p.r||0,0);dummy.scale.set(p.sx||p.s||1,p.sy||p.s||1,p.sz||p.s||1);dummy.updateMatrix();m.setMatrixAt(i,dummy.matrix);}m.instanceMatrix.needsUpdate=true;m.frustumCulled=false;m.castShadow=false;m.receiveShadow=true;this.root.add(m);this.objectCount+=placements.length;this.decorations.push(m);return m;}
  nearHouse(x,z){
   if(this.serviceArea&&inServiceArea(x,z))return true;
@@ -401,9 +421,9 @@ class OkinawaWorld{
    // it washes out to a near-white sage blob, which is what "komisch wirkende Baeume"
    // was actually seeing. Same isolated-sphere test under that exact rig confirmed a
    // color needs to be roughly this dark before it still reads as green, not pale.
-   const geo=merge(gs),mat=new THREE.MeshStandardMaterial({color:[0x16240e,0x1c2e14,0x233a19][v],roughness:1});this.materials.push(mat);this.batch(geo,mat,buckets[v],'Broadleaf canopy '+v);
+   const geo=merge(gs),mat=new THREE.MeshStandardMaterial({color:[0x16240e,0x1c2e14,0x233a19][v],roughness:1});this.materials.push(mat);this.batchCells(geo,mat,buckets[v],'Broadleaf canopy '+v,p=>p.s*.75,p=>p.s*1.3,2000,new THREE.IcosahedronGeometry(.56,0).scale(1,.78,.95).translate(0,.72,0));
   }
-  this.batch(new THREE.CylinderGeometry(.15,.24,1,5).translate(0,.5,0),new THREE.MeshStandardMaterial({color:0x4a3d2e,roughness:1}),trunks,'Tree trunks');
+  this.batchCells(new THREE.CylinderGeometry(.15,.24,1,5).translate(0,.5,0),new THREE.MeshStandardMaterial({color:0x4a3d2e,roughness:1}),trunks,'Tree trunks',p=>p.sx||1,p=>p.sy||1,2000,null,true);
   for(const p of palms)this.treeIndex?.add(p.x,p.z,p.y,10*p.s,4*p.s,.2*p.s);
   this.batch(new THREE.CylinderGeometry(.12,.24,9,7).translate(0,4.5,0),new THREE.MeshStandardMaterial({color:0x5c4f3a,roughness:1}),palms,'Palm trunks');
   this.batch(frondGeometry(),new THREE.MeshStandardMaterial({color:0x1e3018,roughness:1,side:THREE.DoubleSide}),palms,'Palm fronds');
@@ -716,9 +736,20 @@ class OkinawaWorld{
    }`});
   this.sky=new THREE.Mesh(new THREE.SphereGeometry(1,24,12),mat);this.sky.frustumCulled=false;this.sky.renderOrder=-10;this.root.add(this.sky);
  }
+ // Build 277: far crowns beyond 1.6 km, trunks only within 1.1 km (times the
+ // graphics tier's treeRange). A 2-km cell switches as a whole; the distance is
+ // measured to the cell's edge, so the near side never shows the simple crown.
+ updateTreeLOD(x,z,y=0){
+  const k=this.treeRange||1,near=1600*k,trunk=1100*k;
+  for(const c of this.treeLOD||[]){
+   const s=c.sphere.center,d=Math.max(0,Math.hypot(s.x-x,s.z-z,(s.y-y)*.5)-c.sphere.radius);
+   if(c.trunk){c.mesh.visible=d<trunk;continue;}
+   const far=d>near;if(far===c.isFar)continue;c.isFar=far;c.mesh.geometry=far?c.far:c.near;
+  }
+ }
  update(dt,x=0,z=0,y=0){
   this.time.value+=Math.min(dt,.1);this.detailTimer=(this.detailTimer||0)-dt;
-  if(this.detailTimer<=0){this.detailTimer=.35;this.updateVillageDetails(x,z);this.updateFortifications(x,z);}
+  if(this.detailTimer<=0){this.detailTimer=.35;this.updateVillageDetails(x,z);this.updateFortifications(x,z);this.updateTreeLOD(x,z,y);}
   this.coastalScenery?.update(dt,x,z,y);
   if(this.airfieldActivity){
    if(y>450)this.airfieldActivity.group.visible=false;
@@ -727,6 +758,7 @@ class OkinawaWorld{
  }
  setLight(warm){this.warm.value=warm?1:0;}
  dispose(){
+  for(const c of this.treeLOD||[]){c.near.dispose();c.far?.dispose();}
   this.coastalScenery?.dispose();this.airfieldActivity?.dispose();for(const e of this.fortifications){e.group.remove(e.model);}
   const gs=new Set(),ms=new Set(),ts=new Set();[this.root,...this.detailTemplates].forEach(root=>root.traverse(o=>{if(o.geometry)gs.add(o.geometry);if(o.material){for(const m of [].concat(o.material)){ms.add(m);if(m.map)ts.add(m.map);}}}));gs.forEach(g=>g.dispose());ms.forEach(m=>m.dispose());ts.add(this.coastTexture);ts.forEach(t=>t.dispose());if(this.root.parent)this.root.parent.remove(this.root);}
 }
