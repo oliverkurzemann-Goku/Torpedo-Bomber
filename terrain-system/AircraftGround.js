@@ -47,7 +47,14 @@ const AircraftGround={
         return model.userData.groundSupports=[left,right,vertices(tail)];}
     }
     model.traverse(o=>{if(o.isMesh&&visible(o)&&o.userData.groundWheel)wheels.push(vertices(o));});
-    if(wheels.length===3)return model.userData.groundSupports=wheels;
+    // Build 283: departureFit holds the aeroplane on supports[0] and [1], the main wheels. The tagged tyres come in the
+    // model's own traversal order: the Storch lists its tail skid first, so raising the tail pushed both mains 0.5 m
+    // into the ground. Order them: the two widest apart (left, right) first, the tail or nose wheel last.
+    if(wheels.length===3){
+      const cx=v=>{let s=0;for(let i=0;i<v.length;i+=3)s+=v[i];return s/(v.length/3);},span=wheels.map(v=>Math.abs(cx(v)));
+      const tail=span.indexOf(Math.min(...span)),mains=wheels.filter((_,i)=>i!==tail).sort((a,b)=>cx(a)-cx(b));
+      return model.userData.groundSupports=[...mains,wheels[tail]];
+    }
     // Avenger's three tyres are welded into one GLB mesh. Partition only that
     // tagged mesh in aircraft coordinates, retaining every vertex of each tyre.
     if(wheels.length===1){

@@ -63,6 +63,20 @@ const server=http.createServer((req,res)=>{
   assert.ok(T.levelFull>=160&&T.levelFull<=185,'175 km/h at full power: '+T.levelFull);assert.ok(T.levelHalf>110&&T.levelHalf<T.levelFull,'half power: '+T.levelHalf+' of '+T.levelFull);assert.ok(T.idle.kmh<85&&T.idle.sink>1.2&&T.idle.sink<4,'the idle glide: '+JSON.stringify(T.idle));
   assert.ok(T.turn.degPerS>10&&T.turn.degPerS<26&&T.turn.alive,'it turns tightly: '+JSON.stringify(T.turn));assert.ok(T.stall.minKmh<65&&T.stall.alive&&!T.stall.crash,'the wing stalls below 60 km/h and the aeroplane stays alive: '+JSON.stringify(T.stall));
 
+  // ---- 1a. Build 283: on the take-off run the main wheels stay on the grass while the tail comes up (the tail skid was listed first among the tagged tyres, and the
+  //      stance held "supports 0 and 1" on the ground: the tail and ONE main wheel, so lifting the tail pushed both mains 0.5 m into the soil) ----
+  const G=await page.evaluate(()=>{
+   const dt=1/60,v=new THREE.Vector3();begin(null);P.throttle=1;let worst=0,tail=0,airborne=null;
+   const low=n=>{let y=1e9,x=0,z=0;playerModel.getObjectByName(n).traverse(m=>{if(!m.isMesh)return;const p=m.geometry.attributes.position;for(let i=0;i<p.count;i++){v.fromBufferAttribute(p,i);if(p.normalized)v.divideScalar(p.array instanceof Int16Array?32767:65535);v.applyMatrix4(m.matrixWorld);if(v.y<y){y=v.y;x=v.x;z=v.z;}}});return y-AircraftGround.height(terrain,x,z);};
+   for(let t=0;t<12&&P.alive;t+=dt){const vr=SortieFeatures.Handling.speeds(P,acDef().stall,acDef().app).stall*1.1;if(P.onGround&&P.spd>.95*vr)inputPitch=.5;
+    updateFlight(dt);posePlayerAircraft(dt);planeGroup.updateMatrixWorld(true);
+    if(P.onGround){worst=Math.min(worst,low('GearLeft'),low('GearRight'));tail=Math.max(tail,low('TailGear'));}else if(airborne==null)airborne=Math.min(low('GearLeft'),low('GearRight'));if(!P.onGround&&t>9)break;}
+   return {worst:+worst.toFixed(3),tailLift:+tail.toFixed(2),firstAirborne:+(+airborne).toFixed(3)};
+  });
+  report.takeoffWheels=G;console.log('storch take-off wheels',JSON.stringify(G));
+  assert.ok(G.worst>-.02,'main wheels stay on the grass on the take-off run: '+JSON.stringify(G)+' (Build 282: 0.53 m in the ground)');
+  assert.ok(G.tailLift>.3,'the tail comes up: '+JSON.stringify(G));assert.ok(G.firstAirborne>-.02&&G.firstAirborne<.3,'no jump at lift-off: '+JSON.stringify(G));
+
   // ---- 1b. Build 259: the stick's middle is soft. Half stick pulls / pushes the nose about half as far and the climb / sink rate about half as fast as in Build 256
   //      (measured then: ARCADE half back 22.7 deg, 14.9 m/s climb, half forward 20.5 m/s sink; REALISTIC half pull 45 deg after 1 s); full stick still gets the type's limit ----
   const PS=await page.evaluate(()=>{

@@ -46,6 +46,11 @@
    "crash": null
   }
  },
+ "takeoffWheels": {
+  "worst": 0,
+  "tailLift": 1.05,
+  "firstAirborne": -0.013
+ },
  "pitchResponse": {
   "arcadeUp": {
    "peakPitch": 5.9,
@@ -178,11 +183,11 @@
    "wire": true,
    "hidden": true,
    "decoyDist": [
-    857
+    1141
    ],
    "nestDist": [
-    2762,
-    5368
+    3470,
+    5442
    ],
    "weather": "clear",
    "radio": null
@@ -223,18 +228,18 @@
     "squads": 1,
     "spawnT": 7,
     "minD": 171,
-    "firstHit": 46,
-    "loss": 5.6,
+    "firstHit": 25.7,
+    "loss": 11.2,
     "alive": true,
-    "tracers": 2
+    "tracers": 1
    },
    {
     "d": 1,
     "squads": 1,
     "spawnT": 5,
     "minD": 171,
-    "firstHit": 32.8,
-    "loss": 26.9,
+    "firstHit": 14.4,
+    "loss": 49.9,
     "alive": true,
     "tracers": 0
    },
@@ -242,11 +247,11 @@
     "d": 2,
     "squads": 2,
     "spawnT": 4,
-    "minD": 191,
-    "firstHit": 14.7,
+    "minD": 171,
+    "firstHit": 13.3,
     "loss": 60,
     "alive": false,
-    "tracers": 1
+    "tracers": 2
    }
   ],
   "wireWarn": true,
@@ -403,13 +408,13 @@
     "spd": 0,
     "roll": false,
     "fig": true,
-    "dFig": 151,
+    "dFig": 138,
     "agl": 1.3,
-    "x": -137,
+    "x": 144,
     "text": "OBSERVER RUNNING — HOLD STILL"
    },
    "bonus": 0,
-   "boardT": 22.7,
+   "boardT": 21.4,
    "hunters": 2,
    "done": {
     "phase": "home",
@@ -513,7 +518,7 @@
   },
   "careless": {
    "zone": 2,
-   "lost": 44,
+   "lost": 27.6,
    "alive": true
   },
   "hunters": 2,
