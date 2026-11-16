@@ -12,7 +12,7 @@
   }
   begin(dt){this.start=this.last=this.now();this.intervals[this.index]=dt*1000;for(const a of this.times)a[this.index]=0;}
   mark(name){const n=this.now(),i=this.names.indexOf(name);if(i>=0)this.times[i][this.index]+=n-this.last;this.last=n;}
-  end(){this.mark('render');this.count=Math.min(this.size,this.count+1);this.index=(this.index+1)%this.size;}
+  end(){this.mark('render');this.lastCpu=this.last-this.start;this.count=Math.min(this.size,this.count+1);this.index=(this.index+1)%this.size;}
   reset(){this.index=this.count=0;}
   report(){
    const stats=a=>{const v=Array.from(a.slice(0,this.count)).sort((a,b)=>a-b);return {median:v[Math.floor(v.length*.5)]||0,p95:v[Math.min(v.length-1,Math.floor(v.length*.95))]||0,max:v[v.length-1]||0};};

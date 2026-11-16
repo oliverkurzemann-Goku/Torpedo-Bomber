@@ -1,9 +1,44 @@
 # Grafik- und Performance-Plan
 
-Stand: 16.11.2026, **Build 277: Phasen 0–6 umgesetzt, Build 278/279: Nachbesserungen nach iPad-Test (Abschnitte 0a, 0b)** (Freigabe des Nutzers: „setze deine Phasen um …
+Stand: 16.11.2026, **Build 277: Phasen 0–6 umgesetzt, Build 278–280: Nachbesserungen nach iPad-Test (Abschnitte 0a, 0b, 0c)** (Freigabe des Nutzers: „setze deine Phasen um …
 aber keine 120 fps"). Zielgerät des Nutzers: **iPad Pro mit M1**, Ziel **stetige 60 Bilder/s** (120 Hz ist
 ausdrücklich kein Ziel). Was gebaut ist, steht im neuen Abschnitt 0; die Abschnitte 1–8 sind der Plan von
 Build 276 (unverändert, mit Vermerken).
+
+## 0c. Build 280: Einstellung „Frame rate“ (60 halten / 30 fest / unbegrenzt)
+
+Nutzer (iPad-Bild, Build 279, Ultra High + High: „30 FPS · P95 41 ms · 1,38 M tris · 522 draws · 143 MB · 2,00×"):
+„Jetzt sind es meist nur 1,5 Millionen tris, trotzdem wird die Framerate auch bei High auf bis zu 28 fps
+gedrosselt. Ich habe schon mit 5 Mio tris und 48 fps gespielt … Warum gibt es keine fixe fps Einstellung?"
+- **Keine Drosselung im Code:** Auf Ultra lief weder die alte `AdaptiveQuality` noch ein Bildratendeckel. Die
+  30 FPS sind die Grafikkarte: ein Bild, das 16,7 ms verfehlt, zeigt der 60-Hz-Bildschirm erst nach 33 ms.
+- **Dreiecke sind nicht der Engpass, Bildpunkte sind es.** Ultra + High rendert mit Pixelverhältnis **2,0**
+  (2732×2048 = 5,6 Mio. Bildpunkte, 4× MSAA im Szenenziel), dazu Schattenkarte und Glühen; Build 276 lief mit
+  1,5× (3,1 Mio.) ohne beides. Gemessen im echten Spiel (Chromium/SwiftShader, Rhein-Freiflug Ultra/High,
+  iPad-Viewport 1194×834 @2×, Mittel aus 6 Bildern inkl. GPU-Synchronisation; Software-GPU, nur Verhältnisse
+  aussagekräftig): 2× alles 3 319 ms · 1,5× 2 634 · 1× 2 005 · 2× ohne Schatten 2 958 · 2× ohne
+  Nachbearbeitung 2 858 · 2× ohne Glühen 3 067 · **1,5× ohne Schatten/Nachbearbeitung (≈ Build 276) 2 074**.
+  Ultra/High kostet also das **1,6-fache** von Build 276 – genau 48 FPS → 30 FPS. Von den Mehrkosten hängen
+  ~2/3 an der Auflösung.
+- **Neu (`graphics-quality.js`, beide Spiele, Menü und Pausenmenü „Frame rate“, Schlüssel
+  `graphicsFrameRate`, `?framerate=`):** `hold60` (Vorgabe): Fenster von 1 s; ist das Mittel > 112 % von
+  16,7 ms, sinkt die Auflösung eine Stufe (Leiter 2 · 1,75 · 1,5 · 1,3 · 1,15 · 1, nie unter 1×, Tier-Maximum
+  bleibt Obergrenze); nach 6 Fenstern im Ziel ein Versuch nach oben, scheitert er binnen 4 s, zurück und
+  doppelte Wartezeit (30 s … 5 min), nach drei Fehlversuchen auf derselben Stufe keine weiteren. Schatten,
+  Glühen, Detail bleiben – Auflösungswechsel kompilieren keine Shader. Ist schon die Skriptzeit des Bildes
+  (`GameRuntime.frames.lastCpu`) über dem Ziel, bleibt die Auflösung (weniger Bildpunkte helfen dann nicht).
+  Auto ändert die Stufe erst, wenn die Auflösung ganz unten (zu langsam) bzw. ganz oben (schnell genug) ist.
+  `cap30`: zeichnet jedes zweite 60-Hz-Bild (≥ 28 ms Abstand), volle Auflösung, Ziel 33 ms. `free`: wie bis
+  Build 279. Die alte `AdaptiveQuality` (Auflösung bei fester Stufe) läuft nur noch bei `free`.
+- **Automatisierte Browser** (`navigator.webdriver`) bleiben auf `free`, damit simulierte 20-FPS-Testschleifen
+  nie die Auflösung ändern; `?framerate=` schaltet es für Tests ein.
+- Tests: neu `okinawa/tests/graphics-framerate.cjs` (iPad-Modell 60-Hz-Vsync: findet die höchste passende Stufe,
+  ≤ 9 Wechsel in 10 min, danach ruhig; schneller Gerät bleibt 2×; Boden 1×; Auto erst an der Untergrenze; 30 FPS
+  bei 60/120 Hz; CPU-Wächter; Speicherung). Im echten Spiel (Rhein Ultra/High, 30-ms-Bilder): 2 → 1,75 → 1,5 →
+  1,3 → 1,15 in 8 s, danach 60-FPS-Bilder → wieder 1,3; Schatten/Nachbearbeitung/Glühen an, kein GL-Fehler.
+- **Offen:** kein iPad-Test. Ob das iPad bei 1,3–1,5× die 60 schafft, ist nicht gemessen; ist es CPU-gebunden,
+  hilft die Einstellung nicht (dann sinkt nichts). Unter 1× bleibt Ultra/High notfalls langsamer als 60 –
+  dann `cap30` oder Medium.
 
 ## 0b. Nachbesserung Build 279: Schatten kamen spät und plötzlich (High)
 

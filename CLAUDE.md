@@ -1,5 +1,12 @@
 # Torpedo-Bomber — Übergabe an Claude Code
 
+**16.11.2026, Build 280: neue Einstellung „Frame rate“ (60 FPS halten durch Auflösung / 30 FPS fest / unbegrenzt) in beiden Spielen.**
+Nutzer (iPad-Bild Build 279, Ultra+High: 30 FPS, P95 41 ms, 1,38 M Dreiecke, Pixelverhältnis 2,00×): „trotzdem wird die Framerate auch bei High auf bis zu 28 fps gedrosselt. Ich habe schon mit 5 Mio tris und 48 fps gespielt … Warum gibt es keine fixe fps Einstellung?" (dazu Lob für Mondschein-Scheinwerfer und Schatten). Einzelheiten: `GRAPHICS-PLAN.md` Abschnitt 0c.
+- **Gemessen, keine Drosselung im Code:** die 30 FPS sind die GPU (60-Hz-Vsync zeigt ein Bild > 16,7 ms nach 33 ms). Nicht die Dreiecke, sondern die Bildpunkte: Ultra+High = 2,0× (5,6 Mio. px, 4× MSAA) plus Schatten und Glühen; im echten Spiel (Software-GPU, nur Verhältnisse) kostet das das **1,6-fache** des Build-276-Bildes (1,5×, ohne Schatten/Glühen) = 48 → 30 FPS; ~2/3 der Mehrkosten hängen an der Auflösung.
+- **Neu (`graphics-quality.js`; Menü + Pause „Frame rate“, `graphicsFrameRate`, `?framerate=hold60|cap30|free`):** `hold60` (Vorgabe) senkt nur die Renderauflösung in Stufen 2 · 1,75 · 1,5 · 1,3 · 1,15 · 1 bis 60 FPS gehalten werden (Schatten/Glühen/Detail bleiben), versucht nach oben mit wachsender Wartezeit (30 s … 5 min, 3 Fehlversuche je Stufe = Schluss), senkt nicht, wenn schon die Skriptzeit über 16,7 ms liegt (`GameRuntime.frames.lastCpu`, neu); Auto ändert die Stufe erst an der Auflösungsgrenze. `cap30` zeichnet jedes 2. Bild bei voller Auflösung. `free` = bisher. Alte `AdaptiveQuality` nur noch bei `free`. Automatisierte Browser bleiben auf `free` (Tests deterministisch). Menüeintrag „Auto (60 FPS)" heißt jetzt „Auto"; Leistungsanzeige zeigt „High · 60".
+- Neuer Test `okinawa/tests/graphics-framerate.cjs`; im echten Spiel (Rhein Ultra/High) bei 30-ms-Bildern 2 → 1,15 in 8 s, bei 60 FPS wieder hoch, Schatten/Glühen an, kein GL-Fehler; Pazifik lädt mit der Einstellung fehlerfrei. Kennungen 280 (Seiten, Board, Hangar, Xcode, `build-app.mjs`, Tests; `graphics-quality.js`/`game-runtime.js?v=280`).
+**Offen:** kein iPad-Test; ob das M1 bei 1,3–1,5× die 60 hält, ist ungemessen; ist das iPad CPU-gebunden, senkt `hold60` nichts (dann hilft es nicht); jeder Auflösungswechsel legt die Bildpuffer neu an (ein kurzer Ruck, selten).
+
 **16.11.2026, Build 279: Schatten auf High kamen spät und plötzlich – Schattenbox jetzt vor der Kamera, größer, mit weichem Rand; Schattenwerfer 4× je Sekunde.**
 Nutzer: „Jetzt kommen die Schatten leider sehr spät und kurzfristig bei High und hoher Framerate...." Einzelheiten: `GRAPHICS-PLAN.md` Abschnitt 0b.
 - **Gemessen (Rhein, P-47 150 m/s, 60/300 m über Grund):** Schattenkarte war aufs Flugzeug zentriert (±240 m) → entlang der Bahn nur 200 m voraus abgedeckt, harte Kante; Baumzellen-Schattenwerfer nur alle 2 s neu gewählt → zeitweise keine Zelle vor dem Flugzeug markiert (bis ~1,5 s ohne Schatten direkt voraus).
@@ -1232,7 +1239,7 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 279 · Thunderbolt Squadron BUILD 279 · Remagen-Kern 23 / Fahrzeuge 24**
+Stand bei Übergabe: **Torpedo Squadron BUILD 280 · Thunderbolt Squadron BUILD 280 · Remagen-Kern 23 / Fahrzeuge 24**
 
 **Build 198 (22.10.2026): P-47-Fotolackierung, Einsatzspuren und natives Fahrwerk; Terrain-Fix aus Build 197 erhalten.**
 `assets/aircraft/p47-weathered.glb` ist ein ausdrücklich gekennzeichnetes Derivat des

@@ -380,7 +380,7 @@ body.secretSpaceActive #fireBtn{border-color:#73d9fc;color:#d6f9ff}
   <div id="perfHud" hidden></div>
   <div id="ltn" style="position:fixed;inset:0;background:#e6ecff;opacity:0;pointer-events:none;z-index:40;"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 279</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 280</div>
 
   <!-- Optical landing aid -->
   <div id="lso">
@@ -436,7 +436,7 @@ body.secretSpaceActive #fireBtn{border-color:#73d9fc;color:#d6f9ff}
 
 <!-- Menu -->
 <div class="overlay" id="menu" data-campaign="pacific">
-  <div class="menuTop"><a id="selBtn" href="index.html?v=279">&#9664; Change Game</a><span class="menuMeta">PACIFIC OPERATIONS<br>BUILD 279</span></div>
+  <div class="menuTop"><a id="selBtn" href="index.html?v=280">&#9664; Change Game</a><span class="menuMeta">PACIFIC OPERATIONS<br>BUILD 280</span></div>
   <div class="card menuCard">
     <aside class="menuOverview" aria-label="Campaign and pilot options">
     <div class="campaignArt" aria-hidden="true"></div>
@@ -458,7 +458,8 @@ body.secretSpaceActive #fireBtn{border-color:#73d9fc;color:#d6f9ff}
       <label class="toggle" id="loadToggle"><span class="box" id="loadBox"></span> Dive-bomb loadout (SBD)</label>
       <label class="toggle" id="dbgToggle"><span class="box" id="dbgBox"></span> Debug overlay</label>
       <label class="toggle" id="timeToggle"><span class="box" id="timeBox">☀</span> <span id="timeName">Day</span></label>
-      <label class="weatherPick" for="graphicsMenu">Graphics<select id="graphicsMenu"><option value="auto">Auto (60 FPS)</option><option value="low">Low</option><option value="medium">Medium</option><option value="high">High</option></select></label>
+      <label class="weatherPick" for="graphicsMenu">Graphics<select id="graphicsMenu"><option value="auto">Auto</option><option value="low">Low</option><option value="medium">Medium</option><option value="high">High</option></select></label>
+      <label class="weatherPick" for="frameRateMenu">Frame rate<select id="frameRateMenu"><option value="hold60">60 FPS (resolution adapts)</option><option value="cap30">30 FPS steady (full resolution)</option><option value="free">Unlimited (as fast as possible)</option></select></label>
       <label class="toggle"><input id="perfMenu" type="checkbox"> Performance overlay</label>
       <label class="weatherPick" for="practiceWx">Free flight weather<select id="practiceWx"><option value="clear">Clear</option><option value="broken">Broken cloud</option><option value="lowcloud">Low overcast</option><option value="fog">Fog</option><option value="rain">Rain</option><option value="squall">Heavy showers</option><option value="storm">Thunderstorm</option></select></label>
       <button type="button" id="resetPacificEffects" style="min-height:44px">Reset harbor / convoy campaign effects</button>
@@ -469,7 +470,7 @@ body.secretSpaceActive #fireBtn{border-color:#73d9fc;color:#d6f9ff}
     </aside>
     <section class="missionPanel" aria-label="Mission selection">
       <div class="secLbl">Choose your sortie · Pacific operations</div>
-      <a class="hangarLink" href="hangar.html?theatre=pacific&amp;v=279">CUSTOM MISSION · CHOOSE AIRCRAFT &amp; LOADOUT →</a>
+      <a class="hangarLink" href="hangar.html?theatre=pacific&amp;v=280">CUSTOM MISSION · CHOOSE AIRCRAFT &amp; LOADOUT →</a>
 <div id="missionSel" role="group" aria-label="Pacific missions"></div>
       <div id="missionBlurb" class="missionBlurb" aria-live="polite"></div>
       <div class="menuConfig">
@@ -542,8 +543,8 @@ body.secretSpaceActive #fireBtn{border-color:#73d9fc;color:#d6f9ff}
 <script src="okinawa/coastal-scenery.js?v=1"></script>
 <script src="okinawa/world.js?v=277"></script>
 <script src="campaign.js?v=1"></script>
-<script src="game-runtime.js?v=267"></script>
-<script src="graphics-quality.js?v=279"></script>
+<script src="game-runtime.js?v=280"></script>
+<script src="graphics-quality.js?v=280"></script>
 <script src="graphics-post.js?v=277"></script>
 <script src="aircraft-finish.js?v=277"></script>
 <script src="sortie-checkpoint.js?v=238"></script>
@@ -1211,7 +1212,7 @@ function init(){
   const app=document.getElementById('app');
   renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:"high-performance"});
   renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2,graphicsQuality.settings.pixelRatio));
-  window.flightQuality=GameRuntime.createQuality(renderer,{enabled:navigator.maxTouchPoints>0&&graphicsQuality.choice!=='auto'});
+  window.flightQuality=GameRuntime.createQuality(renderer,{enabled:navigator.maxTouchPoints>0&&graphicsQuality.choice!=='auto'&&graphicsQuality.frameMode==='free'});
   renderer.setSize(window.innerWidth,window.innerHeight);
   renderer.outputEncoding=THREE.sRGBEncoding;
   renderer.toneMapping=THREE.ACESFilmicToneMapping;
@@ -1242,6 +1243,7 @@ function init(){
   graphicsPost=GraphicsPost.create(THREE,renderer,{grade:false});
   applyPacificGraphics();
   graphicsQuality.bindSelect(document.getElementById('graphicsMenu'));
+  graphicsQuality.bindFrameSelect(document.getElementById('frameRateMenu'));
   const perfBox=document.getElementById('perfMenu');if(perfBox){perfBox.checked=pacificPerfOn;perfBox.onchange=()=>{pacificPerfOn=perfBox.checked;pacificPerf?.reset();};}
 
   buildSky();
@@ -6760,7 +6762,7 @@ function loadPlaneModel(){
       }
       window.__eyeDbg='EYE '+COCKPIT_EYE.map(v=>v.toFixed(2)).join('/');
       const btEl=document.getElementById('buildTag');
-      if(btEl) btEl.textContent='BUILD 279 · '+window.__eyeDbg;
+      if(btEl) btEl.textContent='BUILD 280 · '+window.__eyeDbg;
       let seat=null;
       model.traverse(function(o){
         if(!o.isMesh||!o.material) return;
@@ -8238,7 +8240,7 @@ function setupUIButtons(){
   if(dbgT2) dbgT2.onclick=()=>{
     dbgOn=!dbgOn; GameRuntime.storage.setItem('dbgOn',dbgOn?'1':'0');
     const db=document.getElementById('dbgBox'); if(db) db.textContent=dbgOn?'✓':'';
-    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 279'; }
+    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 280'; }
   };
   const lu=document.getElementById('lookUp'), ld=document.getElementById('lookDn');
   let _lookT=0;
@@ -8254,7 +8256,7 @@ function setupUIButtons(){
   if(pb) pb.addEventListener('pointerdown',e=>{ e.preventDefault(); togglePause(); });
   const rb=document.getElementById('resumeBtn'); if(rb) rb.onclick=resumeGame;
   const mb=document.getElementById('menuBtn'); if(mb) mb.onclick=exitToMenu;
-  document.getElementById('pauseMainMenu').onclick=async()=>{globalThis.sortieCheckpoint?.save();await globalThis.sortieCheckpoint?.flush();exitToMenu(true);window.location.href='index.html?v=279';};
+  document.getElementById('pauseMainMenu').onclick=async()=>{globalThis.sortieCheckpoint?.save();await globalThis.sortieCheckpoint?.flush();exitToMenu(true);window.location.href='index.html?v=280';};
   document.getElementById('resultBtn').onclick=()=>{
     // the logbook borrows this screen from the menu — send the player straight back
     if(logbookOpen){ logbookOpen=false; showOverlay('menu'); return; }
@@ -8263,7 +8265,7 @@ function setupUIButtons(){
       clearSecretSpace();hideOverlays();P.alive=true;state=ST.FLIGHT;enterSecretSpace(true);clock.getDelta();return;
     }
     const last=mission===MISSIONS.length-2;
-    if(MISSIONS[mission]?.custom){window.location.href='hangar.html?theatre=pacific&v=279';return;}
+    if(MISSIONS[mission]?.custom){window.location.href='hangar.html?theatre=pacific&v=280';return;}
     if(wasWin){
       if(MISSIONS[mission] && MISSIONS[mission].free){ startMission(mission); return; }  // stay in Free Flight
       if(MISSIONS[mission] && MISSIONS[mission].qual){ showOverlay('menu'); return; }  // qual -> ready room
@@ -8582,7 +8584,7 @@ function animate(){
     notice.style.cssText='position:fixed;inset:0;z-index:999998;background:rgba(15,20,15,.95);color:#e8ddbc;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px;text-align:center;font:16px system-ui';
     const title=document.createElement('h2');title.textContent='Simulation interrupted';
     const detail=document.createElement('p');
-    detail.textContent='BUILD 279 · '+(MISSIONS[mission]?.sub||'Menu')+' · '+error.message;
+    detail.textContent='BUILD 280 · '+(MISSIONS[mission]?.sub||'Menu')+' · '+error.message;
     const reload=document.createElement('button');reload.textContent='Reload game';
     reload.style.cssText='padding:12px 24px;font:inherit';reload.onclick=()=>location.reload();
     notice.appendChild(title);notice.appendChild(detail);notice.appendChild(reload);document.body.appendChild(notice);
@@ -8591,6 +8593,7 @@ function animate(){
 }
 function animateFrame(){
   if(state===ST.PAUSED||document.hidden||runtimeSession?.graphicsLost||renderer.getContext().isContextLost())return;
+  if(!graphicsQuality.frameDue(performance.now()))return; // Build 280: steady 30 FPS
   const frameInterval=clock.getDelta(),rawDt=Math.min(0.05,frameInterval);frameIntervalForGraphics=frameInterval;
   GameRuntime.frames.begin(frameInterval);
   if(secretJetSpace){renderSecretSpace(rawDt);return;}
@@ -8764,9 +8767,10 @@ const graphicsQuality=GraphicsQuality.create();
 let graphicsPost=null,pacificPerf=null,pacificPerfOn=new URLSearchParams(location.search).get('perf')==='1',frameIntervalForGraphics=0;
 function applyPacificGraphics(){
   if(!renderer)return;
-  const g=graphicsQuality.settings,ratio=Math.min(window.devicePixelRatio||1,2,g.pixelRatio);
-  if(Math.abs(renderer.getPixelRatio()-ratio)>.01){renderer.setPixelRatio(ratio);renderer.setSize(window.innerWidth,window.innerHeight);
-    window.flightQuality=GameRuntime.createQuality(renderer,{enabled:navigator.maxTouchPoints>0&&graphicsQuality.choice!=='auto'});}
+  const g=graphicsQuality.settings,ratio=graphicsQuality.pixelRatio(Math.min(window.devicePixelRatio||1,2,g.pixelRatio));
+  const safetyNet=navigator.maxTouchPoints>0&&graphicsQuality.choice!=='auto'&&graphicsQuality.frameMode==='free';
+  if(Math.abs(renderer.getPixelRatio()-ratio)>.01||flightQuality.enabled!==safetyNet){renderer.setPixelRatio(ratio);renderer.setSize(window.innerWidth,window.innerHeight);
+    window.flightQuality=GameRuntime.createQuality(renderer,{enabled:safetyNet});}
   const shadows=g.shadows;
   if(sun){
     const size=shadows?g.shadowSize:512;
@@ -8777,9 +8781,11 @@ function applyPacificGraphics(){
   if(graphicsPost){graphicsPost.enabled=g.bloom;graphicsPost.glow=.55;graphicsPost.threshold=.9;}
   GraphicsQuality.applyAnisotropy(scene,renderer,g.anisotropy);
   const el=document.getElementById('graphicsMenu');if(el)el.value=graphicsQuality.choice;
+  const fr=document.getElementById('frameRateMenu');if(fr)fr.value=graphicsQuality.frameMode;
   pacificPerf?.reset();
 }
 graphicsQuality.onChange(applyPacificGraphics);
+graphicsQuality.onResolution(applyPacificGraphics);
 function renderPacific(){
   if(!graphicsPost?.enabled){renderer.__sceneInfo=null;return GameRuntime.render(renderer,scene,camera);}
   const gl=renderer.getContext();if(gl.isContextLost())return false;
@@ -8787,7 +8793,7 @@ function renderPacific(){
   catch(error){if(gl.isContextLost())return false;throw error;}
 }
 function measurePacificFrame(dt,rendered){
-  if(state===ST.FLIGHT&&rendered&&graphicsQuality.sample(dt,true))flash('GRAPHICS: '+graphicsQuality.label().toUpperCase(),900);
+  if(state===ST.FLIGHT&&rendered&&graphicsQuality.sample(dt,true,(GameRuntime.frames.lastCpu||0)/1000))flash('GRAPHICS: '+graphicsQuality.label().toUpperCase(),900);
   const panel=document.getElementById('perfHud');if(!panel)return;
   const visible=pacificPerfOn&&state===ST.FLIGHT&&rendered;
   if(!visible){if(!panel.hidden){panel.hidden=true;pacificPerf?.reset();}return;}

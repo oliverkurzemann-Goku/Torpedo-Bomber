@@ -19,6 +19,18 @@
   const KEY='graphicsQuality';
   const read=()=>{try{const v=global.localStorage.getItem(KEY);return v==='low'||v==='medium'||v==='high'||v==='auto'?v:null;}catch(e){return null;}};
   const write=v=>{try{global.localStorage.setItem(KEY,v);}catch(e){}};
+  // Build 280: frame-rate setting, separate from the detail tier.
+  //   hold60 - keep 60 FPS by lowering the render resolution in small steps
+  //            (shadows, glow and detail stay; only the pixel count changes),
+  //   cap30  - a steady 30 FPS with the full resolution of the tier,
+  //   free   - as before Build 280: whatever the device manages.
+  // Measured (Build 280, Rhine Ultra High, same view): at 2x the scene costs
+  // 1.6x the time of Build 276's 1.5x picture without shadows/glow, and 66 % of
+  // the extra time scales with the pixel count - resolution is the lever.
+  const FRAME_KEY='graphicsFrameRate',FRAME_MODES=['hold60','cap30','free'];
+  const LADDER=[2,1.75,1.5,1.3,1.15,1];
+  const readFrame=()=>{try{const v=global.localStorage.getItem(FRAME_KEY);return FRAME_MODES.includes(v)?v:null;}catch(e){return null;}};
+  const writeFrame=v=>{try{global.localStorage.setItem(FRAME_KEY,v);}catch(e){}};
 
   function create(options={}){
     const params=new URLSearchParams(global.location?.search||'');
@@ -30,6 +42,13 @@
     let auto=touch?'medium':'high',ceiling='high',listeners=[];
     const autoStart=auto;
     let slow=0,good=0,cooldown=0,last=null,failed=new Set(),stepping=false;
+    // Frame-rate state. Automated browsers (tests) keep 'free' unless the page
+    // asks for a mode, so simulated 20-FPS test loops never change resolution.
+    const forcedFrame=params.get('framerate');
+    let frameMode=FRAME_MODES.includes(forcedFrame)?forcedFrame:
+      global.navigator?.webdriver?'free':readFrame()||'hold60';
+    let level=0,steps=1,cpuBound=false,winC=0,winT=0,winN=0,goodWins=0,resCool=0,clockT=0,raisedAt=-1e9,raiseAt=0,backoff=30,lastFrame=-1e9,resListeners=[],misses=new Map();
+    const target=()=>frameMode==='cap30'?1/30:1/60;
     const tier=()=>choice==='auto'?auto:choice;
     const cap=name=>ORDER[Math.min(ORDER.indexOf(name),ORDER.indexOf(ceiling))];
     // Build 278: Auto steps only change what is cheap to change (resolution,
@@ -55,10 +74,23 @@
       // A thermal or memory warning lowers the highest permitted tier.
       limit(level){ceiling=ORDER[Math.max(0,Math.min(2,level))];notify();return api;},
       // Frame interval in seconds (unclamped). Returns true when the tier changed.
-      sample(interval,active=true){
-        if(choice!=='auto'||!active||!Number.isFinite(interval)||interval<=0||interval>.5)return false;
+      // cpuSeconds (optional): script time of the frame. When the script alone
+      // misses the target, fewer pixels cannot help; the resolution then stays.
+      sample(interval,active=true,cpuSeconds=0){
+        if(!active||!Number.isFinite(interval)||interval<=0||interval>.5)return false;
+        // Build 280: resolution first; the tier only moves once the resolution
+        // is at its floor (too slow) or at the tier's full value (fast enough).
+        let atFloor=true,atTop=true;
+        if(frameMode!=='free'){
+          resolution(interval,cpuSeconds);
+          atFloor=level>=steps-1||cpuBound;atTop=level===0;
+        }
+        if(choice!=='auto')return false;
         if(cooldown>0){cooldown-=interval;return false;}
-        const ms=interval*1000;
+        // Thresholds follow the target: 22/17.5 ms at 60 FPS, double at 30.
+        const ms=interval*1000*(1/60)/target();
+        if(!atFloor&&ms>22){slow=0;return false;}
+        if(!atTop&&ms<=22){good=0;return false;}
         // Slower than 45 FPS for three seconds lowers; 20 s at 60 FPS raises.
         // Build 278: a tier that was too slow once is not tried again in this
         // session. Before, a device at ~40 FPS on Medium fell to Low, ran
@@ -70,7 +102,38 @@
         if(good>20&&i<2&&!failed.has(ORDER[i+1])){auto=ORDER[i+1];slow=good=0;cooldown=8;step();return true;}
         return false;
       },
-      label(){return (choice==='auto'?'Auto · ':'')+TIERS[cap(tier())].name;},
+      get frameMode(){return frameMode;},
+      get resolutionLevel(){return level;},
+      setFrameMode(next,remember=true){
+        if(!FRAME_MODES.includes(next))return api;
+        frameMode=next;if(remember)writeFrame(next);
+        level=0;winT=winC=winN=goodWins=0;cpuBound=false;resCool=1;backoff=30;raiseAt=0;slow=good=0;misses.clear();
+        for(const fn of resListeners)try{fn();}catch(err){console.warn('Resolution change:',err);}
+        for(const fn of listeners)try{fn(api.settings,api.tier,last);}catch(err){console.warn('Graphics change:',err);}
+        return api;
+      },
+      onResolution(fn){resListeners.push(fn);return api;},
+      // Render pixel ratio for a device/tier maximum, after the frame-rate steps.
+      pixelRatio(max){
+        const floor=Math.min(max,1);
+        const ladder=[max,...LADDER.filter(r=>r<max-.01&&r>=floor-.001)];
+        steps=ladder.length;if(frameMode!=='hold60'&&frameMode!=='cap30')level=0;
+        return ladder[Math.min(level,steps-1)];
+      },
+      // cap30: true on the frames to draw (every second 60-Hz frame).
+      frameDue(now){
+        if(frameMode!=='cap30')return true;
+        if(now-lastFrame<28)return false;
+        lastFrame=now;return true;
+      },
+      label(){return (choice==='auto'?'Auto · ':'')+TIERS[cap(tier())].name+(frameMode==='free'?'':' · '+(frameMode==='cap30'?'30':'60'));},
+      bindFrameSelect(select){
+        if(!select)return api;
+        select.value=frameMode;
+        select.onchange=e=>api.setFrameMode(e.target.value);
+        listeners.push(()=>{if(select.value!==frameMode)select.value=frameMode;});
+        return api;
+      },
       bindSelect(select){
         if(!select)return api;
         select.value=choice;
@@ -79,9 +142,32 @@
         return api;
       }
     };
+    // One-second windows. Slower than the target by 12 % -> one step down
+    // (about 13 % fewer pixels each). Six windows on target -> try one step up;
+    // if that is too slow within 4 s, step back and wait twice as long before
+    // the next try (30 s, 60 s ... 5 min); a step that failed three times is not
+    // tried again until the setting changes. On a 60-Hz display a frame that
+    // misses 16.7 ms is shown at 33 ms, so free headroom cannot be measured -
+    // only tried.
+    function resolution(interval,cpu){
+      clockT+=interval;if(resCool>0){resCool-=interval;return;}
+      winT+=interval;winC+=Number.isFinite(cpu)&&cpu>0?cpu:0;winN++;if(winT<1)return;
+      const mean=winT/winN,goal=target();cpuBound=winC/winN>goal;winT=winC=winN=0;
+      if(mean>goal*1.12){
+        goodWins=0;
+        if(level<steps-1&&!cpuBound){
+          if(clockT-raisedAt<4){backoff=Math.min(300,backoff*2);raiseAt=clockT+backoff;misses.set(level,(misses.get(level)||0)+1);}
+          level++;resCool=1;changed();
+        }
+      }else if(mean<goal*1.03){
+        goodWins++;
+        if(goodWins>=6&&level>0&&clockT>=raiseAt&&(misses.get(level-1)||0)<3){level--;goodWins=0;raisedAt=clockT;resCool=1;changed();}
+      }else goodWins=0;
+    }
+    function changed(){for(const fn of resListeners)try{fn();}catch(err){console.warn('Resolution change:',err);}}
     function step(){stepping=true;try{notify();}finally{stepping=false;}}
     function notify(){
-      const now=api.tier;
+      const now=api.tier;if(now!==last){misses.clear();backoff=30;}
       for(const fn of listeners)try{fn(api.settings,now,last);}catch(err){console.warn('Graphics change:',err);}
       last=now;
     }
@@ -158,5 +244,5 @@
     return changed;
   }
 
-  global.GraphicsQuality={create,textureBytes,createPerfPanel,applyAnisotropy,TIERS,ORDER};
+  global.GraphicsQuality={create,textureBytes,createPerfPanel,applyAnisotropy,TIERS,ORDER,FRAME_MODES,LADDER};
 })(typeof window!=='undefined'?window:globalThis);

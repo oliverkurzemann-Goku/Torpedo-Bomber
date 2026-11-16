@@ -313,7 +313,7 @@
   <div style="width:100%;height:4px;background:repeating-linear-gradient(45deg,#ffd400,#ffd400 8px,#111 8px,#111 16px);"></div>
   <span id="testVersionBannerText" style="background:#111;color:#ffd400;font-family:monospace;font-weight:800;font-size:11px;letter-spacing:.5px;padding:3px 10px;border:1px solid #ffd400;border-top:none;border-radius:0 0 6px 6px;"></span>
 </div>
-<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 279';</script>
+<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 280';</script>
 <!-- ===== END TEMP TEST-ONLY VERSION BANNER ===== -->
 <div id="app"></div>
 <style>
@@ -355,7 +355,7 @@
   <div id="gunsight"></div>
   <div id="radio"></div>
   <div id="rhinePerfHud" hidden></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 279 · REAL RHINE</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 280 · REAL RHINE</div>
 
   <div id="apr">
     <div id="aprCall"></div>
@@ -410,7 +410,7 @@
 </div>
 
 <div class="overlay hidden" id="menu" data-campaign="europe">
-  <div class="menuTop"><a id="selBtn" href="index.html?v=279">&#9664; Change Game</a><span class="menuMeta">RHINE OPERATIONS<br>BUILD 279</span></div>
+  <div class="menuTop"><a id="selBtn" href="index.html?v=280">&#9664; Change Game</a><span class="menuMeta">RHINE OPERATIONS<br>BUILD 280</span></div>
   <div class="card menuCard">
     <aside class="menuOverview" aria-label="Campaign and pilot options">
     <div class="campaignArt" aria-hidden="true"></div>
@@ -429,7 +429,8 @@
     <details class="extraSettings"><summary>More options &amp; credits</summary><div class="settingsContent">
       <label class="toggle"><input id="spokenRadio" type="checkbox"> Spoken radio (local device voice)</label>
       <label class="weatherPick" for="approachRoute">Jet / Komet approach<select id="approachRoute"><option value="auto">Vary each sortie</option><option value="ridge">Northern ridge gap</option><option value="valley">Southern valley</option></select></label>
-      <label class="weatherPick" for="graphicsMenu">Graphics<select id="graphicsMenu"><option value="auto">Auto (60 FPS)</option><option value="low">Low</option><option value="medium">Medium</option><option value="high">High</option></select></label>
+      <label class="weatherPick" for="graphicsMenu">Graphics<select id="graphicsMenu"><option value="auto">Auto</option><option value="low">Low</option><option value="medium">Medium</option><option value="high">High</option></select></label>
+      <label class="weatherPick" for="frameRateMenu">Frame rate<select id="frameRateMenu"><option value="hold60">60 FPS (resolution adapts)</option><option value="cap30">30 FPS steady (full resolution)</option><option value="free">Unlimited (as fast as possible)</option></select></label>
       <label class="weatherPick" for="rhineSceneryMenu">Rhine scenery<select id="rhineSceneryMenu"><option value="detailed">Detailed (A)</option><option value="ultra">Ultra High (test)</option><option value="classic">Classic (original scenery)</option></select></label>
       <label class="toggle"><input id="rhinePerfMenu" type="checkbox"> Performance overlay</label>
       <label class="toggle" id="dbgToggle"><span class="box" id="dbgBox"></span> Debug overlay</label>
@@ -445,7 +446,7 @@
     </aside>
     <section class="missionPanel" aria-label="Mission selection">
       <div class="secLbl">Choose your sortie · 15 missions + 4 bonus &amp; training</div>
-      <a class="hangarLink" href="hangar.html?theatre=europe&amp;v=279">CUSTOM MISSION · CHOOSE AIRCRAFT &amp; LOADOUT →</a>
+      <a class="hangarLink" href="hangar.html?theatre=europe&amp;v=280">CUSTOM MISSION · CHOOSE AIRCRAFT &amp; LOADOUT →</a>
 <div id="missionSel" role="group" aria-label="European missions"></div>
       <div id="missionBlurb" class="missionBlurb" aria-live="polite"></div>
       <div class="menuConfig">
@@ -499,7 +500,8 @@
     <div class="sub" id="pauseReason">Sortie held</div>
     <div class="brief" id="pauseOrders"></div>
     <div class="rhinePauseSettings">
-      <label class="weatherPick" for="graphicsPause">Graphics<select id="graphicsPause"><option value="auto">Auto (60 FPS)</option><option value="low">Low</option><option value="medium">Medium</option><option value="high">High</option></select></label>
+      <label class="weatherPick" for="graphicsPause">Graphics<select id="graphicsPause"><option value="auto">Auto</option><option value="low">Low</option><option value="medium">Medium</option><option value="high">High</option></select></label>
+      <label class="weatherPick" for="frameRatePause">Frame rate<select id="frameRatePause"><option value="hold60">60 FPS (resolution adapts)</option><option value="cap30">30 FPS steady (full resolution)</option><option value="free">Unlimited (as fast as possible)</option></select></label>
       <label class="weatherPick" for="rhineSceneryPause">Rhine scenery<select id="rhineSceneryPause"><option value="detailed">Detailed (A)</option><option value="ultra">Ultra High (test)</option><option value="classic">Classic (original scenery)</option></select></label>
       <label class="toggle"><input id="rhinePerfPause" type="checkbox"> Performance overlay</label>
     </div>
@@ -598,8 +600,8 @@
 <script src="terrain-system/RhineUltra.js?v=277"></script>
 <script src="terrain-system/LivingWorld.js?v=268"></script>
 <script src="campaign.js?v=1"></script>
-<script src="game-runtime.js?v=267"></script>
-<script src="graphics-quality.js?v=279"></script>
+<script src="game-runtime.js?v=280"></script>
+<script src="graphics-quality.js?v=280"></script>
 <script src="graphics-post.js?v=277"></script>
 <script src="graphics-extras.js?v=279"></script>
 <script src="sortie-checkpoint.js?v=238"></script>
@@ -1034,7 +1036,7 @@ async function loadRealWorld(){
 
   if(OSMManager.BUILD!==23||HistoricalObjectManager.BUILD!==21||LivingWorld.BUILD!==22||WorldVehicles.BUILD!==24) throw new Error('Terrain version mismatch. Reload Remagen.');
   document.getElementById('testVersionBannerText').textContent=
-    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 279 · MODULE 23';
+    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 280 · MODULE 23';
   heightProvider=new DEMHeightProvider(RTILE,'terrain-system/real/data/dem/');
   terrain=new TerrainManager(scene,RTILE,heightProvider);
   osmMgr=new OSMManager(scene,RTILE,terrain,'terrain-system/real/data/osm/');
@@ -8498,7 +8500,7 @@ function showResult(good,title,sub,html,btn){
   document.getElementById('rsGo').onclick=()=>{
     voiceRadio.cancel();soundscape.stop();
     show('result',false);
-    if(MISSIONS[selectedMission]?.custom){window.location.href='hangar.html?theatre=europe&v=279';return;}
+    if(MISSIONS[selectedMission]?.custom){window.location.href='hangar.html?theatre=europe&v=280';return;}
     if(good && selectedMission===MISSIONS.length-1){
       show('menu',true);if(navigation){navigation.reset();navigation.button.style.display='none';}
     }
@@ -8865,17 +8867,19 @@ let graphicsPost=null,graphicsFx=null,graphicsTier=null;
 const SUN_DIRECTION=new THREE.Vector3(-1800,2600,1400).normalize();
 function rhinePixelRatio(){
   const touch=navigator.maxTouchPoints>0,ultra=rhineSceneryMode==='ultra';
-  return Math.min(window.devicePixelRatio||1,ultra||!touch?2:1.5,graphicsSettings().pixelRatio);
+  // Build 280: the frame-rate setting may lower this in steps to hold 60 FPS.
+  return graphicsQuality.pixelRatio(Math.min(window.devicePixelRatio||1,ultra||!touch?2:1.5,graphicsSettings().pixelRatio));
 }
 function applyGraphics(){
   if(!renderer)return;
   const g=graphicsSettings(),ultra=!!rhineUltra;
   const ratio=rhinePixelRatio();
-  if(Math.abs(renderer.getPixelRatio()-ratio)>.01||graphicsTier===null){
+  // The old pixel-ratio safety net stays only for a fixed choice with an unlimited
+  // frame rate; Auto steps tiers itself and the frame-rate setting owns resolution.
+  const safetyNet=navigator.maxTouchPoints>0&&graphicsQuality.choice!=='auto'&&!ultra&&graphicsQuality.frameMode==='free';
+  if(Math.abs(renderer.getPixelRatio()-ratio)>.01||graphicsTier===null||flightQuality.enabled!==safetyNet){
     renderer.setPixelRatio(ratio);renderer.setSize(window.innerWidth,window.innerHeight);
-    const touch=navigator.maxTouchPoints>0;
-    // The old pixel-ratio safety net stays for a fixed choice; Auto steps tiers itself.
-    window.flightQuality=GameRuntime.createQuality(renderer,{enabled:touch&&graphicsQuality.choice!=='auto'&&!ultra});
+    window.flightQuality=GameRuntime.createQuality(renderer,{enabled:safetyNet});
   }
   if(!graphicsPost)graphicsPost=GraphicsPost.create(THREE,renderer,{grade:true});
   graphicsPost.enabled=ultra&&g.grade;graphicsPost.glow=g.bloom?.6:0;
@@ -8888,6 +8892,7 @@ function applyGraphics(){
   for(const id of ['graphicsMenu','graphicsPause']){const el=document.getElementById(id);if(el)el.value=graphicsQuality.choice;}
 }
 graphicsQuality.onChange(()=>{applyGraphics();resetRhineMetrics?.();});
+graphicsQuality.onResolution(()=>applyGraphics());
 
 function applyRhineProfile(){
   const ultra=rhineSceneryMode==='ultra';
@@ -9026,6 +9031,7 @@ function init(){
     document.getElementById(id).onchange=e=>{rhineMetricsEnabled=e.target.checked;resetRhineMetrics();};
   }
   for(const id of ['graphicsMenu','graphicsPause'])graphicsQuality.bindSelect(document.getElementById(id));
+  for(const id of ['frameRateMenu','frameRatePause'])graphicsQuality.bindFrameSelect(document.getElementById(id));
   configureRhineScenery(rhineSceneryMode);
   const hints=document.getElementById('flightHints');hints.checked=GameRuntime.storage.getItem('flightHints')!=='0';
   hints.onchange=()=>GameRuntime.storage.setItem('flightHints',hints.checked?'1':'0');
@@ -9050,7 +9056,7 @@ function init(){
   // menu wiring
   document.getElementById('startBtn').onclick=()=>showBrief(selectedMission);
   duelInit();
-  document.getElementById('pauseMainMenu').onclick=async()=>{globalThis.sortieCheckpoint?.save();await globalThis.sortieCheckpoint?.flush();exitToMenuFromPause(true);window.location.href='index.html?v=279';};
+  document.getElementById('pauseMainMenu').onclick=async()=>{globalThis.sortieCheckpoint?.save();await globalThis.sortieCheckpoint?.flush();exitToMenuFromPause(true);window.location.href='index.html?v=280';};
   document.getElementById('logBtn').onclick=()=>{ show('menu',false); showLogbook(); };
   document.getElementById('skipLaunchPreview').onclick=()=>finishLaunchIntro();
   document.getElementById('brBack').onclick=()=>{ show('brief',false); show('menu',true);if(navigation){navigation.reset();navigation.button.style.display='none';} state=ST.MENU; };
@@ -9140,6 +9146,7 @@ function animate(){
   requestAnimationFrame(animate);
   if(!renderer) return;
   if(state===ST.PAUSED||document.hidden||runtimeSession?.graphicsLost||renderer.getContext().isContextLost())return;
+  if(!graphicsQuality.frameDue(performance.now()))return; // Build 280: steady 30 FPS
   const frameInterval=clock.getDelta(),raw=Math.min(0.05,frameInterval);
   GameRuntime.frames.begin(frameInterval);
   let dt=raw;
@@ -9258,7 +9265,7 @@ function animate(){
   runwayLights?.update(camera);
   if(graphicsFx)graphicsFx.update(raw,camera,graphicsFocus(),{aircraft:graphicsCasters(),altitude:P.pos.y,jet:JET_KINDS.includes(P.ac)&&state===ST.FLIGHT&&P.alive});
   const rendered=renderGraphics();GameRuntime.frames.end();
-  if(state===ST.FLIGHT&&graphicsQuality.sample(frameInterval,P.alive&&!launchIntro))flash('GRAPHICS: '+graphicsQuality.label().toUpperCase(),900);
+  if(state===ST.FLIGHT&&graphicsQuality.sample(frameInterval,P.alive&&!launchIntro,(GameRuntime.frames.lastCpu||0)/1000))flash('GRAPHICS: '+graphicsQuality.label().toUpperCase(),900);
   if(rhineMetricsEnabled)measureRhineFrame(frameInterval,rendered);
   globalThis.sortieCheckpoint?.tick(raw);
 }
