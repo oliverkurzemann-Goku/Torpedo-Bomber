@@ -64,5 +64,20 @@ for(const mesh of group.children.filter(m=>m.geometry.attributes.canopyGround)){
   }
  }
 }
+// Build 278: young trees near the aircraft stand on the ground of their parent
+// stand. They used the tile's current LOD height, so after an air start (coarse
+// tiles) whole groups hung in the air above the river banks until rebuilt.
+{
+ const scene=new THREE.Scene();scene.add(group);
+ terrain.getHeight=(x,z)=>x*.02+z*.03;
+ const fine=terrain.getRenderedHeight;terrain.getRenderedHeight=(x,z)=>fine(x,z)+40;   // a coarse tile, 40 m off
+ osm.updateNearForest(2000,2000,1);
+ const young=[...(osm.nearForest?.values()||[])].map(r=>r.mesh);
+ assert(young.length===1&&young[0].count>20,'one cell of young trees is built near the aircraft');
+ const m=new THREE.Matrix4(),p=new THREE.Vector3();let worst=0;
+ for(let i=0;i<young[0].count;i++){young[0].getMatrixAt(i,m);p.setFromMatrixPosition(m);worst=Math.max(worst,Math.abs(p.y-fine(p.x,p.z)));}
+ assert(worst<.001,'young trees stand on the fine ground, not on a coarse LOD surface: '+worst);
+ terrain.getRenderedHeight=fine;osm.updateNearForest(2000,2000,0);
+}
 console.log(JSON.stringify({surfaces:surfaces.size,landcoverTypes:types.size,paletteColors:colors.size,earthPixels:earth,greenPixels:green,
  forestCoverage:covered/samples,forestBuckets:group.children.length,stands:placements.length}));

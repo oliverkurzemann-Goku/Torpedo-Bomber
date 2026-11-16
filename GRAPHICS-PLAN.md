@@ -1,9 +1,29 @@
 # Grafik- und Performance-Plan
 
-Stand: 16.11.2026, **Build 277: Phasen 0–6 umgesetzt** (Freigabe des Nutzers: „setze deine Phasen um …
+Stand: 16.11.2026, **Build 277: Phasen 0–6 umgesetzt, Build 278: Nachbesserungen nach iPad-Test (Abschnitt 0a)** (Freigabe des Nutzers: „setze deine Phasen um …
 aber keine 120 fps"). Zielgerät des Nutzers: **iPad Pro mit M1**, Ziel **stetige 60 Bilder/s** (120 Hz ist
 ausdrücklich kein Ziel). Was gebaut ist, steht im neuen Abschnitt 0; die Abschnitte 1–8 sind der Plan von
 Build 276 (unverändert, mit Vermerken).
+
+## 0a. Nachbesserung Build 278 (iPad-Rückmeldung zu Build 277)
+
+- **Auto hatte Hänger:** Auto senkte nach 2 s unter 45 Bildern/s eine Stufe und hob nach 15 s flüssigem Flug wieder
+  an. Ein Gerät, das auf Medium ~40 Bilder/s schafft und auf Low 60, pendelte so alle ~25 s hin und her. Jeder
+  Wechsel schaltete Schatten an/aus (alle Shader neu übersetzen) und änderte die anisotrope Filterung (alle Texturen
+  neu hochladen). Gemessen im Testbrowser (SwiftShader, echtes Ultra): erstes Bild nach einem Wechsel 0,2–184 s,
+  20 neue Shaderprogramme. Jetzt: Auto wechselt nur noch Auflösung, Baumreichweite, Glühen, Bodendetail; Schatten
+  und Filterung bleiben auf dem Stand der Startstufe; eine Stufe, die einmal zu langsam war, wird in dieser Sitzung
+  nicht wieder versucht; Senken nach 3 s statt 2 s, Heben nach 20 s statt 15 s. Gemessen danach: erstes Bild nach
+  dem Wechsel 64 ms, 0 neue Programme, kein Zurückpendeln. Feste Stufen (Low/Medium/High) unverändert.
+  Test `okinawa/tests/graphics-quality.cjs`.
+- **Junge Bäume schwebten (Rattenflug):** `OSMManager.updateNearForest` setzte die jungen Bäume auf die *gerade
+  gezeichnete* Geländehöhe. Nach einem Luftstart (Rattenflug, 13,5 km vom Platz) sind die Kacheln noch grob; die
+  Gruppen blieben dann in der Luft hängen, auch nachdem das Gelände fein wurde. Gemessen, nachdem das Gelände fein war: 557 junge Bäume mehr
+  als 6 m über dem Boden (normale Bäume: 0); mit der Korrektur auf derselben Strecke 0. Jetzt: Höhe des Elternbestands plus DEM-Gefälle (unabhängig vom LOD). `landscape-variety.cjs`
+  prüft das (alter Code: 40 m daneben).
+- **Braune Stellen am Ufer (Ultra):** die „Sandbänke" (`RhineRiverLife`, braungrüne Flecken im Uferwasser) wurden für
+  die nächsten 48 Uferstellen gezeichnet und erschienen am Rand dieser Liste schlagartig – einige hundert Meter vor dem
+  Flugzeug. Jetzt 96 Stellen, und sie blenden zur Grenze der Liste weich aus (kein Aufpoppen mehr).
 
 ## 0. Umsetzungsstand Build 277
 

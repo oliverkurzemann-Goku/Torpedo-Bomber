@@ -294,7 +294,12 @@ class OSMManager {
       for(let k=0;k<per;k++){
         const a=osmHash(p.x+k*7.1,p.z,4401)*Math.PI*2,d=osmHash(p.x,p.z+k*3.3,4402)*.5*r;
         pos.set(p.x+Math.cos(a)*d,0,p.z+Math.sin(a)*d);
-        try{pos.y=this.terrain.getRenderedHeight(pos.x,pos.z);}catch(e){continue;}
+        // Build 278: the height follows the parent stand (placed on the fine
+        // terrain at load) plus the DEM slope to the young tree. The rendered
+        // height used before depends on the tile's current LOD: right after an
+        // air start (Rat Flight) the tiles were still coarse and whole groups
+        // of young trees were left hanging in the air over the river banks.
+        try{pos.y=p.y+this.terrain.getHeight(pos.x,pos.z)-this.terrain.getHeight(p.x,p.z);}catch(e){continue;}
         const young=.36+osmHash(pos.x,pos.z,4403)*.16;
         q.setFromAxisAngle(OSM_UP,osmHash(pos.x,pos.z,4404)*Math.PI*2);
         sc.set(r*young,Math.min(1.35,sc.y)*(.42+osmHash(pos.z,pos.x,4405)*.2),r*young);

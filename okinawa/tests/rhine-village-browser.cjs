@@ -24,7 +24,7 @@ const server=http.createServer((req,res)=>{
   page.on('pageerror',e=>errors.push(e.message));
   page.on('console',m=>{if(/Shader Error|VALIDATE_STATUS|not compiled/.test(m.text()))errors.push(m.text());});
   await page.addInitScript(()=>{window.requestAnimationFrame=()=>0;});
-  const url='http://127.0.0.1:'+server.address().port+'/remagen-mission.html?v=277';
+  const url='http://127.0.0.1:'+server.address().port+'/remagen-mission.html?v=278';
   // Build 277: Ultra's pixel ratio follows the graphics level (Auto on touch starts at Medium = 1.5).
   await page.goto(url+'&scenery=ultra&perf=1&graphics=high');
   await page.waitForFunction(()=>typeof livingWorld!=='undefined'&&livingWorld?.rhineVillage&&state===ST.MENU,null,{polling:200});
@@ -279,7 +279,11 @@ const server=http.createServer((req,res)=>{
    const moved=start.distanceTo(tug.mesh.position),wake=shipWakes.tracks.get(tug);
    const birdsMoved=flock.mesh.geometry.attributes.position.array.slice(0,3).some((value,i)=>value!==birdStart[i]);
    const shoreTriangles=life.shore.geometry.drawRange.count/3;
-   if(shoreTriangles<30||shoreTriangles>576)throw Error('Rhine shoals exceed the shoreline geometry budget');
+   // Build 278: 96 nearest sites (was 48), fading out towards the last one.
+   if(shoreTriangles<30||shoreTriangles>1152)throw Error('Rhine shoals exceed the shoreline geometry budget');
+   const shoalReach=life.bankReach.value,shoalFocus=life.bankFocus.value;
+   const farthest=Math.max(...life.shoreSites.map(s=>Math.hypot(s.x-shoalFocus.x,s.z-shoalFocus.y)));
+   if(!(shoalReach>300&&shoalReach<=1950&&farthest<=shoalReach+60))throw Error('Shoals must fade out before the cut of the nearest-site list: '+shoalReach+' / '+farthest);
    const camera=new THREE.PerspectiveCamera(58,1024/768,1,7500);
    camera.position.set(start.x-170,start.y+108,start.z+85);
    camera.lookAt(tug.mesh.position);
@@ -312,7 +316,7 @@ const server=http.createServer((req,res)=>{
    let shorePixels=0;
    for(let i=0;i<shore.length;i+=4)if(Math.abs(shore[i]-without[i])>8)shorePixels++;
    return {moved,birdsMoved,reeds:life.reeds.count,visibleBoats:boats.filter(b=>b.mesh.visible).length,
-    steam:steam.length,wakePoints:wake?.points.length,wakeAboveWater,shoreTriangles,shorePixels,png,shorePng};
+    steam:steam.length,wakePoints:wake?.points.length,wakeAboveWater,shoreTriangles,shoalReach:Math.round(shoalReach),shorePixels,png,shorePng};
   });
   fs.writeFileSync(path.join(out,'rhine-river-life-ultra.png'),Buffer.from(wildlife.png.split(',')[1],'base64'));
   fs.writeFileSync(path.join(out,'rhine-shore-ultra.png'),Buffer.from(wildlife.shorePng.split(',')[1],'base64'));

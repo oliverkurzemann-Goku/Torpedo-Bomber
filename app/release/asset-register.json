@@ -1,13 +1,13 @@
 {
   "schema": 1,
   "reviewedOn": "2026-10-23",
-  "build": 277,
+  "build": 278,
   "status": "OPEN — source declarations checked; no external rights authorization obtained",
   "payload": {
-    "bytes": 166227845,
+    "bytes": 166230407,
     "fileCount": 397,
     "modelCount": 64,
-    "manifestSha256": "974c96bc646e0a7e5f07e44c7916738dfe0c820a1775b5018000b55a9dcdc5a3"
+    "manifestSha256": "a6d69671434251a01400a49262a8fa3dc228daca96c37eb708e74ca195ec5275"
   },
   "files": [
     {
@@ -852,8 +852,8 @@
     },
     {
       "path": "graphics-quality.js",
-      "bytes": 7516,
-      "sha256": "958c6d10baf319630546ffcae23d51cfd8edd3158ce3e13a2e1c14536cfa2c12",
+      "bytes": 8810,
+      "sha256": "7fa9d29f64157e3756a8d7ffb99e57f4d963a9df5d71cfedeeedf2ce0bafa247",
       "kind": "code-or-notice"
     },
     {
@@ -883,7 +883,7 @@
     {
       "path": "hangar.html",
       "bytes": 4919,
-      "sha256": "e1b40d646c5a7aa68353c44d8a4d21aa7fea0e134287061405ecbbc60fb040b1",
+      "sha256": "8f50eef313b6682d2e81999471efff0bb25db020b82d801e1efa879699bd304a",
       "kind": "code-or-notice"
     },
     {
@@ -895,7 +895,7 @@
     {
       "path": "index.html",
       "bytes": 7912,
-      "sha256": "c5d31acccd184ccb9cb2147a7bb30673b6f9224c03d75757120e634a20f0613f",
+      "sha256": "148fcccc11760386f57fb31015950f44ae2ef3536b8ed8e30d64dbd414267338",
       "kind": "code-or-notice"
     },
     {
@@ -1039,7 +1039,7 @@
     {
       "path": "remagen-mission.html",
       "bytes": 608586,
-      "sha256": "3a7a183e3c63a1028cee4522b555cb4f6430b16782fff08993be15abc1f8850d",
+      "sha256": "6f6c10e880d85197b0b5cb86db0d5083e8b7886a869120beef585496fce3d7f8",
       "kind": "code-or-notice"
     },
     {
@@ -1200,8 +1200,8 @@
     },
     {
       "path": "terrain-system/OSMManager.js",
-      "bytes": 97412,
-      "sha256": "68d809866b95bbc5675afac77c66cef02c02a54ab44891cca2125141e96e0f14",
+      "bytes": 97833,
+      "sha256": "46b192be70bd4b7fc8ab17b196f4a19925a685904cc9bed2dfbb446d6e7ae8dd",
       "kind": "code-or-notice"
     },
     {
@@ -1212,8 +1212,8 @@
     },
     {
       "path": "terrain-system/RhineRiverLife.js",
-      "bytes": 14025,
-      "sha256": "f6684ce9112d05b78494dd6d2316e533891a2cba0a3b909b9671c8a75199680e",
+      "bytes": 14872,
+      "sha256": "193450e177f409ec0f245927e7f7a714e23ed932864ff6ab701ef3851d56735b",
       "kind": "code-or-notice"
     },
     {
@@ -2311,7 +2311,7 @@
     {
       "path": "torpedo-carrier.html",
       "bytes": 552336,
-      "sha256": "b92543a9bafa6749612b22ecf806f4549daed4f9b4489927c777be64b08aab4f",
+      "sha256": "69ea5d7437d40b38b86cd9ea5bab6ef3255f77e45eccd9b268516c7f766acd3c",
       "kind": "code-or-notice"
     },
     {

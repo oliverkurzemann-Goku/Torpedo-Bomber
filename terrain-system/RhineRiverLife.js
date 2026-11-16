@@ -77,6 +77,8 @@ class RhineRiverLife {
     return tiles;
   }
 
+  static get SHOAL_SITES(){return 96;}
+
   static *bankEdges(ring,size){
     for(let i=0;i<ring.length;i++){
       const a=ring[i],b=ring[(i+1)%ring.length];
@@ -88,13 +90,19 @@ class RhineRiverLife {
   }
 
   makeShore(){
-    const geometry=new THREE.BufferGeometry(),capacity=48*3*2*6;
+    const geometry=new THREE.BufferGeometry(),capacity=RhineRiverLife.SHOAL_SITES*3*2*6;
     geometry.setAttribute('position',new THREE.BufferAttribute(new Float32Array(capacity*3),3).setUsage(THREE.DynamicDrawUsage));
     geometry.setAttribute('uv',new THREE.BufferAttribute(new Float32Array(capacity*2),2).setUsage(THREE.DynamicDrawUsage));
     geometry.setDrawRange(0,0);
     const uniforms=THREE.UniformsUtils.clone(THREE.UniformsLib.fog);
     uniforms.bankLight=this.bankLight;
     uniforms.bankTime=this.wind;
+    // Build 278: shoals fade in with distance. They used to switch on at full
+    // strength at the edge of the nearest-48 set, a few hundred metres ahead
+    // of the aircraft (brown patches popping in along the banks).
+    uniforms.bankFocus={value:new THREE.Vector2()};
+    uniforms.bankReach={value:1950};
+    this.bankFocus=uniforms.bankFocus;this.bankReach=uniforms.bankReach;
     const material=new THREE.ShaderMaterial({uniforms,fog:true,transparent:true,depthWrite:false,side:THREE.DoubleSide,
       vertexShader:/* glsl */`
         varying vec2 bankUv, bankWorld;
@@ -107,7 +115,8 @@ class RhineRiverLife {
         }`,
       fragmentShader:/* glsl */`
         varying vec2 bankUv, bankWorld;
-        uniform float bankLight,bankTime;
+        uniform float bankLight,bankTime,bankReach;
+        uniform vec2 bankFocus;
         #include <fog_pars_fragment>
         void main(){
           float variation=.57+.19*sin(dot(bankWorld,vec2(.095,.049)))+.16*sin(dot(bankWorld,vec2(.127,-.195)));
@@ -117,6 +126,7 @@ class RhineRiverLife {
             .095*sin(dot(bankWorld,vec2(.24,.12)));
           float ends=1.0-smoothstep(.66,1.0,abs(along));
           float opacity=ends*(1.0-smoothstep(.23,.97,radius))*(.32+.43*variation);
+          opacity*=1.0-smoothstep(bankReach*.45,bankReach*.92,distance(bankWorld,bankFocus));
           float ripple=max(0.0,sin(bankUv.y*23.0-bankTime*1.65+variation*5.0))*(1.0-bankUv.y);
           vec3 tint=mix(vec3(.144,.191,.124),vec3(.36,.31,.18),variation);
           tint+=vec3(.049,.054,.035)*ripple;
@@ -139,7 +149,10 @@ class RhineRiverLife {
         if(distance<1950**2)candidates.push({site,distance});
       }
     }
-    const nearby=candidates.sort((a,b)=>a.distance-b.distance).slice(0,48);
+    const nearby=candidates.sort((a,b)=>a.distance-b.distance).slice(0,RhineRiverLife.SHOAL_SITES);
+    // The fade ends where the list is cut, so no patch appears at full strength.
+    this.bankFocus.value.set(x,z);
+    this.bankReach.value=nearby.length===RhineRiverLife.SHOAL_SITES?Math.sqrt(nearby.at(-1).distance):1950;
     const geometry=this.shore.geometry,positions=geometry.attributes.position,uv=geometry.attributes.uv;
     let vertices=0,count=0;
     this.shoreSites.length=0;
@@ -167,7 +180,7 @@ class RhineRiverLife {
     }
     geometry.setDrawRange(0,vertices);
     positions.needsUpdate=true;uv.needsUpdate=true;
-    for(const {site} of nearby)for(let i=0;i<3;i++){
+    for(const {site} of nearby.slice(0,48))for(let i=0;i<3;i++){
       const along=(i-1)*(4+site.seed*6),inland=2.4+osmHash(site.x+i,site.z,1845)*4.4;
       const px=site.x+site.ux*along+site.nx*inland,pz=site.z+site.uz*along+site.nz*inland;
       if(!this.terrain.tiles.has(Math.floor(px/size)+','+Math.floor(pz/size))||this.world._pointOnWater(px,pz))continue;
