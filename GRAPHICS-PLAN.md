@@ -1,9 +1,29 @@
 # Grafik- und Performance-Plan
 
-Stand: 16.11.2026, **Build 277: Phasen 0–6 umgesetzt, Build 278–280: Nachbesserungen nach iPad-Test (Abschnitte 0a, 0b, 0c)** (Freigabe des Nutzers: „setze deine Phasen um …
+Stand: 16.11.2026, **Build 277: Phasen 0–6 umgesetzt, Build 278–281: Nachbesserungen nach iPad-Test (Abschnitte 0a–0d)** (Freigabe des Nutzers: „setze deine Phasen um …
 aber keine 120 fps"). Zielgerät des Nutzers: **iPad Pro mit M1**, Ziel **stetige 60 Bilder/s** (120 Hz ist
 ausdrücklich kein Ziel). Was gebaut ist, steht im neuen Abschnitt 0; die Abschnitte 1–8 sind der Plan von
 Build 276 (unverändert, mit Vermerken).
+
+## 0d. Build 281: Flackern in den Jet-Einsätzen – Wolken-Sprites vor der Kamera und beim Umsetzen
+
+Nutzer (Foto Build 279, Komet): „Bei der me262 Mission und der Komet Mission flackert der Bildschirm und die
+Farben verändern sich…." Gemessen im echten Spiel (Chromium/SwiftShader, Ultra/High, Wetter `broken`):
+
+| Verdacht | Messung | Ergebnis |
+|---|---|---|
+| Glühen (Bloom) | Bild mit/ohne Glühen bei Nick −0,35…+0,6 | identisch, kein Pixel über der Schwelle .92 |
+| Hitzeflimmern | Bereich (0,5; 0,3), Radius 0,08 Bildhöhe, Ausschlag 0,0022 | klein, hinter dem Heck; nicht ausgeschlossen auf der Apple-GPU |
+| Sicht in der Wolke | 40 s Komet-Steigflug 1 050 → 2 000 m | Sichtweite 8 500 → 6 800 m, weich (Zeitkonstante 0,5 s) |
+| **Kamera in einem Wolken-Sprite** | dieselben 40 s | **296 von 1 200 Bildern** |
+| Wolken-Umsetzen | Spanne 10 km (Pazifik 9 km), 28 Wolken, 240 m/s | ein Wolkenstück taucht ~alle 1,5 s bei 5 km auf |
+
+Me 262 und Komet sind die einzigen Spielerflugzeuge, die durch die Schicht steigen (der Komet startet in ihr).
+Ein Puff ist eine kamerazugewandte Scheibe von 300–500 m: knapp vor der Kamera füllt er das Bild mit
+55–80 % Deckkraft und ist im nächsten Bild weg. **Fix:** `FlightOps.fadeClouds` (beide Spiele, jedes Bild in
+`updateClouds()`): Puff-Deckkraft × smoothstep(1 r, 2,4 r, Abstand), Wolke × (1 − smoothstep(0,74, 0,92 der
+halben Spanne)). Test `okinawa/tests/cloud-fade.cjs`: um die Kamera Deckkraft 0, größter Schritt je Bild
+0,033 (20 FPS) / 0,011 (60) / 0,005 (120), Umsetzen unsichtbar. Kosten: eine Schleife über ~240 Puffs je Bild.
 
 ## 0c. Build 280: Einstellung „Frame rate“ (60 halten / 30 fest / unbegrenzt)
 

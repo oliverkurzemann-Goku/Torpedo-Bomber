@@ -21,10 +21,35 @@ function clouds(pool,name){
   cl.userData.wxRadius=600*size;cl.userData.wxDepth=230*(1+w.cover*.35);
   cl.children.forEach((p,j)=>{if(!p.material)return;
    p.material.color.setHex(j%3===0?0xc8ced0:w.rain>.5?0x8c969f:0xe0e3e0);
-   p.material.opacity=.55+w.cover*.28;
+   p.material.opacity=.55+w.cover*.28;p.userData.wxOpacity=p.material.opacity;
   });
  });
 }
+// Build 281: the cloud puffs are big camera-facing sprites. Flying through one (the
+// jets climb through the layer at 200+ m/s) put a screen-filling disc in front of
+// the camera that vanished the instant its centre passed behind it, and the pool
+// wraps each cloud from 5 km behind to 5 km ahead, where it popped into view: the
+// screen flickered and changed colour. A puff now fades out before the camera
+// reaches it (the in-cloud fog of visibility() does the white-out smoothly) and a
+// cloud fades out before the wrap distance. `half` is half the wrap span.
+const fadeVec={x:0,y:0,z:0};
+function fadeClouds(pool,camera,center,half){
+ const cx=camera.x,cy=camera.y,cz=camera.z,far0=half*.74,far1=half*.92;
+ for(const c of pool){
+  const reach=Math.max(Math.abs(c.position.x-center.x),Math.abs(c.position.z-center.z));
+  const farFade=1-smooth(far0,far1,reach);
+  const sx=c.scale.x,sy=c.scale.y,sz=c.scale.z;
+  for(const p of c.children){
+   if(!p.material)continue;
+   if(p.userData.wxOpacity==null)p.userData.wxOpacity=p.material.opacity;
+   fadeVec.x=c.position.x+p.position.x*sx;fadeVec.y=c.position.y+p.position.y*sy;fadeVec.z=c.position.z+p.position.z*sz;
+   const r=.5*p.scale.x*sx,d=Math.hypot(fadeVec.x-cx,fadeVec.y-cy,fadeVec.z-cz);
+   const f=farFade*smooth(r,r*2.4,d);   // at d=r a puff already fills the screen (fov 60-71 deg)
+   p.material.opacity=p.userData.wxOpacity*f;p.visible=f>.004&&!p.userData.qualityHidden;   // the adaptive quality budget may hide a puff
+  }
+ }
+}
+function smooth(a,b,x){const t=Math.max(0,Math.min(1,(x-a)/(b-a)));return t*t*(3-2*t);}
 function visibility(scene,pool,pos,name,dt,sea,local){
  const w=wx(name);let inside=0;
  for(const c of pool){if(!c.visible)continue;
@@ -146,5 +171,5 @@ function drawMap(canvas,opt){
  const km=1000*scale;g.strokeStyle='#eee0b5';g.beginPath();g.moveTo(W-30-km,H-12);g.lineTo(W-30,H-12);g.stroke();g.fillText('1 km',W-60,H-17);
  return (opt.approach?'APPROACH: '+opt.approach.label+' · ':'')+opt.targets.map((p,i)=>(i+1)+'. '+p.label+(p.optional?' (optional)':'')).join(' · ');
 }
-global.FlightOps={weather,wx,clouds,visibility,Operation,withPhases,briefText,drawMap};
+global.FlightOps={weather,wx,clouds,fadeClouds,visibility,Operation,withPhases,briefText,drawMap};
 })(typeof window!=='undefined'?window:globalThis);

@@ -59,7 +59,7 @@
   weather(clouds,rain){
    if(!this.enabled)return;
    // Only decorative puffs, never the fog/LOS-bearing cloud groups.
-   for(const c of clouds||[])c.children.forEach((p,i)=>{p.visible=i%this.budget.stride===0;});
+   for(const c of clouds||[])c.children.forEach((p,i)=>{const hide=i%this.budget.stride!==0;if(p.userData)p.userData.qualityHidden=hide;p.visible=!hide;});
    if(rain?.isInstancedMesh)rain.count=Math.ceil(rain.instanceMatrix.count*this.budget.rain);
    else if(rain?.geometry&&rain.userData.dropCount)rain.geometry.setDrawRange(0,Math.ceil(rain.userData.dropCount*this.budget.rain)*2);
   }
