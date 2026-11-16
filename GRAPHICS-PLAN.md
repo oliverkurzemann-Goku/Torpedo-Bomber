@@ -1,9 +1,36 @@
 # Grafik- und Performance-Plan
 
-Stand: 16.11.2026, **Build 277: Phasen 0–6 umgesetzt, Build 278–281: Nachbesserungen nach iPad-Test (Abschnitte 0a–0d)** (Freigabe des Nutzers: „setze deine Phasen um …
+Stand: 16.11.2026, **Build 277: Phasen 0–6 umgesetzt, Build 278–282: Nachbesserungen nach iPad-Test (Abschnitte 0a–0e)** (Freigabe des Nutzers: „setze deine Phasen um …
 aber keine 120 fps"). Zielgerät des Nutzers: **iPad Pro mit M1**, Ziel **stetige 60 Bilder/s** (120 Hz ist
 ausdrücklich kein Ziel). Was gebaut ist, steht im neuen Abschnitt 0; die Abschnitte 1–8 sind der Plan von
 Build 276 (unverändert, mit Vermerken).
+
+## 0e. Build 282: Das Nadelöhr ist die CPU (WebGL-Aufrufe), nicht nur die Pixel
+
+Nutzer: „Die stabile frame rate funktioniert nicht. Auch bei steady 60 sinkt sie. Was ist eigentlich das
+Nadelöhr …?" Ein Bild kostet zwei Dinge, die parallel laufen: **CPU** (Spiellogik + jeden Draw-Call an WebGL
+übergeben) und **Grafikchip** (Dreiecke und vor allem Pixel). Die Bildrate richtet sich nach dem langsameren.
+Auflösung senken entlastet nur den Grafikchip.
+
+Gemessen (Chromium, Rhein Ultra/High, P-47 in 300 m, Draw-Aufrufe als No-op = nur CPU-Seite):
+
+| | vor Build 282 | Build 282 |
+|---|---|---|
+| Draw-Calls je Bild | ~600 | ~600 (unverändert) |
+| WebGL-Aufrufe je Bild | 6 960 | **2 384** |
+| Zeichenbefehle abschicken, Median / P95 | 8,1 / 10,9 ms | **4,2 / 7,5 ms** |
+| Welt/Gelände (Skript) | 3,3 ms | 3,1 ms |
+
+Herkunft der ~600 Draws: Bodenflächen 133 · Bäume (1-km-Zellen × 5 Arten) ~170 · Gebäude ~85 · Gelände 36 ·
+übrige Szene ~85 · Schattenpass ~50. Weitere Hebel gemessen: ohne Schattenpass −6 % Aufrufe; Sichtweite
+Bäume/Gebäude 7 → 5,5 / 4,5 / 3,5 km: −9 / −14 / −50 % (3,5 km: ganze Kacheln Bäume fehlen sichtbar – nicht gebaut).
+
+Ursache: r128 bindet bei jedem `InstancedMesh`-Draw alle Vertex-Attribute neu (`updateBuffers=true`).
+Patch `scripts/patch-three-instancing.cjs` (VAO je Instanz-Mesh, Neubindung nur bei geändertem Instanzpuffer,
+Freigabe beim `dispose`). Bild bitgleich (`okinawa/tests/three-instancing-browser.cjs`).
+
+Die Messanzeige zeigt jetzt `CPU … ms (draws …) of … ms · limit: CPU/GPU` und die 60-FPS-Stufe. Nächste
+Schritte, falls das iPad weiter „CPU“ meldet: Bodenflächen je Kachel zu einem Mesh, Baumarten je Zelle bündeln.
 
 ## 0d. Build 281: Flackern in den Jet-Einsätzen – Wolken-Sprites vor der Kamera und beim Umsetzen
 
@@ -24,6 +51,10 @@ Ein Puff ist eine kamerazugewandte Scheibe von 300–500 m: knapp vor der Kamera
 `updateClouds()`): Puff-Deckkraft × smoothstep(1 r, 2,4 r, Abstand), Wolke × (1 − smoothstep(0,74, 0,92 der
 halben Spanne)). Test `okinawa/tests/cloud-fade.cjs`: um die Kamera Deckkraft 0, größter Schritt je Bild
 0,033 (20 FPS) / 0,011 (60) / 0,005 (120), Umsetzen unsichtbar. Kosten: eine Schleife über ~240 Puffs je Bild.
+
+**Nachmessung (Build 282):** im gerenderten Bild (600 Bilder Komet-Steigflug, 110 mit Kamera im Puff) gab es
+auch **ohne** Ausblenden keinen Helligkeitssprung (größter Sprung des Bildmittels 0,3/255; Ultra-Puffs sind nur
+~20 % deckend). Die Wolken sind als Ursache **nicht bestätigt**; das Ausblenden bleibt als Vorsorge.
 
 ## 0c. Build 280: Einstellung „Frame rate“ (60 halten / 30 fest / unbegrenzt)
 

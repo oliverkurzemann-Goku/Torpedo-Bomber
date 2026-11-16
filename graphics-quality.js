@@ -104,6 +104,8 @@
       },
       get frameMode(){return frameMode;},
       get resolutionLevel(){return level;},
+      // Build 282: for the measuring panel - steps on the ladder and whether the script alone missed the target.
+      get resolutionState(){return {level,steps,cpuBound};},
       setFrameMode(next,remember=true){
         if(!FRAME_MODES.includes(next))return api;
         frameMode=next;if(remember)writeFrame(next);
@@ -203,20 +205,34 @@
 
   // Shared measuring panel (both games). Shows frames per second, slowest 5 %,
   // triangles, draw calls, texture memory, pixel ratio and the graphics tier.
+  // Build 282: a third line answers "what limits the frame rate": script time per
+  // frame (game logic + handing the draw calls to WebGL, both on the CPU) against
+  // the frame time, the share of it spent submitting draws, and the 60-FPS step.
+  // CPU near the frame time = the processor is the limit (fewer pixels do not help);
+  // CPU well below it = the graphics chip (pixels) is the limit.
   function createPerfPanel(panel,renderer,options={}){
-    const samples=new Float32Array(300);let n=0,elapsed=0,texT=0,texMB=0;
+    const samples=new Float32Array(300),cpu=new Float32Array(300),draw=new Float32Array(300);let n=0,elapsed=0,texT=0,texMB=0;
     return {
       reset(){n=0;elapsed=0;texT=0;},
       sample(dt,scene,label){
         if(!panel||!Number.isFinite(dt)||dt<=0)return null;
+        const meter=options.frames;cpu[n]=meter?.lastCpu||0;draw[n]=meter?.lastRender||0;
         samples[n++]=dt*1000;elapsed+=dt;texT-=dt;
         if(texT<=0&&scene){texT=3;texMB=textureBytes(renderer,scene)/1048576;}
         if(elapsed<1.5&&n<samples.length)return null;
+        const mean=a=>{let t=0;for(let i=0;i<n;i++)t+=a[i];return t/Math.max(1,n);};
+        const cpuMs=mean(cpu),drawMs=mean(draw),frameMs=elapsed*1000/n;
         const sorted=samples.subarray(0,n).sort();
-        const report={fps:n/elapsed,p95:sorted[Math.ceil(n*.95)-1]};
+        const report={fps:n/elapsed,p95:sorted[Math.ceil(n*.95)-1],cpu:cpuMs,draw:drawMs,
+          limit:frameMs<18?'none':cpuMs>frameMs*.8||cpuMs>15?'cpu':'gpu'};
         const {triangles,calls}=renderer.__sceneInfo||renderer.info.render;
+        const q=options.quality,res=q?.resolutionState;
+        const mode=!q||q.frameMode==='free'?'':q.frameMode==='cap30'?' · 30 FPS mode':
+          ' · 60 FPS mode: step '+(res.level+1)+'/'+res.steps+(res.cpuBound?' (CPU-bound, resolution held)':'');
         panel.textContent=label+' · '+Math.round(report.fps)+' FPS · P95 '+report.p95.toFixed(1)+' ms\n'+
-          (triangles/1e6).toFixed(2)+' M tris · '+calls+' draws · '+Math.round(texMB)+' MB tex · '+renderer.getPixelRatio().toFixed(2)+'×';
+          (triangles/1e6).toFixed(2)+' M tris · '+calls+' draws · '+Math.round(texMB)+' MB tex · '+renderer.getPixelRatio().toFixed(2)+'×\n'+
+          'CPU '+cpuMs.toFixed(1)+' ms (draws '+drawMs.toFixed(1)+') of '+frameMs.toFixed(1)+' ms · limit: '+
+          (report.limit==='none'?'none':report.limit==='cpu'?'CPU':'GPU (pixels)')+mode;
         n=0;elapsed=0;
         return report;
       }

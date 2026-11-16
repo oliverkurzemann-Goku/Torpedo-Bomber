@@ -2,7 +2,7 @@
  'use strict';
  const $=id=>document.getElementById(id);
  const protocol=1, stages=['search','recover','return','escort','boss','won','lost'];
- const scripts=['vendor/three-r128.min.js?v=128','vendor/GLTFLoader-r128.js?v=147','game-runtime.js?v=263',
+ const scripts=['vendor/three-r128.min.js?v=282','vendor/GLTFLoader-r128.js?v=147','game-runtime.js?v=263',
   'space-coop-flight.js?v=263','space-coop-view.js?v=263','audio/throttle-response.js?v=218','audio/jet-engine.js?v=255'];
  let assets,link=null,ready=false,partnerReady=false,preparing=false,view=null,game=null,busy=false,output='';
  let stickInput={yaw:0,pitch:0},roll=false,fire=false,boost=false,keys=new Set(),audio=null;

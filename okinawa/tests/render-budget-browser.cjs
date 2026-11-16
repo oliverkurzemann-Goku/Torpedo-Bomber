@@ -28,7 +28,7 @@ const BUDGET={triangles:2.5e6,calls:800,textureMB:350};
   // --- Rhine, Ultra High, graphics High ----------------------------------
   {
    const {page,errors}=await open();
-   await page.goto(base+'/remagen-mission.html?v=281&surprises=off&scenery=ultra&graphics=high');
+   await page.goto(base+'/remagen-mission.html?v=282&surprises=off&scenery=ultra&graphics=high');
    await page.waitForFunction(()=>state===ST.MENU&&realWorldReady,null,{polling:250});
    await page.evaluate(async()=>{await ensureModel('p47');});
    const out=await page.evaluate(()=>{
@@ -62,7 +62,7 @@ const BUDGET={triangles:2.5e6,calls:800,textureMB:350};
   // --- Pacific carrier, graphics High -------------------------------------
   {
    const {page,errors}=await open();
-   await page.goto(base+'/torpedo-carrier.html?v=281&campaign=1&graphics=high');
+   await page.goto(base+'/torpedo-carrier.html?v=282&campaign=1&graphics=high');
    await page.waitForFunction(()=>state===ST.MENU,null,{polling:250});
    const index=await page.evaluate(()=>MISSIONS.findIndex(m=>/Sortie 3\b/.test(m.title)));
    await page.evaluate(async i=>{renderer.setPixelRatio(1);await prepareOkinawa();await preparePacificModels(MISSIONS[i]);},index);
