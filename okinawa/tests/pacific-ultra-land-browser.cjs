@@ -42,16 +42,18 @@ const server=http.createServer((req,res)=>{
    const views={coast:[c.x-5200,220,c.z+800,0,-.06],hills:[c.x-1500,520,c.z-2500,.6,-.32],fleet:[carrierX+260,90,-160,Math.PI*.8,-.12]};
    for(const [name,[x,y,z,h,p]] of Object.entries(views)){
     const pose=()=>{for(let k=0;k<30;k++){P.pos.set(x,y,z);P.heading=h;P.pitch=p;animateFrame();}};
+    // One pose, then every variant from exactly the same camera (only uniforms/materials change between grabs).
     pose();pics[name+'-land']=grab();
-    pacificLand.setEnabled(false);pose();pics[name+'-sea']=grab();
-    pacificLand.setEnabled(true,scene);pacificLand.uniforms.uPacReliefOn.value=1;pose();
-    if(name==='hills'){const s=seaUniforms.uCloudShade.value;seaUniforms.uCloudShade.value=0;pose();pics['hills-noclouds']=grab();seaUniforms.uCloudShade.value=s;}
+    if(name==='hills'){const s=seaUniforms.uCloudShade.value;seaUniforms.uCloudShade.value=0;pics['hills-noclouds']=grab();seaUniforms.uCloudShade.value=s;
+      pacificLand.uniforms.uPacReliefOn.value=0;pics['hills-norelief']=grab();pacificLand.uniforms.uPacReliefOn.value=1;}
+    pacificLand.setEnabled(false);pics[name+'-sea']=grab();
+    pacificLand.setEnabled(true,scene);pacificLand.uniforms.uPacReliefOn.value=1;
    }
    return pics;
   });
   const diff=(a,b)=>{let n=0;for(let j=0;j<a.length;j+=3)if(Math.abs(a[j]-b[j])+Math.abs(a[j+1]-b[j+1])+Math.abs(a[j+2]-b[j+2])>24)n++;return +(n/(a.length/3)).toFixed(3);};
   res.changed={};for(const k of ['coast','hills','fleet'])res.changed[k]=diff(shots[k+'-land'].data,shots[k+'-sea'].data);
-  res.clouds=diff(shots['hills-land'].data,shots['hills-noclouds'].data);
+  res.clouds=diff(shots['hills-land'].data,shots['hills-noclouds'].data);res.relief=diff(shots['hills-land'].data,shots['hills-norelief'].data);
   fs.mkdirSync(path.join(root,'test-visuals'),{recursive:true});
   for(const [k,v] of Object.entries(shots))fs.writeFileSync(path.join(root,'test-visuals',`build284-pacific-${k}.jpg`),Buffer.from(v.jpg.split(',')[1],'base64'));
   // Standard: every patched material gets its own hook back.
@@ -64,6 +66,7 @@ const server=http.createServer((req,res)=>{
   assert.deepEqual(res.errors,[],'shader/page errors');
   assert.ok(res.setup.terrainPatched,'terrain has the relief variant');assert.equal(res.setup.reliefOn,1);assert.ok(res.setup.patched>20,'lit materials patched '+res.setup.patched);
   for(const [k,v] of Object.entries(res.changed))assert.ok(v>(k==='fleet'?.02:.08),'the land layer changes the '+k+' view: '+v);
+  assert.ok(res.relief>.03,'baked relief visible on the hills: '+res.relief);
   assert.ok(res.clouds>.03,'cloud shadows visible on the island: '+res.clouds);
   assert.equal(res.standard.patched,0);assert.equal(res.standard.left,0);
  }finally{await browser.close();server.close();}
