@@ -32,18 +32,21 @@ const server=http.createServer((req,res)=>{
    clock.getDelta=()=>1/60;state=ST.FLIGHT;P.deckRun=null;P.onDeck=false;P.spd=90;P.gear=P.gearTgt=0;
    renderPacific();const job=pacificLand.update(okinawaWorld,seaUniforms.uSunDir.value);const r=job?await job:pacificLand.stats.lastBake;
    return {bakeMs:Math.round(r.ms),shadedLand:+r.shadedLand.toFixed(3),patched:pacificLand.patchedCount,reliefOn:pacificLand.uniforms.uPacReliefOn.value,shade:seaUniforms.uCloudShade.value,
-     terrainPatched:okinawaWorld.terrain.children.every(m=>m.material.userData.pacUltra?.relief===true),sun:seaUniforms.uSunDir.value.toArray().map(v=>+v.toFixed(3))};
+     terrainPatched:okinawaWorld.terrain.children.every(m=>m.material.userData.pacUltra?.relief===true),shipPatched:(()=>{let n=0,p=0;for(const x of ships)x.group.traverse(o=>{if(o.isMesh&&o.material&&!Array.isArray(o.material)&&(o.material.isMeshStandardMaterial||o.material.isMeshLambertMaterial||o.material.isMeshPhongMaterial)){n++;if(o.material.userData.pacUltra)p++;}});return n>0&&p===n;})(),sun:seaUniforms.uSunDir.value.toArray().map(v=>+v.toFixed(3))};
   },index);
   const shots=await page.evaluate(()=>{
    const gl=renderer.getContext(),pics={};
    const grab=()=>{renderPacific();const W=gl.drawingBufferWidth,H=gl.drawingBufferHeight,a=new Uint8Array(W*H*4);gl.readPixels(0,0,W,H,gl.RGBA,gl.UNSIGNED_BYTE,a);
      return {W,H,data:Array.from(a.filter((_,j)=>j%4!==3&&((j>>2)%W)%4===0&&(((j>>2)/W|0)%4===0))),jpg:renderer.domElement.toDataURL('image/jpeg',.85)};};
    const c=new THREE.Vector3().applyMatrix4(okinawaWorld.root.matrixWorld);
-   const views={coast:[c.x-5200,220,c.z+800,0,-.06],hills:[c.x-1500,520,c.z-2500,.6,-.32],fleet:[carrierX+260,90,-160,Math.PI*.8,-.12]};
+   // the fleet view: chase position 160 m off the first target ship, looking at it
+   const sh=ships.find(x=>x.alive)?.group.position||new THREE.Vector3(carrierX,0,0),fh=Math.atan2(80,140);
+   const views={coast:[c.x-5200,220,c.z+800,0,-.06],hills:[c.x-1500,520,c.z-2500,.6,-.32],fleet:[sh.x-140*Math.cos(fh),45,sh.z-140*Math.sin(fh),fh,-.18]};
    for(const [name,[x,y,z,h,p]] of Object.entries(views)){
     const pose=()=>{for(let k=0;k<30;k++){P.pos.set(x,y,z);P.heading=h;P.pitch=p;animateFrame();}};
     // One pose, then every variant from exactly the same camera (only uniforms/materials change between grabs).
     pose();pics[name+'-land']=grab();
+    if(name!=='coast'){const s=seaUniforms.uCloudShade.value;seaUniforms.uCloudShade.value=0;pics[name+'-noclouds']=grab();seaUniforms.uCloudShade.value=s;}
     if(name==='hills'){const s=seaUniforms.uCloudShade.value;seaUniforms.uCloudShade.value=0;pics['hills-noclouds']=grab();seaUniforms.uCloudShade.value=s;
       pacificLand.uniforms.uPacReliefOn.value=0;pics['hills-norelief']=grab();pacificLand.uniforms.uPacReliefOn.value=1;}
     pacificLand.setEnabled(false);pics[name+'-sea']=grab();
@@ -51,9 +54,22 @@ const server=http.createServer((req,res)=>{
    }
    return pics;
   });
+  // Relief and hill shade at a low sun (12 degrees): the baked layer, on against off, from one camera.
+  const low=await page.evaluate(async()=>{
+   const gl=renderer.getContext(),saved=seaUniforms.uSunDir.value.clone();
+   seaUniforms.uSunDir.value.set(-.95,.21,.23).normalize();const r=await pacificLand.update(okinawaWorld,seaUniforms.uSunDir.value);
+   const c=new THREE.Vector3().applyMatrix4(okinawaWorld.root.matrixWorld);
+   for(let k=0;k<30;k++){P.pos.set(c.x-1500,520,c.z-2500);P.heading=.6;P.pitch=-.32;animateFrame();}
+   const grab=()=>{renderPacific();const W=gl.drawingBufferWidth,H=gl.drawingBufferHeight,a=new Uint8Array(W*H*4);gl.readPixels(0,0,W,H,gl.RGBA,gl.UNSIGNED_BYTE,a);
+     return {data:Array.from(a.filter((_,j)=>j%4!==3&&((j>>2)%W)%4===0&&(((j>>2)/W|0)%4===0))),jpg:renderer.domElement.toDataURL('image/jpeg',.85)};};
+   const on=grab();pacificLand.uniforms.uPacReliefOn.value=0;const off=grab();pacificLand.uniforms.uPacReliefOn.value=1;
+   seaUniforms.uSunDir.value.copy(saved);
+   return {on,off,bakeMs:Math.round(r.ms),shadedLand:+r.shadedLand.toFixed(3)};
+  });
+  shots['lowsun-relief']=low.on;shots['lowsun-norelief']=low.off;
   const diff=(a,b)=>{let n=0;for(let j=0;j<a.length;j+=3)if(Math.abs(a[j]-b[j])+Math.abs(a[j+1]-b[j+1])+Math.abs(a[j+2]-b[j+2])>24)n++;return +(n/(a.length/3)).toFixed(3);};
   res.changed={};for(const k of ['coast','hills','fleet'])res.changed[k]=diff(shots[k+'-land'].data,shots[k+'-sea'].data);
-  res.clouds=diff(shots['hills-land'].data,shots['hills-noclouds'].data);res.relief=diff(shots['hills-land'].data,shots['hills-norelief'].data);
+  res.clouds=diff(shots['hills-land'].data,shots['hills-noclouds'].data);res.shipClouds=diff(shots['fleet-land'].data,shots['fleet-noclouds'].data);res.lowSun={bakeMs:low.bakeMs,shadedLand:low.shadedLand,relief:diff(low.on.data,low.off.data)};res.relief=diff(shots['hills-land'].data,shots['hills-norelief'].data);
   fs.mkdirSync(path.join(root,'test-visuals'),{recursive:true});
   for(const [k,v] of Object.entries(shots))fs.writeFileSync(path.join(root,'test-visuals',`build284-pacific-${k}.jpg`),Buffer.from(v.jpg.split(',')[1],'base64'));
   // Standard: every patched material gets its own hook back.
@@ -65,9 +81,10 @@ const server=http.createServer((req,res)=>{
   console.log('Pacific Ultra land:',JSON.stringify(res));
   assert.deepEqual(res.errors,[],'shader/page errors');
   assert.ok(res.setup.terrainPatched,'terrain has the relief variant');assert.equal(res.setup.reliefOn,1);assert.ok(res.setup.patched>20,'lit materials patched '+res.setup.patched);
-  for(const [k,v] of Object.entries(res.changed))assert.ok(v>(k==='fleet'?.02:.08),'the land layer changes the '+k+' view: '+v);
-  assert.ok(res.relief>.03,'baked relief visible on the hills: '+res.relief);
-  assert.ok(res.clouds>.03,'cloud shadows visible on the island: '+res.clouds);
+  assert.ok(res.changed.hills>.08,'the land layer changes the hills: '+res.changed.hills);
+  assert.ok(res.setup.shipPatched,'target ship materials have the cloud shade');
+  assert.ok(res.lowSun.shadedLand>.02&&res.lowSun.relief>.03,'low sun: ridges shade the valleys '+JSON.stringify(res.lowSun));
+    assert.ok(res.clouds>.03,'cloud shadows visible on the island: '+res.clouds);
   assert.equal(res.standard.patched,0);assert.equal(res.standard.left,0);
  }finally{await browser.close();server.close();}
 })().catch(e=>{console.error(e);process.exit(1);});

@@ -1,8 +1,8 @@
 {
  "setup": {
-  "bakeMs": 2861,
+  "bakeMs": 2572,
   "shadedLand": 0.004,
-  "patched": 883,
+  "patched": 879,
   "reliefOn": 1,
   "shade": 0.55,
   "terrainPatched": true,
@@ -14,11 +14,11 @@
  },
  "changed": {
   "coast": 0.017,
-  "hills": 0.413,
+  "hills": 0.227,
   "fleet": 0
  },
- "clouds": 0,
- "relief": 0,
+ "clouds": 0.219,
+ "relief": 0.002,
  "standard": {
   "patched": 0,
   "left": 0,
