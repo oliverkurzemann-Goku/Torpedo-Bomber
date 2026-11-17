@@ -1,12 +1,12 @@
 {
  "setup": {
-  "bakeMs": 2498,
+  "bakeMs": 2644,
   "shadedLand": 0.004,
-  "patched": 877,
+  "patched": 1061,
   "reliefOn": 1,
   "shade": 0.55,
   "terrainPatched": true,
-  "shipPatched": false,
+  "shipPatched": true,
   "sun": [
    -0.584,
    0.701,
@@ -15,17 +15,17 @@
  },
  "changed": {
   "coast": 0.017,
-  "hills": 0.227,
+  "hills": 0.234,
   "fleet": 0
  },
  "clouds": 0.219,
- "shipClouds": 0.175,
+ "shipClouds": 0.176,
  "lowSun": {
-  "bakeMs": 2212,
-  "shadedLand": 0.069,
-  "relief": 0.005
+  "bakeMs": 2419,
+  "shadedLand": 0.19,
+  "relief": 0.013
  },
- "relief": 0.002,
+ "relief": 0.008,
  "standard": {
   "patched": 0,
   "left": 0,
