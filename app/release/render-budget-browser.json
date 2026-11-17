@@ -8,43 +8,43 @@
   "views": [
    {
     "heading": 0,
-    "triangles": 1391733,
-    "calls": 425
+    "triangles": 1391771,
+    "calls": 444
    },
    {
     "heading": 45,
-    "triangles": 1352233,
-    "calls": 522
+    "triangles": 1346959,
+    "calls": 523
    },
    {
     "heading": 90,
-    "triangles": 1301440,
-    "calls": 543
+    "triangles": 1301368,
+    "calls": 541
    },
    {
     "heading": 135,
-    "triangles": 1344334,
-    "calls": 484
+    "triangles": 1344354,
+    "calls": 494
    },
    {
     "heading": 180,
-    "triangles": 1419630,
-    "calls": 511
+    "triangles": 1419660,
+    "calls": 526
    },
    {
     "heading": 225,
-    "triangles": 1284665,
-    "calls": 520
+    "triangles": 1284647,
+    "calls": 511
    },
    {
     "heading": 270,
-    "triangles": 1128643,
-    "calls": 466
+    "triangles": 1128611,
+    "calls": 450
    },
    {
     "heading": 315,
-    "triangles": 1280965,
-    "calls": 444
+    "triangles": 1280961,
+    "calls": 442
    }
   ],
   "textureMB": 107.0963541666665,
@@ -57,98 +57,98 @@
    {
     "where": "fleet",
     "heading": 0,
-    "triangles": 549325,
-    "calls": 352
+    "triangles": 549315,
+    "calls": 347
    },
    {
     "where": "fleet",
     "heading": 45,
-    "triangles": 437693,
-    "calls": 295
+    "triangles": 437683,
+    "calls": 290
    },
    {
     "where": "fleet",
     "heading": 90,
-    "triangles": 436439,
-    "calls": 257
+    "triangles": 436453,
+    "calls": 261
    },
    {
     "where": "fleet",
     "heading": 135,
-    "triangles": 436451,
-    "calls": 254
-   },
-   {
-    "where": "fleet",
-    "heading": 180,
-    "triangles": 548103,
-    "calls": 306
-   },
-   {
-    "where": "fleet",
-    "heading": 225,
-    "triangles": 436483,
+    "triangles": 436447,
     "calls": 255
    },
    {
     "where": "fleet",
+    "heading": 180,
+    "triangles": 548099,
+    "calls": 304
+   },
+   {
+    "where": "fleet",
+    "heading": 225,
+    "triangles": 436459,
+    "calls": 246
+   },
+   {
+    "where": "fleet",
     "heading": 270,
-    "triangles": 436491,
-    "calls": 256
+    "triangles": 436493,
+    "calls": 257
    },
    {
     "where": "fleet",
     "heading": 315,
-    "triangles": 818954,
-    "calls": 367
+    "triangles": 818966,
+    "calls": 373
    },
    {
     "where": "island",
     "heading": 0,
-    "triangles": 1468616,
-    "calls": 654
+    "triangles": 1468582,
+    "calls": 634
    },
    {
     "where": "island",
     "heading": 45,
-    "triangles": 1201021,
-    "calls": 450
+    "triangles": 1201019,
+    "calls": 446
    },
    {
     "where": "island",
     "heading": 90,
-    "triangles": 932887,
-    "calls": 396
+    "triangles": 932899,
+    "calls": 399
    },
    {
     "where": "island",
     "heading": 135,
-    "triangles": 931019,
-    "calls": 495
+    "triangles": 931033,
+    "calls": 502
    },
    {
     "where": "island",
     "heading": 180,
-    "triangles": 962259,
-    "calls": 590
+    "triangles": 962253,
+    "calls": 587
    },
    {
     "where": "island",
     "heading": 225,
-    "triangles": 847821,
-    "calls": 386
+    "triangles": 847819,
+    "calls": 388
    },
    {
     "where": "island",
     "heading": 270,
-    "triangles": 877928,
-    "calls": 474
+    "triangles": 877910,
+    "calls": 465
    },
    {
     "where": "island",
     "heading": 315,
-    "triangles": 1151902,
-    "calls": 500
+    "triangles": 1151884,
+    "calls": 491
    }
   ],
   "textureMB": 95.57682291666659,
