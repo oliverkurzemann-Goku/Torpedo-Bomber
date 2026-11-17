@@ -8917,11 +8917,12 @@ function setUltraDefine(material,on){
   if(has===on)return;if(on)material.defines.ULTRA='';else delete material.defines.ULTRA;material.needsUpdate=true;
 }
 // Build 284: Ultra step 2 - cloud shadows on the land, ships and aircraft, baked relief and hill shade on Okinawa.
-let pacificLand=null,pacificLandSweepT=0;
+let pacificLand=null,pacificLandSweepT=0,pacificLandChildren=-1;
 function pacificLandTick(dt){
   if(!pacificLand||!pacificUltra)return;
   pacificLandSweepT-=dt;
-  if(pacificLandSweepT<=0){pacificLandSweepT=.5;pacificLand.sweep(scene);}
+  // a new ship/aircraft group is patched before its first frame (no second shader build), the rest twice a second
+  if(pacificLandSweepT<=0||scene.children.length!==pacificLandChildren){pacificLandSweepT=.5;pacificLandChildren=scene.children.length;pacificLand.sweep(scene);}
   if(okinawaWorld)pacificLand.update(okinawaWorld,seaUniforms.uSunDir.value);
 }
 function applyPacificScenery(){

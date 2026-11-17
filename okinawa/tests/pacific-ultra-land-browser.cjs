@@ -54,16 +54,16 @@ const server=http.createServer((req,res)=>{
    }
    return pics;
   });
-  // Relief and hill shade at a low sun (12 degrees): the baked layer, on against off, from one camera.
+  // Relief and hill shade at the game's dusk sun (about 7 degrees, from the west): the baked layer, on against off, from one camera.
   const low=await page.evaluate(async()=>{
-   const gl=renderer.getContext(),saved=seaUniforms.uSunDir.value.clone();
-   seaUniforms.uSunDir.value.set(-.95,.21,.23).normalize();const r=await pacificLand.update(okinawaWorld,seaUniforms.uSunDir.value);
+   const gl=renderer.getContext(),mode=timeMode;
+   applyTimeOfDay('dusk');applyWeather();const r=await pacificLand.update(okinawaWorld,seaUniforms.uSunDir.value);
    const c=new THREE.Vector3().applyMatrix4(okinawaWorld.root.matrixWorld);
    for(let k=0;k<30;k++){P.pos.set(c.x-1500,520,c.z-2500);P.heading=.6;P.pitch=-.32;animateFrame();}
    const grab=()=>{renderPacific();const W=gl.drawingBufferWidth,H=gl.drawingBufferHeight,a=new Uint8Array(W*H*4);gl.readPixels(0,0,W,H,gl.RGBA,gl.UNSIGNED_BYTE,a);
      return {data:Array.from(a.filter((_,j)=>j%4!==3&&((j>>2)%W)%4===0&&(((j>>2)/W|0)%4===0))),jpg:renderer.domElement.toDataURL('image/jpeg',.85)};};
    const on=grab();pacificLand.uniforms.uPacReliefOn.value=0;const off=grab();pacificLand.uniforms.uPacReliefOn.value=1;
-   seaUniforms.uSunDir.value.copy(saved);
+   applyTimeOfDay(mode);applyWeather();
    return {on,off,bakeMs:Math.round(r.ms),shadedLand:+r.shadedLand.toFixed(3)};
   });
   shots['lowsun-relief']=low.on;shots['lowsun-norelief']=low.off;

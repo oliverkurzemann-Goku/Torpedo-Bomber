@@ -34,7 +34,7 @@ float pacCloudLight(vec3 w){
     +'if(uPacReliefOn>0.5){vec2 pacXZ=pacR.rg*2.0-1.0;vec3 pacN=vec3(pacXZ.x,sqrt(max(0.0,1.0-dot(pacXZ,pacXZ))),pacXZ.y);normal=normalize((viewMatrix*vec4(pacN,0.0)).xyz);}');
   }
   frag=frag.replace('#include <aomap_fragment>','{float pacC=pacCloudLight(vPacWorld);'
-   +(relief?'if(uPacReliefOn>0.5){pacC*=mix(0.18,1.0,pacR.b);reflectedLight.indirectDiffuse*=mix(1.0,pacR.a,0.85);}':'')
+   +(relief?'if(uPacReliefOn>0.5){pacC*=mix(0.18,1.0,pacR.b);reflectedLight.indirectDiffuse*=mix(1.0,pacR.a,0.9)*(0.78+0.22*pacR.b);}':'')
    +'reflectedLight.directDiffuse*=pacC;reflectedLight.directSpecular*=pacC;}\n#include <aomap_fragment>');
   shader.fragmentShader=frag;
  }
@@ -99,7 +99,7 @@ float pacCloudLight(vec3 w){
      let ao=1;
      if(h>0){const r=4,i0=Math.max(0,i-r),i1=Math.min(N,i+r+1),j0=Math.max(0,j-r),j1=Math.min(N,j+r+1);
       const mean=(S[j1*(N+1)+i1]-S[j0*(N+1)+i1]-S[j1*(N+1)+i0]+S[j0*(N+1)+i0])/((i1-i0)*(j1-j0));
-      ao=Math.min(1,Math.max(.5,1-(mean-h)/22));land++;if(vis<.5)lit++;}
+      ao=Math.min(1,Math.max(.42,1-(mean-h)/15));land++;if(vis<.5)lit++;}
      data[k*4]=Math.round((nx*.5+.5)*255);data[k*4+1]=Math.round((nz*.5+.5)*255);data[k*4+2]=Math.round(vis*255);data[k*4+3]=Math.round(ao*255);
     }
     await breathe();
