@@ -4,7 +4,7 @@
 Nutzer (vier iPad-Bilder Build 284, Ultra): „Performance ist in Okinawa gut, aber: Es gibt keine Schatten. Bei dawn sind die weit entfernten Berge weiß-blau. Die Wellen sind cool, aber zu gleichmäßig, wirken wie ein designtes Muster." Einzelheiten: `GRAPHICS-PLAN.md` Abschnitt 0h.
 - **Schatten (`torpedo-carrier.html`, `placePacificShadow`/`sweepOkinawaCasters`/`nearTreeCasters`, alle Stufen mit Schatten):** gemessen warf auf Okinawa kein einziges Objekt Schatten, und die Box war ±240 m um das Flugzeug. Jetzt Box vor der Kamera (Reichweite der Stufe, texelgerastet, Randausblendung), Häuser/Dächer/Palmen/Mauern/Bunker/Fahrzeuge werfen, Baumzellen nur nahe der Box; flache Schichten nicht. Nebenfund behoben: `sunSprite` nahm die Richtung aus `sun.position` (falsch fern vom Ursprung), jetzt `sunOffset`.
 - **Dämmerung (`applyWeather`):** die Tageswetterfarbe ersetzte die warme Dunstfarbe → blau-weiße Berge. Jetzt nur Tönung (Bedeckung × 0,6); gemessen dawn/broken (0,64; 0,69; 0,72) → (0,72; 0,69; 0,61).
-- **Wellen (Ultra-Meer):** gedrehte Kopien der großen Maßstäbe fleckweise gemischt, 71-m-Fernabgriff, verzerrte Kleinmaßstäbe, Böenflecken 0,4–1,5×; Wellenhöhe unverändert. Wiederholungsmaß der Wasserstruktur 0,207 → 0,157.
+- **Wellen (Ultra-Meer):** gedrehte Kopien der großen Maßstäbe fleckweise gemischt, 71-m-Fernabgriff, verzerrte Kleinmaßstäbe, Böenflecken 0,4–1,5×; Wellenhöhe unverändert. Wiederholungsmaß der Wasserstruktur 0,207 → 0,157–0,160.
 - Test `okinawa/tests/pacific-shadows-browser.cjs` (neu, mit `OLD_PAGE=` Vorher/Nachher), Kennungen 285.
 **Offen:** kein iPad-Test; Schattenpass-Kosten auf dem M1 ungemessen; ferne Bäume (> ~0,6 km) ohne Echtzeitschatten.
 

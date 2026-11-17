@@ -1,0 +1,25 @@
+{
+ "page": "torpedo-carrier.html",
+ "shadows": {
+  "villageHouses": 52,
+  "casters": 239,
+  "treeCellsCasting": 8,
+  "shadowShare": 0.0039,
+  "range": 360,
+  "boxAhead": 198
+ },
+ "dawn": {
+  "fog": [
+   0.716,
+   0.685,
+   0.608
+  ],
+  "warm": 0.107
+ },
+ "sea": {
+  "blockSd": 0.3484,
+  "neighbour": 0.0133,
+  "repeat": 0.16
+ },
+ "errors": []
+}

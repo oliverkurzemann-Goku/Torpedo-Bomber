@@ -1,8 +1,8 @@
 {
  "setup": {
-  "bakeMs": 2415,
+  "bakeMs": 3341,
   "shadedLand": 0.004,
-  "patched": 1061,
+  "patched": 1067,
   "reliefOn": 1,
   "shade": 0.55,
   "terrainPatched": true,
@@ -19,9 +19,9 @@
   "fleet": 0
  },
  "clouds": 0.219,
- "shipClouds": 0.0308,
+ "shipClouds": 0.0347,
  "lowSun": {
-  "bakeMs": 2230,
+  "bakeMs": 2268,
   "shadedLand": 0.19,
   "relief": 0.013
  },

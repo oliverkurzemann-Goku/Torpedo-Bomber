@@ -1,4 +1,4 @@
-# Offline app asset register — Build 284
+# Offline app asset register — Build 285
 
 Checked 2026-10-23. 398 payload files, 64 model files, 158.6 MiB.
 
