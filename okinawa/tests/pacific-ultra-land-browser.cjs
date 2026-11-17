@@ -46,7 +46,12 @@ const server=http.createServer((req,res)=>{
     const pose=()=>{for(let k=0;k<30;k++){P.pos.set(x,y,z);P.heading=h;P.pitch=p;animateFrame();}};
     // One pose, then every variant from exactly the same camera (only uniforms/materials change between grabs).
     pose();pics[name+'-land']=grab();
-    if(name!=='coast'){const s=seaUniforms.uCloudShade.value;seaUniforms.uCloudShade.value=0;pics[name+'-noclouds']=grab();seaUniforms.uCloudShade.value=s;}
+    if(name!=='coast'){pacificLand.cloudScale=0;pics[name+'-noclouds']=grab();pacificLand.cloudScale=1;}
+    // the ships: the land layer's cloud shade alone, over eight positions of the drifting cloud field
+    if(name==='fleet'){const t0=seaUniforms.uTime.value;let n=0,tot=0;
+      for(let k=0;k<8;k++){seaUniforms.uTime.value=t0+k*350;const a=grab();pacificLand.cloudScale=0;const b=grab();pacificLand.cloudScale=1;
+        for(let j=0;j<a.data.length;j+=3){tot++;if(Math.abs(a.data[j]-b.data[j])+Math.abs(a.data[j+1]-b.data[j+1])+Math.abs(a.data[j+2]-b.data[j+2])>24)n++;}}
+      seaUniforms.uTime.value=t0;pics.shipCloudShare=n/tot;}
     if(name==='hills'){const s=seaUniforms.uCloudShade.value;seaUniforms.uCloudShade.value=0;pics['hills-noclouds']=grab();seaUniforms.uCloudShade.value=s;
       pacificLand.uniforms.uPacReliefOn.value=0;pics['hills-norelief']=grab();pacificLand.uniforms.uPacReliefOn.value=1;}
     pacificLand.setEnabled(false);pics[name+'-sea']=grab();
@@ -69,7 +74,7 @@ const server=http.createServer((req,res)=>{
   shots['lowsun-relief']=low.on;shots['lowsun-norelief']=low.off;
   const diff=(a,b)=>{let n=0;for(let j=0;j<a.length;j+=3)if(Math.abs(a[j]-b[j])+Math.abs(a[j+1]-b[j+1])+Math.abs(a[j+2]-b[j+2])>24)n++;return +(n/(a.length/3)).toFixed(3);};
   res.changed={};for(const k of ['coast','hills','fleet'])res.changed[k]=diff(shots[k+'-land'].data,shots[k+'-sea'].data);
-  res.clouds=diff(shots['hills-land'].data,shots['hills-noclouds'].data);res.shipClouds=diff(shots['fleet-land'].data,shots['fleet-noclouds'].data);res.lowSun={bakeMs:low.bakeMs,shadedLand:low.shadedLand,relief:diff(low.on.data,low.off.data)};res.relief=diff(shots['hills-land'].data,shots['hills-norelief'].data);
+  res.clouds=diff(shots['hills-land'].data,shots['hills-noclouds'].data);res.shipClouds=+shots.shipCloudShare.toFixed(4);delete shots.shipCloudShare;res.lowSun={bakeMs:low.bakeMs,shadedLand:low.shadedLand,relief:diff(low.on.data,low.off.data)};res.relief=diff(shots['hills-land'].data,shots['hills-norelief'].data);
   fs.mkdirSync(path.join(root,'test-visuals'),{recursive:true});
   for(const [k,v] of Object.entries(shots))fs.writeFileSync(path.join(root,'test-visuals',`build284-pacific-${k}.jpg`),Buffer.from(v.jpg.split(',')[1],'base64'));
   // Standard: every patched material gets its own hook back.
@@ -83,7 +88,8 @@ const server=http.createServer((req,res)=>{
   assert.ok(res.setup.terrainPatched,'terrain has the relief variant');assert.equal(res.setup.reliefOn,1);assert.ok(res.setup.patched>20,'lit materials patched '+res.setup.patched);
   assert.ok(res.changed.hills>.08,'the land layer changes the hills: '+res.changed.hills);
   assert.ok(res.setup.shipPatched,'target ship materials have the cloud shade');
-  assert.ok(res.lowSun.shadedLand>.02&&res.lowSun.relief>.03,'low sun: ridges shade the valleys '+JSON.stringify(res.lowSun));
+  assert.ok(res.shipClouds>.002,'cloud shadows cross the ships (8 cloud positions): '+res.shipClouds);
+  assert.ok(res.lowSun.shadedLand>.02&&res.lowSun.relief>.008,'low sun: ridges shade the valleys '+JSON.stringify(res.lowSun));
     assert.ok(res.clouds>.03,'cloud shadows visible on the island: '+res.clouds);
   assert.equal(res.standard.patched,0);assert.equal(res.standard.left,0);
  }finally{await browser.close();server.close();}

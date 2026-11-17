@@ -8920,6 +8920,7 @@ function setUltraDefine(material,on){
 let pacificLand=null,pacificLandSweepT=0,pacificLandChildren=-1;
 function pacificLandTick(dt){
   if(!pacificLand||!pacificUltra)return;
+  pacificLand.sync();
   pacificLandSweepT-=dt;
   // a new ship/aircraft group is patched before its first frame (no second shader build), the rest twice a second
   if(pacificLandSweepT<=0||scene.children.length!==pacificLandChildren){pacificLandSweepT=.5;pacificLandChildren=scene.children.length;pacificLand.sweep(scene);}

@@ -39,7 +39,8 @@ float pacCloudLight(vec3 w){
   shader.fragmentShader=frag;
  }
  function create(THREE,{time,wind,cloud}){
-  const uniforms={uPacTime:time,uPacWind:wind,uPacCloud:cloud,uPacRelief:{value:null},uPacReliefOn:{value:0}};
+  // uPacCloud follows the sea's cloud strength each frame (sync), times cloudScale (1; a test can switch the land part off alone)
+  const uniforms={uPacTime:time,uPacWind:wind,uPacCloud:{value:cloud.value},uPacRelief:{value:null},uPacReliefOn:{value:0}};
   const patched=new Set();let reliefMaterials=new Set(),bakeJob=null,bakedSun=null,enabled=false,generation=0;
   const baseKey=THREE.Material.prototype.customProgramCacheKey;
   function lit(m){return m&&!m.isShaderMaterial&&!m.isRawShaderMaterial&&(m.isMeshStandardMaterial||m.isMeshPhongMaterial||m.isMeshLambertMaterial);}
@@ -124,8 +125,9 @@ float pacCloudLight(vec3 w){
    world?.root?.traverse(o=>{const ms=Array.isArray(o.material)?o.material:[o.material];for(const m of ms)if(m){patched.delete(m);reliefMaterials.delete(m);}});
   }
   const stats={lastBake:null};
-  return {uniforms,patch,unpatch,sweep,setEnabled,update,forget,markTerrain,stats,
+  const api={uniforms,cloudScale:1,sync(){uniforms.uPacCloud.value=cloud.value*api.cloudScale;},patch,unpatch,sweep,setEnabled,update,forget,markTerrain,stats,
    get enabled(){return enabled;},get patchedCount(){return patched.size;},get baking(){return !!bakeJob;}};
+  return api;
  }
  root.PacificUltraLand={create,SIZE,EXTENT};
 })(typeof window!=='undefined'?window:globalThis);
