@@ -40,7 +40,7 @@ float pacCloudLight(vec3 w){
  }
  function create(THREE,{time,wind,cloud}){
   const uniforms={uPacTime:time,uPacWind:wind,uPacCloud:cloud,uPacRelief:{value:null},uPacReliefOn:{value:0}};
-  const patched=new Set();let reliefMaterials=new Set(),bakeJob=null,bakedSun=null,enabled=false;
+  const patched=new Set();let reliefMaterials=new Set(),bakeJob=null,bakedSun=null,enabled=false,generation=0;
   const baseKey=THREE.Material.prototype.customProgramCacheKey;
   function lit(m){return m&&!m.isShaderMaterial&&!m.isRawShaderMaterial&&(m.isMeshStandardMaterial||m.isMeshPhongMaterial||m.isMeshLambertMaterial);}
   function patch(m,relief=false){
@@ -49,7 +49,10 @@ float pacCloudLight(vec3 w){
    const keyOf=prevKey===baseKey?()=>String(prev):()=>prevKey.call(m);
    m.userData.pacUltra={prev,prevKey,hadHook:own.call(m,'onBeforeCompile'),hadKey:own.call(m,'customProgramCacheKey'),relief};
    m.onBeforeCompile=function(s,r){if(prev)prev.call(this,s,r);inject(s,uniforms,relief);};
-   m.customProgramCacheKey=function(){return keyOf()+'|pacUltra284'+(relief?'R':'');};
+   // A generation per switch-on: three r128 re-uses a cached program of the same key WITHOUT running onBeforeCompile
+   // again, and then keeps the uniforms of the previous (unpatched) build - after Ultra off/on the cloud and relief
+   // uniforms would never be uploaded again. A new key per switch-on forces a fresh build with these uniforms.
+   const gen=generation;m.customProgramCacheKey=function(){return keyOf()+'|pacUltra284g'+gen+(relief?'R':'');};
    m.needsUpdate=true;patched.add(m);if(relief)reliefMaterials.add(m);return true;
   }
   function unpatch(m){
@@ -65,7 +68,7 @@ float pacCloudLight(vec3 w){
    return n;
   }
   function setEnabled(on,scene){
-   on=!!on;if(on===enabled)return;enabled=on;
+   on=!!on;if(on===enabled)return;enabled=on;if(on)generation++;
    if(!on){for(const m of patched)unpatch(m);patched.clear();reliefMaterials.clear();uniforms.uPacReliefOn.value=0;}
    else if(scene)sweep(scene);
   }
