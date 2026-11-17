@@ -380,7 +380,7 @@ body.secretSpaceActive #fireBtn{border-color:#73d9fc;color:#d6f9ff}
   <div id="perfHud" hidden></div>
   <div id="ltn" style="position:fixed;inset:0;background:#e6ecff;opacity:0;pointer-events:none;z-index:40;"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 284</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 285</div>
 
   <!-- Optical landing aid -->
   <div id="lso">
@@ -436,7 +436,7 @@ body.secretSpaceActive #fireBtn{border-color:#73d9fc;color:#d6f9ff}
 
 <!-- Menu -->
 <div class="overlay" id="menu" data-campaign="pacific">
-  <div class="menuTop"><a id="selBtn" href="index.html?v=284">&#9664; Change Game</a><span class="menuMeta">PACIFIC OPERATIONS<br>BUILD 284</span></div>
+  <div class="menuTop"><a id="selBtn" href="index.html?v=285">&#9664; Change Game</a><span class="menuMeta">PACIFIC OPERATIONS<br>BUILD 285</span></div>
   <div class="card menuCard">
     <aside class="menuOverview" aria-label="Campaign and pilot options">
     <div class="campaignArt" aria-hidden="true"></div>
@@ -471,7 +471,7 @@ body.secretSpaceActive #fireBtn{border-color:#73d9fc;color:#d6f9ff}
     </aside>
     <section class="missionPanel" aria-label="Mission selection">
       <div class="secLbl">Choose your sortie · Pacific operations</div>
-      <a class="hangarLink" href="hangar.html?theatre=pacific&amp;v=284">CUSTOM MISSION · CHOOSE AIRCRAFT &amp; LOADOUT →</a>
+      <a class="hangarLink" href="hangar.html?theatre=pacific&amp;v=285">CUSTOM MISSION · CHOOSE AIRCRAFT &amp; LOADOUT →</a>
 <div id="missionSel" role="group" aria-label="Pacific missions"></div>
       <div id="missionBlurb" class="missionBlurb" aria-live="polite"></div>
       <div class="menuConfig">
@@ -1911,8 +1911,22 @@ function buildSea(){
         // fading out with distance (mipmaps take the rest), instead of the two value-noise ripples.
         float dist=distance(cameraPosition,vWorld),near=1.0-smoothstep(120.0,900.0,dist);
         vec2 w=vWorld.xz;
-        vec3 t1=waveTap(w/23.0+uWind*uTime*0.021),t2=waveTap(w/7.3-uWind.yx*uTime*0.048),t3=waveTap(w/2.1+vec2(uTime*0.071,-uTime*0.052));
-        vec2 slope=(t1.xz*0.55+t2.xz*0.36*mix(0.45,1.0,near)+t3.xz*0.22*near)*(0.62+0.38*uSeaState);
+        // Build 285: the small scales read the map through a slowly drifting warp (+-3.5 m), so the tile's straight crest
+        // lines bend instead of forming a lattice.
+        vec2 ww=w+(vec2(noise(w/37.0+uWind*uTime*0.03),noise(w/41.0+17.3-uWind*uTime*0.025))-0.5)*7.0;
+        vec3 t1=waveTap(w/23.0+uWind*uTime*0.021),t2=waveTap(ww/7.3-uWind.yx*uTime*0.048),t3=waveTap(ww/2.1+vec2(uTime*0.071,-uTime*0.052));
+        // Build 285: the three taps of one 256-px tile read as a designed pattern (iPad report). Each of the two large
+        // scales now blends with a second copy turned 37 deg and stretched (slopes turned back into world axes), chosen
+        // patch by patch by slow noise; a fourth, 71-m tap carries the far field; and roughness varies in drifting
+        // gust patches (cat's paws, 0.4-1.5x) so no two stretches of water look the same.
+        vec2 wr=mat2(0.799,0.602,-0.602,0.799)*w;mat2 back=mat2(0.799,-0.602,0.602,0.799);
+        float pick=smoothstep(0.32,0.68,noise(w/170.0+uWind*uTime*0.011));
+        vec3 u1=waveTap(wr/29.0+0.37-uWind*uTime*0.017),u2=waveTap(wr/9.1+0.61+uWind.yx*uTime*0.039);
+        u1.xz=back*u1.xz;u2.xz=back*u2.xz;t1=mix(t1,u1,pick);t2=mix(t2,u2,1.0-pick*0.8);
+        vec3 t0=waveTap(wr/71.0-uWind*uTime*0.009);t0.xz=back*t0.xz;
+        float gust=mix(0.4,1.5,smoothstep(0.22,0.78,noise(w/95.0-uWind.yx*uTime*0.02)*0.7+noise(w/31.0+uWind*uTime*0.05)*0.3));
+        float farW=smoothstep(300.0,2500.0,dist);
+        vec2 slope=(t0.xz*0.30*(0.4+0.6*farW)+t1.xz*0.55+t2.xz*0.36*mix(0.45,1.0,near)*gust+t3.xz*0.22*near*gust)*(0.62+0.38*uSeaState)*mix(gust,1.0,0.35);
         N=normalize(N+vec3(slope.x,0.0,slope.y)*0.62);
         float cloud=noise(w/720.0+uWind*uTime*0.0045)*0.65+noise(w/260.0-uWind.yx*uTime*0.006)*0.35;
         float shade=uCloudShade*smoothstep(0.47,0.63,cloud);
@@ -5329,7 +5343,12 @@ function applyWeather(){
   FlightOps.clouds(clouds,weather);
   maritimeWeather?.reset(weather,carrierX,MISSIONS[mission]?.targets.map(t=>({x:t.pos[0],z:t.pos[2]}))||[]);
   if(maritimeWeather)maritimeWeather.layers.material.color.setHex(timeMode==='night'?0x374657:timeMode==='dusk'||timeMode==='dawn'?0xe2c5ac:0xffffff);
-  const mood=new THREE.Color(w.color);if(timeMode!=='night'){scene.fog.color.copy(mood);scene.background.copy(mood);}
+  const mood=new THREE.Color(w.color);
+  // Build 285: at dawn and dusk the weather's daylight grey (broken 0xa3b1b8) used to REPLACE the warm haze of the
+  // time of day, so distant hills faded to blue-white under an orange sky. Now the weather tints the warm haze by the
+  // same share as the sky's horizon colour below (cover x .6); daytime keeps the weather colour as before.
+  if(timeMode==='dawn'||timeMode==='dusk'){scene.fog.color.lerp(mood,w.cover*.6);scene.background.copy(scene.fog.color);}
+  else if(timeMode!=='night'){scene.fog.color.copy(mood);scene.background.copy(mood);}
   if(sun)sun.intensity=(timeMode==='night'?.45:1.32)*w.sun;
   if(hemiLight)hemiLight.intensity=(timeMode==='night'?.25:.45)+w.sun*(timeMode==='night'?.12:.4);
   if(skyMat){skyMat.uniforms.top.value.lerp(mood,w.cover*.65);skyMat.uniforms.bot.value.lerp(mood,w.cover*.6);
@@ -6819,7 +6838,7 @@ function loadPlaneModel(){
       }
       window.__eyeDbg='EYE '+COCKPIT_EYE.map(v=>v.toFixed(2)).join('/');
       const btEl=document.getElementById('buildTag');
-      if(btEl) btEl.textContent='BUILD 284 · '+window.__eyeDbg;
+      if(btEl) btEl.textContent='BUILD 285 · '+window.__eyeDbg;
       let seat=null;
       model.traverse(function(o){
         if(!o.isMesh||!o.material) return;
@@ -8332,7 +8351,7 @@ function setupUIButtons(){
   if(dbgT2) dbgT2.onclick=()=>{
     dbgOn=!dbgOn; GameRuntime.storage.setItem('dbgOn',dbgOn?'1':'0');
     const db=document.getElementById('dbgBox'); if(db) db.textContent=dbgOn?'✓':'';
-    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 284'; }
+    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 285'; }
   };
   const lu=document.getElementById('lookUp'), ld=document.getElementById('lookDn');
   let _lookT=0;
@@ -8348,7 +8367,7 @@ function setupUIButtons(){
   if(pb) pb.addEventListener('pointerdown',e=>{ e.preventDefault(); togglePause(); });
   const rb=document.getElementById('resumeBtn'); if(rb) rb.onclick=resumeGame;
   const mb=document.getElementById('menuBtn'); if(mb) mb.onclick=exitToMenu;
-  document.getElementById('pauseMainMenu').onclick=async()=>{globalThis.sortieCheckpoint?.save();await globalThis.sortieCheckpoint?.flush();exitToMenu(true);window.location.href='index.html?v=284';};
+  document.getElementById('pauseMainMenu').onclick=async()=>{globalThis.sortieCheckpoint?.save();await globalThis.sortieCheckpoint?.flush();exitToMenu(true);window.location.href='index.html?v=285';};
   document.getElementById('resultBtn').onclick=()=>{
     // the logbook borrows this screen from the menu — send the player straight back
     if(logbookOpen){ logbookOpen=false; showOverlay('menu'); return; }
@@ -8357,7 +8376,7 @@ function setupUIButtons(){
       clearSecretSpace();hideOverlays();P.alive=true;state=ST.FLIGHT;enterSecretSpace(true);clock.getDelta();return;
     }
     const last=mission===MISSIONS.length-2;
-    if(MISSIONS[mission]?.custom){window.location.href='hangar.html?theatre=pacific&v=284';return;}
+    if(MISSIONS[mission]?.custom){window.location.href='hangar.html?theatre=pacific&v=285';return;}
     if(wasWin){
       if(MISSIONS[mission] && MISSIONS[mission].free){ startMission(mission); return; }  // stay in Free Flight
       if(MISSIONS[mission] && MISSIONS[mission].qual){ showOverlay('menu'); return; }  // qual -> ready room
@@ -8677,7 +8696,7 @@ function animate(){
     notice.style.cssText='position:fixed;inset:0;z-index:999998;background:rgba(15,20,15,.95);color:#e8ddbc;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px;text-align:center;font:16px system-ui';
     const title=document.createElement('h2');title.textContent='Simulation interrupted';
     const detail=document.createElement('p');
-    detail.textContent='BUILD 284 · '+(MISSIONS[mission]?.sub||'Menu')+' · '+error.message;
+    detail.textContent='BUILD 285 · '+(MISSIONS[mission]?.sub||'Menu')+' · '+error.message;
     const reload=document.createElement('button');reload.textContent='Reload game';
     reload.style.cssText='padding:12px 24px;font:inherit';reload.onclick=()=>location.reload();
     notice.appendChild(title);notice.appendChild(detail);notice.appendChild(reload);document.body.appendChild(notice);
@@ -8814,12 +8833,10 @@ function animateFrame(){
   // that is the "world looks stitched/broken" effect. Recentre it under the player
   // every frame instead; the wave shader is world-space so this is seamless.
   if(sea){ sea.position.x=P.pos.x; sea.position.z=P.pos.z; }
-  if(sun&&sun.castShadow&&P&&P.pos){
-    sun.position.set(P.pos.x+sunOffset.x,P.pos.y+sunOffset.y,P.pos.z+sunOffset.z);
-    sunTarget.position.copy(P.pos);
-  }
-  // sun stays pinned in the sky; radar sweeps
-  if(sunSprite){ const sd=sun.position.clone().normalize();
+  if(sun&&sun.castShadow&&P&&P.pos)placePacificShadow(rawDt);
+  // sun stays pinned in the sky; radar sweeps. Build 285: the sun's DIRECTION is sunOffset (sun.position now sits at
+  // the shadow box; it used to be the player + offset, which normalised to the wrong bearing far from the origin).
+  if(sunSprite){ const sd=sunOffset.clone().normalize();
     sunSprite.position.copy(camera.position).addScaledVector(sd,9000); }
   const rad=carrier&&carrier.getObjectByName('radar'); if(rad) rad.rotation.y+=0.6*dt;
   volcanoT-=dt;
@@ -8878,6 +8895,62 @@ function applyPacificGraphics(){
   pacificPerf?.reset();
 }
 graphicsQuality.onChange(applyPacificGraphics);
+// ---- Build 285: shadows over Okinawa. Nothing on the island cast a shadow (every house, palm, tree and bunker had
+// castShadow off) and the shadow box was 240 m around the aircraft, so at 130 m altitude almost nothing in view was in
+// it. Now, like the Rhine (Build 279): the box sits on the ground AHEAD of the camera (0.55 x range), its size is the
+// tier's shadowRange (High 360 m, Medium 200 m), it is snapped to whole shadow texels (no crawling), and shadows fade out
+// over the last 16 % of the box instead of ending at a hard line. Island casters: buildings, roofs, verandas, walls,
+// palms, bunkers, vehicles, crews; tree cells only when near the box (4x per second). Flat ground layers do not cast.
+{const chunk=THREE.ShaderChunk.shadowmap_pars_fragment;
+ if(chunk&&!chunk.includes('shadowEdgeFade')){
+  const patched=chunk.replace('float getShadow(','float shadowEdgeFade(vec2 uv){vec2 e=min(uv,1.0-uv);return smoothstep(0.0,0.16,min(e.x,e.y));}\n\tfloat getShadow(')
+   .replace(/(#endif\s*\}\s*)return shadow;/,'$1return mix(1.0,shadow,shadowEdgeFade(shadowCoord.xy));');
+  if(patched.includes('shadowEdgeFade(shadowCoord.xy)'))THREE.ShaderChunk.shadowmap_pars_fragment=patched;}}
+const pacShadow={dir:new THREE.Vector3(),right:new THREE.Vector3(),up:new THREE.Vector3(),look:new THREE.Vector3(),focus:new THREE.Vector3(),
+  snapped:new THREE.Vector3(),castT:0,sweepT:0,seen:new WeakSet(),cells:[],world:null};
+const PAC_NO_CAST=/^(Terrain_|Dirt approaches|Cultivated field rows|Coral field boundaries|Hamlet earth roads|Farm tracks|Airfield coral gravel|Airfield tyre tracks|Recessed windows|Window shutters|Wooden doors|Animated coastal water)/;
+function pacShadowGround(x,z){
+  if(okinawaWorld&&okinawaWorld.root.visible){const lx=x-OKINAWA_OFFSET_X;
+    if(Math.abs(lx)<7980&&Math.abs(z)<7980&&okinawaWorld.shoreDistance(lx,z)>1)return okinawaWorld.getSurfaceHeight(lx,z);}
+  return 0;
+}
+function sweepOkinawaCasters(){
+  const w=okinawaWorld;if(!w)return;
+  if(pacShadow.world!==w){pacShadow.world=w;pacShadow.seen=new WeakSet();pacShadow.cells=[];}
+  const skip=new Set([w.terrain,w.coastalScenery?.root].filter(Boolean));
+  const walk=o=>{
+    if(skip.has(o))return;
+    if(o.isMesh&&!pacShadow.seen.has(o)){pacShadow.seen.add(o);
+      const m=Array.isArray(o.material)?o.material[0]:o.material;
+      if(m&&!m.transparent&&!m.isShaderMaterial&&!PAC_NO_CAST.test(o.name||'')){
+        if(o.isInstancedMesh&&o.frustumCulled&&o.geometry.boundingSphere&&o.userData.cell!==undefined)pacShadow.cells.push(o);
+        else o.castShadow=true;
+        o.receiveShadow=true;}}
+    for(const c of o.children)walk(c);
+  };
+  walk(w.root);
+}
+// Tree cells (2 km, frustum-culled) cast only near the shadow box, so the shadow pass draws a few cells, not the island.
+function nearTreeCasters(focus,range){
+  const reach=range*1.6;
+  for(const m of pacShadow.cells){const s=m.geometry.boundingSphere.center;
+    m.castShadow=Math.hypot(s.x+m.parent.matrixWorld.elements[12]-focus.x,s.z+m.parent.matrixWorld.elements[14]-focus.z)-m.geometry.boundingSphere.radius<reach;}
+}
+function placePacificShadow(dt){
+  const range=graphicsQuality.settings.shadowRange||240,size=sun.shadow.mapSize.x,cam=sun.shadow.camera;
+  if(cam.right!==range||cam.near!==10){cam.left=-range;cam.right=range;cam.top=range;cam.bottom=-range;cam.near=10;cam.far=3400;cam.updateProjectionMatrix();sun.shadow.normalBias=.25;}
+  const d=pacShadow.dir.copy(sunOffset).normalize(),right=pacShadow.right.set(0,1,0).cross(d).normalize(),up=pacShadow.up.crossVectors(d,right).normalize();
+  const f=pacShadow.focus.set(P.pos.x,0,P.pos.z);f.y=Math.min(P.pos.y,pacShadowGround(f.x,f.z));
+  camera.getWorldDirection(pacShadow.look);pacShadow.look.y=0;const l=pacShadow.look.length();
+  if(l>.2)f.addScaledVector(pacShadow.look,range*.55/l);
+  const texel=2*range/size,a=Math.round(f.dot(right)/texel)*texel,b=Math.round(f.dot(up)/texel)*texel;
+  pacShadow.snapped.copy(right).multiplyScalar(a).addScaledVector(up,b).addScaledVector(d,f.dot(d));
+  sunTarget.position.copy(pacShadow.snapped);sun.position.copy(pacShadow.snapped).addScaledVector(d,1500);
+  if(okinawaWorld&&okinawaWorld.root.visible){
+    pacShadow.sweepT-=dt;if(pacShadow.sweepT<=0){pacShadow.sweepT=2;sweepOkinawaCasters();}
+    pacShadow.castT-=dt;if(pacShadow.castT<=0){pacShadow.castT=.25;nearTreeCasters(f,range);}
+  }
+}
 graphicsQuality.onResolution(applyPacificGraphics);
 // ---- Build 283: Pacific Ultra scenery (Graphics menu: "Pacific scenery"). Same idea as the Rhine's Ultra High: the
 // detail tier still picks resolution, shadows and glow; Ultra changes what the sea and sky are drawn with.

@@ -1,9 +1,17 @@
 # Grafik- und Performance-Plan
 
-Stand: 16.11.2026, **Build 277: Phasen 0–6 umgesetzt, Build 278–284: Nachbesserungen und Pazifik Ultra (Abschnitte 0a–0g)** (Freigabe des Nutzers: „setze deine Phasen um …
+Stand: 16.11.2026, **Build 277: Phasen 0–6 umgesetzt, Build 278–285: Nachbesserungen und Pazifik Ultra (Abschnitte 0a–0h)** (Freigabe des Nutzers: „setze deine Phasen um …
 aber keine 120 fps"). Zielgerät des Nutzers: **iPad Pro mit M1**, Ziel **stetige 60 Bilder/s** (120 Hz ist
 ausdrücklich kein Ziel). Was gebaut ist, steht im neuen Abschnitt 0; die Abschnitte 1–8 sind der Plan von
 Build 276 (unverändert, mit Vermerken).
+
+## 0h. Build 285: Schatten über Okinawa, warme Dämmerung, unregelmäßigere Wellen (iPad-Rückmeldung zu 284)
+
+- **Schatten (alle Stufen mit Schatten, nicht nur Ultra):** gemessen warf auf Okinawa **kein** Objekt einen Schatten (alle Häuser, Palmen, Bäume, Bunker `castShadow=false`), und die Schattenbox war ±240 m um das Flugzeug (aus 130 m Höhe lag fast nichts im Bild darin). Jetzt wie am Rhein (0b): Box auf dem Boden 0,55 × Reichweite vor der Kamera, Reichweite aus der Stufe (`shadowRange` High 360 m, Medium 200 m), auf Schattentexel gerastet, Ausblenden in den äußeren 16 % (gleicher Patch von `shadowmap_pars_fragment` wie `graphics-extras.js`), `normalBias` .25. Werfer: Gebäude, Dächer, Veranden, Mauern, Palmen, Bunker, Fahrzeuge, Bodenpersonal (Sweep alle 2 s, neue Objekte kommen dazu); flache Bodenschichten (Felder, Wege, Fenster/Türen) nicht; Baumzellen nur in der Nähe der Box (4× je Sekunde). Nebenfund: die Sonnenscheibe (`sunSprite`) nahm ihre Richtung aus `sun.position` (= Spieler + Versatz) und stand fern vom Ursprung falsch; jetzt aus `sunOffset`.
+- **Dämmerung:** `applyWeather` ersetzte bei Dämmerung/Abend die warme Dunstfarbe durch die Tageswetterfarbe (`broken` 0xa3b1b8) → ferne Berge blau-weiß unter orangem Himmel. Jetzt tönt das Wetter den warmen Dunst nur mit demselben Anteil wie den Horizont des Himmels (Bedeckung × 0,6). Gemessen Nebelfarbe dawn/broken: (0,64; 0,69; 0,72) → (0,72; 0,69; 0,61).
+- **Wellen (Ultra):** die drei Abgriffe derselben 256-px-Kachel bildeten ein Gitter. Jetzt: die großen Maßstäbe mischen je nach Fleck (langsames Rauschen) mit einer um 37° gedrehten, gestreckten Kopie (Neigungen zurückgedreht), ein vierter Abgriff (71 m) trägt die Ferne, die kleinen Maßstäbe lesen durch eine treibende Verzerrung (±3,5 m), Rauigkeit in treibenden Böenflecken 0,4–1,5×. Wellenhöhe (`seaHeightAt`) unverändert. Gemessen (Sortie 3, iPad-Pose 160 m über dem Wasser, stärkste Wiederholung der hochpassgefilterten Wasserstruktur bis 30 px Versatz): Build 284 0,207 → 0,157. Kosten je Meerpixel: zwei Texturzugriffe und vier Rauschwerte mehr (nur Ultra).
+- Test `okinawa/tests/pacific-shadows-browser.cjs` (mit `OLD_PAGE=` gegen eine alte Seitenkopie vergleichbar), Bilder `test-visuals/build285-{old,new}-*.jpg`.
+- **Offen:** kein iPad-Test; Kosten des Schattenpasses über Okinawa auf dem M1 ungemessen (Inselweite Instanz-Batches für Häuser zeichnen alle Instanzen in den Schattenpass, sie haben keine Zellen); Bäume weiter als ~0,6 km ohne Echtzeitschatten.
 
 ## 0g. Build 284: Pazifik Ultra Schritt 2 – Wolkenschatten auf Land/Schiffen, Okinawa-Relief
 

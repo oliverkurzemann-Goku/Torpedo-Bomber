@@ -1,5 +1,13 @@
 # Torpedo-Bomber — Übergabe an Claude Code
 
+**17.11.2026, Build 285: Okinawa wirft Schatten, Dämmerung bleibt warm, Ultra-Wellen weniger gleichmäßig.**
+Nutzer (vier iPad-Bilder Build 284, Ultra): „Performance ist in Okinawa gut, aber: Es gibt keine Schatten. Bei dawn sind die weit entfernten Berge weiß-blau. Die Wellen sind cool, aber zu gleichmäßig, wirken wie ein designtes Muster." Einzelheiten: `GRAPHICS-PLAN.md` Abschnitt 0h.
+- **Schatten (`torpedo-carrier.html`, `placePacificShadow`/`sweepOkinawaCasters`/`nearTreeCasters`, alle Stufen mit Schatten):** gemessen warf auf Okinawa kein einziges Objekt Schatten, und die Box war ±240 m um das Flugzeug. Jetzt Box vor der Kamera (Reichweite der Stufe, texelgerastet, Randausblendung), Häuser/Dächer/Palmen/Mauern/Bunker/Fahrzeuge werfen, Baumzellen nur nahe der Box; flache Schichten nicht. Nebenfund behoben: `sunSprite` nahm die Richtung aus `sun.position` (falsch fern vom Ursprung), jetzt `sunOffset`.
+- **Dämmerung (`applyWeather`):** die Tageswetterfarbe ersetzte die warme Dunstfarbe → blau-weiße Berge. Jetzt nur Tönung (Bedeckung × 0,6); gemessen dawn/broken (0,64; 0,69; 0,72) → (0,72; 0,69; 0,61).
+- **Wellen (Ultra-Meer):** gedrehte Kopien der großen Maßstäbe fleckweise gemischt, 71-m-Fernabgriff, verzerrte Kleinmaßstäbe, Böenflecken 0,4–1,5×; Wellenhöhe unverändert. Wiederholungsmaß der Wasserstruktur 0,207 → 0,157.
+- Test `okinawa/tests/pacific-shadows-browser.cjs` (neu, mit `OLD_PAGE=` Vorher/Nachher), Kennungen 285.
+**Offen:** kein iPad-Test; Schattenpass-Kosten auf dem M1 ungemessen; ferne Bäume (> ~0,6 km) ohne Echtzeitschatten.
+
 **17.11.2026, Build 284: Pazifik-Ton kommt nach einer iOS-Unterbrechung wieder, Pazifik Ultra Schritt 2 – Wolkenschatten auf Okinawa, Schiffen und Flugzeugen, gebackenes Relief mit Hangschatten.**
 Nutzer: „Bitte auch den nächsten Schritt umsetzen. Aber derzeit ist der Ton bei Pazifik nicht mehr da. Kein Propellersound, gar nichts." Einzelheiten Grafik: `GRAPHICS-PLAN.md` Abschnitt 0g.
 - **Ton (`torpedo-carrier.html`, `audioWatch`/`audioGesture`/`rebuildAudio`):** im Chromium nicht nachstellbar (dort läuft der Ton). Bekannte iOS-Fälle, die genau „gar nichts" ergeben, sind jetzt abgefangen: der Kontext geht nach Anruf/Siri/App-Wechsel in `interrupted` (der alte Code fragte nur `suspended` ab und weckte ihn nie), der Kontext wurde vom System geschlossen, oder er meldet `running`, aber `currentTime` steht (Ausgabe verloren). Jetzt: alle 1,5 s ein `resume()` solange nicht `running`; steht die Uhr > 3 s oder ist der Kontext zu, wird er beim nächsten Tippen (Pflicht auf iOS) neu gebaut, Motor + Soundscape neu angehängt (Pause bleibt stumm). Test `okinawa/tests/pacific-audio-browser.cjs` (neu: Start, angehalten → automatisch weiter, geschlossen → Tippen baut neu, eingefrorene Uhr → erkannt → Tippen baut neu, Effekte, Pause stumm/laut; Pegel jedes Mal > 0,06 RMS). **Ob das die Ursache auf dem iPad war, ist nicht bewiesen.**
@@ -1272,7 +1280,7 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 284 · Thunderbolt Squadron BUILD 284 · Remagen-Kern 23 / Fahrzeuge 24**
+Stand bei Übergabe: **Torpedo Squadron BUILD 285 · Thunderbolt Squadron BUILD 285 · Remagen-Kern 23 / Fahrzeuge 24**
 
 **Build 198 (22.10.2026): P-47-Fotolackierung, Einsatzspuren und natives Fahrwerk; Terrain-Fix aus Build 197 erhalten.**
 `assets/aircraft/p47-weathered.glb` ist ein ausdrücklich gekennzeichnetes Derivat des
