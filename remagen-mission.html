@@ -313,7 +313,7 @@
   <div style="width:100%;height:4px;background:repeating-linear-gradient(45deg,#ffd400,#ffd400 8px,#111 8px,#111 16px);"></div>
   <span id="testVersionBannerText" style="background:#111;color:#ffd400;font-family:monospace;font-weight:800;font-size:11px;letter-spacing:.5px;padding:3px 10px;border:1px solid #ffd400;border-top:none;border-radius:0 0 6px 6px;"></span>
 </div>
-<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 285';</script>
+<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 286';</script>
 <!-- ===== END TEMP TEST-ONLY VERSION BANNER ===== -->
 <div id="app"></div>
 <style>
@@ -355,7 +355,7 @@
   <div id="gunsight"></div>
   <div id="radio"></div>
   <div id="rhinePerfHud" hidden></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 285 · REAL RHINE</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 286 · REAL RHINE</div>
 
   <div id="apr">
     <div id="aprCall"></div>
@@ -410,7 +410,7 @@
 </div>
 
 <div class="overlay hidden" id="menu" data-campaign="europe">
-  <div class="menuTop"><a id="selBtn" href="index.html?v=285">&#9664; Change Game</a><span class="menuMeta">RHINE OPERATIONS<br>BUILD 285</span></div>
+  <div class="menuTop"><a id="selBtn" href="index.html?v=286">&#9664; Change Game</a><span class="menuMeta">RHINE OPERATIONS<br>BUILD 286</span></div>
   <div class="card menuCard">
     <aside class="menuOverview" aria-label="Campaign and pilot options">
     <div class="campaignArt" aria-hidden="true"></div>
@@ -446,7 +446,7 @@
     </aside>
     <section class="missionPanel" aria-label="Mission selection">
       <div class="secLbl">Choose your sortie · 15 missions + 4 bonus &amp; training</div>
-      <a class="hangarLink" href="hangar.html?theatre=europe&amp;v=285">CUSTOM MISSION · CHOOSE AIRCRAFT &amp; LOADOUT →</a>
+      <a class="hangarLink" href="hangar.html?theatre=europe&amp;v=286">CUSTOM MISSION · CHOOSE AIRCRAFT &amp; LOADOUT →</a>
 <div id="missionSel" role="group" aria-label="European missions"></div>
       <div id="missionBlurb" class="missionBlurb" aria-live="polite"></div>
       <div class="menuConfig">
@@ -602,7 +602,7 @@
 <script src="campaign.js?v=1"></script>
 <script src="game-runtime.js?v=282"></script>
 <script src="graphics-quality.js?v=282"></script>
-<script src="graphics-post.js?v=283"></script>
+<script src="graphics-post.js?v=286"></script>
 <script src="graphics-extras.js?v=279"></script>
 <script src="sortie-checkpoint.js?v=238"></script>
 <script src="ju87-native.js?v=218"></script>
@@ -1036,7 +1036,7 @@ async function loadRealWorld(){
 
   if(OSMManager.BUILD!==23||HistoricalObjectManager.BUILD!==21||LivingWorld.BUILD!==22||WorldVehicles.BUILD!==24) throw new Error('Terrain version mismatch. Reload Remagen.');
   document.getElementById('testVersionBannerText').textContent=
-    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 285 · MODULE 23';
+    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 286 · MODULE 23';
   heightProvider=new DEMHeightProvider(RTILE,'terrain-system/real/data/dem/');
   terrain=new TerrainManager(scene,RTILE,heightProvider);
   osmMgr=new OSMManager(scene,RTILE,terrain,'terrain-system/real/data/osm/');
@@ -7889,10 +7889,26 @@ function updateCamera(dt){
   if(camUp)want.addScaledVector(camUp,lift);else want.y+=lift;
   const gy=groundY(want.x,want.z)+6;
   if(want.y<gy) want.y=gy;
-  camera.position.lerp(want,Math.min(1,(aeroMode?10:7)*dt));
+  // Build 286: the easing works on the camera's OFFSET from the aircraft, not on its world position. The old
+  // camera.position.lerp(want,7*dt) trailed the aircraft by speed*(1/7-dt) metres, so every change of frame time moved
+  // the camera along the flight path: at 205 m/s a 45 ms frame among 16.7 ms frames pulled it 1 m closer, alternating
+  // 16.7/33.3 ms frames (a CPU-bound iPad at ~40 FPS) made it surge 0.3 m every frame - only the aircraft, the one near
+  // object, visibly jumped (Me 262 / Komet: fastest, and the heat-haze pass makes their frames the least even). The
+  // trail is now speed*(1/rate-1/60) at every frame time (= the old picture at 60 FPS) and the easing is exponential.
+  const rate=aeroMode?10:7,follow=camera.userData.follow||(camera.userData.follow={offset:new THREE.Vector3(),prev:new THREE.Vector3(),velocity:null,last:null});
+  if(!follow.last||camera.position.distanceToSquared(follow.last)>.25){follow.offset.copy(camera.position).sub(P.pos);follow.velocity=null;}   // placed elsewhere (intro, bail-out, relaunch): continue from there
+  const moved=follow.last&&dt>0?P.pos.clone().sub(follow.prev).divideScalar(dt):null;
+  if(moved&&moved.lengthSq()<700*700){   // a teleport (relaunch, respawn) is not a speed
+    if(!follow.velocity)follow.velocity=moved;else follow.velocity.lerp(moved,1-Math.exp(-6*dt));   // smoothed: a sudden stop (map edge) eases the trail out
+  }
+  const target=want.clone().sub(P.pos);
+  if(follow.velocity)target.addScaledVector(follow.velocity,-(1/rate-1/60));
+  follow.offset.lerp(target,1-Math.exp(-rate*dt));
+  camera.position.copy(P.pos).add(follow.offset);
   // Remove the sideways lag of the follow easing (crosswind); near the vertical the heading frame is undefined.
   if(camUp)FlightSupport.centerChaseLag(camera,want,track);       // REALISTIC: smooth, keeps the bank offset (Build 229)
   else if(Math.hypot(track.x,track.z)>.6)FlightSupport.centerChase(camera,P.pos,track);
+  follow.offset.copy(camera.position).sub(P.pos);follow.prev.copy(P.pos);
   if(camUp)camera.up.copy(camUp);
   else camera.up.set(0,1,0).applyAxisAngle(track,-P.roll*.55);
   const aim=P.pos.clone().addScaledVector(track,50);
@@ -7903,6 +7919,7 @@ function updateCamera(dt){
     camera.position.x+=(Math.random()-0.5)*k; camera.position.y+=(Math.random()-0.5)*k;
     camera.position.z+=(Math.random()-0.5)*k;
   }
+  (follow.last||(follow.last=new THREE.Vector3())).copy(camera.position);
 }
 
 // ============================================================
@@ -8502,7 +8519,7 @@ function showResult(good,title,sub,html,btn){
   document.getElementById('rsGo').onclick=()=>{
     voiceRadio.cancel();soundscape.stop();
     show('result',false);
-    if(MISSIONS[selectedMission]?.custom){window.location.href='hangar.html?theatre=europe&v=285';return;}
+    if(MISSIONS[selectedMission]?.custom){window.location.href='hangar.html?theatre=europe&v=286';return;}
     if(good && selectedMission===MISSIONS.length-1){
       show('menu',true);if(navigation){navigation.reset();navigation.button.style.display='none';}
     }
@@ -9058,7 +9075,7 @@ function init(){
   // menu wiring
   document.getElementById('startBtn').onclick=()=>showBrief(selectedMission);
   duelInit();
-  document.getElementById('pauseMainMenu').onclick=async()=>{globalThis.sortieCheckpoint?.save();await globalThis.sortieCheckpoint?.flush();exitToMenuFromPause(true);window.location.href='index.html?v=285';};
+  document.getElementById('pauseMainMenu').onclick=async()=>{globalThis.sortieCheckpoint?.save();await globalThis.sortieCheckpoint?.flush();exitToMenuFromPause(true);window.location.href='index.html?v=286';};
   document.getElementById('logBtn').onclick=()=>{ show('menu',false); showLogbook(); };
   document.getElementById('skipLaunchPreview').onclick=()=>finishLaunchIntro();
   document.getElementById('brBack').onclick=()=>{ show('brief',false); show('menu',true);if(navigation){navigation.reset();navigation.button.style.display='none';} state=ST.MENU; };

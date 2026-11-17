@@ -88,9 +88,12 @@
         shadowAuto=renderer.shadowMap.autoUpdate,shadowNeeds=renderer.shadowMap.needsUpdate,alpha=renderer.getClearAlpha();
       renderer.getClearColor(clearColor);
       world.background=null;world.overrideMaterial=maskMaterial;view.layers.set(MASK_LAYER);
+      // Build 286: the scene pass of this frame already updated every world matrix; doing it again here cost the jets a second
+      // walk over the whole Rhine scene each frame (the frame-time spikes that shook the chase camera).
+      const autoUpdate=world.autoUpdate;world.autoUpdate=false;
       renderer.shadowMap.autoUpdate=false;renderer.shadowMap.needsUpdate=false;renderer.setClearColor(0x000000,1);
       renderer.setRenderTarget(maskTarget);renderer.clear();renderer.render(world,view);
-      world.background=background;world.overrideMaterial=override;view.layers.mask=layers;
+      world.background=background;world.overrideMaterial=override;view.layers.mask=layers;world.autoUpdate=autoUpdate;
       renderer.shadowMap.autoUpdate=shadowAuto;renderer.shadowMap.needsUpdate=shadowNeeds;renderer.setClearColor(clearColor,alpha);
     }
     const api={

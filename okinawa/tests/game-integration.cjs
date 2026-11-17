@@ -14,7 +14,8 @@ const pick=(name,next)=>{
 };
 const crashes=[];
 const game=vm.createContext({GameRuntime,ShipContact,THREE,Math,console,MODEL_SCALE:1,MISSIONS:[{okinawa:true},{okinawa:false}],mission:0,
- OKINAWA_OFFSET_X:10000,okinawaWorld:null,sea:{visible:true},
+ OKINAWA_OFFSET_X:10000,okinawaWorld:null,pacificLand:null,   // Build 284: Ultra land layer (absent here)
+sea:{visible:true},
  seaUniforms:{uCoast:{value:null},uCoastActive:{value:0}},islands:[{group:{visible:true}}],
  P:{pos:{x:0,y:0,z:0},touchResolved:false},overDeck:()=>false,DECK_Y:18,carrierX:0,
  STERN_X:-120,BOW_X:120,crashes,DECK_HALF_W:16,crash(type){crashes.push(type)},

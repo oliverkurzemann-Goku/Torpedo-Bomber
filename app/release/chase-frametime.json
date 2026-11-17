@@ -1,0 +1,241 @@
+{
+ "arcade@150": {
+  "even60": {
+   "jerkPx": 0,
+   "distanceStep": 0,
+   "distance": [
+    50.29,
+    50.29
+   ],
+   "y": 544.7
+  },
+  "even30": {
+   "jerkPx": 0,
+   "distanceStep": 0,
+   "distance": [
+    50.29,
+    50.29
+   ],
+   "y": 544.7
+  },
+  "ipad40": {
+   "jerkPx": 0,
+   "distanceStep": 0,
+   "distance": [
+    50.29,
+    50.29
+   ],
+   "y": 544.7
+  },
+  "spikes": {
+   "jerkPx": 0,
+   "distanceStep": 0,
+   "distance": [
+    50.29,
+    50.29
+   ],
+   "y": 544.7
+  }
+ },
+ "arcade@205": {
+  "even60": {
+   "jerkPx": 0,
+   "distanceStep": 0,
+   "distance": [
+    58.9,
+    58.9
+   ],
+   "y": 527.3
+  },
+  "even30": {
+   "jerkPx": 0,
+   "distanceStep": 0,
+   "distance": [
+    58.9,
+    58.9
+   ],
+   "y": 527.3
+  },
+  "ipad40": {
+   "jerkPx": 0,
+   "distanceStep": 0,
+   "distance": [
+    58.9,
+    58.9
+   ],
+   "y": 527.3
+  },
+  "spikes": {
+   "jerkPx": 0,
+   "distanceStep": 0,
+   "distance": [
+    58.9,
+    58.9
+   ],
+   "y": 527.3
+  }
+ },
+ "arcade@240": {
+  "even60": {
+   "jerkPx": 0,
+   "distanceStep": 0,
+   "distance": [
+    64.07,
+    64.07
+   ],
+   "y": 519.7
+  },
+  "even30": {
+   "jerkPx": 0,
+   "distanceStep": 0,
+   "distance": [
+    64.07,
+    64.07
+   ],
+   "y": 519.7
+  },
+  "ipad40": {
+   "jerkPx": 0,
+   "distanceStep": 0,
+   "distance": [
+    64.07,
+    64.07
+   ],
+   "y": 519.7
+  },
+  "spikes": {
+   "jerkPx": 0,
+   "distanceStep": 0,
+   "distance": [
+    64.07,
+    64.07
+   ],
+   "y": 519.7
+  }
+ },
+ "realistic@150": {
+  "even60": {
+   "jerkPx": 0,
+   "distanceStep": 0,
+   "distance": [
+    50.29,
+    50.29
+   ],
+   "y": 544.7
+  },
+  "even30": {
+   "jerkPx": 0,
+   "distanceStep": 0,
+   "distance": [
+    50.29,
+    50.29
+   ],
+   "y": 544.7
+  },
+  "ipad40": {
+   "jerkPx": 0,
+   "distanceStep": 0,
+   "distance": [
+    50.29,
+    50.29
+   ],
+   "y": 544.7
+  },
+  "spikes": {
+   "jerkPx": 0,
+   "distanceStep": 0,
+   "distance": [
+    50.29,
+    50.29
+   ],
+   "y": 544.7
+  }
+ },
+ "realistic@205": {
+  "even60": {
+   "jerkPx": 0,
+   "distanceStep": 0,
+   "distance": [
+    58.9,
+    58.9
+   ],
+   "y": 527.3
+  },
+  "even30": {
+   "jerkPx": 0,
+   "distanceStep": 0,
+   "distance": [
+    58.9,
+    58.9
+   ],
+   "y": 527.3
+  },
+  "ipad40": {
+   "jerkPx": 0,
+   "distanceStep": 0,
+   "distance": [
+    58.9,
+    58.9
+   ],
+   "y": 527.3
+  },
+  "spikes": {
+   "jerkPx": 0,
+   "distanceStep": 0,
+   "distance": [
+    58.9,
+    58.9
+   ],
+   "y": 527.3
+  }
+ },
+ "realistic@240": {
+  "even60": {
+   "jerkPx": 0,
+   "distanceStep": 0,
+   "distance": [
+    64.07,
+    64.07
+   ],
+   "y": 519.7
+  },
+  "even30": {
+   "jerkPx": 0,
+   "distanceStep": 0,
+   "distance": [
+    64.07,
+    64.07
+   ],
+   "y": 519.7
+  },
+  "ipad40": {
+   "jerkPx": 0,
+   "distanceStep": 0,
+   "distance": [
+    64.07,
+    64.07
+   ],
+   "y": 519.7
+  },
+  "spikes": {
+   "jerkPx": 0,
+   "distanceStep": 0,
+   "distance": [
+    64.07,
+    64.07
+   ],
+   "y": 519.7
+  }
+ },
+ "mapEdge": {
+  "stop": {
+   "jerkPx": 1.45,
+   "distanceStep": 2.016,
+   "distance": [
+    33.67,
+    58.9
+   ],
+   "y": 599.6
+  }
+ }
+}

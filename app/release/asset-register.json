@@ -1,13 +1,13 @@
 {
   "schema": 1,
   "reviewedOn": "2026-10-23",
-  "build": 285,
+  "build": 286,
   "status": "OPEN — source declarations checked; no external rights authorization obtained",
   "payload": {
-    "bytes": 166274069,
+    "bytes": 166276117,
     "fileCount": 398,
     "modelCount": 64,
-    "manifestSha256": "503569c828f72e43d9a4aae1bb5ea8364a8a3faf80727b2b93e2d0e4f3f956e0"
+    "manifestSha256": "b8949571e0d40d5d13847e677bd3e80949b2dfeacd60560f4ebb7bd0813ccd79"
   },
   "files": [
     {
@@ -846,8 +846,8 @@
     },
     {
       "path": "graphics-post.js",
-      "bytes": 10752,
-      "sha256": "09b9ba743549109bab1d300f56857233f285cb810d3cf6dfdb762c0880cdea5a",
+      "bytes": 11077,
+      "sha256": "084d19ac43b32ddbfbfc680ccc31977fa20a16093111c0733c0d41a7a57deed6",
       "kind": "code-or-notice"
     },
     {
@@ -883,7 +883,7 @@
     {
       "path": "hangar.html",
       "bytes": 4919,
-      "sha256": "35e3b28b87e5a00212044d968d536f95faf8fe50ca9f3647aa2bd0d5321b62b3",
+      "sha256": "4bdb0ea23343adcafff3a5cefa9eb170295645c3c31d93c939dfa1f48520373e",
       "kind": "code-or-notice"
     },
     {
@@ -895,7 +895,7 @@
     {
       "path": "index.html",
       "bytes": 7912,
-      "sha256": "ad43b1cc62876d6f076792538bc3aea1d524dd1700ba2b84722549d7e0bfa7b5",
+      "sha256": "71731f0b469d61290d954539adc08fecce1fb6d45b8388102e20a09353fc5563",
       "kind": "code-or-notice"
     },
     {
@@ -1044,8 +1044,8 @@
     },
     {
       "path": "remagen-mission.html",
-      "bytes": 610058,
-      "sha256": "af34bd361683a8a561b89813e6eb66be5838c0bcf7e7c984542382002aff0c4e",
+      "bytes": 611781,
+      "sha256": "e1f5780781013e7b8878f38962898349e059e8a3c321c4fa7288eccbc43c53de",
       "kind": "code-or-notice"
     },
     {
@@ -2317,7 +2317,7 @@
     {
       "path": "torpedo-carrier.html",
       "bytes": 571066,
-      "sha256": "12672f2693d91387ea9e15441c787d3dc94073b4996056f53155b46cea74eb44",
+      "sha256": "e18cfb578cc3f5a28e5d08cf28284ac28bb6b2f0ab20ba84e006f22234b4628d",
       "kind": "code-or-notice"
     },
     {

@@ -20,13 +20,13 @@
  "dist": 30.00717972148016,
  "parent": true,
  "before": {
-  "plane": 377,
-  "rest": 7189,
+  "plane": 375,
+  "rest": 6760,
   "planePx": 4568
  },
  "after": {
   "plane": 1,
-  "rest": 6981,
+  "rest": 6543,
   "planePx": 4568
  },
  "still": {

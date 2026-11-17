@@ -1,5 +1,17 @@
 # Torpedo-Bomber — Übergabe an Claude Code
 
+**17.11.2026, Build 286: Me 262 und Komet „springen“ nicht mehr – die Rhein-Verfolgerkamera hing von der Bildzeit ab.**
+Nutzer: „die me262 und die comet springen bzw ruckeln jetzt manchmal. Aber nur das Flugzeug, nicht das ganze Bild. Im Geradeausflug bei normaler Geschwindigkeit.“
+- **Ursache (gemessen im echten Spiel, Rhein Ultra/High, Freiflug in der Luft, Bildschleife mit vorgegebenen Bildzeiten):** `updateCamera` (`remagen-mission.html`) glättete die Weltposition mit `camera.position.lerp(want,7*dt)`. Die Kamera hängt dadurch um Tempo × (1/7 − dt) hinter dem Ziel – die Länge hängt an der Bildzeit. Jede Schwankung der Bildzeit schiebt die Kamera entlang der Flugbahn. Sichtbar ist das nur am nahen Flugzeug, nicht an der fernen Landschaft. Jets sind am stärksten betroffen: höchstes Tempo, und der Hitzeflimmer-Durchgang (Build 283) macht gerade ihre Bildzeiten ungleichmäßig. Gemessen vorher → nachher (Abstand Kamera–Flugzeug, größter Sprung je Bild):
+  - **Me 262 bei 205 m/s:** gleichmäßige 60 FPS 0 → 0. Wechselnde 16,7/33,3 ms (iPad bei ~40 FPS) 55,7–58,9 m, bis 0,65 m je Bild → 58,9 m konstant. Ein 45-ms-Bild unter 60-FPS-Bildern: 1,8 m Sprung, 2,2 px → 0.
+  - **Komet bei 240 m/s:** wechselnde Bildzeiten bis 0,75 m je Bild → 0; 45-ms-Bild 2,1 m → 0.
+  - **P-47 bei 150 m/s:** 0,48 / 1,33 m → 0.
+  - Feste 30 FPS ergaben vorher ein anderes Bild (3 m näher), jetzt dasselbe wie bei 60 FPS.
+- **Fix:** Die Kamera glättet ihren **Versatz zum Flugzeug** statt ihrer Weltposition (exponentiell, 1 − e^(−7·dt), REALISTIC 10). Der Nachlauf entlang der Flugbahn ist fest Tempo × (1/7 − 1/60) – das Bild entspricht dem alten bei 60 FPS. Das Tempo wird aus der tatsächlichen Bewegung geschätzt und geglättet (e^(−6·dt)). Ein Sprung der Position (Neustart, Respawn) zählt nicht als Tempo. Wurde die Kamera anderswo gesetzt (Startfahrt, Fallschirm), läuft die Nachführung von dort weiter. Am Kartenrand, wo das Flugzeug angehalten wird, gab es vorher einen 5-m-Satz in einem Bild; jetzt läuft das über mehrere Bilder aus (größter Schritt 2,0 m). Nur Rheinspiel; Pazifik unverändert (nicht gemeldet).
+- **Nebenbei (`graphics-post.js?v=286`):** Der Masken-Durchgang des Hitzeflimmerns (nur Jets) aktualisierte noch einmal alle Weltmatrizen der Rhein-Szene. Das war doppelte Arbeit im selben Bild und erzeugte zusätzliche Bildzeit-Spitzen. Jetzt geschieht das nicht mehr (`world.autoUpdate` für diesen Durchgang aus).
+- **Tests:** neu `okinawa/tests/chase-frametime.cjs` (echtes `updateCamera`, ARCADE/REALISTIC bei 150/205/240 m/s, gleichmäßige, wechselnde und gespickte Bildzeiten, Kartenrand → `app/release/chase-frametime.json`; mit `OLD_FILE=` gegen eine alte Fassung). `game-integration.cjs` kannte `pacificLand` (Build 284) im VM-Ausschnitt nicht → Stub. Kennungen 286.
+**Offen:** kein iPad-Test. Wenn es danach noch springt, ist es nicht mehr die Kamera, sondern die Bildzeit selbst – Messanzeige (`Performance panel`) mit Bild schicken.
+
 **17.11.2026, Build 285: Okinawa wirft Schatten, Dämmerung bleibt warm, Ultra-Wellen weniger gleichmäßig.**
 Nutzer (vier iPad-Bilder Build 284, Ultra): „Performance ist in Okinawa gut, aber: Es gibt keine Schatten. Bei dawn sind die weit entfernten Berge weiß-blau. Die Wellen sind cool, aber zu gleichmäßig, wirken wie ein designtes Muster." Einzelheiten: `GRAPHICS-PLAN.md` Abschnitt 0h.
 - **Schatten (`torpedo-carrier.html`, `placePacificShadow`/`sweepOkinawaCasters`/`nearTreeCasters`, alle Stufen mit Schatten):** gemessen warf auf Okinawa kein einziges Objekt Schatten, und die Box war ±240 m um das Flugzeug. Jetzt Box vor der Kamera (Reichweite der Stufe, texelgerastet, Randausblendung), Häuser/Dächer/Palmen/Mauern/Bunker/Fahrzeuge werfen, Baumzellen nur nahe der Box; flache Schichten nicht. Nebenfund behoben: `sunSprite` nahm die Richtung aus `sun.position` (falsch fern vom Ursprung), jetzt `sunOffset`.
@@ -1280,7 +1292,7 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 285 · Thunderbolt Squadron BUILD 285 · Remagen-Kern 23 / Fahrzeuge 24**
+Stand bei Übergabe: **Torpedo Squadron BUILD 286 · Thunderbolt Squadron BUILD 286 · Remagen-Kern 23 / Fahrzeuge 24**
 
 **Build 198 (22.10.2026): P-47-Fotolackierung, Einsatzspuren und natives Fahrwerk; Terrain-Fix aus Build 197 erhalten.**
 `assets/aircraft/p47-weathered.glb` ist ein ausdrücklich gekennzeichnetes Derivat des
