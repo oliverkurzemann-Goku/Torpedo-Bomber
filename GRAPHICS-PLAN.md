@@ -1,9 +1,17 @@
 # Grafik- und Performance-Plan
 
-Stand: 16.11.2026, **Build 277: Phasen 0–6 umgesetzt, Build 278–283: Nachbesserungen nach iPad-Test (Abschnitte 0a–0f)** (Freigabe des Nutzers: „setze deine Phasen um …
+Stand: 16.11.2026, **Build 277: Phasen 0–6 umgesetzt, Build 278–284: Nachbesserungen und Pazifik Ultra (Abschnitte 0a–0g)** (Freigabe des Nutzers: „setze deine Phasen um …
 aber keine 120 fps"). Zielgerät des Nutzers: **iPad Pro mit M1**, Ziel **stetige 60 Bilder/s** (120 Hz ist
 ausdrücklich kein Ziel). Was gebaut ist, steht im neuen Abschnitt 0; die Abschnitte 1–8 sind der Plan von
 Build 276 (unverändert, mit Vermerken).
+
+## 0g. Build 284: Pazifik Ultra Schritt 2 – Wolkenschatten auf Land/Schiffen, Okinawa-Relief
+
+- **Modul `pacific-ultra-land.js`** (`PacificUltraLand.create(THREE,{time,wind,cloud})`), nur bei Kulisse Ultra aktiv. `sweep(scene)` patcht jedes beleuchtete Material (Standard/Phong/Lambert) per `onBeforeCompile`: Weltposition als Varying (inkl. `instanceMatrix`), vor `aomap_fragment` wird das direkte Licht mit dem Wolkenfaktor multipliziert – dieselbe Funktion wie die Meeresschatten (`pacNoise` auf 720 m und 260 m, Wind, Stärke aus `pacificCloudShade`). Neue Objekte (Schiffe, Flugzeuge) werden erfasst, sobald sich `scene.children.length` ändert, sonst alle 0,5 s.
+- **Relief:** Geländekacheln Okinawas (`userData.pacRelief`) bekommen eine gebackene 1024²-RGBA-Textur über die 16 km: RG = Normale x/z, B = Sonnensicht (Horizont-Suche mit wachsender Schrittweite bis 200 Texel), A = Mulden-Verdeckung aus einer Summed-Area-Table. Backen in 12-ms-Scheiben (~2,2–2,4 s), neu bei Sonnenänderung > 0,02. Im Shader: Normale pro Pixel, direktes Licht × mix(0,18;1;Sonnensicht), indirektes × Muldenfaktor, feines Nah-Rauschen.
+- **Fallstrick three r128:** gleicher `customProgramCacheKey` → `onBeforeCompile` wird beim Wiedereinschalten übersprungen und die alten Uniform-Objekte bleiben. Der Schlüssel trägt deshalb eine Generationsnummer, die bei jedem Einschalten steigt. Ausschalten stellt Hook und Schlüssel jedes Materials zurück (Standard = Build-283-Shader).
+- **Gemessen (echtes Spiel, Sortie 3, `broken`, Ultra/High):** 1 061 Materialien gepatcht, keine Shader-/Seitenfehler; Wolkenschatten 21,9 % der Inselpixel; Schiffsdeck bis 3,1 % (je nach Wolkenlage); Hügelblick 23,4 % gegenüber ohne Schicht; Dämmerung: 19 % des Landes im Hangschatten, Relief allein 1,3 % der Pixel; Standard-Umschaltung: 0 gepatchte Materialien übrig.
+- **Offen:** M1-Kosten ungemessen; das Relief ist bei hoher Sonne kaum sichtbar (bewusst dezent); Schiffe und Wolken-Sprites unverändert.
 
 ## 0f. Build 283: Pazifik „Ultra High“, Hitzeflimmern ohne Gelee-Triebwerke
 
