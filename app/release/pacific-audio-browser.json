@@ -1,0 +1,56 @@
+{
+ "launch": {
+  "state": "running",
+  "rms": 0.13791432609750714,
+  "dead": false,
+  "kind": "avenger",
+  "loaded": true
+ },
+ "resumed": {
+  "state": "running",
+  "rms": 0.12154631851879273,
+  "dead": false,
+  "kind": "avenger",
+  "loaded": true
+ },
+ "dbg": {
+  "state": 2,
+  "alive": true,
+  "bus": 0,
+  "master": 0.8500000238418579,
+  "ps": {
+   "kind": "avenger",
+   "loaded": true,
+   "loading": false,
+   "error": null,
+   "rpm": 1,
+   "load": 0,
+   "powerFile": "approved/avenger-c-power.wav",
+   "approvedChoice": "P47 C",
+   "powerBlend": 0,
+   "powerPlaybackRate": 1
+  },
+  "pause": false
+ },
+ "closedRebuilt": {
+  "state": "running",
+  "rms": 0.06410507030150514,
+  "dead": false,
+  "kind": "avenger",
+  "loaded": true
+ },
+ "stallFound": true,
+ "stallRebuilt": {
+  "state": "running",
+  "rms": 0.04725283896815557,
+  "dead": false,
+  "kind": "avenger",
+  "loaded": true
+ },
+ "sfx": {
+  "state": 5,
+  "gain": 0.8500000238418579
+ },
+ "paused": 0.00009999999747378752,
+ "resumedGain": 0.8500000238418579
+}

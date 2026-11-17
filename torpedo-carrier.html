@@ -380,7 +380,7 @@ body.secretSpaceActive #fireBtn{border-color:#73d9fc;color:#d6f9ff}
   <div id="perfHud" hidden></div>
   <div id="ltn" style="position:fixed;inset:0;background:#e6ecff;opacity:0;pointer-events:none;z-index:40;"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 283</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 284</div>
 
   <!-- Optical landing aid -->
   <div id="lso">
@@ -436,7 +436,7 @@ body.secretSpaceActive #fireBtn{border-color:#73d9fc;color:#d6f9ff}
 
 <!-- Menu -->
 <div class="overlay" id="menu" data-campaign="pacific">
-  <div class="menuTop"><a id="selBtn" href="index.html?v=283">&#9664; Change Game</a><span class="menuMeta">PACIFIC OPERATIONS<br>BUILD 283</span></div>
+  <div class="menuTop"><a id="selBtn" href="index.html?v=284">&#9664; Change Game</a><span class="menuMeta">PACIFIC OPERATIONS<br>BUILD 284</span></div>
   <div class="card menuCard">
     <aside class="menuOverview" aria-label="Campaign and pilot options">
     <div class="campaignArt" aria-hidden="true"></div>
@@ -471,7 +471,7 @@ body.secretSpaceActive #fireBtn{border-color:#73d9fc;color:#d6f9ff}
     </aside>
     <section class="missionPanel" aria-label="Mission selection">
       <div class="secLbl">Choose your sortie · Pacific operations</div>
-      <a class="hangarLink" href="hangar.html?theatre=pacific&amp;v=283">CUSTOM MISSION · CHOOSE AIRCRAFT &amp; LOADOUT →</a>
+      <a class="hangarLink" href="hangar.html?theatre=pacific&amp;v=284">CUSTOM MISSION · CHOOSE AIRCRAFT &amp; LOADOUT →</a>
 <div id="missionSel" role="group" aria-label="Pacific missions"></div>
       <div id="missionBlurb" class="missionBlurb" aria-live="polite"></div>
       <div class="menuConfig">
@@ -547,6 +547,7 @@ body.secretSpaceActive #fireBtn{border-color:#73d9fc;color:#d6f9ff}
 <script src="game-runtime.js?v=282"></script>
 <script src="graphics-quality.js?v=282"></script>
 <script src="graphics-post.js?v=283"></script>
+<script src="pacific-ultra-land.js?v=284"></script>
 <script src="aircraft-finish.js?v=277"></script>
 <script src="sortie-checkpoint.js?v=238"></script>
 <script src="aircraft-contract.js?v=267"></script>
@@ -1006,6 +1007,7 @@ async function prepareOkinawa(){
       world.root.visible=false;
       scene.add(world.root);
       okinawaWorld=world;
+      if(pacificLand){pacificLand.markTerrain(world);pacificLand.sweep(world.root);}
       return world;
     }catch(e){world.dispose();throw e;}
   })();
@@ -1029,6 +1031,7 @@ function setOkinawaActive(active){
 }
 function releaseOkinawa(){
   if(!okinawaWorld)return;
+  pacificLand?.forget(okinawaWorld);
   okinawaWorld.dispose();
   okinawaWorld=null;
 }
@@ -1281,7 +1284,7 @@ function init(){
   runtimeSession=GameRuntime.attachLifecycle({canvas:renderer.domElement,resetControls:()=>releaseHeldControls(),
     pause:reason=>{if(state===ST.FLIGHT||state===ST.LAUNCH||state===ST.SERVICE||steeringParachute())togglePause(reason);},
     onRestore:()=>{clock.getDelta();document.getElementById('pauseReason').textContent='Graphics restored — tap Resume.';}});
-  window.addEventListener('pointerdown',()=>{ if(actx&&actx.state==='suspended') actx.resume(); });
+  window.addEventListener('pointerdown',audioGesture);window.addEventListener('touchend',audioGesture);
 
   // ---- iPad/Safari zoom-guard -------------------------------------------------
   // iOS may zoom after two quick taps, especially when flying aerobatics.
@@ -6816,7 +6819,7 @@ function loadPlaneModel(){
       }
       window.__eyeDbg='EYE '+COCKPIT_EYE.map(v=>v.toFixed(2)).join('/');
       const btEl=document.getElementById('buildTag');
-      if(btEl) btEl.textContent='BUILD 283 · '+window.__eyeDbg;
+      if(btEl) btEl.textContent='BUILD 284 · '+window.__eyeDbg;
       let seat=null;
       model.traverse(function(o){
         if(!o.isMesh||!o.material) return;
@@ -7489,8 +7492,43 @@ function updateSmoke(dt){
 }
 
 // ---------- AUDIO ----------
+// Build 284: no sound at all in the Pacific on the iPad. This page only ever resumed a 'suspended' context; iOS reports
+// 'interrupted' after a banner, a call, the lock screen or an app switch, and such a context stayed silent for the rest
+// of the session (the Rhine page has handled it since Build 253). Now: resume a context that is not running on every
+// touch and about every 1.5 s, and if it is closed, or 'running' while its clock does not advance for 3 s (the audio
+// output was lost, e.g. when iOS restarts its GPU/media process under memory pressure), build a new one on the next
+// touch (a new context needs a gesture on iOS). Engines, radio and sounds then come back by themselves.
+let audioNudgeAt=0,audioDead=false,audioClock={real:0,t:0,stall:0};
+function audioWatch(){
+  if(!actx)return;
+  if(actx.state==='closed'){audioDead=true;return;}
+  const now=performance.now();
+  if(actx.state!=='running'){
+    audioClock.real=0;audioClock.stall=0;
+    if(now-audioNudgeAt>=1500){audioNudgeAt=now;try{const r=actx.resume();if(r&&r.catch)r.catch(()=>{});}catch(e){}}
+    return;
+  }
+  if(!audioClock.real){audioClock.real=now;audioClock.t=actx.currentTime;return;}
+  if(now-audioClock.real<250)return;
+  if(actx.currentTime<=audioClock.t+1e-4)audioClock.stall+=now-audioClock.real;else audioClock.stall=0;
+  audioClock.real=now;audioClock.t=actx.currentTime;
+  if(audioClock.stall>3000)audioDead=true;
+}
+function rebuildAudio(){
+  const old=actx;actx=null;eng=null;audioDead=false;audioClock={real:0,t:0,stall:0};
+  try{const r=old&&old.state!=='closed'&&old.close();if(r&&r.catch)r.catch(()=>{});}catch(e){}
+  initAudio();
+  if(!actx||!eng)return;
+  soundscape.attach(actx,eng.master);
+  if(state===ST.PAUSED)eng.master.gain.value=0.0001;
+}
+function audioGesture(){
+  if(!actx)return;
+  if(audioDead){rebuildAudio();return;}
+  if(actx.state!=='running'){audioNudgeAt=0;audioWatch();}
+}
 function initAudio(){
-  if(actx){ if(actx.state==='suspended') actx.resume(); return; }
+  if(actx){ if(audioDead){rebuildAudio();return;} if(actx.state!=='running'&&actx.state!=='closed') actx.resume(); else if(actx.state==='closed') rebuildAudio(); return; }
   try{ const AC=window.AudioContext||window.webkitAudioContext; actx=new AC();
     // A context created inside a real user gesture (this only ever runs from a genuine click)
     // is supposed to start 'running' on its own, but WebKit has shipped versions where a
@@ -8294,7 +8332,7 @@ function setupUIButtons(){
   if(dbgT2) dbgT2.onclick=()=>{
     dbgOn=!dbgOn; GameRuntime.storage.setItem('dbgOn',dbgOn?'1':'0');
     const db=document.getElementById('dbgBox'); if(db) db.textContent=dbgOn?'✓':'';
-    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 283'; }
+    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 284'; }
   };
   const lu=document.getElementById('lookUp'), ld=document.getElementById('lookDn');
   let _lookT=0;
@@ -8310,7 +8348,7 @@ function setupUIButtons(){
   if(pb) pb.addEventListener('pointerdown',e=>{ e.preventDefault(); togglePause(); });
   const rb=document.getElementById('resumeBtn'); if(rb) rb.onclick=resumeGame;
   const mb=document.getElementById('menuBtn'); if(mb) mb.onclick=exitToMenu;
-  document.getElementById('pauseMainMenu').onclick=async()=>{globalThis.sortieCheckpoint?.save();await globalThis.sortieCheckpoint?.flush();exitToMenu(true);window.location.href='index.html?v=283';};
+  document.getElementById('pauseMainMenu').onclick=async()=>{globalThis.sortieCheckpoint?.save();await globalThis.sortieCheckpoint?.flush();exitToMenu(true);window.location.href='index.html?v=284';};
   document.getElementById('resultBtn').onclick=()=>{
     // the logbook borrows this screen from the menu — send the player straight back
     if(logbookOpen){ logbookOpen=false; showOverlay('menu'); return; }
@@ -8319,7 +8357,7 @@ function setupUIButtons(){
       clearSecretSpace();hideOverlays();P.alive=true;state=ST.FLIGHT;enterSecretSpace(true);clock.getDelta();return;
     }
     const last=mission===MISSIONS.length-2;
-    if(MISSIONS[mission]?.custom){window.location.href='hangar.html?theatre=pacific&v=283';return;}
+    if(MISSIONS[mission]?.custom){window.location.href='hangar.html?theatre=pacific&v=284';return;}
     if(wasWin){
       if(MISSIONS[mission] && MISSIONS[mission].free){ startMission(mission); return; }  // stay in Free Flight
       if(MISSIONS[mission] && MISSIONS[mission].qual){ showOverlay('menu'); return; }  // qual -> ready room
@@ -8629,6 +8667,7 @@ let runtimeFault=null,pacificHudT=0,pacificMapT=0;
 function animate(){
   requestAnimationFrame(animate);
   if(runtimeFault)return;
+  audioWatch();
   try{animateFrame();}
   catch(error){
     runtimeFault=error;
@@ -8638,7 +8677,7 @@ function animate(){
     notice.style.cssText='position:fixed;inset:0;z-index:999998;background:rgba(15,20,15,.95);color:#e8ddbc;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px;text-align:center;font:16px system-ui';
     const title=document.createElement('h2');title.textContent='Simulation interrupted';
     const detail=document.createElement('p');
-    detail.textContent='BUILD 283 · '+(MISSIONS[mission]?.sub||'Menu')+' · '+error.message;
+    detail.textContent='BUILD 284 · '+(MISSIONS[mission]?.sub||'Menu')+' · '+error.message;
     const reload=document.createElement('button');reload.textContent='Reload game';
     reload.style.cssText='padding:12px 24px;font:inherit';reload.onclick=()=>location.reload();
     notice.appendChild(title);notice.appendChild(detail);notice.appendChild(reload);document.body.appendChild(notice);
@@ -8877,9 +8916,19 @@ function setUltraDefine(material,on){
   if(!material)return;const has=Object.prototype.hasOwnProperty.call(material.defines||(material.defines={}),'ULTRA');
   if(has===on)return;if(on)material.defines.ULTRA='';else delete material.defines.ULTRA;material.needsUpdate=true;
 }
+// Build 284: Ultra step 2 - cloud shadows on the land, ships and aircraft, baked relief and hill shade on Okinawa.
+let pacificLand=null,pacificLandSweepT=0;
+function pacificLandTick(dt){
+  if(!pacificLand||!pacificUltra)return;
+  pacificLandSweepT-=dt;
+  if(pacificLandSweepT<=0){pacificLandSweepT=.5;pacificLand.sweep(scene);}
+  if(okinawaWorld)pacificLand.update(okinawaWorld,seaUniforms.uSunDir.value);
+}
 function applyPacificScenery(){
   if(!sea||!skyMat)return;
   setUltraDefine(sea.material,pacificUltra);setUltraDefine(skyMat,pacificUltra);
+  if(!pacificLand&&window.PacificUltraLand)pacificLand=PacificUltraLand.create(THREE,{time:seaUniforms.uTime,wind:seaUniforms.uWind,cloud:seaUniforms.uCloudShade});
+  if(pacificLand){if(okinawaWorld)pacificLand.markTerrain(okinawaWorld);pacificLand.setEnabled(pacificUltra,scene);pacificLandSweepT=0;}
   if(pacificUltra&&!seaUniforms.uWaveTex.value)seaUniforms.uWaveTex.value=makeWaveNormalTexture();
   const rows=pacificUltra?320:170;
   if(seaGeo.parameters.widthSegments!==rows){const g=new THREE.PlaneGeometry(14000,14000,rows,rows);g.rotateX(-Math.PI/2);
@@ -8898,6 +8947,7 @@ function pacificCloudShade(w){
   return w.cover>=.9?.12:.18+.5*(w.cover||0);
 }
 function renderPacific(){
+  pacificLandTick(frameIntervalForGraphics||0);
   if(!graphicsPost?.enabled){renderer.__sceneInfo=null;return GameRuntime.render(renderer,scene,camera);}
   const gl=renderer.getContext();if(gl.isContextLost())return false;
   try{return graphicsPost.render(scene,camera,clock?clock.elapsedTime:0,true);}
