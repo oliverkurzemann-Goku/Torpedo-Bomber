@@ -60,7 +60,9 @@ const server=http.createServer((req,res)=>{
     let finish=null;
     if(pacificUltra){
      timeMode='dusk';weather='storm';applyWeather();
+     P.pos.set(carrierX-150,43,-62);updateSea(clock.elapsedTime);
      camera.position.set(carrierX-150,43,-62);camera.lookAt(carrierX-20,17,0);
+     placePacificShadow(1/60);updateRain(1/60);
      spawnSplash(carrierX-20,-32,true);
      pacificLightning=.8;
      renderPacific();

@@ -92,7 +92,10 @@ float pacCloudLight(vec3 w){
   function setEnabled(on,scene){
    on=!!on;if(on===enabled)return;enabled=on;if(on)generation++;
    if(!on){for(const m of patched)unpatch(m);patched.clear();reliefMaterials.clear();uniforms.uPacReliefOn.value=0;}
-   else if(scene)sweep(scene);
+   else{
+    uniforms.uPacReliefOn.value=bakedSun?1:0;
+    if(scene)sweep(scene);
+   }
   }
   // Mark the terrain meshes so the sweep gives them the relief variant.
   function markTerrain(world){world?.terrain?.traverse(o=>{if(o.isMesh)o.userData.pacRelief=true;});}
@@ -133,7 +136,7 @@ float pacCloudLight(vec3 w){
   // Start a (time-sliced) bake when Ultra is on and the sun of the sortie differs from the baked one.
   function update(world,sun){
    if(!enabled||!world)return null;if(bakeJob)return bakeJob;
-   if(bakedSun&&bakedSun.world===world&&Math.abs(bakedSun.x-sun.x)+Math.abs(bakedSun.y-sun.y)+Math.abs(bakedSun.z-sun.z)<.02){uniforms.uPacReliefOn.value=1;return null;}
+   if(bakedSun&&bakedSun.world===world&&Math.abs(bakedSun.x-sun.x)+Math.abs(bakedSun.y-sun.y)+Math.abs(bakedSun.z-sun.z)<.02)return null;
    const target={world,x:sun.x,y:sun.y,z:sun.z};markTerrain(world);
    const direction=sun.clone();
    bakeJob=bake(world,direction).then(r=>{
