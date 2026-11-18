@@ -30,9 +30,16 @@ const server=http.createServer((req,res)=>{
    await page.goto(base+'/torpedo-carrier.html?v=287&campaign=1&graphics=high&scenery='+mode);
    await page.waitForFunction(()=>state===ST.MENU,null,{polling:250});
    const index=await page.evaluate(()=>MISSIONS.findIndex(m=>/Sortie 3\b/.test(m.title)));
-   await page.evaluate(async i=>{renderer.setPixelRatio(1);await prepareOkinawa();await preparePacificModels(MISSIONS[i]);},index);
+   await page.evaluate(async i=>{
+    renderer.setPixelRatio(1);
+    if(pacificUltra){
+     await launchCampaignMission(i);
+     if(state!==ST.BRIEF||!pacificLand.uniforms.uPacReliefOn.value)throw Error('Ultra briefing did not prepare the scenery');
+    }else{await prepareOkinawa();await preparePacificModels(MISSIONS[i]);}
+   },index);
    const out=await page.evaluate(i=>{
-    startMission(i);finishCarrierIntro();hideOverlays();weather='broken';applyWeather();
+    if(state===ST.MENU)startMission(i);
+    finishCarrierIntro();hideOverlays();weather='broken';applyWeather();
     clock.getDelta=()=>1/60;state=ST.FLIGHT;P.deckRun=null;P.onDeck=false;P.spd=90;P.gear=P.gearTgt=0;
     const pics={},gl=renderer.getContext(),seaDraws={};
     const countCells=()=>{
@@ -61,6 +68,7 @@ const server=http.createServer((req,res)=>{
       flash:seaUniforms.uStormFlash.value,wetness:pacificLand.uniforms.uPacWet.value,
       gardens:okinawaWorld.kitchenGardens.reduce((n,m)=>n+m.count,0)};
      pics.deck={jpg:renderer.domElement.toDataURL('image/jpeg',.85)};
+     graphicsQuality.setFrameMode('hold60',false);
      const ratio=graphicsQuality.pixelRatio(2),tier=graphicsQuality.tier;
      for(let i=0;i<1000;i++)graphicsQuality.sample(.045,true);
      if(graphicsQuality.pixelRatio(2)!==ratio||graphicsQuality.tier!==tier)throw Error('Ultra switched quality under load');

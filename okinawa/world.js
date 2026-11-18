@@ -374,16 +374,27 @@ class OkinawaWorld{
  }
  buildKitchenGardens(){
   const crops=[[],[]];
-  const span=5.5;
+  const plots=[],span=5.5;
   for(const home of this.houseSites){
    const variety=hash(home.x,home.z);
    if(variety<.34)continue;
-   const angle=home.rot+Math.PI*(variety>.68?1:0);
-   const dx=Math.sin(angle),dz=Math.cos(angle),offset=home.depth*.5+10;
-   const x=home.x+dx*offset,z=home.z+dz*offset,y=this.getSurfaceHeight(x,z);
-   const free=(u,v)=>!this.nearRoad(u,v)&&!this.nearHouse(u,v)&&this.shoreDistance(u,v)>45&&
-    Math.abs(this.getSurfaceHeight(u,v)-y)<.8;
-   if(!free(x,z)||!free(x+span,z+span)||!free(x-span,z-span)||!free(x+span,z-span)||!free(x-span,z+span))continue;
+   const bearing=home.rot+Math.PI*(variety>.68?1:0);
+   const offset=Math.hypot(home.w,home.depth)*.6+14;
+   let plot=null;
+   for(const turn of [0,Math.PI,Math.PI/2,-Math.PI/2]){
+    const angle=bearing+turn,dx=Math.sin(angle),dz=Math.cos(angle);
+    const x=home.x+dx*offset,z=home.z+dz*offset,y=this.getSurfaceHeight(x,z);
+    if(plots.some(p=>Math.hypot(p.x-x,p.z-z)<13))continue;
+    const free=(u,v)=>!this.nearRoad(u,v)&&!this.nearHouse(u,v)&&this.shoreDistance(u,v)>45&&
+     Math.abs(this.getSurfaceHeight(u,v)-y)<1.05;
+    if(free(x,z)&&free(x+span,z+span)&&free(x-span,z-span)&&free(x+span,z-span)&&free(x-span,z+span)){
+     plot={x,z,dx,dz,angle};
+     break;
+    }
+   }
+   if(!plot)continue;
+   plots.push(plot);
+   const {x,z,dx,dz,angle}=plot;
    const list=crops[variety>.68?0:1];
    for(let i=-2;i<=2;i++){
     const u=x+dz*i*1.55,v=z-dx*i*1.55;
