@@ -1381,6 +1381,7 @@ function applyTimeOfDay(mode){
   if(seaUniforms){
     seaUniforms.uSunDir.value.set(c.spos[0],c.spos[1],c.spos[2]).normalize();
     seaUniforms.uSunCol.value.setHex(c.sun);
+    seaUniforms.uReefLight.value=mode==='night'?.05:mode==='dawn'||mode==='dusk'?.47:1;
     seaUniforms.uZenith.value.setHex(c.top);
     seaUniforms.uHorizon.value.setHex(c.bot);
     seaUniforms.uFogColor.value.setHex(c.fog);
@@ -1858,7 +1859,7 @@ function buildSea(){
     uFogFar:{value:6200},
     uCoast:{value:null},
     uCoastActive:{value:0},
-    uStormFlash:{value:0},
+    uStormFlash:{value:0},uReefLight:{value:1},
     uSeaState:{value:1.0},   // wave-height multiplier, set per sortie
     // Build 283, Pacific Ultra only (#ifdef ULTRA): detail-wave normal map, cloud shadows, wind
     uWaveTex:{value:null},uCloudShade:{value:0},uWind:{value:new THREE.Vector2(.94,.34)}
@@ -1896,7 +1897,7 @@ function buildSea(){
       precision highp float;
       uniform vec3 uSunDir; uniform vec3 uSunCol; uniform vec3 uDeep; uniform vec3 uShallow;
       uniform vec3 uZenith; uniform vec3 uHorizon; uniform vec3 uFogColor;
-      uniform float uFogNear; uniform float uFogFar; uniform float uTime,uStormFlash;
+      uniform float uFogNear; uniform float uFogFar; uniform float uTime,uStormFlash,uReefLight;
       uniform sampler2D uCoast; uniform float uCoastActive; uniform float uSeaState;
       varying vec3 vWorld; varying vec3 vN; varying float vH;
       #ifdef ULTRA
@@ -1972,7 +1973,7 @@ function buildSea(){
         if(shore>-175.0){
           float reef=smoothstep(-175.0,-26.0,shore)*(1.0-smoothstep(-20.0,3.0,shore));
           vec3 lagoon=mix(vec3(.06,.29,.26),vec3(.12,.44,.36),t1.y);
-          col=mix(col,lagoon,reef*(1.0-fres)*(.33+.18*max(L.y,0.0))*(1.0-shade*.65));
+          col=mix(col,lagoon,reef*(1.0-fres)*(.33+.18*max(L.y,0.0))*(1.0-shade*.65)*uReefLight);
           float band=0.5+0.5*sin(shore*0.21+uTime*1.5+(t1.y-.5)*1.6);
           float surf=smoothstep(-62.0,1.0,shore)*smoothstep(.52,.93,band)*smoothstep(.25,.72,crest);
           foam+=surf+smoothstep(-11.0,2.0,shore)*(.65+t0.y*.22);

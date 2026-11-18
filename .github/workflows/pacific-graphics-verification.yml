@@ -7,7 +7,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        suite: [pacific-ultra-browser, pacific-shadows-browser, render-budget-browser]
+        suite: [pacific-ultra-browser, pacific-shadows-browser, pacific-ultra-land-browser, render-budget-browser]
     name: ${{ matrix.suite }}
     steps:
       - uses: actions/checkout@v4
