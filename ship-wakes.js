@@ -5,9 +5,26 @@
   const maxShips=24,maxPoints=80,life=38,tracks=new Map(),height=options.height||(()=>.12);
   const capacity=maxShips*(maxPoints*18+18),positions=new Float32Array(capacity*3),uvs=new Float32Array(capacity*2),alphas=new Float32Array(capacity);
   const geo=new THREE.BufferGeometry();geo.setAttribute('position',new THREE.BufferAttribute(positions,3).setUsage(THREE.DynamicDrawUsage));geo.setAttribute('uv',new THREE.BufferAttribute(uvs,2).setUsage(THREE.DynamicDrawUsage));geo.setAttribute('opacity',new THREE.BufferAttribute(alphas,1).setUsage(THREE.DynamicDrawUsage));geo.setDrawRange(0,0);
-  const material=new THREE.ShaderMaterial({transparent:true,depthWrite:false,side:THREE.DoubleSide,fog:true,uniforms:THREE.UniformsUtils.merge([THREE.UniformsLib.fog,{time:{value:0}}]),
+  const material=new THREE.ShaderMaterial({transparent:true,depthWrite:false,side:THREE.DoubleSide,fog:true,uniforms:THREE.UniformsUtils.merge([THREE.UniformsLib.fog,{time:{value:0},ultra:{value:0}}]),
    vertexShader:'attribute float opacity; varying float fade; varying vec2 waterUv; #include <fog_pars_vertex>\nvoid main(){fade=opacity;waterUv=uv;vec4 mvPosition=modelViewMatrix*vec4(position,1.);gl_Position=projectionMatrix*mvPosition; #include <fog_vertex>\n}',
-   fragmentShader:'varying float fade; varying vec2 waterUv; uniform float time; #include <fog_pars_fragment>\nvoid main(){float edge=pow(max(0.,1.-abs(waterUv.x*2.-1.)),.65);float foam=.55+.20*sin(waterUv.y*2.1+waterUv.x*21.)+.15*sin(waterUv.y*4.7-waterUv.x*39.+time*.8);float wash=step(waterUv.y,-.01);float churn=.74+.20*sin(waterUv.y*20.+waterUv.x*19.+time*12.)+.06*sin(waterUv.x*47.-time*9.);gl_FragColor=vec4(mix(vec3(.70,.83,.82),vec3(.90,.96,.95),wash),fade*edge*mix(foam,churn,wash)); #include <fog_fragment>\n#include <encodings_fragment>\n}'});
+   fragmentShader:`
+    varying float fade; varying vec2 waterUv; uniform float time,ultra;
+    #include <fog_pars_fragment>
+    void main(){
+     float edge=pow(max(0.,1.-abs(waterUv.x*2.-1.)),.65);
+     float foam=.55+.20*sin(waterUv.y*2.1+waterUv.x*21.)+.15*sin(waterUv.y*4.7-waterUv.x*39.+time*.8);
+     float wash=step(waterUv.y,-.01);
+     float churn=.74+.20*sin(waterUv.y*20.+waterUv.x*19.+time*12.)+.06*sin(waterUv.x*47.-time*9.);
+     vec3 color=mix(vec3(.70,.83,.82),vec3(.90,.96,.95),wash);
+     if(ultra>.5){
+      float bubbles=sin(waterUv.x*35.+waterUv.y*5.+time*1.6)*sin(waterUv.x*83.-waterUv.y*8.-time*.7);
+      foam*=mix(.64,1.24,smoothstep(-.5,.8,bubbles));
+      color=mix(color,vec3(.94,.98,.97),max(0.,bubbles)*.46);
+     }
+     gl_FragColor=vec4(color,fade*edge*mix(foam,churn,wash));
+     #include <fog_fragment>
+     #include <encodings_fragment>
+    }`});
   // Shader directives must start on their own lines in WebGL 1 as well.
   material.vertexShader=material.vertexShader.replace(/ #include/g,'\n#include');material.fragmentShader=material.fragmentShader.replace(/ #include/g,'\n#include');
   const mesh=new THREE.Mesh(geo,material);mesh.name='fleetWakes';mesh.frustumCulled=false;mesh.renderOrder=1;scene.add(mesh);let time=0,vertices=0,drawClock=.1;
@@ -58,7 +75,8 @@
    }
    geo.setDrawRange(0,vertices);for(const key of ['position','uv','opacity'])geo.attributes[key].needsUpdate=true;
   }
-  return {mesh,track,update,forget(key){tracks.delete(key);},clear(){tracks.clear();vertices=0;drawClock=.1;geo.setDrawRange(0,0);},get tracks(){return tracks;},get stats(){return {ships:tracks.size,points:[...tracks.values()].reduce((n,t)=>n+t.points.length,0),vertices,maxShips,maxPoints,life};},dispose(){scene.remove(mesh);geo.dispose();material.dispose();tracks.clear();}};
+  return {mesh,track,update,setUltra(on){material.uniforms.ultra.value=on?1:0;},
+   forget(key){tracks.delete(key);},clear(){tracks.clear();vertices=0;drawClock=.1;geo.setDrawRange(0,0);},get tracks(){return tracks;},get stats(){return {ships:tracks.size,points:[...tracks.values()].reduce((n,t)=>n+t.points.length,0),vertices,maxShips,maxPoints,life};},dispose(){scene.remove(mesh);geo.dispose();material.dispose();tracks.clear();}};
  }
  root.ShipWakes={create};if(typeof module==='object'&&module.exports)module.exports=root.ShipWakes;
 })(typeof window==='undefined'?globalThis:window);

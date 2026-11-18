@@ -50,12 +50,13 @@
   const drops=1000,positions=new Float32Array(drops*3);
   for(let i=0;i<drops;i++){positions[i*3]=(hash(i*3)-.5)*180;positions[i*3+1]=(hash(i*3+1)-.5)*100;positions[i*3+2]=(hash(i*3+2)-.5)*180;}
   const rainGeo=new THREE.BufferGeometry();rainGeo.setAttribute('position',new THREE.BufferAttribute(positions,3).setUsage(THREE.DynamicDrawUsage));
-  const uniforms={uRatio:{value:1},uWet:{value:0},uNear:{value:0},uFar:{value:3000},uFog:{value:new THREE.Color(0x9ba7ac)}};
+  const uniforms={uRatio:{value:1},uWet:{value:0},uNear:{value:0},uFar:{value:3000},uFog:{value:new THREE.Color(0x9ba7ac)},
+   uLean:{value:0},uStreak:{value:0}};
   const rainMat=new THREE.ShaderMaterial({uniforms,transparent:true,depthWrite:false,
-   vertexShader:'uniform float uRatio;varying float vDepth;void main(){vec4 p=modelViewMatrix*vec4(position,1.0);vDepth=-p.z;gl_Position=projectionMatrix*p;gl_PointSize=clamp(28.0/max(1.0,-p.z),0.8,2.0)*uRatio;}',
-   fragmentShader:'uniform float uWet,uNear,uFar;uniform vec3 uFog;varying float vDepth;void main(){vec2 p=gl_PointCoord-0.5;p.x*=1.6;float a=(1.0-smoothstep(0.12,0.5,length(p)))*min(0.58,0.20+uWet*0.15);if(a<0.02)discard;float f=smoothstep(uNear,uFar,vDepth);gl_FragColor=vec4(mix(vec3(0.72,0.78,0.81),uFog,f),a*(1.0-f));}'});
+   vertexShader:'uniform float uRatio,uStreak;varying float vDepth;void main(){vec4 p=modelViewMatrix*vec4(position,1.0);vDepth=-p.z;gl_Position=projectionMatrix*p;gl_PointSize=clamp(28.0/max(1.0,-p.z),0.8,2.0)*uRatio*(1.0+uStreak);}',
+   fragmentShader:'uniform float uWet,uNear,uFar,uLean,uStreak;uniform vec3 uFog;varying float vDepth;void main(){vec2 p=gl_PointCoord-0.5;p.x=(p.x-p.y*uLean)*(1.6+3.4*uStreak);float a=(1.0-smoothstep(0.12,0.5,length(p)))*min(0.58,0.20+uWet*0.15);if(a<0.02)discard;float f=smoothstep(uNear,uFar,vDepth);gl_FragColor=vec4(mix(vec3(0.72,0.78,0.81),uFog,f),a*(1.0-f));}'});
   const rainMesh=new THREE.Points(rainGeo,rainMat);rainMesh.name='fineMaritimeRain';rainMesh.frustumCulled=false;rainMesh.visible=false;scene.add(rainMesh);
-  const dummy=new THREE.Object3D(),color=new THREE.Color(),lastCamera=new THREE.Vector3();
+  const dummy=new THREE.Object3D(),color=new THREE.Color(),lastCamera=new THREE.Vector3(),drift=new THREE.Vector3();
   let cells=[],banks=[],parts=[],name='clear',time=0,exposure=0,damageTimer=0,lastWet=0,cameraReady=false;
   function reset(next,home=0,targets=[]){
    name=next;time=exposure=damageTimer=0;cameraReady=false;cells=cellsFor(name,home,targets);
@@ -79,7 +80,7 @@
    if(layers.instanceColor)layers.instanceColor.needsUpdate=true;
   }
   function conditions(pos){return sample(name,cells,banks,pos);}
-  function render(dt,camera,renderer,budget={rain:1}){
+  function render(dt,camera,renderer,budget={rain:1},windX=0,windZ=0){
    time+=dt;const s=conditions(camera.position);lastWet=s.rain;
    for(let i=0;i<layers.count;i++){
     const p=parts[i];dummy.position.set(p.x+Math.sin(time*.025+i)*12,p.y,p.z);
@@ -88,16 +89,20 @@
    if(layers.count)layers.instanceMatrix.needsUpdate=true;
    rainMesh.visible=s.rain>.015;
    if(!rainMesh.visible){lastCamera.copy(camera.position);cameraReady=true;return s;}
-   const drift=cameraReady?camera.position.clone().sub(lastCamera):new THREE.Vector3();lastCamera.copy(camera.position);cameraReady=true;
+   if(cameraReady)drift.subVectors(camera.position,lastCamera);else drift.set(0,0,0);
+   lastCamera.copy(camera.position);cameraReady=true;
    // World-relative falling droplets; a large camera cut reseeds the local field.
    if(drift.length()>300)drift.set(0,0,0);
    for(let i=0;i<drops;i++){
-    const k=i*3;positions[k]-=drift.x;positions[k+1]-=drift.y+(24+s.rain*10)*dt;positions[k+2]-=drift.z;
+    const k=i*3;positions[k]+=windX*dt-drift.x;positions[k+1]-=drift.y+(24+s.rain*10)*dt;positions[k+2]+=windZ*dt-drift.z;
     positions[k]=((positions[k]+90)%180+180)%180-90;positions[k+1]=((positions[k+1]+50)%100+100)%100-50;positions[k+2]=((positions[k+2]+90)%180+180)%180-90;
    }
    rainMesh.position.copy(camera.position);rainGeo.attributes.position.needsUpdate=true;
    rainGeo.setDrawRange(0,Math.ceil(drops*clamp(s.rain*.8,.18,1)*(budget.rain??1)));
    uniforms.uWet.value=s.rain;uniforms.uRatio.value=renderer.getPixelRatio();
+   const right=camera.matrixWorld?.elements;
+   uniforms.uLean.value=right?clamp((windX*right[0]+windZ*right[2])/18,-.65,.65):0;
+   uniforms.uStreak.value=windX||windZ?clamp(.45+s.rain*.42):0;
    if(scene.fog){uniforms.uNear.value=scene.fog.near;uniforms.uFar.value=scene.fog.far;uniforms.uFog.value.copy(scene.fog.color);}
    return s;
   }

@@ -19,7 +19,7 @@ sea:{visible:true},
  seaUniforms:{uCoast:{value:null},uCoastActive:{value:0}},islands:[{group:{visible:true}}],
  P:{pos:{x:0,y:0,z:0},touchResolved:false},overDeck:()=>false,DECK_Y:18,carrierX:0,
  STERN_X:-120,BOW_X:120,crashes,DECK_HALF_W:16,crash(type){crashes.push(type)},
- planeShadow:{position:new THREE.Vector3(),scale:new THREE.Vector3(),material:{opacity:1},visible:true},
+ pacificUltra:false,planeShadow:Object.assign(new THREE.Object3D(),{material:{opacity:1}}),
  scene:new THREE.Scene()});
 vm.runInContext(pick('setOkinawaActive','init'),game);
 vm.runInContext(pick('updateShadow','updateClouds'),game);

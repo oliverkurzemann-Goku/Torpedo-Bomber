@@ -380,7 +380,7 @@ body.secretSpaceActive #fireBtn{border-color:#73d9fc;color:#d6f9ff}
   <div id="perfHud" hidden></div>
   <div id="ltn" style="position:fixed;inset:0;background:#e6ecff;opacity:0;pointer-events:none;z-index:40;"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 286</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 287</div>
 
   <!-- Optical landing aid -->
   <div id="lso">
@@ -436,7 +436,7 @@ body.secretSpaceActive #fireBtn{border-color:#73d9fc;color:#d6f9ff}
 
 <!-- Menu -->
 <div class="overlay" id="menu" data-campaign="pacific">
-  <div class="menuTop"><a id="selBtn" href="index.html?v=286">&#9664; Change Game</a><span class="menuMeta">PACIFIC OPERATIONS<br>BUILD 286</span></div>
+  <div class="menuTop"><a id="selBtn" href="index.html?v=287">&#9664; Change Game</a><span class="menuMeta">PACIFIC OPERATIONS<br>BUILD 287</span></div>
   <div class="card menuCard">
     <aside class="menuOverview" aria-label="Campaign and pilot options">
     <div class="campaignArt" aria-hidden="true"></div>
@@ -471,7 +471,7 @@ body.secretSpaceActive #fireBtn{border-color:#73d9fc;color:#d6f9ff}
     </aside>
     <section class="missionPanel" aria-label="Mission selection">
       <div class="secLbl">Choose your sortie · Pacific operations</div>
-      <a class="hangarLink" href="hangar.html?theatre=pacific&amp;v=286">CUSTOM MISSION · CHOOSE AIRCRAFT &amp; LOADOUT →</a>
+      <a class="hangarLink" href="hangar.html?theatre=pacific&amp;v=287">CUSTOM MISSION · CHOOSE AIRCRAFT &amp; LOADOUT →</a>
 <div id="missionSel" role="group" aria-label="Pacific missions"></div>
       <div id="missionBlurb" class="missionBlurb" aria-live="polite"></div>
       <div class="menuConfig">
@@ -542,12 +542,13 @@ body.secretSpaceActive #fireBtn{border-color:#73d9fc;color:#d6f9ff}
 <script src="terrain-system/AirfieldActivity.js?v=254"></script>
 <script src="okinawa/coastal-templates.js?v=1"></script>
 <script src="okinawa/coastal-scenery.js?v=1"></script>
-<script src="okinawa/world.js?v=277"></script>
+<script src="okinawa/world.js?v=287"></script>
 <script src="campaign.js?v=1"></script>
 <script src="game-runtime.js?v=282"></script>
-<script src="graphics-quality.js?v=282"></script>
+<script src="graphics-quality.js?v=287"></script>
 <script src="graphics-post.js?v=286"></script>
-<script src="pacific-ultra-land.js?v=284"></script>
+<script src="pacific-ultra-land.js?v=287"></script>
+<script src="pacific-ultra-finish.js?v=287"></script>
 <script src="aircraft-finish.js?v=277"></script>
 <script src="sortie-checkpoint.js?v=238"></script>
 <script src="aircraft-contract.js?v=267"></script>
@@ -571,7 +572,7 @@ body.secretSpaceActive #fireBtn{border-color:#73d9fc;color:#d6f9ff}
 <script src="ordnance.js?v=238"></script>
 <script src="crew-visuals.js?v=179"></script>
 <script src="deck-activity.js?v=254"></script>
-<script src="ship-wakes.js?v=240"></script>
+<script src="ship-wakes.js?v=287"></script>
 <script src="pilot-bailout.js?v=253"></script>
 <script src="enemy-bailouts.js?v=248"></script>
 <script src="flare-support.js?v=177"></script>
@@ -601,7 +602,7 @@ body.secretSpaceActive #fireBtn{border-color:#73d9fc;color:#d6f9ff}
 <script src="pacific-theater.js?v=248"></script>
 <script src="pby-patrol.js?v=267"></script>
 <script src="carrier-recovery.js?v=198"></script>
-<script src="maritime-weather.js?v=198"></script>
+<script src="maritime-weather.js?v=287"></script>
 <script>
 "use strict";
 /* ============================================================
@@ -792,7 +793,8 @@ const DROP_MAX_ALT= 55;          // m above sea to drop
 const DROP_MAX_SPD= 62;          // m/s
 
 let renderer, scene, camera, clock;
-let sea, seaGeo, seaBase;
+let sea, seaGeo, seaBase, seaUltraGrid;
+let ultraDeckLights,ultraSpray;
 let carrier, planeGroup, propDisk;
 let torpedoes=[], ships=[], tracers=[], splashes=[], wakeParts=[], torpedoReport=[];
 let sun, sunSprite, planeShadow, propSpinner, smokeTex;
@@ -1007,6 +1009,7 @@ async function prepareOkinawa(){
       world.root.visible=false;
       scene.add(world.root);
       okinawaWorld=world;
+      world.setUltraGardens(pacificUltra);
       if(pacificLand){pacificLand.markTerrain(world);pacificLand.sweep(world.root);}
       return world;
     }catch(e){world.dispose();throw e;}
@@ -1021,7 +1024,6 @@ function setOkinawaActive(active){
     // cuts out the ocean where mapped land rises above the waterline.
     okinawaWorld.water.visible=false;
   }
-  if(sea)sea.visible=true;
   if(seaUniforms){
     if(active)seaUniforms.uCoast.value=okinawaWorld.coastTexture;
     else seaUniforms.uCoast.value=null;
@@ -1254,6 +1256,8 @@ function init(){
   buildSun();
   buildClouds();
   buildSea();
+  ultraDeckLights=PacificUltraFinish.deckLighting(THREE,scene);
+  ultraSpray=PacificUltraFinish.spray(THREE,scene,(x,z)=>seaHeightAt(x,z,seaUniforms.uTime.value));
   applyPacificScenery();
   {const el=document.getElementById('pacificSceneryMenu');if(el)el.onchange=()=>setPacificScenery(el.value);}
   buildIslands();
@@ -1497,20 +1501,29 @@ function buildShadow(){
   planeShadow.rotation.x=-Math.PI/2; scene.add(planeShadow);
 }
 
+const shadowUp=new THREE.Vector3(0,0,1),contactNormal=new THREE.Vector3();
 function updateShadow(){
   if(!planeShadow) return;
   const onDeck=(P.pos.x-carrierX)>STERN_X&&(P.pos.x-carrierX)<BOW_X&&Math.abs(P.pos.z)<DECK_HALF_W;
   let baseY=onDeck?DECK_Y+1.05:0.45;
   let terrainY=null;
+  const deckContact=pacificUltra&&onDeck&&Math.abs(P.pos.z)<carrierDeckHalfBeam()-.5;
+  if(deckContact){
+    const deck=carrierDeckPlane();
+    baseY=deck.y+deck.sx*(P.pos.x-deck.x)+deck.sz*(P.pos.z-deck.z)+.055;
+    contactNormal.set(-deck.sx,1,-deck.sz).normalize();
+    planeShadow.quaternion.setFromUnitVectors(shadowUp,contactNormal);
+  }else planeShadow.rotation.set(-Math.PI/2,0,0);
   if(!onDeck && okinawaWorld && okinawaWorld.root.visible){
     const lx=P.pos.x-OKINAWA_OFFSET_X,z=P.pos.z;
     if(Math.abs(lx)<7980 && Math.abs(z)<7980 && okinawaWorld.shoreDistance(lx,z)>1)
       baseY=(terrainY=okinawaWorld.getSurfaceHeight(lx,z))+0.12;
   }
   if(!onDeck&&MISSIONS[mission]?.theater==='escort'){const h=PacificTheater.islandHeight(P.pos.x,P.pos.z);if(h>1)baseY=(terrainY=h)+.12;}
-  const alt=Math.max(0,P.pos.y-(onDeck?DECK_Y:(terrainY===null?0:terrainY)));
+  const alt=Math.max(0,P.pos.y-(deckContact?baseY:onDeck?DECK_Y:(terrainY===null?0:terrainY)));
   planeShadow.position.set(P.pos.x,baseY,P.pos.z);
-  const s=1+alt*0.018; planeShadow.scale.set(s,s,s);
+  const s=1+alt*0.018;
+  planeShadow.scale.set(deckContact?s*.48:s,deckContact?s*.37:s,s);
   planeShadow.material.opacity=Math.max(0.04,0.5-alt*0.0028);
   planeShadow.visible=alt<300;
 }
@@ -1845,6 +1858,7 @@ function buildSea(){
     uFogFar:{value:6200},
     uCoast:{value:null},
     uCoastActive:{value:0},
+    uStormFlash:{value:0},
     uSeaState:{value:1.0},   // wave-height multiplier, set per sortie
     // Build 283, Pacific Ultra only (#ifdef ULTRA): detail-wave normal map, cloud shadows, wind
     uWaveTex:{value:null},uCloudShade:{value:0},uWind:{value:new THREE.Vector2(.94,.34)}
@@ -1882,7 +1896,7 @@ function buildSea(){
       precision highp float;
       uniform vec3 uSunDir; uniform vec3 uSunCol; uniform vec3 uDeep; uniform vec3 uShallow;
       uniform vec3 uZenith; uniform vec3 uHorizon; uniform vec3 uFogColor;
-      uniform float uFogNear; uniform float uFogFar; uniform float uTime;
+      uniform float uFogNear; uniform float uFogFar; uniform float uTime,uStormFlash;
       uniform sampler2D uCoast; uniform float uCoastActive; uniform float uSeaState;
       varying vec3 vWorld; varying vec3 vN; varying float vH;
       #ifdef ULTRA
@@ -1955,9 +1969,16 @@ function buildSea(){
         float crest=t2.y*0.6+t3.y*0.4;
         float foam=smoothstep(1.05-0.22*(uSeaState-1.0),1.6,vH)*smoothstep(0.42,0.78,crest);
         foam+=smoothstep(1.6,3.2,uSeaState)*smoothstep(0.80,0.95,t1.y)*0.45*near;
-        if(shore>-60.0){float band=0.5+0.5*sin(shore*0.21+uTime*1.5);
-          foam+=smoothstep(-60.0,0.0,shore)*smoothstep(0.62,0.95,band)*smoothstep(0.35,0.7,crest)+smoothstep(-10.0,2.0,shore)*0.75;}
+        if(shore>-175.0){
+          float reef=smoothstep(-175.0,-26.0,shore)*(1.0-smoothstep(-20.0,3.0,shore));
+          vec3 lagoon=mix(vec3(.06,.29,.26),vec3(.12,.44,.36),t1.y);
+          col=mix(col,lagoon,reef*(1.0-fres)*(.33+.18*max(L.y,0.0))*(1.0-shade*.65));
+          float band=0.5+0.5*sin(shore*0.21+uTime*1.5+(t1.y-.5)*1.6);
+          float surf=smoothstep(-62.0,1.0,shore)*smoothstep(.52,.93,band)*smoothstep(.25,.72,crest);
+          foam+=surf+smoothstep(-11.0,2.0,shore)*(.65+t0.y*.22);
+        }
         col=mix(col,vec3(0.93,0.96,0.97)*(1.0-shade*0.3),clamp(foam,0.0,1.0)*0.7);
+        col+=vec3(.35,.46,.57)*uStormFlash*(.14+fres*.38);
       #else
         col+=uSunCol*(pow(rl,900.0)*2.2+pow(rl,48.0)*0.20);
         float foam=smoothstep(1.02,1.5,vH)*(0.5+0.5*noise(vWorld.xz*0.8+uTime));
@@ -1975,6 +1996,7 @@ function buildSea(){
 
 function updateSea(t){
   sea.position.x=P.pos.x; sea.position.z=P.pos.z;
+  seaUltraGrid?.position.copy(sea.position);
   seaUniforms.uTime.value=t;
 }
 // Same waves as the sea vertex shader, sampled under a ship's hull so its draft
@@ -2521,8 +2543,9 @@ function startMission(idx){
   wakeParts.forEach(w=>{ w.m.visible=false; wakePool.push(w.m); }); wakeParts=[];
   bombs.forEach(b=>GameRuntime.release(b.mesh)); bombs=[];
   bullets.forEach(b=>GameRuntime.release(b.mesh)); bullets=[];
-  smokes.forEach(s=>{if(s.mesh.userData.runtimeOwned)GameRuntime.release(s.mesh);else{s.mesh.visible=false;smokePool.push(s.mesh);}}); smokes=[];
+  smokes.forEach(s=>{if(s.mesh.userData.runtimeOwned)GameRuntime.release(s.mesh);else{s.mesh.visible=false;(s.fire?firePool:smokePool).push(s.mesh);}}); smokes=[];
   splashes.forEach(s=>GameRuntime.release(s.mesh));splashes=[];
+  ultraSpray?.clear();
   explosions.forEach(e=>GameRuntime.release(e.mesh)); explosions=[];
 
   // spawn ships
@@ -3284,6 +3307,10 @@ function checkObjectiveCleared(){
 }
 
 function spawnSplash(x,z,big){
+  if(pacificUltra&&ultraSpray){
+    ultraSpray.splash(x,z,big);
+    return;
+  }
   const g=new THREE.Mesh(new THREE.ConeGeometry(big?6:3, big?20:8, 8),
     new THREE.MeshStandardMaterial({color:0xdfe9ec,transparent:true,opacity:0.85}));
   GameRuntime.own(g);
@@ -5367,20 +5394,24 @@ function applyWeather(){
   if(rainMesh)rainMesh.visible=w.rain>0;
 }
 function updateRain(dt){
-  return maritimeWeather?.render(dt,camera,renderer,flightQuality?.budget);
+  return maritimeWeather?.render(dt,camera,renderer,flightQuality?.budget,
+    pacificUltra?-(windHead+windGust)*.62:0,pacificUltra?windZ*.62:0);
 }
 let windGust=0, windGustT=0, windGustTarget=0;
 // Lightning during 'storm' weather: an occasional bright flicker on the sky overlay, with
 // thunder trailing a beat behind. Cheap, and it makes the storm read as a storm.
 let ltnT=3, ltnFlash=0;
+let pacificLightning=0;
 function updateStorm(dt){
   const el=document.getElementById('ltn'); if(!el) return;
+  pacificLightning=0;
   if(weather!=='storm'){ if(ltnFlash!==0||el.style.opacity!=='0'){ ltnFlash=0; el.style.opacity='0'; } return; }
   if(ltnFlash>0){
     ltnFlash-=dt;
     const base=Math.max(0,ltnFlash/0.32);            // decay 1 -> 0
     const flick=(Math.random()<0.5?1:0.35);          // sparkle within the strike
-    el.style.opacity=(base*0.6*flick).toFixed(3);
+    pacificLightning=base*flick;
+    el.style.opacity=(pacificLightning*(pacificUltra?.27:.6)).toFixed(3);
     if(ltnFlash<=0) el.style.opacity='0';
     return;
   }
@@ -6838,7 +6869,7 @@ function loadPlaneModel(){
       }
       window.__eyeDbg='EYE '+COCKPIT_EYE.map(v=>v.toFixed(2)).join('/');
       const btEl=document.getElementById('buildTag');
-      if(btEl) btEl.textContent='BUILD 286 · '+window.__eyeDbg;
+      if(btEl) btEl.textContent='BUILD 287 · '+window.__eyeDbg;
       let seat=null;
       model.traverse(function(o){
         if(!o.isMesh||!o.material) return;
@@ -7273,14 +7304,18 @@ function spawnExplosion(x,y,z,sc){
     spawnSmoke(x+(Math.random()-0.5)*9*sc, y+i*2.2*sc+Math.random()*3, z+(Math.random()-0.5)*9*sc,
       i<2?0x141414:0x2c2c2c, 0.75);
 }
+const firePool=[];
 function spawnFire(x,y,z,sc){
   if(!smokeTex||smokes.length>150) return;
-  const m=new THREE.SpriteMaterial({map:smokeTex,color:0xff8c2a,transparent:true,opacity:0.95,
-    blending:THREE.AdditiveBlending,depthWrite:false});
-  const s=new THREE.Sprite(m); s.position.set(x,y,z);
-  GameRuntime.own(s,{geometry:false});
+  let s=firePool.pop();
+  if(!s){
+    s=new THREE.Sprite(new THREE.SpriteMaterial({map:smokeTex,color:0xff8c2a,transparent:true,
+      blending:THREE.AdditiveBlending,depthWrite:false}));
+    scene.add(s);
+  }
+  s.visible=true;s.material.opacity=.95;s.position.set(x,y,z);
   const k=(5+Math.random()*5)*(sc||1); s.scale.set(k,k,1);
-  scene.add(s); smokes.push({mesh:s,life:0.55+Math.random()*0.3,max:0.8,vy:8+Math.random()*5,grow:4});
+  smokes.push({mesh:s,fire:true,life:0.55+Math.random()*0.3,max:0.8,vy:8+Math.random()*5,grow:4});
 }
 function spawnDebris(x,y,z,n){
   for(let i=0;i<n;i++){
@@ -7500,11 +7535,15 @@ function updateSmoke(dt){
     if(sm.plume){
       sm.mesh.position.x+=sm.plume.vx*dt;sm.mesh.position.z+=sm.plume.vz*dt;
     }
+    if(pacificUltra){
+      sm.mesh.position.x-=(windHead+windGust)*dt*(sm.fire?.12:.42);
+      sm.mesh.position.z+=windZ*dt*.42;
+    }
     sm.mesh.material.opacity=Math.max(0,k*(sm.plume?.opacity??.55));
     const sc=sm.mesh.scale.x+sm.grow*dt; sm.mesh.scale.set(sc,sc,1);
     if(sm.life<=0){
       if(sm.mesh.userData.runtimeOwned)GameRuntime.release(sm.mesh);
-      else{sm.mesh.visible=false;smokePool.push(sm.mesh);}
+      else{sm.mesh.visible=false;(sm.fire?firePool:smokePool).push(sm.mesh);}
       smokes.splice(i,1);
     }
   }
@@ -8351,7 +8390,7 @@ function setupUIButtons(){
   if(dbgT2) dbgT2.onclick=()=>{
     dbgOn=!dbgOn; GameRuntime.storage.setItem('dbgOn',dbgOn?'1':'0');
     const db=document.getElementById('dbgBox'); if(db) db.textContent=dbgOn?'✓':'';
-    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 286'; }
+    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 287'; }
   };
   const lu=document.getElementById('lookUp'), ld=document.getElementById('lookDn');
   let _lookT=0;
@@ -8367,7 +8406,7 @@ function setupUIButtons(){
   if(pb) pb.addEventListener('pointerdown',e=>{ e.preventDefault(); togglePause(); });
   const rb=document.getElementById('resumeBtn'); if(rb) rb.onclick=resumeGame;
   const mb=document.getElementById('menuBtn'); if(mb) mb.onclick=exitToMenu;
-  document.getElementById('pauseMainMenu').onclick=async()=>{globalThis.sortieCheckpoint?.save();await globalThis.sortieCheckpoint?.flush();exitToMenu(true);window.location.href='index.html?v=286';};
+  document.getElementById('pauseMainMenu').onclick=async()=>{globalThis.sortieCheckpoint?.save();await globalThis.sortieCheckpoint?.flush();exitToMenu(true);window.location.href='index.html?v=287';};
   document.getElementById('resultBtn').onclick=()=>{
     // the logbook borrows this screen from the menu — send the player straight back
     if(logbookOpen){ logbookOpen=false; showOverlay('menu'); return; }
@@ -8376,7 +8415,7 @@ function setupUIButtons(){
       clearSecretSpace();hideOverlays();P.alive=true;state=ST.FLIGHT;enterSecretSpace(true);clock.getDelta();return;
     }
     const last=mission===MISSIONS.length-2;
-    if(MISSIONS[mission]?.custom){window.location.href='hangar.html?theatre=pacific&v=286';return;}
+    if(MISSIONS[mission]?.custom){window.location.href='hangar.html?theatre=pacific&v=287';return;}
     if(wasWin){
       if(MISSIONS[mission] && MISSIONS[mission].free){ startMission(mission); return; }  // stay in Free Flight
       if(MISSIONS[mission] && MISSIONS[mission].qual){ showOverlay('menu'); return; }  // qual -> ready room
@@ -8404,6 +8443,15 @@ async function launchCampaignMission(idx){
     await prepareOkinawa();
     await preparePacificModels(MISSIONS[idx],text=>{button.textContent=text;});
     startMission(idx);
+    if(pacificUltra){
+      const launchButton=document.getElementById('launchBtn');
+      const label=launchButton.textContent;
+      launchButton.disabled=true;launchButton.textContent='Preparing Ultra scenery…';
+      try{
+        await pacificLandTick(0);
+        renderer.compile(scene,camera);
+      }finally{launchButton.disabled=false;launchButton.textContent=label;}
+    }
   }
   catch(e){console.error(e);flash('SORTIE COULD NOT LOAD — '+e.message,6000);}
   finally{button.disabled=false;button.textContent=label;}
@@ -8559,7 +8607,9 @@ function emitShipExhaust(model,forward,speed,dt){
   }
 }
 function trackShipWake(group,forward,length,beam,speed,dt,propellers){
-  if(state!==ST.MENU&&state!==ST.BRIEF&&state!==ST.RESULT)shipWakes?.track(group,group.position,forward,length,beam,speed,dt,propellers);
+  if(state===ST.MENU||state===ST.BRIEF||state===ST.RESULT)return;
+  shipWakes?.track(group,group.position,forward,length,beam,speed,dt,propellers);
+  if(pacificUltra)ultraSpray?.bow(group,group.position,forward,length,beam,speed,dt,seaState,camera.position);
 }
 function announceComb(ship){
   if(radioEvadeCalled||state!==ST.FLIGHT)return;radioEvadeCalled=true;
@@ -8696,7 +8746,7 @@ function animate(){
     notice.style.cssText='position:fixed;inset:0;z-index:999998;background:rgba(15,20,15,.95);color:#e8ddbc;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px;text-align:center;font:16px system-ui';
     const title=document.createElement('h2');title.textContent='Simulation interrupted';
     const detail=document.createElement('p');
-    detail.textContent='BUILD 286 · '+(MISSIONS[mission]?.sub||'Menu')+' · '+error.message;
+    detail.textContent='BUILD 287 · '+(MISSIONS[mission]?.sub||'Menu')+' · '+error.message;
     const reload=document.createElement('button');reload.textContent='Reload game';
     reload.style.cssText='padding:12px 24px;font:inherit';reload.onclick=()=>location.reload();
     notice.appendChild(title);notice.appendChild(detail);notice.appendChild(reload);document.body.appendChild(notice);
@@ -8745,7 +8795,7 @@ function animateFrame(){
     const pitchA=Math.sin(pT*0.35)*0.010*seaState, rollA=Math.sin(pT*0.23+1.4)*0.018*seaState;
     [carrierModel,ijnCarrierModel].forEach(cm=>{ if(!cm) return;
       cm.rotation.x=pitchA; cm.rotation.z=rollA; });
-    shipWakes?.track(carrier,carrier.position,carrierForward,240,32,CARRIER_SPD,dt,2);
+    trackShipWake(carrier,carrierForward,240,32,CARRIER_SPD,dt,2);
     emitShipExhaust((isDefend()?ijnCarrierModel:carrierModel)||carrier,carrierForward,CARRIER_SPD,dt);
   }
 
@@ -8828,11 +8878,6 @@ function animateFrame(){
   updatePlaneMesh(dt);
   globalThis.sortieCheckpoint?.tick(rawDt);
   if(skyDome) skyDome.position.copy(camera.position);
-  // The sea plane was only centred once, at creation. Fly 7000 units from that point
-  // (easy at altitude, since you cover ground faster) and its edge comes into view —
-  // that is the "world looks stitched/broken" effect. Recentre it under the player
-  // every frame instead; the wave shader is world-space so this is seamless.
-  if(sea){ sea.position.x=P.pos.x; sea.position.z=P.pos.z; }
   if(sun&&sun.castShadow&&P&&P.pos)placePacificShadow(rawDt);
   // sun stays pinned in the sky; radar sweeps. Build 285: the sun's DIRECTION is sunOffset (sun.position now sits at
   // the shadow box; it used to be the player + offset, which normalised to the wrong bearing far from the origin).
@@ -8878,7 +8923,7 @@ let graphicsPost=null,pacificPerf=null,pacificPerfOn=new URLSearchParams(locatio
 function applyPacificGraphics(){
   if(!renderer)return;
   const g=graphicsQuality.settings,ratio=graphicsQuality.pixelRatio(Math.min(window.devicePixelRatio||1,2,g.pixelRatio));
-  const safetyNet=navigator.maxTouchPoints>0&&graphicsQuality.choice!=='auto'&&graphicsQuality.frameMode==='free';
+  const safetyNet=!pacificUltra&&navigator.maxTouchPoints>0&&graphicsQuality.choice!=='auto'&&graphicsQuality.frameMode==='free';
   if(Math.abs(renderer.getPixelRatio()-ratio)>.01||flightQuality.enabled!==safetyNet){renderer.setPixelRatio(ratio);renderer.setSize(window.innerWidth,window.innerHeight);
     window.flightQuality=GameRuntime.createQuality(renderer,{enabled:safetyNet});}
   const shadows=g.shadows;
@@ -8891,7 +8936,8 @@ function applyPacificGraphics(){
   if(graphicsPost){graphicsPost.enabled=g.bloom||pacificUltra;graphicsPost.glow=g.bloom?.55:0;graphicsPost.threshold=.9;}
   GraphicsQuality.applyAnisotropy(scene,renderer,g.anisotropy);
   const el=document.getElementById('graphicsMenu');if(el)el.value=graphicsQuality.choice;
-  const fr=document.getElementById('frameRateMenu');if(fr)fr.value=graphicsQuality.frameMode;
+  const fr=document.getElementById('frameRateMenu');
+  if(fr){fr.value=graphicsQuality.frameMode;fr.options[0].textContent=pacificUltra?'Full resolution':'60 FPS (resolution adapts)';}
   pacificPerf?.reset();
 }
 graphicsQuality.onChange(applyPacificGraphics);
@@ -8908,7 +8954,7 @@ graphicsQuality.onChange(applyPacificGraphics);
   if(patched.includes('shadowEdgeFade(shadowCoord.xy)'))THREE.ShaderChunk.shadowmap_pars_fragment=patched;}}
 const pacShadow={dir:new THREE.Vector3(),right:new THREE.Vector3(),up:new THREE.Vector3(),look:new THREE.Vector3(),focus:new THREE.Vector3(),
   snapped:new THREE.Vector3(),castT:0,sweepT:0,seen:new WeakSet(),cells:[],world:null};
-const PAC_NO_CAST=/^(Terrain_|Dirt approaches|Cultivated field rows|Coral field boundaries|Hamlet earth roads|Farm tracks|Airfield coral gravel|Airfield tyre tracks|Recessed windows|Window shutters|Wooden doors|Animated coastal water)/;
+const PAC_NO_CAST=/^(Terrain_|Dirt approaches|Cultivated field rows|Kitchen garden rows|Coral field boundaries|Hamlet earth roads|Farm tracks|Airfield coral gravel|Airfield tyre tracks|Recessed windows|Window shutters|Wooden doors|Animated coastal water)/;
 function pacShadowGround(x,z){
   if(okinawaWorld&&okinawaWorld.root.visible){const lx=x-OKINAWA_OFFSET_X;
     if(Math.abs(lx)<7980&&Math.abs(z)<7980&&okinawaWorld.shoreDistance(lx,z)>1)return okinawaWorld.getSurfaceHeight(lx,z);}
@@ -8930,8 +8976,8 @@ function sweepOkinawaCasters(){
   };
   walk(w.root);
 }
-// Tree cells (2 km, frustum-culled) cast only near the shadow box, so the shadow pass draws a few cells, not the island.
-function nearTreeCasters(focus,range){
+// Treat buildings and trees alike: only cells near the shadow frustum cast.
+function nearOkinawaCasters(focus,range){
   const reach=range*1.6;
   for(const m of pacShadow.cells){const s=m.geometry.boundingSphere.center;
     m.castShadow=Math.hypot(s.x+m.parent.matrixWorld.elements[12]-focus.x,s.z+m.parent.matrixWorld.elements[14]-focus.z)-m.geometry.boundingSphere.radius<reach;}
@@ -8948,7 +8994,7 @@ function placePacificShadow(dt){
   sunTarget.position.copy(pacShadow.snapped);sun.position.copy(pacShadow.snapped).addScaledVector(d,1500);
   if(okinawaWorld&&okinawaWorld.root.visible){
     pacShadow.sweepT-=dt;if(pacShadow.sweepT<=0){pacShadow.sweepT=2;sweepOkinawaCasters();}
-    pacShadow.castT-=dt;if(pacShadow.castT<=0){pacShadow.castT=.25;nearTreeCasters(f,range);}
+    pacShadow.castT-=dt;if(pacShadow.castT<=0){pacShadow.castT=.25;nearOkinawaCasters(f,range);}
   }
 }
 graphicsQuality.onResolution(applyPacificGraphics);
@@ -8997,17 +9043,25 @@ function pacificLandTick(dt){
   pacificLandSweepT-=dt;
   // a new ship/aircraft group is patched before its first frame (no second shader build), the rest twice a second
   if(pacificLandSweepT<=0||scene.children.length!==pacificLandChildren){pacificLandSweepT=.5;pacificLandChildren=scene.children.length;pacificLand.sweep(scene);}
-  if(okinawaWorld)pacificLand.update(okinawaWorld,seaUniforms.uSunDir.value);
+  return okinawaWorld&&okinawaWorld.root.visible?pacificLand.update(okinawaWorld,seaUniforms.uSunDir.value):null;
 }
 function applyPacificScenery(){
   if(!sea||!skyMat)return;
+  okinawaWorld?.setUltraGardens(pacificUltra);
   setUltraDefine(sea.material,pacificUltra);setUltraDefine(skyMat,pacificUltra);
   if(!pacificLand&&window.PacificUltraLand)pacificLand=PacificUltraLand.create(THREE,{time:seaUniforms.uTime,wind:seaUniforms.uWind,cloud:seaUniforms.uCloudShade});
   if(pacificLand){if(okinawaWorld)pacificLand.markTerrain(okinawaWorld);pacificLand.setEnabled(pacificUltra,scene);pacificLandSweepT=0;}
   if(pacificUltra&&!seaUniforms.uWaveTex.value)seaUniforms.uWaveTex.value=makeWaveNormalTexture();
-  const rows=pacificUltra?320:170;
-  if(seaGeo.parameters.widthSegments!==rows){const g=new THREE.PlaneGeometry(14000,14000,rows,rows);g.rotateX(-Math.PI/2);
-    sea.geometry.dispose();sea.geometry=seaGeo=g;}
+  if(pacificUltra&&!seaUltraGrid){
+    seaUltraGrid=PacificUltraFinish.seaGrid(THREE,sea.material);
+    seaUltraGrid.position.copy(sea.position);
+    scene.add(seaUltraGrid);
+  }
+  sea.visible=!pacificUltra;
+  if(seaUltraGrid)seaUltraGrid.visible=pacificUltra;
+  if(!pacificUltra){ultraSpray?.clear();ultraDeckLights?.update(null,0,0);}
+  shipWakes?.setUltra(pacificUltra);
+  graphicsQuality.setFixedDetail(pacificUltra);
   const el=document.getElementById('pacificSceneryMenu');if(el)el.value=pacificUltra?'ultra':'standard';
   applyPacificGraphics();
 }
@@ -9023,17 +9077,39 @@ function pacificCloudShade(w){
 }
 function renderPacific(){
   pacificLandTick(frameIntervalForGraphics||0);
+  if(pacificUltra){
+    const active=state!==ST.MENU&&state!==ST.RESULT;
+    const dt=Math.min(.05,frameIntervalForGraphics||0),w=WX[weather]||WX.clear;
+    const night=timeMode==='night',twilight=timeMode==='dawn'||timeMode==='dusk';
+    const distance=Math.hypot(camera.position.x-carrierX,camera.position.z);
+    const deckLight=active&&(night||twilight)&&distance<1400?
+      (night?.73:.31)*Math.min(1,(1400-distance)/450):0;
+    ultraDeckLights?.update(deckLight?carrierDeckPlane():null,carrierDeckHalfBeam(),deckLight);
+    ultraSpray?.update(dt,renderer.getPixelRatio(),-(windHead+windGust)*.45,windZ*.45,night?.38:.58+w.sun*.42);
+    pacificLand.uniforms.uPacWet.value=Math.min(1,w.rain)*.85;
+    const fire=pacificLand.uniforms.uPacFire.value;
+    let nearest=260*260;
+    fire.w=0;
+    for(const p of smokes)if(p.fire){
+      const pos=p.mesh.position,d=camera.position.distanceToSquared(pos);
+      if(d<nearest){nearest=d;fire.set(pos.x,pos.y,pos.z,Math.max(0,p.life/p.max)*.88);}
+    }
+    seaUniforms.uStormFlash.value=active&&weather==='storm'?pacificLightning:0;
+  }
   if(!graphicsPost?.enabled){renderer.__sceneInfo=null;return GameRuntime.render(renderer,scene,camera);}
   const gl=renderer.getContext();if(gl.isContextLost())return false;
+  const light=sun.intensity;
+  if(pacificUltra)sun.intensity+=seaUniforms.uStormFlash.value*1.25;
   try{return graphicsPost.render(scene,camera,clock?clock.elapsedTime:0,true);}
   catch(error){if(gl.isContextLost())return false;throw error;}
+  finally{sun.intensity=light;}
 }
 function measurePacificFrame(dt,rendered){
   if(state===ST.FLIGHT&&rendered&&graphicsQuality.sample(dt,true,(GameRuntime.frames.lastCpu||0)/1000))flash('GRAPHICS: '+graphicsQuality.label().toUpperCase(),900);
   const panel=document.getElementById('perfHud');if(!panel)return;
   const visible=pacificPerfOn&&state===ST.FLIGHT&&rendered;
   if(!visible){if(!panel.hidden){panel.hidden=true;pacificPerf?.reset();}return;}
-  panel.hidden=false;pacificPerf??=GraphicsQuality.createPerfPanel(panel,renderer,{frames:GameRuntime.frames,quality:graphicsQuality});
+  panel.hidden=false;pacificPerf??=GraphicsQuality.createPerfPanel(panel,renderer,{frames:GameRuntime.frames,quality:graphicsQuality,showSpikes:true});
   pacificPerf.sample(dt,scene,'Pacific'+(pacificUltra?' Ultra':'')+' · '+graphicsQuality.label());
 }
 
