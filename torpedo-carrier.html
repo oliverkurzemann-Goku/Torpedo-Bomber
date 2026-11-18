@@ -380,7 +380,7 @@ body.secretSpaceActive #fireBtn{border-color:#73d9fc;color:#d6f9ff}
   <div id="perfHud" hidden></div>
   <div id="ltn" style="position:fixed;inset:0;background:#e6ecff;opacity:0;pointer-events:none;z-index:40;"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 287</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 288</div>
 
   <!-- Optical landing aid -->
   <div id="lso">
@@ -436,7 +436,7 @@ body.secretSpaceActive #fireBtn{border-color:#73d9fc;color:#d6f9ff}
 
 <!-- Menu -->
 <div class="overlay" id="menu" data-campaign="pacific">
-  <div class="menuTop"><a id="selBtn" href="index.html?v=287">&#9664; Change Game</a><span class="menuMeta">PACIFIC OPERATIONS<br>BUILD 287</span></div>
+  <div class="menuTop"><a id="selBtn" href="index.html?v=288">&#9664; Change Game</a><span class="menuMeta">PACIFIC OPERATIONS<br>BUILD 288</span></div>
   <div class="card menuCard">
     <aside class="menuOverview" aria-label="Campaign and pilot options">
     <div class="campaignArt" aria-hidden="true"></div>
@@ -572,6 +572,7 @@ body.secretSpaceActive #fireBtn{border-color:#73d9fc;color:#d6f9ff}
 <script src="ordnance.js?v=238"></script>
 <script src="crew-visuals.js?v=179"></script>
 <script src="deck-activity.js?v=254"></script>
+<script src="carrier-outfitting.js?v=288"></script>
 <script src="ship-wakes.js?v=287"></script>
 <script src="pilot-bailout.js?v=253"></script>
 <script src="enemy-bailouts.js?v=248"></script>
@@ -823,7 +824,7 @@ let prePauseState = null;
 // ---- Moving carrier (the whole task group steams forward along +X) ----
 let carrierX = 0;                 // current world-X of the carrier group's origin
 let CARRIER_SPD = 5;            // m/s — gentle, keeps the trap achievable
-let shipWakes=null,deckActivity=null;
+let shipWakes=null,deckActivity=null,carrierOutfitting=null;
 const warningLamps=FlightIndicators.mount(document.getElementById('systemsStatus'));
 GameRuntime.stackHUD(document,8);
 let lastTorpDud = false;         // prevents two dud torpedoes in a row
@@ -1262,6 +1263,7 @@ function init(){
   {const el=document.getElementById('pacificSceneryMenu');if(el)el.onchange=()=>setPacificScenery(el.value);}
   buildIslands();
   buildCarrier();
+  carrierOutfitting=CarrierOutfitting.create(THREE);
   shipWakes=ShipWakes.create(THREE,scene,{height:(x,z)=>seaHeightAt(x,z,seaUniforms.uTime.value)});
   deckActivity=DeckActivity.create(THREE,scene,{deckY:DECK_Y,heightAt:carrierDeckHeight,deckHalfWidth:carrierDeckHalfBeam(),srgbOutput:true});
   carrier.traverse(function(o){ if(o.isMesh){ o.castShadow=true; o.receiveShadow=true; } });
@@ -2716,6 +2718,7 @@ function spawnShip(def){
     const g=new THREE.Group();
     g.add(cruiserTemplate.clone(true));
     g.traverse(function(o){ if(o.isMesh){ o.castShadow=true; o.receiveShadow=true; } });
+    carrierOutfitting.install(g,g.children[0].children[0],'kaga');
     g.position.set(def.pos[0],0,def.pos[2]);
     g.rotation.order='YXZ';g.rotation.y=def.heading??.15;
     scene.add(g);
@@ -2747,6 +2750,7 @@ function upgradeShipsToTemplate(type, template){
     while(s.group.children.length) s.group.remove(s.group.children[0]);
     s.group.add(template.clone(true));
     s.group.traverse(function(o){ if(o.isMesh){ o.castShadow=true; o.receiveShadow=true; } });
+    if(type==='cruiser')carrierOutfitting.install(s.group,s.group.children[0].children[0],'kaga');
     s.usedFallback=false;
   }
 }
@@ -6870,7 +6874,7 @@ function loadPlaneModel(){
       }
       window.__eyeDbg='EYE '+COCKPIT_EYE.map(v=>v.toFixed(2)).join('/');
       const btEl=document.getElementById('buildTag');
-      if(btEl) btEl.textContent='BUILD 287 · '+window.__eyeDbg;
+      if(btEl) btEl.textContent='BUILD 288 · '+window.__eyeDbg;
       let seat=null;
       model.traverse(function(o){
         if(!o.isMesh||!o.material) return;
@@ -6924,6 +6928,7 @@ function loadCarrierModel(){
       });
       scene.add(root);
       shipContact.prepare(root);
+      carrierOutfitting.install(root,model,'enterprise');
       carrierModel=root;
       carrier.visible=false;   // hide the built-in blocky carrier (its nodes/anim still exist)
       carrierModelLoaded=true;
@@ -6964,7 +6969,9 @@ function loadIJNCarrierModel(){
           if(o.material) o.material.side=THREE.DoubleSide; }
       });
       root.visible=false;                          // only shown in the defence sortie
-      shipContact.prepare(root);scene.add(root); ijnCarrierModel=root;
+      shipContact.prepare(root);
+      carrierOutfitting.install(root,model,'kaga');
+      scene.add(root); ijnCarrierModel=root;
       console.log('IJN carrier loaded:', IJN_CARRIER_URL);
     }catch(e){ console.warn('IJN carrier post-process failed', e); }
   }).catch(function(){ console.warn('No IJN carrier at "'+IJN_CARRIER_URL+'"'); });
@@ -8391,7 +8398,7 @@ function setupUIButtons(){
   if(dbgT2) dbgT2.onclick=()=>{
     dbgOn=!dbgOn; GameRuntime.storage.setItem('dbgOn',dbgOn?'1':'0');
     const db=document.getElementById('dbgBox'); if(db) db.textContent=dbgOn?'✓':'';
-    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 287'; }
+    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 288'; }
   };
   const lu=document.getElementById('lookUp'), ld=document.getElementById('lookDn');
   let _lookT=0;
@@ -8407,7 +8414,7 @@ function setupUIButtons(){
   if(pb) pb.addEventListener('pointerdown',e=>{ e.preventDefault(); togglePause(); });
   const rb=document.getElementById('resumeBtn'); if(rb) rb.onclick=resumeGame;
   const mb=document.getElementById('menuBtn'); if(mb) mb.onclick=exitToMenu;
-  document.getElementById('pauseMainMenu').onclick=async()=>{globalThis.sortieCheckpoint?.save();await globalThis.sortieCheckpoint?.flush();exitToMenu(true);window.location.href='index.html?v=287';};
+  document.getElementById('pauseMainMenu').onclick=async()=>{globalThis.sortieCheckpoint?.save();await globalThis.sortieCheckpoint?.flush();exitToMenu(true);window.location.href='index.html?v=288';};
   document.getElementById('resultBtn').onclick=()=>{
     // the logbook borrows this screen from the menu — send the player straight back
     if(logbookOpen){ logbookOpen=false; showOverlay('menu'); return; }
@@ -8747,7 +8754,7 @@ function animate(){
     notice.style.cssText='position:fixed;inset:0;z-index:999998;background:rgba(15,20,15,.95);color:#e8ddbc;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px;text-align:center;font:16px system-ui';
     const title=document.createElement('h2');title.textContent='Simulation interrupted';
     const detail=document.createElement('p');
-    detail.textContent='BUILD 287 · '+(MISSIONS[mission]?.sub||'Menu')+' · '+error.message;
+    detail.textContent='BUILD 288 · '+(MISSIONS[mission]?.sub||'Menu')+' · '+error.message;
     const reload=document.createElement('button');reload.textContent='Reload game';
     reload.style.cssText='padding:12px 24px;font:inherit';reload.onclick=()=>location.reload();
     notice.appendChild(title);notice.appendChild(detail);notice.appendChild(reload);document.body.appendChild(notice);
@@ -9077,6 +9084,9 @@ function pacificCloudShade(w){
   return w.cover>=.9?.12:.18+.5*(w.cover||0);
 }
 function renderPacific(){
+  const time=clock.elapsedTime,dark=timeMode==='night';
+  carrierOutfitting.update(isDefend()?ijnCarrierModel:carrierModel,camera.position,time,dark);
+  for(const ship of ships)if(ship.def.type==='cruiser')carrierOutfitting.update(ship.group,camera.position,time,dark);
   pacificLandTick(frameIntervalForGraphics||0);
   if(pacificUltra){
     const active=state!==ST.MENU&&state!==ST.RESULT;
