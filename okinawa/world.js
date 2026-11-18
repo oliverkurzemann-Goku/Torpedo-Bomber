@@ -337,6 +337,7 @@ class OkinawaWorld{
     g.computeBoundingSphere();const m=new THREE.Mesh(g,material);m.name='Terrain_'+col+'_'+row;m.receiveShadow=true;this.terrain.add(m);
   }
   onProgress(.58,'Growing the coastal landscape…');await pause();this.buildSettlements();await this.loadFortifications();this.buildVillageDetails();this.buildRoads();this.paintRoadTexture();this.buildVegetation();
+  if(this.coastalOptions?.carrierDeparture)this.buildKitchenGardens();
   if(this.coastalOptions!==false&&scope.OkinawaCoastalScenery){
    this.coastalScenery=scope.OkinawaCoastalScenery.load(this,this.coastalOptions);
    if(this.coastalScenery)this.root.add(this.coastalScenery.root);
@@ -362,7 +363,7 @@ class OkinawaWorld{
   const out=[];
   for(const [key,items] of cells){
    const m=this.batch(geo.clone(),mat,items,name);let x=0,z=0;for(const p of items){x+=p.x;z+=p.z;}x/=items.length;z/=items.length;
-   let r=0,lo=Infinity,hi=-Infinity;for(const p of items){r=Math.max(r,Math.hypot(p.x-x,p.z-z)+reach(p));lo=Math.min(lo,p.y);hi=Math.max(hi,p.y+lift(p));}
+   let r=0,lo=Infinity,hi=-Infinity;for(const p of items){r=Math.max(r,Math.hypot(p.x-x,p.z-z)+reach(p));const h=lift(p);lo=Math.min(lo,p.y-h);hi=Math.max(hi,p.y+h);}
    m.geometry.boundingSphere=new THREE.Sphere(new THREE.Vector3(x,(lo+hi)/2,z),Math.hypot(r,(hi-lo)/2)+2);
    m.frustumCulled=true;m.userData.cell=key;out.push(m);
    const lod={mesh:m,sphere:m.geometry.boundingSphere,near:m.geometry,far:null,isFar:false,trunk};
@@ -370,6 +371,43 @@ class OkinawaWorld{
    if(far||trunk)(this.treeLOD??=[]).push(lod);
   }
   geo.dispose();far?.dispose();return out;
+ }
+ buildKitchenGardens(){
+  const crops=[[],[]];
+  const plots=[],span=5.5;
+  for(const home of this.houseSites){
+   const variety=hash(home.x,home.z);
+   if(variety<.34)continue;
+   const bearing=home.rot+Math.PI*(variety>.68?1:0);
+   const offset=Math.hypot(home.w,home.depth)*.6+14;
+   let plot=null;
+   for(const turn of [0,Math.PI,Math.PI/2,-Math.PI/2]){
+    const angle=bearing+turn,dx=Math.sin(angle),dz=Math.cos(angle);
+    const x=home.x+dx*offset,z=home.z+dz*offset,y=this.getSurfaceHeight(x,z);
+    if(plots.some(p=>Math.hypot(p.x-x,p.z-z)<13))continue;
+    const free=(u,v)=>!this.nearRoad(u,v)&&!this.nearHouse(u,v)&&this.shoreDistance(u,v)>45&&
+     Math.abs(this.getSurfaceHeight(u,v)-y)<1.05;
+    if(free(x,z)&&free(x+span,z+span)&&free(x-span,z-span)&&free(x+span,z-span)&&free(x-span,z+span)){
+     plot={x,z,dx,dz,angle};
+     break;
+    }
+   }
+   if(!plot)continue;
+   plots.push(plot);
+   const {x,z,dx,dz,angle}=plot;
+   const list=crops[variety>.68?0:1];
+   for(let i=-2;i<=2;i++){
+    const u=x+dz*i*1.55,v=z-dx*i*1.55;
+    list.push({x:u,z:v,y:this.getSurfaceHeight(u,v)+.14,sx:.88,sy:.28,sz:6.5,r:angle});
+   }
+  }
+  this.kitchenGardens=crops.flatMap((items,i)=>this.batchCells(new THREE.BoxGeometry(1,1,1),
+   new THREE.MeshStandardMaterial({color:i?0x455622:0x687041,roughness:1}),items,'Kitchen garden rows',()=>4,()=>.25,1400));
+  this.setUltraGardens(false);
+ }
+ setUltraGardens(on){
+  this.ultraGardens=on;
+  if(!on)for(const mesh of this.kitchenGardens||[])mesh.visible=false;
  }
  batch(geo,mat,placements,name){if(!placements.length)return;const m=new THREE.InstancedMesh(geo,mat,placements.length),dummy=new THREE.Object3D();m.name=name;for(let i=0;i<placements.length;i++){const p=placements[i];dummy.position.set(p.x,p.y,p.z);dummy.rotation.set(0,p.r||0,0);dummy.scale.set(p.sx||p.s||1,p.sy||p.s||1,p.sz||p.s||1);dummy.updateMatrix();m.setMatrixAt(i,dummy.matrix);}m.instanceMatrix.needsUpdate=true;m.frustumCulled=false;m.castShadow=false;m.receiveShadow=true;this.root.add(m);this.objectCount+=placements.length;this.decorations.push(m);return m;}
  nearHouse(x,z){
@@ -592,11 +630,14 @@ class OkinawaWorld{
     new THREE.MeshStandardMaterial({color:0x655b42,roughness:1,side:THREE.DoubleSide}),
     new THREE.MeshStandardMaterial({color:0x43443f,roughness:1,side:THREE.DoubleSide}),
     new THREE.MeshStandardMaterial({color:0x48332e,roughness:1,side:THREE.DoubleSide})];
+  // Shadow and camera frusta can discard whole neighbourhoods. The original
+  // instance transforms and materials are shared by the new spatial batches.
+  const reach=p=>Math.hypot(p.sx,p.sz),lift=p=>2*p.sy;
   for(let i=0;i<5;i++){
-    this.batch(new THREE.BoxGeometry(1,1,1),new THREE.MeshStandardMaterial({color:wallColors[i],map:wallMaps[i],roughness:1}),walls[i],['Coral homes','Timber workshops','Storehouses','Plastered dwellings','Rural halls'][i]);
-    this.batch(i===0||i===3?roofGeometry():gableRoofGeometry(),roofMaterials[i],roofs[i],['Red tile roofs','Dark gables','Thatch gables','Grey hip roofs','Oxide roofs'][i]);
+    this.batchCells(new THREE.BoxGeometry(1,1,1),new THREE.MeshStandardMaterial({color:wallColors[i],map:wallMaps[i],roughness:1}),walls[i],['Coral homes','Timber workshops','Storehouses','Plastered dwellings','Rural halls'][i],reach,lift,2200);
+    this.batchCells(i===0||i===3?roofGeometry():gableRoofGeometry(),roofMaterials[i],roofs[i],['Red tile roofs','Dark gables','Thatch gables','Grey hip roofs','Oxide roofs'][i],reach,lift,2200);
   }
-  this.batch(new THREE.BoxGeometry(1,1,1),new THREE.MeshStandardMaterial({color:0x302b23,roughness:1}),dark,'Shaded verandas');
+  this.batchCells(new THREE.BoxGeometry(1,1,1),new THREE.MeshStandardMaterial({color:0x302b23,roughness:1}),dark,'Shaded verandas',reach,lift,2200);
   const detail=new THREE.BoxGeometry(1,1,1);
   this.batch(detail,new THREE.MeshStandardMaterial({color:0x4d3a2d,roughness:1}),doors,'Wooden doors');
   this.batch(detail,new THREE.MeshStandardMaterial({color:0x292d2b,roughness:.55}),windows,'Recessed windows');
@@ -749,7 +790,13 @@ class OkinawaWorld{
  }
  update(dt,x=0,z=0,y=0){
   this.time.value+=Math.min(dt,.1);this.detailTimer=(this.detailTimer||0)-dt;
-  if(this.detailTimer<=0){this.detailTimer=.35;this.updateVillageDetails(x,z);this.updateFortifications(x,z);this.updateTreeLOD(x,z,y);}
+  if(this.detailTimer<=0){
+   this.detailTimer=.35;this.updateVillageDetails(x,z);this.updateFortifications(x,z);this.updateTreeLOD(x,z,y);
+   for(const mesh of this.kitchenGardens||[]){
+    const s=mesh.geometry.boundingSphere;
+    mesh.visible=this.ultraGardens&&Math.hypot(x-s.center.x,z-s.center.z,y*.8)-s.radius<1250;
+   }
+  }
   this.coastalScenery?.update(dt,x,z,y);
   if(this.airfieldActivity){
    if(y>450)this.airfieldActivity.group.visible=false;

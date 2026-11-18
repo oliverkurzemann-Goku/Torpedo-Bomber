@@ -20,13 +20,24 @@ float pacCloudLight(vec3 w){
  float c=pacNoise(w.xz/720.0+uPacWind*uPacTime*0.0045)*0.65+pacNoise(w.xz/260.0-uPacWind.yx*uPacTime*0.006)*0.35;
  return 1.0-min(0.85,uPacCloud*1.25)*smoothstep(0.47,0.63,c);
 }`;
- function inject(shader,uniforms,relief){
+ function inject(shader,uniforms,relief,finish){
   Object.assign(shader.uniforms,uniforms);
   shader.vertexShader=shader.vertexShader
-   .replace('#include <common>','#include <common>\nvarying vec3 vPacWorld;'+(relief?'\nvarying vec2 vPacLocal;':''))
-   .replace('#include <project_vertex>','#include <project_vertex>\n{vec4 pacW=vec4(transformed,1.0);\n#ifdef USE_INSTANCING\npacW=instanceMatrix*pacW;\n#endif\nvPacWorld=(modelMatrix*pacW).xyz;'+(relief?'vPacLocal=transformed.xz;':'')+'}');
-  let frag=shader.fragmentShader.replace('#include <common>','#include <common>\nvarying vec3 vPacWorld;\nuniform float uPacTime,uPacCloud;\nuniform vec2 uPacWind;'
+   .replace('#include <common>','#include <common>\nvarying vec3 vPacWorld;'+(relief?'\nvarying vec2 vPacLocal;':'')+(finish?'\nvarying vec3 vPacSurface;':''))
+   .replace('#include <project_vertex>','#include <project_vertex>\n{vec4 pacW=vec4(transformed,1.0);\n#ifdef USE_INSTANCING\npacW=instanceMatrix*pacW;\n#endif\nvPacWorld=(modelMatrix*pacW).xyz;'+(relief?'vPacLocal=transformed.xz;':'')+(finish?'vPacSurface=transformed;':'')+'}');
+  let frag=shader.fragmentShader.replace('#include <common>','#include <common>\nvarying vec3 vPacWorld;\nuniform float uPacTime,uPacCloud;\nuniform vec2 uPacWind;\nuniform vec4 uPacFire;'
+   +(finish?'\nvarying vec3 vPacSurface;\nuniform float uPacWet;':'')
    +(relief?'\nvarying vec2 vPacLocal;\nuniform sampler2D uPacRelief;\nuniform float uPacReliefOn;':'')+NOISE);
+  if(finish){
+   const grain=finish==='deck'?'vPacSurface.xz*vec2(3.0,0.15)':finish==='hull'?'vPacSurface.xy*vec2(0.43,2.6)':'vPacWorld.xz*0.71';
+   const shade=finish==='deck'?'0.22':finish==='hull'?'0.18':'0.27';
+   frag=frag.replace('#include <map_fragment>','#include <map_fragment>\n'+
+    'float pacRange=1.0-smoothstep(45.0,600.0,distance(cameraPosition,vPacWorld));\n'+
+    'float pacGrain=pacNoise('+grain+');\n'+
+    'diffuseColor.rgb*=1.0+pacRange*(pacGrain-0.47)*'+shade+';');
+   if(finish==='deck'||finish==='hull')frag=frag.replace('#include <roughnessmap_fragment>',
+    '#include <roughnessmap_fragment>\nroughnessFactor=mix(roughnessFactor,max(.22,roughnessFactor*.48),uPacWet*pacRange*smoothstep(.27,.68,pacGrain));');
+  }
   if(relief){
    frag=frag.replace('#include <map_fragment>','#include <map_fragment>\n{float pacD=1.0-smoothstep(150.0,900.0,distance(cameraPosition,vPacWorld));\n'
     +' float pacM=pacNoise(vPacWorld.xz*0.31)*0.6+pacNoise(vPacWorld.xz*0.083)*0.4;\n diffuseColor.rgb*=1.0+(pacM-0.5)*0.22*pacD;}')
@@ -35,25 +46,35 @@ float pacCloudLight(vec3 w){
   }
   frag=frag.replace('#include <aomap_fragment>','{float pacC=pacCloudLight(vPacWorld);'
    +(relief?'if(uPacReliefOn>0.5){pacC*=mix(0.18,1.0,pacR.b);reflectedLight.indirectDiffuse*=mix(1.0,pacR.a,0.9)*(0.78+0.22*pacR.b);}':'')
-   +'reflectedLight.directDiffuse*=pacC;reflectedLight.directSpecular*=pacC;}\n#include <aomap_fragment>');
+   +'reflectedLight.directDiffuse*=pacC;reflectedLight.directSpecular*=pacC;'
+   +'if(uPacFire.w>0.0){vec3 pacF=uPacFire.xyz-vPacWorld;float pacA=max(0.0,1.0-dot(pacF,pacF)/3600.0);'
+   +'reflectedLight.directDiffuse+=diffuseColor.rgb*vec3(1.0,.39,.12)*uPacFire.w*pacA*pacA;}}\n#include <aomap_fragment>');
   shader.fragmentShader=frag;
  }
  function create(THREE,{time,wind,cloud}){
   // uPacCloud follows the sea's cloud strength each frame (sync), times cloudScale (1; a test can switch the land part off alone)
-  const uniforms={uPacTime:time,uPacWind:wind,uPacCloud:{value:cloud.value},uPacRelief:{value:null},uPacReliefOn:{value:0}};
+  const uniforms={uPacTime:time,uPacWind:wind,uPacCloud:{value:cloud.value},uPacRelief:{value:null},uPacReliefOn:{value:0},
+   uPacWet:{value:0},uPacFire:{value:new THREE.Vector4()}};
   const patched=new Set();let reliefMaterials=new Set(),bakeJob=null,bakedSun=null,enabled=false,generation=0;
   const baseKey=THREE.Material.prototype.customProgramCacheKey;
   function lit(m){return m&&!m.isShaderMaterial&&!m.isRawShaderMaterial&&(m.isMeshStandardMaterial||m.isMeshPhongMaterial||m.isMeshLambertMaterial);}
-  function patch(m,relief=false){
+  function finishFor(o,m){
+   if(!m?.isMeshStandardMaterial)return '';
+   if(/^(deckPaint|woodDeck|flightDeck)$/i.test(m.name))return 'deck';
+   if(/^(hullPaint|boot|redLead)$/i.test(m.name))return 'hull';
+   if(/roofs|gables|coral gravel|tyre tracks|earth roads|farm tracks|coral garden walls|cultivated field rows/i.test(o.name))return 'island';
+   return '';
+  }
+  function patch(m,relief=false,finish=''){
    if(!lit(m)||m.userData.pacUltra)return false;
    const prev=m.onBeforeCompile,prevKey=m.customProgramCacheKey,own=Object.prototype.hasOwnProperty;
    const keyOf=prevKey===baseKey?()=>String(prev):()=>prevKey.call(m);
    m.userData.pacUltra={prev,prevKey,hadHook:own.call(m,'onBeforeCompile'),hadKey:own.call(m,'customProgramCacheKey'),relief};
-   m.onBeforeCompile=function(s,r){if(prev)prev.call(this,s,r);inject(s,uniforms,relief);};
+   m.onBeforeCompile=function(s,r){if(prev)prev.call(this,s,r);inject(s,uniforms,relief,finish);};
    // A generation per switch-on: three r128 re-uses a cached program of the same key WITHOUT running onBeforeCompile
    // again, and then keeps the uniforms of the previous (unpatched) build - after Ultra off/on the cloud and relief
    // uniforms would never be uploaded again. A new key per switch-on forces a fresh build with these uniforms.
-   const gen=generation;m.customProgramCacheKey=function(){return keyOf()+'|pacUltra284g'+gen+(relief?'R':'');};
+   const gen=generation;m.customProgramCacheKey=function(){return keyOf()+'|pacUltra287g'+gen+(relief?'R':'')+finish;};
    m.needsUpdate=true;patched.add(m);if(relief)reliefMaterials.add(m);return true;
   }
   function unpatch(m){
@@ -65,13 +86,16 @@ float pacCloudLight(vec3 w){
   // Patch every lit material under a root (cheap when nothing is new: a flag per material).
   function sweep(rootObject){
    if(!enabled||!rootObject)return 0;let n=0;
-   rootObject.traverse(o=>{const ms=Array.isArray(o.material)?o.material:[o.material];for(const m of ms)if(m&&!m.userData.pacUltra&&patch(m,!!o.userData.pacRelief))n++;});
+   rootObject.traverse(o=>{const ms=Array.isArray(o.material)?o.material:[o.material];for(const m of ms)if(m&&!m.userData.pacUltra&&patch(m,!!o.userData.pacRelief,finishFor(o,m)))n++;});
    return n;
   }
   function setEnabled(on,scene){
    on=!!on;if(on===enabled)return;enabled=on;if(on)generation++;
    if(!on){for(const m of patched)unpatch(m);patched.clear();reliefMaterials.clear();uniforms.uPacReliefOn.value=0;}
-   else if(scene)sweep(scene);
+   else{
+    uniforms.uPacReliefOn.value=bakedSun?1:0;
+    if(scene)sweep(scene);
+   }
   }
   // Mark the terrain meshes so the sweep gives them the relief variant.
   function markTerrain(world){world?.terrain?.traverse(o=>{if(o.isMesh)o.userData.pacRelief=true;});}
@@ -79,11 +103,11 @@ float pacCloudLight(vec3 w){
   async function bake(world,sun){
    const t0=performance.now(),N=SIZE,step=EXTENT/N,H=new Float32Array(N*N);
    let slice=performance.now();
-   const breathe=async()=>{if(performance.now()-slice>12){await pause();slice=performance.now();}};
+   const breathe=async()=>{if(performance.now()-slice>2.5){await pause();slice=performance.now();}};
    for(let j=0;j<N;j++){const z=-HALF+(j+.5)*step;for(let i=0;i<N;i++)H[j*N+i]=world.getHeight(-HALF+(i+.5)*step,z);await breathe();}
    // Summed-area table for the hollow occlusion (mean height in a 9 x 9 texel window, ~140 m).
    const S=new Float64Array((N+1)*(N+1));
-   for(let j=0;j<N;j++){let row=0;for(let i=0;i<N;i++){row+=H[j*N+i];S[(j+1)*(N+1)+i+1]=S[j*(N+1)+i+1]+row;}}
+   for(let j=0;j<N;j++){let row=0;for(let i=0;i<N;i++){row+=H[j*N+i];S[(j+1)*(N+1)+i+1]=S[j*(N+1)+i+1]+row;}await breathe();}
    const data=new Uint8Array(N*N*4),sx=sun.x,sz=sun.z,flat=Math.hypot(sx,sz),tanSun=sun.y/Math.max(1e-4,flat),dx=flat>1e-4?sx/flat:0,dz=flat>1e-4?sz/flat:0;
    const at=(i,j)=>H[Math.min(N-1,Math.max(0,j))*N+Math.min(N-1,Math.max(0,i))];
    let lit=0,land=0;
@@ -114,8 +138,9 @@ float pacCloudLight(vec3 w){
    if(!enabled||!world)return null;if(bakeJob)return bakeJob;
    if(bakedSun&&bakedSun.world===world&&Math.abs(bakedSun.x-sun.x)+Math.abs(bakedSun.y-sun.y)+Math.abs(bakedSun.z-sun.z)<.02)return null;
    const target={world,x:sun.x,y:sun.y,z:sun.z};markTerrain(world);
-   bakeJob=bake(world,sun).then(r=>{
-    const old=uniforms.uPacRelief.value;uniforms.uPacRelief.value=r.tex;uniforms.uPacReliefOn.value=1;old?.dispose();
+   const direction=sun.clone();
+   bakeJob=bake(world,direction).then(r=>{
+    const old=uniforms.uPacRelief.value;uniforms.uPacRelief.value=r.tex;uniforms.uPacReliefOn.value=enabled?1:0;old?.dispose();
     bakedSun=target;stats.lastBake=r;return r;
    }).finally(()=>{bakeJob=null;});
    return bakeJob;

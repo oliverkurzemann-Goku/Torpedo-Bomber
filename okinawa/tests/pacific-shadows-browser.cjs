@@ -21,7 +21,7 @@ const pageFile=process.env.OLD_PAGE||'torpedo-carrier.html',tag=process.env.OLD_
 (async()=>{
  await new Promise(r=>server.listen(0,'127.0.0.1',r));
  const base='http://127.0.0.1:'+server.address().port,res={page:pageFile};
- const browser=await chromium.launch({executablePath:executable,headless:true,args:['--no-sandbox','--disable-dev-shm-usage','--use-angle=swiftshader','--enable-unsafe-swiftshader','--single-process','--no-zygote','--in-process-gpu']});
+ const browser=await chromium.launch({executablePath:executable,headless:true,args:['--no-sandbox','--disable-dev-shm-usage','--use-angle=swiftshader','--enable-unsafe-swiftshader']});
  try{
   const page=await browser.newPage({viewport:{width:1194,height:660}});page.setDefaultTimeout(900000);
   const errors=[];page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(/Shader Error|VALIDATE_STATUS|not compiled|ERROR:/.test(m.text()))errors.push(m.text().slice(0,600));});
@@ -39,7 +39,8 @@ const pageFile=process.env.OLD_PAGE||'torpedo-carrier.html',tag=process.env.OLD_
   res.shadows=await page.evaluate(src=>{const grab=eval(src);
    const homes=[];okinawaWorld.root.traverse(o=>{if(o.isInstancedMesh&&o.name==='Coral homes')homes.push(o);});
    // the house with the most neighbours within 150 m (a village, not a lone farm)
-   const m=new THREE.Matrix4(),pts=[];for(let i=0;i<homes[0].count;i++){homes[0].getMatrixAt(i,m);pts.push(new THREE.Vector3().setFromMatrixPosition(m));}
+   const m=new THREE.Matrix4(),pts=[];
+   for(const cell of homes)for(let i=0;i<cell.count;i++){cell.getMatrixAt(i,m);pts.push(new THREE.Vector3().setFromMatrixPosition(m));}
    let bi=0,bn=-1;pts.forEach((p,i)=>{let n=0;for(const q of pts)if(Math.hypot(p.x-q.x,p.z-q.z)<150)n++;if(n>bn){bn=n;bi=i;}});
    const h=pts[bi].clone().applyMatrix4(okinawaWorld.root.matrixWorld);
    // fly a fixed heading, read where the chase camera actually looks, and put the aircraft 330 m back along that line

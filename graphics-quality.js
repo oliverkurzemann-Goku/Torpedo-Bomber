@@ -39,7 +39,7 @@
     let choice=['auto','low','medium','high'].includes(forced)?forced:read()||'auto';
     // Desktop browsers and the M1 iPad both have headroom; Auto begins at Medium
     // on touch devices (unknown GPU) and at High elsewhere.
-    let auto=touch?'medium':'high',ceiling='high',listeners=[];
+    let auto=touch?'medium':'high',ceiling='high',listeners=[],fixedDetail=false;
     const autoStart=auto;
     let slow=0,good=0,cooldown=0,last=null,failed=new Set(),stepping=false;
     // Frame-rate state. Automated browsers (tests) keep 'free' unless the page
@@ -49,19 +49,20 @@
       global.navigator?.webdriver?'free':readFrame()||'hold60';
     let level=0,steps=1,cpuBound=false,winC=0,winT=0,winN=0,goodWins=0,resCool=0,clockT=0,raisedAt=-1e9,raiseAt=0,backoff=30,lastFrame=-1e9,resListeners=[],misses=new Map();
     const target=()=>frameMode==='cap30'?1/30:1/60;
-    const tier=()=>choice==='auto'?auto:choice;
+    const tier=()=>choice==='auto'?(fixedDetail?'high':auto):choice;
     const cap=name=>ORDER[Math.min(ORDER.indexOf(name),ORDER.indexOf(ceiling))];
     // Build 278: Auto steps only change what is cheap to change (resolution,
     // tree range, glow, ground detail). Shadows on/off recompiles every shader
     // and a new anisotropy level re-uploads every texture; on the iPad each Auto
     // step was a visible hitch. Those two stay at the starting tier's values.
-    const pinned=t=>choice!=='auto'?t:Object.assign({},t,{shadows:TIERS[autoStart].shadows,
+    const pinned=t=>choice!=='auto'||fixedDetail?t:Object.assign({},t,{shadows:TIERS[autoStart].shadows,
       shadowSize:TIERS[autoStart].shadowSize,anisotropy:TIERS[autoStart].anisotropy});
     const api={
       ORDER,TIERS,
       get choice(){return choice;},
       get tier(){return cap(tier());},
       get settings(){return pinned(TIERS[cap(tier())]);},
+      get fixedDetail(){return fixedDetail;},
       // True while listeners run for an automatic (not user) step.
       get automatic(){return stepping;},
       get failed(){return [...failed];},
@@ -71,13 +72,18 @@
         if(!['auto','low','medium','high'].includes(next))return api;
         choice=next;if(remember)write(next);slow=good=0;cooldown=3;failed.clear();notify();return api;
       },
+      setFixedDetail(fixed){
+        if(fixedDetail===fixed)return;
+        fixedDetail=fixed;
+        level=0;winT=winC=winN=goodWins=slow=good=0;cpuBound=false;resCool=1;cooldown=3;
+      },
       // A thermal or memory warning lowers the highest permitted tier.
       limit(level){ceiling=ORDER[Math.max(0,Math.min(2,level))];notify();return api;},
       // Frame interval in seconds (unclamped). Returns true when the tier changed.
       // cpuSeconds (optional): script time of the frame. When the script alone
       // misses the target, fewer pixels cannot help; the resolution then stays.
       sample(interval,active=true,cpuSeconds=0){
-        if(!active||!Number.isFinite(interval)||interval<=0||interval>.5)return false;
+        if(fixedDetail||!active||!Number.isFinite(interval)||interval<=0||interval>.5)return false;
         // Build 280: resolution first; the tier only moves once the resolution
         // is at its floor (too slow) or at the tier's full value (fast enough).
         let atFloor=true,atTop=true;
@@ -117,6 +123,7 @@
       onResolution(fn){resListeners.push(fn);return api;},
       // Render pixel ratio for a device/tier maximum, after the frame-rate steps.
       pixelRatio(max){
+        if(fixedDetail){steps=1;return max;}
         const floor=Math.min(max,1);
         const ladder=[max,...LADDER.filter(r=>r<max-.01&&r>=floor-.001)];
         steps=ladder.length;if(frameMode!=='hold60'&&frameMode!=='cap30')level=0;
@@ -128,7 +135,8 @@
         if(now-lastFrame<28)return false;
         lastFrame=now;return true;
       },
-      label(){return (choice==='auto'?'Auto · ':'')+TIERS[cap(tier())].name+(frameMode==='free'?'':' · '+(frameMode==='cap30'?'30':'60'));},
+      label(){return (choice==='auto'?'Auto · ':'')+TIERS[cap(tier())].name+
+        (frameMode==='cap30'?' · 30':fixedDetail?' · Fixed':frameMode==='hold60'?' · 60':'');},
       bindFrameSelect(select){
         if(!select)return api;
         select.value=frameMode;
@@ -227,9 +235,10 @@
           limit:frameMs<18?'none':cpuMs>frameMs*.8||cpuMs>15?'cpu':'gpu'};
         const {triangles,calls}=renderer.__sceneInfo||renderer.info.render;
         const q=options.quality,res=q?.resolutionState;
-        const mode=!q||q.frameMode==='free'?'':q.frameMode==='cap30'?' · 30 FPS mode':
+        const mode=!q||q.frameMode==='free'?'':q.frameMode==='cap30'?' · 30 FPS mode':q.fixedDetail?' · Full resolution':
           ' · 60 FPS mode: step '+(res.level+1)+'/'+res.steps+(res.cpuBound?' (CPU-bound, resolution held)':'');
-        panel.textContent=label+' · '+Math.round(report.fps)+' FPS · P95 '+report.p95.toFixed(1)+' ms\n'+
+        const spikes=options.showSpikes?' · P99 '+sorted[Math.ceil(n*.99)-1].toFixed(1)+' ms · Max '+sorted[n-1].toFixed(1)+' ms':'';
+        panel.textContent=label+' · '+Math.round(report.fps)+' FPS · P95 '+report.p95.toFixed(1)+' ms'+spikes+'\n'+
           (triangles/1e6).toFixed(2)+' M tris · '+calls+' draws · '+Math.round(texMB)+' MB tex · '+renderer.getPixelRatio().toFixed(2)+'×\n'+
           'CPU '+cpuMs.toFixed(1)+' ms (draws '+drawMs.toFixed(1)+') of '+frameMs.toFixed(1)+' ms · limit: '+
           (report.limit==='none'?'none':report.limit==='cpu'?'CPU':'GPU (pixels)')+mode;
