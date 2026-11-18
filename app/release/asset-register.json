@@ -1,13 +1,13 @@
 {
   "schema": 1,
   "reviewedOn": "2026-10-23",
-  "build": 286,
+  "build": 290,
   "status": "OPEN — source declarations checked; no external rights authorization obtained",
   "payload": {
-    "bytes": 166276117,
-    "fileCount": 398,
+    "bytes": 166368097,
+    "fileCount": 403,
     "modelCount": 64,
-    "manifestSha256": "b8949571e0d40d5d13847e677bd3e80949b2dfeacd60560f4ebb7bd0813ccd79"
+    "manifestSha256": "0d82cff306e8fb3ea882c1112edc94bd9285c152275e81b594af28b649143d8f"
   },
   "files": [
     {
@@ -701,6 +701,18 @@
       "kind": "code-or-notice"
     },
     {
+      "path": "carrier-finish.js",
+      "bytes": 3496,
+      "sha256": "b37ea1ef77315b58f7a34ca673e45b6c6fc9b46c811d74ee7821f1e73c630ca9",
+      "kind": "code-or-notice"
+    },
+    {
+      "path": "carrier-outfitting.js",
+      "bytes": 15806,
+      "sha256": "8e29dcda357c5f7cfaf19ef0f8af8ada8056d0392bc63f13f7ebd40e6cdecf47",
+      "kind": "code-or-notice"
+    },
+    {
       "path": "carrier-recovery.js",
       "bytes": 2662,
       "sha256": "d3e22151b060dd78149ba3632390ac4106c1a89ef5a8a288e7dd79c5ce9a7c41",
@@ -750,8 +762,8 @@
     },
     {
       "path": "deck-activity.js",
-      "bytes": 8623,
-      "sha256": "a192ef5f874fd738eea658021fdd0dc821300d00dc805baa17f08e0fc39de32b",
+      "bytes": 8784,
+      "sha256": "56631e60133ba373f0083aa09e08fcfb8022104f0d44a8b8ab9125b4e2988a34",
       "kind": "code-or-notice"
     },
     {
@@ -840,20 +852,20 @@
     },
     {
       "path": "graphics-extras.js",
-      "bytes": 15705,
-      "sha256": "e4f7d03796194e56d783acf6564feaece5896ac1f8d60151311b24ffc391e0f4",
+      "bytes": 16082,
+      "sha256": "2bf0f63ae7122f36e085e29c660e08edc514ae46dd0d092b289e30a20ce6f469",
       "kind": "code-or-notice"
     },
     {
       "path": "graphics-post.js",
-      "bytes": 11077,
-      "sha256": "084d19ac43b32ddbfbfc680ccc31977fa20a16093111c0733c0d41a7a57deed6",
+      "bytes": 16666,
+      "sha256": "f969f03e63f82bb0280e5fec26a777dd860030a744ed25a77ae4ff39a9a766fd",
       "kind": "code-or-notice"
     },
     {
       "path": "graphics-quality.js",
-      "bytes": 15450,
-      "sha256": "91b002ef204f4a44ec90c4753b591f07d0e56663e1c6bf21c798f131ae7680d1",
+      "bytes": 16111,
+      "sha256": "808890d49e002ab84c66fcc4033646b97c1948f7a406baf6f4b14cc878a38800",
       "kind": "code-or-notice"
     },
     {
@@ -883,7 +895,7 @@
     {
       "path": "hangar.html",
       "bytes": 4919,
-      "sha256": "4bdb0ea23343adcafff3a5cefa9eb170295645c3c31d93c939dfa1f48520373e",
+      "sha256": "138b1da4245eea9c3d1265f1a7af0f8d36cabf09394da23fb7c46fa518802d51",
       "kind": "code-or-notice"
     },
     {
@@ -895,7 +907,7 @@
     {
       "path": "index.html",
       "bytes": 7912,
-      "sha256": "71731f0b469d61290d954539adc08fecce1fb6d45b8388102e20a09353fc5563",
+      "sha256": "5f307d2e6f0a92c5a3f7873f9c8ba122b8d303fcc871986a137d268bd96f09df",
       "kind": "code-or-notice"
     },
     {
@@ -906,8 +918,8 @@
     },
     {
       "path": "maritime-weather.js",
-      "bytes": 8759,
-      "sha256": "ceb47ea2de117b52b0fa51de152677c14e7ece1e4b532603efe1469d91f21888",
+      "bytes": 9117,
+      "sha256": "24b5ebbd5b9efc2e6c7a601d00de7bcc9d7cc685134986a5e889bda0ee0ce43d",
       "kind": "code-or-notice"
     },
     {
@@ -948,8 +960,8 @@
     },
     {
       "path": "okinawa/coastal-scenery.js",
-      "bytes": 10892,
-      "sha256": "7bfbd9a0ef48f7101a550668c4bdb149eac62f91fe86040351af86b3d99a499b",
+      "bytes": 11652,
+      "sha256": "d2775202c6b44ce72a1b8dddf3663f5952b800dc958fe8a04bac7f9c65434163",
       "kind": "code-or-notice"
     },
     {
@@ -965,6 +977,18 @@
       "kind": "geographic-data"
     },
     {
+      "path": "okinawa/island-detail.js",
+      "bytes": 21254,
+      "sha256": "300682bdaecedf0a6c013ee87b2e592a3f4df3c3797ba40be01a14c0d4afc786",
+      "kind": "code-or-notice"
+    },
+    {
+      "path": "okinawa/vegetation.js",
+      "bytes": 16618,
+      "sha256": "d802fffa12fd272e955a64f46f3518963099521494d2f33abb7e03ada793b532",
+      "kind": "code-or-notice"
+    },
+    {
       "path": "okinawa/viewer.js",
       "bytes": 12498,
       "sha256": "a431936b08b9a39f5b81e4be935d8af172dd56a962a3d10588a2f8a012b90456",
@@ -972,8 +996,8 @@
     },
     {
       "path": "okinawa/world.js",
-      "bytes": 57600,
-      "sha256": "f69ebf3262f70f6f32d12692b830d481e636a119899e11372603cc18720ebfb4",
+      "bytes": 66029,
+      "sha256": "2965f5db7d74692798eb1527f64049af33bd2f2656befc87991ed9b5c9588bdd",
       "kind": "code-or-notice"
     },
     {
@@ -1007,9 +1031,15 @@
       "kind": "code-or-notice"
     },
     {
+      "path": "pacific-ultra-finish.js",
+      "bytes": 6613,
+      "sha256": "aca907b6ea9e0069cc5db97a1eff805277f308c88402882f4f2bc55d3b54aecf",
+      "kind": "code-or-notice"
+    },
+    {
       "path": "pacific-ultra-land.js",
-      "bytes": 9682,
-      "sha256": "cc4d03c75f7d79d657a205a563d35f9b9e8951ac2e9aa1e61d260023fa2173f7",
+      "bytes": 11389,
+      "sha256": "abc91e78a0fc227a67a3838c586230e9538e3a52f7ee98c7a42a6e876378c1d9",
       "kind": "code-or-notice"
     },
     {
@@ -1044,8 +1074,8 @@
     },
     {
       "path": "remagen-mission.html",
-      "bytes": 611781,
-      "sha256": "e1f5780781013e7b8878f38962898349e059e8a3c321c4fa7288eccbc43c53de",
+      "bytes": 612681,
+      "sha256": "0632a227bd7925da8ae9746550303b14df501be958389feb201a1827c2193caa",
       "kind": "code-or-notice"
     },
     {
@@ -1086,8 +1116,8 @@
     },
     {
       "path": "ship-wakes.js",
-      "bytes": 6169,
-      "sha256": "640b056671d5a08122c1140790cfbf900caa948424dd26a3eb56abd063603779",
+      "bytes": 6568,
+      "sha256": "b837abd188648b079241e4372fcc23aa87ac7e98738c5f7d179dfcf53bb23a0a",
       "kind": "code-or-notice"
     },
     {
@@ -1230,8 +1260,8 @@
     },
     {
       "path": "terrain-system/RhineUltra.js",
-      "bytes": 40373,
-      "sha256": "e02184f7a3f10bf90ac70b55e10ff318e87f609d4ad6de129e52920b72c2ab8d",
+      "bytes": 42449,
+      "sha256": "8e49614990670276d39d1e486245b1ea1e5aa50ffd61192bcb998bbf8b7a2838",
       "kind": "code-or-notice"
     },
     {
@@ -2316,8 +2346,8 @@
     },
     {
       "path": "torpedo-carrier.html",
-      "bytes": 571066,
-      "sha256": "e18cfb578cc3f5a28e5d08cf28284ac28bb6b2f0ab20ba84e006f22234b4628d",
+      "bytes": 577842,
+      "sha256": "239eefb8f11a54a33a279578477c1cd22f31b0a2fe2ccef8eeef2a50c042296e",
       "kind": "code-or-notice"
     },
     {

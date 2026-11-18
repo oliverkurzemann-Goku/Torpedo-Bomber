@@ -10,11 +10,11 @@
   const ORDER=['low','medium','high'];
   const TIERS={
     low:{name:'Low',pixelRatio:1,shadows:false,shadowSize:0,shadowRange:0,treeRange:.7,bloom:false,grade:true,
-      anisotropy:2,groundDetail:false,nearTrees:0,contrails:false,heatHaze:false,windowLight:true},
+      anisotropy:2,groundDetail:false,nearTrees:0,contrails:false,heatHaze:false,windowLight:true,envLight:false,softShadows:false},
     medium:{name:'Medium',pixelRatio:1.5,shadows:true,shadowSize:1024,shadowRange:200,treeRange:1,bloom:false,grade:true,
-      anisotropy:4,groundDetail:true,nearTrees:.5,contrails:true,heatHaze:false,windowLight:true},
+      anisotropy:4,groundDetail:true,nearTrees:.5,contrails:true,heatHaze:false,windowLight:true,envLight:true,softShadows:false},
     high:{name:'High',pixelRatio:2,shadows:true,shadowSize:2048,shadowRange:360,treeRange:1.25,bloom:true,grade:true,
-      anisotropy:8,groundDetail:true,nearTrees:1,contrails:true,heatHaze:true,windowLight:true}
+      anisotropy:8,groundDetail:true,nearTrees:1,contrails:true,heatHaze:true,windowLight:true,envLight:true,softShadows:true}
   };
   const KEY='graphicsQuality';
   const read=()=>{try{const v=global.localStorage.getItem(KEY);return v==='low'||v==='medium'||v==='high'||v==='auto'?v:null;}catch(e){return null;}};

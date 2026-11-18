@@ -149,6 +149,6 @@ const specs=require('../../scripts/lib/okinawa-scenery/specs.cjs');
  assert(flock.flightHeight>20,'Sea birds react to a low flyby');
  detail.update(.32,30000,0,900);
  assert(detail.group.children.every(o=>!o.visible),'Remote detail and weather are culled');
- console.log('Build 289 Okinawa geography, scenery and activity:',JSON.stringify(stats));
+ console.log('Build 290 Okinawa geography, scenery and activity:',JSON.stringify(stats));
  updated.dispose();
 })().catch(e=>{console.error(e);process.exitCode=1;});

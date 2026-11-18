@@ -214,6 +214,9 @@
       configure(next){
         if(next.shadows!==undefined&&(next.shadows!==state.shadows||next.shadowSize!==state.shadowSize||next.shadowRange!==state.shadowRange))
           setShadows(!!next.shadows,next.shadowSize||2048,next.shadowRange||200);
+        // Build 290: softer shadow edges on High. r128's PCF kernel spreads its nine taps over shadow.radius texels:
+        // 2.4 texels (0.84 m at the High range) instead of 1 blur the edge like a real penumbra; same nine taps, same cost.
+        if(next.softShadows!==undefined&&sun?.shadow){sun.shadow.radius=next.softShadows?2.4:1;state.softShadows=!!next.softShadows;}
         if(next.contrails!==undefined&&next.contrails!==state.contrails){
           state.contrails=next.contrails;
           if(next.contrails&&!trails)trails=makeTrails();

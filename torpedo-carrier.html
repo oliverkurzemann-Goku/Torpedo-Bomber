@@ -380,7 +380,7 @@ body.secretSpaceActive #fireBtn{border-color:#73d9fc;color:#d6f9ff}
   <div id="perfHud" hidden></div>
   <div id="ltn" style="position:fixed;inset:0;background:#e6ecff;opacity:0;pointer-events:none;z-index:40;"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 289</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 290</div>
 
   <!-- Optical landing aid -->
   <div id="lso">
@@ -436,7 +436,7 @@ body.secretSpaceActive #fireBtn{border-color:#73d9fc;color:#d6f9ff}
 
 <!-- Menu -->
 <div class="overlay" id="menu" data-campaign="pacific">
-  <div class="menuTop"><a id="selBtn" href="index.html?v=289">&#9664; Change Game</a><span class="menuMeta">PACIFIC OPERATIONS<br>BUILD 289</span></div>
+  <div class="menuTop"><a id="selBtn" href="index.html?v=290">&#9664; Change Game</a><span class="menuMeta">PACIFIC OPERATIONS<br>BUILD 290</span></div>
   <div class="card menuCard">
     <aside class="menuOverview" aria-label="Campaign and pilot options">
     <div class="campaignArt" aria-hidden="true"></div>
@@ -471,7 +471,7 @@ body.secretSpaceActive #fireBtn{border-color:#73d9fc;color:#d6f9ff}
     </aside>
     <section class="missionPanel" aria-label="Mission selection">
       <div class="secLbl">Choose your sortie · Pacific operations</div>
-      <a class="hangarLink" href="hangar.html?theatre=pacific&amp;v=287">CUSTOM MISSION · CHOOSE AIRCRAFT &amp; LOADOUT →</a>
+      <a class="hangarLink" href="hangar.html?theatre=pacific&amp;v=290">CUSTOM MISSION · CHOOSE AIRCRAFT &amp; LOADOUT →</a>
 <div id="missionSel" role="group" aria-label="Pacific missions"></div>
       <div id="missionBlurb" class="missionBlurb" aria-live="polite"></div>
       <div class="menuConfig">
@@ -543,11 +543,12 @@ body.secretSpaceActive #fireBtn{border-color:#73d9fc;color:#d6f9ff}
 <script src="okinawa/coastal-templates.js?v=1"></script>
 <script src="okinawa/coastal-scenery.js?v=289"></script>
 <script src="okinawa/island-detail.js?v=289"></script>
-<script src="okinawa/world.js?v=289"></script>
+<script src="okinawa/vegetation.js?v=290"></script>
+<script src="okinawa/world.js?v=290"></script>
 <script src="campaign.js?v=1"></script>
 <script src="game-runtime.js?v=282"></script>
-<script src="graphics-quality.js?v=287"></script>
-<script src="graphics-post.js?v=286"></script>
+<script src="graphics-quality.js?v=290"></script>
+<script src="graphics-post.js?v=290"></script>
 <script src="pacific-ultra-land.js?v=287"></script>
 <script src="pacific-ultra-finish.js?v=287"></script>
 <script src="aircraft-finish.js?v=277"></script>
@@ -1917,10 +1918,23 @@ function buildSea(){
         if(uCoastActive>0.5){
           vec2 shoreUV=(vWorld.xz-vec2(10000.0,0.0)+vec2(8000.0))/16000.0;
           if(all(greaterThanEqual(shoreUV,vec2(0.0))) && all(lessThanEqual(shoreUV,vec2(1.0)))){
-            vec4 encoded=texture2D(uCoast,shoreUV);
-            float shoreMetres=(floor(encoded.r*255.0+0.5)*256.0+floor(encoded.g*255.0+0.5))-32768.0;
+            // Build 290: the 16-bit distance can not be filtered by the GPU (nearest texels), so the shoreline was a
+            // 15.6-m staircase. Interpolate the four decoded samples around the point instead (grid = 1024 samples).
+            vec2 g=shoreUV*1023.0,g0=floor(g),gf=g-g0;
+            vec4 e00=texture2D(uCoast,(g0+vec2(0.5,0.5))/1024.0),e10=texture2D(uCoast,(g0+vec2(1.5,0.5))/1024.0);
+            vec4 e01=texture2D(uCoast,(g0+vec2(0.5,1.5))/1024.0),e11=texture2D(uCoast,(g0+vec2(1.5,1.5))/1024.0);
+            float s00=floor(e00.r*255.0+0.5)*256.0+floor(e00.g*255.0+0.5),s10=floor(e10.r*255.0+0.5)*256.0+floor(e10.g*255.0+0.5);
+            float s01=floor(e01.r*255.0+0.5)*256.0+floor(e01.g*255.0+0.5),s11=floor(e11.r*255.0+0.5)*256.0+floor(e11.g*255.0+0.5);
+            float shoreMetres=mix(mix(s00,s10,gf.x),mix(s01,s11,gf.x),gf.y)-32768.0;
             if(shoreMetres>5.0)discard;
-            shelf=encoded.b>0.0?encoded.b*510.0:175.0;
+            // Build 290: the sea mesh has 44-m triangles; each wave tilts a whole triangle, and on a nearly flat beach
+            // the sea/terrain intersection followed the triangles (a staircase along every Okinawa shore). End the water
+            // per pixel where its drawn height falls below the beach profile (the same profile as OkinawaWorld.getHeight).
+            float beach=shoreMetres<0.0?-min(1.0,-shoreMetres/22.0):shoreMetres*0.019;
+            if(vWorld.y<beach+0.12)discard;
+            // the reef shelf width (blue channel) is nearest-sampled too: bilinear it the same way (0 = default 175 m)
+            vec4 sh=vec4(e00.b,e10.b,e01.b,e11.b);sh=mix(vec4(175.0),sh*510.0,step(0.001,sh));
+            shelf=mix(mix(sh.x,sh.y,gf.x),mix(sh.z,sh.w,gf.x),gf.y);
             coastalShallow=smoothstep(-shelf-48.0,-8.0,shoreMetres);shore=shoreMetres;
           }
         }
@@ -6887,7 +6901,7 @@ function loadPlaneModel(){
       }
       window.__eyeDbg='EYE '+COCKPIT_EYE.map(v=>v.toFixed(2)).join('/');
       const btEl=document.getElementById('buildTag');
-      if(btEl) btEl.textContent='BUILD 289 · '+window.__eyeDbg;
+      if(btEl) btEl.textContent='BUILD 290 · '+window.__eyeDbg;
       let seat=null;
       model.traverse(function(o){
         if(!o.isMesh||!o.material) return;
@@ -8411,7 +8425,7 @@ function setupUIButtons(){
   if(dbgT2) dbgT2.onclick=()=>{
     dbgOn=!dbgOn; GameRuntime.storage.setItem('dbgOn',dbgOn?'1':'0');
     const db=document.getElementById('dbgBox'); if(db) db.textContent=dbgOn?'✓':'';
-    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 289'; }
+    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 290'; }
   };
   const lu=document.getElementById('lookUp'), ld=document.getElementById('lookDn');
   let _lookT=0;
@@ -8427,7 +8441,7 @@ function setupUIButtons(){
   if(pb) pb.addEventListener('pointerdown',e=>{ e.preventDefault(); togglePause(); });
   const rb=document.getElementById('resumeBtn'); if(rb) rb.onclick=resumeGame;
   const mb=document.getElementById('menuBtn'); if(mb) mb.onclick=exitToMenu;
-  document.getElementById('pauseMainMenu').onclick=async()=>{globalThis.sortieCheckpoint?.save();await globalThis.sortieCheckpoint?.flush();exitToMenu(true);window.location.href='index.html?v=289';};
+  document.getElementById('pauseMainMenu').onclick=async()=>{globalThis.sortieCheckpoint?.save();await globalThis.sortieCheckpoint?.flush();exitToMenu(true);window.location.href='index.html?v=290';};
   document.getElementById('resultBtn').onclick=()=>{
     // the logbook borrows this screen from the menu — send the player straight back
     if(logbookOpen){ logbookOpen=false; showOverlay('menu'); return; }
@@ -8436,7 +8450,7 @@ function setupUIButtons(){
       clearSecretSpace();hideOverlays();P.alive=true;state=ST.FLIGHT;enterSecretSpace(true);clock.getDelta();return;
     }
     const last=mission===MISSIONS.length-2;
-    if(MISSIONS[mission]?.custom){window.location.href='hangar.html?theatre=pacific&v=287';return;}
+    if(MISSIONS[mission]?.custom){window.location.href='hangar.html?theatre=pacific&v=290';return;}
     if(wasWin){
       if(MISSIONS[mission] && MISSIONS[mission].free){ startMission(mission); return; }  // stay in Free Flight
       if(MISSIONS[mission] && MISSIONS[mission].qual){ showOverlay('menu'); return; }  // qual -> ready room
@@ -8767,7 +8781,7 @@ function animate(){
     notice.style.cssText='position:fixed;inset:0;z-index:999998;background:rgba(15,20,15,.95);color:#e8ddbc;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px;text-align:center;font:16px system-ui';
     const title=document.createElement('h2');title.textContent='Simulation interrupted';
     const detail=document.createElement('p');
-    detail.textContent='BUILD 289 · '+(MISSIONS[mission]?.sub||'Menu')+' · '+error.message;
+    detail.textContent='BUILD 290 · '+(MISSIONS[mission]?.sub||'Menu')+' · '+error.message;
     const reload=document.createElement('button');reload.textContent='Reload game';
     reload.style.cssText='padding:12px 24px;font:inherit';reload.onclick=()=>location.reload();
     notice.appendChild(title);notice.appendChild(detail);notice.appendChild(reload);document.body.appendChild(notice);

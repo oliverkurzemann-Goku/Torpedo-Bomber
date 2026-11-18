@@ -233,6 +233,33 @@ class RhineUltra {
     return mesh;
   }
 
+  // Build 287: image-based ambient light from this sky. The sky (without the sun disc) and a ground-coloured
+  // lower hemisphere are captured into a pre-filtered environment map once per weather/sky change; standard
+  // materials then take their ambient light and their faint reflections from it (blue from above, warmer
+  // towards the sun, darker under cloud) instead of from a two-colour hemisphere light alone.
+  bakeEnvironment(renderer, {scale=.75, ground=0x55603f}={}) {
+    if(!this.envScene){
+      const skyMaterial=this.sky.material.clone();
+      skyMaterial.uniforms=Object.assign({},this.uniforms,{ultraEnvScale:{value:scale}});
+      skyMaterial.fragmentShader='uniform float ultraEnvScale;\n'+skyMaterial.fragmentShader
+        .replace('gl_FragColor=vec4(mix(colour,vec3(.99,.91,.71),solarDisc),1.0);','gl_FragColor=vec4(colour*ultraEnvScale,1.0);');
+      const sky=new THREE.Mesh(this.sky.geometry,skyMaterial);sky.frustumCulled=false;
+      const groundMaterial=new THREE.MeshBasicMaterial({color:ground,side:THREE.BackSide,fog:false});
+      const floor=new THREE.Mesh(new THREE.SphereGeometry(10,24,8,0,Math.PI*2,Math.PI*.515,Math.PI*.485),groundMaterial);
+      this.envScene=new THREE.Scene();this.envScene.add(sky,floor);
+      this.envParts={skyMaterial,groundMaterial,floor,ground:new THREE.Color(ground)};
+      this.pmrem=new THREE.PMREMGenerator(renderer);
+    }
+    const parts=this.envParts,u=this.uniforms;
+    parts.skyMaterial.uniforms.ultraEnvScale.value=scale;
+    // The ground bounces sunlight: dim under heavy cloud and at night.
+    parts.groundMaterial.color.copy(parts.ground).multiplyScalar(scale*(.35+.65*u.ultraDaylight.value));
+    const previous=this.envTarget;
+    this.envTarget=this.pmrem.fromScene(this.envScene,0,.1,100);
+    previous?.dispose();
+    return this.envTarget.texture;
+  }
+
   setWeather(w, night) {
     const u=this.uniforms;
     const light=night?0:Math.max(0,Math.min(1,(w.sun-.22)*1.35));
@@ -740,6 +767,8 @@ class RhineUltra {
     this.roofTrim.geometry.dispose();
     this.roofTrim.material.dispose();
     this.scene.remove(this.sky);
+    if(this.envScene){this.envParts.skyMaterial.dispose();this.envParts.groundMaterial.dispose();this.envParts.floor.geometry.dispose();
+      this.envTarget?.dispose();this.pmrem.dispose();this.envScene=null;this.envTarget=null;}
     this.sky.geometry.dispose();this.sky.material.dispose();
     for(const [material,{before,cacheKey}] of this.hooks){
       material.onBeforeCompile=before;material.customProgramCacheKey=cacheKey;material.needsUpdate=true;
