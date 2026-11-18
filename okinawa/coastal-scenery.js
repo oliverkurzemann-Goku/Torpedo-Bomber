@@ -106,8 +106,11 @@ function makePlacementPlan(world,templates){
    if(p){entries.push(p);placed.push(p);tris+=added;}
   }
   if(!entries.length)continue;
-  for(const kind of zone.wild??[]){
-   const place=find(world,zone,'reef-foam',kind==='dolphin'?26:65,placed,++serial);
+  const wild=world.islandDetail&&zone.name==='Zanpa cliffs'?['tern']:zone.wild??[];
+  for(const kind of wild){
+   const place=world.islandDetail&&kind==='egret'
+    ? find(world,{...zone,x:zone.x+280},'pandanus',27,placed,++serial)
+    : find(world,zone,'reef-foam',kind==='dolphin'?26:65,placed,++serial);
    if(place)sites[kind].push(place);
   }
   byZone.push({zone,entries,triangles:tris});
@@ -165,7 +168,7 @@ function build(world,templates,{seaHeight=()=>.1,carrierDeparture=false}={}){
    batch.name=kind+' '+mesh.name;root.add(batch);
    return {batch,rest:mesh.matrix.clone(),side:mesh.name==='WingLeft'?-1:mesh.name==='WingRight'?1:0};
   });
-  active.push({kind,config,pieces,sites:plan.sites[kind],site:null});
+  active.push({kind,config,pieces,sites:plan.sites[kind],site:null,flushUntil:-1,flightHeight:0});
  }
  const retained=new Set(active.flatMap(e=>e.pieces.map(p=>p.batch.geometry)));
  for(const group of Object.values(templates))for(const m of group.children)if(!retained.has(m.geometry))m.geometry.dispose();
@@ -184,9 +187,14 @@ function build(world,templates,{seaHeight=()=>.1,carrierDeparture=false}={}){
     if(p.far)p.far.visible=visible&&!nearby;
    });
    for(const e of active){
-    let distance=e.config.range;e.site=null;
+    let distance=e.config.range;const old=e.site;e.site=null;
     if(y<360)for(const p of e.sites){
      const d=Math.hypot(p.x-x,p.z-z);if(d<distance){distance=d;e.site=p;}
+    }
+    if(e.site!==old){e.flightHeight=0;e.flushUntil=0;}
+    if(world.islandDetail&&e.site&&e.kind!=='dolphin'){
+     const h=Math.max(0,world.getSurfaceHeight(e.site.x,e.site.z));
+     if(distance<150&&y-h<90&&elapsed>e.flushUntil+18)e.flushUntil=elapsed+6;
     }
     for(const {batch} of e.pieces)batch.visible=Boolean(e.site);
    }
@@ -194,12 +202,15 @@ function build(world,templates,{seaHeight=()=>.1,carrierDeparture=false}={}){
   for(const e of active){
    if(!e.site)continue;
    const {kind,config,pieces,site}=e;
+   e.flightHeight+=( (elapsed<e.flushUntil?42:0)-e.flightHeight)*Math.min(1,dt*(elapsed<e.flushUntil?1.1:.42));
    for(let i=0;i<config.count;i++){
     const phase=i*2.399963,a=elapsed*config.speed+phase*.26;
     const radius=config.radius*(.53+.47*(i%5)/4);
     const xx=site.x+Math.cos(a)*radius,zz=site.z+Math.sin(a)*radius*.84;
     const dolphin=kind==='dolphin',leap=Math.sin(elapsed*1.7+i*.54);
-    animalObject.position.set(xx,dolphin?seaHeight(xx,zz)-.6+Math.max(0,leap)*1.27:config.alt+1.6*(i%4)+2*Math.sin(a+phase),zz);
+    const terrain=world.islandDetail&&!dolphin?Math.max(0,world.getSurfaceHeight(xx,zz)):0;
+    animalObject.position.set(xx,dolphin?seaHeight(xx,zz)-.6+Math.max(0,leap)*1.27:
+     terrain+config.alt+e.flightHeight+(world.islandDetail?2.4*(i%5):1.6*(i%4))+2*Math.sin(a+phase),zz);
     animalObject.rotation.set(dolphin?-.31*Math.cos(elapsed*1.7+i*.54):.06*Math.sin(a+phase),
      Math.atan2(-Math.sin(a),.84*Math.cos(a)),dolphin?0:.13*Math.cos(a+phase));
     animalObject.updateMatrix();

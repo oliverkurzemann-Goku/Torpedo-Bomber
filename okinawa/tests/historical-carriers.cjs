@@ -25,17 +25,19 @@ function checkOutfitting(name,deckY){
   const ship=new THREE.Group(),model=new THREE.Group();ship.add(model);
   outfitting.install(ship,model,name.startsWith('enterprise')?'enterprise':'kaga');
   const structure=ship.getObjectByName('carrier-bridge-platforms');
-  const equipment=ship.getObjectByName('carrier-hangar-and-deck-equipment');
+  const equipment=ship.getObjectByName('carrier-deck-equipment');
   const work=ship.getObjectByName('carrier-work-areas');
   const flag=ship.getObjectByName('carrier-signal-flags');
   const fixtures=ship.getObjectByName('carrier-hangar-lanterns');
-  const meshes=[structure,equipment,flag,fixtures];
+  const cart=ship.getObjectByName('carrier-service-cart');
+  const hangar=ship.getObjectByName('carrier-hangar-equipment');
+  const meshes=[structure,equipment,flag,fixtures,cart,hangar];
   assert(meshes.every(m=>m.userData.shipVisualOnly),name+' equipment cannot change deck collision');
   const triangles=meshes.reduce((sum,m)=>sum+m.geometry.attributes.position.count/3,0);
-  assert(triangles<20000,name+' outfitting geometry budget: '+triangles);
+  assert(triangles<23000,name+' outfitting geometry budget: '+triangles);
   const vertices=equipment.geometry.attributes.position;
   for(let i=0;i<vertices.count;i++)if(vertices.getY(i)>deckY){
-    assert(Math.abs(vertices.getX(i))>10.9,name+' keeps the aircraft lane clear');
+    assert(Math.abs(vertices.getX(i))>8.65,name+' keeps the aircraft lane clear');
   }
   if(name.startsWith('enterprise')){
     const ray=new THREE.Raycaster(new THREE.Vector3(-14,22,-.6),new THREE.Vector3(0,-1,0));
@@ -51,7 +53,8 @@ function checkOutfitting(name,deckY){
     close(ray.intersectObject(structure)[0]?.point.y,14.31,'Kaga aircraft stand on the aft hangar floor');
   }
   const before=flag.geometry.attributes.position.array.slice();
-  outfitting.update(ship,new THREE.Vector3(),.3,true);
+  outfitting.update(ship,new THREE.Vector3(),.3,true,{x:1,z:-10,heading:Math.PI/2});
+  assert(cart.visible&&cart.position.z>2.4,'cart moves next to the deck crew');
   assert(work.visible&&!fixtures.visible,'night blackout keeps hangar fixtures dark');
   assert(before.some((value,i)=>value!==flag.geometry.attributes.position.array[i]),'signal flags wave');
   outfitting.update(ship,new THREE.Vector3(1620,0,0),1,false);

@@ -21,7 +21,17 @@ const townPlans=[
 ];
 const farmBelts=[[-4310,-1670,420,350],[-3930,-1400,385,280],[-3700,-80,410,370],[-2770,700,470,380],[-3200,900,400,320]];
 const cropColors=[[163,135,78],[184,160,104],[127,140,73],[108,127,65],[163,124,81],[137,147,95]];
-const openCoast=[191,183,149],airfieldColor=[124,122,94];
+const fieldPaint=[[175,153,85],[157,114,75],[117,135,58],[185,158,103],[141,150,87],[139,95,61],[96,124,57],[162,132,95]];
+function workedField(x,z){
+ const u=x+43*Math.sin(z*.006)+14*Math.sin(z*.021+x*.003);
+ const v=z+34*Math.sin(x*.007)-16*Math.sin(x*.016-z*.004);
+ const row=Math.floor(v/105),width=109+hash(row,8)*102,offset=hash(row,17)*width;
+ const col=Math.floor((u+offset)/width),f=hash(col+81,row-47),p=u+offset-col*width,q=v-row*105;
+ const edge=1-smooth(2,10,Math.min(p,width-p,q,105-q));
+ const angle=f*2.4,rows=Math.cos((Math.cos(angle)*u+Math.sin(angle)*v)*.25);
+ return [fieldPaint[Math.min(7,Math.floor(f*8))],(rows*3+edge*(f>.54?16:-19))];
+}
+const openCoast=[191,183,149],airfieldColor=[124,122,94],redSoil=[152,103,71],valleyGreen=[56,83,49],limestone=[164,158,137];
 function grovePattern(x,z){
  const warp=noise(x*.004,z*.004);
  return .68*noise(x*.005+warp,z*.005-warp)+.32*noise(x*.012+19,z*.012-31);
@@ -68,7 +78,7 @@ function frondGeometry(){
 class OkinawaWorld{
  constructor(data, options={}){
   this.data=data;this.root=new THREE.Group();this.root.name='OkinawaEnvironment';this.terrain=new THREE.Group();this.terrain.name='GeographicTerrain';this.root.add(this.terrain);
-  this.tiles=new Map();this.size=16000;this.half=8000;this.mapSize=1024;this.objectCount=0;this.vegetationDensity=options.vegetationDensity===undefined?1:clamp(options.vegetationDensity,.1,1);this.time={value:0};this.warm={value:0};this.sun=new THREE.Vector3(-.48,.72,.46).normalize();this.materials=[];this.decorations=[];this.houseGrid=new Map();this.houseSites=[];this.nearBuildings=[];this.detailTemplates=[];this.fortifications=[];this.serviceArea=Boolean(options.airfieldActivity);this.coastalOptions=options.coastal;
+  this.tiles=new Map();this.size=16000;this.half=8000;this.mapSize=1024;this.objectCount=0;this.vegetationDensity=options.vegetationDensity===undefined?1:clamp(options.vegetationDensity,.1,1);this.time={value:0};this.warm={value:0};this.sun=new THREE.Vector3(-.48,.72,.46).normalize();this.materials=[];this.decorations=[];this.houseGrid=new Map();this.houseSites=[];this.nearBuildings=[];this.detailTemplates=[];this.fortifications=[];this.serviceArea=Boolean(options.airfieldActivity);this.coastalOptions=options.coastal;this.islandDetail=!!options.islandDetail;
   for(const t of data.tiles){const bytes=Uint8Array.from(atob(t.dem),c=>c.charCodeAt(0)),d=new DataView(bytes.buffer);if(String.fromCharCode(...bytes.slice(0,4))!=='DEM1'||d.getUint16(4,true)!==65||bytes.length!==16916)throw Error('Invalid DEM tile '+t.x+','+t.z);const h=new Float32Array(4225);for(let i=0;i<h.length;i++){h[i]=d.getFloat32(16+i*4,true);if(!Number.isFinite(h[i]))throw Error('Non-finite DEM sample');}this.tiles.set(t.x+','+t.z,h);}
  }
  rawHeight(x,z){
@@ -92,7 +102,8 @@ class OkinawaWorld{
    const near=(this.rawHeight(x-125,z)+this.rawHeight(x+125,z)+this.rawHeight(x,z-125)+this.rawHeight(x,z+125))*.25;
    const far=(this.rawHeight(x-280,z)+this.rawHeight(x+280,z)+this.rawHeight(x,z-280)+this.rawHeight(x,z+280))*.25;
    const ridges=clamp((h-near)*1.15+(h-far)*.40,-65,70);
-   offsets[j*terrainSamples+i]=weight*(Math.min(155,(h-48)*.48)+ridges);
+   const cleft=this.islandDetail?clamp((h-near)*.38,-11,12)+(noise(x*.013,z*.013)-.5)*3.8:0;
+   offsets[j*terrainSamples+i]=weight*(Math.min(155,(h-48)*.48)+ridges+cleft);
   }
   this.highlandOffsets=offsets;
  }
@@ -141,6 +152,7 @@ class OkinawaWorld{
    let start=-1,d=Infinity;for(const k of nodes){const p=point(k),dist=Math.hypot(p[0]-c[0],p[1]-c[1]);if(dist<d){d=dist;start=k;}}if(start<0||d>2200||d<200)return;const path=route(start,end);if(path)routes.push({path,width:2.6,kind:'track'});
   });
   this.connectTownRoads(routes);
+  if(this.islandDetail)scope.OkinawaIslandDetail?.connect(this,routes,airfieldSite);
   this.roadRoutes=routes;this.roadGrid=new Map();const buckets={road:[],track:[]};
   const clip=(poly,a,b)=>{const side=p=>(b[0]-a[0])*(p[1]-a[1])-(b[1]-a[1])*(p[0]-a[0]),out=[];for(let i=0;i<poly.length;i++){const p=poly[i],q=poly[(i+1)%poly.length],sp=side(p),sq=side(q);if(sp>=-1e-7)out.push(p);if((sp>=0)!==(sq>=0)){const f=sp/(sp-sq);out.push([p[0]+(q[0]-p[0])*f,p[1]+(q[1]-p[1])*f]);}}return out;};
   const strip=(a,b,width,vertices,offset=.14)=>{
@@ -242,8 +254,23 @@ class OkinawaWorld{
   for(let i=0;i<dist.length;i++)dist[i]*=16000/(n-1)*(this.land[i]?1:-1);
   ctx.fillStyle='#000';ctx.fillRect(0,0,n,n);this.paintPolygons(ctx,'forest','#ff0000');this.paintPolygons(ctx,'fields','#00ff00');this.paintPolygons(ctx,'airfields','#0000ff');this.biomes=ctx.getImageData(0,0,n,n).data;
   this.extendFarmBelts();
-  const sdf=new Uint8Array(n*n*4);for(let i=0;i<n*n;i++){const d=clamp(Math.round(dist[i]+32768),0,65535);sdf[i*4]=d>>8;sdf[i*4+1]=d&255;sdf[i*4+2]=0;sdf[i*4+3]=255;}
+  const sdf=new Uint8Array(n*n*4),stride=16000/(n-1);
+  for(let i=0;i<dist.length;i++){
+   const d=clamp(Math.round(dist[i]+32768),0,65535);
+   sdf[i*4]=d>>8;sdf[i*4+1]=d&255;sdf[i*4+3]=255;
+   if(this.islandDetail&&dist[i]<34&&dist[i]>-530){
+    const x=(i%n)*stride-8000,z=Math.floor(i/n)*stride-8000;
+    sdf[i*4+2]=Math.round(this.shelfWidth(x,z,dist[i])/2);
+   }
+  }
   this.coastTexture=new THREE.DataTexture(sdf,n,n,THREE.RGBAFormat);this.coastTexture.minFilter=this.coastTexture.magFilter=THREE.NearestFilter;this.coastTexture.needsUpdate=true;
+ }
+ shelfWidth(x,z,d){
+  const dx=this.shoreDistance(x+32,z)-this.shoreDistance(x-32,z);
+  const dz=this.shoreDistance(x,z+32)-this.shoreDistance(x,z-32);
+  const scale=(92-d)/Math.max(1,Math.hypot(dx,dz));
+  const cx=x+dx*scale,cz=z+dz*scale,h=this.rawHeight(cx,cz);
+  return 64+(1-smooth(15,42,h))*(96+noise(cx*.004+5,cz*.004)*275);
  }
  extendFarmBelts(){
   const n=this.mapSize,step=16000/(n-1);
@@ -264,7 +291,7 @@ class OkinawaWorld{
  biome(x,z){const n=this.mapSize,i=clamp(Math.round((x+8000)/16000*(n-1)),0,n-1),j=clamp(Math.round((z+8000)/16000*(n-1)),0,n-1),k=(j*n+i)*4;return [this.biomes[k]/255,this.biomes[k+1]/255,this.biomes[k+2]/255];}
  buildGroundTexture(){
   const n=2048,c=canvas(n),ctx=c.getContext('2d'),im=ctx.createImageData(n,n);
-  const size=terrainSamples,relief=new Float32Array(size*size),groves=new Float32Array(size*size);
+  const size=terrainSamples,relief=new Float32Array(size*size),groves=new Float32Array(size*size),rock=new Float32Array(size*size),wet=new Float32Array(size*size);
   for(let j=0;j<size;j++)for(let i=0;i<size;i++){
    const x=i*terrainStep-8000,z=j*terrainStep-8000,k=j*size+i,d=this.shoreDistance(x,z);
    if(d<-24)continue;
@@ -274,6 +301,11 @@ class OkinawaWorld{
    const hollow=clamp(((east+west+south+north)*.25-h)/52,0,.18);
    relief[k]=smooth(22,150,d)*clamp(slope-hollow,-.45,.24);
    groves[k]=grovePattern(x,z);
+   if(this.islandDetail){
+    const grade=Math.hypot(east-west,south-north)/(2*terrainStep);
+    rock[k]=smooth(.44,.95,grade)*(.48+.52*noise(x*.018,z*.018));
+    wet[k]=smooth(.015,.13,hollow)*(1-smooth(120,250,h));
+   }
   }
   for(let j=0;j<n;j++)for(let i=0;i<n;i++){
    const x=i/(n-1)*16000-8000,z=j/(n-1)*16000-8000,d=this.shoreDistance(x,z),k=(j*n+i)*4;
@@ -287,13 +319,21 @@ class OkinawaWorld{
    const cover=mix(glades*.69,.85+.15*grove,continuous);
    const open=[73+18*broad,97+22*broad,62+16*broad],woods=[22+18*broad,46+20*broad,36+15*broad];
    const coast=clamp(1-d/70,0,1)*clamp(1-h/42,.18,1);
+   const cliff=this.islandDetail?this.rasterSample(rock,x,z,size):0;
+   const valley=this.islandDetail?this.rasterSample(wet,x,z,size):0;
+   const bank=this.islandDetail?smooth(.49,.79,broad)*smooth(.45,.77,patch)*(1-cover)*(1-field):0;
    const crown=(noise(x*.065+23,z*.065-16)-.5)*13;
    const shade=(patch-.5)*12+grain*8+cover*crown;
-   const [crop,furrow]=field>.05?cropColor(x,z):[open,0];
+   const [crop,furrow]=field>.05?(this.islandDetail?workedField(x,z):cropColor(x,z)):[open,0];
    for(let q=0;q<3;q++){
     let value=mix(mix(open[q],woods[q],cover),crop[q]+furrow,field)*(1+hill);
     if(air>.08)value=mix(value,airfieldColor[q],air);
-    im.data[k+q]=clamp(mix(value,openCoast[q],coast)+shade,0,255);
+    if(this.islandDetail){
+     value=mix(value,redSoil[q],bank*.82);
+     value=mix(value,valleyGreen[q],valley*.56*(1-field));
+     value=mix(value,limestone[q],cliff*.72*(1-field)*(1-air));
+    }
+    im.data[k+q]=clamp(mix(value,openCoast[q],coast*(1-cliff*.62))+shade,0,255);
    }
    im.data[k+3]=255;
   }
@@ -343,6 +383,7 @@ class OkinawaWorld{
    if(this.coastalScenery)this.root.add(this.coastalScenery.root);
   }
   onProgress(.8,'Lighting the sea…');await pause();this.buildWater();this.buildSky();
+  if(this.islandDetail&&scope.OkinawaIslandDetail)this.islandScenery=scope.OkinawaIslandDetail.build(this,airfieldSite);
   if(this.serviceArea){
    const terrain={tiles:this.tiles,getRenderedHeight:(x,z)=>this.getSurfaceHeight(x,z)};
    this.airfieldActivity=new AirfieldActivity(terrain,airfieldSite.x,airfieldSite.z,{service:'ijn',maxRange:1700,srgbOutput:true});
@@ -441,8 +482,9 @@ class OkinawaWorld{
     if(j&&(this.shoreDistance(x,z)<20||!clear(x,z)))continue;
     const y=j?this.getHeight(x,z):h;
     const slope=Math.hypot(this.getHeight(x+15,z)-y,this.getHeight(x,z+15)-y)/15;if(slope>.9)continue;
-    const s=5.2+rand()*7.6,p={x,z,y:this.getSurfaceHeight(x,z)-.4,s,r:rand()*Math.PI*2};
-    buckets[(i+j)%3].push(p);this.treeIndex?.add(x,z,p.y,s*1.19,s*.66,s*.065);
+    const variant=this.islandDetail?(d<250?2:h>195||slope>.38?1:0):(i+j)%3;
+    const s=(5.2+rand()*7.6)*(this.islandDetail&&variant===1?.71:1),p={x,z,y:this.getSurfaceHeight(x,z)-.4,s,r:rand()*Math.PI*2};
+    buckets[variant].push(p);this.treeIndex?.add(x,z,p.y,s*1.19,s*.66,s*.065);
     trunks.push({...p,sx:s*.27,sy:s*.72,sz:s*.27});
    }
    const px=ax+4,pz=az+3;
@@ -452,14 +494,20 @@ class OkinawaWorld{
   for(const mesh of this.decorations.filter(m=>m.name==='Village palm trunks'||m.name==='Village palm fronds')){let count=0;for(let i=0;i<(this.yardPalms||[]).length;i++)if(!this.nearRoad(this.yardPalms[i].x,this.yardPalms[i].z)){mesh.getMatrixAt(i,matrix);mesh.setMatrixAt(count++,matrix);}mesh.count=count;mesh.instanceMatrix.needsUpdate=true;}
   this.yardPalms=yardTrees;for(const p of yardTrees)this.treeIndex?.add(p.x,p.z,p.y,10*p.s,4*p.s,.2*p.s);
   for(let v=0;v<3;v++){
-   const gs=[];for(let j=0;j<4;j++){const g=new THREE.SphereGeometry(.42,7,5);g.scale(1,.7+(j%2)*.2,.9);g.translate(Math.cos(j*2.4)*.24,.63+(j%2)*.20,Math.sin(j*2.4)*.24);gs.push(g);}
+   const gs=[];
+   for(let j=0;j<4;j++){
+    const g=new THREE.SphereGeometry(.42,7,5),rugged=this.islandDetail?v:0;
+    g.scale(1+(.12*j)*rugged,.7+(j%2)*(.2+rugged*.055),.9-rugged*.10);
+    g.translate(Math.cos(j*2.4)*.24+(rugged===2?j*.16:0),.63+(j%2)*.20,Math.sin(j*2.4)*.24);
+    gs.push(g);
+   }
    // These used to be 0x344c25/0x425b2c/0x4f6531 -- a plausible dark-green hex on
    // paper, but measured (real render, torpedo-carrier.html's own ACESFilmicToneMapping
    // at exposure 1.12 plus its HemisphereLight(.9)+Ambient(.15)+Directional(1.6) rig)
    // it washes out to a near-white sage blob, which is what "komisch wirkende Baeume"
    // was actually seeing. Same isolated-sphere test under that exact rig confirmed a
    // color needs to be roughly this dark before it still reads as green, not pale.
-   const geo=merge(gs),mat=new THREE.MeshStandardMaterial({color:[0x16240e,0x1c2e14,0x233a19][v],roughness:1});this.materials.push(mat);this.batchCells(geo,mat,buckets[v],'Broadleaf canopy '+v,p=>p.s*.75,p=>p.s*1.3,2000,new THREE.IcosahedronGeometry(.56,0).scale(1,.78,.95).translate(0,.72,0));
+   const geo=merge(gs),mat=new THREE.MeshStandardMaterial({color:(this.islandDetail?[0x142c19,0x363d20,0x273f26]:[0x16240e,0x1c2e14,0x233a19])[v],roughness:1});gs.forEach(g=>g.dispose());this.materials.push(mat);this.batchCells(geo,mat,buckets[v],'Broadleaf canopy '+v,p=>p.s*.75,p=>p.s*1.3,2000,new THREE.IcosahedronGeometry(.56,0).scale(1,.78,.95).translate(0,.72,0));
   }
   this.batchCells(new THREE.CylinderGeometry(.15,.24,1,5).translate(0,.5,0),new THREE.MeshStandardMaterial({color:0x4a3d2e,roughness:1}),trunks,'Tree trunks',p=>p.sx||1,p=>p.sy||1,2000,null,true);
   for(const p of palms)this.treeIndex?.add(p.x,p.z,p.y,10*p.s,4*p.s,.2*p.s);
@@ -500,8 +548,10 @@ class OkinawaWorld{
     const heights=corners.map(p=>this.getSurfaceHeight(...p)),high=Math.max(...heights),low=Math.min(...heights);
     if(high-low>1.7)continue;
     const style=rand()<.74?0:[1,2,3,4][Math.floor(rand()*4)];
-    addHouse(x,z,w,depth,rot,high,style,false,low);
-    houses.push(this.houseSites[this.houseSites.length-1]);locations.push({x,z});
+    const annex=this.islandDetail&&rand()<.24;
+    const main=this.houseSites.length;
+    addHouse(x,z,w,depth,rot,high,style,annex,low);
+    houses.push(this.houseSites[main]);locations.push({x,z});
    }
    towns.push({name:plan.name,x,z,streets,exits,square,houses});
   }
@@ -514,11 +564,14 @@ class OkinawaWorld{
   const dark=[],gardenWalls=[],doors=[],windows=[],shutters=[],posts=[],foundations=[],tracks=[],locations=[],yards=[],yardPalms=[],yardCisterns=[];
   const addHouse=(x,z,w,depth,rot,y,style,annex=false,base=y)=>{
     const h=[3.4,4.5,2.65,3.15,4.1][style];
-    this.houseSites.push({x,z,y,w,depth,rot,h,style});
+    const hitReg=(Math.hypot((x+4015)*1.05,(z+750)*1.36)<130||Math.hypot((x+3270)*.9,(z-345)*1.3)<100);
+    const damaged=this.islandDetail&&scope.OkinawaIslandDetail&&hitReg&&hash(Math.floor(x/4),Math.floor(z/4))>.69;
+    this.houseSites.push({x,z,y,w,depth,rot,h,style,damaged});
     const roofH=(style===2||style===3)?w*.42:w*.72;
     const key=Math.floor(x/64)+','+Math.floor(z/64);
     if(!this.houseGrid.has(key))this.houseGrid.set(key,[]);
     this.houseGrid.get(key).push({x,z,radius:Math.hypot(w,depth)*.6});
+    if(damaged)return;
     walls[style].push({x,z,y:y+h/2,sx:w,sy:h,sz:depth,r:rot});
     roofs[style].push({x,z,y:y+h,sx:w,sy:roofH,sz:depth,r:rot});
     const frontX=x+Math.sin(rot)*(depth*.5+.12),frontZ=z+Math.cos(rot)*(depth*.5+.12);
@@ -597,7 +650,7 @@ class OkinawaWorld{
   this.coastalTowns=this.buildCoastalTowns(addHouse,locations);
   // Small planted courtyards break up the empty gaps between buildings. Keep the
   // individual clusters clear of walls and use the measured ground at each yard.
-  for(let i=0;i<yards.length;i+=4){
+  for(let i=0;i<yards.length;i+=this.islandDetail?2:4){
    const p=yards[i],x=p.x+13,z=p.z+12;
    if(this.shoreDistance(x,z)<50||locations.some(h=>Math.hypot(h.x-x,h.z-z)<14))continue;
    const y=this.getHeight(x,z);
@@ -606,7 +659,7 @@ class OkinawaWorld{
   }
   const roofTex=canvas(128),c=roofTex.getContext('2d');
   c.fillStyle='#804936';c.fillRect(0,0,128,128);
-  const roofColors=['#955744','#a9694e','#a05c43','#884d3d'];
+  const roofColors=this.islandDetail?['#a45b3d','#a87556','#b07051','#804332','#956953','#ba8861']:['#955744','#a9694e','#a05c43','#884d3d'];
   for(let i=0;i<128;i+=8)for(let j=0;j<128;j+=16){
    c.fillStyle=roofColors[Math.floor(hash(i,j)*roofColors.length)];c.fillRect(i+1,j,7,15);
    c.fillStyle='#bf876a';c.fillRect(i+1,j,2,15);
@@ -694,7 +747,7 @@ class OkinawaWorld{
    }
    this.detailTemplates.push(template);
   }
-  for(let i=0;i<12;i++){const slot=new THREE.Group();slot.name='Near village detail';slot.visible=false;slot.userData.site=null;this.root.add(slot);this.nearBuildings.push(slot);}
+  for(let i=0;i<(this.islandDetail?16:12);i++){const slot=new THREE.Group();slot.name='Near village detail';slot.visible=false;slot.userData.site=null;this.root.add(slot);this.nearBuildings.push(slot);}
   this.objectCount+=48;
   // Cropped strips and low coral walls delineate farm plots on measured flat land.
   const borders=[],rows=[];
@@ -708,7 +761,7 @@ class OkinawaWorld{
   this.batch(new THREE.BoxGeometry(1,1,1),new THREE.MeshStandardMaterial({color:0x3c4928,roughness:1}),rows,'Cultivated field rows');
  }
  updateVillageDetails(x,z){
-  const closest=this.houseSites.filter(p=>Math.hypot(p.x-x,p.z-z)<1100).sort((a,b)=>Math.hypot(a.x-x,a.z-z)-Math.hypot(b.x-x,b.z-z)).slice(0,12);
+  const closest=this.houseSites.filter(p=>!p.damaged&&Math.hypot(p.x-x,p.z-z)<1100).sort((a,b)=>Math.hypot(a.x-x,a.z-z)-Math.hypot(b.x-x,b.z-z)).slice(0,this.nearBuildings.length);
   const wanted=new Set(closest),assigned=new Set();
   for(const slot of this.nearBuildings){
    slot.visible=wanted.has(slot.userData.site);
@@ -798,6 +851,7 @@ class OkinawaWorld{
    }
   }
   this.coastalScenery?.update(dt,x,z,y);
+  this.islandScenery?.update(dt,x,z,y,this.weatherVisual);
   if(this.airfieldActivity){
    if(y>450)this.airfieldActivity.group.visible=false;
    else this.airfieldActivity.update(dt,x,z,{launching:this.airfieldActivity.time%22<5});

@@ -26,7 +26,7 @@
   // Keep people and their complete routes outside the aircraft's Z=0 lane.
   // The crew keeps to the deck edge strips; a narrow real deck (options.deckHalfWidth) pulls them in, the old 35 m decks keep 12 m.
   const lane=Math.min(12,(options.deckHalfWidth??16)-2.6);
-  const stations=[[-81,-lane,'carry'],[-35,-lane,'walk'],[14,-lane,'repair'],[66,-lane,'repair'],[-66,lane,'walk'],[-9,lane,'carry'],[42,lane,'repair'],[-70,-(lane-2),'signal']];
+  const stations=[[-81,-lane,'carry'],[-35,-lane,'walk'],[14,-lane,'repair'],[66,-lane,'repair'],[-66,lane,'walk'],[-9,lane,'carry'],[options.service==='ijn'?65:36,lane-1.7,'repair'],[-70,-(lane-2),'signal']];
   stations.forEach(([x,z,job],i)=>crew.push({x,z,job,type:i===7?1:0,index:i===7?0:i,phase:i*.83,speed:.68+(i%3)*.04,feet:[{},{}]}));
   function place(mesh,i,x,y,z,rx,ry,rz,sx=1){pos.set(x,y,z);euler.set(rx,ry,rz);q.setFromEuler(euler);scale.set(sx,1,1);matrix.compose(pos,q,scale);mesh.setMatrixAt(i,matrix);}
   function height(x,z){return options.heightAt?options.heightAt(group.position.x+x,z):options.deckY??14;}
@@ -79,11 +79,12 @@
      const f=c.feet[side],d=Math.hypot(f.x-x-local.x,f.z-z-local.z);
      hipY=Math.min(hipY,f.y+Math.sqrt(Math.max(0,legReach*legReach-d*d))-.002);
     }
-    const pitch=service?.20:0;
+    const pose=c.pose??={};pose.x=x;pose.z=z;pose.heading=heading;
+    const pitch=c.job==='repair'?.08+(service?.15:0)+.07*Math.sin(time*2+c.phase):0;
     place(set.body,c.index,x,hipY,z,pitch,heading,0);
     for(let side=0;side<2;side++){
      const s=side?1:-1,i=c.index*2+side,f=c.feet[side],armZ=active?s*(1.65+Math.sin(time*4)*.18):0;
-     const armX=c.job==='carry'?-.95:service?-.8+Math.sin(time*3+c.phase)*.18:walk&&!turn?-Math.sin(distance/stride*2*Math.PI)*.28*s:0;
+     const armX=c.job==='carry'?-.95:c.job==='repair'?-.8+Math.sin(time*3+c.phase)*.18:walk&&!turn?-Math.sin(distance/stride*2*Math.PI)*.28*s:0;
      local.set(s*Math.abs(shoulder.x),shoulder.y,shoulder.z).applyAxisAngle(right,pitch).applyAxisAngle(up,heading);
      euler.set(pitch+armX,0,armZ);q.setFromEuler(euler);yaw.setFromAxisAngle(up,heading);q.premultiply(yaw);pos.set(x+local.x,hipY+local.y,z+local.z);scale.set(side?-1:1,1,1);matrix.compose(pos,q,scale);set.arms.setMatrixAt(i,matrix);
      local.set(s*hipOffset,0,0).applyAxisAngle(up,heading);hip.set(x+local.x,hipY,z+local.z);ankle.set(f.x,f.y,f.z);

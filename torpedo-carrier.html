@@ -380,7 +380,7 @@ body.secretSpaceActive #fireBtn{border-color:#73d9fc;color:#d6f9ff}
   <div id="perfHud" hidden></div>
   <div id="ltn" style="position:fixed;inset:0;background:#e6ecff;opacity:0;pointer-events:none;z-index:40;"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 288</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 289</div>
 
   <!-- Optical landing aid -->
   <div id="lso">
@@ -436,7 +436,7 @@ body.secretSpaceActive #fireBtn{border-color:#73d9fc;color:#d6f9ff}
 
 <!-- Menu -->
 <div class="overlay" id="menu" data-campaign="pacific">
-  <div class="menuTop"><a id="selBtn" href="index.html?v=288">&#9664; Change Game</a><span class="menuMeta">PACIFIC OPERATIONS<br>BUILD 288</span></div>
+  <div class="menuTop"><a id="selBtn" href="index.html?v=289">&#9664; Change Game</a><span class="menuMeta">PACIFIC OPERATIONS<br>BUILD 289</span></div>
   <div class="card menuCard">
     <aside class="menuOverview" aria-label="Campaign and pilot options">
     <div class="campaignArt" aria-hidden="true"></div>
@@ -541,8 +541,9 @@ body.secretSpaceActive #fireBtn{border-color:#73d9fc;color:#d6f9ff}
 <script src="crew-figures.js?v=254"></script>
 <script src="terrain-system/AirfieldActivity.js?v=254"></script>
 <script src="okinawa/coastal-templates.js?v=1"></script>
-<script src="okinawa/coastal-scenery.js?v=1"></script>
-<script src="okinawa/world.js?v=287"></script>
+<script src="okinawa/coastal-scenery.js?v=289"></script>
+<script src="okinawa/island-detail.js?v=289"></script>
+<script src="okinawa/world.js?v=289"></script>
 <script src="campaign.js?v=1"></script>
 <script src="game-runtime.js?v=282"></script>
 <script src="graphics-quality.js?v=287"></script>
@@ -571,8 +572,9 @@ body.secretSpaceActive #fireBtn{border-color:#73d9fc;color:#d6f9ff}
 <script src="flight-support.js?v=238"></script>
 <script src="ordnance.js?v=238"></script>
 <script src="crew-visuals.js?v=179"></script>
-<script src="deck-activity.js?v=254"></script>
-<script src="carrier-outfitting.js?v=288"></script>
+<script src="deck-activity.js?v=289"></script>
+<script src="carrier-finish.js?v=289"></script>
+<script src="carrier-outfitting.js?v=289"></script>
 <script src="ship-wakes.js?v=287"></script>
 <script src="pilot-bailout.js?v=253"></script>
 <script src="enemy-bailouts.js?v=248"></script>
@@ -1000,7 +1002,7 @@ async function prepareOkinawa(){
   if(okinawaLoading)return okinawaLoading;
   okinawaLoading=(async()=>{
     if(!window.OKINAWA_DATA||!window.OkinawaWorld)throw Error('Okinawa scenery files are missing.');
-    const world=new OkinawaWorld(OKINAWA_DATA,{vegetationDensity:.38,airfieldActivity:true,
+    const world=new OkinawaWorld(OKINAWA_DATA,{vegetationDensity:.38,airfieldActivity:true,islandDetail:true,
       coastal:{carrierDeparture:true,seaHeight:(x,z)=>seaHeightAt(x+OKINAWA_OFFSET_X,z,seaUniforms?.uTime.value||0)}});
     try{
       await world.build((p,msg)=>{const b=document.getElementById(state===ST.RESULT?'resultBtn':'startBtn');
@@ -1911,14 +1913,15 @@ function buildSea(){
         return mix(mix(hash(i),hash(i+vec2(1.0,0.0)),f.x),
                    mix(hash(i+vec2(0.0,1.0)),hash(i+vec2(1.0,1.0)),f.x),f.y); }
       void main(){
-        float coastalShallow=0.0,shore=-1000.0;
+        float coastalShallow=0.0,shore=-1000.0,shelf=175.0;
         if(uCoastActive>0.5){
           vec2 shoreUV=(vWorld.xz-vec2(10000.0,0.0)+vec2(8000.0))/16000.0;
           if(all(greaterThanEqual(shoreUV,vec2(0.0))) && all(lessThanEqual(shoreUV,vec2(1.0)))){
             vec4 encoded=texture2D(uCoast,shoreUV);
             float shoreMetres=(floor(encoded.r*255.0+0.5)*256.0+floor(encoded.g*255.0+0.5))-32768.0;
             if(shoreMetres>5.0)discard;
-            coastalShallow=clamp((350.0+shoreMetres)/350.0,0.0,1.0);shore=shoreMetres;
+            shelf=encoded.b>0.0?encoded.b*510.0:175.0;
+            coastalShallow=smoothstep(-shelf-48.0,-8.0,shoreMetres);shore=shoreMetres;
           }
         }
         vec3 N=normalize(vN);
@@ -1955,7 +1958,14 @@ function buildSea(){
         vec3 R=reflect(-V,N);
         vec3 skyRef=mix(uHorizon,uZenith,clamp(R.y*1.4+0.12,0.0,1.0));
         vec3 base=mix(uDeep,uShallow,clamp(vH*0.35+0.42,0.0,1.0));
-        base=mix(base,vec3(0.12,0.33,0.32),coastalShallow*0.55);
+        if(coastalShallow>0.0){
+          vec2 seabed=vWorld.xz;
+          float patches=smoothstep(.40,.72,noise(seabed*.037)*.66+noise(seabed*.013)*.34);
+          vec3 reefBase=mix(vec3(.10,.48,.39),vec3(.036,.195,.157),patches);
+          vec3 sand=mix(vec3(.15,.47,.38),vec3(.30,.53,.41),1.0-patches*.55);
+          reefBase=mix(reefBase,sand,smoothstep(-shelf*.45,-13.0,shore)*.70);
+          base=mix(base,reefBase,coastalShallow*.73*uReefLight);
+        }
         vec3 col=mix(base,skyRef,fres);
         vec3 L=normalize(uSunDir);
         float rl=max(dot(R,L),0.0);
@@ -1972,13 +1982,16 @@ function buildSea(){
         float crest=t2.y*0.6+t3.y*0.4;
         float foam=smoothstep(1.05-0.22*(uSeaState-1.0),1.6,vH)*smoothstep(0.42,0.78,crest);
         foam+=smoothstep(1.6,3.2,uSeaState)*smoothstep(0.80,0.95,t1.y)*0.45*near;
-        if(shore>-175.0){
-          float reef=smoothstep(-175.0,-26.0,shore)*(1.0-smoothstep(-20.0,3.0,shore));
+        if(shore>-shelf-35.0){
+          float reef=smoothstep(-shelf-25.0,-26.0,shore)*(1.0-smoothstep(-20.0,3.0,shore));
           vec3 lagoon=mix(vec3(.06,.29,.26),vec3(.12,.44,.36),t1.y);
           col=mix(col,lagoon,reef*(1.0-fres)*(.33+.18*max(L.y,0.0))*(1.0-shade*.65)*uReefLight);
           float band=0.5+0.5*sin(shore*0.21+uTime*1.5+(t1.y-.5)*1.6);
           float surf=smoothstep(-62.0,1.0,shore)*smoothstep(.52,.93,band)*smoothstep(.25,.72,crest);
-          foam+=surf+smoothstep(-11.0,2.0,shore)*(.65+t0.y*.22);
+          float shoal=shore+shelf*.78+(t1.y-.5)*28.0;
+          float outerSurf=(1.0-smoothstep(2.0,23.0,abs(shoal+sin(uTime*1.7+shore*.04)*5.0)))
+            *smoothstep(.38,.72,crest)*smoothstep(115.0,240.0,shelf);
+          foam+=surf+outerSurf*.95+smoothstep(-11.0,2.0,shore)*(.65+t0.y*.22);
         }
         col=mix(col,vec3(0.93,0.96,0.97)*(1.0-shade*0.3),clamp(foam,0.0,1.0)*0.7);
         col+=vec3(.35,.46,.57)*uStormFlash*(.14+fres*.38);
@@ -6874,7 +6887,7 @@ function loadPlaneModel(){
       }
       window.__eyeDbg='EYE '+COCKPIT_EYE.map(v=>v.toFixed(2)).join('/');
       const btEl=document.getElementById('buildTag');
-      if(btEl) btEl.textContent='BUILD 288 · '+window.__eyeDbg;
+      if(btEl) btEl.textContent='BUILD 289 · '+window.__eyeDbg;
       let seat=null;
       model.traverse(function(o){
         if(!o.isMesh||!o.material) return;
@@ -8398,7 +8411,7 @@ function setupUIButtons(){
   if(dbgT2) dbgT2.onclick=()=>{
     dbgOn=!dbgOn; GameRuntime.storage.setItem('dbgOn',dbgOn?'1':'0');
     const db=document.getElementById('dbgBox'); if(db) db.textContent=dbgOn?'✓':'';
-    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 288'; }
+    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 289'; }
   };
   const lu=document.getElementById('lookUp'), ld=document.getElementById('lookDn');
   let _lookT=0;
@@ -8414,7 +8427,7 @@ function setupUIButtons(){
   if(pb) pb.addEventListener('pointerdown',e=>{ e.preventDefault(); togglePause(); });
   const rb=document.getElementById('resumeBtn'); if(rb) rb.onclick=resumeGame;
   const mb=document.getElementById('menuBtn'); if(mb) mb.onclick=exitToMenu;
-  document.getElementById('pauseMainMenu').onclick=async()=>{globalThis.sortieCheckpoint?.save();await globalThis.sortieCheckpoint?.flush();exitToMenu(true);window.location.href='index.html?v=288';};
+  document.getElementById('pauseMainMenu').onclick=async()=>{globalThis.sortieCheckpoint?.save();await globalThis.sortieCheckpoint?.flush();exitToMenu(true);window.location.href='index.html?v=289';};
   document.getElementById('resultBtn').onclick=()=>{
     // the logbook borrows this screen from the menu — send the player straight back
     if(logbookOpen){ logbookOpen=false; showOverlay('menu'); return; }
@@ -8754,7 +8767,7 @@ function animate(){
     notice.style.cssText='position:fixed;inset:0;z-index:999998;background:rgba(15,20,15,.95);color:#e8ddbc;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px;text-align:center;font:16px system-ui';
     const title=document.createElement('h2');title.textContent='Simulation interrupted';
     const detail=document.createElement('p');
-    detail.textContent='BUILD 288 · '+(MISSIONS[mission]?.sub||'Menu')+' · '+error.message;
+    detail.textContent='BUILD 289 · '+(MISSIONS[mission]?.sub||'Menu')+' · '+error.message;
     const reload=document.createElement('button');reload.textContent='Reload game';
     reload.style.cssText='padding:12px 24px;font:inherit';reload.onclick=()=>location.reload();
     notice.appendChild(title);notice.appendChild(detail);notice.appendChild(reload);document.body.appendChild(notice);
@@ -8879,6 +8892,8 @@ function animateFrame(){
   if(combatFX)combatFX.update(dt);if(flareSupport)flareSupport.update(rawDt,windZ);updateFlareUI();if(enemyBailouts)enemyBailouts.update(rawDt,camera,windZ);if(aircraftDamage)aircraftDamage.update(dt);if(aircraftSmoke)aircraftSmoke.update(dt);
   updateSea(t);
   if(okinawaWorld && okinawaWorld.root.visible){
+    const atmosphere=WX[weather]||WX.clear;
+    okinawaWorld.weatherVisual={rain:atmosphere.rain,mist:weather==='fog'?.84:timeMode==='dawn'?.46:atmosphere.rain*.43};
     okinawaWorld.treeRange=(typeof graphicsQuality!=='undefined'&&graphicsQuality.settings?.treeRange)||1;okinawaWorld.update(dt,P.pos.x-OKINAWA_OFFSET_X,P.pos.z,P.pos.y);
     const apron=okinawaWorld.airfieldActivity;
     if(apron?.group.visible&&zeroTemplate)apron.setAircraft(zeroTemplate,'zero');
@@ -9085,7 +9100,7 @@ function pacificCloudShade(w){
 }
 function renderPacific(){
   const time=clock.elapsedTime,dark=timeMode==='night';
-  carrierOutfitting.update(isDefend()?ijnCarrierModel:carrierModel,camera.position,time,dark);
+  carrierOutfitting.update(isDefend()?ijnCarrierModel:carrierModel,camera.position,time,dark,deckActivity?.crew[0]?.pose);
   for(const ship of ships)if(ship.def.type==='cruiser')carrierOutfitting.update(ship.group,camera.position,time,dark);
   pacificLandTick(frameIntervalForGraphics||0);
   if(pacificUltra){
