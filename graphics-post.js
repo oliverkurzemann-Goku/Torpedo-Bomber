@@ -268,6 +268,9 @@
         for(const m of [bright,down,blur,final,maskMaterial,reduce,adapt,aoMat,aoBlur])m.dispose();
         geometry.dispose();
       },
+      // Build 292: compile the ambient-occlusion programs now. They used to compile the first time the camera came
+      // below 650 m in a sortie, a one-off hitch of a few hundred ms on the iPad right in low flight.
+      warm(){if(!aoOk)return;const keep=quad.material;for(const m of [aoMat,aoBlur]){quad.material=m;renderer.compile(scene,camera);}quad.material=keep;},
       get multisampled(){return !!sceneTarget.isWebGLMultisampleRenderTarget;},
       // Test/diagnostic only (a GPU read stalls): the blurred occlusion of the last frame (min, mean of R) and the
       // depth range seen (G = view distance / 2000).
@@ -290,6 +293,7 @@
         return {log,lum:Math.exp(log),gain:Math.max(look.minGain,Math.min(look.maxGain,Math.sqrt(look.key/Math.exp(log))))};
       }
     };
+    try{api.warm();}catch(e){}
     return api;
   }
   global.GraphicsPost={create};

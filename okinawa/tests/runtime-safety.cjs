@@ -55,7 +55,7 @@ const ec=vm.createContext({THREE,GameRuntime,Math,scene:new THREE.Scene(),debris
 vm.runInContext(routine(eu,'spawnDebris','spawnCrater'),ec);
 for(let n=0;n<30;n++){ec.spawnDebris(0,150,0,12);const check=watchOwned(ec.scene);ec.updateDebris(10);check();assert.equal(ec.debris.length,0);}
 const pc=vm.createContext({THREE,GameRuntime,renderer:{},Math,performance,scene:new THREE.Scene(),smokeTex:new THREE.Texture(),
- combatFX:null,shoreHeight:()=>0,debris:[],bubbles:[],slicks:[],explosions:[],smokes:[],smokePool:[],spawnSplash(){}});
+ combatFX:null,shoreHeight:()=>0,debris:[],bubbles:[],slicks:[],explosions:[],smokes:[],smokePool:[],spawnSplash(){},pacificUltra:false});
 vm.runInContext(routine(pac,'spawnExplosion','initAudio'),pc);
 for(let n=0;n<30;n++){
  pc.spawnExplosion(0,150,0,1);pc.spawnDebris(0,150,0,12);pc.spawnBubble(0,0);

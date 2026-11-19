@@ -1,5 +1,25 @@
 # Torpedo-Bomber — Übergabe an Claude Code
 
+**19.11.2026, Build 292: Löcher im Pazifikwasser vor Okinawa geschlossen; Rhein-Ruckeln seit Build 291 entschärft (PCSS billiger, AO-Shader vorab kompiliert).**
+Nutzer (zwei iPad-Bilder, Build 291 und 287): „Rhein beginnt jetzt leider manchmal zu ruckeln.... Und im pazifik sind diese hellen flecken im wasser störend."
+- **Helle Flecken = Löcher im Meer (Ursache gemessen, nicht geraten, besteht seit Build 290):**
+  - Die Szene des Fotos (220 m, Kurs 107°, Küste voraus) im echten Spiel nachgestellt: Flecken reproduziert.
+  - Mit ausgeblendetem Gelände sind sie Hintergrund, also Löcher im Wasser.
+  - Ursache: Die Strandregel im Meeres-Shader (`torpedo-carrier.html`, Build 290) setzte den Meeresboden seewärts überall auf −1 m. Der Vertiefungsterm von `OkinawaWorld.getHeight` (`pow(-d/95,1.25)`) fehlte.
+  - Folge: Jedes Wellental unter −0,88 m (die lange Dünung reicht bis −1,7 m × Seegang) wurde im ganzen 16-km-Okinawa-Gebiet weggeschnitten, Hunderte Meter vor der Küste. Darunter schien der Meeresboden hell durch.
+  - Fix: dasselbe Profil wie das Gelände (bis −45 m). Nahe am Strand bleibt die Regel wie in Build 290.
+  - Neuer Test `okinawa/tests/sea-holes-browser.cjs` (echtes Spiel, Ultra und Standard): zählt Wasserlöcher unterhalb der Küstenlinie bei Seegang 1 und 2,1 zu drei Zeitpunkten.
+  - Gemessen mit dem alten Code (Build 291, Ultra): 0,8 % ruhig, 5,7 / 21,4 / 52,4 % bei Sturm. Mit Build 292: überall 0. Bilder `test-visuals/build292-sea-holes-*.jpg`.
+- **Rhein-Ruckeln:** Gemessen und geändert, aber ohne iPad. Die Testumgebung (Software-Grafik) kann die Kosten der Grafikkarte nur über einen gezielten Pixeltest zeigen; im ganzen Rheinbild (~2 s je Bild, fast nur Geometrie) gehen PCSS und AO im Rauschen unter (±10 %).
+  - **Weiche Schatten (PCSS) billiger** (`graphics-light.js`): 8 statt 12 Blocker-Abtastungen, 12 statt 16 Filter-Abtastungen. Die Vogel-Scheibe wird mit einer festen Rotationsmatrix weitergedreht, statt `cos`/`sin` pro Abtastung zu rechnen: 20 statt 28 Schattenkarten-Zugriffe, 2 statt 56 Winkelfunktionen je Pixel. Jedes beleuchtete Material hat dadurch einen kürzeren Shader, also auch eine kürzere Kompilierung, wenn neue Kacheln oder Objekte erscheinen.
+    - Pixeltest (1600×1200, bildfüllender Boden mit 400 Schattenwerfern, PCF-soft 2048², je zwei Läufe): PCF ~183 ms je Bild, PCSS alt ~304 ms, neu ~237 ms. Der Aufschlag der weichen Schatten sinkt von +120 auf +54 ms (−55 %).
+    - Bild alt gegen neu: 1,1 % der Bildpunkte >12 Stufen anders, mittlere Abweichung 0,12. Zum Vergleich PCSS gegen PCF: 1,9 % / 0,27.
+  - **Umgebungsverdeckung vorab kompiliert** (`graphics-post.js`, `warm()` in `create`): Die beiden AO-Programme wurden bisher erst kompiliert, wenn die Kamera im Einsatz das erste Mal unter 650 m kam. Das ergab einen einmaligen Hänger mitten im Tiefflug; jetzt kompilieren sie beim Laden (`renderer.compile`, ohne Zeichnen).
+  - Vermutete Ursache des „manchmal“ (nicht am Gerät belegt): Die Mehrkosten von PCSS und AO auf der Grafikkarte lassen „60 FPS halten“ öfter die Auflösung wechseln. Jeder Wechsel legt die Bildpuffer neu an, ein kurzer Ruck. Ruckelt es weiter, bitte ein Bild der Messanzeige (Performance panel) schicken: Die Zeile „60 FPS mode: step n/6“ zeigt das. Hebel sind `softShadows:false` / `ao:false` in `graphics-quality.js`.
+- **Nebenbei:** `runtime-safety.cjs` und `ship-assets.cjs` waren schon auf Build 291 rot. Den VM-Ausschnitten fehlten `pacificUltra` bzw. `carrierOutfitting`; Stubs ergänzt.
+- Kennungen 292 (Seiten, Board, Hangar, Xcode, `build-app.mjs`, Tests; `graphics-light.js`/`graphics-post.js?v=292`).
+**Offen:** kein iPad-Test.
+
 **19.11.2026, Build 291: Himmelslicht für alle Materialien (beide Spiele), echte weiche Schatten (PCSS) auf High, Umgebungsverdeckung im Tiefflug.**
 Nutzer: Frage, ob „1. Umgebungslicht aus dem Himmel für alle Materialien … 3. weiche Schatten (PCSS) … 4. Umgebungsverdeckung“ schon umgesetzt seien (Antwort: nur teilweise, nur Rhein Ultra), dann „Ja bitte“, „Weiter“. Neues Modul `graphics-light.js` (`GraphicsLight`), wird in beiden Spielen nach `graphics-quality.js` geladen und patcht die Shader-Chunks einmal beim Laden.
 - **Himmelslicht (SH-Lichtsonde):** Der eigene Himmel des Spiels wird in eine 16-px-Würfelkarte gerendert, zurückgelesen und auf 9 Kugelflächenfunktionen projiziert (`createSky().bake`). Eine `THREE.LightProbe` wirkt in r128 auf Lambert-, Phong- und Standard-Materialien gleichermaßen (`scene.environment` nur auf Standard). Patch in `lights_fragment_maps`: Hat ein Standard-Material zusätzlich eine Umgebungskarte, entfällt deren diffuser Anteil, solange eine Sonde aktiv ist (Uniform-Test, kein Neukompilieren). Die Spiegelungen bleiben.
@@ -1336,7 +1356,7 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 291 · Thunderbolt Squadron BUILD 291 · Remagen-Kern 23 / Fahrzeuge 24**
+Stand bei Übergabe: **Torpedo Squadron BUILD 292 · Thunderbolt Squadron BUILD 292 · Remagen-Kern 23 / Fahrzeuge 24**
 
 **Build 198 (22.10.2026): P-47-Fotolackierung, Einsatzspuren und natives Fahrwerk; Terrain-Fix aus Build 197 erhalten.**
 `assets/aircraft/p47-weathered.glb` ist ein ausdrücklich gekennzeichnetes Derivat des

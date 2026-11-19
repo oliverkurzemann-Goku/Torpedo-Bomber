@@ -16,7 +16,7 @@ const scene=new THREE.Scene(),ships=[],wingShots=[];let hits=0;
 const ctx=vm.createContext({AvengerBay,GameRuntime,THREE,Ordnance,scene,ships,wingShots,Math,
  destroyerTemplate:null,freighterTemplate:null,cruiserTemplate:null,
  DEST_TARGET_LEN:60,FRT_TARGET_LEN:72,CRU_TARGET_LEN:105,
- hitShip:()=>hits++,spawnSplash:()=>{}});
+ hitShip:()=>hits++,spawnSplash:()=>{},carrierOutfitting:{install(){}}});
 vm.runInContext(segment('spawnShip','launch')+'\n'+segment('spawnWingShot','damageWingman'),ctx);
 for(const type of ['destroyer','freighter','cruiser']){
  ctx.spawnShip({type,pos:[ships.length*200,0,0],hp:3});

@@ -1,0 +1,18 @@
+{
+ "ultra": {
+  "coastActive": 1,
+  "calm": 0,
+  "storm0": 0,
+  "storm3.7": 0,
+  "storm8.1": 0,
+  "errors": []
+ },
+ "standard": {
+  "coastActive": 1,
+  "calm": 0,
+  "storm0": 0,
+  "storm3.7": 0,
+  "storm8.1": 0,
+  "errors": []
+ }
+}

@@ -16,26 +16,31 @@
   'use strict';
   const PCSS_FN=`
 	float pcssShadow( sampler2D map, vec2 size, float k, vec3 c ) {
-		// Build 291: PCSS. 12-tap blocker search, 16-tap filter, both on a Vogel disc turned per pixel.
+		// Build 291: PCSS on a Vogel disc turned per pixel. Build 292 (Rhine stutter on the iPad): 8-tap blocker
+		// search and 12-tap filter instead of 12 + 16, and no cos/sin per tap (the direction is turned by the golden
+		// angle with one constant rotation): 20 shadow-map reads instead of 28, 2 trig calls instead of 56, a
+		// shorter shader for every lit material to compile.
 		float texel = 1.0 / size.x;
 		float rot = 6.2831853 * fract( 52.9829189 * fract( dot( gl_FragCoord.xy, vec2( 0.06711056, 0.00583715 ) ) ) );
+		vec2 d0 = vec2( cos( rot ), sin( rot ) );
+		mat2 turn = mat2( -0.7373688, 0.6754903, -0.6754903, -0.7373688 );
 		float search = 9.0 * texel, zb = 0.0, nb = 0.0;
-		for ( int i = 0; i < 12; i ++ ) {
-			float fi = float( i ), a = fi * 2.3999632 + rot;
-			vec2 o = vec2( cos( a ), sin( a ) ) * sqrt( ( fi + 0.5 ) / 12.0 ) * search;
-			float d = unpackRGBAToDepth( texture2D( map, c.xy + o ) );
-			if ( d < c.z ) { zb += d; nb += 1.0; }
+		vec2 d = d0;
+		for ( int i = 0; i < 8; i ++ ) {
+			float z = unpackRGBAToDepth( texture2D( map, c.xy + d * sqrt( ( float( i ) + 0.5 ) / 8.0 ) * search ) );
+			if ( z < c.z ) { zb += z; nb += 1.0; }
+			d = turn * d;
 		}
 		if ( nb < 0.5 ) return 1.0;
 		zb /= nb;
 		float pen = clamp( ( c.z - zb ) * k, 0.75 * texel, 12.0 * texel );
 		float s = 0.0;
-		for ( int i = 0; i < 16; i ++ ) {
-			float fi = float( i ), a = fi * 2.3999632 + rot;
-			vec2 o = vec2( cos( a ), sin( a ) ) * sqrt( ( fi + 0.5 ) / 16.0 ) * pen;
-			s += texture2DCompare( map, c.xy + o, c.z );
+		d = d0;
+		for ( int i = 0; i < 12; i ++ ) {
+			s += texture2DCompare( map, c.xy + d * sqrt( ( float( i ) + 0.5 ) / 12.0 ) * pen, c.z );
+			d = turn * d;
 		}
-		return s / 16.0;
+		return s / 12.0;
 	}
 `;
   function patchChunks(THREE){
