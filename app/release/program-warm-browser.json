@@ -1,0 +1,29 @@
+{
+ "build": 293,
+ "note": "Rhine Ultra/High, P-47 air start, broken cloud, 60 s straight at ~110 m AGL eastwards, Chromium/SwiftShader with draw calls stubbed (CPU side only). Counts are what matters, times are not iPad values.",
+ "before_build292": {
+  "programsBuiltInFlight": 7,
+  "glCompileShader": 14,
+  "glLinkProgram": 7,
+  "textureUploadMB": 49.5,
+  "newProgramSources": [
+   "Field crows (MeshBasicMaterial)",
+   "Mesh (MeshStandardMaterial)",
+   "SdKfz_9_|_Flak_37 (MeshLambertMaterial)",
+   "Horse_1 (MeshLambertMaterial)",
+   "Rhine cargo barge (MeshLambertMaterial)"
+  ]
+ },
+ "after_build293": {
+  "programsBuiltInFlight": 0,
+  "glCompileShader": 0,
+  "glLinkProgram": 0,
+  "textureUploadMB": 25.5,
+  "warmer": {
+   "programs": 36,
+   "textures": 55,
+   "runs": 10,
+   "ms": 1011.899999999674
+  }
+ }
+}

@@ -313,7 +313,7 @@
   <div style="width:100%;height:4px;background:repeating-linear-gradient(45deg,#ffd400,#ffd400 8px,#111 8px,#111 16px);"></div>
   <span id="testVersionBannerText" style="background:#111;color:#ffd400;font-family:monospace;font-weight:800;font-size:11px;letter-spacing:.5px;padding:3px 10px;border:1px solid #ffd400;border-top:none;border-radius:0 0 6px 6px;"></span>
 </div>
-<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 292';</script>
+<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 293';</script>
 <!-- ===== END TEMP TEST-ONLY VERSION BANNER ===== -->
 <div id="app"></div>
 <style>
@@ -355,7 +355,7 @@
   <div id="gunsight"></div>
   <div id="radio"></div>
   <div id="rhinePerfHud" hidden></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 292 · REAL RHINE</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 293 · REAL RHINE</div>
 
   <div id="apr">
     <div id="aprCall"></div>
@@ -410,7 +410,7 @@
 </div>
 
 <div class="overlay hidden" id="menu" data-campaign="europe">
-  <div class="menuTop"><a id="selBtn" href="index.html?v=292">&#9664; Change Game</a><span class="menuMeta">RHINE OPERATIONS<br>BUILD 292</span></div>
+  <div class="menuTop"><a id="selBtn" href="index.html?v=293">&#9664; Change Game</a><span class="menuMeta">RHINE OPERATIONS<br>BUILD 293</span></div>
   <div class="card menuCard">
     <aside class="menuOverview" aria-label="Campaign and pilot options">
     <div class="campaignArt" aria-hidden="true"></div>
@@ -446,7 +446,7 @@
     </aside>
     <section class="missionPanel" aria-label="Mission selection">
       <div class="secLbl">Choose your sortie · 15 missions + 4 bonus &amp; training</div>
-      <a class="hangarLink" href="hangar.html?theatre=europe&amp;v=292">CUSTOM MISSION · CHOOSE AIRCRAFT &amp; LOADOUT →</a>
+      <a class="hangarLink" href="hangar.html?theatre=europe&amp;v=293">CUSTOM MISSION · CHOOSE AIRCRAFT &amp; LOADOUT →</a>
 <div id="missionSel" role="group" aria-label="European missions"></div>
       <div id="missionBlurb" class="missionBlurb" aria-live="polite"></div>
       <div class="menuConfig">
@@ -600,7 +600,7 @@
 <script src="terrain-system/RhineUltra.js?v=290"></script>
 <script src="terrain-system/LivingWorld.js?v=268"></script>
 <script src="campaign.js?v=1"></script>
-<script src="game-runtime.js?v=282"></script>
+<script src="game-runtime.js?v=293"></script>
 <script src="graphics-quality.js?v=291"></script>
 <script src="graphics-light.js?v=292"></script>
 <script src="graphics-post.js?v=292"></script>
@@ -1037,7 +1037,7 @@ async function loadRealWorld(){
 
   if(OSMManager.BUILD!==23||HistoricalObjectManager.BUILD!==21||LivingWorld.BUILD!==22||WorldVehicles.BUILD!==24) throw new Error('Terrain version mismatch. Reload Remagen.');
   document.getElementById('testVersionBannerText').textContent=
-    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 292 · MODULE 23';
+    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 293 · MODULE 23';
   heightProvider=new DEMHeightProvider(RTILE,'terrain-system/real/data/dem/');
   terrain=new TerrainManager(scene,RTILE,heightProvider);
   osmMgr=new OSMManager(scene,RTILE,terrain,'terrain-system/real/data/osm/');
@@ -7614,6 +7614,7 @@ function startMission(i){
   applyWeaponUI(); resetCtlUI();
   updateHUD();
   radioSay(m.duel?'DUEL — BANDIT IN THE ARENA':m.free?'FIELD IS YOURS — HAVE FUN':m.rats?'DISPATCH ABOARD — ENEMY TERRITORY. STAY LOW AND GET HOME':(isGermanMission(m)?'FORWARD STRIP':'BEAUFORT TOWER')+' — CLEARED FOR TAKE-OFF, RUNWAY ZERO NINE');
+  warmPrograms();   // Build 293: every start path (ground, air, duel, Rat Flight)
   if(m.duel&&duelLaunchAir())return;
   if(m.rats&&typeof stsLaunchAir==='function'&&stsLaunchAir())return;   // Build 249: the Rat Flight starts in the air, deep behind the line
   if(!m.custom||!CustomSortie.launchState(m.custom,'europe',{P,finishIntro:()=>finishLaunchIntro(false),
@@ -7839,6 +7840,17 @@ function beginLaunchIntro(){
   document.getElementById('launchPreviewText').textContent=service?(activity.payload.visible?'GROUND CREW · ARMING THE AIRCRAFT':'GROUND CREW · FINAL CHECKS'):'INTERCEPTOR · READY FOR ACTION';
   document.body.classList.add('launchPreview');
   updateLaunchIntro(0);
+}
+// Build 293 (iPad, Ultra/High: "draws 16.9 ms", P95 148 ms in low flight): the stalls were shader programs
+// built and textures uploaded in the frame that first showed an object (crows, horses, a barge, a flak
+// half-track, vehicle models - 6-7 programs a minute). They are built at the start of each sortie (and each relaunch after
+// service) now, behind the launch shot, and anything that appears later is warmed within a second (GameRuntime.ProgramWarmer).
+let programWarmer=null;
+function warmPrograms(){
+  if(!renderer||!scene||!camera||!GameRuntime.ProgramWarmer)return;
+  if(!programWarmer)programWarmer=new GameRuntime.ProgramWarmer(renderer,scene,camera);
+  GraphicsQuality.applyAnisotropy(scene,renderer,rhineUltra?graphicsSettings().anisotropy:4);
+  programWarmer.all();
 }
 function updateLaunchIntro(dt){
   const intro=launchIntro;if(!intro)return;
@@ -8521,7 +8533,7 @@ function showResult(good,title,sub,html,btn){
   document.getElementById('rsGo').onclick=()=>{
     voiceRadio.cancel();soundscape.stop();
     show('result',false);
-    if(MISSIONS[selectedMission]?.custom){window.location.href='hangar.html?theatre=europe&v=292';return;}
+    if(MISSIONS[selectedMission]?.custom){window.location.href='hangar.html?theatre=europe&v=293';return;}
     if(good && selectedMission===MISSIONS.length-1){
       show('menu',true);if(navigation){navigation.reset();navigation.button.style.display='none';}
     }
@@ -9013,7 +9025,7 @@ function init(){
   renderer.setSize(window.innerWidth,window.innerHeight);
   app.appendChild(renderer.domElement);
   scene=new THREE.Scene();
-  combatFX=CombatFX.create(scene);aircraftSmoke=AircraftSmoke.create(THREE,scene);flareSupport=FlareSupport.create(THREE,scene,groundY);sortieService=SortieService.create({onLaunch:()=>{P.rtb=false;flareSupport.rearm();SortieFuel.reset(P,100,M().custom?CustomSortie.stores(M().custom).tank>0:!isFree()&&!isCircuits());clearDropTank();installDropTank();relaunch();beginLaunchIntro();},onRepair:()=>{aircraftDamage?.forget(planeGroup);resetCtlUI();}});aircraftDamage=AircraftDamage.create(THREE,scene,groundY, {smoke:aircraftSmoke,forward:1});enemyBailouts=EnemyBailouts.create(THREE,scene,groundY,{waterAt:(x,z)=>livingWorld?livingWorld._pointOnWater(x,z):false,bounds:{minX:WORLD_EDGE_MARGIN,maxX:RTILE*RGRID_W-WORLD_EDGE_MARGIN,minZ:WORLD_EDGE_MARGIN,maxZ:RTILE*RGRID_H-WORLD_EDGE_MARGIN}});
+  combatFX=CombatFX.create(scene);aircraftSmoke=AircraftSmoke.create(THREE,scene);flareSupport=FlareSupport.create(THREE,scene,groundY);sortieService=SortieService.create({onLaunch:()=>{P.rtb=false;flareSupport.rearm();SortieFuel.reset(P,100,M().custom?CustomSortie.stores(M().custom).tank>0:!isFree()&&!isCircuits());clearDropTank();installDropTank();relaunch();beginLaunchIntro();warmPrograms();},onRepair:()=>{aircraftDamage?.forget(planeGroup);resetCtlUI();}});aircraftDamage=AircraftDamage.create(THREE,scene,groundY, {smoke:aircraftSmoke,forward:1});enemyBailouts=EnemyBailouts.create(THREE,scene,groundY,{waterAt:(x,z)=>livingWorld?livingWorld._pointOnWater(x,z):false,bounds:{minX:WORLD_EDGE_MARGIN,maxX:RTILE*RGRID_W-WORLD_EDGE_MARGIN,minZ:WORLD_EDGE_MARGIN,maxZ:RTILE*RGRID_H-WORLD_EDGE_MARGIN}});
   // near was 0.6, which threw away depth precision for no gain - nothing is ever that close
   // to a chase camera. 2.5 keeps far ground and water cleanly separated in the depth buffer.
   camera=new THREE.PerspectiveCamera(62,window.innerWidth/window.innerHeight,2.5,30000);
@@ -9104,7 +9116,7 @@ function init(){
   // menu wiring
   document.getElementById('startBtn').onclick=()=>showBrief(selectedMission);
   duelInit();
-  document.getElementById('pauseMainMenu').onclick=async()=>{globalThis.sortieCheckpoint?.save();await globalThis.sortieCheckpoint?.flush();exitToMenuFromPause(true);window.location.href='index.html?v=292';};
+  document.getElementById('pauseMainMenu').onclick=async()=>{globalThis.sortieCheckpoint?.save();await globalThis.sortieCheckpoint?.flush();exitToMenuFromPause(true);window.location.href='index.html?v=293';};
   document.getElementById('logBtn').onclick=()=>{ show('menu',false); showLogbook(); };
   document.getElementById('skipLaunchPreview').onclick=()=>finishLaunchIntro();
   document.getElementById('brBack').onclick=()=>{ show('brief',false); show('menu',true);if(navigation){navigation.reset();navigation.button.style.display='none';} state=ST.MENU; };
@@ -9222,6 +9234,7 @@ function animate(){
     treeLodT-=raw; if(treeLodT<=0&&osmMgr.updateTreeLOD){ treeLodT=0.2; osmMgr.updateTreeLOD(camera.position.x,camera.position.z,camera.position.y,graphicsSettings().treeRange); }
     // Build 277 (phase 4): young trees near the aircraft in Ultra High, one cell per frame.
     osmMgr.updateNearForest?.(focusX,focusZ,rhineUltra?graphicsSettings().nearTrees:0);
+    programWarmer?.tick(raw);
   }
   if(flashT>0){ flashT-=raw; if(flashT<=0) document.getElementById('flash').classList.remove('show'); }
   if(P.dmgT>0){ P.dmgT-=raw;

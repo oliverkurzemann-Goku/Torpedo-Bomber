@@ -279,5 +279,49 @@
   });
   return session;
  }
- global.GameRuntime={storage,own,release,segmentDistance,stickInput,rotorStep,render,HintCoach,attachLifecycle,FrameMeter,frames,setHTML,AdaptiveQuality,createQuality,allowEffect,stackHUD,BombCue,gunAim,showGunAim};
+  // Build 293: three.js builds a shader program the first time an object is drawn, and uploads a
+ // texture the first time it is sampled. On the iPad both happen inside the frame that first shows
+ // the object - a one-off stall of tens to hundreds of ms in the middle of the flight whenever
+ // something new comes into view (measured on the Rhine: crows over a field, horses, a barge, a flak
+ // half-track, a vehicle model; 6-7 programs per minute of low flight, each one frame of 0.3-0.6 s in
+ // the software test browser). The warmer does that work ahead of use:
+ //  all()  - compiles every material in the scene (hidden and culled objects too, renderer.compile
+ //           walks the whole tree) and uploads their textures; called at a quiet moment.
+ //  tick() - every second, finds top-level scene branches holding materials it has not seen yet
+ //           (models that finished loading, objects created later) and warms only those branches.
+ // Same programs as the frame would build: the real scene, its lights, fog and environment are used.
+ class ProgramWarmer{
+  constructor(renderer,scene,camera){this.renderer=renderer;this.scene=scene;this.camera=camera;this.seen=new WeakSet();this.timer=1;this.stats={programs:0,textures:0,runs:0,ms:0};}
+  materials(root,fn){root.traverse(o=>{const m=o.material;if(!m)return;if(Array.isArray(m)){for(const x of m)if(x)fn(x);}else fn(m);});}
+  textures(material,fn){for(const k in material){const v=material[k];if(v&&v.isTexture)fn(v);}
+   if(material.uniforms)for(const k in material.uniforms){const v=material.uniforms[k]?.value;if(v&&v.isTexture)fn(v);}}
+  warm(roots,lights){
+   const r=this.renderer;if(!r?.compile)return 0;
+   const t0=global.performance?.now?.()??0,before=r.info?.programs?.length??0;
+   const all=!roots,keep=this.scene.children,branch=all?this.scene:{traverse:fn=>{for(const c of roots)c.traverse(fn);}};
+   // Only the branches with new materials plus everything holding a light (the light set is part of the program).
+   if(!all)this.scene.children=keep.filter(c=>roots.has(c)||lights?.has(c)||c.isLight);
+   try{r.compile(this.scene,this.camera);
+    if(r.initTexture){const done=new Set();this.materials(branch,m=>this.textures(m,t=>{
+     if(done.has(t)||t.isRenderTargetTexture||t.isCubeTexture||!t.image||t.version<1)return;done.add(t);
+     try{r.initTexture(t);this.stats.textures++;}catch(e){}}));}}
+   catch(e){}
+   finally{if(!all)this.scene.children=keep;}
+   this.materials(branch,m=>this.seen.add(m));
+   const added=(r.info?.programs?.length??0)-before;
+   this.stats.programs+=Math.max(0,added);this.stats.runs++;this.stats.ms+=(global.performance?.now?.()??0)-t0;
+   return added;
+  }
+  all(){return this.warm(null);}
+  tick(dt){
+   this.timer-=dt;if(this.timer>0)return 0;this.timer=1;
+   const roots=new Set(),lights=new Set();
+   for(const c of this.scene.children){let fresh=false,light=false;
+    c.traverse(o=>{if(o.isLight)light=true;const m=o.material;if(!m||fresh)return;
+     if(Array.isArray(m)){for(const x of m)if(x&&!this.seen.has(x))fresh=true;}else if(!this.seen.has(m))fresh=true;});
+    if(fresh)roots.add(c);if(light)lights.add(c);}
+   return roots.size?this.warm(roots,lights):0;
+  }
+ }
+ global.GameRuntime={ProgramWarmer,storage,own,release,segmentDistance,stickInput,rotorStep,render,HintCoach,attachLifecycle,FrameMeter,frames,setHTML,AdaptiveQuality,createQuality,allowEffect,stackHUD,BombCue,gunAim,showGunAim};
 })(typeof window!=='undefined'?window:globalThis);

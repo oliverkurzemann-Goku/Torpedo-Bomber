@@ -24,7 +24,7 @@ const server=http.createServer((req,res)=>{
   page.on('pageerror',e=>errors.push(e.message));
   page.on('console',m=>{if(/Shader Error|VALIDATE_STATUS|not compiled/.test(m.text()))errors.push(m.text());});
   await page.addInitScript(()=>{window.requestAnimationFrame=()=>0;});
-  const url='http://127.0.0.1:'+server.address().port+'/remagen-mission.html?v=292';
+  const url='http://127.0.0.1:'+server.address().port+'/remagen-mission.html?v=293';
   // Build 277: Ultra's pixel ratio follows the graphics level (Auto on touch starts at Medium = 1.5).
   await page.goto(url+'&scenery=ultra&perf=1&graphics=high');
   await page.waitForFunction(()=>typeof livingWorld!=='undefined'&&livingWorld?.rhineVillage&&state===ST.MENU,null,{polling:200});

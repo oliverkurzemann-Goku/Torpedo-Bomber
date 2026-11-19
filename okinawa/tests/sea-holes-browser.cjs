@@ -27,7 +27,7 @@ const server=http.createServer((req,res)=>{
    const page=await browser.newPage({viewport:{width:1000,height:700}});page.setDefaultTimeout(900000);
    const errors=[];page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(/Shader Error|VALIDATE_STATUS|not compiled|ERROR:/.test(m.text()))errors.push(m.text().slice(0,400));});
    await page.addInitScript(()=>{window.requestAnimationFrame=()=>0;});
-   await page.goto(base+'/torpedo-carrier.html?v=292&campaign=1&graphics=high&scenery='+scenery);
+   await page.goto(base+'/torpedo-carrier.html?v=293&campaign=1&graphics=high&scenery='+scenery);
    await page.waitForFunction(()=>state===ST.MENU,null,{polling:250});
    const index=await page.evaluate(()=>MISSIONS.findIndex(m=>/Sortie 3\b/.test(m.title)));
    await page.evaluate(async i=>{await prepareOkinawa();await preparePacificModels(MISSIONS[i]);},index);

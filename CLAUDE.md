@@ -1,5 +1,29 @@
 # Torpedo-Bomber — Übergabe an Claude Code
 
+**19.11.2026, Build 293: Rhein-Ruckeln – Shader und Texturen werden jetzt vor dem Flug vorbereitet statt im ersten Bild, in dem ein Objekt auftaucht.**
+Nutzer (drei iPad-Bilder Build 292, Ultra/High, Frame rate „free“, Pixelverhältnis 2,0): „Pazifik cool. Rhein ruckelt.“ Die Messanzeige zeigt im Normalfall 34–37 FPS, „limit: GPU (pixels)“, CPU 6–8 ms (draws 5–6). Im Ruckelbild aber 18 FPS, P95 148 ms, CPU 23 ms mit „draws 16,9“. Die Mehrzeit liegt also im Abschicken der Zeichenbefehle, nicht in Spiellogik oder Pixeln.
+- **Gemessen im echten Spiel** (Rhein Ultra/High, P-47 Luftstart, `broken`, 60 s geradeaus nach Osten in ~110 m über Grund; Chromium/SwiftShader, Zeichenaufrufe als No-op; jede Shader-Kompilierung, jeder Textur-Upload und jedes Zurücklesen pro Bild gezählt; Messskript im Arbeitsordner):
+  - Mitten im Flug wurden **7 neue Shader-Programme** gebaut (14 `compileShader`, 7 `linkProgram`), jedes in einem einzelnen Bild von 0,3–0,6 s in dieser Testumgebung. Auf dem iPad ist das der „draws“-Sprung.
+  - Auslöser waren Objekte, die erst in der Nähe erscheinen: Krähen über einem Feld (Basic), Pferde (Lambert mit Skelett), ein Rheinkahn (Lambert, Vertexfarben), die Sd.Kfz. 9 mit Flak 37 (Lambert mit Textur) und ein Fahrzeugmodell (Standard).
+  - Dazu kamen beim ersten Anblick hochgeladene Bildtexturen, bis zu 2048² (in der Testumgebung 72 ms).
+  - Kein `readPixels` im Flug; die Himmelslicht-Sonde wird nur bei Wetterwechsel neu gebacken.
+- **Fix** (`game-runtime.js` `GameRuntime.ProgramWarmer`, eingebaut in `remagen-mission.html` `warmPrograms()`):
+  - `all()` übergibt beim Start jedes Einsatzes (alle Startwege: Boden, Luft, Duell, Rattenflug) und bei jedem Neustart nach dem Service die ganze Szene an `renderer.compile`. Das schließt verborgene und weggeschnittene Objekte ein. Danach lädt es jede Bildtextur der Szene mit `renderer.initTexture` hoch; Anisotropie wird vorher gesetzt, damit nichts doppelt hochgeladen wird.
+  - `tick()` sucht jede Sekunde nach Zweigen der Szene mit noch unbekannten Materialien (später fertig geladene Modelle) und bereitet nur diese vor, zusammen mit allen Lichtern (die Lichter gehören zum Programmschlüssel). `scene.children` wird immer zurückgesetzt, auch bei einem Fehler.
+  - Es entstehen dieselben Programme, die das Bild sonst selbst bauen würde: echte Szene, echte Lichter, Nebel und Umgebung.
+- **Nachher, gleicher Flug:**
+  - 0 Programme im Flug gebaut (0 `compileShader` / `linkProgram`), Textur-Uploads im Flug 49,5 → 25,5 MB. Der Rest sind die Knochen-Texturen der Pferde, 16×16, jedes Bild; das ist three.js-Verhalten und wurde nicht geändert.
+  - Der Warmer baute 36 Programme und lud 55 Texturen in 10 Durchgängen. In der Testumgebung waren das zusammen 1,0 s, fast alles beim Einsatzstart hinter der Startkamerafahrt. Texturen im Speicher: 186 → 197.
+  - Messwerte: `app/release/program-warm-browser.json`.
+- **Nicht behoben/offen:**
+  - Einzelne lange Bilder ohne jede gezählte GL-Arbeit (0,5–2 s) gibt es in SwiftShader weiterhin, vorher wie nachher (siehe Build 291). Sie sind nicht zuzuordnen.
+  - Die Grundlast bleibt: 27–29 ms je Bild auf dem iPad, begrenzt durch die Pixel (2,0× mit Ultra/High).
+    - Mit „Frame rate: 60 FPS halten“ würde die Auflösung stufenweise sinken.
+    - Mit `free` (Einstellung des Nutzers) bleibt sie bei 2,0×.
+- Test neu `okinawa/tests/program-warmer.cjs`: ganze Szene inklusive verborgener Objekte, nur neue Zweige plus Lichter, Kinderliste wiederhergestellt (auch nach einer Ausnahme), Render-Target-Texturen und Texturen ohne Bild übersprungen.
+- Kennungen 293 (Seiten, Board, Hangar, Xcode, `build-app.mjs`, Tests; `game-runtime.js?v=293` in beiden Spielen). Das Pazifikspiel nutzt den Warmer noch nicht (dort nicht gemeldet).
+**Offen:** kein iPad-Test.
+
 **19.11.2026, Build 292: Löcher im Pazifikwasser vor Okinawa geschlossen; Rhein-Ruckeln seit Build 291 entschärft (PCSS billiger, AO-Shader vorab kompiliert).**
 Nutzer (zwei iPad-Bilder, Build 291 und 287): „Rhein beginnt jetzt leider manchmal zu ruckeln.... Und im pazifik sind diese hellen flecken im wasser störend."
 - **Helle Flecken = Löcher im Meer (Ursache gemessen, nicht geraten, besteht seit Build 290):**
@@ -1356,7 +1380,7 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 292 · Thunderbolt Squadron BUILD 292 · Remagen-Kern 23 / Fahrzeuge 24**
+Stand bei Übergabe: **Torpedo Squadron BUILD 293 · Thunderbolt Squadron BUILD 293 · Remagen-Kern 23 / Fahrzeuge 24**
 
 **Build 198 (22.10.2026): P-47-Fotolackierung, Einsatzspuren und natives Fahrwerk; Terrain-Fix aus Build 197 erhalten.**
 `assets/aircraft/p47-weathered.glb` ist ein ausdrücklich gekennzeichnetes Derivat des
