@@ -1,5 +1,39 @@
 # Torpedo-Bomber — Übergabe an Claude Code
 
+**19.11.2026, Build 291: Himmelslicht für alle Materialien (beide Spiele), echte weiche Schatten (PCSS) auf High, Umgebungsverdeckung im Tiefflug.**
+Nutzer: Frage, ob „1. Umgebungslicht aus dem Himmel für alle Materialien … 3. weiche Schatten (PCSS) … 4. Umgebungsverdeckung“ schon umgesetzt seien (Antwort: nur teilweise, nur Rhein Ultra), dann „Ja bitte“, „Weiter“. Neues Modul `graphics-light.js` (`GraphicsLight`), wird in beiden Spielen nach `graphics-quality.js` geladen und patcht die Shader-Chunks einmal beim Laden.
+- **Himmelslicht (SH-Lichtsonde):** Der eigene Himmel des Spiels wird in eine 16-px-Würfelkarte gerendert, zurückgelesen und auf 9 Kugelflächenfunktionen projiziert (`createSky().bake`). Eine `THREE.LightProbe` wirkt in r128 auf Lambert-, Phong- und Standard-Materialien gleichermaßen (`scene.environment` nur auf Standard). Patch in `lights_fragment_maps`: Hat ein Standard-Material zusätzlich eine Umgebungskarte, entfällt deren diffuser Anteil, solange eine Sonde aktiv ist (Uniform-Test, kein Neukompilieren). Die Spiegelungen bleiben.
+  - **Pazifik** (`applyPacificSkyLight`): Die Sonde übernimmt `PAC_SKY_SHARE` .8 des Halbkugellichts. Die Stärke wird so bestimmt, dass eine nach oben zeigende Fläche gleich hell bleibt (gemessen: Abweichung 0). Halbkugellicht 0,85 → 0,17. Neu gebacken bei Wetter und Tageszeit (Dämmerung: up 1,98 → 1,26).
+  - **Rhein** (`applyRhineEnvironment`): Sonde aus der vorhandenen Ultra-Himmelsszene. **Behebt einen Fehler von Build 290:** Dort verloren alle Lambert-Flächen (Piste, Wege, Felder, Fahrzeuge, Bodendetail) 55 % ihres Halbkugellichts, ohne Ersatz. Gemessen am Flugplatz (25 m): 18,3 % der Bildpunkte ändern sich, mittlere Helligkeit +8,9.
+  - Stufen: High und Medium an, Low aus (Halbkugellicht voll).
+- **PCSS** (`shadowmap_pars_fragment`, negative `shadow.radius`): Suche nach Schattenwerfern mit 12 Abtastungen, danach ein Filter mit 16 Abtastungen auf einer Vogel-Scheibe, pro Pixel gedreht. Der Halbschatten wächst mit dem Abstand zwischen Werfer und Boden (0,75–12 Texel).
+  - `GraphicsLight.pcssRadius(cam, tan .03)` ist eine Spielentscheidung. Ein 15-m-Baum endet ~0,45 m weich, das Flugzeug aus 60 m ~1,8 m.
+  - Nur auf High (`softShadows`) in beiden Spielen (`graphics-extras.js` Rhein, `placePacificShadow` Pazifik). Medium behält den bisherigen Filter. Der Rand-Ausblend-Patch aus Build 279 funktioniert in beiden Reihenfolgen.
+- **Umgebungsverdeckung** (`graphics-post.js`): Das Multisample-Szenenziel bekommt eine Tiefentextur (WebGL2). AO-Pass in halber Auflösung: Normalen aus der Tiefe über 3 Texel (die SwiftShader-Tiefe ist gestuft, einseitige Differenzen erzeugten Streifen auf flachem Boden). Danach eine tiefenbewusste 4×4-Weichzeichnung, multipliziert im Endpass vor dem Grading (`aoStrength` .85).
+  - Nur auf High (`ao`, neue Stufenspalte). Ausgeblendet nach Kamerahöhe über Grund: voll unter 150 m, aus ab 650 m (`aoForHeight`). Oben kostet der Pass nichts.
+  - Keine zusätzlichen Szenen-Draws (gemessen: 696 = 696).
+- **Auto** pinnt jetzt auch `envLight` (wechselt sonst die Programme aller Standard-Materialien). `ao`/`softShadows` sind reine Uniform- bzw. Pass-Schalter und folgen der Stufe frei.
+- **Gemessen im echten Spiel, Pazifik Sortie 3, dichtestes Okinawa-Dorf, 22 m, Kamera eingefroren** (`okinawa/tests/graphics-light-browser.cjs`, → `app/release/graphics-light-browser.json`, Bilder `test-visuals/build291-pacific-*.jpg`):
+  - Rauschen zwischen zwei gleichen Bildern 0.
+  - AO: 7,3 % der Bildpunkte ändern sich, mittlere Helligkeit −1,4; Verdeckung min .32, 3,6 % der Fläche unter .85 (Baumfüße, Hauswände).
+  - PCSS: 1,9 % der Bildpunkte.
+  - Himmelslicht: 0,9 % der Bildpunkte, +0,5 (gewollt klein, weil abgeglichen).
+  - Medium: Sonde an, PCSS und AO aus. Low: nur das Halbkugellicht.
+- **Rhein Ultra/High, P-47** (Messskript im Arbeitsordner):
+  - 60 m über Wald: AO 9,1 % der Bildpunkte, −1,5; PCSS 0,6 %.
+  - Flugplatz 25 m: AO 2,7 %; Himmelslicht 18,3 % (siehe oben).
+  - Zeitvergleich Build 290 → 291, gleiche Blicke, je 30 Bilder, zwei Läufe hintereinander:
+    - 60 m: Draw-Calls 525/539 → 524/534, WebGL-Aufrufe 2 051/2 113 → 2 061/2 137 (+10: AO- und Weichzeichnerpass), Skript-Median 21,0/25,1 → 25,9/22,3 ms.
+    - 350 m: Draw-Calls 708/691 → 706/705, Median 13,7/17,3 → 22,2/14,0 ms.
+    - Die Streuung zwischen Läufen ist so groß wie der Unterschied, also kein messbarer CPU-Mehraufwand.
+  - **Einzelbilder von 18–112 s in dieser Testumgebung** (der Haupt-Render der Szene, keine neuen Programme, kein Neubacken) hat **Build 290 genauso** (Gegenprobe: 17 solche Renders, P90 23 s). Auch ohne PCSS-Patch und ohne AO treten sie auf. Das ist SwiftShader in der Sandbox, nicht Build 291; auf dem iPad nicht beobachtet.
+- Tests: neu `okinawa/tests/graphics-light.cjs` (Patches in beiden Reihenfolgen, Radius, AO-Ausblendung, SH-Backen mit Ersatz-Renderer) und `graphics-light-browser.cjs`. Kennungen 291 (Seiten, Board, Hangar, Xcode, `build-app.mjs`, Tests; `graphics-light.js`/`graphics-post.js`/`graphics-extras.js`/`graphics-quality.js?v=291`).
+**Offen:**
+- Kein iPad-Test.
+- Kosten von AO (zwei Pässe in halber Auflösung, 12 Tiefenabtastungen je Pixel) und PCSS (28 Schattenkarten-Zugriffe statt 9 je beschattetem Pixel) auf dem M1 sind ungemessen. Die Hebel sind `ao:false` bzw. `softShadows:false` in `graphics-quality.js`.
+- Der Rhein am Flugplatz ist durch das Himmelslicht spürbar heller und blauer. Das ist die Rückgabe des in Build 290 verlorenen Lichts; falls zu hell, ist `ENV_SHARE` der Regler.
+- Die Sonde ist ohne Schatten (Licht unter Bäumen und in Gassen kommt nur durch die AO in Bodennähe dunkler).
+
 **18.11.2026, Build 290: Okinawa bekommt Wälder, Baumvielfalt, abwechslungsreiche Häuser und eine glatte Küste; der Rhein bekommt Himmelslicht, automatische Belichtung und weiche Schatten.**
 Nutzer: „Ich möchte, dass du die Grafik auf das Niveau von Rhein bringst, derzeit ist sie viel zu unrealistisch. Bäume, Häuser… alles zu wenig Details. Abwechslung fehlt! Und dann arbeite bitte weiter an den Lichteffekten.“ (Builds 287–289 stammen aus einer anderen Sitzung – Pazifik-Ultra-Licht, Enterprise/Kaga-Hangars, Okinawa-Kulisse – und haben hier keinen eigenen Eintrag.)
 - **Bäume (neu `okinawa/vegetation.js`, `OkinawaVegetation`, nur mit `islandDetail`):** zehn Arten statt drei Kugelkronen – Laubgehölz-Gruppen, Kiefernhaine, Ryūkyū-Kiefer, zwei Laubbaumformen, Fukugi-Windschutzreihen an Häusern, Banyan an Dörfern, Küstengebüsch, Bambus an Häusern, Sträucher. Zusammenhängende Wälder auf bewaldeten flachen Flächen (Klumpen aus 3–7 Bäumen plus Randgebüsch), einzelne Bäume im Offenland. Jede Art ist vorab zu einer vertexfarbigen Geometrie gemergt (ein gemeinsames Material), mit Fernform ab 1,6 km × `treeRange`; Zellgrößen 2,5–4 km halten die Draw-Calls im Budget. Farben mit `TONE .56` abgedunkelt (der Pazifik rendert sRGB + ACES, Hex-Werte wirkten sonst blass). Ohne das Modul bleibt die alte Vegetation. Gemessen (Dichte .38): ~8 800 → 21 814 Bäume.
@@ -1302,7 +1336,7 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 290 · Thunderbolt Squadron BUILD 290 · Remagen-Kern 23 / Fahrzeuge 24**
+Stand bei Übergabe: **Torpedo Squadron BUILD 291 · Thunderbolt Squadron BUILD 291 · Remagen-Kern 23 / Fahrzeuge 24**
 
 **Build 198 (22.10.2026): P-47-Fotolackierung, Einsatzspuren und natives Fahrwerk; Terrain-Fix aus Build 197 erhalten.**
 `assets/aircraft/p47-weathered.glb` ist ein ausdrücklich gekennzeichnetes Derivat des
