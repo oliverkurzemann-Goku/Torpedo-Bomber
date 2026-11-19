@@ -216,7 +216,11 @@
           setShadows(!!next.shadows,next.shadowSize||2048,next.shadowRange||200);
         // Build 290: softer shadow edges on High. r128's PCF kernel spreads its nine taps over shadow.radius texels:
         // 2.4 texels (0.84 m at the High range) instead of 1 blur the edge like a real penumbra; same nine taps, same cost.
-        if(next.softShadows!==undefined&&sun?.shadow){sun.shadow.radius=next.softShadows?2.4:1;state.softShadows=!!next.softShadows;}
+        // Build 291: real soft shadows (PCSS, graphics-light.js) replace that: a negative radius switches the patched
+        // shadow lookup to a blocker search + a filter that widens with the occluder's height (sun size tan .03).
+        if(next.softShadows!==undefined)state.softShadows=!!next.softShadows;
+        if(sun?.shadow){const pcss=state.softShadows&&global.GraphicsLight?.patched?.pcss;
+          sun.shadow.radius=pcss?global.GraphicsLight.pcssRadius(sun.shadow.camera):state.softShadows?2.4:1;}
         if(next.contrails!==undefined&&next.contrails!==state.contrails){
           state.contrails=next.contrails;
           if(next.contrails&&!trails)trails=makeTrails();

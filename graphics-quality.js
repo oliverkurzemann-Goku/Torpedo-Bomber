@@ -10,11 +10,11 @@
   const ORDER=['low','medium','high'];
   const TIERS={
     low:{name:'Low',pixelRatio:1,shadows:false,shadowSize:0,shadowRange:0,treeRange:.7,bloom:false,grade:true,
-      anisotropy:2,groundDetail:false,nearTrees:0,contrails:false,heatHaze:false,windowLight:true,envLight:false,softShadows:false},
+      anisotropy:2,groundDetail:false,nearTrees:0,contrails:false,heatHaze:false,windowLight:true,envLight:false,softShadows:false,ao:false},
     medium:{name:'Medium',pixelRatio:1.5,shadows:true,shadowSize:1024,shadowRange:200,treeRange:1,bloom:false,grade:true,
-      anisotropy:4,groundDetail:true,nearTrees:.5,contrails:true,heatHaze:false,windowLight:true,envLight:true,softShadows:false},
+      anisotropy:4,groundDetail:true,nearTrees:.5,contrails:true,heatHaze:false,windowLight:true,envLight:true,softShadows:false,ao:false},
     high:{name:'High',pixelRatio:2,shadows:true,shadowSize:2048,shadowRange:360,treeRange:1.25,bloom:true,grade:true,
-      anisotropy:8,groundDetail:true,nearTrees:1,contrails:true,heatHaze:true,windowLight:true,envLight:true,softShadows:true}
+      anisotropy:8,groundDetail:true,nearTrees:1,contrails:true,heatHaze:true,windowLight:true,envLight:true,softShadows:true,ao:true}
   };
   const KEY='graphicsQuality';
   const read=()=>{try{const v=global.localStorage.getItem(KEY);return v==='low'||v==='medium'||v==='high'||v==='auto'?v:null;}catch(e){return null;}};
@@ -55,8 +55,10 @@
     // tree range, glow, ground detail). Shadows on/off recompiles every shader
     // and a new anisotropy level re-uploads every texture; on the iPad each Auto
     // step was a visible hitch. Those two stay at the starting tier's values.
+    // Build 291: the Rhine's sky environment map (envLight) also switches every Standard material's program; pinned too.
+    // PCSS (softShadows) and ambient occlusion (ao) are uniform/pass switches and follow the tier freely.
     const pinned=t=>choice!=='auto'||fixedDetail?t:Object.assign({},t,{shadows:TIERS[autoStart].shadows,
-      shadowSize:TIERS[autoStart].shadowSize,anisotropy:TIERS[autoStart].anisotropy});
+      shadowSize:TIERS[autoStart].shadowSize,anisotropy:TIERS[autoStart].anisotropy,envLight:TIERS[autoStart].envLight});
     const api={
       ORDER,TIERS,
       get choice(){return choice;},

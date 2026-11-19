@@ -1,4 +1,5 @@
 // Build 277: compact post-processing for both games (GRAPHICS-PLAN phases 2 and 5).
+// Build 291: ambient occlusion from the scene depth (near the ground only).
 // Build 287: eye adaptation (auto exposure) and a film look (S-curve, split tone, vignette, grain, sharpening)
 // for the graded Rhine picture; the Pacific (grade:false) is unchanged.
 // The scene is drawn into an off-screen target (multisampled on WebGL 2, so the
@@ -30,7 +31,48 @@
     'vec3 c=pow(max(texture2D(src,uv).rgb,vec3(0.)),vec3(2.2));float l=dot(c,vec3(.2126,.7152,.0722));'+
     'float k=1.-.75*smoothstep(.12,.72,length((uv-.5)*vec2(1.,1.25)));s+=log(max(l,1e-4))*k;w+=k;}'+
     'float cur=s/w,old=texture2D(prev,vec2(.5)).r;gl_FragColor=vec4(rate>=1.?cur:mix(old,cur,rate),0.,0.,1.);}';
-  const FINAL=`uniform sampler2D scene,glowA,glowB,mask,adapt;uniform float glow,grade,exposure,time,hazeCount,useMask;
+  // Build 291: ambient occlusion from the depth buffer (both games, High, faded in near the ground by the game).
+  // Half resolution; the view-space position is rebuilt from depth, the normal from the smaller of the two depth
+  // differences per axis (no halo at silhouettes); 12 taps on a disc of `radius` metres turned on a 4x4 pattern,
+  // which the depth-aware 4x4 box below averages away exactly. Each tap that rises above the surface's tangent plane
+  // darkens by how steeply it rises (cosine above .3, i.e. occluders steeper than ~17 deg: houses, trees, hulls, aircraft;
+  // the gentle creases of the terrain mesh would otherwise draw stripes across flat ground), fading out between one and
+  // two radii. Sky (depth 1) and far ground (fades 900-1600 m) stay at 1.
+  const AO=`uniform sampler2D depth;uniform vec2 texel,tanHalf;uniform float near,far,radius,scale;varying vec2 vUv;
+    float viewZ(vec2 uv){float d=texture2D(depth,uv).r;return 2.*near*far/((far+near)-(2.*d-1.)*(far-near));}
+    vec3 viewPos(vec2 uv,float z){return vec3((uv*2.-1.)*tanHalf*z,-z);}
+    void main(){
+      float d0=texture2D(depth,vUv).r;
+      if(d0>=.99999){gl_FragColor=vec4(1.,1.,0.,1.);return;}
+      float z=viewZ(vUv);vec3 p=viewPos(vUv,z);
+      // Normal: over 3 texels each way (the depth buffer comes in steps; one texel apart two rows can share a depth
+      // and the ground would read as a wall). Where the two sides disagree (an edge) the shorter side is used.
+      vec2 ox=vec2(3.*texel.x,0.),oy=vec2(0.,3.*texel.y);
+      vec3 px=viewPos(vUv+ox,viewZ(vUv+ox))-p,mx=p-viewPos(vUv-ox,viewZ(vUv-ox));
+      vec3 py=viewPos(vUv+oy,viewZ(vUv+oy))-p,my=p-viewPos(vUv-oy,viewZ(vUv-oy));
+      float lx=dot(px,px),lmx=dot(mx,mx),ly=dot(py,py),lmy=dot(my,my);
+      vec3 tx=max(lx,lmx)<4.*min(lx,lmx)?px+mx:(lx<lmx?px:mx),ty=max(ly,lmy)<4.*min(ly,lmy)?py+my:(ly<lmy?py:my);
+      vec3 n=normalize(cross(tx,ty));
+      vec2 cell=mod(floor(gl_FragCoord.xy),4.);
+      float rot=(cell.x*4.+cell.y)*.39269908+.2;
+      float r=clamp(radius*scale/z,4.,48.);
+      float sum=0.;
+      for(int i=0;i<12;i++){
+        float fi=float(i),a=fi*2.3999632+rot;
+        vec2 uv=vUv+vec2(cos(a),sin(a))*sqrt((fi+.5)/12.)*r*texel;
+        vec3 v=viewPos(uv,viewZ(uv))-p;float l=length(v);
+        sum+=(dot(v,n)>.004*z?max(0.,dot(v,n)/max(l,.05)-.3)/.7:0.)*(1.-smoothstep(radius,2.*radius,l));
+      }
+      float ao=clamp(1.-sum*2.2/12.,0.,1.);
+      ao=mix(ao,1.,smoothstep(900.,1600.,z));
+      gl_FragColor=vec4(ao,z/2000.,0.,1.);
+    }`;
+  const AO_BLUR=`uniform sampler2D src;uniform vec2 texel;varying vec2 vUv;
+    void main(){vec2 c=texture2D(src,vUv).rg;float s=0.,w=0.;
+      for(int y=0;y<4;y++)for(int x=0;x<4;x++){vec2 t=texture2D(src,vUv+(vec2(float(x),float(y))-1.5)*texel).rg;
+        float k=1./(1.+abs(t.y-c.y)*8./max(c.y,.0005));s+=t.x*k;w+=k;}
+      gl_FragColor=vec4(s/w,c.y,0.,1.);}`;
+  const FINAL=`uniform sampler2D scene,glowA,glowB,mask,adapt,occlusion;uniform float glow,grade,exposure,time,hazeCount,useMask,aoStrength;
     uniform float autoOn,key,minGain,maxGain,contrast,saturation,vignette,grain,sharpen;uniform vec2 texel;
     uniform vec4 haze[2];uniform vec2 aspect;varying vec2 vUv;
     vec3 aces(vec3 x){return clamp((x*(2.51*x+.03))/(x*(2.43*x+.59)+.14),0.,1.);}
@@ -47,6 +89,7 @@
       if(useMask>.5)off*=1.-smoothstep(0.,.35,max(texture2D(mask,vUv).r,texture2D(mask,vUv+off).r));
       uv+=off;
       vec3 c=texture2D(scene,uv).rgb;
+      if(aoStrength>0.)c*=mix(1.,texture2D(occlusion,vUv).r,aoStrength);
       if(grade>.5){
         // Build 287: a light unsharp mask (four neighbours) restores the crispness the multisampled
         // target and the half-resolution passes take away.
@@ -84,6 +127,12 @@
     // stencilBuffer: r128 gives a plain depth buffer only 16 bits; with stencil it is
     // 24-bit depth. At 2.5 m - 30 km, 16 bits let the ground poke through rivers.
     if(sceneTarget.isWebGLMultisampleRenderTarget)sceneTarget.samples=4;
+    // Build 291: the depth the scene pass wrote, for ambient occlusion (WebGL 2 only: the multisample resolve copies
+    // depth into this texture; same 24-bit depth + stencil format as the multisampled buffer, which the copy needs).
+    const aoOk=gl2&&options.ao!==false&&!!THREE.DepthTexture;
+    if(aoOk){sceneTarget.depthTexture=new THREE.DepthTexture(1,1,THREE.UnsignedInt248Type);sceneTarget.depthTexture.format=THREE.DepthStencilFormat;}
+    const aoTargets=aoOk?[0,1].map(()=>new THREE.WebGLRenderTarget(1,1,{minFilter:THREE.LinearFilter,magFilter:THREE.LinearFilter,format:THREE.RGBAFormat,
+      type:(renderer.extensions?.has?.('EXT_color_buffer_float')||renderer.extensions?.has?.('EXT_color_buffer_half_float'))?THREE.HalfFloatType:THREE.UnsignedByteType,depthBuffer:false})):[];
     // The scene target receives exactly what the screen would (tone mapping and
     // sRGB encoding included), so the passes below all work in display space.
     sceneTarget.texture.encoding=renderer.outputEncoding;
@@ -106,7 +155,11 @@
       glow:{value:0},grade:{value:0},exposure:{value:1},time:{value:0},hazeCount:{value:0},mask:{value:maskTarget.texture},useMask:{value:0},
       haze:{value:[new THREE.Vector4(),new THREE.Vector4()]},aspect:{value:new THREE.Vector2(1,1)},
       adapt:{value:null},autoOn:{value:0},key:{value:.18},minGain:{value:.8},maxGain:{value:1.35},
-      contrast:{value:0},saturation:{value:1.06},vignette:{value:0},grain:{value:0},sharpen:{value:0},texel:{value:new THREE.Vector2()}});
+      contrast:{value:0},saturation:{value:1.06},vignette:{value:0},grain:{value:0},sharpen:{value:0},texel:{value:new THREE.Vector2()},
+      occlusion:{value:null},aoStrength:{value:0}});
+    const aoMat=mat(AO,{depth:{value:aoOk?sceneTarget.depthTexture:null},texel:{value:new THREE.Vector2()},tanHalf:{value:new THREE.Vector2()},
+      near:{value:1},far:{value:1000},radius:{value:3},scale:{value:1}});
+    const aoBlur=mat(AO_BLUR,{src:{value:null},texel:{value:new THREE.Vector2()}});
     // Build 287: eye adaptation needs a float target (a log luminance creeping by a fraction of a percent per frame
     // stalls on 8-bit steps). Without float render targets the exposure stays fixed, as before.
     const floatOk=gl2&&!!(renderer.extensions?.has?.('EXT_color_buffer_float')||renderer.extensions?.has?.('EXT_color_buffer_half_float'));
@@ -145,6 +198,9 @@
       // Forget the adapted brightness (new mission, teleport): the next frame adapts at once.
       resetAdaptation(){adaptFresh=true;},
       haze:[],maskRoot:null,
+      // Build 291: ambient occlusion strength 0..1 (the game sets it from height above ground; 0 skips both passes).
+      ao:0,aoRadius:3,aoStrength:.85,
+      get aoSupported(){return aoOk;},
       resize(){
         renderer.getDrawingBufferSize(size);
         if(size.x===width&&size.y===height)return;
@@ -153,6 +209,7 @@
         half.setSize(Math.max(1,width>>1),Math.max(1,height>>1));maskTarget.setSize(Math.max(1,width>>1),Math.max(1,height>>1));
         for(const t of quarter)t.setSize(Math.max(1,width>>2),Math.max(1,height>>2));
         for(const t of eighth)t.setSize(Math.max(1,width>>3),Math.max(1,height>>3));
+        for(const t of aoTargets)t.setSize(Math.max(1,width>>1),Math.max(1,height>>1));
         final.uniforms.aspect.value.set(width/Math.max(1,height),1);
       },
       // Returns false when post-processing is off, so the caller renders as before.
@@ -177,6 +234,16 @@
           blur.uniforms.src.value=eighth[1].texture;blur.uniforms.dir.value.set(0,1/eighth[0].height);pass(blur,eighth[0]);
         }
         const u=final.uniforms,look=api.look,autoOn=api.grade&&look.auto&&floatOk;
+        const aoOn=aoOk&&api.ao>0&&view.isPerspectiveCamera;
+        if(aoOn){
+          const a=aoMat.uniforms,tanY=Math.tan(view.fov*Math.PI/360)/(view.zoom||1),hw=aoTargets[0].width,hh=aoTargets[0].height;
+          a.texel.value.set(1/width,1/height);a.tanHalf.value.set(tanY*view.aspect,tanY);a.near.value=view.near;a.far.value=view.far;
+          a.radius.value=api.aoRadius;a.scale.value=height/(2*tanY);
+          pass(aoMat,aoTargets[0]);
+          aoBlur.uniforms.src.value=aoTargets[0].texture;aoBlur.uniforms.texel.value.set(1/hw,1/hh);pass(aoBlur,aoTargets[1]);
+          u.occlusion.value=aoTargets[1].texture;
+        }
+        u.aoStrength.value=aoOn?api.ao*api.aoStrength:0;
         if(autoOn){
           reduce.uniforms.src.value=sceneTarget.texture;pass(reduce,lumTarget);
           const dt=lastTime===null?1/60:Math.max(0,Math.min(.25,time-lastTime));
@@ -197,11 +264,23 @@
         return true;
       },
       dispose(){
-        for(const t of [sceneTarget,half,maskTarget,lumTarget,...adaptTargets,...quarter,...eighth])t.dispose();
-        for(const m of [bright,down,blur,final,maskMaterial,reduce,adapt])m.dispose();
+        for(const t of [sceneTarget,half,maskTarget,lumTarget,...adaptTargets,...aoTargets,...quarter,...eighth])t.dispose();sceneTarget.depthTexture?.dispose();
+        for(const m of [bright,down,blur,final,maskMaterial,reduce,adapt,aoMat,aoBlur])m.dispose();
         geometry.dispose();
       },
       get multisampled(){return !!sceneTarget.isWebGLMultisampleRenderTarget;},
+      // Test/diagnostic only (a GPU read stalls): the blurred occlusion of the last frame (min, mean of R) and the
+      // depth range seen (G = view distance / 2000).
+      readOcclusion(raw=false){
+        if(!aoOk||!aoTargets[1].width)return null;
+        const t=aoTargets[raw?0:1],half=t.texture.type===THREE.HalfFloatType,n=t.width*t.height*4,out=half?new Uint16Array(n):new Uint8Array(n);
+        renderer.readRenderTargetPixels(t,0,0,t.width,t.height,out);
+        const f=v=>{if(!half)return v/255;const e=(v>>10)&31,m=v&1023;return e?Math.pow(2,e-15)*(1+m/1024):Math.pow(2,-14)*m/1024;};
+        let min=1,sum=0,dark=0,zmin=1e9,zmax=0;
+        for(let i=0;i<n;i+=4){const a=f(out[i]),z=f(out[i+1]);min=Math.min(min,a);sum+=a;if(a<.85)dark++;zmin=Math.min(zmin,z);zmax=Math.max(zmax,z);}
+        const image=raw===2?Array.from({length:n/4},(_,i)=>Math.round(f(out[i*4])*255)):undefined;
+        return {min,mean:sum/(n/4),darkShare:dark/(n/4),zmin:zmin*2000,zmax:zmax*2000,width:t.width,height:t.height,image};
+      },
       // Test/diagnostic only (a GPU read stalls): the adapted log luminance and the gain it gives.
       readAdaptation(){
         if(!floatOk)return null;

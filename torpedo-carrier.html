@@ -380,7 +380,7 @@ body.secretSpaceActive #fireBtn{border-color:#73d9fc;color:#d6f9ff}
   <div id="perfHud" hidden></div>
   <div id="ltn" style="position:fixed;inset:0;background:#e6ecff;opacity:0;pointer-events:none;z-index:40;"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 290</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 291</div>
 
   <!-- Optical landing aid -->
   <div id="lso">
@@ -436,7 +436,7 @@ body.secretSpaceActive #fireBtn{border-color:#73d9fc;color:#d6f9ff}
 
 <!-- Menu -->
 <div class="overlay" id="menu" data-campaign="pacific">
-  <div class="menuTop"><a id="selBtn" href="index.html?v=290">&#9664; Change Game</a><span class="menuMeta">PACIFIC OPERATIONS<br>BUILD 290</span></div>
+  <div class="menuTop"><a id="selBtn" href="index.html?v=291">&#9664; Change Game</a><span class="menuMeta">PACIFIC OPERATIONS<br>BUILD 291</span></div>
   <div class="card menuCard">
     <aside class="menuOverview" aria-label="Campaign and pilot options">
     <div class="campaignArt" aria-hidden="true"></div>
@@ -471,7 +471,7 @@ body.secretSpaceActive #fireBtn{border-color:#73d9fc;color:#d6f9ff}
     </aside>
     <section class="missionPanel" aria-label="Mission selection">
       <div class="secLbl">Choose your sortie · Pacific operations</div>
-      <a class="hangarLink" href="hangar.html?theatre=pacific&amp;v=290">CUSTOM MISSION · CHOOSE AIRCRAFT &amp; LOADOUT →</a>
+      <a class="hangarLink" href="hangar.html?theatre=pacific&amp;v=291">CUSTOM MISSION · CHOOSE AIRCRAFT &amp; LOADOUT →</a>
 <div id="missionSel" role="group" aria-label="Pacific missions"></div>
       <div id="missionBlurb" class="missionBlurb" aria-live="polite"></div>
       <div class="menuConfig">
@@ -547,8 +547,9 @@ body.secretSpaceActive #fireBtn{border-color:#73d9fc;color:#d6f9ff}
 <script src="okinawa/world.js?v=290"></script>
 <script src="campaign.js?v=1"></script>
 <script src="game-runtime.js?v=282"></script>
-<script src="graphics-quality.js?v=290"></script>
-<script src="graphics-post.js?v=290"></script>
+<script src="graphics-quality.js?v=291"></script>
+<script src="graphics-light.js?v=291"></script>
+<script src="graphics-post.js?v=291"></script>
 <script src="pacific-ultra-land.js?v=287"></script>
 <script src="pacific-ultra-finish.js?v=287"></script>
 <script src="aircraft-finish.js?v=277"></script>
@@ -1250,7 +1251,7 @@ function init(){
   sun.shadow.camera.top=240; sun.shadow.camera.bottom=-240;
   sun.shadow.bias=-0.0006;
   sunTarget=new THREE.Object3D(); scene.add(sunTarget); sun.target=sunTarget;
-  graphicsPost=GraphicsPost.create(THREE,renderer,{grade:false});
+  graphicsPost=GraphicsPost.create(THREE,renderer,{grade:false,ao:true});
   applyPacificGraphics();
   graphicsQuality.bindSelect(document.getElementById('graphicsMenu'));
   graphicsQuality.bindFrameSelect(document.getElementById('frameRateMenu'));
@@ -1380,7 +1381,7 @@ function applyTimeOfDay(mode){
   scene.background.setHex(c.fog);
   if(sun){ sun.color.setHex(c.sun); sun.intensity=c.sunI; sun.position.set(c.spos[0],c.spos[1],c.spos[2]);
     sunOffset.set(c.spos[0],c.spos[1],c.spos[2]).normalize().multiplyScalar(780); }
-  if(hemiLight){ hemiLight.color.setHex(c.sky); hemiLight.groundColor.setHex(c.grd); hemiLight.intensity=c.hemiI; }
+  if(hemiLight){ hemiLight.color.setHex(c.sky); hemiLight.groundColor.setHex(c.grd); hemiLight.intensity=hemiLight.userData.base=c.hemiI; }
   if(renderer) renderer.toneMappingExposure=c.exp;
   if(sunSprite) sunSprite.material.color.setHex(c.sun);
   if(seaUniforms){
@@ -1395,6 +1396,7 @@ function applyTimeOfDay(mode){
     else if(mode==='night'){ seaUniforms.uDeep.value.setHex(0x03060d); seaUniforms.uShallow.value.setHex(0x0f1a2a); }
     else { seaUniforms.uDeep.value.setHex(0x062029); seaUniforms.uShallow.value.setHex(0x155a68); }
   }
+  if(!pacSkyInWeather)applyPacificSkyLight();   // Build 291: the sky light follows the time of day
 }
 
 function makeSoftSprite(){
@@ -5395,7 +5397,7 @@ function buildRain(){
   rainMesh=maritimeWeather?.rainMesh||null;
 }
 function applyWeather(){
-  applyTimeOfDay(timeMode);
+  pacSkyInWeather=true;applyTimeOfDay(timeMode);
   const w=WX[weather]||WX.clear;
   if(scene.fog){ scene.fog.near=w.fogNear; scene.fog.far=w.fogFar; }
   if(seaUniforms){ seaUniforms.uFogNear.value=w.fogNear; seaUniforms.uFogFar.value=w.fogFar; }
@@ -5409,7 +5411,7 @@ function applyWeather(){
   if(timeMode==='dawn'||timeMode==='dusk'){scene.fog.color.lerp(mood,w.cover*.6);scene.background.copy(scene.fog.color);}
   else if(timeMode!=='night'){scene.fog.color.copy(mood);scene.background.copy(mood);}
   if(sun)sun.intensity=(timeMode==='night'?.45:1.32)*w.sun;
-  if(hemiLight)hemiLight.intensity=(timeMode==='night'?.25:.45)+w.sun*(timeMode==='night'?.12:.4);
+  if(hemiLight)hemiLight.intensity=hemiLight.userData.base=(timeMode==='night'?.25:.45)+w.sun*(timeMode==='night'?.12:.4);
   if(skyMat){skyMat.uniforms.top.value.lerp(mood,w.cover*.65);skyMat.uniforms.bot.value.lerp(mood,w.cover*.6);
     skyMat.uniforms.sunCol.value.multiplyScalar(Math.max(.04,1-w.cover*.95));
     if(timeMode==='night'){skyMat.uniforms.top.value.multiplyScalar(.17);skyMat.uniforms.bot.value.multiplyScalar(.22);}
@@ -5424,6 +5426,7 @@ function applyWeather(){
   if(seaUniforms)seaUniforms.uCloudShade.value=pacificCloudShade(w);
   if(!rainMesh) buildRain();
   if(rainMesh)rainMesh.visible=w.rain>0;
+  pacSkyInWeather=false;applyPacificSkyLight();   // Build 291: the sky light follows the weather
 }
 function updateRain(dt){
   return maritimeWeather?.render(dt,camera,renderer,flightQuality?.budget,
@@ -6901,7 +6904,7 @@ function loadPlaneModel(){
       }
       window.__eyeDbg='EYE '+COCKPIT_EYE.map(v=>v.toFixed(2)).join('/');
       const btEl=document.getElementById('buildTag');
-      if(btEl) btEl.textContent='BUILD 290 · '+window.__eyeDbg;
+      if(btEl) btEl.textContent='BUILD 291 · '+window.__eyeDbg;
       let seat=null;
       model.traverse(function(o){
         if(!o.isMesh||!o.material) return;
@@ -8425,7 +8428,7 @@ function setupUIButtons(){
   if(dbgT2) dbgT2.onclick=()=>{
     dbgOn=!dbgOn; GameRuntime.storage.setItem('dbgOn',dbgOn?'1':'0');
     const db=document.getElementById('dbgBox'); if(db) db.textContent=dbgOn?'✓':'';
-    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 290'; }
+    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 291'; }
   };
   const lu=document.getElementById('lookUp'), ld=document.getElementById('lookDn');
   let _lookT=0;
@@ -8441,7 +8444,7 @@ function setupUIButtons(){
   if(pb) pb.addEventListener('pointerdown',e=>{ e.preventDefault(); togglePause(); });
   const rb=document.getElementById('resumeBtn'); if(rb) rb.onclick=resumeGame;
   const mb=document.getElementById('menuBtn'); if(mb) mb.onclick=exitToMenu;
-  document.getElementById('pauseMainMenu').onclick=async()=>{globalThis.sortieCheckpoint?.save();await globalThis.sortieCheckpoint?.flush();exitToMenu(true);window.location.href='index.html?v=290';};
+  document.getElementById('pauseMainMenu').onclick=async()=>{globalThis.sortieCheckpoint?.save();await globalThis.sortieCheckpoint?.flush();exitToMenu(true);window.location.href='index.html?v=291';};
   document.getElementById('resultBtn').onclick=()=>{
     // the logbook borrows this screen from the menu — send the player straight back
     if(logbookOpen){ logbookOpen=false; showOverlay('menu'); return; }
@@ -8450,7 +8453,7 @@ function setupUIButtons(){
       clearSecretSpace();hideOverlays();P.alive=true;state=ST.FLIGHT;enterSecretSpace(true);clock.getDelta();return;
     }
     const last=mission===MISSIONS.length-2;
-    if(MISSIONS[mission]?.custom){window.location.href='hangar.html?theatre=pacific&v=290';return;}
+    if(MISSIONS[mission]?.custom){window.location.href='hangar.html?theatre=pacific&v=291';return;}
     if(wasWin){
       if(MISSIONS[mission] && MISSIONS[mission].free){ startMission(mission); return; }  // stay in Free Flight
       if(MISSIONS[mission] && MISSIONS[mission].qual){ showOverlay('menu'); return; }  // qual -> ready room
@@ -8781,7 +8784,7 @@ function animate(){
     notice.style.cssText='position:fixed;inset:0;z-index:999998;background:rgba(15,20,15,.95);color:#e8ddbc;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px;text-align:center;font:16px system-ui';
     const title=document.createElement('h2');title.textContent='Simulation interrupted';
     const detail=document.createElement('p');
-    detail.textContent='BUILD 290 · '+(MISSIONS[mission]?.sub||'Menu')+' · '+error.message;
+    detail.textContent='BUILD 291 · '+(MISSIONS[mission]?.sub||'Menu')+' · '+error.message;
     const reload=document.createElement('button');reload.textContent='Reload game';
     reload.style.cssText='padding:12px 24px;font:inherit';reload.onclick=()=>location.reload();
     notice.appendChild(title);notice.appendChild(detail);notice.appendChild(reload);document.body.appendChild(notice);
@@ -8957,6 +8960,38 @@ function animateFrame(){
 // The shared setting picks resolution and shadow detail; High adds glow (bloom).
 const graphicsQuality=GraphicsQuality.create();
 let graphicsPost=null,pacificPerf=null,pacificPerfOn=new URLSearchParams(location.search).get('perf')==='1',frameIntervalForGraphics=0;
+// ---- Build 291: sky light for every lit material (graphics-light.js). The sky dome (same material, so the same
+// colours, sun glow and Ultra haze) is measured into a spherical-harmonics light probe, which Lambert, Phong and
+// Standard materials all take; it replaces PAC_SKY_SHARE of the hemisphere light. Its strength is matched so that a
+// surface facing straight up gets as much light as that share gave it; the floor below the horizon is the
+// hemisphere's ground colour at the same level (two passes, because the floor's level depends on that match).
+// Medium and High (envLight); Low keeps the hemisphere alone.
+var PAC_SKY_SHARE=.8,pacSkyInWeather=false,pacSkyLight=null,pacSkyScene=null,pacSkyFloor=null;
+function applyPacificSkyLight(){
+  if(!hemiLight||!renderer||!skyMat||!skyDome)return;
+  const base=hemiLight.userData.base??hemiLight.intensity;hemiLight.userData.base=base;
+  const on=typeof GraphicsLight!=='undefined'&&!!graphicsQuality.settings.envLight&&!!renderer.readRenderTargetPixels;
+  if(!on){pacSkyLight?.off();hemiLight.intensity=base;return;}
+  try{
+    if(!pacSkyLight){
+      pacSkyLight=GraphicsLight.createSky(THREE,renderer);pacSkyScene=new THREE.Scene();
+      const dome=new THREE.Mesh(skyDome.geometry,skyMat);dome.frustumCulled=false;dome.scale.setScalar(.01);
+      pacSkyFloor=new THREE.Mesh(new THREE.SphereGeometry(50,24,8,0,Math.PI*2,Math.PI*.515,Math.PI*.485),
+        new THREE.MeshBasicMaterial({color:0,side:THREE.BackSide,fog:false}));pacSkyFloor.material.toneMapped=false;
+      pacSkyScene.add(dome,pacSkyFloor);
+    }
+    if(pacSkyLight.probe.parent!==scene)scene.add(pacSkyLight.probe);
+    const sky=hemiLight.color,target=PAC_SKY_SHARE*base*Math.PI*(.2126*sky.r+.7152*sky.g+.0722*sky.b);
+    let k=pacSkyLight.probe.userData.k||1;
+    for(let pass=0;pass<2;pass++){
+      pacSkyFloor.material.color.copy(hemiLight.groundColor).multiplyScalar(PAC_SKY_SHARE*base/k);
+      pacSkyLight.bake(pacSkyScene,{intensity:1});
+      const up=pacSkyLight.measured.up;k=up>1e-4?Math.min(8,target/up):1;
+    }
+    pacSkyLight.probe.intensity=k;pacSkyLight.probe.userData.k=k;
+    hemiLight.intensity=base*(1-PAC_SKY_SHARE);
+  }catch(e){console.error('Pacific sky light failed: '+(e&&e.message||e));pacSkyLight?.off();hemiLight.intensity=base;}
+}
 function applyPacificGraphics(){
   if(!renderer)return;
   const g=graphicsQuality.settings,ratio=graphicsQuality.pixelRatio(Math.min(window.devicePixelRatio||1,2,g.pixelRatio));
@@ -8971,6 +9006,7 @@ function applyPacificGraphics(){
       scene.traverse(o=>{const m=o.material;if(m)(Array.isArray(m)?m:[m]).forEach(x=>{x.needsUpdate=true;});});}
   }
   if(graphicsPost){graphicsPost.enabled=g.bloom||pacificUltra;graphicsPost.glow=g.bloom?.55:0;graphicsPost.threshold=.9;}
+  applyPacificSkyLight();
   GraphicsQuality.applyAnisotropy(scene,renderer,g.anisotropy);
   const el=document.getElementById('graphicsMenu');if(el)el.value=graphicsQuality.choice;
   const fr=document.getElementById('frameRateMenu');
@@ -9022,6 +9058,8 @@ function nearOkinawaCasters(focus,range){
 function placePacificShadow(dt){
   const range=graphicsQuality.settings.shadowRange||240,size=sun.shadow.mapSize.x,cam=sun.shadow.camera;
   if(cam.right!==range||cam.near!==10){cam.left=-range;cam.right=range;cam.top=range;cam.bottom=-range;cam.near=10;cam.far=3400;cam.updateProjectionMatrix();sun.shadow.normalBias=.25;}
+  // Build 291: PCSS soft shadows on High (graphics-light.js): a negative radius selects the patched lookup.
+  sun.shadow.radius=graphicsQuality.settings.softShadows&&typeof GraphicsLight!=='undefined'&&GraphicsLight.patched?.pcss?GraphicsLight.pcssRadius(cam):1;
   const d=pacShadow.dir.copy(sunOffset).normalize(),right=pacShadow.right.set(0,1,0).cross(d).normalize(),up=pacShadow.up.crossVectors(d,right).normalize();
   const f=pacShadow.focus.set(P.pos.x,0,P.pos.z);f.y=Math.min(P.pos.y,pacShadowGround(f.x,f.z));
   camera.getWorldDirection(pacShadow.look);pacShadow.look.y=0;const l=pacShadow.look.length();
@@ -9140,6 +9178,9 @@ function renderPacific(){
   const gl=renderer.getContext();if(gl.isContextLost())return false;
   const light=sun.intensity;
   if(pacificUltra)sun.intensity+=seaUniforms.uStormFlash.value*1.25;
+  // Build 291: ambient occlusion (High) near the ground or the sea: full below 150 m, gone by 650 m.
+  graphicsPost.ao=graphicsQuality.settings.ao&&typeof GraphicsLight!=='undefined'?
+    GraphicsLight.aoForHeight(camera.position.y-Math.max(0,shoreHeight(camera.position.x,camera.position.z))):0;
   try{return graphicsPost.render(scene,camera,clock?clock.elapsedTime:0,true);}
   catch(error){if(gl.isContextLost())return false;throw error;}
   finally{sun.intensity=light;}
