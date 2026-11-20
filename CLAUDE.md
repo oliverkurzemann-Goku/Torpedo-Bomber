@@ -31,6 +31,8 @@ Nutzer: „Funktioniert beides gut. Was könnten wir jetzt machen?“, auf die V
   - Neu: `ar234-rig.cjs`, `ar234-storch-browser.cjs` (→ `app/release/ar234-storch-browser.json`), `pby-checkpoint-browser.cjs`.
   - Angepasst: `campaign.cjs` (35 Einsätze), `custom-sortie.cjs` (13 Flugzeuge), `sites-/squad-browser` (35 Pläne). `fleet-dynamics.cjs`/`flight-envelope.cjs` nehmen die Ar 234 wie Storch/Catalina aus (nur Kern).
 - Kennungen 294 (Seiten, Board, Hangar, Xcode, `build-app.mjs`, Tests, `?v=294` der geänderten Module).
+- Browser grün: `ar234-storch`, `pby-checkpoint`, `checkpoint`, `storch-flight`, `sites`, `squad`, `takeoff-briefing`, `graphics-light`, `custom-sortie`, `me262-arcade`; Unit: Syntax, Terrain 41/41, Okinawa 160 Dateien.
+- **`render-budget-browser` ist rot, aber nicht neu:** Pazifik über Okinawa, Blick Kurs 0, 905 Draws (Budget 800). Build 293 im selben Lauf: 874. Die übrigen 15 Blicke liegen bei 241–644 Draws. Der Inselblick in Kursrichtung 0 überschreitet das Budget also schon vor diesem Build (seit wann, nicht gesucht; Build 290 maß 782 im tiefen Dorfblick).
 **Offen:** kein iPad-Test; die Ar 234 ist nicht von Hand geflogen (Startlauf knapp: 800 von 860 m mit Bombe); Storch-Infanterie kann man nur mit dem Heck zum Feind treffen (gewollt); die Rhein-Catalina „Dumbo“ läuft über denselben Storch-Zustand (`stsKind` 'dumbo') und wird damit mitgespeichert, ist aber nicht eigens im Browser geprüft (getestet: Storch-Rettungsflug, Pazifik-Sorties 24–26).
 
 **19.11.2026, Build 293: Rhein-Ruckeln – Shader und Texturen werden jetzt vor dem Flug vorbereitet statt im ersten Bild, in dem ein Objekt auftaucht.**
