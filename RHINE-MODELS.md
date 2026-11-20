@@ -9,7 +9,7 @@ reconstructed from photographs and drawings, with no tolerance established.
 
 | Model | File | Triangles | Bytes | Size (m) | Used in the game |
 | --- | --- | --- | --- | --- | --- |
-| Arado Ar 234 B-2 Blitz | `assets/aircraft/ar234b2-own.glb` | 11 816 | 1 156 496 | 14.40 × 4.30 × 12.64 | **not yet** (see below) |
+| Arado Ar 234 B-2 Blitz | `assets/aircraft/ar234b2-own.glb` | 11 816 | 1 156 496 | 14.40 × 4.30 × 12.64 | player aircraft since Build 294 (Bonus Blitz) |
 | Fieseler Fi 103 (V-1) | `assets/aircraft/fi103-own.glb` | 2 244 | 185 840 | 5.37 × 1.42 × 8.32 | flying bombs of the V-1 sortie |
 | Fi 103 launch ramp | `assets/remagen/sites/fi103-ramp-own.glb` | 2 136 | 212 384 | 8.28 × 6.50 × 48.0 | target of the V-1 sortie |
 | Würzburg-Riese FuMG 65 | `assets/remagen/sites/wuerzburg-riese-own.glb` | 3 292 | 311 316 | 7.5 × 9.0 × 6.0 | optional radar, factory sortie and night sortie |
@@ -43,8 +43,13 @@ Aircraft: `rigContract` extras, +Z nose, −X left. `okinawa/tests/rhine-models.
 
 ## Not done / limits
 
-* **Ar 234:** the model is delivered, validated and stored, but the game has no rig class, flight model or AI for it. It is excluded from
-  the offline app payload (`scripts/build-app.mjs`) until it is flown.
+* **Ar 234 (Build 294: flown):** rig class `jet-bomber-twin` (`aircraft-contract.js`). The GLB is in flying trim and has no landing gear,
+  so the class builds a tricycle gear at install from measured figures (`gearBuild`: mains under the fuselage just behind the wing's
+  quarter chord, nose wheel at z 4.05 m, ground line y −1.30 m = the published 4.3 m height); the generated legs hide when retracted.
+  Flight sheet `flight-core.js` `SOURCES.ar234` (742 km/h at 6 000 m solves the drag; empty mass and climb fall inside the published
+  ranges), take-off rockets 2 × 500 kp for 30 s, one SC 500. No forward guns; the two rear MG 151/20 fire by themselves at a pursuer
+  astern. Mission index 34 "Bonus Blitz" (bridge strike after KG 76's attacks, 7–17 March 1945), hangar: free flight and strike
+  assignments only. It is now part of the app payload.
 * The V-1 has no engine sound and no collision with the player's aircraft; a V-1 that gets through has no consequence beyond the radio call.
 * Effect sizes (radar ×0.8 / ×0.85, searchlight ×0.72 / ×0.62, ranges, launch gap, ramp placement) are game-balance estimates to be tuned
   by playing (the radar and searchlight effects are not scaled by difficulty, the V-1 timing is).

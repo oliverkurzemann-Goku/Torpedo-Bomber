@@ -37,6 +37,9 @@ const SHEETS={
   roll:{peak:18,at:45,fall:1},pitchClass:.6,tag:{m:'B',S:'B',kW:'B',vs:'B',nLimit:'C',roll:'C'}},
  me262:{name:'Me 262A-1a',m:6473,S:21.7,b:12.65,kW:0,propD:0,clmax:1.4,nLimit:5.5,
   roll:{peak:80,at:120,fall:1.6},pitchClass:.9,tag:{m:'A',S:'A',kW:'A',vs:'C',nLimit:'C',roll:'C'}},
+ // Build 294: Ar 234 B-2 (26.4 m2, normal take-off 8 410 kg; FlightCore SOURCES.ar234); jet; roll and nLimit C.
+ ar234:{name:'Ar 234 B-2 Blitz',m:8410,S:26.4,b:14.41,kW:0,propD:0,clmax:1.4,nLimit:4.5,
+  roll:{peak:55,at:130,fall:1.4},pitchClass:.8,tag:{m:'B',S:'A',kW:'A',vs:'C',nLimit:'C',roll:'C'}},
  me163:{name:'Me 163B Komet',m:4110,S:19.6,b:9.3,kW:0,propD:0,clmax:1.1,nLimit:6.0,
   roll:{peak:100,at:120,fall:1.2},pitchClass:1,tag:{m:'B',S:'B',kW:'B',vs:'C',nLimit:'C',roll:'C'}},
  avenger:{name:'TBM-3 Avenger',m:6800,S:45.52,b:16.51,kW:1417,propD:4.01,clmax:1.4,nLimit:4.5,

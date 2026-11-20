@@ -3,7 +3,7 @@
 (function(root){
  'use strict';
  const T=root.THREE;
- const assets={secretjet:'assets/aircraft/geheimer-jet.glb?v=1',p47:'assets/aircraft/p47-independent.glb?v=276',bf109:'assets/aircraft/bf109f2-own.glb',fw190:'assets/aircraft/fw190a8-own.glb',ju87:'assets/aircraft/ju87b2-own.glb',me262:'assets/aircraft/me262-noel.glb',me163:'assets/aircraft/me163b-own.glb',fi156:'assets/aircraft/fi156c2-player.glb',pby:'assets/aircraft/pby5a-own.glb?v=256',avenger:'grumman tbm avenger.glb',sbd:'assets/aircraft/sbd-dauntless.glb',corsair:'assets/aircraft/corsair-f4u1d-own.glb?v=234.1',zero:'zero.glb'};
+ const assets={secretjet:'assets/aircraft/geheimer-jet.glb?v=1',p47:'assets/aircraft/p47-independent.glb?v=276',bf109:'assets/aircraft/bf109f2-own.glb',fw190:'assets/aircraft/fw190a8-own.glb',ju87:'assets/aircraft/ju87b2-own.glb',me262:'assets/aircraft/me262-noel.glb',me163:'assets/aircraft/me163b-own.glb',fi156:'assets/aircraft/fi156c2-player.glb',pby:'assets/aircraft/pby5a-own.glb?v=256',ar234:'assets/aircraft/ar234b2-own.glb',avenger:'grumman tbm avenger.glb',sbd:'assets/aircraft/sbd-dauntless.glb',corsair:'assets/aircraft/corsair-f4u1d-own.glb?v=234.1',zero:'zero.glb'};
  function dispose(model){const geo=new Set(),mat=new Set(),textures=new Set();model?.traverse(o=>{if(o.geometry)geo.add(o.geometry);for(const m of [].concat(o.material||[])){mat.add(m);for(const v of Object.values(m))if(v?.isTexture)textures.add(v);}});geo.forEach(g=>g.dispose());mat.forEach(m=>m.dispose());textures.forEach(t=>t.dispose());}
  function prepare(model,ac){
   const frame=new T.Group();frame.name='previewAircraft';
@@ -92,6 +92,7 @@
   for(const child of [...group.children]){group.remove(child);dispose(child);}
   if(ac==='corsair'){root.CorsairRig.update(frame,{gear:1,...s});return;}
   if(ac==='sbd')root.SBDRig.update(frame,{gear:1,bombs:s.bombs});
+  if(ac==='ar234'){const b=frame.getObjectByName('Bomb');if(b)b.visible=s.bombs>0;return;}   // Build 294: the Ar 234's SC 500 is part of its own model
   function store(kind,x,y,z,scale,parent=group){
    const o=root.Ordnance.create(kind);
    // Shared Ordnance templates must not be disposed when changing aircraft.

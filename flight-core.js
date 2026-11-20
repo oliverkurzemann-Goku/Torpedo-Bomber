@@ -140,6 +140,24 @@ const SOURCES={
   stores:{},fuel:{kg:1970*J2,ref:'C',text:'1 970 l J2 (C)'},
   limits:{mlimit:.82,ref:'B4',text:'tuck from Mach 0.82'},
   roll:{peak:80,at:120,fall:1.6,ref:'C'}},
+ // Build 294: Arado Ar 234 B-2 Blitz, the jet bomber of KG 76 (rig class jet-bomber-twin). Wing area and top speed agree across the sources;
+ // masses differ by source and configuration (empty 4 650-5 200 kg, maximum 9 400-9 800 kg): the sheet weight is the B-2's normal take-off weight.
+ // One level speed is all that is solid, so the jet's thrust lapse keeps the class value (fitParams fits nT only from two figures or more).
+ ar234:{name:'Arado Ar 234 B-2 Blitz (2 x Jumo 004B)',
+  refs:{B1:'Wing area 26.4 m2, span 14.41 m; 742 km/h at 6 000 m clean (historyofwar.org, migflug.com, warbirdsresourcegroup.org; NASM A19600312000 for the span)',
+   B2:'Jumo 004B: 8.8 kN static thrust each (as SOURCES.me262 B2)',
+   B3:'Empty 5 200 kg (W. Green), normal take-off 8 410 kg, maximum about 9 800 kg (warbirdsresourcegroup.org and others)',
+   B4:'Walter HWK 109-500 take-off rocket: 500 kgf for 30 s; two under the outer wings for heavy take-offs'},
+  // RB4: two 109-500 for the loaded take-off, fired automatically (C, GAME_RATO in remagen-mission.html). A 30-s rocket was lit at the start of the
+  // roll, not just before lift-off (fireAt: fraction of the rotation speed, C): fired at 60 % like the Me 262's 6-s rockets it burned only the last
+  // seconds and the loaded Ar 234 ran off the 900 m strip at 52 m/s (measured, Build 294).
+  rato:{thrust:2*500*KGF,burn:30,fireAt:.1,ref:'B4'},
+  mass:8410,massRef:'B3',S:26.4,b:14.41,geomRef:'B1',propD:0,
+  engine:{kind:'jet',thrust:8800,count:2,ref:'B2',text:'2 x 8.8 kN static'},
+  perf:[row('speed',6000,742*KMH,'B1','742 km/h @ 6 000 m, clean')],
+  stores:{refBombs:1},fuel:{kg:3800*J2,ref:'C',text:'3 800 l J2 in two fuselage tanks (C)'},
+  limits:{mlimit:.80,ref:'C',text:'tuck from Mach 0.80 (C)'},
+  roll:{peak:55,at:130,fall:1.4,ref:'C'}},
  me163:{name:'Me 163B-1a Komet (Walter HWK 109-509A)',
   refs:{B1:'migflug / aerocorner / ww2db: 4 310 kg take-off, 1 700 kp thrust, 468 kg C-Stoff + 1 550 kg T-Stoff, 9.33 m span',
    B2:'Climb from a standing start: 2 000 m in 1.48 min, 10 000 m in 3.19 min',B3:'About 960 km/h in level flight; severe compressibility above Mach 0.82',
@@ -237,6 +255,8 @@ const ASSUMED={
  // Build 252: Catalina. Heavy flying-boat structure (C): +3 g, -1 g; gear and floats count as gear drag, there are no flaps; a mild stall (thick wing).
  pby:A_({nLimit:3.0,nNegative:1.0,mcrit:.60,mlimit:.66,vne:175*KT,gearCD:.030,flapCD:.05,severity:.10,spool:.9,stores:{bomb:227,bombArea:.03}}),
  me262:A_({nLimit:5.5,mcrit:.74,vne:950*KMH,spool:2.6,windmill:0,severity:.35,stores:{bomb:250,bombArea:.02}}),
+ // Build 294: Ar 234. Bomber structure (C): +4.5 g; one SC 500 under the fuselage; a mild stall; the Jumo's slow spool as on the Me 262.
+ ar234:A_({nLimit:4.5,nNegative:2.0,mcrit:.72,vne:900*KMH,spool:2.6,windmill:0,severity:.25,stores:{bomb:500,bombArea:.03}}),
  me163:A_({nLimit:6.0,clClean:1.1,clLandingRatio:1.15,spool:.3,windmill:0,gearCD:0,severity:.05,isp:2000}),
  avenger:A_({nLimit:4.5,mcrit:.66,mlimit:.70,vne:320*KT,severity:.25,stores:{torpedo:2216*LB,bomb:227,bombArea:0}}), // internal bay
  sbd:A_({nLimit:5.5,mcrit:.66,mlimit:.70,vne:350*MPH,severity:.2,stores:{bomb:454,bombArea:.03}}),
@@ -417,7 +437,7 @@ function fitParams(base){
  if(k==='turbo'&&base.engine.lapse==null&&data.length>=3)P.push({key:'lapse',x0:5e-6,lo:-2e-5,hi:6e-5,step:1e-10});
  if(k==='piston'&&base.engine.fth==null)P.push({key:'fth',x0:4000,lo:500,hi:9000,step:1});
  if(k==='piston'&&data.some(d=>d.mode==='combat'))P.push({key:'combatRatio',x0:.85,lo:.5,hi:1,step:1e-6});
- if(k==='jet')P.push({key:'nT',x0:.8,lo:.2,hi:1.6,step:1e-6});
+ if(k==='jet'&&data.length>=2)P.push({key:'nT',x0:.8,lo:.2,hi:1.6,step:1e-6});   // Build 294: one figure fixes the drag only
  if(k==='rocket')P.push({key:'mcrit',x0:.72,lo:.5,hi:.95,step:1e-6});
  return P;
 }
@@ -486,7 +506,7 @@ function has(kind){return !!SOURCES[kind];}
 /* ---- live mass and store drag from the game's loadout ---- */
 // p: {fuel 0-100 (internal), tankAttached, tankFuel, tankCapacity, bombs, rockets, torps, bombKg, torpedo}
 // Store counts are capped at what the airframe physically carries (the games allow arcade reloads).
-const CAPACITY={p47:{bomb:2,rocket:10},bf109:{bomb:1},fw190:{bomb:1},ju87:{bomb:4},me262:{bomb:2},avenger:{bomb:4,torpedo:1},
+const CAPACITY={p47:{bomb:2,rocket:10},bf109:{bomb:1},fw190:{bomb:1},ju87:{bomb:4},me262:{bomb:2},ar234:{bomb:1},avenger:{bomb:4,torpedo:1},
  sbd:{bomb:1},corsair:{bomb:2,rocket:8},zero:{bomb:2},pby:{bomb:2}};
 function loadout(m,p={}){
  const st=m.stores||{},cap=CAPACITY[m.kind]||{},fuel=clamp((p.fuel??100)/100,0,1);

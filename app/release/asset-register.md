@@ -1,11 +1,12 @@
-# Offline app asset register — Build 293
+# Offline app asset register — Build 294
 
-Checked 2026-10-23. 404 payload files, 64 model files, 158.7 MiB.
+Checked 2026-10-23. 405 payload files, 65 model files, 159.8 MiB.
 
 Generated from the actual dist-app payload by npm run app:assets. Hashes cover embedded textures too. This is an evidence inventory; no row is automatically approved for distribution. Acquisition dates remain unknown where not recorded.
 
 | Runtime file | Source / uploader | Declared license | Open issue | SHA-256 |
 | --- | --- | --- | --- | --- |
+| assets/aircraft/ar234b2-own.glb | [Torpedo-Bomber project](https://www.si.edu/object/nasm_A19600312000) | project-own (original mesh and paint) | own-build-reference-review-open | 036416e761f59888d48e95c4c78461d4ca9170d99e4d06e513830b4d5ccc54fb |
 | assets/aircraft/b17-helijah.glb | [helijah](https://sketchfab.com/3d-models/boeing-b-17-flying-fortress-927f07f6ddcf470ab0387ce5829024d5) | CC-BY-4.0 (https://creativecommons.org/licenses/by/4.0/) | uploader-license-review-open | bcdf03e6bed86bd8b246a24cf1b8f86a259debe426dbbdd42986d8c278b778db |
 | assets/aircraft/bf109f2-own.glb | [Torpedo-Bomber project (code-built, scripts/build-own-bf109.cjs)](scripts/build-own-bf109.cjs) | project-own; geometry measured on a CC BY-SA 2.0 three-view (B. Huber), finish measured on a CC BY-SA 2.5 profile (H. Ringlstetter) | own-build-reference-review-open | efb76f22bf5057a1f24feab3f450787f1bc5decad8a76f79cbbac16698981f1f |
 | assets/aircraft/bf110g4-own.glb | [Torpedo-Bomber project](https://www.awm.gov.au/visit/exhibitions/striking/planes/german/bf110) | project-own (original mesh and paint) | own-build-reference-review-open | 0f1edf91ded8a11b8a95925285cd5f3967b12a71ebb3448813217b4337202396 |

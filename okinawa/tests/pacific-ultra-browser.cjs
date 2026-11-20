@@ -27,7 +27,7 @@ const server=http.createServer((req,res)=>{
   const pixels={};
   for(const mode of ['standard','ultra']){
    errors=[];
-   await page.goto(base+'/torpedo-carrier.html?v=293&campaign=1&graphics=high&scenery='+mode);
+   await page.goto(base+'/torpedo-carrier.html?v=294&campaign=1&graphics=high&scenery='+mode);
    await page.waitForFunction(()=>state===ST.MENU,null,{polling:250});
    const index=await page.evaluate(()=>MISSIONS.findIndex(m=>/Sortie 3\b/.test(m.title)));
    await page.evaluate(async i=>{

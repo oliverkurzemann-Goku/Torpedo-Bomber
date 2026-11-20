@@ -1,0 +1,152 @@
+{
+ "ar234": {
+  "index": 34,
+  "tyres": 3,
+  "bombs": 1,
+  "bombVisible": true,
+  "coreOn": true,
+  "stall": 56.5,
+  "rato": true,
+  "liftoff": {
+   "t": 28.6,
+   "dist": 800,
+   "ms": 63.5
+  },
+  "alive": true,
+  "agl": 105,
+  "gearHiddenUp": true,
+  "afterDrop": {
+   "bombs": 0,
+   "bombVisible": false,
+   "heavy": true
+  },
+  "gunner": {
+   "rounds": 17,
+   "inFlight": 17,
+   "cannon": true
+  }
+ },
+ "storch": {
+  "ground": {
+   "behindKilled": true,
+   "aheadAlive": true,
+   "rounds": 19,
+   "calls": "OBSERVER: THEY'RE AHEAD OF US — SWING THE TAIL ROUND AND I'LL HAVE THEM | OBSERVER: ENGAGING THE INFANTRY — KEEP YOUR TAIL TOWARD THEM"
+  },
+  "ahead": {
+   "rounds": 0,
+   "calls": ""
+  },
+  "air": {
+   "rounds": 10
+  }
+ },
+ "checkpoint": {
+  "saved": {
+   "kind": "rescue",
+   "clock": 123.4,
+   "hunt": {
+    "n": 2,
+    "t": 17.5
+   },
+   "said": {
+    "near": 1
+   },
+   "wire": {
+    "broken": true,
+    "lines": [
+     false,
+     false
+    ]
+   },
+   "units": [
+    {
+     "x": 20051.94,
+     "z": 24633.34,
+     "alive": false,
+     "hp": -97.8,
+     "revealed": true,
+     "visible": true,
+     "decoy": false
+    },
+    {
+     "x": 18498.77,
+     "z": 23337.77,
+     "alive": true,
+     "hp": 0.6,
+     "revealed": true,
+     "visible": true,
+     "decoy": false
+    },
+    {
+     "x": 16982.54,
+     "z": 22456.02,
+     "alive": true,
+     "hp": 1.2,
+     "revealed": false,
+     "visible": false,
+     "decoy": true
+    }
+   ],
+   "inTargets": 2,
+   "pos": [
+    18889.48,
+    504.56,
+    22568.5
+   ]
+  },
+  "restored": {
+   "kind": "rescue",
+   "clock": 123.4,
+   "hunt": {
+    "n": 2,
+    "t": 17.5
+   },
+   "said": {
+    "near": 1
+   },
+   "wire": {
+    "broken": true,
+    "lines": [
+     false,
+     false
+    ]
+   },
+   "units": [
+    {
+     "x": 20051.94,
+     "z": 24633.34,
+     "alive": false,
+     "hp": -97.8,
+     "revealed": true,
+     "visible": false,
+     "decoy": false
+    },
+    {
+     "x": 18498.77,
+     "z": 23337.77,
+     "alive": true,
+     "hp": 0.6,
+     "revealed": true,
+     "visible": true,
+     "decoy": false
+    },
+    {
+     "x": 16982.54,
+     "z": 22456.02,
+     "alive": true,
+     "hp": 1.2,
+     "revealed": false,
+     "visible": false,
+     "decoy": true
+    }
+   ],
+   "inTargets": 1,
+   "pos": [
+    18889.48,
+    504.56,
+    22568.5
+   ]
+  }
+ }
+}

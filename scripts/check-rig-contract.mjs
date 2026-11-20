@@ -150,7 +150,9 @@ export function checkContract(bytes){
   }
   // tyres: exactly one tagged ground wheel under each leg
   const tyres=nodes.map((x,i)=>i).filter(i=>nodes[i].extras?.groundWheel===true);
-  if(tyres.length!==Object.keys(spec.tyres).length)fail(`need ${Object.keys(spec.tyres).length} groundWheel tyres, found ${tyres.length}`);
+  // Build 294: a class with gearBuild generates its legs and tyres at install (aircraft-contract.js buildGear): the GLB must not bring its own
+  if(spec.gearBuild){if(tyres.length)fail('class '+meta.class+' builds its own gear: the GLB must carry no groundWheel tyres');}
+  else if(tyres.length!==Object.keys(spec.tyres).length)fail(`need ${Object.keys(spec.tyres).length} groundWheel tyres, found ${tyres.length}`);
   for(const leg of Object.keys(spec.tyres)){const li=names.get(leg);if(li!==undefined&&tyres.filter(t=>isAncestor(li,t)).length!==1)fail('exactly one groundWheel tyre must hang under '+leg);}
   tyres.forEach(t=>{if(nodes[t].mesh===undefined)fail('groundWheel node '+(nodes[t].name||t)+' carries no mesh');});
   const muzzles=nodes.filter(x=>/^Muzzle/.test(x.name||''));if(muzzles.length<spec.muzzles)fail('need at least '+spec.muzzles+' Muzzle* node');

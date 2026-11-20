@@ -9,7 +9,7 @@
   targets:targets.filter(t=>!t.surprise&&!t.optionalSite).map(t=>C.entity(t,t.sub)),air:enemyAir.map(e=>C.entity(e)),wingmen:wingmen.map(w=>C.entity(w)),squad:squad.map(w=>C.entity(w)),squadStats:{...squadStats},squadOrder,bomberAlarm,
   traffic:(livingWorld?.entities||[]).map(e=>({alive:e.alive,phase:e.phase,last:C.capture(e.last),alertT:e.alertT,transform:C.transform(e.model)})),
   weapons:{bullets:C.projectiles(bullets),tracers:C.projectiles(tracers),bombs:C.projectiles(bombs),rockets:C.projectiles(rockets),groundFire:C.projectiles(groundFire)},
-  navigation:C.navigationState(navigation),clock:clock.elapsedTime,flares:flareSupport?.checkpoint()};}
+  navigation:C.navigationState(navigation),clock:clock.elapsedTime,flares:flareSupport?.checkpoint(),storch:typeof stsCheckpoint==='function'?stsCheckpoint():null};}
  async function load(saved){
   CustomSortie.restoreSaved('europe',saved,MISSIONS,FlightPlans.europe);selectedMission=saved.mission;
   if(!saved.operation?.config)throw Error('Missing operation in checkpoint');
@@ -37,6 +37,8 @@
    }
   });
   flakUnits=flakUnits.filter(t=>t.alive);
+  // Build 294: the Storch sorties (nests, decoys, infantry, the spotter's zones, the pickup's phase)
+  if(saved.storch&&typeof stsRestoreCheckpoint==='function')stsRestoreCheckpoint(saved.storch);
   if(livingWorld)saved.traffic.forEach((s,i)=>{
    const e=livingWorld.entities[i];if(!s.alive)livingWorld.destroyEntity(e);
    e.phase=s.phase;e.last=C.restore({},s.last);e.alertT=s.alertT;C.applyTransform(e.model,s.transform);

@@ -1,5 +1,38 @@
 # Torpedo-Bomber — Übergabe an Claude Code
 
+**20.11.2026, Build 294: Ar 234 fliegbar (Einsatz „Bonus Blitz“), Storch-Beobachter bekämpft Infanterie, Storch- und Catalina-Einsätze im Checkpoint, Umgebungsverdeckung billiger.**
+Nutzer: „Funktioniert beides gut. Was könnten wir jetzt machen?“, auf die Vorschlagsliste: „1 und 2 bitte umsetzen. Es gibt doch schon comet missionen?“
+- **Korrektur:** Der Komet ist seit langem spielbar (`komet`, `kometdash`). Mein Vorschlag „Komet als Spielerflugzeug“ war falsch.
+- **Ar 234 B-2 als Spielerflugzeug (`assets/aircraft/ar234b2-own.glb`, seit Build 243 im Repo, jetzt im App-Paket):**
+  - Neue Rig-Klasse `jet-bomber-twin` (`aircraft-contract.js`). Das GLB hat kein Fahrwerk; die Klasse baut beim Installieren ein Bugradfahrwerk aus am Modell gemessenen Zahlen. Drei getaggte Reifen auf der Bodenlinie (2 cm), Haupträder hinter, Bugrad vor dem Schwerpunkt.
+  - Nur Flugkern (`CORE_ONLY`). Flugdaten `FlightCore.SOURCES.ar234`: 742 km/h in 6 000 m, 26,4 m², 8 410 kg normales Startgewicht, Leermasse gelöst 4 650–5 200 kg, Steigen etwa 13 m/s.
+  - Zwei Walter-109-500-Startraketen (500 kp, 30 s) zünden automatisch **beim Anrollen** (`rato.fireAt .1`). Bei 60 % der Abhebegeschwindigkeit wie bei der Me 262 überrollte die beladene Maschine die 900-m-Piste mit 52 m/s (gemessen).
+  - Gemessen im echten Spiel: Abheben nach 28,6 s und 800 m mit 63,5 m/s.
+  - Eine SC 500 (verschwindet nach dem Abwurf, schwere Explosion). Keine starre Waffe: die zwei Heckkanonen schießen selbständig auf Verfolger (20-mm-Geschosse, 17 Schuss in 3 s gegen eine P-47 300 m hinten).
+  - Einsatz `blitz` (Rhein-Index 34, hinten angehängt): KG 76 gegen die Ludendorff-Brücke, 3 Flak, 2 P-47 (optional). Hangar/Freiflug nur für `free`/`convoy`/`bridge`/`factory` (`strikeOnly`).
+  - Quellen: historyofwar.org, migflug.com, warbirdsresourcegroup.org, NASM. Unsicher (C): Rollrate, Lastgrenze, Kraftstoffmenge.
+- **Storch: Beobachter bekämpft Infanterie (`remagen-mission.html` `GUNNER_GROUND`, `gunnerGroundTargets`, `updateStorchGunner`):**
+  - Aufgedeckte Trupps (`sts.units`) sind Ziele des Beobachter-MG bis 450 m, am Boden in der hinteren Halbebene, in der Luft im Heckkegel unter 250 m AGL.
+  - Funk: „THEY'RE AHEAD OF US — SWING THE TAIL ROUND“, „ENGAGING THE INFANTRY — KEEP YOUR TAIL TOWARD THEM“.
+  - Gemessen: am Boden fällt ein Trupp 250 m hinten, einer 250 m vorn bleibt unbeschossen (19 Schuss); im Tiefflug 10 Schuss.
+- **Checkpoints:**
+  - Storch (`stsCheckpoint`/`stsRestoreCheckpoint`, `checkpoint-rhine.js`): Phase, Uhren, Trupps (Lage, Treffer, aufgedeckt), Leitung. Die Trupps werden mit `stsUnit` neu gebaut.
+  - Catalina Pazifik (`pbyCheckpoint`/`pbyRestoreCheckpoint`, `checkpoint-pacific.js`): Suchring, Ziel, Floß mit Farbfleck und Männern, U-Boot-Zustand, Falschkontakte, Blasenspur, Peilungen, Uhren. Auf dem Wasser wird nicht gespeichert.
+  - Test `okinawa/tests/pby-checkpoint-browser.cjs` (Sortie 24/25/26, kaltes Neuladen, Continue, Resume): grün.
+- **Rhein-GPU:**
+  - AO (`graphics-post.js`): 8 statt 12 Tiefenabtastungen, früher Ausstieg ab 1 200 m, Ausblendung 700–1 200 m.
+  - Gemessen (SwiftShader, isoliert): Abdunklung nah 0,80 statt 0,81, 0,31 % der Pixel > 4 Stufen anders, fern 0. AO-Pass Median ~62 → ~52 ms, große Streuung.
+  - PCSS unverändert: auf reinem Bodenbild gleich teuer wie PCF (im Rauschen).
+- **Draw-Calls bündeln: gemessen, nicht gebaut.**
+  - In 300 m: 728 Draws, davon Straßen 36, Fluss 36, See 35, Bahn 24, Gelände 36, Sprites 50, Baumarten je ~30–36, Gebäude 9 je Bucket.
+  - Fluss+See zusammenlegen spart ~35 Draws (5 %). Die Geländeanpassung (Builds 197/235, `syncSurface`/`redrapeWater`) rechnet aber mit einem festen Höhenversatz je Mesh, Fluss 0,65 und See 0,9 m. Gleicher Versatz ergäbe Flackern in den Überlappungen, und die Farben unterscheiden sich.
+  - Baumarten je Zelle bräuchte gemischte Geometrien in einem Instanzpuffer. Beides ist Umbau mit Bildrisiko, für einen Engpass, den das iPad nicht hat: die Anzeige zeigt dort „GPU (pixels)“, CPU 6–8 ms.
+- **Tests:**
+  - Neu: `ar234-rig.cjs`, `ar234-storch-browser.cjs` (→ `app/release/ar234-storch-browser.json`), `pby-checkpoint-browser.cjs`.
+  - Angepasst: `campaign.cjs` (35 Einsätze), `custom-sortie.cjs` (13 Flugzeuge), `sites-/squad-browser` (35 Pläne). `fleet-dynamics.cjs`/`flight-envelope.cjs` nehmen die Ar 234 wie Storch/Catalina aus (nur Kern).
+- Kennungen 294 (Seiten, Board, Hangar, Xcode, `build-app.mjs`, Tests, `?v=294` der geänderten Module).
+**Offen:** kein iPad-Test; die Ar 234 ist nicht von Hand geflogen (Startlauf knapp: 800 von 860 m mit Bombe); Storch-Infanterie kann man nur mit dem Heck zum Feind treffen (gewollt); die Rhein-Catalina „Dumbo“ läuft über denselben Storch-Zustand (`stsKind` 'dumbo') und wird damit mitgespeichert, ist aber nicht eigens im Browser geprüft (getestet: Storch-Rettungsflug, Pazifik-Sorties 24–26).
+
 **19.11.2026, Build 293: Rhein-Ruckeln – Shader und Texturen werden jetzt vor dem Flug vorbereitet statt im ersten Bild, in dem ein Objekt auftaucht.**
 Nutzer (drei iPad-Bilder Build 292, Ultra/High, Frame rate „free“, Pixelverhältnis 2,0): „Pazifik cool. Rhein ruckelt.“ Die Messanzeige zeigt im Normalfall 34–37 FPS, „limit: GPU (pixels)“, CPU 6–8 ms (draws 5–6). Im Ruckelbild aber 18 FPS, P95 148 ms, CPU 23 ms mit „draws 16,9“. Die Mehrzeit liegt also im Abschicken der Zeichenbefehle, nicht in Spiellogik oder Pixeln.
 - **Gemessen im echten Spiel** (Rhein Ultra/High, P-47 Luftstart, `broken`, 60 s geradeaus nach Osten in ~110 m über Grund; Chromium/SwiftShader, Zeichenaufrufe als No-op; jede Shader-Kompilierung, jeder Textur-Upload und jedes Zurücklesen pro Bild gezählt; Messskript im Arbeitsordner):

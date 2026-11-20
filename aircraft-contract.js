@@ -67,6 +67,27 @@
     segments:[{x0:2.6,x1:6.4,y0:2.900,y1:2.908,te:[-1.74,-1.74]},{x0:6.4,x1:9.55,y0:2.908,y1:3.013,te:[-1.74,-1.42]}]},
    muzzles:1,
    budget:{triangles:30000,meshes:48,materials:8,images:4,imageSize:2048,bytes:6*1024*1024}
+  },
+  // Build 294: twin-jet bomber (Arado Ar 234 B-2). The GLB is delivered in flying trim: flaps, ailerons, elevators and rudder are hinged, but it has
+  // no landing gear (only the fuselage bulges the B-2's main wheels retracted into, 'RetractedSkidFairings'). The class builds a tricycle gear
+  // from these figures, measured on assets/aircraft/ar234b2-own.glb (root frame, fuselage axis y=0): underside -0.80 under the centre line, -0.67 at
+  // |x| .5, -0.47 at |x| .7 (z 0..1.5); nose underside about -0.64 at z 4; wing root z -0.48..1.99, so the centre of gravity (25 % chord) sits near
+  // z 1.4, ahead of the mains (z .85). Ground line -1.30: the published height of 4.3 m reaches the fin tip (+3.02). The main legs retract forward into
+  // the bulges, the nose leg backward under the cockpit; the generated legs are hidden once they are up (the bulges show where they went).
+  'jet-bomber-twin':{
+   parts:{
+    flightFlaps:{group:true},
+    FlapLeft:{drive:'flapLeft',parent:'flightFlaps'},FlapRight:{drive:'flapRight',parent:'flightFlaps'},
+    AileronLeft:{drive:'roll'},AileronRight:{drive:'roll'},
+    ElevatorLeft:{drive:'pitch'},ElevatorRight:{drive:'pitch'},Rudder:{drive:'yaw'}
+   },
+   optional:{gear:'gear',GearLeft:'gear',GearRight:'gear',NoseGear:'gear'},
+   gearBuild:{ground:-1.30,
+    main:{x:.45,y:-.66,z:.85,wheelX:.17,radius:.44,width:.22,up:-1.48},
+    nose:{y:-.62,z:4.05,radius:.30,width:.16,up:1.42}},
+   tyres:{GearLeft:1,GearRight:1,NoseGear:1},
+   muzzles:2,   // two rear-firing MG 151/20 (MuzzleRear1/2): the game's gunner fires them at pursuers
+   budget:{triangles:25000,meshes:40,materials:10,images:4,imageSize:2048,bytes:4*1024*1024}
   }
  };
  const MOVING=['GearLeft','GearRight','TailGear','NoseGear','FlapLeft','FlapRight','AileronLeft','AileronRight','ElevatorLeft','ElevatorRight','Rudder','Canopy','GearDoorLeft','GearDoorRight','RadiatorFlapLeft','RadiatorFlapRight','FloatLeft','FloatRight','BlisterHatchLeft','BlisterHatchRight'];
@@ -156,6 +177,30 @@
   }
   d.src.add(group);collectFlaps(d);return true;
  }
+ // Build 294: generated tricycle gear (class spec gearBuild). Each leg is a hinge node with its own rig (drive 'gear', range [up angle, 0]),
+ // named like a delivered leg, so pose() and clones treat it as the model's own; the tyres carry userData.groundWheel for AircraftGround.
+ function buildGear(d){
+  const spec=d.spec.gearBuild;if(!spec||d.src.getObjectByName('gear'))return false;
+  const Tj=T(),V=Tj.Vector3,group=new Tj.Group();group.name='gear';
+  const metal=new Tj.MeshStandardMaterial({color:0x5d655f,roughness:.5,metalness:.45}),piston=new Tj.MeshStandardMaterial({color:0xbcc2c4,roughness:.25,metalness:.7}),
+   tyre=new Tj.MeshLambertMaterial({color:0x161816});
+  const strut=(a,b,r,m)=>{const v=new V().subVectors(b,a),mesh=new Tj.Mesh(new Tj.CylinderGeometry(r,r*1.05,v.length(),10),m);
+   mesh.position.copy(a).add(b).multiplyScalar(.5);mesh.quaternion.setFromUnitVectors(new V(0,1,0),v.normalize());mesh.castShadow=true;return mesh;};
+  const wheel=(radius,width)=>{const g=new Tj.Group();g.userData.wheelRadius=radius;
+   const t=new Tj.Mesh(new Tj.TorusGeometry(radius-width*.4,width*.4,10,28),tyre);t.rotation.y=Math.PI/2;t.userData.groundWheel=true;t.name='tyre';t.castShadow=true;g.add(t);
+   const hub=new Tj.Mesh(new Tj.CylinderGeometry(radius*.5,radius*.5,width*.92,16),metal);hub.rotation.z=Math.PI/2;g.add(hub);return g;};
+  const leg=(name,pos,axleLocal,radius,width,up)=>{
+   const hinge=new Tj.Group();hinge.name=name;hinge.position.copy(pos);
+   hinge.userData.rig={drive:'gear',axis:[1,0,0],range:[up,0]};hinge.userData.rigRest=[0,0,0,1];
+   const top=new V(0,.04,0),knee=new V(axleLocal.x*.4,axleLocal.y*.55,0);
+   hinge.add(strut(top,knee,.075,metal),strut(knee,new V(axleLocal.x*(axleLocal.x?.75:0),axleLocal.y,0),.05,piston));
+   if(axleLocal.x)hinge.add(strut(new V(axleLocal.x*.75,axleLocal.y,0),axleLocal,.04,metal));   // the stub axle out to the wheel
+   const w=wheel(radius,width);w.position.copy(axleLocal);hinge.add(w);group.add(hinge);d.parts[name]=hinge;return hinge;};
+  const m=spec.main,axleY=spec.ground+m.radius-m.y;
+  for(const side of [-1,1])leg(side<0?'GearLeft':'GearRight',new V(side*m.x,m.y,m.z),new V(side*m.wheelX,axleY,0),m.radius,m.width,m.up);
+  const n=spec.nose;leg('NoseGear',new V(0,n.y,n.z),new V(0,spec.ground+n.radius-n.y,0),n.radius,n.width,n.up);
+  d.src.add(group);d.parts.gear=group;return true;
+ }
  function turn(d,node,amount){
   const rig=node.userData.rig;if(!rig)return;
   const angle=GAIN_DRIVES.includes(rig.drive)?rig.gain*clamp(amount,-1,1):rig.range[0]+(rig.range[1]-rig.range[0])*clamp(amount);
@@ -167,7 +212,8 @@
   // unrotated with its axis on local Z, so that Euler channel is exactly the shaft.
   if(d.parts.Propeller){d.parts.Propeller.name='prop';d.parts.Propeller.userData.articulationPart=true;}
   else for(const k of ['PropellerLeft','PropellerRight'])if(d.parts[k])d.parts[k].userData.articulationPart=true;   // the twin keeps its two named rotors
-  d.parts.gear.userData.articulationPart=true;if(d.parts.flightFlaps)d.parts.flightFlaps.userData.articulationPart=true;
+  buildGear(d);   // Build 294: the jet bomber's GLB has no gear; its class spec generates the tricycle legs
+  if(d.parts.gear)d.parts.gear.userData.articulationPart=true;if(d.parts.flightFlaps)d.parts.flightFlaps.userData.articulationPart=true;
   buildFlaps(d);   // Build 259: the amphibian's GLB has no flaps; its class spec generates the hinged panels
   buildCenterSection(d);   // Build 259: the Storch's wing centre section
   frame.userData.nativeContract=true;pose(frame,1,{left:0,right:0});return true;
@@ -183,7 +229,7 @@
   for(const h of d.flaps){   // generated flap panels: hidden until the lever moves, then rest slope - angle x amount (positive x turn lifts the trailing edge: nose is +Z)
    const amount=clamp(h.userData.flapSide<0?flaps.left:flaps.right);h.rotation.x=h.userData.flapRest-h.userData.flapAngle*amount;h.visible=amount>.012;
   }
-  d.parts.gear.visible=true;
+  if(d.parts.gear)d.parts.gear.visible=!d.spec.gearBuild||g>.02;   // generated legs vanish into the bulges once they are up
   if(d.src.userData.contractGear!==g){for(let p=d.src;p;p=p.parent)delete p.userData.groundSupports;d.src.userData.contractGear=g;}
  }
  function controls(o,roll,pitch){

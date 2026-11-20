@@ -183,11 +183,11 @@
    "wire": true,
    "hidden": true,
    "decoyDist": [
-    1141
+    1016
    ],
    "nestDist": [
-    3470,
-    5442
+    3098,
+    5699
    ],
    "weather": "clear",
    "radio": null
@@ -228,8 +228,8 @@
     "squads": 1,
     "spawnT": 7,
     "minD": 171,
-    "firstHit": 25.7,
-    "loss": 11.2,
+    "firstHit": 29.1,
+    "loss": 8,
     "alive": true,
     "tracers": 1
    },
@@ -238,20 +238,20 @@
     "squads": 1,
     "spawnT": 5,
     "minD": 171,
-    "firstHit": 14.4,
-    "loss": 49.9,
+    "firstHit": 17.6,
+    "loss": 46.1,
     "alive": true,
-    "tracers": 0
+    "tracers": 1
    },
    {
     "d": 2,
     "squads": 2,
     "spawnT": 4,
     "minD": 171,
-    "firstHit": 13.3,
+    "firstHit": 9.7,
     "loss": 60,
     "alive": false,
-    "tracers": 2
+    "tracers": 1
    }
   ],
   "wireWarn": true,
@@ -378,12 +378,12 @@
     "spd": 0,
     "roll": false,
     "fig": true,
-    "dFig": 77,
+    "dFig": 59,
     "agl": 1.3,
-    "x": 69,
+    "x": 66,
     "text": "OFFICER RUNNING — HOLD STILL"
    },
-   "boardT": 14.5,
+   "boardT": 12.6,
    "done": {
     "phase": "home",
     "courier": 1,
@@ -518,7 +518,7 @@
   },
   "careless": {
    "zone": 2,
-   "lost": 27.6,
+   "lost": 21.4,
    "alive": true
   },
   "hunters": 2,

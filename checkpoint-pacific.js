@@ -3,7 +3,7 @@
 (function(){
  const C=SortieCheckpoint;
  const identity=(i,saved)=>CustomSortie.checkpointIdentity('pacific',MISSIONS,i,saved);
- function airborne(){return !MISSIONS[mission]?.secretJet&&!MISSIONS[mission]?.pby&&(state===ST.FLIGHT||state===ST.PAUSED&&prePauseState===ST.FLIGHT)&&P.alive&&!P.onDeck&&!P.deckRun&&!P.arrestRun&&!carrierIntro&&!bailout&&!ditching;}
+ function airborne(){return !MISSIONS[mission]?.secretJet&&!(MISSIONS[mission]?.pby&&(P.onWater||typeof pbyCheckpoint!=='function'))&&(state===ST.FLIGHT||state===ST.PAUSED&&prePauseState===ST.FLIGHT)&&P.alive&&!P.onDeck&&!P.deckRun&&!P.arrestRun&&!carrierIntro&&!bailout&&!ditching;}
  function snapshot(){
   return {mission,custom:MISSIONS[mission].custom||null,identity:identity(mission),label:MISSIONS[mission].sub,
    player:C.capture(P,['_keys','_stickActive','_keyboardFlightActive']),operation:C.capture(pacificOps),plan:C.capture(pacificPlan),
@@ -16,7 +16,7 @@
    weapons:{torpedoes:C.projectiles(torpedoes),bombs:C.projectiles(bombs),bullets:C.projectiles(bullets),tracers:C.projectiles(tracers),
     etorps:C.projectiles(etorps),enemyBombs:C.projectiles(enemyBombs),wingShots:wingShots.map(w=>({...C.entity(w),targetIndex:ships.indexOf(w.tgt)}))},
    clock:clock.elapsedTime,sceneryTime:operationalScenery?.time||0,navigation:C.navigationState(navigation),
-   flares:flareSupport?.checkpoint()};
+   flares:flareSupport?.checkpoint(),pby:typeof pbyCheckpoint==='function'?pbyCheckpoint():null};
  }
  async function load(saved){
   CustomSortie.restoreSaved('pacific',saved,MISSIONS,FlightPlans.pacific);selectedMission=saved.mission;
@@ -66,6 +66,7 @@
   if(operationalScenery)operationalScenery.time=saved.sceneryTime;
   flareSupport?.restoreCheckpoint(saved.flares);clock.elapsedTime=saved.clock;killCam=null;shakeT=0;radioQ=[];radioT=0;
   C.restoreNavigation(ensureNavigation(),saved.navigation);
+  if(saved.pby&&typeof pbyRestoreCheckpoint==='function'){P.onWater=false;pbyRestoreCheckpoint(saved.pby);}   // Build 294: Catalina patrols
   hideOverlays();state=ST.FLIGHT;releaseHeldControls();setThrottleUI(P.throttle);applyLoadoutUI();resetControlUI();
   const aero=document.getElementById('aeroBtn');aero.classList.toggle('on',aeroMode);aero.innerHTML='REALISTIC<br>'+(aeroMode?'ON':'OFF');
   updatePlaneMesh(0);updateCamera(0);updateHUD();bombCue.reset();clock.getDelta();

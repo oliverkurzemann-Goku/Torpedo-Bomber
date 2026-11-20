@@ -10,6 +10,7 @@ const loadProfiles={
  bf109:{fuel:.11,bomb:.085,rocket:.002,tank:.022,tankFuel:.0825}, // tankFuel: 300 l at the 400 l internal fraction
  fw190:{fuel:.12,bomb:.065,rocket:.0025,tank:.025,tankFuel:.06},
  ju87:{fuel:.12,bomb:.055,rocket:.002},me262:{fuel:.14,bomb:.055,rocket:.002},
+ ar234:{fuel:.31,bomb:.059,rocket:0},   // Build 294: Ar 234 B-2, 3 150 kg of J2 and one SC 500 on 8 410 kg
  fi156:{fuel:.08,bomb:0,rocket:0},   // Build 249: Storch, 108 kg of fuel on 1 260 kg
 
  pby:{fuel:.26,bomb:.016,rocket:0},   // Build 252: Catalina, 4 770 kg of fuel on 16 066 kg
@@ -23,6 +24,7 @@ const Handling={
   fw190:{reference:125*.44704,cleanAdd:6,flapGain:7},ju87:{reference:150/3.6,cleanAdd:6.5,flapGain:7},
   me262:{reference:230/3.6,cleanAdd:8,flapGain:5},me163:{reference:200/3.6,cleanAdd:9,flapGain:10},
   fi156:{reference:70/3.6,cleanAdd:5,flapGain:4},
+  ar234:{reference:220/3.6,cleanAdd:8,flapGain:6},   // Build 294: Ar 234 approach about 220 km/h (C: 1.3 x the computed landing stall)
   pby:{reference:78*.514444,cleanAdd:3,flapGain:0}},   // Build 252: Catalina final approach about 78 kt (1.2 x the loaded stall; no flaps)   // Build 249: Storch final approach about 70 km/h (about 1.3 x the landing stall)
  configure(p,kind,weapon='bomb',theatre='europe'){p.loadProfile={kind,weapon,theatre};},
  configuration(p,stall){
@@ -36,13 +38,13 @@ const Handling={
   if(p.departureAge==null)return {release:1,rate:Infinity,acceleration:Infinity};
   p.departureAge+=dt;
   const kind=p.loadProfile?.kind||p.ac;
-  const initial={p47:17.5,bf109:12,fw190:11,ju87:7.5,me262:14,me163:24,avenger:8,sbd:8.5,corsair:12,zero:11,fi156:6,pby:5}[kind]||9;
-  const climbSpeed={p47:92,bf109:105,fw190:108,ju87:78,me262:140,me163:200,avenger:90,sbd:86,corsair:110,zero:94,fi156:30,pby:46}[kind]||100;
+  const initial={p47:17.5,bf109:12,fw190:11,ju87:7.5,me262:14,me163:24,avenger:8,sbd:8.5,corsair:12,zero:11,fi156:6,pby:5,ar234:12}[kind]||9;
+  const climbSpeed={p47:92,bf109:105,fw190:108,ju87:78,me262:140,me163:200,avenger:90,sbd:86,corsair:110,zero:94,fi156:30,pby:46,ar234:130}[kind]||100;
   // Only airspeed opens the envelope: waiting or gaining height cannot release it.
   const entry=stall*1.12,phase=clamp((p.spd-entry)/Math.max(15,climbSpeed-entry),0,1),release=phase*phase*(3-2*phase);
   const rate=(initial+Math.max(0,p.spd-entry)*.16)*(.35+.65*clamp(p.throttle||0,0,1))*Damage.power(p);
   if(release>=1)p.departureAge=null;
-  const acceleration={p47:4.5,bf109:3.8,fw190:3.5,ju87:2,me262:5,me163:8,avenger:2.2,sbd:2.4,corsair:3.8,zero:3.6,fi156:2.4,pby:1.5}[kind]||3;
+  const acceleration={p47:4.5,bf109:3.8,fw190:3.5,ju87:2,me262:5,me163:8,avenger:2.2,sbd:2.4,corsair:3.8,zero:3.6,fi156:2.4,pby:1.5,ar234:4}[kind]||3;
   return {release,rate,acceleration};
  },
  sample(p){

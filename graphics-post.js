@@ -33,18 +33,21 @@
     'float cur=s/w,old=texture2D(prev,vec2(.5)).r;gl_FragColor=vec4(rate>=1.?cur:mix(old,cur,rate),0.,0.,1.);}';
   // Build 291: ambient occlusion from the depth buffer (both games, High, faded in near the ground by the game).
   // Half resolution; the view-space position is rebuilt from depth, the normal from the smaller of the two depth
-  // differences per axis (no halo at silhouettes); 12 taps on a disc of `radius` metres turned on a 4x4 pattern,
+  // differences per axis (no halo at silhouettes); 8 taps (Build 294; 12 before) on a disc of `radius` metres turned on a 4x4 pattern,
   // which the depth-aware 4x4 box below averages away exactly. Each tap that rises above the surface's tangent plane
   // darkens by how steeply it rises (cosine above .3, i.e. occluders steeper than ~17 deg: houses, trees, hulls, aircraft;
   // the gentle creases of the terrain mesh would otherwise draw stripes across flat ground), fading out between one and
-  // two radii. Sky (depth 1) and far ground (fades 900-1600 m) stay at 1.
+  // two radii. Sky (depth 1) and far ground (fades 700-1200 m, Build 294; 900-1600 before) stay at 1.
   const AO=`uniform sampler2D depth;uniform vec2 texel,tanHalf;uniform float near,far,radius,scale;varying vec2 vUv;
     float viewZ(vec2 uv){float d=texture2D(depth,uv).r;return 2.*near*far/((far+near)-(2.*d-1.)*(far-near));}
     vec3 viewPos(vec2 uv,float z){return vec3((uv*2.-1.)*tanHalf*z,-z);}
     void main(){
       float d0=texture2D(depth,vUv).r;
       if(d0>=.99999){gl_FragColor=vec4(1.,1.,0.,1.);return;}
-      float z=viewZ(vUv);vec3 p=viewPos(vUv,z);
+      float z=viewZ(vUv);
+      // Build 294: past the fade nothing is darkened; return before the normal and the taps (it used to compute them and mix them away)
+      if(z>=1200.){gl_FragColor=vec4(1.,z/2000.,0.,1.);return;}
+      vec3 p=viewPos(vUv,z);
       // Normal: over 3 texels each way (the depth buffer comes in steps; one texel apart two rows can share a depth
       // and the ground would read as a wall). Where the two sides disagree (an edge) the shorter side is used.
       vec2 ox=vec2(3.*texel.x,0.),oy=vec2(0.,3.*texel.y);
@@ -57,14 +60,14 @@
       float rot=(cell.x*4.+cell.y)*.39269908+.2;
       float r=clamp(radius*scale/z,4.,48.);
       float sum=0.;
-      for(int i=0;i<12;i++){
+      for(int i=0;i<8;i++){
         float fi=float(i),a=fi*2.3999632+rot;
-        vec2 uv=vUv+vec2(cos(a),sin(a))*sqrt((fi+.5)/12.)*r*texel;
+        vec2 uv=vUv+vec2(cos(a),sin(a))*sqrt((fi+.5)/8.)*r*texel;
         vec3 v=viewPos(uv,viewZ(uv))-p;float l=length(v);
         sum+=(dot(v,n)>.004*z?max(0.,dot(v,n)/max(l,.05)-.3)/.7:0.)*(1.-smoothstep(radius,2.*radius,l));
       }
-      float ao=clamp(1.-sum*2.2/12.,0.,1.);
-      ao=mix(ao,1.,smoothstep(900.,1600.,z));
+      float ao=clamp(1.-sum*2.2/8.,0.,1.);
+      ao=mix(ao,1.,smoothstep(700.,1200.,z));
       gl_FragColor=vec4(ao,z/2000.,0.,1.);
     }`;
   const AO_BLUR=`uniform sampler2D src;uniform vec2 texel;varying vec2 vUv;

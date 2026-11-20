@@ -16,6 +16,8 @@
   fi156:{name:'Fi 156 C Storch',theatre:'europe',kits:['rear'],bombs:0,freeOnly:true},
   // Build 252: the Catalina is an amphibian flying boat: it takes off from the Rhine or from the strip. Free flight only; bow gun fired by the player, the two blister guns fire by themselves.
   pby:{name:'PBY-5A Catalina',theatre:'europe',kits:['guns','bombs'],bombs:2,freeOnly:true},
+  // Build 294: Arado Ar 234 B-2 jet bomber: one SC 500 under the fuselage; its two rear guns fire by themselves at pursuers.
+  ar234:{name:'Ar 234 B-2 Blitz',theatre:'europe',kits:['bombs','rear'],bombs:1,strikeOnly:true},   // no forward guns: free flight and the strike assignments only
   me163:{name:'Me 163B Komet',theatre:'europe',kits:['guns'],airOnly:true},
   avenger:{name:'TBM Avenger',theatre:'pacific',kits:['guns','torpedo','bombs'],bombs:2},
   sbd:{name:'SBD Dauntless',theatre:'pacific',kits:['guns','bombs'],bombs:3},
@@ -41,7 +43,7 @@
  function aircraft(theatre,task){return Object.keys(planes).filter(ac=>{
   const p=planes[ac];if(p.theatre!==theatre)return false;
   if(ac==='secretjet')return task==='free'&&secretJetUnlocked();
-  if(theatre==='europe')return (task!=='intercept'||ac!=='p47')&&(!p.airOnly||['free','fighter','intercept'].includes(task))&&(!p.freeOnly||task==='free');
+  if(theatre==='europe')return (task!=='intercept'||ac!=='p47')&&(!p.airOnly||['free','fighter','intercept'].includes(task))&&(!p.freeOnly||task==='free')&&(!p.strikeOnly||['free','convoy','bridge','factory'].includes(task));
   return task==='torpedo'?ac==='avenger':task==='defend'?ac==='zero':task==='ships'?ac!=='zero':true;
  });}
  function loadouts(ac,task){const p=planes[ac];if(!p)return [];

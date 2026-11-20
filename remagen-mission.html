@@ -313,7 +313,7 @@
   <div style="width:100%;height:4px;background:repeating-linear-gradient(45deg,#ffd400,#ffd400 8px,#111 8px,#111 16px);"></div>
   <span id="testVersionBannerText" style="background:#111;color:#ffd400;font-family:monospace;font-weight:800;font-size:11px;letter-spacing:.5px;padding:3px 10px;border:1px solid #ffd400;border-top:none;border-radius:0 0 6px 6px;"></span>
 </div>
-<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 293';</script>
+<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 294';</script>
 <!-- ===== END TEMP TEST-ONLY VERSION BANNER ===== -->
 <div id="app"></div>
 <style>
@@ -355,7 +355,7 @@
   <div id="gunsight"></div>
   <div id="radio"></div>
   <div id="rhinePerfHud" hidden></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 293 · REAL RHINE</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 294 · REAL RHINE</div>
 
   <div id="apr">
     <div id="aprCall"></div>
@@ -410,7 +410,7 @@
 </div>
 
 <div class="overlay hidden" id="menu" data-campaign="europe">
-  <div class="menuTop"><a id="selBtn" href="index.html?v=293">&#9664; Change Game</a><span class="menuMeta">RHINE OPERATIONS<br>BUILD 293</span></div>
+  <div class="menuTop"><a id="selBtn" href="index.html?v=294">&#9664; Change Game</a><span class="menuMeta">RHINE OPERATIONS<br>BUILD 294</span></div>
   <div class="card menuCard">
     <aside class="menuOverview" aria-label="Campaign and pilot options">
     <div class="campaignArt" aria-hidden="true"></div>
@@ -446,7 +446,7 @@
     </aside>
     <section class="missionPanel" aria-label="Mission selection">
       <div class="secLbl">Choose your sortie · 15 missions + 4 bonus &amp; training</div>
-      <a class="hangarLink" href="hangar.html?theatre=europe&amp;v=293">CUSTOM MISSION · CHOOSE AIRCRAFT &amp; LOADOUT →</a>
+      <a class="hangarLink" href="hangar.html?theatre=europe&amp;v=294">CUSTOM MISSION · CHOOSE AIRCRAFT &amp; LOADOUT →</a>
 <div id="missionSel" role="group" aria-label="European missions"></div>
       <div id="missionBlurb" class="missionBlurb" aria-live="polite"></div>
       <div class="menuConfig">
@@ -603,13 +603,13 @@
 <script src="game-runtime.js?v=293"></script>
 <script src="graphics-quality.js?v=291"></script>
 <script src="graphics-light.js?v=292"></script>
-<script src="graphics-post.js?v=292"></script>
+<script src="graphics-post.js?v=294"></script>
 <script src="graphics-extras.js?v=291"></script>
 <script src="sortie-checkpoint.js?v=238"></script>
 <script src="ju87-native.js?v=218"></script>
 <script src="me262-native.js?v=206"></script>
 <script src="me163-native.js?v=218"></script>
-<script src="aircraft-contract.js?v=267"></script>
+<script src="aircraft-contract.js?v=294"></script>
 <script src="aircraft-articulation.js?v=258"></script>
 <script src="aircraft-rotors.js?v=172"></script>
 <script src="b17-native.js?v=201"></script>
@@ -635,9 +635,9 @@
 <script src="audio/flight-atmosphere.js?v=175"></script>
 <script src="sortie-systems.js?v=281"></script>
 <script src="me262-performance.js?v=238"></script>
-<script src="flight-envelope.js?v=258"></script>
-<script src="flight-dynamics.js?v=258"></script>
-<script src="flight-core.js?v=258"></script>
+<script src="flight-envelope.js?v=294"></script>
+<script src="flight-dynamics.js?v=294"></script>
+<script src="flight-core.js?v=294"></script>
 <script src="flight-control.js?v=267"></script>
 <script src="dogfight-ai.js?v=238"></script>
 <script src="squad.js?v=238"></script>
@@ -645,13 +645,13 @@
 <script src="duel.js?v=238"></script>
 <script src="audio/aircraft-engine.js?v=258"></script>
 <script src="p47-performance.js?v=204"></script>
-<script src="sortie-features.js?v=258"></script>
+<script src="sortie-features.js?v=294"></script>
 <script src="ground-run.js?v=204"></script>
 <script src="ground-dust.js?v=181"></script>
 <script src="flight-indicators.js?v=198"></script>
-<script src="sortie-fuel.js?v=258"></script>
-<script src="operation-plans.js?v=267"></script>
-<script src="custom-sortie.js?v=267"></script>
+<script src="sortie-fuel.js?v=294"></script>
+<script src="operation-plans.js?v=294"></script>
+<script src="custom-sortie.js?v=294"></script>
 <script>
 // ============================================================
 //  REMAGEN 1945 — REAL TERRAIN (forked from thunderbolt-europe.html)
@@ -701,7 +701,7 @@ const ALLIED_AF_X=6000, ALLIED_AF_Z=15800;
 // OSM has no buildings or roads on its 900 m runway footprint.
 const GERMAN_AF_X=23600, GERMAN_AF_Z=25725;
 let AF_X=ALLIED_AF_X, AF_Z=ALLIED_AF_Z;
-function isGermanMission(m){return ['bf109','fw190','ju87','me262','me163','fi156'].includes(m.ac);}
+function isGermanMission(m){return ['bf109','fw190','ju87','me262','me163','fi156','ar234'].includes(m.ac);}
 function airfieldName(m){return isGermanMission(m)?'FORWARD STRIP':'BEAUFORT';}
 function selectMissionAirfield(m){
   const german=isGermanMission(m);
@@ -837,6 +837,14 @@ const AC={
         rollLim:1.56, pitchLim:1.15, stall:49, app:230/3.6, max:242, thrMin:42,
         hull:95, ammo:1200, bombs:2, rockets:0, gunDmg:3.0, gunRate:0.09, wing:12.51,
         col:0x626b58, band:0x33392a },
+  // Build 294: Arado Ar 234 B-2 Blitz (rig class jet-bomber-twin; data sheet SOURCES.ar234 in flight-core.js: 26.4 m2, 8 410 kg, 2 x Jumo 004B,
+  // 742 km/h at 6 000 m). The jet bomber of KG 76 that attacked the Ludendorff Bridge in March 1945. It flies on the computed core only (CORE_ONLY),
+  // carries one SC 500 under the fuselage (a heavier blast than the fighters' bombs, see dropBomb) and NO forward guns: its two rear MG 151/20 were
+  // aimed through a periscope - here they fire by themselves at a pursuer (updateStorchGunner, game decision C). Take-off rockets: SOURCES.ar234.rato.
+  ar234:{ name:'Ar 234 B-2 Blitz', rollAuth:0.7, pitchAuth:0.75, turn:0.6, gLim:4.5,
+        rollLim:1.40, pitchLim:1.0, stall:52, app:220/3.6, max:206, thrMin:42,
+        hull:110, ammo:400, bombs:1, rockets:0, gunDmg:1.2, gunRate:0.09, wing:14.4, noGuns:true,
+        col:0x737a6a, band:0x353b30 },
   me163:{ name:'Me 163B Komet', rollAuth:1.08, pitchAuth:1.08, turn:1.05, gLim:5.4,
         stickExponent:1.20, controlDamping:0.94, aeroResponse:0.26,
         rollLim:1.53, pitchLim:1.18, stall:51, app:200/3.6, max:238, thrMin:33,
@@ -1037,7 +1045,7 @@ async function loadRealWorld(){
 
   if(OSMManager.BUILD!==23||HistoricalObjectManager.BUILD!==21||LivingWorld.BUILD!==22||WorldVehicles.BUILD!==24) throw new Error('Terrain version mismatch. Reload Remagen.');
   document.getElementById('testVersionBannerText').textContent=
-    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 293 · MODULE 23';
+    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 294 · MODULE 23';
   heightProvider=new DEMHeightProvider(RTILE,'terrain-system/real/data/dem/');
   terrain=new TerrainManager(scene,RTILE,heightProvider);
   osmMgr=new OSMManager(scene,RTILE,terrain,'terrain-system/real/data/osm/');
@@ -1254,13 +1262,14 @@ const MODEL_URL={
   pby:   ['assets/aircraft/pby5a-own.glb'],
   pbyn:  ['assets/aircraft/pby5a-blackcat-own.glb'],
   me163: ['assets/aircraft/me163b-own.glb'],
-  me262: ['assets/aircraft/me262-noel.glb']
+  me262: ['assets/aircraft/me262-noel.glb'],
+  ar234: ['assets/aircraft/ar234b2-own.glb']   // Build 294: rig contract, generated tricycle gear (aircraft-contract.js jet-bomber-twin)
 };
-const REAL_SPAN={ p47:12.42, bf109:9.92, fw190:10.51, ju87:13.8, fi156:14.25, pby:31.7, pbyn:31.7, b17:31.62, b24:33.53, me163:9.3, me262:12.51 };   // metres, tip to tip
+const REAL_SPAN={ p47:12.42, bf109:9.92, fw190:10.51, ju87:13.8, fi156:14.25, pby:31.7, pbyn:31.7, b17:31.62, b24:33.53, me163:9.3, me262:12.51, ar234:14.4 };   // metres, tip to tip
 // Jet/rocket types: no propeller exists, so rigModel() must not go looking for one (see its
 // own comment - the Me262's round nacelle intakes and tail cone measure enough like a
 // hub/blade annulus to fool the same disc heuristic that works for every propeller aircraft).
-const JET_KINDS=['me262','me163'];
+const JET_KINDS=['me262','me163','ar234'];
 // Reported (real screenshot): the bombers flew with an enormous disc bolted to the nose.
 // Measured directly against the real models: findProp() built an 8.5 m "propeller" on the
 // b17.glb and a 3.8 m one on the b24.glb - both four-engine bombers with their real propellers
@@ -1324,6 +1333,7 @@ const MODEL_FIX={
   'me163.glb':                            {yaw:0},
   'assets/aircraft/ju87b2-own.glb': {yaw:0},
   'assets/aircraft/fi156c2-player.glb': {yaw:0},
+  'assets/aircraft/ar234b2-own.glb': {yaw:0},
   'assets/aircraft/pby5a-own.glb': {yaw:0},
   'assets/aircraft/pby5a-blackcat-own.glb': {yaw:0},
   'ju87.glb':                             {yaw:0},
@@ -1334,7 +1344,7 @@ function knownFix(url){
   const k=decodeURIComponent(url.split('?')[0]).toLowerCase();
   return MODEL_FIX[k]||null;
 }
-const AC_KINDS=['p47','bf109','fw190','ju87','fi156','pby','pbyn','b17','b24','me262','me163'];
+const AC_KINDS=['p47','bf109','fw190','ju87','fi156','pby','pbyn','b17','b24','me262','me163','ar234'];
 // Build 252: the Catalina's night paint is a second template; every model lookup goes through this key
 function modelKey(k){return k==='pby'&&typeof M==='function'&&M()?.night?'pbyn':k;}
 const modelTpl={}, modelRaw={}, modelBase={};
@@ -3292,7 +3302,13 @@ const MISSIONS=[
     text:'Fictional rescue ("Dumbo"): a downed airman drifts in a dinghy on the Rhine behind the line (yellow smoke, marked on the map). Fly the Catalina there with the wheels UP, alight on the river, taxi up to the dinghy and hold still while he is hauled aboard through the blister hatch; then take off from the water and bring him home to Beaufort. '
       +'German fighters come ten seconds after he is aboard: the bow gun and the two waist gunners fire by themselves. The wing-tip floats ride out for the water by themselves.'},
   {id:'blackcat',title:'Bonus Black Cat',sub:'Night Strike on the Ferry',ac:'pby',bonus:true,night:true,weather:'clear',kills:{ferry:1},traffic:'ferry',flakDefense:2,blackcat:true,doneText:'The ferry is burning. ',
-    text:'Fictional night strike ("Black Cat"): the Rhine ferry still runs after dark. Fly the Catalina low along the river, find it by its wake, drop the flares (L) and put the bombs on it: two 500 lb, release low and level. The ferry guns and the flak at the crossing shoot back; the paint is black, the engines are loud. Home to Beaufort, wheels down for the strip.'}
+    text:'Fictional night strike ("Black Cat"): the Rhine ferry still runs after dark. Fly the Catalina low along the river, find it by its wake, drop the flares (L) and put the bombs on it: two 500 lb, release low and level. The ferry guns and the flak at the crossing shoot back; the paint is black, the engines are loud. Home to Beaufort, wheels down for the strip.'},
+  // Build 294: the Arado Ar 234 B-2 Blitz (index 34, appended; German side, solo). Based on KG 76's jet attacks on the Ludendorff Bridge, 7-17 March 1945.
+  // The two Thunderbolts are optional (`fightersOptional`): an Ar 234 has no forward guns, it outruns them; its rear guns fire by themselves.
+  {id:'blitz',title:'Bonus Blitz',sub:'KG 76 at the Bridge',ac:'ar234',bonus:true,weather:'broken',kills:{bridge:1},flakDefense:3,enemyAir:2,fightersOptional:true,doneText:'The span is down. ',
+    text:'Based on KG 76\'s Ar 234 attacks on the Ludendorff Bridge, 7-17 March 1945 (a playable scenario, not a reconstruction of one sortie). Take off with one SC 500; the two take-off rockets fire by themselves on the roll. '
+      +'Come in fast in a shallow dive along the span and release on the bomb cue. The crossing is ringed with Allied flak and two Thunderbolts patrol above it: you cannot fight them, you outrun them - the two rear guns fire by themselves at anything behind you. '
+      +'One bomb: a miss means landing, re-arming and going again.'}
 ];
 function M(){ return MISSIONS[mission]; }
 function isFree(){ return !!M().free; }
@@ -3667,8 +3683,19 @@ function gunnerTargets(){
   for(const t of targets)if(t.alive&&t.kind==='nightfighter'&&t.group)out.push({pos:t.group.position,bomber:false});
   return out;
 }
+// Build 294: the Storch's observer also fires on the ground troops of the Storch sorties (revealed squads and machine-gun nests), not only on aircraft:
+// in the air at troops in his rear cone below 250 m, on the ground over the whole rear hemisphere (he swings the MG 15 round; troops ahead of the nose
+// need the aeroplane turned). Aircraft come first. Range 450 m: a little more than the troops' own rifles (330-400 m), so a crew that turns its tail
+// to a squad in time can hold it off; a squad takes about four hits (1.2 hp, .3 a round).
+const GUNNER_GROUND={range:450,agl:250,rear:-.15,lift:1.1};
+function gunnerGroundTargets(){
+  const out=[];if(P.ac!=='fi156'||typeof sts==='undefined'||!sts||!sts.units)return out;
+  for(const a of sts.units)if(a.revealed&&a.t.alive)out.push({pos:new THREE.Vector3(a.x,a.group.position.y+GUNNER_GROUND.lift,a.z),ground:true,unit:a});
+  return out;
+}
 function updateStorchGunner(dt){
-  if((P.ac!=='fi156'&&P.ac!=='pby')||!P.alive||state!==ST.FLIGHT||!playerModel||P.onGround)return;
+  if((P.ac!=='fi156'&&P.ac!=='pby'&&P.ac!=='ar234')||!P.alive||state!==ST.FLIGHT||!playerModel)return;
+  if(P.onGround&&P.ac!=='fi156')return;
   const g=P.gunner||(P.gunner={burst:0,pause:.6,t:0,target:null,sound:0});
   g.sound-=dt;
   const back=noseDir().multiplyScalar(-1);
@@ -3682,6 +3709,17 @@ function updateStorchGunner(dt){
     if(P.ac==='pby'){if(v.dot(fwd)<GUNNER_PBY.front&&v.dot(back)<-GUNNER_PBY.side-.0)continue;}
     else if(v.dot(back)<1-GUNNER.cone*1.6)continue;
     best=t;bestD=dist;
+  }
+  // no aircraft to shoot at: the ground troops (Storch only)
+  if(!best){
+    const agl=P.pos.y-groundY(P.pos.x,P.pos.z);let gd=GUNNER_GROUND.range;
+    if(P.onGround||agl<GUNNER_GROUND.agl)for(const t of gunnerGroundTargets()){
+      const v=t.pos.clone().sub(P.pos),dist=v.length();if(dist>gd||dist<8)continue;v.normalize();
+      const along=v.dot(back);
+      if(P.onGround?along<GUNNER_GROUND.rear:along<1-GUNNER.cone*1.6){if(P.onGround&&!g.toldTurn&&dist<400){g.toldTurn=true;radioSay("OBSERVER: THEY'RE AHEAD OF US — SWING THE TAIL ROUND AND I'LL HAVE THEM");}continue;}
+      best=t;gd=dist;
+    }
+    if(best&&!g.toldFire){g.toldFire=true;radioSay('OBSERVER: ENGAGING THE INFANTRY — KEEP YOUR TAIL TOWARD THEM');}
   }
   g.target=best;
   // the gun barrel swings toward the target (cosmetic): the model's own yaw pivot, limited to its gain
@@ -3699,7 +3737,7 @@ function updateStorchGunner(dt){
   if(g.burst<=0){g.pause=GUNNER.pause[0]+Math.random()*(GUNNER.pause[1]-GUNNER.pause[0]);return;}
   if(g.t>0)return;
   g.t=P.ac==='pby'?GUNNER_PBY.interval:GUNNER.interval;
-  const ports=AircraftContract.muzzles(playerModel,planeGroup);let port=ports.find(p=>p.name==='MuzzleRear')||ports[0];
+  const ports=AircraftContract.muzzles(playerModel,planeGroup);let port=ports.find(p=>p.name==='MuzzleRear')||(P.ac==='ar234'?ports[gunVolley%2]:null)||ports[0];   // Build 294: the Ar 234's two rear guns take turns
   if(P.ac==='pby'){
     // bow gun when the target is ahead, otherwise the blister on that side
     const ahead=best.pos.clone().sub(P.pos).normalize().dot(noseDir())>GUNNER_PBY.front;
@@ -3717,9 +3755,10 @@ function updateStorchGunner(dt){
   // aim with a little lead: the target's position one flight time ahead (its velocity is not tracked here, so the lead is its closing along the tail line)
   const dir=best.pos.clone().sub(origin).normalize();
   dir.add(new THREE.Vector3((Math.random()-.5)*GUNNER.spread*2,(Math.random()-.5)*GUNNER.spread*2,(Math.random()-.5)*GUNNER.spread*2)).normalize();
-  const m=CombatFX.round('rifle',gunVolley++);m.userData.roundBarrel=0;
+  const heavy=P.ac==='ar234';   // Build 294: the Ar 234's two 20 mm MG 151/20 hit harder than the Storch's rifle-calibre MG
+  const m=CombatFX.round(heavy?'cannon':'rifle',gunVolley++);m.userData.roundBarrel=0;
   m.position.copy(origin);m.lookAt(origin.clone().add(dir));scene.add(m);
-  bullets.push({mesh:m,dir,speed:GUNNER.speed+P.spd*0,life:GUNNER.life,dmg:GUNNER.dmg,by:'gunner'});
+  bullets.push({mesh:m,dir,speed:GUNNER.speed+P.spd*0,life:GUNNER.life,dmg:heavy?GUNNER.dmg*2.4:GUNNER.dmg,by:'gunner'});
   P.ammo--;
   if(combatFX)combatFX.muzzle(planeGroup,[port],false);
   if(g.sound<=0){sfxGun();g.sound=.25;}
@@ -3808,9 +3847,12 @@ function dropBomb(){
   m.position.copy(P.pos).addScaledVector(noseDir(),2).add(new THREE.Vector3(0,-1.4,0));
   scene.add(m);
   const v=noseDir().multiplyScalar(P.spd);
-  bombs.push({mesh:m,v,life:22});
-  flash('BOMB GONE',600); sfxWhoosh(); updateHUD();
+  bombs.push({mesh:m,v,life:22,heavy:P.ac==='ar234'});   // Build 294: the Ar 234's SC 500 (twice the fighters' 250 kg)
+  syncStoreVisual();
+  flash(P.ac==='ar234'?'SC 500 GONE':'BOMB GONE',600); sfxWhoosh(); updateHUD();
 }
+// Build 294: the Ar 234 GLB carries its SC 500 and the rack: shown while the bomb is aboard
+function syncStoreVisual(){if(P.ac!=='ar234'||!playerModel)return;const b=playerModel.getObjectByName('Bomb');if(b)b.visible=P.bombs>0;}
 function fireRocket(){
   if(P.rockets<=0){ flash('NO ROCKETS LEFT',700); return; }
   P.rockets--;
@@ -3845,7 +3887,7 @@ function updateOrdnance(dt){
       if(Math.hypot(p.x-tp.x,p.z-tp.z)<t.radius+3 && Math.abs(p.y-tp.y)<(t.kind==='bridge'?26:12)){ hit=true; break; }
     }
     if(hit||b.life<=0){
-      if(hit) blast(p.x,Math.max(p.y,groundY(p.x,p.z)+1),p.z,42,5.5);
+      if(hit) blast(p.x,Math.max(p.y,groundY(p.x,p.z)+1),p.z,b.heavy?56:42,b.heavy?7.5:5.5);
       GameRuntime.release(b.mesh); bombs.splice(i,1);
     }
   }
@@ -4129,7 +4171,7 @@ function updateTracers(dt){
 //  ENEMY AIRCRAFT  — velocity-controlled, the stable pattern from the carrier game
 // ============================================================
 // Cloud tops describe weather, not a wall that can make an interception impossible.
-function flightAltitudeLimit(){return P.ac==='p47'?P47Performance.data.ceiling:P.ac==='me262'||P.ac==='me163'?8000:5000;}
+function flightAltitudeLimit(){return P.ac==='p47'?P47Performance.data.ceiling:P.ac==='me262'||P.ac==='me163'||P.ac==='ar234'?8000:5000;}
 const ENEMY_EDGE_MARGIN=5000;
 function interiorAirPosition(pos,margin=7000){
   pos.x=Math.max(margin,Math.min(RTILE*RGRID_W-margin,pos.x));
@@ -6679,6 +6721,37 @@ function stsThreats(dt){
     }
   }
 }
+// Build 294: the Storch sorties (and the Rhine Catalina's Dumbo) can be continued from a saved flight. Saved only in the air (the checkpoint's
+// own rule); the sortie's state is plain data: phase, timers, calls, the spotter's zones and pending shells, the hunters' timer, the wire, and
+// every ground unit (nests, decoys, infantry) with its place, hit points and whether it has shown itself. On restore the sortie is set up again
+// (startMission -> stsStart: the same meadow, figure, lamps and wire from the mission's fixed plan), the units it placed are replaced by the
+// saved ones, and the state is laid over it. The hunting fighters come back with the checkpoint's enemy aircraft.
+const STS_SAVE=['clock','said','phase','hunt','hold','zone','shell','blasts','high','waves','troops','salt','smokeT','smokeD'];
+function stsCheckpoint(){
+  const s=sts;if(!s)return null;
+  const out={kind:s.kind};for(const k of STS_SAVE)if(s[k]!==undefined)out[k]=JSON.parse(JSON.stringify(s[k]));
+  out.units=s.units.map(a=>({x:a.x,z:a.z,decoy:!!a.decoy,mobile:!!a.mobile,revealed:!!a.revealed,trigger:a.trigger,maxAgl:a.maxAgl,
+    alive:!!a.t.alive,hp:a.t.hp,range:a.t.range,spread:a.t.spread,minAgl:a.t.minAgl,cool:a.t.cool}));
+  out.wire=s.wire?{broken:!!s.wire.broken,warned:!!s.wire.warned}:null;
+  return out;
+}
+function stsRestoreCheckpoint(saved){
+  const s=sts;if(!saved||!s)return;
+  if(saved.kind!==s.kind)throw Error('Storch sortie changed');
+  for(const a of s.units){a.t.alive=false;scene.remove(a.group);}
+  s.units=[];
+  const rand=siteRand(siteSeed('sts-restore:'+M().id+':'+(saved.salt||0)));
+  for(const u of saved.units||[]){
+    const a=stsUnit(u.x,u.z,rand,{decoy:u.decoy,mobile:u.mobile,trigger:u.trigger,maxAgl:u.maxAgl,range:u.range,spread:u.spread});
+    a.t.hp=u.hp;a.t.minAgl=u.minAgl;a.t.cool=u.cool;
+    if(!u.alive){a.t.alive=false;a.revealed=true;continue;}
+    if(u.revealed){a.revealed=true;a.group.visible=true;const y=terrain.getRenderedHeight(a.x,a.z);a.group.position.set(a.x,y,a.z);a.group.userData.terrainLift=y;targets.push(a.t);flakUnits.push(a.t);}
+  }
+  s.decoys=s.decoys?s.units.filter(a=>a.decoy):null;
+  for(const k of STS_SAVE)if(saved[k]!==undefined)s[k]=JSON.parse(JSON.stringify(saved[k]));
+  if(s.phase==='home'&&s.fig)s.fig.visible=false;
+  if(s.wire&&saved.wire){s.wire.warned=saved.wire.warned;if(saved.wire.broken){s.wire.broken=true;for(const o of s.wire.group.children)if(o.isLine)o.visible=false;}}
+}
 function updateStorchSorties(dt){
   const s=sts;if(!s||!P.alive||state!==ST.FLIGHT||launchIntro||missionOver)return;
   s.clock+=dt;
@@ -6888,7 +6961,7 @@ globalThis.FlightCoreEnabled=Core.on;
 // Called without: is the PLAYER on the core right now - REALISTIC always, ARCADE only with ?arcade=core / ?arcade=off.
 function coreAvail(kind){return Core.on&&FlightCore.has(kind);}
 // Build 249: the Storch is core-only (the classic arcade model floors its speed at 32 m/s and was never built for a 14-50 m/s aircraft)
-const CORE_ONLY=['fi156','pby'];
+const CORE_ONLY=['fi156','pby','ar234'];
 function coreOn(kind){return kind===undefined?coreAvail(P.ac)&&(aeroMode||!Core.classic||CORE_ONLY.includes(P.ac)):coreAvail(kind);}
 globalThis.PlayerFlightCore=()=>coreOn();
 // Hangar airborne start on the core: 1.5x the live clean 1-g stall at the start height (mass with the chosen
@@ -6943,7 +7016,7 @@ function coreGround(dt,o={}){
   P.groundPower=(P.groundPower??0)+(thr-(P.groundPower??0))*(1-Math.exp(-dt/m.assumed.spool));
   let extra=0;const rato=FlightCore.SOURCES[P.ac]?.rato;
   if(rato&&o.vr&&P.rato!==undefined){
-    if(P.rato===null&&P.throttle>.8&&P.spd>GAME_RATO.fireAt*o.vr){P.rato=0;flash('RATO — TAKE-OFF ROCKETS FIRED',1600);}
+    if(P.rato===null&&P.throttle>.8&&P.spd>(rato.fireAt??GAME_RATO.fireAt)*o.vr){P.rato=0;flash('RATO — TAKE-OFF ROCKETS FIRED',1600);}
     if(P.rato!==null&&P.rato<rato.burn){P.rato+=dt;extra=rato.thrust;}
   }
   const g=FlightCore.groundAcceleration(m,P.spd,{power:P.groundPower,damage:SortieFeatures.Damage.power(P),massKg:lo.mass,
@@ -7554,7 +7627,7 @@ function startMission(i){
   if(globalThis.sortieCheckpoint&&!globalThis.sortieCheckpoint.restoring)globalThis.sortieCheckpoint.clear();
   // Solve the aircraft's core and its loop gate now (a few ms once), not on the first AERO tap in flight.
   if(coreOn(MISSIONS[i]?.ac||'p47'))aeroGateSpeed(MISSIONS[i]?.ac||'p47');
-  bombCue.reset();
+  bombCue.reset();P.gunner=null;   // Build 294: the observer's calls (engaging, turn the tail) are said once per sortie
   if(navigation)navigation.reset();
   finishLaunchIntro(false);
   if(eng) eng.master.gain.setTargetAtTime(0.85,actx.currentTime,0.05);
@@ -7607,7 +7680,7 @@ function startMission(i){
   if(m.bombers) spawnBombers(m.bombers.n, m.bombers.type);
   // Build 237: bombers fly with an escort. Authored fighters (enemyAir) become the escort of the box; a box without any gets
   // one of its own (optional: it does not have to be shot down for the sortie to count).
-  if(m.enemyAir) spawnEnemyAir(m.enemyAir,undefined,{escort:!!m.bombers});
+  if(m.enemyAir) spawnEnemyAir(m.enemyAir,undefined,{escort:!!m.bombers,optional:!!m.fightersOptional});   // Build 294: fightersOptional - a patrol to outrun, not a required kill
   else if(m.bombers&&m.escort!==0){const n=m.escort!=null?m.escort:escortCount(m.bombers.n);if(n>0)spawnEnemyAir(n,undefined,{escort:true,optional:true});}
   const v=document.getElementById('dmgVig'); if(v) v.style.opacity='0';
   const o=document.getElementById('oilCanopy'); if(o) o.style.opacity='0';
@@ -7634,7 +7707,7 @@ function chooseEuropePlan(i){
  if(MISSIONS[i].duel)return {config:FlightOps.withPhases(MISSIONS[i],{weather:['clear'],practice:true,fuel:100,events:[],notes:''}),weather:'clear',wind:0};
  if(MISSIONS[i].custom){const c=MISSIONS[i].custom;return {config:FlightOps.withPhases(MISSIONS[i],CustomSortie.operation(c)),weather:c.weather,wind:2};}
  const cfg={...(FlightPlans.europe[i]||{}),practice:!!(MISSIONS[i].free||MISSIONS[i].circuits)},names=MISSIONS[i].free?[document.getElementById('practiceWx').value||'clear']:cfg.weather||[MISSIONS[i].weather||'clear'];
- if(!cfg.practice&&['me262','me163'].includes(MISSIONS[i].ac)){
+ if(!cfg.practice&&['me262','me163','ar234'].includes(MISSIONS[i].ac)){
   const choice=document.getElementById('approachRoute')?.value||'auto',ridge=choice==='ridge'||choice==='auto'&&Math.random()<.5;
   cfg.approach=MISSIONS[i].ac==='me163'?{x:ridge?20300:19500,z:ridge?24500:23200,radius:1800,label:ridge?'RIDGE GAP':'SOUTH VALLEY'}:
     {x:ridge?18100:18400,z:ridge?26000:19400,radius:1300,label:ridge?'RIDGE GAP':'SOUTH VALLEY'};
@@ -7778,6 +7851,7 @@ function posePlayerAircraft(dt){
     planeGroup.rotateY(P.heading); planeGroup.rotateX(-P.pitch); planeGroup.rotateZ(-P.roll);
     if(playerModel){
       updateJetExhaust(playerModel,P.alive?P.throttle:0,dt);
+      syncStoreVisual();
       if(playerModel.userData.nativeJu87)Ju87Rig.dive(playerModel,P.diveBrakeVisual);
       else if(P.ac==='ju87')for(const side of ['Left','Right']){
         const brake=playerModel.getObjectByName('diveBrake'+side);
@@ -8178,7 +8252,7 @@ function updateAudio(dt){
   const flying=state===ST.FLIGHT&&P.alive,kind=P.ac;
   const damage=Math.max(0,(55-P.hull)/55);
   jetGunDuck=Math.max(0,jetGunDuck-dt);
-  jetEngine.update(dt,P.throttle,flying&&kind==='me262'&&P.fuel>0,damage,jetGunDuck>0?1:0);
+  jetEngine.update(dt,P.throttle,flying&&(kind==='me262'||kind==='ar234')&&P.fuel>0,damage,jetGunDuck>0?1:0);
   rocketEngine.update(dt,P.throttle,flying&&kind==='me163'&&P.fuel>0&&P.throttle>.01,0,jetGunDuck>0?1:0);
   eng.piston.update(dt,kind,P.throttle,flying,{fuel:P.fuel>0,speed:P.spd,damage});
   if(flying&&AircraftEngine.profiles[kind]&&P.fuel>0&&damage>0&&Math.random()<damage*dt*1.2)sfxSputter();
@@ -8509,7 +8583,7 @@ function showBrief(i){
   briefPlan=chooseEuropePlan(i);
   document.getElementById('brSub').textContent=m.sub;
   document.getElementById('brTitle').textContent=m.title;
-  document.getElementById('brStamp').textContent=(m.ac==='bf109'||m.ac==='fw190'||m.ac==='ju87'||m.ac==='me262'||m.ac==='me163'||m.ac==='fi156')?'Luftwaffe':'Secret';
+  document.getElementById('brStamp').textContent=(m.ac==='bf109'||m.ac==='fw190'||m.ac==='ju87'||m.ac==='me262'||m.ac==='me163'||m.ac==='fi156')?'Luftwaffe':m.ac==='ar234'?'Luftwaffe':'Secret';
   document.getElementById('brText').innerHTML=m.text
     +'<br><br><b>AIRCRAFT</b> '+AC[m.ac||'p47'].name+(briefPlan.squad&&briefPlan.squad.length?'<br><b>FLIGHT</b> You + '+Squad.describe(briefPlan.squad):'')
     +'<br><b>HANDLING</b> '+FlightDynamics.profile(m.ac||'p47').character
@@ -8544,7 +8618,7 @@ function showResult(good,title,sub,html,btn){
 // Reported: "in der Missionsauswahl wäre es toll, wenn man die Flugzeugtypen sehen könnte" -
 // every chip already carries m.ac, just never displayed. Short label + the aircraft's own
 // AC[...].col (the same colour it's rendered in in-flight) so the badge doubles as a legend.
-const ACSHORT={p47:'P-47',bf109:'BF 109',fw190:'FW 190',ju87:'JU 87',me262:'ME 262',me163:'ME 163',fi156:'FI 156'};
+const ACSHORT={p47:'P-47',bf109:'BF 109',fw190:'FW 190',ju87:'JU 87',me262:'ME 262',me163:'ME 163',fi156:'FI 156',ar234:'AR 234'};
 function acHex(kind){ return '#'+(AC[kind]&&AC[kind].col!==undefined?AC[kind].col:0x888888).toString(16).padStart(6,'0'); }
 function landingSpeedNote(m){return 'FINAL APPROACH: ~'+Math.round(AC[m.ac||'p47'].app*KT)+' MPH WITH FULL FLAPS · '+AC[m.ac||'p47'].name+(m.ac==='me163'?' · SKID DOWN.':m.ac==='ju87'?' · GEAR FIXED.':'.')+' Live REF follows fuel, stores and actual flaps. Flare, then idle and keep straight until stopped.';}
 // Build 237: short description of the selected mission, shown on the selection screen (first sentences of the briefing).
@@ -9116,7 +9190,7 @@ function init(){
   // menu wiring
   document.getElementById('startBtn').onclick=()=>showBrief(selectedMission);
   duelInit();
-  document.getElementById('pauseMainMenu').onclick=async()=>{globalThis.sortieCheckpoint?.save();await globalThis.sortieCheckpoint?.flush();exitToMenuFromPause(true);window.location.href='index.html?v=293';};
+  document.getElementById('pauseMainMenu').onclick=async()=>{globalThis.sortieCheckpoint?.save();await globalThis.sortieCheckpoint?.flush();exitToMenuFromPause(true);window.location.href='index.html?v=294';};
   document.getElementById('logBtn').onclick=()=>{ show('menu',false); showLogbook(); };
   document.getElementById('skipLaunchPreview').onclick=()=>finishLaunchIntro();
   document.getElementById('brBack').onclick=()=>{ show('brief',false); show('menu',true);if(navigation){navigation.reset();navigation.button.style.display='none';} state=ST.MENU; };
@@ -9261,7 +9335,7 @@ function animate(){
       updateInterceptRadio(raw);
       updateFlightHints(raw);
       if(firing) fireGuns(dt);
-      if(P.ac==='fi156'||P.ac==='pby')updateStorchGunner(dt);
+      if(P.ac==='fi156'||P.ac==='pby'||P.ac==='ar234')updateStorchGunner(dt);
       updateFlak(dt);updateSurprises(dt);if(typeof updateSites==='function')updateSites(dt);
       updateRecoveryEscort(dt);updateSquad(dt);updateSortieAtmosphere(raw);
     }
@@ -9390,6 +9464,6 @@ function reportStartupError(err){
 const hangarRequest=CustomSortie.install('europe',MISSIONS,FlightPlans.europe,window.location.search);
 window.addEventListener('load',()=>{try{init();}catch(err){reportStartupError(err);}});
 </script>
-<script src="checkpoint-rhine.js?v=248"></script>
+<script src="checkpoint-rhine.js?v=294"></script>
 </body>
 </html>
