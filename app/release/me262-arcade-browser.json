@@ -2,45 +2,45 @@
  "classic-me262-takeoff": {
   "coreOn": false,
   "alive": true,
-  "liftoffS": 14.7,
-  "peak": 26.8,
+  "liftoffS": 13.1,
+  "peak": 28.7,
   "minRatio": 1.2,
   "row": {
    "1": {
-    "pitch": 11.9,
-    "climb": 10.9,
-    "ms": 60.5,
-    "agl": 8
+    "pitch": 13.1,
+    "climb": 12.7,
+    "ms": 64.3,
+    "agl": 9
    },
    "3": {
-    "pitch": 21.4,
-    "climb": 19.7,
-    "ms": 61.4,
-    "agl": 42
+    "pitch": 23,
+    "climb": 22.7,
+    "ms": 65.3,
+    "agl": 48
    },
    "5": {
-    "pitch": 24.9,
-    "climb": 25.3,
-    "ms": 61.8,
-    "agl": 87
+    "pitch": 27.9,
+    "climb": 29.5,
+    "ms": 65.1,
+    "agl": 100
    },
    "10": {
-    "pitch": 26.5,
-    "climb": 26.5,
-    "ms": 61.2,
-    "agl": 220
+    "pitch": 27.7,
+    "climb": 28.4,
+    "ms": 63.1,
+    "agl": 248
    },
    "20": {
+    "pitch": 26.6,
+    "climb": 26.5,
+    "ms": 61.2,
+    "agl": 547
+   },
+   "30": {
     "pitch": 26.2,
     "climb": 25.9,
     "ms": 60.5,
-    "agl": 510
-   },
-   "30": {
-    "pitch": 26,
-    "climb": 25.7,
-    "ms": 60.3,
-    "agl": 773
+    "agl": 818
    }
   }
  },
@@ -427,19 +427,19 @@
     "pitch": 24.8,
     "climb": 28.8,
     "ms": 68.8,
-    "agl": 232
+    "agl": 238
    },
    "20": {
     "pitch": 26.1,
     "climb": 31.3,
     "ms": 71.3,
-    "agl": 568
+    "agl": 572
    },
    "30": {
     "pitch": 25.6,
     "climb": 31.3,
     "ms": 72.5,
-    "agl": 877
+    "agl": 866
    }
   }
  }
