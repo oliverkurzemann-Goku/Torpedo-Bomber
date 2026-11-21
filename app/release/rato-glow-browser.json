@@ -1,0 +1,174 @@
+{
+ "me262Arcade": {
+  "coreOn": false,
+  "podsBox": {
+   "min": {
+    "x": -0.38910000000032596,
+    "y": -0.8390999999999735,
+    "z": -2.1722999999983585
+   },
+   "max": {
+    "x": 0.38910000000032596,
+    "y": -0.6609000000000265,
+    "z": -0.8458499999978812
+   }
+  },
+  "run": {
+   "fired": {
+    "t": 9.52,
+    "spd": 35.4,
+    "dist": 142
+   },
+   "liftoff": {
+    "t": 14.9,
+    "dist": 411,
+    "ms": 61.6,
+    "ratoBurning": true
+   },
+   "podsAtStart": 2,
+   "maxFlames": 2,
+   "smoke": 0,
+   "states": [
+    "mounted",
+    "burning",
+    "spent"
+   ],
+   "alive": true,
+   "agl": 159,
+   "rato": 6.016666666666651,
+   "pods": "spent",
+   "podsAtEnd": 2
+  },
+  "noKit": {
+   "fired": null,
+   "liftoff": {
+    "t": 17.3,
+    "dist": 523,
+    "ms": 59.7,
+    "ratoBurning": false
+   },
+   "podsAtStart": 0,
+   "maxFlames": 0,
+   "smoke": 0,
+   "states": [
+    "gone"
+   ],
+   "alive": true,
+   "agl": 168,
+   "pods": "gone",
+   "podsAtEnd": 0
+  }
+ },
+ "me262Realistic": {
+  "fired": {
+   "t": 19.7,
+   "spd": 36.4,
+   "dist": 316
+  },
+  "liftoff": {
+   "t": 27.4,
+   "dist": 704,
+   "ms": 61.5,
+   "ratoBurning": false
+  },
+  "podsAtStart": 2,
+  "maxFlames": 2,
+  "smoke": 0,
+  "states": [
+   "mounted",
+   "burning",
+   "spent"
+  ],
+  "alive": true,
+  "agl": 171,
+  "rato": 6.016666666666651,
+  "pods": "spent",
+  "podsAtEnd": 2,
+  "coreOn": true
+ },
+ "ar234": {
+  "coreOn": true,
+  "run": {
+   "fired": {
+    "t": 6.67,
+    "spd": 6.3,
+    "dist": 15
+   },
+   "liftoff": {
+    "t": 28.6,
+    "dist": 800,
+    "ms": 63.5,
+    "ratoBurning": true
+   },
+   "podsAtStart": 2,
+   "maxFlames": 2,
+   "smoke": 0,
+   "states": [
+    "mounted",
+    "burning",
+    "gone"
+   ],
+   "alive": true,
+   "agl": 138,
+   "rato": 30.016666666666243,
+   "pods": "gone",
+   "podsAtEnd": 0
+  },
+  "drop": {
+   "t": 36.7,
+   "agl": 122,
+   "ratoT": 30
+  },
+  "chute": true,
+  "maxDrops": 2,
+  "radio": "FORWARD STRIP — CLEARED FOR TAKE-OFF, RUNWAY ZERO NINE | AIRBORNE — BUILD SPEED AND RETRACT GEAR | ROCKET PODS AWAY — CHUTES OPEN",
+  "landed": 2,
+  "landedHeight": [
+   0.2,
+   0.2
+  ],
+  "leftInScene": 0
+ },
+ "glow": {
+  "me262": {
+   "idle": {
+    "r": 43.1,
+    "g": 16.9,
+    "b": 9.1,
+    "hot": 0,
+    "colour": "#631806",
+    "halo": 0.049
+   },
+   "full": {
+    "r": 156.4,
+    "g": 105.2,
+    "b": 42.8,
+    "hot": 219,
+    "colour": "#fea73c",
+    "halo": 0.545
+   }
+  },
+  "ar234": {
+   "idle": {
+    "r": 55.8,
+    "g": 16.1,
+    "b": 5.2,
+    "hot": 0,
+    "colour": "#631806",
+    "halo": 0.049
+   },
+   "full": {
+    "r": 196.5,
+    "g": 130,
+    "b": 48.6,
+    "hot": 396,
+    "colour": "#fea73c",
+    "halo": 0.545
+   }
+  }
+ },
+ "picture": {
+  "state": "burning",
+  "rato": 1.4
+ }
+}

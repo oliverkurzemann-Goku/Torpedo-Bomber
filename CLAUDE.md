@@ -1,5 +1,36 @@
 # Torpedo-Bomber — Übergabe an Claude Code
 
+**21.11.2026, Build 295: Startraketen von Me 262 und Ar 234 sichtbar, Triebwerksdüsen glühen mit dem Schub.**
+Nutzer: „kannst du bei der me262 und der 243 eventuell die Stadträten sichtbar machen? Auch ein leicht oranges/gelbes Leuchten in der Triebwerksgondel wäre cool. Z.b heller bei Vollgas.“ (gemeint: Startraketen, Ar 234)
+- **Startraketen (neu `rato-pods.js`, `RatoPods`; Spiel `updateRatoPods`, `ratoStep`, `sfxRato` in `remagen-mission.html`):**
+  - Me 262: zwei Rheinmetall-Borsig RI 502 unter dem hinteren Rumpf, links und rechts vom Kiel (x ±0,30, y −0,75, z −1,55). Maße laut NASM 127 cm × 16,5 cm, Brenndauer etwa 6 s. Feststoff: orange Flamme bis 1,5 m, grauweißer Rauch.
+  - Ob die Me 262 die leeren Rohre abwarf, belegen die gefundenen Quellen nicht. Sie bleiben deshalb am Flugzeug.
+  - Ar 234: zwei Walter HWK 109-500 unter dem Außenflügel, zwischen Gondel (x 2,43–3,23) und Querruder (x 4,76), an einer kleinen Halterung (x ±4,0, y −0,59, z 0,75).
+  - Die Maße der 109-500 sind nicht veröffentlicht. 1,9 m × 0,5 m sind aus Fotos geschätzt (C).
+  - Ar 234, Antrieb: kalter Wasserstoffperoxid-Antrieb, also kurze blasse Flamme und dichter weißer Dampf. Laut Wikipedia nach dem Start am Fallschirm abgeworfen. Im Spiel: in der Luft, ausgebrannt und über 25 m AGL, Fallschirm nach 1,2 s, Sinken auf 7 m/s begrenzt, 8 s nach der Landung weg.
+  - Positionen am echten Modell im Spiel gemessen (Rumpfunterseite der Me 262 y −0,65 bei z −1,5; Flügelunterseite der Ar 234 y −0,28 bei x 4).
+  - Sichtbar sind die Raketen ab dem Missionsstart am Boden. Ein Luftstart hat keinen Satz (`P.ratoPods`: mounted → burning → spent/gone). Ein Neustart vom Platz (Service) bringt einen frischen Satz.
+  - Zündung mit Blitz, Rauch und Funkmeldung. Ein Rauschen dauert die Brenndauer und wird beim Missionswechsel gestoppt.
+  - Rauch über den gemeinsamen `CombatFX.trail`-Pool: 12–14 Wolken je Sekunde und Rakete, mit der Fahrt bis 10 mehr. Zwei Raketen bleiben unter ~100 von 240 Plätzen.
+- **Schub (Spielentscheidung C):**
+  - Die Raketen zünden jetzt auch in ARCADE (klassisches Modell). Ihr Schub geht dort über die Masse (`ratoMass`) auf die Fahrt.
+  - Nach dem Abheben brennen sie weiter, statt eingefroren zu sein. Ein Timer (`ratoStep`) gilt für Boden, Luft und die sichtbaren Raketen.
+  - REALISTIC wie bisher über `FlightCore.groundAcceleration`.
+- **Gemessen im echten Spiel** (`okinawa/tests/rato-glow-browser.cjs` → `app/release/rato-glow-browser.json`):
+  - Me 262, ARCADE: Zündung nach 9,5 s bei 35 m/s. Abheben nach 14,9 s / 411 m, ohne Raketen 17,3 s / 523 m. Zwei Flammen, Rohre bleiben.
+  - Me 262, REALISTIC: Zündung nach 19,7 s. Abheben nach 27,4 s / 704 m.
+  - Ar 234: Zündung nach 6,7 s bei 6,3 m/s (so lange brauchen die Turbinen zum Hochlaufen). Abheben unverändert 28,6 s / 800 m / 63,5 m/s, die Raketen brennen dabei noch. Abwurf nach 36,7 s in 122 m AGL, beide Fallschirme offen, beide liegen danach am Boden und werden weggeräumt.
+- **Düsenglühen (`attachJetExhaust`/`updateJetExhaust`, `nacelleOutlets`, beide Jets, auch KI- und Duell-Me-262):**
+  - Eine Scheibe sitzt vertieft in jeder Düse. Ihre Textur zeigt einen hellen Ring um den dunkleren Mittelkegel (Jumo-004-„Zwiebel“).
+  - Ein additiver Lichthof direkt hinter dem Auslass (Sprite, wächst mit dem Schub).
+  - Farbe von dunkelrot `#631806` im Leerlauf bis orange-gelb `#fea73c` bei Vollgas, leichtes Flackern. Folgt dem Schub mit 1,1 s Verzögerung wie das Hochlaufen der Turbine.
+  - Lage: Ar-234-Düsen aus den Gondel-Meshes gemessen (Rand Ø 0,55 m, Kegel 16 cm innen). Me 262 aus `Me262Rig.exhaust`, Kegel bei z −0,6.
+  - Gemessen (Bildpunkte um die Düse, Blick von hinten): Me 262 Rot 43 → 156, Grün 17 → 105, Ar 234 Rot 56 → 197. Warmgelbe Bildpunkte 0 → 219 bzw. 396.
+  - Bilder: `test-visuals/build295-*-nozzle-{idle,full}.png`, `build295-*-rato-mounted.png`, `build295-ar234-rato-run.png`.
+- **Tests:** neu `okinawa/tests/rato-pods.cjs` (Lage, geteilte Geometrie, Flamme und Rauch bei 20/60/120 FPS, Fallschirmabwurf) und `rato-glow-browser.cjs`. `terrain-system/tests/me262-exhaust.js` prüft jetzt das Hochlaufen, die Farbe und den Lichthof.
+- Kennungen 295 (Seiten, Board, Hangar, Xcode, `build-app.mjs`, Duell-Test, `rato-pods.js?v=295`).
+**Offen:** kein iPad-Test. Die Rottenflieger-Me-262 zünden ihre Raketen weiter unsichtbar (nur Schub, `squad.js`). Die Größe der 109-500 ist geschätzt. Ob die Me 262 die Rohre abwarf, ist offen.
+
 **20.11.2026, Build 294: Ar 234 fliegbar (Einsatz „Bonus Blitz“), Storch-Beobachter bekämpft Infanterie, Storch- und Catalina-Einsätze im Checkpoint, Umgebungsverdeckung billiger.**
 Nutzer: „Funktioniert beides gut. Was könnten wir jetzt machen?“, auf die Vorschlagsliste: „1 und 2 bitte umsetzen. Es gibt doch schon comet missionen?“
 - **Korrektur:** Der Komet ist seit langem spielbar (`komet`, `kometdash`). Mein Vorschlag „Komet als Spielerflugzeug“ war falsch.

@@ -34,10 +34,19 @@ new THREE.GLTFLoader().parse(bytes.buffer.slice(bytes.byteOffset,bytes.byteOffse
   assert(wake.position.z<core.position.z&&core.position.z-wake.position.z<.6,
    'short shimmer stays immediately behind the engine');
  }
- updateJetExhaust(plane,0,.05);
- const idle=plane.userData.jetExhaust.glow.opacity;
+ // Build 295: the glow follows the power with the turbines' spool lag (time constant 1.1 s), so run a few seconds each way
+ const ex=plane.userData.jetExhaust,run=(thr,s)=>{for(let t=0;t<s;t+=.05)updateJetExhaust(plane,thr,.05);};
+ run(0,4);
+ const idle=ex.glow.opacity,idleColor=ex.nozzle.color.clone();
  updateJetExhaust(plane,1,.05);
- assert(plane.userData.jetExhaust.glow.opacity>idle*2,'heat rises noticeably with throttle');
+ assert(ex.glow.opacity<idle*1.5,'one frame after slamming the throttle the glow has barely moved (spool lag)');
+ run(1,6);
+ assert(ex.glow.opacity>idle*5,'heat rises noticeably with throttle: '+idle.toFixed(3)+' -> '+ex.glow.opacity.toFixed(3));
+ const full=ex.nozzle.color;
+ assert(full.r>idleColor.r*2&&full.g>idleColor.g*4&&full.r>=full.g&&full.g>full.b,'nozzle goes from dull red to orange-yellow');
+ assert(ex.nozzle.map&&ex.glow.blending===THREE.AdditiveBlending,'textured nozzle disc and an additive halo');
+ const halo=()=>plane.getObjectByName('jetHeat').children[0].children[0];
+ assert(halo().isSprite&&halo().getWorldPosition(new THREE.Vector3()).z<plane.getObjectByName('jetHeat').children[0].getWorldPosition(new THREE.Vector3()).z,'the halo sits just aft of the nozzle');
  assert(plane.userData.jetExhaust.shimmer.uniforms.heat.value<1,'exhaust stays subtler than an afterburner');
- console.log('Me 262: twin recessed nozzles, short shimmer and throttle response verified');
+ console.log('Me 262: twin recessed nozzles, short shimmer, spooling nozzle glow and halo verified');
 },e=>{console.error(e);process.exitCode=1;});

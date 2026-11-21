@@ -313,7 +313,7 @@
   <div style="width:100%;height:4px;background:repeating-linear-gradient(45deg,#ffd400,#ffd400 8px,#111 8px,#111 16px);"></div>
   <span id="testVersionBannerText" style="background:#111;color:#ffd400;font-family:monospace;font-weight:800;font-size:11px;letter-spacing:.5px;padding:3px 10px;border:1px solid #ffd400;border-top:none;border-radius:0 0 6px 6px;"></span>
 </div>
-<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 294';</script>
+<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 295';</script>
 <!-- ===== END TEMP TEST-ONLY VERSION BANNER ===== -->
 <div id="app"></div>
 <style>
@@ -355,7 +355,7 @@
   <div id="gunsight"></div>
   <div id="radio"></div>
   <div id="rhinePerfHud" hidden></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 294 · REAL RHINE</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 295 · REAL RHINE</div>
 
   <div id="apr">
     <div id="aprCall"></div>
@@ -410,7 +410,7 @@
 </div>
 
 <div class="overlay hidden" id="menu" data-campaign="europe">
-  <div class="menuTop"><a id="selBtn" href="index.html?v=294">&#9664; Change Game</a><span class="menuMeta">RHINE OPERATIONS<br>BUILD 294</span></div>
+  <div class="menuTop"><a id="selBtn" href="index.html?v=295">&#9664; Change Game</a><span class="menuMeta">RHINE OPERATIONS<br>BUILD 295</span></div>
   <div class="card menuCard">
     <aside class="menuOverview" aria-label="Campaign and pilot options">
     <div class="campaignArt" aria-hidden="true"></div>
@@ -446,7 +446,7 @@
     </aside>
     <section class="missionPanel" aria-label="Mission selection">
       <div class="secLbl">Choose your sortie · 15 missions + 4 bonus &amp; training</div>
-      <a class="hangarLink" href="hangar.html?theatre=europe&amp;v=294">CUSTOM MISSION · CHOOSE AIRCRAFT &amp; LOADOUT →</a>
+      <a class="hangarLink" href="hangar.html?theatre=europe&amp;v=295">CUSTOM MISSION · CHOOSE AIRCRAFT &amp; LOADOUT →</a>
 <div id="missionSel" role="group" aria-label="European missions"></div>
       <div id="missionBlurb" class="missionBlurb" aria-live="polite"></div>
       <div class="menuConfig">
@@ -647,6 +647,7 @@
 <script src="p47-performance.js?v=204"></script>
 <script src="sortie-features.js?v=294"></script>
 <script src="ground-run.js?v=204"></script>
+<script src="rato-pods.js?v=295"></script>
 <script src="ground-dust.js?v=181"></script>
 <script src="flight-indicators.js?v=198"></script>
 <script src="sortie-fuel.js?v=294"></script>
@@ -1045,7 +1046,7 @@ async function loadRealWorld(){
 
   if(OSMManager.BUILD!==23||HistoricalObjectManager.BUILD!==21||LivingWorld.BUILD!==22||WorldVehicles.BUILD!==24) throw new Error('Terrain version mismatch. Reload Remagen.');
   document.getElementById('testVersionBannerText').textContent=
-    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 294 · MODULE 23';
+    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 295 · MODULE 23';
   heightProvider=new DEMHeightProvider(RTILE,'terrain-system/real/data/dem/');
   terrain=new TerrainManager(scene,RTILE,heightProvider);
   osmMgr=new OSMManager(scene,RTILE,terrain,'terrain-system/real/data/osm/');
@@ -2841,7 +2842,7 @@ function tryLoad(L,k,i,onReady,onFailed,lastError){
 // z=-0.68 after its 12.51 m wingspan is applied. Keep the glow recessed at
 // those actual outlets, with only a short, translucent shimmer behind each.
 // No scene capture/postprocessing: that would double terrain rendering on iPad.
-let jetHeatTexture=null,jetHeatDisc=null,jetHeatPlume=null;
+let jetHeatTexture=null,jetHeatDisc=null,jetHeatPlume=null,jetNozzleTexture=null;
 function jetHeatAssets(){
   if(jetHeatTexture)return;
   const n=32,p=new Uint8Array(n*n*4);
@@ -2853,16 +2854,40 @@ function jetHeatAssets(){
   }
   jetHeatTexture=new THREE.DataTexture(p,n,n,THREE.RGBAFormat);
   jetHeatTexture.needsUpdate=true;
+  // Build 295: the hot inside of the nozzle as seen from behind - a bright annulus between the exhaust cone (the Jumo 004's
+  // centre body, darker in the middle) and the wall, falling off toward the rim. Grey: the material colour carries the heat.
+  const m=64,q=new Uint8Array(m*m*4);
+  for(let y=0;y<m;y++)for(let x=0;x<m;x++){
+    const r=Math.hypot((x+0.5-m/2)/(m/2),(y+0.5-m/2)/(m/2)),i=(y*m+x)*4;
+    const ring=Math.exp(-Math.pow((r-.66)/.2,2)),cone=.32+.18*Math.max(0,1-r/.42),v=Math.min(1,Math.max(ring,cone*(r<.5?1:0))*(r<1?1:0)*(1-.35*Math.max(0,r-.85)/.15));
+    q[i]=q[i+1]=q[i+2]=Math.round(255*v);q[i+3]=255;
+  }
+  jetNozzleTexture=new THREE.DataTexture(q,m,m,THREE.RGBAFormat);jetNozzleTexture.needsUpdate=true;
   jetHeatDisc=new THREE.CircleGeometry(.27,20);
   jetHeatPlume=new THREE.CylinderGeometry(.22,.31,.85,16,5,true);
   jetHeatPlume.rotateX(Math.PI/2);
 }
-function attachJetExhaust(aircraft,fallback=false){
+// Build 295: the Ar 234's Jumo 004 outlets, measured on the delivered nacelle meshes in the aircraft frame: centre of the aft rim
+// ring (x +/-2.83, y 0.82 below the frame origin), rim radius 0.277 m, exhaust cone tip 0.16 m inside the rim.
+function nacelleOutlets(aircraft,names){
+  aircraft.updateWorldMatrix(true,true);const inv=new THREE.Matrix4().copy(aircraft.matrixWorld).invert(),v=new THREE.Vector3(),out=[];
+  for(const name of names){
+    const mesh=aircraft.getObjectByName(name),pos=mesh?.geometry?.attributes.position;if(!pos)return null;
+    const m=new THREE.Matrix4().multiplyMatrices(inv,mesh.matrixWorld),pts=[];let zMin=Infinity;
+    for(let i=0;i<pos.count;i++){v.fromBufferAttribute(pos,i).applyMatrix4(m);pts.push(v.clone());if(v.z<zMin)zMin=v.z;}
+    const rim=pts.filter(p=>p.z<zMin+.02),c=rim.reduce((a,p)=>a.add(p),new THREE.Vector3()).multiplyScalar(1/rim.length);
+    out.push({x:c.x,y:c.y,z:zMin,r:Math.max(...rim.map(p=>Math.hypot(p.x-c.x,p.y-c.y)))});
+  }
+  return out.sort((a,b)=>a.x-b.x);
+}
+function attachJetExhaust(aircraft,fallback=false,kind='me262'){
   jetHeatAssets();
   const fx=new THREE.Group(); fx.name='jetHeat';
-  const glow=new THREE.MeshBasicMaterial({map:jetHeatTexture,color:0xff9154,
-    transparent:true,opacity:.15,blending:THREE.AdditiveBlending,depthWrite:false,
-    side:THREE.DoubleSide,fog:false});
+  // the halo: an additive glow just aft of each outlet, facing the camera, bigger and brighter with thrust
+  const glow=new THREE.SpriteMaterial({map:jetHeatTexture,color:0xffa050,
+    transparent:true,opacity:.15,blending:THREE.AdditiveBlending,depthWrite:false,fog:false,toneMapped:false});
+  // the hot nozzle itself: a disc recessed inside the outlet, dull red at idle, orange-yellow at full power
+  const nozzle=new THREE.MeshBasicMaterial({map:jetNozzleTexture,color:0x5a1806,fog:false,toneMapped:false});
   const shimmer=new THREE.ShaderMaterial({
     uniforms:{time:{value:0},heat:{value:0}},
     transparent:true,depthWrite:false,side:THREE.DoubleSide,
@@ -2870,32 +2895,43 @@ function attachJetExhaust(aircraft,fallback=false){
     fragmentShader:'varying vec2 vUv; uniform float time; uniform float heat; void main(){float fade=sin(vUv.y*3.14159); float ripple=0.55+0.45*sin(vUv.x*24.0+vUv.y*18.0-time*7.0); float a=heat*fade*(0.035+0.07*ripple); gl_FragColor=vec4(0.88,0.81,0.70,a);}'
   });
   const z=fallback?-1.25:-.72,y=fallback?-1.0:-1.24;
-  const outlets=Me262Rig.exhaust(aircraft);
+  let outlets=null,recess=0,radius=.27;
+  if(kind==='ar234'){outlets=nacelleOutlets(aircraft,['NacelleLeft','NacelleRight']);recess=.12;radius=outlets?outlets[0].r*.88:.24;}
+  else{outlets=Me262Rig.exhaust(aircraft);if(outlets){recess=.06;radius=.23;}}
   for(const side of [-1,1]){
     const outlet=outlets?.[side<0?0:1];
-    const x=outlet?.x??side*2.22,yy=outlet?.y??y,zz=outlet?.z??z;
-    const core=new THREE.Mesh(jetHeatDisc,glow);
-    core.position.set(x,yy,zz);core.rotation.y=Math.PI;
+    const x=outlet?.x??side*2.22,yy=outlet?.y??y,zz=(outlet?.z??z)+recess;
+    const core=new THREE.Mesh(jetHeatDisc,nozzle);
+    core.position.set(x,yy,zz);core.rotation.y=Math.PI;core.scale.setScalar(radius/.27);
+    const halo=new THREE.Sprite(glow);halo.position.set(0,0,(.18+recess)/core.scale.x);core.add(halo);
     fx.add(core);
     const wake=new THREE.Mesh(jetHeatPlume,shimmer);
-    wake.position.set(x,yy,zz-.46);
+    wake.position.set(x,yy,zz-recess-.46);wake.scale.setScalar(radius/.27*1.05);
     fx.add(wake);
   }
   aircraft.add(fx);
-  aircraft.userData.jetExhaust={glow,shimmer};
+  aircraft.userData.jetExhaust={glow,shimmer,nozzle,heat:0,radius};
 }
+const JET_GLOW={idle:new THREE.Color(0.40,0.10,0.025),full:new THREE.Color(1.0,0.66,0.24)};
 function updateJetExhaust(aircraft,throttle,dt){
   const fx=aircraft?.userData.jetExhaust;if(!fx)return;
-  const heat=Math.max(0,Math.min(1,throttle));
-  fx.shimmer.uniforms.time.value+=dt;
-  fx.shimmer.uniforms.heat.value=.20+.66*heat;
-  fx.glow.opacity=(.13+.29*heat)*(1+.04*Math.sin(fx.shimmer.uniforms.time.value*11));
+  const target=Math.max(0,Math.min(1,throttle));
+  // the turbines spool: the glow follows the power with the Jumo 004's lag, not the lever
+  fx.heat+=(target-fx.heat)*(1-Math.exp(-Math.max(0,dt)/1.1));
+  const heat=fx.heat,t=fx.shimmer.uniforms.time.value+=dt;
+  const flicker=1+.05*Math.sin(t*11)*Math.sin(t*7.3+1.7);
+  fx.shimmer.uniforms.heat.value=.20+.66*target;
+  fx.nozzle.color.copy(JET_GLOW.idle).lerp(JET_GLOW.full,Math.pow(heat,1.2)).multiplyScalar(flicker);
+  fx.glow.opacity=(.05+.5*Math.pow(heat,1.6))*flicker;
+  const size=fx.radius*(2.2+3.2*heat);
+  for(const core of aircraft.getObjectByName('jetHeat')?.children||[])for(const h of core.children)h.scale.set(size/core.scale.x,size/core.scale.x,1);
 }
 function buildAircraft(kind){
   const tplKey=modelKey(kind);
   if(modelTpl[tplKey]){
     const aircraft=modelTpl[tplKey].clone(true);
     if(kind==='me262')attachJetExhaust(aircraft);
+    if(kind==='ar234')attachJetExhaust(aircraft,false,'ar234');   // Build 295: glowing Jumo 004 outlets
     return aircraft;
   }
   if(kind==='me163'){
@@ -3323,6 +3359,7 @@ function missionLoadout(m,d=AC[m.ac||'p47']){
 }
 
 function clearWorld(){
+  if(typeof stopRatoSound==='function')stopRatoSound();if(typeof RatoPods!=='undefined'&&typeof ratoDropped!=='undefined')ratoDropped=RatoPods.clear(ratoDropped);
   if(combatFX)combatFX.clear();aircraftSmoke?.clear();groundDust?.clear();aircraftDamage?.clear();enemyBailouts?.clear();flareSupport?.clear();sortieService?.clear();fieldServicePending=false;shipWakes?.clear();GameRuntime.frames.reset();
   // Every real target (flak/bridge/factory) is permanent world scenery, built once by
   // loadRealWorld() — never removed here, only reset (resetAllRealTargets(), called by the next
@@ -7010,15 +7047,21 @@ function updateCore(dt,d,controls,departure,configuration){
 const GAME_RATO={fireAt:.6};
 // Surface friction (C): firm strip, rough field away from it, and a skid or a belly on grass.
 const GROUND_MU={strip:.04,rough:.08,skid:.35};
+// Build 295: the rockets fire in ARCADE too (the classic ground run gets the same thrust over the aircraft's mass) and keep
+// burning after lift-off (the Ar 234 leaves the strip ~1.5 s before its 30 s burn ends): one timer for the ground, the air and
+// the visible pods (RatoPods). Fired on the ground only, above the type's fraction of the rotation speed, at full throttle.
+function ratoStep(dt,vr){
+  const rato=FlightCore.SOURCES[P.ac]?.rato;if(!rato||P.rato===undefined)return 0;
+  if(P.rato===null&&P.onGround&&vr&&P.throttle>.8&&P.spd>(rato.fireAt??GAME_RATO.fireAt)*vr){P.rato=0;flash('RATO — TAKE-OFF ROCKETS FIRED',1600);sfxRato(rato.burn);}
+  if(P.rato!==null&&P.rato<rato.burn){P.rato+=dt;return rato.thrust;}
+  return 0;
+}
+function ratoMass(){return FlightCore.loadout(FlightCore.model(P.ac),coreLoadout()).mass;}
 function coreGround(dt,o={}){
   const m=FlightCore.model(P.ac),lo=FlightCore.loadout(m,coreLoadout());
   const thr=(P.fuel??100)<=0?0:P.throttle;
   P.groundPower=(P.groundPower??0)+(thr-(P.groundPower??0))*(1-Math.exp(-dt/m.assumed.spool));
-  let extra=0;const rato=FlightCore.SOURCES[P.ac]?.rato;
-  if(rato&&o.vr&&P.rato!==undefined){
-    if(P.rato===null&&P.throttle>.8&&P.spd>(rato.fireAt??GAME_RATO.fireAt)*o.vr){P.rato=0;flash('RATO — TAKE-OFF ROCKETS FIRED',1600);}
-    if(P.rato!==null&&P.rato<rato.burn){P.rato+=dt;extra=rato.thrust;}
-  }
+  const extra=ratoStep(dt,o.vr);
   const g=FlightCore.groundAcceleration(m,P.spd,{power:P.groundPower,damage:SortieFeatures.Damage.power(P),massKg:lo.mass,
     flaps:SortieFeatures.Damage.controls(P).flaps.mean,gear:o.belly?0:P.gear,storeArea:lo.storeArea,tank:lo.tank,
     brake:o.brake||0,rotated:o.rotated||0,mu:o.mu??GROUND_MU.strip,altitude:P.pos.y,extraThrust:extra});
@@ -7063,7 +7106,8 @@ function updateFlight(dt){
     if(wet&&waterWheels()){crash('GEAR DOWN ON THE WATER','The wheels dug in and the boat went over on her nose. Wheels up for the water.');return;}
     if(wet)ground=coreGround(dt,{vr,belly:true,mu:waterMu(P.spd/vr),brake:0,rotated:Math.min(1,(P.takeoffRotation||0)/.063)});
     else if(coreOn())ground=coreGround(dt,{vr,brake:P.throttle<.05?1:0,rotated:Math.min(1,(P.takeoffRotation||0)/.063)});
-    else GroundRun.step(P,dt,{jet:P.ac==='me262',power:SortieFeatures.Damage.power(P),massRatio:load.ratio,acceleration:FlightDynamics.profile(P.ac).ground});
+    else{GroundRun.step(P,dt,{jet:P.ac==='me262',power:SortieFeatures.Damage.power(P),massRatio:load.ratio,acceleration:FlightDynamics.profile(P.ac).ground});
+      const rocket=ratoStep(dt,vr);if(rocket)P.spd+=rocket/ratoMass()*dt;}
     if(typeof fieldServicePending!=="undefined"&&fieldServicePending&&P.spd<1){beginFieldService();return;}
     // steer with the stick's roll axis, tailwheel style — same sense as in the air
     P.heading += inputRoll*steerSign*(wet?Math.min(1,.28+P.spd/14)*.5:Math.min(1,P.spd/40)*0.9)*dt;   // on the water the rudders and the engines turn her at a crawl too
@@ -7102,6 +7146,7 @@ function updateFlight(dt){
   // ---- airborne ----
   STALL_SPD=d.stall; APP_SPD=d.app; MAX_SPD=P.ac==='p47'?P47Performance.maximum(P.pos.y):d.max; THR_MIN_SPD=d.thrMin;
   const stallSpd=speeds.stall;
+  {const rocket=ratoStep(dt,0);if(rocket)P.spd+=rocket/ratoMass()*dt;}   // Build 295: still burning after lift-off, along the path
   let vs;
   if(coreOn()){
     // Computed flight core: speed, load factor, turn and climb from forces solved from the
@@ -7606,7 +7651,7 @@ function relaunch(){
   P.heading=Math.PI/2; P.pitch=0; P.roll=0; P.spd=0; P.vSpeed=0;
   P.pitchVel=0; P.rollVel=0; P.nLoad=1; P.pitchRef=null; P.coreStall=0; P.coreDrop=0; P.core=null;
   P.onGround=true; P.groundPower=0; P.touchResolved=true; P.throttle=0.0; setThrottleUI(0);
-  P.gear=1; P.gearTgt=1; P.flap=0; P.flapTgt=0; P.rato=FlightCore.SOURCES[P.ac]?.rato&&coreAvail(P.ac)?null:undefined;
+  P.gear=1; P.gearTgt=1; P.flap=0; P.flapTgt=0; P.rato=FlightCore.SOURCES[P.ac]?.rato&&coreAvail(P.ac)?null:undefined;P.ratoPods=undefined;
   if(core){P.flap=P.flapTgt=.5;}
   if(P.ac==='me163'){
     // Trolley already released. Both Komet sorties depart southwest toward
@@ -7887,7 +7932,38 @@ function posePlayerAircraft(dt){
       const pr=playerModel.getObjectByName('prop');
       if(pr) pr.rotation.z-=GameRuntime.rotorStep(dt,Math.min(0.30,0.10+P.throttle*0.28),pr.userData.rig?.blades??(P.ac==='p47'?4:3));
       else if(P.ac==='pby')for(const side of ['Left','Right']){const rotor=playerModel.getObjectByName('Propeller'+side);if(rotor)rotor.rotation.z-=GameRuntime.rotorStep(dt,Math.min(0.30,0.10+P.throttle*0.28),rotor.userData.rig?.blades??3)*(side==='Left'?1:.93);}   // Build 252: two rotors
+      if(typeof RatoPods!=='undefined')updateRatoPods(dt);
     }
+}
+
+// Build 295: the take-off rockets, seen (rato-pods.js). P.ratoPods: 'mounted' (fitted, cold) -> 'burning' (P.rato counts the
+// burn) -> 'spent'; the Ar 234 drops its pods on parachutes once airborne ('gone'); the Me 262 keeps the empty tubes.
+// A sortie that starts in the air has no kit. The relaunch from the strip (service) fits a fresh pair.
+let ratoDropped=[];
+function updateRatoPods(dt){
+  const kind=P.ac,spec=RatoPods.SPEC[kind],rato=FlightCore.SOURCES[kind]?.rato;
+  if(P.ratoPods===undefined)P.ratoPods=spec&&rato&&P.rato===null&&P.onGround?'mounted':'gone';
+  if(P.ratoPods==='gone'){RatoPods.detach(playerModel);}
+  else{
+    RatoPods.attach(THREE,playerModel,kind);
+    if(P.ratoPods==='mounted'&&P.rato!==null&&P.rato!==undefined){
+      P.ratoPods='burning';planeGroup.updateMatrixWorld(true);
+      const fwd=noseDir();   // CombatFX.launch: flash at the tail, smoke thrown back against the direction of travel
+      playerModel.getObjectByName('ratoPods')?.children.forEach(pod=>combatFX?.launch(pod.localToWorld(pod.userData.tail.clone()),fwd));
+    }
+    if(P.ratoPods==='burning'&&P.rato>=rato.burn)P.ratoPods='spent';
+    if(P.ratoPods==='burning'){planeGroup.updateMatrixWorld(true);
+      RatoPods.update(THREE,playerModel,kind,{phase:'burning',t:P.rato,burn:rato.burn,dt,travel:P.spd*dt,
+        emit:(w,size,life,color)=>combatFX?.trail(w,size,life,color)});}
+    else RatoPods.update(THREE,playerModel,kind,{phase:'cold',t:0,burn:1,dt});
+    const agl=P.pos.y-groundY(P.pos.x,P.pos.z);
+    if(spec.jettison&&P.ratoPods!=='burning'&&!P.onGround&&agl>25&&P.alive){
+      const v=noseDir().multiplyScalar(P.spd);
+      ratoDropped.push(...RatoPods.jettison(THREE,playerModel,scene,v));P.ratoPods='gone';
+      radioSay('ROCKET PODS AWAY — CHUTES OPEN');
+    }
+  }
+  if(ratoDropped.length)ratoDropped=RatoPods.updateFalling(THREE,ratoDropped,dt,(x,z)=>groundY(x,z));
 }
 
 let launchIntro=null;
@@ -8331,6 +8407,20 @@ function sfxRadio(){
 // A damaged engine misfiring under load - short, irregular crackle bursts, probability and
 // frequency scaled by how badly hurt P.hull is. Triggered from updateAudio() below, same hull
 // threshold (55) already used for the oil-on-canopy visual, so the two read as one damage state.
+// Build 295: take-off rockets - a roar that lasts the burn (solid RI 502: a harsh crackle; Walter 109-500: a steam hiss)
+let ratoSound=null;
+function sfxRato(burn){
+  nburst(.6,'lowpass',260,0,.4,0,1.2);
+  if(!actx)return;stopRatoSound();
+  const steam=P.ac==='ar234',dur=Math.min(burn,30),ct=actx.currentTime,n=Math.floor(actx.sampleRate*Math.min(dur,4));
+  const buf=actx.createBuffer(1,n,actx.sampleRate),d=buf.getChannelData(0);for(let i=0;i<n;i++)d[i]=Math.random()*2-1;
+  const src=actx.createBufferSource();src.buffer=buf;src.loop=true;
+  const f=actx.createBiquadFilter();f.type='bandpass';f.frequency.value=steam?2200:700;f.Q.value=steam?.7:.9;
+  const g=actx.createGain(),peak=steam?.13:.26;g.gain.setValueAtTime(0,ct);g.gain.linearRampToValueAtTime(peak,ct+.15);
+  g.gain.setValueAtTime(peak,ct+dur-1);g.gain.linearRampToValueAtTime(0,ct+dur);
+  src.connect(f);f.connect(g);g.connect(out());src.start(ct);src.stop(ct+dur+.05);ratoSound=src;
+}
+function stopRatoSound(){if(ratoSound){try{ratoSound.stop();}catch(e){}ratoSound=null;}}
 function sfxSputter(){ nburst(0.07,'bandpass',180+Math.random()*260,1.5,0.16+Math.random()*0.12,0,2.4); }
 
 // ============================================================
@@ -9190,7 +9280,7 @@ function init(){
   // menu wiring
   document.getElementById('startBtn').onclick=()=>showBrief(selectedMission);
   duelInit();
-  document.getElementById('pauseMainMenu').onclick=async()=>{globalThis.sortieCheckpoint?.save();await globalThis.sortieCheckpoint?.flush();exitToMenuFromPause(true);window.location.href='index.html?v=294';};
+  document.getElementById('pauseMainMenu').onclick=async()=>{globalThis.sortieCheckpoint?.save();await globalThis.sortieCheckpoint?.flush();exitToMenuFromPause(true);window.location.href='index.html?v=295';};
   document.getElementById('logBtn').onclick=()=>{ show('menu',false); showLogbook(); };
   document.getElementById('skipLaunchPreview').onclick=()=>finishLaunchIntro();
   document.getElementById('brBack').onclick=()=>{ show('brief',false); show('menu',true);if(navigation){navigation.reset();navigation.button.style.display='none';} state=ST.MENU; };
