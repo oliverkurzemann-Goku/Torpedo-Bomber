@@ -13,7 +13,7 @@
    "ms": 63.5
   },
   "alive": true,
-  "agl": 105,
+  "agl": 127,
   "gearHiddenUp": true,
   "afterDrop": {
    "bombs": 0,
@@ -21,8 +21,8 @@
    "heavy": true
   },
   "gunner": {
-   "rounds": 17,
-   "inFlight": 17,
+   "rounds": 16,
+   "inFlight": 16,
    "cannon": true
   }
  },
@@ -30,7 +30,7 @@
   "ground": {
    "behindKilled": true,
    "aheadAlive": true,
-   "rounds": 19,
+   "rounds": 10,
    "calls": "OBSERVER: THEY'RE AHEAD OF US — SWING THE TAIL ROUND AND I'LL HAVE THEM | OBSERVER: ENGAGING THE INFANTRY — KEEP YOUR TAIL TOWARD THEM"
   },
   "ahead": {
@@ -61,8 +61,8 @@
    },
    "units": [
     {
-     "x": 20051.94,
-     "z": 24633.34,
+     "x": 20222.67,
+     "z": 24617.23,
      "alive": false,
      "hp": -97.8,
      "revealed": true,
@@ -70,8 +70,8 @@
      "decoy": false
     },
     {
-     "x": 18498.77,
-     "z": 23337.77,
+     "x": 18596.24,
+     "z": 23229.45,
      "alive": true,
      "hp": 0.6,
      "revealed": true,
@@ -79,8 +79,8 @@
      "decoy": false
     },
     {
-     "x": 16982.54,
-     "z": 22456.02,
+     "x": 17687.27,
+     "z": 22698.34,
      "alive": true,
      "hp": 1.2,
      "revealed": false,
@@ -114,8 +114,8 @@
    },
    "units": [
     {
-     "x": 20051.94,
-     "z": 24633.34,
+     "x": 20222.67,
+     "z": 24617.23,
      "alive": false,
      "hp": -97.8,
      "revealed": true,
@@ -123,8 +123,8 @@
      "decoy": false
     },
     {
-     "x": 18498.77,
-     "z": 23337.77,
+     "x": 18596.24,
+     "z": 23229.45,
      "alive": true,
      "hp": 0.6,
      "revealed": true,
@@ -132,8 +132,8 @@
      "decoy": false
     },
     {
-     "x": 16982.54,
-     "z": 22456.02,
+     "x": 17687.27,
+     "z": 22698.34,
      "alive": true,
      "hp": 1.2,
      "revealed": false,

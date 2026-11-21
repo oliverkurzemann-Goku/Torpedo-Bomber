@@ -28,7 +28,8 @@ Nutzer: „kannst du bei der me262 und der 243 eventuell die Stadträten sichtba
   - Gemessen (Bildpunkte um die Düse, Blick von hinten): Me 262 Rot 43 → 156, Grün 17 → 105, Ar 234 Rot 56 → 197. Warmgelbe Bildpunkte 0 → 219 bzw. 396.
   - Bilder: `test-visuals/build295-*-nozzle-{idle,full}.png`, `build295-*-rato-mounted.png`, `build295-ar234-rato-run.png`.
 - **Tests:** neu `okinawa/tests/rato-pods.cjs` (Lage, geteilte Geometrie, Flamme und Rauch bei 20/60/120 FPS, Fallschirmabwurf) und `rato-glow-browser.cjs`. `terrain-system/tests/me262-exhaust.js` prüft jetzt das Hochlaufen, die Farbe und den Lichthof.
-- Kennungen 295 (Seiten, Board, Hangar, Xcode, `build-app.mjs`, Duell-Test, `rato-pods.js?v=295`).
+- **Hitzeflimmern (`graphics-post.js?v=295`):** Der Lichthof ist ein Sprite. Die Flugzeugmaske nahm bisher nur Meshes auf, das Flimmern verschob deshalb den Lichthof (61 wackelnde Pixel). Die Maske nimmt jetzt auch Sprites auf. `heat-haze-browser.cjs` misst die Luft dahinter mit ausgeblendetem Lichthof: Flugzeug 604 → 0 wackelnde Pixel, Luft 6 378 (ohne Lichthof 6 502).
+- Kennungen 295 (Seiten, Board, Hangar, Xcode, `build-app.mjs`, Duell-Test, `rato-pods.js?v=295`, `graphics-post.js?v=295`).
 **Offen:** kein iPad-Test. Die Rottenflieger-Me-262 zünden ihre Raketen weiter unsichtbar (nur Schub, `squad.js`). Die Größe der 109-500 ist geschätzt. Ob die Me 262 die Rohre abwarf, ist offen.
 
 **20.11.2026, Build 294: Ar 234 fliegbar (Einsatz „Bonus Blitz“), Storch-Beobachter bekämpft Infanterie, Storch- und Catalina-Einsätze im Checkpoint, Umgebungsverdeckung billiger.**

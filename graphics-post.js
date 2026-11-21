@@ -179,7 +179,7 @@
     // program) stays the same as in the main pass, and the shadow map is not redrawn for this pass.
     function renderMask(world,view){
       if(--lightScan<=0){lightScan=120;world.traverse(o=>{if(o.isLight)o.layers.enable(MASK_LAYER);});}
-      api.maskRoot.traverse(o=>{if(o.isMesh)o.layers.enable(MASK_LAYER);});
+      api.maskRoot.traverse(o=>{if(o.isMesh||o.isSprite)o.layers.enable(MASK_LAYER);});   // Build 295: the nozzle halo (a sprite) belongs to the airframe too
       const background=world.background,override=world.overrideMaterial,layers=view.layers.mask,
         shadowAuto=renderer.shadowMap.autoUpdate,shadowNeeds=renderer.shadowMap.needsUpdate,alpha=renderer.getClearAlpha();
       renderer.getClearColor(clearColor);

@@ -20,18 +20,24 @@
  "dist": 30.00717972148016,
  "parent": true,
  "before": {
-  "plane": 375,
-  "rest": 6760,
-  "planePx": 4568
+  "plane": 604,
+  "rest": 8593,
+  "planePx": 4749
  },
  "after": {
-  "plane": 1,
-  "rest": 6543,
-  "planePx": 4568
+  "plane": 0,
+  "rest": 6378,
+  "planePx": 4749
  },
  "still": {
   "plane": 0,
   "rest": 0,
-  "planePx": 4568
- }
+  "planePx": 4749
+ },
+ "air": {
+  "plane": 598,
+  "rest": 6502,
+  "planePx": 4749
+ },
+ "halos": 2
 }

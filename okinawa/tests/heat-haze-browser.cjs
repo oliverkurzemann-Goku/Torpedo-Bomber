@@ -1,5 +1,5 @@
 /* Build 283: Me 262 / Me 163 heat shimmer (Rhine Ultra, graphics High). The real game, the real Me 262: two frames of the shimmer at different
- * times are compared pixel by pixel; changed pixels on the aircraft's own silhouette (the engines) must vanish with the airframe mask,
+ * times are compared pixel by pixel (Build 295: the nozzle halo is masked with the airframe; the air is measured with the halo hidden); changed pixels on the aircraft's own silhouette (the engines) must vanish with the airframe mask,
  * while the air behind the jet keeps rippling. Writes app/release/heat-haze-browser.json and test-visuals/build283-heat-haze.png. */
 'use strict';
 const fs=require('node:fs'),path=require('node:path'),http=require('node:http');
@@ -42,6 +42,10 @@ const server=http.createServer((req,res)=>{
   r.before=count(shot(1,null,haze),shot(1.37,null,haze));
   r.after=count(shot(1,planeGroup,haze),shot(1.37,planeGroup,haze));
   r.still=count(shot(1,null,[]),shot(1.37,null,[]));
+  // Build 295: the nozzle halo is bright; unmasked, the shimmer moves it and the bloom spreads that over many pixels. The air's own
+  // shimmer is measured with the halo hidden, unmasked.
+  const halos=[];planeGroup.traverse(o=>{if(o.isSprite&&o.parent?.parent?.name==='jetHeat'){halos.push(o);o.visible=false;}});
+  r.air=count(shot(1,null,haze),shot(1.37,null,haze));for(const h of halos)h.visible=true;r.halos=halos.length;
   const c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d'),img=x.createImageData(W,H);
   const save=(a)=>{for(let y=0;y<H;y++)img.data.set(a.subarray((H-1-y)*W*4,(H-y)*W*4),y*W*4);x.putImageData(img,0,0);return c.toDataURL('image/png');};
   r.png=save(shot(1,planeGroup,haze));r.pngBefore=save(shot(1,null,haze));
@@ -51,7 +55,7 @@ const server=http.createServer((req,res)=>{
  assert.ok(!out.err,JSON.stringify(out));assert.ok(out.before.planePx>1500,'the Me 262 is on screen: '+JSON.stringify(out));
  assert.ok(out.before.plane>100,'without the mask the shimmer moves the airframe: '+JSON.stringify(out.before));
  assert.ok(out.after.plane<=out.before.plane*.05,'with the mask the airframe stays still: '+JSON.stringify(out.after));
- assert.ok(out.after.rest>out.before.rest*.6,'the air behind the jet still shimmers: '+JSON.stringify(out.after));
+ assert.ok(out.after.rest>out.air.rest*.6,'the air behind the jet still shimmers: '+JSON.stringify(out.after)+' air '+JSON.stringify(out.air));
  assert.equal(out.still.plane+out.still.rest,0,'no shimmer, no change');
  fs.writeFileSync(path.join(root,'app/release/heat-haze-browser.json'),JSON.stringify(out,null,1)+'\n');
  console.log('Heat haze WebGL: OK',JSON.stringify(out));
