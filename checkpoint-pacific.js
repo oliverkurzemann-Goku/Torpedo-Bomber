@@ -16,7 +16,7 @@
    weapons:{torpedoes:C.projectiles(torpedoes),bombs:C.projectiles(bombs),bullets:C.projectiles(bullets),tracers:C.projectiles(tracers),
     etorps:C.projectiles(etorps),enemyBombs:C.projectiles(enemyBombs),wingShots:wingShots.map(w=>({...C.entity(w),targetIndex:ships.indexOf(w.tgt)}))},
    clock:clock.elapsedTime,sceneryTime:operationalScenery?.time||0,navigation:C.navigationState(navigation),
-   flares:flareSupport?.checkpoint(),pby:typeof pbyCheckpoint==='function'?pbyCheckpoint():null};
+   flares:flareSupport?.checkpoint(),pby:typeof pbyCheckpoint==='function'?pbyCheckpoint():null,intel:typeof intel!=='undefined'&&intel?intel.checkpoint():null};
  }
  async function load(saved){
   CustomSortie.restoreSaved('pacific',saved,MISSIONS,FlightPlans.pacific);selectedMission=saved.mission;
@@ -65,6 +65,8 @@
   applyTimeOfDay(timeMode);applyWeather();seaUniforms.uSeaState.value=seaState;
   if(operationalScenery)operationalScenery.time=saved.sceneryTime;
   flareSupport?.restoreCheckpoint(saved.flares);clock.elapsedTime=saved.clock;killCam=null;shakeT=0;radioQ=[];radioT=0;
+  // Build 296: the ships were rebuilt - bind the search areas and what was already found to them again
+  if(typeof setupIntel==='function'){setupIntel(MISSIONS[saved.mission]);if(saved.intel)intel.restore(saved.intel);}
   C.restoreNavigation(ensureNavigation(),saved.navigation);
   if(saved.pby&&typeof pbyRestoreCheckpoint==='function'){P.onWater=false;pbyRestoreCheckpoint(saved.pby);}   // Build 294: Catalina patrols
   hideOverlays();state=ST.FLIGHT;releaseHeldControls();setThrottleUI(P.throttle);applyLoadoutUI();resetControlUI();

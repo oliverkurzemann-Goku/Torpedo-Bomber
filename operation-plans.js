@@ -40,6 +40,9 @@ g.FlightPlans={
   {weather:['clear'],deadline:1100,notes:'Fictional Black Cat strike: night, two 500 lb bombs, the Rhine ferry. Find it by its wake, drop the flares (L) and bomb from low level; the ferry guns and the flak at the crossing shoot back.',events:[]},
   // Build 294: the Ar 234 sortie (index 34)
   {weather:['broken','clear'],deadline:1100,notes:'Jet strike on the Ludendorff Bridge with one SC 500: take-off rockets on the roll, a fast shallow dive along the span, release on the bomb cue. Heavy Allied flak at the crossing; two Thunderbolts patrol above it - outrun them, the rear guns cover your tail.',events:[{at:200,weather:'haze',message:'HAZE OVER THE VALLEY — FIND THE SPAN BY THE RIVER'}]},
+  // Build 296: Tank Hunt and Armed Patrol (indices 35-36)
+  {weather:['haze','broken'],deadline:1200,notes:'Fictional tank hunt: the rings are where the tanks were reported. Search the treelines; a hit tank scatters its group, the crews fire machine guns.',events:[{at:300,weather:'lowcloud',message:'CLOUD BASE COMING DOWN — KEEP UNDER IT'}]},
+  {weather:['broken','haze'],deadline:1300,notes:'Fictional armed patrol: three patrol points in order. Contact reports arrive during the flight with a search ring each.',events:[]},
  ],
  pacific:[{}, {},
   {weather:['broken','haze'],deadline:480,notes:'Confirm the contact in the blue search area, then intercept the moving merchant.',recon:{x:600,z:2450,radius:850,min:60,max:650,seconds:5}},

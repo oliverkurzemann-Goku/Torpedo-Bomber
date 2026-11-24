@@ -1,0 +1,165 @@
+{
+ "rookie": {
+  "brief": 0,
+  "search": false,
+  "areas": 0,
+  "trucks": 4,
+  "nav": "TRUCK"
+ },
+ "veteran": {
+  "brief": [
+   {
+    "key": "truck#0",
+    "x": 12278.72089956037,
+    "z": 20488.830108744223,
+    "r": 1300
+   }
+  ],
+  "areas": [
+   {
+    "key": "truck#0",
+    "x": 12278.72089956037,
+    "z": 20488.830108744223,
+    "r": 1300
+   }
+  ],
+  "hidden": 0,
+  "inside": [
+   0.26781904437582377,
+   0.2445604481212281,
+   0.22099422324952683,
+   0.19720099946437533
+  ],
+  "nav": "SEARCH",
+  "obj": "TRUCKS 4   FOUND 0/4",
+  "fighters": 0,
+  "guard": []
+ },
+ "veteranSpot": {
+  "far": false,
+  "near": "live",
+  "weather": "haze",
+  "range": 1271,
+  "off": 837,
+  "radio": [
+   "TARGET IN SIGHT — VEHICLE, 6 O'CLOCK, 0.5 MI",
+   "TARGET IN SIGHT — VEHICLE, 6 O'CLOCK, 0.5 MI",
+   "TARGET IN SIGHT — VEHICLE, 6 O'CLOCK, 0.5 MI",
+   "TARGET IN SIGHT — VEHICLE, 6 O'CLOCK, 0.5 MI"
+  ],
+  "contacts": 4,
+  "nav": "TRUCK",
+  "score": 100
+ },
+ "ace": {
+  "brief": [
+   {
+    "key": "truck#0",
+    "x": 13042.330677567723,
+    "z": 20196.553329030765,
+    "r": 2100
+   }
+  ],
+  "areas": [
+   {
+    "key": "truck#0",
+    "x": 13042.330677567723,
+    "z": 20196.553329030765,
+    "r": 2100
+   }
+  ],
+  "hidden": 0,
+  "inside": [
+   0.39057821753722305,
+   0.3846157911274991,
+   0.3804189868785092,
+   0.3782720557281594
+  ],
+  "nav": "SEARCH",
+  "obj": "TRUCKS 4   FOUND 0/4",
+  "fighters": 0,
+  "guard": [
+   220
+  ]
+ },
+ "aceSpot": {
+  "far": false,
+  "near": "live",
+  "weather": "haze",
+  "range": 915,
+  "off": 566,
+  "radio": [
+   "TARGET IN SIGHT — VEHICLE, 6 O'CLOCK, 0.4 MI",
+   "TARGET IN SIGHT — VEHICLE, 6 O'CLOCK, 0.4 MI",
+   "TARGET IN SIGHT — VEHICLE, 6 O'CLOCK, 0.4 MI",
+   "TARGET IN SIGHT — VEHICLE, 6 O'CLOCK, 0.4 MI"
+  ],
+  "contacts": 4,
+  "nav": "TRUCK",
+  "score": 100
+ },
+ "ridge": {
+  "hidden": false,
+  "found": true
+ },
+ "flak": {
+  "before": false,
+  "after": "live",
+  "radio": [
+   "MUZZLE FLASHES — FLAK POSITION AT 12 O'CLOCK, NOW MARKED",
+   "MUZZLE FLASHES — FLAK POSITION AT 12 O'CLOCK, NOW MARKED"
+  ]
+ },
+ "fighters": [
+  1,
+  2,
+  3
+ ],
+ "checkpoint": {
+  "found": 4,
+  "hasIntel": true
+ },
+ "pacific_rookie": {
+  "areas": 0,
+  "ships": 1,
+  "nav": "SHIP",
+  "obj": "TRACK: JAPANESE SUPPLY SHIP #1",
+  "inside": [
+   null
+  ],
+  "zeros": 0
+ },
+ "pacific_veteran": {
+  "areas": 1,
+  "ships": 0,
+  "nav": "SEARCH",
+  "obj": "SEARCH: JAPANESE SUPPLY SHIP · FOUND 0/1",
+  "inside": [
+   0.5533548511564733
+  ],
+  "zeros": 0
+ },
+ "pacific_ace": {
+  "areas": 1,
+  "ships": 0,
+  "nav": "SEARCH",
+  "obj": "SEARCH: JAPANESE SUPPLY SHIP · FOUND 0/1",
+  "inside": [
+   0.4855594216939061
+  ],
+  "zeros": 0
+ },
+ "pacificSpot": {
+  "weather": "haze",
+  "timeMode": "day",
+  "range": 3400,
+  "off": 2380,
+  "los": true,
+  "far": false,
+  "near": "live",
+  "radio": [
+   "TARGET IN SIGHT — JAPANESE SUPPLY SHIP, 12 O'CLOCK, 1.3 NM"
+  ],
+  "nav": "SHIP"
+ }
+}

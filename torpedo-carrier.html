@@ -304,7 +304,7 @@
   padding:4px 10px;border-radius:8px;background:rgba(10,18,26,.66);color:#e8f0e0;font:600 11px/1.35 ui-monospace,Menlo,monospace;
   white-space:pre;text-align:center;pointer-events:none;z-index:30}
 </style>
-<link rel="stylesheet" href="menu-layout.css?v=267">
+<link rel="stylesheet" href="menu-layout.css?v=296">
 <style>
 #jetCrewControls{position:fixed;z-index:12;top:max(68px,calc(env(safe-area-inset-top) + 68px));left:50%;transform:translateX(-50%);gap:6px;display:flex;align-items:center}
 #jetCrewControls[hidden],#jetReticle[hidden]{display:none}
@@ -380,7 +380,7 @@ body.secretSpaceActive #fireBtn{border-color:#73d9fc;color:#d6f9ff}
   <div id="perfHud" hidden></div>
   <div id="ltn" style="position:fixed;inset:0;background:#e6ecff;opacity:0;pointer-events:none;z-index:40;"></div>
   <div id="radio"></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 295</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">BUILD 296</div>
 
   <!-- Optical landing aid -->
   <div id="lso">
@@ -436,7 +436,7 @@ body.secretSpaceActive #fireBtn{border-color:#73d9fc;color:#d6f9ff}
 
 <!-- Menu -->
 <div class="overlay" id="menu" data-campaign="pacific">
-  <div class="menuTop"><a id="selBtn" href="index.html?v=295">&#9664; Change Game</a><span class="menuMeta">PACIFIC OPERATIONS<br>BUILD 295</span></div>
+  <div class="menuTop"><a id="selBtn" href="index.html?v=296">&#9664; Change Game</a><span class="menuMeta">PACIFIC OPERATIONS<br>BUILD 296</span></div>
   <div class="card menuCard">
     <aside class="menuOverview" aria-label="Campaign and pilot options">
     <div class="campaignArt" aria-hidden="true"></div>
@@ -471,12 +471,12 @@ body.secretSpaceActive #fireBtn{border-color:#73d9fc;color:#d6f9ff}
     </aside>
     <section class="missionPanel" aria-label="Mission selection">
       <div class="secLbl">Choose your sortie · Pacific operations</div>
-      <a class="hangarLink" href="hangar.html?theatre=pacific&amp;v=295">CUSTOM MISSION · CHOOSE AIRCRAFT &amp; LOADOUT →</a>
+      <a class="hangarLink" href="hangar.html?theatre=pacific&amp;v=296">CUSTOM MISSION · CHOOSE AIRCRAFT &amp; LOADOUT →</a>
 <div id="missionSel" role="group" aria-label="Pacific missions"></div>
       <div id="missionBlurb" class="missionBlurb" aria-live="polite"></div>
       <div class="menuConfig">
         <label id="corsairLoadoutRow" hidden>F4U-1D stores <select id="corsairLoadout" style="min-height:44px"><option value="bombs">2 × 1,000 lb bombs</option><option value="rockets">8 × HVAR rockets</option><option value="mixed">2 × 500 lb bombs + 8 × HVAR</option></select></label>
-        <div class="difficulty"><div class="secLbl" id="diffRow">Difficulty</div><div id="diffPick" role="group" aria-label="Difficulty"></div></div>
+        <div class="difficulty"><div class="secLbl" id="diffRow">Difficulty</div><div id="diffPick" role="group" aria-label="Difficulty"></div><div class="diffNote" id="diffNote" aria-live="polite"></div></div>
         <label class="toggle" id="invToggle"><span class="box" id="invBox"></span> Invert pitch</label>
         <label class="toggle"><input type="checkbox" id="flightHints" checked> Flight hints</label>
       </div>
@@ -587,6 +587,9 @@ body.secretSpaceActive #fireBtn{border-color:#73d9fc;color:#d6f9ff}
 <script src="yamato-aa.js?v=248"></script>
 <script src="radio-intercept.js?v=157"></script>
 <script src="surprises.js?v=238"></script>
+<script src="target-intel.js?v=296"></script>
+<script src="menu-help.js?v=296"></script>
+<script>MenuHelp.install({game:'pacific',seenKey:'tc_howto_seen',graphics:{quality:'graphicsMenu',frame:'frameRateMenu',scenery:'pacificSceneryMenu',perf:'perfMenu'}});   // Build 296: How to Play + Graphics dialogs</script>
 <script src="audio/weapon-sound.js?v=144"></script>
 <script src="audio/flight-atmosphere.js?v=175"></script>
 <script src="sortie-systems.js?v=281"></script>
@@ -600,7 +603,7 @@ body.secretSpaceActive #fireBtn{border-color:#73d9fc;color:#d6f9ff}
 <script src="sortie-features.js?v=294"></script>
 <script src="ground-run.js?v=198"></script>
 <script src="flight-indicators.js?v=198"></script>
-<script src="operation-plans.js?v=294"></script>
+<script src="operation-plans.js?v=296"></script>
 <script src="custom-sortie.js?v=294"></script>
 <script src="secret-jet.js?v=255"></script>
 <script src="secret-space.js?v=257"></script>
@@ -2470,12 +2473,14 @@ function updatePacificOperation(dt){
  if(el){const convoy=MISSIONS[mission].theater==='escort'?' · ARRIVED '+convoyProof().arrived+'/2':MISSIONS[mission].theater==='fleet'?' · DECK '+carrierHP+'%':'';const text=FlightOps.wx(weather).label.toUpperCase()+' · '+(P.rtb&&!pacificOps.failed?pacificRecoveryText():pacificOps.status())+convoy;if(el.textContent!==text)el.textContent=text;}
 }
 function drawPacificBrief(m){
- const targets=m.targets.map(s=>({x:s.pos[0],z:s.pos[2],label:NavalAssets.label(s)+(s.neutral?' — do not attack':s.model==='oiler'?(s.loaded?' — loaded, rides deep':' — empty'):''),optional:s.type==='destroyer'||s.optional,friendly:!!s.neutral}));
- if(m.theater==='harbor')targets.push(...PacificTheater.harborTargets);
+ const searchAreas=intel?.search?intel.allAreas():null;   // Build 296: Veteran/Ace - the ring, not the ship
+ const targets=(searchAreas?m.targets.filter(s=>s.neutral):m.targets).map(s=>({x:s.pos[0],z:s.pos[2],label:NavalAssets.label(s)+(s.neutral?' — do not attack':s.model==='oiler'?(s.loaded?' — loaded, rides deep':' — empty'):''),optional:s.type==='destroyer'||s.optional,friendly:!!s.neutral}));
+ if(m.theater==='harbor'&&!searchAreas)targets.push(...PacificTheater.harborTargets);
  if(m.theater==='escort'){for(const s of m.support.filter(s=>s.transport))targets.push({x:s.pos[0],z:s.pos[2],label:NavalAssets.label(s)+' — protect',friendly:true});targets.push({x:-1800,z:4400,label:'Anchorage — both transports',friendly:true});}
  if(m.theater==='fleet')targets.push({x:3200,z:2300,label:'Japanese bomb-carrier raid'});
- if(m.reinforcement)for(const s of m.reinforcement.targets)targets.push({x:s.pos[0],z:s.pos[2],label:'Second contact: '+NavalAssets.label(s),optional:s.type==='destroyer'});
- if(m.shoreStrike)targets.push(...COASTAL_STRIKE);
+ if(m.reinforcement&&!searchAreas)for(const s of m.reinforcement.targets)targets.push({x:s.pos[0],z:s.pos[2],label:'Second contact: '+NavalAssets.label(s),optional:s.type==='destroyer'});
+ if(m.shoreStrike&&!searchAreas)targets.push(...COASTAL_STRIKE);
+ if(searchAreas)for(const a of searchAreas)targets.push({x:a.x,z:a.z,radius:a.r,label:'Search area — '+(a.kind==='shore'?'shore target':a.label)+(a.moving?' (under way)':'')});
  if(m.defend)targets.push({x:2200,z:2400,label:'Raider approach sector'});
  if(m.pby&&pbyOps)targets.push({x:pbyOps.ring.x,z:pbyOps.ring.z,radius:pbyOps.ring.r,label:'Search area — '+pbyOps.text});   // Build 258: a ring, never a position
  const wxCells=MaritimeWeather.cellsFor(pacificPlan.weather,carrierX,targets).filter(c=>c.cb);
@@ -2485,7 +2490,7 @@ function drawPacificBrief(m){
   approach:m.theater==='harbor'?{x:3600,z:-4200,radius:500,label:'Open bay'}:null,
   sample:(x,z)=>{if(m.theater==='escort'&&PacificTheater.islandHeight(x,z)>1)return '#637653';const lx=x-OKINAWA_OFFSET_X;if(!okinawaWorld||Math.abs(lx)>7990||Math.abs(z)>7990||okinawaWorld.shoreDistance(lx,z)<0)return '#24434c';
    const h=okinawaWorld.getHeight(lx,z),v=Math.min(1,h/250);return 'rgb('+Math.round(63+v*45)+','+Math.round(86+v*30)+','+Math.round(46+v*20)+')';}});
- document.getElementById('opsLegend').textContent=(labels||'Carrier training area')+(wxCells.length?' · AMBER CB: fly around convective cells':'');
+ document.getElementById('opsLegend').textContent=(labels||'Carrier training area')+(wxCells.length?' · AMBER CB: fly around convective cells':'')+(searchAreas?' · '+D().label.toUpperCase()+': FIND THE TARGET INSIDE THE RING, IT IS MARKED ONCE YOU SEE IT':'');
 }
 
 function startMission(idx){
@@ -2594,7 +2599,7 @@ function startMission(idx){
   if(m.theater==='fleet'&&PacificTheater.effects().reinforced){const template=NavalAssets.get('fletcher'),group=new THREE.Group();group.add(template.clone(true));group.position.set(carrierX-350,0,-450);group.rotation.y=Math.PI/2;scene.add(group);supportFleet.push(PacificTheater.initializeConvoy({def:{model:'fletcher',speed:0},group,length:115,wakeT:0}));}
   resetShoreTargets(!!m.shoreStrike);
   // spawn enemy fighters
-  const nz=m.zeros||0;
+  const nz=tierZeros(m.zeros||0);   // Build 296: Rookie one fewer, Ace one more
   for(let i=0;i<nz;i++) spawnZero(i,nz);
   startSurprises();if(m.pby)surprises=null;   // Build 258: the Catalina sorties have their own turns
 
@@ -2705,6 +2710,7 @@ function startMission(idx){
   document.getElementById('briefSub').textContent=m.sub;
   document.getElementById('briefBody').innerHTML=m.body+'<br><br><b>HANDLING</b> '+(m.secretJet?'Test flight · 900 km/h dry, 1,600 km/h with afterburner. The pilot levels out and holds heading while you man a turret.':FlightDynamics.profile(m.pby?'pby':m.defend?'zero':m.corsair?'corsair':m.sbd?'sbd':'avenger').character)+PacificTheater.effectText(m)+FlightOps.briefText(weather,pacificPlan.config,{headwind:Math.abs(pacificPlan.wind)})+(m.pby&&timeMode!=='day'&&!m.time?'<br><b>LIGHT</b> '+timeMode.toUpperCase()+' search: the dye and the raft fade with the light'+(timeMode==='night'?'; drop a FLARE to light the sea.':'.'):'');
   document.getElementById('briefLandingSpeed').textContent=m.secretJet?'CREW: T CYCLES VIEWS · 1 COCKPIT · 2 UPPER · 3 LOWER · C EXTERIOR.':m.pby?'WATER: WHEELS UP · ALIGHT BESIDE THE FLEET · THE GUNNERS FIRE BY THEMSELVES.':'LANDING: LIVE REF / GREEN BAND · GEAR / FLAPS / HOOK DOWN.';
+  setupIntel(m);   // Build 296: after ships and shore targets exist
   drawPacificBrief(m);
   showOverlay('brief');
   state=ST.BRIEF;
@@ -4035,6 +4041,7 @@ function updateFlak(dt){
     const d=Math.hypot(P.pos.x-s.group.position.x, P.pos.z-s.group.position.z);
     s.flakTimer-=dt;
     if(s.flakTimer<=0 && d<2200){
+      intelReveal(s);
       s.flakTimer=(0.30+Math.random()*0.35)*(s.fleetAlertT>0?.85:1)*(s.flakEase||1)*(s.blindT>0?2.6:1)/Math.max(.25,shipDamage?.performance(s).aa??1);
       // 3-round tracer burst, aimed with lead + spread
       const from=new THREE.Vector3(s.group.position.x,10,s.group.position.z);
@@ -6935,7 +6942,7 @@ function loadPlaneModel(){
       }
       window.__eyeDbg='EYE '+COCKPIT_EYE.map(v=>v.toFixed(2)).join('/');
       const btEl=document.getElementById('buildTag');
-      if(btEl) btEl.textContent='BUILD 295 · '+window.__eyeDbg;
+      if(btEl) btEl.textContent='BUILD 296 · '+window.__eyeDbg;
       let seat=null;
       model.traverse(function(o){
         if(!o.isMesh||!o.material) return;
@@ -7949,11 +7956,13 @@ function updateMinimap(){
   if(!okinawaWorld || !okinawaWorld.root.visible)for(const is of islands){ const p=put(is.x,is.z);
     if(Math.hypot(p[0]-c,p[1]-c)<R-1){ mmCtx.beginPath(); mmCtx.arc(p[0],p[1],Math.max(2,is.r*scale),0,7); mmCtx.fill(); } }
   let p=put(carrierX,0); if(Math.hypot(p[0]-c,p[1]-c)<R-1){ mmCtx.fillStyle='#7fae5a'; mmCtx.fillRect(p[0]-3,p[1]-3,6,6); }
-  for(const s of ships){ if(!s.alive||typeof pbyKnowShip==='function'&&!pbyKnowShip(s)) continue; const q=put(s.group.position.x,s.group.position.z);
+  for(const a of intel?.areas()||[]){const q=put(a.x,a.z);mmCtx.strokeStyle='#e8b84b';mmCtx.setLineDash([3,3]);mmCtx.beginPath();mmCtx.arc(q[0],q[1],Math.max(6,a.r*scale),0,7);mmCtx.stroke();mmCtx.setLineDash([]);mmCtx.font='bold 9px monospace';mmCtx.fillStyle='#e8b84b';mmCtx.fillText('?',q[0]-3,q[1]+3);}   // Build 296
+  for(const s of ships){ if(!s.alive||!intelShown(s)||typeof pbyKnowShip==='function'&&!pbyKnowShip(s)) continue; const sp=intelPosOf(s,s.group.position),q=put(sp.x,sp.z);
+    if(intelShown(s)==='last'){if(Math.hypot(q[0]-c,q[1]-c)<R-1){mmCtx.strokeStyle='#c8412a';mmCtx.strokeRect(q[0]-3,q[1]-3,6,6);}continue;}
     if(Math.hypot(q[0]-c,q[1]-c)<R-1){ mmCtx.fillStyle=s.def.neutral?'#e8f0f4':s.def.type==='destroyer'?'#e0a050':'#c8412a';
       mmCtx.beginPath(); mmCtx.arc(q[0],q[1],3,0,7); mmCtx.fill(); } }
   for(const s of supportFleet){if(s.alive===false)continue;const q=put(s.group.position.x,s.group.position.z);if(Math.hypot(q[0]-c,q[1]-c)<R-1){mmCtx.fillStyle=s.arrived?'#a1d191':'#80c9df';mmCtx.fillRect(q[0]-3,q[1]-3,6,6);}}
-  for(const t of shoreTargets){if(!t.alive)continue;const q=put(t.def.x,t.def.z);if(Math.hypot(q[0]-c,q[1]-c)<R-2){mmCtx.fillStyle=t.def.optional?'#dba774':'#f06a4b';mmCtx.fillRect(q[0]-3,q[1]-3,6,6);}}
+  for(const t of shoreTargets){if(!t.alive||!intelShown(t))continue;const q=put(t.def.x,t.def.z);if(Math.hypot(q[0]-c,q[1]-c)<R-2){mmCtx.fillStyle=t.def.optional?'#dba774':'#f06a4b';mmCtx.fillRect(q[0]-3,q[1]-3,6,6);}}
   if(pacificOps?.config.recon&&!pacificOps.reconDone){const r=pacificOps.config.recon,q=put(r.x,r.z);mmCtx.strokeStyle='#80c9df';mmCtx.beginPath();mmCtx.arc(q[0],q[1],r.radius*scale,0,7);mmCtx.stroke();}
   if((typeof isPby==='function'&&isPby()))pbyDrawMinimap(mmCtx,put,scale);
   ensureNavigation().paint(mmCtx,put,c,R-7);
@@ -8150,10 +8159,46 @@ function updateTorpRun(){
 }
 
 let navigation=null;
+// ============================================================
+//  Build 296: TARGET INTEL - Veteran and Ace get a search area instead of the ship's position (target-intel.js).
+// ============================================================
+let intel=null;
+function intelAutomationOff(){return typeof navigator!=='undefined'&&navigator.webdriver&&!window.__intel&&!/[?&]intel=on/.test(location.search);}
+function intelApplies(m){return !!m&&!intelAutomationOff()&&!(m.free||m.qual||m.defend||m.pby||m.secretJet||['escort','fleet'].includes(m.theater));}
+function intelShown(ref){return !intel||intel.known(ref);}
+function intelPosOf(ref,pos){return intelShown(ref)==='last'?(intel.markPos(ref)||pos):pos;}
+function setupIntel(m){
+  intel=TargetIntel.create({level:intelApplies(m)?DIFF:'rookie',northSign:-1});
+  const list=[];
+  for(const s of ships){if(s.def.neutral)continue;const big=['freighter','cruiser','oiler'].includes(s.def.type)||s.def.model==='yamato';
+    list.push({ref:s,kind:'ship',pos:s.group.position,size:big?'huge':'large',moving:true,optional:!!(s.def.optional||s.def.type==='destroyer'),label:NavalAssets.label(s.def)});}
+  for(const t of shoreTargets){list.push({ref:t,kind:'shore',pos:{x:t.def.x,z:t.def.z,y:t.group?.position?.y},size:'medium',moving:false,optional:!!t.def.optional,label:t.def.label});}
+  intel.setup(list);
+}
+function intelVisAt(p){const w=FlightOps.wx(weather);let v=Math.pow(Math.max(.22,Math.min(1,w.far/11000)),.6);
+  if(timeMode==='night'){v*=.45;for(const s of flareSupport?.slots||[])if(s.live&&Math.hypot(s.g.position.x-p.x,s.g.position.z-p.z)<1100){v=Math.max(v,.85);break;}}
+  else if(timeMode==='dusk'||timeMode==='dawn')v*=.8;
+  return v;}
+function intelLos(o,p){if(!okinawaWorld||!okinawaWorld.root.visible)return true;
+  for(let i=1;i<10;i++){const f=i/10,x=o.x+(p.x-o.x)*f,z=o.z+(p.z-o.z)*f,lx=x-OKINAWA_OFFSET_X;
+    if(Math.abs(lx)<7990&&Math.abs(z)<7990&&okinawaWorld.getHeight(lx,z)>o.y+((p.y||0)+8-o.y)*f+2)return false;}
+  return true;}
+function updateIntel(dt){
+  if(!intel||!intel.search||state!==ST.FLIGHT||!P.alive)return;
+  const ev=intel.update(dt,{observer:P.pos,agl:P.pos.y,visAt:intelVisAt,los:intelLos,alive:r=>r.alive});
+  for(const e of ev){
+    if(e.type==='spotted'){const p=e.ref.group?.position||e.ref.def;radioSay((e.optional?'TALLY — ':'TARGET IN SIGHT — ')+String(e.label).toUpperCase()+', '+clockOf(p.x,p.z)+" O'CLOCK, "+(e.dist/NM).toFixed(1)+' NM');flash((e.optional?'SPOTTED: ':'TARGET FOUND: ')+String(e.label).toUpperCase(),1500);if(!e.optional)addScore(25);}
+    else if(e.type==='report')radioSay('UPDATED SIGHTING — '+String(e.label).toUpperCase()+' HAS MOVED. NEW SEARCH AREA '+(e.dist/NM).toFixed(1)+' NM '+e.dir+' OF YOU');
+    else if(e.type==='lost')flash('LOST SIGHT OF '+String(e.label).toUpperCase()+' — LAST SEEN MARKED',1500);
+  }
+}
+function intelReveal(ref){if(intel&&intel.search&&ref?.alive&&intel.managed(ref))intel.reveal(ref);}
+function tierZeros(n){if(!n)return 0;return DIFF==='rookie'?Math.max(1,n-1):DIFF==='ace'?n+1:n;}
 function pacificContacts(){
  const c=[];
- for(const s of ships)if(s.alive&&(typeof pbyKnowShip!=='function'||pbyKnowShip(s)))c.push({ref:s,pos:s.group.position,kind:'SHIP',label:NavalAssets.label(s.def).toUpperCase()+' #'+(ships.indexOf(s)+1)+(s.def.neutral?' · NEUTRAL':'')+(shipDamage?.status(s)?' · '+shipDamage.status(s):'')});
- for(const t of shoreTargets)if(t.alive)c.push({ref:t,pos:t.group.position,kind:'TARGET',label:t.def.label.toUpperCase()});
+ for(const s of ships)if(s.alive&&intelShown(s)&&(typeof pbyKnowShip!=='function'||pbyKnowShip(s)))c.push({ref:s,pos:intelPosOf(s,s.group.position),kind:'SHIP',label:NavalAssets.label(s.def).toUpperCase()+' #'+(ships.indexOf(s)+1)+(s.def.neutral?' · NEUTRAL':'')+(shipDamage?.status(s)?' · '+shipDamage.status(s):'')});
+ for(const a of intel?.areas()||[])c.push({ref:a,pos:a,kind:'AREA',label:'SEARCH AREA — '+String(a.label).toUpperCase()});   // Build 296
+ for(const t of shoreTargets)if(t.alive&&intelShown(t))c.push({ref:t,pos:t.group.position,kind:'TARGET',label:t.def.label.toUpperCase()});
  for(const r of raiders)if(r.alive)c.push({ref:r,pos:r.group.position,kind:'BOMBER',label:r.betty?(r.leader?'LEAD BETTY':'G4M1 BETTY'):r.japanese?'A6M BOMB CARRIER':'INBOUND BOMBER'});
  if(MISSIONS[mission].theater==='escort')for(const s of supportFleet)if(s.alive&&s.def.transport)c.push({ref:s,pos:s.group.position,kind:'ALLY',label:NavalAssets.label(s.def).toUpperCase()+' '+s.hp+'%'+(s.arrived?' — ARRIVED':' — PROTECT')});
  if(patrolRecovery?.alive)c.push({ref:patrolRecovery,pos:patrolRecovery.pos,kind:'ALLY',label:'WOUNDED CORSAIR — KEEP APPROACH CLEAR (OPTIONAL)'});
@@ -8170,6 +8215,7 @@ function updateNav(){
   const nav=ensureNavigation(),contacts=pacificContacts(),base=contacts.find(c=>c.kind==='BASE');
   // Build 265: the Catalina's TARGET contacts (raft, submarine) carry a plain string as ref, not a ship or shore target - they have no def; reading c.ref.def.optional stopped the game the moment one was found
   let list=contacts.filter(c=>c.kind==='TARGET'&&!c.ref?.def?.optional||c.kind==='SHIP'&&!c.ref.def.optional&&['freighter','cruiser'].includes(c.ref.def.type)||hasRaiders()&&c.kind==='BOMBER');
+  if(!list.length&&intel?.areas().length&&!P.rtb)list=contacts.filter(c=>c.kind==='AREA');   // Build 296: nothing found yet - lead to the search area
   if(!list.length&&MISSIONS[mission].theater==='escort'&&!P.rtb)list=contacts.filter(c=>c.kind==='ALLY'&&!c.ref.arrived);
   if(!list.length)list=contacts.filter(c=>c.kind==='BANDIT'||c.kind==='BOMBER');
   let chosen=list.sort((a,b)=>Math.hypot(a.pos.x-P.pos.x,a.pos.z-P.pos.z)-Math.hypot(b.pos.x-P.pos.x,b.pos.z-P.pos.z))[0]||base;
@@ -8177,7 +8223,7 @@ function updateNav(){
   if(P.rtb||pacificOps?.failed)chosen=base;
   if((typeof isPby==='function'&&isPby())){const pn=pbyNavTarget();chosen=(pn&&contacts.find(c=>c.ref===pn.ref))||base;}   // Build 258: a ring until something is found
   chosen=nav.resolve(chosen);
-  const target=chosen.pos,kind=chosen.kind,label=kind==='BASE'?((typeof isPby==='function'&&isPby())?'ALIGHT BESIDE THE FLEET':'RECOVER ABOARD CARRIER'):kind==='RECON'?pacificOps.status():'TRACK: '+chosen.label;
+  const target=chosen.pos,kind=chosen.kind,label=kind==='BASE'?((typeof isPby==='function'&&isPby())?'ALIGHT BESIDE THE FLEET':'RECOVER ABOARD CARRIER'):kind==='RECON'?pacificOps.status():kind==='AREA'?'SEARCH: '+chosen.label.replace('SEARCH AREA — ','')+(intel?' · FOUND '+intel.counts().known+'/'+intel.counts().total:''):'TRACK: '+chosen.label;
   const objText=document.getElementById('objText'); objText.textContent=label;
   // arrow relative to heading
   const bearing=Math.atan2(target.z-P.pos.z, target.x-P.pos.x);
@@ -8190,7 +8236,7 @@ function updateNav(){
   document.getElementById('navCue').textContent=Math.abs(rel)<Math.PI/12?'AHEAD':Math.abs(rel)>Math.PI*11/12?'BEHIND':rel>0?'RIGHT':'LEFT';
   const dist=Math.hypot(target.x-P.pos.x,target.z-P.pos.z)/NM;
   document.getElementById('navDist').textContent=dist.toFixed(1)+' NM';
-  document.getElementById('navKind').textContent=kind;
+  document.getElementById('navKind').textContent=kind==='AREA'?'SEARCH':kind;
   // Pacific flight headings start at east (+X); a geographic compass starts
   // at north (+Z). Convert only the display, preserving the flight controls.
   const cardinal=n=>['N','NE','E','SE','S','SW','W','NW'][Math.round(n/45)%8];
@@ -8452,6 +8498,7 @@ function setupUIButtons(){
         b.onclick=()=>{ DIFF=k; GameRuntime.storage.setItem('tc_diff',k); draw(); };
         wrap.appendChild(b);
       });
+      const note=document.getElementById('diffNote');if(note)note.textContent=TargetIntel.SUMMARY[TargetIntel.levelFor(DIFF).id]||'';   // Build 296
     };
     draw();
   })();
@@ -8459,7 +8506,7 @@ function setupUIButtons(){
   if(dbgT2) dbgT2.onclick=()=>{
     dbgOn=!dbgOn; GameRuntime.storage.setItem('dbgOn',dbgOn?'1':'0');
     const db=document.getElementById('dbgBox'); if(db) db.textContent=dbgOn?'✓':'';
-    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 295'; }
+    if(!dbgOn){ const bt=document.getElementById('buildTag'); if(bt) bt.textContent='BUILD 296'; }
   };
   const lu=document.getElementById('lookUp'), ld=document.getElementById('lookDn');
   let _lookT=0;
@@ -8475,7 +8522,7 @@ function setupUIButtons(){
   if(pb) pb.addEventListener('pointerdown',e=>{ e.preventDefault(); togglePause(); });
   const rb=document.getElementById('resumeBtn'); if(rb) rb.onclick=resumeGame;
   const mb=document.getElementById('menuBtn'); if(mb) mb.onclick=exitToMenu;
-  document.getElementById('pauseMainMenu').onclick=async()=>{globalThis.sortieCheckpoint?.save();await globalThis.sortieCheckpoint?.flush();exitToMenu(true);window.location.href='index.html?v=295';};
+  document.getElementById('pauseMainMenu').onclick=async()=>{globalThis.sortieCheckpoint?.save();await globalThis.sortieCheckpoint?.flush();exitToMenu(true);window.location.href='index.html?v=296';};
   document.getElementById('resultBtn').onclick=()=>{
     // the logbook borrows this screen from the menu — send the player straight back
     if(logbookOpen){ logbookOpen=false; showOverlay('menu'); return; }
@@ -8815,7 +8862,7 @@ function animate(){
     notice.style.cssText='position:fixed;inset:0;z-index:999998;background:rgba(15,20,15,.95);color:#e8ddbc;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px;text-align:center;font:16px system-ui';
     const title=document.createElement('h2');title.textContent='Simulation interrupted';
     const detail=document.createElement('p');
-    detail.textContent='BUILD 295 · '+(MISSIONS[mission]?.sub||'Menu')+' · '+error.message;
+    detail.textContent='BUILD 296 · '+(MISSIONS[mission]?.sub||'Menu')+' · '+error.message;
     const reload=document.createElement('button');reload.textContent='Reload game';
     reload.style.cssText='padding:12px 24px;font:inherit';reload.onclick=()=>location.reload();
     notice.appendChild(title);notice.appendChild(detail);notice.appendChild(reload);document.body.appendChild(notice);
@@ -8892,7 +8939,7 @@ function animateFrame(){
     }
     if(wingmen.length) updateWingmen(dt);
     if(wingShots.length) updateWingShots(dt);
-    updatePacificOperation(dt);updateShoreTargets(dt);updatePacificAtmosphere(rawDt);
+    updatePacificOperation(dt);updateIntel(dt);updateShoreTargets(dt);updatePacificAtmosphere(rawDt);
     updateInterceptRadio(rawDt);
     const localWx=maritimeWeather?.disturb(P,dt,damage=>{P.hull=Math.max(0,P.hull-damage);registerHit();if(P.hull<=0)crash('CB DAMAGE','The aircraft broke up in severe convective turbulence.');});
     const hazard=document.getElementById('wxHazard');if(hazard){hazard.hidden=!localWx?.warning;hazard.textContent=localWx?.warning||'';}
@@ -9234,6 +9281,6 @@ init();
 if(hangarRequest.requested&&hangarRequest.config){selectedMission=0;launchCampaignMission(0);}
 if(hangarRequest.error)flash(hangarRequest.error,8000);
 </script>
-<script src="checkpoint-pacific.js?v=294"></script>
+<script src="checkpoint-pacific.js?v=296"></script>
 </body>
 </html>

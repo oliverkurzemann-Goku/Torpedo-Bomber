@@ -1,0 +1,300 @@
+{
+ "rookie": {
+  "brief": [
+   {
+    "key": "tank#0",
+    "x": 14751.359863947784,
+    "z": 14122.708391382115,
+    "r": 1040
+   },
+   {
+    "key": "tank#1",
+    "x": 15646.90002702341,
+    "z": 18295.1274469302,
+    "r": 1040
+   }
+  ],
+  "areas": [
+   {
+    "key": "tank#0",
+    "x": 14751.359863947784,
+    "z": 14122.708391382115,
+    "r": 1040
+   },
+   {
+    "key": "tank#1",
+    "x": 15646.90002702341,
+    "z": 18295.1274469302,
+    "r": 1040
+   }
+  ],
+  "tanks": 5,
+  "planned": 5,
+  "real": 5,
+  "samePos": true,
+  "hidden": 0,
+  "search": true,
+  "nav": "SEARCH",
+  "obj": "TANKS 4   FOUND 0/5",
+  "guards": 0,
+  "ground": 0,
+  "wet": 0,
+  "baseDist": 8637,
+  "inside": [
+   0.4241804729044422,
+   0.40467864973593326,
+   0.44359291352166363,
+   0.3661874638362816,
+   0.41790673085645386
+  ]
+ },
+ "veteran": {
+  "brief": [
+   {
+    "key": "tank#0",
+    "x": 12791.842438430785,
+    "z": 13804.630441811432,
+    "r": 1300
+   },
+   {
+    "key": "tank#1",
+    "x": 17127.077000869103,
+    "z": 16411.661833828988,
+    "r": 1300
+   },
+   {
+    "key": "tank#2",
+    "x": 16634.936004406387,
+    "z": 13630.369565342637,
+    "r": 1300
+   }
+  ],
+  "areas": [
+   {
+    "key": "tank#0",
+    "x": 12791.842438430785,
+    "z": 13804.630441811432,
+    "r": 1300
+   },
+   {
+    "key": "tank#1",
+    "x": 17127.077000869103,
+    "z": 16411.661833828988,
+    "r": 1300
+   },
+   {
+    "key": "tank#2",
+    "x": 16634.936004406387,
+    "z": 13630.369565342637,
+    "r": 1300
+   }
+  ],
+  "tanks": 6,
+  "planned": 6,
+  "real": 6,
+  "samePos": true,
+  "hidden": 0,
+  "search": true,
+  "nav": "SEARCH",
+  "obj": "TANKS 4   FOUND 0/6",
+  "guards": 3,
+  "ground": 0,
+  "wet": 0,
+  "baseDist": 6792,
+  "inside": [
+   0.24353524183411637,
+   0.24239460840027383,
+   0.29122846407941105,
+   0.2877643476089704,
+   0.5460767503090472,
+   0.5863855886250849
+  ]
+ },
+ "ace": {
+  "brief": [
+   {
+    "key": "tank#0",
+    "x": 12486.981563001336,
+    "z": 14723.230189126238,
+    "r": 2100
+   },
+   {
+    "key": "tank#1",
+    "x": 19014.349485993556,
+    "z": 12782.092851925314,
+    "r": 2100
+   }
+  ],
+  "areas": [
+   {
+    "key": "tank#0",
+    "x": 12486.981563001336,
+    "z": 14723.230189126238,
+    "r": 2100
+   },
+   {
+    "key": "tank#1",
+    "x": 19014.349485993556,
+    "z": 12782.092851925314,
+    "r": 2100
+   }
+  ],
+  "tanks": 6,
+  "planned": 6,
+  "real": 6,
+  "samePos": true,
+  "hidden": 0,
+  "search": true,
+  "nav": "SEARCH",
+  "obj": "TANKS 4   FOUND 0/6",
+  "guards": 2,
+  "ground": 0,
+  "wet": 0,
+  "baseDist": 7820,
+  "inside": [
+   0.667854491251847,
+   0.6568163315009998,
+   0.6123097396989878,
+   0.350358182310779,
+   0.3027869603051713,
+   0.3329803839619135
+  ]
+ },
+ "spot": {
+  "range": 902,
+  "truck": 1456,
+  "far": false,
+  "near": "live",
+  "radio": [
+   "TARGET IN SIGHT — TANKS, 6 O'CLOCK, 0.4 MI",
+   "TARGET IN SIGHT — TANKS, 6 O'CLOCK, 0.5 MI"
+  ],
+  "firing": true,
+  "inFlak": true
+ },
+ "fire": {
+  "lost": 1.2000000000000028,
+  "shots": 9
+ },
+ "kill": {
+  "alive": false,
+  "kills": 1,
+  "mates": 1,
+  "moving": 1,
+  "moved": [
+   168
+  ],
+  "wreck": true,
+  "intact": false,
+  "radio": 1,
+  "ground": 0,
+  "obj": "TANKS 3   FOUND 2/6"
+ },
+ "done": {
+  "rtb": true,
+  "obj": "RTB — LAND AT BEAUFORT",
+  "ready": true,
+  "left": {},
+  "air": 0,
+  "over": false
+ },
+ "patrol_rookie": {
+  "points": 3,
+  "targets": 0,
+  "nav": "PATROL",
+  "obj": "PATROL POINTS 3  CONTACTS 4",
+  "legs": [
+   {
+    "leg": 1,
+    "newTargets": 3,
+    "kinds": [
+     "lorry"
+    ],
+    "areas": 1,
+    "bandits": 0,
+    "report": 1,
+    "hidden": 0,
+    "ground": 0
+   },
+   {
+    "leg": 2,
+    "newTargets": 1,
+    "kinds": [
+     "ambush"
+    ],
+    "areas": 2,
+    "bandits": 0,
+    "report": 2,
+    "hidden": 0,
+    "ground": 0
+   },
+   {
+    "leg": 3,
+    "newTargets": 2,
+    "kinds": [
+     "tank"
+    ],
+    "areas": 3,
+    "bandits": 0,
+    "report": 3,
+    "hidden": 2,
+    "ground": 0
+   }
+  ],
+  "navAfter": "TANK",
+  "hunt": 4,
+  "leg": 3,
+  "rtb": true,
+  "objEnd": "RTB — LAND AT BEAUFORT"
+ },
+ "patrol_ace": {
+  "points": 3,
+  "targets": 0,
+  "nav": "PATROL",
+  "obj": "PATROL POINTS 3  CONTACTS 4",
+  "legs": [
+   {
+    "leg": 1,
+    "newTargets": 4,
+    "kinds": [
+     "lorry"
+    ],
+    "areas": 1,
+    "bandits": 0,
+    "report": 1,
+    "hidden": 0,
+    "ground": 0
+   },
+   {
+    "leg": 2,
+    "newTargets": 3,
+    "kinds": [
+     "tank"
+    ],
+    "areas": 2,
+    "bandits": 2,
+    "report": 2,
+    "hidden": 0,
+    "ground": 0
+   },
+   {
+    "leg": 3,
+    "newTargets": 2,
+    "kinds": [
+     "ambush"
+    ],
+    "areas": 3,
+    "bandits": 0,
+    "report": 3,
+    "hidden": 2,
+    "ground": 0
+   }
+  ],
+  "navAfter": "AMBUSH",
+  "hunt": 4,
+  "leg": 3,
+  "rtb": true,
+  "objEnd": "RTB — LAND AT BEAUFORT"
+ },
+ "checkpoint": "n/a"
+}

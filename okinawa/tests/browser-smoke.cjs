@@ -117,8 +117,9 @@ const cdn={
     await page.locator('#missionSel .chip').last().focus();await page.keyboard.press('Enter');
     assert.equal(await page.locator('#missionSel .chip').last().getAttribute('aria-pressed'),'true','keyboard selection announces state');
     assert(await page.evaluate(()=>state===ST.MENU),'Enter on a mission selects it without launching');
-    await page.locator('.quickGuide summary').click();assert(await page.locator('#menuLandingSpeed').isVisible());
-    await page.locator('.quickGuide summary').click();
+    // Build 296: the controls and landing guide moved into the How to Play dialog
+    await page.locator('#howToPlayBtn').click();assert(await page.locator('#menuLandingSpeed').isVisible());
+    await page.locator('#howToPlay .helpGo').click();
     await page.setViewportSize({width:1024,height:768});
     console.log('Browser '+campaign+': every mission, difficulty, launch and large Change Game fit 1024×600, 1180×680 and 1366×768');
     if(!eu){

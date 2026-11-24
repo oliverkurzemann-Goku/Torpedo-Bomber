@@ -14,6 +14,7 @@ for(const file of ['torpedo-carrier.html','remagen-mission.html']){
   assert.match(html,/id="pauseMainMenu">Main Menu · Change Game/);
   assert.match(html,/class="btn abortBtn"[^>]*>Abort Mission/);
   assert.match(html,/id="menuLandingSpeed"/);
+  assert.match(html,/<script src="menu-help\.js\?v=\d+"><\/script>/,`${file}: How to Play and Graphics dialogs (Build 296)`);
   assert.match(html,/id="briefLandingSpeed"/);
   assert.match(html,/state!==ST\.FLIGHT&&!steeringParachute\(\)/,`${file}: zoom guard limited to flight and active parachute`);
 }

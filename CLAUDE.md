@@ -1,5 +1,61 @@
 # Torpedo-Bomber — Übergabe an Claude Code
 
+**24.11.2026, Build 296: Schwierigkeit spürbar gestaffelt, Ziele selbst suchen (Veteran/Ace), zwei neue Suchmissionen (Panzerjagd, Bewaffnete Patrouille), „How to Play“ und ein Grafik-Fenster mit Erklärungen.**
+Nutzer: „Die Missionen unterscheiden sich in Rookie, Veteran und Ace nicht wirklich. Es ist auch langweilig, immer auf den gelben Punkt zu fliegen und das Ziel zu zerstören. Selber suchen, zumindest in Veteran und Ace, wäre gut. Auch Missionen, bei denen man patrouilliert und Ziele auftauchen, oder man Panzer etc. finden muss, wären gut. Dann fehlt eine übersichtliche Erklärung zum Ablauf für Leute, die zum ersten Mal spielen. Ebenso eine Erklärung, besseres Layout, um die Grafik einzustellen.“
+- **Zielsuche (neu `target-intel.js`, `TargetIntel`; beide Spiele):**
+  - Rookie markiert die Ziele wie bisher.
+  - Veteran und Ace bekommen je Zielgruppe ein **Suchgebiet** (gestrichelter bernsteinfarbener Ring auf Briefingkarte und Minikarte). Das Ziel liegt sicher darin, aber nie in der Mitte (Abstand Veteran 20–60 %, Ace 30–72 % des Radius).
+  - Markiert wird ein Ziel erst, wenn es gesehen wurde. Sichtweite nach Größe: Brücke/Werk 5,2 km, Zug/Fähre/Schiff 3,4 km, Flak 2,3 km, Fahrzeug 1,7 km. Abzüge für Wetter (`wx.far`), Höhe über Grund, Nacht (×0,45; eine Leuchtkugel in 900 m hebt das auf mindestens 0,85) und Gelände (Sichtlinie mit 9 Abtastungen).
+  - Ein Ziel wird außerdem markiert, wenn es feuert oder getroffen wird („MUZZLE FLASHES — …, NOW MARKED“).
+  - Ace: Ringe 2 100 statt 1 300 m, Sicht ×0,72. Ein bewegliches Ziel, das 14 s aus der Sicht ist, zeigt nur noch die letzte bekannte Stelle.
+  - Bewegliche Gruppen, die ihren Ring verlassen: neue Meldung mit neuem Ring (Veteran nach 110 s, Ace nach 150 s).
+  - Funk „TARGET IN SIGHT — …, n O'CLOCK, x MI“, +25 Punkte. Zielzeile `FOUND k/n`. Pfeil zeigt „SEARCH“ auf den nächsten Ring.
+  - Briefing und Einsatz benutzen dieselben Ringe: Saat und Ringe liegen am Plan (`briefPlan.intelSeed/intelAreas`). Checkpoints speichern den Stand (`intel.checkpoint()`).
+  - **Automatisierte Testbrowser behalten die markierten Ziele** (`navigator.webdriver`, wie Build 262). Eingeschaltet wird die Suche mit `window.__intel=true` oder `?intel=on`.
+  - Gemessen im echten Spiel (`okinawa/tests/intel-browser.cjs` → `app/release/intel-browser.json`): Rhein-Konvoi, Veteran im Dunst gesehen ab 1 271 m, Ace ab 915 m. Aus 6 km nichts. Hinter einem Grat nicht gesehen. Flak, die schießt, wird markiert. Pazifik Sortie 1: das Schiff ab 3,4 km im Dunst.
+- **Schwierigkeit zusätzlich:**
+  - Rhein `tierFighters(n)` und Pazifik `tierZeros(n)`: Rookie n−1 (mindestens 1), Ace n+1. Gemessen [1, 2, 3] bei n = 2.
+  - Ace (Rhein): eine versteckte Wachflak 140–320 m am Hauptziel (`placeTargetGuard`).
+  - Im Menü steht unter der Schwierigkeit eine Zeile, was sie bedeutet (`diffNote`, `TargetIntel.SUMMARY`). Bei Querformat bis 700 px Höhe ist sie ausgeblendet; dort erklärt „How to Play“ die Stufen.
+  - Hinterhalte werden jetzt auch ohne Überraschungsplaner aufgedeckt.
+- **Zwei neue Rhein-Einsätze (Index 35/36, hinten angehängt, P-47, Block „TANK HUNT and ARMED PATROL“ in `remagen-mission.html`):**
+  - Beide sind auf jeder Stufe Suchmissionen. Rookie sucht mit kleineren Ringen (×0,8) und besseren Augen (×1,35).
+  - **Bonus Tank Hunt:**
+    - Panzergruppen am Waldrand, 8,5–11 km vom Platz: Rookie 3+2, Veteran 2+2+2, Ace 3+3.
+    - Echte Modelle: Panzer IV, Jagdpanther, Tiger (`worldVehicles.templates`, Wrack-Knoten beim Abschuss).
+    - Getarnt: Sicht ×0,62, gemessen 902 gegen 1 456 m für einen Lkw.
+    - Gefundene Besatzungen schießen mit MG (900 m).
+    - Ein Treffer lässt die übrigen Panzer der Gruppe 140–260 m in neue Deckung fahren (Staub, Funk „BREAKING FOR COVER“; gemessen 168 m).
+    - Veteran/Ace: eine Wachflak je Gruppe.
+    - Vier Abschüsse, dann Heimflug. Die Lage wird beim Briefing geplant (`huntPlan`, `briefPlan.hunt`), Briefing und Einsatz stimmen überein.
+  - **Bonus Armed Patrol:**
+    - Drei Patrouillenpunkte (blaue Ringe 750 m), in Reihenfolge abzufliegen.
+    - Jeder Punkt bringt eine Kontaktmeldung mit eigenem Suchring (`intel.addGroup`): haltende Kolonne, Panzer am Waldrand, Flakbatterie (Reihenfolge gewürfelt).
+    - Am zweiten Punkt starten auf Veteran und Ace Jäger (1 bzw. 2).
+    - Ziel: 3 Punkte und 4 Kontakte.
+  - Nicht im Checkpoint (`airborne()` falsch): die Lage entsteht beim Start.
+  - Gemessen (`okinawa/tests/hunt-browser.cjs` → `app/release/hunt-browser.json`):
+    - 5/6/6 Panzer an den Briefingstellen, alle trocken, auf dem Boden, in ihrem Ring.
+    - Unsichtbar bis gesehen; MG-Feuer (9 Leuchtspuren).
+    - Zerstreuen, Wrack, Heimflug.
+    - Patrouille auf Rookie und Ace: alle drei Meldungen mit Ring, Ziele aller drei Arten, Jäger nur auf Ace, Abschluss.
+- **„How to Play“ und „Graphics“ (neu `menu-help.js`, `MenuHelp.install`; Stil in `menu-layout.css`; beide Spiele):**
+  - Zwei Knöpfe im Menü ersetzen den Ausklapper „Controls & landing guide“.
+  - **How to Play:** sechs Schritte eines Einsatzes (Auswahl/Schwierigkeit, Briefing, Start, Navigation, Suchen/Angriff, Heimflug/Landung), dazu die alte Steuerungshilfe samt Live-Landegeschwindigkeit (`#menuLandingSpeed` wird in den Dialog verschoben) und eine Erklärung der Anzeige.
+  - Öffnet sich beim ersten Start einmal von selbst (`re_howto_seen` / `tc_howto_seen`), nicht in Testbrowsern.
+  - **Graphics:** die echten Bedienelemente werden in den Dialog verschoben (ihre Handler bleiben): Grafikstufe, Bildrate, Kulisse, Messanzeige. Zu jedem steht, was es tut und was es kostet, dazu eine iPad-Empfehlung (High + 60 FPS) und der Knopf „Use recommended“.
+- **Menü:** Rhein 37 Karten in zehn Spalten (vier Reihen). Gemessen bei 1194×660, 1024×600, 1366×1024: Start-Knopf sichtbar, Hilfeknöpfe ≥ 44 px (`okinawa/tests/menu-help-browser.cjs`, Bilder `test-visuals/build296-*.png`).
+- **Tests:**
+  - Neu: `target-intel.cjs`, `intel-browser.cjs`, `hunt-browser.cjs`, `menu-help-browser.cjs`.
+  - Angepasst: `campaign.cjs` (37 Einsätze), `sites-/squad-browser` (37 Pläne), `browser-smoke` (Landegeschwindigkeit jetzt im How-to-Dialog), `start-menu.cjs`.
+- Kennungen 296 (Seiten, Board, Hangar, Xcode, `build-app.mjs`, `menu-layout.css?v=296`, `operation-plans.js?v=296`, `checkpoint-*.js?v=296`).
+**Offen:**
+- Kein iPad-Test.
+- Sichtweiten, Ringgrößen, Tarnung, Zerstreuen und Jägerzahlen sind Spielentscheidungen zum Nachstellen (`TargetIntel.SIGHT/LEVELS`, `HUNT`).
+- Pazifik: keine eigene Panzer-/Patrouillenmission.
+- Die Pazifik-Einsätze mit Begleitschutz oder Flottenabwehr bleiben markiert.
+- Storch- und Catalina-Einsätze haben weiter ihre eigenen Suchgebiete.
+
 **21.11.2026, Build 295: Startraketen von Me 262 und Ar 234 sichtbar, Triebwerksdüsen glühen mit dem Schub.**
 Nutzer: „kannst du bei der me262 und der 243 eventuell die Stadträten sichtbar machen? Auch ein leicht oranges/gelbes Leuchten in der Triebwerksgondel wäre cool. Z.b heller bei Vollgas.“ (gemeint: Startraketen, Ar 234)
 - **Startraketen (neu `rato-pods.js`, `RatoPods`; Spiel `updateRatoPods`, `ratoStep`, `sfxRato` in `remagen-mission.html`):**
@@ -1447,7 +1503,7 @@ langer Vorgeschichte voller Sackgassen — die meisten davon selbst gebaut, in e
 Git-Zugriff, wo jede „Lösung" ungetestet ausgeliefert wurde. Der Abschnitt „Gelernte Lektionen"
 ist keine Höflichkeitsfloskel, sondern verhindert, dass du dieselben Fehler wiederholst.
 
-Stand bei Übergabe: **Torpedo Squadron BUILD 293 · Thunderbolt Squadron BUILD 293 · Remagen-Kern 23 / Fahrzeuge 24**
+Stand bei Übergabe: **Torpedo Squadron BUILD 296 · Thunderbolt Squadron BUILD 296 · Remagen-Kern 23 / Fahrzeuge 24**
 
 **Build 198 (22.10.2026): P-47-Fotolackierung, Einsatzspuren und natives Fahrwerk; Terrain-Fix aus Build 197 erhalten.**
 `assets/aircraft/p47-weathered.glb` ist ein ausdrücklich gekennzeichnetes Derivat des

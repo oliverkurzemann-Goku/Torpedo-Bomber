@@ -53,10 +53,12 @@ assert.equal(pilot.rtb,true,'second kill unlocks carrier recovery');assert.equal
 const script=html('remagen-mission.html');
 const start=script.indexOf('const MISSIONS=['),end=script.indexOf('\nfunction M()',start);
 const missions=vm.runInNewContext(script.slice(start,end)+'\nMISSIONS',{});
-assert.equal(missions.length,35,'training plus thirty-three real-terrain combat sorties (the six Storch, the two Catalina and the Ar 234 bonuses are appended last)');
+assert.equal(missions.length,37,'training plus thirty-five real-terrain combat sorties (the six Storch, the two Catalina, the Ar 234 and the two search bonuses are appended last)');
 assert.equal(missions[34].id,'blitz','Build 294: the Ar 234 bridge strike appends at the end');assert.equal(missions[34].ac,'ar234');assert.equal(JSON.stringify(missions[34].kills),'{"bridge":1}');
 assert.deepEqual([...new Set(missions.map(m=>m.ac))].sort(),['ar234','bf109','fi156','fw190','ju87','me163','me262','p47','pby']);
-assert.equal(missions.filter(m=>m.kills||m.enemyAir||m.bombers).length,33);
+assert.equal(missions.filter(m=>m.kills||m.enemyAir||m.bombers).length,35);
+assert.equal(missions[35].id,'hunt','Build 296: Tank Hunt appends');assert.ok(missions[35].hunt&&missions[35].bonus);assert.equal(missions[35].kills.tank,4);
+assert.equal(missions[36].id,'patrol','Build 296: Armed Patrol appends');assert.ok(missions[36].patrol&&missions[36].bonus);assert.equal(JSON.stringify(missions[36].kills),'{"leg":3,"hunt":4}');
 assert.equal(missions.filter(m=>m.ac==='me262').length,4,'four jet sorties');
 assert.equal(missions[16].ac,'me163','original Komet interception retains its index');
 assert.equal(missions[17].ac,'ju87','Ju 87 bonus retains its index');

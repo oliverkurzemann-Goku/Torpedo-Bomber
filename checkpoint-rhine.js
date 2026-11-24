@@ -2,14 +2,14 @@
 'use strict';
 (function(){
  const C=SortieCheckpoint,identity=(i,saved)=>CustomSortie.checkpointIdentity('europe',MISSIONS,i,saved);
- function airborne(){return (state===ST.FLIGHT||state===ST.PAUSED&&prevState===ST.FLIGHT)&&P.alive&&!P.onGround&&!P.landingRoll&&!launchIntro&&!bailout&&!missionOver&&!sortieService?.active&&!(typeof duelSession!=='undefined'&&duelSession&&duelSession.match);}
+ function airborne(){return (state===ST.FLIGHT||state===ST.PAUSED&&prevState===ST.FLIGHT)&&P.alive&&!P.onGround&&!P.landingRoll&&!launchIntro&&!bailout&&!missionOver&&!sortieService?.active&&!(typeof duelSession!=='undefined'&&duelSession&&duelSession.match)&&!(M().hunt||M().patrol);}   // Build 296: the hunt layout is built at take-off, not saved
  function snapshot(){return {mission,custom:MISSIONS[mission].custom||null,identity:identity(mission),label:MISSIONS[mission].sub,
   player:C.capture(P,['_keys','_stickActive','_keyboardFlightActive']),operation:C.capture(europeOps),
   globals:C.capture({score,scoreStart,sortieKills,hitsTaken,circuitsDone,weather,baseWind,windZ,wxTime,diffIdx,weapon,aeroMode,invertPitch,steerSign,convoyAlertCalled}),
   targets:targets.filter(t=>!t.surprise&&!t.optionalSite).map(t=>C.entity(t,t.sub)),air:enemyAir.map(e=>C.entity(e)),wingmen:wingmen.map(w=>C.entity(w)),squad:squad.map(w=>C.entity(w)),squadStats:{...squadStats},squadOrder,bomberAlarm,
   traffic:(livingWorld?.entities||[]).map(e=>({alive:e.alive,phase:e.phase,last:C.capture(e.last),alertT:e.alertT,transform:C.transform(e.model)})),
   weapons:{bullets:C.projectiles(bullets),tracers:C.projectiles(tracers),bombs:C.projectiles(bombs),rockets:C.projectiles(rockets),groundFire:C.projectiles(groundFire)},
-  navigation:C.navigationState(navigation),clock:clock.elapsedTime,flares:flareSupport?.checkpoint(),storch:typeof stsCheckpoint==='function'?stsCheckpoint():null};}
+  navigation:C.navigationState(navigation),clock:clock.elapsedTime,flares:flareSupport?.checkpoint(),storch:typeof stsCheckpoint==='function'?stsCheckpoint():null,intel:typeof intel!=='undefined'&&intel?intel.checkpoint():null};}
  async function load(saved){
   CustomSortie.restoreSaved('europe',saved,MISSIONS,FlightPlans.europe);selectedMission=saved.mission;
   if(!saved.operation?.config)throw Error('Missing operation in checkpoint');
@@ -37,6 +37,8 @@
    }
   });
   flakUnits=flakUnits.filter(t=>t.alive);
+  // Build 296: what the pilot had already found (search areas, found and last-seen targets)
+  if(saved.intel&&typeof intel!=='undefined'&&intel)intel.restore(saved.intel);
   // Build 294: the Storch sorties (nests, decoys, infantry, the spotter's zones, the pickup's phase)
   if(saved.storch&&typeof stsRestoreCheckpoint==='function')stsRestoreCheckpoint(saved.storch);
   if(livingWorld)saved.traffic.forEach((s,i)=>{

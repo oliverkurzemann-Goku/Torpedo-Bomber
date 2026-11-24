@@ -290,7 +290,7 @@
 .nhMark svg{display:block;width:20px;height:20px;margin:0 auto;fill:rgba(255,122,82,.5);stroke:#ff7a52;stroke-width:1.5;stroke-linejoin:round;opacity:.85;filter:drop-shadow(0 0 2px #000);}
 .nhMark[hidden]{display:none;}
 </style>
-<link rel="stylesheet" href="menu-layout.css?v=267">
+<link rel="stylesheet" href="menu-layout.css?v=296">
 <link rel="stylesheet" href="duel.css?v=267">
 </head>
 <body>
@@ -313,7 +313,7 @@
   <div style="width:100%;height:4px;background:repeating-linear-gradient(45deg,#ffd400,#ffd400 8px,#111 8px,#111 16px);"></div>
   <span id="testVersionBannerText" style="background:#111;color:#ffd400;font-family:monospace;font-weight:800;font-size:11px;letter-spacing:.5px;padding:3px 10px;border:1px solid #ffd400;border-top:none;border-radius:0 0 6px 6px;"></span>
 </div>
-<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 295';</script>
+<script>document.getElementById('testVersionBannerText').textContent='TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 296';</script>
 <!-- ===== END TEMP TEST-ONLY VERSION BANNER ===== -->
 <div id="app"></div>
 <style>
@@ -355,7 +355,7 @@
   <div id="gunsight"></div>
   <div id="radio"></div>
   <div id="rhinePerfHud" hidden></div>
-  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 295 · REAL RHINE</div>
+  <div id="buildTag" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:9px;letter-spacing:2px;color:rgba(202,191,156,.4);">THUNDERBOLT BUILD 296 · REAL RHINE</div>
 
   <div id="apr">
     <div id="aprCall"></div>
@@ -410,7 +410,7 @@
 </div>
 
 <div class="overlay hidden" id="menu" data-campaign="europe">
-  <div class="menuTop"><a id="selBtn" href="index.html?v=295">&#9664; Change Game</a><span class="menuMeta">RHINE OPERATIONS<br>BUILD 295</span></div>
+  <div class="menuTop"><a id="selBtn" href="index.html?v=296">&#9664; Change Game</a><span class="menuMeta">RHINE OPERATIONS<br>BUILD 296</span></div>
   <div class="card menuCard">
     <aside class="menuOverview" aria-label="Campaign and pilot options">
     <div class="campaignArt" aria-hidden="true"></div>
@@ -445,12 +445,12 @@
     </div></details>
     </aside>
     <section class="missionPanel" aria-label="Mission selection">
-      <div class="secLbl">Choose your sortie · 15 missions + 4 bonus &amp; training</div>
-      <a class="hangarLink" href="hangar.html?theatre=europe&amp;v=295">CUSTOM MISSION · CHOOSE AIRCRAFT &amp; LOADOUT →</a>
+      <div class="secLbl">Choose your sortie · missions, bonus sorties &amp; training</div>
+      <a class="hangarLink" href="hangar.html?theatre=europe&amp;v=296">CUSTOM MISSION · CHOOSE AIRCRAFT &amp; LOADOUT →</a>
 <div id="missionSel" role="group" aria-label="European missions"></div>
       <div id="missionBlurb" class="missionBlurb" aria-live="polite"></div>
       <div class="menuConfig">
-        <div class="difficulty"><div class="secLbl">Difficulty</div><div id="diffSel" role="group" aria-label="Difficulty"></div></div>
+        <div class="difficulty"><div class="secLbl">Difficulty</div><div id="diffSel" role="group" aria-label="Difficulty"></div><div class="diffNote" id="diffNote" aria-live="polite"></div></div>
         <label class="toggle" id="invToggle"><span class="box" id="invBox">&#10003;</span> Invert pitch</label>
         <label class="toggle"><input type="checkbox" id="flightHints" checked> Flight hints</label>
       </div>
@@ -630,6 +630,9 @@
 <script src="pilot-rescue.js?v=253"></script>
 <script src="radio-intercept.js?v=157"></script>
 <script src="surprises.js?v=238"></script>
+<script src="target-intel.js?v=296"></script>
+<script src="menu-help.js?v=296"></script>
+<script>MenuHelp.install({game:'europe',seenKey:'re_howto_seen',graphics:{quality:'graphicsMenu',frame:'frameRateMenu',scenery:'rhineSceneryMenu',perf:'rhinePerfMenu'}});   // Build 296: How to Play + Graphics dialogs</script>
 <script src="audio/weapon-sound.js?v=144"></script>
 <script src="audio/throttle-response.js?v=218"></script><script src="audio/jet-engine.js?v=218"></script>
 <script src="audio/flight-atmosphere.js?v=175"></script>
@@ -651,7 +654,7 @@
 <script src="ground-dust.js?v=181"></script>
 <script src="flight-indicators.js?v=198"></script>
 <script src="sortie-fuel.js?v=294"></script>
-<script src="operation-plans.js?v=294"></script>
+<script src="operation-plans.js?v=296"></script>
 <script src="custom-sortie.js?v=294"></script>
 <script>
 // ============================================================
@@ -1046,7 +1049,7 @@ async function loadRealWorld(){
 
   if(OSMManager.BUILD!==23||HistoricalObjectManager.BUILD!==21||LivingWorld.BUILD!==22||WorldVehicles.BUILD!==24) throw new Error('Terrain version mismatch. Reload Remagen.');
   document.getElementById('testVersionBannerText').textContent=
-    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 295 · MODULE 23';
+    'TEST BUILD — THUNDERBOLT · REAL RHINE — BUILD 296 · MODULE 23';
   heightProvider=new DEMHeightProvider(RTILE,'terrain-system/real/data/dem/');
   terrain=new TerrainManager(scene,RTILE,heightProvider);
   osmMgr=new OSMManager(scene,RTILE,terrain,'terrain-system/real/data/osm/');
@@ -3054,6 +3057,9 @@ const TDEF={
   ramp   :{hp:6,   r:27, pts:1200, gun:.25, name:'V-1 RAMP'},
   // Build 246: the Flakvierling wagon coupled to the train (optional target, light flak)
   flakcar:{hp:5,   r:9,  pts:500,  gun:.55, name:'FLAK WAGON'},
+  // Build 296: the tanks and halted vehicles of the Tank Hunt and the Armed Patrol (guns barely scratch armour: rockets and bombs)
+  tank   :{hp:4,   r:9,  pts:400,  gun:.3,  name:'PANZER'},
+  lorry  :{hp:2,   r:7,  pts:220,  gun:1,   name:'TRUCK'},
   // Build 246: the parts of the fuel and ammunition dump (depot-kit-own.glb): tanks, drums and crates count for the objective and burn in chains
   depotTank  :{hp:4,   r:7,  pts:600,  gun:.4,  name:'FUEL TANK'},
   depotDrums :{hp:1.5, r:3.5,pts:250,  gun:.9,  name:'FUEL DRUMS'},
@@ -3104,7 +3110,7 @@ function spawnRealTarget(kind,sub,opt){
   if(kind==='flak') flakUnits.push(t);
   return t;
 }
-const VEHICLE_NAMES={sherman:'M4 SHERMAN',m16:'M16 AA',panzer4:'PANZER IV',halftrack:'SD.KFZ. 251',blitz:'OPEL BLITZ',blitzTanker:'FUEL TRUCK',jagdpanther:'JAGDPANTHER'};
+const VEHICLE_NAMES={sherman:'M4 SHERMAN',m16:'M16 AA',panzer4:'PANZER IV',halftrack:'SD.KFZ. 251',blitz:'OPEL BLITZ',blitzTanker:'FUEL TRUCK',jagdpanther:'JAGDPANTHER',tigerGrey:'TIGER I'};
 function spawnLivingTarget(entity,opt){
   opt=opt||{};const d=TDEF[entity.kind],vehicle=entity.meta?.vehicleModel;
   const armoured=vehicle==='jagdpanther'||vehicle==='sherman'||vehicle==='panzer4';
@@ -3160,7 +3166,7 @@ function damageTarget(t,amount,byGun){
       radioSay('ENEMY FIELD ALERTED — INTERCEPTOR SCRAMBLING');
     }
   }
-  t.hp-=amount;
+  t.hp-=amount;intelReveal(t,'hit');
   if(t.decoy&&typeof storchDecoyHit==='function')storchDecoyHit(t);
   if(t.hp<=0){ killTarget(t); }
 }
@@ -3173,7 +3179,7 @@ function killTarget(t){
   spawnDebris(p.x,p.y+2,p.z, big?18:8);
   sfxBoom(big?1.2:0.6);
   addScore(t.pts);
-  const key={flak:'flak',bridge:'bridge',factory:'factory',truck:'truck',train:'train',ferry:'ferry',ramp:'ramp',depotTank:'depot',depotDrums:'depot',depotCrates:'depot',storch:'storch',staffcar:'storch',nightfighter:'nightfighter'}[t.kind];
+  const key={flak:'flak',bridge:'bridge',factory:'factory',truck:'truck',train:'train',ferry:'ferry',ramp:'ramp',depotTank:'depot',depotDrums:'depot',depotCrates:'depot',storch:'storch',staffcar:'storch',nightfighter:'nightfighter',tank:'tank',lorry:'lorry'}[t.kind];
   if(key) sortieKills[key]=(sortieKills[key]||0)+1;
   if(t.secondary){addScore(300);radioSay('OPTIONAL SECONDARY TARGET DESTROYED — BONUS 300');}
   if(t.chain&&typeof depotChain==='function')depotChain(t);
@@ -3190,6 +3196,7 @@ function killTarget(t){
   else if(t.storch&&typeof storchKilled==='function') storchKilled(t);
   else if(t.hunter&&typeof hunterKilled==='function') hunterKilled(t);
   else if(t.site&&typeof siteWreck==='function') siteWreck(t);
+  else if(t.hunt&&typeof huntWreck==='function') huntWreck(t);   // Build 296
   else if(t.surprise){
     t.sub.traverse(o=>{ if(o.isMesh){ o.material=o.material.clone(); o.material.color.multiplyScalar(0.32); } });
     t.sub.userData.wreckOffset=-.6; t.sub.position.y=(t.sub.userData.terrainLift||0)+t.sub.userData.wreckOffset;
@@ -3344,7 +3351,15 @@ const MISSIONS=[
   {id:'blitz',title:'Bonus Blitz',sub:'KG 76 at the Bridge',ac:'ar234',bonus:true,weather:'broken',kills:{bridge:1},flakDefense:3,enemyAir:2,fightersOptional:true,doneText:'The span is down. ',
     text:'Based on KG 76\'s Ar 234 attacks on the Ludendorff Bridge, 7-17 March 1945 (a playable scenario, not a reconstruction of one sortie). Take off with one SC 500; the two take-off rockets fire by themselves on the roll. '
       +'Come in fast in a shallow dive along the span and release on the bomb cue. The crossing is ringed with Allied flak and two Thunderbolts patrol above it: you cannot fight them, you outrun them - the two rear guns fire by themselves at anything behind you. '
-      +'One bomb: a miss means landing, re-arming and going again.'}
+      +'One bomb: a miss means landing, re-arming and going again.'},
+  // Build 296: two search missions (indices 35-36): the targets are not marked, you find them
+  {id:'hunt',title:'Bonus Tank Hunt',sub:'Panzers in the Woods',ac:'p47',bonus:true,hunt:true,weather:'haze',kills:{tank:4},doneText:'The armour is broken up. ',
+    text:'Fictional armed reconnaissance. Reports place German tanks hiding at the edges of the woods east of the river - the rings on the chart are where they were reported, not where they stand. '
+      +'Fly the rings at 1,000-2,000 ft and look at the treelines: a tank is seen late, a column of dust gives a moving one away. Once you see one it is marked. '
+      +'A tank that is hit makes the rest of its group break for new cover, and their crews shoot back with machine guns. Destroy four, then home.'},
+  {id:'patrol',title:'Bonus Armed Patrol',sub:'Contacts on the Way',ac:'p47',bonus:true,patrol:true,weather:'broken',kills:{leg:3,hunt:4},doneText:'Patrol flown, contacts dealt with. ',
+    text:'Fictional armed patrol: fly through the three patrol points in order. Nothing is known at take-off - contact reports come in while you fly (a column, tanks, a flak battery), each with a search ring on the map. '
+      +'Find them and destroy four of what turns up, fly all three points, then land. Fighters scramble against the patrol at Veteran and Ace.'}
 ];
 function M(){ return MISSIONS[mission]; }
 function isFree(){ return !!M().free; }
@@ -3364,7 +3379,7 @@ function clearWorld(){
   // Every real target (flak/bridge/factory) is permanent world scenery, built once by
   // loadRealWorld() — never removed here, only reset (resetAllRealTargets(), called by the next
   // populate()), the same way the old synthetic game's own permanent worldBridge always was.
-  clearSurprises();
+  clearSurprises();if(typeof clearHunt==='function')clearHunt();
   if(typeof clearSites==='function')clearSites();
   targets=[]; flakUnits=[];
   if(gunMarks){gunMarks.count=0;gunMarkNext=0;}
@@ -3406,6 +3421,7 @@ function populate(){
     if(entity){const t=spawnLivingTarget(entity,{primary:false});t.secondary=true;t.name='OPTIONAL M16';}
   }
   if(typeof spawnMissionSites==='function')spawnMissionSites(m);   // Build 243: radar, searchlights, V-1 ramp
+  if(typeof huntPopulate==='function')huntPopulate(m);   // Build 296: Tank Hunt / Armed Patrol
 }
 function objectiveLeft(){
   const need=M().kills||{};
@@ -3439,8 +3455,9 @@ function objectiveText(){
   if(blockingEnemyAir().length>0 && !ks.length)
     return 'BANDITS  '+blockingEnemyAir().length+' LEFT';
   if(!ks.length) return europeOps?.pending()?'NEXT CONTACT EXPECTED':'RTB — LAND AT '+airfieldName(m);
-  const nm={flak:'FLAK',bridge:'BRIDGE',factory:'FACTORY',truck:['jabo','stuka'].includes(M().id)?'VEHICLES':'TRUCKS',train:'TRAIN',ferry:'FERRY',ramp:'V-1 RAMP',depot:'STORES',storch:'STAFF TARGET',nightfighter:'NIGHT FIGHTERS',rescued:'PILOT',zone:'ZONES',courier:'ANSWER'};
-  return ks.map(k=>(nm[k]||k.toUpperCase())+' '+left[k]).join('  ')+(M().ramp?'   V-1 DOWN '+(sortieKills.v1||0):'');
+  const nm={flak:'FLAK',bridge:'BRIDGE',factory:'FACTORY',truck:['jabo','stuka'].includes(M().id)?'VEHICLES':'TRUCKS',train:'TRAIN',ferry:'FERRY',ramp:'V-1 RAMP',depot:'STORES',storch:'STAFF TARGET',nightfighter:'NIGHT FIGHTERS',rescued:'PILOT',zone:'ZONES',courier:'ANSWER',tank:'TANKS',leg:'PATROL POINTS',hunt:'CONTACTS'};
+  const ic=intel?.search?intel.counts():null,found=ic&&ic.total&&ic.known<ic.total&&intel.areas().length?'   FOUND '+ic.known+'/'+ic.total:'';   // Build 296
+  return ks.map(k=>(nm[k]||k.toUpperCase())+' '+left[k]).join('  ')+(M().ramp?'   V-1 DOWN '+(sortieKills.v1||0):'')+found;
 }
 function checkObjective(){
   if(missionOver||isFree()||(europeOps&&!europeOps.ready())) return;
@@ -3990,7 +4007,7 @@ function updateFlak(dt){
     if(d>range || agl<(f.minAgl??(light?15:140)) || (!light&&d<350)) continue;
     f.cool-=dt;
     if(f.cool>0) continue;
-    flakMuzzle(f);
+    flakMuzzle(f);intelReveal(f,'fire');
     // Build 243: a searchlight holding you and a living radar make the guns quicker and more accurate
     const boost=typeof siteFlakBoost==='function'?siteFlakBoost(f):{cool:1,err:1};
     if(light){
@@ -4077,7 +4094,7 @@ function clockOf(x,z){
   return h===0?12:h;
 }
 // A flat, dry spot near (cx,cz): not water, not steep, away from both airfields and from the player.
-function surpriseSpot(cx,cz,rand,spread,minFrom){
+function surpriseSpot(cx,cz,rand,spread,minFrom,playerGap=600){
   const maxX=RTILE*RGRID_W-1800,maxZ=RTILE*RGRID_H-1800,wet=(x,z)=>!!(livingWorld&&livingWorld._pointOnWater(x,z));
   for(let i=0;i<20;i++){
     const a=rand()*Math.PI*2,r=(minFrom||0)+rand()*Math.max(1,spread-(minFrom||0)),x=cx+Math.cos(a)*r,z=cz+Math.sin(a)*r;
@@ -4086,7 +4103,7 @@ function surpriseSpot(cx,cz,rand,spread,minFrom){
     const slope=Math.abs(groundY(x+25,z)-groundY(x-25,z))+Math.abs(groundY(x,z+25)-groundY(x,z-25));
     if(slope>20)continue;
     if(Math.hypot(x-AF_X,z-AF_Z)<3200||Math.hypot(x-ALLIED_AF_X,z-ALLIED_AF_Z)<3200||Math.hypot(x-GERMAN_AF_X,z-GERMAN_AF_Z)<3200)continue;
-    if(Math.hypot(x-P.pos.x,z-P.pos.z)<600)continue;
+    if(Math.hypot(x-P.pos.x,z-P.pos.z)<playerGap)continue;
     return {x,z};
   }
   return null;
@@ -4173,8 +4190,7 @@ function clearSurprises(){
   if(surprises)surprises.reset(undefined,D().id);
 }
 function updateSurprises(dt){
-  if(!surprises)return;
-  surprises.update(dt,surpriseContext());
+  if(surprises)surprises.update(dt,surpriseContext());   // Build 296: the Ace's guard gun is an ambush too and must reveal without the scheduler
   const agl=P.pos.y-groundY(P.pos.x,P.pos.z);
   for(const a of ambushes){
     if(a.revealed||!a.t.alive)continue;
@@ -7720,12 +7736,13 @@ function startMission(i){
   relaunch();
   populate();
   startSurprises();
+  placeTargetGuard(m);setupIntel(m,plan);   // Build 296: Veteran/Ace search the target; Ace adds a guard gun at it
   spawnSquad(plan.squad||Squad.plan(m,{difficulty:D().id,seed:(Math.random()*2147483647)|0,side:isGermanMission(m)?'axis':'allied'}));
   bomberAlarm=false;escortCalled=false;
   if(m.bombers) spawnBombers(m.bombers.n, m.bombers.type);
   // Build 237: bombers fly with an escort. Authored fighters (enemyAir) become the escort of the box; a box without any gets
   // one of its own (optional: it does not have to be shot down for the sortie to count).
-  if(m.enemyAir) spawnEnemyAir(m.enemyAir,undefined,{escort:!!m.bombers,optional:!!m.fightersOptional});   // Build 294: fightersOptional - a patrol to outrun, not a required kill
+  if(m.enemyAir) spawnEnemyAir(tierFighters(m.enemyAir),undefined,{escort:!!m.bombers,optional:!!m.fightersOptional});   // Build 294: fightersOptional - a patrol to outrun, not a required kill
   else if(m.bombers&&m.escort!==0){const n=m.escort!=null?m.escort:escortCount(m.bombers.n);if(n>0)spawnEnemyAir(n,undefined,{escort:true,optional:true});}
   const v=document.getElementById('dmgVig'); if(v) v.style.opacity='0';
   const o=document.getElementById('oilCanopy'); if(o) o.style.opacity='0';
@@ -7759,6 +7776,7 @@ function chooseEuropePlan(i){
   cfg.notes=(cfg.notes||'')+' Approach gate: '+cfg.approach.label+'. Optional route bonus +150; a direct intercept is allowed.';
  }
  return {config:FlightOps.withPhases(MISSIONS[i],cfg),weather:names[Math.floor(Math.random()*names.length)],wind:(Math.random()<.5?-1:1)*Math.min(2+i*.3,7),
+  hunt:(MISSIONS[i].hunt||MISSIONS[i].patrol)&&typeof huntPlan==='function'?huntPlan(MISSIONS[i],(Math.random()*4294967296)>>>0):null,   // Build 296
   squad:Squad.plan(MISSIONS[i],{difficulty:D().id,seed:(Math.random()*2147483647)|0,side:isGermanMission(MISSIONS[i])?'axis':'allied'})};
 }
 function updateEuropeOperation(dt){
@@ -7822,12 +7840,12 @@ function buildRhineChart(){
 function europeBriefTargets(m){
  const out=[];
  for(const [key,obj,label] of [['bridge',realBridge,'Ludendorff bridge'],['factory',realFactory,'Industrial works']])
-  if(m.kills&&m.kills[key]&&obj)out.push({x:obj.userData.x,z:obj.userData.z,label});
- realFlak.slice(0,m.flakDefense||0).forEach((o,i)=>out.push({x:o.userData.x,z:o.userData.z,label:'Flak battery '+(i+1),optional:!(m.kills&&m.kills.flak)}));
+  if(m.kills&&m.kills[key]&&obj)out.push({x:obj.userData.x,z:obj.userData.z,label,kind:key});
+ realFlak.slice(0,m.flakDefense||0).forEach((o,i)=>out.push({x:o.userData.x,z:o.userData.z,label:'Flak battery '+(i+1),optional:!(m.kills&&m.kills.flak),kind:'flak'}));
  if(typeof sitePlan==='function'&&(m.radar||m.ramp||m.depot)){const plan=sitePlan(m);
-  if(plan.depot)out.push({x:plan.depot.x,z:plan.depot.z,label:'Fuel and ammunition dump'});
-  if(plan.radar)out.push({x:plan.radar.x,z:plan.radar.z,label:'Wuerzburg radar',optional:true});
-  if(plan.ramp)out.push({x:plan.ramp.x,z:plan.ramp.z,label:'V-1 ramp'});}
+  if(plan.depot)out.push({x:plan.depot.x,z:plan.depot.z,label:'Fuel and ammunition dump',kind:'depot'});
+  if(plan.radar)out.push({x:plan.radar.x,z:plan.radar.z,label:'Wuerzburg radar',optional:true,kind:'radar'});
+  if(plan.ramp)out.push({x:plan.ramp.x,z:plan.ramp.z,label:'V-1 ramp',kind:'ramp'});}
  if(m.storch&&typeof storchBriefPoint==='function'){const q=storchBriefPoint(m);if(q)out.push({x:q.x,z:q.z,label:'Staff Storch — last seen here, heading along the road'});}
  if(m.schraege&&typeof schraegeBriefPoint==='function'){const q=schraegeBriefPoint(m);out.push({x:q.x,z:q.z,label:'Night fighter station — orbit, radar-vectored',optional:true});}
  if(typeof stsKind==='function'&&stsKind(m))out.push(...stsBriefPoints(m));
@@ -7836,19 +7854,27 @@ function europeBriefTargets(m){
   const p=livingWorld._sample(e.route,e.initialPhase);
   const label=m.id==='stuka'?(vehicleIndex<2?'M4 Sherman':'M16 AA'):
     e.meta?.vehicleModel==='jagdpanther'?'Jagdpanther':TDEF[e.kind]?.name||e.kind;
-  vehicleIndex++;out.push({x:p.x,z:p.z,label});}
+  vehicleIndex++;out.push({x:p.x,z:p.z,label,kind:e.kind});}
  if(m.secondary&&livingWorld){
   const e=livingWorld.entities.filter(e=>e.kind==='truck'&&e.meta.convoy===0)[2];
-  if(e){const p=livingWorld._sample(e.route,e.initialPhase);out.push({x:p.x,z:p.z,label:'Optional M16 AA',optional:true});}
+  if(e){const p=livingWorld._sample(e.route,e.initialPhase);out.push({x:p.x,z:p.z,label:'Optional M16 AA',optional:true,kind:'truck'});}
  }
+ if((m.hunt||m.patrol)&&briefPlan?.hunt){const h=briefPlan.hunt;   // Build 296
+  if(h.kind==='hunt')h.groups.forEach(g=>g.vehicles.forEach(v=>out.push({x:v.x,z:v.z,label:'Tanks',kind:'tank'})));
+  else h.points.forEach((q,i)=>out.push({x:q.x,z:q.z,radius:HUNT.pointR,label:'Patrol point '+(i+1)}));}
  if(m.enemyAir||m.bombers){const sector=combatSectorPoint();out.push({x:sector.x,z:sector.z,label:m.bombers?'Bomber interception sector':'Fighter patrol sector'});}
  return out;
 }
 function drawEuropeBrief(m){
  buildRhineChart();
- const labels=FlightOps.drawMap(document.getElementById('opsMap'),{title:'RHINE',base:{x:AF_X,z:AF_Z},targets:europeBriefTargets(m),recon:briefPlan.config.recon,approach:briefPlan.config.approach,
+ let pts=europeBriefTargets(m);
+ // Build 296: Veteran/Ace get search areas, not positions; the areas are stored on the plan so the sortie uses the same ones
+ const areas=intelBriefAreas(m,pts,briefPlan);
+ if(areas){const label=k=>({tank:'tanks',bridge:'the bridge',factory:'the works',flak:'flak',truck:'the column',train:'the train',ferry:'the ferry',ramp:'the V-1 ramp',depot:'the dump'}[k]||k);
+  pts=pts.filter(p=>!p.kind).concat(areas.map(a=>({x:a.x,z:a.z,radius:a.r,label:'Search area — '+label(a.kind)+(a.moving?' (moving)':'')})));}
+ const labels=FlightOps.drawMap(document.getElementById('opsMap'),{title:'RHINE',base:{x:AF_X,z:AF_Z},targets:pts,recon:briefPlan.config.recon,approach:briefPlan.config.approach,
   background:(g,put)=>{if(!rhineChart)return;const a=put({x:0,z:32000}),b=put({x:28000,z:0});g.drawImage(rhineChart,a[0],a[1],b[0]-a[0],b[1]-a[1]);}});
- document.getElementById('opsLegend').textContent=labels||'Practice area — Beaufort Field';
+ document.getElementById('opsLegend').textContent=(labels||'Practice area — Beaufort Field')+(areas?' · '+D().name.toUpperCase()+': FIND THE TARGET INSIDE THE RING, IT IS MARKED ONCE YOU SEE IT':'');
 }
 let gunMarks=null,gunMarkNext=0;
 function groundGunImpact(x,z){
@@ -8096,8 +8122,216 @@ function setThrottleUI(v){
   if(t) t.textContent=Math.round(P.throttle*100);
 }
 let navigation=null,europeTrees=null;
+// ============================================================
+//  Build 296: TANK HUNT and ARMED PATROL - targets you have to find. Positions are planned once per briefing
+//  (seeded, so the briefing rings and the sortie agree), the tanks are camouflaged (seen late), scatter to new cover
+//  when they are found or hit and shoot back with machine guns. The patrol flies three checkpoints; contact reports
+//  bring new targets during the flight. Not part of a checkpoint (the layout is built at take-off).
+// ============================================================
+const HUNT={camo:.62,mg:{range:900,minAgl:3,coolBase:.55,coolVar:.4,spread:2.1,damage:1.5},scatter:[140,260],speed:4.2,
+  pointR:750,tankKinds:['panzer4','jagdpanther','tigerGrey'],lorryKinds:['blitz','halftrack','blitzTanker']};
+let hunt=null;
+function huntRandom(seed){let a=seed>>>0;return ()=>{a=(a+0x6D2B79F5)>>>0;let t=a;t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);return((t^t>>>14)>>>0)/4294967296;};}
+function huntTier(){return D().id;}
+// a dry, level spot clear of trees and buildings, preferring the edge of a wood (cover)
+function huntSpot(cx,cz,rand,spread,minFrom){
+  let best=null;
+  for(let i=0;i<14;i++){
+    const sp=surpriseSpot(cx,cz,rand,spread,minFrom,0);   // the player may be right overhead (a scattering group)if(!sp)continue;
+    if(worldVehicles&&typeof worldVehicles.safeSpot==='function'&&!worldVehicles.safeSpot(sp.x,sp.z,0,{x:3.6,y:3,z:7.2}))continue;
+    const cover=huntCover(sp.x,sp.z);if(!best||cover>best.cover)best={...sp,cover};if(cover>=6)break;
+  }
+  return best;
+}
+function huntCover(x,z){   // trees within 120 m (the edge of a wood is where a crew hides its tank)
+  let n=0;const tx=Math.floor(x/RTILE),tz=Math.floor(z/RTILE),t=osmMgr?.tiles?.get(tx+','+tz);if(!t||!t.farGroup)return 0;
+  const m=new THREE.Matrix4();
+  for(const mesh of t.farGroup.children){if(!mesh.isInstancedMesh||!/Trunk/i.test(mesh.name))continue;
+    for(let i=0;i<mesh.count&&n<12;i+=3){mesh.getMatrixAt(i,m);const e=m.elements;if(Math.abs(e[0])+Math.abs(e[2])<1e-5)continue;if(Math.hypot(e[12]-x,e[14]-z)<120)n++;}}
+  return n;
+}
+// the plan for the briefing and the sortie: where the groups are
+function huntPlan(m,seed){
+  const rand=huntRandom(seed),tier=huntTier(),base={x:AF_X,z:AF_Z},inward={x:RTILE*RGRID_W/2-AF_X,z:RTILE*RGRID_H/2-AF_Z},L=Math.hypot(inward.x,inward.z);
+  inward.x/=L;inward.z/=L;const side={x:-inward.z,z:inward.x};
+  if(m.hunt){
+    const c={x:base.x+inward.x*(8500+rand()*2500)+side.x*(rand()-.5)*5000,z:base.z+inward.z*(8500+rand()*2500)+side.z*(rand()-.5)*5000};
+    const sizes=tier==='rookie'?[3,2]:tier==='ace'?[3,3]:[2,2,2],groups=[],a0=rand()*Math.PI*2;
+    sizes.forEach((n,g)=>{const a=a0+g*Math.PI*2/sizes.length,gc=huntSpot(c.x+Math.cos(a)*2300,c.z+Math.sin(a)*2300,rand,700,0);if(!gc)return;
+      const vehicles=[];for(let i=0;i<n;i++){const sp=i?huntSpot(gc.x,gc.z,rand,160,40):gc;if(sp)vehicles.push({kind:HUNT.tankKinds[Math.floor(rand()*HUNT.tankKinds.length)],x:sp.x,z:sp.z,yaw:rand()*Math.PI*2});}
+      const guard=tier==='rookie'?null:huntSpot(gc.x,gc.z,rand,260,90);
+      groups.push({x:gc.x,z:gc.z,vehicles,guard:guard&&{x:guard.x,z:guard.z}});});
+    return {kind:'hunt',center:c,groups};
+  }
+  // Armed Patrol: three checkpoints and the order in which the contact reports come in
+  const pts=[];let p={x:base.x+inward.x*4800+side.x*(rand()-.5)*2400,z:base.z+inward.z*4800+side.z*(rand()-.5)*2400};pts.push(p);
+  p={x:p.x+inward.x*4200+side.x*(rand()<.5?-1:1)*2600,z:p.z+inward.z*4200+side.z*(rand()<.5?-1:1)*2600};pts.push(p);
+  p={x:p.x-inward.x*1500+side.x*(rand()<.5?-1:1)*3800,z:p.z-inward.z*1500+side.z*(rand()<.5?-1:1)*3800};pts.push(p);
+  const points=pts.map(q=>interiorAirPosition(new THREE.Vector3(q.x,0,q.z),2500)).map(v=>({x:v.x,z:v.z}));
+  const events=['column','tanks','guns'];for(let i=events.length-1;i>0;i--){const j=Math.floor(rand()*(i+1));[events[i],events[j]]=[events[j],events[i]];}
+  return {kind:'patrol',points,events,eventSeed:(rand()*4294967296)>>>0};
+}
+function huntModel(kind){
+  const tpl=worldVehicles?.templates?.get(kind);let g;
+  if(tpl){g=tpl.clone(true);g.visible=true;g.traverse(o=>{if(o.name==='Wreck')o.visible=false;if(o.name==='Intact'||o.name==='IntactMerged')o.visible=true;});}
+  else{g=new THREE.Group();const body=new THREE.Mesh(new THREE.BoxGeometry(3.3,2.2,6.8),new THREE.MeshLambertMaterial({color:0x4a4c3a}));body.position.y=1.1;g.add(body);
+    const tur=new THREE.Mesh(new THREE.BoxGeometry(2.2,1,2.6),new THREE.MeshLambertMaterial({color:0x44463a}));tur.position.y=2.6;g.add(tur);g.userData.fallback=true;}
+  return g;
+}
+function spawnHuntVehicle(v,opt){
+  const kind=opt.lorry?'lorry':'tank',d=TDEF[kind],model=huntModel(v.kind),y=groundY(v.x,v.z);
+  model.position.set(v.x,y,v.z);model.rotation.y=v.yaw||0;model.userData.terrainLift=y;scene.add(model);
+  const t={kind,vehicle:v.kind,hunt:true,patrol:!!opt.patrol,sub:model,group:model,hp:d.hp,maxhp:d.hp,alive:true,radius:d.r,pts:d.pts,
+    name:VEHICLE_NAMES[v.kind]||d.name,primary:true,cool:1+Math.random(),burnT:0,smokeT:Math.random(),groupKey:opt.group,
+    ...HUNT.mg,range:kind==='tank'?HUNT.mg.range:650,heavy:false};
+  targets.push(t);hunt.vehicles.push(t);hunt.models.push(model);return t;
+}
+function huntIntelEntry(t){const gun=t.kind==='ambush';
+  return {ref:t,kind:t.kind,pos:t.group.position,size:gun?'medium':'small',sight:gun?undefined:TargetIntel.SIGHT.small*(t.kind==='tank'?HUNT.camo:.85),moving:false,label:gun?'flak':t.kind==='tank'?'tanks':'vehicles'};}
+function huntPopulate(m){
+  clearHunt();if(!m.hunt&&!m.patrol)return;
+  const plan=(briefPlan&&briefPlan.hunt)||huntPlan(m,(Math.random()*4294967296)>>>0);
+  hunt={plan,vehicles:[],models:[],guards:[],leg:0,eventIdx:0,time:0,bounce:false,groups:{}};
+  if(plan.kind==='hunt')plan.groups.forEach((g,i)=>{for(const v of g.vehicles)spawnHuntVehicle(v,{group:'tank#'+i});
+    if(g.guard){const a=addAmbush('ambush',g.guard.x,g.guard.z,Math.random,huntTier()==='ace'?1.25:1);a.guard=true;hunt.guards.push(a);}});
+}
+// a contact report during the patrol: new targets with their own search area
+function huntEvent(kind){
+  const plan=hunt.plan,rand=huntRandom(plan.eventSeed+hunt.eventIdx*977),next=plan.points[Math.min(hunt.leg,plan.points.length-1)],cur={x:P.pos.x,z:P.pos.z};
+  const dx=next.x-cur.x,dz=next.z-cur.z,L=Math.hypot(dx,dz)||1,ax=cur.x+dx/L*Math.min(L,3200)+(-dz/L)*(rand()-.5)*2400,az=cur.z+dz/L*Math.min(L,3200)+(dx/L)*(rand()-.5)*2400;
+  const c=huntSpot(ax,az,rand,900,0);if(!c)return false;
+  const key='patrol#'+hunt.eventIdx++,list=[];let words;
+  if(kind==='column'){words='A HALTED COLUMN UNDER THE TREES';const n=huntTier()==='rookie'?3:4;
+    for(let i=0;i<n;i++){const sp=i?huntSpot(c.x,c.z,rand,90,25):c;if(sp)list.push(spawnHuntVehicle({kind:HUNT.lorryKinds[i%3],x:sp.x,z:sp.z,yaw:rand()*6.28},{lorry:true,patrol:true,group:key}));}}
+  else if(kind==='tanks'){words='TANKS LAAGERED AT THE EDGE OF A WOOD';const n=huntTier()==='ace'?3:2;
+    for(let i=0;i<n;i++){const sp=i?huntSpot(c.x,c.z,rand,140,35):c;if(sp)list.push(spawnHuntVehicle({kind:HUNT.tankKinds[i%3],x:sp.x,z:sp.z,yaw:rand()*6.28},{patrol:true,group:key}));}}
+  else{words='A FLAK BATTERY COVERING THE ROAD';const n=huntTier()==='rookie'?1:2;
+    // a reported gun is a target from the start (the report names it), not a jump scare: shown, not yet firing
+    for(let i=0;i<n;i++){const sp=i?huntSpot(c.x,c.z,rand,160,60):c;if(!sp)continue;const a=addAmbush('ambush',sp.x,sp.z,rand,huntTier()==='ace'?1.25:1);
+      a.revealed=true;a.group.visible=true;Object.assign(a.t,{hunt:true,patrol:true,primary:true,surprise:false,groupKey:key});
+      targets.push(a.t);hunt.vehicles.push(a.t);list.push(a.t);}}
+  if(!list.length)return false;
+  const area=intel?.addGroup(key,list.map(huntIntelEntry));
+  const at=area||c,d=Math.hypot(at.x-P.pos.x,at.z-P.pos.z);
+  radioSay('CONTACT REPORT — '+words+', ABOUT '+(d/MI).toFixed(1)+' MI AT '+clockOf(at.x,at.z)+" O'CLOCK. "+(area?'SEARCH THE RING ON YOUR MAP':'MARKED ON YOUR MAP'));
+  flash('NEW CONTACT REPORT',1600);return true;
+}
+function huntPatrolPoints(){return hunt&&hunt.plan.kind==='patrol'?hunt.plan.points.map((p,i)=>({x:p.x,z:p.z,r:HUNT.pointR,i,done:i<hunt.leg})):[];}
+function updateHunt(dt){
+  if(!hunt||state!==ST.FLIGHT||!P.alive)return;
+  hunt.time+=dt;const agl=P.pos.y-groundY(P.pos.x,P.pos.z);
+  // patrol checkpoints and the contact reports they bring
+  if(hunt.plan.kind==='patrol'){
+    const p=hunt.plan.points[hunt.leg];
+    if(p&&Math.hypot(P.pos.x-p.x,P.pos.z-p.z)<HUNT.pointR&&agl<1800){
+      hunt.leg++;sortieKills.leg=(sortieKills.leg||0)+1;addScore(150);
+      radioSay(hunt.leg<hunt.plan.points.length?'CHECKPOINT '+hunt.leg+' — CONTINUE THE PATROL':'LAST CHECKPOINT — FINISH THE CONTACTS, THEN HOME');
+      const ev=hunt.plan.events[hunt.leg-1];if(ev)huntEvent(ev);
+      if(hunt.leg===2&&huntTier()!=='rookie'&&!hunt.bounce){hunt.bounce=true;const first=enemyAir.length;spawnEnemyAir(huntTier()==='ace'?2:1);enemyAir.slice(first).forEach(e=>{e.escapeThreat=true;e.optional=true;});radioSay('BANDITS SCRAMBLED AGAINST THE PATROL — WATCH YOUR SIX');}
+      checkObjective();
+    }
+  }
+  // found or hit: the crews start their guns, and a group that is attacked scatters to new cover
+  for(const t of hunt.vehicles){
+    if(!t.alive)continue;
+    const known=intel?intel.known(t):'live';
+    if(known&&!t.firing){t.firing=true;if(!flakUnits.includes(t))flakUnits.push(t);}
+    if(t.move){const m=t.move,dx=m.x-t.group.position.x,dz=m.z-t.group.position.z,d=Math.hypot(dx,dz);
+      if(d<1.5){t.move=null;intel?.entries().forEach(e=>{if(e.ref===t)e.moving=false;});continue;}
+      const step=Math.min(d,HUNT.speed*dt);t.group.position.x+=dx/d*step;t.group.position.z+=dz/d*step;t.group.position.y=groundY(t.group.position.x,t.group.position.z);
+      t.group.rotation.y=Math.atan2(dx,dz);t.dust=(t.dust||0)-dt;if(t.dust<=0){t.dust=.35;spawnSmoke(t.group.position.x,t.group.position.y+1,t.group.position.z,0x9c8a6a,1.2);}}
+  }
+}
+// a hit scatters the group: every tank of it drives to a new spot (dust makes them easier to see while they move)
+function huntScatter(t){
+  if(!hunt||!t.groupKey||t.kind!=='tank')return;
+  if(hunt.groups[t.groupKey])return;hunt.groups[t.groupKey]=true;
+  const rand=Math.random;
+  for(const v of hunt.vehicles){if(!v.alive||v.groupKey!==t.groupKey||v===t)continue;
+    const p=v.group.position,sp=huntSpot(p.x,p.z,rand,HUNT.scatter[1],HUNT.scatter[0]);if(!sp)continue;v.move={x:sp.x,z:sp.z};
+    intel?.entries().forEach(e=>{if(e.ref===v)e.moving=true;});}
+  radioSay('THE TANKS ARE MOVING — THEY ARE BREAKING FOR COVER');
+}
+function huntWreck(t){
+  if(t.patrol)sortieKills.hunt=(sortieKills.hunt||0)+1;
+  const wreck=t.sub.getObjectByName('Wreck'),intact=t.sub.getObjectByName('IntactMerged')||t.sub.getObjectByName('Intact');
+  if(wreck&&intact){intact.visible=false;wreck.visible=true;wreck.scale.set(1,1,1);}
+  else t.sub.traverse(o=>{if(o.isMesh){o.material=o.material.clone();o.material.color.multiplyScalar(.32);}});
+  t.move=null;huntScatter(t);
+}
+function clearHunt(){
+  if(!hunt)return;for(const m of hunt.models)scene.remove(m);hunt=null;
+}
+// ============================================================
+//  Build 296: TARGET INTEL - at Veteran and Ace only a search area is given, the pilot has to find the target
+//  (target-intel.js). Rookie keeps the marked targets. See CLAUDE.md, Build 296.
+// ============================================================
+let intel=null;
+const INTEL_SIZE={bridge:'huge',factory:'huge',train:'large',ferry:'large',ramp:'large',depot:'large',flak:'medium',radar:'medium',flakcar:'medium',searchlight:'medium',truck:'small',tank:'small'};
+function intelKind(t){return /^depot/.test(t.kind)?'depot':t.kind;}
+// automated test browsers keep the marked targets (the many navigation tests are deterministic); window.__intel or ?intel=on switches the search on
+function intelAutomationOff(){return typeof navigator!=='undefined'&&navigator.webdriver&&!window.__intel&&!/[?&]intel=on/.test(location.search);}
+function intelApplies(m){return !!m&&!intelAutomationOff()&&!(m.free||m.circuits||m.duel||m.storch||m.schraege||m.rats||(typeof stsKind==='function'&&stsKind(m)));}
+// the Tank Hunt and the Armed Patrol are search missions at every difficulty (the Rookie gets smaller rings and keener eyes)
+function intelAlwaysSearch(m){return !!(m&&(m.hunt||m.patrol));}
+function intelLevel(m){return !intelApplies(m)?'rookie':intelAlwaysSearch(m)&&D().id==='rookie'?'vet':D().id;}
+function intelOpts(m){return intelAlwaysSearch(m)&&D().id==='rookie'?{sightScale:1.35,areaScale:.8}:{};}
+function intelShown(t){return !intel||intel.known(t);}
+function intelPos(t){const k=intelShown(t);return k==='last'?(intel.markPos(t)||t.group.position):t.group.position;}
+function setupIntel(m,plan){
+  intel=TargetIntel.create({level:intelLevel(m),seed:plan?.intelSeed,...intelOpts(m)});
+  const list=targets.filter(t=>t.alive&&!t.hunter&&!t.surprise&&!t.decoy&&!t.intelExempt).map(t=>{if(t.hunt)return huntIntelEntry(t);const kind=intelKind(t);
+    return {ref:t,kind,pos:t.group.position,size:INTEL_SIZE[kind]||'medium',moving:!!t.entity,optional:!t.primary,label:t.name};});
+  intel.setup(list,plan?.intelAreas);
+}
+// the same areas for the briefing chart, planned from the briefing's points (same keys as the sortie)
+function intelBriefAreas(m,points,plan){
+  if(!intelApplies(m)||TargetIntel.levelFor(intelLevel(m)).mode!=='search')return null;
+  if(plan&&plan.intelSeed==null)plan.intelSeed=(Math.random()*4294967296)>>>0;
+  const o=intelOpts(m),areas=TargetIntel.planAreas(points.filter(p=>p.kind).map(p=>({...p,areaScale:o.areaScale})),intelLevel(m),plan?plan.intelSeed:1);
+  if(plan)plan.intelAreas=areas;return areas;
+}
+const INTEL_WORD={bridge:'THE BRIDGE',factory:'THE WORKS',flak:'FLAK POSITION',truck:'VEHICLE',train:'THE TRAIN',ferry:'THE FERRY',ramp:'V-1 RAMP',depot:'THE DUMP',radar:'RADAR',flakcar:'FLAK WAGON',searchlight:'SEARCHLIGHT'};
+function intelVis(){const w=FlightOps.wx(weather);return Math.pow(Math.max(.22,Math.min(1,w.far/11000)),.6);}
+function intelVisAt(p){
+  let v=intelVis();
+  if(M()?.night){v*=.45;for(const s of flareSupport?.slots||[])if(s.live&&Math.hypot(s.g.position.x-p.x,s.g.position.z-p.z)<900){v=Math.max(v,.85);break;}}
+  return v;
+}
+function intelLos(o,p){
+  const ty=(p.y==null?groundY(p.x,p.z):p.y)+4;
+  for(let i=1;i<10;i++){const f=i/10,x=o.x+(p.x-o.x)*f,z=o.z+(p.z-o.z)*f;if(groundY(x,z)>o.y+(ty-o.y)*f+1.5)return false;}
+  return true;
+}
+function updateIntel(dt){
+  if(!intel||!intel.search||state!==ST.FLIGHT||!P.alive)return;
+  const events=intel.update(dt,{observer:P.pos,agl:P.pos.y-groundY(P.pos.x,P.pos.z),visAt:intelVisAt,los:intelLos,alive:t=>t.alive});
+  for(const e of events){
+    const word=INTEL_WORD[intelKind(e.ref||{kind:''})]||String(e.label||'TARGET').toUpperCase();
+    if(e.type==='spotted'){
+      const p=e.ref.group.position;
+      radioSay((e.optional?'TALLY — ':'TARGET IN SIGHT — ')+word+', '+clockOf(p.x,p.z)+" O'CLOCK, "+(e.dist/MI).toFixed(1)+' MI');
+      flash((e.optional?'SPOTTED: ':'TARGET FOUND: ')+word,1500);addScore(e.optional?0:25);
+    }else if(e.type==='report')radioSay('UPDATED REPORT — '+String(e.label).toUpperCase()+' HAS MOVED. NEW SEARCH AREA '+(e.dist/MI).toFixed(1)+' MI '+e.dir+' OF YOU');
+    else if(e.type==='lost')flash('LOST SIGHT OF '+word+' — LAST SEEN MARKED',1500);
+  }
+}
+function intelReveal(t,why){
+  if(!intel||!intel.search||!t?.alive||!intel.managed(t))return;
+  if(intel.reveal(t)&&why==='fire'&&state===ST.FLIGHT){const p=t.group.position;radioSay('MUZZLE FLASHES — '+(INTEL_WORD[intelKind(t)]||'GUNS')+' AT '+clockOf(p.x,p.z)+" O'CLOCK, NOW MARKED");}
+}
+// the extra pressure each difficulty adds besides the search (fighters, a guard gun at the target)
+function tierFighters(n){if(!n)return 0;return D().id==='rookie'?Math.max(1,n-1):D().id==='ace'?n+1:n;}
+function placeTargetGuard(m){
+  if(D().id!=='ace'||!intelApplies(m)||!m.kills||m.hunt||m.patrol)return;   // the hunt places its own guard guns per group
+  const t=targets.find(t=>t.alive&&t.primary&&!t.entity&&!t.surprise)||targets.find(t=>t.alive&&t.primary&&!t.surprise);if(!t)return;
+  const rand=Math.random,p=t.group.position,sp=surpriseSpot(p.x,p.z,rand,320,140);
+  if(sp){const a=addAmbush('ambush',sp.x,sp.z,rand,1.25);a.guard=true;}
+}
 function europeContacts(){
- const contacts=targets.filter(t=>t.alive).map((t,i)=>({ref:t,pos:t.group.position,kind:t.kind.toUpperCase(),label:(t.primary?'OBJECTIVE: ':'')+(t.name||t.kind).toUpperCase()+' #'+(i+1)}));
+ const contacts=targets.filter(t=>t.alive&&intelShown(t)).map((t,i)=>({ref:t,pos:intelPos(t),kind:t.kind.toUpperCase(),label:(t.primary?'OBJECTIVE: ':'')+(t.name||t.kind).toUpperCase()+' #'+(i+1)+(intelShown(t)==='last'?' (LAST SEEN)':'')}));
+ for(const a of intel?.areas()||[])contacts.push({ref:a,pos:a,kind:'AREA',label:'SEARCH AREA — '+String(a.label).toUpperCase()});   // Build 296
+ if(typeof huntPatrolPoints==='function')for(const q of huntPatrolPoints())if(!q.done){contacts.push({ref:'patrol'+q.i,pos:q,kind:'PATROL',label:'PATROL POINT '+(q.i+1)});break;}
  for(const e of enemyAir)if(e.alive)contacts.push({ref:e,pos:e.pos,kind:e.bomber?'BOMBER':'BANDIT',label:e.bomber?'BOMBER':'BANDIT'});
  const r=europeOps?.config.recon;if(r&&!europeOps.reconDone)contacts.push({ref:r,pos:r,kind:'RECON',label:'RECON — BLUE CIRCLE'});
  if(typeof stsMapMarks==='function')for(const k of stsMapMarks())contacts.push({ref:k,pos:k,kind:k.kind||'MARK',label:k.label});
@@ -8139,6 +8373,8 @@ function updateHUD(){
   document.getElementById('objText').textContent=objectiveText();
   const nav=ensureNavigation(),contacts=europeContacts(),base=contacts.find(c=>c.kind==='BASE');
   let candidates=contacts.filter(c=>c.ref?.primary&&(europeOps?.phase()?.id!=='suppress'||c.kind==='FLAK'));
+  if(!candidates.length)candidates=contacts.filter(c=>c.kind==='AREA');   // Build 296: nothing found yet - lead to the nearest search area
+  if(!candidates.length)candidates=contacts.filter(c=>c.kind==='PATROL');   // Build 296: the next patrol point
   if(!candidates.length)candidates=contacts.filter(c=>c.kind==='BANDIT'||c.kind==='BOMBER');
   let chosen=candidates.sort((a,b)=>Math.hypot(a.pos.x-P.pos.x,a.pos.z-P.pos.z)-Math.hypot(b.pos.x-P.pos.x,b.pos.z-P.pos.z))[0]||base;
   if(europeOps&&!europeOps.reconDone)chosen=contacts.find(c=>c.kind==='RECON')||chosen;
@@ -8158,12 +8394,12 @@ function updateHUD(){
   document.getElementById('navCue').textContent=Math.abs(rel)<Math.PI/12?'AHEAD':Math.abs(rel)>Math.PI*11/12?'BEHIND':rel>0?'RIGHT':'LEFT';
   const nd=document.getElementById('navDist');
   if(nd) nd.textContent=(Math.hypot(dx,dz)/MI).toFixed(1)+' mi';
-  document.getElementById('navKind').textContent=navKind;
+  document.getElementById('navKind').textContent=navKind==='AREA'?'SEARCH':navKind;
   const headingCard=n=>['N','NE','E','SE','S','SW','W','NW'][Math.round(n/45)%8];
   const targetDeg=((brg*R2D)%360+360)%360;
   document.getElementById('compassText').textContent='HDG '+String(Math.round(hdg)%360).padStart(3,'0')+'° '+headingCard(hdg)+' · BRG '+String(Math.round(targetDeg)%360).padStart(3,'0')+'° '+headingCard(targetDeg);
   let closest=null,range=Infinity;
-  for(const f of flakUnits){if(!f.alive)continue;const d=P.pos.distanceTo(f.group.position);if(d<range){closest=f;range=d;}}
+  for(const f of flakUnits){if(!f.alive||!intelShown(f))continue;const d=P.pos.distanceTo(f.group.position);if(d<range){closest=f;range=d;}}
   const alert=document.getElementById('flakAlert');
   if(closest&&range<5500&&state===ST.FLIGHT){
     const source=closest.group.position,angle=Math.atan2(source.x-P.pos.x,source.z-P.pos.z);
@@ -8208,9 +8444,14 @@ function drawMinimap(){
   // airfield
   let p=put(AF_X,AF_Z); g.fillStyle='#7fae5a'; g.fillRect(p[0]-3,p[1]-3,6,6);
   // targets — the ones you are being sent after have to stand out at a glance
+  // Build 296: search areas (dashed amber rings) for what is not found yet; a target is drawn only once it is known
+  if(typeof huntPatrolPoints==='function')for(const q0 of huntPatrolPoints()){const q=put(q0.x,q0.z);g.strokeStyle=q0.done?'rgba(120,200,255,.35)':'#78c8ff';g.lineWidth=1.3;g.beginPath();g.arc(q[0],q[1],Math.max(5,q0.r*SC),0,7);g.stroke();g.lineWidth=1;g.font='bold 9px monospace';g.fillStyle=g.strokeStyle;g.fillText(String(q0.i+1),q[0]-3,q[1]+3);}   // Build 296
+  for(const a of intel?.areas()||[]){const q=put(a.x,a.z);g.strokeStyle='#e8b84b';g.setLineDash([3,3]);g.lineWidth=1.3;g.beginPath();g.arc(q[0],q[1],Math.max(6,a.r*SC),0,7);g.stroke();g.setLineDash([]);g.lineWidth=1;g.font='bold 9px monospace';g.fillStyle='#e8b84b';g.fillText('?',q[0]-3,q[1]+3);}
   for(const t of targets){
-    p=put(t.group.position.x,t.group.position.z);
+    const known=intelShown(t);if(!known)continue;
+    const tp=intelPos(t);p=put(tp.x,tp.z);
     if(!t.alive){ g.fillStyle='rgba(120,110,95,.45)'; g.fillRect(p[0]-1,p[1]-1,2,2); continue; }
+    if(known==='last'){g.strokeStyle=t.primary?'#e8b84b':'#b1442b';g.lineWidth=1.3;g.strokeRect(p[0]-3,p[1]-3,6,6);g.lineWidth=1;continue;}   // last seen
     if(t.hunter){   // night fighters: the allied ground-control scope shows them out to SCHRAEGE.gci, as a hollow diamond with their heading
       if(typeof schraegeScope==='function'&&schraegeScope(t)){
         g.strokeStyle='#ff5a3a';g.lineWidth=1.6;g.beginPath();g.moveTo(p[0],p[1]-5);g.lineTo(p[0]+5,p[1]);g.lineTo(p[0],p[1]+5);g.lineTo(p[0]-5,p[1]);g.closePath();g.stroke();
@@ -8252,7 +8493,8 @@ function drawMinimap(){
     const px=R+(lx/L)*(R-5), py=R-(lz/L)*(R-5);
     g.fillStyle=col; g.fillRect(px-2.5,py-2.5,5,5);
   };
-  for(const t of targets) if(t.alive) rim(t.group.position.x,t.group.position.z,t.primary?'#e8b84b':'#b1442b');
+  for(const t of targets) if(t.alive&&intelShown(t)){const tp=intelPos(t);rim(tp.x,tp.z,t.primary?'#e8b84b':'#b1442b');}
+  for(const a of intel?.areas()||[])rim(a.x,a.z,'rgba(232,184,75,.6)');
   for(const e of enemyAir) if(e.alive) rim(e.pos.x,e.pos.z,'#ff6a4a');
   if(typeof duelSession!=='undefined'&&duelSession&&duelSession.avatar&&duelSession.avatar.shown)rim(duelSession.avatar.pos.x,duelSession.avatar.pos.z,'#ff6a4a');
   if(livingWorld)for(const e of livingWorld.entities)
@@ -8751,6 +8993,9 @@ function buildMenu(){
       ds.appendChild(c);
     });
   }
+  // Build 296: what the chosen difficulty means, in one line under the buttons
+  const syncDiffNote=()=>{const n=document.getElementById('diffNote');if(n)n.textContent=TargetIntel.SUMMARY[D().id]||'';};
+  syncDiffNote();ds?.querySelectorAll('.chip').forEach(c=>c.addEventListener('click',syncDiffNote));
   const im=MISSIONS[selectedMission]; const sb=document.getElementById('startBtn');
   if(im&&sb) sb.textContent='Begin '+im.title;
   if(im) document.getElementById('menuLandingSpeed').textContent=landingSpeedNote(im);
@@ -9280,7 +9525,7 @@ function init(){
   // menu wiring
   document.getElementById('startBtn').onclick=()=>showBrief(selectedMission);
   duelInit();
-  document.getElementById('pauseMainMenu').onclick=async()=>{globalThis.sortieCheckpoint?.save();await globalThis.sortieCheckpoint?.flush();exitToMenuFromPause(true);window.location.href='index.html?v=295';};
+  document.getElementById('pauseMainMenu').onclick=async()=>{globalThis.sortieCheckpoint?.save();await globalThis.sortieCheckpoint?.flush();exitToMenuFromPause(true);window.location.href='index.html?v=296';};
   document.getElementById('logBtn').onclick=()=>{ show('menu',false); showLogbook(); };
   document.getElementById('skipLaunchPreview').onclick=()=>finishLaunchIntro();
   document.getElementById('brBack').onclick=()=>{ show('brief',false); show('menu',true);if(navigation){navigation.reset();navigation.button.style.display='none';} state=ST.MENU; };
@@ -9421,7 +9666,7 @@ function animate(){
       updateFlight(dt);
       groundDust?.trail(P,raw,{wetness:FlightOps.wx(weather).rain,light:flareSupport?.night?.24:1});
       if(aircraftSmoke&&P.alive)aircraftSmoke.damage("player",P,noseDir(),dt,new THREE.Vector3(windZ,0,0));
-      updateEuropeOperation(dt);
+      updateEuropeOperation(dt);updateIntel(dt);updateHunt(dt);
       updateInterceptRadio(raw);
       updateFlightHints(raw);
       if(firing) fireGuns(dt);
@@ -9554,6 +9799,6 @@ function reportStartupError(err){
 const hangarRequest=CustomSortie.install('europe',MISSIONS,FlightPlans.europe,window.location.search);
 window.addEventListener('load',()=>{try{init();}catch(err){reportStartupError(err);}});
 </script>
-<script src="checkpoint-rhine.js?v=294"></script>
+<script src="checkpoint-rhine.js?v=296"></script>
 </body>
 </html>
