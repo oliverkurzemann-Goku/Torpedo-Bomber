@@ -220,7 +220,8 @@ const cdn={
      renderer.render(studio,cam);const close=renderer.domElement.toDataURL('image/png');renderer.setPixelRatio(.25);
      return {overview,close,patches,buckets};
     });
-    assert(landscape.patches>100&&landscape.buckets<=14,'mapped woodland stays in bounded instanced buckets');
+    // Since Build 277 the trees are one InstancedMesh per 1-km cell and kind (at most 7 kinds per cell, 16 cells per 4-km tile, two tiles here).
+    assert(landscape.patches>100&&landscape.buckets<=2*16*7,'mapped woodland stays in bounded instanced buckets '+landscape.patches+' '+landscape.buckets);
     for(const [name,png] of [['rhine-fields-and-woods',landscape.overview],['rhine-forest-close',landscape.close]])
      fs.writeFileSync(path.join(out,name+'.png'),Buffer.from(png.split(',')[1],'base64'));
     const service=await page.evaluate(()=>{

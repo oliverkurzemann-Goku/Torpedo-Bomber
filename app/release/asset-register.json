@@ -4,10 +4,10 @@
   "build": 296,
   "status": "OPEN — source declarations checked; no external rights authorization obtained",
   "payload": {
-    "bytes": 167636885,
+    "bytes": 167637819,
     "fileCount": 408,
     "modelCount": 65,
-    "manifestSha256": "5e0c183df6d7e42e9ee6d2074faa01a1ba77ced906fd2281a2f68783a45cdaed"
+    "manifestSha256": "070b799faf677e977020cdb08040f6826085cc91a1d2c9647e50754020615251"
   },
   "files": [
     {
@@ -960,8 +960,8 @@
     },
     {
       "path": "menu-layout.css",
-      "bytes": 18493,
-      "sha256": "76c2abe66692153b563fb17a1c9c39a3803536050c14fc914e91a645396cff4f",
+      "bytes": 19427,
+      "sha256": "09676133587c3f302390535d432ecea5e3b8aa1214ae866e5d149d98aedc15db",
       "kind": "code-or-notice"
     },
     {

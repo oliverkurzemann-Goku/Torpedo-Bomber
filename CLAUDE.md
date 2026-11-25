@@ -44,10 +44,17 @@ Nutzer: „Die Missionen unterscheiden sich in Rookie, Veteran und Ace nicht wir
   - **How to Play:** sechs Schritte eines Einsatzes (Auswahl/Schwierigkeit, Briefing, Start, Navigation, Suchen/Angriff, Heimflug/Landung), dazu die alte Steuerungshilfe samt Live-Landegeschwindigkeit (`#menuLandingSpeed` wird in den Dialog verschoben) und eine Erklärung der Anzeige.
   - Öffnet sich beim ersten Start einmal von selbst (`re_howto_seen` / `tc_howto_seen`), nicht in Testbrowsern.
   - **Graphics:** die echten Bedienelemente werden in den Dialog verschoben (ihre Handler bleiben): Grafikstufe, Bildrate, Kulisse, Messanzeige. Zu jedem steht, was es tut und was es kostet, dazu eine iPad-Empfehlung (High + 60 FPS) und der Knopf „Use recommended“.
-- **Menü:** Rhein 37 Karten in zehn Spalten (vier Reihen). Gemessen bei 1194×660, 1024×600, 1366×1024: Start-Knopf sichtbar, Hilfeknöpfe ≥ 44 px (`okinawa/tests/menu-help-browser.cjs`, Bilder `test-visuals/build296-*.png`).
+- **Menü:**
+  - Rhein: 37 Karten in zehn Spalten (vier Reihen). Pazifik: acht Spalten.
+  - Das gilt jetzt auch für hohe Querformate ab 821 px Höhe (`menu-layout.css`, `min-height:821px`). Vorher galten dort sechs Spalten, die Rhein-Tafel hatte sieben Reihen, und bei 1536×930 lagen „Begin“ und „Continue“ bei 972–1076 px, also außerhalb des Bildes. `checkpoint-browser` fand das.
+  - Gemessen mit sichtbarem Continue-Knopf, beide Spiele, von 1024×520 bis 1536×930: „Begin“ endet bei höchstens 741 px, Hilfeknöpfe ≥ 44 px (`okinawa/tests/menu-help-browser.cjs`, Bilder `test-visuals/build296-*.png`).
 - **Tests:**
   - Neu: `target-intel.cjs`, `intel-browser.cjs`, `hunt-browser.cjs`, `menu-help-browser.cjs`.
-  - Angepasst: `campaign.cjs` (37 Einsätze), `sites-/squad-browser` (37 Pläne), `browser-smoke` (Landegeschwindigkeit jetzt im How-to-Dialog), `start-menu.cjs`.
+  - Angepasst:
+    - `campaign.cjs` (37 Einsätze), `sites-/squad-browser` (37 Pläne), `start-menu.cjs`, `custom-sortie.cjs` (Checkpoint 296), `navigation.cjs` (Stubs für `intel`).
+    - `browser-smoke`: Landegeschwindigkeit jetzt im How-to-Dialog. Außerdem war die Waldprüfung `buckets<=14` schon in Build 295 rot (gegengeprüft im Worktree). Seit Build 277 sind Bäume je 1-km-Zelle gebündelt; gemessen 183 Buckets in zwei Kacheln. Neue Grenze 2 × 16 Zellen × 7 Arten. Danach läuft `browser-smoke` komplett grün.
+  - Grün im Schlusslauf: `hunt`, `intel`, `menu-help`, `takeoff-briefing`, `checkpoint`, `sites`, `browser-smoke`; Unit Okinawa 166 Dateien, Syntax.
+  - **Rot, nicht von diesem Build:** `squad-browser` bricht bei „they fired“ ab: Die Rottenflieger schießen im `libs`-Luftkampf nicht. Gleicher Fehler auf unverändertem Build 295 (Worktree-Gegenprobe). Nicht untersucht.
 - Kennungen 296 (Seiten, Board, Hangar, Xcode, `build-app.mjs`, `menu-layout.css?v=296`, `operation-plans.js?v=296`, `checkpoint-*.js?v=296`).
 **Offen:**
 - Kein iPad-Test.

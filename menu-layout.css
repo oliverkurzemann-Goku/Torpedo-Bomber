@@ -77,6 +77,14 @@
   #menu .menuIntro{font-size:12px;margin-bottom:10px;}
   #menu .menuConfig,#menu .menuActions{margin-top:12px;}
 }
+/* Build 296: taller landscape iPads (821 px and up, e.g. 1194x834, 1536x930, 1366x1024) kept six columns: 37 Rhine cards made seven rows and
+   pushed Begin Sortie and Continue below the screen (measured 1024-1076 px at 1536x930). Same column counts as the short landscape layout, roomier cards. */
+@media (orientation:landscape) and (min-width:900px) and (min-height:821px){
+  #menu[data-campaign="europe"] #missionSel{grid-template-columns:repeat(10,minmax(0,1fr));}
+  #menu[data-campaign="pacific"] #missionSel{grid-template-columns:repeat(8,minmax(0,1fr));}
+  #menu[data-campaign="europe"] #missionSel .chip,#menu[data-campaign="pacific"] #missionSel .chip{min-height:70px;padding:6px 4px;gap:3px;}
+  #menu[data-campaign="europe"] #missionSel .chip .cs,#menu[data-campaign="pacific"] #missionSel .chip .cs{font-size:10.5px;line-height:1.15;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+}
 /* Build 237: short description of the selected mission under the board (both campaigns): one compact paragraph. */
 #menu .missionBlurb{margin-top:10px;padding:8px 11px;border:1px solid #455044;border-radius:6px;background:#141d15;
   font:12px/1.4 system-ui;color:#c9cfbd;text-align:left;min-height:73px;box-sizing:border-box;}

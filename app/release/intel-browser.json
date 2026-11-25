@@ -10,25 +10,25 @@
   "brief": [
    {
     "key": "truck#0",
-    "x": 12278.72089956037,
-    "z": 20488.830108744223,
+    "x": 12379.210970924043,
+    "z": 20616.89627660449,
     "r": 1300
    }
   ],
   "areas": [
    {
     "key": "truck#0",
-    "x": 12278.72089956037,
-    "z": 20488.830108744223,
+    "x": 12379.210970924043,
+    "z": 20616.89627660449,
     "r": 1300
    }
   ],
   "hidden": 0,
   "inside": [
-   0.26781904437582377,
-   0.2445604481212281,
-   0.22099422324952683,
-   0.19720099946437533
+   0.38216598421752906,
+   0.3583579209892583,
+   0.33454694426754644,
+   0.31098096338860953
   ],
   "nav": "SEARCH",
   "obj": "TRUCKS 4   FOUND 0/4",
@@ -38,14 +38,14 @@
  "veteranSpot": {
   "far": false,
   "near": "live",
-  "weather": "haze",
-  "range": 1271,
-  "off": 837,
+  "weather": "broken",
+  "range": 1747,
+  "off": 1185,
   "radio": [
-   "TARGET IN SIGHT — VEHICLE, 6 O'CLOCK, 0.5 MI",
-   "TARGET IN SIGHT — VEHICLE, 6 O'CLOCK, 0.5 MI",
-   "TARGET IN SIGHT — VEHICLE, 6 O'CLOCK, 0.5 MI",
-   "TARGET IN SIGHT — VEHICLE, 6 O'CLOCK, 0.5 MI"
+   "TARGET IN SIGHT — VEHICLE, 6 O'CLOCK, 0.8 MI",
+   "TARGET IN SIGHT — VEHICLE, 6 O'CLOCK, 0.8 MI",
+   "TARGET IN SIGHT — VEHICLE, 6 O'CLOCK, 0.7 MI",
+   "TARGET IN SIGHT — VEHICLE, 6 O'CLOCK, 0.7 MI"
   ],
   "contacts": 4,
   "nav": "TRUCK",
@@ -55,31 +55,31 @@
   "brief": [
    {
     "key": "truck#0",
-    "x": 13042.330677567723,
-    "z": 20196.553329030765,
+    "x": 11850.28116367541,
+    "z": 20727.15515613984,
     "r": 2100
    }
   ],
   "areas": [
    {
     "key": "truck#0",
-    "x": 13042.330677567723,
-    "z": 20196.553329030765,
+    "x": 11850.28116367541,
+    "z": 20727.15515613984,
     "r": 2100
    }
   ],
   "hidden": 0,
   "inside": [
-   0.39057821753722305,
-   0.3846157911274991,
-   0.3804189868785092,
-   0.3782720557281594
+   0.3293410135354277,
+   0.3208666631587821,
+   0.31175228836348706,
+   0.3018647638799523
   ],
   "nav": "SEARCH",
   "obj": "TRUCKS 4   FOUND 0/4",
   "fighters": 0,
   "guard": [
-   220
+   149
   ]
  },
  "aceSpot": {
@@ -115,10 +115,6 @@
   2,
   3
  ],
- "checkpoint": {
-  "found": 4,
-  "hasIntel": true
- },
  "pacific_rookie": {
   "areas": 0,
   "ships": 1,
@@ -135,7 +131,7 @@
   "nav": "SEARCH",
   "obj": "SEARCH: JAPANESE SUPPLY SHIP · FOUND 0/1",
   "inside": [
-   0.5533548511564733
+   0.22024000557139511
   ],
   "zeros": 0
  },
@@ -145,7 +141,7 @@
   "nav": "SEARCH",
   "obj": "SEARCH: JAPANESE SUPPLY SHIP · FOUND 0/1",
   "inside": [
-   0.4855594216939061
+   0.47740198737010353
   ],
   "zeros": 0
  },
